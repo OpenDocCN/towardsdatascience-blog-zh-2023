@@ -1,18 +1,18 @@
 # 机器翻译的数据预处理
 
-> 原文：[https://towardsdatascience.com/data-preprocessing-for-machine-translation-fcbedef0e26a?source=collection_archive---------5-----------------------#2023-02-25](https://towardsdatascience.com/data-preprocessing-for-machine-translation-fcbedef0e26a?source=collection_archive---------5-----------------------#2023-02-25)
+> 原文：[`towardsdatascience.com/data-preprocessing-for-machine-translation-fcbedef0e26a?source=collection_archive---------5-----------------------#2023-02-25`](https://towardsdatascience.com/data-preprocessing-for-machine-translation-fcbedef0e26a?source=collection_archive---------5-----------------------#2023-02-25)
 
 ## 清洗、归一化和分词
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----fcbedef0e26a--------------------------------)[![本杰明·玛丽](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----fcbedef0e26a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcbedef0e26a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fcbedef0e26a--------------------------------) [本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----fcbedef0e26a--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----fcbedef0e26a--------------------------------)![本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----fcbedef0e26a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcbedef0e26a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcbedef0e26a--------------------------------) [本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----fcbedef0e26a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-preprocessing-for-machine-translation-fcbedef0e26a&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----fcbedef0e26a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcbedef0e26a--------------------------------) · 14 min read · 2023年2月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcbedef0e26a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-preprocessing-for-machine-translation-fcbedef0e26a&user=Benjamin+Marie&userId=ad2a414578b3&source=-----fcbedef0e26a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-preprocessing-for-machine-translation-fcbedef0e26a&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----fcbedef0e26a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcbedef0e26a--------------------------------) · 14 min read · 2023 年 2 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcbedef0e26a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-preprocessing-for-machine-translation-fcbedef0e26a&user=Benjamin+Marie&userId=ad2a414578b3&source=-----fcbedef0e26a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffcbedef0e26a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-preprocessing-for-machine-translation-fcbedef0e26a&source=-----fcbedef0e26a---------------------bookmark_footer-----------)![](../Images/c636f6f625036e3463e36d30b90eb824.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffcbedef0e26a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-preprocessing-for-machine-translation-fcbedef0e26a&source=-----fcbedef0e26a---------------------bookmark_footer-----------)![](img/c636f6f625036e3463e36d30b90eb824.png)
 
 图片来自 [Pixabay](https://pixabay.com/photos/coffee-pot-cup-of-coffee-filter-2139481/)。
 
@@ -22,9 +22,9 @@
 
 我通过示例和代码片段解释每一步预处理步骤，以便你可以自行重现。
 
-在本文的预处理示例中，我使用了西班牙语-英语（Es→En）[ParaCrawl v9](https://paracrawl.eu/)语料库的前100,000个段落（CC0）。我直接提供了[这个数据集](https://benjaminmarie.com/data/paracrawl100k.en-es.zip)（大小：9Mb）。
+在本文的预处理示例中，我使用了西班牙语-英语（Es→En）[ParaCrawl v9](https://paracrawl.eu/)语料库的前 100,000 个段落（CC0）。我直接提供了[这个数据集](https://benjaminmarie.com/data/paracrawl100k.en-es.zip)（大小：9Mb）。
 
-如果你想自己制作这个语料库，请按照这些步骤操作（耐心点，原始数据集已压缩，但仍重达24Gb）：
+如果你想自己制作这个语料库，请按照这些步骤操作（耐心点，原始数据集已压缩，但仍重达 24Gb）：
 
 ```py
 #Download the corpus
@@ -40,11 +40,11 @@ rm en-es.txt.zip
 
 在我之前的文章中，我介绍了用于训练、验证和评估的机器翻译数据集的所有主要特征：
 
-[](/datasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa?source=post_page-----fcbedef0e26a--------------------------------) [## 训练、验证和评估机器翻译的数据集
+[](/datasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa?source=post_page-----fcbedef0e26a--------------------------------) ## 训练、验证和评估机器翻译的数据集
 
 ### 选择、检查和拆分
 
-[towardsdatascience.com](/datasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa?source=post_page-----fcbedef0e26a--------------------------------)
+[towardsdatascience.com
 
 # 数据格式：TXT、TSV 和 TMX
 
@@ -56,7 +56,7 @@ rm en-es.txt.zip
 
 你可能会发现的最常见格式有：
 
-+   平行文本（.txt）：这是理想的格式。我们不需要进行任何转换。源语言段落在一个文本文件中，目标语言段落在另一个文本文件中。大多数接下来的预处理步骤将并行应用于这两个文件。在介绍部分，我们下载了这种格式的ParaCrawl数据。
++   平行文本（.txt）：这是理想的格式。我们不需要进行任何转换。源语言段落在一个文本文件中，目标语言段落在另一个文本文件中。大多数接下来的预处理步骤将并行应用于这两个文件。在介绍部分，我们下载了这种格式的 ParaCrawl 数据。
 
 +   制表符分隔值（.tsv）：这是一个单文件，每对源语言和目标语言段落在同一行中由制表符分隔。用“cut”命令将其转换为文本文件是直接的：
 
@@ -67,7 +67,7 @@ cut -f1 data.tsv > train.es
 cut -f2 data.tsv > train.en
 ```
 
-+   翻译记忆交换（.tmx）：这是一种XML格式，专业翻译人员经常使用。这是一种非常详细的格式。这就是为什么它很少用于大型语料库。处理TMX稍微困难一些。我们可以先去除XML标签。为此，我使用了来自Moses项目的[脚本](https://github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/strip-xml.perl)（LGPL许可）：
++   翻译记忆交换（.tmx）：这是一种 XML 格式，专业翻译人员经常使用。这是一种非常详细的格式。这就是为什么它很少用于大型语料库。处理 TMX 稍微困难一些。我们可以先去除 XML 标签。为此，我使用了来自 Moses 项目的[脚本](https://github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/strip-xml.perl)（LGPL 许可）：
 
 ```py
 strip-xml.perl < data.tmx > data.txt
@@ -112,9 +112,9 @@ sed -n 'p;n' data.txt > train.es
 
 +   **空白**或大多包含**不可打印字符**。
 
-+   带有**无效UTF8**，即未正确编码的。
++   带有**无效 UTF8**，即未正确编码的。
 
-+   包含**极长的标记**（或“单词”），因为它们通常无法翻译，例如DNA序列、数字序列、无意义的内容等。
++   包含**极长的标记**（或“单词”），因为它们通常无法翻译，例如 DNA 序列、数字序列、无意义的内容等。
 
 +   有时，**重复**，即如果一个段或一对段在平行数据中出现多于一次，我们只保留一个实例。
 
@@ -148,19 +148,19 @@ sed -n 'p;n' data.txt > train.es
 
 [*预处理*](https://github.com/kpu/preprocess)（[LGPL](https://github.com/kpu/preprocess/blob/master/LICENSE) 许可）是一个高效的框架，可以执行许多过滤操作。它被[机器翻译研讨会](http://www2.statmt.org/wmt23/)用于准备主要国际机器翻译竞赛的数据。
 
-我通常会用自制脚本和额外的框架来补充，比如[Moses脚本](https://github.com/moses-smt/mosesdecoder/tree/master/scripts)（[LGPL](https://github.com/moses-smt/mosesdecoder/blob/master/COPYING) 许可）。
+我通常会用自制脚本和额外的框架来补充，比如[Moses 脚本](https://github.com/moses-smt/mosesdecoder/tree/master/scripts)（[LGPL](https://github.com/moses-smt/mosesdecoder/blob/master/COPYING) 许可）。
 
 在接下来的段落中，我将逐步描述我通常应用于原始平行数据的整个清理和过滤过程。
 
 ## 实践
 
-我们希望清理我们的Paracrawl西班牙语-英语平行数据（见本文介绍部分）。
+我们希望清理我们的 Paracrawl 西班牙语-英语平行数据（见本文介绍部分）。
 
 在内存方面，最昂贵的步骤之一是删除重复项（即“去重”）。在去重之前，我们应该尽可能地移除更多的片段对。
 
-我们可以通过应用[clean-n-corpus.perl](https://github.com/moses-smt/mosesdecoder/blob/master/scripts/training/clean-corpus-n.perl)来开始（这个脚本不需要安装Moses），如下所示：*注意：此步骤假设源语言和目标语言中都存在空格。如果其中一种语言（大多）不使用空格，如日语或中文，你必须首先对源文本和目标文本文件进行分词。如果适用于你的用例，直接跳到“步骤2和3”，然后在完成后再回来这里。*
+我们可以通过应用[clean-n-corpus.perl](https://github.com/moses-smt/mosesdecoder/blob/master/scripts/training/clean-corpus-n.perl)来开始（这个脚本不需要安装 Moses），如下所示：*注意：此步骤假设源语言和目标语言中都存在空格。如果其中一种语言（大多）不使用空格，如日语或中文，你必须首先对源文本和目标文本文件进行分词。如果适用于你的用例，直接跳到“步骤 2 和 3”，然后在完成后再回来这里。*
 
-要了解如何使用clean-n-corpus.perl，调用脚本而不带任何参数。它应返回：
+要了解如何使用 clean-n-corpus.perl，调用脚本而不带任何参数。它应返回：
 
 ```py
 syntax: clean-corpus-n.perl [-ratio n] corpus l1 l2 clean-corpus min max [lines retained file]
@@ -168,9 +168,9 @@ syntax: clean-corpus-n.perl [-ratio n] corpus l1 l2 clean-corpus min max [lines 
 
 参数如下：
 
-+   *比例*：这是繁殖率。默认情况下，它设置为9。我们通常不需要修改它，因此不使用此参数。
++   *比例*：这是繁殖率。默认情况下，它设置为 9。我们通常不需要修改它，因此不使用此参数。
 
-+   *语料库*：这是清理数据集的路径，不包含扩展名。脚本假设你将源文件和目标文件命名为相同，使用语言ISO代码作为扩展名，例如，在我们的例子中是train.es和train.en。如果你采用了我为ParaCrawl使用的相同文件名约定，你只需在那里输入：“train”（假设你在包含数据的目录中）。
++   *语料库*：这是清理数据集的路径，不包含扩展名。脚本假设你将源文件和目标文件命名为相同，使用语言 ISO 代码作为扩展名，例如，在我们的例子中是 train.es 和 train.en。如果你采用了我为 ParaCrawl 使用的相同文件名约定，你只需在那里输入：“train”（假设你在包含数据的目录中）。
 
 +   *l1*: 其中一个平行文件的扩展名，例如“es”。
 
@@ -194,7 +194,7 @@ clean-corpus-n.perl -max-word-length 50 train es en train.clean 0 150
 
 +   空段落
 
-+   超过150个单词（或标记）的段落
++   超过 150 个单词（或标记）的段落
 
 +   高度的繁殖力
 
@@ -269,9 +269,9 @@ Kept 84838 / 85127 = 0.996605
 
 我们已经完成了数据清理。
 
-我们几乎移除了15%的段落。这意味着神经机器翻译的每个训练周期将快15%（大约）。
+我们几乎移除了 15%的段落。这意味着神经机器翻译的每个训练周期将快 15%（大约）。
 
-# 第2步：标准化
+# 第 2 步：标准化
 
 **适用步骤**：所有数据集的源侧，可能还包括训练和验证数据集的目标侧。
 
@@ -322,7 +322,7 @@ sacremoses normalize < train.clean.pp.dedup.en > train.clean.pp.dedup.norm.en
 
 差异示例（使用命令“diff”获得）：*注意：我选择截图而不是复制粘贴这些句子，因为博客编辑器会自动应用其自身的规范化规则。*
 
-![](../Images/d04f41c9cb7179b7b4f21c8ec3c34e32.png)
+![](img/d04f41c9cb7179b7b4f21c8ec3c34e32.png)
 
 ParaCrawl V9 (CC0) 的句子在规范化前后的对比。截图由作者提供。
 

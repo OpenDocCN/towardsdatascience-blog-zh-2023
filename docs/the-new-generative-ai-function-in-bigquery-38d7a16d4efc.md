@@ -1,10 +1,10 @@
 # BigQuery 中的新生成式 AI 函数
 
-> 原文：[https://towardsdatascience.com/the-new-generative-ai-function-in-bigquery-38d7a16d4efc?source=collection_archive---------5-----------------------#2023-12-01](https://towardsdatascience.com/the-new-generative-ai-function-in-bigquery-38d7a16d4efc?source=collection_archive---------5-----------------------#2023-12-01)
+> 原文：[`towardsdatascience.com/the-new-generative-ai-function-in-bigquery-38d7a16d4efc?source=collection_archive---------5-----------------------#2023-12-01`](https://towardsdatascience.com/the-new-generative-ai-function-in-bigquery-38d7a16d4efc?source=collection_archive---------5-----------------------#2023-12-01)
 
 ## 如何使用 BigQuery GENERATE_TEXT 远程函数
 
-[](https://medium.com/@martosi?source=post_page-----38d7a16d4efc--------------------------------)[![Marina Tosic](../Images/cb2168826ed9ed608d61c6c90843c535.png)](https://medium.com/@martosi?source=post_page-----38d7a16d4efc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----38d7a16d4efc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----38d7a16d4efc--------------------------------) [Marina Tosic](https://medium.com/@martosi?source=post_page-----38d7a16d4efc--------------------------------)
+[](https://medium.com/@martosi?source=post_page-----38d7a16d4efc--------------------------------)![Marina Tosic](https://medium.com/@martosi?source=post_page-----38d7a16d4efc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----38d7a16d4efc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----38d7a16d4efc--------------------------------) [Marina Tosic](https://medium.com/@martosi?source=post_page-----38d7a16d4efc--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F38d7a16d4efc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-new-generative-ai-function-in-bigquery-38d7a16d4efc&source=-----38d7a16d4efc---------------------bookmark_footer-----------)![](../Images/6bc5b9d4bfe58fdc6f69a6a33a2454d3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F38d7a16d4efc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-new-generative-ai-function-in-bigquery-38d7a16d4efc&source=-----38d7a16d4efc---------------------bookmark_footer-----------)![](img/6bc5b9d4bfe58fdc6f69a6a33a2454d3.png)
 
 “每个人都可以在 BigQuery 中利用 SQL 知识和良好的提示结构进行编码和进行 NLP 分析” [照片来自 [Adi Goldstein](https://unsplash.com/@adigold1?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)]
 

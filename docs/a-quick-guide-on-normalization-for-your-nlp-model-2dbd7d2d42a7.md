@@ -1,18 +1,18 @@
 # 关于 NLP 模型的归一化快速指南
 
-> 原文：[https://towardsdatascience.com/a-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7?source=collection_archive---------5-----------------------#2023-09-14](https://towardsdatascience.com/a-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7?source=collection_archive---------5-----------------------#2023-09-14)
+> 原文：[`towardsdatascience.com/a-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7?source=collection_archive---------5-----------------------#2023-09-14`](https://towardsdatascience.com/a-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7?source=collection_archive---------5-----------------------#2023-09-14)
 
 ## 通过归一化加速模型收敛并稳定训练过程
 
-[](https://medium.com/@vuphuongthao9611?source=post_page-----2dbd7d2d42a7--------------------------------)[![Thao Vu](../Images/9d44a2f199cdc9c29da72d9dc4971561.png)](https://medium.com/@vuphuongthao9611?source=post_page-----2dbd7d2d42a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2dbd7d2d42a7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2dbd7d2d42a7--------------------------------) [Thao Vu](https://medium.com/@vuphuongthao9611?source=post_page-----2dbd7d2d42a7--------------------------------)
+[](https://medium.com/@vuphuongthao9611?source=post_page-----2dbd7d2d42a7--------------------------------)![Thao Vu](https://medium.com/@vuphuongthao9611?source=post_page-----2dbd7d2d42a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2dbd7d2d42a7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2dbd7d2d42a7--------------------------------) [Thao Vu](https://medium.com/@vuphuongthao9611?source=post_page-----2dbd7d2d42a7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa836aac352ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7&user=Thao+Vu&userId=a836aac352ca&source=post_page-a836aac352ca----2dbd7d2d42a7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2dbd7d2d42a7--------------------------------) ·7 min 阅读·2023年9月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2dbd7d2d42a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7&user=Thao+Vu&userId=a836aac352ca&source=-----2dbd7d2d42a7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa836aac352ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7&user=Thao+Vu&userId=a836aac352ca&source=post_page-a836aac352ca----2dbd7d2d42a7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2dbd7d2d42a7--------------------------------) ·7 min 阅读·2023 年 9 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2dbd7d2d42a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7&user=Thao+Vu&userId=a836aac352ca&source=-----2dbd7d2d42a7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2dbd7d2d42a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7&source=-----2dbd7d2d42a7---------------------bookmark_footer-----------)![](../Images/664add61750b752d6992bc44d3645704.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2dbd7d2d42a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-on-normalization-for-your-nlp-model-2dbd7d2d42a7&source=-----2dbd7d2d42a7---------------------bookmark_footer-----------)![](img/664add61750b752d6992bc44d3645704.png)
 
 图片由 [Mattia Bericchia](https://unsplash.com/@mattiabericchia?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

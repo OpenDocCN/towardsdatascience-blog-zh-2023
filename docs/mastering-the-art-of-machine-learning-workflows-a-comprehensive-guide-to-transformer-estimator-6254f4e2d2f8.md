@@ -1,18 +1,18 @@
 # 掌握机器学习工作流的艺术：变压器、估算器和管道的全面指南
 
-> 原文：[https://towardsdatascience.com/mastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8?source=collection_archive---------7-----------------------#2023-06-09](https://towardsdatascience.com/mastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8?source=collection_archive---------7-----------------------#2023-06-09)
+> 原文：[`towardsdatascience.com/mastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8?source=collection_archive---------7-----------------------#2023-06-09`](https://towardsdatascience.com/mastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8?source=collection_archive---------7-----------------------#2023-06-09)
 
 ## 编写无缝代码以获得最佳结果
 
-[](https://medium.com/@andreas030503?source=post_page-----6254f4e2d2f8--------------------------------)[![Andreas Lukita](../Images/8660ca1fea5da34ce3475281c1f52152.png)](https://medium.com/@andreas030503?source=post_page-----6254f4e2d2f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6254f4e2d2f8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6254f4e2d2f8--------------------------------) [Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----6254f4e2d2f8--------------------------------)
+[](https://medium.com/@andreas030503?source=post_page-----6254f4e2d2f8--------------------------------)![Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----6254f4e2d2f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6254f4e2d2f8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6254f4e2d2f8--------------------------------) [Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----6254f4e2d2f8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----6254f4e2d2f8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6254f4e2d2f8--------------------------------) ·14 min read·2023年6月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6254f4e2d2f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8&user=Andreas+Lukita&userId=955ef38ea7b&source=-----6254f4e2d2f8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----6254f4e2d2f8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6254f4e2d2f8--------------------------------) ·14 min read·2023 年 6 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6254f4e2d2f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8&user=Andreas+Lukita&userId=955ef38ea7b&source=-----6254f4e2d2f8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6254f4e2d2f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8&source=-----6254f4e2d2f8---------------------bookmark_footer-----------)![](../Images/750da8ba509c1ea6c28de2648e625fa5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6254f4e2d2f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-art-of-machine-learning-workflows-a-comprehensive-guide-to-transformer-estimator-6254f4e2d2f8&source=-----6254f4e2d2f8---------------------bookmark_footer-----------)![](img/750da8ba509c1ea6c28de2648e625fa5.png)
 
 图片由 [Rick Hyne](https://unsplash.com/de/@quinley1770?utm_source=medium&utm_medium=referral) 贡献，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,31 +20,31 @@
 
 不，我来告诉你，这还不够好。确实，当你开始一个机器学习项目时，许多新手和中级分析师都急于制作出中等水平的模型，却缺乏适当的工作流程。虽然有时候问题本身很简单，但如果不遵循适当的工作流程，常常会导致一些难以察觉的潜在问题，比如数据泄漏。
 
-“只要有效，就足够好了。” 让我告诉你，这并不是。让我们快速模拟一个场景，你需要向高级分析师解释你的工作。这里有一些问题。如果今天有效，是否能保证明天也有效，并且容易重复？你能在包含200多个单元格的Notebook中解释你的模型工作流程的预处理步骤吗？如果你以这种方式进行交叉验证，是否会暴露测试数据集并使模型性能膨胀？这些问题很棘手，不是吗？
+“只要有效，就足够好了。” 让我告诉你，这并不是。让我们快速模拟一个场景，你需要向高级分析师解释你的工作。这里有一些问题。如果今天有效，是否能保证明天也有效，并且容易重复？你能在包含 200 多个单元格的 Notebook 中解释你的模型工作流程的预处理步骤吗？如果你以这种方式进行交叉验证，是否会暴露测试数据集并使模型性能膨胀？这些问题很棘手，不是吗？
 
-让我告诉你，实际上，你并不孤单，也并没有那么远。即使在参加了多个商业分析和机器学习课程后，我的任何一个讲师都没有分享我下面所要分享的工具和技巧。我会说，这些不是每个人在第一次接触Scikit-Learn时都关注的亮点课程。然而，它们会产生一致的结果，显著提升你的代码编写水平。想象一下，轻松处理数据，流畅地转换特征，并训练复杂的模型，同时保持代码的优雅和简洁。这就是我们在本综合指南结束时的目标，希望你能被下面的实践所说服。让我们开始吧。
+让我告诉你，实际上，你并不孤单，也并没有那么远。即使在参加了多个商业分析和机器学习课程后，我的任何一个讲师都没有分享我下面所要分享的工具和技巧。我会说，这些不是每个人在第一次接触 Scikit-Learn 时都关注的亮点课程。然而，它们会产生一致的结果，显著提升你的代码编写水平。想象一下，轻松处理数据，流畅地转换特征，并训练复杂的模型，同时保持代码的优雅和简洁。这就是我们在本综合指南结束时的目标，希望你能被下面的实践所说服。让我们开始吧。
 
 **目录**
 
-+   [采用流水线的理由](#8d5b)
++   采用流水线的理由
 
-+   [估算器](#29de)
++   估算器
 
-+   [变换器](#4358)
++   变换器
 
-+   [流水线](#fd4a)
++   流水线
 
-+   [自定义估算器](#0457)
++   自定义估算器
 
-+   [特征联合](#5660)
++   特征联合
 
-+   [真实世界数据集示例：银行营销与网格搜索交叉验证](#547b)
++   真实世界数据集示例：银行营销与网格搜索交叉验证
 
 # 采用流水线的理由
 
 **1\. 精简的工作流程。** 利用流水线可以实现数据预处理和建模过程中的多个步骤的无缝集成。它使你能够将各种变换器和估算器串联起来，确保从数据预处理到模型训练和评估的流程清晰、简洁且自动化。通过将你的预处理和建模步骤封装在流水线中，你的代码变得更加有组织、模块化，并且更易于理解。它改善了代码的外观和可维护性，因为每一步都被清楚地定义。将流水线中的每一步视为独立的，你可以在不担心一个预处理步骤如何影响其他步骤的情况下进行更改或添加步骤！
 
-![](../Images/3a976ef31dac95508e385c36c6278c77.png)
+![](img/3a976ef31dac95508e385c36c6278c77.png)
 
 作者提供的图片
 
@@ -106,29 +106,29 @@ np.mean(cross_val_score(estimator=pipe, X=X, y=y))
 
 从`BaseEstimator`本身来看，没有`predict`方法，只有`fit`。一个估计器并不一定需要有`predict`方法，虽然有些有。一个具有`predict`方法的估计器试图基于学习到的模型对新的、未见过的数据进行预测。例如，像线性回归、随机森林分类器、梯度提升分类器等回归器和分类器都是具有`predict`方法的估计器。
 
-更进一步，我们来看看`LogisticRegression`类的原始文档[²](#11e5)。在下面的代码片段中，我们观察到该类继承了`BaseEstimator`以获得`fit`方法，并继承了`LinearClassifierMixin`以获得`predict`方法。
+更进一步，我们来看看`LogisticRegression`类的原始文档²。在下面的代码片段中，我们观察到该类继承了`BaseEstimator`以获得`fit`方法，并继承了`LinearClassifierMixin`以获得`predict`方法。
 
-![](../Images/040dc7cbdee785137308b46706d97c64.png)
+![](img/040dc7cbdee785137308b46706d97c64.png)
 
 [Scikit-learn GitHub](https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/linear_model/_logistic.py)（BSD-3）
 
 # 变换器
 
-变换器是一种具有`transform`方法的估计器。请注意，这里的“变换器”特指Scikit-learn上下文。它不应与近年来备受关注的神经网络架构中的变换器混淆。
+变换器是一种具有`transform`方法的估计器。请注意，这里的“变换器”特指 Scikit-learn 上下文。它不应与近年来备受关注的神经网络架构中的变换器混淆。
 
 简而言之，变换器的作用是以某种方式转换/处理预测变量（`X`），使其可以被机器学习算法使用。这可能是使用像`StandardScaler`和`MinMaxScaler`这样的显著工具对连续预测变量进行缩放，或者使用`OneHotEncoder`或`OrdinalEncoder`对分类预测变量进行编码。
 
-更进一步，变换器具有fit-transform机制，其中它使用`fit`方法从训练数据中学习，然后使用`transform`方法将学习到的转换应用于训练数据和测试数据。这确保了整个过程中的转换一致应用。
+更进一步，变换器具有 fit-transform 机制，其中它使用`fit`方法从训练数据中学习，然后使用`transform`方法将学习到的转换应用于训练数据和测试数据。这确保了整个过程中的转换一致应用。
 
-再进一步，为了遵循Scikit-learn API实现规则，变换器通常从`BaseEstimator`继承其`fit`方法，从`TransformerMixin`继承其`transform`方法。我们来看看`StandardScaler`库的原始文档[³](#2e21)。
+再进一步，为了遵循 Scikit-learn API 实现规则，变换器通常从`BaseEstimator`继承其`fit`方法，从`TransformerMixin`继承其`transform`方法。我们来看看`StandardScaler`库的原始文档³。
 
-![](../Images/4ade96aaf2b16470dcdafba3f3fa35a3.png)
+![](img/4ade96aaf2b16470dcdafba3f3fa35a3.png)
 
 [Scikit-learn GitHub](https://github.com/scikit-learn/scikit-learn/blob/364c77e04/sklearn/preprocessing/_data.py#L644)
 
-## ColumnTransformer[⁵](#ea73)
+## ColumnTransformer⁵
 
-有时，你可能需要根据需求仅对某些列应用特定的变换。例如，对没有特定层次结构的分类特征应用`OneHotEncoder`，对具有特定层次结构和排序的分类特征（即T恤尺寸，我们通常有XS<S<M<L<XL的排序）应用`OrdinalEncoder`。我们可以使用`ColumnTransformer`来实现这种分离。
+有时，你可能需要根据需求仅对某些列应用特定的变换。例如，对没有特定层次结构的分类特征应用`OneHotEncoder`，对具有特定层次结构和排序的分类特征（即 T 恤尺寸，我们通常有 XS<S<M<L<XL 的排序）应用`OrdinalEncoder`。我们可以使用`ColumnTransformer`来实现这种分离。
 
 ```py
 from sklearn.compose import ColumnTransformer
@@ -157,7 +157,7 @@ col_trans = ColumnTransformer(
 
 # **管道**
 
-`Pipeline[⁶](#8591)`类以顺序方式执行管道中的估算器，将一个步骤的输出作为下一个步骤的输入。这本质上实现了链式操作的概念。根据[Scikit-learn 文档](https://scikit-learn.org/stable/developers/develop.html)[⁴](#74fc)的说明，以下是估算器有资格作为管道的一部分的标准。
+`Pipeline⁶`类以顺序方式执行管道中的估算器，将一个步骤的输出作为下一个步骤的输入。这本质上实现了链式操作的概念。根据[Scikit-learn 文档](https://scikit-learn.org/stable/developers/develop.html)⁴的说明，以下是估算器有资格作为管道的一部分的标准。
 
 > 要使估算器能够与`pipeline.Pipeline`一起使用，除了最后一步之外，需要提供`fit`或`fit_transform`函数。为了能够在训练集之外的数据上评估管道，它还需要提供`transform`函数。管道中的最后一步没有特别要求，只需具有`fit`函数。
 
@@ -174,7 +174,7 @@ pipe = Pipeline([("imputer", imputer),
                  ("log", log_reg)])
 ```
 
-简而言之，`Pipeline`的参数是一个顺序执行的元组列表。元组的第一个元素是你任意设定的名称，用来标识估算器，有点像ID。而第二个元素是估算器对象。简单吧？如果你不擅长起名字，Scikit-learn 提供了简写的`make_pipeline`方法，省去了起名字的麻烦。
+简而言之，`Pipeline`的参数是一个顺序执行的元组列表。元组的第一个元素是你任意设定的名称，用来标识估算器，有点像 ID。而第二个元素是估算器对象。简单吧？如果你不擅长起名字，Scikit-learn 提供了简写的`make_pipeline`方法，省去了起名字的麻烦。
 
 ```py
 from sklearn.pipeline import make_pipeline
@@ -188,7 +188,7 @@ make_pipeline(imputer, feature_select, log_reg)
 
 到目前为止，像`StandardScaler`和`MinMaxScaler`这样的方法看起来很好，并且适用于许多情况。问题是，如果你有自己定制的方法来处理和预处理数据集，可以将其整洁地整合到`Pipeline`类中吗？答案是肯定的！有两种方法可以实现这一点——利用`FunctionTransformer`或编写你自己的自定义类。
 
-比如你想对数据集的一部分进行Box-Cox变换。
+比如你想对数据集的一部分进行 Box-Cox 变换。
 
 ```py
 from scipy.stats import boxcox
@@ -256,7 +256,7 @@ pipe = Pipeline([("remove_outlier", OutlierRemove(["a", "b", "c"])),
 
 # FeatureUnion
 
-这里是令人困惑的部分——`FeatureUnion`的作用与`Pipeline`相同，但它们的工作方式却大相径庭。在`FeatureUnion`中，`fit`和`transform`方法不是一个接一个地执行。每个转换器估算器独立地`fit`数据，然后并行地应用`transform`方法。最终结果被组合在一起。想象一下下面的代码。在这里，我们可以使用`FeatureUnion[⁷](#2758)`并行运行数值和分类预测的预处理，因为它们相互独立。这带来了更快和更高效的操作。
+这里是令人困惑的部分——`FeatureUnion`的作用与`Pipeline`相同，但它们的工作方式却大相径庭。在`FeatureUnion`中，`fit`和`transform`方法不是一个接一个地执行。每个转换器估算器独立地`fit`数据，然后并行地应用`transform`方法。最终结果被组合在一起。想象一下下面的代码。在这里，我们可以使用`FeatureUnion⁷`并行运行数值和分类预测的预处理，因为它们相互独立。这带来了更快和更高效的操作。
 
 ```py
 from sklearn.pipeline import FeatureUnion
@@ -288,9 +288,9 @@ pipeline = Pipeline([
 pipeline.fit(X_train, y_train)
 ```
 
-# 真实世界数据集示例：银行营销与网格搜索CV
+# 真实世界数据集示例：银行营销与网格搜索 CV
 
-在这里，我希望通过使用受葡萄牙金融机构启发的真实数据集来说明上述内容。该数据集可以在[UCI机器学习库](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)[¹](#ed3c)上获取，供公众使用并引用。
+在这里，我希望通过使用受葡萄牙金融机构启发的真实数据集来说明上述内容。该数据集可以在[UCI 机器学习库](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)¹上获取，供公众使用并引用。
 
 请允许我跳过所有的探索性数据分析和可视化，直接进入管道建模部分。
 
@@ -312,7 +312,7 @@ df = (pd
 
 1.  将列‘y’重命名为‘deposit’
 
-1.  将列中的“no”和“yes”编码为0和1
+1.  将列中的“no”和“yes”编码为 0 和 1
 
 **2\. 训练-测试拆分**
 
@@ -325,7 +325,7 @@ X_train, X_test, y_train, y_test = train_test_split(df.drop(columns=['deposit'])
                                                     random_state=42)
 ```
 
-**3\. 编写另外3个自定义类**
+**3\. 编写另外 3 个自定义类**
 
 ```py
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -405,7 +405,7 @@ class TweakBankMarketing(BaseEstimator, TransformerMixin):
 
 简而言之，上面的代码实现了以下几个功能：
 
-1.  类`ClfSwitcher`继承自`BaseEstimator`。此类的目的是方便地在分类器之间切换。我们将默认分类器设置为XGBoost分类器。
+1.  类`ClfSwitcher`继承自`BaseEstimator`。此类的目的是方便地在分类器之间切换。我们将默认分类器设置为 XGBoost 分类器。
 
 1.  方法`outlier_thresholds`和`delete_potential_outlier_list`识别每列中的异常值并将其设置为`NaN`。类`OutlierTrans`是一个继承自`BaseEstimator`和`TransformerMixin`的转换器。`transform`方法返回之前提到的两个方法。
 
@@ -475,11 +475,11 @@ pipeline
 
 在这个阶段，这是我们构建的管道。
 
-![](../Images/b0bd308ca51fa6e1ae7316665e165d05.png)
+![](img/b0bd308ca51fa6e1ae7316665e165d05.png)
 
 作者图片
 
-**5\. 为网格搜索CV定义超参数**
+**5\. 为网格搜索 CV 定义超参数**
 
 ```py
 #We define all the hyperparameters for 4 classifiers so that we can easily switch from one to another
@@ -517,9 +517,9 @@ params_grid = [
 
 简而言之，上述代码执行的操作如下：
 
-1.  为4种不同的分类器定义参数网格，即`SGDClassifier`，`LogisticRegression`，`RandomForestClassifier`，`XGBClassifier`。
+1.  为 4 种不同的分类器定义参数网格，即`SGDClassifier`，`LogisticRegression`，`RandomForestClassifier`，`XGBClassifier`。
 
-**6\. 执行网格搜索CV**
+**6\. 执行网格搜索 CV**
 
 ```py
 from sklearn.model_selection import GridSearchCV
@@ -546,9 +546,9 @@ print(f'Recall score: {recall_score(y_test, grid.predict(X_test))}')
 print(f'ROC-AUC score: {roc_auc_score(y_test, grid.predict(X_test))}')
 ```
 
-在这里，我们获得了0.74的验证分数，以及0.74的AUC分数。
+在这里，我们获得了 0.74 的验证分数，以及 0.74 的 AUC 分数。
 
-**8\. 绘制ROC-AUC曲线**
+**8\. 绘制 ROC-AUC 曲线**
 
 ```py
 fpr, tpr, thresholds = skmet.roc_curve(y_test, grid.predict(X_test))
@@ -560,15 +560,15 @@ display = skmet.RocCurveDisplay(fpr=fpr,
 display.plot();
 ```
 
-![](../Images/704e0e23207a8a15c9b496876cad3d55.png)
+![](img/704e0e23207a8a15c9b496876cad3d55.png)
 
 图片来源：作者
 
 # 后记
 
-就是这样！使用估计器和转换器的管道。下次当你处理ML项目时，考虑使用这个技术。起初可能觉得难以采用，但持续练习，很快你就能创建出稳健而高效的机器学习管道。
+就是这样！使用估计器和转换器的管道。下次当你处理 ML 项目时，考虑使用这个技术。起初可能觉得难以采用，但持续练习，很快你就能创建出稳健而高效的机器学习管道。
 
-如果你从这篇文章中获得了有用的信息，请考虑在Medium上给我一个[***关注***](https://medium.com/@andreas030503)。简单，每周一篇文章，保持更新并走在前沿！
+如果你从这篇文章中获得了有用的信息，请考虑在 Medium 上给我一个[***关注***](https://medium.com/@andreas030503)。简单，每周一篇文章，保持更新并走在前沿！
 
 # 关注我！
 
@@ -578,16 +578,16 @@ display.plot();
 
 # 参考文献
 
-1.  银行营销数据集 [Moro et al., 2014] S. Moro, P. Cortez, 和 P. Rita。基于数据的方法来预测银行电话营销的成功。决策支持系统，Elsevier，62:22–31，2014年6月：[https://archive.ics.uci.edu/ml/datasets/Bank+Marketing](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing) (CC BY 4.0)
+1.  银行营销数据集 [Moro et al., 2014] S. Moro, P. Cortez, 和 P. Rita。基于数据的方法来预测银行电话营销的成功。决策支持系统，Elsevier，62:22–31，2014 年 6 月：[`archive.ics.uci.edu/ml/datasets/Bank+Marketing`](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing) (CC BY 4.0)
 
-1.  Scikit-learn线性模型逻辑回归：[https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/linear_model/_logistic.py](https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/linear_model/_logistic.py)
+1.  Scikit-learn 线性模型逻辑回归：[`github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/linear_model/_logistic.py`](https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/linear_model/_logistic.py)
 
-1.  Scikit-learn预处理：[https://github.com/scikit-learn/scikit-learn/blob/364c77e04/sklearn/preprocessing/_data.py#L644](https://github.com/scikit-learn/scikit-learn/blob/364c77e04/sklearn/preprocessing/_data.py#L644)
+1.  Scikit-learn 预处理：[`github.com/scikit-learn/scikit-learn/blob/364c77e04/sklearn/preprocessing/_data.py#L644`](https://github.com/scikit-learn/scikit-learn/blob/364c77e04/sklearn/preprocessing/_data.py#L644)
 
-1.  开发Scikit-learn估计器：[https://scikit-learn.org/stable/developers/develop.html](https://scikit-learn.org/stable/developers/develop.html)
+1.  开发 Scikit-learn 估计器：[`scikit-learn.org/stable/developers/develop.html`](https://scikit-learn.org/stable/developers/develop.html)
 
-1.  Scikit-learn ColumnTransformer：[https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html](https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html)
+1.  Scikit-learn ColumnTransformer：[`scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html`](https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html)
 
-1.  Scikit-learn管道：[https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)
+1.  Scikit-learn 管道：[`scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)
 
-1.  Scikit-learn FeatureUnion：[https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html)
+1.  Scikit-learn FeatureUnion：[`scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html)

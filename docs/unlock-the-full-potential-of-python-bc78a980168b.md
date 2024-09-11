@@ -1,18 +1,18 @@
 # 解锁 Python 的全部潜力
 
-> 原文：[https://towardsdatascience.com/unlock-the-full-potential-of-python-bc78a980168b?source=collection_archive---------4-----------------------#2023-05-10](https://towardsdatascience.com/unlock-the-full-potential-of-python-bc78a980168b?source=collection_archive---------4-----------------------#2023-05-10)
+> 原文：[`towardsdatascience.com/unlock-the-full-potential-of-python-bc78a980168b?source=collection_archive---------4-----------------------#2023-05-10`](https://towardsdatascience.com/unlock-the-full-potential-of-python-bc78a980168b?source=collection_archive---------4-----------------------#2023-05-10)
 
 ## 提高代码可读性和效率的小贴士
 
-[](https://tinztwinspro.medium.com/?source=post_page-----bc78a980168b--------------------------------)[![Janik 和 Patrick Tinz](../Images/a08aa54f553f606ef5df86f9411c36ac.png)](https://tinztwinspro.medium.com/?source=post_page-----bc78a980168b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bc78a980168b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bc78a980168b--------------------------------) [Janik 和 Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----bc78a980168b--------------------------------)
+[](https://tinztwinspro.medium.com/?source=post_page-----bc78a980168b--------------------------------)![Janik 和 Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----bc78a980168b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bc78a980168b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc78a980168b--------------------------------) [Janik 和 Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----bc78a980168b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4eb5d9652d9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-full-potential-of-python-bc78a980168b&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=post_page-4eb5d9652d9e----bc78a980168b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc78a980168b--------------------------------) ·9 min read·2023年5月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbc78a980168b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-full-potential-of-python-bc78a980168b&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=-----bc78a980168b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4eb5d9652d9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-full-potential-of-python-bc78a980168b&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=post_page-4eb5d9652d9e----bc78a980168b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc78a980168b--------------------------------) ·9 min read·2023 年 5 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbc78a980168b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-full-potential-of-python-bc78a980168b&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=-----bc78a980168b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbc78a980168b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-full-potential-of-python-bc78a980168b&source=-----bc78a980168b---------------------bookmark_footer-----------)![](../Images/f2a8e5fcd50cccc27e31966429fead88.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbc78a980168b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-full-potential-of-python-bc78a980168b&source=-----bc78a980168b---------------------bookmark_footer-----------)![](img/f2a8e5fcd50cccc27e31966429fead88.png)
 
 图片由 [Maxwell Nelson](https://unsplash.com/@maxcodes?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

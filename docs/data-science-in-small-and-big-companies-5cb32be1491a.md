@@ -1,18 +1,18 @@
 # 大小公司中的数据科学
 
-> 原文：[https://towardsdatascience.com/data-science-in-small-and-big-companies-5cb32be1491a?source=collection_archive---------8-----------------------#2023-02-24](https://towardsdatascience.com/data-science-in-small-and-big-companies-5cb32be1491a?source=collection_archive---------8-----------------------#2023-02-24)
+> 原文：[`towardsdatascience.com/data-science-in-small-and-big-companies-5cb32be1491a?source=collection_archive---------8-----------------------#2023-02-24`](https://towardsdatascience.com/data-science-in-small-and-big-companies-5cb32be1491a?source=collection_archive---------8-----------------------#2023-02-24)
 
 ## 数据科学家角色在公司规模变化中的全面比较
 
-[](https://thomasdorfer.medium.com/?source=post_page-----5cb32be1491a--------------------------------)[![托马斯·A·多弗](../Images/9258a1735cee805f1d9b02e2adf01096.png)](https://thomasdorfer.medium.com/?source=post_page-----5cb32be1491a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5cb32be1491a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5cb32be1491a--------------------------------) [托马斯·A·多弗](https://thomasdorfer.medium.com/?source=post_page-----5cb32be1491a--------------------------------)
+[](https://thomasdorfer.medium.com/?source=post_page-----5cb32be1491a--------------------------------)![托马斯·A·多弗](https://thomasdorfer.medium.com/?source=post_page-----5cb32be1491a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5cb32be1491a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5cb32be1491a--------------------------------) [托马斯·A·多弗](https://thomasdorfer.medium.com/?source=post_page-----5cb32be1491a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-in-small-and-big-companies-5cb32be1491a&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----5cb32be1491a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5cb32be1491a--------------------------------) ·8分钟阅读·2023年2月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5cb32be1491a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-in-small-and-big-companies-5cb32be1491a&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=-----5cb32be1491a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-in-small-and-big-companies-5cb32be1491a&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----5cb32be1491a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5cb32be1491a--------------------------------) ·8 分钟阅读·2023 年 2 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5cb32be1491a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-in-small-and-big-companies-5cb32be1491a&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=-----5cb32be1491a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5cb32be1491a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-in-small-and-big-companies-5cb32be1491a&source=-----5cb32be1491a---------------------bookmark_footer-----------)![](../Images/f3aa3c19dc38a71fa222cf5fe91ac22e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5cb32be1491a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-in-small-and-big-companies-5cb32be1491a&source=-----5cb32be1491a---------------------bookmark_footer-----------)![](img/f3aa3c19dc38a71fa222cf5fe91ac22e.png)
 
 图片由 [Annie Spratt](https://unsplash.com/@anniespratt) 和 [Chuttersnap](https://unsplash.com/@chuttersnap) 提供，编辑由作者完成。
 

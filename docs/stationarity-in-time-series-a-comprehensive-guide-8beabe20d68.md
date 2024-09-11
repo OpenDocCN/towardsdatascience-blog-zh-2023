@@ -1,18 +1,18 @@
 # 时间序列中的平稳性——综合指南
 
-> 原文：[https://towardsdatascience.com/stationarity-in-time-series-a-comprehensive-guide-8beabe20d68?source=collection_archive---------0-----------------------#2023-04-11](https://towardsdatascience.com/stationarity-in-time-series-a-comprehensive-guide-8beabe20d68?source=collection_archive---------0-----------------------#2023-04-11)
+> 原文：[`towardsdatascience.com/stationarity-in-time-series-a-comprehensive-guide-8beabe20d68?source=collection_archive---------0-----------------------#2023-04-11`](https://towardsdatascience.com/stationarity-in-time-series-a-comprehensive-guide-8beabe20d68?source=collection_archive---------0-----------------------#2023-04-11)
 
 ## 如何在 Python 中检查时间序列是否平稳以及当它非平稳时可以做什么
 
-[](https://medium.com/@iamleonie?source=post_page-----8beabe20d68--------------------------------)[![Leonie Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----8beabe20d68--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8beabe20d68--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8beabe20d68--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----8beabe20d68--------------------------------)
+[](https://medium.com/@iamleonie?source=post_page-----8beabe20d68--------------------------------)![Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----8beabe20d68--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8beabe20d68--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8beabe20d68--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----8beabe20d68--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstationarity-in-time-series-a-comprehensive-guide-8beabe20d68&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----8beabe20d68---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8beabe20d68--------------------------------) ·8分钟阅读·2023年4月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8beabe20d68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstationarity-in-time-series-a-comprehensive-guide-8beabe20d68&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----8beabe20d68---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstationarity-in-time-series-a-comprehensive-guide-8beabe20d68&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----8beabe20d68---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8beabe20d68--------------------------------) ·8 分钟阅读·2023 年 4 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8beabe20d68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstationarity-in-time-series-a-comprehensive-guide-8beabe20d68&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----8beabe20d68---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8beabe20d68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstationarity-in-time-series-a-comprehensive-guide-8beabe20d68&source=-----8beabe20d68---------------------bookmark_footer-----------)![](../Images/55138648f455b73f978af21736d394cf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8beabe20d68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstationarity-in-time-series-a-comprehensive-guide-8beabe20d68&source=-----8beabe20d68---------------------bookmark_footer-----------)![](img/55138648f455b73f978af21736d394cf.png)
 
 时间序列中的平稳性（图像由作者绘制）
 
@@ -20,13 +20,13 @@
 
 在这篇文章中，你将学到：
 
-+   [什么是平稳性](#e15a)，
++   什么是平稳性，
 
-+   [为何这很重要](#afc6)，
++   为何这很重要，
 
-+   [检查平稳性的 3 种方法](#48f0)，以及
++   检查平稳性的 3 种方法，以及
 
-+   [当时间序列非平稳时可以应用的 3 种技术](#b9bb)
++   当时间序列非平稳时可以应用的 3 种技术
 
 # 什么是平稳性？
 

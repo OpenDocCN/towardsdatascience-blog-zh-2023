@@ -1,18 +1,18 @@
 # 在 Docker 中运行 Jaffle Shop dbt 项目
 
-> 原文：[https://towardsdatascience.com/jaffle-shop-dbt-docker-93a9b14532a4?source=collection_archive---------6-----------------------#2023-04-28](https://towardsdatascience.com/jaffle-shop-dbt-docker-93a9b14532a4?source=collection_archive---------6-----------------------#2023-04-28)
+> 原文：[`towardsdatascience.com/jaffle-shop-dbt-docker-93a9b14532a4?source=collection_archive---------6-----------------------#2023-04-28`](https://towardsdatascience.com/jaffle-shop-dbt-docker-93a9b14532a4?source=collection_archive---------6-----------------------#2023-04-28)
 
 ## 一个容器化版本的流行 Jaffle Shop dbt 项目
 
-[](https://gmyrianthous.medium.com/?source=post_page-----93a9b14532a4--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----93a9b14532a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----93a9b14532a4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----93a9b14532a4--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----93a9b14532a4--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----93a9b14532a4--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----93a9b14532a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----93a9b14532a4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----93a9b14532a4--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----93a9b14532a4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fjaffle-shop-dbt-docker-93a9b14532a4&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----93a9b14532a4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----93a9b14532a4--------------------------------) · 8 分钟阅读 · 2023年4月28日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fjaffle-shop-dbt-docker-93a9b14532a4&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----93a9b14532a4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----93a9b14532a4--------------------------------) · 8 分钟阅读 · 2023 年 4 月 28 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F93a9b14532a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fjaffle-shop-dbt-docker-93a9b14532a4&source=-----93a9b14532a4---------------------bookmark_footer-----------)![](../Images/90bb3052f4f1d0f374def43154a20afe.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F93a9b14532a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fjaffle-shop-dbt-docker-93a9b14532a4&source=-----93a9b14532a4---------------------bookmark_footer-----------)![](img/90bb3052f4f1d0f374def43154a20afe.png)
 
 图片由 [Ryan Howerter](https://unsplash.com/@rhowerter?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布在 [Unsplash](https://unsplash.com/photos/JXIFjYVbAS8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

@@ -1,18 +1,18 @@
 # 何时使用条形图是不正确的？
 
-> 原文：[https://towardsdatascience.com/when-is-it-wrong-to-use-bar-charts-70f55a3fb1a2?source=collection_archive---------9-----------------------#2023-05-31](https://towardsdatascience.com/when-is-it-wrong-to-use-bar-charts-70f55a3fb1a2?source=collection_archive---------9-----------------------#2023-05-31)
+> 原文：[`towardsdatascience.com/when-is-it-wrong-to-use-bar-charts-70f55a3fb1a2?source=collection_archive---------9-----------------------#2023-05-31`](https://towardsdatascience.com/when-is-it-wrong-to-use-bar-charts-70f55a3fb1a2?source=collection_archive---------9-----------------------#2023-05-31)
 
 ## …以及可能的解决办法
 
-[](https://medium.com/@zvonimir.boban.mef?source=post_page-----70f55a3fb1a2--------------------------------)[![Zvonimir Boban](../Images/cbad06b7e1f5d021ce9b2dc31b8a6a65.png)](https://medium.com/@zvonimir.boban.mef?source=post_page-----70f55a3fb1a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70f55a3fb1a2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----70f55a3fb1a2--------------------------------) [Zvonimir Boban](https://medium.com/@zvonimir.boban.mef?source=post_page-----70f55a3fb1a2--------------------------------)
+[](https://medium.com/@zvonimir.boban.mef?source=post_page-----70f55a3fb1a2--------------------------------)![Zvonimir Boban](https://medium.com/@zvonimir.boban.mef?source=post_page-----70f55a3fb1a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70f55a3fb1a2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----70f55a3fb1a2--------------------------------) [Zvonimir Boban](https://medium.com/@zvonimir.boban.mef?source=post_page-----70f55a3fb1a2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe31978768a4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-is-it-wrong-to-use-bar-charts-70f55a3fb1a2&user=Zvonimir+Boban&userId=e31978768a4e&source=post_page-e31978768a4e----70f55a3fb1a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70f55a3fb1a2--------------------------------) ·8 分钟阅读·2023年5月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F70f55a3fb1a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-is-it-wrong-to-use-bar-charts-70f55a3fb1a2&user=Zvonimir+Boban&userId=e31978768a4e&source=-----70f55a3fb1a2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe31978768a4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-is-it-wrong-to-use-bar-charts-70f55a3fb1a2&user=Zvonimir+Boban&userId=e31978768a4e&source=post_page-e31978768a4e----70f55a3fb1a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70f55a3fb1a2--------------------------------) ·8 分钟阅读·2023 年 5 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F70f55a3fb1a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-is-it-wrong-to-use-bar-charts-70f55a3fb1a2&user=Zvonimir+Boban&userId=e31978768a4e&source=-----70f55a3fb1a2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F70f55a3fb1a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-is-it-wrong-to-use-bar-charts-70f55a3fb1a2&source=-----70f55a3fb1a2---------------------bookmark_footer-----------)![](../Images/41622e81f6add86cd721cf0a94a6290e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F70f55a3fb1a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-is-it-wrong-to-use-bar-charts-70f55a3fb1a2&source=-----70f55a3fb1a2---------------------bookmark_footer-----------)![](img/41622e81f6add86cd721cf0a94a6290e.png)
 
 由 Canva 文本转图片工具生成的图像
 
@@ -22,7 +22,7 @@
 
 ## 葡萄酒质量数据集
 
-![](../Images/7f096e3819f817eecc0a752682e6df89.png)
+![](img/7f096e3819f817eecc0a752682e6df89.png)
 
 图片由[Kym Ellis](https://unsplash.com/@kymellis?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来源于[Unsplash](https://unsplash.com/s/photos/wine?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -34,13 +34,13 @@
 
 让我们通过绘制一个简单的条形图来比较红葡萄酒和白葡萄酒的总二氧化硫水平，从而说明这个问题。
 
-![](../Images/7e97f737832b2c254d6f177fd1aa3877.png)
+![](img/7e97f737832b2c254d6f177fd1aa3877.png)
 
 图片由作者提供
 
 好吧，也许用上面的例子来批评条形图并不公平，因为基本的图表看起来如此丑陋，没必要进一步论证就让人反感。让我们先通过调整一些美学属性来让它变得更漂亮。
 
-![](../Images/22872ea00208c3e14e53f8b4f8081605.png)
+![](img/22872ea00208c3e14e53f8b4f8081605.png)
 
 图片由作者提供
 
@@ -52,7 +52,7 @@
 
 通过在条形上方添加观察数量和添加误差条来显示每组的标准差，可以部分解决这个问题。
 
-![](../Images/1a22d77138744b93137677cec3ead760.png)
+![](img/1a22d77138744b93137677cec3ead760.png)
 
 图片由作者提供
 
@@ -68,7 +68,7 @@
 
 第一个可能性是将实际的单个观察值添加到图表中。
 
-![](../Images/46f17973a8c224d6cfcec38aaf8c32f1.png)
+![](img/46f17973a8c224d6cfcec38aaf8c32f1.png)
 
 作者提供的图片
 
@@ -78,7 +78,7 @@
 
 第二种替代方案是使用箱形图，并添加指定均值和中位数的功能（默认情况下，中位数由中央箱中的平坦线显示）。尽管箱形图通过指定四分位数给我们提供了底层分布的概念，但我喜欢均值提供的额外信息。这是因为均值和中位数之间的大而明显的差异能立刻告诉我们分布是否偏斜以及偏斜的方向。
 
-![](../Images/95588e3929116deef7793f3c0410ed50.png)
+![](img/95588e3929116deef7793f3c0410ed50.png)
 
 作者提供的图片
 
@@ -88,17 +88,17 @@
 
 我还喜欢添加中位数的信息，因为小提琴图留有很多未使用的空间，何乐而不为呢 :)
 
-![](../Images/1d4370049f9fb5495288b781742e853a.png)
+![](img/1d4370049f9fb5495288b781742e853a.png)
 
 作者提供的图片
 
 ## 4\. 带有抖动点的小提琴图
 
-好吧，这实际上不是一个独立的选项，而是选项1和3的组合。对于我们的具体情况，这将是我的选择，但这并不意味着它适用于所有可能的场景，因为这取决于问题的具体情况，如比较组的数量、点的总数、组的离散程度等。
+好吧，这实际上不是一个独立的选项，而是选项 1 和 3 的组合。对于我们的具体情况，这将是我的选择，但这并不意味着它适用于所有可能的场景，因为这取决于问题的具体情况，如比较组的数量、点的总数、组的离散程度等。
 
-注意，我没有尝试将箱形图与特定点结合起来。这是有意的，因为我认为这种结合会违背箱形图的目的。即，箱形图仅在数据点高于中央箱的上边界1.5倍四分位范围时显示特定点。这可以作为一种简单的异常值检测方法，而添加过多其他点会使其不清晰。
+注意，我没有尝试将箱形图与特定点结合起来。这是有意的，因为我认为这种结合会违背箱形图的目的。即，箱形图仅在数据点高于中央箱的上边界 1.5 倍四分位范围时显示特定点。这可以作为一种简单的异常值检测方法，而添加过多其他点会使其不清晰。
 
-![](../Images/b074e80b3994e82c1ac110f39007868a.png)
+![](img/b074e80b3994e82c1ac110f39007868a.png)
 
 图片来源：作者
 

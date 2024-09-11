@@ -1,16 +1,16 @@
 # 理解梯度提升：数据科学家的指南
 
-> 原文：[https://towardsdatascience.com/understanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441?source=collection_archive---------3-----------------------#2023-02-07](https://towardsdatascience.com/understanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441?source=collection_archive---------3-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/understanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441?source=collection_archive---------3-----------------------#2023-02-07`](https://towardsdatascience.com/understanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441?source=collection_archive---------3-----------------------#2023-02-07)
 
-![](../Images/ddead02c0234cca8db16b03529386445.png)
+![](img/ddead02c0234cca8db16b03529386445.png)
 
 图片来源：Midjourney
 
-[](https://louis-chan.medium.com/?source=post_page-----f5e0e013f441--------------------------------)[![Louis Chan](../Images/6d8df9a478e929dd521059631f26e081.png)](https://louis-chan.medium.com/?source=post_page-----f5e0e013f441--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f5e0e013f441--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f5e0e013f441--------------------------------) [Louis Chan](https://louis-chan.medium.com/?source=post_page-----f5e0e013f441--------------------------------)
+[](https://louis-chan.medium.com/?source=post_page-----f5e0e013f441--------------------------------)![Louis Chan](https://louis-chan.medium.com/?source=post_page-----f5e0e013f441--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f5e0e013f441--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f5e0e013f441--------------------------------) [Louis Chan](https://louis-chan.medium.com/?source=post_page-----f5e0e013f441--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d585e26760a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441&user=Louis+Chan&userId=6d585e26760a&source=post_page-6d585e26760a----f5e0e013f441---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f5e0e013f441--------------------------------) ·10 min 阅读·2023年2月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff5e0e013f441&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441&user=Louis+Chan&userId=6d585e26760a&source=-----f5e0e013f441---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d585e26760a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441&user=Louis+Chan&userId=6d585e26760a&source=post_page-6d585e26760a----f5e0e013f441---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f5e0e013f441--------------------------------) ·10 min 阅读·2023 年 2 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff5e0e013f441&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-gradient-boosting-a-data-scientists-guide-f5e0e013f441&user=Louis+Chan&userId=6d585e26760a&source=-----f5e0e013f441---------------------clap_footer-----------)
 
 --
 
@@ -32,4 +32,4 @@
 
 > 太啰嗦，太复杂了
 
-好吧，想象一下我们和另外两个朋友一起玩10,000片的拼图。（他们一定是非常好的朋友才会愿意参与这个活动）我们每个人负责拼接其中的一部分……
+好吧，想象一下我们和另外两个朋友一起玩 10,000 片的拼图。（他们一定是非常好的朋友才会愿意参与这个活动）我们每个人负责拼接其中的一部分……

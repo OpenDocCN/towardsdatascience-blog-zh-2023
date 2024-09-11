@@ -1,24 +1,24 @@
-# PyTorch模型性能分析与优化 — 第3部分
+# PyTorch 模型性能分析与优化 — 第三部分
 
-> 原文：[https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2?source=collection_archive---------4-----------------------#2023-08-10](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2?source=collection_archive---------4-----------------------#2023-08-10)
+> 原文：[`towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2?source=collection_archive---------4-----------------------#2023-08-10`](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2?source=collection_archive---------4-----------------------#2023-08-10)
 
 ## 如何减少“Cuda Memcpy Async”事件以及为什么你需要警惕布尔掩码操作
 
-[](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----1c5876d78fe2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------) ·11分钟阅读·2023年8月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c5876d78fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&user=Chaim+Rand&userId=9440b37e27fe&source=-----1c5876d78fe2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----1c5876d78fe2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------) ·11 分钟阅读·2023 年 8 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c5876d78fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&user=Chaim+Rand&userId=9440b37e27fe&source=-----1c5876d78fe2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c5876d78fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&source=-----1c5876d78fe2---------------------bookmark_footer-----------)![](../Images/f0e37ec189e53254268fdae595fb5d6e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c5876d78fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&source=-----1c5876d78fe2---------------------bookmark_footer-----------)![](img/f0e37ec189e53254268fdae595fb5d6e.png)
 
 图片由 [Braden Jarvis](https://unsplash.com/@jarvisphoto?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 这是关于使用 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html) 和 [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 分析和优化 PyTorch 模型的系列文章的第三部分。我们的意图是突出**性能分析和优化**在 GPU 训练负载中的好处及其对训练速度和成本的潜在影响。特别是，我们希望展示诸如 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html) 和 [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 等分析工具对所有 ML 开发者的可及性。**你不需要成为 CUDA 专家即可从我们讨论的技术中获得有意义的性能提升**。
 
-在我们的 [第一篇文章](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869) 中，我们演示了 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 的不同*视图*如何用于识别性能问题，并回顾了几种加速训练的流行技术。在 [第二篇文章](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91) 中，我们展示了 [TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) *Trace View* 如何用于识别张量从 CPU 到 GPU 的拷贝以及反向拷贝的情况。这种数据移动——可能会导致同步点并显著降低训练速度——通常是无意的，有时可以很容易地避免。本篇文章的主题是我们遇到的 GPU 和 CPU 之间的同步点，这些同步点**不**与张量拷贝有关。与张量拷贝的情况一样，这些同步点可能会导致训练步骤的停滞，显著减慢整体训练时间。我们将展示此类情况的存在、如何使用 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html) 和 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) *Trace View* 进行识别，以及以最小化此类同步事件的方式构建模型的潜在性能收益。
+在我们的 [第一篇文章](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869) 中，我们演示了 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 的不同*视图*如何用于识别性能问题，并回顾了几种加速训练的流行技术。在 第二篇文章 中，我们展示了 [TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) *Trace View* 如何用于识别张量从 CPU 到 GPU 的拷贝以及反向拷贝的情况。这种数据移动——可能会导致同步点并显著降低训练速度——通常是无意的，有时可以很容易地避免。本篇文章的主题是我们遇到的 GPU 和 CPU 之间的同步点，这些同步点**不**与张量拷贝有关。与张量拷贝的情况一样，这些同步点可能会导致训练步骤的停滞，显著减慢整体训练时间。我们将展示此类情况的存在、如何使用 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html) 和 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) *Trace View* 进行识别，以及以最小化此类同步事件的方式构建模型的潜在性能收益。
 
 就像我们之前的帖子一样，我们将定义一个玩具 PyTorch 模型，然后 *迭代地* 分析其性能，识别瓶颈，并尝试修复它们。我们将在一个 [Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/) 实例上运行实验（该实例包含一个 NVIDIA A10G GPU 和 8 个 vCPU），并使用官方的 [AWS PyTorch 2.0 Docker 镜像](https://github.com/aws/deep-learning-containers)。请记住，我们描述的某些行为可能因 PyTorch 版本而异。
 
@@ -62,7 +62,7 @@ class Net(nn.Module):
 
 1.  我们只会在遇到包含至少两个唯一值的目标张量的批次时更新模型权重。
 
-尽管我们为演示目的选择了这些修改，但这类操作并不罕见，可以在许多“标准” PyTorch 模型中找到。由于我们已经是性能分析的“专家”，我们已经提前将损失函数中的每个操作都用 [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler) 上下文管理器进行了封装，（如我们 [第二篇帖子](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91) 中所述）。
+尽管我们为演示目的选择了这些修改，但这类操作并不罕见，可以在许多“标准” PyTorch 模型中找到。由于我们已经是性能分析的“专家”，我们已经提前将损失函数中的每个操作都用 [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler) 上下文管理器进行了封装，（如我们 第二篇帖子 中所述）。
 
 ```py
 class MaskedLoss(nn.Module):
@@ -192,11 +192,11 @@ with torch.profiler.profile(
 
 # 初步性能结果
 
-在这篇文章中，我们将重点关注 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 的 *跟踪视图*。请参见我们的 [先前文章](/pytorch-model-performance-analysis-and-optimization-10c3c5822869) 获取有关如何使用插件支持的其他 *视图* 的提示。
+在这篇文章中，我们将重点关注 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 的 *跟踪视图*。请参见我们的 先前文章 获取有关如何使用插件支持的其他 *视图* 的提示。
 
 在下图中，我们展示了玩具模型单次训练步骤的 *跟踪视图*。
 
-![](../Images/e9f0678cc9de59ec988d0c458fd7e050.png)
+![](img/e9f0678cc9de59ec988d0c458fd7e050.png)
 
 基线模型的跟踪视图（作者捕获）
 
@@ -220,11 +220,11 @@ def ignore_background(self, target: Tensor) -> Tensor:
 
 在下图中，我们展示了*Trace View*的变化。
 
-![](../Images/6dbd9a5565a840bc4c1f2fdb38130aca.png)
+![](img/6dbd9a5565a840bc4c1f2fdb38130aca.png)
 
 优化 #1 后的 Trace View（作者拍摄）
 
-尽管我们成功去除了来自[torch.nonzero](https://pytorch.org/docs/stable/generated/torch.nonzero.html)操作符的*cudaMempyAsync*，但它立即被来自[torch.unique](https://pytorch.org/docs/stable/generated/torch.unique.html)操作符的*cudaMempyAsync*所替代，我们的步骤时间没有变化。这里PyTorch文档并不友好，但根据我们之前的经验，我们可以假设，我们再次因为使用未确定大小的张量而遭遇了主机-设备同步事件。
+尽管我们成功去除了来自[torch.nonzero](https://pytorch.org/docs/stable/generated/torch.nonzero.html)操作符的*cudaMempyAsync*，但它立即被来自[torch.unique](https://pytorch.org/docs/stable/generated/torch.unique.html)操作符的*cudaMempyAsync*所替代，我们的步骤时间没有变化。这里 PyTorch 文档并不友好，但根据我们之前的经验，我们可以假设，我们再次因为使用未确定大小的张量而遭遇了主机-设备同步事件。
 
 # 优化 #2：减少使用[torch.unique](https://pytorch.org/docs/stable/generated/torch.unique.html)操作符
 
@@ -261,7 +261,7 @@ def ignore_background(self, target: Tensor) -> Tensor:
 
 在下图中，我们捕捉了第二次优化后的*Trace View*：
 
-![](../Images/ca57df982059830ca04dc4ddae4df288.png)
+![](img/ca57df982059830ca04dc4ddae4df288.png)
 
 优化 #2 后的 Trace View（作者拍摄）
 
@@ -289,20 +289,20 @@ class MaskedLoss(nn.Module):
 
 在下图中，我们展示了结果的*Trace View*：
 
-![](../Images/0b0585885e68560323544aec83256de0.png)
+![](img/0b0585885e68560323544aec83256de0.png)
 
 最终 Trace View（作者拍摄）
 
-天哪！！我们的步骤时间已经降到了5.4毫秒。发生了什么？！！通过简单地调整几个函数调用，而无需修改损失函数逻辑，我们能够从训练步骤中移除同步点。重要的是，当计算几百个步骤的平均时间时，实际上为~**330毫秒，大约是我们开始时的四倍快**。这比上面报告的5.4毫秒要高得多。这个差异源于PyTorch Profiler测量的是每个训练步骤的CPU活动时间（例如，内核加载），这不一定与GPU活动对齐。虽然上述同步事件引入了不必要的开销，但它们有一个积极的副作用，即提高了CPU和GPU活动之间的对齐，并提高了时间测量的准确性。在它们不存在的情况下，通过分析器测量的步骤时间出现大幅波动并不罕见。在这种情况下，建议对大量步骤的步骤时间进行平均。有关[异步执行](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)对时间测量准确性影响的更多信息，请参见[这里](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)。
+天哪！！我们的步骤时间已经降到了 5.4 毫秒。发生了什么？！！通过简单地调整几个函数调用，而无需修改损失函数逻辑，我们能够从训练步骤中移除同步点。重要的是，当计算几百个步骤的平均时间时，实际上为~**330 毫秒，大约是我们开始时的四倍快**。这比上面报告的 5.4 毫秒要高得多。这个差异源于 PyTorch Profiler 测量的是每个训练步骤的 CPU 活动时间（例如，内核加载），这不一定与 GPU 活动对齐。虽然上述同步事件引入了不必要的开销，但它们有一个积极的副作用，即提高了 CPU 和 GPU 活动之间的对齐，并提高了时间测量的准确性。在它们不存在的情况下，通过分析器测量的步骤时间出现大幅波动并不罕见。在这种情况下，建议对大量步骤的步骤时间进行平均。有关[异步执行](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)对时间测量准确性影响的更多信息，请参见[这里](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)。
 
 **重要说明**：在我们选择的示例中，我们采取的步骤减少了*cudaMempyAsync*事件的数量，对训练步骤时间产生了明显的影响。然而，也可能存在一些情况，相同类型的改变可能会损害性能而不是提升它。例如，在布尔掩码的情况下，如果我们的掩码极其稀疏且原始张量非常大，应用掩码所节省的计算可能会超过主机与设备同步的成本。重要的是，每种优化的影响应根据具体情况进行评估。
 
 # 总结
 
-在这篇文章中，我们重点讨论了由于主机与设备同步事件而引发的训练应用中的性能问题。我们看到了一些触发这些事件的PyTorch操作符的例子——它们的共同特点是它们输出的张量的*大小*取决于输入。你也可能会遇到其他操作符引发的同步事件，这些操作符在这篇文章中没有涉及。我们展示了如何使用性能分析器，如[PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)及其关联的[TensorBoard插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)来识别这些类型的事件。
+在这篇文章中，我们重点讨论了由于主机与设备同步事件而引发的训练应用中的性能问题。我们看到了一些触发这些事件的 PyTorch 操作符的例子——它们的共同特点是它们输出的张量的*大小*取决于输入。你也可能会遇到其他操作符引发的同步事件，这些操作符在这篇文章中没有涉及。我们展示了如何使用性能分析器，如[PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)及其关联的[TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)来识别这些类型的事件。
 
 在我们的示例中，我们找到了使用固定大小张量的替代操作符，避免了同步事件的需求，从而显著改善了训练时间。然而，在实际应用中，你可能会发现解决这些瓶颈要困难得多——甚至不可能。有时，克服这些问题可能需要重新设计模型的部分内容。
 
 ## 下一步是什么？
 
-在我们关于PyTorch模型优化的系列文章的[下一部分](/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9)中，我们将分析和解决DL训练工作负载的数据预处理管道中的性能瓶颈。一定要[查看](/how-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206)。
+在我们关于 PyTorch 模型优化的系列文章的下一部分中，我们将分析和解决 DL 训练工作负载的数据预处理管道中的性能瓶颈。一定要查看。

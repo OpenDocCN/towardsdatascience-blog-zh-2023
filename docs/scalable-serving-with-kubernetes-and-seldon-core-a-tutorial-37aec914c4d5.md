@@ -1,18 +1,18 @@
 # 使用 Kubernetes 和 Seldon Core 进行可扩展服务：教程
 
-> 原文：[https://towardsdatascience.com/scalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5?source=collection_archive---------20-----------------------#2023-01-09](https://towardsdatascience.com/scalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5?source=collection_archive---------20-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/scalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5?source=collection_archive---------20-----------------------#2023-01-09`](https://towardsdatascience.com/scalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5?source=collection_archive---------20-----------------------#2023-01-09)
 
 ## 学习如何在 Kubernetes 集群中部署机器学习模型，并使用 HPA 和 KEDA 实现自动扩展
 
-[](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)[![Tin Nguyen](../Images/f5a69125e3d42be7906c8cd51f827854.png)](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------) [Tin Nguyen](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)
+[](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)![Tin Nguyen](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------) [Tin Nguyen](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F78d51d946a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&user=Tin+Nguyen&userId=78d51d946a3&source=post_page-78d51d946a3----37aec914c4d5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------) ·11 分钟阅读·2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37aec914c4d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&user=Tin+Nguyen&userId=78d51d946a3&source=-----37aec914c4d5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F78d51d946a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&user=Tin+Nguyen&userId=78d51d946a3&source=post_page-78d51d946a3----37aec914c4d5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------) ·11 分钟阅读·2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37aec914c4d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&user=Tin+Nguyen&userId=78d51d946a3&source=-----37aec914c4d5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37aec914c4d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&source=-----37aec914c4d5---------------------bookmark_footer-----------)![](../Images/b9678f7f5d613266724cc19254ea38e4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37aec914c4d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&source=-----37aec914c4d5---------------------bookmark_footer-----------)![](img/b9678f7f5d613266724cc19254ea38e4.png)
 
 图片由 [Adam Kool](https://unsplash.com/@adamkool) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -100,23 +100,23 @@ output [
 ]
 ```
 
-你可以在[这里](https://github.com/tintn/ml-model-deployment-tutorials/tree/main/toy-model/cifar10-model)找到最终的代码库。Triton支持几种可能用于调整模型性能的特性。你还可以将多个步骤或多个模型组合成一个推理管道，以实现你的业务逻辑。然而，我故意保持模型配置简单，以展示模型部署的整个过程，而不是专注于性能。
+你可以在[这里](https://github.com/tintn/ml-model-deployment-tutorials/tree/main/toy-model/cifar10-model)找到最终的代码库。Triton 支持几种可能用于调整模型性能的特性。你还可以将多个步骤或多个模型组合成一个推理管道，以实现你的业务逻辑。然而，我故意保持模型配置简单，以展示模型部署的整个过程，而不是专注于性能。
 
-如果你想查看如何使用Triton导出和服务PyTorch模型的更实际示例，可以查看这个[帖子](https://tintn.github.io/deploy-detectron2-with-triton/)。它展示了如何使用Triton服务来自Detectron2的MaskRCNN模型，这是一个用于实例分割的流行模型，并且在许多实际的计算机视觉系统中使用。
+如果你想查看如何使用 Triton 导出和服务 PyTorch 模型的更实际示例，可以查看这个[帖子](https://tintn.github.io/deploy-detectron2-with-triton/)。它展示了如何使用 Triton 服务来自 Detectron2 的 MaskRCNN 模型，这是一个用于实例分割的流行模型，并且在许多实际的计算机视觉系统中使用。
 
-Triton可以访问本地文件系统或云存储服务（如S3、Google Storage或Azure Storage）中的模型。由于我们将要在Kubernetes中部署模型，使用云存储服务更为方便，因为Kubernetes集群中的所有节点都可以访问相同的模型。在本教程中，我们将使用AWS S3作为模型库。假设你已经有了AWS账户，让我们创建一个S3存储桶并上传我们准备好的文件夹：
+Triton 可以访问本地文件系统或云存储服务（如 S3、Google Storage 或 Azure Storage）中的模型。由于我们将要在 Kubernetes 中部署模型，使用云存储服务更为方便，因为 Kubernetes 集群中的所有节点都可以访问相同的模型。在本教程中，我们将使用 AWS S3 作为模型库。假设你已经有了 AWS 账户，让我们创建一个 S3 存储桶并上传我们准备好的文件夹：
 
 ```py
 aws s3 cp --recursive cifar10-model s3://<YOUR_BUCKET>/cifar10-model
 ```
 
-将`<YOUR_BUCKET>`替换为你的存储桶名称。我们现在已经在AWS S3上有了模型库，可以开始部署模型了。
+将`<YOUR_BUCKET>`替换为你的存储桶名称。我们现在已经在 AWS S3 上有了模型库，可以开始部署模型了。
 
-# 使用Seldon Core部署模型
+# 使用 Seldon Core 部署模型
 
-我们将使用Seldon Core将模型部署到Kubernetes集群中，Seldon Core是一个专注于ML模型部署和监控的框架。让我们创建一个本地Kubernetes集群，以便使用我们的本地计算机测试部署过程。
+我们将使用 Seldon Core 将模型部署到 Kubernetes 集群中，Seldon Core 是一个专注于 ML 模型部署和监控的框架。让我们创建一个本地 Kubernetes 集群，以便使用我们的本地计算机测试部署过程。
 
-[Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)可以用于创建本地集群。在撰写本文时，Seldon Core在k8s ≥ 1.25上有一个[问题](https://github.com/SeldonIO/seldon-core/issues/4339)，所以我们必须使用1.24或更旧版本。要使用Kind指定k8s版本，只需选择带有相应版本的镜像来启动集群。以下命令创建一个名为`kind-seldon`的本地集群，使用`k8s==1.24.7`：
+[Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)可以用于创建本地集群。在撰写本文时，Seldon Core 在 k8s ≥ 1.25 上有一个[问题](https://github.com/SeldonIO/seldon-core/issues/4339)，所以我们必须使用 1.24 或更旧版本。要使用 Kind 指定 k8s 版本，只需选择带有相应版本的镜像来启动集群。以下命令创建一个名为`kind-seldon`的本地集群，使用`k8s==1.24.7`：
 
 ```py
 kind create cluster --name seldon --image kindest/node:v1.24.7
@@ -128,9 +128,9 @@ kind create cluster --name seldon --image kindest/node:v1.24.7
 kubectl cluster-info --context kind-seldon
 ```
 
-## 安装Seldon Core
+## 安装 Seldon Core
 
-我们将使用[Istio](https://istio.io/)作为集群的Ingress，Seldon Core作为服务平台。你可以在[这里](https://docs.seldon.io/projects/seldon-core/en/latest/install/kind.html)找到安装说明。安装了Istio和Seldon Core后，运行这些命令检查它们是否都已正确安装：
+我们将使用[Istio](https://istio.io/)作为集群的 Ingress，Seldon Core 作为服务平台。你可以在[这里](https://docs.seldon.io/projects/seldon-core/en/latest/install/kind.html)找到安装说明。安装了 Istio 和 Seldon Core 后，运行这些命令检查它们是否都已正确安装：
 
 ```py
 kubectl get svc -n istio-system
@@ -140,7 +140,7 @@ kubectl get svc -n istio-system
 # istiod                 ClusterIP      10.96.195.7    <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP                                        8m48s
 ```
 
-检查Istio网关是否正在运行：
+检查 Istio 网关是否正在运行：
 
 ```py
 kubectl get gateway -n istio-system
@@ -148,7 +148,7 @@ kubectl get gateway -n istio-system
 # seldon-gateway   5m17s
 ```
 
-检查Seldon控制器是否正在运行：
+检查 Seldon 控制器是否正在运行：
 
 ```py
 kubectl get pods -n seldon-system
@@ -396,7 +396,7 @@ kubectl get pods
 # cifar10-default-0-cifar10-pytorch-5dc484599c-ljk74   0/3     Init:0/2   0             9s
 ```
 
-类似于 HPA，在一段低流量时间（默认5分钟）后，将触发缩放。
+类似于 HPA，在一段低流量时间（默认 5 分钟）后，将触发缩放。
 
 ```py
 kubectl get pods -w
@@ -415,4 +415,4 @@ kubectl get pods -w
 
 我们还使用 HPA 和 KEDA 使部署具有可扩展性。与 HPA 相比，KEDA 提供了更多基于 Prometheus 指标（或 KEDA 支持的其他扩展器）灵活的缩放方式。从技术上讲，我们可以实现从 Prometheus 服务器获取的任何指标的缩放规则。
 
-*原文发表于* [*https://tintn.github.io*](https://tintn.github.io/Scalable-Serving-with-Kubernetes-and-Seldon-Core/) *2023年1月9日。*
+*原文发表于* [*https://tintn.github.io*](https://tintn.github.io/Scalable-Serving-with-Kubernetes-and-Seldon-Core/) *2023 年 1 月 9 日。*

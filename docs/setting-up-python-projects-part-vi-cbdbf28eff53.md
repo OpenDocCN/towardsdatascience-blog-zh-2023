@@ -1,18 +1,18 @@
 # Python 项目设置：第六部分
 
-> 原文：[https://towardsdatascience.com/setting-up-python-projects-part-vi-cbdbf28eff53?source=collection_archive---------14-----------------------#2023-04-10](https://towardsdatascience.com/setting-up-python-projects-part-vi-cbdbf28eff53?source=collection_archive---------14-----------------------#2023-04-10)
+> 原文：[`towardsdatascience.com/setting-up-python-projects-part-vi-cbdbf28eff53?source=collection_archive---------14-----------------------#2023-04-10`](https://towardsdatascience.com/setting-up-python-projects-part-vi-cbdbf28eff53?source=collection_archive---------14-----------------------#2023-04-10)
 
 ## 掌握 Python 项目设置的艺术：逐步指南
 
-[](https://johschmidt42.medium.com/?source=post_page-----cbdbf28eff53--------------------------------)[![约翰内斯·施密特](../Images/e0cacf7ff37f339a9bf8bd33c7c83a4d.png)](https://johschmidt42.medium.com/?source=post_page-----cbdbf28eff53--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cbdbf28eff53--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cbdbf28eff53--------------------------------) [约翰内斯·施密特](https://johschmidt42.medium.com/?source=post_page-----cbdbf28eff53--------------------------------)
+[](https://johschmidt42.medium.com/?source=post_page-----cbdbf28eff53--------------------------------)![约翰内斯·施密特](https://johschmidt42.medium.com/?source=post_page-----cbdbf28eff53--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cbdbf28eff53--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cbdbf28eff53--------------------------------) [约翰内斯·施密特](https://johschmidt42.medium.com/?source=post_page-----cbdbf28eff53--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5022ff2e428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-vi-cbdbf28eff53&user=Johannes+Schmidt&userId=b5022ff2e428&source=post_page-b5022ff2e428----cbdbf28eff53---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cbdbf28eff53--------------------------------) · 26分钟阅读 · 2023年4月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcbdbf28eff53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-vi-cbdbf28eff53&user=Johannes+Schmidt&userId=b5022ff2e428&source=-----cbdbf28eff53---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5022ff2e428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-vi-cbdbf28eff53&user=Johannes+Schmidt&userId=b5022ff2e428&source=post_page-b5022ff2e428----cbdbf28eff53---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cbdbf28eff53--------------------------------) · 26 分钟阅读 · 2023 年 4 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcbdbf28eff53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-vi-cbdbf28eff53&user=Johannes+Schmidt&userId=b5022ff2e428&source=-----cbdbf28eff53---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcbdbf28eff53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-vi-cbdbf28eff53&source=-----cbdbf28eff53---------------------bookmark_footer-----------)![](../Images/1093eac93ddb53f3ce2570a3fa7c32bf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcbdbf28eff53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-vi-cbdbf28eff53&source=-----cbdbf28eff53---------------------bookmark_footer-----------)![](img/1093eac93ddb53f3ce2570a3fa7c32bf.png)
 
 照片由 [Amira El Fohail](https://unsplash.com/@amirasartistry?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

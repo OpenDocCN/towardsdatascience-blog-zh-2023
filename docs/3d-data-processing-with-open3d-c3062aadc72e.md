@@ -1,24 +1,24 @@
-# 使用Open3D进行3D数据处理
+# 使用 Open3D 进行 3D 数据处理
 
-> 原文：[https://towardsdatascience.com/3d-data-processing-with-open3d-c3062aadc72e?source=collection_archive---------1-----------------------#2023-05-08](https://towardsdatascience.com/3d-data-processing-with-open3d-c3062aadc72e?source=collection_archive---------1-----------------------#2023-05-08)
+> 原文：[`towardsdatascience.com/3d-data-processing-with-open3d-c3062aadc72e?source=collection_archive---------1-----------------------#2023-05-08`](https://towardsdatascience.com/3d-data-processing-with-open3d-c3062aadc72e?source=collection_archive---------1-----------------------#2023-05-08)
 
-## 使用Python的Open3D库处理3D模型的简洁指南（附带互动式Jupyter Notebook）
+## 使用 Python 的 Open3D 库处理 3D 模型的简洁指南（附带互动式 Jupyter Notebook）
 
-[](https://medium.com/@prerak12.agarwal?source=post_page-----c3062aadc72e--------------------------------)[![Prerak Agarwal](../Images/631f00675c83812d32b983fb41b41edf.png)](https://medium.com/@prerak12.agarwal?source=post_page-----c3062aadc72e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3062aadc72e--------------------------------)[![数据科学之路](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c3062aadc72e--------------------------------) [Prerak Agarwal](https://medium.com/@prerak12.agarwal?source=post_page-----c3062aadc72e--------------------------------)
+[](https://medium.com/@prerak12.agarwal?source=post_page-----c3062aadc72e--------------------------------)![Prerak Agarwal](https://medium.com/@prerak12.agarwal?source=post_page-----c3062aadc72e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3062aadc72e--------------------------------)![数据科学之路](https://towardsdatascience.com/?source=post_page-----c3062aadc72e--------------------------------) [Prerak Agarwal](https://medium.com/@prerak12.agarwal?source=post_page-----c3062aadc72e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F885f74d5a8c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3d-data-processing-with-open3d-c3062aadc72e&user=Prerak+Agarwal&userId=885f74d5a8c&source=post_page-885f74d5a8c----c3062aadc72e---------------------post_header-----------) 发表在 [数据科学之路](https://towardsdatascience.com/?source=post_page-----c3062aadc72e--------------------------------) ·13分钟阅读·2023年5月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc3062aadc72e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3d-data-processing-with-open3d-c3062aadc72e&user=Prerak+Agarwal&userId=885f74d5a8c&source=-----c3062aadc72e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F885f74d5a8c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3d-data-processing-with-open3d-c3062aadc72e&user=Prerak+Agarwal&userId=885f74d5a8c&source=post_page-885f74d5a8c----c3062aadc72e---------------------post_header-----------) 发表在 [数据科学之路](https://towardsdatascience.com/?source=post_page-----c3062aadc72e--------------------------------) ·13 分钟阅读·2023 年 5 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc3062aadc72e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3d-data-processing-with-open3d-c3062aadc72e&user=Prerak+Agarwal&userId=885f74d5a8c&source=-----c3062aadc72e---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc3062aadc72e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3d-data-processing-with-open3d-c3062aadc72e&source=-----c3062aadc72e---------------------bookmark_footer-----------)
 
-在这篇文章中，我提供了一个简洁的指南，讲解如何使用Python的[Open3D](http://www.open3d.org/docs/release/index.html)库来探索、处理和可视化3D模型——这是一个开源的3D数据处理库。
+在这篇文章中，我提供了一个简洁的指南，讲解如何使用 Python 的[Open3D](http://www.open3d.org/docs/release/index.html)库来探索、处理和可视化 3D 模型——这是一个开源的 3D 数据处理库。
 
-![](../Images/d71b3cf9d03ac81a2e4fbbcc7784b555.png)
+![](img/d71b3cf9d03ac81a2e4fbbcc7784b555.png)
 
-使用Open3D可视化的3D模型（原始3D模型可在[这里](https://sketchfab.com/3d-models/tesla-model-s-plaid-9de8855fae324e6cbbb83c9b5288c961)找到）。
+使用 Open3D 可视化的 3D 模型（原始 3D 模型可在[这里](https://sketchfab.com/3d-models/tesla-model-s-plaid-9de8855fae324e6cbbb83c9b5288c961)找到）。
 
 如果你考虑处理 3D 数据/模型以进行特定任务，如训练 AI 模型进行 3D 模型分类和/或分割，你可能会发现这个讲解很有帮助。互联网上的 3D 模型（如 [ShapeNet](https://shapenet.org/) 数据集中）有多种格式，如 *.obj*、*.glb*、*.gltf* 等。使用像 Open3D 这样的库，这些模型可以轻松处理、可视化并转换为其他格式，例如更易于理解和解释的点云。
 
@@ -86,7 +86,7 @@ o3d.visualization.draw_geometries(draw_geoms_list)
 
 网格应在新窗口中打开，呈现出下图所示的样子（请注意，网格以静态图像形式打开，而不是这里展示的动画图像）。可以使用鼠标指针旋转网格图像。
 
-![](../Images/70991296dafd91cf39eca3039cabb112.png)
+![](img/70991296dafd91cf39eca3039cabb112.png)
 
 3D 模型作为网格可视化（**在**估计表面法线之前）。
 
@@ -107,11 +107,11 @@ o3d.visualization.draw_geometries(draw_geoms_list)
 
 一旦可视化，网格应如下面图像所示。计算 *法线* 后，汽车模型将正确渲染，看起来像一个 3D 模型。
 
-![](../Images/4118a351aecbd1187a8df69c2276047e.png)
+![](img/4118a351aecbd1187a8df69c2276047e.png)
 
-3D模型可视化为网格（**估算表面法线后**）。
+3D 模型可视化为网格（**估算表面法线后**）。
 
-让我们创建一个XYZ坐标系，以了解这个车模在欧几里得空间中的方向。XYZ坐标系可以覆盖在上面的3D网格上，通过运行以下代码行进行可视化：
+让我们创建一个 XYZ 坐标系，以了解这个车模在欧几里得空间中的方向。XYZ 坐标系可以覆盖在上面的 3D 网格上，通过运行以下代码行进行可视化：
 
 ```py
 # Creating a mesh of the XYZ axes Cartesian coordinates frame.
@@ -128,21 +128,21 @@ draw_geoms_list = [mesh_coord_frame, mesh]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/04e234bb2232060711c09961583c0ff9.png)
+![](img/04e234bb2232060711c09961583c0ff9.png)
 
-3D网格可视化带有XYZ坐标系。X轴：红色箭头，Y轴：绿色箭头，Z轴：蓝色箭头 [容易记住的方式 — XYZ::RGB]
+3D 网格可视化带有 XYZ 坐标系。X 轴：红色箭头，Y 轴：绿色箭头，Z 轴：蓝色箭头 [容易记住的方式 — XYZ::RGB]
 
 从上述可视化中，我们可以看到这辆车的网格方向如下：
 
-+   XYZ轴的**原点**：**在车模的体积中心**（*在上面的图像中未见，因为它在车模网格内部*）。
++   XYZ 轴的**原点**：**在车模的体积中心**（*在上面的图像中未见，因为它在车模网格内部*）。
 
-+   **X轴**（红色箭头）：沿着汽车的**长度维度**，正X轴指向汽车的引擎盖（*在上面的图像中未见，因为它在车模网格内部*）。
++   **X 轴**（红色箭头）：沿着汽车的**长度维度**，正 X 轴指向汽车的引擎盖（*在上面的图像中未见，因为它在车模网格内部*）。
 
-+   **Y轴**（绿色箭头）：沿着汽车的**高度维度**，正Y轴指向汽车的车顶。
++   **Y 轴**（绿色箭头）：沿着汽车的**高度维度**，正 Y 轴指向汽车的车顶。
 
-+   **Z轴**（蓝色箭头）：沿着汽车的**宽度维度**，正Z轴指向车的右侧。
++   **Z 轴**（蓝色箭头）：沿着汽车的**宽度维度**，正 Z 轴指向车的右侧。
 
-现在我们来看看这个车模内部的情况。为此，我们将沿Z轴裁剪网格，并移除车的右半部分（正Z轴）。
+现在我们来看看这个车模内部的情况。为此，我们将沿 Z 轴裁剪网格，并移除车的右半部分（正 Z 轴）。
 
 ```py
 # Cropping the car mesh using its bouding box to remove its right half (positive Z-axis).
@@ -157,15 +157,15 @@ draw_geoms_list = [mesh_coord_frame, mesh_cropped]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/c66e1e5fba2f67f19c913c3c686aee6e.png)
+![](img/c66e1e5fba2f67f19c913c3c686aee6e.png)
 
-在Z轴上裁剪的3D网格，右半部分的车被移除（正Z轴）。裁剪后的网格展示了这个3D车模的详细内部结构。
+在 Z 轴上裁剪的 3D 网格，右半部分的车被移除（正 Z 轴）。裁剪后的网格展示了这个 3D 车模的详细内部结构。
 
-从上述可视化中，我们看到这个车模有详细的内部结构。现在我们已经看到这个3D网格内部的内容，我们可以在移除属于车内部的“隐藏”点之前，将其转换为点云。
+从上述可视化中，我们看到这个车模有详细的内部结构。现在我们已经看到这个 3D 网格内部的内容，我们可以在移除属于车内部的“隐藏”点之前，将其转换为点云。
 
 # 通过采样点将*网格*转换为*点云*
 
-在Open3D中，将网格转换为点云可以很容易地完成，通过定义我们希望从网格中采样的点的数量。
+在 Open3D 中，将网格转换为点云可以很容易地完成，通过定义我们希望从网格中采样的点的数量。
 
 ```py
 # Uniformly sampling 100,000 points from the mesh to convert it to a point cloud.
@@ -177,11 +177,11 @@ draw_geoms_list = [mesh_coord_frame, pcd]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/3489992121f80d4da3c30e9043befd92.png)
+![](img/3489992121f80d4da3c30e9043befd92.png)
 
-从3D网格中均匀采样的100,000个点创建的3D点云。
+从 3D 网格中均匀采样的 100,000 个点创建的 3D 点云。
 
-请注意，上面的点云中的颜色仅指示点在Z轴上的位置。
+请注意，上面的点云中的颜色仅指示点在 Z 轴上的位置。
 
 如果我们像对网格一样裁剪点云，它会是这样的：
 
@@ -194,9 +194,9 @@ draw_geoms_list = [mesh_coord_frame, pcd_cropped]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/656d506ef643e3a682cf68cb60597adf.png)
+![](img/656d506ef643e3a682cf68cb60597adf.png)
 
-在Z轴上裁剪的3D点云，右半部分的车被移除（正Z轴）。与上面的裁剪网格类似，裁剪后的点云也展示了这个3D车模的详细内部结构。
+在 Z 轴上裁剪的 3D 点云，右半部分的车被移除（正 Z 轴）。与上面的裁剪网格类似，裁剪后的点云也展示了这个 3D 车模的详细内部结构。
 
 我们在裁剪后的点云的可视化中看到，它还包含了属于车模内部的点。这是预期的，因为这个点云是通过从整个网格中均匀采样点创建的。在下一部分中，我们将移除这些属于车内部并不在点云外表面的“隐藏”点。
 
@@ -204,7 +204,7 @@ o3d.visualization.draw_geometries(draw_geoms_list)
 
 想象你将光线照射到汽车模型的右侧。所有落在 3D 模型右侧外表面的点都会被照亮，而点云中的其他点则不会。
 
-![](../Images/b9c54a72522967a3ed2ccfb7c22c4579.png)
+![](img/b9c54a72522967a3ed2ccfb7c22c4579.png)
 
 插图展示了 Open3D 的隐藏点移除功能如何在从给定视角查看的点云上工作。所有被照亮的点被认为是“可见”的，而所有其他点被认为是“隐藏”的。
 
@@ -242,7 +242,7 @@ draw_geoms_list = [mesh_coord_frame, pcd_visible, pcd_hidden]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/f390adb4db7eae032618205b1879c1a0.png)
+![](img/f390adb4db7eae032618205b1879c1a0.png)
 
 从上图所示的相机视角下的隐藏点移除操作后的点云。蓝色为“可见”点，而红色为“隐藏”点。
 
@@ -268,11 +268,11 @@ draw_geoms_list = [mesh_coord_frame, tmp_pcd_r]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/78ac4406b6279930d1595b81f570d332.png)
+![](img/78ac4406b6279930d1595b81f570d332.png)
 
 3D 点云**绕 X 轴旋转了 90 度**。注意，现在，与之前不同的是，**Y 轴**（绿色箭头）沿着汽车的**宽度方向**，而 **Z 轴**（蓝色箭头）沿着汽车的**高度方向**。X 轴（红色箭头）没有变化，仍然沿着汽车的长度方向。
 
-![](../Images/7c39065ff5c12fb88d444f91e97b3920.png)
+![](img/7c39065ff5c12fb88d444f91e97b3920.png)
 
 插图展示了隐藏点移除操作如何在从之前相同视角查看的旋转点云上工作。如前所述，所有被照亮的点被认为是“可见”的，而所有其他点被认为是“隐藏”的。
 
@@ -302,7 +302,7 @@ draw_geoms_list = [mesh_coord_frame, pcd_visible, pcd_hidden]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/eb03d7895f7075a8b11f7c162fe8a8d5.png)
+![](img/eb03d7895f7075a8b11f7c162fe8a8d5.png)
 
 从上图所示的相机视角隐藏点去除操作后的旋转点云。再次，可见的点为蓝色，而隐藏的点为红色。
 
@@ -396,7 +396,7 @@ draw_geoms_list = [mesh_coord_frame, pcd_visible, pcd_hidden]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/43f28acf371940f0bdaa0586e51c7fff.png)
+![](img/43f28acf371940f0bdaa0586e51c7fff.png)
 
 从相同相机视角经所有连续隐藏点去除操作后的点云。聚合的“可见”点（即，点云外表面上的点）为蓝色，而“隐藏”点（即，不在点云外表面上的点）为红色。
 
@@ -416,7 +416,7 @@ draw_geoms_list = [mesh_coord_frame, pcd_visible_cropped, pcd_hidden_cropped]
 o3d.visualization.draw_geometries(draw_geoms_list)
 ```
 
-![](../Images/df3b98c5c29de1be0d3e19aa573568da.png)
+![](img/df3b98c5c29de1be0d3e19aa573568da.png)
 
 经所有连续隐藏点去除操作后的裁剪点云，显示了所有属于 3D 汽车模型内部的“隐藏”点，标记为红色。
 
@@ -459,7 +459,7 @@ pcd_df.loc[pt_map_aggregated, "point_visible"] = True
 
 这将返回如下所示的数据框，其中每个点都是由上面解释的七个属性列表示的一行。
 
-![](../Images/8c803e2c89581a325d6cfcda32e90ab1.png)
+![](img/8c803e2c89581a325d6cfcda32e90ab1.png)
 
 3D 点云转换为数据框。
 
@@ -481,7 +481,7 @@ pcd_df_save_path = "data/3d_model.csv"
 pcd_df.to_csv(pcd_df_save_path, index=False)
 ```
 
-![](../Images/ac1332b3826c2f4143e32746af5f5131.png)
+![](img/ac1332b3826c2f4143e32746af5f5131.png)
 
 3D 模型（上图：完整，下图：裁剪）可视化为 1. 网格，2. 点云和 3. 隐藏点移除后的点云。
 

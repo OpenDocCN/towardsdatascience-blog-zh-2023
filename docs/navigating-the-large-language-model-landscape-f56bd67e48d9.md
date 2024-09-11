@@ -1,26 +1,26 @@
 # 探索大语言模型的领域
 
-> 原文：[https://towardsdatascience.com/navigating-the-large-language-model-landscape-f56bd67e48d9?source=collection_archive---------9-----------------------#2023-07-24](https://towardsdatascience.com/navigating-the-large-language-model-landscape-f56bd67e48d9?source=collection_archive---------9-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/navigating-the-large-language-model-landscape-f56bd67e48d9?source=collection_archive---------9-----------------------#2023-07-24`](https://towardsdatascience.com/navigating-the-large-language-model-landscape-f56bd67e48d9?source=collection_archive---------9-----------------------#2023-07-24)
 
 ## 对于前瞻性领导者和企业家而言的选择和考虑
 
-[](https://medium.com/@kolbeuk?source=post_page-----f56bd67e48d9--------------------------------)[![大卫·科尔布](../Images/ca5bbeca22c88a68d7d770d4e2e25205.png)](https://medium.com/@kolbeuk?source=post_page-----f56bd67e48d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f56bd67e48d9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f56bd67e48d9--------------------------------) [大卫·科尔布](https://medium.com/@kolbeuk?source=post_page-----f56bd67e48d9--------------------------------)
+[](https://medium.com/@kolbeuk?source=post_page-----f56bd67e48d9--------------------------------)![大卫·科尔布](https://medium.com/@kolbeuk?source=post_page-----f56bd67e48d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f56bd67e48d9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f56bd67e48d9--------------------------------) [大卫·科尔布](https://medium.com/@kolbeuk?source=post_page-----f56bd67e48d9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98bb79fdfe35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnavigating-the-large-language-model-landscape-f56bd67e48d9&user=David+Kolb&userId=98bb79fdfe35&source=post_page-98bb79fdfe35----f56bd67e48d9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f56bd67e48d9--------------------------------) ·6分钟阅读·2023年7月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff56bd67e48d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnavigating-the-large-language-model-landscape-f56bd67e48d9&user=David+Kolb&userId=98bb79fdfe35&source=-----f56bd67e48d9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98bb79fdfe35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnavigating-the-large-language-model-landscape-f56bd67e48d9&user=David+Kolb&userId=98bb79fdfe35&source=post_page-98bb79fdfe35----f56bd67e48d9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f56bd67e48d9--------------------------------) ·6 分钟阅读·2023 年 7 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff56bd67e48d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnavigating-the-large-language-model-landscape-f56bd67e48d9&user=David+Kolb&userId=98bb79fdfe35&source=-----f56bd67e48d9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff56bd67e48d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnavigating-the-large-language-model-landscape-f56bd67e48d9&source=-----f56bd67e48d9---------------------bookmark_footer-----------)![](../Images/ee7578de8259e5def2753e8c58a78ec0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff56bd67e48d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnavigating-the-large-language-model-landscape-f56bd67e48d9&source=-----f56bd67e48d9---------------------bookmark_footer-----------)![](img/ee7578de8259e5def2753e8c58a78ec0.png)
 
 图片： [大卫·科尔布](https://www.linkedin.com/in/david-kolb/)
 
-微软和Meta最近推出了Llama 2，这是一种下一代开源大语言模型（LLM）。有了Llama 2的广泛预训练和微调LLM的集合，企业现在面临一个关键问题。
+微软和 Meta 最近推出了 Llama 2，这是一种下一代开源大语言模型（LLM）。有了 Llama 2 的广泛预训练和微调 LLM 的集合，企业现在面临一个关键问题。
 
 > **这一点对寻求采用大语言模型的前瞻性领导者和企业家有什么影响？**
 
-随着大语言模型（LLM）市场变得越来越复杂，公司面临五种选择：商业模型、开源模型、微调模型、定制模型，或者与AI提供商/研究人员合作。
+随着大语言模型（LLM）市场变得越来越复杂，公司面临五种选择：商业模型、开源模型、微调模型、定制模型，或者与 AI 提供商/研究人员合作。
 
 针对 LLM 市场日益复杂的情况，本文旨在总结企业可用的五种主要选项。
 
@@ -30,7 +30,7 @@
 
 然而，必须记住，尽管这些模型设计为多用途，服务于广泛的应用，它们可能不擅长于特定于您业务的任务。因此，应根据您的独特业务需求考虑它们的适用性。
 
-![](../Images/0f49d37749048dac80444648b0f1c07e.png)
+![](img/0f49d37749048dac80444648b0f1c07e.png)
 
 [图片 : David Kolb](https://www.linkedin.com/in/david-kolb/)
 
@@ -52,17 +52,17 @@
 
 在精心执行的情况下，微调使企业能够将大型语言模型适应其独特需求，提升性能和任务特定的相关性。尽管涉及规划和投资，但其好处使微调模型对旨在提升语言处理能力的组织具有吸引力。
 
-![](../Images/9f487b461fb26e9d315d561628bda29e.png)
+![](img/9f487b461fb26e9d315d561628bda29e.png)
 
 图片 : [David Kolb](https://www.linkedin.com/in/david-kolb/)
 
 ## **构建定制模型**
 
-从头开始构建定制的LLM为企业提供了无与伦比的控制和定制性，但成本更高。此选项复杂，需要机器学习和自然语言处理方面的专业知识。定制LLM的优势在于其量身定制的特性。它可以根据你的业务的独特需求进行设计，确保性能最佳且与目标一致。
+从头开始构建定制的 LLM 为企业提供了无与伦比的控制和定制性，但成本更高。此选项复杂，需要机器学习和自然语言处理方面的专业知识。定制 LLM 的优势在于其量身定制的特性。它可以根据你的业务的独特需求进行设计，确保性能最佳且与目标一致。
 
-使用定制的LLM，你可以控制模型的架构、训练数据和微调参数。然而，构建定制的LLM既耗时又昂贵。它需要一个熟练的团队、硬件、大量研究、数据收集和注释以及严格的测试。还需要进行持续的维护和更新，以保持模型的有效性。
+使用定制的 LLM，你可以控制模型的架构、训练数据和微调参数。然而，构建定制的 LLM 既耗时又昂贵。它需要一个熟练的团队、硬件、大量研究、数据收集和注释以及严格的测试。还需要进行持续的维护和更新，以保持模型的有效性。
 
-构建定制的LLM是寻求绝对控制和高性能组织的**终极选择**。虽然这需要投入，但它为你的语言处理需求提供了高度量身定制的解决方案。
+构建定制的 LLM 是寻求绝对控制和高性能组织的**终极选择**。虽然这需要投入，但它为你的语言处理需求提供了高度量身定制的解决方案。
 
 ## **混合方法**
 
@@ -72,7 +72,7 @@
 
 通过采用混合方法，企业可以实现一种适应性强且高效的策略，提供量身定制的解决方案，同时利用商业模型中的知识。这种策略在既定语言模型的背景下，为满足业务特定需求提供了一种实用而有效的方法。
 
-![](../Images/cd6bdcf412626deb280680af3c46c58e.png)
+![](img/cd6bdcf412626deb280680af3c46c58e.png)
 
 图片 : [大卫·科尔布](https://www.linkedin.com/in/david-kolb/)
 

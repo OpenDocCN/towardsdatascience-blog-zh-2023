@@ -1,18 +1,18 @@
 # ToolFormer: 指导 AI 模型使用外部工具
 
-> 原文：[https://towardsdatascience.com/toolformer-guiding-ai-models-to-use-external-tools-37e4227996f1?source=collection_archive---------4-----------------------#2023-10-23](https://towardsdatascience.com/toolformer-guiding-ai-models-to-use-external-tools-37e4227996f1?source=collection_archive---------4-----------------------#2023-10-23)
+> 原文：[`towardsdatascience.com/toolformer-guiding-ai-models-to-use-external-tools-37e4227996f1?source=collection_archive---------4-----------------------#2023-10-23`](https://towardsdatascience.com/toolformer-guiding-ai-models-to-use-external-tools-37e4227996f1?source=collection_archive---------4-----------------------#2023-10-23)
 
 ## Meta 的 LLM 自我学习调用外部 API
 
-[](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)[![Nikos Kafritsas](../Images/de965cfcd8fbd8e1baf849017d365cbb.png)](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------) [Nikos Kafritsas](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)
+[](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)![Nikos Kafritsas](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------) [Nikos Kafritsas](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbec849d9e1d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoolformer-guiding-ai-models-to-use-external-tools-37e4227996f1&user=Nikos+Kafritsas&userId=bec849d9e1d2&source=post_page-bec849d9e1d2----37e4227996f1---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------) ·14 min 阅读·2023年10月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37e4227996f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoolformer-guiding-ai-models-to-use-external-tools-37e4227996f1&user=Nikos+Kafritsas&userId=bec849d9e1d2&source=-----37e4227996f1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbec849d9e1d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoolformer-guiding-ai-models-to-use-external-tools-37e4227996f1&user=Nikos+Kafritsas&userId=bec849d9e1d2&source=post_page-bec849d9e1d2----37e4227996f1---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------) ·14 min 阅读·2023 年 10 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37e4227996f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoolformer-guiding-ai-models-to-use-external-tools-37e4227996f1&user=Nikos+Kafritsas&userId=bec849d9e1d2&source=-----37e4227996f1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37e4227996f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoolformer-guiding-ai-models-to-use-external-tools-37e4227996f1&source=-----37e4227996f1---------------------bookmark_footer-----------)![](../Images/180485d9bb3167a1e863f926c118935d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37e4227996f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoolformer-guiding-ai-models-to-use-external-tools-37e4227996f1&source=-----37e4227996f1---------------------bookmark_footer-----------)![](img/180485d9bb3167a1e863f926c118935d.png)
 
 图片由作者使用 Midjourney 创建
 

@@ -1,16 +1,16 @@
-# 理解列表推导式以编写更简洁、更快速的Python代码
+# 理解列表推导式以编写更简洁、更快速的 Python 代码
 
-> 原文：[https://towardsdatascience.com/comprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84?source=collection_archive---------19-----------------------#2023-03-20](https://towardsdatascience.com/comprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84?source=collection_archive---------19-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/comprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84?source=collection_archive---------19-----------------------#2023-03-20`](https://towardsdatascience.com/comprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84?source=collection_archive---------19-----------------------#2023-03-20)
 
-[](https://medium.com/@Carobert?source=post_page-----d18908b42c84--------------------------------)[![Charles Mendelson](../Images/0a8dea9bab2a49da65687095d31065e9.png)](https://medium.com/@Carobert?source=post_page-----d18908b42c84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d18908b42c84--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d18908b42c84--------------------------------) [Charles Mendelson](https://medium.com/@Carobert?source=post_page-----d18908b42c84--------------------------------)
+[](https://medium.com/@Carobert?source=post_page-----d18908b42c84--------------------------------)![Charles Mendelson](https://medium.com/@Carobert?source=post_page-----d18908b42c84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d18908b42c84--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d18908b42c84--------------------------------) [Charles Mendelson](https://medium.com/@Carobert?source=post_page-----d18908b42c84--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f4d278f87e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84&user=Charles+Mendelson&userId=a6f4d278f87e&source=post_page-a6f4d278f87e----d18908b42c84---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d18908b42c84--------------------------------) ·5分钟阅读·2023年3月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd18908b42c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84&user=Charles+Mendelson&userId=a6f4d278f87e&source=-----d18908b42c84---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f4d278f87e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84&user=Charles+Mendelson&userId=a6f4d278f87e&source=post_page-a6f4d278f87e----d18908b42c84---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d18908b42c84--------------------------------) ·5 分钟阅读·2023 年 3 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd18908b42c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84&user=Charles+Mendelson&userId=a6f4d278f87e&source=-----d18908b42c84---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd18908b42c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84&source=-----d18908b42c84---------------------bookmark_footer-----------)![](../Images/858aa3ba9b38a9ad03cd5fee90cae041.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd18908b42c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehending-comprehensions-to-write-cleaner-faster-python-d18908b42c84&source=-----d18908b42c84---------------------bookmark_footer-----------)![](img/858aa3ba9b38a9ad03cd5fee90cae041.png)
 
 图片由 [Jonathan Cooper](https://unsplash.com/@theshuttervision?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/BuPQp8BST4I?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -173,7 +173,7 @@ turn_first_letter_lowercase(prep_island_name(island))
 
 海象操作符`:=`（也称为赋值操作符），在 Python 3.8 中引入，允许你在传统上不能使用`=`的命名空间中定义变量名。
 
-现在，除了两次调用prep_island_name()函数外，我们可以使用赋值运算符在列表推导内部定义一个变量，并将该变量传递给turn_first_letter_lowercase()。请特别注意我们列表推导中包围关键定义的括号：
+现在，除了两次调用 prep_island_name()函数外，我们可以使用赋值运算符在列表推导内部定义一个变量，并将该变量传递给 turn_first_letter_lowercase()。请特别注意我们列表推导中包围关键定义的括号：
 
 ```py
 island_names = ['The Neglected Holm', 'The Barnacle Key', 'The Dancing Enclave',
@@ -199,14 +199,14 @@ new_island_comprehension_walrus = {
 
 # 结论
 
-我花了令人尴尬的长时间才弄明白如何有效地使用列表推导，因为我一直把它们认为是for循环。功能性编程帮助我打破了对for循环的依赖，并编写了更简洁、更快速的代码。
+我花了令人尴尬的长时间才弄明白如何有效地使用列表推导，因为我一直把它们认为是 for 循环。功能性编程帮助我打破了对 for 循环的依赖，并编写了更简洁、更快速的代码。
 
-学习海象运算符去除了for循环的最后一个优势——轻松的变量赋值。
+学习海象运算符去除了 for 循环的最后一个优势——轻松的变量赋值。
 
 # 关于
 
-查尔斯·门德尔森是一位总部位于西雅图的数据工程师，同时也是华盛顿大学继续教育学院的教学助理，在那里他教授Python证书课程。
+查尔斯·门德尔森是一位总部位于西雅图的数据工程师，同时也是华盛顿大学继续教育学院的教学助理，在那里他教授 Python 证书课程。
 
-他即将从哈佛延伸学院获得心理学硕士学位。如果你想与他联系，最好的方式是通过[LinkedIn](https://www.linkedin.com/in/charles-mendelson-carobert/)，他曾被Databand.ai评选为2022年25位数据工程影响者之一。
+他即将从哈佛延伸学院获得心理学硕士学位。如果你想与他联系，最好的方式是通过[LinkedIn](https://www.linkedin.com/in/charles-mendelson-carobert/)，他曾被 Databand.ai 评选为 2022 年 25 位数据工程影响者之一。
 
-*最初发表于* [*https://charlesmendelson.com*](https://charlesmendelson.com/tds/effective-comprehensons-in-python/) *2023年3月20日。*
+*最初发表于* [*https://charlesmendelson.com*](https://charlesmendelson.com/tds/effective-comprehensons-in-python/) *2023 年 3 月 20 日。*

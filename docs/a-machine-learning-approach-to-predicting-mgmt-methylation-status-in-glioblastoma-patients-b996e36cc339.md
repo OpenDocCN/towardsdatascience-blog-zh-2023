@@ -1,44 +1,44 @@
-# 一种机器学习方法预测胶质母细胞瘤患者的MGMT甲基化状态
+# 一种机器学习方法预测胶质母细胞瘤患者的 MGMT 甲基化状态
 
-> 原文：[https://towardsdatascience.com/a-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339?source=collection_archive---------12-----------------------#2023-07-26](https://towardsdatascience.com/a-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339?source=collection_archive---------12-----------------------#2023-07-26)
+> 原文：[`towardsdatascience.com/a-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339?source=collection_archive---------12-----------------------#2023-07-26`](https://towardsdatascience.com/a-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339?source=collection_archive---------12-----------------------#2023-07-26)
 
 ## 肿瘤学中的放射组学
 
-[](https://medium.com/@jevans2532?source=post_page-----b996e36cc339--------------------------------)[![贾雷特·埃文斯](../Images/74a9607261cc5ad1078549ee660b52cd.png)](https://medium.com/@jevans2532?source=post_page-----b996e36cc339--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b996e36cc339--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b996e36cc339--------------------------------) [贾雷特·埃文斯](https://medium.com/@jevans2532?source=post_page-----b996e36cc339--------------------------------)
+[](https://medium.com/@jevans2532?source=post_page-----b996e36cc339--------------------------------)![贾雷特·埃文斯](https://medium.com/@jevans2532?source=post_page-----b996e36cc339--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b996e36cc339--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----b996e36cc339--------------------------------) [贾雷特·埃文斯](https://medium.com/@jevans2532?source=post_page-----b996e36cc339--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9612ed1f387a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339&user=Jarrett+Evans&userId=9612ed1f387a&source=post_page-9612ed1f387a----b996e36cc339---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b996e36cc339--------------------------------) · 5 分钟阅读 · 2023年7月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb996e36cc339&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339&user=Jarrett+Evans&userId=9612ed1f387a&source=-----b996e36cc339---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9612ed1f387a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339&user=Jarrett+Evans&userId=9612ed1f387a&source=post_page-9612ed1f387a----b996e36cc339---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b996e36cc339--------------------------------) · 5 分钟阅读 · 2023 年 7 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb996e36cc339&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339&user=Jarrett+Evans&userId=9612ed1f387a&source=-----b996e36cc339---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb996e36cc339&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339&source=-----b996e36cc339---------------------bookmark_footer-----------)![](../Images/b0c66015662469f6c7b7f58d2eaddb97.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb996e36cc339&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-approach-to-predicting-mgmt-methylation-status-in-glioblastoma-patients-b996e36cc339&source=-----b996e36cc339---------------------bookmark_footer-----------)![](img/b0c66015662469f6c7b7f58d2eaddb97.png)
 
 照片由 [国家癌症研究所](https://unsplash.com/@nci?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 介绍
 
-今天，我们将探讨一项针对胶质母细胞瘤患者的研究，该研究发表在《自然》杂志的Scientific Reports上：[*通过优化放射组学特征使用基于遗传算法的机器学习方法改善胶质母细胞瘤MGMT甲基化状态预测*](https://www.nature.com/articles/s41598-022-17707-w)。该研究的目标是尝试预测O6-甲基鸟嘌呤-DNA-甲基转移酶（MGMT）甲基化状态。能够预测这一状态的重要原因在于，它可以很好地指示化疗药物替莫唑胺（TMZ）的效果。
+今天，我们将探讨一项针对胶质母细胞瘤患者的研究，该研究发表在《自然》杂志的 Scientific Reports 上：[*通过优化放射组学特征使用基于遗传算法的机器学习方法改善胶质母细胞瘤 MGMT 甲基化状态预测*](https://www.nature.com/articles/s41598-022-17707-w)。该研究的目标是尝试预测 O6-甲基鸟嘌呤-DNA-甲基转移酶（MGMT）甲基化状态。能够预测这一状态的重要原因在于，它可以很好地指示化疗药物替莫唑胺（TMZ）的效果。
 
 > **替莫唑胺概述**
 > 
-> TMZ是一种烷化剂，通过损伤癌细胞中的DNA来发挥作用，最终导致细胞死亡。TMZ还使细胞对放射线更敏感。这在癌症治疗中是一个重要因素，因为放射线用于帮助杀死癌细胞。
+> TMZ 是一种烷化剂，通过损伤癌细胞中的 DNA 来发挥作用，最终导致细胞死亡。TMZ 还使细胞对放射线更敏感。这在癌症治疗中是一个重要因素，因为放射线用于帮助杀死癌细胞。
 
-这项研究旨在通过机器学习寻找预测MGMT甲基化状态的新方法。如果成功，这可以帮助缓解目前为获取肿瘤标本而需进行的技术限制和侵入性程序。
+这项研究旨在通过机器学习寻找预测 MGMT 甲基化状态的新方法。如果成功，这可以帮助缓解目前为获取肿瘤标本而需进行的技术限制和侵入性程序。
 
-由于胶质母细胞瘤（GBM）对患者的致命威胁，处理这种癌症的效率和有效性非常重要。其中位生存期为14至16个月，占所有恶性中枢神经系统肿瘤的约45%。
+由于胶质母细胞瘤（GBM）对患者的致命威胁，处理这种癌症的效率和有效性非常重要。其中位生存期为 14 至 16 个月，占所有恶性中枢神经系统肿瘤的约 45%。
 
 ## 方法
 
-该团队寻求利用两阶段方法来预测适当的MGMT甲基化状态。首先是通过消除噪声放射组学特征，然后将分类算法实施到遗传算法中，以帮助识别最佳预测特征。
+该团队寻求利用两阶段方法来预测适当的 MGMT 甲基化状态。首先是通过消除噪声放射组学特征，然后将分类算法实施到遗传算法中，以帮助识别最佳预测特征。
 
-在这项研究中测试了各种机器学习技术。目的是寻找对预测最有意义的放射组学特征。他们通过从磁共振成像（MRI）的多模态图像中提取放射组学特征来实现这一目标。两阶段特征选择方法从eXtreme Gradient Boosting（XGBoost）模型开始，随后使用基于遗传算法（GA）的包装模型。GA模型的工作方式类似于自然选择，通过识别“最适合”的特征集进行预测。
+在这项研究中测试了各种机器学习技术。目的是寻找对预测最有意义的放射组学特征。他们通过从磁共振成像（MRI）的多模态图像中提取放射组学特征来实现这一目标。两阶段特征选择方法从 eXtreme Gradient Boosting（XGBoost）模型开始，随后使用基于遗传算法（GA）的包装模型。GA 模型的工作方式类似于自然选择，通过识别“最适合”的特征集进行预测。
 
-使用的数据是来自癌症基因组图谱的预处理和分割的多模态MRI特征。总共包括了53名GBM患者，并获得了704个放射组学特征。
+使用的数据是来自癌症基因组图谱的预处理和分割的多模态 MRI 特征。总共包括了 53 名 GBM 患者，并获得了 704 个放射组学特征。
 
 遗传算法的工作流程阶段包括六个不同的步骤：初始种群的生成、适应度评估、父母选择、交叉、突变和下一代的种群替换。用于选择概率的公式（其中特征是根据其在适应度评估阶段的表现进行选择）如下所示：
 
-![](../Images/ddf186a207ca894c6d2cd516cd872f2a.png)
+![](img/ddf186a207ca894c6d2cd516cd872f2a.png)
 
 选择概率公式
 
@@ -74,16 +74,16 @@ GA-RF 模型在 LGG 数据集上的结果为准确率 0.75，灵敏度 0.78，�
 
 ## 结论
 
-如果这一技术继续得到发展并最终被利用，它可能成为医生非侵入性了解患者MGMT甲基化状态的一种方式。这些信息可以帮助他们做出更明智的治疗决策，从而有助于改善患者的预后。这也为放射组学在肿瘤学中可能的其他应用打开了大门。
+如果这一技术继续得到发展并最终被利用，它可能成为医生非侵入性了解患者 MGMT 甲基化状态的一种方式。这些信息可以帮助他们做出更明智的治疗决策，从而有助于改善患者的预后。这也为放射组学在肿瘤学中可能的其他应用打开了大门。
 
-> Do, D.T., Yang, MR., Lam, L.H.T. *等*。通过优化放射组学特征来改善胶质母细胞瘤MGMT甲基化状态预测，使用基于遗传算法的机器学习方法。 *Sci Rep* **12**, 13412 (2022)。 [https://doi.org/10.1038/s41598-022-17707-w](https://doi.org/10.1038/s41598-022-17707-w)
+> Do, D.T., Yang, MR., Lam, L.H.T. *等*。通过优化放射组学特征来改善胶质母细胞瘤 MGMT 甲基化状态预测，使用基于遗传算法的机器学习方法。 *Sci Rep* **12**, 13412 (2022)。 [`doi.org/10.1038/s41598-022-17707-w`](https://doi.org/10.1038/s41598-022-17707-w)
 > 
-> Eberhart, Karin, Ozlem Oral, 和 Devrim Gozuacik。“第13章 — 通过抗癌药物诱导自噬性细胞死亡。” *ScienceDirect*，2014年，[https://www.sciencedirect.com/topics/neuroscience/temozolomide#:~:text=Temozolomide%20(TMZ)%20is%20a%20small,damage%20and%20tumor%20cell%20death](https://www.sciencedirect.com/topics/neuroscience/temozolomide#:~:text=Temozolomide%20(TMZ)%20is%20a%20small,damage%20and%20tumor%20cell%20death)。访问日期：2023年7月12日。
+> Eberhart, Karin, Ozlem Oral, 和 Devrim Gozuacik。“第十三章 — 通过抗癌药物诱导自噬性细胞死亡。” *ScienceDirect*，2014 年，[`www.sciencedirect.com/topics/neuroscience/temozolomide#:~:text=Temozolomide%20(TMZ)%20is%20a%20small,damage%20and%20tumor%20cell%20death`](https://www.sciencedirect.com/topics/neuroscience/temozolomide#:~:text=Temozolomide%20(TMZ)%20is%20a%20small,damage%20and%20tumor%20cell%20death)。访问日期：2023 年 7 月 12 日。
 > 
-> 国家癌症研究所。‘试验产生了对脑癌治疗有影响的结果。’ *癌症动态博客*，2016年6月9日，[https://www.cancer.gov/news-events/cancer-currents-blog/2016/asco-temozolomide-brain](https://www.cancer.gov/news-events/cancer-currents-blog/2016/asco-temozolomide-brain)。访问日期：2023年7月18日。
+> 国家癌症研究所。‘试验产生了对脑癌治疗有影响的结果。’ *癌症动态博客*，2016 年 6 月 9 日，[`www.cancer.gov/news-events/cancer-currents-blog/2016/asco-temozolomide-brain`](https://www.cancer.gov/news-events/cancer-currents-blog/2016/asco-temozolomide-brain)。访问日期：2023 年 7 月 18 日。
 > 
-> 美国癌症学会。“化疗药物的作用机制。” 美国癌症学会，2019年11月22日，[https://www.cancer.org/treatment/treatments-and-side-effects/treatment-types/chemotherapy/how-chemotherapy-drugs-work.html](https://www.cancer.org/treatment/treatments-and-side-effects/treatment-types/chemotherapy/how-chemotherapy-drugs-work.html)。访问日期：2023年7月25日。
+> 美国癌症学会。“化疗药物的作用机制。” 美国癌症学会，2019 年 11 月 22 日，[`www.cancer.org/treatment/treatments-and-side-effects/treatment-types/chemotherapy/how-chemotherapy-drugs-work.html`](https://www.cancer.org/treatment/treatments-and-side-effects/treatment-types/chemotherapy/how-chemotherapy-drugs-work.html)。访问日期：2023 年 7 月 25 日。
 > 
-> 欧洲医学肿瘤学会。“胶质瘤中的MGMT启动子甲基化：ESMO生物标志物简报。” Oncology Pro，[更新于2019年1月18日]，[https://oncologypro.esmo.org/education-library/factsheets-on-biomarkers/mgmt-promoter-methylation-in-glioma](https://oncologypro.esmo.org/education-library/factsheets-on-biomarkers/mgmt-promoter-methylation-in-glioma)。访问日期：2023年7月9日。
+> 欧洲医学肿瘤学会。“胶质瘤中的 MGMT 启动子甲基化：ESMO 生物标志物简报。” Oncology Pro，[更新于 2019 年 1 月 18 日]，[`oncologypro.esmo.org/education-library/factsheets-on-biomarkers/mgmt-promoter-methylation-in-glioma`](https://oncologypro.esmo.org/education-library/factsheets-on-biomarkers/mgmt-promoter-methylation-in-glioma)。访问日期：2023 年 7 月 9 日。
 > 
-> 创作共用许可证链接：[https://creativecommons.org/licenses/by/4.0/](https://creativecommons.org/licenses/by/4.0/)
+> 创作共用许可证链接：[`creativecommons.org/licenses/by/4.0/`](https://creativecommons.org/licenses/by/4.0/)

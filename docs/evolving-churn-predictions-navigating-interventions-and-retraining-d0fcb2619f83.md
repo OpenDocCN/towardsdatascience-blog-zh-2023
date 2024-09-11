@@ -1,10 +1,10 @@
 # 进化的客户流失预测：应对干预和再培训
 
-> 原文：[https://towardsdatascience.com/evolving-churn-predictions-navigating-interventions-and-retraining-d0fcb2619f83?source=collection_archive---------10-----------------------#2023-11-16](https://towardsdatascience.com/evolving-churn-predictions-navigating-interventions-and-retraining-d0fcb2619f83?source=collection_archive---------10-----------------------#2023-11-16)
+> 原文：[`towardsdatascience.com/evolving-churn-predictions-navigating-interventions-and-retraining-d0fcb2619f83?source=collection_archive---------10-----------------------#2023-11-16`](https://towardsdatascience.com/evolving-churn-predictions-navigating-interventions-and-retraining-d0fcb2619f83?source=collection_archive---------10-----------------------#2023-11-16)
 
 ## 处理由于主动保留努力而导致的再培训客户流失模型的新兴挑战
 
-[](https://medium.com/@tomeralma?source=post_page-----d0fcb2619f83--------------------------------)[![Tomer Alma](../Images/fd98d859f22e18b778c8fc1820f62950.png)](https://medium.com/@tomeralma?source=post_page-----d0fcb2619f83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0fcb2619f83--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d0fcb2619f83--------------------------------) [Tomer Alma](https://medium.com/@tomeralma?source=post_page-----d0fcb2619f83--------------------------------)
+[](https://medium.com/@tomeralma?source=post_page-----d0fcb2619f83--------------------------------)![Tomer Alma](https://medium.com/@tomeralma?source=post_page-----d0fcb2619f83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0fcb2619f83--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0fcb2619f83--------------------------------) [Tomer Alma](https://medium.com/@tomeralma?source=post_page-----d0fcb2619f83--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd0fcb2619f83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevolving-churn-predictions-navigating-interventions-and-retraining-d0fcb2619f83&source=-----d0fcb2619f83---------------------bookmark_footer-----------)![](../Images/28f35408aac24fc3d1fa740fc96bea1f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd0fcb2619f83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevolving-churn-predictions-navigating-interventions-and-retraining-d0fcb2619f83&source=-----d0fcb2619f83---------------------bookmark_footer-----------)![](img/28f35408aac24fc3d1fa740fc96bea1f.png)
 
 照片由[CrowN](https://unsplash.com/@cosmicomicfox?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)拍摄
 
@@ -36,7 +36,7 @@
 
 同样，对于流失标签——干预可能是流失的唯一触发因素，使得某些流失标签不可靠。
 
-![](../Images/9f9ff457d7680d6b8b8e4861dba8928d.png)
+![](img/9f9ff457d7680d6b8b8e4861dba8928d.png)
 
 当保留努力模糊模型清晰度时
 
@@ -72,7 +72,7 @@
 
 **不可打扰者：** 仅在被针对时才会流失的客户。保持他们不受干扰是有利的，而针对他们会增加显著成本而没有收入增长，使他们成为“沉睡的狗”。
 
-![](../Images/1e88b5af48437c7b0526ad0435d4d9de.png)
+![](img/1e88b5af48437c7b0526ad0435d4d9de.png)
 
 提升建模的目标是专门针对可说服者。
 
@@ -80,19 +80,19 @@
 
 针对这一挑战有几种提升方法，我们将查看“转换结果”方法。该方法需要来自对照组和处理组的数据，并将我们的重点从分类任务转移到回归任务。
 
-标签是基于[特定公式](https://www.uplift-modeling.com/en/latest/user_guide/models/transformed_outcome.html)分配的，对于处理倾向等于0.5的随机处理分配，目标变量转化为以下值：
+标签是基于[特定公式](https://www.uplift-modeling.com/en/latest/user_guide/models/transformed_outcome.html)分配的，对于处理倾向等于 0.5 的随机处理分配，目标变量转化为以下值：
 
-![](../Images/7835944a98af25275ecdf7ee0fa61179.png)
+![](img/7835944a98af25275ecdf7ee0fa61179.png)
 
-转换结果标签（针对50%的处理倾向）
+转换结果标签（针对 50%的处理倾向）
 
 我们可以使用诸如均方误差（[MSE](https://en.wikipedia.org/wiki/Mean_squared_error)）的损失函数作为解决此回归问题的指标：
 
-对于可说服者，对照组标记为0，处理组标记为2。它们之间的最低MSE将是分数为1的位置，代表可说服者的提升。
+对于可说服者，对照组标记为 0，处理组标记为 2。它们之间的最低 MSE 将是分数为 1 的位置，代表可说服者的提升。
 
-对于“打扰者”，控制组为-2，处理组为0，最佳预测为-1，表示提升。
+对于“打扰者”，控制组为-2，处理组为 0，最佳预测为-1，表示提升。
 
-对于“失去的原因”和“确定的情况”，最佳预测是0。
+对于“失去的原因”和“确定的情况”，最佳预测是 0。
 
 理想情况下，应该以最高得分为目标，尽量保留可以说服的人，尽可能避免打扰人群及其他人群。
 

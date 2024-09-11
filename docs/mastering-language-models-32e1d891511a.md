@@ -1,26 +1,26 @@
 # 掌握语言模型
 
-> 原文：[https://towardsdatascience.com/mastering-language-models-32e1d891511a?source=collection_archive---------5-----------------------#2023-10-03](https://towardsdatascience.com/mastering-language-models-32e1d891511a?source=collection_archive---------5-----------------------#2023-10-03)
+> 原文：[`towardsdatascience.com/mastering-language-models-32e1d891511a?source=collection_archive---------5-----------------------#2023-10-03`](https://towardsdatascience.com/mastering-language-models-32e1d891511a?source=collection_archive---------5-----------------------#2023-10-03)
 
-## 通过温度、top-p、top-k等来平衡质量与多样性
+## 通过温度、top-p、top-k 等来平衡质量与多样性
 
-[](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)[![Samuel Montgomery](../Images/52f12c797b53706ad1039459238ece44.png)](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------) [Samuel Montgomery](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)
+[](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)![Samuel Montgomery](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------) [Samuel Montgomery](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf5cf7332a65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&user=Samuel+Montgomery&userId=bf5cf7332a65&source=post_page-bf5cf7332a65----32e1d891511a---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------) · 12 min read · 2023年10月3日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32e1d891511a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&user=Samuel+Montgomery&userId=bf5cf7332a65&source=-----32e1d891511a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf5cf7332a65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&user=Samuel+Montgomery&userId=bf5cf7332a65&source=post_page-bf5cf7332a65----32e1d891511a---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------) · 12 min read · 2023 年 10 月 3 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32e1d891511a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&user=Samuel+Montgomery&userId=bf5cf7332a65&source=-----32e1d891511a---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32e1d891511a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&source=-----32e1d891511a---------------------bookmark_footer-----------)
 
-如果你曾经通过操控台或API使用过语言模型，你可能被要求选择一些输入参数。对于我们许多人来说，这些参数的意义（以及正确的使用方法）可能并不十分清楚。
+如果你曾经通过操控台或 API 使用过语言模型，你可能被要求选择一些输入参数。对于我们许多人来说，这些参数的意义（以及正确的使用方法）可能并不十分清楚。
 
-![](../Images/b9bdc5e91439bacb53807788c292484d.png)
+![](img/b9bdc5e91439bacb53807788c292484d.png)
 
 一张显示 SillyTavern 界面中参数选择的截图。图片由作者提供。
 
-这篇文章将教你如何使用这些参数来控制幻觉，注入创造力到模型输出中，并进行其他细微的调整以优化行为。就像提示工程一样，输入参数调整可以让你的模型达到110%的性能。
+这篇文章将教你如何使用这些参数来控制幻觉，注入创造力到模型输出中，并进行其他细微的调整以优化行为。就像提示工程一样，输入参数调整可以让你的模型达到 110%的性能。
 
 在本文结束时，你将成为五个重要输入参数的专家——温度、top-p、top-k、频率惩罚和存在惩罚。你还将了解这些参数如何帮助我们在质量和多样性之间进行权衡。
 
@@ -28,17 +28,17 @@
 
 ## 目录
 
-· [背景](#5876)
+· 背景
 
-· [质量、多样性与温度](#1164)
+· 质量、多样性与温度
 
-· [Top-k 和 Top-p](#a476)
+· Top-k 和 Top-p
 
-· [频率和存在惩罚](#e517)
+· 频率和存在惩罚
 
-· [参数调整备忘单](#c9f4)
+· 参数调整备忘单
 
-· [总结](#7610)
+· 总结
 
 # 背景
 
@@ -48,15 +48,15 @@
 
 我们熟悉的大多数语言模型通过反复生成序列中的下一个标记来操作。每当模型想要生成另一个标记时，它会重新读取整个序列，并预测下一个应该出现的标记。这种策略被称为*自回归*生成。
 
-![](../Images/ff9f86565a19ba6f422e13157cd7b039.png)
+![](img/ff9f86565a19ba6f422e13157cd7b039.png)
 
-语言模型的自回归标记生成。GIF由[Echo Lu](https://www.linkedin.com/in/echoxlu/)提供，包含由[Annie Surla](https://developer.nvidia.com/blog/author/anniesurla/)修改的[NVIDIA](https://developer.nvidia.com/blog/how-to-get-better-outputs-from-your-large-language-model/)的图像。经版权所有者许可修改。
+语言模型的自回归标记生成。GIF 由[Echo Lu](https://www.linkedin.com/in/echoxlu/)提供，包含由[Annie Surla](https://developer.nvidia.com/blog/author/anniesurla/)修改的[NVIDIA](https://developer.nvidia.com/blog/how-to-get-better-outputs-from-your-large-language-model/)的图像。经版权所有者许可修改。
 
-这解释了为什么ChatGPT一次输出一个单词：它在写字的时候把单词流式传输给你。
+这解释了为什么 ChatGPT 一次输出一个单词：它在写字的时候把单词流式传输给你。
 
 要选择序列中的下一个标记，语言模型首先为其词汇表中的每个标记分配一个可能性分数。如果标记是文本的良好延续，它会获得一个高可能性分数；如果标记是文本的较差延续，它会获得一个低可能性分数，模型会进行评估。
 
-![](../Images/40490cd101aa2e34bdc072b88614741d.png)
+![](img/40490cd101aa2e34bdc072b88614741d.png)
 
 语言模型分配可能性分数以预测序列中的下一个标记。原始图像由[Annie Surla](https://developer.nvidia.com/blog/author/anniesurla/)提供，来自[NVIDIA](https://developer.nvidia.com/blog/how-to-get-better-outputs-from-your-large-language-model/)，经[Echo Lu](https://www.linkedin.com/in/echoxlu/)修改，经过版权所有者许可。
 
@@ -74,7 +74,7 @@
 
 在高温下，我们会看到更多的垃圾和幻觉，连贯性较差，响应质量也较低，但也会有更多的创造力和答案的多样性。我们建议你*仅*在想要对同一个问题得到两个不同答案时使用非零温度。
 
-![](../Images/72a0df19da4637d3f2f8b985de25958c.png)
+![](img/72a0df19da4637d3f2f8b985de25958c.png)
 
 高温带来了多样性、创造力和多种答案，但也增加了垃圾、无序和幻觉。图片由[Echo Lu](https://www.linkedin.com/in/echoxlu/)提供。
 
@@ -92,7 +92,7 @@
 
 比如说，我们试图为“太阳在……升起”生成一个续写。如果不使用 top-k 采样，模型会考虑词汇表中的每一个词作为序列的可能延续。这样可能会有非零的几率生成诸如“太阳在冰箱里升起”这样荒谬的内容。使用 top-k 采样，模型会过滤掉这些真正糟糕的选择，只考虑前 k 个最佳选项。通过剪掉长尾，我们会失去一点多样性，但质量会大幅提升。
 
-![](../Images/9d2e8cbeca38c147e31be7b9657736f9.png)
+![](img/9d2e8cbeca38c147e31be7b9657736f9.png)
 
 Top-k 采样通过仅保留 k 个最佳候选词并丢弃其余词来提高质量。图片来源于[Echo Lu](https://www.linkedin.com/in/echoxlu/)。
 
@@ -100,13 +100,13 @@ Top-k 采样是一种“既要蛋糕又要吃蛋糕”的方法：它以比单�
 
 Top-k 采样的一种常见变体叫做 top-p 采样，也称为核采样。Top-p 采样与 top-k 非常相似，只是它使用概率得分而不是词汇排名来确定剪切尾部的标准。更具体地说，它只考虑那些排名前列的、其组合概率超过阈值 p 的词汇，丢弃其余词汇。
 
-当存在许多质量低劣或平庸的延续时，与top-k抽样相比，top-p抽样的优势变得明显。例如，假设下一个标记只有几个好的选择，而有数十个模糊合理的选择。如果我们使用k=25的top-k抽样，我们将考虑许多质量低劣的延续。相反，如果我们使用top-p抽样来过滤掉概率分布的底部10%，我们可能只会考虑那些好的标记，同时过滤掉其余的标记。
+当存在许多质量低劣或平庸的延续时，与 top-k 抽样相比，top-p 抽样的优势变得明显。例如，假设下一个标记只有几个好的选择，而有数十个模糊合理的选择。如果我们使用 k=25 的 top-k 抽样，我们将考虑许多质量低劣的延续。相反，如果我们使用 top-p 抽样来过滤掉概率分布的底部 10%，我们可能只会考虑那些好的标记，同时过滤掉其余的标记。
 
-在实践中，与top-k抽样相比，top-p抽样通常能够产生更好的结果。通过关注累积概率，它能够适应输入的上下文并提供更灵活的截断。因此，总之，top-p和top-k抽样都可以在非零温度下使用，以在较低的质量成本下捕捉多样性，但通常top-p抽样做得更好。
+在实践中，与 top-k 抽样相比，top-p 抽样通常能够产生更好的结果。通过关注累积概率，它能够适应输入的上下文并提供更灵活的截断。因此，总之，top-p 和 top-k 抽样都可以在非零温度下使用，以在较低的质量成本下捕捉多样性，但通常 top-p 抽样做得更好。
 
 提示：对于这两个设置，较低的值=更多过滤。当值为零时，它们将过滤掉除排名第一的标记以外的所有标记，这与将温度设置为零具有相同效果。因此，请使用这些参数时，请注意不要将它们设置得太低，否则会损失所有的多样性。
 
-*TLDR：Top-k和top-p在只付出较小代价以增加质量的情况下提高质量。它们通过在随机抽样之前移除最差的标记选择来实现这一点。*
+*TLDR：Top-k 和 top-p 在只付出较小代价以增加质量的情况下提高质量。它们通过在随机抽样之前移除最差的标记选择来实现这一点。*
 
 # 频率和存在惩罚
 
@@ -190,6 +190,6 @@ Top-p/Top-k：
 
 在我们结束之前，还有一个最后的输入参数需要提及：最大令牌长度。最大令牌长度就是模型停止打印答案的截止点，即使答案未完成。在复杂的讨论之后，我们希望这个参数是不言自明的。🙂
 
-随着我们在这一系列中的深入，我们将更深入地探讨诸如提示工程、为你的使用案例选择合适的语言模型等主题！我还会展示一些来自我在Megaputer Intelligence担任数据分析顾问时的实际应用案例。敬请期待更多见解，祝建模愉快！
+随着我们在这一系列中的深入，我们将更深入地探讨诸如提示工程、为你的使用案例选择合适的语言模型等主题！我还会展示一些来自我在 Megaputer Intelligence 担任数据分析顾问时的实际应用案例。敬请期待更多见解，祝建模愉快！
 
 *TLDR: 如果有疑问，将温度、频率惩罚和存在惩罚设置为零。如果这样做对你不起作用，请参考上面的备忘单。*

@@ -1,18 +1,18 @@
 # 比较异常值检测方法
 
-> 原文：[https://towardsdatascience.com/comparing-outlier-detection-methods-956f4b097061?source=collection_archive---------1-----------------------#2023-12-16](https://towardsdatascience.com/comparing-outlier-detection-methods-956f4b097061?source=collection_archive---------1-----------------------#2023-12-16)
+> 原文：[`towardsdatascience.com/comparing-outlier-detection-methods-956f4b097061?source=collection_archive---------1-----------------------#2023-12-16`](https://towardsdatascience.com/comparing-outlier-detection-methods-956f4b097061?source=collection_archive---------1-----------------------#2023-12-16)
 
-## 使用2023年大联盟棒球的击球统计数据
+## 使用 2023 年大联盟棒球的击球统计数据
 
-[](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)[![约翰·安德鲁斯](../Images/f8022a4e19de5e10e563a31e9b79befc.png)](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)[](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------) [约翰·安德鲁斯](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)
+[](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)![约翰·安德鲁斯](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)[](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------) [约翰·安德鲁斯](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F58a322305d14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&user=John+Andrews&userId=58a322305d14&source=post_page-58a322305d14----956f4b097061---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------) ·12分钟阅读·2023年12月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F956f4b097061&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&user=John+Andrews&userId=58a322305d14&source=-----956f4b097061---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F58a322305d14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&user=John+Andrews&userId=58a322305d14&source=post_page-58a322305d14----956f4b097061---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------) ·12 分钟阅读·2023 年 12 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F956f4b097061&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&user=John+Andrews&userId=58a322305d14&source=-----956f4b097061---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F956f4b097061&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&source=-----956f4b097061---------------------bookmark_footer-----------)![](../Images/a98521c8a1b53bffd94feb52c42911b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F956f4b097061&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&source=-----956f4b097061---------------------bookmark_footer-----------)![](img/a98521c8a1b53bffd94feb52c42911b8.png)
 
 Shohei Ohtani，照片由 [Erik Drost](https://www.flickr.com/photos/edrost88/) 拍摄，发布在 [Flikr](https://www.flickr.com/photos/edrost88/48484060286/in/album-72157629239820345/)，[CC BY 2.0](https://commons.wikimedia.org/w/index.php?curid=88998688)
 
@@ -26,13 +26,13 @@ Shohei Ohtani，照片由 [Erik Drost](https://www.flickr.com/photos/edrost88/) 
 
 +   [局部异常因子](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.LocalOutlierFactor.html)是通过将观测值的局部密度与其邻居的密度进行比较来判断异常值。密度远低于邻居的观测值被视为异常值。
 
-+   [一类支持向量机（SVM）与随机梯度下降（SGD）](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDOneClassSVM.html)是一个O(n)的近似解法。请注意，O(n²)的[一类SVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html#sklearn.svm.OneClassSVM)在我们的小示例数据集上效果很好，但可能对你的实际用例不够实用。
++   [一类支持向量机（SVM）与随机梯度下降（SGD）](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDOneClassSVM.html)是一个 O(n)的近似解法。请注意，O(n²)的[一类 SVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html#sklearn.svm.OneClassSVM)在我们的小示例数据集上效果很好，但可能对你的实际用例不够实用。
 
 +   [隔离森林](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html)是一种基于树的方法，其中异常值通过随机分割比正常值更快地被隔离。
 
 由于我们的任务是无监督的，我们没有基准真值来比较这些算法的准确性。相反，我们希望了解它们的结果（特别是球员排名）之间的差异，并对它们的行为和局限性有一些直觉，以便知道何时优先选择某一算法。
 
-让我们使用2023年大联盟棒球（MLB）赛季的两个击球手表现指标来比较这些技术：
+让我们使用 2023 年大联盟棒球（MLB）赛季的两个击球手表现指标来比较这些技术：
 
 +   上垒率（OBP），指击球手在每次打击机会中通过击球、走步或被投球击中到达垒位的比率
 
@@ -142,17 +142,17 @@ for _,row in df_extremes.iterrows():
 plt.show()
 ```
 
-![](../Images/0b7360e584c3624d2b341bc40a88616a.png)
+![](img/0b7360e584c3624d2b341bc40a88616a.png)
 
 散点图的右上角显示了一个击球优秀的聚集群，与 SLG 和 OBP 分布的上尾部重合。这一小群球员在上垒 *和* 击出额外垒数方面表现优异。我们将他们视为异常值（因为他们与大多数球员群体的距离）还是内群体（因为他们彼此靠近）的判断取决于我们选择的算法定义。
 
 # 应用异常值检测算法
 
-Scikit-learn的离群点检测算法通常具有`fit()`和`predict()`方法，但也有例外，并且不同算法的参数也有所不同。我们将逐个考虑每种算法，但我们将每种算法拟合到每个玩家的特征矩阵（n=2，m=453）。然后，我们将对每个玩家以及跨越每个特征范围的值网格进行评分，以帮助我们可视化预测函数。
+Scikit-learn 的离群点检测算法通常具有`fit()`和`predict()`方法，但也有例外，并且不同算法的参数也有所不同。我们将逐个考虑每种算法，但我们将每种算法拟合到每个玩家的特征矩阵（n=2，m=453）。然后，我们将对每个玩家以及跨越每个特征范围的值网格进行评分，以帮助我们可视化预测函数。
 
 要可视化决策边界，我们需要采取以下步骤：
 
-1.  创建一个2D的`meshgrid`输入特征值。
+1.  创建一个 2D 的`meshgrid`输入特征值。
 
 1.  将`decision_function`应用于`meshgrid`上的每一点，这需要将网格展开。
 
@@ -160,7 +160,7 @@ Scikit-learn的离群点检测算法通常具有`fit()`和`predict()`方法，�
 
 1.  绘制预测结果。
 
-我们将使用200x200的网格来覆盖现有的观察结果以及一些填充，但你可以根据所需的速度和分辨率调整网格。
+我们将使用 200x200 的网格来覆盖现有的观察结果以及一些填充，但你可以根据所需的速度和分辨率调整网格。
 
 ```py
 import numpy as np
@@ -195,9 +195,9 @@ Z_ell = ell.decision_function(grid_unstacked).reshape(grid_shape)
 
 ## 本地离群因子
 
-这种隔离度量方法基于k近邻（KNN）。我们计算每个观察值到其最近邻的总距离来定义局部密度，然后将每个观察值的局部密度与其邻居的密度进行比较。局部密度远低于其邻居的观察值被视为离群点。
+这种隔离度量方法基于 k 近邻（KNN）。我们计算每个观察值到其最近邻的总距离来定义局部密度，然后将每个观察值的局部密度与其邻居的密度进行比较。局部密度远低于其邻居的观察值被视为离群点。
 
-**选择邻居的数量：** 在KNN中，一个经验法则是让K = sqrt(N)，其中N是你的观察数量。根据这个规则，我们得到一个接近20的K（这恰好是LOF的默认K）。你可以增加或减少K以减少过拟合或欠拟合。
+**选择邻居的数量：** 在 KNN 中，一个经验法则是让 K = sqrt(N)，其中 N 是你的观察数量。根据这个规则，我们得到一个接近 20 的 K（这恰好是 LOF 的默认 K）。你可以增加或减少 K 以减少过拟合或欠拟合。
 
 ```py
 K = int(np.sqrt(X.shape[0]))
@@ -249,7 +249,7 @@ Mahalanobis distance matrix of size (362, 362), e.g.:
 
 **拟合局部异常因子：**请注意，使用自定义距离矩阵需要将`metric="precomputed"`传递给构造函数，然后将距离矩阵本身传递给`fit`方法。（有关更多详细信息，请参见[文档](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.LocalOutlierFactor.html#sklearn.neighbors.LocalOutlierFactor.fit)。）
 
-还需注意，与其他算法不同的是，在LOF中，我们被[指示](https://scikit-learn.org/stable/auto_examples/neighbors/plot_lof_novelty_detection.html)不要使用`score_samples`方法来为现有观察值打分；此方法仅应用于新颖性检测。
+还需注意，与其他算法不同的是，在 LOF 中，我们被[指示](https://scikit-learn.org/stable/auto_examples/neighbors/plot_lof_novelty_detection.html)不要使用`score_samples`方法来为现有观察值打分；此方法仅应用于新颖性检测。
 
 ```py
 from sklearn.neighbors import LocalOutlierFactor
@@ -271,9 +271,9 @@ D_mahal_grid = cdist(XA=grid_unstacked, XB=X,
 Z_lof = lof.decision_function(D_mahal_grid).reshape(grid_shape)
 ```
 
-## 支持向量机（SGD-一类SVM）
+## 支持向量机（SGD-一类 SVM）
 
-SVM使用核技巧将特征转化为更高维度，从而可以识别分隔超平面。径向基函数（RBF）核要求输入数据进行标准化，但正如[文档](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html)中提到的，标准化器对异常值敏感，因此我们将使用`RobustScaler`。我们将缩放后的输入数据传递到Nyström核近似中，正如[文档](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDOneClassSVM.html)中对`SGDOneClassSVM`的建议。
+SVM 使用核技巧将特征转化为更高维度，从而可以识别分隔超平面。径向基函数（RBF）核要求输入数据进行标准化，但正如[文档](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html)中提到的，标准化器对异常值敏感，因此我们将使用`RobustScaler`。我们将缩放后的输入数据传递到 Nyström 核近似中，正如[文档](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDOneClassSVM.html)中对`SGDOneClassSVM`的建议。
 
 ```py
 from sklearn.pipeline import make_pipeline
@@ -294,7 +294,7 @@ Z_svm = suv.decision_function(grid_unstacked).reshape(grid_shape)
 
 ## Isolation Forest
 
-这种基于树的方法进行隔离测量时会执行随机递归分区。如果隔离给定观察值所需的平均分割次数*低*，则该观察值被认为是*更强的*候选异常值。与随机森林和其他基于树的模型一样，Isolation Forest 不假设特征是正态分布的，也不要求对其进行缩放。默认情况下，它会构建100棵树。我们的示例只使用了两个特征，因此我们不启用特征抽样。
+这种基于树的方法进行隔离测量时会执行随机递归分区。如果隔离给定观察值所需的平均分割次数*低*，则该观察值被认为是*更强的*候选异常值。与随机森林和其他基于树的模型一样，Isolation Forest 不假设特征是正态分布的，也不要求对其进行缩放。默认情况下，它会构建 100 棵树。我们的示例只使用了两个特征，因此我们不启用特征抽样。
 
 ```py
 from sklearn.ensemble import IsolationForest
@@ -388,7 +388,7 @@ print(
 )
 ```
 
-![](../Images/d1bd465c1408e983e2d1f49ea206f488.png)
+![](img/d1bd465c1408e983e2d1f49ea206f488.png)
 
 ```py
 Counting down to the greatest outlier...
@@ -419,11 +419,11 @@ Ronald Acuna Jr. 643 735 217  35   4  41  80    9  84 0.416     100.0 0.596     
 
 椭圆包络也很容易使用而无需配置，并且提供了稳健的协方差矩阵。如果你有低维数据并且合理地期望其呈正态分布（尽管这种情况通常不成立），你可以先尝试这种简单的方法。
 
-**单类 SVM** 具有更均匀的轮廓分布，因此它倾向于比椭圆包络更强调与整体相关方向一致的观察值。全明星一垒手弗雷迪·弗里曼（道奇队）和杨迪·迪亚斯（光芒队）在该算法下的排名明显高于其他算法，因为他们的 SLG 和 OBP 都非常出色（弗里曼分别为99th 和97th 百分位，迪亚斯分别为99th 和95th 百分位）。
+**单类 SVM** 具有更均匀的轮廓分布，因此它倾向于比椭圆包络更强调与整体相关方向一致的观察值。全明星一垒手弗雷迪·弗里曼（道奇队）和杨迪·迪亚斯（光芒队）在该算法下的排名明显高于其他算法，因为他们的 SLG 和 OBP 都非常出色（弗里曼分别为 99th 和 97th 百分位，迪亚斯分别为 99th 和 95th 百分位）。
 
 RBF 核函数需要额外的标准化步骤，但在这个简单的示例中，它似乎也能很好地工作而无需微调。
 
-**局部离群因子** 识别了之前提到的“小簇优秀”特征，轮廓呈双峰状（在图表中几乎不可见）。由于道奇队外场手/二垒手穆基·贝茨被其他优秀击球手如弗里曼、尤尔丹·阿尔瓦雷斯和罗纳德·阿库尼亚 Jr. 环绕，他在 LOF 下的离群值排名仅为第20位，而在其他算法下排名第10位或更高。相反，勇士队外场手马塞尔·奥祖纳的 SLG 稍低且 OBP 明显低于贝茨，但在 LOF 下他是更大的离群值，因为他的邻域较少。
+**局部离群因子** 识别了之前提到的“小簇优秀”特征，轮廓呈双峰状（在图表中几乎不可见）。由于道奇队外场手/二垒手穆基·贝茨被其他优秀击球手如弗里曼、尤尔丹·阿尔瓦雷斯和罗纳德·阿库尼亚 Jr. 环绕，他在 LOF 下的离群值排名仅为第 20 位，而在其他算法下排名第 10 位或更高。相反，勇士队外场手马塞尔·奥祖纳的 SLG 稍低且 OBP 明显低于贝茨，但在 LOF 下他是更大的离群值，因为他的邻域较少。
 
 LOF 是实现过程中最耗时的，因为我们创建了稳健的距离矩阵用于拟合和评分。我们也可能需要花一些时间调整 K。
 
@@ -433,6 +433,6 @@ LOF 是实现过程中最耗时的，因为我们创建了稳健的距离矩阵�
 
 尽管隔离森林算法开箱即用效果良好，但它未能将**大谷翔平**排名为*棒球（以及可能所有职业体育）中的最伟大离群者*，这体现了任何离群点检测器的主要局限性：你用来训练它的数据。
 
-我们不仅省略了防守统计数据（抱歉，奥斯汀·赫奇斯），还没有包含*投球*统计数据。因为投手们现在几乎不再尝试击球……除了大谷，他的赛季包括对打击率（BAA）排名第二和 earned run average（ERA）排名第11的表现（最少100局），还有一场完整的零封比赛，以及一场他击出两支本垒打并三振十名打者的比赛。
+我们不仅省略了防守统计数据（抱歉，奥斯汀·赫奇斯），还没有包含*投球*统计数据。因为投手们现在几乎不再尝试击球……除了大谷，他的赛季包括对打击率（BAA）排名第二和 earned run average（ERA）排名第 11 的表现（最少 100 局），还有一场完整的零封比赛，以及一场他击出两支本垒打并三振十名打者的比赛。
 
-有人建议大谷翔平是一个伪装成人类的高级外星人，但更有可能的是有**两个**高级外星人伪装成同一个人。不幸的是，其中一个刚刚接受了肘部手术，并且在2024年不会投球……但另一个刚刚签下了一份创纪录的10年、7亿美元合同。多亏了离群点检测，我们现在可以看到其中的原因！
+有人建议大谷翔平是一个伪装成人类的高级外星人，但更有可能的是有**两个**高级外星人伪装成同一个人。不幸的是，其中一个刚刚接受了肘部手术，并且在 2024 年不会投球……但另一个刚刚签下了一份创纪录的 10 年、7 亿美元合同。多亏了离群点检测，我们现在可以看到其中的原因！

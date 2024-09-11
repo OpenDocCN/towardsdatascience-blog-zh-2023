@@ -1,14 +1,14 @@
-# 训练LLMs的不同方式
+# 训练 LLMs 的不同方式
 
-> 原文：[https://towardsdatascience.com/different-ways-of-training-llms-c57885f388ed?source=collection_archive---------0-----------------------#2023-07-21](https://towardsdatascience.com/different-ways-of-training-llms-c57885f388ed?source=collection_archive---------0-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/different-ways-of-training-llms-c57885f388ed?source=collection_archive---------0-----------------------#2023-07-21`](https://towardsdatascience.com/different-ways-of-training-llms-c57885f388ed?source=collection_archive---------0-----------------------#2023-07-21)
 
 ## 为什么提示不属于其中任何一种
 
-[](https://medium.com/@doriandrost?source=post_page-----c57885f388ed--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----c57885f388ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c57885f388ed--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c57885f388ed--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----c57885f388ed--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----c57885f388ed--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----c57885f388ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c57885f388ed--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c57885f388ed--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----c57885f388ed--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdifferent-ways-of-training-llms-c57885f388ed&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----c57885f388ed---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c57885f388ed--------------------------------) ·10分钟阅读·2023年7月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc57885f388ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdifferent-ways-of-training-llms-c57885f388ed&user=Dorian+Drost&userId=1d49ea537d1c&source=-----c57885f388ed---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdifferent-ways-of-training-llms-c57885f388ed&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----c57885f388ed---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c57885f388ed--------------------------------) ·10 分钟阅读·2023 年 7 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc57885f388ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdifferent-ways-of-training-llms-c57885f388ed&user=Dorian+Drost&userId=1d49ea537d1c&source=-----c57885f388ed---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 ## 预训练
 
-![](../Images/964977ee5f9e96d018d2ac954cd1baad.png)
+![](img/964977ee5f9e96d018d2ac954cd1baad.png)
 
 “训练”。就像“训练”一样。我很抱歉……照片由 [Brian Suman](https://unsplash.com/ko/@briansuman?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -34,7 +34,7 @@
 
 ## 微调
 
-![](../Images/ab0f36248a06d12adc07fee4166b305c.png)
+![](img/ab0f36248a06d12adc07fee4166b305c.png)
 
 这些旋钮用于微调弦乐器。照片由 [Tony Woodhead](https://unsplash.com/pt-br/@portraitlondon?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,21 +48,21 @@ LLM 的另一个局限在于它所训练的数据。由于数据来源相当丰�
 
 ## RLHF 微调
 
-![](../Images/1514bb39ddf778332f53be9cf20e6c85.png)
+![](img/1514bb39ddf778332f53be9cf20e6c85.png)
 
 RLHF 微调是关于最大化奖励的。照片由 [Alexander Grey](https://unsplash.com/@sharonmccutcheon?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-微调模型的一个特殊情况是基于人类反馈的强化学习（RLHF），这是GPT模型和像Chat-GPT这样的聊天机器人之间的主要区别之一。通过这种微调，模型被训练以产生人类在与模型对话时认为最有用的输出。
+微调模型的一个特殊情况是基于人类反馈的强化学习（RLHF），这是 GPT 模型和像 Chat-GPT 这样的聊天机器人之间的主要区别之一。通过这种微调，模型被训练以产生人类在与模型对话时认为最有用的输出。
 
-主要思想如下：给定一个任意提示，从模型中生成多个输出。人类根据这些输出的有用性或适当性对其进行排名。给定四个样本A、B、C和D，人类可能会决定C是最佳输出，B略差但与D相等，而A是最差的输出。这将导致排序C > B = D > A。接下来，这些数据用于训练一个奖励模型。这是一个全新的模型，它通过给予奖励来学习对LLM的输出进行评分，这些奖励反映了人类的偏好。一旦奖励模型训练完成，它就可以代替人类进行评分。现在，模型的输出由奖励模型进行评分，这个奖励作为反馈提供给LLM，然后LLM会根据最大化奖励进行调整；这个想法与GANs非常相似。
+主要思想如下：给定一个任意提示，从模型中生成多个输出。人类根据这些输出的有用性或适当性对其进行排名。给定四个样本 A、B、C 和 D，人类可能会决定 C 是最佳输出，B 略差但与 D 相等，而 A 是最差的输出。这将导致排序 C > B = D > A。接下来，这些数据用于训练一个奖励模型。这是一个全新的模型，它通过给予奖励来学习对 LLM 的输出进行评分，这些奖励反映了人类的偏好。一旦奖励模型训练完成，它就可以代替人类进行评分。现在，模型的输出由奖励模型进行评分，这个奖励作为反馈提供给 LLM，然后 LLM 会根据最大化奖励进行调整；这个想法与 GANs 非常相似。
 
-正如你所见，这种训练需要人工标注的数据，这需要相当大的努力。然而，所需的数据量是有限的，因为奖励模型的思想是从这些数据中进行概括，使其能够在学习其部分后独立对llm进行评分。RLHF常用于使LLM的输出更具对话性，或避免模型表现出不良行为，如模型变得刻薄、侵入或侮辱。
+正如你所见，这种训练需要人工标注的数据，这需要相当大的努力。然而，所需的数据量是有限的，因为奖励模型的思想是从这些数据中进行概括，使其能够在学习其部分后独立对 llm 进行评分。RLHF 常用于使 LLM 的输出更具对话性，或避免模型表现出不良行为，如模型变得刻薄、侵入或侮辱。
 
 ## 适配器
 
-![](../Images/386b39fc4fdc975696588b89f402249a.png)
+![](img/386b39fc4fdc975696588b89f402249a.png)
 
-两种适配器可以插入到已经存在的网络中。图片来自 [https://arxiv.org/pdf/2304.01933.pdf](https://arxiv.org/pdf/2304.01933.pdf)。
+两种适配器可以插入到已经存在的网络中。图片来自 [`arxiv.org/pdf/2304.01933.pdf`](https://arxiv.org/pdf/2304.01933.pdf)。
 
 在上述的微调过程中，我们调整了模型最后几层的一些参数，而之前几层的其他参数保持不变。然而，还有一种替代方案，通过减少所需训练的参数数量来提高效率，这就是所谓的*a*dapters*。
 
@@ -70,7 +70,7 @@ RLHF 微调是关于最大化奖励的。照片由 [Alexander Grey](https://unsp
 
 ## 提示
 
-![](../Images/699c09b7d2c2fb388ba8675664f2389f.png)
+![](img/699c09b7d2c2fb388ba8675664f2389f.png)
 
 提示更多的是告诉模型要做什么，而不是如何去做。照片由 [Ian Taylor](https://unsplash.com/@carrier_lost?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -96,7 +96,7 @@ Sentiment:"""
 
 ## 提示调优
 
-![](../Images/fe1aa433918ad848d9d51e23e7f84523.png)
+![](img/fe1aa433918ad848d9d51e23e7f84523.png)
 
 提示调优也叫做软提示。软如美利奴羊毛……照片由 [Advocator SY](https://unsplash.com/@advocator_sy?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -110,31 +110,31 @@ Sentiment:"""
 
 我们刚刚看到了各种不同的训练机制，因此让我们在最后做一个简短的总结。
 
-+   预训练LLM意味着以自我监督的方式教它预测下一个标记。
++   预训练 LLM 意味着以自我监督的方式教它预测下一个标记。
 
-+   微调是调整预训练LLM最后几层的权重，可以用来将模型适应特定的上下文。
++   微调是调整预训练 LLM 最后几层的权重，可以用来将模型适应特定的上下文。
 
-+   RLHF的目标是调整模型的行为以匹配人类的期望，并且需要额外的标注工作。
++   RLHF 的目标是调整模型的行为以匹配人类的期望，并且需要额外的标注工作。
 
-+   适配器通过向预训练的LLM添加小层，提供了一种更高效的微调方式。
++   适配器通过向预训练的 LLM 添加小层，提供了一种更高效的微调方式。
 
 +   提示不被认为是训练，因为它不会改变模型的内部表示。
 
 +   提示调优是一种调整生成提示的权重的技术，但不会影响模型的权重本身。
 
-当然，还有许多其他的训练机制，每天都有新的机制被发明。LLM能做的远不止预测文本，教它们做到这些需要多种技能和技术，其中一些我刚刚向你介绍过。
+当然，还有许多其他的训练机制，每天都有新的机制被发明。LLM 能做的远不止预测文本，教它们做到这些需要多种技能和技术，其中一些我刚刚向你介绍过。
 
 ## 进一步阅读
 
-Instruct-GPT是RLHF最著名的例子之一：
+Instruct-GPT 是 RLHF 最著名的例子之一：
 
-+   [https://openai.com/research/instruction-following](https://openai.com/research/instruction-following)
++   [`openai.com/research/instruction-following`](https://openai.com/research/instruction-following)
 
 +   Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C., Mishkin, P., … & Lowe, R. (2022). 训练语言模型以根据人类反馈遵循指令。*神经信息处理系统进展*, *35*, 27730–27744.
 
-常见适配器形式的概述可以在LLM-Adapters项目中找到：
+常见适配器形式的概述可以在 LLM-Adapters 项目中找到：
 
-+   [https://github.com/AGI-Edgerunners/LLM-Adapters](https://github.com/AGI-Edgerunners/LLM-Adapters)
++   [`github.com/AGI-Edgerunners/LLM-Adapters`](https://github.com/AGI-Edgerunners/LLM-Adapters)
 
 +   Hu, Z., Lan, Y., Wang, L., Xu, W., Lim, E. P., Lee, R. K. W., … & Poria, S. (2023). LLM-Adapters: 一种用于大规模语言模型参数高效微调的适配器家族。 *arXiv 预印本 arXiv:2304.01933*。
 
@@ -144,8 +144,8 @@ Instruct-GPT是RLHF最著名的例子之一：
 
 一些关于提示调优的不错解释可以在这里找到：
 
-+   [https://huggingface.co/docs/peft/conceptual_guides/prompting](https://huggingface.co/docs/peft/conceptual_guides/prompting)
++   [`huggingface.co/docs/peft/conceptual_guides/prompting`](https://huggingface.co/docs/peft/conceptual_guides/prompting)
 
-+   [https://ai.googleblog.com/2022/02/guiding-frozen-language-models-with.html](https://ai.googleblog.com/2022/02/guiding-frozen-language-models-with.html)
++   [`ai.googleblog.com/2022/02/guiding-frozen-language-models-with.html`](https://ai.googleblog.com/2022/02/guiding-frozen-language-models-with.html)
 
 *喜欢这篇文章吗？* [*关注我*](https://medium.com/@doriandrost) *以便获取我未来的帖子通知。*

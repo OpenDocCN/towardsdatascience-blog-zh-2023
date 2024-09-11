@@ -1,20 +1,20 @@
 # 成为高效的机器学习团队领导
 
-> 原文：[https://towardsdatascience.com/what-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d?source=collection_archive---------4-----------------------#2023-02-06](https://towardsdatascience.com/what-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d?source=collection_archive---------4-----------------------#2023-02-06)
+> 原文：[`towardsdatascience.com/what-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d?source=collection_archive---------4-----------------------#2023-02-06`](https://towardsdatascience.com/what-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d?source=collection_archive---------4-----------------------#2023-02-06)
 
 ## 我从最优秀和最差的机器学习团队领导那里学到了什么
 
 ## 管理沟通、基础设施和文档
 
-[](https://mikhailiuk.medium.com/?source=post_page-----c9331f56da4d--------------------------------)[![Aliaksei Mikhailiuk](../Images/f4bf3f15f3e0b42f34e50b3ffc436b2a.png)](https://mikhailiuk.medium.com/?source=post_page-----c9331f56da4d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c9331f56da4d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c9331f56da4d--------------------------------) [Aliaksei Mikhailiuk](https://mikhailiuk.medium.com/?source=post_page-----c9331f56da4d--------------------------------)
+[](https://mikhailiuk.medium.com/?source=post_page-----c9331f56da4d--------------------------------)![Aliaksei Mikhailiuk](https://mikhailiuk.medium.com/?source=post_page-----c9331f56da4d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c9331f56da4d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9331f56da4d--------------------------------) [Aliaksei Mikhailiuk](https://mikhailiuk.medium.com/?source=post_page-----c9331f56da4d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bef13bba71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=post_page-30bef13bba71----c9331f56da4d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9331f56da4d--------------------------------) ·12 min read·2023年2月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc9331f56da4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=-----c9331f56da4d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bef13bba71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=post_page-30bef13bba71----c9331f56da4d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9331f56da4d--------------------------------) ·12 min read·2023 年 2 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc9331f56da4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=-----c9331f56da4d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc9331f56da4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d&source=-----c9331f56da4d---------------------bookmark_footer-----------)![](../Images/eac88501066be53ab560362e4334ae36.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc9331f56da4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d&source=-----c9331f56da4d---------------------bookmark_footer-----------)![](img/eac88501066be53ab560362e4334ae36.png)
 
 作者提供的图片。
 
@@ -34,7 +34,7 @@
 
 +   设定截止日期、里程碑和计划更加困难。由于该领域仍在建立中，并且没有现成的解决方案来解决每一个问题，机器学习模型需要从头开始构建。因此，机器学习项目最终变成了以研究为导向的项目。对于这些项目，预测时间框架可能很困难，因为许多决策只能在某个阶段完成后才可以做出。
 
-+   缺乏性能指标使得跟踪和评估性能变得具有挑战性。有些问题有明确的目标——例如，评估一个垃圾邮件过滤器，我们可以客观地告诉它过滤了99%的垃圾邮件，而对于更主观的问题，定义性能指标则更加困难。例如，考虑一个美化过滤器——我们如何在没有用户研究的情况下衡量它是否表现良好？而从用户那里获得足够的可靠数据往往是[昂贵、缓慢且具有挑战性的](https://mimoiq.com/challenges-in-survey-data-collection/)，尤其是在严格的GDPR要求下。
++   缺乏性能指标使得跟踪和评估性能变得具有挑战性。有些问题有明确的目标——例如，评估一个垃圾邮件过滤器，我们可以客观地告诉它过滤了 99%的垃圾邮件，而对于更主观的问题，定义性能指标则更加困难。例如，考虑一个美化过滤器——我们如何在没有用户研究的情况下衡量它是否表现良好？而从用户那里获得足够的可靠数据往往是[昂贵、缓慢且具有挑战性的](https://mimoiq.com/challenges-in-survey-data-collection/)，尤其是在严格的 GDPR 要求下。
 
 +   多学科项目非常常见。因此，团队成员往往会有非常狭窄的专业化方向，为了使项目进展顺利，团队内的沟通流动需要非常出色。
 
@@ -94,7 +94,7 @@
 
 +   为训练数据准备配置文件。这可以简单到模型的*输入-输出*对列表。这将帮助确保你确切知道模型使用了哪些数据，并简化数据加载器。
 
-+   对于参数使用合理的默认值——运行代码的人会期望它开箱即用，不需要深入挖掘。如果需要几个超参数，拥有一个执行命令的bash脚本会很方便，因为它比终端中的文本更易于修改。
++   对于参数使用合理的默认值——运行代码的人会期望它开箱即用，不需要深入挖掘。如果需要几个超参数，拥有一个执行命令的 bash 脚本会很方便，因为它比终端中的文本更易于修改。
 
 +   如果资源允许，部署的可自动化部分必须自动化。自动化通过消除重复工作节省团队时间，并防止错误发生。
 
@@ -104,7 +104,7 @@
 
 ## 模型跟踪
 
-团队中的多个成员在同一个模型的不同部分工作时，我们需要比较所有结果。为每个团队成员提供一个本地tensorboard会非常低效。同时，将所有实验堆积在同一个文件夹中会非常麻烦。
+团队中的多个成员在同一个模型的不同部分工作时，我们需要比较所有结果。为每个团队成员提供一个本地 tensorboard 会非常低效。同时，将所有实验堆积在同一个文件夹中会非常麻烦。
 
 有一些强大的替代工具可以用来分析模型性能，比如[wandb](https://wandb.ai/site)（对于小团队可能是免费的）和[aimstack](https://aimstack.io/)（在撰写时完全免费）。
 
@@ -120,9 +120,9 @@
 
 ## 代码管理
 
-在进行多个实验时，分支爆炸问题不可避免。我看到过一些项目有500多个GitHub分支，很明显不可能对所有分支进行跟踪和良好文档记录。
+在进行多个实验时，分支爆炸问题不可避免。我看到过一些项目有 500 多个 GitHub 分支，很明显不可能对所有分支进行跟踪和良好文档记录。
 
-鼓励分支合并和归档，否则很容易迷失方向。鼓励小的提交和PR——大的提交审查时间长，最终会变得过时。
+鼓励分支合并和归档，否则很容易迷失方向。鼓励小的提交和 PR——大的提交审查时间长，最终会变得过时。
 
 使用简化和抽象部分代码的框架——例如[pytorch-lightning](https://www.pytorchlightning.ai)，它为训练代码提供结构，并移除与环境设置相关的部分。
 
@@ -154,7 +154,7 @@
 
 路线图是项目的逐步计划，包含关键里程碑和实现目标所需采取的步骤。一个好的路线图应包含目标、描述、时间框架、任务负责人以及主要发现和结果链接。
 
-为机器学习任务设置时间框架可能会很困难，因为结果可能不明确 — 例如，将任务设置在一个期望98%召回率的路线图上是不现实的，因为实验可能会成功也可能不会。相反，任务应该被拆分成小组件，交付物可以是一个代码块或一个数据集。
+为机器学习任务设置时间框架可能会很困难，因为结果可能不明确 — 例如，将任务设置在一个期望 98%召回率的路线图上是不现实的，因为实验可能会成功也可能不会。相反，任务应该被拆分成小组件，交付物可以是一个代码块或一个数据集。
 
 ## 每周笔记
 
@@ -182,22 +182,22 @@
 
 我是否遗漏了什么？请随时留下笔记、评论或直接通过 [LinkedIn](https://www.linkedin.com/in/aliakseimikhailiuk/) 或 [Twitter](https://twitter.com/mikhailiuka) 联系我！
 
-[](/acing-machine-learning-interviews-aa73d6d7b07b?source=post_page-----c9331f56da4d--------------------------------) [## 精通机器学习面试
+[](/acing-machine-learning-interviews-aa73d6d7b07b?source=post_page-----c9331f56da4d--------------------------------) ## 精通机器学习面试
 
 ### 机器学习面试的准备指南和资源。
 
-towardsdatascience.com](/acing-machine-learning-interviews-aa73d6d7b07b?source=post_page-----c9331f56da4d--------------------------------) [](/three-soft-skills-every-phd-student-gets-for-free-f63f4b1d3f2d?source=post_page-----c9331f56da4d--------------------------------) [## 每个博士生都能免费获得的三种软技能
+towardsdatascience.com [](/three-soft-skills-every-phd-student-gets-for-free-f63f4b1d3f2d?source=post_page-----c9331f56da4d--------------------------------) ## 每个博士生都能免费获得的三种软技能
 
 ### 我在机器学习博士期间学到的关于研究、沟通和团队合作的综合技巧和窍门。
 
-towardsdatascience.com](/three-soft-skills-every-phd-student-gets-for-free-f63f4b1d3f2d?source=post_page-----c9331f56da4d--------------------------------) [](/seven-questions-to-ask-before-introducing-ai-to-your-project-b969d591c98b?source=post_page-----c9331f56da4d--------------------------------) [## 在向你的项目引入AI之前要问的七个问题
+towardsdatascience.com [](/seven-questions-to-ask-before-introducing-ai-to-your-project-b969d591c98b?source=post_page-----c9331f56da4d--------------------------------) ## 在向你的项目引入 AI 之前要问的七个问题
 
 ### 也就是机器学习的第一规则——不要使用机器学习。
 
-towardsdatascience.com](/seven-questions-to-ask-before-introducing-ai-to-your-project-b969d591c98b?source=post_page-----c9331f56da4d--------------------------------) [](/nine-tools-i-wish-i-mastered-before-my-phd-in-machine-learning-708c6dcb2fb0?source=post_page-----c9331f56da4d--------------------------------) [## 我希望在攻读机器学习博士学位之前掌握的九个工具
+towardsdatascience.com [](/nine-tools-i-wish-i-mastered-before-my-phd-in-machine-learning-708c6dcb2fb0?source=post_page-----c9331f56da4d--------------------------------) ## 我希望在攻读机器学习博士学位之前掌握的九个工具
 
 ### 无论你是在创建初创公司还是在取得科学突破，这些工具都能将你的机器学习管道提升到…
 
-towardsdatascience.com](/nine-tools-i-wish-i-mastered-before-my-phd-in-machine-learning-708c6dcb2fb0?source=post_page-----c9331f56da4d--------------------------------)
+towardsdatascience.com
 
-**本博客中的观点仅代表我个人，并不代表Snap公司的立场或观点。**
+**本博客中的观点仅代表我个人，并不代表 Snap 公司的立场或观点。**

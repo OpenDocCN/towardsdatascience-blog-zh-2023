@@ -1,18 +1,18 @@
 # 人工智能中的伦理：偏见算法的潜在根源
 
-> 原文：[https://towardsdatascience.com/ethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3?source=collection_archive---------1-----------------------#2023-01-27](https://towardsdatascience.com/ethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3?source=collection_archive---------1-----------------------#2023-01-27)
+> 原文：[`towardsdatascience.com/ethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3?source=collection_archive---------1-----------------------#2023-01-27`](https://towardsdatascience.com/ethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3?source=collection_archive---------1-----------------------#2023-01-27)
 
 ## 理解数据偏见的另一种方法
 
-[](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------)[![Jonas Dieckmann](../Images/e1f2d236e6bda6ec1e14fd5eaa9d205e.png)](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----890091915aa3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----890091915aa3--------------------------------) [Jonas Dieckmann](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------)
+[](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------)![Jonas Dieckmann](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----890091915aa3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----890091915aa3--------------------------------) [Jonas Dieckmann](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c8d1cf684f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3&user=Jonas+Dieckmann&userId=1c8d1cf684f2&source=post_page-1c8d1cf684f2----890091915aa3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----890091915aa3--------------------------------) ·12分钟阅读·2023年1月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F890091915aa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3&user=Jonas+Dieckmann&userId=1c8d1cf684f2&source=-----890091915aa3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c8d1cf684f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3&user=Jonas+Dieckmann&userId=1c8d1cf684f2&source=post_page-1c8d1cf684f2----890091915aa3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----890091915aa3--------------------------------) ·12 分钟阅读·2023 年 1 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F890091915aa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3&user=Jonas+Dieckmann&userId=1c8d1cf684f2&source=-----890091915aa3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F890091915aa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3&source=-----890091915aa3---------------------bookmark_footer-----------)![](../Images/e5c4b13259f189e635f5142221eb191e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F890091915aa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fethics-in-ai-potential-root-causes-for-biased-algorithms-890091915aa3&source=-----890091915aa3---------------------bookmark_footer-----------)![](img/e5c4b13259f189e635f5142221eb191e.png)
 
 图片来源：[Pixabay](https://pixabay.com/vectors/lady-justice-allegory-justice-7313900/)
 
@@ -24,7 +24,7 @@
 
 如今，数据科学的讨论常常与商业和工业中的重大机遇相关联，以提供更准确的预测和分类解决方案，并改善人们在健康和环境领域的生活。² ³ 也许和这些好处一样重要的是，在评估数据分析中的新解决方案和方法时，应该考虑数据伦理挑战。作为伦理学的一个特定分支，数据伦理处理与数据、算法及相关实践有关的道德问题，以制定和支持道德良好的解决方案。⁴ 总体而言，数据的使用与滥用之间似乎存在一条微妙的界限。公司不仅收集数据以增加利润，还为了向客户提供量身定制的体验。⁵ 然而，当公司开始将其数据用于其他收集目的之外的外部利用时，就会出现伦理问题。除了这些隐私相关的问题外，另一个挑战是数据分析偏差，它可能以多种方式出现。例如，由有特定意图或框架的人设计的调查问题、从具有特定背景的群体中选择性收集数据，或数据来源本身的偏差。⁶
 
-![](../Images/8cf06feccb2e3d60dd59b0cee91c5553.png)
+![](img/8cf06feccb2e3d60dd59b0cee91c5553.png)
 
 图片来源：[Pixabay](https://pixabay.com/photos/play-figures-green-blue-play-wood-4541731/)
 
@@ -34,23 +34,23 @@
 
 +   **犯罪预测中的种族歧视**
 
-    一个有问题且广为人知的例子是犯罪预测。2016年，上海交通大学的一篇机器学习论文研究了是否可以通过面部特征分析来检测犯罪行为。⁷ 结果显示，那些外貌与平均水平“不同”的人更可能被怀疑犯有罪行。⁸ 另一个例子是美国用于预测被逮捕个体再犯可能性的风险评估算法。结果表明，底层算法倾向于将黑人被告的再犯可能性预测为白人被告的两倍，而白人被告则常被错误分类为低风险，即使他们实际上是再犯者。⁹
+    一个有问题且广为人知的例子是犯罪预测。2016 年，上海交通大学的一篇机器学习论文研究了是否可以通过面部特征分析来检测犯罪行为。⁷ 结果显示，那些外貌与平均水平“不同”的人更可能被怀疑犯有罪行。⁸ 另一个例子是美国用于预测被逮捕个体再犯可能性的风险评估算法。结果表明，底层算法倾向于将黑人被告的再犯可能性预测为白人被告的两倍，而白人被告则常被错误分类为低风险，即使他们实际上是再犯者。⁹
 
 +   **招聘中的性别歧视**
 
-    另一个受偏见算法影响的领域是招聘。2014年，亚马逊使用基于机器学习的软件来评估和排名潜在候选人的简历，以寻找新的顶级人才。2015年，该公司发现其新系统在评估申请者时并未性别中立，特别是在软件开发职位上。根据过去十年的招聘情况，该系统惩罚了所有在简历中包含“女性”一词的申请。¹⁰
+    另一个受偏见算法影响的领域是招聘。2014 年，亚马逊使用基于机器学习的软件来评估和排名潜在候选人的简历，以寻找新的顶级人才。2015 年，该公司发现其新系统在评估申请者时并未性别中立，特别是在软件开发职位上。根据过去十年的招聘情况，该系统惩罚了所有在简历中包含“女性”一词的申请。¹⁰
 
 +   **社交媒体中的刻板印象**
 
-    性别和种族偏见也可以在Facebook的广告中找到。在他们2019年的实证研究中，Ali等人发现，根据广告与不同受众的相关性，可能会对特定用户投放广告时存在偏见规则。这种相关性通常基于男性/女性刻板印象，通过分析数字广告媒体的图像分析软件进行分类和关联。¹¹
+    性别和种族偏见也可以在 Facebook 的广告中找到。在他们 2019 年的实证研究中，Ali 等人发现，根据广告与不同受众的相关性，可能会对特定用户投放广告时存在偏见规则。这种相关性通常基于男性/女性刻板印象，通过分析数字广告媒体的图像分析软件进行分类和关联。¹¹
 
 ## 大数据伦理原则
 
-如何防止这种情况的发生？这些案例只是现代世界中算法被偏见性使用的众多实例之一。许多专家讨论并评估避免数据分析偏见的方法，这在Herdiana发布的《大数据伦理5原则》之一中有所体现：“大数据不应固化诸如种族主义或性别歧视等不公平偏见。”¹² 虽然这一原则被认为是数据伦理中的通用规则，但给出的示例“如种族主义或性别歧视”似乎是最常见的情况。然而，更通用的描述可能是：
+如何防止这种情况的发生？这些案例只是现代世界中算法被偏见性使用的众多实例之一。许多专家讨论并评估避免数据分析偏见的方法，这在 Herdiana 发布的《大数据伦理 5 原则》之一中有所体现：“大数据不应固化诸如种族主义或性别歧视等不公平偏见。”¹² 虽然这一原则被认为是数据伦理中的通用规则，但给出的示例“如种族主义或性别歧视”似乎是最常见的情况。然而，更通用的描述可能是：
 
 > “大数据不应固化导致歧视的不公平偏见。”
 
-加拿大人权委员会（CHRC）将歧视描述为因称为“理由”的原因而对某人或某群体的不公平对待。这些理由受到《加拿大人权法案》的保护，包括*种族、民族或族裔来源、肤色、宗教、年龄、性别、性取向、性别认同或表现、婚姻状况、家庭状况、残疾、遗传特征以及已获赦免或注册被暂停的罪行*。¹³ 在社会学中，歧视描述了基于个人或群体特征的贬低行为，这种行为是系统性地进行的，因此构成了严重的人权侵犯。¹⁴ 欧洲人权公约（ECHR）也在第14条中禁止在上述所有领域的歧视，并将*语言、政治观点*和*财产*等添加到CHRC的名单中。¹⁵
+加拿大人权委员会（CHRC）将歧视描述为因称为“理由”的原因而对某人或某群体的不公平对待。这些理由受到《加拿大人权法案》的保护，包括*种族、民族或族裔来源、肤色、宗教、年龄、性别、性取向、性别认同或表现、婚姻状况、家庭状况、残疾、遗传特征以及已获赦免或注册被暂停的罪行*。¹³ 在社会学中，歧视描述了基于个人或群体特征的贬低行为，这种行为是系统性地进行的，因此构成了严重的人权侵犯。¹⁴ 欧洲人权公约（ECHR）也在第 14 条中禁止在上述所有领域的歧视，并将*语言、政治观点*和*财产*等添加到 CHRC 的名单中。¹⁵
 
 欧洲经济和社会委员会（EESC）的一项研究题为“**大数据的伦理：在欧盟政策背景下平衡经济利益和大数据的伦理问题**”将算法偏见描述为大数据的关键伦理问题之一。他们将对算法的信任定义为一个伦理问题，因为大多数人认为机器天生是中立的。实际上情况并非如此，因此风险可能非常高。¹⁶ 但这种缺乏中立性的可能原因是什么？很难想象世界上最优秀的数据科学家在开发算法时有这样的目标。
 
@@ -70,7 +70,7 @@
 
 我们的分析表明，算法中的偏见主要是当今社会偏见的结果。后者支持收集带有偏见的数据集，这些数据集可能包含（隐藏的）关系，最终导致偏见结果。此外，我们质疑人类决策是否比算法规则更少偏见。最后，我们得出结论，更复杂的算法往往过于不透明。
 
-![](../Images/14d1030419c35000674f8e36d30d092c.png)
+![](img/14d1030419c35000674f8e36d30d092c.png)
 
 图片来源：Pixabay
 
@@ -88,19 +88,19 @@
 
 **展望：接下来怎么办？**
 
-评估决策或预测时，不仅应考虑结果本身，还需考虑在解决方案中涉及的伦理问题。我们还需要重新思考涉及偏见行为的系统。然而，没有证据表明替代方案（以人为基础的决策）会导致总体上的更多平等。因此，我们不应仅关注*技术内部*的偏见问题，而应将讨论扩大到*技术外部*的偏见问题。然而，*正因为如此*，**无偏见的系统应有助于改善我们当前的社会弱点**，并可能带来**未来世界中的更多平等**。人们可以利用AI更容易地检测非技术世界中的歧视。因为**只要我们在数据中发现偏见，社会中也存在偏见**。
+评估决策或预测时，不仅应考虑结果本身，还需考虑在解决方案中涉及的伦理问题。我们还需要重新思考涉及偏见行为的系统。然而，没有证据表明替代方案（以人为基础的决策）会导致总体上的更多平等。因此，我们不应仅关注*技术内部*的偏见问题，而应将讨论扩大到*技术外部*的偏见问题。然而，*正因为如此*，**无偏见的系统应有助于改善我们当前的社会弱点**，并可能带来**未来世界中的更多平等**。人们可以利用 AI 更容易地检测非技术世界中的歧视。因为**只要我们在数据中发现偏见，社会中也存在偏见**。
 
 [Jonas Dieckmann - Medium](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------) 
 
-### 阅读Jonas Dieckmann在Medium上的文章。分析经理兼产品负责人 @ Philips | 对…充满热情并撰写关于…
+### 阅读 Jonas Dieckmann 在 Medium 上的文章。分析经理兼产品负责人 @ Philips | 对…充满热情并撰写关于…
 
 [Jonas Dieckmann - Medium](https://medium.com/@jonas_dieckmann?source=post_page-----890091915aa3--------------------------------)
 
-希望你觉得这些内容有趣。请告诉我你的想法，并随时在LinkedIn [https://www.linkedin.com/in/jonas-dieckmann](https://www.linkedin.com/in/jonas-dieckmann/) 上联系我，或者在medium上关注我。
+希望你觉得这些内容有趣。请告诉我你的想法，并随时在 LinkedIn [`www.linkedin.com/in/jonas-dieckmann`](https://www.linkedin.com/in/jonas-dieckmann/) 上联系我，或者在 medium 上关注我。
 
 # 也可以查看我的其他文章：
 
-[如何使用Keras API和Google Colab开始使用TensorFlow](https://towardsdatascience.com/how-to-set-started-with-tensorflow-using-keras-api-and-google-colab-5421e5e4ef56?source=post_page-----890091915aa3--------------------------------) 
+[如何使用 Keras API 和 Google Colab 开始使用 TensorFlow](https://towardsdatascience.com/how-to-set-started-with-tensorflow-using-keras-api-and-google-colab-5421e5e4ef56?source=post_page-----890091915aa3--------------------------------) 
 
 ### 使用神经网络分析人类活动的逐步教程
 
@@ -108,7 +108,7 @@
 
 ### 供应链中材料规划的机器学习模型开发
 
-[towardsdatascience.com](/case-study-applying-a-data-science-process-model-to-a-real-world-scenario-93ae57b682bf?source=post_page-----890091915aa3--------------------------------)
+towardsdatascience.com
 
 # 参考文献
 
@@ -116,7 +116,7 @@
 
 [2]: Floridi, L., & Taddeo, M. (2016). 什么是数据伦理？ 皇家学会哲学学刊 A: 数学、物理与工程科学，374(2083)，20160360. doi: 10.1098/rsta.2016.0360
 
-[3]: Google (2021). 社会公益中的人工智能：将人工智能应用于全球最大挑战. 检索日期：2021年3月10日，来源：[https://ai.google/social-good](https://ai.google/social-good)
+[3]: Google (2021). 社会公益中的人工智能：将人工智能应用于全球最大挑战. 检索日期：2021 年 3 月 10 日，来源：[`ai.google/social-good`](https://ai.google/social-good)
 
 [4] Mittelstadt, B., & Floridi, L. (2015). 大数据伦理：生物医学背景中的当前和可预见问题. 科学与工程伦理，22(2)，303–341. DOI: 10.1007/s11948–015- 9652–2
 
@@ -126,38 +126,38 @@
 
 [7] 吴晓林，张熙. (2016). 使用面部图像的犯罪推断自动化。
 
-[8] Sullivan, B. (2016). 一个新程序判断你是否是罪犯通过你的面部特征. 检索日期：2021年3月10日，来源：[https://www.vice.com/en/article/d7ykmw/new-programdecides-criminality-from-facial-features](https://www.vice.com/en/article/d7ykmw/new-programdecides-criminality-from-facial-features)
+[8] Sullivan, B. (2016). 一个新程序判断你是否是罪犯通过你的面部特征. 检索日期：2021 年 3 月 10 日，来源：[`www.vice.com/en/article/d7ykmw/new-programdecides-criminality-from-facial-features`](https://www.vice.com/en/article/d7ykmw/new-programdecides-criminality-from-facial-features)
 
-[9] Angwin, J., Larson, J., Mattu, S., & Kirchner, L. (2016). 机器偏见. 检索日期：2021年2月28日，来源：[https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing](https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing)
+[9] Angwin, J., Larson, J., Mattu, S., & Kirchner, L. (2016). 机器偏见. 检索日期：2021 年 2 月 28 日，来源：[`www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing`](https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing)
 
-[10] Dastin, J. (2018). 亚马逊取消了一个对女性有偏见的秘密人工智能招聘工具. 检索日期：2021年2月28日，来源：[https://www.reuters.com/article/us-amazon-com-jobsautomation-insight-idUSKCN1MK08G](https://www.reuters.com/article/us-amazon-com-jobsautomation-insight-idUSKCN1MK08G)
+[10] Dastin, J. (2018). 亚马逊取消了一个对女性有偏见的秘密人工智能招聘工具. 检索日期：2021 年 2 月 28 日，来源：[`www.reuters.com/article/us-amazon-com-jobsautomation-insight-idUSKCN1MK08G`](https://www.reuters.com/article/us-amazon-com-jobsautomation-insight-idUSKCN1MK08G)
 
-[11] Ali, M., Sapiezynski, P., Bogen, M., Korolova, A., Mislove, A., & Rieke, A. (2019). 通过优化进行歧视. ACM人机交互学刊，3(CSCW)，1–30. DOI: 10.1145/3359301
+[11] Ali, M., Sapiezynski, P., Bogen, M., Korolova, A., Mislove, A., & Rieke, A. (2019). 通过优化进行歧视. ACM 人机交互学刊，3(CSCW)，1–30. DOI: 10.1145/3359301
 
-[12] Herdiana (2013), “大数据伦理的5项原则,” 化学信息与建模学刊. 检索日期：2021年3月10日，来源：[https://aiforceos.com/2018/06/16/big-data-ethics](https://aiforceos.com/2018/06/16/big-data-ethics)
+[12] Herdiana (2013), “大数据伦理的 5 项原则,” 化学信息与建模学刊. 检索日期：2021 年 3 月 10 日，来源：[`aiforceos.com/2018/06/16/big-data-ethics`](https://aiforceos.com/2018/06/16/big-data-ethics)
 
-[13] 加拿大人权委员会. 什么是歧视. 检索日期：2021年2月28日，来源：[https://www.chrc-ccdp.gc.ca/eng/content/what-discrimination](https://www.chrc-ccdp.gc.ca/eng/content/what-discrimination)
+[13] 加拿大人权委员会. 什么是歧视. 检索日期：2021 年 2 月 28 日，来源：[`www.chrc-ccdp.gc.ca/eng/content/what-discrimination`](https://www.chrc-ccdp.gc.ca/eng/content/what-discrimination)
 
 [14] Hartfiel, G., & Hillmann, K. (1994). 社会学词典. 斯图加特：Kröner
 
-[15] 欧洲委员会（1950）。《保护人权和基本自由的欧洲公约》。检索日期：2021年3月10日，来自[www.refworld.org/docid/3ae6b3b04](http://www.refworld.org/docid/3ae6b3b04)
+[15] 欧洲委员会（1950）。《保护人权和基本自由的欧洲公约》。检索日期：2021 年 3 月 10 日，来自[www.refworld.org/docid/3ae6b3b04](http://www.refworld.org/docid/3ae6b3b04)
 
 [16] 欧洲经济和社会委员会。（2017）。大数据的伦理。
 
-[17] Eslami, M., Vaccaro, K., Karahalios, K. 和 Hamilton, K.（2017）‘小心；事情可能比看起来更糟’：理解评级平台中的偏见算法和用户行为。《国际AAAI网络与社会媒体会议论文集》，11(1)。
+[17] Eslami, M., Vaccaro, K., Karahalios, K. 和 Hamilton, K.（2017）‘小心；事情可能比看起来更糟’：理解评级平台中的偏见算法和用户行为。《国际 AAAI 网络与社会媒体会议论文集》，11(1)。
 
-[18] Kim, P.（2017）审计算法以防歧视，166 U. Pa. L. Rev. 检索日期：2021年3月10日，来自scholarship.law.upenn.edu/penn_law_review_online/vol166/iss1/10
+[18] Kim, P.（2017）审计算法以防歧视，166 U. Pa. L. Rev. 检索日期：2021 年 3 月 10 日，来自 scholarship.law.upenn.edu/penn_law_review_online/vol166/iss1/10
 
 [19] Mittelstadt, B., Allo, P., Taddeo, M., Wachter, S., & Floridi, L.（2016）。算法的伦理：辩论的映射。《大数据与社会》，3(2)，205395171667967。DOI: 10.1177/2053951716679679
 
-[20] Lehr, D., Ohm, P.（2017）。数据的游戏：法律学者应当了解的机器学习，《UCDL评论》51：653，671。
+[20] Lehr, D., Ohm, P.（2017）。数据的游戏：法律学者应当了解的机器学习，《UCDL 评论》51：653，671。
 
 [21] Calders, T., & Žliobaitė, I.（2013）。为何无偏计算过程可能导致歧视性决策程序。《应用哲学、认识论与理性伦理研究》，43–57。DOI: 10.1007/978–3–642–30487–3_3
 
-[22] Rosen, R.（2019）。缺失数据和插补。检索日期：2021年3月10日，来自[https://towardsdatascience.com/missing-data-and-imputation-89e9889268c8](/missing-data-and-imputation-89e9889268c8)
+[22] Rosen, R.（2019）。缺失数据和插补。检索日期：2021 年 3 月 10 日，来自`towardsdatascience.com/missing-data-and-imputation-89e9889268c8`
 
 [23] Saake. I., Nassehi, A.（2004）。伦理的文化化。卢曼文化概念的时代诊断应用。法兰克福/美因：102，135
 
 [24] Ridgeway, G., Kovalchik, S., Griffin, B., & Kabeto, M.（2015）。带权重数据的倾向得分分析。《因果推断期刊》，3(2)，237–249。doi: 10.1515/jci-2014–0039
 
-[25] Floridi, L.（2016）。无过错责任：关于分布式道德行为的性质和道德责任的分配。《皇家学会A类：数学、物理和工程科学哲学交易》，374(2083)，20160112。doi: 10.1098/rsta.2016.0112
+[25] Floridi, L.（2016）。无过错责任：关于分布式道德行为的性质和道德责任的分配。《皇家学会 A 类：数学、物理和工程科学哲学交易》，374(2083)，20160112。doi: 10.1098/rsta.2016.0112

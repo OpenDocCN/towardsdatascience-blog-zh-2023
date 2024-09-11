@@ -1,16 +1,16 @@
 # 杀死你机器学习模型的数据质量问题
 
-> 原文：[https://towardsdatascience.com/data-quality-issues-that-kill-your-machine-learning-models-961591340b40?source=collection_archive---------4-----------------------#2023-01-19](https://towardsdatascience.com/data-quality-issues-that-kill-your-machine-learning-models-961591340b40?source=collection_archive---------4-----------------------#2023-01-19)
+> 原文：[`towardsdatascience.com/data-quality-issues-that-kill-your-machine-learning-models-961591340b40?source=collection_archive---------4-----------------------#2023-01-19`](https://towardsdatascience.com/data-quality-issues-that-kill-your-machine-learning-models-961591340b40?source=collection_archive---------4-----------------------#2023-01-19)
 
 ## 数据质量纪实
 
 ## 应对不完美数据的复杂性
 
-[](https://medium.com/@miriam.santos?source=post_page-----961591340b40--------------------------------)[![Miriam Santos](../Images/decbc6528a641e7b02934a03e136284a.png)](https://medium.com/@miriam.santos?source=post_page-----961591340b40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----961591340b40--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----961591340b40--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----961591340b40--------------------------------)
+[](https://medium.com/@miriam.santos?source=post_page-----961591340b40--------------------------------)![Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----961591340b40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----961591340b40--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----961591340b40--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----961591340b40--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-issues-that-kill-your-machine-learning-models-961591340b40&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----961591340b40---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----961591340b40--------------------------------) ·8 min read·2023年1月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F961591340b40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-issues-that-kill-your-machine-learning-models-961591340b40&user=Miriam+Santos&userId=243289394aaa&source=-----961591340b40---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-issues-that-kill-your-machine-learning-models-961591340b40&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----961591340b40---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----961591340b40--------------------------------) ·8 min read·2023 年 1 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F961591340b40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-issues-that-kill-your-machine-learning-models-961591340b40&user=Miriam+Santos&userId=243289394aaa&source=-----961591340b40---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 *这是一个专注于数据科学数据质量的专栏系列。这是第一篇文章，重点讨论数据不平衡、数据代表性不足以及数据重叠问题。*
 
-![](../Images/896d0664fdf1aa1b80791ac60098ce60.png)
+![](img/896d0664fdf1aa1b80791ac60098ce60.png)
 
 图片由[Sergey Sokolov](https://unsplash.com/@svsokolov?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,17 +28,17 @@
 
 *从社会到医疗应用，机器学习已深深融入我们的日常生活。*
 
-![](../Images/814ff3e3227790515834a98cb67e8b35.png)
+![](img/814ff3e3227790515834a98cb67e8b35.png)
 
-机器学习在实际应用中的情况：有了强大的能力，就有了巨大的责任。这提到了面部识别技术的“编码凝视”和Joy Buolamwini在[算法正义联盟](https://www.ajl.org/library/multimedia)上开展的工作。图片由[engin akyurt](https://unsplash.com/@enginakyurt?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+机器学习在实际应用中的情况：有了强大的能力，就有了巨大的责任。这提到了面部识别技术的“编码凝视”和 Joy Buolamwini 在[算法正义联盟](https://www.ajl.org/library/multimedia)上开展的工作。图片由[engin akyurt](https://unsplash.com/@enginakyurt?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-也许你今天早上7:45醒来，因为一个算法已经分析了你的睡眠模式，并确定这是你开始新一天而不会感到昏昏欲睡的最佳时间。然后，你可能会沿着另一个算法推荐的路线开车去工作，以避免交通拥堵。
+也许你今天早上 7:45 醒来，因为一个算法已经分析了你的睡眠模式，并确定这是你开始新一天而不会感到昏昏欲睡的最佳时间。然后，你可能会沿着另一个算法推荐的路线开车去工作，以避免交通拥堵。
 
 当你打开笔记本电脑时，你的电子邮件已经被分门别类到这些所谓的“智能”文件夹中，垃圾邮件也被自动过滤（通过另一个算法！），这样你可以专注于重要的消息。
 
 在这漫长的一天结束时，也许你会有一个盲目约会，对方的个人资料在成千上万的可能性中被另一个算法挑选（好吧，*脚本挑选？*）。再次由另一个算法完成。
 
-*当技术变得如此普遍，如机器学习目前的状态，我们明智的做法是* ***专注于这些模型和它们的学习方式****，因为尽管AI具有* ***服务社会的巨大潜力****，它也具有* ***巨大的破坏和不平等的力量****。
+*当技术变得如此普遍，如机器学习目前的状态，我们明智的做法是* ***专注于这些模型和它们的学习方式****，因为尽管 AI 具有* ***服务社会的巨大潜力****，它也具有* ***巨大的破坏和不平等的力量****。
 
 那为什么会这样呢？
 
@@ -52,7 +52,7 @@
 
 *数据*（或*大数据*，一个我们在过去几年中经常听到的词汇）并不等同于*优质数据*，混淆这两者可能导致开发出**有偏见和不公平的模型**，而不是**准确可靠的模型**。
 
-![](../Images/dea06f1d39e853d6a474cd5381e72cc7.png)
+![](img/dea06f1d39e853d6a474cd5381e72cc7.png)
 
 数据与优质数据。图像由作者提供。
 
@@ -128,7 +128,7 @@
 
 确实，即使在高度不均衡的领域中，标准分类器也可能在*分类问题复杂度较低*（例如，考虑一个线性可分的领域）时取得令人满意的结果。
 
-![](../Images/ecbde41f8bfd2acf22bfbcbb6f5e8654.png)
+![](img/ecbde41f8bfd2acf22bfbcbb6f5e8654.png)
 
 存在于单独的**不均衡数据**与**类重叠**结合的数据。两个领域包含相同数量的点（500）和不均衡比（8:1）。图像由作者提供。
 
@@ -142,7 +142,7 @@
 
 小离群点是数据中小而未充分代表的子概念，理解为类概念中的小簇。
 
-![](../Images/7e1f3bac485a5c6ddddef798081efc22.png)
+![](img/7e1f3bac485a5c6ddddef798081efc22.png)
 
 数据不均衡的特点是数据中出现小的子簇。图像由作者提供。
 
@@ -160,7 +160,7 @@
 
 随着不同概念的代表填充相同的区域，机器学习分类器很难区分它们，这导致了分类性能差（特别是影响这些区域中较少表示的概念）。
 
-![](../Images/0d188a7697f523cc8ff47dedf9e8c080.png)
+![](img/0d188a7697f523cc8ff47dedf9e8c080.png)
 
 类别重叠的典型示例：领域中存在越来越多的重叠示例。图片由作者提供。
 
@@ -168,7 +168,7 @@
 
 其他作者尝试区分散布在整个输入空间中的示例与集中在概念之间决策边界上的示例，应用量身定制的策略来处理每种类型的不同。
 
-当前研究正转向**类别重叠是一个异质概念，包含多种复杂来源**的观点。在初步工作中，我特别将其区分为4种主要的重叠表示，将其分为特征重叠、实例重叠、结构重叠和多分辨率重叠，每种类型与不同的复杂性概念相关联。
+当前研究正转向**类别重叠是一个异质概念，包含多种复杂来源**的观点。在初步工作中，我特别将其区分为 4 种主要的重叠表示，将其分为特征重叠、实例重叠、结构重叠和多分辨率重叠，每种类型与不同的复杂性概念相关联。
 
 ## **我们在哪里可以找到它？**
 
@@ -176,15 +176,15 @@
 
 # 结论：我们从这里出发去哪里？
 
-虽然过去几十年AI研究致力于生产更好的模型——我们称之为*模型中心AI*——但目前的关注点已从模型优化和超参数调整转向系统识别和缓解数据质量问题——这一范式最近被称为*数据中心AI*。
+虽然过去几十年 AI 研究致力于生产更好的模型——我们称之为*模型中心 AI*——但目前的关注点已从模型优化和超参数调整转向系统识别和缓解数据质量问题——这一范式最近被称为*数据中心 AI*。
 
-![](../Images/d621d07badb9e4703f3a8a6fd400b65e.png)
+![](img/d621d07badb9e4703f3a8a6fd400b65e.png)
 
 在我们当前生活的“人工智能巴别塔”中，真正理解数据并指向重要内容将比拥有大量的“信息”更具变革性。这种**指向**是新数据中心人工智能范式的基础。照片由 [Killian Cartignies](https://unsplash.com/@kikisad?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
 这种新方法包含了对数据进行系统化和持续迭代的循环，从*不完美*数据转变为*智能且可操作*数据。这自然需要对数据缺陷有深入的理解，包括其识别与特征描述，以及其综合效应和高效的缓解策略。
 
-*数据质量纪实系列*介绍了数据科学中的数据质量话题，从现实世界中常见的3种数据质量问题开始：*不平衡数据*、*不足数据*和*重叠数据*。系列的后续部分将致力于对其他数据质量问题进行特征描述，深入探讨每一个问题，并向读者介绍有效的工具和策略，以便在处理现实世界数据集时有效识别和衡量这些问题。
+*数据质量纪实系列*介绍了数据科学中的数据质量话题，从现实世界中常见的 3 种数据质量问题开始：*不平衡数据*、*不足数据*和*重叠数据*。系列的后续部分将致力于对其他数据质量问题进行特征描述，深入探讨每一个问题，并向读者介绍有效的工具和策略，以便在处理现实世界数据集时有效识别和衡量这些问题。
 
 ## 关于我
 
@@ -198,8 +198,8 @@
 
 1.  S. Das, S. Datta, B. Chaudhuri, [处理分类中的数据不规则性：基础、趋势与未来挑战](https://www.sciencedirect.com/science/article/abs/pii/S0031320318300931)（2018），*模式识别* 81, 674–693。
 
-1.  A. Fernández, S. García, M. Galar, M., R. Prati, B. Krawczyk, F. Herrera, [*数据内在特征*](https://www.springerprofessional.de/en/data-intrinsic-characteristics/16217922)（2018），Springer International Publishing，页253–277。
+1.  A. Fernández, S. García, M. Galar, M., R. Prati, B. Krawczyk, F. Herrera, [*数据内在特征*](https://www.springerprofessional.de/en/data-intrinsic-characteristics/16217922)（2018），Springer International Publishing，页 253–277。
 
-1.  I. Triguero, D. García-Gil, J. Maillo, J. Luengo, S. García, F. Herrera, [将大数据转化为智能数据：关于使用k-最近邻算法获取高质量数据的见解](https://wires.onlinelibrary.wiley.com/doi/abs/10.1002/widm.1289)（2019），Wiley Interdisciplinary Reviews：*数据挖掘与知识发现* 9, e1289。
+1.  I. Triguero, D. García-Gil, J. Maillo, J. Luengo, S. García, F. Herrera, [将大数据转化为智能数据：关于使用 k-最近邻算法获取高质量数据的见解](https://wires.onlinelibrary.wiley.com/doi/abs/10.1002/widm.1289)（2019），Wiley Interdisciplinary Reviews：*数据挖掘与知识发现* 9, e1289。
 
-1.  M. Santos, P. Abreu, N. Japkowicz, A. Fernández, J. Santos, [关于类重叠和不平衡的统一视角：关键概念、多视角全景以及研究的新领域](https://www.sciencedirect.com/science/article/pii/S1566253522001099)（2023年），*信息融合* 89, 228–253。
+1.  M. Santos, P. Abreu, N. Japkowicz, A. Fernández, J. Santos, [关于类重叠和不平衡的统一视角：关键概念、多视角全景以及研究的新领域](https://www.sciencedirect.com/science/article/pii/S1566253522001099)（2023 年），*信息融合* 89, 228–253。

@@ -1,20 +1,20 @@
 # 解密 Matplotlib
 
-> 原文：[https://towardsdatascience.com/demystifying-matplotlib-3895ab229a63?source=collection_archive---------2-----------------------#2023-11-02](https://towardsdatascience.com/demystifying-matplotlib-3895ab229a63?source=collection_archive---------2-----------------------#2023-11-02)
+> 原文：[`towardsdatascience.com/demystifying-matplotlib-3895ab229a63?source=collection_archive---------2-----------------------#2023-11-02`](https://towardsdatascience.com/demystifying-matplotlib-3895ab229a63?source=collection_archive---------2-----------------------#2023-11-02)
 
 ## Quick Success 数据科学
 
 ## 你感到困惑是有原因的
 
-[](https://medium.com/@lee_vaughan?source=post_page-----3895ab229a63--------------------------------)[![Lee Vaughan](../Images/9f6b90bb76102f438ab0b9a4a62ffa3f.png)](https://medium.com/@lee_vaughan?source=post_page-----3895ab229a63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3895ab229a63--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3895ab229a63--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----3895ab229a63--------------------------------)
+[](https://medium.com/@lee_vaughan?source=post_page-----3895ab229a63--------------------------------)![Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----3895ab229a63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3895ab229a63--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3895ab229a63--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----3895ab229a63--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-matplotlib-3895ab229a63&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----3895ab229a63---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3895ab229a63--------------------------------) ·16分钟阅读·2023年11月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3895ab229a63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-matplotlib-3895ab229a63&user=Lee+Vaughan&userId=5d604015c08b&source=-----3895ab229a63---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-matplotlib-3895ab229a63&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----3895ab229a63---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3895ab229a63--------------------------------) ·16 分钟阅读·2023 年 11 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3895ab229a63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-matplotlib-3895ab229a63&user=Lee+Vaughan&userId=5d604015c08b&source=-----3895ab229a63---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3895ab229a63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-matplotlib-3895ab229a63&source=-----3895ab229a63---------------------bookmark_footer-----------)![](../Images/d556e988458efce5ec0801d4c6a1fca6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3895ab229a63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-matplotlib-3895ab229a63&source=-----3895ab229a63---------------------bookmark_footer-----------)![](img/d556e988458efce5ec0801d4c6a1fca6.png)
 
 图片来源：Cederic Vandenberghe, Unsplash
 

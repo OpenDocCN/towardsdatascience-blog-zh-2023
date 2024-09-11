@@ -1,18 +1,18 @@
 # 以三种难度级别解释向量数据库
 
-> 原文：[https://towardsdatascience.com/explaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78?source=collection_archive---------0-----------------------#2023-07-04](https://towardsdatascience.com/explaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78?source=collection_archive---------0-----------------------#2023-07-04)
+> 原文：[`towardsdatascience.com/explaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78?source=collection_archive---------0-----------------------#2023-07-04`](https://towardsdatascience.com/explaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78?source=collection_archive---------0-----------------------#2023-07-04)
 
 ## 从新手到专家：揭开向量数据库的神秘面纱
 
-[](https://medium.com/@iamleonie?source=post_page-----fc392e48ab78--------------------------------)[![Leonie Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----fc392e48ab78--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fc392e48ab78--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fc392e48ab78--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----fc392e48ab78--------------------------------)
+[](https://medium.com/@iamleonie?source=post_page-----fc392e48ab78--------------------------------)![Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----fc392e48ab78--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fc392e48ab78--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fc392e48ab78--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----fc392e48ab78--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----fc392e48ab78---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fc392e48ab78--------------------------------) ·8分钟阅读·2023年7月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffc392e48ab78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----fc392e48ab78---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----fc392e48ab78---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fc392e48ab78--------------------------------) ·8 分钟阅读·2023 年 7 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffc392e48ab78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----fc392e48ab78---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffc392e48ab78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78&source=-----fc392e48ab78---------------------bookmark_footer-----------)![](../Images/328d368e5d803b2e02d900d2bda2437e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffc392e48ab78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78&source=-----fc392e48ab78---------------------bookmark_footer-----------)![](img/328d368e5d803b2e02d900d2bda2437e.png)
 
 向量空间（图像由作者手绘）
 
@@ -26,10 +26,10 @@
 
 向量数据库是一种存储和管理非结构化数据（如文本、图像或音频）的数据库，它将这些数据转换为向量嵌入（高维向量），以便快速查找和检索相似对象。
 
-如果这个定义让你更困惑，那我们一步一步来。本文的灵感来源于[WIRED的“5 Levels”视频系列](https://www.wired.com/video/series/5-levels)，并将向量数据库的概念分解为以下三个难度级别：
+如果这个定义让你更困惑，那我们一步一步来。本文的灵感来源于[WIRED 的“5 Levels”视频系列](https://www.wired.com/video/series/5-levels)，并将向量数据库的概念分解为以下三个难度级别：
 
-+   [像我五岁一样解释](#8273)
++   像我五岁一样解释
 
-+   [向数字原住民和科技爱好者解释向量数据库](#ffae)
++   向数字原住民和科技爱好者解释向量数据库
 
-+   [向工程师和数据专业人士解释向量数据库](#61cf)
++   向工程师和数据专业人士解释向量数据库

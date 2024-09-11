@@ -1,18 +1,18 @@
 # 实用提示工程
 
-> 原文：[https://towardsdatascience.com/practical-prompt-engineering-74e96130abc4?source=collection_archive---------0-----------------------#2023-07-30](https://towardsdatascience.com/practical-prompt-engineering-74e96130abc4?source=collection_archive---------0-----------------------#2023-07-30)
+> 原文：[`towardsdatascience.com/practical-prompt-engineering-74e96130abc4?source=collection_archive---------0-----------------------#2023-07-30`](https://towardsdatascience.com/practical-prompt-engineering-74e96130abc4?source=collection_archive---------0-----------------------#2023-07-30)
 
-## 成功提示LLM的技巧与窍门…
+## 成功提示 LLM 的技巧与窍门…
 
-[](https://wolfecameron.medium.com/?source=post_page-----74e96130abc4--------------------------------)[![Cameron R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----74e96130abc4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----74e96130abc4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----74e96130abc4--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----74e96130abc4--------------------------------)
+[](https://wolfecameron.medium.com/?source=post_page-----74e96130abc4--------------------------------)![Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----74e96130abc4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----74e96130abc4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----74e96130abc4--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----74e96130abc4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-prompt-engineering-74e96130abc4&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----74e96130abc4---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----74e96130abc4--------------------------------) ·15分钟阅读·2023年7月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F74e96130abc4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-prompt-engineering-74e96130abc4&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----74e96130abc4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-prompt-engineering-74e96130abc4&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----74e96130abc4---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----74e96130abc4--------------------------------) ·15 分钟阅读·2023 年 7 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F74e96130abc4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-prompt-engineering-74e96130abc4&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----74e96130abc4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F74e96130abc4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-prompt-engineering-74e96130abc4&source=-----74e96130abc4---------------------bookmark_footer-----------)![](../Images/e25abf0c0a3c6577a9a7741aa923ce0d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F74e96130abc4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-prompt-engineering-74e96130abc4&source=-----74e96130abc4---------------------bookmark_footer-----------)![](img/e25abf0c0a3c6577a9a7741aa923ce0d.png)
 
 （照片由[Jan Kahánek](https://unsplash.com/@honza_kahanek?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来源于[Unsplash](https://unsplash.com/photos/g3O5ZtRk2E4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)）
 

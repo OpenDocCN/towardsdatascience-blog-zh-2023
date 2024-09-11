@@ -1,16 +1,16 @@
 # 《快速入门指南：如何根除模型偏见》
 
-> 原文：[https://towardsdatascience.com/a-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc?source=collection_archive---------12-----------------------#2023-01-19](https://towardsdatascience.com/a-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc?source=collection_archive---------12-----------------------#2023-01-19)
+> 原文：[`towardsdatascience.com/a-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc?source=collection_archive---------12-----------------------#2023-01-19`](https://towardsdatascience.com/a-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc?source=collection_archive---------12-----------------------#2023-01-19)
 
-![](../Images/af28ba3d159eb1a66dd25bd6ce62218b.png)
+![](img/af28ba3d159eb1a66dd25bd6ce62218b.png)
 
 图片来源于作者
 
-[](https://aparnadhinak.medium.com/?source=post_page-----f4465c8e84bc--------------------------------)[![Aparna Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----f4465c8e84bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f4465c8e84bc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f4465c8e84bc--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----f4465c8e84bc--------------------------------)
+[](https://aparnadhinak.medium.com/?source=post_page-----f4465c8e84bc--------------------------------)![Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----f4465c8e84bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f4465c8e84bc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f4465c8e84bc--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----f4465c8e84bc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----f4465c8e84bc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f4465c8e84bc--------------------------------) ·12 分钟阅读·2023年1月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff4465c8e84bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----f4465c8e84bc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----f4465c8e84bc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f4465c8e84bc--------------------------------) ·12 分钟阅读·2023 年 1 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff4465c8e84bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quickstart-guide-to-uprooting-model-bias-f4465c8e84bc&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----f4465c8e84bc---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 *本文由 Arize AI 的机器学习工程师 Amber Roberts 共同撰写*
 
-在今天的世界中，读到关于AI表现出歧视行为的新闻已是司空见惯。从反映[持续存在的住房歧视遗产](https://www.technologyreview.com/2020/10/20/1009452/ai-has-exacerbated-racial-bias-in-housing-could-it-help-eliminate-it-instead/)的房地产估值模型到在医疗保健中加剧[获取护理和健康结果不平等](https://www.hsph.harvard.edu/news/hsph-in-the-news/study-widely-used-health-care-algorithm-has-racial-bias/)的模型，不幸的是，例子很容易找到。随着机器学习（ML）模型变得更加复杂，这一问题的真实范围及其对边缘化群体的影响可能尚未完全了解。幸运的是，ML团队可以采取一些简单步骤，以根除ML生命周期中的有害模型偏差。
+在今天的世界中，读到关于 AI 表现出歧视行为的新闻已是司空见惯。从反映[持续存在的住房歧视遗产](https://www.technologyreview.com/2020/10/20/1009452/ai-has-exacerbated-racial-bias-in-housing-could-it-help-eliminate-it-instead/)的房地产估值模型到在医疗保健中加剧[获取护理和健康结果不平等](https://www.hsph.harvard.edu/news/hsph-in-the-news/study-widely-used-health-care-algorithm-has-racial-bias/)的模型，不幸的是，例子很容易找到。随着机器学习（ML）模型变得更加复杂，这一问题的真实范围及其对边缘化群体的影响可能尚未完全了解。幸运的是，ML 团队可以采取一些简单步骤，以根除 ML 生命周期中的有害模型偏差。
 
 # 什么是模型偏差？
 
@@ -62,11 +62,11 @@
 
 当然，在定义谁是被保护的对象之前，你不能量化有害的模型偏差。
 
-了解法律下的保护类别是一个好的第一步。大多数美国人可能知道1964年美国民权法案禁止基于种族和性别的歧视，但更少人知道其他属性——如遗传信息或国籍——也符合法律下的保护类别，并且当发生违规时可能会导致[数百万或数十亿美元](https://www.justice.gov/opa/pr/justice-department-reaches-settlement-wells-fargo-resulting-more-175-million-relief)的罚款。
+了解法律下的保护类别是一个好的第一步。大多数美国人可能知道 1964 年美国民权法案禁止基于种族和性别的歧视，但更少人知道其他属性——如遗传信息或国籍——也符合法律下的保护类别，并且当发生违规时可能会导致[数百万或数十亿美元](https://www.justice.gov/opa/pr/justice-department-reaches-settlement-wells-fargo-resulting-more-175-million-relief)的罚款。
 
 法律合规只是一个起点。许多大型企业也[超越](https://purpose.businessroundtable.org/)这些法律要求，拥有额外的保护类别或公开承诺多样性和公平性。
 
-![](../Images/faee444511a6ac4201789bca31f369ba.png)
+![](img/faee444511a6ac4201789bca31f369ba.png)
 
 图片来源：作者
 
@@ -74,7 +74,7 @@
 
 一旦你清楚了所有相关司法管辖区的保护类别，下一步就是定义公平性是什么样的。虽然这是一个[复杂的话题](https://arxiv.org/pdf/1908.09635.pdf)，但一些基本原则可以帮助你。
 
-![](../Images/dbb303dc1ceb8828d59d79a998492ee2.png)
+![](img/dbb303dc1ceb8828d59d79a998492ee2.png)
 
 图片来源：作者
 
@@ -84,9 +84,9 @@
 
 +   **个人公平性** 的定义是相似的个体获得相似的待遇或结果。
 
-例如，假设一家银行正在评估100份抵押贷款申请。70份申请来自男性，30份来自女性。基于等比例的群体公平性，你会批准男性50%的申请（35份）和女性50%的申请（15份）。另一方面，基于等数量的群体公平性，50份批准会平均分配——男性25份，女性25份。如果某一组中贷款资格较高，这两种结果都可能被认为是不公平的。行业中一种主流的方法是确保每个群体的预测准确性相同——这是公平机会与准确性的衡量标准。
+例如，假设一家银行正在评估 100 份抵押贷款申请。70 份申请来自男性，30 份来自女性。基于等比例的群体公平性，你会批准男性 50%的申请（35 份）和女性 50%的申请（15 份）。另一方面，基于等数量的群体公平性，50 份批准会平均分配——男性 25 份，女性 25 份。如果某一组中贷款资格较高，这两种结果都可能被认为是不公平的。行业中一种主流的方法是确保每个群体的预测准确性相同——这是公平机会与准确性的衡量标准。
 
-![](../Images/320e687084b7c1159388e585af72ea3a.png)
+![](img/320e687084b7c1159388e585af72ea3a.png)
 
 作者提供的图像
 
@@ -130,7 +130,7 @@
 
 在决定使用哪个[公平性指标](https://arize.com/blog-course/fairness-bias-metrics/)时，你必须考虑需要什么见解，以确保你的模型没有表现出歧视。关心公平性的团队——特别是那些在高度监管行业如健康、贷款、保险和金融服务领域工作的团队——通常希望看到他们的模型在敏感属性（如种族或性别）上是否公平和无偏。当模型存在偏见时，团队需要知道哪个群体经历了最多的偏见，以便采取措施。
 
-为了理解你评估的时间段内的公平性指标值，许多公司使用四分之一规则。四分之一规则是[用于](https://www.eeoc.gov/laws/guidance/questions-and-answers-clarify-and-provide-common-interpretation-uniform-guidelines)的一个阈值，由像美国平等就业机会委员会这样的监管机构帮助识别对受保护类别的负面待遇。由于理想的公平性分数是1，当利用四分之一规则时，你通常会测量你的公平性指标分数是否落在0.8到1.25的范围之外。如果分数低于0.8或高于1.25，你的模型可能对所选的敏感群体存在算法偏见。
+为了理解你评估的时间段内的公平性指标值，许多公司使用四分之一规则。四分之一规则是[用于](https://www.eeoc.gov/laws/guidance/questions-and-answers-clarify-and-provide-common-interpretation-uniform-guidelines)的一个阈值，由像美国平等就业机会委员会这样的监管机构帮助识别对受保护类别的负面待遇。由于理想的公平性分数是 1，当利用四分之一规则时，你通常会测量你的公平性指标分数是否落在 0.8 到 1.25 的范围之外。如果分数低于 0.8 或高于 1.25，你的模型可能对所选的敏感群体存在算法偏见。
 
 从上面的决策树可以看出，选择的公平性指标取决于你的模型是否解决了不同表现、相等数量或辅助行为的问题。
 
@@ -142,7 +142,7 @@
 
 +   **何时使用：** 如果子组中的召回率接近，则实现了召回平衡
 
-+   **如何计算：** *召回平衡 = 召回_敏感组 / 召回_基准组* ; 召回 = TP / (TP + FN)
++   **如何计算：** *召回平衡 = 召回 _ 敏感组 / 召回 _ 基准组* ; 召回 = TP / (TP + FN)
 
 ## 假阳性率平衡
 
@@ -150,7 +150,7 @@
 
 +   **何时使用：** 如果子组中的假阳性率（假阳性数与总负数的比率）接近，则实现了假阳性率平衡
 
-+   **如何计算：** *假阳性平衡 = FPR_受限组 / FPR_特权组*; 假阳性率 = FP / (FP + TN)
++   **如何计算：** *假阳性平衡 = FPR_ 受限组 / FPR_ 特权组*; 假阳性率 = FP / (FP + TN)
 
 ## 不平等影响
 
@@ -158,7 +158,7 @@
 
 +   **何时使用：** 不平等影响，也称为比例平衡，用于检查不同组的结果比率是否与它们在总体中的比例相同
 
-+   **如何计算：** 如果男性的工作机会率为50%，女性的工作机会率为25%，那么这两个率的比率为2，表示存在不平等影响
++   **如何计算：** 如果男性的工作机会率为 50%，女性的工作机会率为 25%，那么这两个率的比率为 2，表示存在不平等影响
 
 一旦通过咨询公平性树定义了业务问题背景中的公平性，你可以计算你的平衡得分，并使用五分之一规则来确定是否需要在模型开发流程的预处理、处理中或后处理阶段进行干预。有关要实现的平衡类型以展示算法中立性，请参见下文。
 
@@ -204,17 +204,17 @@
 
 +   Aequitas：一个开源偏差审计工具包，用于对机器学习模型进行歧视和偏差审计。
 
-+   Arize AI (**完全披露**：我是Arize的联合创始人！)：提供模型公平性检查，比较训练基线和生产数据，并进行根本原因分析工作流。
++   Arize AI (**完全披露**：我是 Arize 的联合创始人！)：提供模型公平性检查，比较训练基线和生产数据，并进行根本原因分析工作流。
 
 +   IBM Fairness 360：一个开源工具包，帮助你通过审计检查、报告和缓解机器学习模型中的歧视和偏差。
 
-+   Google的PAIR AI：提供多个针对特定用例的工具，包括一个用于缓解图像数据集公平性和偏差问题的工具，支持TensorFlow Datasets API。
++   Google 的 PAIR AI：提供多个针对特定用例的工具，包括一个用于缓解图像数据集公平性和偏差问题的工具，支持 TensorFlow Datasets API。
 
 尽管其中一些工具可以用于汇总公平性指标和事后解释（即模型解释性），这些对于审计很有用，但它们大多数并不适用于生产中的实时监控。
 
 # 生产中的监控
 
-在生产中监控公平性指标很重要，原因很简单：在部署的AI中，模型偏差发生是时间问题，而非是否发生的问题。[概念漂移](https://arize.com/model-drift/)、训练中未见的新模式、训练与服务偏差以及异常值挑战着即使是最先进的团队，这些团队在训练中表现完美且通过验证阶段的模型也难以避免。
+在生产中监控公平性指标很重要，原因很简单：在部署的 AI 中，模型偏差发生是时间问题，而非是否发生的问题。[概念漂移](https://arize.com/model-drift/)、训练中未见的新模式、训练与服务偏差以及异常值挑战着即使是最先进的团队，这些团队在训练中表现完美且通过验证阶段的模型也难以避免。
 
 以下是一些提供生产中实时公平性监控的平台：
 
@@ -226,7 +226,7 @@
 
 解决模型偏差的第一步是理解数据，确保团队拥有正确的工具，并确保组织治理到位以确保公平。团队需要了解数据建模管道中对偏差有价值的预处理、处理和后处理阶段，因此，需要在这些阶段之一（如果不是多个阶段）进行公平性干预。以下是组织在这些阶段实现公平性的一些步骤。
 
-**步骤1：使受保护类别数据对模型构建者和维护生产模型的机器学习团队可用**
+**步骤 1：使受保护类别数据对模型构建者和维护生产模型的机器学习团队可用**
 
 根据[最近的一项调查](https://arize.com/resource/survey-machine-learning-observability-results/)，79.7%的机器学习团队报告称，他们“缺乏根除偏差或伦理问题所需的受保护数据”，至少有时如此，近一半（42.1%）表示这至少有时是一个问题。这需要改变。正如一位研究人员[所说](https://fairmlbook.org/classification.html)，无视并不能实现公平。
 

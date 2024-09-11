@@ -1,18 +1,18 @@
 # 探索大规模光栅人口数据
 
-> 原文：[https://towardsdatascience.com/exploring-large-scale-raster-population-data-72803cf7f2ad?source=collection_archive---------6-----------------------#2023-09-21](https://towardsdatascience.com/exploring-large-scale-raster-population-data-72803cf7f2ad?source=collection_archive---------6-----------------------#2023-09-21)
+> 原文：[`towardsdatascience.com/exploring-large-scale-raster-population-data-72803cf7f2ad?source=collection_archive---------6-----------------------#2023-09-21`](https://towardsdatascience.com/exploring-large-scale-raster-population-data-72803cf7f2ad?source=collection_archive---------6-----------------------#2023-09-21)
 
-![](../Images/447d132fd00738a285dfd225d655e478.png)
+![](img/447d132fd00738a285dfd225d655e478.png)
 
 图片来源：作者。
 
 ## 使用 Python 可视化跨多个尺度的地理空间人口数据：全球、国家和城市级数据
 
-[](https://medium.com/@janosovm?source=post_page-----72803cf7f2ad--------------------------------)[![米兰·贾诺索夫](../Images/77b62460041f66ec4585a81baef81a03.png)](https://medium.com/@janosovm?source=post_page-----72803cf7f2ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72803cf7f2ad--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72803cf7f2ad--------------------------------) [米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----72803cf7f2ad--------------------------------)
+[](https://medium.com/@janosovm?source=post_page-----72803cf7f2ad--------------------------------)![米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----72803cf7f2ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72803cf7f2ad--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----72803cf7f2ad--------------------------------) [米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----72803cf7f2ad--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F838408aa2ad4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-large-scale-raster-population-data-72803cf7f2ad&user=Milan+Janosov&userId=838408aa2ad4&source=post_page-838408aa2ad4----72803cf7f2ad---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72803cf7f2ad--------------------------------) · 9 分钟阅读 · 2023年9月21日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72803cf7f2ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-large-scale-raster-population-data-72803cf7f2ad&user=Milan+Janosov&userId=838408aa2ad4&source=-----72803cf7f2ad---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F838408aa2ad4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-large-scale-raster-population-data-72803cf7f2ad&user=Milan+Janosov&userId=838408aa2ad4&source=post_page-838408aa2ad4----72803cf7f2ad---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72803cf7f2ad--------------------------------) · 9 分钟阅读 · 2023 年 9 月 21 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72803cf7f2ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-large-scale-raster-population-data-72803cf7f2ad&user=Milan+Janosov&userId=838408aa2ad4&source=-----72803cf7f2ad---------------------clap_footer-----------)
 
 --
 

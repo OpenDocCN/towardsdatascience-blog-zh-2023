@@ -1,18 +1,18 @@
 # 因果性的科学与艺术（第二部分）
 
-> 原文：[https://towardsdatascience.com/the-science-and-art-of-causality-part-2-c085a9d56fd2?source=collection_archive---------14-----------------------#2023-01-06](https://towardsdatascience.com/the-science-and-art-of-causality-part-2-c085a9d56fd2?source=collection_archive---------14-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/the-science-and-art-of-causality-part-2-c085a9d56fd2?source=collection_archive---------14-----------------------#2023-01-06`](https://towardsdatascience.com/the-science-and-art-of-causality-part-2-c085a9d56fd2?source=collection_archive---------14-----------------------#2023-01-06)
 
 ## 让我们站在侦探的角度，探索因果推断。
 
-[](https://medium.com/@quentin.gallea?source=post_page-----c085a9d56fd2--------------------------------)[![Quentin Gallea, PhD](../Images/457af55dd9c6121da7ec97f8e2991c43.png)](https://medium.com/@quentin.gallea?source=post_page-----c085a9d56fd2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c085a9d56fd2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c085a9d56fd2--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----c085a9d56fd2--------------------------------)
+[](https://medium.com/@quentin.gallea?source=post_page-----c085a9d56fd2--------------------------------)![Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----c085a9d56fd2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c085a9d56fd2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c085a9d56fd2--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----c085a9d56fd2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa52dcb9793ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-2-c085a9d56fd2&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=post_page-a52dcb9793ad----c085a9d56fd2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c085a9d56fd2--------------------------------) · 8 min read · 2023年1月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc085a9d56fd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-2-c085a9d56fd2&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=-----c085a9d56fd2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa52dcb9793ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-2-c085a9d56fd2&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=post_page-a52dcb9793ad----c085a9d56fd2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c085a9d56fd2--------------------------------) · 8 min read · 2023 年 1 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc085a9d56fd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-2-c085a9d56fd2&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=-----c085a9d56fd2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc085a9d56fd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-2-c085a9d56fd2&source=-----c085a9d56fd2---------------------bookmark_footer-----------)![](../Images/57f3298b27ae1b36d07e40de1363581f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc085a9d56fd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-2-c085a9d56fd2&source=-----c085a9d56fd2---------------------bookmark_footer-----------)![](img/57f3298b27ae1b36d07e40de1363581f.png)
 
 正如我们在这篇两部分文章的第一部分中看到的，测量因果效应对于得出正确结论至关重要，因为你做出的每一个选择或决定通常都是预期因果关系的结果。
 
@@ -28,19 +28,19 @@
 
 +   在家办公会降低生产力
 
-+   向用户投放YouTube Premium广告会增加订阅者数量。
++   向用户投放 YouTube Premium 广告会增加订阅者数量。
 
 **政策制定者：**
 
 +   用可再生能源替代核电站将有助于实现《巴黎协定》。
 
-+   封锁措施将减少COVID-19的传播
++   封锁措施将减少 COVID-19 的传播
 
 问题在于没有统计测试可以证明你的效果是因果关系。要挑战因果关系，正如文章的第一部分所解释的，你可以提出两个主要问题：是否还有其他因素可以解释因果关系，或者是否可能是反过来的（即效果导致了原因）？
 
 > [H]如何在没有直接测试因果关系的统计测试的情况下找到因果效应的证据？
 
-这些问题使我们能够挑战因果声称。但是，如何在没有直接测试因果关系的统计测试的情况下找到因果效应的证据？在这篇文章中，我将向你展示研究人员如何通过一篇引人入胜的科学论文：*‘伦敦雾：1866–1965年污染与死亡率的一个世纪’*（Hanlon (2018)）。
+这些问题使我们能够挑战因果声称。但是，如何在没有直接测试因果关系的统计测试的情况下找到因果效应的证据？在这篇文章中，我将向你展示研究人员如何通过一篇引人入胜的科学论文：*‘伦敦雾：1866–1965 年污染与死亡率的一个世纪’*（Hanlon (2018)）。
 
 为了做到这一点，我们将把自己置于警探的角度。警探们不断试图回答因果问题：是谁造成了这个人的死亡？是文官芥末在温室里用烛台吗？你确定不是用扳手或者其他人犯的罪吗？在我们的例子中，我们有一个嫌疑人，或者更准确地说，是一个我们想要验证的假设（例如，污染增加了死亡率）。然后我们问自己，这真的只是污染，还是健康服务的发展？或者实际上是天气的结果？等等。
 
@@ -48,23 +48,23 @@
 
 # 案例研究：伦敦雾与死亡率
 
-让我用以下论文*‘伦敦雾：1866–1965年污染与死亡率的一个世纪’*（Hanlon (2018)）来说明这些概念。伦敦在19世纪时已经是一个人口密集、污染严重的地区。这篇研究论文的作者回答了一个非常重要的问题：暴露对死亡率的影响是什么？
+让我用以下论文*‘伦敦雾：1866–1965 年污染与死亡率的一个世纪’*（Hanlon (2018)）来说明这些概念。伦敦在 19 世纪时已经是一个人口密集、污染严重的地区。这篇研究论文的作者回答了一个非常重要的问题：暴露对死亡率的影响是什么？
 
-这篇文章的有趣之处在于，空气污染数据自1950年代才开始有。然而，准确的气象数据自1850年代就已存在。因此，文章的想法是利用雾作为污染的指标，因为在雾天，污染水平较低，而市民的污染暴露增加（见下图）。
+这篇文章的有趣之处在于，空气污染数据自 1950 年代才开始有。然而，准确的气象数据自 1850 年代就已存在。因此，文章的想法是利用雾作为污染的指标，因为在雾天，污染水平较低，而市民的污染暴露增加（见下图）。
 
-你可以在这里找到一个完整的Python笔记本，其中包含我的代码，以复制论文并生成我将在本文中使用的图表：[Deepnote notebook](https://deepnote.com/workspace/statswithquentin-9de199f7-1b70-481e-a6e2-df6c97c779f4/project/06londonfog-c5f4d2b2-5471-42ec-b8df-879dc56780f2/%2F02_rdd_london.ipynb)。
+你可以在这里找到一个完整的 Python 笔记本，其中包含我的代码，以复制论文并生成我将在本文中使用的图表：[Deepnote notebook](https://deepnote.com/workspace/statswithquentin-9de199f7-1b70-481e-a6e2-df6c97c779f4/project/06londonfog-c5f4d2b2-5471-42ec-b8df-879dc56780f2/%2F02_rdd_london.ipynb)。
 
-![](../Images/80caa3c144b6c5c358e010cb87b9d1e8.png)
+![](img/80caa3c144b6c5c358e010cb87b9d1e8.png)
 
 因果图。图片由作者提供。
 
 ## 初步了解影响
 
-论文研究了严重雾霾对死亡率的影响。因此，让我们首先查看从雾霾周前五周到雾霾周后五周，死亡率（所有原因一起）如何变化。结果显示，死亡率在冲击时（第0周）以及后续几周都增加。然而，许多因素可能解释这一效应（例如季节性）。
+论文研究了严重雾霾对死亡率的影响。因此，让我们首先查看从雾霾周前五周到雾霾周后五周，死亡率（所有原因一起）如何变化。结果显示，死亡率在冲击时（第 0 周）以及后续几周都增加。然而，许多因素可能解释这一效应（例如季节性）。
 
-数据集包含1850年至1940年伦敦的每周天气和死亡数据，并排除了第一次世界大战的年份。
+数据集包含 1850 年至 1940 年伦敦的每周天气和死亡数据，并排除了第一次世界大战的年份。
 
-![](../Images/541a6e7ec9290dc8b906d0f65238da00.png)
+![](img/541a6e7ec9290dc8b906d0f65238da00.png)
 
 图片由作者提供
 
@@ -72,37 +72,37 @@
 
 首先，让我们查看一下雾霾事件在一年中的分布情况。可以看到非常强的季节性（遇到严重雾霾的概率在冬季较高）。因此，在我们的模型中捕捉季节性效应非常重要，因为寒冷的天气与更多的雾霾相关，同时也可能与更多的死亡相关（寒冷天气容易让人们生病）。
 
-![](../Images/5bd6701c2ea83eb922d122a5f49ebc9d.png)
+![](img/5bd6701c2ea83eb922d122a5f49ebc9d.png)
 
 雾霾的季节性。图片由作者提供。
 
-其次，让我们查看一下1850年至1940年间出现严重雾霾的周频率。我们再次可以看到强相关性。我们观察到1900年后雾霾周的数量平均较少。模型必须考虑这一演变，以避免将这一效应与我们关注的效应混淆。这是因为医疗系统的质量随时间变化，降低了死亡率，同时雾霾周的数量也随时间减少。因此，如果我们不捕捉时间趋势，可能会夸大系数（高估雾霾对死亡率的影响）。
+其次，让我们查看一下 1850 年至 1940 年间出现严重雾霾的周频率。我们再次可以看到强相关性。我们观察到 1900 年后雾霾周的数量平均较少。模型必须考虑这一演变，以避免将这一效应与我们关注的效应混淆。这是因为医疗系统的质量随时间变化，降低了死亡率，同时雾霾周的数量也随时间减少。因此，如果我们不捕捉时间趋势，可能会夸大系数（高估雾霾对死亡率的影响）。
 
-![](../Images/5ad86fb632b6c2ea722c35e76b5a5e03.png)
+![](img/5ad86fb632b6c2ea722c35e76b5a5e03.png)
 
-每年的雾霾事件数量。红色虚线表示1900年前/后的平均值。图片由作者提供
+每年的雾霾事件数量。红色虚线表示 1900 年前/后的平均值。图片由作者提供
 
 请注意，即使你对下面呈现的模型不熟悉，你仍然应该能够理解这个想法。估计模型是一个简单的线性回归：
 
-![](../Images/b55c6f123db85f0bbcd9614551e27dc8.png)
+![](img/b55c6f123db85f0bbcd9614551e27dc8.png)
 
 用于表示一周的变量是*t*。*Fog^s* 是一个虚拟变量，当第*s+t*周出现严重雾霾时取值为一。***X*** 是一个气象控制向量，包括降雨量、温度、气压和湿度。*Year* 和 *Week* 分别是固定效应集，用于捕捉年份效应和日历周效应（季节性）。*e* 是一个误差项。
 
 因此，这种模型允许在有大雾的周的之前、期间和之后测量对死亡率的影响，同时考虑气象条件、季节性和年固定效应（时间的演变）。
 
-![](../Images/66c474afa251db128d2174c34c7d3d6b.png)
+![](img/66c474afa251db128d2174c34c7d3d6b.png)
 
-森林图表示线性回归的系数。垂直轴代表死亡率，而水平轴代表距离有大雾的一周的周数。柱状图代表95%的置信区间。作者提供的图片。
+森林图表示线性回归的系数。垂直轴代表死亡率，而水平轴代表距离有大雾的一周的周数。柱状图代表 95%的置信区间。作者提供的图片。
 
 上图比较了一个不考虑季节性的模型（粉色方框）和一个考虑季节性的模型（橙色圆圈）。我们可以看到，季节性的影响确实扭曲了系数（在粉色模型中，死亡率增加大于橙色模型）。此外，考虑季节性的模型中死亡率在两周后恢复到雾前水平。
 
-现在让我们加入年度固定效应。这组控制变量捕捉了污染物随时间的演变，但也捕捉了健康部门质量的演变，例如。因此，系数的解释略有不同。现在我们探讨年度t的死亡率与平均死亡率的偏差。
+现在让我们加入年度固定效应。这组控制变量捕捉了污染物随时间的演变，但也捕捉了健康部门质量的演变，例如。因此，系数的解释略有不同。现在我们探讨年度 t 的死亡率与平均死亡率的偏差。
 
 下面的图表显示了在大雾的那一周和接下来的一周，死亡率增加了。此外，我们还可以看到天气控制对估计值影响不大。
 
-![](../Images/4a8c640b41852180b0172fbefd4412f4.png)
+![](img/4a8c640b41852180b0172fbefd4412f4.png)
 
-森林图表示线性回归的系数。垂直轴代表死亡率，而水平轴代表距离有大雾的一周的周数。这里的两种模型都包括了周和年的固定效应。柱状图代表95%的置信区间。作者提供的图片。
+森林图表示线性回归的系数。垂直轴代表死亡率，而水平轴代表距离有大雾的一周的周数。这里的两种模型都包括了周和年的固定效应。柱状图代表 95%的置信区间。作者提供的图片。
 
 现在让我们来质疑这种效应的因果关系。理由是雾会使污染物浓度降低，进而增加死亡率。使用我在本文第一部分中介绍的工具：“如果这是其他因素导致了这种效应呢？”。
 
@@ -114,9 +114,9 @@
 
 我们正逐渐接近抓到我们的嫌疑人：污染物。还有一个替代故事我想和大家探讨一下。
 
-![](../Images/fe36022b9cc30bdbb0c3192b33dd31d5.png)
+![](img/fe36022b9cc30bdbb0c3192b33dd31d5.png)
 
-森林图表示线性回归的系数。纵轴表示死亡率（不同原因：事故/犯罪与肺炎），横轴表示与浓雾周的距离（以周为单位）。条形图表示95%的置信区间。图像来源：作者
+森林图表示线性回归的系数。纵轴表示死亡率（不同原因：事故/犯罪与肺炎），横轴表示与浓雾周的距离（以周为单位）。条形图表示 95%的置信区间。图像来源：作者
 
 ## 这可能是一个关于天气与流行病学的故事吗？
 
@@ -126,9 +126,9 @@
 
 下面的图表正好揭示了这一效果：雾霾致死，大雨拯救生命。
 
-![](../Images/e3cf480af9544f754841181bc0caa9f6.png)
+![](img/e3cf480af9544f754841181bc0caa9f6.png)
 
-森林图表示线性回归的系数。纵轴表示总体死亡率，横轴表示与浓雾周的距离（以周为单位）。条形图表示95%的置信区间。图像来源：作者
+森林图表示线性回归的系数。纵轴表示总体死亡率，横轴表示与浓雾周的距离（以周为单位）。条形图表示 95%的置信区间。图像来源：作者
 
 ## 结论
 

@@ -1,22 +1,22 @@
-# 生成式问答与GPT 3.5及长期记忆
+# 生成式问答与 GPT 3.5 及长期记忆
 
-> 原文：[https://towardsdatascience.com/generative-question-answering-with-long-term-memory-c280e237b144?source=collection_archive---------0-----------------------#2023-02-17](https://towardsdatascience.com/generative-question-answering-with-long-term-memory-c280e237b144?source=collection_archive---------0-----------------------#2023-02-17)
+> 原文：[`towardsdatascience.com/generative-question-answering-with-long-term-memory-c280e237b144?source=collection_archive---------0-----------------------#2023-02-17`](https://towardsdatascience.com/generative-question-answering-with-long-term-memory-c280e237b144?source=collection_archive---------0-----------------------#2023-02-17)
 
 ## 探索检索增强机器学习的新世界
 
-[](https://jamescalam.medium.com/?source=post_page-----c280e237b144--------------------------------)[![詹姆斯·布里格斯](../Images/cb34b7011748e4d8607b7ff4a8510a93.png)](https://jamescalam.medium.com/?source=post_page-----c280e237b144--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c280e237b144--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c280e237b144--------------------------------) [詹姆斯·布里格斯](https://jamescalam.medium.com/?source=post_page-----c280e237b144--------------------------------)
+[](https://jamescalam.medium.com/?source=post_page-----c280e237b144--------------------------------)![詹姆斯·布里格斯](https://jamescalam.medium.com/?source=post_page-----c280e237b144--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c280e237b144--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c280e237b144--------------------------------) [詹姆斯·布里格斯](https://jamescalam.medium.com/?source=post_page-----c280e237b144--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9d77a4ca1d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-question-answering-with-long-term-memory-c280e237b144&user=James+Briggs&userId=b9d77a4ca1d1&source=post_page-b9d77a4ca1d1----c280e237b144---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c280e237b144--------------------------------) ·6分钟阅读·2023年2月17日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9d77a4ca1d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-question-answering-with-long-term-memory-c280e237b144&user=James+Briggs&userId=b9d77a4ca1d1&source=post_page-b9d77a4ca1d1----c280e237b144---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c280e237b144--------------------------------) ·6 分钟阅读·2023 年 2 月 17 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc280e237b144&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-question-answering-with-long-term-memory-c280e237b144&source=-----c280e237b144---------------------bookmark_footer-----------)![](../Images/c5e51b39e15d83cb4ab0c9ed3580abef.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc280e237b144&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-question-answering-with-long-term-memory-c280e237b144&source=-----c280e237b144---------------------bookmark_footer-----------)![](img/c5e51b39e15d83cb4ab0c9ed3580abef.png)
 
 图片由 [布雷特·卡瓦诺](https://unsplash.com/@bretkavanaugh?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。 *最初发表于* [*pinecone.io*](https://www.pinecone.io/learn/openai-gen-qa/)，*作者在该网站工作*。*
 
-生成式AI在2022年引发了几个*“哇”*的时刻。从生成艺术工具如OpenAI的DALL-E 2、Midjourney和Stable Diffusion，到下一代**大**型**语**言**模**型，如OpenAI的GPT-3.5系列模型、BLOOM，以及像LaMDA和ChatGPT这样的聊天机器人。
+生成式 AI 在 2022 年引发了几个*“哇”*的时刻。从生成艺术工具如 OpenAI 的 DALL-E 2、Midjourney 和 Stable Diffusion，到下一代**大**型**语**言**模**型，如 OpenAI 的 GPT-3.5 系列模型、BLOOM，以及像 LaMDA 和 ChatGPT 这样的聊天机器人。
 
 生成式 AI 正经历着兴趣和创新的繁荣，这一点并不令人惊讶[1]。然而，这只是生成式 AI 广泛应用的**第一年**：这是一个新兴领域的早期阶段，预计将颠覆我们与机器的互动方式。
 

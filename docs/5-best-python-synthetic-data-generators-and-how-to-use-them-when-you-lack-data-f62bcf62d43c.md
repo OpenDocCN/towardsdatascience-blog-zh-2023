@@ -1,22 +1,22 @@
-# 5个最佳Python合成数据生成器及其在数据不足时的使用方法
+# 5 个最佳 Python 合成数据生成器及其在数据不足时的使用方法
 
-> 原文：[https://towardsdatascience.com/5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c?source=collection_archive---------5-----------------------#2023-01-23](https://towardsdatascience.com/5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c?source=collection_archive---------5-----------------------#2023-01-23)
+> 原文：[`towardsdatascience.com/5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c?source=collection_archive---------5-----------------------#2023-01-23`](https://towardsdatascience.com/5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c?source=collection_archive---------5-----------------------#2023-01-23)
 
 ## 获取更多数据
 
-[](https://ibexorigin.medium.com/?source=post_page-----f62bcf62d43c--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----f62bcf62d43c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f62bcf62d43c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f62bcf62d43c--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----f62bcf62d43c--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----f62bcf62d43c--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----f62bcf62d43c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f62bcf62d43c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f62bcf62d43c--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----f62bcf62d43c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----f62bcf62d43c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f62bcf62d43c--------------------------------) · 8分钟阅读 · 2023年1月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff62bcf62d43c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c&user=Bex+T.&userId=39db050c2ac2&source=-----f62bcf62d43c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----f62bcf62d43c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f62bcf62d43c--------------------------------) · 8 分钟阅读 · 2023 年 1 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff62bcf62d43c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c&user=Bex+T.&userId=39db050c2ac2&source=-----f62bcf62d43c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff62bcf62d43c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c&source=-----f62bcf62d43c---------------------bookmark_footer-----------)![](../Images/4ec4344f18ad73a5f9dd05b5af784f43.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff62bcf62d43c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-best-python-synthetic-data-generators-and-how-to-use-them-when-you-lack-data-f62bcf62d43c&source=-----f62bcf62d43c---------------------bookmark_footer-----------)![](img/4ec4344f18ad73a5f9dd05b5af784f43.png)
 
 **照片由** [**Maxim Berg**](https://unsplash.com/@maxberg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-2021年，每天产生了2.5亿亿字节（2.5百万TB）的数据。今天，这一数字甚至更多。但显然，这还不够，因为Python生态系统中有许多库可以生成合成数据。有些库可能只是为了生成合成数据而创建，但大多数有着有益的应用，例如：
+2021 年，每天产生了 2.5 亿亿字节（2.5 百万 TB）的数据。今天，这一数字甚至更多。但显然，这还不够，因为 Python 生态系统中有许多库可以生成合成数据。有些库可能只是为了生成合成数据而创建，但大多数有着有益的应用，例如：
 
 +   机器学习：当现实世界的数据不可用或难以获取用于模型训练时
 

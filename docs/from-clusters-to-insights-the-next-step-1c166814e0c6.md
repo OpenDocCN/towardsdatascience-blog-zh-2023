@@ -1,18 +1,18 @@
 # 从聚类到洞察；下一步
 
-> 原文：[https://towardsdatascience.com/from-clusters-to-insights-the-next-step-1c166814e0c6?source=collection_archive---------3-----------------------#2023-05-10](https://towardsdatascience.com/from-clusters-to-insights-the-next-step-1c166814e0c6?source=collection_archive---------3-----------------------#2023-05-10)
+> 原文：[`towardsdatascience.com/from-clusters-to-insights-the-next-step-1c166814e0c6?source=collection_archive---------3-----------------------#2023-05-10`](https://towardsdatascience.com/from-clusters-to-insights-the-next-step-1c166814e0c6?source=collection_archive---------3-----------------------#2023-05-10)
 
 ## 了解如何定量检测哪些特征驱动了聚类的形成
 
-[](https://erdogant.medium.com/?source=post_page-----1c166814e0c6--------------------------------)[![Erdogan Taskesen](../Images/8e62cdae0502687710d8ae4bbcd8966e.png)](https://erdogant.medium.com/?source=post_page-----1c166814e0c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c166814e0c6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c166814e0c6--------------------------------) [埃尔多安·塔克森](https://erdogant.medium.com/?source=post_page-----1c166814e0c6--------------------------------)
+[](https://erdogant.medium.com/?source=post_page-----1c166814e0c6--------------------------------)![Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----1c166814e0c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c166814e0c6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c166814e0c6--------------------------------) [埃尔多安·塔克森](https://erdogant.medium.com/?source=post_page-----1c166814e0c6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e636e2ef813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-clusters-to-insights-the-next-step-1c166814e0c6&user=Erdogan+Taskesen&userId=4e636e2ef813&source=post_page-4e636e2ef813----1c166814e0c6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c166814e0c6--------------------------------) ·9 分钟阅读·2023年5月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c166814e0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-clusters-to-insights-the-next-step-1c166814e0c6&user=Erdogan+Taskesen&userId=4e636e2ef813&source=-----1c166814e0c6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e636e2ef813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-clusters-to-insights-the-next-step-1c166814e0c6&user=Erdogan+Taskesen&userId=4e636e2ef813&source=post_page-4e636e2ef813----1c166814e0c6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c166814e0c6--------------------------------) ·9 分钟阅读·2023 年 5 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c166814e0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-clusters-to-insights-the-next-step-1c166814e0c6&user=Erdogan+Taskesen&userId=4e636e2ef813&source=-----1c166814e0c6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c166814e0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-clusters-to-insights-the-next-step-1c166814e0c6&source=-----1c166814e0c6---------------------bookmark_footer-----------)![](../Images/f07bdc7ebd537a94cb31545f18cd623b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c166814e0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-clusters-to-insights-the-next-step-1c166814e0c6&source=-----1c166814e0c6---------------------bookmark_footer-----------)![](img/f07bdc7ebd537a94cb31545f18cd623b.png)
 
 图片由作者提供。
 

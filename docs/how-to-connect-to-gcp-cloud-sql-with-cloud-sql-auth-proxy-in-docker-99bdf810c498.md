@@ -1,18 +1,18 @@
-# 如何在Docker中使用Cloud SQL Auth Proxy连接到GCP Cloud SQL
+# 如何在 Docker 中使用 Cloud SQL Auth Proxy 连接到 GCP Cloud SQL
 
-> 原文：[https://towardsdatascience.com/how-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498?source=collection_archive---------5-----------------------#2023-02-20](https://towardsdatascience.com/how-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498?source=collection_archive---------5-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/how-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498?source=collection_archive---------5-----------------------#2023-02-20`](https://towardsdatascience.com/how-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498?source=collection_archive---------5-----------------------#2023-02-20)
 
-## 学习一种标准方法，将docker化应用程序连接到GCP Cloud SQL实例
+## 学习一种标准方法，将 docker 化应用程序连接到 GCP Cloud SQL 实例
 
-[](https://lynn-kwong.medium.com/?source=post_page-----99bdf810c498--------------------------------)[![Lynn G. Kwong](../Images/b9a05b6587db5ca41c1d8264adda5b06.png)](https://lynn-kwong.medium.com/?source=post_page-----99bdf810c498--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99bdf810c498--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----99bdf810c498--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----99bdf810c498--------------------------------)
+[](https://lynn-kwong.medium.com/?source=post_page-----99bdf810c498--------------------------------)![Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----99bdf810c498--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99bdf810c498--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----99bdf810c498--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----99bdf810c498--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff649eccbbc3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=post_page-f649eccbbc3d----99bdf810c498---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99bdf810c498--------------------------------) ·9分钟阅读·2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99bdf810c498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=-----99bdf810c498---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff649eccbbc3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=post_page-f649eccbbc3d----99bdf810c498---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99bdf810c498--------------------------------) ·9 分钟阅读·2023 年 2 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99bdf810c498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=-----99bdf810c498---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F99bdf810c498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498&source=-----99bdf810c498---------------------bookmark_footer-----------)![](../Images/ab898b9635bf96960353af4de7d4cb3b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F99bdf810c498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-to-gcp-cloud-sql-with-cloud-sql-auth-proxy-in-docker-99bdf810c498&source=-----99bdf810c498---------------------bookmark_footer-----------)![](img/ab898b9635bf96960353af4de7d4cb3b.png)
 
 图片来源：WilliamsCreativity (Servers Data) 在 Pixabay
 

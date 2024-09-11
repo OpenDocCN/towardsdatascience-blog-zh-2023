@@ -1,18 +1,18 @@
 # 系统设计备忘单：ElasticSearch
 
-> 原文：[https://towardsdatascience.com/system-design-cheatsheets-elasticsearch-673b98eebfff?source=collection_archive---------0-----------------------#2023-11-28](https://towardsdatascience.com/system-design-cheatsheets-elasticsearch-673b98eebfff?source=collection_archive---------0-----------------------#2023-11-28)
+> 原文：[`towardsdatascience.com/system-design-cheatsheets-elasticsearch-673b98eebfff?source=collection_archive---------0-----------------------#2023-11-28`](https://towardsdatascience.com/system-design-cheatsheets-elasticsearch-673b98eebfff?source=collection_archive---------0-----------------------#2023-11-28)
 
 ## 了解如何以及何时在系统中使用 ElasticSearch，并通过三个实际的系统设计示例进行说明
 
-[](https://medium.com/@sanilkhurana7?source=post_page-----673b98eebfff--------------------------------)[![Sanil Khurana](../Images/b6aea8dd0366a0659fcf3828fc745aea.png)](https://medium.com/@sanilkhurana7?source=post_page-----673b98eebfff--------------------------------)[](https://towardsdatascience.com/?source=post_page-----673b98eebfff--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----673b98eebfff--------------------------------) [Sanil Khurana](https://medium.com/@sanilkhurana7?source=post_page-----673b98eebfff--------------------------------)
+[](https://medium.com/@sanilkhurana7?source=post_page-----673b98eebfff--------------------------------)![Sanil Khurana](https://medium.com/@sanilkhurana7?source=post_page-----673b98eebfff--------------------------------)[](https://towardsdatascience.com/?source=post_page-----673b98eebfff--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----673b98eebfff--------------------------------) [Sanil Khurana](https://medium.com/@sanilkhurana7?source=post_page-----673b98eebfff--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bda56b80bb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-cheatsheets-elasticsearch-673b98eebfff&user=Sanil+Khurana&userId=2bda56b80bb9&source=post_page-2bda56b80bb9----673b98eebfff---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----673b98eebfff--------------------------------) ·13分钟阅读·2023年11月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F673b98eebfff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-cheatsheets-elasticsearch-673b98eebfff&user=Sanil+Khurana&userId=2bda56b80bb9&source=-----673b98eebfff---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bda56b80bb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-cheatsheets-elasticsearch-673b98eebfff&user=Sanil+Khurana&userId=2bda56b80bb9&source=post_page-2bda56b80bb9----673b98eebfff---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----673b98eebfff--------------------------------) ·13 分钟阅读·2023 年 11 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F673b98eebfff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-cheatsheets-elasticsearch-673b98eebfff&user=Sanil+Khurana&userId=2bda56b80bb9&source=-----673b98eebfff---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F673b98eebfff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-cheatsheets-elasticsearch-673b98eebfff&source=-----673b98eebfff---------------------bookmark_footer-----------)![](../Images/d7e1f0c7bfdf754fff121de143f1dd46.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F673b98eebfff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-cheatsheets-elasticsearch-673b98eebfff&source=-----673b98eebfff---------------------bookmark_footer-----------)![](img/d7e1f0c7bfdf754fff121de143f1dd46.png)
 
 # 引言
 
@@ -44,7 +44,7 @@ ElasticSearch 提供了一种执行“全文搜索”的方法。全文搜索指
 
 你可以将所有这些文档加载到 ElasticSearch 中，然后在几毫秒内搜索每个文档中的特定单词或短语。因此，如果你加载所有新闻文章，然后执行一个搜索，比如“COVID19 感染在德里”，ElasticSearch 会返回所有包含“COVID19”、“感染”或“德里”这些词的文章。
 
-为了演示在 ElasticSearch 中的搜索，我们来设置 Elasticsearch 并加载一些数据。对于本文，我将使用[我在 Kaggle 上找到的这个新闻数据集](https://www.kaggle.com/datasets/rmisra/news-category-dataset)(Misra, Rishabh. “News Category Dataset.” arXiv 预印本 arXiv:2209.11429 (2022)) ([来源](rishabhmisra.github.io/publications)) ([许可证](https://creativecommons.org/licenses/by/4.0/))。该数据集非常简单，包含约 210,000 篇新闻文章，涵盖标题、简短描述、作者以及一些我们不太关注的其他字段。我们并不需要所有 210,000 篇文档，因此我会加载大约 10,000 篇文档到 ES 中并开始搜索。
+为了演示在 ElasticSearch 中的搜索，我们来设置 Elasticsearch 并加载一些数据。对于本文，我将使用[我在 Kaggle 上找到的这个新闻数据集](https://www.kaggle.com/datasets/rmisra/news-category-dataset)(Misra, Rishabh. “News Category Dataset.” arXiv 预印本 arXiv:2209.11429 (2022)) (来源) ([许可证](https://creativecommons.org/licenses/by/4.0/))。该数据集非常简单，包含约 210,000 篇新闻文章，涵盖标题、简短描述、作者以及一些我们不太关注的其他字段。我们并不需要所有 210,000 篇文档，因此我会加载大约 10,000 篇文档到 ES 中并开始搜索。
 
 这些是数据集中一些文档的示例——
 
@@ -172,25 +172,25 @@ ElasticSearch 复杂且成本高昂。运行和管理大型 ElasticSearch 集群
 
 如果你只需要执行简单的查询或数据量相对较少，那么简单的数据库可能更适合你的应用程序。
 
-# 如何在系统设计中使用ElasticSearch
+# 如何在系统设计中使用 ElasticSearch
 
-一个单一的软件系统通常需要多个数据库，每个数据库支持不同的功能。让我们通过一个例子来更好地理解使用ElasticSearch的设计选择。
+一个单一的软件系统通常需要多个数据库，每个数据库支持不同的功能。让我们通过一个例子来更好地理解使用 ElasticSearch 的设计选择。
 
-假设你想构建一个视频流媒体服务，比如Netflix。让我们看看ElasticSearch在这个例子中可以适应的地方。
+假设你想构建一个视频流媒体服务，比如 Netflix。让我们看看 ElasticSearch 在这个例子中可以适应的地方。
 
 ## 作为搜索系统
 
-ElasticSearch的一个非常常见的用例是作为支持全文搜索查询的辅助数据库。这对我们的在线视频应用非常有用。我们不能将视频存储在ElasticSearch中，并且我们可能也不想将与计费或用户相关的数据存储在ElasticSearch中。
+ElasticSearch 的一个非常常见的用例是作为支持全文搜索查询的辅助数据库。这对我们的在线视频应用非常有用。我们不能将视频存储在 ElasticSearch 中，并且我们可能也不想将与计费或用户相关的数据存储在 ElasticSearch 中。
 
-为此，我们可以使用其他数据库，但我们可以将电影标题、描述、类型、评分等信息存储在ElasticSearch中。
+为此，我们可以使用其他数据库，但我们可以将电影标题、描述、类型、评分等信息存储在 ElasticSearch 中。
 
 我们可以有一个类似这样的架构：
 
-![](../Images/d9ad7cfe3ed8d6d261a805ffb143f58e.png)
+![](img/d9ad7cfe3ed8d6d261a805ffb143f58e.png)
 
 作者提供的图片
 
-我们可以将我们希望支持全文搜索的数据摄取到ElasticSearch中。当用户执行搜索操作时，我们可以查询ElasticSearch集群。这样，我们就可以利用ElasticSearch的全文搜索功能，当我们需要更新用户信息时，可以在我们的主要存储中执行这些更新。
+我们可以将我们希望支持全文搜索的数据摄取到 ElasticSearch 中。当用户执行搜索操作时，我们可以查询 ElasticSearch 集群。这样，我们就可以利用 ElasticSearch 的全文搜索功能，当我们需要更新用户信息时，可以在我们的主要存储中执行这些更新。
 
 ## 作为实时数据分析管道
 
@@ -198,25 +198,25 @@ ElasticSearch的一个非常常见的用例是作为支持全文搜索查询的�
 
 例如，在我们的在线视频应用中，我们可以在用户点击电影或节目时发布包含用户和电影数据的事件。然后我们可以分析和绘制汇总图表，以更好地理解用户如何使用我们的产品。例如，我们可能会注意到用户在晚上使用我们的产品的频率比在下午高，或者用户可能更喜欢用本国语言而非其他语言的节目或电影。利用这些信息，我们可以改进我们的产品，提升用户体验。
 
-这就是使用ElasticSearch和Kibana（一个与ElasticSearch配合良好的仪表板工具）的实时数据分析基本系统的样子：
+这就是使用 ElasticSearch 和 Kibana（一个与 ElasticSearch 配合良好的仪表板工具）的实时数据分析基本系统的样子：
 
-![](../Images/7dca386444fea2acd23ba1c0f0311527.png)
+![](img/7dca386444fea2acd23ba1c0f0311527.png)
 
 作者提供的图片
 
 ## 作为推荐系统
 
-我们可以在ElasticSearch中构建查询，以对某些属性给予更多优先级（称为提升）。例如，与简单查询相比
+我们可以在 ElasticSearch 中构建查询，以对某些属性给予更多优先级（称为提升）。例如，与简单查询相比
 
-我们可以使用ElasticSearch构建基本的推荐系统。我们可以存储有关用户的信息，例如用户的国家、年龄、偏好等，并生成查询，以获取该用户的热门电影节目或系列。
+我们可以使用 ElasticSearch 构建基本的推荐系统。我们可以存储有关用户的信息，例如用户的国家、年龄、偏好等，并生成查询，以获取该用户的热门电影节目或系列。
 
 理解查询语言和如何提升某些字段以及执行汇总是一个较大的主题，但我在这里写了一篇涵盖基础知识的博客文章：
 
-[](/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=post_page-----673b98eebfff--------------------------------) [## 掌握 Elasticsearch: 初学者强大的搜索与精准指南 — 第1部分
+[](/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=post_page-----673b98eebfff--------------------------------) ## 掌握 Elasticsearch: 初学者强大的搜索与精准指南 — 第一部分
 
-### 在第1部分解锁 Elasticsearch 的力量：深入了解 Elasticsearch，掌握基本的搜索查询，并探索词汇…
+### 在第一部分解锁 Elasticsearch 的力量：深入了解 Elasticsearch，掌握基本的搜索查询，并探索词汇…
 
-towardsdatascience.com](/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=post_page-----673b98eebfff--------------------------------)
+towardsdatascience.com
 
 # 结论
 
@@ -234,11 +234,11 @@ betterprogramming.pub](https://betterprogramming.pub/system-design-series-elasti
 
 搜索是复杂的，非常复杂。有很多方法可以改进搜索系统，使其更强大并更理解用户需求。你已经了解了 ElasticSearch 及其功能。从这里开始，构建一个基本的搜索查询，理解查询和系统中的问题，并通过示例一步一步地演变和改进系统。
 
-[](/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=post_page-----673b98eebfff--------------------------------) [## 掌握 Elasticsearch: 初学者强大的搜索与精准指南 — 第1部分
+[](/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=post_page-----673b98eebfff--------------------------------) ## 掌握 Elasticsearch: 初学者强大的搜索与精准指南 — 第一部分
 
-### 在第1部分解锁 Elasticsearch 的力量：深入了解 Elasticsearch，掌握基本的搜索查询，并探索词汇…
+### 在第一部分解锁 Elasticsearch 的力量：深入了解 Elasticsearch，掌握基本的搜索查询，并探索词汇…
 
-towardsdatascience.com](/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=post_page-----673b98eebfff--------------------------------)
+towardsdatascience.com
 
 ## 上下文感知搜索
 

@@ -1,30 +1,30 @@
 # 一位站点搜索工程师的日志：在 Elasticsearch 查询构建中应对相关性挑战
 
-> 原文：[https://towardsdatascience.com/a-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5?source=collection_archive---------17-----------------------#2023-06-13](https://towardsdatascience.com/a-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5?source=collection_archive---------17-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/a-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5?source=collection_archive---------17-----------------------#2023-06-13`](https://towardsdatascience.com/a-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5?source=collection_archive---------17-----------------------#2023-06-13)
 
 ## 与 Elasticsearch 的工作就像是在玩乐高
 
-[](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)[![Quý Đinh](../Images/40c7da5cfcc56d79d2b6f45ea70a26ee.png)](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------) [Quý Đinh](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)
+[](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)![Quý Đinh](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------) [Quý Đinh](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44a47bf76e4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&user=Qu%C3%BD+%C4%90inh&userId=44a47bf76e4e&source=post_page-44a47bf76e4e----1eca29283da5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------) · 15 分钟阅读 · 2023年6月13日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1eca29283da5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&user=Qu%C3%BD+%C4%90inh&userId=44a47bf76e4e&source=-----1eca29283da5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44a47bf76e4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&user=Qu%C3%BD+%C4%90inh&userId=44a47bf76e4e&source=post_page-44a47bf76e4e----1eca29283da5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------) · 15 分钟阅读 · 2023 年 6 月 13 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1eca29283da5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&user=Qu%C3%BD+%C4%90inh&userId=44a47bf76e4e&source=-----1eca29283da5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1eca29283da5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&source=-----1eca29283da5---------------------bookmark_footer-----------)![](../Images/f943af89e64f6e075864489a6e3eb919.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1eca29283da5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&source=-----1eca29283da5---------------------bookmark_footer-----------)![](img/f943af89e64f6e075864489a6e3eb919.png)
 
 [Mourizal Zativa](https://unsplash.com/@mourimoto?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
 # 介绍
 
-在过去的22个月里，我一直担任站点搜索工程师，使用 Elasticsearch 来帮助提高我们餐饮平台的相关性。我总共部署了83个版本，包括3个主要版本。
+在过去的 22 个月里，我一直担任站点搜索工程师，使用 Elasticsearch 来帮助提高我们餐饮平台的相关性。我总共部署了 83 个版本，包括 3 个主要版本。
 
 每周大约发布一次，我可以说我们的搜索引擎不仅比两年前好得多，而且我也学到了很多。虽然仍然远未达到一个伟大的搜索引擎，但在我看来，有些事情值得分享。更重要的是，我非常希望得到反馈。
 
 本博客文章旨在提供一种设计 Elasticsearch 查询模板的方法，以处理常见的网站搜索问题，包括跨不同字段的匹配、结果提升和测试。我们将共同识别默认方法的问题，然后逐步提出一种新的方法来解决这些问题。
 
-这个 Github 仓库：[https://github.com/dvquy13/elasticsearch-sharing](https://github.com/dvquy13/elasticsearch-sharing) 包含了本文讨论的示例和代码。
+这个 Github 仓库：[`github.com/dvquy13/elasticsearch-sharing`](https://github.com/dvquy13/elasticsearch-sharing) 包含了本文讨论的示例和代码。
 
 # 主要
 
@@ -467,7 +467,7 @@ GET /_search/template
 }
 ```
 
-上述查询返回了我们期望的越南餐馆，给定一个拼写错误的关键词`vietnames`。在后台，模糊匹配使用了[Levenshtein编辑距离](https://www.elastic.co/guide/en/elasticsearch/reference/8.7/query-dsl-fuzzy-query.html)，它通过修改一个字符串使其变成另一个字符串的次数来衡量字符串之间的相似度。在我们的例子中，我们只需要在末尾添加一个字母`e`，将`vietnames`变成`vietnamese`。对算法来说，这是一项非常简单的任务。也许有人会争辩说，这对我们的开发人员来说也很简单。2行代码和一个新的漂亮特性。
+上述查询返回了我们期望的越南餐馆，给定一个拼写错误的关键词`vietnames`。在后台，模糊匹配使用了[Levenshtein 编辑距离](https://www.elastic.co/guide/en/elasticsearch/reference/8.7/query-dsl-fuzzy-query.html)，它通过修改一个字符串使其变成另一个字符串的次数来衡量字符串之间的相似度。在我们的例子中，我们只需要在末尾添加一个字母`e`，将`vietnames`变成`vietnamese`。对算法来说，这是一项非常简单的任务。也许有人会争辩说，这对我们的开发人员来说也很简单。2 行代码和一个新的漂亮特性。
 
 好吧，真正有趣的地方在于别处。一天，我们的销售团队突然向我们投诉搜索结果错误。即使人们明确搜索`kbbq`（这是`korean bbq`的常见缩写），他们也会得到日本烧烤餐馆而不是韩国烧烤餐馆。
 
@@ -525,7 +525,7 @@ POST _bulk
 
 为了理解发生了什么，我们需要启用`explain=true`来查看是什么因素贡献了最终的分数。由于这次输出过于冗长，以下是发现：
 
-+   `Best BBQ in town`餐馆的关键词匹配分数（在提升之前）为0.8，低于`Park Hang-seo's KBBQ`的1.2
++   `Best BBQ in town`餐馆的关键词匹配分数（在提升之前）为 0.8，低于`Park Hang-seo's KBBQ`的 1.2
 
 +   如果没有应用提升，我们会看到`Park Hang-seo's KBBQ`餐馆排在第一位
 
@@ -740,31 +740,31 @@ PUT _scripts/02-constant-score-search-template
 
 # 总结
 
-本博客文章重点是让你置身于需要衍生适合站点搜索引擎需求的查询模板的Elasticsearch工程师角色。我们简要覆盖了以下主题：
+本博客文章重点是让你置身于需要衍生适合站点搜索引擎需求的查询模板的 Elasticsearch 工程师角色。我们简要覆盖了以下主题：
 
 +   多字段关键词匹配
 
-+   理解默认Elasticsearch评分
++   理解默认 Elasticsearch 评分
 
-+   默认TFIDF的问题
++   默认 TFIDF 的问题
 
 +   通过属性提升搜索结果
 
 +   模糊匹配
 
-+   Elasticsearch查询模板评估与排名评估API
++   Elasticsearch 查询模板评估与排名评估 API
 
 +   使用`dis_max`和`constant_score`构造查询
 
-虽然绝对不是最佳的，我希望博客中的某些部分能帮助你更接近利用Elasticsearch解决自己的问题。
+虽然绝对不是最佳的，我希望博客中的某些部分能帮助你更接近利用 Elasticsearch 解决自己的问题。
 
-我也非常感激任何评论或反馈。如果你想深入讨论，请在此帖子下评论或在Github仓库中打开一个问题：[https://github.com/dvquy13/elasticsearch-sharing](https://github.com/dvquy13/elasticsearch-sharing)。
+我也非常感激任何评论或反馈。如果你想深入讨论，请在此帖子下评论或在 Github 仓库中打开一个问题：[`github.com/dvquy13/elasticsearch-sharing`](https://github.com/dvquy13/elasticsearch-sharing)。
 
 谢谢大家！
 
 # 附录
 
-## #1：详细解析默认TFIDF匹配，其中字段值的长度影响整体匹配分数
+## #1：详细解析默认 TFIDF 匹配，其中字段值的长度影响整体匹配分数
 
 ```py
 # Result

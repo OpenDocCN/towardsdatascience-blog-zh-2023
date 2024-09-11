@@ -1,20 +1,20 @@
 # 使用 AWS Sagemaker SDK 对 HuggingFace 模型进行超参数调整
 
-> 原文：[https://towardsdatascience.com/hyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36?source=collection_archive---------7-----------------------#2023-01-30](https://towardsdatascience.com/hyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36?source=collection_archive---------7-----------------------#2023-01-30)
+> 原文：[`towardsdatascience.com/hyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36?source=collection_archive---------7-----------------------#2023-01-30`](https://towardsdatascience.com/hyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36?source=collection_archive---------7-----------------------#2023-01-30)
 
 ## 使用 HuggingFace Estimator 和 Sagemaker Tuner 优化深度神经网络
 
-[](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)[![Ciarán Cooney](../Images/94d79e4ac477343c919a80fe124a96c9.png)](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------) [Ciarán Cooney](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)
+[](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)![Ciarán Cooney](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------) [Ciarán Cooney](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc6421cc0e5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&user=Ciar%C3%A1n+Cooney&userId=c6421cc0e5d6&source=post_page-c6421cc0e5d6----f727ac06cf36---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------) ·8 分钟阅读·2023年1月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff727ac06cf36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&user=Ciar%C3%A1n+Cooney&userId=c6421cc0e5d6&source=-----f727ac06cf36---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc6421cc0e5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&user=Ciar%C3%A1n+Cooney&userId=c6421cc0e5d6&source=post_page-c6421cc0e5d6----f727ac06cf36---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------) ·8 分钟阅读·2023 年 1 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff727ac06cf36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&user=Ciar%C3%A1n+Cooney&userId=c6421cc0e5d6&source=-----f727ac06cf36---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff727ac06cf36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&source=-----f727ac06cf36---------------------bookmark_footer-----------)![](../Images/9dd34e6c9734edf67315988646a63a25.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff727ac06cf36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&source=-----f727ac06cf36---------------------bookmark_footer-----------)![](img/9dd34e6c9734edf67315988646a63a25.png)
 
-图片来源于 pexels.com ([https://www.pexels.com/photo/person-holding-volume-knob-1345630/](https://urldefense.com/v3/__https:/www.pexels.com/photo/person-holding-volume-knob-1345630/__;!!MjIf2fY!myN_3VIbtds_D5dJELsjpVxU_DWxOfCYWeJ5xf3jHZaMREVimOZ7tDN0hKn1VEzEFG4JFDzJp_GlVhgBCv1M6Q$))
+图片来源于 pexels.com ([`www.pexels.com/photo/person-holding-volume-knob-1345630/`](https://urldefense.com/v3/__https:/www.pexels.com/photo/person-holding-volume-knob-1345630/__;!!MjIf2fY!myN_3VIbtds_D5dJELsjpVxU_DWxOfCYWeJ5xf3jHZaMREVimOZ7tDN0hKn1VEzEFG4JFDzJp_GlVhgBCv1M6Q$))
 
 # 介绍
 
@@ -52,7 +52,7 @@ Sagemaker 的 HyperparameterTuner 使得运行超参数任务变得易于维护�
 
 现在我们已经将训练和测试数据存储在一个 S3 位置，训练作业可以访问它。
 
-![](../Images/3794284b7c795cf8c59addc641668fbc.png)
+![](img/3794284b7c795cf8c59addc641668fbc.png)
 
 训练和测试集的 S3 位置。图片由作者提供。
 
@@ -100,7 +100,7 @@ Sagemaker 的 HyperparameterTuner 使得运行超参数任务变得易于维护�
 
 调优作业结束后，我们得到了调优后的超参数。调优器附带一个`tuner.analytics()`方法，用于在 pandas 数据框中显示汇总结果。FinalObjectiveValue 是我们在配置调优作业时建立的损失指标。
 
-![](../Images/5979b4cd28f15f5279f2cc8af8941fff.png)
+![](img/5979b4cd28f15f5279f2cc8af8941fff.png)
 
 调优器分析结果数据框。图片作者提供。
 
@@ -118,7 +118,7 @@ Sagemaker 的 HyperparameterTuner 使得运行超参数任务变得易于维护�
 
 当然，我们可以直接从数据框绘制结果，但还有另一种方法。从 Sagemaker 控制台，我们可以点击训练和超参数调优作业标签。从那里，我们可以找到已完成的作业并点击`View algorithm metrics`链接。这将带我们到 AWS CloudWatch，在那里我们可以看到各种交互式图表，并对调优器返回的数据执行查询。下图是一个示例折线图，显示了两个周期的测试损失。
 
-![](../Images/b05b700b83611446d17926eeaae747dd.png)
+![](img/b05b700b83611446d17926eeaae747dd.png)
 
 AWS CloudWatch。图片作者提供。
 
@@ -136,13 +136,13 @@ AWS CloudWatch。图片作者提供。
 
 进行预测。
 
-![](../Images/1b499fcf7d9c4426ed241cc909fc593d.png)
+![](img/1b499fcf7d9c4426ed241cc909fc593d.png)
 
 使用部署的模型进行预测。图片来源：作者。
 
 预测一个类别标签。
 
-![](../Images/881736cfdfadeb55de3ccb46093f4638.png)
+![](img/881736cfdfadeb55de3ccb46093f4638.png)
 
 将预测结果格式化为可读形式。图片来源：作者。
 

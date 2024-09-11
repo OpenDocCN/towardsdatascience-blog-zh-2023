@@ -1,22 +1,22 @@
 # 优质数据分析的艺术
 
-> 原文：[https://towardsdatascience.com/the-art-of-making-quality-data-analyses-a91ea319b573?source=collection_archive---------4-----------------------#2023-12-05](https://towardsdatascience.com/the-art-of-making-quality-data-analyses-a91ea319b573?source=collection_archive---------4-----------------------#2023-12-05)
+> 原文：[`towardsdatascience.com/the-art-of-making-quality-data-analyses-a91ea319b573?source=collection_archive---------4-----------------------#2023-12-05`](https://towardsdatascience.com/the-art-of-making-quality-data-analyses-a91ea319b573?source=collection_archive---------4-----------------------#2023-12-05)
 
-## 用3个词总结：时效性、方法论和可消化性
+## 用 3 个词总结：时效性、方法论和可消化性
 
-[](https://medium.com/@jordangom?source=post_page-----a91ea319b573--------------------------------)[![Jordan Gomes](../Images/d08bb9fd8b084687599a67a2221ec68c.png)](https://medium.com/@jordangom?source=post_page-----a91ea319b573--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a91ea319b573--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a91ea319b573--------------------------------) [乔丹·戈梅斯](https://medium.com/@jordangom?source=post_page-----a91ea319b573--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----a91ea319b573--------------------------------)![Jordan Gomes](https://medium.com/@jordangom?source=post_page-----a91ea319b573--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a91ea319b573--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a91ea319b573--------------------------------) [乔丹·戈梅斯](https://medium.com/@jordangom?source=post_page-----a91ea319b573--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-making-quality-data-analyses-a91ea319b573&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----a91ea319b573---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a91ea319b573--------------------------------) ·7分钟阅读·2023年12月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa91ea319b573&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-making-quality-data-analyses-a91ea319b573&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----a91ea319b573---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-making-quality-data-analyses-a91ea319b573&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----a91ea319b573---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a91ea319b573--------------------------------) ·7 分钟阅读·2023 年 12 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa91ea319b573&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-making-quality-data-analyses-a91ea319b573&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----a91ea319b573---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa91ea319b573&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-making-quality-data-analyses-a91ea319b573&source=-----a91ea319b573---------------------bookmark_footer-----------)
 
-几周前，我写了关于[构建系统以生成更多优质洞察](/generating-more-quality-insights-per-month-0d932930d99c)的文章。我展示了如何通过改进流程、工具、文化等领域来提高团队的产出，但我从未定义“质量”意味着什么——所以这周，我们将深入探讨这一概念。
+几周前，我写了关于构建系统以生成更多优质洞察的文章。我展示了如何通过改进流程、工具、文化等领域来提高团队的产出，但我从未定义“质量”意味着什么——所以这周，我们将深入探讨这一概念。
 
-通常当有人谈论数据研究的质量时——我们会立即想到“确保数据分析的准确性和结果的可靠性”。我认为这只是定义的一部分。根据我8年以上的分析经验，数据分析要被认为是“优质工作”，它必须融合三个基本元素。
+通常当有人谈论数据研究的质量时——我们会立即想到“确保数据分析的准确性和结果的可靠性”。我认为这只是定义的一部分。根据我 8 年以上的分析经验，数据分析要被认为是“优质工作”，它必须融合三个基本元素。
 
 +   它以及时的精确度解决了实际需求。
 
@@ -26,7 +26,7 @@
 
 让我们*深入探讨*！
 
-![](../Images/fcb80675d8f7bc85fdec454bf7951bf1.png)
+![](img/fcb80675d8f7bc85fdec454bf7951bf1.png)
 
 成功的数据分析包含的内容 — 作者插图
 
@@ -52,7 +52,7 @@
 
 结构化/标准化的方法确保了全面性，同时提升了分析的可信度和可重复性。
 
-我发现一个容易遵循的方法论是跨行业数据挖掘标准流程（CRISP-DM）框架。在这个领域工作了近十年，这仍然是我在从头开始分析时的首选框架。这个框架——被称为标准的“数据科学”/“数据分析”流程——有6个主要阶段：
+我发现一个容易遵循的方法论是跨行业数据挖掘标准流程（CRISP-DM）框架。在这个领域工作了近十年，这仍然是我在从头开始分析时的首选框架。这个框架——被称为标准的“数据科学”/“数据分析”流程——有 6 个主要阶段：
 
 +   **业务理解：** 在这个阶段，数据分析师应全面了解“业务背景”：我们要解决的痛点是什么，我们过去做了什么，谁是“参与者”，风险、资源等是什么——以及非常重要的是，项目的成功标准是什么。
 
@@ -62,7 +62,7 @@
 
 +   **建模：** “建模”的概念可能让一些人感到畏惧——但建模可以像为一个真/假指标“创建一个特定的阈值”一样简单（例如，如果你的项目是理解/定义流失）。在这个阶段，将各种建模技术应用于准备好的数据，以便你可以将它们相互对比，并了解哪些是最成功的。
 
-+   **评估：** 现在对模型进行严格评估，以确保它们达到业务目标以及在第1阶段设定的成功标准。这通常会导致你获得可以用来回顾和修订业务理解的见解。
++   **评估：** 现在对模型进行严格评估，以确保它们达到业务目标以及在第 1 阶段设定的成功标准。这通常会导致你获得可以用来回顾和修订业务理解的见解。
 
 +   **部署：** 最后一个阶段涉及将模型应用于实际数据和情况，将分析付诸实践，并开始使用这些见解来改进团队的运营。
 
@@ -74,7 +74,7 @@
 
 ## 从观众那里培养深层次的理解
 
-实现这一点需要使数据对观众既可访问又引起共鸣。这时，主题专家（SMEs）扮演着关键角色。通过在分析过程中早期涉及SMEs，他们的领域知识可以指导数据的框架和解释，确保分析与实际情况对接，并以对目标观众有意义的方式呈现。
+实现这一点需要使数据对观众既可访问又引起共鸣。这时，主题专家（SMEs）扮演着关键角色。通过在分析过程中早期涉及 SMEs，他们的领域知识可以指导数据的框架和解释，确保分析与实际情况对接，并以对目标观众有意义的方式呈现。
 
 另一个增强易读性的关键策略是实施‘阶段门’流程，这包括与利益相关者或接收团队进行定期检查和更新。这种方法避免了在研究结束时用一大堆复杂信息压倒他们。相反，利益相关者会被带到整个过程中，让他们逐渐吸收新见解。它还开辟了持续反馈的途径，确保分析始终与观众不断变化的需求和期望保持一致。
 

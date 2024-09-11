@@ -1,16 +1,16 @@
 # ETL 的 Docker Compose：Meerschaum Compose
 
-> 原文：[https://towardsdatascience.com/the-docker-compose-of-etl-meerschaum-compose-777e0e7304d1?source=collection_archive---------15-----------------------#2023-06-19](https://towardsdatascience.com/the-docker-compose-of-etl-meerschaum-compose-777e0e7304d1?source=collection_archive---------15-----------------------#2023-06-19)
+> 原文：[`towardsdatascience.com/the-docker-compose-of-etl-meerschaum-compose-777e0e7304d1?source=collection_archive---------15-----------------------#2023-06-19`](https://towardsdatascience.com/the-docker-compose-of-etl-meerschaum-compose-777e0e7304d1?source=collection_archive---------15-----------------------#2023-06-19)
 
-![](../Images/29603b9f71a9d9ec6dd01e06d9c2f749.png)
+![](img/29603b9f71a9d9ec6dd01e06d9c2f749.png)
 
 图片由[CHUTTERSNAP](https://unsplash.com/@chuttersnap?utm_source=medium&utm_medium=referral)拍摄，刊登于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-[](https://bmeares.medium.com/?source=post_page-----777e0e7304d1--------------------------------)[![本尼特·米尔斯](../Images/3511be817c635cee99b09014f4fc5322.png)](https://bmeares.medium.com/?source=post_page-----777e0e7304d1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----777e0e7304d1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----777e0e7304d1--------------------------------) [本尼特·米尔斯](https://bmeares.medium.com/?source=post_page-----777e0e7304d1--------------------------------)
+[](https://bmeares.medium.com/?source=post_page-----777e0e7304d1--------------------------------)![本尼特·米尔斯](https://bmeares.medium.com/?source=post_page-----777e0e7304d1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----777e0e7304d1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----777e0e7304d1--------------------------------) [本尼特·米尔斯](https://bmeares.medium.com/?source=post_page-----777e0e7304d1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff9b22e04ae69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-docker-compose-of-etl-meerschaum-compose-777e0e7304d1&user=Bennett+Meares&userId=f9b22e04ae69&source=post_page-f9b22e04ae69----777e0e7304d1---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----777e0e7304d1--------------------------------) · 6分钟阅读 · 2023年6月19日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F777e0e7304d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-docker-compose-of-etl-meerschaum-compose-777e0e7304d1&user=Bennett+Meares&userId=f9b22e04ae69&source=-----777e0e7304d1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff9b22e04ae69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-docker-compose-of-etl-meerschaum-compose-777e0e7304d1&user=Bennett+Meares&userId=f9b22e04ae69&source=post_page-f9b22e04ae69----777e0e7304d1---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----777e0e7304d1--------------------------------) · 6 分钟阅读 · 2023 年 6 月 19 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F777e0e7304d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-docker-compose-of-etl-meerschaum-compose-777e0e7304d1&user=Bennett+Meares&userId=f9b22e04ae69&source=-----777e0e7304d1---------------------clap_footer-----------)
 
 --
 
@@ -48,7 +48,7 @@ mrsm compose run --file mrsm-compose-02-load.yaml
 
 > **注意：** 命令`mrsm compose sync pipes`是并行执行的，最适用于 Compose 文件中的管道彼此独立的情况。
 
-![](../Images/cd955aae03970a39cc952d87fcb61b12.png)
+![](img/cd955aae03970a39cc952d87fcb61b12.png)
 
 Compose 运行命令一次同步一个管道。
 
@@ -56,7 +56,7 @@ Compose 运行命令一次同步一个管道。
 
 解析 Compose 文件并打印定义管道的当前环境和状态。这在故障排除和理解项目结构时非常有用。
 
-![](../Images/160134a0ed611d60d212a4e13e6ace5d.png)
+![](img/160134a0ed611d60d212a4e13e6ace5d.png)
 
 Compose explain 命令打印定义管道的状态。
 
@@ -76,7 +76,7 @@ Compose explain 命令打印定义管道的状态。
 
 每当你运行 `mrsm compose` 命令时，标志 `--tags {project_name}` 会被附加（除非被覆盖），以确保你只与项目中的管道进行交互。
 
-![](../Images/1ca148ed2498fd40a4211df8da5c9489.png)
+![](img/1ca148ed2498fd40a4211df8da5c9489.png)
 
 一个 Meerschaum Compose 项目的示例，用于天气数据的 ETL。
 
@@ -84,7 +84,7 @@ Compose explain 命令打印定义管道的状态。
 
 谦逊的 [管道](https://meerschaum.io/reference/pipes/) 是 Meerschaum 对增量 ETL 的抽象。管道具有输入和输出 [连接器](https://meerschaum.io/reference/connectors/) 并存储 [参数](https://meerschaum.io/reference/pipes/#parameters) 来配置其同步过程的行为。这可以是简单的 SQL 查询，也可以包括用于插件的自定义键。
 
-![](../Images/47b0e7e17488cdfa1760b18a6662361f.png)
+![](img/47b0e7e17488cdfa1760b18a6662361f.png)
 
 上述 Compose 项目的管道通过 web UI 展示
 

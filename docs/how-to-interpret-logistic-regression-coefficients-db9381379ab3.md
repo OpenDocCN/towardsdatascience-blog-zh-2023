@@ -1,20 +1,20 @@
 # 如何解释逻辑回归系数
 
-> 原文：[https://towardsdatascience.com/how-to-interpret-logistic-regression-coefficients-db9381379ab3?source=collection_archive---------8-----------------------#2023-08-24](https://towardsdatascience.com/how-to-interpret-logistic-regression-coefficients-db9381379ab3?source=collection_archive---------8-----------------------#2023-08-24)
+> 原文：[`towardsdatascience.com/how-to-interpret-logistic-regression-coefficients-db9381379ab3?source=collection_archive---------8-----------------------#2023-08-24`](https://towardsdatascience.com/how-to-interpret-logistic-regression-coefficients-db9381379ab3?source=collection_archive---------8-----------------------#2023-08-24)
 
 ## 计算逻辑回归系数的均值边际效应
 
-[](https://medium.com/@jarom.hulet?source=post_page-----db9381379ab3--------------------------------)[![Jarom Hulet](../Images/0fdeb1a2df90cccdd8f2f4b84d5e54eb.png)](https://medium.com/@jarom.hulet?source=post_page-----db9381379ab3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db9381379ab3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db9381379ab3--------------------------------) [Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----db9381379ab3--------------------------------)
+[](https://medium.com/@jarom.hulet?source=post_page-----db9381379ab3--------------------------------)![Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----db9381379ab3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db9381379ab3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----db9381379ab3--------------------------------) [Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----db9381379ab3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88982a88b4e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-interpret-logistic-regression-coefficients-db9381379ab3&user=Jarom+Hulet&userId=88982a88b4e5&source=post_page-88982a88b4e5----db9381379ab3---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----db9381379ab3--------------------------------) · 10分钟阅读·2023年8月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb9381379ab3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-interpret-logistic-regression-coefficients-db9381379ab3&user=Jarom+Hulet&userId=88982a88b4e5&source=-----db9381379ab3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88982a88b4e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-interpret-logistic-regression-coefficients-db9381379ab3&user=Jarom+Hulet&userId=88982a88b4e5&source=post_page-88982a88b4e5----db9381379ab3---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----db9381379ab3--------------------------------) · 10 分钟阅读·2023 年 8 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb9381379ab3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-interpret-logistic-regression-coefficients-db9381379ab3&user=Jarom+Hulet&userId=88982a88b4e5&source=-----db9381379ab3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb9381379ab3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-interpret-logistic-regression-coefficients-db9381379ab3&source=-----db9381379ab3---------------------bookmark_footer-----------)![](../Images/6b8de6ded7e16028cbbbdf6fbf4cd355.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb9381379ab3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-interpret-logistic-regression-coefficients-db9381379ab3&source=-----db9381379ab3---------------------bookmark_footer-----------)![](img/6b8de6ded7e16028cbbbdf6fbf4cd355.png)
 
-图片来源于Pexels.com上的Dominika Roseclay
+图片来源于 Pexels.com 上的 Dominika Roseclay
 
 你是否喜欢逻辑回归，但讨厌解释任何形式的对数变换？好吧，我不能说你是个好伙伴，但我可以说你确实有*我*做伴！
 

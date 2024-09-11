@@ -1,24 +1,24 @@
 # 深入探讨 pandas Copy-on-Write 模式：第一部分
 
-> 原文：[https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6?source=collection_archive---------5-----------------------#2023-08-09](https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6?source=collection_archive---------5-----------------------#2023-08-09)
+> 原文：[`towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6?source=collection_archive---------5-----------------------#2023-08-09`](https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6?source=collection_archive---------5-----------------------#2023-08-09)
 
 ## *解释 Copy-on-Write 内部是如何工作的*
 
-[](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)[![Patrick Hoefler](../Images/35ca9ef1100d8c93dbadd374f0569fe1.png)](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)
+[](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)![Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----26982e7408c6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------) ·8分钟阅读·2023年8月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F26982e7408c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----26982e7408c6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----26982e7408c6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------) ·8 分钟阅读·2023 年 8 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F26982e7408c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----26982e7408c6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F26982e7408c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&source=-----26982e7408c6---------------------bookmark_footer-----------)![](../Images/76145cd8462a1cce9b082b46b634ac76.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F26982e7408c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&source=-----26982e7408c6---------------------bookmark_footer-----------)![](img/76145cd8462a1cce9b082b46b634ac76.png)
 
 照片由 [Clint Adair](https://unsplash.com/@clintadair?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/BW0vK-FA3eg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供
 
 ## 介绍
 
-[pandas 2.0](https://medium.com/gitconnected/welcoming-pandas-2-0-194094e4275b)于四月初发布，并带来了许多对新 Copy-on-Write (CoW) 模式的改进。该功能预计将成为 pandas 3.0 的默认模式，计划于2024年四月发布。目前没有遗留或非 CoW 模式的计划。
+[pandas 2.0](https://medium.com/gitconnected/welcoming-pandas-2-0-194094e4275b)于四月初发布，并带来了许多对新 Copy-on-Write (CoW) 模式的改进。该功能预计将成为 pandas 3.0 的默认模式，计划于 2024 年四月发布。目前没有遗留或非 CoW 模式的计划。
 
 这一系列文章将解释 Copy-on-Write 如何在内部工作，以帮助用户了解发生了什么，展示如何有效使用它，并说明如何调整你的代码。这将包括如何利用机制以获得最有效的性能的示例，同时展示一些会导致不必要瓶颈的反模式。我几个月前写了一篇[简短的介绍](https://medium.com/towards-data-science/a-solution-for-inconsistencies-in-indexing-operations-in-pandas-b76e10719744) 介绍 Copy-on-Write。
 
@@ -106,7 +106,7 @@ df.iloc[0, 0] = 100
 
 前两个案例很简单。当创建 DataFrame 时，支撑它的 NumPy 数组会连接到一个新的 `BlockValuesRefs` 对象。这些数组仅被新对象引用，因此我们不必跟踪任何其他对象。该对象创建一个 `weakref`，指向包裹 NumPy 数组的 `Block` 并在内部存储这个引用。Blocks 的概念在[这里](https://medium.com/better-programming/pandas-internals-explained-545f14a941c1)进行了解释。
 
-> [weakref](https://docs.python.org/3/library/weakref.html)创建对任何Python对象的引用。它不会在对象通常超出作用域时保持该对象存活。
+> [weakref](https://docs.python.org/3/library/weakref.html)创建对任何 Python 对象的引用。它不会在对象通常超出作用域时保持该对象存活。
 
 ```py
 import weakref
@@ -122,7 +122,7 @@ Out[3]: <__main__.Dummy object at 0x108187d60>
 In[4]: obj = Dummy(2)
 ```
 
-> 这个示例创建了一个Dummy对象及其弱引用。随后，我们将另一个对象赋给相同的变量，例如初始对象超出作用域并被垃圾回收。弱引用不会干扰这一过程。如果你解析弱引用，它将指向`None`而不是原始对象。
+> 这个示例创建了一个 Dummy 对象及其弱引用。随后，我们将另一个对象赋给相同的变量，例如初始对象超出作用域并被垃圾回收。弱引用不会干扰这一过程。如果你解析弱引用，它将指向`None`而不是原始对象。
 
 ```py
 In[5]: ref()
@@ -133,35 +133,35 @@ Out[5]: None
 
 让我们来看看这些对象是如何组织的：
 
-![](../Images/af723ab6a06f1f56cd2e5ba5dea4bf68.png)
+![](img/af723ab6a06f1f56cd2e5ba5dea4bf68.png)
 
 作者提供的图片
 
-我们的示例有两列`"a"`和`"b"`，它们的dtype都是`"int64"`。它们由一个Block支持，该Block保存这两列的数据。Block持有对引用跟踪对象的硬引用，确保只要Block没有被垃圾回收，它就会保持活跃。引用跟踪对象持有对Block的弱引用。这使得该对象能够跟踪此Block的生命周期，但不会阻止垃圾回收。引用跟踪对象尚未持有对任何其他Block的弱引用。
+我们的示例有两列`"a"`和`"b"`，它们的 dtype 都是`"int64"`。它们由一个 Block 支持，该 Block 保存这两列的数据。Block 持有对引用跟踪对象的硬引用，确保只要 Block 没有被垃圾回收，它就会保持活跃。引用跟踪对象持有对 Block 的弱引用。这使得该对象能够跟踪此 Block 的生命周期，但不会阻止垃圾回收。引用跟踪对象尚未持有对任何其他 Block 的弱引用。
 
-这些是简单的场景。我们知道没有其他pandas对象共享相同的NumPy数组，因此我们可以简单地实例化一个新的引用跟踪对象。
+这些是简单的场景。我们知道没有其他 pandas 对象共享相同的 NumPy 数组，因此我们可以简单地实例化一个新的引用跟踪对象。
 
-第三种情况更复杂。新对象查看的数据与原始对象相同。这意味着两个对象指向相同的内存。我们的操作将创建一个新的Block，该Block引用相同的NumPy数组，这称为浅拷贝。我们现在必须在我们的引用跟踪机制中注册这个新的`Block`。我们将使用与旧对象连接的引用跟踪对象来注册我们的新`Block`。
+第三种情况更复杂。新对象查看的数据与原始对象相同。这意味着两个对象指向相同的内存。我们的操作将创建一个新的 Block，该 Block 引用相同的 NumPy 数组，这称为浅拷贝。我们现在必须在我们的引用跟踪机制中注册这个新的`Block`。我们将使用与旧对象连接的引用跟踪对象来注册我们的新`Block`。
 
 ```py
 df2 = df.reset_index(drop=True)
 ```
 
-![](../Images/a2c2fc52065f845d3ec6093ce639265d.png)
+![](img/a2c2fc52065f845d3ec6093ce639265d.png)
 
 作者提供的图片
 
-我们的`BlockValuesRefs`现在指向支持初始`df`的Block和支持`df2`的新增Block。这确保了我们始终了解所有指向相同内存的DataFrame。
+我们的`BlockValuesRefs`现在指向支持初始`df`的 Block 和支持`df2`的新增 Block。这确保了我们始终了解所有指向相同内存的 DataFrame。
 
-我们现在可以询问引用跟踪对象有多少个指向相同NumPy数组的Block仍然存在。引用跟踪对象评估弱引用，并告诉我们有多个对象引用相同的数据。这使我们能够在其中一个对象在原地修改时内部触发复制。
+我们现在可以询问引用跟踪对象有多少个指向相同 NumPy 数组的 Block 仍然存在。引用跟踪对象评估弱引用，并告诉我们有多个对象引用相同的数据。这使我们能够在其中一个对象在原地修改时内部触发复制。
 
 ```py
 df2.iloc[0, 0] = 100
 ```
 
-`df2`中的Block通过深拷贝进行复制，创建了一个新的Block，该Block拥有自己的数据和引用跟踪对象。原始的Block现在可以被垃圾回收，这确保了`df`和`df2`所支持的数组不会共享任何内存。
+`df2`中的 Block 通过深拷贝进行复制，创建了一个新的 Block，该 Block 拥有自己的数据和引用跟踪对象。原始的 Block 现在可以被垃圾回收，这确保了`df`和`df2`所支持的数组不会共享任何内存。
 
-![](../Images/e06fd9daf47e7ebe973af0728c0f407c.png)
+![](img/e06fd9daf47e7ebe973af0728c0f407c.png)
 
 作者提供的图片
 
@@ -172,13 +172,13 @@ df = None
 df2.iloc[0, 0] = 100
 ```
 
-在我们修改`df2`之前，`df`已被失效。因此，我们引用跟踪对象的弱引用，指向支持`df`的Block，评估结果为`None`。这使我们能够在不触发复制的情况下修改`df2`。
+在我们修改`df2`之前，`df`已被失效。因此，我们引用跟踪对象的弱引用，指向支持`df`的 Block，评估结果为`None`。这使我们能够在不触发复制的情况下修改`df2`。
 
-![](../Images/7174f506834adb8fbf5c54b4d1adbd88.png)
+![](img/7174f506834adb8fbf5c54b4d1adbd88.png)
 
 作者提供的图像
 
-我们的引用跟踪对象仅指向一个DataFrame，这使我们能够在不触发复制的情况下进行就地操作。
+我们的引用跟踪对象仅指向一个 DataFrame，这使我们能够在不触发复制的情况下进行就地操作。
 
 上述`reset_index`创建了一个视图。如果我们有一个内部触发复制的操作，机制会简单一些。
 
@@ -186,16 +186,16 @@ df2.iloc[0, 0] = 100
 df2 = df.copy()
 ```
 
-这立即为我们的DataFrame `df2` 实例化了一个新的引用跟踪对象。
+这立即为我们的 DataFrame `df2` 实例化了一个新的引用跟踪对象。
 
-![](../Images/00760204bbc4c441baab8b73b4b858e8.png)
+![](img/00760204bbc4c441baab8b73b4b858e8.png)
 
 作者提供的图像
 
 ## 结论
 
-我们已经研究了Copy-on-Write跟踪机制是如何工作的以及何时触发复制。该机制尽可能推迟pandas中的复制，这与非CoW行为有很大不同。引用跟踪机制跟踪所有共享内存的DataFrame，从而在pandas中实现更一致的行为。
+我们已经研究了 Copy-on-Write 跟踪机制是如何工作的以及何时触发复制。该机制尽可能推迟 pandas 中的复制，这与非 CoW 行为有很大不同。引用跟踪机制跟踪所有共享内存的 DataFrame，从而在 pandas 中实现更一致的行为。
 
 本系列的下一部分将解释用于提高此机制效率的技术。
 
-感谢阅读。如有意见和反馈，请随时联系以分享您对Copy-on-Write的看法。
+感谢阅读。如有意见和反馈，请随时联系以分享您对 Copy-on-Write 的看法。

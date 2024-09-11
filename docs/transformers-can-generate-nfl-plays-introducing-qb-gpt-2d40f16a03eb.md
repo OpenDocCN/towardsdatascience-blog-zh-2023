@@ -1,28 +1,28 @@
-# Transformers可以生成NFL比赛：介绍QB-GPT
+# Transformers 可以生成 NFL 比赛：介绍 QB-GPT
 
-> 原文：[https://towardsdatascience.com/transformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb?source=collection_archive---------14-----------------------#2023-11-07](https://towardsdatascience.com/transformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb?source=collection_archive---------14-----------------------#2023-11-07)
+> 原文：[`towardsdatascience.com/transformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb?source=collection_archive---------14-----------------------#2023-11-07`](https://towardsdatascience.com/transformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb?source=collection_archive---------14-----------------------#2023-11-07)
 
-## 弥合GenAI与体育分析之间的差距
+## 弥合 GenAI 与体育分析之间的差距
 
-[](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)[![Samuel Chaineau](../Images/53523a7fb804971410841d38a47457c7.png)](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------) [Samuel Chaineau](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)
+[](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)![Samuel Chaineau](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------) [Samuel Chaineau](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F71edae854a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&user=Samuel+Chaineau&userId=71edae854a7f&source=post_page-71edae854a7f----2d40f16a03eb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------) · 10分钟阅读 · 2023年11月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d40f16a03eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&user=Samuel+Chaineau&userId=71edae854a7f&source=-----2d40f16a03eb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F71edae854a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&user=Samuel+Chaineau&userId=71edae854a7f&source=post_page-71edae854a7f----2d40f16a03eb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------) · 10 分钟阅读 · 2023 年 11 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d40f16a03eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&user=Samuel+Chaineau&userId=71edae854a7f&source=-----2d40f16a03eb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d40f16a03eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&source=-----2d40f16a03eb---------------------bookmark_footer-----------)![](../Images/c8da7b29154888dc16655b0835a0b189.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d40f16a03eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&source=-----2d40f16a03eb---------------------bookmark_footer-----------)![](img/c8da7b29154888dc16655b0835a0b189.png)
 
 由 [Zetong Li](https://unsplash.com/@zetong?utm_source=medium&utm_medium=referral) 摄影，发表于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 *自从我撰写了关于* [*StratFormer*](https://medium.com/better-programming/transformers-will-guess-nfl-playbooks-f90e7420835b)*的第一篇文章后，我收到了相对较多的反馈和想法（所以首先谢谢大家！）。这促使我深入研究，并尝试进一步的步骤：* ***构建一个足球战术生成器****。在这篇文章中，我介绍了* ***QB-GPT****，一个能够在提供一些元素后有效生成足球战术的模型。可以在* [*这里*](https://huggingface.co/spaces/samchain/QB-GPT) *找到一个专门的 HuggingFace 空间以进行尝试。我将在本月晚些时候分享我关于如何使用这种生成模型作为基础来更好地预测 NFL 战术的工作和发现。行业也在关注这一领域，因为* [*DeepMind 安全研究*](https://medium.com/u/55e08ddea42e?source=post_page-----2d40f16a03eb--------------------------------) *目前正在与利物浦合作研究足球，了解球员在场上的移动方式。*
 
-![](../Images/9191405f2c4641d82bf08476efed5054.png)
+![](img/9191405f2c4641d82bf08476efed5054.png)
 
 QB-GPT 生成的轨迹
 
-![](../Images/b845679a6346a8d6a7cc8c3e4ab33570.png)
+![](img/b845679a6346a8d6a7cc8c3e4ab33570.png)
 
 真实轨迹
 
@@ -72,15 +72,15 @@ QB-GPT 生成的轨迹
 
 下面是一个表示单个球员输入嵌入的示意图：
 
-![](../Images/df7540caf17fae50eb5087db156cd23b.png)
+![](img/df7540caf17fae50eb5087db156cd23b.png)
 
 然后将十一名球员按比赛进行连接，然后按帧截断，以始终保持标记数等于 256。为了确保每名球员的帧数始终相同，我将每名球员的帧数限制为 21（最大 = 21*11 = 231）。因此，我不得不从比赛的某个特定时刻直接创建新的轨迹，因为我的大多数比赛有超过 21 帧。我创建了一个 12 帧的填充步骤，这意味着轨迹现在被分成子轨迹，每次偏移 12 帧。这个过程往往使得预测第 12、24、36 和 48 帧的任务变得更加困难，正如我们稍后将看到的。
 
-![](../Images/0e7ae7ecea369218fa4f514c12181dea.png)
+![](img/0e7ae7ecea369218fa4f514c12181dea.png)
 
 元素可以讨论。例如，用 1 码为基础对场地进行划分的相关性，或为何使用 0.2 秒的帧率。我认为模型（即其训练数据）是一个起点，我想承认并非一切都是完美的。反馈和意见都是欢迎的，只要它们是相关的。
 
-## 第 2 部分：模型
+## 第二部分：模型
 
 该模型完全受 OpenAI GPT 架构的启发。它依赖于一个嵌入层，将不同的上下文元素添加到输入标记中。然后，将这些嵌入传递到一个使用 3 个头的多头注意力的单个 Transformer 模块中。在大型模型中，应用了第二个 Transformer 模块。输出随后传递到一个具有“relu”激活的全连接层中。为了获得预测结果，我们对 logits 应用 soft-max 激活。
 
@@ -88,15 +88,15 @@ QB-GPT 生成的轨迹
 
 +   **多时间步因果掩码**：在经典 GPT 中，位置 i 处的嵌入只能关注从位置 0 到 i-1 的标记。在我们的案例中，由于我正在**完全**解码团队，我需要时间 i 处的标记能够关注时间 0 到 i-1 之间的所有标记。与其使用所谓的“下三角掩码”，你最终会得到一个多三角掩码。
 
-![](../Images/5af61ad139a1017cd0cefe0aaeb132e0.png)
+![](img/5af61ad139a1017cd0cefe0aaeb132e0.png)
 
 注意力掩码
 
-![](../Images/2236dd3b9ce207f1d2382c1e1305a0f8.png)
+![](img/2236dd3b9ce207f1d2382c1e1305a0f8.png)
 
 原始注意力得分和注意力掩码减去后的得分
 
-![](../Images/7eae47de8f4a51ded66bf92c18af574c.png)
+![](img/7eae47de8f4a51ded66bf92c18af574c.png)
 
 不同 vmax 规模下的注意力得分
 
@@ -118,7 +118,7 @@ QB-GPT 生成的轨迹
 
 以下图表展示了不同模型在训练过程中的准确率和损失的比较：
 
-![](../Images/0352c1ed1fed7fa5a95e05dd4ac38f8b.png)
+![](img/0352c1ed1fed7fa5a95e05dd4ac38f8b.png)
 
 四个模型的损失和准确率
 
@@ -138,7 +138,7 @@ QB-GPT 生成的轨迹
 
 +   **前 5 准确率**：下一步标记的动作是否在前 5 个预测中？
 
-![](../Images/9c29b03acaafbc50978382c019d188b5.png)
+![](img/9c29b03acaafbc50978382c019d188b5.png)
 
 四个模型的前 3 和前 5 准确率
 
@@ -150,25 +150,25 @@ QB-GPT 生成的轨迹
 
 我决定将这些预测分为 3 类：时间、比赛类型和位置。
 
-![](../Images/1e6997c9489e5ef9220a740a64359825.png)
+![](img/1e6997c9489e5ef9220a740a64359825.png)
 
 准确率和 RMSE 随时间（帧）的变化
 
 对模型来说，前 5 帧相对较容易预测，因为球员经常以相似的动作开始。帧 5 到 10 之间的准确率下降了 40-50%。这是动作趋于不同且有各自路径的时刻。在四个模型中，小模型在轨迹末端特别困难。中等模型即使在长期（超过 20 帧）中也表现得非常好。峰值与填充轨迹的开始相关，因为这些数据在没有过去轨迹知识的情况下输入。
 
-![](../Images/73ffae52dc35c5994bf1536ff488e289.png)
+![](img/73ffae52dc35c5994bf1536ff488e289.png)
 
 比赛类型的准确性和 RMSE
 
 相对静态的比赛（毫不意外）更容易预测。跑动、传球、开球和踢球（毫不意外）是最难猜测的，因为球员的移动更多，且可能存在混乱的模式。模型之间没有显著差异。
 
-![](../Images/ff1363859b77dc66ea07fa772feba2d0.png)
+![](img/ff1363859b77dc66ea07fa772feba2d0.png)
 
 位置的准确性和 RMSE
 
 位置是一个非常显著的因素，不同位置之间的准确性差异可以达到 10% 到 20%。总体而言，移动较多的位置也是最难预测的。小型和微型模型通常比其他模型的准确性要差。
 
-## **第 5 部分：我通过玩这个模型所见的一切**
+## **第五部分：我通过玩这个模型所见的一切**
 
 该模型的理想温度似乎在 1.5 和 2.5 之间。我测试了 10、20 和 50 的选择。温度和选择值越高，模型往往会变得越来越疯狂，产生奇怪的模式（球员离场、改变方向、两个帧之间的巨大间隙）。
 

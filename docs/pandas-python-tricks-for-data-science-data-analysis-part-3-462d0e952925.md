@@ -1,10 +1,10 @@
-# Pandas 和 Python 数据科学与数据分析技巧 — 第 3 部分
+# Pandas 和 Python 数据科学与数据分析技巧 — 第三部分
 
-> 原文：[https://towardsdatascience.com/pandas-python-tricks-for-data-science-data-analysis-part-3-462d0e952925?source=collection_archive---------6-----------------------#2023-02-16](https://towardsdatascience.com/pandas-python-tricks-for-data-science-data-analysis-part-3-462d0e952925?source=collection_archive---------6-----------------------#2023-02-16)
+> 原文：[`towardsdatascience.com/pandas-python-tricks-for-data-science-data-analysis-part-3-462d0e952925?source=collection_archive---------6-----------------------#2023-02-16`](https://towardsdatascience.com/pandas-python-tricks-for-data-science-data-analysis-part-3-462d0e952925?source=collection_archive---------6-----------------------#2023-02-16)
 
 ## 这是我分享的 Pandas 和 Python 技巧的第三部分
 
-[](https://zoumanakeita.medium.com/?source=post_page-----462d0e952925--------------------------------)[![Zoumana Keita](../Images/34a15c1d03687816dbdbc065f5719f80.png)](https://zoumanakeita.medium.com/?source=post_page-----462d0e952925--------------------------------)[](https://towardsdatascience.com/?source=post_page-----462d0e952925--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----462d0e952925--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----462d0e952925--------------------------------)
+[](https://zoumanakeita.medium.com/?source=post_page-----462d0e952925--------------------------------)![Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----462d0e952925--------------------------------)[](https://towardsdatascience.com/?source=post_page-----462d0e952925--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----462d0e952925--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----462d0e952925--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F462d0e952925&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-python-tricks-for-data-science-data-analysis-part-3-462d0e952925&source=-----462d0e952925---------------------bookmark_footer-----------)![](../Images/d611a2a92c7483193eb35b857f113a1e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F462d0e952925&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-python-tricks-for-data-science-data-analysis-part-3-462d0e952925&source=-----462d0e952925---------------------bookmark_footer-----------)![](img/d611a2a92c7483193eb35b857f113a1e.png)
 
 图片由 [Andrew Neel](https://unsplash.com/@andrewtneel) 提供，来源于 [Unsplash](https://unsplash.com/photos/cckf4TsHAuw)
 
@@ -30,7 +30,7 @@
 
 下面是一个示例 💡
 
-![](../Images/b7db149aeeffcf76acaec343ca8080cc.png)
+![](img/b7db149aeeffcf76acaec343ca8080cc.png)
 
 ## 给你的 Pandas 数据框应用颜色
 

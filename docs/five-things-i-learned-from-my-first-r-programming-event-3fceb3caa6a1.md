@@ -1,18 +1,18 @@
 # 我从第一次 R 编程活动中学到的五件事
 
-> 原文：[https://towardsdatascience.com/five-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1?source=collection_archive---------6-----------------------#2023-05-11](https://towardsdatascience.com/five-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1?source=collection_archive---------6-----------------------#2023-05-11)
+> 原文：[`towardsdatascience.com/five-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1?source=collection_archive---------6-----------------------#2023-05-11`](https://towardsdatascience.com/five-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1?source=collection_archive---------6-----------------------#2023-05-11)
 
 ## 从 SatRDays London 学到的关于 R、数据科学和吸引观众的经验
 
-[](https://roryspanton.medium.com/?source=post_page-----3fceb3caa6a1--------------------------------)[![Rory Spanton](../Images/6c35a3de7cb516aac09bc5cf417a6c70.png)](https://roryspanton.medium.com/?source=post_page-----3fceb3caa6a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3fceb3caa6a1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3fceb3caa6a1--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----3fceb3caa6a1--------------------------------)
+[](https://roryspanton.medium.com/?source=post_page-----3fceb3caa6a1--------------------------------)![Rory Spanton](https://roryspanton.medium.com/?source=post_page-----3fceb3caa6a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3fceb3caa6a1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3fceb3caa6a1--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----3fceb3caa6a1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----3fceb3caa6a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3fceb3caa6a1--------------------------------) ·8分钟阅读·2023年5月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3fceb3caa6a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1&user=Rory+Spanton&userId=39501aa8ce39&source=-----3fceb3caa6a1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----3fceb3caa6a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3fceb3caa6a1--------------------------------) ·8 分钟阅读·2023 年 5 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3fceb3caa6a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1&user=Rory+Spanton&userId=39501aa8ce39&source=-----3fceb3caa6a1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3fceb3caa6a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1&source=-----3fceb3caa6a1---------------------bookmark_footer-----------)![](../Images/20b8f1552ec8009b0748f6941c7fcf39.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3fceb3caa6a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-things-i-learned-from-my-first-r-programming-event-3fceb3caa6a1&source=-----3fceb3caa6a1---------------------bookmark_footer-----------)![](img/20b8f1552ec8009b0748f6941c7fcf39.png)
 
 图片由 [Teemu Paananen](https://unsplash.com/@xteemu?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -117,13 +117,13 @@ Vyara Apostolova 和 Laura Cole 在国家审计办公室的一次讲话中重点
 
 R 社区非常棒。
 
-这一点对于了解我人品的任何人来说都不应该感到惊讶。我鼓励在[学习 R](/how-to-learn-r-for-data-science-fast-d47408d0becf)时积极参与社区互动，甚至在选择使用哪些软件包时也是如此。
+这一点对于了解我人品的任何人来说都不应该感到惊讶。我鼓励在学习 R 时积极参与社区互动，甚至在选择使用哪些软件包时也是如此。
 
-[](/tidyverse-vs-base-r-how-to-choose-the-best-framework-for-you-29b702bdb384?source=post_page-----3fceb3caa6a1--------------------------------) [## Tidyverse 与 Base-R：如何为自己选择最佳框架
+[](/tidyverse-vs-base-r-how-to-choose-the-best-framework-for-you-29b702bdb384?source=post_page-----3fceb3caa6a1--------------------------------) ## Tidyverse 与 Base-R：如何为自己选择最佳框架
 
 ### 最受欢迎的 R 编程方法的优缺点。
 
-towardsdatascience.com](/tidyverse-vs-base-r-how-to-choose-the-best-framework-for-you-29b702bdb384?source=post_page-----3fceb3caa6a1--------------------------------)
+towardsdatascience.com
 
 但我从未与这么多 R 用户和专业人士待在同一空间里过。我在一天开始时不认识任何人，所以我希望能找到至少几个友好的人聊聊天。说实话，我有点紧张。
 

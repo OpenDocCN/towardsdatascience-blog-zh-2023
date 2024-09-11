@@ -1,26 +1,26 @@
 # 气候变化的时间序列：使用深度学习进行精准农业
 
-> 原文：[https://towardsdatascience.com/time-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c?source=collection_archive---------12-----------------------#2023-05-29](https://towardsdatascience.com/time-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c?source=collection_archive---------12-----------------------#2023-05-29)
+> 原文：[`towardsdatascience.com/time-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c?source=collection_archive---------12-----------------------#2023-05-29`](https://towardsdatascience.com/time-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c?source=collection_archive---------12-----------------------#2023-05-29)
 
 ## 如何使用时间序列分析和预测应对气候变化
 
-[](https://vcerq.medium.com/?source=post_page-----806878cab9c--------------------------------)[![Vitor Cerqueira](../Images/9e52f462c6bc20453d3ea273eb52114b.png)](https://vcerq.medium.com/?source=post_page-----806878cab9c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----806878cab9c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----806878cab9c--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----806878cab9c--------------------------------)
+[](https://vcerq.medium.com/?source=post_page-----806878cab9c--------------------------------)![Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----806878cab9c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----806878cab9c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----806878cab9c--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----806878cab9c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----806878cab9c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----806878cab9c--------------------------------) ·6分钟阅读·2023年5月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F806878cab9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----806878cab9c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----806878cab9c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----806878cab9c--------------------------------) ·6 分钟阅读·2023 年 5 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F806878cab9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----806878cab9c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F806878cab9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c&source=-----806878cab9c---------------------bookmark_footer-----------)![](../Images/ed0a643a934d77c8b57b71161f666ee4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F806878cab9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-using-deep-learning-for-precision-agriculture-806878cab9c&source=-----806878cab9c---------------------bookmark_footer-----------)![](img/ed0a643a934d77c8b57b71161f666ee4.png)
 
 [Irewolede](https://unsplash.com/@irewolede?utm_source=medium&utm_medium=referral)拍摄于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 这是系列文章*气候变化的时间序列*的第六部分。文章列表：
 
-+   第1部分: [风能预测](/time-series-for-climate-change-forecasting-wind-power-8ed6d653a255)
++   第一部分: 风能预测
 
-+   第2部分: [太阳辐射预测](/time-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f)
++   第二部分: 太阳辐射预测
 
 +   Part 3: [预测大洋海浪](https://medium.com/towards-data-science/time-series-for-climate-change-forecasting-large-ocean-waves-78484536be36)
 

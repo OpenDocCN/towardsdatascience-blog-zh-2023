@@ -1,24 +1,24 @@
-# 使用强化学习解决Leetcode问题
+# 使用强化学习解决 Leetcode 问题
 
-> 原文：[https://towardsdatascience.com/solving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309?source=collection_archive---------8-----------------------#2023-08-29](https://towardsdatascience.com/solving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309?source=collection_archive---------8-----------------------#2023-08-29)
+> 原文：[`towardsdatascience.com/solving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309?source=collection_archive---------8-----------------------#2023-08-29`](https://towardsdatascience.com/solving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309?source=collection_archive---------8-----------------------#2023-08-29)
 
 ## 强化学习的实用介绍
 
-[](https://medium.com/@pratikaher?source=post_page-----6ec9959dd309--------------------------------)[![Pratik Aher](../Images/5648c040ff967717c94657ebfff11e2b.png)](https://medium.com/@pratikaher?source=post_page-----6ec9959dd309--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6ec9959dd309--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6ec9959dd309--------------------------------) [Pratik Aher](https://medium.com/@pratikaher?source=post_page-----6ec9959dd309--------------------------------)
+[](https://medium.com/@pratikaher?source=post_page-----6ec9959dd309--------------------------------)![Pratik Aher](https://medium.com/@pratikaher?source=post_page-----6ec9959dd309--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6ec9959dd309--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ec9959dd309--------------------------------) [Pratik Aher](https://medium.com/@pratikaher?source=post_page-----6ec9959dd309--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc2e5b1d7be67&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309&user=Pratik+Aher&userId=c2e5b1d7be67&source=post_page-c2e5b1d7be67----6ec9959dd309---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ec9959dd309--------------------------------) ·7分钟阅读·2023年8月29日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6ec9959dd309&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309&user=Pratik+Aher&userId=c2e5b1d7be67&source=-----6ec9959dd309---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc2e5b1d7be67&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309&user=Pratik+Aher&userId=c2e5b1d7be67&source=post_page-c2e5b1d7be67----6ec9959dd309---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ec9959dd309--------------------------------) ·7 分钟阅读·2023 年 8 月 29 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6ec9959dd309&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309&user=Pratik+Aher&userId=c2e5b1d7be67&source=-----6ec9959dd309---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6ec9959dd309&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-a-leetcode-problem-using-reinforcement-learning-a-practical-introduction-to-6ec9959dd309&source=-----6ec9959dd309---------------------bookmark_footer-----------)
 
-最近，我遇到了一个在leetcode上的问题：[**网格中的最短路径与障碍物消除**](https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/)**。** 网格中的最短路径与障碍物消除问题涉及在包含障碍物的二维网格中，从起始单元格到目标单元格寻找最短路径，你可以消除沿途最多k个障碍物。网格由一个“**m x n**”的二维数组表示，其中0表示空单元格，1表示障碍物单元格。
+最近，我遇到了一个在 leetcode 上的问题：[**网格中的最短路径与障碍物消除**](https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/)**。** 网格中的最短路径与障碍物消除问题涉及在包含障碍物的二维网格中，从起始单元格到目标单元格寻找最短路径，你可以消除沿途最多 k 个障碍物。网格由一个“**m x n**”的二维数组表示，其中 0 表示空单元格，1 表示障碍物单元格。
 
 目标是找到从起始单元格**(0, 0)**到目标单元格**(m-1, n-1)**的最短路径，途经空单元格，同时最多消除 k 个障碍。消除障碍意味着将障碍单元格（1）转换为空单元格（0），以便路径可以通过。
 
-![](../Images/df4176ec56c6a4dc88d009915f69507e.png)
+![](img/df4176ec56c6a4dc88d009915f69507e.png)
 
 在网格中消除障碍的最短路径示例（图像来自作者）
 
@@ -73,7 +73,7 @@ class Solution:
 
 让我们逐一深入这些术语：
 
-![](../Images/48d4351283a45d8d305ae1f54da8f312.png)
+![](img/48d4351283a45d8d305ae1f54da8f312.png)
 
 环境与智能体 Raya（图像来自作者）
 
@@ -83,9 +83,9 @@ class Solution:
 
 +   **状态**：状态表示玩家的当前情况。在我们的例子中，它表示玩家的当前位置和剩余的违规次数。
 
-+   **奖励系统**：奖励是我们采取某种行动后获得的分数。在这种情况下：空单元格为-1分，到达目的地为+20分，如果我们用完了违规次数k，则为-10分。
++   **奖励系统**：奖励是我们采取某种行动后获得的分数。在这种情况下：空单元格为-1 分，到达目的地为+20 分，如果我们用完了违规次数 k，则为-10 分。
 
-![](../Images/40d3c955adae9ee5f4575d4046fff47a.png)
+![](img/40d3c955adae9ee5f4575d4046fff47a.png)
 
 迭代过程（图像来自作者）
 
@@ -97,7 +97,7 @@ class Solution:
 
 Q(s, a) 代表代理在状态 s 下采取动作 a 并遵循策略 π 时可以获得的期望累计奖励。
 
-![](../Images/1cbcb1c577ff27720715d05cf948e0d5.png)
+![](img/1cbcb1c577ff27720715d05cf948e0d5.png)
 
 Q 函数（作者提供的图片）
 
@@ -113,7 +113,7 @@ Q 函数（作者提供的图片）
 
 代理需要在利用已知的高奖励动作和探索可能带来更高奖励的未知动作之间取得平衡。使用 0 到 1 之间的折扣因子有助于防止代理陷入[局部最优策略](https://ai-ml-analytics.com/reinforcement-learning-exploration-vs-exploitation-tradeoff/)。
 
-![](../Images/f0143d06f6cf15e2fe24d2a1b07d1db8.png)
+![](img/f0143d06f6cf15e2fe24d2a1b07d1db8.png)
 
 给定一个状态，Q 函数返回一个向量，该向量为所有动作提供一个评分（作者提供的图片）
 
@@ -131,7 +131,7 @@ Q 函数（作者提供的图片）
 
 这里是贝尔曼方程的方程式：
 
-![](../Images/adda2e0d616a50d33997a93ef04005dd.png)
+![](img/adda2e0d616a50d33997a93ef04005dd.png)
 
 Q 值方程（作者提供的图片）
 
@@ -149,4 +149,4 @@ Q 值方程（作者提供的图片）
 
 如果你通过更改 0 和 1 来改变棋盘的配置，这种硬编码的 Q 表方法将无法推广。我们的目标是训练一个代理，使其学习网格世界配置的通用表示，并能够在新的布局中找到最优路径。在下一篇文章中，我将用深度 Q 网络 (DQN) 替换硬编码的 Q 表值。DQN 是一个神经网络，它接受状态-行动组合和完整网格布局作为输入，并输出 Q 值估计。这个 DQN 应该能让代理即使在训练过程中未遇到的新网格布局中也能找到最优路径。
 
-如果你想快速聊聊并建立联系，可以通过 LinkedIn 联系我：[https://www.linkedin.com/in/pratikdaher/](https://www.linkedin.com/in/pratikdaher/)
+如果你想快速聊聊并建立联系，可以通过 LinkedIn 联系我：[`www.linkedin.com/in/pratikdaher/`](https://www.linkedin.com/in/pratikdaher/)

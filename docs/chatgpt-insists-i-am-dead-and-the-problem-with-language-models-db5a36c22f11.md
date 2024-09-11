@@ -1,18 +1,18 @@
 # GPT 是一个不可靠的信息存储库
 
-> 原文：[https://towardsdatascience.com/chatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11?source=collection_archive---------0-----------------------#2023-02-21](https://towardsdatascience.com/chatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11?source=collection_archive---------0-----------------------#2023-02-21)
+> 原文：[`towardsdatascience.com/chatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11?source=collection_archive---------0-----------------------#2023-02-21`](https://towardsdatascience.com/chatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11?source=collection_archive---------0-----------------------#2023-02-21)
 
 ## 了解大型语言模型的局限性和风险
 
-[](https://medium.com/@nobleackerson?source=post_page-----db5a36c22f11--------------------------------)[![Noble Ackerson](../Images/e89361fc2723b2b08384ace7f081bfed.png)](https://medium.com/@nobleackerson?source=post_page-----db5a36c22f11--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db5a36c22f11--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db5a36c22f11--------------------------------) [Noble Ackerson](https://medium.com/@nobleackerson?source=post_page-----db5a36c22f11--------------------------------)
+[](https://medium.com/@nobleackerson?source=post_page-----db5a36c22f11--------------------------------)![Noble Ackerson](https://medium.com/@nobleackerson?source=post_page-----db5a36c22f11--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db5a36c22f11--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5a36c22f11--------------------------------) [Noble Ackerson](https://medium.com/@nobleackerson?source=post_page-----db5a36c22f11--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F68605bd278a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11&user=Noble+Ackerson&userId=68605bd278a3&source=post_page-68605bd278a3----db5a36c22f11---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5a36c22f11--------------------------------) ·9 min read·2023年2月21日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F68605bd278a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11&user=Noble+Ackerson&userId=68605bd278a3&source=post_page-68605bd278a3----db5a36c22f11---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5a36c22f11--------------------------------) ·9 min read·2023 年 2 月 21 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb5a36c22f11&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11&source=-----db5a36c22f11---------------------bookmark_footer-----------)![](../Images/877f131a65aa9cec5806a78ebd5af18a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb5a36c22f11&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-insists-i-am-dead-and-the-problem-with-language-models-db5a36c22f11&source=-----db5a36c22f11---------------------bookmark_footer-----------)![](img/877f131a65aa9cec5806a78ebd5af18a.png)
 
 “寻找意义” 作者拍摄
 

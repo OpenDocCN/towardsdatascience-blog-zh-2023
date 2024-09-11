@@ -1,36 +1,36 @@
-# 50,000家零售店关店在即：拥抱数据驱动和以客户为中心的方法
+# 50,000 家零售店关店在即：拥抱数据驱动和以客户为中心的方法
 
-> 原文：[https://towardsdatascience.com/50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1?source=collection_archive---------20-----------------------#2023-01-12](https://towardsdatascience.com/50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1?source=collection_archive---------20-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1?source=collection_archive---------20-----------------------#2023-01-12`](https://towardsdatascience.com/50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1?source=collection_archive---------20-----------------------#2023-01-12)
 
 ## 盈利店铺队伍优化指南
 
 ## 如何分析服务区、店铺网络、销售转移和收购影响
 
-[](https://medium.com/@martinleitner_33020?source=post_page-----cd016c2174a1--------------------------------)[![马丁·莱特纳](../Images/f069e0e14888c52f4689518a23cc20f3.png)](https://medium.com/@martinleitner_33020?source=post_page-----cd016c2174a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd016c2174a1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cd016c2174a1--------------------------------) [马丁·莱特纳](https://medium.com/@martinleitner_33020?source=post_page-----cd016c2174a1--------------------------------)
+[](https://medium.com/@martinleitner_33020?source=post_page-----cd016c2174a1--------------------------------)![马丁·莱特纳](https://medium.com/@martinleitner_33020?source=post_page-----cd016c2174a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd016c2174a1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd016c2174a1--------------------------------) [马丁·莱特纳](https://medium.com/@martinleitner_33020?source=post_page-----cd016c2174a1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb910204cd9bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1&user=Martin+Leitner&userId=b910204cd9bf&source=post_page-b910204cd9bf----cd016c2174a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd016c2174a1--------------------------------) · 7分钟阅读 · 2023年1月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcd016c2174a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1&user=Martin+Leitner&userId=b910204cd9bf&source=-----cd016c2174a1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb910204cd9bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1&user=Martin+Leitner&userId=b910204cd9bf&source=post_page-b910204cd9bf----cd016c2174a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd016c2174a1--------------------------------) · 7 分钟阅读 · 2023 年 1 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcd016c2174a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1&user=Martin+Leitner&userId=b910204cd9bf&source=-----cd016c2174a1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd016c2174a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1&source=-----cd016c2174a1---------------------bookmark_footer-----------)![](../Images/0ebd9544f464c00a09cb71e98767bce2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd016c2174a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F50-000-more-retail-store-closures-on-the-horizon-embracing-a-data-driven-approach-cd016c2174a1&source=-----cd016c2174a1---------------------bookmark_footer-----------)![](img/0ebd9544f464c00a09cb71e98767bce2.png)
 
 图片由 [Tim Mossholder](https://unsplash.com/@timmossholder?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在过去的一年里，许多零售商因客户偏好变化、竞争加剧和运营费用上升而不得不关闭大量门店。一些宣布重大店铺关闭的零售商例子包括：
 
-1.  J.C. Penney — 这家百货公司连锁店已宣布计划在未来几年关闭200多家门店，因为它在与在线零售商竞争中挣扎。
+1.  J.C. Penney — 这家百货公司连锁店已宣布计划在未来几年关闭 200 多家门店，因为它在与在线零售商竞争中挣扎。
 
-1.  梅西百货 — 这家百货公司连锁店已宣布计划在未来几年内关闭100多家门店，以适应消费者行为的变化。
+1.  梅西百货 — 这家百货公司连锁店已宣布计划在未来几年内关闭 100 多家门店，以适应消费者行为的变化。
 
-1.  西尔斯 — 这家陷入困境的零售商已宣布计划关闭200多家门店，努力扭转业务局面。
+1.  西尔斯 — 这家陷入困境的零售商已宣布计划关闭 200 多家门店，努力扭转业务局面。
 
-1.  古驰 — 这家服装零售商已宣布计划关闭约200家门店，以精简运营。
+1.  古驰 — 这家服装零售商已宣布计划关闭约 200 家门店，以精简运营。
 
-1.  维多利亚的秘密 — 这家内衣零售商已宣布计划关闭约250家门店，因为面临来自在线零售商的激烈竞争。
+1.  维多利亚的秘密 — 这家内衣零售商已宣布计划关闭约 250 家门店，因为面临来自在线零售商的激烈竞争。
 
-这些只是过去一年中宣布重大店铺关闭计划的一些零售商例子。在此期间还有许多其他零售商也关闭了门店。分析师估计，仅在美国，短期内我们将看到超过50,000家门店的关闭。与其依赖直觉和 Excel 技能，不如采用以数据驱动和客户为中心的方法来提高门店连锁的盈利能力。
+这些只是过去一年中宣布重大店铺关闭计划的一些零售商例子。在此期间还有许多其他零售商也关闭了门店。分析师估计，仅在美国，短期内我们将看到超过 50,000 家门店的关闭。与其依赖直觉和 Excel 技能，不如采用以数据驱动和客户为中心的方法来提高门店连锁的盈利能力。
 
 ## 如何决定关闭哪些门店？
 
@@ -44,13 +44,13 @@
 
 突然间，这听起来更像是一个**数据科学问题**而非财务排名练习。
 
-![](../Images/9e286f435139ecb7fab31c604ceac99f.png)
+![](img/9e286f435139ecb7fab31c604ceac99f.png)
 
 摄影作品由 [Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 数据驱动与以客户为中心的方法
 
-在您采取这种方法为您的CFO/COO制定全面建议时，有几个事项需要考虑。
+在您采取这种方法为您的 CFO/COO 制定全面建议时，有几个事项需要考虑。
 
 +   服务区：如何定义围绕我的商店的重要区域
 
@@ -60,7 +60,7 @@
 
 +   预测获取新客户的影响
 
-+   综合分析（1年、3年影响，排名）
++   综合分析（1 年、3 年影响，排名）
 
 +   测量与模型改进
 
@@ -68,9 +68,9 @@
 
 服务区是指某个特定业务接收客户的地理区域。服务区的定义基于各种因素，如距离、交通可达性和市场需求。它们对于房地产开发、分析和业务规划至关重要。
 
-服务区的计算方式：1.) 在传统方式中，人们会在商店周围画一个一定英里半径的圆，比如三英里，圆内的区域都会被视为服务区。请不要这样做。2.) 第一种方法的进阶方式是使用驾车时间来定义服务区。例如，以您的商店为中心的30分钟驾车时间就是服务区。
+服务区的计算方式：1.) 在传统方式中，人们会在商店周围画一个一定英里半径的圆，比如三英里，圆内的区域都会被视为服务区。请不要这样做。2.) 第一种方法的进阶方式是使用驾车时间来定义服务区。例如，以您的商店为中心的 30 分钟驾车时间就是服务区。
 
-**以客户为中心的建议：** 使用过去12或24个月在商店购物的客户 *(根据您的业务模型，您需要自行判断时间范围)*，并将他们的居住地点进行映射，例如，按人口普查区块组级别。当您完成后，您将发现，区域可能会非常大，通常覆盖美国的大部分区域。缩小范围的一种方法是应用优化函数，使用多边形并努力最小化区域的大小，同时保持累计销售百分比尽可能大。我发现，在一个最优解中，累计销售捕捉率通常在70%到80%之间。好了，您现在有了所有商店的定制服务区。
+**以客户为中心的建议：** 使用过去 12 或 24 个月在商店购物的客户 *(根据您的业务模型，您需要自行判断时间范围)*，并将他们的居住地点进行映射，例如，按人口普查区块组级别。当您完成后，您将发现，区域可能会非常大，通常覆盖美国的大部分区域。缩小范围的一种方法是应用优化函数，使用多边形并努力最小化区域的大小，同时保持累计销售百分比尽可能大。我发现，在一个最优解中，累计销售捕捉率通常在 70%到 80%之间。好了，您现在有了所有商店的定制服务区。
 
 ## 商店网络
 
@@ -90,7 +90,7 @@
 
 现在，你应该拥有覆盖整个店铺网络的各种规模，从孤立区域的单店网络到包含十几家店铺的更大网络。
 
-![](../Images/08de88845019a30d1a976e3179a3030b.png)
+![](img/08de88845019a30d1a976e3179a3030b.png)
 
 [Omar Flores](https://unsplash.com/@designedbyflores?utm_source=medium&utm_medium=referral) 的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -120,6 +120,6 @@
 
 +   ✍ 在 [Linkedin](https://www.linkedin.com/in/leitnerm/) 上联系我
 
-![](../Images/6443a8fb2e6b1f00e705faa56d6ade82.png)
+![](img/6443a8fb2e6b1f00e705faa56d6ade82.png)
 
 图片由 [Heidi Fin](https://unsplash.com/@nofunfin?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)

@@ -1,18 +1,18 @@
 # 用户反馈 — 机器学习监控栈的缺失部分
 
-> 原文：[https://towardsdatascience.com/user-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4?source=collection_archive---------7-----------------------#2023-08-02](https://towardsdatascience.com/user-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4?source=collection_archive---------7-----------------------#2023-08-02)
+> 原文：[`towardsdatascience.com/user-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4?source=collection_archive---------7-----------------------#2023-08-02`](https://towardsdatascience.com/user-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4?source=collection_archive---------7-----------------------#2023-08-02)
 
 ## 完整指南：构建以用户为中心的人工智能
 
-[](https://medium.com/@joel.hodgson1996?source=post_page-----46b2bbf0b5e4--------------------------------)[![乔尔·霍奇森](../Images/86c6a256d618c159407139e389cf30e4.png)](https://medium.com/@joel.hodgson1996?source=post_page-----46b2bbf0b5e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46b2bbf0b5e4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----46b2bbf0b5e4--------------------------------) [乔尔·霍奇森](https://medium.com/@joel.hodgson1996?source=post_page-----46b2bbf0b5e4--------------------------------)
+[](https://medium.com/@joel.hodgson1996?source=post_page-----46b2bbf0b5e4--------------------------------)![乔尔·霍奇森](https://medium.com/@joel.hodgson1996?source=post_page-----46b2bbf0b5e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46b2bbf0b5e4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----46b2bbf0b5e4--------------------------------) [乔尔·霍奇森](https://medium.com/@joel.hodgson1996?source=post_page-----46b2bbf0b5e4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1af09f6c90f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4&user=Joel+Hodgson&userId=c1af09f6c90f&source=post_page-c1af09f6c90f----46b2bbf0b5e4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46b2bbf0b5e4--------------------------------) · 8 分钟阅读 · 2023年8月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F46b2bbf0b5e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4&user=Joel+Hodgson&userId=c1af09f6c90f&source=-----46b2bbf0b5e4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1af09f6c90f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4&user=Joel+Hodgson&userId=c1af09f6c90f&source=post_page-c1af09f6c90f----46b2bbf0b5e4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46b2bbf0b5e4--------------------------------) · 8 分钟阅读 · 2023 年 8 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F46b2bbf0b5e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4&user=Joel+Hodgson&userId=c1af09f6c90f&source=-----46b2bbf0b5e4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F46b2bbf0b5e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4&source=-----46b2bbf0b5e4---------------------bookmark_footer-----------)![](../Images/7ab7564a2ff994d8022b5650e5bd9fbc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F46b2bbf0b5e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-feedback-the-missing-piece-of-your-ml-monitoring-stack-46b2bbf0b5e4&source=-----46b2bbf0b5e4---------------------bookmark_footer-----------)![](img/7ab7564a2ff994d8022b5650e5bd9fbc.png)
 
 图片来自 [Unsplash](https://unsplash.com/photos/x21KgBfOd_4)
 
@@ -54,55 +54,55 @@
 
 1.  用户反馈通常是非结构化的，并突出了不正确预测以外的问题，因此不能总是直接用于重新训练模型。例如，用户指出简历助手使用过于正式的语言可能需要在训练数据中增加更多非正式文本的示例，而不是直接用这些反馈进行重新训练。
 
-1.  仅关注正确/错误预测忽略了用户提供的宝贵信息。理解用户反馈可以帮助AI团队根据用户体验和使用模式改进应用。
+1.  仅关注正确/错误预测忽略了用户提供的宝贵信息。理解用户反馈可以帮助 AI 团队根据用户体验和使用模式改进应用。
 
 1.  如强化学习与人类反馈（RLHF）等训练策略在受控环境中效果很好。然而，现实世界的用户反馈可能嘈杂且潜在有害。例如，盲目地将用户反馈纳入训练数据可能导致[数据中毒](https://datascientest.com/en/data-poisoning-a-threat-to-machine-learning-models)，其中恶意用户故意误导模型。
 
-因此，AI团队应该审查用户反馈，以提取不同的见解，并确定下一步最佳行动方案，以改善整体AI应用。
+因此，AI 团队应该审查用户反馈，以提取不同的见解，并确定下一步最佳行动方案，以改善整体 AI 应用。
 
-# 为什么用户反馈对AI很重要？
+# 为什么用户反馈对 AI 很重要？
 
 **实现模型评估**
 
-许多AI模型缺乏基准真相。这使得在测试数据集上进行评估变得困难，因为它通常基于一个代理指标，而这个指标通常只讲述了一部分故事。这在生成模型中尤其如此，因为了解用户是否对模型预测感到满意通常是最重要的指标。
+许多 AI 模型缺乏基准真相。这使得在测试数据集上进行评估变得困难，因为它通常基于一个代理指标，而这个指标通常只讲述了一部分故事。这在生成模型中尤其如此，因为了解用户是否对模型预测感到满意通常是最重要的指标。
 
 **提升模型性能：**
 
-用户反馈可以用来持续提高AI模型的性能。用户可能具备构建强大模型所需的良好领域知识。此外，监控用户参与度可以帮助识别模型是否因训练/测试集未能良好代表现实世界而表现不佳。
+用户反馈可以用来持续提高 AI 模型的性能。用户可能具备构建强大模型所需的良好领域知识。此外，监控用户参与度可以帮助识别模型是否因训练/测试集未能良好代表现实世界而表现不佳。
 
 **增加用户对齐度：**
 
-用户反馈提供了模型哪些方面运作良好以及造成摩擦的原因的见解。这使得AI团队能够提升用户体验，使模型更加直观和用户友好。此外，AI团队可以确保模型对所有用户而不仅仅是小型子群体对齐。例如，确保简历助手在所有语言中保持质量，而不仅仅是英语。
+用户反馈提供了模型哪些方面运作良好以及造成摩擦的原因的见解。这使得 AI 团队能够提升用户体验，使模型更加直观和用户友好。此外，AI 团队可以确保模型对所有用户而不仅仅是小型子群体对齐。例如，确保简历助手在所有语言中保持质量，而不仅仅是英语。
 
-当用户感到他们的声音被听到时，他们更可能信任AI模型并保持参与，从而增加用户对齐度和采纳度。
+当用户感到他们的声音被听到时，他们更可能信任 AI 模型并保持参与，从而增加用户对齐度和采纳度。
 
-**提高AI责任感：**
+**提高 AI 责任感：**
 
-通过用户反馈，AI团队可以识别和解决与安全性、偏见或其他伦理问题相关的担忧。这种积极主动的方法导致了更安全、更负责任的AI模型的发展。通过寻求和回应用户反馈，AI团队展示了他们对创建高质量和可靠AI解决方案的责任感和承诺。反馈也可能揭示对额外教育资源和文档的需求，AI团队可以提供这些资源，以确保用户对模型的能力有清晰的理解，并促进最佳实践。
+通过用户反馈，AI 团队可以识别和解决与安全性、偏见或其他伦理问题相关的担忧。这种积极主动的方法导致了更安全、更负责任的 AI 模型的发展。通过寻求和回应用户反馈，AI 团队展示了他们对创建高质量和可靠 AI 解决方案的责任感和承诺。反馈也可能揭示对额外教育资源和文档的需求，AI 团队可以提供这些资源，以确保用户对模型的能力有清晰的理解，并促进最佳实践。
 
-总结来说，利用用户洞察可以使AI团队优化模型、提升用户体验和解决伦理问题，从而提高用户满意度和信任度。
+总结来说，利用用户洞察可以使 AI 团队优化模型、提升用户体验和解决伦理问题，从而提高用户满意度和信任度。
 
 现在我们已经明确了用户反馈及其好处，让我们来讨论不同类型的反馈及其用途。
 
 # 不同类型的反馈有哪些？
 
-用户反馈主要分为两个类别：明确反馈和隐性反馈。这可以通过我们新朋友ChatGPT（如下图）进行很好的解释和说明。
+用户反馈主要分为两个类别：明确反馈和隐性反馈。这可以通过我们新朋友 ChatGPT（如下图）进行很好的解释和说明。
 
-![](../Images/a5b9397bba6d961859c9eaf208cbb18a.png)
+![](img/a5b9397bba6d961859c9eaf208cbb18a.png)
 
-ChatGPT说明了明确和隐性反馈之间的区别。截图来自OpenAI的ChatGPT，并由作者编辑。
+ChatGPT 说明了明确和隐性反馈之间的区别。截图来自 OpenAI 的 ChatGPT，并由作者编辑。
 
-明确的用户反馈指的是用户对其体验、观点或偏好的直接、故意和自觉的输入。正如你在ChatGPT界面中看到的，点赞/点踩反馈就是明确反馈的一个例子。
+明确的用户反馈指的是用户对其体验、观点或偏好的直接、故意和自觉的输入。正如你在 ChatGPT 界面中看到的，点赞/点踩反馈就是明确反馈的一个例子。
 
-明确的反馈可以进一步分为定量和定性两种。定量反馈包括可测量的尺度，如点赞/点踩、用户满意度（也称为5分制李克特量表），或任何最适合你想了解的用户信息的自定义尺度。
+明确的反馈可以进一步分为定量和定性两种。定量反馈包括可测量的尺度，如点赞/点踩、用户满意度（也称为 5 分制李克特量表），或任何最适合你想了解的用户信息的自定义尺度。
 
-定性反馈通常涉及一个开放的文本框，以允许用户提供书面反馈。将定量测量与定性反馈结合起来，可以使AI团队了解用户评论背后的“为什么”，并揭示诸如AI缺陷、领域知识或用户偏好等细节。
+定性反馈通常涉及一个开放的文本框，以允许用户提供书面反馈。将定量测量与定性反馈结合起来，可以使 AI 团队了解用户评论背后的“为什么”，并揭示诸如 AI 缺陷、领域知识或用户偏好等细节。
 
-![](../Images/71d7b014b2434d88c7f289a30fb4a892.png)
+![](img/71d7b014b2434d88c7f289a30fb4a892.png)
 
-提交定性反馈后，选择了负面的定量反馈。截图来自OpenAI的ChatGPT。
+提交定性反馈后，选择了负面的定量反馈。截图来自 OpenAI 的 ChatGPT。
 
-隐性用户反馈指的是基于用户行为、动作或模式提供的间接、非自觉的数据。再次看ChatGPT界面，‘复制到剪贴板’按钮就是OpenAI收集隐性反馈的一个例子。对于简历助手的例子，隐性用户反馈也可以通过跟踪用户对生成输出的任何编辑来获得。
+隐性用户反馈指的是基于用户行为、动作或模式提供的间接、非自觉的数据。再次看 ChatGPT 界面，‘复制到剪贴板’按钮就是 OpenAI 收集隐性反馈的一个例子。对于简历助手的例子，隐性用户反馈也可以通过跟踪用户对生成输出的任何编辑来获得。
 
 在选择实施的反馈类型时需要进行考虑。明确的反馈提供了用户反馈和想法的更清晰理解。然而，对于外部使用情况，最终用户可能不会总是提供明确反馈，因为他们可能不了解如何受益（或感觉没有时间！）。在这种情况下，隐式反馈也可以很好地了解 AI 应用的使用情况，而无需用户采取直接行动。
 
@@ -112,7 +112,7 @@ ChatGPT说明了明确和隐性反馈之间的区别。截图来自OpenAI的Chat
 
 在本节中，我们将详细介绍收集用户反馈的四个关键步骤，并将用户洞察整合回 ML 监控系统中（如下所示）。
 
-![](../Images/841a8c873bee0a48146e481cb44dd8ba.png)
+![](img/841a8c873bee0a48146e481cb44dd8ba.png)
 
 系统图概述了收集用户反馈的高层架构，并将用户洞察整合回 ML 监控系统。图像由作者提供。
 
@@ -134,20 +134,20 @@ AI 模型元数据应与通过组件提交的所有反馈一起捕获。这包�
 
 AI 团队在这一阶段的角色是识别模型问题和用户问题，并确定解决这些问题的最佳行动方案。
 
-要提醒AI团队可能在用户反馈中发现的见解类型，请回顾“什么是AI的用户反馈？”部分。
+要提醒 AI 团队可能在用户反馈中发现的见解类型，请回顾“什么是 AI 的用户反馈？”部分。
 
 **步骤 4 — 将用户反馈整合回你的机器学习监控系统中**
 
-将用户反馈整合到现有的机器学习监控系统中，可以让你设置警报（类似于性能监控或漂移检测）。例如，如果全球用户满意度得分低于某个阈值，可以触发警报通知AI团队采取行动。
+将用户反馈整合到现有的机器学习监控系统中，可以让你设置警报（类似于性能监控或漂移检测）。例如，如果全球用户满意度得分低于某个阈值，可以触发警报通知 AI 团队采取行动。
 
-此外，摘要和日报可以发送给AI团队或利益相关者，提供用户反馈的概览。
+此外，摘要和日报可以发送给 AI 团队或利益相关者，提供用户反馈的概览。
 
 # 总结
 
-总结来说，用户反馈使AI团队能够识别漏洞、微调模型，并使模型与用户对齐。
+总结来说，用户反馈使 AI 团队能够识别漏洞、微调模型，并使模型与用户对齐。
 
 上述内容也可以通过机器学习监控系统来实现。然而，通过从不同的角度，即用户的视角来评估模型，我们可以识别传统机器学习监控系统可能忽视的额外信息。
 
-我希望这篇文章激发了你的兴趣，并为你提供了如何开始倾听用户意见并增强AI应用的初步想法。
+我希望这篇文章激发了你的兴趣，并为你提供了如何开始倾听用户意见并增强 AI 应用的初步想法。
 
-*如果你想了解更多关于AI用户反馈的信息，或分享和讨论你在这个话题上的想法，请随时通过* [*Linkedin*](https://www.linkedin.com/in/joel-hodgson-6459ab151/) *或* [*email*](mailto:joel.hodgson@trubrics.com)*与我联系。*
+*如果你想了解更多关于 AI 用户反馈的信息，或分享和讨论你在这个话题上的想法，请随时通过* [*Linkedin*](https://www.linkedin.com/in/joel-hodgson-6459ab151/) *或* *email**与我联系。*

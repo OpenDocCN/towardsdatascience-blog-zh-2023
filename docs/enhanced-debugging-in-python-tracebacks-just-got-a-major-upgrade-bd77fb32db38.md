@@ -1,18 +1,18 @@
 # Python 中的增强调试：追溯信息获得重大升级
 
-> 原文：[https://towardsdatascience.com/enhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38?source=collection_archive---------13-----------------------#2023-03-15](https://towardsdatascience.com/enhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38?source=collection_archive---------13-----------------------#2023-03-15)
+> 原文：[`towardsdatascience.com/enhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38?source=collection_archive---------13-----------------------#2023-03-15`](https://towardsdatascience.com/enhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38?source=collection_archive---------13-----------------------#2023-03-15)
 
 ## 如何通过位置增强的追溯信息来提升 Python 3.11 的调试体验
 
-[](https://thomasdorfer.medium.com/?source=post_page-----bd77fb32db38--------------------------------)[![Thomas A Dorfer](../Images/9258a1735cee805f1d9b02e2adf01096.png)](https://thomasdorfer.medium.com/?source=post_page-----bd77fb32db38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bd77fb32db38--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bd77fb32db38--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----bd77fb32db38--------------------------------)
+[](https://thomasdorfer.medium.com/?source=post_page-----bd77fb32db38--------------------------------)![Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----bd77fb32db38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bd77fb32db38--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd77fb32db38--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----bd77fb32db38--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----bd77fb32db38---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd77fb32db38--------------------------------) ·4分钟阅读·2023年3月15日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----bd77fb32db38---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd77fb32db38--------------------------------) ·4 分钟阅读·2023 年 3 月 15 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbd77fb32db38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38&source=-----bd77fb32db38---------------------bookmark_footer-----------)![](../Images/b7116c89ccd139a962a51f3ddcada150.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbd77fb32db38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhanced-debugging-in-python-tracebacks-just-got-a-major-upgrade-bd77fb32db38&source=-----bd77fb32db38---------------------bookmark_footer-----------)![](img/b7116c89ccd139a962a51f3ddcada150.png)
 
 图片来源于 [Mohamed Hassan](https://pixabay.com/users/mohamed_hassan-5229782/) 在 [Pixabay](https://pixabay.com/vectors/error-warning-computer-crash-6641731/)
 
@@ -39,4 +39,4 @@ def ci(stats):
 ci(stats)
 ```
 
-我故意将字典对象中的*z*值赋为`None`以引发异常。对于低于3.11版本的Python，跟踪信息将会是这样的：
+我故意将字典对象中的*z*值赋为`None`以引发异常。对于低于 3.11 版本的 Python，跟踪信息将会是这样的：

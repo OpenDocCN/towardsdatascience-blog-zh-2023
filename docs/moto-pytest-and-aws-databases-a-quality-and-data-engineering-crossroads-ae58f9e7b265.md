@@ -1,92 +1,92 @@
 # Moto、Pytest 和 AWS 数据库：质量与数据工程的交汇点
 
-> 原文：[https://towardsdatascience.com/moto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265?source=collection_archive---------3-----------------------#2023-01-03](https://towardsdatascience.com/moto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265?source=collection_archive---------3-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/moto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265?source=collection_archive---------3-----------------------#2023-01-03`](https://towardsdatascience.com/moto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265?source=collection_archive---------3-----------------------#2023-01-03)
 
 ## Moto 和 Pytest 如何与 AWS 数据库协同工作
 
-[](https://medium.com/@taywag?source=post_page-----ae58f9e7b265--------------------------------)[![Taylor Wagner](../Images/5bb000c13c40b17049632a10982ee32b.png)](https://medium.com/@taywag?source=post_page-----ae58f9e7b265--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ae58f9e7b265--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ae58f9e7b265--------------------------------) [Taylor Wagner](https://medium.com/@taywag?source=post_page-----ae58f9e7b265--------------------------------)
+[](https://medium.com/@taywag?source=post_page-----ae58f9e7b265--------------------------------)![Taylor Wagner](https://medium.com/@taywag?source=post_page-----ae58f9e7b265--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ae58f9e7b265--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae58f9e7b265--------------------------------) [Taylor Wagner](https://medium.com/@taywag?source=post_page-----ae58f9e7b265--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd40c65f02fb7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmoto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265&user=Taylor+Wagner&userId=d40c65f02fb7&source=post_page-d40c65f02fb7----ae58f9e7b265---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae58f9e7b265--------------------------------) ·9分钟阅读·2023年1月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fae58f9e7b265&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmoto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265&user=Taylor+Wagner&userId=d40c65f02fb7&source=-----ae58f9e7b265---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd40c65f02fb7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmoto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265&user=Taylor+Wagner&userId=d40c65f02fb7&source=post_page-d40c65f02fb7----ae58f9e7b265---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae58f9e7b265--------------------------------) ·9 分钟阅读·2023 年 1 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fae58f9e7b265&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmoto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265&user=Taylor+Wagner&userId=d40c65f02fb7&source=-----ae58f9e7b265---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fae58f9e7b265&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmoto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265&source=-----ae58f9e7b265---------------------bookmark_footer-----------)![](../Images/f2014e6ddd769007fc5d5973991a3b7b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fae58f9e7b265&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmoto-pytest-and-aws-databases-a-quality-and-data-engineering-crossroads-ae58f9e7b265&source=-----ae58f9e7b265---------------------bookmark_footer-----------)![](img/f2014e6ddd769007fc5d5973991a3b7b.png)
 
 图片由[Christina @ wocintechchat.com](https://unsplash.com/@wocintechchat?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 概述
 
-我最近花了很多时间使用Pytest来测试AWS服务，通过Boto3。Boto3是一个非常强大的AWS SDK，用于处理AWS服务。我的研究和实践经验让我发现了一个叫做Moto的补充工具！Moto与Boto3配合使用，成为我在最近项目中的测试策略规划以及维护干净生产数据的首选工具。在本文中，我将分享如何以及为何使用Moto（一个虚假的Boto3）和Pytest来模拟测试AWS数据库。我甚至会一步步带你通过使用Moto和Pytest测试AWS NoSQL数据库服务——Amazon DynamoDB的过程。
+我最近花了很多时间使用 Pytest 来测试 AWS 服务，通过 Boto3。Boto3 是一个非常强大的 AWS SDK，用于处理 AWS 服务。我的研究和实践经验让我发现了一个叫做 Moto 的补充工具！Moto 与 Boto3 配合使用，成为我在最近项目中的测试策略规划以及维护干净生产数据的首选工具。在本文中，我将分享如何以及为何使用 Moto（一个虚假的 Boto3）和 Pytest 来模拟测试 AWS 数据库。我甚至会一步步带你通过使用 Moto 和 Pytest 测试 AWS NoSQL 数据库服务——Amazon DynamoDB 的过程。
 
 *请注意：除非另有说明，所有图像均由作者提供。*
 
 ## Moto
 
-[Moto](https://docs.getmoto.org/en/latest/docs/getting_started.html#recommended-usage)是一个能够模拟AWS服务编程使用的Python库。简单来说 — [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)是一个面向对象的API，用于创建、配置和管理*真实*的AWS服务和账户，而**Moto是Boto3的模拟版本**。虽然Moto没有包括Boto3提供的每一个方法，[Moto确实提供了相当一部分](https://docs.getmoto.org/en/latest/docs/services/index.html)的Boto3方法，以便在本地运行测试。在使用Moto时，我强烈建议结合使用Boto3文档和Moto文档，以获得更详细的方法解释。
+[Moto](https://docs.getmoto.org/en/latest/docs/getting_started.html#recommended-usage)是一个能够模拟 AWS 服务编程使用的 Python 库。简单来说 — [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)是一个面向对象的 API，用于创建、配置和管理*真实*的 AWS 服务和账户，而**Moto 是 Boto3 的模拟版本**。虽然 Moto 没有包括 Boto3 提供的每一个方法，[Moto 确实提供了相当一部分](https://docs.getmoto.org/en/latest/docs/services/index.html)的 Boto3 方法，以便在本地运行测试。在使用 Moto 时，我强烈建议结合使用 Boto3 文档和 Moto 文档，以获得更详细的方法解释。
 
-**Moto的优点：**
+**Moto 的优点：**
 
-+   不需要AWS账户
++   不需要 AWS 账户
 
-+   避免在AWS生产账户中更改实际数据或资源的风险
++   避免在 AWS 生产账户中更改实际数据或资源的风险
 
-+   可轻松将Moto模拟设置转换为Boto3以用于实际应用场景
++   可轻松将 Moto 模拟设置转换为 Boto3 以用于实际应用场景
 
 +   测试运行迅速 — 无延迟问题
 
 +   易于学习和上手
 
-+   免费！— 不会产生AWS费用
++   免费！— 不会产生 AWS 费用
 
-**Moto的一个缺点：**
+**Moto 的一个缺点：**
 
-+   不包括Boto3的*所有*方法 — Boto3提供了对AWS服务的更广泛覆盖
++   不包括 Boto3 的*所有*方法 — Boto3 提供了对 AWS 服务的更广泛覆盖
 
-![](../Images/326ba1e89583c009255200fef02f8ee3.png)
+![](img/326ba1e89583c009255200fef02f8ee3.png)
 
-Moto文档截图：可用于Amazon DynamoDB的Boto3方法的完整列表，并标记了Moto “X”可用的方法。欲查看完整列表，请点击[这里](https://docs.getmoto.org/en/latest/docs/services/dynamodb.html)。
+Moto 文档截图：可用于 Amazon DynamoDB 的 Boto3 方法的完整列表，并标记了 Moto “X”可用的方法。欲查看完整列表，请点击[这里](https://docs.getmoto.org/en/latest/docs/services/dynamodb.html)。
 
-Moto文档提供了哪些Boto3方法可以使用的洞察。例如，Boto3中略多于一半的[DynamoDB方法](https://docs.getmoto.org/en/latest/docs/services/dynamodb.html)可用于Moto进行模拟。
+Moto 文档提供了哪些 Boto3 方法可以使用的洞察。例如，Boto3 中略多于一半的[DynamoDB 方法](https://docs.getmoto.org/en/latest/docs/services/dynamodb.html)可用于 Moto 进行模拟。
 
 ## Pytest
 
-[Pytest](https://docs.pytest.org/en/7.2.x/contents.html)是一个用于编写简洁易读测试的Python框架。此框架使用详细的断言检查，使得普通的`assert`语句非常用户友好。Pytest具有强大的功能，可以扩展以支持应用程序和库的复杂功能测试。
+[Pytest](https://docs.pytest.org/en/7.2.x/contents.html)是一个用于编写简洁易读测试的 Python 框架。此框架使用详细的断言检查，使得普通的`assert`语句非常用户友好。Pytest 具有强大的功能，可以扩展以支持应用程序和库的复杂功能测试。
 
-![](../Images/76a8a7a85fe9a725d92f962ddf344e89.png)
+![](img/76a8a7a85fe9a725d92f962ddf344e89.png)
 
-终端截图1：执行`pytest`命令
+终端截图 1：执行`pytest`命令
 
-测试可以通过一个简单的`pytest`命令来执行。`pytest`命令会运行所有测试，但可以通过在`pytest`后面添加文件路径来运行单个测试文件，如：`pytest tests/test_dynamodb.py`。运行`pytest`会给出准确的结果，每个测试会显示绿色的“.”表示通过，红色的“F”表示失败，或黄色的“S”表示跳过（如适用）。有两个非常有用的标志我将分享并强烈建议在使用Pytest执行测试时使用。*请注意：在本节的屏幕截图中，这些不同命令运行之间的代码没有任何变化。唯一的区别是标志。*
+测试可以通过一个简单的`pytest`命令来执行。`pytest`命令会运行所有测试，但可以通过在`pytest`后面添加文件路径来运行单个测试文件，如：`pytest tests/test_dynamodb.py`。运行`pytest`会给出准确的结果，每个测试会显示绿色的“.”表示通过，红色的“F”表示失败，或黄色的“S”表示跳过（如适用）。有两个非常有用的标志我将分享并强烈建议在使用 Pytest 执行测试时使用。*请注意：在本节的屏幕截图中，这些不同命令运行之间的代码没有任何变化。唯一的区别是标志。*
 
-![](../Images/9f4a50e278f9cd902aa7758b132757c7.png)
+![](img/9f4a50e278f9cd902aa7758b132757c7.png)
 
-终端截图2：使用-s标志执行`pytest`命令
+终端截图 2：使用-s 标志执行`pytest`命令
 
-首先是`-s`（stdout/stderr输出）标志。运行`pytest -s`会在测试运行时在终端显示所有打印语句。如果没有添加`-s`标志，即使代码中有打印语句，终端中也不会出现打印语句。这对于调试非常有用。
+首先是`-s`（stdout/stderr 输出）标志。运行`pytest -s`会在测试运行时在终端显示所有打印语句。如果没有添加`-s`标志，即使代码中有打印语句，终端中也不会出现打印语句。这对于调试非常有用。
 
-![](../Images/74dec82722eb3bd6e0bd02a48720287b.png)
+![](img/74dec82722eb3bd6e0bd02a48720287b.png)
 
-终端截图3：使用-v标志执行`pytest`命令
+终端截图 3：使用-v 标志执行`pytest`命令
 
 另一个有用的标志是`-v`（详细）标志。使用`pytest -v`会在测试运行时在终端提供更多详细信息。这个标志将提供每个测试的类和方法名称，以及所有待运行测试的每个测试完成的累积百分比，以及每个测试的绿色“通过”、红色“失败”或黄色“跳过”指示器。*注意，这个标志不会显示打印语句。*
 
-![](../Images/8d2243add06f462049efde4e40efbf1f.png)
+![](img/8d2243add06f462049efde4e40efbf1f.png)
 
-终端截图4：使用组合的-sv标志执行`pytest`命令
+终端截图 4：使用组合的-sv 标志执行`pytest`命令
 
-**专业提示**：在运行测试执行命令时，可以组合标志！在使用Pytest时，我通常运行`pytest -sv`。`-s`和`-v`标志的组合提供了更具可读性的细节，并且对打印语句有更多的洞察力。
+**专业提示**：在运行测试执行命令时，可以组合标志！在使用 Pytest 时，我通常运行`pytest -sv`。`-s`和`-v`标志的组合提供了更具可读性的细节，并且对打印语句有更多的洞察力。
 
 ## 开始使用
 
-Pytest要求使用Python3.7或更高版本。您可以[在这里](https://www.python.org/downloads/)下载最新版本的Python。然后，需要三个库才能开始。打开您选择的IDE，在一个全新的目录中，运行以下终端命令以下载所需的依赖项：
+Pytest 要求使用 Python3.7 或更高版本。您可以[在这里](https://www.python.org/downloads/)下载最新版本的 Python。然后，需要三个库才能开始。打开您选择的 IDE，在一个全新的目录中，运行以下终端命令以下载所需的依赖项：
 
 ```py
 pip install boto3 moto pytest
 ```
 
-接下来，我们设置“客户端连接”。设置Moto连接的过程与Boto3非常相似。对于Boto3，要求提供AWS凭证。为了使用Moto模拟这个过程，我们将使用虚假的凭证。可以随意设置值，只要类型是字符串即可。
+接下来，我们设置“客户端连接”。设置 Moto 连接的过程与 Boto3 非常相似。对于 Boto3，要求提供 AWS 凭证。为了使用 Moto 模拟这个过程，我们将使用虚假的凭证。可以随意设置值，只要类型是字符串即可。
 
 *请注意：在实际使用中，保护机密凭证值非常重要，不应将其硬编码到应用程序中。可以通过命令行导出变量或将其保存在环境文件中以限制访问性。* *此外，任何区域都可以用于连接，但“us-east-1”通常用于此区域，因为该区域包括所有 AWS 服务和产品。*
 
@@ -147,7 +147,7 @@ pytest
 
 这个命令应该会返回测试通过的结果：
 
-![](../Images/209a361b6ec8d0bf561bad0b9117c1d9.png)
+![](img/209a361b6ec8d0bf561bad0b9117c1d9.png)
 
 终端截图 5：执行 `pytest` 命令以测试表的创建
 

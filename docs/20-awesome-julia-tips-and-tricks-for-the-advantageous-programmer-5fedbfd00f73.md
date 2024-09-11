@@ -1,18 +1,18 @@
 # 《20 个令人惊叹的 Julia 提示与技巧，为有利的程序员提供》
 
-> 原文：[https://towardsdatascience.com/20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73?source=collection_archive---------7-----------------------#2023-01-31](https://towardsdatascience.com/20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73?source=collection_archive---------7-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73?source=collection_archive---------7-----------------------#2023-01-31`](https://towardsdatascience.com/20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73?source=collection_archive---------7-----------------------#2023-01-31)
 
 ## 一些快速提示，将你的 Julia 软件提升到一个新的水平
 
-[](https://emmaccode.medium.com/?source=post_page-----5fedbfd00f73--------------------------------)[![Emma Boudreau](../Images/f7201d012b733643d6e97957f73fd1fa.png)](https://emmaccode.medium.com/?source=post_page-----5fedbfd00f73--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5fedbfd00f73--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5fedbfd00f73--------------------------------) [Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----5fedbfd00f73--------------------------------)
+[](https://emmaccode.medium.com/?source=post_page-----5fedbfd00f73--------------------------------)![Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----5fedbfd00f73--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5fedbfd00f73--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5fedbfd00f73--------------------------------) [Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----5fedbfd00f73--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----5fedbfd00f73---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5fedbfd00f73--------------------------------) · 18 分钟阅读 · 2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5fedbfd00f73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73&user=Emma+Boudreau&userId=ea170050148c&source=-----5fedbfd00f73---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----5fedbfd00f73---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5fedbfd00f73--------------------------------) · 18 分钟阅读 · 2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5fedbfd00f73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73&user=Emma+Boudreau&userId=ea170050148c&source=-----5fedbfd00f73---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5fedbfd00f73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73&source=-----5fedbfd00f73---------------------bookmark_footer-----------)![](../Images/f78a4b327b7b2092d69dbdcb98c3c995.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5fedbfd00f73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-awesome-julia-tips-and-tricks-for-the-advantageous-programmer-5fedbfd00f73&source=-----5fedbfd00f73---------------------bookmark_footer-----------)![](img/f78a4b327b7b2092d69dbdcb98c3c995.png)
 
 （图片来自作者）
 

@@ -1,18 +1,18 @@
 # 如何在 R 中编写条件语句：四种方法
 
-> 原文：[https://towardsdatascience.com/how-to-write-conditional-statements-in-r-four-methods-f9bedbae0683?source=collection_archive---------10-----------------------#2023-06-13](https://towardsdatascience.com/how-to-write-conditional-statements-in-r-four-methods-f9bedbae0683?source=collection_archive---------10-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/how-to-write-conditional-statements-in-r-four-methods-f9bedbae0683?source=collection_archive---------10-----------------------#2023-06-13`](https://towardsdatascience.com/how-to-write-conditional-statements-in-r-four-methods-f9bedbae0683?source=collection_archive---------10-----------------------#2023-06-13)
 
 ## 了解超越 if-else 语句的强大方法，提高你的 R 代码水平
 
-[](https://roryspanton.medium.com/?source=post_page-----f9bedbae0683--------------------------------)[![Rory Spanton](../Images/6c35a3de7cb516aac09bc5cf417a6c70.png)](https://roryspanton.medium.com/?source=post_page-----f9bedbae0683--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9bedbae0683--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f9bedbae0683--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----f9bedbae0683--------------------------------)
+[](https://roryspanton.medium.com/?source=post_page-----f9bedbae0683--------------------------------)![Rory Spanton](https://roryspanton.medium.com/?source=post_page-----f9bedbae0683--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9bedbae0683--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f9bedbae0683--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----f9bedbae0683--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-conditional-statements-in-r-four-methods-f9bedbae0683&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----f9bedbae0683---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f9bedbae0683--------------------------------) ·8分钟阅读·2023年6月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff9bedbae0683&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-conditional-statements-in-r-four-methods-f9bedbae0683&user=Rory+Spanton&userId=39501aa8ce39&source=-----f9bedbae0683---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-conditional-statements-in-r-four-methods-f9bedbae0683&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----f9bedbae0683---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f9bedbae0683--------------------------------) ·8 分钟阅读·2023 年 6 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff9bedbae0683&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-conditional-statements-in-r-four-methods-f9bedbae0683&user=Rory+Spanton&userId=39501aa8ce39&source=-----f9bedbae0683---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9bedbae0683&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-conditional-statements-in-r-four-methods-f9bedbae0683&source=-----f9bedbae0683---------------------bookmark_footer-----------)![](../Images/b283762681b9c2ea398ae7af7ec6bf40.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9bedbae0683&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-conditional-statements-in-r-four-methods-f9bedbae0683&source=-----f9bedbae0683---------------------bookmark_footer-----------)![](img/b283762681b9c2ea398ae7af7ec6bf40.png)
 
 照片由 [Caleb Jones](https://unsplash.com/@gcalebjones?utm_source=medium&utm_medium=referral) 提供，刊登于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -98,11 +98,11 @@ age_group <- ifelse(age >= 18, "adult", "child")
 
 这是一种简洁、直接的编写简短条件语句的方法。它还有另一个优点；它是矢量化的。
 
-[](/make-your-r-code-10x-faster-vectorization-explained-in-3-minutes-9eb4cdd7a49e?source=post_page-----f9bedbae0683--------------------------------) [## 让你的 R 代码快10倍：3分钟解释矢量化
+[](/make-your-r-code-10x-faster-vectorization-explained-in-3-minutes-9eb4cdd7a49e?source=post_page-----f9bedbae0683--------------------------------) ## 让你的 R 代码快 10 倍：3 分钟解释矢量化
 
 ### 向慢速、杂乱的循环说再见
 
-[towardsdatascience.com](/make-your-r-code-10x-faster-vectorization-explained-in-3-minutes-9eb4cdd7a49e?source=post_page-----f9bedbae0683--------------------------------)
+[towardsdatascience.com
 
 矢量化是 R 中一个重要的概念。如果一个函数是矢量化的，它会自动应用于多个值，而不仅仅是一个。要查看 `ifelse` 函数的示例，我们可以给变量 `age` 分配更多的值，然后再次运行代码。
 
@@ -115,7 +115,7 @@ age_group <- ifelse(age >= 18, "adult", "child")
 
 `ifelse` 函数会自动评估 `age` 中的所有值，返回一系列相应的输出。这使得 `ifelse` 成为评估大量简单条件的一种简洁方式，而不需要慢速、杂乱的循环。
 
-# R中的条件索引
+# R 中的条件索引
 
 尽管 `ifelse` 可以轻松地评估许多输入，但还有其他方法可以实现这一点。
 
@@ -145,7 +145,7 @@ user_data <- tibble(
 )
 ```
 
-![](../Images/bd51b1e44f5ba2880f7b1ad829f00196.png)
+![](img/bd51b1e44f5ba2880f7b1ad829f00196.png)
 
 上述代码创建的数据。
 
@@ -168,7 +168,7 @@ user_data$user_id[user_data$age < 18]
 user_data$region[user_data$region == "UK"] <- "EU"
 ```
 
-![](../Images/1ecdbc0b2b4b08bc9d5faf1985d41d51.png)
+![](img/1ecdbc0b2b4b08bc9d5faf1985d41d51.png)
 
 上述代码的结果是，“UK”区域值已被替换为“EU”。
 
@@ -180,7 +180,7 @@ user_data$region[user_data$region == "UK"] <- "EU"
 user_data[user_data$region == "USA",]
 ```
 
-![](../Images/bc64f468b7e9d5ce61cf06e353f98cb0.png)
+![](img/bc64f468b7e9d5ce61cf06e353f98cb0.png)
 
 上述代码的结果。
 
@@ -199,7 +199,7 @@ user_data %>%
                                   .default = FALSE))
 ```
 
-![](../Images/84c693816e721ec506de46e82034c750.png)
+![](img/84c693816e721ec506de46e82034c750.png)
 
 上述代码的结果是，包含新列“drinking_age”。
 

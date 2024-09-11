@@ -1,18 +1,18 @@
 # 《线性代数入门》
 
-> 原文：[https://towardsdatascience.com/a-primer-on-linear-algebra-414111d195ca?source=collection_archive---------14-----------------------#2023-01-12](https://towardsdatascience.com/a-primer-on-linear-algebra-414111d195ca?source=collection_archive---------14-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/a-primer-on-linear-algebra-414111d195ca?source=collection_archive---------14-----------------------#2023-01-12`](https://towardsdatascience.com/a-primer-on-linear-algebra-414111d195ca?source=collection_archive---------14-----------------------#2023-01-12)
 
 ## 对数据科学的关键概念和操作的温和回顾
 
-[](https://medium.com/@dataforyou?source=post_page-----414111d195ca--------------------------------)[![Rob Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----414111d195ca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----414111d195ca--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----414111d195ca--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----414111d195ca--------------------------------)
+[](https://medium.com/@dataforyou?source=post_page-----414111d195ca--------------------------------)![Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----414111d195ca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----414111d195ca--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----414111d195ca--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----414111d195ca--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-primer-on-linear-algebra-414111d195ca&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----414111d195ca---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----414111d195ca--------------------------------) ·9分钟阅读·2023年1月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F414111d195ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-primer-on-linear-algebra-414111d195ca&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----414111d195ca---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-primer-on-linear-algebra-414111d195ca&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----414111d195ca---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----414111d195ca--------------------------------) ·9 分钟阅读·2023 年 1 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F414111d195ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-primer-on-linear-algebra-414111d195ca&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----414111d195ca---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F414111d195ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-primer-on-linear-algebra-414111d195ca&source=-----414111d195ca---------------------bookmark_footer-----------)![](../Images/b5f3e71d4c34baa68e826b8223106e46.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F414111d195ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-primer-on-linear-algebra-414111d195ca&source=-----414111d195ca---------------------bookmark_footer-----------)![](img/b5f3e71d4c34baa68e826b8223106e46.png)
 
 照片由 [Vashishtha Jogi](https://unsplash.com/@jogi?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -26,13 +26,13 @@
 
 一个*向量*包含一组有序的值，这些值告诉我们如何在*n*维空间中从一个点移动到另一个点。例如，在二维空间中，向量表示两个离散的(*x, y*)点之间的有向线段——它告诉你一个点相对于另一个点的位置。然而，向量空间可以有超过两个维度；因此，向量包含的分量数量对应于其空间的*维度*：
 
-![](../Images/8a2765f2278af8d822b92cdc36d02e17.png)
+![](img/8a2765f2278af8d822b92cdc36d02e17.png)
 
-一个n维列向量（图片由作者提供）。
+一个 n 维列向量（图片由作者提供）。
 
 其中 ℝ 表示所有维度为*n*的实值向量的集合。这里，**v** 是一个*列向量*，但也可以表示为*行向量：*
 
-![](../Images/f7923299df295ee45beca69a8fb2c483.png)
+![](img/f7923299df295ee45beca69a8fb2c483.png)
 
 行向量是通过转置列向量创建的（图片由作者提供）。
 
@@ -42,25 +42,25 @@
 
 对向量应用运算和函数通常很有用，其中一种运算是*向量加法*。这个操作没有什么神秘之处，它的作用就像名字所示那样。假设我们有两个*2*维向量**u**和**v**，我们想将它们相加。这些向量的和就是它们分量的和：
 
-![](../Images/ffcacff55244bf94f8044154e32bfdc2.png)
+![](img/ffcacff55244bf94f8044154e32bfdc2.png)
 
 向量加法（图片由作者提供）。
 
 我们也可以对向量进行乘法运算，其中最简单的称为*标量乘法*。这涉及到将每个向量分量乘以一个实数常量*c*，这个常量称为*标量倍数*，或简称为*标量*。例如，向量*c***v** 为：
 
-![](../Images/7dd3d576e700968ca7c27e79a0911281.png)
+![](img/7dd3d576e700968ca7c27e79a0911281.png)
 
 向量的标量乘法（图片由作者提供）。
 
 这会产生一个*缩放*后的向量，这个向量的效果是拉伸或收缩，缩放后的版本长度是原始向量的 |*c*| 倍。此外，如果*c < 0*，则向量的方向会*反转*。如果我们想减去向量而不是加上向量，这会非常有用，因为向量**v**的负数就是(-1)**v = -v**，所以在这种情况下*c* = -1。然后，向量**u**和**v**之间的差异可以表示为：
 
-![](../Images/c9c04cd545947697f51241a21718b6a5.png)
+![](img/c9c04cd545947697f51241a21718b6a5.png)
 
 向量减法（图片由作者提供）。
 
 标量还用于创建*线性组合*的向量；不过，在这种情况下，标量通常称为*系数*。例如，我们可以用向量**u**和**v**以及系数*a*和*b*来创建一个向量**w**，如下所示：
 
-![](../Images/a7e7977b3b3db466fc57234fa1201097.png)
+![](img/a7e7977b3b3db466fc57234fa1201097.png)
 
 向量的线性组合（作者提供的图片）。
 
@@ -70,7 +70,7 @@
 
 *点积*（或*数量积*）取两个维度相同的向量，并产生每个对应分量的乘积的和的标量。这是相当冗长的描述，所以为了说明，在下面显示了两个*n*维向量**u**和**v**的点积：
 
-![](../Images/369536c54fc5479b87d44046cefb411b.png)
+![](img/369536c54fc5479b87d44046cefb411b.png)
 
 点积（作者提供的图片）。
 
@@ -78,37 +78,37 @@
 
 点积还用于测量向量的长度，称为*范数*。范数是一个非负标量，等于其平方分量的和的平方根，用来衡量原点*O*=[0, 0]和*n*维空间中的向量点之间的距离。例如，具有维度*n*的向量**v**的范数计算如下：
 
-![](../Images/dd76249b195c4c1acb3253ad7c7905cf.png)
+![](img/dd76249b195c4c1acb3253ad7c7905cf.png)
 
 范数是向量的长度（作者提供的图片）。
 
 在二维空间中，这不仅测量直角三角形的斜边长度，并且与毕达哥拉斯定理完全相同。我们还可以测量两个向量之间的距离，这只是上述的一般化。如果我们想要测量向量**u**和**v**之间的距离，那么这只是两个向量之间差异的范数：
 
-![](../Images/8eac5d6c7423eaf878797eacec7df069.png)
+![](img/8eac5d6c7423eaf878797eacec7df069.png)
 
 两个向量之间的距离（作者提供的图片）。
 
 最后，点积还用于测量两个非零向量之间的角度。具体来说，向量**u**和**v**之间的角度的余弦是：
 
-![](../Images/33c30d91e0a9a2930a5edd36769fd8e1.png)
+![](img/33c30d91e0a9a2930a5edd36769fd8e1.png)
 
 两个向量之间夹角的余弦（作者提供的图片）。
 
 因此，角度等于：
 
-![](../Images/8220d5f8b7000337d117e72c784c4d07.png)
+![](img/8220d5f8b7000337d117e72c784c4d07.png)
 
 求角度（作者提供的图片）。
 
-在结束向量之前，一个重要的条件要认识到是*正交性*。如果两个向量之间的夹角为90度（或*垂直*），则说这些向量是正交的。在这种情况下，向量形成直角，因此：
+在结束向量之前，一个重要的条件要认识到是*正交性*。如果两个向量之间的夹角为 90 度（或*垂直*），则说这些向量是正交的。在这种情况下，向量形成直角，因此：
 
-![](../Images/4f2f3f95e1e6877c494b4c2f5b9a0f82.png)
+![](img/4f2f3f95e1e6877c494b4c2f5b9a0f82.png)
 
 如果满足这个条件，两个向量是正交的（作者提供的图片）。
 
 由此可见：
 
-![](../Images/5d61c5977f7a9cf6955287e3d421b6d2.png)
+![](img/5d61c5977f7a9cf6955287e3d421b6d2.png)
 
 正交性的另一个影响（作者提供的图片）。
 
@@ -118,45 +118,45 @@
 
 一般来说，大小为*n* x *m* 的矩阵的形式为：
 
-![](../Images/207da9d5d8ff2a1f87cc769b4c50f30e.png)
+![](img/207da9d5d8ff2a1f87cc769b4c50f30e.png)
 
 一个*m* x *n* 矩阵（作者插图）。
 
 在引用特定矩阵元素时，通常使用*双下标*符号，其中*i* 为条目的行下标，*j* 为列下标。对于上述矩阵*A*，一个条目可以引用为：
 
-![](../Images/e101f46e03bc5c270f3c98a02f7683d0.png)
+![](img/e101f46e03bc5c270f3c98a02f7683d0.png)
 
-矩阵A中元素的定义（作者插图）。
+矩阵 A 中元素的定义（作者插图）。
 
 对于任何矩阵，我们可以将*对角元素*定义为那些具有相同下标的元素：
 
-![](../Images/b203c63932f548efd9e007fa16e855b1.png)
+![](img/b203c63932f548efd9e007fa16e855b1.png)
 
 矩阵的对角元素具有相同的下标（作者插图）。
 
 如果条件*m* = *n* 成立，那么矩阵被称为*方阵*，并且沿主对角线的元素数量等于行或列的数量。此外，对于任何*n* x *n* 方阵，*迹*定义为沿主对角线元素的总和：
 
-![](../Images/64083a1d9712dbd7af022e5987c0b879.png)
+![](img/64083a1d9712dbd7af022e5987c0b879.png)
 
 方阵的迹（作者插图）。
 
 现在，如果一个矩阵只有非零的对角线元素——这意味着所有其他元素*都是*零——那么这个矩阵被称为*对角矩阵*：
 
-![](../Images/32548e06337a2a68c60e8d2791c576f4.png)
+![](img/32548e06337a2a68c60e8d2791c576f4.png)
 
 对角矩阵沿主对角线只有非零元素（作者插图）。
 
 然而，如果对角矩阵的值都是*相同的——*也就是说，对角线上的值是一个标量——那么这个矩阵被称为*标量矩阵*：
 
-![](../Images/254accd95745e2b273667a8e5431150c.png)
+![](img/254accd95745e2b273667a8e5431150c.png)
 
 标量矩阵沿主对角线只有非零标量（作者插图）。
 
 但如果标量恰好是*c* = 1，那么这个矩阵被称为*单位矩阵*：
 
-![](../Images/34a1343b9fae282f7e53e930f0eb5b8f.png)
+![](img/34a1343b9fae282f7e53e930f0eb5b8f.png)
 
-单位矩阵沿主对角线只有1（作者插图）。
+单位矩阵沿主对角线只有 1（作者插图）。
 
 请注意，对于任何标量*c*，标量矩阵可以作为单位矩阵的标量倍数来推导：*B* = *c* *I*。
 
@@ -164,19 +164,19 @@
 
 之前讨论的向量运算也可以推广到矩阵。例如，如果两个矩阵*A*和*B*大小相等，则可以按元素相加，如下所示：
 
-![](../Images/d79e55482f27b137902e67255755d5aa.png)
+![](img/d79e55482f27b137902e67255755d5aa.png)
 
 矩阵加法（作者插图）。
 
 类似地，矩阵可以使用任何实值常数*c*进行缩放：
 
-![](../Images/fce7cd2efaa0cee6f30323af76be3eca.png)
+![](img/fce7cd2efaa0cee6f30323af76be3eca.png)
 
 矩阵的标量乘法（作者插图）。
 
 我们还讨论了如何使用转置运算符将列向量转换为行向量。这个运算符也可以推广到矩阵，并通过交换行和列来实现。具体来说，矩阵*A*的转置结果是：
 
-![](../Images/d685d20afe22b9f5c1c887dd1ab70fdd.png)
+![](img/d685d20afe22b9f5c1c887dd1ab70fdd.png)
 
 矩阵的转置（图像作者提供）。
 
@@ -184,7 +184,7 @@
 
 转置也用于评估一个方阵是否是*对称的*。如果满足以下条件，则为对称矩阵：
 
-![](../Images/692c988f3b92316be956dd79e9bb4f80.png)
+![](img/692c988f3b92316be956dd79e9bb4f80.png)
 
 对称方阵的条件（图像作者提供）。
 
@@ -194,7 +194,7 @@
 
 与上面讨论的向量和矩阵操作不同，矩阵乘法不是逐元素的。例如，如果*A*是一个*m* x *n*的矩阵，*B*是一个*n* x *p*的矩阵，那么积*C* = *AB* 是一个*m* x *p*的矩阵，其中第*i*行和第*j*列的条目计算为：
 
-![](../Images/fbee4e01e159d11c27d7c49bc857b2d4.png)
+![](img/fbee4e01e159d11c27d7c49bc857b2d4.png)
 
 对于第*i*行和第*j*列的逐元素计算（图像作者提供）。
 

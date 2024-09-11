@@ -1,16 +1,16 @@
-# AI驱动的个人语音助手用于语言学习
+# AI 驱动的个人语音助手用于语言学习
 
-> 原文：[https://towardsdatascience.com/ai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b?source=collection_archive---------2-----------------------#2023-08-28](https://towardsdatascience.com/ai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b?source=collection_archive---------2-----------------------#2023-08-28)
+> 原文：[`towardsdatascience.com/ai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b?source=collection_archive---------2-----------------------#2023-08-28`](https://towardsdatascience.com/ai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b?source=collection_archive---------2-----------------------#2023-08-28)
 
-[](https://medium.com/@gamzsaglam?source=post_page-----5ada0dfb1f9b--------------------------------)[![Gamze Zorlubas](../Images/30d8e1604a22dc6f1bd3ef96c8092cc1.png)](https://medium.com/@gamzsaglam?source=post_page-----5ada0dfb1f9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ada0dfb1f9b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ada0dfb1f9b--------------------------------) [Gamze Zorlubas](https://medium.com/@gamzsaglam?source=post_page-----5ada0dfb1f9b--------------------------------)
+[](https://medium.com/@gamzsaglam?source=post_page-----5ada0dfb1f9b--------------------------------)![Gamze Zorlubas](https://medium.com/@gamzsaglam?source=post_page-----5ada0dfb1f9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ada0dfb1f9b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ada0dfb1f9b--------------------------------) [Gamze Zorlubas](https://medium.com/@gamzsaglam?source=post_page-----5ada0dfb1f9b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd24f99cbdd78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b&user=Gamze+Zorlubas&userId=d24f99cbdd78&source=post_page-d24f99cbdd78----5ada0dfb1f9b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ada0dfb1f9b--------------------------------) · 11分钟阅读 · 2023年8月28日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ada0dfb1f9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b&user=Gamze+Zorlubas&userId=d24f99cbdd78&source=-----5ada0dfb1f9b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd24f99cbdd78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b&user=Gamze+Zorlubas&userId=d24f99cbdd78&source=post_page-d24f99cbdd78----5ada0dfb1f9b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ada0dfb1f9b--------------------------------) · 11 分钟阅读 · 2023 年 8 月 28 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ada0dfb1f9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b&user=Gamze+Zorlubas&userId=d24f99cbdd78&source=-----5ada0dfb1f9b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ada0dfb1f9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b&source=-----5ada0dfb1f9b---------------------bookmark_footer-----------)![](../Images/7ec79878a9cb3bf3da2b34b1d22f9b95.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ada0dfb1f9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-powered-personal-voicebot-for-language-learning-5ada0dfb1f9b&source=-----5ada0dfb1f9b---------------------bookmark_footer-----------)![](img/7ec79878a9cb3bf3da2b34b1d22f9b95.png)
 
 由 Stable Diffusion XL 创建 — 图片由作者提供
 
@@ -20,15 +20,15 @@
 
 最近，大型语言模型已经进入我们的视野，它们正在改变我们的工作方式。这些强大的工具创建了可以像人类一样回应的聊天机器人，并迅速融入我们生活的各个方面，以数百种不同的方式使用。其中一个特别有趣的用途是在语言学习中，尤其是在口语练习方面。
 
-当我不久前搬到德国时，我意识到学习一门新语言并找到练习口语的机会是多么具有挑战性。课程和语言小组可能昂贵或难以融入繁忙的日程。面对这些挑战，我有了一个想法：为什么不使用聊天机器人进行口语练习呢？单纯的文字交流是不够的，因为语言学习不仅仅涉及写作。因此，通过将AI驱动的聊天机器人与语音转文本和文本转语音技术结合起来，我成功创建了一个感觉像与真实人对话的学习体验。
+当我不久前搬到德国时，我意识到学习一门新语言并找到练习口语的机会是多么具有挑战性。课程和语言小组可能昂贵或难以融入繁忙的日程。面对这些挑战，我有了一个想法：为什么不使用聊天机器人进行口语练习呢？单纯的文字交流是不够的，因为语言学习不仅仅涉及写作。因此，通过将 AI 驱动的聊天机器人与语音转文本和文本转语音技术结合起来，我成功创建了一个感觉像与真实人对话的学习体验。
 
-在本文中，我将分享我选择的工具，解释过程，并介绍通过语音命令和语音回应与AI聊天机器人进行口语练习的概念。项目流程包括三个主要部分：语音转文本转录、使用语言模型和文本转语音转换。这些将在以下三个标题下进行解释。
+在本文中，我将分享我选择的工具，解释过程，并介绍通过语音命令和语音回应与 AI 聊天机器人进行口语练习的概念。项目流程包括三个主要部分：语音转文本转录、使用语言模型和文本转语音转换。这些将在以下三个标题下进行解释。
 
 # 1. 语音转文本转录
 
-语言辅导中的语音识别作为用户语音输入与AI基于文本的理解之间的桥梁，用于生成回应。它是关键组件，使语音驱动的互动成为可能，从而提供更具沉浸感和有效的语言学习体验。
+语言辅导中的语音识别作为用户语音输入与 AI 基于文本的理解之间的桥梁，用于生成回应。它是关键组件，使语音驱动的互动成为可能，从而提供更具沉浸感和有效的语言学习体验。
 
-准确的转录对于与Chatbot的顺畅互动至关重要，尤其在语言学习的背景下，发音、口音和语法是关键因素。有各种语音识别工具可用于在Python中转录语音输入，如[OpenAI的Whisper](https://openai.com/research/whisper)和[Google Cloud的Speech-to-Text](https://cloud.google.com/speech-to-text/?utm_source=google&utm_medium=cpc&utm_campaign=emea-de-all-en-dr-bkws-all-all-trial-e-gcp-1011340&utm_content=text-ad-none-any-DEV_c-CRE_574560786447-ADGP_Hybrid+%7C+BKWS+-+EXA+%7C+Txt+%7E+AI+%26+ML+%7E+Speech-to-Text%23v19-KWID_43700053284440638-aud-606988877734%3Akwd-316837061214-userloc_9043449&utm_term=KW_google+audio+transcription-NET_g-PLAC_&gad=1&gclsrc=aw.ds)。
+准确的转录对于与 Chatbot 的顺畅互动至关重要，尤其在语言学习的背景下，发音、口音和语法是关键因素。有各种语音识别工具可用于在 Python 中转录语音输入，如[OpenAI 的 Whisper](https://openai.com/research/whisper)和[Google Cloud 的 Speech-to-Text](https://cloud.google.com/speech-to-text/?utm_source=google&utm_medium=cpc&utm_campaign=emea-de-all-en-dr-bkws-all-all-trial-e-gcp-1011340&utm_content=text-ad-none-any-DEV_c-CRE_574560786447-ADGP_Hybrid+%7C+BKWS+-+EXA+%7C+Txt+%7E+AI+%26+ML+%7E+Speech-to-Text%23v19-KWID_43700053284440638-aud-606988877734%3Akwd-316837061214-userloc_9043449&utm_term=KW_google+audio+transcription-NET_g-PLAC_&gad=1&gclsrc=aw.ds)。
 
 在为语言辅导项目选择语音识别工具时，需要考虑准确性、语言支持、成本以及是否需要离线解决方案等因素。
 
@@ -76,21 +76,21 @@ while True:
 
 # 3\. 文本转语音
 
-在语音转文本转录部分，我解释了用户如何利用语音命令模拟对话体验，仿佛与真实的人交谈。为了进一步增强这种感觉并创建一个更动态和互动的学习体验，下一步涉及使用像gTTS这样的文本转语音工具将GPT的文本输出转换为可听的语音。这不仅有助于创建一个更具吸引力且易于跟随的体验，还解决了语言学习的一个关键方面：通过听力而不是阅读来理解。通过整合这一听觉组件，我们促进了更全面的实践，更贴近真实世界的语言使用。
+在语音转文本转录部分，我解释了用户如何利用语音命令模拟对话体验，仿佛与真实的人交谈。为了进一步增强这种感觉并创建一个更动态和互动的学习体验，下一步涉及使用像 gTTS 这样的文本转语音工具将 GPT 的文本输出转换为可听的语音。这不仅有助于创建一个更具吸引力且易于跟随的体验，还解决了语言学习的一个关键方面：通过听力而不是阅读来理解。通过整合这一听觉组件，我们促进了更全面的实践，更贴近真实世界的语言使用。
 
-有各种TTS工具可供选择，例如Google的Text-to-Speech（gTTS）和IBM Watson的Text to Speech。在这个项目中，我选择了gTTS，因为它超级易于使用，提供了自然的语音质量，而且完全免费。要使用gTTS库，你需要有互联网连接，因为该库需要访问Google的服务器来将文本转换为语音。
+有各种 TTS 工具可供选择，例如 Google 的 Text-to-Speech（gTTS）和 IBM Watson 的 Text to Speech。在这个项目中，我选择了 gTTS，因为它超级易于使用，提供了自然的语音质量，而且完全免费。要使用 gTTS 库，你需要有互联网连接，因为该库需要访问 Google 的服务器来将文本转换为语音。
 
 # 流程的详细说明
 
 在我们深入探讨流程之前，你可能想先查看我在[Github](https://github.com/gamzez/language_tutor)页面上的完整代码，因为我将会引用其中的一些部分。
 
-下图解释了AI驱动的虚拟语言导师的工作流程，该导师旨在建立一个实时的基于语音的对话学习体验：
+下图解释了 AI 驱动的虚拟语言导师的工作流程，该导师旨在建立一个实时的基于语音的对话学习体验：
 
-![](../Images/23b3b3a1169fa7c5e3c19235f59c9e99.png)
+![](img/23b3b3a1169fa7c5e3c19235f59c9e99.png)
 
 流程图 — 作者提供的图片
 
-+   用户通过开始录制他们的语音来启动对话，临时将其保存为.wav文件。这是通过按住空格键来实现的，录音在释放空格键时停止。下面解释了实现这种按键对话功能的Python代码部分。
++   用户通过开始录制他们的语音来启动对话，临时将其保存为.wav 文件。这是通过按住空格键来实现的，录音在释放空格键时停止。下面解释了实现这种按键对话功能的 Python 代码部分。
 
 以下全局变量用于管理录音过程的状态：
 
@@ -100,7 +100,7 @@ done_recording = False  # Indicates that the user has completed recording a voic
 stop_recording = False  # Indicates that the user wants to exit the conversation
 ```
 
-`listen_for_keys`函数用于检查键盘的按压和释放。它根据空格键和esc按钮的状态设置全局变量。
+`listen_for_keys`函数用于检查键盘的按压和释放。它根据空格键和 esc 按钮的状态设置全局变量。
 
 ```py
 def listen_for_keys():
@@ -136,7 +136,7 @@ def callback(indata, frames, time, status):
 
 它初始化全局变量以管理录音状态，并确定采样率，还创建一个临时文件来存储录制的音频。
 
-函数随后打开一个SoundFile对象来写入音频数据，并使用先前提到的`callback`函数创建一个InputStream对象来从麦克风捕获音频。启动一个线程以监听按键，特别是录制的空格键和停止的'esc'键。在一个循环内，函数检查录制标志，并在录制活动时将音频数据写入文件。如果录制停止，函数返回-1；否则，它返回录制音频的文件名。
+函数随后打开一个 SoundFile 对象来写入音频数据，并使用先前提到的`callback`函数创建一个 InputStream 对象来从麦克风捕获音频。启动一个线程以监听按键，特别是录制的空格键和停止的'esc'键。在一个循环内，函数检查录制标志，并在录制活动时将音频数据写入文件。如果录制停止，函数返回-1；否则，它返回录制音频的文件名。
 
 ```py
 def press2record(filename, subtype, channels, samplerate):
@@ -186,7 +186,7 @@ def get_voice_command():
     # ...
 ```
 
-+   在捕捉并保存了语音命令到一个临时的.wav文件后，我们现在进入转录阶段。在这一阶段，录制的音频将通过Whisper转换成文本。下面是一个简单运行.wav文件转录任务的脚本：
++   在捕捉并保存了语音命令到一个临时的.wav 文件后，我们现在进入转录阶段。在这一阶段，录制的音频将通过 Whisper 转换成文本。下面是一个简单运行.wav 文件转录任务的脚本：
 
 ```py
 def get_voice_command():
@@ -195,9 +195,9 @@ def get_voice_command():
     # ...
 ```
 
-这个方法接受两个参数：录制音频文件的路径`saved_file`和一个可选的标志，用于在CUDA可用的情况下使用FP16精度以增强兼容硬件上的性能。它简单地返回转录的文本。
+这个方法接受两个参数：录制音频文件的路径`saved_file`和一个可选的标志，用于在 CUDA 可用的情况下使用 FP16 精度以增强兼容硬件上的性能。它简单地返回转录的文本。
 
-+   然后，转录的文本被发送到ChatGPT，以在`interact_with_tutor()`函数中生成适当的回应。相关的代码段如下：
++   然后，转录的文本被发送到 ChatGPT，以在`interact_with_tutor()`函数中生成适当的回应。相关的代码段如下：
 
 ```py
 def interact_with_tutor():
@@ -232,11 +232,11 @@ def interact_with_tutor():
         # ...
 ```
 
-`interact_with_tutor`函数开始时定义ChatGPT的系统角色，以塑造其在对话中的行为。由于我的目标是练习德语，我相应地设置了系统角色。我称呼我的虚拟导师为“Anna”，并为她设置了我的语言熟练度，以便她调整她的回应。此外，我指示她通过提问保持对话的吸引力。
+`interact_with_tutor`函数开始时定义 ChatGPT 的系统角色，以塑造其在对话中的行为。由于我的目标是练习德语，我相应地设置了系统角色。我称呼我的虚拟导师为“Anna”，并为她设置了我的语言熟练度，以便她调整她的回应。此外，我指示她通过提问保持对话的吸引力。
 
-接下来，用户转录的语音命令以“user”的角色追加到消息列表中。然后将该消息发送给ChatGPT。由于对话在一个while循环中继续进行，用户命令和GPT回应的整个历史被记录在消息列表中。
+接下来，用户转录的语音命令以“user”的角色追加到消息列表中。然后将该消息发送给 ChatGPT。由于对话在一个 while 循环中继续进行，用户命令和 GPT 回应的整个历史被记录在消息列表中。
 
-+   在每次ChatGPT回应后，我们使用gTTS将文本消息转换为语音。
++   在每次 ChatGPT 回应后，我们使用 gTTS 将文本消息转换为语音。
 
 ```py
 def interact_with_tutor():
@@ -251,23 +251,23 @@ def interact_with_tutor():
   os.remove(audio_file) # Remove the temporary audio file
 ```
 
-`gTTS()`函数接受4个参数：`text`，`tld`，`lang`和`slow`。`text`参数被赋予`messages`列表中最后一条消息的内容（由`[-1]`表示），你想将其转换为语音。`tld`参数指定Google翻译服务的顶级域。将其设置为`"de"`意味着使用德语域，这对确保发音和语调适合德语非常重要。`lang`参数指定文本应以何种语言朗读。在此代码中，`language`变量设置为`'de'`，意味着文本将以德语朗读。`slow=False`：`slow`参数控制语音的速度。将其设置为`False`意味着语音将以正常速度朗读。如果设置为`True`，语音将更慢。
+`gTTS()`函数接受 4 个参数：`text`，`tld`，`lang`和`slow`。`text`参数被赋予`messages`列表中最后一条消息的内容（由`[-1]`表示），你想将其转换为语音。`tld`参数指定 Google 翻译服务的顶级域。将其设置为`"de"`意味着使用德语域，这对确保发音和语调适合德语非常重要。`lang`参数指定文本应以何种语言朗读。在此代码中，`language`变量设置为`'de'`，意味着文本将以德语朗读。`slow=False`：`slow`参数控制语音的速度。将其设置为`False`意味着语音将以正常速度朗读。如果设置为`True`，语音将更慢。
 
-+   ChatGPT响应的转换语音将保存为临时的.wav文件，向用户播放，然后删除。
++   ChatGPT 响应的转换语音将保存为临时的.wav 文件，向用户播放，然后删除。
 
 +   当用户再次按下空格键继续对话时，`interact_with_tutor`函数会重复运行。
 
-+   如果用户按下“esc”，对话结束，并且整个对话保存到一个pickle文件`chat_log.pkl`中，您可以稍后用于分析。
++   如果用户按下“esc”，对话结束，并且整个对话保存到一个 pickle 文件`chat_log.pkl`中，您可以稍后用于分析。
 
 # 命令行用法
 
-要运行脚本，只需在终端中运行以下Python代码：
+要运行脚本，只需在终端中运行以下 Python 代码：
 
 ```py
 sudo python chat.py
 ```
 
-`sudo`是必需的，因为该脚本需要访问麦克风并使用键盘库。如果您使用Anaconda，您也可以通过“以管理员身份运行”来启动Anaconda终端，以赋予完全访问权限。
+`sudo`是必需的，因为该脚本需要访问麦克风并使用键盘库。如果您使用 Anaconda，您也可以通过“以管理员身份运行”来启动 Anaconda 终端，以赋予完全访问权限。
 
 这里有一个演示视频展示了代码在我的笔记本电脑上的运行情况。您可以感受一下性能：
 
@@ -275,8 +275,8 @@ sudo python chat.py
 
 # 最后的备注
 
-我通过简单设置ChatGPT的系统角色并调整gTTs函数中的参数，将导师的语言设置为德语。然而，您也可以轻松切换到其他语言。只需几秒钟即可为目标语言配置它。
+我通过简单设置 ChatGPT 的系统角色并调整 gTTs 函数中的参数，将导师的语言设置为德语。然而，您也可以轻松切换到其他语言。只需几秒钟即可为目标语言配置它。
 
-如果您想要讨论特定主题，您也可以在ChatGPT的系统角色中添加它。例如，使用它练习面试可能是一个不错的用例。您还可以指定您的语言水平以调整其响应。
+如果您想要讨论特定主题，您也可以在 ChatGPT 的系统角色中添加它。例如，使用它练习面试可能是一个不错的用例。您还可以指定您的语言水平以调整其响应。
 
-一个重要的备注是，聊天的整体速度取决于您的互联网连接（由于ChatGPT API和gTTS）以及您的硬件（由于Whisper的本地部署）。在我的情况下，我的输入后的整体响应时间在4-10秒之间。
+一个重要的备注是，聊天的整体速度取决于您的互联网连接（由于 ChatGPT API 和 gTTS）以及您的硬件（由于 Whisper 的本地部署）。在我的情况下，我的输入后的整体响应时间在 4-10 秒之间。

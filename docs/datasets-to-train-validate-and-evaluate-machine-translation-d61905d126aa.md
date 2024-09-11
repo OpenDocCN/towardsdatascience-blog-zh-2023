@@ -1,18 +1,18 @@
 # 训练、验证和评估机器翻译的数据集
 
-> 原文：[https://towardsdatascience.com/datasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa?source=collection_archive---------2-----------------------#2023-02-04](https://towardsdatascience.com/datasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa?source=collection_archive---------2-----------------------#2023-02-04)
+> 原文：[`towardsdatascience.com/datasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa?source=collection_archive---------2-----------------------#2023-02-04`](https://towardsdatascience.com/datasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa?source=collection_archive---------2-----------------------#2023-02-04)
 
 ## 选择、检查和拆分
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----d61905d126aa--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----d61905d126aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d61905d126aa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d61905d126aa--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----d61905d126aa--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----d61905d126aa--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----d61905d126aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d61905d126aa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d61905d126aa--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----d61905d126aa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----d61905d126aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d61905d126aa--------------------------------) ·13 min 阅读·2023年2月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd61905d126aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa&user=Benjamin+Marie&userId=ad2a414578b3&source=-----d61905d126aa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----d61905d126aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d61905d126aa--------------------------------) ·13 min 阅读·2023 年 2 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd61905d126aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa&user=Benjamin+Marie&userId=ad2a414578b3&source=-----d61905d126aa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd61905d126aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa&source=-----d61905d126aa---------------------bookmark_footer-----------)![](../Images/b19a0e5aa70cbc0a6adef86313a71daf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd61905d126aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatasets-to-train-validate-and-evaluate-machine-translation-d61905d126aa&source=-----d61905d126aa---------------------bookmark_footer-----------)![](img/b19a0e5aa70cbc0a6adef86313a71daf.png)
 
 图片来源于 [Pixabay](https://pixabay.com/illustrations/translate-translation-web-service-3324171/)
 
@@ -30,11 +30,11 @@
 
 +   **评估**：这一步骤自动生成我们选择的模型在尽可能接近我们系统实际部署后将要翻译的文本的数据集上的表现。如果表现令人满意，那么我们可以部署我们的模型。如果不满意，我们需要用不同的超参数或训练数据重新训练模型。
 
-[](/watch-out-for-your-beam-search-hyperparameters-9c4daf6668d6?source=post_page-----d61905d126aa--------------------------------) [## 注意你的束搜索超参数
+[](/watch-out-for-your-beam-search-hyperparameters-9c4daf6668d6?source=post_page-----d61905d126aa--------------------------------) ## 注意你的束搜索超参数
 
 ### 默认值永远不是最优的。
 
-towardsdatascience.com](/watch-out-for-your-beam-search-hyperparameters-9c4daf6668d6?source=post_page-----d61905d126aa--------------------------------)
+towardsdatascience.com
 
 所有这些数据集都是**平行语料库**，包括**源语言**和**目标语言**，并且理想情况下是**目标领域**的。
 
@@ -50,7 +50,7 @@ towardsdatascience.com](/watch-out-for-your-beam-search-hyperparameters-9c4daf66
 
 例如，以下数据集是平行的：
 
-![](../Images/e7b0aea558f481a2f2e339fc8e20bb06.png)
+![](img/e7b0aea558f481a2f2e339fc8e20bb06.png)
 
 从 Paracrawl 英荷平行语料库中提取（[CC0](https://www.paracrawl.eu/)）。作者截图。
 
@@ -94,17 +94,17 @@ towardsdatascience.com](/watch-out-for-your-beam-search-hyperparameters-9c4daf66
 
 “数量”通常指的是平行语料库中平行段落的数量。我在这里将使用这个定义。
 
-对于训练来说，**尽可能使用更多的数据是一个好的经验法则**，前提是数据的质量合理。我将训练场景分为3类：
+对于训练来说，**尽可能使用更多的数据是一个好的经验法则**，前提是数据的质量合理。我将训练场景分为 3 类：
 
-+   **低资源**：训练数据包含少于100,000个平行段落（或称为句子）
++   **低资源**：训练数据包含少于 100,000 个平行段落（或称为句子）
 
-+   **中等资源**：训练数据包含100,000到1,000,000个平行段落
++   **中等资源**：训练数据包含 100,000 到 1,000,000 个平行段落
 
-+   **高资源**：训练数据包含超过1,000,000个平行段落
++   **高资源**：训练数据包含超过 1,000,000 个平行段落
 
 对于验证和评估，使用大量数据可能看似是获取我们模型准确评估的正确选择，但通常我们更倾向于**将更多的数据用于训练而不是验证和评估**。
 
-如果你查看研究和开发中的最佳实践，你会发现机器翻译的验证和评估数据集通常包含1,000到3,000个平行段落。请记住，这些数据集的质量比数量重要得多，与训练数据集不同。我们希望评估数据集的翻译尽可能完美，并且尽可能接近我们的系统将要翻译的文本。
+如果你查看研究和开发中的最佳实践，你会发现机器翻译的验证和评估数据集通常包含 1,000 到 3,000 个平行段落。请记住，这些数据集的质量比数量重要得多，与训练数据集不同。我们希望评估数据集的翻译尽可能完美，并且尽可能接近我们的系统将要翻译的文本。
 
 # 单语数据
 
@@ -132,7 +132,7 @@ towardsdatascience.com](/watch-out-for-your-beam-search-hyperparameters-9c4daf66
 
 最明显的数据泄漏情况是评估数据中的段落或文档也出现在训练数据中。这些段落应该被排除。
 
-另一种数据泄漏的形式是当训练和评估数据来自相同的文档时。例如，将数据集的段落顺序打乱，然后选择前95%用于训练，最后5%用于验证/评估，可能会导致数据泄漏。在这种情况下，我们可能在训练和验证/评估数据中使用了原本来自同一文档的段落对，这些文档可能由同一译者创建。也有可能训练数据中的段落直接用于创建验证/评估数据段落的翻译。因此，验证/评估数据在翻译时人为变得更容易。
+另一种数据泄漏的形式是当训练和评估数据来自相同的文档时。例如，将数据集的段落顺序打乱，然后选择前 95%用于训练，最后 5%用于验证/评估，可能会导致数据泄漏。在这种情况下，我们可能在训练和验证/评估数据中使用了原本来自同一文档的段落对，这些文档可能由同一译者创建。也有可能训练数据中的段落直接用于创建验证/评估数据段落的翻译。因此，验证/评估数据在翻译时人为变得更容易。
 
 为了防止数据泄漏，总是要了解数据的来源，以及数据是如何制作和划分为训练/验证/评估数据集的。
 
@@ -182,41 +182,41 @@ towardsdatascience.com](/watch-out-for-your-beam-search-hyperparameters-9c4daf66
 
 幸运的是，西班牙语到英语（Es→En）是一个高资源任务。在各种领域有大量平行语料库。例如，从 OPUS，我们可以获得：
 
-![](../Images/ccad4f1ad23139ba0371f719defe4caf.png)
+![](img/ccad4f1ad23139ba0371f719defe4caf.png)
 
 来自[OPUS](https://opus.nlpl.eu)的截图。
 
-第一个，“ParaCrawl v9”是最大的之一。它是自动创建的，但足够好以训练机器翻译系统。我们应该始终检查许可证，以确保我们可以将其用于目标应用程序。如上所述，OPUS没有提供许可证信息，但一旦点击，它会提供数据集的来源。有关许可证信息，我们必须检查数据的原始来源：[https://www.paracrawl.eu/](https://www.paracrawl.eu/)。该语料库在[CC0许可证](https://creativecommons.org/share-your-work/public-domain/cc0/)下提供。允许学术和商业用途。
+第一个，“ParaCrawl v9”是最大的之一。它是自动创建的，但足够好以训练机器翻译系统。我们应该始终检查许可证，以确保我们可以将其用于目标应用程序。如上所述，OPUS 没有提供许可证信息，但一旦点击，它会提供数据集的来源。有关许可证信息，我们必须检查数据的原始来源：[`www.paracrawl.eu/`](https://www.paracrawl.eu/)。该语料库在[CC0 许可证](https://creativecommons.org/share-your-work/public-domain/cc0/)下提供。允许学术和商业用途。
 
-这是一个包含264M对段的大型语料库。这个数据量足够将其拆分为训练/验证/评估数据集。我会这样拆分数据以避免数据泄露：
+这是一个包含 264M 对段的大型语料库。这个数据量足够将其拆分为训练/验证/评估数据集。我会这样拆分数据以避免数据泄露：
 
-![](../Images/8645063b165ced63106b235166e7b22c.png)
+![](img/8645063b165ced63106b235166e7b22c.png)
 
 作者插图。
 
-由于段对数量很多，我们可以将数据拆分为连续的10M段对。我会提取一个段，对例如最后一个段进行重新拆分成更小的连续段对1M。最后，我会从第一个较小段提取3,000个段用于验证，从最后一个较小段提取另外3,000个段用于评估。
+由于段对数量很多，我们可以将数据拆分为连续的 10M 段对。我会提取一个段，对例如最后一个段进行重新拆分成更小的连续段对 1M。最后，我会从第一个较小段提取 3,000 个段用于验证，从最后一个较小段提取另外 3,000 个段用于评估。
 
 训练、验证和评估数据集之间的距离足够。这是一种非常简单的方法，但远非最佳。如果语料库中的段对已经被打乱，它不会防止数据泄露。
 
 还有其他方法，我在这里不讨论，以更好地保证在提取每个数据集最有用的段对时数据不会泄露。
 
-对于训练，你可以从例如前两个10M段开始。如果对翻译质量不满意，你可以将更多的段加入训练数据中。
+对于训练，你可以从例如前两个 10M 段开始。如果对翻译质量不满意，你可以将更多的段加入训练数据中。
 
-如果翻译质量没有太大改善，说明你可能不需要使用剩余的200M+段对。
+如果翻译质量没有太大改善，说明你可能不需要使用剩余的 200M+段对。
 
-*任务2* 要困难得多。
+*任务 2* 要困难得多。
 
 我们想要翻译斯瓦希里语。非洲语言通常资源较少。此外，我们针对的是一个相对较新的领域——COVID-19，因此我们可以预期这个任务可用的数据会非常少。
 
-正如预期的那样，在OPUS上可用的数据集要少得多：
+正如预期的那样，在 OPUS 上可用的数据集要少得多：
 
-![](../Images/a5918577f225704639f73c1990b50506.png)
+![](img/a5918577f225704639f73c1990b50506.png)
 
 来自[OPUS](https://opus.nlpl.eu)的截图。
 
-一个好的点是，Paracrawl也提供Sw→En的资源，但其10万个段对相对较小。然而，这是一个最大的CC0许可证资源之一。我会用它进行训练，然后尝试添加其他数据源（如CCMatrix或CCAligned）以观察性能如何改进。
+一个好的点是，Paracrawl 也提供 Sw→En 的资源，但其 10 万个段对相对较小。然而，这是一个最大的 CC0 许可证资源之一。我会用它进行训练，然后尝试添加其他数据源（如 CCMatrix 或 CCAligned）以观察性能如何改进。
 
-*但如何评估一个专门用于翻译COVID-19内容的机器翻译系统？*
+*但如何评估一个专门用于翻译 COVID-19 内容的机器翻译系统？*
 
 在 COVID-19 爆发后，研究社区致力于制作多语言的翻译资源。 [TICO-19](https://tico-19.github.io/) 语料库就是其中之一，并且提供了 CC0 许可。它可以在 OPUS 上获取。虽然它很小，但提供了 3,100 段斯瓦希里语和英语的翻译。这足以制作验证/评估数据集。在这里，我会选择 1,000 段用于验证，其余段落用于评估。然后，你将了解你的系统在 Paracrawl 上训练后在翻译 COVID-19 内容方面的表现。
 

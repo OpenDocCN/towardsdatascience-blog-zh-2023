@@ -1,14 +1,14 @@
 # 结构化您的云实例启动脚本
 
-> 原文：[https://towardsdatascience.com/structuring-your-cloud-instances-startup-scripts-2ce981825b8d?source=collection_archive---------9-----------------------#2023-11-09](https://towardsdatascience.com/structuring-your-cloud-instances-startup-scripts-2ce981825b8d?source=collection_archive---------9-----------------------#2023-11-09)
+> 原文：[`towardsdatascience.com/structuring-your-cloud-instances-startup-scripts-2ce981825b8d?source=collection_archive---------9-----------------------#2023-11-09`](https://towardsdatascience.com/structuring-your-cloud-instances-startup-scripts-2ce981825b8d?source=collection_archive---------9-----------------------#2023-11-09)
 
 ## 分辨首次启动与重启
 
-[](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)[![Jake Teo](../Images/9687f43822fab69befb750a8ec58516d.png)](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------) [Jake Teo](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)
+[](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)![Jake Teo](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------) [Jake Teo](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52b0d82d5bf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstructuring-your-cloud-instances-startup-scripts-2ce981825b8d&user=Jake+Teo&userId=52b0d82d5bf5&source=post_page-52b0d82d5bf5----2ce981825b8d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------) ·7分钟阅读·2023年11月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2ce981825b8d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstructuring-your-cloud-instances-startup-scripts-2ce981825b8d&user=Jake+Teo&userId=52b0d82d5bf5&source=-----2ce981825b8d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52b0d82d5bf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstructuring-your-cloud-instances-startup-scripts-2ce981825b8d&user=Jake+Teo&userId=52b0d82d5bf5&source=post_page-52b0d82d5bf5----2ce981825b8d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------) ·7 分钟阅读·2023 年 11 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2ce981825b8d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstructuring-your-cloud-instances-startup-scripts-2ce981825b8d&user=Jake+Teo&userId=52b0d82d5bf5&source=-----2ce981825b8d---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 您的大多数机器学习任务通常会在初步探索阶段后被打包成镜像，并部署到本地或云服务器上。这将有助于快速迭代，以建立支持 MLOps 流水线运作的基础设施，涉及整个开发团队，包括数据科学家，以及数据、软件、云工程师等。
 
-![](../Images/d582e642cfce4bde1f97ee0d72d95c17.png)
+![](img/d582e642cfce4bde1f97ee0d72d95c17.png)
 
 示例图显示了将机器学习任务典型地部署到服务器上的情况（VM = 虚拟机）。图像作者提供
 

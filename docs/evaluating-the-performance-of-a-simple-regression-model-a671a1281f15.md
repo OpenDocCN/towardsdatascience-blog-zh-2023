@@ -1,16 +1,16 @@
 # 通过图表和指标评估简单回归模型的表现
 
-> 原文：[https://towardsdatascience.com/evaluating-the-performance-of-a-simple-regression-model-a671a1281f15?source=collection_archive---------1-----------------------#2023-05-27](https://towardsdatascience.com/evaluating-the-performance-of-a-simple-regression-model-a671a1281f15?source=collection_archive---------1-----------------------#2023-05-27)
+> 原文：[`towardsdatascience.com/evaluating-the-performance-of-a-simple-regression-model-a671a1281f15?source=collection_archive---------1-----------------------#2023-05-27`](https://towardsdatascience.com/evaluating-the-performance-of-a-simple-regression-model-a671a1281f15?source=collection_archive---------1-----------------------#2023-05-27)
 
-[](https://wendynavarrete.medium.com/?source=post_page-----a671a1281f15--------------------------------)[![Wendy Navarrete](../Images/05793a5c2ba6a86a5155ee08167208d2.png)](https://wendynavarrete.medium.com/?source=post_page-----a671a1281f15--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a671a1281f15--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a671a1281f15--------------------------------) [Wendy Navarrete](https://wendynavarrete.medium.com/?source=post_page-----a671a1281f15--------------------------------)
+[](https://wendynavarrete.medium.com/?source=post_page-----a671a1281f15--------------------------------)![Wendy Navarrete](https://wendynavarrete.medium.com/?source=post_page-----a671a1281f15--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a671a1281f15--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a671a1281f15--------------------------------) [Wendy Navarrete](https://wendynavarrete.medium.com/?source=post_page-----a671a1281f15--------------------------------)
 
 ·
 
-[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe036a91a10cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-the-performance-of-a-simple-regression-model-a671a1281f15&user=Wendy+Navarrete&userId=e036a91a10cb&source=post_page-e036a91a10cb----a671a1281f15---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a671a1281f15--------------------------------) ·5 min read·2023年5月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa671a1281f15&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-the-performance-of-a-simple-regression-model-a671a1281f15&user=Wendy+Navarrete&userId=e036a91a10cb&source=-----a671a1281f15---------------------clap_footer-----------)
+[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe036a91a10cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-the-performance-of-a-simple-regression-model-a671a1281f15&user=Wendy+Navarrete&userId=e036a91a10cb&source=post_page-e036a91a10cb----a671a1281f15---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a671a1281f15--------------------------------) ·5 min read·2023 年 5 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa671a1281f15&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-the-performance-of-a-simple-regression-model-a671a1281f15&user=Wendy+Navarrete&userId=e036a91a10cb&source=-----a671a1281f15---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa671a1281f15&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-the-performance-of-a-simple-regression-model-a671a1281f15&source=-----a671a1281f15---------------------bookmark_footer-----------)![](../Images/ebc28a965f21b0cdabc575f539659231.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa671a1281f15&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-the-performance-of-a-simple-regression-model-a671a1281f15&source=-----a671a1281f15---------------------bookmark_footer-----------)![](img/ebc28a965f21b0cdabc575f539659231.png)
 
 版权归 [Pixabay](https://pixabay.com) 所有
 
@@ -24,7 +24,7 @@
 
 +   识别变量之间的关系
 
-+   基于单个自变量*x*预测因变量Y
++   基于单个自变量*x*预测因变量 Y
 
 +   检验关联关系的假设
 

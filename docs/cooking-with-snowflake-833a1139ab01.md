@@ -1,20 +1,20 @@
 # 使用 Snowflake 进行数据处理
 
-> 原文：[https://towardsdatascience.com/cooking-with-snowflake-833a1139ab01?source=collection_archive---------6-----------------------#2023-05-17](https://towardsdatascience.com/cooking-with-snowflake-833a1139ab01?source=collection_archive---------6-----------------------#2023-05-17)
+> 原文：[`towardsdatascience.com/cooking-with-snowflake-833a1139ab01?source=collection_archive---------6-----------------------#2023-05-17`](https://towardsdatascience.com/cooking-with-snowflake-833a1139ab01?source=collection_archive---------6-----------------------#2023-05-17)
 
 ## Snowflake 优化
 
 ## 简单的配方与数据仓库中的即时满足
 
-[](https://medium.com/@pbd_94?source=post_page-----833a1139ab01--------------------------------)[![Prabodh Agarwal](../Images/c4aa2193795fbc56edecbd78172da021.png)](https://medium.com/@pbd_94?source=post_page-----833a1139ab01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----833a1139ab01--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----833a1139ab01--------------------------------) [Prabodh Agarwal](https://medium.com/@pbd_94?source=post_page-----833a1139ab01--------------------------------)
+[](https://medium.com/@pbd_94?source=post_page-----833a1139ab01--------------------------------)![Prabodh Agarwal](https://medium.com/@pbd_94?source=post_page-----833a1139ab01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----833a1139ab01--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----833a1139ab01--------------------------------) [Prabodh Agarwal](https://medium.com/@pbd_94?source=post_page-----833a1139ab01--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9856a06a88a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcooking-with-snowflake-833a1139ab01&user=Prabodh+Agarwal&userId=9856a06a88a6&source=post_page-9856a06a88a6----833a1139ab01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----833a1139ab01--------------------------------) ·10 分钟阅读·2023年5月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F833a1139ab01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcooking-with-snowflake-833a1139ab01&user=Prabodh+Agarwal&userId=9856a06a88a6&source=-----833a1139ab01---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9856a06a88a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcooking-with-snowflake-833a1139ab01&user=Prabodh+Agarwal&userId=9856a06a88a6&source=post_page-9856a06a88a6----833a1139ab01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----833a1139ab01--------------------------------) ·10 分钟阅读·2023 年 5 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F833a1139ab01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcooking-with-snowflake-833a1139ab01&user=Prabodh+Agarwal&userId=9856a06a88a6&source=-----833a1139ab01---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F833a1139ab01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcooking-with-snowflake-833a1139ab01&source=-----833a1139ab01---------------------bookmark_footer-----------)![](../Images/73dfb2244fbf2936dcb1412336728421.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F833a1139ab01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcooking-with-snowflake-833a1139ab01&source=-----833a1139ab01---------------------bookmark_footer-----------)![](img/73dfb2244fbf2936dcb1412336728421.png)
 
 使用 Midjourney 生成（付费订阅）
 
@@ -24,9 +24,9 @@ Toplyne 的业务涉及从实时数据中提取实时洞察。这些数据目前
 
 CRM 和支付数据的体量大多是可控的。一个产品会有有限的付费客户，以及在 CRM 中跟踪的略多一些的客户。然而，产品分析数据的体量要大得多。
 
-Toplyne 的POC（概念验证）和MVP（最简可行产品）是基于产品分析数据构建的。我们从一开始就知道需要使用数据仓库解决方案来处理这些数据。该解决方案必须满足两个明确的要求：
+Toplyne 的 POC（概念验证）和 MVP（最简可行产品）是基于产品分析数据构建的。我们从一开始就知道需要使用数据仓库解决方案来处理这些数据。该解决方案必须满足两个明确的要求：
 
-1.  它应该能轻松处理几百GB的数据。
+1.  它应该能轻松处理几百 GB 的数据。
 
 1.  它应该提供一个简单而简明的 API 来与这些数据交互。
 
@@ -60,7 +60,7 @@ SQL 是一种第四代语言（4GL），相对较容易学习。结合一个只�
 
 我们 ETL 流程的样本架构图。Snowflake 是该系统的核心。
 
-![](../Images/260a503ca0b67035740ce4d76415aaa0.png)
+![](img/260a503ca0b67035740ce4d76415aaa0.png)
 
 Toplyne 的数据管道架构
 
@@ -74,15 +74,15 @@ Toplyne 的数据管道架构
 
 几个月来，系统的不同组件经历了多次更改和重大重写，而 Snowflake 是唯一不变的。
 
-由于我们已经运行并维护了一个系统，我们想提出一些关于Snowflake中查询优化的想法。我们有一种超级简单的技术，通过对现有查询进行轻微调整，能够从系统中提取出大量的性能。
+由于我们已经运行并维护了一个系统，我们想提出一些关于 Snowflake 中查询优化的想法。我们有一种超级简单的技术，通过对现有查询进行轻微调整，能够从系统中提取出大量的性能。
 
 # **查询优化**
 
-我们运行一个多租户系统，其中单个Snowflake实例负责处理大量客户数据的ETL。ETL由Airflow编排。
+我们运行一个多租户系统，其中单个 Snowflake 实例负责处理大量客户数据的 ETL。ETL 由 Airflow 编排。
 
-我们为每个客户创建一个仓库，并在该仓库上运行所有ETL和特征工程。在整个ETL运行期间，对一个仓库会依次和/或并行地执行数百个SQL查询。一次运行可能持续一个小时，并且一天中可能有多次运行。
+我们为每个客户创建一个仓库，并在该仓库上运行所有 ETL 和特征工程。在整个 ETL 运行期间，对一个仓库会依次和/或并行地执行数百个 SQL 查询。一次运行可能持续一个小时，并且一天中可能有多次运行。
 
-本质上，一个仓库的大小运行所有昂贵的以及便宜的查询。因此我们的目标是将仓库大小保持在最低限度。我们通过为不同的ETL运行定义服务水平协议（SLA）来定义最小值。然后，我们调整仓库大小，以便可以在该大小下满足ETL SLA。像任何工程组织一样，我们希望在满足SLA的情况下将仓库大小保持在最低限度。
+本质上，一个仓库的大小运行所有昂贵的以及便宜的查询。因此我们的目标是将仓库大小保持在最低限度。我们通过为不同的 ETL 运行定义服务水平协议（SLA）来定义最小值。然后，我们调整仓库大小，以便可以在该大小下满足 ETL SLA。像任何工程组织一样，我们希望在满足 SLA 的情况下将仓库大小保持在最低限度。
 
 我们有仪表板来监控最昂贵查询的查询模式。这些仪表板有不同的粒度级别。我们不断监控这些仪表板，并不断调整查询。随着时间的推移，我们识别出了一些昂贵查询中的模式，并制定了一本关于如何最小化这些查询运行时间的操作手册。我们将展示三个案例研究，概述查询的问题陈述、最初编写方式、该查询中的瓶颈以及其最终的最佳解决方案。
 
@@ -92,15 +92,15 @@ Toplyne 的数据管道架构
 
 我们从产品分析数据中跟踪用户的个人资料信息。产品分析系统保存有关用户的多个数据点，例如位置、设备、订阅状态等。一些数据点经常变化，而另一些则不那么频繁。鉴于这些数据的性质，这些信息在数据库中以追加日志的形式表示。
 
-我们的一个特征工程需求是捕获用户最新的个人资料信息，作为ETL运行的一部分。
+我们的一个特征工程需求是捕获用户最新的个人资料信息，作为 ETL 运行的一部分。
 
-![](../Images/b758fff47289b6182bb792dbf288cb70.png)
+![](img/b758fff47289b6182bb792dbf288cb70.png)
 
-上图给出了ETL的流程图。
+上图给出了 ETL 的流程图。
 
-**1** 是来自产品分析的原始数据，**2** 是我们想要应用的算法，**3** 是ETL的最终结果。
+**1** 是来自产品分析的原始数据，**2** 是我们想要应用的算法，**3** 是 ETL 的最终结果。
 
-我们拥有的SQL查询是这样的：
+我们拥有的 SQL 查询是这样的：
 
 ```py
 select
@@ -113,7 +113,7 @@ qualify
 
 ## 瓶颈
 
-这个查询很简单，而且在Snowflake中效果很好。然而，这个查询中的窗口函数是一个瓶颈。
+这个查询很简单，而且在 Snowflake 中效果很好。然而，这个查询中的窗口函数是一个瓶颈。
 
 查询的工作原理如下：
 
@@ -165,7 +165,7 @@ qualify
 
 **1** 是原始数据，**2** 是转换后的输出。
 
-![](../Images/23964d6ab2492da9ff62c5fd92a86fd3.png)
+![](img/23964d6ab2492da9ff62c5fd92a86fd3.png)
 
 我们的 SQL 查询如下：
 
@@ -232,7 +232,7 @@ create final_table as (
 );
 ```
 
-我们的生产系统将**1000个事件**拆分成**10个块**，每块包含**100个事件**。此查询显著加速，因为它将字节溢出减少到接近 0。
+我们的生产系统将**1000 个事件**拆分成**10 个块**，每块包含**100 个事件**。此查询显著加速，因为它将字节溢出减少到接近 0。
 
 此外，一旦我们用最优解决方案 1 替换 Pivot 函数，这个优化是非常直观的。
 
@@ -240,7 +240,7 @@ create final_table as (
 
 # 聚合查询
 
-SQL规范定义了许多汇总函数，Snowflake在这方面表现出色。Snowflake中也有一个庞大的汇总函数库。
+SQL 规范定义了许多汇总函数，Snowflake 在这方面表现出色。Snowflake 中也有一个庞大的汇总函数库。
 
 不同的汇总函数有不同的运行时间，在我们看来，每个汇总函数都应根据其优点进行处理。优化汇总函数的策略是首先识别出成为瓶颈的汇总函数，然后激励自己相信**可能**存在算法解决方案。
 
@@ -254,9 +254,9 @@ Q1) 识别所有在一秒内大多被多次触发的数据点
 
 Q2) 识别大多在至少一小时间隔内触发的数据点
 
-![](../Images/94bc234e71ecdc85f1c613ee208e0eef.png)
+![](img/94bc234e71ecdc85f1c613ee208e0eef.png)
 
-为了回答这些问题，我们使用Snowflake的**window query**和**lag function**将`tbl_1`中的输入数据转换为`tbl_2`。
+为了回答这些问题，我们使用 Snowflake 的**window query**和**lag function**将`tbl_1`中的输入数据转换为`tbl_2`。
 
 然后我们使用**median function**编写了解决方案查询。
 
@@ -286,13 +286,13 @@ having median(hour_diff) > 0;
 
 `median`函数非常慢。
 
-我们让ChatGPT建议一个最佳解决方案。它确实提出了使用**Percentile**函数的解决方案，但这同样很慢，并且似乎与**Median**函数本身类似。
+我们让 ChatGPT 建议一个最佳解决方案。它确实提出了使用**Percentile**函数的解决方案，但这同样很慢，并且似乎与**Median**函数本身类似。
 
-然而，ChatGPT很好地解释了为什么提出了那个解决方案。然后我们通过迭代和改进ChatGPT的解决方案，提出了一个新的解决方案。
+然而，ChatGPT 很好地解释了为什么提出了那个解决方案。然后我们通过迭代和改进 ChatGPT 的解决方案，提出了一个新的解决方案。
 
 ## 最优解决方案
 
-我们确定，对于我们的需求，我们只需使用计数查询。对于**Q1)**和**Q2)**，我们希望大多数事件的**sec_diff**和**hour_diff**分别大于或等于0。
+我们确定，对于我们的需求，我们只需使用计数查询。对于**Q1)**和**Q2)**，我们希望大多数事件的**sec_diff**和**hour_diff**分别大于或等于 0。
 
 ```py
 -- Q1) after optimisation
@@ -320,7 +320,7 @@ having hourcount >= 0.5
 
 我们持续观察我们的系统，然后确定哪些优化需要紧急分析，哪些可以积压。
 
-Snowflake提供了多个配置参数，可以进行调优以获得性能。Snowflake社区定期发布技巧和技术。
+Snowflake 提供了多个配置参数，可以进行调优以获得性能。Snowflake 社区定期发布技巧和技术。
 
 在这些信息过载中，我们需要专注并建立一个适合我们的剧本和技术库，这些技术可以毫不费力地应用。
 

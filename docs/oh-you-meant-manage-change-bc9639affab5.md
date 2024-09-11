@@ -1,20 +1,20 @@
 # 哦，你是说“管理变革”？
 
-> 原文：[https://towardsdatascience.com/oh-you-meant-manage-change-bc9639affab5?source=collection_archive---------7-----------------------#2023-10-20](https://towardsdatascience.com/oh-you-meant-manage-change-bc9639affab5?source=collection_archive---------7-----------------------#2023-10-20)
+> 原文：[`towardsdatascience.com/oh-you-meant-manage-change-bc9639affab5?source=collection_archive---------7-----------------------#2023-10-20`](https://towardsdatascience.com/oh-you-meant-manage-change-bc9639affab5?source=collection_archive---------7-----------------------#2023-10-20)
 
 ## 数据组织中对变革的不同视角
 
-[](https://medium.com/@marcdelbaere?source=post_page-----bc9639affab5--------------------------------)[![Marc Delbaere](../Images/6986bf11d190fffaa73e862a942e38fc.png)](https://medium.com/@marcdelbaere?source=post_page-----bc9639affab5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bc9639affab5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bc9639affab5--------------------------------) [Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----bc9639affab5--------------------------------)
+[](https://medium.com/@marcdelbaere?source=post_page-----bc9639affab5--------------------------------)![Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----bc9639affab5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bc9639affab5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc9639affab5--------------------------------) [Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----bc9639affab5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6fc3dd051b77&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foh-you-meant-manage-change-bc9639affab5&user=Marc+Delbaere&userId=6fc3dd051b77&source=post_page-6fc3dd051b77----bc9639affab5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc9639affab5--------------------------------) ·7分钟阅读·2023年10月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbc9639affab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foh-you-meant-manage-change-bc9639affab5&user=Marc+Delbaere&userId=6fc3dd051b77&source=-----bc9639affab5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6fc3dd051b77&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foh-you-meant-manage-change-bc9639affab5&user=Marc+Delbaere&userId=6fc3dd051b77&source=post_page-6fc3dd051b77----bc9639affab5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc9639affab5--------------------------------) ·7 分钟阅读·2023 年 10 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbc9639affab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foh-you-meant-manage-change-bc9639affab5&user=Marc+Delbaere&userId=6fc3dd051b77&source=-----bc9639affab5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbc9639affab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foh-you-meant-manage-change-bc9639affab5&source=-----bc9639affab5---------------------bookmark_footer-----------)![](../Images/897132a4592bafedc90341958323db64.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbc9639affab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foh-you-meant-manage-change-bc9639affab5&source=-----bc9639affab5---------------------bookmark_footer-----------)![](img/897132a4592bafedc90341958323db64.png)
 
-作者在布鲁塞尔的Menssa餐厅拍摄
+作者在布鲁塞尔的 Menssa 餐厅拍摄
 
 # 变革的不同酿制方式
 
@@ -50,7 +50,7 @@
 
 许多首席数据官（CDO）正在倾向于**去中心化**或*数据网格*的概念。这是从传统的中心化数据团队转变为一个模型的重大变化，在这个模型中，领域团队拥有、生成并提供他们的数据作为产品。这里的思维过程既简单又具有革命性：那些对数据最了解的人应该负责打包和维护数据。这不仅能确保更好的数据质量，还能培养自我消费的文化，赋予组织不同部分更多的自主权。
 
-达成这些目标非常困难。每一个战略目标都带来了变更管理的问题，像亚历克斯这样的CDO必须直接面对这些问题。
+达成这些目标非常困难。每一个战略目标都带来了变更管理的问题，像亚历克斯这样的 CDO 必须直接面对这些问题。
 
 比如以业务价值为首的议程。对于那些已经在技术任务中工作了多年，甚至几十年的数据专业人士来说，转移关注到业务成果上可能会让人感到不适。他们已经被训练成以数据准确性、系统集成和代码优化为思考的方式。要求他们“以业务价值为思考方式”常常会遇到困惑的目光！
 
@@ -60,7 +60,7 @@
 
 # 实际情况：日常挑战
 
-虽然亚历克斯作为CDO的角色主要关注大局，驾驭广泛而不可预测的情境，但变更管理还有另一面。这体现在像杰米这样的数据工程师面临的日常详细挑战中。在他们的领域中，*变更管理*不是关于长期战略或总体业务目标。相反，它关注于确保数据在不断变化的背景下保持一致和可访问的持续、每时每刻的障碍。
+虽然亚历克斯作为 CDO 的角色主要关注大局，驾驭广泛而不可预测的情境，但变更管理还有另一面。这体现在像杰米这样的数据工程师面临的日常详细挑战中。在他们的领域中，*变更管理*不是关于长期战略或总体业务目标。相反，它关注于确保数据在不断变化的背景下保持一致和可访问的持续、每时每刻的障碍。
 
 首先，组织中的大部分数据是作为副产品产生的。随着各种业务活动的展开，数据自然地积累，就像机器的废气一样。然而，虽然这些数据对于生成它的人来说可能只是副产品，但对于数据团队及其内部和外部的下游客户来说，这些数据成为了他们日常运营的核心。讽刺的是，在源头，这种‘废气’往往被忽视，尽管它对于链条上的这些利益相关者来说是不可或缺的。
 
@@ -80,11 +80,11 @@
 
 **协作确保一致性**。数据组织中的每个人都需要保持同步。在日常层面，这意味着有效沟通以防止意外的麻烦。在战略层面，则是确保每个人对广泛目标有清晰认识，确保日常任务和整体计划朝着相同的方向推进。
 
-**标准化提供了稳定性**。引入像数据合同这样的实践不仅解决了Jamie面临的细节挑战，还巩固了Alex战略愿景建立的基础。通过建立明确的标准，我们消除了模糊性，使得既有大局观的思考者也有注重细节的执行者能够协同朝同一方向前进。
+**标准化提供了稳定性**。引入像数据合同这样的实践不仅解决了 Jamie 面临的细节挑战，还巩固了 Alex 战略愿景建立的基础。通过建立明确的标准，我们消除了模糊性，使得既有大局观的思考者也有注重细节的执行者能够协同朝同一方向前进。
 
-最终的讽刺在于，为了解决Jamie的日常问题（即不透明依赖链中的意外后果），你需要将这个话题提升为战略优先事项。
+最终的讽刺在于，为了解决 Jamie 的日常问题（即不透明依赖链中的意外后果），你需要将这个话题提升为战略优先事项。
 
-如果你想取得成功，鉴于过程、人力和技术的变革，你需要应用所有由Alex倡导的变革管理良好原则。当然，Jamie在这里扮演着至关重要的角色，他是最接近问题及其后果的人，因此他可以成为变革推动者，让他的同事和管理层参与其中。
+如果你想取得成功，鉴于过程、人力和技术的变革，你需要应用所有由 Alex 倡导的变革管理良好原则。当然，Jamie 在这里扮演着至关重要的角色，他是最接近问题及其后果的人，因此他可以成为变革推动者，让他的同事和管理层参与其中。
 
 所以，最初的互惠互利实际上可能是战略转型的开始：明确的行动理由、路线图、合适的领导者和工具。
 

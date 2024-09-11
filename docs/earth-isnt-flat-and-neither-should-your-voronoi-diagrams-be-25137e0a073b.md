@@ -1,10 +1,10 @@
 # 地球并非平坦，你的 Voronoi 图也不应该是
 
-> 原文：[https://towardsdatascience.com/earth-isnt-flat-and-neither-should-your-voronoi-diagrams-be-25137e0a073b?source=collection_archive---------9-----------------------#2023-12-12](https://towardsdatascience.com/earth-isnt-flat-and-neither-should-your-voronoi-diagrams-be-25137e0a073b?source=collection_archive---------9-----------------------#2023-12-12)
+> 原文：[`towardsdatascience.com/earth-isnt-flat-and-neither-should-your-voronoi-diagrams-be-25137e0a073b?source=collection_archive---------9-----------------------#2023-12-12`](https://towardsdatascience.com/earth-isnt-flat-and-neither-should-your-voronoi-diagrams-be-25137e0a073b?source=collection_archive---------9-----------------------#2023-12-12)
 
 ## *一个关于精确度的故事，揭示了使用 Python 绘制球面地理 Voronoi 图的强大功能*
 
-[](https://raczeq.medium.com/?source=post_page-----25137e0a073b--------------------------------)[![Kamil Raczycki](../Images/2c45075e217e60660ad3b4475530333d.png)](https://raczeq.medium.com/?source=post_page-----25137e0a073b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25137e0a073b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----25137e0a073b--------------------------------) [Kamil Raczycki](https://raczeq.medium.com/?source=post_page-----25137e0a073b--------------------------------)
+[](https://raczeq.medium.com/?source=post_page-----25137e0a073b--------------------------------)![Kamil Raczycki](https://raczeq.medium.com/?source=post_page-----25137e0a073b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25137e0a073b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----25137e0a073b--------------------------------) [Kamil Raczycki](https://raczeq.medium.com/?source=post_page-----25137e0a073b--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25137e0a073b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fearth-isnt-flat-and-neither-should-your-voronoi-diagrams-be-25137e0a073b&source=-----25137e0a073b---------------------bookmark_footer-----------)![](../Images/d1135f3a03fdec66395009f24b815529.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25137e0a073b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fearth-isnt-flat-and-neither-should-your-voronoi-diagrams-be-25137e0a073b&source=-----25137e0a073b---------------------bookmark_footer-----------)![](img/d1135f3a03fdec66395009f24b815529.png)
 
 地球上的球面 Voronoi 图在两个投影之间移动：正交投影和等距投影。由作者使用 D3.js 库生成。
 
@@ -34,7 +34,7 @@
 
 下面你可以看到我上面描述的角度和距离问题。尽管这些线在同一点交叉，Voronoi 单元的形状和角度却有所不同。
 
-![](../Images/6ab5bdcc0fa0f660bc09473de2025ebf.png)
+![](img/6ab5bdcc0fa0f660bc09473de2025ebf.png)
 
 下面是 Voronoi 图中角度和距离差异的示例。图像由作者提供。
 
@@ -83,11 +83,11 @@ earth_points_gdf = gpd.GeoDataFrame(
 )
 ```
 
-![](../Images/f802c83d38b5f89fe9a39044101b8ae2.png)
+![](img/f802c83d38b5f89fe9a39044101b8ae2.png)
 
 图片由作者提供。
 
-使用`[voronoi_diagram](https://shapely.readthedocs.io/en/stable/manual.html#voronoi-diagram)`从`Shapely`库生成Voronoi图。
+使用`[voronoi_diagram](https://shapely.readthedocs.io/en/stable/manual.html#voronoi-diagram)`从`Shapely`库生成 Voronoi 图。
 
 ```py
 def generate_flat_voronoi_diagram_regions(
@@ -122,9 +122,9 @@ earth_poles_flat_voronoi_regions = generate_flat_voronoi_diagram_regions(
 )
 ```
 
-使用`[VoronoiRegionalizer](https://kraina-ai.github.io/srai/latest/examples/regionalizers/voronoi_regionalizer/)`从`srai`库生成Voronoi图。
+使用`[VoronoiRegionalizer](https://kraina-ai.github.io/srai/latest/examples/regionalizers/voronoi_regionalizer/)`从`srai`库生成 Voronoi 图。
 
-在底层，它使用了`[SphericalVoronoi](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.SphericalVoronoi.html)`实现，来自`scipy`库，并正确地将WGS84坐标转换到球面坐标系统。
+在底层，它使用了`[SphericalVoronoi](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.SphericalVoronoi.html)`实现，来自`scipy`库，并正确地将 WGS84 坐标转换到球面坐标系统。
 
 ```py
 earth_points_spherical_voronoi_regions = VoronoiRegionalizer(
@@ -134,17 +134,17 @@ earth_points_spherical_voronoi_regions = VoronoiRegionalizer(
 
 让我们查看两个图中的差异。
 
-![](../Images/49c2f70b6a96262d1d8eb8701d1d4b58.png)![](../Images/dfdddcc9e791e782e4c37e62b712c99a.png)
+![](img/49c2f70b6a96262d1d8eb8701d1d4b58.png)![](img/dfdddcc9e791e782e4c37e62b712c99a.png)
 
-WGS84坐标系中平面（左）和球面（右）版本的Voronoi图。由作者使用GeoPandas库生成。
+WGS84 坐标系中平面（左）和球面（右）版本的 Voronoi 图。由作者使用 GeoPandas 库生成。
 
-![](../Images/7375067b64a932c3330c0a62eeb45bcf.png)![](../Images/700f5ada495ce8561b0a2a77f29a7ee7.png)
+![](img/7375067b64a932c3330c0a62eeb45bcf.png)![](img/700f5ada495ce8561b0a2a77f29a7ee7.png)
 
-WGS84坐标系中平面（左）和球面（右）版本的Voronoi图在正交投影下的差异。由作者使用Plotly生成。
+WGS84 坐标系中平面（左）和球面（右）版本的 Voronoi 图在正交投影下的差异。由作者使用 Plotly 生成。
 
-首先可以看到的是，2D Voronoi图不会绕地球回环，因为它在平面[笛卡尔坐标系](https://en.wikipedia.org/wiki/Cartesian_coordinate_system)上工作。球面Voronoi图正确覆盖了地球，不会在[*反子午线*](https://en.wikipedia.org/wiki/180th_meridian)（经度从180°切换到-180°的地方）断裂。
+首先可以看到的是，2D Voronoi 图不会绕地球回环，因为它在平面[笛卡尔坐标系](https://en.wikipedia.org/wiki/Cartesian_coordinate_system)上工作。球面 Voronoi 图正确覆盖了地球，不会在[*反子午线*](https://en.wikipedia.org/wiki/180th_meridian)（经度从 180°切换到-180°的地方）断裂。
 
-为了定量测量差异，我们可以计算**IoU**（交并比）指标（或[*Jaccard Index*](https://en.wikipedia.org/wiki/Jaccard_index)）来衡量多边形形状之间的差异。该指标的值在0到1之间，0表示没有重叠，1表示完全重叠。
+为了定量测量差异，我们可以计算**IoU**（交并比）指标（或[*Jaccard Index*](https://en.wikipedia.org/wiki/Jaccard_index)）来衡量多边形形状之间的差异。该指标的值在 0 到 1 之间，0 表示没有重叠，1 表示完全重叠。
 
 ```py
 def calculate_iou(
@@ -188,9 +188,9 @@ calculate_iou(
 
 计算出的值为**0.423**，这相当低，在大规模上，这些多边形彼此不同，这在上面的图中可以很容易看到。
 
-# 实际数据示例：使用AED（自动体外除颤器）位置划分地球。
+# 实际数据示例：使用 AED（自动体外除颤器）位置划分地球。
 
-本示例中使用的数据来自[OpenAEDMap](https://openaedmap.org/)，基于[OpenStreetMap](https://www.openstreetmap.org/)数据。准备好的文件过滤了位置（准确为80694个），去除了定义在同一位置上的重复节点。
+本示例中使用的数据来自[OpenAEDMap](https://openaedmap.org/)，基于[OpenStreetMap](https://www.openstreetmap.org/)数据。准备好的文件过滤了位置（准确为 80694 个），去除了定义在同一位置上的重复节点。
 
 ```py
 # Load AEDs positions to GeoDataFrame
@@ -199,7 +199,7 @@ aed_world_gdf = gpd.read_file(
 )
 ```
 
-为AED生成Voronoi图。
+为 AED 生成 Voronoi 图。
 
 ```py
 aed_flat_voronoi_regions = generate_flat_voronoi_diagram_regions(aed_world_gdf)
@@ -209,13 +209,13 @@ aed_spherical_voronoi_regions = VoronoiRegionalizer(
 ).transform()
 ```
 
-让我们比较这些Voronoi图。
+让我们比较这些 Voronoi 图。
 
-![](../Images/acd16b508266c10a92ff9c802c6000e7.png)![](../Images/bf2610006e25f580b986ae354a6654a8.png)
+![](img/acd16b508266c10a92ff9c802c6000e7.png)![](img/bf2610006e25f580b986ae354a6654a8.png)
 
-WGS84坐标系中平面（左）和球面（右）版本的Voronoi图的差异。由作者使用GeoPandas生成。
+WGS84 坐标系中平面（左）和球面（右）版本的 Voronoi 图的差异。由作者使用 GeoPandas 生成。
 
-![](../Images/43dfa62f99641c36c1220d7614be8501.png)![](../Images/88f4157b34dda78cbe55a599b146aed4.png)
+![](img/43dfa62f99641c36c1220d7614be8501.png)![](img/88f4157b34dda78cbe55a599b146aed4.png)
 
 平面（左）和球面（右）版本的 Voronoi 图在正交投影中的差异。由作者使用 Plotly 生成。
 
@@ -238,7 +238,7 @@ greater_london_area = geocode_to_region_gdf("Greater London")
 aeds_in_london = aed_world_gdf.sjoin(greater_london_area)
 ```
 
-![](../Images/2f66248b127403e09747e29fe573425d.png)
+![](img/2f66248b127403e09747e29fe573425d.png)
 
 2D 和球面 Voronoi 图以红色和蓝色叠加在一起。图片由作者提供。
 
@@ -253,7 +253,7 @@ calculate_iou(
 
 让我们看一些叠加在一起的个别示例。
 
-![](../Images/896c256c3e89b12a2a3731a2347e9802.png)
+![](img/896c256c3e89b12a2a3731a2347e9802.png)
 
 图片由作者提供。
 

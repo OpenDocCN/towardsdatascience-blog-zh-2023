@@ -1,12 +1,12 @@
 # 为什么以及如何实现更长的 LLM 上下文窗口
 
-> 原文：[https://towardsdatascience.com/why-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9?source=collection_archive---------1-----------------------#2023-10-13](https://towardsdatascience.com/why-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9?source=collection_archive---------1-----------------------#2023-10-13)
+> 原文：[`towardsdatascience.com/why-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9?source=collection_archive---------1-----------------------#2023-10-13`](https://towardsdatascience.com/why-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9?source=collection_archive---------1-----------------------#2023-10-13)
 
-[](https://medium.com/@ddxzzx?source=post_page-----5f76f8656ea9--------------------------------)[![Davide Ghilardi](../Images/1643cb58465144e914c545bbca4359b4.png)](https://medium.com/@ddxzzx?source=post_page-----5f76f8656ea9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5f76f8656ea9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5f76f8656ea9--------------------------------) [Davide Ghilardi](https://medium.com/@ddxzzx?source=post_page-----5f76f8656ea9--------------------------------)
+[](https://medium.com/@ddxzzx?source=post_page-----5f76f8656ea9--------------------------------)![Davide Ghilardi](https://medium.com/@ddxzzx?source=post_page-----5f76f8656ea9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5f76f8656ea9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5f76f8656ea9--------------------------------) [Davide Ghilardi](https://medium.com/@ddxzzx?source=post_page-----5f76f8656ea9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2907a3374fa5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9&user=Davide+Ghilardi&userId=2907a3374fa5&source=post_page-2907a3374fa5----5f76f8656ea9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5f76f8656ea9--------------------------------) ·7 min read·2023年10月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5f76f8656ea9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9&user=Davide+Ghilardi&userId=2907a3374fa5&source=-----5f76f8656ea9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2907a3374fa5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9&user=Davide+Ghilardi&userId=2907a3374fa5&source=post_page-2907a3374fa5----5f76f8656ea9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5f76f8656ea9--------------------------------) ·7 min read·2023 年 10 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5f76f8656ea9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-and-how-to-achieve-longer-context-windows-for-llms-5f76f8656ea9&user=Davide+Ghilardi&userId=2907a3374fa5&source=-----5f76f8656ea9---------------------clap_footer-----------)
 
 -- 
 
@@ -16,17 +16,17 @@
 
 然而，增加 LLM 的上下文窗口并非易事。实际上，这会带来计算复杂度的增加，因为注意力矩阵呈二次方增长。
 
-一种解决方案可能是用相对较小的窗口（例如4K个令牌）在大量数据上训练模型，然后在更大的窗口（例如64K个令牌）上进行微调。这一操作并不简单，因为尽管上下文长度不会影响模型的权重数量，但它确实影响这些权重在令牌稠密表示中如何编码**位置的信息**。
+一种解决方案可能是用相对较小的窗口（例如 4K 个令牌）在大量数据上训练模型，然后在更大的窗口（例如 64K 个令牌）上进行微调。这一操作并不简单，因为尽管上下文长度不会影响模型的权重数量，但它确实影响这些权重在令牌稠密表示中如何编码**位置的信息**。
 
 这减少了模型在长上下文窗口下适应的能力，即使在微调之后也会导致性能不佳，因此需要新的技术来正确和动态地编码位置的信息，在训练和微调之间。
 
 # 绝对位置编码
 
-在transformers中，每个令牌的位置信息在令牌输入到注意力头之前被编码。这是一个关键步骤，因为与RNN不同，transformers不会跟踪令牌的位置。
+在 transformers 中，每个令牌的位置信息在令牌输入到注意力头之前被编码。这是一个关键步骤，因为与 RNN 不同，transformers 不会跟踪令牌的位置。
 
-原始transformer架构 [[1](#d8de)] 将位置编码为与令牌嵌入相同形状的向量，以便它们可以**相加**在一起。特别是，他们使用了一个cos/sin波的组合，其长度从低维到高维嵌入的顺序递增。
+原始 transformer 架构 [1] 将位置编码为与令牌嵌入相同形状的向量，以便它们可以**相加**在一起。特别是，他们使用了一个 cos/sin 波的组合，其长度从低维到高维嵌入的顺序递增。
 
-![](../Images/ba7885dd0e0a7826e17a67e0dc250355.png)
+![](img/ba7885dd0e0a7826e17a67e0dc250355.png)
 
 图片由作者提供
 
@@ -34,13 +34,13 @@
 
 为了了解为什么会发生这种情况，我们来关注一对连续的维度。如果我们在图表上绘制它们，我们可以将令牌和位置嵌入表示为二维向量，如下图所示：
 
-![](../Images/c2c045db49e24a0fde1c83c690ef7775.png)
+![](img/c2c045db49e24a0fde1c83c690ef7775.png)
 
 *图片由作者提供*
 
 上图包含两个图表：左侧是嵌入空间，右侧是键/查询空间。嵌入向量是黑色的，位置向量是蓝色的，它们的和用绿色表示。
 
-为了从嵌入转到键（K）和查询（Q），transformer应用了由两个矩阵**W**q和**W**k定义的线性变换。由于线性性质，该变换可以在嵌入和位置向量之间分别应用。在KQ空间中，注意力作为键和查询之间的点积计算，图中用黄色区域表示在两个绿色向量之间。
+为了从嵌入转到键（K）和查询（Q），transformer 应用了由两个矩阵**W**q 和**W**k 定义的线性变换。由于线性性质，该变换可以在嵌入和位置向量之间分别应用。在 KQ 空间中，注意力作为键和查询之间的点积计算，图中用黄色区域表示在两个绿色向量之间。
 
 由于旋转的混合方式不同，基于令牌和位置嵌入的原始方向，以及它们在变换中的缩放方式，模型无法直接访问令牌之间的相对距离。
 
@@ -48,7 +48,7 @@
 
 # 相对位置编码
 
-为了高效编码标记之间的相对位置信息，已经提出了其他方法。我们将重点关注**RoPE** [[2](#d8de)]，即**Ro**tary **P**osition **E**mbedding，已经为更长的上下文窗口提出了扩展方法。
+为了高效编码标记之间的相对位置信息，已经提出了其他方法。我们将重点关注**RoPE** [2]，即**Ro**tary **P**osition **E**mbedding，已经为更长的上下文窗口提出了扩展方法。
 
 RoPE 的两个主要创新是：
 
@@ -60,7 +60,7 @@ RoPE 的两个主要创新是：
 
 再次考虑一对连续的维度。如果我们将它们绘制在复数平面上（将第一个设置在实轴上，第二个设置在虚轴上），我们可以将标记嵌入表示为复数向量，如下图所示：
 
-![](../Images/0aee7722d74ac1e4feed129c77317423.png)
+![](img/0aee7722d74ac1e4feed129c77317423.png)
 
 *图片来源：作者*
 
@@ -68,7 +68,7 @@ RoPE 的两个主要创新是：
 
 这一最后的特性对于在注意力计算中纳入相对位置至关重要。实际上，如果我们考虑未旋转（黑色）和旋转（绿色）版本的**k**ₙ 和 **q**ₙ₊ₖ 之间的注意力，如右侧图表中分别由橙色和黄色角度表示，我们可以注意到一些有趣的现象：
 
-![](../Images/8fdcabc8b8b3a1a6dec25f60b52eb584.png)
+![](img/8fdcabc8b8b3a1a6dec25f60b52eb584.png)
 
 *图片来源：作者*
 
@@ -78,7 +78,7 @@ RoPE 的两个主要创新是：
 
 到目前为止，我们始终保持嵌入维度固定，但为了看到整个框架，还需要观察沿该方向发生的情况。
 
-![](../Images/757e569819126fd9ce4a772d5b7975dc.png)
+![](img/757e569819126fd9ce4a772d5b7975dc.png)
 
 *图片来源：作者*
 
@@ -86,23 +86,23 @@ RoPE 公式定义了第 *d* 维的旋转角度，与 *exp(-d)* 成正比。因�
 
 # RoPE 扩展
 
-一旦我们有效地将相对位置信息整合到模型中，增加我们LLM的上下文窗口L的最直接方法是通过**位置插值**（**PI**） [[3](#d8de)]进行微调。
+一旦我们有效地将相对位置信息整合到模型中，增加我们 LLM 的上下文窗口 L 的最直接方法是通过**位置插值**（**PI**） [3]进行微调。
 
-这是一种简单的技术，将标记的位置缩放以适应新的上下文长度。例如，如果我们决定将其翻倍，所有位置将被缩小一半。特别地，对于我们想要实现的任何上下文长度L* > L，我们可以定义一个缩放因子*s* = L/ L* < 1。
+这是一种简单的技术，将标记的位置缩放以适应新的上下文长度。例如，如果我们决定将其翻倍，所有位置将被缩小一半。特别地，对于我们想要实现的任何上下文长度 L* > L，我们可以定义一个缩放因子*s* = L/ L* < 1。
 
-尽管这种技术通过在相对较少的标记上进行微调成功地扩展了LLM的上下文，并显示了有希望的结果，但它也有其自身的缺点。
+尽管这种技术通过在相对较少的标记上进行微调成功地扩展了 LLM 的上下文，并显示了有希望的结果，但它也有其自身的缺点。
 
-其中之一是，它在对较大上下文进行微调后，略微降低了短上下文大小的性能（例如，困惑度增加）。这个问题发生是因为通过缩放*s <* 1标记的位置（以及它们的相对距离），我们减少了对向量的旋转，导致高频信息的丧失。因此，模型较难识别小旋转，从而难以确定接近标记的位置信序。
+其中之一是，它在对较大上下文进行微调后，略微降低了短上下文大小的性能（例如，困惑度增加）。这个问题发生是因为通过缩放*s <* 1 标记的位置（以及它们的相对距离），我们减少了对向量的旋转，导致高频信息的丧失。因此，模型较难识别小旋转，从而难以确定接近标记的位置信序。
 
-为了解决这个问题，我们可以应用一种巧妙的机制，称为**NTK-aware** [[4](#d8de)]位置插值，它不是将每个RoPE维度均等地缩放*s*，而是通过对高频率缩放较少，对低频率缩放较多来分散插值压力。
+为了解决这个问题，我们可以应用一种巧妙的机制，称为**NTK-aware** [4]位置插值，它不是将每个 RoPE 维度均等地缩放*s*，而是通过对高频率缩放较少，对低频率缩放较多来分散插值压力。
 
-其他PI扩展方法还包括**NTK-by-parts** [[5](#d8de)]和**dynamic NTK** [[6](#d8de)]方法。前者施加两个阈值，以限制在某些维度上的缩放；后者在推理过程中动态调整*s*。
+其他 PI 扩展方法还包括**NTK-by-parts** [5]和**dynamic NTK** [6]方法。前者施加两个阈值，以限制在某些维度上的缩放；后者在推理过程中动态调整*s*。
 
-最后，由于观察到随着标记数量的增加，注意力softmax分布变得越来越“尖锐”（注意力softmax的平均熵减少），**YaRN** [[7](#d8de)]（**Y**et **a**nother **R**oPE extensio**N** method）是一种通过在应用softmax之前将注意力矩阵乘以温度因子*t*来逆转这一过程的方法。
+最后，由于观察到随着标记数量的增加，注意力 softmax 分布变得越来越“尖锐”（注意力 softmax 的平均熵减少），**YaRN** [7]（**Y**et **a**nother **R**oPE extensio**N** method）是一种通过在应用 softmax 之前将注意力矩阵乘以温度因子*t*来逆转这一过程的方法。
 
 下面是这些方法在位置（旋转次数）和维度（每次旋转的度数）视角下的操作方式。
 
-![](../Images/bf9c6d315ad5524bc56e483f555771e7.png)
+![](img/bf9c6d315ad5524bc56e483f555771e7.png)
 
 *作者提供的图像*
 
@@ -110,13 +110,13 @@ RoPE 公式定义了第 *d* 维的旋转角度，与 *exp(-d)* 成正比。因�
 
 最后，如前所述，其他上下文扩展方法也存在，这里简要描述了最流行的一些方法及其操作方式：
 
-+   Alibi [[8](#d8de)]：这是一种位置编码的另一种方法，根据键和值的距离来惩罚查询可以分配给键的注意力值。
++   Alibi [8]：这是一种位置编码的另一种方法，根据键和值的距离来惩罚查询可以分配给键的注意力值。
 
-+   XPos [[9](#d8de)]：另一种位置编码方法，它将RoPE推广到包括一个缩放因子。
++   XPos [9]：另一种位置编码方法，它将 RoPE 推广到包括一个缩放因子。
 
 # 参考文献
 
-1.  Vaswani等人，2017年。《Attention Is All You Need》。 [link](https://arxiv.org/abs/1706.03762)
+1.  Vaswani 等人，2017 年。《Attention Is All You Need》。 [link](https://arxiv.org/abs/1706.03762)
 
 1.  Su 等人, 2022\. RoFormer：具有旋转位置嵌入的增强型变压器。[link](https://arxiv.org/abs/2104.09864)
 

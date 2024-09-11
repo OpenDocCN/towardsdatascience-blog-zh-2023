@@ -1,10 +1,10 @@
 # **终极可视化助手**
 
-> 原文：[https://towardsdatascience.com/the-ultimate-visualization-assistant-2dc89003d847?source=collection_archive---------9-----------------------#2023-06-30](https://towardsdatascience.com/the-ultimate-visualization-assistant-2dc89003d847?source=collection_archive---------9-----------------------#2023-06-30)
+> 原文：[`towardsdatascience.com/the-ultimate-visualization-assistant-2dc89003d847?source=collection_archive---------9-----------------------#2023-06-30`](https://towardsdatascience.com/the-ultimate-visualization-assistant-2dc89003d847?source=collection_archive---------9-----------------------#2023-06-30)
 
 ## 晚上与 AI 的互动如何改变了我对数据可视化的方式
 
-[](https://medium.com/@anthonybaum?source=post_page-----2dc89003d847--------------------------------)[![Anthony Baum](../Images/7c79710f88cac1b378807b2fef8e19ae.png)](https://medium.com/@anthonybaum?source=post_page-----2dc89003d847--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2dc89003d847--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2dc89003d847--------------------------------) [Anthony Baum](https://medium.com/@anthonybaum?source=post_page-----2dc89003d847--------------------------------)
+[](https://medium.com/@anthonybaum?source=post_page-----2dc89003d847--------------------------------)![Anthony Baum](https://medium.com/@anthonybaum?source=post_page-----2dc89003d847--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2dc89003d847--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2dc89003d847--------------------------------) [Anthony Baum](https://medium.com/@anthonybaum?source=post_page-----2dc89003d847--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2dc89003d847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-visualization-assistant-2dc89003d847&source=-----2dc89003d847---------------------bookmark_footer-----------)![](../Images/5426c2750c58c49f0ed1e59c00bc2495.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2dc89003d847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-visualization-assistant-2dc89003d847&source=-----2dc89003d847---------------------bookmark_footer-----------)![](img/5426c2750c58c49f0ed1e59c00bc2495.png)
 
 图片由 [Simon Abrams](https://unsplash.com/@flysi3000?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

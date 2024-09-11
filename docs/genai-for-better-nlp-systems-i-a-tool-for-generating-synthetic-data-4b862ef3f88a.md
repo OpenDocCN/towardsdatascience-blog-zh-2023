@@ -1,18 +1,18 @@
-# GenAI用于改进NLP系统 I：生成合成数据的工具。
+# GenAI 用于改进 NLP 系统 I：生成合成数据的工具。
 
-> 原文：[https://towardsdatascience.com/genai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a?source=collection_archive---------9-----------------------#2023-09-29](https://towardsdatascience.com/genai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a?source=collection_archive---------9-----------------------#2023-09-29)
+> 原文：[`towardsdatascience.com/genai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a?source=collection_archive---------9-----------------------#2023-09-29`](https://towardsdatascience.com/genai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a?source=collection_archive---------9-----------------------#2023-09-29)
 
-## 一项关于使用Python进行Prompt Engineering的GenAI生成和增强合成数据的实验。
+## 一项关于使用 Python 进行 Prompt Engineering 的 GenAI 生成和增强合成数据的实验。
 
-[](https://nroy0110.medium.com/?source=post_page-----4b862ef3f88a--------------------------------)[![Nabanita Roy](../Images/83ab7766a28c79371ebf9517e1f273d2.png)](https://nroy0110.medium.com/?source=post_page-----4b862ef3f88a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b862ef3f88a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4b862ef3f88a--------------------------------) [Nabanita Roy](https://nroy0110.medium.com/?source=post_page-----4b862ef3f88a--------------------------------)
+[](https://nroy0110.medium.com/?source=post_page-----4b862ef3f88a--------------------------------)![Nabanita Roy](https://nroy0110.medium.com/?source=post_page-----4b862ef3f88a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b862ef3f88a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b862ef3f88a--------------------------------) [Nabanita Roy](https://nroy0110.medium.com/?source=post_page-----4b862ef3f88a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd36a8b28c928&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a&user=Nabanita+Roy&userId=d36a8b28c928&source=post_page-d36a8b28c928----4b862ef3f88a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b862ef3f88a--------------------------------) · 7分钟阅读 · 2023年9月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4b862ef3f88a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a&user=Nabanita+Roy&userId=d36a8b28c928&source=-----4b862ef3f88a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd36a8b28c928&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a&user=Nabanita+Roy&userId=d36a8b28c928&source=post_page-d36a8b28c928----4b862ef3f88a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b862ef3f88a--------------------------------) · 7 分钟阅读 · 2023 年 9 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4b862ef3f88a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a&user=Nabanita+Roy&userId=d36a8b28c928&source=-----4b862ef3f88a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4b862ef3f88a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a&source=-----4b862ef3f88a---------------------bookmark_footer-----------)![](../Images/2c632c9d6ff85d169081e0ad66f249ac.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4b862ef3f88a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenai-for-better-nlp-systems-i-a-tool-for-generating-synthetic-data-4b862ef3f88a&source=-----4b862ef3f88a---------------------bookmark_footer-----------)![](img/2c632c9d6ff85d169081e0ad66f249ac.png)
 
 图片由[SR](https://unsplash.com/@lemonmelon?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 

@@ -1,10 +1,10 @@
 # 机器学习三步法：如何高效学习
 
-> 原文：[https://towardsdatascience.com/machine-learning-in-three-steps-how-to-efficiently-learn-it-aefcf423a9e1?source=collection_archive---------0-----------------------#2023-03-03](https://towardsdatascience.com/machine-learning-in-three-steps-how-to-efficiently-learn-it-aefcf423a9e1?source=collection_archive---------0-----------------------#2023-03-03)
+> 原文：[`towardsdatascience.com/machine-learning-in-three-steps-how-to-efficiently-learn-it-aefcf423a9e1?source=collection_archive---------0-----------------------#2023-03-03`](https://towardsdatascience.com/machine-learning-in-three-steps-how-to-efficiently-learn-it-aefcf423a9e1?source=collection_archive---------0-----------------------#2023-03-03)
 
 ## 在不让自己感到不堪重负的情况下优先考虑预测建模的核心要素
 
-[](https://medium.com/@angela.shi?source=post_page-----aefcf423a9e1--------------------------------)[![Angela and Kezhan Shi](../Images/a89d678f2f3887c0c2ff3928f9d767b4.png)](https://medium.com/@angela.shi?source=post_page-----aefcf423a9e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aefcf423a9e1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aefcf423a9e1--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----aefcf423a9e1--------------------------------)
+[](https://medium.com/@angela.shi?source=post_page-----aefcf423a9e1--------------------------------)![Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----aefcf423a9e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aefcf423a9e1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aefcf423a9e1--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----aefcf423a9e1--------------------------------)
 
 ·
 

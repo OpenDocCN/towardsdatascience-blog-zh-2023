@@ -1,26 +1,26 @@
 # 大型语言模型的领域适配
 
-> 原文：[https://towardsdatascience.com/domain-adaptation-of-a-large-language-model-2692ed59f180?source=collection_archive---------5-----------------------#2023-11-14](https://towardsdatascience.com/domain-adaptation-of-a-large-language-model-2692ed59f180?source=collection_archive---------5-----------------------#2023-11-14)
+> 原文：[`towardsdatascience.com/domain-adaptation-of-a-large-language-model-2692ed59f180?source=collection_archive---------5-----------------------#2023-11-14`](https://towardsdatascience.com/domain-adaptation-of-a-large-language-model-2692ed59f180?source=collection_archive---------5-----------------------#2023-11-14)
 
-## 使用HuggingFace将预训练模型适配到新领域
+## 使用 HuggingFace 将预训练模型适配到新领域
 
-[](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)[![Mina Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)
+[](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)![Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----2692ed59f180---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------) · 13分钟阅读 · 2023年11月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2692ed59f180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----2692ed59f180---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----2692ed59f180---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------) · 13 分钟阅读 · 2023 年 11 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2692ed59f180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----2692ed59f180---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2692ed59f180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&source=-----2692ed59f180---------------------bookmark_footer-----------)![](../Images/dcd659ece26bd7d235dacf241d80c574.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2692ed59f180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&source=-----2692ed59f180---------------------bookmark_footer-----------)![](img/dcd659ece26bd7d235dacf241d80c574.png)
 
 图片来自[unsplash](https://unsplash.com/photos/a-pink-flower-in-the-middle-of-a-cactus-TyRP_UH7I_0)
 
-大型语言模型（LLMs），如BERT，通常是在类似维基百科和BookCorpus的通用领域语料库上进行预训练的。如果将它们应用于医疗等更专业的领域，与*适配*这些领域的模型相比，性能往往会下降。
+大型语言模型（LLMs），如 BERT，通常是在类似维基百科和 BookCorpus 的通用领域语料库上进行预训练的。如果将它们应用于医疗等更专业的领域，与*适配*这些领域的模型相比，性能往往会下降。
 
-> 在本文中，我们将探讨如何使用HuggingFace Transformers库将预训练的LLM（如Deberta base）适配到医学领域。具体而言，我们将介绍一种称为中间预训练的有效技术，在这种技术中，我们在目标领域的数据上进一步预训练LLM。这使模型适应新领域，并提高其性能。
+> 在本文中，我们将探讨如何使用 HuggingFace Transformers 库将预训练的 LLM（如 Deberta base）适配到医学领域。具体而言，我们将介绍一种称为中间预训练的有效技术，在这种技术中，我们在目标领域的数据上进一步预训练 LLM。这使模型适应新领域，并提高其性能。
 
-这是一个简单却有效的技术，可以将LLMs调整到你的领域，并在下游任务性能上获得显著提升。
+这是一个简单却有效的技术，可以将 LLMs 调整到你的领域，并在下游任务性能上获得显著提升。
 
 让我们开始吧。
 
@@ -28,19 +28,19 @@
 
 任何项目的第一步是准备数据。由于我们的数据集属于医学领域，它包含以下字段以及更多：
 
-![](../Images/153b7422d396eaf71d450853c1da8540.png)
+![](img/153b7422d396eaf71d450853c1da8540.png)
 
 图片作者
 
-在这里列出所有字段是不可能的，因为字段众多。但即使是这些现有字段的简要介绍，也有助于我们为LLM形成输入序列。
+在这里列出所有字段是不可能的，因为字段众多。但即使是这些现有字段的简要介绍，也有助于我们为 LLM 形成输入序列。
 
-> 需要记住的第一点是，输入必须是序列，因为LLMs将输入视为文本序列。
+> 需要记住的第一点是，输入必须是序列，因为 LLMs 将输入视为文本序列。
 
-为了将其形成序列，我们可以注入特殊标签，以告知LLM接下来会出现什么信息。考虑以下示例：`<patient>name:John, surname: Doer, patientID:1234, age:34</patient>`，`<patient>` 是一个特殊标签，告知LLM接下来的是关于患者的信息。
+为了将其形成序列，我们可以注入特殊标签，以告知 LLM 接下来会出现什么信息。考虑以下示例：`<patient>name:John, surname: Doer, patientID:1234, age:34</patient>`，`<patient>` 是一个特殊标签，告知 LLM 接下来的是关于患者的信息。
 
 所以我们将输入序列形成如下：
 
-![](../Images/15080a76be38bffaa30e1a17f24bd446.png)
+![](img/15080a76be38bffaa30e1a17f24bd446.png)
 
 图片作者
 
@@ -58,9 +58,9 @@
 
 > 请注意，对于给定的患者和医院，我们按时间戳排序事件并将它们连接在一起。这形成了患者在医院中经历的按时间排序的访问序列。
 
-特殊标签的优点在于，在训练LLM后，如果我想要一个患者的嵌入，可以通过检索 `<patient>` 标签的嵌入来获取。同样，如果我们想要一个作为患者档案的嵌入，可以检索 `<visits>` 标签的嵌入，因为这个标签包含了患者在医院中经历的所有事件。
+特殊标签的优点在于，在训练 LLM 后，如果我想要一个患者的嵌入，可以通过检索 `<patient>` 标签的嵌入来获取。同样，如果我们想要一个作为患者档案的嵌入，可以检索 `<visits>` 标签的嵌入，因为这个标签包含了患者在医院中经历的所有事件。
 
-假设我们的数据存储在s3中；其中数据模式只有一列叫做“text”，每条记录是“text”列中上述格式的序列。我们使用以下代码从s3加载数据：
+假设我们的数据存储在 s3 中；其中数据模式只有一列叫做“text”，每条记录是“text”列中上述格式的序列。我们使用以下代码从 s3 加载数据：
 
 ```py
 import s3fs
@@ -86,7 +86,7 @@ print(raw_datasets)
 
 和 `raw_datasets` 看起来如下：
 
-![](../Images/711fe4d19dac23adebfe6d751f30d809.png)
+![](img/711fe4d19dac23adebfe6d751f30d809.png)
 
 图片作者
 
@@ -123,7 +123,7 @@ pydantic==1.10.6
 deepspeed==0.9.0
 ```
 
-编写代码时，我们需要定义模型参数、数据参数和训练参数。然后我们需要定义模型，并将其置于PEFT（参数高效）设置中，如果我们想通过PEFT进行训练。
+编写代码时，我们需要定义模型参数、数据参数和训练参数。然后我们需要定义模型，并将其置于 PEFT（参数高效）设置中，如果我们想通过 PEFT 进行训练。
 
 首先，我们定义数据、模型和训练的输入参数。
 
@@ -212,9 +212,9 @@ class ModelArguments:
             )
 ```
 
-## PEFT参数
+## PEFT 参数
 
-下面是与参数高效训练相关的参数。这使用了lora包进行低秩适应。
+下面是与参数高效训练相关的参数。这使用了 lora 包进行低秩适应。
 
 ```py
 @dataclass
@@ -400,7 +400,7 @@ training_args = TrainingArguments(output_dir = './output',
                                  )
 ```
 
-如你所见，我们正在加载deberta-base模型，因此我们将把这个模型适应于医学领域。
+如你所见，我们正在加载 deberta-base 模型，因此我们将把这个模型适应于医学领域。
 
 ## 数据分词
 
@@ -473,7 +473,7 @@ if tokenizer.model_max_length > 1e9:
 
 `tokenized_datasets`如下所示：
 
-![](../Images/8cd8e23fa2768b624a2d89b565840132.png)
+![](img/8cd8e23fa2768b624a2d89b565840132.png)
 
 作者提供的图片
 
@@ -529,7 +529,7 @@ for item in tokenized_datasets['train']:
 print(set(l))
 ```
 
-它只打印`{512}`，因为所有序列的长度都是512。
+它只打印`{512}`，因为所有序列的长度都是 512。
 
 接下来我们定义数据整理器：
 
@@ -595,7 +595,7 @@ data_collator = MaskingDataCollator(
 
 ## 训练模型
 
-如果我们要在参数高效模式下进行训练，我们使用lora包，如下所示：
+如果我们要在参数高效模式下进行训练，我们使用 lora 包，如下所示：
 
 ```py
 peft_args = PEFTArguments()
@@ -631,11 +631,11 @@ def compute_metrics(eval_preds):
     return metric.compute(predictions=preds, references=labels)
 ```
 
-注意`mask = labels != -100`是为了确保我们在被掩盖的实体上计算损失。对于被掩盖的实体，其对应的标签是一个正ID（即原始标记在该位置的输入ID）。对于没有被掩盖的实体，因此我们不想计算模型在这些实体上的表现，其对应的标签被设置为`-100`。
+注意`mask = labels != -100`是为了确保我们在被掩盖的实体上计算损失。对于被掩盖的实体，其对应的标签是一个正 ID（即原始标记在该位置的输入 ID）。对于没有被掩盖的实体，因此我们不想计算模型在这些实体上的表现，其对应的标签被设置为`-100`。
 
-定义`mask = labels != -100`产生`mask`作为布尔向量，只有在实体被掩盖时它才为True。
+定义`mask = labels != -100`产生`mask`作为布尔向量，只有在实体被掩盖时它才为 True。
 
-**Logit 处理**：然后，我们对logits进行预处理。以下函数返回最大logit出现的索引。这将是模型的预测。
+**Logit 处理**：然后，我们对 logits 进行预处理。以下函数返回最大 logit 出现的索引。这将是模型的预测。
 
 ```py
 def preprocess_logits_for_metrics(logits, labels):
@@ -688,7 +688,7 @@ trainer.save_state()
 
 它打印出以下输出：
 
-![](../Images/627f970f24d0601cd081d26e49947868.png)
+![](img/627f970f24d0601cd081d26e49947868.png)
 
 作者提供的图片
 
@@ -702,32 +702,32 @@ TrainOutput(global_step=2000, training_loss=3.754445343017578, metrics={'train_r
 
 `trainer.log_metrics()`打印出的报告如下所示：
 
-![](../Images/037c6316aef7914599c45733639deb1d.png)
+![](img/037c6316aef7914599c45733639deb1d.png)
 
 作者提供的图片
 
 其次，注意我们保存了一些东西：
 
-+   `trainer.save_model()`：这将保存模型及其tokenizer。我们可以稍后使用`from_pretrained()`重新加载它。
++   `trainer.save_model()`：这将保存模型及其 tokenizer。我们可以稍后使用`from_pretrained()`重新加载它。
 
 +   `trainer.save_state()`：这将保存训练器的状态，因为`trainer.save_model()`不会保存状态。此语句会创建一个*trainer_state.json*文件，如下所示：
 
-![](../Images/ef0ac5e2cbb59d6021982a0a3052215b.png)
+![](img/ef0ac5e2cbb59d6021982a0a3052215b.png)
 
 作者提供的图片
 
-+   `trainer.save_metrics("train", metrics)`：这将把指标保存到该训练分割的json文件中，例如`train_results.json`。这个文件如下所示：
++   `trainer.save_metrics("train", metrics)`：这将把指标保存到该训练分割的 json 文件中，例如`train_results.json`。这个文件如下所示：
 
-![](../Images/858a5c6fea6d1685699160197fcf196a.png)
+![](img/858a5c6fea6d1685699160197fcf196a.png)
 
 作者提供的图片
 
 # 结论
 
-在这篇文章中，我们回顾了如何将预训练的LLM适应到新的领域，如医学、金融等。我们从huggingFace获取了一个预训练的deberta基础模型，并继续在医学数据上进行再训练。我们将训练好的模型保存在一个目录中以便进行定制化评估。
+在这篇文章中，我们回顾了如何将预训练的 LLM 适应到新的领域，如医学、金融等。我们从 huggingFace 获取了一个预训练的 deberta 基础模型，并继续在医学数据上进行再训练。我们将训练好的模型保存在一个目录中以便进行定制化评估。
 
 如果你有任何问题或建议，请随时联系我：
 
 Email: mina.ghashami@gmail.com
 
-LinkedIn: [https://www.linkedin.com/in/minaghashami/](https://www.linkedin.com/in/minaghashami/)
+LinkedIn: [`www.linkedin.com/in/minaghashami/`](https://www.linkedin.com/in/minaghashami/)

@@ -1,18 +1,18 @@
 # 五个免费的可靠天气数据来源
 
-> 原文：[https://towardsdatascience.com/five-free-and-reliable-weather-data-sources-20b9ea6afac9?source=collection_archive---------7-----------------------#2023-05-31](https://towardsdatascience.com/five-free-and-reliable-weather-data-sources-20b9ea6afac9?source=collection_archive---------7-----------------------#2023-05-31)
+> 原文：[`towardsdatascience.com/five-free-and-reliable-weather-data-sources-20b9ea6afac9?source=collection_archive---------7-----------------------#2023-05-31`](https://towardsdatascience.com/five-free-and-reliable-weather-data-sources-20b9ea6afac9?source=collection_archive---------7-----------------------#2023-05-31)
 
 ## 高质量的数据可以改善和增强你的建模过程
 
-[](https://medium.com/@anthonybaum?source=post_page-----20b9ea6afac9--------------------------------)[![Anthony Baum](../Images/7c79710f88cac1b378807b2fef8e19ae.png)](https://medium.com/@anthonybaum?source=post_page-----20b9ea6afac9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20b9ea6afac9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20b9ea6afac9--------------------------------) [Anthony Baum](https://medium.com/@anthonybaum?source=post_page-----20b9ea6afac9--------------------------------)
+[](https://medium.com/@anthonybaum?source=post_page-----20b9ea6afac9--------------------------------)![Anthony Baum](https://medium.com/@anthonybaum?source=post_page-----20b9ea6afac9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20b9ea6afac9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----20b9ea6afac9--------------------------------) [Anthony Baum](https://medium.com/@anthonybaum?source=post_page-----20b9ea6afac9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad510de786e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-free-and-reliable-weather-data-sources-20b9ea6afac9&user=Anthony+Baum&userId=ad510de786e8&source=post_page-ad510de786e8----20b9ea6afac9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20b9ea6afac9--------------------------------) ·6 min read·2023年5月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20b9ea6afac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-free-and-reliable-weather-data-sources-20b9ea6afac9&user=Anthony+Baum&userId=ad510de786e8&source=-----20b9ea6afac9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad510de786e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-free-and-reliable-weather-data-sources-20b9ea6afac9&user=Anthony+Baum&userId=ad510de786e8&source=post_page-ad510de786e8----20b9ea6afac9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20b9ea6afac9--------------------------------) ·6 min read·2023 年 5 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20b9ea6afac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-free-and-reliable-weather-data-sources-20b9ea6afac9&user=Anthony+Baum&userId=ad510de786e8&source=-----20b9ea6afac9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20b9ea6afac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-free-and-reliable-weather-data-sources-20b9ea6afac9&source=-----20b9ea6afac9---------------------bookmark_footer-----------)![](../Images/6faf8540ef0bb93961ec58198dc451f3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20b9ea6afac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-free-and-reliable-weather-data-sources-20b9ea6afac9&source=-----20b9ea6afac9---------------------bookmark_footer-----------)![](img/6faf8540ef0bb93961ec58198dc451f3.png)
 
 照片由 NOAA 提供，拍摄于 Unsplash
 

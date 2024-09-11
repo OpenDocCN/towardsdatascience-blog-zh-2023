@@ -1,20 +1,20 @@
 # 如何使用 ChatGPT 生成图表
 
-> 原文：[https://towardsdatascience.com/how-to-use-chatgpt-to-generate-diagrams-a78fb6693057?source=collection_archive---------3-----------------------#2023-05-29](https://towardsdatascience.com/how-to-use-chatgpt-to-generate-diagrams-a78fb6693057?source=collection_archive---------3-----------------------#2023-05-29)
+> 原文：[`towardsdatascience.com/how-to-use-chatgpt-to-generate-diagrams-a78fb6693057?source=collection_archive---------3-----------------------#2023-05-29`](https://towardsdatascience.com/how-to-use-chatgpt-to-generate-diagrams-a78fb6693057?source=collection_archive---------3-----------------------#2023-05-29)
 
 ## 提示工程，SVG
 
 ## 如何编写合适的提示以使 ChatGPT 生成图表的快速教程
 
-[](https://alod83.medium.com/?source=post_page-----a78fb6693057--------------------------------)[![Angelica Lo Duca](../Images/45aa2e2e504bb3af6d3b8009dc6f030e.png)](https://alod83.medium.com/?source=post_page-----a78fb6693057--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a78fb6693057--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a78fb6693057--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----a78fb6693057--------------------------------)
+[](https://alod83.medium.com/?source=post_page-----a78fb6693057--------------------------------)![Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----a78fb6693057--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a78fb6693057--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a78fb6693057--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----a78fb6693057--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chatgpt-to-generate-diagrams-a78fb6693057&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----a78fb6693057---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a78fb6693057--------------------------------) ·4 分钟阅读·2023年5月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa78fb6693057&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chatgpt-to-generate-diagrams-a78fb6693057&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=-----a78fb6693057---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chatgpt-to-generate-diagrams-a78fb6693057&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----a78fb6693057---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a78fb6693057--------------------------------) ·4 分钟阅读·2023 年 5 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa78fb6693057&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chatgpt-to-generate-diagrams-a78fb6693057&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=-----a78fb6693057---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa78fb6693057&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chatgpt-to-generate-diagrams-a78fb6693057&source=-----a78fb6693057---------------------bookmark_footer-----------)![](../Images/876b7ea5765f625c93fd8beaff12c525.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa78fb6693057&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chatgpt-to-generate-diagrams-a78fb6693057&source=-----a78fb6693057---------------------bookmark_footer-----------)![](img/876b7ea5765f625c93fd8beaff12c525.png)
 
 照片由 [Christina @ wocintechchat.com](https://unsplash.com/@wocintechchat?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -34,7 +34,7 @@
 
 让我们假设你想要使用 ChatGPT 创建下图：
 
-![](../Images/bf11f8ea50ebcc3112590ab27db13e76.png)
+![](img/bf11f8ea50ebcc3112590ab27db13e76.png)
 
 图像来源：作者
 

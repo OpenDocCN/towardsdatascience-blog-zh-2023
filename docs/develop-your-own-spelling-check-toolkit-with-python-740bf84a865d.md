@@ -1,18 +1,18 @@
-# 使用Python开发你自己的拼写检查工具包
+# 使用 Python 开发你自己的拼写检查工具包
 
-> 原文：[https://towardsdatascience.com/develop-your-own-spelling-check-toolkit-with-python-740bf84a865d?source=collection_archive---------11-----------------------#2023-01-11](https://towardsdatascience.com/develop-your-own-spelling-check-toolkit-with-python-740bf84a865d?source=collection_archive---------11-----------------------#2023-01-11)
+> 原文：[`towardsdatascience.com/develop-your-own-spelling-check-toolkit-with-python-740bf84a865d?source=collection_archive---------11-----------------------#2023-01-11`](https://towardsdatascience.com/develop-your-own-spelling-check-toolkit-with-python-740bf84a865d?source=collection_archive---------11-----------------------#2023-01-11)
 
-## 使用Python创建一个有效的拼写验证应用程序
+## 使用 Python 创建一个有效的拼写验证应用程序
 
-[](https://bharath-k1297.medium.com/?source=post_page-----740bf84a865d--------------------------------)[![Bharath K](../Images/b6f215f28132a953bcae80842301e303.png)](https://bharath-k1297.medium.com/?source=post_page-----740bf84a865d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----740bf84a865d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----740bf84a865d--------------------------------) [Bharath K](https://bharath-k1297.medium.com/?source=post_page-----740bf84a865d--------------------------------)
+[](https://bharath-k1297.medium.com/?source=post_page-----740bf84a865d--------------------------------)![Bharath K](https://bharath-k1297.medium.com/?source=post_page-----740bf84a865d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----740bf84a865d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----740bf84a865d--------------------------------) [Bharath K](https://bharath-k1297.medium.com/?source=post_page-----740bf84a865d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2b0fa005e971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdevelop-your-own-spelling-check-toolkit-with-python-740bf84a865d&user=Bharath+K&userId=2b0fa005e971&source=post_page-2b0fa005e971----740bf84a865d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----740bf84a865d--------------------------------) ·7分钟阅读·2023年1月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F740bf84a865d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdevelop-your-own-spelling-check-toolkit-with-python-740bf84a865d&user=Bharath+K&userId=2b0fa005e971&source=-----740bf84a865d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2b0fa005e971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdevelop-your-own-spelling-check-toolkit-with-python-740bf84a865d&user=Bharath+K&userId=2b0fa005e971&source=post_page-2b0fa005e971----740bf84a865d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----740bf84a865d--------------------------------) ·7 分钟阅读·2023 年 1 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F740bf84a865d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdevelop-your-own-spelling-check-toolkit-with-python-740bf84a865d&user=Bharath+K&userId=2b0fa005e971&source=-----740bf84a865d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F740bf84a865d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdevelop-your-own-spelling-check-toolkit-with-python-740bf84a865d&source=-----740bf84a865d---------------------bookmark_footer-----------)![](../Images/7afeb5ad5b1c2c058199cdc11b12f4fd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F740bf84a865d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdevelop-your-own-spelling-check-toolkit-with-python-740bf84a865d&source=-----740bf84a865d---------------------bookmark_footer-----------)![](img/7afeb5ad5b1c2c058199cdc11b12f4fd.png)
 
 照片由[Olesia 🇺🇦 Buyar](https://unsplash.com/@olesichka?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

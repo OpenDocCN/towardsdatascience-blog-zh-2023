@@ -1,28 +1,28 @@
 # 构建一个本地运行的语音助手
 
-> 原文：[https://towardsdatascience.com/build-a-locally-running-voice-assistant-2f2ead904fe9?source=collection_archive---------1-----------------------#2023-12-29](https://towardsdatascience.com/build-a-locally-running-voice-assistant-2f2ead904fe9?source=collection_archive---------1-----------------------#2023-12-29)
+> 原文：[`towardsdatascience.com/build-a-locally-running-voice-assistant-2f2ead904fe9?source=collection_archive---------1-----------------------#2023-12-29`](https://towardsdatascience.com/build-a-locally-running-voice-assistant-2f2ead904fe9?source=collection_archive---------1-----------------------#2023-12-29)
 
-## 向LLM提问而不泄露私人信息
+## 向 LLM 提问而不泄露私人信息
 
-[](https://sebastiengilbert.medium.com/?source=post_page-----2f2ead904fe9--------------------------------)[![Sébastien Gilbert](../Images/380f6588c3ef718947bcf82061f190eb.png)](https://sebastiengilbert.medium.com/?source=post_page-----2f2ead904fe9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2f2ead904fe9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2f2ead904fe9--------------------------------) [Sébastien Gilbert](https://sebastiengilbert.medium.com/?source=post_page-----2f2ead904fe9--------------------------------)
+[](https://sebastiengilbert.medium.com/?source=post_page-----2f2ead904fe9--------------------------------)![Sébastien Gilbert](https://sebastiengilbert.medium.com/?source=post_page-----2f2ead904fe9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2f2ead904fe9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2f2ead904fe9--------------------------------) [Sébastien Gilbert](https://sebastiengilbert.medium.com/?source=post_page-----2f2ead904fe9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F975aef8c496a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-locally-running-voice-assistant-2f2ead904fe9&user=S%C3%A9bastien+Gilbert&userId=975aef8c496a&source=post_page-975aef8c496a----2f2ead904fe9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2f2ead904fe9--------------------------------) ·7分钟阅读·2023年12月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2f2ead904fe9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-locally-running-voice-assistant-2f2ead904fe9&user=S%C3%A9bastien+Gilbert&userId=975aef8c496a&source=-----2f2ead904fe9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F975aef8c496a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-locally-running-voice-assistant-2f2ead904fe9&user=S%C3%A9bastien+Gilbert&userId=975aef8c496a&source=post_page-975aef8c496a----2f2ead904fe9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2f2ead904fe9--------------------------------) ·7 分钟阅读·2023 年 12 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2f2ead904fe9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-locally-running-voice-assistant-2f2ead904fe9&user=S%C3%A9bastien+Gilbert&userId=975aef8c496a&source=-----2f2ead904fe9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2f2ead904fe9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-locally-running-voice-assistant-2f2ead904fe9&source=-----2f2ead904fe9---------------------bookmark_footer-----------)![](../Images/431d431bc36ee8d489e091189e0b7371.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2f2ead904fe9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-locally-running-voice-assistant-2f2ead904fe9&source=-----2f2ead904fe9---------------------bookmark_footer-----------)![](img/431d431bc36ee8d489e091189e0b7371.png)
 
-图片由作者生成，并由openart.ai协助
+图片由作者生成，并由 openart.ai 协助
 
 我不得不承认，我最初对大型语言模型（LLM）生成实际有效的代码片段的能力持怀疑态度。我带着最坏的预期尝试了，结果却感到惊喜。像与任何聊天机器人互动一样，问题的格式很重要，但随着时间的推移，你会学会如何明确你需要帮助的问题的边界。
 
-我习惯了在编写代码时有一个始终可用的在线聊天机器人服务，但当我的雇主发布了禁止员工使用它的公司政策时，我不得不寻找其他方案。我可以回到以前的谷歌习惯，但我决定构建一个本地运行的LLM服务，这样我可以在不泄露公司外部信息的情况下提问。感谢[HuggingFace](https://huggingface.co)上的开源LLM提供以及[chainlit项目](https://docs.chainlit.io/get-started/overview)，我能够组建一个满足编码辅助需求的服务。
+我习惯了在编写代码时有一个始终可用的在线聊天机器人服务，但当我的雇主发布了禁止员工使用它的公司政策时，我不得不寻找其他方案。我可以回到以前的谷歌习惯，但我决定构建一个本地运行的 LLM 服务，这样我可以在不泄露公司外部信息的情况下提问。感谢[HuggingFace](https://huggingface.co)上的开源 LLM 提供以及[chainlit 项目](https://docs.chainlit.io/get-started/overview)，我能够组建一个满足编码辅助需求的服务。
 
 下一步是添加一些语音交互。尽管语音不适合编码辅助（你希望看到生成的代码片段，而不是听到它们），但在某些情况下，你需要在创意项目上获得灵感。讲故事的感觉为体验增添了价值。另一方面，你可能不愿意使用在线服务，因为你希望保持工作的隐私。
 
-在这个项目中，我将带你了解构建一个允许你通过语音与开源LLM交互的助手的步骤。所有组件都在你的计算机上本地运行。
+在这个项目中，我将带你了解构建一个允许你通过语音与开源 LLM 交互的助手的步骤。所有组件都在你的计算机上本地运行。
 
 # 架构
 
@@ -34,15 +34,15 @@
 
 +   一个聊天服务
 
-![](../Images/b645360bc06d8cab1f0dd141376d991e.png)
+![](img/b645360bc06d8cab1f0dd141376d991e.png)
 
 三个组件的流程图。图片由作者提供。
 
-这三个组件是独立的项目，每个项目都有自己的github仓库。让我们逐一了解每个组件及其如何交互。
+这三个组件是独立的项目，每个项目都有自己的 github 仓库。让我们逐一了解每个组件及其如何交互。
 
 ## 聊天服务
 
-聊天服务运行开源LLM，名为[*HuggingFaceH4/zephyr-7b-alpha*](https://huggingface.co/HuggingFaceH4/zephyr-7b-alpha)。该服务通过POST调用接收提示，将提示传递给LLM，并将输出作为调用响应返回。
+聊天服务运行开源 LLM，名为[*HuggingFaceH4/zephyr-7b-alpha*](https://huggingface.co/HuggingFaceH4/zephyr-7b-alpha)。该服务通过 POST 调用接收提示，将提示传递给 LLM，并将输出作为调用响应返回。
 
 你可以在[这里](https://github.com/sebastiengilbert73/chat_service)找到代码。
 
@@ -58,11 +58,11 @@ python .\chat_server.py
 
 你会从终端收到服务正在运行的确认：
 
-![](../Images/3a9c8aab18256f8324d1b98a08cb387d.png)
+![](img/3a9c8aab18256f8324d1b98a08cb387d.png)
 
 聊天服务运行的确认。图片由作者提供。
 
-如果你想测试与LLM的交互，请前往…/chat_service/chainlit_interface/。
+如果你想测试与 LLM 的交互，请前往…/chat_service/chainlit_interface/。
 
 将**app_config.xml.example**重命名为**app_config.xml**。使用以下命令启动网络聊天服务：
 
@@ -72,11 +72,11 @@ python .\chat_server.py
 
 浏览到本地地址**localhost:8000**
 
-你应该能够通过文本接口与本地运行的LLM进行交互：
+你应该能够通过文本接口与本地运行的 LLM 进行交互：
 
-![](../Images/33d813385a193a71ec43e16e4b7694b0.png)
+![](img/33d813385a193a71ec43e16e4b7694b0.png)
 
-与本地运行的LLM的文本交互。图片由作者提供。
+与本地运行的 LLM 的文本交互。图片由作者提供。
 
 ## 语音助手服务
 
@@ -88,11 +88,11 @@ python .\chat_server.py
 
 助理通过播放问候语开始，以表明它正在监听用户。问候语的文本在**voice_assistant_config.xml**中配置，位于*<welcome_message>*元素下：
 
-![](../Images/89c8cc195d28f9f5a7a83ae94e2f9e42.png)
+![](img/89c8cc195d28f9f5a7a83ae94e2f9e42.png)
 
-voice_assistant_config.xml文件。图片由作者提供。
+voice_assistant_config.xml 文件。图片由作者提供。
 
-允许程序将文本转换为你可以通过音频输出设备听到的语音的文本转语音引擎是[pyttsx3](https://pypi.org/project/pyttsx3/)。根据我的经验，这个引擎用英语和法语说话都非常自然。与其他依赖API调用的软件包不同，它是在本地运行的。
+允许程序将文本转换为你可以通过音频输出设备听到的语音的文本转语音引擎是[pyttsx3](https://pypi.org/project/pyttsx3/)。根据我的经验，这个引擎用英语和法语说话都非常自然。与其他依赖 API 调用的软件包不同，它是在本地运行的。
 
 一个名为[*facebook/seamless-m4t-v2-large*](https://huggingface.co/facebook/seamless-m4t-v2-large)的模型执行语音转文本推断。**voice_assistant_service.py**首次运行时会下载模型权重。
 
@@ -130,13 +130,13 @@ python gui.py
 
 每当检测到唤醒词时，都会调用一个命令文件，正如配置文件的*<command_on_wakeword>*元素中所指定的。在我们的情况下，**command.bat**文件激活虚拟环境并启动语音助手服务。
 
-![](../Images/a10b684d726fc922f4169fcf2d404486.png)
+![](img/a10b684d726fc922f4169fcf2d404486.png)
 
-唤醒词检测服务GUI的配置文件。图片来源于作者。
+唤醒词检测服务 GUI 的配置文件。图片来源于作者。
 
 如果你想将唤醒词检测服务用于其他用途，你可以编辑**command.bat**文件，以启动你想要的任何程序。
 
-当检测到唤醒词时，唤醒词检测服务会发出两声哔声以指示已触发。这一快速反馈告诉用户，他们必须等待，因为文本到语音和语音到文本模型正在加载到计算机的GPU中，这可能需要几秒钟。当两个模型都加载完毕后，语音助手服务会播放问候语，交谈可以开始。对话结束后，语音助手服务终止，唤醒词检测服务会发出另一声两声哔声信号。
+当检测到唤醒词时，唤醒词检测服务会发出两声哔声以指示已触发。这一快速反馈告诉用户，他们必须等待，因为文本到语音和语音到文本模型正在加载到计算机的 GPU 中，这可能需要几秒钟。当两个模型都加载完毕后，语音助手服务会播放问候语，交谈可以开始。对话结束后，语音助手服务终止，唤醒词检测服务会发出另一声两声哔声信号。
 
 当三个组件安装并测试完成后，我们可以启动聊天和唤醒词检测服务。唤醒词检测服务将不断监听麦克风。当检测到唤醒词（“Jarvis?”）时，它将启动语音助手服务。然后你可以大声提问并收到语音回答。当检测到对话结束短语（“谢谢，再见”）时，语音助手服务结束。
 
@@ -156,7 +156,7 @@ python gui.py
 > 
 > “告诉我电影‘回到未来’的情节。”
 > 
-> “电影《回到未来》讲述了高中生马蒂·麦克弗莱的故事，他意外地被传送回1955年，乘坐由他那古怪的科学家朋友布朗博士创造的时光旅行德洛林车。马蒂必须在修复对现在造成的损害的同时应对过去的挑战，并防止他的青少年母亲爱上他的青少年父亲。在这个过程中，马蒂结识了年轻版的布朗博士，并帮助他克服个人悲剧。这部电影探讨了命运、家庭和改变过去的后果等主题。”
+> “电影《回到未来》讲述了高中生马蒂·麦克弗莱的故事，他意外地被传送回 1955 年，乘坐由他那古怪的科学家朋友布朗博士创造的时光旅行德洛林车。马蒂必须在修复对现在造成的损害的同时应对过去的挑战，并防止他的青少年母亲爱上他的青少年父亲。在这个过程中，马蒂结识了年轻版的布朗博士，并帮助他克服个人悲剧。这部电影探讨了命运、家庭和改变过去的后果等主题。”
 > 
 > “谢谢，再见”
 > 

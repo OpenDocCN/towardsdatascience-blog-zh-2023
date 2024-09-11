@@ -1,18 +1,18 @@
 # 识别：可信因果推断的关键
 
-> 原文：[https://towardsdatascience.com/identification-the-key-to-credible-causal-inference-c3023143349e?source=collection_archive---------5-----------------------#2023-02-22](https://towardsdatascience.com/identification-the-key-to-credible-causal-inference-c3023143349e?source=collection_archive---------5-----------------------#2023-02-22)
+> 原文：[`towardsdatascience.com/identification-the-key-to-credible-causal-inference-c3023143349e?source=collection_archive---------5-----------------------#2023-02-22`](https://towardsdatascience.com/identification-the-key-to-credible-causal-inference-c3023143349e?source=collection_archive---------5-----------------------#2023-02-22)
 
 ## 提高你的因果智商，通过掌握识别来建立对因果推断的信任
 
-[](https://medium.com/@murat.unal?source=post_page-----c3023143349e--------------------------------)[![Murat Unal](../Images/9f00db7597d7ece01213a6b0589c87d8.png)](https://medium.com/@murat.unal?source=post_page-----c3023143349e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3023143349e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c3023143349e--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----c3023143349e--------------------------------)
+[](https://medium.com/@murat.unal?source=post_page-----c3023143349e--------------------------------)![Murat Unal](https://medium.com/@murat.unal?source=post_page-----c3023143349e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3023143349e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3023143349e--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----c3023143349e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fidentification-the-key-to-credible-causal-inference-c3023143349e&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----c3023143349e---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3023143349e--------------------------------) · 阅读时间约8分钟·2023年2月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc3023143349e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fidentification-the-key-to-credible-causal-inference-c3023143349e&user=Murat+Unal&userId=15a64c9fc55d&source=-----c3023143349e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fidentification-the-key-to-credible-causal-inference-c3023143349e&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----c3023143349e---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3023143349e--------------------------------) · 阅读时间约 8 分钟·2023 年 2 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc3023143349e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fidentification-the-key-to-credible-causal-inference-c3023143349e&user=Murat+Unal&userId=15a64c9fc55d&source=-----c3023143349e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc3023143349e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fidentification-the-key-to-credible-causal-inference-c3023143349e&source=-----c3023143349e---------------------bookmark_footer-----------)![](../Images/a11824c6853cbc713984143488ab3d6b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc3023143349e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fidentification-the-key-to-credible-causal-inference-c3023143349e&source=-----c3023143349e---------------------bookmark_footer-----------)![](img/a11824c6853cbc713984143488ab3d6b.png)
 
 图片由 [Paul Skorupskas](https://unsplash.com/@pawelskor?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,9 +28,9 @@
 
 ## 潜在结果
 
-要理解识别，首先从潜在结果框架开始是有用的。假设我们感兴趣的是回答成为Prime会员是否会导致客户在亚马逊在线商店上花费更多。因为这是一个简单的两种处理条件的案例，我们可以将处理（是否为Prime会员）描述为一个二元随机变量，*Ti=[0,1]*。我们感兴趣的结果是购买金额，比如，成为Prime会员后的12个月内的购买金额，记作*Yi*。
+要理解识别，首先从潜在结果框架开始是有用的。假设我们感兴趣的是回答成为 Prime 会员是否会导致客户在亚马逊在线商店上花费更多。因为这是一个简单的两种处理条件的案例，我们可以将处理（是否为 Prime 会员）描述为一个二元随机变量，*Ti=[0,1]*。我们感兴趣的结果是购买金额，比如，成为 Prime 会员后的 12 个月内的购买金额，记作*Yi*。
 
-为了回答这个问题，我们假设我们可以想象一个人如果没有加入Prime会发生什么，反之亦然。因此，每个客户有两个潜在结果，一个是如果客户是会员，另一个是如果不是。因果效应是两个潜在结果之间的差异，但只能观察到其中一个。让 *Yi1* 表示客户 *i* 作为会员时的潜在结果，*Yi0* 表示客户 *i* 作为非会员时的潜在结果。Prime会员资格对客户 *i* 的因果效应是潜在结果之间的差异，定义如下：
+为了回答这个问题，我们假设我们可以想象一个人如果没有加入 Prime 会发生什么，反之亦然。因此，每个客户有两个潜在结果，一个是如果客户是会员，另一个是如果不是。因果效应是两个潜在结果之间的差异，但只能观察到其中一个。让 *Yi1* 表示客户 *i* 作为会员时的潜在结果，*Yi0* 表示客户 *i* 作为非会员时的潜在结果。Prime 会员资格对客户 *i* 的因果效应是潜在结果之间的差异，定义如下：
 
 因为我们从未同时观察到 *Yi1* 和 *Yi0*，我们面临**因果推断的基本问题**，这简单地说明了个体层面的因果推断是**不可能**的 [1]。
 
@@ -38,19 +38,19 @@
 
 通常，我们关注平均处理效应（ATE），即期望值之间的差异。
 
-问题在于：我们需要无条件期望值 *E[Yi1]* 和 *E[Yi0]* 来获得ATE，即如果**总体**中的每个人都成为Prime会员与不成为会员的预期结果差异。然而，我们只观察到条件期望值 *E[Yi1|Ti=1]* 和 *E[Yi0|Ti=0]*，即在数据中看到的会员和非会员的预期结果，这只是总体的一个**样本**。所以，除非我们有理由相信 *E[Yi1|Ti=1]=E[Yi1]* 和 *E[Yi0|Ti=0]=E[Yi0]*，否则我们无法获得ATE。
+问题在于：我们需要无条件期望值 *E[Yi1]* 和 *E[Yi0]* 来获得 ATE，即如果**总体**中的每个人都成为 Prime 会员与不成为会员的预期结果差异。然而，我们只观察到条件期望值 *E[Yi1|Ti=1]* 和 *E[Yi0|Ti=0]*，即在数据中看到的会员和非会员的预期结果，这只是总体的一个**样本**。所以，除非我们有理由相信 *E[Yi1|Ti=1]=E[Yi1]* 和 *E[Yi0|Ti=0]=E[Yi0]*，否则我们无法获得 ATE。
 
-看待因果推断挑战的另一种方式是将ATE（平均处理效应）分解如下：
+看待因果推断挑战的另一种方式是将 ATE（平均处理效应）分解如下：
 
-![](../Images/fa48dec9e78b135e988ecac191f513d6.png)
+![](img/fa48dec9e78b135e988ecac191f513d6.png)
 
-在这里，ATE是五个量的函数，而我们从观察数据中只能估计以下三个量：*P(Ti=1)*，使用分配到处理条件的比例；*E[Yi1|Ti=1]*，使用 *E[Yi|Ti=1]*，即会员的平均结果；以及 *E[Yi0|Ti=0]*，使用 *E[Yi|Ti=0]*，即非会员的平均结果。其他两个量是 *E[Yi0|Ti=1]*，即处理条件下的控制下的平均结果，以及 *E[Yi1|Ti=0]*，即控制条件下的处理下的平均结果。请注意这些是**未观察到的反事实**，我们无法从数据中估计这两个量。
+在这里，ATE 是五个量的函数，而我们从观察数据中只能估计以下三个量：*P(Ti=1)*，使用分配到处理条件的比例；*E[Yi1|Ti=1]*，使用 *E[Yi|Ti=1]*，即会员的平均结果；以及 *E[Yi0|Ti=0]*，使用 *E[Yi|Ti=0]*，即非会员的平均结果。其他两个量是 *E[Yi0|Ti=1]*，即处理条件下的控制下的平均结果，以及 *E[Yi1|Ti=0]*，即控制条件下的处理下的平均结果。请注意这些是**未观察到的反事实**，我们无法从数据中估计这两个量。
 
 ## 识别
 
-那么，我们如何进行？我们如何证明条件期望值等同于无条件期望值，并且它们的差异确实是ATE？或者我们如何处理替代表达中的未观察到的反事实？答案是我们做出**不可测试的假设**并为之辩护。
+那么，我们如何进行？我们如何证明条件期望值等同于无条件期望值，并且它们的差异确实是 ATE？或者我们如何处理替代表达中的未观察到的反事实？答案是我们做出**不可测试的假设**并为之辩护。
 
-这正是识别发挥作用的地方。从本质上讲，识别意味着列出从数据中获得的统计估计需要的假设，以便将其赋予因果解释。然而，这并不仅仅是这样。它还意味着要阐明这些假设为何合理，从而我们在数据中找到的关联**识别**了我们所追求的因果估计量，即ATE，并且可以被信任为因果关系。因此，识别迫使我们不仅要明确因果关系所需的假设，还要在分析中为这些假设辩护。
+这正是识别发挥作用的地方。从本质上讲，识别意味着列出从数据中获得的统计估计需要的假设，以便将其赋予因果解释。然而，这并不仅仅是这样。它还意味着要阐明这些假设为何合理，从而我们在数据中找到的关联**识别**了我们所追求的因果估计量，即 ATE，并且可以被信任为因果关系。因此，识别迫使我们不仅要明确因果关系所需的假设，还要在分析中为这些假设辩护。
 
 现在，我希望你不会感到失望，如果我告诉你包括随机实验在内的每一种因果推断方法，都需要**无法检验的假设**来建立因果关系。没错，就是这样。即使是因果推断的金标准也无法在不做假设的情况下给出因果关系。问题是，并不是所有的假设都是平等的。有些假设比其他假设更合理，当我们和我们的受众对指导我们因果推断的假设有清晰认识时，我们可以寻找评估这些假设的方法。
 
@@ -60,15 +60,15 @@
 
 ## 偏差
 
-我的意思是这样的。假设为了找出Prime会员对亚马逊客户购买行为的影响，我告诉你我收集了会员和非会员的历史购买数据，并且将使用这些数据来估计ATE。这显然意味着我假设我可以通过*E[Yi1|Ti=1]*来获得*E[Yi1]*，通过*E[Yi0|Ti=0]*来获得*E[Yi0]*，这就是我的识别假设。现在，在查看分析或数据之前，我们应该问这个假设是否合理。
+我的意思是这样的。假设为了找出 Prime 会员对亚马逊客户购买行为的影响，我告诉你我收集了会员和非会员的历史购买数据，并且将使用这些数据来估计 ATE。这显然意味着我假设我可以通过*E[Yi1|Ti=1]*来获得*E[Yi1]*，通过*E[Yi0|Ti=0]*来获得*E[Yi0]*，这就是我的识别假设。现在，在查看分析或数据之前，我们应该问这个假设是否合理。
 
 为了做出判断，让我们看一下从条件期望中获得的以下分解：
 
-![](../Images/0eaf986824d3d5bdb5274c943cfecef1.png)
+![](img/0eaf986824d3d5bdb5274c943cfecef1.png)
 
-那么，通过这种方法，我们得到的结果不是ATE，而是两部分的结合体：Prime会员对会员的影响，即处理效应（ATT），以及一个偏差项。简单来说，偏差项告诉我们，如果会员没有加入Prime，会员与非会员之间的购买差异会是什么。
+那么，通过这种方法，我们得到的结果不是 ATE，而是两部分的结合体：Prime 会员对会员的影响，即处理效应（ATT），以及一个偏差项。简单来说，偏差项告诉我们，如果会员没有加入 Prime，会员与非会员之间的购买差异会是什么。
 
-在许多商业环境中，我们期望自愿订阅某项服务或产品的用户，其购买行为与未订阅的用户有所不同。在我们的例子中，我们可以认为那些加入Prime的人是因为他们已经经常使用亚马逊，并且期望继续这样做，加入Prime对他们来说是一个好交易。实质上，即使他们没有加入Prime，会员的购买量也会高于非会员，表明存在正偏差，*E[Yi0|Ti=1]>E[Yi0|Ti=0]*。这意味着我为因果推断所做的假设不成立，我们无法识别ATE。
+在许多商业环境中，我们期望自愿订阅某项服务或产品的用户，其购买行为与未订阅的用户有所不同。在我们的例子中，我们可以认为那些加入 Prime 的人是因为他们已经经常使用亚马逊，并且期望继续这样做，加入 Prime 对他们来说是一个好交易。实质上，即使他们没有加入 Prime，会员的购买量也会高于非会员，表明存在正偏差，*E[Yi0|Ti=1]>E[Yi0|Ti=0]*。这意味着我为因果推断所做的假设不成立，我们无法识别 ATE。
 
 现在，无论我们数据中有多少观察值，或者我们使用简单的均值差异估计量还是进行回归分析，都没有关系。因为我们的识别不成立，最终我们会得到一个关联而非因果效应。
 

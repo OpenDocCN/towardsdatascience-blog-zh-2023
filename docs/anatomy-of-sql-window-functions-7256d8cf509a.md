@@ -1,18 +1,18 @@
 # SQL 窗口函数的解析
 
-> 原文：[https://towardsdatascience.com/anatomy-of-sql-window-functions-7256d8cf509a?source=collection_archive---------0-----------------------#2023-03-30](https://towardsdatascience.com/anatomy-of-sql-window-functions-7256d8cf509a?source=collection_archive---------0-----------------------#2023-03-30)
+> 原文：[`towardsdatascience.com/anatomy-of-sql-window-functions-7256d8cf509a?source=collection_archive---------0-----------------------#2023-03-30`](https://towardsdatascience.com/anatomy-of-sql-window-functions-7256d8cf509a?source=collection_archive---------0-----------------------#2023-03-30)
 
 ## 回到基础 | SQL 初学者的基础知识
 
-[](https://iffatm.medium.com/?source=post_page-----7256d8cf509a--------------------------------)[![Iffat Malik](../Images/7be3b651053507de2077b3c3c9d3a408.png)](https://iffatm.medium.com/?source=post_page-----7256d8cf509a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7256d8cf509a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7256d8cf509a--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----7256d8cf509a--------------------------------)
+[](https://iffatm.medium.com/?source=post_page-----7256d8cf509a--------------------------------)![Iffat Malik](https://iffatm.medium.com/?source=post_page-----7256d8cf509a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7256d8cf509a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7256d8cf509a--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----7256d8cf509a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanatomy-of-sql-window-functions-7256d8cf509a&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----7256d8cf509a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7256d8cf509a--------------------------------) ·9 分钟阅读·2023年3月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7256d8cf509a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanatomy-of-sql-window-functions-7256d8cf509a&user=Iffat+Malik&userId=88491120e677&source=-----7256d8cf509a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanatomy-of-sql-window-functions-7256d8cf509a&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----7256d8cf509a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7256d8cf509a--------------------------------) ·9 分钟阅读·2023 年 3 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7256d8cf509a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanatomy-of-sql-window-functions-7256d8cf509a&user=Iffat+Malik&userId=88491120e677&source=-----7256d8cf509a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7256d8cf509a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanatomy-of-sql-window-functions-7256d8cf509a&source=-----7256d8cf509a---------------------bookmark_footer-----------)![](../Images/cb45c6657e13eb4af98d3e3c9d64e15e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7256d8cf509a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanatomy-of-sql-window-functions-7256d8cf509a&source=-----7256d8cf509a---------------------bookmark_footer-----------)![](img/cb45c6657e13eb4af98d3e3c9d64e15e.png)
 
 图片由作者提供，创建于 [canva](https://www.canva.com)
 

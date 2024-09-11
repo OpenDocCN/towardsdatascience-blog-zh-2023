@@ -1,14 +1,14 @@
-# 数据科学代码中需要避免的6个常见错误
+# 数据科学代码中需要避免的 6 个常见错误
 
-> 原文：[https://towardsdatascience.com/6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594?source=collection_archive---------2-----------------------#2023-12-21](https://towardsdatascience.com/6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594?source=collection_archive---------2-----------------------#2023-12-21)
+> 原文：[`towardsdatascience.com/6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594?source=collection_archive---------2-----------------------#2023-12-21`](https://towardsdatascience.com/6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594?source=collection_archive---------2-----------------------#2023-12-21)
 
 ## 以及如何克服它们
 
-[](https://khuyentran1476.medium.com/?source=post_page-----d0fc38f96594--------------------------------)[![Khuyen Tran](../Images/98aa66025ad29b618e875c75f1c400a5.png)](https://khuyentran1476.medium.com/?source=post_page-----d0fc38f96594--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0fc38f96594--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d0fc38f96594--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----d0fc38f96594--------------------------------)
+[](https://khuyentran1476.medium.com/?source=post_page-----d0fc38f96594--------------------------------)![Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----d0fc38f96594--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0fc38f96594--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0fc38f96594--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----d0fc38f96594--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----d0fc38f96594---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0fc38f96594--------------------------------) ·10 min 阅读·2023年12月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0fc38f96594&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594&user=Khuyen+Tran&userId=84a02493194a&source=-----d0fc38f96594---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----d0fc38f96594---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0fc38f96594--------------------------------) ·10 min 阅读·2023 年 12 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0fc38f96594&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-mistakes-to-avoid-in-data-science-code-d0fc38f96594&user=Khuyen+Tran&userId=84a02493194a&source=-----d0fc38f96594---------------------clap_footer-----------)
 
 --
 

@@ -1,12 +1,12 @@
-# 超越VIF：用于偏差缓解和预测准确性的共线性分析
+# 超越 VIF：用于偏差缓解和预测准确性的共线性分析
 
-> 原文：[https://towardsdatascience.com/beyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2?source=collection_archive---------5-----------------------#2023-07-31](https://towardsdatascience.com/beyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2?source=collection_archive---------5-----------------------#2023-07-31)
+> 原文：[`towardsdatascience.com/beyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2?source=collection_archive---------5-----------------------#2023-07-31`](https://towardsdatascience.com/beyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2?source=collection_archive---------5-----------------------#2023-07-31)
 
-[](https://goodrobotsai.medium.com/?source=post_page-----18fbba3f7aa2--------------------------------)[![Good Robots](../Images/f2fe19ea6712bbe0e4ff20763eaf61b5.png)](https://goodrobotsai.medium.com/?source=post_page-----18fbba3f7aa2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18fbba3f7aa2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----18fbba3f7aa2--------------------------------) [Good Robots](https://goodrobotsai.medium.com/?source=post_page-----18fbba3f7aa2--------------------------------)
+[](https://goodrobotsai.medium.com/?source=post_page-----18fbba3f7aa2--------------------------------)![Good Robots](https://goodrobotsai.medium.com/?source=post_page-----18fbba3f7aa2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18fbba3f7aa2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----18fbba3f7aa2--------------------------------) [Good Robots](https://goodrobotsai.medium.com/?source=post_page-----18fbba3f7aa2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3abbfbfa9c59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2&user=Good+Robots&userId=3abbfbfa9c59&source=post_page-3abbfbfa9c59----18fbba3f7aa2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18fbba3f7aa2--------------------------------) ·12分钟阅读·2023年7月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18fbba3f7aa2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2&user=Good+Robots&userId=3abbfbfa9c59&source=-----18fbba3f7aa2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3abbfbfa9c59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2&user=Good+Robots&userId=3abbfbfa9c59&source=post_page-3abbfbfa9c59----18fbba3f7aa2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18fbba3f7aa2--------------------------------) ·12 分钟阅读·2023 年 7 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18fbba3f7aa2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-vif-collinearity-analysis-for-bias-mitigation-and-predictive-accuracy-18fbba3f7aa2&user=Good+Robots&userId=3abbfbfa9c59&source=-----18fbba3f7aa2---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 大多数机器学习算法会选择最佳的特征组合以优化预测准确性。因此，即使存在共线性，只要训练中观察到的相关性在实际世界中仍然成立，共线性在机器学习中也不是问题。然而，对于模型的可解释性来说，共线性的 unchecked 效果是潜在的偏差来源。
 
-![](../Images/ecdab118843501b78f93e4362fba284d.png)
+![](img/ecdab118843501b78f93e4362fba284d.png)
 
 图 1: 波士顿住房数据集中的共线性概览
 
@@ -28,13 +28,13 @@
 
 为了展示 unchecked 共线性如何导致无意的偏差，让我们使用“*如何不收集数据*”的警示故事： [***波士顿住房数据集***](https://github.com/Good-Robots/Collinearity-Analysis/blob/main/housing.csv)***。*** 该数据集已经被揭穿并从公开使用中撤回，因为它包含了一个 [“不可逆](https://medium.com/@docintangible/racist-data-destruction-113e3eff54a8)” 变量 “B”。独立变量 “B”、“RM” 和 “TAX” 之间的共线性关系是虚假相关如何压制 IVs 之间真实关系的典型案例。对 “B” 的 [‘不可逆](https://www.sciencedirect.com/science/article/abs/pii/0095069678900062)’ 转换，（*一个伪装成连续 IV 的二元 IV*）引入了一种可能不会被 ML 算法检测到的调节偏差。
 
-![](../Images/3eb95cd84eabbd62eafda2dacbdd7cea.png)
+![](img/3eb95cd84eabbd62eafda2dacbdd7cea.png)
 
 图 2: IVs — 波士顿住房数据集
 
 考虑波士顿住房数据集中的 13 个***独立变量（IVs）***，以城镇中的自有住房中位值（MEDV）作为因变量（***DV***）。某些特征可能看起来是结果的强预测因子，但这种影响在于它们的方差在很大程度上由其他预测因子解释。
 
-![](../Images/16c5fdc0b0a3d4779938a257e4f8f625.png)
+![](img/16c5fdc0b0a3d4779938a257e4f8f625.png)
 
 图 2: 交叉相关分析 — 波士顿住房数据集
 
@@ -52,11 +52,11 @@
 
 # 评估共线性
 
-如果两个或更多自变量高度相关（如RAD和TAX），共线性的直观解释是，它们可能提供了关于某个“潜在”概念（如大郊区房屋/城市公寓）对因变量（如房地产价值）影响的完全相同的信息。在存在“物业税”的情况下，通往辐射高速公路的可达性对房地产价值没有提供新的信息（反之亦然）。当自变量之间毫无意义地高度相关时，回归模型的系数会变得很大，从而导致对某些因素对结果影响的过度估计。
+如果两个或更多自变量高度相关（如 RAD 和 TAX），共线性的直观解释是，它们可能提供了关于某个“潜在”概念（如大郊区房屋/城市公寓）对因变量（如房地产价值）影响的完全相同的信息。在存在“物业税”的情况下，通往辐射高速公路的可达性对房地产价值没有提供新的信息（反之亦然）。当自变量之间毫无意义地高度相关时，回归模型的系数会变得很大，从而导致对某些因素对结果影响的过度估计。
 
 目前，有两种处理共线性的方法，但都没有考虑到因变量。
 
-1.  **成对相关**：有多少自变量彼此“高度”相关。‘高度相关’特征的相关系数的阈值是主观的。然而，[普遍共识](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1600-0587.2012.07348.x)是，当相关系数达到+/- 0.7时，共线性成为一个严重问题。
+1.  **成对相关**：有多少自变量彼此“高度”相关。‘高度相关’特征的相关系数的阈值是主观的。然而，[普遍共识](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1600-0587.2012.07348.x)是，当相关系数达到+/- 0.7 时，共线性成为一个严重问题。
 
 ```py
 def dropMultiCorrelated(cormat, threshold):
@@ -74,11 +74,11 @@ def dropMultiCorrelated(cormat, threshold):
     return to_drop"
 ```
 
-**2\. 方差膨胀**：虽然相关系数确认了两个自变量之间的变化程度，但它对***自变量的重要性***了解甚少。这是因为，在多元关系中，自变量在其对因变量的影响上并不真正***独立***（参见图1），它们的真实***影响显著性***是在其他**自变量**的组合存在下才显现出来。
+**2\. 方差膨胀**：虽然相关系数确认了两个自变量之间的变化程度，但它对***自变量的重要性***了解甚少。这是因为，在多元关系中，自变量在其对因变量的影响上并不真正***独立***（参见图 1），它们的真实***影响显著性***是在其他**自变量**的组合存在下才显现出来。
 
-方差膨胀评分是由于自变量之间的相互依赖而对回归系数的影响大小。VIF采用***“留一法”***方法，处理每一个***“留出”***作为因变量，所有***“留在”***作为自变量。因此，所有自变量变成因变量，每个模型生成一个(***R2***)值。这个R2值表示了***“留出”***自变量的方差百分比由***“留在”***自变量解释。VIF评分估算如下：
+方差膨胀评分是由于自变量之间的相互依赖而对回归系数的影响大小。VIF 采用***“留一法”***方法，处理每一个***“留出”***作为因变量，所有***“留在”***作为自变量。因此，所有自变量变成因变量，每个模型生成一个(***R2***)值。这个 R2 值表示了***“留出”***自变量的方差百分比由***“留在”***自变量解释。VIF 评分估算如下：
 
-![](../Images/11aa5178c75d032ce66a4f3c6cf9961f.png)
+![](img/11aa5178c75d032ce66a4f3c6cf9961f.png)
 
 图 4：变量膨胀估计 — 波士顿住房数据集
 
@@ -105,7 +105,7 @@ c1 = pd.DataFrame(coefs, columns = ['Feature', 'VarianceEx']).sort_values("Varia
 
 第一个指标是 IV 对因变量的独立影响，即由 IV（R_squared）***独立地***解释的因变量方差。为了保持一致性，我们还将根据这个 R_squared 值估算 VIF 分数，并称之为 VIF(IY) —— 独立重要性。第二个指标是在所有 IV 存在的情况下，独立变量对因变量的影响，即上述估算的 VIF。我们称之为 VIF(IX) —— 集体重要性。
 
-![](../Images/e7392eabce2644ac817325271855a666.png)
+![](img/e7392eabce2644ac817325271855a666.png)
 
 图 5：估算特征对 ML 模型的膨胀成本与预测成本
 
@@ -113,7 +113,7 @@ c1 = pd.DataFrame(coefs, columns = ['Feature', 'VarianceEx']).sort_values("Varia
 
 由于这是一个预处理步骤，我们将对 VIF(IX) 因子的 20（红线）和 VIF(IY) 的 1.15（蓝线）使用非常宽松的“临界值”。这样，红线以下的特征由其他 IV 解释最少，而蓝线后的特征无法独立预测（Y）。
 
-![](../Images/5c82c220afce449655caf835e2f1f50a.png)
+![](img/5c82c220afce449655caf835e2f1f50a.png)
 
 图 6：特征的膨胀成本与预测成本
 
@@ -175,7 +175,7 @@ cc[corr_ic & corr_io & corr_co & co_sig & io_sig]
 
 变量 ***B***、***TAX*** 和 RM 彼此之间具有显著的预测关系，同时也独立预测结果。这可能是最能预测 DV (***MEDV***) 的 IV 线性组合。或者，这些 IV 中任意两个的预测相关性可能因第三个 IV 的存在而被夸大或抑制。为了调查这一点，应将每个变量依次从包含所有独立变量的基线模型中移除。
 
-![](../Images/a316c8bf4766c61b9fa51229d88ab9c0.png)
+![](img/a316c8bf4766c61b9fa51229d88ab9c0.png)
 
 图 7：IV 丢弃对基线模型的影响
 
@@ -189,9 +189,9 @@ cc[corr_ic & corr_io & corr_co & co_sig & io_sig]
 
 > 请注意，这些效应在没有深入因果分析的情况下无法真正确定，但作为去除偏差的预处理步骤，我们可以使用这些概念的简单定义来过滤这些关系。
 
-![](../Images/4f423c333f8ccfdb99bb3d26268ce125.png)
+![](img/4f423c333f8ccfdb99bb3d26268ce125.png)
 
-图8：波士顿住房数据集中调解关系
+图 8：波士顿住房数据集中调解关系
 
 ***中介变量***解释了自变量和因变量是如何相关的，即它们之间相关的过程。一个中介变量必须满足三个标准：
 
@@ -215,19 +215,19 @@ icoci_sig = (cc['IO_sig'] > cc['ICO_I_sig']) # Direct relationship between I and
 
 房间数量可以调解或混淆黑人人口比例与物业价值之间的关系。根据[这篇论文](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2819361/#:~:text=Mediation%20involves%20a%20distinctly%20causal,examine%20undistorted%20estimates%20of%20effects.)，这取决于（B）和（RM）之间的关系。如果（RM <-> MEDV）和（RM <-> B）之间的关系是***相同方向的***，移除（RM）应该会削弱（B）对（MEDV）的影响。然而，如果（RM <-> MEDV）和（RM <-> B）之间的关系是***相反方向的***，移除（RM）应该会增强（B）。
 
-（RM <—> MEDV）和（RM <-> B）是相同方向的（图1的子图3），然而，移除（RM）增强了（B）的效果。
+（RM <—> MEDV）和（RM <-> B）是相同方向的（图 1 的子图 3），然而，移除（RM）增强了（B）的效果。
 
 但请参见下图，其中我们看到在第一个自变量与因变量之间的关系中，第三个自变量有一个良好的决策边界。这表明根据(B)的值，(RM)与(TAX)之间存在不同类型的关系。
 
-![](../Images/b5182633423e496832bd3e96b7e44ad5.png)
+![](img/b5182633423e496832bd3e96b7e44ad5.png)
 
-图9：调节回归
+图 9：调节回归
 
-有了***调节变量***，第一个自变量与因变量之间的关系会根据调节变量的值有所不同。你可以期望对价值$100,000的房子支付多少物业税？这取决于该镇的黑人比例和房间数量。事实上，有一组城镇的物业税保持一致，无论房间数量如何，只要(B)保持在某个阈值以下。
+有了***调节变量***，第一个自变量与因变量之间的关系会根据调节变量的值有所不同。你可以期望对价值$100,000 的房子支付多少物业税？这取决于该镇的黑人比例和房间数量。事实上，有一组城镇的物业税保持一致，无论房间数量如何，只要(B)保持在某个阈值以下。
 
-![](../Images/d5b1251f303feb908eae9b2c2bb77612.png)
+![](img/d5b1251f303feb908eae9b2c2bb77612.png)
 
-图10：调节关系 波士顿住房数据集
+图 10：调节关系 波士顿住房数据集
 
 调节变量通常是数据中的类别特征或组。常规的预处理步骤为每个组标签创建虚拟变量。这[可能解决](https://www.researchgate.net/post/Do-you-need-to-dummy-code-sex-to-run-it-as-a-moderator-variable-in-moderated-multiple-regression)来自该组对因变量的任何调节效应。然而，排名变量或具有低方差的连续变量(B)也可以是调节变量。
 

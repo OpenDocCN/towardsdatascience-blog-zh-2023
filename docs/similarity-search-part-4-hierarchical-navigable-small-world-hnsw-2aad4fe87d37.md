@@ -1,18 +1,18 @@
-# 相似性搜索，第4部分：分层可导航的小世界（HNSW）
+# 相似性搜索，第四部分：分层可导航的小世界（HNSW）
 
-> 原文：[https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=collection_archive---------0-----------------------#2023-06-16](https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=collection_archive---------0-----------------------#2023-06-16)
+> 原文：[`towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=collection_archive---------0-----------------------#2023-06-16`](https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=collection_archive---------0-----------------------#2023-06-16)
 
 ## 发现如何构建高效的多层图以提升在海量数据中的搜索速度
 
-[](https://medium.com/@slavahead?source=post_page-----2aad4fe87d37--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----2aad4fe87d37--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2aad4fe87d37--------------------------------)[![数据科学进展](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2aad4fe87d37--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----2aad4fe87d37--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----2aad4fe87d37--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----2aad4fe87d37--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2aad4fe87d37--------------------------------)![数据科学进展](https://towardsdatascience.com/?source=post_page-----2aad4fe87d37--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----2aad4fe87d37--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----2aad4fe87d37---------------------post_header-----------) 发表在 [数据科学进展](https://towardsdatascience.com/?source=post_page-----2aad4fe87d37--------------------------------) · 13 分钟阅读 · 2023年6月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2aad4fe87d37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----2aad4fe87d37---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----2aad4fe87d37---------------------post_header-----------) 发表在 [数据科学进展](https://towardsdatascience.com/?source=post_page-----2aad4fe87d37--------------------------------) · 13 分钟阅读 · 2023 年 6 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2aad4fe87d37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----2aad4fe87d37---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2aad4fe87d37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&source=-----2aad4fe87d37---------------------bookmark_footer-----------)![](../Images/d9c57ffdc93575971084c70c2b6d6e38.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2aad4fe87d37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&source=-----2aad4fe87d37---------------------bookmark_footer-----------)![](img/d9c57ffdc93575971084c70c2b6d6e38.png)
 
 **相似性搜索** 是一个问题，其中给定一个查询，目标是找到与之最相似的文档，这些文档位于所有数据库文档中。
 
@@ -34,7 +34,7 @@
 
 [跳表](https://en.wikipedia.org/wiki/Skip_list) 是一种概率数据结构，允许在排序列表中以 *O(logn)* 的平均时间复杂度插入和搜索元素。跳表由多个层次的链表构成。最低层包含所有元素的原始链表。当移动到更高的层级时，被跳过的元素数量增加，从而减少了连接数。
 
-![](../Images/2504b3cea528c33a5d4d7ff24c2d8778.png)
+![](img/2504b3cea528c33a5d4d7ff24c2d8778.png)
 
 在跳表中找到元素 20
 
@@ -54,13 +54,13 @@
 
 首先，通过选择一个入口点进行搜索。为了确定算法下一步移动的顶点（或顶点），它计算查询向量到当前顶点邻居的距离，并移动到最近的一个。某些时候，当算法找不到比当前节点更靠近查询的邻居节点时，它会终止搜索过程。这个节点被返回作为查询的响应。
 
-![](../Images/a4eb5d43f3a843ea5c4d77ac2b3b8846.png)
+![](img/a4eb5d43f3a843ea5c4d77ac2b3b8846.png)
 
 可导航的小世界中的贪心搜索过程。节点 A 被用作入口点。它有两个邻居 B 和 D。节点 D 比 B 更接近查询。因此，我们移动到 D。节点 D 有三个邻居 C、E 和 F。E 是距离查询最近的邻居，所以我们移动到 E。最终，搜索过程将导致节点 L。由于 L 的所有邻居都比 L 本身离查询更远，我们停止算法，并将 L 作为查询的答案返回。
 
 这种贪心策略不能保证找到确切的最近邻，因为该方法仅使用当前步骤的局部信息来做出决策。**早期停止** 是该算法的问题之一。特别是在搜索过程的开始阶段，当没有比当前节点更好的邻居节点时，早期停止现象尤为明显。在大多数情况下，这可能发生在起始区域有太多低度顶点时。
 
-![](../Images/0f13febee8fe41bde554255204c8a1dc.png)
+![](img/0f13febee8fe41bde554255204c8a1dc.png)
 
 早期停止。当前节点的两个邻居都比查询更远。因此，算法返回当前节点作为响应，尽管存在距离查询更近的节点。
 
@@ -70,7 +70,7 @@
 
 NSW 图是通过打乱数据集点并逐个将它们插入当前图中来构建的。当插入一个新节点时，它会通过边连接到其*M*个最近的顶点。
 
-![](../Images/1b03640a542eb8fadb8ccfb27ff34f1c.png)
+![](img/1b03640a542eb8fadb8ccfb27ff34f1c.png)
 
 节点的顺序插入（从左到右），M = 2。在每次迭代中，向图中添加一个新顶点，并将其链接到其 M = 2 个最近邻居。蓝线表示连接到新插入节点的边。
 
@@ -90,11 +90,11 @@ NSW 图是通过打乱数据集点并逐个将它们插入当前图中来构建�
 
 搜索从最高层开始，每次在层节点中贪婪地找到局部最近邻，然后逐层向下。最终，找到的最低层上的最近邻即为查询的答案。
 
-![](../Images/5a334283e8e94afb5a71acfb241e76ca.png)
+![](img/5a334283e8e94afb5a71acfb241e76ca.png)
 
-HNSW中的搜索
+HNSW 中的搜索
 
-类似于NSW，通过使用多个入口点可以提高HNSW的搜索质量。与其在每层上仅找到一个最近邻，不如使用*efSearch*（一个超参数）找到与查询向量最接近的最近邻，并将每个邻居作为下一层的入口点。
+类似于 NSW，通过使用多个入口点可以提高 HNSW 的搜索质量。与其在每层上仅找到一个最近邻，不如使用*efSearch*（一个超参数）找到与查询向量最接近的最近邻，并将每个邻居作为下一层的入口点。
 
 ## 复杂度
 
@@ -104,13 +104,13 @@ HNSW中的搜索
 
 ## 选择最大层
 
-节点在HNSW中是一个接一个地顺序插入的。每个节点会随机分配一个整数*l*，表示该节点可以出现在图中的最大层。例如，如果*l = 1*，则该节点只能在第0层和第1层找到。作者为每个节点随机选择*l*，其*指数衰减概率分布*由非零乘数*mL（mL = 0* 结果是HNSW中的单层和非优化的搜索复杂度）*进行归一化*。通常，大多数*l*值应该等于0，因此大多数节点仅存在于最低层。较大的*mL*值增加了节点出现在更高层的概率。
+节点在 HNSW 中是一个接一个地顺序插入的。每个节点会随机分配一个整数*l*，表示该节点可以出现在图中的最大层。例如，如果*l = 1*，则该节点只能在第 0 层和第 1 层找到。作者为每个节点随机选择*l*，其*指数衰减概率分布*由非零乘数*mL（mL = 0* 结果是 HNSW 中的单层和非优化的搜索复杂度）*进行归一化*。通常，大多数*l*值应该等于 0，因此大多数节点仅存在于最低层。较大的*mL*值增加了节点出现在更高层的概率。
 
-![](../Images/a1bcb306f30647ddfd33ea0369dab2bd.png)
+![](img/a1bcb306f30647ddfd33ea0369dab2bd.png)
 
-每个节点的层数l是根据*指数衰减概率分布*随机选择的。
+每个节点的层数 l 是根据*指数衰减概率分布*随机选择的。
 
-![](../Images/80559580b66a286c3abbfeaaf5127e17.png)
+![](img/80559580b66a286c3abbfeaaf5127e17.png)
 
 基于标准化因子*mL*的层数分布。横轴表示均匀分布(0, 1)的值。
 
@@ -126,17 +126,17 @@ HNSW中的搜索
 
 1.  算法从上层开始，贪婪地找到最近的节点。找到的节点随后被用作下一层的入口点，搜索过程继续。一旦达到层*l*，插入过程就进入第二步。
 
-1.  从层*l*开始，算法在当前层插入新节点。然后，它像之前一样执行第1步，但不是仅找到一个最近邻，而是贪婪地搜索*efConstruction*（超参数）个最近邻。然后从*efConstruction*个邻居中选择*M*个，并建立从插入节点到它们的边。之后，算法下降到下一层，每个找到的*efConstruction*节点作为入口点。算法在新节点及其边被插入到最低层0后终止。
+1.  从层*l*开始，算法在当前层插入新节点。然后，它像之前一样执行第 1 步，但不是仅找到一个最近邻，而是贪婪地搜索*efConstruction*（超参数）个最近邻。然后从*efConstruction*个邻居中选择*M*个，并建立从插入节点到它们的边。之后，算法下降到下一层，每个找到的*efConstruction*节点作为入口点。算法在新节点及其边被插入到最低层 0 后终止。
 
-![](../Images/9344c9f75ac1c76b943f2eb9edbe6d69.png)
+![](img/9344c9f75ac1c76b943f2eb9edbe6d69.png)
 
-在HNSW中插入一个节点（蓝色）。新节点的最大层随机选择为l = 2。因此，节点将被插入到层2、1和0。在每一层，节点将连接到其M = 2个最近邻。
+在 HNSW 中插入一个节点（蓝色）。新节点的最大层随机选择为 l = 2。因此，节点将被插入到层 2、1 和 0。在每一层，节点将连接到其 M = 2 个最近邻。
 
 ## 选择构造参数的值
 
 原始论文提供了如何选择超参数的几个有用见解：
 
-+   根据模拟，*M*的良好值在5到48之间。较小的*M*值适合较低的召回率或低维数据，而较大的M值则更适合较高的召回率或高维数据。
++   根据模拟，*M*的良好值在 5 到 48 之间。较小的*M*值适合较低的召回率或低维数据，而较大的 M 值则更适合较高的召回率或高维数据。
 
 +   更高的*efConstruction*值意味着更深层次的搜索，因为会探索更多的候选项。然而，这也需要更多的计算。作者建议选择一个*efConstruction*值，以便在训练过程中回忆接近*0.95–1*。
 
@@ -150,7 +150,7 @@ HNSW中的搜索
 
 想象一个如下面图所示的图结构。正如你所见，图中有三个区域，其中两个区域彼此没有连接（在左侧和顶部）。因此，例如，从点 *A* 到 *B* 需要通过另一个区域经过很长的路径。为了更好的导航，将这两个区域以某种方式连接起来是合乎逻辑的。
 
-![](../Images/5d9fd78eec3c946eaa9179ffc20e6f7b.png)
+![](img/5d9fd78eec3c946eaa9179ffc20e6f7b.png)
 
 节点 *X* 被插入到图中。目标是将其最优地连接到其他 *M* = 2 个点。
 
@@ -164,7 +164,7 @@ HNSW中的搜索
 
 回到例子，启发式过程如下面的图所示。启发式算法选择 *B* 作为 *X* 的最近邻居，并建立了边 *BX*。然后算法选择 *C* 作为下一个最近邻居。然而，这次 *BC < CX*。这表明将边 *CX* 添加到图中并不是最优的，因为已经存在边 *BX*，且节点 *B* 和 *C* 非常接近。相同的类比适用于节点 *D* 和 *E*。之后，算法检查节点 *A*。这一次，它满足条件，因为 *BA* *> AX*。因此，新边 *AX* 和两个初始区域变得互相连接。
 
-![](../Images/e6c85eede8fe13f3ede4e8fe2c082bed.png)
+![](img/e6c85eede8fe13f3ede4e8fe2c082bed.png)
 
 左侧的示例使用了简单的方法。右侧的示例使用了选择启发式，使两个初始不相交的区域相互连接。
 
@@ -176,7 +176,7 @@ HNSW中的搜索
 
 HNSW 可以与其他相似性搜索方法结合使用，以提供更好的性能。最常见的方法之一是将其与倒排文件索引和产品量化（*IndexIVFPQ*）结合使用，这在本系列文章的其他部分中已有描述。
 
-[](https://medium.com/@slavahead/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa?source=post_page-----2aad4fe87d37--------------------------------) [## 相似性搜索，第 3 部分：融合倒排文件索引和产品量化
+[](https://medium.com/@slavahead/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa?source=post_page-----2aad4fe87d37--------------------------------) [## 相似性搜索，第三部分：融合倒排文件索引和产品量化
 
 ### 在本系列的前两部分中，我们讨论了信息检索中的两个基本算法：倒排……
 
@@ -184,31 +184,31 @@ medium.com](https://medium.com/@slavahead/similarity-search-blending-inverted-fi
 
 在这个范式中，HNSW 充当**粗量化器**的角色，负责找到最近的 Voronoi 划分，从而可以缩小搜索范围。为此，必须在所有 Voronoi 质心上构建 HNSW 索引。给定查询时，使用 HNSW 找到最近的 Voronoi 质心（而不是之前通过比较每个质心的距离进行的暴力搜索）。之后，查询向量在相应的 Voronoi 划分中被量化，并通过 PQ 代码计算距离。
 
-![](../Images/e6c54daac1c43ee24feaa3ed5f5c0e5e.png)
+![](img/e6c54daac1c43ee24feaa3ed5f5c0e5e.png)
 
 通过在 Voronoi 质心上建立的 HNSW 中找到最近邻，选择最接近的 Voronoi 质心。
 
 当仅使用倒排文件索引时，最好将 Voronoi 划分的数量设置得不太大（例如 256 或 1024），因为会执行暴力搜索以找到最近的质心。通过选择较少的 Voronoi 划分，划分内的候选项数量变得相对较大。因此，算法迅速识别查询的最近质心，并且大部分运行时间集中在 Voronoi 划分内找到最近邻上。
 
-然而，将HNSW引入工作流需要调整。考虑仅在少量质心（256或1024）上运行HNSW：由于质心数量较少，HNSW在执行时间上与简单的暴力搜索相对相同，因此不会带来显著的好处。此外，HNSW需要更多的内存来存储图结构。
+然而，将 HNSW 引入工作流需要调整。考虑仅在少量质心（256 或 1024）上运行 HNSW：由于质心数量较少，HNSW 在执行时间上与简单的暴力搜索相对相同，因此不会带来显著的好处。此外，HNSW 需要更多的内存来存储图结构。
 
-> 这就是为什么在合并HNSW和倒排文件索引时，建议将Voronoi质心的数量设置得比平时大得多。这样，每个Voronoi分区内的候选者数量会大大减少。
+> 这就是为什么在合并 HNSW 和倒排文件索引时，建议将 Voronoi 质心的数量设置得比平时大得多。这样，每个 Voronoi 分区内的候选者数量会大大减少。
 
 这种范式的转变导致了以下设置：
 
-+   HNSW以对数时间快速识别最近的Voronoi质心。
++   HNSW 以对数时间快速识别最近的 Voronoi 质心。
 
-+   之后，执行各自Voronoi分区内的穷举搜索。因为潜在候选者的数量较少，所以不应成为问题。
++   之后，执行各自 Voronoi 分区内的穷举搜索。因为潜在候选者的数量较少，所以不应成为问题。
 
-# Faiss实现
+# Faiss 实现
 
-> [**Faiss**](https://github.com/facebookresearch/faiss)（Facebook AI 搜索相似性）是一个用C++编写的Python库，用于优化相似性搜索。该库提供了不同类型的索引，这些索引是用于高效存储数据和执行查询的数据结构。
+> [**Faiss**](https://github.com/facebookresearch/faiss)（Facebook AI 搜索相似性）是一个用 C++编写的 Python 库，用于优化相似性搜索。该库提供了不同类型的索引，这些索引是用于高效存储数据和执行查询的数据结构。
 
-根据[Faiss文档](https://faiss.ai)的信息，我们将探讨如何将HNSW与倒排文件索引和乘积量化结合使用。
+根据[Faiss 文档](https://faiss.ai)的信息，我们将探讨如何将 HNSW 与倒排文件索引和乘积量化结合使用。
 
 ## IndexHNSWFlat
 
-FAISS有一个类*IndexHNSWFlat*实现了HNSW结构。通常，“*Flat*”后缀表示数据集向量完全存储在索引中。构造函数接受2个参数：
+FAISS 有一个类*IndexHNSWFlat*实现了 HNSW 结构。通常，“*Flat*”后缀表示数据集向量完全存储在索引中。构造函数接受 2 个参数：
 
 +   **d**：数据维度。
 
@@ -228,9 +228,9 @@ FAISS有一个类*IndexHNSWFlat*实现了HNSW结构。通常，“*Flat*”后�
 
 +   **hnsw.set_default_probas(M: int, level_mult: float)**：允许分别设置*M*和*mL*值。默认情况下，*level_mult* 设置为 *1 / ln(M)*。
 
-![](../Images/d8aa815a66893b9d4185852daa96c27b.png)
+![](img/d8aa815a66893b9d4185852daa96c27b.png)
 
-Faiss实现的IndexHNSWFlat
+Faiss 实现的 IndexHNSWFlat
 
 *IndexHNSWFlat* 为*Mₘₐₓ = M* 和 *Mₘₐₓ₀ = 2 * M* 设置值。
 
@@ -244,7 +244,7 @@ Faiss实现的IndexHNSWFlat
 
 训练和添加可以使用不同或相同的数据完成。
 
-![](../Images/a2c65f1fd3db6f3c74764b883b6e46aa.png)
+![](img/a2c65f1fd3db6f3c74764b883b6e46aa.png)
 
 FAISS 实现的 IndexHNSWFlat + IndexIVFPQ
 

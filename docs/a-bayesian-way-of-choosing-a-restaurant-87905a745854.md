@@ -1,12 +1,12 @@
 # 贝叶斯选择餐厅的方法
 
-> 原文：[https://towardsdatascience.com/a-bayesian-way-of-choosing-a-restaurant-87905a745854?source=collection_archive---------5-----------------------#2023-10-12](https://towardsdatascience.com/a-bayesian-way-of-choosing-a-restaurant-87905a745854?source=collection_archive---------5-----------------------#2023-10-12)
+> 原文：[`towardsdatascience.com/a-bayesian-way-of-choosing-a-restaurant-87905a745854?source=collection_archive---------5-----------------------#2023-10-12`](https://towardsdatascience.com/a-bayesian-way-of-choosing-a-restaurant-87905a745854?source=collection_archive---------5-----------------------#2023-10-12)
 
-[](https://5why.medium.com/?source=post_page-----87905a745854--------------------------------)[![Kirill Tsyganov](../Images/376bcac6eae9741114ff6cc385883d62.png)](https://5why.medium.com/?source=post_page-----87905a745854--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87905a745854--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----87905a745854--------------------------------) [Kirill Tsyganov](https://5why.medium.com/?source=post_page-----87905a745854--------------------------------)
+[](https://5why.medium.com/?source=post_page-----87905a745854--------------------------------)![Kirill Tsyganov](https://5why.medium.com/?source=post_page-----87905a745854--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87905a745854--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----87905a745854--------------------------------) [Kirill Tsyganov](https://5why.medium.com/?source=post_page-----87905a745854--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad57bdbd9754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-bayesian-way-of-choosing-a-restaurant-87905a745854&user=Kirill+Tsyganov&userId=ad57bdbd9754&source=post_page-ad57bdbd9754----87905a745854---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87905a745854--------------------------------) ·3分钟阅读·2023年10月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87905a745854&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-bayesian-way-of-choosing-a-restaurant-87905a745854&user=Kirill+Tsyganov&userId=ad57bdbd9754&source=-----87905a745854---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad57bdbd9754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-bayesian-way-of-choosing-a-restaurant-87905a745854&user=Kirill+Tsyganov&userId=ad57bdbd9754&source=post_page-ad57bdbd9754----87905a745854---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87905a745854--------------------------------) ·3 分钟阅读·2023 年 10 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87905a745854&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-bayesian-way-of-choosing-a-restaurant-87905a745854&user=Kirill+Tsyganov&userId=ad57bdbd9754&source=-----87905a745854---------------------clap_footer-----------)
 
 --
 
@@ -14,7 +14,7 @@
 
 最近我在寻找一家新的好餐厅。Google Maps 给了我两个选项：餐厅 A 有 10 条评论全是 5 星，而餐厅 B 有 200 条评论，平均评分为 4 星。我倾向于选择餐厅 A，但评论数量少让我感到担忧。另一方面，餐厅 B 的许多评论让我对其 4 星评级有信心，但没有承诺任何卓越。因此，我想比较这些餐厅，并选择最好的，考虑评论或缺少评论的情况。感谢贝叶斯，我们有办法做到这一点。
 
-![](../Images/e306eaf4ab6d73bf22c1c73a73023f0b.png)
+![](img/e306eaf4ab6d73bf22c1c73a73023f0b.png)
 
 图片由作者制作。
 
@@ -38,7 +38,7 @@ prior_reviews_mean_a = np.dot(p_a, ratings_support)
 prior_reviews_mean_b = np.dot(p_b, ratings_support)
 ```
 
-![](../Images/29d7c20cc46584189adb11920e1c115f.png)
+![](img/29d7c20cc46584189adb11920e1c115f.png)
 
 图片由作者制作。
 
@@ -50,7 +50,7 @@ prior_reviews_mean_b = np.dot(p_b, ratings_support)
 
 +   事实证明，Dirichlet 是 Multinomial 似然的**共轭先验**。换句话说，我们的**后验分布也是 Dirichlet** 分布，参数包含了观测数据。
 
-![](../Images/3efe17e0895746f8924ac4546b80868f.png)
+![](img/3efe17e0895746f8924ac4546b80868f.png)
 
 图片由作者制作。
 
@@ -71,7 +71,7 @@ posterior_reviews_mean_b = np.dot(p_b, ratings_support)
 
 +   现在，A 的后验平均评分介于**先验 3 和观察到的 5 之间**。但 B 的平均评分变化不大，因为大量的评论超出了初始信念的影响。
 
-![](../Images/54add7a0439835424879234e30891ed8.png)
+![](img/54add7a0439835424879234e30891ed8.png)
 
 图片由作者制作。
 
@@ -79,7 +79,7 @@ posterior_reviews_mean_b = np.dot(p_b, ratings_support)
 
 +   回到我们最初的问题，“更好”意味着**A 的平均评分大于 B 的平均评分**的概率，即 P(E(A|data)>E(B|data))。
 
-+   在我的情况下，我得到了85%的概率，即餐厅 A 比餐厅 B 更好。
++   在我的情况下，我得到了 85%的概率，即餐厅 A 比餐厅 B 更好。
 
 ```py
 # P(E(A)-E(B)>0)
@@ -87,7 +87,7 @@ posterior_rating_diff = posterior_reviews_mean_a-posterior_reviews_mean_b
 p_posterior_better = sum(posterior_rating_diff>0)/len(posterior_rating_diff)
 ```
 
-![](../Images/a1bb98cbb307aad650137ec4267dd2d1.png)
+![](img/a1bb98cbb307aad650137ec4267dd2d1.png)
 
 图片由作者制作。
 

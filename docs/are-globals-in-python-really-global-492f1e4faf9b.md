@@ -1,12 +1,12 @@
 # Python 中的全局变量真的是全局的吗？
 
-> 原文：[https://towardsdatascience.com/are-globals-in-python-really-global-492f1e4faf9b?source=collection_archive---------10-----------------------#2023-11-17](https://towardsdatascience.com/are-globals-in-python-really-global-492f1e4faf9b?source=collection_archive---------10-----------------------#2023-11-17)
+> 原文：[`towardsdatascience.com/are-globals-in-python-really-global-492f1e4faf9b?source=collection_archive---------10-----------------------#2023-11-17`](https://towardsdatascience.com/are-globals-in-python-really-global-492f1e4faf9b?source=collection_archive---------10-----------------------#2023-11-17)
 
 ## PYTHON 编程
 
 ## 学习一个技巧，使得 Python 对象真正全局。
 
-[](https://medium.com/@nyggus?source=post_page-----492f1e4faf9b--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----492f1e4faf9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----492f1e4faf9b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----492f1e4faf9b--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----492f1e4faf9b--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----492f1e4faf9b--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----492f1e4faf9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----492f1e4faf9b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----492f1e4faf9b--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----492f1e4faf9b--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F492f1e4faf9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fare-globals-in-python-really-global-492f1e4faf9b&source=-----492f1e4faf9b---------------------bookmark_footer-----------)![](../Images/4f883bbad7e256509273e34303fb4715.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F492f1e4faf9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fare-globals-in-python-really-global-492f1e4faf9b&source=-----492f1e4faf9b---------------------bookmark_footer-----------)![](img/4f883bbad7e256509273e34303fb4715.png)
 
 真正的全局意味着可以从任何地方访问。照片由[Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

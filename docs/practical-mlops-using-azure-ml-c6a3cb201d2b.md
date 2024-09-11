@@ -1,18 +1,18 @@
 # 使用 Azure ML 实现实用的 MLOps
 
-> 原文：[https://towardsdatascience.com/practical-mlops-using-azure-ml-c6a3cb201d2b?source=collection_archive---------6-----------------------#2023-02-20](https://towardsdatascience.com/practical-mlops-using-azure-ml-c6a3cb201d2b?source=collection_archive---------6-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/practical-mlops-using-azure-ml-c6a3cb201d2b?source=collection_archive---------6-----------------------#2023-02-20`](https://towardsdatascience.com/practical-mlops-using-azure-ml-c6a3cb201d2b?source=collection_archive---------6-----------------------#2023-02-20)
 
-![](../Images/d17a49bdf391f5a3923daaeab5cddd78.png)
+![](img/d17a49bdf391f5a3923daaeab5cddd78.png)
 
 图片由 [Luca Bravo](https://unsplash.com/@lucabravo?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 使用 Azure ML CLI(v2) 和 github actions 自动化 ML 流程
 
-[](https://shiftcoder-95.medium.com/?source=post_page-----c6a3cb201d2b--------------------------------)[![Anupam Misra](../Images/0190c11f017cabb390797ed1ae524512.png)](https://shiftcoder-95.medium.com/?source=post_page-----c6a3cb201d2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6a3cb201d2b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6a3cb201d2b--------------------------------) [Anupam Misra](https://shiftcoder-95.medium.com/?source=post_page-----c6a3cb201d2b--------------------------------)
+[](https://shiftcoder-95.medium.com/?source=post_page-----c6a3cb201d2b--------------------------------)![Anupam Misra](https://shiftcoder-95.medium.com/?source=post_page-----c6a3cb201d2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6a3cb201d2b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6a3cb201d2b--------------------------------) [Anupam Misra](https://shiftcoder-95.medium.com/?source=post_page-----c6a3cb201d2b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2ebdcaf49014&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-mlops-using-azure-ml-c6a3cb201d2b&user=Anupam+Misra&userId=2ebdcaf49014&source=post_page-2ebdcaf49014----c6a3cb201d2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6a3cb201d2b--------------------------------) · 10 分钟阅读 · 2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6a3cb201d2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-mlops-using-azure-ml-c6a3cb201d2b&user=Anupam+Misra&userId=2ebdcaf49014&source=-----c6a3cb201d2b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2ebdcaf49014&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-mlops-using-azure-ml-c6a3cb201d2b&user=Anupam+Misra&userId=2ebdcaf49014&source=post_page-2ebdcaf49014----c6a3cb201d2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6a3cb201d2b--------------------------------) · 10 分钟阅读 · 2023 年 2 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6a3cb201d2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-mlops-using-azure-ml-c6a3cb201d2b&user=Anupam+Misra&userId=2ebdcaf49014&source=-----c6a3cb201d2b---------------------clap_footer-----------)
 
 --
 
@@ -108,7 +108,7 @@ MLOps 的需求及实现步骤：
 
 当你的 Azure ML 工作区创建完成后，你应该能看到如下界面：
 
-![](../Images/6392191e004d7a69a14a455dfa06e963.png)
+![](img/6392191e004d7a69a14a455dfa06e963.png)
 
 通过 ml.azure.com 访问 Azure ML 工作区
 
@@ -122,7 +122,7 @@ MLOps 的需求及实现步骤：
 
 将生成的 JSON 保存为 AZURE_CREDENTIALS 并存储在你的仓库秘密中。
 
-![](../Images/37f1b9f485e8ae45987d542cc91275e1.png)
+![](img/37f1b9f485e8ae45987d542cc91275e1.png)
 
 仓库中的 GitHub Actions 密钥
 
@@ -132,13 +132,13 @@ MLOps 的需求及实现步骤：
 
 在 GitHub 中，从设置 > 开发者设置 > 个人访问令牌 生成 PAT。
 
-![](../Images/197d96360ceb08cba34ef221581e0f36.png)
+![](img/197d96360ceb08cba34ef221581e0f36.png)
 
 用于编辑工作流的个人访问令牌
 
 将 PAT 保存到你的仓库秘密中，并设置以下仓库权限：
 
-![](../Images/1e2f3d02c89776335ef0750c36dc2165.png)
+![](img/1e2f3d02c89776335ef0750c36dc2165.png)
 
 PAT 的仓库权限
 
@@ -176,13 +176,13 @@ PAT 的仓库权限
 
 指标：
 
-![](../Images/9f0df5264e9bdee328897fbd9f7bccf8.png)
+![](img/9f0df5264e9bdee328897fbd9f7bccf8.png)
 
 每次训练任务中捕获的指标
 
 运行时模型参数：
 
-![](../Images/fd264a1c2d1677d117e8372deea0d1db.png)
+![](img/fd264a1c2d1677d117e8372deea0d1db.png)
 
 每次运行时版本控制的参数
 
@@ -196,7 +196,7 @@ Azure ML studio 自动链接所有内容。
 
 训练模型时的示例血统跟踪：
 
-![](../Images/d0de23fe0891284a2a28c6e9964ebb11.png)
+![](img/d0de23fe0891284a2a28c6e9964ebb11.png)
 
 训练任务快照
 
@@ -234,7 +234,7 @@ Azure ML studio 自动链接所有内容。
 
 项目文件夹结构：
 
-![](../Images/b16aca6ac49230e3ab74f5503205421c.png)
+![](img/b16aca6ac49230e3ab74f5503205421c.png)
 
 ## 文件夹和文件的简要信息：
 
@@ -470,7 +470,7 @@ get_dataset_tags(…)
 
 版本控制数据并添加标签。
 
-![](../Images/287918fd613e7b674d00d7e943155647.png)
+![](img/287918fd613e7b674d00d7e943155647.png)
 
 在上传到 Azure 之前生成的数据集标签。
 

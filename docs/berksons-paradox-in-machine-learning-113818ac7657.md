@@ -1,18 +1,18 @@
 # 机器学习中的伯克森悖论
 
-> 原文：[https://towardsdatascience.com/berksons-paradox-in-machine-learning-113818ac7657?source=collection_archive---------3-----------------------#2023-12-22](https://towardsdatascience.com/berksons-paradox-in-machine-learning-113818ac7657?source=collection_archive---------3-----------------------#2023-12-22)
+> 原文：[`towardsdatascience.com/berksons-paradox-in-machine-learning-113818ac7657?source=collection_archive---------3-----------------------#2023-12-22`](https://towardsdatascience.com/berksons-paradox-in-machine-learning-113818ac7657?source=collection_archive---------3-----------------------#2023-12-22)
 
 ## 理解数据分析中的隐性偏差
 
-[](https://medium.com/@ocaelen?source=post_page-----113818ac7657--------------------------------)[![Olivier Caelen](../Images/5315295f68999af7c14b456694d19979.png)](https://medium.com/@ocaelen?source=post_page-----113818ac7657--------------------------------)[](https://towardsdatascience.com/?source=post_page-----113818ac7657--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----113818ac7657--------------------------------) [Olivier Caelen](https://medium.com/@ocaelen?source=post_page-----113818ac7657--------------------------------)
+[](https://medium.com/@ocaelen?source=post_page-----113818ac7657--------------------------------)![Olivier Caelen](https://medium.com/@ocaelen?source=post_page-----113818ac7657--------------------------------)[](https://towardsdatascience.com/?source=post_page-----113818ac7657--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----113818ac7657--------------------------------) [Olivier Caelen](https://medium.com/@ocaelen?source=post_page-----113818ac7657--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7268030c8a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberksons-paradox-in-machine-learning-113818ac7657&user=Olivier+Caelen&userId=d7268030c8a8&source=post_page-d7268030c8a8----113818ac7657---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----113818ac7657--------------------------------) · 8 分钟阅读 · 2023年12月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F113818ac7657&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberksons-paradox-in-machine-learning-113818ac7657&user=Olivier+Caelen&userId=d7268030c8a8&source=-----113818ac7657---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7268030c8a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberksons-paradox-in-machine-learning-113818ac7657&user=Olivier+Caelen&userId=d7268030c8a8&source=post_page-d7268030c8a8----113818ac7657---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----113818ac7657--------------------------------) · 8 分钟阅读 · 2023 年 12 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F113818ac7657&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberksons-paradox-in-machine-learning-113818ac7657&user=Olivier+Caelen&userId=d7268030c8a8&source=-----113818ac7657---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F113818ac7657&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberksons-paradox-in-machine-learning-113818ac7657&source=-----113818ac7657---------------------bookmark_footer-----------)![](../Images/1331ec1fae3eb1c3317bf49f07732fa7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F113818ac7657&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberksons-paradox-in-machine-learning-113818ac7657&source=-----113818ac7657---------------------bookmark_footer-----------)![](img/1331ec1fae3eb1c3317bf49f07732fa7.png)
 
 由 DALL-E 生成
 
@@ -22,7 +22,7 @@
 
 +   基于[Berkson](https://en.wikipedia.org/wiki/Joseph_Berkson)的原始例子，我们来设想一个在医院进行的回顾性研究。在这家医院，研究人员正在研究胆囊炎（胆囊疾病）的风险因素，其中一个风险可能是糖尿病。由于样本来源于住院人群而非一般人群，这存在抽样偏差，这可能导致错误地认为糖尿病对胆囊炎有保护作用。
 
-+   另一个著名的例子来自[Jordon Ellenberg](https://en.wikipedia.org/wiki/Jordan_Ellenberg)。在这个例子中，Alex创建了一个约会池。这个小组并不能很好地代表所有男人；我们有一个抽样偏差，因为她挑选的是非常友好、吸引人，或者两者兼具的人。在Alex的约会池中，发生了一些有趣的事情……在她约会的男人中，看起来他们越友好，越不吸引人，反之亦然。这种抽样偏差可能导致Alex错误地认为友好与吸引力之间存在负相关。
++   另一个著名的例子来自[Jordon Ellenberg](https://en.wikipedia.org/wiki/Jordan_Ellenberg)。在这个例子中，Alex 创建了一个约会池。这个小组并不能很好地代表所有男人；我们有一个抽样偏差，因为她挑选的是非常友好、吸引人，或者两者兼具的人。在 Alex 的约会池中，发生了一些有趣的事情……在她约会的男人中，看起来他们越友好，越不吸引人，反之亦然。这种抽样偏差可能导致 Alex 错误地认为友好与吸引力之间存在负相关。
 
 # 让我们尝试稍微形式化一下问题
 
@@ -30,7 +30,7 @@
 
 这些随机事件可以是，例如，得胆囊炎或有糖尿病，如第一个例子，或者是友好或美丽，如第二个例子。当然，当我说这两个事件是独立的时，我指的是整个总体！
 
-在之前的例子中，抽样偏差总是同一种类型：没有事件都未发生的情况。在医院样本中，没有患者既没有胆囊炎也没有糖尿病。在Alex的样本中，没有男人既不友好又丑。因此，我们被条件限制在至少发生一个事件：事件*X*发生了，或者事件*Y*发生了，或者两者都发生了。为此，我们可以定义一个新的事件*Z*，它是事件*X*和*Y*的并集。
+在之前的例子中，抽样偏差总是同一种类型：没有事件都未发生的情况。在医院样本中，没有患者既没有胆囊炎也没有糖尿病。在 Alex 的样本中，没有男人既不友好又丑。因此，我们被条件限制在至少发生一个事件：事件*X*发生了，或者事件*Y*发生了，或者两者都发生了。为此，我们可以定义一个新的事件*Z*，它是事件*X*和*Y*的并集。
 
 现在，我们可以写下以下内容，以表明我们在抽样偏差假设下：
 
@@ -104,7 +104,7 @@
 
 在下面的代码中，我将使用 Python 模拟骰子掷出。
 
-以下代码模拟了百万次掷两个骰子的实验，对于每次实验，它检查第一个骰子是否掷出6（事件X），以及第二个骰子是否掷出1或2（事件Y）。然后，它将这些检查的结果（真或假）分别存储在列表X和Y中。
+以下代码模拟了百万次掷两个骰子的实验，对于每次实验，它检查第一个骰子是否掷出 6（事件 X），以及第二个骰子是否掷出 1 或 2（事件 Y）。然后，它将这些检查的结果（真或假）分别存储在列表 X 和 Y 中。
 
 ```py
 import random
@@ -124,7 +124,7 @@ nb_exp=1_000_000
 X, Y = sample_X_Y(nb_exp)
 ```
 
-接下来，我们需要检查这两个事件是否确实独立。为此，以下代码计算了事件X的概率以及在事件Y给定的情况下事件X的条件概率。它通过将成功结果的数量除以每个概率的实验总数来完成这一过程。
+接下来，我们需要检查这两个事件是否确实独立。为此，以下代码计算了事件 X 的概率以及在事件 Y 给定的情况下事件 X 的条件概率。它通过将成功结果的数量除以每个概率的实验总数来完成这一过程。
 
 ```py
 # compute P(X=1) and P(X1=1|Y=1) to check if X and Y are independent
@@ -142,7 +142,7 @@ P(X=1|Y=1) =  0.16681
 
 如我们所见，这两个概率接近；因此（如预期 ;-) ）或两个骰子是独立的。
 
-现在，让我们看看引入抽样偏差*Z*时会发生什么。以下代码过滤实验结果，仅保留X = 1、Y = 1或两者都为1的结果。它将这些过滤后的结果存储在列表XZ和YZ中。
+现在，让我们看看引入抽样偏差*Z*时会发生什么。以下代码过滤实验结果，仅保留 X = 1、Y = 1 或两者都为 1 的结果。它将这些过滤后的结果存储在列表 XZ 和 YZ 中。
 
 ```py
 # keep only the observations where X=1, Y=1 or both (remove when X=0 and Y=0)
@@ -171,7 +171,7 @@ P(X=1|Z=1) =  0.37545
 P(X=1|Y=1,Z=1) =  0.16681
 ```
 
-我们有一个不等式（与前一节相同的值），这意味着如果Z为真，那么拥有Y的信息会改变X的概率；因此，它们不再是独立的。
+我们有一个不等式（与前一节相同的值），这意味着如果 Z 为真，那么拥有 Y 的信息会改变 X 的概率；因此，它们不再是独立的。
 
 # 这种悖论对机器学习专家的影响是什么？
 

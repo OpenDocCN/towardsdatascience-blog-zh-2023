@@ -1,14 +1,14 @@
 # 多变量高斯分布下的异常检测基础
 
-> 原文：[https://towardsdatascience.com/the-basics-of-anomaly-detection-65aff59949b7?source=collection_archive---------2-----------------------#2023-07-05](https://towardsdatascience.com/the-basics-of-anomaly-detection-65aff59949b7?source=collection_archive---------2-----------------------#2023-07-05)
+> 原文：[`towardsdatascience.com/the-basics-of-anomaly-detection-65aff59949b7?source=collection_archive---------2-----------------------#2023-07-05`](https://towardsdatascience.com/the-basics-of-anomaly-detection-65aff59949b7?source=collection_archive---------2-----------------------#2023-07-05)
 
 ## 异常检测概述、多变量高斯分布的回顾以及在 Python 中实现基本异常检测算法的两个示例
 
-[](https://viyaleta.medium.com/?source=post_page-----65aff59949b7--------------------------------)[![Viyaleta Apgar](../Images/8d8fd8e4817bc4d1dbeb16a2ec1ae1f1.png)](https://viyaleta.medium.com/?source=post_page-----65aff59949b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65aff59949b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65aff59949b7--------------------------------) [Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----65aff59949b7--------------------------------)
+[](https://viyaleta.medium.com/?source=post_page-----65aff59949b7--------------------------------)![Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----65aff59949b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65aff59949b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----65aff59949b7--------------------------------) [Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----65aff59949b7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccae8864d5a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-basics-of-anomaly-detection-65aff59949b7&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=post_page-ccae8864d5a4----65aff59949b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65aff59949b7--------------------------------) · 11 min read · 2023年7月5日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccae8864d5a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-basics-of-anomaly-detection-65aff59949b7&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=post_page-ccae8864d5a4----65aff59949b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65aff59949b7--------------------------------) · 11 min read · 2023 年 7 月 5 日
 
 --
 
@@ -34,7 +34,7 @@
 
 异常检测技术可以应用于任何数据，数据格式会影响哪个算法最为有效。数据类型包括 **序列**（时间序列、链表、语言、声音）、**表格**（例如，发动机传感器数据）、**图像**（例如，X 光图像）和 **图**（例如，工作流或过程）。
 
-![](../Images/4de9612835019d778d1b3b5b103b76c9.png)
+![](img/4de9612835019d778d1b3b5b103b76c9.png)
 
 胸部 X 光图像中的异常检测示例 [[4]](https://doi.org/10.1007/s10278-020-00413-2)
 
@@ -50,11 +50,11 @@
 
 概率密度函数，定义为 f(x)，测量数据集中某个结果 x 的概率。正式地，
 
-![](../Images/132e4dae7fd023a5a97330b388f36f9c.png)
+![](img/132e4dae7fd023a5a97330b388f36f9c.png)
 
 假设我们的数据集只有一个特征，并且该特征遵循正态分布，那么我们可以使用上述的 f(x) 来建模我们的异常检测算法。然后我们可以设置一个阈值 epsilon 来决定一个情况是否异常。Epsilon 应根据启发式方法设置，其值将依赖于使用场景和对异常的敏感度。
 
-![](../Images/f9ba04d873bd8758283bccee5d6dcae6.png)
+![](img/f9ba04d873bd8758283bccee5d6dcae6.png)
 
 描述正态分布的图 [[5]](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)
 
@@ -64,17 +64,17 @@
 
 单特征的例子很简单——如果我们有多个特征怎么办？如果我们的特征完全独立，我们实际上可以取特征概率密度函数的乘积来分类异常。
 
-![](../Images/44aa3c666d6764da479b385114e930a4.png)
+![](img/44aa3c666d6764da479b385114e930a4.png)
 
 对于两个不相关特征的情况，这变成
 
-![](../Images/db09df24bd5a74f1cf1babd3389893b2.png)
+![](img/db09df24bd5a74f1cf1babd3389893b2.png)
 
 本质上，特征概率的乘积可以确保如果至少有一个特征存在异常值，我们可以检测到异常（假设我们的 epsilon 足够高）；如果我们的实例在多个特征中表现出异常值，我们的概率将更小（因为我们的总概率值是各个分数的乘积），从而更有可能将一个值识别为异常。
 
 然而，*我们不能假设我们的特征是独立的*。这就是多变量概率密度函数发挥作用的地方。在多变量情况下，我们构建一个协方差矩阵（用 Σ 表示）以捕捉特征之间的关系。然后，我们可以利用协方差矩阵来避免“重复计算”特征关系（这是一种非常初步的表述实际发生的情况）。多变量分布概率密度函数的公式如下，[这些来自杜克大学的幻灯片](https://www2.stat.duke.edu/courses/Spring12/sta104.1/Lectures/Lec22.pdf)很好地推导了这个公式。
 
-![](../Images/4ee3cd2aef8c7c7487f88fc87c54d509.png)
+![](img/4ee3cd2aef8c7c7487f88fc87c54d509.png)
 
 在这里，x 是一个输入向量，μ 是特征均值的向量，Σ 是特征之间的协方差矩阵。
 
@@ -88,13 +88,13 @@
 
 下图的散点图展示了结果：x1 特征绘制在 x 轴上，x2 特征绘制在 y 轴上，异常点已标注，颜色表示来自多变量概率密度函数的概率。
 
-![](../Images/c3574a946504c99dbc4d629bd0c81d95.png)
+![](img/c3574a946504c99dbc4d629bd0c81d95.png)
 
 展示正样本和异常点的散点图 [[5]](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)
 
 一旦我们将阈值设置得*足够低*，我们将能够区分异常值和期望值。下面的两个图表比较了 1x10^-7 和 1x10^-9 的 epsilon 值。1x10^-9 的 epsilon 值往往能更好地捕捉我们预期的异常值，而 1x10^-7 则将一些正样本识别为异常值。
 
-![](../Images/cdb42a428657fe549c0caaa84b045b05.png)
+![](img/cdb42a428657fe549c0caaa84b045b05.png)
 
 在较高和较低 epsilon 值下识别的异常点的散点图比较 [[5]](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)
 
@@ -104,25 +104,25 @@
 
 在这个示例中，我将使用 [葡萄酒数据集](http://odds.cs.stonybrook.edu/wine-dataset/) 来自 ODDS 库 [3]。该数据集包含 13 个数值特征和 129 个实例。特征捕捉了有关葡萄酒的信息，原始数据集用于基于葡萄酒分析的分类任务。为了进行异常检测，将目标类别中的一个类进行了下采样，并作为异常点呈现。总共有 10 个异常点，129 个实例中约有 8%。我们处理的是一个相当干净的数据集，没有缺失值。
 
-我们首先必须确保我们的特征符合高斯分布。尽可能的话，我们应当去除异常值，并使用归一化策略对分布进行归一化。在这个数据集中，4个特征已经符合正态分布（酒精、灰分、灰分的碱度和非黄酮酚）而4个特征可以通过取对数来进行归一化（总酚、前花青素、颜色强度和色调）。虽然对剩余特征存在更好的策略，但为了这个练习的目的，我仅仅从我们的训练数据集中删除了它们。最后，我通过排除所有包含至少一个特征值超出或低于均值2个标准差的行来去除异常值。其余代码与上述示例相同。
+我们首先必须确保我们的特征符合高斯分布。尽可能的话，我们应当去除异常值，并使用归一化策略对分布进行归一化。在这个数据集中，4 个特征已经符合正态分布（酒精、灰分、灰分的碱度和非黄酮酚）而 4 个特征可以通过取对数来进行归一化（总酚、前花青素、颜色强度和色调）。虽然对剩余特征存在更好的策略，但为了这个练习的目的，我仅仅从我们的训练数据集中删除了它们。最后，我通过排除所有包含至少一个特征值超出或低于均值 2 个标准差的行来去除异常值。其余代码与上述示例相同。
 
 与上节中的两个特征示例不同，现在不再可行在二维平面上可视化结果，但我们可以使用混淆矩阵指标（包括召回率和精确度）以及 ROC 曲线下面积来帮助我们找到适用于用例的正确 epsilon。
 
 由于通常存在精确度与召回率之间的权衡，epsilon 的设置取决于我们用例的敏感度要求。在这个例子中，我寻找一个可以最大化曲线下面积的 epsilon 值。一些用例可能要求尽可能多地找到异常（以包括正值为代价），而其他用例可能只在绝对确定的情况下检测异常（以遗漏一些异常为代价）。我为几个不同的 epsilon 值计算了评估指标。
 
-![](../Images/db00e59bb482f0674f681affbde78dd6.png)
+![](img/db00e59bb482f0674f681affbde78dd6.png)
 
 按 epsilon 值的评估指标线图比较 [[5]](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)
 
-随着 epsilon 的增加，召回率提高。尽管在提出的 epsilon 值范围内精确度相对较低，但通常在0.0035和0.0065左右达到峰值。AUC 尝试在精确度和召回率之间取得平衡，并在0.0065附近达到峰值。让我们来看看混淆矩阵。
+随着 epsilon 的增加，召回率提高。尽管在提出的 epsilon 值范围内精确度相对较低，但通常在 0.0035 和 0.0065 左右达到峰值。AUC 尝试在精确度和召回率之间取得平衡，并在 0.0065 附近达到峰值。让我们来看看混淆矩阵。
 
-![](../Images/676e53e6d1ff455b6c95918e4e6acc36.png)
+![](img/676e53e6d1ff455b6c95918e4e6acc36.png)
 
 描述混淆矩阵的表格 [[5]](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)
 
-我们的模型在发现所有异常点方面表现相当出色，只漏掉了一个。考虑到我排除了三分之一的特征，这个结果非常棒。不幸的是，我们的模型还将40个正实例标记为异常，这意味着如果我们使用这个模型进行异常检测，我们必须手动检查一半的正实例，以确认它们是否确实异常。
+我们的模型在发现所有异常点方面表现相当出色，只漏掉了一个。考虑到我排除了三分之一的特征，这个结果非常棒。不幸的是，我们的模型还将 40 个正实例标记为异常，这意味着如果我们使用这个模型进行异常检测，我们必须手动检查一半的正实例，以确认它们是否确实异常。
 
-为了改进该模型，我们可以进一步工程化剩余特征，并找到可能对异常值稍微不那么敏感的epsilon值。这个问题的其余部分是简单的，留给读者作为练习（iykyk）。你可以在[这里找到源代码](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)。
+为了改进该模型，我们可以进一步工程化剩余特征，并找到可能对异常值稍微不那么敏感的 epsilon 值。这个问题的其余部分是简单的，留给读者作为练习（iykyk）。你可以在[这里找到源代码](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)。
 
 # 高斯异常检测的潜在缺陷
 
@@ -142,15 +142,15 @@
 
 ## 来源：
 
-1.  [https://www.kaggle.com/code/matheusfacure/semi-supervised-anomaly-detection-survey](https://www.kaggle.com/code/matheusfacure/semi-supervised-anomaly-detection-survey)
+1.  [`www.kaggle.com/code/matheusfacure/semi-supervised-anomaly-detection-survey`](https://www.kaggle.com/code/matheusfacure/semi-supervised-anomaly-detection-survey)
 
-1.  [https://ai.googleblog.com/2023/02/unsupervised-and-semi-supervised.html](https://ai.googleblog.com/2023/02/unsupervised-and-semi-supervised.html)
+1.  [`ai.googleblog.com/2023/02/unsupervised-and-semi-supervised.html`](https://ai.googleblog.com/2023/02/unsupervised-and-semi-supervised.html)
 
-1.  Saket Sathe 和 Charu C. Aggarwal。 [LODES: Local Density meets Spectral Outlier Detection.](http://saketsathe.net/papers/lodes.pdf) SIAM 数据挖掘会议，2016年。
+1.  Saket Sathe 和 Charu C. Aggarwal。 [LODES: Local Density meets Spectral Outlier Detection.](http://saketsathe.net/papers/lodes.pdf) SIAM 数据挖掘会议，2016 年。
 
-1.  Nakao, T., Hanaoka, S., Nomura, Y. *等*。《胸部放射图中的无监督深度异常检测》。*J Digit Imaging* **34**，418–427（2021）。 [https://doi.org/10.1007/s10278-020-00413-2](https://doi.org/10.1007/s10278-020-00413-2)
+1.  Nakao, T., Hanaoka, S., Nomura, Y. *等*。《胸部放射图中的无监督深度异常检测》。*J Digit Imaging* **34**，418–427（2021）。 [`doi.org/10.1007/s10278-020-00413-2`](https://doi.org/10.1007/s10278-020-00413-2)
 
-1.  [https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)
+1.  [`github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb`](https://github.com/viyaleta/Anomaly-Detection/blob/main/Examples/1%20Anomaly%20Detection%20with%20Guassian%20Distribution.ipynb)
 
 数学排版由 [Codecogs 在线 LaTeX 编辑器](https://latex.codecogs.com/eqneditor/editor.php) 提供。
 

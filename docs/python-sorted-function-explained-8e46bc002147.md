@@ -1,18 +1,18 @@
 # Python sorted() 函数解析
 
-> 原文：[https://towardsdatascience.com/python-sorted-function-explained-8e46bc002147?source=collection_archive---------21-----------------------#2023-01-16](https://towardsdatascience.com/python-sorted-function-explained-8e46bc002147?source=collection_archive---------21-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/python-sorted-function-explained-8e46bc002147?source=collection_archive---------21-----------------------#2023-01-16`](https://towardsdatascience.com/python-sorted-function-explained-8e46bc002147?source=collection_archive---------21-----------------------#2023-01-16)
 
 ## 在这篇文章中，我们将探讨如何使用 Python **sorted()** 函数。
 
-[](https://pyshark.medium.com/?source=post_page-----8e46bc002147--------------------------------)[![Misha Sv](../Images/d3f9605e2c7020246ff793869728e218.png)](https://pyshark.medium.com/?source=post_page-----8e46bc002147--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e46bc002147--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8e46bc002147--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----8e46bc002147--------------------------------)
+[](https://pyshark.medium.com/?source=post_page-----8e46bc002147--------------------------------)![Misha Sv](https://pyshark.medium.com/?source=post_page-----8e46bc002147--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e46bc002147--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e46bc002147--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----8e46bc002147--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-sorted-function-explained-8e46bc002147&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----8e46bc002147---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e46bc002147--------------------------------) ·4分钟阅读·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8e46bc002147&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-sorted-function-explained-8e46bc002147&user=Misha+Sv&userId=685c2995a8e&source=-----8e46bc002147---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-sorted-function-explained-8e46bc002147&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----8e46bc002147---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e46bc002147--------------------------------) ·4 分钟阅读·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8e46bc002147&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-sorted-function-explained-8e46bc002147&user=Misha+Sv&userId=685c2995a8e&source=-----8e46bc002147---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e46bc002147&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-sorted-function-explained-8e46bc002147&source=-----8e46bc002147---------------------bookmark_footer-----------)![](../Images/5fda325ced75dc2866b7414161b8a2b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e46bc002147&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-sorted-function-explained-8e46bc002147&source=-----8e46bc002147---------------------bookmark_footer-----------)![](img/5fda325ced75dc2866b7414161b8a2b8.png)
 
 图片由 [Andre Taissin](https://unsplash.com/fr/@andretaissin?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/hOwcob_3dpc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

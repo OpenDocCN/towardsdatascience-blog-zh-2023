@@ -1,18 +1,18 @@
 # 提升软件代码质量的高级 JavaScript 函数
 
-> 原文：[https://towardsdatascience.com/advanced-javascript-functions-to-improve-code-quality-2663781ea382?source=collection_archive---------12-----------------------#2023-02-20](https://towardsdatascience.com/advanced-javascript-functions-to-improve-code-quality-2663781ea382?source=collection_archive---------12-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/advanced-javascript-functions-to-improve-code-quality-2663781ea382?source=collection_archive---------12-----------------------#2023-02-20`](https://towardsdatascience.com/advanced-javascript-functions-to-improve-code-quality-2663781ea382?source=collection_archive---------12-----------------------#2023-02-20)
 
 ## 通过包括 Debounce、Once 和 Memoize 在内的功能，提升代码质量，一直到 Pipe、Pick 和 Zip
 
-[](https://medium.knulst.de/?source=post_page-----2663781ea382--------------------------------)[![Paul Knulst](../Images/9fcb767d927a1fe53ee739c584fdf92c.png)](https://medium.knulst.de/?source=post_page-----2663781ea382--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2663781ea382--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2663781ea382--------------------------------) [Paul Knulst](https://medium.knulst.de/?source=post_page-----2663781ea382--------------------------------)
+[](https://medium.knulst.de/?source=post_page-----2663781ea382--------------------------------)![Paul Knulst](https://medium.knulst.de/?source=post_page-----2663781ea382--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2663781ea382--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2663781ea382--------------------------------) [Paul Knulst](https://medium.knulst.de/?source=post_page-----2663781ea382--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1282c85b5cbc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-javascript-functions-to-improve-code-quality-2663781ea382&user=Paul+Knulst&userId=1282c85b5cbc&source=post_page-1282c85b5cbc----2663781ea382---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2663781ea382--------------------------------) ·14分钟阅读·2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2663781ea382&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-javascript-functions-to-improve-code-quality-2663781ea382&user=Paul+Knulst&userId=1282c85b5cbc&source=-----2663781ea382---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1282c85b5cbc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-javascript-functions-to-improve-code-quality-2663781ea382&user=Paul+Knulst&userId=1282c85b5cbc&source=post_page-1282c85b5cbc----2663781ea382---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2663781ea382--------------------------------) ·14 分钟阅读·2023 年 2 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2663781ea382&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-javascript-functions-to-improve-code-quality-2663781ea382&user=Paul+Knulst&userId=1282c85b5cbc&source=-----2663781ea382---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2663781ea382&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-javascript-functions-to-improve-code-quality-2663781ea382&source=-----2663781ea382---------------------bookmark_footer-----------)![](../Images/dff07a46eeeaa2df542233e6e4f7feeb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2663781ea382&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-javascript-functions-to-improve-code-quality-2663781ea382&source=-----2663781ea382---------------------bookmark_footer-----------)![](img/dff07a46eeeaa2df542233e6e4f7feeb.png)
 
 图片由[Joan Gamell](https://unsplash.com/@gamell) / [Unsplash](https://unsplash.com/photos/ZS67i1HLllo)提供
 

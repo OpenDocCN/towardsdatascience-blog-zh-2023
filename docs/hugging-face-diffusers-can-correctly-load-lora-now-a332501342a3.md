@@ -1,14 +1,14 @@
 # Hugging Face Diffusers 可以正确加载 LoRA
 
-> 原文：[https://towardsdatascience.com/hugging-face-diffusers-can-correctly-load-lora-now-a332501342a3?source=collection_archive---------5-----------------------#2023-07-28](https://towardsdatascience.com/hugging-face-diffusers-can-correctly-load-lora-now-a332501342a3?source=collection_archive---------5-----------------------#2023-07-28)
+> 原文：[`towardsdatascience.com/hugging-face-diffusers-can-correctly-load-lora-now-a332501342a3?source=collection_archive---------5-----------------------#2023-07-28`](https://towardsdatascience.com/hugging-face-diffusers-can-correctly-load-lora-now-a332501342a3?source=collection_archive---------5-----------------------#2023-07-28)
 
 ## 使用最新的 Diffusers Monkey Patching 函数加载 LoRA 会产生与 A1111 完全相同的结果
 
-[](https://xhinker.medium.com/?source=post_page-----a332501342a3--------------------------------)[![Andrew Zhu (Shudong Zhu)](../Images/46f07a875a42bcc4e0c262aea5e2a504.png)](https://xhinker.medium.com/?source=post_page-----a332501342a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a332501342a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a332501342a3--------------------------------) [Andrew Zhu (Shudong Zhu)](https://xhinker.medium.com/?source=post_page-----a332501342a3--------------------------------)
+[](https://xhinker.medium.com/?source=post_page-----a332501342a3--------------------------------)![Andrew Zhu (Shudong Zhu)](https://xhinker.medium.com/?source=post_page-----a332501342a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a332501342a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a332501342a3--------------------------------) [Andrew Zhu (Shudong Zhu)](https://xhinker.medium.com/?source=post_page-----a332501342a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf0160c6bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhugging-face-diffusers-can-correctly-load-lora-now-a332501342a3&user=Andrew+Zhu+%28Shudong+Zhu%29&userId=bf0160c6bb&source=post_page-bf0160c6bb----a332501342a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a332501342a3--------------------------------) ·5分钟阅读·2023年7月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa332501342a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhugging-face-diffusers-can-correctly-load-lora-now-a332501342a3&user=Andrew+Zhu+%28Shudong+Zhu%29&userId=bf0160c6bb&source=-----a332501342a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf0160c6bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhugging-face-diffusers-can-correctly-load-lora-now-a332501342a3&user=Andrew+Zhu+%28Shudong+Zhu%29&userId=bf0160c6bb&source=post_page-bf0160c6bb----a332501342a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a332501342a3--------------------------------) ·5 分钟阅读·2023 年 7 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa332501342a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhugging-face-diffusers-can-correctly-load-lora-now-a332501342a3&user=Andrew+Zhu+%28Shudong+Zhu%29&userId=bf0160c6bb&source=-----a332501342a3---------------------clap_footer-----------)
 
 --
 
@@ -28,10 +28,10 @@ pip install -U git+https://github.com/huggingface/diffusers.git@main
 
 自从使用 Diffusers 的程序员无法轻松加载 LoRA 已经有一段时间了。要将 LoRA 加载到检查点模型中，并输出与 A1111 的 Stable Diffusion Webui 相同的结果，我们需要使用额外的自定义代码来加载权重，如本文所述。
 
-[](/improving-diffusers-package-for-high-quality-image-generation-a50fff04bdd4?source=post_page-----a332501342a3--------------------------------) [## 改进 Diffusers 包以实现高质量图像生成
+[](/improving-diffusers-package-for-high-quality-image-generation-a50fff04bdd4?source=post_page-----a332501342a3--------------------------------) ## 改进 Diffusers 包以实现高质量图像生成
 
 ### 克服令牌大小限制、自定义模型加载、LoRa 支持、文本反演支持等问题
 
-[towardsdatascience.com](/improving-diffusers-package-for-high-quality-image-generation-a50fff04bdd4?source=post_page-----a332501342a3--------------------------------)
+[towardsdatascience.com
 
 本文提供的解决方案运行良好且速度快，但需要额外的…

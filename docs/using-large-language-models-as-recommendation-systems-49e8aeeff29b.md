@@ -1,22 +1,22 @@
 # 使用大型语言模型作为推荐系统
 
-> 原文：[https://towardsdatascience.com/using-large-language-models-as-recommendation-systems-49e8aeeff29b?source=collection_archive---------0-----------------------#2023-04-10](https://towardsdatascience.com/using-large-language-models-as-recommendation-systems-49e8aeeff29b?source=collection_archive---------0-----------------------#2023-04-10)
+> 原文：[`towardsdatascience.com/using-large-language-models-as-recommendation-systems-49e8aeeff29b?source=collection_archive---------0-----------------------#2023-04-10`](https://towardsdatascience.com/using-large-language-models-as-recommendation-systems-49e8aeeff29b?source=collection_archive---------0-----------------------#2023-04-10)
 
 ## 最近研究的综述及自定义实现
 
-[](https://medium.com/@mohammadhia?source=post_page-----49e8aeeff29b--------------------------------)[![Mohamad Aboufoul](../Images/af1edb6a878499e693b398c3bda7a0c5.png)](https://medium.com/@mohammadhia?source=post_page-----49e8aeeff29b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----49e8aeeff29b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----49e8aeeff29b--------------------------------) [Mohamad Aboufoul](https://medium.com/@mohammadhia?source=post_page-----49e8aeeff29b--------------------------------)
+[](https://medium.com/@mohammadhia?source=post_page-----49e8aeeff29b--------------------------------)![Mohamad Aboufoul](https://medium.com/@mohammadhia?source=post_page-----49e8aeeff29b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----49e8aeeff29b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----49e8aeeff29b--------------------------------) [Mohamad Aboufoul](https://medium.com/@mohammadhia?source=post_page-----49e8aeeff29b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F48bf72143c5f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-large-language-models-as-recommendation-systems-49e8aeeff29b&user=Mohamad+Aboufoul&userId=48bf72143c5f&source=post_page-48bf72143c5f----49e8aeeff29b---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----49e8aeeff29b--------------------------------) · 8分钟阅读 · 2023年4月10日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F49e8aeeff29b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-large-language-models-as-recommendation-systems-49e8aeeff29b&user=Mohamad+Aboufoul&userId=48bf72143c5f&source=-----49e8aeeff29b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F48bf72143c5f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-large-language-models-as-recommendation-systems-49e8aeeff29b&user=Mohamad+Aboufoul&userId=48bf72143c5f&source=post_page-48bf72143c5f----49e8aeeff29b---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----49e8aeeff29b--------------------------------) · 8 分钟阅读 · 2023 年 4 月 10 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F49e8aeeff29b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-large-language-models-as-recommendation-systems-49e8aeeff29b&user=Mohamad+Aboufoul&userId=48bf72143c5f&source=-----49e8aeeff29b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F49e8aeeff29b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-large-language-models-as-recommendation-systems-49e8aeeff29b&source=-----49e8aeeff29b---------------------bookmark_footer-----------)![](../Images/0777460e6a57934a4dced98e05c6b490.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F49e8aeeff29b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-large-language-models-as-recommendation-systems-49e8aeeff29b&source=-----49e8aeeff29b---------------------bookmark_footer-----------)![](img/0777460e6a57934a4dced98e05c6b490.png)
 
 图片来源：[卢卡·巴吉奥](https://unsplash.com/@luca42?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-近年来，大型语言模型（LLMs）在数据科学界和新闻界引起了极大的关注。自2017年变压器架构问世以来，我们见证了这些模型在自然语言任务复杂性方面的指数级进步，包括分类、意图与情感提取，以及生成与人类相似的文本。
+近年来，大型语言模型（LLMs）在数据科学界和新闻界引起了极大的关注。自 2017 年变压器架构问世以来，我们见证了这些模型在自然语言任务复杂性方面的指数级进步，包括分类、意图与情感提取，以及生成与人类相似的文本。
 
 从应用角度来看，将 LLMs 与各种现有技术结合使用，来弥补它们的缺陷（我最喜欢的之一是[GPT + Wolfram Alpha 组合](https://writings.stephenwolfram.com/2023/03/chatgpt-gets-its-wolfram-superpowers/) 用于处理数学和符号推理问题），其可能性似乎无穷无尽。
 
@@ -42,7 +42,7 @@
 
 语言模型是概率模型，试图映射一系列标记（短语、句子等）的发生概率。它们在各种文本上进行训练，并相应地推导概率分布。对于它们可以处理的各种任务（总结、问答等），它们通过条件概率迭代地选择最可能的标记/词汇来继续提示。请参见下面的示例：
 
-![](../Images/7b434459a3c104cfeaccb6a235198ce3.png)
+![](img/7b434459a3c104cfeaccb6a235198ce3.png)
 
 基于上下文的后续标记的概率示例（作者提供的图片）
 
@@ -58,7 +58,7 @@ LLMs 是经过大量文本训练的语言模型，这些模型具有庞大的架
 
 # LLMs 作为推荐系统
 
-2022年，Rutger’s University 的研究人员发布了论文**《推荐作为语言处理（RLP）：统一预训练、个性化提示与预测范式（P5）》**（Geng et. al）。论文中介绍了一种“灵活统一的文本到文本范式”，将多个推荐任务结合在一个系统中：P5。该系统能够通过自然语言序列执行以下操作：
+2022 年，Rutger’s University 的研究人员发布了论文**《推荐作为语言处理（RLP）：统一预训练、个性化提示与预测范式（P5）》**（Geng et. al）。论文中介绍了一种“灵活统一的文本到文本范式”，将多个推荐任务结合在一个系统中：P5。该系统能够通过自然语言序列执行以下操作：
 
 +   顺序推荐
 
@@ -121,40 +121,40 @@ Target Output: “Soccer Jersey”
 
 # 复制尝试 2 — 阿拉伯语
 
-接下来，我想看看是否可以为阿拉伯语做这个，所以我翻译了我的数据集，并寻找了一些能够处理阿拉伯语文本的公开可用T5模型（[AraT5](https://huggingface.co/UBC-NLP/AraT5-base), [MT5](https://huggingface.co/google/mt5-large)等）。在尝试了十几个我在[Hugging Face Hub](https://huggingface.co/models)上找到的变体后，我遗憾地发现无法得到令人满意的结果。
+接下来，我想看看是否可以为阿拉伯语做这个，所以我翻译了我的数据集，并寻找了一些能够处理阿拉伯语文本的公开可用 T5 模型（[AraT5](https://huggingface.co/UBC-NLP/AraT5-base), [MT5](https://huggingface.co/google/mt5-large)等）。在尝试了十几个我在[Hugging Face Hub](https://huggingface.co/models)上找到的变体后，我遗憾地发现无法得到令人满意的结果。
 
-模型（经过微调后）会推荐相同的1或2件商品，不管购买历史如何——通常是“كرة القدم”，即“soccer ball”（***不过，也许它知道阿拉伯语使用者喜欢足球，并且总是寻找新的足球***）。即使尝试了这些模型的更大版本，如MT5-xl，我也得到了相同的结果。这很可能是由于这些LLM在英语以外的语言上的数据稀缺。
+模型（经过微调后）会推荐相同的 1 或 2 件商品，不管购买历史如何——通常是“كرة القدم”，即“soccer ball”（***不过，也许它知道阿拉伯语使用者喜欢足球，并且总是寻找新的足球***）。即使尝试了这些模型的更大版本，如 MT5-xl，我也得到了相同的结果。这很可能是由于这些 LLM 在英语以外的语言上的数据稀缺。
 
-对于我的最后一次尝试，我决定尝试将Google Translate API与我的英语微调T5模型结合使用。过程如下：
+对于我的最后一次尝试，我决定尝试将 Google Translate API 与我的英语微调 T5 模型结合使用。过程如下：
 
 +   将阿拉伯语输入 → 翻译成英语 → 输入到经过英语微调的模型中 → 获取模型的英语预测 → 翻译回阿拉伯语
 
-不幸的是，这仍然没能帮助多少，因为翻译器会犯一些错误（例如：“كرة القدم”，我们用来代替“soccer”的词直接翻译成“foot ball”），这让模型出错，导致始终推荐相同的1-2件商品。
+不幸的是，这仍然没能帮助多少，因为翻译器会犯一些错误（例如：“كرة القدم”，我们用来代替“soccer”的词直接翻译成“foot ball”），这让模型出错，导致始终推荐相同的 1-2 件商品。
 
-# LLM作为推荐系统的优点和陷阱
+# LLM 作为推荐系统的优点和陷阱
 
-这种技术最突出的优点在于它作为独立系统实施的简便性。由于上述LLM和预训练技术的性质，我们可以绕过繁重的手动特征工程——模型应该能够自然地学习表示和关系。此外，我们可以在一定程度上绕过新商品的冷启动问题——商品的名称/描述可以被提取并自然地与用户已经购买/选择的现有商品相关联。
+这种技术最突出的优点在于它作为独立系统实施的简便性。由于上述 LLM 和预训练技术的性质，我们可以绕过繁重的手动特征工程——模型应该能够自然地学习表示和关系。此外，我们可以在一定程度上绕过新商品的冷启动问题——商品的名称/描述可以被提取并自然地与用户已经购买/选择的现有商品相关联。
 
 然而，这种方法有一些陷阱（不要急着丢弃你当前的推荐系统！），主要是由于对推荐内容的控制缺乏。
 
-+   因为没有对用户在检查后购买商品的不同操作/事件进行加权，所以我们完全依赖LLM预测的最可能的下一个token(s)进行推荐。我们无法考虑用户书签、查看了一段时间、放入购物车等操作。
++   因为没有对用户在检查后购买商品的不同操作/事件进行加权，所以我们完全依赖 LLM 预测的最可能的下一个 token(s)进行推荐。我们无法考虑用户书签、查看了一段时间、放入购物车等操作。
 
-+   此外，对于这些LLM，我们确实面临大多数推荐基于相似性的风险（即与目前购买的商品语义相似的商品），尽管我认为通过大量用户购买历史数据，我们可以通过这种方法模拟的“协同过滤”方法来改善这个问题。
++   此外，对于这些 LLM，我们确实面临大多数推荐基于相似性的风险（即与目前购买的商品语义相似的商品），尽管我认为通过大量用户购买历史数据，我们可以通过这种方法模拟的“协同过滤”方法来改善这个问题。
 
 +   最后，由于大型语言模型（LLMs）理论上可以生成任何文本，输出可能是一个与库存中的条目不完全匹配的字符串（尽管我认为这种情况发生的可能性较低）。
 
 # 最终想法
 
-根据P5论文的结果以及我尝试在T5模型上进行一些微调和提示的结果，我推测这种技术可以应用于许多语言模型。使用更强大的序列到序列模型可能会有显著帮助，尤其是当微调数据足够大且提示技术得到完善时。
+根据 P5 论文的结果以及我尝试在 T5 模型上进行一些微调和提示的结果，我推测这种技术可以应用于许多语言模型。使用更强大的序列到序列模型可能会有显著帮助，尤其是当微调数据足够大且提示技术得到完善时。
 
-然而，我不会建议（没有双关的意思）任何人单独使用这种方法。我建议将其与其他推荐系统技术结合使用，这样我们可以避免上述提到的陷阱，同时获得好处。如何实现这一点——我不确定，但我认为通过一些创造力，这种LLM技术可以以有益的方式集成（也许通过提取基于嵌入的特征用于协同过滤，或者与[“双塔”架构](https://medium.com/nvidia-merlin/scale-faster-with-less-code-using-two-tower-with-merlin-c16f32aafa9f)结合使用，可能性是无限的）。
+然而，我不会建议（没有双关的意思）任何人单独使用这种方法。我建议将其与其他推荐系统技术结合使用，这样我们可以避免上述提到的陷阱，同时获得好处。如何实现这一点——我不确定，但我认为通过一些创造力，这种 LLM 技术可以以有益的方式集成（也许通过提取基于嵌入的特征用于协同过滤，或者与[“双塔”架构](https://medium.com/nvidia-merlin/scale-faster-with-less-code-using-two-tower-with-merlin-c16f32aafa9f)结合使用，可能性是无限的）。
 
 # 代码
 
-+   [我实现的T5推荐系统](https://github.com/Mohammadhia/t5_p5_recommendation_system)（Github仓库）
++   [我实现的 T5 推荐系统](https://github.com/Mohammadhia/t5_p5_recommendation_system)（Github 仓库）
 
-+   [我在Hugging Face上的微调T5模型](https://huggingface.co/mohammadhia/t5_recommendation_sports_equipment_english)（Hugging Face Hub）
++   [我在 Hugging Face 上的微调 T5 模型](https://huggingface.co/mohammadhia/t5_recommendation_sports_equipment_english)（Hugging Face Hub）
 
 # 参考文献
 
-[1] S. Geng, S. Liu, Z. Fu, Y. Ge, Y. Zhang, [推荐作为语言处理（RLP）：统一的预训练、个性化提示与预测范式（P5）](https://arxiv.org/pdf/2203.13366.pdf)（2023），第16届ACM推荐系统会议
+[1] S. Geng, S. Liu, Z. Fu, Y. Ge, Y. Zhang, [推荐作为语言处理（RLP）：统一的预训练、个性化提示与预测范式（P5）](https://arxiv.org/pdf/2203.13366.pdf)（2023），第 16 届 ACM 推荐系统会议

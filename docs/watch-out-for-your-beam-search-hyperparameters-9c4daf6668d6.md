@@ -1,18 +1,18 @@
 # 注意你的 Beam Search 超参数
 
-> 原文：[https://towardsdatascience.com/watch-out-for-your-beam-search-hyperparameters-9c4daf6668d6?source=collection_archive---------12-----------------------#2023-01-11](https://towardsdatascience.com/watch-out-for-your-beam-search-hyperparameters-9c4daf6668d6?source=collection_archive---------12-----------------------#2023-01-11)
+> 原文：[`towardsdatascience.com/watch-out-for-your-beam-search-hyperparameters-9c4daf6668d6?source=collection_archive---------12-----------------------#2023-01-11`](https://towardsdatascience.com/watch-out-for-your-beam-search-hyperparameters-9c4daf6668d6?source=collection_archive---------12-----------------------#2023-01-11)
 
 ## 默认值从来不是最优的。
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----9c4daf6668d6--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----9c4daf6668d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c4daf6668d6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c4daf6668d6--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----9c4daf6668d6--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----9c4daf6668d6--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----9c4daf6668d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c4daf6668d6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c4daf6668d6--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----9c4daf6668d6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwatch-out-for-your-beam-search-hyperparameters-9c4daf6668d6&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----9c4daf6668d6---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c4daf6668d6--------------------------------) ·6 min 阅读·2023年1月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c4daf6668d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwatch-out-for-your-beam-search-hyperparameters-9c4daf6668d6&user=Benjamin+Marie&userId=ad2a414578b3&source=-----9c4daf6668d6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwatch-out-for-your-beam-search-hyperparameters-9c4daf6668d6&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----9c4daf6668d6---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c4daf6668d6--------------------------------) ·6 min 阅读·2023 年 1 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c4daf6668d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwatch-out-for-your-beam-search-hyperparameters-9c4daf6668d6&user=Benjamin+Marie&userId=ad2a414578b3&source=-----9c4daf6668d6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c4daf6668d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwatch-out-for-your-beam-search-hyperparameters-9c4daf6668d6&source=-----9c4daf6668d6---------------------bookmark_footer-----------)![](../Images/0fab5a914d706a814394dc57392b6d05.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c4daf6668d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwatch-out-for-your-beam-search-hyperparameters-9c4daf6668d6&source=-----9c4daf6668d6---------------------bookmark_footer-----------)![](img/0fab5a914d706a814394dc57392b6d05.png)
 
 图片来源于[Paulius Dragunas](https://unsplash.com/@paulius005?utm_source=medium&utm_medium=referral)的[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 

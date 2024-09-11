@@ -1,12 +1,12 @@
 # 最强大的气候数据仍然被隐藏
 
-> 原文：[https://towardsdatascience.com/the-most-powerful-climate-data-remains-hidden-87cb0a0bf302?source=collection_archive---------11-----------------------#2023-02-20](https://towardsdatascience.com/the-most-powerful-climate-data-remains-hidden-87cb0a0bf302?source=collection_archive---------11-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/the-most-powerful-climate-data-remains-hidden-87cb0a0bf302?source=collection_archive---------11-----------------------#2023-02-20`](https://towardsdatascience.com/the-most-powerful-climate-data-remains-hidden-87cb0a0bf302?source=collection_archive---------11-----------------------#2023-02-20)
 
-[](https://medium.com/@ericbroda?source=post_page-----87cb0a0bf302--------------------------------)[![Eric Broda](../Images/98628a26c6fa903108bda7c4d8955c04.png)](https://medium.com/@ericbroda?source=post_page-----87cb0a0bf302--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87cb0a0bf302--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----87cb0a0bf302--------------------------------) [Eric Broda](https://medium.com/@ericbroda?source=post_page-----87cb0a0bf302--------------------------------)
+[](https://medium.com/@ericbroda?source=post_page-----87cb0a0bf302--------------------------------)![Eric Broda](https://medium.com/@ericbroda?source=post_page-----87cb0a0bf302--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87cb0a0bf302--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----87cb0a0bf302--------------------------------) [Eric Broda](https://medium.com/@ericbroda?source=post_page-----87cb0a0bf302--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9eab94e66722&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-most-powerful-climate-data-remains-hidden-87cb0a0bf302&user=Eric+Broda&userId=9eab94e66722&source=post_page-9eab94e66722----87cb0a0bf302---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87cb0a0bf302--------------------------------) · 13 分钟阅读 · 2023年2月20日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87cb0a0bf302&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-most-powerful-climate-data-remains-hidden-87cb0a0bf302&user=Eric+Broda&userId=9eab94e66722&source=-----87cb0a0bf302---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9eab94e66722&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-most-powerful-climate-data-remains-hidden-87cb0a0bf302&user=Eric+Broda&userId=9eab94e66722&source=post_page-9eab94e66722----87cb0a0bf302---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87cb0a0bf302--------------------------------) · 13 分钟阅读 · 2023 年 2 月 20 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87cb0a0bf302&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-most-powerful-climate-data-remains-hidden-87cb0a0bf302&user=Eric+Broda&userId=9eab94e66722&source=-----87cb0a0bf302---------------------clap_footer-----------)
 
 --
 
@@ -14,11 +14,11 @@
 
 气候数据和推动全球可持续决策的模型往往是专有的，对我们隐藏的。数据市场、数据合同、数据许可和数据定价提供了分享这些重要信息的激励和实践。
 
-![](../Images/cd3434155179f294000534a426728db0.png)
+![](img/cd3434155179f294000534a426728db0.png)
 
 照片由 [Olga Vilkha](https://unsplash.com/@vilkha_olga?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/s/photos/stamp-official?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供
 
-了解当前气候数据格局并形成本文的过程中，有几位贡献者和顾问给予了极大的帮助：Ellie Young（Common Action）、Philippe Höij（DFRNT.com）和Andrew Padilla（Datacequia.com）。
+了解当前气候数据格局并形成本文的过程中，有几位贡献者和顾问给予了极大的帮助：Ellie Young（Common Action）、Philippe Höij（DFRNT.com）和 Andrew Padilla（Datacequia.com）。
 
 # 使隐藏的气候数据可以共享
 

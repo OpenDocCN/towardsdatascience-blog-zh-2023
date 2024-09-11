@@ -1,18 +1,18 @@
-# 从交叉职能机器学习项目中获得的20个经验教训
+# 从交叉职能机器学习项目中获得的 20 个经验教训
 
-> 原文：[https://towardsdatascience.com/20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1?source=collection_archive---------10-----------------------#2023-08-07](https://towardsdatascience.com/20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1?source=collection_archive---------10-----------------------#2023-08-07)
+> 原文：[`towardsdatascience.com/20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1?source=collection_archive---------10-----------------------#2023-08-07`](https://towardsdatascience.com/20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1?source=collection_archive---------10-----------------------#2023-08-07)
 
 ## 如何在复杂的跨团队项目中导航，推动及时解决方案，同时不破坏关系
 
-[](https://mikhailiuk.medium.com/?source=post_page-----ad32371d09c1--------------------------------)[![Aliaksei Mikhailiuk](../Images/f4bf3f15f3e0b42f34e50b3ffc436b2a.png)](https://mikhailiuk.medium.com/?source=post_page-----ad32371d09c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ad32371d09c1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ad32371d09c1--------------------------------) [Aliaksei Mikhailiuk](https://mikhailiuk.medium.com/?source=post_page-----ad32371d09c1--------------------------------)
+[](https://mikhailiuk.medium.com/?source=post_page-----ad32371d09c1--------------------------------)![Aliaksei Mikhailiuk](https://mikhailiuk.medium.com/?source=post_page-----ad32371d09c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ad32371d09c1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad32371d09c1--------------------------------) [Aliaksei Mikhailiuk](https://mikhailiuk.medium.com/?source=post_page-----ad32371d09c1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bef13bba71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=post_page-30bef13bba71----ad32371d09c1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad32371d09c1--------------------------------) ·6分钟阅读·2023年8月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fad32371d09c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=-----ad32371d09c1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bef13bba71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=post_page-30bef13bba71----ad32371d09c1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad32371d09c1--------------------------------) ·6 分钟阅读·2023 年 8 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fad32371d09c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1&user=Aliaksei+Mikhailiuk&userId=30bef13bba71&source=-----ad32371d09c1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fad32371d09c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1&source=-----ad32371d09c1---------------------bookmark_footer-----------)![](../Images/606a9ccfeae624297ed8a6ee3c0fcd98.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fad32371d09c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-learnings-from-delivering-cross-functional-machine-learning-projects-ad32371d09c1&source=-----ad32371d09c1---------------------bookmark_footer-----------)![](img/606a9ccfeae624297ed8a6ee3c0fcd98.png)
 
 图片由作者使用 SDXL 1.0 生成。
 
@@ -24,15 +24,15 @@
 
 在这里，我总结了在规划、开发过程、管理文档和沟通方面的经验，以及我从跨团队合作中提炼出的规则。
 
-[](/what-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d?source=post_page-----ad32371d09c1--------------------------------) [## 成为一名高效的机器学习团队负责人
+[](/what-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d?source=post_page-----ad32371d09c1--------------------------------) ## 成为一名高效的机器学习团队负责人
 
 ### 管理沟通、基础设施和文档
 
-[towardsdatascience.com](/what-i-learned-from-the-best-and-the-worst-machine-learning-team-leads-c9331f56da4d?source=post_page-----ad32371d09c1--------------------------------)
+[towardsdatascience.com
 
 # 规划、截止日期和里程碑
 
-+   当将团队聚集在一起处理某个特性时，准备一页纸总结该特性、说明其必要性的充分理由，并通过来自A/B测试/使用分析的数据或上级的请求来证明其优先级。
++   当将团队聚集在一起处理某个特性时，准备一页纸总结该特性、说明其必要性的充分理由，并通过来自 A/B 测试/使用分析的数据或上级的请求来证明其优先级。
 
 +   在接触团队时，要记住每个团队都有自己要实现的功能堆栈；如果他们承诺处理某项任务，就需要重新调整任务的优先级。
 
@@ -62,7 +62,7 @@
 
 +   在与共同作者分享文档之前，总是要先询问，尤其是当文档尚未完成时。
 
-+   无论是外部还是内部文档，所有文档必须包含POC、创建日期和最后一次重要更改。
++   无论是外部还是内部文档，所有文档必须包含 POC、创建日期和最后一次重要更改。
 
 +   使用共享文档进行讨论和对齐。口头协议往往会被误解和遗忘。拥有书面文本来对齐提供了一个起点和一个建设性讨论的锚点。如果您是文档的所有者，请允许第三方留下评论。
 
@@ -72,17 +72,17 @@
 
 +   高层管理人员没有时间深入了解；但他们会对当前的方向和优先级有更好的了解。当向高层管理人员提供信息或潜在的开发选项时，不要过多深入细节。保持报告简洁明了，多用视觉材料，高层概述和现实世界的类比，早期标记问题，这些都是让管理层满意的要素。
 
-+   在向高层管理人员沟通不同选项时，不要仅仅描述几个选项并要求他们选择一个。最好有一个预设的决定，例如，我们想选择X，因为它具备AB和C；然而，Y有DEF，但从长远来看，这一点不重要。您是否同意我们继续进行A？
++   在向高层管理人员沟通不同选项时，不要仅仅描述几个选项并要求他们选择一个。最好有一个预设的决定，例如，我们想选择 X，因为它具备 AB 和 C；然而，Y 有 DEF，但从长远来看，这一点不重要。您是否同意我们继续进行 A？
 
 +   沟通时，与其不抄送重要人员，不如多抄送一个不太相关的人。问问自己：“如果我不联系他们，他们会生气吗？”——项目可能因为有人生气而脱轨。
 
 +   与团队成员以及跨团队保持良好关系是至关重要的。保持这种关系的最佳方式是保持关注，并开放接受反馈。主动请求反馈，尤其是负面的 — 发送消息表明你愿意沟通 — 建立信任。潜意识中，人们会注意到问题并在可能爆发之前告诉你。
 
-[三种每位博士生免费获得的软技能](/three-soft-skills-every-phd-student-gets-for-free-f63f4b1d3f2d?source=post_page-----ad32371d09c1--------------------------------)
+三种每位博士生免费获得的软技能
 
 ### 这是我在攻读机器学习博士学位期间学到的关于研究、沟通和团队合作的全面技巧和窍门列表…
 
-[towardsdatascience.com](/three-soft-skills-every-phd-student-gets-for-free-f63f4b1d3f2d?source=post_page-----ad32371d09c1--------------------------------)
+towardsdatascience.com
 
 # 摘要
 
@@ -120,4 +120,4 @@
 
 [towardsdatascience.com](https://example.org/nine-tools-i-wish-i-mastered-before-my-phd-in-machine-learning-708c6dcb2fb0?source=post_page-----ad32371d09c1--------------------------------)
 
-**本博客中的观点仅代表我个人，不代表Snap的观点。**
+**本博客中的观点仅代表我个人，不代表 Snap 的观点。**

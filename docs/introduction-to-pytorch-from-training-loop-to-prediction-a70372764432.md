@@ -1,18 +1,18 @@
 # PyTorch 介绍：从训练循环到预测
 
-> 原文：[https://towardsdatascience.com/introduction-to-pytorch-from-training-loop-to-prediction-a70372764432?source=collection_archive---------5-----------------------#2023-03-28](https://towardsdatascience.com/introduction-to-pytorch-from-training-loop-to-prediction-a70372764432?source=collection_archive---------5-----------------------#2023-03-28)
+> 原文：[`towardsdatascience.com/introduction-to-pytorch-from-training-loop-to-prediction-a70372764432?source=collection_archive---------5-----------------------#2023-03-28`](https://towardsdatascience.com/introduction-to-pytorch-from-training-loop-to-prediction-a70372764432?source=collection_archive---------5-----------------------#2023-03-28)
 
 ## *PyTorch 的训练循环和应对该库更陡峭的初始学习曲线的一般方法介绍*
 
-[](https://medium.com/@theDrewDag?source=post_page-----a70372764432--------------------------------)[![Andrea D'Agostino](../Images/58c7c218815f25278aae59cea44d8771.png)](https://medium.com/@theDrewDag?source=post_page-----a70372764432--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a70372764432--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a70372764432--------------------------------) [Andrea D'Agostino](https://medium.com/@theDrewDag?source=post_page-----a70372764432--------------------------------)
+[](https://medium.com/@theDrewDag?source=post_page-----a70372764432--------------------------------)![Andrea D'Agostino](https://medium.com/@theDrewDag?source=post_page-----a70372764432--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a70372764432--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a70372764432--------------------------------) [Andrea D'Agostino](https://medium.com/@theDrewDag?source=post_page-----a70372764432--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e8f67b0b09b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-from-training-loop-to-prediction-a70372764432&user=Andrea+D%27Agostino&userId=4e8f67b0b09b&source=post_page-4e8f67b0b09b----a70372764432---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a70372764432--------------------------------) ·14 min read·2023年3月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa70372764432&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-from-training-loop-to-prediction-a70372764432&user=Andrea+D%27Agostino&userId=4e8f67b0b09b&source=-----a70372764432---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e8f67b0b09b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-from-training-loop-to-prediction-a70372764432&user=Andrea+D%27Agostino&userId=4e8f67b0b09b&source=post_page-4e8f67b0b09b----a70372764432---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a70372764432--------------------------------) ·14 min read·2023 年 3 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa70372764432&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-from-training-loop-to-prediction-a70372764432&user=Andrea+D%27Agostino&userId=4e8f67b0b09b&source=-----a70372764432---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa70372764432&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-from-training-loop-to-prediction-a70372764432&source=-----a70372764432---------------------bookmark_footer-----------)![](../Images/39bd895d764577c1f195119868a023ec.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa70372764432&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-from-training-loop-to-prediction-a70372764432&source=-----a70372764432---------------------bookmark_footer-----------)![](img/39bd895d764577c1f195119868a023ec.png)
 
 图片由作者提供。
 

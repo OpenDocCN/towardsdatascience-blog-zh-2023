@@ -1,14 +1,14 @@
 # 使用马尔可夫链建模游戏
 
-> 原文：[https://towardsdatascience.com/modeling-games-with-markov-chains-c7b614731a7f?source=collection_archive---------5-----------------------#2023-10-09](https://towardsdatascience.com/modeling-games-with-markov-chains-c7b614731a7f?source=collection_archive---------5-----------------------#2023-10-09)
+> 原文：[`towardsdatascience.com/modeling-games-with-markov-chains-c7b614731a7f?source=collection_archive---------5-----------------------#2023-10-09`](https://towardsdatascience.com/modeling-games-with-markov-chains-c7b614731a7f?source=collection_archive---------5-----------------------#2023-10-09)
 
 ## 探索使用“封箱游戏”的概率建模
 
-[](https://medium.com/@ktmorton17?source=post_page-----c7b614731a7f--------------------------------)[![Kairo Morton](../Images/5d4e978e42280add588fd77a05fc44af.png)](https://medium.com/@ktmorton17?source=post_page-----c7b614731a7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c7b614731a7f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c7b614731a7f--------------------------------) [Kairo Morton](https://medium.com/@ktmorton17?source=post_page-----c7b614731a7f--------------------------------)
+[](https://medium.com/@ktmorton17?source=post_page-----c7b614731a7f--------------------------------)![Kairo Morton](https://medium.com/@ktmorton17?source=post_page-----c7b614731a7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c7b614731a7f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7b614731a7f--------------------------------) [Kairo Morton](https://medium.com/@ktmorton17?source=post_page-----c7b614731a7f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F475e9134255d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-games-with-markov-chains-c7b614731a7f&user=Kairo+Morton&userId=475e9134255d&source=post_page-475e9134255d----c7b614731a7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7b614731a7f--------------------------------) ·14分钟阅读·2023年10月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc7b614731a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-games-with-markov-chains-c7b614731a7f&user=Kairo+Morton&userId=475e9134255d&source=-----c7b614731a7f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F475e9134255d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-games-with-markov-chains-c7b614731a7f&user=Kairo+Morton&userId=475e9134255d&source=post_page-475e9134255d----c7b614731a7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7b614731a7f--------------------------------) ·14 分钟阅读·2023 年 10 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc7b614731a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-games-with-markov-chains-c7b614731a7f&user=Kairo+Morton&userId=475e9134255d&source=-----c7b614731a7f---------------------clap_footer-----------)
 
 --
 
@@ -26,7 +26,7 @@
 
 如果我们将游戏的状态定义为每次抛硬币后的玩家现金余额，马尔可夫性质成立，并且幸运的是我们可以使用马尔可夫链建模这个游戏！在图形上，我们可以如下表示马尔可夫链的状态和转换概率：
 
-![](../Images/e09c74b97381a79b6927b984c049adb2.png)
+![](img/e09c74b97381a79b6927b984c049adb2.png)
 
 在上图中，橙色圆圈代表游戏状态，箭头表示状态之间的转换概率。注意所有的转换概率都是 0.5，因为改变状态需要正确猜测公平抛硬币的结果。此外，状态 0 和 10 有一个指向自己的箭头，标记为概率 1，因为它们是游戏的结束状态。
 
@@ -44,7 +44,7 @@
 
 为了真正深入探讨与马尔可夫链相关的概率建模复杂性，我们将把重点放在游戏“掩盖盒子”上。我在浏览 Instagram Reels 时偶然发现了这个游戏，对规则有模糊的理解，我开始试图确定获胜的难度。
 
-![](../Images/b2da70dc5417aef72248984cc104c795.png)
+![](img/b2da70dc5417aef72248984cc104c795.png)
 
 Roland Scheicher / Roland Scheicher 于德国维基百科，公共领域，通过维基共享资源
 
@@ -58,15 +58,15 @@ Roland Scheicher / Roland Scheicher 于德国维基百科，公共领域，通�
 
 为了计算从一个状态转换到另一个状态的概率，我们必须回答这个问题：“在游戏中发生什么动作会导致状态发生变化？”对于我们感兴趣的游戏“关掉盒子”，有两个概率性动作决定下一个状态：掷骰子和选择翻下的瓷砖。让我们从检查骰子在状态 i 和 k 之间转换的作用开始。我们首先让 Sᵢ 和 Sₖ 分别表示状态 i 和 k 中的竖立数字的集合。为了使从状态 i 到状态 k 的转换具有非零概率，很明显 Sₖ 必须是 Sᵢ 的一个真子集。这是因为在状态之间转换时，竖立的瓷砖数量必须减少，而瓷砖一旦翻下就不能再翻回去。根据这种状态表示以及假设 Sₖ ⊂ Sᵢ，在状态 i 和 k 之间转换过程中翻下的数字构成集合 D = Sᵢ - Sₖ（Sᵢ 中但不在 Sₖ 中的元素）。
 
-![](../Images/caa293c2d4620ac3397b20d32de44706.png)
+![](img/caa293c2d4620ac3397b20d32de44706.png)
 
 因此，这一转换发生的一个必要条件是掷出的骰子总和必须等于集合 D 中元素的总和。形式上，必须满足以下方程：
 
-![](../Images/f99a44e7ef9664888115972320231132.png)
+![](img/f99a44e7ef9664888115972320231132.png)
 
 其中 X₁ 和 X₂ 是表示两个骰子值的离散随机变量。如果我们让 z 是集合 D 中元素的总和，那么两个六面骰子的情况可以通过以下方法推导出上述方程成立的概率：
 
-![](../Images/64fde9228eb62e89b8d86a4a010cdf2c.png)![](../Images/de6f430db029253a6cae621a5e9f940f.png)![](../Images/f2fccb5352f966e16ef1aa97b11fda6a.png)![](../Images/5c81934c6f2e40b46218b3ea0579c22d.png)
+![](img/64fde9228eb62e89b8d86a4a010cdf2c.png)![](img/de6f430db029253a6cae621a5e9f940f.png)![](img/f2fccb5352f966e16ef1aa97b11fda6a.png)![](img/5c81934c6f2e40b46218b3ea0579c22d.png)
 
 如果 z < 2 或 z > 12，那么从状态 i 转移到状态 k 的概率为零，因为不存在两个普通骰子掷出的和为 z 的情况。
 
@@ -82,7 +82,7 @@ Roland Scheicher / Roland Scheicher 于德国维基百科，公共领域，通�
 
 因此，转移矩阵的条目可以定义如下：
 
-![](../Images/d529f5c6b030afbb4146e3743ffd9e84.png)![](../Images/614ca3e5a749498d811930b9b309c397.png)![](../Images/ea7c7d4d4eab7ac3cfe73ed8fa801206.png)![](../Images/2a71675f825f7ccd2c7f250b861318c7.png)
+![](img/d529f5c6b030afbb4146e3743ffd9e84.png)![](img/614ca3e5a749498d811930b9b309c397.png)![](img/ea7c7d4d4eab7ac3cfe73ed8fa801206.png)![](img/2a71675f825f7ccd2c7f250b861318c7.png)
 
 需要注意的是，上述转移矩阵的定义没有考虑玩家回合结束的概率。这种情况可能发生在玩家“关闭盒子”时，或者在观察骰子掷出值后没有瓷砖可以翻下。在这两种情况下，1/Nᵢₖ 是未定义的，因此必须单独处理。
 
@@ -90,11 +90,11 @@ Roland Scheicher / Roland Scheicher 于德国维基百科，公共领域，通�
 
 最后，我们将添加一个“失败”状态（L），以表示由于“不幸”的掷骰结果玩家的回合结束。具体来说，要将此状态纳入转移矩阵，我们需要知道没有任何子集 Sᵢ 的和等于 X₁ + X₂（两个骰子的和）的概率。虽然显式计算此量可能是可行的，但我们可以相对于其他转移矩阵值进行定义，如下所示：
 
-![](../Images/dff385bf616368065164b5ad3fea5e4c.png)
+![](img/dff385bf616368065164b5ad3fea5e4c.png)
 
 因为转移矩阵中的每一行表示状态的概率分布，且这些概率必须加起来等于一。此外，由于这是游戏的最终状态，因此离开该状态的概率为 0。
 
-![](../Images/ba8b343aeafec7a840a2d0415aeb35f3.png)
+![](img/ba8b343aeafec7a840a2d0415aeb35f3.png)
 
 利用上述确切的转移概率结果，我们现在可以利用马尔可夫链的一些重要属性来回答一个问题，那就是“关闭盒子”有多困难？具体来说，我们可以回答以下问题：玩家使用完全随机策略“关闭盒子”的概率是多少？
 
@@ -102,15 +102,15 @@ Roland Scheicher / Roland Scheicher 于德国维基百科，公共领域，通�
 
 在尝试计算该游戏的“胜/负”概率时，了解转移矩阵的作用非常重要。对于马尔可夫链，转移矩阵使我们能够探讨状态上的概率分布如何在单次转移后演变，只需一个矩阵-向量乘法即可。数学上，我们可以简单地写成如下形式：
 
-![](../Images/7a4bc65aba54aefb9b0fa433bd263acc.png)
+![](img/7a4bc65aba54aefb9b0fa433bd263acc.png)
 
 其中 T 是转移矩阵，πₜ 是表示经过 t 次转移后所有状态的概率分布的行向量。因此，给定我们知道当前处于任何状态的概率，我们可以回答这样的问题：“如果我们随机选择要翻下的瓷砖，那么在一次骰子掷出后处于任何状态的概率是多少？”此外，利用我们对游戏初始状态（所有瓷砖都翻起）的确定性知识，我们可以很容易地定义 π₀ 并递归地将其乘以 T，以确定经过任意数量的转移（掷骰子 + 翻瓷砖）后的状态分布。这个递归可以被重写为 πₜ 的以下封闭形式表达式：
 
-![](../Images/b9a055ad971f390133acf7da4bcb012e.png)
+![](img/b9a055ad971f390133acf7da4bcb012e.png)
 
 模拟“关箱子”的马尔可夫链有两个最终状态：胜利和失败，一旦进入就不能离开（即吸收状态）。因此，我们可以确定，在经过一些有限数量的转移后，所有状态的分布将收敛到这两个状态的分布。直观地说，对于“关箱子”来说，这个声明突出了一个事实，即玩家的回合必须以“关箱子”或未能做到这一点而结束，因此在一轮回合中玩家可以进行的移动次数是有限的。
 
-要找到这个上限，注意到最长的回合发生在玩家每次掷骰子后翻下一块瓷砖，直到标记为“1”的瓷砖仅有竖立状态，因此在接下来的骰子掷出时他们无法“关箱子”。这个动作序列总共构成了 9 次移动以达到最终状态，因为总共有 9 块瓷砖。因此，求解胜率/败率就像设置 t ≥ 9 并计算 πₜ 一样简单。计算 πₜ 后，玩家使用随机策略“关箱子”的概率是 πₜ 中的第一个条目，因为它对应于所有瓷砖都翻倒的状态（S₀）。另外，递归过程可以从 0 开始重复，直到分布收敛。此外，对于这种情况，还有更快的方法来计算 πₜ，我在此帖中不予讨论。它们利用了吸收状态的存在和转移矩阵的特殊定义。了解更多信息请访问：[https://en.wikipedia.org/wiki/Absorbing_Markov_chain](https://en.wikipedia.org/wiki/Absorbing_Markov_chain)
+要找到这个上限，注意到最长的回合发生在玩家每次掷骰子后翻下一块瓷砖，直到标记为“1”的瓷砖仅有竖立状态，因此在接下来的骰子掷出时他们无法“关箱子”。这个动作序列总共构成了 9 次移动以达到最终状态，因为总共有 9 块瓷砖。因此，求解胜率/败率就像设置 t ≥ 9 并计算 πₜ 一样简单。计算 πₜ 后，玩家使用随机策略“关箱子”的概率是 πₜ 中的第一个条目，因为它对应于所有瓷砖都翻倒的状态（S₀）。另外，递归过程可以从 0 开始重复，直到分布收敛。此外，对于这种情况，还有更快的方法来计算 πₜ，我在此帖中不予讨论。它们利用了吸收状态的存在和转移矩阵的特殊定义。了解更多信息请访问：[`en.wikipedia.org/wiki/Absorbing_Markov_chain`](https://en.wikipedia.org/wiki/Absorbing_Markov_chain)
 
 为了在 Python 中计算胜率/败率，我们将完全依赖科学计算库 Numpy。首先，我们将瓷砖的数量、骰子的数量和游戏中的状态数量分别定义为 9、2 和 513。
 
@@ -173,11 +173,11 @@ print("Lose Probability: {:.4f}".format(lose_prob))
 
 在这个代码片段中，我们使用了 Numpy 的 matrix_power 和 matmul（矩阵乘法）函数来分别计算 T₉ 和 π₉。使用这些结果，“关闭盒子”的概率简单地存储为 π₉ 的第一个元素，这对应于没有竖立瓷砖的状态（在二进制中为 '000000000'）。根据这一见解，我们最终知道，当使用完全随机策略时，“关闭盒子”是非常困难的（约 2% 的机会）！ （精确概率值如下所示）。
 
-![](../Images/58e8667b72046b2fa0064939ebccbe05.png)
+![](img/58e8667b72046b2fa0064939ebccbe05.png)
 
 上述代码和模型公式经过一些修改后，可以扩展以支持任何数量的瓷砖和任何数量的骰子的“关闭盒子”变体。因此，我在下方可视化了随着骰子数量和瓷砖数量变化的获胜概率图：
 
-![](../Images/4ab2b580093b226eaf40429bb0f91997.png)
+![](img/4ab2b580093b226eaf40429bb0f91997.png)
 
 # 结论
 

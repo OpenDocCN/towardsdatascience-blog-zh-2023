@@ -1,20 +1,20 @@
 # 了解因果树
 
-> 原文：[https://towardsdatascience.com/understanding-causal-trees-920177462149?source=collection_archive---------2-----------------------#2023-02-03](https://towardsdatascience.com/understanding-causal-trees-920177462149?source=collection_archive---------2-----------------------#2023-02-03)
+> 原文：[`towardsdatascience.com/understanding-causal-trees-920177462149?source=collection_archive---------2-----------------------#2023-02-03`](https://towardsdatascience.com/understanding-causal-trees-920177462149?source=collection_archive---------2-----------------------#2023-02-03)
 
 ## [因果数据科学](https://towardsdatascience.com/tagged/causal-data-science)
 
 ## *如何使用回归树来估计异质治疗效应*
 
-[](https://medium.com/@matteo.courthoud?source=post_page-----920177462149--------------------------------)[![Matteo Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----920177462149--------------------------------)[](https://towardsdatascience.com/?source=post_page-----920177462149--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----920177462149--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----920177462149--------------------------------)
+[](https://medium.com/@matteo.courthoud?source=post_page-----920177462149--------------------------------)![Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----920177462149--------------------------------)[](https://towardsdatascience.com/?source=post_page-----920177462149--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----920177462149--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----920177462149--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-causal-trees-920177462149&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----920177462149---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----920177462149--------------------------------) ·15分钟阅读·2023年2月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F920177462149&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-causal-trees-920177462149&user=Matteo+Courthoud&userId=666130fb420f&source=-----920177462149---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-causal-trees-920177462149&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----920177462149---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----920177462149--------------------------------) ·15 分钟阅读·2023 年 2 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F920177462149&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-causal-trees-920177462149&user=Matteo+Courthoud&userId=666130fb420f&source=-----920177462149---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F920177462149&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-causal-trees-920177462149&source=-----920177462149---------------------bookmark_footer-----------)![](../Images/7b179d1c87c2a54be0d5266b5a9d9071.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F920177462149&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-causal-trees-920177462149&source=-----920177462149---------------------bookmark_footer-----------)![](img/7b179d1c87c2a54be0d5266b5a9d9071.png)
 
 封面，作者提供的图片
 

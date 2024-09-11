@@ -1,18 +1,18 @@
 # 使用 Black 和 GitHub Actions 维护干净的 Python 代码
 
-> 原文：[https://towardsdatascience.com/black-with-git-hub-actions-4ffc5c61b5fe?source=collection_archive---------11-----------------------#2023-01-16](https://towardsdatascience.com/black-with-git-hub-actions-4ffc5c61b5fe?source=collection_archive---------11-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/black-with-git-hub-actions-4ffc5c61b5fe?source=collection_archive---------11-----------------------#2023-01-16`](https://towardsdatascience.com/black-with-git-hub-actions-4ffc5c61b5fe?source=collection_archive---------11-----------------------#2023-01-16)
 
 ## 没有人愿意面对混乱的代码库；很少有人有耐心去清理它
 
-[](https://thuwarakesh.medium.com/?source=post_page-----4ffc5c61b5fe--------------------------------)[![Thuwarakesh Murallie](../Images/44f1a14a899426592bbd8c7f73ce169d.png)](https://thuwarakesh.medium.com/?source=post_page-----4ffc5c61b5fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4ffc5c61b5fe--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4ffc5c61b5fe--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----4ffc5c61b5fe--------------------------------)
+[](https://thuwarakesh.medium.com/?source=post_page-----4ffc5c61b5fe--------------------------------)![Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----4ffc5c61b5fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4ffc5c61b5fe--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4ffc5c61b5fe--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----4ffc5c61b5fe--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-with-git-hub-actions-4ffc5c61b5fe&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----4ffc5c61b5fe---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4ffc5c61b5fe--------------------------------) ·8分钟阅读·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4ffc5c61b5fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-with-git-hub-actions-4ffc5c61b5fe&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----4ffc5c61b5fe---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-with-git-hub-actions-4ffc5c61b5fe&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----4ffc5c61b5fe---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4ffc5c61b5fe--------------------------------) ·8 分钟阅读·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4ffc5c61b5fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-with-git-hub-actions-4ffc5c61b5fe&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----4ffc5c61b5fe---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4ffc5c61b5fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-with-git-hub-actions-4ffc5c61b5fe&source=-----4ffc5c61b5fe---------------------bookmark_footer-----------)![](../Images/5b6f032c9c15cbfb6fd4451172f5f685.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4ffc5c61b5fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-with-git-hub-actions-4ffc5c61b5fe&source=-----4ffc5c61b5fe---------------------bookmark_footer-----------)![](img/5b6f032c9c15cbfb6fd4451172f5f685.png)
 
 像这个清洁机器人一样，我们可以建立一个自动系统，通过 Black 和 GitHub Actions 清理我们的 Python 代码库。 — 照片来自 [Onur Binay](https://unsplash.com/@onurbinay?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,4 +30,4 @@
 
 这与我们如何格式化代码有关。
 
-Python，我最喜欢的编程语言，其语法最为简单。但这并不保证所有阅读你Python代码的人都会理解它。
+Python，我最喜欢的编程语言，其语法最为简单。但这并不保证所有阅读你 Python 代码的人都会理解它。

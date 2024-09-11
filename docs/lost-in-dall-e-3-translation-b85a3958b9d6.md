@@ -1,18 +1,18 @@
 # 在 DALL-E 3 翻译中的迷失
 
-> 原文：[https://towardsdatascience.com/lost-in-dall-e-3-translation-b85a3958b9d6?source=collection_archive---------6-----------------------#2023-11-02](https://towardsdatascience.com/lost-in-dall-e-3-translation-b85a3958b9d6?source=collection_archive---------6-----------------------#2023-11-02)
+> 原文：[`towardsdatascience.com/lost-in-dall-e-3-translation-b85a3958b9d6?source=collection_archive---------6-----------------------#2023-11-02`](https://towardsdatascience.com/lost-in-dall-e-3-translation-b85a3958b9d6?source=collection_archive---------6-----------------------#2023-11-02)
 
 ## 用多种语言生成的 AI 图像会产生不同的结果
 
-[](https://medium.com/@artfish?source=post_page-----b85a3958b9d6--------------------------------)[![Yennie Jun](../Images/b635e965f21c3d55833269e12e861322.png)](https://medium.com/@artfish?source=post_page-----b85a3958b9d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b85a3958b9d6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b85a3958b9d6--------------------------------) [Yennie Jun](https://medium.com/@artfish?source=post_page-----b85a3958b9d6--------------------------------)
+[](https://medium.com/@artfish?source=post_page-----b85a3958b9d6--------------------------------)![Yennie Jun](https://medium.com/@artfish?source=post_page-----b85a3958b9d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b85a3958b9d6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b85a3958b9d6--------------------------------) [Yennie Jun](https://medium.com/@artfish?source=post_page-----b85a3958b9d6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F12ca1ab81192&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flost-in-dall-e-3-translation-b85a3958b9d6&user=Yennie+Jun&userId=12ca1ab81192&source=post_page-12ca1ab81192----b85a3958b9d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b85a3958b9d6--------------------------------) · 11 分钟阅读 · 2023年11月2日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F12ca1ab81192&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flost-in-dall-e-3-translation-b85a3958b9d6&user=Yennie+Jun&userId=12ca1ab81192&source=post_page-12ca1ab81192----b85a3958b9d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b85a3958b9d6--------------------------------) · 11 分钟阅读 · 2023 年 11 月 2 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb85a3958b9d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flost-in-dall-e-3-translation-b85a3958b9d6&source=-----b85a3958b9d6---------------------bookmark_footer-----------)![](../Images/77d913b783ec6e95f9ffeecc49a33bca.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb85a3958b9d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flost-in-dall-e-3-translation-b85a3958b9d6&source=-----b85a3958b9d6---------------------bookmark_footer-----------)![](img/77d913b783ec6e95f9ffeecc49a33bca.png)
 
 使用 DALL-E 3 生成的图像，展示了“一个人的图像”这一提示下的六种语言版本。图形由作者创建。
 

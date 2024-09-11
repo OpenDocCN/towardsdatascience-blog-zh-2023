@@ -1,18 +1,18 @@
 # 如何构建一个互联的多页面 Streamlit 应用
 
-> 原文：[https://towardsdatascience.com/how-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f?source=collection_archive---------8-----------------------#2023-07-24](https://towardsdatascience.com/how-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f?source=collection_archive---------8-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/how-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f?source=collection_archive---------8-----------------------#2023-07-24`](https://towardsdatascience.com/how-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f?source=collection_archive---------8-----------------------#2023-07-24)
 
 ## 从规划到执行——我是如何构建 GPT 实验室的
 
-[](https://medium.com/@dclin?source=post_page-----3114c313f88f--------------------------------)[![Dave Lin](../Images/630f84748ac5ea04912ca28cffdbfd15.png)](https://medium.com/@dclin?source=post_page-----3114c313f88f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3114c313f88f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3114c313f88f--------------------------------) [Dave Lin](https://medium.com/@dclin?source=post_page-----3114c313f88f--------------------------------)
+[](https://medium.com/@dclin?source=post_page-----3114c313f88f--------------------------------)![Dave Lin](https://medium.com/@dclin?source=post_page-----3114c313f88f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3114c313f88f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3114c313f88f--------------------------------) [Dave Lin](https://medium.com/@dclin?source=post_page-----3114c313f88f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b1d830863a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f&user=Dave+Lin&userId=6b1d830863a3&source=post_page-6b1d830863a3----3114c313f88f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3114c313f88f--------------------------------) ·9分钟阅读·2023年7月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3114c313f88f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f&user=Dave+Lin&userId=6b1d830863a3&source=-----3114c313f88f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b1d830863a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f&user=Dave+Lin&userId=6b1d830863a3&source=post_page-6b1d830863a3----3114c313f88f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3114c313f88f--------------------------------) ·9 分钟阅读·2023 年 7 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3114c313f88f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f&user=Dave+Lin&userId=6b1d830863a3&source=-----3114c313f88f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3114c313f88f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f&source=-----3114c313f88f---------------------bookmark_footer-----------)![](../Images/e492690c6892273adc45a13ebb488b40.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3114c313f88f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-interconnected-multi-page-streamlit-app-3114c313f88f&source=-----3114c313f88f---------------------bookmark_footer-----------)![](img/e492690c6892273adc45a13ebb488b40.png)
 
 照片由 [Clément Hélardot](https://unsplash.com/@clemhlrdt?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上提供
 
@@ -22,7 +22,7 @@
 
 感谢你们的巨大支持，GPT Lab 已获得超过 9K 的应用查看次数、1150+ 的独特登录用户、900+ 次与助手的会话、650+ 个测试过的提示以及 180+ 个创建的助手。该应用还在 Streamlit 应用画廊中与其他优秀应用一起展示。
 
-[http://gptlab.streamlit.app/?embed=true](http://gptlab.streamlit.app/?embed=true)
+[`gptlab.streamlit.app/?embed=true`](http://gptlab.streamlit.app/?embed=true)
 
 你们中的许多人问我，“你是如何规划和构建如此大型的 Streamlit 应用的？”迫不及待地想回答，我决定将 GPT Lab 开源。
 

@@ -1,18 +1,18 @@
 # 准备应对气候变化与 AI 助手
 
-> 原文：[https://towardsdatascience.com/preparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426?source=collection_archive---------3-----------------------#2023-11-26](https://towardsdatascience.com/preparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426?source=collection_archive---------3-----------------------#2023-11-26)
+> 原文：[`towardsdatascience.com/preparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426?source=collection_archive---------3-----------------------#2023-11-26`](https://towardsdatascience.com/preparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426?source=collection_archive---------3-----------------------#2023-11-26)
 
 ## 通过对话简化复杂数据
 
-[](https://medium.com/@astrobagel?source=post_page-----cdceb5ce4426--------------------------------)[![Matthew Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----cdceb5ce4426--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cdceb5ce4426--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cdceb5ce4426--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----cdceb5ce4426--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----cdceb5ce4426--------------------------------)![Matthew Harris](https://medium.com/@astrobagel?source=post_page-----cdceb5ce4426--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cdceb5ce4426--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdceb5ce4426--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----cdceb5ce4426--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpreparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----cdceb5ce4426---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdceb5ce4426--------------------------------) ·13分钟阅读·2023年11月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcdceb5ce4426&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpreparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----cdceb5ce4426---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpreparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----cdceb5ce4426---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdceb5ce4426--------------------------------) ·13 分钟阅读·2023 年 11 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcdceb5ce4426&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpreparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----cdceb5ce4426---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcdceb5ce4426&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpreparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426&source=-----cdceb5ce4426---------------------bookmark_footer-----------)![](../Images/843a51eb863429365131e0a7bd40f1dc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcdceb5ce4426&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpreparing-for-climate-change-with-an-ai-assistant-cdceb5ce4426&source=-----cdceb5ce4426---------------------bookmark_footer-----------)![](img/843a51eb863429365131e0a7bd40f1dc.png)
 
 使用 OpenAI 的 ChatGPT 和 Dall-E-3 生成的图像
 
@@ -36,13 +36,13 @@
 
 幸运的是，[Probable Futures](https://probablefutures.org/)的团队做得非常出色！
 
-![](../Images/269fc20807be4eecd19871fb0094ee9a.png)
+![](img/269fc20807be4eecd19871fb0094ee9a.png)
 
 [Probable Futures](https://probablefutures.org/)提供了与气候变化预测相关的各种资源
 
-Probable Futures是“*一个非营利气候素养倡议，提供在线实用工具、故事和资源，面向所有人，无论身在何处*”，他们提供了一系列基于CORDEX-CORE框架的地图和数据，这是对来自REMO2015和REGCM4区域气候模型的气候模型输出的标准化。[附注：我与Probable Futures没有关联]
+Probable Futures 是“*一个非营利气候素养倡议，提供在线实用工具、故事和资源，面向所有人，无论身在何处*”，他们提供了一系列基于 CORDEX-CORE 框架的地图和数据，这是对来自 REMO2015 和 REGCM4 区域气候模型的气候模型输出的标准化。[附注：我与 Probable Futures 没有关联]
 
-重要的是，他们提供了一个[GraphQL API](https://docs.probablefutures.org/calling-the-api/)来访问这些数据，我在[请求API密钥](https://docs.probablefutures.org/api-access/)后可以访问。
+重要的是，他们提供了一个[GraphQL API](https://docs.probablefutures.org/calling-the-api/)来访问这些数据，我在[请求 API 密钥](https://docs.probablefutures.org/api-access/)后可以访问。
 
 根据[文档](https://docs.probablefutures.org/calling-the-api/)我创建了函数，并将其保存在文件`assistant_tools.py`中…
 
@@ -107,23 +107,23 @@ def get_pf_data(address, country, warming_scenario="1.5"):
     return str(response.json())
 ```
 
-我有意排除了`datasetId`以检索所有指标，这样AI代理就能拥有广泛的信息供其使用。
+我有意排除了`datasetId`以检索所有指标，这样 AI 代理就能拥有广泛的信息供其使用。
 
-该API非常强大，既可以接受城镇和城市，也可以接受完整地址。例如…
+该 API 非常强大，既可以接受城镇和城市，也可以接受完整地址。例如…
 
 ```py
 get_pf_data(address="New Delhi", country="India", warming_scenario="1.5")
 ```
 
-返回包含位置气候变化信息的JSON记录…
+返回包含位置气候变化信息的 JSON 记录…
 
 ```py
 {'data': {'getDatasetStatistics': {'datasetStatisticsResponses': [{'datasetId': 40601, 'midValue': '17.0', 'name': 'Change in total annual precipitation', 'unit': 'mm', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40616, 'midValue': '14.0', 'name': 'Change in wettest 90 days', 'unit': 'mm', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40607, 'midValue': '19.0', 'name': 'Change in dry hot days', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40614, 'midValue': '0.0', 'name': 'Change in snowy days', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40612, 'midValue': '2.0', 'name': 'Change in frequency of “1-in-100-year” storm', 'unit': 'x as frequent', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40101, 'midValue': '28.0', 'name': 'Average temperature', 'unit': '°C', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40901, 'midValue': '4.0', 'name': 'Climate zones', 'unit': 'class', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {'climateZoneName': 'Dry semi-arid (or steppe) hot'}}, {'datasetId': 40613, 'midValue': '49.0', 'name': 'Change in precipitation “1-in-100-year” storm', 'unit': 'mm', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40701, 'midValue': '7.0', 'name': 'Likelihood of year-plus extreme drought', 'unit': '%', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40702, 'midValue': '30.0', 'name': 'Likelihood of year-plus drought', 'unit': '%', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40704, 'midValue': '5.0', 'name': 'Change in wildfire danger days', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40703, 'midValue': '-0.2', 'name': 'Change in water balance', 'unit': 'z-score', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40201, 'midValue': '21.0', 'name': 'Average nighttime temperature', 'unit': '°C', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40205, 'midValue': '0.0', 'name': 'Freezing days', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40301, 'midValue': '71.0', 'name': 'Days above 26°C (78°F) wet-bulb', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40302, 'midValue': '24.0', 'name': 'Days above 28°C (82°F) wet-bulb', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40303, 'midValue': '2.0', 'name': 'Days above 30°C (86°F) wet-bulb', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40102, 'midValue': '35.0', 'name': 'Average daytime temperature', 'unit': '°C', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40103, 'midValue': '49.0', 'name': '10 hottest days', 'unit': '°C', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40104, 'midValue': '228.0', 'name': 'Days above 32°C (90°F)', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40105, 'midValue': '187.0', 'name': 'Days above 35°C (95°F)', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40106, 'midValue': '145.0', 'name': 'Days above 38°C (100°F)', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40202, 'midValue': '0.0', 'name': 'Frost nights', 'unit': 'nights', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40304, 'midValue': '0.0', 'name': 'Days above 32°C (90°F) wet-bulb', 'unit': 'days', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40305, 'midValue': '29.0', 'name': '10 hottest wet-bulb days', 'unit': '°C', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40203, 'midValue': '207.0', 'name': 'Nights above 20°C (68°F)', 'unit': 'nights', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}, {'datasetId': 40204, 'midValue': '147.0', 'name': 'Nights above 25°C (77°F)', 'unit': 'nights', 'warmingScenario': '1.5', 'latitude': 28.6, 'longitude': 77.2, 'info': {}}]}}}
 ```
 
-# 创建一个OpenAI助手
+# 创建一个 OpenAI 助手
 
-接下来，我们需要使用测试版API构建AI助手。在[文档](https://platform.openai.com/docs/assistants/overview)和非常有用的[OpenAI Cookbook](https://cookbook.openai.com/examples/assistants_api_overview_python)中有一些很好的资源。然而，由于这是新推出的测试版，信息还不是很多，所以有时需要一些试错过程。
+接下来，我们需要使用测试版 API 构建 AI 助手。在[文档](https://platform.openai.com/docs/assistants/overview)和非常有用的[OpenAI Cookbook](https://cookbook.openai.com/examples/assistants_api_overview_python)中有一些很好的资源。然而，由于这是新推出的测试版，信息还不是很多，所以有时需要一些试错过程。
 
 首先，我们需要配置助手可以使用的工具，比如获取气候变化数据的功能。参考[文档](https://platform.openai.com/docs/assistants/tools/function-calling)…
 
@@ -156,7 +156,7 @@ get_pf_data(address="New Delhi", country="India", warming_scenario="1.5")
     }
 ```
 
-你会注意到我们为每个参数提供了文本描述。根据实验，这似乎是助手在填充参数时使用的，所以要尽可能清晰，并记录任何特性，以便LLM能够调整。从这些定义工具…
+你会注意到我们为每个参数提供了文本描述。根据实验，这似乎是助手在填充参数时使用的，所以要尽可能清晰，并记录任何特性，以便 LLM 能够调整。从这些定义工具…
 
 ```py
 tools = [
@@ -168,7 +168,7 @@ tools = [
 ]
 ```
 
-你会注意到我保留了code_interpretor，赋予助手运行数据分析所需代码的能力。
+你会注意到我保留了 code_interpretor，赋予助手运行数据分析所需代码的能力。
 
 接下来，我们需要指定一组用户指令（系统提示）。这些指令在将助手的性能调整到我们的任务上时至关重要。通过一些快速实验，我得出了这一组…
 
@@ -229,51 +229,51 @@ except:
     print("Now save the DI in your .env file")
 ```
 
-上述假设我们在`.env`文件中定义了密钥和代理ID。你会注意到代码首先检查是否存在代理，使用`.env`文件中的`ASSISTANT_ID`并进行更新，否则它会创建一个全新的代理，生成的ID必须复制到`.env`文件中。否则，我会创建大量的助手！
+上述假设我们在`.env`文件中定义了密钥和代理 ID。你会注意到代码首先检查是否存在代理，使用`.env`文件中的`ASSISTANT_ID`并进行更新，否则它会创建一个全新的代理，生成的 ID 必须复制到`.env`文件中。否则，我会创建大量的助手！
 
-一旦创建了助手，它将在[OpenAI用户界面](https://platform.openai.com/assistants)上可见，可以在[Playground](https://platform.openai.com/playground)中进行测试。由于大多数功能调用相关的开发和调试实际上涉及调用代码，我发现Playground对这次分析并不是特别有用，但它设计得很好，可能在其他工作中会有用。
+一旦创建了助手，它将在[OpenAI 用户界面](https://platform.openai.com/assistants)上可见，可以在[Playground](https://platform.openai.com/playground)中进行测试。由于大多数功能调用相关的开发和调试实际上涉及调用代码，我发现 Playground 对这次分析并不是特别有用，但它设计得很好，可能在其他工作中会有用。
 
 对于这次分析，我决定使用新的[GPT-4-Turbo](https://help.openai.com/en/articles/8555510-gpt-4-turbo)模型，将`model`设置为“gpt-4–1106-preview”。
 
 # 创建用户界面
 
-我们想创建一个完整的聊天机器人，因此我从这个[chainlit食谱示例](https://github.com/Chainlit/cookbook/tree/main/openai-assistant)开始，稍微调整了一下，将代理代码分离到一个专用文件中，并通过……
+我们想创建一个完整的聊天机器人，因此我从这个[chainlit 食谱示例](https://github.com/Chainlit/cookbook/tree/main/openai-assistant)开始，稍微调整了一下，将代理代码分离到一个专用文件中，并通过……
 
 ```py
 import assistant_tools as at
 ```
 
-Chainlit非常简洁，用户界面易于设置，你可以在[这里](https://github.com/datakind/climate-change-assistant/blob/main/app.py)找到应用的代码。
+Chainlit 非常简洁，用户界面易于设置，你可以在[这里](https://github.com/datakind/climate-change-assistant/blob/main/app.py)找到应用的代码。
 
-# 尝试我们的气候变化助手AI代理
+# 尝试我们的气候变化助手 AI 代理
 
 把这些放在一起——见代码[这里](https://github.com/datakind/climate-change-assistant/tree/main)——我们用简单的`chainlit run app.py`启动代理……
 
-![](../Images/c5919b5b0d6bf74ea521271af0f9fc17.png)
+![](img/c5919b5b0d6bf74ea521271af0f9fc17.png)
 
 让我们询问一个位置……
 
-![](../Images/532a9253a7abfc03622b330d1699eec2.png)
+![](img/532a9253a7abfc03622b330d1699eec2.png)
 
-注意到上述我故意拼写错误了Mombasa。
+注意到上述我故意拼写错误了 Mombasa。
 
-然后代理开始工作，调用API并处理JSON响应（这大约花了20秒）……
+然后代理开始工作，调用 API 并处理 JSON 响应（这大约花了 20 秒）……
 
-![](../Images/49ed28382e012a30332ceb482eb82ec0.png)
+![](img/49ed28382e012a30332ceb482eb82ec0.png)
 
 根据我们的指令，它最终完成了……
 
-![](../Images/e759fbfee93d2ea443add0f506ea5191.png)
+![](img/e759fbfee93d2ea443add0f506ea5191.png)
 
 但这是否正确？
 
-让我们调用API并查看输出……
+让我们调用 API 并查看输出……
 
 ```py
 get_pf_data(address="Mombassa", country="Kenya", warming_scenario="1.5")
 ```
 
-这会查询API……
+这会查询 API……
 
 ```py
 mutation {
@@ -367,45 +367,45 @@ mutation {
 
 # 通过指令改善可用性
 
-AI代理可以通过一些指令来改进其信息呈现方式。
+AI 代理可以通过一些指令来改进其信息呈现方式。
 
-其中一项指令是始终生成一个返回到Probable Futures网站的地图可视化链接，点击后会转到正确的位置……
+其中一项指令是始终生成一个返回到 Probable Futures 网站的地图可视化链接，点击后会转到正确的位置……
 
-![](../Images/282e7fcb1c67dde0e6635cbcaf7951e9.png)
+![](img/282e7fcb1c67dde0e6635cbcaf7951e9.png)
 
-代理始终生成一个URL，将用户带到正确的[地图可视化](https://probablefutures.org/maps/?selected_map=days_above_32c&map_version=latest&volume=heat&warming_scenario=1.5&map_projection=mercator#9.2/-4/39.6)上，以便在可能的未来网站上进行查询。
+代理始终生成一个 URL，将用户带到正确的[地图可视化](https://probablefutures.org/maps/?selected_map=days_above_32c&map_version=latest&volume=heat&warming_scenario=1.5&map_projection=mercator#9.2/-4/39.6)上，以便在可能的未来网站上进行查询。
 
-另一个指令要求代理始终提示用户尝试其他变暖情景。默认情况下，代理会生成预测全球温度升高1.5摄氏度的结果，但我们允许用户探索其他——有些令人沮丧的——情景。
+另一个指令要求代理始终提示用户尝试其他变暖情景。默认情况下，代理会生成预测全球温度升高 1.5 摄氏度的结果，但我们允许用户探索其他——有些令人沮丧的——情景。
 
 # 分析任务
 
-既然我们给了AI代理代码解释器技能，它应该能够执行Python代码来进行基本的数据分析。让我们尝试一下。
+既然我们给了 AI 代理代码解释器技能，它应该能够执行 Python 代码来进行基本的数据分析。让我们尝试一下。
 
 首先我询问了气候变化如何影响伦敦和纽约，代理提供了总结。然后我问了……
 
-![](../Images/a33e331f4044ea5a8dfd0ee42a1cf01c.png)
+![](img/a33e331f4044ea5a8dfd0ee42a1cf01c.png)
 
-结果是代理使用代码解释器生成并运行Python代码以创建一个图表……
+结果是代理使用代码解释器生成并运行 Python 代码以创建一个图表……
 
-![](../Images/1060482040ee01dc6b1981bae17f1cdb.png)
+![](img/1060482040ee01dc6b1981bae17f1cdb.png)
 
-AI代理能够使用从API提取的气候变化数据进行基本的数据分析任务。
+AI 代理能够使用从 API 提取的气候变化数据进行基本的数据分析任务。
 
 不错！
 
 # 结论与未来工作
 
-通过使用Probable Futures API和OpenAI助手，我们能够创建一个对话界面，展示人们如何能够询问有关气候变化的问题并获得如何准备的建议。代理能够进行API调用以及一些基本的数据分析。这提供了另一种气候意识的渠道，这可能对一些非技术用户更具吸引力。
+通过使用 Probable Futures API 和 OpenAI 助手，我们能够创建一个对话界面，展示人们如何能够询问有关气候变化的问题并获得如何准备的建议。代理能够进行 API 调用以及一些基本的数据分析。这提供了另一种气候意识的渠道，这可能对一些非技术用户更具吸引力。
 
-我们当然可以开发一个聊天机器人来确定意图/实体，并编写代码处理API，但这需要更多工作，并且在API发生更改或添加新API时需要重新审视。此外，大型语言模型代理在解释用户输入和总结方面表现良好，并且可以运行代码和进行基本数据分析。我们的特定用例似乎特别适合AI代理，因为任务范围有限。
+我们当然可以开发一个聊天机器人来确定意图/实体，并编写代码处理 API，但这需要更多工作，并且在 API 发生更改或添加新 API 时需要重新审视。此外，大型语言模型代理在解释用户输入和总结方面表现良好，并且可以运行代码和进行基本数据分析。我们的特定用例似乎特别适合 AI 代理，因为任务范围有限。
 
-不过也有一些挑战，这个技术有点慢（查询完成大约需要20-30秒）。此外，LLM令牌费用未在本文中分析，可能会很高。
+不过也有一些挑战，这个技术有点慢（查询完成大约需要 20-30 秒）。此外，LLM 令牌费用未在本文中分析，可能会很高。
 
-也就是说，OpenAI Assistants API仍处于测试阶段。此外，代理没有经过任何调整，因此通过进一步的工作，额外的常用功能、性能和成本可能会针对这一令人兴奋的新技术进行优化。
+也就是说，OpenAI Assistants API 仍处于测试阶段。此外，代理没有经过任何调整，因此通过进一步的工作，额外的常用功能、性能和成本可能会针对这一令人兴奋的新技术进行优化。
 
 # 参考文献
 
-*本文基于Probable Futures提供的数据和其他内容，Probable Futures是SouthCoast Community Foundation的一个项目，部分数据可能由Woodwell Climate Research Center, Inc.或The Coordinated Regional Climate Downscaling Experiment (CORDEX)提供*
+*本文基于 Probable Futures 提供的数据和其他内容，Probable Futures 是 SouthCoast Community Foundation 的一个项目，部分数据可能由 Woodwell Climate Research Center, Inc.或 The Coordinated Regional Climate Downscaling Experiment (CORDEX)提供*
 
 这个分析的代码可以在[这里](https://github.com/datakind/climate-change-assistant/tree/main)找到。
 

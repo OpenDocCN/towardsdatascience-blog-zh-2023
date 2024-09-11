@@ -1,18 +1,18 @@
-# 使用LLaVA创建你的视觉聊天助手
+# 使用 LLaVA 创建你的视觉聊天助手
 
-> 原文：[https://towardsdatascience.com/create-your-vision-chat-assistant-with-llava-610b02c3283e?source=collection_archive---------3-----------------------#2023-11-11](https://towardsdatascience.com/create-your-vision-chat-assistant-with-llava-610b02c3283e?source=collection_archive---------3-----------------------#2023-11-11)
+> 原文：[`towardsdatascience.com/create-your-vision-chat-assistant-with-llava-610b02c3283e?source=collection_archive---------3-----------------------#2023-11-11`](https://towardsdatascience.com/create-your-vision-chat-assistant-with-llava-610b02c3283e?source=collection_archive---------3-----------------------#2023-11-11)
 
-## 开始使用开源的LLaVA模型来创建多模态对话模型。
+## 开始使用开源的 LLaVA 模型来创建多模态对话模型。
 
-[](https://medium.com/@gabrielesgroi94?source=post_page-----610b02c3283e--------------------------------)[![Gabriele Sgroi, PhD](../Images/b81978d35e6238d160457de2affc2b0e.png)](https://medium.com/@gabrielesgroi94?source=post_page-----610b02c3283e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----610b02c3283e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----610b02c3283e--------------------------------) [Gabriele Sgroi, PhD](https://medium.com/@gabrielesgroi94?source=post_page-----610b02c3283e--------------------------------)
+[](https://medium.com/@gabrielesgroi94?source=post_page-----610b02c3283e--------------------------------)![Gabriele Sgroi, PhD](https://medium.com/@gabrielesgroi94?source=post_page-----610b02c3283e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----610b02c3283e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----610b02c3283e--------------------------------) [Gabriele Sgroi, PhD](https://medium.com/@gabrielesgroi94?source=post_page-----610b02c3283e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97ea0c34751b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-vision-chat-assistant-with-llava-610b02c3283e&user=Gabriele+Sgroi%2C+PhD&userId=97ea0c34751b&source=post_page-97ea0c34751b----610b02c3283e---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----610b02c3283e--------------------------------) ·17分钟阅读·2023年11月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F610b02c3283e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-vision-chat-assistant-with-llava-610b02c3283e&user=Gabriele+Sgroi%2C+PhD&userId=97ea0c34751b&source=-----610b02c3283e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97ea0c34751b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-vision-chat-assistant-with-llava-610b02c3283e&user=Gabriele+Sgroi%2C+PhD&userId=97ea0c34751b&source=post_page-97ea0c34751b----610b02c3283e---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----610b02c3283e--------------------------------) ·17 分钟阅读·2023 年 11 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F610b02c3283e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-vision-chat-assistant-with-llava-610b02c3283e&user=Gabriele+Sgroi%2C+PhD&userId=97ea0c34751b&source=-----610b02c3283e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F610b02c3283e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-vision-chat-assistant-with-llava-610b02c3283e&source=-----610b02c3283e---------------------bookmark_footer-----------)![](../Images/a2fcdb6fb47b3c5be1cdf24d8bbb67b4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F610b02c3283e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-vision-chat-assistant-with-llava-610b02c3283e&source=-----610b02c3283e---------------------bookmark_footer-----------)![](img/a2fcdb6fb47b3c5be1cdf24d8bbb67b4.png)
 
 照片由[Izabela Kraus](https://unsplash.com/@izabelakraus?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上拍摄。
 
@@ -20,27 +20,27 @@
 
 大语言模型已经证明自己是一项革命性的技术。利用其能力的众多应用已经被开发出来，预计还会有更多的应用出现。大语言模型的一个最有趣的应用是将其作为智能助手，能够在各种任务中帮助用户。经过指令调优和从人类反馈中学习的聊天模型显示出很有前景的能力，能够遵循人类指令并完成指定任务。然而，它们在仅语言任务的适用性上存在局限。
 
-多模态对话模型旨在释放大语言模型的潜力，以解决需要将自然语言与其他模态结合的问题。特别是，自从将视觉能力引入GPT-4V以来，视觉语言模型受到了越来越多的关注。赋予GPT-4的自然语言能力以图像理解，已导致一个强大的聊天助手，可以帮助用户处理需要视觉和语言理解的任务。尽管GPT-4V的视觉能力令人印象深刻，但闭源模型限制了对这一令人惊叹的技术进行研究和实验的潜力。幸运的是，一些开源模型出现了，将视觉语言模型的力量以易于访问和透明的方式带给了社区。这些模型还延续了对计算和内存效率的关注趋势，这一趋势在开源大语言模型中已经显现。这是一个重要的特性，因为它促进了这些模型的广泛应用。
+多模态对话模型旨在释放大语言模型的潜力，以解决需要将自然语言与其他模态结合的问题。特别是，自从将视觉能力引入 GPT-4V 以来，视觉语言模型受到了越来越多的关注。赋予 GPT-4 的自然语言能力以图像理解，已导致一个强大的聊天助手，可以帮助用户处理需要视觉和语言理解的任务。尽管 GPT-4V 的视觉能力令人印象深刻，但闭源模型限制了对这一令人惊叹的技术进行研究和实验的潜力。幸运的是，一些开源模型出现了，将视觉语言模型的力量以易于访问和透明的方式带给了社区。这些模型还延续了对计算和内存效率的关注趋势，这一趋势在开源大语言模型中已经显现。这是一个重要的特性，因为它促进了这些模型的广泛应用。
 
-在本教程中，我将介绍如何使用在[Visual Instruction Tuning](https://arxiv.org/abs/2304.08485)论文中介绍的LLaVA（大语言与视觉助手）模型创建一个视觉聊天助手。我将首先简要介绍LLaVA模型及其改进，然后讨论使用[官方代码库](https://github.com/haotian-liu/LLaVA)中提供的代码实现一个简单的视觉聊天助手。我还将展示一些我设计的示例，以展示该模型的能力和局限性。
+在本教程中，我将介绍如何使用在[Visual Instruction Tuning](https://arxiv.org/abs/2304.08485)论文中介绍的 LLaVA（大语言与视觉助手）模型创建一个视觉聊天助手。我将首先简要介绍 LLaVA 模型及其改进，然后讨论使用[官方代码库](https://github.com/haotian-liu/LLaVA)中提供的代码实现一个简单的视觉聊天助手。我还将展示一些我设计的示例，以展示该模型的能力和局限性。
 
 ## LLaVA
 
-LLaVA模型首次在论文[视觉指令调整](https://arxiv.org/abs/2304.08485)中提出，随后在[改进的基线与视觉指令调整](https://arxiv.org/abs/2310.03744)中进一步改进（也称为LLaVA-1.5）。其背后的理念是从图像中提取视觉嵌入，并像处理语言标记生成答案一样处理它们，通过将它们馈送给大型语言模型。直观地说，我们可以认为图像将用语言模型生成答案所需的“单词”。为了选择正确的“单词”，模型使用预训练的CLIP视觉编码器提取视觉嵌入，然后将其投影到语言模型的单词嵌入空间中。后者的操作是通过一个视觉语言连接器完成的，最初在第一篇论文[视觉指令调整](https://arxiv.org/abs/2304.08485)中选择为简单的线性层，后来在[改进的基线与视觉指令](https://arxiv.org/abs/2310.03744)中替换为更具表现力的多层感知器（MLP）。模型的架构如下所示。
+LLaVA 模型首次在论文[视觉指令调整](https://arxiv.org/abs/2304.08485)中提出，随后在[改进的基线与视觉指令调整](https://arxiv.org/abs/2310.03744)中进一步改进（也称为 LLaVA-1.5）。其背后的理念是从图像中提取视觉嵌入，并像处理语言标记生成答案一样处理它们，通过将它们馈送给大型语言模型。直观地说，我们可以认为图像将用语言模型生成答案所需的“单词”。为了选择正确的“单词”，模型使用预训练的 CLIP 视觉编码器提取视觉嵌入，然后将其投影到语言模型的单词嵌入空间中。后者的操作是通过一个视觉语言连接器完成的，最初在第一篇论文[视觉指令调整](https://arxiv.org/abs/2304.08485)中选择为简单的线性层，后来在[改进的基线与视觉指令](https://arxiv.org/abs/2310.03744)中替换为更具表现力的多层感知器（MLP）。模型的架构如下所示。
 
-![](../Images/5bd728a3d4d590a808f4a3982572fa4d.png)
+![](img/5bd728a3d4d590a808f4a3982572fa4d.png)
 
-LLaVA模型的架构。在LLaVA中，投影W是一个简单的线性层，而在LLaVA-1.5中是一个MLP。图片来源于论文[视觉指令调整](https://arxiv.org/abs/2304.08485)。
+LLaVA 模型的架构。在 LLaVA 中，投影 W 是一个简单的线性层，而在 LLaVA-1.5 中是一个 MLP。图片来源于论文[视觉指令调整](https://arxiv.org/abs/2304.08485)。
 
-该方法的优势之一在于通过使用预训练的视觉编码器和预训练语言模型，只需学习轻量级模块——视觉语言连接器，从头开始。具体而言，LLaVA的训练包括两个阶段：
+该方法的优势之一在于通过使用预训练的视觉编码器和预训练语言模型，只需学习轻量级模块——视觉语言连接器，从头开始。具体而言，LLaVA 的训练包括两个阶段：
 
 +   特征对齐的预训练：冻结预训练的视觉编码器和语言模型的权重，仅更新视觉语言连接器的权重。所有训练样本由文本-图像对打包成单回合对话。此阶段旨在训练视觉语言连接器将视觉编码器的嵌入与语言模型的文本嵌入对齐。
 
-+   使用视觉指令进行微调：在此阶段，仅冻结视觉编码器的权重，同时对视觉语言连接器和语言模型进行微调。模型在基于图像的指令跟随任务上进行微调。有趣的是，一些数据是通过使用仅包含语言的GPT4从图像的标题和实体边界框的坐标创建指令跟随样本。
++   使用视觉指令进行微调：在此阶段，仅冻结视觉编码器的权重，同时对视觉语言连接器和语言模型进行微调。模型在基于图像的指令跟随任务上进行微调。有趣的是，一些数据是通过使用仅包含语言的 GPT4 从图像的标题和实体边界框的坐标创建指令跟随样本。
 
 # 视觉聊天机器人实现
 
-使用[官方存储库](https://github.com/haotian-liu/LLaVA)中提供的代码创建视觉聊天机器人非常简单。该存储库还提供了标准化的聊天模板，可用于解析正确格式的输入。遵循训练中使用的正确格式对生成的答案质量至关重要。确切的模板取决于使用的语言模型。使用预训练的Vicuna语言模型的LLaVA-1.5的模板如下：
+使用[官方存储库](https://github.com/haotian-liu/LLaVA)中提供的代码创建视觉聊天机器人非常简单。该存储库还提供了标准化的聊天模板，可用于解析正确格式的输入。遵循训练中使用的正确格式对生成的答案质量至关重要。确切的模板取决于使用的语言模型。使用预训练的 Vicuna 语言模型的 LLaVA-1.5 的模板如下：
 
 ```py
 A chat between a curious user and an artificial intelligence assistant. The 
@@ -55,7 +55,7 @@ USER: Another prompt
 
 前几行是模型使用的一般系统提示。特殊标记<im_start>、<image>和<im_end>用于指示将放置表示图像的嵌入的位置。
 
-聊天机器人可以在一个简单的Python类中定义。
+聊天机器人可以在一个简单的 Python 类中定义。
 
 ```py
 class LLaVAChatBot:
@@ -182,13 +182,13 @@ class LLaVAChatBot:
         return answer
 ```
 
-如果您熟悉[transformers](https://github.com/huggingface/transformers)库，您将会认识到许多常见功能，并且执行的操作应该很容易理解。让我们快速浏览上面定义的LLaVAChatBot类的方法。
+如果您熟悉[transformers](https://github.com/huggingface/transformers)库，您将会认识到许多常见功能，并且执行的操作应该很容易理解。让我们快速浏览上面定义的 LLaVAChatBot 类的方法。
 
-+   load_models: 该方法加载语言模型、分词器和图像处理器，使用BitsAndBytes库进行量化，以减少GPU内存需求。该代码阴影了Hugging Face transformers模型使用的from_pretrained方法。BitsAndBytes允许将模型量化为8位或4位。
++   load_models: 该方法加载语言模型、分词器和图像处理器，使用 BitsAndBytes 库进行量化，以减少 GPU 内存需求。该代码阴影了 Hugging Face transformers 模型使用的 from_pretrained 方法。BitsAndBytes 允许将模型量化为 8 位或 4 位。
 
-+   setup_image: 它从本地路径或URL加载图像，并使用图像处理器将其转换为张量。
++   setup_image: 它从本地路径或 URL 加载图像，并使用图像处理器将其转换为张量。
 
-+   generate_answer: 该方法返回模型关于所提供图像当前对话的答案。LLaVa模型的generate方法类似于Hugging Face transformers模型的generate方法。
++   generate_answer: 该方法返回模型关于所提供图像当前对话的答案。LLaVa 模型的 generate 方法类似于 Hugging Face transformers 模型的 generate 方法。
 
 +   get_conv_text: 该方法返回到目前为止对话的原始文本。
 
@@ -196,15 +196,15 @@ class LLaVAChatBot:
 
 +   continue_chat: 另一个主要方法，它继续关于图像的现有对话。
 
-我在[此Colab笔记本](https://colab.research.google.com/drive/1tq9K3utBJ4VeMmuUarMEFCmaekMUG_Zd?usp=sharing)中提供了完整的代码，这样你就可以自己尝试。
+我在[此 Colab 笔记本](https://colab.research.google.com/drive/1tq9K3utBJ4VeMmuUarMEFCmaekMUG_Zd?usp=sharing)中提供了完整的代码，这样你就可以自己尝试。
 
 # 示例
 
-在本节中，我收集了在测试模型能力时获得的一些有趣示例。本文中的所有示例都是使用8位量化的模型llava-v1.5–7b创建的。
+在本节中，我收集了在测试模型能力时获得的一些有趣示例。本文中的所有示例都是使用 8 位量化的模型 llava-v1.5–7b 创建的。
 
 首先，让我们看看该模型描述和理解图像的能力。下面我要求模型描述一张描绘白老虎的图片。
 
-![](../Images/240edd0c191583c4a31c4cab91338c91.png)
+![](img/240edd0c191583c4a31c4cab91338c91.png)
 
 照片由[Joshua J. Cotten](https://unsplash.com/@jcotten?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -235,7 +235,7 @@ striped tigers.</s></s>
 
 接下来，我测试了模型是否能够为用户提供执行各种任务的可操作指导。这是区分“字幕生成”模型和真正的视觉对话助手的关键点。例如，模型能否根据图像中存在的成分提供食谱？结果如下报告。
 
-![](../Images/5cca84ad35e4a7587b31ef017dff4cbd.png)
+![](img/5cca84ad35e4a7587b31ef017dff4cbd.png)
 
 照片由[ThermoPro](https://unsplash.com/@thermopro?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -310,7 +310,7 @@ of side dishes, such as mashed potatoes or a vegetable-based sauce.</s></s>
 
 现在让我们看看模型如何用于获得建议。这是在头脑风暴时获取新想法的有用功能，并且可以为用户提供真正的价值。在下面的对话中，我请求模型提供关于改变咖啡馆外观的建议。
 
-![](../Images/cf321a55ad85606eab4203e9fd846305.png)
+![](img/cf321a55ad85606eab4203e9fd846305.png)
 
 照片由[Michał Mancewicz](https://unsplash.com/@kreyatif?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -355,7 +355,7 @@ creating a memorable experience for its patrons.</s></s>
 
 让我们继续实际的内容，可以帮助用户在日常活动中获得帮助。模型是否能够帮助撰写广告或列表？
 
-![](../Images/58fbea207cd49b2ab4ee9a211bf1af02.png)
+![](img/58fbea207cd49b2ab4ee9a211bf1af02.png)
 
 照片由[Eugene Chystiakov](https://unsplash.com/@eugenechystiakov?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -391,9 +391,9 @@ functional chair today.</s></s>
 
 模型能够准确指出椅子的特征，并且能够创建吸引人的广告，当要求时正确地定制答案以适应不同的目标。
 
-作为最后的测试，让我们看看是否可以像大型语言模型那样使用已被证明对LLaVA有益的提示技术。以下是尝试零点启发的链式思维提示的示例。
+作为最后的测试，让我们看看是否可以像大型语言模型那样使用已被证明对 LLaVA 有益的提示技术。以下是尝试零点启发的链式思维提示的示例。
 
-![](../Images/cb0ed3882d16fa029375b9b6d6413222.png)
+![](img/cb0ed3882d16fa029375b9b6d6413222.png)
 
 照片由[Arnold Middelkoop](https://unsplash.com/@arnoldmid?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -437,15 +437,15 @@ water. It is a large, white, stone fish sculpture, which is not a real fish
 and does not have the buoyancy properties of a natural fish.</s></s>
 ```
 
-虽然最终答案仍然是正确的，但在这种情况下给出的解释要少得多，并且答案是在句子开头给出的。由于LLaVA使用的生成语言模型是因果的，这意味着提供的答案不依赖于后续的解释。进行更广泛的实验将很有趣，以测试Chain of Thought（CoT）是否通常能够改善视觉语言模型在复杂推理任务中的表现，类似于观察到的大型语言模型在[Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)和[Large Language Models are Zero-Shot Reasoners](https://arxiv.org/abs/2205.11916)中所述的情况。
+虽然最终答案仍然是正确的，但在这种情况下给出的解释要少得多，并且答案是在句子开头给出的。由于 LLaVA 使用的生成语言模型是因果的，这意味着提供的答案不依赖于后续的解释。进行更广泛的实验将很有趣，以测试 Chain of Thought（CoT）是否通常能够改善视觉语言模型在复杂推理任务中的表现，类似于观察到的大型语言模型在[Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)和[Large Language Models are Zero-Shot Reasoners](https://arxiv.org/abs/2205.11916)中所述的情况。
 
 # 限制
 
-尽管非常强大，LLaVA也有其局限性。例如，该模型已经训练成每次只使用一张图片，因此无法处理需要与多张图片交互的更复杂对话。然而，值得注意的是，这种限制并非模型架构固有的，可以通过在训练期间包含多图片对话数据来修正。
+尽管非常强大，LLaVA 也有其局限性。例如，该模型已经训练成每次只使用一张图片，因此无法处理需要与多张图片交互的更复杂对话。然而，值得注意的是，这种限制并非模型架构固有的，可以通过在训练期间包含多图片对话数据来修正。
 
-在测试中，我注意到该模型（至少是1.5 7b模型的8位量化版本）在计算图像中的元素数量以及处理数值任务方面存在困难。以下是一个例子。
+在测试中，我注意到该模型（至少是 1.5 7b 模型的 8 位量化版本）在计算图像中的元素数量以及处理数值任务方面存在困难。以下是一个例子。
 
-![](../Images/da758143f4be167c44018ab5e580cb7a.png)
+![](img/da758143f4be167c44018ab5e580cb7a.png)
 
 照片由[John Matychuk](https://unsplash.com/@john_matychuk?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -465,7 +465,7 @@ ASSISTANT: The parking spots occupied by cars are 66, 67, 68, 69, 70, and 71.</s
 
 像所有大型语言模型一样，该模型也容易产生幻觉，并且可以通过适当的提示轻易地被欺骗而犯错。例如，如果提供了沙漠的图片，并问这张图片中的鱼是哪种物种，它会产生沙漠鱼的幻觉。
 
-![](../Images/afc885c1294f8b11eca34827ea9e8eaa.png)
+![](img/afc885c1294f8b11eca34827ea9e8eaa.png)
 
 照片由[Wolfgang Hasselmann](https://unsplash.com/@wolfgang_hasselmann?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -482,12 +482,12 @@ to living in desert environments.</s></s>
 
 # 结论
 
-LLaVA在视觉语言理解方面显示出令人印象深刻的能力。这标志着多模式开源视觉语言模型的明显进步。LLaVA最大的优势之一是它易于训练和微调。例如，LLaVA 1.5 13b的完整训练仅使用了1.2M数据，在单个8-A100节点上大约耗时1天。这使其适合在特定领域进行微调，以获得专家助理，例如在[LLaVA-Med: Training a Large Language-and-Vision Assistant for Biomedicine in One Day](https://arxiv.org/abs/2306.00890)中所做的那样。
+LLaVA 在视觉语言理解方面显示出令人印象深刻的能力。这标志着多模式开源视觉语言模型的明显进步。LLaVA 最大的优势之一是它易于训练和微调。例如，LLaVA 1.5 13b 的完整训练仅使用了 1.2M 数据，在单个 8-A100 节点上大约耗时 1 天。这使其适合在特定领域进行微调，以获得专家助理，例如在[LLaVA-Med: Training a Large Language-and-Vision Assistant for Biomedicine in One Day](https://arxiv.org/abs/2306.00890)中所做的那样。
 
-为聊天助手添加视觉能力扩展了此类模型的应用领域，使其革命性潜力能够应用于更复杂和更细致的任务。将图像特征视为语言标记也带来了使用所有先进提示技术的可能性，这些技术通常用于纯文本语言模型，并进一步扩展了这些技术。例如，可以通过检索与对话相关的文本和图像来扩展检索增强生成的能力。实际上，利用CLIP的共享图像文本嵌入空间，可以通过输入文本或图片来检索外部文档和外部图像！
+为聊天助手添加视觉能力扩展了此类模型的应用领域，使其革命性潜力能够应用于更复杂和更细致的任务。将图像特征视为语言标记也带来了使用所有先进提示技术的可能性，这些技术通常用于纯文本语言模型，并进一步扩展了这些技术。例如，可以通过检索与对话相关的文本和图像来扩展检索增强生成的能力。实际上，利用 CLIP 的共享图像文本嵌入空间，可以通过输入文本或图片来检索外部文档和外部图像！
 
 扩展模型能力的另一个有趣方向可以在[LLaVA-Interactive: An All-in-One Demo for Image Chat, Segmentation, Generation and Editing](https://arxiv.org/abs/2311.00571)中找到。主要思路是结合视觉语言聊天模型、文本生成图像模型以及其他视觉模型（如图像分割模型）的各种能力，以获得一个能够处理多模态输入并生成多模态输出的助手。
 
-总之，LLaVA为开源多模态生成模型标志着一个重要的步骤，这些模型展现了令人印象深刻的能力，并引起了广泛关注。随着开源模型的更广泛采用，我相信我们很快将见证这些强大模型的新应用的迅速增长。
+总之，LLaVA 为开源多模态生成模型标志着一个重要的步骤，这些模型展现了令人印象深刻的能力，并引起了广泛关注。随着开源模型的更广泛采用，我相信我们很快将见证这些强大模型的新应用的迅速增长。
 
 感谢阅读！如果你想亲自尝试代码，可以查看[这个 Colab 笔记本](https://colab.research.google.com/drive/1tq9K3utBJ4VeMmuUarMEFCmaekMUG_Zd?usp=sharing)。

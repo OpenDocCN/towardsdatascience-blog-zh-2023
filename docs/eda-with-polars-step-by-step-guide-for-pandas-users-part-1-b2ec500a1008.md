@@ -1,10 +1,10 @@
 # EDA 使用 Polars: Pandas 用户的逐步指南（第一部分）
 
-> 原文：[https://towardsdatascience.com/eda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008?source=collection_archive---------4-----------------------#2023-07-06](https://towardsdatascience.com/eda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008?source=collection_archive---------4-----------------------#2023-07-06)
+> 原文：[`towardsdatascience.com/eda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008?source=collection_archive---------4-----------------------#2023-07-06`](https://towardsdatascience.com/eda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008?source=collection_archive---------4-----------------------#2023-07-06)
 
 ## 使用 Polars 提升您的数据分析
 
-[](https://medium.com/@antonsruberts?source=post_page-----b2ec500a1008--------------------------------)[![Antons Tocilins-Ruberts](../Images/363a4f32aa793cca7a67dea68e76e3cf.png)](https://medium.com/@antonsruberts?source=post_page-----b2ec500a1008--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b2ec500a1008--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b2ec500a1008--------------------------------) [Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----b2ec500a1008--------------------------------)
+[](https://medium.com/@antonsruberts?source=post_page-----b2ec500a1008--------------------------------)![Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----b2ec500a1008--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b2ec500a1008--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2ec500a1008--------------------------------) [Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----b2ec500a1008--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb2ec500a1008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008&source=-----b2ec500a1008---------------------bookmark_footer-----------)![](../Images/1ec62693f9e625f8eb7847708504fcaa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb2ec500a1008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008&source=-----b2ec500a1008---------------------bookmark_footer-----------)![](img/1ec62693f9e625f8eb7847708504fcaa.png)
 
 图片由 [Mitul Grover](https://unsplash.com/@mitulgrover?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

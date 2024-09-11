@@ -1,18 +1,18 @@
-# 《PyTorch中的清晰代码：可读的机器学习最佳实践》
+# 《PyTorch 中的清晰代码：可读的机器学习最佳实践》
 
-> 原文：[https://towardsdatascience.com/clean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df?source=collection_archive---------6-----------------------#2023-03-17](https://towardsdatascience.com/clean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df?source=collection_archive---------6-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/clean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df?source=collection_archive---------6-----------------------#2023-03-17`](https://towardsdatascience.com/clean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df?source=collection_archive---------6-----------------------#2023-03-17)
 
-![](../Images/bd25c3ef78df4d6a87b77701273f3c31.png)
+![](img/bd25c3ef78df4d6a87b77701273f3c31.png)
 
 图片由[Greyson Joralemon](https://unsplash.com/@greysonjoralemon?utm_source=medium&utm_medium=referral)提供，刊登在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-## 在PyTorch中编写清晰、高效且可读的代码的五个技巧
+## 在 PyTorch 中编写清晰、高效且可读的代码的五个技巧
 
-[](https://medium.com/@marcellopoliti?source=post_page-----adfd798bf6df--------------------------------)[![Marcello Politi](../Images/484e44571bd2e75acfe5fef3146ab3c2.png)](https://medium.com/@marcellopoliti?source=post_page-----adfd798bf6df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----adfd798bf6df--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----adfd798bf6df--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----adfd798bf6df--------------------------------)
+[](https://medium.com/@marcellopoliti?source=post_page-----adfd798bf6df--------------------------------)![Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----adfd798bf6df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----adfd798bf6df--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----adfd798bf6df--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----adfd798bf6df--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----adfd798bf6df---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----adfd798bf6df--------------------------------) · 5分钟阅读·2023年3月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fadfd798bf6df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df&user=Marcello+Politi&userId=7390355d40fe&source=-----adfd798bf6df---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----adfd798bf6df---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----adfd798bf6df--------------------------------) · 5 分钟阅读·2023 年 3 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fadfd798bf6df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclean-code-in-pytorch-best-practices-for-readable-ml-adfd798bf6df&user=Marcello+Politi&userId=7390355d40fe&source=-----adfd798bf6df---------------------clap_footer-----------)
 
 --
 

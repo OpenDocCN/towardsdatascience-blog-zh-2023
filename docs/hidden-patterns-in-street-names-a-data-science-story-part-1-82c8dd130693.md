@@ -1,16 +1,16 @@
-# 街道名称中的隐藏模式：数据科学故事 [第1部分]
+# 街道名称中的隐藏模式：数据科学故事 [第一部分]
 
-> 原文：[https://towardsdatascience.com/hidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693?source=collection_archive---------4-----------------------#2023-01-29](https://towardsdatascience.com/hidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693?source=collection_archive---------4-----------------------#2023-01-29)
+> 原文：[`towardsdatascience.com/hidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693?source=collection_archive---------4-----------------------#2023-01-29`](https://towardsdatascience.com/hidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693?source=collection_archive---------4-----------------------#2023-01-29)
 
-[](https://deabardhoshi.medium.com/?source=post_page-----82c8dd130693--------------------------------)[![Dea Bardhoshi](../Images/14ce0986fc2a4a192797a52ed9908d1e.png)](https://deabardhoshi.medium.com/?source=post_page-----82c8dd130693--------------------------------)[](https://towardsdatascience.com/?source=post_page-----82c8dd130693--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----82c8dd130693--------------------------------) [Dea Bardhoshi](https://deabardhoshi.medium.com/?source=post_page-----82c8dd130693--------------------------------)
+[](https://deabardhoshi.medium.com/?source=post_page-----82c8dd130693--------------------------------)![Dea Bardhoshi](https://deabardhoshi.medium.com/?source=post_page-----82c8dd130693--------------------------------)[](https://towardsdatascience.com/?source=post_page-----82c8dd130693--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----82c8dd130693--------------------------------) [Dea Bardhoshi](https://deabardhoshi.medium.com/?source=post_page-----82c8dd130693--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd61c58ba988e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693&user=Dea+Bardhoshi&userId=d61c58ba988e&source=post_page-d61c58ba988e----82c8dd130693---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----82c8dd130693--------------------------------) ·6分钟阅读·2023年1月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F82c8dd130693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693&user=Dea+Bardhoshi&userId=d61c58ba988e&source=-----82c8dd130693---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd61c58ba988e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693&user=Dea+Bardhoshi&userId=d61c58ba988e&source=post_page-d61c58ba988e----82c8dd130693---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----82c8dd130693--------------------------------) ·6 分钟阅读·2023 年 1 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F82c8dd130693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693&user=Dea+Bardhoshi&userId=d61c58ba988e&source=-----82c8dd130693---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F82c8dd130693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693&source=-----82c8dd130693---------------------bookmark_footer-----------)![](../Images/024b14857164d6a413d164623793c12f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F82c8dd130693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhidden-patterns-in-street-names-a-data-science-story-part-1-82c8dd130693&source=-----82c8dd130693---------------------bookmark_footer-----------)![](img/024b14857164d6a413d164623793c12f.png)
 
 照片由 [Alexandr Bormotin](https://unsplash.com/@bormot?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -26,7 +26,7 @@
 
 这是 Open Street Map 提供的数据的一个快照，指定了一组坐标以覆盖整个地拉那区域：
 
-![](../Images/13a988aaa933795dafe86588ffc73538.png)
+![](img/13a988aaa933795dafe86588ffc73538.png)
 
 图片由作者提供
 
@@ -40,17 +40,17 @@
 
 这里是每个性别的计数情况：
 
-![](../Images/ed9ee260da69281cf3eb13d6234085ff.png)
+![](img/ed9ee260da69281cf3eb13d6234085ff.png)
 
 图片由作者提供
 
-如你所见，女性街道名称在地拉那的街道名称中占约3.3%，而男性名称则占约71%。这种情况在阿尔巴尼亚并非独特：[巴黎有2%的街道以女性命名](https://www.fodors.com/world/europe/france/experiences/news/why-are-all-the-streets-in-france-named-after-men)，而在[罗马这个比例是3.5%](https://www.bloomberg.com/news/articles/2015-11-04/mapping-the-sexism-of-street-names-in-major-cities)。在这些主要城市中，部分原因是制定这些决定的市政委员会历史上往往是男性和白人的主导。事实上，全球地方政府成员的平均女性比例仅为[36%](https://www.unwomen.org/sites/default/files/2022-01/Womens-representation-in-local-government-en.pdf)，许多国家甚至远未达到这一值，例如只有约25个国家在地方政府中有40%的女性代表。尽管如此，最近的地拉那市议会立法机构的男女比例为50–50%，这是朝着正确方向迈出的一步。
+如你所见，女性街道名称在地拉那的街道名称中占约 3.3%，而男性名称则占约 71%。这种情况在阿尔巴尼亚并非独特：[巴黎有 2%的街道以女性命名](https://www.fodors.com/world/europe/france/experiences/news/why-are-all-the-streets-in-france-named-after-men)，而在[罗马这个比例是 3.5%](https://www.bloomberg.com/news/articles/2015-11-04/mapping-the-sexism-of-street-names-in-major-cities)。在这些主要城市中，部分原因是制定这些决定的市政委员会历史上往往是男性和白人的主导。事实上，全球地方政府成员的平均女性比例仅为[36%](https://www.unwomen.org/sites/default/files/2022-01/Womens-representation-in-local-government-en.pdf)，许多国家甚至远未达到这一值，例如只有约 25 个国家在地方政府中有 40%的女性代表。尽管如此，最近的地拉那市议会立法机构的男女比例为 50–50%，这是朝着正确方向迈出的一步。
 
 ## 街道类型和长度
 
 OpenStreetMap 数据还包括描述每条街道类型的标签，以下是按性别比较这些类型的可视化图：
 
-![](../Images/98a4140ec771c6dfc790ca91554fa2e5.png)
+![](img/98a4140ec771c6dfc790ca91554fa2e5.png)
 
 作者提供的图片
 
@@ -58,13 +58,13 @@ OpenStreetMap 数据还包括描述每条街道类型的标签，以下是按性
 
 让我们看看按性别分组的所有街道总长度。为此，我将线串几何体投影到使用米的投影坐标系统中，并按性别平均了它们的长度：
 
-![](../Images/5633bf52ebb77cc5d4b2c9609e570c53.png)
+![](img/5633bf52ebb77cc5d4b2c9609e570c53.png)
 
 作者提供的图片
 
 有趣的是，“其他”街道的平均长度最长，而以女性命名的街道略短于以男性命名的街道。还发现“其他”街道多位于远离地拉那城市核心的高速公路或外围街道上：
 
-![](../Images/f15ed897df0ae8f8359222e2c267f77b.png)
+![](img/f15ed897df0ae8f8359222e2c267f77b.png)
 
 作者提供的图片
 
@@ -74,11 +74,11 @@ OpenStreetMap 数据还包括描述每条街道类型的标签，以下是按性
 
 以下是自定义地图的示例代码
 
-![](../Images/a2ca6d246a999f2b033a751ab9c7865b.png)
+![](img/a2ca6d246a999f2b033a751ab9c7865b.png)
 
 以男性命名的街道地图（图像由作者提供）
 
-![](../Images/dc7492865b3580b171971869861d82cf.png)
+![](img/dc7492865b3580b171971869861d82cf.png)
 
 以女性命名的街道地图（图像由作者提供）
 
@@ -90,23 +90,23 @@ OpenStreetMap 数据还包括描述每条街道类型的标签，以下是按性
 
 +   **艺术、教师/作家/研究员、政治、人道主义和宗教与战争**（为提供一些背景，许多这些女性在二战中与男性并肩作战，她们代表了“战争”类别中大多数女性）：
 
-![](../Images/ff0f0e2e6633ddb73b38bc692ee7a1dc.png)
+![](img/ff0f0e2e6633ddb73b38bc692ee7a1dc.png)
 
 图像由作者提供
 
 ## 邻里
 
-除了贡献领域，街道名称在不同邻里中的分布是否存在模式？地拉那有14个行政区域，将城市划分为不同的区域。使用来自OpenStreetMaps的GeoJSON文件，该文件显示了这些区域的多边形，我们可以将这个数据集与街道名称的数据集进行空间连接。这是14个区域的地图：
+除了贡献领域，街道名称在不同邻里中的分布是否存在模式？地拉那有 14 个行政区域，将城市划分为不同的区域。使用来自 OpenStreetMaps 的 GeoJSON 文件，该文件显示了这些区域的多边形，我们可以将这个数据集与街道名称的数据集进行空间连接。这是 14 个区域的地图：
 
 创建下图的代码，带有用户定义的图例
 
-![](../Images/88b451e286e29dfb7432c0b66374eaeb.png)
+![](img/88b451e286e29dfb7432c0b66374eaeb.png)
 
 我对每个行政区域中街道名称中女性的比例感兴趣：
 
-![](../Images/db6bba6fc50799c8c941d646b65890c9.png)
+![](img/db6bba6fc50799c8c941d646b65890c9.png)
 
-有一些有趣的发现（至少对我来说 :) ）。女性名字的比例存在一些差异，如第4区的街道中几乎有10%以女性命名，而第8区仅有0.08%。另一方面，两个区域（12、14）没有以女性命名的街道。再次说，探讨这些命名选择背后的决策过程将是有趣的。
+有一些有趣的发现（至少对我来说 :) ）。女性名字的比例存在一些差异，如第 4 区的街道中几乎有 10%以女性命名，而第 8 区仅有 0.08%。另一方面，两个区域（12、14）没有以女性命名的街道。再次说，探讨这些命名选择背后的决策过程将是有趣的。
 
 ## 结论
 

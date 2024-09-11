@@ -1,38 +1,38 @@
 # PyTorch 介绍
 
-> 原文：[https://towardsdatascience.com/introduction-to-pytorch-e0235570a080?source=collection_archive---------11-----------------------#2023-03-01](https://towardsdatascience.com/introduction-to-pytorch-e0235570a080?source=collection_archive---------11-----------------------#2023-03-01)
+> 原文：[`towardsdatascience.com/introduction-to-pytorch-e0235570a080?source=collection_archive---------11-----------------------#2023-03-01`](https://towardsdatascience.com/introduction-to-pytorch-e0235570a080?source=collection_archive---------11-----------------------#2023-03-01)
 
 ## 了解 PyTorch 项目的工作流程
 
-[](https://medium.com/@pumaline?source=post_page-----e0235570a080--------------------------------)[![Datamapu](../Images/63b0c7f9a3d160c5bb039bbebd791f7e.png)](https://medium.com/@pumaline?source=post_page-----e0235570a080--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e0235570a080--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e0235570a080--------------------------------) [Datamapu](https://medium.com/@pumaline?source=post_page-----e0235570a080--------------------------------)
+[](https://medium.com/@pumaline?source=post_page-----e0235570a080--------------------------------)![Datamapu](https://medium.com/@pumaline?source=post_page-----e0235570a080--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e0235570a080--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0235570a080--------------------------------) [Datamapu](https://medium.com/@pumaline?source=post_page-----e0235570a080--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffcd72d75ae6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-e0235570a080&user=Datamapu&userId=fcd72d75ae6e&source=post_page-fcd72d75ae6e----e0235570a080---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0235570a080--------------------------------) · 13 分钟阅读 · 2023年3月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe0235570a080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-e0235570a080&user=Datamapu&userId=fcd72d75ae6e&source=-----e0235570a080---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffcd72d75ae6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-e0235570a080&user=Datamapu&userId=fcd72d75ae6e&source=post_page-fcd72d75ae6e----e0235570a080---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0235570a080--------------------------------) · 13 分钟阅读 · 2023 年 3 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe0235570a080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-e0235570a080&user=Datamapu&userId=fcd72d75ae6e&source=-----e0235570a080---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe0235570a080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-e0235570a080&source=-----e0235570a080---------------------bookmark_footer-----------)![](../Images/1e2d7992b69d15a3657c1c6969a38233.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe0235570a080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-pytorch-e0235570a080&source=-----e0235570a080---------------------bookmark_footer-----------)![](img/1e2d7992b69d15a3657c1c6969a38233.png)
 
 图片来源：Igor Lepilin 在 Unsplash
 
-在本文中，我们将通过使用PyTorch的深度学习项目生命周期。我们假设你已经对神经网络有一定了解，因此不会详细解释它们，只会关注PyTorch特有的方面。我们将主要遵循[官方文档](https://pytorch.org/tutorials/beginner/basics/intro.html)中展示的步骤，但考虑一个不同的例子。在文档中展示的是图像分类的例子，而这里我们将考虑存储在.csv文件中的表格数据。这意味着一些更改是必要的，特别是在准备数据集时。拥有两个不同的例子应该有助于更好地理解PyTorch项目的一般工作流程。除了这篇文章，你还可以查看包含完整代码和工作流程结构的[colab笔记本](https://drive.google.com/file/d/1p31TH09BExMYyo-cm2DfcacoTdxONgwe/view?usp=sharing)，或者在[GitHub](https://github.com/froukje/articles/blob/main/06_pytorch_introduction.ipynb)上找到该笔记本。
+在本文中，我们将通过使用 PyTorch 的深度学习项目生命周期。我们假设你已经对神经网络有一定了解，因此不会详细解释它们，只会关注 PyTorch 特有的方面。我们将主要遵循[官方文档](https://pytorch.org/tutorials/beginner/basics/intro.html)中展示的步骤，但考虑一个不同的例子。在文档中展示的是图像分类的例子，而这里我们将考虑存储在.csv 文件中的表格数据。这意味着一些更改是必要的，特别是在准备数据集时。拥有两个不同的例子应该有助于更好地理解 PyTorch 项目的一般工作流程。除了这篇文章，你还可以查看包含完整代码和工作流程结构的[colab 笔记本](https://drive.google.com/file/d/1p31TH09BExMYyo-cm2DfcacoTdxONgwe/view?usp=sharing)，或者在[GitHub](https://github.com/froukje/articles/blob/main/06_pytorch_introduction.ipynb)上找到该笔记本。
 
 # 数据
 
-使用的数据从[kaggle](https://www.kaggle.com/datasets/adityakadiwal/water-potability) [1]下载，且免费提供。这些数据描述了在城市环境中确定水质所需的不同特征。目标是预测水质是好还是坏。也就是说，我们正在考虑一个二分类问题。总共有9个特征（均为数值型）和标签。
+使用的数据从[kaggle](https://www.kaggle.com/datasets/adityakadiwal/water-potability) [1]下载，且免费提供。这些数据描述了在城市环境中确定水质所需的不同特征。目标是预测水质是好还是坏。也就是说，我们正在考虑一个二分类问题。总共有 9 个特征（均为数值型）和标签。
 
-![](../Images/0657b63353cb716606c32939eca8dcdb.png)
+![](img/0657b63353cb716606c32939eca8dcdb.png)
 
 给定数据集的特征和标签。
 
 # 预处理
 
-与每个数据科学项目一样，首先需要进行一些预处理。这与我们使用的深度学习框架无关。因此，我们在这里不详细讨论。有关更多信息，请参见[colab笔记本](https://colab.research.google.com/drive/1p31TH09BExMYyo-cm2DfcacoTdxONgwe)或[GitHub](https://github.com/froukje/articles/blob/main/06_pytorch_introduction.ipynb)。
+与每个数据科学项目一样，首先需要进行一些预处理。这与我们使用的深度学习框架无关。因此，我们在这里不详细讨论。有关更多信息，请参见[colab 笔记本](https://colab.research.google.com/drive/1p31TH09BExMYyo-cm2DfcacoTdxONgwe)或[GitHub](https://github.com/froukje/articles/blob/main/06_pytorch_introduction.ipynb)。
 
-我们很幸运，数据不需要太多准备。所有特征都是数值型和浮点型。然而，有一些缺失值，我们用相应特征的均值进行了填补。还需考虑的是，目标变量并不均匀分布，0（差的水质）的数量远多于1（良好的水质）。为了简化，我们对数据进行了上采样，使得0的数量与1的数量相等，通过从1的子集随机抽样直到达到相同数量的样本。最后，我们将数据集划分为训练集（80%）、验证集（10%）和测试集（10%），并对数据进行了缩放。
+我们很幸运，数据不需要太多准备。所有特征都是数值型和浮点型。然而，有一些缺失值，我们用相应特征的均值进行了填补。还需考虑的是，目标变量并不均匀分布，0（差的水质）的数量远多于 1（良好的水质）。为了简化，我们对数据进行了上采样，使得 0 的数量与 1 的数量相等，通过从 1 的子集随机抽样直到达到相同数量的样本。最后，我们将数据集划分为训练集（80%）、验证集（10%）和测试集（10%），并对数据进行了缩放。
 
-# 创建一个PyTorch数据集
+# 创建一个 PyTorch 数据集
 
 为了在 PyTorch 模型中使用我们的数据，我们需要将其转化为特定的形式：*PyTorch 数据集*。该数据集的构建与模型解耦。数据集对象存储样本及其对应的标签。此时，这个例子略微偏离了 PyTorch 文档页面。文档中使用的示例数据是 [FashionMNIST](https://www.kaggle.com/datasets/zalando-research/fashionmnist)。对于这个（和其他几个）数据集，PyTorch 提供了预加载的数据集。要了解如何加载这些数据集，可以查看他们的 [PyTorch 教程](https://pytorch.org/tutorials/beginner/basics/data_tutorial.html)。然而，如果你想用 PyTorch 处理自己的数据，你很可能需要编写自己的自定义数据集类。
 
@@ -341,13 +341,13 @@ def valid(model, device, val_dataloader, criterion):
 
 3. **定义优化器**
 
-+   在PyTorch中有不同的[优化器](https://pytorch.org/docs/stable/optim.html)。我们使用Adam优化器，这是一种非常常见的优化器。不过你也可以尝试不同的优化器。Adam优化器是随机梯度下降的扩展。简单来说，区别在于随机梯度下降在训练过程中保持学习率不变，而Adam则对其进行调整。关于Adam优化器的介绍可以在[这里](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/)找到。
++   在 PyTorch 中有不同的[优化器](https://pytorch.org/docs/stable/optim.html)。我们使用 Adam 优化器，这是一种非常常见的优化器。不过你也可以尝试不同的优化器。Adam 优化器是随机梯度下降的扩展。简单来说，区别在于随机梯度下降在训练过程中保持学习率不变，而 Adam 则对其进行调整。关于 Adam 优化器的介绍可以在[这里](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/)找到。
 
 4. **定义损失函数**
 
-+   我们正在考虑一个1维输出的二分类问题，这种问题的默认选择是[二元交叉熵](/understanding-binary-cross-entropy-log-loss-a-visual-explanation-a3ac6025181a)，我们将使用它。
++   我们正在考虑一个 1 维输出的二分类问题，这种问题的默认选择是二元交叉熵，我们将使用它。
 
-+   请注意，我们没有在模型中应用最终的[sigmoid层](https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html)。这是故意的，因为PyTorch提供了`[nn.BCEWithLogitsLoss()](https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html)`方法，它将最终的sigmoid层和二元交叉熵结合起来。我们也可以单独应用这两种方法，即将`[nn.Sigmoid](https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html)`层作为模型的最后一步，然后使用`[nn.BCE()](https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html)`损失。不过，使用`nn.BCEWithLogitsLoss()`是处理二分类问题的推荐方式，因为它在数值上更稳定。
++   请注意，我们没有在模型中应用最终的[sigmoid 层](https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html)。这是故意的，因为 PyTorch 提供了`[nn.BCEWithLogitsLoss()](https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html)`方法，它将最终的 sigmoid 层和二元交叉熵结合起来。我们也可以单独应用这两种方法，即将`[nn.Sigmoid](https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html)`层作为模型的最后一步，然后使用`[nn.BCE()](https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html)`损失。不过，使用`nn.BCEWithLogitsLoss()`是处理二分类问题的推荐方式，因为它在数值上更稳定。
 
 在我们开始训练模型之前，我们设置超参数。超参数是可调节的参数，允许你控制模型优化过程。不同的超参数值可以影响模型的训练和收敛速度。在我们的例子中，我们有三个超参数需要设置。请注意，模型层的输入和输出特征也是超参数。我们将它们设置为固定值，不过你可以尝试不同的值。
 
@@ -357,7 +357,7 @@ def valid(model, device, val_dataloader, criterion):
 
 +   `learning_rate`：学习率
 
-我们还设置了变量`print_every`。这不是一个超参数，而只是决定在训练和验证过程中多频繁打印损失。请注意，如果有GPU可用，我们还需要手动将设备设置为“cuda”。
+我们还设置了变量`print_every`。这不是一个超参数，而只是决定在训练和验证过程中多频繁打印损失。请注意，如果有 GPU 可用，我们还需要手动将设备设置为“cuda”。
 
 ```py
 # hyperparamters 
@@ -423,13 +423,13 @@ for epoch in range(epochs):
 
 为了评估结果，我们可以查看训练和评估过程中的损失和指标。
 
-![](../Images/ed6db4f285385f8aa7d567e2e4d7bc7a.png)
+![](img/ed6db4f285385f8aa7d567e2e4d7bc7a.png)
 
-训练和验证的损失为150个周期。
+训练和验证的损失为 150 个周期。
 
-![](../Images/140d4c2d9d8d9d601fb2f02dde90be62.png)
+![](img/140d4c2d9d8d9d601fb2f02dde90be62.png)
 
-训练和验证的回顾持续150个周期。
+训练和验证的回顾持续 150 个周期。
 
 你可以在[笔记本](https://colab.research.google.com/drive/1p31TH09BExMYyo-cm2DfcacoTdxONgwe)中找到其他计算指标的图表。
 
@@ -468,13 +468,13 @@ predictions, test_accuracy, test_loss, test_recall, test_precision = \
 
 # 结论
 
-本文展示了如何使用PyTorch进行深度学习项目的详细示例。讨论并应用了深度学习工作流中的各个步骤到一个具体的数据集。在训练模型之前，一个重要的步骤是将数据转换为正确的形式，并为特定应用定义一个定制的数据集。在训练模型时，四个主要步骤是（1）应用模型，（2）计算损失，（3）进行反向传播，（4）更新权重。定义并应用了一个包含所有这些步骤的示例训练函数。最后，要使用模型，了解如何存储和重新加载模型是很重要的。
+本文展示了如何使用 PyTorch 进行深度学习项目的详细示例。讨论并应用了深度学习工作流中的各个步骤到一个具体的数据集。在训练模型之前，一个重要的步骤是将数据转换为正确的形式，并为特定应用定义一个定制的数据集。在训练模型时，四个主要步骤是（1）应用模型，（2）计算损失，（3）进行反向传播，（4）更新权重。定义并应用了一个包含所有这些步骤的示例训练函数。最后，要使用模型，了解如何存储和重新加载模型是很重要的。
 
 # 资源
 
-[1] Aditya Kadiwal, 2021, 水质 — 水质分类数据集, [https://www.kaggle.com/datasets/mssmartypants/water-quality](https://www.kaggle.com/datasets/mssmartypants/water-quality), 下载于2023年1月, 许可证：CC0: 公共领域
+[1] Aditya Kadiwal, 2021, 水质 — 水质分类数据集, [`www.kaggle.com/datasets/mssmartypants/water-quality`](https://www.kaggle.com/datasets/mssmartypants/water-quality), 下载于 2023 年 1 月, 许可证：CC0: 公共领域
 
-[2] PyTorch, 2022, [https://pytorch.org/tutorials/beginner/basics/intro.html](https://pytorch.org/tutorials/beginner/basics/intro.html)
+[2] PyTorch, 2022, [`pytorch.org/tutorials/beginner/basics/intro.html`](https://pytorch.org/tutorials/beginner/basics/intro.html)
 
 除非另有说明，所有图片均为作者提供。
 
@@ -484,9 +484,9 @@ predictions, test_accuracy, test_loss, test_recall, test_precision = \
 
 ### 数据科学和机器学习博客
 
-[datamapu.com](https://datamapu.com/?source=post_page-----e0235570a080--------------------------------) [medium.com](https://medium.com/@pumaline/subscribe?source=post_page-----e0235570a080--------------------------------) [## 每当Pumaline发布时获得电子邮件。
+[datamapu.com](https://datamapu.com/?source=post_page-----e0235570a080--------------------------------) [medium.com](https://medium.com/@pumaline/subscribe?source=post_page-----e0235570a080--------------------------------) [## 每当 Pumaline 发布时获得电子邮件。
 
-### 每当Pumaline发布时获得电子邮件。通过注册，如果你还没有Medium账户，将会创建一个…
+### 每当 Pumaline 发布时获得电子邮件。通过注册，如果你还没有 Medium 账户，将会创建一个…
 
 [medium.com](https://medium.com/@pumaline/subscribe?source=post_page-----e0235570a080--------------------------------) [www.buymeacoffee.com](https://www.buymeacoffee.com/pumaline?source=post_page-----e0235570a080--------------------------------) [## Pumaline
 

@@ -1,20 +1,20 @@
-# 使用Gumbel Softmax的离散分布变分自编码器（VAE）
+# 使用 Gumbel Softmax 的离散分布变分自编码器（VAE）
 
-> 原文：[https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e?source=collection_archive---------11-----------------------#2023-08-09](https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e?source=collection_archive---------11-----------------------#2023-08-09)
+> 原文：[`towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e?source=collection_archive---------11-----------------------#2023-08-09`](https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e?source=collection_archive---------11-----------------------#2023-08-09)
 
-## 理论和PyTorch实现
+## 理论和 PyTorch 实现
 
-[](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[![Alexey Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)
+[](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)![Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----b3f749b3417e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------) ·17分钟阅读·2023年8月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb3f749b3417e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----b3f749b3417e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----b3f749b3417e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------) ·17 分钟阅读·2023 年 8 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb3f749b3417e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----b3f749b3417e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb3f749b3417e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e&source=-----b3f749b3417e---------------------bookmark_footer-----------)![](../Images/596f70c179f4ea59a15aa4591018200b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb3f749b3417e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e&source=-----b3f749b3417e---------------------bookmark_footer-----------)![](img/596f70c179f4ea59a15aa4591018200b.png)
 
-[https://unsplash.com/photos/sbVu5zitZt0](https://unsplash.com/photos/sbVu5zitZt0)
+[`unsplash.com/photos/sbVu5zitZt0`](https://unsplash.com/photos/sbVu5zitZt0)
 
 由于这篇文章将会很详尽，我将为读者提供一个索引，以便更好地导航：
 
@@ -24,11 +24,11 @@
 
 1.  Kullback–Leibler (KL) 散度
 
-1.  VAE损失
+1.  VAE 损失
 
 1.  重参数化技巧
 
-1.  从类别分布中采样 & Gumbel-Max技巧
+1.  从类别分布中采样 & Gumbel-Max 技巧
 
 1.  实现
 

@@ -1,12 +1,12 @@
 # 使用 GPT-3 预测人道主义数据集的元数据
 
-> 原文：[https://towardsdatascience.com/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d?source=collection_archive---------4-----------------------#2023-01-18](https://towardsdatascience.com/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d?source=collection_archive---------4-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d?source=collection_archive---------4-----------------------#2023-01-18`](https://towardsdatascience.com/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d?source=collection_archive---------4-----------------------#2023-01-18)
 
-[](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)[![Matthew Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)![Matthew Harris](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----b104be17716d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------) ·19分钟阅读·2023年1月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb104be17716d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----b104be17716d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----b104be17716d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------) ·19 分钟阅读·2023 年 1 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb104be17716d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----b104be17716d---------------------clap_footer-----------)
 
 --
 
@@ -16,13 +16,13 @@
 
 简化发现的一个方法是确保表格数据有描述每列的元数据。这可以帮助将数据集链接在一起，例如知道一个地雷位置表中的列指定了经度和纬度，这与另一个表中定位野战医院的列类似。列名并不总能明显显示它们可能包含的数据，这些数据可能以多种语言呈现，并遵循不同的标准。在理想的情况下，这种元数据是与数据一起提供的，但正如我们下面将看到的那样，这通常不是情况。手动处理这项工作可能非常庞大。
 
-在这篇文章中，我将探讨我们如何通过使用[OpenAI的 GPT-3](https://openai.com/blog/gpt-3-apps/) 大型语言模型来预测人道主义数据集的元数据属性，从而帮助自动化这个过程，并改进以往工作的表现。
+在这篇文章中，我将探讨我们如何通过使用[OpenAI 的 GPT-3](https://openai.com/blog/gpt-3-apps/) 大型语言模型来预测人道主义数据集的元数据属性，从而帮助自动化这个过程，并改进以往工作的表现。
 
 # 人道主义数据交换（HDX）
 
-[人道主义数据交换](https://data.humdata.org/)（HDX）是一个极好的平台，旨在通过以标准化的方式将人道主义数据集合在一起，解决这些问题。截至我写这篇文章时，全球共有20,403个数据集，涵盖了广泛的领域和文件类型。这些数据集中的CSV和Excel文件产生了大约148,000个不同的表格，数据量非常庞大！
+[人道主义数据交换](https://data.humdata.org/)（HDX）是一个极好的平台，旨在通过以标准化的方式将人道主义数据集合在一起，解决这些问题。截至我写这篇文章时，全球共有 20,403 个数据集，涵盖了广泛的领域和文件类型。这些数据集中的 CSV 和 Excel 文件产生了大约 148,000 个不同的表格，数据量非常庞大！
 
-![](../Images/4bf351851393834c447cc8b83c2844b5.png)
+![](img/4bf351851393834c447cc8b83c2844b5.png)
 
 [人道主义数据交换](https://data.humdata.org/)（HDX）平台上的文件类型。有关数据如何汇总的信息，请参见[这个笔记本](https://github.com/datakind/gpt-3-meta-data-discovery/blob/main/hdx_gpt-3_tag_prediction.ipynb)。
 
@@ -32,7 +32,7 @@ HDX 平台的一个优点是它鼓励数据拥有者使用[人道主义交换语
 
 HXL 标签有两种形式，一种是设置在数据集级别的标签，另一种是应用于表格数据中列的字段级别标签。后者看起来像这样：
 
-![](../Images/ac56a776af2eb693400af0f63fb15ee0.png)
+![](img/ac56a776af2eb693400af0f63fb15ee0.png)
 
 第二行有 HXL 标签的表格示例[[#HXL Standards examples](https://hxlstandard.org/hxlexample/)]
 
@@ -40,7 +40,7 @@ HXL 标签有两种形式，一种是设置在数据集级别的标签，另一�
 
 挑战在于这些字段级标签并不总是设置在 HDX 数据集上，这使得使用那里的数据变得更加困难。查看肯尼亚的 CSV 和 Excel 数据，大多数表格似乎缺少列 HXL 标签。
 
-![](../Images/d797dbe8f75ae6c6827659970a062991.png)
+![](img/d797dbe8f75ae6c6827659970a062991.png)
 
 分析[人道主义数据交换](https://data.humdata.org/) (HDX)平台上肯尼亚的数据文件，查看哪些文件有 HXL 列标签。有关如何整理数据的细节，请参见[这个笔记本](https://github.com/datakind/gpt-3-meta-data-discovery/blob/main/hdx_gpt-3_tag_prediction.ipynb)。
 
@@ -60,13 +60,13 @@ HXL 标签有两种形式，一种是设置在数据集级别的标签，另一�
 
 首先，值得澄清一下 HDX 数据集、资源和表格的层次结构。‘数据集’可以包含一组‘资源’，这些资源是文件。数据集有自己的页面，比如[这个](https://data.humdata.org/dataset/mli-vegetation-indicators-dekad-admin2)，提供了很多关于历史、上传者和数据集级别标签的有用信息。
 
-![](../Images/add9842a1f5e62a1255154ef3ee78352.png)
+![](img/add9842a1f5e62a1255154ef3ee78352.png)
 
 HDX 平台上的一个 HDX 数据集示例
 
 上面的示例有两个 CSV 文件资源，如果选择**更多 > 在 HDX 上预览**，可以显示 HXL 标签。
 
-![](../Images/fe0c06003bbc3ef33a58457108499182.png)
+![](img/fe0c06003bbc3ef33a58457108499182.png)
 
 一个 [HDX 平台上的示例资源](https://data.humdata.org/dataset/mli-vegetation-indicators-dekad-admin2/resource/be4ec19e-046f-4df2-8772-5615a06aef03)
 
@@ -951,6 +951,6 @@ F1: 0.95
 
 [2] Sarah Telford, [Opinion: Humanitarian world is full of data myths. Here are the most popular](https://www.devex.com/news/opinion-humanitarian-world-is-full-of-data-myths-here-are-the-most-popular-91959) (2018)
 
-[3] Vinitra Swamy 等人，[人道主义数据的机器学习：使用 HXL 标准进行标签预测](https://www.kdd.org/kdd2019/docs/Humanitarian_Data_tagging_KDD2019_SocialImpactTrack_HXLTagPrediction.pdf)（2019年）
+[3] Vinitra Swamy 等人，[人道主义数据的机器学习：使用 HXL 标准进行标签预测](https://www.kdd.org/kdd2019/docs/Humanitarian_Data_tagging_KDD2019_SocialImpactTrack_HXLTagPrediction.pdf)（2019 年）
 
 用于此分析的笔记本可以在[这里](https://github.com/datakind/gpt-3-meta-data-discovery)找到。

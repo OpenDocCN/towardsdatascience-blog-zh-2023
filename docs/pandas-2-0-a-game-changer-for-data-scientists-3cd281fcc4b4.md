@@ -1,18 +1,18 @@
 # Pandas 2.0：数据科学家的游戏改变者？
 
-> 原文：[https://towardsdatascience.com/pandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4?source=collection_archive---------0-----------------------#2023-06-27](https://towardsdatascience.com/pandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4?source=collection_archive---------0-----------------------#2023-06-27)
+> 原文：[`towardsdatascience.com/pandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4?source=collection_archive---------0-----------------------#2023-06-27`](https://towardsdatascience.com/pandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4?source=collection_archive---------0-----------------------#2023-06-27)
 
 ## 高效数据处理的五大特点
 
-[](https://medium.com/@miriam.santos?source=post_page-----3cd281fcc4b4--------------------------------)[![Miriam Santos](../Images/decbc6528a641e7b02934a03e136284a.png)](https://medium.com/@miriam.santos?source=post_page-----3cd281fcc4b4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3cd281fcc4b4--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3cd281fcc4b4--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----3cd281fcc4b4--------------------------------)
+[](https://medium.com/@miriam.santos?source=post_page-----3cd281fcc4b4--------------------------------)![Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----3cd281fcc4b4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3cd281fcc4b4--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----3cd281fcc4b4--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----3cd281fcc4b4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----3cd281fcc4b4---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----3cd281fcc4b4--------------------------------) ·7分钟阅读·2023年6月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3cd281fcc4b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4&user=Miriam+Santos&userId=243289394aaa&source=-----3cd281fcc4b4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----3cd281fcc4b4---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----3cd281fcc4b4--------------------------------) ·7 分钟阅读·2023 年 6 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3cd281fcc4b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4&user=Miriam+Santos&userId=243289394aaa&source=-----3cd281fcc4b4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3cd281fcc4b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4&source=-----3cd281fcc4b4---------------------bookmark_footer-----------)![](../Images/7969af49055231191e3ed95318f9168d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3cd281fcc4b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-2-0-a-game-changer-for-data-scientists-3cd281fcc4b4&source=-----3cd281fcc4b4---------------------bookmark_footer-----------)![](img/7969af49055231191e3ed95318f9168d.png)
 
 今年四月，[pandas 2.0.0 正式发布](https://github.com/pandas-dev/pandas/releases/tag/v2.0.0)，在数据科学界掀起了巨大波澜。照片由 [Yancy Min](https://unsplash.com/@yancymin?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -24,7 +24,7 @@
 
 尽管我并不了解所有的炒作， [Data-Centric AI Community](https://tiny.ydata.ai/dcai-medium) 很快就给予了援助：
 
-![](../Images/fb154dd1a6cf10801128616a7b33ecea.png)
+![](img/fb154dd1a6cf10801128616a7b33ecea.png)
 
 2.0 版本似乎在数据科学社区中产生了相当大的影响，许多用户赞扬了新版本中添加的修改。作者提供的截图。
 
@@ -58,13 +58,13 @@ read_csv() 比较：使用 pyarrow 后端快 35 倍。作者提供的代码片�
 
 除了读取数据这一最简单的情况之外，你还可以**期待一系列其他操作的改进**，特别是[那些涉及字符串操作](https://medium.com/@santiagobasulto/pandas-2-0-performance-comparison-3f56b4719f58)，因为`pyarrow`对字符串数据类型的实现非常高效：
 
-比较字符串操作：展示arrow实现的效率。代码片段由作者提供。
+比较字符串操作：展示 arrow 实现的效率。代码片段由作者提供。
 
-事实上，Arrow支持的数据类型比`numpy`更多（且支持更好），这些类型在科学（数值）范围之外是必需的：**日期和时间**、**持续时间**、**二进制**、**十进制**、**列表**和**映射**。浏览一下[pyarrow支持的数据类型与`numpy`的等效性](https://pandas.pydata.org/docs/dev/reference/arrays.html#pyarrow)可能是一个很好的练习，特别是如果你想学习如何利用它们。
+事实上，Arrow 支持的数据类型比`numpy`更多（且支持更好），这些类型在科学（数值）范围之外是必需的：**日期和时间**、**持续时间**、**二进制**、**十进制**、**列表**和**映射**。浏览一下[pyarrow 支持的数据类型与`numpy`的等效性](https://pandas.pydata.org/docs/dev/reference/arrays.html#pyarrow)可能是一个很好的练习，特别是如果你想学习如何利用它们。
 
-**现在也可以在索引中保存更多的numpy数值类型**。传统的`int64`、`uint64`和`float64`为所有numpy数值数据类型的索引值腾出了空间，因此我们可以，例如，**指定它们的32位版本**：
+**现在也可以在索引中保存更多的 numpy 数值类型**。传统的`int64`、`uint64`和`float64`为所有 numpy 数值数据类型的索引值腾出了空间，因此我们可以，例如，**指定它们的 32 位版本**：
 
-利用32位的numpy索引，使代码更具内存效率。代码片段由作者提供。
+利用 32 位的 numpy 索引，使代码更具内存效率。代码片段由作者提供。
 
 这是一个受欢迎的变化，因为索引是`pandas`中最常用的功能之一，允许用户筛选、连接和打乱数据等操作。**本质上，索引越轻量，这些过程就会越高效！**
 
@@ -82,7 +82,7 @@ read_csv() 比较：使用 pyarrow 后端快 35 倍。作者提供的代码片�
 
 错误的类型集合直接影响数据准备决策，导致不同数据块之间的不兼容，即使在静默传递时，它们也可能影响某些操作，使其返回无意义的结果。
 
-举个例子，在[数据驱动的AI社区](https://tiny.ydata.ai/dcai-medium)中，我们目前正在进行一个关于[数据隐私的合成数据](https://github.com/Data-Centric-AI-Community/nist-crc-2023)的项目。一个特性`NOC`（子女数量）有缺失值，因此当数据加载时，它会自动转换为`float`。然后，当将数据作为`float`传入生成模型时，我们可能会得到像2.5这样的十进制输出值——除非你是一位有2个孩子、新生儿，且有奇怪幽默感的数学家，*拥有2.5个孩子是不合适的*。
+举个例子，在[数据驱动的 AI 社区](https://tiny.ydata.ai/dcai-medium)中，我们目前正在进行一个关于[数据隐私的合成数据](https://github.com/Data-Centric-AI-Community/nist-crc-2023)的项目。一个特性`NOC`（子女数量）有缺失值，因此当数据加载时，它会自动转换为`float`。然后，当将数据作为`float`传入生成模型时，我们可能会得到像 2.5 这样的十进制输出值——除非你是一位有 2 个孩子、新生儿，且有奇怪幽默感的数学家，*拥有 2.5 个孩子是不合适的*。
 
 **在 pandas 2.0 中，我们可以利用** `dtype = 'numpy_nullable'`**，在不更改数据类型的情况下处理缺失值**，因此我们可以保持原始数据类型（在此情况下为`int64`）。
 
@@ -110,7 +110,7 @@ read_csv() 比较：使用 pyarrow 后端快 35 倍。作者提供的代码片�
 
 # 5\. 可选依赖项
 
-使用`pip`时，2.0版本给予我们**安装可选依赖项**的灵活性，这在*定制*和*优化*资源方面是一个加分项。
+使用`pip`时，2.0 版本给予我们**安装可选依赖项**的灵活性，这在*定制*和*优化*资源方面是一个加分项。
 
 **我们可以根据具体要求定制安装，而无需在不需要的内容上浪费磁盘空间。**
 
@@ -124,7 +124,7 @@ read_csv() 比较：使用 pyarrow 后端快 35 倍。作者提供的代码片�
 
 **其中，我决定尝试一下** [**ydata-profiling**](https://github.com/ydataai/ydata-profiling) **— 它刚刚添加了对 pandas 2.0 的支持，这[似乎是社区的必备](https://github.com/ydataai/ydata-profiling/issues/1321)！在新版本中，用户可以放心，如果他们使用 pandas 2.0，管道不会中断，这是一个很大的优点！*那还会有什么其他的呢？***
 
-说实话，ydata-profiling 一直是我最喜欢的[探索性数据分析](/a-data-scientists-essential-guide-to-exploratory-data-analysis-25637eee0cf6)工具之一，它也是一个很好的基准测试工具 —— **在我这只需一行代码，但在幕后却充满了作为数据科学家需要解决的计算** —— 描述性统计、直方图绘制、分析相关性，*等等。*
+说实话，ydata-profiling 一直是我最喜欢的探索性数据分析工具之一，它也是一个很好的基准测试工具 —— **在我这只需一行代码，但在幕后却充满了作为数据科学家需要解决的计算** —— 描述性统计、直方图绘制、分析相关性，*等等。*
 
 那么，有什么比用最小的努力测试`pyarrow`引擎对所有这些的影响更好的方法呢？
 
@@ -132,7 +132,7 @@ read_csv() 比较：使用 pyarrow 后端快 35 倍。作者提供的代码片�
 
 再次强调，使用`pyarrow`引擎读取数据无疑更好，尽管在创建数据分析报告的速度上变化不大。
 
-然而，差异可能依赖于内存效率，对此我们需要进行不同的分析。此外，我们还可以进一步调查对数据进行的分析类型：对于某些操作，[1.5.2版本和2.0版本之间的差异似乎微不足道](https://medium.com/@santiagobasulto/pandas-2-0-performance-comparison-3f56b4719f58)。
+然而，差异可能依赖于内存效率，对此我们需要进行不同的分析。此外，我们还可以进一步调查对数据进行的分析类型：对于某些操作，[1.5.2 版本和 2.0 版本之间的差异似乎微不足道](https://medium.com/@santiagobasulto/pandas-2-0-performance-comparison-3f56b4719f58)。
 
 **但我注意到的主要问题是** ydata-profiling 还没有利用`pyarrow`数据类型。这个更新[可能对速度和内存有很大影响](https://twitter.com/rasbt/status/1632090412117532672?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1632334005264580608%7Ctwgr%5E5b02b1e083a5a8172dee5c827232d185e41f54ff%7Ctwcon%5Es3_&ref_url=https%3A%2F%2Fcdn.embedly.com%2Fwidgets%2Fmedia.html%3Ftype%3Dtext2Fhtmlkey%3Da19fcc184b9711e1b4764040d3dc5c07schema%3Dtwitterurl%3Dhttps3A%2F%2Ftwitter.com%2FRitchieVink%2Fstatus%2F1632334005264580608%2Fphoto%2F1image%3Dhttps3A%2F%2Fi.embed.ly%2F1%2Fimage3Furl3Dhttps253A252F252Fabs.twimg.com252Ferrors252Flogo46x38.png26key3Da19fcc184b9711e1b4764040d3dc5c07) ，这是我在未来发展中期待的！
 

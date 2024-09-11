@@ -1,20 +1,20 @@
 # 优秀工程师、差劲工程师和恶劣工程师——数据领导者的轶事
 
-> 原文：[https://towardsdatascience.com/good-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e?source=collection_archive---------4-----------------------#2023-11-29](https://towardsdatascience.com/good-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e?source=collection_archive---------4-----------------------#2023-11-29)
+> 原文：[`towardsdatascience.com/good-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e?source=collection_archive---------4-----------------------#2023-11-29`](https://towardsdatascience.com/good-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e?source=collection_archive---------4-----------------------#2023-11-29)
 
 ## 我区分优秀工程师、差劲工程师和恶劣工程师的黄金框架，适用于所有领域，包括数据领域
 
-[](https://medium.com/@thanhthuyphamvn?source=post_page-----6cceb82c8c3e--------------------------------)[![艾拉·Pham](../Images/7d05cbfeff29a294f9e3c3caf2f6830c.png)](https://medium.com/@thanhthuyphamvn?source=post_page-----6cceb82c8c3e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6cceb82c8c3e--------------------------------)[![数据科学的前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6cceb82c8c3e--------------------------------) [艾拉·Pham](https://medium.com/@thanhthuyphamvn?source=post_page-----6cceb82c8c3e--------------------------------)
+[](https://medium.com/@thanhthuyphamvn?source=post_page-----6cceb82c8c3e--------------------------------)![艾拉·Pham](https://medium.com/@thanhthuyphamvn?source=post_page-----6cceb82c8c3e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6cceb82c8c3e--------------------------------)![数据科学的前沿](https://towardsdatascience.com/?source=post_page-----6cceb82c8c3e--------------------------------) [艾拉·Pham](https://medium.com/@thanhthuyphamvn?source=post_page-----6cceb82c8c3e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7da00bf67be3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgood-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e&user=Ella+Pham&userId=7da00bf67be3&source=post_page-7da00bf67be3----6cceb82c8c3e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6cceb82c8c3e--------------------------------) ·7分钟阅读·2023年11月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6cceb82c8c3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgood-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e&user=Ella+Pham&userId=7da00bf67be3&source=-----6cceb82c8c3e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7da00bf67be3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgood-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e&user=Ella+Pham&userId=7da00bf67be3&source=post_page-7da00bf67be3----6cceb82c8c3e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6cceb82c8c3e--------------------------------) ·7 分钟阅读·2023 年 11 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6cceb82c8c3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgood-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e&user=Ella+Pham&userId=7da00bf67be3&source=-----6cceb82c8c3e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6cceb82c8c3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgood-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e&source=-----6cceb82c8c3e---------------------bookmark_footer-----------)![](../Images/007298ec1475c1882d30b44ec3b7be35.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6cceb82c8c3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgood-engineers-bad-engineers-and-evil-engineers-an-anecdote-for-data-leaders-6cceb82c8c3e&source=-----6cceb82c8c3e---------------------bookmark_footer-----------)![](img/007298ec1475c1882d30b44ec3b7be35.png)
 
-图片由作者提供（使用Canva的Magic Media应用生成）
+图片由作者提供（使用 Canva 的 Magic Media 应用生成）
 
 > 工程就是利用**科学**原理设计或建造某物——《剑桥词典》。
 
@@ -60,7 +60,7 @@
 
 以一个数据工程师为例，他构建了一个管道，将一组原始数据表从事务数据仓库复制到云中的容器中。按照勋章架构，数据经过青铜层、银层和金层，他们首先清理数据并将其倒入指定数据湖仓中的一组青铜层表中。接下来，他们在银层中对表进行规范化，并建立它们之间的关系。最后，他们将多个表连接在一个视图中，并创建新特征以表示业务指标，以供 Tableau 仪表板使用。
 
-在仪表板测试过程中，发现某些记录中的某一列存在缺失值。业务用户担心看到该列中超过50%的记录缺失数据，但他们也承认数据在源头可能不完整。现在，工程师需要调查和解决问题。
+在仪表板测试过程中，发现某些记录中的某一列存在缺失值。业务用户担心看到该列中超过 50%的记录缺失数据，但他们也承认数据在源头可能不完整。现在，工程师需要调查和解决问题。
 
 **优秀的工程师将**：
 

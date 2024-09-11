@@ -1,22 +1,22 @@
 # 文本新颖性检测
 
-> 原文：[https://towardsdatascience.com/textual-novelty-detection-ce81d2e689bf?source=collection_archive---------6-----------------------#2023-10-02](https://towardsdatascience.com/textual-novelty-detection-ce81d2e689bf?source=collection_archive---------6-----------------------#2023-10-02)
+> 原文：[`towardsdatascience.com/textual-novelty-detection-ce81d2e689bf?source=collection_archive---------6-----------------------#2023-10-02`](https://towardsdatascience.com/textual-novelty-detection-ce81d2e689bf?source=collection_archive---------6-----------------------#2023-10-02)
 
 ## 如何使用最小协方差判别法（MCD）检测新颖的新闻头条
 
-[](https://medium.com/@ilia.teimouri?source=post_page-----ce81d2e689bf--------------------------------)[![Ilia Teimouri PhD](../Images/0eb948c4d3f81c116cd16fa4d5016629.png)](https://medium.com/@ilia.teimouri?source=post_page-----ce81d2e689bf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce81d2e689bf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce81d2e689bf--------------------------------) [Ilia Teimouri PhD](https://medium.com/@ilia.teimouri?source=post_page-----ce81d2e689bf--------------------------------)
+[](https://medium.com/@ilia.teimouri?source=post_page-----ce81d2e689bf--------------------------------)![Ilia Teimouri PhD](https://medium.com/@ilia.teimouri?source=post_page-----ce81d2e689bf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce81d2e689bf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce81d2e689bf--------------------------------) [Ilia Teimouri PhD](https://medium.com/@ilia.teimouri?source=post_page-----ce81d2e689bf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf9b9036159&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftextual-novelty-detection-ce81d2e689bf&user=Ilia+Teimouri+PhD&userId=bf9b9036159&source=post_page-bf9b9036159----ce81d2e689bf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce81d2e689bf--------------------------------) · 8分钟阅读 · 2023年10月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce81d2e689bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftextual-novelty-detection-ce81d2e689bf&user=Ilia+Teimouri+PhD&userId=bf9b9036159&source=-----ce81d2e689bf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf9b9036159&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftextual-novelty-detection-ce81d2e689bf&user=Ilia+Teimouri+PhD&userId=bf9b9036159&source=post_page-bf9b9036159----ce81d2e689bf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce81d2e689bf--------------------------------) · 8 分钟阅读 · 2023 年 10 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce81d2e689bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftextual-novelty-detection-ce81d2e689bf&user=Ilia+Teimouri+PhD&userId=bf9b9036159&source=-----ce81d2e689bf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce81d2e689bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftextual-novelty-detection-ce81d2e689bf&source=-----ce81d2e689bf---------------------bookmark_footer-----------)![](../Images/3a9fb3a16537768e9f8142215fd50175.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce81d2e689bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftextual-novelty-detection-ce81d2e689bf&source=-----ce81d2e689bf---------------------bookmark_footer-----------)![](img/3a9fb3a16537768e9f8142215fd50175.png)
 
 图片由 [Ali Shah Lakhani](https://unsplash.com/@alishahlakhani) 提供，发布于 [Unsplash](https://unsplash.com/)。
 
-在今天的信息时代，我们每天都被新闻文章淹没。这些文章中的许多只是对相同事实的重复陈述，但也有一些包含真正的新信息，这些信息可能会对我们的决策产生重大影响。例如，想要投资Meta的人可能希望关注那些包含独家信息的文章，而不是那些仅仅重复先前发布数据的文章。能够区分新颖的新闻和冗余的新闻至关重要，这样我们才能在面对信息洪流时做出明智的决策。
+在今天的信息时代，我们每天都被新闻文章淹没。这些文章中的许多只是对相同事实的重复陈述，但也有一些包含真正的新信息，这些信息可能会对我们的决策产生重大影响。例如，想要投资 Meta 的人可能希望关注那些包含独家信息的文章，而不是那些仅仅重复先前发布数据的文章。能够区分新颖的新闻和冗余的新闻至关重要，这样我们才能在面对信息洪流时做出明智的决策。
 
 这就是[新颖性检测](https://en.wikipedia.org/wiki/Novelty_detection)发挥作用的地方。新颖性检测是识别新数据或未知数据的任务，这些数据与以前见过的数据有所不同。这是一种无监督学习技术，用于检测数据中的异常、离群值或新模式。关键思想是建立一个“正常”数据的模型，然后利用该模型识别偏离正常的数据点。
 
@@ -24,9 +24,9 @@
 
 ## 最小协方差行列式（MCD）
 
-最小协方差行列式（MCD）方法是一种估计数据集协方差矩阵的技术。它可以用来创建一个包围高斯分布中心模式的椭圆形，任何位于该形状外的数据点都可以被视为新颖性（有时称为异常值）。MCD方法对于噪声大或含有离群值的数据集特别有用，因为它可以帮助识别那些可能不符合整体数据模式的异常数据点。（[见示例](https://wis.kuleuven.be/stat/robust/papers/2010/wire-mcd.pdf)）
+最小协方差行列式（MCD）方法是一种估计数据集协方差矩阵的技术。它可以用来创建一个包围高斯分布中心模式的椭圆形，任何位于该形状外的数据点都可以被视为新颖性（有时称为异常值）。MCD 方法对于噪声大或含有离群值的数据集特别有用，因为它可以帮助识别那些可能不符合整体数据模式的异常数据点。（[见示例](https://wis.kuleuven.be/stat/robust/papers/2010/wire-mcd.pdf)）
 
-MCD可以用来检测新闻头条中的新颖性。虽然该方法可以推广到完整文章中，我们的目标是提供一个简明的示例，展示如何在短文本中应用MCD进行新颖性检测。MCD是一个多变量位置和散布的鲁棒估计量，使其非常适合在高维数据（如文本）中识别离群值。在新闻头条的数据集上，MCD将基于协方差学习一个“正常”头条的模型。然后我们可以使用该模型来评分新头条，并标记那些显著偏离正常的头条，作为潜在的新颖或异常故事。示例代码和实验将说明MCD新颖性检测在实践中的运作方式。
+MCD 可以用来检测新闻头条中的新颖性。虽然该方法可以推广到完整文章中，我们的目标是提供一个简明的示例，展示如何在短文本中应用 MCD 进行新颖性检测。MCD 是一个多变量位置和散布的鲁棒估计量，使其非常适合在高维数据（如文本）中识别离群值。在新闻头条的数据集上，MCD 将基于协方差学习一个“正常”头条的模型。然后我们可以使用该模型来评分新头条，并标记那些显著偏离正常的头条，作为潜在的新颖或异常故事。示例代码和实验将说明 MCD 新颖性检测在实践中的运作方式。
 
 ## 步骤方法
 
@@ -34,7 +34,7 @@ MCD可以用来检测新闻头条中的新颖性。虽然该方法可以推广�
 
 文本嵌入是一种特定类型的嵌入，用于将文本数据转换为向量表示。它考虑了单词、短语和句子之间的语义和关系，并将它们转换为捕捉文本含义的数值表示。这使我们能够执行诸如查找相似文本、基于语义意义对文本进行聚类等操作。
 
-假设我们收集了过去几个月有关Meta的以下头条新闻：
+假设我们收集了过去几个月有关 Meta 的以下头条新闻：
 
 ```py
 news = [
@@ -174,27 +174,27 @@ plt.show()
 
 最后，我们得到内点和外点的可视化效果如下：
 
-![](../Images/5bc2982a701f693fba2c5f3f4b40cebb.png)
+![](img/5bc2982a701f693fba2c5f3f4b40cebb.png)
 
 绘制包络线以及标记为内点或外点的点
 
-现在让我们查看标题，第8条和第9条是：
+现在让我们查看标题，第 8 条和第 9 条是：
 
-> Facebook在欧盟关于个人数据使用的裁决后遭遇新挫折。
+> Facebook 在欧盟关于个人数据使用的裁决后遭遇新挫折。
 > 
-> Facebook母公司Meta因欧盟-美国数据传输问题被罚创纪录的12亿欧元。
+> Facebook 母公司 Meta 因欧盟-美国数据传输问题被罚创纪录的 12 亿欧元。
 
-这两个标题都与欧盟调节Meta在其平台上如何使用和传输个人数据的努力有关。
+这两个标题都与欧盟调节 Meta 在其平台上如何使用和传输个人数据的努力有关。
 
-而内点标题则主要讨论Meta如何全力投入人工智能和虚拟现实。人工智能的重点在于新发布的AI聊天机器人，而虚拟现实的重点在于新发布的Meta Quest 3头戴设备。你还可以注意到第0条和第6条标题涉及远程办公设置，因此它们在图中的位置较为接近。
+而内点标题则主要讨论 Meta 如何全力投入人工智能和虚拟现实。人工智能的重点在于新发布的 AI 聊天机器人，而虚拟现实的重点在于新发布的 Meta Quest 3 头戴设备。你还可以注意到第 0 条和第 6 条标题涉及远程办公设置，因此它们在图中的位置较为接近。
 
 ## 总结
 
 在这篇文章中，我们展示了如何根据分布区分正常点和新颖点。简而言之，正常点是指位于数据分布的高密度区域的点，即它们在特征空间中接近大多数其他点。而新颖点则是位于数据分布的低密度区域的点，即它们在特征空间中远离大多数其他点。
 
-在MCD和椭圆包络的背景下，正常点是指位于椭圆包络内部的点，椭圆包络是拟合于数据分布的中央模式的。而新颖点则位于椭圆包络外部。
+在 MCD 和椭圆包络的背景下，正常点是指位于椭圆包络内部的点，椭圆包络是拟合于数据分布的中央模式的。而新颖点则位于椭圆包络外部。
 
-我们还了解到有一些参数影响MCD的结果，这些参数包括：
+我们还了解到有一些参数影响 MCD 的结果，这些参数包括：
 
 +   **阈值：** 决策边界或阈值在确定一个点是正常还是新颖方面至关重要。例如，在椭圆包络方法中，位于包络线内部的点被认为是正常的，而那些在包络线外部的点被认为是新颖的。
 

@@ -1,22 +1,22 @@
 # 《Magic the Gathering Arena：利用概率赢得比赛》
 
-> 原文：[https://towardsdatascience.com/magic-the-gathering-arena-winning-with-probability-b71f363e0ce2?source=collection_archive---------12-----------------------#2023-05-09](https://towardsdatascience.com/magic-the-gathering-arena-winning-with-probability-b71f363e0ce2?source=collection_archive---------12-----------------------#2023-05-09)
+> 原文：[`towardsdatascience.com/magic-the-gathering-arena-winning-with-probability-b71f363e0ce2?source=collection_archive---------12-----------------------#2023-05-09`](https://towardsdatascience.com/magic-the-gathering-arena-winning-with-probability-b71f363e0ce2?source=collection_archive---------12-----------------------#2023-05-09)
 
-## 如何利用概率和Excel赢得锦标赛
+## 如何利用概率和 Excel 赢得锦标赛
 
-[](https://medium.edkruegerdata.com/?source=post_page-----b71f363e0ce2--------------------------------)[![Edward Krueger](../Images/3ba3570d022e6cbeafad8549c8f48713.png)](https://medium.edkruegerdata.com/?source=post_page-----b71f363e0ce2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b71f363e0ce2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b71f363e0ce2--------------------------------) [Edward Krueger](https://medium.edkruegerdata.com/?source=post_page-----b71f363e0ce2--------------------------------)
+[](https://medium.edkruegerdata.com/?source=post_page-----b71f363e0ce2--------------------------------)![Edward Krueger](https://medium.edkruegerdata.com/?source=post_page-----b71f363e0ce2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b71f363e0ce2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b71f363e0ce2--------------------------------) [Edward Krueger](https://medium.edkruegerdata.com/?source=post_page-----b71f363e0ce2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4889b755e348&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmagic-the-gathering-arena-winning-with-probability-b71f363e0ce2&user=Edward+Krueger&userId=4889b755e348&source=post_page-4889b755e348----b71f363e0ce2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b71f363e0ce2--------------------------------) ·7分钟阅读·2023年5月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb71f363e0ce2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmagic-the-gathering-arena-winning-with-probability-b71f363e0ce2&user=Edward+Krueger&userId=4889b755e348&source=-----b71f363e0ce2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4889b755e348&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmagic-the-gathering-arena-winning-with-probability-b71f363e0ce2&user=Edward+Krueger&userId=4889b755e348&source=post_page-4889b755e348----b71f363e0ce2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b71f363e0ce2--------------------------------) ·7 分钟阅读·2023 年 5 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb71f363e0ce2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmagic-the-gathering-arena-winning-with-probability-b71f363e0ce2&user=Edward+Krueger&userId=4889b755e348&source=-----b71f363e0ce2---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb71f363e0ce2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmagic-the-gathering-arena-winning-with-probability-b71f363e0ce2&source=-----b71f363e0ce2---------------------bookmark_footer-----------)
 
-*作者:* [*Edward Krueger*](https://www.linkedin.com/in/edkrueger/) *数据科学家、讲师及* [*E*rin Oefelein](https://www.linkedin.com/in/erin-oefelein-3105a878/) *数据科学家（Taxwell公司）*
+*作者:* [*Edward Krueger*](https://www.linkedin.com/in/edkrueger/) *数据科学家、讲师及* [*E*rin Oefelein](https://www.linkedin.com/in/erin-oefelein-3105a878/) *数据科学家（Taxwell 公司）*
 
-![](../Images/e57fabdb61669b1b612b262ea8eb8e56.png)
+![](img/e57fabdb61669b1b612b262ea8eb8e56.png)
 
 照片由 [Wayne Low](https://unsplash.com/@wayneshin?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/OvN4OkhkTLo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

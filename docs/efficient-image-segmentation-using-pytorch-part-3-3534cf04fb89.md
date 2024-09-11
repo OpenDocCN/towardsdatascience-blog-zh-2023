@@ -1,40 +1,40 @@
-# 使用PyTorch进行高效的图像分割：第3部分
+# 使用 PyTorch 进行高效的图像分割：第三部分
 
-> 原文：[https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-3-3534cf04fb89?source=collection_archive---------7-----------------------#2023-06-27](https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-3-3534cf04fb89?source=collection_archive---------7-----------------------#2023-06-27)
+> 原文：[`towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-3-3534cf04fb89?source=collection_archive---------7-----------------------#2023-06-27`](https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-3-3534cf04fb89?source=collection_archive---------7-----------------------#2023-06-27)
 
 ## 深度可分离卷积
 
-[](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)[![Dhruv Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)
+[](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)![Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----3534cf04fb89---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------) · 12分钟阅读 · 2023年6月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3534cf04fb89&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&user=Dhruv+Matani&userId=63f5d5495279&source=-----3534cf04fb89---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----3534cf04fb89---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------) · 12 分钟阅读 · 2023 年 6 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3534cf04fb89&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&user=Dhruv+Matani&userId=63f5d5495279&source=-----3534cf04fb89---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3534cf04fb89&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&source=-----3534cf04fb89---------------------bookmark_footer-----------)
 
-在这个四部分系列中，我们将逐步实现图像分割，使用PyTorch中的深度学习技术从零开始。本部分将重点优化我们的CNN基线模型，通过使用深度可分离卷积来减少可训练参数的数量，使模型可以在移动设备和其他边缘设备上部署。
+在这个四部分系列中，我们将逐步实现图像分割，使用 PyTorch 中的深度学习技术从零开始。本部分将重点优化我们的 CNN 基线模型，通过使用深度可分离卷积来减少可训练参数的数量，使模型可以在移动设备和其他边缘设备上部署。
 
 与[Naresh Singh](https://medium.com/@brocolishbroxoli)共同撰写
 
-![](../Images/f29d9d6903f7abb12a21cd463b98a2b2.png)
+![](img/f29d9d6903f7abb12a21cd463b98a2b2.png)
 
-图1：使用深度可分离卷积而非普通卷积进行图像分割的结果。从上到下依次为输入图像、真实分割掩码和预测分割掩码。来源：作者
+图 1：使用深度可分离卷积而非普通卷积进行图像分割的结果。从上到下依次为输入图像、真实分割掩码和预测分割掩码。来源：作者
 
 # 文章大纲
 
 在本文中，我们将增强我们[早期构建的卷积神经网络（CNN）](https://medium.com/p/bed68cadd7c7/)，以减少网络中可学习参数的数量。识别输入图像中的宠物像素（属于猫、狗、仓鼠等的像素）这一任务保持不变。我们选择的网络将继续是[SegNet](https://arxiv.org/abs/1511.00561)，我们唯一的改变是用深度可分卷积（DSC）替换卷积层。在此之前，我们将深入探讨深度可分卷积的理论与实践，并欣赏这一技术背后的理念。
 
-在本文中，我们将引用来自这个[笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/oxford-iiit-pets-segmentation-using-pytorch-segnet-and-depth-wise-separable-convs.ipynb)的代码和结果用于模型训练，以及这个[笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/types%20of%20convolutions.ipynb)作为DSC的入门。如果你希望复现结果，你需要一个GPU以确保第一个笔记本在合理的时间内完成运行。第二个笔记本可以在普通的CPU上运行。
+在本文中，我们将引用来自这个[笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/oxford-iiit-pets-segmentation-using-pytorch-segnet-and-depth-wise-separable-convs.ipynb)的代码和结果用于模型训练，以及这个[笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/types%20of%20convolutions.ipynb)作为 DSC 的入门。如果你希望复现结果，你需要一个 GPU 以确保第一个笔记本在合理的时间内完成运行。第二个笔记本可以在普通的 CPU 上运行。
 
 # 本系列文章
 
-本系列适合所有深度学习经验水平的读者。如果你想学习深度学习和视觉AI的实践，了解一些扎实的理论和实践经验，你来对地方了！预计将会有4篇文章的系列，内容如下：
+本系列适合所有深度学习经验水平的读者。如果你想学习深度学习和视觉 AI 的实践，了解一些扎实的理论和实践经验，你来对地方了！预计将会有 4 篇文章的系列，内容如下：
 
 1.  [概念与想法](https://medium.com/p/89e8297a0923/)
 
-1.  [基于CNN的模型](https://medium.com/p/bed68cadd7c7/)
+1.  [基于 CNN 的模型](https://medium.com/p/bed68cadd7c7/)
 
 1.  **深度可分卷积（本文）**
 
@@ -42,11 +42,11 @@
 
 # 介绍
 
-让我们从模型大小和计算成本的角度深入探讨卷积。可训练参数的数量是模型大小的一个很好的指标，而张量操作的数量反映了模型的复杂性或计算成本。考虑一个具有n个dₖ x dₖ大小滤波器的卷积层。进一步假设此层处理形状为*m x h x w*的输入，其中*m*是输入通道的数量，而*h*和*w*分别是高度和宽度维度。在这种情况下，卷积层将产生形状为*n x h x w*的输出，如图2所示。我们假设卷积使用*stride=1*。让我们继续评估这一设置的可训练参数和计算成本。
+让我们从模型大小和计算成本的角度深入探讨卷积。可训练参数的数量是模型大小的一个很好的指标，而张量操作的数量反映了模型的复杂性或计算成本。考虑一个具有 n 个 dₖ x dₖ大小滤波器的卷积层。进一步假设此层处理形状为*m x h x w*的输入，其中*m*是输入通道的数量，而*h*和*w*分别是高度和宽度维度。在这种情况下，卷积层将产生形状为*n x h x w*的输出，如图 2 所示。我们假设卷积使用*stride=1*。让我们继续评估这一设置的可训练参数和计算成本。
 
-![](../Images/f05ac4a1e2764b6daf7b1c0384ff9c5f.png)
+![](img/f05ac4a1e2764b6daf7b1c0384ff9c5f.png)
 
-图2：常规卷积滤波器应用于输入以产生输出。假设stride=1和padding=dₖ-2。来源：[高效深度学习书](https://efficientdlbook.com/)
+图 2：常规卷积滤波器应用于输入以产生输出。假设 stride=1 和 padding=dₖ-2。来源：[高效深度学习书](https://efficientdlbook.com/)
 
 **可训练参数的评估：** 我们有 *n* 个滤波器，每个滤波器都有 *m x dₖ x dₖ* 个可训练参数。这总共会有 *n x m x dₖ x dₖ* 个可训练参数。为了简化讨论，忽略了偏置项。我们来看下面的 PyTorch 代码以验证我们的理解。
 
@@ -105,7 +105,7 @@ Estimated Total Size (MB): 5.26
 
 # 深度可分离卷积
 
-深度可分离卷积（DSC）的概念最早由 Laurent Sifre 在其博士论文《[刚性运动散射用于图像分类](https://www.di.ens.fr/data/publications/papers/phd_sifre.pdf)》中提出。从那时起，它们在各种流行的深度卷积网络中成功应用，例如 [XceptionNet](https://arxiv.org/abs/1610.02357) 和 [MobileNet](/review-mobilenetv1-depthwise-separable-convolution-light-weight-model-a382df364b69)。
+深度可分离卷积（DSC）的概念最早由 Laurent Sifre 在其博士论文《[刚性运动散射用于图像分类](https://www.di.ens.fr/data/publications/papers/phd_sifre.pdf)》中提出。从那时起，它们在各种流行的深度卷积网络中成功应用，例如 [XceptionNet](https://arxiv.org/abs/1610.02357) 和 MobileNet。
 
 普通卷积与 DSC 之间的主要区别在于 DSC 由 2 个卷积组成，如下所述：
 
@@ -113,7 +113,7 @@ Estimated Total Size (MB): 5.26
 
 1.  **逐点卷积**（滤波器大小=1），其工作方式类似于普通卷积，每个 n 个滤波器作用于所有 m 个输入通道，以产生单个输出值。
 
-![](../Images/0f229cb577579524f10f7960aaa3e0b3.png)
+![](img/0f229cb577579524f10f7960aaa3e0b3.png)
 
 图 3：深度可分卷积滤波器应用于输入以生成输出。假设 *stride=1* 和 *padding=dₖ-2*。来源：[高效深度学习书](https://efficientdlbook.com/)
 
@@ -184,77 +184,77 @@ Estimated Total Size (MB): 7.34
 
 为了比较常规卷积和深度可分卷积的大小和成本，我们将假设输入大小为 *128 x 128*，卷积核大小为 *3 x 3*，网络逐步将空间维度减半并将通道维度加倍。我们假设每一步有一个 2d-conv 层，但实际上可能会有更多。
 
-![](../Images/4646694c069f37f3ed9be0287e6d4d40.png)
+![](img/4646694c069f37f3ed9be0287e6d4d40.png)
 
 图 4：比较常规卷积和深度可分卷积的可训练参数（大小）和多次加法（成本）。我们还展示了两种卷积的大小和成本的比例。来源：作者。
 
 你可以看到，平均而言，DSC 的大小和计算成本大约是上述配置常规卷积成本的 11% 到 12%。
 
-![](../Images/12addf86c5b96f25ef62b5277e3360ea.png)
+![](img/12addf86c5b96f25ef62b5277e3360ea.png)
 
 图 5：常规卷积与深度可分卷积的相对大小和成本。来源：作者。
 
-现在我们已经对各种卷积类型及其相对成本有了很好的理解，你一定在想使用DSC是否有任何缺点。到目前为止，我们看到的一切似乎都表明它们在各方面都更好！不过，我们还没有考虑一个重要方面，即它们对模型准确性的影响。让我们通过下面的实验来探讨这个问题。
+现在我们已经对各种卷积类型及其相对成本有了很好的理解，你一定在想使用 DSC 是否有任何缺点。到目前为止，我们看到的一切似乎都表明它们在各方面都更好！不过，我们还没有考虑一个重要方面，即它们对模型准确性的影响。让我们通过下面的实验来探讨这个问题。
 
-# 使用深度可分离卷积的SegNet
+# 使用深度可分离卷积的 SegNet
 
 [这个笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/oxford-iiit-pets-segmentation-using-pytorch-segnet-and-depth-wise-separable-convs.ipynb)包含了本节的所有代码。
 
-我们将从[之前的帖子](https://medium.com/p/bed68cadd7c7/)中调整我们的SegNet模型，并将所有常规卷积层替换为DSC层。这样做后，我们发现笔记本中的参数数量从15.27M减少到1.75M，减少了88.5%！这与我们之前估计的网络可训练参数减少11%到12%的一致。
+我们将从[之前的帖子](https://medium.com/p/bed68cadd7c7/)中调整我们的 SegNet 模型，并将所有常规卷积层替换为 DSC 层。这样做后，我们发现笔记本中的参数数量从 15.27M 减少到 1.75M，减少了 88.5%！这与我们之前估计的网络可训练参数减少 11%到 12%的一致。
 
 在模型训练和验证过程中使用了与[之前](https://medium.com/p/bed68cadd7c7/)相似的配置。配置如下所示。
 
 1.  *随机水平翻转*和*颜色抖动*数据增强方法被应用于训练集，以防止过拟合。
 
-1.  图像在进行不保持长宽比的调整操作时被调整为128x128像素。
+1.  图像在进行不保持长宽比的调整操作时被调整为 128x128 像素。
 
-1.  图像没有进行输入归一化处理，而是[使用批量归一化层作为模型的第一层](/replace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c)。
+1.  图像没有进行输入归一化处理，而是使用批量归一化层作为模型的第一层。
 
-1.  模型使用Adam优化器进行20个周期的训练，学习率为0.001，并且没有学习率调度器。
+1.  模型使用 Adam 优化器进行 20 个周期的训练，学习率为 0.001，并且没有学习率调度器。
 
 1.  交叉熵损失函数用于将像素分类为宠物、背景或宠物边界。
 
-该模型在20个训练周期后达到了86.96%的验证准确率。这低于使用常规卷积在相同训练周期内达到的88.28%准确率。我们已经通过实验确定，训练更多周期会提高两个模型的准确性，因此20个周期绝对不是训练周期的结束。为了本文章的演示目的，我们在20个周期后停止训练。
+该模型在 20 个训练周期后达到了 86.96%的验证准确率。这低于使用常规卷积在相同训练周期内达到的 88.28%准确率。我们已经通过实验确定，训练更多周期会提高两个模型的准确性，因此 20 个周期绝对不是训练周期的结束。为了本文章的演示目的，我们在 20 个周期后停止训练。
 
-我们绘制了一个gif，展示了模型如何学习预测验证集中21张图像的分割掩码。
+我们绘制了一个 gif，展示了模型如何学习预测验证集中 21 张图像的分割掩码。
 
-![](../Images/aa9aec7b78d408275a886ec1f9bcafc1.png)
+![](img/aa9aec7b78d408275a886ec1f9bcafc1.png)
 
-图6：一个gif展示了使用DSC的SegNet模型如何学习预测验证集中21张图像的分割掩码。来源：作者
+图 6：一个 gif 展示了使用 DSC 的 SegNet 模型如何学习预测验证集中 21 张图像的分割掩码。来源：作者
 
-现在我们已经看到模型如何通过训练周期的进展，让我们比较一下使用常规卷积和DSC的模型的训练周期。
+现在我们已经看到模型如何通过训练周期的进展，让我们比较一下使用常规卷积和 DSC 的模型的训练周期。
 
 ## 准确性比较
 
-我们发现查看使用常规卷积和DSC的模型训练周期很有用。我们注意到的主要区别是在训练的早期阶段（周期），之后两种模型大致趋于相同的预测流程。实际上，在训练了100个周期后，我们发现使用DSC的模型准确性比使用常规卷积的模型低约1%。这与我们从仅20个周期的训练中观察到的结果一致。
+我们发现查看使用常规卷积和 DSC 的模型训练周期很有用。我们注意到的主要区别是在训练的早期阶段（周期），之后两种模型大致趋于相同的预测流程。实际上，在训练了 100 个周期后，我们发现使用 DSC 的模型准确性比使用常规卷积的模型低约 1%。这与我们从仅 20 个周期的训练中观察到的结果一致。
 
-![](../Images/e1142979b7b9b8d83e1a5eac150d630c.png)
+![](img/e1142979b7b9b8d83e1a5eac150d630c.png)
 
-图7：一个动图展示了使用常规卷积与DSC的SegNet模型预测的分割掩码进展。来源：作者。
+图 7：一个动图展示了使用常规卷积与 DSC 的 SegNet 模型预测的分割掩码进展。来源：作者。
 
-你可能会注意到，两种模型在仅经过6个训练周期后预测大致正确——即可以直观地看到模型预测了一些有用的东西。训练模型的大部分艰巨工作在于确保预测掩码的边界尽可能紧密，并尽可能接近图像中的实际物体。这意味着尽管在后续训练周期中，准确性的绝对提升可能较少，但这对预测质量的影响要大得多。我们注意到，在较高的绝对准确性值（例如从89%提升到90%）下，准确性的单个位数提升会显著改善预测质量。
+你可能会注意到，两种模型在仅经过 6 个训练周期后预测大致正确——即可以直观地看到模型预测了一些有用的东西。训练模型的大部分艰巨工作在于确保预测掩码的边界尽可能紧密，并尽可能接近图像中的实际物体。这意味着尽管在后续训练周期中，准确性的绝对提升可能较少，但这对预测质量的影响要大得多。我们注意到，在较高的绝对准确性值（例如从 89%提升到 90%）下，准确性的单个位数提升会显著改善预测质量。
 
-## 与UNet模型的比较
+## 与 UNet 模型的比较
 
 我们进行了一个实验，调整了很多超参数，重点是提高整体准确性，以了解这种设置与最优设置的接近程度。以下是该实验的配置。
 
 1.  图像大小：128 x 128——与之前的实验相同
 
-1.  训练周期：100——当前实验训练了20个周期
+1.  训练周期：100——当前实验训练了 20 个周期
 
-1.  数据增强：增加了很多数据增强技术，例如图像旋转、通道丢弃、随机块移除。我们使用了Albumentations而不是torchvision transforms。Albumentations会自动为我们转换分割掩码。
+1.  数据增强：增加了很多数据增强技术，例如图像旋转、通道丢弃、随机块移除。我们使用了 Albumentations 而不是 torchvision transforms。Albumentations 会自动为我们转换分割掩码。
 
-1.  学习率调度器：使用了StepLR调度器，每25个训练周期衰减0.8倍
+1.  学习率调度器：使用了 StepLR 调度器，每 25 个训练周期衰减 0.8 倍
 
-1.  损失函数：我们尝试了4种不同的损失函数：交叉熵、焦点损失、Dice损失、加权交叉熵。Dice损失表现最差，而其他损失函数则相差无几。实际上，经过100个周期后，其他损失函数的最佳准确性差异在小数点后第四位（假设准确性在0.0到1.0之间）。
+1.  损失函数：我们尝试了 4 种不同的损失函数：交叉熵、焦点损失、Dice 损失、加权交叉熵。Dice 损失表现最差，而其他损失函数则相差无几。实际上，经过 100 个周期后，其他损失函数的最佳准确性差异在小数点后第四位（假设准确性在 0.0 到 1.0 之间）。
 
 1.  卷积类型：常规
 
-1.  模型类型：UNet——当前实验使用了SegNet模型
+1.  模型类型：UNet——当前实验使用了 SegNet 模型
 
-我们在上述设置下取得了91.3%的最佳验证准确性。我们注意到图像大小对最佳验证准确性有显著影响。例如，当我们将图像大小更改为256 x 256时，最佳验证准确性上升到93.0%。然而，训练时间大大增加，并且使用了更多内存，这意味着我们不得不减少批量大小。
+我们在上述设置下取得了 91.3%的最佳验证准确性。我们注意到图像大小对最佳验证准确性有显著影响。例如，当我们将图像大小更改为 256 x 256 时，最佳验证准确性上升到 93.0%。然而，训练时间大大增加，并且使用了更多内存，这意味着我们不得不减少批量大小。
 
-![](../Images/adf9fa994f9857ab5aaa8a0ce9b761c0.png)
+![](img/adf9fa994f9857ab5aaa8a0ce9b761c0.png)
 
 图 8：使用上述超参数训练 100 个训练周期的 UNet 模型的结果。来源：作者。
 
@@ -262,7 +262,7 @@ Estimated Total Size (MB): 7.34
 
 # 结论
 
-在本系列第 3 部分，我们了解了深度可分离卷积（DSC）作为一种在不显著降低验证准确性的情况下减少模型大小和训练/推理成本的技术。我们了解了在特定设置下，常规卷积与 DSC 之间的大小/成本权衡。
+在本系列第三部分，我们了解了深度可分离卷积（DSC）作为一种在不显著降低验证准确性的情况下减少模型大小和训练/推理成本的技术。我们了解了在特定设置下，常规卷积与 DSC 之间的大小/成本权衡。
 
 我们展示了如何在 PyTorch 中调整 SegNet 模型以使用 DSC。这项技术可以应用于任何深度 CNN。事实上，我们可以选择性地用 DSC 替换一些卷积层 —— 即我们不需要全部替换。选择替换哪些层将取决于你希望在模型大小/运行成本和预测准确性之间达成的平衡。这个决定将取决于你的具体使用案例和部署设置。
 
@@ -272,6 +272,6 @@ Estimated Total Size (MB): 7.34
 
 # 参考文献和进一步阅读
 
-+   [高效深度学习书籍第04章 — 高效架构](https://github.com/EfficientDL/book/raw/main/book/%5BEDL%5D%20Chapter%204%20-%20Efficient%20Architectures.pdf)
++   [高效深度学习书籍第四章 — 高效架构](https://github.com/EfficientDL/book/raw/main/book/%5BEDL%5D%20Chapter%204%20-%20Efficient%20Architectures.pdf)
 
-+   [可分离卷积基础介绍](/a-basic-introduction-to-separable-convolutions-b99ec3102728)
++   可分离卷积基础介绍

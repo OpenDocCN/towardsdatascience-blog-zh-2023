@@ -1,14 +1,14 @@
 # 设计多方交互的对话代理
 
-> 原文：[https://towardsdatascience.com/designing-conversational-agents-for-multi-party-interactions-523b05ea8834?source=collection_archive---------15-----------------------#2023-04-06](https://towardsdatascience.com/designing-conversational-agents-for-multi-party-interactions-523b05ea8834?source=collection_archive---------15-----------------------#2023-04-06)
+> 原文：[`towardsdatascience.com/designing-conversational-agents-for-multi-party-interactions-523b05ea8834?source=collection_archive---------15-----------------------#2023-04-06`](https://towardsdatascience.com/designing-conversational-agents-for-multi-party-interactions-523b05ea8834?source=collection_archive---------15-----------------------#2023-04-06)
 
 ## 多一个人如何影响对话？
 
-[](https://addlesee.medium.com/?source=post_page-----523b05ea8834--------------------------------)[![Angus Addlesee](../Images/0a6a016590ca622cc3c8cae24e188f6e.png)](https://addlesee.medium.com/?source=post_page-----523b05ea8834--------------------------------)[](https://towardsdatascience.com/?source=post_page-----523b05ea8834--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----523b05ea8834--------------------------------) [Angus Addlesee](https://addlesee.medium.com/?source=post_page-----523b05ea8834--------------------------------)
+[](https://addlesee.medium.com/?source=post_page-----523b05ea8834--------------------------------)![Angus Addlesee](https://addlesee.medium.com/?source=post_page-----523b05ea8834--------------------------------)[](https://towardsdatascience.com/?source=post_page-----523b05ea8834--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----523b05ea8834--------------------------------) [Angus Addlesee](https://addlesee.medium.com/?source=post_page-----523b05ea8834--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7f06284203ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-conversational-agents-for-multi-party-interactions-523b05ea8834&user=Angus+Addlesee&userId=7f06284203ea&source=post_page-7f06284203ea----523b05ea8834---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----523b05ea8834--------------------------------) ·10分钟阅读·2023年4月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F523b05ea8834&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-conversational-agents-for-multi-party-interactions-523b05ea8834&user=Angus+Addlesee&userId=7f06284203ea&source=-----523b05ea8834---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7f06284203ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-conversational-agents-for-multi-party-interactions-523b05ea8834&user=Angus+Addlesee&userId=7f06284203ea&source=post_page-7f06284203ea----523b05ea8834---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----523b05ea8834--------------------------------) ·10 分钟阅读·2023 年 4 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F523b05ea8834&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-conversational-agents-for-multi-party-interactions-523b05ea8834&user=Angus+Addlesee&userId=7f06284203ea&source=-----523b05ea8834---------------------clap_footer-----------)
 
 --
 
@@ -27,11 +27,11 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 }
 ```
 
-考虑与对话代理的互动，也许是你手机上的Siri、家中的Amazon Alexa，或者网站上的虚拟客户服务代理。这些互动是‘双方面的’，即它们只涉及一个人（你自己）和一个代理。这对于所有语音助手和基于聊天的代理来说都是典型的。
+考虑与对话代理的互动，也许是你手机上的 Siri、家中的 Amazon Alexa，或者网站上的虚拟客户服务代理。这些互动是‘双方面的’，即它们只涉及一个人（你自己）和一个代理。这对于所有语音助手和基于聊天的代理来说都是典型的。
 
 > *对话代理被设计用于一对一的互动。*
 
-![](../Images/4c0694faaace149f2cceef1041d53b33.png)![](../Images/0f738c94a4a7fbbca2d5e9105ef6eba9.png)
+![](img/4c0694faaace149f2cceef1041d53b33.png)![](img/0f738c94a4a7fbbca2d5e9105ef6eba9.png)
 
 这两张照片展示了双方（对话式）互动。一张是有一个电话语音助手而不是一个人（左 [source](https://unsplash.com/photos/tugh5n8r8JQ)），另一张是（右 [source](https://unsplash.com/photos/_4qmlxHbX6I)）。
 
@@ -39,21 +39,21 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 
 > *对话代理是否需要在多方设置中工作？多方对话是否带来了新的挑战？我们需要采取什么下一步措施来推进？我将在本文中回答这三个问题。*
 
-![](../Images/ecbb28d99d5b8c24163e335f2e702709.png)![](../Images/c75125b099b1dfdc99294a2c7c69f3ba.png)
+![](img/ecbb28d99d5b8c24163e335f2e702709.png)![](img/c75125b099b1dfdc99294a2c7c69f3ba.png)
 
 多方互动。考虑这些对话与上述的双方对话有什么不同（左 [source](https://unsplash.com/photos/WY5kuE0R4-k)），（右 [source](https://unsplash.com/photos/34GZCgaVksk)）。
 
 # 多方设置中的对话代理
 
-如今的系统被设计用于处理双方互动，当然这是因为通常情况下我们就是这样与它们互动的。Siri不会被动地听你与朋友的对话并在需要时插话——它会在激活时听取你的单一请求。Google Assistant和Alexa也非常相似，监听它们的唤醒词和一个发言。可以说，这些语音助手在家庭环境中可能会从多方理解中受益，但这并不紧迫。
+如今的系统被设计用于处理双方互动，当然这是因为通常情况下我们就是这样与它们互动的。Siri 不会被动地听你与朋友的对话并在需要时插话——它会在激活时听取你的单一请求。Google Assistant 和 Alexa 也非常相似，监听它们的唤醒词和一个发言。可以说，这些语音助手在家庭环境中可能会从多方理解中受益，但这并不紧迫。
 
 > *对话代理正在被嵌入到虚拟代理和公共场所如博物馆、机场、购物中心和医院的社交机器人中等……人们与家人、朋友和看护者一起去这些地方——所以这些代理必须能够处理多方互动。*
 
-我将在本文中使用许多示例来说明观点，因此最好设定一下背景。让我们想象在医院记忆诊所候诊室中的一个机器人助手。这个机器人叫做ARI，患者带着伴侣来进行预约。这个配对可能需要指引、咖啡、医院信息或只是一些娱乐。这正好是EU [SPRING](https://spring-h2020.eu/) 项目的背景，所有示例都将符合这个背景。
+我将在本文中使用许多示例来说明观点，因此最好设定一下背景。让我们想象在医院记忆诊所候诊室中的一个机器人助手。这个机器人叫做 ARI，患者带着伴侣来进行预约。这个配对可能需要指引、咖啡、医院信息或只是一些娱乐。这正好是 EU [SPRING](https://spring-h2020.eu/) 项目的背景，所有示例都将符合这个背景。
 
-![](../Images/bd5b88c97f36ce901d85fb376fbaa981.png)
+![](img/bd5b88c97f36ce901d85fb376fbaa981.png)
 
-多方设置中的ARI机器人。版权 [PAL Robotics](https://pal-robotics.com/)
+多方设置中的 ARI 机器人。版权 [PAL Robotics](https://pal-robotics.com/)
 
 # 多方对话真的如此不同吗？
 
@@ -61,7 +61,7 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 
 ## 说话人识别
 
-在两人对话中，代理不需要识别说话者。这是微不足道的，因为说话者是对话中唯一的其他人。Alexa有一个很棒的功能，只有在它识别到我的声音时才允许我购买物品——但这不是我所说的说话人识别。这是否标记为说话者1、说话者2还是说话者xyz都无关紧要——对话代理的回应将是一样的。
+在两人对话中，代理不需要识别说话者。这是微不足道的，因为说话者是对话中唯一的其他人。Alexa 有一个很棒的功能，只有在它识别到我的声音时才允许我购买物品——但这不是我所说的说话人识别。这是否标记为说话者 1、说话者 2 还是说话者 xyz 都无关紧要——对话代理的回应将是一样的。
 
 然而，识别说话者对于理解多方对话至关重要。让我们假设患者和陪伴者想与机器人玩一个测验。机器人问“德国的首都是什么？”然后是以下互动：
 
@@ -79,7 +79,7 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 3) C: Yes, Munich.
 ```
 
-在这个PPC案例中，患者和陪伴者已经达成一致，答案是慕尼黑。然后机器人可以告诉他们答案是错误的，告知他们正确答案，并继续下一个问题。或者：
+在这个 PPC 案例中，患者和陪伴者已经达成一致，答案是慕尼黑。然后机器人可以告诉他们答案是错误的，告知他们正确答案，并继续下一个问题。或者：
 
 ```py
 1) P: I think it is Berlin.
@@ -87,15 +87,15 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 3) C: Yes, Munich.
 ```
 
-在这个PCC案例中，患者提出了正确答案，而陪伴者则建议了第二个错误选项。陪伴者随后再次确认他们的确定性，但重要的是，患者**没有**同意。如果机器人在这种情况下将慕尼黑作为最终答案，患者会非常沮丧，因为他们提出了正确答案却被忽视了。
+在这个 PCC 案例中，患者提出了正确答案，而陪伴者则建议了第二个错误选项。陪伴者随后再次确认他们的确定性，但重要的是，患者**没有**同意。如果机器人在这种情况下将慕尼黑作为最终答案，患者会非常沮丧，因为他们提出了正确答案却被忽视了。
 
-希望这个例子很清楚。在PPC（或PCP）案例中，一致意见已经达成，继续测验是正确的行动。在PCC案例中，机器人应该保持沉默，等待患者的回应。
+希望这个例子很清楚。在 PPC（或 PCP）案例中，一致意见已经达成，继续测验是正确的行动。在 PCC 案例中，机器人应该保持沉默，等待患者的回应。
 
 > *对话代理只有在识别到说话者时才能知道哪个行动是正确的。这在两人对话中并不成立。*
 
 ## 收件人识别
 
-与说话人识别类似，弄清楚谁在被说话者讲述在两人对话中也很简单。说话者显然是在对第二个人/代理讲话。然而，这在多方对话中并非如此。说话者可能在对一个个体、另一个个体或两者同时讲话。为了说明这一点，请考虑（其中R = 机器人，P = 患者）：
+与说话人识别类似，弄清楚谁在被说话者讲述在两人对话中也很简单。说话者显然是在对第二个人/代理讲话。然而，这在多方对话中并非如此。说话者可能在对一个个体、另一个个体或两者同时讲话。为了说明这一点，请考虑（其中 R = 机器人，P = 患者）：
 
 ```py
 1) P: What is my appointment about?
@@ -105,11 +105,11 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 5) P: Stop!
 ```
 
-在这个例子中，病人在第1回合时最初向机器人提问。机器人随后作出了正确的回应。然而，在第3回合时，病人转向他们的伴侣并重复了相同的问题。由于机器人没有地址识别能力，它再次做出了相同的回应，这让病人感到沮丧。
+在这个例子中，病人在第 1 回合时最初向机器人提问。机器人随后作出了正确的回应。然而，在第 3 回合时，病人转向他们的伴侣并重复了相同的问题。由于机器人没有地址识别能力，它再次做出了相同的回应，这让病人感到沮丧。
 
-![](../Images/f1d65e20f92b6b6b0e73aeb72657d82c.png)
+![](img/f1d65e20f92b6b6b0e73aeb72657d82c.png)
 
-在赫瑞瓦特大学测试的用于SPRING的ARI机器人
+在赫瑞瓦特大学测试的用于 SPRING 的 ARI 机器人
 
 ## 回应选择或生成
 
@@ -127,24 +127,24 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 
 ## 对话状态跟踪
 
-在对话的上下文中理解每个用户发言的要点是很重要的。对话状态跟踪（DST）正是要做到这一点，并面临如DSTC和MultiWoZ这样的挑战。许多研究机构和公司为此任务分配了资源，但所有的数据集都是二人对话的。再次强调，DST在多方环境中有所不同。
+在对话的上下文中理解每个用户发言的要点是很重要的。对话状态跟踪（DST）正是要做到这一点，并面临如 DSTC 和 MultiWoZ 这样的挑战。许多研究机构和公司为此任务分配了资源，但所有的数据集都是二人对话的。再次强调，DST 在多方环境中有所不同。
 
-当前的DST模型可以输出用户请求特定信息、确认某事、提供信息等……但它们不能检测到同意或确定请求是否已被满足，因为这在二人对话中不会发生。例如：
+当前的 DST 模型可以输出用户请求特定信息、确认某事、提供信息等……但它们不能检测到同意或确定请求是否已被满足，因为这在二人对话中不会发生。例如：
 
 ```py
 1) P: Where is the lift
 2) P: It is to the left of the reception
 ```
 
-这种情况在二人对话中永远不会发生。一个人问一个问题然后立刻自己回答是不合逻辑的。然而，发言2可能由伴侣说出，机器人必须跟踪伴侣向病人提供了信息。
+这种情况在二人对话中永远不会发生。一个人问一个问题然后立刻自己回答是不合逻辑的。然而，发言 2 可能由伴侣说出，机器人必须跟踪伴侣向病人提供了信息。
 
 ## 目标跟踪
 
-最后，在多方环境中跟踪人们的目标也更加困难。类似于DST的差异，人们可以回答彼此的目标，而这种情况在二人对话中不会发生。代理必须能够确定用户目标是否被*准确*满足，以免重复刚刚回答者所说的内容。然而，如果回答者的回答是不正确的，机器人仍然需要回应，因为目标尚未完成。
+最后，在多方环境中跟踪人们的目标也更加困难。类似于 DST 的差异，人们可以回答彼此的目标，而这种情况在二人对话中不会发生。代理必须能够确定用户目标是否被*准确*满足，以免重复刚刚回答者所说的内容。然而，如果回答者的回答是不正确的，机器人仍然需要回应，因为目标尚未完成。
 
 另一个主要的目标跟踪差异是我们人类非常擅长的——确定人们是否有共同的目标。如果两个人进咖啡馆点咖啡，咖啡师的互动方式会根据这是否是两个人分别点咖啡还是两个人一起点咖啡而有所不同。
 
-![](../Images/ec16f985c858169c1431d6d1eb73ab6c.png)
+![](img/ec16f985c858169c1431d6d1eb73ab6c.png)
 
 两个人点咖啡 ([来源](https://unsplash.com/photos/f7zm5TDOi4g))
 
@@ -163,11 +163,11 @@ Addlesee, A., Sieińska, W., Gunson, N., Garcia, D.H., Dondrup, C., Lemon, O., 2
 
 # 我们如何进展？
 
-由于该领域的大多数研究集中在双人互动上，适合的数据非常有限，且没有具有DST或目标跟踪注释的数据。为了在多方环境中训练系统执行上述任务，我们必须收集数据。我们——SPRING项目——正在医院记忆诊所中使用ARI机器人收集多方对话。
+由于该领域的大多数研究集中在双人互动上，适合的数据非常有限，且没有具有 DST 或目标跟踪注释的数据。为了在多方环境中训练系统执行上述任务，我们必须收集数据。我们——SPRING 项目——正在医院记忆诊所中使用 ARI 机器人收集多方对话。
 
-![](../Images/6ea20838326ee7aff1c7cbe94cf12458.png)
+![](img/6ea20838326ee7aff1c7cbe94cf12458.png)
 
-我在[论文](https://drive.google.com/file/d/1gUsMOlYHDzreB17CYNFxDOu-dWCtBQ4M/view)中展示了我们在洛杉矶[IWSDS 2023](https://sites.google.com/view/iwsds2023/home)会议上使用的ARI机器人用于数据收集的情况。
+我在[论文](https://drive.google.com/file/d/1gUsMOlYHDzreB17CYNFxDOu-dWCtBQ4M/view)中展示了我们在洛杉矶[IWSDS 2023](https://sites.google.com/view/iwsds2023/home)会议上使用的 ARI 机器人用于数据收集的情况。
 
 访问医院记忆诊所的患者及其陪同者会被提供带有不同目标的角色扮演场景。为了收集具有上述各种挑战的对话，我们设计了六种条件。我写这篇文章时，第三轮数据收集正在进行中！
 

@@ -1,10 +1,10 @@
 # 如何利用 LLMs 自动化从 PDF 中提取实体
 
-> 原文：[https://towardsdatascience.com/how-to-automate-entity-extraction-from-pdf-using-llms-ea9c1351f531?source=collection_archive---------1-----------------------#2023-06-15](https://towardsdatascience.com/how-to-automate-entity-extraction-from-pdf-using-llms-ea9c1351f531?source=collection_archive---------1-----------------------#2023-06-15)
+> 原文：[`towardsdatascience.com/how-to-automate-entity-extraction-from-pdf-using-llms-ea9c1351f531?source=collection_archive---------1-----------------------#2023-06-15`](https://towardsdatascience.com/how-to-automate-entity-extraction-from-pdf-using-llms-ea9c1351f531?source=collection_archive---------1-----------------------#2023-06-15)
 
 ## 利用零样本标注
 
-[![Walid Amamou](../Images/c5ae089c59a5ff070f0f90ad63ee3817.png)](https://walidamamou.medium.com/?source=post_page-----ea9c1351f531--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea9c1351f531--------------------------------) [Walid Amamou](https://walidamamou.medium.com/?source=post_page-----ea9c1351f531--------------------------------)
+![Walid Amamou](https://walidamamou.medium.com/?source=post_page-----ea9c1351f531--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea9c1351f531--------------------------------) [Walid Amamou](https://walidamamou.medium.com/?source=post_page-----ea9c1351f531--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-![](../Images/1fdba51610cfa80948066af630a9b08a.png)
+![](img/1fdba51610cfa80948066af630a9b08a.png)
 
 照片由 [Google DeepMind](https://unsplash.com/@deepmind?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/large-language-AI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -22,6 +22,6 @@
 
 在本教程中，我们将介绍一种利用大型语言模型（LLM）在上下文学习能力来自动标注非结构化和半结构化文档的方法。
 
-# 从SDS中提取信息
+# 从 SDS 中提取信息
 
-与传统的监督模型需要大量标注数据来训练以解决特定任务不同，LLM能够从少量数据中进行泛化和推断……
+与传统的监督模型需要大量标注数据来训练以解决特定任务不同，LLM 能够从少量数据中进行泛化和推断……

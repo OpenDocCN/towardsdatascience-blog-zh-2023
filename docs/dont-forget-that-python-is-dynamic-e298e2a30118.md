@@ -1,20 +1,20 @@
 # 别忘了 Python 是动态的！
 
-> 原文：[https://towardsdatascience.com/dont-forget-that-python-is-dynamic-e298e2a30118?source=collection_archive---------14-----------------------#2023-06-13](https://towardsdatascience.com/dont-forget-that-python-is-dynamic-e298e2a30118?source=collection_archive---------14-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/dont-forget-that-python-is-dynamic-e298e2a30118?source=collection_archive---------14-----------------------#2023-06-13`](https://towardsdatascience.com/dont-forget-that-python-is-dynamic-e298e2a30118?source=collection_archive---------14-----------------------#2023-06-13)
 
 ## PYTHON 编程
 
 ## 越来越多的静态和动态检查……这是我们希望 Python 发展的方向吗？
 
-[](https://medium.com/@nyggus?source=post_page-----e298e2a30118--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----e298e2a30118--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e298e2a30118--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e298e2a30118--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----e298e2a30118--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----e298e2a30118--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----e298e2a30118--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e298e2a30118--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e298e2a30118--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----e298e2a30118--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-forget-that-python-is-dynamic-e298e2a30118&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----e298e2a30118---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e298e2a30118--------------------------------) ·8 分钟阅读·2023年6月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe298e2a30118&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-forget-that-python-is-dynamic-e298e2a30118&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----e298e2a30118---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-forget-that-python-is-dynamic-e298e2a30118&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----e298e2a30118---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e298e2a30118--------------------------------) ·8 分钟阅读·2023 年 6 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe298e2a30118&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-forget-that-python-is-dynamic-e298e2a30118&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----e298e2a30118---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe298e2a30118&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-forget-that-python-is-dynamic-e298e2a30118&source=-----e298e2a30118---------------------bookmark_footer-----------)![](../Images/6da0e0a508c5e05c453414dadb108c73.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe298e2a30118&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-forget-that-python-is-dynamic-e298e2a30118&source=-----e298e2a30118---------------------bookmark_footer-----------)![](img/6da0e0a508c5e05c453414dadb108c73.png)
 
 Python 未来会走向何处？照片由 [Jamie Templeton](https://unsplash.com/@jamietempleton?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

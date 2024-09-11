@@ -1,18 +1,18 @@
 # 数据科学家面试指南
 
-> 原文：[https://towardsdatascience.com/data-scientist-technical-interview-guide-part-1-84e286fd4bae?source=collection_archive---------7-----------------------#2023-02-09](https://towardsdatascience.com/data-scientist-technical-interview-guide-part-1-84e286fd4bae?source=collection_archive---------7-----------------------#2023-02-09)
+> 原文：[`towardsdatascience.com/data-scientist-technical-interview-guide-part-1-84e286fd4bae?source=collection_archive---------7-----------------------#2023-02-09`](https://towardsdatascience.com/data-scientist-technical-interview-guide-part-1-84e286fd4bae?source=collection_archive---------7-----------------------#2023-02-09)
 
-## 第1部分：统计学与概率论
+## 第一部分：统计学与概率论
 
-[](https://medium.com/@dannyf16?source=post_page-----84e286fd4bae--------------------------------)[![Daniel Foley](../Images/b2a9e060f181784ffc9b1c00a7b071f7.png)](https://medium.com/@dannyf16?source=post_page-----84e286fd4bae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----84e286fd4bae--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----84e286fd4bae--------------------------------) [Daniel Foley](https://medium.com/@dannyf16?source=post_page-----84e286fd4bae--------------------------------)
+[](https://medium.com/@dannyf16?source=post_page-----84e286fd4bae--------------------------------)![Daniel Foley](https://medium.com/@dannyf16?source=post_page-----84e286fd4bae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----84e286fd4bae--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----84e286fd4bae--------------------------------) [Daniel Foley](https://medium.com/@dannyf16?source=post_page-----84e286fd4bae--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa823d37636a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientist-technical-interview-guide-part-1-84e286fd4bae&user=Daniel+Foley&userId=a823d37636a4&source=post_page-a823d37636a4----84e286fd4bae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----84e286fd4bae--------------------------------) · 18分钟阅读 · 2023年2月9日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa823d37636a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientist-technical-interview-guide-part-1-84e286fd4bae&user=Daniel+Foley&userId=a823d37636a4&source=post_page-a823d37636a4----84e286fd4bae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----84e286fd4bae--------------------------------) · 18 分钟阅读 · 2023 年 2 月 9 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F84e286fd4bae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientist-technical-interview-guide-part-1-84e286fd4bae&source=-----84e286fd4bae---------------------bookmark_footer-----------)![](../Images/8ae427526ba605580176c95c7f878677.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F84e286fd4bae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientist-technical-interview-guide-part-1-84e286fd4bae&source=-----84e286fd4bae---------------------bookmark_footer-----------)![](img/8ae427526ba605580176c95c7f878677.png)
 
 图片由 [Maranda Vandergriff](https://unsplash.com/@mkvandergriff?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/s/photos/interview?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 上提供
 

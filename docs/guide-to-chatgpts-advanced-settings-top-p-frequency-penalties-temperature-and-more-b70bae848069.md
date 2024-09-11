@@ -1,10 +1,10 @@
 # ChatGPT 高级设置指南——Top P、频率惩罚、温度及更多
 
-> 原文：[https://towardsdatascience.com/guide-to-chatgpts-advanced-settings-top-p-frequency-penalties-temperature-and-more-b70bae848069?source=collection_archive---------5-----------------------#2023-11-07](https://towardsdatascience.com/guide-to-chatgpts-advanced-settings-top-p-frequency-penalties-temperature-and-more-b70bae848069?source=collection_archive---------5-----------------------#2023-11-07)
+> 原文：[`towardsdatascience.com/guide-to-chatgpts-advanced-settings-top-p-frequency-penalties-temperature-and-more-b70bae848069?source=collection_archive---------5-----------------------#2023-11-07`](https://towardsdatascience.com/guide-to-chatgpts-advanced-settings-top-p-frequency-penalties-temperature-and-more-b70bae848069?source=collection_archive---------5-----------------------#2023-11-07)
 
 ## 通过优化扩展配置，如 Top P、频率和出现惩罚、停止序列和最大长度，来释放 ChatGPT 的潜在能力。
 
-[](https://kennethleungty.medium.com/?source=post_page-----b70bae848069--------------------------------)[![Kenneth Leung](../Images/2514dffb34529d6d757c0c4ec5f98334.png)](https://kennethleungty.medium.com/?source=post_page-----b70bae848069--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b70bae848069--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b70bae848069--------------------------------) [Kenneth Leung](https://kennethleungty.medium.com/?source=post_page-----b70bae848069--------------------------------)
+[](https://kennethleungty.medium.com/?source=post_page-----b70bae848069--------------------------------)![Kenneth Leung](https://kennethleungty.medium.com/?source=post_page-----b70bae848069--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b70bae848069--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b70bae848069--------------------------------) [Kenneth Leung](https://kennethleungty.medium.com/?source=post_page-----b70bae848069--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb70bae848069&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguide-to-chatgpts-advanced-settings-top-p-frequency-penalties-temperature-and-more-b70bae848069&source=-----b70bae848069---------------------bookmark_footer-----------)![](../Images/d194737499056062f9858dd926170f53.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb70bae848069&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguide-to-chatgpts-advanced-settings-top-p-frequency-penalties-temperature-and-more-b70bae848069&source=-----b70bae848069---------------------bookmark_footer-----------)![](img/d194737499056062f9858dd926170f53.png)
 
 图片来源于 [Volodymyr Hryshchenko](https://unsplash.com/@lunarts?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 在 [Unsplash](https://unsplash.com/photos/three-crumpled-yellow-papers-on-green-surface-surrounded-by-yellow-lined-papers-V5vqWC9gyEU?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 
@@ -24,7 +24,7 @@
 
 # 目录
 
-> ***(1)***[*温度*](#289d)***(2)***[*最大长度*](#c377)***(3)***[*停止序列*](#c733)***(4)***[*Top P*](#0829)***(5)***[*频率惩罚*](#da2d)***(6)***[*存在惩罚*](#ad10)
+> ***(1)****温度****(2)****最大长度****(3)****停止序列****(4)****Top P****(5)****频率惩罚****(6)****存在惩罚*
 
 # 介绍
 

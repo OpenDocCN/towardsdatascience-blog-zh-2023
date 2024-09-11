@@ -1,22 +1,22 @@
 # 类型提示数据框用于静态分析和运行时验证
 
-> 原文：[https://towardsdatascience.com/type-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d?source=collection_archive---------3-----------------------#2023-11-16](https://towardsdatascience.com/type-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d?source=collection_archive---------3-----------------------#2023-11-16)
+> 原文：[`towardsdatascience.com/type-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d?source=collection_archive---------3-----------------------#2023-11-16`](https://towardsdatascience.com/type-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d?source=collection_archive---------3-----------------------#2023-11-16)
 
-## StaticFrame如何实现全面的数据框类型提示
+## StaticFrame 如何实现全面的数据框类型提示
 
-[](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)[![Christopher Ariza](../Images/35208ace15080724e4cd6690e43d6502.png)](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------) [Christopher Ariza](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)
+[](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)![Christopher Ariza](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------) [Christopher Ariza](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a4f500b1e4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d&user=Christopher+Ariza&userId=6a4f500b1e4f&source=post_page-6a4f500b1e4f----3dedd2df481d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------) · 9分钟阅读 · 2023年11月16日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a4f500b1e4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d&user=Christopher+Ariza&userId=6a4f500b1e4f&source=post_page-6a4f500b1e4f----3dedd2df481d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------) · 9 分钟阅读 · 2023 年 11 月 16 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3dedd2df481d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d&source=-----3dedd2df481d---------------------bookmark_footer-----------)![](../Images/fcedb934dd797193272db95f8b6f913b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3dedd2df481d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d&source=-----3dedd2df481d---------------------bookmark_footer-----------)![](img/fcedb934dd797193272db95f8b6f913b.png)
 
 作者照片
 
-自从Python 3.5引入类型提示以来，静态类型数据框通常只限于指定类型：
+自从 Python 3.5 引入类型提示以来，静态类型数据框通常只限于指定类型：
 
 ```py
 def process(f: DataFrame) -> Series: ...
@@ -51,7 +51,7 @@ Python 的内置泛型类型（例如 `tuple` 或 `dict`）需要指定组件类
 
 泛型 `Series` 定义了一个用于索引的 `TypeVar` 和一个用于值的 `TypeVar`。StaticFrame 的 `Index` 和 `IndexHierarchy` 也是泛型的，后者再次利用 `TypeVarTuple` 来定义每个深度级别的可变数量的组件 `Index`。
 
-StaticFrame使用NumPy类型定义`Frame`的列类型，或者`Series`或`Index`的值类型。这允许严格指定大小的数值类型，如`np.uint8`或`np.complex128`；或广泛指定类型的类别，如`np.integer`或`np.inexact`。由于StaticFrame支持所有NumPy类型，因此对应关系是直接的。
+StaticFrame 使用 NumPy 类型定义`Frame`的列类型，或者`Series`或`Index`的值类型。这允许严格指定大小的数值类型，如`np.uint8`或`np.complex128`；或广泛指定类型的类别，如`np.integer`或`np.inexact`。由于 StaticFrame 支持所有 NumPy 类型，因此对应关系是直接的。
 
 ## 使用泛型数据框定义接口
 
@@ -78,7 +78,7 @@ def process(f: Frame[
 
 此函数处理来自[开源资产定价](https://www.openassetpricing.com)（OSAP）数据集（公司级特征/个体/预测器）的信号表。每个表具有三列：安全标识符（标记为“permno”）、年和月（标记为“yyyymm”）以及信号（具有特定信号的名称）。
 
-该函数忽略所提供`Frame`的索引（类型为`Any`），并创建由第一列“permno” `np.int_`值定义的组。返回以“permno”为键的字典，其中每个值是该“permno”的`np.float64`值的`Series`；索引是从`np.str_`“yyyymm”列创建的`IndexYearMonth`。（StaticFrame使用NumPy `datetime64`值来定义单位类型的索引：`IndexYearMonth`存储`datetime64[M]`标签。）
+该函数忽略所提供`Frame`的索引（类型为`Any`），并创建由第一列“permno” `np.int_`值定义的组。返回以“permno”为键的字典，其中每个值是该“permno”的`np.float64`值的`Series`；索引是从`np.str_`“yyyymm”列创建的`IndexYearMonth`。（StaticFrame 使用 NumPy `datetime64`值来定义单位类型的索引：`IndexYearMonth`存储`datetime64[M]`标签。）
 
 以下函数不返回`dict`，而是返回具有分层索引的`Series`。`IndexHierarchy`泛型指定了每个深度级别的组件`Index`；在此处，外部深度是从“permno”列派生的`Index[np.int_]`，内部深度是从“yyyymm”列派生的`IndexYearMonth`。
 
@@ -100,13 +100,13 @@ def process(f: Frame[
                 ]: ...
 ```
 
-丰富的类型提示提供了一个自描述的接口，使功能明确。更好的是，这些类型提示可以用于与Pyright（现在）和Mypy（待完全支持`TypeVarTuple`）的静态分析。例如，使用两列`np.float64`的`Frame`调用此函数将在编辑器中失败静态分析类型检查或提供警告。
+丰富的类型提示提供了一个自描述的接口，使功能明确。更好的是，这些类型提示可以用于与 Pyright（现在）和 Mypy（待完全支持`TypeVarTuple`）的静态分析。例如，使用两列`np.float64`的`Frame`调用此函数将在编辑器中失败静态分析类型检查或提供警告。
 
 ## 运行时类型验证
 
 静态类型检查可能不足够：运行时评估提供了更强的约束，特别是对于动态或未完全（或错误地）类型提示的值。
 
-基于名为`TypeClinic`的新运行时类型检查器，StaticFrame 2引入了`[@CallGuard](http://twitter.com/CallGuard).check`，一个用于类型提示接口运行时验证的装饰器。支持所有StaticFrame和NumPy泛型，并支持大多数内置Python类型，即使嵌套深度很深。以下函数添加了`[@CallGuard](http://twitter.com/CallGuard).check`装饰器。
+基于名为`TypeClinic`的新运行时类型检查器，StaticFrame 2 引入了`[@CallGuard](http://twitter.com/CallGuard).check`，一个用于类型提示接口运行时验证的装饰器。支持所有 StaticFrame 和 NumPy 泛型，并支持大多数内置 Python 类型，即使嵌套深度很深。以下函数添加了`[@CallGuard](http://twitter.com/CallGuard).check`装饰器。
 
 ```py
 from typing import Any
@@ -254,7 +254,7 @@ In args of (f: Frame[Any, Annotated[Index[str_], LabelsOrder(['permno', <lambda>
 >>> f2: sf.Frame[Any, Any, np.bool_, np.float64, np.int8, np.int8, np.str_, np.datetime64]
 ```
 
-虽然这适用于各种DataFrame，但对宽型DataFrame（例如具有数百列的DataFrame）的类型提示可能会显得笨拙。Python 3.11引入了一种新的语法，通过`TypeVarTuple`泛型提供可变范围的类型：`tuple`泛型别名的星号表达式。例如，要对具有日期索引、字符串列标签和任意列类型配置的`Frame`进行类型提示，我们可以星号解包零个或多个`All`的`tuple`。
+虽然这适用于各种 DataFrame，但对宽型 DataFrame（例如具有数百列的 DataFrame）的类型提示可能会显得笨拙。Python 3.11 引入了一种新的语法，通过`TypeVarTuple`泛型提供可变范围的类型：`tuple`泛型别名的星号表达式。例如，要对具有日期索引、字符串列标签和任意列类型配置的`Frame`进行类型提示，我们可以星号解包零个或多个`All`的`tuple`。
 
 ```py
 >>> from typing import Any
@@ -274,7 +274,7 @@ In args of (f: Frame[Any, Annotated[Index[str_], LabelsOrder(['permno', <lambda>
 
 ## 类型提示工具
 
-使用如此详细的类型提示可能会很具挑战性。为了帮助用户，StaticFrame提供了便捷的运行时类型提示和检查工具。所有StaticFrame 2容器现在都具备`via_type_clinic`接口，允许访问`TypeClinic`功能。
+使用如此详细的类型提示可能会很具挑战性。为了帮助用户，StaticFrame 提供了便捷的运行时类型提示和检查工具。所有 StaticFrame 2 容器现在都具备`via_type_clinic`接口，允许访问`TypeClinic`功能。
 
 首先，提供了将容器（例如完整的`Frame`）转换为类型提示的工具。`via_type_clinic`接口的字符串表示提供了容器类型提示的字符串表示；另外，`to_hint()`方法返回一个完整的泛型别名对象。
 
@@ -299,7 +299,7 @@ In Frame[Index[str_], Index[Any], Unpack[Tuple[Any, ...]]]
     └── Expected str_, provided int64 invalid
 ```
 
-为支持渐进类型，StaticFrame定义了几个配置为每种组件类型的`Any`的泛型别名。例如，`TFrameAny`可用于任何`Frame`，而`TSeriesAny`用于任何`Series`。如预期的那样，`TFrameAny`将验证上面创建的`Frame`。
+为支持渐进类型，StaticFrame 定义了几个配置为每种组件类型的`Any`的泛型别名。例如，`TFrameAny`可用于任何`Frame`，而`TSeriesAny`用于任何`Series`。如预期的那样，`TFrameAny`将验证上面创建的`Frame`。
 
 ```py
 >>> f.via_type_clinic.check(sf.TFrameAny)
@@ -307,4 +307,4 @@ In Frame[Index[str_], Index[Any], Unpack[Tuple[Any, ...]]]
 
 ## 结论
 
-更好的DataFrame类型提示早已迫切需要。凭借现代Python类型工具和基于不可变数据模型构建的DataFrame，StaticFrame 2满足了这一需求，为优先考虑可维护性和可验证性的工程师提供了强大的资源。
+更好的 DataFrame 类型提示早已迫切需要。凭借现代 Python 类型工具和基于不可变数据模型构建的 DataFrame，StaticFrame 2 满足了这一需求，为优先考虑可维护性和可验证性的工程师提供了强大的资源。

@@ -1,22 +1,22 @@
-# 从线性代数到深度学习的7本书（2024年冬季更新）
+# 从线性代数到深度学习的 7 本书（2024 年冬季更新）
 
-> 原文：[https://towardsdatascience.com/from-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1?source=collection_archive---------0-----------------------#2023-11-17](https://towardsdatascience.com/from-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1?source=collection_archive---------0-----------------------#2023-11-17)
+> 原文：[`towardsdatascience.com/from-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1?source=collection_archive---------0-----------------------#2023-11-17`](https://towardsdatascience.com/from-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1?source=collection_archive---------0-----------------------#2023-11-17)
 
 ## 我最喜欢的七本机器学习书籍
 
-[](https://medium.com/@andreas.stoeffelbauer?source=post_page-----8df2b706a0b1--------------------------------)[![Andreas Stöffelbauer](../Images/0ec3ebcaaf62da44823b6a7b6b84b7ad.png)](https://medium.com/@andreas.stoeffelbauer?source=post_page-----8df2b706a0b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8df2b706a0b1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8df2b706a0b1--------------------------------) [Andreas Stöffelbauer](https://medium.com/@andreas.stoeffelbauer?source=post_page-----8df2b706a0b1--------------------------------)
+[](https://medium.com/@andreas.stoeffelbauer?source=post_page-----8df2b706a0b1--------------------------------)![Andreas Stöffelbauer](https://medium.com/@andreas.stoeffelbauer?source=post_page-----8df2b706a0b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8df2b706a0b1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8df2b706a0b1--------------------------------) [Andreas Stöffelbauer](https://medium.com/@andreas.stoeffelbauer?source=post_page-----8df2b706a0b1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb06af985ef2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1&user=Andreas+St%C3%B6ffelbauer&userId=b06af985ef2&source=post_page-b06af985ef2----8df2b706a0b1---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8df2b706a0b1--------------------------------) · 12分钟阅读 · 2023年11月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8df2b706a0b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1&user=Andreas+St%C3%B6ffelbauer&userId=b06af985ef2&source=-----8df2b706a0b1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb06af985ef2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1&user=Andreas+St%C3%B6ffelbauer&userId=b06af985ef2&source=post_page-b06af985ef2----8df2b706a0b1---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8df2b706a0b1--------------------------------) · 12 分钟阅读 · 2023 年 11 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8df2b706a0b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1&user=Andreas+St%C3%B6ffelbauer&userId=b06af985ef2&source=-----8df2b706a0b1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8df2b706a0b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1&source=-----8df2b706a0b1---------------------bookmark_footer-----------)![](../Images/0ac77d28fe1d2fa8bfc3645f5bbbff18.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8df2b706a0b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-linear-algebra-to-deep-learning-in-7-books-winter-2023-update-8df2b706a0b1&source=-----8df2b706a0b1---------------------bookmark_footer-----------)![](img/0ac77d28fe1d2fa8bfc3645f5bbbff18.png)
 
 图片由 [Laura Kapfer](https://unsplash.com/@kapfii?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在我2019年为*Towards Data Science*撰写的第一篇博客中，我介绍了五本我最喜欢的机器学习书籍——涵盖了从基础线性代数到现代深度学习的各个方面。
+在我 2019 年为*Towards Data Science*撰写的第一篇博客中，我介绍了五本我最喜欢的机器学习书籍——涵盖了从基础线性代数到现代深度学习的各个方面。
 
 它们包括：
 
@@ -30,11 +30,11 @@
 
 +   **深度学习** 由 Ian Goodfellow 等人 编写。
 
-[](/books-on-machine-learning-c99e77140270?source=post_page-----8df2b706a0b1--------------------------------) [## 线性代数到深度学习的五本书
+[](/books-on-machine-learning-c99e77140270?source=post_page-----8df2b706a0b1--------------------------------) ## 线性代数到深度学习的五本书
 
 ### 我最喜欢的机器学习书籍
 
-[towardsdatascience.com](/books-on-machine-learning-c99e77140270?source=post_page-----8df2b706a0b1--------------------------------)
+[towardsdatascience.com
 
 这五本书我认为真的非常棒，各有各的原因。例如*统计学习元素*就是当年我还是本科生时让我对数据科学产生兴趣的原因。事实上，这五本书多年来帮助我学到了很多东西，如果没有它们，我现在不会达到这个水平。
 
@@ -82,9 +82,9 @@
 
 **我从这本书中学到的**：这本书证明了 R 是一个用于数据科学的惊人语言，特别是在学习方面更是如此。这是一本极具实用性的实践指南，我从中学到了 tidyverse 的数据科学方法。它特别关注数据处理，这是其他书籍（如 ISLR）通常没有的。直到今天，我仍然依赖于这本书中获得的数据处理知识。
 
-**如何阅读这本书**：你可以从头到尾阅读它，学到大量的新知识和技巧。如果你是数据科学的新手，我绝对推荐这样做。然而，这不是我第一本数据科学书籍，所以我采取了不同的方式。我按照自己的感觉阅读了各个章节。如果你已经有一些数据科学经验（例如，因为你来自Python），你也可以这样做——选择一个你想深入了解的主题，阅读相应的章节来加深你的知识。每一部分都是相对独立的，所以你可以很容易地这样做。
+**如何阅读这本书**：你可以从头到尾阅读它，学到大量的新知识和技巧。如果你是数据科学的新手，我绝对推荐这样做。然而，这不是我第一本数据科学书籍，所以我采取了不同的方式。我按照自己的感觉阅读了各个章节。如果你已经有一些数据科学经验（例如，因为你来自 Python），你也可以这样做——选择一个你想深入了解的主题，阅读相应的章节来加深你的知识。每一部分都是相对独立的，所以你可以很容易地这样做。
 
-**新版本的变化**：这本书的第二版于今年发布，所有代码示例都进行了重构。tidyverse在过去几年里发展迅速，因此这本书也需要更新。
+**新版本的变化**：这本书的第二版于今年发布，所有代码示例都进行了重构。tidyverse 在过去几年里发展迅速，因此这本书也需要更新。
 
 [](https://r4ds.hadley.nz/?source=post_page-----8df2b706a0b1--------------------------------) [## R for Data Science (2e)
 
@@ -94,7 +94,7 @@ r4ds.hadley.nz](https://r4ds.hadley.nz/?source=post_page-----8df2b706a0b1-------
 
 (我链接了这本书的第二版，它现在应该已经完成了，但你可以在[这里](https://r4ds.had.co.nz/)找到原版第一版。)
 
-> **《机器学习数学》** 作者：Marc Peter Deisenroth等
+> **《机器学习数学》** 作者：Marc Peter Deisenroth 等
 
 如果你在寻找一本全面学习机器学习所需数学的书籍，*《机器学习数学》*是一个很好的选择。
 
@@ -114,7 +114,7 @@ r4ds.hadley.nz](https://r4ds.hadley.nz/?source=post_page-----8df2b706a0b1-------
 
 > **《百页机器学习书》** by Andriy Burkov
 
-首先，实际上不是100页，而是更多一点。但无论如何，书籍确实做到了它承诺的内容，那就是一本简明但全面的机器学习关键概念和方法概述。
+首先，实际上不是 100 页，而是更多一点。但无论如何，书籍确实做到了它承诺的内容，那就是一本简明但全面的机器学习关键概念和方法概述。
 
 因此，它可能不是一个从零开始学习数据科学的首选资源，也不是非常实用。它的目的是提供重要概念的简明描述，并介绍其背后的数学和理论。
 
@@ -122,7 +122,7 @@ r4ds.hadley.nz](https://r4ds.hadley.nz/?source=post_page-----8df2b706a0b1-------
 
 **我从这本书中学到的东西**：对我来说，这本书有时候像是一种自我检查。我认为如果我能从其基本描述中理解一个概念，那我应该对这个主题有了很好的理解。我觉得这本书就是关于这个的。它并不是从头教你数据科学或者机器学习，但在心理上，你可以通过阅读书中的内容总结或者重新理解一个概念。
 
-**如何阅读这本书**：这本书是关于机器学习概念的最佳简明总结之一，我建议你像我一样做，即使用这本书来检查你对某个主题或概念的理解。如果你理解了这个概念，那就很完美。如果没有，你可能需要回到另一本书（如ISLR或ESL）中更详细地解释这个概念。
+**如何阅读这本书**：这本书是关于机器学习概念的最佳简明总结之一，我建议你像我一样做，即使用这本书来检查你对某个主题或概念的理解。如果你理解了这个概念，那就很完美。如果没有，你可能需要回到另一本书（如 ISLR 或 ESL）中更详细地解释这个概念。
 
 [](http://themlbook.com/?source=post_page-----8df2b706a0b1--------------------------------) [## 《百页机器学习书》 by Andriy Burkov
 
@@ -144,7 +144,7 @@ themlbook.com](http://themlbook.com/?source=post_page-----8df2b706a0b1----------
 
 [](https://mitpress.mit.edu/9780262018029/machine-learning/?source=post_page-----8df2b706a0b1--------------------------------) [## 机器学习
 
-### 获奖者，2013年国际贝叶斯分析学会颁发的德格鲁特奖，1104页，8 x 9 英寸，300色……
+### 获奖者，2013 年国际贝叶斯分析学会颁发的德格鲁特奖，1104 页，8 x 9 英寸，300 色……
 
 mitpress.mit.edu](https://mitpress.mit.edu/9780262018029/machine-learning/?source=post_page-----8df2b706a0b1--------------------------------)
 
@@ -160,15 +160,15 @@ mitpress.mit.edu](https://mitpress.mit.edu/9780262018029/machine-learning/?sourc
 
 **如何阅读这本书**：如果你刚开始深度学习，这可能是又一本从头到尾阅读的书，因为弗朗索瓦是一个出色的作者，他在阐述概念时做得非常出色。如果你已经有一些深度学习经验，你也可以选择一章来增强对特定主题的理解。
 
-**第二版中的新内容**：本书的第二版于今年早些时候发布。深度学习发展迅速，因此书籍需要进行更新。它还包含了新的章节和主题。例如，它包括了最新语言模型和文本生成技术的新内容。此外，Keras也随着年份的推移发生了变化，所以书籍也进行了相应调整。
+**第二版中的新内容**：本书的第二版于今年早些时候发布。深度学习发展迅速，因此书籍需要进行更新。它还包含了新的章节和主题。例如，它包括了最新语言模型和文本生成技术的新内容。此外，Keras 也随着年份的推移发生了变化，所以书籍也进行了相应调整。
 
-[](https://www.manning.com/books/deep-learning-with-python-second-edition?source=post_page-----8df2b706a0b1--------------------------------) [## 使用Python进行深度学习，第二版
+[](https://www.manning.com/books/deep-learning-with-python-second-edition?source=post_page-----8df2b706a0b1--------------------------------) [## 使用 Python 进行深度学习，第二版
 
 ### 本书的上一版电子书副本包含在内，无需额外费用。它将自动添加到…
 
 [www.manning.com](https://www.manning.com/books/deep-learning-with-python-second-edition?source=post_page-----8df2b706a0b1--------------------------------)
 
-（还有一本非常相似的书，名为[*使用PyTorch进行深度学习*](https://www.manning.com/books/deep-learning-with-pytorch)，它涵盖了很多相同的内容，但重点放在PyTorch上，而不是TensorFlow/Keras。）
+（还有一本非常相似的书，名为[*使用 PyTorch 进行深度学习*](https://www.manning.com/books/deep-learning-with-pytorch)，它涵盖了很多相同的内容，但重点放在 PyTorch 上，而不是 TensorFlow/Keras。）
 
 > **强化学习导论**，作者：理查德·萨顿和安德鲁·巴托
 

@@ -1,18 +1,18 @@
 # 非结构化数据漏斗
 
-> 原文：[https://towardsdatascience.com/the-unstructured-data-funnel-245f72925176?source=collection_archive---------8-----------------------#2023-12-15](https://towardsdatascience.com/the-unstructured-data-funnel-245f72925176?source=collection_archive---------8-----------------------#2023-12-15)
+> 原文：[`towardsdatascience.com/the-unstructured-data-funnel-245f72925176?source=collection_archive---------8-----------------------#2023-12-15`](https://towardsdatascience.com/the-unstructured-data-funnel-245f72925176?source=collection_archive---------8-----------------------#2023-12-15)
 
-![](../Images/70a9cff10a032a2a0f68964b01824643.png)
+![](img/70a9cff10a032a2a0f68964b01824643.png)
 
 深入多少决定了你的支出。照片由 [Ricardo Gomez Angel](https://unsplash.com/@rgaleriacom?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 提供，来源于 [Unsplash](https://unsplash.com/photos/black-and-white-round-tunnel-JB3mBjGt94Y?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 
 ## 为什么漏斗是数据领域最强者之间争夺的核心
 
-[](https://medium.com/@hugolu87?source=post_page-----245f72925176--------------------------------)[![Hugo Lu](../Images/045de11463bb16ea70a816ba89118a9e.png)](https://medium.com/@hugolu87?source=post_page-----245f72925176--------------------------------)[](https://towardsdatascience.com/?source=post_page-----245f72925176--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----245f72925176--------------------------------) [Hugo Lu](https://medium.com/@hugolu87?source=post_page-----245f72925176--------------------------------)
+[](https://medium.com/@hugolu87?source=post_page-----245f72925176--------------------------------)![Hugo Lu](https://medium.com/@hugolu87?source=post_page-----245f72925176--------------------------------)[](https://towardsdatascience.com/?source=post_page-----245f72925176--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----245f72925176--------------------------------) [Hugo Lu](https://medium.com/@hugolu87?source=post_page-----245f72925176--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F202d118f4cb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-unstructured-data-funnel-245f72925176&user=Hugo+Lu&userId=202d118f4cb9&source=post_page-202d118f4cb9----245f72925176---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----245f72925176--------------------------------) ·9 min read·2023年12月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F245f72925176&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-unstructured-data-funnel-245f72925176&user=Hugo+Lu&userId=202d118f4cb9&source=-----245f72925176---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F202d118f4cb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-unstructured-data-funnel-245f72925176&user=Hugo+Lu&userId=202d118f4cb9&source=post_page-202d118f4cb9----245f72925176---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----245f72925176--------------------------------) ·9 min read·2023 年 12 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F245f72925176&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-unstructured-data-funnel-245f72925176&user=Hugo+Lu&userId=202d118f4cb9&source=-----245f72925176---------------------clap_footer-----------)
 
 --
 
@@ -26,7 +26,7 @@
 
 虽然对我们数据从业者来说，非结构化数据可能看起来无害，但它在宏观层面上正引发巨大的波动。实际上，GPT 模型 [都在训练](https://en.wikipedia.org/wiki/ChatGPT) 非结构化数据。托马斯·通古兹在 Snowflake 的财报电话会议中在一篇 [最近的文章](https://www.linkedin.com/pulse/snow-angels-come-early-data-snowflakes-strength-spells-tomasz-tunguz-bdggc/) 中正确地观察到了这一点：
 
-![](../Images/a8e4d62926abb2208c99028959ff279e.png)
+![](img/a8e4d62926abb2208c99028959ff279e.png)
 
 摘自托马斯·通古兹的《雪天使》
 

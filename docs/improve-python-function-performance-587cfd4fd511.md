@@ -1,18 +1,18 @@
 # 如何提升 Python 函数的性能
 
-> 原文：[https://towardsdatascience.com/improve-python-function-performance-587cfd4fd511?source=collection_archive---------5-----------------------#2023-03-10](https://towardsdatascience.com/improve-python-function-performance-587cfd4fd511?source=collection_archive---------5-----------------------#2023-03-10)
+> 原文：[`towardsdatascience.com/improve-python-function-performance-587cfd4fd511?source=collection_archive---------5-----------------------#2023-03-10`](https://towardsdatascience.com/improve-python-function-performance-587cfd4fd511?source=collection_archive---------5-----------------------#2023-03-10)
 
 ## 提升 Python 中常被调用函数的性能
 
-[](https://gmyrianthous.medium.com/?source=post_page-----587cfd4fd511--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----587cfd4fd511--------------------------------)[](https://towardsdatascience.com/?source=post_page-----587cfd4fd511--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----587cfd4fd511--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----587cfd4fd511--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----587cfd4fd511--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----587cfd4fd511--------------------------------)[](https://towardsdatascience.com/?source=post_page-----587cfd4fd511--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----587cfd4fd511--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----587cfd4fd511--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-python-function-performance-587cfd4fd511&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----587cfd4fd511---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----587cfd4fd511--------------------------------) ·9分钟阅读·2023年3月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F587cfd4fd511&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-python-function-performance-587cfd4fd511&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----587cfd4fd511---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-python-function-performance-587cfd4fd511&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----587cfd4fd511---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----587cfd4fd511--------------------------------) ·9 分钟阅读·2023 年 3 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F587cfd4fd511&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-python-function-performance-587cfd4fd511&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----587cfd4fd511---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F587cfd4fd511&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-python-function-performance-587cfd4fd511&source=-----587cfd4fd511---------------------bookmark_footer-----------)![](../Images/d4ef78a78679f6b7ede3800157e16a73.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F587cfd4fd511&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-python-function-performance-587cfd4fd511&source=-----587cfd4fd511---------------------bookmark_footer-----------)![](img/d4ef78a78679f6b7ede3800157e16a73.png)
 
 图片来源：[Esteban Lopez](https://unsplash.com/@exxteban?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 于 [Unsplash](https://unsplash.com/photos/6yjAC0-OwkA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

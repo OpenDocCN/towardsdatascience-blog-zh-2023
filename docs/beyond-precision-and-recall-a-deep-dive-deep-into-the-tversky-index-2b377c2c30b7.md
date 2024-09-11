@@ -1,30 +1,30 @@
 # 超越精度和召回率：深入探讨 Tversky 指数
 
-> 原文：[https://towardsdatascience.com/beyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7?source=collection_archive---------8-----------------------#2023-09-02](https://towardsdatascience.com/beyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7?source=collection_archive---------8-----------------------#2023-09-02)
+> 原文：[`towardsdatascience.com/beyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7?source=collection_archive---------8-----------------------#2023-09-02`](https://towardsdatascience.com/beyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7?source=collection_archive---------8-----------------------#2023-09-02)
 
 ## 探索一种替代分类指标
 
-[](https://mikhailklassen.medium.com/?source=post_page-----2b377c2c30b7--------------------------------)[![Mikhail Klassen](../Images/9c4a6cc856fd4061f682e95a1c145c36.png)](https://mikhailklassen.medium.com/?source=post_page-----2b377c2c30b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2b377c2c30b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2b377c2c30b7--------------------------------) [Mikhail Klassen](https://mikhailklassen.medium.com/?source=post_page-----2b377c2c30b7--------------------------------)
+[](https://mikhailklassen.medium.com/?source=post_page-----2b377c2c30b7--------------------------------)![Mikhail Klassen](https://mikhailklassen.medium.com/?source=post_page-----2b377c2c30b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2b377c2c30b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b377c2c30b7--------------------------------) [Mikhail Klassen](https://mikhailklassen.medium.com/?source=post_page-----2b377c2c30b7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd9dfda9f9153&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7&user=Mikhail+Klassen&userId=d9dfda9f9153&source=post_page-d9dfda9f9153----2b377c2c30b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b377c2c30b7--------------------------------) ·7 min read·2023年9月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2b377c2c30b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7&user=Mikhail+Klassen&userId=d9dfda9f9153&source=-----2b377c2c30b7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd9dfda9f9153&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7&user=Mikhail+Klassen&userId=d9dfda9f9153&source=post_page-d9dfda9f9153----2b377c2c30b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b377c2c30b7--------------------------------) ·7 min read·2023 年 9 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2b377c2c30b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7&user=Mikhail+Klassen&userId=d9dfda9f9153&source=-----2b377c2c30b7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2b377c2c30b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7&source=-----2b377c2c30b7---------------------bookmark_footer-----------)![](../Images/007d37c92072ebd8b214107ae1e5014e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2b377c2c30b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-precision-and-recall-a-deep-dive-deep-into-the-tversky-index-2b377c2c30b7&source=-----2b377c2c30b7---------------------bookmark_footer-----------)![](img/007d37c92072ebd8b214107ae1e5014e.png)
 
 照片由 [Ricardo Arce](https://unsplash.com/@jrarce?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在数据科学的世界里，指标是引导我们模型走向成功的指南针。虽然许多人熟悉经典的精度和召回率指标，但实际上还有许多其他值得探索的选项。
 
-在这篇文章中，我们将深入探讨Tversky指数。这个指标是Dice和Jaccard系数的推广，对于平衡精确度和召回率非常有用。当作为神经网络的损失函数实现时，它可以是处理类别不平衡的强大工具。
+在这篇文章中，我们将深入探讨 Tversky 指数。这个指标是 Dice 和 Jaccard 系数的推广，对于平衡精确度和召回率非常有用。当作为神经网络的损失函数实现时，它可以是处理类别不平衡的强大工具。
 
 ## 对精确度和召回率的快速回顾
 
-想象你是一名侦探，负责抓捕你镇上的罪犯。实际上，街上有10名罪犯在游荡。
+想象你是一名侦探，负责抓捕你镇上的罪犯。实际上，街上有 10 名罪犯在游荡。
 
-在你的第一个月里，你带来了8名你认为是罪犯的嫌疑人。最终只有4人确实有罪，而其他4人是无辜的。
+在你的第一个月里，你带来了 8 名你认为是罪犯的嫌疑人。最终只有 4 人确实有罪，而其他 4 人是无辜的。
 
 如果你是一款机器学习模型，你会根据你的精确度和召回率来进行评估。
 

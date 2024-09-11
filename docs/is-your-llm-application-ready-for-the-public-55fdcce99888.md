@@ -1,30 +1,30 @@
-# 您的LLM应用程序准备好公开了吗？
+# 您的 LLM 应用程序准备好公开了吗？
 
-> 原文：[https://towardsdatascience.com/is-your-llm-application-ready-for-the-public-55fdcce99888?source=collection_archive---------17-----------------------#2023-06-20](https://towardsdatascience.com/is-your-llm-application-ready-for-the-public-55fdcce99888?source=collection_archive---------17-----------------------#2023-06-20)
+> 原文：[`towardsdatascience.com/is-your-llm-application-ready-for-the-public-55fdcce99888?source=collection_archive---------17-----------------------#2023-06-20`](https://towardsdatascience.com/is-your-llm-application-ready-for-the-public-55fdcce99888?source=collection_archive---------17-----------------------#2023-06-20)
 
-## 将基于LLM的应用程序投入生产时的关键关注点
+## 将基于 LLM 的应用程序投入生产时的关键关注点
 
-[](https://medium.com/@itai_88363?source=post_page-----55fdcce99888--------------------------------)[![Itai Bar Sinai](../Images/f5639687f014cd240832a01414f27d8b.png)](https://medium.com/@itai_88363?source=post_page-----55fdcce99888--------------------------------)[](https://towardsdatascience.com/?source=post_page-----55fdcce99888--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----55fdcce99888--------------------------------) [Itai Bar Sinai](https://medium.com/@itai_88363?source=post_page-----55fdcce99888--------------------------------)
+[](https://medium.com/@itai_88363?source=post_page-----55fdcce99888--------------------------------)![Itai Bar Sinai](https://medium.com/@itai_88363?source=post_page-----55fdcce99888--------------------------------)[](https://towardsdatascience.com/?source=post_page-----55fdcce99888--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----55fdcce99888--------------------------------) [Itai Bar Sinai](https://medium.com/@itai_88363?source=post_page-----55fdcce99888--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdae6c2441260&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-your-llm-application-ready-for-the-public-55fdcce99888&user=Itai+Bar+Sinai&userId=dae6c2441260&source=post_page-dae6c2441260----55fdcce99888---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----55fdcce99888--------------------------------) ·6分钟阅读·2023年6月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F55fdcce99888&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-your-llm-application-ready-for-the-public-55fdcce99888&user=Itai+Bar+Sinai&userId=dae6c2441260&source=-----55fdcce99888---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdae6c2441260&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-your-llm-application-ready-for-the-public-55fdcce99888&user=Itai+Bar+Sinai&userId=dae6c2441260&source=post_page-dae6c2441260----55fdcce99888---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----55fdcce99888--------------------------------) ·6 分钟阅读·2023 年 6 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F55fdcce99888&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-your-llm-application-ready-for-the-public-55fdcce99888&user=Itai+Bar+Sinai&userId=dae6c2441260&source=-----55fdcce99888---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F55fdcce99888&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-your-llm-application-ready-for-the-public-55fdcce99888&source=-----55fdcce99888---------------------bookmark_footer-----------)
 
-大型语言模型（LLMs）正成为现代自然语言处理（NLP）应用的基本组成部分，并且在许多方面取代了各种更为专业的工具，例如命名实体识别模型、问答模型和文本分类器。因此，很难想象一个不以某种方式使用LLM的NLP产品。虽然LLM带来了诸如个性化和创意对话生成等诸多好处，但在将这些模型集成到服务最终用户的软件产品中时，了解其陷阱以及如何应对这些问题是很重要的。事实证明，监控能够很好地解决这些挑战，并且是任何与LLM合作的企业工具箱中的一个重要部分。
+大型语言模型（LLMs）正成为现代自然语言处理（NLP）应用的基本组成部分，并且在许多方面取代了各种更为专业的工具，例如命名实体识别模型、问答模型和文本分类器。因此，很难想象一个不以某种方式使用 LLM 的 NLP 产品。虽然 LLM 带来了诸如个性化和创意对话生成等诸多好处，但在将这些模型集成到服务最终用户的软件产品中时，了解其陷阱以及如何应对这些问题是很重要的。事实证明，监控能够很好地解决这些挑战，并且是任何与 LLM 合作的企业工具箱中的一个重要部分。
 
 # 数据、隐私和提示注入
 
-![](../Images/f33bf41296052bcbdf1e05d77807782d.png)
+![](img/f33bf41296052bcbdf1e05d77807782d.png)
 
 图片由 TheDigitalArtist 提供，来源于 [Pixabay](https://pixabay.com/photos/computer-business-gdpr-legislation-3233754/)
 
 # 数据与隐私
 
-隐私和数据使用是现代消费者的主要关注点之一，尤其是在剑桥分析等著名数据共享丑闻的影响下，消费者越来越不愿使用那些可能危及个人隐私的服务和产品。虽然LLM（大型语言模型）为用户提供了极高的个性化，但了解它们所带来的风险也很重要。与所有机器学习模型一样，LLM容易受到针对性的攻击，这些攻击旨在揭示训练数据，由于其生成性质，LLM尤其容易受到风险，甚至在进行自由形式生成时可能会意外泄露数据。例如，在[2020年博客文章](https://ai.googleblog.com/2020/12/privacy-considerations-in-large.html)中，谷歌大脑的研究科学家尼古拉斯·卡尔尼讨论了如何通过提示LLM（如GPT）来泄露个人身份信息，如姓名、地址和电子邮件，这些信息包含在模型的训练数据中。这表明，针对客户数据对LLM进行微调的企业可能会引发类似的隐私风险。同样，来自微软研究人员的[论文](https://ppml-workshop.github.io/ppml21/pdfs/ppml21-final58.pdf)也证实了这些说法，并建议了一些具体的缓解策略，这些策略利用差分隐私技术来训练LLM，同时减少数据泄露的担忧。不幸的是，由于许多企业使用的LLM API不允许他们控制微调过程，因此无法利用这些技术。这些公司的解决方案在于插入一个监控步骤，在将结果返回给最终用户之前验证和限制模型的输出。通过这种方式，企业可以在隐私违规实际发生之前识别并标记潜在的训练数据泄露实例。例如，监控工具可以应用诸如命名实体识别和正则表达式过滤等技术来识别模型生成的姓名、地址、电子邮件及其他敏感信息，防止这些信息落入不良分子之手。这对于在隐私受限领域如医疗或金融工作的组织尤其重要，这些领域涉及HIPAA和FTC/FDIC等严格法规。即使是仅仅在国际上运营的企业也面临违反复杂的地域特定法规，如欧盟的GDPR。
+隐私和数据使用是现代消费者的主要关注点之一，尤其是在剑桥分析等著名数据共享丑闻的影响下，消费者越来越不愿使用那些可能危及个人隐私的服务和产品。虽然 LLM（大型语言模型）为用户提供了极高的个性化，但了解它们所带来的风险也很重要。与所有机器学习模型一样，LLM 容易受到针对性的攻击，这些攻击旨在揭示训练数据，由于其生成性质，LLM 尤其容易受到风险，甚至在进行自由形式生成时可能会意外泄露数据。例如，在[2020 年博客文章](https://ai.googleblog.com/2020/12/privacy-considerations-in-large.html)中，谷歌大脑的研究科学家尼古拉斯·卡尔尼讨论了如何通过提示 LLM（如 GPT）来泄露个人身份信息，如姓名、地址和电子邮件，这些信息包含在模型的训练数据中。这表明，针对客户数据对 LLM 进行微调的企业可能会引发类似的隐私风险。同样，来自微软研究人员的[论文](https://ppml-workshop.github.io/ppml21/pdfs/ppml21-final58.pdf)也证实了这些说法，并建议了一些具体的缓解策略，这些策略利用差分隐私技术来训练 LLM，同时减少数据泄露的担忧。不幸的是，由于许多企业使用的 LLM API 不允许他们控制微调过程，因此无法利用这些技术。这些公司的解决方案在于插入一个监控步骤，在将结果返回给最终用户之前验证和限制模型的输出。通过这种方式，企业可以在隐私违规实际发生之前识别并标记潜在的训练数据泄露实例。例如，监控工具可以应用诸如命名实体识别和正则表达式过滤等技术来识别模型生成的姓名、地址、电子邮件及其他敏感信息，防止这些信息落入不良分子之手。这对于在隐私受限领域如医疗或金融工作的组织尤其重要，这些领域涉及 HIPAA 和 FTC/FDIC 等严格法规。即使是仅仅在国际上运营的企业也面临违反复杂的地域特定法规，如欧盟的 GDPR。
 
 # 提示注入
 
@@ -36,7 +36,7 @@
 
 幻觉（hallucination）指的是 LLM 偶尔“编造”那些实际上不符合现实的输出的倾向。提示注入和幻觉可以表现为同一枚硬币的两面，尽管提示注入中的虚假生成是用户的故意行为，而幻觉则是 LLM 训练目标的无意副作用。由于 LLM 被训练为在每个时间步骤中预测序列中下一个最可能的词，因此它们能够生成高度逼真的文本。因此，幻觉是最可能的情况并不总是真的简单结果。
 
-![](../Images/4ad9a20e80f4114ca5a3042e78f5b19a.png)
+![](img/4ad9a20e80f4114ca5a3042e78f5b19a.png)
 
 图片来源：Matheus Bertelli via [Pexels](https://www.pexels.com/photo/woman-laptop-working-internet-16094040/)
 
@@ -48,4 +48,4 @@
 
 # **结论**
 
-每个将大型语言模型（LLMs）应用于其产品的企业，都应确保将监控功能整合到其系统中，以避免并解决LLMs的众多陷阱。此外，使用的监控解决方案应专门针对LLMs应用，允许用户识别潜在的隐私侵犯，防止和/或修复提示注入，标记幻觉，并诊断不断上升的成本。最佳的监控解决方案将解决所有这些问题，并为企业提供一个框架，以确保其基于LLM的应用准备好对公众发布。通过[预约演示](https://www.monalabs.io/request-demo)来查看Mona的全面监控能力，确保你的LLM应用经过充分优化并按预期运行。
+每个将大型语言模型（LLMs）应用于其产品的企业，都应确保将监控功能整合到其系统中，以避免并解决 LLMs 的众多陷阱。此外，使用的监控解决方案应专门针对 LLMs 应用，允许用户识别潜在的隐私侵犯，防止和/或修复提示注入，标记幻觉，并诊断不断上升的成本。最佳的监控解决方案将解决所有这些问题，并为企业提供一个框架，以确保其基于 LLM 的应用准备好对公众发布。通过[预约演示](https://www.monalabs.io/request-demo)来查看 Mona 的全面监控能力，确保你的 LLM 应用经过充分优化并按预期运行。

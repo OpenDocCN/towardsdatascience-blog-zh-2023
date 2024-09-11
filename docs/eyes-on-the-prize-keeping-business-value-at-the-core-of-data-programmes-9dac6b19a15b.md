@@ -1,28 +1,28 @@
 # 眼光放在奖品上：将商业价值置于数据项目的核心
 
-> 原文：[https://towardsdatascience.com/eyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b?source=collection_archive---------22-----------------------#2023-07-21](https://towardsdatascience.com/eyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b?source=collection_archive---------22-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/eyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b?source=collection_archive---------22-----------------------#2023-07-21`](https://towardsdatascience.com/eyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b?source=collection_archive---------22-----------------------#2023-07-21)
 
 ## 最大化数据投资的商业价值
 
-[](https://medium.com/@marcdelbaere?source=post_page-----9dac6b19a15b--------------------------------)[![Marc Delbaere](../Images/6986bf11d190fffaa73e862a942e38fc.png)](https://medium.com/@marcdelbaere?source=post_page-----9dac6b19a15b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9dac6b19a15b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9dac6b19a15b--------------------------------) [Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----9dac6b19a15b--------------------------------)
+[](https://medium.com/@marcdelbaere?source=post_page-----9dac6b19a15b--------------------------------)![Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----9dac6b19a15b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9dac6b19a15b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9dac6b19a15b--------------------------------) [Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----9dac6b19a15b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6fc3dd051b77&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b&user=Marc+Delbaere&userId=6fc3dd051b77&source=post_page-6fc3dd051b77----9dac6b19a15b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9dac6b19a15b--------------------------------) ·10分钟阅读·2023年7月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9dac6b19a15b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b&user=Marc+Delbaere&userId=6fc3dd051b77&source=-----9dac6b19a15b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6fc3dd051b77&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b&user=Marc+Delbaere&userId=6fc3dd051b77&source=post_page-6fc3dd051b77----9dac6b19a15b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9dac6b19a15b--------------------------------) ·10 分钟阅读·2023 年 7 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9dac6b19a15b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b&user=Marc+Delbaere&userId=6fc3dd051b77&source=-----9dac6b19a15b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9dac6b19a15b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b&source=-----9dac6b19a15b---------------------bookmark_footer-----------)![](../Images/3471f00dee51ad3327fb9dc437a850d3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9dac6b19a15b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feyes-on-the-prize-keeping-business-value-at-the-core-of-data-programmes-9dac6b19a15b&source=-----9dac6b19a15b---------------------bookmark_footer-----------)![](img/3471f00dee51ad3327fb9dc437a850d3.png)
 
 由 Midjourney 生成
 
-在我的软件执行官角色中，我经常与各行业的首席数据官（CDO）进行交流。有些CDO本质上是技术型的，拥有深厚的数据架构和AI算法知识。而其他的则更偏向于商业领域，具备对数据如何释放商业价值的敏锐理解。
+在我的软件执行官角色中，我经常与各行业的首席数据官（CDO）进行交流。有些 CDO 本质上是技术型的，拥有深厚的数据架构和 AI 算法知识。而其他的则更偏向于商业领域，具备对数据如何释放商业价值的敏锐理解。
 
-几周前，我和金融机构的一位CDO Alex进行了一次友好的交谈，我认为他更偏向于商业领域。
+几周前，我和金融机构的一位 CDO Alex 进行了一次友好的交谈，我认为他更偏向于商业领域。
 
 亚历克斯向我解释说，不久前，在准备一个执行委员会会议时，她要求管理团队提供近期成就的意见。然而，她听到的都是与最近的数据基础设施云迁移相关的技术成就。她知道这些内容不会引起商业利益相关者的共鸣，因此她不得不自己构建一个全新的叙述，最终她成功做到了这一点。这时她意识到，在向商业高管推销数据计划的商业价值时，她大多是孤军奋战，而他们讲述的故事与她团队中的人们当时对工作的感知不一致。
 
-这是我不断与首席数据官（CDO）讨论的话题，从最技术型到更商业导向型的CDO们都感受到数据管理的技术复杂性与这些举措应提供的实际商业价值之间的日益紧张。根据NewVantage Partners《数据与分析领导力年鉴2023》，首席数据官的角色，从2012年仅在12%的组织中出现，现在已在82%的公司中稳固建立。数据管理的复杂性也随之增长，使得这道鸿沟更具挑战性。
+这是我不断与首席数据官（CDO）讨论的话题，从最技术型到更商业导向型的 CDO 们都感受到数据管理的技术复杂性与这些举措应提供的实际商业价值之间的日益紧张。根据 NewVantage Partners《数据与分析领导力年鉴 2023》，首席数据官的角色，从 2012 年仅在 12%的组织中出现，现在已在 82%的公司中稳固建立。数据管理的复杂性也随之增长，使得这道鸿沟更具挑战性。
 
 接下来的章节将深入探讨这个问题：数据管理的复杂技术方面与对清晰商业价值生成的迫切需求之间的紧张关系。
 
@@ -60,9 +60,9 @@
 
 让我们考虑一些源自我与客户互动经验的实际例子。你会注意到，这些业务用例以“业务价值优先”的方式进行描述——这是首席数据官向业务方展示成就的方式。
 
-**能源效率改进**：我们合作的一家大型泛欧工业公司实施了一种分析解决方案，以减少能源成本。这一举措引起了业务的关注，因为它导致了接近百万欧元的节省，并将每年的CO2排放量减少了1000吨。实施过程中涉及了部署传感器以测量能源消耗，创建模拟模型，并可视化主要贡献者，以了解能源流动情况。
+**能源效率改进**：我们合作的一家大型泛欧工业公司实施了一种分析解决方案，以减少能源成本。这一举措引起了业务的关注，因为它导致了接近百万欧元的节省，并将每年的 CO2 排放量减少了 1000 吨。实施过程中涉及了部署传感器以测量能源消耗，创建模拟模型，并可视化主要贡献者，以了解能源流动情况。
 
-**实时缺陷检测**：我们服务的一家主要英国汽车制造商实施了一个流动的过程故障单（PFS），以在生产过程中实时检测和解决缺陷。该系统随装配线移动，覆盖整个生产过程，实现了生产异常的高效识别。之前，他们的缺陷报告过程效率低下，耗时长且容易出错。实施流动PFS后，大大减少了检查时间和每班次所需的技术人员数量。因此，公司每辆车节省了1.75英镑，全年节省超过40万英镑——这清晰地展示了该数据计划的业务价值。
+**实时缺陷检测**：我们服务的一家主要英国汽车制造商实施了一个流动的过程故障单（PFS），以在生产过程中实时检测和解决缺陷。该系统随装配线移动，覆盖整个生产过程，实现了生产异常的高效识别。之前，他们的缺陷报告过程效率低下，耗时长且容易出错。实施流动 PFS 后，大大减少了检查时间和每班次所需的技术人员数量。因此，公司每辆车节省了 1.75 英镑，全年节省超过 40 万英镑——这清晰地展示了该数据计划的业务价值。
 
 业务用例提供了可观的价值，无论是通过增加收入、降低成本，还是减少风险。但业务用例的范围不仅限于这些主要类别。它们还包括必要的合规报告，并支持与更广泛公司目标一致的关键绩效指标（KPI），如推动多样性或可持续性。
 
@@ -72,7 +72,7 @@
 
 业务用例的价值并非静态，它随着市场动态、监管环境的变化、技术进步以及其他众多外部因素而不断演变。
 
-让我们用最近的一个例子来说明——COVID-19大流行。在疫情最严重时，数据团队围绕工作场所占用率、空气质量指数以及其他与疫情相关的数据开发了业务用例。这些用例在当时具有很高的价值，但随着我们进入后疫情时代，这些特定用例的价值已减少，新的优先事项应运而生。虽然应对类似事件的能力仍然具有价值，但它在危机高峰期时的立即性或量化意义不再那么显著。
+让我们用最近的一个例子来说明——COVID-19 大流行。在疫情最严重时，数据团队围绕工作场所占用率、空气质量指数以及其他与疫情相关的数据开发了业务用例。这些用例在当时具有很高的价值，但随着我们进入后疫情时代，这些特定用例的价值已减少，新的优先事项应运而生。虽然应对类似事件的能力仍然具有价值，但它在危机高峰期时的立即性或量化意义不再那么显著。
 
 重要的是，评估这些业务用例的价值的责任完全落在业务利益相关者的肩上，而不是数据团队。业务利益相关者是那些日复一日体验这些用例操作影响的人。他们的见解对于评估价值和区分短期利益（如一次性成本减少）与结构性利益（如长期运营效率提高）至关重要。
 

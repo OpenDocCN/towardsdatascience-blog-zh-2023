@@ -1,18 +1,18 @@
 # 对你的数据工程师角色感到厌倦吗？
 
-> 原文：[https://towardsdatascience.com/tired-of-your-data-engineering-role-bb40b10275f9?source=collection_archive---------3-----------------------#2023-08-19](https://towardsdatascience.com/tired-of-your-data-engineering-role-bb40b10275f9?source=collection_archive---------3-----------------------#2023-08-19)
+> 原文：[`towardsdatascience.com/tired-of-your-data-engineering-role-bb40b10275f9?source=collection_archive---------3-----------------------#2023-08-19`](https://towardsdatascience.com/tired-of-your-data-engineering-role-bb40b10275f9?source=collection_archive---------3-----------------------#2023-08-19)
 
 ## 我是如何转型为数据分析工程师的
 
-[![Madison Schott](../Images/0b82d0dd48629641abb439cef23ebe04.png)](https://madison-schott.medium.com/?source=post_page-----bb40b10275f9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb40b10275f9--------------------------------) [Madison Schott](https://madison-schott.medium.com/?source=post_page-----bb40b10275f9--------------------------------)
+![Madison Schott](https://madison-schott.medium.com/?source=post_page-----bb40b10275f9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb40b10275f9--------------------------------) [Madison Schott](https://madison-schott.medium.com/?source=post_page-----bb40b10275f9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ed0ce2dcf93&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-your-data-engineering-role-bb40b10275f9&user=Madison+Schott&userId=3ed0ce2dcf93&source=post_page-3ed0ce2dcf93----bb40b10275f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb40b10275f9--------------------------------) ·8 min read·2023年8月19日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ed0ce2dcf93&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-your-data-engineering-role-bb40b10275f9&user=Madison+Schott&userId=3ed0ce2dcf93&source=post_page-3ed0ce2dcf93----bb40b10275f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb40b10275f9--------------------------------) ·8 min read·2023 年 8 月 19 日
 
 --
 
-![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbb40b10275f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-your-data-engineering-role-bb40b10275f9&source=-----bb40b10275f9---------------------bookmark_footer-----------)![](../Images/0e5188e9dae762c09103dd4ece122775.png)
+![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbb40b10275f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-your-data-engineering-role-bb40b10275f9&source=-----bb40b10275f9---------------------bookmark_footer-----------)![](img/0e5188e9dae762c09103dd4ece122775.png)
 
 照片由 [Campaign Creators](https://unsplash.com/@campaign_creators?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -22,7 +22,7 @@
 
 我记得在大学时我非常喜欢市场营销和业务方面的东西，所以我决定开始探索那方面的选择。我开始与每天使用数据解决业务问题的数据分析师交谈。他们就像是有更多业务曝光的数据工程师！
 
-通过要求参与数据分析项目，我学会了使用[dbt](https://www.getdbt.com/)并进一步发展了我的Python技能。玩弄新技术帮助我看到，我仍然喜欢从事数据工作，只是需要使用正确的工具和解决正确的问题。最终，这促使我寻求一个与这些新发现的兴趣和技能集更匹配的不同角色。**这个角色恰好就是数据分析工程师。**
+通过要求参与数据分析项目，我学会了使用[dbt](https://www.getdbt.com/)并进一步发展了我的 Python 技能。玩弄新技术帮助我看到，我仍然喜欢从事数据工作，只是需要使用正确的工具和解决正确的问题。最终，这促使我寻求一个与这些新发现的兴趣和技能集更匹配的不同角色。**这个角色恰好就是数据分析工程师。**
 
 # 如何知道你应该过渡到数据分析工程
 
@@ -38,7 +38,7 @@
 
 我申请了很多数据分析师职位，但运气不佳。我缺乏分析师所需的深入业务经验，以及构建适当仪表盘的技能。我开始专注于那些结合了我已有技能和我想要学习技能的职位，而不是单纯关注职位名称。
 
-最终，我偶然发现了分析工程师这一角色。这个角色要求掌握SQL、Python、AWS、编排、dbt和数据仓库等技能，而这些技能正是我作为数据工程师时所获得的。然而，它还要求具有使用现代数据堆栈工具的经验、与业务团队沟通的能力，以及一些基础的BI报告技能。
+最终，我偶然发现了分析工程师这一角色。这个角色要求掌握 SQL、Python、AWS、编排、dbt 和数据仓库等技能，而这些技能正是我作为数据工程师时所获得的。然而，它还要求具有使用现代数据堆栈工具的经验、与业务团队沟通的能力，以及一些基础的 BI 报告技能。
 
 尽管我没有太多现代数据堆栈的经验，但我很幸运找到了一家相信我的热情和学习欲望的公司。有时候，如果匹配合适，公司愿意在没有所有要求的情况下雇用你！
 
@@ -48,11 +48,11 @@
 
 ## dbt
 
-dbt，或称为数据构建工具，是一种真正为分析工程师开辟道路的数据转换工具。事实上，它背后的公司也是首创“分析工程师”这一名称的！虽然你不一定需要了解dbt才能成为一名分析工程师，但这是一项许多公司在招聘时寻找的技能。
+dbt，或称为数据构建工具，是一种真正为分析工程师开辟道路的数据转换工具。事实上，它背后的公司也是首创“分析工程师”这一名称的！虽然你不一定需要了解 dbt 才能成为一名分析工程师，但这是一项许多公司在招聘时寻找的技能。
 
-dbt是一个基于SQL的工具，所以如果你已经知道SQL，学习起来相对简单。你需要熟悉设置dbt项目、数据建模最佳实践以及每种dbt数据模型的目的。我建议查看[dbt样式指南](/the-most-efficient-way-to-organize-dbt-models-244e23c17072)，以了解在dbt中编写SQL代码的“应做”与“忌做”之处。这将帮助你学习当你加入团队时可能已经存在的标准。
+dbt 是一个基于 SQL 的工具，所以如果你已经知道 SQL，学习起来相对简单。你需要熟悉设置 dbt 项目、数据建模最佳实践以及每种 dbt 数据模型的目的。我建议查看 dbt 样式指南，以了解在 dbt 中编写 SQL 代码的“应做”与“忌做”之处。这将帮助你学习当你加入团队时可能已经存在的标准。
 
-dbt还使用了一种称为Jinja的模板语言用于文档和工具内的功能。然而，dbt称这些为宏，而不是函数。宏是更高级的功能，相当于函数。你可以使用它们在数据模型中自动化SQL输出。虽然这不是获得工作的必要条件，但这无疑是使你作为分析工程师的工作更轻松的有用技能。
+dbt 还使用了一种称为 Jinja 的模板语言用于文档和工具内的功能。然而，dbt 称这些为宏，而不是函数。宏是更高级的功能，相当于函数。你可以使用它们在数据模型中自动化 SQL 输出。虽然这不是获得工作的必要条件，但这无疑是使你作为分析工程师的工作更轻松的有用技能。
 
 ## 商业沟通
 
@@ -82,7 +82,7 @@ dbt还使用了一种称为Jinja的模板语言用于文档和工具内的功能
 
 不要专注于你不知道的东西，而要关注你知道的！是什么让你独特？为什么有人会选择雇佣你而不是别人？思考那些在工作中无法学到的让你脱颖而出的事情。行业总在变化，这意味着总会有你不知道的东西。接受它！这就是分析工程的最佳部分之一。
 
-当我开始作为分析工程师时，我根本不知道什么是维度建模。我实际上是在最初试验组织我们的数据仓库和建模数据时通过dbt的文档了解到的。最终，我学会了什么是维度建模，应用这些技术到我的工作中，并提高了我的数据建模技能。现在我可以和你谈论维度建模整整一天！
+当我开始作为分析工程师时，我根本不知道什么是维度建模。我实际上是在最初试验组织我们的数据仓库和建模数据时通过 dbt 的文档了解到的。最终，我学会了什么是维度建模，应用这些技术到我的工作中，并提高了我的数据建模技能。现在我可以和你谈论维度建模整整一天！
 
 ## 申请新角色从来不会太早。
 

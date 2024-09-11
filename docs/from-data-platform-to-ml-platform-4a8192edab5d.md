@@ -1,14 +1,14 @@
 # 从数据平台到机器学习平台
 
-> 原文：[https://towardsdatascience.com/from-data-platform-to-ml-platform-4a8192edab5d?source=collection_archive---------0-----------------------#2023-10-22](https://towardsdatascience.com/from-data-platform-to-ml-platform-4a8192edab5d?source=collection_archive---------0-----------------------#2023-10-22)
+> 原文：[`towardsdatascience.com/from-data-platform-to-ml-platform-4a8192edab5d?source=collection_archive---------0-----------------------#2023-10-22`](https://towardsdatascience.com/from-data-platform-to-ml-platform-4a8192edab5d?source=collection_archive---------0-----------------------#2023-10-22)
 
 ## 数据/机器学习平台如何演变并支持复杂的 MLOps 实践
 
-[](https://medium.com/@ming.gao.gm?source=post_page-----4a8192edab5d--------------------------------)[![ming gao](../Images/4eeb08e6f2f47f789801694b82fe3057.png)](https://medium.com/@ming.gao.gm?source=post_page-----4a8192edab5d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a8192edab5d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4a8192edab5d--------------------------------) [ming gao](https://medium.com/@ming.gao.gm?source=post_page-----4a8192edab5d--------------------------------)
+[](https://medium.com/@ming.gao.gm?source=post_page-----4a8192edab5d--------------------------------)![ming gao](https://medium.com/@ming.gao.gm?source=post_page-----4a8192edab5d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a8192edab5d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a8192edab5d--------------------------------) [ming gao](https://medium.com/@ming.gao.gm?source=post_page-----4a8192edab5d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F56b61a38427c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-data-platform-to-ml-platform-4a8192edab5d&user=ming+gao&userId=56b61a38427c&source=post_page-56b61a38427c----4a8192edab5d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a8192edab5d--------------------------------) · 9分钟阅读 · 2023年10月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4a8192edab5d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-data-platform-to-ml-platform-4a8192edab5d&user=ming+gao&userId=56b61a38427c&source=-----4a8192edab5d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F56b61a38427c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-data-platform-to-ml-platform-4a8192edab5d&user=ming+gao&userId=56b61a38427c&source=post_page-56b61a38427c----4a8192edab5d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a8192edab5d--------------------------------) · 9 分钟阅读 · 2023 年 10 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4a8192edab5d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-data-platform-to-ml-platform-4a8192edab5d&user=ming+gao&userId=56b61a38427c&source=-----4a8192edab5d---------------------clap_footer-----------)
 
 --
 
@@ -24,7 +24,7 @@
 
 这里是可能的基础设施：
 
-![](../Images/91b189e685127aef067dfd947f9df224.png)
+![](img/91b189e685127aef067dfd947f9df224.png)
 
 图片来源：作者
 
@@ -56,7 +56,7 @@
 
 你的基础设施可能如下所示：
 
-![](../Images/c23044e4526d4ac5dee67ac3bd0cf016.png)
+![](img/c23044e4526d4ac5dee67ac3bd0cf016.png)
 
 作者提供的图片
 
@@ -66,7 +66,7 @@
 
 为了最大化你的数据湖的价值和效率，我们应该仔细选择每个数据湖层的文件格式和平均文件大小。
 
-![](../Images/b7f14745cfb589ea9bac421913334c57.png)
+![](img/b7f14745cfb589ea9bac421913334c57.png)
 
 作者提供的图片
 
@@ -94,65 +94,65 @@
 
 整体架构可能如下所示。
 
-![](../Images/11709d7d8e95a361f21cc6d4ff616520.png)
+![](img/11709d7d8e95a361f21cc6d4ff616520.png)
 
 作者提供的图片
 
-有了在数据河流（例如[Kafka](https://kafka.apache.org/)）中的数据，我们可以构建数据流管道来处理实时数据。这些数据可以直接用于在线特征存储或同步到像[Pinot](https://github.com/apache/pinot)这样的度量服务器。度量服务器可以进一步处理/聚合这些度量点，形成更有用的模型性能度量和业务度量。你也可以采用像[RisingWave](https://www.risingwave.com/)这样的流数据库，它可以用SQL语法对流数据进行连接/聚合。
+有了在数据河流（例如[Kafka](https://kafka.apache.org/)）中的数据，我们可以构建数据流管道来处理实时数据。这些数据可以直接用于在线特征存储或同步到像[Pinot](https://github.com/apache/pinot)这样的度量服务器。度量服务器可以进一步处理/聚合这些度量点，形成更有用的模型性能度量和业务度量。你也可以采用像[RisingWave](https://www.risingwave.com/)这样的流数据库，它可以用 SQL 语法对流数据进行连接/聚合。
 
-对于数据流构建，[Flink](https://flink.apache.org/)相当受欢迎。你也可以使用[带有CDC连接器的Flink](https://ververica.github.io/flink-cdc-connectors/release-2.1/content/about.html)从OLTP数据库提取数据，并将数据发送到消息中间件和数据湖。
+对于数据流构建，[Flink](https://flink.apache.org/)相当受欢迎。你也可以使用[带有 CDC 连接器的 Flink](https://ververica.github.io/flink-cdc-connectors/release-2.1/content/about.html)从 OLTP 数据库提取数据，并将数据发送到消息中间件和数据湖。
 
-应该有一个在线特征存储，支持如[ScyllaDB](https://www.scylladb.com/)或AWS Dynamo DB等键值数据库。在线特征存储可以帮助你用与特定参考ID（用户ID、产品UUID）相关联的特征向量丰富发送给模型服务的请求。这可以极大地解耦构建微服务的后台服务团队与构建ML模型的ML工程师团队之间的依赖关系。它允许ML工程师独立推出新的ML特征与新ML模型（*当你更新特征向量时，你的模型服务API签名对微服务的暴露将保持不变*）。
+应该有一个在线特征存储，支持如[ScyllaDB](https://www.scylladb.com/)或 AWS Dynamo DB 等键值数据库。在线特征存储可以帮助你用与特定参考 ID（用户 ID、产品 UUID）相关联的特征向量丰富发送给模型服务的请求。这可以极大地解耦构建微服务的后台服务团队与构建 ML 模型的 ML 工程师团队之间的依赖关系。它允许 ML 工程师独立推出新的 ML 特征与新 ML 模型（*当你更新特征向量时，你的模型服务 API 签名对微服务的暴露将保持不变*）。
 
-![](../Images/630bcf3480c7796bd8d4878d436ad999.png)
+![](img/630bcf3480c7796bd8d4878d436ad999.png)
 
 作者提供的图片
 
-在书中，[设计机器学习系统](https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/)提到了模型堆叠（[Jen Wadkin的](https://threnjen.medium.com/) [medium帖子](/simple-model-stacking-explained-and-automated-1b54e4357916)关于模型堆叠）。在模型服务中使用模型堆叠是相当常见的。当你想将异构模型堆叠在一起时，例如将pytorch和tensorflow模型堆叠在一起时，需要一个协调器。你还可以通过在路由请求到不同模型时根据模型性能动态调整权重，使你的协调器变得更加复杂。
+在书中，[设计机器学习系统](https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/)提到了模型堆叠（[Jen Wadkin 的](https://threnjen.medium.com/) medium 帖子关于模型堆叠）。在模型服务中使用模型堆叠是相当常见的。当你想将异构模型堆叠在一起时，例如将 pytorch 和 tensorflow 模型堆叠在一起时，需要一个协调器。你还可以通过在路由请求到不同模型时根据模型性能动态调整权重，使你的协调器变得更加复杂。
 
 现在我们有了一个复杂的系统。它看起来很酷，但带来了新的挑战：
 
 +   如果不加以管理，系统的债务将迅速增加。
 
-+   对ML工程师而言认知负担很重。
++   对 ML 工程师而言认知负担很重。
 
-这时你可能需要思考MLOps如何帮助你。
+这时你可能需要思考 MLOps 如何帮助你。
 
 # MLOps：抽象、可观察性和可扩展性
 
-MLOps从来不是一个具体的解决方案。它更像是一组用于管理ML系统的原则。与典型的软件项目不同，ML系统受数据变化的影响很大，数据依赖管理并非易事。论文[机器学习系统中的隐性技术债务](https://proceedings.neurips.cc/paper_files/paper/2015/file/86df7dcfd896fcaf2674f757a2463eba-Paper.pdf)详细描述了这些挑战。因此，一个由MLOps驱动的ML平台必须能够：
+MLOps 从来不是一个具体的解决方案。它更像是一组用于管理 ML 系统的原则。与典型的软件项目不同，ML 系统受数据变化的影响很大，数据依赖管理并非易事。论文[机器学习系统中的隐性技术债务](https://proceedings.neurips.cc/paper_files/paper/2015/file/86df7dcfd896fcaf2674f757a2463eba-Paper.pdf)详细描述了这些挑战。因此，一个由 MLOps 驱动的 ML 平台必须能够：
 
 +   数据变化监控和数据质量监控。
 
-+   管理离线和在线环境中的ML特征。
++   管理离线和在线环境中的 ML 特征。
 
-+   可重复的ML管道，满足实验-操作对称性。
++   可重复的 ML 管道，满足实验-操作对称性。
 
-+   简洁的ML管道配置，可以抽象出基础设施的细节。
++   简洁的 ML 管道配置，可以抽象出基础设施的细节。
 
-本文，[MLOps: 机器学习中的持续交付和自动化管道](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)，强调了[实验-操作对称性](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning#characteristics_2)的重要性。它还描述了MLOps的自动化级别，从level-0、level-1到最终的level-2。我非常喜欢这份文档中的图表，将借用它来解释level-1 MLOps的样子。
+本文，[MLOps: 机器学习中的持续交付和自动化管道](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)，强调了[实验-操作对称性](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning#characteristics_2)的重要性。它还描述了 MLOps 的自动化级别，从 level-0、level-1 到最终的 level-2。我非常喜欢这份文档中的图表，将借用它来解释 level-1 MLOps 的样子。
 
-![](../Images/995a8cd1a179f9c0570df09ceb34025e.png)
+![](img/995a8cd1a179f9c0570df09ceb34025e.png)
 
-作者提供的图像。描述了[MLOps: 机器学习中的持续交付和自动化管道](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)中的MLOps Level-1。
+作者提供的图像。描述了[MLOps: 机器学习中的持续交付和自动化管道](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)中的 MLOps Level-1。
 
-为了在您的组织中扩展这种MLOps实践，您需要提供简洁的ML管道配置，以便为ML工程师抽象出基础设施实现细节。这样，平台工程师也能在不对平台用户造成过多干扰的情况下灵活地升级ML平台。您可以考虑使用像yaml这样的配置文件来描述ML管道，并依靠您的ML管道控制器将其转换为实际的工作负载。
+为了在您的组织中扩展这种 MLOps 实践，您需要提供简洁的 ML 管道配置，以便为 ML 工程师抽象出基础设施实现细节。这样，平台工程师也能在不对平台用户造成过多干扰的情况下灵活地升级 ML 平台。您可以考虑使用像 yaml 这样的配置文件来描述 ML 管道，并依靠您的 ML 管道控制器将其转换为实际的工作负载。
 
-因此，让我们通过以下图表重新组织实时数据/ML基础设施，以突出MLOps如何塑造我们的平台。
+因此，让我们通过以下图表重新组织实时数据/ML 基础设施，以突出 MLOps 如何塑造我们的平台。
 
-![](../Images/3e97f33cbd4aabce938a02c91af58155.png)
+![](img/3e97f33cbd4aabce938a02c91af58155.png)
 
 作者提供的图像
 
-为了给您更好的了解ML管道可能的样子，这里是每个阶段的可能抽象示例。以下图表仅帮助您进一步理解配置的可能样子，并不代表任何实际实现，也不涵盖所有所需的方面。
+为了给您更好的了解 ML 管道可能的样子，这里是每个阶段的可能抽象示例。以下图表仅帮助您进一步理解配置的可能样子，并不代表任何实际实现，也不涵盖所有所需的方面。
 
-![](../Images/1de18b307f8c4b3a05838f7fbba7a76f.png)
+![](img/1de18b307f8c4b3a05838f7fbba7a76f.png)
 
-ML管道配置的一般概念。作者提供的图像
+ML 管道配置的一般概念。作者提供的图像
 
 Kubernetes 是一种流行的解决方案，用于编排机器学习工作负载（或如今的所有工作负载）。你可以使用 CRD 提供用户与平台之间的简洁接口。在文章[我对 Kubebuilder 的思考](https://towardsdev.com/my-thinking-about-kubebuilder-443a9d45f1e)中，我分享了在使用 kubebuilder 构建 CRD 时的一些想法。
 
-![](../Images/816be3f43007666345b98180577530a5.png)
+![](img/816be3f43007666345b98180577530a5.png)
 
 图片来源于作者
 
@@ -164,7 +164,7 @@ Kubernetes 是一种流行的解决方案，用于编排机器学习工作负载
 
 # 接下来做什么
 
-你可以看到***MLOps只是给已知任务一个合适的名称***。这远不是任务完成。我分享的是一个有观点的机器学习操作平台实施策略。即便如此，创建高质量机器学习产品的门槛仍然很高，收集、处理和挖掘数据的工作量仍然很大。
+你可以看到***MLOps 只是给已知任务一个合适的名称***。这远不是任务完成。我分享的是一个有观点的机器学习操作平台实施策略。即便如此，创建高质量机器学习产品的门槛仍然很高，收集、处理和挖掘数据的工作量仍然很大。
 
 除了这些挑战之外，我还想分享我观察到的机器学习领域的趋势。鉴于这个领域发展的如此快速，这绝对不是一个完整的列表。
 

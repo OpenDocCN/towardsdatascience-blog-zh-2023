@@ -1,28 +1,28 @@
-# Transformer 模型 101：入门指南 — 第2部分
+# Transformer 模型 101：入门指南 — 第二部分
 
-> 原文：[https://towardsdatascience.com/transformer-models-101-getting-started-part-2-4c9a45bf8b81?source=collection_archive---------13-----------------------#2023-06-06](https://towardsdatascience.com/transformer-models-101-getting-started-part-2-4c9a45bf8b81?source=collection_archive---------13-----------------------#2023-06-06)
+> 原文：[`towardsdatascience.com/transformer-models-101-getting-started-part-2-4c9a45bf8b81?source=collection_archive---------13-----------------------#2023-06-06`](https://towardsdatascience.com/transformer-models-101-getting-started-part-2-4c9a45bf8b81?source=collection_archive---------13-----------------------#2023-06-06)
 
 ## Transformer 模型背后的复杂数学，用简单的词汇解释
 
-[](https://nandinibansal1811.medium.com/?source=post_page-----4c9a45bf8b81--------------------------------)[![Nandini Bansal](../Images/a813ac8be6f89b2e856651fda66ab078.png)](https://nandinibansal1811.medium.com/?source=post_page-----4c9a45bf8b81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c9a45bf8b81--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4c9a45bf8b81--------------------------------) [Nandini Bansal](https://nandinibansal1811.medium.com/?source=post_page-----4c9a45bf8b81--------------------------------)
+[](https://nandinibansal1811.medium.com/?source=post_page-----4c9a45bf8b81--------------------------------)![Nandini Bansal](https://nandinibansal1811.medium.com/?source=post_page-----4c9a45bf8b81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c9a45bf8b81--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c9a45bf8b81--------------------------------) [Nandini Bansal](https://nandinibansal1811.medium.com/?source=post_page-----4c9a45bf8b81--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc41c26af0465&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-2-4c9a45bf8b81&user=Nandini+Bansal&userId=c41c26af0465&source=post_page-c41c26af0465----4c9a45bf8b81---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c9a45bf8b81--------------------------------) · 7 分钟阅读 · 2023年6月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4c9a45bf8b81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-2-4c9a45bf8b81&user=Nandini+Bansal&userId=c41c26af0465&source=-----4c9a45bf8b81---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc41c26af0465&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-2-4c9a45bf8b81&user=Nandini+Bansal&userId=c41c26af0465&source=post_page-c41c26af0465----4c9a45bf8b81---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c9a45bf8b81--------------------------------) · 7 分钟阅读 · 2023 年 6 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4c9a45bf8b81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-2-4c9a45bf8b81&user=Nandini+Bansal&userId=c41c26af0465&source=-----4c9a45bf8b81---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4c9a45bf8b81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-2-4c9a45bf8b81&source=-----4c9a45bf8b81---------------------bookmark_footer-----------)![](../Images/b598c04052b566c5fdd8e24dde8376ae.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4c9a45bf8b81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-2-4c9a45bf8b81&source=-----4c9a45bf8b81---------------------bookmark_footer-----------)![](img/b598c04052b566c5fdd8e24dde8376ae.png)
 
 图片由[Dariusz Sankowski](https://pixabay.com/users/dariuszsankowski-1441456/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1052010)提供，来源于[Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1052010)
 
 在上一篇文章中，我们详细介绍了 Transformer 模型的编码器（Encoder）块的工作原理。如果你还没有阅读那篇文章，我建议你在阅读本文之前先阅读它，因为那里的概念在本文中有所延续。你可以前往：
 
-[](/transformer-models-101-getting-started-part-1-b3a77ccfa14d?source=post_page-----4c9a45bf8b81--------------------------------) [## 变换器模型 101：入门 — 第 1 部分
+[](/transformer-models-101-getting-started-part-1-b3a77ccfa14d?source=post_page-----4c9a45bf8b81--------------------------------) ## 变换器模型 101：入门 — 第一部分
 
 ### 用简单的语言解释变换器模型背后的复杂数学...
 
-towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa14d?source=post_page-----4c9a45bf8b81--------------------------------)
+towardsdatascience.com
 
 如果你已经阅读了这些内容，太棒了！让我们开始深入了解解码器块及其相关的复杂数学。
 
@@ -34,7 +34,7 @@ towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa
 
 +   之前解码器的输出
 
-![](../Images/1144b091a8021ae2198f3598dc9f9afe.png)
+![](img/1144b091a8021ae2198f3598dc9f9afe.png)
 
 图 1\. 编码器和解码器块的协同工作（图片由作者提供）
 
@@ -52,7 +52,7 @@ towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa
 
 你可以将其视为一个递归过程！
 
-![](../Images/c4f83c9c11b7f68dfa0f7df38ef85dfc.png)
+![](img/c4f83c9c11b7f68dfa0f7df38ef85dfc.png)
 
 图 2 递归生成输出标记使用解码器（图片由作者提供）
 
@@ -68,7 +68,7 @@ towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa
 
 让我们举一个简单的例子来理解它：
 
-![](../Images/f70b358e28c8796b99a4b8f0b931c107.png)
+![](img/f70b358e28c8796b99a4b8f0b931c107.png)
 
 图 3\. 掩蔽多头注意力矩阵表示（图像来源：作者）
 
@@ -94,7 +94,7 @@ towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa
 
 解码器块的这个子层也被称为***“编码器-解码器注意力层”***，因为它接收**掩蔽注意力矩阵 (M)**和**由编码器生成的句子表示 (R)**。
 
-![](../Images/42c44b268b7f30a8506a35f82570c2be.png)
+![](img/42c44b268b7f30a8506a35f82570c2be.png)
 
 图 4\. 多头注意力机制（图像来源：作者）
 
@@ -114,7 +114,7 @@ towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa
 
 在这里，我们也做着相同的事情，唯一的区别是，我们将输入句子（K-转置）的每个词与目标句子词（Q）进行比较。这将帮助我们量化这两个句子彼此的相似程度，并理解单词之间的关系。
 
-![](../Images/a2c20a503086986041db5f326a124c28.png)
+![](img/a2c20a503086986041db5f326a124c28.png)
 
 图 5\. 输入句子和目标句子的注意力矩阵表示（作者提供的图像）
 
@@ -130,7 +130,7 @@ towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa
 
 +   ***Add & Norm 组件*** — 这是一个*残差层*，后面跟着*层归一化*。它有助于加快模型训练，同时确保不会丢失来自子层的信息。
 
-我们在[第 1 部分](/transformer-models-101-getting-started-part-1-b3a77ccfa14d)中详细介绍了这些概念。
+我们在第一部分中详细介绍了这些概念。
 
 有了这些，我们也总结了 Decoder 块的内部工作原理。正如你可能猜到的，编码器和解码器块用于处理和生成输入句子的上下文化向量。那么实际的下一个词预测任务由谁来完成呢？让我们找出答案。
 
@@ -148,9 +148,9 @@ towardsdatascience.com](/transformer-models-101-getting-started-part-1-b3a77ccfa
 
 你可以参考以下资源：
 
-1.  [https://huggingface.co/blog/bert-101](https://huggingface.co/blog/bert-101)
+1.  [`huggingface.co/blog/bert-101`](https://huggingface.co/blog/bert-101)
 
-1.  [https://jalammar.github.io/illustrated-gpt2/](https://jalammar.github.io/illustrated-gpt2/)
+1.  [`jalammar.github.io/illustrated-gpt2/`](https://jalammar.github.io/illustrated-gpt2/)
 
 希望这篇两部分的文章能让 Transformer 模型的理解变得稍微不那么令人生畏。如果你觉得这篇文章有用，请传播这个好消息。
 

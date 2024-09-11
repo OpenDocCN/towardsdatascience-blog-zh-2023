@@ -1,38 +1,38 @@
 # 基于数据驱动的方法来减少员工调查长度
 
-> 原文：[https://towardsdatascience.com/a-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9?source=collection_archive---------2-----------------------#2023-01-14](https://towardsdatascience.com/a-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9?source=collection_archive---------2-----------------------#2023-01-14)
+> 原文：[`towardsdatascience.com/a-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9?source=collection_archive---------2-----------------------#2023-01-14`](https://towardsdatascience.com/a-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9?source=collection_archive---------2-----------------------#2023-01-14)
 
 ## 减少调查长度，同时最大化可靠性和有效性
 
-[](https://medium.com/@trevorcoppins?source=post_page-----8aecedcf5df9--------------------------------)[![Trevor Coppins](../Images/32dbd12ef6b18798131c7b48060c69f5.png)](https://medium.com/@trevorcoppins?source=post_page-----8aecedcf5df9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8aecedcf5df9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8aecedcf5df9--------------------------------) [Trevor Coppins](https://medium.com/@trevorcoppins?source=post_page-----8aecedcf5df9--------------------------------)
+[](https://medium.com/@trevorcoppins?source=post_page-----8aecedcf5df9--------------------------------)![Trevor Coppins](https://medium.com/@trevorcoppins?source=post_page-----8aecedcf5df9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8aecedcf5df9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8aecedcf5df9--------------------------------) [Trevor Coppins](https://medium.com/@trevorcoppins?source=post_page-----8aecedcf5df9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88581b94ffb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9&user=Trevor+Coppins&userId=88581b94ffb&source=post_page-88581b94ffb----8aecedcf5df9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8aecedcf5df9--------------------------------) ·16分钟阅读·2023年1月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8aecedcf5df9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9&user=Trevor+Coppins&userId=88581b94ffb&source=-----8aecedcf5df9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88581b94ffb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9&user=Trevor+Coppins&userId=88581b94ffb&source=post_page-88581b94ffb----8aecedcf5df9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8aecedcf5df9--------------------------------) ·16 分钟阅读·2023 年 1 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8aecedcf5df9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9&user=Trevor+Coppins&userId=88581b94ffb&source=-----8aecedcf5df9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8aecedcf5df9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9&source=-----8aecedcf5df9---------------------bookmark_footer-----------)![](../Images/93b3c15c9e86ed98d4a7f8f3fcd341e2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8aecedcf5df9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-driven-method-to-reduce-employee-survey-length-8aecedcf5df9&source=-----8aecedcf5df9---------------------bookmark_footer-----------)![](img/93b3c15c9e86ed98d4a7f8f3fcd341e2.png)
 
 图片来源：[Marvin Meyer](https://unsplash.com/@marvelous?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-员工调查正迅速成为组织生活中的一个重要方面。事实上，人力分析领域的增长和数据驱动的人才管理方法的采纳就是证明（见麦肯锡[报告](mckinsey.com/capabilities/people-and-organizational-performance/our-insights/how-to-be-great-at-people-analytics)）。通过一次调查，我们可以收集有关领导者表现的信息、员工是否有动力以及员工是否考虑离职。唯一一个相当*长*的“隐形问题”就是我们的调查长度。
+员工调查正迅速成为组织生活中的一个重要方面。事实上，人力分析领域的增长和数据驱动的人才管理方法的采纳就是证明（见麦肯锡报告）。通过一次调查，我们可以收集有关领导者表现的信息、员工是否有动力以及员工是否考虑离职。唯一一个相当*长*的“隐形问题”就是我们的调查长度。
 
-员工调查的创建者（例如，人力资源部门和/或行为数据科学家）希望准确测量多个重要主题，这通常需要大量的问题。另一方面，参与时间较长的调查的受访者更有可能中途退出调查（Hoerger, 2010; Galesic & Bosnjak, 2009），并且引入测量误差（例如，Peytchev & Peytcheva, 2017; Holtom et al., 2022）。尽管如此，参与调查的受访者比例却有所增加：组织行为学文献中的研究报告显示，在15年期间（2005–2020年），受访率从48%大幅提高至68%（Holtom et al., 2022）。虽然调查长度只是决定数据质量和受访者比例的众多因素之一（例如，激励措施、后续跟进；Edwards et al., 2002; Holtom et al., 2022），但调查长度是一个易于调整且直接受调查创建者控制的因素。
+员工调查的创建者（例如，人力资源部门和/或行为数据科学家）希望准确测量多个重要主题，这通常需要大量的问题。另一方面，参与时间较长的调查的受访者更有可能中途退出调查（Hoerger, 2010; Galesic & Bosnjak, 2009），并且引入测量误差（例如，Peytchev & Peytcheva, 2017; Holtom et al., 2022）。尽管如此，参与调查的受访者比例却有所增加：组织行为学文献中的研究报告显示，在 15 年期间（2005–2020 年），受访率从 48%大幅提高至 68%（Holtom et al., 2022）。虽然调查长度只是决定数据质量和受访者比例的众多因素之一（例如，激励措施、后续跟进；Edwards et al., 2002; Holtom et al., 2022），但调查长度是一个易于调整且直接受调查创建者控制的因素。
 
 本文提出了一种通过选择尽可能少的条目来缩短员工调查的方法，以实现最大的期望条目特征、可靠性和有效性。通过这种方法，员工调查可以被缩短，以节省员工时间，同时希望改善参与率/退出率和测量误差，这些都是较长调查中常见的关注点（例如，Edwards et al., 2002; Holtom et al., 2022; Jeong et al., 2023; Peytchev & Peytcheva, 2017; Porter, 2004; Rolstad et al., 2011; Yammarino et al., 1991）。
 
 *缩短调查的经济效益*
 
-不相信？让我们看看缩短调查的实际经济效益。作为一个说明性的例子，我们计算一下如果将一个季度的15分钟调查缩短为10分钟，对于一个拥有10万人的大型组织（例如，《财富》100强公司），投资回报率会如何。使用美国工人的中位工资（$56,287；见[报告](https://www.census.gov/content/dam/Census/library/publications/2021/demo/p60-273.pdf)），将调查时间缩短5分钟可以为组织节省超过100万美元的员工时间。虽然这些计算不是精确科学，但这是理解调查时间如何影响组织底线的有用指标。
+不相信？让我们看看缩短调查的实际经济效益。作为一个说明性的例子，我们计算一下如果将一个季度的 15 分钟调查缩短为 10 分钟，对于一个拥有 10 万人的大型组织（例如，《财富》100 强公司），投资回报率会如何。使用美国工人的中位工资（$56,287；见[报告](https://www.census.gov/content/dam/Census/library/publications/2021/demo/p60-273.pdf)），将调查时间缩短 5 分钟可以为组织节省超过 100 万美元的员工时间。虽然这些计算不是精确科学，但这是理解调查时间如何影响组织底线的有用指标。
 
-![](../Images/ff87268b8dbbbde595a22c75daecd276.png)
+![](img/ff87268b8dbbbde595a22c75daecd276.png)
 
 显示减少员工调查时间的成本节约图
 
 ***解决方案：缩短员工调查问卷***
 
-为了缩短我们的调查问卷，但保留理想的项目级统计数据、可靠性和有效性，我们采用两步过程，其中Python和R程序将帮助确定最佳保留的项目。在**第1步**中，我们将利用多标准决策（MCDM）程序（`Scikit-criteria`；Cabral等，2016）根据多个标准（标准差、偏斜度、峰度和主题专家评分）选择表现最佳的项目。在**第2步**中，我们将利用R程序（OASIS；Cortina等，2020）选择第1步中排名最高的项目的最佳组合，以进一步缩短我们的量表，但保持最大的可靠性和其他有效性问题。
+为了缩短我们的调查问卷，但保留理想的项目级统计数据、可靠性和有效性，我们采用两步过程，其中 Python 和 R 程序将帮助确定最佳保留的项目。在**第 1 步**中，我们将利用多标准决策（MCDM）程序（`Scikit-criteria`；Cabral 等，2016）根据多个标准（标准差、偏斜度、峰度和主题专家评分）选择表现最佳的项目。在**第 2 步**中，我们将利用 R 程序（OASIS；Cortina 等，2020）选择第 1 步中排名最高的项目的最佳组合，以进一步缩短我们的量表，但保持最大的可靠性和其他有效性问题。
 
 简而言之，最终输出将是一个减少后的项目集，具有理想的项目级统计数据以及最大的可靠性和有效性。
 
@@ -40,7 +40,7 @@
 
 +   从事调查创建和人员数据分析的人员分析专家、数据科学家、I/O 心理学家或人力资源（HR）专业人员
 
-+   理想情况下，用户应具有一些Python或R和统计学的初级经验。
++   理想情况下，用户应具有一些 Python 或 R 和统计学的初级经验。
 
 **你需要什么？**
 
@@ -50,15 +50,15 @@
 
 +   数据集（选择一个）：
 
-1.  实践数据集 — 我利用了国际人格项目库（IPIP；[https://ipip.ori.org/](https://ipip.ori.org/)；Goldberg, 1992）公开数据集的前1000个回应，由开放心理测量学（[openpsychometrics.org](http://openpsychometrics.org/)）提供。为简便起见，我只使用了10个责任心项目。*数据来源说明*：IPIP是一个公共领域的人格测试，可以在没有作者许可或费用的情况下使用。类似地，openpsychometrics.org是开放源数据，已在其他几篇学术出版物中使用（见[此处](https://openpsychometrics.org/_rawdata/cited/)）。
+1.  实践数据集 — 我利用了国际人格项目库（IPIP；[`ipip.ori.org/`](https://ipip.ori.org/)；Goldberg, 1992）公开数据集的前 1000 个回应，由开放心理测量学（[openpsychometrics.org](http://openpsychometrics.org/)）提供。为简便起见，我只使用了 10 个责任心项目。*数据来源说明*：IPIP 是一个公共领域的人格测试，可以在没有作者许可或费用的情况下使用。类似地，openpsychometrics.org 是开放源数据，已在其他几篇学术出版物中使用（见[此处](https://openpsychometrics.org/_rawdata/cited/)）。
 
-1.  你自己的数据集（包含员工回应）用于你想要缩短的调查问卷。理想情况下，这应该是尽可能大的数据集，以提高准确性和复制的可能性。通常，大多数用户希望拥有100到200+个回应的数据集，以期消除抽样或偏斜回应的影响（见Hinkin, 1998以进一步讨论）。
+1.  你自己的数据集（包含员工回应）用于你想要缩短的调查问卷。理想情况下，这应该是尽可能大的数据集，以提高准确性和复制的可能性。通常，大多数用户希望拥有 100 到 200+个回应的数据集，以期消除抽样或偏斜回应的影响（见 Hinkin, 1998 以进一步讨论）。
 
 +   **可选**：数据集中每个候选缩短项目的主题专家（SME）评分。仅在使用自己的数据集时适用。
 
 +   **可选**：聚合效度和区分效度测量。这些可以在第二步中使用，但不是必需的。这些效度测量对于新量表开发更为重要，而不是缩短现有的已建立量表。聚合效度是指一个测量与其他类似测量的相关程度，而区分效度则是指它与非相关测量的无关程度（Hinkin, 1998；Levy, 2010）。同样，仅在你拥有自己的数据集时适用。
 
-*Github 页面代码:* [https://github.com/TrevorCoppins/SurveyReductionCode](https://github.com/TrevorCoppins/SurveyReductionCode)
+*Github 页面代码:* [`github.com/TrevorCoppins/SurveyReductionCode`](https://github.com/TrevorCoppins/SurveyReductionCode)
 
 ***请注意***：除非另有说明，否则所有图片均为作者提供
 
@@ -185,7 +185,7 @@ dmat = skc.mkdm(
 
 *过滤器*
 
-scikit-criteria 最棒的部分之一是它们的 `filters` 函数。这允许我们过滤掉不需要的项目级统计数据，并防止这些项目进入最终选择排名阶段。例如，如果一个项目的标准差极高——这表明回答问题的受访者差异很大，我们不希望该项目进入最终选择阶段。对于 SME 评分（如上所述为可选项），这一点尤其重要。在这里，我们只会保留那些分数高于最低阈值的项目——这可以防止那些定义对应极差的项目（例如，SME 平均评分为1或2）在其他项目级统计数据良好的情况下成为排名靠前的项目。下面是过滤器的应用，但由于我们的数据已经在这些值范围内，因此不会影响最终结果。
+scikit-criteria 最棒的部分之一是它们的 `filters` 函数。这允许我们过滤掉不需要的项目级统计数据，并防止这些项目进入最终选择排名阶段。例如，如果一个项目的标准差极高——这表明回答问题的受访者差异很大，我们不希望该项目进入最终选择阶段。对于 SME 评分（如上所述为可选项），这一点尤其重要。在这里，我们只会保留那些分数高于最低阈值的项目——这可以防止那些定义对应极差的项目（例如，SME 平均评分为 1 或 2）在其他项目级统计数据良好的情况下成为排名靠前的项目。下面是过滤器的应用，但由于我们的数据已经在这些值范围内，因此不会影响最终结果。
 
 ```py
 from skcriteria.preprocessing import filters
@@ -225,7 +225,7 @@ dmatfinal
 #dmatfinal
 ```
 
-***注意***：这也可以应用于偏度和峰度值。许多科学家会利用一个通用的经验规则，即偏度和峰度在-1.00到+1.00之间是可以接受的（Warner, 2013）；你只需创建如上所示的上限和下限过滤器，结合标准差即可。
+***注意***：这也可以应用于偏度和峰度值。许多科学家会利用一个通用的经验规则，即偏度和峰度在-1.00 到+1.00 之间是可以接受的（Warner, 2013）；你只需创建如上所示的上限和下限过滤器，结合标准差即可。
 
 *反转和缩放标准*
 
@@ -248,7 +248,7 @@ dmatfinal = scaler.transform(dmatfinal)
 dmatfinal
 ```
 
-![](../Images/6079314f5a8704f7e81a393561242ba5.png)
+![](img/6079314f5a8704f7e81a393561242ba5.png)
 
 求和和排名之前的最终标准值。
 
@@ -267,7 +267,7 @@ ranking
 
 对于练习数据集，排名如下：
 
-![](../Images/e6d28ba49802984e2bdd664adbf28b23.png)
+![](img/e6d28ba49802984e2bdd664adbf28b23.png)
 
 *保存第二步的数据*
 
@@ -291,7 +291,7 @@ library(shiny)
 runUrl("https://orgscience.uncc.edu/sites/orgscience.uncc.edu/files/media/OASIS.zip")
 ```
 
-![](../Images/a7edb941bcc481da85f4be3992372025.png)
+![](img/a7edb941bcc481da85f4be3992372025.png)
 
 OASIS 计算器的输入
 
@@ -299,11 +299,11 @@ OASIS 计算器的输入
 
 如下所示，5 项目方案产生了最高的 omega (ω = .73) 和 Cronbach alpha 系数 (α = .75)，符合传统的学术可靠性标准。如果我们有收敛和区分效度的测量，我们还可以使用这些值对项目组合进行排序。OASIS 计算器还允许你为每个值选择一般范围（例如，只显示高于某些值的组合）。
 
-![](../Images/8a9a89c3b8eff618d3c2c1470d6e2703.png)
+![](img/8a9a89c3b8eff618d3c2c1470d6e2703.png)
 
 让我们比较一下我们的最终解决方案：
 
-![](../Images/17f6b1099c26cda1af71958943f44c11.png)
+![](img/17f6b1099c26cda1af71958943f44c11.png)
 
 缩短量表与全长量表的比较
 
@@ -313,21 +313,21 @@ OASIS 计算器的输入
 
 ***警示***
 
-1.  这种方法可能会产生在语法上冗余或缺乏内容覆盖的最终结果。用户应通过确保第二步中选择的最终项目集具有足够的内容覆盖，或使用OASIS计算器的内容映射功能（见[文档](https://orgscience.charlotte.edu/sites/orgscience.charlotte.edu/files/media/ScaleShorteningApp/Scale%20Shortening%20Shiny%20App%20Instructions_0.pdf)）来调整。例如，您可能有一个*人格*或*动机*评估，它有多个‘子因素’（例如，*您是否是外部或内在动机*）。如果您没有在OASIS计算器中进行内容映射或考虑这一点，您可能会仅得到来自一个子因素的条目。
+1.  这种方法可能会产生在语法上冗余或缺乏内容覆盖的最终结果。用户应通过确保第二步中选择的最终项目集具有足够的内容覆盖，或使用 OASIS 计算器的内容映射功能（见[文档](https://orgscience.charlotte.edu/sites/orgscience.charlotte.edu/files/media/ScaleShorteningApp/Scale%20Shortening%20Shiny%20App%20Instructions_0.pdf)）来调整。例如，您可能有一个*人格*或*动机*评估，它有多个‘子因素’（例如，*您是否是外部或内在动机*）。如果您没有在 OASIS 计算器中进行内容映射或考虑这一点，您可能会仅得到来自一个子因素的条目。
 
 1.  您的结果可能会因样本而有所不同。由于两个步骤都使用现有数据来‘最大化’结果，您可能会看到未来样本中的可靠性或项目级统计数据有所下降。然而，这不应是显著的。
 
-1.  依赖于您的组织/样本，您的数据可能因为来源单一而自然偏斜。例如，如果公司X要求*所有经理*参与某些行为，那么询问这些行为的条目可能（希望）会偏斜（即，所有经理的评分都很高）。
+1.  依赖于您的组织/样本，您的数据可能因为来源单一而自然偏斜。例如，如果公司 X 要求*所有经理*参与某些行为，那么询问这些行为的条目可能（希望）会偏斜（即，所有经理的评分都很高）。
 
 # 结论
 
-本文介绍了一种两步法，旨在显著减少调查问卷的长度，同时最大化可靠性和有效性。在以开源人格数据为例的说明中，调查问卷的长度减少了一半，但仍保持了高水平的Cronbach和Omega可靠性。虽然可能需要额外的步骤（例如，复制和比较预测有效性），但这种方法为用户提供了一种数据驱动的强大方法，可以显著减少员工调查的长度，这最终可以改善数据质量、减少受访者流失，并节省员工时间。
+本文介绍了一种两步法，旨在显著减少调查问卷的长度，同时最大化可靠性和有效性。在以开源人格数据为例的说明中，调查问卷的长度减少了一半，但仍保持了高水平的 Cronbach 和 Omega 可靠性。虽然可能需要额外的步骤（例如，复制和比较预测有效性），但这种方法为用户提供了一种数据驱动的强大方法，可以显著减少员工调查的长度，这最终可以改善数据质量、减少受访者流失，并节省员工时间。
 
 **参考文献**
 
-J. B. Cabral, N. A. Luczywo 和 J. L. Zanazzi, Scikit-Criteria：集成到Python科学堆栈的多标准分析方法集合（2016），*第45届阿根廷计算机与运筹学会议（45JAIIO）——第十四届阿根廷运筹学研讨会（SIO）*，59–66。
+J. B. Cabral, N. A. Luczywo 和 J. L. Zanazzi, Scikit-Criteria：集成到 Python 科学堆栈的多标准分析方法集合（2016），*第 45 届阿根廷计算机与运筹学会议（45JAIIO）——第十四届阿根廷运筹学研讨会（SIO）*，59–66。
 
-E. Cho 和 S. Kim, Cronbach的α系数：知名但理解不深（2015），*组织研究方法*，*18*(2), 207–230。
+E. Cho 和 S. Kim, Cronbach 的α系数：知名但理解不深（2015），*组织研究方法*，*18*(2), 207–230。
 
 J. Colquitt, T. Sabey, J. Rodell 和 E. Hill, 内容验证指南：定义对应性和定义独特性的评估标准（2019），*应用心理学期刊，104*(10), 1243–1265。
 
@@ -349,7 +349,7 @@ B. Holtom, Y. Baruch, H. Aguinis 和 G. Ballinger, 调查响应率：趋势与�
 
 D. Jeong, S. Aggarwal, J. Robinson, N. Kumar, A. Spearot 和 D. Park, 详尽还是令人疲惫？关于长问卷中受访者疲劳的证据（2023），*《发展经济学期刊》*, *161*, 1–20。
 
-P. Levy, *《工业/组织心理学：理解工作场所》*（第3版）（2010），Worth出版。
+P. Levy, *《工业/组织心理学：理解工作场所》*（第 3 版）（2010），Worth 出版。
 
 D. McNeish, 感谢系数阿尔法，我们会从这里继续（2018），*《心理学方法》, 23*(3), 412–433。
 
@@ -359,6 +359,6 @@ S. Porter, 提高响应率：有效的措施是什么？（2004），*《机构�
 
 A. Rolstad 和 A. Rydén, 提高邮寄问卷的响应率：系统综述（2002）。*《BMJ》*, *324*。
 
-R. Warner, *《应用统计学：从双变量到多变量技术》*（第2版）（2013），SAGE出版。
+R. Warner, *《应用统计学：从双变量到多变量技术》*（第 2 版）（2013），SAGE 出版。
 
 F. Yammarino, S. Skinner 和 T. Childers, 理解邮件调查响应行为的元分析（1991），*《公众意见季刊》*, *55*(4), 613–639。

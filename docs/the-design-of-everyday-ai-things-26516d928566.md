@@ -1,22 +1,22 @@
 # **日常（AI）物品的设计**
 
-> 原文：[https://towardsdatascience.com/the-design-of-everyday-ai-things-26516d928566?source=collection_archive---------3-----------------------#2023-10-06](https://towardsdatascience.com/the-design-of-everyday-ai-things-26516d928566?source=collection_archive---------3-----------------------#2023-10-06)
+> 原文：[`towardsdatascience.com/the-design-of-everyday-ai-things-26516d928566?source=collection_archive---------3-----------------------#2023-10-06`](https://towardsdatascience.com/the-design-of-everyday-ai-things-26516d928566?source=collection_archive---------3-----------------------#2023-10-06)
 
-## 构建优秀生成式AI工具的UI/UX原则
+## 构建优秀生成式 AI 工具的 UI/UX 原则
 
-[](https://medium.com/@sjstone1987?source=post_page-----26516d928566--------------------------------)[![Sam Stone](../Images/c241f50c3904ef8ee56c826f813fa8e1.png)](https://medium.com/@sjstone1987?source=post_page-----26516d928566--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26516d928566--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----26516d928566--------------------------------) [Sam Stone](https://medium.com/@sjstone1987?source=post_page-----26516d928566--------------------------------)
+[](https://medium.com/@sjstone1987?source=post_page-----26516d928566--------------------------------)![Sam Stone](https://medium.com/@sjstone1987?source=post_page-----26516d928566--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26516d928566--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----26516d928566--------------------------------) [Sam Stone](https://medium.com/@sjstone1987?source=post_page-----26516d928566--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbfd810ae7b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-design-of-everyday-ai-things-26516d928566&user=Sam+Stone&userId=cbfd810ae7b5&source=post_page-cbfd810ae7b5----26516d928566---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26516d928566--------------------------------) ·10 min阅读·2023年10月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F26516d928566&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-design-of-everyday-ai-things-26516d928566&user=Sam+Stone&userId=cbfd810ae7b5&source=-----26516d928566---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbfd810ae7b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-design-of-everyday-ai-things-26516d928566&user=Sam+Stone&userId=cbfd810ae7b5&source=post_page-cbfd810ae7b5----26516d928566---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26516d928566--------------------------------) ·10 min 阅读·2023 年 10 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F26516d928566&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-design-of-everyday-ai-things-26516d928566&user=Sam+Stone&userId=cbfd810ae7b5&source=-----26516d928566---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F26516d928566&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-design-of-everyday-ai-things-26516d928566&source=-----26516d928566---------------------bookmark_footer-----------)![](../Images/9f788e1f8dc4501a77a349c40bd5d3ac.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F26516d928566&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-design-of-everyday-ai-things-26516d928566&source=-----26516d928566---------------------bookmark_footer-----------)![](img/9f788e1f8dc4501a77a349c40bd5d3ac.png)
 
 图片来源：DreamStudio
 
-唐·诺曼1988年的设计经典《**日常物品的设计**》阐述了用户体验原则，这些原则至今影响着卓越的硬件和软件设计。尽管诺曼举了门把手和电灯开关等类比例子，他的原则广泛适用于软件，包括生成式AI产品。在关于生成式AI的炒作中，很容易忘记即使是最先进模型驱动的产品，如果缺乏良好的UI/UX，也会失败。
+唐·诺曼 1988 年的设计经典《**日常物品的设计**》阐述了用户体验原则，这些原则至今影响着卓越的硬件和软件设计。尽管诺曼举了门把手和电灯开关等类比例子，他的原则广泛适用于软件，包括生成式 AI 产品。在关于生成式 AI 的炒作中，很容易忘记即使是最先进模型驱动的产品，如果缺乏良好的 UI/UX，也会失败。
 
 许多新的 AI 工具引起了大量兴趣，但随后用户留存表现平平（[Sequoia 在这里详细说明](https://www.sequoiacap.com/article/generative-ai-act-two/)）。AI 噱头驱动了“游客”注册，但新用户很难理解或从产品中获得真正的价值。这就是经典的“幻灭低谷”，当核心技术（生成模型）领先时，而支持技术（UI/UX 设计）滞后。
 
@@ -58,9 +58,9 @@
 
 所以当这位销售经理希望从 AI 工具中获得这样的报告时，她不清楚需要告诉工具什么规范，以及工具已经知道了什么。这时，迭代工作流程特别有用。她可以从一些简单且熟悉的内容开始，比如请求“季度销售报告”，然后工具可以帮助她准确地确定她的具体要求。Zach Lloyd 在[这篇关于 AI 设计的合理文章](https://thezbook.com/ask-adjust-the-future-of-productivity-interfaces)中称这种模式为“提问和调整”。
 
-![](../Images/35de2bbf1f92cf3c2ea1e5ec8dbd13fc.png)
+![](img/35de2bbf1f92cf3c2ea1e5ec8dbd13fc.png)
 
-Tome 的大纲编辑器是一个迭代人工智能工作流中的中间步骤的示例，位于提示和最终输出（一个多页演示文稿）之间。[https://tome.page](https://tome.page)
+Tome 的大纲编辑器是一个迭代人工智能工作流中的中间步骤的示例，位于提示和最终输出（一个多页演示文稿）之间。[`tome.page`](https://tome.page)
 
 ## 用户反馈不是免费的
 
@@ -86,29 +86,29 @@ Tome 的大纲编辑器是一个迭代人工智能工作流中的中间步骤的
 
 这些不同的切入点导致了显著不同的界面，甚至在人工智能界面发展的早期阶段就已经如此。对于（1），自由文本或“空白画布”界面已经成为早期的主流范式。对于（2），内联生成（也称为自动完成）往往主导文本生成功能（如 Github Copilot），而“给我更多类似的”则主导图像生成功能（如 Midjourney）。对于（3），界面往往集中于高亮、选择或上传现有内容（如 Grammarly）。
 
-![](../Images/e4c0949fe9bbe79a7912ea0646b64e35.png)
+![](img/e4c0949fe9bbe79a7912ea0646b64e35.png)
 
-Whimsical的AI思维导图帮助用户从头开始。 [https://whimsical.com](https://whimsical.com)
+Whimsical 的 AI 思维导图帮助用户从头开始。 [`whimsical.com`](https://whimsical.com)
 
-对于已经发现一个AI入口点的用户而言，他们可能会轻易得出“这就是AI所在之处”的结论，而忽视其他功能。优秀的产品通过在用户工作流中最可能有用的时刻向用户介绍各种AI入口点来减少这一问题。
+对于已经发现一个 AI 入口点的用户而言，他们可能会轻易得出“这就是 AI 所在之处”的结论，而忽视其他功能。优秀的产品通过在用户工作流中最可能有用的时刻向用户介绍各种 AI 入口点来减少这一问题。
 
-## 输入AI信息
+## 输入 AI 信息
 
-许多生成性AI工作流的核心输入是自由文本输入，也称为“提示”。不幸的是，好的提示是复杂的、快速发展的，并且在工具之间不一致。好的产品帮助用户通过示例提示和工具提示来构建提示策略。
+许多生成性 AI 工作流的核心输入是自由文本输入，也称为“提示”。不幸的是，好的提示是复杂的、快速发展的，并且在工具之间不一致。好的产品帮助用户通过示例提示和工具提示来构建提示策略。
 
-![](../Images/e2e606ed2395b58030e5e56043342eec.png)
+![](img/e2e606ed2395b58030e5e56043342eec.png)
 
-Perplexity在其主页上包含了一些示例提示，以说明超出典型搜索引擎的使用案例。 [https://www.perplexity.ai/](https://www.perplexity.ai/)
+Perplexity 在其主页上包含了一些示例提示，以说明超出典型搜索引擎的使用案例。 [`www.perplexity.ai/`](https://www.perplexity.ai/)
 
-好的界面还帮助用户理解AI所拥有的上下文——以及它所缺乏的。当使用强大的AI时，合理的用户可能会得出结论，无论他们在应用中看到什么，AI也必须能够看到和理解。例如，如果我能看到与AI的过去对话，AI肯定也必须知道这一点（这是ChatGPT普及的行为）。但并非所有AI都如此工作！一些系统了解用户之前的提示，有些甚至了解比过去提示更多的上下文——而有些则只了解用户当前的交互和其他任何信息。用户不应通过反复试验来弄清楚系统知道什么和不知道什么。
+好的界面还帮助用户理解 AI 所拥有的上下文——以及它所缺乏的。当使用强大的 AI 时，合理的用户可能会得出结论，无论他们在应用中看到什么，AI 也必须能够看到和理解。例如，如果我能看到与 AI 的过去对话，AI 肯定也必须知道这一点（这是 ChatGPT 普及的行为）。但并非所有 AI 都如此工作！一些系统了解用户之前的提示，有些甚至了解比过去提示更多的上下文——而有些则只了解用户当前的交互和其他任何信息。用户不应通过反复试验来弄清楚系统知道什么和不知道什么。
 
-## 使用AI输出
+## 使用 AI 输出
 
-当系统生成了优秀的AI输出时，我们很容易认为成功已经到手。但即使输出表现良好，对于用户来说，这可能也是一个令人困惑的时刻。
+当系统生成了优秀的 AI 输出时，我们很容易认为成功已经到手。但即使输出表现良好，对于用户来说，这可能也是一个令人困惑的时刻。
 
 首先，新用户经常不知道如何保存输出。即使输出很不错，许多用户仍然希望进行迭代，看看是否能从好变得更好。但害怕丢失现有工作可能会导致犹豫和挫折感。
 
-其次，用户可能会困惑于*如何*改进输出。假设他们使用了“从头开始”的AI功能，他们是否应该回到最开始？他们是否需要转到不同的AI入口点，如“扩展”或“编辑”？许多用户可能遇到过像ChatGPT这样的产品，其中输出不是直接可编辑的；如果输出是可编辑的，用户可能需要一个编辑工具。
+其次，用户可能会困惑于*如何*改进输出。假设他们使用了“从头开始”的 AI 功能，他们是否应该回到最开始？他们是否需要转到不同的 AI 入口点，如“扩展”或“编辑”？许多用户可能遇到过像 ChatGPT 这样的产品，其中输出不是直接可编辑的；如果输出是可编辑的，用户可能需要一个编辑工具。
 
 # 主题 3：约束
 
@@ -118,18 +118,18 @@ Perplexity在其主页上包含了一些示例提示，以说明超出典型搜�
 
 ## 输入：不要害怕控制
 
-受到ChatGPT成功的启发，许多生成型人工智能工具将自由文本框作为唯一或主要的用户输入。但用户的意图的许多方面通过分类或数字输入更能得到有效表达。在创建文档时，大多数用户会考虑语言（一个分类）和长度（一个数值）。用户可能不会在自由文本提示中提及这些属性，但这并不意味着他们不在意。通过离散的、有界的控制（如下拉菜单或滑块）来征询这些输入，系统帮助获取所需的输入，以提供用户脑海中的内容。对于帮助用户导航离散控制，有一些经久不衰的原则：设置良好的默认值，逻辑地分组控制，并通过工具提示或标签解释控制。
+受到 ChatGPT 成功的启发，许多生成型人工智能工具将自由文本框作为唯一或主要的用户输入。但用户的意图的许多方面通过分类或数字输入更能得到有效表达。在创建文档时，大多数用户会考虑语言（一个分类）和长度（一个数值）。用户可能不会在自由文本提示中提及这些属性，但这并不意味着他们不在意。通过离散的、有界的控制（如下拉菜单或滑块）来征询这些输入，系统帮助获取所需的输入，以提供用户脑海中的内容。对于帮助用户导航离散控制，有一些经久不衰的原则：设置良好的默认值，逻辑地分组控制，并通过工具提示或标签解释控制。
 
-关于控制，设置良好的默认值是设计的关键部分。在绝大多数情况下（远远超过90%），用户不会更改默认设置，即使这样做对他们有利。将良好的默认值与用户偏好的变异结合的一个机会是通过硬编码规则或人工智能动态调整默认值。
+关于控制，设置良好的默认值是设计的关键部分。在绝大多数情况下（远远超过 90%），用户不会更改默认设置，即使这样做对他们有利。将良好的默认值与用户偏好的变异结合的一个机会是通过硬编码规则或人工智能动态调整默认值。
 
 ## 输出：并非所有可以生成的内容都应该生成
 
 对于生成型人工智能产品，有许多情况是基础模型可以生成*某些*内容，但用户宁愿什么也不做，也不愿意应对误导性或刺耳的输出。
 
-对于大多数工作相关任务，用户宁愿选择“我不知道”也不愿接受需要验证或反驳的潜在错误答案。[这项哈佛大学在咨询公司BCG进行的研究](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4573321)展示了当人工智能回答超出其“信心边界”的问题时，如何影响工作质量，而用户对边界并不知情，因此没有充分审查输出。
+对于大多数工作相关任务，用户宁愿选择“我不知道”也不愿接受需要验证或反驳的潜在错误答案。[这项哈佛大学在咨询公司 BCG 进行的研究](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4573321)展示了当人工智能回答超出其“信心边界”的问题时，如何影响工作质量，而用户对边界并不知情，因此没有充分审查输出。
 
 减少幻觉的方法正在迅速发展（例如，[检索增强生成](https://www.pinecone.io/learn/retrieval-augmented-generation/)），我怀疑幻觉将在几年后成为一个“解决”的问题——但今天，当事实准确性至关重要时，输出仍然是一个重要的考虑约束的地方。
 
 法律和伦理问题是限制用户面对输出的第二个原因。仅仅因为底层模型可以生成某个主题的文本或图像，并不意味着这样做是合乎良心的。然而，许多情况下，当系统将用户请求分类为“超出范围”时，用户的意图实际上是善意的。通过一点帮助，用户可以重新表述他们的请求，以保持在范围内。例如，一些图像生成工具拒绝包含“child”一词的提示。但如果用户想生成一个有孩子的家庭的图像，他们可以提示“家庭四口”或“父母和儿子女儿”。关键在于，限制对用户来说是明确的。
 
-随着生成式AI产品的流行，优秀的产品设计师和产品经理会记住：成功不仅仅源于AI的智能程度，还在于产品如何引导用户通过AI驱动的工作流程。核心设计概念如反馈、可用性和限制依然重要，但它们的实施战术和模式正在迅速演变。善用这些设计模式对任何希望超越初期炒作周期并提供持久、广泛使用产品的AI公司至关重要。
+随着生成式 AI 产品的流行，优秀的产品设计师和产品经理会记住：成功不仅仅源于 AI 的智能程度，还在于产品如何引导用户通过 AI 驱动的工作流程。核心设计概念如反馈、可用性和限制依然重要，但它们的实施战术和模式正在迅速演变。善用这些设计模式对任何希望超越初期炒作周期并提供持久、广泛使用产品的 AI 公司至关重要。

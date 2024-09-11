@@ -1,18 +1,18 @@
 # 解析数据中最不寻常的片段
 
-> 原文：[https://towardsdatascience.com/figuring-out-the-most-unusual-segments-in-data-af5fbeacb2b2?source=collection_archive---------8-----------------------#2023-07-13](https://towardsdatascience.com/figuring-out-the-most-unusual-segments-in-data-af5fbeacb2b2?source=collection_archive---------8-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/figuring-out-the-most-unusual-segments-in-data-af5fbeacb2b2?source=collection_archive---------8-----------------------#2023-07-13`](https://towardsdatascience.com/figuring-out-the-most-unusual-segments-in-data-af5fbeacb2b2?source=collection_archive---------8-----------------------#2023-07-13)
 
 ## 如何利用常识和机器学习找到关注的片段
 
-[](https://miptgirl.medium.com/?source=post_page-----af5fbeacb2b2--------------------------------)[![Mariya Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----af5fbeacb2b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af5fbeacb2b2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----af5fbeacb2b2--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----af5fbeacb2b2--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----af5fbeacb2b2--------------------------------)![Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----af5fbeacb2b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af5fbeacb2b2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----af5fbeacb2b2--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----af5fbeacb2b2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffiguring-out-the-most-unusual-segments-in-data-af5fbeacb2b2&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----af5fbeacb2b2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----af5fbeacb2b2--------------------------------) · 13分钟阅读 · 2023年7月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf5fbeacb2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffiguring-out-the-most-unusual-segments-in-data-af5fbeacb2b2&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----af5fbeacb2b2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffiguring-out-the-most-unusual-segments-in-data-af5fbeacb2b2&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----af5fbeacb2b2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----af5fbeacb2b2--------------------------------) · 13 分钟阅读 · 2023 年 7 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf5fbeacb2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffiguring-out-the-most-unusual-segments-in-data-af5fbeacb2b2&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----af5fbeacb2b2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf5fbeacb2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffiguring-out-the-most-unusual-segments-in-data-af5fbeacb2b2&source=-----af5fbeacb2b2---------------------bookmark_footer-----------)![](../Images/55977911cccb6b801adf2e71c8ae9970.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf5fbeacb2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffiguring-out-the-most-unusual-segments-in-data-af5fbeacb2b2&source=-----af5fbeacb2b2---------------------bookmark_footer-----------)![](img/55977911cccb6b801adf2e71c8ae9970.png)
 
 照片由 [Klara Kulikova](https://unsplash.com/@kkalerry?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,17 +24,17 @@
 
 +   基于常识和基础数学，
 
-+   基于机器学习——我们在Wise的数据科学团队开源了一个库[***Wise Pizza***](https://github.com/transferwise/wise-pizza#readme)，它能用三行代码给你答案。
++   基于机器学习——我们在 Wise 的数据科学团队开源了一个库[***Wise Pizza***](https://github.com/transferwise/wise-pizza#readme)，它能用三行代码给你答案。
 
 # 示例：银行客户的流失
 
 > 你可以在[GitHub](https://github.com/miptgirl/miptgirl_medium/blob/main/slices_wise_pizza/bank_churn_segments.ipynb)上找到这个示例的完整代码。
 
-我们将以银行客户流失数据为例。[这个数据集](https://www.kaggle.com/datasets/mathchi/churn-for-bank-customers)可以在Kaggle上找到，许可证为[CC0: 公众领域](https://www.kaggle.com/datasets/mathchi/churn-for-bank-customers)。
+我们将以银行客户流失数据为例。[这个数据集](https://www.kaggle.com/datasets/mathchi/churn-for-bank-customers)可以在 Kaggle 上找到，许可证为[CC0: 公众领域](https://www.kaggle.com/datasets/mathchi/churn-for-bank-customers)。
 
 我们将尝试使用不同的方法找到对流失影响最大的细分群体：图表、常识和机器学习。但让我们从数据预处理开始。
 
-![](../Images/38476a2ad4f1f62ec00941d08faa0f50.png)
+![](img/38476a2ad4f1f62ec00941d08faa0f50.png)
 
 数据集列出了客户及其特征：信用评分、居住国家、年龄和性别、客户账户余额等。此外，我们还知道每个客户是否流失——参数`exited`。
 
@@ -44,7 +44,7 @@
 
 我们将处理离散特征，因此我们需要将连续指标（如`age`或`balance`）进行转换。为此，我们可以查看分布并定义合适的桶。例如，让我们看看年龄。
 
-![](../Images/c0b4e39a32a63ffd44bb08b40309c655.png)
+![](img/c0b4e39a32a63ffd44bb08b40309c655.png)
 
 图表由作者提供
 
@@ -69,9 +69,9 @@ raw_df['age_group'] = raw_df.age.map(get_age_group)
 
 找到数据中有趣的细分群体的最直接方法是查看可视化。我们可以通过柱状图或热图查看按一个或两个维度分割的流失率。
 
-让我们看看年龄与流失之间的关系。35岁以下的客户流失率较低——不到10%。而45到64岁的客户则保留率最差——几乎一半的客户已经流失。
+让我们看看年龄与流失之间的关系。35 岁以下的客户流失率较低——不到 10%。而 45 到 64 岁的客户则保留率最差——几乎一半的客户已经流失。
 
-![](../Images/994e6c1cfe29f97735f663e9ad4537c2.png)
+![](img/994e6c1cfe29f97735f663e9ad4537c2.png)
 
 图表由作者提供
 
@@ -79,7 +79,7 @@ raw_df['age_group'] = raw_df.age.map(get_age_group)
 
 女性的流失率在所有年龄组中都较高，因此性别是一个重要因素。
 
-![](../Images/9ad2fc34dddffec14880b8879891f001.png)
+![](img/9ad2fc34dddffec14880b8879891f001.png)
 
 作者的图表
 
@@ -99,7 +99,7 @@ raw_df['age_group'] = raw_df.age.map(get_age_group)
 
 我们如何计算修复特定细分市场问题的潜在影响？我们可以将其与流失率较低的“理想”情景进行比较。
 
-![](../Images/ff798190db2886d853a2790dd3dfce1a.png)
+![](img/ff798190db2886d853a2790dd3dfce1a.png)
 
 你可能会想我们如何估算流失率的基准。有几种方法可以做到这一点：
 
@@ -113,17 +113,17 @@ raw_df['age_group'] = raw_df.age.map(get_age_group)
 
 ## 列出所有可能的细分市场
 
-下一步是构建所有可能的细分市场。我们的数据集有十个维度，每个维度有3–6个独特值。总的组合数大约是120万。即使我们只有少数几个维度和不同的值，这看起来计算成本也很高。在实际任务中，你通常会有几十个特征和独特值。
+下一步是构建所有可能的细分市场。我们的数据集有十个维度，每个维度有 3–6 个独特值。总的组合数大约是 120 万。即使我们只有少数几个维度和不同的值，这看起来计算成本也很高。在实际任务中，你通常会有几十个特征和独特值。
 
 我们确实需要考虑一些性能优化。否则，我们可能需要花费数小时等待结果。以下是减少计算的几个小贴士：
 
-+   首先，我们不需要构建所有可能的组合。将深度限制在4–6层是合理的。你的产品团队需要关注由42个不同过滤器定义的用户细分市场的可能性非常低。
++   首先，我们不需要构建所有可能的组合。将深度限制在 4–6 层是合理的。你的产品团队需要关注由 42 个不同过滤器定义的用户细分市场的可能性非常低。
 
-+   其次，我们可以定义我们感兴趣的效果规模。假设我们希望将保留率提高至少1个百分点。这意味着我们对少于1%用户的细分市场不感兴趣。如果细分市场的规模低于这个阈值，我们可以停止进一步划分——这将减少操作次数。
++   其次，我们可以定义我们感兴趣的效果规模。假设我们希望将保留率提高至少 1 个百分点。这意味着我们对少于 1%用户的细分市场不感兴趣。如果细分市场的规模低于这个阈值，我们可以停止进一步划分——这将减少操作次数。
 
 +   最后但同样重要的是，你可以在实际数据集中显著减少数据大小和计算资源的消耗。为此，你可以将每个维度的小特征分组到一个`other`组。例如，有数百个国家，每个国家用户的比例通常遵循[齐夫定律](https://en.wikipedia.org/wiki/Zipf's_law)，像许多其他真实数据关系一样。因此，你会有很多国家的用户占比低于 1%。正如我们之前讨论的，我们对这些小用户群体不感兴趣，可以将它们全部分组到一个`country = other`片段中，以简化计算。
 
-![](../Images/b61ffb300a8b407ab8f727b4d0d46621.png)
+![](img/b61ffb300a8b407ab8f727b4d0d46621.png)
 
 作者绘制的图表
 
@@ -206,7 +206,7 @@ filt_segments_df = segments_df[segments_df.churn_est_reduction > 0]\
 
 这应该是一个能提供所有答案的圣杯。但等等，那里有太多重复的片段和相互接续的片段。我们能否减少重复，只保留最有信息量的用户群体？
 
-![](../Images/cbba7d3af9ff11b40ac440629b1eeffb.png)
+![](img/cbba7d3af9ff11b40ac440629b1eeffb.png)
 
 ## 梳理
 
@@ -214,11 +214,11 @@ filt_segments_df = segments_df[segments_df.churn_est_reduction > 0]\
 
 子片段`age_group = 45–54, gender = Male`的流失率低于`age_group = 45–54`。添加`gender = Male`筛选器并没有使我们更接近具体问题。因此，我们可以排除这些情况。
 
-![](../Images/c4c0a2b942ccf64f650fe78701e771c4.png)
+![](img/c4c0a2b942ccf64f650fe78701e771c4.png)
 
 下面的例子显示了相反的情况：子片段的流失率显著更高，而且更重要的是，子片段包括了来自父节点的 80% 流失客户。在这种情况下，合理的做法是排除`credit_score_group = poor, tenure_group = 8+`片段，因为主要问题在于`is_active_member = 0`组中。
 
-![](../Images/b943b19492090d5632740eb0c2fd20dd.png)
+![](img/b943b19492090d5632740eb0c2fd20dd.png)
 
 让我们筛选掉那些不那么有趣的片段。
 
@@ -311,9 +311,9 @@ filt_parent_segments_df = pd.DataFrame(filt_parent_segments)
 filt_segments_df = filt_segments_df[~filt_segments_df.index.isin(filt_parent_segments_df.parent_segment.values)]
 ```
 
-现在我们有大约4000个有趣的段。对于这个玩具数据集，我们在处理后看到顶级段几乎没有差异。然而，使用现实数据时，这些努力往往会有所回报。
+现在我们有大约 4000 个有趣的段。对于这个玩具数据集，我们在处理后看到顶级段几乎没有差异。然而，使用现实数据时，这些努力往往会有所回报。
 
-![](../Images/6d7d211859d589d203a4e4f85618f8d9.png)
+![](img/6d7d211859d589d203a4e4f85618f8d9.png)
 
 ## 根本原因
 
@@ -331,7 +331,7 @@ root_segments_df = filt_segments_df[~filt_segments_df.index.isin(
 
 所以，就是这样，现在我们有一个需要关注的用户组列表。由于数据中复杂的关系较少，顶级段仅为一维段，因为只有少数特征可以解释全部效果。
 
-![](../Images/5bea2be4ac745153e59bb474148fb1a6.png)
+![](img/5bea2be4ac745153e59bb474148fb1a6.png)
 
 讨论我们如何解释结果是至关重要的。我们得到了一个客户段列表及其估算的影响。我们的估算基于这样的假设：我们可以将整个段的流失率降低到基准水平（在我们的示例中是平均值）。因此，我们估算了修复每个用户组问题的影响。
 
@@ -341,11 +341,11 @@ root_segments_df = filt_segments_df[~filt_segments_df.index.isin(
 
 # 披萨时间
 
-实际上，还有另一种方法。我们在Wise的数据科学团队开发了一个库[***Wise Pizza***](https://github.com/transferwise/wise-pizza#readme)，可以在一瞬间找到最引人注目的段。它是基于Apache 2.0许可证的开源库，因此你也可以用于你的任务。
+实际上，还有另一种方法。我们在 Wise 的数据科学团队开发了一个库[***Wise Pizza***](https://github.com/transferwise/wise-pizza#readme)，可以在一瞬间找到最引人注目的段。它是基于 Apache 2.0 许可证的开源库，因此你也可以用于你的任务。
 
-> 如果你有兴趣了解更多关于**Wise Pizza**库的信息，不要错过Egor在[数据科学节](https://datasciencefestival.com/session/unleashing-wisepizza-finding-unusual-segments-in-your-data/)上的演讲。
+> 如果你有兴趣了解更多关于**Wise Pizza**库的信息，不要错过 Egor 在[数据科学节](https://datasciencefestival.com/session/unleashing-wisepizza-finding-unusual-segments-in-your-data/)上的演讲。
 
-## 应用Wise Pizza
+## 应用 Wise Pizza
 
 这个库很容易使用。你只需编写几行代码，并指定你想要的维度和段的数量即可。
 
@@ -368,7 +368,7 @@ sf = wise_pizza.explain_levels(
 sf.plot(width=700, height=100, plot_is_static=False)
 ```
 
-![](../Images/a0afe50ffd627e30b6ba3d548a0a0862.png)
+![](img/a0afe50ffd627e30b6ba3d548a0a0862.png)
 
 作者绘制的图表
 
@@ -376,21 +376,21 @@ sf.plot(width=700, height=100, plot_is_static=False)
 
 ## 它的工作原理
 
-这个库基于Lasso和LP求解器。如果我们简化它，这个库的功能类似于one-hot编码，为分段（之前计算的相同分段）添加标志，然后使用Lasso回归，目标变量是流失率。
+这个库基于 Lasso 和 LP 求解器。如果我们简化它，这个库的功能类似于 one-hot 编码，为分段（之前计算的相同分段）添加标志，然后使用 Lasso 回归，目标变量是流失率。
 
-![](../Images/9ff2779de24248ae111093262dc64fa5.png)
+![](img/9ff2779de24248ae111093262dc64fa5.png)
 
-正如你可能从机器学习中记得的，Lasso回归倾向于有许多零系数，选择少数显著因素。***Wise Pizza***找到合适的`alpha`系数用于Lasso回归，从而得到指定数量的分段结果。
+正如你可能从机器学习中记得的，Lasso 回归倾向于有许多零系数，选择少数显著因素。***Wise Pizza***找到合适的`alpha`系数用于 Lasso 回归，从而得到指定数量的分段结果。
 
-> 对于修订Lasso（L1）和Ridge（L2）正则化，你可以参考[这篇文章](https://pub.towardsai.net/lasso-l1-and-ridge-l2-regularization-techniques-33b7f12ac0b)。
+> 对于修订 Lasso（L1）和 Ridge（L2）正则化，你可以参考[这篇文章](https://pub.towardsai.net/lasso-l1-and-ridge-l2-regularization-techniques-33b7f12ac0b)。
 
 ## 如何解释结果
 
 影响的估算是系数与分段大小的乘积结果。
 
-![](../Images/8450ab992704763ee2953281f125d92e.png)
+![](img/8450ab992704763ee2953281f125d92e.png)
 
-正如你所见，这与我们之前估算的完全不同。常识方法估算了彻底解决用户组问题的影响，而Wise Pizza的影响显示了对其他选择分段的递增效果。
+正如你所见，这与我们之前估算的完全不同。常识方法估算了彻底解决用户组问题的影响，而 Wise Pizza 的影响显示了对其他选择分段的递增效果。
 
 这种方法的优势在于你可以汇总不同的效果。然而，你在解释结果时需要准确，因为每个分段的影响依赖于其他选择的分段，因为它们可能是相关的。例如，在我们的案例中，我们有三个相关的分段：
 
@@ -410,8 +410,8 @@ sf.plot(width=700, height=100, plot_is_static=False)
 
 1.  在数据中找到有趣的切片是分析师的常见任务（尤其是在发现阶段）。幸运的是，你不需要制作大量图表来解决这些问题。有一些更全面且易于使用的框架。
 
-1.  你可以使用[***Wise Pizza***](https://github.com/transferwise/wise-pizza#readme) ML库来快速洞察对平均值影响最大的细分领域（*它还允许你查看两个数据集之间的差异*）。我通常使用它来获取第一个有意义的维度和细分领域列表。
+1.  你可以使用[***Wise Pizza***](https://github.com/transferwise/wise-pizza#readme) ML 库来快速洞察对平均值影响最大的细分领域（*它还允许你查看两个数据集之间的差异*）。我通常使用它来获取第一个有意义的维度和细分领域列表。
 
-1.  ML方法可以在一瞬间为你提供高层次的视图和优先级。然而，我建议你注意结果的解释，并确保你和你的利益相关者完全理解它。然而，如果你需要对修复整个用户组问题对KPI的潜在影响进行全面估算，使用基于算术的传统常识方法是值得的。
+1.  ML 方法可以在一瞬间为你提供高层次的视图和优先级。然而，我建议你注意结果的解释，并确保你和你的利益相关者完全理解它。然而，如果你需要对修复整个用户组问题对 KPI 的潜在影响进行全面估算，使用基于算术的传统常识方法是值得的。
 
 > 非常感谢你阅读这篇文章。我希望它对你有启发。如果你有任何后续问题或评论，请不要犹豫在评论区留言。

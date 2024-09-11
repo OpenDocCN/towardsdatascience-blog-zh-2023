@@ -1,18 +1,18 @@
 # 理解 SQL：入门窗口函数
 
-> 原文：[https://towardsdatascience.com/understanding-sql-getting-started-with-window-functions-287391b9cef5?source=collection_archive---------5-----------------------#2023-09-17](https://towardsdatascience.com/understanding-sql-getting-started-with-window-functions-287391b9cef5?source=collection_archive---------5-----------------------#2023-09-17)
+> 原文：[`towardsdatascience.com/understanding-sql-getting-started-with-window-functions-287391b9cef5?source=collection_archive---------5-----------------------#2023-09-17`](https://towardsdatascience.com/understanding-sql-getting-started-with-window-functions-287391b9cef5?source=collection_archive---------5-----------------------#2023-09-17)
 
 ## 通过使用 SQL 窗口函数，获取更多的聚合信息
 
-[](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)[![Rob Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)
+[](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)![Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----287391b9cef5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------) ·15 分钟阅读·2023年9月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F287391b9cef5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----287391b9cef5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----287391b9cef5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------) ·15 分钟阅读·2023 年 9 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F287391b9cef5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----287391b9cef5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F287391b9cef5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&source=-----287391b9cef5---------------------bookmark_footer-----------)![](../Images/7d9d02bd38237ca6dc7bedb3e5383324.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F287391b9cef5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&source=-----287391b9cef5---------------------bookmark_footer-----------)![](img/7d9d02bd38237ca6dc7bedb3e5383324.png)
 
 图片由 [Components AI](https://unsplash.com/@components_ai?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,7 +24,7 @@
 
 在这篇文章中，我们将查看 SQL 窗口函数的结构和基本功能。这里的重点有些基础，因此如果你还没有接触过窗口函数，或者对它们的使用经验有限，希望这对你会有一些帮助。
 
-本文将使用关于1930年至2022年FIFA世界杯比赛的一些高级汇总数据。这些排名和统计数据来自维基百科，并在知识共享署名-相同方式共享（CC-BY-SA）许可下提供。数据和相关信息可以在[这里](https://en.wikipedia.org/wiki/FIFA_World_Cup)找到。为了本博客的目的，我将表格导入到我自己的PostgresSQL数据库中，但如果你想跟随，你可以从我的[Git 仓库](https://github.com/dataforyounz/fifa-world-cup)中获取表格的副本。在我的数据库中，这个表格被称为`world_cup_placings`，下面显示了一个输出示例：
+本文将使用关于 1930 年至 2022 年 FIFA 世界杯比赛的一些高级汇总数据。这些排名和统计数据来自维基百科，并在知识共享署名-相同方式共享（CC-BY-SA）许可下提供。数据和相关信息可以在[这里](https://en.wikipedia.org/wiki/FIFA_World_Cup)找到。为了本博客的目的，我将表格导入到我自己的 PostgresSQL 数据库中，但如果你想跟随，你可以从我的[Git 仓库](https://github.com/dataforyounz/fifa-world-cup)中获取表格的副本。在我的数据库中，这个表格被称为`world_cup_placings`，下面显示了一个输出示例：
 
 ```py
 |year|start_date|end_date|host_country |first_place |second_place  |third_place  |fourth_place|total_teams|matches_played|total_goals|total_attendance|
@@ -340,9 +340,9 @@ FROM world_cup_placings
 
 现在，这些聚合本身并不是特别有用，它们只是为了演示目的。但让我们看看从这个查询中实际得到的结果。
 
-首先，`all_goals`列提供了每个获胜国家在所有比赛中进球的总数（回忆一下，我们已使用`first_place`列对行进行了分区）。例如，在阿根廷获胜的比赛中，我们可以看到在1978年阿根廷主办时进了102球，1986年墨西哥主办时进了132球，最近在卡塔尔进了172球。`all_goals`值就是这两个值的总和，即406。
+首先，`all_goals`列提供了每个获胜国家在所有比赛中进球的总数（回忆一下，我们已使用`first_place`列对行进行了分区）。例如，在阿根廷获胜的比赛中，我们可以看到在 1978 年阿根廷主办时进了 102 球，1986 年墨西哥主办时进了 132 球，最近在卡塔尔进了 172 球。`all_goals`值就是这两个值的总和，即 406。
 
-其次，`max_attendance`值返回每个获胜国家的最高比赛出席人数。例如，在表中列出的世界杯中，意大利赢得了其中四场，其中2006年在德国举办的世界杯的最高出席人数（3,359,439）。因此，对于所有意大利获胜的行，这就是`max_attendance`返回的值。
+其次，`max_attendance`值返回每个获胜国家的最高比赛出席人数。例如，在表中列出的世界杯中，意大利赢得了其中四场，其中 2006 年在德国举办的世界杯的最高出席人数（3,359,439）。因此，对于所有意大利获胜的行，这就是`max_attendance`返回的值。
 
 回顾查询，你可能会注意到我们需要写`OVER( PARTITION BY first_place )`三次；每个窗口函数在`SELECT`列表中出现一次。如果你的查询需要多个窗口函数，并且使用相同的列进行分区，这可能会变得有些乏味。那么有没有更好的方法来实现相同的目标？有的。确实有。在这些情况下——所有函数的窗口设置相同——我们可以使用一个单独的`WINDOW`子句来定义分区，并为其指定一个可以通过`OVER`调用的名称。查看下面的查询：
 
@@ -414,7 +414,7 @@ FROM world_cup_placings
 |1934|Italy        |Italy       |70         |22     |21      |
 ```
 
-看到了区别吗？如果我们查看第二行和第三行，我们会看到巴西2014和法国1998都得到了171个进球。虽然`row_num`列为这些行分配了不同的值，但`row_rank`列则分配了相同的排名。
+看到了区别吗？如果我们查看第二行和第三行，我们会看到巴西 2014 和法国 1998 都得到了 171 个进球。虽然`row_num`列为这些行分配了不同的值，但`row_rank`列则分配了相同的排名。
 
 需要注意的是，对于`ROW_NUMBER`窗口函数，我实际上不需要指定`ORDER BY total_goals DESC`，但我这样做是为了强调`ROW_NUMBER`窗口函数不关心重复值；它只是为每一行编号，不管是否按`total_goals`排序。
 
@@ -458,9 +458,9 @@ FROM world_cup_placings
 |1954|Switerland   |West Germany|3       |
 ```
 
-通过按降序排列比赛年份，我们确保每个分区的第一行是最新的年份。现在，由于每年只能有一个获胜者，因此`year`列中没有重复值。因此，当我们为每个分区分配排名时，第一行将始终具有排名1，这对应于每个国家的最新胜利。
+通过按降序排列比赛年份，我们确保每个分区的第一行是最新的年份。现在，由于每年只能有一个获胜者，因此`year`列中没有重复值。因此，当我们为每个分区分配排名时，第一行将始终具有排名 1，这对应于每个国家的最新胜利。
 
-然而，这个输出有点杂乱，我们必须阅读每一行以找出每个分区的排名。我们可以通过将上述查询放在子查询中，并过滤出仅具有排名1的行来整理一下。查看下面的查询以了解实际效果：
+然而，这个输出有点杂乱，我们必须阅读每一行以找出每个分区的排名。我们可以通过将上述查询放在子查询中，并过滤出仅具有排名 1 的行来整理一下。查看下面的查询以了解实际效果：
 
 ```py
 /* Filter only rows that have a rank of 1 */

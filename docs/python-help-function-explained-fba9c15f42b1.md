@@ -1,18 +1,18 @@
 # Python help() 函数解释
 
-> 原文：[https://towardsdatascience.com/python-help-function-explained-fba9c15f42b1?source=collection_archive---------17-----------------------#2023-01-13](https://towardsdatascience.com/python-help-function-explained-fba9c15f42b1?source=collection_archive---------17-----------------------#2023-01-13)
+> 原文：[`towardsdatascience.com/python-help-function-explained-fba9c15f42b1?source=collection_archive---------17-----------------------#2023-01-13`](https://towardsdatascience.com/python-help-function-explained-fba9c15f42b1?source=collection_archive---------17-----------------------#2023-01-13)
 
 ## 在本文中，我们将深入探讨如何使用 Python **help()** 函数
 
-[](https://pyshark.medium.com/?source=post_page-----fba9c15f42b1--------------------------------)[![Misha Sv](../Images/d3f9605e2c7020246ff793869728e218.png)](https://pyshark.medium.com/?source=post_page-----fba9c15f42b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fba9c15f42b1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fba9c15f42b1--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----fba9c15f42b1--------------------------------)
+[](https://pyshark.medium.com/?source=post_page-----fba9c15f42b1--------------------------------)![Misha Sv](https://pyshark.medium.com/?source=post_page-----fba9c15f42b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fba9c15f42b1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fba9c15f42b1--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----fba9c15f42b1--------------------------------)
 
 ·
 
-[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-help-function-explained-fba9c15f42b1&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----fba9c15f42b1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fba9c15f42b1--------------------------------) ·4分钟阅读·2023年1月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffba9c15f42b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-help-function-explained-fba9c15f42b1&user=Misha+Sv&userId=685c2995a8e&source=-----fba9c15f42b1---------------------clap_footer-----------)
+[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-help-function-explained-fba9c15f42b1&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----fba9c15f42b1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fba9c15f42b1--------------------------------) ·4 分钟阅读·2023 年 1 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffba9c15f42b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-help-function-explained-fba9c15f42b1&user=Misha+Sv&userId=685c2995a8e&source=-----fba9c15f42b1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffba9c15f42b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-help-function-explained-fba9c15f42b1&source=-----fba9c15f42b1---------------------bookmark_footer-----------)![](../Images/478d5da12e5951b60853775b6e7feca4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffba9c15f42b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-help-function-explained-fba9c15f42b1&source=-----fba9c15f42b1---------------------bookmark_footer-----------)![](img/478d5da12e5951b60853775b6e7feca4.png)
 
 图片来源：[Toa Heftiba](https://unsplash.com/@heftiba?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 摄影，[Unsplash](https://unsplash.com/photos/_UIVmIBB3JU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

@@ -1,20 +1,20 @@
 # 如何连接 Streamlit 到 Snowflake
 
-> 原文：[https://towardsdatascience.com/how-to-connect-streamlit-to-snowflake-b93256d80a40?source=collection_archive---------5-----------------------#2023-04-06](https://towardsdatascience.com/how-to-connect-streamlit-to-snowflake-b93256d80a40?source=collection_archive---------5-----------------------#2023-04-06)
+> 原文：[`towardsdatascience.com/how-to-connect-streamlit-to-snowflake-b93256d80a40?source=collection_archive---------5-----------------------#2023-04-06`](https://towardsdatascience.com/how-to-connect-streamlit-to-snowflake-b93256d80a40?source=collection_archive---------5-----------------------#2023-04-06)
 
 ## [实践教程](https://towardsdatascience.com/tagged/hands-on-tutorials)
 
 ## 一个逐步的实用教程
 
-[](https://data-professor.medium.com/?source=post_page-----b93256d80a40--------------------------------)[![Chanin Nantasenamat](../Images/db835baa5f00e4b006ebd43724367136.png)](https://data-professor.medium.com/?source=post_page-----b93256d80a40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b93256d80a40--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b93256d80a40--------------------------------) [Chanin Nantasenamat](https://data-professor.medium.com/?source=post_page-----b93256d80a40--------------------------------)
+[](https://data-professor.medium.com/?source=post_page-----b93256d80a40--------------------------------)![Chanin Nantasenamat](https://data-professor.medium.com/?source=post_page-----b93256d80a40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b93256d80a40--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b93256d80a40--------------------------------) [Chanin Nantasenamat](https://data-professor.medium.com/?source=post_page-----b93256d80a40--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff94b47c3cfca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-streamlit-to-snowflake-b93256d80a40&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=post_page-f94b47c3cfca----b93256d80a40---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b93256d80a40--------------------------------) ·10 min read·2023年4月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb93256d80a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-streamlit-to-snowflake-b93256d80a40&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=-----b93256d80a40---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff94b47c3cfca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-streamlit-to-snowflake-b93256d80a40&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=post_page-f94b47c3cfca----b93256d80a40---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b93256d80a40--------------------------------) ·10 min read·2023 年 4 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb93256d80a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-streamlit-to-snowflake-b93256d80a40&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=-----b93256d80a40---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb93256d80a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-streamlit-to-snowflake-b93256d80a40&source=-----b93256d80a40---------------------bookmark_footer-----------)![](../Images/6978541f4e294838bdf609b39dc53a0a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb93256d80a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-streamlit-to-snowflake-b93256d80a40&source=-----b93256d80a40---------------------bookmark_footer-----------)![](img/6978541f4e294838bdf609b39dc53a0a.png)
 
 图片由 Chanin Nantasenamat 在 [BlueWillow](https://www.bluewillow.ai/) 上生成。
 
@@ -28,27 +28,27 @@ Streamlit 是一个用于 Python 编程语言的低代码 Web 框架。它允许
 
 让我们预览一下我们正在构建的 Streamlit 应用：
 
-![](../Images/d1fbbe9e2240072ea65a67078bcef703.png)
+![](img/d1fbbe9e2240072ea65a67078bcef703.png)
 
 # 2\. 创建 Snowflake 数据库
 
 在本教程中，我们将创建一个 Snowflake 数据库，并在我们正在构建的 Streamlit 应用程序中连接它。
 
-1\. 在 [https://signup.snowflake.com](https://signup.snowflake.com) 注册一个 Snowflake 账户
+1\. 在 [`signup.snowflake.com`](https://signup.snowflake.com) 注册一个 Snowflake 账户
 
 2\. 检查你的 *“欢迎使用 Snowflake！”* 邮件，获取账户 URL 以访问你的 Snowflake 账户。接着，点击 **LOG IN TO SNOWFLAKE** 按钮，或者将账户 URL `https://<your-unique-account-id>.snowflakecomputing.com` 复制粘贴到互联网浏览器中。
 
-![](../Images/54c50d21cba56e4e780745c96ecda66b.png)
+![](img/54c50d21cba56e4e780745c96ecda66b.png)
 
 3\. 继续输入你的 Snowflake 凭据。
 
-![](../Images/5f32be364585d3778bd803d6f9bc9d50.png)
+![](img/5f32be364585d3778bd803d6f9bc9d50.png)
 
 4\. 登录后，默认会看到工作表面板。
 
 5\. 按照以下说明创建一个新的 SQL 工作表：
 
-![](../Images/1a41f8272f9df6d65d18301abef4ac25.png)
+![](img/1a41f8272f9df6d65d18301abef4ac25.png)
 
 6\. 在查询框中输入以下 SQL 查询（请参见代码框下的截图）：
 
@@ -65,19 +65,19 @@ INSERT INTO MYTABLE VALUES ('Mary', 'dog'), ('John', 'cat'), ('Robert', 'bird');
 SELECT * FROM MYTABLE;
 ```
 
-![](../Images/34c34d827873c811f09c0d093eebb475.png)
+![](img/34c34d827873c811f09c0d093eebb475.png)
 
 7\. PETS 数据库现在已经创建。接下来，点击左上角的链接返回主页面。
 
-![](../Images/2330fe9f2ba4871dc00336b561b39869.png)
+![](img/2330fe9f2ba4871dc00336b561b39869.png)
 
 8\. 从主页面，点击 “Data” 标签查看我们的数据库。
 
-![](../Images/df7add397266db2543c3c994bb2efa32.png)
+![](img/df7add397266db2543c3c994bb2efa32.png)
 
 9\. 在这里，我们可以看到新创建的 PETS 数据库。
 
-![](../Images/25e5eabfa274b44692a6929446b7d2bd.png)
+![](img/25e5eabfa274b44692a6929446b7d2bd.png)
 
 现在我们的数据库已经准备好了，让我们继续设置编码环境。
 
@@ -93,13 +93,13 @@ conda create -n snowpark python=3.8
 
 几分钟后，你会看到 conda 请求你确认它将安装以下新包。要确认，请输入 `Y`
 
-![](../Images/ded689f80d5c80e57531f5b4aea8d8ce.png)
+![](img/ded689f80d5c80e57531f5b4aea8d8ce.png)
 
 等待几分钟，让各种 Python 库安装完成。
 
 一切设置好后，底部会有一条消息，说明如何激活和停用环境。
 
-![](../Images/8969b209e593b3c08627e2013df12121.png)
+![](img/8969b209e593b3c08627e2013df12121.png)
 
 ## 激活 conda 环境
 
@@ -113,7 +113,7 @@ conda activate snowpark
 
 特别地，在下面的第一个截图中，我们使用的是基础环境（注意用户名左侧的 `(base)`），而第二个截图显示了已激活的 `snowpark` conda 环境（注意用户名左侧的 `(snowpark)`）。
 
-![](../Images/41d0093e0a79061b3c2074078917d4d9.png)![](../Images/33d2a4963c4325ab29296cbfc20fe529.png)
+![](img/41d0093e0a79061b3c2074078917d4d9.png)![](img/33d2a4963c4325ab29296cbfc20fe529.png)
 
 接下来，我们将需要安装一些先决的 Python 库，以便我们可以构建一个可以连接到 Snowflake 数据库的 Streamlit 应用。
 
@@ -125,7 +125,7 @@ pip install snowflake-snowpark-python streamlit
 
 这将安装上述两个 Python 库：
 
-![](../Images/4494a2f1f2c6aa08fdfb69d82fed67b1.png)
+![](img/4494a2f1f2c6aa08fdfb69d82fed67b1.png)
 
 恭喜你，你的编码环境现在已经准备好让我们进行操作了！
 
@@ -139,7 +139,7 @@ conda deactivate
 
 一旦 conda 环境被停用，你会注意到我们将退出到`(base)`环境。
 
-![](../Images/43bd2c60b52dda02f5bcb4e7de3fa955.png)
+![](img/43bd2c60b52dda02f5bcb4e7de3fa955.png)
 
 # 4. 设置目录和文件
 
@@ -153,7 +153,7 @@ conda deactivate
 pwd
 ```
 
-![](../Images/c939e4dc35bbf3310cb34eb73bcf2eba.png)
+![](img/c939e4dc35bbf3310cb34eb73bcf2eba.png)
 
 你会看到在我的电脑上，我的位置是`/Users/chanin`。假设我想导航到我的工作目录`/Users/chanin/Documents/sandbox`，那么我需要通过`cd`命令切换目录，后面跟上两个子文件夹`Documents/sandbox`。
 
@@ -161,7 +161,7 @@ pwd
 cd Documents/sandbox
 ```
 
-![](../Images/8cc341240c9dbe414a06d092585d7614.png)
+![](img/8cc341240c9dbe414a06d092585d7614.png)
 
 ## 创建目录
 
@@ -194,7 +194,7 @@ touch .streamlit/secrets.toml
 
 要查看我们所在的当前目录的内容，可以使用`ls`命令：
 
-![](../Images/e92857b2a7b2ac8586fc52f560629ec8.png)
+![](img/e92857b2a7b2ac8586fc52f560629ec8.png)
 
 等一下，为什么我们只看到一个文件，而我们已经创建了两个文件。缺少的文件是位于隐藏的`.streamlit`目录中的`secrets.toml`文件。
 
@@ -204,7 +204,7 @@ touch .streamlit/secrets.toml
 ls -a
 ```
 
-![](../Images/3bfc32dc234a2d72c377fd54d6674836.png)
+![](img/3bfc32dc234a2d72c377fd54d6674836.png)
 
 现在我们可以看到隐藏目录了！
 
@@ -214,7 +214,7 @@ ls -a
 ls -a -l
 ```
 
-![](../Images/6e7d5ae129fe8c8272b8f0dab5a429d1.png)
+![](img/6e7d5ae129fe8c8272b8f0dab5a429d1.png)
 
 我们不仅可以以垂直列表的形式查看内容，还可以看到内容的其他信息，例如读/写权限、文件大小、文件创建/修改日期等。
 
@@ -275,11 +275,11 @@ vi streamlit_app.py
 
 这将启动你的 Vim 文本编辑器，以编辑`streamlit_app.py`文件的内容。
 
-![](../Images/a36a309485c31c013d5e24089f2f7bfe.png)
+![](img/a36a309485c31c013d5e24089f2f7bfe.png)
 
 然后，按 `i` 键，你应该会看到终端窗口底部显示编辑器处于 **INSERT** 模式。
 
-![](../Images/bfbc97ed10c4c259bc3525bbfcb7df97.png)
+![](img/bfbc97ed10c4c259bc3525bbfcb7df97.png)
 
 接下来，按 **Ctrl+V**（在 Windows 上）或 **CMD+V**（在 Mac OSX 上）将复制的内容粘贴到文件中。
 
@@ -297,7 +297,7 @@ vi streamlit_app.py
 cat streamlit_app.py
 ```
 
-![](../Images/d303174bde0ffc806a17996afe74fbd3.png)
+![](img/d303174bde0ffc806a17996afe74fbd3.png)
 
 现在 `streamlit_app.py` 文件已经准备好，我们接下来处理 Snowflake 访问凭据。
 
@@ -312,7 +312,7 @@ password = "enter_your_password_here"
 account = "enter_your_account_key_here"
 ```
 
-![](../Images/5d59f746284aba42835cf9c26a44ac69.png)
+![](img/5d59f746284aba42835cf9c26a44ac69.png)
 
 保存并退出（参考之前的说明）编辑器。
 
@@ -336,11 +336,11 @@ streamlit run streamlit_app.py
 
 几分钟后，你会注意到终端窗口中出现以下消息，提供有关访问 Streamlit 应用程序的说明。
 
-![](../Images/1a041beab6dfae22cdfb9c50ea2db908.png)
+![](img/1a041beab6dfae22cdfb9c50ea2db908.png)
 
 同时，你应该能够看到一个新的互联网浏览器启动，Streamlit 应用程序位于本地的 `http://localhost:8503`
 
-![](../Images/716414a61f49e4dbd8d4bd0aec74e8df.png)
+![](img/716414a61f49e4dbd8d4bd0aec74e8df.png)
 
 # 8\. 行级代码解释
 
@@ -427,19 +427,19 @@ data-professor.medium.com](https://data-professor.medium.com/membership?source=p
 
 # 阅读这些内容…
 
-[](/streamlit-quests-getting-started-with-streamlit-42fa6f11c2a8?source=post_page-----b93256d80a40--------------------------------) [## Streamlit 探索任务：Streamlit 入门
+[](/streamlit-quests-getting-started-with-streamlit-42fa6f11c2a8?source=post_page-----b93256d80a40--------------------------------) ## Streamlit 探索任务：Streamlit 入门
 
 ### 学习 Streamlit 的指导路径
 
-towardsdatascience.com](/streamlit-quests-getting-started-with-streamlit-42fa6f11c2a8?source=post_page-----b93256d80a40--------------------------------) [](/how-to-master-scikit-learn-for-data-science-c29214ec25b0?source=post_page-----b93256d80a40--------------------------------) [## 如何掌握 Scikit-learn 以进行数据科学
+towardsdatascience.com [](/how-to-master-scikit-learn-for-data-science-c29214ec25b0?source=post_page-----b93256d80a40--------------------------------) ## 如何掌握 Scikit-learn 以进行数据科学
 
 ### 这里是数据科学中你需要的基本 Scikit-learn
 
-towardsdatascience.com](/how-to-master-scikit-learn-for-data-science-c29214ec25b0?source=post_page-----b93256d80a40--------------------------------) [](/how-to-master-python-for-data-science-1fb8353718bf?source=post_page-----b93256d80a40--------------------------------) [## 如何掌握 Python 以进行数据科学
+towardsdatascience.com [](/how-to-master-python-for-data-science-1fb8353718bf?source=post_page-----b93256d80a40--------------------------------) ## 如何掌握 Python 以进行数据科学
 
 ### 这里是数据科学中你需要的基本 Python
 
-towardsdatascience.com](/how-to-master-python-for-data-science-1fb8353718bf?source=post_page-----b93256d80a40--------------------------------)
+towardsdatascience.com
 
 # 下一步观看…
 

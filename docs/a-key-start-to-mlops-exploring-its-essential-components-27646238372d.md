@@ -1,18 +1,18 @@
-# MLOps的关键起步：探索其核心组件
+# MLOps 的关键起步：探索其核心组件
 
-> 原文：[https://towardsdatascience.com/a-key-start-to-mlops-exploring-its-essential-components-27646238372d?source=collection_archive---------4-----------------------#2023-11-09](https://towardsdatascience.com/a-key-start-to-mlops-exploring-its-essential-components-27646238372d?source=collection_archive---------4-----------------------#2023-11-09)
+> 原文：[`towardsdatascience.com/a-key-start-to-mlops-exploring-its-essential-components-27646238372d?source=collection_archive---------4-----------------------#2023-11-09`](https://towardsdatascience.com/a-key-start-to-mlops-exploring-its-essential-components-27646238372d?source=collection_archive---------4-----------------------#2023-11-09)
 
-## 面向初学者的MLOps介绍
+## 面向初学者的 MLOps 介绍
 
-[](https://medium.com/@chimso1994?source=post_page-----27646238372d--------------------------------)[![Chayma Zatout](../Images/341c45f53ddf73dc0851d547cc7cb55a.png)](https://medium.com/@chimso1994?source=post_page-----27646238372d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27646238372d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----27646238372d--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----27646238372d--------------------------------)
+[](https://medium.com/@chimso1994?source=post_page-----27646238372d--------------------------------)![Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----27646238372d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27646238372d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----27646238372d--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----27646238372d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-key-start-to-mlops-exploring-its-essential-components-27646238372d&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----27646238372d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----27646238372d--------------------------------) ·9分钟阅读·2023年11月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F27646238372d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-key-start-to-mlops-exploring-its-essential-components-27646238372d&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----27646238372d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-key-start-to-mlops-exploring-its-essential-components-27646238372d&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----27646238372d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----27646238372d--------------------------------) ·9 分钟阅读·2023 年 11 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F27646238372d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-key-start-to-mlops-exploring-its-essential-components-27646238372d&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----27646238372d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F27646238372d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-key-start-to-mlops-exploring-its-essential-components-27646238372d&source=-----27646238372d---------------------bookmark_footer-----------)![](../Images/ade50b19b8852efc8ab1345e4e30c83b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F27646238372d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-key-start-to-mlops-exploring-its-essential-components-27646238372d&source=-----27646238372d---------------------bookmark_footer-----------)![](img/ade50b19b8852efc8ab1345e4e30c83b.png)
 
 [照片由 Aaron Burden](https://unsplash.com/@aaronburden?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,23 +20,23 @@
 
 **目录：**
 
-· [1\. 介绍](#d7be)
+· 1\. 介绍
 
-· [2\. MLOps 工作流](#4776)
+· 2\. MLOps 工作流
 
-· [3\. MLOps 原则](#1190)
+· 3\. MLOps 原则
 
-· [4\. MLOps 工具](#e0d3)
+· 4\. MLOps 工具
 
-· [5\. MLOps 最佳实践](#4147)
+· 5\. MLOps 最佳实践
 
-· [6\. 结论](#c292)
+· 6\. 结论
 
 **我的 MLOps 教程：**
 
-+   [*教程 1: MLOps 的关键起点：探索其基本组成部分*](/a-key-start-to-mlops-exploring-its-essential-components-27646238372d)
++   *教程 1: MLOps 的关键起点：探索其基本组成部分*
 
-+   [*教程 2: 面向初学者的 MLOps 工作流介绍*](/a-beginner-friendly-introduction-to-mlops-95282f25325c)
++   *教程 2: 面向初学者的 MLOps 工作流介绍*
 
 +   [*教程 3: MLOps 原则介绍*](https://medium.com/towards-data-science/introduction-to-mlops-principles-c5d73a00aa76)
 

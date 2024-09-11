@@ -1,20 +1,20 @@
 # 使用 Criterion 基准测试 Rust 编译器设置
 
-> 原文：[https://towardsdatascience.com/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb?source=collection_archive---------12-----------------------#2023-12-15](https://towardsdatascience.com/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb?source=collection_archive---------12-----------------------#2023-12-15)
+> 原文：[`towardsdatascience.com/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb?source=collection_archive---------12-----------------------#2023-12-15`](https://towardsdatascience.com/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb?source=collection_archive---------12-----------------------#2023-12-15)
 
 ## 使用脚本和环境变量控制 Criterion
 
-[](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)[![Carl M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)
+[](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)![Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----62db50cd62fb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------) ·6分钟阅读·2023年12月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62db50cd62fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----62db50cd62fb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----62db50cd62fb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------) ·6 分钟阅读·2023 年 12 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62db50cd62fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----62db50cd62fb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F62db50cd62fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&source=-----62db50cd62fb---------------------bookmark_footer-----------)![](../Images/d23babfcffe8bcef29dff4ca4666ab4c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F62db50cd62fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&source=-----62db50cd62fb---------------------bookmark_footer-----------)![](img/d23babfcffe8bcef29dff4ca4666ab4c.png)
 
-蟹赛时间 — 来源：[https://openai.com/dall-e-2/](https://openai.com/dall-e-2/)。所有其他图像来自作者。
+蟹赛时间 — 来源：[`openai.com/dall-e-2/`](https://openai.com/dall-e-2/)。所有其他图像来自作者。
 
 本文首先解释了如何使用流行的 [criterion](https://docs.rs/criterion/latest/criterion/) crate 进行基准测试。然后，提供了额外的信息，展示了如何在不同编译器设置下进行基准测试。虽然每种编译器设置的组合都需要重新编译和单独运行，但我们仍然可以汇总和分析结果。本文是 *Towards Data Science* 中的文章 [Nine Rules for SIMD Acceleration of Your Rust Code](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21) 的配套文章。
 
@@ -121,7 +121,7 @@ criterion_main!(benches);
 
 使用命令 `cargo bench` 运行基准测试。报告将出现在 `target/criterion/simple/report/index.html` 中，并包括像这样的图表，显示 Splat1 的运行速度比 Regular 快很多。
 
-![](../Images/0baad5a4a40ae23d4c2e6973b4acc72f.png)
+![](img/0baad5a4a40ae23d4c2e6973b4acc72f.png)
 
 # 跳出 Criterion 的思维框架
 
@@ -281,13 +281,13 @@ CSV 文件适合通过 [电子表格数据透视表](https://support.microsoft.c
 
 例如，这是我 5000 行长的 Excel 数据文件的顶部：
 
-![](../Images/95f1e30fa085dc0341b141331e6b2999.png)
+![](img/95f1e30fa085dc0341b141331e6b2999.png)
 
 A 到 J 列来自基准测试。K 到 N 列由 Excel 计算得出。
 
 这是基于数据的透视表（及图表）。它显示了 SIMD lanes 数量变化对吞吐量的影响。图表平均了元素类型和输入长度。图表表明，对于最佳算法，32 或 64 个 lanes 是最好的。
 
-![](../Images/d01656abaf5c1374a97aa21d3cfee7c0.png)
+![](img/d01656abaf5c1374a97aa21d3cfee7c0.png)
 
 有了这次分析，我们现在可以选择我们的算法并决定如何设置 LANES 参数。
 

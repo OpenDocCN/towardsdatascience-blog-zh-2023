@@ -1,24 +1,24 @@
 # 机器学习编排与 MLOps
 
-> 原文：[https://towardsdatascience.com/machine-learning-orchestration-vs-mlops-d4cfe3b7bec?source=collection_archive---------4-----------------------#2023-06-05](https://towardsdatascience.com/machine-learning-orchestration-vs-mlops-d4cfe3b7bec?source=collection_archive---------4-----------------------#2023-06-05)
+> 原文：[`towardsdatascience.com/machine-learning-orchestration-vs-mlops-d4cfe3b7bec?source=collection_archive---------4-----------------------#2023-06-05`](https://towardsdatascience.com/machine-learning-orchestration-vs-mlops-d4cfe3b7bec?source=collection_archive---------4-----------------------#2023-06-05)
 
-[](https://fletchjeff.medium.com/?source=post_page-----d4cfe3b7bec--------------------------------)[![Jeff Fletcher](../Images/b5018f623161faa43a6a3289e25f7eb7.png)](https://fletchjeff.medium.com/?source=post_page-----d4cfe3b7bec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d4cfe3b7bec--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d4cfe3b7bec--------------------------------) [Jeff Fletcher](https://fletchjeff.medium.com/?source=post_page-----d4cfe3b7bec--------------------------------)
+[](https://fletchjeff.medium.com/?source=post_page-----d4cfe3b7bec--------------------------------)![Jeff Fletcher](https://fletchjeff.medium.com/?source=post_page-----d4cfe3b7bec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d4cfe3b7bec--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----d4cfe3b7bec--------------------------------) [Jeff Fletcher](https://fletchjeff.medium.com/?source=post_page-----d4cfe3b7bec--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff9a90e9b6352&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-orchestration-vs-mlops-d4cfe3b7bec&user=Jeff+Fletcher&userId=f9a90e9b6352&source=post_page-f9a90e9b6352----d4cfe3b7bec---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----d4cfe3b7bec--------------------------------) · 5 分钟阅读 · 2023年6月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd4cfe3b7bec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-orchestration-vs-mlops-d4cfe3b7bec&user=Jeff+Fletcher&userId=f9a90e9b6352&source=-----d4cfe3b7bec---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff9a90e9b6352&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-orchestration-vs-mlops-d4cfe3b7bec&user=Jeff+Fletcher&userId=f9a90e9b6352&source=post_page-f9a90e9b6352----d4cfe3b7bec---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----d4cfe3b7bec--------------------------------) · 5 分钟阅读 · 2023 年 6 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd4cfe3b7bec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-orchestration-vs-mlops-d4cfe3b7bec&user=Jeff+Fletcher&userId=f9a90e9b6352&source=-----d4cfe3b7bec---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd4cfe3b7bec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-orchestration-vs-mlops-d4cfe3b7bec&source=-----d4cfe3b7bec---------------------bookmark_footer-----------)![](../Images/50208277d57962573099116c20acd825.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd4cfe3b7bec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-orchestration-vs-mlops-d4cfe3b7bec&source=-----d4cfe3b7bec---------------------bookmark_footer-----------)![](img/50208277d57962573099116c20acd825.png)
 
 图片由 [Mark Williams](https://unsplash.com/@markwilliamspics?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-我听到过我合作过的 ML 工程师说“机器学习操作（MLOps）的主要部分只是数据工程”。有一篇博客文章将实际百分比定为[98%](https://mlops.community/mlops-is-mostly-data-engineering/)。这显然是夸张的说法，但我认为这个观点是正确的。然而，MLOps 的含义仍在变化。虽然有很多组件和变动的部分可以被认为是 MLOps 的一部分，[Cristiano Breuel 的这个定义](/ml-ops-machine-learning-as-an-engineering-discipline-b86ca4874a3f)足够好，适合我在这篇文章中讨论的内容：
+我听到过我合作过的 ML 工程师说“机器学习操作（MLOps）的主要部分只是数据工程”。有一篇博客文章将实际百分比定为[98%](https://mlops.community/mlops-is-mostly-data-engineering/)。这显然是夸张的说法，但我认为这个观点是正确的。然而，MLOps 的含义仍在变化。虽然有很多组件和变动的部分可以被认为是 MLOps 的一部分，Cristiano Breuel 的这个定义足够好，适合我在这篇文章中讨论的内容：
 
 > ML Ops 是一组结合了机器学习、DevOps 和数据工程的实践，旨在可靠且高效地部署和维护生产中的 ML 系统。
 
-![](../Images/306fe372a11a2ca898c4ebdbf186ca6f.png)
+![](img/306fe372a11a2ca898c4ebdbf186ca6f.png)
 
 作者改编自[原始图像](https://en.wikipedia.org/wiki/MLOps#/media/File:ML_Ops_Venn_Diagram.svg)由 CM Beuel 提供
 
@@ -38,7 +38,7 @@
 
 > 协调器是任何 MLOps 堆栈中的关键组件，因为它负责运行你的机器学习管道。为此，协调器提供了一个环境，以便执行管道的各个步骤。它还确保只有在所有输入（即管道之前步骤的输出）都可用时，管道的步骤才会被执行。
 
-![](../Images/bf1998d620181093d5cce5a520f2f5bf.png)
+![](img/bf1998d620181093d5cce5a520f2f5bf.png)
 
 由作者改编自 [原始图像](https://en.wikipedia.org/wiki/MLOps#/media/File:ML_Ops_Venn_Diagram.svg) CM Beuel
 

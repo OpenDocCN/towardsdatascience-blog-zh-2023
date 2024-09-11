@@ -1,30 +1,30 @@
-# 测试mlscorecheck包的报告的机器学习性能一致性
+# 测试 mlscorecheck 包的报告的机器学习性能一致性
 
-> 原文：[https://towardsdatascience.com/testing-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610?source=collection_archive---------6-----------------------#2023-11-12](https://towardsdatascience.com/testing-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610?source=collection_archive---------6-----------------------#2023-11-12)
+> 原文：[`towardsdatascience.com/testing-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610?source=collection_archive---------6-----------------------#2023-11-12`](https://towardsdatascience.com/testing-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610?source=collection_archive---------6-----------------------#2023-11-12)
 
-![](../Images/fa56cf93c52f06cc70ff8f8ba26f6c98.png)
+![](img/fa56cf93c52f06cc70ff8f8ba26f6c98.png)
 
 AI (Dall-E) 生成的主题描述
 
 ## 为了实现可复现的机器学习科学迈出了一小步
 
-[](https://medium.com/@gyuriofkovacs?source=post_page-----e1baaba57610--------------------------------)[![Gyorgy Kovacs](../Images/aa5d1fcc59d738acc1056de3f0cbe7ca.png)](https://medium.com/@gyuriofkovacs?source=post_page-----e1baaba57610--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e1baaba57610--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e1baaba57610--------------------------------) [Gyorgy Kovacs](https://medium.com/@gyuriofkovacs?source=post_page-----e1baaba57610--------------------------------)
+[](https://medium.com/@gyuriofkovacs?source=post_page-----e1baaba57610--------------------------------)![Gyorgy Kovacs](https://medium.com/@gyuriofkovacs?source=post_page-----e1baaba57610--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e1baaba57610--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1baaba57610--------------------------------) [Gyorgy Kovacs](https://medium.com/@gyuriofkovacs?source=post_page-----e1baaba57610--------------------------------)
 
 ·
 
-[跟进](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4563dd81810c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610&user=Gyorgy+Kovacs&userId=4563dd81810c&source=post_page-4563dd81810c----e1baaba57610---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1baaba57610--------------------------------) ·11分钟阅读·2023年11月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe1baaba57610&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610&user=Gyorgy+Kovacs&userId=4563dd81810c&source=-----e1baaba57610---------------------clap_footer-----------)
+[跟进](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4563dd81810c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610&user=Gyorgy+Kovacs&userId=4563dd81810c&source=post_page-4563dd81810c----e1baaba57610---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1baaba57610--------------------------------) ·11 分钟阅读·2023 年 11 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe1baaba57610&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610&user=Gyorgy+Kovacs&userId=4563dd81810c&source=-----e1baaba57610---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe1baaba57610&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-the-consistency-of-reported-machine-learning-performance-scores-by-the-mlscorecheck-package-e1baaba57610&source=-----e1baaba57610---------------------bookmark_footer-----------)
 
-在本文中，我们探讨了如何使用Python包[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)来测试报告的机器学习性能分数与实验设置描述之间的一致性。
+在本文中，我们探讨了如何使用 Python 包[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)来测试报告的机器学习性能分数与实验设置描述之间的一致性。
 
-*免责声明：本文的作者是mlscorecheck包的作者。*
+*免责声明：本文的作者是 mlscorecheck 包的作者。*
 
 # **什么是性能分数的一致性测试？**
 
-假设你遇到一个二分类问题的准确率（0.9494）、敏感性（0.8523）和特异性（0.9765）分数，这个测试集由100个正样本和1000个负样本组成。你能相信这些分数吗？你如何检查这些分数是否真的可能是所宣称的实验结果？这就是`mlscorecheck`包可以通过提供一致性测试功能来帮助你的地方。在这个具体的例子中，可以利用
+假设你遇到一个二分类问题的准确率（0.9494）、敏感性（0.8523）和特异性（0.9765）分数，这个测试集由 100 个正样本和 1000 个负样本组成。你能相信这些分数吗？你如何检查这些分数是否真的可能是所宣称的实验结果？这就是`mlscorecheck`包可以通过提供一致性测试功能来帮助你的地方。在这个具体的例子中，可以利用
 
 ```py
 from mlscorecheck.check.binary import check_1_testset_no_kfold
@@ -38,7 +38,7 @@ result['inconsistency']
 #False
 ```
 
-如果结果的`'insconsistency'`标志为`False`，则表明这些分数可能是从实验中得出的。（这是真的，因为这些分数对应于81个真实的正样本和850个真实的负样本。）如果准确率分数0.8474是由于意外的打印错误而报告的呢？
+如果结果的`'insconsistency'`标志为`False`，则表明这些分数可能是从实验中得出的。（这是真的，因为这些分数对应于 81 个真实的正样本和 850 个真实的负样本。）如果准确率分数 0.8474 是由于意外的打印错误而报告的呢？
 
 ```py
 result = check_1_testset_no_kfold(
@@ -56,7 +56,7 @@ result['inconsistency']
 
 # 介绍
 
-在研究和应用中，监督学习方法通常通过在一些实验中计算的性能分数进行排名（[二分类](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)，[多分类](/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f)，[回归](https://scikit-learn.org/stable/modules/model_evaluation.html#regression-metrics)）。由于出版物中的打印错误，[不当使用的统计数据](https://doi.org/10.1055/s-0033-1359421)，[数据泄漏](https://www.cell.com/patterns/abstract/S2666-3899(23)00159-9)以及[伪装](https://doi.org/10.1371/journal.pone.0005738)，许多情况下报告的性能分数是不可靠的。除了对机器学习和人工智能中的[可重复性危机](https://en.wikipedia.org/wiki/Replication_crisis)做出贡献外，不切实际的高性能分数的影响通常还会被[出版偏倚](https://en.wikipedia.org/wiki/Publication_bias)进一步放大，最终[扭曲整个领域](https://doi.org/10.1016/j.artmed.2020.101987)的研究。
+在研究和应用中，监督学习方法通常通过在一些实验中计算的性能分数进行排名（[二分类](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)，多分类，[回归](https://scikit-learn.org/stable/modules/model_evaluation.html#regression-metrics)）。由于出版物中的打印错误，[不当使用的统计数据](https://doi.org/10.1055/s-0033-1359421)，[数据泄漏](https://www.cell.com/patterns/abstract/S2666-3899(23)00159-9)以及[伪装](https://doi.org/10.1371/journal.pone.0005738)，许多情况下报告的性能分数是不可靠的。除了对机器学习和人工智能中的[可重复性危机](https://en.wikipedia.org/wiki/Replication_crisis)做出贡献外，不切实际的高性能分数的影响通常还会被[出版偏倚](https://en.wikipedia.org/wiki/Publication_bias)进一步放大，最终[扭曲整个领域](https://doi.org/10.1016/j.artmed.2020.101987)的研究。
 
 [mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包的目标是提供数值技术**以测试一组报告的性能分数是否可能是假定实验设置的结果**。
 
@@ -64,11 +64,11 @@ result['inconsistency']
 
 一致性测试的理念是，在给定的实验设置中，性能分数不能独立地取任何值：
 
-+   例如，在一个二元分类测试集中有100个正样本时，[灵敏度](https://zh.wikipedia.org/wiki/灵敏度和特异度)分数只能取值为0.0, 0.01, 0.02, …, 1.0，但不能是0.8543。
++   例如，在一个二元分类测试集中有 100 个正样本时，[灵敏度](https://zh.wikipedia.org/wiki/灵敏度和特异度)分数只能取值为 0.0, 0.01, 0.02, …, 1.0，但不能是 0.8543。
 
-+   当报告多个性能分数时，它们需要彼此一致。例如，[准确率](https://zh.wikipedia.org/wiki/ROC曲线)是[灵敏度和特异度](https://zh.wikipedia.org/wiki/ROC曲线)的加权平均，因此，在一个由100个正样本和100个负样本组成的二元分类问题中，得分acc = 0.96，sens = 0.91，spec = 0.97是不可能的。
++   当报告多个性能分数时，它们需要彼此一致。例如，[准确率](https://zh.wikipedia.org/wiki/ROC 曲线)是[灵敏度和特异度](https://zh.wikipedia.org/wiki/ROC 曲线)的加权平均，因此，在一个由 100 个正样本和 100 个负样本组成的二元分类问题中，得分 acc = 0.96，sens = 0.91，spec = 0.97 是不可能的。
 
-在更复杂的实验设置中（涉及[k折交叉验证](https://zh.wikipedia.org/wiki/交叉验证_(统计学))等），跨多个折叠/数据集的分数聚合，等等，约束条件变得更加先进，但它们仍然存在。[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包实现了数值测试，以检查假设从实验中得出的分数是否满足相应的约束条件。
+在更复杂的实验设置中（涉及[k 折交叉验证](https://zh.wikipedia.org/wiki/交叉验证 _(统计学))等），跨多个折叠/数据集的分数聚合，等等，约束条件变得更加先进，但它们仍然存在。[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包实现了数值测试，以检查假设从实验中得出的分数是否满足相应的约束条件。
 
 **测试是数值化的，确定性地识别出不一致之处**。用统计假设检验作类比，零假设是没有不一致，一旦发现某种不一致，就提供了反对零假设的证据，但作为数值测试，这种证据是无可争议的。
 
@@ -84,7 +84,7 @@ result['inconsistency']
 
 +   **报告的性能分数的收集**；
 
-+   分数的**估计数值不确定性**（当分数被截断为*4*位小数时，可以假设实际值在报告值的0.0001范围内，这是分数的数值不确定性） — 这通常是测试的eps参数，只需检查分数即可推断。
++   分数的**估计数值不确定性**（当分数被截断为*4*位小数时，可以假设实际值在报告值的 0.0001 范围内，这是分数的数值不确定性） — 这通常是测试的 eps 参数，只需检查分数即可推断。
 
 +   **实验的细节**（涉及的数据集统计信息，交叉验证方案，聚合模式）。
 
@@ -110,7 +110,7 @@ result['inconsistency']
 
 **N 个测试集，均值得分汇总**
 
-在本例中，我们假设有 N 个测试集，不涉及 k 折交叉验证，但分数以均值得分的方式汇总，即为每个测试集确定原始真正例和真负例数字，然后从总（或平均）真正例和真负例数字计算性能分数。可用的分数被认为是[准确率](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)，[负预测值](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)和[F1分数](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)。
+在本例中，我们假设有 N 个测试集，不涉及 k 折交叉验证，但分数以均值得分的方式汇总，即为每个测试集确定原始真正例和真负例数字，然后从总（或平均）真正例和真负例数字计算性能分数。可用的分数被认为是[准确率](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)，[负预测值](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)和[F1 分数](https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers)。
 
 例如，在实践中，对存储在一个张量中的 N 个测试图像进行图像分割技术的评估通常会导致这种情况。
 
@@ -135,7 +135,7 @@ result['inconsistency']
 # False
 ```
 
-结果表明，分数可能是实验的结果。毫不奇怪，这些分数是通过对测试集的真正阳性和真正阴性计数进行抽样，并按指定的方式计算得出的。然而，如果其中一个分数略有变化，例如F1修改为0.3191，则配置变得不一致：
+结果表明，分数可能是实验的结果。毫不奇怪，这些分数是通过对测试集的真正阳性和真正阴性计数进行抽样，并按指定的方式计算得出的。然而，如果其中一个分数略有变化，例如 F1 修改为 0.3191，则配置变得不一致：
 
 ```py
 scores['f1'] = 0.3191
@@ -151,13 +151,13 @@ result['inconsistency']
 
 进一步分析的详细信息，例如，关于可行性的证据可以从测试函数返回的字典中提取。关于输出的结构，同样，请参阅[文档](https://mlscorecheck.readthedocs.io/en/latest/)。
 
-**1 数据集，k折交叉验证，分数均值聚合**
+**1 数据集，k 折交叉验证，分数均值聚合**
 
-在这个例子中，我们假设有一个数据集，对其中的二元分类器进行了分层重复k折交叉验证（2折，3次重复），并报告了各折产生的分数的均值。
+在这个例子中，我们假设有一个数据集，对其中的二元分类器进行了分层重复 k 折交叉验证（2 折，3 次重复），并报告了各折产生的分数的均值。
 
 这个实验设置可能是监督式机器学习中最常用的。
 
-我们强调了*知道*和*不知道**折叠配置*之间的区别。通常，MoS测试依赖于线性整数规划，并且需要折叠配置来制定线性整数规划。折叠配置可以通过列出折叠的统计数据来指定，或者可以引用导致确定性折叠统计的折叠策略，例如*分层*。后来，我们展示了即使在不知道折叠配置的情况下，也可以进行测试，不过在这种情况下，会测试所有可能的折叠配置，这可能会带来巨大的计算需求。
+我们强调了*知道*和*不知道**折叠配置*之间的区别。通常，MoS 测试依赖于线性整数规划，并且需要折叠配置来制定线性整数规划。折叠配置可以通过列出折叠的统计数据来指定，或者可以引用导致确定性折叠统计的折叠策略，例如*分层*。后来，我们展示了即使在不知道折叠配置的情况下，也可以进行测试，不过在这种情况下，会测试所有可能的折叠配置，这可能会带来巨大的计算需求。
 
 再次强调，第一步是选择要使用的适当测试。在这种情况下，正确的测试是`check_1_dataset_known_folds_mos`函数，其中`mos`表示聚合模式，`known_folds`表示由于分层而知道*折叠配置*。测试的执行如下：
 
@@ -236,7 +236,7 @@ estimate_n_evaluations(
 
 测试多类分类场景类似于二元情况，因此我们不会像在二元情况下那样进入太多细节。
 
-在该包支持的6个实验设置中，我们选择了一个常用的用于说明的设置：假设有一个多类数据集（4类），并且使用了4折重复分层k折交叉验证。我们还知道分数是以*宏平均*的方式聚合的，即，在每个折叠中，针对每个类别的性能以二元分类方式评估所有其他类别，然后在类别和折叠上进行平均。
+在该包支持的 6 个实验设置中，我们选择了一个常用的用于说明的设置：假设有一个多类数据集（4 类），并且使用了 4 折重复分层 k 折交叉验证。我们还知道分数是以*宏平均*的方式聚合的，即，在每个折叠中，针对每个类别的性能以二元分类方式评估所有其他类别，然后在类别和折叠上进行平均。
 
 再次，第一步是选择合适的测试函数，在这种情况下，选择了来自`mlscorecheck.check.multiclass`模块的`check_1_dataset_known_folds_mos_macro`。名称中的 `'mos’` 和 `'macro’` 表示实验中使用的聚合方式。
 
@@ -262,11 +262,11 @@ result['inconsistency']
 # False
 ```
 
-类似于前面的情况，通过手工制作的一组一致分数，测试检测到没有不一致性。然而，一个小的改变，例如，将准确度修改为0.656，就会使配置变得不可行。
+类似于前面的情况，通过手工制作的一组一致分数，测试检测到没有不一致性。然而，一个小的改变，例如，将准确度修改为 0.656，就会使配置变得不可行。
 
 ## **回归**
 
-[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包支持的最后一个监督学习任务是回归。测试回归问题是最困难的，因为对测试集的预测可以取任何值，因此实验可以产生任何分数值。回归测试唯一可以依赖的是当前支持的*平均绝对误差 (mae)*、*均方误差 (mse)* 和 *r平方* (r2) 之间的数学关系。
+[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包支持的最后一个监督学习任务是回归。测试回归问题是最困难的，因为对测试集的预测可以取任何值，因此实验可以产生任何分数值。回归测试唯一可以依赖的是当前支持的*平均绝对误差 (mae)*、*均方误差 (mse)* 和 *r 平方* (r2) 之间的数学关系。
 
 在以下示例中，我们假设*mae*和*r2*分数是针对测试集报告的，并且我们知道其主要统计数据（样本数量和方差）。然后，可以执行一致性测试，如下所示：
 
@@ -287,13 +287,13 @@ result['inconsistency']
 # False
 ```
 
-再次地，测试正确显示没有不一致（分数是通过实际评估准备的）。但是，如果*r2*分数稍微改变，例如，变为0.9997，配置将变得不可行。
+再次地，测试正确显示没有不一致（分数是通过实际评估准备的）。但是，如果*r2*分数稍微改变，例如，变为 0.9997，配置将变得不可行。
 
 # **测试包**
 
 为了使针对流行的、广泛研究的问题报告的分数的一致性测试更容易，[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包包括了多个被认为是某些问题标准的实验设置的规范。
 
-## **DRIVE数据集上的视网膜血管分割**
+## **DRIVE 数据集上的视网膜血管分割**
 
 在视网膜图像分析领域，存在一个[歧义](https://www.researchgate.net/publication/350236730_A_new_baseline_for_retinal_vessel_segmentation_Numerical_identification_and_correction_of_methodological_inconsistencies_affecting_100_papers)的问题：作者可以自由选择是否考虑视野圆形区域之外的像素，而这一选择在出版物中很少被指明。这种歧义可能导致基于不可比性能分数的算法排名。在[mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包中实现的功能适合识别作者是否使用了视野之外的像素进行评估。
 
@@ -346,7 +346,7 @@ result['inconsistency']
 
 如需更多信息，我们建议查看：
 
-+   [mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包的README，
++   [mlscorecheck](https://github.com/FalseNegativeLab/mlscorecheck)包的 README，
 
 +   套件中提供的[说明性笔记本](https://github.com/FalseNegativeLab/mlscorecheck/tree/main/notebooks/illustration)，
 

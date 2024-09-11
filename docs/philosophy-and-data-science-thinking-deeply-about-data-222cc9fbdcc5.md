@@ -1,18 +1,18 @@
 # 哲学与数据科学——深刻思考数据
 
-> 原文：[https://towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5?source=collection_archive---------3-----------------------#2023-11-28](https://towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5?source=collection_archive---------3-----------------------#2023-11-28)
+> 原文：[`towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5?source=collection_archive---------3-----------------------#2023-11-28`](https://towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5?source=collection_archive---------3-----------------------#2023-11-28)
 
 ## 第二部分：认识论
 
-[](https://medium.com/@jarom.hulet?source=post_page-----222cc9fbdcc5--------------------------------)[![Jarom Hulet](../Images/0fdeb1a2df90cccdd8f2f4b84d5e54eb.png)](https://medium.com/@jarom.hulet?source=post_page-----222cc9fbdcc5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----222cc9fbdcc5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----222cc9fbdcc5--------------------------------) [Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----222cc9fbdcc5--------------------------------)
+[](https://medium.com/@jarom.hulet?source=post_page-----222cc9fbdcc5--------------------------------)![Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----222cc9fbdcc5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----222cc9fbdcc5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----222cc9fbdcc5--------------------------------) [Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----222cc9fbdcc5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88982a88b4e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5&user=Jarom+Hulet&userId=88982a88b4e5&source=post_page-88982a88b4e5----222cc9fbdcc5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----222cc9fbdcc5--------------------------------) ·11分钟阅读·2023年11月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F222cc9fbdcc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5&user=Jarom+Hulet&userId=88982a88b4e5&source=-----222cc9fbdcc5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88982a88b4e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5&user=Jarom+Hulet&userId=88982a88b4e5&source=post_page-88982a88b4e5----222cc9fbdcc5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----222cc9fbdcc5--------------------------------) ·11 分钟阅读·2023 年 11 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F222cc9fbdcc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5&user=Jarom+Hulet&userId=88982a88b4e5&source=-----222cc9fbdcc5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F222cc9fbdcc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5&source=-----222cc9fbdcc5---------------------bookmark_footer-----------)![](../Images/2b6675f0a9b4258dcee3c847565f5896.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F222cc9fbdcc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-222cc9fbdcc5&source=-----222cc9fbdcc5---------------------bookmark_footer-----------)![](img/2b6675f0a9b4258dcee3c847565f5896.png)
 
 图片由 Alex Pere 提供，来源于 pexels.com
 

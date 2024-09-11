@@ -1,12 +1,12 @@
 # 使用 Tracemem 跟踪 Python 的会话内存
 
-> 原文：[https://towardsdatascience.com/tracking-pythons-session-memory-using-tracemem-30f00c3f347?source=collection_archive---------5-----------------------#2023-12-11](https://towardsdatascience.com/tracking-pythons-session-memory-using-tracemem-30f00c3f347?source=collection_archive---------5-----------------------#2023-12-11)
+> 原文：[`towardsdatascience.com/tracking-pythons-session-memory-using-tracemem-30f00c3f347?source=collection_archive---------5-----------------------#2023-12-11`](https://towardsdatascience.com/tracking-pythons-session-memory-using-tracemem-30f00c3f347?source=collection_archive---------5-----------------------#2023-12-11)
 
 ## PYTHON 编程
 
 ## Tracemem 是一个轻量级库，帮助您追踪 Python 会话的完整内存。
 
-[](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30f00c3f347--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30f00c3f347--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30f00c3f347--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----30f00c3f347--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30f00c3f347&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftracking-pythons-session-memory-using-tracemem-30f00c3f347&source=-----30f00c3f347---------------------bookmark_footer-----------)![](../Images/6648173ce353664cef3a6ada910ce9e0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30f00c3f347&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftracking-pythons-session-memory-using-tracemem-30f00c3f347&source=-----30f00c3f347---------------------bookmark_footer-----------)![](img/6648173ce353664cef3a6ada910ce9e0.png)
 
 Tracemem 是 Python 中的会话内存跟踪器。照片由[Ronan Furuta](https://unsplash.com/@ronan18?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)拍摄。
 

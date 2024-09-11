@@ -1,24 +1,24 @@
 # 总结最佳实践以进行提示工程
 
-> 原文：[https://towardsdatascience.com/summarising-best-practices-for-prompt-engineering-c5e86c483af4?source=collection_archive---------0-----------------------#2023-05-29](https://towardsdatascience.com/summarising-best-practices-for-prompt-engineering-c5e86c483af4?source=collection_archive---------0-----------------------#2023-05-29)
+> 原文：[`towardsdatascience.com/summarising-best-practices-for-prompt-engineering-c5e86c483af4?source=collection_archive---------0-----------------------#2023-05-29`](https://towardsdatascience.com/summarising-best-practices-for-prompt-engineering-c5e86c483af4?source=collection_archive---------0-----------------------#2023-05-29)
 
 ## 如何使用 OpenAI API 构建自己的基于 LLM 的应用
 
-[](https://medium.com/@andimid?source=post_page-----c5e86c483af4--------------------------------)[![Dmytro Nikolaiev (Dimid)](../Images/4121156b9c08ed20e7aa620712a391d9.png)](https://medium.com/@andimid?source=post_page-----c5e86c483af4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c5e86c483af4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c5e86c483af4--------------------------------) [Dmytro Nikolaiev (Dimid)](https://medium.com/@andimid?source=post_page-----c5e86c483af4--------------------------------)
+[](https://medium.com/@andimid?source=post_page-----c5e86c483af4--------------------------------)![Dmytro Nikolaiev (Dimid)](https://medium.com/@andimid?source=post_page-----c5e86c483af4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c5e86c483af4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c5e86c483af4--------------------------------) [Dmytro Nikolaiev (Dimid)](https://medium.com/@andimid?source=post_page-----c5e86c483af4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97b5279dad26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarising-best-practices-for-prompt-engineering-c5e86c483af4&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=post_page-97b5279dad26----c5e86c483af4---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c5e86c483af4--------------------------------) · 13分钟阅读 · 2023年5月29日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc5e86c483af4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarising-best-practices-for-prompt-engineering-c5e86c483af4&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=-----c5e86c483af4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97b5279dad26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarising-best-practices-for-prompt-engineering-c5e86c483af4&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=post_page-97b5279dad26----c5e86c483af4---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c5e86c483af4--------------------------------) · 13 分钟阅读 · 2023 年 5 月 29 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc5e86c483af4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarising-best-practices-for-prompt-engineering-c5e86c483af4&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=-----c5e86c483af4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc5e86c483af4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarising-best-practices-for-prompt-engineering-c5e86c483af4&source=-----c5e86c483af4---------------------bookmark_footer-----------)![](../Images/29f7df4f533997ab03fde5e13ffcb7b5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc5e86c483af4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarising-best-practices-for-prompt-engineering-c5e86c483af4&source=-----c5e86c483af4---------------------bookmark_footer-----------)![](img/29f7df4f533997ab03fde5e13ffcb7b5.png)
 
 图片由[Glenn Carstens-Peters](https://unsplash.com/@glenncarstenspeters?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，来源于[Unsplash](https://unsplash.com/photos/RLw-UC03Gwc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 
-提示工程指的是为大型语言模型（LLMs），如OpenAI的ChatGPT，创建称为*提示*的指令的过程。利用LLMs解决各种任务的巨大潜力，借助提示工程可以节省大量时间，并促进令人印象深刻的应用程序的开发。它是**释放这些大型模型全部能力**的关键，改变我们与这些模型的互动方式及其带来的好处。
+提示工程指的是为大型语言模型（LLMs），如 OpenAI 的 ChatGPT，创建称为*提示*的指令的过程。利用 LLMs 解决各种任务的巨大潜力，借助提示工程可以节省大量时间，并促进令人印象深刻的应用程序的开发。它是**释放这些大型模型全部能力**的关键，改变我们与这些模型的互动方式及其带来的好处。
 
-在这篇文章中，我尝试总结提示工程的最佳实践，以帮助你更快地构建基于LLM的应用程序。虽然这个领域发展迅速，但以下这些“经过时间考验”的:) 技术往往效果很好，并能让你取得出色的成果。特别是，我们将涵盖：
+在这篇文章中，我尝试总结提示工程的最佳实践，以帮助你更快地构建基于 LLM 的应用程序。虽然这个领域发展迅速，但以下这些“经过时间考验”的:) 技术往往效果很好，并能让你取得出色的成果。特别是，我们将涵盖：
 
 +   **迭代提示开发**的概念，使用分隔符和结构化输出；
 
@@ -28,37 +28,37 @@
 
 结合直观的解释，我将分享实际的示例和未来调查的资源。
 
-然后我们将探索如何使用[OpenAI API](https://platform.openai.com/docs/introduction)免费构建一个简单的基于LLM的本地应用程序。我们将使用Python来描述逻辑，使用[Streamlit库](https://streamlit.io/)来构建网页界面。
+然后我们将探索如何使用[OpenAI API](https://platform.openai.com/docs/introduction)免费构建一个简单的基于 LLM 的本地应用程序。我们将使用 Python 来描述逻辑，使用[Streamlit 库](https://streamlit.io/)来构建网页界面。
 
 让我们开始吧！
 
 # 提示工程的最佳实践
 
-在这篇文章中，我将通过网页界面和API与ChatGPT互动。我将使用的`gpt-3.5-turbo`模型是ChatGPT背后的模型，因此你可以直接在浏览器中实验你的提示。
+在这篇文章中，我将通过网页界面和 API 与 ChatGPT 互动。我将使用的`gpt-3.5-turbo`模型是 ChatGPT 背后的模型，因此你可以直接在浏览器中实验你的提示。
 
-> 这里一个重要的点是，ChatGPT不仅仅是大型语言模型（LLM）；如你所知，它还是一个SFT（监督微调）模型，经过了[来自人类反馈的强化学习（RLHF）](https://huyenchip.com/2023/05/02/rlhf.html)的进一步微调。虽然许多开发者目前利用OpenAI的模型进行实验项目和个人探索，但由于隐私和其他原因，其他模型可能更适合在大型企业的生产环境中部署。
+> 这里一个重要的点是，ChatGPT 不仅仅是大型语言模型（LLM）；如你所知，它还是一个 SFT（监督微调）模型，经过了[来自人类反馈的强化学习（RLHF）](https://huyenchip.com/2023/05/02/rlhf.html)的进一步微调。虽然许多开发者目前利用 OpenAI 的模型进行实验项目和个人探索，但由于隐私和其他原因，其他模型可能更适合在大型企业的生产环境中部署。
 > 
-> 如果你想知道为什么基础模型（如[GPT-3](https://en.wikipedia.org/wiki/GPT-3)，[Chinchilla](https://arxiv.org/abs/2203.15556)，[LLaMA](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)）的功能与微调和RLHF训练的助手（如[ChatGPT](https://openai.com/blog/chatgpt)，[Koala](https://bair.berkeley.edu/blog/2023/04/03/koala/)，[Alpaca](https://crfm.stanford.edu/2023/03/13/alpaca.html)）不同，可以参考[Andrej Karpathy关于训练和使用类似GPT模型的讲座](https://build.microsoft.com/en-US/sessions/db3f4859-cd30-4445-a0cd-553c3304f8e2)。我强烈推荐查看这个讲座以获得更深入的理解，时间只有40分钟。总结可以参考[这个Twitter线程](https://threadreaderapp.com/thread/1661236778458832896.html)。
+> 如果你想知道为什么基础模型（如[GPT-3](https://en.wikipedia.org/wiki/GPT-3)，[Chinchilla](https://arxiv.org/abs/2203.15556)，[LLaMA](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)）的功能与微调和 RLHF 训练的助手（如[ChatGPT](https://openai.com/blog/chatgpt)，[Koala](https://bair.berkeley.edu/blog/2023/04/03/koala/)，[Alpaca](https://crfm.stanford.edu/2023/03/13/alpaca.html)）不同，可以参考[Andrej Karpathy 关于训练和使用类似 GPT 模型的讲座](https://build.microsoft.com/en-US/sessions/db3f4859-cd30-4445-a0cd-553c3304f8e2)。我强烈推荐查看这个讲座以获得更深入的理解，时间只有 40 分钟。总结可以参考[这个 Twitter 线程](https://threadreaderapp.com/thread/1661236778458832896.html)。
 
-现在让我们深入探讨针对指令调优LLMs的最佳实践！
+现在让我们深入探讨针对指令调优 LLMs 的最佳实践！
 
 ## 迭代提示开发
 
 就像任何机器学习模型都是通过*迭代过程*构建的，有效的提示也是通过类似的迭代方法构建的。即使是最有才华的开发者也可能在第一次尝试时没有创建完美的提示，因此要准备好接受现实，可能需要*多次*尝试才能实现预期目标。
 
-![](../Images/4083d7c372cb4ac15b64bd8af2107112.png)
+![](img/4083d7c372cb4ac15b64bd8af2107112.png)
 
 基于数据的应用程序构建始终是一个迭代过程。[公共领域](https://commons.wikimedia.org/wiki/File:CRISP-DM_Process_Diagram.png)
 
 通过示例理解事物总是更好。让我们开始构建一个**从职位描述中提取信息的系统**。我们将在示例中使用的职位描述是来自 LinkedIn 的机器学习工程师招聘广告。
 
-![](../Images/2d4285bb3456098a7f92e0604ba754c5.png)
+![](img/2d4285bb3456098a7f92e0604ba754c5.png)
 
 示例职位描述。来自[LinkedIn 职位页面](https://www.linkedin.com/jobs/)的截图
 
 初始提示可以简单地请求模型提取特定信息。此外，我会使用分隔符（你可以在稍后提到的[ChatGPT 提示工程师课程](https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/)中了解更多）。虽然本地应用程序不太可能受到[提示注入攻击](https://learnprompting.org/docs/prompt_hacking/injection)的影响，但这仍然是一个好习惯。
 
-![](../Images/3f70008e054894ce2493fe290b9c3ad0.png)
+![](img/3f70008e054894ce2493fe290b9c3ad0.png)
 
 提示 v1 的输出。由作者使用[ChatGPT](https://chat.openai.com/chat)创建的图像
 
@@ -66,13 +66,13 @@
 
 > 记住，这只是一个示例，你可以设计你的提示来提取你想要的任何信息：学位、所需经验年限、地点等等。
 
-![](../Images/f9638fb4a5327f81e5a5cf32ff957ffb.png)
+![](img/f9638fb4a5327f81e5a5cf32ff957ffb.png)
 
 提示 v2 的输出。由作者使用[ChatGPT](https://chat.openai.com/chat)创建的图像
 
 看起来更好！为了使输出更简洁明了，让我们要求模型将技能输出为列表，并提供更简短的职位描述总结。
 
-![](../Images/c77323df87ea345febfaa32f5f4bf160.png)
+![](img/c77323df87ea345febfaa32f5f4bf160.png)
 
 提示 v3 的输出。由作者使用[ChatGPT](https://chat.openai.com/chat)创建的图像
 
@@ -84,7 +84,7 @@
 
 一种常见的做法是使用 JSON 或 XML 等格式，并定义特定的键来组织输出数据。让我们修改提示以展示模型预期的 JSON 结构。
 
-![](../Images/7ec32d518783fe76a5e156fe8e630909.png)
+![](img/7ec32d518783fe76a5e156fe8e630909.png)
 
 对于提示 v4 的输出，要求 JSON 输出。由 [ChatGPT](https://chat.openai.com/chat) 创作的作者提供的图像
 
@@ -94,13 +94,13 @@
 
 其中一个可能的应用是生成特定格式的大量内容（例如，使用 [guidance](https://github.com/microsoft/guidance) 的游戏角色信息）。
 
-![](../Images/947eb4216ade29b99b26d82cb16f0ca2.png)
+![](img/947eb4216ade29b99b26d82cb16f0ca2.png)
 
 生成 JSON 格式的游戏角色信息。来自 [guidance GitHub 仓库](https://github.com/microsoft/guidance) 的 gif
 
 像 [LMQL](https://lmql.ai/) 这样的语言为提示语言模型引入了类似编程的方法。随着这些工具的不断发展和改进，它们有可能彻底改变我们与 LLM 的互动方式，从而提供更准确和结构化的响应。
 
-![](../Images/5fe7d232aafae7011bd6de1799076779.png)
+![](img/5fe7d232aafae7011bd6de1799076779.png)
 
 LMQL 查询示例。请参阅 [LMQL 网页，更多示例请见此处](https://lmql.ai/) 的截图
 
@@ -110,7 +110,7 @@ Chain-of-Thought (CoT) 推理被发现对于需要……好吧，推理的任务
 
 看看原始论文中的示例。通过将问题拆分成更小的步骤并提供明确的指示，我们可以帮助模型生成正确的输出。
 
-![](../Images/8ed7855cdb779bf6d4e88425bf2cbcfe.png)
+![](img/8ed7855cdb779bf6d4e88425bf2cbcfe.png)
 
 介绍 CoT 提示。来自 [Chain-of-Thought Prompting Elicits Reasoning in LLMs 论文](https://arxiv.org/pdf/2201.11903.pdf) 的图 1
 
@@ -118,33 +118,33 @@ Chain-of-Thought (CoT) 推理被发现对于需要……好吧，推理的任务
 
 目前最佳的零-shot CoT 提示是“**让我们一步一步地解决这个问题，以确保我们得到正确的答案**”。
 
-![](../Images/d9ad914d665075aee6752b6276e50124.png)
+![](img/d9ad914d665075aee6752b6276e50124.png)
 
-最佳零样本提示。来自[LLMs 是人类水平的提示工程师论文](https://arxiv.org/pdf/2211.01910.pdf)的表7
+最佳零样本提示。来自[LLMs 是人类水平的提示工程师论文](https://arxiv.org/pdf/2211.01910.pdf)的表 7
 
 更复杂的解决方案正在积极开发中。虽然它们在某些场景中显著超越其他方法，但其实际应用仍然有限。我将提到两种这样的技术：*自一致性*和*思维树*。
 
 [自一致性论文](https://arxiv.org/pdf/2203.11171.pdf)的作者提出了以下方法。他们建议不要仅仅依赖于初始模型输出，而是通过多次采样并通过多数投票来聚合结果。通过依赖直觉和[集成方法](https://en.wikipedia.org/wiki/Ensemble_learning)在经典机器学习中的成功，这种技术增强了模型的鲁棒性。
 
-![](../Images/c7c6be883fb384c6a33edc479af020de.png)
+![](img/c7c6be883fb384c6a33edc479af020de.png)
 
-自一致性。来自[自一致性改进语言模型中的链式推理论文](https://arxiv.org/pdf/2203.11171.pdf)的图1
+自一致性。来自[自一致性改进语言模型中的链式推理论文](https://arxiv.org/pdf/2203.11171.pdf)的图 1
 
 你也可以在不实施聚合步骤的情况下应用自一致性。对于短输出的任务，要求模型**建议几个选项**并选择最佳选项。
 
 思维树（ToT）将这一概念进一步扩展。它提出了为模型的“推理思维”应用树搜索算法的想法，当模型遇到不良假设时，实际上是回溯。
 
-![](../Images/a0fb05671b6dee06c9e97bfb2c687e18.png)
+![](img/a0fb05671b6dee06c9e97bfb2c687e18.png)
 
-思维树。来自[思维树：使用LLMs进行深思熟虑问题解决论文](https://arxiv.org/pdf/2305.10601.pdf)的图1
+思维树。来自[思维树：使用 LLMs 进行深思熟虑问题解决论文](https://arxiv.org/pdf/2305.10601.pdf)的图 1
 
-> 如果你感兴趣，可以查看[Yannic Kilcher的ToT论文评论视频](https://www.youtube.com/watch?v=ut5kp56wW_4)。
+> 如果你感兴趣，可以查看[Yannic Kilcher 的 ToT 论文评论视频](https://www.youtube.com/watch?v=ut5kp56wW_4)。
 
 对于我们的具体场景，利用链式思维推理并非必要，但我们可以将模型的总结任务分为两个阶段。最初，它可以概括整个职位描述，然后再对得出的总结进行集中于职位职责的总结。
 
-![](../Images/8c95872561a59e8ab6fde59c6ae006c2.png)
+![](img/8c95872561a59e8ab6fde59c6ae006c2.png)
 
-带有逐步指令的提示v5的输出。由[ChatGPT](https://chat.openai.com/chat)创建的作者图像
+带有逐步指令的提示 v5 的输出。由[ChatGPT](https://chat.openai.com/chat)创建的作者图像
 
 在这个特定的例子中，结果没有显示出显著的变化，但这种方法对大多数任务非常有效。
 
@@ -158,7 +158,7 @@ Chain-of-Thought (CoT) 推理被发现对于需要……好吧，推理的任务
 
 这个提示可能会让人感到有些压倒，但不要害怕：它只是一个以前的提示（v5）和一个标记的示例，采用 `For example: 'input description' -> 'output JSON'` 格式。
 
-![](../Images/2be54202a408a5d5282c61effc8f4fe8.png)
+![](img/2be54202a408a5d5282c61effc8f4fe8.png)
 
 包含一个示例的提示 v6 输出。图像由作者使用[ChatGPT](https://chat.openai.com/chat)创建
 
@@ -212,7 +212,7 @@ Chain-of-Thought (CoT) 推理被发现对于需要……好吧，推理的任务
 
 为了说明这一点，我们来看看不同语言中 [全句](https://clagnut.com/blog/2380) 的分词情况。在这个玩具示例中，英语需要 9 个标记，法语 — 12，保加利亚语 — 59，日语 — 72，俄语 — 73。
 
-![](../Images/ff25f16bfa9d4e539d0b727755bced5c.png)
+![](img/ff25f16bfa9d4e539d0b727755bced5c.png)
 
 不同语言的分词。截图来自 [OpenAI 分词器游乐场](https://platform.openai.com/tokenizer)
 
@@ -222,13 +222,13 @@ Chain-of-Thought (CoT) 推理被发现对于需要……好吧，推理的任务
 
 我们最新的提示（v6）大约由 1.5k 个标记组成。
 
-![](../Images/0d86ff60b17ea35cb57608a7b0e76e0a.png)
+![](img/0d86ff60b17ea35cb57608a7b0e76e0a.png)
 
 提示的分词 v6。截图来自 [OpenAI 分词器游乐场](https://platform.openai.com/tokenizer)
 
 考虑到输出长度通常与输入长度相同，我们可以估计每次请求的平均标记数约为 3k 个（*输入标记 + 输出标记*）。通过将这个数字乘以初始费用，我们发现**每次请求约为 0.006 美元或 0.6 美分**，这相当实惠。
 
-即使我们考虑到每次请求稍高的费用为1美分（相当于大约5k个标记），你仍然可以以**仅需1美元进行100次请求**。此外，OpenAI 提供了[设置软限制和硬限制](https://openai.com/pricing#:~:text=How%20can%20I%20manage%20my%20spending%3F)的灵活性。软限制会在你接近定义的限制时发出通知，而硬限制则会限制你超出指定阈值。
+即使我们考虑到每次请求稍高的费用为 1 美分（相当于大约 5k 个标记），你仍然可以以**仅需 1 美元进行 100 次请求**。此外，OpenAI 提供了[设置软限制和硬限制](https://openai.com/pricing#:~:text=How%20can%20I%20manage%20my%20spending%3F)的灵活性。软限制会在你接近定义的限制时发出通知，而硬限制则会限制你超出指定阈值。
 
 > 对于本地使用的 LLM 应用程序，你可以舒适地配置每月 1 美元的硬限制，确保在预算范围内享受模型的好处。
 
@@ -246,7 +246,7 @@ Streamlit 是一个 Python 库，它允许你创建简单的网页界面，无�
 
 整个应用程序的代码大致如下，可以在[这个 GitHub 仓库](https://github.com/Winston-503/streamlit_app_template)中找到。由于共享 OpenAI 密钥不是一个好主意，我添加了一个名为`toy_ask_chatgpt()`的占位符函数。目前，这个应用程序只是将提示复制到输出中。
 
-如果不定义函数和占位符，这只有大约50行代码！
+如果不定义函数和占位符，这只有大约 50 行代码！
 
 幸好[Streamlit 最近的更新现在允许嵌入它](https://docs.streamlit.io/streamlit-community-cloud/get-started/embed-your-app)到这篇文章中！所以你应该能够在下方看到它。
 
@@ -254,7 +254,7 @@ Streamlit 是一个 Python 库，它允许你创建简单的网页界面，无�
 
 # 结论
 
-在这篇博客文章中，我列出了几种提示工程的最佳实践。我们讨论了迭代提示开发、使用分隔符、请求结构化输出、思维链推理以及少量示例学习。我还提供了一个模板，用于在不到100行代码的情况下使用 Streamlit 构建一个简单的网页应用程序。现在，轮到你来提出一个令人兴奋的项目创意并将其变为现实了！
+在这篇博客文章中，我列出了几种提示工程的最佳实践。我们讨论了迭代提示开发、使用分隔符、请求结构化输出、思维链推理以及少量示例学习。我还提供了一个模板，用于在不到 100 行代码的情况下使用 Streamlit 构建一个简单的网页应用程序。现在，轮到你来提出一个令人兴奋的项目创意并将其变为现实了！
 
 现代工具允许我们在仅仅几小时内创建复杂的应用程序，这真是令人惊叹。即使没有丰富的编程知识、Python 熟练度或对机器学习的深刻理解，你也可以快速构建一些有用的东西并自动化一些任务。
 
@@ -264,9 +264,9 @@ Streamlit 是一个 Python 库，它允许你创建简单的网页界面，无�
 
 这里是我关于 LLM 的其他文章，希望对你有所帮助。我已经涵盖了：
 
-+   [估算大语言模型的规模](/behind-the-millions-estimating-the-scale-of-large-language-models-97bd7287fb6b)：LLM 是什么，如何训练，它们需要多少数据和计算资源；
++   估算大语言模型的规模：LLM 是什么，如何训练，它们需要多少数据和计算资源；
 
-+   [使用 ChatGPT 进行调试](/using-chatgpt-for-efficient-debugging-fc9e065b7856#da94-27cac6b3f550)：如何使用 LLM 进行调试和代码生成。
++   使用 ChatGPT 进行调试：如何使用 LLM 进行调试和代码生成。
 
 你可能还会对以下内容感兴趣：
 
@@ -280,4 +280,4 @@ Streamlit 是一个 Python 库，它允许你创建简单的网页界面，无�
 
 +   如果你有任何问题或评论，我会很高兴收到任何反馈。可以在评论中问我，或通过[LinkedIn](https://www.linkedin.com/in/andimid/)或[Twitter](https://twitter.com/dimid_ml)联系我。
 
-+   支持我作为作者并访问其他成千上万篇Medium文章，请通过[我的推荐链接](https://medium.com/@andimid/membership)获取Medium会员（对你没有额外费用）。
++   支持我作为作者并访问其他成千上万篇 Medium 文章，请通过[我的推荐链接](https://medium.com/@andimid/membership)获取 Medium 会员（对你没有额外费用）。

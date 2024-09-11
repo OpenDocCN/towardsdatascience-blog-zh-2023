@@ -1,12 +1,12 @@
 # 机器学习风险管理的组织流程
 
-> 原文：[https://towardsdatascience.com/organizational-processes-for-machine-learning-risk-management-14f4444dd07f?source=collection_archive---------5-----------------------#2023-09-23](https://towardsdatascience.com/organizational-processes-for-machine-learning-risk-management-14f4444dd07f?source=collection_archive---------5-----------------------#2023-09-23)
+> 原文：[`towardsdatascience.com/organizational-processes-for-machine-learning-risk-management-14f4444dd07f?source=collection_archive---------5-----------------------#2023-09-23`](https://towardsdatascience.com/organizational-processes-for-machine-learning-risk-management-14f4444dd07f?source=collection_archive---------5-----------------------#2023-09-23)
 
 ## 负责任的人工智能
 
 ## *组织流程是机器学习系统可靠性的关键非技术决定因素。*
 
-[](https://pandeyparul.medium.com/?source=post_page-----14f4444dd07f--------------------------------)[![Parul Pandey](../Images/760b72a4feacfad6fc4224835c2e1f19.png)](https://pandeyparul.medium.com/?source=post_page-----14f4444dd07f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----14f4444dd07f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----14f4444dd07f--------------------------------) [Parul Pandey](https://pandeyparul.medium.com/?source=post_page-----14f4444dd07f--------------------------------)
+[](https://pandeyparul.medium.com/?source=post_page-----14f4444dd07f--------------------------------)![Parul Pandey](https://pandeyparul.medium.com/?source=post_page-----14f4444dd07f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----14f4444dd07f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----14f4444dd07f--------------------------------) [Parul Pandey](https://pandeyparul.medium.com/?source=post_page-----14f4444dd07f--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F14f4444dd07f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Forganizational-processes-for-machine-learning-risk-management-14f4444dd07f&source=-----14f4444dd07f---------------------bookmark_footer-----------)![](../Images/6f17ca9325b10e97b1e4f7c65396c676.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F14f4444dd07f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Forganizational-processes-for-machine-learning-risk-management-14f4444dd07f&source=-----14f4444dd07f---------------------bookmark_footer-----------)![](img/6f17ca9325b10e97b1e4f7c65396c676.png)
 
 作者提供的图片
 

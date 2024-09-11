@@ -1,18 +1,18 @@
 # 远离电子表格的透视表
 
-> 原文：[https://towardsdatascience.com/pivot-away-from-spreadsheets-e2c1639f4e2b?source=collection_archive---------11-----------------------#2023-04-13](https://towardsdatascience.com/pivot-away-from-spreadsheets-e2c1639f4e2b?source=collection_archive---------11-----------------------#2023-04-13)
+> 原文：[`towardsdatascience.com/pivot-away-from-spreadsheets-e2c1639f4e2b?source=collection_archive---------11-----------------------#2023-04-13`](https://towardsdatascience.com/pivot-away-from-spreadsheets-e2c1639f4e2b?source=collection_archive---------11-----------------------#2023-04-13)
 
 ## Excel 不是唯一的数据透视表工具
 
-[](https://bradley-stephen-shaw.medium.com/?source=post_page-----e2c1639f4e2b--------------------------------)[![Bradley Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----e2c1639f4e2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2c1639f4e2b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e2c1639f4e2b--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----e2c1639f4e2b--------------------------------)
+[](https://bradley-stephen-shaw.medium.com/?source=post_page-----e2c1639f4e2b--------------------------------)![Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----e2c1639f4e2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2c1639f4e2b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2c1639f4e2b--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----e2c1639f4e2b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc5cd0a58b5ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpivot-away-from-spreadsheets-e2c1639f4e2b&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=post_page-c5cd0a58b5ae----e2c1639f4e2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2c1639f4e2b--------------------------------) · 8 分钟阅读 · 2023年4月13日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2c1639f4e2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpivot-away-from-spreadsheets-e2c1639f4e2b&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=-----e2c1639f4e2b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc5cd0a58b5ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpivot-away-from-spreadsheets-e2c1639f4e2b&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=post_page-c5cd0a58b5ae----e2c1639f4e2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2c1639f4e2b--------------------------------) · 8 分钟阅读 · 2023 年 4 月 13 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2c1639f4e2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpivot-away-from-spreadsheets-e2c1639f4e2b&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=-----e2c1639f4e2b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2c1639f4e2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpivot-away-from-spreadsheets-e2c1639f4e2b&source=-----e2c1639f4e2b---------------------bookmark_footer-----------)![](../Images/25b9c5f30107ac892acc25c53fe0b677.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2c1639f4e2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpivot-away-from-spreadsheets-e2c1639f4e2b&source=-----e2c1639f4e2b---------------------bookmark_footer-----------)![](img/25b9c5f30107ac892acc25c53fe0b677.png)
 
 由 [DDP](https://unsplash.com/fr/@moino007?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 拍摄的照片
 

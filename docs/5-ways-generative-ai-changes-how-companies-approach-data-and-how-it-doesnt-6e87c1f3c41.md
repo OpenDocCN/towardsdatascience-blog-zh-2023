@@ -1,22 +1,22 @@
-# 生成型AI改变了公司处理数据的方式（以及没有改变的方式）
+# 生成型 AI 改变了公司处理数据的方式（以及没有改变的方式）
 
-> 原文：[https://towardsdatascience.com/5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41?source=collection_archive---------8-----------------------#2023-08-10](https://towardsdatascience.com/5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41?source=collection_archive---------8-----------------------#2023-08-10)
+> 原文：[`towardsdatascience.com/5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41?source=collection_archive---------8-----------------------#2023-08-10`](https://towardsdatascience.com/5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41?source=collection_archive---------8-----------------------#2023-08-10)
 
-## *来自风险投资、Snowflake等领域的专家讨论了生成型AI如何惠及数据团队以及他们必须解决的挑战。*
+## *来自风险投资、Snowflake 等领域的专家讨论了生成型 AI 如何惠及数据团队以及他们必须解决的挑战。*
 
-[](https://medium.com/@michaelrsegner?source=post_page-----6e87c1f3c41--------------------------------)[![Michael Segner](../Images/b302642a7c8929ac155a0b51f9997e46.png)](https://medium.com/@michaelrsegner?source=post_page-----6e87c1f3c41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6e87c1f3c41--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6e87c1f3c41--------------------------------) [Michael Segner](https://medium.com/@michaelrsegner?source=post_page-----6e87c1f3c41--------------------------------)
+[](https://medium.com/@michaelrsegner?source=post_page-----6e87c1f3c41--------------------------------)![Michael Segner](https://medium.com/@michaelrsegner?source=post_page-----6e87c1f3c41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6e87c1f3c41--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6e87c1f3c41--------------------------------) [Michael Segner](https://medium.com/@michaelrsegner?source=post_page-----6e87c1f3c41--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe1baca128a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41&user=Michael+Segner&userId=e1baca128a3c&source=post_page-e1baca128a3c----6e87c1f3c41---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6e87c1f3c41--------------------------------) ·10分钟阅读·2023年8月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6e87c1f3c41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41&user=Michael+Segner&userId=e1baca128a3c&source=-----6e87c1f3c41---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe1baca128a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41&user=Michael+Segner&userId=e1baca128a3c&source=post_page-e1baca128a3c----6e87c1f3c41---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6e87c1f3c41--------------------------------) ·10 分钟阅读·2023 年 8 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6e87c1f3c41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41&user=Michael+Segner&userId=e1baca128a3c&source=-----6e87c1f3c41---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6e87c1f3c41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41&source=-----6e87c1f3c41---------------------bookmark_footer-----------)![](../Images/95b205d46370df96e0037d2061828790.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6e87c1f3c41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-ways-generative-ai-changes-how-companies-approach-data-and-how-it-doesnt-6e87c1f3c41&source=-----6e87c1f3c41---------------------bookmark_footer-----------)![](img/95b205d46370df96e0037d2061828790.png)
 
 图片由作者提供。生成工具为 [DiffusionBee](https://diffusionbee.com)。
 
-生成型AI并不是一个新概念。它已经研究了数十年，并在有限的范围内应用。直到2022年底，ChatGPT震撼了我们的集体意识。
+生成型 AI 并不是一个新概念。它已经研究了数十年，并在有限的范围内应用。直到 2022 年底，ChatGPT 震撼了我们的集体意识。
 
 生成意大利面条食谱与在企业中融入生成式人工智能能力或将大型语言模型（LLMs）集成到数据工程工作流程中是完全不同的过程。
 
@@ -36,27 +36,27 @@
 
 ## **5 个生成式人工智能的好处**
 
-+   #1- [增加数据可访问性](#3675)
++   #1- 增加数据可访问性
 
-+   #2- [从数据和图表分析中提取洞察](#c87a)
++   #2- 从数据和图表分析中提取洞察
 
-+   #3- [将非结构化数据投入使用](#7216)
++   #3- 将非结构化数据投入使用
 
-+   #4- [加速数据管道开发](#fe84)
++   #4- 加速数据管道开发
 
-+   #5- [降低成本（也许还有收入生成）](#5400)
++   #5- 降低成本（也许还有收入生成）
 
 ## **5 个生成式人工智能的挑战**
 
-+   #1- [幻觉、可靠性和信任](#5e04)
++   #1- 幻觉、可靠性和信任
 
-+   #2- [解决自身问题](#785a)
++   #2- 解决自身问题
 
-+   #3- [安全性和隐私](#53d0)
++   #3- 安全性和隐私
 
-+   #4- [我们在基础设施和解决方案方面还处于早期阶段](#6f89)
++   #4- 我们在基础设施和解决方案方面还处于早期阶段
 
-+   #5- [技能集变化](#8ab2)
++   #5- 技能集变化
 
 # 5 个生成式人工智能的好处
 
@@ -72,35 +72,35 @@
 
 利奥尔说：“我认为人工智能为那些不熟悉数据的人打开了获取有意义数据和洞察的可能性。而且即使是那些知道 SQL 的人，它也将加速这一过程。所以我们将把数据交到更多人的手中。”
 
-[数据平台](https://www.montecarlodata.com/blog-what-is-a-data-platform-and-how-to-build-one/)如Snowflake正在投资于生成式人工智能如何不仅生成SQL，还重新构想用户-数据体验。Kristen谈到了数据云中一个较为实验性的功能，该功能目前正在开发中，旨在将LLMs、SQL查询和数据可视化连接起来。
+[数据平台](https://www.montecarlodata.com/blog-what-is-a-data-platform-and-how-to-build-one/)如 Snowflake 正在投资于生成式人工智能如何不仅生成 SQL，还重新构想用户-数据体验。Kristen 谈到了数据云中一个较为实验性的功能，该功能目前正在开发中，旨在将 LLMs、SQL 查询和数据可视化连接起来。
 
 “价值链可能需要很长时间才能生成正确的数据，然后获得令人满意的最终用户体验。这是推送通知吗？是仪表板吗？是商业智能报告吗？”她说。“我对人工智能能够简化这些步骤，并让最终用户能够更快地垂直进入堆栈并获得[更好的]最终体验感到非常兴奋……虽然现在还不是，但我认为它会到来。”
 
 # #2- 从数据和图表分析中提取洞察
 
-![](../Images/53ccd59f2f6a66c3d28f53019679b312.png)
+![](img/53ccd59f2f6a66c3d28f53019679b312.png)
 
 图表和分析可能很快由生成式人工智能完成。照片由[Chris Liverani](https://unsplash.com/@chrisliverani?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，来源于[Unsplash](https://unsplash.com/photos/dBI_My696Rk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-生成式人工智能不仅可以在查询和可视化数据的基础上产生影响，还可以迈出下一步，从中提取洞察。实际上，这个过程已经被Tomasz使用了。
+生成式人工智能不仅可以在查询和可视化数据的基础上产生影响，还可以迈出下一步，从中提取洞察。实际上，这个过程已经被 Tomasz 使用了。
 
-“ChartGPT是一个专注于图表数据的专门产品。如果有人玩过[[ChatGPT] 代码解释器](https://chat.openai.com/?model=gpt-4-code-interpreter)，那真的很疯狂，”他说。“你可以将一家上市公司的Excel电子表格上传到代码解释器中，要求它总结‘Google财报后的状态’，它将产生一些相当重要的洞察。”
+“ChartGPT 是一个专注于图表数据的专门产品。如果有人玩过[[ChatGPT] 代码解释器](https://chat.openai.com/?model=gpt-4-code-interpreter)，那真的很疯狂，”他说。“你可以将一家上市公司的 Excel 电子表格上传到代码解释器中，要求它总结‘Google 财报后的状态’，它将产生一些相当重要的洞察。”
 
 # #3- 发挥非结构化数据的作用
 
 我们所有的专家小组成员对生成式人工智能能够使数据团队和组织从非关系型来源中提取价值的潜力感到兴奋。
 
-“世界上有很多非结构化数据。文本和图像需要专门的技能和工具来分析，这[受限于资源]，”Lior说。“你可以想象生成式人工智能从这些文本和图像数据集中提取结构，并像我们对待关系型数据一样加以利用。”
+“世界上有很多非结构化数据。文本和图像需要专门的技能和工具来分析，这[受限于资源]，”Lior 说。“你可以想象生成式人工智能从这些文本和图像数据集中提取结构，并像我们对待关系型数据一样加以利用。”
 
-Tomasz将这一过程称为“信息开采”。
+Tomasz 将这一过程称为“信息开采”。
 
-“在Theory [他的风险投资公司]，我们收集了大约10,000份有关初创公司的文档……大约两周前，我们制作了第一份关于被称为生成式RPA的领域的投资备忘录总结。这些内容完全是通过大量文本文件进行信息开采产生的，”他说。
+“在 Theory [他的风险投资公司]，我们收集了大约 10,000 份有关初创公司的文档……大约两周前，我们制作了第一份关于被称为生成式 RPA 的领域的投资备忘录总结。这些内容完全是通过大量文本文件进行信息开采产生的，”他说。
 
-Snowflake和其他数据平台正在推出将加速数据团队实现这一目标的功能。
+Snowflake 和其他数据平台正在推出将加速数据团队实现这一目标的功能。
 
 “[文档 AI](https://www.snowflake.com/blog/generative-ai-llms-summit-2023/) 是一个不断增长的项目，源于我们[收购 Applica](https://www.snowflake.com/blog/snowflake-to-acquire-applica/)，其使用案例主要集中在文档阅读和解读上，”她说。“这可能用于人力资源的采购合同等……我遇到的客户都在处理一堆[数据]，他们希望从中获得价值。”
 
-![](../Images/01b0638abb4097505ecc37f7b57fa3c8.png)
+![](img/01b0638abb4097505ecc37f7b57fa3c8.png)
 
 文档 AI 在上面展示的最新 Snowflake Summit 上首次推出。照片由作者拍摄。
 
@@ -118,7 +118,7 @@ Lior 说：“生成 AI 已经非常擅长编写 SQL、Python、Scala 或任何�
 
 Kristen 说：“有两种方法可以改善盈利能力。一种是从收入方面入手，这更具外部导向，并且你会遇到很多问题。” “另一种[改善盈利能力的方法]是从内部降低成本……很多人问，‘我们如何利用 AI 降低内部成本？’然后，希望能从中获得很多经验教训，帮助建立更多面向外部的、生成收入的使用案例。”
 
-# 5个生成式 AI 挑战
+# 5 个生成式 AI 挑战
 
 既然我们都陶醉于 AI 的可能性，是时候清醒面对一些非常现实的挑战和限制。这些包括：
 
@@ -128,35 +128,35 @@ Kristen 说：“有两种方法可以改善盈利能力。一种是从收入方
 
 Tomasz 说：“我们已经看到了一些挑战，无论是幻觉还是在非常特定领域中让生成 AI 工作的挑战……我认为这些问题仍然是显著的挑战。”
 
-但这不仅仅是幻觉。与分析仪表盘和机器学习应用一样，生成型AI模型的可靠性和可信度仅取决于其访问或训练的底层数据。这些问题并不新鲜，但它们会变得更加普遍，并需要更具扩展性的解决方案。
+但这不仅仅是幻觉。与分析仪表盘和机器学习应用一样，生成型 AI 模型的可靠性和可信度仅取决于其访问或训练的底层数据。这些问题并不新鲜，但它们会变得更加普遍，并需要更具扩展性的解决方案。
 
 Lior 说：“选择使用的数据集，如何验证它，如何清理它，以及如何将其整合起来，以回答业务问题[当你有] 更少分析师参与时，将加剧当前存在的一些治理问题。如何识别哪些数据集是值得信赖的，哪些是有用的，以及如何拥有正确的元数据和文档，以使数据对模型有用？”
 
-底层数据堆栈还将作为生成型AI理解底层数据的关键指南。
+底层数据堆栈还将作为生成型 AI 理解底层数据的关键指南。
 
 Kristen 说：“如果你要求模型根据它对世界其他部分的了解来解释你的业务，那么世界其他部分并不了解你如何解释你的业务。你在哪里将业务逻辑注入到服务于每个后续层的数据堆栈中？我认为在数据堆栈的基础层中，制定一些关于你的业务的关键规则，无论是实体相关还是关系嵌入的，都将有利于[模型的速度和准确性]。”
 
 # #2- 解决自身问题
 
-Tomasz 分享了关于将生成型AI用于更广泛任务的相关经验：
+Tomasz 分享了关于将生成型 AI 用于更广泛任务的相关经验：
 
-他说：“我在准备一个演示文稿，想要绘制一个特定GitHub存储库的GitHub星标增长图。所以我需要构建两个或三个代码块。于是我让机器人生成一个爬虫来获取信息。另一个部分是实际绘图，然后我想自动化它，以便我可以给它一个存储库列表进行处理。” “它很难将这样一个大块的问题分解成单独的任务，然后再构建它。”
+他说：“我在准备一个演示文稿，想要绘制一个特定 GitHub 存储库的 GitHub 星标增长图。所以我需要构建两个或三个代码块。于是我让机器人生成一个爬虫来获取信息。另一个部分是实际绘图，然后我想自动化它，以便我可以给它一个存储库列表进行处理。” “它很难将这样一个大块的问题分解成单独的任务，然后再构建它。”
 
-他还对生成型AI模型在犯错后容易陷入困境表示了沮丧。
+他还对生成型 AI 模型在犯错后容易陷入困境表示了沮丧。
 
 他说：“[当] 它走到一个错误的路径上，代码无法执行时，它很难忘记所犯的错误，它想继续改进，你必须重新启动会话。它有非常、非常持久的记忆。”
 
 # #3- 安全性和隐私
 
-这可能是 Tomasz 认为生成型AI广泛采用的最大障碍。
+这可能是 Tomasz 认为生成型 AI 广泛采用的最大障碍。
 
-他说：“许多[银行和财富2000强公司]已经完全封锁了[生成型AI]。我认为他们中的许多人在等待AI产品在Azure VPC内发布，以便他们可以控制它。在云中，我们转向了多租户，其中多个客户在同一台机器上……对于大型语言模型，客户会接受这种情况吗，还是我们实际上需要每个客户一个大型语言模型？”
+他说：“许多[银行和财富 2000 强公司]已经完全封锁了[生成型 AI]。我认为他们中的许多人在等待 AI 产品在 Azure VPC 内发布，以便他们可以控制它。在云中，我们转向了多租户，其中多个客户在同一台机器上……对于大型语言模型，客户会接受这种情况吗，还是我们实际上需要每个客户一个大型语言模型？”
 
 行业在应对这些问题的初期阶段，但到目前为止，解决这些安全和隐私挑战的主要方式有四种：
 
 +   禁止它
 
-+   定期告诉LLM“忘记我所有的数据，并且不要用它来进行训练”
++   定期告诉 LLM“忘记我所有的数据，并且不要用它来进行训练”
 
 +   使用中间层来拦截个人身份信息
 
@@ -164,25 +164,25 @@ Tomasz 分享了关于将生成型AI用于更广泛任务的相关经验：
 
 解决方案通常由使用案例决定。生成模板化网站的风险远低于处理可能涉及客户信息和信用卡的客户服务。
 
-当然，如果没有提到提示注入和一个[相关的xkcd](https://xkcd.com/327/)关于SQL注入的讨论，那这次生成AI的讨论就不完整了。
+当然，如果没有提到提示注入和一个[相关的 xkcd](https://xkcd.com/327/)关于 SQL 注入的讨论，那这次生成 AI 的讨论就不完整了。
 
 # #4- 我们在基础设施和解决方案方面还处于早期阶段
 
-应对治理、可靠性、安全性和其他生成AI挑战将需要一个当前还不存在的强大基础设施。
+应对治理、可靠性、安全性和其他生成 AI 挑战将需要一个当前还不存在的强大基础设施。
 
-利奥说：“在我称之为基础设施和解决方案方面，仍然处于早期阶段。当我们现在谈论生成AI时，对大多数人来说，这意味着使用OpenAI的API。少数人可能在玩一些开源模型和向量数据库，但我认为围绕它的工具还是相当早期的。”
+利奥说：“在我称之为基础设施和解决方案方面，仍然处于早期阶段。当我们现在谈论生成 AI 时，对大多数人来说，这意味着使用 OpenAI 的 API。少数人可能在玩一些开源模型和向量数据库，但我认为围绕它的工具还是相当早期的。”
 
 分类和访问控制是另外两个挑战，支持基础设施可以提供帮助。
 
-克里斯滕说：“数据分类是一个困难的问题。当你考虑访问控制和大规模访问控制时……你必须已经了解分类。” “我们在这个领域花了很多时间，并且有一些原生于Snowflake的功能。”
+克里斯滕说：“数据分类是一个困难的问题。当你考虑访问控制和大规模访问控制时……你必须已经了解分类。” “我们在这个领域花了很多时间，并且有一些原生于 Snowflake 的功能。”
 
-PII实际上并不难弄清楚，但我认为关注点在于使人们能够创建自定义分类器。因为宇宙是无限的，如果你[考虑]什么构成商业机密或客户数据，这在公司内部可能是动态的。”
+PII 实际上并不难弄清楚，但我认为关注点在于使人们能够创建自定义分类器。因为宇宙是无限的，如果你[考虑]什么构成商业机密或客户数据，这在公司内部可能是动态的。”
 
 # #5- 技能集转变
 
-也许讨论的最长部分集中在对新兴生成AI技能集的需求以及部署这些大型语言模型将导致的劳动力转变上。
+也许讨论的最长部分集中在对新兴生成 AI 技能集的需求以及部署这些大型语言模型将导致的劳动力转变上。
 
-最大的赢家？数据团队，他们的服务需求将呈指数增长，特别是对不同生成AI模型的评估和微调。
+最大的赢家？数据团队，他们的服务需求将呈指数增长，特别是对不同生成 AI 模型的评估和微调。
 
 托马斯说：“我认为某些[责任]将转移到数据团队，因为他们需要确保输出的准确性以及所使用的解决方案符合适用于该业务的任何法规。” “他们将负责从初步评估到持续维护。因此，我认为数据团队将会增长。”
 

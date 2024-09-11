@@ -1,18 +1,18 @@
 # dbt Core、Snowflake 和 GitHub Actions：数据工程师的个人项目
 
-> 原文：[https://towardsdatascience.com/dbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44?source=collection_archive---------7-----------------------#2023-12-01](https://towardsdatascience.com/dbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44?source=collection_archive---------7-----------------------#2023-12-01)
+> 原文：[`towardsdatascience.com/dbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44?source=collection_archive---------7-----------------------#2023-12-01`](https://towardsdatascience.com/dbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44?source=collection_archive---------7-----------------------#2023-12-01)
 
 ## 数据/分析工程师的个人项目：探索现代数据堆栈工具——dbt Core、Snowflake、Fivetran 和 GitHub Actions。
 
-[](https://medium.com/@kategera6?source=post_page-----815991a48b44--------------------------------)[![Kateryna Herashchenko](../Images/dd6018e0f3ffb6d4fecd8cb72100282c.png)](https://medium.com/@kategera6?source=post_page-----815991a48b44--------------------------------)[](https://towardsdatascience.com/?source=post_page-----815991a48b44--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----815991a48b44--------------------------------) [Kateryna Herashchenko](https://medium.com/@kategera6?source=post_page-----815991a48b44--------------------------------)
+[](https://medium.com/@kategera6?source=post_page-----815991a48b44--------------------------------)![Kateryna Herashchenko](https://medium.com/@kategera6?source=post_page-----815991a48b44--------------------------------)[](https://towardsdatascience.com/?source=post_page-----815991a48b44--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----815991a48b44--------------------------------) [Kateryna Herashchenko](https://medium.com/@kategera6?source=post_page-----815991a48b44--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4fc94e2ed685&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44&user=Kateryna+Herashchenko&userId=4fc94e2ed685&source=post_page-4fc94e2ed685----815991a48b44---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----815991a48b44--------------------------------) ·6 分钟阅读·2023年12月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F815991a48b44&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44&user=Kateryna+Herashchenko&userId=4fc94e2ed685&source=-----815991a48b44---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4fc94e2ed685&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44&user=Kateryna+Herashchenko&userId=4fc94e2ed685&source=post_page-4fc94e2ed685----815991a48b44---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----815991a48b44--------------------------------) ·6 分钟阅读·2023 年 12 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F815991a48b44&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44&user=Kateryna+Herashchenko&userId=4fc94e2ed685&source=-----815991a48b44---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F815991a48b44&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44&source=-----815991a48b44---------------------bookmark_footer-----------)![](../Images/c550e2d6ed787a2bf6243b3e727599ff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F815991a48b44&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-core-snowflake-and-github-actions-pet-project-for-data-engineers-815991a48b44&source=-----815991a48b44---------------------bookmark_footer-----------)![](img/c550e2d6ed787a2bf6243b3e727599ff.png)
 
 图片由 [Gaining Visuals](https://unsplash.com/@gainingvisuals?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,13 +24,13 @@
 
 **Google Calendar** -> **Fivetran** -> **Snowflake** -> **dbt** -> **Snowflake Dashboard**，由**GitHub Actions**协调部署。
 
-![](../Images/8ff05646a8b0204831aa105f5ef64cda.png)
+![](img/8ff05646a8b0204831aa105f5ef64cda.png)
 
 架构
 
 参考 Joe Reis 的《数据工程基础》，让我们根据数据生命周期的定义阶段来审视我们的项目：
 
-![](../Images/f1733e478c42fe23b00c1fa9d7338888.png)
+![](img/f1733e478c42fe23b00c1fa9d7338888.png)
 
 数据工程生命周期 [1]
 
@@ -44,15 +44,15 @@
 
     将专门为 Fivetran 同步创建一个新数据库，以及相应的仓库以运行 SQL 工作负载。你应该知道，Snowflake 采用了解耦的存储和计算，因此费用也是分开的。作为最佳实践，你应该为不同的工作负载（如临时、同步、BI 分析）或不同的环境（如开发、生产）使用不同的仓库。
 
-![](../Images/f431365d1580340e358dcf4cd9e149a9.png)
+![](img/f431365d1580340e358dcf4cd9e149a9.png)
 
 转到 Partner Connect 以连接 Fivetran。
 
-![](../Images/7a112d493f9447f09ce99c6536c95c72.png)
+![](img/7a112d493f9447f09ce99c6536c95c72.png)
 
 在 Fivetran 中设置 Google Calendar 连接器。
 
-![](../Images/38a2542d3dac0d8066fd9bdccd10fae0.png)
+![](img/38a2542d3dac0d8066fd9bdccd10fae0.png)
 
 同步的数据会出现在 Snowflake 中。
 
@@ -70,7 +70,7 @@
 
     dbt 的重要功能是 [Jinja 和宏](https://courses.getdbt.com/courses/jinja-macros-packages)，你可以将其编织到 SQL 中，从而增强其影响力和可重用性。
 
-![](../Images/875c9de7d5e6d260a7ea70df5ce0a13c.png)
+![](img/875c9de7d5e6d260a7ea70df5ce0a13c.png)
 
 选择不同类型的模型物化。
 
@@ -78,41 +78,41 @@
 
     以及 “/tests” 文件夹中。在**“dbt build”**命令期间，这些数据质量检查将与模型构建一起运行，以防止数据损坏。
 
-![](../Images/4c204eaf6b005f942f81ca4c07541544.png)
+![](img/4c204eaf6b005f942f81ca4c07541544.png)
 
 你可以使用 “dbt test” 运行测试。
 
-+   探索dbt的快照功能，用于变更数据捕获和类型2缓慢变化维度。在我们的[示例](https://github.com/KHerashchenko/SurfalyticsWorkshop/blob/master/dbt_hol/snapshots/recurrence_snapshot.sql)中，我们捕获了“recurrence”表中的变化。
++   探索 dbt 的快照功能，用于变更数据捕获和类型 2 缓慢变化维度。在我们的[示例](https://github.com/KHerashchenko/SurfalyticsWorkshop/blob/master/dbt_hol/snapshots/recurrence_snapshot.sql)中，我们捕获了“recurrence”表中的变化。
 
-![](../Images/e0da53b1e6955a9e2b81b1e635462f0f.png)
+![](img/e0da53b1e6955a9e2b81b1e635462f0f.png)
 
 将快照存储在单独的模式中
 
-+   使用**“dbt docs generate”**命令生成dbt文档可能需要一些时间。你将看到从项目中自动创建的数据血缘图和元数据。你可以通过在你的 .yml 文件中添加对数据实体的描述来进一步增强它。
++   使用**“dbt docs generate”**命令生成 dbt 文档可能需要一些时间。你将看到从项目中自动创建的数据血缘图和元数据。你可以通过在你的 .yml 文件中添加对数据实体的描述来进一步增强它。
 
     良好的文档提供了更好的数据发现性和治理。
 
-![](../Images/4f4e168ba3ead8b7e73fb3217d083382.png)
+![](img/4f4e168ba3ead8b7e73fb3217d083382.png)
 
 运行 `dbt docs serve` 以在浏览器中打开它。
 
-+   **服务 — *Snowflake仪表板*** 最后，使用Snowflake仪表板可视化你的转换数据。在Snowflake UI中创建一个仪表板，并根据你的SQL查询尝试使用图块（绘图）。
++   **服务 — *Snowflake 仪表板*** 最后，使用 Snowflake 仪表板可视化你的转换数据。在 Snowflake UI 中创建一个仪表板，并根据你的 SQL 查询尝试使用图块（绘图）。
 
-![](../Images/266ccc344bbcbe911847257bee354a3a.png)
+![](img/266ccc344bbcbe911847257bee354a3a.png)
 
 仪表板示例
 
-+   **部署 — *GitHub Actions*** 虽然dbt Cloud提供了一个简单的部署选项，但我们将使用GitHub Actions工作流来进行我们的dbt Core项目。你需要创建一个[workflow .yml 文件](https://github.com/KHerashchenko/SurfalyticsWorkshop/blob/master/.github/workflows/dbt_prod.yaml)，该文件将在对GitHub dbt repo进行更改时触发，运行指定的操作。在我的示例工作流中，你可以看到一个两步的部署过程：**dbt build**用于开发环境，成功后还会执行**dbt
++   **部署 — *GitHub Actions*** 虽然 dbt Cloud 提供了一个简单的部署选项，但我们将使用 GitHub Actions 工作流来进行我们的 dbt Core 项目。你需要创建一个[workflow .yml 文件](https://github.com/KHerashchenko/SurfalyticsWorkshop/blob/master/.github/workflows/dbt_prod.yaml)，该文件将在对 GitHub dbt repo 进行更改时触发，运行指定的操作。在我的示例工作流中，你可以看到一个两步的部署过程：**dbt build**用于开发环境，成功后还会执行**dbt
 
-    **用于生产环境的build**。
+    **用于生产环境的 build**。
 
-    注意：将Snowflake账户和密码等机密替换为GitHub机密。为此，请在你的repo网页上，转到Settings -> Secrets and Variables -> Actions。
+    注意：将 Snowflake 账户和密码等机密替换为 GitHub 机密。为此，请在你的 repo 网页上，转到 Settings -> Secrets and Variables -> Actions。
 
-    每次“master”分支更新时，你可以在repo的Actions标签中看到工作流的启动情况：
+    每次“master”分支更新时，你可以在 repo 的 Actions 标签中看到工作流的启动情况：
 
-![](../Images/129492b139aaeea10506b6b16fd85bf2.png)
+![](img/129492b139aaeea10506b6b16fd85bf2.png)
 
-查看Actions结果
+查看 Actions 结果
 
 在这个项目中，我们仅仅触及了现代数据工程栈中各种技术的表面。这不仅是一个实际的成就，也是深入探索的绝佳起点。感谢阅读，祝编程愉快！
 

@@ -1,30 +1,30 @@
-# R中的线性回归矩阵代数
+# R 中的线性回归矩阵代数
 
-> 原文：[https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-in-r-b172ee5296e3?source=collection_archive---------12-----------------------#2023-05-10](https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-in-r-b172ee5296e3?source=collection_archive---------12-----------------------#2023-05-10)
+> 原文：[`towardsdatascience.com/the-matrix-algebra-of-linear-regression-in-r-b172ee5296e3?source=collection_archive---------12-----------------------#2023-05-10`](https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-in-r-b172ee5296e3?source=collection_archive---------12-----------------------#2023-05-10)
 
-## 探索如何使用R的矩阵运算符估计回归参数
+## 探索如何使用 R 的矩阵运算符估计回归参数
 
-[](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)[![Rob Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)
+[](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)![Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----b172ee5296e3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------) ·12分钟阅读·2023年5月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb172ee5296e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----b172ee5296e3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----b172ee5296e3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------) ·12 分钟阅读·2023 年 5 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb172ee5296e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----b172ee5296e3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb172ee5296e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&source=-----b172ee5296e3---------------------bookmark_footer-----------)![](../Images/db58cd733b595a3b246084687d7db11e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb172ee5296e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&source=-----b172ee5296e3---------------------bookmark_footer-----------)![](img/db58cd733b595a3b246084687d7db11e.png)
 
 图片由 [Breno Machado](https://unsplash.com/@brenomachado?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 介绍
 
-我最近写了一篇[文章](/the-matrix-algebra-of-linear-regression-6fb433f522d5)，探讨了线性回归背后的矩阵代数和数学运算。虽然掌握理论原则确实很重要，但没有什么能比得上*实际*进行这些计算。所以，在这篇后续文章中，我们将探讨如何使用R实现这些矩阵运算。
+我最近写了一篇文章，探讨了线性回归背后的矩阵代数和数学运算。虽然掌握理论原则确实很重要，但没有什么能比得上*实际*进行这些计算。所以，在这篇后续文章中，我们将探讨如何使用 R 实现这些矩阵运算。
 
-本文应作为我之前的[文章](/the-matrix-algebra-of-linear-regression-6fb433f522d5)的补充，如果你还没读过这篇文章，我鼓励你去看看；不过即使没读过，你也能继续跟进。
+本文应作为我之前的文章的补充，如果你还没读过这篇文章，我鼓励你去看看；不过即使没读过，你也能继续跟进。
 
 ## 数据
 
-作为我们的工作示例，我选择了 R 中 `datasets` 包里的 `cars` 数据集。这是一个简单的数据集，包含了在不同速度下的汽车停止距离。因此，这个数据集包含两个变量：`speed` 和 `dist`。不过，这些观测数据是1920年代的，因此绝不是最新的数据！尽管如此，它非常适合用来建立一个简单的线性回归模型。
+作为我们的工作示例，我选择了 R 中 `datasets` 包里的 `cars` 数据集。这是一个简单的数据集，包含了在不同速度下的汽车停止距离。因此，这个数据集包含两个变量：`speed` 和 `dist`。不过，这些观测数据是 1920 年代的，因此绝不是最新的数据！尽管如此，它非常适合用来建立一个简单的线性回归模型。
 
 首先，我们快速查看一下数据：
 
@@ -35,13 +35,13 @@
  $ dist : num  2 10 4 22 16 10 18 26 34 17 ...
 ```
 
-这里没有什么复杂的。我们共有50个观测值和两个数值变量。需要注意的一点是 `speed` 和 `dist` 都是整数值。这确实引入了一些离散化，但目前这不太重要。
+这里没有什么复杂的。我们共有 50 个观测值和两个数值变量。需要注意的一点是 `speed` 和 `dist` 都是整数值。这确实引入了一些离散化，但目前这不太重要。
 
 为了了解 `dist` 和 `speed` 之间的关系，下面我绘制了停止距离与速度的关系图。这些变量之间存在较强的正相关，表明停止距离随着速度的*增加*而增加。我还使用 ggplot 的 `geom_smooth` 函数叠加了最佳拟合回归线。
 
 因此，我们的目标是*不*使用内置的 `lm` 函数来估计这条直线的参数。相反，我们将应用矩阵运算来获得回归系数，然后生成应当落在这条直线上的拟合值。
 
-![](../Images/ecde3aaf52c5f24e897d7e5b79fed328.png)
+![](img/ecde3aaf52c5f24e897d7e5b79fed328.png)
 
 这是一个展示停止距离与速度关系的图。数据来源于 R 的汽车数据集（图片由作者提供）。
 
@@ -51,13 +51,13 @@
 
 预测变量和截距项共同形成一个 *n* × *p* 设计矩阵，其中 *p = m + 1* 反映了模型中需要从数据中估计的未知回归系数的数量。估计需要找到以下*正规方程*的解：
 
-![](../Images/b1d44c78834574b4e7515cae3829549b.png)
+![](img/b1d44c78834574b4e7515cae3829549b.png)
 
 正规方程（图片由作者提供）。
 
 重新排列方程以求解未知系数，我们得到以下解：
 
-![](../Images/83c7b142968ce142f76bbd673a288b5b.png)
+![](img/83c7b142968ce142f76bbd673a288b5b.png)
 
 估计方程（图片由作者提供）。
 
@@ -106,7 +106,7 @@ x_mat <- model.matrix( dist ~ speed, data = cars )
 
 ## 步骤 1
 
-如果我们观察估计方程的右手边，第一项是设计矩阵的逆与其自身的乘积。在步骤2中，我们将处理逆，因此我们首先需要计算 *X*ᵀ*X*。
+如果我们观察估计方程的右手边，第一项是设计矩阵的逆与其自身的乘积。在步骤 2 中，我们将处理逆，因此我们首先需要计算 *X*ᵀ*X*。
 
 对于我们的简单线性回归模型，*X*ᵀ*X* 将是一个 2 × 2 的方阵。出于实际目的，我将简单地将其表示为矩阵 *A*。使用矩阵乘法 `%*%` 和转置 `t` 运算符来计算这个矩阵，我将将输出赋值给一个叫做 `A` 的对象：
 
@@ -117,7 +117,7 @@ A  <- t( x_mat ) %*% x_mat
 
 现在，在我之前的帖子中，我们通过矩阵运算了解了这个矩阵中包含的元素的一些信息。我不会在这里重新讨论具体细节，只是将结果如下记录：
 
-![](../Images/b1682048cb8a51d79ef59ef220e99985.png)
+![](img/b1682048cb8a51d79ef59ef220e99985.png)
 
 设计矩阵的交叉乘积（作者提供的图片）。
 
@@ -148,7 +148,7 @@ speed               770 13228
 
 这也是正确的！
 
-## 第2步
+## 第 2 步
 
 下一步是找到矩阵 *XᵀX* 的*逆*。在 R 中，我们使用 `solve` 函数对 `A` 执行此操作。让我们先执行这个操作并将输出分配给一个名为 `A_inv` 的对象：
 
@@ -159,7 +159,7 @@ A_inv <- solve( A )
 
 现在，在查看 `A_inv` 之前，让我们先检查 *XᵀX* 的逆矩阵的解：
 
-![](../Images/936f0f5ae04f7aeb3071c1cb3b4ece9c.png)
+![](img/936f0f5ae04f7aeb3071c1cb3b4ece9c.png)
 
 设计矩阵交叉乘积的逆矩阵（图片由作者提供）。
 
@@ -208,7 +208,7 @@ speed       -0.01124088  0.000729927
 
 在进入下一步之前，我们可以做一个额外的检查。如果出于某种原因我们怀疑 `solve` 的输出有误，我们可以依赖于以下事实：任何 *n* × *n* 的方阵 *A* 被认为是*可逆的*，当且仅当存在另一个方阵 *n* × *n* 的矩阵 *B*，使其结果为以下等式：
 
-![](../Images/6a845c04b13e0f9540be32cbc3ce0519.png)
+![](img/6a845c04b13e0f9540be32cbc3ce0519.png)
 
 矩阵可逆性的条件（图片由作者提供）。
 
@@ -236,7 +236,7 @@ B <- t( x_mat ) %*% y_vec
 
 如上所述，让我们考虑一下这个操作的预期输出是什么：
 
-![](../Images/694d2c7c07ee8921b843d9a6cd10f55d.png)
+![](img/694d2c7c07ee8921b843d9a6cd10f55d.png)
 
 设计矩阵与响应向量的叉乘（图片作者提供）。
 
@@ -287,17 +287,17 @@ speed         3.932409
 
 我想指出最后一件事。我在之前的帖子中展示了，如果你对估计方程做一些代数运算，你会得到一个非常方便的解。也就是说，斜率参数等于：
 
-![](../Images/34ab197a6dc7deb317ffcd1787e9a765.png)
+![](img/34ab197a6dc7deb317ffcd1787e9a765.png)
 
 斜率参数（图片作者提供）。
 
 并且截距参数等于：
 
-![](../Images/80d70d35f595c980c8a328469c442ee2.png)
+![](img/80d70d35f595c980c8a328469c442ee2.png)
 
 截距参数（图片作者提供）。
 
-这两者计算起来非常直接，可以在R中如下进行：
+这两者计算起来非常直接，可以在 R 中如下进行：
 
 ```py
 # The slope parameter
@@ -319,7 +319,7 @@ b_0 <- with(cars, mean(dist) - mean(speed) * b_1 )
 
 看我们的估计值，我们可以看到有一个负的截距项，这并不太合理。这里的截距是`dist`在`speed`设为零时的值，这意味着当车辆的速度为零时——也就是说，*静止不动*——它的*负*制动距离。我不会在这里解决这个问题，所以现在我们就这样接受它（尽管这并不合理）。
 
-另一方面，斜率参数肯定更有用。这表明每增加一个单位的*速度*（以每小时英里为单位），制动距离*增加*接近4英尺。因此，如果车辆的速度从10英里每小时增加到11英里每小时，则制动距离从21.7英尺跳跃到25.7英尺。然而，如果汽车的速度从60英里每小时增加到61英里每小时，制动距离的增加也应该是相同的，这可能不太合理。
+另一方面，斜率参数肯定更有用。这表明每增加一个单位的*速度*（以每小时英里为单位），制动距离*增加*接近 4 英尺。因此，如果车辆的速度从 10 英里每小时增加到 11 英里每小时，则制动距离从 21.7 英尺跳跃到 25.7 英尺。然而，如果汽车的速度从 60 英里每小时增加到 61 英里每小时，制动距离的增加也应该是相同的，这可能不太合理。
 
 ## 计算拟合值
 
@@ -337,7 +337,7 @@ e_vec <- y_hat - y_vec
 
 我们能做的最后一件事是将我们之前生成的图上的拟合值进行叠加。如果一切顺利，我们应该能看到拟合值很好地沿回归线分布：
 
-![](../Images/c01051643702151c2b223a07e79f0e53.png)
+![](img/c01051643702151c2b223a07e79f0e53.png)
 
 在之前生成的图上叠加拟合值（图片作者提供）。
 
@@ -349,7 +349,7 @@ e_vec <- y_hat - y_vec
 
 ## 相关文章
 
-+   [线性回归的矩阵代数](/the-matrix-algebra-of-linear-regression-6fb433f522d5)
++   线性回归的矩阵代数
 
 +   [线性代数入门](https://medium.com/towards-data-science/a-primer-on-linear-algebra-414111d195ca)
 

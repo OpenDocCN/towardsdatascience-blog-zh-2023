@@ -1,20 +1,20 @@
 # 超越准确性：在长期用户留存中接受偶然性和新颖性的推荐
 
-> 原文：[https://towardsdatascience.com/beyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34?source=collection_archive---------7-----------------------#2023-06-26](https://towardsdatascience.com/beyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34?source=collection_archive---------7-----------------------#2023-06-26)
+> 原文：[`towardsdatascience.com/beyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34?source=collection_archive---------7-----------------------#2023-06-26`](https://towardsdatascience.com/beyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34?source=collection_archive---------7-----------------------#2023-06-26)
 
 ## 推荐系统
 
 ## 对于良好推荐和长期用户留存的因素进行考察
 
-[](https://medium.com/@christabellecp?source=post_page-----701a23b1cb34--------------------------------)[![Christabelle Pabalan](../Images/24187865b6e9d03ae1aabf873ce1e67c.png)](https://medium.com/@christabellecp?source=post_page-----701a23b1cb34--------------------------------)[](https://towardsdatascience.com/?source=post_page-----701a23b1cb34--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----701a23b1cb34--------------------------------) [Christabelle Pabalan](https://medium.com/@christabellecp?source=post_page-----701a23b1cb34--------------------------------)
+[](https://medium.com/@christabellecp?source=post_page-----701a23b1cb34--------------------------------)![Christabelle Pabalan](https://medium.com/@christabellecp?source=post_page-----701a23b1cb34--------------------------------)[](https://towardsdatascience.com/?source=post_page-----701a23b1cb34--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----701a23b1cb34--------------------------------) [Christabelle Pabalan](https://medium.com/@christabellecp?source=post_page-----701a23b1cb34--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4200eb8e8b26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34&user=Christabelle+Pabalan&userId=4200eb8e8b26&source=post_page-4200eb8e8b26----701a23b1cb34---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----701a23b1cb34--------------------------------) ·10分钟阅读·2023年6月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F701a23b1cb34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34&user=Christabelle+Pabalan&userId=4200eb8e8b26&source=-----701a23b1cb34---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4200eb8e8b26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34&user=Christabelle+Pabalan&userId=4200eb8e8b26&source=post_page-4200eb8e8b26----701a23b1cb34---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----701a23b1cb34--------------------------------) ·10 分钟阅读·2023 年 6 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F701a23b1cb34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34&user=Christabelle+Pabalan&userId=4200eb8e8b26&source=-----701a23b1cb34---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F701a23b1cb34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34&source=-----701a23b1cb34---------------------bookmark_footer-----------)![](../Images/e8c54a4ea7faab00502f8dfcac239192.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F701a23b1cb34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34&source=-----701a23b1cb34---------------------bookmark_footer-----------)![](img/e8c54a4ea7faab00502f8dfcac239192.png)
 
 作者使用 DALL-E 创作
 

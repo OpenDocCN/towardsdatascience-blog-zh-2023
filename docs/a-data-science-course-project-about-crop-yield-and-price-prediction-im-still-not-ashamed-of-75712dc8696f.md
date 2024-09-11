@@ -1,22 +1,22 @@
 # 一个关于作物产量和价格预测的数据科学课程项目，我至今不感到羞愧
 
-> 原文：[https://towardsdatascience.com/a-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f?source=collection_archive---------0-----------------------#2023-12-28](https://towardsdatascience.com/a-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f?source=collection_archive---------0-----------------------#2023-12-28)
+> 原文：[`towardsdatascience.com/a-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f?source=collection_archive---------0-----------------------#2023-12-28`](https://towardsdatascience.com/a-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f?source=collection_archive---------0-----------------------#2023-12-28)
 
 ## 即便从一位经验丰富的数据科学家的角度来看
 
-[](https://medium.com/@mik.sarafanov?source=post_page-----75712dc8696f--------------------------------)[![米哈伊尔·萨拉法诺夫](../Images/88869a3c6f664785c90539dd7aab6d74.png)](https://medium.com/@mik.sarafanov?source=post_page-----75712dc8696f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----75712dc8696f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----75712dc8696f--------------------------------) [米哈伊尔·萨拉法诺夫](https://medium.com/@mik.sarafanov?source=post_page-----75712dc8696f--------------------------------)
+[](https://medium.com/@mik.sarafanov?source=post_page-----75712dc8696f--------------------------------)![米哈伊尔·萨拉法诺夫](https://medium.com/@mik.sarafanov?source=post_page-----75712dc8696f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----75712dc8696f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----75712dc8696f--------------------------------) [米哈伊尔·萨拉法诺夫](https://medium.com/@mik.sarafanov?source=post_page-----75712dc8696f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F209c78c40898&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f&user=Mikhail+Sarafanov&userId=209c78c40898&source=post_page-209c78c40898----75712dc8696f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----75712dc8696f--------------------------------) ·12分钟阅读·2023年12月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F75712dc8696f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f&user=Mikhail+Sarafanov&userId=209c78c40898&source=-----75712dc8696f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F209c78c40898&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f&user=Mikhail+Sarafanov&userId=209c78c40898&source=post_page-209c78c40898----75712dc8696f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----75712dc8696f--------------------------------) ·12 分钟阅读·2023 年 12 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F75712dc8696f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f&user=Mikhail+Sarafanov&userId=209c78c40898&source=-----75712dc8696f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F75712dc8696f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f&source=-----75712dc8696f---------------------bookmark_footer-----------)![](../Images/2e1fd0b88e4ca36f4be5449c8d94b4fd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F75712dc8696f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-science-course-project-about-crop-yield-and-price-prediction-im-still-not-ashamed-of-75712dc8696f&source=-----75712dc8696f---------------------bookmark_footer-----------)![](img/2e1fd0b88e4ca36f4be5449c8d94b4fd.png)
 
 预览图（作者提供）
 
-你好，亲爱的读者！在这些圣诞假期期间，我感到对过去的学生岁月有些怀念。因此，我决定写一篇关于一个学生项目的文章，这个项目是在差不多四年前作为ITMO大学硕士课程“*多变量数据分析方法与模型*”的项目完成的。
+你好，亲爱的读者！在这些圣诞假期期间，我感到对过去的学生岁月有些怀念。因此，我决定写一篇关于一个学生项目的文章，这个项目是在差不多四年前作为 ITMO 大学硕士课程“*多变量数据分析方法与模型*”的项目完成的。
 
 **免责声明：** 我决定写这篇文章有两个原因：
 
@@ -42,7 +42,7 @@
 
 所以，这就是…
 
-![](../Images/637f15e1a14e5c8d00178473639821da.png)
+![](img/637f15e1a14e5c8d00178473639821da.png)
 
 图 1\. 选择的主题（作者提供的图像）
 
@@ -94,7 +94,7 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 因此，我们从一个假设开始：“小麦、稻米、玉米和大麦的产量取决于上半年（至 6 月 30 日）的天气条件”（图 2）；
 
-![](../Images/7402cecfc40a3e5724688b69b9bbdc5e.png)
+![](img/7402cecfc40a3e5724688b69b9bbdc5e.png)
 
 图 2. 产量预测特征生成（以活跃温度之和为例）（图像由作者提供）
 
@@ -122,35 +122,35 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 +   上半年最低日均气温，℃；
 
-+   10摄氏度以上的活跃温度之和，℃（见图 3）。
++   10 摄氏度以上的活跃温度之和，℃（见图 3）。
 
-![](../Images/37d57db19b47b755dcb2d456ce93346c.png)
+![](img/37d57db19b47b755dcb2d456ce93346c.png)
 
 动画。上半年的降水量，毫米。图表顶部列出了年份（由作者提供）
 
-![](../Images/cf1f37a909453b1dc73eeda24aa30414.png)
+![](img/cf1f37a909453b1dc73eeda24aa30414.png)
 
 图 3\. 1950 年上半年活跃温度之和，摄氏度（图像由作者提供）
 
-因此，我们获得了整个欧洲地区的矩阵，为未来的模型计算了特征。读者可能会注意到，我计算了一个参数，即“10摄氏度以上的活跃温度之和”。这是生态学和植物学中非常流行的一个参数，有助于确定不同物种（主要是植物）的温度最佳值，例如 “[作为确定‘S̆ampion’和‘Ligol’苹果品种最佳收获日期的方法的活跃温度之和](https://www.semanticscholar.org/paper/The-sum-of-active-temperatures-as-a-method-of-the-%C5%81ysiak/764cd7d6aa55469a78dbd073d7c3805e8e2025fd)”）
+因此，我们获得了整个欧洲地区的矩阵，为未来的模型计算了特征。读者可能会注意到，我计算了一个参数，即“10 摄氏度以上的活跃温度之和”。这是生态学和植物学中非常流行的一个参数，有助于确定不同物种（主要是植物）的温度最佳值，例如 “[作为确定‘S̆ampion’和‘Ligol’苹果品种最佳收获日期的方法的活跃温度之和](https://www.semanticscholar.org/paper/The-sum-of-active-temperatures-as-a-method-of-the-%C5%81ysiak/764cd7d6aa55469a78dbd073d7c3805e8e2025fd)”）
 
 > 提示 4：如果你在该领域拥有专业知识（与数据科学无关），确保在项目中加以利用——展示你不仅在进行“拟合预测”，而且在调整和改进领域特定的方法
 
 下一步是按国家聚合信息。分别从气象参数矩阵中提取每个国家的值（图 4）。
 
-![](../Images/af5cf9e09a047190139314542f8174ce.png)
+![](img/af5cf9e09a047190139314542f8174ce.png)
 
 图 4\. 含有国家边界的矩阵（图像由作者提供）
 
 我想指出，这个策略是有道理的（图 5）：例如，图片显示对西班牙而言，小麦产量几乎不受活跃温度之和的影响。然而，对于捷克共和国，温暖的上半年更可能导致较低的产量。因此，为每个国家单独建模是一个好主意。
 
-![](../Images/3d02419656beac96d46ffc65d9972b01.png)
+![](img/3d02419656beac96d46ffc65d9972b01.png)
 
 图 5\. **小麦**产量（吨/公顷）与活跃温度之和的依赖关系（图像由作者提供）
 
 并非所有国家的领土都适合农业。因此，有必要仅从特定像素中聚合信息。为了考虑农业用地的位置，准备了以下矩阵（图 6）。
 
-![](../Images/a79c9301560e5dabab2dde9c13600673.png)
+![](img/a79c9301560e5dabab2dde9c13600673.png)
 
 图 6\. 土地利用矩阵（图像由作者提供）
 
@@ -158,19 +158,19 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 所以，我们的数据已经准备好了。然而，农业是一个非常复杂的行业，每年、每十年都有显著改进。限制模型的训练样本可能是有意义的。为此，我们使用了累计和方法（图 7）：
 
-> **累积和方法：** 对样本中的每一个数字，依次将后续数字累加。也就是说，如果样本仅包含三年：1950、1951 和 1952，那么1950年的数值将在Y轴上绘制为1950，而1951将显示1950和1951的和，依此类推。
+> **累积和方法：** 对样本中的每一个数字，依次将后续数字累加。也就是说，如果样本仅包含三年：1950、1951 和 1952，那么 1950 年的数值将在 Y 轴上绘制为 1950，而 1951 将显示 1950 和 1951 的和，依此类推。
 > 
 > - 如果线的形状接近直线且没有断裂，样本是均匀的
 > 
 > - 如果线的形状有断裂，样本将基于此断裂分为两部分
 
-![](../Images/7fcf1f5bf0af1dc5153249a3b8db7e1a.png)
+![](img/7fcf1f5bf0af1dc5153249a3b8db7e1a.png)
 
-图7\. 法国。跨年度目标变量比较：小麦（每公顷吨数）（图像由作者提供）
+图 7\. 法国。跨年度目标变量比较：小麦（每公顷吨数）（图像由作者提供）
 
 如果检测到断裂，我们将两个样本比较是否属于总体（Kolmogorov-Smirnov 统计量）。如果样本在统计上显著不同，我们将使用第二部分训练预测模型。如果没有，我们将使用整个样本。
 
-> 提示5：不要害怕结合统计分析的方法（这是课程项目！）。例如，在讲座中，我们没有被告知累积和方法——主题是比较分布。然而，我之前在处理冰图时使用了这种方法来比较冰况趋势。我认为这在这里也可能有用
+> 提示 5：不要害怕结合统计分析的方法（这是课程项目！）。例如，在讲座中，我们没有被告知累积和方法——主题是比较分布。然而，我之前在处理冰图时使用了这种方法来比较冰况趋势。我认为这在这里也可能有用
 
 我在这里应该指出，我们假设过程是遍历的，因此决定以这种方式进行比较。
 
@@ -196,29 +196,29 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 让我们继续查看可视化，以使其更清晰。
 
-![](../Images/aee7f7385343192cb31f088ed6878314.png)
+![](img/aee7f7385343192cb31f088ed6878314.png)
 
-图8\. 基于初始化模型，为每个国家生成的特定年份预测表面（图像由作者提供）
+图 8\. 基于初始化模型，为每个国家生成的特定年份预测表面（图像由作者提供）
 
-这里是图9，显示了[残差](https://en.wikipedia.org/wiki/Errors_and_residuals)（*残差 = 观测值 - 估计（预测）值*）来自法国和意大利的线性模型：
+这里是图 9，显示了[残差](https://en.wikipedia.org/wiki/Errors_and_residuals)（*残差 = 观测值 - 估计（预测）值*）来自法国和意大利的线性模型：
 
-![](../Images/77a1058752a8925cdeec1e9327597791.png)
+![](img/77a1058752a8925cdeec1e9327597791.png)
 
-图9\. 验证样本上线性回归的残差和指标的可视化（图像由作者提供）
+图 9\. 验证样本上线性回归的残差和指标的可视化（图像由作者提供）
 
 从图表中可以看出，指标令人满意，但误差分布偏离零——这意味着模型存在系统误差。我们在下面的新模型中尝试进行修正
 
 验证样本 MAPE 指标值：10.42%
 
-> 提示6：从最简单的模型开始（例如线性回归）。这将为你提供一个基线，以便与改进版本的模型进行比较。模型越简单越好，只要它显示出令人满意的指标
+> 提示 6：从最简单的模型开始（例如线性回归）。这将为你提供一个基线，以便与改进版本的模型进行比较。模型越简单越好，只要它显示出令人满意的指标
 
 ## 3\. 本讲座的主题是：多元分布分析
 
-我们将本讲座的材料转化为一个“分布分析”模型。假设很简单——我们分析了每年的气候参数分布以及当前年份的分布，并找到与当前年份最相似的年份，以预测与过去已知值完全相同的产量（图10）。
+我们将本讲座的材料转化为一个“分布分析”模型。假设很简单——我们分析了每年的气候参数分布以及当前年份的分布，并找到与当前年份最相似的年份，以预测与过去已知值完全相同的产量（图 10）。
 
-![](../Images/fdbef4dbf54d56a5f462e36969ed1d08.png)
+![](img/fdbef4dbf54d56a5f462e36969ed1d08.png)
 
-图10\. 选择年份类比的两两比较概念（图片由作者提供）
+图 10\. 选择年份类比的两两比较概念（图片由作者提供）
 
 **想法：** 具有相似气象条件的年份，其产量也将相似
 
@@ -226,47 +226,47 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 **使用的分布：**
 
-+   年初的温度，2月、4月、6月的温度；
++   年初的温度，2 月、4 月、6 月的温度；
 
-+   年初的降水量，2月、4月、6月的降水量；
++   年初的降水量，2 月、4 月、6 月的降水量；
 
-+   年初的气压，2月、4月、6月的气压。
++   年初的气压，2 月、4 月、6 月的气压。
 
-我们使用了Kruskal-Wallis检验来比较分布。为了调整p值，引入了多重检验修正——Bonferroni修正。
+我们使用了 Kruskal-Wallis 检验来比较分布。为了调整 p 值，引入了多重检验修正——Bonferroni 修正。
 
-![](../Images/deaedddb9152f759111c5ec07b640afd.png)
+![](img/deaedddb9152f759111c5ec07b640afd.png)
 
-图11\. 2000年和2018年的气温分布（图片由作者提供）
+图 11\. 2000 年和 2018 年的气温分布（图片由作者提供）
 
-验证样本的MAPE度量值：13.80%
+验证样本的 MAPE 度量值：13.80%
 
-> 提示7：如果你进行多个统计检验，别忘了包括修正（例如，Bonferroni修正）
+> 提示 7：如果你进行多个统计检验，别忘了包括修正（例如，Bonferroni 修正）
 
 ## 4\. 本讲座的主题是：贝叶斯网络
 
-一次讲座集中于[贝叶斯网络](https://en.wikipedia.org/wiki/Bayesian_network)。因此，我们决定将这种方法适用于产量预测。我们认为每年由一组变量A、B、C等描述，其中A是描述作物产量的类别集合，B是例如活跃温度条件的总和，以此类推。例如，A可以取三个值：“高作物产量”、“中等作物产量”、“低作物产量”。B和C及其他也相同。因此，如果我们对条件和目标变量进行分类，我们得到每年的以下描述：
+一次讲座集中于[贝叶斯网络](https://en.wikipedia.org/wiki/Bayesian_network)。因此，我们决定将这种方法适用于产量预测。我们认为每年由一组变量 A、B、C 等描述，其中 A 是描述作物产量的类别集合，B 是例如活跃温度条件的总和，以此类推。例如，A 可以取三个值：“高作物产量”、“中等作物产量”、“低作物产量”。B 和 C 及其他也相同。因此，如果我们对条件和目标变量进行分类，我们得到每年的以下描述：
 
-+   1950年 — “高热量供应”，“低降水供应”，“高气压” — “高作物产量”
++   1950 年 — “高热量供应”，“低降水供应”，“高气压” — “高作物产量”
 
-+   1951年 — “低热量供应”，“高降水供应”，“高气压” — “中等作物产量”
++   1951 年 — “低热量供应”，“高降水供应”，“高气压” — “中等作物产量”
 
-+   1952年 — “低热量供应”，“低降水供应”，“高气压” — 哪种作物产量？
++   1952 年 — “低热量供应”，“低降水供应”，“高气压” — 哪种作物产量？
 
 该算法旨在基于三个其他类别的组合来预测产量类别：
 
-+   **作物产量（3个类别）— 隐藏状态 — 目标变量**
++   **作物产量（3 个类别）— 隐藏状态 — 目标变量**
 
-+   活跃温度总和（3个类别）
++   活跃温度总和（3 个类别）
 
-+   降水量（3个类别）
++   降水量（3 个类别）
 
-+   平均压力（3个类别）
++   平均压力（3 个类别）
 
-我们如何定义这些类别？——通过使用聚类算法！例如，确定了用于小麦产量的以下3个集群
+我们如何定义这些类别？——通过使用聚类算法！例如，确定了用于小麦产量的以下 3 个集群
 
-![](../Images/5ee06d8833c9ef3432e1d621b23e81bc.png)
+![](img/5ee06d8833c9ef3432e1d621b23e81bc.png)
 
-图12：用于贝叶斯网络分析的小麦产量集群（图片由作者提供）
+图 12：用于贝叶斯网络分析的小麦产量集群（图片由作者提供）
 
 该模型的最终预测——预测集群的平均产量。
 
@@ -280,9 +280,9 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 将这种方法付诸实践被证明是最简单的。例如，在 Python 中有几个库可以定制和应用 ARIMA 模型，例如 [pmdarima](https://pypi.org/project/pmdarima/)。
 
-![](../Images/34acfa1bc3f2df10a1610ec135630d05.png)
+![](img/34acfa1bc3f2df10a1610ec135630d05.png)
 
-图13：应用 ARIMA 模型预测产量时间序列。X轴：时间索引，Y轴：大麦产量（图片由作者提供）
+图 13：应用 ARIMA 模型预测产量时间序列。X 轴：时间索引，Y 轴：大麦产量（图片由作者提供）
 
 验证样本 MAPE 指标值：10.41%
 
@@ -290,19 +290,19 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 ## 6. 讲座主题为：集成方法
 
-所有模型建立后，我们探讨了每个模型是如何“出错”的（回忆线性回归模型的残差图——见图9）：
+所有模型建立后，我们探讨了每个模型是如何“出错”的（回忆线性回归模型的残差图——见图 9）：
 
-![](../Images/6d840923a9161e6204ba5e1b28334ffe.png)
+![](img/6d840923a9161e6204ba5e1b28334ffe.png)
 
-图14：不同作物产量预测模型的残差图（图片由作者提供）
+图 14：不同作物产量预测模型的残差图（图片由作者提供）
 
-**没有一个呈现的算法能突破10%的门槛（根据 MAPE）。**
+**没有一个呈现的算法能突破 10%的门槛（根据 MAPE）。**
 
-使用了卡尔曼滤波器来提高预测质量（进行集成）。对于一些国家已经取得了令人满意的结果（图15）
+使用了卡尔曼滤波器来提高预测质量（进行集成）。对于一些国家已经取得了令人满意的结果（图 15）
 
-![](../Images/f13cba38fe76a6fdd10ab3d9964d3ffe.png)
+![](img/f13cba38fe76a6fdd10ab3d9964d3ffe.png)
 
-图15：使用集成方法对不同国家的作物产量预测（图片由作者提供）
+图 15：使用集成方法对不同国家的作物产量预测（图片由作者提供）
 
 验证样本 MAPE 指标值：9.89%
 
@@ -310,11 +310,11 @@ Camilo 还想尝试制作可视化的仪表板（使用 PowerBI），但几乎�
 
 ## 期货价格预测
 
-最后一部分：模型（Lasso 回归），使用预测的产量值和期货特征来估计可能的价格值（图16）：
+最后一部分：模型（Lasso 回归），使用预测的产量值和期货特征来估计可能的价格值（图 16）：
 
-![](../Images/ae3965f57d53e3ec35942d3c3a96133c.png)
+![](img/ae3965f57d53e3ec35942d3c3a96133c.png)
 
-图16\. 小麦期货价格预测（图片来源：作者）
+图 16\. 小麦期货价格预测（图片来源：作者）
 
 验证样本上的 Mape：6.61%
 

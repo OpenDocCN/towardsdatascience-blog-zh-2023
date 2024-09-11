@@ -1,24 +1,24 @@
 # 使用 Polars 进行 EDA：聚合和分析函数的逐步指南（第二部分）
 
-> 原文：[https://towardsdatascience.com/eda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa?source=collection_archive---------7-----------------------#2023-07-10](https://towardsdatascience.com/eda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa?source=collection_archive---------7-----------------------#2023-07-10)
+> 原文：[`towardsdatascience.com/eda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa?source=collection_archive---------7-----------------------#2023-07-10`](https://towardsdatascience.com/eda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa?source=collection_archive---------7-----------------------#2023-07-10)
 
 ## 使用 Polars 进行快速的高级聚合和滚动平均
 
-[](https://medium.com/@antonsruberts?source=post_page-----a22d986315aa--------------------------------)[![Antons Tocilins-Ruberts](../Images/363a4f32aa793cca7a67dea68e76e3cf.png)](https://medium.com/@antonsruberts?source=post_page-----a22d986315aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a22d986315aa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a22d986315aa--------------------------------) [Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----a22d986315aa--------------------------------)
+[](https://medium.com/@antonsruberts?source=post_page-----a22d986315aa--------------------------------)![Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----a22d986315aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a22d986315aa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a22d986315aa--------------------------------) [Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----a22d986315aa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9dee50b0374b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa&user=Antons+Tocilins-Ruberts&userId=9dee50b0374b&source=post_page-9dee50b0374b----a22d986315aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a22d986315aa--------------------------------) ·9分钟阅读·2023年7月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa22d986315aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa&user=Antons+Tocilins-Ruberts&userId=9dee50b0374b&source=-----a22d986315aa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9dee50b0374b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa&user=Antons+Tocilins-Ruberts&userId=9dee50b0374b&source=post_page-9dee50b0374b----a22d986315aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a22d986315aa--------------------------------) ·9 分钟阅读·2023 年 7 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa22d986315aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa&user=Antons+Tocilins-Ruberts&userId=9dee50b0374b&source=-----a22d986315aa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa22d986315aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa&source=-----a22d986315aa---------------------bookmark_footer-----------)![](../Images/e244e107d7b8e9c628cb4f7312d675a8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa22d986315aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feda-with-polars-step-by-step-guide-to-aggregate-and-analytic-functions-part-2-a22d986315aa&source=-----a22d986315aa---------------------bookmark_footer-----------)![](img/e244e107d7b8e9c628cb4f7312d675a8.png)
 
 照片由 [Spencer Davis](https://unsplash.com/@spencerdavis?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 介绍
 
-在[本系列的第一部分](/eda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008)中，我们介绍了 Polars 的基础知识，并将其功能和语法与 Pandas 进行了比较。这一部分将使我们的查询复杂度提高一个档次，我们将看到如何执行一些相当复杂的聚合、滚动统计等。如果你不熟悉 Polars 或者需要复习一下，确保查看[之前的部分](/eda-with-polars-step-by-step-guide-for-pandas-users-part-1-b2ec500a1008)。否则，让我们继续探索 Polars 吧！
+在本系列的第一部分中，我们介绍了 Polars 的基础知识，并将其功能和语法与 Pandas 进行了比较。这一部分将使我们的查询复杂度提高一个档次，我们将看到如何执行一些相当复杂的聚合、滚动统计等。如果你不熟悉 Polars 或者需要复习一下，确保查看之前的部分。否则，让我们继续探索 Polars 吧！
 
 # 设置
 

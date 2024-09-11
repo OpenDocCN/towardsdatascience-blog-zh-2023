@@ -1,14 +1,14 @@
 # 数据治理，但要将其作为团队运动
 
-> 原文：[https://towardsdatascience.com/data-governance-but-make-it-a-team-sport-30dc0164fb7c?source=collection_archive---------2-----------------------#2023-01-20](https://towardsdatascience.com/data-governance-but-make-it-a-team-sport-30dc0164fb7c?source=collection_archive---------2-----------------------#2023-01-20)
+> 原文：[`towardsdatascience.com/data-governance-but-make-it-a-team-sport-30dc0164fb7c?source=collection_archive---------2-----------------------#2023-01-20`](https://towardsdatascience.com/data-governance-but-make-it-a-team-sport-30dc0164fb7c?source=collection_archive---------2-----------------------#2023-01-20)
 
 ## 数据治理中没有`我` 🙃
 
-[](https://medium.com/@maggie.hays?source=post_page-----30dc0164fb7c--------------------------------)[![Maggie Hays](../Images/d895958f9f6bad3d6d046b74c6a68db1.png)](https://medium.com/@maggie.hays?source=post_page-----30dc0164fb7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30dc0164fb7c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30dc0164fb7c--------------------------------) [Maggie Hays](https://medium.com/@maggie.hays?source=post_page-----30dc0164fb7c--------------------------------)
+[](https://medium.com/@maggie.hays?source=post_page-----30dc0164fb7c--------------------------------)![Maggie Hays](https://medium.com/@maggie.hays?source=post_page-----30dc0164fb7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30dc0164fb7c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----30dc0164fb7c--------------------------------) [Maggie Hays](https://medium.com/@maggie.hays?source=post_page-----30dc0164fb7c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97bb0837f08f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-governance-but-make-it-a-team-sport-30dc0164fb7c&user=Maggie+Hays&userId=97bb0837f08f&source=post_page-97bb0837f08f----30dc0164fb7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30dc0164fb7c--------------------------------) ·6分钟阅读·2023年1月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F30dc0164fb7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-governance-but-make-it-a-team-sport-30dc0164fb7c&user=Maggie+Hays&userId=97bb0837f08f&source=-----30dc0164fb7c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97bb0837f08f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-governance-but-make-it-a-team-sport-30dc0164fb7c&user=Maggie+Hays&userId=97bb0837f08f&source=post_page-97bb0837f08f----30dc0164fb7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30dc0164fb7c--------------------------------) ·6 分钟阅读·2023 年 1 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F30dc0164fb7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-governance-but-make-it-a-team-sport-30dc0164fb7c&user=Maggie+Hays&userId=97bb0837f08f&source=-----30dc0164fb7c---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 众所周知，我们正处于现代数据堆栈的黄金时代。现在接入和使用高度灵活、可扩展的数据工具从未如此快速和简单。我们敏捷！我们以数据驱动！我们正在实现自助服务、数据民主化的梦想！
 
-![](../Images/97325f72875aa1d0bedfa08719514d2a.png)
+![](img/97325f72875aa1d0bedfa08719514d2a.png)
 
 图片由 [Campaign Creators](https://unsplash.com/@campaign_creators?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -34,11 +34,11 @@
 
 +   我们每月的**数据存储和处理成本**失控了。我们需要尽快削减成本，但不知道谁负责什么，也不知道它在组织中的使用情况。
 
-+   我们团队花费20%的开发时间来修复由于**数据质量不可靠**而导致的损坏管道。数据质量问题应该在源头被发现，并由拥有数据源的团队解决。
++   我们团队花费 20%的开发时间来修复由于**数据质量不可靠**而导致的损坏管道。数据质量问题应该在源头被发现，并由拥有数据源的团队解决。
 
 *让我们在深入框架时聚焦于第三个问题：*
 
-![](../Images/086df0e51223701b3d8274f987c29dec.png)
+![](img/086df0e51223701b3d8274f987c29dec.png)
 
 作者提供的图片
 
@@ -50,7 +50,7 @@
 
 让我们继续以数据质量不可靠为例，我们希望数据质量问题在源头被发现，并由适当的团队解决。这意味着我们要设定两个目标：1）分配**数据所有权**，2）为所有资产建立**数据质量测试覆盖**。因此，我们期望看到解决破损数据管道的时间减少。
 
-![](../Images/893c6c9aa42c8979fd09c53cfbc87127.png)
+![](img/893c6c9aa42c8979fd09c53cfbc87127.png)
 
 作者提供的图片
 
@@ -58,13 +58,13 @@
 
 # 步骤 3\. 从小处着手，然后再扩大
 
-你还记得我们在第2步刚想到的解决方案吗？抑制一下将其一次性推广到所有数据资产的冲动。这一点尤其重要，当你从数千（或数十万！）资源开始，并将其委派给几十或上百个人时。
+你还记得我们在第 2 步刚想到的解决方案吗？抑制一下将其一次性推广到所有数据资产的冲动。这一点尤其重要，当你从数千（或数十万！）资源开始，并将其委派给几十或上百个人时。
 
-🤦🏼‍♀️*提醒：将180k列名称直接放入Google表格，并期待整个工程团队因为你礼貌请求就同意添加文档，这* ***绝对是个糟糕的主意*** *。他们会嘲笑你，你每次想到这事时都会感到尴尬。* 🙃🙃
+🤦🏼‍♀️*提醒：将 180k 列名称直接放入 Google 表格，并期待整个工程团队因为你礼貌请求就同意添加文档，这* ***绝对是个糟糕的主意*** *。他们会嘲笑你，你每次想到这事时都会感到尴尬。* 🙃🙃
 
 相反，从高影响、低复杂性的数据资源子集和高度投入的利益相关者开始，与他们合作——*这就是我们开始将数据治理变成团队运动的地方！*
 
-回到我们的数据质量问题例子：我们设定了一个非常高的目标，即将所有数据实体的所有权和数据质量测试分配给100%。我们将避免一下子实现这个大目标，而是从一个狭窄的资源子集开始，这些资源是：
+回到我们的数据质量问题例子：我们设定了一个非常高的目标，即将所有数据实体的所有权和数据质量测试分配给 100%。我们将避免一下子实现这个大目标，而是从一个狭窄的资源子集开始，这些资源是：
 
 +   由高度投入的利益相关者拥有
 
@@ -72,13 +72,13 @@
 
 +   应用于业务关键的管道、模型、报告等
 
-![](../Images/e744e881c65ce7eb7f8bc8775a7a9f0e.png)
+![](img/e744e881c65ce7eb7f8bc8775a7a9f0e.png)
 
 作者提供的图片
 
 通过保持数据实体的狭窄范围，你将能够更专注于设计可重复的、跨团队的数据治理工作流程。
 
-# 第4步：推动渐进行动
+# 第 4 步：推动渐进行动
 
 你已经完成了定义解决什么问题、目标结果以及处理哪些资源的工作；现在是时候启用其他人采取行动了。这是与初步利益相关者组紧密合作的机会，以测试这一举措，为未来的大规模推广提供信息。
 
@@ -92,7 +92,7 @@
 
 最后但同样重要的是，创建快速反馈循环，并主动征求反馈。你的利益相关者在哪些方面缺乏背景？哪些行动对他们来说很困难？他们需要什么类型的持续支持？
 
-回到我们不可靠的数据质量例子，我们已经要求高度投入的利益相关者正式承担所有权，并为他们最常查询的25%业务关键数据资产添加数据质量测试。在这一步中，我们应专注于确保他们：
+回到我们不可靠的数据质量例子，我们已经要求高度投入的利益相关者正式承担所有权，并为他们最常查询的 25%业务关键数据资产添加数据质量测试。在这一步中，我们应专注于确保他们：
 
 +   理解数据质量测试的缺乏对下游资源有很大影响
 
@@ -100,11 +100,11 @@
 
 +   能够轻松创建和监控范围内资源的数据质量测试
 
-![](../Images/417c9c59d98066c0e57c3209a731045a.png)
+![](img/417c9c59d98066c0e57c3209a731045a.png)
 
 作者提供的图片
 
-# 第5步：衡量进展并学习
+# 第 5 步：衡量进展并学习
 
 既然你已经启动了跨团队的数据治理工作流，现在是时候衡量进展并确定哪些有效哪些无效了：
 
@@ -116,11 +116,11 @@
 
 +   在向其他利益相关者推出之前，你需要改变/调整什么？
 
-![](../Images/6d0e9f7837d71a71ec3118b8a5d98691.png)
+![](img/6d0e9f7837d71a71ec3118b8a5d98691.png)
 
 作者提供的图片
 
-# 第6步。迭代！
+# 第 6 步。迭代！
 
 你已经完成了最后一步！现在是时候从头开始，应用你所学到的知识，并在过程中完善这些工作流。
 

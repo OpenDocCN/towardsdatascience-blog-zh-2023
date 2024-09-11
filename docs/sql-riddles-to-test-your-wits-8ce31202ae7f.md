@@ -1,18 +1,18 @@
-# SQL谜题测试你的智慧
+# SQL 谜题测试你的智慧
 
-> 原文：[https://towardsdatascience.com/sql-riddles-to-test-your-wits-8ce31202ae7f?source=collection_archive---------4-----------------------#2023-02-22](https://towardsdatascience.com/sql-riddles-to-test-your-wits-8ce31202ae7f?source=collection_archive---------4-----------------------#2023-02-22)
+> 原文：[`towardsdatascience.com/sql-riddles-to-test-your-wits-8ce31202ae7f?source=collection_archive---------4-----------------------#2023-02-22`](https://towardsdatascience.com/sql-riddles-to-test-your-wits-8ce31202ae7f?source=collection_archive---------4-----------------------#2023-02-22)
 
 ## 时间戳、依赖过滤器和表现不佳的左连接
 
-[](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)[![Matt Sosna](../Images/c3175c0dc62b795a8d0fa57532fb669b.png)](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------) [Matt Sosna](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)
+[](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)![Matt Sosna](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------) [Matt Sosna](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff17fb22b897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-riddles-to-test-your-wits-8ce31202ae7f&user=Matt+Sosna&userId=f17fb22b897&source=post_page-f17fb22b897----8ce31202ae7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------) · 8分钟阅读 · 2023年2月22日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8ce31202ae7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-riddles-to-test-your-wits-8ce31202ae7f&user=Matt+Sosna&userId=f17fb22b897&source=-----8ce31202ae7f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff17fb22b897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-riddles-to-test-your-wits-8ce31202ae7f&user=Matt+Sosna&userId=f17fb22b897&source=post_page-f17fb22b897----8ce31202ae7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------) · 8 分钟阅读 · 2023 年 2 月 22 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8ce31202ae7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-riddles-to-test-your-wits-8ce31202ae7f&user=Matt+Sosna&userId=f17fb22b897&source=-----8ce31202ae7f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8ce31202ae7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-riddles-to-test-your-wits-8ce31202ae7f&source=-----8ce31202ae7f---------------------bookmark_footer-----------)![](../Images/e1fc7bf3a6b50e65020f31e0892a018c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8ce31202ae7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-riddles-to-test-your-wits-8ce31202ae7f&source=-----8ce31202ae7f---------------------bookmark_footer-----------)![](img/e1fc7bf3a6b50e65020f31e0892a018c.png)
 
 图片由 [Saffu](https://unsplash.com/@saffu?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

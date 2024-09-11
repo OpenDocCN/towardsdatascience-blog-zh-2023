@@ -1,18 +1,18 @@
 # 在 CPU 上分布式运行 Llama 2
 
-> 原文：[https://towardsdatascience.com/distributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d?source=collection_archive---------2-----------------------#2023-08-02](https://towardsdatascience.com/distributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d?source=collection_archive---------2-----------------------#2023-08-02)
+> 原文：[`towardsdatascience.com/distributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d?source=collection_archive---------2-----------------------#2023-08-02`](https://towardsdatascience.com/distributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d?source=collection_archive---------2-----------------------#2023-08-02)
 
 ## *一个使用 Python 在普通硬件上进行批量推理的玩具示例，通过 llama.cpp 和 PySpark。*
 
-[](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)[![Jonathan Apple](../Images/82095d4a9ffde8260eb679f76a2f162c.png)](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------) [Jonathan Apple](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)
+[](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)![Jonathan Apple](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------) [Jonathan Apple](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d68a0f98df3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&user=Jonathan+Apple&userId=7d68a0f98df3&source=post_page-7d68a0f98df3----65736e9f466d---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------) ·6分钟阅读·2023年8月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65736e9f466d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&user=Jonathan+Apple&userId=7d68a0f98df3&source=-----65736e9f466d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d68a0f98df3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&user=Jonathan+Apple&userId=7d68a0f98df3&source=post_page-7d68a0f98df3----65736e9f466d---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------) ·6 分钟阅读·2023 年 8 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65736e9f466d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&user=Jonathan+Apple&userId=7d68a0f98df3&source=-----65736e9f466d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65736e9f466d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&source=-----65736e9f466d---------------------bookmark_footer-----------)![](../Images/875651a67a41a94af74d7dfb027b9fbc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65736e9f466d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&source=-----65736e9f466d---------------------bookmark_footer-----------)![](img/875651a67a41a94af74d7dfb027b9fbc.png)
 
 *作者通过 DALL-E 制作的图像*
 
@@ -36,11 +36,11 @@
 
 接下来，[llama-cpp-python](https://github.com/abetlen/llama-cpp-python) 绑定提供了从 Python 内部使用 **llama.cpp** 的简单方法。
 
-最后，Spark 的 `applyInPandas()` ([文档](https://spark.apache.org/docs/3.1.2/api/python/reference/api/pyspark.sql.GroupedData.applyInPandas.html)) 可以将巨大的数据源分割成 [Pandas](https://pandas.pydata.org/) 大小的块并独立处理。请注意，如果向量化的 Spark 函数能够实现相同的结果，这种方法 *可能* 是一种反模式，但在我们的案例中，我们基本上是将 Spark 作为一个简单的协调器来[扩展](/the-beginners-guide-to-distributed-computing-6d6833796318)我们对 **llama.cpp** 的使用。可能还有更高效的批处理方式来使用 **llama.cpp**，但考虑到 Spark 的容错和可扩展性的简易性和自动化好处，这种方式很有吸引力。
+最后，Spark 的 `applyInPandas()` ([文档](https://spark.apache.org/docs/3.1.2/api/python/reference/api/pyspark.sql.GroupedData.applyInPandas.html)) 可以将巨大的数据源分割成 [Pandas](https://pandas.pydata.org/) 大小的块并独立处理。请注意，如果向量化的 Spark 函数能够实现相同的结果，这种方法 *可能* 是一种反模式，但在我们的案例中，我们基本上是将 Spark 作为一个简单的协调器来扩展我们对 **llama.cpp** 的使用。可能还有更高效的批处理方式来使用 **llama.cpp**，但考虑到 Spark 的容错和可扩展性的简易性和自动化好处，这种方式很有吸引力。
 
 # 计划
 
-![](../Images/9b9e891e959bf66a4db3f5e1fcbaeff5.png)
+![](img/9b9e891e959bf66a4db3f5e1fcbaeff5.png)
 
 创意共享许可证 ([CC BY-SA 3.0](https://commons.wikimedia.org/wiki/Category:War_and_Peace#/media/File:War_and_Peace_book.JPG))
 

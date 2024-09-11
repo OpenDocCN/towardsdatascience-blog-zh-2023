@@ -1,18 +1,18 @@
 # 两个强大的 Python 特性，让你的代码更简洁易读
 
-> 原文：[https://towardsdatascience.com/two-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a?source=collection_archive---------5-----------------------#2023-09-29](https://towardsdatascience.com/two-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a?source=collection_archive---------5-----------------------#2023-09-29)
+> 原文：[`towardsdatascience.com/two-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a?source=collection_archive---------5-----------------------#2023-09-29`](https://towardsdatascience.com/two-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a?source=collection_archive---------5-----------------------#2023-09-29)
 
 ## 利用匹配语句和对象切片的优雅提升你的代码质量。
 
-[](https://murtaza5152-ali.medium.com/?source=post_page-----51240f11d1a--------------------------------)[![Murtaza Ali](../Images/2aecff50999761022af29f9b30e2f925.png)](https://murtaza5152-ali.medium.com/?source=post_page-----51240f11d1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51240f11d1a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51240f11d1a--------------------------------) [Murtaza Ali](https://murtaza5152-ali.medium.com/?source=post_page-----51240f11d1a--------------------------------)
+[](https://murtaza5152-ali.medium.com/?source=post_page-----51240f11d1a--------------------------------)![Murtaza Ali](https://murtaza5152-ali.medium.com/?source=post_page-----51240f11d1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51240f11d1a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----51240f11d1a--------------------------------) [Murtaza Ali](https://murtaza5152-ali.medium.com/?source=post_page-----51240f11d1a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F607fa603b7ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a&user=Murtaza+Ali&userId=607fa603b7ce&source=post_page-607fa603b7ce----51240f11d1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51240f11d1a--------------------------------) · 8 min read · 2023年9月29日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F607fa603b7ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a&user=Murtaza+Ali&userId=607fa603b7ce&source=post_page-607fa603b7ce----51240f11d1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51240f11d1a--------------------------------) · 8 min read · 2023 年 9 月 29 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51240f11d1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a&source=-----51240f11d1a---------------------bookmark_footer-----------)![](../Images/4c2222582de9c851f5249d9cc8877197.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51240f11d1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-powerful-python-features-to-streamline-your-code-and-make-it-more-readable-51240f11d1a&source=-----51240f11d1a---------------------bookmark_footer-----------)![](img/4c2222582de9c851f5249d9cc8877197.png)
 
 照片由 [Kevin Ku](https://unsplash.com/@ikukevk?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 

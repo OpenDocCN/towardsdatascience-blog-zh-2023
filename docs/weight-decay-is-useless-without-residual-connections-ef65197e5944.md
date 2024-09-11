@@ -1,18 +1,18 @@
 # 权重衰减在没有残差连接的情况下能有效吗？
 
-> 原文：[https://towardsdatascience.com/weight-decay-is-useless-without-residual-connections-ef65197e5944?source=collection_archive---------13-----------------------#2023-02-21](https://towardsdatascience.com/weight-decay-is-useless-without-residual-connections-ef65197e5944?source=collection_archive---------13-----------------------#2023-02-21)
+> 原文：[`towardsdatascience.com/weight-decay-is-useless-without-residual-connections-ef65197e5944?source=collection_archive---------13-----------------------#2023-02-21`](https://towardsdatascience.com/weight-decay-is-useless-without-residual-connections-ef65197e5944?source=collection_archive---------13-----------------------#2023-02-21)
 
 ## 残差连接如何秘密地对抗过拟合？
 
-[](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)[![Guy Dar](../Images/0a3b1ddd33d595e97e7a0dad551b2708.png)](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------) [Guy Dar](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)
+[](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)![Guy Dar](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------) [Guy Dar](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffab216dbde3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&user=Guy+Dar&userId=fab216dbde3e&source=post_page-fab216dbde3e----ef65197e5944---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------) ·9 min read·2023年2月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef65197e5944&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&user=Guy+Dar&userId=fab216dbde3e&source=-----ef65197e5944---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffab216dbde3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&user=Guy+Dar&userId=fab216dbde3e&source=post_page-fab216dbde3e----ef65197e5944---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------) ·9 min read·2023 年 2 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef65197e5944&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&user=Guy+Dar&userId=fab216dbde3e&source=-----ef65197e5944---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef65197e5944&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&source=-----ef65197e5944---------------------bookmark_footer-----------)![](../Images/f8e4f8de8c3ec7f53556112e57392c22.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef65197e5944&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&source=-----ef65197e5944---------------------bookmark_footer-----------)![](img/f8e4f8de8c3ec7f53556112e57392c22.png)
 
 图片由 ThisisEngineering RAEng 提供，来源于 Unsplash
 
@@ -32,13 +32,13 @@
 
 让我们看看添加 LayerNorm 后会发生什么。首先，什么是 LayerNorm？简单回顾一下：
 
-![](../Images/5124a0125668a4824ed9dcf3ede31074.png)
+![](img/5124a0125668a4824ed9dcf3ede31074.png)
 
 其中 **µ** 是 **x** 条目的平均值，*◦* 表示逐元素乘法，**β, γ** 是向量。
 
 那么，当我们添加 LayerNorm 时，尺度特性会发生什么变化？当然，在添加 LayerNorm 之前，情况不会改变，因此如果我们在此之前将权重矩阵缩放了 **a** > 0，那么 LayerNorm 的输入会被 **a** 缩放，然后发生的情况是：
 
-![](../Images/b1e9da85a8554edb34aabbfe7c5ca942.png)
+![](img/b1e9da85a8554edb34aabbfe7c5ca942.png)
 
 所以，我们得到一个新的属性，这次尺度缩放只是使输出 *保持不变——* **正尺度 *不变性***。而且，这即将变得令人遗憾……
 
@@ -48,17 +48,17 @@
 
 让我们提醒自己我们正在尝试最小化什么：
 
-![](../Images/f19404ac9585bb2ca33a7afd4e576dde.png)
+![](img/f19404ac9585bb2ca33a7afd4e576dde.png)
 
 其中训练集表示为一组 {***(x_i, y_i)***} 的对，神经网络的参数（权重）***f*** 由 **Θ** 指定。这个表达式由两部分组成：需要最小化的经验损失——神经网络在训练集上的损失，以及旨在使模型达到“更简单”解决方案的正则化项。在这种情况下，简单性被量化为网络权重具有低范数。
 
-但问题在于，我们发现了一种绕过权重规模限制的方法。我们可以将每个权重矩阵按任意小的因子进行缩放，仍然能得到相同的输出。换句话说——**函数 *f***，即原始网络和缩放网络实现的函数是完全相同的！内部可能不同，但输出是相同的。这适用于每一个具有这种架构的网络，不管参数的实际值是什么。聪明的读者可能会注意到**β, γ**也是参数，因此也应考虑，但由于下一个LayerNorm的尺度不变性，它们也可以被缩放（*除了那个恼人的最后一层）。
+但问题在于，我们发现了一种绕过权重规模限制的方法。我们可以将每个权重矩阵按任意小的因子进行缩放，仍然能得到相同的输出。换句话说——**函数 *f***，即原始网络和缩放网络实现的函数是完全相同的！内部可能不同，但输出是相同的。这适用于每一个具有这种架构的网络，不管参数的实际值是什么。聪明的读者可能会注意到**β, γ**也是参数，因此也应考虑，但由于下一个 LayerNorm 的尺度不变性，它们也可以被缩放（*除了那个恼人的最后一层）。
 
 记住，我们的目标是对未见数据进行泛化。如果正则化项趋近于零，网络就可以自由地过拟合训练数据，正则化项也就变得无用。正如我们所见，对于每一个具有这种架构的网络，我们可以设计一个等效的网络（即计算完全相同的函数），其权重矩阵范数可以任意小，这意味着正则化项可以趋近于零而不影响经验损失项。换句话说，我们可以去掉权重衰减项，它不会有太大影响。
 
-最后一层的技术细节仍然是我们面临的一个小问题，我们不能去掉它的权重衰减项，因为最后一层通常没有跟随LayerNorm，而且：最后的LayerNorm无法重新缩放，因为它后面没有任何LayerNorm，因此我们还要考虑它的**β, γ**。所以我们剩下的只有最后一层的范数和LayerNorm的参数。为什么这并不是那么糟糕？过拟合可能发生在整个网络中，因此我们可以几乎所有参数进行过拟合。更重要的是，模型的内部层是学习关注点的特征提取器，而最后一层是对学习到的特征进行分类的分类器。至少从直观上看，它在过拟合中的作用可能相比于特征提取要小得多。
+最后一层的技术细节仍然是我们面临的一个小问题，我们不能去掉它的权重衰减项，因为最后一层通常没有跟随 LayerNorm，而且：最后的 LayerNorm 无法重新缩放，因为它后面没有任何 LayerNorm，因此我们还要考虑它的**β, γ**。所以我们剩下的只有最后一层的范数和 LayerNorm 的参数。为什么这并不是那么糟糕？过拟合可能发生在整个网络中，因此我们可以几乎所有参数进行过拟合。更重要的是，模型的内部层是学习关注点的特征提取器，而最后一层是对学习到的特征进行分类的分类器。至少从直观上看，它在过拟合中的作用可能相比于特征提取要小得多。
 
-还有一句警告：尽管理论上，模型应该找到一个过拟合训练数据的解决方案，但观察到优化可能会收敛到泛化解决方案，即使没有显式正则化。这与优化算法有关。我们使用局部优化算法，例如梯度下降、SGD、Adam、AdaGrad等。它们不能保证收敛到最***全局***最优的解决方案。这有时反而是一种福气。一项有趣的研究（例如，[*Neyshabur, 2017*]）表明，即使没有显式正则化，这些算法也属于**隐式正则化**的一种形式！虽然并非万无一失，但有时模型会收敛到一个泛化解决方案——即使没有正则化项！
+还有一句警告：尽管理论上，模型应该找到一个过拟合训练数据的解决方案，但观察到优化可能会收敛到泛化解决方案，即使没有显式正则化。这与优化算法有关。我们使用局部优化算法，例如梯度下降、SGD、Adam、AdaGrad 等。它们不能保证收敛到最***全局***最优的解决方案。这有时反而是一种福气。一项有趣的研究（例如，[*Neyshabur, 2017*]）表明，即使没有显式正则化，这些算法也属于**隐式正则化**的一种形式！虽然并非万无一失，但有时模型会收敛到一个泛化解决方案——即使没有正则化项！
 
 # 残差连接如何解决这个问题？
 
@@ -76,6 +76,6 @@
 
 F. Liu, X. Ren, Z. Zhang, X. Sun, 和 Y. Zou. *重新思考带有层归一化的残差连接*，2020.
 
-B. Neyshabur. *深度学习中的隐式正则化*，2017\. 网址 [https://arxiv.org/abs/1709.01953](https://arxiv.org/abs/1709.01953).
+B. Neyshabur. *深度学习中的隐式正则化*，2017\. 网址 [`arxiv.org/abs/1709.01953`](https://arxiv.org/abs/1709.01953).
 
-R. Xiong, Y. Yang, D. He, K. Zheng, S. Zheng, C. Xing, H. Zhang, Y. Lan, L. Wang, 和 T.-Y. Liu. *关于 Transformer 架构中的层归一化*，2020\. 网址 [https://arxiv.org/abs/2002.04745](https://arxiv.org/abs/2002.04745).
+R. Xiong, Y. Yang, D. He, K. Zheng, S. Zheng, C. Xing, H. Zhang, Y. Lan, L. Wang, 和 T.-Y. Liu. *关于 Transformer 架构中的层归一化*，2020\. 网址 [`arxiv.org/abs/2002.04745`](https://arxiv.org/abs/2002.04745).

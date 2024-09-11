@@ -1,18 +1,18 @@
-# 你需要注意的3个隐性 Pandas 错误
+# 你需要注意的 3 个隐性 Pandas 错误
 
-> 原文：[https://towardsdatascience.com/3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5?source=collection_archive---------3-----------------------#2023-08-15](https://towardsdatascience.com/3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5?source=collection_archive---------3-----------------------#2023-08-15)
+> 原文：[`towardsdatascience.com/3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5?source=collection_archive---------3-----------------------#2023-08-15`](https://towardsdatascience.com/3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5?source=collection_archive---------3-----------------------#2023-08-15)
 
 ## 以及这些错误如何导致隐藏的失败
 
-[](https://sonery.medium.com/?source=post_page-----80d0112de6b5--------------------------------)[![Soner Yıldırım](../Images/c589572e9d1ee176cd4f5a0008173f1b.png)](https://sonery.medium.com/?source=post_page-----80d0112de6b5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----80d0112de6b5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----80d0112de6b5--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----80d0112de6b5--------------------------------)
+[](https://sonery.medium.com/?source=post_page-----80d0112de6b5--------------------------------)![Soner Yıldırım](https://sonery.medium.com/?source=post_page-----80d0112de6b5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----80d0112de6b5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----80d0112de6b5--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----80d0112de6b5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----80d0112de6b5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----80d0112de6b5--------------------------------) · 5 min read · 2023年8月15日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F80d0112de6b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----80d0112de6b5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----80d0112de6b5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----80d0112de6b5--------------------------------) · 5 min read · 2023 年 8 月 15 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F80d0112de6b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----80d0112de6b5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F80d0112de6b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5&source=-----80d0112de6b5---------------------bookmark_footer-----------)![](../Images/b465b8e4d26e6b8aacd9bf4a3442c2e5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F80d0112de6b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-silent-pandas-mistakes-you-should-be-aware-of-80d0112de6b5&source=-----80d0112de6b5---------------------bookmark_footer-----------)![](img/b465b8e4d26e6b8aacd9bf4a3442c2e5.png)
 
 [Malik Earnest](https://unsplash.com/@resolvxd?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/photos/xgxzqRpK0UE?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

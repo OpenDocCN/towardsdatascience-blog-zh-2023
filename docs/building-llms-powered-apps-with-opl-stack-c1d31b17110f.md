@@ -1,113 +1,113 @@
-# 使用OPL堆栈构建LLMs驱动的应用程序
+# 使用 OPL 堆栈构建 LLMs 驱动的应用程序
 
-> 原文：[https://towardsdatascience.com/building-llms-powered-apps-with-opl-stack-c1d31b17110f?source=collection_archive---------2-----------------------#2023-04-03](https://towardsdatascience.com/building-llms-powered-apps-with-opl-stack-c1d31b17110f?source=collection_archive---------2-----------------------#2023-04-03)
+> 原文：[`towardsdatascience.com/building-llms-powered-apps-with-opl-stack-c1d31b17110f?source=collection_archive---------2-----------------------#2023-04-03`](https://towardsdatascience.com/building-llms-powered-apps-with-opl-stack-c1d31b17110f?source=collection_archive---------2-----------------------#2023-04-03)
 
-## OPL：OpenAI、Pinecone 和 Langchain 用于知识驱动的AI助手
+## OPL：OpenAI、Pinecone 和 Langchain 用于知识驱动的 AI 助手
 
-[](https://medium.com/@wen_yang?source=post_page-----c1d31b17110f--------------------------------)[![Wen Yang](../Images/5eac438762d015a0ab128757cc951967.png)](https://medium.com/@wen_yang?source=post_page-----c1d31b17110f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c1d31b17110f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c1d31b17110f--------------------------------) [Wen Yang](https://medium.com/@wen_yang?source=post_page-----c1d31b17110f--------------------------------)
+[](https://medium.com/@wen_yang?source=post_page-----c1d31b17110f--------------------------------)![Wen Yang](https://medium.com/@wen_yang?source=post_page-----c1d31b17110f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c1d31b17110f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c1d31b17110f--------------------------------) [Wen Yang](https://medium.com/@wen_yang?source=post_page-----c1d31b17110f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbb5383bd438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-llms-powered-apps-with-opl-stack-c1d31b17110f&user=Wen+Yang&userId=cbb5383bd438&source=post_page-cbb5383bd438----c1d31b17110f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c1d31b17110f--------------------------------) ·12 min 阅读·2023年4月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc1d31b17110f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-llms-powered-apps-with-opl-stack-c1d31b17110f&user=Wen+Yang&userId=cbb5383bd438&source=-----c1d31b17110f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbb5383bd438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-llms-powered-apps-with-opl-stack-c1d31b17110f&user=Wen+Yang&userId=cbb5383bd438&source=post_page-cbb5383bd438----c1d31b17110f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c1d31b17110f--------------------------------) ·12 min 阅读·2023 年 4 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc1d31b17110f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-llms-powered-apps-with-opl-stack-c1d31b17110f&user=Wen+Yang&userId=cbb5383bd438&source=-----c1d31b17110f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc1d31b17110f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-llms-powered-apps-with-opl-stack-c1d31b17110f&source=-----c1d31b17110f---------------------bookmark_footer-----------)![](../Images/017e9316f7ecbd4f794d51802ab23255.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc1d31b17110f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-llms-powered-apps-with-opl-stack-c1d31b17110f&source=-----c1d31b17110f---------------------bookmark_footer-----------)![](img/017e9316f7ecbd4f794d51802ab23255.png)
 
 Midjourney 提示：一个女孩用多个积木块建造乐高桥梁
 
 我记得一个月前，Eugene Yan 在 LinkedIn 上发布了一项 [投票](https://www.linkedin.com/posts/eugeneyan_activity-7029289248209977344-oteC?utm_source=share&utm_medium=member_desktop)：
 
-> 你是否感到因为没有参与LLMs/生成型AI而错失良机？
+> 你是否感到因为没有参与 LLMs/生成型 AI 而错失良机？
 
-大多数人回答了“是”。考虑到chatGPT引发的广泛关注以及现在gpt-4的发布，很容易理解为什么会这样。人们形容大型语言模型（LLMs）的崛起就像iPhone的时刻。然而，我认为真的没有必要感到FOMO。考虑一下：错过了开发iPhones的机会并不排除创造创新iPhone应用程序的巨大潜力。LLMs也是如此。我们刚刚进入了一个新时代，现在正是利用LLMs整合构建强大应用程序的绝佳时机。
+大多数人回答了“是”。考虑到 chatGPT 引发的广泛关注以及现在 gpt-4 的发布，很容易理解为什么会这样。人们形容大型语言模型（LLMs）的崛起就像 iPhone 的时刻。然而，我认为真的没有必要感到 FOMO。考虑一下：错过了开发 iPhones 的机会并不排除创造创新 iPhone 应用程序的巨大潜力。LLMs 也是如此。我们刚刚进入了一个新时代，现在正是利用 LLMs 整合构建强大应用程序的绝佳时机。
 
 在这篇文章中，我将涵盖以下主题：
 
-1.  什么是OPL技术栈？
+1.  什么是 OPL 技术栈？
 
-1.  如何使用OPL构建具有领域知识的chatGPT？（包含代码演示的关键组件）
+1.  如何使用 OPL 构建具有领域知识的 chatGPT？（包含代码演示的关键组件）
 
 1.  生产考虑因素
 
 1.  常见误解
 
-# 1\. 什么是OPL技术栈？
+# 1\. 什么是 OPL 技术栈？
 
-![](../Images/5efe1d72069d166bbe99a2cee6c8a240.png)
+![](img/5efe1d72069d166bbe99a2cee6c8a240.png)
 
 作者创建的图像
 
-**OPL代表OpenAI、Pinecone和Langchain，** 它已逐渐成为克服LLMs两个局限性的行业解决方案：
+**OPL 代表 OpenAI、Pinecone 和 Langchain，** 它已逐渐成为克服 LLMs 两个局限性的行业解决方案：
 
-1.  **LLMs幻觉：** chatGPT有时会提供过度自信的错误回答。一个潜在的原因是这些语言模型被训练得非常有效地预测下一个词，或者更准确地说是下一个标记。给定输入文本，chatGPT会返回高概率的词，这并不意味着chatGPT具有推理能力。
+1.  **LLMs 幻觉：** chatGPT 有时会提供过度自信的错误回答。一个潜在的原因是这些语言模型被训练得非常有效地预测下一个词，或者更准确地说是下一个标记。给定输入文本，chatGPT 会返回高概率的词，这并不意味着 chatGPT 具有推理能力。
 
-1.  **知识更新不够及时：** chatGPT的训练数据仅限于2021年9月之前的互联网数据。因此，如果你的问题涉及最近的趋势或话题，它可能会产生不太理想的回答。
+1.  **知识更新不够及时：** chatGPT 的训练数据仅限于 2021 年 9 月之前的互联网数据。因此，如果你的问题涉及最近的趋势或话题，它可能会产生不太理想的回答。
 
-常见的解决方案是在LLMs上添加知识库，并使用Langchain作为构建流水线的框架。每项技术的关键组件可以总结如下：
+常见的解决方案是在 LLMs 上添加知识库，并使用 Langchain 作为构建流水线的框架。每项技术的关键组件可以总结如下：
 
 +   **OpenAI**：
 
-    - 提供对强大LLMs如chatGPT和gpt-4的API访问
+    - 提供对强大 LLMs 如 chatGPT 和 gpt-4 的 API 访问
 
     - 提供将文本转换为嵌入的模型。
 
 +   **Pinecone**：提供嵌入向量存储、语义相似度比较和快速检索。
 
-+   **Langchain**：它包含6个模块（`Models`、`Prompts`、`Indexes`、`Memory`、`Chains`和`Agents`）。
++   **Langchain**：它包含 6 个模块（`Models`、`Prompts`、`Indexes`、`Memory`、`Chains`和`Agents`）。
 
-    - `Models` 提供了灵活的嵌入模型、聊天模型和LLMs，包括但不限于OpenAI的产品。你还可以使用Hugging Face上的其他模型，如BLOOM和FLAN-T5。
+    - `Models` 提供了灵活的嵌入模型、聊天模型和 LLMs，包括但不限于 OpenAI 的产品。你还可以使用 Hugging Face 上的其他模型，如 BLOOM 和 FLAN-T5。
 
     - `Memory` : 有多种方式可以让聊天机器人记住过去的对话记录。根据我的经验，实体记忆效果好且高效。
 
-    - `Chains` : 如果你是Langchain的新手，Chains是一个很好的起点。它遵循类似流水线的结构来处理用户输入，选择LLM模型，应用Prompt模板，并从知识库中搜索相关上下文。
+    - `Chains` : 如果你是 Langchain 的新手，Chains 是一个很好的起点。它遵循类似流水线的结构来处理用户输入，选择 LLM 模型，应用 Prompt 模板，并从知识库中搜索相关上下文。
 
-接下来，我将介绍我使用OPL技术栈构建的应用程序。
+接下来，我将介绍我使用 OPL 技术栈构建的应用程序。
 
-# 2\. 如何使用OPL构建具有领域知识的chatGPT？（包含代码演示的关键组件）
+# 2\. 如何使用 OPL 构建具有领域知识的 chatGPT？（包含代码演示的关键组件）
 
 我构建的应用程序称为[chatOutside](https://outsidechat.streamlit.app/)，它有两个主要部分：
 
-+   **chatGPT**：让你直接与chatGPT聊天，格式类似于问答应用，每次接收一个输入和输出。
++   **chatGPT**：让你直接与 chatGPT 聊天，格式类似于问答应用，每次接收一个输入和输出。
 
-+   **chatOutside**：让你与具有户外活动及趋势专业知识的chatGPT版本进行对话。格式更类似于聊天机器人的风格，所有消息在对话过程中都会被记录。我还包含了一个提供源链接的部分，这可以增强用户信心，并且总是有用的。
++   **chatOutside**：让你与具有户外活动及趋势专业知识的 chatGPT 版本进行对话。格式更类似于聊天机器人的风格，所有消息在对话过程中都会被记录。我还包含了一个提供源链接的部分，这可以增强用户信心，并且总是有用的。
 
-如你所见，如果你问同样的问题：“2023年最好的跑鞋是什么？我的预算在$200左右。”chatGPT会说“作为一个AI语言模型，我无法访问未来的信息。”而chatOutside会为你提供更及时的答案，并附上源链接。
+如你所见，如果你问同样的问题：“2023 年最好的跑鞋是什么？我的预算在$200 左右。”chatGPT 会说“作为一个 AI 语言模型，我无法访问未来的信息。”而 chatOutside 会为你提供更及时的答案，并附上源链接。
 
-![](../Images/90480e9dfc8f81b47e0fe6bf4e2e3f4b.png)
+![](img/90480e9dfc8f81b47e0fe6bf4e2e3f4b.png)
 
 开发过程涉及三个主要步骤：
 
-+   第一步：在Pinecone中构建外部知识库
++   第一步：在 Pinecone 中构建外部知识库
 
-+   第二步：使用Langchain进行问答服务
++   第二步：使用 Langchain 进行问答服务
 
-+   第三步：在Streamlit中构建我们的应用程序
++   第三步：在 Streamlit 中构建我们的应用程序
 
 每个步骤的实施细节将在下面讨论。
 
-## **步骤1：** 在Pinecone中构建外部知识库
+## **步骤 1：** 在 Pinecone 中构建外部知识库
 
-+   **步骤1.1：** 我连接到我们的外部目录数据库，并选择了在2022年1月1日至2023年3月29日之间发布的文章。这为我们提供了大约20,000条记录。
++   **步骤 1.1：** 我连接到我们的外部目录数据库，并选择了在 2022 年 1 月 1 日至 2023 年 3 月 29 日之间发布的文章。这为我们提供了大约 20,000 条记录。
 
-![](../Images/a55bed6eacdefdd3ad7e8a6bb57cae7c.png)
+![](img/a55bed6eacdefdd3ad7e8a6bb57cae7c.png)
 
 外部的示例数据预览
 
 接下来，我们需要进行两个数据转换。
 
-+   **步骤1.2：** 将上述数据框转换为字典列表，以确保数据可以正确地插入到Pinecone中。
++   **步骤 1.2：** 将上述数据框转换为字典列表，以确保数据可以正确地插入到 Pinecone 中。
 
 ```py
 # Convert dataframe to a list of dict for Pinecone data upsert
 data = df_item.to_dict('records')
 ```
 
-+   **步骤1.3：** 使用Langchain的`RecursiveCharacterTextSplitter`将`content`拆分成更小的块。将文档拆分为更小的块有两个好处：
++   **步骤 1.3：** 使用 Langchain 的`RecursiveCharacterTextSplitter`将`content`拆分成更小的块。将文档拆分为更小的块有两个好处：
 
-    - 一篇典型文章可能超过1000个字符，这非常长。想象一下我们想检索前3篇文章作为提示给chatGPT，我们很容易就会超过4000个字元限制。
+    - 一篇典型文章可能超过 1000 个字符，这非常长。想象一下我们想检索前 3 篇文章作为提示给 chatGPT，我们很容易就会超过 4000 个字元限制。
 
-    - 更小的块提供更相关的信息，从而为chatGPT提供更好的提示上下文。
+    - 更小的块提供更相关的信息，从而为 chatGPT 提供更好的提示上下文。
 
 ```py
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -120,13 +120,13 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 ```
 
-分割后，每条记录的内容被拆分成多个部分，每个部分少于400个字元。
+分割后，每条记录的内容被拆分成多个部分，每个部分少于 400 个字元。
 
-![](../Images/309b912e454adbd6526dcc71bbd2aab6.png)
+![](img/309b912e454adbd6526dcc71bbd2aab6.png)
 
 将内容拆分为多个块
 
-值得注意的是，使用的文本分割器称为`RecursiveCharacterTextSplitter`，这是Langchain的创建者Harrison Chase推荐使用的。基本思路是首先按段落拆分，然后按句子拆分，重叠（20字元）。这有助于保留来自周围句子的有意义信息和上下文。
+值得注意的是，使用的文本分割器称为`RecursiveCharacterTextSplitter`，这是 Langchain 的创建者 Harrison Chase 推荐使用的。基本思路是首先按段落拆分，然后按句子拆分，重叠（20 字元）。这有助于保留来自周围句子的有意义信息和上下文。
 
 +   **步骤 1.4：** 将数据插入 Pinecone。下面的代码改编自 [James Briggs](https://medium.com/u/b9d77a4ca1d1?source=post_page-----c1d31b17110f--------------------------------) 的精彩 [教程](https://github.com/pinecone-io/examples/blob/master/generation/langchain/handbook/05-langchain-retrieval-augmentation.ipynb)。
 
@@ -213,7 +213,7 @@ for i, record in enumerate(tqdm(data)):
 
 在将 Outside 文章数据插入后，我们可以通过使用 `index.describe_index_stats()` 检查我们的 Pinecone 索引。需要注意的统计数据之一是 `index_fullness`，在我们的案例中为 0.2。这意味着 Pinecone pod 已满 20%，暗示一个 p1 pod 大约可以存储 10 万篇文章。
 
-![](../Images/e58bbd39a40d1f5ca391d0328c3206d7.png)
+![](img/e58bbd39a40d1f5ca391d0328c3206d7.png)
 
 在将数据插入 Pinecone 后
 
@@ -221,7 +221,7 @@ for i, record in enumerate(tqdm(data)):
 
 *注意：Langchain 最近更新非常快，下面代码使用的版本是* `*0.0.118*` *。*
 
-![](../Images/84f252a1857dc61124514ae1c921ecfe.png)
+![](img/84f252a1857dc61124514ae1c921ecfe.png)
 
 OPL 堆栈中的数据流
 
@@ -272,7 +272,7 @@ qa_with_sources = VectorDBQAWithSourcesChain.from_chain_type(
 
 现在我们可以通过提出一个与徒步旅行相关的问题进行测试：“你能推荐一些加州湾区带水景的高级徒步旅行路线吗？”
 
-![](../Images/20894ccdec7880545e25efa3b0beb363.png)
+![](img/20894ccdec7880545e25efa3b0beb363.png)
 
 Langchain VectorDBQA 带来源
 

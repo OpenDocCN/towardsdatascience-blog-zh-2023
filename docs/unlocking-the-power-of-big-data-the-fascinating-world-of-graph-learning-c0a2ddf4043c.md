@@ -1,18 +1,18 @@
 # 解锁大数据的力量：图学习的迷人世界
 
-> 原文：[https://towardsdatascience.com/unlocking-the-power-of-big-data-the-fascinating-world-of-graph-learning-c0a2ddf4043c?source=collection_archive---------8-----------------------#2023-11-09](https://towardsdatascience.com/unlocking-the-power-of-big-data-the-fascinating-world-of-graph-learning-c0a2ddf4043c?source=collection_archive---------8-----------------------#2023-11-09)
+> 原文：[`towardsdatascience.com/unlocking-the-power-of-big-data-the-fascinating-world-of-graph-learning-c0a2ddf4043c?source=collection_archive---------8-----------------------#2023-11-09`](https://towardsdatascience.com/unlocking-the-power-of-big-data-the-fascinating-world-of-graph-learning-c0a2ddf4043c?source=collection_archive---------8-----------------------#2023-11-09)
 
 ## 利用深度学习将未开发的数据转变为长期竞争力的战略资产。
 
-[![Mathieu Laversin](../Images/9ca7f2528f9fe655e2aa18e382e560f9.png)](https://medium.com/@mathieulaversin3?source=post_page-----c0a2ddf4043c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c0a2ddf4043c--------------------------------) [Mathieu Laversin](https://medium.com/@mathieulaversin3?source=post_page-----c0a2ddf4043c--------------------------------)
+![Mathieu Laversin](https://medium.com/@mathieulaversin3?source=post_page-----c0a2ddf4043c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0a2ddf4043c--------------------------------) [Mathieu Laversin](https://medium.com/@mathieulaversin3?source=post_page-----c0a2ddf4043c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd6ebca0f38b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-the-power-of-big-data-the-fascinating-world-of-graph-learning-c0a2ddf4043c&user=Mathieu+Laversin&userId=d6ebca0f38b4&source=post_page-d6ebca0f38b4----c0a2ddf4043c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0a2ddf4043c--------------------------------) ·12分钟阅读·2023年11月9日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd6ebca0f38b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-the-power-of-big-data-the-fascinating-world-of-graph-learning-c0a2ddf4043c&user=Mathieu+Laversin&userId=d6ebca0f38b4&source=post_page-d6ebca0f38b4----c0a2ddf4043c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0a2ddf4043c--------------------------------) ·12 分钟阅读·2023 年 11 月 9 日
 
 --
 
-![](../Images/a392b226af14c62e715a11a498e32b34.png)
+![](img/a392b226af14c62e715a11a498e32b34.png)
 
 图片由 [Nathan Anderson](https://unsplash.com/@nathananderson?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，[Unsplash](https://unsplash.com/s/photos/night-sky?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 上的照片
 
@@ -26,7 +26,7 @@
 
 访问这些数据需要很长时间，权利验证，特别是内容检查在授予用户访问权限之前是必需的。
 
-![](../Images/90c71b29e47c2a19feb1d4229fd0a774.png)
+![](img/90c71b29e47c2a19feb1d4229fd0a774.png)
 
 可视化数据未被使用的原因。（由 Bing Image Creator 生成）
 
@@ -54,7 +54,7 @@
 
 *这个想法是创建一个图来结构化我们的数据，并最终根据特征预测业务数据。换句话说，从存储在公司环境中的数据中，记录每个数据集以关联用途，将来减少搜索成本，并更具数据驱动。*
 
-*我们有830个标签需要分类，但行数不多。希望图学习的力量能发挥作用。我让你阅读...“*
+*我们有 830 个标签需要分类，但行数不多。希望图学习的力量能发挥作用。我让你阅读...“*
 
 **文章目标：** 本文旨在提供对大数据概念、图学习、使用的算法及结果的理解。它还涉及部署考虑事项以及如何成功开发模型。
 
@@ -62,13 +62,13 @@
 
 +   **数据采集：为图创建获取必要数据**
 
-+   **基于图的建模与GSage**
++   **基于图的建模与 GSage**
 
 +   **有效的部署策略**
 
 # 数据采集
 
-正如我之前提到的，数据通常存储在Hive列中。如果你还不知道，这些数据存储在大型容器中。我们通过称为ETL的技术提取、转换和加载这些数据。
+正如我之前提到的，数据通常存储在 Hive 列中。如果你还不知道，这些数据存储在大型容器中。我们通过称为 ETL 的技术提取、转换和加载这些数据。
 
 我需要什么类型的数据？
 
@@ -80,7 +80,7 @@
 
 **1.** **特征/特性**在我们存储数据时直接获得；它们在我们存储数据时是必需的。例如（取决于你的情况）：
 
-![](../Images/0c8c2d149fa04420ea7b0029121e641c.png)
+![](img/0c8c2d149fa04420ea7b0029121e641c.png)
 
 **主要特征**的示例，（由作者提供）
 
@@ -94,45 +94,45 @@
 
 想象一下你脑海中的大数据以及所有这些数据。在一些项目中，我们使用表格中的数据，并通过一个任务（Spark）进行转换。
 
-![](../Images/8f2312f07cc5597c8426f1474c11ff3b.png)
+![](img/8f2312f07cc5597c8426f1474c11ff3b.png)
 
-从Atlas网站可视化的Atlas谱系，[LINK](https://atlas.apache.org/1.2.0/ClassificationPropagation.html)
+从 Atlas 网站可视化的 Atlas 谱系，[LINK](https://atlas.apache.org/1.2.0/ClassificationPropagation.html)
 
 我们收集了所有物理数据的信息，以便在我们的图中创建连接，或者至少创建其中一个连接。
 
 **3.** **映射**是为我们的项目增值的基础。在这里，我们将业务数据与物理数据关联起来。这为算法提供了经过验证的信息，使其能够最终对新进来的数据进行分类。这个映射必须由了解公司流程的人完成，并且具备识别复杂模式的技能，而无需询问。
 
-ML建议，基于我自己的经验：
+ML 建议，基于我自己的经验：
 
-*引用Andrew NG先生的话，在经典机器学习中，有一种叫做算法生命周期的东西。我们常常考虑算法，使其复杂，而不只是使用一个老式的线性回归（我尝试过；它不起作用）。在这个生命周期中，包括所有的预处理、建模和监控阶段……但最重要的是，数据聚焦。*
+*引用 Andrew NG 先生的话，在经典机器学习中，有一种叫做算法生命周期的东西。我们常常考虑算法，使其复杂，而不只是使用一个老式的线性回归（我尝试过；它不起作用）。在这个生命周期中，包括所有的预处理、建模和监控阶段……但最重要的是，数据聚焦。*
 
 **这是我们经常犯的错误；** 我们理所当然地开始进行数据分析。我们从数据集中得出结论，而有时却**没有质疑其相关性**。**不要忘记数据聚焦，我的朋友们；它可以提升你的表现，甚至导致项目的改变 :)**
 
 回到我们的文章，获取数据后，我们最终可以**创建我们的图**。
 
-![](../Images/0618769c8a8310b5805d1aaf12701ac6.png)
+![](img/0618769c8a8310b5805d1aaf12701ac6.png)
 
 **我们数据集的分布图**的绘图（使用[networkx](https://networkx.org/)制作）。(由作者制作)
 
-该图考虑了一批2000行的数据，因此在数据集和表格中有2000列。你可以在中心找到业务数据，而偏离中心的是物理数据。
+该图考虑了一批 2000 行的数据，因此在数据集和表格中有 2000 列。你可以在中心找到业务数据，而偏离中心的是物理数据。
 
-在数学中，我们将图表示为G，**G(N, V, f)**。N代表节点，V代表顶点（边），f代表特征。假设这三者都是非空集合。
+在数学中，我们将图表示为 G，**G(N, V, f)**。N 代表节点，V 代表顶点（边），f 代表特征。假设这三者都是非空集合。
 
-对于节点（我们在映射表中有业务数据ID）以及物理数据，以便通过谱系追踪它们。
+对于节点（我们在映射表中有业务数据 ID）以及物理数据，以便通过谱系追踪它们。
 
-**谈到谱系**，它部分作为边，通过映射和ID链接我们已有的链接。我们必须通过使用**Apache Atlas API**的ETL过程来提取它。
+**谈到谱系**，它部分作为边，通过映射和 ID 链接我们已有的链接。我们必须通过使用**Apache Atlas API**的 ETL 过程来提取它。
 
 你可以看到，在奠定基础之后，大数据问题可以变得容易理解，但实施起来却更具挑战性，尤其对于一名年轻的实习生来说……
 
-![](../Images/fdd4ca2d0fd9ef6663ce673842638bd9.png)
+![](img/fdd4ca2d0fd9ef6663ce673842638bd9.png)
 
-“计算机上的忍者卡通”（由Dall.E 3生成）
+“计算机上的忍者卡通”（由 Dall.E 3 生成）
 
-# **基于图的建模与GSage**
+# **基于图的建模与 GSage**
 
 ## 图学习基础
 
-本节将致力于解释GSage以及为何在数学和经验上都选择了它。
+本节将致力于解释 GSage 以及为何在数学和经验上都选择了它。
 
 在这次实习之前，我不习惯使用图形。这就是为什么我购买了书籍**[2]**，我在描述中包含了它，因为它大大帮助我理解了原理。
 
@@ -154,7 +154,7 @@ ML建议，基于我自己的经验：
 
 一旦你有了嵌入，这时候魔法才会发生。但你问一切是如何运作的？
 
-![](../Images/c31b2b4e40887261f7f86918c039e19d.png)
+![](img/c31b2b4e40887261f7f86918c039e19d.png)
 
 基于《史酷比宇宙》的图解来解释 GSage（由作者制作）。
 
@@ -166,31 +166,31 @@ ML建议，基于我自己的经验：
 
 当聚合器权重被学习时，GraphSAGE 的真正实力便会显现。此时，该架构可以利用节点的特征和邻域为未见节点生成嵌入，使其成为图基机器学习中各种应用的强大工具。
 
-![](../Images/3999bbbf4baf9b568d5cd3679b6efe4a.png)
+![](img/3999bbbf4baf9b568d5cd3679b6efe4a.png)
 
 架构训练时间的差异，Maxime Labonne 的文章，[链接](https://mlabonne.github.io/blog/posts/2022-04-06-GraphSAGE.html)
 
-如你在此图中所见，当我们在GraphSage架构上使用相同的数据集时，训练时间会减少。GAT（图注意网络）和GCN（图卷积网络）也是非常有趣的图架构。我真的鼓励你关注！
+如你在此图中所见，当我们在 GraphSage 架构上使用相同的数据集时，训练时间会减少。GAT（图注意网络）和 GCN（图卷积网络）也是非常有趣的图架构。我真的鼓励你关注！
 
-*第一次计算时，我感到震惊，震惊于看到训练1000批次在数千行数据上仅需25秒。*
+*第一次计算时，我感到震惊，震惊于看到训练 1000 批次在数千行数据上仅需 25 秒。*
 
 我知道你现在对图学习感兴趣，并想了解更多，我的建议是阅读这位作者的内容。提供了很好的示例和建议。
 
-[](/introduction-to-graphsage-in-python-a9e7f9ecf9d7?source=post_page-----c0a2ddf4043c--------------------------------) [## GraphSAGE: 扩展图神经网络
+[](/introduction-to-graphsage-in-python-a9e7f9ecf9d7?source=post_page-----c0a2ddf4043c--------------------------------) ## GraphSAGE: 扩展图神经网络
 
-### 使用PyTorch Geometric的GraphSAGE简介
+### 使用 PyTorch Geometric 的 GraphSAGE 简介
 
-[](/introduction-to-graphsage-in-python-a9e7f9ecf9d7?source=post_page-----c0a2ddf4043c--------------------------------) 
+[ 
 
-作为Medium的读者，当我查看一篇新文章时，我会好奇阅读代码，对于你来说，我们可以在PyTorch Geometric中实现GraphSAGE架构，使用`SAGEConv`层。
+作为 Medium 的读者，当我查看一篇新文章时，我会好奇阅读代码，对于你来说，我们可以在 PyTorch Geometric 中实现 GraphSAGE 架构，使用`SAGEConv`层。
 
 让我们创建一个包含两个`SAGEConv`层的网络：
 
-+   第一个使用了*ReLU*作为激活函数和一个**dropout层**；
++   第一个使用了*ReLU*作为激活函数和一个**dropout 层**；
 
 +   第二个直接输出**节点嵌入**。
 
-在我们的多类分类任务中，我们选择使用交叉熵损失作为主要损失函数。这一选择是由于其适用于具有多个类别的分类问题。此外，我们还采用了强度为0.0005的L2正则化。
+在我们的多类分类任务中，我们选择使用交叉熵损失作为主要损失函数。这一选择是由于其适用于具有多个类别的分类问题。此外，我们还采用了强度为 0.0005 的 L2 正则化。
 
 **这种正则化技术有助于防止过拟合**，通过对大参数值进行惩罚来促进模型的泛化。这是一种确保模型稳定性和预测准确性的全面方法。
 
@@ -267,15 +267,15 @@ def test(model, data):
 
 在我们项目的开发和部署过程中，我们利用了三种关键技术，每种技术都有其独特而重要的作用：
 
-![](../Images/7a4dae7fadcc90f34fa31346cfeea253.png)
+![](img/7a4dae7fadcc90f34fa31346cfeea253.png)
 
 来自[Google](https://www.google.com/)的三个标志
 
-**Airflow：** 为了高效管理和调度我们项目复杂的数据工作流，我们使用了Airflow Orchestrator。Airflow是一个**广泛采用的任务调度工具**，可以自动化流程，并确保我们的数据管道平稳且按时运行。
+**Airflow：** 为了高效管理和调度我们项目复杂的数据工作流，我们使用了 Airflow Orchestrator。Airflow 是一个**广泛采用的任务调度工具**，可以自动化流程，并确保我们的数据管道平稳且按时运行。
 
-**Mirantis：** 我们项目的基础设施是在Mirantis云平台上构建和托管的。Mirantis以提供**强大、可扩展和可靠的云解决方案**而闻名，为我们的**部署**提供了坚实的基础。
+**Mirantis：** 我们项目的基础设施是在 Mirantis 云平台上构建和托管的。Mirantis 以提供**强大、可扩展和可靠的云解决方案**而闻名，为我们的**部署**提供了坚实的基础。
 
-**Jenkins：** 为了简化我们的开发和部署流程，我们依赖Jenkins，一个在持续集成和**持续交付（CI/CD）**领域中值得信赖的名字。Jenkins自动化了**项目的构建、测试和部署**，确保了我们开发周期中的**效率**和**可靠性**。
+**Jenkins：** 为了简化我们的开发和部署流程，我们依赖 Jenkins，一个在持续集成和**持续交付（CI/CD）**领域中值得信赖的名字。Jenkins 自动化了**项目的构建、测试和部署**，确保了我们开发周期中的**效率**和**可靠性**。
 
 此外，我们将我们的机器学习代码存储在公司的 Artifactory 中。 **但什么是 Artifactory？**
 
@@ -305,7 +305,7 @@ topk_values, topk_indices = torch.topk(probabilities, k = 2, dim = 1)
 
 那么，回到第一次预测，这里是我们训练后的分布。告诉你们，真棒！
 
-![](../Images/fa18b82584a0d1ee6f8deab16a1d02ef.png)
+![](img/fa18b82584a0d1ee6f8deab16a1d02ef.png)
 
 **模型输出的概率**的绘图（来自 matplotlib），第一次预测（由作者制作）
 
@@ -313,7 +313,7 @@ topk_values, topk_indices = torch.topk(probabilities, k = 2, dim = 1)
 
 我不会教你什么是机器学习中的准确率和损失，我假设你们都是专家……（如果不确定，可以询问 ChatGPT，没有羞耻感）。在训练中，通过不同的尺度，你可以看到曲线上的收敛，这很好，说明学习稳定。
 
-![](../Images/38e9591e0e39237f97c80f277014c1d7.png)
+![](img/38e9591e0e39237f97c80f277014c1d7.png)
 
 **准确率和损失**的绘图（matplotlib）（由作者制作）
 
@@ -323,13 +323,13 @@ t-SNE（t-分布随机邻域嵌入）是一种降维技术，用于通过在较�
 
 换句话说，想象一下训练前的随机分布 :
 
-![](../Images/17dff6aca2e38a337b1ab1a1ed626493.png)
+![](img/17dff6aca2e38a337b1ab1a1ed626493.png)
 
 数据分布 **训练前，**（由作者制作）
 
 记住我们正在做多分类，因此这是训练后的分布。特征的聚合似乎做得很满意。聚类形成，物理数据似乎已加入组，表明训练进行了良好。
 
-![](../Images/70933a0ca1c2018e23c7f3afb006d35f.png)
+![](img/70933a0ca1c2018e23c7f3afb006d35f.png)
 
 数据分布 **训练后，**（由作者制作）
 
@@ -355,18 +355,18 @@ t-SNE（t-分布随机邻域嵌入）是一种降维技术，用于通过在较�
 
 # 参考资料和资源
 
-**[1]** [Inc](https://www.inc.com/jeff-barrett/misusing-data-could-be-costing-your-business-heres-how.html)（2018），来自Inc的网络文章
+**[1]** [Inc](https://www.inc.com/jeff-barrett/misusing-data-could-be-costing-your-business-heres-how.html)（2018），来自 Inc 的网络文章
 
 **[2]** [图机器学习：通过应用机器学习技术和算法将图数据提升到一个新水平](https://www.amazon.fr/Graph-Machine-Learning-techniques-algorithms/dp/1800204493/ref=asc_df_1800204493/?tag=googshopfr-21&linkCode=df0&hvadid=506880135571&hvpos=&hvnetw=g&hvrand=7038120787362687179&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9055317&hvtargid=pla-1503184391952&psc=1&mcid=ad38156d270633babacde02db431d62c)（2021），Claudio Stamile
 
-**[3]** [GraphSAGE，扩展图神经网络](/introduction-to-graphsage-in-python-a9e7f9ecf9d7)，（2021），Maxime Labonne
+**[3]** GraphSAGE，扩展图神经网络，（2021），Maxime Labonne
 
 # 图片来源
 
 +   [Nathan Anderson](https://unsplash.com/@nathananderson?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)的照片，来源于[Unsplash](https://unsplash.com/s/photos/night-sky?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-+   GraphSAGE时间差，来自Maxime Labonne的文章，[链接](https://mlabonne.github.io/blog/posts/2022-04-06-GraphSAGE.html)
++   GraphSAGE 时间差，来自 Maxime Labonne 的文章，[链接](https://mlabonne.github.io/blog/posts/2022-04-06-GraphSAGE.html)
 
-+   Atlas Lineage可视化，来自Atlas网站，[链接](https://atlas.apache.org/1.2.0/ClassificationPropagation.html)
++   Atlas Lineage 可视化，来自 Atlas 网站，[链接](https://atlas.apache.org/1.2.0/ClassificationPropagation.html)
 
 +   三个标志来自[Google](https://www.google.com/)

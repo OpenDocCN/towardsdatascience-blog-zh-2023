@@ -1,18 +1,18 @@
 # 使用 PySpark UDFs 在合成表中创建多对一关系
 
-> 原文：[https://towardsdatascience.com/create-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936?source=collection_archive---------3-----------------------#2023-12-09](https://towardsdatascience.com/create-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936?source=collection_archive---------3-----------------------#2023-12-09)
+> 原文：[`towardsdatascience.com/create-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936?source=collection_archive---------3-----------------------#2023-12-09`](https://towardsdatascience.com/create-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936?source=collection_archive---------3-----------------------#2023-12-09)
 
 ## 利用一些简单的方程在测试表中生成相关列。
 
-[](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)[![Matt Collins](../Images/b28ac8100d6fb287e3fa6926eec7939a.png)](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)[](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------) [Matt Collins](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)
+[](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)![Matt Collins](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)[](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------) [Matt Collins](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----41e39d97c936---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------) ·7 分钟阅读·2023年12月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F41e39d97c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&user=Matt+Collins&userId=d1970f1605f1&source=-----41e39d97c936---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----41e39d97c936---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------) ·7 分钟阅读·2023 年 12 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F41e39d97c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&user=Matt+Collins&userId=d1970f1605f1&source=-----41e39d97c936---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F41e39d97c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&source=-----41e39d97c936---------------------bookmark_footer-----------)![](../Images/8f6ff1c8009d98db1eaa04ccfe19ff4e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F41e39d97c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&source=-----41e39d97c936---------------------bookmark_footer-----------)![](img/8f6ff1c8009d98db1eaa04ccfe19ff4e.png)
 
 使用 DALL-E 3 生成的图像
 
@@ -56,7 +56,7 @@ Sale Id 需要是唯一的列，以便我们可以为此生成一个 Id 列。�
 
 我们可以创建一个快速的数据概况来查看列中的值分布：
 
-![](../Images/a82e88e7cd291b288a0986f984fac0b1.png)
+![](img/a82e88e7cd291b288a0986f984fac0b1.png)
 
 作者提供的图片：在 Databricks 中生成的数据概况
 
@@ -88,7 +88,7 @@ employeesPerStore 列表确保每个商店的员工 ID 不会重叠。我们可�
 
 我们可以通过使用 Databricks 中的可视化工具来快速测试这是否正确，查看每个商店 ID 的员工 ID 不同计数。这是我的首选方法，但你也可以使用分组逻辑或其他绘图模块，如果需要的话。
 
-![](../Images/159ea138f058375b07f161e8b09a7df3.png)
+![](img/159ea138f058375b07f161e8b09a7df3.png)
 
 作者图片：每个商店的员工 ID 不同计数
 
@@ -114,27 +114,27 @@ employeesPerStore 列表确保每个商店的员工 ID 不会重叠。我们可�
 
 我们的新脚本如下：
 
-![](../Images/b5bc57b56200b1ece8e679b6be856c58.png)
+![](img/b5bc57b56200b1ece8e679b6be856c58.png)
 
 作者图片：新 DataFrame 的 Databricks 数据概况
 
 # 向客户添加随机性
 
-我们现在需要的是一些随机性，我们需要定义它。以我们的例子为例，假设每个客户有90%的机会在通常的商店（“本地”商店）购物。如果我们不需要将所有客户返回在结果集中，我们可以简单地调整我们的*customers_udf*，并使用*df2*：
+我们现在需要的是一些随机性，我们需要定义它。以我们的例子为例，假设每个客户有 90%的机会在通常的商店（“本地”商店）购物。如果我们不需要将所有客户返回在结果集中，我们可以简单地调整我们的*customers_udf*，并使用*df2*：
 
 该逻辑涉及使用*random.choices*函数来提供加权列表并返回单一值。
 
-要计算加权列表，我们需要将客户的“本地”商店的权重设置为90%，因此需要将剩余的10%分配给其他商店，这里有19家商店。因此，每个其他商店被选择的概率将是10/19 = 0.526%。我们可以用这些百分比填充一个数组，数组看起来类似于：[0.526,0.526,0.526,…,90,0.526,…0.526]
+要计算加权列表，我们需要将客户的“本地”商店的权重设置为 90%，因此需要将剩余的 10%分配给其他商店，这里有 19 家商店。因此，每个其他商店被选择的概率将是 10/19 = 0.526%。我们可以用这些百分比填充一个数组，数组看起来类似于：[0.526,0.526,0.526,…,90,0.526,…0.526]
 
-将其传递给`random.choices`，我们就可以根据对应的权重从列表中随机选择一个商店ID，并将其用作*customer_id*变量的输入，如前所述。
+将其传递给`random.choices`，我们就可以根据对应的权重从列表中随机选择一个商店 ID，并将其用作*customer_id*变量的输入，如前所述。
 
-**注意：** `random.choices`的输出返回一个列表（因为你可以请求k个结果），所以访问列表的第0个元素以获取store_id作为整数值。
+**注意：** `random.choices`的输出返回一个列表（因为你可以请求 k 个结果），所以访问列表的第 0 个元素以获取 store_id 作为整数值。
 
 如果我们需要将此逻辑与包含所有客户的 DataFrame 结合使用，我们可以稍微逆转该过程。权重逻辑仍然有效，所以我们可以将其插入以随机选择商店并将其作为结果返回：
 
-![](../Images/abaf37bd9c9efc775dda58e0503258df.png)
+![](img/abaf37bd9c9efc775dda58e0503258df.png)
 
-作者提供的图像：Databricks中的最终 DataFrame 示例
+作者提供的图像：Databricks 中的最终 DataFrame 示例
 
 # 结论
 

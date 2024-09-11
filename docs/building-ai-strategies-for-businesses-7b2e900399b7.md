@@ -1,10 +1,10 @@
 # 为企业构建 AI 策略
 
-> 原文：[https://towardsdatascience.com/building-ai-strategies-for-businesses-7b2e900399b7?source=collection_archive---------1-----------------------#2023-06-06](https://towardsdatascience.com/building-ai-strategies-for-businesses-7b2e900399b7?source=collection_archive---------1-----------------------#2023-06-06)
+> 原文：[`towardsdatascience.com/building-ai-strategies-for-businesses-7b2e900399b7?source=collection_archive---------1-----------------------#2023-06-06`](https://towardsdatascience.com/building-ai-strategies-for-businesses-7b2e900399b7?source=collection_archive---------1-----------------------#2023-06-06)
 
 ## 通过 Wardley 图谱制定 AI 策略的艺术
 
-[](https://johnadeojo.medium.com/?source=post_page-----7b2e900399b7--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----7b2e900399b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b2e900399b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b2e900399b7--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----7b2e900399b7--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----7b2e900399b7--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----7b2e900399b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b2e900399b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b2e900399b7--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----7b2e900399b7--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b2e900399b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-ai-strategies-for-businesses-7b2e900399b7&source=-----7b2e900399b7---------------------bookmark_footer-----------)![](../Images/4d3018ff78227d368d5fe9cd84dded15.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b2e900399b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-ai-strategies-for-businesses-7b2e900399b7&source=-----7b2e900399b7---------------------bookmark_footer-----------)![](img/4d3018ff78227d368d5fe9cd84dded15.png)
 
 作者图片：由 Midjourney 生成
 

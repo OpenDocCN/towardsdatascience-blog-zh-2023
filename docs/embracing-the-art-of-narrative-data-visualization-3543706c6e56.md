@@ -1,18 +1,18 @@
 # **拥抱叙事数据可视化的艺术**
 
-> 原文：[https://towardsdatascience.com/embracing-the-art-of-narrative-data-visualization-3543706c6e56?source=collection_archive---------2-----------------------#2023-08-21](https://towardsdatascience.com/embracing-the-art-of-narrative-data-visualization-3543706c6e56?source=collection_archive---------2-----------------------#2023-08-21)
+> 原文：[`towardsdatascience.com/embracing-the-art-of-narrative-data-visualization-3543706c6e56?source=collection_archive---------2-----------------------#2023-08-21`](https://towardsdatascience.com/embracing-the-art-of-narrative-data-visualization-3543706c6e56?source=collection_archive---------2-----------------------#2023-08-21)
 
 ## 通过 NASA 的 TESS 任务进行的数据可视化
 
-[](https://albarqawi.medium.com/?source=post_page-----3543706c6e56--------------------------------)[![Ahmad Albarqawi](../Images/f039f134cbb10d01a838a9ad864fd3c6.png)](https://albarqawi.medium.com/?source=post_page-----3543706c6e56--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3543706c6e56--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3543706c6e56--------------------------------) [Ahmad Albarqawi](https://albarqawi.medium.com/?source=post_page-----3543706c6e56--------------------------------)
+[](https://albarqawi.medium.com/?source=post_page-----3543706c6e56--------------------------------)![Ahmad Albarqawi](https://albarqawi.medium.com/?source=post_page-----3543706c6e56--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3543706c6e56--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3543706c6e56--------------------------------) [Ahmad Albarqawi](https://albarqawi.medium.com/?source=post_page-----3543706c6e56--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab1cf21d75fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-the-art-of-narrative-data-visualization-3543706c6e56&user=Ahmad+Albarqawi&userId=ab1cf21d75fd&source=post_page-ab1cf21d75fd----3543706c6e56---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3543706c6e56--------------------------------) ·8 min read·2023年8月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3543706c6e56&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-the-art-of-narrative-data-visualization-3543706c6e56&user=Ahmad+Albarqawi&userId=ab1cf21d75fd&source=-----3543706c6e56---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab1cf21d75fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-the-art-of-narrative-data-visualization-3543706c6e56&user=Ahmad+Albarqawi&userId=ab1cf21d75fd&source=post_page-ab1cf21d75fd----3543706c6e56---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3543706c6e56--------------------------------) ·8 min read·2023 年 8 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3543706c6e56&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-the-art-of-narrative-data-visualization-3543706c6e56&user=Ahmad+Albarqawi&userId=ab1cf21d75fd&source=-----3543706c6e56---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3543706c6e56&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-the-art-of-narrative-data-visualization-3543706c6e56&source=-----3543706c6e56---------------------bookmark_footer-----------)![](../Images/970fbe6e3a4de7a60b63fa3b03a7a27e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3543706c6e56&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-the-art-of-narrative-data-visualization-3543706c6e56&source=-----3543706c6e56---------------------bookmark_footer-----------)![](img/970fbe6e3a4de7a60b63fa3b03a7a27e.png)
 
 叙事视觉场景的示例，用于探索系外行星的特点 — 作者
 
@@ -20,7 +20,7 @@
 
 叙事可视化是关于打造引导观众穿越数据的场景。它以创新的方式呈现数据，通过这些数据讲述一个故事。这个故事强调关键点以增加互动性，使观众能够与图表建立联系。每个视觉元素应被精心编织成一个有意义的故事。这样，这些数据就能在主动引发观众感官的同时，进行有效的传达。这样的数据接触方式允许观众在一段时间内记住重要信息。
 
-本文将探讨叙事可视化的概念及其在数据传达中的应用。由NASA的过境系外行星勘测卫星（TESS）任务发现的系外行星将作为我们检视叙事可视化的一个视角。我们还将探讨D3，这是一款强大的用于创建数据驱动文档的JavaScript库。
+本文将探讨叙事可视化的概念及其在数据传达中的应用。由 NASA 的过境系外行星勘测卫星（TESS）任务发现的系外行星将作为我们检视叙事可视化的一个视角。我们还将探讨 D3，这是一款强大的用于创建数据驱动文档的 JavaScript 库。
 
 # 解码叙事可视化的基础
 
@@ -34,31 +34,31 @@
 
 1.  **读者驱动的叙事**：这种方法将控制权交给观众。它提供了更具互动性的体验，观众可以按照自己的节奏探索数据并跟随自己的路径。这有助于鼓励参与和探索。例如，互动仪表板就是一个例子。
 
-1.  **混合叙事**：结合了作者驱动和读者驱动叙事的元素。它们通常以作者驱动的介绍开始，随后是读者驱动的探索部分。这在引导讲故事和互动探索之间提供了平衡。例如，Martini Glass数据表示就是一个例子。
+1.  **混合叙事**：结合了作者驱动和读者驱动叙事的元素。它们通常以作者驱动的介绍开始，随后是读者驱动的探索部分。这在引导讲故事和互动探索之间提供了平衡。例如，Martini Glass 数据表示就是一个例子。
 
-![](../Images/b4a321d75dd1c8c87ddb813d47114387.png)
+![](img/b4a321d75dd1c8c87ddb813d47114387.png)
 
 martini glass sketch — 作者提供
 
-在接下来的部分中，我们将使用“马提尼酒杯”结构，这是一种流行的混合叙事方式，来可视化NASA TESS任务的数据。该结构提供了一个初步由作者驱动的概述（酒杯的柄），随后是一个由读者驱动的探索空间（酒杯的碗）。这允许我们在让观众深入探索数据之前，带领他们了解数据的关键点。
+在接下来的部分中，我们将使用“马提尼酒杯”结构，这是一种流行的混合叙事方式，来可视化 NASA TESS 任务的数据。该结构提供了一个初步由作者驱动的概述（酒杯的柄），随后是一个由读者驱动的探索空间（酒杯的碗）。这允许我们在让观众深入探索数据之前，带领他们了解数据的关键点。
 
-# 案例研究：通过NASA的TESS任务发现系外行星
+# 案例研究：通过 NASA 的 TESS 任务发现系外行星
 
-![](../Images/b9ff79c244c3feffb6849dbd45a56875.png)
+![](img/b9ff79c244c3feffb6849dbd45a56875.png)
 
-TESS任务的概念 — 由[NASA戈达德太空飞行中心](https://svs.gsfc.nasa.gov/12727)提供（许可详情见参考文献）
+TESS 任务的概念 — 由[NASA 戈达德太空飞行中心](https://svs.gsfc.nasa.gov/12727)提供（许可详情见参考文献）
 
-2018年，NASA通过发射凌日系外行星勘测卫星（TESS）任务，开始了探索太阳系之外系外行星的旅程。
+2018 年，NASA 通过发射凌日系外行星勘测卫星（TESS）任务，开始了探索太阳系之外系外行星的旅程。
 
-TESS任务已被证明是一个天文学上的宝藏。通过这一任务，NASA积累了超过90个数据点。这些数据点包含关于每个系外行星的宝贵信息，有助于解开宇宙之谜。这些数据包括系外行星的名称、其宿主恒星和发现年份，以及它们的物理特征：大小、形状、偏心率和轨道周期。这些数据集概括了每个系外行星的故事，使TESS任务的事实和数据揭示出引人入胜的宇宙故事。
+TESS 任务已被证明是一个天文学上的宝藏。通过这一任务，NASA 积累了超过 90 个数据点。这些数据点包含关于每个系外行星的宝贵信息，有助于解开宇宙之谜。这些数据包括系外行星的名称、其宿主恒星和发现年份，以及它们的物理特征：大小、形状、偏心率和轨道周期。这些数据集概括了每个系外行星的故事，使 TESS 任务的事实和数据揭示出引人入胜的宇宙故事。
 
-![](../Images/08ba1d9d804166fd877d86cce18a4dd3.png)
+![](img/08ba1d9d804166fd877d86cce18a4dd3.png)
 
-数据样本 — 原始数据包含超过90列
+数据样本 — 原始数据包含超过 90 列
 
-我们将使用[TESS数据](https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=PS&constraint=disc_facility+like+%27%25TESS%25%27)创建叙事可视化，讲述多年来系外行星发现的故事，并使用最后的灵活工具进行深入分析。
+我们将使用[TESS 数据](https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=PS&constraint=disc_facility+like+%27%25TESS%25%27)创建叙事可视化，讲述多年来系外行星发现的故事，并使用最后的灵活工具进行深入分析。
 
-**场景 1：已发现系外行星概览** 叙事从2018年到2023年TESS发现的系外行星概览开始，重点突出时间趋势，并在高层次上将某些特征与地球范围进行比较。这为我们的故事奠定了基础，提供了有关TESS任务范围和规模的背景。第一场景细分为三个具体的可视化，旨在展示数据的独特概览：
+**场景 1：已发现系外行星概览** 叙事从 2018 年到 2023 年 TESS 发现的系外行星概览开始，重点突出时间趋势，并在高层次上将某些特征与地球范围进行比较。这为我们的故事奠定了基础，提供了有关 TESS 任务范围和规模的背景。第一场景细分为三个具体的可视化，旨在展示数据的独特概览：
 
 +   每年发现的系外行星数量直方图：展示了每年发现的系外行星数量。每根柱子的高度对应于发现的数量。为了提供互动体验，点击柱子会筛选其他图表中的数据，以便集中分析该年发现的系外行星。
 
@@ -66,7 +66,7 @@ TESS任务已被证明是一个天文学上的宝藏。通过这一任务，NASA
 
 +   恒星质量与半径的散点图：聚焦于主星，该可视化将恒星质量与半径进行比较，每个都由一个圆圈表示。与之前的可视化一样，交互功能允许用户探索特定的行星特性。
 
-![](../Images/7205c48e06f006f8dd201b4ba38a2367.png)
+![](img/7205c48e06f006f8dd201b4ba38a2367.png)
 
 场景 1 — 按年份展示的系外行星概述
 
@@ -76,7 +76,7 @@ TESS任务已被证明是一个天文学上的宝藏。通过这一任务，NASA
 
 本场景提供了对使每个行星独特的属性的更详细了解，如平衡温度、行星半径、轨道半长轴、轨道离心率，以及主星的半径和质量。
 
-![](../Images/c55fef76442fd5aad06846a64f9a7a70.png)
+![](img/c55fef76442fd5aad06846a64f9a7a70.png)
 
 场景 2 — 单个系外行星特性与地球范围的比较
 
@@ -84,7 +84,7 @@ TESS任务已被证明是一个天文学上的宝藏。通过这一任务，NASA
 
 最终场景提供了一个交互式探索工具，允许用户更改各种比较范围并选择要比较的特性。在这个场景中，我们允许进行个性化的探索体验。
 
-![](../Images/193664eecbce5293b5da10a7ae06a08e.png)
+![](img/193664eecbce5293b5da10a7ae06a08e.png)
 
 场景 3 — 交互工具
 
@@ -175,28 +175,28 @@ TESS 任务数据探索 — scene2 代码示例，用于将单个系外行星特
 
 您可以查看下面的最终叙事结果：
 
-[https://barqawiz.github.io/NASA_TESS_Narrative/](https://barqawiz.github.io/NASA_TESS_Narrative/)
+[`barqawiz.github.io/NASA_TESS_Narrative/`](https://barqawiz.github.io/NASA_TESS_Narrative/)
 
 **总之**，叙事可视化偏离了单调的数据沟通路径，踏上了一段旅程。数据以结构化但引人入胜的方式呈现，以吸引观众的注意。这些数据故事以个性化的方式吸引观众。然而，这些故事的策展人可以有意选择他们的叙事结构，以实现高效的数据讲述，无论是作者驱动的、读者驱动的还是混合叙事。
 
-NASA的过境系外行星勘测卫星任务数据被用作案例研究，以展示叙事可视化。这个TESS任务发现了超过90个特征的系外行星，超出了我们的太阳系。混合的马提尼杯方法用于向观众传达这些数据。叙事从作者驱动的方法开始，然后通过读者驱动的方法过渡到关于系外行星的详细信息，进行互动和个性化的探索。
+NASA 的过境系外行星勘测卫星任务数据被用作案例研究，以展示叙事可视化。这个 TESS 任务发现了超过 90 个特征的系外行星，超出了我们的太阳系。混合的马提尼杯方法用于向观众传达这些数据。叙事从作者驱动的方法开始，然后通过读者驱动的方法过渡到关于系外行星的详细信息，进行互动和个性化的探索。
 
 创作视觉叙事是一门艺术，明确你的**最终目标**和目标受众，并选择故事结构，对数据的隐含意义和吸引观众至关重要。
 
 # 参考文献
 
-+   NASA TESS任务画廊: [链接](https://svs.gsfc.nasa.gov/Gallery/TESS.html)
++   NASA TESS 任务画廊: [链接](https://svs.gsfc.nasa.gov/Gallery/TESS.html)
 
-+   NASA系外行星档案: [链接](https://exoplanetarchive.ipac.caltech.edu/)
++   NASA 系外行星档案: [链接](https://exoplanetarchive.ipac.caltech.edu/)
 
-+   NASA内容政策: [链接](https://gpm.nasa.gov/image-use-policy)
++   NASA 内容政策: [链接](https://gpm.nasa.gov/image-use-policy)
 
 +   地球事实表: [链接](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html)
 
-+   包含完整代码的Github仓库: [链接](https://github.com/Barqawiz/NASA_TESS_Narrative)
++   包含完整代码的 Github 仓库: [链接](https://github.com/Barqawiz/NASA_TESS_Narrative)
 
 +   清理后的数据: [链接](https://github.com/Barqawiz/NASA_TESS_Narrative/blob/main/data/tess_confirmed_plannets.csv)
 
 +   UIUC 课程 “CS 416: 数据可视化”。
 
-引用：**NASA内容（图像、视频、音频等）通常不受版权保护**，可以用于教育或信息目的**而不需要明确许可**。
+引用：**NASA 内容（图像、视频、音频等）通常不受版权保护**，可以用于教育或信息目的**而不需要明确许可**。

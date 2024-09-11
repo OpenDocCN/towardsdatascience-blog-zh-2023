@@ -1,18 +1,18 @@
 # 机器学习并非你所需的一切：关于签名检测的案例研究
 
-> 原文：[https://towardsdatascience.com/machine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7?source=collection_archive---------7-----------------------#2023-12-21](https://towardsdatascience.com/machine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7?source=collection_archive---------7-----------------------#2023-12-21)
+> 原文：[`towardsdatascience.com/machine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7?source=collection_archive---------7-----------------------#2023-12-21`](https://towardsdatascience.com/machine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7?source=collection_archive---------7-----------------------#2023-12-21)
 
-## 机器学习不应成为你处理所有任务的首选解决方案。像我在签名检测中一样考虑KISS原则。
+## 机器学习不应成为你处理所有任务的首选解决方案。像我在签名检测中一样考虑 KISS 原则。
 
-[](https://toon-beerten.medium.com/?source=post_page-----9551f2e5d0e7--------------------------------)[![Toon Beerten](../Images/f169eaa8cefa00f17176955596972d57.png)](https://toon-beerten.medium.com/?source=post_page-----9551f2e5d0e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9551f2e5d0e7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9551f2e5d0e7--------------------------------) [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----9551f2e5d0e7--------------------------------)
+[](https://toon-beerten.medium.com/?source=post_page-----9551f2e5d0e7--------------------------------)![Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----9551f2e5d0e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9551f2e5d0e7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9551f2e5d0e7--------------------------------) [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----9551f2e5d0e7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----9551f2e5d0e7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9551f2e5d0e7--------------------------------) ·6 min read·2023年12月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9551f2e5d0e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7&user=Toon+Beerten&userId=3aef462e13b5&source=-----9551f2e5d0e7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----9551f2e5d0e7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9551f2e5d0e7--------------------------------) ·6 min read·2023 年 12 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9551f2e5d0e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7&user=Toon+Beerten&userId=3aef462e13b5&source=-----9551f2e5d0e7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9551f2e5d0e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7&source=-----9551f2e5d0e7---------------------bookmark_footer-----------)![](../Images/51960a70a543b67e7494729412514b04.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9551f2e5d0e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-is-not-all-you-need-a-case-study-on-signature-detection-9551f2e5d0e7&source=-----9551f2e5d0e7---------------------bookmark_footer-----------)![](img/51960a70a543b67e7494729412514b04.png)
 
 图片由作者提供
 
@@ -20,17 +20,17 @@
 
 **案例研究：签名检测**
 
-想象一下我们有一堆合同，需要知道它们是否已签名。这个场景涉及签名检测——可靠地识别特定位置是否出现签名——假设你已经知道签名应该大致位于哪里（例如，东南方向）。在古代，这个任务是通过二值化图像并计算区域内的黑色像素来完成的。如果存在签名，黑色像素计数会超过阈值。但在2023年，我们如何以不同的方式完成这个任务呢？
+想象一下我们有一堆合同，需要知道它们是否已签名。这个场景涉及签名检测——可靠地识别特定位置是否出现签名——假设你已经知道签名应该大致位于哪里（例如，东南方向）。在古代，这个任务是通过二值化图像并计算区域内的黑色像素来完成的。如果存在签名，黑色像素计数会超过阈值。但在 2023 年，我们如何以不同的方式完成这个任务呢？
 
 **机器学习方法**
 
-我们将使用 [GroundingDino](https://github.com/IDEA-Research/GroundingDINO)，这是一个最先进的零-shot目标检测模型。模型的输入是图像与提示的结合，而输出则是表示潜在位置的矩形及其相关的置信度分数。虽然这乍一看似乎是一个理想的解决方案，但仍然存在一些值得考虑的限制。让我们尝试用三个不同的提示：‘signature’，‘handwriting’ 和 ‘scribble’。
+我们将使用 [GroundingDino](https://github.com/IDEA-Research/GroundingDINO)，这是一个最先进的零-shot 目标检测模型。模型的输入是图像与提示的结合，而输出则是表示潜在位置的矩形及其相关的置信度分数。虽然这乍一看似乎是一个理想的解决方案，但仍然存在一些值得考虑的限制。让我们尝试用三个不同的提示：‘signature’，‘handwriting’ 和 ‘scribble’。
 
-![](../Images/517494875622219dee3da066b698cf19.png)![](../Images/8eec019f5630393c4e58d164c1ac0286.png)![](../Images/d85ca8777f6198937fe373f7dc64eac9.png)
+![](img/517494875622219dee3da066b698cf19.png)![](img/8eec019f5630393c4e58d164c1ac0286.png)![](img/d85ca8777f6198937fe373f7dc64eac9.png)
 
 提示结果分别为‘signature’，‘handwriting’ 和 ‘scribble’。图像由作者提供。
 
-你可以看到结果严重依赖于提示，更不用说在CPU上结果出现前大约需要30秒。这是因为这是一个基础模型，经过大量类别的训练，不仅仅是签名。我们可以做些什么来使其更准确和快速呢？我们可以使用 Autodistill ([教程](https://roboflow.com/train/grounding-dino-and-yolov8))，它使用 Grounding DINO 训练 YOLOv8 模型。有效地使用基础模型来训练一个更轻量的监督模型。工作流程是收集大量签名文档数据集，然后找到一个好的提示以获取标记数据，最终在其上训练一个 YOLOv8 模型。
+你可以看到结果严重依赖于提示，更不用说在 CPU 上结果出现前大约需要 30 秒。这是因为这是一个基础模型，经过大量类别的训练，不仅仅是签名。我们可以做些什么来使其更准确和快速呢？我们可以使用 Autodistill ([教程](https://roboflow.com/train/grounding-dino-and-yolov8))，它使用 Grounding DINO 训练 YOLOv8 模型。有效地使用基础模型来训练一个更轻量的监督模型。工作流程是收集大量签名文档数据集，然后找到一个好的提示以获取标记数据，最终在其上训练一个 YOLOv8 模型。
 
 你可以想象这需要大量的时间和精力。但是还有其他办法吗？
 
@@ -42,7 +42,7 @@ OpenCV 中的 `connectedComponentsWithStats` 函数用于标记和分析图像�
 
 为了更易于理解，我创建了这张图。它是签名区域的裁剪图像。每个连通像素的岛屿都有一种颜色，代表一个单独的连通组件（或：标签）。
 
-![](../Images/4e37330f93bc3588b263cb4c15997962.png)
+![](img/4e37330f93bc3588b263cb4c15997962.png)
 
 图像由作者提供。
 
@@ -56,7 +56,7 @@ OpenCV 中的 `connectedComponentsWithStats` 函数用于标记和分析图像�
 
 +   更小的东西，比如微小的噪点和点
 
-为了筛选掉不相关的标签，我们可以取所有标签的中位数区域，这将是单个字符的大小（假设图像中包含的字母多于噪声），作为最小阈值。任何低于此阈值的区域都可以被过滤掉。我们还可以设置一个最大阈值，假设签名不会占据超过字母x倍的区域。剩下的就是实际的签名候选项。但徽标呢？它们可能与签名大小相同，但签名通常在字母之间有很多空白。通过黑色像素比例过滤器，我可以将这些徽标筛选掉。剩下的标签应该是实际的签名。
+为了筛选掉不相关的标签，我们可以取所有标签的中位数区域，这将是单个字符的大小（假设图像中包含的字母多于噪声），作为最小阈值。任何低于此阈值的区域都可以被过滤掉。我们还可以设置一个最大阈值，假设签名不会占据超过字母 x 倍的区域。剩下的就是实际的签名候选项。但徽标呢？它们可能与签名大小相同，但签名通常在字母之间有很多空白。通过黑色像素比例过滤器，我可以将这些徽标筛选掉。剩下的标签应该是实际的签名。
 
 将上述内容转化为代码结果如下：
 
@@ -167,9 +167,9 @@ def merge_nearby_rectangles(rectangles, nearness):
     return merged
 ```
 
-我只花费了原本需要的一小部分时间来实现机器学习方法。除了节省时间之外，它的效果非常好。它能处理高分辨率和低分辨率扫描。该方法的其他优点是它能很容易地集成到现有的C++或Python代码中，并且运行速度极快。当然，参数可以进一步调整，为此我邀请你打开我的[共享colab笔记本](https://github.com/Toon-nooT/notebooks/blob/main/Signature_Detection_OpenCV.ipynb)自行尝试。如果你愿意在线试用，可以尝试我的[Huggingface演示](https://huggingface.co/spaces/to-be/signature_detection_opencv)。
+我只花费了原本需要的一小部分时间来实现机器学习方法。除了节省时间之外，它的效果非常好。它能处理高分辨率和低分辨率扫描。该方法的其他优点是它能很容易地集成到现有的 C++或 Python 代码中，并且运行速度极快。当然，参数可以进一步调整，为此我邀请你打开我的[共享 colab 笔记本](https://github.com/Toon-nooT/notebooks/blob/main/Signature_Detection_OpenCV.ipynb)自行尝试。如果你愿意在线试用，可以尝试我的[Huggingface 演示](https://huggingface.co/spaces/to-be/signature_detection_opencv)。
 
-![](../Images/dde0e5a5805b630f6aee3ab883f7aa2f.png)
+![](img/dde0e5a5805b630f6aee3ab883f7aa2f.png)
 
 图片由作者提供。
 

@@ -1,18 +1,18 @@
 # 使用 PostgreSQL、FastAPI 和 Docker 构建后端
 
-> 原文：[https://towardsdatascience.com/build-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06?source=collection_archive---------0-----------------------#2023-03-14](https://towardsdatascience.com/build-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06?source=collection_archive---------0-----------------------#2023-03-14)
+> 原文：[`towardsdatascience.com/build-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06?source=collection_archive---------0-----------------------#2023-03-14`](https://towardsdatascience.com/build-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06?source=collection_archive---------0-----------------------#2023-03-14)
 
 ## 一步一步的指南：开发基于地图的应用程序（第四部分）
 
-[](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)[![Jacky Kaub](../Images/e66c699ee5a9d5bbd58a1a72d688234a.png)](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------) [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)
+[](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)![Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------) [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ccb7065ef90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06&user=Jacky+Kaub&userId=7ccb7065ef90&source=post_page-7ccb7065ef90----7ebfe59e4f06---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------) · 28分钟阅读·2023年3月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ebfe59e4f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06&user=Jacky+Kaub&userId=7ccb7065ef90&source=-----7ebfe59e4f06---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ccb7065ef90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06&user=Jacky+Kaub&userId=7ccb7065ef90&source=post_page-7ccb7065ef90----7ebfe59e4f06---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------) · 28 分钟阅读·2023 年 3 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ebfe59e4f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06&user=Jacky+Kaub&userId=7ccb7065ef90&source=-----7ebfe59e4f06---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7ebfe59e4f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06&source=-----7ebfe59e4f06---------------------bookmark_footer-----------)![](../Images/0c94c9aabf27aae32cad325a9448c7da.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7ebfe59e4f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06&source=-----7ebfe59e4f06---------------------bookmark_footer-----------)![](img/0c94c9aabf27aae32cad325a9448c7da.png)
 
 照片由 [Caspar Camille Rubin](https://unsplash.com/@casparrubin?utm_source=medium&utm_medium=referral) 拍摄，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,11 +22,11 @@
 
 # 系列文章：
 
-[第一部分：概念验证 — 构建一个简约的演示](/a-step-by-step-guide-to-develop-a-map-based-application-part-i-757766b04f77)
+第一部分：概念验证 — 构建一个简约的演示
 
-[第二部分：如何使用 React 构建网页应用（静态布局）](/a-step-by-step-guide-to-develop-a-map-based-application-part-ii-6d3fa7dbd8b9)
+第二部分：如何使用 React 构建网页应用（静态布局）
 
-[第三部分：使用 React 为网页应用添加交互性](/a-step-by-step-guide-to-develop-a-map-based-application-part-iii-ad501c4aa35b)
+第三部分：使用 React 为网页应用添加交互性
 
 第四部分：使用 PostgreSQL、FastAPI 和 Docker 构建后端
 

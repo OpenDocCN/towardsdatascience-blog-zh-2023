@@ -1,18 +1,18 @@
 # 语音增强简介：第二部分 — 信号表示
 
-> 原文：[https://towardsdatascience.com/introduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74?source=collection_archive---------22-----------------------#2023-01-31](https://towardsdatascience.com/introduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74?source=collection_archive---------22-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/introduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74?source=collection_archive---------22-----------------------#2023-01-31`](https://towardsdatascience.com/introduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74?source=collection_archive---------22-----------------------#2023-01-31)
 
 ## 让我们深入探讨信号表示、傅里叶变换、频谱和谐波。
 
-[](https://medium.com/@mattiadigangi?source=post_page-----ab1deca2fa74--------------------------------)[![Mattia Di Gangi](../Images/ccd89021df6724797d45cc3c655a38a5.png)](https://medium.com/@mattiadigangi?source=post_page-----ab1deca2fa74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab1deca2fa74--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ab1deca2fa74--------------------------------) [Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----ab1deca2fa74--------------------------------)
+[](https://medium.com/@mattiadigangi?source=post_page-----ab1deca2fa74--------------------------------)![Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----ab1deca2fa74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab1deca2fa74--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab1deca2fa74--------------------------------) [Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----ab1deca2fa74--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a5b9f193a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=post_page-8a5b9f193a3c----ab1deca2fa74---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab1deca2fa74--------------------------------) ·10分钟阅读·2023年1月31日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a5b9f193a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=post_page-8a5b9f193a3c----ab1deca2fa74---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab1deca2fa74--------------------------------) ·10 分钟阅读·2023 年 1 月 31 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fab1deca2fa74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74&source=-----ab1deca2fa74---------------------bookmark_footer-----------)![](../Images/089f61fe7f5fa79d6f139a1233f7e860.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fab1deca2fa74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74&source=-----ab1deca2fa74---------------------bookmark_footer-----------)![](img/089f61fe7f5fa79d6f139a1233f7e860.png)
 
 图片由 [Richard Horvath](https://unsplash.com/@orwhat?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,14 +1,14 @@
 # 《战略数据分析（第三部分）：诊断性问题》
 
-> 原文：[https://towardsdatascience.com/strategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b?source=collection_archive---------6-----------------------#2023-10-26](https://towardsdatascience.com/strategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b?source=collection_archive---------6-----------------------#2023-10-26)
+> 原文：[`towardsdatascience.com/strategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b?source=collection_archive---------6-----------------------#2023-10-26`](https://towardsdatascience.com/strategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b?source=collection_archive---------6-----------------------#2023-10-26)
 
 ## 深入探讨回答“为什么”问题的方法
 
-[](https://viyaleta.medium.com/?source=post_page-----c0fcb840294b--------------------------------)[![Viyaleta Apgar](../Images/8d8fd8e4817bc4d1dbeb16a2ec1ae1f1.png)](https://viyaleta.medium.com/?source=post_page-----c0fcb840294b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0fcb840294b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c0fcb840294b--------------------------------) [Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----c0fcb840294b--------------------------------)
+[](https://viyaleta.medium.com/?source=post_page-----c0fcb840294b--------------------------------)![Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----c0fcb840294b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0fcb840294b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0fcb840294b--------------------------------) [Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----c0fcb840294b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccae8864d5a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=post_page-ccae8864d5a4----c0fcb840294b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0fcb840294b--------------------------------) ·14 分钟阅读·2023年10月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc0fcb840294b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=-----c0fcb840294b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccae8864d5a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=post_page-ccae8864d5a4----c0fcb840294b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0fcb840294b--------------------------------) ·14 分钟阅读·2023 年 10 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc0fcb840294b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=-----c0fcb840294b---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 *这是《战略数据分析》系列的一部分。*
 
-[*战略数据分析（第一部分）*](https://medium.com/towards-data-science/strategic-data-analysis-part-1-fb2df3a43831)[*战略数据分析（第二部分）：描述性问题*](/strategic-data-analysis-for-descriptive-questions-b6c9e469b32f)***→ 《战略数据分析（第三部分）：诊断性问题》*** *战略数据分析（第四部分）：预测性问题 ← 敬请期待！*
+[*战略数据分析（第一部分）*](https://medium.com/towards-data-science/strategic-data-analysis-part-1-fb2df3a43831)*战略数据分析（第二部分）：描述性问题****→ 《战略数据分析（第三部分）：诊断性问题》*** *战略数据分析（第四部分）：预测性问题 ← 敬请期待！*
 
 《战略数据分析（第五部分）：处方性问题》← 敬请期待！*
 
@@ -60,7 +60,7 @@
 
 1.  评估因果关系
 
-![](../Images/66b95a5bc23cbb1cb701f67340ebe7d7.png)
+![](img/66b95a5bc23cbb1cb701f67340ebe7d7.png)
 
 图片由 [Mediamodifier](https://unsplash.com/@mediamodifier?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -74,13 +74,13 @@
 
 问题中的结果是经历了某种潜在原因影响的因变量。通常，诊断问题应该只有一个因变量。识别结果非常重要，以便明确它并验证它是否可以被测量。如果问题有多个因变量，则应该将问题拆分成不同的问题。
 
-例如，在[第1部分](/strategic-data-analysis-part-1-fb2df3a43831)的“是什么导致了热浪”这个问题中，结果是热浪，这可以定义为温度的突然和剧烈升高。在“为什么我们的客户取消了他们的订阅”这个问题中，我们想要调查的结果是订阅取消。如果我们遇到一个类似于“为什么房价在上涨而租金在下降”的问题，我们应该回答两个独立的诊断问题：“为什么房价在上涨”和“为什么租金在下降”。
+例如，在第一部分的“是什么导致了热浪”这个问题中，结果是热浪，这可以定义为温度的突然和剧烈升高。在“为什么我们的客户取消了他们的订阅”这个问题中，我们想要调查的结果是订阅取消。如果我们遇到一个类似于“为什么房价在上涨而租金在下降”的问题，我们应该回答两个独立的诊断问题：“为什么房价在上涨”和“为什么租金在下降”。
 
-## 步骤2：识别可能的原因和潜在的偏见
+## 步骤 2：识别可能的原因和潜在的偏见
 
 一旦我们确定了问题中的结果，我们必须列出所有可能解释它的因素，并帮助我们回答“为什么”。通常，这个过程可以分解为识别三件事：原因、偏见和因果机制。应构建图形因果模型来辅助识别过程。
 
-![](../Images/2bf75803994b230fce4a3760acc631e4.png)
+![](img/2bf75803994b230fce4a3760acc631e4.png)
 
 图片由[Mark Rabe](https://unsplash.com/@itsrahbee?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -88,7 +88,7 @@
 
 在列出潜在原因的清单时，一个很好的工具是头脑风暴。头脑风暴的一种新颖方法是一个重复的过程，首先：列出尽可能多的原因，而不对其有效性进行判断，其次：遍历清单，确保列出的原因是合理和逻辑的。
 
-例如，为了回答[第1部分](https://medium.com/towards-data-science/strategic-data-analysis-part-1-fb2df3a43831)中的一个问题：“为什么我们的客户取消了他们的订阅”，我们可以首先进行调研，了解我们的流失客户是否报告了他们取消订阅的原因。我们可以采访客户成功团队，以了解他们经常收到的客户投诉。然后，我们可以通过与决策者的头脑风暴会议，提出任何额外的原因。
+例如，为了回答[第一部分](https://medium.com/towards-data-science/strategic-data-analysis-part-1-fb2df3a43831)中的一个问题：“为什么我们的客户取消了他们的订阅”，我们可以首先进行调研，了解我们的流失客户是否报告了他们取消订阅的原因。我们可以采访客户成功团队，以了解他们经常收到的客户投诉。然后，我们可以通过与决策者的头脑风暴会议，提出任何额外的原因。
 
 **潜在偏差**可能比潜在原因更难发现，但对答案有重大影响。就像原因一样，偏差可以通过建立主题专长来确定。然而，与主要依赖知识的潜在原因不同，偏差识别通常需要创造性和建设性的思维。
 
@@ -96,7 +96,7 @@
 
 一个非常突出的生存者偏差例子涉及了亚伯拉罕·瓦尔德在二战期间的工作。作为哥伦比亚大学统计研究小组的一部分，瓦尔德及其团队被委托优化战机应携带的装甲量：如果战机装甲过多——由于重量过大，它们将无法飞行；如果装甲过少——它们将没有保护。在分析了安全返回但有弹孔的战机后，亚伯拉罕·瓦尔德建议将装甲添加到战机上*没有*弹孔的地方（而不是弹孔所在的位置）。为什么？因为分析只包括了幸存的战机，因此那些没有幸存的战机可能在一些关键区域有弹孔。如果这些关键区域被击中，它们未能返回，所以在关键区域增加装甲是有意义的[3]。了解整个故事请查看[这篇文章](https://www.cantorsparadise.com/survivorship-bias-and-the-mathematician-who-helped-win-wwii-356b174defa6)作者[亚历山德罗·巴齐](https://medium.com/u/7f6922738871?source=post_page-----c0fcb840294b--------------------------------)。
 
-![](../Images/fb29793b7e463d98da18f9bff1eb2770.png)
+![](img/fb29793b7e463d98da18f9bff1eb2770.png)
 
 来源： [维基共享资源](https://commons.wikimedia.org/wiki/File:Survivorship-bias.png)
 
@@ -110,15 +110,15 @@
 
 假设我们正在研究在房屋上市出售之前进行粉刷是否会影响销售时间。我们可以假设收入较高可能会影响房主是否决定在出售之前粉刷房屋。然而，我们也可以认识到更高的收入意味着房主还可以利用减少销售时间的资源。这是混杂偏差的一个例子，我们应该在最终模型中控制收入因素。
 
-![](../Images/661cb8ae7701bb551908138df6a93d0f.png)
+![](img/661cb8ae7701bb551908138df6a93d0f.png)
 
 由我在 draw.io 制作的图示
 
-## 第3步：评估因果关系
+## 第 3 步：评估因果关系
 
 现在我们有了一个结果、原因和偏差，以及构成我们依赖关系的机制，我们可以评估因果关系。这一步要求我们验证我们假设的观点是否合理。根据情况和可用资源，我们可以通过两种方式实现这一目标：1\. 进行随机实验并比较结果，或 2\. 利用历史数据开发统计模型来测量因果关系。
 
-![](../Images/7648c6ef29d47a274c4caac6936d8004.png)
+![](img/7648c6ef29d47a274c4caac6936d8004.png)
 
 照片来自 [Bradyn Trollip](https://unsplash.com/@bradyn?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -136,7 +136,7 @@
 
 让我们继续讨论[第二部分](https://medium.com/towards-data-science/strategic-data-analysis-for-descriptive-questions-b6c9e469b32f)的案例研究，在那里我提出了一个关于火车迟到的描述性问题的回答策略。假设我们的决策者现在想知道“*为什么*火车会迟到？”按照本文中概述的步骤，我们可以制定以下策略来回答这个问题：
 
-**识别结果。** 问题“火车为什么迟到”的结果是火车迟到（我们定义为“如果火车实际到达时间与预期到达时间之间的差异大于1分钟，则设置为1的二进制标志”）
+**识别结果。** 问题“火车为什么迟到”的结果是火车迟到（我们定义为“如果火车实际到达时间与预期到达时间之间的差异大于 1 分钟，则设置为 1 的二进制标志”）
 
 **识别潜在的原因和偏差。**
 
@@ -148,7 +148,7 @@
 
 我们可以整理一个图形因果模型，以评估我们提出的原因和偏差与结果的关系，并为每个原因概述一个潜在机制。此时，我们还可以进行更多的探索性数据分析，以发现我们原因之间的隐性关联，并选择最终的潜在原因纳入模型。例如，如果我们发现有技术问题的火车大多数是老旧火车，我们就不需要将火车年龄作为模型参数，因为它已经通过技术问题参数得到了暗示。
 
-![](../Images/3595e4d9fa38a8acaa67aa25a41657ff.png)
+![](img/3595e4d9fa38a8acaa67aa25a41657ff.png)
 
 来源：由我在 draw.io 中制作
 
@@ -172,8 +172,8 @@
 
 ## 来源
 
-[1] [https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html](https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html)
+[1] [`matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html`](https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html)
 
-[2] [https://www.metabase.com/blog/6-most-common-type-of-data-bias-in-data-analysis](https://www.metabase.com/blog/6-most-common-type-of-data-bias-in-data-analysis)
+[2] [`www.metabase.com/blog/6-most-common-type-of-data-bias-in-data-analysis`](https://www.metabase.com/blog/6-most-common-type-of-data-bias-in-data-analysis)
 
-[3] [https://www.cantorsparadise.com/survivorship-bias-and-the-mathematician-who-helped-win-wwii-356b174defa6](https://www.cantorsparadise.com/survivorship-bias-and-the-mathematician-who-helped-win-wwii-356b174defa6)
+[3] [`www.cantorsparadise.com/survivorship-bias-and-the-mathematician-who-helped-win-wwii-356b174defa6`](https://www.cantorsparadise.com/survivorship-bias-and-the-mathematician-who-helped-win-wwii-356b174defa6)

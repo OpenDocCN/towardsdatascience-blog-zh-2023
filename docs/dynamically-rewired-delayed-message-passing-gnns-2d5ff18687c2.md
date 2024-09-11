@@ -1,12 +1,12 @@
-# 动态重连的延迟消息传递GNNs
+# 动态重连的延迟消息传递 GNNs
 
-> 原文：[https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2?source=collection_archive---------7-----------------------#2023-06-19](https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2?source=collection_archive---------7-----------------------#2023-06-19)
+> 原文：[`towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2?source=collection_archive---------7-----------------------#2023-06-19`](https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2?source=collection_archive---------7-----------------------#2023-06-19)
 
 ## 延迟消息传递
 
-## 消息传递图神经网络（MPNNs）往往会遭遇*过度压缩*的现象，这会导致依赖于长距离交互的任务性能下降。这主要归因于消息传递仅在*局部*范围内发生，即仅在节点的直接邻居之间。传统的静态图重连技术通常试图通过允许远程节点即时通信来对抗这一效果（在极端情况下，如Transformers，通过使所有节点在每一层都可访问）。然而，这会带来计算成本，并且破坏了输入图结构所提供的归纳偏置。在这篇文章中，我们描述了两种新机制来克服过度压缩，同时抵消静态重连方法的副作用：*动态重连*和*延迟*消息传递。这些技术可以被纳入任何MPNN中，并带来更好的……
+## 消息传递图神经网络（MPNNs）往往会遭遇*过度压缩*的现象，这会导致依赖于长距离交互的任务性能下降。这主要归因于消息传递仅在*局部*范围内发生，即仅在节点的直接邻居之间。传统的静态图重连技术通常试图通过允许远程节点即时通信来对抗这一效果（在极端情况下，如 Transformers，通过使所有节点在每一层都可访问）。然而，这会带来计算成本，并且破坏了输入图结构所提供的归纳偏置。在这篇文章中，我们描述了两种新机制来克服过度压缩，同时抵消静态重连方法的副作用：*动态重连*和*延迟*消息传递。这些技术可以被纳入任何 MPNN 中，并带来更好的……
 
-[](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Michael Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------) [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)
+[](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)![Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------) [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)
 
 ·
 

@@ -1,14 +1,14 @@
-# V-Net，U-Net在图像分割中的大哥
+# V-Net，U-Net 在图像分割中的大哥
 
-> 原文：[https://towardsdatascience.com/v-net-u-nets-big-brother-in-image-segmentation-906e393968f7?source=collection_archive---------4-----------------------#2023-07-28](https://towardsdatascience.com/v-net-u-nets-big-brother-in-image-segmentation-906e393968f7?source=collection_archive---------4-----------------------#2023-07-28)
+> 原文：[`towardsdatascience.com/v-net-u-nets-big-brother-in-image-segmentation-906e393968f7?source=collection_archive---------4-----------------------#2023-07-28`](https://towardsdatascience.com/v-net-u-nets-big-brother-in-image-segmentation-906e393968f7?source=collection_archive---------4-----------------------#2023-07-28)
 
-## 欢迎阅读关于V-Net的指南，V-Net是著名的U-Net在3D图像分割中的“表亲”。你将彻底了解它！
+## 欢迎阅读关于 V-Net 的指南，V-Net 是著名的 U-Net 在 3D 图像分割中的“表亲”。你将彻底了解它！
 
-[](https://medium.com/@francoisporcher?source=post_page-----906e393968f7--------------------------------)[![François Porcher](../Images/9ddb233f8cadbd69026bd79e2bd62dea.png)](https://medium.com/@francoisporcher?source=post_page-----906e393968f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----906e393968f7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----906e393968f7--------------------------------) [François Porcher](https://medium.com/@francoisporcher?source=post_page-----906e393968f7--------------------------------)
+[](https://medium.com/@francoisporcher?source=post_page-----906e393968f7--------------------------------)![François Porcher](https://medium.com/@francoisporcher?source=post_page-----906e393968f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----906e393968f7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----906e393968f7--------------------------------) [François Porcher](https://medium.com/@francoisporcher?source=post_page-----906e393968f7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e8e73046f53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fv-net-u-nets-big-brother-in-image-segmentation-906e393968f7&user=Fran%C3%A7ois+Porcher&userId=8e8e73046f53&source=post_page-8e8e73046f53----906e393968f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----906e393968f7--------------------------------) ·8分钟阅读·2023年7月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F906e393968f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fv-net-u-nets-big-brother-in-image-segmentation-906e393968f7&user=Fran%C3%A7ois+Porcher&userId=8e8e73046f53&source=-----906e393968f7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e8e73046f53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fv-net-u-nets-big-brother-in-image-segmentation-906e393968f7&user=Fran%C3%A7ois+Porcher&userId=8e8e73046f53&source=post_page-8e8e73046f53----906e393968f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----906e393968f7--------------------------------) ·8 分钟阅读·2023 年 7 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F906e393968f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fv-net-u-nets-big-brother-in-image-segmentation-906e393968f7&user=Fran%C3%A7ois+Porcher&userId=8e8e73046f53&source=-----906e393968f7---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 欢迎进入深度学习架构的激动人心的旅程！你可能已经熟悉了[U-Net](https://medium.com/@foporcher/cooking-your-first-u-net-for-image-segmentation-e812e37e9cd0)，这在计算机视觉领域是一个游戏规则的改变者，显著重塑了图像分割的格局。
 
-今天，让我们将焦点转向U-Net的大哥——V-Net。
+今天，让我们将焦点转向 U-Net 的大哥——V-Net。
 
 由 Fausto Milletari、Nassir Navab 和 Seyed-Ahmad Ahmadi 发表的论文[“VNet: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation”](https://arxiv.org/abs/1606.04797)介绍了一种突破性的 3D 图像分析方法。
 

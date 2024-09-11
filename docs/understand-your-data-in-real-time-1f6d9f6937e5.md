@@ -1,16 +1,16 @@
 # 实时了解您的数据
 
-> 原文：[https://towardsdatascience.com/understand-your-data-in-real-time-1f6d9f6937e5?source=collection_archive---------8-----------------------#2023-07-20](https://towardsdatascience.com/understand-your-data-in-real-time-1f6d9f6937e5?source=collection_archive---------8-----------------------#2023-07-20)
+> 原文：[`towardsdatascience.com/understand-your-data-in-real-time-1f6d9f6937e5?source=collection_archive---------8-----------------------#2023-07-20`](https://towardsdatascience.com/understand-your-data-in-real-time-1f6d9f6937e5?source=collection_archive---------8-----------------------#2023-07-20)
 
 ## 实操教程
 
 ## 与 bytewax 和 ydata-profiling
 
-[](https://medium.com/@miriam.santos?source=post_page-----1f6d9f6937e5--------------------------------)[![Miriam Santos](../Images/decbc6528a641e7b02934a03e136284a.png)](https://medium.com/@miriam.santos?source=post_page-----1f6d9f6937e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f6d9f6937e5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1f6d9f6937e5--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----1f6d9f6937e5--------------------------------)
+[](https://medium.com/@miriam.santos?source=post_page-----1f6d9f6937e5--------------------------------)![Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----1f6d9f6937e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f6d9f6937e5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f6d9f6937e5--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----1f6d9f6937e5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-your-data-in-real-time-1f6d9f6937e5&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----1f6d9f6937e5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f6d9f6937e5--------------------------------) ·8分钟阅读·2023年7月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f6d9f6937e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-your-data-in-real-time-1f6d9f6937e5&user=Miriam+Santos&userId=243289394aaa&source=-----1f6d9f6937e5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-your-data-in-real-time-1f6d9f6937e5&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----1f6d9f6937e5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f6d9f6937e5--------------------------------) ·8 分钟阅读·2023 年 7 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f6d9f6937e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-your-data-in-real-time-1f6d9f6937e5&user=Miriam+Santos&userId=243289394aaa&source=-----1f6d9f6937e5---------------------clap_footer-----------)
 
 --
 
@@ -24,7 +24,7 @@
 
 **无状态流处理** 用于*内联*转换，无需了解流中其他数据点，例如掩码电子邮件或类型转换。
 
-![](../Images/fa739120431ffe7c214dee1b52f4a04c.png)
+![](img/fa739120431ffe7c214dee1b52f4a04c.png)
 
 照片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral) 提供，拍摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -58,9 +58,9 @@ Bytewax 非常适合多种使用场景，包括[生成 AI 的嵌入管道](https
 
 # 为什么需要对数据流进行数据分析？
 
-**数据分析是任何机器学习任务成功的关键**，指的是[彻底理解我们的数据](/a-data-scientists-essential-guide-to-exploratory-data-analysis-25637eee0cf6)：其结构、行为和质量。
+**数据分析是任何机器学习任务成功的关键**，指的是彻底理解我们的数据：其结构、行为和质量。
 
-简而言之，[数据分析](/awesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779)包括分析与数据格式和基本描述符相关的方面（例如，样本数量、特征数量/类型、重复值）、其[内在特征](/data-quality-issues-that-kill-your-machine-learning-models-961591340b40)（如缺失数据或不平衡特征），以及在数据收集或处理过程中可能出现的其他复杂因素（例如，错误值或不一致特征）。
+简而言之，数据分析包括分析与数据格式和基本描述符相关的方面（例如，样本数量、特征数量/类型、重复值）、其内在特征（如缺失数据或不平衡特征），以及在数据收集或处理过程中可能出现的其他复杂因素（例如，错误值或不一致特征）。
 
 **确保高数据质量标准对于所有领域和组织都至关重要，但对于那些处理持续输出数据的领域尤其相关**，因为情况可能会快速变化，需要立即采取行动（例如，医疗监测、股票价值、空气质量政策）。
 
@@ -78,21 +78,21 @@ Bytewax 非常适合多种使用场景，包括[生成 AI 的嵌入管道](https
 
 这确实是对我们数据的*360º视角*——付出最少的努力。
 
-![](../Images/9c2f2ccd6d2fdc260da9563be1e4caab.png)
+![](img/9c2f2ccd6d2fdc260da9563be1e4caab.png)
 
 分析报告：突显潜在的数据质量问题。图片来源：作者。
 
-# 汇总：bytewax和ydata-profiling
+# 汇总：bytewax 和 ydata-profiling
 
-在开始项目之前，我们需要首先设置我们的Python依赖项并配置数据源。
+在开始项目之前，我们需要首先设置我们的 Python 依赖项并配置数据源。
 
 首先，让我们安装`bytewax`和`ydata-profiling`包（*你可能需要使用虚拟环境来进行这个操作——* [*查看这些说明*](https://github.com/Data-Centric-AI-Community/nist-crc-2023#%EF%B8%8F-installation-instructions) *如果你需要额外的指导！）*
 
-然后，我们将上传[环境传感器遥测数据集](https://www.kaggle.com/datasets/garystafford/environmental-sensor-data-132k)（许可—CC0：公共领域），该数据集包含来自不同IoT设备的**温度、湿度、一氧化碳、液化石油气、烟雾、光线和运动**的多项测量：
+然后，我们将上传[环境传感器遥测数据集](https://www.kaggle.com/datasets/garystafford/environmental-sensor-data-132k)（许可—CC0：公共领域），该数据集包含来自不同 IoT 设备的**温度、湿度、一氧化碳、液化石油气、烟雾、光线和运动**的多项测量：
 
-**在生产环境中，这些测量将由每个设备持续生成**，输入将类似于我们在流媒体平台[例如Kafka](https://bytewax.io/guides/enriching-streaming-data)中预期的内容。在这篇文章中，**为了模拟流数据的上下文，我们将一次从CSV文件中读取一行数据**，并使用bytewax创建数据流。
+**在生产环境中，这些测量将由每个设备持续生成**，输入将类似于我们在流媒体平台[例如 Kafka](https://bytewax.io/guides/enriching-streaming-data)中预期的内容。在这篇文章中，**为了模拟流数据的上下文，我们将一次从 CSV 文件中读取一行数据**，并使用 bytewax 创建数据流。
 
-*(快速旁注：数据流本质上是一个可以描述为有向无环图—DAG的数据管道)*
+*(快速旁注：数据流本质上是一个可以描述为有向无环图—DAG 的数据管道)*
 
 首先，让我们进行一些**必要的导入**：
 
@@ -130,8 +130,8 @@ map 方法将以无状态的方式对每个数据点进行更改。我们修改�
 
 适当地处理和分析传入数据能够在不同领域开启许多应用场景，从**数据模式和格式错误的修正**到突出和缓解由现实世界活动引发的额外问题，如**异常检测**（例如，欺诈或入侵/威胁检测）、**设备故障**以及其他偏离预期的事件（例如，数据漂移或与业务规则的不一致）。
 
-现在你可以开始探索你的数据流了！让我们知道你发现了哪些其他应用场景，随时在评论中给我们留言，或在[数据驱动的AI社区](https://tiny.ydata.ai/dcai-medium)中与我们联系，提出问题和建议！*在那里见！*
+现在你可以开始探索你的数据流了！让我们知道你发现了哪些其他应用场景，随时在评论中给我们留言，或在[数据驱动的 AI 社区](https://tiny.ydata.ai/dcai-medium)中与我们联系，提出问题和建议！*在那里见！*
 
 # 致谢
 
-*本文得到了Fabiana Clemente（CDO @* [*YData*](https://ydata.ai)*)的支持，开发了* [*ydata-profiling*](https://github.com/ydataai/ydata-profiling)*，以及Zander Matheson（*CEO & Founder @ [Bytewax](https://bytewax.io)*)和Oli Makhasoeva（Developer Relations @* [*Bytewax*](https://bytewax.io)*），两者都开发了* [*bytewax*](https://github.com/bytewax/bytewax)*。你可以在相应的文档中找到有关这些开源软件包的更多信息：* [*ydata-profiling文档*](https://ydata-profiling.ydata.ai/docs/master/index.html) *与* [*bytewax文档*](https://bytewax.io/docs/)*。*
+*本文得到了 Fabiana Clemente（CDO @* [*YData*](https://ydata.ai)*)的支持，开发了* [*ydata-profiling*](https://github.com/ydataai/ydata-profiling)*，以及 Zander Matheson（*CEO & Founder @ [Bytewax](https://bytewax.io)*)和 Oli Makhasoeva（Developer Relations @* [*Bytewax*](https://bytewax.io)*），两者都开发了* [*bytewax*](https://github.com/bytewax/bytewax)*。你可以在相应的文档中找到有关这些开源软件包的更多信息：* [*ydata-profiling 文档*](https://ydata-profiling.ydata.ai/docs/master/index.html) *与* [*bytewax 文档*](https://bytewax.io/docs/)*。*

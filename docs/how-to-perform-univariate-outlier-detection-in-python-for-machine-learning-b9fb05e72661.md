@@ -1,18 +1,18 @@
-# 如何在Python中进行单变量离群值检测以用于机器学习
+# 如何在 Python 中进行单变量离群值检测以用于机器学习
 
-> 原文：[https://towardsdatascience.com/how-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661?source=collection_archive---------6-----------------------#2023-02-06](https://towardsdatascience.com/how-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661?source=collection_archive---------6-----------------------#2023-02-06)
+> 原文：[`towardsdatascience.com/how-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661?source=collection_archive---------6-----------------------#2023-02-06`](https://towardsdatascience.com/how-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661?source=collection_archive---------6-----------------------#2023-02-06)
 
-## 离群值检测系列 — 第2部分
+## 离群值检测系列 — 第二部分
 
-[](https://ibexorigin.medium.com/?source=post_page-----b9fb05e72661--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----b9fb05e72661--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b9fb05e72661--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b9fb05e72661--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----b9fb05e72661--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----b9fb05e72661--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----b9fb05e72661--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b9fb05e72661--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9fb05e72661--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----b9fb05e72661--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----b9fb05e72661---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9fb05e72661--------------------------------) ·9分钟阅读·2023年2月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb9fb05e72661&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661&user=Bex+T.&userId=39db050c2ac2&source=-----b9fb05e72661---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----b9fb05e72661---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9fb05e72661--------------------------------) ·9 分钟阅读·2023 年 2 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb9fb05e72661&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661&user=Bex+T.&userId=39db050c2ac2&source=-----b9fb05e72661---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb9fb05e72661&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661&source=-----b9fb05e72661---------------------bookmark_footer-----------)![](../Images/32e714fae05225ece5cf9f7517a7195a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb9fb05e72661&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-univariate-outlier-detection-in-python-for-machine-learning-b9fb05e72661&source=-----b9fb05e72661---------------------bookmark_footer-----------)![](img/32e714fae05225ece5cf9f7517a7195a.png)
 
 图片来自 [Alexa](https://pixabay.com/users/alexas_fotos-686414/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1744091) [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1744091)
 
@@ -24,7 +24,7 @@
 
 让我们开始吧！
 
-[## 如何在 Python 中进行异常值检测以用于机器学习：第 1 部分](https://towardsdatascience.com/how-to-perform-outlier-detection-in-python-in-easy-steps-for-machine-learning-1-8f9a3e6c88b5?source=post_page-----b9fb05e72661--------------------------------)
+[## 如何在 Python 中进行异常值检测以用于机器学习：第一部分](https://towardsdatascience.com/how-to-perform-outlier-detection-in-python-in-easy-steps-for-machine-learning-1-8f9a3e6c88b5?source=post_page-----b9fb05e72661--------------------------------)
 
 ### 地球是一个异常值——理论
 

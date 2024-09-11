@@ -1,14 +1,14 @@
 # 使用 Azure ML 和 MONAI 的多模态 3D 脑肿瘤分割
 
-> 原文：[https://towardsdatascience.com/multimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7?source=collection_archive---------6-----------------------#2023-03-21](https://towardsdatascience.com/multimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7?source=collection_archive---------6-----------------------#2023-03-21)
+> 原文：[`towardsdatascience.com/multimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7?source=collection_archive---------6-----------------------#2023-03-21`](https://towardsdatascience.com/multimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7?source=collection_archive---------6-----------------------#2023-03-21)
 
 ## 在企业级 ML 平台上大规模运行医学影像框架
 
-[](https://medium.com/@andreaskopp_89294?source=post_page-----4a721e42f5f7--------------------------------)[![Andreas Kopp](../Images/a3184ebc20f577c933a0e9a74eb0c291.png)](https://medium.com/@andreaskopp_89294?source=post_page-----4a721e42f5f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a721e42f5f7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4a721e42f5f7--------------------------------) [Andreas Kopp](https://medium.com/@andreaskopp_89294?source=post_page-----4a721e42f5f7--------------------------------)
+[](https://medium.com/@andreaskopp_89294?source=post_page-----4a721e42f5f7--------------------------------)![Andreas Kopp](https://medium.com/@andreaskopp_89294?source=post_page-----4a721e42f5f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a721e42f5f7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a721e42f5f7--------------------------------) [Andreas Kopp](https://medium.com/@andreaskopp_89294?source=post_page-----4a721e42f5f7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe712cdda5a0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7&user=Andreas+Kopp&userId=e712cdda5a0c&source=post_page-e712cdda5a0c----4a721e42f5f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a721e42f5f7--------------------------------) ·14 分钟阅读·2023年3月21日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4a721e42f5f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7&user=Andreas+Kopp&userId=e712cdda5a0c&source=-----4a721e42f5f7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe712cdda5a0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7&user=Andreas+Kopp&userId=e712cdda5a0c&source=post_page-e712cdda5a0c----4a721e42f5f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a721e42f5f7--------------------------------) ·14 分钟阅读·2023 年 3 月 21 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4a721e42f5f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-3d-brain-tumor-segmentation-with-azure-ml-and-monai-4a721e42f5f7&user=Andreas+Kopp&userId=e712cdda5a0c&source=-----4a721e42f5f7---------------------clap_footer-----------)
 
 --
 
@@ -16,33 +16,33 @@
 
 作者：[Harmke Alkemade](https://www.linkedin.com/in/harmke-alkemade/) 和 [Andreas Kopp](https://www.linkedin.com/in/andreas-kopp-1947183/)
 
-![](../Images/be12bbfcd17e35b5f16c263d1eb3b757.png)
+![](img/be12bbfcd17e35b5f16c263d1eb3b757.png)
 
 3D 脑肿瘤分割（*图片来源于 Shutterstock，授权给 Andreas Kopp*）
 
 我们感谢来自 NVIDIA 和 MONAI 团队的 Brad Genereaux、Prerna Dogra、Kristopher Kersten、Ahmed Harouni 和 Wenqi Li，他们在该资产的开发中给予了积极支持。
 
-自2021年12月以来，我们发布了多个示例以支持[使用Azure机器学习的医学影像](https://github.com/Azure/medical-imaging)，我们收到了热烈的反馈。兴趣和咨询进一步证明了AI如何迅速成为现代医学实践的关键方面。
+自 2021 年 12 月以来，我们发布了多个示例以支持[使用 Azure 机器学习的医学影像](https://github.com/Azure/medical-imaging)，我们收到了热烈的反馈。兴趣和咨询进一步证明了 AI 如何迅速成为现代医学实践的关键方面。
 
-![](../Images/d06607cd34f626de5c5ed94ed3287380.png)
+![](img/d06607cd34f626de5c5ed94ed3287380.png)
 
-选定的医学影像库用例（*图片5,6通过Shutterstock获得Andreas Kopp授权*）
+选定的医学影像库用例（*图片 5,6 通过 Shutterstock 获得 Andreas Kopp 授权*）
 
-## 3D脑肿瘤分割应用案例
+## 3D 脑肿瘤分割应用案例
 
-今天，我们介绍一个新的医学影像资产，用于[3D脑肿瘤分割](https://github.com/Azure/medical-imaging/tree/main/3d-brain-tumor-segmentation)，这是一个解决肿瘤学领域中的挑战性用例的解决方案。我们的解决方案利用来自多个MRI模态的体积视觉输入和不同的3D胶质瘤肿瘤分割，以产生准确的肿瘤边界和子区域预测。为了处理涉及的大量影像数据，我们的资产采用了在Azure ML上使用可扩展GPU资源的并行训练。此外，我们利用了医学人工智能开放网络（MONAI），这是一个领域特定的框架，提供了最先进的工具和方法用于医学影像分析。
+今天，我们介绍一个新的医学影像资产，用于[3D 脑肿瘤分割](https://github.com/Azure/medical-imaging/tree/main/3d-brain-tumor-segmentation)，这是一个解决肿瘤学领域中的挑战性用例的解决方案。我们的解决方案利用来自多个 MRI 模态的体积视觉输入和不同的 3D 胶质瘤肿瘤分割，以产生准确的肿瘤边界和子区域预测。为了处理涉及的大量影像数据，我们的资产采用了在 Azure ML 上使用可扩展 GPU 资源的并行训练。此外，我们利用了医学人工智能开放网络（MONAI），这是一个领域特定的框架，提供了最先进的工具和方法用于医学影像分析。
 
-结合Azure机器学习和MONAI，为可扩展的机器学习开发和操作提供了宝贵的协同效应，特别是在医学影像方面的创新。
+结合 Azure 机器学习和 MONAI，为可扩展的机器学习开发和操作提供了宝贵的协同效应，特别是在医学影像方面的创新。
 
-[**Azure机器学习**](https://azure.microsoft.com/en-us/products/machine-learning)是一个基于云的平台，为数据科学家和机器学习工程师提供了一个协作环境，用于大规模开发和部署机器学习模型。它提供了多种创作选项，从无需编码/低编码的自动化机器学习到使用VSCode等流行工具的代码优先。用户可以访问可扩展的计算资源进行训练和部署，使其在处理大型数据集和复杂模型时非常理想。此外，它包括MLOps功能，可以实现机器学习资产的管理、维护和版本控制，并允许自动化的训练和部署管道。该平台包括负责任的AI工具，可以帮助解释模型并减轻潜在的偏见，使其成为希望开发和部署伦理AI解决方案的企业的理想选择。
+[**Azure 机器学习**](https://azure.microsoft.com/en-us/products/machine-learning)是一个基于云的平台，为数据科学家和机器学习工程师提供了一个协作环境，用于大规模开发和部署机器学习模型。它提供了多种创作选项，从无需编码/低编码的自动化机器学习到使用 VSCode 等流行工具的代码优先。用户可以访问可扩展的计算资源进行训练和部署，使其在处理大型数据集和复杂模型时非常理想。此外，它包括 MLOps 功能，可以实现机器学习资产的管理、维护和版本控制，并允许自动化的训练和部署管道。该平台包括负责任的 AI 工具，可以帮助解释模型并减轻潜在的偏见，使其成为希望开发和部署伦理 AI 解决方案的企业的理想选择。
 
-[**医学人工智能开放网络（MONAI）**](https://monai.io/)是一个基于PyTorch的开源项目，旨在用于医学影像。它提供了一套全面的工具，用于构建和部署医疗影像的AI模型：
+[**医学人工智能开放网络（MONAI）**](https://monai.io/)是一个基于 PyTorch 的开源项目，旨在用于医学影像。它提供了一套全面的工具，用于构建和部署医疗影像的 AI 模型：
 
-+   **MONAI标签**用于AI辅助标记医学影像数据
++   **MONAI 标签**用于 AI 辅助标记医学影像数据
 
-+   **MONAI核心**用于训练具有领域特定功能的AI模型
++   **MONAI 核心**用于训练具有领域特定功能的 AI 模型
 
-+   **MONAI部署**用于打包、测试和部署医学AI应用程序。
++   **MONAI 部署**用于打包、测试和部署医学 AI 应用程序。
 
 MONAI Core 是本文描述的解决方案的重点。它原生支持常用的医学成像格式，如 Nifty 和 DICOM。它还包括字典变换等功能，以确保在复杂的变换管道中图像和分割之间的一致性。此外，MONAI Core 提供了一系列网络架构，包括像 UNETR 这样的最先进的基于 Transformer 的 3D 分割算法。
 
@@ -52,15 +52,15 @@ MONAI Core 是本文描述的解决方案的重点。它原生支持常用的医
 
 1.  原生 T1 (**T1**)：可用于区分各种组织类型和病理状态。原生 T1 通常用于提取有关组织特性的定量信息。
 
-1.  T1加权对比剂钆 (**T1Gd**)：这种模态可用于划分肿瘤边界和识别活跃肿瘤生长区域。
+1.  T1 加权对比剂钆 (**T1Gd**)：这种模态可用于划分肿瘤边界和识别活跃肿瘤生长区域。
 
-1.  T2加权 (**T2**)：这些图像对检测水肿（液体积聚）、炎症和其他可能与肿瘤相关的脑组织变化非常有用。
+1.  T2 加权 (**T2**)：这些图像对检测水肿（液体积聚）、炎症和其他可能与肿瘤相关的脑组织变化非常有用。
 
-1.  T2加权液体衰减反转恢复 (**T2-FLAIR**)：T2-FLAIR 图像对于识别侵袭性肿瘤边缘和非增强肿瘤成分非常有用。
+1.  T2 加权液体衰减反转恢复 (**T2-FLAIR**)：T2-FLAIR 图像对于识别侵袭性肿瘤边缘和非增强肿瘤成分非常有用。
 
 以下插图提供了 BraTS 数据集中专家标注的肿瘤分割示例：肿瘤核心、整体肿瘤和增强结构。左上角的图像结合了这三种分割。
 
-![](../Images/a00f76d7a1dc145e7f92caf8ee1b43e3.png)
+![](img/a00f76d7a1dc145e7f92caf8ee1b43e3.png)
 
 从 BraTS 2021 数据集中提取的脑肿瘤分割（作者提供的图像）
 
@@ -72,13 +72,13 @@ MONAI Core 是本文描述的解决方案的重点。它原生支持常用的医
 
 这个使用案例的端到端工作流程在我们的 [编排笔记本](https://github.com/Azure/medical-imaging/blob/main/3d-brain-tumor-segmentation/3d-brain-tumor-seg-BRATS2021.ipynb) 中实现。这些是主要步骤及其相关输出：
 
-![](../Images/0ade5cb0596b1028c7d46d2e2f823dcc.png)
+![](img/0ade5cb0596b1028c7d46d2e2f823dcc.png)
 
 脑肿瘤分割工作流程及输出（图片由作者提供）
 
 第一步涉及下载和可视化数据，然后提交训练作业到 Azure ML 计算集群。模型训练完成并注册后，它被部署为 Azure ML 管理的端点。笔记本最后通过可视化验证集中的图像体上的模型预测来结束。训练和推理脚本单独存储在仓库中。
 
-![](../Images/04290d9732eb031470492ec0e52b98a0.png)
+![](img/04290d9732eb031470492ec0e52b98a0.png)
 
 在 itkwidgets 3D 查看器中可视化肿瘤核心（图片由作者提供）
 
@@ -90,7 +90,7 @@ MONAI Core 是本文描述的解决方案的重点。它原生支持常用的医
 
 以下示例说明了 MONAI 字典变换在确保图像与相关分割标签之间的一致性方面的好处。假设我们使用一个随机变换的管道来进行数据增强，这些变换会影响图像的形状或位置（如调整大小、翻转、旋转、透视调整等）。我们必须确保对分割图像应用相同的变换，以确保图像和标签之间的一致性，便于后续的训练过程。在这种情况下，MONAI 字典变换是一个便利的工具：我们只需指定变换应应用于图像、标签还是两者。在这个例子中，我们将变换应用于两个对象。MONAI 还确保在随机变换的情况下保持一致性。
 
-![](../Images/c905e76650b5865e7727d15d95bf05d8.png)
+![](img/c905e76650b5865e7727d15d95bf05d8.png)
 
 随机水平翻转的字典变换示例（图像由作者提供）
 
@@ -155,7 +155,7 @@ returned_job= ml_client.create_or_update(job)
 
 了解 GPU 利用率对于优化资源使用和防止在长时间的 PyTorch 训练过程中出现的内存溢出（OOM）错误至关重要。Azure ML 提供了一系列指标来跟踪网络和磁盘 I/O，以及 CPU 和 GPU 内存和处理器利用率。以下示例演示了在 Standard_NC24rs_v3 类型的多 GPU 集群节点上训练运行开始时的 GPU 内存和能耗情况。在这种情况下，我们可以看到四个 GPU 上每个 GPU 的 16 GB 内存正在有效利用。剩余的头部空间很小，这清楚地表明增加批量大小可能会提高遇到 OOM 错误的风险。此外，Azure ML 还允许我们监控每个 GPU 的能耗，以千焦耳为单位进行测量。
 
-![](../Images/26e1fcb5788b50ab98cf8494bc6005a9.png)
+![](img/26e1fcb5788b50ab98cf8494bc6005a9.png)
 
 监控训练期间的多 GPU 资源消耗（图像由作者提供）
 
@@ -167,13 +167,13 @@ returned_job= ml_client.create_or_update(job)
 
 在训练作业运行时，JupyterLab、VSCode 和 Tensorboard 在容器中运行，使其可以进行监控和调试。这在 `services` 参数中指定。我们在训练脚本中使用 Tensorboard 和 MLFlow 记录训练指标，并使用 MLFlow 注册最终模型。由于 Azure ML 中对 MLFlow 的本机支持，指标和模型都可以在 Azure ML Studio 的实验部分找到。通过访问运行在容器中的 Tensorboard 实例，我们可以在模型训练时查看训练和验证指标。
 
-![](../Images/a6777327e55b4160b10d16f897962e11.png)
+![](img/a6777327e55b4160b10d16f897962e11.png)
 
 使用 Tensorboard 进行交互式作业的训练性能监控（图像由作者提供）
 
 Dice 系数用于评估模型性能，是一种常用于对象分割模型的度量指标。它衡量预测分割掩膜与真实数据掩膜之间的相似性。Dice 系数为 1.0 表示预测掩膜与真实数据掩膜完全重叠。对数据集中不同类别的 Dice 指标进行跟踪：肿瘤核心 (*val_dice_tc*)、整体肿瘤 (*val_dice_wt*) 和增强结构 (*val_dice_et*)。还跟踪不同类别的平均 Dice 指标 (*val_mean_dice*)。进行 150 个 epochs 的实验得到以下指标：
 
-![](../Images/14a154808c996fae0e64eda9ef596375.png)
+![](img/14a154808c996fae0e64eda9ef596375.png)
 
 在 Azure ML Studio 中进行 150 个 epoch 训练期间的验证 DICE 指标（图像由作者提供）
 
@@ -181,7 +181,7 @@ Dice 系数用于评估模型性能，是一种常用于对象分割模型的度
 
 在将四种模态的二进制编码版本的 MRI 图像堆栈发送到我们的端点后，我们会收到作为 JSON 响应的一部分的预测分割结果。编排笔记本的最后部分包含了可视化这些预测的代码。我们的图像滑块将每个切片的预测分割结果与真实数据并排显示，以便进行比较。
 
-![](../Images/9de27c8554fd29c9ed43f12a41d92d44.png)
+![](img/9de27c8554fd29c9ed43f12a41d92d44.png)
 
 比较专家标注的（真实数据）与预测的肿瘤结构（图像由作者提供）
 

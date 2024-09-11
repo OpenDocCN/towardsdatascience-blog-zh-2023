@@ -1,14 +1,14 @@
 # 正则化：避免机器学习中的过拟合
 
-> 原文：[https://towardsdatascience.com/regularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc?source=collection_archive---------16-----------------------#2023-01-16](https://towardsdatascience.com/regularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc?source=collection_archive---------16-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/regularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc?source=collection_archive---------16-----------------------#2023-01-16`](https://towardsdatascience.com/regularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc?source=collection_archive---------16-----------------------#2023-01-16)
 
 ## 正则化如何工作以及何时使用
 
-[](https://medium.com/@riandolphin?source=post_page-----bb65d993e9cc--------------------------------)[![Rian Dolphin](../Images/86716dde8ad84b693d071e3face37f40.png)](https://medium.com/@riandolphin?source=post_page-----bb65d993e9cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb65d993e9cc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb65d993e9cc--------------------------------) [Rian Dolphin](https://medium.com/@riandolphin?source=post_page-----bb65d993e9cc--------------------------------)
+[](https://medium.com/@riandolphin?source=post_page-----bb65d993e9cc--------------------------------)![Rian Dolphin](https://medium.com/@riandolphin?source=post_page-----bb65d993e9cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb65d993e9cc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb65d993e9cc--------------------------------) [Rian Dolphin](https://medium.com/@riandolphin?source=post_page-----bb65d993e9cc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2f79d1e1bf6d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc&user=Rian+Dolphin&userId=2f79d1e1bf6d&source=post_page-2f79d1e1bf6d----bb65d993e9cc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb65d993e9cc--------------------------------) ·7 min read·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb65d993e9cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc&user=Rian+Dolphin&userId=2f79d1e1bf6d&source=-----bb65d993e9cc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2f79d1e1bf6d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc&user=Rian+Dolphin&userId=2f79d1e1bf6d&source=post_page-2f79d1e1bf6d----bb65d993e9cc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb65d993e9cc--------------------------------) ·7 min read·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb65d993e9cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregularization-avoiding-overfitting-in-machine-learning-bb65d993e9cc&user=Rian+Dolphin&userId=2f79d1e1bf6d&source=-----bb65d993e9cc---------------------clap_footer-----------)
 
 --
 
@@ -26,7 +26,7 @@
 
 ## 正则化是如何工作的？
 
-![](../Images/1e6c93cb41b4d3d97a5270d005e2d6d6.png)
+![](img/1e6c93cb41b4d3d97a5270d005e2d6d6.png)
 
 图片由 [Ugur Akdemir](https://unsplash.com/ja/@ugur?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/lights?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 

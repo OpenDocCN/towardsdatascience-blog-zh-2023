@@ -1,18 +1,18 @@
 # 5 个有用的提取与加载实践，帮助获得高质量原始数据
 
-> 原文：[https://towardsdatascience.com/5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721?source=collection_archive---------8-----------------------#2023-04-04](https://towardsdatascience.com/5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721?source=collection_archive---------8-----------------------#2023-04-04)
+> 原文：[`towardsdatascience.com/5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721?source=collection_archive---------8-----------------------#2023-04-04`](https://towardsdatascience.com/5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721?source=collection_archive---------8-----------------------#2023-04-04)
 
 ## 不可变的原始区域，未经过变换、平展或去重，直到完成你的挖掘工作
 
-[](https://svenbalnojan.medium.com/?source=post_page-----65b9a59a8721--------------------------------)[![Sven Balnojan](../Images/3c8ba26bf656dec273cde0d93acf5576.png)](https://svenbalnojan.medium.com/?source=post_page-----65b9a59a8721--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65b9a59a8721--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65b9a59a8721--------------------------------) [Sven Balnojan](https://svenbalnojan.medium.com/?source=post_page-----65b9a59a8721--------------------------------)
+[](https://svenbalnojan.medium.com/?source=post_page-----65b9a59a8721--------------------------------)![Sven Balnojan](https://svenbalnojan.medium.com/?source=post_page-----65b9a59a8721--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65b9a59a8721--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----65b9a59a8721--------------------------------) [Sven Balnojan](https://svenbalnojan.medium.com/?source=post_page-----65b9a59a8721--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F31ae15774b19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721&user=Sven+Balnojan&userId=31ae15774b19&source=post_page-31ae15774b19----65b9a59a8721---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65b9a59a8721--------------------------------) ·8 分钟阅读·2023年4月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65b9a59a8721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721&user=Sven+Balnojan&userId=31ae15774b19&source=-----65b9a59a8721---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F31ae15774b19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721&user=Sven+Balnojan&userId=31ae15774b19&source=post_page-31ae15774b19----65b9a59a8721---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65b9a59a8721--------------------------------) ·8 分钟阅读·2023 年 4 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65b9a59a8721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721&user=Sven+Balnojan&userId=31ae15774b19&source=-----65b9a59a8721---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65b9a59a8721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721&source=-----65b9a59a8721---------------------bookmark_footer-----------)![](../Images/942b5c7466ce87920f0d5f97feff976f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65b9a59a8721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-helpful-extract-load-practices-for-high-quality-raw-data-65b9a59a8721&source=-----65b9a59a8721---------------------bookmark_footer-----------)![](img/942b5c7466ce87920f0d5f97feff976f.png)
 
 挖掘机 - 图片由 [Dmitriy Zub](https://unsplash.com/@dimitryzub?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/jibUsRaauLY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 
@@ -54,17 +54,17 @@ ELT 作为一种模式的概念听起来很简单，“只需首先复制源数�
 
 +   源系统：关于数据来源的元数据。
 
-![](../Images/41b27b818ea3570f01f23d958c21a027.png)
+![](img/41b27b818ea3570f01f23d958c21a027.png)
 
 图片由作者提供。
 
-将这些元数据中的任何一个或全部添加到你摄取的数据的每一行/条目中。我们建议使用摄取器的开始时间作为“摄取时间”，因为这简化了过程。“摄取实例的标识符”应该明确。不要仅仅提供“Airflow-OracleDB-Ingester”作为过程，而是提供“Airflow-OracleDB-Ingester-ID1244”，其中ID1244标识特定的摄取运行。
+将这些元数据中的任何一个或全部添加到你摄取的数据的每一行/条目中。我们建议使用摄取器的开始时间作为“摄取时间”，因为这简化了过程。“摄取实例的标识符”应该明确。不要仅仅提供“Airflow-OracleDB-Ingester”作为过程，而是提供“Airflow-OracleDB-Ingester-ID1244”，其中 ID1244 标识特定的摄取运行。
 
 将源系统作为元数据的一个好处是，你可以快速调试下游仪表板中的问题并识别其来源。这也是其他用例中有用的元数据。
 
 假设你有一个遗留系统和一个新的客户注册组件。在这种情况下，你可以在仪表板中将源系统作为过滤选项，让用户仅过滤来自一个系统的客户。
 
-![](../Images/644ef20394e1ff864642f8a183b4f584.png)
+![](img/644ef20394e1ff864642f8a183b4f584.png)
 
 图片由作者提供。
 
@@ -72,29 +72,29 @@ ELT 作为一种模式的概念听起来很简单，“只需首先复制源数�
 
 通常，你会遇到三种数据重复情况需要“去重”。但无论是哪种情况，都不要在原始/落地层进行去重！
 
-第一种情况是有意的重复数据，其中源系统包含你和终端用户认为重复的内容。例如，你的CRM系统可能有两个相同客户的条目，该客户取消后重新注册。如果你在原始层级去重，这意味着要么合并两个条目，要么删除一个。这两者都会删除源系统中存在的数据。
+第一种情况是有意的重复数据，其中源系统包含你和终端用户认为重复的内容。例如，你的 CRM 系统可能有两个相同客户的条目，该客户取消后重新注册。如果你在原始层级去重，这意味着要么合并两个条目，要么删除一个。这两者都会删除源系统中存在的数据。
 
 第二种情况是无意间产生的重复数据，其中源系统可能会删除你在数据仓库中仍然存在的记录，或者源系统无意中生成了未来可能会删除的重复数据。尽管这是一个“错误”，我不建议在原始摄取区域删除这些数据，而是应该在后续阶段进一步过滤，例如在建模的下一阶段。否则，你会在摄取中添加难以跟踪的逻辑。
 
-第三种情况是由于技术限制导致的重复。可能是你的摄取工具倾向于“至少一次交付”策略，或者可能是摄取过程中的一个bug。使用“至少一次交付”增量加载策略，你确保获取所有数据行，但可能会产生一些重复数据。再次建议在原始层级保留重复数据，并在后续阶段进行过滤。
+第三种情况是由于技术限制导致的重复。可能是你的摄取工具倾向于“至少一次交付”策略，或者可能是摄取过程中的一个 bug。使用“至少一次交付”增量加载策略，你确保获取所有数据行，但可能会产生一些重复数据。再次建议在原始层级保留重复数据，并在后续阶段进行过滤。
 
-![](../Images/ff199127920861992094eaa3637ff3f0.png)
+![](img/ff199127920861992094eaa3637ff3f0.png)
 
 图片由作者提供。
 
 无论情况如何，都不要在加载时去重。加载所有数据，并保持原样。稍后在下一阶段进行去重。
 
-## 3\. 在EL期间不要展平，推迟到一个阶段后进行
+## 3\. 在 EL 期间不要展平，推迟到一个阶段后进行
 
-许多源系统在摄取时会返回数组、JSON或其他具有某些层级的嵌套对象，你希望将其拆解以进行进一步处理。但不是在摄取层面。将原始数据按原样导入你的数据系统，然后让一个过程进行“扁平化”。
+许多源系统在摄取时会返回数组、JSON 或其他具有某些层级的嵌套对象，你希望将其拆解以进行进一步处理。但不是在摄取层面。将原始数据按原样导入你的数据系统，然后让一个过程进行“扁平化”。
 
-一个很典型的例子是JSON对象。你的源数据可能包含一个大的JSON对象，而你希望将其处理成Snowflake数据库中的单独列。这种做法建议首先创建一个仅包含元数据列和一个“JSON_blob”列的原始表，其中包含JSON对象。在第二步，你可以将这些数据处理成列。
+一个很典型的例子是 JSON 对象。你的源数据可能包含一个大的 JSON 对象，而你希望将其处理成 Snowflake 数据库中的单独列。这种做法建议首先创建一个仅包含元数据列和一个“JSON_blob”列的原始表，其中包含 JSON 对象。在第二步，你可以将这些数据处理成列。
 
-![](../Images/65ab7ad6d86159b77caaa8f6cbd89b2d.png)
+![](img/65ab7ad6d86159b77caaa8f6cbd89b2d.png)
 
 图片由作者提供。
 
-这样做的原因是，扁平化涉及业务逻辑。它涉及到你知道哪些属性是“始终存在的”。如果你在摄取时进行扁平化，你的摄取过程可能会因为一个JSON对象为空，或者一个JSON对象没有一个预期的值而中断。处理已经摄取的数据并重新运行扁平化工具总是比运行摄取和扁平化过程更容易。
+这样做的原因是，扁平化涉及业务逻辑。它涉及到你知道哪些属性是“始终存在的”。如果你在摄取时进行扁平化，你的摄取过程可能会因为一个 JSON 对象为空，或者一个 JSON 对象没有一个预期的值而中断。处理已经摄取的数据并重新运行扁平化工具总是比运行摄取和扁平化过程更容易。
 
 *附加提示：相同的实践可以避免在摄取时进行类型转换（如果可能的话）。我们建议在摄取之后再进行类型转换。*
 
@@ -104,11 +104,11 @@ ELT 作为一种模式的概念听起来很简单，“只需首先复制源数�
 
 > “不可变原始层”：一个你**绝对不要修改或删除数据**的区域。
 
-不去重复数据是其中的一部分（见规则2），但还有更多：在你的不可变原始层中，你不会删除上游移除的记录或修改上游修改的数据。你只是加载新数据，仅此而已。
+不去重复数据是其中的一部分（见规则 2），但还有更多：在你的不可变原始层中，你不会删除上游移除的记录或修改上游修改的数据。你只是加载新数据，仅此而已。
 
 一个我仍然痛苦记忆的例子是北极星指标仪表板。它展示了我基于过去几个月客户行为所工作的北极星指标的当前发展情况。仪表板和数字看起来都很好，呈上升趋势。产品和管理决策基于此做出。北极星指标的新记录每周广播一次。
 
-然后突然有一天，仪表板看起来不同了。我们的北极星指标减少了10%的值，并在某个特定细分市场中减少了30%。
+然后突然有一天，仪表板看起来不同了。我们的北极星指标减少了 10%的值，并在某个特定细分市场中减少了 30%。
 
 一位大客户离开了，记录被完全删除。
 
@@ -116,13 +116,13 @@ ELT 作为一种模式的概念听起来很简单，“只需首先复制源数�
 
 从那天起，我们使用了可能会变动的所有原始数据的[快照](https://docs.getdbt.com/docs/build/snapshots)。
 
-![](../Images/1fb22bc843ea507b419f0816c0eb7b90.png)
+![](img/1fb22bc843ea507b419f0816c0eb7b90.png)
 
 图片由作者提供。
 
 为自己做个好事，让你的原始层不可变。
 
-*注意：不可变的暂存区域实际上就是你在进行全表同步时创建的，如果你不删除数据的话。此外，出于GDPR和隐私问题，你应该在这里做一个例外。*
+*注意：不可变的暂存区域实际上就是你在进行全表同步时创建的，如果你不删除数据的话。此外，出于 GDPR 和隐私问题，你应该在这里做一个例外。*
 
 ## 5\. 在数据摄取时不要进行任何形式的转换，即使是轻微的，除非确实必要
 
@@ -132,7 +132,7 @@ ELT 作为一种模式的概念听起来很简单，“只需首先复制源数�
 
 如果你默认要进行转换，最好先进行数据摄取。然后，你可以，例如，创建一个映射表并在那里进行连接。
 
-![](../Images/e210cf087a2aa0289dc7d767e08bead3.png)
+![](img/e210cf087a2aa0289dc7d767e08bead3.png)
 
 图片由作者提供。
 
@@ -146,6 +146,6 @@ ELT 作为一种模式的概念听起来很简单，“只需首先复制源数�
 
 如果你想了解所有实践的简短版本，请查看下面的图示。
 
-![](../Images/a3e3d5dd98f02bb8fda9cbb7ae21cc98.png)
+![](img/a3e3d5dd98f02bb8fda9cbb7ae21cc98.png)
 
 5 个有用的提取和加载实践，图片由作者提供。

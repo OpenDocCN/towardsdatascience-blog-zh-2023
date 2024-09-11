@@ -1,18 +1,18 @@
 # 一个逐步指南，帮助实现稳健的机器学习分类
 
-> 原文：[https://towardsdatascience.com/a-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d?source=collection_archive---------7-----------------------#2023-03-03](https://towardsdatascience.com/a-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d?source=collection_archive---------7-----------------------#2023-03-03)
+> 原文：[`towardsdatascience.com/a-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d?source=collection_archive---------7-----------------------#2023-03-03`](https://towardsdatascience.com/a-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d?source=collection_archive---------7-----------------------#2023-03-03)
 
 ## 如何避免常见的陷阱，并深入挖掘我们的模型
 
-[](https://ryancburke8.medium.com/?source=post_page-----5ce83592eb1d--------------------------------)[![Ryan Burke](../Images/4a6c1ac506da2456406afe46bae8e732.png)](https://ryancburke8.medium.com/?source=post_page-----5ce83592eb1d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce83592eb1d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ce83592eb1d--------------------------------) [Ryan Burke](https://ryancburke8.medium.com/?source=post_page-----5ce83592eb1d--------------------------------)
+[](https://ryancburke8.medium.com/?source=post_page-----5ce83592eb1d--------------------------------)![Ryan Burke](https://ryancburke8.medium.com/?source=post_page-----5ce83592eb1d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce83592eb1d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce83592eb1d--------------------------------) [Ryan Burke](https://ryancburke8.medium.com/?source=post_page-----5ce83592eb1d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ea55f01411&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d&user=Ryan+Burke&userId=93ea55f01411&source=post_page-93ea55f01411----5ce83592eb1d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce83592eb1d--------------------------------) ·17分钟阅读·2023年3月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce83592eb1d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d&user=Ryan+Burke&userId=93ea55f01411&source=-----5ce83592eb1d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ea55f01411&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d&user=Ryan+Burke&userId=93ea55f01411&source=post_page-93ea55f01411----5ce83592eb1d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce83592eb1d--------------------------------) ·17 分钟阅读·2023 年 3 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce83592eb1d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d&user=Ryan+Burke&userId=93ea55f01411&source=-----5ce83592eb1d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ce83592eb1d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d&source=-----5ce83592eb1d---------------------bookmark_footer-----------)![](../Images/f1856f0dfbd79cecda67d8bfcb71783b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ce83592eb1d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-robust-ml-classification-5ce83592eb1d&source=-----5ce83592eb1d---------------------bookmark_footer-----------)![](img/f1856f0dfbd79cecda67d8bfcb71783b.png)
 
 照片由 [Luca Bravo](https://unsplash.com/@lucabravo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/wallpapers/nature/forest?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -22,7 +22,7 @@
 
 # 库
 
-以下是我用于今天分析的库列表。这些库包括了标准的数据科学工具包以及必要的sklearn库。
+以下是我用于今天分析的库列表。这些库包括了标准的数据科学工具包以及必要的 sklearn 库。
 
 ```py
 import sys

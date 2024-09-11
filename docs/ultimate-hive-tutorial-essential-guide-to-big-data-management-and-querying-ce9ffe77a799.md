@@ -1,10 +1,10 @@
 # Ultimate Hive Tutorial: Big Data 管理和查询的基本指南
 
-> 原文：[https://towardsdatascience.com/ultimate-hive-tutorial-essential-guide-to-big-data-management-and-querying-ce9ffe77a799?source=collection_archive---------7-----------------------#2023-11-10](https://towardsdatascience.com/ultimate-hive-tutorial-essential-guide-to-big-data-management-and-querying-ce9ffe77a799?source=collection_archive---------7-----------------------#2023-11-10)
+> 原文：[`towardsdatascience.com/ultimate-hive-tutorial-essential-guide-to-big-data-management-and-querying-ce9ffe77a799?source=collection_archive---------7-----------------------#2023-11-10`](https://towardsdatascience.com/ultimate-hive-tutorial-essential-guide-to-big-data-management-and-querying-ce9ffe77a799?source=collection_archive---------7-----------------------#2023-11-10)
 
 ## 解锁 Hive 的力量：您的深度指南与视觉思维导图洞见
 
-[](https://medium.com/@yoloshe302?source=post_page-----ce9ffe77a799--------------------------------)[![Summer He](../Images/8bdf6ffcb4d02033d966243d3f25f1c4.png)](https://medium.com/@yoloshe302?source=post_page-----ce9ffe77a799--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce9ffe77a799--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce9ffe77a799--------------------------------) [夏·赫](https://medium.com/@yoloshe302?source=post_page-----ce9ffe77a799--------------------------------)
+[](https://medium.com/@yoloshe302?source=post_page-----ce9ffe77a799--------------------------------)![Summer He](https://medium.com/@yoloshe302?source=post_page-----ce9ffe77a799--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce9ffe77a799--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce9ffe77a799--------------------------------) [夏·赫](https://medium.com/@yoloshe302?source=post_page-----ce9ffe77a799--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce9ffe77a799&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fultimate-hive-tutorial-essential-guide-to-big-data-management-and-querying-ce9ffe77a799&source=-----ce9ffe77a799---------------------bookmark_footer-----------)![](../Images/ffec0a11222ebfb6a018ea8edb5d97bd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce9ffe77a799&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fultimate-hive-tutorial-essential-guide-to-big-data-management-and-querying-ce9ffe77a799&source=-----ce9ffe77a799---------------------bookmark_footer-----------)![](img/ffec0a11222ebfb6a018ea8edb5d97bd.png)
 
 图片作者：Obsidian 提供
 

@@ -1,28 +1,28 @@
 # 神经网络作为决策树
 
-> 原文：[https://towardsdatascience.com/neural-networks-as-decision-trees-89cd9fdcdf6a?source=collection_archive---------5-----------------------#2023-04-03](https://towardsdatascience.com/neural-networks-as-decision-trees-89cd9fdcdf6a?source=collection_archive---------5-----------------------#2023-04-03)
+> 原文：[`towardsdatascience.com/neural-networks-as-decision-trees-89cd9fdcdf6a?source=collection_archive---------5-----------------------#2023-04-03`](https://towardsdatascience.com/neural-networks-as-decision-trees-89cd9fdcdf6a?source=collection_archive---------5-----------------------#2023-04-03)
 
-![](../Images/1b720424104554f1a4898b202caf97a0.png)
+![](img/1b720424104554f1a4898b202caf97a0.png)
 
 图片由 [Jens Lelie](https://unsplash.com/@madebyjens?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 将神经网络的强大功能与决策树的可解释结构结合起来
 
-[](https://medium.com/@upadhyan?source=post_page-----89cd9fdcdf6a--------------------------------)[![Nakul Upadhya](../Images/336cb21272e9b1f098177adbde50e92e.png)](https://medium.com/@upadhyan?source=post_page-----89cd9fdcdf6a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89cd9fdcdf6a--------------------------------)[![数据科学之路](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89cd9fdcdf6a--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----89cd9fdcdf6a--------------------------------)
+[](https://medium.com/@upadhyan?source=post_page-----89cd9fdcdf6a--------------------------------)![Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----89cd9fdcdf6a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89cd9fdcdf6a--------------------------------)![数据科学之路](https://towardsdatascience.com/?source=post_page-----89cd9fdcdf6a--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----89cd9fdcdf6a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-as-decision-trees-89cd9fdcdf6a&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----89cd9fdcdf6a---------------------post_header-----------) 发布于 [数据科学之路](https://towardsdatascience.com/?source=post_page-----89cd9fdcdf6a--------------------------------) · 9 分钟阅读 · 2023年4月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89cd9fdcdf6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-as-decision-trees-89cd9fdcdf6a&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----89cd9fdcdf6a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-as-decision-trees-89cd9fdcdf6a&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----89cd9fdcdf6a---------------------post_header-----------) 发布于 [数据科学之路](https://towardsdatascience.com/?source=post_page-----89cd9fdcdf6a--------------------------------) · 9 分钟阅读 · 2023 年 4 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89cd9fdcdf6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-as-decision-trees-89cd9fdcdf6a&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----89cd9fdcdf6a---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89cd9fdcdf6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-as-decision-trees-89cd9fdcdf6a&source=-----89cd9fdcdf6a---------------------bookmark_footer-----------)
 
-人工智能的近期繁荣清楚地展示了深度神经网络在各种任务中的强大能力，尤其是在数据维度高且与目标变量之间存在复杂非线性关系的分类问题领域。然而，解释任何神经分类器的决策是一个非常困难的问题。虽然许多后置方法如DeepLift [2] 和 Layer-Wise Relevance Propagation [3] 可以帮助解释单个决策，但解释全局决策机制（即模型通常寻找的内容）则更加困难。
+人工智能的近期繁荣清楚地展示了深度神经网络在各种任务中的强大能力，尤其是在数据维度高且与目标变量之间存在复杂非线性关系的分类问题领域。然而，解释任何神经分类器的决策是一个非常困难的问题。虽然许多后置方法如 DeepLift [2] 和 Layer-Wise Relevance Propagation [3] 可以帮助解释单个决策，但解释全局决策机制（即模型通常寻找的内容）则更加困难。
 
-因此，许多高风险领域的从业者更倾向于选择更具可解释性的模型，如基本的决策树，因为决策层级可以被利益相关者清晰地可视化和理解。然而，基本的决策树往往不能提供足够的准确性，通常会使用集成方法如Bagging或Boosting来提高模型的性能。不过，这又牺牲了一些可解释性，因为要理解一个单一的决策，从业者需要查看数百棵树。然而，这些方法仍然比深度网络更受欢迎，因为至少特征重要性（无论是局部还是全局）可以被轻松提取和展示。
+因此，许多高风险领域的从业者更倾向于选择更具可解释性的模型，如基本的决策树，因为决策层级可以被利益相关者清晰地可视化和理解。然而，基本的决策树往往不能提供足够的准确性，通常会使用集成方法如 Bagging 或 Boosting 来提高模型的性能。不过，这又牺牲了一些可解释性，因为要理解一个单一的决策，从业者需要查看数百棵树。然而，这些方法仍然比深度网络更受欢迎，因为至少特征重要性（无论是局部还是全局）可以被轻松提取和展示。
 
-因此，目前的问题是我们想要神经网络的区分能力，但又希望具备决策树的可解释性。那么，为什么不把网络结构化成一棵树呢？这就是Fross和Hinton（2017）在他们的论文“将神经网络提炼成软决策树”[1]中采用的主要方法。在这篇文章中，我将深入探讨神经决策树背后的关键机制，并解释这种方法的一些优点以及在实际应用中可能需要考虑的一些因素。虽然我们主要讨论分类树，但详细的方法也可以应用于回归树，只需进行一些相对较小的调整。
+因此，目前的问题是我们想要神经网络的区分能力，但又希望具备决策树的可解释性。那么，为什么不把网络结构化成一棵树呢？这就是 Fross 和 Hinton（2017）在他们的论文“将神经网络提炼成软决策树”[1]中采用的主要方法。在这篇文章中，我将深入探讨神经决策树背后的关键机制，并解释这种方法的一些优点以及在实际应用中可能需要考虑的一些因素。虽然我们主要讨论分类树，但详细的方法也可以应用于回归树，只需进行一些相对较小的调整。
 
 # 方法论
 
@@ -30,9 +30,9 @@
 
 在深入了解如何将神经网络构建成软决策树之前，让我们首先定义什么是软决策树。
 
-当人们想到决策树（例如sklearn中实现的决策树）时，他们想到的是每个决策都是确定性的硬决策树。
+当人们想到决策树（例如 sklearn 中实现的决策树）时，他们想到的是每个决策都是确定性的硬决策树。
 
-![](../Images/2bebf2d9966b06b8088614c10d6b18ad.png)
+![](img/2bebf2d9966b06b8088614c10d6b18ad.png)
 
 硬决策树的示例（图片由作者提供）
 
@@ -40,7 +40,7 @@
 
 软决策树有许多相似之处，但工作方式略有不同
 
-![](../Images/a046b34b34c672f21cb0774203878164.png)
+![](img/a046b34b34c672f21cb0774203878164.png)
 
 软决策树的示例（图片由作者提供）
 
@@ -60,7 +60,7 @@
 
 传统的决策树被认为是“正交”树，因为它们的决策是相对于给定的轴进行的。简单来说，每次决策中只使用一个变量。另一方面，倾斜树在决策过程中使用多个变量，通常是线性组合的形式。
 
-![](../Images/4956ffd1bb2e36c939f14afff5813c17.png)
+![](img/4956ffd1bb2e36c939f14afff5813c17.png)
 
 倾斜决策边界的示例（图源：Zhang et. al 2017 [4]）
 
@@ -76,7 +76,7 @@
 
 每个叶节点包含一个 N 维张量，其中 N 是类别的数量。这个张量表示样本属于某一类别的概率分布。
 
-![](../Images/d5127a16fca501035478e0ac6091036d.png)
+![](img/d5127a16fca501035478e0ac6091036d.png)
 
 神经网络作为决策树（图像复制自 Frosst & Hinton 2017 [1]）
 
@@ -86,7 +86,7 @@
 
 神经树的一个好处是可以通过像梯度下降这样的连续优化算法进行训练，而不是像普通决策树需要构建的贪婪算法。我们需要做的就是定义损失函数：
 
-![](../Images/f97462919156b6ef811c76aa0aa73ecd.png)
+![](img/f97462919156b6ef811c76aa0aa73ecd.png)
 
 神经树的损失函数（图像来自 Frosst & Hinton 2017 [1]）
 
@@ -98,19 +98,19 @@
 
 惩罚是期望平均分布（左右树各 50/50）与实际平均分布（定义为 alpha）之间的交叉熵。
 
-![](../Images/be85248d2e8af155179bd3a7b948d4e7.png)
+![](img/be85248d2e8af155179bd3a7b948d4e7.png)
 
 节点 i 的 alpha 定义（图像来自 Frosst & Hinton 2017 [1]）
 
 在这个方程中，*P^i*(**x**) 是从根节点到节点 *i* 的路径概率。我们然后对所有内部节点的惩罚进行求和。
 
-![](../Images/b85663f715637106eb679f8bdbb7adb1.png)
+![](img/b85663f715637106eb679f8bdbb7adb1.png)
 
 惩罚的定义（图像来自 Frosst & Hinton 2017 [1]）
 
 在这个方程中，lambda 是一个超参数，决定了惩罚的强度。然而，这可能会导致一些问题，因为随着树的下降，数据分裂成 50/50 的机会减少，因此建议使用根据树的深度变化的自适应 lambda。这将修改惩罚为：
 
-![](../Images/268b1e9a9b438cded55af1710a5828d3.png)
+![](img/268b1e9a9b438cded55af1710a5828d3.png)
 
 修改后的惩罚函数（图片由作者提供，摘自 Frosst & Hinton 2017 [1]）
 
@@ -122,7 +122,7 @@
 
 首先看看经典问题的解释——MNIST 中的数字分类：
 
-![](../Images/49812e36c1d1b088c4b26ca48b531778.png)
+![](img/49812e36c1d1b088c4b26ca48b531778.png)
 
 MNIST 示例（图片来自 Frosst & Hinton 2017 [1]）
 
@@ -132,7 +132,7 @@ MNIST 示例（图片来自 Frosst & Hinton 2017 [1]）
 
 另一个有趣的例子是预测 Connect4 游戏中的胜利
 
-![](../Images/ea094be911091bf222626ecce49da15c.png)
+![](img/ea094be911091bf222626ecce49da15c.png)
 
 可视化神经决策树前 2 层预测 Connect4 游戏胜者（图片来自 Frosst & Hinton 2017）
 
@@ -142,22 +142,22 @@ MNIST 示例（图片来自 Frosst & Hinton 2017 [1]）
 
 将神经网络构建为软决策树使我们能够利用神经网络的强大能力，同时仍保留一些可解释性。正如 MNIST 数据集上的结果所示，学习到的过滤器可以提供局部和全局的解释能力，这对于高风险任务也是一种受欢迎且有帮助的特性。此外，训练方法（一次优化和更新整个树）使我们能够在保持树的大小固定的情况下获得更多的区分能力，这是我们在正常决策树中无法实现的。
 
-尽管如此，神经树仍然不完美。树的软性特征意味着使用这些树的数据科学家需要在向非技术利益相关者展示之前“预处理”树，而普通决策树可以直接展示（因为它们相对自解释）。此外，虽然树的斜向特性有助于准确性，但在给定节点中变量过多会使解释变得更加困难。这意味着正则化不仅是推荐的，而且在一定程度上是必要的。此外，无论模型多么可解释，仍然存在[对利益相关者可理解的解释性特征的需求](/defining-interpretable-features-ebd7ed94897)。
+尽管如此，神经树仍然不完美。树的软性特征意味着使用这些树的数据科学家需要在向非技术利益相关者展示之前“预处理”树，而普通决策树可以直接展示（因为它们相对自解释）。此外，虽然树的斜向特性有助于准确性，但在给定节点中变量过多会使解释变得更加困难。这意味着正则化不仅是推荐的，而且在一定程度上是必要的。此外，无论模型多么可解释，仍然存在对利益相关者可理解的解释性特征的需求。
 
 然而，这些缺点并未削弱这些模型在推动解释性与性能前沿方面的潜力。我强烈建议大家在下一个数据科学任务中尝试这些模型。我也推荐大家[阅读原始论文](https://arxiv.org/abs/1711.09784#)。
 
 # 资源与参考文献
 
-1.  [在PyTorch中实现软决策树](https://github.com/kimhc6028/soft-decision-tree)
+1.  [在 PyTorch 中实现软决策树](https://github.com/kimhc6028/soft-decision-tree)
 
-1.  想了解更多关于XAI和时间序列预测的信息，请关注
+1.  想了解更多关于 XAI 和时间序列预测的信息，请关注
 
 ## 参考文献
 
-[1] N. Frosst, G. Hinton. [将神经网络蒸馏为软决策树](https://arxiv.org/abs/1711.09784#) (2017). 2017人工智能行动会议
+[1] N. Frosst, G. Hinton. [将神经网络蒸馏为软决策树](https://arxiv.org/abs/1711.09784#) (2017). 2017 人工智能行动会议
 
 [2] A. Shrikumar, P. Greenside, A. Jundjae. [通过传播激活差异学习重要特征](https://arxiv.org/abs/1704.02685) (2017). 国际机器学习会议 PMLR 2017。
 
 [3] S.Bach, A. Binder, G. Montavon, F. Klauschen, K-R. Muller, W. Samek. [基于层级相关传播的非线性分类器像素级解释](https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0130140) (2015). PloS one, 10(7), e0130140
 
-[4] L. Zhang, J. Varadarajan, P. N. Suganthan, N. Ahuja, P. Moulin. [使用斜向随机森林的鲁棒视觉跟踪](https://ieeexplore.ieee.org/abstract/document/8100100) (2017). 2017计算机视觉与模式识别会议。
+[4] L. Zhang, J. Varadarajan, P. N. Suganthan, N. Ahuja, P. Moulin. [使用斜向随机森林的鲁棒视觉跟踪](https://ieeexplore.ieee.org/abstract/document/8100100) (2017). 2017 计算机视觉与模式识别会议。

@@ -1,14 +1,14 @@
 # 大型语言模型中的上下文学习方法
 
-> 原文：[https://towardsdatascience.com/in-context-learning-approaches-in-large-language-models-9c0c53b116a1?source=collection_archive---------0-----------------------#2023-07-01](https://towardsdatascience.com/in-context-learning-approaches-in-large-language-models-9c0c53b116a1?source=collection_archive---------0-----------------------#2023-07-01)
+> 原文：[`towardsdatascience.com/in-context-learning-approaches-in-large-language-models-9c0c53b116a1?source=collection_archive---------0-----------------------#2023-07-01`](https://towardsdatascience.com/in-context-learning-approaches-in-large-language-models-9c0c53b116a1?source=collection_archive---------0-----------------------#2023-07-01)
 
 ## 简单而强大的技术，使大型语言模型在推理时能够学习新任务
 
-[](https://medium.com/@javaid.nabi?source=post_page-----9c0c53b116a1--------------------------------)[![Javaid Nabi](../Images/a306349c22ed74db6409541a7d64cae7.png)](https://medium.com/@javaid.nabi?source=post_page-----9c0c53b116a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c0c53b116a1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c0c53b116a1--------------------------------) [Javaid Nabi](https://medium.com/@javaid.nabi?source=post_page-----9c0c53b116a1--------------------------------)
+[](https://medium.com/@javaid.nabi?source=post_page-----9c0c53b116a1--------------------------------)![Javaid Nabi](https://medium.com/@javaid.nabi?source=post_page-----9c0c53b116a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c0c53b116a1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c0c53b116a1--------------------------------) [Javaid Nabi](https://medium.com/@javaid.nabi?source=post_page-----9c0c53b116a1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F70c04bf6660e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fin-context-learning-approaches-in-large-language-models-9c0c53b116a1&user=Javaid+Nabi&userId=70c04bf6660e&source=post_page-70c04bf6660e----9c0c53b116a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c0c53b116a1--------------------------------) ·17 min read·2023年7月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c0c53b116a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fin-context-learning-approaches-in-large-language-models-9c0c53b116a1&user=Javaid+Nabi&userId=70c04bf6660e&source=-----9c0c53b116a1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F70c04bf6660e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fin-context-learning-approaches-in-large-language-models-9c0c53b116a1&user=Javaid+Nabi&userId=70c04bf6660e&source=post_page-70c04bf6660e----9c0c53b116a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c0c53b116a1--------------------------------) ·17 min read·2023 年 7 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c0c53b116a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fin-context-learning-approaches-in-large-language-models-9c0c53b116a1&user=Javaid+Nabi&userId=70c04bf6660e&source=-----9c0c53b116a1---------------------clap_footer-----------)
 
 --
 
@@ -16,29 +16,29 @@
 
 # 介绍
 
-语言建模（LM）旨在对词序列的生成概率进行建模，以预测未来（或缺失）标记的概率。近年来，语言模型在自然语言处理（NLP）领域带来了革命性变化。现在已经广泛认识到，增加语言模型的规模（例如训练计算、模型参数等）可以在一系列下游NLP任务中带来更好的性能和样本效率。调查论文“*大型语言模型调查*” [1] 涵盖了大型语言模型几乎所有的方面。该论文提供了对LLMs文献的最新回顾，详细介绍了预训练方法、指令调优技术及最新的RLHF方法的进一步对齐训练。指令调优和对齐调优方法用于根据具体目标调整LLMs。
+语言建模（LM）旨在对词序列的生成概率进行建模，以预测未来（或缺失）标记的概率。近年来，语言模型在自然语言处理（NLP）领域带来了革命性变化。现在已经广泛认识到，增加语言模型的规模（例如训练计算、模型参数等）可以在一系列下游 NLP 任务中带来更好的性能和样本效率。调查论文“*大型语言模型调查*” [1] 涵盖了大型语言模型几乎所有的方面。该论文提供了对 LLMs 文献的最新回顾，详细介绍了预训练方法、指令调优技术及最新的 RLHF 方法的进一步对齐训练。指令调优和对齐调优方法用于根据具体目标调整 LLMs。
 
-*在预训练或适应性调优之后，使用LLMs的主要方法是设计合适的提示策略来解决各种任务。* *一种典型的提示方法，也称为上下文学习（ICL），以自然语言文本的形式制定任务描述和/或示例。*
+*在预训练或适应性调优之后，使用 LLMs 的主要方法是设计合适的提示策略来解决各种任务。* *一种典型的提示方法，也称为上下文学习（ICL），以自然语言文本的形式制定任务描述和/或示例。*
 
 # 上下文学习
 
-LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个示例中学习。许多研究表明，LLMs可以通过ICL执行一系列复杂任务，例如解决数学推理问题。
+LLMs 展示了一种上下文学习（ICL）能力，即从上下文中的几个示例中学习。许多研究表明，LLMs 可以通过 ICL 执行一系列复杂任务，例如解决数学推理问题。
 
-上下文学习的关键思想是通过类比进行学习。下图展示了语言模型如何通过ICL进行决策的示例。首先，ICL需要几个示例来形成演示上下文。这些示例通常以自然语言模板的形式编写。然后，ICL将查询问题和一段演示上下文拼接在一起，形成提示，接着将其输入语言模型进行预测 [2]。
+上下文学习的关键思想是通过类比进行学习。下图展示了语言模型如何通过 ICL 进行决策的示例。首先，ICL 需要几个示例来形成演示上下文。这些示例通常以自然语言模板的形式编写。然后，ICL 将查询问题和一段演示上下文拼接在一起，形成提示，接着将其输入语言模型进行预测 [2]。
 
-![](../Images/5bca8c4a159d204dcaed9f45112fcf29.png)
+![](img/5bca8c4a159d204dcaed9f45112fcf29.png)
 
 [上下文学习示例](https://arxiv.org/pdf/2301.00234.pdf)
 
-与需要使用反向梯度更新模型参数的监督学习不同，ICL不进行参数更新，而是直接对预训练的语言模型进行预测。模型期望从示例中学习隐藏的模式，从而做出正确的预测。
+与需要使用反向梯度更新模型参数的监督学习不同，ICL 不进行参数更新，而是直接对预训练的语言模型进行预测。模型期望从示例中学习隐藏的模式，从而做出正确的预测。
 
-## 什么使得ICL具有吸引力？
+## 什么使得 ICL 具有吸引力？
 
-1.  用自然语言编写的示例提供了一个可解释的接口，与LLMs进行交流。这个范式使得通过更改示例和模板将人类知识融入LLMs变得更加容易。
+1.  用自然语言编写的示例提供了一个可解释的接口，与 LLMs 进行交流。这个范式使得通过更改示例和模板将人类知识融入 LLMs 变得更加容易。
 
 1.  这类似于人类通过类比进行的决策过程。
 
-1.  与监督训练相比，ICL是一种无需训练的学习框架。这不仅大大降低了将模型调整到新任务的计算成本，还使语言模型即服务成为可能，并且可以轻松应用于大规模的真实任务。
+1.  与监督训练相比，ICL 是一种无需训练的学习框架。这不仅大大降低了将模型调整到新任务的计算成本，还使语言模型即服务成为可能，并且可以轻松应用于大规模的真实任务。
 
 ## 但这如何运作呢？
 
@@ -70,7 +70,7 @@ LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个�
 
 观察发现，标准提示技术（也称为一般输入输出提示）在复杂推理任务（如算术推理、常识推理和符号推理）上表现不佳。思维链是一种改进的提示策略，用于提升 LLM 在涉及推理的复杂案例中的表现[6]。与 ICL 中仅使用输入输出对构建提示不同，思维链将可以导致最终输出的中间推理步骤纳入提示中。如下例所示。
 
-![](../Images/9eacd78a63e972890918b6bf8a4076bb.png)
+![](img/9eacd78a63e972890918b6bf8a4076bb.png)
 
 [参考文献[6]](https://arxiv.org/pdf/2201.11903.pdf)
 
@@ -82,7 +82,7 @@ LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个�
 
 在 **零样本 CoT** 中，LLM 首先通过 *“让我们一步步思考”* 生成推理步骤，然后通过 *“因此，答案是”* 推导出最终答案。他们发现，当模型规模超过某一大小时，这种策略显著提升了性能，但对小规模模型效果不佳，显示出显著的突现能力模式。
 
-![](../Images/1687abfbc0752763e4d26aa6b2f80812.png)
+![](img/1687abfbc0752763e4d26aa6b2f80812.png)
 
 [参考文献[7]](https://arxiv.org/pdf/2205.11916.pdf)
 
@@ -96,7 +96,7 @@ LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个�
 
 尽管零样本-CoT 概念上很简单，但它使用了两次提示来提取推理和答案，如下图所示。
 
-![](../Images/59279a565f1fd4c5e7d33177f1fa249a.png)
+![](img/59279a565f1fd4c5e7d33177f1fa249a.png)
 
 [参考文献[7]](https://arxiv.org/pdf/2205.11916.pdf)
 
@@ -148,13 +148,13 @@ LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个�
 
 下图通过一个例子说明了自一致性方法。
 
-![](../Images/07b6e0f78bf2a1c96edcf631d68d0f49.png)
+![](img/07b6e0f78bf2a1c96edcf631d68d0f49.png)
 
 [参考文献[9]](https://arxiv.org/pdf/2203.11171.pdf)
 
 首先从语言模型的解码器中生成一组多样化的推理路径；每条推理路径可能会导致不同的最终答案，因此通过对采样的推理路径进行边际化来确定最一致的答案。换句话说，通过对模型的解码器中的答案进行多数投票，我们可以在最终答案集中得到最“一致”的答案。
 
-![](../Images/47905a9ce38151fa4c27d87fb5c06ac7.png)
+![](img/47905a9ce38151fa4c27d87fb5c06ac7.png)
 
 [多数投票示例](https://www.arxiv-vanity.com/papers/2210.11610/)
 
@@ -168,7 +168,7 @@ LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个�
 
 [10] 的作者提出了“*思维树*”（ToT），它在“*链式思维*”方法上进行了概括，以提示语言模型，并允许在作为解决问题的中间步骤的连贯文本单元（“思维”）上进行探索。ToT 允许语言模型通过考虑多个不同的推理路径并自我评估选择来进行深思熟虑的决策，同时在必要时前瞻或回溯以做出全局选择。结果/实验表明，ToT 在需要非平凡规划或搜索的三项新任务（24 点游戏、创意写作和迷你填字游戏）上显著提升了语言模型的解决问题能力。
 
-![](../Images/f3e4b7ab005d0fb5d1c44d2751a924e5.png)
+![](img/f3e4b7ab005d0fb5d1c44d2751a924e5.png)
 
 [示意图说明了各种提示方法，每个矩形框代表一个思维](https://arxiv.org/pdf/2305.10601.pdf)
 
@@ -178,7 +178,7 @@ LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个�
 
 虽然 CoT 在没有明确分解的情况下连贯地采样思维，ToT 利用问题特性设计和分解中间思维步骤。如*表 1*所示，依赖于不同的问题，思维可以是几个单词（填字游戏）、一行方程式（24 点游戏）或一整段写作计划（创意写作）。这就像你将问题分解成几个任务。每个任务是我们讨论的步骤 Zn。请注意，这部分仅涉及将问题分解为任务。就像规划一样，我们在这部分并不实际进行任何思维。
 
-![](../Images/4469b6444417dee2c9975ad60047356d.png)
+![](img/4469b6444417dee2c9975ad60047356d.png)
 
 [参考文献 [10]](https://arxiv.org/pdf/2305.10601.pdf)
 
@@ -186,29 +186,29 @@ LLMs展示了一种上下文学习（ICL）能力，即从上下文中的几个�
 
 a. 从 CoT 提示中抽取 i.i.d. 思维。我们独立重复生成过程 k 次。当思维空间丰富时（例如，每个思维是一个段落），i.i.d. 样本能带来多样性。
 
-![](../Images/6259a1564f5ae127d0750afe316150d3.png)
+![](img/6259a1564f5ae127d0750afe316150d3.png)
 
 [在随机选择的创造性写作任务中的一次深思熟虑的搜索步骤。](https://arxiv.org/pdf/2305.10601.pdf)
 
-在上图中，展示了在随机选择的**创造性写作任务**中的一步深思熟虑的搜索。给定输入，LM 采样了5个不同的计划，然后投票5次决定哪个计划最佳。多数选择被用来随后用相同的样本-投票程序写出输出段落。
+在上图中，展示了在随机选择的**创造性写作任务**中的一步深思熟虑的搜索。给定输入，LM 采样了 5 个不同的计划，然后投票 5 次决定哪个计划最佳。多数选择被用来随后用相同的样本-投票程序写出输出段落。
 
 b. 使用“提出提示”顺序提出思维。当思维空间更受限时（例如，每个思维只是一个词或一行），在同一上下文中提出不同的思维可以避免重复。在这种情况下，我们在一次推理中生成 k 个思维。因此，这些 k 个思维可能并不独立。
 
 3\. **评估状态：** 在这一部分，我们定义一个状态评估函数：v(s)。为了扩展树，我们使用这个函数找到好的路径，就像在棋类编程中一样。我们评估给定的树路径*s=[x, z1…i]*。有两种方法来定义评估函数：
 
-+   独立评估每个状态：每个状态‘s’（或路径）将被独立评估。[*示例：24点游戏*]
++   独立评估每个状态：每个状态‘s’（或路径）将被独立评估。[*示例：24 点游戏*]
 
 +   跨状态投票：每个状态‘s’ 将在所有状态集合 S 中进行评估。就像你在自我一致性 COT 中比较 S 中的状态一样。[*示例：创造性写作任务*]
 
-**24点游戏示例：**
+**24 点游戏示例：**
 
-24点游戏是一种数学推理挑战，其目标是使用4个数字和基本的算术运算（+-*/）得到24。例如，给定输入“4 9 10 13”，一种解决方案可能是“(10–4) * (13–9) = 24”。
+24 点游戏是一种数学推理挑战，其目标是使用 4 个数字和基本的算术运算（+-*/）得到 24。例如，给定输入“4 9 10 13”，一种解决方案可能是“(10–4) * (13–9) = 24”。
 
-![](../Images/823f42fd6852510d10f72d6408f1409a.png)
+![](img/823f42fd6852510d10f72d6408f1409a.png)
 
-[‘24点游戏’ ToT 分解。LM 被提示进行 (a) 思维生成和 (b) 评估。](https://arxiv.org/pdf/2305.10601.pdf)
+[‘24 点游戏’ ToT 分解。LM 被提示进行 (a) 思维生成和 (b) 评估。](https://arxiv.org/pdf/2305.10601.pdf)
 
-为了将‘*24点游戏*’框架转入 ToT，我们将思维分解为3个步骤，每个步骤是一个中间方程。如上图（a）所示，在每个树节点，我们提取“左侧”数字，并提示 LM 提出一些可能的下一步。所有3个思维步骤使用相同的“提出提示”，尽管它只有一个包含4个输入数字的示例。我们在 ToT 中执行广度优先搜索（BFS），在每一步我们保留最佳的 b = 5 个候选项。为了在 ToT 中执行深思熟虑的 BFS，如图（b）所示，我们提示 LM 评估每个思维候选项为“确定/可能/不可能”，以判断是否能达到24。目的是推广可以在少量前瞻试验中判定的正确部分解决方案，并根据“过大/过小”的常识消除不可能的部分解决方案，保留其余的“可能”。我们对每个思维进行3次采样。
+为了将‘*24 点游戏*’框架转入 ToT，我们将思维分解为 3 个步骤，每个步骤是一个中间方程。如上图（a）所示，在每个树节点，我们提取“左侧”数字，并提示 LM 提出一些可能的下一步。所有 3 个思维步骤使用相同的“提出提示”，尽管它只有一个包含 4 个输入数字的示例。我们在 ToT 中执行广度优先搜索（BFS），在每一步我们保留最佳的 b = 5 个候选项。为了在 ToT 中执行深思熟虑的 BFS，如图（b）所示，我们提示 LM 评估每个思维候选项为“确定/可能/不可能”，以判断是否能达到 24。目的是推广可以在少量前瞻试验中判定的正确部分解决方案，并根据“过大/过小”的常识消除不可能的部分解决方案，保留其余的“可能”。我们对每个思维进行 3 次采样。
 
 4\. **搜索算法**：我们尝试扩展树。对于每个叶子节点，我们使用状态评估函数对其进行评估。选择哪个叶子节点进行评估时，我们使用搜索算法。它可以是广度优先搜索或深度优先搜索。根据树的结构，可以插入不同的搜索算法。
 
@@ -242,50 +242,50 @@ ToT 框架使语言模型能够更自主和智能地做出决策和解决问题�
 
 ## Auto-CoT：自动链式思维提示
 
-在“*大规模语言模型中的自动化链式思维提示*”[12]中，作者提出了Auto-CoT范式，以自动构建带有问题和推理链的示例。在这一技术中，作者采用了聚类技术来抽样问题，然后生成链。作者观察到，LLM往往会犯某些类型的错误。一种错误可能在嵌入空间中类似，因此被分组在一起。通过仅从频繁错误簇中抽取一个或几个样本，我们可以防止过多错误类型的错误示例，并收集多样的例子。
+在“*大规模语言模型中的自动化链式思维提示*”[12]中，作者提出了 Auto-CoT 范式，以自动构建带有问题和推理链的示例。在这一技术中，作者采用了聚类技术来抽样问题，然后生成链。作者观察到，LLM 往往会犯某些类型的错误。一种错误可能在嵌入空间中类似，因此被分组在一起。通过仅从频繁错误簇中抽取一个或几个样本，我们可以防止过多错误类型的错误示例，并收集多样的例子。
 
-![](../Images/4c5f48633aedff23b526f5e76b36405b.png)
+![](img/4c5f48633aedff23b526f5e76b36405b.png)
 
 [Auto-COT : 自动化链式思维提示](https://arxiv.org/pdf/2210.03493.pdf)
 
 **Auto-CoT**包括以下主要阶段：
 
-1.  **问题聚类**：对给定的问题集Q进行聚类分析。首先通过Sentence-BERT计算Q中每个问题的向量表示。将上下文化的向量平均化以形成固定大小的问题表示。然后，使用k-means聚类算法处理问题表示，生成k个问题簇。
+1.  **问题聚类**：对给定的问题集 Q 进行聚类分析。首先通过 Sentence-BERT 计算 Q 中每个问题的向量表示。将上下文化的向量平均化以形成固定大小的问题表示。然后，使用 k-means 聚类算法处理问题表示，生成 k 个问题簇。
 
 1.  **示例选择**：从每个簇中选择一组具有代表性的问题；即从一个簇中选择一个示例。每个簇中的样本按距离簇中心的远近排序，距离中心较近的样本优先选择。
 
-1.  **推理生成**：使用零-shot CoT为选定的问题生成推理链，并构建少-shot提示以进行推理。
+1.  **推理生成**：使用零-shot CoT 为选定的问题生成推理链，并构建少-shot 提示以进行推理。
 
-LLM在CoT提示下展示了推理能力。Manual-CoT的优越性能依赖于手工制作示例。为了消除这种手工设计，提出的Auto-CoT自动构建示例。它抽样具有多样性的问题并生成推理链以构建示例。对推理数据集的实验结果表明，在GPT-3上，Auto-CoT的表现始终与需要手工设计示例的CoT范式相匹配或超越。
+LLM 在 CoT 提示下展示了推理能力。Manual-CoT 的优越性能依赖于手工制作示例。为了消除这种手工设计，提出的 Auto-CoT 自动构建示例。它抽样具有多样性的问题并生成推理链以构建示例。对推理数据集的实验结果表明，在 GPT-3 上，Auto-CoT 的表现始终与需要手工设计示例的 CoT 范式相匹配或超越。
 
 # 结论
 
-上下文学习或提示有助于我们与LLM沟通，以引导其行为实现期望的结果。这是一种提取信息的有吸引力的方法，因为你不需要大量的离线训练集，不需要离线访问模型，并且即使对于非工程师也感觉直观。提示工程旨在利用提示作为为实际应用构建可靠功能的方法。这是一门经验科学，提示工程方法的效果在模型之间可能差异很大，因此需要大量实验和启发式方法。提示需要大量人力来创建和适应新的数据集。注释过程并不简单，因为人类不仅需要选择问题，还需要仔细设计每个问题的推理步骤，因此有必要对提示技术进行自动化。
+上下文学习或提示有助于我们与 LLM 沟通，以引导其行为实现期望的结果。这是一种提取信息的有吸引力的方法，因为你不需要大量的离线训练集，不需要离线访问模型，并且即使对于非工程师也感觉直观。提示工程旨在利用提示作为为实际应用构建可靠功能的方法。这是一门经验科学，提示工程方法的效果在模型之间可能差异很大，因此需要大量实验和启发式方法。提示需要大量人力来创建和适应新的数据集。注释过程并不简单，因为人类不仅需要选择问题，还需要仔细设计每个问题的推理步骤，因此有必要对提示技术进行自动化。
 
 # 参考文献
 
-[1] 大型语言模型调查，[https://arxiv.org/pdf/2303.18223.pdf](https://arxiv.org/pdf/2303.18223.pdf)
+[1] 大型语言模型调查，[`arxiv.org/pdf/2303.18223.pdf`](https://arxiv.org/pdf/2303.18223.pdf)
 
-[2] 上下文学习调查，[https://arxiv.org/pdf/2301.00234.pdf](https://arxiv.org/pdf/2301.00234.pdf)
+[2] 上下文学习调查，[`arxiv.org/pdf/2301.00234.pdf`](https://arxiv.org/pdf/2301.00234.pdf)
 
-[3] 大型语言模型的突现能力，[https://arxiv.org/pdf/2206.07682.pdf](https://arxiv.org/pdf/2206.07682.pdf)
+[3] 大型语言模型的突现能力，[`arxiv.org/pdf/2206.07682.pdf`](https://arxiv.org/pdf/2206.07682.pdf)
 
-[4] 为什么GPT可以进行上下文学习？语言模型隐式地执行梯度下降作为元优化器，[https://arxiv.org/pdf/2212.10559.pdf](https://arxiv.org/pdf/2212.10559.pdf)
+[4] 为什么 GPT 可以进行上下文学习？语言模型隐式地执行梯度下降作为元优化器，[`arxiv.org/pdf/2212.10559.pdf`](https://arxiv.org/pdf/2212.10559.pdf)
 
-[5] 将上下文学习解释为隐式贝叶斯推理，[http://ai.stanford.edu/blog/understanding-incontext/](http://ai.stanford.edu/blog/understanding-incontext/)
+[5] 将上下文学习解释为隐式贝叶斯推理，[`ai.stanford.edu/blog/understanding-incontext/`](http://ai.stanford.edu/blog/understanding-incontext/)
 
-[6] 链式思维提示激发大型语言模型中的推理，[https://arxiv.org/pdf/2201.11903.pdf](https://arxiv.org/pdf/2201.11903.pdf)
+[6] 链式思维提示激发大型语言模型中的推理，[`arxiv.org/pdf/2201.11903.pdf`](https://arxiv.org/pdf/2201.11903.pdf)
 
-[7] 大型语言模型是零样本推理者，[https://arxiv.org/pdf/2205.11916.pdf](https://arxiv.org/pdf/2205.11916.pdf)
+[7] 大型语言模型是零样本推理者，[`arxiv.org/pdf/2205.11916.pdf`](https://arxiv.org/pdf/2205.11916.pdf)
 
-[8] 上下文学习与归纳头。Transformer电路，2022。[https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html](https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html)
+[8] 上下文学习与归纳头。Transformer 电路，2022。[`transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html`](https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html)
 
-[9] 自洽性提升了LLM中的链式思维推理，[https://arxiv.org/pdf/2203.11171.pdf](https://arxiv.org/pdf/2203.11171.pdf)
+[9] 自洽性提升了 LLM 中的链式思维推理，[`arxiv.org/pdf/2203.11171.pdf`](https://arxiv.org/pdf/2203.11171.pdf)
 
-[10] 思维树，[https://arxiv.org/pdf/2305.10601.pdf](https://arxiv.org/pdf/2305.10601.pdf)
+[10] 思维树，[`arxiv.org/pdf/2305.10601.pdf`](https://arxiv.org/pdf/2305.10601.pdf)
 
-[11] 自动提示增强与从标注数据中链式思维的选择 [https://arxiv.org/pdf/2302.12822.pdf](https://arxiv.org/pdf/2302.12822.pdf)
+[11] 自动提示增强与从标注数据中链式思维的选择 [`arxiv.org/pdf/2302.12822.pdf`](https://arxiv.org/pdf/2302.12822.pdf)
 
-[12] 大型语言模型中的自动链式思维提示，[https://arxiv.org/pdf/2210.03493.pdf](https://arxiv.org/pdf/2210.03493.pdf)
+[12] 大型语言模型中的自动链式思维提示，[`arxiv.org/pdf/2210.03493.pdf`](https://arxiv.org/pdf/2210.03493.pdf)
 
-[13] 大型语言模型可以自我提升，[https://www.arxiv-vanity.com/papers/2210.11610/](https://www.arxiv-vanity.com/papers/2210.11610/)
+[13] 大型语言模型可以自我提升，[`www.arxiv-vanity.com/papers/2210.11610/`](https://www.arxiv-vanity.com/papers/2210.11610/)

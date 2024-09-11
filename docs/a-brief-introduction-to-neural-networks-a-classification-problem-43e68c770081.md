@@ -1,18 +1,18 @@
 # 《神经网络简要介绍：一个分类问题》
 
-> 原文：[https://towardsdatascience.com/a-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081?source=collection_archive---------4-----------------------#2023-01-24](https://towardsdatascience.com/a-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081?source=collection_archive---------4-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/a-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081?source=collection_archive---------4-----------------------#2023-01-24`](https://towardsdatascience.com/a-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081?source=collection_archive---------4-----------------------#2023-01-24)
 
-## 《Python中神经网络的实用入门指南》
+## 《Python 中神经网络的实用入门指南》
 
-[](https://medium.com/@chimso1994?source=post_page-----43e68c770081--------------------------------)[![Chayma Zatout](../Images/341c45f53ddf73dc0851d547cc7cb55a.png)](https://medium.com/@chimso1994?source=post_page-----43e68c770081--------------------------------)[](https://towardsdatascience.com/?source=post_page-----43e68c770081--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----43e68c770081--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----43e68c770081--------------------------------)
+[](https://medium.com/@chimso1994?source=post_page-----43e68c770081--------------------------------)![Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----43e68c770081--------------------------------)[](https://towardsdatascience.com/?source=post_page-----43e68c770081--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----43e68c770081--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----43e68c770081--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----43e68c770081---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----43e68c770081--------------------------------) ·18分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F43e68c770081&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----43e68c770081---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----43e68c770081---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----43e68c770081--------------------------------) ·18 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F43e68c770081&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----43e68c770081---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F43e68c770081&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081&source=-----43e68c770081---------------------bookmark_footer-----------)![](../Images/c8d201223863da346293e2b716990b27.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F43e68c770081&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-introduction-to-neural-networks-a-classification-problem-43e68c770081&source=-----43e68c770081---------------------bookmark_footer-----------)![](img/c8d201223863da346293e2b716990b27.png)
 
 图片由 [W T](https://unsplash.com/ja/@goodfunlover?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,42 +20,42 @@
 
 **目录**
 
-· [1\. 介绍](#cc0d)
+· 1\. 介绍
 
-· [2\. 问题理解](#69f1)
+· 2\. 问题理解
 
-· [3\. 数据准备和预处理](#cc9e)
+· 3\. 数据准备和预处理
 
-∘ [3.1\. 数据描述](#1162)
+∘ 3.1\. 数据描述
 
-∘ [3.2\. 数据转换](#ebb1)
+∘ 3.2\. 数据转换
 
-· [4\. 模型构思](#e1d7)
+· 4\. 模型构思
 
-∘ [4.1\. 单一单元输出](#1a1c)
+∘ 4.1\. 单一单元输出
 
-∘ [4.2\. 一热输出](#288a)
+∘ 4.2\. 一热输出
 
-∘ [4.3\. 卷积神经网络](#692e)
+∘ 4.3\. 卷积神经网络
 
-· [5\. 训练](#0fb6)
+· 5\. 训练
 
-∘ [5.1\. 单一单元输出](#c474)
+∘ 5.1\. 单一单元输出
 
-∘ [5.2\. 一热输出](#17aa)
+∘ 5.2\. 一热输出
 
-∘ [5.3\. 卷积单元](#56e6)
+∘ 5.3\. 卷积单元
 
-· [6\. 验证](#2608)
+· 6\. 验证
 
-∘ [6.1 预测](#d7f1)
+∘ 6.1 预测
 
-∘ [6.2\. 学习曲线](#39df)
+∘ 6.2\. 学习曲线
 
-∘ [6.3\. 测试集上的评价](#4c07)
+∘ 6.3\. 测试集上的评价
 
-∘ [6.4\. 评价指标](#2f91)
+∘ 6.4\. 评价指标
 
-∘ [6.5\. 显示一些数据](#5a16)
+∘ 6.5\. 显示一些数据
 
-· [7\. 结论](#5151)
+· 7\. 结论

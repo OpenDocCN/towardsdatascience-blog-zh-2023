@@ -1,10 +1,10 @@
 # 数据民主化是否被夸大了？
 
-> 原文：[https://towardsdatascience.com/is-data-democratization-overhyped-778cea2d4aad?source=collection_archive---------11-----------------------#2023-09-26](https://towardsdatascience.com/is-data-democratization-overhyped-778cea2d4aad?source=collection_archive---------11-----------------------#2023-09-26)
+> 原文：[`towardsdatascience.com/is-data-democratization-overhyped-778cea2d4aad?source=collection_archive---------11-----------------------#2023-09-26`](https://towardsdatascience.com/is-data-democratization-overhyped-778cea2d4aad?source=collection_archive---------11-----------------------#2023-09-26)
 
 ## 组织如何为实现数据民主文化过程中可能遇到的障碍和成功因素做好准备
 
-[](https://julius-c.medium.com/?source=post_page-----778cea2d4aad--------------------------------)[![Julius Cerniauskas](../Images/fdff5669f0b16936af3cb59bb4c14526.png)](https://julius-c.medium.com/?source=post_page-----778cea2d4aad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----778cea2d4aad--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----778cea2d4aad--------------------------------) [Julius Cerniauskas](https://julius-c.medium.com/?source=post_page-----778cea2d4aad--------------------------------)
+[](https://julius-c.medium.com/?source=post_page-----778cea2d4aad--------------------------------)![Julius Cerniauskas](https://julius-c.medium.com/?source=post_page-----778cea2d4aad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----778cea2d4aad--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----778cea2d4aad--------------------------------) [Julius Cerniauskas](https://julius-c.medium.com/?source=post_page-----778cea2d4aad--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F778cea2d4aad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-data-democratization-overhyped-778cea2d4aad&source=-----778cea2d4aad---------------------bookmark_footer-----------)![](../Images/37afa1efcbbb7e0ca6e7028dc40e0ad7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F778cea2d4aad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-data-democratization-overhyped-778cea2d4aad&source=-----778cea2d4aad---------------------bookmark_footer-----------)![](img/37afa1efcbbb7e0ca6e7028dc40e0ad7.png)
 
 数据民主化目前是讨论更有效利用商业数据时的主要理念之一。然而，数据民主化或其缺乏也被[列为在美国和欧洲组织中从数据使用中获取更多价值的主要挑战](https://www.statista.com/statistics/1267748/data-challenges-business-value-organizations/)。
 
@@ -32,7 +32,7 @@
 
 一方面，公民数据科学家将平凡的数据管理任务从专业数据科学家手中接过，允许后者专注于更高层次的职责。另一方面，领域专家在能够自行提取和处理数据时，也可以更快地完成他们的工作，而不是请求数据相关服务。
 
-此外，数据民主化将其从黑暗中带出。全球范围内，[超过50%的数据](https://www.tessi.eu/wp-content/uploads/2023/02/human-interactive-guide-dark-data-web-2023-en.pdf)在各种公司流程中被收集后存储却未被利用，占用了存储空间，增加了数据安全和管理成本，并消耗了电力。提供更广泛的公司数据访问可以显著减少黑暗数据的体积，并创造从现在仅仅是负担的数据中提取价值的机会。
+此外，数据民主化将其从黑暗中带出。全球范围内，[超过 50%的数据](https://www.tessi.eu/wp-content/uploads/2023/02/human-interactive-guide-dark-data-web-2023-en.pdf)在各种公司流程中被收集后存储却未被利用，占用了存储空间，增加了数据安全和管理成本，并消耗了电力。提供更广泛的公司数据访问可以显著减少黑暗数据的体积，并创造从现在仅仅是负担的数据中提取价值的机会。
 
 此外，当更多具有广泛专业知识的团队被允许查看数据时，决策会变得更好、更全面。由于特定专业背景形成的个人偏见和先入为主的观念将对数据推理的影响减小，使得数据驱动的推理更加多样化和客观。
 
@@ -58,11 +58,11 @@
 
 当曾经生活在独裁统治下的人们过渡到民主制度时，主要挑战之一是学习如何承担与自由和自我治理相伴随的公共福祉的个人责任。
 
-在过渡到数据民主化的情况下，同样的挑战表现为接受数据保护作为每位员工的共同责任。当管理和共享数据是IT和数据专家的专属领域时，确保这些过程的质量、安全性和合规性的责任也落在他们身上。这可能对相当一部分员工来说更为可取，因为新的责任形式可能让人感到恐惧。
+在过渡到数据民主化的情况下，同样的挑战表现为接受数据保护作为每位员工的共同责任。当管理和共享数据是 IT 和数据专家的专属领域时，确保这些过程的质量、安全性和合规性的责任也落在他们身上。这可能对相当一部分员工来说更为可取，因为新的责任形式可能让人感到恐惧。
 
-因此，目标是说服员工不怕使用数据，并赋予他们以安全和负责任的方式使用数据的能力。上述全面的数据规范和网络安全培训对实现这一目标至关重要。[Airbnb提供了一个良好的示例](https://www.researchgate.net/profile/Christine-Legner-2/publication/354906721_Data_democratization_toward_a_deeper_understanding/links/61539051fd7b3d1215599a07/Data-democratization-toward-a-deeper-understanding.pdf)，通过建立内部数据大学来提高员工的数据素养；之前，公司通过推出名为Dataportal的数据探索工具来开放内部数据访问。
+因此，目标是说服员工不怕使用数据，并赋予他们以安全和负责任的方式使用数据的能力。上述全面的数据规范和网络安全培训对实现这一目标至关重要。[Airbnb 提供了一个良好的示例](https://www.researchgate.net/profile/Christine-Legner-2/publication/354906721_Data_democratization_toward_a_deeper_understanding/links/61539051fd7b3d1215599a07/Data-democratization-toward-a-deeper-understanding.pdf)，通过建立内部数据大学来提高员工的数据素养；之前，公司通过推出名为 Dataportal 的数据探索工具来开放内部数据访问。
 
-Netflix和Uber等公司也采用了自助分析工具，并配以内部数据培训。对于决定走这条路的公司来说，最重要的因素是是否应以相同的方式涉及所有员工（这很少发生）。通常，组织从将员工分为不同目标群体或角色，并赋予不同的数据访问权限和定制教育中获益。
+Netflix 和 Uber 等公司也采用了自助分析工具，并配以内部数据培训。对于决定走这条路的公司来说，最重要的因素是是否应以相同的方式涉及所有员工（这很少发生）。通常，组织从将员工分为不同目标群体或角色，并赋予不同的数据访问权限和定制教育中获益。
 
 # 文化转变
 

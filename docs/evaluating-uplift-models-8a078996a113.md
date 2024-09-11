@@ -1,20 +1,20 @@
 # 评估提升模型
 
-> 原文：[https://towardsdatascience.com/evaluating-uplift-models-8a078996a113?source=collection_archive---------2-----------------------#2023-07-13](https://towardsdatascience.com/evaluating-uplift-models-8a078996a113?source=collection_archive---------2-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/evaluating-uplift-models-8a078996a113?source=collection_archive---------2-----------------------#2023-07-13`](https://towardsdatascience.com/evaluating-uplift-models-8a078996a113?source=collection_archive---------2-----------------------#2023-07-13)
 
 ## [因果数据科学](https://towardsdatascience.com/tagged/causal-data-science)
 
 ## 如何比较和选择最佳的提升模型
 
-[](https://medium.com/@matteo.courthoud?source=post_page-----8a078996a113--------------------------------)[![Matteo Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----8a078996a113--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a078996a113--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8a078996a113--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----8a078996a113--------------------------------)
+[](https://medium.com/@matteo.courthoud?source=post_page-----8a078996a113--------------------------------)![Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----8a078996a113--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a078996a113--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a078996a113--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----8a078996a113--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-uplift-models-8a078996a113&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----8a078996a113---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a078996a113--------------------------------) ·18 分钟阅读·2023年7月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a078996a113&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-uplift-models-8a078996a113&user=Matteo+Courthoud&userId=666130fb420f&source=-----8a078996a113---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-uplift-models-8a078996a113&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----8a078996a113---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a078996a113--------------------------------) ·18 分钟阅读·2023 年 7 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a078996a113&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-uplift-models-8a078996a113&user=Matteo+Courthoud&userId=666130fb420f&source=-----8a078996a113---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8a078996a113&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-uplift-models-8a078996a113&source=-----8a078996a113---------------------bookmark_footer-----------)![](../Images/8182be522fb1050cb15fce92296a5526.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8a078996a113&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fevaluating-uplift-models-8a078996a113&source=-----8a078996a113---------------------bookmark_footer-----------)![](img/8182be522fb1050cb15fce92296a5526.png)
 
 封面，图片由作者提供。
 

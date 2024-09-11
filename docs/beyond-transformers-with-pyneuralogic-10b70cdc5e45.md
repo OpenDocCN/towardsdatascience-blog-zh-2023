@@ -1,12 +1,12 @@
-# 超越变压器：PyNeuraLogic的未来
+# 超越变压器：PyNeuraLogic 的未来
 
-> 原文：[https://towardsdatascience.com/beyond-transformers-with-pyneuralogic-10b70cdc5e45?source=collection_archive---------6-----------------------#2023-02-07](https://towardsdatascience.com/beyond-transformers-with-pyneuralogic-10b70cdc5e45?source=collection_archive---------6-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/beyond-transformers-with-pyneuralogic-10b70cdc5e45?source=collection_archive---------6-----------------------#2023-02-07`](https://towardsdatascience.com/beyond-transformers-with-pyneuralogic-10b70cdc5e45?source=collection_archive---------6-----------------------#2023-02-07)
 
 ## 深度关系学习的前行 [DEEP RELATIONAL LEARNING](https://medium.com/tag/deep-relational-learning)
 
 ## 展示神经符号编程的力量
 
-[](https://medium.com/@lukaszahradnik?source=post_page-----10b70cdc5e45--------------------------------)[![Lukáš Zahradník](../Images/fe12d5cebab663f1df4372203636a6e4.png)](https://medium.com/@lukaszahradnik?source=post_page-----10b70cdc5e45--------------------------------)[](https://towardsdatascience.com/?source=post_page-----10b70cdc5e45--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----10b70cdc5e45--------------------------------) [Lukáš Zahradník](https://medium.com/@lukaszahradnik?source=post_page-----10b70cdc5e45--------------------------------)
+[](https://medium.com/@lukaszahradnik?source=post_page-----10b70cdc5e45--------------------------------)![Lukáš Zahradník](https://medium.com/@lukaszahradnik?source=post_page-----10b70cdc5e45--------------------------------)[](https://towardsdatascience.com/?source=post_page-----10b70cdc5e45--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----10b70cdc5e45--------------------------------) [Lukáš Zahradník](https://medium.com/@lukaszahradnik?source=post_page-----10b70cdc5e45--------------------------------)
 
 ·
 
@@ -14,11 +14,11 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F10b70cdc5e45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-transformers-with-pyneuralogic-10b70cdc5e45&source=-----10b70cdc5e45---------------------bookmark_footer-----------)![](../Images/10b9f75778c05a2122e8e1b51d3285a0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F10b70cdc5e45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-transformers-with-pyneuralogic-10b70cdc5e45&source=-----10b70cdc5e45---------------------bookmark_footer-----------)![](img/10b9f75778c05a2122e8e1b51d3285a0.png)
 
 从一个标记的角度可视化注意力计算图，展示了标记之间的可见关系。图片由作者提供。
 
-在过去几年中，我们看到基于Transformer¹的模型在许多领域取得了成功应用，如自然语言处理或计算机视觉。本文将探讨一种简洁、可解释且可扩展的方式来表达深度学习模型，特别是transformers，作为一种混合架构，即将深度学习与符号人工智能结合。为此，我们将在一个名为[PyNeuraLogic](https://github.com/LukasZahradnik/PyNeuraLogic/)的Python神经符号框架中实现这些模型*（作者是该框架的共同作者）*。
+在过去几年中，我们看到基于 Transformer¹的模型在许多领域取得了成功应用，如自然语言处理或计算机视觉。本文将探讨一种简洁、可解释且可扩展的方式来表达深度学习模型，特别是 transformers，作为一种混合架构，即将深度学习与符号人工智能结合。为此，我们将在一个名为[PyNeuraLogic](https://github.com/LukasZahradnik/PyNeuraLogic/)的 Python 神经符号框架中实现这些模型*（作者是该框架的共同作者）*。
 
 > “我们不能在没有混合架构、丰富的先验知识和复杂的推理技术三者结合的情况下，以充分自动化的方式构建丰富的认知模型。”
 > 
@@ -26,17 +26,17 @@
 
 将符号表示与深度学习结合起来，填补了当前深度学习模型中的空白，例如开箱即用的可解释性或缺乏推理技术。也许，提高参数数量并不是实现这些期望结果的最佳方法，就像增加相机的像素数量并不一定能拍出更好的照片一样。
 
-![](../Images/680dc9c97005d1c4701ef2d0c54e5636.png)
+![](img/680dc9c97005d1c4701ef2d0c54e5636.png)
 
-由PyNeuraLogic实现的神经符号概念Lifted Relational Neural Networks³ (LRNN)的高级可视化。在这里，我们展示了一个简单的模板（逻辑程序），其中包括一个线性层，后跟一个求和聚合。对于每个（输入）样本，都会构建一个独特的神经网络。图片由作者提供。
+由 PyNeuraLogic 实现的神经符号概念 Lifted Relational Neural Networks³ (LRNN)的高级可视化。在这里，我们展示了一个简单的模板（逻辑程序），其中包括一个线性层，后跟一个求和聚合。对于每个（输入）样本，都会构建一个独特的神经网络。图片由作者提供。
 
-PyNeuraLogic框架基于逻辑编程，但有所不同——逻辑程序包含可微分的参数。该框架非常适合较小的结构化数据，如分子，以及复杂模型，如Transformers和图神经网络。另一方面，PyNeuraLogic并不是处理非关系型和大张量数据的最佳选择。
+PyNeuraLogic 框架基于逻辑编程，但有所不同——逻辑程序包含可微分的参数。该框架非常适合较小的结构化数据，如分子，以及复杂模型，如 Transformers 和图神经网络。另一方面，PyNeuraLogic 并不是处理非关系型和大张量数据的最佳选择。
 
-该框架的关键组件是一个可微分的逻辑程序，我们称之为模板。模板由定义神经网络结构的逻辑规则组成——我们可以将模板视为模型架构的蓝图。然后将模板应用于每个输入数据实例，通过生成和神经化过程产生一个对输入样本独特的神经网络。这一过程与其他具有预定义架构的框架完全不同，后者无法根据不同的输入样本进行调整。有关框架的更详细介绍，可以参考，例如，从图神经网络的角度出发的[上一篇文章](/beyond-graph-neural-networks-with-pyneuralogic-c1e6502c46f7)。
+该框架的关键组件是一个可微分的逻辑程序，我们称之为模板。模板由定义神经网络结构的逻辑规则组成——我们可以将模板视为模型架构的蓝图。然后将模板应用于每个输入数据实例，通过生成和神经化过程产生一个对输入样本独特的神经网络。这一过程与其他具有预定义架构的框架完全不同，后者无法根据不同的输入样本进行调整。有关框架的更详细介绍，可以参考，例如，从图神经网络的角度出发的上一篇文章。
 
-# 符号Transformers
+# 符号 Transformers
 
-![](../Images/bd0bd53131df7c150f1d66c176f9ed6d.png)
+![](img/bd0bd53131df7c150f1d66c176f9ed6d.png)
 
 变换器架构由两个模块组成——编码器（左）和解码器（右）。这两个模块有相似之处——解码器是扩展的编码器，因此我们只关注编码器，因为解码器的实现类似。图像由作者提供，灵感来自于 [1]。
 
@@ -46,7 +46,7 @@ PyNeuraLogic框架基于逻辑编程，但有所不同——逻辑程序包含�
 
 注意力机制构成了所有变换器模型的核心。具体来说，它的经典版本使用了所谓的多头缩放点积注意力。让我们将一个头的缩放点积注意力分解成一个简单的逻辑程序（为了清晰起见）。
 
-![](../Images/75505fc4973eb9f9d900b57bcf55a17d.png)
+![](img/75505fc4973eb9f9d900b57bcf55a17d.png)
 
 缩放点积注意力方程
 
@@ -73,7 +73,7 @@ PyNeuraLogic框架基于逻辑编程，但有所不同——逻辑程序包含�
 
 使用我们的符号表示，我们可以通过简单地添加一个作为约束的主体关系来实现这一点。在计算权重时，我们限制 *j* 索引小于或等于 *i* 索引。与掩码不同，我们仅计算所需的缩放点积。
 
-![](../Images/2fc97073fac58ff837b52cea92fc9e62.png)
+![](img/2fc97073fac58ff837b52cea92fc9e62.png)
 
 常规深度学习框架通过掩码来限制注意力（左侧）。首先，计算整个 QK^T 矩阵，然后通过用低值（白色交叉单元）覆盖值来掩盖，从而模拟仅关注相关的标记（蓝色单元）。在 PyNeuraLogic 中，我们通过应用符号约束（右侧）仅计算所需的标量值——因此没有冗余计算。这个好处在随后的注意力版本中更加显著。图片由作者提供。
 
@@ -101,7 +101,7 @@ PyNeuraLogic框架基于逻辑编程，但有所不同——逻辑程序包含�
 )) | [F.product, F.softmax_agg(agg_terms=[V.J])],
 ```
 
-![](../Images/eafd5be4a52a8c3619b31c01893e4720.png)
+![](img/eafd5be4a52a8c3619b31c01893e4720.png)
 
 关系注意力方程
 

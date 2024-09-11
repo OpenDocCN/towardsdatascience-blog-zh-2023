@@ -1,42 +1,42 @@
 # 使用 Ray 在 Amazon SageMaker 上实现有效负载均衡
 
-> 原文：[https://towardsdatascience.com/effective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3?source=collection_archive---------8-----------------------#2023-09-04](https://towardsdatascience.com/effective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3?source=collection_archive---------8-----------------------#2023-09-04)
+> 原文：[`towardsdatascience.com/effective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3?source=collection_archive---------8-----------------------#2023-09-04`](https://towardsdatascience.com/effective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3?source=collection_archive---------8-----------------------#2023-09-04)
 
 ## 一种提高 DNN 训练效率和降低训练成本的方法
 
-[](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----d3b9020679d3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------) ·10 分钟阅读·2023年9月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd3b9020679d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&user=Chaim+Rand&userId=9440b37e27fe&source=-----d3b9020679d3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----d3b9020679d3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------) ·10 分钟阅读·2023 年 9 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd3b9020679d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&user=Chaim+Rand&userId=9440b37e27fe&source=-----d3b9020679d3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd3b9020679d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&source=-----d3b9020679d3---------------------bookmark_footer-----------)![](../Images/825ef1fcbc6836470358bbe0e79c0b7f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd3b9020679d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&source=-----d3b9020679d3---------------------bookmark_footer-----------)![](img/825ef1fcbc6836470358bbe0e79c0b7f.png)
 
 图片由 [Fineas Anton](https://unsplash.com/@fineas_anton?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
-在之前的文章中（例如，[这里](/cloud-ml-performance-checklist-caa51e798002)），我们扩展了对DNN训练工作负载性能分析和优化的重要性。训练深度学习模型——尤其是大型模型——可能是一项昂贵的工作。**最大化训练资源的利用率**，以加速模型收敛并最小化训练成本，是决定您项目成功的关键因素。**性能优化**是一个迭代过程，其中我们识别并解决应用程序中的**性能瓶颈**，即阻碍我们提高资源利用率和/或加速运行时间的部分。
+在之前的文章中（例如，这里），我们扩展了对 DNN 训练工作负载性能分析和优化的重要性。训练深度学习模型——尤其是大型模型——可能是一项昂贵的工作。**最大化训练资源的利用率**，以加速模型收敛并最小化训练成本，是决定您项目成功的关键因素。**性能优化**是一个迭代过程，其中我们识别并解决应用程序中的**性能瓶颈**，即阻碍我们提高资源利用率和/或加速运行时间的部分。
 
-本文是关于训练深度学习模型时遇到的一个常见性能瓶颈系列文章中的第三篇，涉及到[**数据预处理瓶颈**](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851)。数据预处理瓶颈发生在我们的GPU（或其他加速器）——通常是我们训练设置中*最昂贵*的资源——在等待来自*过度繁忙*的CPU资源的数据输入时处于闲置状态。
+本文是关于训练深度学习模型时遇到的一个常见性能瓶颈系列文章中的第三篇，涉及到**数据预处理瓶颈**。数据预处理瓶颈发生在我们的 GPU（或其他加速器）——通常是我们训练设置中*最昂贵*的资源——在等待来自*过度繁忙*的 CPU 资源的数据输入时处于闲置状态。
 
-![](../Images/b1cc394697bc34133fcceda418841e87.png)
+![](img/b1cc394697bc34133fcceda418841e87.png)
 
-来自[TensorBoard分析器](https://www.tensorflow.org/tensorboard/tensorboard_profiling_keras)标签页的一张图像，展示了数据输入管道中的瓶颈的典型特征。我们可以清楚地看到在每第七个训练步骤中都有长时间的GPU空闲时间。（作者提供）
+来自[TensorBoard 分析器](https://www.tensorflow.org/tensorboard/tensorboard_profiling_keras)标签页的一张图像，展示了数据输入管道中的瓶颈的典型特征。我们可以清楚地看到在每第七个训练步骤中都有长时间的 GPU 空闲时间。（作者提供）
 
-在我们[第一篇文章](/overcoming-ml-data-preprocessing-bottlenecks-with-grpc-ca30fdc01bee)中，我们讨论并演示了应对这种瓶颈的不同方法，包括：
+在我们第一篇文章中，我们讨论并演示了应对这种瓶颈的不同方法，包括：
 
-1.  选择一个与您的工作负载更为匹配的CPU与GPU计算比率的训练实例，
+1.  选择一个与您的工作负载更为匹配的 CPU 与 GPU 计算比率的训练实例，
 
-1.  通过将一些CPU操作转移到GPU，改善CPU和GPU之间的工作负载平衡，并且
+1.  通过将一些 CPU 操作转移到 GPU，改善 CPU 和 GPU 之间的工作负载平衡，并且
 
-1.  将一些CPU计算卸载到辅助CPU工作者设备上。
+1.  将一些 CPU 计算卸载到辅助 CPU 工作者设备上。
 
-我们使用了[TensorFlow Data Service API](https://www.tensorflow.org/api_docs/python/tf/data/experimental/service)演示了第三种选择，这是一种专门针对TensorFlow的解决方案，其中部分输入数据处理可以通过使用gRPC作为底层通信协议来卸载到其他设备上。
+我们使用了[TensorFlow Data Service API](https://www.tensorflow.org/api_docs/python/tf/data/experimental/service)演示了第三种选择，这是一种专门针对 TensorFlow 的解决方案，其中部分输入数据处理可以通过使用 gRPC 作为底层通信协议来卸载到其他设备上。
 
-在我们的[第二篇文章](/overcoming-ml-data-preprocessing-bottlenecks-with-grpc-ca30fdc01bee)中，我们提出了一种基于gRPC的更通用的解决方案，用于利用辅助CPU工作者，并在一个玩具PyTorch模型上进行了演示。尽管它需要比[TensorFlow Data Service API](https://www.tensorflow.org/api_docs/python/tf/data/experimental/service)更多的手动编码和调整，但该解决方案提供了更大的鲁棒性，并在训练性能上实现了相同的优化。
+在我们的第二篇文章中，我们提出了一种基于 gRPC 的更通用的解决方案，用于利用辅助 CPU 工作者，并在一个玩具 PyTorch 模型上进行了演示。尽管它需要比[TensorFlow Data Service API](https://www.tensorflow.org/api_docs/python/tf/data/experimental/service)更多的手动编码和调整，但该解决方案提供了更大的鲁棒性，并在训练性能上实现了相同的优化。
 
-## 使用Ray进行负载均衡
+## 使用 Ray 进行负载均衡
 
 在这篇文章中，我们将展示一种额外的方法，利用辅助 CPU 工作线程，这种方法旨在将通用解决方案的鲁棒性与 TensorFlow 特定 API 的简单性和易用性相结合。我们将演示的方法将使用 [**Ray 数据集**](https://docs.ray.io/en/latest/data/dataset.html) 来自 [Ray 数据](https://docs.ray.io/en/latest/data/dataset.html) 库。通过利用 Ray 的 [资源管理](https://docs.ray.io/en/latest/ray-core/scheduling/resources.html) 和 [分布式调度](https://docs.ray.io/en/latest/ray-core/scheduling/index.html) 系统的全部功能，Ray 数据能够以 **可扩展** 和 **分布式** 的方式运行我们的训练数据输入管道。特别是，我们将配置 Ray 数据集，使得该库能够自动检测和利用所有可用的 CPU 资源进行训练数据的预处理。我们还将用 [Ray AIR Trainer](https://docs.ray.io/en/latest/ray-air/trainer.html#air-trainers) 封装我们的模型训练循环，以便能够无缝扩展到多 GPU 设置。
 
@@ -275,7 +275,7 @@ estimator.fit()
 
 在下表中，我们比较了在两种不同设置下运行我们的训练脚本的运行时结果：一个单独的 ml.g5.xlarge GPU 实例和一个包含 ml.g5.xlarge 实例以及 ml.c5.4xlarge 实例的异构集群。我们使用 [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) 评估系统资源利用率，并根据编写本文时的 [Amazon SageMaker 定价](https://aws.amazon.com/sagemaker/pricing/?p=pm&c=sm&z=4) 估算训练成本（ml.c5.4xlarge 实例每小时 $0.816，ml.g5.xlarge 实例每小时 $1.408）。
 
-![](../Images/3e024e2da81b7e609eb6fcc2d2112427.png)
+![](img/3e024e2da81b7e609eb6fcc2d2112427.png)
 
 性能比较结果（作者提供）
 

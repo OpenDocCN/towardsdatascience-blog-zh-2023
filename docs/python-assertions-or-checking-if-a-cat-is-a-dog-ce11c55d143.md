@@ -1,20 +1,20 @@
 # Python 断言，或检查一只猫是否是狗
 
-> 原文：[https://towardsdatascience.com/python-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143?source=collection_archive---------6-----------------------#2023-03-02](https://towardsdatascience.com/python-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143?source=collection_archive---------6-----------------------#2023-03-02)
+> 原文：[`towardsdatascience.com/python-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143?source=collection_archive---------6-----------------------#2023-03-02`](https://towardsdatascience.com/python-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143?source=collection_archive---------6-----------------------#2023-03-02)
 
 ## PYTHON 编程
 
 ## 了解在 Python 中使用断言的规则——以及不使用它们的规则
 
-[](https://medium.com/@nyggus?source=post_page-----ce11c55d143--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----ce11c55d143--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce11c55d143--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce11c55d143--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ce11c55d143--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----ce11c55d143--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ce11c55d143--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce11c55d143--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce11c55d143--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ce11c55d143--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----ce11c55d143---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce11c55d143--------------------------------) ·13 分钟阅读·2023年3月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce11c55d143&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----ce11c55d143---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----ce11c55d143---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce11c55d143--------------------------------) ·13 分钟阅读·2023 年 3 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce11c55d143&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----ce11c55d143---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce11c55d143&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143&source=-----ce11c55d143---------------------bookmark_footer-----------)![](../Images/84e60e7f48e20b9ca7e0acd560d557f3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce11c55d143&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-assertions-or-checking-if-a-cat-is-a-dog-ce11c55d143&source=-----ce11c55d143---------------------bookmark_footer-----------)![](img/84e60e7f48e20b9ca7e0acd560d557f3.png)
 
 错误的断言应该让你停下来：有问题了！照片由[Jose Aragones](https://unsplash.com/@jodaarba?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

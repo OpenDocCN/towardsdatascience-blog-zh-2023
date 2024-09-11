@@ -1,18 +1,18 @@
 # 使用 Spark、Google Cloud Storage 和 Big Query 创建数据管道
 
-> 原文：[https://towardsdatascience.com/creating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c?source=collection_archive---------7-----------------------#2023-03-06](https://towardsdatascience.com/creating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c?source=collection_archive---------7-----------------------#2023-03-06)
+> 原文：[`towardsdatascience.com/creating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c?source=collection_archive---------7-----------------------#2023-03-06`](https://towardsdatascience.com/creating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c?source=collection_archive---------7-----------------------#2023-03-06)
 
 ## 本地和云端协同工作以交付数据产品
 
-[](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)[![João Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)
+[](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)![João Pedro](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----a72ede294f4c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------) · 10 分钟阅读 · 2023年3月6日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa72ede294f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----a72ede294f4c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----a72ede294f4c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------) · 10 分钟阅读 · 2023 年 3 月 6 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa72ede294f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----a72ede294f4c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa72ede294f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&source=-----a72ede294f4c---------------------bookmark_footer-----------)![](../Images/43f50bf401c4c19245d3fab8b7acb67f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa72ede294f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&source=-----a72ede294f4c---------------------bookmark_footer-----------)![](img/43f50bf401c4c19245d3fab8b7acb67f.png)
 
 图片由 [Toro Tseleng](https://unsplash.com/@crayon__artworks?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,7 +48,7 @@
 
 管道的想法很简单，将 CSV 文件下载到本地机器，转换为存储在 GCS 桶中的 Delta-Lake 表，对这个 delta 表进行所需的转换，并将结果保存到一个 Big Query 表中，以便其他下游任务可以轻松使用。
 
-![](../Images/11b2045ad52ab8651da0058becf8be49.png)
+![](img/11b2045ad52ab8651da0058becf8be49.png)
 
 提议的管道。作者提供的图像。
 
@@ -113,17 +113,17 @@ docker 镜像已经配置为从头自动创建一个新环境，因此我们可�
 
 **1.** 访问 GCP 控制台并**创建一个新项目**。我将我的项目命名为“BigQueryFirstSteps”
 
-![](../Images/340a6e94c035fa53ebee52c1e841bf79.png)
+![](img/340a6e94c035fa53ebee52c1e841bf79.png)
 
 **2\.** 在 API & Services 标签中授权 Google Cloud Storage 和 BigQuery 的 API。
 
 **3.** 在 Google Cloud Storage 中创建一个名为**censo-ensino-superior**的新存储桶
 
-![](../Images/3e4a3538dcef2ce5700fafe7d899a1da.png)
+![](img/3e4a3538dcef2ce5700fafe7d899a1da.png)
 
 **4\.** 在 Google Big Query 中创建一个名为**censo-ensino-superior**的新数据集
 
-![](../Images/f597a457047d711e3130624f7ea308b7.png)
+![](img/f597a457047d711e3130624f7ea308b7.png)
 
 **5\.** 在 IAM & Administrator 标签页中的*服务账户*项目下创建一个新的服务账户，并分配适当的角色以读取、写入和创建 GCP 存储桶和 GBQ 表（我使用了*BigQuery 管理员*和*存储管理员*角色）
 
@@ -160,7 +160,7 @@ python download_files.py
 
 CSV 文件将下载到 ./data 文件夹中。
 
-![](../Images/ab9e4c5614c78d5b9c0878bef020a285.png)
+![](img/ab9e4c5614c78d5b9c0878bef020a285.png)
 
 ## 2\. 将 CSV 转换为 GCS 中的 Delta Lake
 
@@ -262,7 +262,7 @@ spark-submit --packages io.delta:delta-core_2.12:2.1.0 --master spark://spark:70
 
 一分钟左右，脚本将完成，数据将可用在你的 GCS 桶中。
 
-![](../Images/c8fdf35dee751871fa131a082a03d7e1.png)
+![](img/c8fdf35dee751871fa131a082a03d7e1.png)
 
 ## 3\. 从 GCS 处理 Delta 表到 GBQ
 
@@ -361,7 +361,7 @@ spark-submit --packages io.delta:delta-core_2.12:2.1.0,com.google.cloud.spark:sp
 
 表将会被创建并填充，让我们来看看：
 
-![](../Images/1b1928a2eb05013d0322edeadf2be961.png)
+![](img/1b1928a2eb05013d0322edeadf2be961.png)
 
 为了举例说明，让我们运行一个查询。
 
@@ -384,7 +384,7 @@ ORDER BY
 
 结果：
 
-![](../Images/921969adee7c397d481691898cd1a103.png)
+![](img/921969adee7c397d481691898cd1a103.png)
 
 带有注释翻译的查询结果。图片由作者提供。
 
@@ -412,10 +412,10 @@ ORDER BY
 
 [2] 什么是 BigQuery？（无日期）。*Google Cloud*。 [链接](https://cloud.google.com/bigquery/docs/introduction)。
 
-[3] *Delta Lake 官方页面*。（无日期）。Delta Lake。 [https://delta.io/](https://delta.io/)
+[3] *Delta Lake 官方页面*。（无日期）。Delta Lake。 [`delta.io/`](https://delta.io/)
 
-[4] Databricks. (2020年9月15日)。*利用 Delta Lake 改善 Apache SparkTM* [[视频](https://www.youtube.com/watch?v=LJtShrQqYZY)]。YouTube。
+[4] Databricks. (2020 年 9 月 15 日)。*利用 Delta Lake 改善 Apache SparkTM* [[视频](https://www.youtube.com/watch?v=LJtShrQqYZY)]。YouTube。
 
 [5]*使用 BigQuery 连接器与 Spark*。（无日期）。Google Cloud。 [链接](https://cloud.google.com/dataproc/docs/tutorials/bigquery-connector-spark-example)。
 
-[6] Sohail, K. (2021年12月15日)。*使用本地 PySpark 和 Jupyter Notebooks 从 Google Cloud Storage Bucket 读取文件*。Medium。 [链接](https://kashif-sohail.medium.com/read-files-from-google-cloud-storage-bucket-using-local-pyspark-and-jupyter-notebooks-f8bd43f4b42e)。
+[6] Sohail, K. (2021 年 12 月 15 日)。*使用本地 PySpark 和 Jupyter Notebooks 从 Google Cloud Storage Bucket 读取文件*。Medium。 [链接](https://kashif-sohail.medium.com/read-files-from-google-cloud-storage-bucket-using-local-pyspark-and-jupyter-notebooks-f8bd43f4b42e)。

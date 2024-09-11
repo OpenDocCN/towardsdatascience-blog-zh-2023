@@ -1,24 +1,24 @@
 # 人工智能如何改变我们的编码方式
 
-> 原文：[https://towardsdatascience.com/how-ai-is-changing-the-way-we-code-36ff30262e65?source=collection_archive---------5-----------------------#2023-08-23](https://towardsdatascience.com/how-ai-is-changing-the-way-we-code-36ff30262e65?source=collection_archive---------5-----------------------#2023-08-23)
+> 原文：[`towardsdatascience.com/how-ai-is-changing-the-way-we-code-36ff30262e65?source=collection_archive---------5-----------------------#2023-08-23`](https://towardsdatascience.com/how-ai-is-changing-the-way-we-code-36ff30262e65?source=collection_archive---------5-----------------------#2023-08-23)
 
 ## 来自 ChatGPT 和 Stack Overflow 的证据
 
-[](https://medium.com/@quentin.gallea?source=post_page-----36ff30262e65--------------------------------)[![Quentin Gallea, PhD](../Images/457af55dd9c6121da7ec97f8e2991c43.png)](https://medium.com/@quentin.gallea?source=post_page-----36ff30262e65--------------------------------)[](https://towardsdatascience.com/?source=post_page-----36ff30262e65--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----36ff30262e65--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----36ff30262e65--------------------------------)
+[](https://medium.com/@quentin.gallea?source=post_page-----36ff30262e65--------------------------------)![Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----36ff30262e65--------------------------------)[](https://towardsdatascience.com/?source=post_page-----36ff30262e65--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----36ff30262e65--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----36ff30262e65--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa52dcb9793ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-ai-is-changing-the-way-we-code-36ff30262e65&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=post_page-a52dcb9793ad----36ff30262e65---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----36ff30262e65--------------------------------) ·11分钟阅读·2023年8月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F36ff30262e65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-ai-is-changing-the-way-we-code-36ff30262e65&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=-----36ff30262e65---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa52dcb9793ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-ai-is-changing-the-way-we-code-36ff30262e65&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=post_page-a52dcb9793ad----36ff30262e65---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----36ff30262e65--------------------------------) ·11 分钟阅读·2023 年 8 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F36ff30262e65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-ai-is-changing-the-way-we-code-36ff30262e65&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=-----36ff30262e65---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F36ff30262e65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-ai-is-changing-the-way-we-code-36ff30262e65&source=-----36ff30262e65---------------------bookmark_footer-----------)![](../Images/e7a7140ce111c7509fc8f72fe3d5aa46.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F36ff30262e65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-ai-is-changing-the-way-we-code-36ff30262e65&source=-----36ff30262e65---------------------bookmark_footer-----------)![](img/e7a7140ce111c7509fc8f72fe3d5aa46.png)
 
 图片来源：Pavel Danilyuk，来自 [Pexels](https://www.pexels.com/fr-fr/photo/femme-technologie-vin-porter-8439089/)
 
 **简而言之：** 在本文中，您将找到我关于人工智能和工作的最新研究总结（探讨人工智能对生产力的影响，同时开启关于长期效果的讨论），一个使用 ChatGPT 和 Stack Overflow 说明的准实验方法（差异中的差异），以及如何通过简单的 SQL 查询从 Stack Overflow 提取数据。
 
-完整科学文章的链接（请引用）：[https://arxiv.org/abs/2308.11302](https://arxiv.org/abs/2308.11302)
+完整科学文章的链接（请引用）：[`arxiv.org/abs/2308.11302`](https://arxiv.org/abs/2308.11302)
 
 与大多数技术革命一样，ChatGPT 的发布伴随着惊奇和恐惧。一方面，仅仅两个月内，应用程序就以 1 亿月活跃用户打破了历史上增长最快的消费应用记录。另一方面，高盛的一份报告声称，这项技术可能会取代全球超过 3 亿个工作岗位 [1]。此外，埃隆·马斯克和 1000 多名科技领袖及研究人员签署了一封公开信，呼吁暂停最先进的人工智能发展 [2]。
 
@@ -46,7 +46,7 @@
 
 编程社区指数）。Python 在线资源的丰富提供了像 ChatGPT 这样的聊天机器人的丰富训练集。现在，为了与 Python 进行比较，我选择了 R。Python 通常被引用为 R 的最佳替代品，两者都可以免费使用。然而，R 的流行度稍低一些（例如在 TIOBE 编程社区指数中排名第 16），因此训练数据可能较少，这意味着 ChatGPT 的性能可能较差。经验性证据证实了这种差异（更多细节请参见方法部分）。因此，R 对于 Python 来说是一个有效的反事实（它受季节性影响，但我们可以预期 ChatGPT 的影响可以忽略不计）。
 
-![](../Images/32c6d6149730e4ce661e8504386b0ac8.png)
+![](img/32c6d6149730e4ce661e8504386b0ac8.png)
 
 图 1：ChatGPT 对 Stack Overflow 每周问题数量的影响
 
@@ -54,15 +54,15 @@ Overflow（作者提供的图表）
 
 上图显示了每周原始数据。我们可以看到在 ChatGPT 3.5 发布后，关于 Python 的 Stack Overflow 每周问题数量突然减少了重要的 21.2%，而对 R 的影响略小（减少了 15.8%）。
 
-这些‘定性’观察结果得到了统计模型的确认。后面描述的计量经济学模型发现，Python在Stack Overflow上的每周问题数平均下降了937.7（95%置信区间：[-1232.8,-642.55]；p值=0.000）。随后，利用差分中的差分方法的分析进一步揭示了问题质量的改善（通过平台上的得分进行衡量），同时未回答问题的比例增加（虽然每个问题的平均浏览次数似乎没有变化）。因此，这项研究为之前定义的三个假设提供了证据。
+这些‘定性’观察结果得到了统计模型的确认。后面描述的计量经济学模型发现，Python 在 Stack Overflow 上的每周问题数平均下降了 937.7（95%置信区间：[-1232.8,-642.55]；p 值=0.000）。随后，利用差分中的差分方法的分析进一步揭示了问题质量的改善（通过平台上的得分进行衡量），同时未回答问题的比例增加（虽然每个问题的平均浏览次数似乎没有变化）。因此，这项研究为之前定义的三个假设提供了证据。
 
-**这些发现强调了AI在我们工作方式中的深远作用。通过处理常规查询，生成性AI使个人能够将精力转向更复杂的任务，同时提高他们的生产力。然而，长期的重要潜在不利影响也在讨论部分中进行了讨论。**
+**这些发现强调了 AI 在我们工作方式中的深远作用。通过处理常规查询，生成性 AI 使个人能够将精力转向更复杂的任务，同时提高他们的生产力。然而，长期的重要潜在不利影响也在讨论部分中进行了讨论。**
 
 文章的其余部分将介绍数据和方法，然后是结果，并以讨论结束。
 
 # 数据
 
-数据是通过在[Stack Overflow数据浏览器门户](https://data.stackexchange.com/)上执行SQL查询提取的（许可证：[CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/)）。以下是使用的SQL命令：
+数据是通过在[Stack Overflow 数据浏览器门户](https://data.stackexchange.com/)上执行 SQL 查询提取的（许可证：[CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/)）。以下是使用的 SQL 命令：
 
 ```py
 SELECT Id, CreationDate, Score, ViewCount, AnswerCount
@@ -72,7 +72,7 @@ AND CreationDate BETWEEN '2022–10–01' AND '2023–04–30'
 AND PostTypeId = 1;
 ```
 
-然后，我将数据按周汇总，以减少噪音，从而获得了从2022年10月17日星期一到2023年3月19日的数据集，其中包含每周帖子数量、浏览次数、每个问题的浏览次数、每个问题的平均得分以及未回答问题的比例。得分由平台用户定义，他们可以投票表示问题是否表现出*“研究努力；它是有用且清晰的”*。
+然后，我将数据按周汇总，以减少噪音，从而获得了从 2022 年 10 月 17 日星期一到 2023 年 3 月 19 日的数据集，其中包含每周帖子数量、浏览次数、每个问题的浏览次数、每个问题的平均得分以及未回答问题的比例。得分由平台用户定义，他们可以投票表示问题是否表现出*“研究努力；它是有用且清晰的”*。
 
 # 方法
 
@@ -126,7 +126,7 @@ DiD = ( λₜ+β) — λₜ = β
 
 如引言中所述，Diff-in-Diff 模型估计在 Stack Overflow 上 Python 的每周提问平均减少了 937.7（95% CI: [-1232.8, -642.55]; p 值 = 0.000），这代表了每周提问减少了 18%。
 
-![](../Images/602587aad68760c6468395407344b582.png)
+![](img/602587aad68760c6468395407344b582.png)
 
 图 2: ChatGPT 对每周提问数量的影响（图片来源：作者）
 
@@ -134,7 +134,7 @@ DiD = ( λₜ+β) — λₜ = β
 
 ChatGPT 可能对回答问题有帮助（参见 H1）。然而，当聊天机器人无法解决问题时，它可能让人进一步探索问题或解决方案的某些元素。该平台允许我们测试这一假设，用户可以对每个问题投票，如果他们认为 *“这个问题展示了研究努力；它有用且清晰”*（增加 1 分）*，* 或不认为（减少 1 分）*。* 这第二次回归估计问题的分数平均增加了 0.07 分（95% CI: [-0.0127 , 0.1518]; p 值: 0.095）（见图 3），这代表了 41.2% 的增加。
 
-![](../Images/f9d391b6da47c9c574a45d5450698de7.png)
+![](img/f9d391b6da47c9c574a45d5450698de7.png)
 
 图 3: ChatGPT 对提问质量的影响（图片来源：作者）
 
@@ -142,9 +142,9 @@ ChatGPT 可能对回答问题有帮助（参见 H1）。然而，当聊天机器
 
 现在我们有一些证据表明 ChatGPT 能够提供显著帮助（解决问题并帮助记录其他问题），我们希望确认剩下的问题更复杂。为此，我们将关注两件事。首先，我发现未回答问题的比例在上升（没有答案可能是问题更复杂的标志）。更具体地说，我发现未回答问题的比例增加了 2.21 个百分点（95% 置信区间：[0.12, 0.30]；p 值：0.039），这代表了 6.8% 的增长。其次，我们还发现每个问题的浏览量没有变化（我们无法拒绝其未变化的零假设，p 值为 0.477）。这个第二个测试使我们部分排除由于流量较低导致未回答问题增多的替代解释。
 
-![](../Images/f5d7c68c0b97e27808035f01e52dcae9.png)
+![](img/f5d7c68c0b97e27808035f01e52dcae9.png)
 
-图4：ChatGPT 对未回答问题比例的影响（作者提供的图像）
+图 4：ChatGPT 对未回答问题比例的影响（作者提供的图像）
 
 # 讨论
 
@@ -154,10 +154,10 @@ ChatGPT 可能对回答问题有帮助（参见 H1）。然而，当聊天机器
 
 所有这些长期不利影响尚不明确，需要仔细分析。请在评论中告诉我你的想法。
 
-[0] Gallea, Quentin. “从平凡到重要：AI 对工作动态的影响——来自 ChatGPT 和 Stack Overflow 的证据” arXiv econ.GN（2023年）
+[0] Gallea, Quentin. “从平凡到重要：AI 对工作动态的影响——来自 ChatGPT 和 Stack Overflow 的证据” arXiv econ.GN（2023 年）
 
-[1] Hatzius, Jan. “人工智能对经济增长的潜在巨大影响（Briggs/Kodnani）。” *高盛*（2023年）。
+[1] Hatzius, Jan. “人工智能对经济增长的潜在巨大影响（Briggs/Kodnani）。” *高盛*（2023 年）。
 
-[2] [https://www.nytimes.com/2023/03/29/technology/ai-artificial-intelligence-musk-risks.html](https://www.nytimes.com/2023/03/29/technology/ai-artificial-intelligence-musk-risks.html)
+[2] [`www.nytimes.com/2023/03/29/technology/ai-artificial-intelligence-musk-risks.html`](https://www.nytimes.com/2023/03/29/technology/ai-artificial-intelligence-musk-risks.html)
 
-[3] Bhat, Vasudev 等. “Min (e) d 你的标签：对 Stack Overflow 问题响应时间的分析。” *2014 IEEE/ACM 国际社会网络分析与挖掘会议（ASONAM 2014）*。IEEE，（2014年）
+[3] Bhat, Vasudev 等. “Min (e) d 你的标签：对 Stack Overflow 问题响应时间的分析。” *2014 IEEE/ACM 国际社会网络分析与挖掘会议（ASONAM 2014）*。IEEE，（2014 年）

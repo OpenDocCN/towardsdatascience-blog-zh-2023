@@ -1,20 +1,20 @@
 # 应用和使用正态分布进行数据科学
 
-> 原文：[https://towardsdatascience.com/applying-and-using-the-normal-distribution-for-data-science-98f910629ba1?source=collection_archive---------12-----------------------#2023-07-07](https://towardsdatascience.com/applying-and-using-the-normal-distribution-for-data-science-98f910629ba1?source=collection_archive---------12-----------------------#2023-07-07)
+> 原文：[`towardsdatascience.com/applying-and-using-the-normal-distribution-for-data-science-98f910629ba1?source=collection_archive---------12-----------------------#2023-07-07`](https://towardsdatascience.com/applying-and-using-the-normal-distribution-for-data-science-98f910629ba1?source=collection_archive---------12-----------------------#2023-07-07)
 
 ## 数据科学步骤
 
 ## 审查正态分布在数据科学中的各种应用
 
-[](https://emmaccode.medium.com/?source=post_page-----98f910629ba1--------------------------------)[![Emma Boudreau](../Images/f7201d012b733643d6e97957f73fd1fa.png)](https://emmaccode.medium.com/?source=post_page-----98f910629ba1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98f910629ba1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----98f910629ba1--------------------------------) [Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----98f910629ba1--------------------------------)
+[](https://emmaccode.medium.com/?source=post_page-----98f910629ba1--------------------------------)![Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----98f910629ba1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98f910629ba1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----98f910629ba1--------------------------------) [Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----98f910629ba1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplying-and-using-the-normal-distribution-for-data-science-98f910629ba1&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----98f910629ba1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98f910629ba1--------------------------------) · 10分钟阅读 · 2023年7月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98f910629ba1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplying-and-using-the-normal-distribution-for-data-science-98f910629ba1&user=Emma+Boudreau&userId=ea170050148c&source=-----98f910629ba1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplying-and-using-the-normal-distribution-for-data-science-98f910629ba1&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----98f910629ba1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98f910629ba1--------------------------------) · 10 分钟阅读 · 2023 年 7 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98f910629ba1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplying-and-using-the-normal-distribution-for-data-science-98f910629ba1&user=Emma+Boudreau&userId=ea170050148c&source=-----98f910629ba1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98f910629ba1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplying-and-using-the-normal-distribution-for-data-science-98f910629ba1&source=-----98f910629ba1---------------------bookmark_footer-----------)![](../Images/47097f452e4d3f5d438d97443ddb866b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98f910629ba1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplying-and-using-the-normal-distribution-for-data-science-98f910629ba1&source=-----98f910629ba1---------------------bookmark_footer-----------)![](img/47097f452e4d3f5d438d97443ddb866b.png)
 
 （图片由作者提供）
 

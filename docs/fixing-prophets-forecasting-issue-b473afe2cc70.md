@@ -1,18 +1,18 @@
 # 修复 Prophet 的预测问题
 
-> 原文：[https://towardsdatascience.com/fixing-prophets-forecasting-issue-b473afe2cc70?source=collection_archive---------5-----------------------#2023-01-24](https://towardsdatascience.com/fixing-prophets-forecasting-issue-b473afe2cc70?source=collection_archive---------5-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/fixing-prophets-forecasting-issue-b473afe2cc70?source=collection_archive---------5-----------------------#2023-01-24`](https://towardsdatascience.com/fixing-prophets-forecasting-issue-b473afe2cc70?source=collection_archive---------5-----------------------#2023-01-24)
 
 ## 步骤 1：限制不合理的趋势
 
-[](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)[![Tyler Blume](../Images/65885dd1d8c07a786764c6f898bafb35.png)](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------) [Tyler Blume](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)
+[](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)![Tyler Blume](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------) [Tyler Blume](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffd464a2f5769&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffixing-prophets-forecasting-issue-b473afe2cc70&user=Tyler+Blume&userId=fd464a2f5769&source=post_page-fd464a2f5769----b473afe2cc70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------) ·10 分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb473afe2cc70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffixing-prophets-forecasting-issue-b473afe2cc70&user=Tyler+Blume&userId=fd464a2f5769&source=-----b473afe2cc70---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffd464a2f5769&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffixing-prophets-forecasting-issue-b473afe2cc70&user=Tyler+Blume&userId=fd464a2f5769&source=post_page-fd464a2f5769----b473afe2cc70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------) ·10 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb473afe2cc70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffixing-prophets-forecasting-issue-b473afe2cc70&user=Tyler+Blume&userId=fd464a2f5769&source=-----b473afe2cc70---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb473afe2cc70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffixing-prophets-forecasting-issue-b473afe2cc70&source=-----b473afe2cc70---------------------bookmark_footer-----------)![](../Images/8d63f95cc7d070338a256c75364f8771.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb473afe2cc70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffixing-prophets-forecasting-issue-b473afe2cc70&source=-----b473afe2cc70---------------------bookmark_footer-----------)![](img/8d63f95cc7d070338a256c75364f8771.png)
 
 图片由[Hunter Haley](https://unsplash.com/@hnhmarketing?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，[Unsplash](https://unsplash.com/s/photos/nails-in-wood?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)上可见
 

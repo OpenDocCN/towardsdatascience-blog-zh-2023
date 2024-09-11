@@ -1,12 +1,12 @@
 # 使用实时先进物体识别技术构建乐高技术件分类器
 
-> 原文：[https://towardsdatascience.com/enhancing-nullspace-robotics-capabilities-building-a-lego-sorter-with-advanced-object-recognition-7ba5d70c9902?source=collection_archive---------5-----------------------#2023-11-02](https://towardsdatascience.com/enhancing-nullspace-robotics-capabilities-building-a-lego-sorter-with-advanced-object-recognition-7ba5d70c9902?source=collection_archive---------5-----------------------#2023-11-02)
+> 原文：[`towardsdatascience.com/enhancing-nullspace-robotics-capabilities-building-a-lego-sorter-with-advanced-object-recognition-7ba5d70c9902?source=collection_archive---------5-----------------------#2023-11-02`](https://towardsdatascience.com/enhancing-nullspace-robotics-capabilities-building-a-lego-sorter-with-advanced-object-recognition-7ba5d70c9902?source=collection_archive---------5-----------------------#2023-11-02)
 
-[](https://medium.com/@aveekgoswami?source=post_page-----7ba5d70c9902--------------------------------)[![Aveek Goswami](../Images/605b68f373d08d4d82223f9478417177.png)](https://medium.com/@aveekgoswami?source=post_page-----7ba5d70c9902--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ba5d70c9902--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ba5d70c9902--------------------------------) [Aveek Goswami](https://medium.com/@aveekgoswami?source=post_page-----7ba5d70c9902--------------------------------)
+[](https://medium.com/@aveekgoswami?source=post_page-----7ba5d70c9902--------------------------------)![Aveek Goswami](https://medium.com/@aveekgoswami?source=post_page-----7ba5d70c9902--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ba5d70c9902--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ba5d70c9902--------------------------------) [Aveek Goswami](https://medium.com/@aveekgoswami?source=post_page-----7ba5d70c9902--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff6c39b7b31a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-nullspace-robotics-capabilities-building-a-lego-sorter-with-advanced-object-recognition-7ba5d70c9902&user=Aveek+Goswami&userId=ff6c39b7b31a&source=post_page-ff6c39b7b31a----7ba5d70c9902---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ba5d70c9902--------------------------------) · 9 分钟阅读 · 2023年11月2日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff6c39b7b31a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-nullspace-robotics-capabilities-building-a-lego-sorter-with-advanced-object-recognition-7ba5d70c9902&user=Aveek+Goswami&userId=ff6c39b7b31a&source=post_page-ff6c39b7b31a----7ba5d70c9902---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ba5d70c9902--------------------------------) · 9 分钟阅读 · 2023 年 11 月 2 日
 
 --
 
@@ -16,11 +16,11 @@
 
 **在这篇博客文章中，我将带你了解遇到的挑战以及我们如何成功完成这个项目。**
 
-![](../Images/a5719e3ed885a8b80b02d537557a7715.png)
+![](img/a5719e3ed885a8b80b02d537557a7715.png)
 
-*阿莫斯·科赫和我在22年夏天教学生编程和机器人技术，同时为 Nullspace 工作。你可以在文章下方的链接找到我们。*
+*阿莫斯·科赫和我在 22 年夏天教学生编程和机器人技术，同时为 Nullspace 工作。你可以在文章下方的链接找到我们。*
 
-Nullspace Robotics 是新加坡领先的中小学机器人和编程教育提供商。他们的大部分操作涉及使用乐高 Technic 部件构建机器人，这些部件被分类到特定的托盘中。你可以想象，让一个充满精力的8岁小孩帮忙把积木放回托盘是一个噩梦般的任务，而他们只想做更多的东西。
+Nullspace Robotics 是新加坡领先的中小学机器人和编程教育提供商。他们的大部分操作涉及使用乐高 Technic 部件构建机器人，这些部件被分类到特定的托盘中。你可以想象，让一个充满精力的 8 岁小孩帮忙把积木放回托盘是一个噩梦般的任务，而他们只想做更多的东西。
 
 Nullspace 让我们制作一台可以将乐高 Technic 积木分类到特定类别的机器，以最小化人工干预，从而解决进行机器人教学时的关键效率挑战之一。
 
@@ -114,7 +114,7 @@ if text == "Piece found":
 
 我们自己创建了图像数据集，而不是使用在线找到的 Lego Technic 零件图像，因为我们想要模拟模型最终检测和分类零件的条件。因此，我们设计了一个简单的传送带系统，完全使用 Lego Technic 零件！然后我们将其连接到 Lego Spike Prime 电机，以保持传送带的运转。
 
-![](../Images/2e2e1ef3fe6d6b3949357d1d2bcb5a94.png)
+![](img/2e2e1ef3fe6d6b3949357d1d2bcb5a94.png)
 
 **设计模型架构**
 
@@ -193,9 +193,9 @@ model_history = model.fit(x_train, y_train, epochs=200, verbose=2, validation_da
 
 **模型结果**
 
-该模型使用6000张图像，涵盖7类乐高技术块进行训练。最终验证准确率达到了**93%**。下面展示了训练过程的图示以及用于评估性能的混淆矩阵：
+该模型使用 6000 张图像，涵盖 7 类乐高技术块进行训练。最终验证准确率达到了**93%**。下面展示了训练过程的图示以及用于评估性能的混淆矩阵：
 
-![](../Images/8da60f1fe85e0e69ae73b076c5da5cd6.png)
+![](img/8da60f1fe85e0e69ae73b076c5da5cd6.png)
 
 ## 在树莓派上实施模型
 
@@ -244,7 +244,7 @@ interpreter.allocate_tensors()
 
 我们努力的最终成果是展示系统的整体准确性，辅以捕捉其操作的照片和视频。传送带设置（如上图）是此次演示的关键部分：
 
-![](../Images/a7725099423eb08137c26cfafb1f89f7.png)![](../Images/2428c86acf96a1fbd484b8396e3bf7e2.png)
+![](img/a7725099423eb08137c26cfafb1f89f7.png)![](img/2428c86acf96a1fbd484b8396e3bf7e2.png)
 
 # 未来工作及改进方向
 
@@ -260,15 +260,15 @@ interpreter.allocate_tensors()
 
 查看 Github 或 HuggingFace 上的完整代码库，获取代码、数据集图像以及更多项目信息：
 
-Github: [https://github.com/magichampz/lego-sorting-machine-ag-ak/](https://github.com/magichampz/lego-sorting-machine-ag-ak/)
+Github: [`github.com/magichampz/lego-sorting-machine-ag-ak/`](https://github.com/magichampz/lego-sorting-machine-ag-ak/)
 
-HuggingFace: [https://huggingface.co/magichampz](https://huggingface.co/magichampz)
+HuggingFace: [`huggingface.co/magichampz`](https://huggingface.co/magichampz)
 
 # 认识开发者
 
-Aveek: [https://www.linkedin.com/in/aveekg00/](https://www.linkedin.com/in/aveekg00/)
+Aveek: [`www.linkedin.com/in/aveekg00/`](https://www.linkedin.com/in/aveekg00/)
 
-Amos: [https://www.linkedin.com/in/ak726/](https://www.linkedin.com/in/ak726/)
+Amos: [`www.linkedin.com/in/ak726/`](https://www.linkedin.com/in/ak726/)
 
 查看 [Nullspace Robotics](https://sg.nullspace.co)
 
@@ -278,11 +278,11 @@ Amos: [https://www.linkedin.com/in/ak726/](https://www.linkedin.com/in/ak726/)
 
 ### 在本教程中，我将向你展示如何使用 Python 和 OpenCV 执行基本的运动检测和跟踪。了解如何……
 
-pyimagesearch.com](https://pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/?source=post_page-----7ba5d70c9902--------------------------------) [](/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42?source=post_page-----7ba5d70c9902--------------------------------) [## 使用 OpenCV 检测运动 — 初学者图像分析
+pyimagesearch.com](https://pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/?source=post_page-----7ba5d70c9902--------------------------------) [](/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42?source=post_page-----7ba5d70c9902--------------------------------) ## 使用 OpenCV 检测运动 — 初学者图像分析
 
 ### 如何使用 OpenCV 检测和分析移动物体
 
-towardsdatascience.com](/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42?source=post_page-----7ba5d70c9902--------------------------------) [](https://github.com/aladdinpersson/Machine-Learning-Collection/blob/master/ML/TensorFlow/Basics/tutorial15-customizing-modelfit.py?source=post_page-----7ba5d70c9902--------------------------------) [## Machine-Learning-Collection/ML/TensorFlow/Basics/tutorial15-customizing-modelfit.py 在主分支 ·…
+towardsdatascience.com [](https://github.com/aladdinpersson/Machine-Learning-Collection/blob/master/ML/TensorFlow/Basics/tutorial15-customizing-modelfit.py?source=post_page-----7ba5d70c9902--------------------------------) [## Machine-Learning-Collection/ML/TensorFlow/Basics/tutorial15-customizing-modelfit.py 在主分支 ·…
 
 ### 一个关于机器学习和深度学习的资源……
 
@@ -290,6 +290,6 @@ github.com](https://github.com/aladdinpersson/Machine-Learning-Collection/blob/m
 
 # 未使用的内容
 
-![](../Images/4ffed3f50aa90501db4c8d22d2657f79.png)
+![](img/4ffed3f50aa90501db4c8d22d2657f79.png)
 
 *除非另有说明，所有图片均为作者提供*

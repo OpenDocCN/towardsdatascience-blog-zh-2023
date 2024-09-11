@@ -1,32 +1,32 @@
 # 机器学习的公众认知问题
 
-> 原文：[https://towardsdatascience.com/machine-learnings-public-perception-problem-48daf587e7a8?source=collection_archive---------5-----------------------#2023-09-02](https://towardsdatascience.com/machine-learnings-public-perception-problem-48daf587e7a8?source=collection_archive---------5-----------------------#2023-09-02)
+> 原文：[`towardsdatascience.com/machine-learnings-public-perception-problem-48daf587e7a8?source=collection_archive---------5-----------------------#2023-09-02`](https://towardsdatascience.com/machine-learnings-public-perception-problem-48daf587e7a8?source=collection_archive---------5-----------------------#2023-09-02)
 
 ## 为什么公众的机器学习素养需要成为数据科学的优先事项，以及我们能为此做些什么。
 
-[](https://medium.com/@s.kirmer?source=post_page-----48daf587e7a8--------------------------------)[![斯蒂芬妮·基尔默](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----48daf587e7a8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48daf587e7a8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----48daf587e7a8--------------------------------) [斯蒂芬妮·基尔默](https://medium.com/@s.kirmer?source=post_page-----48daf587e7a8--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----48daf587e7a8--------------------------------)![斯蒂芬妮·基尔默](https://medium.com/@s.kirmer?source=post_page-----48daf587e7a8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48daf587e7a8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----48daf587e7a8--------------------------------) [斯蒂芬妮·基尔默](https://medium.com/@s.kirmer?source=post_page-----48daf587e7a8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learnings-public-perception-problem-48daf587e7a8&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----48daf587e7a8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48daf587e7a8--------------------------------) ·10分钟阅读·2023年9月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F48daf587e7a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learnings-public-perception-problem-48daf587e7a8&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----48daf587e7a8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learnings-public-perception-problem-48daf587e7a8&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----48daf587e7a8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48daf587e7a8--------------------------------) ·10 分钟阅读·2023 年 9 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F48daf587e7a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learnings-public-perception-problem-48daf587e7a8&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----48daf587e7a8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48daf587e7a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learnings-public-perception-problem-48daf587e7a8&source=-----48daf587e7a8---------------------bookmark_footer-----------)![](../Images/7753f5b7d45f1325fdb307af9dc33ad0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48daf587e7a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learnings-public-perception-problem-48daf587e7a8&source=-----48daf587e7a8---------------------bookmark_footer-----------)![](img/7753f5b7d45f1325fdb307af9dc33ad0.png)
 
 图片由 [安德鲁·西曼](https://unsplash.com/@amseaman?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-最近我在听一个播客，里面有一些聪明、深思熟虑的普通人（我不会透露他们的名字，以示礼貌），讨论AI如何在医疗保健中使用。我已经有些担忧，因为他们使用了“AI”这个术语，我发现这常常意味着同时包括了所有和没有任何意义。但我继续听下去，他们讨论了如何将AI工具（实际上只是机器学习）融入医疗实践。这些工具包括根据症状建议诊断，以及根据患者的生命体征和病情调整药物剂量，这些看起来很有前景且实际。
+最近我在听一个播客，里面有一些聪明、深思熟虑的普通人（我不会透露他们的名字，以示礼貌），讨论 AI 如何在医疗保健中使用。我已经有些担忧，因为他们使用了“AI”这个术语，我发现这常常意味着同时包括了所有和没有任何意义。但我继续听下去，他们讨论了如何将 AI 工具（实际上只是机器学习）融入医疗实践。这些工具包括根据症状建议诊断，以及根据患者的生命体征和病情调整药物剂量，这些看起来很有前景且实际。
 
-然而，在接下来的瞬间，我有些震惊，因为一位发言者（一位医学博士）说（我概括一下）“似乎AI在数学方面变差了”。这一点不仅在整个播客中萦绕于我，整个周末都未曾离开。
+然而，在接下来的瞬间，我有些震惊，因为一位发言者（一位医学博士）说（我概括一下）“似乎 AI 在数学方面变差了”。这一点不仅在整个播客中萦绕于我，整个周末都未曾离开。
 
 当受过教育、聪明的普通人对机器学习感到如此困惑和误解时，我们就有了问题。（我会避免使用“AI”这个术语，因为我真的相信它比解释更多地混淆了我们的意义。在这个背景下，这些人讨论的是机器学习和使用它的产品，即使他们对此并不知晓。）
 
 在这位医生的例子中，他可能是在谈到大型语言模型（LLMs）时提到数学。他不知为何认为一个被训练以复杂方式排列单词以响应提示的模型也应该能够进行数学计算。它在这方面并不擅长（因为它并没有被训练来做这些！），他的所有机器学习的印象都被这一现实所玷污。
 
-与这种误解相反，数据科学家知道LLMs只是更广泛机器学习领域的一小部分。许多其他算法和模型在数学计算方面表现出色，因为那是它们的具体目的。（正如一个朋友说的，当我告诉他这个故事时，“机器学习模型本质上就是数学！”）然而，这段话的开头是问题所在——数据科学家知道这一点，但公众普遍并不知晓。
+与这种误解相反，数据科学家知道 LLMs 只是更广泛机器学习领域的一小部分。许多其他算法和模型在数学计算方面表现出色，因为那是它们的具体目的。（正如一个朋友说的，当我告诉他这个故事时，“机器学习模型本质上就是数学！”）然而，这段话的开头是问题所在——数据科学家知道这一点，但公众普遍并不知晓。
 
-> …数据科学家明白LLMs只是更广泛机器学习领域的一小部分。
+> …数据科学家明白 LLMs 只是更广泛机器学习领域的一小部分。
 
 我可以花整篇文章讨论语言模型与其他形式的机器学习之间的区别，但这并不是我今天真正感兴趣的。相反，我想探讨一下为什么我们需要关注普通人缺乏这些信息，以及可能的影响。
 
@@ -48,13 +48,13 @@
 
 机器学习的效果依赖于使用者能否最大限度地发挥其功能。我经常看到和听到像我开头提到的轶事一样的例子，人们对机器学习的理解充满了极端的误解，并在这个错误的基础上建立了思维框架。这导致了他们对机器学习的整个认知图谱都是不正确的。
 
-这对数据科学领域的意义在于，我们在构建越来越先进的机器学习中的所有工作，其可能性并不受限于我们能获得多少GPU，而是受限于我们解释我们所构建的内容和教育公众有关其意义及如何使用的能力。
+这对数据科学领域的意义在于，我们在构建越来越先进的机器学习中的所有工作，其可能性并不受限于我们能获得多少 GPU，而是受限于我们解释我们所构建的内容和教育公众有关其意义及如何使用的能力。
 
-> …我们在建设更先进机器学习服务中的工作，其可能性并不受我们能获得多少GPU的限制，而是受限于我们解释所构建内容的能力。
+> …我们在建设更先进机器学习服务中的工作，其可能性并不受我们能获得多少 GPU 的限制，而是受限于我们解释所构建内容的能力。
 
 ## 人们天生并不准备理解机器学习。
 
-我最近读了一篇文章，题为 [“Why Johnny Can’t Prompt”](https://dl.acm.org/doi/abs/10.1145/3544548.3581388)（Zamfirescu-Pereira, Wong, Hartmann, 和 Yang, 2023年4月）。这让我对非数据科学家如何看待和处理生成式AI，特别是广义上的机器学习，有了很多思考。
+我最近读了一篇文章，题为 [“Why Johnny Can’t Prompt”](https://dl.acm.org/doi/abs/10.1145/3544548.3581388)（Zamfirescu-Pereira, Wong, Hartmann, 和 Yang, 2023 年 4 月）。这让我对非数据科学家如何看待和处理生成式 AI，特别是广义上的机器学习，有了很多思考。
 
 我可能会另写一篇文章来详细讨论这个话题，但对于这个论点来说，有价值的一点是：人们倾向于将他们与其他**人**互动的既有框架应用于与**机器学习系统**的互动中，从而导致效果不佳和用户挫败感。
 
@@ -90,7 +90,7 @@
 
 这些误解源于对大型语言模型（LLMs）的拟人化，假设它们具有类似人类的推理和真伪判断能力。实际上，ChatGPT 是一个非常复杂的模型，它根据你给出的提示将单词排列在一起。它经过训练，能够生成非常易于理解的语言。但 ChatGPT 没有“真相”或“谎言”的概念。它没有内部嵌入来表示某事是否准确。因此，当新闻谈论 ChatGPT 撒谎或“产生幻觉”时，这有些误导。
 
-然而，重要的是，我们现在有一群人看到了这个消息，更不用说涉及的律师，他们对从ChatGPT中获得的任何信息是否可靠感到焦虑。这个情境并没有帮助他们理解LLM的概念，也确实没有帮助实现将机器学习应用于有益的更广泛目标。有人因为缺乏对模型工作原理的了解而受到了伤害，其他人对此嗤之以鼻，而现在我们制造了更多的怀疑者，他们将来可能会避免使用至少一些形式的机器学习。
+然而，重要的是，我们现在有一群人看到了这个消息，更不用说涉及的律师，他们对从 ChatGPT 中获得的任何信息是否可靠感到焦虑。这个情境并没有帮助他们理解 LLM 的概念，也确实没有帮助实现将机器学习应用于有益的更广泛目标。有人因为缺乏对模型工作原理的了解而受到了伤害，其他人对此嗤之以鼻，而现在我们制造了更多的怀疑者，他们将来可能会避免使用至少一些形式的机器学习。
 
 所有这些都指向相同的问题——当技术缺乏适当的公众教育时，我们就把公众教育的任务留给了不可靠和有偏见的来源，这些来源的优先级与公众利益不一致。只需问问任何公共卫生专业人员，看看他们如何努力提高疫苗接种率。机器学习如果我们不能在公众教育方面走在前面，可能会沿着相同的不幸道路发展。
 
@@ -100,7 +100,7 @@
 
 我认为我们可以做的一件事是将更多的时间和精力投入到公众教育中。现在，我并不是说街上的每个人都需要学习反向传播或编码器架构的教程。（这就像说人们需要研究微芯片才能成为有效的计算机用户一样。）但我确实认为，人们需要了解一些机器学习的基本要素，以便成为信息技术的知情用户，包括目前技术的伦理、风险和局限性。作为一个领域，数据科学需要了解一个人需要掌握哪些信息才能成为成功且有效的机器学习用户，并且我们如何能够分享这些信息。
 
-如果我们没有看到如此戏剧性的转变，LLM（大型语言模型）正快速普及到公众手中，我们或许可以对此稍作等待。基本的预测模型结果通常由数据科学专业人员进行中介，即模型的输入经过精心设计，结果也以深思熟虑的方式呈现。然而，对于LLM聊天机器人来说，这种情况并不成立。人们可以输入任何他们想要的内容，没有人控制返回的结果。用户需要更多的知识来负责任地生成和消费这些信息。
+如果我们没有看到如此戏剧性的转变，LLM（大型语言模型）正快速普及到公众手中，我们或许可以对此稍作等待。基本的预测模型结果通常由数据科学专业人员进行中介，即模型的输入经过精心设计，结果也以深思熟虑的方式呈现。然而，对于 LLM 聊天机器人来说，这种情况并不成立。人们可以输入任何他们想要的内容，没有人控制返回的结果。用户需要更多的知识来负责任地生成和消费这些信息。
 
 其次，我认为数据科学作为一个领域，需要对机器学习的实际能力以及它能够做什么进行更多的发声和坚持反对过度炒作和夸大其词。我发现这种情况大多数存在于吸引眼球的媒体中，甚至一些理论上更可信的新闻报道中。不要误解我，机器学习确实令人惊叹，并且它可以做出令人难以置信的事情！然而，它并不完美，我们不应该让任何人假装它是完美的，而不进行反对。
 

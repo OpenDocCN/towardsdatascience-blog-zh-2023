@@ -1,32 +1,32 @@
-# Scikit-Learn中的管道：一种捆绑转换的神奇方式
+# Scikit-Learn 中的管道：一种捆绑转换的神奇方式
 
-> 原文：[https://towardsdatascience.com/pipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac?source=collection_archive---------15-----------------------#2023-04-05](https://towardsdatascience.com/pipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac?source=collection_archive---------15-----------------------#2023-04-05)
+> 原文：[`towardsdatascience.com/pipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac?source=collection_archive---------15-----------------------#2023-04-05`](https://towardsdatascience.com/pipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac?source=collection_archive---------15-----------------------#2023-04-05)
 
 ## 管道如何帮助你编写更好的机器学习和数据科学代码 😍
 
-[](https://medium.com/@ebbeberge?source=post_page-----9ef0594000ac--------------------------------)[![Eirik Berge, PhD](../Images/7507374e75980fd0c1056af3cd299eaa.png)](https://medium.com/@ebbeberge?source=post_page-----9ef0594000ac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ef0594000ac--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9ef0594000ac--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----9ef0594000ac--------------------------------)
+[](https://medium.com/@ebbeberge?source=post_page-----9ef0594000ac--------------------------------)![Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----9ef0594000ac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ef0594000ac--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ef0594000ac--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----9ef0594000ac--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7722f981eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=post_page-7722f981eb----9ef0594000ac---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ef0594000ac--------------------------------) · 5分钟阅读 · 2023年4月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ef0594000ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=-----9ef0594000ac---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7722f981eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=post_page-7722f981eb----9ef0594000ac---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ef0594000ac--------------------------------) · 5 分钟阅读 · 2023 年 4 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ef0594000ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=-----9ef0594000ac---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ef0594000ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac&source=-----9ef0594000ac---------------------bookmark_footer-----------)![](../Images/af74d4aa798e6d0abd86bb7284cd5dc3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ef0594000ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipelines-in-scikit-learn-an-amazing-way-to-bundle-transformations-9ef0594000ac&source=-----9ef0594000ac---------------------bookmark_footer-----------)![](img/af74d4aa798e6d0abd86bb7284cd5dc3.png)
 
 图片由[Rodion Kutsaiev](https://unsplash.com/fr/@frostroomhead?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 你的旅程概述
 
-1.  [引言](#a6cb)
+1.  引言
 
-1.  [没有管道的问题？](#8f4f)
+1.  没有管道的问题？
 
-1.  [管道拯救者！](#d657)
+1.  管道拯救者！
 
-1.  [有用的属性和实用函数](#15c2)
+1.  有用的属性和实用函数
 
-1.  [总结](#c801)
+1.  总结
 
 # 1 — 引言
 

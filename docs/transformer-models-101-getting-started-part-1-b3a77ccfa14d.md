@@ -1,18 +1,18 @@
-# Transformer 模型 101：入门 — 第 1 部分
+# Transformer 模型 101：入门 — 第一部分
 
-> 原文：[https://towardsdatascience.com/transformer-models-101-getting-started-part-1-b3a77ccfa14d?source=collection_archive---------1-----------------------#2023-02-18](https://towardsdatascience.com/transformer-models-101-getting-started-part-1-b3a77ccfa14d?source=collection_archive---------1-----------------------#2023-02-18)
+> 原文：[`towardsdatascience.com/transformer-models-101-getting-started-part-1-b3a77ccfa14d?source=collection_archive---------1-----------------------#2023-02-18`](https://towardsdatascience.com/transformer-models-101-getting-started-part-1-b3a77ccfa14d?source=collection_archive---------1-----------------------#2023-02-18)
 
 ## 用简单的语言解释 Transformer 模型背后的复杂数学
 
-[](https://nandinibansal1811.medium.com/?source=post_page-----b3a77ccfa14d--------------------------------)[![Nandini Bansal](../Images/a813ac8be6f89b2e856651fda66ab078.png)](https://nandinibansal1811.medium.com/?source=post_page-----b3a77ccfa14d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3a77ccfa14d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b3a77ccfa14d--------------------------------) [Nandini Bansal](https://nandinibansal1811.medium.com/?source=post_page-----b3a77ccfa14d--------------------------------)
+[](https://nandinibansal1811.medium.com/?source=post_page-----b3a77ccfa14d--------------------------------)![Nandini Bansal](https://nandinibansal1811.medium.com/?source=post_page-----b3a77ccfa14d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3a77ccfa14d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3a77ccfa14d--------------------------------) [Nandini Bansal](https://nandinibansal1811.medium.com/?source=post_page-----b3a77ccfa14d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc41c26af0465&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-1-b3a77ccfa14d&user=Nandini+Bansal&userId=c41c26af0465&source=post_page-c41c26af0465----b3a77ccfa14d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3a77ccfa14d--------------------------------) ·11分钟阅读·2023年2月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb3a77ccfa14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-1-b3a77ccfa14d&user=Nandini+Bansal&userId=c41c26af0465&source=-----b3a77ccfa14d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc41c26af0465&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-1-b3a77ccfa14d&user=Nandini+Bansal&userId=c41c26af0465&source=post_page-c41c26af0465----b3a77ccfa14d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3a77ccfa14d--------------------------------) ·11 分钟阅读·2023 年 2 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb3a77ccfa14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-1-b3a77ccfa14d&user=Nandini+Bansal&userId=c41c26af0465&source=-----b3a77ccfa14d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb3a77ccfa14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-1-b3a77ccfa14d&source=-----b3a77ccfa14d---------------------bookmark_footer-----------)![](../Images/75e375b7793cc2763bbaa654fb731228.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb3a77ccfa14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-101-getting-started-part-1-b3a77ccfa14d&source=-----b3a77ccfa14d---------------------bookmark_footer-----------)![](img/75e375b7793cc2763bbaa654fb731228.png)
 
 图片来源：[Kerttu](https://pixabay.com/users/kerttu-569708/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1151405) 来自 [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1151405)
 
@@ -22,13 +22,13 @@
 
 正如所说的，需求是发明的母亲。传统的序列到序列模型在处理长文本时表现不佳。***这意味着模型在处理输入序列的后半部分时，往往会忘记前半部分的学习内容***。这种信息丧失是不可取的。
 
-尽管像 LSTM 和 GRU 这样的门控架构通过 ***丢弃沿途无用的信息以记住重要信息***，在处理长期依赖性方面表现出了一些改进，但仍然不够。世界需要更强大的东西，于是，在2015年，[**Bahdanau 等人**](https://arxiv.org/abs/1409.0473)**引入了“注意力机制”**。它们与 RNN/LSTM 结合使用，模仿人类行为，专注于选择性事物，同时忽略其余部分。Bahdanau 提议为句子中的每个单词分配相对重要性，以便模型关注重要单词并忽略其他部分。这被证明是对神经机器翻译任务中的编码器-解码器模型的巨大改进，很快，注意力机制的应用也扩展到了其他任务中。
+尽管像 LSTM 和 GRU 这样的门控架构通过 ***丢弃沿途无用的信息以记住重要信息***，在处理长期依赖性方面表现出了一些改进，但仍然不够。世界需要更强大的东西，于是，在 2015 年，[**Bahdanau 等人**](https://arxiv.org/abs/1409.0473)**引入了“注意力机制”**。它们与 RNN/LSTM 结合使用，模仿人类行为，专注于选择性事物，同时忽略其余部分。Bahdanau 提议为句子中的每个单词分配相对重要性，以便模型关注重要单词并忽略其他部分。这被证明是对神经机器翻译任务中的编码器-解码器模型的巨大改进，很快，注意力机制的应用也扩展到了其他任务中。
 
 ## **变换器模型的时代**
 
-变换器模型完全基于注意力机制，也称为 ***“自注意力”***。这一架构在2017年通过论文 “[**Attention is All You Need**](https://arxiv.org/abs/1706.03762)” 介绍给世界。它由编码器-解码器架构组成。
+变换器模型完全基于注意力机制，也称为 ***“自注意力”***。这一架构在 2017 年通过论文 “[**Attention is All You Need**](https://arxiv.org/abs/1706.03762)” 介绍给世界。它由编码器-解码器架构组成。
 
-![](../Images/e1adf6bb56d8cb4d42606b7e2236a8d0.png)
+![](img/e1adf6bb56d8cb4d42606b7e2236a8d0.png)
 
 图. 高层次的变换器模型架构（来源：作者）
 
@@ -44,13 +44,13 @@
 
 变换器的编码器块由 N 个编码器的堆叠组成，这些编码器顺序工作。一个编码器的输出是下一个编码器的输入，依此类推。最后一个编码器的输出是输入句子的最终表示，这一表示被传递给解码器块。
 
-![](../Images/e82a5f3835bb6428ad06e633f02301be.png)
+![](img/e82a5f3835bb6428ad06e633f02301be.png)
 
 图：具有堆叠编码器的编码器块（来源：作者）
 
 每个编码器块可以进一步分为下图所示的两个组件。
 
-![](../Images/701ef09d3f7d1158f0d332eafcbcedb2.png)
+![](img/701ef09d3f7d1158f0d332eafcbcedb2.png)
 
 图：编码器层的组件（来源：作者）
 
@@ -60,7 +60,7 @@
 
 每个人可能会产生的第一个问题是：*注意力和自注意力是不同的概念吗？* 是的，它们不同。（显而易见！）
 
-传统上，***注意力机制***在前一节中讨论的神经机器翻译任务中产生。因此，本质上，注意力机制用于将源句和目标句进行映射。由于 seq-to-seq 模型逐词执行翻译任务，注意力机制帮助我们识别在为目标句生成令牌 x 时应该***更多关注***源句中的哪些令牌。为此，它利用来自编码器和解码器的隐藏状态表示来计算注意力分数，并基于这些分数生成上下文向量作为解码器的输入。如果你想了解更多关于注意力机制的内容，请查看[这篇文章](/intuitive-understanding-of-attention-mechanism-in-deep-learning-6c9482aecf4f)（解释得非常精彩！）。
+传统上，***注意力机制***在前一节中讨论的神经机器翻译任务中产生。因此，本质上，注意力机制用于将源句和目标句进行映射。由于 seq-to-seq 模型逐词执行翻译任务，注意力机制帮助我们识别在为目标句生成令牌 x 时应该***更多关注***源句中的哪些令牌。为此，它利用来自编码器和解码器的隐藏状态表示来计算注意力分数，并基于这些分数生成上下文向量作为解码器的输入。如果你想了解更多关于注意力机制的内容，请查看这篇文章（解释得非常精彩！）。
 
 回到***自注意力***，主要思想是在将源句映射到自身时计算注意力分数。如果你有一句话，如，
 
@@ -92,7 +92,7 @@
 
 从上图中，我们可以推断 qi、ki 和 vi 代表句子中第 i 个词的 Q、K 和 V 的值。
 
-![](../Images/67fc6dc5181747aa4895072c410b31a6.png)
+![](img/67fc6dc5181747aa4895072c410b31a6.png)
 
 图例：Q 和 K 转置的点积示例（来源：作者）
 
@@ -160,7 +160,7 @@ Z(it) = 0.0 * V(the) + 1.0 * V(dog) + 0.0 * V(ate) + …… + 0.0 * V(hungry)
 
 计算位置编码时，使用下面给出的公式。
 
-![](../Images/cd3612f39271e47035921e579b010bfb.png)
+![](img/cd3612f39271e47035921e579b010bfb.png)
 
 图。计算位置编码的公式（来源：作者）
 
@@ -176,37 +176,37 @@ Z(it) = 0.0 * V(the) + 1.0 * V(dog) + 0.0 * V(ate) + …… + 0.0 * V(hungry)
 
 如果你想深入了解位置编码，这个视频涵盖了详细内容。
 
-[变换器神经网络视觉指南 — （第1部分）位置嵌入](https://www.youtube.com/watch?v=dichIcUZfOw)
+[变换器神经网络视觉指南 — （第一部分）位置嵌入](https://www.youtube.com/watch?v=dichIcUZfOw)
 
 我正在使用上述视频中的一些视觉内容来用我的话解释这一概念。
 
-![](../Images/ea8f94415a5cf0c2c2f9df3d73b615ab.png)
+![](img/ea8f94415a5cf0c2c2f9df3d73b615ab.png)
 
 图。位置编码向量表示（来源：作者）
 
 上图展示了一个位置编码向量及其不同的变量值示例。
 
-![](../Images/ab2f78bca8ce05315cae5718b316e410.png)
+![](img/ab2f78bca8ce05315cae5718b316e410.png)
 
-图。位置编码向量，i和d恒定（来源：作者）
+图。位置编码向量，i 和 d 恒定（来源：作者）
 
-![](../Images/396c07028afbefbe8e9c4d543febaa9e.png)
+![](img/396c07028afbefbe8e9c4d543febaa9e.png)
 
-图。位置编码向量，i和d恒定（来源：作者）
+图。位置编码向量，i 和 d 恒定（来源：作者）
 
-上图展示了如何*在i恒定而只有pos变化的情况下，***PE(pos, 2i)*** 的值会变化*。我们知道***正弦波***是一个周期性函数，倾向于在固定的间隔后重复自己。我们可以看到pos = 0和pos = 6的编码向量是相同的。这并不可取，因为我们希望*对不同的pos值有不同的位置编码向量*。
+上图展示了如何*在 i 恒定而只有 pos 变化的情况下，***PE(pos, 2i)*** 的值会变化*。我们知道***正弦波***是一个周期性函数，倾向于在固定的间隔后重复自己。我们可以看到 pos = 0 和 pos = 6 的编码向量是相同的。这并不可取，因为我们希望*对不同的 pos 值有不同的位置编码向量*。
 
 这可以通过*改变正弦波的频率*来实现。
 
-![](../Images/8510db69b50d4b69bb7d67905eb17508.png)
+![](img/8510db69b50d4b69bb7d67905eb17508.png)
 
-图。位置编码向量，pos和i变化（来源：作者）
+图。位置编码向量，pos 和 i 变化（来源：作者）
 
-随着i的变化，正弦波的频率也会变化，导致不同的波形，因此，每个位置编码向量的值也不同。这正是我们想要实现的。
+随着 i 的变化，正弦波的频率也会变化，导致不同的波形，因此，每个位置编码向量的值也不同。这正是我们想要实现的。
 
 位置编码矩阵（P）被添加到输入矩阵（X）中，并送入编码器。
 
-![](../Images/85aa9a8bf6e14434b531874306780d2e.png)
+![](img/85aa9a8bf6e14434b531874306780d2e.png)
 
 图。将位置编码添加到输入嵌入中（来源：作者）
 
@@ -214,7 +214,7 @@ Z(it) = 0.0 * V(the) + 1.0 * V(dog) + 0.0 * V(ate) + …… + 0.0 * V(hungry)
 
 ## 前馈网络
 
-编码器块中的这一子层是经典的神经网络，包含两个全连接层和ReLU激活。它接受来自多头注意力层的输入，对其进行一些非线性变换，最终生成上下文化的向量。全连接层负责考虑每个注意力头，并从中学习相关信息。由于注意力向量彼此独立，它们可以以并行方式传递给变换器网络。
+编码器块中的这一子层是经典的神经网络，包含两个全连接层和 ReLU 激活。它接受来自多头注意力层的输入，对其进行一些非线性变换，最终生成上下文化的向量。全连接层负责考虑每个注意力头，并从中学习相关信息。由于注意力向量彼此独立，它们可以以并行方式传递给变换器网络。
 
 编码器块的最后一个组件是***加法和规范化组件***。
 
@@ -222,7 +222,7 @@ Z(it) = 0.0 * V(the) + 1.0 * V(dog) + 0.0 * V(ate) + …… + 0.0 * V(hungry)
 
 这是一个*残差层*，后跟*层归一化*。残差层确保在处理过程中不会丢失与子层输入相关的重要信息，而归一化层则促进模型训练的速度，并防止值的大幅变化。
 
-![](../Images/8445cba56bcc14616fbd25b49285cc98.png)
+![](img/8445cba56bcc14616fbd25b49285cc98.png)
 
 图。包含加法和规范化层的编码器组件（来源：作者）
 

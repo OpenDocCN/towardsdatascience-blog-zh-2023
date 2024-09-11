@@ -1,14 +1,14 @@
 # 保护你的容器化模型和工作负载
 
-> 原文：[https://towardsdatascience.com/securing-your-containerised-models-and-workloads-3bff4d90a07b?source=collection_archive---------5-----------------------#2023-10-24](https://towardsdatascience.com/securing-your-containerised-models-and-workloads-3bff4d90a07b?source=collection_archive---------5-----------------------#2023-10-24)
+> 原文：[`towardsdatascience.com/securing-your-containerised-models-and-workloads-3bff4d90a07b?source=collection_archive---------5-----------------------#2023-10-24`](https://towardsdatascience.com/securing-your-containerised-models-and-workloads-3bff4d90a07b?source=collection_archive---------5-----------------------#2023-10-24)
 
 ## 切换到非 root 用户！
 
-[](https://medium.com/@teosiyang?source=post_page-----3bff4d90a07b--------------------------------)[![Jake Teo](../Images/9687f43822fab69befb750a8ec58516d.png)](https://medium.com/@teosiyang?source=post_page-----3bff4d90a07b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bff4d90a07b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3bff4d90a07b--------------------------------) [Jake Teo](https://medium.com/@teosiyang?source=post_page-----3bff4d90a07b--------------------------------)
+[](https://medium.com/@teosiyang?source=post_page-----3bff4d90a07b--------------------------------)![Jake Teo](https://medium.com/@teosiyang?source=post_page-----3bff4d90a07b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bff4d90a07b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bff4d90a07b--------------------------------) [Jake Teo](https://medium.com/@teosiyang?source=post_page-----3bff4d90a07b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52b0d82d5bf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecuring-your-containerised-models-and-workloads-3bff4d90a07b&user=Jake+Teo&userId=52b0d82d5bf5&source=post_page-52b0d82d5bf5----3bff4d90a07b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bff4d90a07b--------------------------------) ·8分钟阅读·2023年10月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bff4d90a07b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecuring-your-containerised-models-and-workloads-3bff4d90a07b&user=Jake+Teo&userId=52b0d82d5bf5&source=-----3bff4d90a07b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52b0d82d5bf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecuring-your-containerised-models-and-workloads-3bff4d90a07b&user=Jake+Teo&userId=52b0d82d5bf5&source=post_page-52b0d82d5bf5----3bff4d90a07b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bff4d90a07b--------------------------------) ·8 分钟阅读·2023 年 10 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bff4d90a07b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecuring-your-containerised-models-and-workloads-3bff4d90a07b&user=Jake+Teo&userId=52b0d82d5bf5&source=-----3bff4d90a07b---------------------clap_footer-----------)
 
 --
 
@@ -37,8 +37,8 @@ Summary
 
 或者说，为什么不使用 root 用户呢？让我们以下面的虚拟架构为例。
 
-![](../Images/f13742acc9199c79964e30e62bc8eac1.png)
+![](img/f13742acc9199c79964e30e62bc8eac1.png)
 
 一个黑客进入一个具有 root 访问权限的容器。图片由作者提供
 
-安全通常被视为多层次的方法。如果攻击者设法进入容器，那么作为用户所拥有的权限将是第一层防御。如果容器用户被赋予了root访问权限，攻击者将可以完全控制容器中的一切。由于这种广泛的访问权限，它还可以利用任何潜在的漏洞并使用…
+安全通常被视为多层次的方法。如果攻击者设法进入容器，那么作为用户所拥有的权限将是第一层防御。如果容器用户被赋予了 root 访问权限，攻击者将可以完全控制容器中的一切。由于这种广泛的访问权限，它还可以利用任何潜在的漏洞并使用…

@@ -1,22 +1,22 @@
-# AI对裁员的真实影响是什么？深入分析
+# AI 对裁员的真实影响是什么？深入分析
 
-> 原文：[https://towardsdatascience.com/what-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9?source=collection_archive---------3-----------------------#2023-11-06](https://towardsdatascience.com/what-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9?source=collection_archive---------3-----------------------#2023-11-06)
+> 原文：[`towardsdatascience.com/what-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9?source=collection_archive---------3-----------------------#2023-11-06`](https://towardsdatascience.com/what-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9?source=collection_archive---------3-----------------------#2023-11-06)
 
-[](https://medium.com/@AhmedF?source=post_page-----7197ad1377f9--------------------------------)[![Ahmed Fessi](../Images/bd26738b0d8a0d5b465af62ad849b4bd.png)](https://medium.com/@AhmedF?source=post_page-----7197ad1377f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7197ad1377f9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7197ad1377f9--------------------------------) [Ahmed Fessi](https://medium.com/@AhmedF?source=post_page-----7197ad1377f9--------------------------------)
+[](https://medium.com/@AhmedF?source=post_page-----7197ad1377f9--------------------------------)![Ahmed Fessi](https://medium.com/@AhmedF?source=post_page-----7197ad1377f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7197ad1377f9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7197ad1377f9--------------------------------) [Ahmed Fessi](https://medium.com/@AhmedF?source=post_page-----7197ad1377f9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F37fb6215fe2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9&user=Ahmed+Fessi&userId=37fb6215fe2c&source=post_page-37fb6215fe2c----7197ad1377f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7197ad1377f9--------------------------------) ·8 min read·2023年11月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7197ad1377f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9&user=Ahmed+Fessi&userId=37fb6215fe2c&source=-----7197ad1377f9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F37fb6215fe2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9&user=Ahmed+Fessi&userId=37fb6215fe2c&source=post_page-37fb6215fe2c----7197ad1377f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7197ad1377f9--------------------------------) ·8 min read·2023 年 11 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7197ad1377f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9&user=Ahmed+Fessi&userId=37fb6215fe2c&source=-----7197ad1377f9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7197ad1377f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9&source=-----7197ad1377f9---------------------bookmark_footer-----------)![](../Images/461771988d9ee0ddd38fa5e3d4b48abb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7197ad1377f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-the-real-impact-of-ai-on-job-cuts-7197ad1377f9&source=-----7197ad1377f9---------------------bookmark_footer-----------)![](img/461771988d9ee0ddd38fa5e3d4b48abb.png)
 
-AI替代人类，未来主义，油画风格——由作者使用Dall-E 3生成
+AI 替代人类，未来主义，油画风格——由作者使用 Dall-E 3 生成
 
-自从ChatGPT发布以来，随着生成性AI的普及，许多人开始关注AI对就业市场的影响。
+自从 ChatGPT 发布以来，随着生成性 AI 的普及，许多人开始关注 AI 对就业市场的影响。
 
-多家公司宣布裁员，因为他们的团队采用了AI，从而“需要更少的劳动力”。没有行业似乎幸免，没有职能似乎幸免。
+多家公司宣布裁员，因为他们的团队采用了 AI，从而“需要更少的劳动力”。没有行业似乎幸免，没有职能似乎幸免。
 
 这些公告涵盖了像[英国电信](https://medium.com/@AhmedF/is-ai-already-massively-replacing-humans-british-telecom-ai-and-layoffs-8defaaf1b6b5)这样的 大公司，也涵盖了像这家法国公关公司[用人工智能替换一半员工](https://www.ouest-france.fr/high-tech/intelligence-artificielle/cette-entreprise-francaise-vire-217-salaries-pour-les-remplacer-par-une-intelligence-artificielle-1dea7af2-560d-11ee-ba56-a7ce59b686ce)这样的较小公司。
 

@@ -1,18 +1,18 @@
 # 招聘杰出的数据科学家
 
-> 原文：[https://towardsdatascience.com/hiring-exceptional-data-scientists-c454110742f?source=collection_archive---------8-----------------------#2023-02-28](https://towardsdatascience.com/hiring-exceptional-data-scientists-c454110742f?source=collection_archive---------8-----------------------#2023-02-28)
+> 原文：[`towardsdatascience.com/hiring-exceptional-data-scientists-c454110742f?source=collection_archive---------8-----------------------#2023-02-28`](https://towardsdatascience.com/hiring-exceptional-data-scientists-c454110742f?source=collection_archive---------8-----------------------#2023-02-28)
 
 ## 异常值：超越单纯的技术技能
 
-[](https://medium.com/@jacowp357?source=post_page-----c454110742f--------------------------------)[![Jaco du Toit](../Images/0a2cca87d98a29303c7ee82290d2e712.png)](https://medium.com/@jacowp357?source=post_page-----c454110742f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c454110742f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c454110742f--------------------------------) [Jaco du Toit](https://medium.com/@jacowp357?source=post_page-----c454110742f--------------------------------)
+[](https://medium.com/@jacowp357?source=post_page-----c454110742f--------------------------------)![Jaco du Toit](https://medium.com/@jacowp357?source=post_page-----c454110742f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c454110742f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c454110742f--------------------------------) [Jaco du Toit](https://medium.com/@jacowp357?source=post_page-----c454110742f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F815098f8de27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhiring-exceptional-data-scientists-c454110742f&user=Jaco+du+Toit&userId=815098f8de27&source=post_page-815098f8de27----c454110742f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c454110742f--------------------------------) · 阅读时间 7 分钟 · 2023年2月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc454110742f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhiring-exceptional-data-scientists-c454110742f&user=Jaco+du+Toit&userId=815098f8de27&source=-----c454110742f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F815098f8de27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhiring-exceptional-data-scientists-c454110742f&user=Jaco+du+Toit&userId=815098f8de27&source=post_page-815098f8de27----c454110742f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c454110742f--------------------------------) · 阅读时间 7 分钟 · 2023 年 2 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc454110742f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhiring-exceptional-data-scientists-c454110742f&user=Jaco+du+Toit&userId=815098f8de27&source=-----c454110742f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc454110742f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhiring-exceptional-data-scientists-c454110742f&source=-----c454110742f---------------------bookmark_footer-----------)![](../Images/f9272da1ebbb1378f7b764f474f1c042.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc454110742f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhiring-exceptional-data-scientists-c454110742f&source=-----c454110742f---------------------bookmark_footer-----------)![](img/f9272da1ebbb1378f7b764f474f1c042.png)
 
 布劳贝格斯特兰德（作者提供的图片）
 
@@ -48,7 +48,7 @@
 
 **系统导向推理：** 他们会通过考虑解决方案嵌入的整个端到端系统来处理问题。他们仔细分析系统中各种数据和模型组件之间的相互关系，考虑这些组件如何被消费或互动。他们还会考虑系统中某部分的变化对整个系统的影响，并对导致系统行为的基本结构和反馈回路感兴趣。我还观察到，杰出的数据科学家会与系统的最终用户密切合作，以利用用户体验反馈。
 
-**指标驱动：** 他们非常强调使用数据和定量措施（适当的统计数据）来推动决策和评估绩效。他们专注于跟踪和分析KPI，并利用这些信息做出明智的决策，以改善模型或系统。例如，他们将准确知道在特定模型中使用哪些指标，如何解释它们，以及需要注意哪些认知偏差和统计偏差（如Goodhart定律、Simpson悖论、Berkson悖论等）。
+**指标驱动：** 他们非常强调使用数据和定量措施（适当的统计数据）来推动决策和评估绩效。他们专注于跟踪和分析 KPI，并利用这些信息做出明智的决策，以改善模型或系统。例如，他们将准确知道在特定模型中使用哪些指标，如何解释它们，以及需要注意哪些认知偏差和统计偏差（如 Goodhart 定律、Simpson 悖论、Berkson 悖论等）。
 
 **数据导向：** 他们非常注重数据的收集、分析和解释，以指导决策并获得对各种现象的洞察。个人在处理数据、数据分析和数据可视化方面非常熟练。他们在数据探索过程中注重细节，并会寻找异常发现的解释——绝不会将隐藏的知识掩盖在地毯下。
 

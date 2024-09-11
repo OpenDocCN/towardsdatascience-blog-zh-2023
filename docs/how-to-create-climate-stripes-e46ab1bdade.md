@@ -1,10 +1,10 @@
 # 如何创建气候条纹
 
-> 原文：[https://towardsdatascience.com/how-to-create-climate-stripes-e46ab1bdade?source=collection_archive---------28-----------------------#2023-01-10](https://towardsdatascience.com/how-to-create-climate-stripes-e46ab1bdade?source=collection_archive---------28-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/how-to-create-climate-stripes-e46ab1bdade?source=collection_archive---------28-----------------------#2023-01-10`](https://towardsdatascience.com/how-to-create-climate-stripes-e46ab1bdade?source=collection_archive---------28-----------------------#2023-01-10)
 
 ## 使用 R 的数据可视化教程
 
-[](https://medium.com/@irfanalghani11?source=post_page-----e46ab1bdade--------------------------------)[![Irfan Alghani Khalid](../Images/6a5f58a353463a0c2c8f4192ca9509e6.png)](https://medium.com/@irfanalghani11?source=post_page-----e46ab1bdade--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e46ab1bdade--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e46ab1bdade--------------------------------) [Irfan Alghani Khalid](https://medium.com/@irfanalghani11?source=post_page-----e46ab1bdade--------------------------------)
+[](https://medium.com/@irfanalghani11?source=post_page-----e46ab1bdade--------------------------------)![Irfan Alghani Khalid](https://medium.com/@irfanalghani11?source=post_page-----e46ab1bdade--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e46ab1bdade--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e46ab1bdade--------------------------------) [Irfan Alghani Khalid](https://medium.com/@irfanalghani11?source=post_page-----e46ab1bdade--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe46ab1bdade&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-climate-stripes-e46ab1bdade&source=-----e46ab1bdade---------------------bookmark_footer-----------)![](../Images/03bfc65addd424d90c810393216fe448.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe46ab1bdade&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-climate-stripes-e46ab1bdade&source=-----e46ab1bdade---------------------bookmark_footer-----------)![](img/03bfc65addd424d90c810393216fe448.png)
 
 气候条纹。（图片由作者制作）
 

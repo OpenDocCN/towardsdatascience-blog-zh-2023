@@ -1,20 +1,20 @@
-# 《Python中的接球手… 捕获异常和警告的单一工具》
+# 《Python 中的接球手… 捕获异常和警告的单一工具》
 
-> 原文：[https://towardsdatascience.com/the-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76?source=collection_archive---------19-----------------------#2023-05-23](https://towardsdatascience.com/the-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76?source=collection_archive---------19-----------------------#2023-05-23)
+> 原文：[`towardsdatascience.com/the-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76?source=collection_archive---------19-----------------------#2023-05-23`](https://towardsdatascience.com/the-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76?source=collection_archive---------19-----------------------#2023-05-23)
 
 ## PYTHON 编程
 
 ## 为什么不实现一个工具来捕获 Python 中的异常和警告呢？
 
-[](https://medium.com/@nyggus?source=post_page-----81714117da76--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----81714117da76--------------------------------)[](https://towardsdatascience.com/?source=post_page-----81714117da76--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----81714117da76--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----81714117da76--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----81714117da76--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----81714117da76--------------------------------)[](https://towardsdatascience.com/?source=post_page-----81714117da76--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----81714117da76--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----81714117da76--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----81714117da76---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----81714117da76--------------------------------) · 13 min 阅读 · 2023年5月23日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F81714117da76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----81714117da76---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----81714117da76---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----81714117da76--------------------------------) · 13 min 阅读 · 2023 年 5 月 23 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F81714117da76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----81714117da76---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F81714117da76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76&source=-----81714117da76---------------------bookmark_footer-----------)![](../Images/6f42c45eba05eb69d8a1a9adcc012803.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F81714117da76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-catcher-in-the-python-catch-exceptions-and-warnings-with-one-tool-81714117da76&source=-----81714117da76---------------------bookmark_footer-----------)![](img/6f42c45eba05eb69d8a1a9adcc012803.png)
 
 这篇文章讨论了在 Python 中捕获异常和警告的内容。图片由 [Keith Johnston](https://unsplash.com/de/@acfb5071?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

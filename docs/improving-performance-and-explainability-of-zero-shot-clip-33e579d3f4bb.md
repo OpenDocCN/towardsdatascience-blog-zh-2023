@@ -1,14 +1,14 @@
-# 提高零-shot CLIP的性能和解释性
+# 提高零-shot CLIP 的性能和解释性
 
-> 原文：[https://towardsdatascience.com/improving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb?source=collection_archive---------9-----------------------#2023-11-25](https://towardsdatascience.com/improving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb?source=collection_archive---------9-----------------------#2023-11-25)
+> 原文：[`towardsdatascience.com/improving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb?source=collection_archive---------9-----------------------#2023-11-25`](https://towardsdatascience.com/improving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb?source=collection_archive---------9-----------------------#2023-11-25)
 
-## 第二部分 — 通过LLMs的描述进行视觉分类
+## 第二部分 — 通过 LLMs 的描述进行视觉分类
 
-[](https://medium.com/@alexml0123?source=post_page-----33e579d3f4bb--------------------------------)[![Alexey Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----33e579d3f4bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----33e579d3f4bb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----33e579d3f4bb--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----33e579d3f4bb--------------------------------)
+[](https://medium.com/@alexml0123?source=post_page-----33e579d3f4bb--------------------------------)![Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----33e579d3f4bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----33e579d3f4bb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----33e579d3f4bb--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----33e579d3f4bb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----33e579d3f4bb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----33e579d3f4bb--------------------------------) ·6分钟阅读·2023年11月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F33e579d3f4bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----33e579d3f4bb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----33e579d3f4bb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----33e579d3f4bb--------------------------------) ·6 分钟阅读·2023 年 11 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F33e579d3f4bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-performance-and-explainability-of-zero-shot-clip-33e579d3f4bb&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----33e579d3f4bb---------------------clap_footer-----------)
 
 --
 

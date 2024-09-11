@@ -1,18 +1,18 @@
 # 使用部分和 Pydantic 编写 DRY 数据模型
 
-> 原文：[https://towardsdatascience.com/write-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a?source=collection_archive---------4-----------------------#2023-02-14](https://towardsdatascience.com/write-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a?source=collection_archive---------4-----------------------#2023-02-14)
+> 原文：[`towardsdatascience.com/write-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a?source=collection_archive---------4-----------------------#2023-02-14`](https://towardsdatascience.com/write-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a?source=collection_archive---------4-----------------------#2023-02-14)
 
 ## 构建干净的嵌套数据模型，用于数据工程管道
 
-[](https://medium.com/@Carobert?source=post_page-----b0b13d0eeb3a--------------------------------)[![查尔斯·门德尔森](../Images/0a8dea9bab2a49da65687095d31065e9.png)](https://medium.com/@Carobert?source=post_page-----b0b13d0eeb3a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0b13d0eeb3a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b0b13d0eeb3a--------------------------------) [查尔斯·门德尔森](https://medium.com/@Carobert?source=post_page-----b0b13d0eeb3a--------------------------------)
+[](https://medium.com/@Carobert?source=post_page-----b0b13d0eeb3a--------------------------------)![查尔斯·门德尔森](https://medium.com/@Carobert?source=post_page-----b0b13d0eeb3a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0b13d0eeb3a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0b13d0eeb3a--------------------------------) [查尔斯·门德尔森](https://medium.com/@Carobert?source=post_page-----b0b13d0eeb3a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f4d278f87e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwrite-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a&user=Charles+Mendelson&userId=a6f4d278f87e&source=post_page-a6f4d278f87e----b0b13d0eeb3a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0b13d0eeb3a--------------------------------) ·7 min 阅读·2023年2月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0b13d0eeb3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwrite-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a&user=Charles+Mendelson&userId=a6f4d278f87e&source=-----b0b13d0eeb3a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f4d278f87e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwrite-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a&user=Charles+Mendelson&userId=a6f4d278f87e&source=post_page-a6f4d278f87e----b0b13d0eeb3a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0b13d0eeb3a--------------------------------) ·7 min 阅读·2023 年 2 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0b13d0eeb3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwrite-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a&user=Charles+Mendelson&userId=a6f4d278f87e&source=-----b0b13d0eeb3a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0b13d0eeb3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwrite-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a&source=-----b0b13d0eeb3a---------------------bookmark_footer-----------)![](../Images/a5f33117bda3e5651248696317ad5a7a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0b13d0eeb3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwrite-dry-data-models-with-partials-and-pydantic-b0b13d0eeb3a&source=-----b0b13d0eeb3a---------------------bookmark_footer-----------)![](img/a5f33117bda3e5651248696317ad5a7a.png)
 
 图片由 [Didssph](https://unsplash.com/ko/@didsss?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/PB80D_B4g7c?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -38,7 +38,7 @@ Pydantic 的类型提示比标准库的更强大，更具自定义性。
 
 让我们开始检查我们的数据：
 
-![](../Images/c3bb3d39f2feb2387af43a34175a2db6.png)
+![](img/c3bb3d39f2feb2387af43a34175a2db6.png)
 
 作者提供的图像，由 Carbon 生成
 
@@ -63,7 +63,7 @@ class RpgCharacterModel(pydantic.BaseModel):
 
 我发现一个有用的工具是 [JSONCrack](https://jsoncrack.com/)，它提供了 JSON 数据的精彩可视化：
 
-![](../Images/ec7fd0634f18cdb24d4708c2154d393c.png)
+![](img/ec7fd0634f18cdb24d4708c2154d393c.png)
 
 图像从 JSON Crack 下载，使用 [GNU 通用公共许可证 v3.0](https://github.com/AykutSarac/jsoncrack.com/blob/main/LICENSE)
 
@@ -340,4 +340,4 @@ def validate_data(list_o_dicts, model: pydantic.BaseModel, index_offset: int = 0
     return (good_data, bad_data)
 ```
 
-*最初发布于* [*https://charlesmendelson.com*](https://charlesmendelson.com/tds/pydantic-and-partials/) *2023年2月23日。*
+*最初发布于* [*https://charlesmendelson.com*](https://charlesmendelson.com/tds/pydantic-and-partials/) *2023 年 2 月 23 日。*

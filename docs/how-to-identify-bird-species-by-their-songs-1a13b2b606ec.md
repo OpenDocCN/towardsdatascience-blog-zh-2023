@@ -1,18 +1,18 @@
 # 如何通过鸟类的歌曲识别鸟类种类？
 
-> 原文：[https://towardsdatascience.com/how-to-identify-bird-species-by-their-songs-1a13b2b606ec?source=collection_archive---------7-----------------------#2023-05-22](https://towardsdatascience.com/how-to-identify-bird-species-by-their-songs-1a13b2b606ec?source=collection_archive---------7-----------------------#2023-05-22)
+> 原文：[`towardsdatascience.com/how-to-identify-bird-species-by-their-songs-1a13b2b606ec?source=collection_archive---------7-----------------------#2023-05-22`](https://towardsdatascience.com/how-to-identify-bird-species-by-their-songs-1a13b2b606ec?source=collection_archive---------7-----------------------#2023-05-22)
 
 ## 应用机器学习于声音的起步
 
-[](https://medium.com/@jacky.kaub?source=post_page-----1a13b2b606ec--------------------------------)[![Jacky Kaub](../Images/e66c699ee5a9d5bbd58a1a72d688234a.png)](https://medium.com/@jacky.kaub?source=post_page-----1a13b2b606ec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a13b2b606ec--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1a13b2b606ec--------------------------------) [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----1a13b2b606ec--------------------------------)
+[](https://medium.com/@jacky.kaub?source=post_page-----1a13b2b606ec--------------------------------)![Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----1a13b2b606ec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a13b2b606ec--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a13b2b606ec--------------------------------) [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----1a13b2b606ec--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ccb7065ef90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-bird-species-by-their-songs-1a13b2b606ec&user=Jacky+Kaub&userId=7ccb7065ef90&source=post_page-7ccb7065ef90----1a13b2b606ec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a13b2b606ec--------------------------------) ·10分钟阅读·2023年5月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1a13b2b606ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-bird-species-by-their-songs-1a13b2b606ec&user=Jacky+Kaub&userId=7ccb7065ef90&source=-----1a13b2b606ec---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ccb7065ef90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-bird-species-by-their-songs-1a13b2b606ec&user=Jacky+Kaub&userId=7ccb7065ef90&source=post_page-7ccb7065ef90----1a13b2b606ec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a13b2b606ec--------------------------------) ·10 分钟阅读·2023 年 5 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1a13b2b606ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-bird-species-by-their-songs-1a13b2b606ec&user=Jacky+Kaub&userId=7ccb7065ef90&source=-----1a13b2b606ec---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a13b2b606ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-bird-species-by-their-songs-1a13b2b606ec&source=-----1a13b2b606ec---------------------bookmark_footer-----------)![](../Images/ece658a10d750c0d4ee2d4b907341888.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a13b2b606ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-bird-species-by-their-songs-1a13b2b606ec&source=-----1a13b2b606ec---------------------bookmark_footer-----------)![](img/ece658a10d750c0d4ee2d4b907341888.png)
 
 图片由 [Jan Meeus](https://unsplash.com/@janmeeus?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 ## 关于本文中使用的数据
 
-为了说明声音分类，我们将使用从[https://xeno-canto.org/](https://xeno-canto.org/)录制的鸟鸣声音。Xeno-canto是一个由社区驱动的全球鸟鸣声音集合，包含了大量的鸟类录音。
+为了说明声音分类，我们将使用从[`xeno-canto.org/`](https://xeno-canto.org/)录制的鸟鸣声音。Xeno-canto 是一个由社区驱动的全球鸟鸣声音集合，包含了大量的鸟类录音。
 
 在使用这些数据之前，你需要知道每个录音可能有不同的许可证，而在这篇文章中，我选择了**CC BY 4.0**许可证下的记录。
 

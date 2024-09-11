@@ -1,18 +1,18 @@
-# 构建更好的 ML 系统——第4章：模型部署及其发展
+# 构建更好的 ML 系统——第四章：模型部署及其发展
 
-> 原文：[https://towardsdatascience.com/building-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec?source=collection_archive---------2-----------------------#2023-09-28](https://towardsdatascience.com/building-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec?source=collection_archive---------2-----------------------#2023-09-28)
+> 原文：[`towardsdatascience.com/building-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec?source=collection_archive---------2-----------------------#2023-09-28`](https://towardsdatascience.com/building-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec?source=collection_archive---------2-----------------------#2023-09-28)
 
 ## *关于部署、监控、数据分布漂移、模型更新和生产环境中的测试。*
 
-[](https://olga-chernytska.medium.com/?source=post_page-----eae3a75496ec--------------------------------)[![Olga Chernytska](../Images/3a1a1b5f3c92d3b86283911cd90a9259.png)](https://olga-chernytska.medium.com/?source=post_page-----eae3a75496ec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eae3a75496ec--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eae3a75496ec--------------------------------) [Olga Chernytska](https://olga-chernytska.medium.com/?source=post_page-----eae3a75496ec--------------------------------)
+[](https://olga-chernytska.medium.com/?source=post_page-----eae3a75496ec--------------------------------)![Olga Chernytska](https://olga-chernytska.medium.com/?source=post_page-----eae3a75496ec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eae3a75496ec--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----eae3a75496ec--------------------------------) [Olga Chernytska](https://olga-chernytska.medium.com/?source=post_page-----eae3a75496ec--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcc932e019245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec&user=Olga+Chernytska&userId=cc932e019245&source=post_page-cc932e019245----eae3a75496ec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eae3a75496ec--------------------------------) ·13分钟阅读·2023年9月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feae3a75496ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec&user=Olga+Chernytska&userId=cc932e019245&source=-----eae3a75496ec---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcc932e019245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec&user=Olga+Chernytska&userId=cc932e019245&source=post_page-cc932e019245----eae3a75496ec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eae3a75496ec--------------------------------) ·13 分钟阅读·2023 年 9 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feae3a75496ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec&user=Olga+Chernytska&userId=cc932e019245&source=-----eae3a75496ec---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feae3a75496ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec&source=-----eae3a75496ec---------------------bookmark_footer-----------)![](../Images/2c0498ae65314b5963a18c5c21e81094.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feae3a75496ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-4-model-deployment-and-beyond-eae3a75496ec&source=-----eae3a75496ec---------------------bookmark_footer-----------)![](img/2c0498ae65314b5963a18c5c21e81094.png)
 
 [图片来源](https://unsplash.com/photos/iM8dxccK1sY)
 
@@ -20,7 +20,7 @@
 
 当一个 ML 项目接近生产阶段时，越来越多的人参与其中：后端工程师、前端工程师、数据工程师、DevOps、基础设施工程师……
 
-他们选择数据存储，介绍工作流和管道，将服务集成到后端和UI代码库中，自动化发布，进行备份和回滚，决定计算实例，设置监控和警报……如今，几乎没有人期望数据科学家/机器学习工程师能做到这一切。即使在一个小型初创公司中，人们也在某种程度上有所专门化。
+他们选择数据存储，介绍工作流和管道，将服务集成到后端和 UI 代码库中，自动化发布，进行备份和回滚，决定计算实例，设置监控和警报……如今，几乎没有人期望数据科学家/机器学习工程师能做到这一切。即使在一个小型初创公司中，人们也在某种程度上有所专门化。
 
 “数据科学家/机器学习工程师为什么需要了解生产环境？”——你可能会问。
 
@@ -30,7 +30,7 @@
 
 在这篇文章中，我有意只专注于机器学习话题，并省略了许多工程概念或以高层次的方式进行介绍——以便使不同经验水平的人都能简单易懂。
 
-这是“构建更好的机器学习系统”系列的最终篇。本系列旨在帮助你掌握设计和构建机器学习系统的艺术、科学和（有时的）魔法。在之前的章节中，我们已经讨论了项目规划和商业价值（[第1章](/building-better-ml-systems-chapter-1-every-project-must-start-with-a-plan-907a36774a32)）；数据收集、标注和验证（[第2章](/building-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39)）；模型开发、实验跟踪和离线评估……（[第3章](/building-better-ml-systems-chapter-3-modeling-let-the-fun-begin-73059c75e1d5)）。如果你错过了之前的帖子，我建议你在阅读这篇之前或之后看看它们。
+这是“构建更好的机器学习系统”系列的最终篇。本系列旨在帮助你掌握设计和构建机器学习系统的艺术、科学和（有时的）魔法。在之前的章节中，我们已经讨论了项目规划和商业价值（第一章）；数据收集、标注和验证（第二章）；模型开发、实验跟踪和离线评估……（第三章）。如果你错过了之前的帖子，我建议你在阅读这篇之前或之后看看它们。
 
 # 部署
 
@@ -48,7 +48,7 @@
 
 批处理推断则更便宜且更容易实现。之前收集的输入会一次性处理。批处理推断用于评估（在静态测试数据集上运行时）、临时活动（如选择客户进行电子邮件营销活动）或在不需要立即预测的情况下。批处理推断也可以是实时推断的成本或速度优化：你提前计算预测并在请求时返回它们。
 
-![](../Images/4f2977a15581931d62f6efc8f443ad4c.png)
+![](img/4f2977a15581931d62f6efc8f443ad4c.png)
 
 *实时推断与批处理推断。图片来源于作者*
 
@@ -66,7 +66,7 @@
 
 在云计算中，数据通常通过互联网传输并在集中式服务器上处理。另一方面，在边缘计算中，数据在生成数据的设备上处理，每个设备以去中心化的方式处理其自身的数据。边缘设备的例子包括手机、笔记本电脑和汽车。
 
-![](../Images/d52a5b600cdb8433692bed73fc71eea2.png)
+![](img/d52a5b600cdb8433692bed73fc71eea2.png)
 
 *云计算与边缘计算。图片来源于作者*
 
@@ -112,15 +112,15 @@
 
 从技术上讲，监控意味着收集日志，从中计算指标，将这些指标显示在类似于 [Grafana](https://grafana.com/) 的仪表板上，并设置警报以在指标超出预期范围时提醒。
 
-**应该监控哪些指标？** 由于ML系统是软件系统的一个子类，因此可以从操作指标开始。示例包括机器的CPU/GPU利用率、内存和磁盘空间；发送到应用程序的请求数量和响应延迟、错误率；网络连接性。要深入了解操作指标的监控，请查看Justin Ellingwood的文章[指标、监控与警报介绍](https://www.digitalocean.com/community/tutorials/an-introduction-to-metrics-monitoring-and-alerting#what-type-of-information-is-important-to-track)。
+**应该监控哪些指标？** 由于 ML 系统是软件系统的一个子类，因此可以从操作指标开始。示例包括机器的 CPU/GPU 利用率、内存和磁盘空间；发送到应用程序的请求数量和响应延迟、错误率；网络连接性。要深入了解操作指标的监控，请查看 Justin Ellingwood 的文章[指标、监控与警报介绍](https://www.digitalocean.com/community/tutorials/an-introduction-to-metrics-monitoring-and-alerting#what-type-of-information-is-important-to-track)。
 
-操作指标关注机器、网络和应用程序的健康状态，而与ML相关的指标检查模型准确性和输入一致性。
+操作指标关注机器、网络和应用程序的健康状态，而与 ML 相关的指标检查模型准确性和输入一致性。
 
 **准确性是我们最关心的事情**。这意味着模型可能仍然会返回预测，但这些预测可能完全不准确，你直到模型被评估时才会意识到。如果你有幸在一个自然标签快速可用的领域工作（如推荐系统），只需收集这些标签，并持续评估模型。然而，在许多领域，标签可能需要很长时间才能到达，或者根本不会出现。在这种情况下，监控一些可能间接指示准确性下降的指标是有益的。
 
 **为什么模型准确率会下降？最普遍的原因是生产数据已从训练/测试数据中漂移**。在计算机视觉领域，你可以直观地看到数据已经漂移：图像变得更暗或更亮，或分辨率发生变化，或现在室内图像比室外图像更多。
 
-要自动检测数据漂移（也称为“数据分布变化”），需要持续监控模型的输入和输出。模型的输入应该与训练期间使用的一致；对于表格数据，这意味着列名以及特征的均值和方差必须相同。监控模型预测的分布也是有价值的。例如，在分类任务中，你可以跟踪每个类别预测的比例。如果发生了显著变化——比如一个模型以前将5%的实例分类为A类，现在将20%分类为A类——这就是一个明确的信号，表明确实发生了某些事情。要了解更多关于数据漂移的内容，请查看Chip Huyen的这篇精彩文章：[数据分布变化与监控](https://huyenchip.com/2022/02/07/data-distribution-shifts-and-monitoring.html)。
+要自动检测数据漂移（也称为“数据分布变化”），需要持续监控模型的输入和输出。模型的输入应该与训练期间使用的一致；对于表格数据，这意味着列名以及特征的均值和方差必须相同。监控模型预测的分布也是有价值的。例如，在分类任务中，你可以跟踪每个类别预测的比例。如果发生了显著变化——比如一个模型以前将 5%的实例分类为 A 类，现在将 20%分类为 A 类——这就是一个明确的信号，表明确实发生了某些事情。要了解更多关于数据漂移的内容，请查看 Chip Huyen 的这篇精彩文章：[数据分布变化与监控](https://huyenchip.com/2022/02/07/data-distribution-shifts-and-monitoring.html)。
 
 关于监控还有很多要说的内容，但我们必须继续前进。如果你觉得需要更多信息，可以查看这些文章：
 
@@ -148,17 +148,17 @@
 
 # 测试生产环境
 
-在将模型部署到生产环境之前，必须对其进行彻底评估。我们已经在[上一篇文章](/building-better-ml-systems-chapter-3-modeling-let-the-fun-begin-73059c75e1d5)中讨论了生产前（离线）评估（请参见“模型评估”部分）。然而，直到你将模型部署到生产环境，你永远不知道它在生产环境中的表现如何。这促生了生产环境中的测试，也称为在线评估。
+在将模型部署到生产环境之前，必须对其进行彻底评估。我们已经在上一篇文章中讨论了生产前（离线）评估（请参见“模型评估”部分）。然而，直到你将模型部署到生产环境，你永远不知道它在生产环境中的表现如何。这促生了生产环境中的测试，也称为在线评估。
 
 在生产环境中测试并不意味着草率地将你可靠的旧模型替换为新训练的模型，然后焦急地等待第一次预测，随时准备在出现轻微问题时回滚。绝不要这样做。有更聪明、更安全的策略来在生产环境中测试你的模型，而不会冒着失去资金或客户的风险。
 
 **A/B 测试**是业界最流行的方法。通过这种方法，流量在现有模型和新模型之间以某种比例随机划分。现有模型和新模型对真实用户进行预测，预测结果被保存并随后仔细检查。比较的不仅仅是模型准确性，还可以比较一些与业务相关的指标，如转化率或收入，这些有时可能与准确性负相关。
 
-A/B 测试高度依赖于统计假设检验。如果你想了解更多，可以查看这篇文章：[A/B 测试：统计检验的完整指南](/a-b-testing-a-complete-guide-to-statistical-testing-e3f1db140499) 作者：弗朗切斯科·卡萨列尼奥。有关 A/B 测试的工程实现，请查看[在线 AB 测试模式](https://github.com/mercari/ml-system-design-pattern/blob/master/QA-patterns/Online-ab-test-pattern/design_en.md)。
+A/B 测试高度依赖于统计假设检验。如果你想了解更多，可以查看这篇文章：A/B 测试：统计检验的完整指南 作者：弗朗切斯科·卡萨列尼奥。有关 A/B 测试的工程实现，请查看[在线 AB 测试模式](https://github.com/mercari/ml-system-design-pattern/blob/master/QA-patterns/Online-ab-test-pattern/design_en.md)。
 
 **Shadow 部署**是测试模型的最安全方式。其理念是将所有流量发送到现有模型，并以通常的方式将其预测返回给最终用户，同时也将所有流量发送到新的（Shadow）模型。Shadow 模型的预测不会被使用，仅仅是存储以备未来分析。
 
-![](../Images/aace33b0946dae80228ced8998c4910e.png)
+![](img/aace33b0946dae80228ced8998c4910e.png)
 
 *A/B 测试与 Shadow 部署。图片由作者提供*
 

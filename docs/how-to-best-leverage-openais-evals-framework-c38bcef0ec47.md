@@ -1,18 +1,18 @@
-# 如何最佳利用OpenAI的Evals框架
+# 如何最佳利用 OpenAI 的 Evals 框架
 
-> 原文：[https://towardsdatascience.com/how-to-best-leverage-openais-evals-framework-c38bcef0ec47?source=collection_archive---------2-----------------------#2023-05-23](https://towardsdatascience.com/how-to-best-leverage-openais-evals-framework-c38bcef0ec47?source=collection_archive---------2-----------------------#2023-05-23)
+> 原文：[`towardsdatascience.com/how-to-best-leverage-openais-evals-framework-c38bcef0ec47?source=collection_archive---------2-----------------------#2023-05-23`](https://towardsdatascience.com/how-to-best-leverage-openais-evals-framework-c38bcef0ec47?source=collection_archive---------2-----------------------#2023-05-23)
 
-![](../Images/91f397160d3039365854c9a5bc606c06.png)
+![](img/91f397160d3039365854c9a5bc606c06.png)
 
 图片由作者授权用于商业用途
 
-## 使用OpenAI Evals评估LLM的关键
+## 使用 OpenAI Evals 评估 LLM 的关键
 
-[](https://aparnadhinak.medium.com/?source=post_page-----c38bcef0ec47--------------------------------)[![Aparna Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----c38bcef0ec47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c38bcef0ec47--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c38bcef0ec47--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----c38bcef0ec47--------------------------------)
+[](https://aparnadhinak.medium.com/?source=post_page-----c38bcef0ec47--------------------------------)![Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----c38bcef0ec47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c38bcef0ec47--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c38bcef0ec47--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----c38bcef0ec47--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-best-leverage-openais-evals-framework-c38bcef0ec47&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----c38bcef0ec47---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----c38bcef0ec47--------------------------------) ·6 分钟阅读·2023年5月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc38bcef0ec47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-best-leverage-openais-evals-framework-c38bcef0ec47&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----c38bcef0ec47---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-best-leverage-openais-evals-framework-c38bcef0ec47&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----c38bcef0ec47---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----c38bcef0ec47--------------------------------) ·6 分钟阅读·2023 年 5 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc38bcef0ec47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-best-leverage-openais-evals-framework-c38bcef0ec47&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----c38bcef0ec47---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 *本博客由* [*Trevor LaViale*](https://www.linkedin.com/in/trevor-laviale/) *共同撰写*
 
-根据近期的一项[调查](https://arize.com/blog/survey-massive-retooling-around-large-language-models-underway/)，近一半（43%）的数据科学和工程团队计划在未来一年内部署大型语言模型（LLMs）。LLMs的时代确实已经来临；然而，评估这些模型往往具有挑战性，研究人员需要开发可靠的方法来比较不同模型的性能。
+根据近期的一项[调查](https://arize.com/blog/survey-massive-retooling-around-large-language-models-underway/)，近一半（43%）的数据科学和工程团队计划在未来一年内部署大型语言模型（LLMs）。LLMs 的时代确实已经来临；然而，评估这些模型往往具有挑战性，研究人员需要开发可靠的方法来比较不同模型的性能。
 
 几个月前，OpenAI 开源了他们的框架，用于根据一系列基准评估 LLM。这一框架在 OpenAI 内部使用，以确保他们的新版本模型表现适当。OpenAI 的 Eval 框架是一个工具，旨在帮助研究人员和从业者评估他们的 LLM，并将其与其他先进的模型进行比较。
 
@@ -68,19 +68,19 @@
 
 ## 构建样本
 
-在这里，我们将介绍如何使用[现有模板](https://github.com/openai/evals/blob/main/docs/eval-templates.md)来加快工作速度来构建自定义评估。（如果你想构建一个完全自定义的评估，[这里有一个README](https://github.com/openai/evals/blob/main/docs/custom-eval.md)来自Eval GitHub存储库。）
+在这里，我们将介绍如何使用[现有模板](https://github.com/openai/evals/blob/main/docs/eval-templates.md)来加快工作速度来构建自定义评估。（如果你想构建一个完全自定义的评估，[这里有一个 README](https://github.com/openai/evals/blob/main/docs/custom-eval.md)来自 Eval GitHub 存储库。）
 
 构建评估的第一步是构造样本。样本需要根据你选择的模板包含某些字段。每个样本需要包含一个“input”字段，代表提示，建议以[聊天格式](https://platform.openai.com/docs/guides/chat/introduction)指定。其他字段取决于你选择的评估模板。例如，假设我们使用*Match*模板。在这种情况下，我需要在聊天格式中指定“input”字段和“ideal”字段。它可能如下所示：
 
-这告诉系统尽可能简洁地完成短语，我们提供的短语是“ABC AI是一家专注于ML的公司”，预期的答案是“可观测性”。
+这告诉系统尽可能简洁地完成短语，我们提供的短语是“ABC AI 是一家专注于 ML 的公司”，预期的答案是“可观测性”。
 
-如果你的样本在不同于JSONL的文件格式中，OpenAI提供了一个CLI来将这些样本转换为JSONL文件。你可以使用以下代码由[评估存储库](https://github.com/openai/evals/blob/main/docs/build-eval.md#formatting-your-data)提供来完成这个任务：
+如果你的样本在不同于 JSONL 的文件格式中，OpenAI 提供了一个 CLI 来将这些样本转换为 JSONL 文件。你可以使用以下代码由[评估存储库](https://github.com/openai/evals/blob/main/docs/build-eval.md#formatting-your-data)提供来完成这个任务：
 
-很好，我们的样本在一个JSONL文件中！下一步是注册我们的评估。
+很好，我们的样本在一个 JSONL 文件中！下一步是注册我们的评估。
 
 ## 注册你的评估
 
-要注册评估，我们需要将一个文件添加到*evals/registry/evals/<eval_name>.yaml*。该文件的格式与上面的示例*test-match*评估格式相同。它需要包含评估名称、ID、可选描述、指标、类别和指定样本文件位置的参数。一旦我们注册了评估，就可以像运行test-match评估一样运行它。这就是设置你自己的评估所需的全部内容！
+要注册评估，我们需要将一个文件添加到*evals/registry/evals/<eval_name>.yaml*。该文件的格式与上面的示例*test-match*评估格式相同。它需要包含评估名称、ID、可选描述、指标、类别和指定样本文件位置的参数。一旦我们注册了评估，就可以像运行 test-match 评估一样运行它。这就是设置你自己的评估所需的全部内容！
 
 # 构建完成函数
 

@@ -1,18 +1,18 @@
-# Julia中的数据过滤：你需要知道的一切
+# Julia 中的数据过滤：你需要知道的一切
 
-> 原文：[https://towardsdatascience.com/data-filtering-in-julia-everything-you-need-to-know-d0bf08a00328?source=collection_archive---------10-----------------------#2023-07-11](https://towardsdatascience.com/data-filtering-in-julia-everything-you-need-to-know-d0bf08a00328?source=collection_archive---------10-----------------------#2023-07-11)
+> 原文：[`towardsdatascience.com/data-filtering-in-julia-everything-you-need-to-know-d0bf08a00328?source=collection_archive---------10-----------------------#2023-07-11`](https://towardsdatascience.com/data-filtering-in-julia-everything-you-need-to-know-d0bf08a00328?source=collection_archive---------10-----------------------#2023-07-11)
 
-## 关于Julia中的数据过滤，你需要知道的一切
+## 关于 Julia 中的数据过滤，你需要知道的一切
 
-[](https://emmaccode.medium.com/?source=post_page-----d0bf08a00328--------------------------------)[![艾玛·布德罗](../Images/f7201d012b733643d6e97957f73fd1fa.png)](https://emmaccode.medium.com/?source=post_page-----d0bf08a00328--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0bf08a00328--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d0bf08a00328--------------------------------) [艾玛·布德罗](https://emmaccode.medium.com/?source=post_page-----d0bf08a00328--------------------------------)
+[](https://emmaccode.medium.com/?source=post_page-----d0bf08a00328--------------------------------)![艾玛·布德罗](https://emmaccode.medium.com/?source=post_page-----d0bf08a00328--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0bf08a00328--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0bf08a00328--------------------------------) [艾玛·布德罗](https://emmaccode.medium.com/?source=post_page-----d0bf08a00328--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-filtering-in-julia-everything-you-need-to-know-d0bf08a00328&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----d0bf08a00328---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0bf08a00328--------------------------------) ·7 min read·2023年7月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0bf08a00328&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-filtering-in-julia-everything-you-need-to-know-d0bf08a00328&user=Emma+Boudreau&userId=ea170050148c&source=-----d0bf08a00328---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-filtering-in-julia-everything-you-need-to-know-d0bf08a00328&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----d0bf08a00328---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0bf08a00328--------------------------------) ·7 min read·2023 年 7 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0bf08a00328&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-filtering-in-julia-everything-you-need-to-know-d0bf08a00328&user=Emma+Boudreau&userId=ea170050148c&source=-----d0bf08a00328---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd0bf08a00328&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-filtering-in-julia-everything-you-need-to-know-d0bf08a00328&source=-----d0bf08a00328---------------------bookmark_footer-----------)![](../Images/0d8be971b1ee16caf88f89d7affa2ca9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd0bf08a00328&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-filtering-in-julia-everything-you-need-to-know-d0bf08a00328&source=-----d0bf08a00328---------------------bookmark_footer-----------)![](img/0d8be971b1ee16caf88f89d7affa2ca9.png)
 
 图片由 [Najib Kalil](https://unsplash.com/@nkalil?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

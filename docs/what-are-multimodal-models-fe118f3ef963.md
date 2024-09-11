@@ -1,18 +1,18 @@
 # 多模态模型是什么？
 
-> 原文：[https://towardsdatascience.com/what-are-multimodal-models-fe118f3ef963?source=collection_archive---------2-----------------------#2023-10-16](https://towardsdatascience.com/what-are-multimodal-models-fe118f3ef963?source=collection_archive---------2-----------------------#2023-10-16)
+> 原文：[`towardsdatascience.com/what-are-multimodal-models-fe118f3ef963?source=collection_archive---------2-----------------------#2023-10-16`](https://towardsdatascience.com/what-are-multimodal-models-fe118f3ef963?source=collection_archive---------2-----------------------#2023-10-16)
 
 ## 赋予大型语言模型（LLMs）视觉能力！
 
-[](https://medium.com/@omermx?source=post_page-----fe118f3ef963--------------------------------)[![Omer Mahmood](../Images/0c87da4134bea397c77bc4ba6640e34b.png)](https://medium.com/@omermx?source=post_page-----fe118f3ef963--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe118f3ef963--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe118f3ef963--------------------------------) [Omer Mahmood](https://medium.com/@omermx?source=post_page-----fe118f3ef963--------------------------------)
+[](https://medium.com/@omermx?source=post_page-----fe118f3ef963--------------------------------)![Omer Mahmood](https://medium.com/@omermx?source=post_page-----fe118f3ef963--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe118f3ef963--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe118f3ef963--------------------------------) [Omer Mahmood](https://medium.com/@omermx?source=post_page-----fe118f3ef963--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F62cd989987f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-multimodal-models-fe118f3ef963&user=Omer+Mahmood&userId=62cd989987f6&source=post_page-62cd989987f6----fe118f3ef963---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe118f3ef963--------------------------------) ·6分钟阅读·2023年10月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffe118f3ef963&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-multimodal-models-fe118f3ef963&user=Omer+Mahmood&userId=62cd989987f6&source=-----fe118f3ef963---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F62cd989987f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-multimodal-models-fe118f3ef963&user=Omer+Mahmood&userId=62cd989987f6&source=post_page-62cd989987f6----fe118f3ef963---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe118f3ef963--------------------------------) ·6 分钟阅读·2023 年 10 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffe118f3ef963&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-multimodal-models-fe118f3ef963&user=Omer+Mahmood&userId=62cd989987f6&source=-----fe118f3ef963---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffe118f3ef963&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-multimodal-models-fe118f3ef963&source=-----fe118f3ef963---------------------bookmark_footer-----------)![](../Images/4b7fb0fc89f35adbb6b9d33055d2f0d0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffe118f3ef963&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-multimodal-models-fe118f3ef963&source=-----fe118f3ef963---------------------bookmark_footer-----------)![](img/4b7fb0fc89f35adbb6b9d33055d2f0d0.png)
 
 [Mecari 文本与图像嵌入演示](https://atlas.nomic.ai/map/vertex-mercari)的截图，运行在 Nomic 的 Atlas 上。
 

@@ -1,18 +1,18 @@
 # 这不仅仅关乎得分
 
-> 原文：[https://towardsdatascience.com/its-not-all-about-scores-1a5d97ea981d?source=collection_archive---------22-----------------------#2023-03-27](https://towardsdatascience.com/its-not-all-about-scores-1a5d97ea981d?source=collection_archive---------22-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/its-not-all-about-scores-1a5d97ea981d?source=collection_archive---------22-----------------------#2023-03-27`](https://towardsdatascience.com/its-not-all-about-scores-1a5d97ea981d?source=collection_archive---------22-----------------------#2023-03-27)
 
 ## 在模型选择过程中，你应考虑的其他标准
 
-[](https://medium.com/@doriandrost?source=post_page-----1a5d97ea981d--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----1a5d97ea981d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a5d97ea981d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1a5d97ea981d--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----1a5d97ea981d--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----1a5d97ea981d--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----1a5d97ea981d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a5d97ea981d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a5d97ea981d--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----1a5d97ea981d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-not-all-about-scores-1a5d97ea981d&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----1a5d97ea981d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a5d97ea981d--------------------------------) ·8分钟阅读·2023年3月27日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-not-all-about-scores-1a5d97ea981d&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----1a5d97ea981d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a5d97ea981d--------------------------------) ·8 分钟阅读·2023 年 3 月 27 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a5d97ea981d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-not-all-about-scores-1a5d97ea981d&source=-----1a5d97ea981d---------------------bookmark_footer-----------)![](../Images/c31db6f4c5aafd7f57312b3f605a67bb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a5d97ea981d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-not-all-about-scores-1a5d97ea981d&source=-----1a5d97ea981d---------------------bookmark_footer-----------)![](img/c31db6f4c5aafd7f57312b3f605a67bb.png)
 
 模型选择和甜甜圈选择之间的区别：在模型选择中，你只能选择一个。照片由[ELISA KERSCHBAUMER](https://unsplash.com/@__elisa__?utm_source=medium&utm_medium=referral)提供，拍摄于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -24,7 +24,7 @@
 
 # 1) 推理速度
 
-![](../Images/056eab5ae327a83dc92ed8358ca22906.png)
+![](img/056eab5ae327a83dc92ed8358ca22906.png)
 
 图片由 [George Brynzan](https://unsplash.com/@nitros?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -36,7 +36,7 @@
 
 # 2) 重新训练
 
-![](../Images/3c888984071d58b841524535be346e62.png)
+![](img/3c888984071d58b841524535be346e62.png)
 
 图片由 [Danil Shostak](https://unsplash.com/@max010?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,27 +48,27 @@
 
 # 3) 可部署性
 
-![](../Images/e2817d99414e7f5d5e19fdd536d02b59.png)
+![](img/e2817d99414e7f5d5e19fdd536d02b59.png)
 
 照片由 [Ian Taylor](https://unsplash.com/@carrier_lost?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 如果一个模型不能被任何人使用，那么再好的模型也没有意义。有多种方式可以将模型交付给最终用户，从在云服务器上托管服务到在用户设备上安装程序。选择哪种方式取决于你的使用场景，因此你决定的模型需要适应所需的部署方式。
 
-更大的模型需要更长时间来加载，并且需要更多的资源。一个需要解压神经网络及相关包的Docker容器，可能轻松达到几个GB的大小。在云提供商上，多出几个GB需要花费一些钱，你可以决定是否值得，但如果用户需要下载模型，问题可能会变得更大。在现代笔记本电脑上，安装几个GB可能不是问题，但如果你的主要目标群体生活在发展中国家，并使用几年前的手机，内存和计算能力可能会成为问题。
+更大的模型需要更长时间来加载，并且需要更多的资源。一个需要解压神经网络及相关包的 Docker 容器，可能轻松达到几个 GB 的大小。在云提供商上，多出几个 GB 需要花费一些钱，你可以决定是否值得，但如果用户需要下载模型，问题可能会变得更大。在现代笔记本电脑上，安装几个 GB 可能不是问题，但如果你的主要目标群体生活在发展中国家，并使用几年前的手机，内存和计算能力可能会成为问题。
 
-如果你训练一个AI来检测主要用于非洲或南美洲的作物中的害虫或疾病，你应该预期你的用户没有稳定的互联网连接。因此，应用程序应该能够离线运行，这意味着用户需要下载模型，并在可能已经有几年历史且资源有限的智能手机上计算预测。在这种情况下，即使深度神经网络有更好的评分，更小、更简单的模型可能是更好的选择。
+如果你训练一个 AI 来检测主要用于非洲或南美洲的作物中的害虫或疾病，你应该预期你的用户没有稳定的互联网连接。因此，应用程序应该能够离线运行，这意味着用户需要下载模型，并在可能已经有几年历史且资源有限的智能手机上计算预测。在这种情况下，即使深度神经网络有更好的评分，更小、更简单的模型可能是更好的选择。
 
 如上所述，甚至有需要托管多个模型的情况（例如，每个客户一个）。在这种情况下，模型的大小变得尤为关键。部署一个神经网络可能是可行的，但你是否能托管一百个不同的模型？如果不能，小型模型可能是更好的选择。
 
 # 4) 可解释性
 
-![](../Images/4d5c958de3c557e4dced1ea93cc03392.png)
+![](img/4d5c958de3c557e4dced1ea93cc03392.png)
 
 照片由[Crissy Jarvis](https://unsplash.com/@crissyjarvis?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-出于充分的理由，可解释的人工智能在当前研究中变得越来越重要。大多数时候，我们只是接受机器学习方法通常是黑箱的这一现实，即模型给出预测而无法解释模型为何以某种方式行为。然而，许多使用案例中，这种可解释性有助于获得用户的信任或提升他们的体验。对于医生来说，如果人工智能做出一个令人惊讶的诊断而没有解释，那么很难决定如何继续。而金融投资者可能不会遵循模型的预测，如果他们无法理解其中的逻辑。健康或金融相关任务中的关键或敏感决策，可能需要比其他较不关键任务更多的解释。如果AI无法找到你手机上的图像，你可能不会在意原因。在这种情况下，更好的模型性能将大大提升你的体验。
+出于充分的理由，可解释的人工智能在当前研究中变得越来越重要。大多数时候，我们只是接受机器学习方法通常是黑箱的这一现实，即模型给出预测而无法解释模型为何以某种方式行为。然而，许多使用案例中，这种可解释性有助于获得用户的信任或提升他们的体验。对于医生来说，如果人工智能做出一个令人惊讶的诊断而没有解释，那么很难决定如何继续。而金融投资者可能不会遵循模型的预测，如果他们无法理解其中的逻辑。健康或金融相关任务中的关键或敏感决策，可能需要比其他较不关键任务更多的解释。如果 AI 无法找到你手机上的图像，你可能不会在意原因。在这种情况下，更好的模型性能将大大提升你的体验。
 
-关于可解释性，简单的模型通常比复杂的模型更容易理解。在线性回归中，权重有明确的含义，而在深度神经网络中，它们则完全形成了一个黑箱。然而，也有越来越多的努力使深度学习模型变得可理解，[ELI5](https://eli5.readthedocs.io/en/latest/)就是其中一个最著名的例子。对用户而言，模型或算法是否看起来更值得信任可能会更常被使用，即使它的分数低于竞争模型。你不会仅仅因为一个AI告诉你这么做而不解释原因就投资钱，对吧？
+关于可解释性，简单的模型通常比复杂的模型更容易理解。在线性回归中，权重有明确的含义，而在深度神经网络中，它们则完全形成了一个黑箱。然而，也有越来越多的努力使深度学习模型变得可理解，[ELI5](https://eli5.readthedocs.io/en/latest/)就是其中一个最著名的例子。对用户而言，模型或算法是否看起来更值得信任可能会更常被使用，即使它的分数低于竞争模型。你不会仅仅因为一个 AI 告诉你这么做而不解释原因就投资钱，对吧？
 
 # 总结
 

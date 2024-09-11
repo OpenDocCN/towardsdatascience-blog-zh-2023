@@ -1,31 +1,31 @@
 # 线性代数的鸟瞰图：基础知识
 
-> 原文：[https://towardsdatascience.com/a-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f?source=collection_archive---------0-----------------------#2023-08-27](https://towardsdatascience.com/a-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f?source=collection_archive---------0-----------------------#2023-08-27)
+> 原文：[`towardsdatascience.com/a-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f?source=collection_archive---------0-----------------------#2023-08-27`](https://towardsdatascience.com/a-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f?source=collection_archive---------0-----------------------#2023-08-27)
 
 ## 我们认为不依赖基底，我们写作时也不依赖基底，但在关键时刻，我们关上办公室的门，疯狂地用矩阵进行计算。
 
-[](https://medium.com/@rohitpandey576?source=post_page-----29ad2122d98f--------------------------------)[![Rohit Pandey](../Images/af817d8f68f2984058f0afb8fd7ecbe9.png)](https://medium.com/@rohitpandey576?source=post_page-----29ad2122d98f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29ad2122d98f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----29ad2122d98f--------------------------------) [Rohit Pandey](https://medium.com/@rohitpandey576?source=post_page-----29ad2122d98f--------------------------------)
+[](https://medium.com/@rohitpandey576?source=post_page-----29ad2122d98f--------------------------------)![Rohit Pandey](https://medium.com/@rohitpandey576?source=post_page-----29ad2122d98f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29ad2122d98f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----29ad2122d98f--------------------------------) [Rohit Pandey](https://medium.com/@rohitpandey576?source=post_page-----29ad2122d98f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa743c5fec8cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f&user=Rohit+Pandey&userId=a743c5fec8cd&source=post_page-a743c5fec8cd----29ad2122d98f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29ad2122d98f--------------------------------) ·12分钟阅读·2023年8月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F29ad2122d98f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f&user=Rohit+Pandey&userId=a743c5fec8cd&source=-----29ad2122d98f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa743c5fec8cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f&user=Rohit+Pandey&userId=a743c5fec8cd&source=post_page-a743c5fec8cd----29ad2122d98f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29ad2122d98f--------------------------------) ·12 分钟阅读·2023 年 8 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F29ad2122d98f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f&user=Rohit+Pandey&userId=a743c5fec8cd&source=-----29ad2122d98f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F29ad2122d98f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f&source=-----29ad2122d98f---------------------bookmark_footer-----------)![](../Images/ad8a15d16434947475c6474d26411a89.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F29ad2122d98f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f&source=-----29ad2122d98f---------------------bookmark_footer-----------)![](img/ad8a15d16434947475c6474d26411a89.png)
 
 领域的鸟瞰图。图像由 midjourney 创建
 
 这是《线性代数的鸟瞰图》这本正在进行中的书的第一章。迄今为止的目录：
 
-1.  第1章: (当前) [基础知识](https://medium.com/towards-data-science/a-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f)
+1.  第一章: (当前) [基础知识](https://medium.com/towards-data-science/a-birds-eye-view-of-linear-algebra-the-basics-29ad2122d98f)
 
-1.  **第2章**: [映射的度量——行列式](https://medium.com/p/1e5fd752a3be)
+1.  **第二章**: [映射的度量——行列式](https://medium.com/p/1e5fd752a3be)
 
-1.  **第3章:** [为什么矩阵乘法是这样的？](https://medium.com/towards-data-science/a-birds-eye-view-of-linear-algebra-why-is-matrix-multiplication-like-that-a4d94067651e)
+1.  **第三章:** [为什么矩阵乘法是这样的？](https://medium.com/towards-data-science/a-birds-eye-view-of-linear-algebra-why-is-matrix-multiplication-like-that-a4d94067651e)
 
-1.  第4章: [方程组、线性回归和神经网络](https://medium.com/p/fe5b88a57f66)
+1.  第四章: [方程组、线性回归和神经网络](https://medium.com/p/fe5b88a57f66)
 
-1.  第5章: [秩-零化和为什么行秩 == 列秩](/a-birds-eye-view-of-linear-algebra-rank-nullity-and-why-row-rank-equals-column-rank-bc084e0e1075)
+1.  第五章: 秩-零化和为什么行秩 == 列秩
 
 线性代数是支撑数学任何应用的基础学科。从物理学到机器学习、概率论（例如：马尔科夫链），应有尽有。无论你在做什么，线性代数总是潜伏在背后，一旦问题变得多维，它随时准备出现。根据我的经验（以及我从其他人那里听到的），这是高中和大学之间产生巨大震撼的源头。在高中（印度），我接触到了一些非常基础的线性代数（主要是行列式和矩阵乘法）。然后在大学级的工程教育中，每个…

@@ -1,18 +1,18 @@
-# AI驱动的洞察：利用LangChain和Pinecone与GPT-4
+# AI 驱动的洞察：利用 LangChain 和 Pinecone 与 GPT-4
 
-> 原文：[https://towardsdatascience.com/ai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9?source=collection_archive---------6-----------------------#2023-06-19](https://towardsdatascience.com/ai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9?source=collection_archive---------6-----------------------#2023-06-19)
+> 原文：[`towardsdatascience.com/ai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9?source=collection_archive---------6-----------------------#2023-06-19`](https://towardsdatascience.com/ai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9?source=collection_archive---------6-----------------------#2023-06-19)
 
 ## 赋能下一代产品经理
 
-[](https://elengabrielyan.medium.com/?source=post_page-----7755485019f9--------------------------------)[![Elen Gabrielyan](../Images/a28280d051c33841e870f57101a731b2.png)](https://elengabrielyan.medium.com/?source=post_page-----7755485019f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7755485019f9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7755485019f9--------------------------------) [Elen Gabrielyan](https://elengabrielyan.medium.com/?source=post_page-----7755485019f9--------------------------------)
+[](https://elengabrielyan.medium.com/?source=post_page-----7755485019f9--------------------------------)![Elen Gabrielyan](https://elengabrielyan.medium.com/?source=post_page-----7755485019f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7755485019f9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7755485019f9--------------------------------) [Elen Gabrielyan](https://elengabrielyan.medium.com/?source=post_page-----7755485019f9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f456c2bb76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9&user=Elen+Gabrielyan&userId=9f456c2bb76&source=post_page-9f456c2bb76----7755485019f9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7755485019f9--------------------------------) ·10分钟阅读·2023年6月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7755485019f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9&user=Elen+Gabrielyan&userId=9f456c2bb76&source=-----7755485019f9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f456c2bb76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9&user=Elen+Gabrielyan&userId=9f456c2bb76&source=post_page-9f456c2bb76----7755485019f9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7755485019f9--------------------------------) ·10 分钟阅读·2023 年 6 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7755485019f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9&user=Elen+Gabrielyan&userId=9f456c2bb76&source=-----7755485019f9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7755485019f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9&source=-----7755485019f9---------------------bookmark_footer-----------)![](../Images/fb2dd3b8f691b939ee14e08d2c00b81e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7755485019f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-driven-insights-for-product-managers-vol-1-leveraging-langchain-and-pinecone-with-gpt-4-7755485019f9&source=-----7755485019f9---------------------bookmark_footer-----------)![](img/fb2dd3b8f691b939ee14e08d2c00b81e.png)
 
 高效处理定性数据是产品经理最重要的技能之一；收集数据、分析数据并有效地传达这些数据，提供可行且有价值的洞察。
 
@@ -50,7 +50,7 @@ LangChain 是一个围绕 LLM 的框架，提供了各种功能，如聊天机�
 
 在这篇文章中，我将分享一些我例子中的功能。
 
-![](../Images/3da1aa9ce4639b4a93a09d1e73526dca.png)
+![](img/3da1aa9ce4639b4a93a09d1e73526dca.png)
 
 *LangChain 模块的高级概述*
 
@@ -76,7 +76,7 @@ Pinecone.ai 是一个强大的工具，旨在简化高维数据表示（即向�
 
 简而言之，Pinecone.ai 允许你以便捷的方式存储你的定性数据的向量表示。你可以轻松地在这些向量中进行搜索，并应用 LLM 模型从中提取有价值的见解。它简化了管理数据和从中获取有意义信息的过程。
 
-![](../Images/81c46b6619a12375dab3bb4390791059.png)
+![](img/81c46b6619a12375dab3bb4390791059.png)
 
 向量数据库的表示
 
@@ -100,9 +100,9 @@ Pinecone.ai 是一个强大的工具，旨在简化高维数据表示（即向�
 
 作为产品经理，我的工作包括改进我们的会议记录和转录功能。为此，我们听取用户对这些功能的评价。
 
-对于我们的[会议记录功能](https://krisp.ai/ai-meeting-assistant/)，用户给我们质量打分1到5分，告诉我们他们使用了哪个模板，并发送他们的评论。流程如下：
+对于我们的[会议记录功能](https://krisp.ai/ai-meeting-assistant/)，用户给我们质量打分 1 到 5 分，告诉我们他们使用了哪个模板，并发送他们的评论。流程如下：
 
-![](../Images/e82324a307d9a09ba751a071fe1c457a.png)
+![](img/e82324a307d9a09ba751a071fe1c457a.png)
 
 在这个项目中，我密切关注了两件事：用户对我们功能的反馈和他们使用了哪些模板。我处理了大量的数据——超过 20,000 字，当我使用一个特殊工具将其拆分时，变成了超过 38,000 个“令牌”（或数据片段）。这数据量之大，超出了某些高级模型一次性处理的能力！
 
@@ -125,15 +125,15 @@ query =  "Please list all feedback regarding sentence structures in a table \
 in markdown and get a single insight for each one, and give a general summary for all."
 ```
 
-这里是一个高层次的图示，展示了在使用LLM和Pinecone时的流程。你向GPT-4提问，或者我们称之为“查询”。与此同时，Pinecone，我们的反馈库，提供了你的查询的上下文，当你将问题本身发送给它（“嵌入查询”）时。它们一起帮助我们高效地理解数据：
+这里是一个高层次的图示，展示了在使用 LLM 和 Pinecone 时的流程。你向 GPT-4 提问，或者我们称之为“查询”。与此同时，Pinecone，我们的反馈库，提供了你的查询的上下文，当你将问题本身发送给它（“嵌入查询”）时。它们一起帮助我们高效地理解数据：
 
-![](../Images/cc2c3092924645f8cbe8d8a3a06ac72d.png)
+![](img/cc2c3092924645f8cbe8d8a3a06ac72d.png)
 
 以下是图示的简化版本：
 
-![](../Images/dbae8365b9ef674d83a32d23103964c8.png)
+![](img/dbae8365b9ef674d83a32d23103964c8.png)
 
-让我们开始吧！在这个脚本中，我们设置了一个管道来使用OpenAI的GPT-4、Pinecone和LangChain分析用户反馈数据。本质上，它导入了必要的库，设置了反馈数据的路径，并建立了处理数据的OpenAI API密钥。
+让我们开始吧！在这个脚本中，我们设置了一个管道来使用 OpenAI 的 GPT-4、Pinecone 和 LangChain 分析用户反馈数据。本质上，它导入了必要的库，设置了反馈数据的路径，并建立了处理数据的 OpenAI API 密钥。
 
 ```py
 import os
@@ -153,7 +153,7 @@ directory = 'path to your directory with text files, containing feedback'
 OPENAI_API_KEY = "your key"
 ```
 
-然后我们定义并调用一个函数`load_docs()`，该函数使用LangChain的DirectoryLoader从指定目录加载用户反馈文档。然后，它会统计并显示加载的文档总数。
+然后我们定义并调用一个函数`load_docs()`，该函数使用 LangChain 的 DirectoryLoader 从指定目录加载用户反馈文档。然后，它会统计并显示加载的文档总数。
 
 ```py
 def load_docs(directory):
@@ -165,7 +165,7 @@ documents = load_docs(directory)
 len(documents)
 ```
 
-接下来定义并执行`split_docs()`函数，该函数使用LangChain的RecursiveCharacterTextSplitter将加载的文档分割成特定大小和重叠的小块。然后，它会统计并打印出结果块的总数。
+接下来定义并执行`split_docs()`函数，该函数使用 LangChain 的 RecursiveCharacterTextSplitter 将加载的文档分割成特定大小和重叠的小块。然后，它会统计并打印出结果块的总数。
 
 ```py
 def split_docs(documents, chunk_size=500, chunk_overlap=20):
@@ -177,7 +177,7 @@ docs = split_docs(documents)
 print(len(docs))
 ```
 
-要使用Pinecone，这基本上是一个向量数据库，我们需要从文档中获取嵌入，因此我们应该为此引入一个函数。有很多方法可以做到这一点，但我们使用OpenAI的嵌入函数：
+要使用 Pinecone，这基本上是一个向量数据库，我们需要从文档中获取嵌入，因此我们应该为此引入一个函数。有很多方法可以做到这一点，但我们使用 OpenAI 的嵌入函数：
 
 ```py
 # Assuming OpenAIEmbeddings class is imported above
@@ -190,7 +190,7 @@ def generate_embedding(query):
     return query_result
 ```
 
-要将这些向量存储到Pinecone中，你需要在那里创建一个帐户并创建一个索引。这个过程非常简单。然后你将从那里获得API密钥、环境名称和索引名称。
+要将这些向量存储到 Pinecone 中，你需要在那里创建一个帐户并创建一个索引。这个过程非常简单。然后你将从那里获得 API 密钥、环境名称和索引名称。
 
 ```py
 MY_API_KEY_p= "the_key"
@@ -217,7 +217,7 @@ def get_similiar_docs(query, k=40, score=False):
   return similar_docs
 ```
 
-在这段代码中，我们使用OpenAI的GPT-4模型和LangChain设置了一个问答系统。`get_answer()`函数接受一个问题作为输入，查找类似的文档，并使用问答链生成一个答案。
+在这段代码中，我们使用 OpenAI 的 GPT-4 模型和 LangChain 设置了一个问答系统。`get_answer()`函数接受一个问题作为输入，查找类似的文档，并使用问答链生成一个答案。
 
 ```py
 from langchain.chat_models import ChatOpenAI
@@ -269,7 +269,7 @@ from IPython.display import display, Markdown
 display(Markdown(response))
 ```
 
-![](../Images/354be8b9180c8499f71421e758707b06.png)
+![](img/354be8b9180c8499f71421e758707b06.png)
 
 示例输出
 

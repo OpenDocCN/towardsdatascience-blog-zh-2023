@@ -1,38 +1,38 @@
 # 图像分割：深入指南
 
-> 原文：[https://towardsdatascience.com/image-segmentation-an-in-depth-guide-5e56512eea2e?source=collection_archive---------2-----------------------#2023-10-06](https://towardsdatascience.com/image-segmentation-an-in-depth-guide-5e56512eea2e?source=collection_archive---------2-----------------------#2023-10-06)
+> 原文：[`towardsdatascience.com/image-segmentation-an-in-depth-guide-5e56512eea2e?source=collection_archive---------2-----------------------#2023-10-06`](https://towardsdatascience.com/image-segmentation-an-in-depth-guide-5e56512eea2e?source=collection_archive---------2-----------------------#2023-10-06)
 
 ## 如何让计算机区分图像中的不同对象？一个逐步指南。
 
-[](https://medium.com/@ed.izaguirre?source=post_page-----5e56512eea2e--------------------------------)[![Ed Izaguirre](../Images/c9eded1f06c47571baa662107428483f.png)](https://medium.com/@ed.izaguirre?source=post_page-----5e56512eea2e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e56512eea2e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5e56512eea2e--------------------------------) [Ed Izaguirre](https://medium.com/@ed.izaguirre?source=post_page-----5e56512eea2e--------------------------------)
+[](https://medium.com/@ed.izaguirre?source=post_page-----5e56512eea2e--------------------------------)![Ed Izaguirre](https://medium.com/@ed.izaguirre?source=post_page-----5e56512eea2e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e56512eea2e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e56512eea2e--------------------------------) [Ed Izaguirre](https://medium.com/@ed.izaguirre?source=post_page-----5e56512eea2e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33a47cfa4187&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-segmentation-an-in-depth-guide-5e56512eea2e&user=Ed+Izaguirre&userId=33a47cfa4187&source=post_page-33a47cfa4187----5e56512eea2e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e56512eea2e--------------------------------) ·21 分钟阅读·2023年10月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5e56512eea2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-segmentation-an-in-depth-guide-5e56512eea2e&user=Ed+Izaguirre&userId=33a47cfa4187&source=-----5e56512eea2e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33a47cfa4187&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-segmentation-an-in-depth-guide-5e56512eea2e&user=Ed+Izaguirre&userId=33a47cfa4187&source=post_page-33a47cfa4187----5e56512eea2e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e56512eea2e--------------------------------) ·21 分钟阅读·2023 年 10 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5e56512eea2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-segmentation-an-in-depth-guide-5e56512eea2e&user=Ed+Izaguirre&userId=33a47cfa4187&source=-----5e56512eea2e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5e56512eea2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-segmentation-an-in-depth-guide-5e56512eea2e&source=-----5e56512eea2e---------------------bookmark_footer-----------)![](../Images/18ea8243d356c00038d27bbaa2202afd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5e56512eea2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-segmentation-an-in-depth-guide-5e56512eea2e&source=-----5e56512eea2e---------------------bookmark_footer-----------)![](img/18ea8243d356c00038d27bbaa2202afd.png)
 
 一张猫咪在白色栅栏前的图像。来源于 [DALL·E 3](https://openai.com/dall-e-3)。
 
 **目录**
 
-1.  [介绍、动机](#4522)
+1.  介绍、动机
 
-1.  [提取数据](#6b76)
+1.  提取数据
 
-1.  [可视化图像](#af63)
+1.  可视化图像
 
-1.  [构建简单的 U-Net 模型](#2142)
+1.  构建简单的 U-Net 模型
 
-1.  [指标和损失函数](#c836)
+1.  指标和损失函数
 
-1.  [构建完整的 U-Net 模型](#978d)
+1.  构建完整的 U-Net 模型
 
-1.  [总结](#a780)
+1.  总结
 
-1.  [参考文献](#08e4)
+1.  参考文献
 
 **相关链接**
 
@@ -46,7 +46,7 @@
 
 **图像分割**是指计算机（更准确地说是存储在计算机上的模型）将图像中的每个像素分配到相应类别的能力。例如，可以将上面展示的猫的图像通过图像分割器处理，并得到如下的分割图像：
 
-![](../Images/9385336d4aa4e3b361a97f77bff85580.png)
+![](img/9385336d4aa4e3b361a97f77bff85580.png)
 
 猫的图像，分割成‘猫’像素和‘背景’像素。修改后的图像来自 [DALL·E 3](https://openai.com/dall-e-3)。
 
@@ -56,23 +56,23 @@
 
 为什么计算机在做一个六岁小孩能做的事情时会挣扎？我们可以通过考虑一个人如何通过盲文学习阅读来设身处地为计算机着想。假设你拿到了一篇用盲文写的文章，并且假设你不知道如何阅读它。你会怎么做？你需要什么来将盲文解码成英文？
 
-![](../Images/23797d6f1750c9e5b7acd23806fbec45.png)
+![](img/23797d6f1750c9e5b7acd23806fbec45.png)
 
 一小段用盲文书写的文字。来源于 [Unsplash](https://unsplash.com/)。
 
 你需要的是一种将输入转换为对你可读的输出的方法。在数学中，我们称之为**映射**。我们说我们希望学习一个函数 *f(x)*，它将我们无法读取的输入 *x* 映射到一个可读取的输出 *y*。
 
-![](../Images/7732d26a356f0a39a3135c97f833928b.png)
+![](img/7732d26a356f0a39a3135c97f833928b.png)
 
 通过长时间的练习和良好的导师，任何人都可以学会从盲文到英文的必要映射。类比而言，处理图像的计算机有点像初次接触盲文的人；它看起来像一堆无意义的东西。计算机需要学习必要的映射 *f(x)*，将与像素对应的一堆数字转换为可以用来分割图像的内容。不幸的是，计算机模型没有数千年的进化、生物学以及多年看世界的经验；它在您启动程序时基本上‘出生’。**这就是我们希望在计算机视觉中教给我们模型的内容。**
 
-首先，我们为什么要进行图像分割呢？其中一个更明显的用例是Zoom。许多人在视频会议中喜欢使用虚拟背景，以避免同事看到他们的狗在客厅里做花式。*图像分割对于这项任务至关重要*。另一个强大的用例是医学成像。在对患者器官进行CT扫描时，自动分割图像中的器官可能有助于医疗专业人员确定诸如损伤、肿瘤存在等问题。[这里有一个很好的例子](https://www.kaggle.com/competitions/rsna-2023-abdominal-trauma-detection) 是一个专注于此任务的Kaggle竞赛。
+首先，我们为什么要进行图像分割呢？其中一个更明显的用例是 Zoom。许多人在视频会议中喜欢使用虚拟背景，以避免同事看到他们的狗在客厅里做花式。*图像分割对于这项任务至关重要*。另一个强大的用例是医学成像。在对患者器官进行 CT 扫描时，自动分割图像中的器官可能有助于医疗专业人员确定诸如损伤、肿瘤存在等问题。[这里有一个很好的例子](https://www.kaggle.com/competitions/rsna-2023-abdominal-trauma-detection) 是一个专注于此任务的 Kaggle 竞赛。
 
 图像分割有几种不同的类型，从简单到复杂不等。在本文中，我们将处理最简单的图像分割类型：*二进制分割*。这意味着只会有两类不同的对象，例如‘猫’和‘背景’。不多也不少。
 
-请注意，我在此呈现的代码已经稍作整理和编辑以增加清晰度。要运行一些可工作的代码，请查看文章顶部的代码链接。我们将使用Kaggle的Carvana图像掩模挑战数据集。您需要注册此挑战以获取数据集，并将您的Kaggle API密钥插入Colab笔记本以使其正常工作（如果您不想使用Kaggle笔记本）。[请查看此讨论帖](https://www.kaggle.com/discussions/general/74235) 获取详细信息。
+请注意，我在此呈现的代码已经稍作整理和编辑以增加清晰度。要运行一些可工作的代码，请查看文章顶部的代码链接。我们将使用 Kaggle 的 Carvana 图像掩模挑战数据集。您需要注册此挑战以获取数据集，并将您的 Kaggle API 密钥插入 Colab 笔记本以使其正常工作（如果您不想使用 Kaggle 笔记本）。[请查看此讨论帖](https://www.kaggle.com/discussions/general/74235) 获取详细信息。
 
-还有一件事；尽管我很想详细讨论代码中的每个想法，但我假设您对卷积神经网络、最大池化层、密集连接层、dropout层和残差连接器有一些工作知识。不幸的是，长时间讨论这些概念需要一篇新文章，超出了我们专注于实现细节的范围。
+还有一件事；尽管我很想详细讨论代码中的每个想法，但我假设您对卷积神经网络、最大池化层、密集连接层、dropout 层和残差连接器有一些工作知识。不幸的是，长时间讨论这些概念需要一篇新文章，超出了我们专注于实现细节的范围。
 
 # 提取数据
 
@@ -86,7 +86,7 @@
 
 在图像分割的上下文中，**mask** 是分割后的图像。我们尝试让模型学习如何将输入图像映射到输出分割掩模。通常假设真实的掩模（即地面真相）是由人类专家手工绘制的。
 
-![](../Images/535db816963d7b6d14f8c1a293d957d3.png)
+![](img/535db816963d7b6d14f8c1a293d957d3.png)
 
 一个图像及其相应的真实掩模的例子，是真实的人手工绘制的。来自 Carvana 图像掩模挑战数据集。
 
@@ -231,7 +231,7 @@ def preprocess_target(file_path):
 
 +   最后，我们将图像/掩膜调整为我们所需的尺寸（较小）。请注意，我之前展示的汽车图像与真实掩膜看起来模糊；这次缩小是故意进行的，以减少计算负荷并使训练相对较快。默认使用 method=‘nearest’ 是个好主意；否则函数将始终返回 float32，这对于你希望它是 uint8 格式的情况是不好的。
 
-![](../Images/d9ea340e152cd50a2ed62d40fad7d400.png)
+![](img/d9ea340e152cd50a2ed62d40fad7d400.png)
 
 颜色 burnt orange 可以用 float32 或 uint8 格式表示。图片由作者提供。
 
@@ -255,7 +255,7 @@ for images, masks in batched_val_dataset.take(1):
         plt.axis("off")
 ```
 
-![](../Images/4de9150e514f5730a3daf8f5bff40fd2.png)
+![](img/4de9150e514f5730a3daf8f5bff40fd2.png)
 
 我们的汽车图像与附带的掩膜配对显示。
 
@@ -263,35 +263,35 @@ for images, masks in batched_val_dataset.take(1):
 
 # 构建一个简单的 U-Net 模型
 
-在1675年2月5日写给其对手罗伯特·胡克的信中，艾萨克·牛顿表示：
+在 1675 年 2 月 5 日写给其对手罗伯特·胡克的信中，艾萨克·牛顿表示：
 
 > *“如果我看得更远，那是因为我站在了巨人的肩膀上。”*
 
 同样地，我们将站在之前机器学习研究者的肩膀上，他们已经发现了哪些架构最适合图像分割任务。实验自己设计的架构并非坏主意；然而，之前的研究者们走过许多弯路才发现了有效的模型。这些架构并不一定是终极解决方案，因为研究仍在进行中，可能会发现更好的架构。
 
-![](../Images/d01011a3b09163f8eaf0dd41cc39c0f8.png)
+![](img/d01011a3b09163f8eaf0dd41cc39c0f8.png)
 
-U-Net的可视化，描述见[1]。图片由作者提供。
+U-Net 的可视化，描述见[1]。图片由作者提供。
 
-一个较为知名的架构称为**U-Net**，因为网络的下采样部分和上采样部分可以被可视化为一个U形（见上文）。在由Ronneberger、Fisher和Brox撰写的名为*U-Net: Convolutional Networks for Biomedical Image Segmentation*的论文[1]中，作者描述了如何创建一个**全卷积网络** **(FCN)**，该网络在图像分割中表现有效。全卷积意味着没有密集连接层；所有层都是卷积层。
+一个较为知名的架构称为**U-Net**，因为网络的下采样部分和上采样部分可以被可视化为一个 U 形（见上文）。在由 Ronneberger、Fisher 和 Brox 撰写的名为*U-Net: Convolutional Networks for Biomedical Image Segmentation*的论文[1]中，作者描述了如何创建一个**全卷积网络** **(FCN)**，该网络在图像分割中表现有效。全卷积意味着没有密集连接层；所有层都是卷积层。
 
 有几点需要注意：
 
-+   网络由一系列重复的两个卷积层块组成，使用padding = ‘same’和stride = 1，以确保卷积的输出在块内不会缩小。
++   网络由一系列重复的两个卷积层块组成，使用 padding = ‘same’和 stride = 1，以确保卷积的输出在块内不会缩小。
 
 +   每个块后面跟着一个最大池化层，该层将特征图的宽度和高度减半。
 
-+   接下来的模块将滤波器的数量加倍。这个模式会继续。如果你研究过CNN，这种在减少特征空间的同时增加滤波器数量的模式应该很熟悉。这完成了作者所称的“收缩路径”。
++   接下来的模块将滤波器的数量加倍。这个模式会继续。如果你研究过 CNN，这种在减少特征空间的同时增加滤波器数量的模式应该很熟悉。这完成了作者所称的“收缩路径”。
 
 +   “瓶颈”层位于‘U’的底部。该层捕捉高度抽象的特征（如线条、曲线、窗户、门等），但在空间分辨率上大幅降低。
 
-+   接下来是他们所谓的“扩展路径”。简而言之，这个过程是反向的，每个模块再次由两个卷积层组成。每个模块后面跟着一个**上采样层**，在TensorFlow中我们称之为Conv2DTranspose层。它将较小的特征图的高度和宽度加倍。
++   接下来是他们所谓的“扩展路径”。简而言之，这个过程是反向的，每个模块再次由两个卷积层组成。每个模块后面跟着一个**上采样层**，在 TensorFlow 中我们称之为 Conv2DTranspose 层。它将较小的特征图的高度和宽度加倍。
 
-+   接下来的模块将滤波器的数量减半。重复这个过程，直到得到与起始图像相同的高度和宽度。最后，用一个1x1卷积层来将通道数量减少到1。我们希望最后得到一个通道，因为这是二值分割，所以我们需要一个滤波器，像素值对应于我们的两个类别。我们使用sigmoid激活函数将像素值压缩在0到1之间。
++   接下来的模块将滤波器的数量减半。重复这个过程，直到得到与起始图像相同的高度和宽度。最后，用一个 1x1 卷积层来将通道数量减少到 1。我们希望最后得到一个通道，因为这是二值分割，所以我们需要一个滤波器，像素值对应于我们的两个类别。我们使用 sigmoid 激活函数将像素值压缩在 0 到 1 之间。
 
-+   U-Net架构中还有**跳跃连接**，允许网络在下采样和上采样后保留细粒度的空间信息。在这个过程中通常会丢失很多信息。通过将信息从收缩块传递到相应的扩展块，我们可以保留这些空间信息。这个架构有一个漂亮的对称性。
++   U-Net 架构中还有**跳跃连接**，允许网络在下采样和上采样后保留细粒度的空间信息。在这个过程中通常会丢失很多信息。通过将信息从收缩块传递到相应的扩展块，我们可以保留这些空间信息。这个架构有一个漂亮的对称性。
 
-我们将首先做一个简单版本的U-Net。这将是一个FCN，但没有残差连接和最大池化层。
+我们将首先做一个简单版本的 U-Net。这将是一个 FCN，但没有残差连接和最大池化层。
 
 ```py
 data_augmentation = tf.keras.Sequential([
@@ -328,29 +328,29 @@ def get_model(img_size):
 custom_model = get_model(img_size=img_size)
 ```
 
-这里我们有与U-Net相同的基本结构，包括一个收缩路径和一个扩展路径。一个有趣的观察是，与其使用最大池化层将特征空间切成两半，我们使用一个步幅为2的卷积层。根据Chollet [2]，这可以将特征空间切成两半，同时保留比最大池化层更多的空间信息。他指出，只要位置信息重要（如在图像分割中），最好避免破坏性的最大池化层，而改用步幅卷积（**这很有趣，因为著名的** **U-Net架构确实使用了最大池化**）。还要注意，我们正在进行一些数据增强，以帮助我们的模型泛化到未见的示例。
+这里我们有与 U-Net 相同的基本结构，包括一个收缩路径和一个扩展路径。一个有趣的观察是，与其使用最大池化层将特征空间切成两半，我们使用一个步幅为 2 的卷积层。根据 Chollet [2]，这可以将特征空间切成两半，同时保留比最大池化层更多的空间信息。他指出，只要位置信息重要（如在图像分割中），最好避免破坏性的最大池化层，而改用步幅卷积（**这很有趣，因为著名的** **U-Net 架构确实使用了最大池化**）。还要注意，我们正在进行一些数据增强，以帮助我们的模型泛化到未见的示例。
 
-一些重要的细节：将kernel_initializer设置为‘he_normal’以用于ReLU激活会在训练稳定性方面产生意想不到的大差异。我最初低估了权重初始化的力量。与随机初始化权重不同，he_normalization将权重初始化为均值为0，标准差为（2 / 层的输入单元数）的平方根。在CNN的情况下，输入单元的数量指的是前一层特征图的通道数。已发现he_normal初始化能导致更快的收敛，减轻梯度消失，并改善学习。有关更多细节，请参见参考文献[3]。
+一些重要的细节：将 kernel_initializer 设置为‘he_normal’以用于 ReLU 激活会在训练稳定性方面产生意想不到的大差异。我最初低估了权重初始化的力量。与随机初始化权重不同，he_normalization 将权重初始化为均值为 0，标准差为（2 / 层的输入单元数）的平方根。在 CNN 的情况下，输入单元的数量指的是前一层特征图的通道数。已发现 he_normal 初始化能导致更快的收敛，减轻梯度消失，并改善学习。有关更多细节，请参见参考文献[3]。
 
 # 指标和损失函数
 
-二值分割可以使用几种常见的指标和损失函数。在这里，我们将使用**dice系数**作为指标，并使用相应的**dice损失**进行训练，因为这是比赛要求的。
+二值分割可以使用几种常见的指标和损失函数。在这里，我们将使用**dice 系数**作为指标，并使用相应的**dice 损失**进行训练，因为这是比赛要求的。
 
-让我们首先看看dice系数背后的数学原理：
+让我们首先看看 dice 系数背后的数学原理：
 
-![](../Images/bd23ec4488d38032c23f8f61c35f95b0.png)
+![](img/bd23ec4488d38032c23f8f61c35f95b0.png)
 
-一般形式的dice系数。
+一般形式的 dice 系数。
 
-Dice系数被定义为两个集合（*X*和*Y*）的交集，除以每个集合的和，再乘以2。Dice系数的值范围在0（如果集合没有交集）到1（如果集合完全重叠）之间。现在我们可以理解为什么这成为图像分割的一个很好的度量标准。
+Dice 系数被定义为两个集合（*X*和*Y*）的交集，除以每个集合的和，再乘以 2。Dice 系数的值范围在 0（如果集合没有交集）到 1（如果集合完全重叠）之间。现在我们可以理解为什么这成为图像分割的一个很好的度量标准。
 
-![](../Images/cb83c98c2e92e3a20843999e79e16a57.png)
+![](img/cb83c98c2e92e3a20843999e79e16a57.png)
 
 两个遮罩重叠的示例。橙色用于清晰度。图片来源于作者。
 
 上述方程是 dice 系数的通用定义；当应用于 *向量* 量时（与集合不同），我们使用更具体的定义：
 
-![](../Images/b147a9a8680ca375b9bc738af7aeb79e.png)
+![](img/b147a9a8680ca375b9bc738af7aeb79e.png)
 
 以向量形式表示的 dice 系数。
 
@@ -440,7 +440,7 @@ show_predictions(model = custom_model, dataset = batched_train_dataset, num = 6)
 
 经过 10 个周期后，我们达到了最高验证 dice 分数 0.8788。还不错，但不是很好。在 P100 GPU 上，这大约花了我 20 分钟。这里是我们审查的样本掩膜：
 
-![](../Images/7cbd52526f40648c35425e6eabfb9170.png)
+![](img/7cbd52526f40648c35425e6eabfb9170.png)
 
 输入图像、真实掩膜和预测掩膜的比较。作者提供。
 
@@ -450,7 +450,7 @@ show_predictions(model = custom_model, dataset = batched_train_dataset, num = 6)
 
 +   为什么掩码的颜色是黄色和紫色，而不是黑色和白色？我们使用了：tf.keras.preprocessing.image.array_to_img() 将掩码的输出从张量转换为 PIL 图像。然后我们将图像传递给 plt.imshow()。[来自文档](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html) 我们看到单通道图像的默认颜色图是“viridis”（3 通道 RGB 图像保持原样）。viridis 颜色图将低值转化为深紫色，高值转化为黄色。这个颜色图显然可以帮助色盲人士准确查看图像中的颜色。我们本可以通过添加 cmap=“grayscale” 作为参数来解决这个问题，但这会搞砸我们的输入图像。更多信息见 [此链接](https://en.wikipedia.org/wiki/Color_blindness)。
 
-![](../Images/82384d6f3ece15994a1d089ad40e0d75.png)
+![](img/82384d6f3ece15994a1d089ad40e0d75.png)
 
 viridis 颜色图，从低值（紫色）到高值（黄色）。作者提供。
 
@@ -574,7 +574,7 @@ unet = keras.models.load_model("/kaggle/working/best-u_net-model", custom_object
 show_predictions(model = unet, dataset = batched_train_dataset, num = 6)
 ```
 
-![](../Images/49623a94ebb3eda2868cbb2909a1dd30.png)
+![](img/49623a94ebb3eda2868cbb2909a1dd30.png)
 
 完整 U-Net 的预测掩码。要好得多！作者提供。
 
@@ -602,20 +602,20 @@ show_predictions(model = unet, dataset = batched_train_dataset, num = 6)
 
 +   图像分割的目标是找到从图像中的输入像素值到模型可以用来为每个像素分配类别的输出数字的映射。
 
-+   第一步是将你的图像组织成TensorFlow数据集对象，并查看你的图像和相应的掩码。
++   第一步是将你的图像组织成 TensorFlow 数据集对象，并查看你的图像和相应的掩码。
 
-+   关于模型架构，不需要重新发明轮子：我们知道U-Net效果良好。
++   关于模型架构，不需要重新发明轮子：我们知道 U-Net 效果良好。
 
-+   Dice得分是一个常用的指标，用于监控模型预测的成功。我们也可以从中获得损失函数。
++   Dice 得分是一个常用的指标，用于监控模型预测的成功。我们也可以从中获得损失函数。
 
-未来的工作可能会将经典U-Net架构中的最大池化层转换为步幅卷积层。
+未来的工作可能会将经典 U-Net 架构中的最大池化层转换为步幅卷积层。
 
 祝你的图像分割问题好运！
 
 # 参考文献
 
-[1] O. Ronneberger, P. Fischer, 和 T. Brox, [U-Net：用于生物医学图像分割的卷积网络](https://arxiv.org/abs/1505.04597) (2015)，MICCAI 2015国际会议
+[1] O. Ronneberger, P. Fischer, 和 T. Brox, [U-Net：用于生物医学图像分割的卷积网络](https://arxiv.org/abs/1505.04597) (2015)，MICCAI 2015 国际会议
 
-[2] F. Chollet, 《用Python进行深度学习》（2021），Manning Publications Co.
+[2] F. Chollet, 《用 Python 进行深度学习》（2021），Manning Publications Co.
 
-[3] K. He, X. Zhang, S. Ren, J. Sun, [深入探讨整流器：在ImageNet分类中超越人类水平的表现](https://arxiv.org/abs/1502.01852) (2015)，国际计算机视觉大会（ICCV）
+[3] K. He, X. Zhang, S. Ren, J. Sun, [深入探讨整流器：在 ImageNet 分类中超越人类水平的表现](https://arxiv.org/abs/1502.01852) (2015)，国际计算机视觉大会（ICCV）

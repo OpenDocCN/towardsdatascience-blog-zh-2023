@@ -1,18 +1,18 @@
 # 使用 QGIS 进行地理空间数据分析的实用入门
 
-> 原文：[https://towardsdatascience.com/a-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e?source=collection_archive---------5-----------------------#2023-02-27](https://towardsdatascience.com/a-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e?source=collection_archive---------5-----------------------#2023-02-27)
+> 原文：[`towardsdatascience.com/a-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e?source=collection_archive---------5-----------------------#2023-02-27`](https://towardsdatascience.com/a-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e?source=collection_archive---------5-----------------------#2023-02-27)
 
 ## 这是一个互动教程，可以在使用 QGIS 的过程中学习 GIS 关键概念
 
-[](https://eugenia-anello.medium.com/?source=post_page-----a6f82105b30e--------------------------------)[![尤金尼亚·安奈洛](../Images/537f444252cdc60709e7a19e37734c7b.png)](https://eugenia-anello.medium.com/?source=post_page-----a6f82105b30e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6f82105b30e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a6f82105b30e--------------------------------) [尤金尼亚·安奈洛](https://eugenia-anello.medium.com/?source=post_page-----a6f82105b30e--------------------------------)
+[](https://eugenia-anello.medium.com/?source=post_page-----a6f82105b30e--------------------------------)![尤金尼亚·安奈洛](https://eugenia-anello.medium.com/?source=post_page-----a6f82105b30e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6f82105b30e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6f82105b30e--------------------------------) [尤金尼亚·安奈洛](https://eugenia-anello.medium.com/?source=post_page-----a6f82105b30e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F86fdc517c278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e&user=Eugenia+Anello&userId=86fdc517c278&source=post_page-86fdc517c278----a6f82105b30e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6f82105b30e--------------------------------) ·6 min read·2023年2月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa6f82105b30e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e&user=Eugenia+Anello&userId=86fdc517c278&source=-----a6f82105b30e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F86fdc517c278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e&user=Eugenia+Anello&userId=86fdc517c278&source=post_page-86fdc517c278----a6f82105b30e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6f82105b30e--------------------------------) ·6 min read·2023 年 2 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa6f82105b30e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e&user=Eugenia+Anello&userId=86fdc517c278&source=-----a6f82105b30e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6f82105b30e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e&source=-----a6f82105b30e---------------------bookmark_footer-----------)![](../Images/7e80a72add9dcb55d0fadf62b861dee1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6f82105b30e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-practical-introduction-to-geospatial-data-analysis-using-qgis-a6f82105b30e&source=-----a6f82105b30e---------------------bookmark_footer-----------)![](img/7e80a72add9dcb55d0fadf62b861dee1.png)
 
 [克里斯·劳顿](https://unsplash.com/@chrislawton) 拍摄于 [Unsplash](https://unsplash.com/photos/duQ1ulzTJbM)
 
@@ -20,11 +20,11 @@
 
 1.  *使用 QGIS 进行地理空间数据分析（本文）*
 
-1.  [*OpenStreetMap 入门指南*](/a-comprehensive-guide-for-getting-started-with-openstreetmap-e92dff95fc80?sk=e0981a4fed7f4cfefa9a58477a863ea6)
+1.  *OpenStreetMap 入门指南*
 
-1.  [*使用 GeoPandas 进行地理空间数据分析*](/geospatial-data-analysis-with-geopandas-876cb72721cb?sk=042a0f2fb834cb08ffd0f74eb856e7e1)
+1.  *使用 GeoPandas 进行地理空间数据分析*
 
-1.  [*使用 OSMnx 进行地理空间数据分析*](/geospatial-data-analysis-with-osmnx-8a300d77b592?sk=7afb9be17e024167937a615d7ea4b267)
+1.  *使用 OSMnx 进行地理空间数据分析*
 
 1.  [*为数据科学家提供的地理编码*](https://www.datacamp.com/tutorial/geocoding-for-data-scientists)
 

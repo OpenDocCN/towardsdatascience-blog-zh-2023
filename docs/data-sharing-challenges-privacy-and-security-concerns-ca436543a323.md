@@ -1,18 +1,18 @@
 # 数据共享挑战：隐私和安全问题
 
-> 原文：[https://towardsdatascience.com/data-sharing-challenges-privacy-and-security-concerns-ca436543a323?source=collection_archive---------15-----------------------#2023-02-01](https://towardsdatascience.com/data-sharing-challenges-privacy-and-security-concerns-ca436543a323?source=collection_archive---------15-----------------------#2023-02-01)
+> 原文：[`towardsdatascience.com/data-sharing-challenges-privacy-and-security-concerns-ca436543a323?source=collection_archive---------15-----------------------#2023-02-01`](https://towardsdatascience.com/data-sharing-challenges-privacy-and-security-concerns-ca436543a323?source=collection_archive---------15-----------------------#2023-02-01)
 
 ## 实施数据共享时的隐私和安全挑战
 
-[](https://medium.com/@louise.de.leyritz?source=post_page-----ca436543a323--------------------------------)[![Louise de Leyritz](../Images/7223761fa288aa730d1bb5751f29e8ce.png)](https://medium.com/@louise.de.leyritz?source=post_page-----ca436543a323--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ca436543a323--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ca436543a323--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----ca436543a323--------------------------------)
+[](https://medium.com/@louise.de.leyritz?source=post_page-----ca436543a323--------------------------------)![Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----ca436543a323--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ca436543a323--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ca436543a323--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----ca436543a323--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-sharing-challenges-privacy-and-security-concerns-ca436543a323&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----ca436543a323---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ca436543a323--------------------------------) ·11分钟阅读·2023年2月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fca436543a323&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-sharing-challenges-privacy-and-security-concerns-ca436543a323&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----ca436543a323---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-sharing-challenges-privacy-and-security-concerns-ca436543a323&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----ca436543a323---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ca436543a323--------------------------------) ·11 分钟阅读·2023 年 2 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fca436543a323&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-sharing-challenges-privacy-and-security-concerns-ca436543a323&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----ca436543a323---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fca436543a323&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-sharing-challenges-privacy-and-security-concerns-ca436543a323&source=-----ca436543a323---------------------bookmark_footer-----------)![](../Images/9fd090463316d2457ba8a20a78bf04aa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fca436543a323&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-sharing-challenges-privacy-and-security-concerns-ca436543a323&source=-----ca436543a323---------------------bookmark_footer-----------)![](img/9fd090463316d2457ba8a20a78bf04aa.png)
 
 隐私与安全：数据共享的最大挑战 — 图片来自 [Castor](https://www.castordoc.com/)
 
@@ -36,7 +36,7 @@
 
 更重要的是，这些规则通过严格的法规得以执行，例如欧洲的**通用数据保护条例** **（GDPR）**和美国的**加州消费者隐私法案（CCPA）**。
 
-根据像GDPR和CCPA这样的法律，仅仅遵守是不够的，你还必须能够证明这一点！这就是问责原则。如果你不能展示你遵守规则，你将被认为是不合规的。而且，我们知道，不合规会带来巨额的代价。
+根据像 GDPR 和 CCPA 这样的法律，仅仅遵守是不够的，你还必须能够证明这一点！这就是问责原则。如果你不能展示你遵守规则，你将被认为是不合规的。而且，我们知道，不合规会带来巨额的代价。
 
 本文探讨了在避免隐私和安全相关风险的同时实施数据共享。文章分为三个部分：
 
@@ -50,9 +50,9 @@
 
 当我们分享个人身份信息（PII）时，想要保持隐私是很自然的。隐私就是对信息共享、共享对象以及原因的控制。
 
-个人信息包括我们的姓名、社会安全号码、电子邮件、邮寄地址和IP地址。保护这些数据对于防止从不便（如垃圾广告）到真正的威胁（如身份盗窃）的侵扰是非常重要的。
+个人信息包括我们的姓名、社会安全号码、电子邮件、邮寄地址和 IP 地址。保护这些数据对于防止从不便（如垃圾广告）到真正的威胁（如身份盗窃）的侵扰是非常重要的。
 
-GDPR和CCPA中最广泛认可的隐私规则被称为**目的限制**。根据这一规则，你应该仅为了特定、明确且合法的目的处理PII。你必须在收集数据之前向数据主体说明这些目的。
+GDPR 和 CCPA 中最广泛认可的隐私规则被称为**目的限制**。根据这一规则，你应该仅为了特定、明确且合法的目的处理 PII。你必须在收集数据之前向数据主体说明这些目的。
 
 这一原则确保收集的数据始终用于其指定目的。
 
@@ -60,13 +60,13 @@ GDPR和CCPA中最广泛认可的隐私规则被称为**目的限制**。根据�
 
 当涉及数据共享时，我们如何确保数据仅用于其预期目的？当数据对更广泛的受众开放时，跟踪其使用情况可能会变得困难。利益相关者往往不知道数据收集的具体原因。没有这些知识，遵守规则可能会很困难。
 
-此外，数据共享增加了PII数据潜在暴露点的数量。这为潜在的隐私侵犯（如身份盗窃）和对个人信息的控制丧失打开了大门。你对数据的开放程度越高，利益相关者利用数据进行恶意目的的机会就越多。
+此外，数据共享增加了 PII 数据潜在暴露点的数量。这为潜在的隐私侵犯（如身份盗窃）和对个人信息的控制丧失打开了大门。你对数据的开放程度越高，利益相关者利用数据进行恶意目的的机会就越多。
 
 # 解决方案：文档与数据共享协议
 
-在深入解决方案之前，重要的是要注意数据共享并不意味着对PII数据的*无限制*访问。
+在深入解决方案之前，重要的是要注意数据共享并不意味着对 PII 数据的*无限制*访问。
 
-> PII数据应仅暴露给需要查看的人。
+> PII 数据应仅暴露给需要查看的人。
 
 我们将在稍后的访问控制管理部分讨论这些内容。
 
@@ -80,7 +80,7 @@ GDPR和CCPA中最广泛认可的隐私规则被称为**目的限制**。根据�
 
 有不同的方法来管理组织中的数据访问：
 
-+   **实施二次认证措施**：验证单个用户的身份至关重要，以便准确知道是谁试图登录系统。在员工使用共享账户（如管理员或root）时，这变得更加复杂。在这些情况下，实施二次认证方法非常重要。
++   **实施二次认证措施**：验证单个用户的身份至关重要，以便准确知道是谁试图登录系统。在员工使用共享账户（如管理员或 root）时，这变得更加复杂。在这些情况下，实施二次认证方法非常重要。
 
 +   **引入双因素认证**：凭证盗窃仍然是安全漏洞的一个普遍原因。双因素认证通过要求用户不仅提供他们知道的东西（如凭证），还需要他们拥有的东西（如智能手机）或是（如生物识别数据）来改善用户身份验证。
 
@@ -92,17 +92,17 @@ GDPR和CCPA中最广泛认可的隐私规则被称为**目的限制**。根据�
 
 教育员工的最佳方式是将数据安全信息纳入整体公司政策中。一项全面的政策作为内部程序和标准的可靠信息来源，包括网络安全。这是一种有效的方法，可以教育新员工了解他们可以和不可以如何处理公司数据。
 
-另一种解决方案是数据文档化。对PII数据进行适当的文档记录是确保数据以道德和合法方式处理的重要步骤。
+另一种解决方案是数据文档化。对 PII 数据进行适当的文档记录是确保数据以道德和合法方式处理的重要步骤。
 
-文档化涉及识别PII数据并在数据库中标记。你应该指定数据收集的目的，以及你将使用数据的具体用途。
+文档化涉及识别 PII 数据并在数据库中标记。你应该指定数据收集的目的，以及你将使用数据的具体用途。
 
-为每个PII字段提供正确的背景信息可以确保每个人都知道它的用途。这样，各团队在访问数据时可以在目的限制原则下合法使用。
+为每个 PII 字段提供正确的背景信息可以确保每个人都知道它的用途。这样，各团队在访问数据时可以在目的限制原则下合法使用。
 
 假设你在数据集中有一个标记为“电子邮件地址”的列。对于这个列，重要的是要包含数据使用的详细说明。这可能包括如下声明：“电子邮件地址，仅用于产品配送”
 
 这确保了利益相关者使用数据的目的符合预期，而不是用于任何未经授权的活动。
 
-一旦你的业务团队已经设置好可以轻松访问文档化数据，保持系统运作的另一种方法是设立一个[数据共享协议 (DSA)](/data-contracts-ensure-robustness-in-your-data-mesh-architecture-69a3c38f07db#:~:text=managing%20this%20process.-,Data%20Sharing%20Agreement,-Data%20sharing%20agreements)。正如[Piethein Strengholt](https://piethein.medium.com/)所述，DSA是一个具有法律约束力的合同，列出了数据共享和使用的所有条款和条件。
+一旦你的业务团队已经设置好可以轻松访问文档化数据，保持系统运作的另一种方法是设立一个数据共享协议 (DSA)。正如[Piethein Strengholt](https://piethein.medium.com/)所述，DSA 是一个具有法律约束力的合同，列出了数据共享和使用的所有条款和条件。
 
 它概述了将共享哪些类型的数据、共享的原因以及如何保护这些数据。它还列出了每个人的责任，包括数据使用的任何限制，以及如果事情没有按计划进行会发生什么。这些协议在研究、商业和政府中被广泛使用。它们是确保每个人都遵守规则并将数据用于预定目的的绝佳方式。
 
@@ -110,13 +110,13 @@ GDPR和CCPA中最广泛认可的隐私规则被称为**目的限制**。根据�
 
 安全是关于实施**保护**个人信息的措施。
 
-> PII数据需要防止未经授权的访问、使用、披露、干扰、修改或销毁。
+> PII 数据需要防止未经授权的访问、使用、披露、干扰、修改或销毁。
 
-GDPR中的一个重要安全规则是**完整性原则**。它规定，个人数据必须受到保护，防止未经授权的访问、更改或销毁。
+GDPR 中的一个重要安全规则是**完整性原则**。它规定，个人数据必须受到保护，防止未经授权的访问、更改或销毁。
 
 实施数据共享就像是打开了洪水闸门，带来了多种潜在威胁，如黑客攻击或恶意软件。访问数据的人越多，未经授权方获取数据的机会就越多。而且，当数据被共享时，它可能还会存储在多个位置，使得监控变得更加困难。
 
-即使公司的IT系统像金库一样坚固，数据共享仍可能带来安全风险。这是因为尽管强大的IT系统可能能够抵御外部威胁，但它可能无法防止内部威胁，例如内部泄露。
+即使公司的 IT 系统像金库一样坚固，数据共享仍可能带来安全风险。这是因为尽管强大的 IT 系统可能能够抵御外部威胁，但它可能无法防止内部威胁，例如内部泄露。
 
 数据共享可能是一项棘手的业务。访问数据的人越多，你公司系统中的潜在弱点就越多。但这并不意味着一切都要悲观。即使数据受到更多人的关注，仍然可以在确保数据安全和合规的同时保护数据。这只是需要采取正确措施以保护数据。
 
@@ -126,7 +126,7 @@ GDPR中的一个重要安全规则是**完整性原则**。它规定，个人数
 
 +   **访问控制**旨在确保只有合适的人才能访问数据。这个话题在前面章节中已经讨论过。
 
-+   [**数据最小化**](https://medium.com/@deshpandetanmay/gdpr-what-is-data-minimization-dcf9aee8d9)是另一个关键部分。其核心在于将共享的数据量保持在最低限度。与其分享所有数据，不如退一步思考哪些信息对各团队执行任务是真正必要的。一般来说，你可以在数据集中移除或遮蔽PII列，而不影响利益相关者。只分享必要的数据，可以将流动的PII信息量保持在最低水平。
++   [**数据最小化**](https://medium.com/@deshpandetanmay/gdpr-what-is-data-minimization-dcf9aee8d9)是另一个关键部分。其核心在于将共享的数据量保持在最低限度。与其分享所有数据，不如退一步思考哪些信息对各团队执行任务是真正必要的。一般来说，你可以在数据集中移除或遮蔽 PII 列，而不影响利益相关者。只分享必要的数据，可以将流动的 PII 信息量保持在最低水平。
 
 当**访问控制**和**数据最小化**一起使用时，它们可以帮助你与更多人共享数据，同时保持数据的安全性和符合安全法规的要求。它们可以共同确保你的数据安全，同时向需要的人提供访问。
 
@@ -154,7 +154,7 @@ GDPR中的一个重要安全规则是**完整性原则**。它规定，个人数
 
 1.  **定期进行隐私审计** — 定期进行隐私审计有助于评估您对 GDPR 的合规性，并识别需要改进的领域。它们还表明您致力于保护个人数据并保持对 GDPR 的合规性。
 
-![](../Images/e8b13d276e3c530696af14246428c5f3.png)
+![](img/e8b13d276e3c530696af14246428c5f3.png)
 
 数据血缘示例 — 图片由 [Castor](https://www.castordoc.com/) 提供
 
@@ -166,7 +166,7 @@ GDPR中的一个重要安全规则是**完整性原则**。它规定，个人数
 
 管理隐私和安全风险可以通过实施一些关键策略来实现。为了保护个人信息，重要的是投资于适当的**文档**并建立明确的**数据共享协议**。此外，实施**访问控制**和遵循**数据最小化**实践可以帮助减少安全风险并确保敏感信息的安全。我们在下面的图片中总结了这些信息。
 
-![](../Images/f7f7715a29fb9021bdaca78b07676749.png)
+![](img/f7f7715a29fb9021bdaca78b07676749.png)
 
 处理隐私与安全 — 图片由 [Castor](https://www.castordoc.com/) 提供
 

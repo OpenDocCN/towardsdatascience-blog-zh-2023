@@ -1,18 +1,18 @@
 # 《抓住我，如果你能：Python 异常处理指南》
 
-> 原文：[https://towardsdatascience.com/catch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9?source=collection_archive---------9-----------------------#2023-05-08](https://towardsdatascience.com/catch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9?source=collection_archive---------9-----------------------#2023-05-08)
+> 原文：[`towardsdatascience.com/catch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9?source=collection_archive---------9-----------------------#2023-05-08`](https://towardsdatascience.com/catch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9?source=collection_archive---------9-----------------------#2023-05-08)
 
 ## 通过智能异常管理，释放 Python 的全部潜力
 
-[](https://medium.com/@orjwan.zaafarani?source=post_page-----3efc7b2477f9--------------------------------)[![Orjuwan Zaafarani](../Images/3400a2bf9d5f7a11aabcaa8ca9ad1823.png)](https://medium.com/@orjwan.zaafarani?source=post_page-----3efc7b2477f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3efc7b2477f9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3efc7b2477f9--------------------------------) [Orjuwan Zaafarani](https://medium.com/@orjwan.zaafarani?source=post_page-----3efc7b2477f9--------------------------------)
+[](https://medium.com/@orjwan.zaafarani?source=post_page-----3efc7b2477f9--------------------------------)![Orjuwan Zaafarani](https://medium.com/@orjwan.zaafarani?source=post_page-----3efc7b2477f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3efc7b2477f9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3efc7b2477f9--------------------------------) [Orjuwan Zaafarani](https://medium.com/@orjwan.zaafarani?source=post_page-----3efc7b2477f9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F155bd470ac4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcatch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9&user=Orjuwan+Zaafarani&userId=155bd470ac4c&source=post_page-155bd470ac4c----3efc7b2477f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3efc7b2477f9--------------------------------) ·6 分钟阅读·2023年5月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3efc7b2477f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcatch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9&user=Orjuwan+Zaafarani&userId=155bd470ac4c&source=-----3efc7b2477f9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F155bd470ac4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcatch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9&user=Orjuwan+Zaafarani&userId=155bd470ac4c&source=post_page-155bd470ac4c----3efc7b2477f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3efc7b2477f9--------------------------------) ·6 分钟阅读·2023 年 5 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3efc7b2477f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcatch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9&user=Orjuwan+Zaafarani&userId=155bd470ac4c&source=-----3efc7b2477f9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3efc7b2477f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcatch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9&source=-----3efc7b2477f9---------------------bookmark_footer-----------)![](../Images/bf4a79f5d2abc3d82f44902159d3cfd3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3efc7b2477f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcatch-me-if-you-can-a-guide-to-exception-handling-in-python-3efc7b2477f9&source=-----3efc7b2477f9---------------------bookmark_footer-----------)![](img/bf4a79f5d2abc3d82f44902159d3cfd3.png)
 
 图片来源：[Cookie the Pom](https://unsplash.com/@cookiethepom?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -182,7 +182,7 @@ InvalidEmailAddress: Invalid email address
 
 1.  **设计以应对失败**：提前规划，考虑可能的失败情况并设计你的程序以优雅地处理这些失败。这意味着要预见边界情况并实施适当的错误处理程序。
 
-1.  **使用描述性的错误信息**：提供详细的错误信息或日志，帮助用户理解出了什么问题以及为什么。避免使用诸如“发生错误”或“发生了不好的事情”的通用错误信息。相反，显示一个友好的消息，建议解决方案或提供文档链接。务必在提供详细说明和避免UI过于繁杂之间取得平衡。
+1.  **使用描述性的错误信息**：提供详细的错误信息或日志，帮助用户理解出了什么问题以及为什么。避免使用诸如“发生错误”或“发生了不好的事情”的通用错误信息。相反，显示一个友好的消息，建议解决方案或提供文档链接。务必在提供详细说明和避免 UI 过于繁杂之间取得平衡。
 
 1.  **最小化副作用**：通过使用 try-finally 或 try-with-resources 块隔离问题代码段，最小化失败操作的后果。确保清理任务在成功或失败的结果下都能始终执行。
 
@@ -198,6 +198,6 @@ InvalidEmailAddress: Invalid email address
 
 # 资源
 
-[1] [https://docs.python.org/3/tutorial/errors.html](https://docs.python.org/3/tutorial/errors.html)
+[1] [`docs.python.org/3/tutorial/errors.html`](https://docs.python.org/3/tutorial/errors.html)
 
-[2] [https://www.geeksforgeeks.org/python-exception-handling/](https://www.geeksforgeeks.org/python-exception-handling/)
+[2] [`www.geeksforgeeks.org/python-exception-handling/`](https://www.geeksforgeeks.org/python-exception-handling/)

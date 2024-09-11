@@ -1,32 +1,32 @@
-# 构建一个问答PDF聊天机器人
+# 构建一个问答 PDF 聊天机器人
 
-> 原文：[https://towardsdatascience.com/building-a-question-answering-pdf-chatbot-3e3b6372528c?source=collection_archive---------0-----------------------#2023-04-09](https://towardsdatascience.com/building-a-question-answering-pdf-chatbot-3e3b6372528c?source=collection_archive---------0-----------------------#2023-04-09)
+> 原文：[`towardsdatascience.com/building-a-question-answering-pdf-chatbot-3e3b6372528c?source=collection_archive---------0-----------------------#2023-04-09`](https://towardsdatascience.com/building-a-question-answering-pdf-chatbot-3e3b6372528c?source=collection_archive---------0-----------------------#2023-04-09)
 
 ## LangChain + OpenAI + Panel + HuggingFace
 
-[](https://sophiamyang.medium.com/?source=post_page-----3e3b6372528c--------------------------------)[![Sophia Yang, Ph.D.](../Images/c133f918245ea4857dc46df3a07fc2b1.png)](https://sophiamyang.medium.com/?source=post_page-----3e3b6372528c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e3b6372528c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e3b6372528c--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----3e3b6372528c--------------------------------)
+[](https://sophiamyang.medium.com/?source=post_page-----3e3b6372528c--------------------------------)![Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----3e3b6372528c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e3b6372528c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e3b6372528c--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----3e3b6372528c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-question-answering-pdf-chatbot-3e3b6372528c&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----3e3b6372528c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e3b6372528c--------------------------------) ·6分钟阅读·2023年4月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e3b6372528c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-question-answering-pdf-chatbot-3e3b6372528c&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----3e3b6372528c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-question-answering-pdf-chatbot-3e3b6372528c&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----3e3b6372528c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e3b6372528c--------------------------------) ·6 分钟阅读·2023 年 4 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e3b6372528c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-question-answering-pdf-chatbot-3e3b6372528c&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----3e3b6372528c---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3e3b6372528c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-question-answering-pdf-chatbot-3e3b6372528c&source=-----3e3b6372528c---------------------bookmark_footer-----------)
 
-让我们来构建一个用于回答外部PDF文件问题的聊天机器人。通过5个简单的步骤，你应该能够构建一个像这样的问答PDF聊天机器人：
+让我们来构建一个用于回答外部 PDF 文件问题的聊天机器人。通过 5 个简单的步骤，你应该能够构建一个像这样的问答 PDF 聊天机器人：
 
-![](../Images/04e327db177f82e78b649034568bb913.png)
+![](img/04e327db177f82e78b649034568bb913.png)
 
-😊 想试用这个应用吗？我已经在Hugging Face上托管了这个应用：[https://sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App](https://sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App)
+😊 想试用这个应用吗？我已经在 Hugging Face 上托管了这个应用：[`sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App`](https://sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App)
 
 [💻](https://emojipedia.org/laptop/) 你可以在这里找到我所有的代码：
 
-[https://huggingface.co/spaces/sophiamyang/Panel_PDF_QA/tree/main](https://huggingface.co/spaces/sophiamyang/Panel_PDF_QA/tree/main)
+[`huggingface.co/spaces/sophiamyang/Panel_PDF_QA/tree/main`](https://huggingface.co/spaces/sophiamyang/Panel_PDF_QA/tree/main)
 
 📒 你可以在这里找到我的笔记本文件：
 
-[https://huggingface.co/spaces/sophiamyang/Panel_PDF_QA/blob/main/LangChain_QA_Panel_App.ipynb](https://huggingface.co/spaces/sophiamyang/Panel_PDF_QA/blob/main/LangChain_QA_Panel_App.ipynb)
+[`huggingface.co/spaces/sophiamyang/Panel_PDF_QA/blob/main/LangChain_QA_Panel_App.ipynb`](https://huggingface.co/spaces/sophiamyang/Panel_PDF_QA/blob/main/LangChain_QA_Panel_App.ipynb)
 
 好的，开始构建这个问答 PDF 聊天机器人吧！
 
@@ -53,7 +53,7 @@ from langchain.vectorstores import Chroma
 import panel as pn
 ```
 
-+   定义 OpenAI API 密钥：在 OpenAI 创建一个账户并生成 API 密钥 [https://platform.openai.com/account](https://platform.openai.com/account)。请注意，OpenAI API 不是免费的。你需要在这里设置账单信息才能使用 OpenAI API。或者，你可以使用 HuggingFace Hub 或其他地方的模型。查看我之前的 [博客文章](/the-easiest-way-to-interact-with-language-models-4da158cfb5c5?sk=271c9c82a16282f93ef3df37f034babe) 和 [视频](https://www.youtube.com/watch?v=kmbS6FDQh7c) 了解如何使用其他模型。
++   定义 OpenAI API 密钥：在 OpenAI 创建一个账户并生成 API 密钥 [`platform.openai.com/account`](https://platform.openai.com/account)。请注意，OpenAI API 不是免费的。你需要在这里设置账单信息才能使用 OpenAI API。或者，你可以使用 HuggingFace Hub 或其他地方的模型。查看我之前的 博客文章 和 [视频](https://www.youtube.com/watch?v=kmbS6FDQh7c) 了解如何使用其他模型。
 
 ```py
 import os 
@@ -99,7 +99,7 @@ widgets = pn.Row(
 )
 ```
 
-![](../Images/13977854847cc63fd72ad272b5161716.png)
+![](img/13977854847cc63fd72ad272b5161716.png)
 
 # 第二步：定义问答函数
 
@@ -139,7 +139,7 @@ def qa(file, query, chain_type, k):
 
 下面是一个使用此函数的示例：
 
-![](../Images/7e81186b8414586a4162c4160fc25212.png)
+![](img/7e81186b8414586a4162c4160fc25212.png)
 
 # 第三步：将输出显示为 Panel 对象
 
@@ -194,7 +194,7 @@ qa_interactive = pn.panel(
 output = pn.WidgetBox('*Output will show up here:*', qa_interactive, width=630, scroll=True)
 ```
 
-![](../Images/281ed418e8c7bb749853ea3c8785e738.png)
+![](img/281ed418e8c7bb749853ea3c8785e738.png)
 
 # 第 5 步：定义布局
 
@@ -220,9 +220,9 @@ pn.Column(
 
 # 最终步骤：托管到 Hugging Face Space
 
-如你所见，在我的视频开始时，我在 Hugging Face 上托管了我的应用：[https://sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App](https://sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App)
+如你所见，在我的视频开始时，我在 Hugging Face 上托管了我的应用：[`sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App`](https://sophiamyang-panel-pdf-qa.hf.space/LangChain_QA_Panel_App)
 
-查看我之前的 [博客文章](/how-to-deploy-a-panel-app-to-hugging-face-using-docker-6189e3789718?sk=9c2bbd9bdbc3917e39dbd1fc9d1a5771) 和 [视频](https://www.youtube.com/watch?v=QQYq5rHgsa4)，了解如何在 Hugging Face 上托管 Panel 应用。
+查看我之前的 博客文章 和 [视频](https://www.youtube.com/watch?v=QQYq5rHgsa4)，了解如何在 Hugging Face 上托管 Panel 应用。
 
 这是我为这个应用程序所做的：
 
@@ -240,7 +240,7 @@ pn.Column(
 
 感谢 Jim Bednar 和 Philipp Rudiger 的指导和反馈！
 
-![](../Images/76672d3fd26b280ee1d8afa06e636c92.png)
+![](img/76672d3fd26b280ee1d8afa06e636c92.png)
 
 图片由 [Volodymyr Hryshchenko](https://unsplash.com/de/@lunarts?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

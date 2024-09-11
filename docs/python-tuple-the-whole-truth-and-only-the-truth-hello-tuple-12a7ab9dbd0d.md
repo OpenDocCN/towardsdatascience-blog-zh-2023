@@ -1,20 +1,20 @@
 # Python 元组，全部真相与唯一真相：你好，元组！
 
-> 原文：[https://towardsdatascience.com/python-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d?source=collection_archive---------0-----------------------#2023-01-21](https://towardsdatascience.com/python-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d?source=collection_archive---------0-----------------------#2023-01-21)
+> 原文：[`towardsdatascience.com/python-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d?source=collection_archive---------0-----------------------#2023-01-21`](https://towardsdatascience.com/python-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d?source=collection_archive---------0-----------------------#2023-01-21)
 
 ## PYTHON PROGRAMMING
 
 ## 学习元组的基础知识及其用法
 
-[](https://medium.com/@nyggus?source=post_page-----12a7ab9dbd0d--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----12a7ab9dbd0d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12a7ab9dbd0d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12a7ab9dbd0d--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----12a7ab9dbd0d--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----12a7ab9dbd0d--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----12a7ab9dbd0d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12a7ab9dbd0d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----12a7ab9dbd0d--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----12a7ab9dbd0d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----12a7ab9dbd0d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12a7ab9dbd0d--------------------------------) ·16分钟阅读·2023年1月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12a7ab9dbd0d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----12a7ab9dbd0d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----12a7ab9dbd0d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12a7ab9dbd0d--------------------------------) ·16 分钟阅读·2023 年 1 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12a7ab9dbd0d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----12a7ab9dbd0d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12a7ab9dbd0d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d&source=-----12a7ab9dbd0d---------------------bookmark_footer-----------)![](../Images/74860d4642efa6cd08de3d7411205690.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12a7ab9dbd0d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-tuple-the-whole-truth-and-only-the-truth-hello-tuple-12a7ab9dbd0d&source=-----12a7ab9dbd0d---------------------bookmark_footer-----------)![](img/74860d4642efa6cd08de3d7411205690.png)
 
 元组通常被认为是记录。照片由 [Samuel Regan-Asante](https://unsplash.com/@fkaregan?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

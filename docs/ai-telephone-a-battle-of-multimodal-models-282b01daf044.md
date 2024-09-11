@@ -1,18 +1,18 @@
 # AI 电话 — 多模态模型的对决
 
-> 原文：[https://towardsdatascience.com/ai-telephone-a-battle-of-multimodal-models-282b01daf044?source=collection_archive---------5-----------------------#2023-06-15](https://towardsdatascience.com/ai-telephone-a-battle-of-multimodal-models-282b01daf044?source=collection_archive---------5-----------------------#2023-06-15)
+> 原文：[`towardsdatascience.com/ai-telephone-a-battle-of-multimodal-models-282b01daf044?source=collection_archive---------5-----------------------#2023-06-15`](https://towardsdatascience.com/ai-telephone-a-battle-of-multimodal-models-282b01daf044?source=collection_archive---------5-----------------------#2023-06-15)
 
 ## DALL-E2、Stable Diffusion、BLIP 等！
 
-[](https://medium.com/@jacob_marks?source=post_page-----282b01daf044--------------------------------)[![Jacob Marks, Ph.D.](../Images/94d9832b8706d1044e3195386613bfab.png)](https://medium.com/@jacob_marks?source=post_page-----282b01daf044--------------------------------)[](https://towardsdatascience.com/?source=post_page-----282b01daf044--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----282b01daf044--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----282b01daf044--------------------------------)
+[](https://medium.com/@jacob_marks?source=post_page-----282b01daf044--------------------------------)![Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----282b01daf044--------------------------------)[](https://towardsdatascience.com/?source=post_page-----282b01daf044--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----282b01daf044--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----282b01daf044--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-telephone-a-battle-of-multimodal-models-282b01daf044&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----282b01daf044---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----282b01daf044--------------------------------) · 14 min 阅读 · 2023年6月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F282b01daf044&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-telephone-a-battle-of-multimodal-models-282b01daf044&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----282b01daf044---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-telephone-a-battle-of-multimodal-models-282b01daf044&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----282b01daf044---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----282b01daf044--------------------------------) · 14 min 阅读 · 2023 年 6 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F282b01daf044&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-telephone-a-battle-of-multimodal-models-282b01daf044&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----282b01daf044---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F282b01daf044&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-telephone-a-battle-of-multimodal-models-282b01daf044&source=-----282b01daf044---------------------bookmark_footer-----------)![](../Images/c69c273d766460fcee87fbfc328b6a01.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F282b01daf044&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-telephone-a-battle-of-multimodal-models-282b01daf044&source=-----282b01daf044---------------------bookmark_footer-----------)![](img/c69c273d766460fcee87fbfc328b6a01.png)
 
 *AI 电话游戏的艺术渲染图。图像由作者使用 DALL-E2 生成。*
 
@@ -52,15 +52,15 @@ Telestrations 非常类似于 [电话游戏](https://www.wikihow.com/Play-the-Te
 
 文章的结构如下：
 
-1.  [选择多模态模型](#6fb8)
+1.  选择多模态模型
 
-1.  [生成提示](#cc8c)
+1.  生成提示
 
-1.  [创建电话线路](#50e9)
+1.  创建电话线路
 
-1.  [进行对话](#5551)
+1.  进行对话
 
-1.  [可视化和分析结果](#715e)
+1.  可视化和分析结果
 
 运行这个实验和玩 AI 电话游戏的所有代码可以在 [这里](https://github.com/voxel51/fiftyone-examples/blob/master/examples/ai_telephone.ipynb) 找到。
 
@@ -192,9 +192,9 @@ prompts that I can use to run these games of telephone. You must give me one 3
 easy, 3 medium, 3 hard, and 1 ultra-hard prompt
 ```
 
-我正在使用文本到图像和图像到文本的AI模型进行电话游戏。我希望根据这些模型在长时间对话中保持复杂语义信息的能力进行评估。你的任务是给我10个文本提示，我可以用来运行这些电话游戏。你必须给我3个简单的、3个中等的、3个困难的和1个超难（“不可能”）的提示。
+我正在使用文本到图像和图像到文本的 AI 模型进行电话游戏。我希望根据这些模型在长时间对话中保持复杂语义信息的能力进行评估。你的任务是给我 10 个文本提示，我可以用来运行这些电话游戏。你必须给我 3 个简单的、3 个中等的、3 个困难的和 1 个超难（“不可能”）的提示。
 
-这里是一些ChatGPT生成的提示：
+这里是一些 ChatGPT 生成的提示：
 
 ```py
 Easy:
@@ -216,7 +216,7 @@ Impossible:
 
 *更严格的科学方法会对所使用的提示以及它们的分类更加用心。*
 
-我将ChatGPT生成的文本提示转化为`Prompt`对象，其中包含提示的文本，以及ChatGPT分配的“难度”级别：
+我将 ChatGPT 生成的文本提示转化为`Prompt`对象，其中包含提示的文本，以及 ChatGPT 分配的“难度”级别：
 
 ```py
 class Prompt(object):
@@ -235,11 +235,11 @@ def get_prompts():
     return prompts
 ```
 
-AI电话游戏中VQGAN-CLIP与MiniGPT-4之间图像的进展。
+AI 电话游戏中 VQGAN-CLIP 与 MiniGPT-4 之间图像的进展。
 
 # 电话线
 
-玩AI电话游戏的最后一个组件是“电话线”本身。我创建了一个`TelephoneLine`类来封装T2I模型和I2T模型之间的连接。给定一条电话线，通过调用`play(prompt, nturns=10)`来进行“游戏”，对话从`prompt`开始，并进行`nturns`轮回合。
+玩 AI 电话游戏的最后一个组件是“电话线”本身。我创建了一个`TelephoneLine`类来封装 T2I 模型和 I2T 模型之间的连接。给定一条电话线，通过调用`play(prompt, nturns=10)`来进行“游戏”，对话从`prompt`开始，并进行`nturns`轮回合。
 
 ```py
 import os
@@ -280,9 +280,9 @@ class TelephoneLine(object):
         }
 ```
 
-对于每个进行的游戏，使用唯一名称记录对话，该名称由T2I模型名称、I2T模型名称和提示文本（`get_conversation_name()`方法）哈希生成。
+对于每个进行的游戏，使用唯一名称记录对话，该名称由 T2I 模型名称、I2T 模型名称和提示文本（`get_conversation_name()`方法）哈希生成。
 
-我还为该类配备了一个`save_conversations_to_dataset()`方法，该方法将所有游戏中的图像和描述保存到FiftyOne `Dataset`中：
+我还为该类配备了一个`save_conversations_to_dataset()`方法，该方法将所有游戏中的图像和描述保存到 FiftyOne `Dataset`中：
 
 ```py
  def save_conversations_to_dataset(self, dataset):
@@ -314,13 +314,13 @@ class TelephoneLine(object):
                 dataset.add_sample(sample)
 ```
 
-AI电话游戏中Stable Diffusion与CLIP Prefix Captioning之间图像的进展。
+AI 电话游戏中 Stable Diffusion 与 CLIP Prefix Captioning 之间图像的进展。
 
 # 进行对话
 
-所有构建模块到位后，玩AI电话游戏简直是小菜一碟！
+所有构建模块到位后，玩 AI 电话游戏简直是小菜一碟！
 
-我们可以实例化T2I和I2T模型：
+我们可以实例化 T2I 和 I2T 模型：
 
 ```py
 ## Image2Text models
@@ -350,7 +350,7 @@ lines = [TelephoneLine(*combo) for combo in combos]
 prompts = get_prompts()
 ```
 
-并创建一个FiftyOne `Dataset`，我们将用来存储生成的图像以及来自对话的所有相关信息：
+并创建一个 FiftyOne `Dataset`，我们将用来存储生成的图像以及来自对话的所有相关信息：
 
 ```py
 import fiftyone as fo
@@ -366,7 +366,7 @@ dataset.add_sample_field("text_before", fo.StringField)
 dataset.add_sample_field("text_after", fo.StringField)
 ```
 
-然后我们可以运行所有120场电话游戏：
+然后我们可以运行所有 120 场电话游戏：
 
 ```py
 from tqdm import tqdm
@@ -379,7 +379,7 @@ for line in tqdm(lines):
 session = fo.launch_app(dataset)
 ```
 
-在FiftyOne应用程序中，点击菜单栏中的分割图标，以对话为单位对图像进行分组，从下拉菜单中选择`conversation_name`，然后将选择器切换到`ordered`并选择`step_number`。
+在 FiftyOne 应用程序中，点击菜单栏中的分割图标，以对话为单位对图像进行分组，从下拉菜单中选择`conversation_name`，然后将选择器切换到`ordered`并选择`step_number`。
 
 # 结果和结论
 
@@ -389,7 +389,7 @@ session = fo.launch_app(dataset)
 from scipy.spatial.distance import cosine as cosine_distance
 ```
 
-对于嵌入模型，我希望选择一个能够同时嵌入文本和图像的模型，以适应该任务的多模态特性。最终，我选择了使用ImageBind，原因有三：
+对于嵌入模型，我希望选择一个能够同时嵌入文本和图像的模型，以适应该任务的多模态特性。最终，我选择了使用 ImageBind，原因有三：
 
 1.  其他流行的联合图像-文本嵌入模型如 CLIP 和 BLIP 与我在实验中使用的一些模型（BLIP 和 CLIP prefix captioning）有关，我希望避免使用相同类型模型进行评估带来的任何潜在偏差。
 
@@ -458,7 +458,7 @@ for cg in conversation_groups.iter_dynamic_groups(progress=True):
 
 ## 简单
 
-![](../Images/0f19f4db954511a26ab1c95cb13526c9.png)
+![](img/0f19f4db954511a26ab1c95cb13526c9.png)
 
 对于简单的提示，性能往往最依赖于文本到图像模型。DALL-E2 和 Stable Diffusion 显著优于 VQGAN-CLIP。MiniGPT-4 是这两个顶级表现对中的成员。
 
@@ -470,7 +470,7 @@ for cg in conversation_groups.iter_dynamic_groups(progress=True):
 
 ## 中等
 
-![](../Images/cc664b641e6ec5bbbc202e6fa1dbd1e7.png)
+![](img/cc664b641e6ec5bbbc202e6fa1dbd1e7.png)
 
 当提示变得稍微困难时，情况开始发生变化。
 
@@ -480,7 +480,7 @@ for cg in conversation_groups.iter_dynamic_groups(progress=True):
 
 ## 困难
 
-![](../Images/9e02437c072b5f6388b7e36483df716b.png)
+![](img/9e02437c072b5f6388b7e36483df716b.png)
 
 当提示变得具有挑战性时，我们开始看到有趣的现象：在早期步骤中，图像到文本模型最为重要（MiniGPT-4 最佳，CLIP Prefix 通常最差）。但在后期阶段，文本到图像模型变得最为重要。更复杂的是，VQGAN-CLIP 在这里表现最佳！
 
@@ -492,7 +492,7 @@ AI 电话对于一个困难的提示，涉及成对的文本到图像和图像�
 
 ## 不可能
 
-![](../Images/00ae40dcc7622c335c9b871b46224e71.png)
+![](img/00ae40dcc7622c335c9b871b46224e71.png)
 
 不出所料，我们的竞争对手在这里表现得都不太好。有人可能会争辩说 VQGAN-CLIP 是赢家。但在大多数情况下，这一切只是噪音。在视频中，即使是涉及 VQGAN-CLIP 的游戏，主题也基本上无法识别。
 

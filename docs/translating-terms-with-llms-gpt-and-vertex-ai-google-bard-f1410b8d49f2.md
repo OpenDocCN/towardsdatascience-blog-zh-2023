@@ -1,16 +1,16 @@
 # 翻译术语与 LLM（GPT 和 Vertex AI/Google Bard）
 
-> 原文：[https://towardsdatascience.com/translating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2?source=collection_archive---------12-----------------------#2023-09-21](https://towardsdatascience.com/translating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2?source=collection_archive---------12-----------------------#2023-09-21)
+> 原文：[`towardsdatascience.com/translating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2?source=collection_archive---------12-----------------------#2023-09-21`](https://towardsdatascience.com/translating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2?source=collection_archive---------12-----------------------#2023-09-21)
 
-[](https://medium.com/@shafquat?source=post_page-----f1410b8d49f2--------------------------------)[![Shafquat Arefeen](../Images/a52f40380207c523acd2feff7d2c4d4a.png)](https://medium.com/@shafquat?source=post_page-----f1410b8d49f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1410b8d49f2--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f1410b8d49f2--------------------------------) [Shafquat Arefeen](https://medium.com/@shafquat?source=post_page-----f1410b8d49f2--------------------------------)
+[](https://medium.com/@shafquat?source=post_page-----f1410b8d49f2--------------------------------)![Shafquat Arefeen](https://medium.com/@shafquat?source=post_page-----f1410b8d49f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1410b8d49f2--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----f1410b8d49f2--------------------------------) [Shafquat Arefeen](https://medium.com/@shafquat?source=post_page-----f1410b8d49f2--------------------------------)
 
 ·
 
-[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F73abef6f209b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2&user=Shafquat+Arefeen&userId=73abef6f209b&source=post_page-73abef6f209b----f1410b8d49f2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f1410b8d49f2--------------------------------) ·6分钟阅读·2023年9月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff1410b8d49f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2&user=Shafquat+Arefeen&userId=73abef6f209b&source=-----f1410b8d49f2---------------------clap_footer-----------)
+[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F73abef6f209b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2&user=Shafquat+Arefeen&userId=73abef6f209b&source=post_page-73abef6f209b----f1410b8d49f2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f1410b8d49f2--------------------------------) ·6 分钟阅读·2023 年 9 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff1410b8d49f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2&user=Shafquat+Arefeen&userId=73abef6f209b&source=-----f1410b8d49f2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1410b8d49f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2&source=-----f1410b8d49f2---------------------bookmark_footer-----------)![](../Images/3d6348c7aafe453c0c1aca222ec00686.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1410b8d49f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslating-terms-with-llms-gpt-and-vertex-ai-google-bard-f1410b8d49f2&source=-----f1410b8d49f2---------------------bookmark_footer-----------)![](img/3d6348c7aafe453c0c1aca222ec00686.png)
 
 照片由 [Mojahid Mottakin](https://unsplash.com/@iammottakin?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/qkAUuWW_YHk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供
 
@@ -22,7 +22,7 @@
 
 随着像 ChatGPT 和 Google Bard 这样的语言模型（LLMs）的兴起，我们可能通过为 LLM 提供额外的上下文（如定义和词性）来更接近人类翻译的准确性。
 
-![](../Images/557569e79fc2091cf7292e696eabcb5b.png)
+![](img/557569e79fc2091cf7292e696eabcb5b.png)
 
 # 假设
 
@@ -89,7 +89,7 @@ for language in languages:
     df[language+'_terms'] = df.apply(translate_terms, axis=1, args=(language,))
 ```
 
-![](../Images/0ca63057418f35de4d924084a9458fb2.png)
+![](img/0ca63057418f35de4d924084a9458fb2.png)
 
 带有翻译术语的数据框
 
@@ -164,11 +164,11 @@ FROM
 
 *说明：除了英语，我不懂这些语言，因此请对我的结论保持一些保留。*
 
-![](../Images/8b4548e8734b00ebeefcbfe9f2348079.png)
+![](img/8b4548e8734b00ebeefcbfe9f2348079.png)
 
 GPT 翻译术语
 
-![](../Images/49c75449feeb3da3bbab802a36bdbd96.png)
+![](img/49c75449feeb3da3bbab802a36bdbd96.png)
 
 Vertex AI 翻译术语
 
@@ -184,8 +184,8 @@ Vertex AI 翻译术语
 
     - 这可能是因为我的提示结构不是最优的。例如，我本可以在术语前提供定义，以便 LLM 先处理这些信息。
 
-+   “Heavy metal”（专有名词）似乎被GPT字面翻译，特别是在德语中，它被翻译成一个与音乐流派不相符的术语。
++   “Heavy metal”（专有名词）似乎被 GPT 字面翻译，特别是在德语中，它被翻译成一个与音乐流派不相符的术语。
 
-我最终会说这两种LLM各有优缺点。GPT易于在Python中设置和运行，而Vertex AI对提示的理解更清晰，在进行翻译之前会考虑所有上下文。我认为可以公平地说，LLM比普通机器翻译做得更好，因为它们能够处理提示中的额外上下文。告诉我你的想法。我是否能做得更好？
+我最终会说这两种 LLM 各有优缺点。GPT 易于在 Python 中设置和运行，而 Vertex AI 对提示的理解更清晰，在进行翻译之前会考虑所有上下文。我认为可以公平地说，LLM 比普通机器翻译做得更好，因为它们能够处理提示中的额外上下文。告诉我你的想法。我是否能做得更好？
 
 *原文发表于* [*https://shafquatarefeen.com*](https://shafquatarefeen.com/gpt/)*。*

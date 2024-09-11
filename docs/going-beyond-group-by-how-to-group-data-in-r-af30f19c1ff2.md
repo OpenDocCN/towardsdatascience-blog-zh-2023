@@ -1,18 +1,18 @@
 # 如何在 R 中分组数据：超越“group_by”
 
-> 原文：[https://towardsdatascience.com/going-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2?source=collection_archive---------12-----------------------#2023-02-15](https://towardsdatascience.com/going-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2?source=collection_archive---------12-----------------------#2023-02-15)
+> 原文：[`towardsdatascience.com/going-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2?source=collection_archive---------12-----------------------#2023-02-15`](https://towardsdatascience.com/going-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2?source=collection_archive---------12-----------------------#2023-02-15)
 
 ## 从初学者到高级用户，掌握这些分组工作流程
 
-[](https://roryspanton.medium.com/?source=post_page-----af30f19c1ff2--------------------------------)[![Rory Spanton](../Images/6c35a3de7cb516aac09bc5cf417a6c70.png)](https://roryspanton.medium.com/?source=post_page-----af30f19c1ff2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af30f19c1ff2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----af30f19c1ff2--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----af30f19c1ff2--------------------------------)
+[](https://roryspanton.medium.com/?source=post_page-----af30f19c1ff2--------------------------------)![Rory Spanton](https://roryspanton.medium.com/?source=post_page-----af30f19c1ff2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af30f19c1ff2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----af30f19c1ff2--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----af30f19c1ff2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----af30f19c1ff2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----af30f19c1ff2--------------------------------) ·8分钟阅读·2023年2月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf30f19c1ff2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2&user=Rory+Spanton&userId=39501aa8ce39&source=-----af30f19c1ff2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----af30f19c1ff2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----af30f19c1ff2--------------------------------) ·8 分钟阅读·2023 年 2 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf30f19c1ff2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2&user=Rory+Spanton&userId=39501aa8ce39&source=-----af30f19c1ff2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf30f19c1ff2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2&source=-----af30f19c1ff2---------------------bookmark_footer-----------)![](../Images/94f77c2b664024472c8b2639518e76a7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf30f19c1ff2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-beyond-group-by-how-to-group-data-in-r-af30f19c1ff2&source=-----af30f19c1ff2---------------------bookmark_footer-----------)![](img/94f77c2b664024472c8b2639518e76a7.png)
 
 图片由[Camille San Vicente](https://unsplash.com/@camillesanvicente?utm_source=medium&utm_medium=referral)提供，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 

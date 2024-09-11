@@ -1,14 +1,14 @@
 # 解锁用户激活与根本原因分析
 
-> 原文：[https://towardsdatascience.com/unlocking-user-activation-with-root-cause-analysis-f7469a672c88?source=collection_archive---------16-----------------------#2023-03-20](https://towardsdatascience.com/unlocking-user-activation-with-root-cause-analysis-f7469a672c88?source=collection_archive---------16-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/unlocking-user-activation-with-root-cause-analysis-f7469a672c88?source=collection_archive---------16-----------------------#2023-03-20`](https://towardsdatascience.com/unlocking-user-activation-with-root-cause-analysis-f7469a672c88?source=collection_archive---------16-----------------------#2023-03-20)
 
 ## **逐步指南：如何进行结构化根本原因分析**
 
-[](https://medium.com/@jordangom?source=post_page-----f7469a672c88--------------------------------)[![Jordan Gomes](../Images/d08bb9fd8b084687599a67a2221ec68c.png)](https://medium.com/@jordangom?source=post_page-----f7469a672c88--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f7469a672c88--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f7469a672c88--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----f7469a672c88--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----f7469a672c88--------------------------------)![Jordan Gomes](https://medium.com/@jordangom?source=post_page-----f7469a672c88--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f7469a672c88--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f7469a672c88--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----f7469a672c88--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-user-activation-with-root-cause-analysis-f7469a672c88&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----f7469a672c88---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f7469a672c88--------------------------------) ·6分钟阅读·2023年3月20日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-user-activation-with-root-cause-analysis-f7469a672c88&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----f7469a672c88---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f7469a672c88--------------------------------) ·6 分钟阅读·2023 年 3 月 20 日
 
 --
 
@@ -18,7 +18,7 @@
 
 建立这些是迈向产品增长伟大旅程的第一步，一旦你识别出这些内容——这时有趣的部分才开始。你接下来的任务就是理解哪些方法和最有效的杠杆可以推动这些内容。
 
-这就是根本原因分析可以帮助你的地方。RCA是一种结构化的问题解决方法，可以提供对使用哪些杠杆以及它们对你期望结果的贡献程度的更好理解。它将帮助你深入了解当前的问题并识别其根本原因。
+这就是根本原因分析可以帮助你的地方。RCA 是一种结构化的问题解决方法，可以提供对使用哪些杠杆以及它们对你期望结果的贡献程度的更好理解。它将帮助你深入了解当前的问题并识别其根本原因。
 
 我特别喜欢这种分析方法，因为它位于定量和定性方法的交汇点。这使其成为一种高度跨职能和全面的研究，其中利用定性数据对于识别潜在原因和测试假设是必要的。
 
@@ -26,15 +26,15 @@
 
 +   你经营一个健身应用程序。
 
-+   你刚刚发现，上传锻炼视频的用户在下载应用程序后的7天内更有可能继续使用你的应用程序，而不是那些没有上传的用户。
++   你刚刚发现，上传锻炼视频的用户在下载应用程序后的 7 天内更有可能继续使用你的应用程序，而不是那些没有上传的用户。
 
 +   你现在在思考如何才能最好地推动这个指标。
 
-![](../Images/463e6d34a6b018e6df36b0128f8f12bb.png)
+![](img/463e6d34a6b018e6df36b0128f8f12bb.png)
 
 [Matteo Grando](https://unsplash.com/@mang5ta?utm_source=medium&utm_medium=referral) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-# **什么是RCA**
+# **什么是 RCA**
 
 根本原因分析（RCA）是一种结构化的问题解决方法，它帮助你识别问题的根本原因，而不仅仅是处理其症状。它可以让你真正了解“为什么”——为什么事情会以这种方式发生。其输出可以有多种形式——但通常可以表示为“决策树”或“失败树”，这些形式易于理解，非常直观，商业利益相关者尤其喜欢。
 
@@ -45,11 +45,11 @@ If properly used, it can be a great tool to make you think about complex
 systemic interactions and allow you to move away from a symptom to its cause. 
 ```
 
-它通常包括大约5个步骤：定义问题、收集数据、识别和评估不同的原因、识别根本原因以及制定解决方案计划。此外，它不仅允许你了解“为什么”，还可以让你对如何能在你的问题上取得多大进展有个粗略估计（从这些估计中你可以建立优先级模型、OKRs等）。
+它通常包括大约 5 个步骤：定义问题、收集数据、识别和评估不同的原因、识别根本原因以及制定解决方案计划。此外，它不仅允许你了解“为什么”，还可以让你对如何能在你的问题上取得多大进展有个粗略估计（从这些估计中你可以建立优先级模型、OKRs 等）。
 
 # **常规的根本原因分析步骤**
 
-**#1: 定义问题**：根本原因分析的第一步是明确你想解决的问题。在我们的例子中（以及在此阶段），问题相当直接：“我们如何在用户注册我们的移动健身应用程序后的7天内增加上传锻炼的用户数量，以提高用户保留率？”
+**#1: 定义问题**：根本原因分析的第一步是明确你想解决的问题。在我们的例子中（以及在此阶段），问题相当直接：“我们如何在用户注册我们的移动健身应用程序后的 7 天内增加上传锻炼的用户数量，以提高用户保留率？”
 
 **#2: 收集数据**：下一步是收集有关问题的数据。这包括收集有关问题的信息，例如何时发生/发生了什么/谁受到影响/他们如何受到影响。重要的是要获得问题的定量和定性视角，并与受影响的人员和/或该主题的专家交谈。
 
@@ -73,17 +73,17 @@ directly (i.e. without further checking) for your root cause analysis.
 
 一旦你识别出所有可能的原因，并开始构建你的树形图，重要的是要评估这些原因并了解它们对问题的贡献程度。对于一些原因，这将很简单，因为你会有数据；而对于其他原因，则可能稍微复杂一些，你可能需要收集更多的数据和/或发挥一些想象力来生成一些现实的估计——但通过这些权重，当你开始撰写建议并决定调整哪些杠杆时，这将使事情变得更加简单。
 
-**#4: 迭代直到识别出根本原因**：现在你已经识别出决策树的第一个节点，你可以重新迭代，直到找到实际的原因。作为一个经验法则，你应该尝试进行最多5次迭代（即“5个为什么”技术）——这是一个很好的强迫性方法，挑战你真正思考第二/第三层次的效果，而不仅仅是明显的原因。
+**#4: 迭代直到识别出根本原因**：现在你已经识别出决策树的第一个节点，你可以重新迭代，直到找到实际的原因。作为一个经验法则，你应该尝试进行最多 5 次迭代（即“5 个为什么”技术）——这是一个很好的强迫性方法，挑战你真正思考第二/第三层次的效果，而不仅仅是明显的原因。
 
 如果我们回到我们的例子，它可能看起来像这样：
 
-![](../Images/a172e2e6fef4bc2eb77a6b6e83cd2101.png)
+![](img/a172e2e6fef4bc2eb77a6b6e83cd2101.png)
 
 针对健身应用激活率的根本原因分析示例（图像由作者提供）
 
 **#5: 制定行动计划**：现在你已经对潜在根本原因有了清晰的了解，最后一步是制定一个行动计划来解决这些问题。我写了一篇关于“[如何优先考虑进行哪些数据科学项目](https://medium.com/towards-data-science/how-to-choose-which-data-projects-to-work-on-c6b8310ac04e)”的文章：这里的思路类似：你需要根据不同的参数来优先考虑要调整哪个杠杆，这些参数可以包括（但不限于）：机会的大小、执行能力、对结果的信心、市场时间等。
 
-![](../Images/d6afe20c369f69550101d2b4f609eb56.png)
+![](img/d6afe20c369f69550101d2b4f609eb56.png)
 
 数据项目的时间投资矩阵（图像由作者提供）
 

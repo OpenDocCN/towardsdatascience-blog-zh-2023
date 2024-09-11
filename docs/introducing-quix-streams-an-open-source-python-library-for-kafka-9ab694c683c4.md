@@ -1,10 +1,10 @@
 # 介绍 Quix Streams：一个开源的 Python Kafka 库
 
-> 原文：[https://towardsdatascience.com/introducing-quix-streams-an-open-source-python-library-for-kafka-9ab694c683c4?source=collection_archive---------18-----------------------#2023-03-06](https://towardsdatascience.com/introducing-quix-streams-an-open-source-python-library-for-kafka-9ab694c683c4?source=collection_archive---------18-----------------------#2023-03-06)
+> 原文：[`towardsdatascience.com/introducing-quix-streams-an-open-source-python-library-for-kafka-9ab694c683c4?source=collection_archive---------18-----------------------#2023-03-06`](https://towardsdatascience.com/introducing-quix-streams-an-open-source-python-library-for-kafka-9ab694c683c4?source=collection_archive---------18-----------------------#2023-03-06)
 
 ## 轻松生成和消费类似 Pandas 接口的时间序列数据流
 
-[](https://medium.com/@tomasatquix?source=post_page-----9ab694c683c4--------------------------------)[![Tomáš Neubauer](../Images/5eb14b73cfe100ef9a43148db6abd3a9.png)](https://medium.com/@tomasatquix?source=post_page-----9ab694c683c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ab694c683c4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9ab694c683c4--------------------------------) [Tomáš Neubauer](https://medium.com/@tomasatquix?source=post_page-----9ab694c683c4--------------------------------)
+[](https://medium.com/@tomasatquix?source=post_page-----9ab694c683c4--------------------------------)![Tomáš Neubauer](https://medium.com/@tomasatquix?source=post_page-----9ab694c683c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ab694c683c4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ab694c683c4--------------------------------) [Tomáš Neubauer](https://medium.com/@tomasatquix?source=post_page-----9ab694c683c4--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ab694c683c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-quix-streams-an-open-source-python-library-for-kafka-9ab694c683c4&source=-----9ab694c683c4---------------------bookmark_footer-----------)![](../Images/d943b1dd736dd40843ce1917803e06f4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ab694c683c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-quix-streams-an-open-source-python-library-for-kafka-9ab694c683c4&source=-----9ab694c683c4---------------------bookmark_footer-----------)![](img/d943b1dd736dd40843ce1917803e06f4.png)
 
 作者提供的图片
 
@@ -222,14 +222,14 @@ qx.App.run()
 
 请注意，这正是您在 Jupyter notebook 上对静态数据执行相同计算的方式——因此，对于习惯于批处理的人来说，学习起来会很容易。
 
-你无需为流数据的有状态处理的复杂性而苦恼——这一切都会由库来管理。此外，虽然它仍然会像Pandas一样，但底层将使用二进制表——这相比传统的Pandas DataFrames带来了显著的性能提升。
+你无需为流数据的有状态处理的复杂性而苦恼——这一切都会由库来管理。此外，虽然它仍然会像 Pandas 一样，但底层将使用二进制表——这相比传统的 Pandas DataFrames 带来了显著的性能提升。
 
 要了解下一个版本何时准备好，请确保关注[Quix Streams GitHub 仓库](https://github.com/quixio/quix-streams)。
 
 路线图也应由更广泛的数据社区的反馈和贡献来塑造：
 
-+   如果你发现了bug或想要请求改进，请随时[报告 GitHub 问题](https://github.com/quixio/quix-streams/issues)。
++   如果你发现了 bug 或想要请求改进，请随时[报告 GitHub 问题](https://github.com/quixio/quix-streams/issues)。
 
-+   如果你有问题、需要帮助，或只是想了解更多关于这个库的信息，可以尝试在Slack社区“[The Stream](https://quix.io/slack-invite)”（我帮忙进行管理）中发布消息，或查看[文档](https://quix.io/docs/)。
++   如果你有问题、需要帮助，或只是想了解更多关于这个库的信息，可以尝试在 Slack 社区“[The Stream](https://quix.io/slack-invite)”（我帮忙进行管理）中发布消息，或查看[文档](https://quix.io/docs/)。
 
 +   如果你想改进这个库，请查看[贡献指南](https://github.com/quixio/quix-streams/blob/main/CONTRIBUTING.md)。

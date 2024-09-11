@@ -1,22 +1,22 @@
 # 升级到 PyTorch 2.0 的技巧和窍门
 
-> 原文：[https://towardsdatascience.com/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d?source=collection_archive---------3-----------------------#2023-05-21](https://towardsdatascience.com/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d?source=collection_archive---------3-----------------------#2023-05-21)
+> 原文：[`towardsdatascience.com/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d?source=collection_archive---------3-----------------------#2023-05-21`](https://towardsdatascience.com/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d?source=collection_archive---------3-----------------------#2023-05-21)
 
 ## 迁移到全新 “*编译模式*” 时需要注意的事项
 
-[](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----3127db1d1f3d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------) · 19 分钟阅读 · 2023年5月21日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3127db1d1f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&user=Chaim+Rand&userId=9440b37e27fe&source=-----3127db1d1f3d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----3127db1d1f3d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------) · 19 分钟阅读 · 2023 年 5 月 21 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3127db1d1f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&user=Chaim+Rand&userId=9440b37e27fe&source=-----3127db1d1f3d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3127db1d1f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&source=-----3127db1d1f3d---------------------bookmark_footer-----------)![](../Images/060c7e18eb124cb75770d6516eabd6ba.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3127db1d1f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&source=-----3127db1d1f3d---------------------bookmark_footer-----------)![](img/060c7e18eb124cb75770d6516eabd6ba.png)
 
 图片由 [Mohamed Nohassi](https://unsplash.com/@coopery?utm_source=medium&utm_medium=referral) 提供，刊登在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-![](../Images/26d692c970946df49e1809c2e6ee619e.png)
+![](img/26d692c970946df49e1809c2e6ee619e.png)
 
 作者
 
@@ -26,13 +26,13 @@
 
 在开始之前，我们应该提到几件事。我们在这篇文章中的意图是分享一些我们在适应 torch.compile API 过程中遇到的问题示例。这些示例绝非全面。你可能会遇到本文未提及的问题。还要记住，torch.compile 仍在积极开发中。我们所写的内容可能在你阅读时已经不再适用。务必保持最新，关注最新的发布和文档。
 
-在torch编译中，存在许多创新技术，包括[TorchDynamo](https://github.com/pytorch/torchdynamo/tree/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd)、[FX Graph](https://pytorch.org/docs/stable/fx.html)、[TorchInductor](https://dev-discuss.pytorch.org/t/torchinductor-a-pytorch-native-compiler-with-define-by-run-ir-and-symbolic-shapes/747)、[Triton](https://github.com/openai/triton)等。虽然我们在此不会深入探讨这些不同的组件，但我们鼓励你从[PyTorch文档](https://pytorch.org/get-started/pytorch-2.0/#technology-overview)、[2022年PyTorch大会](https://www.youtube.com/watch?v=vbtGZL7IrAw&ab_channel=PyTorch)或[这篇有用的TDS帖子](/how-pytorch-2-0-accelerates-deep-learning-with-operator-fusion-and-cpu-gpu-code-generation-35132a85bd26)中了解它们。通常，对幕后发生的事情有一个好的理解可以帮助你弄清楚为什么模型没有编译成功以及如何解决这个问题。
+在 torch 编译中，存在许多创新技术，包括[TorchDynamo](https://github.com/pytorch/torchdynamo/tree/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd)、[FX Graph](https://pytorch.org/docs/stable/fx.html)、[TorchInductor](https://dev-discuss.pytorch.org/t/torchinductor-a-pytorch-native-compiler-with-define-by-run-ir-and-symbolic-shapes/747)、[Triton](https://github.com/openai/triton)等。虽然我们在此不会深入探讨这些不同的组件，但我们鼓励你从[PyTorch 文档](https://pytorch.org/get-started/pytorch-2.0/#technology-overview)、[2022 年 PyTorch 大会](https://www.youtube.com/watch?v=vbtGZL7IrAw&ab_channel=PyTorch)或这篇有用的 TDS 帖子中了解它们。通常，对幕后发生的事情有一个好的理解可以帮助你弄清楚为什么模型没有编译成功以及如何解决这个问题。
 
-本文绝不应被视为官方PyTorch文档的替代品（例如，[这里](https://pytorch.org/get-started/pytorch-2.0/)）。本文也不应被视为对PyTorch相对于TensorFlow（或其他ML训练框架）、编译模式相对于急切模式，或任何我们提到的工具、库或平台的认可。我发现所有框架都有其优缺点。我对任何特定框架没有强烈的偏好或热情。我的热情在于解决有趣的技术挑战——挑战越难越好——无论它们存在于何种平台或框架上。你可以说我对框架是中立的。尽管如此，请允许我对PyTorch和TensorFlow库如何随时间演变进行两个完全无关紧要的观察。可以跳过这些观察，直接回到正题。
+本文绝不应被视为官方 PyTorch 文档的替代品（例如，[这里](https://pytorch.org/get-started/pytorch-2.0/)）。本文也不应被视为对 PyTorch 相对于 TensorFlow（或其他 ML 训练框架）、编译模式相对于急切模式，或任何我们提到的工具、库或平台的认可。我发现所有框架都有其优缺点。我对任何特定框架没有强烈的偏好或热情。我的热情在于解决有趣的技术挑战——挑战越难越好——无论它们存在于何种平台或框架上。你可以说我对框架是中立的。尽管如此，请允许我对 PyTorch 和 TensorFlow 库如何随时间演变进行两个完全无关紧要的观察。可以跳过这些观察，直接回到正题。
 
-## TensorFlow与PyTorch战争的两个完全无关紧要的观察
+## TensorFlow 与 PyTorch 战争的两个完全无关紧要的观察
 
-**观察1**：在过去，当生活很简单时，PyTorch和TensorFlow之间有明显的区别。PyTorch使用急切执行模式，TensorFlow使用图模式，大家都很满意，因为我们都知道自己在争论什么。但后来出现了TensorFlow 2，它将急切执行作为默认执行模式，TensorFlow变得有点像PyTorch。现在，PyTorch也推出了自己的图编译解决方案，变得有点像TensorFlow。TensorFlow与PyTorch的战争依然继续，但两者之间的差异正在慢慢消失。请参见[这条推文](https://twitter.com/cHHillee/status/1601371638913638402?lang=en)，其中对PyTorch演变的评论我觉得很有趣。
+**观察 1**：在过去，当生活很简单时，PyTorch 和 TensorFlow 之间有明显的区别。PyTorch 使用急切执行模式，TensorFlow 使用图模式，大家都很满意，因为我们都知道自己在争论什么。但后来出现了 TensorFlow 2，它将急切执行作为默认执行模式，TensorFlow 变得有点像 PyTorch。现在，PyTorch 也推出了自己的图编译解决方案，变得有点像 TensorFlow。TensorFlow 与 PyTorch 的战争依然继续，但两者之间的差异正在慢慢消失。请参见[这条推文](https://twitter.com/cHHillee/status/1601371638913638402?lang=en)，其中对 PyTorch 演变的评论我觉得很有趣。
 
 **观察 2**：AI 开发是一项时尚的业务。与时尚行业类似，流行的 AI 模型、模型架构、学习算法、**训练框架**等都会随季节变化而变化。与时尚行业一样，AI 也有自己的出版物和会议，你可以通过这些途径跟上最新的趋势。直到几年前，我们大多数工作的模型都是用 TensorFlow 编写的。而人们对此不满。他们主要的两点抱怨是高层的 model.fit API 限制了他们的开发灵活性，以及图模式使他们无法进行调试。他们说：“我们必须转到 PyTorch”，因为“我们可以按照自己的方式构建模型并轻松调试”。几年的时间过去了，同样的人现在却在说：“我们必须适应 PyTorch Lightning（或其他高层 API），并且必须通过 torch.compile 加速训练”。要明确的是……我不是在评判。我只是想说，也许我们应该更加自我觉察。
 
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
 在下表中，我们展示了在使用[*ml.g5.xlarge*](https://aws.amazon.com/ec2/instance-types/g5/)实例类型和[Amazon SageMaker](https://aws.amazon.com/pm/sagemaker/?trk=ps_a134p000007BxdvAAC&trkCampaign=acq_paid_search_brand&sc_channel=PS&sc_campaign=acquisition_IL&sc_publisher=Google&sc_category=Machine+Learning&sc_country=IL&sc_geo=EMEA&sc_outcome=acq&sc_detail=amazon+sagemaker&sc_content=Sagemaker_e&sc_matchtype=e&sc_segment=532435490322&sc_medium=ACQ-P%7CPS-GO%7CBrand%7CDesktop%7CSU%7CMachine+Learning%7CSagemaker%7CIL%7CEN%7CText&s_kwcid=AL%214422%213%21532435490322%21e%21%21g%21%21amazon+sagemaker&ef_id=Cj0KCQiAhMOMBhDhARIsAPVml-HxIwfeABmnxXbZ9ia_5DV_TckDGpMSH2mFhSpu8jrCgntII8hcHB4aAuhfEALw_wcB%3AG%3As) 上运行训练脚本时的性能比较结果。模型编译的影响会因平台而异（例如，参见[这里](https://pytorch.org/get-started/pytorch-2.0/#pytorch-2x-faster-more-pythonic-and-as-dynamic-as-ever)）。一般而言，现代服务器级 GPU 上的加速效果会更高。请记住，这些仅是您可能看到的结果类型示例。实际结果将高度依赖于项目的具体细节。
 
-![](../Images/3f44b9117b23239c20b8e4695af3b66e.png)
+![](img/3f44b9117b23239c20b8e4695af3b66e.png)
 
 性能结果（按作者）
 
@@ -166,7 +166,7 @@ def compile(model: Optional[Callable] = None, *,
 
 在下表中，我们比较了上述 ViT 模型在不同编译模式下的编译结果。
 
-![](../Images/fdbbadd482b933054be20692b2811160.png)
+![](img/fdbbadd482b933054be20692b2811160.png)
 
 性能结果（作者提供）
 
@@ -187,7 +187,7 @@ print(_dynamo.list_backends())
 
 ## 性能分析
 
-我们已经广泛讨论了（例如，[这里](/cloud-ml-performance-checklist-caa51e798002)）对训练性能进行分析的重要性，作为加速训练速度和降低成本的一种手段。我们用来分析 PyTorch 模型性能的关键工具之一是 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)。PyTorch Profiler 允许我们评估和分析图编译如何优化训练步骤。在下面的代码块中，我们用 [torch.profiler](https://pytorch.org/docs/stable/profiler.html) 包装了我们的训练循环，并为 [TensorBoard](http://orch.profiler.tensorboard_trace_handler) 生成了结果。我们将输出保存在 [*SM_MODEL_DIR*](https://github.com/aws/sagemaker-training-toolkit/blob/master/ENVIRONMENT_VARIABLES.md#sm_model_dir) 中，该目录会在训练任务结束时自动上传到持久存储。
+我们已经广泛讨论了（例如，这里）对训练性能进行分析的重要性，作为加速训练速度和降低成本的一种手段。我们用来分析 PyTorch 模型性能的关键工具之一是 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)。PyTorch Profiler 允许我们评估和分析图编译如何优化训练步骤。在下面的代码块中，我们用 [torch.profiler](https://pytorch.org/docs/stable/profiler.html) 包装了我们的训练循环，并为 [TensorBoard](http://orch.profiler.tensorboard_trace_handler) 生成了结果。我们将输出保存在 [*SM_MODEL_DIR*](https://github.com/aws/sagemaker-training-toolkit/blob/master/ENVIRONMENT_VARIABLES.md#sm_model_dir) 中，该目录会在训练任务结束时自动上传到持久存储。
 
 ```py
  out_path = os.path.join(os.environ.get('SM_MODEL_DIR','/tmp'),'profile')
@@ -221,7 +221,7 @@ print(_dynamo.list_backends())
 
 下图截取自 TensorBoard PyTorch Profiler 标签的 *GPU 内核* 视图。它提供了在编译模型试验的训练步骤中，运行在 GPU 上的内核的详细信息。
 
-![](../Images/3928d90159e9c441ef4e0adb7d6a5bca.png)
+![](img/3928d90159e9c441ef4e0adb7d6a5bca.png)
 
 TensorBoard PyTorch Profiler 标签下的内核视图截图（作者提供）
 
@@ -366,13 +366,13 @@ if __name__ == '__main__':
 
 更糟的是，图模式下的调试比急切模式下要困难得多。在急切模式中，每一行代码都是独立执行的，这使我们可以在代码的任何位置设置断点并评估当前张量值。另一方面，在图模式中，我们代码定义的模型在处理之前会经历多个转换，因此，您的断点可能不会被触发。
 
-过去，[我们扩展了图模式下调试的难点](/debugging-in-tensorflow-392b193d0b8)并提出了几种解决方法。当您遇到问题时，可以尝试以下两步方法。首先，恢复到急切模式，那里调试较少困难，并祈祷问题能够重现。如果没有，尝试在编译的计算图中评估感兴趣的中间张量，通过故意在模型中插入图断点来实现。您可以通过将模型明确地分成两个（或更多）部分并分别应用torch.compile，或通过插入*print*和/或[Tensor.numpy](https://pytorch.org/docs/stable/generated/torch.Tensor.numpy.html)调用来生成图断点。根据您的操作方式，您甚至可能成功触发代码中的断点。然而，请记住，以这种方式拆分图形可能会修改低级操作的顺序，因此可能无法准确重现完全编译的图形执行。但它确实给您提供了更多的灵活性，以便深入探究问题。
+过去，我们扩展了图模式下调试的难点并提出了几种解决方法。当您遇到问题时，可以尝试以下两步方法。首先，恢复到急切模式，那里调试较少困难，并祈祷问题能够重现。如果没有，尝试在编译的计算图中评估感兴趣的中间张量，通过故意在模型中插入图断点来实现。您可以通过将模型明确地分成两个（或更多）部分并分别应用 torch.compile，或通过插入*print*和/或[Tensor.numpy](https://pytorch.org/docs/stable/generated/torch.Tensor.numpy.html)调用来生成图断点。根据您的操作方式，您甚至可能成功触发代码中的断点。然而，请记住，以这种方式拆分图形可能会修改低级操作的顺序，因此可能无法准确重现完全编译的图形执行。但它确实给您提供了更多的灵活性，以便深入探究问题。
 
 如果您遇到编译模式和急切模式之间意外的差异，请参见[准确性调试](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#accuracy-debugging)部分以及[故障排除指南](https://pytorch.org/docs/stable/dynamo/troubleshooting.html)。
 
 ## 将损失函数包含在图中
 
-正如我们在上面的示例中所演示的，通过用torch.compile调用包装PyTorch模型（或函数）可以启用图执行模式。您可能已经观察到损失函数不在编译调用中，因此不在生成的图中。在许多情况下，包括我们展示的那些，损失函数是训练步骤中的一个相对小的部分，急切运行不会造成太多开销。然而，如果您有一个特别重的损失函数，您可以通过将其包含在编译的计算图中来进一步提升性能。例如，在下面的代码块中，我们定义了一个损失函数，用于（天真地）从一个大型ViT模型（具有24个ViT块）到一个较小的ViT模型（具有12个ViT块）进行[模型蒸馏](https://en.wikipedia.org/wiki/Knowledge_distillation)。
+正如我们在上面的示例中所演示的，通过用 torch.compile 调用包装 PyTorch 模型（或函数）可以启用图执行模式。您可能已经观察到损失函数不在编译调用中，因此不在生成的图中。在许多情况下，包括我们展示的那些，损失函数是训练步骤中的一个相对小的部分，急切运行不会造成太多开销。然而，如果您有一个特别重的损失函数，您可以通过将其包含在编译的计算图中来进一步提升性能。例如，在下面的代码块中，我们定义了一个损失函数，用于（天真地）从一个大型 ViT 模型（具有 24 个 ViT 块）到一个较小的 ViT 模型（具有 12 个 ViT 块）进行[模型蒸馏](https://en.wikipedia.org/wiki/Knowledge_distillation)。
 
 ```py
 import torch

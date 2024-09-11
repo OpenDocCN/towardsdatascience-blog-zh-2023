@@ -1,18 +1,18 @@
 # 设置 Python 项目：第五部分
 
-> 原文：[https://towardsdatascience.com/setting-up-python-projects-part-v-206df3c1e3d3?source=collection_archive---------0-----------------------#2023-01-14](https://towardsdatascience.com/setting-up-python-projects-part-v-206df3c1e3d3?source=collection_archive---------0-----------------------#2023-01-14)
+> 原文：[`towardsdatascience.com/setting-up-python-projects-part-v-206df3c1e3d3?source=collection_archive---------0-----------------------#2023-01-14`](https://towardsdatascience.com/setting-up-python-projects-part-v-206df3c1e3d3?source=collection_archive---------0-----------------------#2023-01-14)
 
 ## 掌握 Python 项目设置的艺术：逐步指南
 
-[](https://johschmidt42.medium.com/?source=post_page-----206df3c1e3d3--------------------------------)[![Johannes Schmidt](../Images/e0cacf7ff37f339a9bf8bd33c7c83a4d.png)](https://johschmidt42.medium.com/?source=post_page-----206df3c1e3d3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----206df3c1e3d3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----206df3c1e3d3--------------------------------) [Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----206df3c1e3d3--------------------------------)
+[](https://johschmidt42.medium.com/?source=post_page-----206df3c1e3d3--------------------------------)![Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----206df3c1e3d3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----206df3c1e3d3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----206df3c1e3d3--------------------------------) [Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----206df3c1e3d3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5022ff2e428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-v-206df3c1e3d3&user=Johannes+Schmidt&userId=b5022ff2e428&source=post_page-b5022ff2e428----206df3c1e3d3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----206df3c1e3d3--------------------------------) ·20分钟阅读·2023年1月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F206df3c1e3d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-v-206df3c1e3d3&user=Johannes+Schmidt&userId=b5022ff2e428&source=-----206df3c1e3d3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5022ff2e428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-v-206df3c1e3d3&user=Johannes+Schmidt&userId=b5022ff2e428&source=post_page-b5022ff2e428----206df3c1e3d3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----206df3c1e3d3--------------------------------) ·20 分钟阅读·2023 年 1 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F206df3c1e3d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-v-206df3c1e3d3&user=Johannes+Schmidt&userId=b5022ff2e428&source=-----206df3c1e3d3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F206df3c1e3d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-v-206df3c1e3d3&source=-----206df3c1e3d3---------------------bookmark_footer-----------)![](../Images/c80bbfc10240ac4b4126a69759a6a36e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F206df3c1e3d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsetting-up-python-projects-part-v-206df3c1e3d3&source=-----206df3c1e3d3---------------------bookmark_footer-----------)![](img/c80bbfc10240ac4b4126a69759a6a36e.png)
 
 照片由 [Zoya Loonohod](https://unsplash.com/@loonohod?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

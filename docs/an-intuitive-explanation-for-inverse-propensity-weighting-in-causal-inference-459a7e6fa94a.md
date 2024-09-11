@@ -1,28 +1,28 @@
 # 逆倾向加权在因果推断中的直观解释
 
-> 原文：[https://towardsdatascience.com/an-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a?source=collection_archive---------9-----------------------#2023-01-18](https://towardsdatascience.com/an-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a?source=collection_archive---------9-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/an-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a?source=collection_archive---------9-----------------------#2023-01-18`](https://towardsdatascience.com/an-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a?source=collection_archive---------9-----------------------#2023-01-18)
 
 ## 通过一个简单的例子理解逆倾向加权的根源。
 
-[](https://medium.com/@murat.unal?source=post_page-----459a7e6fa94a--------------------------------)[![Murat Unal](../Images/9f00db7597d7ece01213a6b0589c87d8.png)](https://medium.com/@murat.unal?source=post_page-----459a7e6fa94a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----459a7e6fa94a--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----459a7e6fa94a--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----459a7e6fa94a--------------------------------)
+[](https://medium.com/@murat.unal?source=post_page-----459a7e6fa94a--------------------------------)![Murat Unal](https://medium.com/@murat.unal?source=post_page-----459a7e6fa94a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----459a7e6fa94a--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----459a7e6fa94a--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----459a7e6fa94a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----459a7e6fa94a---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----459a7e6fa94a--------------------------------) ·8分钟阅读·2023年1月18日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----459a7e6fa94a---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----459a7e6fa94a--------------------------------) ·8 分钟阅读·2023 年 1 月 18 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F459a7e6fa94a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a&source=-----459a7e6fa94a---------------------bookmark_footer-----------)![](../Images/2f18c8f2bb21617b7ebeb362476b6fe5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F459a7e6fa94a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-intuitive-explanation-for-inverse-propensity-weighting-in-causal-inference-459a7e6fa94a&source=-----459a7e6fa94a---------------------bookmark_footer-----------)![](img/2f18c8f2bb21617b7ebeb362476b6fe5.png)
 
 图片由 [Diego PH](https://unsplash.com/ko/@jdiegoph?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-一种公认的因果推断方法基于逆倾向加权（IPW）。在这篇文章中，我们将使用一个简单的例子来建立对IPW的直观理解。具体而言，我们将看到如何从简单的加权平均推导IPW，以便在因果评估中考虑不同的处理分配率。
+一种公认的因果推断方法基于逆倾向加权（IPW）。在这篇文章中，我们将使用一个简单的例子来建立对 IPW 的直观理解。具体而言，我们将看到如何从简单的加权平均推导 IPW，以便在因果评估中考虑不同的处理分配率。
 
-让我们考虑一个简单的例子，我们想要估计进行营销优惠券活动对顾客支出的平均效果。我们在两个商店中运行此活动，通过随机将优惠券分配给现有顾客。假设两个商店的顾客数量相同，而我们不知道的是，处理顾客的支出在商店1和商店2中分别呈*N(20,3²)*和*N(40,3²)*的分布。
+让我们考虑一个简单的例子，我们想要估计进行营销优惠券活动对顾客支出的平均效果。我们在两个商店中运行此活动，通过随机将优惠券分配给现有顾客。假设两个商店的顾客数量相同，而我们不知道的是，处理顾客的支出在商店 1 和商店 2 中分别呈*N(20,3²)*和*N(40,3²)*的分布。
 
 在整个例子中，*Yi*​(1)表示个体在收到优惠券时的支出，*Ti*​=1，而*Yi*​(0)表示他们在未收到优惠券时的支出，*Ti*​=0。这些随机变量称为潜在结果。观察到的结果*Yi*​与潜在结果的关系如下：
 
-我们的估计量，即我们想要估计的内容，是在给定优惠券的情况下的总体平均支出，*E*[*Yi*​(1)]。如果我们在两个商店中随机分配相同数量的优惠券给顾客，我们可以通过简单地平均处理顾客的观察支出来获得这个无偏估计，即0.5∗$20+0.5∗$40=$30。
+我们的估计量，即我们想要估计的内容，是在给定优惠券的情况下的总体平均支出，*E*[*Yi*​(1)]。如果我们在两个商店中随机分配相同数量的优惠券给顾客，我们可以通过简单地平均处理顾客的观察支出来获得这个无偏估计，即 0.5∗$20+0.5∗$40=$30。
 
 从数学上看，这如下所示：
 
@@ -30,7 +30,7 @@
 
 ## 简单平均
 
-我们定义一个函数，该函数生成2000个顾客的样本，随机将其中50%的人分配到两个商店的处理组，并记录他们的平均支出。我们还将运行一个模拟，该模拟调用此函数1000次。
+我们定义一个函数，该函数生成 2000 个顾客的样本，随机将其中 50%的人分配到两个商店的处理组，并记录他们的平均支出。我们还将运行一个模拟，该模拟调用此函数 1000 次。
 
 ```py
 def run_campaign(biased=False):
@@ -69,11 +69,11 @@ results_df = pd.DataFrame(values, columns=['simple_treat'])
 
 以下图表显示了平均支出的分布围绕真实均值集中。
 
-![](../Images/1fb0f499bfe9d6eed91eb8e1303eedb2.png)
+![](img/1fb0f499bfe9d6eed91eb8e1303eedb2.png)
 
-作者的图1
+作者的图 1
 
-现在，假设由于某种原因，第二家商店将90%的优惠券分配给顾客，而第一家商店则分配给50%的顾客。如果我们忽略这一点，并使用之前相同的方法计算所有处理顾客支出的平均值会发生什么？由于第二家商店的顾客治疗率更高，他们的平均支出在我们的估计中将占据更大的权重，从而导致上升偏差。
+现在，假设由于某种原因，第二家商店将 90%的优惠券分配给顾客，而第一家商店则分配给 50%的顾客。如果我们忽略这一点，并使用之前相同的方法计算所有处理顾客支出的平均值会发生什么？由于第二家商店的顾客治疗率更高，他们的平均支出在我们的估计中将占据更大的权重，从而导致上升偏差。
 
 换句话说，我们不再有真正的随机实验，因为现在收到优惠券的概率取决于商店。此外，由于两个商店中处理顾客的平均支出也有很大不同，因此顾客所属的商店在因果推断中是一个混杂变量。
 
@@ -89,7 +89,7 @@ values = Parallel(n_jobs=4)(delayed(run_campaign)(biased=True) for _ in tqdm(ran
 results_df = pd.DataFrame(values, columns=['simple_treat'])
 ```
 
-![](../Images/e6bd69402f8d95a266b510b1b598559d.png)
+![](img/e6bd69402f8d95a266b510b1b598559d.png)
 
 作者图 2
 
@@ -151,7 +151,7 @@ results_df = pd.DataFrame(values, columns=['simple_treat','weighted_treat'])
 
 我们看到加权平均的平均值再次正好等于真实均值。
 
-![](../Images/3d6985c150c18c0287700c95460b953c.png)
+![](img/3d6985c150c18c0287700c95460b953c.png)
 
 作者图 3
 
@@ -216,7 +216,7 @@ results_df = pd.DataFrame(values, columns=['simple_treat','ipw_treat'])
 
 给我们之前相同的无偏估计。
 
-![](../Images/89e6504f9a4fe34192bd7ba18a75f578.png)
+![](img/89e6504f9a4fe34192bd7ba18a75f578.png)
 
 作者图 4
 
@@ -291,21 +291,21 @@ values = Parallel(n_jobs=4)(delayed(run_campaign4)() for _ in tqdm(range(sim)) )
 results_df = pd.DataFrame(values, columns=['simple_tau','weighted_tau','ipw_tau'])
 ```
 
-如下所示，加权平均数和IPW估计器的中心都围绕着真实效应$20，而不控制商店会员的简单平均数的分布则围绕着$23，偏离真实效应15%。
+如下所示，加权平均数和 IPW 估计器的中心都围绕着真实效应$20，而不控制商店会员的简单平均数的分布则围绕着$23，偏离真实效应 15%。
 
-![](../Images/0e115825533f1c87374aa618963ebdd4.png)
+![](img/0e115825533f1c87374aa618963ebdd4.png)
 
-作者图5
+作者图 5
 
 ## 结论
 
-IPW估计器在因果推断中有着悠久的历史。这篇文章的目标是通过一个简单的例子来培养对这一著名估计器的直觉。通过一个营销案例，我们看到该方法的标志性特征是纠正不平等的处理分配机制。此外，我们还展示了该方法是加权平均估计器的扩展。
+IPW 估计器在因果推断中有着悠久的历史。这篇文章的目标是通过一个简单的例子来培养对这一著名估计器的直觉。通过一个营销案例，我们看到该方法的标志性特征是纠正不平等的处理分配机制。此外，我们还展示了该方法是加权平均估计器的扩展。
 
 ## 参考文献
 
-[1] 理查德·K·克朗普，V·约瑟夫·霍茨，圭多·W·因本斯，奥斯卡·A·米特尼克。[处理有限重叠以估计平均处理效应。](https://academic.oup.com/biomet/article-abstract/96/1/187/235329?redirectedFrom=fulltext&login=false)（2009年），*Biometrika*。
+[1] 理查德·K·克朗普，V·约瑟夫·霍茨，圭多·W·因本斯，奥斯卡·A·米特尼克。[处理有限重叠以估计平均处理效应。](https://academic.oup.com/biomet/article-abstract/96/1/187/235329?redirectedFrom=fulltext&login=false)（2009 年），*Biometrika*。
 
-[2] 斯特凡·瓦格尔，[Stats 361: 因果推断](https://web.stanford.edu/~swager/stats361.pdf)（2020年春季），*斯坦福大学*。
+[2] 斯特凡·瓦格尔，[Stats 361: 因果推断](https://web.stanford.edu/~swager/stats361.pdf)（2020 年春季），*斯坦福大学*。
 
 ## 代码
 

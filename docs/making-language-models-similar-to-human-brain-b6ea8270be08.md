@@ -1,20 +1,20 @@
 # 使语言模型更像人类大脑
 
-> 原文：[https://towardsdatascience.com/making-language-models-similar-to-human-brain-b6ea8270be08?source=collection_archive---------4-----------------------#2023-03-23](https://towardsdatascience.com/making-language-models-similar-to-human-brain-b6ea8270be08?source=collection_archive---------4-----------------------#2023-03-23)
+> 原文：[`towardsdatascience.com/making-language-models-similar-to-human-brain-b6ea8270be08?source=collection_archive---------4-----------------------#2023-03-23`](https://towardsdatascience.com/making-language-models-similar-to-human-brain-b6ea8270be08?source=collection_archive---------4-----------------------#2023-03-23)
 
 ## 神经科学 | 人工智能 | 自然语言处理
 
 ## 在自然语言处理领域，语言模型与人类大脑之间仍然存在差距，激励人工智能以填补这一差距
 
-[](https://salvatore-raieli.medium.com/?source=post_page-----b6ea8270be08--------------------------------)[![Salvatore Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----b6ea8270be08--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b6ea8270be08--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b6ea8270be08--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----b6ea8270be08--------------------------------)
+[](https://salvatore-raieli.medium.com/?source=post_page-----b6ea8270be08--------------------------------)![Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----b6ea8270be08--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b6ea8270be08--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b6ea8270be08--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----b6ea8270be08--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-language-models-similar-to-human-brain-b6ea8270be08&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----b6ea8270be08---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b6ea8270be08--------------------------------) ·14 分钟阅读·2023年3月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb6ea8270be08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-language-models-similar-to-human-brain-b6ea8270be08&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----b6ea8270be08---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-language-models-similar-to-human-brain-b6ea8270be08&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----b6ea8270be08---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b6ea8270be08--------------------------------) ·14 分钟阅读·2023 年 3 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb6ea8270be08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-language-models-similar-to-human-brain-b6ea8270be08&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----b6ea8270be08---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb6ea8270be08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-language-models-similar-to-human-brain-b6ea8270be08&source=-----b6ea8270be08---------------------bookmark_footer-----------)![](../Images/a0a4abe6ce5e686b45b7af813a0a8778.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb6ea8270be08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-language-models-similar-to-human-brain-b6ea8270be08&source=-----b6ea8270be08---------------------bookmark_footer-----------)![](img/a0a4abe6ce5e686b45b7af813a0a8778.png)
 
 图片由作者使用 OpenAI DALL-E 制作
 

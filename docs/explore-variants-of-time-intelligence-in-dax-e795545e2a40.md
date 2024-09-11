@@ -1,18 +1,18 @@
 # 探索 DAX 中时间智能的变体
 
-> 原文：[https://towardsdatascience.com/explore-variants-of-time-intelligence-in-dax-e795545e2a40?source=collection_archive---------4-----------------------#2023-11-06](https://towardsdatascience.com/explore-variants-of-time-intelligence-in-dax-e795545e2a40?source=collection_archive---------4-----------------------#2023-11-06)
+> 原文：[`towardsdatascience.com/explore-variants-of-time-intelligence-in-dax-e795545e2a40?source=collection_archive---------4-----------------------#2023-11-06`](https://towardsdatascience.com/explore-variants-of-time-intelligence-in-dax-e795545e2a40?source=collection_archive---------4-----------------------#2023-11-06)
 
 ## *我们在 DAX 中有一些有价值的函数来计算前一年、YTC 等。但其他函数允许我们以不同的方式计算相同的结果。让我们深入探讨这些选项及其重要性。*
 
-[](https://medium.com/@salvatorecagliari?source=post_page-----e795545e2a40--------------------------------)[![Salvatore Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----e795545e2a40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e795545e2a40--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e795545e2a40--------------------------------) [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----e795545e2a40--------------------------------)
+[](https://medium.com/@salvatorecagliari?source=post_page-----e795545e2a40--------------------------------)![Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----e795545e2a40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e795545e2a40--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e795545e2a40--------------------------------) [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----e795545e2a40--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39cccb39e92a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-variants-of-time-intelligence-in-dax-e795545e2a40&user=Salvatore+Cagliari&userId=39cccb39e92a&source=post_page-39cccb39e92a----e795545e2a40---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e795545e2a40--------------------------------) · 11分钟阅读 · 2023年11月6日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe795545e2a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-variants-of-time-intelligence-in-dax-e795545e2a40&user=Salvatore+Cagliari&userId=39cccb39e92a&source=-----e795545e2a40---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39cccb39e92a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-variants-of-time-intelligence-in-dax-e795545e2a40&user=Salvatore+Cagliari&userId=39cccb39e92a&source=post_page-39cccb39e92a----e795545e2a40---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e795545e2a40--------------------------------) · 11 分钟阅读 · 2023 年 11 月 6 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe795545e2a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-variants-of-time-intelligence-in-dax-e795545e2a40&user=Salvatore+Cagliari&userId=39cccb39e92a&source=-----e795545e2a40---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe795545e2a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-variants-of-time-intelligence-in-dax-e795545e2a40&source=-----e795545e2a40---------------------bookmark_footer-----------)![](../Images/38219b1d3802a388882421def14b50bf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe795545e2a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-variants-of-time-intelligence-in-dax-e795545e2a40&source=-----e795545e2a40---------------------bookmark_footer-----------)![](img/38219b1d3802a388882421def14b50bf.png)
 
 图片由 [Lukas Blazek](https://unsplash.com/@goumbik?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -26,7 +26,7 @@
 
 例如，请查看以下报告页面：
 
-![](../Images/66b511fd289c0defd973c77c592b45e8.png)
+![](img/66b511fd289c0defd973c77c592b45e8.png)
 
 图 1 — 示例报告（图示由作者提供）
 

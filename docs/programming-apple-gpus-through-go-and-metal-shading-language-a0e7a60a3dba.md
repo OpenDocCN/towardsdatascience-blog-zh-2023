@@ -1,18 +1,18 @@
 # 通过 Go 和 Metal Shading Language 编程苹果 GPU
 
-> 原文：[https://towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04](https://towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04)
+> 原文：[`towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04`](https://towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04)
 
 ## 研究 Go、Cgo、Metal Shading Language、Metal Performance Shaders，以及对矩阵乘法的不同方法进行基准测试
 
-[](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)[![Mike Cvet](../Images/93545a0c873515a599ba094ad51ee915.png)](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------) [Mike Cvet](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)
+[](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)![Mike Cvet](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------) [Mike Cvet](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbc23035f3073&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=post_page-bc23035f3073----a0e7a60a3dba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------) ·12分钟阅读·2023年12月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=-----a0e7a60a3dba---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbc23035f3073&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=post_page-bc23035f3073----a0e7a60a3dba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------) ·12 分钟阅读·2023 年 12 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=-----a0e7a60a3dba---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&source=-----a0e7a60a3dba---------------------bookmark_footer-----------)![](../Images/859d70c23112109e0b37aa4562897206.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&source=-----a0e7a60a3dba---------------------bookmark_footer-----------)![](img/859d70c23112109e0b37aa4562897206.png)
 
 图片由 [Etienne Martin](https://unsplash.com/@etiennemartin?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 在 [Unsplash](https://unsplash.com/photos/a-close-up-of-a-metal-diamond-plate-v6uiP2MD6vs?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 上拍摄
 
@@ -20,27 +20,27 @@
 
 源代码的布局，[在 GitHub 上可用](https://github.com/mikecvet/go-mm)，如下所示：
 
-![](../Images/fce8e5410b9c2d3d5dd57587c6a14875.png)
+![](img/fce8e5410b9c2d3d5dd57587c6a14875.png)
 
 高级源代码、库和设备布局
 
-这量很大，所以我将其分解为这些部分，或者可以直接跳到 [基准测试](#4aba)。
+这量很大，所以我将其分解为这些部分，或者可以直接跳到 基准测试。
 
-+   [GPU 和浮点并行性](#cad4)
++   GPU 和浮点并行性
 
-+   [Metal GPU 基础](#e19f)
++   Metal GPU 基础
 
-+   [Metal 着色语言](#1a7c)
++   Metal 着色语言
 
-+   [Objective-C 绑定](#eb32)
++   Objective-C 绑定
 
-+   [Metal Performance Shaders 框架](#890a)
++   Metal Performance Shaders 框架
 
-+   [Go 和 cgo](#7de2)
++   Go 和 cgo
 
-+   [Go 实现基线和 OpenBLAS](#8aa1)
++   Go 实现基线和 OpenBLAS
 
-+   [结果](#4aba)
++   结果
 
 # GPU 和浮点并行性
 
@@ -70,13 +70,13 @@ GPU 设计上极其高效于大规模并行浮点运算，这要求高内存带�
 
 # Metal 着色语言
 
-[Metal 着色语言](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf) 是 [C++14](https://en.cppreference.com/w/cpp/14) 的一种衍生语言，可用于编写自定义逻辑（称为“着色器”），以在兼容 Metal 的 GPU 上运行。一般来说，如果可能的话，使用 [MPS 框架](https://developer.apple.com/documentation/metalperformanceshaders)（[稍后讨论](#890a)）来实现等效功能可能更好——它通常针对常见的 GPU 对齐用例（如矩阵乘法或 [神经网络](https://developer.apple.com/documentation/metalperformanceshadersgraph/training_a_neural_network_using_mps_graph)）进行了高度优化。
+[Metal 着色语言](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf) 是 [C++14](https://en.cppreference.com/w/cpp/14) 的一种衍生语言，可用于编写自定义逻辑（称为“着色器”），以在兼容 Metal 的 GPU 上运行。一般来说，如果可能的话，使用 [MPS 框架](https://developer.apple.com/documentation/metalperformanceshaders)（稍后讨论）来实现等效功能可能更好——它通常针对常见的 GPU 对齐用例（如矩阵乘法或 [神经网络](https://developer.apple.com/documentation/metalperformanceshadersgraph/training_a_neural_network_using_mps_graph)）进行了高度优化。
 
-MSL代码的调试相当困难。你可以通过Xcode使用[着色器调试器](https://developer.apple.com/documentation/xcode/debugging-the-shaders-within-a-draw-command-or-compute-dispatch/)，但如果你想在没有Xcode的情况下检查或打印中间值，你需要将数据写入响应调试缓冲区，并在你的C++或Objective-C包装器中解析这些原语。
+MSL 代码的调试相当困难。你可以通过 Xcode 使用[着色器调试器](https://developer.apple.com/documentation/xcode/debugging-the-shaders-within-a-draw-command-or-compute-dispatch/)，但如果你想在没有 Xcode 的情况下检查或打印中间值，你需要将数据写入响应调试缓冲区，并在你的 C++或 Objective-C 包装器中解析这些原语。
 
-MSL函数通过`kernel`标识公开为公共接口。Metal框架传递当前调用线程上下文或线程组的ID，这些ID可以用来确保非重叠写入。线程可以通过三维ID系统表示；这个线程空间的维度在包装器代码中配置。
+MSL 函数通过`kernel`标识公开为公共接口。Metal 框架传递当前调用线程上下文或线程组的 ID，这些 ID 可以用来确保非重叠写入。线程可以通过三维 ID 系统表示；这个线程空间的维度在包装器代码中配置。
 
-以下是[原始矩阵乘法](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L9)算法的实现，结合了一些循环展开，令人惊讶地显著提高了性能。这只是为了比较；通常，MPS的`MPSMatrixMultiplication`功能会更合适。
+以下是[原始矩阵乘法](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L9)算法的实现，结合了一些循环展开，令人惊讶地显著提高了性能。这只是为了比较；通常，MPS 的`MPSMatrixMultiplication`功能会更合适。
 
 ```py
 kernel void matrix_multiply_naive(
@@ -119,7 +119,7 @@ kernel void matrix_multiply_naive(
 }
 ```
 
-我还在MSL中实现了一个[原始转置函数](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L42)以供比较。给定一个转置矩阵，这是对上述逻辑的一个微不足道的调整，其内部循环遍历B的行而不是列：
+我还在 MSL 中实现了一个[原始转置函数](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L42)以供比较。给定一个转置矩阵，这是对上述逻辑的一个微不足道的调整，其内部循环遍历 B 的行而不是列：
 
 ```py
 // Loop unrolling; improves performance by a notable margin
@@ -140,11 +140,11 @@ for (; k < params->a_cols; ++k) {
 }
 ```
 
-我在[早期的博客文章中讨论了这种方法](https://betterprogramming.pub/better-than-cubic-complexity-for-matrix-multiplication-in-rust-cf8dfb6299f6#740c)，这是一种相当简单的方法，可以提高原始算法的标量性能，至少在CPU上是如此。更多内容稍后会讨论。
+我在[早期的博客文章中讨论了这种方法](https://betterprogramming.pub/better-than-cubic-complexity-for-matrix-multiplication-in-rust-cf8dfb6299f6#740c)，这是一种相当简单的方法，可以提高原始算法的标量性能，至少在 CPU 上是如此。更多内容稍后会讨论。
 
-# Objective-C绑定
+# Objective-C 绑定
 
-Metal框架提供了[从Metal源代码编译库](https://developer.apple.com/documentation/metal/mtldevice/1433431-newlibrarywithsource)的能力。一旦文件内容被加载，绑定代码会按[名称](https://github.com/mikecvet/go-mm/blob/main/metal.m#L51)查找内核函数，并初始化一个新的`MTLComputePipelineState`，表示编译后的函数代码。
+Metal 框架提供了[从 Metal 源代码编译库](https://developer.apple.com/documentation/metal/mtldevice/1433431-newlibrarywithsource)的能力。一旦文件内容被加载，绑定代码会按[名称](https://github.com/mikecvet/go-mm/blob/main/metal.m#L51)查找内核函数，并初始化一个新的`MTLComputePipelineState`，表示编译后的函数代码。
 
 ```py
 id<MTLDevice> device = MTLCreateSystemDefaultDevice();
@@ -171,7 +171,7 @@ id<MTLComputePipelineState> pipelineStateNaive = [device newComputePipelineState
   error:&error];
 ```
 
-为了实际调用原生Metal代码，线程配置[需要设置](https://github.com/mikecvet/go-mm/blob/main/metal.m#L200)，并初始化GPU缓冲区。
+为了实际调用原生 Metal 代码，线程配置[需要设置](https://github.com/mikecvet/go-mm/blob/main/metal.m#L200)，并初始化 GPU 缓冲区。
 
 ```py
 [computeEncoder setComputePipelineState:pipelineStateNaive];
@@ -203,13 +203,13 @@ MTLSize threadsPerThreadgroup = MTLSizeMake(w, h, 1);
 
 这内容比较多，我在这里阐明一下关系：
 
-![](../Images/b233737dc027f8a96e6a7e61a0e7d67b.png)
+![](img/b233737dc027f8a96e6a7e61a0e7d67b.png)
 
-Objective-C包装器中的概念、类型和硬件的高级布局
+Objective-C 包装器中的概念、类型和硬件的高级布局
 
-# Metal性能着色器框架
+# Metal 性能着色器框架
 
-[MPS框架](https://developer.apple.com/documentation/metalperformanceshaders)是苹果公司提供的高性能库，用于其[Metal GPU系列](https://support.apple.com/en-us/102894)。它提供从图像任务到[神经网络支持](https://developer.apple.com/documentation/metalperformanceshaders/training_a_neural_network_with_metal_performance_shaders)的功能。
+[MPS 框架](https://developer.apple.com/documentation/metalperformanceshaders)是苹果公司提供的高性能库，用于其[Metal GPU 系列](https://support.apple.com/en-us/102894)。它提供从图像任务到[神经网络支持](https://developer.apple.com/documentation/metalperformanceshaders/training_a_neural_network_with_metal_performance_shaders)的功能。
 
 API 主要通过 Swift 或 Objective-C 提供，尽管也有一个 [Metal-cpp](https://developer.apple.com/metal/cpp/) 库可供使用。
 
@@ -372,9 +372,9 @@ func (a Matrix[T]) TransposeMultParallel(b *Matrix[T]) *Matrix[T] {
 }
 ```
 
-`Gonum BLAS`是一个纯Go库，它[实现了BLAS接口](https://pkg.go.dev/gonum.org/v1/gonum/blas)。然而，它也可以配置为将代数运算转发到本地代码BLAS实现，例如通过[netlib](https://github.com/gonum/netlib)的[OpenBLAS](https://www.openblas.net)。
+`Gonum BLAS`是一个纯 Go 库，它[实现了 BLAS 接口](https://pkg.go.dev/gonum.org/v1/gonum/blas)。然而，它也可以配置为将代数运算转发到本地代码 BLAS 实现，例如通过[netlib](https://github.com/gonum/netlib)的[OpenBLAS](https://www.openblas.net)。
 
-我上面展示了如何配置`cgo`以正确链接到MacOS上的OpenBLAS安装。在应用程序代码中，可以直接设置首选的BLAS实现。从基准测试代码：
+我上面展示了如何配置`cgo`以正确链接到 MacOS 上的 OpenBLAS 安装。在应用程序代码中，可以直接设置首选的 BLAS 实现。从基准测试代码：
 
 ```py
 // Convert primitive arrays into gonum dense matrix types
@@ -430,52 +430,52 @@ elements naive transpose transpose_parallel metal_naive metal_transpose mps gonu
 
 [一些快速绘图](https://github.com/mikecvet/go-mm/blob/main/plot.py)通过`matplotlib`
 
-![](../Images/b8774a41fe0cc0304901089327c9e37c.png)
+![](img/b8774a41fe0cc0304901089327c9e37c.png)
 
 所有方法的性能图
 
-正如预期，我手写的Go实现相对失控。实际上，其他方法速度如此之快，以至于在图中无法区分它们。以下是这次运行的GPU使用滑动直方图
+正如预期，我手写的 Go 实现相对失控。实际上，其他方法速度如此之快，以至于在图中无法区分它们。以下是这次运行的 GPU 使用滑动直方图
 
-![](../Images/106a8c798394b1afc407f5e27746208c.png)
+![](img/106a8c798394b1afc407f5e27746208c.png)
 
-活动监视器GPU历史可视化 — 所有方法（Y轴为使用百分比）
+活动监视器 GPU 历史可视化 — 所有方法（Y 轴为使用百分比）
 
-你可以看到GPU并不是特别忙碌，因为时间主要花在了CPU操作上。以下是另一轮测试，排除了最慢的三种乘法技术：
+你可以看到 GPU 并不是特别忙碌，因为时间主要花在了 CPU 操作上。以下是另一轮测试，排除了最慢的三种乘法技术：
 
-![](../Images/6e3a2d0a1e5df20c4f6d9843234287ac.png)
+![](img/6e3a2d0a1e5df20c4f6d9843234287ac.png)
 
-排除我手写的Go变体的各种方法性能图
+排除我手写的 Go 变体的各种方法性能图
 
-大约16M元素（4k x 4k），`Gonum`开始下降。可以清楚地看到，基于GPU的和`OpenBLAS`操作优于纯Go实现。仅看基于GPU的方法：
+大约 16M 元素（4k x 4k），`Gonum`开始下降。可以清楚地看到，基于 GPU 的和`OpenBLAS`操作优于纯 Go 实现。仅看基于 GPU 的方法：
 
-![](../Images/37744ae5c88393237a3dc3ecf77fec1d.png)
+![](img/37744ae5c88393237a3dc3ecf77fec1d.png)
 
-仅在GPU上运行的矩阵乘法操作性能图
+仅在 GPU 上运行的矩阵乘法操作性能图
 
 这里有几个有趣的笔记：
 
-+   Metal Performance Shaders库的速度惊人
++   Metal Performance Shaders 库的速度惊人
 
 +   天真的方法和转置天真的方法之间没有实际性能差异
 
-对于第二点：这与上述Go基础的实现对比性能特性不同。结果表明，对CPU有利的缓存访问模式在GPU上效果不同，尤其是它们的SIMD组（[或warps](https://developer.apple.com/documentation/metal/compute_passes/creating_threads_and_threadgroups)）访问内存的方式。见GPU利用率以便比较：
+对于第二点：这与上述 Go 基础的实现对比性能特性不同。结果表明，对 CPU 有利的缓存访问模式在 GPU 上效果不同，尤其是它们的 SIMD 组（[或 warps](https://developer.apple.com/documentation/metal/compute_passes/creating_threads_and_threadgroups)）访问内存的方式。见 GPU 利用率以便比较：
 
-![](../Images/8b1b8a86d76081114882d01182891873.png)
+![](img/8b1b8a86d76081114882d01182891873.png)
 
-活动监视器GPU历史可视化 — 仅GPU操作
+活动监视器 GPU 历史可视化 — 仅 GPU 操作
 
 现在仅查看`OpenBLAS`和`MPS` — 这两种最快的方法：
 
-![](../Images/9ea4490d60e353f04df49b3a5fd25d06.png)
+![](img/9ea4490d60e353f04df49b3a5fd25d06.png)
 
-OpenBLAS与Apple的Metal Performance Shaders MPSMatrixMultiplication API性能对比图
+OpenBLAS 与 Apple 的 Metal Performance Shaders MPSMatrixMultiplication API 性能对比图
 
-在大约35M元素时，`OpenBLAS` 实现开始下降，而 `MPS` 则保持稳定。这里的差异相当显著，后者完成相同的35M元素矩阵乘法操作的时间少于15%。可以合理地假设，随着矩阵规模的增长，这种差异会继续扩大。
+在大约 35M 元素时，`OpenBLAS` 实现开始下降，而 `MPS` 则保持稳定。这里的差异相当显著，后者完成相同的 35M 元素矩阵乘法操作的时间少于 15%。可以合理地假设，随着矩阵规模的增长，这种差异会继续扩大。
 
-当然，这两种方法之间可能存在算法差异，因此这不是一个公平的CPU与GPU比较。如果我绘制我两个手工编码实现的性能差异图，它看起来是这样的：
+当然，这两种方法之间可能存在算法差异，因此这不是一个公平的 CPU 与 GPU 比较。如果我绘制我两个手工编码实现的性能差异图，它看起来是这样的：
 
-![](../Images/ea1d29dc0e64b1077fd68ad3517ceba8.png)
+![](img/ea1d29dc0e64b1077fd68ad3517ceba8.png)
 
-我的MSL编写的矩阵乘法代码与Go编写的代码的性能比率图
+我的 MSL 编写的矩阵乘法代码与 Go 编写的代码的性能比率图
 
-这意味着，基于MSL的简单实现完成5M *元素的乘法操作仅需我Go实现的1%时间*，而这种比率似乎随着时间的推移对GPU更有利。
+这意味着，基于 MSL 的简单实现完成 5M *元素的乘法操作仅需我 Go 实现的 1%时间*，而这种比率似乎随着时间的推移对 GPU 更有利。

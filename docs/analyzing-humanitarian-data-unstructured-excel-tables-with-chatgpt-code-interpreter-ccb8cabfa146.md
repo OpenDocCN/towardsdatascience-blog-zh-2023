@@ -1,10 +1,10 @@
 # 使用 ChatGPT 代码解释器分析人道主义数据的非结构化 Excel 表格
 
-> 原文：[https://towardsdatascience.com/analyzing-humanitarian-data-unstructured-excel-tables-with-chatgpt-code-interpreter-ccb8cabfa146?source=collection_archive---------3-----------------------#2023-07-10](https://towardsdatascience.com/analyzing-humanitarian-data-unstructured-excel-tables-with-chatgpt-code-interpreter-ccb8cabfa146?source=collection_archive---------3-----------------------#2023-07-10)
+> 原文：[`towardsdatascience.com/analyzing-humanitarian-data-unstructured-excel-tables-with-chatgpt-code-interpreter-ccb8cabfa146?source=collection_archive---------3-----------------------#2023-07-10`](https://towardsdatascience.com/analyzing-humanitarian-data-unstructured-excel-tables-with-chatgpt-code-interpreter-ccb8cabfa146?source=collection_archive---------3-----------------------#2023-07-10)
 
 ## 使用代码解释器的一些初步探索
 
-[](https://medium.com/@astrobagel?source=post_page-----ccb8cabfa146--------------------------------)[![Matthew Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----ccb8cabfa146--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ccb8cabfa146--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ccb8cabfa146--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----ccb8cabfa146--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----ccb8cabfa146--------------------------------)![Matthew Harris](https://medium.com/@astrobagel?source=post_page-----ccb8cabfa146--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ccb8cabfa146--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ccb8cabfa146--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----ccb8cabfa146--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fccb8cabfa146&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyzing-humanitarian-data-unstructured-excel-tables-with-chatgpt-code-interpreter-ccb8cabfa146&source=-----ccb8cabfa146---------------------bookmark_footer-----------)![](../Images/9a4db24a0029f8aac36fa5b615500686.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fccb8cabfa146&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyzing-humanitarian-data-unstructured-excel-tables-with-chatgpt-code-interpreter-ccb8cabfa146&source=-----ccb8cabfa146---------------------bookmark_footer-----------)![](img/9a4db24a0029f8aac36fa5b615500686.png)
 
 由 DALL-E2 创建，提示为“儿童的蜡笔画，展示一个快乐的机器人处理数据，背景有图表”
 
@@ -30,7 +30,7 @@ TL;DR
 
 1.  成为[ChatGPT+](https://openai.com/blog/chatgpt-plus)订阅者，费用为每月 $20
 
-1.  访问[https://chat.openai.com/](https://chat.openai.com/)
+1.  访问[`chat.openai.com/`](https://chat.openai.com/)
 
 1.  选择左下角你名字旁的“…”并选择“设置”
 
@@ -44,39 +44,39 @@ TL;DR
 
 如[之前的博客文章](https://medium.com/towards-data-science/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45)中提到的，Excel 文件中的表格可以有各种奇妙的形式，包括合并单元格、空白行等，这些都可能使自动处理变得有些挑战。对于这篇文章，我决定尝试使用[GPT-4](https://openai.com/research/gpt-4)与代码解释器来分析在人道数据交换（HDX）中发现的 Excel 表格的典型示例……
 
-![](../Images/b8a93c73e798926ce23cb65154d977a4.png)
+![](img/b8a93c73e798926ce23cb65154d977a4.png)
 
 Excel 中不规则表格的示例，包括空白的顶部行、标签和合并单元格。对人类来说完全可读，但对数据科学来说是一个挑战。这个文件来自[人道数据交换](https://data.humdata.org/dataset/kenya-number-of-acreage-under-irrigation-in-bomet-county)
 
-尽管代码解释器可以访问开放数据集，但它尚未包含 HDX，也没有访问互联网的能力。我预计这很快会有所改变，但在此期间，我下载了文件，按照上述描述在[https://chat.openai.com/](https://chat.openai.com/)上开始了一个会话，然后通过点击聊天输入框中的“+”上传了这个文件……
+尽管代码解释器可以访问开放数据集，但它尚未包含 HDX，也没有访问互联网的能力。我预计这很快会有所改变，但在此期间，我下载了文件，按照上述描述在[`chat.openai.com/`](https://chat.openai.com/)上开始了一个会话，然后通过点击聊天输入框中的“+”上传了这个文件……
 
-![](../Images/69cef3f4e5009e57a165eb41561b2d5a.png)
+![](img/69cef3f4e5009e57a165eb41561b2d5a.png)
 
 上传后，ChatGPT 立即开始工作，将数据加载到 Python Pandas 中，并进行一些初步分析……
 
-![](../Images/e1126a39f78c6591b5a53c7caf0d2d4a.png)
+![](img/e1126a39f78c6591b5a53c7caf0d2d4a.png)
 
 它立刻发现表格在工作表中有些不规则，并立即尝试解决这个问题……
 
-![](../Images/4041dba882323f06ada8ac2e75956f90.png)
+![](img/4041dba882323f06ada8ac2e75956f90.png)
 
 这实际上非常准确。事实上，它接着询问了……
 
-![](../Images/0cdf2a80d10e5b3e70743683aff7284b.png)
+![](img/0cdf2a80d10e5b3e70743683aff7284b.png)
 
 我回应道……
 
-![](../Images/511ecc60bd475380521e6a2d567fd9f7.png)
+![](img/511ecc60bd475380521e6a2d567fd9f7.png)
 
 通过选择每个响应下的“显示工作”下拉菜单，可以看到它是如何得出结论的，提供生成的 Python 代码和结果……
 
-![](../Images/dcb4f53e273987c70f136b4e15d4de03.png)
+![](img/dcb4f53e273987c70f136b4e15d4de03.png)
 
 它的方法似乎合理，但值得注意的是，它没有使用关于合并单元格的原生 Excel 信息，而是直接加载到 Pandas 中。
 
 ChatGPT 开始工作并自动尝试处理数据……
 
-![](../Images/0e09835b4509398a0717d8548a8c15de.png)
+![](img/0e09835b4509398a0717d8548a8c15de.png)
 
 但它立即失败了。在选择“显示工作”时，我们看到它生成了一些用于解析我们表格的 Python 代码……
 
@@ -129,53 +129,53 @@ tidy_data
 
 但这导致了一个边界错误……
 
-![](../Images/ca831e732e225558e82abbe5fcfceb76.png)
+![](img/ca831e732e225558e82abbe5fcfceb76.png)
 
 ChatGPT 没有放弃，自动开始调试……
 
-![](../Images/38a360323a41acd9840296696e05f813.png)
+![](img/38a360323a41acd9840296696e05f813.png)
 
 这相当令人印象深刻，因为它似乎正确识别了问题。然而，考虑到它在对话开始时已经准确识别了列层次结构，结果却似乎“丢失”了这些信息，这让人有些失望。
 
 再次，它回到了任务中并自动继续进行……
 
-![](../Images/5be4ecced6a8e955a775e30d2adb7313.png)
+![](img/5be4ecced6a8e955a775e30d2adb7313.png)
 
 这生成了一个带有如下标题的表格……
 
-![](../Images/fd2cb2b0f5d48f55d41978a7d543ea24.png)
+![](img/fd2cb2b0f5d48f55d41978a7d543ea24.png)
 
 我们看到数据被包括在列标题中，表明它没有识别出列的结束和数据的开始。事实上，它甚至发现了这一点并勇敢地继续……
 
-![](../Images/ada16a2f8cdc66071e02c24c5560dbb8.png)
+![](img/ada16a2f8cdc66071e02c24c5560dbb8.png)
 
 此时，它陷入了一种有些混乱的状态，尝试了许多在此未显示的循环。
 
 最终，我认为超出了令牌限制，生成停止了，表格看起来是这样的……
 
-![](../Images/b014296ed8f16b4947f4af452e4c5cba.png)
+![](img/b014296ed8f16b4947f4af452e4c5cba.png)
 
 在‘显示工作’输出中对比上述值与原始表格，我们看到最后一行“总计”的值看起来是正确的，但有两个“Bomet Central Femail N Bomet”列标题。它发现了这一点……
 
-![](../Images/75dc691f421fd241fed49eab3ad61fe7.png)
+![](img/75dc691f421fd241fed49eab3ad61fe7.png)
 
 由于它看起来非常接近，我要求 ChatGPT 继续……
 
-![](../Images/1e8746bea8f473453660e9b633e86adf.png)
+![](img/1e8746bea8f473453660e9b633e86adf.png)
 
 我让它等了一会儿才要求继续，我怀疑这导致了代码环境任务被终止。它似乎很乐意再次开始，但这样做时丢失了一些变量……
 
-![](../Images/ed955be875863af20a00540a879cb82d.png)
+![](img/ed955be875863af20a00540a879cb82d.png)
 
 我按照提示重新上传了文件，它再次开始处理。最终，这是它生成的表格……
 
-![](../Images/1a2528d93581eb11be7df04ef69d8449.png)
+![](img/1a2528d93581eb11be7df04ef69d8449.png)
 
 这非常好……对于原始表格中的*仅*“总计”行。ChatGPT 丢失了所有其他被按面积拆分的数据行，因此解析实际上失败了。
 
 我指出它实际上缺少一个与土地面积相关的列，而它在第一次初始上传后确实立即识别了这一点……
 
-![](../Images/8692e5eab1494cc53943b27b626eeffb.png)
+![](img/8692e5eab1494cc53943b27b626eeffb.png)
 
 此时，ChatGPT 开始了另一个任务，尝试解析表格的多个方法，但没有一个最终成功。聊天的完整链接可以在[这里](https://chat.openai.com/share/891b77ef-411e-4b7b-85f1-7aa77438696f)找到。
 
@@ -187,19 +187,19 @@ ChatGPT 没有放弃，自动开始调试……
 
 那么，如果我们给 ChatGPT 提示直接使用 'openpyxl' 并考虑合并单元格会怎么样呢？
 
-![](../Images/294cc1891d315c91a516321057541a58.png)
+![](img/294cc1891d315c91a516321057541a58.png)
 
 就像上次一样，它从一开始就正确处理了事情……
 
-![](../Images/77409e101ae48f86c1ed7d3f701a6a64.png)
+![](img/77409e101ae48f86c1ed7d3f701a6a64.png)
 
 然后再次进行分析……
 
-![](../Images/a872451a1b1ffe096695de0f1b989ef3.png)
+![](img/a872451a1b1ffe096695de0f1b989ef3.png)
 
 然而，这一次，在提供了一些关于技术的指导后……它几乎完美地展平了表格，仅使用上述单一提示而无需进一步干预。
 
-![](../Images/00cf3c49df26271ef69b2a24ab0d9547.png)
+![](img/00cf3c49df26271ef69b2a24ab0d9547.png)
 
 ChatGPT '代码解释器' 处理一个未结构化的 Excel 表格，将其转换成可能被加载到 SQL 数据库中的形式。这个结果是通过提示使用 'openpyxl' Python 库来识别列标题中的合并单元格创建的。
 
@@ -207,7 +207,7 @@ ChatGPT '代码解释器' 处理一个未结构化的 Excel 表格，将其转�
 
 我要求 ChatGPT 生成完整的代码以查看它最后得出了什么……
 
-![](../Images/c7182af50e8a2d274d2809eb91b7d718.png)
+![](img/c7182af50e8a2d274d2809eb91b7d718.png)
 
 ```py
 from openpyxl import load_workbook

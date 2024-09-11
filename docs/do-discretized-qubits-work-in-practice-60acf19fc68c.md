@@ -1,14 +1,14 @@
 # 离散化量子比特在实际中有效吗？
 
-> 原文：[https://towardsdatascience.com/do-discretized-qubits-work-in-practice-60acf19fc68c?source=collection_archive---------18-----------------------#2023-01-18](https://towardsdatascience.com/do-discretized-qubits-work-in-practice-60acf19fc68c?source=collection_archive---------18-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/do-discretized-qubits-work-in-practice-60acf19fc68c?source=collection_archive---------18-----------------------#2023-01-18`](https://towardsdatascience.com/do-discretized-qubits-work-in-practice-60acf19fc68c?source=collection_archive---------18-----------------------#2023-01-18)
 
 ## 如果量子比特不仅仅是 0 或 1 呢？
 
-[](https://pyqml.medium.com/?source=post_page-----60acf19fc68c--------------------------------)[![弗兰克·齐克特 | 量子机器学习](../Images/ae361c0d68d13dac21bb86c7496d2917.png)](https://pyqml.medium.com/?source=post_page-----60acf19fc68c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----60acf19fc68c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----60acf19fc68c--------------------------------) [弗兰克·齐克特 | 量子机器学习](https://pyqml.medium.com/?source=post_page-----60acf19fc68c--------------------------------)
+[](https://pyqml.medium.com/?source=post_page-----60acf19fc68c--------------------------------)![弗兰克·齐克特 | 量子机器学习](https://pyqml.medium.com/?source=post_page-----60acf19fc68c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----60acf19fc68c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----60acf19fc68c--------------------------------) [弗兰克·齐克特 | 量子机器学习](https://pyqml.medium.com/?source=post_page-----60acf19fc68c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feebfab42a2c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-discretized-qubits-work-in-practice-60acf19fc68c&user=Frank+Zickert+%7C+Quantum+Machine+Learning&userId=eebfab42a2c4&source=post_page-eebfab42a2c4----60acf19fc68c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----60acf19fc68c--------------------------------) ·9 min read·2023年1月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F60acf19fc68c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-discretized-qubits-work-in-practice-60acf19fc68c&user=Frank+Zickert+%7C+Quantum+Machine+Learning&userId=eebfab42a2c4&source=-----60acf19fc68c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feebfab42a2c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-discretized-qubits-work-in-practice-60acf19fc68c&user=Frank+Zickert+%7C+Quantum+Machine+Learning&userId=eebfab42a2c4&source=post_page-eebfab42a2c4----60acf19fc68c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----60acf19fc68c--------------------------------) ·9 min read·2023 年 1 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F60acf19fc68c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-discretized-qubits-work-in-practice-60acf19fc68c&user=Frank+Zickert+%7C+Quantum+Machine+Learning&userId=eebfab42a2c4&source=-----60acf19fc68c---------------------clap_footer-----------)
 
 --
 
@@ -20,9 +20,9 @@
 
 量子计算是一项有前景的技术，可能加速此类模型的训练。然而，它也面临着一系列挑战。
 
-量子比特（qubits）是我们在量子计算机内部使用的基本单位。与经典比特（经典比特要么是0，要么是1）不同，量子比特处于其两个基态 |0⟩ 和 |1⟩ 之间的复杂线性关系中，这种状态称为叠加态。
+量子比特（qubits）是我们在量子计算机内部使用的基本单位。与经典比特（经典比特要么是 0，要么是 1）不同，量子比特处于其两个基态 |0⟩ 和 |1⟩ 之间的复杂线性关系中，这种状态称为叠加态。
 
-![](../Images/d4ac85b337301a61c12c7e25e0d8faca.png)
+![](img/d4ac85b337301a61c12c7e25e0d8faca.png)
 
 作者提供的图片
 
@@ -30,4 +30,4 @@
 
 但问题是，这里总是有问题——不幸的是。
 
-一旦我们测量量子比特，它就会塌缩到其基态之一。不可避免地，我们看到的只有0或…
+一旦我们测量量子比特，它就会塌缩到其基态之一。不可避免地，我们看到的只有 0 或…

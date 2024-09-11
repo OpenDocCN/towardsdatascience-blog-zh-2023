@@ -1,20 +1,20 @@
 # 当电子表格不够用时：关系数据库的课程
 
-> 原文：[https://towardsdatascience.com/when-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a?source=collection_archive---------8-----------------------#2023-05-12](https://towardsdatascience.com/when-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a?source=collection_archive---------8-----------------------#2023-05-12)
+> 原文：[`towardsdatascience.com/when-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a?source=collection_archive---------8-----------------------#2023-05-12`](https://towardsdatascience.com/when-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a?source=collection_archive---------8-----------------------#2023-05-12)
 
 ## SQL 教程
 
 ## 数据库规范化、关系数据库以及你为何需要它们
 
-[](https://medium.com/@stephanie_lo?source=post_page-----2e5b0b847f5a--------------------------------)[![Stephanie Lo](../Images/2b7787607352815394cf8b734a9f0f02.png)](https://medium.com/@stephanie_lo?source=post_page-----2e5b0b847f5a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e5b0b847f5a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e5b0b847f5a--------------------------------) [Stephanie Lo](https://medium.com/@stephanie_lo?source=post_page-----2e5b0b847f5a--------------------------------)
+[](https://medium.com/@stephanie_lo?source=post_page-----2e5b0b847f5a--------------------------------)![Stephanie Lo](https://medium.com/@stephanie_lo?source=post_page-----2e5b0b847f5a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e5b0b847f5a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e5b0b847f5a--------------------------------) [Stephanie Lo](https://medium.com/@stephanie_lo?source=post_page-----2e5b0b847f5a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff4309a31ceee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a&user=Stephanie+Lo&userId=f4309a31ceee&source=post_page-f4309a31ceee----2e5b0b847f5a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e5b0b847f5a--------------------------------) ·11分钟阅读·2023年5月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e5b0b847f5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a&user=Stephanie+Lo&userId=f4309a31ceee&source=-----2e5b0b847f5a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff4309a31ceee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a&user=Stephanie+Lo&userId=f4309a31ceee&source=post_page-f4309a31ceee----2e5b0b847f5a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e5b0b847f5a--------------------------------) ·11 分钟阅读·2023 年 5 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e5b0b847f5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a&user=Stephanie+Lo&userId=f4309a31ceee&source=-----2e5b0b847f5a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e5b0b847f5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a&source=-----2e5b0b847f5a---------------------bookmark_footer-----------)![](../Images/4b5c754c610ad34a260e1df042ad0ff8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e5b0b847f5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-spreadsheets-arent-good-enough-a-lesson-in-relational-databases-2e5b0b847f5a&source=-----2e5b0b847f5a---------------------bookmark_footer-----------)![](img/4b5c754c610ad34a260e1df042ad0ff8.png)
 
 图片由 [Ivan Liu Hu](https://unsplash.com/ko/@ivanliuhu?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 那么关系型数据库到底是什么？它是一组表。可以将每个表视作存储业务不同信息的 Excel 电子表格，但想象一下，如果你可以将这些 Excel 电子表格连接在一起。
 
-![](../Images/ceec2252d122b42e8f82c85bd518beb3.png)
+![](img/ceec2252d122b42e8f82c85bd518beb3.png)
 
 电子表格存在于孤岛中，而关系型数据库在表之间建立了关系。
 
@@ -44,15 +44,15 @@
 
 ## **示例：高速增长的电子商务零售商**
 
-![](../Images/31f345dd24bd9c1c4f4eeba9e3e2c052.png)
+![](img/31f345dd24bd9c1c4f4eeba9e3e2c052.png)
 
 照片由 [Iga Palacz](https://unsplash.com/@igapalacz?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 你为一个本地的二手家具电子商务零售商工作，每周你会向团队提供一份总结销售数据的报告，这有助于采购团队了解他们应该采购更多的商品。
 
-目前，由于库存数据已经输入到Excel中，你大部分的分析都是在电子表格上进行的。你很可能使用数据透视表或vlookup来计算某些产品或品牌的周度、月度或年度销售百分比变化。最近，你注意到由于销售的库存增加，打开电子表格和进行简单分析都需要很长时间。
+目前，由于库存数据已经输入到 Excel 中，你大部分的分析都是在电子表格上进行的。你很可能使用数据透视表或 vlookup 来计算某些产品或品牌的周度、月度或年度销售百分比变化。最近，你注意到由于销售的库存增加，打开电子表格和进行简单分析都需要很长时间。
 
-在公司处于增长阶段，记录了更多的采购、客户和库存时，Excel可能无法再有效地完成你的常规任务。这时，关系型数据库可以通过能够大规模存储信息并通过SQL提取数据来提供帮助。
+在公司处于增长阶段，记录了更多的采购、客户和库存时，Excel 可能无法再有效地完成你的常规任务。这时，关系型数据库可以通过能够大规模存储信息并通过 SQL 提取数据来提供帮助。
 
 如果你对这些情况有共鸣，那么你可能会想知道如何将当前的数据设置转变为关系型数据库。考虑如何结构化你的数据库的一个好方法是进行一个称为**数据库规范化**的过程。
 
@@ -60,7 +60,7 @@
 
 数据库规范化是修改现有数据模式的过程，以使其符合一系列渐进的规范形式。简单来说，就是确保数据以结构化的方式组织。这给你一套规则，帮助你开始对数据进行分类，并形成一个适合你的布局。
 
-通过在数据库中建立结构，你能够帮助建立几个重要的事物：数据完整性和可扩展性。数据完整性确保数据的输入正确和准确，而可扩展性则确保你以一种更具计算效率的方式组织数据，以便在运行SQL查询时更为高效。
+通过在数据库中建立结构，你能够帮助建立几个重要的事物：数据完整性和可扩展性。数据完整性确保数据的输入正确和准确，而可扩展性则确保你以一种更具计算效率的方式组织数据，以便在运行 SQL 查询时更为高效。
 
 但是，当我们谈到规范形式时，我们到底在说什么呢？
 
@@ -68,7 +68,7 @@
 
 组织过程的每个阶段都被称为“规范形式”。
 
-> *爱德华·C·科德首次提出了这一概念* [*在这里*](https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf)*，最初描述了七种规范形式。* *然而，为了使本文简洁，我们将解释并讲解前三种规范形式，特别是因为数据库通常被认为“规范化”，如果它符合第三范式。更全面的形式概述和很好的教程可以在* [*这里*](/a-complete-guide-to-database-normalization-in-sql-6b16544deb0)*找到。*
+> *爱德华·C·科德首次提出了这一概念* [*在这里*](https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf)*，最初描述了七种规范形式。* *然而，为了使本文简洁，我们将解释并讲解前三种规范形式，特别是因为数据库通常被认为“规范化”，如果它符合第三范式。更全面的形式概述和很好的教程可以在* *这里**找到。*
 
 **第一范式 (1NF)**
 
@@ -96,13 +96,13 @@
 
 ## **教程：在加拿大零售商中进行受众分割**
 
-![](../Images/6c514e1e812e27147ea1eeb25a2471fd.png)
+![](img/6c514e1e812e27147ea1eeb25a2471fd.png)
 
 由 [charlesdeluvio](https://unsplash.com/@charlesdeluvio?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供的照片
 
-在这个例子中，我使用了MySQL来执行查询，如果你想在其他SQL服务器（如PostgreSQL或Oracle）中跟随操作，每个脚本都应进行相应的调整。如果你对MySQL不太熟悉，我建议你阅读这些文章 [这里](https://dev.mysql.com/doc/mysql-getting-started/en/) 以获取安装说明，以及 [这里](/an-introduction-to-sql-4c9eb27995df) 以开始使用。请注意，跟随代码假设你具备一些基础的SQL知识。
+在这个例子中，我使用了 MySQL 来执行查询，如果你想在其他 SQL 服务器（如 PostgreSQL 或 Oracle）中跟随操作，每个脚本都应进行相应的调整。如果你对 MySQL 不太熟悉，我建议你阅读这些文章 [这里](https://dev.mysql.com/doc/mysql-getting-started/en/) 以获取安装说明，以及 这里 以开始使用。请注意，跟随代码假设你具备一些基础的 SQL 知识。
 
-> 以下数据并非基于实际的电子商务/订阅数据，仅供演示目的使用。合成数据已被创建，以便探索本文讨论的概念（在实际企业中，你将处理数千行数据，而不仅仅是二十行）。要跟随本教程，请查看我的Github仓库 [这里](https://github.com/stephrlo/mySQL_database_normalization)，其中包含了数据的完整转换过程，包括数据创建、数据转换和查询。
+> 以下数据并非基于实际的电子商务/订阅数据，仅供演示目的使用。合成数据已被创建，以便探索本文讨论的概念（在实际企业中，你将处理数千行数据，而不仅仅是二十行）。要跟随本教程，请查看我的 Github 仓库 [这里](https://github.com/stephrlo/mySQL_database_normalization)，其中包含了数据的完整转换过程，包括数据创建、数据转换和查询。
 
 ## **数据库规范化实践**
 
@@ -112,13 +112,13 @@
 
 当你访问数据库时，有几件事会立即引起注意。最显著的是，电子邮件订阅和客户信息被存储在不同的表格中，并且没有建立任何关系，这在执行分配任务时带来了挑战。然而，值得庆幸的是，你拥有相对完整的数据，并且通过一些调整可以在两者之间建立关系以完成任务。以下是当前数据库的详细信息：
 
-![](../Images/ba15131dbce682f7b4061342e8e8105e.png)
+![](img/ba15131dbce682f7b4061342e8e8105e.png)
 
 上述表格包含了与客户和电子邮件订阅者相关的众多变量，包括他们的地理位置、他们以前收到的电子邮件以及相关的电子邮件指标。
 
 ## 第一范式（1NF）
 
-我们可以做的第一件事是查看每列中包含的数据和数据类型，在将每个文件上传到SQL服务器之后。我们可以通过执行以下查询来完成此操作：
+我们可以做的第一件事是查看每列中包含的数据和数据类型，在将每个文件上传到 SQL 服务器之后。我们可以通过执行以下查询来完成此操作：
 
 看起来我们还有很长的路要走才能符合第一范式！回顾一下，达到第一范式的要求涉及正确的行标识和正确分组数据。我们当前的设置违反了第一范式的所有三条规则，这主要集中在`email_newsletter`表中：
 
@@ -136,13 +136,13 @@
 
 我们的结果是将每列分隔到最简化的形式，以便更清晰地看到每列的类别。
 
-最后，我们可以通过将所有与电子邮件内容相关的数据组织到一个新的表格`email_distribution`中来去除重复的组，别忘了将原表中的数据添加进去！（查看GitHub [here](https://github.com/stephrlo/mySQL_database_normalization) 获取完整的SQL，包括数据加载）：
+最后，我们可以通过将所有与电子邮件内容相关的数据组织到一个新的表格`email_distribution`中来去除重复的组，别忘了将原表中的数据添加进去！（查看 GitHub [here](https://github.com/stephrlo/mySQL_database_normalization) 获取完整的 SQL，包括数据加载）：
 
 通过上面的查询，我们将电子邮件内容拆分到一个单独的表中，以确保我们不会丢失任何信息。现在我们需要使用以下查询将其与`email_newsletter`表连接起来，使用外键：
 
 这有助于我们遵守第一范式，作为最终步骤，我们可以删除任何冗余的列，并查看我们的布局，然后再进入第二范式：
 
-![](../Images/fa4f60bc56c1cb85ff82a2d7f03fdd22.png)
+![](img/fa4f60bc56c1cb85ff82a2d7f03fdd22.png)
 
 ## 第二范式（2NF）
 
@@ -156,11 +156,11 @@
 
 该表有助于连接我们整个数据库的链接，因为我们在创建表时已经说明了外键，表中的每列都与主键相关且依赖。
 
-我们现在的设置几乎完成了，但有点不平衡——因为我们为客户建立了一个已建立的指标表，但没有为电子邮件前景建立一个表。通过对这一组应用相同的处理，可以帮助减轻未来的问题，因为如果前景的电子邮件更改，则在单独的表中存储这些信息会减少修订（请在GitHub上的完整代码[这里](https://github.com/stephrlo/mySQL_database_normalization)进行跟踪）。
+我们现在的设置几乎完成了，但有点不平衡——因为我们为客户建立了一个已建立的指标表，但没有为电子邮件前景建立一个表。通过对这一组应用相同的处理，可以帮助减轻未来的问题，因为如果前景的电子邮件更改，则在单独的表中存储这些信息会减少修订（请在 GitHub 上的完整代码[这里](https://github.com/stephrlo/mySQL_database_normalization)进行跟踪）。
 
-将`email_newsletter`重命名为`email_newsletter_metrics`并创建我们的`email_prospect`表后，我们的数据库经过了2NF转换：
+将`email_newsletter`重命名为`email_newsletter_metrics`并创建我们的`email_prospect`表后，我们的数据库经过了 2NF 转换：
 
-![](../Images/285c2b70c06a4d26adbe9f048e410d4a.png)
+![](img/285c2b70c06a4d26adbe9f048e410d4a.png)
 
 ## 第三范式（3NF）
 
@@ -172,7 +172,7 @@
 
 上述代码块的最后完成了我们的规范化过程（耶！），我们最终转换后的数据库如下所示：
 
-![](../Images/873980ebe09f27f53ca034ca825b74a0.png)
+![](img/873980ebe09f27f53ca034ca825b74a0.png)
 
 ## **我们重新访问的初始请求：使用关系数据库**
 
@@ -184,7 +184,7 @@
 
 查询将产生两个表，输出如下所示：
 
-![](../Images/67a63aa8ecd7cfd082be9e77d447c2e1.png)
+![](img/67a63aa8ecd7cfd082be9e77d447c2e1.png)
 
 现在你可以自信地发送下一封销售邮件了，确保表格之间没有重复或遗漏的联系人。更重要的是，我们已经按照这样的结构组织了数据库，使数据分析变得更容易，并且为更多客户做好了准备。
 
@@ -192,14 +192,14 @@
 
 通过识别日常工作中诸如数据库缓慢或复杂等痛点，本文旨在提供实施关系数据库作为解决方案的方法。通过使用从第一到第三范式的技术，你可以将数据拆分为易于处理和减少错误的可管理块。
 
-> 作为友好的最后提醒，关于所用代码的完整解析，请访问我的GitHub仓库 [这里](https://github.com/stephrlo/mySQL_database_normalization)。希望这篇文章能够激发你对关系数据库的新兴趣✨。感谢阅读和关注！
+> 作为友好的最后提醒，关于所用代码的完整解析，请访问我的 GitHub 仓库 [这里](https://github.com/stephrlo/mySQL_database_normalization)。希望这篇文章能够激发你对关系数据库的新兴趣✨。感谢阅读和关注！
 
 除非另有说明，所有图片均由作者提供。
 
 ## **参考文献**
 
-1.  E.F.Codd, [大规模共享数据银行的关系模型](https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf)，1970年6月，《ACM通讯》。
+1.  E.F.Codd, [大规模共享数据银行的关系模型](https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf)，1970 年 6 月，《ACM 通讯》。
 
-1.  E.burns, [SQL数据库规范化完整指南](/a-complete-guide-to-database-normalization-in-sql-6b16544deb0)，2021年2月，Medium。
+1.  E.burns, SQL 数据库规范化完整指南，2021 年 2 月，Medium。
 
-1.  C.Andreou, [SQL介绍](/an-introduction-to-sql-4c9eb27995df)，2019年8月，Medium。
+1.  C.Andreou, SQL 介绍，2019 年 8 月，Medium。

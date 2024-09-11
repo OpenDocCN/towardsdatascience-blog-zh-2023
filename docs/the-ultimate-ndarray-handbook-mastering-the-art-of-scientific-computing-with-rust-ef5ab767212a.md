@@ -1,18 +1,18 @@
 # 《终极 Ndarray 手册：掌握 Rust 的科学计算艺术》
 
-> 原文：[https://towardsdatascience.com/the-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a?source=collection_archive---------1-----------------------#2023-05-02](https://towardsdatascience.com/the-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a?source=collection_archive---------1-----------------------#2023-05-02)
+> 原文：[`towardsdatascience.com/the-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a?source=collection_archive---------1-----------------------#2023-05-02`](https://towardsdatascience.com/the-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a?source=collection_archive---------1-----------------------#2023-05-02)
 
 ## 对 Rust 的不同内置数据结构进行概述，并深入探讨 Ndarray 库
 
-[](https://wiseai.medium.com/?source=post_page-----ef5ab767212a--------------------------------)[![Mahmoud Harmouch](../Images/d61617549d25565399975debaad5908f.png)](https://wiseai.medium.com/?source=post_page-----ef5ab767212a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef5ab767212a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ef5ab767212a--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----ef5ab767212a--------------------------------)
+[](https://wiseai.medium.com/?source=post_page-----ef5ab767212a--------------------------------)![Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----ef5ab767212a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef5ab767212a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef5ab767212a--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----ef5ab767212a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----ef5ab767212a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef5ab767212a--------------------------------) ·31分钟阅读·2023年5月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef5ab767212a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----ef5ab767212a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----ef5ab767212a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef5ab767212a--------------------------------) ·31 分钟阅读·2023 年 5 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef5ab767212a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----ef5ab767212a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef5ab767212a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a&source=-----ef5ab767212a---------------------bookmark_footer-----------)![](../Images/6fd226fc675887e1ef5fcb21042dc628.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef5ab767212a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a&source=-----ef5ab767212a---------------------bookmark_footer-----------)![](img/6fd226fc675887e1ef5fcb21042dc628.png)
 
 照片由 [Crissy Jarvis](https://unsplash.com/@crissyjarvis?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -34,51 +34,51 @@ github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page----
 
 # 目录（TOC）
 
-∘ [这篇文章讲了什么？](#d2ef)
+∘ 这篇文章讲了什么？
 
-∘ [Rust 内置数据结构](#3498)
+∘ Rust 内置数据结构
 
-∘ [1\. 向量](#5a24)
+∘ 1\. 向量
 
-∘ [2\. 数组](#c03f)
+∘ 2\. 数组
 
-∘ [3\. 元组](#d625)
+∘ 3\. 元组
 
-∘ [4\. 哈希集合](#2bba)
+∘ 4\. 哈希集合
 
-∘ [5\. 哈希映射](#31e1)
+∘ 5\. 哈希映射
 
-∘ [Ndarray 用于数据分析](#672d)
+∘ Ndarray 用于数据分析
 
-∘ [Ndarray 简介](#373b)
+∘ Ndarray 简介
 
-∘ [Ndarray 用例](#3b5f)
+∘ Ndarray 用例
 
-∘ [初始占位符](#7d56)
+∘ 初始占位符
 
-∘ [多维数组](#b787)
+∘ 多维数组
 
-∘ [Ndarray 数组操作](#b4f3)
+∘ Ndarray 数组操作
 
-∘ [索引与切片](#8047)
+∘ 索引与切片
 
-∘ [重塑](#1131)
+∘ 重塑
 
-∘ [转置](#edbc)
+∘ 转置
 
-∘ [交换轴](#7c44)
+∘ 交换轴
 
-∘ [线性代数](#bc63)
+∘ 线性代数
 
-∘ [结论](#aa63)
+∘ 结论
 
-∘ [结束语](#aa3d)
+∘ 结束语
 
-∘ [资源](#f6a5)
+∘ 资源
 
 ## 这篇文章讲了什么？
 
-![](../Images/e06c1558e0ba0e05b00c9891493a0b7a.png)
+![](img/e06c1558e0ba0e05b00c9891493a0b7a.png)
 
 [Ashni](https://unsplash.com/@ashni_ahlawat?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
@@ -92,7 +92,7 @@ github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page----
 
 ## 1\. 向量
 
-![](../Images/1d7913fc0d7655a9d216be4d419e6f47.png)
+![](img/1d7913fc0d7655a9d216be4d419e6f47.png)
 
 向量内存布局（作者提供的图片）
 
@@ -229,7 +229,7 @@ Rust 的向量的多功能性在于其动态调整大小的能力，允许在运
 
 ## 添加元素
 
-![](../Images/add9570e28879f1d0e4854190a2708ff.png)
+![](img/add9570e28879f1d0e4854190a2708ff.png)
 
 向量中添加元素（图像来源：作者）
 
@@ -277,11 +277,11 @@ println!("{:?}", v);
 // ["apple", "pear", "grapefruit"]
 ```
 
-给定的示例涉及创建一个包含三个元素的向量`**v**`，然后将其第二个元素（位于索引1）修改为`**“pear”**`，并将第三个元素（在索引2）的值指定为`**“grapefruit”**`。最后，我们通过`**println!**`宏在终端上显示这个更新后的版本。
+给定的示例涉及创建一个包含三个元素的向量`**v**`，然后将其第二个元素（位于索引 1）修改为`**“pear”**`，并将第三个元素（在索引 2）的值指定为`**“grapefruit”**`。最后，我们通过`**println!**`宏在终端上显示这个更新后的版本。
 
 ## 删除元素
 
-![](../Images/78b67871e69275da49c456afea969603.png)
+![](img/78b67871e69275da49c456afea969603.png)
 
 从向量中删除元素（图像由作者提供）
 
@@ -317,7 +317,7 @@ println!("{:?}", v);
 // ["apple", "banana", "mango"]
 ```
 
-要从Rust中的向量中删除所有元素，使用`[**retain**](https://doc.rust-lang.org/alloc/vec/struct.Vec.html#method.retain)`方法来保留所有符合某个条件的元素：
+要从 Rust 中的向量中删除所有元素，使用`[**retain**](https://doc.rust-lang.org/alloc/vec/struct.Vec.html#method.retain)`方法来保留所有符合某个条件的元素：
 
 ```py
 let mut v = vec!["A", "warm", "fall", "warm", "day"];
@@ -345,11 +345,11 @@ println!("{:?}", v1);
 // ["apple", "banana", "orange", "mango"]
 ```
 
-在上面的示例中，我们首先创建了两个向量`**v1**`和`**v2**`，然后通过在`**v1**`上调用extend方法并传递`**v2**`作为参数来连接它们。
+在上面的示例中，我们首先创建了两个向量`**v1**`和`**v2**`，然后通过在`**v1**`上调用 extend 方法并传递`**v2**`作为参数来连接它们。
 
 ## 过滤与映射元素
 
-我们可以使用`[**iter**](https://doc.rust-lang.org/core/iter/index.html)`、`[**filter**](https://doc.rust-lang.org/core/iter/struct.Filter.html)`和`[**map**](https://doc.rust-lang.org/core/iter/struct.Map.html)`方法来过滤和映射Rust中的向量元素。
+我们可以使用`[**iter**](https://doc.rust-lang.org/core/iter/index.html)`、`[**filter**](https://doc.rust-lang.org/core/iter/struct.Filter.html)`和`[**map**](https://doc.rust-lang.org/core/iter/struct.Map.html)`方法来过滤和映射 Rust 中的向量元素。
 
 ## **过滤元素**
 
@@ -409,7 +409,7 @@ println!("{}", v.contains(&"hello"));
 
 ## 反转元素
 
-我们可以使用 `[**reverse**](https://doc.rust-lang.org/core/primitive.slice.html#method.reverse)` 方法在Rust中反转一个向量。这个方法会原地修改向量，所以它不返回任何东西。
+我们可以使用 `[**reverse**](https://doc.rust-lang.org/core/primitive.slice.html#method.reverse)` 方法在 Rust 中反转一个向量。这个方法会原地修改向量，所以它不返回任何东西。
 
 ```py
 let mut v = vec![1, 2, 3, 4, 5];
@@ -424,7 +424,7 @@ println!("{:?}", v);
 
 ## 最大值与最小值
 
-通过利用Rust的`**iter**`函数以及`**max**`和`**min**`方法，可以轻松找到向量中的最高值和最低值。这种方法在简化这些操作方面非常有效。
+通过利用 Rust 的`**iter**`函数以及`**max**`和`**min**`方法，可以轻松找到向量中的最高值和最低值。这种方法在简化这些操作方面非常有效。
 
 ```py
 let v = vec![1, 2, 3, 4, 5];
@@ -444,9 +444,9 @@ println!("Min element: {}", min_element);
 
 ## 2\. 数组
 
-![](../Images/c5f5bed40ef9169713b78f1dfdc56123.png)
+![](img/c5f5bed40ef9169713b78f1dfdc56123.png)
 
-Rust数组内存布局（图片来源：作者）
+Rust 数组内存布局（图片来源：作者）
 
 使用**数组**是一种存储相同数据类型不同值的可行选项。**与向量不同**，数组中的每个元素必须具有**一致的数据类型**。与其他编程语言中的数组相比，它们是**固定大小的集合**，其中元素的数据类型相同。当你需要在**栈**上分配内存或知道它们的大小在运行时会保持不变时，这些集合具有优势。
 
@@ -666,7 +666,7 @@ for element in &my_set {
 
 ## 集合操作
 
-![](../Images/9398199d6d0f7c1e9d1c90dc219e4a59.png)
+![](img/9398199d6d0f7c1e9d1c90dc219e4a59.png)
 
 不同的集合操作（图像由作者提供）
 
@@ -719,7 +719,7 @@ for element in union_set {
 
 ## 5\. 哈希映射
 
-![](../Images/0f1181e99cd25818afcc8b70220e3d3b.png)
+![](img/0f1181e99cd25818afcc8b70220e3d3b.png)
 
 哈希映射（图像由作者提供）
 
@@ -727,7 +727,7 @@ for element in union_set {
 
 ## 创建哈希映射
 
-你可以通过多种方式在Rust中初始化哈希映射，其中一种方法是使用哈希映射结构体的`[**new**](https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.new)`方法。
+你可以通过多种方式在 Rust 中初始化哈希映射，其中一种方法是使用哈希映射结构体的`[**new**](https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.new)`方法。
 
 ```py
 use std::collections::HashMap;
@@ -745,7 +745,7 @@ println!("{:?}", employees_map);
 // {"Mahmoud": 1, "Ferris": 2}
 ```
 
-在给定的示例中，我们引入了一个新的哈希映射（Hash Map），命名为`**employees_map**`。随后，利用`[**insert**](https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.insert)`函数，我们向这个哈希映射中添加元素。最后，通过应用`**println!**`宏并使用`**{:?}**`格式化，我们展示了我们创建的HashMap的调试模式表示。另一种初始化哈希映射的方法是使用`[**HashMap::from**](https://doc.rust-lang.org/std/collections/struct.HashMap.html#impl-From%3C%5B(K,+V);+N%5D%3E-for-HashMap%3CK,+V,+RandomState%3E)`方法。
+在给定的示例中，我们引入了一个新的哈希映射（Hash Map），命名为`**employees_map**`。随后，利用`[**insert**](https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.insert)`函数，我们向这个哈希映射中添加元素。最后，通过应用`**println!**`宏并使用`**{:?}**`格式化，我们展示了我们创建的 HashMap 的调试模式表示。另一种初始化哈希映射的方法是使用`[**HashMap::from**](https://doc.rust-lang.org/std/collections/struct.HashMap.html#impl-From%3C%5B(K,+V);+N%5D%3E-for-HashMap%3CK,+V,+RandomState%3E)`方法。
 
 ```py
 use std::collections::HashMap;
@@ -814,7 +814,7 @@ println!("{:?}", employees_map);
 
 ## 访问值
 
-类似于Python，我们可以使用`**get**`来从给定的哈希映射中访问一个值。例如：
+类似于 Python，我们可以使用`**get**`来从给定的哈希映射中访问一个值。例如：
 
 ```py
 use std::collections::HashMap;
@@ -853,19 +853,19 @@ fn main() {
 // Length of employees_map = 2
 ```
 
-本质上，Rust的哈希映射是一种强大的数据结构，它通过**键值对**有效地管理和排列数据。它们提供**快速访问**数据的能力，并且经常用于如**计数出现次数**、**记忆化**和**缓存**等任务。得益于Rust的集成哈希映射实现以及其广泛的技术组合，使用哈希映射是一个简单而不复杂的过程。
+本质上，Rust 的哈希映射是一种强大的数据结构，它通过**键值对**有效地管理和排列数据。它们提供**快速访问**数据的能力，并且经常用于如**计数出现次数**、**记忆化**和**缓存**等任务。得益于 Rust 的集成哈希映射实现以及其广泛的技术组合，使用哈希映射是一个简单而不复杂的过程。
 
 欲了解更多信息，你可以参考官方文档的[**这一页面**](https://doc.rust-lang.org/std/collections/struct.HashMap.html)。
 
-当我们结束这一部分时，让我们回顾一下我们进入Rust内置数据结构广阔世界的旅程。我们的探索涉及了一些基本组件，如向量、数组、元组和哈希映射——这些都是任何熟练程序员在构建强健程序过程中不可或缺的元素。
+当我们结束这一部分时，让我们回顾一下我们进入 Rust 内置数据结构广阔世界的旅程。我们的探索涉及了一些基本组件，如向量、数组、元组和哈希映射——这些都是任何熟练程序员在构建强健程序过程中不可或缺的元素。
 
-通过我们对创建和访问数据结构的掌握，以及轻松操控它们的能力，我们获得了有关其定义特性和细微差别的宝贵见解。凭借这些知识，你将能够编写出高效且能够有效实现预期结果的Rust代码。
+通过我们对创建和访问数据结构的掌握，以及轻松操控它们的能力，我们获得了有关其定义特性和细微差别的宝贵见解。凭借这些知识，你将能够编写出高效且能够有效实现预期结果的 Rust 代码。
 
 在牢固掌握了 Rust 内置数据结构的基本概念后，我们现在将其与本文后半部分探讨的 Ndarray 结合起来。这个出色的库因其在 Rust 中进行数值计算的能力而闻名。它具有类似于向量的数组对象，但具有增强的能力，能够无缝地执行数学运算。
 
 ## Ndarray 在数据分析中的应用
 
-![](../Images/62fc6ce98c7ec14be3334f950bc8fbc7.png)
+![](img/62fc6ce98c7ec14be3334f950bc8fbc7.png)
 
 不同数组的维度（图片作者提供）
 
@@ -895,9 +895,9 @@ fn main() {
 
 **Ndarray** 提供了多种生成和初始化数组的函数，被称为**初始占位符**或数组创建函数。这些强大的工具使我们能够创建具有特定形状和数据类型的自定义数组，并填充预定或随机值。以下是`**ndarray**`库中一些常用的初始占位符函数示例：
 
-1.  `[**ndarray::Array::<type, _>::zeros(shape.f())**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.zeros)`：此函数创建一个填充了0的数组。`**shape**` 参数指定数组的维度，`**type**` 参数指定数组元素的数据类型。`**f**` 函数将数组从行优先转换为列优先。
+1.  `[**ndarray::Array::<type, _>::zeros(shape.f())**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.zeros)`：此函数创建一个填充了 0 的数组。`**shape**` 参数指定数组的维度，`**type**` 参数指定数组元素的数据类型。`**f**` 函数将数组从行优先转换为列优先。
 
-1.  `[**ndarray::Array<::type, _>::ones(shape.f())**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.ones)`：此函数创建一个填充了1的数组。`**type**` 和 `**f**` 的效果与 `**ndarray::Array::zeros**` 相同。
+1.  `[**ndarray::Array<::type, _>::ones(shape.f())**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.ones)`：此函数创建一个填充了 1 的数组。`**type**` 和 `**f**` 的效果与 `**ndarray::Array::zeros**` 相同。
 
 1.  `[**ndarray::Array::<type, _>::range(start, end, step)**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.range)`：此函数创建一个范围内值的数组。start 参数指定范围的起点，end 参数指定范围的终点（不包括）。step 参数指定值之间的步长。`**type**` 参数指定数组元素的数据类型。
 
@@ -905,7 +905,7 @@ fn main() {
 
 1.  `[**ndarray::Array::<type, _>::fill(value)**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.fill)`: 这个函数用指定的值填充数组。参数`**value**`指定要填充数组的值。
 
-1.  `[**ndarray::Array::<type, _>::eye(shape.f())**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.eye)`: 这个函数创建一个方阵的单位矩阵，对角线上为1，其他位置为0。参数`**n**`指定行和列的数量。参数`**type**`和`**f**`函数与`**ndarray::Array::zeros**`的意义相同。
+1.  `[**ndarray::Array::<type, _>::eye(shape.f())**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.eye)`: 这个函数创建一个方阵的单位矩阵，对角线上为 1，其他位置为 0。参数`**n**`指定行和列的数量。参数`**type**`和`**f**`函数与`**ndarray::Array::zeros**`的意义相同。
 
 1.  `[**ndarray::Array<type, _>::random(shape.f(), distribution_function)**](https://crates.io/crates/ndarray-rand)`: 这个函数使用给定的分布函数创建一个具有随机值的数组。参数`**shape**`指定数组的维度。
 
@@ -1043,7 +1043,7 @@ println!("{:?}", array_d3);
 
 ## [索引](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#indexing-and-dimension) & [切片](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#slicing)
 
-![](../Images/a4a0c6b3556995118bfc2df99560956b.png)
+![](img/a4a0c6b3556995118bfc2df99560956b.png)
 
 数组切片（图片由作者提供）
 
@@ -1074,7 +1074,7 @@ let slice = array_d1.slice(s![0..3]);
 
 ## 重塑
 
-![](../Images/aee487bbadac24685a13ee9faaed8344.png)
+![](img/aee487bbadac24685a13ee9faaed8344.png)
 
 数组重塑（图像由作者提供）
 
@@ -1088,7 +1088,7 @@ let array_d2 = array_d1.reshape((2, 2));
 
 ## **展平**
 
-![](../Images/c2722fbb99175769336a7d26d5090003.png)
+![](img/c2722fbb99175769336a7d26d5090003.png)
 
 数组展平（图像由作者提供）
 
@@ -1110,7 +1110,7 @@ print!("{:?}", array_flatten);
 
 ## 转置
 
-![](../Images/01ba4d4b77e0dea0ff774279f8515b96.png)
+![](img/01ba4d4b77e0dea0ff774279f8515b96.png)
 
 数组转置（图像由作者提供）
 
@@ -1345,7 +1345,7 @@ print!("{:?}", x);
 
 ## 结尾说明
 
-![](../Images/bef1895c3809bb773cf033fd615b0884.png)
+![](img/bef1895c3809bb773cf033fd615b0884.png)
 
 照片由 [Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=medium&utm_medium=referral) 提供，刊登于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

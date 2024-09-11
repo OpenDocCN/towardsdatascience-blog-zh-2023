@@ -1,18 +1,18 @@
 # LLM 提示中的思维链：结构化 LLM 推理概述
 
-> 原文：[https://towardsdatascience.com/something-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390?source=collection_archive---------1-----------------------#2023-09-16](https://towardsdatascience.com/something-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390?source=collection_archive---------1-----------------------#2023-09-16)
+> 原文：[`towardsdatascience.com/something-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390?source=collection_archive---------1-----------------------#2023-09-16`](https://towardsdatascience.com/something-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390?source=collection_archive---------1-----------------------#2023-09-16)
 
 ## 思维链（CoT）、思维树（ToT）、思维图（GoT）以及其他相关概念，这些思维究竟是什么？
 
-[](https://wangyz.medium.com/?source=post_page-----70302752b390--------------------------------)[![Yunzhe Wang](../Images/2e6f7fdae8cf731a616927bf7742d514.png)](https://wangyz.medium.com/?source=post_page-----70302752b390--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70302752b390--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----70302752b390--------------------------------) [Yunzhe Wang](https://wangyz.medium.com/?source=post_page-----70302752b390--------------------------------)
+[](https://wangyz.medium.com/?source=post_page-----70302752b390--------------------------------)![Yunzhe Wang](https://wangyz.medium.com/?source=post_page-----70302752b390--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70302752b390--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----70302752b390--------------------------------) [Yunzhe Wang](https://wangyz.medium.com/?source=post_page-----70302752b390--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F31c691ae725d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsomething-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390&user=Yunzhe+Wang&userId=31c691ae725d&source=post_page-31c691ae725d----70302752b390---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70302752b390--------------------------------) ·9分钟阅读·2023年9月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F70302752b390&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsomething-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390&user=Yunzhe+Wang&userId=31c691ae725d&source=-----70302752b390---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F31c691ae725d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsomething-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390&user=Yunzhe+Wang&userId=31c691ae725d&source=post_page-31c691ae725d----70302752b390---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70302752b390--------------------------------) ·9 分钟阅读·2023 年 9 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F70302752b390&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsomething-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390&user=Yunzhe+Wang&userId=31c691ae725d&source=-----70302752b390---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F70302752b390&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsomething-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390&source=-----70302752b390---------------------bookmark_footer-----------)![](../Images/ee9435141d0b3a2d40140e778b071961.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F70302752b390&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsomething-of-thought-in-llm-prompting-an-overview-of-structured-llm-reasoning-70302752b390&source=-----70302752b390---------------------bookmark_footer-----------)![](img/ee9435141d0b3a2d40140e778b071961.png)
 
 “思维树”，由 Midjourney 生成
 
@@ -46,7 +46,7 @@
 
 举个例子，考虑一个数学问题：“Roger 拥有 5 个网球，然后购买了 2 罐网球，每罐包含 3 个球。他现在拥有多少个网球？”。与其直接推导出答案是 11，一个人可能会推理：“最初，Roger 有 5 个球。2 罐球的总数，每罐包含 3 个球，总计 6 个球。将这些值相加，5 + 6，得到 11。”将这种逐步分析推理整合到输入提示中，不仅提高了模型响应的准确性，还可以在不需要额外训练数据集或改变基本模型配置的情况下完成。
 
-![](../Images/7ba1090dc166a973d850c78f042dc18b.png)
+![](img/7ba1090dc166a973d850c78f042dc18b.png)
 
 思维链提示，来源: [Wei et al. (2022)](https://arxiv.org/abs/2201.11903)
 
@@ -54,7 +54,7 @@
 
 > 构建多个思维链，评估每一个链，最终选择最有效且连贯的链。
 
-从思维链框架发展而来的一个进步是 [CoT自一致性](https://arxiv.org/abs/2203.11171)。该方法在响应查询时发起多个并行的推理路径，并在最终确定答案之前应用加权机制。这种方法类似于传统机器学习中观察到的集成技术，但它被应用于大语言模型中的思维序列。
+从思维链框架发展而来的一个进步是 [CoT 自一致性](https://arxiv.org/abs/2203.11171)。该方法在响应查询时发起多个并行的推理路径，并在最终确定答案之前应用加权机制。这种方法类似于传统机器学习中观察到的集成技术，但它被应用于大语言模型中的思维序列。
 
 # 思维树 (ToT)
 
@@ -62,7 +62,7 @@
 
 [思维树 (ToT)](https://arxiv.org/abs/2305.10601) 提供了一个更结构化的 LLM 推理框架，通过将复杂问题分解为更可管理的部分来进行思考。与通过链条链接进行推理的 CoT 不同，ToT 将其问题解决策略组织为树形结构。每个节点，被称为“思维”，是一个连贯的语言序列，作为通向最终答案的步骤。通过将问题分解为这些离散的“思维”单元——从填字游戏中的简短词组到数学方程的一个组件——ToT 确保问题的每个阶段都得到系统性地解决。
 
-![](../Images/180d5a85d8fc814621426807b4fb77c1.png)
+![](img/180d5a85d8fc814621426807b4fb77c1.png)
 
 ToT 在 24 点游戏中的推理，来源: [Yao et al. (2023)](https://arxiv.org/abs/2305.10601)
 
@@ -76,7 +76,7 @@ ToT 的重要性源于其整体设计、适应性和效率。链式思维提示�
 
 [思维图谱 (GoT)](https://arxiv.org/abs/2308.09687) 框架代表了从 CoT 和 ToT 方法的先进进展。GoT 框架的核心是将想法概念化为有向无环图（DAG）中的顶点。在这种情况下，每个顶点对应于一个特定的思路或解决方案——无论是初步的、中间的还是最终的——由输入刺激引发。图中的有向边描绘了这些思路之间的相互依赖性。具体来说，如果一条边从思路 t1 延伸到 t2，则表示 t2 是基于 t1 形成的。这种系统化允许多种思路，因为节点可以被分类为“计划”或“结果”等不同类别。
 
-![](../Images/f832191be1dfbcabf2682a84c8859370.png)
+![](img/f832191be1dfbcabf2682a84c8859370.png)
 
 思维图谱，来源：[Besta 等 (2023)](https://arxiv.org/abs/2308.09687)
 
@@ -92,7 +92,7 @@ GoT 的新颖性在于其对这些思路应用变换，从而进一步精炼推�
 
 [思维算法（AoT）](https://arxiv.org/abs/2308.10379)提供了一种创新的方法，具有动态和可变的推理路径。通过维持单一的不断演变的思想上下文链，AoT 整合了思想探索，提高了效率，减少了计算开销。
 
-![](../Images/36b10dfbbf7392043cdf07558effb4d0.png)
+![](img/36b10dfbbf7392043cdf07558effb4d0.png)
 
 思维算法。每个框表示一个独特的思想。绿色代表有前景的思想，红色代表较少有前景的思想。注意：ToT 有多个查询，而 AoT 保持单一上下文，来源：[Sel 等（2023）](https://arxiv.org/abs/2308.10379)
 
@@ -106,24 +106,24 @@ AoT 的基石在于其四个主要组成部分：1) 将复杂问题分解为易�
 
 [思维骨架（SoT）](https://arxiv.org/abs/2307.15337)范式独特地设计，并非主要为了增强大型语言模型（LLM）的推理能力，而是解决最关键的挑战——最小化端到端生成延迟。该方法基于双阶段方法，首先生成初步答案蓝图，然后进行全面扩展。
 
-![](../Images/dd7fb01b086fb80b4f666696ac0dd5d9.png)
+![](img/dd7fb01b086fb80b4f666696ac0dd5d9.png)
 
 思维骨架，来源：[宁等（2023）](https://arxiv.org/abs/2307.15337)
 
 在初始的“骨架阶段”，模型不是生成一个全面的响应，而是生成一个简洁的答案骨架。这个通过精心设计的骨架模板生成的简略表示，捕捉了潜在答案的核心要素，从而为后续阶段奠定基础。
 
-在随后的“扩展点阶段”，LLM系统地扩展答案骨架中每个组件。利用扩展点提示模板，模型同时对骨架的每个部分进行详细说明。这种将生成过程分为初步骨架制定和并行详细扩展的二分法方法，不仅加速了响应生成，还努力保持输出的连贯性和精确性。
+在随后的“扩展点阶段”，LLM 系统地扩展答案骨架中每个组件。利用扩展点提示模板，模型同时对骨架的每个部分进行详细说明。这种将生成过程分为初步骨架制定和并行详细扩展的二分法方法，不仅加速了响应生成，还努力保持输出的连贯性和精确性。
 
 # 思维程序（PoT）
 
 > 将问题回答的推理形成一个可执行程序，将程序解释器的输出作为最终答案的一部分。
 
-[思维程序（PoT）](https://arxiv.org/abs/2211.12588)是一种独特的LLM推理方法，它不仅仅是生成自然语言的答案，PoT要求创建一个可执行程序，这意味着它可以在程序解释器（如Python）上运行，从而产生实际结果。这种方法与更直接的模型形成对比，强调其将推理分解为顺序步骤并将语义与变量关联的能力。因此，PoT提供了一个更清晰、更具表现力且有实据的答案生成模型，提高了准确性和理解，特别适用于需要数字计算的数学类型逻辑问题。
+[思维程序（PoT）](https://arxiv.org/abs/2211.12588)是一种独特的 LLM 推理方法，它不仅仅是生成自然语言的答案，PoT 要求创建一个可执行程序，这意味着它可以在程序解释器（如 Python）上运行，从而产生实际结果。这种方法与更直接的模型形成对比，强调其将推理分解为顺序步骤并将语义与变量关联的能力。因此，PoT 提供了一个更清晰、更具表现力且有实据的答案生成模型，提高了准确性和理解，特别适用于需要数字计算的数学类型逻辑问题。
 
 需要注意的是，PoT 的程序执行不一定以最终答案为目标，而可能是最终答案的一个中间步骤。
 
-![](../Images/9aa904330a995f6724768bd6b6088c44.png)
+![](img/9aa904330a995f6724768bd6b6088c44.png)
 
-CoT与PoT的比较，来源：[Chen et al. (2022)](https://arxiv.org/abs/2211.12588)
+CoT 与 PoT 的比较，来源：[Chen et al. (2022)](https://arxiv.org/abs/2211.12588)
 
-在不断发展的AI领域中，结构化推理框架如链式思维（Chain-of-Thought）极大地改变了我们对大型语言模型（LLM）能力的认知和利用方式。它们象征着一种转变，向着不仅仅是信息重复的模型迈进，同时也进行复杂的推理，这与人类认知过程非常相似。展望未来，潜在的前景似乎无穷无尽。设想一个AI，能够生成不仅准确的答案，还能提供强大、可编程的解决方案，或具备可视化其思维过程的能力，使AI与人类的合作更加无缝。这些进步建立在本文探索的基础框架上，预示着一个LLM成为问题解决、创造力和决策不可或缺的伴侣的未来，推动我们与技术的共生关系发生范式转变。
+在不断发展的 AI 领域中，结构化推理框架如链式思维（Chain-of-Thought）极大地改变了我们对大型语言模型（LLM）能力的认知和利用方式。它们象征着一种转变，向着不仅仅是信息重复的模型迈进，同时也进行复杂的推理，这与人类认知过程非常相似。展望未来，潜在的前景似乎无穷无尽。设想一个 AI，能够生成不仅准确的答案，还能提供强大、可编程的解决方案，或具备可视化其思维过程的能力，使 AI 与人类的合作更加无缝。这些进步建立在本文探索的基础框架上，预示着一个 LLM 成为问题解决、创造力和决策不可或缺的伴侣的未来，推动我们与技术的共生关系发生范式转变。

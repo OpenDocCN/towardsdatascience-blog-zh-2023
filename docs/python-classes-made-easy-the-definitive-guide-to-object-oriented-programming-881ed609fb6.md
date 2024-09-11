@@ -1,18 +1,18 @@
 # **《Python 类别轻松入门：面向对象编程的权威指南》**
 
-> 原文：[https://towardsdatascience.com/python-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6?source=collection_archive---------3-----------------------#2023-03-13](https://towardsdatascience.com/python-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6?source=collection_archive---------3-----------------------#2023-03-13)
+> 原文：[`towardsdatascience.com/python-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6?source=collection_archive---------3-----------------------#2023-03-13`](https://towardsdatascience.com/python-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6?source=collection_archive---------3-----------------------#2023-03-13)
 
-## 提升你的Python技能，借助这本全面的类别参考书
+## 提升你的 Python 技能，借助这本全面的类别参考书
 
-[](https://federicotrotta.medium.com/?source=post_page-----881ed609fb6--------------------------------)[![Federico Trotta](../Images/e997e3a96940c16ab5071629016d82fd.png)](https://federicotrotta.medium.com/?source=post_page-----881ed609fb6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----881ed609fb6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----881ed609fb6--------------------------------) [Federico Trotta](https://federicotrotta.medium.com/?source=post_page-----881ed609fb6--------------------------------)
+[](https://federicotrotta.medium.com/?source=post_page-----881ed609fb6--------------------------------)![Federico Trotta](https://federicotrotta.medium.com/?source=post_page-----881ed609fb6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----881ed609fb6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----881ed609fb6--------------------------------) [Federico Trotta](https://federicotrotta.medium.com/?source=post_page-----881ed609fb6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F654cd4bbe899&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6&user=Federico+Trotta&userId=654cd4bbe899&source=post_page-654cd4bbe899----881ed609fb6---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----881ed609fb6--------------------------------) ·18分钟阅读·2023年3月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F881ed609fb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6&user=Federico+Trotta&userId=654cd4bbe899&source=-----881ed609fb6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F654cd4bbe899&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6&user=Federico+Trotta&userId=654cd4bbe899&source=post_page-654cd4bbe899----881ed609fb6---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----881ed609fb6--------------------------------) ·18 分钟阅读·2023 年 3 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F881ed609fb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6&user=Federico+Trotta&userId=654cd4bbe899&source=-----881ed609fb6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F881ed609fb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6&source=-----881ed609fb6---------------------bookmark_footer-----------)![](../Images/243dd67262bbc8d50ada6050e9cb8725.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F881ed609fb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-classes-made-easy-the-definitive-guide-to-object-oriented-programming-881ed609fb6&source=-----881ed609fb6---------------------bookmark_footer-----------)![](img/243dd67262bbc8d50ada6050e9cb8725.png)
 
 图片由[Lukas Bieri](https://pixabay.com/it/users/lukasbieri-4664461/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2838945)提供，发布在[Pixabay](https://pixabay.com/it//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2838945)。
 
@@ -25,15 +25,15 @@
 ```py
 **Table of Contents**
 
-[Object Oriented Programming](#2502)
-[Classes in Python](#aa37)
+Object Oriented Programming
+Classes in Python
   The "self" Parameter
   The "__init__" Method
   if __name__ == "__main__"
-[Type Hints](#fcad)
-[Docstrings (and how to invoke them](#d8d0))
-[Inheritance](#f2a2)
-[Pro tip on how to use Python classes](#a506)
+Type Hints
+Docstrings (and how to invoke them)
+Inheritance
+Pro tip on how to use Python classes
 ```
 
 # 面向对象编程

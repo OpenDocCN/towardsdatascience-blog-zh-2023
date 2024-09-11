@@ -1,18 +1,18 @@
 # 3 个你可能没想到使用 Matplotlib 创建的独特图表
 
-> 原文：[https://towardsdatascience.com/3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f?source=collection_archive---------13-----------------------#2023-03-20](https://towardsdatascience.com/3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f?source=collection_archive---------13-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f?source=collection_archive---------13-----------------------#2023-03-20`](https://towardsdatascience.com/3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f?source=collection_archive---------13-----------------------#2023-03-20)
 
 ## 利用 Python 的 Matplotlib 创建高级数据可视化
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----421ab8cdd36f--------------------------------)[![安迪·麦克唐纳](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----421ab8cdd36f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----421ab8cdd36f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----421ab8cdd36f--------------------------------) [安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----421ab8cdd36f--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----421ab8cdd36f--------------------------------)![安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----421ab8cdd36f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----421ab8cdd36f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----421ab8cdd36f--------------------------------) [安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----421ab8cdd36f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----421ab8cdd36f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----421ab8cdd36f--------------------------------) · 7 分钟阅读 · 2023年3月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F421ab8cdd36f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f&user=Andy+McDonald&userId=9c280f85f15c&source=-----421ab8cdd36f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----421ab8cdd36f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----421ab8cdd36f--------------------------------) · 7 分钟阅读 · 2023 年 3 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F421ab8cdd36f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f&user=Andy+McDonald&userId=9c280f85f15c&source=-----421ab8cdd36f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F421ab8cdd36f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f&source=-----421ab8cdd36f---------------------bookmark_footer-----------)![](../Images/39a50e5cfdc22ee8defc3bac3ff6c682.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F421ab8cdd36f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-unique-charts-created-with-matplotlib-you-probably-havent-seen-before-421ab8cdd36f&source=-----421ab8cdd36f---------------------bookmark_footer-----------)![](img/39a50e5cfdc22ee8defc3bac3ff6c682.png)
 
 使用 matplotlib 创建的示例甘特图 — 图片由作者提供。
 
@@ -20,7 +20,7 @@
 
 在学习 python 时，[matplotlib](https://matplotlib.org/) 通常是人们遇到的第一个数据可视化库。只需几行代码，你就可能生成如下所示的图形。之后，许多人会转向学习 [Seaborn](https://seaborn.pydata.org/) 或 [Plotly](https://plotly.com/)，再也不回头。
 
-![](../Images/fa133ad98fda180590dc6b67ab24d619.png)
+![](img/fa133ad98fda180590dc6b67ab24d619.png)
 
 一个基本的 matplotlib 散点图示例。图片由作者提供。
 

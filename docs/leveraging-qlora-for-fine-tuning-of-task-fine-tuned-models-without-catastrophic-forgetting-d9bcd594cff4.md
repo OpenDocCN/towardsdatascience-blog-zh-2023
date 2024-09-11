@@ -1,20 +1,20 @@
-# 利用qLoRA对任务精调模型进行精调而不产生灾难性遗忘：以LLaMA2(-chat)为例
+# 利用 qLoRA 对任务精调模型进行精调而不产生灾难性遗忘：以 LLaMA2(-chat)为例
 
-> 原文：[https://towardsdatascience.com/leveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4?source=collection_archive---------1-----------------------#2023-09-07](https://towardsdatascience.com/leveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4?source=collection_archive---------1-----------------------#2023-09-07)
+> 原文：[`towardsdatascience.com/leveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4?source=collection_archive---------1-----------------------#2023-09-07`](https://towardsdatascience.com/leveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4?source=collection_archive---------1-----------------------#2023-09-07)
 
 ## 了解如何在保持任务特定性质的同时，将知识注入目的精调模型
 
-[](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)[![Aris Tsakpinis](../Images/2cc1101aed68e1f71a0026bfdec28f58.png)](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------) [Aris Tsakpinis](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)
+[](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)![Aris Tsakpinis](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------) [Aris Tsakpinis](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ab3accce432&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&user=Aris+Tsakpinis&userId=8ab3accce432&source=post_page-8ab3accce432----d9bcd594cff4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------) · 11分钟阅读 · 2023年9月7日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd9bcd594cff4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&user=Aris+Tsakpinis&userId=8ab3accce432&source=-----d9bcd594cff4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ab3accce432&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&user=Aris+Tsakpinis&userId=8ab3accce432&source=post_page-8ab3accce432----d9bcd594cff4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------) · 11 分钟阅读 · 2023 年 9 月 7 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd9bcd594cff4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&user=Aris+Tsakpinis&userId=8ab3accce432&source=-----d9bcd594cff4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd9bcd594cff4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&source=-----d9bcd594cff4---------------------bookmark_footer-----------)![](../Images/90b4a36383c72f5d33217ebfd35ebbd2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd9bcd594cff4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&source=-----d9bcd594cff4---------------------bookmark_footer-----------)![](img/90b4a36383c72f5d33217ebfd35ebbd2.png)
 
-图片由StableDiffusionXL提供，托管在Amazon Web Services
+图片由 StableDiffusionXL 提供，托管在 Amazon Web Services
 
 # 这篇文章讲了什么，为什么重要？
 
@@ -24,7 +24,7 @@
 
 将领域知识传递到基础模型中有几种选择：
 
-![](../Images/e1ef8c600e84ed054e0de9a9eb0a3a0b.png)
+![](img/e1ef8c600e84ed054e0de9a9eb0a3a0b.png)
 
 作者插图
 
@@ -36,21 +36,21 @@
 
 我们的目标是将 LLaMA2 适应于特定领域，获取最新的知识以克服“知识截止”问题，即模型缺乏对未纳入其训练数据的最新信息的意识。与任务特定的微调不同，这对于许多从业者来说是一个更可实现的任务，因为他们可以简单地使用包含领域特定信息的文本语料库作为训练数据集，而不是像对话或指令数据集那样手动制作或收集任务特定的数据集。
 
-由于许多相关的LLM驱动的使用场景中，任务特定模型是有益的，我们还将展示所提议的设置如何同样适用于像LLaMA2-chat这样的模型，这些模型已经进行了任务特定的微调而不失去其任务特定特性（例如指令跟随、对话行为等）。
+由于许多相关的 LLM 驱动的使用场景中，任务特定模型是有益的，我们还将展示所提议的设置如何同样适用于像 LLaMA2-chat 这样的模型，这些模型已经进行了任务特定的微调而不失去其任务特定特性（例如指令跟随、对话行为等）。
 
 通过详细介绍这一端到端的知识注入工作流程，我们提供了一个将基础模型调优以满足特定需求的实用指南。
 
 # 模型
 
-LLaMA2模型于2023年7月发布，并附有一篇[研究论文](https://scontent.fham6-1.fna.fbcdn.net/v/t39.2365-6/10000000_662098952474184_2584067087619170692_n.pdf?_nc_cat=105&ccb=1-7&_nc_sid=3c67a6&_nc_ohc=Vldy0tYq-X8AX9NLDca&_nc_ht=scontent.fham6-1.fna&oh=00_AfAiZlF_VS1P3n26xqkC3133VVTndBLCZOGyrxkEryDsIw&oe=64F5C5FF)。在论文中，Touvron等人表示，LLaMA2是“一个预训练和微调的大型语言模型（LLMs）集合，规模从70亿到700亿个参数不等。我们的微调LLMs，称为Llama 2-Chat，专门针对对话使用场景进行了优化。我们的模型在我们测试的多数基准上超过了开源聊天模型，并且根据我们对有用性和安全性的人工评估，可能是闭源模型的合适替代品。”
+LLaMA2 模型于 2023 年 7 月发布，并附有一篇[研究论文](https://scontent.fham6-1.fna.fbcdn.net/v/t39.2365-6/10000000_662098952474184_2584067087619170692_n.pdf?_nc_cat=105&ccb=1-7&_nc_sid=3c67a6&_nc_ohc=Vldy0tYq-X8AX9NLDca&_nc_ht=scontent.fham6-1.fna&oh=00_AfAiZlF_VS1P3n26xqkC3133VVTndBLCZOGyrxkEryDsIw&oe=64F5C5FF)。在论文中，Touvron 等人表示，LLaMA2 是“一个预训练和微调的大型语言模型（LLMs）集合，规模从 70 亿到 700 亿个参数不等。我们的微调 LLMs，称为 Llama 2-Chat，专门针对对话使用场景进行了优化。我们的模型在我们测试的多数基准上超过了开源聊天模型，并且根据我们对有用性和安全性的人工评估，可能是闭源模型的合适替代品。”
 
-如前所述，LLaMA2模型有三种尺寸：7B、13B和70B。它们既有纯完成模型，也有针对对话使用场景优化的版本。预训练时使用了大约2万亿个标记，它们支持最长4096个标记的上下文长度。针对对话使用场景的微调使用了超过10万个示例，并通过超过100万个代表人类偏好的训练样本进一步优化。
+如前所述，LLaMA2 模型有三种尺寸：7B、13B 和 70B。它们既有纯完成模型，也有针对对话使用场景优化的版本。预训练时使用了大约 2 万亿个标记，它们支持最长 4096 个标记的上下文长度。针对对话使用场景的微调使用了超过 10 万个示例，并通过超过 100 万个代表人类偏好的训练样本进一步优化。
 
-在AWS中，LLaMA2模型可以通过[SageMaker JumpStart](https://aws.amazon.com/blogs/machine-learning/llama-2-foundation-models-from-meta-are-now-available-in-amazon-sagemaker-jumpstart/)一键部署，也可以通过[AWSxHuggingFace LLM DLC](https://www.philschmid.de/sagemaker-llama-llm)从HuggingFace模型库中获取。
+在 AWS 中，LLaMA2 模型可以通过[SageMaker JumpStart](https://aws.amazon.com/blogs/machine-learning/llama-2-foundation-models-from-meta-are-now-available-in-amazon-sagemaker-jumpstart/)一键部署，也可以通过[AWSxHuggingFace LLM DLC](https://www.philschmid.de/sagemaker-llama-llm)从 HuggingFace 模型库中获取。
 
 # 微调
 
-微调利用迁移学习高效地将特定领域的专业知识注入到像LLaMA2这样的基础模型中。该过程涉及通过在特定领域的数据上继续预训练来更新模型的权重，同时保持整体网络结构不变。与需要大量数据集和计算的全面预训练不同，微调在样本和计算方面非常高效。参数高效的微调（PEFT）技术，例如（q）LoRA方法，使得在像LLaMA2这样的通用语言模型中轻量化地注入专业知识成为可能，且开销最小。
+微调利用迁移学习高效地将特定领域的专业知识注入到像 LLaMA2 这样的基础模型中。该过程涉及通过在特定领域的数据上继续预训练来更新模型的权重，同时保持整体网络结构不变。与需要大量数据集和计算的全面预训练不同，微调在样本和计算方面非常高效。参数高效的微调（PEFT）技术，例如（q）LoRA 方法，使得在像 LLaMA2 这样的通用语言模型中轻量化地注入专业知识成为可能，且开销最小。
 
 在谈到微调时，有两种不同的方法可以选择：
 
@@ -64,7 +64,7 @@ LLaMA2模型于2023年7月发布，并附有一篇[研究论文](https://sconten
 
 # 场景
 
-7月26日，AWS 在纽约市 AWS 峰会上宣布了生成式 AI 领域的多项新功能。为了分享更多细节，发布了几篇公告博客：
+7 月 26 日，AWS 在纽约市 AWS 峰会上宣布了生成式 AI 领域的多项新功能。为了分享更多细节，发布了几篇公告博客：
 
 · [Amazon Bedrock 的代理](https://aws.amazon.com/blogs/aws/preview-enable-foundation-models-to-complete-tasks-with-agents-for-amazon-bedrock/)
 
@@ -78,39 +78,39 @@ LLaMA2模型于2023年7月发布，并附有一篇[研究论文](https://sconten
 
 · [Amazon EC2 P5](https://aws.amazon.com/blogs/aws/new-amazon-ec2-p5-instances-powered-by-nvidia-h100-tensor-core-gpus-for-accelerating-generative-ai-and-hpc-applications/)
 
-考虑到LLaMA2的知识截止日期，不幸的是，该模型的纯形式将无法提供有关这些公告的信息。我们希望通过利用微调将这些知识注入到基础模型（FM）中，并提升其知识水平以实现这一点。
+考虑到 LLaMA2 的知识截止日期，不幸的是，该模型的纯形式将无法提供有关这些公告的信息。我们希望通过利用微调将这些知识注入到基础模型（FM）中，并提升其知识水平以实现这一点。
 
-由于我们不打算将模型微调到特定任务上，而是希望摄取领域特定的知识，我们可以使用经典的CLM基础方法（前面章节中的选项1）。Philipp Schmid在他非常全面的[博客](https://www.philschmid.de/sagemaker-llama2-qlora)中描述了如何使用QLoRA对LLaMA2模型进行微调，但重点是任务特定（指令）微调。我们将以他的博客中分享的代码样本为起点，并相应地调整代码。
+由于我们不打算将模型微调到特定任务上，而是希望摄取领域特定的知识，我们可以使用经典的 CLM 基础方法（前面章节中的选项 1）。Philipp Schmid 在他非常全面的[博客](https://www.philschmid.de/sagemaker-llama2-qlora)中描述了如何使用 QLoRA 对 LLaMA2 模型进行微调，但重点是任务特定（指令）微调。我们将以他的博客中分享的代码样本为起点，并相应地调整代码。
 
-为了负责任地使用资源，我们将对LLaMA2–13b和LLaMA2–13b-chat模型进行微调。微调7b及70b版本将使用调整后的训练集群配置（参见Philipp的[博客](https://www.philschmid.de/sagemaker-llama2-qlora)）。在微调完成后，我们将部署基础模型和微调后的模型，并进行高层次的性能比较。
+为了负责任地使用资源，我们将对 LLaMA2–13b 和 LLaMA2–13b-chat 模型进行微调。微调 7b 及 70b 版本将使用调整后的训练集群配置（参见 Philipp 的[博客](https://www.philschmid.de/sagemaker-llama2-qlora)）。在微调完成后，我们将部署基础模型和微调后的模型，并进行高层次的性能比较。
 
 随后，我们将逐步讲解微调模型的每个步骤。如果您想访问完整的代码仓库，可以在[这里](https://github.com/aristsakpinis93/finetuning-llama2)找到。
 
 # 数据加载
 
-对于数据加载，我们使用LangChain的WebBaseLoader加载由其URL标识的网站数组。
+对于数据加载，我们使用 LangChain 的 WebBaseLoader 加载由其 URL 标识的网站数组。
 
-# 许可协议与HuggingFace登录
+# 许可协议与 HuggingFace 登录
 
-![](../Images/4e728c608f6173d34d09c784adb7f15e.png)
+![](img/4e728c608f6173d34d09c784adb7f15e.png)
 
-接受LLaMA2模型的许可协议
+接受 LLaMA2 模型的许可协议
 
-在我们开始数据准备和训练之前，我们需要接受LLaMA2模型的许可协议。这包括在Meta网站上的注册，所用的电子邮件地址需与您的HuggingFace账户邮箱匹配。
+在我们开始数据准备和训练之前，我们需要接受 LLaMA2 模型的许可协议。这包括在 Meta 网站上的注册，所用的电子邮件地址需与您的 HuggingFace 账户邮箱匹配。
 
-然后我们从运行时对HuggingFace hub进行身份验证。
+然后我们从运行时对 HuggingFace hub 进行身份验证。
 
 # 数据准备
 
-首先，我们对原始网站进行一些预处理。在实际应用中，可能会更重视这一步骤。为了演示的目的，我们仅仅去除了较大的空格拼接，以获得一个连贯流畅的文本语料库。然后我们将文档列表加载到HuggingFace数据集中。
+首先，我们对原始网站进行一些预处理。在实际应用中，可能会更重视这一步骤。为了演示的目的，我们仅仅去除了较大的空格拼接，以获得一个连贯流畅的文本语料库。然后我们将文档列表加载到 HuggingFace 数据集中。
 
-在下一步中，我们对文本语料库进行分词处理，使其适合LLM。为此，我们使用从HuggingFace hub加载的LLaMA2分词器。加载后的分词器可以用于对根据模型的上下文窗口（2048个tokens）批量处理后的数据进行分词。
+在下一步中，我们对文本语料库进行分词处理，使其适合 LLM。为此，我们使用从 HuggingFace hub 加载的 LLaMA2 分词器。加载后的分词器可以用于对根据模型的上下文窗口（2048 个 tokens）批量处理后的数据进行分词。
 
-然后我们将数据集保存到S3中，以便在训练作业中使用。
+然后我们将数据集保存到 S3 中，以便在训练作业中使用。
 
 # 培训
 
-现在我们可以触发一个Amazon SageMaker训练作业，执行基于预处理数据的CLM绑定QLoRA微调脚本。
+现在我们可以触发一个 Amazon SageMaker 训练作业，执行基于预处理数据的 CLM 绑定 QLoRA 微调脚本。
 
 超参数和训练脚本参考了 Philipp 的博客文章。唯一的例外是执行的训练轮次数量，我们选择了相对较高的 20 轮。这是为了考虑到我们的训练数据集相对较小（约 32k 个标记）。在实际应用中，建议使用更大的数据集进行微调。训练脚本本身可以在 [这里](https://github.com/aristsakpinis93/finetuning-llama2/blob/main/scripts/run_clm.py) 找到。
 
@@ -144,14 +144,14 @@ LLaMA2模型于2023年7月发布，并附有一篇[研究论文](https://sconten
 
 +   LLaMA2–13b：“*NVIDIA Tesla V100。\nNVIDIA Tesla V100 是一种旨在进行高性能计算的 GPU。它基于 NVIDIA Volta 架构，并配备了 32GB 的 HBM2 内存。V100 能够提供高达 100 teraflops 的性能，并设计用于数据中心和超级计算机。\nNVIDIA Tesla V100 是一种强大的 GPU，旨在进行高性能计算。它基于 NVIDIA Volta 架构，并配备了 32GB 的 HBM2 内存。V100 能够提供高达 100 teraflops 的性能，并设计用于数据中心和超级计算机。\nNVIDIA Tesla V1…*”
 
-+   LLaMA2–13b-nyc-finetuned：“*NVIDIA A100 用于计算密集型工作负载，例如生成 AI、高性能计算（HPC）和数据分析。P5 实例非常适合训练和运行具有万亿参数的模型以及在庞大数据集上进行数据分析。与 P4 实例相比，它们提供了 8 倍的 GPU 内存和 64 倍的浮点运算（FLOPs）计算性能。\n您可以在 Amazon Elastic Container Service（ECS）中使用 P5 实例，支持最常见的容器工具和框架，如 Docker、PyTorch、TensorFlow、Jupyter Notebook、R Studio 和 Venv，或通过 Amazon Elastic MapReduce（EMR）或 Amazon DeepSense 使用 Amazon 或其他公司提供的 ML 和 AI 框架和工具来使用 P5 实例。为了便于在 P5 实例上构建生成 AI 应用程序，…*”
++   LLaMA2–13b-nyc-finetuned：“*NVIDIA A100 用于计算密集型工作负载，例如生成 AI、高性能计算（HPC）和数据分析。P5 实例非常适合训练和运行具有万亿参数的模型以及在庞大数据集上进行数据分析。与 P4 实例相比，它们提供了 8 倍的 GPU 内存和 64 倍的浮点运算（FLOPs）计算性能。\n 您可以在 Amazon Elastic Container Service（ECS）中使用 P5 实例，支持最常见的容器工具和框架，如 Docker、PyTorch、TensorFlow、Jupyter Notebook、R Studio 和 Venv，或通过 Amazon Elastic MapReduce（EMR）或 Amazon DeepSense 使用 Amazon 或其他公司提供的 ML 和 AI 框架和工具来使用 P5 实例。为了便于在 P5 实例上构建生成 AI 应用程序，…*”
 
-尽管用少量数据微调聊天微调模型已导致消除了基于LLaMA2模型的幻觉，但在我们的设置中似乎不起作用。这可能是因为我们微调数据集的大小有限。此外，更复杂的提示工程和优化推理配置参数设置可能会有所帮助。
+尽管用少量数据微调聊天微调模型已导致消除了基于 LLaMA2 模型的幻觉，但在我们的设置中似乎不起作用。这可能是因为我们微调数据集的大小有限。此外，更复杂的提示工程和优化推理配置参数设置可能会有所帮助。
 
 # 结论
 
-总之，这篇博客文章深入探讨了将领域特定知识融入大型语言模型（LLMs）如LLaMA2的关键过程，强调了在设计LLM驱动的企业级应用时，解决有用性、诚实性和无害性等挑战的重要性。这里的主要关注点是参数化微调方法，它可以有效地将专业知识注入基础模型而不影响其通用语言能力。
+总之，这篇博客文章深入探讨了将领域特定知识融入大型语言模型（LLMs）如 LLaMA2 的关键过程，强调了在设计 LLM 驱动的企业级应用时，解决有用性、诚实性和无害性等挑战的重要性。这里的主要关注点是参数化微调方法，它可以有效地将专业知识注入基础模型而不影响其通用语言能力。
 
-博客文章重点介绍了使用参数高效微调技术（如qLoRA方法）微调LLaMA2的步骤，以及如何在Amazon SageMaker上进行这一过程。通过采用这种方法，实践者可以将LLaMA2适应于特定领域，确保模型即使在超出原始训练数据的情况下也能保持最新的知识。
+博客文章重点介绍了使用参数高效微调技术（如 qLoRA 方法）微调 LLaMA2 的步骤，以及如何在 Amazon SageMaker 上进行这一过程。通过采用这种方法，实践者可以将 LLaMA2 适应于特定领域，确保模型即使在超出原始训练数据的情况下也能保持最新的知识。
 
-文章还强调了这种方法的多功能性，显示它可以应用于像LLaMA2-chat这样的模型，这些模型已经经过了特定任务的微调。这为将知识注入到LLM中提供了机会，而无需进行广泛的指令或基于对话的微调，从而保持了其特定任务的特性。
+文章还强调了这种方法的多功能性，显示它可以应用于像 LLaMA2-chat 这样的模型，这些模型已经经过了特定任务的微调。这为将知识注入到 LLM 中提供了机会，而无需进行广泛的指令或基于对话的微调，从而保持了其特定任务的特性。

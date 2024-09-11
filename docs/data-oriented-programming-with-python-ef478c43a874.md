@@ -1,18 +1,18 @@
-# Python中的数据导向编程
+# Python 中的数据导向编程
 
-> 原文：[https://towardsdatascience.com/data-oriented-programming-with-python-ef478c43a874?source=collection_archive---------1-----------------------#2023-05-12](https://towardsdatascience.com/data-oriented-programming-with-python-ef478c43a874?source=collection_archive---------1-----------------------#2023-05-12)
+> 原文：[`towardsdatascience.com/data-oriented-programming-with-python-ef478c43a874?source=collection_archive---------1-----------------------#2023-05-12`](https://towardsdatascience.com/data-oriented-programming-with-python-ef478c43a874?source=collection_archive---------1-----------------------#2023-05-12)
 
-## 由Yehonathan Sharvit撰写的关于*数据导向编程*的回顾，但使用了Python示例（而不是JavaScript和Java）
+## 由 Yehonathan Sharvit 撰写的关于*数据导向编程*的回顾，但使用了 Python 示例（而不是 JavaScript 和 Java）
 
-[](https://medium.com/@tamdtranthe?source=post_page-----ef478c43a874--------------------------------)[![Tam D Tran-The](../Images/2d1fcc2d5bfda09f26719c3a86817836.png)](https://medium.com/@tamdtranthe?source=post_page-----ef478c43a874--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef478c43a874--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ef478c43a874--------------------------------) [Tam D Tran-The](https://medium.com/@tamdtranthe?source=post_page-----ef478c43a874--------------------------------)
+[](https://medium.com/@tamdtranthe?source=post_page-----ef478c43a874--------------------------------)![Tam D Tran-The](https://medium.com/@tamdtranthe?source=post_page-----ef478c43a874--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef478c43a874--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef478c43a874--------------------------------) [Tam D Tran-The](https://medium.com/@tamdtranthe?source=post_page-----ef478c43a874--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff13e13f2829a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-oriented-programming-with-python-ef478c43a874&user=Tam+D+Tran-The&userId=f13e13f2829a&source=post_page-f13e13f2829a----ef478c43a874---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef478c43a874--------------------------------) ·12分钟阅读·2023年5月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef478c43a874&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-oriented-programming-with-python-ef478c43a874&user=Tam+D+Tran-The&userId=f13e13f2829a&source=-----ef478c43a874---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff13e13f2829a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-oriented-programming-with-python-ef478c43a874&user=Tam+D+Tran-The&userId=f13e13f2829a&source=post_page-f13e13f2829a----ef478c43a874---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef478c43a874--------------------------------) ·12 分钟阅读·2023 年 5 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef478c43a874&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-oriented-programming-with-python-ef478c43a874&user=Tam+D+Tran-The&userId=f13e13f2829a&source=-----ef478c43a874---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef478c43a874&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-oriented-programming-with-python-ef478c43a874&source=-----ef478c43a874---------------------bookmark_footer-----------)![](../Images/0394f0fd53608e090d14270536bf6869.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef478c43a874&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-oriented-programming-with-python-ef478c43a874&source=-----ef478c43a874---------------------bookmark_footer-----------)![](img/0394f0fd53608e090d14270536bf6869.png)
 
 图片由[AltumCode](https://unsplash.com/@altumcode?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

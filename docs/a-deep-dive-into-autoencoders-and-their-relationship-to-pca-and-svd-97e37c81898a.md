@@ -1,10 +1,10 @@
 # 深入探讨自编码器及其与 PCA 和 SVD 的关系
 
-> 原文：[https://towardsdatascience.com/a-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a?source=collection_archive---------3-----------------------#2023-06-13](https://towardsdatascience.com/a-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a?source=collection_archive---------3-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/a-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a?source=collection_archive---------3-----------------------#2023-06-13`](https://towardsdatascience.com/a-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a?source=collection_archive---------3-----------------------#2023-06-13)
 
 ## 对自编码器和降维技术的深入探索
 
-[](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)[![Reza Bagheri](../Images/7c5a7dc9e6e31048ce31c8d49055987c.png)](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97e37c81898a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----97e37c81898a--------------------------------) [Reza Bagheri](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)
+[](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)![Reza Bagheri](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97e37c81898a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----97e37c81898a--------------------------------) [Reza Bagheri](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F97e37c81898a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a&source=-----97e37c81898a---------------------bookmark_footer-----------)![](../Images/e2dacc0a1ecbcd18de0a94b4ba484e25.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F97e37c81898a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a&source=-----97e37c81898a---------------------bookmark_footer-----------)![](img/e2dacc0a1ecbcd18de0a94b4ba484e25.png)
 
 图片来源：作者
 

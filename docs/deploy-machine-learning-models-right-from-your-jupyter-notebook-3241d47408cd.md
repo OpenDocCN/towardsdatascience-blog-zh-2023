@@ -1,18 +1,18 @@
 # 直接从你的 Jupyter Notebook 部署机器学习模型
 
-> 原文：[https://towardsdatascience.com/deploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd?source=collection_archive---------2-----------------------#2023-03-28](https://towardsdatascience.com/deploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd?source=collection_archive---------2-----------------------#2023-03-28)
+> 原文：[`towardsdatascience.com/deploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd?source=collection_archive---------2-----------------------#2023-03-28`](https://towardsdatascience.com/deploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd?source=collection_archive---------2-----------------------#2023-03-28)
 
 ## 一行代码部署机器学习模型
 
-[](https://medium.com/@avi_chawla?source=post_page-----3241d47408cd--------------------------------)[![Avi Chawla](../Images/c9c3e4fc7549c3e388f8b4a5560c7cc6.png)](https://medium.com/@avi_chawla?source=post_page-----3241d47408cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3241d47408cd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3241d47408cd--------------------------------) [Avi Chawla](https://medium.com/@avi_chawla?source=post_page-----3241d47408cd--------------------------------)
+[](https://medium.com/@avi_chawla?source=post_page-----3241d47408cd--------------------------------)![Avi Chawla](https://medium.com/@avi_chawla?source=post_page-----3241d47408cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3241d47408cd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3241d47408cd--------------------------------) [Avi Chawla](https://medium.com/@avi_chawla?source=post_page-----3241d47408cd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d33decdf4c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd&user=Avi+Chawla&userId=5d33decdf4c4&source=post_page-5d33decdf4c4----3241d47408cd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3241d47408cd--------------------------------) ·7分钟阅读·2023年3月28日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d33decdf4c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd&user=Avi+Chawla&userId=5d33decdf4c4&source=post_page-5d33decdf4c4----3241d47408cd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3241d47408cd--------------------------------) ·7 分钟阅读·2023 年 3 月 28 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3241d47408cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd&source=-----3241d47408cd---------------------bookmark_footer-----------)![](../Images/4645ee16b71f68d11b5b7a71086fcb33.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3241d47408cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-machine-learning-models-right-from-your-jupyter-notebook-3241d47408cd&source=-----3241d47408cd---------------------bookmark_footer-----------)![](img/4645ee16b71f68d11b5b7a71086fcb33.png)
 
 图片由 [Roman Synkevych 🇺🇦](https://unsplash.com/ko/@synkevych?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -26,9 +26,9 @@
 
 但你是否曾想过为什么部署是一个具有挑战性的过程？如果是的话，让我来帮助你。
 
-在这篇博客中，我将详细概述为什么ML部署通常是一个繁琐的过程。
+在这篇博客中，我将详细概述为什么 ML 部署通常是一个繁琐的过程。
 
-此外，我还将分享如何使用[Modelbit](https://www.modelbit.com/) API 从jupyter notebook简化这个过程并部署模型。
+此外，我还将分享如何使用[Modelbit](https://www.modelbit.com/) API 从 jupyter notebook 简化这个过程并部署模型。
 
 让我们开始 🚀！
 
@@ -40,21 +40,21 @@
 
 你可以在这里阅读我之前关于机器学习部署的文章：
 
-[](/deploying-machine-learning-models-with-heroku-4dec1df87f71?source=post_page-----3241d47408cd--------------------------------) [## 使用Heroku部署机器学习模型
+[](/deploying-machine-learning-models-with-heroku-4dec1df87f71?source=post_page-----3241d47408cd--------------------------------) ## 使用 Heroku 部署机器学习模型
 
 ### 不仅要训练，还要部署：逐步指南
 
-[towardsdatascience.com](/deploying-machine-learning-models-with-heroku-4dec1df87f71?source=post_page-----3241d47408cd--------------------------------)
+[towardsdatascience.com
 
-# ML模型部署的痛点
+# ML 模型部署的痛点
 
 ## #1) 一致性挑战
 
-在几乎所有的ML用例中，使用的算法通常从未从头开始编写。相反，人们会使用PyTorch、Sklearn等库提供的开源实现。
+在几乎所有的 ML 用例中，使用的算法通常从未从头开始编写。相反，人们会使用 PyTorch、Sklearn 等库提供的开源实现。
 
 为了确保生产环境中的可重复性，生产环境应与模型训练时的环境保持一致。
 
-![](../Images/2a497e7ca8b1dc4308b8f819af4135f7.png)
+![](img/2a497e7ca8b1dc4308b8f819af4135f7.png)
 
 开发和生产环境（图像由作者提供）
 
@@ -62,11 +62,11 @@
 
 实现这种一致性有时可能具有挑战性。
 
-事实上，在我撰写上述的Heroku博客时，我遇到了许多错误和挑战，在尝试将机器学习模型部署到Heroku时，整体过程有些繁琐且耗时，这也是我在博客中讨论的内容。
+事实上，在我撰写上述的 Heroku 博客时，我遇到了许多错误和挑战，在尝试将机器学习模型部署到 Heroku 时，整体过程有些繁琐且耗时，这也是我在博客中讨论的内容。
 
 ## #2) 基础设施挑战
 
-ML模型通常需要像GPU这样的专用处理器进行训练。
+ML 模型通常需要像 GPU 这样的专用处理器进行训练。
 
 根据复杂程度，推断阶段，即部署后的阶段，可能还需要专门的基础设施。
 
@@ -74,7 +74,7 @@ ML模型通常需要像GPU这样的专用处理器进行训练。
 
 ## #3) 专业知识不足（或知识差距）
 
-ML工程师可能没有部署经验。他们可能在软件工程、DevOps和基础设施管理等领域缺乏必要的专业知识。
+ML 工程师可能没有部署经验。他们可能在软件工程、DevOps 和基础设施管理等领域缺乏必要的专业知识。
 
 这可能使他们在生产环境中有效部署和扩展模型变得困难。
 
@@ -82,7 +82,7 @@ ML工程师可能没有部署经验。他们可能在软件工程、DevOps和基
 
 然而，专门招聘用于部署的工程师可能对 ML 算法和技术没有深入了解。
 
-![](../Images/c2412d35281401c7aa0585386d0b48a4.png)
+![](img/c2412d35281401c7aa0585386d0b48a4.png)
 
 开发和生产团队（作者提供的图片）
 
@@ -102,7 +102,7 @@ ML工程师可能没有部署经验。他们可能在软件工程、DevOps和基
 
 下面的图片描绘了部署过程中的步骤的高层次图示概览。
 
-![](../Images/40c568c3284c79f2075aed3d13be8cb5.png)
+![](img/40c568c3284c79f2075aed3d13be8cb5.png)
 
 部署工作流（作者提供的图片）
 
@@ -122,7 +122,7 @@ ML工程师可能没有部署经验。他们可能在软件工程、DevOps和基
 
 首先，我们将训练一个我们打算部署的机器学习模型。为了简化起见，我们考虑一个在以下虚拟数据集上训练的线性回归模型：
 
-![](../Images/16c4e983926ce84a85ea1f4b1fcb50fe.png)
+![](img/16c4e983926ce84a85ea1f4b1fcb50fe.png)
 
 虚拟数据集（作者提供的图片）
 
@@ -138,7 +138,7 @@ model.fit(x, y)
 
 我们得到以下回归图：
 
-![](../Images/e6c1353f835b69bf64147e1cf458caba.png)
+![](img/e6c1353f835b69bf64147e1cf458caba.png)
 
 回归拟合（作者提供的图片）
 
@@ -203,13 +203,13 @@ mb.deploy(my_lr_deployement)
 
 就这样！模型已成功部署。下方展示了演示：
 
-![](../Images/7133b117ce443ebe66c541eadcdb9e47.png)
+![](img/7133b117ce443ebe66c541eadcdb9e47.png)
 
 部署演示（作者提供的图片）
 
 一旦你的模型成功部署，它将出现在你的 Modelbit 仪表盘中。
 
-![](../Images/a9c6ebfc8adec79825a9db8a709db340.png)
+![](img/a9c6ebfc8adec79825a9db8a709db340.png)
 
 部署仪表盘（作者提供的图片）
 

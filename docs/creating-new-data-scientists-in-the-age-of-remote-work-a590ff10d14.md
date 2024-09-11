@@ -1,22 +1,22 @@
 # 在远程工作的时代培养新的数据科学家
 
-> 原文：[https://towardsdatascience.com/creating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14?source=collection_archive---------1-----------------------#2023-10-17](https://towardsdatascience.com/creating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14?source=collection_archive---------1-----------------------#2023-10-17)
+> 原文：[`towardsdatascience.com/creating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14?source=collection_archive---------1-----------------------#2023-10-17`](https://towardsdatascience.com/creating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14?source=collection_archive---------1-----------------------#2023-10-17)
 
 ## 学习如何成为一名专业数据科学家的方式现在有所不同，但并非不可能
 
-[](https://medium.com/@s.kirmer?source=post_page-----a590ff10d14--------------------------------)[![Stephanie Kirmer](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----a590ff10d14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a590ff10d14--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a590ff10d14--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a590ff10d14--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----a590ff10d14--------------------------------)![Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a590ff10d14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a590ff10d14--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a590ff10d14--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a590ff10d14--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----a590ff10d14---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a590ff10d14--------------------------------) · 9 分钟阅读 · 2023年10月17日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa590ff10d14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----a590ff10d14---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----a590ff10d14---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a590ff10d14--------------------------------) · 9 分钟阅读 · 2023 年 10 月 17 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa590ff10d14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----a590ff10d14---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa590ff10d14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14&source=-----a590ff10d14---------------------bookmark_footer-----------)![](../Images/cf2f4dca66906db0bee1156c4a00f1ff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa590ff10d14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-new-data-scientists-in-the-age-of-remote-work-a590ff10d14&source=-----a590ff10d14---------------------bookmark_footer-----------)![](img/cf2f4dca66906db0bee1156c4a00f1ff.png)
 
 图片由 [Tim Gouw](https://unsplash.com/@punttim?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-今天的专栏部分涉及数据科学，但也涉及工作的社会学。作为该领域的高级从业者，我在Covid-19以及我们今天工作方式的根本转变之前很久就开始了我的数据科学职业生涯。我在那之前几年就开始了我的职业生涯。因此，我的多年学习如何成为任何职业人士（更不用说专业数据科学家了）是在与许多更有经验的人紧密相处中度过的，这在很多方面使我能够达到现在的位置。我的数据科学家发展不仅仅是关于课程学习和研究，它还涉及以各种方式学习如何成为数据科学家，其中许多都是通过与其他数据科学家在一起工作和进行工作而微妙地吸收的。
+今天的专栏部分涉及数据科学，但也涉及工作的社会学。作为该领域的高级从业者，我在 Covid-19 以及我们今天工作方式的根本转变之前很久就开始了我的数据科学职业生涯。我在那之前几年就开始了我的职业生涯。因此，我的多年学习如何成为任何职业人士（更不用说专业数据科学家了）是在与许多更有经验的人紧密相处中度过的，这在很多方面使我能够达到现在的位置。我的数据科学家发展不仅仅是关于课程学习和研究，它还涉及以各种方式学习如何成为数据科学家，其中许多都是通过与其他数据科学家在一起工作和进行工作而微妙地吸收的。
 
 重要的是要认识到，工作不仅仅是我们对雇主的付出，即使是在资本主义体系下。它也包括我们得到的回报，而且不仅仅是金钱方面的。工作场所和工作对我们有许多社会和文化影响，不仅仅是领取薪水。特别是，我们通过职业发展我们的社会身份，我们通过观察其他人如何体现这些身份来学习如何体现这些身份。
 
@@ -76,7 +76,7 @@
 
 我不会精确规定如何构建有意的面对面时间，因为每家公司和组织的情况都不同，无法一刀切。然而，我有一些针对上述具体目标的建议。
 
-+   **规范**：传达规范和文化最好是有意为之。不要仅仅希望你的初级员工会立即理解人际期望的运作方式。我们可能在每周工作40多个小时时不需要明确说明这些事情，但情况可能已经改变。比你认为需要的更明确一些。一些对这些规范的被动吸收也会在有意的面对面时间中发生。
++   **规范**：传达规范和文化最好是有意为之。不要仅仅希望你的初级员工会立即理解人际期望的运作方式。我们可能在每周工作 40 多个小时时不需要明确说明这些事情，但情况可能已经改变。比你认为需要的更明确一些。一些对这些规范的被动吸收也会在有意的面对面时间中发生。
 
 +   **技能**：数据科学的关键技能根据不同人的定义有所不同，但通常涉及一些编码、统计学、机器学习、商业头脑和沟通技巧的混合。这些都是通过实际工作发展和提高的技能，但我们也可以通过观察其他人如何做这项工作来获得这些技能。通过在你有意安排的面对面时间中创造协作工作机会，而不仅仅是专注于繁琐的会议，你可以帮助这些技能的传递。
 

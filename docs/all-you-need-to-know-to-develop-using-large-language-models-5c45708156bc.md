@@ -1,18 +1,18 @@
 # 开发大型语言模型所需了解的一切
 
-> 原文：[https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc?source=collection_archive---------0-----------------------#2023-11-15](https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc?source=collection_archive---------0-----------------------#2023-11-15)
+> 原文：[`towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc?source=collection_archive---------0-----------------------#2023-11-15`](https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc?source=collection_archive---------0-----------------------#2023-11-15)
 
-![](../Images/98c22ee1ed98e7ee21069160e94b530b.png)
+![](img/98c22ee1ed98e7ee21069160e94b530b.png)
 
 图像由 Stable Diffusion 生成
 
 ## 用简单的术语解释启动开发 LLM 基础应用所需的核心技术。
 
-[](https://slgero.medium.com/?source=post_page-----5c45708156bc--------------------------------)[![Sergei Savvov](../Images/a653eaeeec954f1a71e6341b424f009a.png)](https://slgero.medium.com/?source=post_page-----5c45708156bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5c45708156bc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5c45708156bc--------------------------------) [Sergei Savvov](https://slgero.medium.com/?source=post_page-----5c45708156bc--------------------------------)
+[](https://slgero.medium.com/?source=post_page-----5c45708156bc--------------------------------)![Sergei Savvov](https://slgero.medium.com/?source=post_page-----5c45708156bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5c45708156bc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5c45708156bc--------------------------------) [Sergei Savvov](https://slgero.medium.com/?source=post_page-----5c45708156bc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F227c6aaec11a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&user=Sergei+Savvov&userId=227c6aaec11a&source=post_page-227c6aaec11a----5c45708156bc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5c45708156bc--------------------------------) · 12 min read · 2023年11月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5c45708156bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&user=Sergei+Savvov&userId=227c6aaec11a&source=-----5c45708156bc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F227c6aaec11a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&user=Sergei+Savvov&userId=227c6aaec11a&source=post_page-227c6aaec11a----5c45708156bc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5c45708156bc--------------------------------) · 12 min read · 2023 年 11 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5c45708156bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&user=Sergei+Savvov&userId=227c6aaec11a&source=-----5c45708156bc---------------------clap_footer-----------)
 
 --
 
@@ -24,13 +24,13 @@
 
 我想你已经听了无数次关于 LLM 是什么，所以我不会再过多赘述。我们只需知道：大型语言模型（LLM）是一个**大型**神经网络模型，根据先前预测的 token 来预测下一个 token。就是这样。
 
-![](../Images/baef17b325f3a0a91efb69b5f000121a.png)
+![](img/baef17b325f3a0a91efb69b5f000121a.png)
 
 模型参数数量的比较。**只需看看 GPT-3 有多大。**而且没人知道 GPT-4 的情况……
 
 LLMs 的受欢迎程度归因于其多功能性和有效性。它们可以完美地完成翻译、摘要、意义分析等任务。
 
-![](../Images/f067bc2b066b128c05a9b99209c1abb0.png)
+![](img/f067bc2b066b128c05a9b99209c1abb0.png)
 
 LLMs 的能力
 
@@ -56,7 +56,7 @@ LLMs 的能力
 
 没有明确的答案说明什么更好或更差。我总结了以下几点：
 
-![](../Images/93415feefe3e2027c695a8346773c5bd.png)
+![](img/93415feefe3e2027c695a8346773c5bd.png)
 
 如果你对深入了解细节感兴趣，我建议你阅读我的文章“[你真的不需要托管的 LLMs，对吧？](https://medium.com/better-programming/you-dont-need-hosted-llms-do-you-1160b2520526)”。
 
@@ -80,17 +80,17 @@ LLMs 的能力
 
 # 3\. 提示工程的艺术
 
-我知道，很多人认为这是一门伪科学或只是暂时的炒作。但事实是，我们仍然没有完全理解LLM的工作原理。为什么它们有时能提供高质量的回答，而有时却编造事实（[幻觉](https://medium.com/better-programming/fixing-hallucinations-in-llms-9ff0fd438e33)）？或者为什么在提示中添加“让我们逐步思考”会突然提高质量？
+我知道，很多人认为这是一门伪科学或只是暂时的炒作。但事实是，我们仍然没有完全理解 LLM 的工作原理。为什么它们有时能提供高质量的回答，而有时却编造事实（[幻觉](https://medium.com/better-programming/fixing-hallucinations-in-llms-9ff0fd438e33)）？或者为什么在提示中添加“让我们逐步思考”会突然提高质量？
 
-![](../Images/a54da5dfb878ed04049f2bf61d77a0ee.png)
+![](img/a54da5dfb878ed04049f2bf61d77a0ee.png)
 
 添加情感色彩会提高任何模型的质量。[来源](https://arxiv.org/pdf/2307.11760.pdf)
 
 正因为如此，科学家和爱好者只能尝试不同的提示，试图使模型表现得更好。
 
-![](../Images/78d2c86b54dc16eac939b1047e3f5927.png)
+![](img/78d2c86b54dc16eac939b1047e3f5927.png)
 
-示意图，展示了用LLM解决问题的各种方法
+示意图，展示了用 LLM 解决问题的各种方法
 
 我不会用复杂的提示链来让你感到无聊，而是给你一些能立即提高性能的示例：
 
@@ -98,7 +98,7 @@ LLMs 的能力
 
 1.  [***“深呼吸，逐步解决这个问题”***](https://arxiv.org/pdf/2309.03409.pdf) — 是前一点的改进版。它可以再提高几个百分点的质量。
 
-1.  [***“这对我的职业生涯非常重要”***](https://arxiv.org/pdf/2307.11760.pdf) — 只需将其添加到提示的末尾，你会注意到质量提高5–20%。
+1.  [***“这对我的职业生涯非常重要”***](https://arxiv.org/pdf/2307.11760.pdf) — 只需将其添加到提示的末尾，你会注意到质量提高 5–20%。
 
 另外，我会立即分享一个有用的提示模板：
 
@@ -110,45 +110,45 @@ LLMs 的能力
 
 ## 有用链接：
 
-+   [prompttools](https://github.com/hegelai/prompttools) — 提示测试和实验，支持LLM（例如OpenAI，LLaMA）。
++   [prompttools](https://github.com/hegelai/prompttools) — 提示测试和实验，支持 LLM（例如 OpenAI，LLaMA）。
 
-+   [promptfoo](https://github.com/promptfoo/promptfoo) — 测试和评估LLM输出质量。
++   [promptfoo](https://github.com/promptfoo/promptfoo) — 测试和评估 LLM 输出质量。
 
-+   [Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) — 一系列用于ChatGPT模型的提示示例集合。
++   [Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) — 一系列用于 ChatGPT 模型的提示示例集合。
 
 # 4\. 融入新数据：检索增强生成（RAG）
 
-RAG是一种将LLM与外部知识库结合的技术。这使得模型能够添加原始训练集中未包含的相关信息或特定数据。
+RAG 是一种将 LLM 与外部知识库结合的技术。这使得模型能够添加原始训练集中未包含的相关信息或特定数据。
 
 尽管名字听起来吓人（有时我们会在其前面加上“reranker”一词），但它实际上是一种相当古老且出乎意料简单的技术：
 
-![](../Images/efe26cbc8b7fd9a77f9e9b7959339d57.png)
+![](img/efe26cbc8b7fd9a77f9e9b7959339d57.png)
 
-RAG工作原理的示意图
+RAG 工作原理的示意图
 
-1.  您将文档转换为数字，我们称之为[**嵌入**](/neural-network-embeddings-explained-4d028e6f0526)。
+1.  您将文档转换为数字，我们称之为**嵌入**。
 
 1.  然后，您还使用同一模型将用户的搜索查询转换为嵌入。
 
-1.  找到前K个最接近的文档，通常基于[余弦相似度](https://en.wikipedia.org/wiki/Cosine_similarity)。
+1.  找到前 K 个最接近的文档，通常基于[余弦相似度](https://en.wikipedia.org/wiki/Cosine_similarity)。
 
-1.  要求LLM基于这些文档生成响应。
+1.  要求 LLM 基于这些文档生成响应。
 
 ## 适合使用时
 
 +   **需要当前信息时：** 当应用程序需要不断更新的信息，例如新闻文章时。
 
-+   **领域特定应用程序：** 对于需要LLM训练数据之外的专业知识的应用程序，例如内部公司文档。
++   **领域特定应用程序：** 对于需要 LLM 训练数据之外的专业知识的应用程序，例如内部公司文档。
 
 ## 不适合使用时
 
 +   **通用对话应用程序：** 信息需要是通用的，不需要额外的数据。
 
-+   **有限资源场景：** RAG的检索组件涉及搜索大型知识库，这可能计算成本高且速度慢 — 尽管仍然比微调更快且更便宜。
++   **有限资源场景：** RAG 的检索组件涉及搜索大型知识库，这可能计算成本高且速度慢 — 尽管仍然比微调更快且更便宜。
 
-## 使用RAG构建应用程序
+## 使用 RAG 构建应用程序
 
-一个很好的起点是使用[LlamaIndex库](https://github.com/run-llama/llama_index)。它允许您快速将数据连接到LLM。为此，您只需要几行代码：
+一个很好的起点是使用[LlamaIndex 库](https://github.com/run-llama/llama_index)。它允许您快速将数据连接到 LLM。为此，您只需要几行代码：
 
 ```py
 from llama_index import VectorStoreIndex, SimpleDirectoryReader
@@ -169,31 +169,31 @@ print(response)
 
 ## 读什么 & 有用的链接
 
-+   [为生产环境构建基于RAG的LLM应用程序](https://www.anyscale.com/blog/a-comprehensive-guide-for-building-rag-based-llm-applications-part-1) — 一篇关于RAG主要组成部分的优秀详细文章。
++   [为生产环境构建基于 RAG 的 LLM 应用程序](https://www.anyscale.com/blog/a-comprehensive-guide-for-building-rag-based-llm-applications-part-1) — 一篇关于 RAG 主要组成部分的优秀详细文章。
 
-+   [为何在生产环境中您的RAG不可靠](/why-your-rag-is-not-reliable-in-a-production-environment-9e6a73b3eddb) — 由[Ahmed Besbes](https://medium.com/u/adc8ea174c69?source=post_page-----5c45708156bc--------------------------------)撰写的一篇很棒的文章，清楚地解释了在使用RAG时可能出现的困难。
++   为何在生产环境中您的 RAG 不可靠 — 由[Ahmed Besbes](https://medium.com/u/adc8ea174c69?source=post_page-----5c45708156bc--------------------------------)撰写的一篇很棒的文章，清楚地解释了在使用 RAG 时可能出现的困难。
 
-+   [使用LlamaIndex导航知识图谱的7种查询策略](https://betterprogramming.pub/7-query-strategies-for-navigating-knowledge-graphs-with-llamaindex-ed551863d416) — 来自[Wenqi Glantz](https://medium.com/u/ce7cd5b8b74a?source=post_page-----5c45708156bc--------------------------------)的信息丰富的文章，详细而微妙地探讨了使用LlamaIndex构建RAG管道。
++   [使用 LlamaIndex 导航知识图谱的 7 种查询策略](https://betterprogramming.pub/7-query-strategies-for-navigating-knowledge-graphs-with-llamaindex-ed551863d416) — 来自[Wenqi Glantz](https://medium.com/u/ce7cd5b8b74a?source=post_page-----5c45708156bc--------------------------------)的信息丰富的文章，详细而微妙地探讨了使用 LlamaIndex 构建 RAG 管道。
 
 +   [OpenAI 检索工具](https://platform.openai.com/docs/assistants/tools/knowledge-retrieval) — 如果你想要最小的工作量，可以使用 OpenAI 的 RAG。
 
-# 5\. 微调您的LLM
+# 5\. 微调您的 LLM
 
-微调是继续在特定数据集上训练预训练大语言模型（LLM）的过程。你可能会问，如果我们已经可以通过RAG添加数据，为什么还需要进一步训练模型。简单的回答是，只有微调才能使你的模型适应特定领域或定义其风格。例如，我[通过在个人通信上进行微调创建了自己的副本](https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e)：
+微调是继续在特定数据集上训练预训练大语言模型（LLM）的过程。你可能会问，如果我们已经可以通过 RAG 添加数据，为什么还需要进一步训练模型。简单的回答是，只有微调才能使你的模型适应特定领域或定义其风格。例如，我[通过在个人通信上进行微调创建了自己的副本](https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e)：
 
-![](../Images/c3a7b21c134390c8c947c4ee28812d55.png)
+![](img/c3a7b21c134390c8c947c4ee28812d55.png)
 
 微调模型在作者通信上的演示
 
 好吧，如果我已经说服了你它的重要性，让我们来看看它是如何工作的（**剧透** — 其实并不难）：
 
-![](../Images/c65f03ad9d92f925b08f8adcde668485.png)
+![](img/c65f03ad9d92f925b08f8adcde668485.png)
 
 *经典的微调领域特定数据的方法（所有图标来自* [*flaticon*](http://flaticon.com/)*)*
 
-1.  选择一个经过训练的大语言模型，有时称为基础LLM。你可以从[HuggingFace](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)下载它们。
+1.  选择一个经过训练的大语言模型，有时称为基础 LLM。你可以从[HuggingFace](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)下载它们。
 
-1.  准备你的训练数据。你只需要编译指令和响应。[这里有一个例子](https://huggingface.co/datasets/databricks/databricks-dolly-15k)的这样的数据集。你也可以[使用GPT-4生成合成数据](https://www.promptingguide.ai/applications/generating)。
+1.  准备你的训练数据。你只需要编译指令和响应。[这里有一个例子](https://huggingface.co/datasets/databricks/databricks-dolly-15k)的这样的数据集。你也可以[使用 GPT-4 生成合成数据](https://www.promptingguide.ai/applications/generating)。
 
 1.  选择合适的微调方法。[LoRA](https://github.com/microsoft/LoRA)和[QLoRA](https://github.com/artidoro/qlora)目前很受欢迎。
 
@@ -203,15 +203,15 @@ print(response)
 
 +   **小众应用：** 当应用涉及专业或非常规话题时。例如，需要理解和处理法律术语的法律文件应用。
 
-+   **自定义语言风格：** 对于需要特定语调或风格的应用。例如，创建一个[AI角色](https://beta.character.ai/)，无论是名人还是书中的角色。
++   **自定义语言风格：** 对于需要特定语调或风格的应用。例如，创建一个[AI 角色](https://beta.character.ai/)，无论是名人还是书中的角色。
 
 ## 何时不使用
 
 +   **广泛应用：** 当应用的范围较广，不需要专业知识时。
 
-+   **有限的数据：** 微调需要大量相关的数据。然而，你始终可以[使用另一个LLM生成数据](https://www.confident-ai.com/blog/how-to-generate-synthetic-data-using-llms-part-1)。例如，[Alpaca数据集](https://github.com/gururise/AlpacaDataCleaned)包含52k个LLM生成的指令-响应对，用于创建今年早些时候的第一个微调[Llama v1](https://arxiv.org/abs/2302.13971)模型。
++   **有限的数据：** 微调需要大量相关的数据。然而，你始终可以[使用另一个 LLM 生成数据](https://www.confident-ai.com/blog/how-to-generate-synthetic-data-using-llms-part-1)。例如，[Alpaca 数据集](https://github.com/gururise/AlpacaDataCleaned)包含 52k 个 LLM 生成的指令-响应对，用于创建今年早些时候的第一个微调[Llama v1](https://arxiv.org/abs/2302.13971)模型。
 
-## 微调你的LLM
+## 微调你的 LLM
 
 你可以找到大量关于模型微调的文章。仅在 Medium 上，就有成千上万篇。因此，我不想过于深入这个话题，会向你展示一个高级库，[Lit-GPT](https://github.com/Lightning-AI/lit-gpt)，它隐藏了所有的魔法。是的，它不允许对训练过程进行太多自定义，但你可以快速进行实验并获得初步结果。你只需要几行代码：
 
@@ -234,9 +234,9 @@ python finetune/lora.py \
 
 就这样！你的训练过程将开始：
 
-![](../Images/b919aa7721ea04f6df5c5783dd882fd0.png)
+![](img/b919aa7721ea04f6df5c5783dd882fd0.png)
 
-> 请注意，这个过程可能需要很长时间。在单个 A100 GPU 上微调 Falcon-7B 大约需要**10小时**和**30 GB**内存。
+> 请注意，这个过程可能需要很长时间。在单个 A100 GPU 上微调 Falcon-7B 大约需要**10 小时**和**30 GB**内存。
 
 当然，我稍微简化了一下，我们只触及了表面。实际上，微调过程要复杂得多，要获得更好的结果，你需要了解各种适配器、它们的参数以及更多内容。不过，即使经过如此简单的一轮，你也将拥有一个按照你的指示运行的新模型。
 
@@ -254,7 +254,7 @@ python finetune/lora.py \
 
 有时候，我们只希望简单地按下“部署”按钮……
 
-![](../Images/ccafea187bb4ef867065b18a1781fc9e.png)
+![](img/ccafea187bb4ef867065b18a1781fc9e.png)
 
 幸运的是，这相当可行。有大量专注于部署大型语言模型的框架。是什么让它们如此优秀？
 
@@ -270,17 +270,17 @@ python finetune/lora.py \
 
 部署 LLM 应用程序的框架选择取决于多种因素，包括模型的大小、应用程序的可扩展性要求和部署环境。目前，框架的种类并不多，因此理解它们的差异应该不会太难。下面，我为你准备了一份速查表，帮助你快速入门：
 
-![](../Images/67ac80e1155c047a0175a5523a329036.png)
+![](img/67ac80e1155c047a0175a5523a329036.png)
 
-此外，在我的文章“[7种用于服务LLM的框架](https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407)”中，我提供了对现有解决方案的更详细概述。如果你打算部署你的模型，我建议查看一下。
+此外，在我的文章“[7 种用于服务 LLM 的框架](https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407)”中，我提供了对现有解决方案的更详细概述。如果你打算部署你的模型，我建议查看一下。
 
-![](../Images/2b73a99b6ce220522fcf5cb5db8d26d4.png)
+![](img/2b73a99b6ce220522fcf5cb5db8d26d4.png)
 
-LLM推理框架的比较
+LLM 推理框架的比较
 
 ## 部署示例代码
 
-让我们从理论转向实践，尝试使用[文本生成推理](https://github.com/huggingface/text-generation-inference)部署LLaMA-2。正如你可能猜到的，你只需几行代码：
+让我们从理论转向实践，尝试使用[文本生成推理](https://github.com/huggingface/text-generation-inference)部署 LLaMA-2。正如你可能猜到的，你只需几行代码：
 
 ```py
 # 1\. Create a folder where your model will be stored:
@@ -299,29 +299,29 @@ curl 127.0.0.1:8080/generate \
     -H 'Content-Type: application/json'
 ```
 
-就这些！你已经设置了一个内置日志记录的RestAPI服务，带有用于监控的Prometheus端点、令牌流式传输，并且你的模型已完全优化。难道这不是很神奇吗？
+就这些！你已经设置了一个内置日志记录的 RestAPI 服务，带有用于监控的 Prometheus 端点、令牌流式传输，并且你的模型已完全优化。难道这不是很神奇吗？
 
-![](../Images/89f89d8b815ae7b78448c9441b533a16.png)
+![](img/89f89d8b815ae7b78448c9441b533a16.png)
 
-API文档
+API 文档
 
 ## 该读什么 & 有用的链接
 
-+   [7种用于服务LLM的框架](https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407) —— 一份详尽的指南，介绍了LLMs推理和服务的详细比较。
++   [7 种用于服务 LLM 的框架](https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407) —— 一份详尽的指南，介绍了 LLMs 推理和服务的详细比较。
 
-+   [推理端点](https://huggingface.co/inference-endpoints) —— HuggingFace的一个产品，可以让你通过几次点击部署任何LLMs。当你需要快速原型时，这是一个不错的选择。
++   [推理端点](https://huggingface.co/inference-endpoints) —— HuggingFace 的一个产品，可以让你通过几次点击部署任何 LLMs。当你需要快速原型时，这是一个不错的选择。
 
 # 7. 什么在幕后仍然存在
 
-尽管我们已经涵盖了开发基于LLM的应用所需的主要概念，但仍然有一些方面你可能会在未来遇到。因此，我想留下一些有用的链接：
+尽管我们已经涵盖了开发基于 LLM 的应用所需的主要概念，但仍然有一些方面你可能会在未来遇到。因此，我想留下一些有用的链接：
 
 ## 优化
 
 当你启动第一个模型时，你不可避免地会发现它没有你期望的那么快，而且消耗了大量资源。如果是这种情况，你需要了解如何优化它。
 
-+   [7种加速托管LLM推理的方法](https://medium.com/better-programming/speed-up-llm-inference-83653aa24c47) —— 加速LLMs推理的技术，以提高令牌生成速度和减少内存消耗。
++   [7 种加速托管 LLM 推理的方法](https://medium.com/better-programming/speed-up-llm-inference-83653aa24c47) —— 加速 LLMs 推理的技术，以提高令牌生成速度和减少内存消耗。
 
-+   [在PyTorch中优化LLM的内存使用](https://lightning.ai/pages/community/tutorial/pytorch-memory-vit-llm/) —— 文章提供了一系列技术，可以在不牺牲建模性能和预测准确性的情况下，将PyTorch中的内存消耗减少约20倍。
++   [在 PyTorch 中优化 LLM 的内存使用](https://lightning.ai/pages/community/tutorial/pytorch-memory-vit-llm/) —— 文章提供了一系列技术，可以在不牺牲建模性能和预测准确性的情况下，将 PyTorch 中的内存消耗减少约 20 倍。
 
 ## 评估
 
@@ -329,23 +329,23 @@ API文档
 
 +   [关于评估大语言模型的一切](https://explodinggradients.com/all-about-evaluating-large-language-models) —— 一篇关于基准和指标的好概述文章。
 
-+   [evals](https://github.com/openai/evals) —— 最受欢迎的评估LLMs和LLM系统的框架。
++   [evals](https://github.com/openai/evals) —— 最受欢迎的评估 LLMs 和 LLM 系统的框架。
 
 ## 向量数据库
 
-如果你使用RAG，某个时候你会从将向量存储在内存中转到数据库中。为此，了解市场上的当前产品及其局限性非常重要。
+如果你使用 RAG，某个时候你会从将向量存储在内存中转到数据库中。为此，了解市场上的当前产品及其局限性非常重要。
 
-+   [你需要知道的关于向量数据库的所有信息](/all-you-need-to-know-about-vector-databases-and-how-to-use-them-to-augment-your-llm-apps-596f39adfedb) — [Dominik Polzer](https://medium.com/u/3ab8d3143e32?source=post_page-----5c45708156bc--------------------------------) 提供的逐步指南，帮助你发现并利用向量数据库的力量。
++   你需要知道的关于向量数据库的所有信息 — [Dominik Polzer](https://medium.com/u/3ab8d3143e32?source=post_page-----5c45708156bc--------------------------------) 提供的逐步指南，帮助你发现并利用向量数据库的力量。
 
-+   [选择向量数据库：2023年的比较和指南](https://benchmark.vectorview.ai/vectordbs.html) — 对Pinecone、Weviate、Milvus、Qdrant、Chroma、Elasticsearch和PGvector数据库的比较。
++   [选择向量数据库：2023 年的比较和指南](https://benchmark.vectorview.ai/vectordbs.html) — 对 Pinecone、Weviate、Milvus、Qdrant、Chroma、Elasticsearch 和 PGvector 数据库的比较。
 
-## LLM代理
+## LLM 代理
 
-在我看来，这是LLMs中最有前景的发展。如果你想让多个模型协同工作，建议你探索以下链接。
+在我看来，这是 LLMs 中最有前景的发展。如果你想让多个模型协同工作，建议你探索以下链接。
 
-+   [基于LLM的自主代理调查](https://github.com/paitesanshi/llm-agent-survey#-more-comprehensive-summarization) — 这可能是关于LLM代理的最全面的概述。
++   [基于 LLM 的自主代理调查](https://github.com/paitesanshi/llm-agent-survey#-more-comprehensive-summarization) — 这可能是关于 LLM 代理的最全面的概述。
 
-+   [autogen](https://github.com/microsoft/autogen) — 一个框架，使得开发使用多个能够相互对话以解决任务的LLM应用程序成为可能。
++   [autogen](https://github.com/microsoft/autogen) — 一个框架，使得开发使用多个能够相互对话以解决任务的 LLM 应用程序成为可能。
 
 +   [OpenAgents](https://github.com/xlang-ai/OpenAgents) — 一个开放平台，用于在实际环境中使用和托管语言代理。
 
@@ -353,19 +353,19 @@ API文档
 
 一旦你允许用户访问你的模型，你就开始承担责任。如果它回应粗鲁？或者泄露炸弹制作成分？为避免这种情况，请查看这些文章：
 
-+   [说明来自人类反馈的强化学习（RLHF）](https://huggingface.co/blog/rlhf) — 详细介绍RLHF技术的概述文章。
++   [说明来自人类反馈的强化学习（RLHF）](https://huggingface.co/blog/rlhf) — 详细介绍 RLHF 技术的概述文章。
 
-+   [RL4LMs](https://github.com/allenai/RL4LMs) — 一个模块化的RL库，用于将语言模型微调到人类偏好。
++   [RL4LMs](https://github.com/allenai/RL4LMs) — 一个模块化的 RL 库，用于将语言模型微调到人类偏好。
 
 +   [TRL](https://github.com/huggingface/trl) — 一套用于训练变换器语言模型的工具，从监督微调步骤（SFT）、奖励建模步骤（RM）到近端策略优化（PPO）步骤。
 
 # 结论
 
-尽管有些炒作让我们感到有些厌倦，LLMs将长期存在，而理解其堆栈并编写简单应用程序的能力可以为你带来显著的提升。我希望我能让你在这个领域中稍作沉浸，并展示它并不复杂或令人恐惧。
+尽管有些炒作让我们感到有些厌倦，LLMs 将长期存在，而理解其堆栈并编写简单应用程序的能力可以为你带来显著的提升。我希望我能让你在这个领域中稍作沉浸，并展示它并不复杂或令人恐惧。
 
 感谢你的关注，请继续关注新文章！
 
-> **免责声明**：本文中的信息截至2023年11月，但请注意之后可能会有所变动。
+> **免责声明**：本文中的信息截至 2023 年 11 月，但请注意之后可能会有所变动。
 
 *除非另有说明，所有图片均由作者提供。*
 

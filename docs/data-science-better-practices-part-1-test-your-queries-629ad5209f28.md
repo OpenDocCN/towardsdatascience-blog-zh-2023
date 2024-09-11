@@ -1,22 +1,22 @@
-# 数据科学最佳实践，第1部分——测试你的查询
+# 数据科学最佳实践，第一部分——测试你的查询
 
-> 原文：[https://towardsdatascience.com/data-science-better-practices-part-1-test-your-queries-629ad5209f28?source=collection_archive---------5-----------------------#2023-09-07](https://towardsdatascience.com/data-science-better-practices-part-1-test-your-queries-629ad5209f28?source=collection_archive---------5-----------------------#2023-09-07)
+> 原文：[`towardsdatascience.com/data-science-better-practices-part-1-test-your-queries-629ad5209f28?source=collection_archive---------5-----------------------#2023-09-07`](https://towardsdatascience.com/data-science-better-practices-part-1-test-your-queries-629ad5209f28?source=collection_archive---------5-----------------------#2023-09-07)
 
 ## 如何确保我们的查询按预期工作——以及其他未来的好处。
 
-[](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)[![Shachaf Poran](../Images/ac1ac57b8777c3441ad69358af1d649b.png)](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------) [Shachaf Poran](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)
+[](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)![Shachaf Poran](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------) [Shachaf Poran](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33e74b6a3393&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&user=Shachaf+Poran&userId=33e74b6a3393&source=post_page-33e74b6a3393----629ad5209f28---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------) · 11 分钟阅读 · 2023年9月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F629ad5209f28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&user=Shachaf+Poran&userId=33e74b6a3393&source=-----629ad5209f28---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33e74b6a3393&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&user=Shachaf+Poran&userId=33e74b6a3393&source=post_page-33e74b6a3393----629ad5209f28---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------) · 11 分钟阅读 · 2023 年 9 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F629ad5209f28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&user=Shachaf+Poran&userId=33e74b6a3393&source=-----629ad5209f28---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F629ad5209f28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&source=-----629ad5209f28---------------------bookmark_footer-----------)![](../Images/639f0db4a613a31f29c317358dc28752.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F629ad5209f28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&source=-----629ad5209f28---------------------bookmark_footer-----------)![](img/639f0db4a613a31f29c317358dc28752.png)
 
 由 Midjourney 生成
 
-数据科学领域根植于数学和统计学以及计算机科学。尽管在过去几十年中它有了显著的发展，但只有在过去的10到15年里，它才成为组织中的一个成熟角色，并且作为科技行业中的一个独立领域而崛起。
+数据科学领域根植于数学和统计学以及计算机科学。尽管在过去几十年中它有了显著的发展，但只有在过去的 10 到 15 年里，它才成为组织中的一个成熟角色，并且作为科技行业中的一个独立领域而崛起。
 
 作为一个相对年轻的职业，数据科学中的最佳实践还没有足够的时间来凝聚，也没有得到很好的记录。这与软件工程这一相对成熟的领域形成对比，后者充满了经验丰富的指南、结构和方法论，经过时间的考验被证明是有益的。
 
@@ -30,15 +30,15 @@
 
 你正在使用`PySpark`并希望从一个大表中提取一些信息。你无法在内存中保持大量的相关数据，因此你被迫在查询语言中完成所有的转换、聚合、连接等操作。
 
-你开始编写查询，并且对它感到满意，因为`PySpark`使得即使查询太复杂而难以解释给其他人，它也能轻松使用具有Python风格的优雅API。即使你决定使用SQL接口——你仍然愉快地输入着。
+你开始编写查询，并且对它感到满意，因为`PySpark`使得即使查询太复杂而难以解释给其他人，它也能轻松使用具有 Python 风格的优雅 API。即使你决定使用 SQL 接口——你仍然愉快地输入着。
 
 然后，你意识到在`groupBy`调用中遗漏了一个关键列，于是回去修复它。
 
 然后，你意识到一个窗口函数缺少`orderBy`子句。
 
-然后，你决定将第四行中使用的这个神奇数字改为1.25，而不是1.2。
+然后，你决定将第四行中使用的这个神奇数字改为 1.25，而不是 1.2。
 
-你最终会反复地查看这些20到50行的查询，来回调整20到30分钟，稍微修改一下，同时构建最终的查询结构。
+你最终会反复地查看这些 20 到 50 行的查询，来回调整 20 到 30 分钟，稍微修改一下，同时构建最终的查询结构。
 
 然后……你运行查询，它**失败**了。
 
@@ -72,7 +72,7 @@
 
 让我们从创建我们需要与`PySpark`一起工作的环境（即固定装置）开始。我们每次运行可能会测试许多用例，因此我们在模块级别设置`PySpark`会话。否则，我们可能需要为每个测试启动和停止会话，这会产生不可忽略的开销。
 
-我使用Python内置的`*unittest*`，但如果你或你的团队其他成员使用`*pytest*`、`*nose*`或任何其他测试框架，我相信你会找到执行这些操作的方法。
+我使用 Python 内置的`*unittest*`，但如果你或你的团队其他成员使用`*pytest*`、`*nose*`或任何其他测试框架，我相信你会找到执行这些操作的方法。
 
 `*unittest*`有两个钩子`*setUpModule*`和`*tearDownModule*`，分别在测试之前和之后运行。我们将使用这些钩子来启动和停止我们的`PySpark`会话。
 
@@ -130,21 +130,21 @@ class TestPysparkQueries(unittest.TestCase):
         self.assertIsNotNone(spark)
 ```
 
-你瞧，我运行了测试（PyCharm允许你直接从代码中运行，你应该会看到每个测试旁边有一个绿色的“播放”按钮），并且收到了OK消息：
+你瞧，我运行了测试（PyCharm 允许你直接从代码中运行，你应该会看到每个测试旁边有一个绿色的“播放”按钮），并且收到了 OK 消息：
 
-![](../Images/deb15d316a4af5979cf0cdac24eb8429.png)
+![](img/deb15d316a4af5979cf0cdac24eb8429.png)
 
 # 创建*和*测试我们的数据
 
-现在我们可以开始讨论数据了。你应该手头有一个小的数据集，涵盖你可能遇到的不同情况，并且仍然可以手动处理。就实际大小而言，我通常建议20–50行，具体取决于领域和查询的复杂性。如果涉及分组，请选择5–10个不同的组。
+现在我们可以开始讨论数据了。你应该手头有一个小的数据集，涵盖你可能遇到的不同情况，并且仍然可以手动处理。就实际大小而言，我通常建议 20–50 行，具体取决于领域和查询的复杂性。如果涉及分组，请选择 5–10 个不同的组。
 
 出于教学目的，我创建了一个包含名字和出生日期的数据集。为了简单起见，我假设所有具有相同姓氏的个体是兄弟姐妹。我还引入了行顺序的随机性，以防止顺序敏感的查询在不直接处理顺序的情况下获得正确的答案。数据如下所示：
 
-![](../Images/bba6b4af9486e541502ebcee25aeed16.png)
+![](img/bba6b4af9486e541502ebcee25aeed16.png)
 
 现在是时候将数据加载到我们的`PySpark`会话中了。但首先，让我们为它创建一个基本的测试。顺便说一下，创建测试然后编写使测试通过的代码是测试驱动开发（TDD）方法的一部分，但我不对数据科学家传授这个方法，只关注测试部分。
 
-对于一个理智的测试，我们可以测试列名，测试数据集大小，或者两者都测试，或者我们可以提出更深层次的测试。甚至，我们可以编写一个测试，逐行匹配CSV文件和`DataFrame`。
+对于一个理智的测试，我们可以测试列名，测试数据集大小，或者两者都测试，或者我们可以提出更深层次的测试。甚至，我们可以编写一个测试，逐行匹配 CSV 文件和`DataFrame`。
 
 我们在编写测试时越严格，后来对代码正确性的确信就越强，但这也会使未来的更改更加困难，*例如*，如果我们想在数据集中添加/更改一行以测试特定边界情况怎么办？
 
@@ -173,9 +173,9 @@ def get_family_data():
 
 当我运行测试时……失败了？这怎么可能？
 
-![](../Images/7ab75221a73cfd8a023056f0e562cbc2.png)
+![](img/7ab75221a73cfd8a023056f0e562cbc2.png)
 
-在重新计算行数并确保为25后，我最终在代码中添加了`*header=True*`，测试通过了（不用担心，我会在接下来的示例中省略虚假的戏剧性）：
+在重新计算行数并确保为 25 后，我最终在代码中添加了`*header=True*`，测试通过了（不用担心，我会在接下来的示例中省略虚假的戏剧性）：
 
 # query_pyspark.py
 
@@ -227,7 +227,7 @@ def get_elder_child(family_df: pyspark.sql.DataFrame):
 
 如果我们通过后来出现的错误遇到这些特殊情况（即使我们不是自己提出的），我们也会这样做——更改数据集以反映这些情况，然后从那里继续。
 
-我们还应该为其他查询编写测试，并且我们会遇到不同类型的测试。在上面的测试中，我们关心的是**结果集**，但如果我们想测试简单的1:1转换，*即* `f(row) = y`，我们需要考虑Spark在行顺序上的非确定性。
+我们还应该为其他查询编写测试，并且我们会遇到不同类型的测试。在上面的测试中，我们关心的是**结果集**，但如果我们想测试简单的 1:1 转换，*即* `f(row) = y`，我们需要考虑 Spark 在行顺序上的非确定性。
 
 例如，假设我们想要获取数据集中名字的首字母。
 
@@ -292,7 +292,7 @@ def get_initials(first_name, last_name):
 
 在这两个选项中，我肯定会选择后者，因为它更**灵活**，因为它不直接依赖数据，而是通过支持函数的代理——这些函数在不与数据集耦合的情况下进行测试。
 
-当然，如果函数对你的查询负载不重，你可以选择将其用作UDF，保持代码复杂性低。
+当然，如果函数对你的查询负载不重，你可以选择将其用作 UDF，保持代码复杂性低。
 
 # 等等，还有更多内容吗？
 
@@ -336,18 +336,18 @@ def get_initials(first_name, last_name):
 
 A: 理想情况下，你不会随时间改变查询，但我知道我们领域的探索性。因此答案是“是的”。这也是为什么你可能会感觉编写测试时速度变慢的原因之一。然而，速度是与准确性/正确性权衡的。你可能会在后期过程中编写测试，当查询结构更加稳定时。
 
-Q: 如果我不使用PyCharm，怎么运行测试？
+Q: 如果我不使用 PyCharm，怎么运行测试？
 
-A: 在测试文件的末尾添加以下魔法行，然后使用`*python test_pyspark.py*`运行它。别忘了确保代码根目录被包含在`PYTHONPATH`中，以便导入能够正常工作（PyCharm会自动处理这个问题）。
+A: 在测试文件的末尾添加以下魔法行，然后使用`*python test_pyspark.py*`运行它。别忘了确保代码根目录被包含在`PYTHONPATH`中，以便导入能够正常工作（PyCharm 会自动处理这个问题）。
 
 ```py
 if __name__ == '__main__':
     unittest.main()
 ```
 
-Q: 如果我不想（或者无法）将数据保存在.csv文件中怎么办？
+Q: 如果我不想（或者无法）将数据保存在.csv 文件中怎么办？
 
-A: 任何对你有效的数据存储和加载方式都可以，只要尽量保持整洁即可。对于非常小的数据集，我使用了dict-to-DataFrame（或者如果你愿意，可以使用json-to-DataFrame），对于较大的数据集，我使用了永久存储在Hadoop上的表。
+A: 任何对你有效的数据存储和加载方式都可以，只要尽量保持整洁即可。对于非常小的数据集，我使用了 dict-to-DataFrame（或者如果你愿意，可以使用 json-to-DataFrame），对于较大的数据集，我使用了永久存储在 Hadoop 上的表。
 
 Q: 你给出的示例函数不是非常简单吗？
 

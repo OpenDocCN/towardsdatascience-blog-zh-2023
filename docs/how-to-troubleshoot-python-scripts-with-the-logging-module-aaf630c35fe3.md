@@ -1,38 +1,38 @@
 # 如何使用日志模块调试 Python 脚本
 
-> 原文：[https://towardsdatascience.com/how-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3?source=collection_archive---------8-----------------------#2023-08-26](https://towardsdatascience.com/how-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3?source=collection_archive---------8-----------------------#2023-08-26)
+> 原文：[`towardsdatascience.com/how-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3?source=collection_archive---------8-----------------------#2023-08-26`](https://towardsdatascience.com/how-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3?source=collection_archive---------8-----------------------#2023-08-26)
 
 ## 打印语句只能帮助你到此为止……
 
-[](https://medium.com/@aashishnair?source=post_page-----aaf630c35fe3--------------------------------)[![Aashish Nair](../Images/23f4b3839e464419332b690a4098d824.png)](https://medium.com/@aashishnair?source=post_page-----aaf630c35fe3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aaf630c35fe3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aaf630c35fe3--------------------------------) [Aashish Nair](https://medium.com/@aashishnair?source=post_page-----aaf630c35fe3--------------------------------)
+[](https://medium.com/@aashishnair?source=post_page-----aaf630c35fe3--------------------------------)![Aashish Nair](https://medium.com/@aashishnair?source=post_page-----aaf630c35fe3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aaf630c35fe3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aaf630c35fe3--------------------------------) [Aashish Nair](https://medium.com/@aashishnair?source=post_page-----aaf630c35fe3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3087ba81e065&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3&user=Aashish+Nair&userId=3087ba81e065&source=post_page-3087ba81e065----aaf630c35fe3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aaf630c35fe3--------------------------------) ·7分钟阅读·2023年8月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faaf630c35fe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3&user=Aashish+Nair&userId=3087ba81e065&source=-----aaf630c35fe3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3087ba81e065&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3&user=Aashish+Nair&userId=3087ba81e065&source=post_page-3087ba81e065----aaf630c35fe3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aaf630c35fe3--------------------------------) ·7 分钟阅读·2023 年 8 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faaf630c35fe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3&user=Aashish+Nair&userId=3087ba81e065&source=-----aaf630c35fe3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faaf630c35fe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3&source=-----aaf630c35fe3---------------------bookmark_footer-----------)![](../Images/88282bab14f50541e0bba68c4d0cf0bc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faaf630c35fe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-troubleshoot-python-scripts-with-the-logging-module-aaf630c35fe3&source=-----aaf630c35fe3---------------------bookmark_footer-----------)![](img/88282bab14f50541e0bba68c4d0cf0bc.png)
 
-图片来自 Tima Miroshnichenko: [https://www.pexels.com/photo/a-person-writing-on-a-notebook-5336909/](https://www.pexels.com/photo/a-person-writing-on-a-notebook-5336909/)
+图片来自 Tima Miroshnichenko: [`www.pexels.com/photo/a-person-writing-on-a-notebook-5336909/`](https://www.pexels.com/photo/a-person-writing-on-a-notebook-5336909/)
 
 ## 目录
 
-∘ [简介](#cb4a)
+∘ 简介
 
-∘ [日志模块](#3486)
+∘ 日志模块
 
-∘ [日志的级别](#21ff)
+∘ 日志的级别
 
-∘ [配置级别](#5e80)
+∘ 配置级别
 
-∘ [配置调试级别](#0153)
+∘ 配置调试级别
 
-∘ [创建日志文件](#a8c5)
+∘ 创建日志文件
 
-∘ [格式化日志消息](#9e39)
+∘ 格式化日志消息
 
-∘ [主要要点](#968a)
+∘ 主要要点
 
 ## 简介
 

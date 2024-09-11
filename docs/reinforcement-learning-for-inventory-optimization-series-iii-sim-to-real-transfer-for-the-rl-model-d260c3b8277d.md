@@ -1,18 +1,18 @@
 # 强化学习在库存优化中的应用系列 III：从模拟到现实的 RL 模型转移
 
-> 原文：[https://towardsdatascience.com/reinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d?source=collection_archive---------10-----------------------#2023-01-30](https://towardsdatascience.com/reinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d?source=collection_archive---------10-----------------------#2023-01-30)
+> 原文：[`towardsdatascience.com/reinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d?source=collection_archive---------10-----------------------#2023-01-30`](https://towardsdatascience.com/reinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d?source=collection_archive---------10-----------------------#2023-01-30)
 
 ## 弥合模拟器与现实世界之间的差距
 
-[](https://medium.com/@guanx92?source=post_page-----d260c3b8277d--------------------------------)[![Guangrui Xie](../Images/def9aa637424a88d75a6a3bb103350bc.png)](https://medium.com/@guanx92?source=post_page-----d260c3b8277d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d260c3b8277d--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d260c3b8277d--------------------------------) [Guangrui Xie](https://medium.com/@guanx92?source=post_page-----d260c3b8277d--------------------------------)
+[](https://medium.com/@guanx92?source=post_page-----d260c3b8277d--------------------------------)![Guangrui Xie](https://medium.com/@guanx92?source=post_page-----d260c3b8277d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d260c3b8277d--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----d260c3b8277d--------------------------------) [Guangrui Xie](https://medium.com/@guanx92?source=post_page-----d260c3b8277d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F495b92f0c66d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d&user=Guangrui+Xie&userId=495b92f0c66d&source=post_page-495b92f0c66d----d260c3b8277d---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----d260c3b8277d--------------------------------) · 8 分钟阅读 · 2023年1月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd260c3b8277d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d&user=Guangrui+Xie&userId=495b92f0c66d&source=-----d260c3b8277d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F495b92f0c66d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d&user=Guangrui+Xie&userId=495b92f0c66d&source=post_page-495b92f0c66d----d260c3b8277d---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----d260c3b8277d--------------------------------) · 8 分钟阅读 · 2023 年 1 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd260c3b8277d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d&user=Guangrui+Xie&userId=495b92f0c66d&source=-----d260c3b8277d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd260c3b8277d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d&source=-----d260c3b8277d---------------------bookmark_footer-----------)![](../Images/57bb3512be81d81faddf8f3fd7b5317c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd260c3b8277d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-for-inventory-optimization-series-iii-sim-to-real-transfer-for-the-rl-model-d260c3b8277d&source=-----d260c3b8277d---------------------bookmark_footer-----------)![](img/57bb3512be81d81faddf8f3fd7b5317c.png)
 
 照片由 [Suad Kamardeen](https://unsplash.com/@suadkamardeen?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,33 +30,33 @@
 
 以我之前构建的 RL 模型为例，这些模型通过大量的历史需求数据进行训练，因此很可能从训练的 RL 模型中学习到的库存政策过度拟合了历史需求数据所代表的需求模式。如果未来的需求模式继续保持相同，库存政策将表现良好，但如果未来的需求模式偏离历史模式，性能将会退化。
 
-作为一个数值示例，假设未来需求分布在现实世界中偏离了用于训练RL模型的模拟器中的历史需求数据。我将[我第一篇文章](https://medium.com/towards-data-science/a-reinforcement-learning-based-inventory-control-policy-for-retailers-ac35bc592278)中训练的RL模型应用于现实世界的两个未来需求场景。在一个场景中，我们假设正态分布的均值增加1，而在另一个场景中，均值减少1。需求分布结构如下表所示。
+作为一个数值示例，假设未来需求分布在现实世界中偏离了用于训练 RL 模型的模拟器中的历史需求数据。我将[我第一篇文章](https://medium.com/towards-data-science/a-reinforcement-learning-based-inventory-control-policy-for-retailers-ac35bc592278)中训练的 RL 模型应用于现实世界的两个未来需求场景。在一个场景中，我们假设正态分布的均值增加 1，而在另一个场景中，均值减少 1。需求分布结构如下表所示。
 
-![](../Images/ae64463d93bb6ab33b286a83fb4967d3.png)
+![](img/ae64463d93bb6ab33b286a83fb4967d3.png)
 
 两个未来/现实世界需求分布场景（图片由作者提供）
 
-对于需求增加场景和需求减少场景（如上表的第二列和第三列），我生成了100个需求数据集，每个数据集包含52周的数据，使用其自身的需求分布设置。然后，我将基于历史/模拟器需求数据（如上表的第一列）训练的DQN策略应用于这两个场景，得到的平均利润如下表所示。
+对于需求增加场景和需求减少场景（如上表的第二列和第三列），我生成了 100 个需求数据集，每个数据集包含 52 周的数据，使用其自身的需求分布设置。然后，我将基于历史/模拟器需求数据（如上表的第一列）训练的 DQN 策略应用于这两个场景，得到的平均利润如下表所示。
 
-![](../Images/875d73b680def5abba7790abdb6faf55.png)
+![](img/875d73b680def5abba7790abdb6faf55.png)
 
-应用训练于历史/模拟器数据的DQN策略到每个需求场景中获得的平均利润（图片由作者提供）
+应用训练于历史/模拟器数据的 DQN 策略到每个需求场景中获得的平均利润（图片由作者提供）
 
-为了评估训练的DQN策略表现如何，对于每个需求场景，假设我们知道未来/现实世界需求分布将如何偏离，并生成一个由52周需求数据组成的训练集，使用其自身的未来/现实世界需求分布设置。然后，我们为每个场景训练一个全新的RL模型，并将新RL模型应用于每个场景。得到的平均利润如下表所示。
+为了评估训练的 DQN 策略表现如何，对于每个需求场景，假设我们知道未来/现实世界需求分布将如何偏离，并生成一个由 52 周需求数据组成的训练集，使用其自身的未来/现实世界需求分布设置。然后，我们为每个场景训练一个全新的 RL 模型，并将新 RL 模型应用于每个场景。得到的平均利润如下表所示。
 
-![](../Images/46b9f9db2d6275890dd36142ebd0b90a.png)
+![](img/46b9f9db2d6275890dd36142ebd0b90a.png)
 
-应用训练于每个场景的训练集的DQN策略到每个需求场景中获得的平均利润（图片由作者提供）
+应用训练于每个场景的训练集的 DQN 策略到每个需求场景中获得的平均利润（图片由作者提供）
 
-从上面两张表的比较（$25077.61 对比 $27399.79 和 $13890.99 对比 $14707.44）可以看出，如果模拟器与现实世界之间存在差距，RL模型的性能会下降。
+从上面两张表的比较（$25077.61 对比 $27399.79 和 $13890.99 对比 $14707.44）可以看出，如果模拟器与现实世界之间存在差距，RL 模型的性能会下降。
 
 # 使用领域随机化弥合差距
 
-为了弥合模拟器和现实世界之间的差距，在实际应用中，可以选择最近一段时间的历史需求数据，并假设这段较短的时间更好地代表了未来需求模式或趋势。然后，我们可以通过使用最近更新的较短历史需求数据频繁重新训练RL模型。然而，我们也可以尝试在训练过程中使用领域随机化的概念来解决这个问题。
+为了弥合模拟器和现实世界之间的差距，在实际应用中，可以选择最近一段时间的历史需求数据，并假设这段较短的时间更好地代表了未来需求模式或趋势。然后，我们可以通过使用最近更新的较短历史需求数据频繁重新训练 RL 模型。然而，我们也可以尝试在训练过程中使用领域随机化的概念来解决这个问题。
 
 领域随机化是一种通常用于将模拟转移到实际的技术，尤其是在将强化学习应用于机器人时。机器人中的强化学习应用也面临现实差距的问题，因为模拟与现实世界之间的差距会降低将强化学习模型转移到实际机器人中的策略的性能[1]。在机器人领域，领域随机化的核心思想是通过在训练强化学习模型时随机化模拟环境的物理参数（例如摩擦系数和视觉属性如物体外观），强化学习模型将体验到更接近真实环境的情况，从而学习到的策略会更好地推广到实际环境中。下图展示了领域随机化的直觉。
 
-![](../Images/7c7a3d1976c0b74a9a3e3e6a0e95d41b.png)
+![](img/7c7a3d1976c0b74a9a3e3e6a0e95d41b.png)
 
 领域随机化的直觉（图片来源于参考文献 [1]）
 
@@ -114,15 +114,15 @@ for k in range(10):
     demand_hist_randomized.extend(demand) 
 ```
 
-在这里，我通过向每个场景的需求观察值中添加随机噪声来创建了10个历史需求场景。然后我将这些场景组合在一起，作为用于训练的完整历史需求数据，假装我们有10年的需求数据。请注意，这个想法的本质也与计算机视觉任务中的数据增强技术相一致，我们通过操控图像来丰富训练集，以避免过拟合。
+在这里，我通过向每个场景的需求观察值中添加随机噪声来创建了 10 个历史需求场景。然后我将这些场景组合在一起，作为用于训练的完整历史需求数据，假装我们有 10 年的需求数据。请注意，这个想法的本质也与计算机视觉任务中的数据增强技术相一致，我们通过操控图像来丰富训练集，以避免过拟合。
 
-我尝试了不同的正态分布均值来生成随机噪声。最初，我认为使用均值为0是有意义的，因为它更有可能生成相等数量的需求增加和减少场景。有趣的是，在尝试了不同的值之后，我发现将均值设置为0以上（更多的需求增加场景）在这个特定的例子中得到了更好的测试结果。这可能是因为需求数据在0处被截断，因此尽管我们生成均值为0的噪声，但需求分布向左移动的空间不大。所以生成均值为正数的噪声会使强化学习模型学到更多有用的知识。
+我尝试了不同的正态分布均值来生成随机噪声。最初，我认为使用均值为 0 是有意义的，因为它更有可能生成相等数量的需求增加和减少场景。有趣的是，在尝试了不同的值之后，我发现将均值设置为 0 以上（更多的需求增加场景）在这个特定的例子中得到了更好的测试结果。这可能是因为需求数据在 0 处被截断，因此尽管我们生成均值为 0 的噪声，但需求分布向左移动的空间不大。所以生成均值为正数的噪声会使强化学习模型学到更多有用的知识。
 
-现在我们使用通过领域随机化获得的新10年历史需求数据来训练DQN模型，然后将学习到的DQN策略应用于上一节中描述的需求增加和减少场景（详见第一个表）。下表展示了每个场景中获得的平均利润。
+现在我们使用通过领域随机化获得的新 10 年历史需求数据来训练 DQN 模型，然后将学习到的 DQN 策略应用于上一节中描述的需求增加和减少场景（详见第一个表）。下表展示了每个场景中获得的平均利润。
 
-![](../Images/360f435930f658b9dada5c27e199242f.png)
+![](img/360f435930f658b9dada5c27e199242f.png)
 
-使用领域随机化后训练的DQN策略在每个场景中获得的平均利润（图片由作者提供）
+使用领域随机化后训练的 DQN 策略在每个场景中获得的平均利润（图片由作者提供）
 
 我们看到，与没有领域随机化的结果相比，明显有所改善（增加场景中为 $26432.61 对 $25077.61，减少场景中为 $14311.52 对 $13890.99）。
 

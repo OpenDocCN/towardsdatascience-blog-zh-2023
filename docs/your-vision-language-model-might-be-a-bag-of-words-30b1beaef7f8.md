@@ -1,10 +1,10 @@
 # 你的视觉-语言模型可能只是一个词袋
 
-> 原文：[https://towardsdatascience.com/your-vision-language-model-might-be-a-bag-of-words-30b1beaef7f8?source=collection_archive---------5-----------------------#2023-03-21](https://towardsdatascience.com/your-vision-language-model-might-be-a-bag-of-words-30b1beaef7f8?source=collection_archive---------5-----------------------#2023-03-21)
+> 原文：[`towardsdatascience.com/your-vision-language-model-might-be-a-bag-of-words-30b1beaef7f8?source=collection_archive---------5-----------------------#2023-03-21`](https://towardsdatascience.com/your-vision-language-model-might-be-a-bag-of-words-30b1beaef7f8?source=collection_archive---------5-----------------------#2023-03-21)
 
 ## 我们在 ICLR 2023 的口头报告中探讨了视觉-语言模型对语言的理解极限
 
-[](https://fede-bianchi.medium.com/?source=post_page-----30b1beaef7f8--------------------------------)[![Federico Bianchi](../Images/fa38ff2051af04df7803af7d84c5cd4d.png)](https://fede-bianchi.medium.com/?source=post_page-----30b1beaef7f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30b1beaef7f8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30b1beaef7f8--------------------------------) [Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----30b1beaef7f8--------------------------------)
+[](https://fede-bianchi.medium.com/?source=post_page-----30b1beaef7f8--------------------------------)![Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----30b1beaef7f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30b1beaef7f8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----30b1beaef7f8--------------------------------) [Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----30b1beaef7f8--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30b1beaef7f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-vision-language-model-might-be-a-bag-of-words-30b1beaef7f8&source=-----30b1beaef7f8---------------------bookmark_footer-----------)![](../Images/727a10ca8f3a50cfa828295de0c20824.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30b1beaef7f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-vision-language-model-might-be-a-bag-of-words-30b1beaef7f8&source=-----30b1beaef7f8---------------------bookmark_footer-----------)![](img/727a10ca8f3a50cfa828295de0c20824.png)
 
 图片由 [ThisIsEngineering](https://www.pexels.com/photo/code-projected-over-woman-3861969/) 提供。
 
@@ -44,13 +44,13 @@
 
 +   **蓝色方块**包含模型需要最大化相似性的配对，其他**白色方块**是我们希望最小化的相似度（因为这些方块包含了不匹配的图像-文本配对的相似度，例如，一张猫的图片和描述“我的古董椅子”）。
 
-![](../Images/8dd883eea0defe3843fcbc04009cc470.png)
+![](img/8dd883eea0defe3843fcbc04009cc470.png)
 
-CLIP 中的对比预训练。蓝色方块表示我们希望优化相似性的配对。图片来源于 [https://github.com/openai/CLIP](https://github.com/openai/CLIP)
+CLIP 中的对比预训练。蓝色方块表示我们希望优化相似性的配对。图片来源于 [`github.com/openai/CLIP`](https://github.com/openai/CLIP)
 
-训练完成后，你应该拥有一个有意义的向量空间，在其中你可以对图像和描述进行编码。一旦你为每个图像和每个文本获取了嵌入，你可以执行许多任务，例如查看哪些图像与描述更相似（例如，在你2017年夏季度假专辑中查找“海滩上的狗”），或找出哪个文本标签与图像更相似（例如，你有一大堆你家狗和猫的图片，你希望能够识别它们）。
+训练完成后，你应该拥有一个有意义的向量空间，在其中你可以对图像和描述进行编码。一旦你为每个图像和每个文本获取了嵌入，你可以执行许多任务，例如查看哪些图像与描述更相似（例如，在你 2017 年夏季度假专辑中查找“海滩上的狗”），或找出哪个文本标签与图像更相似（例如，你有一大堆你家狗和猫的图片，你希望能够识别它们）。
 
-视觉-语言模型，如CLIP，已成为通过整合视觉和语言信息解决复杂AI任务的强大工具。它们将这两种数据嵌入到共享向量空间中的能力，使其在各种应用中达到前所未有的准确性和性能水平。
+视觉-语言模型，如 CLIP，已成为通过整合视觉和语言信息解决复杂 AI 任务的强大工具。它们将这两种数据嵌入到共享向量空间中的能力，使其在各种应用中达到前所未有的准确性和性能水平。
 
 # **视觉-语言模型理解语言吗？**
 
@@ -58,13 +58,13 @@ CLIP 中的对比预训练。蓝色方块表示我们希望优化相似性的配
 
 ## **新的基准：属性、关系和顺序**
 
-像CLIP（以及来自Salesforce的更新模型BLIP）这样的模型在理解语言方面表现如何？
+像 CLIP（以及来自 Salesforce 的更新模型 BLIP）这样的模型在理解语言方面表现如何？
 
 我们收集了一组基于属性的组合描述（例如，“红色的门和站着的人”）和基于关系的组合描述（例如，“马在吃草”），以及相应的匹配图片。然后，我们生成了替代的错误描述，如“草在吃马”。**模型能找到正确的描述吗？** 我们还探索了打乱词语的效果：**模型是否更喜欢未打乱的描述而非打乱的描述？**
 
 我们为属性、关系和顺序（**ARO**）创建的四个数据集在下图中有所说明（注意顺序包含两个数据集）：
 
-![](../Images/65a7f62ba01da19787ddb9bd7af4ab6c.png)
+![](img/65a7f62ba01da19787ddb9bd7af4ab6c.png)
 
 我们创建的不同数据集是关系、属性和顺序。对于每个数据集，我们展示一个图片示例和不同的描述。只有一个描述是正确的，模型必须识别正确的描述。图片由作者提供。
 
@@ -78,13 +78,13 @@ CLIP 中的对比预训练。蓝色方块表示我们希望优化相似性的配
 
 好吧，可能是 BLIP，因为它不能理解“马在吃草”和“草在吃马”之间的区别：
 
-![](../Images/27c4eeaf79fe4a4aac79a00d4447b008.png)
+![](img/27c4eeaf79fe4a4aac79a00d4447b008.png)
 
 BLIP 不理解“草在吃马”和“马在吃草”之间的区别。图像由作者提供，包含来自 Visual Genome 数据集的元素。图像由作者提供。
 
 现在让我们看看一些结果。少数模型在关系理解（例如，吃）上显著高于偶然水平。CLIP 在归因和关系上仅略高于偶然水平。这实际上表明视觉语言模型存在问题。
 
-![](../Images/94a31fb70a8209dd389c6ceb5138452d.png)
+![](img/94a31fb70a8209dd389c6ceb5138452d.png)
 
 不同模型在归因、关系和顺序（针对 Flick30k）基准上的表现。你可以看到 CLIP、BLIP 和其他最先进的模型。图像由作者提供。
 
@@ -98,7 +98,7 @@ BLIP 不理解“草在吃马”和“马在吃草”之间的区别。图像由
 
 我们试图更好地理解这个问题，并测试了模型在重新排列标题中的单词顺序后的表现。我们能找到标题为“books the looking at people are”的正确图像吗？如果答案是肯定的，这意味着查找正确图像时不需要顺序信息。
 
-![](../Images/151199634d6caba0c53a41c8676f74b6.png)
+![](img/151199634d6caba0c53a41c8676f74b6.png)
 
 我们测试的任务是用打乱的标题进行检索。即使我们打乱标题，模型仍能正确找到相应的图像（反之亦然）。这表明检索任务可能太简单。图像由作者提供。
 
@@ -112,7 +112,7 @@ BLIP 不理解“草在吃马”和“马在吃草”之间的区别。图像由
 
 确实，我们提议通过增加专门用于解决此问题的困难负样本来改进 CLIP 的训练。这是一个非常简单有效的解决方案：它只需对原始 CLIP 损失做非常小的编辑，不会影响整体性能（具体细节可以在论文中阅读）。我们称这种 CLIP 版本为 NegCLIP。
 
-![](../Images/dd9b786195ee8d59a7fea6bec276aea3.png)
+![](img/dd9b786195ee8d59a7fea6bec276aea3.png)
 
 在 CLIP 中引入困难负样本。我们添加了图像和文本的困难负样本。图片来源于作者。
 
@@ -120,7 +120,7 @@ BLIP 不理解“草在吃马”和“马在吃草”之间的区别。图像由
 
 这个修复的效果是，它实际上可以提高 ARO 基准上的性能，而不会影响检索性能或其他下游任务如检索和分类的表现。有关不同基准的结果，请参见下图（详细信息请见论文）。
 
-![](../Images/38f67f6f2c47d4c3f8e1a3453dc4d163.png)
+![](img/38f67f6f2c47d4c3f8e1a3453dc4d163.png)
 
 NegCLIP 与 CLIP 在不同基准上的比较。蓝色基准是我们介绍的，绿色基准来自文献。图片来源于作者。
 
@@ -169,7 +169,7 @@ vga_dataset = VG_Attribution(image_preprocess=preprocess,
 
 ### CLIP 介绍以及我们在 HuggingFace 社区周期间如何为意大利语言进行微调。
 
-[towardsdatascience.com](/how-to-train-your-clip-45a451dcd303?source=post_page-----30b1beaef7f8--------------------------------)
+towardsdatascience.com
 
 我还对 CLIP 进行了时尚数据的微调。这里有一篇你可能感兴趣的博客文章！
 
@@ -177,4 +177,4 @@ vga_dataset = VG_Attribution(image_preprocess=preprocess,
 
 ### 训练 FashionCLIP，一种针对时尚领域的 CLIP 模型
 
-[towardsdatascience.com](/teaching-clip-some-fashion-3005ac3fdcc3?source=post_page-----30b1beaef7f8--------------------------------)
+towardsdatascience.com

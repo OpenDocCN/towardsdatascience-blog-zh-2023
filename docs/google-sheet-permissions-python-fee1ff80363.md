@@ -1,18 +1,18 @@
 # 如何使用 Python 更改 Google 表格权限
 
-> 原文：[https://towardsdatascience.com/google-sheet-permissions-python-fee1ff80363?source=collection_archive---------5-----------------------#2023-05-04](https://towardsdatascience.com/google-sheet-permissions-python-fee1ff80363?source=collection_archive---------5-----------------------#2023-05-04)
+> 原文：[`towardsdatascience.com/google-sheet-permissions-python-fee1ff80363?source=collection_archive---------5-----------------------#2023-05-04`](https://towardsdatascience.com/google-sheet-permissions-python-fee1ff80363?source=collection_archive---------5-----------------------#2023-05-04)
 
 ## 使用 Python API 编程共享 Google 表格给特定用户
 
-[](https://gmyrianthous.medium.com/?source=post_page-----fee1ff80363--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----fee1ff80363--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fee1ff80363--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fee1ff80363--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----fee1ff80363--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----fee1ff80363--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----fee1ff80363--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fee1ff80363--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fee1ff80363--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----fee1ff80363--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-sheet-permissions-python-fee1ff80363&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----fee1ff80363---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fee1ff80363--------------------------------) · 5 分钟阅读 · 2023年5月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffee1ff80363&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-sheet-permissions-python-fee1ff80363&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----fee1ff80363---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-sheet-permissions-python-fee1ff80363&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----fee1ff80363---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fee1ff80363--------------------------------) · 5 分钟阅读 · 2023 年 5 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffee1ff80363&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-sheet-permissions-python-fee1ff80363&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----fee1ff80363---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffee1ff80363&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-sheet-permissions-python-fee1ff80363&source=-----fee1ff80363---------------------bookmark_footer-----------)![](../Images/08ae206774c5ada897f91d3d70b78ba0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffee1ff80363&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-sheet-permissions-python-fee1ff80363&source=-----fee1ff80363---------------------bookmark_footer-----------)![](img/08ae206774c5ada897f91d3d70b78ba0.png)
 
 图片由 [Artur Tumasjan](https://unsplash.com/es/@arturtumasjan?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布在 [Unsplash](https://unsplash.com/photos/zM8sSfYFDww?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

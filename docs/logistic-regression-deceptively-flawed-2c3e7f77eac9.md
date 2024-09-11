@@ -1,28 +1,28 @@
 # 逻辑回归：看似有缺陷
 
-> 原文：[https://towardsdatascience.com/logistic-regression-deceptively-flawed-2c3e7f77eac9?source=collection_archive---------15-----------------------#2023-05-23](https://towardsdatascience.com/logistic-regression-deceptively-flawed-2c3e7f77eac9?source=collection_archive---------15-----------------------#2023-05-23)
+> 原文：[`towardsdatascience.com/logistic-regression-deceptively-flawed-2c3e7f77eac9?source=collection_archive---------15-----------------------#2023-05-23`](https://towardsdatascience.com/logistic-regression-deceptively-flawed-2c3e7f77eac9?source=collection_archive---------15-----------------------#2023-05-23)
 
 ## 大的赔率比和完美分离的数据什么时候会让你吃亏？
 
-[](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)[![Igor Šegota](../Images/17c592b71fef9526a0679d47937837f6.png)](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------) [Igor Šegota](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)
+[](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)![Igor Šegota](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------) [Igor Šegota](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe5f8ebca4ad8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=post_page-e5f8ebca4ad8----2c3e7f77eac9---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------) ·8分钟阅读·2023年5月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2c3e7f77eac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=-----2c3e7f77eac9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe5f8ebca4ad8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=post_page-e5f8ebca4ad8----2c3e7f77eac9---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------) ·8 分钟阅读·2023 年 5 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2c3e7f77eac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=-----2c3e7f77eac9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2c3e7f77eac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&source=-----2c3e7f77eac9---------------------bookmark_footer-----------)![](../Images/fd6846838f4d97d1fe123837c8fb36d1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2c3e7f77eac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&source=-----2c3e7f77eac9---------------------bookmark_footer-----------)![](img/fd6846838f4d97d1fe123837c8fb36d1.png)
 
 照片由[Alvan Nee](https://unsplash.com/es/@alvannee?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 这是上一篇关于逻辑回归概念理解的文章的第二部分：
 
-[](/logistic-regression-faceoff-67560de4f492?source=post_page-----2c3e7f77eac9--------------------------------) [## 逻辑回归：对决与概念理解
+[](/logistic-regression-faceoff-67560de4f492?source=post_page-----2c3e7f77eac9--------------------------------) ## 逻辑回归：对决与概念理解
 
 ### 对数损失和完美分离的数据与冰球棒有什么关系？
 
-towardsdatascience.com](/logistic-regression-faceoff-67560de4f492?source=post_page-----2c3e7f77eac9--------------------------------)
+towardsdatascience.com
 
 上次我们可视化并解释了逻辑回归中的对数损失拟合。我们还展示了这个过程无法完美拟合完全分离的数据。换句话说，与普通最小二乘法的线性回归不同，逻辑回归实际上在数据稍微有些噪声时效果更好！
 
@@ -38,13 +38,13 @@ towardsdatascience.com](/logistic-regression-faceoff-67560de4f492?source=post_pa
 
 在这一部分，我们将使用 Python 的 statsmodels 库。请注意，statsmodels 和 scikit-learn（稍后使用）使用 *β* 来参数化概率，而不是 *k* 和 *x₀*：
 
-![](../Images/6b56227f9d6f2bd6640839f01a3d90a6.png)
+![](img/6b56227f9d6f2bd6640839f01a3d90a6.png)
 
 其中 *k*、*x₀* 和 *β₁*、*β₀* 之间的关系是：
 
-![](../Images/b9226107d5bd05e8238a5d138809310b.png)
+![](img/b9226107d5bd05e8238a5d138809310b.png)
 
-我们将继续使用我们在 [逻辑回归第一部分](/logistic-regression-faceoff-67560de4f492) 中生成的数据集，首先使用“非完美”数据 `sample_df` ，使用 statsmodels 的公式 API：
+我们将继续使用我们在 逻辑回归第一部分 中生成的数据集，首先使用“非完美”数据 `sample_df` ，使用 statsmodels 的公式 API：
 
 ```py
 import statsmodels.formula.api as smf
@@ -56,11 +56,11 @@ model.summary()
 #>         Iterations 8
 ```
 
-![](../Images/0c76474446a04887204ce5aebabe589a.png)
+![](img/0c76474446a04887204ce5aebabe589a.png)
 
 我们的模型参数是 *k = 3* 和 *x₀ = 2.5*，因此它们对应于 *β₁ = 3* 和 *β₀ = -7.5*。我们可以通过从底部表格的 `coef` 列中读取这些参数，与拟合的参数进行比较：
 
-![](../Images/6e4bba19fadc12707c46ebbaba5aa5c7.png)
+![](img/6e4bba19fadc12707c46ebbaba5aa5c7.png)
 
 我们的数据点非常少，而且种子是故意选择的，以展示离群值，因此拟合略有偏差，但仍在合理范围内。这里报告的总对数损失为“对数似然”，即总对数损失的负值，等于 -6.911。
 
@@ -96,7 +96,7 @@ perfect_sep_model_2.summary()
 #>   Maximum Likelihood optimization failed to converge. Check mle_retvals
 ```
 
-![](../Images/29d9a85d58eaf5d3be965f408b515d2b.png)
+![](img/29d9a85d58eaf5d3be965f408b515d2b.png)
 
 由于第二个模型也没有收敛，我们可以认为它可能也应该返回一个错误，而不是一个无害的警告。R 中的逻辑回归函数 `glm(..., family=binomial)` 也是这样。引用 [R Inferno](https://www.burns-stat.com/pages/Tutor/R_inferno.pdf) 的第五圈，一致性：
 
@@ -183,7 +183,7 @@ sklearn_logistic_fit(perfect_sep2_df)
 
 还有一个我们没有深入讨论的话题。系数 *k*（或 *β₁*）乘以 *x*，有另一种解释——*对数几率比*。几率比描述了当 *x* 增加 1 时几率的乘法变化：
 
-![](../Images/e8f72fc1b29d7d37a5de1eee98f6643a.png)
+![](img/e8f72fc1b29d7d37a5de1eee98f6643a.png)
 
 这个定义表明**赔率比是概率比的比率**。如果将 *x* 增加一个单位，使得 *y = 1* 的概率从 0.1（赔率 0.1 / 0.9 = 0.11）增加到 0.2（赔率 = 0.2 / 0.8 = 0.25），则赔率比为 0.25 / 0.1 = 2.27。
 

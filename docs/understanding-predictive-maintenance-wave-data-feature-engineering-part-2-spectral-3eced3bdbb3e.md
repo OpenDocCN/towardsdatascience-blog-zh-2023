@@ -1,10 +1,10 @@
 # 理解预测性维护 — 波数据：特征工程（第二部分）
 
-> 原文：[https://towardsdatascience.com/understanding-predictive-maintenance-wave-data-feature-engineering-part-2-spectral-3eced3bdbb3e?source=collection_archive---------13-----------------------#2023-12-01](https://towardsdatascience.com/understanding-predictive-maintenance-wave-data-feature-engineering-part-2-spectral-3eced3bdbb3e?source=collection_archive---------13-----------------------#2023-12-01)
+> 原文：[`towardsdatascience.com/understanding-predictive-maintenance-wave-data-feature-engineering-part-2-spectral-3eced3bdbb3e?source=collection_archive---------13-----------------------#2023-12-01`](https://towardsdatascience.com/understanding-predictive-maintenance-wave-data-feature-engineering-part-2-spectral-3eced3bdbb3e?source=collection_archive---------13-----------------------#2023-12-01)
 
 ## 频谱数据的特征工程
 
-[](https://marcin-staskopl.medium.com/?source=post_page-----3eced3bdbb3e--------------------------------)[![Marcin Stasko](../Images/5142b9a260a1cce7c6a2ebcc16f46fbb.png)](https://marcin-staskopl.medium.com/?source=post_page-----3eced3bdbb3e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3eced3bdbb3e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3eced3bdbb3e--------------------------------) [Marcin Stasko](https://marcin-staskopl.medium.com/?source=post_page-----3eced3bdbb3e--------------------------------)
+[](https://marcin-staskopl.medium.com/?source=post_page-----3eced3bdbb3e--------------------------------)![Marcin Stasko](https://marcin-staskopl.medium.com/?source=post_page-----3eced3bdbb3e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3eced3bdbb3e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3eced3bdbb3e--------------------------------) [Marcin Stasko](https://marcin-staskopl.medium.com/?source=post_page-----3eced3bdbb3e--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3eced3bdbb3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-predictive-maintenance-wave-data-feature-engineering-part-2-spectral-3eced3bdbb3e&source=-----3eced3bdbb3e---------------------bookmark_footer-----------)![](../Images/f135b31634608fd3f588fd8593f13524.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3eced3bdbb3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-predictive-maintenance-wave-data-feature-engineering-part-2-spectral-3eced3bdbb3e&source=-----3eced3bdbb3e---------------------bookmark_footer-----------)![](img/f135b31634608fd3f588fd8593f13524.png)
 
 [Evie S.](https://unsplash.com/@evieshaffer?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 

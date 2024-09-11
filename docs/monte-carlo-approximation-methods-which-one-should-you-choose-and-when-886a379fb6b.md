@@ -1,18 +1,18 @@
 # 蒙特卡罗近似方法：你应该选择哪一种，何时使用？
 
-> 原文：[https://towardsdatascience.com/monte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b?source=collection_archive---------5-----------------------#2023-08-25](https://towardsdatascience.com/monte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b?source=collection_archive---------5-----------------------#2023-08-25)
+> 原文：[`towardsdatascience.com/monte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b?source=collection_archive---------5-----------------------#2023-08-25`](https://towardsdatascience.com/monte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b?source=collection_archive---------5-----------------------#2023-08-25)
 
-## 是逆变换、随机游走Metropolis-Hastings，还是Gibbs？对每种方法的数学基础、从零开始的Python实现以及优缺点的分析
+## 是逆变换、随机游走 Metropolis-Hastings，还是 Gibbs？对每种方法的数学基础、从零开始的 Python 实现以及优缺点的分析
 
-[](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)[![Suyang Li](../Images/9612066e1b048c1289f133e909cb21e8.png)](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------) [Suyang Li](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)
+[](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)![Suyang Li](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------) [Suyang Li](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2b9882509386&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b&user=Suyang+Li&userId=2b9882509386&source=post_page-2b9882509386----886a379fb6b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------) · 12 min read · 2023年8月25日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2b9882509386&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b&user=Suyang+Li&userId=2b9882509386&source=post_page-2b9882509386----886a379fb6b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------) · 12 min read · 2023 年 8 月 25 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F886a379fb6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b&source=-----886a379fb6b---------------------bookmark_footer-----------)![](../Images/a69c02e7513a5252713b3e1deb243285.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F886a379fb6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b&source=-----886a379fb6b---------------------bookmark_footer-----------)![](img/a69c02e7513a5252713b3e1deb243285.png)
 
 图片由[Joakim Honkasalo](https://unsplash.com/@jhonkasalo?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,7 +24,7 @@
 
 由于如刚刚所见，确定性推断在概率模型中通常难以处理，因此我们现在转向基于数值采样的近似方法，这些方法被称为**蒙特卡罗**技术。我们将研究这些方法的关键问题是给定概率分布*p(z)*下目标函数*f(z)*的期望值计算。回顾一下，期望的简单定义是通过积分给出的：
 
-![](../Images/e9e87120954cc0e72e3fbda6c6d18435.png)
+![](img/e9e87120954cc0e72e3fbda6c6d18435.png)
 
 来源：PRML¹ Eq. 11.1
 
@@ -40,33 +40,33 @@
 
 # 目录
 
-1.  [逆变换采样](#e96f)
+1.  逆变换采样
 
-    • [算法如何工作？](#93fc)
+    • 算法如何工作？
 
-    • [Python 实现](#d1ff)
+    • Python 实现
 
-    • [前提条件](#c20f)
+    • 前提条件
 
-    • [优缺点](#9cdd)
+    • 优缺点
 
-1.  [马尔可夫链蒙特卡罗](#d20d)
+1.  马尔可夫链蒙特卡罗
 
-    • [Metropolis-Hastings 算法](#2847)
+    • Metropolis-Hastings 算法
 
-    • [特殊情况：对称分布的 Metropolis 算法](#bfed)
+    • 特殊情况：对称分布的 Metropolis 算法
 
-    • [优缺点](#76a3)
+    • 优缺点
 
-1.  [Gibbs](#c3b6)
+1.  Gibbs
 
-    • [算法](#42ee)
+    • 算法
 
-    • [条件](#cf29)
+    • 条件
 
-    • [Gibbs 与 Metropolis-Hastings 的关系](#0cf9)
+    • Gibbs 与 Metropolis-Hastings 的关系
 
-1.  [比较：转换 vs. Met-Hastings vs. Gibbs 的优缺点](#e6ac)
+1.  比较：转换 vs. Met-Hastings vs. Gibbs 的优缺点
 
 # 1\. 转换方法：逆 CDF
 
@@ -78,21 +78,21 @@
 
 下面是样本（蓝色）如何从分布（红色）中抽取的简要说明：
 
-![](../Images/8e5d2b1707e1d71d1887eeaec4b24878.png)
+![](img/8e5d2b1707e1d71d1887eeaec4b24878.png)
 
 逆 CDF 是一种**计算上** **简单且可推广**的方法，用于从已知 CDF 的分布中进行采样，例如正态分布、指数分布、伽马分布或贝塔分布。
 
 ## PDF、CDF 和逆 CDF
 
-![](../Images/30e9376ff43939896930449104c0eb74.png)
+![](img/30e9376ff43939896930449104c0eb74.png)
 
-（从左到右）：标准正态分布的 PDF、CDF 和逆CDF
+（从左到右）：标准正态分布的 PDF、CDF 和逆 CDF
 
-从直观上讲，CDF 是 PDF 的累计值，相当于 PDF 的积分；然后我们取 CDF 函数的逆函数，以获得用于此方法的最终逆CDF。
+从直观上讲，CDF 是 PDF 的累计值，相当于 PDF 的积分；然后我们取 CDF 函数的逆函数，以获得用于此方法的最终逆 CDF。
 
 正式来说，如果 *a* 是一个随机变量，那么 *a* 的 CDF 给出如下：
 
-![](../Images/e5505c7ce4a106b209e247f362f59bd8.png)
+![](img/e5505c7ce4a106b209e247f362f59bd8.png)
 
 PRML，第 11.5–11.6 节
 
@@ -104,7 +104,7 @@ CDF *F* 具有以下关键属性：
 
 +   *F* 的范围是 0 ≤ cdf(*a*) ≤ 1 对于所有 *a* ∈ R
 
-## 逆CDF 算法是如何工作的？
+## 逆 CDF 算法是如何工作的？
 
 该算法包含以下要素：
 
@@ -112,7 +112,7 @@ CDF *F* 具有以下关键属性：
 
 +   `U`：*U* 是一个从 0 到 1 之间均匀分布的随机变量。
 
-+   这作为逆CDF的输入概率，并将被转换为来自期望分布的样本。
++   这作为逆 CDF 的输入概率，并将被转换为来自期望分布的样本。
 
 **参数**：
 
@@ -124,29 +124,29 @@ CDF *F* 具有以下关键属性：
 
 +   `x`：从目标分布中抽取的随机样本。
 
-+   这是通过将逆CDF 应用到均匀分布的随机数（输入）来生成的。
++   这是通过将逆 CDF 应用到均匀分布的随机数（输入）来生成的。
 
 ## Python 实现
 
-现在，让我们从头开始实现这个方法。我们将使用指数函数，因为它将容易可视化我们通过逆CDF 生成的样本，并与精确分布进行比较：
+现在，让我们从头开始实现这个方法。我们将使用指数函数，因为它将容易可视化我们通过逆 CDF 生成的样本，并与精确分布进行比较：
 
-![](../Images/8af34e7ef1b6f16d77f29a6bcf53a72f.png)
+![](img/8af34e7ef1b6f16d77f29a6bcf53a72f.png)
 
 指数函数（目标分布）的 PDF
 
 通过标准微积分积分技术，我们发现目标 CDF *F(x)* 是：
 
-![](../Images/664a8e1ee0c2a55acb775c804eb7eade.png)
+![](img/664a8e1ee0c2a55acb775c804eb7eade.png)
 
 指数函数的 CDF
 
 这个 CDF 的逆函数是：
 
-![](../Images/8b54a28e59301732af785e77bcb20428.png)
+![](img/8b54a28e59301732af785e77bcb20428.png)
 
-指数函数的逆CDF
+指数函数的逆 CDF
 
-我们将使用逆CDF 方法生成 5000 个样本：
+我们将使用逆 CDF 方法生成 5000 个样本：
 
 ```py
 import numpy as np
@@ -165,63 +165,63 @@ x_values = np.linspace(0, np.max(transformed_samples), 1000)
 pdf_values = np.exp(-x_values)
 ```
 
-![](../Images/8e5d2b1707e1d71d1887eeaec4b24878.png)
+![](img/8e5d2b1707e1d71d1887eeaec4b24878.png)
 
-## 逆CDF 算法工作的要求
+## 逆 CDF 算法工作的要求
 
-逆CDF 方法做了一个关键假设：
+逆 CDF 方法做了一个关键假设：
 
 +   **CDF *F* 是可逆的**：CDF *F* 必须是**可逆的**，这意味着每个输入到 *F* 的值必须有唯一的输出。
 
-这个约束排除了一些函数。例如，下面是一些常见但**不可逆**的函数类型（因此**不能与逆CDF 一起使用**）：
+这个约束排除了一些函数。例如，下面是一些常见但**不可逆**的函数类型（因此**不能与逆 CDF 一起使用**）：
 
 1.  **常数函数**：任何形式为 *f(x) = c* 的常数函数，其中 *c* 是常数，都不是可逆的，因为每个输入都映射到相同的输出，因此该函数**不是一对一的**。
 
-![](../Images/f63ff25af3ce705bdb89e0ff2d1d784c.png)
+![](img/f63ff25af3ce705bdb89e0ff2d1d784c.png)
 
 红点显示了映射到相同 y 值的多个 x 值中的两个，这使得 f(x) = 5 变得不可逆。
 
-2. **某些二次函数**：例如 *f(x) = x^2* 是不可逆的，因为它是多对一的（考虑 *f(x) = 1*，*x* 可以是 *1* 或 *-1*）。
+2. **某些二次函数**：例如 *f(x) = x²* 是不可逆的，因为它是多对一的（考虑 *f(x) = 1*，*x* 可以是 *1* 或 *-1*）。
 
-![](../Images/59146469e51e069c4e325cca1b4509db.png)
+![](img/59146469e51e069c4e325cca1b4509db.png)
 
 红点显示了映射到相同 y 值的多个 x 值中的一对，在 f(x) = x² 中。
 
 3\. **某些三角函数**：例如 *f(x) = sin(x)* 在其整个域上不可逆，因为它们是周期性的，尽管在**限制域**上它们可能变得可逆。
 
-![](../Images/eec4b28788026f8b59493e8bd239dbbe.png)
+![](img/eec4b28788026f8b59493e8bd239dbbe.png)
 
 红点显示了由于周期性，在 f(x) = sin(x) 给定域上映射到相同 y 值的多个 x 值集合之一。
 
 ## 为什么逆累积分布函数（CDF）有效？
 
-关键思想是，一个**在0到1之间均匀分布的随机变量**可以通过应用目标分布CDF的逆变换成**具有特定分布的随机变量**，前提是该分布的CDF已知且易于处理。
+关键思想是，一个**在 0 到 1 之间均匀分布的随机变量**可以通过应用目标分布 CDF 的逆变换成**具有特定分布的随机变量**，前提是该分布的 CDF 已知且易于处理。
 
 ## 优势
 
 1.  **算法简单性**：对于低维数据，实现起来非常容易，因此在不同领域和任务中有广泛的应用。
 
-1.  **样本准确性**：假设CDF及其逆函数表示准确的目标分布，该方法相比于其他方法（如稍后会看到的MCMC），具有相对较高的准确性。
+1.  **样本准确性**：假设 CDF 及其逆函数表示准确的目标分布，该方法相比于其他方法（如稍后会看到的 MCMC），具有相对较高的准确性。
 
 ## 缺点
 
-1.  **计算复杂性**：对于一些分布，逆CDF可能没有封闭形式表达式，使得计算具有挑战性或昂贵。
+1.  **计算复杂性**：对于一些分布，逆 CDF 可能没有封闭形式表达式，使得计算具有挑战性或昂贵。
 
 1.  **高维度难度**：在高维空间中应用可能很困难，尤其是当变量之间存在依赖关系时。
 
-1.  **可逆性限制**：任何CDF不可逆时，该方法将变得无效。这排除了我们上面看到的一些函数。
+1.  **可逆性限制**：任何 CDF 不可逆时，该方法将变得无效。这排除了我们上面看到的一些函数。
 
-1.  **限于已知分布**：逆CDF需要CDF的准确形式，这限制了其仅能应用于已知分布。
+1.  **限于已知分布**：逆 CDF 需要 CDF 的准确形式，这限制了其仅能应用于已知分布。
 
-考虑到所有这些限制，我们只能将逆CDF应用于少数几类分布。实际上，面对大数据和未知分布时，这种方法可能会迅速失效。
+考虑到所有这些限制，我们只能将逆 CDF 应用于少数几类分布。实际上，面对大数据和未知分布时，这种方法可能会迅速失效。
 
 记住这些优缺点后，让我们现在来看另一种随机采样框架，**马尔可夫链蒙特卡罗（MCMC）**，它解决了这些限制。
 
 # 2\. 马尔可夫链蒙特卡罗（MCMC）
 
-正如我们刚才看到的，逆CDF变换方法**高度受限**，尤其是在**高维**样本空间中。另一方面，马尔可夫链蒙特卡罗（MCMC）在维度上表现良好，使我们能够从更大的分布家族中进行采样。
+正如我们刚才看到的，逆 CDF 变换方法**高度受限**，尤其是在**高维**样本空间中。另一方面，马尔可夫链蒙特卡罗（MCMC）在维度上表现良好，使我们能够从更大的分布家族中进行采样。
 
-![](../Images/7aadb0e9bfad08606a83b2bcb0f4a4a4.png)
+![](img/7aadb0e9bfad08606a83b2bcb0f4a4a4.png)
 
 Metropolis-Hastings 例子探索混合高斯分布（左），生成样本（右）
 
@@ -237,7 +237,7 @@ Metropolis-Hastings 例子探索混合高斯分布（左），生成样本（右
 
 1.  以概率接受样本，然后我们将以**接受概率**接受该值，在 Metropolis-Hastings 中定义为：
 
-![](../Images/9f5b7dd83e528a0a8d399046030d7b8c.png)
+![](img/9f5b7dd83e528a0a8d399046030d7b8c.png)
 
 PRML¹ Eq 11.44
 
@@ -263,7 +263,7 @@ PRML¹ Eq 11.44
 
 1.  以以下概率接受样本：
 
-![](../Images/7e41da8ba42ba27d11ab1bd9c3318a73.png)
+![](img/7e41da8ba42ba27d11ab1bd9c3318a73.png)
 
 Metropolis 算法接受阈值。来源：PRML¹ Eq. 11.33
 
@@ -271,7 +271,7 @@ Metropolis 算法接受阈值。来源：PRML¹ Eq. 11.33
 
 让我们并排比较这些算法。如我们之前所见，唯一的区别是接受阈值；算法的其他步骤完全相同：
 
-![](../Images/c99439fa15f3dea42cd2a269f6eefcb4.png)
+![](img/c99439fa15f3dea42cd2a269f6eefcb4.png)
 
 Metropolis 与 Metropolis-Hastings 算法
 
@@ -309,25 +309,25 @@ Gibbs 采样是 Metropolis-Hastings 的一个特殊实例，其中 **每一步�
 
 1.  在时间步 *T*，将起始值初始化为：
 
-![](../Images/7cd087dce3e8d6677b236c4ea8bd4024.png)
+![](img/7cd087dce3e8d6677b236c4ea8bd4024.png)
 
 PRML¹
 
 2\. 为 *z1* 生成新值：
 
-![](../Images/9d86e1bd0dfd60f0945c508585063b76.png)
+![](img/9d86e1bd0dfd60f0945c508585063b76.png)
 
 PRML¹ Eq 11.46
 
 3\. 从条件分布中为第二个位置 *z2* 生成一个新值：
 
-![](../Images/d756a4f209a7d918c9a6d2bd55ce730b.png)
+![](img/d756a4f209a7d918c9a6d2bd55ce730b.png)
 
 PRML¹ Eq 11.47
 
 4\. 最后为最后一个位置 *z3* 生成一个新值：
 
-![](../Images/88460e00830181cceb0d2031ec0023b7.png)
+![](img/88460e00830181cceb0d2031ec0023b7.png)
 
 PRML¹ Eq 11.48
 
@@ -337,7 +337,7 @@ PRML¹ Eq 11.48
 
 从形式上看，算法首先初始化起始位置，然后采取 *T* 个连续步骤
 
-![](../Images/5b2d3cf7ff76b0588770593aac58b413.png)
+![](img/5b2d3cf7ff76b0588770593aac58b413.png)
 
 图片来源：PRML¹ Ch11.3 Gibbs 采样
 
@@ -353,17 +353,17 @@ PRML¹ Eq 11.48
 
 在 Metropolis-Hastings 中，我们定义接受阈值为：
 
-![](../Images/c30ed153ca1b1cac19f0606319abe736.png)
+![](img/c30ed153ca1b1cac19f0606319abe736.png)
 
 因此，Metropolis-Hastings 提案步骤总是被接受的，正如我们在 Gibbs 算法中所看到的那样。
 
 ## 变体
 
-由于Gibbs方法一次更新一个变量，因此连续样本之间存在较强的依赖性。为克服这一点，我们可以使用一种中间策略来从**变量组**而非**单个变量**中采样，称为[阻塞Gibbs](https://www.sciencedirect.com/science/article/pii/S0002929707623398)。
+由于 Gibbs 方法一次更新一个变量，因此连续样本之间存在较强的依赖性。为克服这一点，我们可以使用一种中间策略来从**变量组**而非**单个变量**中采样，称为[阻塞 Gibbs](https://www.sciencedirect.com/science/article/pii/S0002929707623398)。
 
 同样，由于马尔可夫链的性质，连续抽取的样本将会相关。为了生成独立样本，我们可以在序列中使用子采样。
 
-# 4. 优缺点：逆CDF vs Metropolis-Hastings vs Gibbs
+# 4. 优缺点：逆 CDF vs Metropolis-Hastings vs Gibbs
 
 现在我们已经详细了解了每种算法的工作原理及其应用领域，让我们总结一下每种方法的定义特征。
 
@@ -377,9 +377,9 @@ PRML¹ Eq 11.48
 
 +   **如果**：采样高维变量/分布。
 
-+   **最大优点**：如果CDF准确反映目标分布，则准确性高。
++   **最大优点**：如果 CDF 准确反映目标分布，则准确性高。
 
-+   **要求**：CDF必须已知且可逆。
++   **要求**：CDF 必须已知且可逆。
 
 ## 2. Metropolis-Hastings (MCMC)
 
@@ -405,11 +405,11 @@ PRML¹ Eq 11.48
 
     - 不良的初始值或步长选择
 
-## 3. Gibbs采样
+## 3. Gibbs 采样
 
 +   **数据大小**：适用于小型和大型数据集。
 
-+   **时间**：通常比随机游走Metropolis-Hastings更有效，因为它不需要接受/拒绝步骤。
++   **时间**：通常比随机游走 Metropolis-Hastings 更有效，因为它不需要接受/拒绝步骤。
 
 +   **数据复杂性**：当处理高维分布时，最佳用于可以从每个变量的条件分布中采样的情况。
 
@@ -427,20 +427,20 @@ PRML¹ Eq 11.48
 
 ## 总结：
 
-![](../Images/67e33e80ecf03e5ed1c319ef7a79cb45.png)
+![](img/67e33e80ecf03e5ed1c319ef7a79cb45.png)
 
-逆CDF、Metropolis-Hastings和Gibbs的优缺点汇总表
+逆 CDF、Metropolis-Hastings 和 Gibbs 的优缺点汇总表
 
 # 结论
 
-感谢你一直陪伴到现在！在这篇文章中，我们探讨了3种关键的近似采样方法：逆CDF、Metropolis Hastings MCMC 和 Gibbs Sampling MCMC。我们了解了每种算法的工作原理、各自的优缺点以及典型的应用场景。
+感谢你一直陪伴到现在！在这篇文章中，我们探讨了 3 种关键的近似采样方法：逆 CDF、Metropolis Hastings MCMC 和 Gibbs Sampling MCMC。我们了解了每种算法的工作原理、各自的优缺点以及典型的应用场景。
 
-**逆CDF** 提供了一种直接从已知分布中采样的方法，当其CDF是可逆时。这种方法计算效率高，但不太适用于高维或复杂的分布。
+**逆 CDF** 提供了一种直接从已知分布中采样的方法，当其 CDF 是可逆时。这种方法计算效率高，但不太适用于高维或复杂的分布。
 
 **Metropolis Hastings MCMC** 提供了一种更通用的方法，允许从难以处理的分布中进行采样。然而，它需要更多的计算资源，并且可能对像提议分布这样的调参敏感。
 
 **Gibbs Sampling MCMC** 在联合分布复杂但可以分解为更简单的条件分布时特别高效。它在机器学习中广泛使用，尽管对于高维问题可能收敛缓慢且占用内存。
 
-[1] Bishop, C. M. (2016). *模式识别与机器学习*（原版第1版2006年软封面再版（2009年第8次印刷校订版））。Springer New York.
+[1] Bishop, C. M. (2016). *模式识别与机器学习*（原版第 1 版 2006 年软封面再版（2009 年第 8 次印刷校订版））。Springer New York.
 
 **图片由作者提供，除非另有说明，**

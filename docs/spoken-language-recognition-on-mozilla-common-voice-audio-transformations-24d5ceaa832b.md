@@ -1,20 +1,20 @@
 # 在 Mozilla Common Voice 上的口语语言识别——音频变换。
 
-> 原文：[https://towardsdatascience.com/spoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b?source=collection_archive---------1-----------------------#2023-08-13](https://towardsdatascience.com/spoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b?source=collection_archive---------1-----------------------#2023-08-13)
+> 原文：[`towardsdatascience.com/spoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b?source=collection_archive---------1-----------------------#2023-08-13`](https://towardsdatascience.com/spoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b?source=collection_archive---------1-----------------------#2023-08-13)
 
-[](https://medium.com/@sergeyvilov?source=post_page-----24d5ceaa832b--------------------------------)[![Sergey Vilov](../Images/42efe223e2aa575250e050cf3660cf20.png)](https://medium.com/@sergeyvilov?source=post_page-----24d5ceaa832b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24d5ceaa832b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----24d5ceaa832b--------------------------------) [Sergey Vilov](https://medium.com/@sergeyvilov?source=post_page-----24d5ceaa832b--------------------------------)
+[](https://medium.com/@sergeyvilov?source=post_page-----24d5ceaa832b--------------------------------)![Sergey Vilov](https://medium.com/@sergeyvilov?source=post_page-----24d5ceaa832b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24d5ceaa832b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----24d5ceaa832b--------------------------------) [Sergey Vilov](https://medium.com/@sergeyvilov?source=post_page-----24d5ceaa832b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33297faf768d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b&user=Sergey+Vilov&userId=33297faf768d&source=post_page-33297faf768d----24d5ceaa832b---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----24d5ceaa832b--------------------------------) ·5 min read·2023年8月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24d5ceaa832b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b&user=Sergey+Vilov&userId=33297faf768d&source=-----24d5ceaa832b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33297faf768d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b&user=Sergey+Vilov&userId=33297faf768d&source=post_page-33297faf768d----24d5ceaa832b---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----24d5ceaa832b--------------------------------) ·5 min read·2023 年 8 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24d5ceaa832b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b&user=Sergey+Vilov&userId=33297faf768d&source=-----24d5ceaa832b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F24d5ceaa832b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b&source=-----24d5ceaa832b---------------------bookmark_footer-----------)![](../Images/a05c695d6e175040ecd08602ecb19ba9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F24d5ceaa832b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-audio-transformations-24d5ceaa832b&source=-----24d5ceaa832b---------------------bookmark_footer-----------)![](img/a05c695d6e175040ecd08602ecb19ba9.png)
 
 图片由 [Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-这是基于 [Mozilla Common Voice](https://commonvoice.mozilla.org/en) 数据集的第三篇关于语音语言识别的文章。在 [第一部分](/spoken-language-recognition-on-mozilla-common-voice-part-i-3f5400bbbcd8)，我们讨论了数据选择和数据预处理，在 [第二部分](/spoken-language-recognition-on-mozilla-common-voice-part-ii-models-b32780ea1ee4) 中我们分析了几种神经网络分类器的性能。
+这是基于 [Mozilla Common Voice](https://commonvoice.mozilla.org/en) 数据集的第三篇关于语音语言识别的文章。在 第一部分，我们讨论了数据选择和数据预处理，在 第二部分 中我们分析了几种神经网络分类器的性能。
 
 最终模型达到了 92% 的准确率和 97% 的配对准确率。由于此模型存在较高的方差，通过添加更多数据可能会提高准确率。获取额外数据的一种非常常见的方法是通过对现有数据集执行各种变换来合成数据。
 
@@ -35,7 +35,7 @@ IPython.display.Audio(signal, rate=sr)
 
 原始样本 *common_voice_en_100040 来自 MCV*。
 
-![](../Images/5ae08da5e063d63b7a63fc9bd9a7ac5a.png)
+![](img/5ae08da5e063d63b7a63fc9bd9a7ac5a.png)
 
 原始信号波形（作者提供的图像）
 
@@ -61,7 +61,7 @@ IPython.display.display(IPython.display.Audio(noisy_signal[1000], rate=sr))
 
 通过将噪声 SNR=5 和 SNR=1000 叠加到原始 MCV 样本 common_voice_en_100040 上获取的信号。
 
-![](../Images/c4d4745c92215c63a55fa7f8bea5f45c.png)
+![](img/c4d4745c92215c63a55fa7f8bea5f45c.png)
 
 几种噪声水平的信号波形（作者提供的图像）
 
@@ -77,9 +77,9 @@ IPython.display.Audio(signal, rate=sr*1.5)
 
 使用虚假采样率获取的信号用于原始 MCV 样本 common_voice_en_100040（作者生成）。
 
-改变速度而不影响音高更具挑战性。需要使用[相位声码器](https://en.wikipedia.org/wiki/Phase_vocoder)(PV)算法。简言之，输入信号首先被分割成重叠的帧。然后，通过应用快速傅里叶变换（FFT）计算每帧内的频谱。播放速度通过以不同的速率重新合成帧来修改。由于每帧的频率内容未受影响，因此音高保持不变。PV在帧之间进行插值，并使用相位信息实现平滑。
+改变速度而不影响音高更具挑战性。需要使用[相位声码器](https://en.wikipedia.org/wiki/Phase_vocoder)(PV)算法。简言之，输入信号首先被分割成重叠的帧。然后，通过应用快速傅里叶变换（FFT）计算每帧内的频谱。播放速度通过以不同的速率重新合成帧来修改。由于每帧的频率内容未受影响，因此音高保持不变。PV 在帧之间进行插值，并使用相位信息实现平滑。
 
-对于我们的实验，我们将使用来自[这个](https://github.com/gaganbahga/time_stretch)PV实现的*stretch_wo_loop*时间伸缩函数。
+对于我们的实验，我们将使用来自[这个](https://github.com/gaganbahga/time_stretch)PV 实现的*stretch_wo_loop*时间伸缩函数。
 
 ```py
 stretching_factor = 1.3
@@ -88,9 +88,9 @@ signal_stretched = stretch_wo_loop(signal, stretching_factor)
 IPython.display.Audio(signal_stretched, rate=sr)
 ```
 
-通过改变原始MCV样本common_voice_en_100040的速度获得的信号（由作者生成）。
+通过改变原始 MCV 样本 common_voice_en_100040 的速度获得的信号（由作者生成）。
 
-![](../Images/de5b95ce491cb4b12c56d1e58edd6779.png)
+![](img/de5b95ce491cb4b12c56d1e58edd6779.png)
 
 速度增加后的信号波形（图片由作者提供）
 
@@ -98,19 +98,19 @@ IPython.display.Audio(signal_stretched, rate=sr)
 
 # 改变音高
 
-要在不改变速度的情况下改变音高，我们可以使用相同的PV时间伸缩，但假装信号具有不同的采样率，以使信号的总持续时间保持不变：
+要在不改变速度的情况下改变音高，我们可以使用相同的 PV 时间伸缩，但假装信号具有不同的采样率，以使信号的总持续时间保持不变：
 
 ```py
 IPython.display.Audio(signal_stretched, rate=sr/stretching_factor)
 ```
 
-通过改变原始MCV样本common_voice_en_100040的音高获得的信号（由作者生成）。
+通过改变原始 MCV 样本 common_voice_en_100040 的音高获得的信号（由作者生成）。
 
-为什么我们还要使用这个PV，而[*librosa*](https://librosa.org/)已经有*time_stretch*和*pitch_shift*函数？这些函数会将信号变换回时间域。当你需要后续计算嵌入时，你将浪费时间在冗余的傅里叶变换上。另一方面，很容易修改*stretch_wo_loop*函数，使其产生傅里叶输出而不进行逆变换。也可以尝试深入*librosa*代码以获得类似的结果。
+为什么我们还要使用这个 PV，而[*librosa*](https://librosa.org/)已经有*time_stretch*和*pitch_shift*函数？这些函数会将信号变换回时间域。当你需要后续计算嵌入时，你将浪费时间在冗余的傅里叶变换上。另一方面，很容易修改*stretch_wo_loop*函数，使其产生傅里叶输出而不进行逆变换。也可以尝试深入*librosa*代码以获得类似的结果。
 
 # 时间掩蔽和切割&拼接
 
-这两种变换最初在*频率*域中提出（[Park等，2019](https://www.isca-speech.org/archive_v0/Interspeech_2019/pdfs/2680.pdf)）。其想法是通过使用预计算的频谱进行音频增强以节省FFT的时间。为了简单起见，我们将演示这些变换如何在*时间*域中工作。所列操作可以通过用帧索引替换时间轴轻松转移到频率域。
+这两种变换最初在*频率*域中提出（[Park 等，2019](https://www.isca-speech.org/archive_v0/Interspeech_2019/pdfs/2680.pdf)）。其想法是通过使用预计算的频谱进行音频增强以节省 FFT 的时间。为了简单起见，我们将演示这些变换如何在*时间*域中工作。所列操作可以通过用帧索引替换时间轴轻松转移到频率域。
 
 ## 时间掩蔽
 
@@ -130,9 +130,9 @@ masked_signal[mask_start:mask_start+mask_length] = 0
 IPython.display.Audio(masked_signal, rate=sr)
 ```
 
-通过对原始MCV样本common_voice_en_100040应用时间掩蔽变换获得的信号（由作者生成）。
+通过对原始 MCV 样本 common_voice_en_100040 应用时间掩蔽变换获得的信号（由作者生成）。
 
-![](../Images/93e8ac68243f0db355fe067d836a0c65.png)
+![](img/93e8ac68243f0db355fe067d836a0c65.png)
 
 时间掩蔽后的信号波形（掩蔽区域用橙色标示）（图片由作者提供）
 
@@ -156,16 +156,16 @@ synth_signal[mask_start:mask_start+mask_length] = other_signal[mask_start:mask_s
 IPython.display.Audio(synth_signal, rate=sr)
 ```
 
-通过对原始MCV样本common_voice_en_100040（由作者生成）应用cut&splice变换得到的合成信号。
+通过对原始 MCV 样本 common_voice_en_100040（由作者生成）应用 cut&splice 变换得到的合成信号。
 
-![](../Images/e3c3f47ff55952f337762f862acfcead.png)
+![](img/e3c3f47ff55952f337762f862acfcead.png)
 
-cut&splice变换后的信号波形（从其他信号中插入的片段用橙色标示）（图片由作者提供）
+cut&splice 变换后的信号波形（从其他信号中插入的片段用橙色标示）（图片由作者提供）
 
-下表显示了[AttNN模型](/spoken-language-recognition-on-mozilla-common-voice-part-ii-models-b32780ea1ee4)在验证集上对每个变换的准确率及其典型参数值：
+下表显示了 AttNN 模型在验证集上对每个变换的准确率及其典型参数值：
 
-![](../Images/70d59432a66adb1d9d311230e919c991.png)
+![](img/70d59432a66adb1d9d311230e919c991.png)
 
-Mozilla Common Voice数据集上每个变换的AttNN准确率及其典型参数（图片由作者提供）。
+Mozilla Common Voice 数据集上每个变换的 AttNN 准确率及其典型参数（图片由作者提供）。
 
-如所见，这些变换没有显著改变我们基于MCV的语音识别系统的准确性。然而，这些变换有可能在某些其他数据集上提升性能。最后，在寻找最佳超参数时，逐个尝试这些变换而不是随机/网格搜索是有意义的。之后，可以将有效的变换结合在一起。
+如所见，这些变换没有显著改变我们基于 MCV 的语音识别系统的准确性。然而，这些变换有可能在某些其他数据集上提升性能。最后，在寻找最佳超参数时，逐个尝试这些变换而不是随机/网格搜索是有意义的。之后，可以将有效的变换结合在一起。

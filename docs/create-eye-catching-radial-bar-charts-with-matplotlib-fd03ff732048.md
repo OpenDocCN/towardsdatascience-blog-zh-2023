@@ -1,18 +1,18 @@
 # 使用 Matplotlib 创建引人注目的径向条形图
 
-> 原文：[https://towardsdatascience.com/create-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048?source=collection_archive---------12-----------------------#2023-03-06](https://towardsdatascience.com/create-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048?source=collection_archive---------12-----------------------#2023-03-06)
+> 原文：[`towardsdatascience.com/create-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048?source=collection_archive---------12-----------------------#2023-03-06`](https://towardsdatascience.com/create-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048?source=collection_archive---------12-----------------------#2023-03-06)
 
 ## 轻松在 Python 中创建视觉上吸引人的圆形条形图
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----fd03ff732048--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----fd03ff732048--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fd03ff732048--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fd03ff732048--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----fd03ff732048--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----fd03ff732048--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----fd03ff732048--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fd03ff732048--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd03ff732048--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----fd03ff732048--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----fd03ff732048---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd03ff732048--------------------------------) ·9分钟阅读·2023年3月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffd03ff732048&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048&user=Andy+McDonald&userId=9c280f85f15c&source=-----fd03ff732048---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----fd03ff732048---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd03ff732048--------------------------------) ·9 分钟阅读·2023 年 3 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffd03ff732048&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048&user=Andy+McDonald&userId=9c280f85f15c&source=-----fd03ff732048---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffd03ff732048&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048&source=-----fd03ff732048---------------------bookmark_footer-----------)![](../Images/daff7ea922e980791aef37e03a134f32.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffd03ff732048&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-eye-catching-radial-bar-charts-with-matplotlib-fd03ff732048&source=-----fd03ff732048---------------------bookmark_footer-----------)![](img/daff7ea922e980791aef37e03a134f32.png)
 
 使用 matplotlib 创建的径向条形图。图片由作者提供。
 

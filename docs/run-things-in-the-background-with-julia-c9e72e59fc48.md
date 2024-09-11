@@ -1,18 +1,18 @@
 # 在 Julia 中后台运行任务
 
-> 原文：[https://towardsdatascience.com/run-things-in-the-background-with-julia-c9e72e59fc48?source=collection_archive---------9-----------------------#2023-05-26](https://towardsdatascience.com/run-things-in-the-background-with-julia-c9e72e59fc48?source=collection_archive---------9-----------------------#2023-05-26)
+> 原文：[`towardsdatascience.com/run-things-in-the-background-with-julia-c9e72e59fc48?source=collection_archive---------9-----------------------#2023-05-26`](https://towardsdatascience.com/run-things-in-the-background-with-julia-c9e72e59fc48?source=collection_archive---------9-----------------------#2023-05-26)
 
 ## 停止等待，开始多线程
 
-[](https://niczky12.medium.com/?source=post_page-----c9e72e59fc48--------------------------------)[![Bence Komarniczky](../Images/d4de94667bcac6d9001390515592eab9.png)](https://niczky12.medium.com/?source=post_page-----c9e72e59fc48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c9e72e59fc48--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c9e72e59fc48--------------------------------) [Bence Komarniczky](https://niczky12.medium.com/?source=post_page-----c9e72e59fc48--------------------------------)
+[](https://niczky12.medium.com/?source=post_page-----c9e72e59fc48--------------------------------)![Bence Komarniczky](https://niczky12.medium.com/?source=post_page-----c9e72e59fc48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c9e72e59fc48--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9e72e59fc48--------------------------------) [Bence Komarniczky](https://niczky12.medium.com/?source=post_page-----c9e72e59fc48--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F29f55325f60b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-things-in-the-background-with-julia-c9e72e59fc48&user=Bence+Komarniczky&userId=29f55325f60b&source=post_page-29f55325f60b----c9e72e59fc48---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9e72e59fc48--------------------------------) ·4 min read·2023年5月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc9e72e59fc48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-things-in-the-background-with-julia-c9e72e59fc48&user=Bence+Komarniczky&userId=29f55325f60b&source=-----c9e72e59fc48---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F29f55325f60b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-things-in-the-background-with-julia-c9e72e59fc48&user=Bence+Komarniczky&userId=29f55325f60b&source=post_page-29f55325f60b----c9e72e59fc48---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9e72e59fc48--------------------------------) ·4 min read·2023 年 5 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc9e72e59fc48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-things-in-the-background-with-julia-c9e72e59fc48&user=Bence+Komarniczky&userId=29f55325f60b&source=-----c9e72e59fc48---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc9e72e59fc48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-things-in-the-background-with-julia-c9e72e59fc48&source=-----c9e72e59fc48---------------------bookmark_footer-----------)![](../Images/b6d8943bd405300d84e92529392e8559.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc9e72e59fc48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-things-in-the-background-with-julia-c9e72e59fc48&source=-----c9e72e59fc48---------------------bookmark_footer-----------)![](img/b6d8943bd405300d84e92529392e8559.png)
 
 图片来自 [Max Wolfs](https://unsplash.com/ko/@yesterdazed?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

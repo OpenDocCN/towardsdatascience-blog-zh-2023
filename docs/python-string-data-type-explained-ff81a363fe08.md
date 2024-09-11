@@ -1,18 +1,18 @@
 # Python 字符串数据类型解析
 
-> 原文：[https://towardsdatascience.com/python-string-data-type-explained-ff81a363fe08?source=collection_archive---------17-----------------------#2023-01-30](https://towardsdatascience.com/python-string-data-type-explained-ff81a363fe08?source=collection_archive---------17-----------------------#2023-01-30)
+> 原文：[`towardsdatascience.com/python-string-data-type-explained-ff81a363fe08?source=collection_archive---------17-----------------------#2023-01-30`](https://towardsdatascience.com/python-string-data-type-explained-ff81a363fe08?source=collection_archive---------17-----------------------#2023-01-30)
 
 ## 在这篇文章中，我们将探讨 Python 字符串数据类型。
 
-[](https://pyshark.medium.com/?source=post_page-----ff81a363fe08--------------------------------)[![Misha Sv](../Images/d3f9605e2c7020246ff793869728e218.png)](https://pyshark.medium.com/?source=post_page-----ff81a363fe08--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff81a363fe08--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ff81a363fe08--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----ff81a363fe08--------------------------------)
+[](https://pyshark.medium.com/?source=post_page-----ff81a363fe08--------------------------------)![Misha Sv](https://pyshark.medium.com/?source=post_page-----ff81a363fe08--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff81a363fe08--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff81a363fe08--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----ff81a363fe08--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-string-data-type-explained-ff81a363fe08&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----ff81a363fe08---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff81a363fe08--------------------------------) ·6 分钟阅读·2023年1月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fff81a363fe08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-string-data-type-explained-ff81a363fe08&user=Misha+Sv&userId=685c2995a8e&source=-----ff81a363fe08---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-string-data-type-explained-ff81a363fe08&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----ff81a363fe08---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff81a363fe08--------------------------------) ·6 分钟阅读·2023 年 1 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fff81a363fe08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-string-data-type-explained-ff81a363fe08&user=Misha+Sv&userId=685c2995a8e&source=-----ff81a363fe08---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fff81a363fe08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-string-data-type-explained-ff81a363fe08&source=-----ff81a363fe08---------------------bookmark_footer-----------)![](../Images/251d45286cc239a7aea658321c440a0f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fff81a363fe08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-string-data-type-explained-ff81a363fe08&source=-----ff81a363fe08---------------------bookmark_footer-----------)![](img/251d45286cc239a7aea658321c440a0f.png)
 
 图片由 [Gaelle Marcel](https://unsplash.com/@gaellemarcel?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，[Unsplash](https://unsplash.com/photos/S6hz7Y1FCTs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 上的照片
 

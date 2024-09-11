@@ -1,34 +1,34 @@
 # 开创数据可观察性：数据、代码、基础设施与人工智能
 
-> 原文：[https://towardsdatascience.com/pioneering-data-observability-data-code-infrastructure-ai-c22a26706866?source=collection_archive---------5-----------------------#2023-08-08](https://towardsdatascience.com/pioneering-data-observability-data-code-infrastructure-ai-c22a26706866?source=collection_archive---------5-----------------------#2023-08-08)
+> 原文：[`towardsdatascience.com/pioneering-data-observability-data-code-infrastructure-ai-c22a26706866?source=collection_archive---------5-----------------------#2023-08-08`](https://towardsdatascience.com/pioneering-data-observability-data-code-infrastructure-ai-c22a26706866?source=collection_archive---------5-----------------------#2023-08-08)
 
-[](https://barrmoses.medium.com/?source=post_page-----c22a26706866--------------------------------)[![Barr Moses](../Images/4c74558ee692a85196d5a55ac1920718.png)](https://barrmoses.medium.com/?source=post_page-----c22a26706866--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c22a26706866--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c22a26706866--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----c22a26706866--------------------------------)
+[](https://barrmoses.medium.com/?source=post_page-----c22a26706866--------------------------------)![Barr Moses](https://barrmoses.medium.com/?source=post_page-----c22a26706866--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c22a26706866--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c22a26706866--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----c22a26706866--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpioneering-data-observability-data-code-infrastructure-ai-c22a26706866&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----c22a26706866---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c22a26706866--------------------------------) ·8分钟阅读·2023年8月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc22a26706866&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpioneering-data-observability-data-code-infrastructure-ai-c22a26706866&user=Barr+Moses&userId=2818bac48708&source=-----c22a26706866---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpioneering-data-observability-data-code-infrastructure-ai-c22a26706866&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----c22a26706866---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c22a26706866--------------------------------) ·8 分钟阅读·2023 年 8 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc22a26706866&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpioneering-data-observability-data-code-infrastructure-ai-c22a26706866&user=Barr+Moses&userId=2818bac48708&source=-----c22a26706866---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc22a26706866&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpioneering-data-observability-data-code-infrastructure-ai-c22a26706866&source=-----c22a26706866---------------------bookmark_footer-----------)![](../Images/079ebda08bb05632eee7b75a1e165fa8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc22a26706866&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpioneering-data-observability-data-code-infrastructure-ai-c22a26706866&source=-----c22a26706866---------------------bookmark_footer-----------)![](img/079ebda08bb05632eee7b75a1e165fa8.png)
 
 数据可观察性的四个维度：数据、代码、基础设施和人工智能？图片由作者提供。
 
 概述了构建可靠数据系统的过去、现在和未来。
 
-当我们在2019年推出[**数据可观察性**](https://www.montecarlodata.com/blog-what-is-data-observability/)类别时，这个术语几乎是我难以发音的。
+当我们在 2019 年推出[**数据可观察性**](https://www.montecarlodata.com/blog-what-is-data-observability/)类别时，这个术语几乎是我难以发音的。
 
-四年后，这一类别已经明确确立为[**现代数据堆栈的核心层**](/how-to-build-a-5-layer-data-stack-508ed09711f2)。数据可观察性是[一个G2类别](https://www.g2.com/categories/data-observability)，被Gartner、Forrester等机构认可，最重要的是，被包括一些世界上最先进的数据组织在内的数百家公司广泛采用。
+四年后，这一类别已经明确确立为**现代数据堆栈的核心层**。数据可观察性是[一个 G2 类别](https://www.g2.com/categories/data-observability)，被 Gartner、Forrester 等机构认可，最重要的是，被包括一些世界上最先进的数据组织在内的数百家公司广泛采用。
 
 事实上，一家快速增长公司的首席技术官最近告诉我：“这是由于世界变化而产生的世俗趋势。数据可观察性早晚会发生，没有人能阻止它。”
 
-虽然我仍然不能总是正确发音（有ESL的吗？），但数据可观察性已经成为现代数据团队的必需品，我对这一运动取得的进展感到无比自豪——以及我们要去的地方。
+虽然我仍然不能总是正确发音（有 ESL 的吗？），但数据可观察性已经成为现代数据团队的必需品，我对这一运动取得的进展感到无比自豪——以及我们要去的地方。
 
 那么，数据可靠性的未来会是什么样的呢？要理解我们的前进方向，首先需要退一步评估我们已经走了多远。
 
 # 我们的起点
 
-在2010年代中期，数据团队开始迁移到云端，采用数据存储和计算技术——Redshift、Snowflake、Databricks、GCP，哎呀！——以满足对分析的不断增长的需求。云计算使数据处理更快、转换更容易、访问更广泛。
+在 2010 年代中期，数据团队开始迁移到云端，采用数据存储和计算技术——Redshift、Snowflake、Databricks、GCP，哎呀！——以满足对分析的不断增长的需求。云计算使数据处理更快、转换更容易、访问更广泛。
 
 随着数据变得越来越普遍，管道变得更复杂，新角色（例如数据工程师）出现以管理这种混乱，可能的使用场景数量激增。
 
@@ -36,15 +36,15 @@
 
 缺点？基础部分——如数据质量——被忽视了，且在这个现代数据堆栈中处于次要地位。
 
-在过去的某个时期，我亲身体验了坏数据的影响。凌晨5点，首席财务官发来的信息说“数据看起来有问题”。来自利益相关者的贴纸条，提醒我仪表盘未能更新。因我们的产品输入了不准确的数据而感到困惑的客户。
+在过去的某个时期，我亲身体验了坏数据的影响。凌晨 5 点，首席财务官发来的信息说“数据看起来有问题”。来自利益相关者的贴纸条，提醒我仪表盘未能更新。因我们的产品输入了不准确的数据而感到困惑的客户。
 
-[数据可观察性](https://www.montecarlodata.com/blog-what-is-data-observability/)源于这种痛苦——我们称之为[数据停机时间](https://www.montecarlodata.com/blog-the-rise-of-data-downtime/)——并提供了一个切实可行的解决方案。受应用可观察性和站点可靠性工程的启发，数据可观察性监控并警告组织数据事件，避免对业务造成影响。数据可观察性提供了一种自动化、流程驱动的替代方案，以实现数据可靠性，从而降低成本，推动增长，并大幅减少凌晨5点的紧急处理。
+[数据可观察性](https://www.montecarlodata.com/blog-what-is-data-observability/)源于这种痛苦——我们称之为[数据停机时间](https://www.montecarlodata.com/blog-the-rise-of-data-downtime/)——并提供了一个切实可行的解决方案。受应用可观察性和站点可靠性工程的启发，数据可观察性监控并警告组织数据事件，避免对业务造成影响。数据可观察性提供了一种自动化、流程驱动的替代方案，以实现数据可靠性，从而降低成本，推动增长，并大幅减少凌晨 5 点的紧急处理。
 
 从历史上看，最强的数据可观察性方法包括三个主要阶段：**检测**、**解决**和**预防**。
 
 1.  **检测：** 数据可观察性检测数据中的异常和其他问题，并在相关利益相关者发现之前，提醒数据团队的相关负责人。
 
-1.  **解决方案：**同时，数据可观察性平台为团队提供了解决问题的工具，包括字段级追溯、自动根本原因分析和影响分析、有关影响该资产的过去事件的信息、相关查询日志和dbt模型、受影响的报告等。
+1.  **解决方案：**同时，数据可观察性平台为团队提供了解决问题的工具，包括字段级追溯、自动根本原因分析和影响分析、有关影响该资产的过去事件的信息、相关查询日志和 dbt 模型、受影响的报告等。
 
 1.  **预防：**最后，数据可观察性还提供了防止数据问题发生的机制，例如在管道中设置断路器，并创建有关代码更改对数据影响的可见性，以及其他主动措施，以防止不良数据首次进入管道。
 
@@ -54,9 +54,9 @@
 
 然而，像任何行业一样，数据领域也在发展，影响了团队对事件检测和解决以及更广泛的数据可观察性的思考方式。这一演变归因于一些令人兴奋的趋势：**数据产品的兴起**以及因此**数据团队不断向工程部门靠拢或直接融入工程部门**。
 
-随着数据团队在组织中的范围扩大，数据使用案例的增长，数据团队对底线的影响比以往任何时候都更大。现在，业务中的每个人每天都利用数据来驱动洞察、推动数字服务和训练机器学习模型。实际上，我们已经超越了仅仅[将数据视作产品](https://insidebigdata.com/2022/06/09/dont-call-it-a-data-product-unless-it-meets-these-5-requirements/)。在2023年，**数据即产品**。
+随着数据团队在组织中的范围扩大，数据使用案例的增长，数据团队对底线的影响比以往任何时候都更大。现在，业务中的每个人每天都利用数据来驱动洞察、推动数字服务和训练机器学习模型。实际上，我们已经超越了仅仅[将数据视作产品](https://insidebigdata.com/2022/06/09/dont-call-it-a-data-product-unless-it-meets-these-5-requirements/)。在 2023 年，**数据即产品**。
 
-数百位客户之后，包括Pepsi、Gusto、MasterClass和Vimeo的团队，我们发现需要超越**数据**来实现数据可靠性。不可靠的数据不会独立存在……它受到数据生态系统中所有三种成分的影响：**数据** + **代码** + **基础设施**。
+数百位客户之后，包括 Pepsi、Gusto、MasterClass 和 Vimeo 的团队，我们发现需要超越**数据**来实现数据可靠性。不可靠的数据不会独立存在……它受到数据生态系统中所有三种成分的影响：**数据** + **代码** + **基础设施**。
 
 这种更广泛的视角反映了我们在软件工程领域的朋友们如何处理检测和解决问题。应用程序可观察性从基础设施开始，但分析的内容远不止这些，以检测和解决软件停机问题；根本原因分析考虑了代码、基础设施、服务、网络和其他许多因素。对于软件工程师来说，可靠性不是在真空中实现的——它通常受到多个因素的影响，这些因素经常一起作用或相互叠加。
 
@@ -70,11 +70,11 @@
 
 最后，你**查看了你的基础设施**。你迅速点击到你的 Airflow 用户界面——也许你在一个小实例上运行 Airflow，而它的内存耗尽了（不应该把那些行加载到内存中！！），导致了下游的新鲜度问题。发现了——你找到了问题所在！
 
-经验告诉我们，这三种因素都会对数据停机产生重要影响。所以无论你首先查看哪里，你都要经历一个漫长而乏味的过程，进行有根据的猜测并逐一排除。哦，我们提到过这还需要访问和熟练掌握组成你数据栈的8种不同工具吗？
+经验告诉我们，这三种因素都会对数据停机产生重要影响。所以无论你首先查看哪里，你都要经历一个漫长而乏味的过程，进行有根据的猜测并逐一排除。哦，我们提到过这还需要访问和熟练掌握组成你数据栈的 8 种不同工具吗？
 
 现在，想象一下你可以迅速将你看到的症状（陈旧的仪表板……）与数据、代码和基础设施的所有变化关联起来。哦，而且你不需要统计学博士学位或在公司工作十年，知道数据仓库中的每一列。所有这些都触手可及——对数据、代码和基础设施如何共同作用以导致仪表板出现问题的端到端理解。想想你本可以节省多少时间和资源，避免多少利益相关者的沮丧，更不用说那些早晨的闹钟了。
 
-![](../Images/241446b62edeb1e92024042187ee3262.png)
+![](img/241446b62edeb1e92024042187ee3262.png)
 
 *数据可观察性需要洞察数据环境的三个层面：数据、代码和基础设施。图片由作者提供。*
 

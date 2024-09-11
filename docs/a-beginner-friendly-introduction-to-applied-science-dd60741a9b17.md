@@ -1,18 +1,18 @@
 # 面向初学者的应用科学入门
 
-> 原文：[https://towardsdatascience.com/a-beginner-friendly-introduction-to-applied-science-dd60741a9b17?source=collection_archive---------14-----------------------#2023-06-06](https://towardsdatascience.com/a-beginner-friendly-introduction-to-applied-science-dd60741a9b17?source=collection_archive---------14-----------------------#2023-06-06)
+> 原文：[`towardsdatascience.com/a-beginner-friendly-introduction-to-applied-science-dd60741a9b17?source=collection_archive---------14-----------------------#2023-06-06`](https://towardsdatascience.com/a-beginner-friendly-introduction-to-applied-science-dd60741a9b17?source=collection_archive---------14-----------------------#2023-06-06)
 
 ## 学习功能和统计分析的基础知识
 
-[](https://emmaccode.medium.com/?source=post_page-----dd60741a9b17--------------------------------)[![Emma Boudreau](../Images/f7201d012b733643d6e97957f73fd1fa.png)](https://emmaccode.medium.com/?source=post_page-----dd60741a9b17--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd60741a9b17--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dd60741a9b17--------------------------------) [Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----dd60741a9b17--------------------------------)
+[](https://emmaccode.medium.com/?source=post_page-----dd60741a9b17--------------------------------)![Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----dd60741a9b17--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd60741a9b17--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd60741a9b17--------------------------------) [Emma Boudreau](https://emmaccode.medium.com/?source=post_page-----dd60741a9b17--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-applied-science-dd60741a9b17&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----dd60741a9b17---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd60741a9b17--------------------------------) ·12分钟阅读·2023年6月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdd60741a9b17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-applied-science-dd60741a9b17&user=Emma+Boudreau&userId=ea170050148c&source=-----dd60741a9b17---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-applied-science-dd60741a9b17&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----dd60741a9b17---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd60741a9b17--------------------------------) ·12 分钟阅读·2023 年 6 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdd60741a9b17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-applied-science-dd60741a9b17&user=Emma+Boudreau&userId=ea170050148c&source=-----dd60741a9b17---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdd60741a9b17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-applied-science-dd60741a9b17&source=-----dd60741a9b17---------------------bookmark_footer-----------)![](../Images/3e91a2f1a3c4434bcfa619eddf242623.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdd60741a9b17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-applied-science-dd60741a9b17&source=-----dd60741a9b17---------------------bookmark_footer-----------)![](img/3e91a2f1a3c4434bcfa619eddf242623.png)
 
 图片由 [Edge2Edge Media](https://unsplash.com/@edge2edgemedia?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

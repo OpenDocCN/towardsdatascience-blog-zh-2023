@@ -1,14 +1,14 @@
 # 利用 SQL 中的分析函数进行更快的数据提取
 
-> 原文：[https://towardsdatascience.com/sql-window-functions-939ed24c9752?source=collection_archive---------19-----------------------#2023-07-18](https://towardsdatascience.com/sql-window-functions-939ed24c9752?source=collection_archive---------19-----------------------#2023-07-18)
+> 原文：[`towardsdatascience.com/sql-window-functions-939ed24c9752?source=collection_archive---------19-----------------------#2023-07-18`](https://towardsdatascience.com/sql-window-functions-939ed24c9752?source=collection_archive---------19-----------------------#2023-07-18)
 
 ## 分析函数提供了一种非常强大且易于实现的数据处理和分析方式。本文将展示如何在 SQL 语句中使用分析函数。
 
-[](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)[![Günter Röhrich](../Images/31a1d0dc835c7ad31197f8c387023d10.png)](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)[](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------) [Günter Röhrich](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)
+[](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)![Günter Röhrich](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)[](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------) [Günter Röhrich](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3718a9423801&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-window-functions-939ed24c9752&user=G%C3%BCnter+R%C3%B6hrich&userId=3718a9423801&source=post_page-3718a9423801----939ed24c9752---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------) ·8分钟阅读·2023年7月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F939ed24c9752&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-window-functions-939ed24c9752&user=G%C3%BCnter+R%C3%B6hrich&userId=3718a9423801&source=-----939ed24c9752---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3718a9423801&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-window-functions-939ed24c9752&user=G%C3%BCnter+R%C3%B6hrich&userId=3718a9423801&source=post_page-3718a9423801----939ed24c9752---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------) ·8 分钟阅读·2023 年 7 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F939ed24c9752&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-window-functions-939ed24c9752&user=G%C3%BCnter+R%C3%B6hrich&userId=3718a9423801&source=-----939ed24c9752---------------------clap_footer-----------)
 
 --
 
@@ -18,4 +18,4 @@
 
 *你可能认为这不是一个常见的问题。因此，让我给一个日常的例子来证明这个假设是错误的：*
 
-想象一下你在一家制造公司工作，并且你对收集机器传感器数据感兴趣。这些数据通常会被频繁收集，并且可能非常嘈杂。为了更好地了解你的机器情况，对密集收集的数据进行平滑和预处理（例如，测量可能每秒收集几次）很快会导致数据集的规模巨大！假设我们有150个传感器放置在…
+想象一下你在一家制造公司工作，并且你对收集机器传感器数据感兴趣。这些数据通常会被频繁收集，并且可能非常嘈杂。为了更好地了解你的机器情况，对密集收集的数据进行平滑和预处理（例如，测量可能每秒收集几次）很快会导致数据集的规模巨大！假设我们有 150 个传感器放置在…

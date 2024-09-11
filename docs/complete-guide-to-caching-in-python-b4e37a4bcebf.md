@@ -1,18 +1,18 @@
-# Python缓存完整指南
+# Python 缓存完整指南
 
-> 原文：[https://towardsdatascience.com/complete-guide-to-caching-in-python-b4e37a4bcebf?source=collection_archive---------10-----------------------#2023-12-01](https://towardsdatascience.com/complete-guide-to-caching-in-python-b4e37a4bcebf?source=collection_archive---------10-----------------------#2023-12-01)
+> 原文：[`towardsdatascience.com/complete-guide-to-caching-in-python-b4e37a4bcebf?source=collection_archive---------10-----------------------#2023-12-01`](https://towardsdatascience.com/complete-guide-to-caching-in-python-b4e37a4bcebf?source=collection_archive---------10-----------------------#2023-12-01)
 
 ## 缓存是如何工作的，以及缓存函数的方法
 
-[](https://kayjanwong.medium.com/?source=post_page-----b4e37a4bcebf--------------------------------)[![Kay Jan Wong](../Images/28e803eca6327d97b6aa97ee4095d7bd.png)](https://kayjanwong.medium.com/?source=post_page-----b4e37a4bcebf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4e37a4bcebf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b4e37a4bcebf--------------------------------) [凯·简·黄](https://kayjanwong.medium.com/?source=post_page-----b4e37a4bcebf--------------------------------)
+[](https://kayjanwong.medium.com/?source=post_page-----b4e37a4bcebf--------------------------------)![Kay Jan Wong](https://kayjanwong.medium.com/?source=post_page-----b4e37a4bcebf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4e37a4bcebf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4e37a4bcebf--------------------------------) [凯·简·黄](https://kayjanwong.medium.com/?source=post_page-----b4e37a4bcebf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffee8693930fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomplete-guide-to-caching-in-python-b4e37a4bcebf&user=Kay+Jan+Wong&userId=fee8693930fb&source=post_page-fee8693930fb----b4e37a4bcebf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4e37a4bcebf--------------------------------) ·7分钟阅读·2023年12月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb4e37a4bcebf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomplete-guide-to-caching-in-python-b4e37a4bcebf&user=Kay+Jan+Wong&userId=fee8693930fb&source=-----b4e37a4bcebf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffee8693930fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomplete-guide-to-caching-in-python-b4e37a4bcebf&user=Kay+Jan+Wong&userId=fee8693930fb&source=post_page-fee8693930fb----b4e37a4bcebf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4e37a4bcebf--------------------------------) ·7 分钟阅读·2023 年 12 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb4e37a4bcebf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomplete-guide-to-caching-in-python-b4e37a4bcebf&user=Kay+Jan+Wong&userId=fee8693930fb&source=-----b4e37a4bcebf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4e37a4bcebf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomplete-guide-to-caching-in-python-b4e37a4bcebf&source=-----b4e37a4bcebf---------------------bookmark_footer-----------)![](../Images/b0f443c08318e8fb89a059bc3e15b59c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4e37a4bcebf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomplete-guide-to-caching-in-python-b4e37a4bcebf&source=-----b4e37a4bcebf---------------------bookmark_footer-----------)![](img/b0f443c08318e8fb89a059bc3e15b59c.png)
 
 图片来源：[娜娜·斯米尔诺娃](https://unsplash.com/@nananadolgo?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

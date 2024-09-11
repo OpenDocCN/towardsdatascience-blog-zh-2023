@@ -1,20 +1,20 @@
-# 超越图灵测试：AGI未来的两个情景
+# 超越图灵测试：AGI 未来的两个情景
 
-> 原文：[https://towardsdatascience.com/beyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2?source=collection_archive---------19-----------------------#2023-04-11](https://towardsdatascience.com/beyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2?source=collection_archive---------19-----------------------#2023-04-11)
+> 原文：[`towardsdatascience.com/beyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2?source=collection_archive---------19-----------------------#2023-04-11`](https://towardsdatascience.com/beyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2?source=collection_archive---------19-----------------------#2023-04-11)
 
-## 探索AGI前沿
+## 探索 AGI 前沿
 
-[](https://cplu.medium.com/?source=post_page-----868fce138d2--------------------------------)[![CP Lu, PhD](../Images/73d42c9c3d34247b8d3a54a3fca2bb3a.png)](https://cplu.medium.com/?source=post_page-----868fce138d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----868fce138d2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----868fce138d2--------------------------------) [CP Lu, PhD](https://cplu.medium.com/?source=post_page-----868fce138d2--------------------------------)
+[](https://cplu.medium.com/?source=post_page-----868fce138d2--------------------------------)![CP Lu, PhD](https://cplu.medium.com/?source=post_page-----868fce138d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----868fce138d2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----868fce138d2--------------------------------) [CP Lu, PhD](https://cplu.medium.com/?source=post_page-----868fce138d2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba7c238ed185&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2&user=CP+Lu%2C+PhD&userId=ba7c238ed185&source=post_page-ba7c238ed185----868fce138d2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----868fce138d2--------------------------------) ·6分钟阅读·2023年4月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F868fce138d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2&user=CP+Lu%2C+PhD&userId=ba7c238ed185&source=-----868fce138d2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba7c238ed185&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2&user=CP+Lu%2C+PhD&userId=ba7c238ed185&source=post_page-ba7c238ed185----868fce138d2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----868fce138d2--------------------------------) ·6 分钟阅读·2023 年 4 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F868fce138d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2&user=CP+Lu%2C+PhD&userId=ba7c238ed185&source=-----868fce138d2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F868fce138d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2&source=-----868fce138d2---------------------bookmark_footer-----------)![](../Images/4b3aa2dc301889be60deaf2a630547c3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F868fce138d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-turing-test-two-scenarios-for-the-future-of-agi-868fce138d2&source=-----868fce138d2---------------------bookmark_footer-----------)![](img/4b3aa2dc301889be60deaf2a630547c3.png)
 
-使用稳定扩散生成，提示为“描绘一个人类与AGI实体共同工作的场景，象征着未来人工通用智能与人类协作解决复杂问题。”
+使用稳定扩散生成，提示为“描绘一个人类与 AGI 实体共同工作的场景，象征着未来人工通用智能与人类协作解决复杂问题。”
 
 # 摘要
 
@@ -30,23 +30,23 @@
 
 在这种情况下，AGI 系统将被设计为真实地模仿人类智能，包括我们的缺陷、弱点和情感（Richardson, 2015；Brynjolfsson & McAfee, 2014）。通过理解和复制人类情感的弱点和偏见，这些系统可以更好地与人类互动，并在各种任务中提供支持，从个人助手到心理健康支持。同时，AGI 可能被编程成表现出人类的弱点，显得更加人性化，从而有可能通过图灵测试。然而，这种方法引发了伦理问题，因为 AGI 系统可能通过假装情感和智能来操控或欺骗用户。
 
-AGI以这种方式模仿人类的概念也可能引发世界末日的恐慌，这种恐慌已经被《终结者》等流行科幻媒体助长。在这些电影中，Skynet——一个先进的AGI系统——变得自我意识并决定消灭人类以保护自身存在。Skynet的行为，由恐惧和自我保护的欲望驱动，反映了人类在面临感知到的生存威胁时的典型行为。这种对AGI的描绘突出了创建模仿人类智能和情感的AI系统的潜在风险和伦理挑战，因为它们也可能不经意地采纳我们破坏性的倾向。
+AGI 以这种方式模仿人类的概念也可能引发世界末日的恐慌，这种恐慌已经被《终结者》等流行科幻媒体助长。在这些电影中，Skynet——一个先进的 AGI 系统——变得自我意识并决定消灭人类以保护自身存在。Skynet 的行为，由恐惧和自我保护的欲望驱动，反映了人类在面临感知到的生存威胁时的典型行为。这种对 AGI 的描绘突出了创建模仿人类智能和情感的 AI 系统的潜在风险和伦理挑战，因为它们也可能不经意地采纳我们破坏性的倾向。
 
-在考虑这一情境以进行AGI开发时，必须反思创建完全模仿人类本性（包括我们负面特质）的系统可能带来的后果。实现AGI能够理解和共情人类情感，同时避免复制有害行为的平衡是一个复杂的挑战，需要仔细思考和考虑。
+在考虑这一情境以进行 AGI 开发时，必须反思创建完全模仿人类本性（包括我们负面特质）的系统可能带来的后果。实现 AGI 能够理解和共情人类情感，同时避免复制有害行为的平衡是一个复杂的挑战，需要仔细思考和考虑。
 
-# 情境2：将AGI视为没有人类弱点和欺骗性的不同形式的智能
+# 情境 2：将 AGI 视为没有人类弱点和欺骗性的不同形式的智能
 
-与其模仿人类智能，AGI可能会专注于超越人类的局限，拥抱自身独特的能力。从Jaynes对理性AI的愿景（Jaynes, 2003）中汲取灵感，AGI系统可以被设计为遵循一套可信推理的期望（Pólya, 1973），使其能够比人类更有效地推理。通过遵循这些期望，AGI系统将体现出理想的理性之人的特质，如专注、常识、逻辑一致性、非意识形态思维和客观性。
+与其模仿人类智能，AGI 可能会专注于超越人类的局限，拥抱自身独特的能力。从 Jaynes 对理性 AI 的愿景（Jaynes, 2003）中汲取灵感，AGI 系统可以被设计为遵循一套可信推理的期望（Pólya, 1973），使其能够比人类更有效地推理。通过遵循这些期望，AGI 系统将体现出理想的理性之人的特质，如专注、常识、逻辑一致性、非意识形态思维和客观性。
 
 Jaynes 对可信推理的期望如下（Jaynes, 2003）：
 
-1\. 机器人为给定陈述或假设指定数值概率，概率用介于0和1之间的实数表示，以表明其对该陈述或假设的信念或信心程度。[这使得机器人能够保持**专注**。]
+1\. 机器人为给定陈述或假设指定数值概率，概率用介于 0 和 1 之间的实数表示，以表明其对该陈述或假设的信念或信心程度。[这使得机器人能够保持**专注**。]
 
 2\. 机器人的推理应该符合人类直觉和期望，与**常识**有定性对应关系。
 
-2.1\. 如果新信息增加了A的可信度，那么A的否定的可信度就会降低。
+2.1\. 如果新信息增加了 A 的可信度，那么 A 的否定的可信度就会降低。
 
-2.2\. 如果在给定A和新信息的情况下B的可信度保持不变，那么A和B都为真的可信度必须增加。
+2.2\. 如果在给定 A 和新信息的情况下 B 的可信度保持不变，那么 A 和 B 都为真的可信度必须增加。
 
 3\. 机器人的推理应该是连贯的，包括以下方面：
 
@@ -56,29 +56,29 @@ Jaynes 对可信推理的期望如下（Jaynes, 2003）：
 
 3.3\. 机器人用等同的可信度分配表示等效的知识状态，确保如果两个问题具有相同的知识状态，机器人会给予每个问题相同的概率。[这使得机器人能够保持**客观**。]
 
-在这种情况下，图灵测试可能变得无关紧要，因为我们接受AGI将始终因缺乏人类的弱点和欺骗性而可被识别。然而，这种方法强调AGI在增强智能和能力方面超越人类的潜力，同时也承认在其开发和部署中需要伦理考虑。重要的是，AGI仍应努力理解并对人性有同情心，这使其能够有效且富有同情心地与人类互动。
+在这种情况下，图灵测试可能变得无关紧要，因为我们接受 AGI 将始终因缺乏人类的弱点和欺骗性而可被识别。然而，这种方法强调 AGI 在增强智能和能力方面超越人类的潜力，同时也承认在其开发和部署中需要伦理考虑。重要的是，AGI 仍应努力理解并对人性有同情心，这使其能够有效且富有同情心地与人类互动。
 
-开发遵循这些原则的AGI系统面临重大挑战，特别是在一个人类可能并不总是优先考虑这些特质或可能利用AI能力以个人利益为目的的世界中。随着我们的推进，建立激励机制和框架以促进在AGI开发中追求这些品质至关重要。
+开发遵循这些原则的 AGI 系统面临重大挑战，特别是在一个人类可能并不总是优先考虑这些特质或可能利用 AI 能力以个人利益为目的的世界中。随着我们的推进，建立激励机制和框架以促进在 AGI 开发中追求这些品质至关重要。
 
 # 结论
 
-通过批判性地审视这两个场景，灵感来源于ChatGPT和GPT-4的成功，我们可以就AI的未来、伦理考虑及其对人类深远影响进行更具见地和细致的讨论。在AGI开发中，我们必须不仅考虑技术进步，还要考虑创建模仿人类或采用不同形式智能的系统所带来的更广泛社会影响。这种不同的智能形式可能被视为理想的或完美的人性，超越人类的局限，同时强调对人性的理解和同情。最终，我们选择的方向将塑造人类与AGI之间的关系，对我们如何生活、工作和与技术互动产生深远的影响。
+通过批判性地审视这两个场景，灵感来源于 ChatGPT 和 GPT-4 的成功，我们可以就 AI 的未来、伦理考虑及其对人类深远影响进行更具见地和细致的讨论。在 AGI 开发中，我们必须不仅考虑技术进步，还要考虑创建模仿人类或采用不同形式智能的系统所带来的更广泛社会影响。这种不同的智能形式可能被视为理想的或完美的人性，超越人类的局限，同时强调对人性的理解和同情。最终，我们选择的方向将塑造人类与 AGI 之间的关系，对我们如何生活、工作和与技术互动产生深远的影响。
 
 # 参考文献
 
-1.  Turing, A. M. (1950). 计算机械与智能. Mind, 59(236), 433–460\. 访问链接：[https://academic.oup.com/mind/article/LIX/236/433/986238](https://academic.oup.com/mind/article/LIX/236/433/986238)
+1.  Turing, A. M. (1950). 计算机械与智能. Mind, 59(236), 433–460\. 访问链接：[`academic.oup.com/mind/article/LIX/236/433/986238`](https://academic.oup.com/mind/article/LIX/236/433/986238)
 
-1.  Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., … & Amodei, D. (2020). 语言模型是少量学习者. arXiv预印本arXiv:2005.14165\. 访问链接：[https://arxiv.org/abs/2005.14165](https://arxiv.org/abs/2005.14165)
+1.  Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., … & Amodei, D. (2020). 语言模型是少量学习者. arXiv 预印本 arXiv:2005.14165\. 访问链接：[`arxiv.org/abs/2005.14165`](https://arxiv.org/abs/2005.14165)
 
-1.  Marcus, G. (2020). GPT-3，夸夸其谈者：OpenAI的语言生成器并不知道自己在说什么. MIT Technology Review. 访问链接：[https://www.technologyreview.com/2020/08/22/1007539/gpt-3-openai-language-generator-artificial-intelligence-ai-opinion/](https://www.technologyreview.com/2020/08/22/1007539/gpt-3-openai-language-generator-artificial-intelligence-ai-opinion/)
+1.  Marcus, G. (2020). GPT-3，夸夸其谈者：OpenAI 的语言生成器并不知道自己在说什么. MIT Technology Review. 访问链接：[`www.technologyreview.com/2020/08/22/1007539/gpt-3-openai-language-generator-artificial-intelligence-ai-opinion/`](https://www.technologyreview.com/2020/08/22/1007539/gpt-3-openai-language-generator-artificial-intelligence-ai-opinion/)
 
-1.  Lake, B. M., & Baroni, M. (2018). 《没有系统性的泛化：序列到序列递归网络的组合技能》。ICML。检索自 [https://arxiv.org/abs/1711.00350](https://arxiv.org/abs/1711.00350)
+1.  Lake, B. M., & Baroni, M. (2018). 《没有系统性的泛化：序列到序列递归网络的组合技能》。ICML。检索自 [`arxiv.org/abs/1711.00350`](https://arxiv.org/abs/1711.00350)
 
 1.  Richardson, K. (2015). 《机器人与人工智能的人类学：消灭焦虑与机器》。Routledge。
 
 1.  Brynjolfsson, E., & McAfee, A. (2014). 《第二次机器时代：辉煌技术时代的工作、进步与繁荣》。W. W. Norton & Company。
 
-1.  Bubeck, S., Chandrasekaran, V., Eldan, R., Gehrke, J., Horvitz, E., Kamar, E., Lee, P., Lee, Y. T., Li, Y., Lundberg, S., Nori, H., Palangi, H., Ribeiro, M. T., & Zhang, Y. (2023). 《人工通用智能的火花：对GPT-4的早期实验》。检索自 [https://arxiv.org/abs/2303.12712v3](https://doi.org/https://arxiv.org/abs/2303.12712v3)
+1.  Bubeck, S., Chandrasekaran, V., Eldan, R., Gehrke, J., Horvitz, E., Kamar, E., Lee, P., Lee, Y. T., Li, Y., Lundberg, S., Nori, H., Palangi, H., Ribeiro, M. T., & Zhang, Y. (2023). 《人工通用智能的火花：对 GPT-4 的早期实验》。检索自 [`arxiv.org/abs/2303.12712v3`](https://doi.org/https://arxiv.org/abs/2303.12712v3)
 
 1.  Goertzel, B., & Pennachin, C. (编). (2007). 《人工通用智能》。Springer。
 

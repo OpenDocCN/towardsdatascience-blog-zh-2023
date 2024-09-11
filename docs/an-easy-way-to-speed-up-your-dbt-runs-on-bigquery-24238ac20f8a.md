@@ -1,18 +1,18 @@
 # 提升你在 BigQuery 上 dbt 运行速度的简单方法
 
-> 原文：[https://towardsdatascience.com/an-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a?source=collection_archive---------14-----------------------#2023-04-11](https://towardsdatascience.com/an-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a?source=collection_archive---------14-----------------------#2023-04-11)
+> 原文：[`towardsdatascience.com/an-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a?source=collection_archive---------14-----------------------#2023-04-11`](https://towardsdatascience.com/an-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a?source=collection_archive---------14-----------------------#2023-04-11)
 
 ## *通过并发查询加速 dbt 运行*
 
-[](https://medium.com/@tobisam?source=post_page-----24238ac20f8a--------------------------------)[![Tobi Sam](../Images/daffb5aeec33842e42fd8ad68fc94b72.png)](https://medium.com/@tobisam?source=post_page-----24238ac20f8a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24238ac20f8a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----24238ac20f8a--------------------------------) [Tobi Sam](https://medium.com/@tobisam?source=post_page-----24238ac20f8a--------------------------------)
+[](https://medium.com/@tobisam?source=post_page-----24238ac20f8a--------------------------------)![Tobi Sam](https://medium.com/@tobisam?source=post_page-----24238ac20f8a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24238ac20f8a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----24238ac20f8a--------------------------------) [Tobi Sam](https://medium.com/@tobisam?source=post_page-----24238ac20f8a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F92fab82e0c7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a&user=Tobi+Sam&userId=92fab82e0c7a&source=post_page-92fab82e0c7a----24238ac20f8a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----24238ac20f8a--------------------------------) ·3 min read·2023年4月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24238ac20f8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a&user=Tobi+Sam&userId=92fab82e0c7a&source=-----24238ac20f8a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F92fab82e0c7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a&user=Tobi+Sam&userId=92fab82e0c7a&source=post_page-92fab82e0c7a----24238ac20f8a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----24238ac20f8a--------------------------------) ·3 min read·2023 年 4 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24238ac20f8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a&user=Tobi+Sam&userId=92fab82e0c7a&source=-----24238ac20f8a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F24238ac20f8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a&source=-----24238ac20f8a---------------------bookmark_footer-----------)![](../Images/dd8787608c94122a0e69e49364a7e974.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F24238ac20f8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-way-to-speed-up-your-dbt-runs-on-bigquery-24238ac20f8a&source=-----24238ac20f8a---------------------bookmark_footer-----------)![](img/dd8787608c94122a0e69e49364a7e974.png)
 
 图片来源：作者
 

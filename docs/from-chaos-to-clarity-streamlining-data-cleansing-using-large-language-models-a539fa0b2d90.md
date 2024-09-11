@@ -1,28 +1,28 @@
 # 从混乱到清晰：利用大型语言模型简化数据清洗
 
-> 原文：[https://towardsdatascience.com/from-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90?source=collection_archive---------5-----------------------#2023-06-07](https://towardsdatascience.com/from-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90?source=collection_archive---------5-----------------------#2023-06-07)
+> 原文：[`towardsdatascience.com/from-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90?source=collection_archive---------5-----------------------#2023-06-07`](https://towardsdatascience.com/from-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90?source=collection_archive---------5-----------------------#2023-06-07)
 
 ## 使用 OpenAI 的 GPT 模型清理调查回应。包含完整代码和 Github 链接。
 
-[](https://medium.com/@naresh-ram?source=post_page-----a539fa0b2d90--------------------------------)[![Naresh Ram](../Images/4a20b5646f75fb6cc2a5684fd3daf6db.png)](https://medium.com/@naresh-ram?source=post_page-----a539fa0b2d90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a539fa0b2d90--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a539fa0b2d90--------------------------------) [Naresh Ram](https://medium.com/@naresh-ram?source=post_page-----a539fa0b2d90--------------------------------)
+[](https://medium.com/@naresh-ram?source=post_page-----a539fa0b2d90--------------------------------)![Naresh Ram](https://medium.com/@naresh-ram?source=post_page-----a539fa0b2d90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a539fa0b2d90--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a539fa0b2d90--------------------------------) [Naresh Ram](https://medium.com/@naresh-ram?source=post_page-----a539fa0b2d90--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5665b0dac5f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90&user=Naresh+Ram&userId=a5665b0dac5f&source=post_page-a5665b0dac5f----a539fa0b2d90---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a539fa0b2d90--------------------------------) ·17 min 阅读 ·2023年6月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa539fa0b2d90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90&user=Naresh+Ram&userId=a5665b0dac5f&source=-----a539fa0b2d90---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5665b0dac5f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90&user=Naresh+Ram&userId=a5665b0dac5f&source=post_page-a5665b0dac5f----a539fa0b2d90---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a539fa0b2d90--------------------------------) ·17 min 阅读 ·2023 年 6 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa539fa0b2d90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90&user=Naresh+Ram&userId=a5665b0dac5f&source=-----a539fa0b2d90---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa539fa0b2d90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90&source=-----a539fa0b2d90---------------------bookmark_footer-----------)![](../Images/629cba145be86d7a78351b5798f1bb46.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa539fa0b2d90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-clarity-streamlining-data-cleansing-using-large-language-models-a539fa0b2d90&source=-----a539fa0b2d90---------------------bookmark_footer-----------)![](img/629cba145be86d7a78351b5798f1bb46.png)
 
 图片由 Dall-E 2 提供，生成并由作者修改。
 
-在数字时代，准确可靠的数据对致力于提供个性化体验和做出明智决策的企业至关重要[1]。然而，数据的庞大数量和复杂性常常带来重大挑战，需要大量繁琐的手工工作。此时，改变游戏规则的大型语言模型（LLMs）技术登场。这些先进的AI工具凭借其自然语言处理能力和模式识别，有可能彻底改变数据清洗过程，使其更加可用。
+在数字时代，准确可靠的数据对致力于提供个性化体验和做出明智决策的企业至关重要[1]。然而，数据的庞大数量和复杂性常常带来重大挑战，需要大量繁琐的手工工作。此时，改变游戏规则的大型语言模型（LLMs）技术登场。这些先进的 AI 工具凭借其自然语言处理能力和模式识别，有可能彻底改变数据清洗过程，使其更加可用。
 
-在数据科学家的工具箱中，LLMs就像是扳手和螺丝刀，重新塑造活动，利用其强大能力提高数据质量。隐喻中的锤子将揭示可操作的见解，并*最终*为更好的客户体验铺平道路。
+在数据科学家的工具箱中，LLMs 就像是扳手和螺丝刀，重新塑造活动，利用其强大能力提高数据质量。隐喻中的锤子将揭示可操作的见解，并*最终*为更好的客户体验铺平道路。
 
 话虽如此，让我们直接深入到今天将用作示例的用例中。
 
-![](../Images/97f979d0821efb5af6e1b55a5fd222fc.png)
+![](img/97f979d0821efb5af6e1b55a5fd222fc.png)
 
 图片由 [Scott Graham](https://unsplash.com/@homajob?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/OQMZwNd3ThU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -30,7 +30,7 @@
 
 在对学生进行调查时，最糟糕的事情就是把一个事实字段留作自由文本！你可以想象我们收到了哪些回应。
 
-开玩笑的话题，我们的一位客户，[Study Fetch](https://www.studyfetch.com/)，一个利用课程材料为学生创建个性化全能学习集的AI驱动平台，进行了一项针对大学生的调查。在收到超过10K的回应后，他们的CEO兼联合创始人Esan Durrani遇到了一点小麻烦。原来，调查中的“主要”字段是一个自由文本框，意味着受访者可以随意输入内容。作为数据科学家，我们知道如果你想进行统计分析，这不是最明智的做法。因此，调查的原始数据看起来就是这样的……
+开玩笑的话题，我们的一位客户，[Study Fetch](https://www.studyfetch.com/)，一个利用课程材料为学生创建个性化全能学习集的 AI 驱动平台，进行了一项针对大学生的调查。在收到超过 10K 的回应后，他们的 CEO 兼联合创始人 Esan Durrani 遇到了一点小麻烦。原来，调查中的“主要”字段是一个自由文本框，意味着受访者可以随意输入内容。作为数据科学家，我们知道如果你想进行统计分析，这不是最明智的做法。因此，调查的原始数据看起来就是这样的……
 
 ```py
 Anthropology 
@@ -42,7 +42,7 @@ cs
 IMB
 ```
 
-哦天哪！准备好拿起你的Excel，开始一个排序冒险，这可能仅需一个小时，或者，谁知道，也许需要三小时。只有这样，这些数据异端才会被彻底清除。
+哦天哪！准备好拿起你的 Excel，开始一个排序冒险，这可能仅需一个小时，或者，谁知道，也许需要三小时。只有这样，这些数据异端才会被彻底清除。
 
 然而，不用担心，因为我们有大型语言模型（LLM）的锤子。
 
@@ -52,7 +52,7 @@ IMB
 
 我认为对于我们的目的来说，1750 亿+ 参数应该足够了。只要我们能够提出正确的提示。
 
-![](../Images/3010dd28b52df0da8ba791e7211a3cca.png)
+![](img/3010dd28b52df0da8ba791e7211a3cca.png)
 
 [Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 的照片，来源于 [Unsplash](https://unsplash.com/photos/BoAbPMRKLS0?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -134,7 +134,7 @@ Data
 ###
 ```
 
-我们使用的完整提示可以在GitHub链接[这里](https://github.com/aaxis-nram/data-cleanser-llm-node)查看。
+我们使用的完整提示可以在 GitHub 链接[这里](https://github.com/aaxis-nram/data-cleanser-llm-node)查看。
 
 **模型的输出**：
 
@@ -148,7 +148,7 @@ Data
 ]
 ```
 
-正如之前讨论的那样，模型的输出是调查响应的序数与我们定义的类别之间的映射。以第一行举例：1,1。那意味着1是响应号，1是对应的映射程序号。调查响应1是“戏剧”，映射程序1是“艺术与人文学科”。这似乎是对的！戏剧在其正确的#1位置，所有的目光都集中在它上面。
+正如之前讨论的那样，模型的输出是调查响应的序数与我们定义的类别之间的映射。以第一行举例：1,1。那意味着 1 是响应号，1 是对应的映射程序号。调查响应 1 是“戏剧”，映射程序 1 是“艺术与人文学科”。这似乎是对的！戏剧在其正确的#1 位置，所有的目光都集中在它上面。
 
 尽管输出乍看起来像是嵌入（用于聚类和降维）的结果，但它们只是带有序数位置的相同映射信息。除了在令牌使用上提供一些成本优势外，这些数字也更容易解析。
 
@@ -156,19 +156,19 @@ Data
 
 但等等，我不打算坐在电脑前，将每一块调查响应输入到浏览器中并计算映射。除了令人厌烦外，错误率也完全无法接受。
 
-我们需要一些老式的自动化。进入API…
+我们需要一些老式的自动化。进入 API…
 
-![](../Images/3fa72dd277d6faa436ff71e5527e30fe.png)
+![](img/3fa72dd277d6faa436ff71e5527e30fe.png)
 
 图片来源于[劳拉·奥克尔](https://unsplash.com/@viazavier?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄于[Unsplash](https://unsplash.com/photos/UQ2Fw_9oApU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-# API的救援
+# API 的救援
 
-如你所知，应用程序编程接口（API）允许我们的程序高效地与第三方服务互动。尽管许多人在使用ChatGPT时取得了令人印象深刻的成就，但语言模型的真正潜力在于利用API将自然语言能力无缝集成到应用程序中，使其对用户不可察觉。这就像你用来阅读这篇文章的手机或电脑中所蕴含的不可思议的科技。
+如你所知，应用程序编程接口（API）允许我们的程序高效地与第三方服务互动。尽管许多人在使用 ChatGPT 时取得了令人印象深刻的成就，但语言模型的真正潜力在于利用 API 将自然语言能力无缝集成到应用程序中，使其对用户不可察觉。这就像你用来阅读这篇文章的手机或电脑中所蕴含的不可思议的科技。
 
-如果你还没有，可以在这里申请API访问，[https://openai.com/blog/openai-api](https://openai.com/blog/openai-api) [4]。一旦注册并获得API密钥，可以在[这里](https://platform.openai.com/docs/api-reference/chat)找到规格说明。包含代码示例的一些非常有用的示例可以在[这里](https://platform.openai.com/examples)找到。[playground](https://platform.openai.com/playground)是一个很好的功能，可以在将其投入使用前测试各种设置。
+如果你还没有，可以在这里申请 API 访问，[`openai.com/blog/openai-api`](https://openai.com/blog/openai-api) [4]。一旦注册并获得 API 密钥，可以在[这里](https://platform.openai.com/docs/api-reference/chat)找到规格说明。包含代码示例的一些非常有用的示例可以在[这里](https://platform.openai.com/examples)找到。[playground](https://platform.openai.com/playground)是一个很好的功能，可以在将其投入使用前测试各种设置。
 
-我们将使用REST的聊天完成API。调用的示例有效负载如下：
+我们将使用 REST 的聊天完成 API。调用的示例有效负载如下：
 
 ```py
 { 
@@ -207,13 +207,13 @@ Data
 
 首先，令牌可以被认为是一个单词的一部分。一个令牌大约是 4 个英文字符。例如，引用“预见未来的最佳方式是创造未来”，这个引言被归因于亚伯拉罕·林肯等人，包含了 11 个令牌。
 
-![](../Images/69813147518fbb984cbb356dc463a64a.png)
+![](img/69813147518fbb984cbb356dc463a64a.png)
 
 图片来源于 Open AI Tokenizer。由作者生成。
 
 如果你认为一个令牌就是一个单词，这里有另外一个 64 个令牌的例子，来说明这并不是那么简单。
 
-![](../Images/45ebcfd49afaab54bb19814bf769cbc0.png)
+![](img/45ebcfd49afaab54bb19814bf769cbc0.png)
 
 图片来源于 Open AI Tokenizer。由作者生成。
 
@@ -221,31 +221,31 @@ Data
 
 模型的最大令牌窗口是一个技术限制。你的提示（包括你放入的任何额外数据）和答案必须都在模型最大限制内，详细信息请查看[这里](https://platform.openai.com/docs/models/model-endpoint-compatibility)。在聊天完成的情况下，内容、角色和所有之前的消息都消耗令牌。如果你从输入或输出（助手消息）中删除一条消息，模型将失去对其的所有记忆[8]。就像多莉在寻找奇科时一样，没有法比奥，没有宾戈，没有哈波，没有艾尔莫？… 尼莫！
 
-对于gpt-3.5-turbo，模型的最大限制是4096个token，或者大约16K字符。对于我们的用例，提示大约是2000个字符，每个调查回复大约是20个字符（平均），映射回复是7个字符。因此，如果我们在每个提示中放入N个调查回复，最大字符数将是：
+对于 gpt-3.5-turbo，模型的最大限制是 4096 个 token，或者大约 16K 字符。对于我们的用例，提示大约是 2000 个字符，每个调查回复大约是 20 个字符（平均），映射回复是 7 个字符。因此，如果我们在每个提示中放入 N 个调查回复，最大字符数将是：
 
-2000 + 20*N + 7*N 应小于16,000。
+2000 + 20*N + 7*N 应小于 16,000。
 
-解算后，我们得到一个小于518或大约500的N值。从技术上讲，我们可以在每个请求中放入500个调查回复，并处理数据20次。相反，我们选择每个请求中放入50个调查回复，处理200次，因为如果我们在单个请求中放入超过50个调查回复，偶尔会收到异常回复。有时，服务会发脾气！我们不确定这是系统性乖戾的慢性病，还是刚好碰上了运气不好的一面。
+解算后，我们得到一个小于 518 或大约 500 的 N 值。从技术上讲，我们可以在每个请求中放入 500 个调查回复，并处理数据 20 次。相反，我们选择每个请求中放入 50 个调查回复，处理 200 次，因为如果我们在单个请求中放入超过 50 个调查回复，偶尔会收到异常回复。有时，服务会发脾气！我们不确定这是系统性乖戾的慢性病，还是刚好碰上了运气不好的一面。
 
-那么，我们如何使用这个API呢？让我们进入重点，代码部分。
+那么，我们如何使用这个 API 呢？让我们进入重点，代码部分。
 
-![](../Images/b6ca9b8296d4852b235147598e4088ad.png)
+![](img/b6ca9b8296d4852b235147598e4088ad.png)
 
 [Markus Spiske](https://unsplash.com/ko/@markusspiske?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄于[Unsplash](https://unsplash.com/photos/iar-afB0QQw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 # 代码的方式
 
-Node.js是一个JavaScript运行环境[9]。我们将编写一个Node.js/JavaScript程序，该程序将执行在这个流程图中描述的操作：
+Node.js 是一个 JavaScript 运行环境[9]。我们将编写一个 Node.js/JavaScript 程序，该程序将执行在这个流程图中描述的操作：
 
-![](../Images/822cff75f20673c7821f6388fd4629d3.png)
+![](img/822cff75f20673c7821f6388fd4629d3.png)
 
 程序的流程图。图片由作者提供。
 
-我的JavaScript技能不是特别出色。我可以写更好的Java、PHP、Julia、Go、C#，甚至Python。但Esan坚持使用Node，所以就用JavaScript吧。
+我的 JavaScript 技能不是特别出色。我可以写更好的 Java、PHP、Julia、Go、C#，甚至 Python。但 Esan 坚持使用 Node，所以就用 JavaScript 吧。
 
-所有代码、提示和示例输入可以在这个[GitHub链接](https://github.com/aaxis-nram/data-cleanser-llm-node)中找到。不过，让我们来看看最重要的部分：
+所有代码、提示和示例输入可以在这个[GitHub 链接](https://github.com/aaxis-nram/data-cleanser-llm-node)中找到。不过，让我们来看看最重要的部分：
 
-首先，让我们看看如何使用“csv-parser”Node库读取CSV文件。
+首先，让我们看看如何使用“csv-parser”Node 库读取 CSV 文件。
 
 ```py
 fs.createReadStream(fileName)
@@ -273,7 +273,7 @@ for(index = 0; index < totalDataPoints; ++index) {
 }
 ```
 
-然后，提示由类别、主要提示文本和CSV中的数据构成。我们将提示通过他们的OpenAI Node库发送到服务。
+然后，提示由类别、主要提示文本和 CSV 中的数据构成。我们将提示通过他们的 OpenAI Node 库发送到服务。
 
 ```py
 let prompt = categoriesText + mainPrompt + dataText;
@@ -297,7 +297,7 @@ try {
 }
 ```
 
-最后，当所有迭代完成后，我们可以将srcCol文本（调查回复）翻译为targetCol（标准化的程序名称），并写出CSV文件。
+最后，当所有迭代完成后，我们可以将 srcCol 文本（调查回复）翻译为 targetCol（标准化的程序名称），并写出 CSV 文件。
 
 ```py
 for (let row of rows) {
@@ -316,11 +316,11 @@ stringify(rows, {
 });
 ```
 
-那段JavaScript代码没有我想象中的那么复杂，2到3小时内完成了。我想，直到开始做之前总是看起来很令人生畏。
+那段 JavaScript 代码没有我想象中的那么复杂，2 到 3 小时内完成了。我想，直到开始做之前总是看起来很令人生畏。
 
 现在，代码已经准备好，是时候进行最终执行了……
 
-![](../Images/c1dccfd7b15920a59038fb6d2723ee56.png)
+![](img/c1dccfd7b15920a59038fb6d2723ee56.png)
 
 [Alexander Grey](https://unsplash.com/@sharonmccutcheon?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄于[Unsplash](https://unsplash.com/photos/8lnbXtxFGZw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -328,31 +328,31 @@ stringify(rows, {
 
 现在，我们需要一个地方来运行代码。在争论是否应该获得一个云实例来运行负载后，我做了一些快速计算，发现我可以在不到一小时内在我的笔记本电脑上运行它。这也不算太糟糕。
 
-我们开始了测试轮次，并注意到服务有1/10的几率会返回提供给它的数据，而不是映射。因此，我们只会收到调查回应的列表。由于没有找到映射，这些CSV文件中的回应会被映射为空字符串。
+我们开始了测试轮次，并注意到服务有 1/10 的几率会返回提供给它的数据，而不是映射。因此，我们只会收到调查回应的列表。由于没有找到映射，这些 CSV 文件中的回应会被映射为空字符串。
 
 与其在代码中检测并重试，我决定重新运行脚本，但只处理目标列为空的记录。
 
 脚本将从所有行中目标列为空开始，并填写标准化的程序名称。由于响应中的错误，一些行的目标列没有被映射并保持为空。当脚本第二次运行时，它只会为第一次运行中未处理的回应构造提示。我们重跑了几次程序，最终将所有内容映射完成。
 
-多次运行大约花了30分钟，并且不需要太多监督。这里是模型的一些更有趣的映射的选择：
+多次运行大约花了 30 分钟，并且不需要太多监督。这里是模型的一些更有趣的映射的选择：
 
-![](../Images/99e85c0374f04c76b2cc3ad622f97dfc.png)
+![](img/99e85c0374f04c76b2cc3ad622f97dfc.png)
 
 输入和程序名称之间的示例映射。图片由作者提供。
 
 大多数看起来对。组织行为学是社会科学还是商业学科呢？我想两者都可以。
 
-每个约50条记录的请求总共使用了大约800个tokens。整个过程的费用是40美分。我们可能花了10美分进行测试、重跑等。所以，总费用约50美分，大约2 ½小时的编码/测试时间和½小时的运行时间，我们完成了工作。
+每个约 50 条记录的请求总共使用了大约 800 个 tokens。整个过程的费用是 40 美分。我们可能花了 10 美分进行测试、重跑等。所以，总费用约 50 美分，大约 2 ½小时的编码/测试时间和½小时的运行时间，我们完成了工作。
 
-**总费用：** 约1美元以内
+**总费用：** 约 1 美元以内
 
-**总时间：** 大约3小时
+**总时间：** 大约 3 小时
 
-也许使用Excel、排序、正则表达式以及拖拽复制的手动转换，我们可以在同样的时间内完成并节省一点费用。但是，这要有趣得多，我们学到了东西，我们有了一个可重复的脚本/过程，并且还写了一篇文章。而且，我觉得[StudyFetch](https://www.studyfetch.com/)可以承担这50美分。
+也许使用 Excel、排序、正则表达式以及拖拽复制的手动转换，我们可以在同样的时间内完成并节省一点费用。但是，这要有趣得多，我们学到了东西，我们有了一个可重复的脚本/过程，并且还写了一篇文章。而且，我觉得[StudyFetch](https://www.studyfetch.com/)可以承担这 50 美分。
 
-这是我们高效且经济地实现的一个好用例，但LLMs还能用于什么其他用途呢？
+这是我们高效且经济地实现的一个好用例，但 LLMs 还能用于什么其他用途呢？
 
-![](../Images/16d14ddbac51d8d5b5a9d9c84159a6af.png)
+![](img/16d14ddbac51d8d5b5a9d9c84159a6af.png)
 
 照片由[Marcel Strauß](https://unsplash.com/@martzzl?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来自[Unsplash](https://unsplash.com/photos/NMGFl05r728?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -376,7 +376,7 @@ stringify(rows, {
 
 如果谨慎使用并了解潜在陷阱，LLMs 可以成为你工具箱中的一个很好的工具。
 
-![](../Images/14ea7f5c68fc1c141a45404c249fc973.png)
+![](img/14ea7f5c68fc1c141a45404c249fc973.png)
 
 图片由 [Paul Szewczyk](https://unsplash.com/fr/@allphotobangkok?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/photos/xTPiSriowpA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -384,7 +384,7 @@ stringify(rows, {
 
 在这篇文章中，我们首先探讨了数据清理的具体用例：将调查回应标准化为一组特定值。这将使我们能够对回应进行分组，并获得有价值的见解。我们使用了大型语言模型（LLM），Open AI 的 GPT 3.5 Turbo，来帮助分类这些回应。我们回顾了使用的提示、如何利用提示进行 API 调用以及所需的代码来自动化所有操作。最后，我们将所有内容整合在一起，总共花费的 OpenAI 工具成本不到一美元。
 
-我们是否拥有一个典型的大型语言模型工具，并找到完美的解决方案？也许。但更可能的是，我们拥有了一把瑞士军刀，并用它来剥皮和吃鱼。虽然不是特别专业，但仍然非常合适。至于Esan，真的很喜欢寿司。
+我们是否拥有一个典型的大型语言模型工具，并找到完美的解决方案？也许。但更可能的是，我们拥有了一把瑞士军刀，并用它来剥皮和吃鱼。虽然不是特别专业，但仍然非常合适。至于 Esan，真的很喜欢寿司。
 
 你的用例是什么？我们很想听听你的意见！
 
@@ -400,24 +400,24 @@ stringify(rows, {
 
 # 参考文献
 
-1\. **泰穆·赖塔卢奥托**，《数字时代个性化营销的重要性》，MaketTailor Blog，2023年5月，[https://www.markettailor.io/blog/importance-of-personalized-marketing-in-digital-age](https://www.markettailor.io/blog/importance-of-personalized-marketing-in-digital-age)
+1\. **泰穆·赖塔卢奥托**，《数字时代个性化营销的重要性》，MaketTailor Blog，2023 年 5 月，[`www.markettailor.io/blog/importance-of-personalized-marketing-in-digital-age`](https://www.markettailor.io/blog/importance-of-personalized-marketing-in-digital-age)
 
-2\. **安库尔·A·帕特尔**、**布赖恩特·林顿** 和 **迪娜·索斯塔雷克**，《GPT-4、GPT-3 和 GPT-3.5 Turbo：OpenAI 大型语言模型综述》，2023年4月，Ankur’s Newsletter，[https://www.ankursnewsletter.com/p/gpt-4-gpt-3-and-gpt-35-turbo-a-review](https://www.ankursnewsletter.com/p/gpt-4-gpt-3-and-gpt-35-turbo-a-review)
+2\. **安库尔·A·帕特尔**、**布赖恩特·林顿** 和 **迪娜·索斯塔雷克**，《GPT-4、GPT-3 和 GPT-3.5 Turbo：OpenAI 大型语言模型综述》，2023 年 4 月，Ankur’s Newsletter，[`www.ankursnewsletter.com/p/gpt-4-gpt-3-and-gpt-35-turbo-a-review`](https://www.ankursnewsletter.com/p/gpt-4-gpt-3-and-gpt-35-turbo-a-review)
 
-3\. **亚历山德拉·门德斯**，《终极ChatGPT提示工程指南：面向普通用户和开发者》，2023年6月，Imaginary Cloud Blog，[https://www.imaginarycloud.com/blog/chatgpt-prompt-engineering/](https://www.imaginarycloud.com/blog/chatgpt-prompt-engineering/)
+3\. **亚历山德拉·门德斯**，《终极 ChatGPT 提示工程指南：面向普通用户和开发者》，2023 年 6 月，Imaginary Cloud Blog，[`www.imaginarycloud.com/blog/chatgpt-prompt-engineering/`](https://www.imaginarycloud.com/blog/chatgpt-prompt-engineering/)
 
-4\. **塞巴斯蒂安**，《如何在 Node.js 中使用 OpenAI 的 ChatGPT API》，2023年3月，Medium — **智能编程方式**，[https://medium.com/codingthesmartway-com-blog/how-to-use-openais-chatgpt-api-in-node-js-3f01c1f8d473](https://medium.com/codingthesmartway-com-blog/how-to-use-openais-chatgpt-api-in-node-js-3f01c1f8d473)
+4\. **塞巴斯蒂安**，《如何在 Node.js 中使用 OpenAI 的 ChatGPT API》，2023 年 3 月，Medium — **智能编程方式**，[`medium.com/codingthesmartway-com-blog/how-to-use-openais-chatgpt-api-in-node-js-3f01c1f8d473`](https://medium.com/codingthesmartway-com-blog/how-to-use-openais-chatgpt-api-in-node-js-3f01c1f8d473)
 
-5\. **特里斯坦·沃尔夫**，《利用 OpenAI API Playground 解放你的 ChatGPT 提示》，2023年2月，Medium — **明日故事**，[https://medium.com/tales-of-tomorrow/liberate-your-prompts-from-chatgpt-restrictions-with-the-openai-api-playground-a0ac92644c6f](https://medium.com/tales-of-tomorrow/liberate-your-prompts-from-chatgpt-restrictions-with-the-openai-api-playground-a0ac92644c6f)
+5\. **特里斯坦·沃尔夫**，《利用 OpenAI API Playground 解放你的 ChatGPT 提示》，2023 年 2 月，Medium — **明日故事**，[`medium.com/tales-of-tomorrow/liberate-your-prompts-from-chatgpt-restrictions-with-the-openai-api-playground-a0ac92644c6f`](https://medium.com/tales-of-tomorrow/liberate-your-prompts-from-chatgpt-restrictions-with-the-openai-api-playground-a0ac92644c6f)
 
-6\. **AlgoWriting**，《简单指南：设置 GPT-3 温度》，2020年11月，Medium，[https://algowriting.medium.com/gpt-3-temperature-setting-101-41200ff0d0be](https://algowriting.medium.com/gpt-3-temperature-setting-101-41200ff0d0be)
+6\. **AlgoWriting**，《简单指南：设置 GPT-3 温度》，2020 年 11 月，Medium，[`algowriting.medium.com/gpt-3-temperature-setting-101-41200ff0d0be`](https://algowriting.medium.com/gpt-3-temperature-setting-101-41200ff0d0be)
 
-7\. **凯恩·胡珀**，《用 Ruby 掌握 GPT-3 温度参数》，2023年1月，Plain English，[https://plainenglish.io/blog/mastering-the-gpt-3-temperature-parameter-with-ruby](https://plainenglish.io/blog/mastering-the-gpt-3-temperature-parameter-with-ruby)
+7\. **凯恩·胡珀**，《用 Ruby 掌握 GPT-3 温度参数》，2023 年 1 月，Plain English，[`plainenglish.io/blog/mastering-the-gpt-3-temperature-parameter-with-ruby`](https://plainenglish.io/blog/mastering-the-gpt-3-temperature-parameter-with-ruby)
 
-8\. **OpenAI 作者**，《GPT 指南 — 管理令牌》，2023年，OpenAI 文档，[https://platform.openai.com/docs/guides/gpt/managing-tokens](https://platform.openai.com/docs/guides/gpt/managing-tokens)
+8\. **OpenAI 作者**，《GPT 指南 — 管理令牌》，2023 年，OpenAI 文档，[`platform.openai.com/docs/guides/gpt/managing-tokens`](https://platform.openai.com/docs/guides/gpt/managing-tokens)
 
-9\. **普里耶什·帕特尔**，《Node.js 究竟是什么？》，2018年4月，Medium — **自由代码营**，[https://medium.com/free-code-camp/what-exactly-is-node-js-ae36e97449f5](https://medium.com/free-code-camp/what-exactly-is-node-js-ae36e97449f5)
+9\. **普里耶什·帕特尔**，《Node.js 究竟是什么？》，2018 年 4 月，Medium — **自由代码营**，[`medium.com/free-code-camp/what-exactly-is-node-js-ae36e97449f5`](https://medium.com/free-code-camp/what-exactly-is-node-js-ae36e97449f5)
 
-10\. **本·迪克森**，《大型语言模型存在推理问题》，2022年6月，Tech Talks Blog，[https://bdtechtalks.com/2022/06/27/large-language-models-logical-reasoning/](https://bdtechtalks.com/2022/06/27/large-language-models-logical-reasoning/)
+10\. **本·迪克森**，《大型语言模型存在推理问题》，2022 年 6 月，Tech Talks Blog，[`bdtechtalks.com/2022/06/27/large-language-models-logical-reasoning/`](https://bdtechtalks.com/2022/06/27/large-language-models-logical-reasoning/)
 
-11\. **弗兰克·诺伊根鲍尔**，《理解 LLM 幻觉》，2023年5月，Towards Data Science，[https://towardsdatascience.com/llm-hallucinations-ec831dcd7786](/llm-hallucinations-ec831dcd7786)
+11\. **弗兰克·诺伊根鲍尔**，《理解 LLM 幻觉》，2023 年 5 月，Towards Data Science，`towardsdatascience.com/llm-hallucinations-ec831dcd7786`

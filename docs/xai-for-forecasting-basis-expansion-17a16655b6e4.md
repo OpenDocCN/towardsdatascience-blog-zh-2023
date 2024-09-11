@@ -1,18 +1,18 @@
 # XAI 预测：基础扩展
 
-> 原文：[https://towardsdatascience.com/xai-for-forecasting-basis-expansion-17a16655b6e4?source=collection_archive---------6-----------------------#2023-03-24](https://towardsdatascience.com/xai-for-forecasting-basis-expansion-17a16655b6e4?source=collection_archive---------6-----------------------#2023-03-24)
+> 原文：[`towardsdatascience.com/xai-for-forecasting-basis-expansion-17a16655b6e4?source=collection_archive---------6-----------------------#2023-03-24`](https://towardsdatascience.com/xai-for-forecasting-basis-expansion-17a16655b6e4?source=collection_archive---------6-----------------------#2023-03-24)
 
-![](../Images/fba0ad0a63160f4102e075123ef170a5.png)
+![](img/fba0ad0a63160f4102e075123ef170a5.png)
 
 图片来源：[理查德·霍尔瓦斯](https://unsplash.com/@orwhat?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## NBEATS 和其他可解释的深度预测模型
 
-[](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)[![Nakul Upadhya](../Images/336cb21272e9b1f098177adbde50e92e.png)](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)
+[](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)![Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxai-for-forecasting-basis-expansion-17a16655b6e4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----17a16655b6e4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------) ·15分钟阅读·2023年3月24日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17a16655b6e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxai-for-forecasting-basis-expansion-17a16655b6e4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----17a16655b6e4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxai-for-forecasting-basis-expansion-17a16655b6e4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----17a16655b6e4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------) ·15 分钟阅读·2023 年 3 月 24 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17a16655b6e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxai-for-forecasting-basis-expansion-17a16655b6e4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----17a16655b6e4---------------------clap_footer-----------)
 
 --
 
@@ -22,7 +22,7 @@
 
 近年来，预测人员转向深度学习，并在如长短期记忆 (LSTM) 网络和时间卷积网络 (CNNs) 等模型中获得了有希望的结果。2019 年之前，解决预测问题的主要方法是将传统统计方法（如 ARIMA）与深度学习相结合 [1]。然而，预测文献在 2020 年突破了这一点，并朝两个不同的方向发展。
 
-第一个方向涉及开发利用注意力机制和变换器架构进行预测的方法。这一方法由 Li 等人首次提出的 LogSparse Transformer 开创，该方法调整了传统的自注意力机制，使其在 NLP 任务中对局部性更为敏感且使用更少的内存 [5]。此工作后来由 Autoformer [6]、Informer [7]、FEDFormer [8] 等模型进一步扩展和改进。这是一个蓬勃发展的领域，但最近的工作对这一方法提出了质疑。Zeng 等人最近质疑了自注意力机制在预测任务中的有效性，并进行了大量实验，显示注意力机制可能对时间表示不太有用 [9]（这些实验的总结可以在[这篇文章](https://medium.com/towards-data-science/transformers-lose-to-linear-models-902164ca5974)中找到）。此外，从可解释性 AI (XAI) 角度来看，这一方法也稍显不足。尽管这些模型都有可视化的注意力机制，但许多学者认为这可能无法解释，这也是一个活跃的辩论领域。Denis Vorotyntsev 发表了一篇[总结辩论的优秀文章](/is-attention-explanation-b609a7b0925c)，我强烈建议查看他的文章 [10]。
+第一个方向涉及开发利用注意力机制和变换器架构进行预测的方法。这一方法由 Li 等人首次提出的 LogSparse Transformer 开创，该方法调整了传统的自注意力机制，使其在 NLP 任务中对局部性更为敏感且使用更少的内存 [5]。此工作后来由 Autoformer [6]、Informer [7]、FEDFormer [8] 等模型进一步扩展和改进。这是一个蓬勃发展的领域，但最近的工作对这一方法提出了质疑。Zeng 等人最近质疑了自注意力机制在预测任务中的有效性，并进行了大量实验，显示注意力机制可能对时间表示不太有用 [9]（这些实验的总结可以在[这篇文章](https://medium.com/towards-data-science/transformers-lose-to-linear-models-902164ca5974)中找到）。此外，从可解释性 AI (XAI) 角度来看，这一方法也稍显不足。尽管这些模型都有可视化的注意力机制，但许多学者认为这可能无法解释，这也是一个活跃的辩论领域。Denis Vorotyntsev 发表了一篇总结辩论的优秀文章，我强烈建议查看他的文章 [10]。
 
 与基于注意力的变换器方法相比，解决预测问题的另一主要方向是由 Oreshkin 等人 [1] 在 2020 年提出的神经基础扩展分析方法，该方法使用 N-BEATS 架构。该方法涉及使用多个堆叠的深度全连接网络来迭代构建预测。网络不是直接预测时间序列，而是预测基础的权重。这种架构允许用户指定他们想要提取的时间序列组件，并且预测的重建性质增加了额外的可解释性。
 
@@ -30,7 +30,7 @@
 
 # N-BEATS
 
-![](../Images/28208184fe703ee750bb312da4c19fdc.png)
+![](img/28208184fe703ee750bb312da4c19fdc.png)
 
 图 1：Oreshkin 等人 2020 年的 N-BEATS 架构 [1]
 
@@ -54,7 +54,7 @@ N-BEATS 代表**神经基础扩展分析**（Neural Basis Expansion Analysis）�
 
 如图 1 中蓝色部分所示，块包含 1 个全连接网络堆栈，该堆栈将其输出传递到 2 个不同的线性层。我们可以将全连接层视为生成输入的编码。这两个线性层随后接收这个编码并将其投射到 2 组权重中：一组用于预测基础，一组用于回溯基础。在数学上，这组操作可以描述如下（这有一个 4 层全连接网络）：
 
-![](../Images/a7851cca3f7db3cc8771c5b63cb1f937.png)
+![](img/a7851cca3f7db3cc8771c5b63cb1f937.png)
 
 图片来源：Oreshkin 等人 2022
 
@@ -66,7 +66,7 @@ N-BEATS 代表**神经基础扩展分析**（Neural Basis Expansion Analysis）�
 
 通用架构遵循这一确切定义：
 
-![](../Images/b15bb2d679bc5ccfb89d3fd4c5cf4398.png)
+![](img/b15bb2d679bc5ccfb89d3fd4c5cf4398.png)
 
 图片来源于 Oreshkin 等人 2022
 
@@ -74,13 +74,13 @@ N-BEATS 代表**神经基础扩展分析**（Neural Basis Expansion Analysis）�
 
 第一个可解释的基向量是趋势基向量。这将基向量更改为一系列低次幂的多项式（例如 at+bt²+ct³），我们的网络预测每个多项式项的权重。
 
-![](../Images/0dbc76c64300d01a08c880344e5d9b0f.png)
+![](img/0dbc76c64300d01a08c880344e5d9b0f.png)
 
 图片来源于 Oreshkin 等人 2022
 
 第二个可解释的基向量是季节性基向量。与趋势基向量类似，网络预测一组方程的权重，但这一次它预测的是傅里叶级数的权重。
 
-![](../Images/5ba2adb957fea254d43eee653c464e89.png)
+![](img/5ba2adb957fea254d43eee653c464e89.png)
 
 图片来源于 Oreshkin 等人 2022
 
@@ -96,7 +96,7 @@ N-BEATS 代表**神经基础扩展分析**（Neural Basis Expansion Analysis）�
 
 N-BEATS 不只是由 1 个块组成，而是由多个串联在一起的块组成，每个块解释时间序列的一个信号。允许这种行为的关键机制是双重残差堆叠。**简单来说：当前块的输入等同于前一个块的输入减去前一个块的回溯预测。此外，最终预测是所有块预测的总和 [1]。**
 
-![](../Images/fecd120caa6fe309e5261a7b0044995a.png)
+![](img/fecd120caa6fe309e5261a7b0044995a.png)
 
 图片来源于 Oreshkin 等人 2022
 
@@ -116,13 +116,13 @@ N-BEATS 不只是由 1 个块组成，而是由多个串联在一起的块组成
 
 第二种方法是首先生成协变量的编码，然后将其作为块的基础：
 
-![](../Images/6e86dde1aab893c7c647b9f329b525bc.png)
+![](img/6e86dde1aab893c7c647b9f329b525bc.png)
 
 图片来源于 Challu 等人 2023
 
 # DEPTS
 
-![](../Images/f7eccce5889922e30d548f5445b6bdfb.png)
+![](img/f7eccce5889922e30d548f5445b6bdfb.png)
 
 DEPTS 架构来源于 Fan 等人 2022[4]
 
@@ -136,7 +136,7 @@ DEPTS 代表 **D**eep **E**xpansion **L**earning for **P**eriodic **T**ime **S**
 
 DEPTS 用来实现上述两个特性的第一个机制是其专用的周期性模块，该模块接受回溯窗口和预测范围的时间步长，并生成由余弦序列定义的季节性上下文向量 [4]：
 
-![](../Images/26df5a1df036784e47802810236fa19e.png)
+![](img/26df5a1df036784e47802810236fa19e.png)
 
 图片来源于 Fan 等人 2022[4]
 
@@ -144,7 +144,7 @@ DEPTS 用来实现上述两个特性的第一个机制是其专用的周期性�
 
 然而，这一学习过程中的一个棘手之处在于，在尝试学习 *A*、*F* 和 *P* 时，模型很容易陷入局部最小值。为了解决这个问题，会进行预学习优化以初始化参数值。注意：在这个方程中，*phi* 代表可学习参数的集合，*M* 是一个与生成函数中的每一项相乘的二进制向量（如果选择该项则为 1，否则为 0） [4]。
 
-![](../Images/b00eb1396b0f913808f26b915e971ace.png)
+![](img/b00eb1396b0f913808f26b915e971ace.png)
 
 图片来源于 Fan 等人 2022 [4]
 
@@ -154,7 +154,7 @@ DEPTS 用来实现上述两个特性的第一个机制是其专用的周期性�
 
 周期性模块的全部目的是生成初始周期性上下文向量 *z*。这些上下文向量被传递到周期性块 [4]。
 
-![](../Images/30e265fb31cfea590f09e645433525b3.png)
+![](img/30e265fb31cfea590f09e645433525b3.png)
 
 DEPTS 周期性块架构来自 Fan 等人 2022[4]
 
@@ -162,7 +162,7 @@ DEPTS 周期性块架构来自 Fan 等人 2022[4]
 
 这些周期性回溯和预测是如何使用的？深入探讨 DEPTS 的一层可以给我们更多的见解。注意在这个图中，*x* 是目标序列 [4]。
 
-![](../Images/a6325dca35ace00df886ec9ec3216812.png)
+![](img/a6325dca35ace00df886ec9ec3216812.png)
 
 DEPTS 层架构来自 Fan 等人 2022[4]
 
@@ -172,35 +172,35 @@ DEPTS 层架构来自 Fan 等人 2022[4]
 
 ## 可解释性
 
-像NBEATS一样，DEPTS保持了NBEATS的许多解释优势，即预测的聚合。然而，DEPTS还提供了对全球周期模式的观察，这是NBEATS所没有的。通过运行周期性模块，可以轻松可视化全球周期模式。此外，通过查看“剩余”模式，可以检查最终的周期上下文向量，以了解局部预测如何可能偏离全球模式。
+像 NBEATS 一样，DEPTS 保持了 NBEATS 的许多解释优势，即预测的聚合。然而，DEPTS 还提供了对全球周期模式的观察，这是 NBEATS 所没有的。通过运行周期性模块，可以轻松可视化全球周期模式。此外，通过查看“剩余”模式，可以检查最终的周期上下文向量，以了解局部预测如何可能偏离全球模式。
 
 # N-HiTS
 
-![](../Images/e19bf2949152a6fdb6359ca12abb44cc.png)
+![](img/e19bf2949152a6fdb6359ca12abb44cc.png)
 
-N-HiTS架构来自Challu等人2022[2]
+N-HiTS 架构来自 Challu 等人 2022[2]
 
-NBEATS的第二大改进是N-HiTS或**N**eural **H**ierarchical **I**nterpolation for **T**ime Series **F**orecasting [2]。虽然DEPTS引入了专门的周期性预测机制，N-HiTS则专注于更好地构建预测聚合过程，并提供了两个主要优势：
+NBEATS 的第二大改进是 N-HiTS 或**N**eural **H**ierarchical **I**nterpolation for **T**ime Series **F**orecasting [2]。虽然 DEPTS 引入了专门的周期性预测机制，N-HiTS 则专注于更好地构建预测聚合过程，并提供了两个主要优势：
 
-1.  通过层次化的预测聚合方法，N-HiTS在识别和提取信号方面比N-BEATS在大多数情况下更为出色[2]。
+1.  通过层次化的预测聚合方法，N-HiTS 在识别和提取信号方面比 N-BEATS 在大多数情况下更为出色[2]。
 
-1.  通过插值机制，N-HiTS的内存使用量比NBEATS小得多，使得训练变得更加容易[2]。
+1.  通过插值机制，N-HiTS 的内存使用量比 NBEATS 小得多，使得训练变得更加容易[2]。
 
 这一切都得益于层次插值机制，它由两个部分组成：多速率信号采样和插值[2]。
 
 ## 多速率信号采样
 
-![](../Images/8304f5648b9160236c9d42ce723cad26.png)
+![](img/8304f5648b9160236c9d42ce723cad26.png)
 
-N-HiTS块架构来自Challu等人2022[2]
+N-HiTS 块架构来自 Challu 等人 2022[2]
 
-第一个主要机制是多速率信号采样。这非常简单（这使得它更加美丽）：在每个块的开头添加一个MaxPool层，该层预处理块输入并有效地平滑它[2]。这为什么有用？好吧，**我们可以在每个块中改变MaxPool层的内核大小，有效捕捉不同大小的信号[2]。** 此外，MaxPool还通过提供平滑处理，使模型对噪声的敏感性降低，本身就是一个强大但简单的工具[2]。
+第一个主要机制是多速率信号采样。这非常简单（这使得它更加美丽）：在每个块的开头添加一个 MaxPool 层，该层预处理块输入并有效地平滑它[2]。这为什么有用？好吧，**我们可以在每个块中改变 MaxPool 层的内核大小，有效捕捉不同大小的信号[2]。** 此外，MaxPool 还通过提供平滑处理，使模型对噪声的敏感性降低，本身就是一个强大但简单的工具[2]。
 
 ## 插值
 
 多速率采样非常强大，但与插值机制结合使用时效果更佳。
 
-回到原始的通用N-BEATS块架构，每个块生成两组权重：回溯权重集和预测权重集。通常，生成的权重数量等于窗口*L*的长度（用于回溯）或预测*H*的长度[1]。然而，这种方法存在一些问题。首先，预测所有权重可能导致生成的预测更具波动性和噪声[2]。此外，对于较大的预测范围，这可能导致极高的内存使用[2]。
+回到原始的通用 N-BEATS 块架构，每个块生成两组权重：回溯权重集和预测权重集。通常，生成的权重数量等于窗口*L*的长度（用于回溯）或预测*H*的长度[1]。然而，这种方法存在一些问题。首先，预测所有权重可能导致生成的预测更具波动性和噪声[2]。此外，对于较大的预测范围，这可能导致极高的内存使用[2]。
 
 N-HiTS 选择应用插值，其中预测的参数数量等于 *r*H*（以及回溯的 *r*L*），其中 r 是表现比率 [2]。更高的表现比率会导致更多的参数被预测。然后可以通过任何插值方法填补缺失的权重。作者测试了线性插值、最近邻插值和三次插值，但也可以使用任何自定义方法。
 
@@ -212,7 +212,7 @@ N-HiTS 选择应用插值，其中预测的参数数量等于 *r*H*（以及回�
 
 然后，作者将这种权重插值与上述多速率信号采样结合起来，创建了分层插值机制。**在分层插值中，块的表现比率和 MaxPool 核心大小在各个块之间是反向变化的** [2]**。** 任何具有高表现比率的块也使用小的核心大小。任何具有低表现比率的块使用大的核心大小。这两个参数的同步正是使 N-HiTS 能够捕捉不同幅度信号的原因，如下图所示 [2]：
 
-![](../Images/2433c91bab87ade4a1f294f5f3708dcc.png)
+![](img/2433c91bab87ade4a1f294f5f3708dcc.png)
 
 线性插值（左）与非插值（右）。图源自 Challu 等人 2022 [2]
 
@@ -226,7 +226,7 @@ N-HiTS 选择应用插值，其中预测的参数数量等于 *r*H*（以及回�
 
 还有一些工作将注意力机制应用于这些基础扩展方法，主要是 Jiang 等人提出的 DeepFS 模型 [12]，该模型使用了一个注意力层（改编自 [7]）来生成编码，然后将该编码传递到类似周期性 N-BEATS 块的模块中，以及传递到一个前馈堆栈中。尽管这可以被视为一种改进，但我在本文中没有详细描述此模型，因为正如 [9] 所示，时间序列预测中注意力机制的益处仍然存在争议。
 
-关于基础扩展是否可解释也存在一些争论。如果最终我们的模型产生了40个不同的方程，这是否能被解释？此外，尽管我们可以识别这些模型所识别的所有信号，但确定这些信号的机制仍然相对不透明，我们可能不知道为什么模型选择接收或忽略某个信号。当将这些模型适应到使用协变量时间序列时，可解释性也会降低。
+关于基础扩展是否可解释也存在一些争论。如果最终我们的模型产生了 40 个不同的方程，这是否能被解释？此外，尽管我们可以识别这些模型所识别的所有信号，但确定这些信号的机制仍然相对不透明，我们可能不知道为什么模型选择接收或忽略某个信号。当将这些模型适应到使用协变量时间序列时，可解释性也会降低。
 
 尽管存在这些缺陷，但本文讨论的所有模型在表现上始终表现出强大的性能，并为预测领域的更多创新铺平了道路。
 
@@ -254,18 +254,18 @@ N-HiTS 选择应用插值，其中预测的参数数量等于 *r*H*（以及回�
 
 [4] W. Fan, S. Zheng, X. Yi, W. Cao, Y. Fu, J. Bian, T-Y. Liu. [DEPTS: 深度扩展学习用于周期时间序列预测](https://arxiv.org/abs/2203.07681) (2022). 第十届国际学习表征会议。
 
-[5] S. Li, X. Jin, Y. Xuan, X. Zhou, W. Chen, Y. Wang, X. Yan. [增强变换器在时间序列预测中的局部性并突破记忆瓶颈](https://proceedings.neurips.cc/paper/2019/hash/6775a0635c302542da2c32aa19d86be0-Abstract.html) (2019). 神经信息处理系统大会第32届
+[5] S. Li, X. Jin, Y. Xuan, X. Zhou, W. Chen, Y. Wang, X. Yan. [增强变换器在时间序列预测中的局部性并突破记忆瓶颈](https://proceedings.neurips.cc/paper/2019/hash/6775a0635c302542da2c32aa19d86be0-Abstract.html) (2019). 神经信息处理系统大会第 32 届
 
-[6] H. Wu, J. Xu, J. Wang, M. Long. [Autoformer：具有自相关的分解变换器用于长期序列预测](https://arxiv.org/abs/2106.13008) (2021). 神经信息处理系统大会第34届
+[6] H. Wu, J. Xu, J. Wang, M. Long. [Autoformer：具有自相关的分解变换器用于长期序列预测](https://arxiv.org/abs/2106.13008) (2021). 神经信息处理系统大会第 34 届
 
-[7] H. Zhou, S. Zhang, J. Peng, S. Zhang, J. Li, H. Xiong, W. Zhang. [Informer：超越高效变换器用于长序列时间序列预测](https://arxiv.org/abs/2012.07436) (2021). 第三十五届AAAI人工智能大会，虚拟会议
+[7] H. Zhou, S. Zhang, J. Peng, S. Zhang, J. Li, H. Xiong, W. Zhang. [Informer：超越高效变换器用于长序列时间序列预测](https://arxiv.org/abs/2012.07436) (2021). 第三十五届 AAAI 人工智能大会，虚拟会议
 
-[8] T. Zhou, Z. Ma, Q. Wen, X. Wang, L. Sun, R. Jin. [EDformer：用于长期序列预测的频率增强分解变换器](https://arxiv.org/abs/2201.12740) (2022). 第39届国际机器学习会议
+[8] T. Zhou, Z. Ma, Q. Wen, X. Wang, L. Sun, R. Jin. [EDformer：用于长期序列预测的频率增强分解变换器](https://arxiv.org/abs/2201.12740) (2022). 第 39 届国际机器学习会议
 
-[9] A. Zeng, M. Chen, L. Zhang, Q. Xu. [变换器对时间序列预测是否有效？](https://arxiv.org/abs/2205.13504) (2022). 第三十七届AAAI人工智能大会
+[9] A. Zeng, M. Chen, L. Zhang, Q. Xu. [变换器对时间序列预测是否有效？](https://arxiv.org/abs/2205.13504) (2022). 第三十七届 AAAI 人工智能大会
 
-[10] D. Vorotyntsev. [注意力是解释吗？](/is-attention-explanation-b609a7b0925c) (2022). 数据科学前沿
+[10] D. Vorotyntsev. 注意力是解释吗？ (2022). 数据科学前沿
 
-[12] S. Jiang, T. Syed, X. Zhy, J. Levy, B. Aronchik, Y. Sun. [桥接自注意力和时间序列分解以进行周期性预测](https://www.amazon.science/publications/bridging-self-attention-and-time-series-decomposition-for-periodic-forecasting) (2022). 第31届ACM国际信息与知识管理会议
+[12] S. Jiang, T. Syed, X. Zhy, J. Levy, B. Aronchik, Y. Sun. [桥接自注意力和时间序列分解以进行周期性预测](https://www.amazon.science/publications/bridging-self-attention-and-time-series-decomposition-for-periodic-forecasting) (2022). 第 31 届 ACM 国际信息与知识管理会议
 
-[11]S. Smyl, J. Ranganathan, A Pasqua. [M4预测竞赛：介绍一种新的混合ES-RNN模型](https://eng.uber.com/m4-forecasting-competition/) (2018). 优步研究
+[11]S. Smyl, J. Ranganathan, A Pasqua. [M4 预测竞赛：介绍一种新的混合 ES-RNN 模型](https://eng.uber.com/m4-forecasting-competition/) (2018). 优步研究

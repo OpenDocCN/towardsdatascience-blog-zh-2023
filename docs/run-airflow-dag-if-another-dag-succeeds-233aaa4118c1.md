@@ -1,18 +1,18 @@
 # 仅在另一个 DAG 成功时运行 Airflow DAG
 
-> 原文：[https://towardsdatascience.com/run-airflow-dag-if-another-dag-succeeds-233aaa4118c1?source=collection_archive---------3-----------------------#2023-12-19](https://towardsdatascience.com/run-airflow-dag-if-another-dag-succeeds-233aaa4118c1?source=collection_archive---------3-----------------------#2023-12-19)
+> 原文：[`towardsdatascience.com/run-airflow-dag-if-another-dag-succeeds-233aaa4118c1?source=collection_archive---------3-----------------------#2023-12-19`](https://towardsdatascience.com/run-airflow-dag-if-another-dag-succeeds-233aaa4118c1?source=collection_archive---------3-----------------------#2023-12-19)
 
 ## 使用 Airflow 传感器控制不同调度的 DAG 执行
 
-[](https://gmyrianthous.medium.com/?source=post_page-----233aaa4118c1--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----233aaa4118c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----233aaa4118c1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----233aaa4118c1--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----233aaa4118c1--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----233aaa4118c1--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----233aaa4118c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----233aaa4118c1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----233aaa4118c1--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----233aaa4118c1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-airflow-dag-if-another-dag-succeeds-233aaa4118c1&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----233aaa4118c1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----233aaa4118c1--------------------------------) · 11分钟阅读 · 2023年12月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F233aaa4118c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-airflow-dag-if-another-dag-succeeds-233aaa4118c1&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----233aaa4118c1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-airflow-dag-if-another-dag-succeeds-233aaa4118c1&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----233aaa4118c1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----233aaa4118c1--------------------------------) · 11 分钟阅读 · 2023 年 12 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F233aaa4118c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-airflow-dag-if-another-dag-succeeds-233aaa4118c1&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----233aaa4118c1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F233aaa4118c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-airflow-dag-if-another-dag-succeeds-233aaa4118c1&source=-----233aaa4118c1---------------------bookmark_footer-----------)![](../Images/3de6a6755eaa5db34e2a4adb3bcbeffe.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F233aaa4118c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-airflow-dag-if-another-dag-succeeds-233aaa4118c1&source=-----233aaa4118c1---------------------bookmark_footer-----------)![](img/3de6a6755eaa5db34e2a4adb3bcbeffe.png)
 
 图像由 [DALL-E2](https://openai.com/dall-e-2) 生成
 
@@ -24,7 +24,7 @@
 
 现在让我们开始探索包含两个 Airflow DAG 的用例。
 
-第一个DAG，`my_daily_dag`，每天在UTC时间凌晨5点运行。
+第一个 DAG，`my_daily_dag`，每天在 UTC 时间凌晨 5 点运行。
 
 ```py
 from datetime import datetime, timedelta

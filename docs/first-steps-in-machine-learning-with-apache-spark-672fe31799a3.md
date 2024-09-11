@@ -1,18 +1,18 @@
 # 使用 Apache Spark 进行机器学习的第一步
 
-> 原文：[https://towardsdatascience.com/first-steps-in-machine-learning-with-apache-spark-672fe31799a3?source=collection_archive---------8-----------------------#2023-01-04](https://towardsdatascience.com/first-steps-in-machine-learning-with-apache-spark-672fe31799a3?source=collection_archive---------8-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/first-steps-in-machine-learning-with-apache-spark-672fe31799a3?source=collection_archive---------8-----------------------#2023-01-04`](https://towardsdatascience.com/first-steps-in-machine-learning-with-apache-spark-672fe31799a3?source=collection_archive---------8-----------------------#2023-01-04)
 
 ## Spark MLlib 包的基本概念和主题
 
-[](https://joaopedro214.medium.com/?source=post_page-----672fe31799a3--------------------------------)[![João Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----672fe31799a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----672fe31799a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----672fe31799a3--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----672fe31799a3--------------------------------)
+[](https://joaopedro214.medium.com/?source=post_page-----672fe31799a3--------------------------------)![João Pedro](https://joaopedro214.medium.com/?source=post_page-----672fe31799a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----672fe31799a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----672fe31799a3--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----672fe31799a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffirst-steps-in-machine-learning-with-apache-spark-672fe31799a3&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----672fe31799a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----672fe31799a3--------------------------------) ·11 分钟阅读·2023年1月4日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F672fe31799a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffirst-steps-in-machine-learning-with-apache-spark-672fe31799a3&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----672fe31799a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffirst-steps-in-machine-learning-with-apache-spark-672fe31799a3&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----672fe31799a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----672fe31799a3--------------------------------) ·11 分钟阅读·2023 年 1 月 4 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F672fe31799a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffirst-steps-in-machine-learning-with-apache-spark-672fe31799a3&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----672fe31799a3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F672fe31799a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffirst-steps-in-machine-learning-with-apache-spark-672fe31799a3&source=-----672fe31799a3---------------------bookmark_footer-----------)![](../Images/b6f9154e2eb16e7cf1f6b67fc5e34280.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F672fe31799a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffirst-steps-in-machine-learning-with-apache-spark-672fe31799a3&source=-----672fe31799a3---------------------bookmark_footer-----------)![](img/b6f9154e2eb16e7cf1f6b67fc5e34280.png)
 
 照片来自 [Element5 Digital](https://unsplash.com/es/@element5digital?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,11 +20,11 @@
 
 Apache Spark 是大数据背景下数据处理和分析的主要工具之一。它是一个非常完整（且复杂）的数据处理框架，其功能大致可以分为四组：SparkSQL & DataFrames，用于通用数据处理需求；Spark Structured Streaming，用于处理数据流；Spark MLlib，专注于机器学习和数据科学；GraphX，图形处理 API。
 
-![](../Images/114fdcdf4bf192579d828ab3f5628c35.png)
+![](img/114fdcdf4bf192579d828ab3f5628c35.png)
 
 官方文档中的 Spark 库部分。打印由作者提供。
 
-我已经在其他文章中介绍了前两个：[创建一个数据仓库的 ETL 过程](https://joaopedro214.medium.com/creating-a-simple-etl-pipeline-with-apache-spark-825cc17c8cf6) 和 [将 Spark 和 Kafka 集成进行流处理](/a-fast-look-at-spark-structured-streaming-kafka-f0ff64107325)。今天我们要讨论第三个——让我们使用 Spark MLlib 进行机器学习。
+我已经在其他文章中介绍了前两个：[创建一个数据仓库的 ETL 过程](https://joaopedro214.medium.com/creating-a-simple-etl-pipeline-with-apache-spark-825cc17c8cf6) 和 将 Spark 和 Kafka 集成进行流处理。今天我们要讨论第三个——让我们使用 Spark MLlib 进行机器学习。
 
 机器学习在我心中占有特殊的位置，因为它是我进入数据科学领域的入口门槛，并且像你们中的许多人一样，我是通过经典的 [Scikit-Learn](https://scikit-learn.org/stable/) 库开始的。
 
@@ -52,7 +52,7 @@ Apache Spark 是一个基于分布式内存的数据转换引擎。它旨在在�
 
 文章中描述的架构（在 *docker-compose.yaml* 文件中）如下面的图像所示。
 
-![](../Images/0bc69dd0959c25391ac31ea5829a090b.png)
+![](img/0bc69dd0959c25391ac31ea5829a090b.png)
 
 项目的架构与 Docker 容器。图片由作者提供。
 
@@ -112,7 +112,7 @@ df_avocado.show(4)
 
 让我们查看一下数据：
 
-![](../Images/41e5e436d69f75fd4547288f7fcc8daa.png)
+![](img/41e5e436d69f75fd4547288f7fcc8daa.png)
 
 关于列的更多细节可以在原始数据集的 Kaggle 页面上找到。
 
@@ -128,9 +128,9 @@ df_avocado_train, df_avocado_test = df_avocado.randomSplit([0.75, 0.25], seed=21
 
 **变换器** 是能够变换 DataFrame 的对象。它们接收原始 DataFrame 并返回处理后的 DataFrame。常见的变换器包括 PolynomialExpansion、SQLTransformer 和 VectorAssembler（非常重要，后面会讨论）。
 
-**估算器**，另一方面，是需要在数据上进行拟合/训练以生成变换器的对象。这些包括机器学习预测器（线性回归、逻辑回归、决策树等）、降维算法（PCA、卡方选择器），以及其他列变换器（标准化器、最小最大缩放器、TF-IDF等）。
+**估算器**，另一方面，是需要在数据上进行拟合/训练以生成变换器的对象。这些包括机器学习预测器（线性回归、逻辑回归、决策树等）、降维算法（PCA、卡方选择器），以及其他列变换器（标准化器、最小最大缩放器、TF-IDF 等）。
 
-![](../Images/66e637a5d0dae1f23fd8e1cd6aa7d0f8.png)
+![](img/66e637a5d0dae1f23fd8e1cd6aa7d0f8.png)
 
 Spark MLlib 上的变换器和估算器。作者提供的图片。
 
@@ -167,17 +167,17 @@ sql_trans.transform(df_avocado_train).show(4)
 
 结果：
 
-![](../Images/f64d500d4fa54ec5f666bde14553c2e8.png)
+![](img/f64d500d4fa54ec5f666bde14553c2e8.png)
 
 缩放是在数据预处理中的一种常见做法。让我们使用最小-最大缩放技术缩放 **month** 列，将所有值放在 [0, 1] 区间内。MinMaxScaler 是一种 **估算器**，因此需要先在数据上进行拟合，然后才能用来变换数据。
 
-大多数估算器（包括所有预测模型）要求输入列为向量形式。向量是一种在Spark MLlib中主要使用的特殊列类型。它正如名字所示，是一个固定大小的数字数组。
+大多数估算器（包括所有预测模型）要求输入列为向量形式。向量是一种在 Spark MLlib 中主要使用的特殊列类型。它正如名字所示，是一个固定大小的数字数组。
 
-为了将列合并成一个单一的向量列，我们使用VectorAssembler Transformer。
+为了将列合并成一个单一的向量列，我们使用 VectorAssembler Transformer。
 
-![](../Images/10d7f1182d8aae534012fae3ebcf64a5.png)
+![](img/10d7f1182d8aae534012fae3ebcf64a5.png)
 
-Vector Assembler正在运行。图片来自作者。
+Vector Assembler 正在运行。图片来自作者。
 
 ```py
 from pyspark.ml.feature import MinMaxScaler
@@ -199,19 +199,19 @@ month_scaler\
 
 下面的图片详细说明了这个过程。
 
-![](../Images/947a6e4950f72e96ca89f39f97b78dda.png)
+![](img/947a6e4950f72e96ca89f39f97b78dda.png)
 
-对列应用MinMaxScaler的过程。图片来自作者。
+对列应用 MinMaxScaler 的过程。图片来自作者。
 
 结果：
 
-![](../Images/4266dc8f0f8d22a0be0135035e63f918.png)
+![](img/4266dc8f0f8d22a0be0135035e63f918.png)
 
 牢记这些概念，只需了解可用的变换器并在我们的管道中使用它们。
 
-例如，列**type**有两个值，"*conventional*"和"*organic*"，需要映射成数字。负责此操作的变换器是StringIndexer。
+例如，列**type**有两个值，"*conventional*"和"*organic*"，需要映射成数字。负责此操作的变换器是 StringIndexer。
 
-它将列中的每个类别分配一个数值。由于“type”列只有两个类别，它将被转换成一个只有两个值的列：0和1，这相当于应用了独热编码技术。
+它将列中的每个类别分配一个数值。由于“type”列只有两个类别，它将被转换成一个只有两个值的列：0 和 1，这相当于应用了独热编码技术。
 
 ```py
 str_indexer = StringIndexer(inputCol="type", outputCol="type_index")
@@ -224,11 +224,11 @@ str_indexer\
   .show(4)
 ```
 
-![](../Images/4023608a0496a7586241d873e67675f5.png)
+![](img/4023608a0496a7586241d873e67675f5.png)
 
 从现在开始，我将总结所做的工作。
 
-生成的数值特征（所有列，除了*type_index*）被组装成一个名为“features_num”的单一向量，这个最终向量通过一个StandardScaler。
+生成的数值特征（所有列，除了*type_index*）被组装成一个名为“features_num”的单一向量，这个最终向量通过一个 StandardScaler。
 
 ```py
 # Apply transformations
@@ -264,7 +264,7 @@ df_avocado_train_transformed = categorical_vec_ass.transform(df_avocado_train_tr
 df_avocado_train_transformed.select(['features_cat', 'features_num', 'AveragePrice']).show(4, False)
 ```
 
-![](../Images/2f535578bd130098b42226615bc4641b.png)
+![](img/2f535578bd130098b42226615bc4641b.png)
 
 ```py
 # Scaling the numerical features using a StandardScaler
@@ -279,7 +279,7 @@ std_scaler = std_scaler.fit(df_avocado_train_transformed)
 std_scaler.transform(df_avocado_train_transformed).select(['features_scaled']).show(5, False)
 ```
 
-![](../Images/0e457d208950ce3e100e5b51d4c2c76b.png)
+![](img/0e457d208950ce3e100e5b51d4c2c76b.png)
 
 然后将类别列“type_index”添加到最终向量中。
 
@@ -338,7 +338,7 @@ only showing top 4 rows
 
 不幸的是，这部分将比前一部分短很多 ¯\_(ツ)_/¯
 
-如前所述，ML模型只是估算器，因此过程会重复：实例化、拟合和转换。
+如前所述，ML 模型只是估算器，因此过程会重复：实例化、拟合和转换。
 
 让我们训练一个线性回归模型：
 
@@ -358,9 +358,9 @@ lin_reg = LinearRegression(
 )
 ```
 
-必须指定特征列、目标/标签列以及预测列的名称。就像我们遇到的其他估算器一样，ML模型只会向DataFrame中添加另一列。
+必须指定特征列、目标/标签列以及预测列的名称。就像我们遇到的其他估算器一样，ML 模型只会向 DataFrame 中添加另一列。
 
-![](../Images/321df60ec602669af3dbf906e9cd169f.png)
+![](img/321df60ec602669af3dbf906e9cd169f.png)
 
 机器学习模型只是一个估算器。图片来自作者。
 
@@ -393,11 +393,11 @@ only showing top 4 rows
 
 要评估模型的性能，我们需要一个**评估器**。我认为它的名字已经很直观了，它将计算真实标签与模型预测之间的性能指标。
 
-![](../Images/31ce091d0a576d2f5998b40f939d0e27.png)
+![](img/31ce091d0a576d2f5998b40f939d0e27.png)
 
 评估器在操作中。图像来源：作者。
 
-在下面的单元格中，实例化一个RegressionEvaluator来测量预测值与实际值（在训练数据上）之间的RMSE（*均方根误差*）。
+在下面的单元格中，实例化一个 RegressionEvaluator 来测量预测值与实际值（在训练数据上）之间的 RMSE（*均方根误差*）。
 
 ```py
 from pyspark.ml.evaluation import RegressionEvaluator
@@ -422,7 +422,7 @@ reg_eval.evaluate(df_avocado_train_pred)
 
 在这里，我们遇到了今天文章中的最后构建块——**ParamGridBuilder**和**CrossValidator**。
 
-从ParamGridBuilder开始：这是用来构建超参数网格的对象。
+从 ParamGridBuilder 开始：这是用来构建超参数网格的对象。
 
 ```py
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
@@ -530,13 +530,13 @@ print(reg_eval.evaluate(df_avocado_test_pred))
 
 # 结论
 
-随着ML应用的普及和其要求的复杂化，掌握各种用途不同的工具知识变得至关重要。
+随着 ML 应用的普及和其要求的复杂化，掌握各种用途不同的工具知识变得至关重要。
 
-在这篇文章中，我们了解了如何通过Spark MLlib模块在机器学习的背景下使用Apache Spark。通过一个实际项目，我们创建了一个通用的ML管道，涵盖了该模块的主要概念和基本主题。
+在这篇文章中，我们了解了如何通过 Spark MLlib 模块在机器学习的背景下使用 Apache Spark。通过一个实际项目，我们创建了一个通用的 ML 管道，涵盖了该模块的主要概念和基本主题。
 
-学习一种新工具主要涉及熟悉其词汇，*即*，理解组成它的基本部分以及如何利用它们来解决问题。因此，我们专注于理解Spark MLlib的基础知识：估计器、转换器、评估器和管道。
+学习一种新工具主要涉及熟悉其词汇，*即*，理解组成它的基本部分以及如何利用它们来解决问题。因此，我们专注于理解 Spark MLlib 的基础知识：估计器、转换器、评估器和管道。
 
-我希望这篇简短的文章能帮助你理解Spark如何在机器学习应用中使用。
+我希望这篇简短的文章能帮助你理解 Spark 如何在机器学习应用中使用。
 
 一如既往，这篇文章只是略微触及了所探讨主题的表面，因此我强烈建议进一步阅读，见下文的参考文献。
 
@@ -550,7 +550,7 @@ print(reg_eval.evaluate(df_avocado_test_pred))
 
 [1] Chambers, B., & Zaharia, M. (2018). *Spark: 终极指南：简化的大数据处理*。“ O’Reilly Media, Inc.”
 
-[2] Spark 示例 — [https://sparkbyexamples.com/](https://sparkbyexamples.com/)
+[2] Spark 示例 — [`sparkbyexamples.com/`](https://sparkbyexamples.com/)
 
 [3] Géron, A. (2022). *动手实践机器学习：使用 Scikit-Learn、Keras 和 TensorFlow*。“ O’Reilly Media, Inc.”.
 

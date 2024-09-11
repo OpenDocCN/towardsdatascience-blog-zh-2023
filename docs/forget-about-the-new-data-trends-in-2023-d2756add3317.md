@@ -1,22 +1,22 @@
 # ETL 测试 — 如何正确测试你的数据管道
 
-> 原文：[https://towardsdatascience.com/forget-about-the-new-data-trends-in-2023-d2756add3317?source=collection_archive---------0-----------------------#2023-01-06](https://towardsdatascience.com/forget-about-the-new-data-trends-in-2023-d2756add3317?source=collection_archive---------0-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/forget-about-the-new-data-trends-in-2023-d2756add3317?source=collection_archive---------0-----------------------#2023-01-06`](https://towardsdatascience.com/forget-about-the-new-data-trends-in-2023-d2756add3317?source=collection_archive---------0-----------------------#2023-01-06)
 
 ## 忘掉 2023 年的新数据趋势吧！这个根本的数据工程挑战仍然没有解决。
 
-[](https://vinodhini-sd.medium.com/?source=post_page-----d2756add3317--------------------------------)[![Vino Duraisamy](../Images/065b150b7518e0818ef37dbc423aacda.png)](https://vinodhini-sd.medium.com/?source=post_page-----d2756add3317--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2756add3317--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2756add3317--------------------------------) [Vino Duraisamy](https://vinodhini-sd.medium.com/?source=post_page-----d2756add3317--------------------------------)
+[](https://vinodhini-sd.medium.com/?source=post_page-----d2756add3317--------------------------------)![Vino Duraisamy](https://vinodhini-sd.medium.com/?source=post_page-----d2756add3317--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2756add3317--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2756add3317--------------------------------) [Vino Duraisamy](https://vinodhini-sd.medium.com/?source=post_page-----d2756add3317--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff5dbd5e34b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforget-about-the-new-data-trends-in-2023-d2756add3317&user=Vino+Duraisamy&userId=ff5dbd5e34b8&source=post_page-ff5dbd5e34b8----d2756add3317---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2756add3317--------------------------------) · 7 分钟阅读 · 2023年1月6日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff5dbd5e34b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforget-about-the-new-data-trends-in-2023-d2756add3317&user=Vino+Duraisamy&userId=ff5dbd5e34b8&source=post_page-ff5dbd5e34b8----d2756add3317---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2756add3317--------------------------------) · 7 分钟阅读 · 2023 年 1 月 6 日
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd2756add3317&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforget-about-the-new-data-trends-in-2023-d2756add3317&source=-----d2756add3317---------------------bookmark_footer-----------)
 
-**2023年**！ELT、反向ETL、EtLT、数据网格、数据合同、FinOps 和现代数据栈等新数据范式（或流行词汇）已经进入主流数据对话。我们的数据团队仍在弄清楚哪些是炒作，哪些不是。
+**2023 年**！ELT、反向 ETL、EtLT、数据网格、数据合同、FinOps 和现代数据栈等新数据范式（或流行词汇）已经进入主流数据对话。我们的数据团队仍在弄清楚哪些是炒作，哪些不是。
 
-明天可能会有10种新范式，但一些数据工程中的根本挑战——如**数据质量**——仍然相关且尚未完全解决（我认为我们永远无法完全解决这个问题）。提高数据质量的第一步是对我们的数据管道进行严格测试。
+明天可能会有 10 种新范式，但一些数据工程中的根本挑战——如**数据质量**——仍然相关且尚未完全解决（我认为我们永远无法完全解决这个问题）。提高数据质量的第一步是对我们的数据管道进行严格测试。
 
 在本文中，让我们探讨在有效测试数据管道时面临的挑战以及如何为您的组织建立一个全面的测试策略。
 
@@ -26,19 +26,19 @@
 
 > 大多数数据团队都面临紧迫的截止日期。因此，数据工程的文化使得我们最终构建的管道是在一周结束前提供数据，而不是融入长期有价值的最佳实践。
 
-+   在ETL测试中，我们通常需要比较来自不同源系统的大量数据（例如数百万条记录）。我们在比较经过复杂SQL查询或Spark作业处理后的转换数据。
++   在 ETL 测试中，我们通常需要比较来自不同源系统的大量数据（例如数百万条记录）。我们在比较经过复杂 SQL 查询或 Spark 作业处理后的转换数据。
 
 +   不是所有的数据工程师（及数据工程领导者）都有软件工程背景，也不都擅长软件工程开发原则和最佳实践。
 
 +   自动化测试套件和数据产品的自动化部署/发布仍未成为主流。
 
-![](../Images/97fba55bff6a7298497dba7caed923cb.png)
+![](img/97fba55bff6a7298497dba7caed923cb.png)
 
 来源：由作者创建
 
-> ETL测试是一个以数据为中心的测试过程。为了有效地测试我们的管道，我们需要类似生产的数据（在体积、多样性和速度方面）。
+> ETL 测试是一个以数据为中心的测试过程。为了有效地测试我们的管道，我们需要类似生产的数据（在体积、多样性和速度方面）。
 
-![](../Images/45287cd2c724e6bbe0da82b26b116520.png)
+![](img/45287cd2c724e6bbe0da82b26b116520.png)
 
 来源：由作者创建
 
@@ -66,29 +66,29 @@
 
 **优点：** 提供真实世界生产数据用于测试。符合所有数据隐私法规。
 
-**缺点**：再次强调，生产数据的持续变化意味着测试环境中的数据变得过时，并需要频繁刷新。每次从生产环境中复制数据时都需要进行PII匿名化。每次手动执行匿名化步骤并维护长期运行的测试数据环境容易出错且资源消耗大。
+**缺点**：再次强调，生产数据的持续变化意味着测试环境中的数据变得过时，并需要频繁刷新。每次从生产环境中复制数据时都需要进行 PII 匿名化。每次手动执行匿名化步骤并维护长期运行的测试数据环境容易出错且资源消耗大。
 
 # 5\. 使用数据版本控制工具将生产数据镜像到开发/测试环境：
 
-**优点**：可用的真实生产数据。通过类似Git的API提供的自动化短期测试环境。
+**优点**：可用的真实生产数据。通过类似 Git 的 API 提供的自动化短期测试环境。
 
 **缺点**：将一个新工具（如[lakeFS](http://lakefs.io)）添加到现有的数据堆栈中。
 
-注意：如果你对ETL测试中的数据版本控制工具感兴趣，这里有一个[快速指南](https://lakefs.io/blog/etl-testing/)，供你参考。
+注意：如果你对 ETL 测试中的数据版本控制工具感兴趣，这里有一个[快速指南](https://lakefs.io/blog/etl-testing/)，供你参考。
 
-关于如何使用lakeFS创建不同数据环境以进行ETL测试的视频教程。来源：作者创建。
+关于如何使用 lakeFS 创建不同数据环境以进行 ETL 测试的视频教程。来源：作者创建。
 
 # 好了，假设你拥有正确的数据。接下来呢？
 
 +   需要运行一系列全面的测试，以确保数据湖或数据仓库中数据的质量和可靠性。
 
-+   你可以使用数据质量测试工具（如Great Expectations、soda.io等）进行这些测试，也可以构建一个内部测试套件。无论如何！
++   你可以使用数据质量测试工具（如 Great Expectations、soda.io 等）进行这些测试，也可以构建一个内部测试套件。无论如何！
 
 +   根据项目、数据集和业务的不同，需要执行不同类型的测试。然而，这里有一个由[Irene](https://www.linkedin.com/in/irene-mikhailouskaya-makaranka-957a7388/)整理的不同数据质量维度的基本测试检查表。
 
-![](../Images/0b08da2ddc5d205ff1eaee90771cdf6e.png)
+![](img/0b08da2ddc5d205ff1eaee90771cdf6e.png)
 
-来源：[https://www.scnsoft.com/blog/guide-to-data-quality-management](https://www.scnsoft.com/blog/guide-to-data-quality-management)
+来源：[`www.scnsoft.com/blog/guide-to-data-quality-management`](https://www.scnsoft.com/blog/guide-to-data-quality-management)
 
 # 1\. 一致性：
 
@@ -98,15 +98,15 @@
 
 # 2\. 准确性：
 
-你的检查应包括数据验证和领域值检查。例如，***出生日期***列不能有超过200年的值。
+你的检查应包括数据验证和领域值检查。例如，***出生日期***列不能有超过 200 年的值。
 
-根据你的领域，数据应在特定范围内。一些业务KPI不能有特定值。例如，一个名为***点击率***的列不能有大于1.0的值，等等。
+根据你的领域，数据应在特定范围内。一些业务 KPI 不能有特定值。例如，一个名为***点击率***的列不能有大于 1.0 的值，等等。
 
 # 3\. 完整性：
 
 应包括记录数、列数、每列缺失值的百分比、空值的百分比、范围检查（min_value、max_value）以及基本统计数据，如均值、中位数、方差和数据分布（特定列中值的频率）等检查。
 
-再次，根据业务领域的不同，你可以设定一个错误的阈值。在制药和金融领域，由于合规要求，数据团队力求100%的数据验证和0%的错误差异。
+再次，根据业务领域的不同，你可以设定一个错误的阈值。在制药和金融领域，由于合规要求，数据团队力求 100%的数据验证和 0%的错误差异。
 
 # 4\. 数据可审计性：
 
@@ -130,21 +130,21 @@
 
 # 1\. 白盒测试：
 
-上述七种测试类型属于白盒测试。另一种类型是对复杂数据转换进行**单元测试**。这是为了验证KPI定义和其他转换是否符合预期。
+上述七种测试类型属于白盒测试。另一种类型是对复杂数据转换进行**单元测试**。这是为了验证 KPI 定义和其他转换是否符合预期。
 
 # 2\. 黑盒测试：
 
-数据管道包含许多动态部分——从多个数据源、复杂的数据转换到下游的并发数据消费者。因此，仅测试转换是不够的。需要对ETL管道进行端到端测试，以确保管道按预期工作。
+数据管道包含许多动态部分——从多个数据源、复杂的数据转换到下游的并发数据消费者。因此，仅测试转换是不够的。需要对 ETL 管道进行端到端测试，以确保管道按预期工作。
 
 # 3\. 回归测试：
 
 假设管道的某一部分发生了变化，必须确保其他部分由于这次变化没有出现回归错误。
 
-这就是自动化ETL测试重要的地方。也就是说，在每次更改后，需要运行一套测试（有时也称为持续集成测试）。只有当测试套件成功运行时，才能将更改推送到生产环境中。
+这就是自动化 ETL 测试重要的地方。也就是说，在每次更改后，需要运行一套测试（有时也称为持续集成测试）。只有当测试套件成功运行时，才能将更改推送到生产环境中。
 
-你可以使用像[lakeFS这样的工具来运行自动化测试，并实现数据湖的CI/CD](https://docs.lakefs.io/use_cases/cicd_for_data.html)。
+你可以使用像[lakeFS 这样的工具来运行自动化测试，并实现数据湖的 CI/CD](https://docs.lakefs.io/use_cases/cicd_for_data.html)。
 
-[](https://docs.lakefs.io/use_cases/cicd_for_data.html?source=post_page-----d2756add3317--------------------------------) [## 数据湖的CI/CD
+[](https://docs.lakefs.io/use_cases/cicd_for_data.html?source=post_page-----d2756add3317--------------------------------) [## 数据湖的 CI/CD
 
 ### 数据管道将处理后的数据从数据湖传送到下游的消费者，如业务仪表盘和机器…
 
@@ -152,11 +152,11 @@
 
 # 4\. 性能测试：
 
-除了确保数据质量外，对ETL管道进行负载测试也是提高数据产品发布可靠性所必需的。
+除了确保数据质量外，对 ETL 管道进行负载测试也是提高数据产品发布可靠性所必需的。
 
-因此，分析ETL任务的运行时间和任务的执行顺序，以识别瓶颈。通常，当数据量增加时，会导致管道变慢。通过监控运行时间、优化分布式计算作业和调整硬件需求，可以解决这个问题。
+因此，分析 ETL 任务的运行时间和任务的执行顺序，以识别瓶颈。通常，当数据量增加时，会导致管道变慢。通过监控运行时间、优化分布式计算作业和调整硬件需求，可以解决这个问题。
 
-这些是需要运行的全面测试清单。然而，我们中的大多数人在工作中只运行其中的一些。如果你是数据工程师，**你们团队的ETL测试策略是怎样的？**
+这些是需要运行的全面测试清单。然而，我们中的大多数人在工作中只运行其中的一些。如果你是数据工程师，**你们团队的 ETL 测试策略是怎样的？**
 
 # 感谢阅读！
 
@@ -164,6 +164,6 @@
 
 1.  支持我的**最佳**方式是关注我在[Medium](https://medium.com/@vinodhini-sd)上的账号。
 
-1.  有关数据工程最佳实践和Python初学者的技巧，请在[LinkedIn](https://www.linkedin.com/in/vinodhini-sd/)上关注我。
+1.  有关数据工程最佳实践和 Python 初学者的技巧，请在[LinkedIn](https://www.linkedin.com/in/vinodhini-sd/)上关注我。
 
 1.  请随意点赞，以便我知道这篇文章对你有多大帮助。

@@ -1,14 +1,14 @@
-# Excel中的梯度提升线性回归
+# Excel 中的梯度提升线性回归
 
-> 原文：[https://towardsdatascience.com/gradient-boosted-linear-regression-in-excel-a08522f13d6a?source=collection_archive---------2-----------------------#2023-03-17](https://towardsdatascience.com/gradient-boosted-linear-regression-in-excel-a08522f13d6a?source=collection_archive---------2-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/gradient-boosted-linear-regression-in-excel-a08522f13d6a?source=collection_archive---------2-----------------------#2023-03-17`](https://towardsdatascience.com/gradient-boosted-linear-regression-in-excel-a08522f13d6a?source=collection_archive---------2-----------------------#2023-03-17)
 
 ## 为了更好地理解梯度提升
 
-[](https://medium.com/@angela.shi?source=post_page-----a08522f13d6a--------------------------------)[![Angela and Kezhan Shi](../Images/a89d678f2f3887c0c2ff3928f9d767b4.png)](https://medium.com/@angela.shi?source=post_page-----a08522f13d6a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a08522f13d6a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a08522f13d6a--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----a08522f13d6a--------------------------------)
+[](https://medium.com/@angela.shi?source=post_page-----a08522f13d6a--------------------------------)![Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----a08522f13d6a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a08522f13d6a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a08522f13d6a--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----a08522f13d6a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosted-linear-regression-in-excel-a08522f13d6a&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----a08522f13d6a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a08522f13d6a--------------------------------) ·7 分钟阅读·2023年3月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa08522f13d6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosted-linear-regression-in-excel-a08522f13d6a&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----a08522f13d6a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosted-linear-regression-in-excel-a08522f13d6a&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----a08522f13d6a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a08522f13d6a--------------------------------) ·7 分钟阅读·2023 年 3 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa08522f13d6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosted-linear-regression-in-excel-a08522f13d6a&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----a08522f13d6a---------------------clap_footer-----------)
 
 --
 

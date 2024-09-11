@@ -1,16 +1,16 @@
 # PyTorch 的 Nesterov 动量实现是否有误？
 
-> 原文：[https://towardsdatascience.com/is-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008?source=collection_archive---------10-----------------------#2023-09-02](https://towardsdatascience.com/is-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008?source=collection_archive---------10-----------------------#2023-09-02)
+> 原文：[`towardsdatascience.com/is-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008?source=collection_archive---------10-----------------------#2023-09-02`](https://towardsdatascience.com/is-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008?source=collection_archive---------10-----------------------#2023-09-02)
 
-[](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)[![Jason Vega](../Images/712b2e34c1af7a8572193296bdd8b206.png)](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------) [Jason Vega](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)
+[](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)![Jason Vega](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------) [Jason Vega](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa9932c231079&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&user=Jason+Vega&userId=a9932c231079&source=post_page-a9932c231079----5dc5f5032008---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------) ·6 分钟阅读·2023年9月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5dc5f5032008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&user=Jason+Vega&userId=a9932c231079&source=-----5dc5f5032008---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa9932c231079&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&user=Jason+Vega&userId=a9932c231079&source=post_page-a9932c231079----5dc5f5032008---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------) ·6 分钟阅读·2023 年 9 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5dc5f5032008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&user=Jason+Vega&userId=a9932c231079&source=-----5dc5f5032008---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5dc5f5032008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&source=-----5dc5f5032008---------------------bookmark_footer-----------)![](../Images/0e58bb7374f65a47beb941d924f19ba1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5dc5f5032008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&source=-----5dc5f5032008---------------------bookmark_footer-----------)![](img/0e58bb7374f65a47beb941d924f19ba1.png)
 
 动量帮助 SGD 更有效地遍历复杂的损失景观。图片由 [Maxim Berg](https://unsplash.com/@maxberg?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -96,14 +96,14 @@
 
 # 参考文献
 
-1.  “SGD。” SGD — PyTorch 2.0 文档，pytorch.org/docs/stable/generated/torch.optim.SGD.html。访问日期：2023年9月2日。
+1.  “SGD。” SGD — PyTorch 2.0 文档，pytorch.org/docs/stable/generated/torch.optim.SGD.html。访问日期：2023 年 9 月 2 日。
 
-1.  Sutskever, Ilya等人。“[深度学习中初始化和动量的重要性](http://proceedings.mlr.press/v28/sutskever13.pdf)”。国际机器学习会议。PMLR，2013年。
+1.  Sutskever, Ilya 等人。“[深度学习中初始化和动量的重要性](http://proceedings.mlr.press/v28/sutskever13.pdf)”。国际机器学习会议。PMLR，2013 年。
 
-1.  Danihelka, Ivo. “[Nesterov的动量简明介绍](https://github.com/fidlej/optim/raw/master/dok/nesterov_simple.pdf)”。2012年8月25日。
+1.  Danihelka, Ivo. “[Nesterov 的动量简明介绍](https://github.com/fidlej/optim/raw/master/dok/nesterov_simple.pdf)”。2012 年 8 月 25 日。
 
-1.  Chintala, Soumith. “SGD中的Nesterov动量是错误的 · Issue #27 · torch/optim。” GitHub，2014年10月13日，[github.com/torch/optim/issues/27](https://github.com/torch/optim/issues/27)。
+1.  Chintala, Soumith. “SGD 中的 Nesterov 动量是错误的 · Issue #27 · torch/optim。” GitHub，2014 年 10 月 13 日，[github.com/torch/optim/issues/27](https://github.com/torch/optim/issues/27)。
 
-1.  Gross, Sam. “在文档中添加关于优化中使用的动量公式的说明 · Issue #1099 · pytorch/pytorch。” GitHub，2017年3月25日，[github.com/pytorch/pytorch/issues/1099#issuecomment-289190614](https://github.com/pytorch/pytorch/issues/1099#issuecomment-289190614)。
+1.  Gross, Sam. “在文档中添加关于优化中使用的动量公式的说明 · Issue #1099 · pytorch/pytorch。” GitHub，2017 年 3 月 25 日，[github.com/pytorch/pytorch/issues/1099#issuecomment-289190614](https://github.com/pytorch/pytorch/issues/1099#issuecomment-289190614)。
 
-1.  Zhao, Yilong. “修复Nesterov动量错误 · Issue #5920 · pytorch/pytorch。” GitHub，2018年3月21日，[https://github.com/pytorch/pytorch/pull/5920#issuecomment-375181908](https://github.com/pytorch/pytorch/pull/5920#issuecomment-375181908)。
+1.  Zhao, Yilong. “修复 Nesterov 动量错误 · Issue #5920 · pytorch/pytorch。” GitHub，2018 年 3 月 21 日，[`github.com/pytorch/pytorch/pull/5920#issuecomment-375181908`](https://github.com/pytorch/pytorch/pull/5920#issuecomment-375181908)。

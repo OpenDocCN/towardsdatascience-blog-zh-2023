@@ -1,18 +1,18 @@
 # ChatGPT 能解决背包问题吗？
 
-> 原文：[https://towardsdatascience.com/can-chatgpt-solve-knapsack-problems-1a9a388c4caf?source=collection_archive---------10-----------------------#2023-09-21](https://towardsdatascience.com/can-chatgpt-solve-knapsack-problems-1a9a388c4caf?source=collection_archive---------10-----------------------#2023-09-21)
+> 原文：[`towardsdatascience.com/can-chatgpt-solve-knapsack-problems-1a9a388c4caf?source=collection_archive---------10-----------------------#2023-09-21`](https://towardsdatascience.com/can-chatgpt-solve-knapsack-problems-1a9a388c4caf?source=collection_archive---------10-----------------------#2023-09-21)
 
 ## 用 ChatGPT 解决运筹学（OR）问题
 
-[](https://medium.com/@guanx92?source=post_page-----1a9a388c4caf--------------------------------)[![Guangrui Xie](../Images/def9aa637424a88d75a6a3bb103350bc.png)](https://medium.com/@guanx92?source=post_page-----1a9a388c4caf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a9a388c4caf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1a9a388c4caf--------------------------------) [Guangrui Xie](https://medium.com/@guanx92?source=post_page-----1a9a388c4caf--------------------------------)
+[](https://medium.com/@guanx92?source=post_page-----1a9a388c4caf--------------------------------)![Guangrui Xie](https://medium.com/@guanx92?source=post_page-----1a9a388c4caf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a9a388c4caf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a9a388c4caf--------------------------------) [Guangrui Xie](https://medium.com/@guanx92?source=post_page-----1a9a388c4caf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F495b92f0c66d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-solve-knapsack-problems-1a9a388c4caf&user=Guangrui+Xie&userId=495b92f0c66d&source=post_page-495b92f0c66d----1a9a388c4caf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a9a388c4caf--------------------------------) ·10分钟阅读·2023年9月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1a9a388c4caf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-solve-knapsack-problems-1a9a388c4caf&user=Guangrui+Xie&userId=495b92f0c66d&source=-----1a9a388c4caf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F495b92f0c66d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-solve-knapsack-problems-1a9a388c4caf&user=Guangrui+Xie&userId=495b92f0c66d&source=post_page-495b92f0c66d----1a9a388c4caf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a9a388c4caf--------------------------------) ·10 分钟阅读·2023 年 9 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1a9a388c4caf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-solve-knapsack-problems-1a9a388c4caf&user=Guangrui+Xie&userId=495b92f0c66d&source=-----1a9a388c4caf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a9a388c4caf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-solve-knapsack-problems-1a9a388c4caf&source=-----1a9a388c4caf---------------------bookmark_footer-----------)![](../Images/3272c86ba9ff1223c86d7d1d8650584d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a9a388c4caf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-solve-knapsack-problems-1a9a388c4caf&source=-----1a9a388c4caf---------------------bookmark_footer-----------)![](img/3272c86ba9ff1223c86d7d1d8650584d.png)
 
 图片由 [Jakob Owens](https://unsplash.com/@jakobowens1?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -60,7 +60,7 @@
 
 显然，我们注意到 ChatGPT 能够选择正确的方法来解决这个问题，但 ChatGPT 给出的最终解答与其推理过程不一致。具体来说，动态规划（DP）表显示 $80（右下角单元格）是最佳目标值，但 ChatGPT 得出的结论是 $90 是最终答案。
 
-为了检查哪个是正确的解决方案，我编写了一段Python脚本来执行DP算法。
+为了检查哪个是正确的解决方案，我编写了一段 Python 脚本来执行 DP 算法。
 
 ```py
 import numpy as np
@@ -77,11 +77,11 @@ for i in range(1,5):
 dp[1:,1:]
 ```
 
-打印出的DP表如下。
+打印出的 DP 表如下。
 
-![](../Images/0622c030306b1f62b6374d6d6db77199.png)
+![](img/0622c030306b1f62b6374d6d6db77199.png)
 
-这确认了ChatGPT得出的结论是正确的，但ChatGPT给出的DP表是错误的。然后我继续让它纠正DP表。
+这确认了 ChatGPT 得出的结论是正确的，但 ChatGPT 给出的 DP 表是错误的。然后我继续让它纠正 DP 表。
 
 *我：我认为你的解决方案是正确的，但表格有些错误。*
 
@@ -91,23 +91,23 @@ dp[1:,1:]
 
 — — — — — — — — — — — — — — — — — — — — — — — — — — — — — —
 
-物品1 (5磅) 0 0 0 0 0 10 10 10 10 10 10
+物品 1 (5 磅) 0 0 0 0 0 10 10 10 10 10 10
 
-物品2 (4磅) 0 0 0 0 40 40 40 40 40 50 50
+物品 2 (4 磅) 0 0 0 0 40 40 40 40 40 50 50
 
-物品3 (6磅) 0 0 0 0 40 40 40 40 40 50 70
+物品 3 (6 磅) 0 0 0 0 40 40 40 40 40 50 70
 
-物品4 (3磅) 0 0 0 50 50 50 90 90 90 90 90*
+物品 4 (3 磅) 0 0 0 50 50 50 90 90 90 90 90*
 
-*现在，表格是正确的。右下角单元格中的值是$90，这表示在10磅的背包容量下可以获得的最大值。如前所述，最优解是选择物品2和物品4，这将给你总价值$90。*
+*现在，表格是正确的。右下角单元格中的值是$90，这表示在 10 磅的背包容量下可以获得的最大值。如前所述，最优解是选择物品 2 和物品 4，这将给你总价值$90。*
 
-有趣的是，ChatGPT能够对表格进行一些修正，使右下角单元格与$90对齐。然而，如果我们更仔细地查看表格，表格的最后一行仍然不正确。第4行第7列的单元格（对应于背包容量为6磅）应该是$50而不是$90。一个容量为6磅的背包无法选择物品2和物品4来达到$90，因为物品2和物品4的总重量为7磅，超出了背包的容量。
+有趣的是，ChatGPT 能够对表格进行一些修正，使右下角单元格与$90 对齐。然而，如果我们更仔细地查看表格，表格的最后一行仍然不正确。第 4 行第 7 列的单元格（对应于背包容量为 6 磅）应该是$50 而不是$90。一个容量为 6 磅的背包无法选择物品 2 和物品 4 来达到$90，因为物品 2 和物品 4 的总重量为 7 磅，超出了背包的容量。
 
 我随后要求它编写一些代码来解决这个问题。
 
-*我：你能写一段Python代码来解决这个问题吗？*
+*我：你能写一段 Python 代码来解决这个问题吗？*
 
-*ChatGPT：当然可以！你可以使用动态规划在Python中解决0/1背包问题。以下是解决你提供的特定实例的Python代码片段：*
+*ChatGPT：当然可以！你可以使用动态规划在 Python 中解决 0/1 背包问题。以下是解决你提供的特定实例的 Python 代码片段：*
 
 ```py
 def knapsack(values, weights, capacity):
@@ -148,11 +148,11 @@ for i in selected_items:
     print(f"Item {i + 1} (Value: ${values[i]}, Weight: {weights[i]} lbs)")
 ```
 
-*当你运行这段代码时，它将输出最大值和应放入背包的选定物品。在你的特定情况下，它会正确选择物品2和物品4，这些物品的总价值为$90，总重量为7磅，在背包容量为10磅的范围内。*
+*当你运行这段代码时，它将输出最大值和应放入背包的选定物品。在你的特定情况下，它会正确选择物品 2 和物品 4，这些物品的总价值为$90，总重量为 7 磅，在背包容量为 10 磅的范围内。*
 
-这段代码清晰正确地打印出了最优解。由这段代码计算出的DP表也正确。
+这段代码清晰正确地打印出了最优解。由这段代码计算出的 DP 表也正确。
 
-然后我进一步测试了一个更大规模的实例，一个背包容量为500磅且有10个物品可供选择的背包问题。每个物品的价值和重量都是使用以下代码随机生成的。
+然后我进一步测试了一个更大规模的实例，一个背包容量为 500 磅且有 10 个物品可供选择的背包问题。每个物品的价值和重量都是使用以下代码随机生成的。
 
 ```py
 import numpy as np
@@ -172,7 +172,7 @@ for i in range(1,101):
 dp[1:,1:]
 ```
 
-我复制并粘贴了生成的值和重量，并要求ChatGPT解决它。
+我复制并粘贴了生成的值和重量，并要求 ChatGPT 解决它。
 
 *我：考虑一个背包问题，其中背包的容量为 500 磅。我有 100 个物品可供选择，其值由列表 [156, 59, 61, 129, 64, 158, 87, 77, 157, 144, 156, 127, 74, 157, 91, 124, 128, 95, 118, 127, 111, 67, 108, 139, 79, 95, 86, 155, 120, 112, 76, 116, 79, 100, 80, 120, 117, 93, 111, 67, 55, 113, 105, 119, 171, 128, 72, 133, 60, 86, 97, 151, 77, 75, 97, 80, 133, 67, 65, 86, 85, 157, 128, 102, 63, 125, 69, 53, 135, 109, 127, 109, 125, 80, 68, 120, 75, 79, 86, 100, 89, 58, 80, 33, 118, 51, 66, 101, 77, 146, 61, 108, 98, 64, 115, 94, 123, 124, 164, 140] 和重量由列表 [15, 11, 12, 16, 15, 7, 12, 9, 9, 11, 10, 14, 12, 10, 11, 11, 14, 9, 10, 7, 2, 11, 12, 7, 16, 5, 10, 9, 14, 14, 10, 11, 7, 4, 8, 10, 13, 13, 8, 9, 6, 5, 4, 15, 8, 8, 6, 12, 5, 9, 7, 11, 8, 6, 9, 11, 10, 10, 8, 8, 7, 8, 7, 4, 10, 8, 5, 11, 7, 10, 12, 10, 13, 6, 11, 7, 7, 8, 9, 10, 6, 12, 11, 5, 14, 15, 13, 9, 6, 13, 8, 13, 10, 12, 11, 12, 10, 15, 10, 11] 分别给出。你能为我解决这个问题吗？*
 

@@ -1,16 +1,16 @@
 # 《温和介绍：通过 LangChain 链接 LLMs、代理和工具》
 
-> 原文：[https://towardsdatascience.com/a-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81?source=collection_archive---------0-----------------------#2023-04-21](https://towardsdatascience.com/a-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81?source=collection_archive---------0-----------------------#2023-04-21)
+> 原文：[`towardsdatascience.com/a-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81?source=collection_archive---------0-----------------------#2023-04-21`](https://towardsdatascience.com/a-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81?source=collection_archive---------0-----------------------#2023-04-21)
 
 ## *#初学者的 LLM*
 
 ## 理解代理、工具和提示的基础知识以及一些学习经验
 
-[](https://varshitasher.medium.com/?source=post_page-----16cd385fca81--------------------------------)[![Varshita Sher 博士](../Images/a3f2e9bf1dc1d8cbe018e54f9341f608.png)](https://varshitasher.medium.com/?source=post_page-----16cd385fca81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16cd385fca81--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----16cd385fca81--------------------------------) [Varshita Sher 博士](https://varshitasher.medium.com/?source=post_page-----16cd385fca81--------------------------------)
+[](https://varshitasher.medium.com/?source=post_page-----16cd385fca81--------------------------------)![Varshita Sher 博士](https://varshitasher.medium.com/?source=post_page-----16cd385fca81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16cd385fca81--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----16cd385fca81--------------------------------) [Varshita Sher 博士](https://varshitasher.medium.com/?source=post_page-----16cd385fca81--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8ca36def59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81&user=Dr.+Varshita+Sher&userId=f8ca36def59&source=post_page-f8ca36def59----16cd385fca81---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16cd385fca81--------------------------------) ·20分钟阅读·2023年4月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F16cd385fca81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81&user=Dr.+Varshita+Sher&userId=f8ca36def59&source=-----16cd385fca81---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8ca36def59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81&user=Dr.+Varshita+Sher&userId=f8ca36def59&source=post_page-f8ca36def59----16cd385fca81---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16cd385fca81--------------------------------) ·20 分钟阅读·2023 年 4 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F16cd385fca81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-intro-to-chaining-llms-agents-and-utils-via-langchain-16cd385fca81&user=Dr.+Varshita+Sher&userId=f8ca36def59&source=-----16cd385fca81---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 > 受众：对于那些被庞大（但卓越）库感到不知所措的人…
 
-![](../Images/4c6806a457e762ae481cc1f29a02d4bd.png)
+![](img/4c6806a457e762ae481cc1f29a02d4bd.png)
 
 作者使用[DALL.E 2](https://openai.com/product/dall-e-2)生成的图像
 
@@ -26,34 +26,34 @@
 
 如果我说我掌握了整个 LangChain 库，那我就是在撒谎——实际上，我远远没有做到。但是，围绕它的热议足以让我摆脱写作 hiatus，去尝试一下 🚀。
 
-最初的动机是看看LangChain在实践中添加了什么（在实际水平上），这使它不同于上个月我用`openai`包中的`ChatCompletion.create()`函数构建的聊天机器人。在这样做的过程中，我意识到需要先理解LangChain的基础构建块，然后再转向更复杂的部分。
+最初的动机是看看 LangChain 在实践中添加了什么（在实际水平上），这使它不同于上个月我用`openai`包中的`ChatCompletion.create()`函数构建的聊天机器人。在这样做的过程中，我意识到需要先理解 LangChain 的基础构建块，然后再转向更复杂的部分。
 
 这就是本文所做的事情。请注意，随着我对这个库的着迷和持续探索，将会有更多的部分出现。
 
-让我们从理解LangChain的基本构建块 —— 即链条开始。如果你想跟进，请查看这个[GitHub仓库](https://github.com/V-Sher/LangChain-Tutorial)。
+让我们从理解 LangChain 的基本构建块 —— 即链条开始。如果你想跟进，请查看这个[GitHub 仓库](https://github.com/V-Sher/LangChain-Tutorial)。
 
-## LangChain中的链条是什么？
+## LangChain 中的链条是什么？
 
-链条是通过以逻辑方式连接一个或多个大型语言模型（LLMs）而得到的。 （虽然链条可以由除LLMs以外的实体构建，但现在让我们暂时使用这个定义以简化问题）。
+链条是通过以逻辑方式连接一个或多个大型语言模型（LLMs）而得到的。 （虽然链条可以由除 LLMs 以外的实体构建，但现在让我们暂时使用这个定义以简化问题）。
 
-OpenAI是一种LLM（提供者），你可以使用它，但还有其他像Cohere、Bloom、Huggingface等。
+OpenAI 是一种 LLM（提供者），你可以使用它，但还有其他像 Cohere、Bloom、Huggingface 等。
 
-*注意：几乎所有这些LLM提供者都需要您申请API密钥才能使用它们。所以请确保在继续阅读本博客的其余部分之前，您已经这样做了。例如：*
+*注意：几乎所有这些 LLM 提供者都需要您申请 API 密钥才能使用它们。所以请确保在继续阅读本博客的其余部分之前，您已经这样做了。例如：*
 
 ```py
 import os
 os.environ["OPENAI_API_KEY"] = "..."
 ```
 
-*P.S. 我将在本教程中使用OpenAI，因为我有一个一个月后过期的积分密钥，但请随意替换为任何其他LLM。无论如何，这里涵盖的概念都将是有用的。*
+*P.S. 我将在本教程中使用 OpenAI，因为我有一个一个月后过期的积分密钥，但请随意替换为任何其他 LLM。无论如何，这里涵盖的概念都将是有用的。*
 
 链条可以简单（例如通用）或专业化（例如实用）。
 
-1.  通用 — 单个LLM是最简单的链条。它接受一个输入提示和LLM的名称，然后使用LLM进行文本生成（即输出提示的结果）。这里是一个例子：
+1.  通用 — 单个 LLM 是最简单的链条。它接受一个输入提示和 LLM 的名称，然后使用 LLM 进行文本生成（即输出提示的结果）。这里是一个例子：
 
 ## 让我们构建一个基本的链条 —— 创建一个提示并获取预测结果
 
-在Lanchain中，使用`PromptTemplate`创建提示（Prompt）有点花哨，但这可能是因为根据用例的不同，可以有多种不同的方式来创建提示（我们将涵盖`AIMessagePromptTemplate`等等）。
+在 Lanchain 中，使用`PromptTemplate`创建提示（Prompt）有点花哨，但这可能是因为根据用例的不同，可以有多种不同的方式来创建提示（我们将涵盖`AIMessagePromptTemplate`等等）。
 
 `HumanMessagePromptTemplate`等等将在下一篇博客文章中涵盖。现在先看一个简单的例子：
 
@@ -73,7 +73,7 @@ print(prompt.format(product="podcast player"))
 
 *注意：如果您需要多个* `*input_variables*`，例如：* `*input_variables=["product", "audience"]*` *用于模板，例如* `*“一个公司的好名字，为{product}制作{audience}”*`，则需要执行* `print(prompt.format(product="podcast player", audience="children”)` *以获取更新后的提示。
 
-一旦您建立了一个提示，我们就可以调用所需的LLM。为此，我们创建一个`LLMChain`实例（在我们的例子中，我们使用`OpenAI`的大型语言模型`text-davinci-003`）。要获取预测结果（即AI生成的文本），我们使用`run`函数和`product`的名称。
+一旦您建立了一个提示，我们就可以调用所需的 LLM。为此，我们创建一个`LLMChain`实例（在我们的例子中，我们使用`OpenAI`的大型语言模型`text-davinci-003`）。要获取预测结果（即 AI 生成的文本），我们使用`run`函数和`product`的名称。
 
 ```py
 from langchain.llms import OpenAI
@@ -140,7 +140,7 @@ palchain.run("If my age is half of my dad's age and he is going to be 60 next ye
 # '29.5'
 ```
 
-*注意1：如果你不需要看到中间步骤，`*verbose*` *可以设置为* `*False*`*。*
+*注意 1：如果你不需要看到中间步骤，`*verbose*` *可以设置为* `*False*`*。*
 
 现在，有些人可能会想 — *但提示呢？我们肯定没有像我们建立的通用* `*llmchain*` *那样传递它。* 实际上，当使用`.from_math_prompt()`时，它会自动加载。您可以使用`palchain.prompt.template`检查默认提示，或者直接查看提示文件[这里](https://github.com/hwchase17/langchain/blob/master/langchain/chains/pal/math_prompt.py)。
 
@@ -150,27 +150,27 @@ print(palchain.prompt.template)
 # 'Q: Olivia has $23\. She bought five bagels for $3 each. How much money does she have left?\n\n# solution in Python:\n\n\ndef solution():\n    """Olivia has $23\. She bought five bagels for $3 each. How much money does she have left?"""\n    money_initial = 23\n    bagels = 5\n    bagel_cost = 3\n    money_spent = bagels * bagel_cost\n    money_left = money_initial - money_spent\n    result = money_left\n    return result\n\n\n\n\n\nQ: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n\n# solution in Python:\n\n\ndef solution():\n    """Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?"""\n    golf_balls_initial = 58\n    golf_balls_lost_tuesday = 23\n    golf_balls_lost_wednesday = 2\n    golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n    result = golf_balls_left\n    return result\n\n\n\n\n\nQ: There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?\n\n# solution in Python:\n\n\ndef solution():\n    """There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?"""\n    computers_initial = 9\n    computers_per_day = 5\n    num_days = 4  # 4 days between monday and thursday\n    computers_added = computers_per_day * num_days\n    computers_total = computers_initial + computers_added\n    result = computers_total\n    return result\n\n\n\n\n\nQ: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?\n\n# solution in Python:\n\n\ndef solution():\n    """Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?"""\n    toys_initial = 5\n    mom_toys = 2\n    dad_toys = 2\n    total_received = mom_toys + dad_toys\n    total_toys = toys_initial + total_received\n    result = total_toys\n    return result\n\n\n\n\n\nQ: Jason had 20 lollipops. He gave Denny some lollipops. Now Jason has 12 lollipops. How many lollipops did Jason give to Denny?\n\n# solution in Python:\n\n\ndef solution():\n    """Jason had 20 lollipops. He gave Denny some lollipops. Now Jason has 12 lollipops. How many lollipops did Jason give to Denny?"""\n    jason_lollipops_initial = 20\n    jason_lollipops_after = 12\n    denny_lollipops = jason_lollipops_initial - jason_lollipops_after\n    result = denny_lollipops\n    return result\n\n\n\n\n\nQ: Leah had 32 chocolates and her sister had 42\. If they ate 35, how many pieces do they have left in total?\n\n# solution in Python:\n\n\ndef solution():\n    """Leah had 32 chocolates and her sister had 42\. If they ate 35, how many pieces do they have left in total?"""\n    leah_chocolates = 32\n    sister_chocolates = 42\n    total_chocolates = leah_chocolates + sister_chocolates\n    chocolates_eaten = 35\n    chocolates_left = total_chocolates - chocolates_eaten\n    result = chocolates_left\n    return result\n\n\n\n\n\nQ: If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?\n\n# solution in Python:\n\n\ndef solution():\n    """If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?"""\n    cars_initial = 3\n    cars_arrived = 2\n    total_cars = cars_initial + cars_arrived\n    result = total_cars\n    return result\n\n\n\n\n\nQ: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?\n\n# solution in Python:\n\n\ndef solution():\n    """There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?"""\n    trees_initial = 15\n    trees_after = 21\n    trees_added = trees_after - trees_initial\n    result = trees_added\n    return result\n\n\n\n\n\nQ: {question}\n\n# solution in Python:\n\n\n'
 ```
 
-*注意：大多数实用链条的提示作为库的一部分是预定义的（在这里查看* [*这里*](https://github.com/hwchase17/langchain/tree/master/langchain/chains)*）。它们有时非常详细（即：有很多令牌），因此在成本和LLM响应质量之间肯定存在权衡。*
+*注意：大多数实用链条的提示作为库的一部分是预定义的（在这里查看* [*这里*](https://github.com/hwchase17/langchain/tree/master/langchain/chains)*）。它们有时非常详细（即：有很多令牌），因此在成本和 LLM 响应质量之间肯定存在权衡。*
 
-## 是否存在不需要LLM和提示的链条？
+## 是否存在不需要 LLM 和提示的链条？
 
-*尽管PalChain需要一个LLM（以及相应的提示）来解析用户用自然语言编写的问题，但在LangChain中有一些链条不需要。这些主要是预处理提示的转换链条，例如删除额外的空格，然后将其输入LLM。你可以在另一个例子中看到* [*这里*](https://python.langchain.com/en/latest/modules/chains/generic/transformation.html)*。*
+*尽管 PalChain 需要一个 LLM（以及相应的提示）来解析用户用自然语言编写的问题，但在 LangChain 中有一些链条不需要。这些主要是预处理提示的转换链条，例如删除额外的空格，然后将其输入 LLM。你可以在另一个例子中看到* [*这里*](https://python.langchain.com/en/latest/modules/chains/generic/transformation.html)*。*
 
 ## 我们能进入精彩部分并开始创建链条吗？
 
-当然可以！我们已经有了开始逻辑地将LLM连接在一起的基本构建块。为此，我们将使用`SimpleSequentialChain`。
+当然可以！我们已经有了开始逻辑地将 LLM 连接在一起的基本构建块。为此，我们将使用`SimpleSequentialChain`。
 
-文档中有一些很好的例子，例如，你可以在[这里](https://python.langchain.com/en/latest/modules/chains/generic/transformation.html)看到如何组合两个链条，其中链条#1用于清理提示（删除额外空格，缩短提示等），而链条#2用于使用这个干净的提示调用LLM。这里还有[另一个例子](https://js.langchain.com/docs/modules/chains/foundational/sequential_chains/#simplesequentialchain)，其中链条#1用于为一部戏剧生成简介，而链条#2则用于基于此简介撰写评论。
+文档中有一些很好的例子，例如，你可以在[这里](https://python.langchain.com/en/latest/modules/chains/generic/transformation.html)看到如何组合两个链条，其中链条#1 用于清理提示（删除额外空格，缩短提示等），而链条#2 用于使用这个干净的提示调用 LLM。这里还有[另一个例子](https://js.langchain.com/docs/modules/chains/foundational/sequential_chains/#simplesequentialchain)，其中链条#1 用于为一部戏剧生成简介，而链条#2 则用于基于此简介撰写评论。
 
-虽然这些都是很好的例子，但我想专注于其他事情。如果你还记得，我提到链条可以由除了LLM以外的实体组成。更具体地说，我对将代理和LLM组合在一起很感兴趣。*但首先，什么是代理？*
+虽然这些都是很好的例子，但我想专注于其他事情。如果你还记得，我提到链条可以由除了 LLM 以外的实体组成。更具体地说，我对将代理和 LLM 组合在一起很感兴趣。*但首先，什么是代理？*
 
-## 使用代理动态调用LLM
+## 使用代理动态调用 LLM
 
 对于解释代理的作用与其是什么，将会更加容易。
 
-假设我们想知道明天的天气预报。如果我们使用简单的ChatGPT API并给它一个提示`Show me the weather for tomorrow in London`，它不会知道答案，因为它无法访问实时数据。
+假设我们想知道明天的天气预报。如果我们使用简单的 ChatGPT API 并给它一个提示`Show me the weather for tomorrow in London`，它不会知道答案，因为它无法访问实时数据。
 
-![](../Images/a379c0d1313089f343dc25f6510660a3.png)
+![](img/a379c0d1313089f343dc25f6510660a3.png)
 
 如果我们能有一个安排，利用 LLM 理解我们的查询（即提示），然后代表我们调用天气 API 来获取所需数据，那不是很有用吗？这正是代理所做的（当然还有其他事情）。
 
@@ -222,7 +222,7 @@ agent.run("If my age is half of my dad's age and he is going to be 60 next year,
 # 'My current age is 29.5 years old.'
 ```
 
-*注意1：在每一步，你会注意到代理做了三件事之一——它要么有一个* `*observation*`*，要么有一个* `*thought*`*，要么采取一个* `*action*`*。这主要是由于 ReAct 框架和代理使用的相关提示：*
+*注意 1：在每一步，你会注意到代理做了三件事之一——它要么有一个* `*observation*`*，要么有一个* `*thought*`*，要么采取一个* `*action*`*。这主要是由于 ReAct 框架和代理使用的相关提示：*
 
 ```py
 print(agent.agent.llm_chain.prompt.template)
@@ -245,7 +245,7 @@ print(agent.agent.llm_chain.prompt.template)
 # Thought:{agent_scratchpad}
 ```
 
-*注意2：你可能会想，为什么要让代理做 LLM 可以做的事情。一些应用不仅需要一个预定的 LLM/其他工具调用链，可能还需要一个取决于用户输入的未知链 [*[*来源*](https://python.langchain.com/en/latest/modules/agents.html#agents)*]。在这些类型的链中，有一个“代理”，可以访问一套工具。*
+*注意 2：你可能会想，为什么要让代理做 LLM 可以做的事情。一些应用不仅需要一个预定的 LLM/其他工具调用链，可能还需要一个取决于用户输入的未知链 [*[*来源*](https://python.langchain.com/en/latest/modules/agents.html#agents)*]。在这些类型的链中，有一个“代理”，可以访问一套工具。*
 
 例如，* [*这是*](https://python.langchain.com/en/latest/modules/agents/agent_executors/examples/agent_vectorstore.html#create-the-agent) *一个代理的示例，它可以根据问题是指文档 A 还是文档 B，获取正确的文档（从向量存储中）。*
 
@@ -286,9 +286,9 @@ agent.run("Show me episodes for money saving tips.")
 # 'The Money Nerds, The Rachel Cruze Show, and The Martin Lewis Podcast are great podcast options for money saving tips.'
 ```
 
-*注意1: 有一个* [*已知错误*](https://github.com/hwchase17/langchain/pull/1833) *，在使用这个 API 时你可能会看到，`*openai.error.InvalidRequestError: This model’s maximum context length is 4097 tokens, however you requested XXX tokens (XX in your prompt; XX for the completion). Please reduce your prompt; or completion length.*` *当 API 返回的响应可能过大时会发生这种情况。为了解决这个问题，文档建议返回更少的搜索结果，例如，通过将问题更新为* `"Show me episodes for money saving tips, return only 1 result"`。
+*注意 1: 有一个* [*已知错误*](https://github.com/hwchase17/langchain/pull/1833) *，在使用这个 API 时你可能会看到，`*openai.error.InvalidRequestError: This model’s maximum context length is 4097 tokens, however you requested XXX tokens (XX in your prompt; XX for the completion). Please reduce your prompt; or completion length.*` *当 API 返回的响应可能过大时会发生这种情况。为了解决这个问题，文档建议返回更少的搜索结果，例如，通过将问题更新为* `"Show me episodes for money saving tips, return only 1 result"`。
 
-*注意2: 在使用这个工具时，我注意到了一些不一致的地方。响应第一次生成时并不总是完整的，例如，以下是两次连续运行的输入和响应：*
+*注意 2: 在使用这个工具时，我注意到了一些不一致的地方。响应第一次生成时并不总是完整的，例如，以下是两次连续运行的输入和响应：*
 
 *输入: “提高法语水平的播客”*
 
@@ -296,9 +296,9 @@ agent.run("Show me episodes for money saving tips.")
 
 *回应 2: “学习法语的最佳播客是‘FrenchPod101’。”*
 
-在底层，这个工具首先使用 LLMChain 来[构建 API URL](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/base.py#L115)，根据我们的输入指令（类似于 `[https://listen-api.listennotes.com/api/v2/search?q=french&type=podcast&page_size=3](https://listen-api.listennotes.com/api/v2/search?q=french&type=podcast&page_size=3%29)`）和[进行 API 调用](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/base.py#L116)。接收到响应后，它使用另一个 LLMChain 来[总结响应](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/base.py#L117)，以获得对我们原始问题的回答。你可以在[这里](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/prompt.py)查看两个 LLMchains 的提示，它们详细描述了这个过程。
+在底层，这个工具首先使用 LLMChain 来[构建 API URL](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/base.py#L115)，根据我们的输入指令（类似于 `[`listen-api.listennotes.com/api/v2/search?q=french&type=podcast&page_size=3`](https://listen-api.listennotes.com/api/v2/search?q=french&type=podcast&page_size=3%29)`）和[进行 API 调用](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/base.py#L116)。接收到响应后，它使用另一个 LLMChain 来[总结响应](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/base.py#L117)，以获得对我们原始问题的回答。你可以在[这里](https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/prompt.py)查看两个 LLMchains 的提示，它们详细描述了这个过程。
 
-我倾向于猜测上述不一致的结果是由于总结步骤造成的，因为我已经通过Postman单独调试并测试了由LLMChain#1创建的API URL，并且得到了正确的响应。为了进一步确认我的疑虑，我还对总结链进行了压力测试，作为一个独立链使用了一个空的API URL，希望它能抛出一个错误，但得到了*“发现了‘投资’播客，总共有3个结果。”* 🤷‍♀ 我很好奇其他人是否在使用这个工具时比我更幸运！
+我倾向于猜测上述不一致的结果是由于总结步骤造成的，因为我已经通过 Postman 单独调试并测试了由 LLMChain#1 创建的 API URL，并且得到了正确的响应。为了进一步确认我的疑虑，我还对总结链进行了压力测试，作为一个独立链使用了一个空的 API URL，希望它能抛出一个错误，但得到了*“发现了‘投资’播客，总共有 3 个结果。”* 🤷‍♀ 我很好奇其他人是否在使用这个工具时比我更幸运！
 
 ## 用例 2：结合链创建一个适合年龄的礼物生成器
 
@@ -306,7 +306,7 @@ agent.run("Show me episodes for money saving tips.")
 
 +   链 #1 — 我们刚创建的`agent`，能够解决数学中的[年龄问题](https://www.cliffsnotes.com/study-guides/algebra/algebra-i/word-problems/age-problems)。
 
-+   链 #2 — 一个LLM，它接受一个人的年龄并建议一个适合他们的礼物。
++   链 #2 — 一个 LLM，它接受一个人的年龄并建议一个适合他们的礼物。
 
 ```py
 # Chain1 - solve math problem, get the age
@@ -335,7 +335,7 @@ overall_chain = SimpleSequentialChain(
 
 需要注意几点：
 
-+   我们不需要为`SimpleSequentialChain`明确传递`input_variables`和`output_variables`，因为其基本假设是链1的输出作为链2的输入。
++   我们不需要为`SimpleSequentialChain`明确传递`input_variables`和`output_variables`，因为其基本假设是链 1 的输出作为链 2 的输入。
 
 最后，我们可以用之前的数学问题来运行它：
 
@@ -498,9 +498,9 @@ For someone of your age, a good gift would be something that is both practical a
 
 直到下次见 ✨
 
-*我喜欢撰写逐步初学者指南、如何教程、解码ML/AI术语等。如果您希望全面访问我的所有文章（以及Medium上的其他文章），可以使用* [***我的链接***](https://varshitasher.medium.com/membership)*在这里注册*。
+*我喜欢撰写逐步初学者指南、如何教程、解码 ML/AI 术语等。如果您希望全面访问我的所有文章（以及 Medium 上的其他文章），可以使用* [***我的链接***](https://varshitasher.medium.com/membership)*在这里注册*。
 
-[](/step-by-step-guide-to-explaining-your-ml-project-during-a-data-science-interview-81dfaaa408bf?source=post_page-----16cd385fca81--------------------------------) [## 逐步指南：在数据科学面试中解释您的ML项目。
+[](/step-by-step-guide-to-explaining-your-ml-project-during-a-data-science-interview-81dfaaa408bf?source=post_page-----16cd385fca81--------------------------------) [## 逐步指南：在数据科学面试中解释您的 ML 项目。
 
 ### 并附带一个示例脚本，让您可以悄悄展示您的技术技能！
 
@@ -512,7 +512,7 @@ For someone of your age, a good gift would be something that is both practical a
 
 ### 学习如何使用 Weights & Biases 自动化实验跟踪、单元测试、工件创建以及更多内容…
 
-[数据科学家实用的 GitHub Actions 介绍](https://towardsdatascience.com/hands-on-introduction-to-github-actions-for-data-scientists-f422631c9ea7?source=post_page-----16cd385fca81--------------------------------) [](/deploying-an-end-to-end-deep-learning-project-with-few-clicks-part-2-89009cff6f16?source=post_page-----16cd385fca81--------------------------------) [## 使用少量点击部署端到端深度学习项目：第2部分
+[数据科学家实用的 GitHub Actions 介绍](https://towardsdatascience.com/hands-on-introduction-to-github-actions-for-data-scientists-f422631c9ea7?source=post_page-----16cd385fca81--------------------------------) [](/deploying-an-end-to-end-deep-learning-project-with-few-clicks-part-2-89009cff6f16?source=post_page-----16cd385fca81--------------------------------) [## 使用少量点击部署端到端深度学习项目：第二部分
 
 ### 将模型从 Jupyter notebook 转移到 Flask 应用程序，使用 Postman 测试 API 端点，并进行 Heroku 部署
 

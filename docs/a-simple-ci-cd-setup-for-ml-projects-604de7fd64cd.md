@@ -1,18 +1,18 @@
 # 机器学习项目的简单 CI/CD 设置
 
-> 原文：[https://towardsdatascience.com/a-simple-ci-cd-setup-for-ml-projects-604de7fd64cd?source=collection_archive---------1-----------------------#2023-12-20](https://towardsdatascience.com/a-simple-ci-cd-setup-for-ml-projects-604de7fd64cd?source=collection_archive---------1-----------------------#2023-12-20)
+> 原文：[`towardsdatascience.com/a-simple-ci-cd-setup-for-ml-projects-604de7fd64cd?source=collection_archive---------1-----------------------#2023-12-20`](https://towardsdatascience.com/a-simple-ci-cd-setup-for-ml-projects-604de7fd64cd?source=collection_archive---------1-----------------------#2023-12-20)
 
-![](../Images/e7789e958d448c41d90f7ac7c763a80e.png)
+![](img/e7789e958d448c41d90f7ac7c763a80e.png)
 
 图片由 [vackground.com](https://unsplash.com/@vackground?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 应用最佳实践，学习如何使用 GitHub Actions 构建强健的代码
 
-[](https://medium.com/@marcellopoliti?source=post_page-----604de7fd64cd--------------------------------)[![Marcello Politi](../Images/484e44571bd2e75acfe5fef3146ab3c2.png)](https://medium.com/@marcellopoliti?source=post_page-----604de7fd64cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----604de7fd64cd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----604de7fd64cd--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----604de7fd64cd--------------------------------)
+[](https://medium.com/@marcellopoliti?source=post_page-----604de7fd64cd--------------------------------)![Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----604de7fd64cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----604de7fd64cd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----604de7fd64cd--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----604de7fd64cd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-ci-cd-setup-for-ml-projects-604de7fd64cd&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----604de7fd64cd---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----604de7fd64cd--------------------------------) ·7 min 阅读·2023年12月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F604de7fd64cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-ci-cd-setup-for-ml-projects-604de7fd64cd&user=Marcello+Politi&userId=7390355d40fe&source=-----604de7fd64cd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-ci-cd-setup-for-ml-projects-604de7fd64cd&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----604de7fd64cd---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----604de7fd64cd--------------------------------) ·7 min 阅读·2023 年 12 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F604de7fd64cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-ci-cd-setup-for-ml-projects-604de7fd64cd&user=Marcello+Politi&userId=7390355d40fe&source=-----604de7fd64cd---------------------clap_footer-----------)
 
 --
 

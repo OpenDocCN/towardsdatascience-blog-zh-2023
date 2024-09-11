@@ -1,26 +1,26 @@
-# 在Mac上优化VS Code以适应dbt
+# 在 Mac 上优化 VS Code 以适应 dbt
 
-> 原文：[https://towardsdatascience.com/optimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5?source=collection_archive---------7-----------------------#2023-04-05](https://towardsdatascience.com/optimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5?source=collection_archive---------7-----------------------#2023-04-05)
+> 原文：[`towardsdatascience.com/optimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5?source=collection_archive---------7-----------------------#2023-04-05`](https://towardsdatascience.com/optimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5?source=collection_archive---------7-----------------------#2023-04-05)
 
-## 在Visual Studio Code中最大化你的dbt生产力指南
+## 在 Visual Studio Code 中最大化你的 dbt 生产力指南
 
-[](https://medium.com/@sebasn?source=post_page-----a56dd27ba8d5--------------------------------)[![Bas Nederkoorn](../Images/457bf4c58451ad98d1a389ed5c9ea5a3.png)](https://medium.com/@sebasn?source=post_page-----a56dd27ba8d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a56dd27ba8d5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a56dd27ba8d5--------------------------------) [Bas Nederkoorn](https://medium.com/@sebasn?source=post_page-----a56dd27ba8d5--------------------------------)
+[](https://medium.com/@sebasn?source=post_page-----a56dd27ba8d5--------------------------------)![Bas Nederkoorn](https://medium.com/@sebasn?source=post_page-----a56dd27ba8d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a56dd27ba8d5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a56dd27ba8d5--------------------------------) [Bas Nederkoorn](https://medium.com/@sebasn?source=post_page-----a56dd27ba8d5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F37a0396260cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5&user=Bas+Nederkoorn&userId=37a0396260cd&source=post_page-37a0396260cd----a56dd27ba8d5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a56dd27ba8d5--------------------------------) ·9分钟阅读·2023年4月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa56dd27ba8d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5&user=Bas+Nederkoorn&userId=37a0396260cd&source=-----a56dd27ba8d5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F37a0396260cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5&user=Bas+Nederkoorn&userId=37a0396260cd&source=post_page-37a0396260cd----a56dd27ba8d5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a56dd27ba8d5--------------------------------) ·9 分钟阅读·2023 年 4 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa56dd27ba8d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5&user=Bas+Nederkoorn&userId=37a0396260cd&source=-----a56dd27ba8d5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa56dd27ba8d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5&source=-----a56dd27ba8d5---------------------bookmark_footer-----------)![](../Images/3a045c30c5c89f8576cbca8a2d7a003f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa56dd27ba8d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vs-code-for-dbt-on-mac-a56dd27ba8d5&source=-----a56dd27ba8d5---------------------bookmark_footer-----------)![](img/3a045c30c5c89f8576cbca8a2d7a003f.png)
 
 （图片来自[Unsplash](https://unsplash.com/photos/PqRvLsjD_TU)）
 
-如果你在使VS Code和dbt良好协同工作方面遇到困难，你并不孤单。将它们集成可能具有挑战性，但它将提高你的建模效率。这就是我分享对我有效的设置的原因。
+如果你在使 VS Code 和 dbt 良好协同工作方面遇到困难，你并不孤单。将它们集成可能具有挑战性，但它将提高你的建模效率。这就是我分享对我有效的设置的原因。
 
-在本文中，我将涵盖诸如升级终端以便快速回忆命令、利用可以更快构建模型的扩展，以及设置格式化和检查以清理代码和发现SQL中的错误等主题。
+在本文中，我将涵盖诸如升级终端以便快速回忆命令、利用可以更快构建模型的扩展，以及设置格式化和检查以清理代码和发现 SQL 中的错误等主题。
 
-如果你实施本文中的提示，你将减少在输入代码、运行模型、清理代码和寻找错误上浪费的时间。这些节省下来的时间你可以用来创建增加价值的数据模型。虽然我在写这篇文章时以Mac用户为目标，但许多这些提示对Windows用户也同样适用。
+如果你实施本文中的提示，你将减少在输入代码、运行模型、清理代码和寻找错误上浪费的时间。这些节省下来的时间你可以用来创建增加价值的数据模型。虽然我在写这篇文章时以 Mac 用户为目标，但许多这些提示对 Windows 用户也同样适用。
 
 **开始所需：**
 
@@ -28,35 +28,35 @@
 
 +   `homebrew`包管理器。安装说明 [在这里](https://docs.brew.sh/Installation)
 
-+   Python 3.7或更高版本以及安装了`dbt`的虚拟环境。有关详细信息，请参阅[官方文档](https://docs.getdbt.com/docs/core/pip-install)。
++   Python 3.7 或更高版本以及安装了`dbt`的虚拟环境。有关详细信息，请参阅[官方文档](https://docs.getdbt.com/docs/core/pip-install)。
 
-+   一个dbt项目。本文不详细介绍如何设置dbt项目。如果你没有这方面的经验，我建议你首先完成官方的dbt [jaffle shop教程](https://docs.getdbt.com/docs/quickstarts/dbt-core/quickstart)。
++   一个 dbt 项目。本文不详细介绍如何设置 dbt 项目。如果你没有这方面的经验，我建议你首先完成官方的 dbt [jaffle shop 教程](https://docs.getdbt.com/docs/quickstarts/dbt-core/quickstart)。
 
 让我们深入了解吧！
 
 # 1\. 优化你的终端
 
-你可以改善你内部的VS Code终端，使其看起来和行为更像[iTerm](https://iterm2.com/)。安装[Oh-My-Zsh](https://ohmyz.sh/)和一些附加软件包可以解锁以下好处：
+你可以改善你内部的 VS Code 终端，使其看起来和行为更像[iTerm](https://iterm2.com/)。安装[Oh-My-Zsh](https://ohmyz.sh/)和一些附加软件包可以解锁以下好处：
 
 +   **自动补全**，在你想快速调用`dbt run -m {specific_model_you_ran_a_while_ago}`时非常有用
 
-+   **Git分支可视化**
++   **Git 分支可视化**
 
 +   **语法高亮**，例如检查你输入的命令是否存在于`$PATH`中
 
-如果你没有`zsh`（较新的Mac已预装），请运行：
+如果你没有`zsh`（较新的 Mac 已预装），请运行：
 
 ```py
 brew install zsh
 ```
 
-运行以下命令来安装Oh-My-Zsh：
+运行以下命令来安装 Oh-My-Zsh：
 
 ```py
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
-现在你可以选择一个主题。我最喜欢的是*Agnoster*，因为它具有良好的git分支可视化。选择主题可以在你家目录中的zsh配置文件中完成。通过运行以下命令打开这个文件：
+现在你可以选择一个主题。我最喜欢的是*Agnoster*，因为它具有良好的 git 分支可视化。选择主题可以在你家目录中的 zsh 配置文件中完成。通过运行以下命令打开这个文件：
 
 ```py
 code ~/.zshrc
@@ -66,27 +66,27 @@ code ~/.zshrc
 
 > ***注意*** *要刷新当前终端窗口的设置，你可以运行：* `*source ~/.zshrc*`
 
-Git分支可视化使用了一些特定的图标，你可以通过所谓的“Nerd Font”在终端中显示这些图标。我喜欢Dejavu Sans Mono Nerd Font，你可以使用`homebrew`安装它[[1]](#ce33)：
+Git 分支可视化使用了一些特定的图标，你可以通过所谓的“Nerd Font”在终端中显示这些图标。我喜欢 Dejavu Sans Mono Nerd Font，你可以使用`homebrew`安装它[[1]](#ce33)：
 
 ```py
 brew tap homebrew/cask-fonts && brew install --cask font-dejavu-sans-mono-nerd-font
 ```
 
-接下来，确保你的VS Code终端使用新字体。转到命令面板（**Cmd + Shift + P**）并通过输入*open settings*打开`settings.json`。在文件中添加以下行：
+接下来，确保你的 VS Code 终端使用新字体。转到命令面板（**Cmd + Shift + P**）并通过输入*open settings*打开`settings.json`。在文件中添加以下行：
 
 ```py
  "terminal.integrated.fontFamily": "DejaVuSansMono Nerd Font",
 ```
 
-> ***注意：*** *确保选择的是通用* 用户设置 *文件，而不是项目特定的* 工作区设置 *文件。稍后，当配置与dbt相关的设置时，我们将使用工作区设置。*
+> ***注意：*** *确保选择的是通用* 用户设置 *文件，而不是项目特定的* 工作区设置 *文件。稍后，当配置与 dbt 相关的设置时，我们将使用工作区设置。*
 
-你的VS Code终端现在应该看起来像这样：
+你的 VS Code 终端现在应该看起来像这样：
 
-![](../Images/0e03e7ef5b2ddfbd0c051f7db0851418.png)
+![](img/0e03e7ef5b2ddfbd0c051f7db0851418.png)
 
 （作者截图）
 
-最后的步骤是安装`zsh-autocompletion`和`zsh-syntax-highlighting`软件包[[2](#ce33)]，[[3](#ce33)]。通过运行以下命令来安装它们：
+最后的步骤是安装`zsh-autocompletion`和`zsh-syntax-highlighting`软件包[2]，[3]。通过运行以下命令来安装它们：
 
 ```py
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && \
@@ -124,7 +124,7 @@ marketplace.visualstudio.com](https://marketplace.visualstudio.com/items?itemNam
 
 ## SQL & Jinja 模板化
 
-![](../Images/3899c34e79d5558e2c228da19808d56d.png)
+![](img/3899c34e79d5558e2c228da19808d56d.png)
 
 SQL 模板化的概念（图片来源于作者）
 
@@ -172,7 +172,7 @@ marketplace.visualstudio.com](https://marketplace.visualstudio.com/items?itemNam
 
 ## **添加自定义片段**
 
-![](../Images/932beab829985311ada2c32022e94433.png)
+![](img/932beab829985311ada2c32022e94433.png)
 
 创建自定义代码片段（图片来源于作者）
 
@@ -180,11 +180,11 @@ marketplace.visualstudio.com](https://marketplace.visualstudio.com/items?itemNam
 
 你可以通过打开命令面板（**Cmd + Shift + P**）并导航到*配置用户片段*来添加代码片段。
 
-![](../Images/3fd306c9f53b82e4d620fb37b4e644b5.png)
+![](img/3fd306c9f53b82e4d620fb37b4e644b5.png)
 
 转到配置用户片段（截图由作者提供）
 
-![](../Images/d4a4bfcc150f662c14923e30ed9fa5ce.png)
+![](img/d4a4bfcc150f662c14923e30ed9fa5ce.png)
 
 打开 jinja-sql 片段文件（截图由作者提供）
 
@@ -205,7 +205,7 @@ marketplace.visualstudio.com](https://marketplace.visualstudio.com/items?itemNam
 
 为了格式化 Jinja-SQL，我使用 `sqlfmt`，这是一个专门为 dbt 逻辑设计的格式化工具，并与 dbt Power User 集成。`sqlfmt` 是一个*有主见的格式化工具*，你可以调整最大行长度，但在自定义格式化行为方面没有太多空间。这是好事，因为它减少了关于代码美学的讨论空间。这种简单性也对格式化的可靠性和速度产生了积极影响。
 
-安装 `sqlfmt` 的最简单方法（如 [[4](#ce33)] 中推荐的）是使用 `pipx`。
+安装 `sqlfmt` 的最简单方法（如 [4] 中推荐的）是使用 `pipx`。
 
 如果你没有 `pipx`，请运行以下命令安装：
 
@@ -227,7 +227,7 @@ pipx install 'shandy-sqlfmt[jijnafmt]'
 
 结果是 `sqlfmt` 被安装并暴露在你的 `$PATH` 中：
 
-![](../Images/4d9d07a46c96effe15b92bd74bea060f.png)
+![](img/4d9d07a46c96effe15b92bd74bea060f.png)
 
 （图片由作者提供）
 
@@ -244,7 +244,7 @@ pipx install 'shandy-sqlfmt[jijnafmt]'
 
 # 4\. 使用 SQLFluff 进行 Linting
 
-![](../Images/4588c9fdd0797bbc62df410734dc07b6.png)
+![](img/4588c9fdd0797bbc62df410734dc07b6.png)
 
 使用 SQLFluff 进行 Linting（图片由作者提供）
 
@@ -262,7 +262,7 @@ Linting 是分析代码以查找错误、漏洞和样式问题的过程。你可
 brew install sqlfluff
 ```
 
-要将SQLFluff与VS Code集成，你可以下载[sqlfluff扩展](https://marketplace.visualstudio.com/items?itemName=dorzey.vscode-sqlfluff)。为避免`sqlfluff`、`sqlfmt`和dbt Jinja逻辑之间的冲突，请在你的工作区`settings.json`中添加以下行：
+要将 SQLFluff 与 VS Code 集成，你可以下载[sqlfluff 扩展](https://marketplace.visualstudio.com/items?itemName=dorzey.vscode-sqlfluff)。为避免`sqlfluff`、`sqlfmt`和 dbt Jinja 逻辑之间的冲突，请在你的工作区`settings.json`中添加以下行：
 
 ```py
  "sqlfluff.dialect": "bigquery", // Depends on your database
@@ -305,31 +305,31 @@ template_blocks_indent = False
 multiline_newline = True
 ```
 
-> ***注意：*** *上述提到的`*.sqlfluff*`基于 [*[*5*](#ce33)*] 但稍作扩展。如何设置linting规则取决于你的个人（以及你团队的）偏好。*
+> ***注意：*** *上述提到的`*.sqlfluff*`基于 *[*5**] 但稍作扩展。如何设置 linting 规则取决于你的个人（以及你团队的）偏好。*
 
-安装了`vscode-sqlfluff`扩展后，你无需再从命令行进行lint检查。然而，我仍然喜欢从终端调用`sqlfluff lint {path_to_model_sub_folder}`，因为它能清楚地概览你代码中的任何问题。
+安装了`vscode-sqlfluff`扩展后，你无需再从命令行进行 lint 检查。然而，我仍然喜欢从终端调用`sqlfluff lint {path_to_model_sub_folder}`，因为它能清楚地概览你代码中的任何问题。
 
-![](../Images/0ff3b14031a71ef49a0818a28889bfd1.png)
+![](img/0ff3b14031a71ef49a0818a28889bfd1.png)
 
 （截图由作者提供）
 
-除了`lint`命令，SQLFluff还有一个类似格式化的`fix`命令。你可以使用它来修复SQLFluff提出的一些代码问题。然而，我建议谨慎使用此功能，因为它也可能会破坏你的代码。如前所述，我倾向于使用较少复杂的`sqlfmt`进行格式化。
+除了`lint`命令，SQLFluff 还有一个类似格式化的`fix`命令。你可以使用它来修复 SQLFluff 提出的一些代码问题。然而，我建议谨慎使用此功能，因为它也可能会破坏你的代码。如前所述，我倾向于使用较少复杂的`sqlfmt`进行格式化。
 
-为了忽略由于模板化dbt函数导致的lint错误，比如下面的那个，你可以在`.sqlfluff`文件中添加`ignore = templating`。
+为了忽略由于模板化 dbt 函数导致的 lint 错误，比如下面的那个，你可以在`.sqlfluff`文件中添加`ignore = templating`。
 
 ```py
 L:  25 | P:  15 |  TMP | Undefined jinja template variable: 'dbt_utils'
 ```
 
-要进一步自定义linting行为，请参阅官方文档[[6](#ce33)]。
+要进一步自定义 linting 行为，请参阅官方文档[6]。
 
 完成！
 
 # 结论
 
-如果你按照步骤操作并且已经完成了这些，应该现在你有了一个**优化**的工作区来使用dbt！我们涵盖了如升级VS Code终端、使用哪些扩展以及如何格式化和lint Jinja模板化SQL等主题。这些提示将节省你的时间和精力，让你专注于构建更好的数据模型。
+如果你按照步骤操作并且已经完成了这些，应该现在你有了一个**优化**的工作区来使用 dbt！我们涵盖了如升级 VS Code 终端、使用哪些扩展以及如何格式化和 lint Jinja 模板化 SQL 等主题。这些提示将节省你的时间和精力，让你专注于构建更好的数据模型。
 
-目标是不断提高效率。如果你在寻找下一个更高级的步骤，我建议你探索[dbt的宏](https://docs.getdbt.com/docs/build/jinja-macros)。如果你有任何问题或对未来的文章有想法，请随时联系我。
+目标是不断提高效率。如果你在寻找下一个更高级的步骤，我建议你探索[dbt 的宏](https://docs.getdbt.com/docs/build/jinja-macros)。如果你有任何问题或对未来的文章有想法，请随时联系我。
 
 感谢阅读，祝建模愉快！
 
@@ -339,13 +339,13 @@ L:  25 | P:  15 |  TMP | Undefined jinja template variable: 'dbt_utils'
 
 ## **参考文献**
 
-[1] 通过homebrew安装字体 **| |** [*链接*](https://gist.github.com/davidteren/898f2dcccd42d9f8680ec69a3a5d350e)
+[1] 通过 homebrew 安装字体 **| |** [*链接*](https://gist.github.com/davidteren/898f2dcccd42d9f8680ec69a3a5d350e)
 
-[2] 安装zsh-syntax-higlighting | | [*链接*](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
+[2] 安装 zsh-syntax-higlighting | | [*链接*](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
 
-[3] 安装zsh-autocomplete **| |** [*链接*](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md)
+[3] 安装 zsh-autocomplete **| |** [*链接*](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md)
 
-[4] 安装sqlfmt ***| |*** [*链接*](https://docs.sqlfmt.com/getting-started/installation)
+[4] 安装 sqlfmt ***| |*** [*链接*](https://docs.sqlfmt.com/getting-started/installation)
 
 [5] 集成`sqlfmt`和`sqlfluff` | | [*链接*](https://docs.sqlfmt.com/integrations/sqlfluff)
 

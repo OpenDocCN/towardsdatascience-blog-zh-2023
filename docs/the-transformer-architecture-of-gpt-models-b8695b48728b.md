@@ -1,18 +1,18 @@
-# GPT模型的Transformer架构
+# GPT 模型的 Transformer 架构
 
-> 原文：[https://towardsdatascience.com/the-transformer-architecture-of-gpt-models-b8695b48728b?source=collection_archive---------3-----------------------#2023-07-25](https://towardsdatascience.com/the-transformer-architecture-of-gpt-models-b8695b48728b?source=collection_archive---------3-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/the-transformer-architecture-of-gpt-models-b8695b48728b?source=collection_archive---------3-----------------------#2023-07-25`](https://towardsdatascience.com/the-transformer-architecture-of-gpt-models-b8695b48728b?source=collection_archive---------3-----------------------#2023-07-25)
 
-## 了解Transformer架构的详细信息
+## 了解 Transformer 架构的详细信息
 
-[](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)[![Beatriz Stollnitz](../Images/63a2a7daeca6d93e26b3ac0556c42aa1.png)](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------) [Beatriz Stollnitz](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)
+[](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)![Beatriz Stollnitz](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------) [Beatriz Stollnitz](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c8863892480&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-transformer-architecture-of-gpt-models-b8695b48728b&user=Beatriz+Stollnitz&userId=1c8863892480&source=post_page-1c8863892480----b8695b48728b---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------) · 22分钟阅读 · 2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb8695b48728b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-transformer-architecture-of-gpt-models-b8695b48728b&user=Beatriz+Stollnitz&userId=1c8863892480&source=-----b8695b48728b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c8863892480&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-transformer-architecture-of-gpt-models-b8695b48728b&user=Beatriz+Stollnitz&userId=1c8863892480&source=post_page-1c8863892480----b8695b48728b---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------) · 22 分钟阅读 · 2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb8695b48728b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-transformer-architecture-of-gpt-models-b8695b48728b&user=Beatriz+Stollnitz&userId=1c8863892480&source=-----b8695b48728b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb8695b48728b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-transformer-architecture-of-gpt-models-b8695b48728b&source=-----b8695b48728b---------------------bookmark_footer-----------)![](../Images/b27fc545e177f9112abf27cfac0ceebb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb8695b48728b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-transformer-architecture-of-gpt-models-b8695b48728b&source=-----b8695b48728b---------------------bookmark_footer-----------)![](img/b27fc545e177f9112abf27cfac0ceebb.png)
 
 图片由[fabio](https://unsplash.com/@fabioha?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

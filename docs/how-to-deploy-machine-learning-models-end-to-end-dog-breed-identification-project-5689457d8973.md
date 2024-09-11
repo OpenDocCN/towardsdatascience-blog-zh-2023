@@ -1,14 +1,14 @@
 # 如何部署机器学习模型？端到端犬种识别项目！
 
-> 原文：[https://towardsdatascience.com/how-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973?source=collection_archive---------17-----------------------#2023-04-03](https://towardsdatascience.com/how-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973?source=collection_archive---------17-----------------------#2023-04-03)
+> 原文：[`towardsdatascience.com/how-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973?source=collection_archive---------17-----------------------#2023-04-03`](https://towardsdatascience.com/how-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973?source=collection_archive---------17-----------------------#2023-04-03)
 
 ## 将你的 ML 模型在网络上部署的最简单方法。
 
-[](https://medium.com/@gkeretchashvili?source=post_page-----5689457d8973--------------------------------)[![Gurami Keretchashvili](../Images/4da78f113a0046c2deb8224e09dd9e3d.png)](https://medium.com/@gkeretchashvili?source=post_page-----5689457d8973--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5689457d8973--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5689457d8973--------------------------------) [Gurami Keretchashvili](https://medium.com/@gkeretchashvili?source=post_page-----5689457d8973--------------------------------)
+[](https://medium.com/@gkeretchashvili?source=post_page-----5689457d8973--------------------------------)![Gurami Keretchashvili](https://medium.com/@gkeretchashvili?source=post_page-----5689457d8973--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5689457d8973--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5689457d8973--------------------------------) [Gurami Keretchashvili](https://medium.com/@gkeretchashvili?source=post_page-----5689457d8973--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba1f382fdaca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973&user=Gurami+Keretchashvili&userId=ba1f382fdaca&source=post_page-ba1f382fdaca----5689457d8973---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5689457d8973--------------------------------) ·9 分钟阅读·2023年4月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5689457d8973&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973&user=Gurami+Keretchashvili&userId=ba1f382fdaca&source=-----5689457d8973---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba1f382fdaca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973&user=Gurami+Keretchashvili&userId=ba1f382fdaca&source=post_page-ba1f382fdaca----5689457d8973---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5689457d8973--------------------------------) ·9 分钟阅读·2023 年 4 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5689457d8973&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-machine-learning-models-end-to-end-dog-breed-identification-project-5689457d8973&user=Gurami+Keretchashvili&userId=ba1f382fdaca&source=-----5689457d8973---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 在进一步讨论之前，让我们先看一下项目的演示：
 
-![](../Images/89db508f88f224db73a88ad654bbe646.png)
+![](img/89db508f88f224db73a88ad654bbe646.png)
 
 部署演示（作者提供的 gif）
 

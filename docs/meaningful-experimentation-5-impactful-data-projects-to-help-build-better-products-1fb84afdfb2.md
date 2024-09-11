@@ -1,18 +1,18 @@
 # 有意义的实验：5 个有影响力的数据项目，帮助打造更好的产品
 
-> 原文：[https://towardsdatascience.com/meaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2?source=collection_archive---------19-----------------------#2023-01-06](https://towardsdatascience.com/meaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2?source=collection_archive---------19-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/meaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2?source=collection_archive---------19-----------------------#2023-01-06`](https://towardsdatascience.com/meaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2?source=collection_archive---------19-----------------------#2023-01-06)
 
 ## *实际数据领导者系列的第二部分，介绍如何与各部门及其所有奇特特性进行最佳合作*
 
-[](https://medium.com/@shane.murray5?source=post_page-----1fb84afdfb2--------------------------------)[![shane murray](../Images/8bb1f3acf15dc26273097e12d03dd616.png)](https://medium.com/@shane.murray5?source=post_page-----1fb84afdfb2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1fb84afdfb2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1fb84afdfb2--------------------------------) [shane murray](https://medium.com/@shane.murray5?source=post_page-----1fb84afdfb2--------------------------------)
+[](https://medium.com/@shane.murray5?source=post_page-----1fb84afdfb2--------------------------------)![shane murray](https://medium.com/@shane.murray5?source=post_page-----1fb84afdfb2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1fb84afdfb2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1fb84afdfb2--------------------------------) [shane murray](https://medium.com/@shane.murray5?source=post_page-----1fb84afdfb2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8aa0d9ae3ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2&user=shane+murray&userId=8aa0d9ae3ebd&source=post_page-8aa0d9ae3ebd----1fb84afdfb2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1fb84afdfb2--------------------------------) ·14 分钟阅读·2023年1月6日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1fb84afdfb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2&user=shane+murray&userId=8aa0d9ae3ebd&source=-----1fb84afdfb2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8aa0d9ae3ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2&user=shane+murray&userId=8aa0d9ae3ebd&source=post_page-8aa0d9ae3ebd----1fb84afdfb2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1fb84afdfb2--------------------------------) ·14 分钟阅读·2023 年 1 月 6 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1fb84afdfb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2&user=shane+murray&userId=8aa0d9ae3ebd&source=-----1fb84afdfb2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1fb84afdfb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2&source=-----1fb84afdfb2---------------------bookmark_footer-----------)![](../Images/4a2d401e37561d585cbdb7d695c9642b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1fb84afdfb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeaningful-experimentation-5-impactful-data-projects-to-help-build-better-products-1fb84afdfb2&source=-----1fb84afdfb2---------------------bookmark_footer-----------)![](img/4a2d401e37561d585cbdb7d695c9642b.png)
 
 图片由 Shane Murray 提供。
 
@@ -38,7 +38,7 @@
 
 这可以理解——开发新功能是一个资源密集型的过程，风险很高。这给产品经理带来了做出正确决策的压力，这通常会产生一定程度的确定性需求，或者至少是可以辩护的理由。但分析师只有过去实验和决策的数据，而没有可能允许他们推断未来决策的反事实数据。
 
-![](../Images/35f20a9bb6c74e3241e2414a7156116e.png)
+![](img/35f20a9bb6c74e3241e2414a7156116e.png)
 
 *图片由 JUVART 提供，来源于* [*Shutterstock*](https://www.shutterstock.com/image-vector/development-team-creating-mobile-application-set-2108335400)*。*
 
@@ -76,23 +76,23 @@
 
 +   **风险通常更高** — 例如，用户体验的变化可能需要多天的设计、构建和部署。
 
-+   **存在多个集成点**——例如，你可能需要通过SDK或CDN部署你的实验分配库，此外还要提供通过浏览器中的JavaScript进行集成。
++   **存在多个集成点**——例如，你可能需要通过 SDK 或 CDN 部署你的实验分配库，此外还要提供通过浏览器中的 JavaScript 进行集成。
 
 +   **结果不容易立即知晓**——例如，一个推荐系统可能需要根据它对用户参与度和留存率的影响来衡量，而不是其点击率，这可能需要几周或几个月的时间。
 
 +   **权衡可能更复杂**——例如，主页实验可能需要测量多个业务结果，每个结果对业务的价值不同，并且需要管理不同的利益相关者。
 
-+   **方法可能根据产品类型有所不同**——例如，根据优化问题的形状，你可能会使用离散（A/B和多变量）或自适应（“土匪”）实验模式。
++   **方法可能根据产品类型有所不同**——例如，根据优化问题的形状，你可能会使用离散（A/B 和多变量）或自适应（“土匪”）实验模式。
 
 因此，数据领导者积极标准化平台或工具以支持产品实验是有益的。特别是当实验的执行可能会分散到多个跨职能产品团队时，这一点尤为重要。
 
 不要认为可以购买或构建支持所有用例的平台。但应明确平台将支持的用例，并在实施和数据收集上提供足够的灵活性，以便可靠地完成不常见或更复杂的实验。
 
-![](../Images/fa77409eba1734e78e2dc6e9ffbc4c70.png)
+![](img/fa77409eba1734e78e2dc6e9ffbc4c70.png)
 
 图片由 [Hans Reniers](https://unsplash.com/@hansreniers?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/s/photos/lab-experimentation?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 
-实验速度通常被产品团队视为构建和扩展成功产品的关键，这通常通过谷歌（严重缺陷的）“[41种蓝色](https://www.theguardian.com/technology/2014/feb/05/why-google-engineers-designers)”实验来体现。
+实验速度通常被产品团队视为构建和扩展成功产品的关键，这通常通过谷歌（严重缺陷的）“[41 种蓝色](https://www.theguardian.com/technology/2014/feb/05/why-google-engineers-designers)”实验来体现。
 
 但虽然速度和迭代学习至关重要，**你无法通过迭代方式达到新的商业模式。** 大型组织中的实验往往受限于当前用户体验的可能性和/或单个产品团队所能控制的范围，而实际任务可能是重新构想体验的可能性。
 
@@ -102,9 +102,9 @@
 
 +   将假设转化为独立的实验属性（也许将蓝色的阴影留给设计团队）
 
-+   考虑合适的实验设计——是连续的A/B测试系列，还是需要多变量方法，以便理解实验属性之间的交互？
++   考虑合适的实验设计——是连续的 A/B 测试系列，还是需要多变量方法，以便理解实验属性之间的交互？
 
-不要陷入局部最优。过去15年中，我见过的最具影响力的实验都要求团队超越自身范围，定义那些从根本上改变用户体验和商业模式的假设。
+不要陷入局部最优。过去 15 年中，我见过的最具影响力的实验都要求团队超越自身范围，定义那些从根本上改变用户体验和商业模式的假设。
 
 ## 4\. 队列分析
 
@@ -120,27 +120,27 @@
 
 为了使这种分析有用，至关重要的是，你必须比较“苹果与苹果”，例如关注每周到来的*新用户*。你还可以进一步细分这些队列（例如，按地域或设备），以诊断用户健康状况的增加和减少。
 
-![](../Images/8a1a1f67d8e1abf236fd9afcf3805843.png)
+![](img/8a1a1f67d8e1abf236fd9afcf3805843.png)
 
-*这张图表绘制了每周新用户的用户保留随时间的变化，显示了每个队列的健康状况。* 图片由Shane Murray提供。
+*这张图表绘制了每周新用户的用户保留随时间的变化，显示了每个队列的健康状况。* 图片由 Shane Murray 提供。
 
 *其次，让我们考虑一个产品团队，希望了解哪些特征在推动健康用户方面最有价值。*
 
-避免返回那些分析说“做x的人更可能留下”的结论。这些陈述因几个原因几乎毫无用处。
+避免返回那些分析说“做 x 的人更可能留下”的结论。这些陈述因几个原因几乎毫无用处。
 
 首先，执行任何操作的用户更可能留存——你可能只是挑选数据；其次，你没有提供关于特征使用情况的背景信息——它可能是最不受欢迎的特征；最后，缺乏时间意识使得这种说法更可能只是相关性的。
 
 相反，你应该：
 
-+   对队列操作进行时间限制（例如前30天），以将潜在原因与后续效果（例如第30天至第180天）分开。
++   对队列操作进行时间限制（例如前 30 天），以将潜在原因与后续效果（例如第 30 天至第 180 天）分开。
 
 +   比较多个操作，以避免挑选感兴趣的特征。
 
 +   提供关于特征使用情况及其对用户保留影响的背景信息。
 
-![](../Images/0c07378ec816f0354c258a015d9fee3c.png)
+![](img/0c07378ec816f0354c258a015d9fee3c.png)
 
-特征散点图。图片由Shane Murray提供。
+特征散点图。图片由 Shane Murray 提供。
 
 上述功能散点图显示了一个标记为 A 到 H 的产品功能集的功能使用与保留提升的关系。例如，功能 A 被轻度采纳，但与最大的保留提升相关联；功能 D 被大量采纳，但与较小的保留提升相关联。
 
@@ -216,20 +216,20 @@
 
 这个决策很少是容易的——虽然数据团队的客户通常说他们希望访问原始数据，但他们通常指的是希望访问经过高度筛选、可信的数据，并以一种他们可以轻松操作的方式提供。
 
-自助解决方案（例如Amplitude、Mixpanel）提供了许多现成的可视化和可下载报告，这些是你的产品客户急需的，但这将要求你遵循他们的数据模型，并且需要数据团队在仪表化、治理、培训和对所选工具的支持上投入大量精力。
+自助解决方案（例如 Amplitude、Mixpanel）提供了许多现成的可视化和可下载报告，这些是你的产品客户急需的，但这将要求你遵循他们的数据模型，并且需要数据团队在仪表化、治理、培训和对所选工具的支持上投入大量精力。
 
-另一方面，在你的数据仓库之上构建以产品为中心的报告，通过BI工具或更多自定义的数据应用，可能为数据团队提供他们所需的一致性和灵活性，但通常需要为每个新的指标、报告或屏幕进行开发。
+另一方面，在你的数据仓库之上构建以产品为中心的报告，通过 BI 工具或更多自定义的数据应用，可能为数据团队提供他们所需的一致性和灵活性，但通常需要为每个新的指标、报告或屏幕进行开发。
 
 无论你选择哪条路径，最终目标都应是为了更好或更快的产品决策。因此，你应考虑更广泛访问的好处，以及数据团队从采用这一解决方案中工作负载的变化。一个好的、轻量级的自服务实施将使你的分析师能够从事更有意义的工作。
 
-![](../Images/b11f87f0803efd7741a26c50c22bea0f.png)
+![](img/b11f87f0803efd7741a26c50c22bea0f.png)
 
-图片由Shane Murray提供。
+图片由 Shane Murray 提供。
 
-另一个需要记住的关于点击流数据的决定性特征是其短暂的价值。产品和市场的根本变化使得从五年前的点击流数据中提取见解几乎是徒劳的。[有些人建议](https://www.linkedin.com/feed/update/urn:li:activity:6997982529827811328?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6997982529827811328%2C6998001949992259584%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286998001949992259584%2Curn%3Ali%3Aactivity%3A6997982529827811328%29) 时间衰减可以表示为1/x。这里的要点是，在迁移或其他数据重组项目中，你通常可以将其留在冷存储中（如果你还保留的话）。
+另一个需要记住的关于点击流数据的决定性特征是其短暂的价值。产品和市场的根本变化使得从五年前的点击流数据中提取见解几乎是徒劳的。[有些人建议](https://www.linkedin.com/feed/update/urn:li:activity:6997982529827811328?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6997982529827811328%2C6998001949992259584%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286998001949992259584%2Curn%3Ali%3Aactivity%3A6997982529827811328%29) 时间衰减可以表示为 1/x。这里的要点是，在迁移或其他数据重组项目中，你通常可以将其留在冷存储中（如果你还保留的话）。
 
 # “真正的艺术家会发布作品”
 
 著名的史蒂夫·乔布斯名言恰如其分地总结了有效的数据产品团队关系。在最佳状态下，两个团队共同协作，发布新的有效功能和产品，并由最佳的数据驱动决策…以及一些艺术直觉指导。
 
-[关注我](/@shane.murray5)以获取更多关于数据领导力、数据科学应用及相关主题的故事。[订阅](/subscribe/@shane.murray5)以将我的故事送到你的收件箱。
+关注我以获取更多关于数据领导力、数据科学应用及相关主题的故事。订阅以将我的故事送到你的收件箱。

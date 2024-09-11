@@ -1,18 +1,18 @@
 # 寻找气候变化数据集的前 5 个地方
 
-> 原文：[https://towardsdatascience.com/top-5-places-to-find-climate-change-datasets-e3f5a7ee2139?source=collection_archive---------5-----------------------#2023-06-02](https://towardsdatascience.com/top-5-places-to-find-climate-change-datasets-e3f5a7ee2139?source=collection_archive---------5-----------------------#2023-06-02)
+> 原文：[`towardsdatascience.com/top-5-places-to-find-climate-change-datasets-e3f5a7ee2139?source=collection_archive---------5-----------------------#2023-06-02`](https://towardsdatascience.com/top-5-places-to-find-climate-change-datasets-e3f5a7ee2139?source=collection_archive---------5-----------------------#2023-06-02)
 
 ## 并尝试利用这些气候变化数据集进行分析和模型开发。
 
-[](https://eugenia-anello.medium.com/?source=post_page-----e3f5a7ee2139--------------------------------)[![Eugenia Anello](../Images/537f444252cdc60709e7a19e37734c7b.png)](https://eugenia-anello.medium.com/?source=post_page-----e3f5a7ee2139--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3f5a7ee2139--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e3f5a7ee2139--------------------------------) [Eugenia Anello](https://eugenia-anello.medium.com/?source=post_page-----e3f5a7ee2139--------------------------------)
+[](https://eugenia-anello.medium.com/?source=post_page-----e3f5a7ee2139--------------------------------)![Eugenia Anello](https://eugenia-anello.medium.com/?source=post_page-----e3f5a7ee2139--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3f5a7ee2139--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3f5a7ee2139--------------------------------) [Eugenia Anello](https://eugenia-anello.medium.com/?source=post_page-----e3f5a7ee2139--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F86fdc517c278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-places-to-find-climate-change-datasets-e3f5a7ee2139&user=Eugenia+Anello&userId=86fdc517c278&source=post_page-86fdc517c278----e3f5a7ee2139---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3f5a7ee2139--------------------------------) ·6 分钟阅读·2023年6月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3f5a7ee2139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-places-to-find-climate-change-datasets-e3f5a7ee2139&user=Eugenia+Anello&userId=86fdc517c278&source=-----e3f5a7ee2139---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F86fdc517c278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-places-to-find-climate-change-datasets-e3f5a7ee2139&user=Eugenia+Anello&userId=86fdc517c278&source=post_page-86fdc517c278----e3f5a7ee2139---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3f5a7ee2139--------------------------------) ·6 分钟阅读·2023 年 6 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3f5a7ee2139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-places-to-find-climate-change-datasets-e3f5a7ee2139&user=Eugenia+Anello&userId=86fdc517c278&source=-----e3f5a7ee2139---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3f5a7ee2139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-places-to-find-climate-change-datasets-e3f5a7ee2139&source=-----e3f5a7ee2139---------------------bookmark_footer-----------)![](../Images/899db630b2b57b63e66748bae9913639.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3f5a7ee2139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-places-to-find-climate-change-datasets-e3f5a7ee2139&source=-----e3f5a7ee2139---------------------bookmark_footer-----------)![](img/899db630b2b57b63e66748bae9913639.png)
 
 图片由 [Markus Spiske](https://unsplash.com/@markusspiske) 提供，来源于 [Unsplash](https://unsplash.com/photos/xYY7WADfens)
 

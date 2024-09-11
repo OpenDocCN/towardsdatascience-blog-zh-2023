@@ -1,18 +1,18 @@
 # 数据科学不是科学
 
-> 原文：[https://towardsdatascience.com/data-science-is-not-science-bb95d783697a?source=collection_archive---------7-----------------------#2023-01-17](https://towardsdatascience.com/data-science-is-not-science-bb95d783697a?source=collection_archive---------7-----------------------#2023-01-17)
+> 原文：[`towardsdatascience.com/data-science-is-not-science-bb95d783697a?source=collection_archive---------7-----------------------#2023-01-17`](https://towardsdatascience.com/data-science-is-not-science-bb95d783697a?source=collection_archive---------7-----------------------#2023-01-17)
 
 ## 如何在数据科学分析中融入科学过程
 
-[](https://conorosullyds.medium.com/?source=post_page-----bb95d783697a--------------------------------)[![Conor O'Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----bb95d783697a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb95d783697a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb95d783697a--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----bb95d783697a--------------------------------)
+[](https://conorosullyds.medium.com/?source=post_page-----bb95d783697a--------------------------------)![Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----bb95d783697a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb95d783697a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb95d783697a--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----bb95d783697a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-is-not-science-bb95d783697a&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----bb95d783697a---------------------post_header-----------) 在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb95d783697a--------------------------------)上发布 · 8分钟阅读 · 2023年1月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb95d783697a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-is-not-science-bb95d783697a&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----bb95d783697a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-is-not-science-bb95d783697a&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----bb95d783697a---------------------post_header-----------) 在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb95d783697a--------------------------------)上发布 · 8 分钟阅读 · 2023 年 1 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb95d783697a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-is-not-science-bb95d783697a&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----bb95d783697a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbb95d783697a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-is-not-science-bb95d783697a&source=-----bb95d783697a---------------------bookmark_footer-----------)![](../Images/cca5ee3484d862d642dfb4909eae09b4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbb95d783697a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-is-not-science-bb95d783697a&source=-----bb95d783697a---------------------bookmark_footer-----------)![](img/cca5ee3484d862d642dfb4909eae09b4.png)
 
 图片由[Greg Rakozy](https://unsplash.com/@grakozy?utm_source=medium&utm_medium=referral)提供，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -52,7 +52,7 @@
 
 ## 证据
 
-在科学中，我们永远不能以100%的确定性宣称一个假设是真的。我们可以通过更多来自多个独立实验的证据逐渐接近这一目标。要宣称咖啡对睡眠有负面影响，我们需要比一次实验更严格。这需要多个人、不同的咖啡因水平、双盲测试等……
+在科学中，我们永远不能以 100%的确定性宣称一个假设是真的。我们可以通过更多来自多个独立实验的证据逐渐接近这一目标。要宣称咖啡对睡眠有负面影响，我们需要比一次实验更严格。这需要多个人、不同的咖啡因水平、双盲测试等……
 
 这就是科学过程——做观察，制定假设，设计实验，收集证据，得出结论并重复！这是我们获取新知识的最佳工具。然而，它不是唯一的工具。
 
@@ -82,9 +82,9 @@
 
 一个例子来自我自己的研究。我的硕士论文研究了[使用机器学习和自然语言处理技术预测法律案件的结果](https://arxiv.org/abs/1912.10819)。这旨在帮助欧洲人权法院（ECHR）提高判决速度。
 
-我的唯一目标是提高现有方法的准确度。回顾过去，这实际上对ECHR并没有帮助。法官会相信模型的结果吗？
+我的唯一目标是提高现有方法的准确度。回顾过去，这实际上对 ECHR 并没有帮助。法官会相信模型的结果吗？
 
-与其挤出额外的1%准确度，我本可以解释模型或提供更深入的结果分析。这样法院可以用来辅助决策，而不是完全取代决策。
+与其挤出额外的 1%准确度，我本可以解释模型或提供更深入的结果分析。这样法院可以用来辅助决策，而不是完全取代决策。
 
 ## 快速决策
 
@@ -104,7 +104,7 @@
 
 ## 使用多个指标和可视化
 
-在提供证据时，不要仅仅依赖一个指标或可视化，因为它们都有自己的局限性。数据科学家们已经这样做了。在评估模型性能时，我们不仅仅看准确性。我们使用精确度、召回率，甚至通过ROC曲线来可视化性能。
+在提供证据时，不要仅仅依赖一个指标或可视化，因为它们都有自己的局限性。数据科学家们已经这样做了。在评估模型性能时，我们不仅仅看准确性。我们使用精确度、召回率，甚至通过 ROC 曲线来可视化性能。
 
 进行分析时也应采取相同的方法。例如，假设我们想评估某人的财务状况。我们可以计算他们前一年的总收入。这会告诉我们很多，但一个数字不足以完全捕捉他们的状况。我们还需要查看开支和现有债务。除了总数外，我们还可以查看月度变化。
 
@@ -114,19 +114,19 @@
 
 更进一步，我们可以正式定义指标及其截断值。也就是说，我们将在分析中使用哪些指标，以及哪些值将被视为成功。这是为了防止你挑选支持先入为主观念的指标。
 
-一个例子来自下面关于算法公平性的文章。这里我们提供了公平性的不同定义。一种定义，**平等机会**，通过比较特权组和非特权组的假阳性率（FPR）来工作。如果FPR的差异在某个截断值之内，则模型被认为是公平的。
+一个例子来自下面关于算法公平性的文章。这里我们提供了公平性的不同定义。一种定义，**平等机会**，通过比较特权组和非特权组的假阳性率（FPR）来工作。如果 FPR 的差异在某个截断值之内，则模型被认为是公平的。
 
-[](/analysing-fairness-in-machine-learning-with-python-96a9ab0d0705?source=post_page-----bb95d783697a--------------------------------) [## 机器学习中的公平性分析（使用Python）
+[](/analysing-fairness-in-machine-learning-with-python-96a9ab0d0705?source=post_page-----bb95d783697a--------------------------------) ## 机器学习中的公平性分析（使用 Python）
 
 ### 进行探索性公平性分析，并使用平等机会、平等化概率和差异化...
 
-towardsdatascience.com](/analysing-fairness-in-machine-learning-with-python-96a9ab0d0705?source=post_page-----bb95d783697a--------------------------------)
+towardsdatascience.com
 
-假设我们没有定义截断值或选择公平性的定义。在计算FPR差异后，我们可以争论一个更高的截断值。如果差异显著，我们甚至可以争论使用完全不同的定义。面对几个月的建模工作，这可能是诱人的。
+假设我们没有定义截断值或选择公平性的定义。在计算 FPR 差异后，我们可以争论一个更高的截断值。如果差异显著，我们甚至可以争论使用完全不同的定义。面对几个月的建模工作，这可能是诱人的。
 
 ## 可解释的机器学习
 
-我们还可以努力不仅仅使用这些评估指标。这就是 IML 的作用。它旨在构建可以被人类理解的模型。像[SHAP](/introduction-to-shap-with-python-d27edc23c454)、[LIME](/squeezing-more-out-of-lime-with-python-28f46f74ca8e)、[PDPs 和 ICE 图](/the-ultimate-guide-to-pdps-and-ice-plots-4182885662aa)这样的 IML 方法允许你窥视黑箱，了解它的工作原理。
+我们还可以努力不仅仅使用这些评估指标。这就是 IML 的作用。它旨在构建可以被人类理解的模型。像 SHAP、LIME、PDPs 和 ICE 图这样的 IML 方法允许你窥视黑箱，了解它的工作原理。
 
 使用这些方法使我们更接近科学的目标——理解我们的自然世界。我们从了解模型预测的效果到了解它们如何做出这些预测。在这个过程中，我们可以学到一些关于我们数据的新知识。
 
@@ -156,12 +156,12 @@ towardsdatascience.com](/analysing-fairness-in-machine-learning-with-python-96a9
 
 ## 参考资料
 
-伯克利，**科学理解101** [https://undsci.berkeley.edu/understanding-science-101/](https://undsci.berkeley.edu/understanding-science-101/)
+伯克利，**科学理解 101** [`undsci.berkeley.edu/understanding-science-101/`](https://undsci.berkeley.edu/understanding-science-101/)
 
-科学委员会，**我们对科学的定义**，[https://sciencecouncil.org/about-science/our-definition-of-science/](https://sciencecouncil.org/about-science/our-definition-of-science/)
+科学委员会，**我们对科学的定义**，[`sciencecouncil.org/about-science/our-definition-of-science/`](https://sciencecouncil.org/about-science/our-definition-of-science/)
 
-澳大利亚科学院，**什么是科学？** [https://www.science.org.au/curious/people-medicine/what-science](https://www.science.org.au/curious/people-medicine/what-science)
+澳大利亚科学院，**什么是科学？** [`www.science.org.au/curious/people-medicine/what-science`](https://www.science.org.au/curious/people-medicine/what-science)
 
-可汗学院，**科学方法** [https://www.khanacademy.org/science/biology/intro-to-biology/science-of-biology/a/the-science-of-biology](https://www.khanacademy.org/science/biology/intro-to-biology/science-of-biology/a/the-science-of-biology)
+可汗学院，**科学方法** [`www.khanacademy.org/science/biology/intro-to-biology/science-of-biology/a/the-science-of-biology`](https://www.khanacademy.org/science/biology/intro-to-biology/science-of-biology/a/the-science-of-biology)
 
-微软 Power BI，**什么是数据讲述？** [https://powerbi.microsoft.com/en-us/data-storytelling/](https://powerbi.microsoft.com/en-us/data-storytelling/)
+微软 Power BI，**什么是数据讲述？** [`powerbi.microsoft.com/en-us/data-storytelling/`](https://powerbi.microsoft.com/en-us/data-storytelling/)

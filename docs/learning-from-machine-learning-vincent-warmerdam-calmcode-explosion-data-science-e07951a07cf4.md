@@ -1,18 +1,18 @@
 # 从机器学习中学习 | **Vincent Warmerdam**：Calmcode，Explosion，数据科学
 
-> 原文：[https://towardsdatascience.com/learning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4?source=collection_archive---------7-----------------------#2023-06-14](https://towardsdatascience.com/learning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4?source=collection_archive---------7-----------------------#2023-06-14)
+> 原文：[`towardsdatascience.com/learning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4?source=collection_archive---------7-----------------------#2023-06-14`](https://towardsdatascience.com/learning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4?source=collection_archive---------7-----------------------#2023-06-14)
 
-## 数据科学的过去、现在和未来：与Explosion ML工程师及calmcode创始人**Vincent Warmerdam**的访谈
+## 数据科学的过去、现在和未来：与 Explosion ML 工程师及 calmcode 创始人**Vincent Warmerdam**的访谈
 
-[](https://medium.com/@levine.seth.p?source=post_page-----e07951a07cf4--------------------------------)[![Seth Levine](../Images/a660734f5feac433e2d930116ab70986.png)](https://medium.com/@levine.seth.p?source=post_page-----e07951a07cf4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e07951a07cf4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e07951a07cf4--------------------------------) [**Seth Levine**](https://medium.com/@levine.seth.p?source=post_page-----e07951a07cf4--------------------------------)
+[](https://medium.com/@levine.seth.p?source=post_page-----e07951a07cf4--------------------------------)![Seth Levine](https://medium.com/@levine.seth.p?source=post_page-----e07951a07cf4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e07951a07cf4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e07951a07cf4--------------------------------) [**Seth Levine**](https://medium.com/@levine.seth.p?source=post_page-----e07951a07cf4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F70f6655bd458&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4&user=Seth+Levine&userId=70f6655bd458&source=post_page-70f6655bd458----e07951a07cf4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e07951a07cf4--------------------------------) · 53 分钟阅读 · 2023年6月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe07951a07cf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4&user=Seth+Levine&userId=70f6655bd458&source=-----e07951a07cf4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F70f6655bd458&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4&user=Seth+Levine&userId=70f6655bd458&source=post_page-70f6655bd458----e07951a07cf4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e07951a07cf4--------------------------------) · 53 分钟阅读 · 2023 年 6 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe07951a07cf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4&user=Seth+Levine&userId=70f6655bd458&source=-----e07951a07cf4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe07951a07cf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4&source=-----e07951a07cf4---------------------bookmark_footer-----------)![](../Images/53efad9e9b9d78339cdcdc8a901f3f82.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe07951a07cf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-vincent-warmerdam-calmcode-explosion-data-science-e07951a07cf4&source=-----e07951a07cf4---------------------bookmark_footer-----------)![](img/53efad9e9b9d78339cdcdc8a901f3f82.png)
 
 作者提供的图片
 
@@ -74,47 +74,47 @@ Vincent 的职业道路不寻常，他在数据科学尚处于萌芽阶段时便
 
 # 目录
 
-> [介绍](#26e3)
+> 介绍
 > 
-> [总结](#89a2)
+> 总结
 > 
-> [建议与收获](#a5c2) [完整采访](#c58f)
+> 建议与收获 完整采访
 > 
-> — [欢迎](#78d6)
+> — 欢迎
 > 
-> — [背景](#eccb)
+> — 背景
 > 
-> — [学术背景](#fb97)
+> — 学术背景
 > 
-> — [机器学习的吸引力](#8fa8)
+> — 机器学习的吸引力
 > 
-> — [Calmcode](#e684)
+> — Calmcode
 > 
-> — [开源](#b85e)
+> — 开源
 > 
-> — [批量处理](#7396)
+> — 批量处理
 > 
-> — [理解问题](#4198)
+> — 理解问题
 > 
-> — [机器学习中的未解之谜](#ef45)
+> — 机器学习中的未解之谜
 > 
-> — [生成性与预测性机器学习](#5bf3)
+> — 生成性与预测性机器学习
 > 
-> — [影响因素](#7a2a)
+> — 影响因素
 > 
-> — [职业建议](#f1fc)
+> — 职业建议
 > 
-> — [对新数据科学家的建议](#ad30)
+> — 对新数据科学家的建议
 > 
-> — [从机器学习中学习](#5b18)
+> — 从机器学习中学习
 > 
-> [视频采访](#3b15)
+> 视频采访
 > 
-> [Spotify 音频](#05de)
+> Spotify 音频
 > 
-> [前一集 featuring Maarten Grootendorst](#9210)
+> 前一集 featuring Maarten Grootendorst
 > 
-> [参考文献](#a6b6)
+> 参考文献
 
 # 完整采访
 
@@ -150,9 +150,9 @@ Vincent 的职业道路不寻常，他在数据科学尚处于萌芽阶段时便
 
 > …种下一千朵花，总会有一朵是莲花
 
-![](../Images/3a4a7bf604fda0b50f5ff6a56b66a46a.png)
+![](img/3a4a7bf604fda0b50f5ff6a56b66a46a.png)
 
-图片生成使用了 [https://huggingface.co/CompVis/stable-diffusion-v1-4](https://huggingface.co/CompVis/stable-diffusion-v1-4)，提示为“种下一千朵花，总会有一朵是莲花”
+图片生成使用了 [`huggingface.co/CompVis/stable-diffusion-v1-4`](https://huggingface.co/CompVis/stable-diffusion-v1-4)，提示为“种下一千朵花，总会有一朵是莲花”
 
 我认同这种观点，但很多情况也归结于运气和一点特权。我只是想对这一点保持诚实。能够被认可对我来说确实很有用。
 
@@ -228,25 +228,25 @@ Vincent 的职业道路不寻常，他在数据科学尚处于萌芽阶段时便
 
 我忘了确切的名称，但它类似于城镇中黑人比例。你不应该把这个数据放到预测模型中。这是一个非常非常糟糕的主意。此外，为什么这个数据集会出现在 scikit-learn 上？为什么这么多人在使用它？
 
-这导致了我很多的挫败感。我还注意到有些企业课程使用Load Boston，收费高达一千美元一天。你看了之后会觉得，这真是一团糟。然后我想，如果我这么沮丧，也许可以通过把这些东西免费分享出来来获得一些动力。
+这导致了我很多的挫败感。我还注意到有些企业课程使用 Load Boston，收费高达一千美元一天。你看了之后会觉得，这真是一团糟。然后我想，如果我这么沮丧，也许可以通过把这些东西免费分享出来来获得一些动力。
 
-我知道自己有足够的知识来教授这些主题，因为我以前教过。但我也发现，很多教育内容似乎更关注创作者，而不是把想法传达出去。所以我觉得做一个学习平台会是一个有趣的实验。如果我来做这个平台，我会怎么做？这就是CalmCode的诞生原因。
+我知道自己有足够的知识来教授这些主题，因为我以前教过。但我也发现，很多教育内容似乎更关注创作者，而不是把想法传达出去。所以我觉得做一个学习平台会是一个有趣的实验。如果我来做这个平台，我会怎么做？这就是 CalmCode 的诞生原因。
 
-这个想法是你最多只有五个一分钟的视频来解释一个单一主题，这些视频的顺序可以组成一个关于pandas的小课程，也可以是关于其他任何东西的小课程。
+这个想法是你最多只有五个一分钟的视频来解释一个单一主题，这些视频的顺序可以组成一个关于 pandas 的小课程，也可以是关于其他任何东西的小课程。
 
 > …对于每一个主题，我都可以问：这是一个平静的工具吗？它是否能让你的日常生活更好？如果答案是否定的，那我就不教这个工具。
 
-我喜欢做calmcode的原因是，对于每一个主题，我都可以问：这是一个平静的工具吗？它是否能让你的日常生活更好？如果答案是否定的，那我就不教这个工具，这也是我不教Spark的原因之一。因为安装起来真的很麻烦。有时有比使用大型数据工具更简单的数据分析方法。
+我喜欢做 calmcode 的原因是，对于每一个主题，我都可以问：这是一个平静的工具吗？它是否能让你的日常生活更好？如果答案是否定的，那我就不教这个工具，这也是我不教 Spark 的原因之一。因为安装起来真的很麻烦。有时有比使用大型数据工具更简单的数据分析方法。
 
 这只是一个非常有个人见解的学习环境，人们似乎非常喜欢。我收到了很多非常好的反馈。自从孩子出生以来，我做得少了很多。
 
 看到这个小小的爱好项目在没有干扰的情况下保持非常平静真的很酷。每个月似乎有一万到两万人访问。我还经常在会议上收到陌生人请我喝酒。这些事情都很棒。
 
-**Seth**：是的。这是一个很好的资源。确实是在回馈社会，为数据科学家创建一个学习任何东西的地方。你有没有发现自己回去查看旧的calmcode以刷新一些技能？
+**Seth**：是的。这是一个很好的资源。确实是在回馈社会，为数据科学家创建一个学习任何东西的地方。你有没有发现自己回去查看旧的 calmcode 以刷新一些技能？
 
-**Vincent**：是的。这是另一个原因。calmcode对我来说很好的一点是，它有点像一个片段库。我知道我做的课程中提到了这些内容，而且我确实需要一个配置文件，它在哪里？
+**Vincent**：是的。这是另一个原因。calmcode 对我来说很好的一点是，它有点像一个片段库。我知道我做的课程中提到了这些内容，而且我确实需要一个配置文件，它在哪里？
 
-就在今天，我查看了我的typer课程，因为我需要“哦，选项是怎么工作的？复制粘贴。”所以现在这几乎也成了我自己的片段工具。虽然不是最初的意图，但似乎确实发生了。
+就在今天，我查看了我的 typer 课程，因为我需要“哦，选项是怎么工作的？复制粘贴。”所以现在这几乎也成了我自己的片段工具。虽然不是最初的意图，但似乎确实发生了。
 
 此外，我现在也在为 calmcode 建立搜索功能。这算是一项兴趣项目。我在考虑，嘿，也许搜索功能的主要任务就是找到正确的代码片段，这本身就是一个有趣的搜索问题。
 
@@ -300,11 +300,11 @@ Whatlies 就是一个例子，因为我想要一个库，可以非常快速地�
 
 当然，也有一些工具我不能公开展示。我在一家公司工作。有些工具是私有的。这没问题。但大多数时候，我遇到一个问题时，我只是希望以后能够用非常少的努力解决它。因为我之前做过包，所以重复这件事变得非常简单。
 
-这也是[疑问实验室](https://koaning.github.io/doubtlab/)的形成过程，以及[embetter](https://github.com/koaning/embetter)的形成过程，老实说，也包括bulk的形成过程。只不过在某个时刻，我意识到我需要这个工具来完成工作。它很好用，所以我们就打包它，公开构建，这对我来说效果很好。这就是主要的故事。
+这也是[疑问实验室](https://koaning.github.io/doubtlab/)的形成过程，以及[embetter](https://github.com/koaning/embetter)的形成过程，老实说，也包括 bulk 的形成过程。只不过在某个时刻，我意识到我需要这个工具来完成工作。它很好用，所以我们就打包它，公开构建，这对我来说效果很好。这就是主要的故事。
 
 **塞思**：是的，非常酷。这是一个很棒的故事。看起来，创建一个工具，你积累了某些技能，然后一个事情引出了另一个事情，这样它就不那么难了。
 
-一旦我猜测，你大概有三十多个惊人的工具来添加那个第37个工具。
+一旦我猜测，你大概有三十多个惊人的工具来添加那个第 37 个工具。
 
 **文森特**：是的，但我确实想做一个评论，因为我确实认为，通常来说，如果我回顾一下我访问过的公司，以我的顾问背景来看，我确实认为没有足够的人创建自己的 Python 包。
 
@@ -374,9 +374,9 @@ Whatlies 就是一个例子，因为我想要一个库，可以非常快速地�
 
 通过重新定义这个问题，我相信他们得到了大约五%的成本减少，这对于一个已经花了多年时间来优化的操作来说是个极高的数字。获得五%的成本减少几乎是闻所未闻的，但这基本上是因为他们在解决错误的问题。我的理论至少是，这个故事是发生在世界粮食计划组织的一个人身上的一个轶事。通常情况下，这种重新表述问题的行为是非常有用的，也许我们做得还不够。
 
-在NLP中的一个例子，我们有时在支持论坛上看到的问题是，比如说，他们有一份简历想要解析。然后他们说，我想要每份工作的开始日期和结束日期。因此，我想要一个能够检测开始日期的算法。你知道，你可以建立一个能够检测开始日期的算法，这没问题。但如果你将问题重新表述为，首先找出所有日期，然后再确定哪个是开始日期，哪个是结束日期，那么第二个问题就变成了，开始日期可能在前面，结束日期可能在后面。如果你将问题重新表述为两步走，整个问题就变得简单多了，而不是考虑成端到端。
+在 NLP 中的一个例子，我们有时在支持论坛上看到的问题是，比如说，他们有一份简历想要解析。然后他们说，我想要每份工作的开始日期和结束日期。因此，我想要一个能够检测开始日期的算法。你知道，你可以建立一个能够检测开始日期的算法，这没问题。但如果你将问题重新表述为，首先找出所有日期，然后再确定哪个是开始日期，哪个是结束日期，那么第二个问题就变成了，开始日期可能在前面，结束日期可能在后面。如果你将问题重新表述为两步走，整个问题就变得简单多了，而不是考虑成端到端。
 
-还有很多这样的机会人们会忽视。我再次回到calmcode，我担心部分机器学习教科书要负部分责任，因为很少有机器学习书籍实际上告诉你，如果忽略一半的数据更有意义，你可以选择忽略。你可以选择解决一个更容易解决的不同问题。但这似乎不是我看到的思维模式，尤其是新毕业生。这有点遗憾。
+还有很多这样的机会人们会忽视。我再次回到 calmcode，我担心部分机器学习教科书要负部分责任，因为很少有机器学习书籍实际上告诉你，如果忽略一半的数据更有意义，你可以选择忽略。你可以选择解决一个更容易解决的不同问题。但这似乎不是我看到的思维模式，尤其是新毕业生。这有点遗憾。
 
 但关于世界粮食计划署的故事，我必须相信那个在台上告诉我这个故事的人，但这确实发生了。比如，世界粮食计划署通过重新表述一个数学问题找到了一种减少运输成本五个百分点的方法。这绝对是现实生活中会发生的事情。
 
@@ -412,13 +412,13 @@ Akhoff 在他的书中做得非常好的一点是，他基本上解释了很多�
 
 **塞思**：当你得到问题的答案时，你必须问自己，这有意义吗？这有时是很多人跳过的一小步，但非常重要。
 
-**文森特**：我确实想承认，这也是困难的，对吧？我认为调用.fit和.predict是简单的部分。
+**文森特**：我确实想承认，这也是困难的，对吧？我认为调用.fit 和.predict 是简单的部分。
 
 这都是围绕这个主题的东西。要复杂得多。尤其是当你考虑公平性主题、所有可能出现的问题时，我们真的能事先知道吗？我不知道你是否总能做到。
 
-不过要提到一个项目吗？这个项目叫做[deon](https://deon.drivendata.org/)，有一个[Deon清单](https://deon.drivendata.org/)。还有一个[calmcode课程](https://calmcode.io/deon/introduction.html)。
+不过要提到一个项目吗？这个项目叫做[deon](https://deon.drivendata.org/)，有一个[Deon 清单](https://deon.drivendata.org/)。还有一个[calmcode 课程](https://calmcode.io/deon/introduction.html)。
 
-Deon是一个数据科学清单。就是一些在不同公司出现过的问题，有报纸文章解释情况变得多么糟糕。他们有一个清单，类似于“嘿，在上线前检查这个，因为可能会出错。”对于清单上的每一项，他们还有两篇关于过去发生的事情的报纸文章。因此，作为数据科学家，你可以去找你的老板说：“我想要[最小化]风险，因为这实际上出了问题。”
+Deon 是一个数据科学清单。就是一些在不同公司出现过的问题，有报纸文章解释情况变得多么糟糕。他们有一个清单，类似于“嘿，在上线前检查这个，因为可能会出错。”对于清单上的每一项，他们还有两篇关于过去发生的事情的报纸文章。因此，作为数据科学家，你可以去找你的老板说：“我想要[最小化]风险，因为这实际上出了问题。”
 
 这是一个非常酷的项目，因为他们实际上进行了适当的轶事收集，这在当今时代是一个强大的行为。
 
@@ -450,25 +450,25 @@ Deon是一个数据科学清单。就是一些在不同公司出现过的问题�
 
 **Vincent**：所以我实际上在专业上玩这些东西。如果你查看一下，Explosion 仓库现在有 [openai/prodigy recipes](https://github.com/explosion/prodigy-openai-recipes)。这就是仓库的名字。所以我们正在稍微尝试一下，比如，嘿，ChatGPT 能不能说，这里有一个句子，检测所有的日期。
 
-以便我们可以在我们的Prodigy界面中预先高亮显示。这是我们现在正在探索的事情。结果发现，它在一些例子中确实非常好，而在其他例子中却很差。我们还不完全理解为什么。
+以便我们可以在我们的 Prodigy 界面中预先高亮显示。这是我们现在正在探索的事情。结果发现，它在一些例子中确实非常好，而在其他例子中却很差。我们还不完全理解为什么。
 
 但我承认这可能非常有用。如果这能让你更快地获得更好的训练数据，因为标注只是说“是”或“否”比高亮每一个用户界面中的项目要快，这似乎完全可以接受。
 
 我觉得更值得关注的是，人们有时会说：“哦，这很神奇。这就是它的工作原理。这是魔法。”这不是魔法。这在某种程度上有点像[马尔科夫链](https://en.wikipedia.org/wiki/Markov_chain#:~:text=A%20Markov%20chain%20or%20Markov,the%20state%20of%20affairs%20now.%22)，它只是预测下一个词。你可以想象，如果你给它足够的文本和计算能力，你可能会让它生成非常可信的文本，像你在互联网上找到的那样。然后你可以问，比如，它是否在概括？还是只是记住？
 
-![](../Images/1ad22c0824cd7a1ec3144f1c402ae257.png)
+![](img/1ad22c0824cd7a1ec3144f1c402ae257.png)
 
 空中漂浮的魔法由[稳定扩散 v1–4](https://huggingface.co/CompVis/stable-diffusion-v1-4?text=magic+floating+through+the+air)生成
 
 这些问题都是公平的，但这还不是智力。这还不是实际的推理。我有很多愚蠢的例子可以证明，实际上并没有真正的智力在运作。
 
-话虽如此，只要有一个人参与其中，并且它被证明是有用和高效的，我认为这是可以的。但话说回来，那是当我带上职业眼镜时。显然，我认为还有一些有害因素需要考虑。你绝对可以批量发送更多的群发邮件，也许还能有更多的Twitter机器人，还有那些我不太喜欢的东西。
+话虽如此，只要有一个人参与其中，并且它被证明是有用和高效的，我认为这是可以的。但话说回来，那是当我带上职业眼镜时。显然，我认为还有一些有害因素需要考虑。你绝对可以批量发送更多的群发邮件，也许还能有更多的 Twitter 机器人，还有那些我不太喜欢的东西。
 
-总之，这只是一个方面。另一件我也许想强调的事情是，我也尝试了Midjourney。我尝试生成《万智牌》卡片。
+总之，这只是一个方面。另一件我也许想强调的事情是，我也尝试了 Midjourney。我尝试生成《万智牌》卡片。
 
 **Seth**：好吧。我见过这些，它们非常有趣。
 
-**Vincent**：我觉得有趣的是，某一刻我想说，嘿，让我们制作一些办公室里的《万智牌》卡片。你会有一个兽人领主产品经理，一个兽人风险投资家，还有一个兽人TED演讲者。这个想法立刻就很有趣，因为如果你想到办公室，你会想到一个沉闷的灰色西装。如果你想到兽人，你会想到《魔兽世界》和像是战争狂人等等。所以，这真的很有趣。
+**Vincent**：我觉得有趣的是，某一刻我想说，嘿，让我们制作一些办公室里的《万智牌》卡片。你会有一个兽人领主产品经理，一个兽人风险投资家，还有一个兽人 TED 演讲者。这个想法立刻就很有趣，因为如果你想到办公室，你会想到一个沉闷的灰色西装。如果你想到兽人，你会想到《魔兽世界》和像是战争狂人等等。所以，这真的很有趣。
 
 但接下来的问题是，我们是否能生成真正搞笑的图片？这证明是有些困难的。所以我有一张铁甲兽人的图片，基本上完全覆盖在铁网中，坐在电脑后面。你可能会觉得，数据工程师，还不错。这已经挺搞笑的了。
 
@@ -490,7 +490,7 @@ Deon是一个数据科学清单。就是一些在不同公司出现过的问题�
 
 但，是的，一般来说，因为你提到了真实情况——真实情况也很棘手。这也是许多人工愚蠢产生的原因。对于我个人的不满——所以考虑一下，图像分类，那些著名的猫狗问题：这是一张狗的照片还是猫的照片？
 
-![](../Images/3b65a7e37412c950d7f64cacd80cca28.png)
+![](img/3b65a7e37412c950d7f64cacd80cca28.png)
 
 来源：Catdog Logo [维基百科](https://en.wikipedia.org/wiki/File:CatDog.jpeg)
 
@@ -560,15 +560,15 @@ Deon是一个数据科学清单。就是一些在不同公司出现过的问题�
 
 假设你可能走了一些捷径，但你计算出了最佳的宝可梦。我不知道，就类似的事情。这仍然可以是一个很棒的演讲。
 
-再次提到，更多人应该这样做。如果人们对写博客和做演讲感兴趣，考虑一下闪电演讲和非常短的博客文章，称为“今天我学到了”。世界上确实需要更多这样的内容。我很高兴看到PyAmsterdam一年一度的闪电演讲聚会，十个人进行五分钟的演讲。
+再次提到，更多人应该这样做。如果人们对写博客和做演讲感兴趣，考虑一下闪电演讲和非常短的博客文章，称为“今天我学到了”。世界上确实需要更多这样的内容。我很高兴看到 PyAmsterdam 一年一度的闪电演讲聚会，十个人进行五分钟的演讲。
 
-那些聚会往往非常精彩。任何PyData的组织者如果在听，请随意借鉴这个想法。这些聚会总是很有趣。
+那些聚会往往非常精彩。任何 PyData 的组织者如果在听，请随意借鉴这个想法。这些聚会总是很有趣。
 
 ## 职业建议
 
 **Seth**：非常酷。所以你已经给了很多建议，但我想问一下，你收到的哪个建议或某些特别突出的东西帮助了你在机器学习或职业发展中？
 
-**Vincent**：我在职业生涯早期就得到了这个建议。我以前的CTO现在仍然和我一起，他在我二十三岁时给了我相当好的职业建议。他说，“小心加薪。因为如果你的工作开始赚很多钱，但有些乏味，那么金钱可能会成为你留在那里的原因。”
+**Vincent**：我在职业生涯早期就得到了这个建议。我以前的 CTO 现在仍然和我一起，他在我二十三岁时给了我相当好的职业建议。他说，“小心加薪。因为如果你的工作开始赚很多钱，但有些乏味，那么金钱可能会成为你留在那里的原因。”
 
 [点击这里查看视频](https://youtube.com/shorts/i1QEuc8ioDs?si=BWrpO4FVfYUI_r6q&source=post_page-----e07951a07cf4--------------------------------) ## 早期职业生涯中要小心加薪
 
@@ -578,7 +578,7 @@ Deon是一个数据科学清单。就是一些在不同公司出现过的问题�
 
 再次说，我在这里很幸运，对吧？但我已经能够应用这些建议，这真的很棒。
 
-这是一个有点奇怪的轶事，但它也令人惊讶地充满了启发。我有很多朋友在数据科学方面什么也不做。我很喜欢这样。我是书呆子Vincent，当我和他们喝啤酒时，他们会说，别做书呆子Vincent，你现在在正常人中间，可以谈谈生活了。
+这是一个有点奇怪的轶事，但它也令人惊讶地充满了启发。我有很多朋友在数据科学方面什么也不做。我很喜欢这样。我是书呆子 Vincent，当我和他们喝啤酒时，他们会说，别做书呆子 Vincent，你现在在正常人中间，可以谈谈生活了。
 
 我住在一个你基本上认识所有邻居的社区。这个社区仍然是中产阶级社区的一部分——因为城市化它在变化，但我们彼此都认识。所以我街上有一个人，他是个画家。当天气好的时候，他会在家门外的长凳上放一箱啤酒。
 
@@ -602,17 +602,17 @@ Deon是一个数据科学清单。就是一些在不同公司出现过的问题�
 
 话虽如此，我其实是一个很差的职业建议提供者，因为回顾过去，我觉得我今天所处的位置很大程度上是由于运气，而运气是很难优化的东西。
 
-我认为一般来说，有一个自己的博客，分享你今天学到的东西，可能会很有用。所以，就像calmcode在某种程度上仍然是我的代码片段库一样，你的博客也可以是你的代码片段库。总的来说，我发现对于这些“今天我学到了什么”片段——如果你能够每月写两篇，可能每篇需要半小时，而不是一篇需要几个小时的大博客，这件事不应该超过几十分钟。但你这样做了一年，就会有一个包含24篇文章的博客。
+我认为一般来说，有一个自己的博客，分享你今天学到的东西，可能会很有用。所以，就像 calmcode 在某种程度上仍然是我的代码片段库一样，你的博客也可以是你的代码片段库。总的来说，我发现对于这些“今天我学到了什么”片段——如果你能够每月写两篇，可能每篇需要半小时，而不是一篇需要几个小时的大博客，这件事不应该超过几十分钟。但你这样做了一年，就会有一个包含 24 篇文章的博客。
 
 如果你在学习并且能够分享知识，那么人们会认可你确实有一些履历表明你在学习东西。所以，如果你想以较低的努力获得一定的在线存在感，这似乎是件相当简单的事。这是我推荐的做法。
 
 我确实认为，如果你是刚起步的超级初级人员，我想承认这有点困难。现在的[招聘市场现状]有点让人遗憾。但是，你可以做的一件事是考虑一下，你不需要知道所有东西才能得到工作。
 
-你也可能能找到相关的工作。我给那些想进入数据科学领域的朋友的一些建议是，学习R可能比学习Python稍微容易一点，做一两年的分析师可能也会更简单一些。
+你也可能能找到相关的工作。我给那些想进入数据科学领域的朋友的一些建议是，学习 R 可能比学习 Python 稍微容易一点，做一两年的分析师可能也会更简单一些。
 
 而且你作为分析师学到的所有技能，如果你想以后成为数据科学人员，都将非常有用。所以，如果更容易并且你能从中获得报酬，**不要优化头衔**。只需优化你在工作中学到的东西。这似乎更容易。作为一个优秀的分析师没有什么错。
 
-也许我们需要更多优秀的分析师，而不是优秀的数据科学家。对吧？也许我们需要更多拯救一天的group by语句。提示，看看这个演讲。
+也许我们需要更多优秀的分析师，而不是优秀的数据科学家。对吧？也许我们需要更多拯救一天的 group by 语句。提示，看看这个演讲。
 
 但我确实认为在职位头衔上有一点虚荣。“比如，我是超级高级的员工，超级工程师。是的。”但如果你只是一个真正称职的分析师，我们需要更多的优秀分析师。这也没关系。去争取吧。
 
@@ -634,19 +634,19 @@ Deon是一个数据科学清单。就是一些在不同公司出现过的问题�
 
 **文森特**：是的。我同意。还有一点我真的可能要为雇主稍微夸耀一下。
 
-我非常喜欢SpaCy的一点是，你不必使用机器学习的部分。你也可以只使用SpaCy中的非机器学习部分。它们也表现出色，快速且非常有用。还有一些机器学习包允许你做一些基于规则的工作。如果你在做NLP，这就是我为什么喜欢使用SpaCy的原因。
+我非常喜欢 SpaCy 的一点是，你不必使用机器学习的部分。你也可以只使用 SpaCy 中的非机器学习部分。它们也表现出色，快速且非常有用。还有一些机器学习包允许你做一些基于规则的工作。如果你在做 NLP，这就是我为什么喜欢使用 SpaCy 的原因。
 
 你不必一直使用统计方法。基于规则的引擎也很好。推销完毕。
 
-**塞思**：我已经是SpaCy的忠实粉丝有一段时间了——至少四年，可能更久。它帮助我解决了许多问题，从命名实体识别、文本分类到做匹配的酷方法，所有这些。
+**塞思**：我已经是 SpaCy 的忠实粉丝有一段时间了——至少四年，可能更久。它帮助我解决了许多问题，从命名实体识别、文本分类到做匹配的酷方法，所有这些。
 
-**文森特**：好吧，如果我可以做一个最后的推销。现在有很多关于数据驱动的人工智能的讨论。但我开始对这些Explosion团队的工作产生兴趣的原因之一是，他们在2017年写了一篇博客文章，标题是[监督学习很棒——破碎的是数据收集](https://explosion.ai/blog/supervised-learning-data-collection)。他们在2017年就做了数据驱动的工作，但这是我读过的最好的博客文章之一。
+**文森特**：好吧，如果我可以做一个最后的推销。现在有很多关于数据驱动的人工智能的讨论。但我开始对这些 Explosion 团队的工作产生兴趣的原因之一是，他们在 2017 年写了一篇博客文章，标题是[监督学习很棒——破碎的是数据收集](https://explosion.ai/blog/supervised-learning-data-collection)。他们在 2017 年就做了数据驱动的工作，但这是我读过的最好的博客文章之一。
 
 他们谈到了数据质量，其中一句最经典的名言就是：不要指望得到优秀的数据，如果你让低薪员工感到无聊，因为机械土耳其人有时仍然是人们的选择，读那篇博客文章。我会给你一个链接到节目备注。这也是人们应该阅读的非常有启发性的内容。
 
 **Seth**: 太棒了。非常感谢你。与您交谈真是太愉快了。你给了我很多很棒的资源。整理这些节目说明肯定会很有趣。如果有些地方你希望听众更多了解你，那些地方会是哪里？
 
-**Vincent**: 目前我在 [Twitter](https://twitter.com/fishnets88?s=20) 和 Fosstodon 上。不过主要的是我不能宣布任何消息。因为我在Explosion工作，能看到正在开发的内容。所以我正在做一些非常酷的事情，肯定会有超级酷的公告，我的其他同事们也在做很棒的工作——只需关注Explosion即可。
+**Vincent**: 目前我在 [Twitter](https://twitter.com/fishnets88?s=20) 和 Fosstodon 上。不过主要的是我不能宣布任何消息。因为我在 Explosion 工作，能看到正在开发的内容。所以我正在做一些非常酷的事情，肯定会有超级酷的公告，我的其他同事们也在做很棒的工作——只需关注 Explosion 即可。
 
 有很多非常酷的内容正在开发中。如果你这样做，那么你也会在某个时候听到一些我正在做的事情。
 
@@ -658,31 +658,31 @@ Deon是一个数据科学清单。就是一些在不同公司出现过的问题�
 
 [完整访谈的视频](https://youtu.be/yvgxRzqx1Jg)可以在这里观看：
 
-Vincent Warmerdam | 从机器学习中学习 第2集
+Vincent Warmerdam | 从机器学习中学习 第 2 集
 
 播客现在可以在所有 [播客平台](https://rss.com/podcasts/learning-from-machine-learning/804379/) 上收听：
 
 我们的上一集节目特邀了 [Maarten Grootendorst](https://www.maartengrootendorst.com/)，[BERTopic](https://maartengr.github.io/BERTopic/) 和 [KeyBERT](https://maartengr.github.io/KeyBERT/) 的创始人，以及 [Towards Data Science](https://medium.com/@maartengrootendorst) 上的一位 [多产作者](https://medium.com/@maartengrootendorst)。他讨论了开源项目、心理学与机器学习和软件开发的交集，以及自然语言处理的未来。
 
-[](/learning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921?source=post_page-----e07951a07cf4--------------------------------) [## 从机器学习中学习 | Maarten Grootendorst: BERTopic, 数据科学, 心理学
+[](/learning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921?source=post_page-----e07951a07cf4--------------------------------) ## 从机器学习中学习 | Maarten Grootendorst: BERTopic, 数据科学, 心理学
 
-### 从机器学习中学习的第一集节目介绍了BERTopic的创始人Maarten Grootendorst。
+### 从机器学习中学习的第一集节目介绍了 BERTopic 的创始人 Maarten Grootendorst。
 
-towardsdatascience.com](/learning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921?source=post_page-----e07951a07cf4--------------------------------)
+towardsdatascience.com
 
 ## 参考资料
 
-了解更多关于Vincent Warmerdam的资源：
+了解更多关于 Vincent Warmerdam 的资源：
 
 +   [calmcode](https://calmcode.io/)
 
-+   [https://koaning.io/](https://koaning.io/)
++   [`koaning.io/`](https://koaning.io/)
 
 +   [Vincent Warmerdam: 解决（错误问题）的职业 | PyData Amsterdam 2019](https://www.youtube.com/watch?v=kYMfE9u-lMo&ab_channel=PyData)
 
-+   [拯救一天的Group-by语句 — Vincent D Warmerdam](https://www.youtube.com/watch?v=S7vhi6RjBZA&t=0s&ab_channel=NormConf)
++   [拯救一天的 Group-by 语句 — Vincent D Warmerdam](https://www.youtube.com/watch?v=S7vhi6RjBZA&t=0s&ab_channel=NormConf)
 
-+   [https://github.com/koaning](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbThEWVk0N1AzQ1diZm1QVjAyRllGbTVfRUZFd3xBQ3Jtc0tsbE1scFl4QUg2MVgwNE1PMlBXMVZObmxlcUlBN0psSWNaQkd0TUZrZ280b3JEQzhneExRMlFwOE5QSDYxZ3M3R0JhVUQxdGRTRFZGNy1US1g2X1J0RTJKdjNwT3R3V0YzU3RUVmJ1aFdBV1RBLWJUNA&q=https%3A%2F%2Fgithub.com%2Fkoaning&v=yvgxRzqx1Jg)
++   [`github.com/koaning`](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbThEWVk0N1AzQ1diZm1QVjAyRllGbTVfRUZFd3xBQ3Jtc0tsbE1scFl4QUg2MVgwNE1PMlBXMVZObmxlcUlBN0psSWNaQkd0TUZrZ280b3JEQzhneExRMlFwOE5QSDYxZ3M3R0JhVUQxdGRTRFZGNy1US1g2X1J0RTJKdjNwT3R3V0YzU3RUVmJ1aFdBV1RBLWJUNA&q=https%3A%2F%2Fgithub.com%2Fkoaning&v=yvgxRzqx1Jg)
 
 ## 本集参考资料
 
@@ -704,10 +704,10 @@ towardsdatascience.com](/learning-from-machine-learning-maarten-grootendorst-ber
 
 了解更多有关从机器学习中学习的资源：
 
-+   [订阅Youtube频道](https://www.youtube.com/channel/UCGwSWuvSRzop4ZVG2z9NmnQ)
++   [订阅 Youtube 频道](https://www.youtube.com/channel/UCGwSWuvSRzop4ZVG2z9NmnQ)
 
-+   [在LinkedIn上学习从机器学习](https://www.linkedin.com/company/learning-from-machine-learning/)
++   [在 LinkedIn 上学习从机器学习](https://www.linkedin.com/company/learning-from-machine-learning/)
 
-+   联系我 [在LinkedIn上](https://www.linkedin.com/in/sethplevine/)
++   联系我 [在 LinkedIn 上](https://www.linkedin.com/in/sethplevine/)
 
-+   [在Medium上关注我](https://medium.com/@levine.seth.p)
++   [在 Medium 上关注我](https://medium.com/@levine.seth.p)

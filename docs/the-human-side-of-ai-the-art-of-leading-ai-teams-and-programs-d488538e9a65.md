@@ -1,18 +1,18 @@
-# 人工智能的另一面：领导AI团队和项目的艺术
+# 人工智能的另一面：领导 AI 团队和项目的艺术
 
-> 原文：[https://towardsdatascience.com/the-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65?source=collection_archive---------4-----------------------#2023-05-11](https://towardsdatascience.com/the-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65?source=collection_archive---------4-----------------------#2023-05-11)
+> 原文：[`towardsdatascience.com/the-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65?source=collection_archive---------4-----------------------#2023-05-11`](https://towardsdatascience.com/the-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65?source=collection_archive---------4-----------------------#2023-05-11)
 
 ## 如何成功管理不确定性并实现创新
 
-[](https://medium.com/@przemek_pospieszny?source=post_page-----d488538e9a65--------------------------------)[![Przemek Pospieszny](../Images/fe7461b399cfe43d97c8789d3ea1b6c0.png)](https://medium.com/@przemek_pospieszny?source=post_page-----d488538e9a65--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d488538e9a65--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d488538e9a65--------------------------------) [Przemek Pospieszny](https://medium.com/@przemek_pospieszny?source=post_page-----d488538e9a65--------------------------------)
+[](https://medium.com/@przemek_pospieszny?source=post_page-----d488538e9a65--------------------------------)![Przemek Pospieszny](https://medium.com/@przemek_pospieszny?source=post_page-----d488538e9a65--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d488538e9a65--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d488538e9a65--------------------------------) [Przemek Pospieszny](https://medium.com/@przemek_pospieszny?source=post_page-----d488538e9a65--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdfeec0868596&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65&user=Przemek+Pospieszny&userId=dfeec0868596&source=post_page-dfeec0868596----d488538e9a65---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d488538e9a65--------------------------------) · 11分钟阅读 · 2023年5月11日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd488538e9a65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65&user=Przemek+Pospieszny&userId=dfeec0868596&source=-----d488538e9a65---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdfeec0868596&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65&user=Przemek+Pospieszny&userId=dfeec0868596&source=post_page-dfeec0868596----d488538e9a65---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d488538e9a65--------------------------------) · 11 分钟阅读 · 2023 年 5 月 11 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd488538e9a65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65&user=Przemek+Pospieszny&userId=dfeec0868596&source=-----d488538e9a65---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd488538e9a65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65&source=-----d488538e9a65---------------------bookmark_footer-----------)![](../Images/29e41d6f8a710eb6db0ed9a8d2ca9518.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd488538e9a65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-human-side-of-ai-the-art-of-leading-ai-teams-and-programs-d488538e9a65&source=-----d488538e9a65---------------------bookmark_footer-----------)![](img/29e41d6f8a710eb6db0ed9a8d2ca9518.png)
 
 克里斯托弗·C·克拉夫特 Jr. 阿波罗计划期间的任务控制中心（休斯顿）（有少许调整），[公有领域](https://commons.wikimedia.org/wiki/File:Mission_Operations_Control_Room_during_Apollo_9.jpg)
 
@@ -20,15 +20,15 @@
 
 很多共同点！例如，高度不确定性、研究导向的特性、即兴发挥以及许多其他因素。机器学习专业人员常常像是在探索人类的宇宙先锋，其中创造力和即兴发挥往往扮演着重要角色。
 
-也许机器学习项目并不像建造和发射到月球的星际飞船那样复杂，但相比于标准的软件工程程序，它们**难以规划且需要频繁调整**。因此，许多AI领导者在预定的时间、精力和成果限制内难以交付AI解决方案。此外，由于对AI/ML人才的高需求，他们难以应对团队内的高流动率。
+也许机器学习项目并不像建造和发射到月球的星际飞船那样复杂，但相比于标准的软件工程程序，它们**难以规划且需要频繁调整**。因此，许多 AI 领导者在预定的时间、精力和成果限制内难以交付 AI 解决方案。此外，由于对 AI/ML 人才的高需求，他们难以应对团队内的高流动率。
 
-在这篇‘简短’的文章中，我将分享一些来自我15年领导数据工程、数据科学和机器学习团队及项目的有用技巧。这无疑是一个广泛的话题，可能适合写成一本书（也许有一天？）。不过，我将给你一个关于如何更成功地领导高绩效AI/ML团队的预览，这些团队工作于研发、应用研发或专注于生产化。
+在这篇‘简短’的文章中，我将分享一些来自我 15 年领导数据工程、数据科学和机器学习团队及项目的有用技巧。这无疑是一个广泛的话题，可能适合写成一本书（也许有一天？）。不过，我将给你一个关于如何更成功地领导高绩效 AI/ML 团队的预览，这些团队工作于研发、应用研发或专注于生产化。
 
-本文适用于那些希望成为领导者的MLR/MLEs、想提高技能的经理、高级领导者（以更好地辅导/指导），或对AI领导力感兴趣的AI爱好者。
+本文适用于那些希望成为领导者的 MLR/MLEs、想提高技能的经理、高级领导者（以更好地辅导/指导），或对 AI 领导力感兴趣的 AI 爱好者。
 
 **成功在前，失败不是选项！**
 
-![](../Images/c76dbdea95384ed1967d585350ef1e9c.png)
+![](img/c76dbdea95384ed1967d585350ef1e9c.png)
 
 图片来源于 [SpaceX](https://www.pexels.com/@spacex/) 来自 [Pexels](https://www.pexels.com/)
 
@@ -38,9 +38,9 @@
 
 乍一看，这可能像其他任何软件程序或项目，你有一个工程师团队，定义目标，应用某种形式的敏捷（scrum、sprints、每日站会等），偶尔与他们同步（啊，乏味的事，我非得做吗？），然后就开始了！
 
-是的，你可能面临与任何软件经理或领导者相同的问题，比如对人才的高需求、稀缺性、分布式团队、低士气，以及过度的辅导和指导工作。此外，你可能会觉得每个人，特别是LinkedIn上的招聘人员，都想挖走你辛苦培养的顶尖人才……你还会责怪他们团队的高流动率。
+是的，你可能面临与任何软件经理或领导者相同的问题，比如对人才的高需求、稀缺性、分布式团队、低士气，以及过度的辅导和指导工作。此外，你可能会觉得每个人，特别是 LinkedIn 上的招聘人员，都想挖走你辛苦培养的顶尖人才……你还会责怪他们团队的高流动率。
 
-然而，真正的区别和挑战在于你如何处理机器学习解决方案的研究、原型设计和开发，更重要的是，如何管理你的团队。只列举几个与AI项目相关的主要挑战：
+然而，真正的区别和挑战在于你如何处理机器学习解决方案的研究、原型设计和开发，更重要的是，如何管理你的团队。只列举几个与 AI 项目相关的主要挑战：
 
 +   **不确定性与规划** — 目标不明确，对交付成果及其形式（什么会有效、如何有效）存在高度不确定性。因此，常常缺乏规划、估算和监控，成功标准模糊/未量化，这些都阻碍了进展和**最终结果**的衡量。
 
@@ -56,7 +56,7 @@
 
 **是的，的确，我们有一个问题！**
 
-![](../Images/f25878ec741dab1a0aa3bd50d57088df.png)
+![](img/f25878ec741dab1a0aa3bd50d57088df.png)
 
 [SpaceX](https://www.pexels.com/@spacex/) 的照片来自 [Pexels](https://www.pexels.com/)
 
@@ -114,11 +114,11 @@ AI/ML 中的平衡至关重要，就像其他一切一样。你需要在创新�
 
 你可能经常听到，*“这是研发，无需计划，一切都关于实验和发现”*。胡说，相信我。
 
-的确，ML项目中的不确定性很高，**但只有规划才能帮助你理解它、规划各种场景并控制它**。在开始任何ML项目、迭代或活动之前，花一些时间进行规划。我知道，尤其是在早期阶段，这非常困难，因为可能不清楚什么会有效。但规划是一项能帮助你控制未知、准备各种场景并降低风险的练习。
+的确，ML 项目中的不确定性很高，**但只有规划才能帮助你理解它、规划各种场景并控制它**。在开始任何 ML 项目、迭代或活动之前，花一些时间进行规划。我知道，尤其是在早期阶段，这非常困难，因为可能不清楚什么会有效。但规划是一项能帮助你控制未知、准备各种场景并降低风险的练习。
 
 定义你的目标和成功标准，首先选择快速的胜利，并将其分解为里程碑或主要任务。不要深入挖掘；记住，你还需要保持灵活。
 
-*考虑到ML进展通常是* ***非线性的****。
+*考虑到 ML 进展通常是* ***非线性的****。
 
 投入时间到**风险管理**中。*等一下，真的？谁会做这些？* 你应该。创建一个潜在风险的清单和一个缓解计划，定期与团队更新。随着时间的推移，你会发现管理不确定性会变得更加可控。
 
@@ -128,9 +128,9 @@ AI/ML 中的平衡至关重要，就像其他一切一样。你需要在创新�
 
 规划过程的一部分是定义**成功标准**和指标，以便跟踪你的进展。为了监控目的，你可以将它们分配到各个阶段和里程碑中。它们可以反映具体的方面，如模型性能、延迟或涵盖的用户体验用例。但它们也可以是无形的，如用户满意度，在某些情况下，这可能比具体指标更重要。
 
-*确保你设定现实的KPI，并且如果项目需要调整，愿意改变它们。*
+*确保你设定现实的 KPI，并且如果项目需要调整，愿意改变它们。*
 
-还有**不要忘记沟通**。这是每一个成功的ML活动的关键因素。让你的利益相关者了解你的进展、风险和问题是至关重要的。每周或每两周的会议效果最佳（即使它们很短）。用通俗的语言教育他们关于ML的知识将对你大有帮助。
+还有**不要忘记沟通**。这是每一个成功的 ML 活动的关键因素。让你的利益相关者了解你的进展、风险和问题是至关重要的。每周或每两周的会议效果最佳（即使它们很短）。用通俗的语言教育他们关于 ML 的知识将对你大有帮助。
 
 ## **8\. 庆祝与反思**
 
@@ -140,9 +140,9 @@ AI/ML 中的平衡至关重要，就像其他一切一样。你需要在创新�
 
 通过庆祝成功和反思失败，你也可以培养一种创新文化，让每个人都感到鼓励去冒险和尝试新事物。
 
-![](../Images/663a983ff66b98eeca748134543cb6a3.png)
+![](img/663a983ff66b98eeca748134543cb6a3.png)
 
-（左）凯瑟琳·约翰逊，第一位女性和非洲裔美国NASA科学家之一，负责计算水银和阿波罗计划的轨迹，[公有领域](https://en.wikipedia.org/wiki/Katherine_Johnson) | （右）阿波罗导向计算机，基于硅集成电路的第一台计算机，CPU 2MHz，4kB RAM，[公有领域](https://en.wikipedia.org/wiki/Apollo_Guidance_Computer#/media/File:Agc_view.jpg)
+（左）凯瑟琳·约翰逊，第一位女性和非洲裔美国 NASA 科学家之一，负责计算水银和阿波罗计划的轨迹，[公有领域](https://en.wikipedia.org/wiki/Katherine_Johnson) | （右）阿波罗导向计算机，基于硅集成电路的第一台计算机，CPU 2MHz，4kB RAM，[公有领域](https://en.wikipedia.org/wiki/Apollo_Guidance_Computer#/media/File:Agc_view.jpg)
 
 # **如何避免偏离方向？**
 
@@ -164,30 +164,30 @@ AI/ML 中的平衡至关重要，就像其他一切一样。你需要在创新�
 
 +   **模型未收敛，让我们向其中注入更多数据** — 但数据收集和标记既昂贵又耗时。首先要弄清楚为什么它不起作用（数据、方法、模型和参数），确定更多数据是否真的会带来价值。
 
-![](../Images/ec3acb2ca5a5f7e2f7096cda25b2a256.png)![](../Images/132ae56371df8072e7272ca70f8b2c22.png)
+![](img/ec3acb2ca5a5f7e2f7096cda25b2a256.png)![](img/132ae56371df8072e7272ca70f8b2c22.png)
 
-(左) 照片由 [Mike Kiev](https://www.pexels.com/pl-pl/@mike-kiev/) 提供自 [Pexels](https://www.pexels.com) | (右) 阿波罗13号着陆，[公共领域](https://en.wikipedia.org/wiki/Apollo_13#/media/File:Mission_Control_Celebrates_-_GPN-2000-001313.jpg)
+(左) 照片由 [Mike Kiev](https://www.pexels.com/pl-pl/@mike-kiev/) 提供自 [Pexels](https://www.pexels.com) | (右) 阿波罗 13 号着陆，[公共领域](https://en.wikipedia.org/wiki/Apollo_13#/media/File:Mission_Control_Celebrates_-_GPN-2000-001313.jpg)
 
 # **就这些了？没有更多的建议了吗？**
 
-我已经与你分享了一些主要的方法。通过遵循这些技巧，你可以克服AI项目的挑战，并确保项目的成功。
+我已经与你分享了一些主要的方法。通过遵循这些技巧，你可以克服 AI 项目的挑战，并确保项目的成功。
 
-记住，AI是一个快速发展的领域，保持创新需要一个优秀的团队、奉献精神、计划、在实用性与创新之间取得平衡，以及持续学习。
+记住，AI 是一个快速发展的领域，保持创新需要一个优秀的团队、奉献精神、计划、在实用性与创新之间取得平衡，以及持续学习。
 
 谦逊而好奇。祝你旅途顺利和成功！ 🚀
 
-*顺便说一句，我强烈推荐Gene Kranz的书*[***‘Failure is not an option’***](https://www.amazon.com/Failure-Not-Option-Mission-Control/dp/1439148813/ref=sr_1_1?keywords=failure+is+not+an+option&qid=1683273623&sprefix=failure+is+n%2Caps%2C341&sr=8-1)*。它概述了早期太空计划的复杂性，同时强调了在面对挑战和挫折时领导力、团队合作和毅力的重要性。有时候，我觉得在AI开发，特别是通用人工智能方面，我们正处于试图登月的阶段！*
+*顺便说一句，我强烈推荐 Gene Kranz 的书*[***‘Failure is not an option’***](https://www.amazon.com/Failure-Not-Option-Mission-Control/dp/1439148813/ref=sr_1_1?keywords=failure+is+not+an+option&qid=1683273623&sprefix=failure+is+n%2Caps%2C341&sr=8-1)*。它概述了早期太空计划的复杂性，同时强调了在面对挑战和挫折时领导力、团队合作和毅力的重要性。有时候，我觉得在 AI 开发，特别是通用人工智能方面，我们正处于试图登月的阶段！*
 
 感谢阅读。请随意在 [**LinkedIn**](https://www.linkedin.com/in/ppospieszny/) 上联系或留言。
 
 如果你喜欢这篇文章，请随时查看我的另外两篇：
 
-[](/how-to-effectively-define-and-validate-use-cases-932c284837fe?source=post_page-----d488538e9a65--------------------------------) [## 如何有效定义和验证AI/ML用例
+[](/how-to-effectively-define-and-validate-use-cases-932c284837fe?source=post_page-----d488538e9a65--------------------------------) ## 如何有效定义和验证 AI/ML 用例
 
-### 大多数数据专业人士都在努力定义能转化为AI/ML解决方案并带来实际价值的用例。
+### 大多数数据专业人士都在努力定义能转化为 AI/ML 解决方案并带来实际价值的用例。
 
-[向数据科学迈进](/how-to-effectively-define-and-validate-use-cases-932c284837fe?source=post_page-----d488538e9a65--------------------------------) [](/how-to-build-data-science-unit-f84ee3de63f5?source=post_page-----d488538e9a65--------------------------------) [## 我如何建立一个数据科学实验室并休假
+[向数据科学迈进 [](/how-to-build-data-science-unit-f84ee3de63f5?source=post_page-----d488538e9a65--------------------------------) ## 我如何建立一个数据科学实验室并休假
 
 ### 学习如何有效地开发数据科学单元并避免常见的陷阱
 
-[向数据科学迈进](/how-to-build-data-science-unit-f84ee3de63f5?source=post_page-----d488538e9a65--------------------------------)
+[向数据科学迈进

@@ -1,10 +1,10 @@
 # 部署 Cohere 语言模型在 Amazon SageMaker 上
 
-> 原文：[https://towardsdatascience.com/deploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1?source=collection_archive---------10-----------------------#2023-05-18](https://towardsdatascience.com/deploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1?source=collection_archive---------10-----------------------#2023-05-18)
+> 原文：[`towardsdatascience.com/deploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1?source=collection_archive---------10-----------------------#2023-05-18`](https://towardsdatascience.com/deploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1?source=collection_archive---------10-----------------------#2023-05-18)
 
 ## 在 AWS 上扩展和托管 LLMs
 
-[](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)[![Ram Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23a3f79639b1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----23a3f79639b1--------------------------------) [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)
+[](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)![Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23a3f79639b1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----23a3f79639b1--------------------------------) [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23a3f79639b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1&source=-----23a3f79639b1---------------------bookmark_footer-----------)![](../Images/57c4cb0d9ebd119ae5f3cd5986778694.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23a3f79639b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1&source=-----23a3f79639b1---------------------bookmark_footer-----------)![](img/57c4cb0d9ebd119ae5f3cd5986778694.png)
 
 来自 [Unsplash](https://unsplash.com/photos/EgwhIBec0Ck) 的图片，由 [Sigmund](https://unsplash.com/@sigmund) 拍摄
 

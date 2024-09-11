@@ -1,18 +1,18 @@
 # 采样——数据科学中的无名英雄
 
-> 原文：[https://towardsdatascience.com/sampling-the-unsung-hero-of-data-science-5687c1bd1c1e?source=collection_archive---------14-----------------------#2023-01-18](https://towardsdatascience.com/sampling-the-unsung-hero-of-data-science-5687c1bd1c1e?source=collection_archive---------14-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/sampling-the-unsung-hero-of-data-science-5687c1bd1c1e?source=collection_archive---------14-----------------------#2023-01-18`](https://towardsdatascience.com/sampling-the-unsung-hero-of-data-science-5687c1bd1c1e?source=collection_archive---------14-----------------------#2023-01-18)
 
 ## 采样：方法论、实施与比较
 
-[](https://medium.com/@fmnobar?source=post_page-----5687c1bd1c1e--------------------------------)[![Farzad Mahmoodinobar](../Images/2d75209693b712300e6f0796bd2487d0.png)](https://medium.com/@fmnobar?source=post_page-----5687c1bd1c1e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5687c1bd1c1e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5687c1bd1c1e--------------------------------) [Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----5687c1bd1c1e--------------------------------)
+[](https://medium.com/@fmnobar?source=post_page-----5687c1bd1c1e--------------------------------)![Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----5687c1bd1c1e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5687c1bd1c1e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5687c1bd1c1e--------------------------------) [Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----5687c1bd1c1e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c56b7d4893e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsampling-the-unsung-hero-of-data-science-5687c1bd1c1e&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=post_page-3c56b7d4893e----5687c1bd1c1e---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----5687c1bd1c1e--------------------------------) ·6 分钟阅读·2023年1月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5687c1bd1c1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsampling-the-unsung-hero-of-data-science-5687c1bd1c1e&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=-----5687c1bd1c1e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c56b7d4893e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsampling-the-unsung-hero-of-data-science-5687c1bd1c1e&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=post_page-3c56b7d4893e----5687c1bd1c1e---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----5687c1bd1c1e--------------------------------) ·6 分钟阅读·2023 年 1 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5687c1bd1c1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsampling-the-unsung-hero-of-data-science-5687c1bd1c1e&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=-----5687c1bd1c1e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5687c1bd1c1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsampling-the-unsung-hero-of-data-science-5687c1bd1c1e&source=-----5687c1bd1c1e---------------------bookmark_footer-----------)![](../Images/ccd2f34f0dc6dea7154094484aec2969.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5687c1bd1c1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsampling-the-unsung-hero-of-data-science-5687c1bd1c1e&source=-----5687c1bd1c1e---------------------bookmark_footer-----------)![](img/ccd2f34f0dc6dea7154094484aec2969.png)
 
 一、代表一切，由 [DALL.E 2](https://openai.com/dall-e-2/)
 

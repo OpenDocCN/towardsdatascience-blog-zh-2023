@@ -1,14 +1,14 @@
 # 微型神经网络用于吉他效果与微控制器
 
-> 原文：[https://towardsdatascience.com/mini-neural-nets-for-guitar-effects-with-microcontrollers-ea9cdad2a29c?source=collection_archive---------1-----------------------#2023-04-07](https://towardsdatascience.com/mini-neural-nets-for-guitar-effects-with-microcontrollers-ea9cdad2a29c?source=collection_archive---------1-----------------------#2023-04-07)
+> 原文：[`towardsdatascience.com/mini-neural-nets-for-guitar-effects-with-microcontrollers-ea9cdad2a29c?source=collection_archive---------1-----------------------#2023-04-07`](https://towardsdatascience.com/mini-neural-nets-for-guitar-effects-with-microcontrollers-ea9cdad2a29c?source=collection_archive---------1-----------------------#2023-04-07)
 
-![](../Images/277de6904d28ad22861606c6e0892e3a.png)
+![](img/277de6904d28ad22861606c6e0892e3a.png)
 
 我的自制数字吉他效果器使用神经网络（图片由作者提供）
 
 ## *少即是多*
 
-[](https://keyth72.medium.com/?source=post_page-----ea9cdad2a29c--------------------------------)[![Keith Bloemer](../Images/3e8d884c0f32430286599b8ffb7b249c.png)](https://keyth72.medium.com/?source=post_page-----ea9cdad2a29c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea9cdad2a29c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea9cdad2a29c--------------------------------) [Keith Bloemer](https://keyth72.medium.com/?source=post_page-----ea9cdad2a29c--------------------------------)
+[](https://keyth72.medium.com/?source=post_page-----ea9cdad2a29c--------------------------------)![Keith Bloemer](https://keyth72.medium.com/?source=post_page-----ea9cdad2a29c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea9cdad2a29c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea9cdad2a29c--------------------------------) [Keith Bloemer](https://keyth72.medium.com/?source=post_page-----ea9cdad2a29c--------------------------------)
 
 ·
 
@@ -26,7 +26,7 @@
 
 但如果你想在一个便宜的微控制器上运行神经网络，使用一个小型（吉他效果踏板大小）的设备，专门用于运行音频效果而不做其他事情呢？像 [Raspberry Pi](https://www.raspberrypi.org/) 这样的微型计算机足够强大，可以运行操作系统，支持应用程序和吉他效果，还有多余的空间，这意味着更高成本下的资源浪费。这些计算机使用微处理器，而不是微控制器。微-*处理器* 具有外部内存和 I/O，而微-*控制器* 是一个自包含的计算系统，可以独立运行程序。微控制器通常不需要像 PC 或智能手机那样强大，因为它专门用于做一件事。微控制器非常适合数字吉他踏板，但为它们编写软件与智能手机或 PC 是不同的，这是我以前从未做过的。
 
-![](../Images/719b95227fbe9fe0b9ec78ee62895c3f.png)
+![](img/719b95227fbe9fe0b9ec78ee62895c3f.png)
 
 部分构建的 Terrarium PCB（左）和 Daisy Seed（右）（图片作者提供）
 
@@ -34,7 +34,7 @@
 
 以 42 美元的音频硬件成本，我的成本已经远低于我之前使用的 [NeuralPi 吉他踏板](https://medium.com/towards-data-science/neural-networks-for-real-time-audio-raspberry-pi-guitar-pedal-bded4b6b7f31) 的 Raspberry Pi4。我购买了电路板，得益于我之前对模拟效果的痴迷，手头有足够的硬件来构建 Terrarium 踏板。总成本约为 100 美元（包括外壳、电气组件、旋钮/开关），需要基本的焊接技能来组装。[其他现有项目](https://github.com/tnatoli/Sonic_Daisy/tree/main/rhythm_delay) 在完成的 Terrarium 踏板上运行良好，声音也很棒。
 
-![](../Images/fb0cbf0832b865b93fa315e6a6d0c7ee.png)
+![](img/fb0cbf0832b865b93fa315e6a6d0c7ee.png)
 
 我完成的 Terrarium 踏板。（图片作者提供）
 
@@ -44,7 +44,7 @@
 
 当我最初编译我的最小 c++ 程序与 RTNeural 时，我超出了 128KB 的限制。因此，我向 RTNeural 的创建者寻求帮助（正如我以前多次做的那样！）。他成功地将编译后的占用量减少了大量，为所需的代码和模型文件腾出了足够的空间。
 
-![](../Images/1e283ece1894dd7e9cc6518249b2e90f.png)
+![](img/1e283ece1894dd7e9cc6518249b2e90f.png)
 
 Daisy Seed 通过 USB 连接以上传 c++ 程序（图片作者提供）
 

@@ -1,18 +1,18 @@
-# 《SQL中的通用表表达式全面指南》
+# 《SQL 中的通用表表达式全面指南》
 
-> 原文：[https://towardsdatascience.com/a-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5?source=collection_archive---------5-----------------------#2023-08-22](https://towardsdatascience.com/a-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5?source=collection_archive---------5-----------------------#2023-08-22)
+> 原文：[`towardsdatascience.com/a-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5?source=collection_archive---------5-----------------------#2023-08-22`](https://towardsdatascience.com/a-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5?source=collection_archive---------5-----------------------#2023-08-22)
 
 ## 回归基础 | 简化复杂查询并提升可读性
 
-[](https://iffatm.medium.com/?source=post_page-----8c892ffda2f5--------------------------------)[![Iffat Malik](../Images/7be3b651053507de2077b3c3c9d3a408.png)](https://iffatm.medium.com/?source=post_page-----8c892ffda2f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c892ffda2f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8c892ffda2f5--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----8c892ffda2f5--------------------------------)
+[](https://iffatm.medium.com/?source=post_page-----8c892ffda2f5--------------------------------)![Iffat Malik](https://iffatm.medium.com/?source=post_page-----8c892ffda2f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c892ffda2f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c892ffda2f5--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----8c892ffda2f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----8c892ffda2f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c892ffda2f5--------------------------------) · 14 分钟阅读 · 2023年8月22日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c892ffda2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5&user=Iffat+Malik&userId=88491120e677&source=-----8c892ffda2f5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----8c892ffda2f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c892ffda2f5--------------------------------) · 14 分钟阅读 · 2023 年 8 月 22 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c892ffda2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5&user=Iffat+Malik&userId=88491120e677&source=-----8c892ffda2f5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8c892ffda2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5&source=-----8c892ffda2f5---------------------bookmark_footer-----------)![](../Images/b150ba7dccc63bf4a565984c86a8b0aa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8c892ffda2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-common-table-expression-in-sql-8c892ffda2f5&source=-----8c892ffda2f5---------------------bookmark_footer-----------)![](img/b150ba7dccc63bf4a565984c86a8b0aa.png)
 
 作者提供的图片
 

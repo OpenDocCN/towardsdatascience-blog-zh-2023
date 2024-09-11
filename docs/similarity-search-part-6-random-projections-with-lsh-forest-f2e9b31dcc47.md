@@ -1,54 +1,54 @@
-# 相似度搜索，第6部分：使用LSH森林的随机投影
+# 相似度搜索，第六部分：使用 LSH 森林的随机投影
 
-> 原文：[https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21](https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21`](https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21)
 
 ## 了解如何通过构造随机超平面对数据进行哈希，并反映其相似性
 
-[](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----f2e9b31dcc47---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------) · 12分钟阅读·2023年7月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----f2e9b31dcc47---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----f2e9b31dcc47---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------) · 12 分钟阅读·2023 年 7 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----f2e9b31dcc47---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&source=-----f2e9b31dcc47---------------------bookmark_footer-----------)![](../Images/12114a0785739ca563e1e315b906d96b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&source=-----f2e9b31dcc47---------------------bookmark_footer-----------)![](img/12114a0785739ca563e1e315b906d96b.png)
 
 **相似度搜索** 是一个问题，其中给定一个查询的目标是从所有数据库文档中找到与其最相似的文档。
 
 # 简介
 
-在数据科学中，相似度搜索通常出现在NLP领域、搜索引擎或推荐系统中，在这些领域，需要为查询检索最相关的文档或项目。在处理大规模数据时，存在多种方法来提高搜索性能。
+在数据科学中，相似度搜索通常出现在 NLP 领域、搜索引擎或推荐系统中，在这些领域，需要为查询检索最相关的文档或项目。在处理大规模数据时，存在多种方法来提高搜索性能。
 
-在[上一部分](https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203)，我们探讨了局部敏感哈希（LSH）的主要范式，即*将输入向量转换为低维哈希值，同时保留它们之间相似性的信息*。为了获得哈希值（签名），使用了minhash函数。在本文中，我们将随机投影输入数据，以获取类似的二进制向量。
+在[上一部分](https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203)，我们探讨了局部敏感哈希（LSH）的主要范式，即*将输入向量转换为低维哈希值，同时保留它们之间相似性的信息*。为了获得哈希值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据，以获取类似的二进制向量。
 
-[](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------) [## 相似性搜索，第5部分：局部敏感哈希（LSH）
+[](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------) ## 相似性搜索，第五部分：局部敏感哈希（LSH）
 
 ### 探索如何将相似性信息融入到哈希函数中
 
-towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------)
+towardsdatascience.com
 
 # 思路
 
 考虑在高维空间中的一组点。可以构造一个随机超平面作为墙，将每个点分为两组：正组和负组。将“1”赋给正组中的每个点，将“0”赋给负组中的每个点。
 
-![](../Images/db91cd0f54fb01f7056f6323feec17e0.png)
+![](img/db91cd0f54fb01f7056f6323feec17e0.png)
 
-超平面分隔两个3D空间点的示例
+超平面分隔两个 3D 空间点的示例
 
 如何确定某个向量在超平面的一侧？通过使用内积！深入到线性代数的本质中，给定向量与超平面法向量之间点积的符号决定了该向量位于超平面的哪一侧。这样，每个数据集向量都可以被分隔到两个侧面之一。
 
-![](../Images/00c4e7a079ad44deb761eef2c59a5cf4.png)
+![](img/00c4e7a079ad44deb761eef2c59a5cf4.png)
 
-通过计算向量与超平面法向量的内积，并与0进行比较，可以判断该向量相对于超平面的位置。
+通过计算向量与超平面法向量的内积，并与 0 进行比较，可以判断该向量相对于超平面的位置。
 
-显然，使用一个二进制值对每个数据集向量进行编码是不够的。因此，应该构造多个随机超平面，以便每个向量可以根据其相对位置用多个0和1进行编码。如果两个向量的二进制代码完全相同，则表示没有任何构造的超平面能够将它们分离到不同的区域。因此，它们在现实中很可能非常接近。
+显然，使用一个二进制值对每个数据集向量进行编码是不够的。因此，应该构造多个随机超平面，以便每个向量可以根据其相对位置用多个 0 和 1 进行编码。如果两个向量的二进制代码完全相同，则表示没有任何构造的超平面能够将它们分离到不同的区域。因此，它们在现实中很可能非常接近。
 
-要为给定的查询找到最近的邻居，只需通过检查其相对位置到所有超平面，使用0和1对查询进行编码即可。可以将查询找到的二进制向量与数据集中所有其他二进制向量进行比较。这可以通过使用汉明距离线性完成。
+要为给定的查询找到最近的邻居，只需通过检查其相对位置到所有超平面，使用 0 和 1 对查询进行编码即可。可以将查询找到的二进制向量与数据集中所有其他二进制向量进行比较。这可以通过使用汉明距离线性完成。
 
 > **汉明距离**指的是两个向量在其值不同的位置的数量。
 
-![](../Images/6110f31884e5d2440dd027e66a2037a9.png)
+![](img/6110f31884e5d2440dd027e66a2037a9.png)
 
 计算汉明距离的示例。左侧的一对向量因为其汉明距离较小而彼此更为相似。
 
@@ -66,7 +66,7 @@ towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh
 
 随机投影方法有时被称为 **LSH 树**。这是因为哈希码分配的过程可以表示为决策树的形式，每个节点包含一个条件，判断向量是否位于当前超平面的负侧或正侧。
 
-![](../Images/dd1474b48056732a935964db924be732.png)
+![](img/dd1474b48056732a935964db924be732.png)
 
 第一个节点检查向量相对于红色超平面的位置。第二层节点检查相对于绿色超平面的位置。最后，第三层检查相对于蓝色超平面的位置。根据这三个条件，向量被分配一个 3 位哈希值。
 
@@ -74,7 +74,7 @@ towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh
 
 超平面是随机构建的。这可能导致它们无法有效分隔数据集点，如下图所示。
 
-![](../Images/a7d909830c7dcf2b1f125e7222cb89ef.png)
+![](img/a7d909830c7dcf2b1f125e7222cb89ef.png)
 
 构建了 4 个超平面来将数据集点表示为 4 长度的二进制向量。即使点 D 和 E 具有相同的哈希码，它们之间的距离仍然相对较远（FP）。相反，点 E 和 F 的情况则是它们位于不同的区域，但彼此非常接近（FN）。考虑到汉明距离，算法通常预测点 D 更接近点 E 而不是点 F。
 
@@ -90,7 +90,7 @@ towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh
 
 选择适当数量的超平面以对数据集进行划分非常重要。选择的超平面越多，数据点之间的碰撞越少，但计算哈希代码所需的时间越长，存储它们所需的内存也越多。具体而言，如果数据集由 *n* 个向量组成，我们用 *k* 个超平面进行划分，则平均每个可能的哈希代码将被分配给 *n / 2ᵏ* 个向量。
 
-![](../Images/e5344a069b049e23f0319c2a8645138a.png)
+![](img/e5344a069b049e23f0319c2a8645138a.png)
 
 k = 3 结果是 2³ = 8 个桶
 
@@ -106,7 +106,7 @@ LSH Forest 训练阶段分为两个部分：
 
 上述过程对森林中的每棵树重复多次。
 
-![](../Images/3b0b47d41f8109c64aafe892d1b6fed2.png)
+![](img/3b0b47d41f8109c64aafe892d1b6fed2.png)
 
 训练复杂度
 
@@ -122,7 +122,7 @@ LSH forest 的一个优点是其快速推断，包括两个步骤：
 
 和往常一样，上述过程对森林中的每棵树重复多次。
 
-![](../Images/630951b782bb1e19a0a66758900557f8.png)
+![](img/630951b782bb1e19a0a66758900557f8.png)
 
 推理复杂度
 
@@ -132,23 +132,23 @@ LSH forest 的一个优点是其快速推断，包括两个步骤：
 
 在前面的 LSH 文章部分中，我们讨论了如何根据签名相似性找到两个向量被选为候选的概率。在这里，我们将使用几乎相同的逻辑来寻找 LSH 森林的公式。
 
-![](../Images/c452b2188fcbfd0bc3d7f8ed2e3ad179.png)
+![](img/c452b2188fcbfd0bc3d7f8ed2e3ad179.png)
 
 设 s 为两个向量的哈希值在相同位置上具有相同比特位的概率（s 将在后面估计）
 
-![](../Images/2627cc16d15c4dea9ed77b25464231e4.png)
+![](img/2627cc16d15c4dea9ed77b25464231e4.png)
 
 两个向量的长度为 k 的哈希码相等的概率
 
-![](../Images/6f77f816eddd37ab45ba57197a22d3e4.png)
+![](img/6f77f816eddd37ab45ba57197a22d3e4.png)
 
 两个向量的长度为 k 的哈希码不同（或至少有一个比特位不同）的概率
 
-![](../Images/f4b47775fb0a7e28aedcc187af92cd60.png)
+![](img/f4b47775fb0a7e28aedcc187af92cd60.png)
 
 两个向量的所有 l 个哈希码（用于 l 个超平面）不同的概率
 
-![](../Images/d73960509a18827c37433c71dfafcace.png)
+![](img/d73960509a18827c37433c71dfafcace.png)
 
 至少有一个 l 个哈希码相等的概率，这样向量将成为候选
 
@@ -156,45 +156,45 @@ LSH forest 的一个优点是其快速推断，包括两个步骤：
 
 说实话，*s* 是两个向量 *a* 和 *b* 具有相同比特位的概率。这个概率等同于一个随机超平面将这些向量分到同一侧的概率。让我们可视化一下：
 
-![](../Images/0af7b3dc68161821c43c1b390fded16f.png)
+![](img/0af7b3dc68161821c43c1b390fded16f.png)
 
 向量 a 和 b 被蓝色超平面分开。绿色超平面没有将它们分开。
 
 从图中可以看出，只有当超平面穿过它们之间时，才会将向量 *a* 和 *b* 分到两个不同的侧面。这样的概率 *q* 与向量之间的角度成正比，可以很容易地计算：
 
-![](../Images/8fe558b85b717c872df9910f1eba0d58.png)
+![](img/8fe558b85b717c872df9910f1eba0d58.png)
 
 随机超平面将两个向量分开的概率（即，它们具有不同的比特位）
 
-![](../Images/28bd65fa3c1e8a5ddbc1a48bb8fc3405.png)
+![](img/28bd65fa3c1e8a5ddbc1a48bb8fc3405.png)
 
 随机超平面不将两个向量分开的概率（即，它们具有相同的比特位）
 
 将此方程代入之前获得的方程中，可以得到最终公式：
 
-![](../Images/8df3753d3ee282c6ec9722a0e8396e6a.png)
+![](img/8df3753d3ee282c6ec9722a0e8396e6a.png)
 
 基于超平面数量 *k* 和 LSH 树的数量 *l*，两个向量至少有一个对应的哈希值（即成为候选者）的概率
 
 ## 可视化
 
-*注意*。余弦相似度在正式定义范围[-1, 1]内。为了简便起见，我们将这个区间映射到[0, 1]，其中0和1分别表示最低和最高的相似度。
+*注意*。余弦相似度在正式定义范围[-1, 1]内。为了简便起见，我们将这个区间映射到[0, 1]，其中 0 和 1 分别表示最低和最高的相似度。
 
 使用最后得到的公式，让我们可视化不同超平面 *k* 和树 *l* 数量下的两个向量成为候选者的概率。
 
-![](../Images/1c8d1abc9f4f92ee1e09f12117a17500.png)
+![](img/1c8d1abc9f4f92ee1e09f12117a17500.png)
 
 调整树的数量 l
 
-![](../Images/d5d2615dac869b093f4842dd1483f5e3.png)
+![](img/d5d2615dac869b093f4842dd1483f5e3.png)
 
 调整超平面数量 k
 
 根据图表，可以得出几个有用的观察结果：
 
-+   余弦相似度为1的一对向量总是成为候选者。
++   余弦相似度为 1 的一对向量总是成为候选者。
 
-+   余弦相似度为0的一对向量从不会成为候选者。
++   余弦相似度为 0 的一对向量从不会成为候选者。
 
 +   当超平面数量 *k* 减少或 LSH 树的数量 *l* 增加时，两向量成为候选者的概率 *P* 会增加（即更多的 *假阳性*）。逆命题也成立。
 
@@ -202,17 +202,17 @@ LSH forest 的一个优点是其快速推断，包括两个步骤：
 
 ## 示例
 
-我们来看以下例子。假设构建了 *l = 5* 棵树，并且使用了 *k = 10* 个超平面。此外，还有两个余弦相似度为0.8的向量。在大多数系统中，这种余弦相似度表明向量彼此非常接近。然而，根据前面的结果，这个概率仅为2.5%! 显然，对于如此高的余弦相似度，这个结果非常低。使用这些参数 *l = 5* 和 *k = 10* 会产生大量的*假阴性*! 下面的绿色线条表示这种情况下的概率。
+我们来看以下例子。假设构建了 *l = 5* 棵树，并且使用了 *k = 10* 个超平面。此外，还有两个余弦相似度为 0.8 的向量。在大多数系统中，这种余弦相似度表明向量彼此非常接近。然而，根据前面的结果，这个概率仅为 2.5%! 显然，对于如此高的余弦相似度，这个结果非常低。使用这些参数 *l = 5* 和 *k = 10* 会产生大量的*假阴性*! 下面的绿色线条表示这种情况下的概率。
 
-![](../Images/8f07e7d21fa0e15e1ea4370c54939e14.png)
+![](img/8f07e7d21fa0e15e1ea4370c54939e14.png)
 
 基于两个向量的余弦相似度的概率曲线
 
 这个问题可以通过调整更好的 *k* 和 *l* 的值来解决，使曲线向左移动。
 
-例如，如果 *k* 减少到3（红线），那么相同的余弦相似度为0.8的概率将达到68%，这比之前要好。乍一看，红线似乎比绿线更合适，但需要注意的是，使用小的 *k* 值（如红线情况）会导致大量的碰撞。因此，有时调整第二个参数，即树的数量 *l* 更为可取。
+例如，如果 *k* 减少到 3（红线），那么相同的余弦相似度为 0.8 的概率将达到 68%，这比之前要好。乍一看，红线似乎比绿线更合适，但需要注意的是，使用小的 *k* 值（如红线情况）会导致大量的碰撞。因此，有时调整第二个参数，即树的数量 *l* 更为可取。
 
-与*k*不同，通常需要非常多的树*l*才能获得类似的曲线形状。在图中，蓝线是通过将*l*的值从10更改为500得到的。蓝线明显比绿线更适合，但仍然远未完美：因为在0.6到0.8的余弦相似度值之间斜率很高，所以在0.3-0.5的余弦相似度附近概率几乎为0，这不利于效果。实际中，0.3–0.5的文档相似度的小概率通常应该更高。
+与*k*不同，通常需要非常多的树*l*才能获得类似的曲线形状。在图中，蓝线是通过将*l*的值从 10 更改为 500 得到的。蓝线明显比绿线更适合，但仍然远未完美：因为在 0.6 到 0.8 的余弦相似度值之间斜率很高，所以在 0.3-0.5 的余弦相似度附近概率几乎为 0，这不利于效果。实际中，0.3–0.5 的文档相似度的小概率通常应该更高。
 
 根据最后一个例子，很明显，即使是非常多的树（需要大量计算）仍然会产生许多*假阴性*! 这就是随机投影方法的主要缺点：
 
@@ -220,11 +220,11 @@ LSH forest 的一个优点是其快速推断，包括两个步骤：
 
 # Faiss 实现
 
-> [**Faiss**](https://github.com/facebookresearch/faiss)（Facebook AI 搜索相似性）是一个用C++编写的Python库，用于优化相似性搜索。该库提供了不同类型的索引，这些索引是用于高效存储数据和执行查询的数据结构。
+> [**Faiss**](https://github.com/facebookresearch/faiss)（Facebook AI 搜索相似性）是一个用 C++编写的 Python 库，用于优化相似性搜索。该库提供了不同类型的索引，这些索引是用于高效存储数据和执行查询的数据结构。
 
-根据[Faiss文档](https://faiss.ai)的信息，我们将了解如何构建LSH索引。
+根据[Faiss 文档](https://faiss.ai)的信息，我们将了解如何构建 LSH 索引。
 
-随机投影算法在Faiss中通过*IndexLSH*类实现。尽管Faiss作者使用了一种略有不同的技术称为“随机旋转”，但它与本文所描述的仍有相似之处。该类只实现了一个LSH树。如果我们想使用LSH森林，只需创建几个LSH树并汇总它们的结果即可。
+随机投影算法在 Faiss 中通过*IndexLSH*类实现。尽管 Faiss 作者使用了一种略有不同的技术称为“随机旋转”，但它与本文所描述的仍有相似之处。该类只实现了一个 LSH 树。如果我们想使用 LSH 森林，只需创建几个 LSH 树并汇总它们的结果即可。
 
 *IndexLSH*类的构造函数接受两个参数：
 
@@ -234,15 +234,15 @@ LSH forest 的一个优点是其快速推断，包括两个步骤：
 
 > `search()`方法返回的距离是查询向量的汉明距离。
 
-![](../Images/bee3e4613c3f739d5d7ccf1b92d88a87.png)
+![](img/bee3e4613c3f739d5d7ccf1b92d88a87.png)
 
 Faiss 对 IndexLSH 的实现
 
-此外，Faiss允许通过调用*faiss.vector_to_array(index.codes)*方法检查每个数据集向量的编码哈希值。
+此外，Faiss 允许通过调用*faiss.vector_to_array(index.codes)*方法检查每个数据集向量的编码哈希值。
 
 由于每个数据集向量由*nbits*个二进制值编码，存储单个向量所需的字节数等于：
 
-![](../Images/de186f2e3138d8eb7e1a5d77ed3e8617.png)
+![](img/de186f2e3138d8eb7e1a5d77ed3e8617.png)
 
 # Johnson-Lindenstrauss 引理
 

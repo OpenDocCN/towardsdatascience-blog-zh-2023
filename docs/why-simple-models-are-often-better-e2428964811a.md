@@ -1,18 +1,18 @@
 # 为什么简单模型往往更好
 
-> 原文：[https://towardsdatascience.com/why-simple-models-are-often-better-e2428964811a?source=collection_archive---------7-----------------------#2023-01-26](https://towardsdatascience.com/why-simple-models-are-often-better-e2428964811a?source=collection_archive---------7-----------------------#2023-01-26)
+> 原文：[`towardsdatascience.com/why-simple-models-are-often-better-e2428964811a?source=collection_archive---------7-----------------------#2023-01-26`](https://towardsdatascience.com/why-simple-models-are-often-better-e2428964811a?source=collection_archive---------7-----------------------#2023-01-26)
 
 ## 奥卡姆剃刀在数据科学和机器学习中的重要性
 
-[](https://thomasdorfer.medium.com/?source=post_page-----e2428964811a--------------------------------)[![Thomas A Dorfer](../Images/9258a1735cee805f1d9b02e2adf01096.png)](https://thomasdorfer.medium.com/?source=post_page-----e2428964811a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2428964811a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e2428964811a--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----e2428964811a--------------------------------)
+[](https://thomasdorfer.medium.com/?source=post_page-----e2428964811a--------------------------------)![Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----e2428964811a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2428964811a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2428964811a--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----e2428964811a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-simple-models-are-often-better-e2428964811a&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----e2428964811a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2428964811a--------------------------------) ·8分钟阅读·2023年1月26日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-simple-models-are-often-better-e2428964811a&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----e2428964811a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2428964811a--------------------------------) ·8 分钟阅读·2023 年 1 月 26 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2428964811a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-simple-models-are-often-better-e2428964811a&source=-----e2428964811a---------------------bookmark_footer-----------)![](../Images/e1dc823456e970d8e19dbd386739e884.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2428964811a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-simple-models-are-often-better-e2428964811a&source=-----e2428964811a---------------------bookmark_footer-----------)![](img/e1dc823456e970d8e19dbd386739e884.png)
 
 图片来源：[Pablo Arroyo](https://unsplash.com/@pablogamedev) 通过 [Unsplash](https://unsplash.com/photos/_SEbdtH4ZLM)
 

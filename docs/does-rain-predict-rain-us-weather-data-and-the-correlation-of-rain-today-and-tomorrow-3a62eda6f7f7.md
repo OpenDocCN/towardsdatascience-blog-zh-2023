@@ -1,18 +1,18 @@
 # 雨能预测雨吗？美国气象数据及今天和明天降雨的相关性
 
-> 原文：[https://towardsdatascience.com/does-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7?source=collection_archive---------6-----------------------#2023-08-10](https://towardsdatascience.com/does-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7?source=collection_archive---------6-----------------------#2023-08-10)
+> 原文：[`towardsdatascience.com/does-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7?source=collection_archive---------6-----------------------#2023-08-10`](https://towardsdatascience.com/does-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7?source=collection_archive---------6-----------------------#2023-08-10)
 
 ## 介绍有用的气候数据集并验证全球变暖预测
 
-[](https://medium.com/@chuck.connell.3?source=post_page-----3a62eda6f7f7--------------------------------)[![Chuck Connell](../Images/e188f1f743e4b798fb419d907e1df586.png)](https://medium.com/@chuck.connell.3?source=post_page-----3a62eda6f7f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3a62eda6f7f7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3a62eda6f7f7--------------------------------) [Chuck Connell](https://medium.com/@chuck.connell.3?source=post_page-----3a62eda6f7f7--------------------------------)
+[](https://medium.com/@chuck.connell.3?source=post_page-----3a62eda6f7f7--------------------------------)![Chuck Connell](https://medium.com/@chuck.connell.3?source=post_page-----3a62eda6f7f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3a62eda6f7f7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3a62eda6f7f7--------------------------------) [Chuck Connell](https://medium.com/@chuck.connell.3?source=post_page-----3a62eda6f7f7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc4e1ad08794e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdoes-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7&user=Chuck+Connell&userId=c4e1ad08794e&source=post_page-c4e1ad08794e----3a62eda6f7f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3a62eda6f7f7--------------------------------) ·8 分钟阅读·2023年8月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3a62eda6f7f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdoes-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7&user=Chuck+Connell&userId=c4e1ad08794e&source=-----3a62eda6f7f7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc4e1ad08794e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdoes-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7&user=Chuck+Connell&userId=c4e1ad08794e&source=post_page-c4e1ad08794e----3a62eda6f7f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3a62eda6f7f7--------------------------------) ·8 分钟阅读·2023 年 8 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3a62eda6f7f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdoes-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7&user=Chuck+Connell&userId=c4e1ad08794e&source=-----3a62eda6f7f7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3a62eda6f7f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdoes-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7&source=-----3a62eda6f7f7---------------------bookmark_footer-----------)![](../Images/8b8a07963d0de8faeb2b895b98fb236f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3a62eda6f7f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdoes-rain-predict-rain-us-weather-data-and-the-correlation-of-rain-today-and-tomorrow-3a62eda6f7f7&source=-----3a62eda6f7f7---------------------bookmark_footer-----------)![](img/8b8a07963d0de8faeb2b895b98fb236f.png)
 
 照片由[Wim van ‘t Einde](https://unsplash.com/fr/@wimvanteinde?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，发布在[Unsplash](https://unsplash.com/s/photos/weather?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)上。
 
@@ -141,52 +141,52 @@ station_url = HPD_LOCAL_DIR + station_files[i]  # toggle between local and cloud
 
 两张图表显示了这一结果。
 
-![](../Images/d9884bdcb867c586916aa2696c8213ac.png)
+![](img/d9884bdcb867c586916aa2696c8213ac.png)
 
 明天降雨几率与降雨天数（作者提供的图片）
 
-![](../Images/a8525a59eeb6a5b6b819cdcfaa185b8c.png)
+![](img/a8525a59eeb6a5b6b819cdcfaa185b8c.png)
 
 明天降雨量与降雨天数（作者提供的图片）
 
-我尝试了不同的“雨天”设置，将其从0.5英寸改为0.75和1.0。这些变化显示了雨天预测更多降雨的相同一般现象，但在八天内并没有完全的相关性。将“雨天”定义为0.5英寸似乎是预测明天降雨的最佳选择。
+我尝试了不同的“雨天”设置，将其从 0.5 英寸改为 0.75 和 1.0。这些变化显示了雨天预测更多降雨的相同一般现象，但在八天内并没有完全的相关性。将“雨天”定义为 0.5 英寸似乎是预测明天降雨的最佳选择。
 
-你可能会想知道在哪里会连续10天下雨。在全美范围内的22年中，接近九百万个数据点中只有118次这样的天气情况。部分地点包括：佛罗里达州博卡拉顿；波多黎各圣胡安；夏威夷卡胡纳瀑布；夏威夷考曼那；夏威夷基哈拉尼；夏威夷帕阿凯亚；密西西比州帕斯卡古拉；华盛顿州奎诺特；和华盛顿州奎尔辛。
+你可能会想知道在哪里会连续 10 天下雨。在全美范围内的 22 年中，接近九百万个数据点中只有 118 次这样的天气情况。部分地点包括：佛罗里达州博卡拉顿；波多黎各圣胡安；夏威夷卡胡纳瀑布；夏威夷考曼那；夏威夷基哈拉尼；夏威夷帕阿凯亚；密西西比州帕斯卡古拉；华盛顿州奎诺特；和华盛顿州奎尔辛。
 
-连续干燥的天数（< 0.05英寸的降雨）与第二天的干燥情况也有很好的相关性，但预测的准确性不如前者，因为明天干燥的可能性非常接近。明天干燥的概率始终接近78%的总体均值。
+连续干燥的天数（< 0.05 英寸的降雨）与第二天的干燥情况也有很好的相关性，但预测的准确性不如前者，因为明天干燥的可能性非常接近。明天干燥的概率始终接近 78%的总体均值。
 
-![](../Images/1fee88fb128460423d73467fb0c1e393.png)
+![](img/1fee88fb128460423d73467fb0c1e393.png)
 
 连续干燥的天数在预测第二天的降雨量方面有一定的准确性。
 
-![](../Images/b5e31ffb13f0375088645bea14232759.png)
+![](img/b5e31ffb13f0375088645bea14232759.png)
 
 明天降雨量与干燥天数（作者提供的图片）
 
 # 气候变化
 
-一个明显相关的问题是，随着地球温度因气候变化而上升，这里描述的结果是否有所改变。我对1940年至1960年、1960年至1980年和1980年至2000年的美国数据进行了相同的分析。
+一个明显相关的问题是，随着地球温度因气候变化而上升，这里描述的结果是否有所改变。我对 1940 年至 1960 年、1960 年至 1980 年和 1980 年至 2000 年的美国数据进行了相同的分析。
 
-主要结果是相同的——雨天预测更多的降雨。每个时间段的具体数字略有不同，但并没有改变强烈的相关性。例如，从1960年至1980年，有1388个有效数据的气象站和6,807,917个数据点，结果如下：
+主要结果是相同的——雨天预测更多的降雨。每个时间段的具体数字略有不同，但并没有改变强烈的相关性。例如，从 1960 年至 1980 年，有 1388 个有效数据的气象站和 6,807,917 个数据点，结果如下：
 
-`1个雨天后的降雨概率 = 17.3% 2个雨天后的降雨概率 = 19.6% 3个雨天后的降雨概率 = 27.4% 4个雨天后的降雨概率 = 37.1% 5个雨天后的降雨概率 = 43.8% 6个雨天后的降雨概率 = 51.5% 7个雨天后的降雨概率 = 52.4%`
+`1 个雨天后的降雨概率 = 17.3% 2 个雨天后的降雨概率 = 19.6% 3 个雨天后的降雨概率 = 27.4% 4 个雨天后的降雨概率 = 37.1% 5 个雨天后的降雨概率 = 43.8% 6 个雨天后的降雨概率 = 51.5% 7 个雨天后的降雨概率 = 52.4%`
 
-一个更重要的推论是，气候变化模型预测随着地球变暖，降雨量将会增加。HPD数据集可以验证这一点，至少在过去80年里是如此。
+一个更重要的推论是，气候变化模型预测随着地球变暖，降雨量将会增加。HPD 数据集可以验证这一点，至少在过去 80 年里是如此。
 
-简单的方法是使用所有当前气候站（约2000个）并查看每十年的降雨数据。但这样做存在潜在的偏差。现在的气象站比1940年时要多，因为过去80年里气象站逐渐增加。新建的气象站可能位于降雨量较多的地方。如果是这样的话，新数据会显示更多的降雨，但仅仅是因为总体的气象站集比1940年的站点集要湿润。
+简单的方法是使用所有当前气候站（约 2000 个）并查看每十年的降雨数据。但这样做存在潜在的偏差。现在的气象站比 1940 年时要多，因为过去 80 年里气象站逐渐增加。新建的气象站可能位于降雨量较多的地方。如果是这样的话，新数据会显示更多的降雨，但仅仅是因为总体的气象站集比 1940 年的站点集要湿润。
 
-更准确的方法是找到1940年代有降水数据的站点集合，然后在每个十年中使用相同的站点。我的程序可以做到这一点，因为它会输出每次运行时实际使用的站点列表。因此，我首先找到了1940到1950年的数据，然后在1950到1960年、1960到1970年等期间再次使用了发出的站点列表。这大约涉及840个站点，包含40万到250万的数据点。
+更准确的方法是找到 1940 年代有降水数据的站点集合，然后在每个十年中使用相同的站点。我的程序可以做到这一点，因为它会输出每次运行时实际使用的站点列表。因此，我首先找到了 1940 到 1950 年的数据，然后在 1950 到 1960 年、1960 到 1970 年等期间再次使用了发出的站点列表。这大约涉及 840 个站点，包含 40 万到 250 万的数据点。
 
 每十年的平均降水量应该非常接近——再次依据大数法则。但下图显示了在相同采集站点的降水量显著增加。这是支持全球变暖模型关键预测的一个显著结果。
 
-![](../Images/07731eed52416f5c61cf068cd698e878.png)
+![](img/07731eed52416f5c61cf068cd698e878.png)
 
 平均降水量与十年（作者提供的图片）
 
 # 了解更多信息
 
-[https://www.weather.gov/rah/virtualtourlist](https://www.weather.gov/rah/virtualtourlist) — 美国国家气象局如何进行天气预报。
+[`www.weather.gov/rah/virtualtourlist`](https://www.weather.gov/rah/virtualtourlist) — 美国国家气象局如何进行天气预报。
 
-[https://www.ncdc.noaa.gov/cdo-web/datasets](https://www.ncdc.noaa.gov/cdo-web/datasets) — 美国国家海洋和大气管理局数据集概述。
+[`www.ncdc.noaa.gov/cdo-web/datasets`](https://www.ncdc.noaa.gov/cdo-web/datasets) — 美国国家海洋和大气管理局数据集概述。
 
-[https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation](https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation#:~:text=Since%201901%2C%20global%20precipitation%20has,increases%20in%20precipitation%20than%20others.) — 美国环保局关于气候变化引起的降水增加的报告。
+[`www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation`](https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation#:~:text=Since%201901%2C%20global%20precipitation%20has,increases%20in%20precipitation%20than%20others.) — 美国环保局关于气候变化引起的降水增加的报告。

@@ -1,18 +1,18 @@
 # 初学者的对数变换
 
-> 原文：[https://towardsdatascience.com/logarithmic-transformation-for-beginners-99488b8951e3?source=collection_archive---------7-----------------------#2023-05-26](https://towardsdatascience.com/logarithmic-transformation-for-beginners-99488b8951e3?source=collection_archive---------7-----------------------#2023-05-26)
+> 原文：[`towardsdatascience.com/logarithmic-transformation-for-beginners-99488b8951e3?source=collection_archive---------7-----------------------#2023-05-26`](https://towardsdatascience.com/logarithmic-transformation-for-beginners-99488b8951e3?source=collection_archive---------7-----------------------#2023-05-26)
 
 ## 无单位的关联解释和其他好处
 
-[](https://medium.com/@jaekim8080?source=post_page-----99488b8951e3--------------------------------)[![Jae Kim](../Images/34716958ecfe8c0540f5cf5c1640d587.png)](https://medium.com/@jaekim8080?source=post_page-----99488b8951e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99488b8951e3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----99488b8951e3--------------------------------) [Jae Kim](https://medium.com/@jaekim8080?source=post_page-----99488b8951e3--------------------------------)
+[](https://medium.com/@jaekim8080?source=post_page-----99488b8951e3--------------------------------)![Jae Kim](https://medium.com/@jaekim8080?source=post_page-----99488b8951e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99488b8951e3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----99488b8951e3--------------------------------) [Jae Kim](https://medium.com/@jaekim8080?source=post_page-----99488b8951e3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a7641c3f8c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogarithmic-transformation-for-beginners-99488b8951e3&user=Jae+Kim&userId=3a7641c3f8c1&source=post_page-3a7641c3f8c1----99488b8951e3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99488b8951e3--------------------------------) ·7分钟阅读·2023年5月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99488b8951e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogarithmic-transformation-for-beginners-99488b8951e3&user=Jae+Kim&userId=3a7641c3f8c1&source=-----99488b8951e3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a7641c3f8c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogarithmic-transformation-for-beginners-99488b8951e3&user=Jae+Kim&userId=3a7641c3f8c1&source=post_page-3a7641c3f8c1----99488b8951e3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99488b8951e3--------------------------------) ·7 分钟阅读·2023 年 5 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99488b8951e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogarithmic-transformation-for-beginners-99488b8951e3&user=Jae+Kim&userId=3a7641c3f8c1&source=-----99488b8951e3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F99488b8951e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogarithmic-transformation-for-beginners-99488b8951e3&source=-----99488b8951e3---------------------bookmark_footer-----------)![](../Images/af1190126698b57beaa04749e17fcdd0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F99488b8951e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogarithmic-transformation-for-beginners-99488b8951e3&source=-----99488b8951e3---------------------bookmark_footer-----------)![](img/af1190126698b57beaa04749e17fcdd0.png)
 
 由 [Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供的照片
 
@@ -28,7 +28,7 @@
 
 +   与正态分布的接近程度。
 
-在这篇文章中，我将通过一个应用详细解释上述观点。数据和R代码可以从[这里](https://github.com/jh8080/Chicago)获取。
+在这篇文章中，我将通过一个应用详细解释上述观点。数据和 R 代码可以从[这里](https://github.com/jh8080/Chicago)获取。
 
 # 1\. 函数的变化和斜率
 

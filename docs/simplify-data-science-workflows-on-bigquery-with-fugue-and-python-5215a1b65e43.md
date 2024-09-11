@@ -1,14 +1,14 @@
 # 使用 Fugue 和 Python 简化 BigQuery 上的数据科学工作流
 
-> 原文：[https://towardsdatascience.com/simplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43?source=collection_archive---------9-----------------------#2023-04-13](https://towardsdatascience.com/simplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43?source=collection_archive---------9-----------------------#2023-04-13)
+> 原文：[`towardsdatascience.com/simplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43?source=collection_archive---------9-----------------------#2023-04-13`](https://towardsdatascience.com/simplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43?source=collection_archive---------9-----------------------#2023-04-13)
 
 ## 加速迭代并降低计算成本
 
-[](https://khuyentran1476.medium.com/?source=post_page-----5215a1b65e43--------------------------------)[![Khuyen Tran](../Images/98aa66025ad29b618e875c75f1c400a5.png)](https://khuyentran1476.medium.com/?source=post_page-----5215a1b65e43--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5215a1b65e43--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5215a1b65e43--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----5215a1b65e43--------------------------------)
+[](https://khuyentran1476.medium.com/?source=post_page-----5215a1b65e43--------------------------------)![Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----5215a1b65e43--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5215a1b65e43--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5215a1b65e43--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----5215a1b65e43--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----5215a1b65e43---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5215a1b65e43--------------------------------) ·6 min read·2023年4月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5215a1b65e43&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43&user=Khuyen+Tran&userId=84a02493194a&source=-----5215a1b65e43---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----5215a1b65e43---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5215a1b65e43--------------------------------) ·6 min read·2023 年 4 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5215a1b65e43&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-data-science-workflows-on-bigquery-with-fugue-and-python-5215a1b65e43&user=Khuyen+Tran&userId=84a02493194a&source=-----5215a1b65e43---------------------clap_footer-----------)
 
 --
 
@@ -30,7 +30,7 @@
 
 +   在彻底测试后，轻松切换回 BigQuery。
 
-![](../Images/5885ddbb9506439aefb9f64884f16214.png)
+![](img/5885ddbb9506439aefb9f64884f16214.png)
 
 作者提供的图像
 

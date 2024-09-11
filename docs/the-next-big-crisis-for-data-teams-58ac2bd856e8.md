@@ -1,10 +1,10 @@
 # 数据团队面临的下一个大危机
 
-> 原文：[https://towardsdatascience.com/the-next-big-crisis-for-data-teams-58ac2bd856e8?source=collection_archive---------0-----------------------#2023-04-17](https://towardsdatascience.com/the-next-big-crisis-for-data-teams-58ac2bd856e8?source=collection_archive---------0-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/the-next-big-crisis-for-data-teams-58ac2bd856e8?source=collection_archive---------0-----------------------#2023-04-17`](https://towardsdatascience.com/the-next-big-crisis-for-data-teams-58ac2bd856e8?source=collection_archive---------0-----------------------#2023-04-17)
 
 ## 数据团队比以往任何时候都更为重要 —— 但他们需要更贴近业务。以下是我们如何纠正航向的方法。
 
-[](https://barrmoses.medium.com/?source=post_page-----58ac2bd856e8--------------------------------)[![Barr Moses](../Images/4c74558ee692a85196d5a55ac1920718.png)](https://barrmoses.medium.com/?source=post_page-----58ac2bd856e8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58ac2bd856e8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----58ac2bd856e8--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----58ac2bd856e8--------------------------------)
+[](https://barrmoses.medium.com/?source=post_page-----58ac2bd856e8--------------------------------)![Barr Moses](https://barrmoses.medium.com/?source=post_page-----58ac2bd856e8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58ac2bd856e8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----58ac2bd856e8--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----58ac2bd856e8--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58ac2bd856e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-next-big-crisis-for-data-teams-58ac2bd856e8&source=-----58ac2bd856e8---------------------bookmark_footer-----------)![](../Images/441df0658c141ea30003a71d55e2fee4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58ac2bd856e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-next-big-crisis-for-data-teams-58ac2bd856e8&source=-----58ac2bd856e8---------------------bookmark_footer-----------)![](img/441df0658c141ea30003a71d55e2fee4.png)
 
 图片由 Daniel Lerman 提供，来自 [Unsplash](https://unsplash.com/photos/GBkssTODNT0)。
 
@@ -20,31 +20,31 @@
 
 我们一直在建设现代化的数据堆栈，像生命取决于它一样迁移到 Snowflake，投资无头 BI，并比你说反向 ETL 更快地扩展我们的团队。然而，我们大部分时间不知道这些工具是否真正为业务带来价值。
 
-别误解我的意思：我坚信[**现代数据堆栈**](https://www.montecarlodata.com/blog-the-future-of-the-modern-data-stack/)。当涉及到快速高效地生成分析时，云原生、基于SQL和模块化是最佳选择。然而，在如今紧张的预算和精简的团队面前，仅仅引用云的弹性和速度还不足以证明对这些工具的投资是合理的。
+别误解我的意思：我坚信[**现代数据堆栈**](https://www.montecarlodata.com/blog-the-future-of-the-modern-data-stack/)。当涉及到快速高效地生成分析时，云原生、基于 SQL 和模块化是最佳选择。然而，在如今紧张的预算和精简的团队面前，仅仅引用云的弹性和速度还不足以证明对这些工具的投资是合理的。
 
-![](../Images/fc9d63fbd26dae5c433a83190733f452.png)
+![](img/fc9d63fbd26dae5c433a83190733f452.png)
 
-*现代数据堆栈菜单。图片由* [*Matt Turck*](https://mattturck.com/MAD2023/) *和Firstmark Capital提供。*
+*现代数据堆栈菜单。图片由* [*Matt Turck*](https://mattturck.com/MAD2023/) *和 Firstmark Capital 提供。*
 
-现在，当服务员递上账单时，CFO不再毫不犹豫地掏出信用卡，而是逐项调查账单内容。
+现在，当服务员递上账单时，CFO 不再毫不犹豫地掏出信用卡，而是逐项调查账单内容。
 
 对于数据团队来说，账单已经到期。*应该*是机会的事情变成了危机，因为组织发现他们离业务还不够近，无法解释为何他们点了龙虾。
 
 # 我们是如何到达这里的？
 
-数据团队以几乎没有问题的方式首开历史，建立了8位数的技术堆栈。
+数据团队以几乎没有问题的方式首开历史，建立了 8 位数的技术堆栈。
 
-在2010年代中期，数据领导者被赋予了“成为数据驱动”的任务——不管这意味着什么。当然，数据可以帮助优化成本、改善财务表现、指导产品路线图、提供出色的客户洞察并获得竞争优势。但“数据驱动”是一个模糊的目标，带有模糊的指标和不清晰的投资回报。
+在 2010 年代中期，数据领导者被赋予了“成为数据驱动”的任务——不管这意味着什么。当然，数据可以帮助优化成本、改善财务表现、指导产品路线图、提供出色的客户洞察并获得竞争优势。但“数据驱动”是一个模糊的目标，带有模糊的指标和不清晰的投资回报。
 
 当然，数据团队并没有失控。在“增长不惜一切代价”的时代，火车全速前进。高管和决策者们看到谁在胜出——谷歌、Netflix 和亚马逊等公司——投资数据似乎是显而易见的选择。
 
 我们这个新兴行业构建了堆栈，这些堆栈要么是在内部拼凑而成，要么是临时购买的，用以解决特定问题。无论这些系统——以及数据本身——是否与期望的、软件工程启发的五个九的可靠性相结合，通常都是事后考虑的。
 
-在这个阶段，*拥有*数据往往就足以推动增长。有些数据有用，有些数据则没有，但至少我们拥有了它。到2020年，随着一切变得数字化并开始产生数据，疫情更是火上浇油。
+在这个阶段，*拥有*数据往往就足以推动增长。有些数据有用，有些数据则没有，但至少我们拥有了它。到 2020 年，随着一切变得数字化并开始产生数据，疫情更是火上浇油。
 
-像Snowflake、Databricks 和 Fivetran这样的技术出现，仿佛魔法一般，解决了许多“成为数据驱动”的问题。更快的洞察？没错！更简单的摄取？没错！更智能的模型？没错！
+像 Snowflake、Databricks 和 Fivetran 这样的技术出现，仿佛魔法一般，解决了许多“成为数据驱动”的问题。更快的洞察？没错！更简单的摄取？没错！更智能的模型？没错！
 
-然而，最终这些解决方案开始将数据量与成本挂钩。快进到今天，你的数据每年快速增长，你面临的是1000倍的数据量和1000倍的成本。在这个市场中，这无疑是一颗难以下咽的药丸。
+然而，最终这些解决方案开始将数据量与成本挂钩。快进到今天，你的数据每年快速增长，你面临的是 1000 倍的数据量和 1000 倍的成本。在这个市场中，这无疑是一颗难以下咽的药丸。
 
 要想脱颖而出并证明我们的工作，*提供*数据是不够的。它还需要可靠且有明确目的。
 
@@ -54,7 +54,7 @@
 
 # 通过了解人们来了解业务
 
-![](../Images/6dc29e9aa110cdc199caded3174a6e95.png)
+![](img/6dc29e9aa110cdc199caded3174a6e95.png)
 
 谁不喜欢一只可爱的填充企鹅？照片由[Andrea Gradilone](https://unsplash.com/@andrea_gradilone?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，来源于[Unsplash](https://unsplash.com/s/photos/stuffed-penguins?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -88,21 +88,21 @@
 
 你不能总是实时与每个人交谈。异步沟通和反馈循环对于数据和业务对齐（尤其是在今天的远程工作环境中）至关重要。
 
-如果你没有一个广泛可访问且活跃的Slack频道用于这些类型的沟通，考虑立即创建这样一个沟通空间。这也是数据与分析总监Priya Gupta在快速增长的初创公司Cribl创建[数据文化](https://www.montecarlodata.com/blog-building-data-driven-culture/)的关键之一。她说：
+如果你没有一个广泛可访问且活跃的 Slack 频道用于这些类型的沟通，考虑立即创建这样一个沟通空间。这也是数据与分析总监 Priya Gupta 在快速增长的初创公司 Cribl 创建[数据文化](https://www.montecarlodata.com/blog-building-data-driven-culture/)的关键之一。她说：
 
 “我们的数据团队倾向于过度沟通，我们尽可能通过多种渠道进行交流。正如我们作为数据工程师会对那些文档不全的数据源心存疑虑一样，业务用户对沉默的数据团队也会天然感到怀疑。
 
-类似Slack或Teams这样的聊天应用在这方面非常有帮助。我们创建了一个集中请求的频道，这有两个目的。它让整个分析团队能够看到请求情况，同时也让其他相关方了解他们的同行感兴趣的内容。
+类似 Slack 或 Teams 这样的聊天应用在这方面非常有帮助。我们创建了一个集中请求的频道，这有两个目的。它让整个分析团队能够看到请求情况，同时也让其他相关方了解他们的同行感兴趣的内容。
 
-“你见过的最令人满意的事情就是当有人在你的公共Slack频道中提出请求时，另一个相关方回答了原本应该由你回答的问题。”
+“你见过的最令人满意的事情就是当有人在你的公共 Slack 频道中提出请求时，另一个相关方回答了原本应该由你回答的问题。”
 
-但也许最重要的反馈环节是你如何向消费者展示数据产品的可信度和可靠性。并非所有的数据产品都会或需要100%可靠。
+但也许最重要的反馈环节是你如何向消费者展示数据产品的可信度和可靠性。并非所有的数据产品都会或需要 100%可靠。
 
-一旦你创建了自助服务或发现机制，进一步展示可靠性SLA以及产品满足该SLA的时间百分比。这正是[Roche](https://vimeo.com/765878759)在其数据网格上构建数据产品时采用的策略。
+一旦你创建了自助服务或发现机制，进一步展示可靠性 SLA 以及产品满足该 SLA 的时间百分比。这正是[Roche](https://vimeo.com/765878759)在其数据网格上构建数据产品时采用的策略。
 
 # 站在数据使用者的角度思考
 
-![](../Images/157f26bbcffc94c3c5faa77beda0b861.png)
+![](img/157f26bbcffc94c3c5faa77beda0b861.png)
 
 你可能甚至不需要完全站在他们的立场上……也许只需要几份仪表板的长度？照片由[Jose Fontano](https://unsplash.com/es/@josenothose?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来源于[Unsplash](https://unsplash.com/s/photos/beat-up-shoes?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -112,21 +112,21 @@
 
 为此，让数据团队的成员与相关方深入接触，体验他们的数据生活。
 
-[这是策略](https://www.montecarlodata.com/blog-data-enablement/)，由Upside的分析工程团队制定，经过高级数据分析工程师Jack Willis的经验 “…意识到很多为这个团队制作的[数据]产品在我实际看到他们的使用方式时并没有达到预期。”
+[这是策略](https://www.montecarlodata.com/blog-data-enablement/)，由 Upside 的分析工程团队制定，经过高级数据分析工程师 Jack Willis 的经验 “…意识到很多为这个团队制作的[数据]产品在我实际看到他们的使用方式时并没有达到预期。”
 
 他们的数据赋能框架包括三个步骤：完全融入团队中，与利益相关者一起规划，并培训团队以确保可持续的所有权。这是一种有效的方法，可以最大限度地发挥像分析工程师这样的新角色的价值，他们能够弥合数据工程师和分析师之间的差距。他们可以更深入地了解业务运作以及哪些数据真正能带来变化。
 
-“我们在数据产品中建立了一条信任之路……我们的利益相关者不再害怕数据和工程，我们的数据从业者也不再害怕业务……这让我们进入了一个数据飞轮，”Jack说道。
+“我们在数据产品中建立了一条信任之路……我们的利益相关者不再害怕数据和工程，我们的数据从业者也不再害怕业务……这让我们进入了一个数据飞轮，”Jack 说道。
 
 # 让采纳成为你的指南
 
 你不总是需要生活在数据消费者的世界中才能理解他们的故事。这个故事也可以通过他们采纳的东西和不采纳的东西来讲述。实际上，*“暗数据”*和[**数据孤岛**](https://www.montecarlodata.com/blog-data-silos/)可能比被广泛采纳的数据产品更具信息性。
 
-![](../Images/6009ceba386ac923b72003f4173399cd.png)
+![](img/6009ceba386ac923b72003f4173399cd.png)
 
 我们是否应该将路径移到那里？图片由作者提供。
 
-如果`V_GOOD_DASHBOARD_48`是由你的业务运营团队导出到Excel中的版本，它比`V_GOOD_DASHBOARD_49`更有价值（即使知道你的Looker技能被低估可能会让你感到痛苦）。
+如果`V_GOOD_DASHBOARD_48`是由你的业务运营团队导出到 Excel 中的版本，它比`V_GOOD_DASHBOARD_49`更有价值（即使知道你的 Looker 技能被低估可能会让你感到痛苦）。
 
 在你[从客户数据平台过渡到更具云原生的解决方案](https://www.montecarlodata.com/blog-death-of-the-customer-data-platform/)之前，了解营销团队如何使用它以及原因是很重要的。与提供强大的客户细分功能一样，直观的自助访问也可能同样有价值。
 
@@ -152,13 +152,13 @@
 
 # 专注于重要的短期胜利
 
-处理临时请求、调查断裂的数据管道，以及回应财务部Bob提出的第五个问题都是快速胜利，但它们并不能实质性地推动进展。
+处理临时请求、调查断裂的数据管道，以及回应财务部 Bob 提出的第五个问题都是快速胜利，但它们并不能实质性地推动进展。
 
-另一方面，启动多年的公司范围计划在启动电话会议之前往往就注定失败了。大型“资本P”项目（数据网格，如何？）虽然重要且值得，但它们不需要“完成”才有用。最好的选择是专注于具有明确业务价值的小型短期胜利。
+另一方面，启动多年的公司范围计划在启动电话会议之前往往就注定失败了。大型“资本 P”项目（数据网格，如何？）虽然重要且值得，但它们不需要“完成”才有用。最好的选择是专注于具有明确业务价值的小型短期胜利。
 
 再次强调，采纳应该是你的指导方针。将大部分资源集中在优化和构建关键用例和数据资产上（你知道你的关键数据资产吧？）。
 
-![](../Images/05d5dfcb783f1ddfc3b6794e5900e865.png)
+![](img/05d5dfcb783f1ddfc3b6794e5900e865.png)
 
 理解关键资产的使用情况可以帮助你专注于对业务利益相关者真正重要的数据。图片由作者提供，来自内部数据平台。
 
@@ -168,7 +168,7 @@
 
 +   尽量减少在新鲜度、体量和模式检查（你知道，就是那些简单的）的时间，然后专注于编写自定义规则以捕捉分布或字段健康异常。
 
-+   启动Slack、Teams或信鸽渠道，以便在数据出现问题时提醒所有相关方，并在数据血统的帮助下，提供受影响的报告和仪表板的建议。
++   启动 Slack、Teams 或信鸽渠道，以便在数据出现问题时提醒所有相关方，并在数据血统的帮助下，提供受影响的报告和仪表板的建议。
 
 缩小你的关注范围是否意味着你无法让所有人满意？是的。缩小关注范围是否意味着你在本季度会更成功？是的。
 

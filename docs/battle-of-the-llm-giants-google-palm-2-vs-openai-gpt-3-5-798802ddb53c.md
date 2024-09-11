@@ -1,18 +1,18 @@
 # LLM 巨头之战：Google PaLM 2 对 OpenAI GPT-3.5
 
-> 原文：[https://towardsdatascience.com/battle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c?source=collection_archive---------1-----------------------#2023-06-26](https://towardsdatascience.com/battle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c?source=collection_archive---------1-----------------------#2023-06-26)
+> 原文：[`towardsdatascience.com/battle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c?source=collection_archive---------1-----------------------#2023-06-26`](https://towardsdatascience.com/battle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c?source=collection_archive---------1-----------------------#2023-06-26)
 
 ## 使用 Outside 的真实数据、Pinecone 和 Langchain 的实用比较
 
-[](https://medium.com/@wen_yang?source=post_page-----798802ddb53c--------------------------------)[![Wen Yang](../Images/5eac438762d015a0ab128757cc951967.png)](https://medium.com/@wen_yang?source=post_page-----798802ddb53c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----798802ddb53c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----798802ddb53c--------------------------------) [Wen Yang](https://medium.com/@wen_yang?source=post_page-----798802ddb53c--------------------------------)
+[](https://medium.com/@wen_yang?source=post_page-----798802ddb53c--------------------------------)![Wen Yang](https://medium.com/@wen_yang?source=post_page-----798802ddb53c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----798802ddb53c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----798802ddb53c--------------------------------) [Wen Yang](https://medium.com/@wen_yang?source=post_page-----798802ddb53c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbb5383bd438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbattle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c&user=Wen+Yang&userId=cbb5383bd438&source=post_page-cbb5383bd438----798802ddb53c---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----798802ddb53c--------------------------------) · 11 分钟阅读 · 2023年6月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F798802ddb53c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbattle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c&user=Wen+Yang&userId=cbb5383bd438&source=-----798802ddb53c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbb5383bd438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbattle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c&user=Wen+Yang&userId=cbb5383bd438&source=post_page-cbb5383bd438----798802ddb53c---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----798802ddb53c--------------------------------) · 11 分钟阅读 · 2023 年 6 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F798802ddb53c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbattle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c&user=Wen+Yang&userId=cbb5383bd438&source=-----798802ddb53c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F798802ddb53c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbattle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c&source=-----798802ddb53c---------------------bookmark_footer-----------)![](../Images/0e166d585075cebb67623c314149ca6a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F798802ddb53c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbattle-of-the-llm-giants-google-palm-2-vs-openai-gpt-3-5-798802ddb53c&source=-----798802ddb53c---------------------bookmark_footer-----------)![](img/0e166d585075cebb67623c314149ca6a.png)
 
 作者使用 Midjourney 生成的图像以庆祝 Pride Outside
 

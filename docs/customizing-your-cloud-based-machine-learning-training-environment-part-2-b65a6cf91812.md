@@ -1,14 +1,14 @@
-# 定制你的云端机器学习训练环境 — 第2部分
+# 定制你的云端机器学习训练环境 — 第二部分
 
-> 原文：[https://towardsdatascience.com/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812?source=collection_archive---------8-----------------------#2023-05-21](https://towardsdatascience.com/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812?source=collection_archive---------8-----------------------#2023-05-21)
+> 原文：[`towardsdatascience.com/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812?source=collection_archive---------8-----------------------#2023-05-21`](https://towardsdatascience.com/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812?source=collection_archive---------8-----------------------#2023-05-21)
 
 ## 增加开发灵活性的额外解决方案
 
-[](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----b65a6cf91812---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------) ·7 分钟阅读·2023年5月21日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----b65a6cf91812---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------) ·7 分钟阅读·2023 年 5 月 21 日
 
 --
 
@@ -26,11 +26,11 @@
 
 [AWS 深度学习容器 (DLC) github 仓库](https://github.com/aws/deep-learning-containers)包含了[扩展官方 AWS DLC 的说明](https://github.com/aws/deep-learning-containers/blob/master/custom_images.md)。这需要登录以访问深度学习容器镜像库，从而拉取镜像、构建扩展镜像，并将其上传到你账户中的[Amazon Elastic Container Registry (ECR)](https://aws.amazon.com/ecr/)。
 
-以下代码块展示了如何从我们的 SageMaker 示例（第 1 部分）扩展官方 AWS DLC。我们展示了三种类型的扩展：
+以下代码块展示了如何从我们的 SageMaker 示例（第一部分）扩展官方 AWS DLC。我们展示了三种类型的扩展：
 
 1.  **Linux 包**：我们安装了[Nvidia Nsight Systems](https://developer.nvidia.com/nsight-systems)，用于对我们的训练作业进行高级 GPU 性能分析。
 
-1.  **Conda 包**：我们安装了[S5cmd](https://github.com/peak/s5cmd) conda 包，用于[从云存储中拉取数据文件](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056)。
+1.  **Conda 包**：我们安装了[S5cmd](https://github.com/peak/s5cmd) conda 包，用于从云存储中拉取数据文件。
 
 1.  **Pip 包**：我们安装了特定版本的[opencv-python](https://pypi.org/project/opencv-python/) pip 包。
 
@@ -79,7 +79,7 @@ estimator = PyTorch(
 
 ## 自带选项 1：SageMaker 训练工具包
 
-第一种选项，在[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/docker-containers-adapt-your-own.html)有文档记录，允许你将我们在[第 1 部分](https://chaimrand.medium.com/2622e10ed65a)中描述的专用（托管）训练启动流程添加到你自定义的 Python 环境中。这本质上使你可以在 SageMaker 中使用自定义镜像进行训练，就像使用官方镜像一样。特别是，你可以将相同的镜像重用于多个项目/实验，并依赖 SageMaker API 在启动时将特定于实验的代码下载到训练环境中（如[第 1 部分](https://chaimrand.medium.com/2622e10ed65a)中所述）。每次更改训练代码时，你不需要创建和上传新的镜像。
+第一种选项，在[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/docker-containers-adapt-your-own.html)有文档记录，允许你将我们在[第一部分](https://chaimrand.medium.com/2622e10ed65a)中描述的专用（托管）训练启动流程添加到你自定义的 Python 环境中。这本质上使你可以在 SageMaker 中使用自定义镜像进行训练，就像使用官方镜像一样。特别是，你可以将相同的镜像重用于多个项目/实验，并依赖 SageMaker API 在启动时将特定于实验的代码下载到训练环境中（如[第一部分](https://chaimrand.medium.com/2622e10ed65a)中所述）。每次更改训练代码时，你不需要创建和上传新的镜像。
 
 下面的代码块演示了如何获取自定义镜像，并按照[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/adapt-training-container.html)中详细的说明，使用[SageMaker 训练工具包](https://github.com/aws/sagemaker-training-toolkit)对其进行增强。
 

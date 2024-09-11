@@ -1,22 +1,22 @@
 # 偏见如何渗透到 AI 系统中
 
-> 原文：[https://towardsdatascience.com/how-prejudice-creeps-into-ai-systems-3673646ae8e3?source=collection_archive---------8-----------------------#2023-02-03](https://towardsdatascience.com/how-prejudice-creeps-into-ai-systems-3673646ae8e3?source=collection_archive---------8-----------------------#2023-02-03)
+> 原文：[`towardsdatascience.com/how-prejudice-creeps-into-ai-systems-3673646ae8e3?source=collection_archive---------8-----------------------#2023-02-03`](https://towardsdatascience.com/how-prejudice-creeps-into-ai-systems-3673646ae8e3?source=collection_archive---------8-----------------------#2023-02-03)
 
 ## AI 偏见实际上源于哪里？
 
-[](https://medium.com/@boris-ruf?source=post_page-----3673646ae8e3--------------------------------)[![Boris Ruf](../Images/96dc4fc2f32add89fef6911195590cd8.png)](https://medium.com/@boris-ruf?source=post_page-----3673646ae8e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3673646ae8e3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3673646ae8e3--------------------------------) [Boris Ruf](https://medium.com/@boris-ruf?source=post_page-----3673646ae8e3--------------------------------)
+[](https://medium.com/@boris-ruf?source=post_page-----3673646ae8e3--------------------------------)![Boris Ruf](https://medium.com/@boris-ruf?source=post_page-----3673646ae8e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3673646ae8e3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3673646ae8e3--------------------------------) [Boris Ruf](https://medium.com/@boris-ruf?source=post_page-----3673646ae8e3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fed341456850c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-prejudice-creeps-into-ai-systems-3673646ae8e3&user=Boris+Ruf&userId=ed341456850c&source=post_page-ed341456850c----3673646ae8e3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3673646ae8e3--------------------------------) ·4 分钟阅读·2023年2月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3673646ae8e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-prejudice-creeps-into-ai-systems-3673646ae8e3&user=Boris+Ruf&userId=ed341456850c&source=-----3673646ae8e3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fed341456850c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-prejudice-creeps-into-ai-systems-3673646ae8e3&user=Boris+Ruf&userId=ed341456850c&source=post_page-ed341456850c----3673646ae8e3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3673646ae8e3--------------------------------) ·4 分钟阅读·2023 年 2 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3673646ae8e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-prejudice-creeps-into-ai-systems-3673646ae8e3&user=Boris+Ruf&userId=ed341456850c&source=-----3673646ae8e3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3673646ae8e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-prejudice-creeps-into-ai-systems-3673646ae8e3&source=-----3673646ae8e3---------------------bookmark_footer-----------)![](../Images/68abad72609d8df6d60b05d3f299ac8f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3673646ae8e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-prejudice-creeps-into-ai-systems-3673646ae8e3&source=-----3673646ae8e3---------------------bookmark_footer-----------)![](img/68abad72609d8df6d60b05d3f299ac8f.png)
 
 图片由 [Lucas Benjamin](https://unsplash.com/@aznbokchoy?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-*一个挑战是，人工智能（AI）系统可能会在算法中嵌入偏见。在* [*我之前的文章*](/biased-ai-a-look-under-the-hood-5d0a41968f16)*中，我解释了当 AI 行为异常时发生的内部过程。接下来，我将深入探讨这些偏见实际上来自哪里——以及这些来源如何与传统技术中研究得较多的偏见问题不同。*
+*一个挑战是，人工智能（AI）系统可能会在算法中嵌入偏见。在* *我之前的文章**中，我解释了当 AI 行为异常时发生的内部过程。接下来，我将深入探讨这些偏见实际上来自哪里——以及这些来源如何与传统技术中研究得较多的偏见问题不同。*
 
 机器学习（ML）算法识别数据中的模式。它们的主要优势在于能够在训练数据中找到和区分类别，并利用这些洞察对新数据进行预测。
 
@@ -42,7 +42,7 @@
 
 第一个自然想到的偏差来源是人为偏差。下面概述了这种类型的偏差的不同类型。
 
-![](../Images/f9710dec7d1831383ee2ab85ed2521f9.png)
+![](img/f9710dec7d1831383ee2ab85ed2521f9.png)
 
 人为偏差的不同来源
 
@@ -52,7 +52,7 @@
 
 另一个不那么明显的偏差来源是数据收集的过程。如果数据未能反映真实的分布，那么使用这些数据进行训练的机器学习算法将会学习并加剧这种偏差。下表列出了可能导致数据选择偏差的不同类型的偏差。
 
-![](../Images/34af303bfe8f31aa1c978efd7dd28816.png)
+![](img/34af303bfe8f31aa1c978efd7dd28816.png)
 
 不同来源的选择偏差
 
@@ -60,4 +60,4 @@
 
 机器学习算法在创建预测模型时非常依赖于其使用的数据。这些训练数据可能存在偏差，特别是形式上的人为偏差或选择偏差。由于算法容易受到这些影响，并且由于有可能在大规模应用中出现，即使是算法中的微小系统性错误也可能导致加剧的歧视。
 
-*特别感谢Antoine Pietri在撰写这篇文章时提供的宝贵支持。在* [*我的下一篇文章*](https://medium.com/towards-data-science/to-guarantee-impartial-ai-decisions-lady-justice-needs-to-blink-2992167b2591)*中，我将解释为什么删除敏感属性并不是确保AI公平性的简单解决方案。*
+*特别感谢 Antoine Pietri 在撰写这篇文章时提供的宝贵支持。在* [*我的下一篇文章*](https://medium.com/towards-data-science/to-guarantee-impartial-ai-decisions-lady-justice-needs-to-blink-2992167b2591)*中，我将解释为什么删除敏感属性并不是确保 AI 公平性的简单解决方案。*

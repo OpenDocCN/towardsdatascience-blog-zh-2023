@@ -1,18 +1,18 @@
 # 10 个数据分析师可能会遇到的常见问题——以及如何回答它们
 
-> 原文：[https://towardsdatascience.com/10-common-questions-data-analysts-are-likely-to-encounter-and-how-to-answer-them-5d4d967635da?source=collection_archive---------12-----------------------#2023-07-25](https://towardsdatascience.com/10-common-questions-data-analysts-are-likely-to-encounter-and-how-to-answer-them-5d4d967635da?source=collection_archive---------12-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/10-common-questions-data-analysts-are-likely-to-encounter-and-how-to-answer-them-5d4d967635da?source=collection_archive---------12-----------------------#2023-07-25`](https://towardsdatascience.com/10-common-questions-data-analysts-are-likely-to-encounter-and-how-to-answer-them-5d4d967635da?source=collection_archive---------12-----------------------#2023-07-25)
 
 ## 学习如何应对一些行业数据分析师最常遇到的问题
 
-[![Matthew Gazzano](../Images/23f154b154d05847c2c13ea17ceb7a57.png)](https://medium.com/@mattgazzano?source=post_page-----5d4d967635da--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5d4d967635da--------------------------------) [Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----5d4d967635da--------------------------------)
+![Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----5d4d967635da--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d4d967635da--------------------------------) [Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----5d4d967635da--------------------------------)
 
 ·
 
-在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d4d967635da--------------------------------) 上发布 ·10分钟阅读·2023年7月25日 [关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F626000912ce9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F10-common-questions-data-analysts-are-likely-to-encounter-and-how-to-answer-them-5d4d967635da&user=Matthew+Gazzano&userId=626000912ce9&source=post_page-626000912ce9----5d4d967635da---------------------post_header-----------)
+在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d4d967635da--------------------------------) 上发布 ·10 分钟阅读·2023 年 7 月 25 日 [关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F626000912ce9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F10-common-questions-data-analysts-are-likely-to-encounter-and-how-to-answer-them-5d4d967635da&user=Matthew+Gazzano&userId=626000912ce9&source=post_page-626000912ce9----5d4d967635da---------------------post_header-----------)
 
 --
 
-![](../Images/ec66219d63b14126559345b3c86b05cd.png)
+![](img/ec66219d63b14126559345b3c86b05cd.png)
 
 [照片](https://unsplash.com/photos/5fNmWej4tAA) 由 [Scott Graham](https://unsplash.com/@homajob) 提供，来源于 [Unsplash](https://unsplash.com/)
 
@@ -24,7 +24,7 @@
 
 作为数据分析师，理解和解决有关你业务的基本问题对你的有效性至关重要。通过将你的报告和分析框架置于核心业务问题的背景下，你可以引发与管理层和决策者更深入的讨论。
 
-通过这篇文章，我旨在为你提供应对这些重复出现的问题所需的知识和见解。通过准备好解决这10个基本问题，你将增强你的分析能力，并在组织中确立自己作为不可或缺的资产。
+通过这篇文章，我旨在为你提供应对这些重复出现的问题所需的知识和见解。通过准备好解决这 10 个基本问题，你将增强你的分析能力，并在组织中确立自己作为不可或缺的资产。
 
 下面是你可能会被问到的问题。
 
@@ -36,9 +36,9 @@
 
 当我处理财务规划与分析报告时，组织通常会为财政年度设定一系列目标/配额基准。这些基准会以月度和累计总额的形式提供。它会类似于以下内容：
 
-> 我们希望X产品线每月带来$100,000的收入。这意味着它在第一个月应带来100,000，在第二个月带来200,000……
+> 我们希望 X 产品线每月带来$100,000 的收入。这意味着它在第一个月应带来 100,000，在第二个月带来 200,000……
 
-为了解决这个问题，作为数据分析师，你的角色将涉及将各种数据源，如CRM系统或由高层领导设定的外部清单，与账单系统结果连接起来。通过合并这些来源，你可以识别出收入的盈余或赤字，并为任何偏离预期目标的情况提供有意义的解释。你的分析将揭示造成赤字的潜在因素，使管理层能够做出明智的决策。
+为了解决这个问题，作为数据分析师，你的角色将涉及将各种数据源，如 CRM 系统或由高层领导设定的外部清单，与账单系统结果连接起来。通过合并这些来源，你可以识别出收入的盈余或赤字，并为任何偏离预期目标的情况提供有意义的解释。你的分析将揭示造成赤字的潜在因素，使管理层能够做出明智的决策。
 
 这种类型的报告不仅展示了你处理财务数据的能力，还展示了你在连接和解释来自不同来源的信息方面的分析技能。通过有效地弥合财务目标与实际结果之间的差距，你使决策者能够全面了解组织的财务表现。
 
@@ -46,9 +46,9 @@
 
 预测收入增长或收缩的趋势是领导者希望解决的关键问题。作为数据分析师，你可以在提供有关未来收入趋势的知情预测方面发挥关键作用，通常是在月度和季度基础上。让我们探讨一些你作为数据分析师或财务团队成员可以实施的技术，以有效解决这个问题：
 
-+   [**时间序列预测模型**](/the-complete-guide-to-time-series-analysis-and-forecasting-70d476bfe775) — 该模型使用统计技术根据历史数据预测日期轴上的值。可以使用多种技术来执行时间序列模型，详细内容过于繁琐，此处不作详述 — 请参阅我提供的链接以获取更多信息。
++   **时间序列预测模型** — 该模型使用统计技术根据历史数据预测日期轴上的值。可以使用多种技术来执行时间序列模型，详细内容过于繁琐，此处不作详述 — 请参阅我提供的链接以获取更多信息。
 
-+   **利用销售管道** — 常见的财务报告是“实际 vs 预测”报告。例如，“3 X 9”表示我们展示了3个月的实际数据与9个月的预测数据。预测元素将利用CRM中的开放数据，并计算在财年结束前的成交可能性百分比。
++   **利用销售管道** — 常见的财务报告是“实际 vs 预测”报告。例如，“3 X 9”表示我们展示了 3 个月的实际数据与 9 个月的预测数据。预测元素将利用 CRM 中的开放数据，并计算在财年结束前的成交可能性百分比。
 
 +   **手动输入** — 在某些团队中，销售领导希望能够审查管道中的内容，并挑选出哪些销售机会将会成交、成交时间以及预计价值，作为最终审查。虽然这种方法仍然有效，但依赖于个人的判断，无法程序化精简。这通常涉及接收一个需要纳入时间序列汇总的数值电子表格。
 
@@ -64,7 +64,7 @@
 
 销售渠道本身指的是组织可以获取收入的不同方式。销售渠道的数量在不同的组织中会有所不同，因为这还取决于其商业模式。一个典型的销售渠道集可能如下所示：
 
-+   **直接销售** — 使用销售团队与客户达成交易并将其记录在如Salesforce等CRM系统中。
++   **直接销售** — 使用销售团队与客户达成交易并将其记录在如 Salesforce 等 CRM 系统中。
 
 +   **电子商务** — 客户直接在组织的网站上购买产品。
 
@@ -88,21 +88,21 @@
 
 ## 客户保留：客户流失和续订率？
 
-领导者想了解他们如何扩展客户基础。这意味着提供在给定时间点的汇总总数，同时了解典型客户的流失率。如果有客户在x个月后停止使用你的服务的模式，那么原因是什么？这对客户生命周期的故事有什么启示？
+领导者想了解他们如何扩展客户基础。这意味着提供在给定时间点的汇总总数，同时了解典型客户的流失率。如果有客户在 x 个月后停止使用你的服务的模式，那么原因是什么？这对客户生命周期的故事有什么启示？
 
 理解客户保留率和流失的可能性，使领导者能够调整路径或为销售团队提供挽救可能流失客户的能力。当团队掌握流失报告时，他们将对客户流失的原因有深入了解，并会制定标准化流程以保持客户的账单状态。
 
 ## 客户细分：我们的典型客户类型有哪些？
 
-映射一系列客户档案是向产品和销售领导者提供的强大分析。这使团队能够根据最相关的客户群体（在B2C中）或最相关的组织类型（在B2B中）来量身定制服务。
+映射一系列客户档案是向产品和销售领导者提供的强大分析。这使团队能够根据最相关的客户群体（在 B2C 中）或最相关的组织类型（在 B2B 中）来量身定制服务。
 
-这是一个典型的机器学习问题，使用K-Means聚类模型，这是一种无监督模型，根据一系列输入将记录分组到一定数量的不同组中。执行客户细分模型是一个独立的主题 —— [Ceren Iyim](https://medium.com/@cereniyim) 写了一篇关于这个主题的优秀文章，名为[*Customer Segmentation with Machine Learning*](/customer-segmentation-with-machine-learning-a0ac8c3d4d84)*。*
+这是一个典型的机器学习问题，使用 K-Means 聚类模型，这是一种无监督模型，根据一系列输入将记录分组到一定数量的不同组中。执行客户细分模型是一个独立的主题 —— [Ceren Iyim](https://medium.com/@cereniyim) 写了一篇关于这个主题的优秀文章，名为*Customer Segmentation with Machine Learning**。*
 
 # 📱产品与市场营销
 
 ## 我们的产品/服务哪些功能使用最多，哪些功能使用最少？
 
-拥有数字产品的组织不断监测用户最常使用的功能。理解用户的“点击路径”背后的模式使得Instagram和TikTok等产品能够如此引人入胜和互动（有人可能会说这些服务在这一领域过于有效，但那是另一篇文章…）。当产品团队能够理解产品中的哪些功能有效、哪些无效时，他们可以构建对用户更具影响力的功能，这*最终*会提高客户留存率。
+拥有数字产品的组织不断监测用户最常使用的功能。理解用户的“点击路径”背后的模式使得 Instagram 和 TikTok 等产品能够如此引人入胜和互动（有人可能会说这些服务在这一领域过于有效，但那是另一篇文章…）。当产品团队能够理解产品中的哪些功能有效、哪些无效时，他们可以构建对用户更具影响力的功能，这*最终*会提高客户留存率。
 
 这也适用于那些不是围绕数字产品建立的组织——包括服务、零售和酒店业。数据可能通过客户调查的不同形式进行收集。领导者仍然可以从直接的客户反馈中获得有价值的发现，甚至从客户交易历史中获得洞察。亚马逊客户评论就是一个很好的例子——分析团队可以发展出对产品的一般情感，并报告评论中最常出现的关键词。
 
@@ -122,7 +122,7 @@
 
 与品牌互动类似，领导者也需要了解客户对你的产品和品牌的总体情感。团队可以参考多个数据点来推测总体满意度，包括以下内容：
 
-+   使用开源或付费API提取的组织社交媒体账户上的评论、推文和帖子。
++   使用开源或付费 API 提取的组织社交媒体账户上的评论、推文和帖子。
 
 +   客户满意度调查
 

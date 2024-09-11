@@ -1,12 +1,12 @@
 # 介绍 Python 的魔术方法
 
-> 原文：[https://towardsdatascience.com/introducing-pythons-magic-methods-f443ed913703?source=collection_archive---------3-----------------------#2023-05-24](https://towardsdatascience.com/introducing-pythons-magic-methods-f443ed913703?source=collection_archive---------3-----------------------#2023-05-24)
+> 原文：[`towardsdatascience.com/introducing-pythons-magic-methods-f443ed913703?source=collection_archive---------3-----------------------#2023-05-24`](https://towardsdatascience.com/introducing-pythons-magic-methods-f443ed913703?source=collection_archive---------3-----------------------#2023-05-24)
 
 ## PYTHON | 编程
 
 ## 一份关于利用魔术方法提高编程能力的实用指南
 
-[](https://david-farrugia.medium.com/?source=post_page-----f443ed913703--------------------------------)[![David Farrugia](../Images/082ed61e24c7c26a4ae1c77343a87824.png)](https://david-farrugia.medium.com/?source=post_page-----f443ed913703--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f443ed913703--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f443ed913703--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----f443ed913703--------------------------------)
+[](https://david-farrugia.medium.com/?source=post_page-----f443ed913703--------------------------------)![David Farrugia](https://david-farrugia.medium.com/?source=post_page-----f443ed913703--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f443ed913703--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f443ed913703--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----f443ed913703--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff443ed913703&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pythons-magic-methods-f443ed913703&source=-----f443ed913703---------------------bookmark_footer-----------)![](../Images/e1d07678085006aa654f8b8a1494a25c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff443ed913703&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pythons-magic-methods-f443ed913703&source=-----f443ed913703---------------------bookmark_footer-----------)![](img/e1d07678085006aa654f8b8a1494a25c.png)
 
 照片由 [Matt Palmer](https://unsplash.com/@mattpalmer?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,11 +22,11 @@ Python 是一门极好的编程语言，正如 [GitHub](https://octoverse.github
 
 Python 具有许多不为人知的酷炫功能。如果你有兴趣了解更多，可以随时查看我之前关于这个主题的文章。
 
-[](/5-awesome-python-hidden-features-a0172e0bd98e?source=post_page-----f443ed913703--------------------------------) [## 5 个令人惊叹的 Python 隐藏特性 — 第 1 部分
+[](/5-awesome-python-hidden-features-a0172e0bd98e?source=post_page-----f443ed913703--------------------------------) ## 5 个令人惊叹的 Python 隐藏特性 — 第一部分
 
 ### 使用这些酷炫的隐藏 Python 特性将你的编程技能提升到一个新水平。
 
-towardsdatascience.com](/5-awesome-python-hidden-features-a0172e0bd98e?source=post_page-----f443ed913703--------------------------------)
+towardsdatascience.com
 
 在 Python 编程广阔而动态的世界中，存在一组初学者常常忽视但在语言生态系统中具有重要意义的独特函数。这些就是魔法方法（也称为 dunder 函数）。
 

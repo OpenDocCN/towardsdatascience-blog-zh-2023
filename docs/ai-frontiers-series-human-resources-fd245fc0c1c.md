@@ -1,18 +1,18 @@
-# AI前沿系列：人力资源
+# AI 前沿系列：人力资源
 
-> 原文：[https://towardsdatascience.com/ai-frontiers-series-human-resources-fd245fc0c1c?source=collection_archive---------16-----------------------#2023-06-20](https://towardsdatascience.com/ai-frontiers-series-human-resources-fd245fc0c1c?source=collection_archive---------16-----------------------#2023-06-20)
+> 原文：[`towardsdatascience.com/ai-frontiers-series-human-resources-fd245fc0c1c?source=collection_archive---------16-----------------------#2023-06-20`](https://towardsdatascience.com/ai-frontiers-series-human-resources-fd245fc0c1c?source=collection_archive---------16-----------------------#2023-06-20)
 
 ## 人工智能难题的介绍
 
-[](https://medium.com/@eortizrecalde?source=post_page-----fd245fc0c1c--------------------------------)[![Ezequiel Ortiz Recalde](../Images/bd18d10a317f568b24d51008b9bb9da4.png)](https://medium.com/@eortizrecalde?source=post_page-----fd245fc0c1c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fd245fc0c1c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fd245fc0c1c--------------------------------) [Ezequiel Ortiz Recalde](https://medium.com/@eortizrecalde?source=post_page-----fd245fc0c1c--------------------------------)
+[](https://medium.com/@eortizrecalde?source=post_page-----fd245fc0c1c--------------------------------)![Ezequiel Ortiz Recalde](https://medium.com/@eortizrecalde?source=post_page-----fd245fc0c1c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fd245fc0c1c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd245fc0c1c--------------------------------) [Ezequiel Ortiz Recalde](https://medium.com/@eortizrecalde?source=post_page-----fd245fc0c1c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2939b50adecd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-frontiers-series-human-resources-fd245fc0c1c&user=Ezequiel+Ortiz+Recalde&userId=2939b50adecd&source=post_page-2939b50adecd----fd245fc0c1c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd245fc0c1c--------------------------------) ·16分钟阅读·2023年6月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffd245fc0c1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-frontiers-series-human-resources-fd245fc0c1c&user=Ezequiel+Ortiz+Recalde&userId=2939b50adecd&source=-----fd245fc0c1c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2939b50adecd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-frontiers-series-human-resources-fd245fc0c1c&user=Ezequiel+Ortiz+Recalde&userId=2939b50adecd&source=post_page-2939b50adecd----fd245fc0c1c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd245fc0c1c--------------------------------) ·16 分钟阅读·2023 年 6 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffd245fc0c1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-frontiers-series-human-resources-fd245fc0c1c&user=Ezequiel+Ortiz+Recalde&userId=2939b50adecd&source=-----fd245fc0c1c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffd245fc0c1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-frontiers-series-human-resources-fd245fc0c1c&source=-----fd245fc0c1c---------------------bookmark_footer-----------)![](../Images/3afb0f663e5bc811df6f06f1dcfd6969.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffd245fc0c1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-frontiers-series-human-resources-fd245fc0c1c&source=-----fd245fc0c1c---------------------bookmark_footer-----------)![](img/3afb0f663e5bc811df6f06f1dcfd6969.png)
 
 图像由[Midjourney](https://www.midjourney.com/)生成
 
@@ -22,7 +22,7 @@
 
 与[**前一篇文章**](https://medium.com/towards-data-science/ai-frontiers-series-supply-chain-f5fa008570ad)讨论的供应链数据问题不同，这里的主要关注点不仅仅是高质量数据的可用性。数据的处理和遵守数据规范同样至关重要。在接下来的章节中，我们将讨论如何解决这些因素，以解锁人工智能在人力资源中的变革力量。
 
-然而，在深入这些用例之前，需要注意的是，你的组织应首先评估其实施这些策略的准备情况，正如Chowdhury, S., et al.,（2023）所推荐的。此外，正如我不断强调的，检查一些更广泛的要求肯定会大有帮助（你可以参考这篇[**文章**](https://medium.com/towards-data-science/14-requirements-to-make-your-machine-learning-project-a-success-part-i-80c288be503d)）。
+然而，在深入这些用例之前，需要注意的是，你的组织应首先评估其实施这些策略的准备情况，正如 Chowdhury, S., et al.,（2023）所推荐的。此外，正如我不断强调的，检查一些更广泛的要求肯定会大有帮助（你可以参考这篇[**文章**](https://medium.com/towards-data-science/14-requirements-to-make-your-machine-learning-project-a-success-part-i-80c288be503d)）。
 
 # 人力资源管理中的挑战
 
@@ -40,7 +40,7 @@
 
 +   多样性比例（diversity ratios）
 
-需要强调的是，这些指标所测量的过程需要**定量分析与人类理解的微妙平衡**。因此，为了充分理解人工智能在人力资源中的潜力，我们必须首先对每个KPI测量的过程的现状提出一些问题。请注意，这是你在处理任何机器学习[**项目**](https://medium.com/towards-data-science/14-requirements-to-make-your-machine-learning-project-a-success-part-i-80c288be503d)时应该遵循的标准程序。在这方面，我们将通过使用一些触发问题来逐步探讨每个过程的步骤。
+需要强调的是，这些指标所测量的过程需要**定量分析与人类理解的微妙平衡**。因此，为了充分理解人工智能在人力资源中的潜力，我们必须首先对每个 KPI 测量的过程的现状提出一些问题。请注意，这是你在处理任何机器学习[**项目**](https://medium.com/towards-data-science/14-requirements-to-make-your-machine-learning-project-a-success-part-i-80c288be503d)时应该遵循的标准程序。在这方面，我们将通过使用一些触发问题来逐步探讨每个过程的步骤。
 
 ## **1. 人才招聘挑战**
 
@@ -56,7 +56,7 @@
 
 举个例子，考虑一个针对专门从事人力资源工作的高级数据科学家职位，要求精通 AWS。利用人工智能，提示可以在不到 10 秒的时间内编写完成，这不仅高效而且非常有效。
 
-![](../Images/ea8fa904a74cd2f41843dee384e22e4f.png)
+![](img/ea8fa904a74cd2f41843dee384e22e4f.png)
 
 作者提供的图片
 
@@ -66,13 +66,13 @@
 
 **1.2\. 简历分析**
 
-你还在手动筛选每一份进入邮箱的简历吗？你的HR人才招聘专员是否在分析数百甚至上千份申请时投入了宝贵的时间，即便已经找到合适的候选人？你是否曾经考虑过你的招聘人员在决策时权衡的具体变量，或者他们如何利用数据库中留下的简历来匹配未来的职位招聘？
+你还在手动筛选每一份进入邮箱的简历吗？你的 HR 人才招聘专员是否在分析数百甚至上千份申请时投入了宝贵的时间，即便已经找到合适的候选人？你是否曾经考虑过你的招聘人员在决策时权衡的具体变量，或者他们如何利用数据库中留下的简历来匹配未来的职位招聘？
 
 如果这些问题曾经困扰过你，那么很明显你已经认识到在数据驱动的时代，手动审阅简历和分析大量申请的传统方法已经不再奏效。
 
 自动化简历解析解决方案确实是一个重大进步，使我们能够相对轻松地从简历中提取相关信息。但这还不是终点。在解析阶段之后，我们面临着一堆看起来令人不知所措和难以处理的数据。仅仅将这些数据分类到表格中并进行基本分析已不再够用。
 
-此外，虽然我们可能假设领先的HR平台已经掌握了简历解析的艺术，但现实往往令人失望。当简历偏离常规格式时，它们的表现可能较差，导致关键候选人信息的丢失。
+此外，虽然我们可能假设领先的 HR 平台已经掌握了简历解析的艺术，但现实往往令人失望。当简历偏离常规格式时，它们的表现可能较差，导致关键候选人信息的丢失。
 
 克服这些障碍的一个解决方案是**语义匹配**。在机器学习中，这一概念指的是理解和比较不同文本或数据的意义或语义的过程。它涉及评估单词、短语、句子甚至整个文档之间的相似性或相关性。目标是确定不同文本在其基本意义上的对齐程度，而不仅仅是依赖表面模式或确切的单词匹配。语义匹配在各种自然语言处理（NLP）任务中扮演着至关重要的角色，如信息检索、问答、情感分析和文本分类。它有助于弥合人类对语言的理解与机器学习模型的计算能力之间的差距。
 
@@ -82,11 +82,11 @@
 
 +   **自动化预筛选**：实施机制以筛选出不符合特定标准或最低资格的候选人。这可以通过基于规则的系统或在历史招聘数据上训练的机器学习模型实现。当然，要做到这一点，你应该有一个解析器解决方案。
 
-+   **基于ML的排名**：开发一个根据各种属性（如技能、经验和资格）自动打分和排名候选人的排名系统。这种方法使数据驱动的决策成为可能，并消除了评估过程中的偏见。
++   **基于 ML 的排名**：开发一个根据各种属性（如技能、经验和资格）自动打分和排名候选人的排名系统。这种方法使数据驱动的决策成为可能，并消除了评估过程中的偏见。
 
-请注意，投资于这些变更的实施可能会比你预期的更具影响力。这些技术可以在多个方面惠及你的HR操作：
+请注意，投资于这些变更的实施可能会比你预期的更具影响力。这些技术可以在多个方面惠及你的 HR 操作：
 
-+   **可扩展性和效率**：随着业务的扩展和申请量的增加，手动处理工作负荷变得越来越具挑战性。提到的技术可以通过高效处理和评估大量简历来提供可扩展性，确保对所有申请进行一致和全面的分析。此外，通过自动化简历分析的初始阶段，公司可以显著减少审查不合格候选人所花费的时间和资源。这使HR团队可以将精力集中在更具战略性的任务上，如面试和评估最有前途的候选人。
++   **可扩展性和效率**：随着业务的扩展和申请量的增加，手动处理工作负荷变得越来越具挑战性。提到的技术可以通过高效处理和评估大量简历来提供可扩展性，确保对所有申请进行一致和全面的分析。此外，通过自动化简历分析的初始阶段，公司可以显著减少审查不合格候选人所花费的时间和资源。这使 HR 团队可以将精力集中在更具战略性的任务上，如面试和评估最有前途的候选人。
 
 +   **减少偏见**：实施描述的解决方案具有减少候选人评估过程中的偏见的巨大潜力。通过关注职位要求和候选人特征之间的语义对齐，评估变得更加客观，不易受到可能影响人工简历筛选的无意识偏见的影响。
 
@@ -106,9 +106,9 @@
 
 **1.4\. 全流程自动化？**
 
-你现在是否计划完全自动化招聘过程？请注意，我从未建议使用AI聊天机器人或其他方法来自动化整个招聘过程。为什么？嗯，我不认为我们已经达到那个阶段，我们可以通过保留人为因素获得更多的好处。虽然自动化和先进技术可以大大增强人才获取过程，但认识到人类判断和专业知识的价值也很重要。采用人机协作的方法，其中自动化技术的结果由人工招聘人员审查和验证，可以确保一个平衡且准确的评估，结合了人类智慧和机器学习算法的优点。
+你现在是否计划完全自动化招聘过程？请注意，我从未建议使用 AI 聊天机器人或其他方法来自动化整个招聘过程。为什么？嗯，我不认为我们已经达到那个阶段，我们可以通过保留人为因素获得更多的好处。虽然自动化和先进技术可以大大增强人才获取过程，但认识到人类判断和专业知识的价值也很重要。采用人机协作的方法，其中自动化技术的结果由人工招聘人员审查和验证，可以确保一个平衡且准确的评估，结合了人类智慧和机器学习算法的优点。
 
-作为一个有趣的结尾，我留给你一个值得深思的问题：如果我们通过AI聊天机器人等工具来自动化过程，候选人也可以利用AI学习如何在一种强化学习过程中说服这些聊天机器人……
+作为一个有趣的结尾，我留给你一个值得深思的问题：如果我们通过 AI 聊天机器人等工具来自动化过程，候选人也可以利用 AI 学习如何在一种强化学习过程中说服这些聊天机器人……
 
 ## **2\. 人才留任挑战**
 
@@ -126,9 +126,9 @@
 
 你的组织是否提供定制的职业发展路径？员工通常在竞争力的薪酬和职业成长机会之间寻求平衡。虽然这两个方面都很重要，但例如年轻专业人士可能会优先考虑有机会发展技能并在所选领域中晋升。认识到这一点，组织可以利用个性化学习和发展计划，通过满足这种隐性期望来增强员工的留任率。
 
-AI驱动的推荐系统在这方面可以发挥重要作用。这些系统利用员工绩效数据，分析个人的优势、劣势和职业目标。它们还考虑了“相似”员工的信息，这些员工在类似角色或职业路径中取得了成功。通过整合这些见解，组织可以为培训和“技能提升”机会制定量身定制的推荐，以符合每位员工的具体需求和期望。
+AI 驱动的推荐系统在这方面可以发挥重要作用。这些系统利用员工绩效数据，分析个人的优势、劣势和职业目标。它们还考虑了“相似”员工的信息，这些员工在类似角色或职业路径中取得了成功。通过整合这些见解，组织可以为培训和“技能提升”机会制定量身定制的推荐，以符合每位员工的具体需求和期望。
 
-此外，在主流方面，AI驱动的推荐系统可以通过建议与每位员工的发展计划相一致的相关学习材料、课程、指导机会或网络活动，提供持续的指导。通过适应个人偏好和不断变化的职业路径，这些系统确保员工在与组织的旅程中始终获得相关且有趣的学习体验。
+此外，在主流方面，AI 驱动的推荐系统可以通过建议与每位员工的发展计划相一致的相关学习材料、课程、指导机会或网络活动，提供持续的指导。通过适应个人偏好和不断变化的职业路径，这些系统确保员工在与组织的旅程中始终获得相关且有趣的学习体验。
 
 接下来，紧密关联的留任问题就是参与度问题。
 
@@ -178,9 +178,9 @@ AI驱动的推荐系统在这方面可以发挥重要作用。这些系统利用
 
 对于那些在进行多个员工评审时难以记住关键细节的人，解决方案可能在于利用总结模型。事实上，我们已经为此问题构建了一个[**解决方案**](https://www.linkedin.com/posts/javierdelgado_thinkhuman-workdigital-activity-7061958057412415488-qy5F?utm_source=share&utm_medium=member_desktop)。
 
-想象一下我们有一个名为“TheBestCompany”的组织。在TheBestCompany，他们利用LLMs模型处理多个数据源并生成员工评审。各种数据源，如反馈、参与的项目和客户反馈，会被汇总并输入LLM，LLM然后区分出成就和改进领域，并将这些反馈整合到一个绩效评估模板中，当前的人工评审员可以对其进行修改。
+想象一下我们有一个名为“TheBestCompany”的组织。在 TheBestCompany，他们利用 LLMs 模型处理多个数据源并生成员工评审。各种数据源，如反馈、参与的项目和客户反馈，会被汇总并输入 LLM，LLM 然后区分出成就和改进领域，并将这些反馈整合到一个绩效评估模板中，当前的人工评审员可以对其进行修改。
 
-这个自动化评审生成过程节省了时间和资源，最小化了偏见和错误，生成了详细且准确的评审。LLMs的灵活性允许根据组织需求进行定制，提升绩效评估的准确性、效率和公平性。这一解决方案使组织能够专注于其他重要任务和目标。
+这个自动化评审生成过程节省了时间和资源，最小化了偏见和错误，生成了详细且准确的评审。LLMs 的灵活性允许根据组织需求进行定制，提升绩效评估的准确性、效率和公平性。这一解决方案使组织能够专注于其他重要任务和目标。
 
 ## 5\. 解决多样性和包容性挑战
 
@@ -216,7 +216,7 @@ AI驱动的推荐系统在这方面可以发挥重要作用。这些系统利用
 
 [2] Pereira, V., Hadjielias, E., Christofi, M., & Vrontis, D. (2023). 关于人工智能对工作场所结果影响的系统文献综述：一个多过程视角。*人力资源管理评论*, *33*(1), 100857。
 
-[3] Barabási, A. L. 2013\. 网络科学。*皇家学会A卷：数学、物理与工程科学的哲学学报*, 371(1987), 20120375。
+[3] Barabási, A. L. 2013\. 网络科学。*皇家学会 A 卷：数学、物理与工程科学的哲学学报*, 371(1987), 20120375。
 
 [4] Rodgers, W., Murray, J. M., Stefanidis, A., Degbey, W. Y., & Tarba, S. Y. (2023). 一种人工智能算法方法在**人力资源管理过程**中的伦理决策。*人力资源管理评论*, *33*(1), 100925。
 

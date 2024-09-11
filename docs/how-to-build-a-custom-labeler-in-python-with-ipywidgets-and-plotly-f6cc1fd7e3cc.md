@@ -1,40 +1,40 @@
-# 如何使用IPyWidgets和Plotly在Python中构建自定义标注工具
+# 如何使用 IPyWidgets 和 Plotly 在 Python 中构建自定义标注工具
 
-> 原文：[https://towardsdatascience.com/how-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc?source=collection_archive---------21-----------------------#2023-01-10](https://towardsdatascience.com/how-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc?source=collection_archive---------21-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/how-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc?source=collection_archive---------21-----------------------#2023-01-10`](https://towardsdatascience.com/how-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc?source=collection_archive---------21-----------------------#2023-01-10)
 
-## 在Jupyter环境中创建一个分割工具
+## 在 Jupyter 环境中创建一个分割工具
 
-[](https://medium.com/@jacky.kaub?source=post_page-----f6cc1fd7e3cc--------------------------------)[![Jacky Kaub](../Images/e66c699ee5a9d5bbd58a1a72d688234a.png)](https://medium.com/@jacky.kaub?source=post_page-----f6cc1fd7e3cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f6cc1fd7e3cc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f6cc1fd7e3cc--------------------------------) [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----f6cc1fd7e3cc--------------------------------)
+[](https://medium.com/@jacky.kaub?source=post_page-----f6cc1fd7e3cc--------------------------------)![Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----f6cc1fd7e3cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f6cc1fd7e3cc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f6cc1fd7e3cc--------------------------------) [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----f6cc1fd7e3cc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ccb7065ef90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc&user=Jacky+Kaub&userId=7ccb7065ef90&source=post_page-7ccb7065ef90----f6cc1fd7e3cc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f6cc1fd7e3cc--------------------------------) ·11分钟阅读·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff6cc1fd7e3cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc&user=Jacky+Kaub&userId=7ccb7065ef90&source=-----f6cc1fd7e3cc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ccb7065ef90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc&user=Jacky+Kaub&userId=7ccb7065ef90&source=post_page-7ccb7065ef90----f6cc1fd7e3cc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f6cc1fd7e3cc--------------------------------) ·11 分钟阅读·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff6cc1fd7e3cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc&user=Jacky+Kaub&userId=7ccb7065ef90&source=-----f6cc1fd7e3cc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff6cc1fd7e3cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc&source=-----f6cc1fd7e3cc---------------------bookmark_footer-----------)![](../Images/a47b2b2f32879bd5ccc1adbd9766dfb0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff6cc1fd7e3cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-custom-labeler-in-python-with-ipywidgets-and-plotly-f6cc1fd7e3cc&source=-----f6cc1fd7e3cc---------------------bookmark_footer-----------)![](img/a47b2b2f32879bd5ccc1adbd9766dfb0.png)
 
-从肾脏中分割出的肾小球。原始图像由[HuBMAP组织映射中心](https://medschool.vanderbilt.edu/biomic/) 提供，来自范德堡大学
+从肾脏中分割出的肾小球。原始图像由[HuBMAP 组织映射中心](https://medschool.vanderbilt.edu/biomic/) 提供，来自范德堡大学
 
 你知道吗？你可以在几行代码内将一个简单的**Jupyter Notebook** 转变成**一个**强大的标注工具。
 
 将一个简单的笔记本转变为标注工具在项目开始时可以节省大量时间，尤其是在你还在评估一个想法的潜力，并且不想在构建一个稳定的网页应用上花费太多时。
 
-在这篇文章中，我将向你展示如何使用**plotly**和**ipywidget**构建一个分割工具，以生成python中图像的二进制掩模。在图像分割中，二进制掩模可以用于训练深度学习模型，以高效地自动识别和隔离感兴趣区域。
+在这篇文章中，我将向你展示如何使用**plotly**和**ipywidget**构建一个分割工具，以生成 python 中图像的二进制掩模。在图像分割中，二进制掩模可以用于训练深度学习模型，以高效地自动识别和隔离感兴趣区域。
 
-我假设你已经熟悉ipywidgets和plotly的基础知识。如果不是，我强烈建议你先查看[这篇文章](https://medium.com/@jacky.kaub/build-custom-widgets-with-ipywidgets-and-plotly-a454cb3b2b4f)，我们将介绍基础知识。
+我假设你已经熟悉 ipywidgets 和 plotly 的基础知识。如果不是，我强烈建议你先查看[这篇文章](https://medium.com/@jacky.kaub/build-custom-widgets-with-ipywidgets-and-plotly-a454cb3b2b4f)，我们将介绍基础知识。
 
 ## 关于用例的一句话
 
-我正在使用[HuBMAP数据集](https://www.kaggle.com/competitions/hubmap-kidney-segmentation/data)，这是一个2021年在Kaggle上举办的竞赛中的数据集。
+我正在使用[HuBMAP 数据集](https://www.kaggle.com/competitions/hubmap-kidney-segmentation/data)，这是一个 2021 年在 Kaggle 上举办的竞赛中的数据集。
 
 我选择这个数据集，因为它完美地展示了现实生活中的应用：一个客户联系你，提供一堆图像，并询问你是否可以找到一种方法来自动隔离这些图像中的特定感兴趣区域。这些区域（在这个例子中）被称为肾小体，是肾脏中帮助过滤血液中废物和多余水分的小部分，见下图。
 
 下图展示了你的客户在这里的期望：一个能够快速识别那些感兴趣区域的模型。
 
-![](../Images/075e02aa0858e1ed84f463e96c2de637.png)
+![](img/075e02aa0858e1ed84f463e96c2de637.png)
 
-项目目标：提供肾脏图像的分割区域。原始图像由[HuBMAP组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
+项目目标：提供肾脏图像的分割区域。原始图像由[HuBMAP 组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
 
 在探索阶段，时间至关重要。通常，我们只有原始数据，并需要快速生成标签来训练和评估模型，并评估项目的可行性。
 
@@ -44,13 +44,13 @@
 
 在直接进入编码部分之前，我们需要退一步，考虑一下我们到底希望从我们的部件中得到什么。我们需要回答的问题包括：
 
-+   输入的格式是什么？是jpeg图像吗？Numpy数组？栅格？等等。
++   输入的格式是什么？是 jpeg 图像吗？Numpy 数组？栅格？等等。
 
 +   它们存储在哪里？本地？多个区域？还是在云端？
 
-+   你期望的输出是什么？另一个jpeg图像还是numpy数组？也许是存储在json中的注释？
++   你期望的输出是什么？另一个 jpeg 图像还是 numpy 数组？也许是存储在 json 中的注释？
 
-+   你期望的交互是什么？点击按钮做某事，具有一些UI元素以有效地从数据到数据导航，直接与图形交互，等等。
++   你期望的交互是什么？点击按钮做某事，具有一些 UI 元素以有效地从数据到数据导航，直接与图形交互，等等。
 
 +   对于每次交互，实际操作中你将如何管理？这将如何影响部件的内部状态？
 
@@ -76,7 +76,7 @@ main/
 
 +   小部件将显示两个图像：一个是带有掩膜透明覆盖的原始图像（正在进行中），另一个是当前保存的掩膜，这将允许用户可视化当前完成的工作，并在需要时完成它。
 
-+   用户可以多次点击图像以生成定义区域的多边形。这将在小部件内用于生成一个掩膜，其中区域外的像素为0，区域内的像素为1。
++   用户可以多次点击图像以生成定义区域的多边形。这将在小部件内用于生成一个掩膜，其中区域外的像素为 0，区域内的像素为 1。
 
 +   应该使用一个按钮来保存掩膜，当用户对其标签感到满意时，这样结果就会被存储并可以由他或其他服务（如深度学习模型）检索。
 
@@ -86,9 +86,9 @@ main/
 
 +   用户可以通过下拉菜单在图像之间导航
 
-![](../Images/b7679ccbba9d3ebc483e098f4ebca07b.png)
+![](img/b7679ccbba9d3ebc483e098f4ebca07b.png)
 
-我们希望实现的小部件布局的粗略视图。原始图像由 [HuBMAP组织组织](https://medschool.vanderbilt.edu/biomic/) 提供，来自范德比尔特大学
+我们希望实现的小部件布局的粗略视图。原始图像由 [HuBMAP 组织组织](https://medschool.vanderbilt.edu/biomic/) 提供，来自范德比尔特大学
 
 # 构建小部件
 
@@ -257,7 +257,7 @@ def display(self):
 
 拥有这样的方法允许用户直接显示小部件，而无需在其内部状态中查找你的部件名称……
 
-![](../Images/ad364ac049395129d9098cf7d48bd310.png)
+![](img/ad364ac049395129d9098cf7d48bd310.png)
 
 由[HuBMAP 组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)在范德堡大学提供的原始图像
 
@@ -313,7 +313,7 @@ def _build_dropdown(self):
 
 我们现在可以浏览不同的图像。
 
-![](../Images/f0471ed71b38d443101d39db3807bfee.png)
+![](img/f0471ed71b38d443101d39db3807bfee.png)
 
 由[HuBMAP 组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)在范德堡大学提供的原始图像
 
@@ -375,9 +375,9 @@ def _initialize_figures(self):
 
 就这样！我们现在可以可视化我们图表交互的效果：
 
-![](../Images/54b58906563ba78c3c1e3c671f2c326c.png)
+![](img/54b58906563ba78c3c1e3c671f2c326c.png)
 
-原始图像由[HuBMAP组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
+原始图像由[HuBMAP 组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
 
 ## 按钮交互
 
@@ -411,9 +411,9 @@ def _build_save_button(self):
     self._save_button.on_click(self._callback_save_button)
 ```
 
-![](../Images/6a8c1ae8d5c1c0148806595935b6d4a8.png)
+![](img/6a8c1ae8d5c1c0148806595935b6d4a8.png)
 
-原始图像由[HuBMAP组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
+原始图像由[HuBMAP 组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
 
 “删除当前掩模”按钮。这个按钮只是将 _intermediate_mask 重置为 _current_mask 的值，并刷新图形和 _polygon_coordinates 列表。
 
@@ -429,9 +429,9 @@ def _build_delete_current_config_button(self):
     self._delete_current_config_button.on_click(self._callback_delete_current_config_button)
 ```
 
-![](../Images/f5b07125ecbd2e53123b2cb61545af7c.png)
+![](img/f5b07125ecbd2e53123b2cb61545af7c.png)
 
-原始图像由[HuBMAP组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
+原始图像由[HuBMAP 组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
 
 “删除所有掩模”按钮。这个按钮只是将 _intermediate_mask 重置为 0，并将 _polygon_coordinates 重置为空列表。
 
@@ -447,9 +447,9 @@ def _build_delete_all_button(self):
     self._delete_all_button.on_click(self._callback_delete_all_button)
 ```
 
-![](../Images/e2d73c91b19af88ef415856921842b00.png)
+![](img/e2d73c91b19af88ef415856921842b00.png)
 
-原始图像由[HuBMAP组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
+原始图像由[HuBMAP 组织的组织映射中心](https://medschool.vanderbilt.edu/biomic/)提供，位于范德比尔特大学。
 
 想自己试试吗？完整代码请见[这里](https://github.com/jkaub/segmentation-widget)！
 

@@ -1,36 +1,36 @@
 # 在 PyTorch 中实现自定义损失函数
 
-> 原文：[https://towardsdatascience.com/implementing-custom-loss-functions-in-pytorch-50739f9e0ee1?source=collection_archive---------4-----------------------#2023-01-16](https://towardsdatascience.com/implementing-custom-loss-functions-in-pytorch-50739f9e0ee1?source=collection_archive---------4-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/implementing-custom-loss-functions-in-pytorch-50739f9e0ee1?source=collection_archive---------4-----------------------#2023-01-16`](https://towardsdatascience.com/implementing-custom-loss-functions-in-pytorch-50739f9e0ee1?source=collection_archive---------4-----------------------#2023-01-16)
 
 ## 使用 MNIST 数据集理解 PyTorch 中自定义损失函数的理论和实现
 
-[](https://marcosanguineti.medium.com/?source=post_page-----50739f9e0ee1--------------------------------)[![Marco Sanguineti](../Images/9c426e512b31b77734801912d81f51c1.png)](https://marcosanguineti.medium.com/?source=post_page-----50739f9e0ee1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----50739f9e0ee1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----50739f9e0ee1--------------------------------) [Marco Sanguineti](https://marcosanguineti.medium.com/?source=post_page-----50739f9e0ee1--------------------------------)
+[](https://marcosanguineti.medium.com/?source=post_page-----50739f9e0ee1--------------------------------)![Marco Sanguineti](https://marcosanguineti.medium.com/?source=post_page-----50739f9e0ee1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----50739f9e0ee1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----50739f9e0ee1--------------------------------) [Marco Sanguineti](https://marcosanguineti.medium.com/?source=post_page-----50739f9e0ee1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33141be0f14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-custom-loss-functions-in-pytorch-50739f9e0ee1&user=Marco+Sanguineti&userId=33141be0f14d&source=post_page-33141be0f14d----50739f9e0ee1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----50739f9e0ee1--------------------------------) ·12 min 阅读·2023年1月16日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33141be0f14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-custom-loss-functions-in-pytorch-50739f9e0ee1&user=Marco+Sanguineti&userId=33141be0f14d&source=post_page-33141be0f14d----50739f9e0ee1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----50739f9e0ee1--------------------------------) ·12 min 阅读·2023 年 1 月 16 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F50739f9e0ee1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-custom-loss-functions-in-pytorch-50739f9e0ee1&source=-----50739f9e0ee1---------------------bookmark_footer-----------)![](../Images/0b3072c7dfbedca6f5144d9f7eb88a7c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F50739f9e0ee1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-custom-loss-functions-in-pytorch-50739f9e0ee1&source=-----50739f9e0ee1---------------------bookmark_footer-----------)![](img/0b3072c7dfbedca6f5144d9f7eb88a7c.png)
 
 图片由 [Markus Winkler](https://unsplash.com/es/@markuswinkler?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
 ## 介绍
 
-在机器学习中，损失函数是一个关键组成部分，用于衡量预测输出与实际输出之间的差异。它在模型训练中起着至关重要的作用，因为它通过指示模型应改进的方向来指导优化过程。损失函数的选择依赖于具体任务和数据类型。本文将深入探讨PyTorch中自定义损失函数的理论和实现，以MNIST数据集的数字分类为例。
+在机器学习中，损失函数是一个关键组成部分，用于衡量预测输出与实际输出之间的差异。它在模型训练中起着至关重要的作用，因为它通过指示模型应改进的方向来指导优化过程。损失函数的选择依赖于具体任务和数据类型。本文将深入探讨 PyTorch 中自定义损失函数的理论和实现，以 MNIST 数据集的数字分类为例。
 
-MNIST数据集是一个广泛使用的图像分类数据集，包含70,000张手写数字图像，每张图像的分辨率为28x28像素。任务是将这些图像分类为10个数字中的一个（0–9）。该任务旨在训练一个模型，使其能够准确地分类新的手写数字图像，基于MNIST数据集中提供的训练示例。
+MNIST 数据集是一个广泛使用的图像分类数据集，包含 70,000 张手写数字图像，每张图像的分辨率为 28x28 像素。任务是将这些图像分类为 10 个数字中的一个（0–9）。该任务旨在训练一个模型，使其能够准确地分类新的手写数字图像，基于 MNIST 数据集中提供的训练示例。
 
-![](../Images/06d53b28de548088516452652c919f9c.png)
+![](img/06d53b28de548088516452652c919f9c.png)
 
 照片由 [Carlos Muza](https://unsplash.com/fr/@kmuza?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-处理这个任务的一个典型方法是使用多类逻辑回归模型，即软最大分类器。软最大函数将模型的输出映射到10个类别的概率分布上。交叉熵损失通常作为这种模型的损失函数。交叉熵损失计算预测概率分布与实际概率分布之间的差异。
+处理这个任务的一个典型方法是使用多类逻辑回归模型，即软最大分类器。软最大函数将模型的输出映射到 10 个类别的概率分布上。交叉熵损失通常作为这种模型的损失函数。交叉熵损失计算预测概率分布与实际概率分布之间的差异。
 
 然而，在某些情况下，交叉熵损失可能不是特定任务的最佳选择。例如，考虑一个场景，其中误分类某些类别的代价远高于其他类别。在这种情况下，有必要使用自定义损失函数来考虑每个类别的相对重要性。
 
-在这篇文章中，我将展示如何为MNIST数据集实现自定义损失函数，其中误分类数字9的代价远高于其他数字。我们将使用Pytorch作为框架，首先讨论自定义损失函数背后的理论，然后展示如何使用Pytorch实现自定义损失函数。最后，我们将使用自定义损失函数在MNIST数据集上训练一个线性模型，并评估模型的性能。
+在这篇文章中，我将展示如何为 MNIST 数据集实现自定义损失函数，其中误分类数字 9 的代价远高于其他数字。我们将使用 Pytorch 作为框架，首先讨论自定义损失函数背后的理论，然后展示如何使用 Pytorch 实现自定义损失函数。最后，我们将使用自定义损失函数在 MNIST 数据集上训练一个线性模型，并评估模型的性能。
 
 ## 自定义损失函数：原因
 
@@ -50,21 +50,21 @@ MNIST数据集是一个广泛使用的图像分类数据集，包含70,000张手
 
 总结来说，自定义损失函数可以提供一种更好地优化模型以适应特定问题的方法，并能提供更好的性能和泛化能力。
 
-## PyTorch中的自定义损失函数
+## PyTorch 中的自定义损失函数
 
-MNIST 数据集包含70,000张手写数字图像，每张图像的分辨率为28x28像素。任务是将这些图像分类为10个数字中的一个（0–9）。这种任务的典型方法是使用多类逻辑回归模型，即softmax分类器。softmax函数将模型的输出映射到10个类别的概率分布上。交叉熵损失通常用作这种类型模型的损失函数。
+MNIST 数据集包含 70,000 张手写数字图像，每张图像的分辨率为 28x28 像素。任务是将这些图像分类为 10 个数字中的一个（0–9）。这种任务的典型方法是使用多类逻辑回归模型，即 softmax 分类器。softmax 函数将模型的输出映射到 10 个类别的概率分布上。交叉熵损失通常用作这种类型模型的损失函数。
 
-交叉熵损失计算预测概率分布和实际概率分布之间的差异。预测概率分布是通过对模型的输出应用softmax函数获得的。实际概率分布是一个one-hot向量，其中对应正确类别的元素值为1，其他元素的值为0。交叉熵损失定义为：
+交叉熵损失计算预测概率分布和实际概率分布之间的差异。预测概率分布是通过对模型的输出应用 softmax 函数获得的。实际概率分布是一个 one-hot 向量，其中对应正确类别的元素值为 1，其他元素的值为 0。交叉熵损失定义为：
 
 **L = -∑(y_i * log(p_i))**
 
-其中y_i是类别i的实际概率，p_i是类别i的预测概率。
+其中 y_i 是类别 i 的实际概率，p_i 是类别 i 的预测概率。
 
 然而，在某些情况下，交叉熵损失可能不是特定任务的最佳选择。例如，考虑一种场景，其中错误分类某些类别的成本远高于其他类别。在这种情况下，有必要使用自定义损失函数来考虑每个类别的相对重要性。
 
-在PyTorch中，自定义损失函数可以通过创建`nn.Module`类的子类并重写`forward`方法来实现。`forward`方法以预测输出和实际输出为输入，并返回损失的值。
+在 PyTorch 中，自定义损失函数可以通过创建`nn.Module`类的子类并重写`forward`方法来实现。`forward`方法以预测输出和实际输出为输入，并返回损失的值。
 
-这里是一个针对MNIST分类任务的自定义损失函数示例，其中错误分类数字9的成本远高于其他数字：
+这里是一个针对 MNIST 分类任务的自定义损失函数示例，其中错误分类数字 9 的成本远高于其他数字：
 
 ```py
 class CustomLoss(nn.Module):
@@ -211,7 +211,7 @@ for epoch in range(1, n_epochs + 1):
 
 下一个代码块创建了一个 Net 类的实例，一个优化器（随机梯度下降），以及一个自定义损失函数的实例。
 
-最后一块代码是训练循环，其中模型训练了10个周期。在每个周期中，模型遍历训练数据集，将图像通过网络，使用自定义损失函数计算损失并反向传播梯度。然后，它使用优化器更新模型的参数。同时，它跟踪训练损失和测试损失，并定期将当前损失打印到控制台。此外，它还创建了一个名为“results”的新目录来存储训练过程的结果和输出。
+最后一块代码是训练循环，其中模型训练了 10 个周期。在每个周期中，模型遍历训练数据集，将图像通过网络，使用自定义损失函数计算损失并反向传播梯度。然后，它使用优化器更新模型的参数。同时，它跟踪训练损失和测试损失，并定期将当前损失打印到控制台。此外，它还创建了一个名为“results”的新目录来存储训练过程的结果和输出。
 
 ```py
 import matplotlib.pyplot as plt
@@ -225,21 +225,21 @@ plt.ylabel('negative log likelihood loss')
 plt.show()
 ```
 
-![](../Images/93db5d18c905850d1b5ab433f420342b.png)
+![](img/93db5d18c905850d1b5ab433f420342b.png)
 
 自定义损失趋势 — 图片由作者提供
 
-这段代码正在为MNIST数据集创建自定义损失函数的图形。该图形将显示训练集和测试集的自定义损失。
+这段代码正在为 MNIST 数据集创建自定义损失函数的图形。该图形将显示训练集和测试集的自定义损失。
 
-它首先导入了Matplotlib库，这是一个用于Python的绘图库。然后，使用`plt.figure()`函数创建了一个指定大小的图形对象。
+它首先导入了 Matplotlib 库，这是一个用于 Python 的绘图库。然后，使用`plt.figure()`函数创建了一个指定大小的图形对象。
 
-下一行代码使用`plt.plot()`函数绘制训练集的自定义损失。它使用`train_counter`和`train_losses`变量分别作为x轴和y轴的值。图的颜色通过`color`参数设置为蓝色。
+下一行代码使用`plt.plot()`函数绘制训练集的自定义损失。它使用`train_counter`和`train_losses`变量分别作为 x 轴和 y 轴的值。图的颜色通过`color`参数设置为蓝色。
 
-然后，它使用`plt.scatter()`函数绘制测试集的自定义损失。它使用`test_counter`和`test_losses`变量分别作为x轴和y轴的值。图的颜色通过`color`参数设置为红色。
+然后，它使用`plt.scatter()`函数绘制测试集的自定义损失。它使用`test_counter`和`test_losses`变量分别作为 x 轴和 y 轴的值。图的颜色通过`color`参数设置为红色。
 
 `plt.legend()`函数为图形添加图例，指明哪个图代表训练损失，哪个图代表测试损失。`loc`参数设置为'upper right'，这意味着图例将位于图形的右上角。
 
-`plt.xlabel()`和`plt.ylabel()`函数分别为图形的x轴和y轴添加标签。x轴标签设置为'number of training examples seen'，y轴标签设置为'Custom loss'。
+`plt.xlabel()`和`plt.ylabel()`函数分别为图形的 x 轴和 y 轴添加标签。x 轴标签设置为'number of training examples seen'，y 轴标签设置为'Custom loss'。
 
 最后，使用`plt.show()`函数显示图形。
 
@@ -263,13 +263,13 @@ for i in range(6):
 plt.show()
 ```
 
-![](../Images/dff9371acd8f7041ea0389b7070f948c.png)
+![](img/dff9371acd8f7041ea0389b7070f948c.png)
 
 测试集样本和预测 — 图片由作者提供
 
-这段代码显示了来自测试集的6张图像及其对应的训练网络的预测结果。
+这段代码显示了来自测试集的 6 张图像及其对应的训练网络的预测结果。
 
-它开始使用`enumerate()`函数循环遍历test_loader，这是一个按批次加载测试数据集的迭代器。使用`next()`函数获取测试集的第一个批次样本。
+它开始使用`enumerate()`函数循环遍历 test_loader，这是一个按批次加载测试数据集的迭代器。使用`next()`函数获取测试集的第一个批次样本。
 
 `example_data` 变量包含图像，`example_targets` 变量包含相应的标签。
 

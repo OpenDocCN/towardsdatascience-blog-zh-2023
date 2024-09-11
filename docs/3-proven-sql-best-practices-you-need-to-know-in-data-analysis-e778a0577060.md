@@ -1,20 +1,20 @@
 # 数据分析中你需要知道的三种经验证的 SQL 最佳实践
 
-> 原文：[https://towardsdatascience.com/3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060?source=collection_archive---------0-----------------------#2023-05-16](https://towardsdatascience.com/3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060?source=collection_archive---------0-----------------------#2023-05-16)
+> 原文：[`towardsdatascience.com/3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060?source=collection_archive---------0-----------------------#2023-05-16`](https://towardsdatascience.com/3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060?source=collection_archive---------0-----------------------#2023-05-16)
 
 ## 数据分析
 
 ## 学习三种最佳方法，以编写易于阅读、调试和修改的 SQL 查询
 
-[](https://medium.com/@17.rsuraj?source=post_page-----e778a0577060--------------------------------)[![Suraj Gurav](../Images/f5dca32861f8c1c428e66fbe2174c04b.png)](https://medium.com/@17.rsuraj?source=post_page-----e778a0577060--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e778a0577060--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e778a0577060--------------------------------) [Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----e778a0577060--------------------------------)
+[](https://medium.com/@17.rsuraj?source=post_page-----e778a0577060--------------------------------)![Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----e778a0577060--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e778a0577060--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e778a0577060--------------------------------) [Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----e778a0577060--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fdda183cca2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060&user=Suraj+Gurav&userId=1fdda183cca2&source=post_page-1fdda183cca2----e778a0577060---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e778a0577060--------------------------------) ·5 min read·2023年5月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe778a0577060&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060&user=Suraj+Gurav&userId=1fdda183cca2&source=-----e778a0577060---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fdda183cca2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060&user=Suraj+Gurav&userId=1fdda183cca2&source=post_page-1fdda183cca2----e778a0577060---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e778a0577060--------------------------------) ·5 min read·2023 年 5 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe778a0577060&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060&user=Suraj+Gurav&userId=1fdda183cca2&source=-----e778a0577060---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe778a0577060&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060&source=-----e778a0577060---------------------bookmark_footer-----------)![](../Images/d46797d817049ddf474c63fbabf401c9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe778a0577060&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-proven-sql-best-practices-you-need-to-know-in-data-analysis-e778a0577060&source=-----e778a0577060---------------------bookmark_footer-----------)![](img/d46797d817049ddf474c63fbabf401c9.png)
 
 照片由 [Kobby Mendez](https://unsplash.com/@kobbymendez?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

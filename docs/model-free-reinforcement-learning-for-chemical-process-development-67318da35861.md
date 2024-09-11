@@ -1,20 +1,20 @@
 # 无模型强化学习在化学过程开发中的应用
 
-> 原文：[https://towardsdatascience.com/model-free-reinforcement-learning-for-chemical-process-development-67318da35861?source=collection_archive---------12-----------------------#2023-07-11](https://towardsdatascience.com/model-free-reinforcement-learning-for-chemical-process-development-67318da35861?source=collection_archive---------12-----------------------#2023-07-11)
+> 原文：[`towardsdatascience.com/model-free-reinforcement-learning-for-chemical-process-development-67318da35861?source=collection_archive---------12-----------------------#2023-07-11`](https://towardsdatascience.com/model-free-reinforcement-learning-for-chemical-process-development-67318da35861?source=collection_archive---------12-----------------------#2023-07-11)
 
 ## 智能化化学系统
 
 ## 迈向化学过程代理。
 
-[](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)[![Georgi Tancev](../Images/4529168ec26d51265185189298c81677.png)](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)[](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------) [Georgi Tancev](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)
+[](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)![Georgi Tancev](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)[](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------) [Georgi Tancev](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F54224776d918&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&user=Georgi+Tancev&userId=54224776d918&source=post_page-54224776d918----67318da35861---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------) · 5分钟阅读 · 2023年7月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F67318da35861&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&user=Georgi+Tancev&userId=54224776d918&source=-----67318da35861---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F54224776d918&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&user=Georgi+Tancev&userId=54224776d918&source=post_page-54224776d918----67318da35861---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------) · 5 分钟阅读 · 2023 年 7 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F67318da35861&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&user=Georgi+Tancev&userId=54224776d918&source=-----67318da35861---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F67318da35861&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&source=-----67318da35861---------------------bookmark_footer-----------)![](../Images/05ed0b66f8d084c815e741a76805469b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F67318da35861&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&source=-----67318da35861---------------------bookmark_footer-----------)![](img/05ed0b66f8d084c815e741a76805469b.png)
 
 照片由 [Alex Kondratiev](https://unsplash.com/@alexkondratiev?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -28,17 +28,17 @@
 
 # 问题定义
 
-我们有一个软件，所谓的**代理**。这个代理处于一个具有许多不同**状态**（如成分浓度、体积、温度）的环境中，在其中可以执行某些化学操作，即**动作**。这些动作包括剂量A、增加/减少进出流量、增加/减少温度等。随着代理执行这些动作，它会转变为新的状态。
+我们有一个软件，所谓的**代理**。这个代理处于一个具有许多不同**状态**（如成分浓度、体积、温度）的环境中，在其中可以执行某些化学操作，即**动作**。这些动作包括剂量 A、增加/减少进出流量、增加/减少温度等。随着代理执行这些动作，它会转变为新的状态。
 
-例如，**对乙酰氨基酚（PC）** 是从 ***p*-氨基酚（AP）** 和 **乙酸酐（AA）** 合成的，如图1a所示。在已知的[**动力学**](https://jurnal.ugm.ac.id/jrekpros/article/view/64551)下，这个过程可以建模，并代表了环境，例如，在图1b所示的**连续搅拌反应器（CSTR）**中。
+例如，**对乙酰氨基酚（PC）** 是从 ***p*-氨基酚（AP）** 和 **乙酸酐（AA）** 合成的，如图 1a 所示。在已知的[**动力学**](https://jurnal.ugm.ac.id/jrekpros/article/view/64551)下，这个过程可以建模，并代表了环境，例如，在图 1b 所示的**连续搅拌反应器（CSTR）**中。
 
-![](../Images/a8c2fb8e45c9edb1eb5f75c92ca932bf.png)![](../Images/bc9e3ddf35302c03a14ae2768baba5f0.png)
+![](img/a8c2fb8e45c9edb1eb5f75c92ca932bf.png)![](img/bc9e3ddf35302c03a14ae2768baba5f0.png)
 
-**图1：（a）** 感兴趣的反应（©Georgi Tancev）。**（b）** 连续搅拌反应器的示意图，包括进/出流量、输入浓度、反应器浓度和体积（©Georgi Tancev）。
+**图 1：（a）** 感兴趣的反应（©Georgi Tancev）。**（b）** 连续搅拌反应器的示意图，包括进/出流量、输入浓度、反应器浓度和体积（©Georgi Tancev）。
 
-在每个状态下，代理选择一组动作，并且一个**微分方程**（表示虚拟环境）在固定时间间隔内进行数值积分，结果是一个新状态。然后，代理收到一个与合成的对乙酰氨基酚量成正比的**奖励**。换句话说，代理玩一个游戏，需要在给定的时间段内（大约2000次转换或170小时）尽可能多地生产对乙酰氨基酚。
+在每个状态下，代理选择一组动作，并且一个**微分方程**（表示虚拟环境）在固定时间间隔内进行数值积分，结果是一个新状态。然后，代理收到一个与合成的对乙酰氨基酚量成正比的**奖励**。换句话说，代理玩一个游戏，需要在给定的时间段内（大约 2000 次转换或 170 小时）尽可能多地生产对乙酰氨基酚。
 
-在以下研究中，反应器本质上是一个[实验室规模的CSTR](https://pubs.rsc.org/en/content/articlelanding/2023/re/d2re00476c) ，最大体积为0.45 L。最大流量为2.5 mL/min，最大输入浓度为3.3 mol/L。如果体积超出限制，代理将收到与超出体积成正比的惩罚；如果超过临界阈值，剧集将立即结束。温度保持在105 °C。
+在以下研究中，反应器本质上是一个[实验室规模的 CSTR](https://pubs.rsc.org/en/content/articlelanding/2023/re/d2re00476c) ，最大体积为 0.45 L。最大流量为 2.5 mL/min，最大输入浓度为 3.3 mol/L。如果体积超出限制，代理将收到与超出体积成正比的惩罚；如果超过临界阈值，剧集将立即结束。温度保持在 105 °C。
 
 # 方法
 
@@ -50,18 +50,18 @@
 
 图 2 说明了不同超参数下的平均奖励随训练轮次变化的情况，基准案例为*γ* = 0.995，*λ* = 0.97，以及*ε* = 0.20。该图中的平均奖励直接与生产的对乙酰氨基酚的量相关。
 
-![](../Images/3ec724f05c73f715df85e8e91dfc618b.png)
+![](img/3ec724f05c73f715df85e8e91dfc618b.png)
 
 **图 2：** 学习曲线（©Georgi Tancev）。
 
 最优策略，即收敛后的策略，如图 3 所示。
 
-![](../Images/90075d764efb604b4bd079133be516e1.png)
+![](img/90075d764efb604b4bd079133be516e1.png)
 
 **图 3：** 随时间变化的状态和动作（经过 2000 轮次）。图示显示了浓度、体积、入口浓度和流量随操作时间的变化（©Georgi Tancev）。
 
-可以看到，代理通过将输出流（Q₂）保持在低于输入流（Q₁）的水平来填充CSTR。至于输入浓度，从一开始就保持在最大值。换句话说，代理通过与环境的互动学会了如何最好地合成PA。由于无模型的强化学习方案样本效率低下，这一策略是在计算机上 elaborated 的。借助更高效的（即，**离线策略**）方案和**基于模型**的强化学习，化学机器人未来可以在实验室中独立开发合成方法。然而，这也需要[**安全探索**](https://dl.acm.org/doi/10.5555/3454287.3454547)。
+可以看到，代理通过将输出流（Q₂）保持在低于输入流（Q₁）的水平来填充 CSTR。至于输入浓度，从一开始就保持在最大值。换句话说，代理通过与环境的互动学会了如何最好地合成 PA。由于无模型的强化学习方案样本效率低下，这一策略是在计算机上 elaborated 的。借助更高效的（即，**离线策略**）方案和**基于模型**的强化学习，化学机器人未来可以在实验室中独立开发合成方法。然而，这也需要[**安全探索**](https://dl.acm.org/doi/10.5555/3454287.3454547)。
 
 # 结论与展望
 
-这项简要研究表明，强化学习（RL）在化学过程开发中确实具有潜力，值得进一步探索。这个潜力很大，因为繁琐的实验室工作可以由机器人处理。然而，这里仍然存在许多未解答的问题。无模型的强化学习（model-free RL）样本效率低，而基于模型的和/或离线策略的方法（例如，[**软演员-评论家**](https://arxiv.org/abs/1801.01290)）会更受青睐。此外，PPO经常报告存在[不稳定性](https://arxiv.org/abs/2009.10897)。最后，在低温下几乎没有反应发生，因此没有反馈形式的奖励（即稀疏奖励），因此必须为此找到合适的解决方案。
+这项简要研究表明，强化学习（RL）在化学过程开发中确实具有潜力，值得进一步探索。这个潜力很大，因为繁琐的实验室工作可以由机器人处理。然而，这里仍然存在许多未解答的问题。无模型的强化学习（model-free RL）样本效率低，而基于模型的和/或离线策略的方法（例如，[**软演员-评论家**](https://arxiv.org/abs/1801.01290)）会更受青睐。此外，PPO 经常报告存在[不稳定性](https://arxiv.org/abs/2009.10897)。最后，在低温下几乎没有反应发生，因此没有反馈形式的奖励（即稀疏奖励），因此必须为此找到合适的解决方案。

@@ -1,28 +1,28 @@
 # 管理大数据应用程序的云存储成本
 
-> 原文：[https://towardsdatascience.com/managing-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c?source=collection_archive---------15-----------------------#2023-06-26](https://towardsdatascience.com/managing-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c?source=collection_archive---------15-----------------------#2023-06-26)
+> 原文：[`towardsdatascience.com/managing-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c?source=collection_archive---------15-----------------------#2023-06-26`](https://towardsdatascience.com/managing-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c?source=collection_archive---------15-----------------------#2023-06-26)
 
 ## 降低使用基于云的存储成本的技巧
 
-[](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----e3cbd92cf51c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------) · 11分钟阅读 · 2023年6月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3cbd92cf51c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&user=Chaim+Rand&userId=9440b37e27fe&source=-----e3cbd92cf51c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----e3cbd92cf51c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------) · 11 分钟阅读 · 2023 年 6 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3cbd92cf51c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&user=Chaim+Rand&userId=9440b37e27fe&source=-----e3cbd92cf51c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3cbd92cf51c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&source=-----e3cbd92cf51c---------------------bookmark_footer-----------)![](../Images/c6ef4be9850fa0fcf28ebe2f3ea7e0c7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3cbd92cf51c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&source=-----e3cbd92cf51c---------------------bookmark_footer-----------)![](img/c6ef4be9850fa0fcf28ebe2f3ea7e0c7.png)
 
 图片由 [JOSHUA COLEMAN](https://unsplash.com/@joshstyle?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/storage?orientation=landscape&license=free&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-随着对不断增长的数据量的依赖，现代公司比以往任何时候都更加依赖高容量和高度可扩展的数据存储解决方案。对于许多公司来说，这种解决方案通常表现为云存储服务，如[Amazon S3](https://aws.amazon.com/s3/)、[Google Cloud Storage](https://cloud.google.com/storage)和[Azure Blob Storage](https://azure.microsoft.com/en-us/products/category/storage/)，这些服务都提供了丰富的API和功能（例如，[多层存储](https://aws.amazon.com/s3/storage-classes/intelligent-tiering/)），支持各种数据存储设计。当然，云存储服务也有相关的成本。这些成本通常包括多个组成部分，包括你使用的存储空间的总体大小，以及如将数据传入、传出或在云存储中传输等活动。例如，Amazon S3的价格（截至本文撰写时）包括[六个成本组成部分](https://aws.amazon.com/s3/pricing/?p=pm&c=s3&z=4)，每个部分都需要考虑。可以看出，管理云存储成本可能变得复杂，因此开发了指定的计算器（例如，[这里](https://calculator.aws/#/)）来协助处理这一问题。
+随着对不断增长的数据量的依赖，现代公司比以往任何时候都更加依赖高容量和高度可扩展的数据存储解决方案。对于许多公司来说，这种解决方案通常表现为云存储服务，如[Amazon S3](https://aws.amazon.com/s3/)、[Google Cloud Storage](https://cloud.google.com/storage)和[Azure Blob Storage](https://azure.microsoft.com/en-us/products/category/storage/)，这些服务都提供了丰富的 API 和功能（例如，[多层存储](https://aws.amazon.com/s3/storage-classes/intelligent-tiering/)），支持各种数据存储设计。当然，云存储服务也有相关的成本。这些成本通常包括多个组成部分，包括你使用的存储空间的总体大小，以及如将数据传入、传出或在云存储中传输等活动。例如，Amazon S3 的价格（截至本文撰写时）包括[六个成本组成部分](https://aws.amazon.com/s3/pricing/?p=pm&c=s3&z=4)，每个部分都需要考虑。可以看出，管理云存储成本可能变得复杂，因此开发了指定的计算器（例如，[这里](https://calculator.aws/#/)）来协助处理这一问题。
 
-在一篇[近期文章](/on-the-importance-of-compressing-big-data-edd4cc7441d2)中，我们扩展了设计数据和数据使用的重要性，以降低与数据存储相关的成本。我们在那里关注的是使用数据压缩作为减少数据总体大小的一种方法。在这篇文章中，我们关注的是一个有时被忽视的云存储成本组成部分 —— [对你的云存储桶和数据对象进行的API请求成本](https://aws.amazon.com/s3/pricing/?nc=sn&loc=4)。我们将通过示例展示为什么这个组成部分常常被低估，以及如果管理不当，它如何可能成为你大数据应用成本的重要组成部分。然后我们将讨论几种简单的方法来控制这一成本。
+在一篇近期文章中，我们扩展了设计数据和数据使用的重要性，以降低与数据存储相关的成本。我们在那里关注的是使用数据压缩作为减少数据总体大小的一种方法。在这篇文章中，我们关注的是一个有时被忽视的云存储成本组成部分 —— [对你的云存储桶和数据对象进行的 API 请求成本](https://aws.amazon.com/s3/pricing/?nc=sn&loc=4)。我们将通过示例展示为什么这个组成部分常常被低估，以及如果管理不当，它如何可能成为你大数据应用成本的重要组成部分。然后我们将讨论几种简单的方法来控制这一成本。
 
 ## 免责声明
 
-尽管我们的演示将使用Amazon S3，但本文的内容同样适用于任何其他云存储服务。请不要将我们选择Amazon S3或我们提到的任何其他工具、服务或库解读为对其使用的支持。最适合你的选项将取决于你自己项目的具体细节。此外，请记住，关于如何存储和使用数据的任何设计选择都会有其利弊，这些利弊应根据你自己项目的细节权衡。
+尽管我们的演示将使用 Amazon S3，但本文的内容同样适用于任何其他云存储服务。请不要将我们选择 Amazon S3 或我们提到的任何其他工具、服务或库解读为对其使用的支持。最适合你的选项将取决于你自己项目的具体细节。此外，请记住，关于如何存储和使用数据的任何设计选择都会有其利弊，这些利弊应根据你自己项目的细节权衡。
 
 本文将包括在 [Amazon EC2 c5.4xlarge](https://aws.amazon.com/ec2/instance-types/c5/) 实例（具有 16 个 vCPUs 和 [“高达 10 Gbps” 的网络带宽](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html)）上运行的一系列实验。我们将分享这些实验的输出，作为你可能看到的比较结果的示例。请注意，输出结果可能会因实验运行的环境而有很大不同。请不要将这里呈现的结果作为你自己设计决策的依据。我们强烈建议你在决定自己项目的最佳方案之前，运行这些以及其他额外的实验。
 
@@ -34,7 +34,7 @@
 
 降低 API 调用成本的显而易见方法是将样本归为大文件，并在样本批次上进行转换。将我们的批量大小记作*N*，这种策略可能将我们的成本降低*N*倍（假设没有使用多部分文件传输——见下文）。这种技术不仅在 PUT 和 GET 调用上节省了费用，还能在**所有**与对象文件数量相关的 Amazon S3 成本组成部分上节省开支，而不是数据的整体大小（例如，[生命周期转换请求](https://aws.amazon.com/s3/pricing/?trk=c8974be7-bc21-436d-8108-722e8ab912e1&sc_channel=ps&ef_id=Cj0KCQjw7aqkBhDPARIsAKGa0oJZYkx6SjrewVcE--kFsSRWT1-nzsS07TMivfP1P1SVqRSO4mKx_MIaAkCBEALw_wcB%3AG%3As&s_kwcid=AL%214422%213%21645125274431%21e%21%21g%21%21s3+pricing%2119574556914%21145779857032))。
 
-将样本组合在一起有一些缺点。例如，当你单独存储样本时，你可以随时访问其中的任何一个。当样本组合在一起时，这就变得更加具有挑战性。（有关将样本批处理成大文件的优缺点，请参见[这篇文章](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056)）。如果你选择将样本组合在一起，那么最大的疑问是如何选择大小 *N*。较大的 *N* 可能会降低存储成本，但可能会引入延迟，增加计算时间，并由此增加计算成本。找到最佳数量可能需要一些实验，考虑到这些以及其他额外的因素。
+将样本组合在一起有一些缺点。例如，当你单独存储样本时，你可以随时访问其中的任何一个。当样本组合在一起时，这就变得更加具有挑战性。（有关将样本批处理成大文件的优缺点，请参见这篇文章）。如果你选择将样本组合在一起，那么最大的疑问是如何选择大小 *N*。较大的 *N* 可能会降低存储成本，但可能会引入延迟，增加计算时间，并由此增加计算成本。找到最佳数量可能需要一些实验，考虑到这些以及其他额外的因素。
 
 但我们不要自欺欺人。进行这种更改并不容易。你的数据可能有很多消费者（包括人类和人工智能），每个人都有自己特定的需求和限制。将样本存储在单独的文件中可以更容易地让每个人满意。找到一个能够满足所有人需求的批处理策略将会很困难。
 
@@ -138,7 +138,7 @@ print(f'mean {mean_calc} variance {var_calc}')
 
 下表总结了不同样本分组大小 *N* 的数据遍历速度。
 
-![](../Images/e0bd7fc2dd13510cfdc9762f48d73fe2.png)
+![](img/e0bd7fc2dd13510cfdc9762f48d73fe2.png)
 
 不同分组策略对数据遍历时间的影响（作者）
 
@@ -176,7 +176,7 @@ for size in [8*MB, 100*MB, 500*MB, 2*GB]:
 
 此实验的结果总结在下面的表格中：
 
-![](../Images/15610cf9ad7376004c75cee5df9c88cf.png)
+![](img/15610cf9ad7376004c75cee5df9c88cf.png)
 
 多部分分块大小对下载时间的影响（作者）
 
@@ -184,7 +184,7 @@ for size in [8*MB, 100*MB, 500*MB, 2*GB]:
 
 关于我们讨论的话题，重要的是要注意多部分数据传输的成本影响。具体来说，当你使用多部分数据传输时，[你会为每个文件部分的 API 操作收费](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html#mpuploadpricing)。因此，使用多部分上传/下载将限制将数据样本批量处理成大文件的成本节省潜力。
 
-许多API**默认**使用多部分下载。如果你的主要关注点是减少与S3的交互延迟，这种做法是很好的。但是，如果你的关心是限制成本，那么这种默认行为对你来说并不有利。例如，Boto3是一个流行的Python API，用于从S3上传和下载文件。如果未指定，boto3的S3 API如 [upload_file](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/upload_file.html) 和 [download_file](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/download_file.html) 将使用默认的 [TransferConfig](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/customizations/s3.html#boto3.s3.transfer.TransferConfig)，该配置将对任何大于8 MB的文件应用8 MB的块大小的多部分上传/下载。如果你负责控制组织中的云成本，你可能会惊讶地发现这些API被广泛使用其默认设置。在许多情况下，你可能会发现这些设置是不必要的，增加多部分*阈值*和*块大小*值，或完全禁用多部分数据传输，对应用程序的性能影响很小。
+许多 API**默认**使用多部分下载。如果你的主要关注点是减少与 S3 的交互延迟，这种做法是很好的。但是，如果你的关心是限制成本，那么这种默认行为对你来说并不有利。例如，Boto3 是一个流行的 Python API，用于从 S3 上传和下载文件。如果未指定，boto3 的 S3 API 如 [upload_file](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/upload_file.html) 和 [download_file](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/download_file.html) 将使用默认的 [TransferConfig](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/customizations/s3.html#boto3.s3.transfer.TransferConfig)，该配置将对任何大于 8 MB 的文件应用 8 MB 的块大小的多部分上传/下载。如果你负责控制组织中的云成本，你可能会惊讶地发现这些 API 被广泛使用其默认设置。在许多情况下，你可能会发现这些设置是不必要的，增加多部分*阈值*和*块大小*值，或完全禁用多部分数据传输，对应用程序的性能影响很小。
 
 ## 示例 — 多部分文件传输大小对速度和成本的影响
 
@@ -246,23 +246,23 @@ for multipart_chunksize in [1*MB, 8*MB, 100*MB, 200*MB, 500*MB]:
     print(f'cost of API calls {transform_cost}')
 ```
 
-在这个例子中，我们将文件大小固定为500 MB，并对下载和上传应用了相同的多部分设置。一个更完整的分析将会变化数据文件的大小和多部分设置。
+在这个例子中，我们将文件大小固定为 500 MB，并对下载和上传应用了相同的多部分设置。一个更完整的分析将会变化数据文件的大小和多部分设置。
 
 在下表中，我们总结了实验的结果。
 
-![](../Images/a4fc335db1fe163928b43ba1615afbaf.png)
+![](img/a4fc335db1fe163928b43ba1615afbaf.png)
 
 多部分块大小对数据转换速度和成本的影响（作者）
 
-结果表明，至多达到500 MB的多部分块大小（我们文件的大小），数据转换时间的影响是最小的。另一方面，与使用Boto3的默认块大小（8MB）相比，云存储API成本的潜在节省是显著的，最多可达98.4%。这个例子不仅展示了将样本分组的成本效益，而且还暗示了通过适当配置多部分数据传输设置获得额外节省的机会。
+结果表明，至多达到 500 MB 的多部分块大小（我们文件的大小），数据转换时间的影响是最小的。另一方面，与使用 Boto3 的默认块大小（8MB）相比，云存储 API 成本的潜在节省是显著的，最多可达 98.4%。这个例子不仅展示了将样本分组的成本效益，而且还暗示了通过适当配置多部分数据传输设置获得额外节省的机会。
 
 # 结论
 
-让我们将上一个示例的结果应用到我们在本文开头介绍的思维实验中。我们展示了如果数据样本存储在单独的文件中，对1亿个数据样本应用简单转换的费用将是$5,400。如果我们将样本分组为200万个文件，每个文件有500个样本，并且在不使用多部分数据传输的情况下（如上述示例的最后一次试验），API调用的成本将减少到$10.8！！同时，假设测试环境相同，我们预期的整体运行时间的影响（基于我们的实验）将相对较低。我认为这是一个相当不错的交易。你觉得呢？
+让我们将上一个示例的结果应用到我们在本文开头介绍的思维实验中。我们展示了如果数据样本存储在单独的文件中，对 1 亿个数据样本应用简单转换的费用将是$5,400。如果我们将样本分组为 200 万个文件，每个文件有 500 个样本，并且在不使用多部分数据传输的情况下（如上述示例的最后一次试验），API 调用的成本将减少到$10.8！！同时，假设测试环境相同，我们预期的整体运行时间的影响（基于我们的实验）将相对较低。我认为这是一个相当不错的交易。你觉得呢？
 
 # 摘要
 
-在开发基于云的大数据应用时，了解我们活动的**所有**成本细节至关重要。在这篇文章中，我们专注于Amazon S3定价策略中的“请求与数据检索”组件。我们演示了这个组件如何成为大数据应用总体成本的重要组成部分。我们讨论了可能影响这一成本的两个因素：数据样本的分组方式和多部分数据传输的使用方式。
+在开发基于云的大数据应用时，了解我们活动的**所有**成本细节至关重要。在这篇文章中，我们专注于 Amazon S3 定价策略中的“请求与数据检索”组件。我们演示了这个组件如何成为大数据应用总体成本的重要组成部分。我们讨论了可能影响这一成本的两个因素：数据样本的分组方式和多部分数据传输的使用方式。
 
 自然，仅优化一个成本组件可能会以某种方式增加其他组件，从而提高整体成本。数据存储的适当设计需要考虑**所有**潜在成本因素**并且将大大依赖于你的具体数据需求和使用模式**。
 

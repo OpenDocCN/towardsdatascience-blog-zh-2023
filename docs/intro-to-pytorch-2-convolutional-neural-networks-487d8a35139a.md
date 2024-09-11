@@ -1,40 +1,40 @@
 # PyTorch 2：卷积神经网络
 
-> 原文：[https://towardsdatascience.com/intro-to-pytorch-2-convolutional-neural-networks-487d8a35139a?source=collection_archive---------1-----------------------#2023-02-13](https://towardsdatascience.com/intro-to-pytorch-2-convolutional-neural-networks-487d8a35139a?source=collection_archive---------1-----------------------#2023-02-13)
+> 原文：[`towardsdatascience.com/intro-to-pytorch-2-convolutional-neural-networks-487d8a35139a?source=collection_archive---------1-----------------------#2023-02-13`](https://towardsdatascience.com/intro-to-pytorch-2-convolutional-neural-networks-487d8a35139a?source=collection_archive---------1-----------------------#2023-02-13)
 
-[](https://medium.com/@florestony5454?source=post_page-----487d8a35139a--------------------------------)[![托尼·弗洛雷斯](../Images/9eacdf91506321ae7ed7b19006a58053.png)](https://medium.com/@florestony5454?source=post_page-----487d8a35139a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----487d8a35139a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----487d8a35139a--------------------------------) [托尼·弗洛雷斯](https://medium.com/@florestony5454?source=post_page-----487d8a35139a--------------------------------)
+[](https://medium.com/@florestony5454?source=post_page-----487d8a35139a--------------------------------)![托尼·弗洛雷斯](https://medium.com/@florestony5454?source=post_page-----487d8a35139a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----487d8a35139a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----487d8a35139a--------------------------------) [托尼·弗洛雷斯](https://medium.com/@florestony5454?source=post_page-----487d8a35139a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce0f79ea6056&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-pytorch-2-convolutional-neural-networks-487d8a35139a&user=Tony+Flores&userId=ce0f79ea6056&source=post_page-ce0f79ea6056----487d8a35139a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----487d8a35139a--------------------------------) ·16分钟阅读·2023年2月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F487d8a35139a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-pytorch-2-convolutional-neural-networks-487d8a35139a&user=Tony+Flores&userId=ce0f79ea6056&source=-----487d8a35139a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce0f79ea6056&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-pytorch-2-convolutional-neural-networks-487d8a35139a&user=Tony+Flores&userId=ce0f79ea6056&source=post_page-ce0f79ea6056----487d8a35139a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----487d8a35139a--------------------------------) ·16 分钟阅读·2023 年 2 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F487d8a35139a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-pytorch-2-convolutional-neural-networks-487d8a35139a&user=Tony+Flores&userId=ce0f79ea6056&source=-----487d8a35139a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F487d8a35139a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-pytorch-2-convolutional-neural-networks-487d8a35139a&source=-----487d8a35139a---------------------bookmark_footer-----------)![](../Images/6d7fc147708d94a3fd991370a06255a3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F487d8a35139a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-pytorch-2-convolutional-neural-networks-487d8a35139a&source=-----487d8a35139a---------------------bookmark_footer-----------)![](img/6d7fc147708d94a3fd991370a06255a3.png)
 
-图片来源于Adobe Stock
+图片来源于 Adobe Stock
 
 # **简介**
 
-在[本系列的前一部分](https://medium.com/towards-data-science/intro-to-pytorch-part-1-663574fb9675)，我们使用了[CIFAR-10数据集](https://www.cs.toronto.edu/~kriz/cifar.html)并介绍了PyTorch的基础知识：
+在[本系列的前一部分](https://medium.com/towards-data-science/intro-to-pytorch-part-1-663574fb9675)，我们使用了[CIFAR-10 数据集](https://www.cs.toronto.edu/~kriz/cifar.html)并介绍了 PyTorch 的基础知识：
 
 +   张量及其相关操作
 
-+   数据集和DataLoader
++   数据集和 DataLoader
 
 +   构建基本神经网络
 
 +   基本模型训练和评估
 
-我们为CIFAR-10数据集开发的图像分类模型只能在验证集上达到53%的准确率，并且在正确分类一些类别的图像（如鸟类和猫类，大约33–35%）时表现非常挣扎。这是预期中的，因为我们通常会使用卷积神经网络进行图像分类。在本教程系列的这一部分，我们将专注于CNN及其在CIFAR-10上提高图像分类性能。
+我们为 CIFAR-10 数据集开发的图像分类模型只能在验证集上达到 53%的准确率，并且在正确分类一些类别的图像（如鸟类和猫类，大约 33–35%）时表现非常挣扎。这是预期中的，因为我们通常会使用卷积神经网络进行图像分类。在本教程系列的这一部分，我们将专注于 CNN 及其在 CIFAR-10 上提高图像分类性能。
 
-# **CNN基础**
+# **CNN 基础**
 
-在我们深入代码之前，让我们讨论一下卷积神经网络的基础，以便更好地理解我们的代码在做什么。如果你对CNN的工作原理很熟悉，可以跳过这一部分。
+在我们深入代码之前，让我们讨论一下卷积神经网络的基础，以便更好地理解我们的代码在做什么。如果你对 CNN 的工作原理很熟悉，可以跳过这一部分。
 
-与前馈网络（如我们在系列前一部分中开发的那种）相比，CNN具有不同的架构，并由不同类型的层组成。在下图中，我们可以看到典型CNN的一般架构，包括它可以包含的不同层类型。
+与前馈网络（如我们在系列前一部分中开发的那种）相比，CNN 具有不同的架构，并由不同类型的层组成。在下图中，我们可以看到典型 CNN 的一般架构，包括它可以包含的不同层类型。
 
-![](../Images/3a48cb9a2be2b96e532e8f01602b4643.png)
+![](img/3a48cb9a2be2b96e532e8f01602b4643.png)
 
 图片来源：作者
 
@@ -48,7 +48,7 @@
 
 ## **卷积层**
 
-CNN的定义组件和第一层是卷积层，它由以下内容组成。
+CNN 的定义组件和第一层是卷积层，它由以下内容组成。
 
 +   输入数据（在本例中为图像）
 
@@ -60,11 +60,11 @@ CNN的定义组件和第一层是卷积层，它由以下内容组成。
 
 那么，为什么卷积层比密集/完全连接层在图像数据中更好呢？本质上，密集层会学习输入中的全局模式，而卷积层具有学习局部和空间模式的优势。这听起来可能有点模糊或抽象，因此让我们看一个示例来说明这意味着什么。
 
-![](../Images/d7dc0c57603023b4e03de913c56e36fc.png)
+![](img/d7dc0c57603023b4e03de913c56e36fc.png)
 
 图片来源：作者
 
-在图像的左侧，我们可以看到一个基本的二维黑白图像4在卷积层中的表示方式。红色方框是过滤器/特征检测器/卷积核，正在对图像进行卷积。在右侧是相同图像输入到密集连接层中的方式。你可以看到与红色卷积核框架内相同的9个图像像素。注意左侧像素如何在空间上被分组，邻近其他像素。然而在右侧，这9个像素不再是邻居。
+在图像的左侧，我们可以看到一个基本的二维黑白图像 4 在卷积层中的表示方式。红色方框是过滤器/特征检测器/卷积核，正在对图像进行卷积。在右侧是相同图像输入到密集连接层中的方式。你可以看到与红色卷积核框架内相同的 9 个图像像素。注意左侧像素如何在空间上被分组，邻近其他像素。然而在右侧，这 9 个像素不再是邻居。
 
 通过这一点，我们可以看到当图像被展平并在全连接/线性层中表示时，空间/位置相关的信息是如何丢失的。这就是为什么卷积神经网络在处理图像数据时更强大的原因。输入数据的空间结构得以保持，图像中的模式（边缘、纹理、形状等）可以被学习。
 
@@ -74,7 +74,7 @@ CNN的定义组件和第一层是卷积层，它由以下内容组成。
 
 CIFAR-10 数据集包含 60,000 张 32x32 彩色图像，每张图像被表示为一个三维张量。每张图像将是一个 `(32,32,3)` 张量，其中维度为 32（高度）x 32（宽度）x 3（R-G-B 颜色通道）。下图展示了数据集中飞机的全彩图像中分离出的三种不同颜色通道（RGB）。
 
-![](../Images/edeed5a366c6bebb10ba8a10645daf24.png)
+![](img/edeed5a366c6bebb10ba8a10645daf24.png)
 
 图像来源：作者
 
@@ -84,11 +84,11 @@ CIFAR-10 数据集包含 60,000 张 32x32 彩色图像，每张图像被表示�
 
 卷积层中的滤波器（也称为内核或特征检测器）是一个权重数组，实质上以滑动窗口的方式扫描图像，在每个停靠点计算点积，并将该点积输出到一个新的数组中，称为特征图。滑动窗口扫描称为卷积。让我们看看这个过程的插图，以帮助理解发生了什么。
 
-![](../Images/b9c7c0564b5eab99ea816f70199a7a70.png)
+![](img/b9c7c0564b5eab99ea816f70199a7a70.png)
 
 *3x3 滤波器（蓝色）在输入（红色）上卷积以创建特征图（紫色）的插图。图像来源：作者*
 
-![](../Images/6aeac259fc8695fcc08af484d6907974.png)
+![](img/6aeac259fc8695fcc08af484d6907974.png)
 
 *每一步卷积中的点积计算插图。图像来源：作者*
 
@@ -122,13 +122,13 @@ CIFAR-10 数据集包含 60,000 张 32x32 彩色图像，每张图像被表示�
 
 所以，如果你正在使用 Colab，为了确保你正在使用 GPU，请前往 `Runtime` 并点击 `Change runtime type`。
 
-![](../Images/14d135ca33cd5d0d2ab3dc0ab90ab770.png)
+![](img/14d135ca33cd5d0d2ab3dc0ab90ab770.png)
 
 图片来源：作者
 
 在对话框中选择 `GPU` 并保存。
 
-![](../Images/a20a5461174b46d89088e1d8233f4db8.png)
+![](img/a20a5461174b46d89088e1d8233f4db8.png)
 
 图片来源：作者
 
@@ -148,11 +148,11 @@ CIFAR-10 数据集包含 60,000 张 32x32 彩色图像，每张图像被表示�
 
 # **构建 CNN**
 
-在PyTorch中，`nn.Conv2d`是用于图像输入数据的卷积层。`Conv2d`的第一个参数是输入的通道数，因此对于我们的第一个卷积层，我们将使用3，因为彩色图像将有3个颜色通道。在第一个卷积层之后，这个参数将取决于前一层输出的通道数。第二个参数是层中卷积操作输出的通道数。这些通道就是在卷积层介绍中讨论的特征图。最后，第三个参数是卷积核或过滤器的大小。这可以是像`3`这样的整数值表示`3x3`的卷积核，或者是像`(3,3)`这样的元组。因此，我们的卷积层将采用`nn.Conv2d(in_channels, out_channels, kernel_size)`的形式。可以添加其他可选参数，包括（但不限于）：`stride`、`padding`和`dilation`。我们将在卷积层`conv4`中使用`stride=2`。
+在 PyTorch 中，`nn.Conv2d`是用于图像输入数据的卷积层。`Conv2d`的第一个参数是输入的通道数，因此对于我们的第一个卷积层，我们将使用 3，因为彩色图像将有 3 个颜色通道。在第一个卷积层之后，这个参数将取决于前一层输出的通道数。第二个参数是层中卷积操作输出的通道数。这些通道就是在卷积层介绍中讨论的特征图。最后，第三个参数是卷积核或过滤器的大小。这可以是像`3`这样的整数值表示`3x3`的卷积核，或者是像`(3,3)`这样的元组。因此，我们的卷积层将采用`nn.Conv2d(in_channels, out_channels, kernel_size)`的形式。可以添加其他可选参数，包括（但不限于）：`stride`、`padding`和`dilation`。我们将在卷积层`conv4`中使用`stride=2`。
 
 在经过一系列卷积层之后，我们需要使用一个展平层将特征图展平成可以输入到线性层的数据，为此我们将使用`nn.Flatten()`。我们可以使用`nn.BatchNorm1d()`来应用批量归一化，并且需要传入特征数量作为参数。最后，我们的线性全连接层使用`nn.Linear()`构建，它也会将特征数量作为第一个参数，并且指定输出特征的数量作为第二个参数。
 
-为了开始定义我们模型的基本架构，我们将定义一个继承自PyTorch `nn.Module`类的`ConvNet`类。然后，我们可以将每一层定义为类的属性，并根据需要构建它们。一旦我们指定了层的架构，就可以通过创建一个`forward()`方法来定义模型的流动。我们可以用激活函数包裹每一层，在我们的案例中我们将使用`relu`。我们可以在层之间应用`dropout`，通过传入前一层和`p`的元素丢弃概率（默认为0.5）。最后，我们创建我们的模型对象并将其附加到我们的`device`上，以便在GPU上进行训练。
+为了开始定义我们模型的基本架构，我们将定义一个继承自 PyTorch `nn.Module`类的`ConvNet`类。然后，我们可以将每一层定义为类的属性，并根据需要构建它们。一旦我们指定了层的架构，就可以通过创建一个`forward()`方法来定义模型的流动。我们可以用激活函数包裹每一层，在我们的案例中我们将使用`relu`。我们可以在层之间应用`dropout`，通过传入前一层和`p`的元素丢弃概率（默认为 0.5）。最后，我们创建我们的模型对象并将其附加到我们的`device`上，以便在 GPU 上进行训练。
 
 ## **训练和测试函数**
 
@@ -162,11 +162,11 @@ CIFAR-10 数据集包含 60,000 张 32x32 彩色图像，每张图像被表示�
 
 让我们训练模型。
 
-![](../Images/f83abc3b8a4c65aa307718fb1bd0d321.png)
+![](img/f83abc3b8a4c65aa307718fb1bd0d321.png)
 
 图片来源：作者
 
-仅仅经过10个周期，61.7%的表现远远好于我们训练的全连接模型！显然，CNN更适合图像分类，但通过延长训练时间和调整超参数，我们可以挤出更多的性能。在我们进行这些操作之前，让我们快速查看一下内部情况，看看滤波器是什么样的。回忆一下，滤波器的像素是我们模型中的可训练参数。这不是训练图像分类模型的必要步骤，我们也不会发现太多有用的信息，但看到模型内部发生了什么还是很有趣的。
+仅仅经过 10 个周期，61.7%的表现远远好于我们训练的全连接模型！显然，CNN 更适合图像分类，但通过延长训练时间和调整超参数，我们可以挤出更多的性能。在我们进行这些操作之前，让我们快速查看一下内部情况，看看滤波器是什么样的。回忆一下，滤波器的像素是我们模型中的可训练参数。这不是训练图像分类模型的必要步骤，我们也不会发现太多有用的信息，但看到模型内部发生了什么还是很有趣的。
 
 # **可视化滤波器**
 
@@ -174,17 +174,17 @@ CIFAR-10 数据集包含 60,000 张 32x32 彩色图像，每张图像被表示�
 
 让我们查看一下第一卷积层（`conv1`）中的滤波器，因为这些滤波器直接应用于图像。
 
-以下是输出，包含了来自我们的`conv1`卷积层的48个滤波器的可视化。我们可以看到每个滤波器是一个包含不同值或颜色的3x3张量。
+以下是输出，包含了来自我们的`conv1`卷积层的 48 个滤波器的可视化。我们可以看到每个滤波器是一个包含不同值或颜色的 3x3 张量。
 
-![](../Images/800417b0ffb0ab653c78bfaa9f771b74.png)
+![](img/800417b0ffb0ab653c78bfaa9f771b74.png)
 
 图片来源：作者
 
-如果我们的滤波器是5x5的，我们会在图中看到这种差异。回忆一下，使用`nn.Conv2d`我们可以通过第三个参数来改变滤波器的大小，所以如果我们想要一个5x5的，`conv1`将会是这样的：
+如果我们的滤波器是 5x5 的，我们会在图中看到这种差异。回忆一下，使用`nn.Conv2d`我们可以通过第三个参数来改变滤波器的大小，所以如果我们想要一个 5x5 的，`conv1`将会是这样的：
 
-如果我们使用新的5x5滤波器重新训练模型，输出将会变成这样：
+如果我们使用新的 5x5 滤波器重新训练模型，输出将会变成这样：
 
-![](../Images/a44f00a162d9680f72a989f19dec70e5.png)
+![](img/a44f00a162d9680f72a989f19dec70e5.png)
 
 图片来源：作者
 
@@ -244,25 +244,25 @@ PyTorch 通过 `torchvision.transforms` 模块使图像增强变得简单。如�
 
 现在我们可以调整我们的超参数了！通过使用`%%time`，在整个调优过程完成后，我们可以精确地看到所用的时间。我们将学习率保持为`lrate=0.001`和批量大小为`batch_sz=512`，用之前定义的`search_space`实例化`HyperSearch`，将`verbose`设置为`True`或`False`（你可以选择），然后调用`optimize()`方法开始调优。
 
-**注意：** 在我的机器上（NVIDIA RTX 3070），完成这个过程大约花费了50分钟，所以如果你在Colab上使用提供的GPU，预计也会花费差不多的时间。
+**注意：** 在我的机器上（NVIDIA RTX 3070），完成这个过程大约花费了 50 分钟，所以如果你在 Colab 上使用提供的 GPU，预计也会花费差不多的时间。
 
 一旦整个优化周期完成，你应该会得到如下表格：
 
-![](../Images/ce5ec39125424fde755fa34dc2beb37c.png)
+![](img/ce5ec39125424fde755fa34dc2beb37c.png)
 
 图片来源：作者
 
 # **结果**
 
-从表格来看，最佳结果来自Run 00，其`c1=48`，`c2=96`，`l1=256`。0.84的损失和71.24%的准确率是一个不错的改进，特别是考虑到它仅仅训练了10个轮次！
+从表格来看，最佳结果来自 Run 00，其`c1=48`，`c2=96`，`l1=256`。0.84 的损失和 71.24%的准确率是一个不错的改进，特别是考虑到它仅仅训练了 10 个轮次！
 
-现在，我们已经找到了在10个epoch中表现最佳的超参数，接下来就对这个模型进行微调吧！我们可以训练更多的epoch，并稍微降低学习率以尝试挤出更多的性能。首先，让我们定义我们希望使用的模型，并设置批量大小和学习率：
+现在，我们已经找到了在 10 个 epoch 中表现最佳的超参数，接下来就对这个模型进行微调吧！我们可以训练更多的 epoch，并稍微降低学习率以尝试挤出更多的性能。首先，让我们定义我们希望使用的模型，并设置批量大小和学习率：
 
-最后，我们可以将`epochs`设置为50，并更改保存权重的路径。让训练周期运行，如果进展停止，早停将终止训练。
+最后，我们可以将`epochs`设置为 50，并更改保存权重的路径。让训练周期运行，如果进展停止，早停将终止训练。
 
-早停应该在达到50个epoch之前终止训练，并且应该达到约77%的准确率。
+早停应该在达到 50 个 epoch 之前终止训练，并且应该达到约 77%的准确率。
 
-![](../Images/2da8c39fd833b4ad2c65c9080965621a.png)
+![](img/2da8c39fd833b4ad2c65c9080965621a.png)
 
 图片来源：作者
 
@@ -274,7 +274,7 @@ PyTorch 通过 `torchvision.transforms` 模块使图像增强变得简单。如�
 
 这应该输出准确率和损失：
 
-![](../Images/9e779c41b6c96d762f987e0686238b39.png)
+![](img/9e779c41b6c96d762f987e0686238b39.png)
 
 图片来源：作者
 
@@ -282,7 +282,7 @@ PyTorch 通过 `torchvision.transforms` 模块使图像增强变得简单。如�
 
 执行这个代码块将给出以下输出：
 
-![](../Images/9541621aa24e8bc4717ad486068317a9.png)
+![](img/9541621aa24e8bc4717ad486068317a9.png)
 
 图片来源：作者
 
@@ -292,9 +292,9 @@ PyTorch 通过 `torchvision.transforms` 模块使图像增强变得简单。如�
 
 我们可以通过混淆矩阵获得更多关于性能的洞察。让我们建立一个混淆矩阵，然后获取一个良好的可视化效果。
 
-定义了`confusion_matrix`之后，我们可以使用Seaborn库帮助我们可视化它。
+定义了`confusion_matrix`之后，我们可以使用 Seaborn 库帮助我们可视化它。
 
-![](../Images/efe97e933ef296bd8dcb0efa04bd3dcf.png)
+![](img/efe97e933ef296bd8dcb0efa04bd3dcf.png)
 
 图片来源：作者
 
@@ -304,13 +304,13 @@ PyTorch 通过 `torchvision.transforms` 模块使图像增强变得简单。如�
 
 ## **每个类别的召回率**
 
-![](../Images/4c129e182dc3e733ac99fcd076beb09a.png)
+![](img/4c129e182dc3e733ac99fcd076beb09a.png)
 
 图片来源：作者
 
 ## **每个类别的精度**
 
-![](../Images/e5c94e732f7fc046f3751a1e06d23095.png)
+![](img/e5c94e732f7fc046f3751a1e06d23095.png)
 
 图片来源：作者
 
@@ -322,12 +322,12 @@ PyTorch 通过 `torchvision.transforms` 模块使图像增强变得简单。如�
 
 调用函数，传入你想要采样的图像数量。输出将给出每张图像从左到右的真实标签和预测类别。
 
-![](../Images/6b5f8a5182cb47e4ac87f5d0fc911a2a.png)
+![](img/6b5f8a5182cb47e4ac87f5d0fc911a2a.png)
 
 图片来源：作者
 
-![](../Images/319869d0ee25f4e30176f20816cd778c.png)
+![](img/319869d0ee25f4e30176f20816cd778c.png)
 
 图片来源：作者
 
-利用卷积网络进行超参数调优和图像增强确实有助于提高在CIFAR-10数据集上的表现！一如既往，感谢阅读，希望你对PyTorch和用于图像分类的CNN有了一些了解。包含所有代码的完整Notebook可以在[GitHub](https://github.com/florestony54/intro-to-pytorch-2/blob/main/pytorch2_2.ipynb)上找到。
+利用卷积网络进行超参数调优和图像增强确实有助于提高在 CIFAR-10 数据集上的表现！一如既往，感谢阅读，希望你对 PyTorch 和用于图像分类的 CNN 有了一些了解。包含所有代码的完整 Notebook 可以在[GitHub](https://github.com/florestony54/intro-to-pytorch-2/blob/main/pytorch2_2.ipynb)上找到。

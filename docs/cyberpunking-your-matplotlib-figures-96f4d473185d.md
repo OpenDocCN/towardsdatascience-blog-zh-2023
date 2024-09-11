@@ -1,18 +1,18 @@
 # 让你的 matplotlib 图表变得有趣的黑客技术
 
-> 原文：[https://towardsdatascience.com/cyberpunking-your-matplotlib-figures-96f4d473185d?source=collection_archive---------5-----------------------#2023-05-21](https://towardsdatascience.com/cyberpunking-your-matplotlib-figures-96f4d473185d?source=collection_archive---------5-----------------------#2023-05-21)
+> 原文：[`towardsdatascience.com/cyberpunking-your-matplotlib-figures-96f4d473185d?source=collection_archive---------5-----------------------#2023-05-21`](https://towardsdatascience.com/cyberpunking-your-matplotlib-figures-96f4d473185d?source=collection_archive---------5-----------------------#2023-05-21)
 
 ## 通过几行代码将你的 matplotlib 图表从乏味变得有趣
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----96f4d473185d--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----96f4d473185d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96f4d473185d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----96f4d473185d--------------------------------) [安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----96f4d473185d--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----96f4d473185d--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----96f4d473185d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96f4d473185d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----96f4d473185d--------------------------------) [安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----96f4d473185d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcyberpunking-your-matplotlib-figures-96f4d473185d&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----96f4d473185d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96f4d473185d--------------------------------) ·8 min read·2023年5月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96f4d473185d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcyberpunking-your-matplotlib-figures-96f4d473185d&user=Andy+McDonald&userId=9c280f85f15c&source=-----96f4d473185d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcyberpunking-your-matplotlib-figures-96f4d473185d&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----96f4d473185d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96f4d473185d--------------------------------) ·8 min read·2023 年 5 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96f4d473185d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcyberpunking-your-matplotlib-figures-96f4d473185d&user=Andy+McDonald&userId=9c280f85f15c&source=-----96f4d473185d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F96f4d473185d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcyberpunking-your-matplotlib-figures-96f4d473185d&source=-----96f4d473185d---------------------bookmark_footer-----------)![](../Images/fea8b724924c77103e370ccfe95d5961.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F96f4d473185d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcyberpunking-your-matplotlib-figures-96f4d473185d&source=-----96f4d473185d---------------------bookmark_footer-----------)![](img/fea8b724924c77103e370ccfe95d5961.png)
 
 一个包含多个子图并应用了 mplcyberpunk 主题的 matplotlib 图表。图片由作者提供。
 

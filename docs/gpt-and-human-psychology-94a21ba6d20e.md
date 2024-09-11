@@ -1,20 +1,20 @@
-# GPT与人类心理学
+# GPT 与人类心理学
 
-> 原文：[https://towardsdatascience.com/gpt-and-human-psychology-94a21ba6d20e?source=collection_archive---------4-----------------------#2023-06-29](https://towardsdatascience.com/gpt-and-human-psychology-94a21ba6d20e?source=collection_archive---------4-----------------------#2023-06-29)
+> 原文：[`towardsdatascience.com/gpt-and-human-psychology-94a21ba6d20e?source=collection_archive---------4-----------------------#2023-06-29`](https://towardsdatascience.com/gpt-and-human-psychology-94a21ba6d20e?source=collection_archive---------4-----------------------#2023-06-29)
 
 ## 类比人类思维和推理。
 
-[](https://medium.com/@maartengrootendorst?source=post_page-----94a21ba6d20e--------------------------------)[![Maarten Grootendorst](../Images/58e24b9cf7e10ff1cd5ffd75a32d1a26.png)](https://medium.com/@maartengrootendorst?source=post_page-----94a21ba6d20e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----94a21ba6d20e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----94a21ba6d20e--------------------------------) [Maarten Grootendorst](https://medium.com/@maartengrootendorst?source=post_page-----94a21ba6d20e--------------------------------)
+[](https://medium.com/@maartengrootendorst?source=post_page-----94a21ba6d20e--------------------------------)![Maarten Grootendorst](https://medium.com/@maartengrootendorst?source=post_page-----94a21ba6d20e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----94a21ba6d20e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----94a21ba6d20e--------------------------------) [Maarten Grootendorst](https://medium.com/@maartengrootendorst?source=post_page-----94a21ba6d20e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F22405c3b2875&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgpt-and-human-psychology-94a21ba6d20e&user=Maarten+Grootendorst&userId=22405c3b2875&source=post_page-22405c3b2875----94a21ba6d20e---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----94a21ba6d20e--------------------------------) ·13 min read·2023年6月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F94a21ba6d20e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgpt-and-human-psychology-94a21ba6d20e&user=Maarten+Grootendorst&userId=22405c3b2875&source=-----94a21ba6d20e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F22405c3b2875&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgpt-and-human-psychology-94a21ba6d20e&user=Maarten+Grootendorst&userId=22405c3b2875&source=post_page-22405c3b2875----94a21ba6d20e---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----94a21ba6d20e--------------------------------) ·13 min read·2023 年 6 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F94a21ba6d20e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgpt-and-human-psychology-94a21ba6d20e&user=Maarten+Grootendorst&userId=22405c3b2875&source=-----94a21ba6d20e---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F94a21ba6d20e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgpt-and-human-psychology-94a21ba6d20e&source=-----94a21ba6d20e---------------------bookmark_footer-----------)
 
-人工智能的状态随着生成式文本模型的出现发生了剧变，如ChatGPT、GPT-4等。
+人工智能的状态随着生成式文本模型的出现发生了剧变，如 ChatGPT、GPT-4 等。
 
 这些**GPT**（生成预训练变换器）模型似乎降低了没有技术背景的人进入人工智能的门槛。任何人都可以开始向模型提出各种问题，并获得令人惊讶的准确答案。
 

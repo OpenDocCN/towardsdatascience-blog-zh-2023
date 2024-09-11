@@ -1,12 +1,12 @@
 # **优化需求满足：行业方法**
 
-> 原文：[https://towardsdatascience.com/optimal-demand-fulfillment-an-industryapproach-58746615d91e?source=collection_archive---------15-----------------------#2023-02-06](https://towardsdatascience.com/optimal-demand-fulfillment-an-industryapproach-58746615d91e?source=collection_archive---------15-----------------------#2023-02-06)
+> 原文：[`towardsdatascience.com/optimal-demand-fulfillment-an-industryapproach-58746615d91e?source=collection_archive---------15-----------------------#2023-02-06`](https://towardsdatascience.com/optimal-demand-fulfillment-an-industryapproach-58746615d91e?source=collection_archive---------15-----------------------#2023-02-06)
 
-[](https://saifalikheraj.medium.com/?source=post_page-----58746615d91e--------------------------------)[![Saif Ali Kheraj](../Images/7b4fbd0444f5945ec7385b82a8276f27.png)](https://saifalikheraj.medium.com/?source=post_page-----58746615d91e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58746615d91e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----58746615d91e--------------------------------) [Saif Ali Kheraj](https://saifalikheraj.medium.com/?source=post_page-----58746615d91e--------------------------------)
+[](https://saifalikheraj.medium.com/?source=post_page-----58746615d91e--------------------------------)![Saif Ali Kheraj](https://saifalikheraj.medium.com/?source=post_page-----58746615d91e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58746615d91e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----58746615d91e--------------------------------) [Saif Ali Kheraj](https://saifalikheraj.medium.com/?source=post_page-----58746615d91e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9feeca234e74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimal-demand-fulfillment-an-industryapproach-58746615d91e&user=Saif+Ali+Kheraj&userId=9feeca234e74&source=post_page-9feeca234e74----58746615d91e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----58746615d91e--------------------------------) · 8分钟阅读 · 2023年2月6日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F58746615d91e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimal-demand-fulfillment-an-industryapproach-58746615d91e&user=Saif+Ali+Kheraj&userId=9feeca234e74&source=-----58746615d91e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9feeca234e74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimal-demand-fulfillment-an-industryapproach-58746615d91e&user=Saif+Ali+Kheraj&userId=9feeca234e74&source=post_page-9feeca234e74----58746615d91e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----58746615d91e--------------------------------) · 8 分钟阅读 · 2023 年 2 月 6 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F58746615d91e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimal-demand-fulfillment-an-industryapproach-58746615d91e&user=Saif+Ali+Kheraj&userId=9feeca234e74&source=-----58746615d91e---------------------clap_footer-----------)
 
 --
 
@@ -28,7 +28,7 @@
 
 让我们从一个例子开始。我们有四个基站，区域被分为四个区域。大面积通常会在地图上分成不同的网格。我们不会深入讨论这一点。例如，基站 #1 可以覆盖区域 1 和 2，而基站 #2 可以覆盖区域 3。基站 #2 可以覆盖区域 1、2 和 3。基站 #3 可以覆盖区域 3 和 4。基站 #4 可以覆盖区域 2 和 4。下图展示了这一点。
 
-![](../Images/dbbeb2b254c4fd912bba43e8f38d26f0.png)
+![](img/dbbeb2b254c4fd912bba43e8f38d26f0.png)
 
 图 1：区域与网络塔的连接性（作者图）
 
@@ -36,27 +36,27 @@
 
 ## 方程
 
-让我们用J表示位置/基站，用I表示需求节点/区域。我们还定义aij，如果需求节点i被位置节点j覆盖，则aij等于1。aij可以使用某个距离阈值来定义。
+让我们用 J 表示位置/基站，用 I 表示需求节点/区域。我们还定义 aij，如果需求节点 i 被位置节点 j 覆盖，则 aij 等于 1。aij 可以使用某个距离阈值来定义。
 
-![](../Images/abe8cd616ee03c0ee4c282bc3626d897.png)
+![](img/abe8cd616ee03c0ee4c282bc3626d897.png)
 
-表1：场景1的样本问题表述和变量符号（作者绘制）
+表 1：场景 1 的样本问题表述和变量符号（作者绘制）
 
-每个基站位置由一个二进制变量xj表示，该变量指示该位置是否被选中。如果基站被选中，则xj=1，否则xj=0。
+每个基站位置由一个二进制变量 xj 表示，该变量指示该位置是否被选中。如果基站被选中，则 xj=1，否则 xj=0。
 
 目标函数是通过最小化选定基站的总和来进行优化。
 
-![](../Images/57dc31020fc54fd9813b70b33eec14b5.png)
+![](img/57dc31020fc54fd9813b70b33eec14b5.png)
 
-方程1：目标函数——场景1中最小化选定基站的总和（作者绘制）
+方程 1：目标函数——场景 1 中最小化选定基站的总和（作者绘制）
 
-约束条件是确保每个区域至少被一个选定的基站覆盖。因此，我们希望每个需求节点i（在我们案例中是区域）至少由一个位置j（在我们案例中是基站）服务。
+约束条件是确保每个区域至少被一个选定的基站覆盖。因此，我们希望每个需求节点 i（在我们案例中是区域）至少由一个位置 j（在我们案例中是基站）服务。
 
-![](../Images/ed3b25b1e5d99e7a50d3ef92ed34089f.png)
+![](img/ed3b25b1e5d99e7a50d3ef92ed34089f.png)
 
-方程2：约束条件——场景1中每个区域必须由至少一个基站/位置覆盖（作者绘制）
+方程 2：约束条件——场景 1 中每个区域必须由至少一个基站/位置覆盖（作者绘制）
 
-因此，对于每个区域i，我们查看所有基站，看看这些基站是否覆盖区域i。每个区域应该至少由一个基站覆盖。请注意，在这个特定模型中，区域可以由多个基站服务。
+因此，对于每个区域 i，我们查看所有基站，看看这些基站是否覆盖区域 i。每个区域应该至少由一个基站覆盖。请注意，在这个特定模型中，区域可以由多个基站服务。
 
 通过解决这个优化问题，电信公司可以在最小化所需基站数量的同时确定最佳的基站位置，以覆盖整个国家/城市/区域。
 
@@ -99,47 +99,47 @@ for j in model.J:
 print(f"Number of open locations: {model.obj()}")
 ```
 
-![](../Images/3e5b39b1ae1c809e6291ca291a7031a3.png)
+![](img/3e5b39b1ae1c809e6291ca291a7031a3.png)
 
-图1：场景1的结果（作者绘制）
+图 1：场景 1 的结果（作者绘制）
 
 正如我们所见，我们可以用两个基站覆盖所有需求点/区域，你可以使用上面的图表自行验证结果。
 
-# 场景2
+# 场景 2
 
-现在我们进入第二个用例，讨论如何对可用的站点位置设置上限，以满足最大需求。考虑到可用的基站数量有限，我们希望最大化覆盖范围。例如，公司可能决定设置一个最大为两个基站的上限，并关闭其他基站以节省费用。现在的问题是我们能用两个基站覆盖多少个区域。当然，不同的组合是可能的；例如，如果我们只使用基站1和2，并关闭基站3和4，那么我们实际上会在区域3失去覆盖。也许有某些两个基站的组合可以覆盖整个区域，这将通过我们的优化方程来解决。可能存在不止一个可行的解决方案。
+现在我们进入第二个用例，讨论如何对可用的站点位置设置上限，以满足最大需求。考虑到可用的基站数量有限，我们希望最大化覆盖范围。例如，公司可能决定设置一个最大为两个基站的上限，并关闭其他基站以节省费用。现在的问题是我们能用两个基站覆盖多少个区域。当然，不同的组合是可能的；例如，如果我们只使用基站 1 和 2，并关闭基站 3 和 4，那么我们实际上会在区域 3 失去覆盖。也许有某些两个基站的组合可以覆盖整个区域，这将通过我们的优化方程来解决。可能存在不止一个可行的解决方案。
 
 ## 方程
 
-![](../Images/651c0996d8e5acdd04ac6e60e4f0ef8f.png)
+![](img/651c0996d8e5acdd04ac6e60e4f0ef8f.png)
 
-表2：场景2的样本问题表述和变量符号（作者绘制）
+表 2：场景 2 的样本问题表述和变量符号（作者绘制）
 
-在这种情况下，我们希望基本上最大化我们的覆盖范围，我们用 y 变量定义覆盖的概念。在这种情况下， yi 表示我们的区域是否会被选中。如果被选中，则 yi 将为1，否则为0。我们基本上希望最大化这个总和，也就是说，我们希望每个区域都被覆盖。这可以通过以下方程表示。
+在这种情况下，我们希望基本上最大化我们的覆盖范围，我们用 y 变量定义覆盖的概念。在这种情况下， yi 表示我们的区域是否会被选中。如果被选中，则 yi 将为 1，否则为 0。我们基本上希望最大化这个总和，也就是说，我们希望每个区域都被覆盖。这可以通过以下方程表示。
 
-![](../Images/27ac29b475025dcd365306b4135d4c96.png)
+![](img/27ac29b475025dcd365306b4135d4c96.png)
 
-方程 3：目标函数——最大化场景1的覆盖/区域（图由作者提供）
+方程 3：目标函数——最大化场景 1 的覆盖/区域（图由作者提供）
 
 然而，我们有一些限制条件，因此可能无法覆盖所有区域。让我们从第一个限制条件开始，即覆盖区域的基站数量必须大于等于 yi。例如，如果某个区域被选中，则 yi=1，那么我们基本上希望覆盖该区域的基站数量大于等于 yi。
 
-![](../Images/8901760ed5cfa6b333b0140943d15a9b.png)
+![](img/8901760ed5cfa6b333b0140943d15a9b.png)
 
-方程 4：限制条件——每个选定的区域（yi）需要至少由1个基站/位置覆盖，用于场景2（图由作者提供）
+方程 4：限制条件——每个选定的区域（yi）需要至少由 1 个基站/位置覆盖，用于场景 2（图由作者提供）
 
-方程与第一部分相同，只是将1替换为 yi。因此，对于每个区域 I，我们查看它是否被基站覆盖，并将其加起来以确保它大于等于 yi。
+方程与第一部分相同，只是将 1 替换为 yi。因此，对于每个区域 I，我们查看它是否被基站覆盖，并将其加起来以确保它大于等于 yi。
 
-除此之外，最重要的限制条件是公司决定将我们限制在最多两个基站。我们基本上希望基站总数小于等于 p。（在我们的情况下是2）。
+除此之外，最重要的限制条件是公司决定将我们限制在最多两个基站。我们基本上希望基站总数小于等于 p。（在我们的情况下是 2）。
 
-![](../Images/3ae149a469e29792feea2ca278c3c1b5.png)
+![](img/3ae149a469e29792feea2ca278c3c1b5.png)
 
-方程 5：限制条件——场景2的 p 个基站上限（图由作者提供）
+方程 5：限制条件——场景 2 的 p 个基站上限（图由作者提供）
 
 现在，让我们将所有方程组合在一起，再次写出完整的内容。
 
-![](../Images/730e1b537f2ced3310cdf65017c9a2ef.png)
+![](img/730e1b537f2ced3310cdf65017c9a2ef.png)
 
-方程 6：结合上述所有内容的完整方程，用于场景2（图由作者提供）
+方程 6：结合上述所有内容的完整方程，用于场景 2（图由作者提供）
 
 ## 代码
 
@@ -187,9 +187,9 @@ for i in model.I:
 print(f"Number of regions covered: {model.obj()}")
 ```
 
-![](../Images/4879794e00704a493f3c8f3d0c350b27.png)
+![](img/4879794e00704a493f3c8f3d0c350b27.png)
 
-图 2：场景2的结果（图由作者提供）
+图 2：场景 2 的结果（图由作者提供）
 
 我们仍然可以用有限数量的基站覆盖所有需求/区域。你现在可以尝试 p=1 来查看可能会遗漏哪些区域。重要的是要注意，使用上限时，你可能会遗漏一些区域，但仍能最大化覆盖范围。
 
@@ -199,8 +199,8 @@ print(f"Number of regions covered: {model.obj()}")
 
 # 参考文献
 
-[1] [https://optimization.cbe.cornell.edu/index.php?title=Set_covering_problem](https://optimization.cbe.cornell.edu/index.php?title=Set_covering_problem)
+[1] [`optimization.cbe.cornell.edu/index.php?title=Set_covering_problem`](https://optimization.cbe.cornell.edu/index.php?title=Set_covering_problem)
 
-[2] [http://www.im.ntu.edu.tw/~lckung/courses/OR15/slides/OR-Sp15_09_IPapplication.pdf](http://www.im.ntu.edu.tw/~lckung/courses/OR15/slides/OR-Sp15_09_IPapplication.pdf)
+[2] [`www.im.ntu.edu.tw/~lckung/courses/OR15/slides/OR-Sp15_09_IPapplication.pdf`](http://www.im.ntu.edu.tw/~lckung/courses/OR15/slides/OR-Sp15_09_IPapplication.pdf)
 
-[3] [http://www.pyomo.org/documentation](http://www.pyomo.org/documentation)
+[3] [`www.pyomo.org/documentation`](http://www.pyomo.org/documentation)

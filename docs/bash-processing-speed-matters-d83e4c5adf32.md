@@ -1,18 +1,18 @@
 # Bash 处理速度至关重要
 
-> 原文：[https://towardsdatascience.com/bash-processing-speed-matters-d83e4c5adf32?source=collection_archive---------5-----------------------#2023-03-30](https://towardsdatascience.com/bash-processing-speed-matters-d83e4c5adf32?source=collection_archive---------5-----------------------#2023-03-30)
+> 原文：[`towardsdatascience.com/bash-processing-speed-matters-d83e4c5adf32?source=collection_archive---------5-----------------------#2023-03-30`](https://towardsdatascience.com/bash-processing-speed-matters-d83e4c5adf32?source=collection_archive---------5-----------------------#2023-03-30)
 
 ## 我将一个 bash 命令行的执行速度提升了超过 500 倍，使其使用起来轻而易举
 
-[](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)[![Mattia Di Gangi](../Images/ccd89021df6724797d45cc3c655a38a5.png)](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------) [Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)
+[](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)![Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------) [Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a5b9f193a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbash-processing-speed-matters-d83e4c5adf32&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=post_page-8a5b9f193a3c----d83e4c5adf32---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------) ·5 分钟阅读·2023年3月30日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a5b9f193a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbash-processing-speed-matters-d83e4c5adf32&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=post_page-8a5b9f193a3c----d83e4c5adf32---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------) ·5 分钟阅读·2023 年 3 月 30 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd83e4c5adf32&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbash-processing-speed-matters-d83e4c5adf32&source=-----d83e4c5adf32---------------------bookmark_footer-----------)![](../Images/3c5892a7dbb49c0b78ff636aafe30db5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd83e4c5adf32&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbash-processing-speed-matters-d83e4c5adf32&source=-----d83e4c5adf32---------------------bookmark_footer-----------)![](img/3c5892a7dbb49c0b78ff636aafe30db5.png)
 
 图片来源：[Chris Liverani](https://unsplash.com/@chrisliverani?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

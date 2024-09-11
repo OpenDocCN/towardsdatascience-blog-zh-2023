@@ -1,18 +1,18 @@
 # 如何将初级数据科学代码升级为高级数据科学代码
 
-> 原文：[https://towardsdatascience.com/how-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d?source=collection_archive---------4-----------------------#2023-06-12](https://towardsdatascience.com/how-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d?source=collection_archive---------4-----------------------#2023-06-12)
+> 原文：[`towardsdatascience.com/how-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d?source=collection_archive---------4-----------------------#2023-06-12`](https://towardsdatascience.com/how-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d?source=collection_archive---------4-----------------------#2023-06-12)
 
-## 这4个技巧将帮助你像高级数据科学家一样编写代码
+## 这 4 个技巧将帮助你像高级数据科学家一样编写代码
 
-[](https://madison13.medium.com/?source=post_page-----d3eb88a5555d--------------------------------)[![玛迪逊·亨特](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----d3eb88a5555d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d3eb88a5555d--------------------------------)[![数据科学的方向](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d3eb88a5555d--------------------------------) [玛迪逊·亨特](https://madison13.medium.com/?source=post_page-----d3eb88a5555d--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----d3eb88a5555d--------------------------------)![玛迪逊·亨特](https://madison13.medium.com/?source=post_page-----d3eb88a5555d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d3eb88a5555d--------------------------------)![数据科学的方向](https://towardsdatascience.com/?source=post_page-----d3eb88a5555d--------------------------------) [玛迪逊·亨特](https://madison13.medium.com/?source=post_page-----d3eb88a5555d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----d3eb88a5555d---------------------post_header-----------) 发布于[数据科学的方向](https://towardsdatascience.com/?source=post_page-----d3eb88a5555d--------------------------------) ·7分钟阅读·2023年6月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd3eb88a5555d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d&user=Madison+Hunter&userId=6a8c6841e521&source=-----d3eb88a5555d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----d3eb88a5555d---------------------post_header-----------) 发布于[数据科学的方向](https://towardsdatascience.com/?source=post_page-----d3eb88a5555d--------------------------------) ·7 分钟阅读·2023 年 6 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd3eb88a5555d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d&user=Madison+Hunter&userId=6a8c6841e521&source=-----d3eb88a5555d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd3eb88a5555d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d&source=-----d3eb88a5555d---------------------bookmark_footer-----------)![](../Images/51e32bff513d6abcd1c9ed4c90e14251.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd3eb88a5555d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-upgrade-your-junior-level-data-science-code-to-senior-level-data-science-code-d3eb88a5555d&source=-----d3eb88a5555d---------------------bookmark_footer-----------)![](img/51e32bff513d6abcd1c9ed4c90e14251.png)
 
 照片由[玛丽亚·特涅瓦](https://unsplash.com/@miteneva?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -36,7 +36,7 @@
 
 # 专注于编写干净、可维护和易读的代码
 
-我常在[以前的文章](/software-engineering-best-practices-for-data-scientists-4c199ede6e03)中开玩笑说数据科学家写的代码很糟糕。意大利面条代码确实存在，尤其是在你刚开始的时候。这在你作为初级数据科学家的前两年可能是可以接受的，但随着经验的增加，写出凌乱的代码就变得越来越不可接受。
+我常在以前的文章中开玩笑说数据科学家写的代码很糟糕。意大利面条代码确实存在，尤其是在你刚开始的时候。这在你作为初级数据科学家的前两年可能是可以接受的，但随着经验的增加，写出凌乱的代码就变得越来越不可接受。
 
 使你脱颖而出的一个方面是你能够编写干净、可维护和易读的代码。这不仅让你在工作中更容易合作且非常专业，还表明你能够将这些技巧传授给未来在你指导下的初级数据科学家。
 
@@ -64,11 +64,11 @@ Python 和 R 都有关于最佳实践和风格的很好的指南，这些指南�
 
 发展测试和质量保证技能是向公司展示你致力于提升技艺和关心工作质量及推送到生产环境的代码的好方法。这些都是让你成为高级数据科学家职位优秀候选人的属性。
 
-[单元测试和数据科学的 Python](https://towardsdatascience.com/unit-testing-for-data-science-with-python-16dfdcfe3232?source=post_page-----d3eb88a5555d--------------------------------) [## 单元测试与数据科学的 Python
+[单元测试和数据科学的 Python](https://towardsdatascience.com/unit-testing-for-data-science-with-python-16dfdcfe3232?source=post_page-----d3eb88a5555d--------------------------------) ## 单元测试与数据科学的 Python
 
-### 使用nose2和参数化测试尽早发现错误
+### 使用 nose2 和参数化测试尽早发现错误
 
-[towardsdatascience.com](/unit-testing-for-data-science-with-python-16dfdcfe3232?source=post_page-----d3eb88a5555d--------------------------------)
+[towardsdatascience.com
 
 # 将性能优化作为优先事项
 

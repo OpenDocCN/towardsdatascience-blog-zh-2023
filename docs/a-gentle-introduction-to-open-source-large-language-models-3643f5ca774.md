@@ -1,20 +1,20 @@
 # 《开源大型语言模型的温和介绍》
 
-> 原文：[https://towardsdatascience.com/a-gentle-introduction-to-open-source-large-language-models-3643f5ca774?source=collection_archive---------1-----------------------#2023-08-11](https://towardsdatascience.com/a-gentle-introduction-to-open-source-large-language-models-3643f5ca774?source=collection_archive---------1-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/a-gentle-introduction-to-open-source-large-language-models-3643f5ca774?source=collection_archive---------1-----------------------#2023-08-11`](https://towardsdatascience.com/a-gentle-introduction-to-open-source-large-language-models-3643f5ca774?source=collection_archive---------1-----------------------#2023-08-11)
 
 ## 开放语言模型
 
 ## 为什么每个人都在谈论美洲驼、羊驼、猎鹰及其他动物
 
-[](https://donatoriccio.medium.com/?source=post_page-----3643f5ca774--------------------------------)[![Donato Riccio](../Images/0af2a026e72a023db4635522cbca50eb.png)](https://donatoriccio.medium.com/?source=post_page-----3643f5ca774--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3643f5ca774--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3643f5ca774--------------------------------) [Donato Riccio](https://donatoriccio.medium.com/?source=post_page-----3643f5ca774--------------------------------)
+[](https://donatoriccio.medium.com/?source=post_page-----3643f5ca774--------------------------------)![Donato Riccio](https://donatoriccio.medium.com/?source=post_page-----3643f5ca774--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3643f5ca774--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3643f5ca774--------------------------------) [Donato Riccio](https://donatoriccio.medium.com/?source=post_page-----3643f5ca774--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe384fc71d292&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-open-source-large-language-models-3643f5ca774&user=Donato+Riccio&userId=e384fc71d292&source=post_page-e384fc71d292----3643f5ca774---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3643f5ca774--------------------------------) · 11 分钟阅读 · 2023年8月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3643f5ca774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-open-source-large-language-models-3643f5ca774&user=Donato+Riccio&userId=e384fc71d292&source=-----3643f5ca774---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe384fc71d292&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-open-source-large-language-models-3643f5ca774&user=Donato+Riccio&userId=e384fc71d292&source=post_page-e384fc71d292----3643f5ca774---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3643f5ca774--------------------------------) · 11 分钟阅读 · 2023 年 8 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3643f5ca774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-open-source-large-language-models-3643f5ca774&user=Donato+Riccio&userId=e384fc71d292&source=-----3643f5ca774---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3643f5ca774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-open-source-large-language-models-3643f5ca774&source=-----3643f5ca774---------------------bookmark_footer-----------)![](../Images/b78c1db423fd8ee4ce173a12b054118c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3643f5ca774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-open-source-large-language-models-3643f5ca774&source=-----3643f5ca774---------------------bookmark_footer-----------)![](img/b78c1db423fd8ee4ce173a12b054118c.png)
 
 作者提供的图片（使用 Midjourney 生成）
 
@@ -22,19 +22,19 @@
 
 # 目录
 
-— [我们为什么需要开源模型？](#c41d)
+— 我们为什么需要开源模型？
 
-— [越大越好？训练大型语言模型](#031f)
+— 越大越好？训练大型语言模型
 
-— [微调大型语言模型](#9419)
+— 微调大型语言模型
 
-— [最佳开源大型语言模型](#1f3c)
+— 最佳开源大型语言模型
 
-— [在你的计算机上运行大型语言模型](#2d37)
+— 在你的计算机上运行大型语言模型
 
-— [局限性](#d1aa)
+— 局限性
 
-— [结论](#2c45)
+— 结论
 
 ## 什么是大型语言模型？
 

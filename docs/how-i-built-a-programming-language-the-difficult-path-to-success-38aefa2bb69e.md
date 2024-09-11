@@ -1,14 +1,14 @@
 # 我是如何构建一个编程语言的：通往成功的（艰难）之路
 
-> 原文：[https://towardsdatascience.com/how-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e?source=collection_archive---------14-----------------------#2023-07-20](https://towardsdatascience.com/how-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e?source=collection_archive---------14-----------------------#2023-07-20)
+> 原文：[`towardsdatascience.com/how-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e?source=collection_archive---------14-----------------------#2023-07-20`](https://towardsdatascience.com/how-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e?source=collection_archive---------14-----------------------#2023-07-20)
 
 ## 坦白说，“艰难”这个词还不足以形容。
 
-[](https://medium.com/@yashrajvishwakarma.31?source=post_page-----38aefa2bb69e--------------------------------)[![Yashrajvishwakarma](../Images/c07b1c3dd52ee792139cb517e8b25661.png)](https://medium.com/@yashrajvishwakarma.31?source=post_page-----38aefa2bb69e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----38aefa2bb69e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----38aefa2bb69e--------------------------------) [Yashrajvishwakarma](https://medium.com/@yashrajvishwakarma.31?source=post_page-----38aefa2bb69e--------------------------------)
+[](https://medium.com/@yashrajvishwakarma.31?source=post_page-----38aefa2bb69e--------------------------------)![Yashrajvishwakarma](https://medium.com/@yashrajvishwakarma.31?source=post_page-----38aefa2bb69e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----38aefa2bb69e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----38aefa2bb69e--------------------------------) [Yashrajvishwakarma](https://medium.com/@yashrajvishwakarma.31?source=post_page-----38aefa2bb69e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa7fae3e99bf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e&user=Yashrajvishwakarma&userId=a7fae3e99bf7&source=post_page-a7fae3e99bf7----38aefa2bb69e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----38aefa2bb69e--------------------------------) ·6分钟阅读·2023年7月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F38aefa2bb69e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e&user=Yashrajvishwakarma&userId=a7fae3e99bf7&source=-----38aefa2bb69e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa7fae3e99bf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e&user=Yashrajvishwakarma&userId=a7fae3e99bf7&source=post_page-a7fae3e99bf7----38aefa2bb69e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----38aefa2bb69e--------------------------------) ·6 分钟阅读·2023 年 7 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F38aefa2bb69e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-programming-language-the-difficult-path-to-success-38aefa2bb69e&user=Yashrajvishwakarma&userId=a7fae3e99bf7&source=-----38aefa2bb69e---------------------clap_footer-----------)
 
 --
 
@@ -26,7 +26,7 @@
 
 你写程序时，有多少次每一行看起来都正确，但却得到一个似乎几乎无法调试的神秘错误，这时候你开始失去动力，想着要放弃。
 
-![](../Images/a949b920ff2b7ef1f7b26a0886feab0e.png)
+![](img/a949b920ff2b7ef1f7b26a0886feab0e.png)
 
 照片由 [Tim Gouw](https://unsplash.com/@punttim?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -38,7 +38,7 @@
 
 但是多年后，同样的想法重新点燃了我的脑海，只是我完全不知道该如何开始。
 
-![](../Images/264518413c257ec524d35235e18b251d.png)
+![](img/264518413c257ec524d35235e18b251d.png)
 
 照片由 [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -72,7 +72,7 @@
 
 我猜测，你可能比学习使用 LLVM 构建编译器的基础知识要更快地学会 Java 的基础知识。
 
-![](../Images/1775d933031de14e3c2886999ed3573a.png)
+![](img/1775d933031de14e3c2886999ed3573a.png)
 
 图片由 [Emile Perron](https://unsplash.com/@emilep?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -94,13 +94,13 @@
 
 但我当时正处于绝望的时期，那时候需要采取绝望的措施。
 
-回到印度后，我花了接下来的一周处于失眠状态，字面意义上全天24小时工作（如果不算早餐、午餐和晚餐的话，大约是21小时——我吃得很慢）。
+回到印度后，我花了接下来的一周处于失眠状态，字面意义上全天 24 小时工作（如果不算早餐、午餐和晚餐的话，大约是 21 小时——我吃得很慢）。
 
 接下来发生的事情是我第一次遇到的，并且可能不会再发生——我的代码第一次尝试就成功了！没有调试，没有更多的困惑。
 
 当我运行我的源代码时，每一个组件：从词法分析器到解析器及 AST，都正常工作，并正确执行了每一行代码。
 
-![](../Images/283fa4577fcbe40820ca52b484957066.png)
+![](img/283fa4577fcbe40820ca52b484957066.png)
 
 图片由 [the blowup](https://unsplash.com/@theblowup?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

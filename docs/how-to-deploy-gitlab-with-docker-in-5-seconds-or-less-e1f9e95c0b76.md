@@ -1,18 +1,18 @@
 # 如何在 5 秒钟内或更短时间内使用 Docker 部署 GitLab
 
-> 原文：[https://towardsdatascience.com/how-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76?source=collection_archive---------21-----------------------#2023-03-27](https://towardsdatascience.com/how-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76?source=collection_archive---------21-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/how-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76?source=collection_archive---------21-----------------------#2023-03-27`](https://towardsdatascience.com/how-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76?source=collection_archive---------21-----------------------#2023-03-27)
 
 ## 最快速的方式来启动一个生产就绪的 GitLab 实例
 
-[](https://medium.knulst.de/?source=post_page-----e1f9e95c0b76--------------------------------)[![Paul Knulst](../Images/9fcb767d927a1fe53ee739c584fdf92c.png)](https://medium.knulst.de/?source=post_page-----e1f9e95c0b76--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e1f9e95c0b76--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e1f9e95c0b76--------------------------------) [Paul Knulst](https://medium.knulst.de/?source=post_page-----e1f9e95c0b76--------------------------------)
+[](https://medium.knulst.de/?source=post_page-----e1f9e95c0b76--------------------------------)![Paul Knulst](https://medium.knulst.de/?source=post_page-----e1f9e95c0b76--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e1f9e95c0b76--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1f9e95c0b76--------------------------------) [Paul Knulst](https://medium.knulst.de/?source=post_page-----e1f9e95c0b76--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1282c85b5cbc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76&user=Paul+Knulst&userId=1282c85b5cbc&source=post_page-1282c85b5cbc----e1f9e95c0b76---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1f9e95c0b76--------------------------------) · 3 分钟阅读 · 2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe1f9e95c0b76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76&user=Paul+Knulst&userId=1282c85b5cbc&source=-----e1f9e95c0b76---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1282c85b5cbc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76&user=Paul+Knulst&userId=1282c85b5cbc&source=post_page-1282c85b5cbc----e1f9e95c0b76---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1f9e95c0b76--------------------------------) · 3 分钟阅读 · 2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe1f9e95c0b76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76&user=Paul+Knulst&userId=1282c85b5cbc&source=-----e1f9e95c0b76---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe1f9e95c0b76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76&source=-----e1f9e95c0b76---------------------bookmark_footer-----------)![](../Images/6f7b205b9c7f1725f99062be645e2e6a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe1f9e95c0b76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-deploy-gitlab-with-docker-in-5-seconds-or-less-e1f9e95c0b76&source=-----e1f9e95c0b76---------------------bookmark_footer-----------)![](img/6f7b205b9c7f1725f99062be645e2e6a.png)
 
 [图片来源：rawpixel.com](https://www.freepik.com/free-photo/development-growth-progress-icon-concept_2758711.htm) 于 Freepik
 

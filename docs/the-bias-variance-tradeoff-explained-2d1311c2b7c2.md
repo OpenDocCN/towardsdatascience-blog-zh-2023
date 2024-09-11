@@ -1,16 +1,16 @@
 # 偏差-方差权衡，解读
 
-> 原文：[https://towardsdatascience.com/the-bias-variance-tradeoff-explained-2d1311c2b7c2?source=collection_archive---------5-----------------------#2023-02-15](https://towardsdatascience.com/the-bias-variance-tradeoff-explained-2d1311c2b7c2?source=collection_archive---------5-----------------------#2023-02-15)
+> 原文：[`towardsdatascience.com/the-bias-variance-tradeoff-explained-2d1311c2b7c2?source=collection_archive---------5-----------------------#2023-02-15`](https://towardsdatascience.com/the-bias-variance-tradeoff-explained-2d1311c2b7c2?source=collection_archive---------5-----------------------#2023-02-15)
 
 ## 不拘一格的解密者
 
 ## 偏差-方差权衡，第三部分，共三部分
 
-[](https://kozyrkov.medium.com/?source=post_page-----2d1311c2b7c2--------------------------------)[![Cassie Kozyrkov](../Images/ad18dd12979a4a3ec130bdf8b889af23.png)](https://kozyrkov.medium.com/?source=post_page-----2d1311c2b7c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d1311c2b7c2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d1311c2b7c2--------------------------------) [Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----2d1311c2b7c2--------------------------------)
+[](https://kozyrkov.medium.com/?source=post_page-----2d1311c2b7c2--------------------------------)![Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----2d1311c2b7c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d1311c2b7c2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d1311c2b7c2--------------------------------) [Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----2d1311c2b7c2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fccb851bb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bias-variance-tradeoff-explained-2d1311c2b7c2&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=post_page-2fccb851bb5e----2d1311c2b7c2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d1311c2b7c2--------------------------------) ·4分钟阅读·2023年2月15日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fccb851bb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bias-variance-tradeoff-explained-2d1311c2b7c2&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=post_page-2fccb851bb5e----2d1311c2b7c2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d1311c2b7c2--------------------------------) ·4 分钟阅读·2023 年 2 月 15 日
 
 --
 
@@ -20,7 +20,7 @@
 
 吃蔬菜是个很好的主意，所以在继续阅读本部分之前，请务必回顾一下之前的文章，因为第三部分是甜点：你通过跟随逻辑所获得的总结。
 
-![](../Images/2d5041225c864fe2f6084d3983c5220e.png)
+![](img/2d5041225c864fe2f6084d3983c5220e.png)
 
 我们的甜点将以简洁的方式呈现。图像由作者提供。
 

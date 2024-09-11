@@ -1,24 +1,24 @@
 # 调试和调整 Amazon SageMaker 训练任务与 SageMaker SSH 帮助工具
 
-> 原文：[https://towardsdatascience.com/debugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be?source=collection_archive---------6-----------------------#2023-12-27](https://towardsdatascience.com/debugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be?source=collection_archive---------6-----------------------#2023-12-27)
+> 原文：[`towardsdatascience.com/debugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be?source=collection_archive---------6-----------------------#2023-12-27`](https://towardsdatascience.com/debugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be?source=collection_archive---------6-----------------------#2023-12-27)
 
 ## 一个新工具，提升了托管训练工作负载的调试能力
 
-[](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----51efeb4d03be---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------) ·10分钟阅读·2023年12月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51efeb4d03be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&user=Chaim+Rand&userId=9440b37e27fe&source=-----51efeb4d03be---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----51efeb4d03be---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------) ·10 分钟阅读·2023 年 12 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51efeb4d03be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&user=Chaim+Rand&userId=9440b37e27fe&source=-----51efeb4d03be---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51efeb4d03be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&source=-----51efeb4d03be---------------------bookmark_footer-----------)![](../Images/480849dada98f2550913adfd745d3ba9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51efeb4d03be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&source=-----51efeb4d03be---------------------bookmark_footer-----------)![](img/480849dada98f2550913adfd745d3ba9.png)
 
 照片由 [James Wainscoat](https://unsplash.com/@tumbao1949?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 考虑到过去一年（2023）宣布的所有新 Amazon SageMaker 功能，包括最近的 [AWS re:invent](https://press.aboutamazon.com/2023/11/aws-announces-five-new-amazon-sagemaker-capabilities-for-scaling-with-models)，很容易忽视 [SageMaker SSH Helper](https://github.com/aws-samples/sagemaker-ssh-helper) — 一种用于连接到远程 SageMaker 培训环境的新工具。但 **有时正是这些安静的增强功能有潜力对你的日常开发产生最大的影响。** 在这篇文章中，我们将回顾 [SageMaker SSH Helper](https://github.com/aws-samples/sagemaker-ssh-helper) 并展示它如何提高你 1) 调查和解决培训应用程序中出现的错误的能力，以及 2) 优化其运行时性能。
 
-在 [之前的帖子](/6-steps-to-migrating-your-machine-learning-project-to-the-cloud-6d9b6e4f18e0) 中，我们详细讨论了云端培训的好处。基于云的管理培训服务，如 [Amazon SageMaker](https://aws.amazon.com/sagemaker/)，简化了围绕 AI 模型开发的许多复杂问题，并大大提高了对 AI 特定机器和 [预训练 AI 模型](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jumpstart.html) 的可访问性。要在 Amazon SageMaker 中进行培训，你只需定义一个培训环境（包括实例类型）并指向你希望运行的代码，培训服务将 1) 设置请求的环境，2) 将你的代码传送到培训机器，3) 运行你的培训脚本，4) 将培训输出复制到持久存储中，5) 在培训完成后拆除一切（以便你只需为你需要的部分付费）。听起来很简单…对吧？然而，管理培训也并非没有缺陷，其中之一 — 它对培训环境的有限访问性 — 将在本文中讨论。
+在 之前的帖子 中，我们详细讨论了云端培训的好处。基于云的管理培训服务，如 [Amazon SageMaker](https://aws.amazon.com/sagemaker/)，简化了围绕 AI 模型开发的许多复杂问题，并大大提高了对 AI 特定机器和 [预训练 AI 模型](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jumpstart.html) 的可访问性。要在 Amazon SageMaker 中进行培训，你只需定义一个培训环境（包括实例类型）并指向你希望运行的代码，培训服务将 1) 设置请求的环境，2) 将你的代码传送到培训机器，3) 运行你的培训脚本，4) 将培训输出复制到持久存储中，5) 在培训完成后拆除一切（以便你只需为你需要的部分付费）。听起来很简单…对吧？然而，管理培训也并非没有缺陷，其中之一 — 它对培训环境的有限访问性 — 将在本文中讨论。
 
 ## 免责声明
 
@@ -30,17 +30,17 @@
 
 正如经验丰富的开发者所知道的，应用开发时间的很大一部分实际上花在了调试上。我们的程序很少会“开箱即用”；更多时候，它们需要经过数小时的繁琐调试才能按预期运行。当然，要有效调试，你需要对应用环境有直接访问权限。尝试在没有环境访问权限的情况下调试应用程序，就像尝试修理水龙头却没有扳手一样。
 
-AI模型开发中的另一个重要步骤是调整训练应用的运行时性能。训练AI模型可能成本高昂，我们最大化计算资源利用的能力可能对训练成本产生决定性影响。在[之前的一篇文章](/cloud-ml-performance-checklist-caa51e798002)中，我们描述了分析和优化训练性能的迭代过程。类似于调试，直接访问运行时环境将大大提高并加速我们获得最佳结果的能力。
+AI 模型开发中的另一个重要步骤是调整训练应用的运行时性能。训练 AI 模型可能成本高昂，我们最大化计算资源利用的能力可能对训练成本产生决定性影响。在之前的一篇文章中，我们描述了分析和优化训练性能的迭代过程。类似于调试，直接访问运行时环境将大大提高并加速我们获得最佳结果的能力。
 
-不幸的是，SageMaker训练的“开火即忘”特性带来了一个副作用，那就是无法自由连接到训练环境。当然，你可以通过训练作业输出日志和调试打印（即，添加打印、研究输出日志、修改代码，并重复直到解决所有错误并达到所需性能）来调试和优化性能，但这将是一个非常原始且耗时的解决方案。
+不幸的是，SageMaker 训练的“开火即忘”特性带来了一个副作用，那就是无法自由连接到训练环境。当然，你可以通过训练作业输出日志和调试打印（即，添加打印、研究输出日志、修改代码，并重复直到解决所有错误并达到所需性能）来调试和优化性能，但这将是一个非常原始且耗时的解决方案。
 
 有一些最佳实践可以解决管理训练工作负载时的调试问题，每种方法都有其优缺点。我们将回顾其中的三种，讨论它们的局限性，然后展示新的[SageMaker SSH Helper](https://github.com/aws-samples/sagemaker-ssh-helper)如何彻底改变游戏规则。
 
 ## 在本地环境中调试
 
-建议在将任务提交到云端之前，先在本地环境中运行几步训练。尽管这可能需要对代码进行一些修改（例如，为了在CPU设备上进行训练），但通常是值得的，因为它使你能够识别并修复一些简单的编码错误。显然，这比在云端昂贵的GPU机器上发现这些错误更具成本效益。理想情况下，你的本地环境应尽可能类似于SageMaker训练环境（例如，使用相同版本的Python和Python包），但在大多数情况下，这种相似性是有限的。
+建议在将任务提交到云端之前，先在本地环境中运行几步训练。尽管这可能需要对代码进行一些修改（例如，为了在 CPU 设备上进行训练），但通常是值得的，因为它使你能够识别并修复一些简单的编码错误。显然，这比在云端昂贵的 GPU 机器上发现这些错误更具成本效益。理想情况下，你的本地环境应尽可能类似于 SageMaker 训练环境（例如，使用相同版本的 Python 和 Python 包），但在大多数情况下，这种相似性是有限的。
 
-## 在SageMaker Docker容器中本地调试
+## 在 SageMaker Docker 容器中本地调试
 
 第二个选项是拉取 SageMaker 使用的 [深度学习容器 (DLC) 镜像](https://docs.aws.amazon.com/deep-learning-containers/latest/devguide/deep-learning-containers-images.html)，并在你的本地 PC 上的容器中运行你的训练脚本。这种方法可以让你很好地了解 SageMaker 训练环境，包括已安装的包（和包版本）。它在识别缺失的依赖项和解决依赖项冲突方面极为有用。请参见 [文档](https://github.com/aws/deep-learning-containers/blob/master/available_images.md) 以了解如何登录并拉取适当的镜像。请注意，SageMaker 的 API 支持通过其 [本地模式](https://sagemaker.readthedocs.io/en/stable/overview.html#local-mode) 功能拉取和训练 DLC。然而，自己运行镜像将使你能够更自由地探索和研究镜像。
 
@@ -118,7 +118,7 @@ sleep(2*HOUR)
 
 ## 通过 AWS SSM 进行端口转发
 
-我们可以扩展我们的*aws ssm start-session* 命令，以启用[端口转发](https://aws.amazon.com/blogs/aws/new-port-forwarding-using-aws-system-manager-sessions-manager/)。这允许您安全地连接到云实例上运行的服务器应用程序。这对于习惯使用[TensorBoard Profiler](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 插件分析运行时性能的开发人员尤其令人兴奋（正如[我们所做的](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)）。下面的命令演示了如何通过 AWS SSM 设置端口转发：
+我们可以扩展我们的*aws ssm start-session* 命令，以启用[端口转发](https://aws.amazon.com/blogs/aws/new-port-forwarding-using-aws-system-manager-sessions-manager/)。这允许您安全地连接到云实例上运行的服务器应用程序。这对于习惯使用[TensorBoard Profiler](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html) 插件分析运行时性能的开发人员尤其令人兴奋（正如我们所做的）。下面的命令演示了如何通过 AWS SSM 设置端口转发：
 
 ```py
 aws ssm start-session \

@@ -1,18 +1,18 @@
 # 使用 Python 的 Plotly 和 Folium 库创建地理空间热力图
 
-> 原文：[https://towardsdatascience.com/creating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8?source=collection_archive---------3-----------------------#2023-03-17](https://towardsdatascience.com/creating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8?source=collection_archive---------3-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/creating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8?source=collection_archive---------3-----------------------#2023-03-17`](https://towardsdatascience.com/creating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8?source=collection_archive---------3-----------------------#2023-03-17)
 
 ## 两种出色的 Python 可视化地理空间变异的选项
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----4159e98a1ae8--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----4159e98a1ae8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4159e98a1ae8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4159e98a1ae8--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----4159e98a1ae8--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----4159e98a1ae8--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----4159e98a1ae8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4159e98a1ae8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4159e98a1ae8--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----4159e98a1ae8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----4159e98a1ae8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4159e98a1ae8--------------------------------) · 6 分钟阅读 · 2023年3月17日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----4159e98a1ae8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4159e98a1ae8--------------------------------) · 6 分钟阅读 · 2023 年 3 月 17 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4159e98a1ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8&source=-----4159e98a1ae8---------------------bookmark_footer-----------)![](../Images/07f55e060065099f6e715799e103d191.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4159e98a1ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-geospatial-heatmaps-with-pythons-plotly-and-folium-libraries-4159e98a1ae8&source=-----4159e98a1ae8---------------------bookmark_footer-----------)![](img/07f55e060065099f6e715799e103d191.png)
 
 图片由 [KOBU Agency](https://unsplash.com/@kobuagency?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

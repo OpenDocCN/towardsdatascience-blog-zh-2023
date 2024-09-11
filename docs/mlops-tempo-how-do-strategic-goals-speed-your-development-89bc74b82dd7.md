@@ -1,34 +1,34 @@
 # MLOps 节奏：战略目标如何创造更快的迭代？
 
-> 原文：[https://towardsdatascience.com/mlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7?source=collection_archive---------8-----------------------#2023-06-14](https://towardsdatascience.com/mlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7?source=collection_archive---------8-----------------------#2023-06-14)
+> 原文：[`towardsdatascience.com/mlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7?source=collection_archive---------8-----------------------#2023-06-14`](https://towardsdatascience.com/mlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7?source=collection_archive---------8-----------------------#2023-06-14)
 
 ## 基础是了解组织的需求
 
-[](https://blaza.medium.com/?source=post_page-----89bc74b82dd7--------------------------------)[![Matt Blasa](../Images/29a6db36f81799f9b8a3c22ac6672de2.png)](https://blaza.medium.com/?source=post_page-----89bc74b82dd7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89bc74b82dd7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89bc74b82dd7--------------------------------) [Matt Blasa](https://blaza.medium.com/?source=post_page-----89bc74b82dd7--------------------------------)
+[](https://blaza.medium.com/?source=post_page-----89bc74b82dd7--------------------------------)![Matt Blasa](https://blaza.medium.com/?source=post_page-----89bc74b82dd7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89bc74b82dd7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----89bc74b82dd7--------------------------------) [Matt Blasa](https://blaza.medium.com/?source=post_page-----89bc74b82dd7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd78a2c965654&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7&user=Matt+Blasa&userId=d78a2c965654&source=post_page-d78a2c965654----89bc74b82dd7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89bc74b82dd7--------------------------------) ·12 min 阅读·2023年6月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89bc74b82dd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7&user=Matt+Blasa&userId=d78a2c965654&source=-----89bc74b82dd7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd78a2c965654&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7&user=Matt+Blasa&userId=d78a2c965654&source=post_page-d78a2c965654----89bc74b82dd7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89bc74b82dd7--------------------------------) ·12 min 阅读·2023 年 6 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89bc74b82dd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7&user=Matt+Blasa&userId=d78a2c965654&source=-----89bc74b82dd7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89bc74b82dd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7&source=-----89bc74b82dd7---------------------bookmark_footer-----------)![](../Images/e3e0ccbb6bb6747628a1202909cdd072.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89bc74b82dd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tempo-how-do-strategic-goals-speed-your-development-89bc74b82dd7&source=-----89bc74b82dd7---------------------bookmark_footer-----------)![](img/e3e0ccbb6bb6747628a1202909cdd072.png)
 
 照片由 [Cristina Gottardi](https://unsplash.com/@cristina_gottardi) 拍摄，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)，作者创作
 
 战略目标是伟大开发节奏（MLOps 节奏）的基础。它有助于确定开发的方向、资源的重点以及如何高效执行项目。它为 MLOps 节奏的其他所有方面奠定了基础。
 
-![](../Images/6b39661d8e4ed7fa281fe11ddc945dcc.png)
+![](img/6b39661d8e4ed7fa281fe11ddc945dcc.png)
 
 MLOps 节奏的因素，作者创作
 
 MLOps 节奏是组织规划、开发和部署机器学习模型的速度。这个节奏越快，组织利用机器学习的优势就越迅速，从而获得显著的竞争优势。
 
-[](/mlops-what-is-operational-tempo-91a3e0657ce6?source=post_page-----89bc74b82dd7--------------------------------) [## MLOps: 什么是操作节奏？
+[](/mlops-what-is-operational-tempo-91a3e0657ce6?source=post_page-----89bc74b82dd7--------------------------------) ## MLOps: 什么是操作节奏？
 
 ### 快速周转不仅仅是工具。
 
-towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=post_page-----89bc74b82dd7--------------------------------)
+towardsdatascience.com
 
 影响 ML Ops 节奏的因素在很大程度上由组织决定。对 MLOps 节奏的良好理解对决策者至关重要，因为它直接影响从 ML 或 AI 应用中获得的价值。这些目标指导数据产品的运营和产品模型，以及它们驱动的决策。
 
@@ -38,7 +38,7 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 # 战略目标如何影响 MLOps 节奏？
 
-![](../Images/6f66d2efb434d84a22f46499b381d18a.png)
+![](img/6f66d2efb434d84a22f46499b381d18a.png)
 
 照片由 [Steven Lelham](https://unsplash.com/@slelham?utm_source=medium&utm_medium=referral) 拍摄，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -56,7 +56,7 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 理解战略目标如何影响 MLOps 节奏需要从三个层次来看待：个体贡献者、经理以及中高层管理。
 
-![](../Images/61e85f27cc6236210afb57961ddff979.png)
+![](img/61e85f27cc6236210afb57961ddff979.png)
 
 战略目标如何加快组织的节奏，作者创作
 
@@ -68,41 +68,41 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 1.  **中高层管理**：明确的战略目标有助于提供背景，并做出明智的决策，评估新举措，并对扩展操作做出明智的决策。
 
-良好的战略目标有助于整个组织，从上到下，允许重要信息向上传递，以及做出明智的决策。这样可以加快周转时间，评估项目是否有效，当然，还可以评估ML项目是否符合战略目标。
+良好的战略目标有助于整个组织，从上到下，允许重要信息向上传递，以及做出明智的决策。这样可以加快周转时间，评估项目是否有效，当然，还可以评估 ML 项目是否符合战略目标。
 
-对不同层级的MLOps节奏有良好的理解，有助于每个人更好地应对ML项目的复杂性。
+对不同层级的 MLOps 节奏有良好的理解，有助于每个人更好地应对 ML 项目的复杂性。
 
 # 从“为什么”开始，以“如何”结束
 
-![](../Images/0f979548a5128fe0f7ca016d0fa88ce5.png)
+![](img/0f979548a5128fe0f7ca016d0fa88ce5.png)
 
 照片由 [Startaê Team](https://unsplash.com/@startaeteam?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-战略目标必须从“为什么”开始。了解它对更大业务目标的重要性很重要。这有助于优先分配资源，避免不必要的复杂性，加快开发决策，甚至决定是否需要ML解决方案。
+战略目标必须从“为什么”开始。了解它对更大业务目标的重要性很重要。这有助于优先分配资源，避免不必要的复杂性，加快开发决策，甚至决定是否需要 ML 解决方案。
 
 这种战略从决策者传递到项目和产品经理，最终到构建机器学习（ML）或人工智能（AI）解决方案的数据科学团队。当每个人都理解意图时，这会改善团队之间的沟通——这是任何行业良好操作节奏的基本要素。减少了在澄清问题上的会议时间，增加了实施的时间。
 
-用例必须始终以最终产品为目标，然后筛选技术方面和限制。这是ML项目的“为什么”，绝对有必要确定项目是否与战略目标对齐，所需的资源等。
+用例必须始终以最终产品为目标，然后筛选技术方面和限制。这是 ML 项目的“为什么”，绝对有必要确定项目是否与战略目标对齐，所需的资源等。
 
-“为什么”形成了在模型构建过程开始时需要提出的其他关键问题的基础。它对MLOps节奏的其他因素有着显著影响。
+“为什么”形成了在模型构建过程开始时需要提出的其他关键问题的基础。它对 MLOps 节奏的其他因素有着显著影响。
 
-![](../Images/444ab1d19e15cd9389175a228b03e17b.png)
+![](img/444ab1d19e15cd9389175a228b03e17b.png)
 
-制定MLOps节奏的战略目标，作者创作
+制定 MLOps 节奏的战略目标，作者创作
 
-有一些特定的“为什么”问题需要被提出，这有助于制定良好的ML战略目标：
+有一些特定的“为什么”问题需要被提出，这有助于制定良好的 ML 战略目标：
 
 **我们为什么要构建这个？**
 
-对于某些用例，ML并非总是必需的。这个问题有助于定义是否需要它，从而节省可以用于其他地方的资源和时间。它还帮助定义是否有多个用例。这有助于界定范围并设定方向。
+对于某些用例，ML 并非总是必需的。这个问题有助于定义是否需要它，从而节省可以用于其他地方的资源和时间。它还帮助定义是否有多个用例。这有助于界定范围并设定方向。
 
-定义机器学习模型的目的至关重要，因为它为整个项目设定了方向。它有助于将所有的努力和资源对准一个共同的目标，确保时间的高效利用，并提升MLOps的节奏。它有助于
+定义机器学习模型的目的至关重要，因为它为整个项目设定了方向。它有助于将所有的努力和资源对准一个共同的目标，确保时间的高效利用，并提升 MLOps 的节奏。它有助于
 
 **我们希望它做什么？**
 
 这种关注意味着将业务用例和期望的最终产品放在首位。重要的是这些用例是否与战略目标对齐。机器学习模型需要能够回答这些用例。
 
-![](../Images/d9254fa2b21879935a859e8f640649e2.png)
+![](img/d9254fa2b21879935a859e8f640649e2.png)
 
 从“为什么”到“如何”的流程，作者创作
 
@@ -112,17 +112,17 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 识别潜在风险可以实现缓解。模型并不总是有效。良好的战略目标帮助领导层和构建团队创新并设计替代解决方案，以实现预期的结果。它有助于建立替代路径，以实现组织对机器学习的战略目标。
 
-![](../Images/9dbcb17ac04d889a51120a0cd8de1e33.png)
+![](img/9dbcb17ac04d889a51120a0cd8de1e33.png)
 
 什么与潜在风险，作者创作
 
-适应能力至关重要。计划和现实之间的摩擦是常见的。清晰、沟通良好且理解到位的战略目标可以防止意外情况阻碍或暂停项目。它允许MLOps的节奏保持稳定，并实现高效的周转。
+适应能力至关重要。计划和现实之间的摩擦是常见的。清晰、沟通良好且理解到位的战略目标可以防止意外情况阻碍或暂停项目。它允许 MLOps 的节奏保持稳定，并实现高效的周转。
 
 **我们希望什么时候完成这项工作？**
 
 战略目标不仅指导时间表，还指导资源的时机和协调，以创建一个机器学习解决方案。从一开始并不是所有资源都是必需的。特定的资源，例如资金、共享工具专家、赞助商等，必须在适当的时间发挥作用，以避免影响其他项目。
 
-![](../Images/12180a04587cacb0aaf8104f975e2376.png)
+![](img/12180a04587cacb0aaf8104f975e2376.png)
 
 完成时间，作者创作
 
@@ -134,7 +134,7 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 这通常留给运营和构建团队。战略层面的人将不太参与其中。然而，回答模型的“为什么”、“什么”、“风险”和“何时”是非常重要的。这为这些团队的工作奠定了基础。
 
-![](../Images/08fe72017b479952bb1be4c2fdcf99f5.png)
+![](img/08fe72017b479952bb1be4c2fdcf99f5.png)
 
 从“为什么”到“如何”的时间线，作者创作
 
@@ -166,29 +166,29 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 **如何构建解决方案**
 
-我们将“如何”问题留给了运营和建设团队。退一步，让专家和领域专家学习过程并提供长期价值。我们确保我们可以帮助，并设置会议来确保他们对流程有坚实的基础。这种对齐帮助项目和产品经理有效地引导数据科学家、数据工程师和ML工程师。
+我们将“如何”问题留给了运营和建设团队。退一步，让专家和领域专家学习过程并提供长期价值。我们确保我们可以帮助，并设置会议来确保他们对流程有坚实的基础。这种对齐帮助项目和产品经理有效地引导数据科学家、数据工程师和 ML 工程师。
 
-遵循这种战略目标设定方法，公司能够避免预算超支，并建立符合并实现战略目标的ML解决方案。
+遵循这种战略目标设定方法，公司能够避免预算超支，并建立符合并实现战略目标的 ML 解决方案。
 
-公司注意到ML倡议的效率显著提升，并且比以前的高价值开发时间更加高效。
+公司注意到 ML 倡议的效率显著提升，并且比以前的高价值开发时间更加高效。
 
 # 业务和技术战略聚焦战略目标
 
-![](../Images/21ecf4be796f5bd6db7d84bdf4b6daa1.png)
+![](img/21ecf4be796f5bd6db7d84bdf4b6daa1.png)
 
 [Kaleidico](https://unsplash.com/@kaleidico?utm_source=medium&utm_medium=referral)的照片，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-集中的战略目标需要对业务策略和技术策略有良好的理解。每个都贡献独特的力量，同时考虑两者可以加快您的MLOps节奏。业务和技术策略对您为ML开发设定的战略目标产生了深远影响。
+集中的战略目标需要对业务策略和技术策略有良好的理解。每个都贡献独特的力量，同时考虑两者可以加快您的 MLOps 节奏。业务和技术策略对您为 ML 开发设定的战略目标产生了深远影响。
 
 业务战略关注于这些战略目标如何与企业的盈利能力联系在一起。
 
 而技术战略侧重于如何利用现有技术资源实现这些目标。
 
-每个因素对MLOps的节奏都有明显影响。不明确的业务策略可能通过设定超出可用技术范围的过于雄心勃勃的结果来减缓技术策略。而不明确的技术策略可能会为不需要的业务用例开发ML模型。
+每个因素对 MLOps 的节奏都有明显影响。不明确的业务策略可能通过设定超出可用技术范围的过于雄心勃勃的结果来减缓技术策略。而不明确的技术策略可能会为不需要的业务用例开发 ML 模型。
 
 业务策略和技术策略都有几个影响战略目标的因素。
 
-![](../Images/d11bdef23540379568e3847ef140149c.png)
+![](img/d11bdef23540379568e3847ef140149c.png)
 
 业务战略支柱，作者创作
 
@@ -200,7 +200,7 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 +   **当前业务资源**：全面了解可用资源能够展现当前的现实图景。这使得高效的规划和分配成为可能，最有前景的倡议和活动得到最多的关注和价值。
 
-![](../Images/e6d6f4bb9bad3a265a3f7fe16e4dda60.png)
+![](img/e6d6f4bb9bad3a265a3f7fe16e4dda60.png)
 
 技术策略，作者创作
 
@@ -210,19 +210,19 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 +   **可用基础设施：**了解现有技术设置有助于确定业务战略目标是否可行。及早识别潜在的障碍，使你能够快速调整、利用资源并改变项目和数据产品规划。
 
-+   **机器学习策略**：这是在项目中应用机器学习的蓝图。它定义了ML模型将解决的具体问题、实验、迭代和部署。它帮助开发团队专注于关键的可操作项目——减少数据、技术和模型债务。
++   **机器学习策略**：这是在项目中应用机器学习的蓝图。它定义了 ML 模型将解决的具体问题、实验、迭代和部署。它帮助开发团队专注于关键的可操作项目——减少数据、技术和模型债务。
 
 +   **开发框架：**这些是指导框架，能够顺利进行版本控制、跟踪和测试模型、管道和部署。它还帮助技术团队了解最佳实践，以便进行有效的部署和开发。框架建立良好时，可以确保一致性和效率，减少错误，加速项目进程。
 
 在任何项目开始之前建立这些要素是非常重要的。它能防止瓶颈，促进更顺利的过程，并使项目稳步朝着设定目标前进。
 
-不明确的更大战略目标可能导致ML项目失败，从而产生大量的技术、数据和模型债务。在某些情况下，这甚至可能导致数据科学部门被视为成本中心，而ML举措被认为是需要避免的高成本开支。
+不明确的更大战略目标可能导致 ML 项目失败，从而产生大量的技术、数据和模型债务。在某些情况下，这甚至可能导致数据科学部门被视为成本中心，而 ML 举措被认为是需要避免的高成本开支。
 
-通过正确的对齐、评估和定义商业和技术策略，组织可以显著加快MLOps的节奏，同时保持数据科学部门和团队不断交付并展示价值。
+通过正确的对齐、评估和定义商业和技术策略，组织可以显著加快 MLOps 的节奏，同时保持数据科学部门和团队不断交付并展示价值。
 
 # 最后的思考
 
-了解战略目标对于评估MLOps节奏的速度至关重要。定义战略目标对于改进ML项目的战略决策以及使其更有效和高效非常重要。
+了解战略目标对于评估 MLOps 节奏的速度至关重要。定义战略目标对于改进 ML 项目的战略决策以及使其更有效和高效非常重要。
 
 总结：
 
@@ -230,11 +230,11 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 +   首先问清楚业务用例背后的原因——**这将有助于评估虚荣项目与业务需求之间的差异。**
 
-+   关注战略目标如何与技术和商业策略**对齐**——这对于确保ML的商业目标得以有效实施非常重要。
++   关注战略目标如何与技术和商业策略**对齐**——这对于确保 ML 的商业目标得以有效实施非常重要。
 
 感谢阅读！
 
-我经常撰写有关数据策略、MLOps和机器学习的文章。可以在[Linkedin](https://www.linkedin.com/in/mblasa/)、[YouTube](https://www.youtube.com/channel/UCi__PAxoR_apUqsKzk8wWXA)和[Twitter](https://twitter.com/blazamatt)与我联系。
+我经常撰写有关数据策略、MLOps 和机器学习的文章。可以在[Linkedin](https://www.linkedin.com/in/mblasa/)、[YouTube](https://www.youtube.com/channel/UCi__PAxoR_apUqsKzk8wWXA)和[Twitter](https://twitter.com/blazamatt)与我联系。
 
 ## 如果你喜欢这篇文章，你可能也会喜欢我的其他文章：
 
@@ -246,8 +246,8 @@ towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=pos
 
 ### 在机器学习中，工件是指在机器学习过程中生成的任何文件或对象。
 
-[blaza-matt.com](https://blaza-matt.com/mlops-simplified-what-is-an-artifact-684b64e9f60?source=post_page-----89bc74b82dd7--------------------------------) [](/mlops-what-is-operational-tempo-91a3e0657ce6?source=post_page-----89bc74b82dd7--------------------------------) [## MLOps：什么是操作节奏？
+[blaza-matt.com](https://blaza-matt.com/mlops-simplified-what-is-an-artifact-684b64e9f60?source=post_page-----89bc74b82dd7--------------------------------) [](/mlops-what-is-operational-tempo-91a3e0657ce6?source=post_page-----89bc74b82dd7--------------------------------) ## MLOps：什么是操作节奏？
 
 ### 快速的周转不仅仅是工具。
 
-[towardsdatascience.com](/mlops-what-is-operational-tempo-91a3e0657ce6?source=post_page-----89bc74b82dd7--------------------------------)
+[towardsdatascience.com

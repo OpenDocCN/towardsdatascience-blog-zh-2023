@@ -1,22 +1,22 @@
-# 超越Numpy和Pandas：发掘鲜为人知的Python库的潜力
+# 超越 Numpy 和 Pandas：发掘鲜为人知的 Python 库的潜力
 
-> 原文：[https://towardsdatascience.com/beyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230?source=collection_archive---------0-----------------------#2023-07-06](https://towardsdatascience.com/beyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230?source=collection_archive---------0-----------------------#2023-07-06)
+> 原文：[`towardsdatascience.com/beyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230?source=collection_archive---------0-----------------------#2023-07-06`](https://towardsdatascience.com/beyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230?source=collection_archive---------0-----------------------#2023-07-06)
 
-## 作为数据专业人士，你应该了解的3个用于科学计算的Python库
+## 作为数据专业人士，你应该了解的 3 个用于科学计算的 Python 库
 
-[](https://federicotrotta.medium.com/?source=post_page-----86d2bdc4d230--------------------------------)[![Federico Trotta](../Images/e997e3a96940c16ab5071629016d82fd.png)](https://federicotrotta.medium.com/?source=post_page-----86d2bdc4d230--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86d2bdc4d230--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----86d2bdc4d230--------------------------------) [Federico Trotta](https://federicotrotta.medium.com/?source=post_page-----86d2bdc4d230--------------------------------)
+[](https://federicotrotta.medium.com/?source=post_page-----86d2bdc4d230--------------------------------)![Federico Trotta](https://federicotrotta.medium.com/?source=post_page-----86d2bdc4d230--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86d2bdc4d230--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----86d2bdc4d230--------------------------------) [Federico Trotta](https://federicotrotta.medium.com/?source=post_page-----86d2bdc4d230--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F654cd4bbe899&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230&user=Federico+Trotta&userId=654cd4bbe899&source=post_page-654cd4bbe899----86d2bdc4d230---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----86d2bdc4d230--------------------------------) ·12分钟阅读·2023年7月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F86d2bdc4d230&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230&user=Federico+Trotta&userId=654cd4bbe899&source=-----86d2bdc4d230---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F654cd4bbe899&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230&user=Federico+Trotta&userId=654cd4bbe899&source=post_page-654cd4bbe899----86d2bdc4d230---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----86d2bdc4d230--------------------------------) ·12 分钟阅读·2023 年 7 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F86d2bdc4d230&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230&user=Federico+Trotta&userId=654cd4bbe899&source=-----86d2bdc4d230---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F86d2bdc4d230&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230&source=-----86d2bdc4d230---------------------bookmark_footer-----------)![](../Images/8d87b395925ef2d403f2cee6542c46b9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F86d2bdc4d230&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-numpy-and-pandas-unlocking-the-potential-of-lesser-known-python-libraries-86d2bdc4d230&source=-----86d2bdc4d230---------------------bookmark_footer-----------)![](img/8d87b395925ef2d403f2cee6542c46b9.png)
 
 图片由[OrMaVaredo](https://pixabay.com/it/users/ormavaredo-14515736/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=5826755)提供，来源于[Pixabay](https://pixabay.com/it//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=5826755)
 
-Python是世界上最常用的编程语言之一，并为开发者提供了广泛的库。
+Python 是世界上最常用的编程语言之一，并为开发者提供了广泛的库。
 
 无论如何，谈到数据处理和科学计算，我们通常会想到诸如`Numpy`、`Pandas`或`SciPy`等库。
 

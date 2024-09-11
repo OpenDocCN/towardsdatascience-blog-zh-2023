@@ -1,10 +1,10 @@
 # 如何数据科学能够提供价值
 
-> 原文：[https://towardsdatascience.com/how-data-science-can-deliver-value-f2d4a1ea3a49?source=collection_archive---------7-----------------------#2023-10-11](https://towardsdatascience.com/how-data-science-can-deliver-value-f2d4a1ea3a49?source=collection_archive---------7-----------------------#2023-10-11)
+> 原文：[`towardsdatascience.com/how-data-science-can-deliver-value-f2d4a1ea3a49?source=collection_archive---------7-----------------------#2023-10-11`](https://towardsdatascience.com/how-data-science-can-deliver-value-f2d4a1ea3a49?source=collection_archive---------7-----------------------#2023-10-11)
 
 ## 分类其价值主张可以更容易地传达您的团队所做的事情
 
-[](https://medium.com/@seade03?source=post_page-----f2d4a1ea3a49--------------------------------)[![Sarah Eade](../Images/f483ea986bfb124e9fde29846bfde095.png)](https://medium.com/@seade03?source=post_page-----f2d4a1ea3a49--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2d4a1ea3a49--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2d4a1ea3a49--------------------------------) [Sarah Eade](https://medium.com/@seade03?source=post_page-----f2d4a1ea3a49--------------------------------)
+[](https://medium.com/@seade03?source=post_page-----f2d4a1ea3a49--------------------------------)![Sarah Eade](https://medium.com/@seade03?source=post_page-----f2d4a1ea3a49--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2d4a1ea3a49--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2d4a1ea3a49--------------------------------) [Sarah Eade](https://medium.com/@seade03?source=post_page-----f2d4a1ea3a49--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2d4a1ea3a49&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-data-science-can-deliver-value-f2d4a1ea3a49&source=-----f2d4a1ea3a49---------------------bookmark_footer-----------)![](../Images/aeeffb00053fb82ed6771c5e077410aa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2d4a1ea3a49&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-data-science-can-deliver-value-f2d4a1ea3a49&source=-----f2d4a1ea3a49---------------------bookmark_footer-----------)![](img/aeeffb00053fb82ed6771c5e077410aa.png)
 
 照片由[Shubham Dhage](https://unsplash.com/@theshubhamdhage?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上拍摄
 

@@ -1,18 +1,18 @@
 # 适应现有 LLM 项目以使用 LangChain
 
-> 原文：[https://towardsdatascience.com/adapting-existing-llm-projects-to-use-langchain-cd07028c01b0?source=collection_archive---------6-----------------------#2023-07-01](https://towardsdatascience.com/adapting-existing-llm-projects-to-use-langchain-cd07028c01b0?source=collection_archive---------6-----------------------#2023-07-01)
+> 原文：[`towardsdatascience.com/adapting-existing-llm-projects-to-use-langchain-cd07028c01b0?source=collection_archive---------6-----------------------#2023-07-01`](https://towardsdatascience.com/adapting-existing-llm-projects-to-use-langchain-cd07028c01b0?source=collection_archive---------6-----------------------#2023-07-01)
 
 ## 使用 LangChain 重构 OpenAI 调用，使其更强大
 
-[](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)[![Lily Hughes-Robinson](../Images/b610721a40e274e7fb81418395314ae3.png)](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------) [Lily Hughes-Robinson](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)
+[](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)![Lily Hughes-Robinson](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------) [Lily Hughes-Robinson](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5389e25ca1bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadapting-existing-llm-projects-to-use-langchain-cd07028c01b0&user=Lily+Hughes-Robinson&userId=5389e25ca1bb&source=post_page-5389e25ca1bb----cd07028c01b0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------) ·6 分钟阅读·2023年7月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcd07028c01b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadapting-existing-llm-projects-to-use-langchain-cd07028c01b0&user=Lily+Hughes-Robinson&userId=5389e25ca1bb&source=-----cd07028c01b0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5389e25ca1bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadapting-existing-llm-projects-to-use-langchain-cd07028c01b0&user=Lily+Hughes-Robinson&userId=5389e25ca1bb&source=post_page-5389e25ca1bb----cd07028c01b0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------) ·6 分钟阅读·2023 年 7 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcd07028c01b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadapting-existing-llm-projects-to-use-langchain-cd07028c01b0&user=Lily+Hughes-Robinson&userId=5389e25ca1bb&source=-----cd07028c01b0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd07028c01b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadapting-existing-llm-projects-to-use-langchain-cd07028c01b0&source=-----cd07028c01b0---------------------bookmark_footer-----------)![](../Images/814da28df7832cee3963ba401e7ba764.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd07028c01b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadapting-existing-llm-projects-to-use-langchain-cd07028c01b0&source=-----cd07028c01b0---------------------bookmark_footer-----------)![](img/814da28df7832cee3963ba401e7ba764.png)
 
 图片由 [JJ Ying](https://unsplash.com/@jjying?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

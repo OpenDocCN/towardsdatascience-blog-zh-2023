@@ -1,26 +1,26 @@
-# 最终的DXA国家
+# 最终的 DXA 国家
 
-> 原文：[https://towardsdatascience.com/final-dxa-nation-f0309d718980?source=collection_archive---------2-----------------------#2023-07-22](https://towardsdatascience.com/final-dxa-nation-f0309d718980?source=collection_archive---------2-----------------------#2023-07-22)
+> 原文：[`towardsdatascience.com/final-dxa-nation-f0309d718980?source=collection_archive---------2-----------------------#2023-07-22`](https://towardsdatascience.com/final-dxa-nation-f0309d718980?source=collection_archive---------2-----------------------#2023-07-22)
 
-## 纵向基于图像的AI模型在健康和医学中的应用
+## 纵向基于图像的 AI 模型在健康和医学中的应用
 
-## AI可以看到结局！深度学习通过单次和顺序身体成分成像预测全因死亡率
+## AI 可以看到结局！深度学习通过单次和顺序身体成分成像预测全因死亡率
 
-[](https://lambertleong.medium.com/?source=post_page-----f0309d718980--------------------------------)[![Lambert T Leong, PhD](../Images/2080be3fcabb7f5d702487a95c59d41b.png)](https://lambertleong.medium.com/?source=post_page-----f0309d718980--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0309d718980--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0309d718980--------------------------------) [Lambert T Leong, PhD](https://lambertleong.medium.com/?source=post_page-----f0309d718980--------------------------------)
+[](https://lambertleong.medium.com/?source=post_page-----f0309d718980--------------------------------)![Lambert T Leong, PhD](https://lambertleong.medium.com/?source=post_page-----f0309d718980--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0309d718980--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0309d718980--------------------------------) [Lambert T Leong, PhD](https://lambertleong.medium.com/?source=post_page-----f0309d718980--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F60c1d532d2c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinal-dxa-nation-f0309d718980&user=Lambert+T+Leong%2C+PhD&userId=60c1d532d2c0&source=post_page-60c1d532d2c0----f0309d718980---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0309d718980--------------------------------) ·9分钟阅读·2023年7月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0309d718980&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinal-dxa-nation-f0309d718980&user=Lambert+T+Leong%2C+PhD&userId=60c1d532d2c0&source=-----f0309d718980---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F60c1d532d2c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinal-dxa-nation-f0309d718980&user=Lambert+T+Leong%2C+PhD&userId=60c1d532d2c0&source=post_page-60c1d532d2c0----f0309d718980---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0309d718980--------------------------------) ·9 分钟阅读·2023 年 7 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0309d718980&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinal-dxa-nation-f0309d718980&user=Lambert+T+Leong%2C+PhD&userId=60c1d532d2c0&source=-----f0309d718980---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0309d718980&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinal-dxa-nation-f0309d718980&source=-----f0309d718980---------------------bookmark_footer-----------)![](../Images/cd4883e21fad31c2d88cd0b856faea01.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0309d718980&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinal-dxa-nation-f0309d718980&source=-----f0309d718980---------------------bookmark_footer-----------)![](img/cd4883e21fad31c2d88cd0b856faea01.png)
 
-DXA成像提供了多种身体成分可视化类型。（图片来源于作者）
+DXA 成像提供了多种身体成分可视化类型。（图片来源于作者）
 
 ## 关键点，总结：
 
-+   身体成分成像与元数据（例如年龄、性别、握力、步速等）的结合产生了最佳的10年死亡率预测
++   身体成分成像与元数据（例如年龄、性别、握力、步速等）的结合产生了最佳的 10 年死亡率预测
 
 +   总体而言，纵向或顺序模型的表现优于单一记录模型，突出了在健康数据中建模变化和时间依赖性的重要性。
 

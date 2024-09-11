@@ -1,42 +1,42 @@
-# 理解KL散度
+# 理解 KL 散度
 
-> 原文：[https://towardsdatascience.com/understanding-kl-divergence-f3ddc8dff254?source=collection_archive---------0-----------------------#2023-02-02](https://towardsdatascience.com/understanding-kl-divergence-f3ddc8dff254?source=collection_archive---------0-----------------------#2023-02-02)
+> 原文：[`towardsdatascience.com/understanding-kl-divergence-f3ddc8dff254?source=collection_archive---------0-----------------------#2023-02-02`](https://towardsdatascience.com/understanding-kl-divergence-f3ddc8dff254?source=collection_archive---------0-----------------------#2023-02-02)
 
-![](../Images/23ed4c262576e3be5227e532e0eedf31.png)
+![](img/23ed4c262576e3be5227e532e0eedf31.png)
 
 图片由作者提供
 
-## KL散度的数学、直观理解和实际应用指南——包括如何在漂移监测中最佳使用它
+## KL 散度的数学、直观理解和实际应用指南——包括如何在漂移监测中最佳使用它
 
-[](https://aparnadhinak.medium.com/?source=post_page-----f3ddc8dff254--------------------------------)[![Aparna Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----f3ddc8dff254--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f3ddc8dff254--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f3ddc8dff254--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----f3ddc8dff254--------------------------------)
+[](https://aparnadhinak.medium.com/?source=post_page-----f3ddc8dff254--------------------------------)![Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----f3ddc8dff254--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f3ddc8dff254--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f3ddc8dff254--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----f3ddc8dff254--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-kl-divergence-f3ddc8dff254&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----f3ddc8dff254---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f3ddc8dff254--------------------------------) ·7分钟阅读·2023年2月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff3ddc8dff254&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-kl-divergence-f3ddc8dff254&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----f3ddc8dff254---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-kl-divergence-f3ddc8dff254&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----f3ddc8dff254---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f3ddc8dff254--------------------------------) ·7 分钟阅读·2023 年 2 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff3ddc8dff254&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-kl-divergence-f3ddc8dff254&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----f3ddc8dff254---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff3ddc8dff254&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-kl-divergence-f3ddc8dff254&source=-----f3ddc8dff254---------------------bookmark_footer-----------)
 
-**Kullback-Leibler散度**度量（相对熵）是信息理论中的一种统计测量，通常用于量化一个概率分布与参考概率分布之间的差异。
+**Kullback-Leibler 散度**度量（相对熵）是信息理论中的一种统计测量，通常用于量化一个概率分布与参考概率分布之间的差异。
 
-尽管KL散度很受欢迎，但有时会被误解。在实践中，有时也很难知道何时应选择一种统计距离检查而非另一种。
+尽管 KL 散度很受欢迎，但有时会被误解。在实践中，有时也很难知道何时应选择一种统计距离检查而非另一种。
 
-本博客介绍了如何使用KL散度，它在实践中的工作原理，以及何时应使用或不应使用KL散度来监测漂移。
+本博客介绍了如何使用 KL 散度，它在实践中的工作原理，以及何时应使用或不应使用 KL 散度来监测漂移。
 
-# 你如何计算KL散度？
+# 你如何计算 KL 散度？
 
 KL 散度是一种非对称度量， [测量相对熵](http://hanj.cs.illinois.edu/cs412/bk3/KL-divergence.pdf) 或两个分布所表示的信息差异。它可以被视为测量两个数据分布之间的距离，显示这两个分布彼此之间的差异。
 
 KL 散度有连续形式
 
-![](../Images/6ad674da352f58e57e2b6d350c36194a.png)
+![](img/6ad674da352f58e57e2b6d350c36194a.png)
 
 作者提供的图片
 
 以及离散形式的 KL 散度：
 
-![](../Images/8ab7c7798e76224f948d0de7b8caf822.png)
+![](img/8ab7c7798e76224f948d0de7b8caf822.png)
 
 作者提供的图片
 
@@ -50,7 +50,7 @@ KL 散度有连续形式
 
 KL 散度通常应用于每个特征，独立地进行计算；它不是作为协方差特征度量的设计，而是显示每个特征如何独立于基准值发生偏离的度量。
 
-![](../Images/52a909cc15e9bc7d6942a8712757c40b.png)
+![](img/52a909cc15e9bc7d6942a8712757c40b.png)
 
 作者提供的图片
 
@@ -62,7 +62,7 @@ KL 散度通常应用于每个特征，独立地进行计算；它不是作为�
 
 是的。如果你交换基线分布 p(x) 和样本分布 q(x)，你会得到不同的数字。作为一个非对称度量，KL 散度在团队使用它进行数据模型比较时有一些缺点。有时团队希望在故障排除工作流程中用不同的分布替换比较基线，而拥有一个*A / B* 与*B / A* 不同的度量可能会使结果比较变得困难。
 
-![](../Images/3cb72a873aabe21985a675c56cba853e.png)
+![](img/3cb72a873aabe21985a675c56cba853e.png)
 
 作者提供的图像
 
@@ -72,7 +72,7 @@ KL 散度通常应用于每个特征，独立地进行计算；它不是作为�
 
 KL 散度可以用于测量数值分布与分类分布之间的差异。
 
-![](../Images/521325cae5eaa261781ae9deab73eb81.png)
+![](img/521325cae5eaa261781ae9deab73eb81.png)
 
 作者提供的图像
 
@@ -88,7 +88,7 @@ KL 散度的监测跟踪分类数据集中的大规模分布变化。对于分�
 
 在高基数字特征监测的情况下，现成的统计距离通常效果不好——我们通常推荐两个选项：
 
-1.  **嵌入**：在一些高基数的情况下，使用的值——如用户 ID 或内容 ID——已经被用于内部创建嵌入。[嵌入漂移监测](/measuring-embedding-drift-aa9b7ddb84ae)可以提供帮助。
+1.  **嵌入**：在一些高基数的情况下，使用的值——如用户 ID 或内容 ID——已经被用于内部创建嵌入。嵌入漂移监测可以提供帮助。
 
 1.  **纯高基数分类**：在其他情况下，当模型将输入编码到较大的空间时，使用 KL 散度监测前 50–100 个顶级项以及所有其他值作为“其他”可能会很有用。
 
@@ -98,7 +98,7 @@ KL 散度的监测跟踪分类数据集中的大规模分布变化。对于分�
 
 这是一个[KL 散度](https://arize.com/blog-course/kl-divergence/)的示例。
 
-![](../Images/f22bd63ba1fc4b894ad6c59afb8d4bfc.png)
+![](img/f22bd63ba1fc4b894ad6c59afb8d4bfc.png)
 
 作者提供的图像
 
@@ -108,7 +108,7 @@ KL 散度的监测跟踪分类数据集中的大规模分布变化。对于分�
 
 对于度量及其基于分布变化的变化，拥有一定的直觉非常重要。
 
-![](../Images/c7e9b9e7cfb3d9d19d5af4f923ae61db.png)
+![](img/c7e9b9e7cfb3d9d19d5af4f923ae61db.png)
 
 作者提供的图像
 
@@ -118,7 +118,7 @@ KL 散度的监测跟踪分类数据集中的大规模分布变化。对于分�
 
 一般来说，减少百分比并将其向 0 移动的变化对该统计量的影响大于百分比的增加。
 
-![](../Images/5b4a8fcc6994cdbaa6158d4deaa6b24a.png)
+![](img/5b4a8fcc6994cdbaa6158d4deaa6b24a.png)
 
 作者提供的图像
 

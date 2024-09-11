@@ -1,18 +1,18 @@
 # 在你的 WhatsApp 聊天中构建一个语言模型
 
-> 原文：[https://towardsdatascience.com/build-a-language-model-on-your-whatsapp-chats-31264a9ced90?source=collection_archive---------1-----------------------#2023-11-21](https://towardsdatascience.com/build-a-language-model-on-your-whatsapp-chats-31264a9ced90?source=collection_archive---------1-----------------------#2023-11-21)
+> 原文：[`towardsdatascience.com/build-a-language-model-on-your-whatsapp-chats-31264a9ced90?source=collection_archive---------1-----------------------#2023-11-21`](https://towardsdatascience.com/build-a-language-model-on-your-whatsapp-chats-31264a9ced90?source=collection_archive---------1-----------------------#2023-11-21)
 
 ## 通过应用程序了解 GPT 架构的视觉指南
 
-[](https://bernhard-pfann.medium.com/?source=post_page-----31264a9ced90--------------------------------)[![Bernhard Pfann, CFA](../Images/00988e4640d9dfc4f999bb67204c8109.png)](https://bernhard-pfann.medium.com/?source=post_page-----31264a9ced90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----31264a9ced90--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----31264a9ced90--------------------------------) [Bernhard Pfann, CFA](https://bernhard-pfann.medium.com/?source=post_page-----31264a9ced90--------------------------------)
+[](https://bernhard-pfann.medium.com/?source=post_page-----31264a9ced90--------------------------------)![Bernhard Pfann, CFA](https://bernhard-pfann.medium.com/?source=post_page-----31264a9ced90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----31264a9ced90--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----31264a9ced90--------------------------------) [Bernhard Pfann, CFA](https://bernhard-pfann.medium.com/?source=post_page-----31264a9ced90--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb2add0f92c53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-language-model-on-your-whatsapp-chats-31264a9ced90&user=Bernhard+Pfann%2C+CFA&userId=b2add0f92c53&source=post_page-b2add0f92c53----31264a9ced90---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----31264a9ced90--------------------------------) ·16 分钟阅读·2023年11月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F31264a9ced90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-language-model-on-your-whatsapp-chats-31264a9ced90&user=Bernhard+Pfann%2C+CFA&userId=b2add0f92c53&source=-----31264a9ced90---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb2add0f92c53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-language-model-on-your-whatsapp-chats-31264a9ced90&user=Bernhard+Pfann%2C+CFA&userId=b2add0f92c53&source=post_page-b2add0f92c53----31264a9ced90---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----31264a9ced90--------------------------------) ·16 分钟阅读·2023 年 11 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F31264a9ced90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-language-model-on-your-whatsapp-chats-31264a9ced90&user=Bernhard+Pfann%2C+CFA&userId=b2add0f92c53&source=-----31264a9ced90---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F31264a9ced90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-language-model-on-your-whatsapp-chats-31264a9ced90&source=-----31264a9ced90---------------------bookmark_footer-----------)![](../Images/0acb87053cc35cfd27f5cef359322dd3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F31264a9ced90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-language-model-on-your-whatsapp-chats-31264a9ced90&source=-----31264a9ced90---------------------bookmark_footer-----------)![](img/0acb87053cc35cfd27f5cef359322dd3.png)
 
 图片由 [Volodymyr Hryshchenko](https://unsplash.com/@lunarts?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -62,7 +62,7 @@ github.com](https://github.com/bernhard-pfann/lad-gpt?source=post_page-----31264
 
 # 2. 数据来源
 
-WhatsApp，作为我的主要沟通渠道，是捕捉我的对话风格的理想来源。导出超过六年的群聊记录，总计超过150万字是非常简单的。
+WhatsApp，作为我的主要沟通渠道，是捕捉我的对话风格的理想来源。导出超过六年的群聊记录，总计超过 150 万字是非常简单的。
 
 数据使用正则表达式模式解析成包含日期、联系人姓名和聊天消息的元组列表。
 
@@ -190,7 +190,7 @@ torch.tensor([8127, 115, 2363, 3, ..., 14028])
 
 由于我们需要评估模型在一些未见数据上的质量，我们将张量分成两部分。这样，我们就得到了训练集和验证集，可以准备好喂给语言模型。
 
-![](../Images/ee2c75bbcfee5677b0b6d39ca209f864.png)
+![](img/ee2c75bbcfee5677b0b6d39ca209f864.png)
 
 作者提供的图片
 
@@ -198,17 +198,17 @@ torch.tensor([8127, 115, 2363, 3, ..., 14028])
 
 我决定应用 GPT 架构，这一架构在具有影响力的论文“[Attention is All you Need](https://arxiv.org/abs/1706.03762)”中得到了推广。由于我试图构建的是语言生成器而不是问答机器人，因此仅使用解码器（右侧）架构足以满足这一目的。
 
-![](../Images/8c46ef5120214bc2b9b854d7989a07ff.png)
+![](img/8c46ef5120214bc2b9b854d7989a07ff.png)
 
 “[Attention is All you Need](https://arxiv.org/abs/1706.03762)” 由 A. Vaswani 等人撰写（取自 arXiv: 1706.03762）
 
-在接下来的部分中，我将分解 GPT 架构的每个组件，解释其作用以及基础的矩阵运算。从准备好的训练测试开始，我将追踪一个示例上下文的3个词，通过模型，直到它预测下一个令牌。
+在接下来的部分中，我将分解 GPT 架构的每个组件，解释其作用以及基础的矩阵运算。从准备好的训练测试开始，我将追踪一个示例上下文的 3 个词，通过模型，直到它预测下一个令牌。
 
 ## 5.1\. 模型目标
 
 在深入技术细节之前，了解我们模型的主要目标至关重要。在仅解码器的设置中，我们的目标是解码语言的结构，以准确预测序列中的下一个令牌，前提是给定前面的令牌上下文。
 
-![](../Images/4b54ee5ec49172e5d5534cd0f3eb7e1f.png)
+![](img/4b54ee5ec49172e5d5534cd0f3eb7e1f.png)
 
 图片由作者提供
 
@@ -230,15 +230,15 @@ torch.tensor([8127, 115, 2363, 3, ..., 14028])
 
 到目前为止，我们序列中的每个令牌都由一个整数索引表示。然而，这种简单的形式无法反映单词之间的关系或相似性。为了解决这个问题，我们将一维索引提升到更高维度的空间中，通过嵌入实现。
 
-+   **词嵌入：** 单词的本质由一个n维的浮点向量来捕捉。
++   **词嵌入：** 单词的本质由一个 n 维的浮点向量来捕捉。
 
-+   **位置嵌入：** 这些嵌入强调了单词在句子中的位置的重要性，也表示为n维的浮点向量。
++   **位置嵌入：** 这些嵌入强调了单词在句子中的位置的重要性，也表示为 n 维的浮点向量。
 
 对于每个令牌，我们查找其词嵌入和位置嵌入，然后逐元素相加。这就得出了每个令牌在上下文中的输出嵌入。
 
-在下面的示例中，上下文包含3个令牌。在嵌入过程结束时，每个令牌由一个n维向量表示（其中n是嵌入大小，一个可调的超参数）。
+在下面的示例中，上下文包含 3 个令牌。在嵌入过程结束时，每个令牌由一个 n 维向量表示（其中 n 是嵌入大小，一个可调的超参数）。
 
-![](../Images/e927158ac25f6689bebf09e273e94d17.png)
+![](img/e927158ac25f6689bebf09e273e94d17.png)
 
 图片由作者提供
 
@@ -251,7 +251,7 @@ self.pos_embedding = nn.Embedding(block_size, embed_size)
 
 ## 5.3. 自注意力头
 
-虽然词嵌入提供了词语相似性的整体感觉，但一个词的真实含义往往取决于其周围的上下文。例如，“bat”可能指的是动物或运动器材，这取决于句子。这就是自注意力机制（GPT架构的关键组成部分）发挥作用的地方。
+虽然词嵌入提供了词语相似性的整体感觉，但一个词的真实含义往往取决于其周围的上下文。例如，“bat”可能指的是动物或运动器材，这取决于句子。这就是自注意力机制（GPT 架构的关键组成部分）发挥作用的地方。
 
 自注意力机制关注三个主要概念：查询（Q）、键（K）和值（V）。
 
@@ -261,13 +261,13 @@ self.pos_embedding = nn.Embedding(block_size, embed_size)
 
 1.  **值（V）：** 值也是输入序列中每个标记的表示。然而，它们的作用不同，因为它们对注意力分数施加最终加权。
 
-![](../Images/569e854e38e6d0982ebc8bf9c59b1ac1.png)
+![](img/569e854e38e6d0982ebc8bf9c59b1ac1.png)
 
 作者提供的图像
 
 **示例：**
 
-在我们的示例中，上下文中的每个标记已经是嵌入形式，作为n维向量（e1, e2, e3）。自注意力头将它们作为输入，以逐一输出每个标记的上下文化版本。
+在我们的示例中，上下文中的每个标记已经是嵌入形式，作为 n 维向量（e1, e2, e3）。自注意力头将它们作为输入，以逐一输出每个标记的上下文化版本。
 
 1.  在评估“name”这个标记时，通过将其嵌入向量**v2**与可训练矩阵**M_Q**相乘，得到一个查询向量**q**。
 
@@ -319,13 +319,13 @@ class Head(nn.Module):
 
 ## 5.4. 掩蔽多头注意力
 
-语言是复杂的，捕捉其所有的细微差别并不简单。一组注意力计算通常不足以捕捉词语如何相互作用的细微之处。这就是GPT模型中的多头注意力的理念派上用场的地方。
+语言是复杂的，捕捉其所有的细微差别并不简单。一组注意力计算通常不足以捕捉词语如何相互作用的细微之处。这就是 GPT 模型中的多头注意力的理念派上用场的地方。
 
 你可以把多头注意力想象成多个“眼睛”以不同的方式观察数据，每个“眼睛”注意到独特的细节。这些独立的观察结果然后被整合成一个大图景。为了使这个大图景易于管理并与我们模型的其余部分兼容，我们使用线性层（可训练权重）将其压缩回原始的嵌入大小。
 
 最后，为了确保我们的模型不仅仅记住训练数据，还能在新文本上进行良好的预测，我们使用了一个 dropout 层。这个层在训练过程中随机关闭数据的部分内容，帮助模型变得更加适应。
 
-![](../Images/2760acd6c26176c932ffba3413dbd5f4.png)
+![](img/2760acd6c26176c932ffba3413dbd5f4.png)
 
 作者提供的图片
 
@@ -356,11 +356,11 @@ class MultiHeadAttention(nn.Module):
 
 多头注意力层最初捕捉了序列中的上下文关系。通过两个连续的线性层为网络添加了更多深度，这两个层共同构成了前馈神经网络。
 
-![](../Images/4ea0fae415491644685ddbe6e75da8c3.png)
+![](img/4ea0fae415491644685ddbe6e75da8c3.png)
 
 作者提供的图片
 
-在**初始线性层**中，我们增加了维度（在我们的例子中是增加了4倍），这有效地拓宽了网络学习和表示更复杂特征的能力。对结果矩阵的每个元素应用[ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks))函数，使得非线性模式能够被识别。
+在**初始线性层**中，我们增加了维度（在我们的例子中是增加了 4 倍），这有效地拓宽了网络学习和表示更复杂特征的能力。对结果矩阵的每个元素应用[ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks))函数，使得非线性模式能够被识别。
 
 随后，**第二个线性层**作为一个压缩器，将扩展的维度减少回原始形状（块大小 x 嵌入大小）。**Dropout 层**结束了这个过程，随机地停用矩阵的部分元素，以实现模型的泛化。
 
@@ -391,7 +391,7 @@ class FeedFoward(nn.Module):
 
 +   **层归一化（Norm）：** 这种方法通过减去嵌入向量的均值并除以其标准差来归一化上下文中的每个嵌入向量。这个过程还确保了在反向传播过程中梯度不会爆炸或消失。
 
-![](../Images/6aecc16dc453b3e4359fce4392d6d89c.png)
+![](img/6aecc16dc453b3e4359fce4392d6d89c.png)
 
 作者提供的图片
 
@@ -421,11 +421,11 @@ class Block(nn.Module):
 
 在遍历多个块组件后，我们获得了一个维度为（块大小 x 嵌入大小）的矩阵。为了将这个矩阵重塑为所需的维度（块大小 x 词汇表大小），我们将其通过一个最终的线性层。这个形状表示了上下文中每个位置词汇表中每个词的一个条目。
 
-最后，我们对这些值应用soft-max变换，将其转换为概率。我们成功地获得了上下文中每个位置的下一个标记的概率分布。
+最后，我们对这些值应用 soft-max 变换，将其转换为概率。我们成功地获得了上下文中每个位置的下一个标记的概率分布。
 
 # 6\. 模型训练
 
-为了训练语言模型，我从训练数据中的随机位置选择了令牌序列。鉴于WhatsApp对话的快节奏，我确定32个词的上下文长度足够。因此，我选择了随机的32词块作为上下文输入，并使用相应的向量（向后移动一个词）作为比较的目标。
+为了训练语言模型，我从训练数据中的随机位置选择了令牌序列。鉴于 WhatsApp 对话的快节奏，我确定 32 个词的上下文长度足够。因此，我选择了随机的 32 词块作为上下文输入，并使用相应的向量（向后移动一个词）作为比较的目标。
 
 训练过程循环执行以下步骤：
 
@@ -435,13 +435,13 @@ class Block(nn.Module):
 
 1.  根据当前的损失和模型权重应用反向传播。
 
-1.  每500次迭代更全面地评估损失。
+1.  每 500 次迭代更全面地评估损失。
 
-一旦所有其他模型超参数（如嵌入大小、自注意力头数量等）确定后，我最终选择了一个具有250万参数的模型。考虑到我对输入数据大小和计算资源的限制，我发现这是对我而言的**最佳**设置。
+一旦所有其他模型超参数（如嵌入大小、自注意力头数量等）确定后，我最终选择了一个具有 250 万参数的模型。考虑到我对输入数据大小和计算资源的限制，我发现这是对我而言的**最佳**设置。
 
-训练过程大约花费了12小时，完成了10,000次迭代。可以看到，训练本可以更早停止，因为验证集和训练集上的损失差距在扩大。
+训练过程大约花费了 12 小时，完成了 10,000 次迭代。可以看到，训练本可以更早停止，因为验证集和训练集上的损失差距在扩大。
 
-![](../Images/f097aae828c46fb03488c7b46270e671.png)
+![](img/f097aae828c46fb03488c7b46270e671.png)
 
 作者提供的图片
 
@@ -582,8 +582,8 @@ def conversation() -> None:
 
 然而，在评估生成句子的连贯性时，我承认结果并没有达到我已经很低的期望。当然，我也可以责怪我的朋友们聊了太多无聊的话，限制了模型学习有用内容的能力...
 
-为了在结尾展示至少一些示例输出，你可以查看虚拟模型在200条训练虚拟消息上的表现 ;)
+为了在结尾展示至少一些示例输出，你可以查看虚拟模型在 200 条训练虚拟消息上的表现 ;)
 
-![](../Images/4ead9603facfac34d9b5e0d5f3cdf9ff.png)
+![](img/4ead9603facfac34d9b5e0d5f3cdf9ff.png)
 
 作者提供的图片

@@ -1,20 +1,20 @@
-# 使用Matplotlib创建令人惊叹的雷达图
+# 使用 Matplotlib 创建令人惊叹的雷达图
 
-> 原文：[https://towardsdatascience.com/create-stunning-radar-plots-with-matplotlib-6a8e05054ff9?source=collection_archive---------4-----------------------#2023-04-19](https://towardsdatascience.com/create-stunning-radar-plots-with-matplotlib-6a8e05054ff9?source=collection_archive---------4-----------------------#2023-04-19)
+> 原文：[`towardsdatascience.com/create-stunning-radar-plots-with-matplotlib-6a8e05054ff9?source=collection_archive---------4-----------------------#2023-04-19`](https://towardsdatascience.com/create-stunning-radar-plots-with-matplotlib-6a8e05054ff9?source=collection_archive---------4-----------------------#2023-04-19)
 
-## 使用Python最受欢迎的数据可视化库来可视化地质数据
+## 使用 Python 最受欢迎的数据可视化库来可视化地质数据
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----6a8e05054ff9--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----6a8e05054ff9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a8e05054ff9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a8e05054ff9--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----6a8e05054ff9--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----6a8e05054ff9--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----6a8e05054ff9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a8e05054ff9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a8e05054ff9--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----6a8e05054ff9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-stunning-radar-plots-with-matplotlib-6a8e05054ff9&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----6a8e05054ff9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a8e05054ff9--------------------------------) ·7分钟阅读·2023年4月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a8e05054ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-stunning-radar-plots-with-matplotlib-6a8e05054ff9&user=Andy+McDonald&userId=9c280f85f15c&source=-----6a8e05054ff9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-stunning-radar-plots-with-matplotlib-6a8e05054ff9&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----6a8e05054ff9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a8e05054ff9--------------------------------) ·7 分钟阅读·2023 年 4 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a8e05054ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-stunning-radar-plots-with-matplotlib-6a8e05054ff9&user=Andy+McDonald&userId=9c280f85f15c&source=-----6a8e05054ff9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a8e05054ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-stunning-radar-plots-with-matplotlib-6a8e05054ff9&source=-----6a8e05054ff9---------------------bookmark_footer-----------)![](../Images/0dec40fb2793b0b25ae483d0ba80f368.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a8e05054ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-stunning-radar-plots-with-matplotlib-6a8e05054ff9&source=-----6a8e05054ff9---------------------bookmark_footer-----------)![](img/0dec40fb2793b0b25ae483d0ba80f368.png)
 
-带有赛博朋克主题的Matplotlib雷达图。图片由作者提供。
+带有赛博朋克主题的 Matplotlib 雷达图。图片由作者提供。
 
 雷达图（也称为蛛网图或雷达图表）是一种流行的数据可视化工具，它允许我们通过在二维图上同时显示多个变量来比较数据集。
 

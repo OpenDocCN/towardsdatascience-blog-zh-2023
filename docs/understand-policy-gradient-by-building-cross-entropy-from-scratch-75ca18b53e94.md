@@ -1,14 +1,14 @@
 # 通过从零开始构建交叉熵来理解策略梯度
 
-> 原文：[https://towardsdatascience.com/understand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94?source=collection_archive---------2-----------------------#2023-06-11](https://towardsdatascience.com/understand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94?source=collection_archive---------2-----------------------#2023-06-11)
+> 原文：[`towardsdatascience.com/understand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94?source=collection_archive---------2-----------------------#2023-06-11`](https://towardsdatascience.com/understand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94?source=collection_archive---------2-----------------------#2023-06-11)
 
 ## 我们如何训练模型的统一视角
 
-[](https://tonychenxyz.medium.com/?source=post_page-----75ca18b53e94--------------------------------)[![Tony Chen](../Images/37a65cea36bc332c8777c4f599a592f5.png)](https://tonychenxyz.medium.com/?source=post_page-----75ca18b53e94--------------------------------)[](https://towardsdatascience.com/?source=post_page-----75ca18b53e94--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----75ca18b53e94--------------------------------) [Tony Chen](https://tonychenxyz.medium.com/?source=post_page-----75ca18b53e94--------------------------------)
+[](https://tonychenxyz.medium.com/?source=post_page-----75ca18b53e94--------------------------------)![Tony Chen](https://tonychenxyz.medium.com/?source=post_page-----75ca18b53e94--------------------------------)[](https://towardsdatascience.com/?source=post_page-----75ca18b53e94--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----75ca18b53e94--------------------------------) [Tony Chen](https://tonychenxyz.medium.com/?source=post_page-----75ca18b53e94--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c86c3ef2039&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94&user=Tony+Chen&userId=1c86c3ef2039&source=post_page-1c86c3ef2039----75ca18b53e94---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----75ca18b53e94--------------------------------) · 16 分钟阅读 · 2023年6月11日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F75ca18b53e94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94&user=Tony+Chen&userId=1c86c3ef2039&source=-----75ca18b53e94---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c86c3ef2039&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94&user=Tony+Chen&userId=1c86c3ef2039&source=post_page-1c86c3ef2039----75ca18b53e94---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----75ca18b53e94--------------------------------) · 16 分钟阅读 · 2023 年 6 月 11 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F75ca18b53e94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstand-policy-gradient-by-building-cross-entropy-from-scratch-75ca18b53e94&user=Tony+Chen&userId=1c86c3ef2039&source=-----75ca18b53e94---------------------clap_footer-----------)
 
 --
 
@@ -18,31 +18,31 @@
 
 # 摘要
 
-+   我们将从设计一个简单的监督训练程序开始，通过奖励+1来对二分类机器人进行正确答案的训练
++   我们将从设计一个简单的监督训练程序开始，通过奖励+1 来对二分类机器人进行正确答案的训练
 
 +   我们将为该过程制定目标
 
 +   我们将推导出该过程的梯度上升公式（这将与使用交叉熵的梯度下降过程相同）
 
-+   我们将把我们的过程与RL设置进行比较，并将我们的梯度上升与策略梯度联系起来
++   我们将把我们的过程与 RL 设置进行比较，并将我们的梯度上升与策略梯度联系起来
 
 # **谁应该阅读这个？**
 
-+   我的目标是提供一种友好且直观的方式来理解PG。如果你对RL问题设置有一个大致了解，并且知道PG的高级概念，将会很有帮助。
++   我的目标是提供一种友好且直观的方式来理解 PG。如果你对 RL 问题设置有一个大致了解，并且知道 PG 的高级概念，将会很有帮助。
 
-+   我希望帮助你更好地理解RL与PG以及监督ML之间的关系。因此，如果你了解如何用交叉熵损失函数训练一个监督ML算法，将会非常有帮助。
++   我希望帮助你更好地理解 RL 与 PG 以及监督 ML 之间的关系。因此，如果你了解如何用交叉熵损失函数训练一个监督 ML 算法，将会非常有帮助。
 
 # 为什么写这篇文章？
 
 ## 策略梯度
 
-在RL问题中，**代理**与**环境**互动以学习**策略**。策略告诉代理在不同**状态**下该做什么以最大化**奖励**。
+在 RL 问题中，**代理**与**环境**互动以学习**策略**。策略告诉代理在不同**状态**下该做什么以最大化**奖励**。
 
-![](../Images/c713f4a5b047c8393283f44de994e836.png)
+![](img/c713f4a5b047c8393283f44de994e836.png)
 
 作者提供的图像
 
-PG的想法似乎很简单明了。
+PG 的想法似乎很简单明了。
 
 +   指导时间*t*上代理行为的**策略**是*π_θ(a_t|s_t)*。
 
@@ -56,11 +56,11 @@ PG的想法似乎很简单明了。
 
 我们如何进行更新？通过…**梯度**！我们通过以下梯度更新生成*π_θ*的模型
 
-![](../Images/33d815377e9ba0a3076a657fab933349.png)
+![](img/33d815377e9ba0a3076a657fab933349.png)
 
 ## 有些东西感觉不对劲
 
-这看起来非常熟悉。当我们在传统的监督学习中训练神经网络模型时，我们也通过执行第二行操作即梯度下降来更新模型参数（在PG情况下，技术上是梯度上升，因为我们在最大化目标）。
+这看起来非常熟悉。当我们在传统的监督学习中训练神经网络模型时，我们也通过执行第二行操作即梯度下降来更新模型参数（在 PG 情况下，技术上是梯度上升，因为我们在最大化目标）。
 
 但这也感觉非常不同。如果你查看它的[推导过程](https://www.youtube.com/watch?v=GKoKNYaBvM0&list=PL_iWQOsE6TfXxKgI1GgyV1B_Xa0DxE5eH&index=23)，你会发现推导这个方程**需要一点努力**。这与我们在监督学习中更直观的做法非常不同：将输入提供给神经网络，得到输出，与目标进行比较并计算损失函数，点击反向传播按钮，就完成了！
 
@@ -72,7 +72,7 @@ PG的想法似乎很简单明了。
 
 如果我们用一些在监督学习中使用的损失函数来分析，它们会立即“显得合理”。但要理解它们的来源则需要更多的努力。例如，经典的均方误差直观上很合理：它只是最小化预测与目标之间的距离。但有这么多距离度量，为什么选择平方距离？[你必须深入了解均方误差是做最大似然估计并假设基础总体分布为正态分布的副产品](https://tivadardanka.com/blog/mean-squared-error-explained)。
 
-同样地，我们日常使用的另一个经典损失函数是交叉熵。虽然有很多[关于交叉熵的良好解释](/entropy-cross-entropy-and-kl-divergence-17138ffab87b#:~:text=KL%20divergence%20is%20the%20relative,as%20the%20actual%20probability%20distribution.)，**让我们尝试从最基本的方式构建它**。
+同样地，我们日常使用的另一个经典损失函数是交叉熵。虽然有很多关于交叉熵的良好解释，**让我们尝试从最基本的方式构建它**。
 
 ## 让我们训练一个分类机器人！
 
@@ -80,31 +80,31 @@ PG的想法似乎很简单明了。
 
 +   你**给机器人一张图片**。我们称之为*s*。这张图片是从总体分布*D_s*中采样的。
 
-![](../Images/90151735fcf9c358929bba56a796f060.png)
+![](img/90151735fcf9c358929bba56a796f060.png)
 
 狗图像来源：Unsplash；其他部分由作者提供
 
 +   如果机器人认为这是狗的图像（动作*a_dog*）或这是猫的图像（动作*a_cat*），它将**给你一个答案**。
 
-+   机器人根据图像有**自己的预测**，即图像是狗还是猫的概率：*π_θ(a|s) = (a_dog, a_cat)*。例如，*π_θ(a|s) = (0.9, 0.1)*意味着它认为有0.9的概率是狗，0.1的概率是猫。
++   机器人根据图像有**自己的预测**，即图像是狗还是猫的概率：*π_θ(a|s) = (a_dog, a_cat)*。例如，*π_θ(a|s) = (0.9, 0.1)*意味着它认为有 0.9 的概率是狗，0.1 的概率是猫。
 
-![](../Images/31518402fb49d27bc9d2ced9334b2d01.png)
+![](img/31518402fb49d27bc9d2ced9334b2d01.png)
 
 狗图像来源：Unsplash；其他部分由作者提供
 
 +   但每次机器人只会给你一个明确的答案。它要么说“这是狗” (*a_dog*)，要么说“这是猫” *(a_cat)*。每次**它给你一个回应**时，回应（动作）是**从分布中随机采样**得到的，由*π_θ(a|s)*产生：*a = (a_dog, a_cat) ~ π_θ(a|s)*。
 
-![](../Images/89e8436eefd10f6faca3a83c91f37826.png)
+![](img/89e8436eefd10f6faca3a83c91f37826.png)
 
 狗图像来源：Unsplash；其他部分由作者提供
 
-+   当机器人正确回答时，你将**奖励**它（可能给它一个小奖励？），奖励值为1。（*r(s,a) = 1*）。当回答错误时，则**没有奖励**（0奖励）。(*r(s,a) = 0*)
++   当机器人正确回答时，你将**奖励**它（可能给它一个小奖励？），奖励值为 1。（*r(s,a) = 1*）。当回答错误时，则**没有奖励**（0 奖励）。(*r(s,a) = 0*)
 
-![](../Images/32a9c703d976a3082f0b2b7452894982.png)
+![](img/32a9c703d976a3082f0b2b7452894982.png)
 
 狗图像来源：Unsplash；其他部分由作者提供
 
-![](../Images/cf7ff12b91caebf06f6324d5860acff4.png)
+![](img/cf7ff12b91caebf06f6324d5860acff4.png)
 
 猫图像来源：Unsplash；其他部分由作者提供
 
@@ -114,17 +114,17 @@ PG的想法似乎很简单明了。
 
 我们的目标是什么？我们希望它的响应尽可能正确。更准确地说，我们希望找到最优参数*θ*，使得生成的*π_θ(a|s)*，在所有可能的*s*（从图像总体分布*D_s*中采样）和*a*（从由模型*π_θ(a|s)*生成的分布中采样）中，能够获得**每对*(s,a)*出现的概率加权的最大平均奖励**：
 
-![](../Images/51cddd132910509e631770148af36d81.png)
+![](img/51cddd132910509e631770148af36d81.png)
 
 换句话说，我们在**最大化**定义为
 
-![](../Images/68e8b3d62384b11eb799409224934b10.png)
+![](img/68e8b3d62384b11eb799409224934b10.png)
 
 ## 目标的梯度
 
 现在我们有了一个目标函数，我们可以尝试通过…梯度上升来最大化它！也就是说，我们可以通过迭代进行
 
-![](../Images/31073f9fbb212dcb9a46f8b235dde998.png)
+![](img/31073f9fbb212dcb9a46f8b235dde998.png)
 
 但我们应如何计算梯度，即*J*对*θ*的导数？这在这种情况下有点棘手，因为
 
@@ -136,15 +136,15 @@ PG的想法似乎很简单明了。
 
 此外，**理想情况下，我们希望梯度呈现以下形式**
 
-![](../Images/df2aff2595ad8db90cba253e1fd6529d.png)
+![](img/df2aff2595ad8db90cba253e1fd6529d.png)
 
 这是因为你通过机器人与您的交互样本来训练机器人。每个样本包含一个*(s,a,r)*三元组。因此，我们可以通过对收集到的*N*个样本进行平均来近似这个梯度（根据大数法则，即进行随机梯度上升）：
 
-![](../Images/20b0441122d80c37d43bb51c281ffe07.png)
+![](img/20b0441122d80c37d43bb51c281ffe07.png)
 
 然后我们可以通过进行梯度上升来进行优化
 
-![](../Images/b7d2290df9fb82d565f032c8fadfb1e5.png)
+![](img/b7d2290df9fb82d565f032c8fadfb1e5.png)
 
 现在让我们找到*f*。
 
@@ -152,41 +152,41 @@ PG的想法似乎很简单明了。
 
 总结一下，我们希望从（1）开始，得到（2），对于某个*f(θ,s,a,r)*。
 
-![](../Images/be0cf74430c73014af3e3081d153a191.png)
+![](img/be0cf74430c73014af3e3081d153a191.png)
 
 首先，让我们用**期望的定义**重写（1）：
 
-![](../Images/7acfd07aa0eb750ddb7697d47f03b45d.png)
+![](img/7acfd07aa0eb750ddb7697d47f03b45d.png)
 
 这基本上是对所有可能的*(s,a)*对的奖励按概率加权的积分。
 
 那么，一个*(s,a)*对的联合概率*P(s,a)*究竟是多少？我们可以将其分解为图像样本（*s*）出现的概率和机器人随机选择动作*a*的概率。
 
-![](../Images/bc1e000dca4f52ae85ddd28428ab0330.png)
+![](img/bc1e000dca4f52ae85ddd28428ab0330.png)
 
 由于机器人从其内部预测模型 *π_θ(a|s)* 中随机选择动作 *a*，我们有
 
-![](../Images/3ae5aed9db62c8211b8a17c33f7a77a7.png)
+![](img/3ae5aed9db62c8211b8a17c33f7a77a7.png)
 
 在括号内的所有项中，只有 *π_θ(a|s)* 依赖于 *θ*。其他项都是常数。因此，我们可以**将梯度操作移动到积分符号内**，并得到
 
-![](../Images/4947001861b23bf63fb5bc7e2581012c.png)
+![](img/4947001861b23bf63fb5bc7e2581012c.png)
 
-注意，我们也可以写出以下内容。这里没什么大不了的。只是将原始左边的内容乘以以分数形式写出的1，并调整项。
+注意，我们也可以写出以下内容。这里没什么大不了的。只是将原始左边的内容乘以以分数形式写出的 1，并调整项。
 
-![](../Images/6052d91540c72ca207601583ea3cd79b.png)
+![](img/6052d91540c72ca207601583ea3cd79b.png)
 
 替换回去，并稍微调整一下，我们得到
 
-![](../Images/e83df6f3f4d826ed91a7760403e76b72.png)
+![](img/e83df6f3f4d826ed91a7760403e76b72.png)
 
 *P(s)π_θ(a|s)* 看起来很熟悉。这正是我们之前分解的 *P(s,a)*！将其放回去，我们得到
 
-![](../Images/b5532069617ea101e52c2021c02c0e9c.png)
+![](img/b5532069617ea101e52c2021c02c0e9c.png)
 
 现在我们有一个积分和 *P(s,a)*，我们可以…将其适配回**期望的定义**！
 
-![](../Images/b3bb809839bdcaf9aafc99d278fe540a.png)
+![](img/b3bb809839bdcaf9aafc99d278fe540a.png)
 
 这正是我们在（2）中想要得到的形式，其中 *f* 是括号内的项！
 
@@ -196,41 +196,41 @@ PG的想法似乎很简单明了。
 
 现在是魔法时刻。
 
-![](../Images/a5366bbd4ec40454be4bf04c966b6033.png)
+![](img/a5366bbd4ec40454be4bf04c966b6033.png)
 
 不相信我？使用链式法则从右手边到左手边进行工作。（[可选] 旁注：如果你对策略梯度公式中对数项的动机感到困惑，这实际上是简化我们得到的繁琐方程的副产品，旨在提取一个 *π_θ(a|s)* 项，将事物转回期望。）
 
 所以我们可以稍微简化*J(θ)*的梯度：
 
-![](../Images/a9e1880f242614f1079f6fb15b8c37fa.png)
+![](img/a9e1880f242614f1079f6fb15b8c37fa.png)
 
 所以每次我们有一批*(s,a)*作为样本时，可以通过
 
-![](../Images/1640cda6d2fd5a21a65a02d0a6e8afd5.png)
+![](img/1640cda6d2fd5a21a65a02d0a6e8afd5.png)
 
 为了将其转化为更熟悉的形式，将梯度符号移到求和外部，我们有
 
-![](../Images/18707025a5e1fd5d9ff9c696371f86ad.png)
+![](img/18707025a5e1fd5d9ff9c696371f86ad.png)
 
 我们还会通过进行以下操作来反转符号
 
-![](../Images/a709db8808ec96d0725e5a23dcbc114c.png)
+![](img/a709db8808ec96d0725e5a23dcbc114c.png)
 
 这让你想起什么吗？让我们将其与**在交叉熵损失上进行梯度下降**时所做的事情进行比较。
 
 记住，交叉熵损失是
 
-![](../Images/46bc5ce54fb4dc9bc83393022d14bef5.png)
+![](img/46bc5ce54fb4dc9bc83393022d14bef5.png)
 
-其中**y_i**是真实标签，是一个描述图像是猫还是狗的独热向量（*y_i_1, y_i_2*，要么是(0,1)要么是(1,0)）。**y_hat_i**是模型的预测，是一个向量（*y_hat_i_1, y_hat_i_2*），其中两个条目的和为1。
+其中**y_i**是真实标签，是一个描述图像是猫还是狗的独热向量（*y_i_1, y_i_2*，要么是(0,1)要么是(1,0)）。**y_hat_i**是模型的预测，是一个向量（*y_hat_i_1, y_hat_i_2*），其中两个条目的和为 1。
 
 当我们对这个损失函数进行**梯度下降**时，我们计算批次的交叉熵损失函数，并点击反向传播按钮：
 
-![](../Images/8f7faf6a722147b90275b2e04cdc4556.png)
+![](img/8f7faf6a722147b90275b2e04cdc4556.png)
 
 这个表达式与我们之前推导出的梯度上升表达式之间的区别是
 
-![](../Images/847bf691725e8e3dad2692bc2c512639.png)
+![](img/847bf691725e8e3dad2692bc2c512639.png)
 
 用语言描述，就是：在样本*x_i*上，y_i
 
@@ -238,15 +238,15 @@ PG的想法似乎很简单明了。
 
 +   模型**从预测分布中随机采样响应**
 
-+   我们**奖励**响应1的*y_i_1*，并且对响应2的*y_i_2*进行奖励。
++   我们**奖励**响应 1 的*y_i_1*，并且对响应 2 的*y_i_2*进行奖励。
 
-+   由于当标签为类别1时，*y_i_1 = 1, y_i_2 = 0*，我们在模型正确响应1时**奖励模型1分**，而在模型错误响应0时**没有奖励**。类别2的情况也是如此。
++   由于当标签为类别 1 时，*y_i_1 = 1, y_i_2 = 0*，我们在模型正确响应 1 时**奖励模型 1 分**，而在模型错误响应 0 时**没有奖励**。类别 2 的情况也是如此。
 
 这正是我们一直在做的事情！
 
 所以总结一下，
 
-+   我们**设计了一个简单的训练**设置，在这个设置中，我们**奖励** **机器人**当其正确回答时得1分，当其回答错误时得0分。
++   我们**设计了一个简单的训练**设置，在这个设置中，我们**奖励** **机器人**当其正确回答时得 1 分，当其回答错误时得 0 分。
 
 +   我们总结了我们希望在**目标函数**中实现的内容，该目标函数描述了机器人根据其响应的机会加权所获得的奖励。
 
@@ -256,17 +256,17 @@ PG的想法似乎很简单明了。
 
 # 回到强化学习
 
-现在让我们把焦点重新放回到强化学习设置上。RL与监督学习设置之间的区别是什么？
+现在让我们把焦点重新放回到强化学习设置上。RL 与监督学习设置之间的区别是什么？
 
 ## 多个时间步长
 
-第一个区别是RL通常涉及**多个状态和多个回合**。在我们的设置中，机器人从图像输入开始，即状态*s*。在机器人基于预测给出答案并收集奖励后，机器人与您的互动就结束了。
+第一个区别是 RL 通常涉及**多个状态和多个回合**。在我们的设置中，机器人从图像输入开始，即状态*s*。在机器人基于预测给出答案并收集奖励后，机器人与您的互动就结束了。
 
-相反，在RL（强化学习）问题中，智能体通常在**多个回合**中与环境互动，且在初始状态后可能过渡到其他状态。
+相反，在 RL（强化学习）问题中，智能体通常在**多个回合**中与环境互动，且在初始状态后可能过渡到其他状态。
 
 目标函数变为
 
-![](../Images/0db0ebac8f528b86c6f438801036b294.png)
+![](img/0db0ebac8f528b86c6f438801036b294.png)
 
 用语言描述，我们最大化**所有时间步长**的**平均奖励总和**，**对所有可能的状态和动作序列（轨迹）加权**，**加权由每个轨迹发生的概率决定**，当动作由参数*θ*决定时。
 
@@ -274,7 +274,7 @@ PG的想法似乎很简单明了。
 
 让我们与之前的目标进行比较：
 
-![](../Images/68e8b3d62384b11eb799409224934b10.png)
+![](img/68e8b3d62384b11eb799409224934b10.png)
 
 **主要区别**如下：
 
@@ -288,37 +288,37 @@ PG的想法似乎很简单明了。
 
 回顾一下，我们的目标是以以下形式找到某些*f*的*J(θ)*的梯度。
 
-![](../Images/51c03df091a50c12a0c49fd25857a142.png)
+![](img/51c03df091a50c12a0c49fd25857a142.png)
 
 当我们获得一批样本序列*s_1, a_1, r_1, … s_T, a_T, r_T*时，我们可以通过随机梯度上升更新*θ*：
 
-![](../Images/dcf0c87b185cef2d80e89fe317052566.png)
+![](img/dcf0c87b185cef2d80e89fe317052566.png)
 
 为了简化，我们将状态序列记作一个变量*τ*。
 
-![](../Images/b5550a0ddf26d2a80114c2964221b459.png)
+![](img/b5550a0ddf26d2a80114c2964221b459.png)
 
 所以我们希望最大化以下目标函数：
 
-![](../Images/3845823a7665d560b48d15d159a05a05.png)
+![](img/3845823a7665d560b48d15d159a05a05.png)
 
 我们可以做类似的操作：
 
 +   **用积分表示期望**。
 
-![](../Images/32f0fda37bbd20c49cd30d7d635828e1.png)
+![](img/32f0fda37bbd20c49cd30d7d635828e1.png)
 
 +   对仅涉及*θ*的项*p_θ(τ)* **求导**。
 
-![](../Images/dfad136479b7d13f40f32b4e33e58d29.png)
+![](img/dfad136479b7d13f40f32b4e33e58d29.png)
 
 +   将*p_θ(τ)*的梯度重写为** *p_θ(τ)*和其他东西的乘积**，以恢复定义期望的形式。
 
-![](../Images/6038a11e5a858b4a7dc55648e5dabef6.png)
+![](img/6038a11e5a858b4a7dc55648e5dabef6.png)
 
 所以我们得到：
 
-![](../Images/814cbdc34ccc9e58fd5ddf31e88a3f0b.png)
+![](img/814cbdc34ccc9e58fd5ddf31e88a3f0b.png)
 
 看！这正是我们想要找到的。换句话说，这意味着我们正在将*θ* **更新为样本*τ*的对数概率梯度的方向**，权重是沿样本*τ*的**总奖励**。**这正是策略梯度的公式**。
 
@@ -326,7 +326,7 @@ PG的想法似乎很简单明了。
 
 我们可以对条件概率和 *p_θ(τ)* 的定义进行更多的操作。这个过程在[这个视频](https://www.youtube.com/watch?v=GKoKNYaBvM0&list=PL_iWQOsE6TfXxKgI1GgyV1B_Xa0DxE5eH&index=22&ab_channel=RAIL)（大约在 9:27）中讲解得很好。我们最终得到以下内容，将 *p_θ(τ)* 重新表示为 *π_θ(a_t|s_t)*，这是我们实际知道其值的：
 
-![](../Images/02b546318170e0f0cec5b21354e454c4.png)
+![](img/02b546318170e0f0cec5b21354e454c4.png)
 
 注意 **当 T = 1**（单次实验），**这与我们之前设置中获得的梯度是一样的**。换句话说，监督学习是强化学习的一个特殊情况，其中只有一个实验，奖励是非随机的（见下一节）。
 
@@ -342,11 +342,11 @@ PG的想法似乎很简单明了。
 
 更糟糕的是，由于代理行为是通过收集的奖励来更新的，如果我们收集到低质量的奖励，我们可能会陷入并停留在一个糟糕的策略中。要从那里走出来并重新回到正确的轨道上需要很长时间。
 
-这是强化学习中的一个挑战，仍然是一个正在进行的研究领域。 [对奖励进行一些操作](https://www.youtube.com/watch?v=VgdSubQN35g&list=PL_iWQOsE6TfXxKgI1GgyV1B_Xa0DxE5eH&index=25&ab_channel=RAIL) 和变体，如 [TRPO](https://arxiv.org/abs/1502.05477) 和 [PPO](https://arxiv.org/abs/1707.06347)，旨在更好地解决这个问题，并且比普通PG使用得更为广泛。
+这是强化学习中的一个挑战，仍然是一个正在进行的研究领域。 [对奖励进行一些操作](https://www.youtube.com/watch?v=VgdSubQN35g&list=PL_iWQOsE6TfXxKgI1GgyV1B_Xa0DxE5eH&index=25&ab_channel=RAIL) 和变体，如 [TRPO](https://arxiv.org/abs/1502.05477) 和 [PPO](https://arxiv.org/abs/1707.06347)，旨在更好地解决这个问题，并且比普通 PG 使用得更为广泛。
 
 ## [可选] 另一种思考：与序列监督机器学习的比较
 
-我们的监督机器学习设置与RL之间的一个区别是RL通常涉及多个时间步。我立刻有一个问题：那么RL与训练像Transformer或LSTM这样的序列模型有什么不同？
+我们的监督机器学习设置与 RL 之间的一个区别是 RL 通常涉及多个时间步。我立刻有一个问题：那么 RL 与训练像 Transformer 或 LSTM 这样的序列模型有什么不同？
 
 这个问题的答案绝对取决于你最喜欢的序列模型的训练损失设计。
 
@@ -354,17 +354,17 @@ PG的想法似乎很简单明了。
 
 我们通过对每个样本的每个单词输出预测与真实标签之间的交叉熵之和来计算损失函数。然后，我们对一批样本进行平均，并像下面这样进行反向传播。
 
-![](../Images/fc39808c28ea708c98fd3999d99a357a.png)
+![](img/fc39808c28ea708c98fd3999d99a357a.png)
 
 放回到策略梯度公式中，对我来说，这与计算目标函数的梯度相同
 
-![](../Images/341af3d224e7b768f617589c55d9830e.png)
+![](img/341af3d224e7b768f617589c55d9830e.png)
 
-这种公式与PG公式的区别在于，我们没有将所有时间步的预测的对数概率之和与所有步骤的奖励之和相乘。相反，我们取每个时间步的对数概率与奖励的成对乘积并将它们相加。
+这种公式与 PG 公式的区别在于，我们没有将所有时间步的预测的对数概率之和与所有步骤的奖励之和相乘。相反，我们取每个时间步的对数概率与奖励的成对乘积并将它们相加。
 
-这去除了很多项，因此大大减少了梯度的方差，这可能是使得在监督设置中训练Transformer/LSTM比RL算法更容易的原因？（除了监督设置中的非随机奖励）。
+这去除了很多项，因此大大减少了梯度的方差，这可能是使得在监督设置中训练 Transformer/LSTM 比 RL 算法更容易的原因？（除了监督设置中的非随机奖励）。
 
-[这个视频](https://www.youtube.com/watch?v=VgdSubQN35g&list=PL_iWQOsE6TfXxKgI1GgyV1B_Xa0DxE5eH&index=25&ab_channel=RAIL) 中介绍了一种减少PG方差的技术：将PG中所有时间步的奖励总和更改为未来奖励（即从 *t’ = t 到 t’ = T* 的总和）。这与PG与在监督设置中训练Transformer/LSTM之间的不同具有相似的风味。虽然未来奖励方法使得代理能够通过可能的未来奖励评估每个状态，但我们是否可以说监督序列训练使得模型仅关注当前时间步的正确性？
+[这个视频](https://www.youtube.com/watch?v=VgdSubQN35g&list=PL_iWQOsE6TfXxKgI1GgyV1B_Xa0DxE5eH&index=25&ab_channel=RAIL) 中介绍了一种减少 PG 方差的技术：将 PG 中所有时间步的奖励总和更改为未来奖励（即从 *t’ = t 到 t’ = T* 的总和）。这与 PG 与在监督设置中训练 Transformer/LSTM 之间的不同具有相似的风味。虽然未来奖励方法使得代理能够通过可能的未来奖励评估每个状态，但我们是否可以说监督序列训练使得模型仅关注当前时间步的正确性？
 
 此外，我尝试从这个梯度表达式中倒推，找到导致这个梯度表达式的原始 *J(θ)*，以便我们可以更直接地解释监督序列训练的目标。但我在半途中卡住了。如果你有任何想法，请告诉我。
 

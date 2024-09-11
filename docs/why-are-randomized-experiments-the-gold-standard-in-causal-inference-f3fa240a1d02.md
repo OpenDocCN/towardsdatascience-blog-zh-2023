@@ -1,18 +1,18 @@
 # 为什么随机实验是因果推断中的黄金标准？
 
-> 原文：[https://towardsdatascience.com/why-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02?source=collection_archive---------14-----------------------#2023-03-07](https://towardsdatascience.com/why-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02?source=collection_archive---------14-----------------------#2023-03-07)
+> 原文：[`towardsdatascience.com/why-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02?source=collection_archive---------14-----------------------#2023-03-07`](https://towardsdatascience.com/why-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02?source=collection_archive---------14-----------------------#2023-03-07)
 
 ## 理解实验中的识别假设
 
-[](https://medium.com/@murat.unal?source=post_page-----f3fa240a1d02--------------------------------)[![Murat Unal](../Images/9f00db7597d7ece01213a6b0589c87d8.png)](https://medium.com/@murat.unal?source=post_page-----f3fa240a1d02--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f3fa240a1d02--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f3fa240a1d02--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----f3fa240a1d02--------------------------------)
+[](https://medium.com/@murat.unal?source=post_page-----f3fa240a1d02--------------------------------)![Murat Unal](https://medium.com/@murat.unal?source=post_page-----f3fa240a1d02--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f3fa240a1d02--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f3fa240a1d02--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----f3fa240a1d02--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----f3fa240a1d02---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f3fa240a1d02--------------------------------) ·7分钟阅读·2023年3月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff3fa240a1d02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02&user=Murat+Unal&userId=15a64c9fc55d&source=-----f3fa240a1d02---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----f3fa240a1d02---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f3fa240a1d02--------------------------------) ·7 分钟阅读·2023 年 3 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff3fa240a1d02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02&user=Murat+Unal&userId=15a64c9fc55d&source=-----f3fa240a1d02---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff3fa240a1d02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02&source=-----f3fa240a1d02---------------------bookmark_footer-----------)![](../Images/b84e56591feb7ece2a967855fe86a5e9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff3fa240a1d02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-randomized-experiments-the-gold-standard-in-causal-inference-f3fa240a1d02&source=-----f3fa240a1d02---------------------bookmark_footer-----------)![](img/b84e56591feb7ece2a967855fe86a5e9.png)
 
 图片由 [takaharu SAWA](https://unsplash.com/@haru88?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -34,7 +34,7 @@
 
 由于我们仅能访问样本而不是整个总体，我们只能观察到条件期望 *E[Yi|Ti=1]* 和 *E[Yi|Ti=0]*，即我们数据中看到的处理组和对照组的期望结果。
 
-现在，为了声称我们通过条件期望的差异得到的是ATE，即我们的因果估计量，我们需要展示这些差异等同于无条件期望。做到这一点的方法是通过提出假设并使我们的观众相信它们在我们特定背景下的合理性。
+现在，为了声称我们通过条件期望的差异得到的是 ATE，即我们的因果估计量，我们需要展示这些差异等同于无条件期望。做到这一点的方法是通过提出假设并使我们的观众相信它们在我们特定背景下的合理性。
 
 ## 识别部分 1：陈述假设
 
@@ -48,13 +48,13 @@
 
 有了这些假设，我们可以如下编写观察结果的期望值：
 
-这使我们能够利用数据中处理组和对照组的结果来获得ATE：
+这使我们能够利用数据中处理组和对照组的结果来获得 ATE：
 
 另一种观察这些假设如何发挥作用的方式是查看以下分解：
 
-![](../Images/0eaf986824d3d5bdb5274c943cfecef1.png)
+![](img/0eaf986824d3d5bdb5274c943cfecef1.png)
 
-独立性假设有效地消除了偏差项，我们剩下的是ATT（对处理组的平均处理效应），这相当于ATE。
+独立性假设有效地消除了偏差项，我们剩下的是 ATT（对处理组的平均处理效应），这相当于 ATE。
 
 ## 识别部分 2：捍卫假设
 
@@ -74,7 +74,7 @@
 
 这是**完美平衡**的情况，随机化通过构造保证了这一点，因为它为我们因果模型中其他*P*因果因素提供了正交性。换句话说，我们知道在确定处理分配时除了掷硬币之外没有使用其他方法。
 
-仍然存在对**内部有效性**的威胁，这可能会削弱我们的因果推断。首先，SUTVA的违背，即两个组之间的受试者相互作用，在许多社会和经济应用中可能会发生。如果发生这种情况，我们所做的比较将不再是处理组和对照组之间的比较，而是处理组和部分处理组之间的比较。
+仍然存在对**内部有效性**的威胁，这可能会削弱我们的因果推断。首先，SUTVA 的违背，即两个组之间的受试者相互作用，在许多社会和经济应用中可能会发生。如果发生这种情况，我们所做的比较将不再是处理组和对照组之间的比较，而是处理组和部分处理组之间的比较。
 
 其次，由于共同原因排除混淆是有期望保证的，这意味着处理组和对照组仅在处理分配上有所不同而在其他方面没有差异的概率，随着样本量的增加而变得任意更高。在给定样本中，特别是如果样本较小，其他原因的净效应可能不为零，这可能会偏倚 ATE。
 

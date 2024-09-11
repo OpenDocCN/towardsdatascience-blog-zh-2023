@@ -1,14 +1,14 @@
 # 结构方程模型中的多组分析
 
-> 原文：[https://towardsdatascience.com/multiple-group-analysis-in-structural-equation-modeling-2b2c7eef329?source=collection_archive---------7-----------------------#2023-06-16](https://towardsdatascience.com/multiple-group-analysis-in-structural-equation-modeling-2b2c7eef329?source=collection_archive---------7-----------------------#2023-06-16)
+> 原文：[`towardsdatascience.com/multiple-group-analysis-in-structural-equation-modeling-2b2c7eef329?source=collection_archive---------7-----------------------#2023-06-16`](https://towardsdatascience.com/multiple-group-analysis-in-structural-equation-modeling-2b2c7eef329?source=collection_archive---------7-----------------------#2023-06-16)
 
 ## 测试子群体之间的效应
 
-[](https://laura-castro-schilo.medium.com/?source=post_page-----2b2c7eef329--------------------------------)[![Laura Castro-Schilo](../Images/78ab9f49dd2a84e3092d7772ddc73ef4.png)](https://laura-castro-schilo.medium.com/?source=post_page-----2b2c7eef329--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2b2c7eef329--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2b2c7eef329--------------------------------) [Laura Castro-Schilo](https://laura-castro-schilo.medium.com/?source=post_page-----2b2c7eef329--------------------------------)
+[](https://laura-castro-schilo.medium.com/?source=post_page-----2b2c7eef329--------------------------------)![Laura Castro-Schilo](https://laura-castro-schilo.medium.com/?source=post_page-----2b2c7eef329--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2b2c7eef329--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b2c7eef329--------------------------------) [Laura Castro-Schilo](https://laura-castro-schilo.medium.com/?source=post_page-----2b2c7eef329--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F362adbd3ba84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-group-analysis-in-structural-equation-modeling-2b2c7eef329&user=Laura+Castro-Schilo&userId=362adbd3ba84&source=post_page-362adbd3ba84----2b2c7eef329---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b2c7eef329--------------------------------) ·6 分钟阅读·2023年6月16日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2b2c7eef329&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-group-analysis-in-structural-equation-modeling-2b2c7eef329&user=Laura+Castro-Schilo&userId=362adbd3ba84&source=-----2b2c7eef329---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F362adbd3ba84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-group-analysis-in-structural-equation-modeling-2b2c7eef329&user=Laura+Castro-Schilo&userId=362adbd3ba84&source=post_page-362adbd3ba84----2b2c7eef329---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b2c7eef329--------------------------------) ·6 分钟阅读·2023 年 6 月 16 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2b2c7eef329&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-group-analysis-in-structural-equation-modeling-2b2c7eef329&user=Laura+Castro-Schilo&userId=362adbd3ba84&source=-----2b2c7eef329---------------------clap_footer-----------)
 
 --
 
@@ -16,15 +16,15 @@
 
 多组分析（MGA）是一种统计技术，允许研究人员通过指定具有*组特定*估计值或在各组之间具有*相等*估计值的[结构方程模型](https://community.jmp.com/t5/JMPer-Cable/Structural-Equation-Modeling-The-arrival-of-a-powerful-new/ba-p/230440)（SEMs），来研究子群体或人口统计细分中的差异。
 
-可以使用MGA来研究均值、回归、载荷、方差和变量的协方差之间的差异，因为所有这些参数都可以在SEM中建模。因此，即使其他建模技术（例如方差分析或带有交互效应的回归）也可以调查分组变量的作用，但这些技术在SEM中的灵活性不如MGA。
+可以使用 MGA 来研究均值、回归、载荷、方差和变量的协方差之间的差异，因为所有这些参数都可以在 SEM 中建模。因此，即使其他建模技术（例如方差分析或带有交互效应的回归）也可以调查分组变量的作用，但这些技术在 SEM 中的灵活性不如 MGA。
 
-![](../Images/9a93db9bde1bedf10ba3356c3c142d47.png)
+![](img/9a93db9bde1bedf10ba3356c3c142d47.png)
 
-*图1\. 多组分析的一般概述以及推断策略。图像由作者提供。*
+*图 1\. 多组分析的一般概述以及推断策略。图像由作者提供。*
 
 # 多组分析的常见用途
 
-每当有兴趣探索组间差异时，MGA可以成为一个有用的工具。当数据是关于个人时，组通常基于具有少量层级的因素（例如，性别、民族、职业、家庭状态、健康状态等）来定义，但也可以根据不同的领域、数据和分析背景来定义其他各种因素。以下是一些可以在几个不同领域使用MGA回答的问题示例：
+每当有兴趣探索组间差异时，MGA 可以成为一个有用的工具。当数据是关于个人时，组通常基于具有少量层级的因素（例如，性别、民族、职业、家庭状态、健康状态等）来定义，但也可以根据不同的领域、数据和分析背景来定义其他各种因素。以下是一些可以在几个不同领域使用 MGA 回答的问题示例：
 
 消费者研究
 
@@ -54,9 +54,9 @@
 
 上述所有问题涉及的变量都是未观察到的（例如，满意度、表现等），也称为*潜在*变量。由于这些变量无法直接观察，因此测量起来比较困难。
 
-![](../Images/9befbc6aa469ea358638e6ead255ba3e.png)
+![](img/9befbc6aa469ea358638e6ead255ba3e.png)
 
-*图2\. 比较未观察（潜在）变量与观察变量的测量。图像由作者提供。*
+*图 2\. 比较未观察（潜在）变量与观察变量的测量。图像由作者提供。*
 
 这样一个困难是，不同的组可能对这些变量有不同的概念化。问问自己：
 
@@ -68,9 +68,9 @@
 > 
 > ***很多时候，答案是肯定的。***
 
-幸运的是，我们可以通过实证测试不同组是否以相似的方式概念化潜在变量。这个测试在SEM框架下通过MGA进行，称为[因子不变性](https://web.pdx.edu/~newsomj/semclass/ho_invariance.pdf)（也称为测量不变性）。因子不变性测试对于确保跨组比较的有效性至关重要；因此，如果存在潜在变量，这些测试必须在比较组间的回归或均值（即结构参数）之前进行。
+幸运的是，我们可以通过实证测试不同组是否以相似的方式概念化潜在变量。这个测试在 SEM 框架下通过 MGA 进行，称为[因子不变性](https://web.pdx.edu/~newsomj/semclass/ho_invariance.pdf)（也称为测量不变性）。因子不变性测试对于确保跨组比较的有效性至关重要；因此，如果存在潜在变量，这些测试必须在比较组间的回归或均值（即结构参数）之前进行。
 
-![](../Images/5f6b6430f46aae7a30238ac8ed78299a.png)
+![](img/5f6b6430f46aae7a30238ac8ed78299a.png)
 
 *图 3\. 模型化未观察变量的挑战在于，它们可能在子群体之间测量的内容不相同。图片由作者提供。*
 
@@ -78,21 +78,21 @@
 
 为了测试组间参数的差异，研究人员通常会拟合有无组间等式约束的结构方程模型。然后，使用似然比检验（等效于[卡方差异检验](https://www.jmp.com/support/help/en/17.0/#page/jmp/model-comparison-report-4.shtml#ww518615)）和其他拟合统计量（例如比较拟合指数和均方根误差）比较这两个模型，以评估施加约束是否导致模型拟合的统计学显著恶化。如果模型的拟合没有显著恶化，则保留具有等式约束的模型，并得出结论认为考虑的总体在测试的参数上没有显著差异。相反，如果模型的拟合显著恶化，则保留没有约束的模型（即允许每个组具有自己的估计），并得出结论认为考虑的总体在测试的参数上存在显著差异。
 
-下图展示了在进行简单线性回归的双组示例中MGA背后的策略。此图显示了对一个参数施加的等式约束。模型 1 具有零自由度（即，完全饱和），而模型 2 由于等式约束而具有一个自由度。这些模型通过它们的卡方差异进行比较，该差异也服从自由度为一的卡方分布（模型之间的自由度差异）。可以通过对多个参数同时施加等式约束来进行更不特定的测试。
+下图展示了在进行简单线性回归的双组示例中 MGA 背后的策略。此图显示了对一个参数施加的等式约束。模型 1 具有零自由度（即，完全饱和），而模型 2 由于等式约束而具有一个自由度。这些模型通过它们的卡方差异进行比较，该差异也服从自由度为一的卡方分布（模型之间的自由度差异）。可以通过对多个参数同时施加等式约束来进行更不特定的测试。
 
-![](../Images/521b3dd8038223adcc6736b38b8437c2.png)
+![](img/521b3dd8038223adcc6736b38b8437c2.png)
 
-*图 4\. 具有简单线性回归的双组示例中MGA背后的策略。图片由作者提供。*
+*图 4\. 具有简单线性回归的双组示例中 MGA 背后的策略。图片由作者提供。*
 
-**结构方程模型（SEMs）作为确认性模型开发而来。** 也就是说，人们提出假设，将其转化为可检验的统计模型，然后通过推断来确定数据是否支持这些假设。这种方法也适用于MGA，并且对于避免大规模的I型错误率至关重要，这种错误会导致发现数据中实际上不存在的统计效应。因此，不推荐进行所有可能的组间比较。
+**结构方程模型（SEMs）作为确认性模型开发而来。** 也就是说，人们提出假设，将其转化为可检验的统计模型，然后通过推断来确定数据是否支持这些假设。这种方法也适用于 MGA，并且对于避免大规模的 I 型错误率至关重要，这种错误会导致发现数据中实际上不存在的统计效应。因此，不推荐进行所有可能的组间比较。
 
-# MGA估计的直观理解
+# MGA 估计的直观理解
 
-***免责声明：*** *以下段落适用于希望深入了解MGA的方法论者。本节假设读者了解全信息最大似然估计器。此外，这里列出的步骤仅用于解释MGA背后的逻辑。实际上，按照这些步骤进行MGA会低效，因为统计软件应利用简化此过程的算法。*
+***免责声明：*** *以下段落适用于希望深入了解 MGA 的方法论者。本节假设读者了解全信息最大似然估计器。此外，这里列出的步骤仅用于解释 MGA 背后的逻辑。实际上，按照这些步骤进行 MGA 会低效，因为统计软件应利用简化此过程的算法。*
 
 MGA 的估计与具有缺失数据的简单 SEM 没有不同。在 MGA-SEM 的标准实施中，用户提交他们想要分析的数据及一个分组变量，该变量指示每个观察值所属的组。需要一个简单的数据处理步骤——使用分组变量——来为多个组设置分析。下面的图示出了用于分析的数据和用于 MGA 的数据重组。
 
-![](../Images/43253ff4aeae03d3a07a9a3f4aeaceeb.png)
+![](img/43253ff4aeae03d3a07a9a3f4aeaceeb.png)
 
 *图 5. 用户输入的数据与进行多组分析后的数据重组。图像由作者提供。*
 

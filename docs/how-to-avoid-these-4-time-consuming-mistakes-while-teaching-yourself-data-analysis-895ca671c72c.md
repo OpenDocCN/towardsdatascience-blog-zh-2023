@@ -1,24 +1,24 @@
-# 如何避免在自学数据分析时犯这4个耗时错误
+# 如何避免在自学数据分析时犯这 4 个耗时错误
 
-> 原文：[https://towardsdatascience.com/how-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c?source=collection_archive---------1-----------------------#2023-02-10](https://towardsdatascience.com/how-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c?source=collection_archive---------1-----------------------#2023-02-10)
+> 原文：[`towardsdatascience.com/how-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c?source=collection_archive---------1-----------------------#2023-02-10`](https://towardsdatascience.com/how-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c?source=collection_archive---------1-----------------------#2023-02-10)
 
 ## 从这些错误中学习将帮助你在自学数据分析时避免浪费时间
 
-[](https://madison13.medium.com/?source=post_page-----895ca671c72c--------------------------------)[![Madison Hunter](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----895ca671c72c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----895ca671c72c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----895ca671c72c--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----895ca671c72c--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----895ca671c72c--------------------------------)![Madison Hunter](https://madison13.medium.com/?source=post_page-----895ca671c72c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----895ca671c72c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----895ca671c72c--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----895ca671c72c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----895ca671c72c---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----895ca671c72c--------------------------------) ·7分钟阅读·2023年2月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F895ca671c72c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c&user=Madison+Hunter&userId=6a8c6841e521&source=-----895ca671c72c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----895ca671c72c---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----895ca671c72c--------------------------------) ·7 分钟阅读·2023 年 2 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F895ca671c72c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c&user=Madison+Hunter&userId=6a8c6841e521&source=-----895ca671c72c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F895ca671c72c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c&source=-----895ca671c72c---------------------bookmark_footer-----------)![](../Images/7f4c89dce80a4736e482ddde2d8e1e9d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F895ca671c72c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-these-4-time-consuming-mistakes-while-teaching-yourself-data-analysis-895ca671c72c&source=-----895ca671c72c---------------------bookmark_footer-----------)![](img/7f4c89dce80a4736e482ddde2d8e1e9d.png)
 
 图片由[Dan Cristian Pădureț](https://unsplash.com/@dancristianpaduret?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 如果你曾尝试自学某些东西，你知道这通常会花费你非常长的时间。特别是当涉及到自学数据分析时，这一点尤为真实。
 
-从编码到数学再到数据可视化，数据分析涵盖了三种非常不同的技能，每种技能都需要各种学习方法。不仅如此，容易被YouTube教程和数据分析文章所吸引，可能会导致你花费比最初预期更多的时间学习。
+从编码到数学再到数据可视化，数据分析涵盖了三种非常不同的技能，每种技能都需要各种学习方法。不仅如此，容易被 YouTube 教程和数据分析文章所吸引，可能会导致你花费比最初预期更多的时间学习。
 
 在学习数据分析过程中，我犯了不少错误，下面列出了其中的主要错误，并提供了一些实用的方法来避免这些错误，你可以立即开始实施。只要你知道何时动手（可以这么说），何时使用你已经知道的工具而不是学习新工具，何时专注于学习你需要的技能，何时坚持完成学习数据分析的目标，学习数据分析不必是一个漫长的过程。
 
@@ -28,11 +28,11 @@
 
 **解决方法：** 避免在编码教程的“炼狱”中浪费时间的最简单方法是每次学到新知识时都将其应用到现有项目中。
 
-在大学学习软件开发之前，我尝试过多次通过Codecademy和YouTube的在线教程自学编码。不幸的是，我只是把所有时间花在了做教程上，而没有真正动手（可以这么说）使用我学到的东西创建一些东西。我浪费了很多时间没有将理论知识应用于实践，导致缺乏实际成果。
+在大学学习软件开发之前，我尝试过多次通过 Codecademy 和 YouTube 的在线教程自学编码。不幸的是，我只是把所有时间花在了做教程上，而没有真正动手（可以这么说）使用我学到的东西创建一些东西。我浪费了很多时间没有将理论知识应用于实践，导致缺乏实际成果。
 
 学习数据分析的编码部分可能是最动手的部分，需要立即将通过教程练习的内容应用于实践。例如，在编写完整个分析程序后，你可以观看一个有关如何将代码分组到函数中的教程。然后，你应该进入项目代码，创建能组织和简化代码的函数。
 
-这种做法不仅能让你更快地学习，还能让你更快地完成项目。例如，你可能只是为了完成一个单一项目而学习数据分析。与其等到你学会了Python编码的所有内容再开始你的项目，不如在学习不同技能或技术的过程中逐步推进你的项目。
+这种做法不仅能让你更快地学习，还能让你更快地完成项目。例如，你可能只是为了完成一个单一项目而学习数据分析。与其等到你学会了 Python 编码的所有内容再开始你的项目，不如在学习不同技能或技术的过程中逐步推进你的项目。
 
 例如，我需要学习数据分析的某些方面，以完成我正在进行的一些本科研究。然而，由于有一个完成研究的截止日期，并且我需要最终毕业，我需要迅速掌握需要添加到代码中的内容，并立即实现它。
 

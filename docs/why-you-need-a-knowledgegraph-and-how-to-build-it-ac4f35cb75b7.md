@@ -1,14 +1,14 @@
 # 为什么你需要知识图谱，以及如何构建它
 
-> 原文：[https://towardsdatascience.com/why-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7?source=collection_archive---------0-----------------------#2023-08-09](https://towardsdatascience.com/why-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7?source=collection_archive---------0-----------------------#2023-08-09)
+> 原文：[`towardsdatascience.com/why-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7?source=collection_archive---------0-----------------------#2023-08-09`](https://towardsdatascience.com/why-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7?source=collection_archive---------0-----------------------#2023-08-09)
 
 ## 从关系数据库迁移到图数据库的指南
 
-[](https://swpugsley.medium.com/?source=post_page-----ac4f35cb75b7--------------------------------)[![Stan Pugsley](../Images/3b9894cdd03406db213c017a7d77b113.png)](https://swpugsley.medium.com/?source=post_page-----ac4f35cb75b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac4f35cb75b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac4f35cb75b7--------------------------------) [Stan Pugsley](https://swpugsley.medium.com/?source=post_page-----ac4f35cb75b7--------------------------------)
+[](https://swpugsley.medium.com/?source=post_page-----ac4f35cb75b7--------------------------------)![Stan Pugsley](https://swpugsley.medium.com/?source=post_page-----ac4f35cb75b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac4f35cb75b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac4f35cb75b7--------------------------------) [Stan Pugsley](https://swpugsley.medium.com/?source=post_page-----ac4f35cb75b7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc3a1e6da7396&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7&user=Stan+Pugsley&userId=c3a1e6da7396&source=post_page-c3a1e6da7396----ac4f35cb75b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac4f35cb75b7--------------------------------) ·7分钟阅读·2023年8月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac4f35cb75b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7&user=Stan+Pugsley&userId=c3a1e6da7396&source=-----ac4f35cb75b7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc3a1e6da7396&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7&user=Stan+Pugsley&userId=c3a1e6da7396&source=post_page-c3a1e6da7396----ac4f35cb75b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac4f35cb75b7--------------------------------) ·7 分钟阅读·2023 年 8 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac4f35cb75b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-a-knowledgegraph-and-how-to-build-it-ac4f35cb75b7&user=Stan+Pugsley&userId=c3a1e6da7396&source=-----ac4f35cb75b7---------------------clap_footer-----------)
 
 --
 
@@ -26,13 +26,13 @@
 
 +   优化**供应链**的依赖关系和互联元素
 
-这些都是事件、人员和资源网络的示例，这些网络给使用关系数据库的SQL分析师带来了巨大的头痛。随着网络规模的增加，关系数据库的速度会呈指数级下降，而图数据库则具有相对线性的关系。如果你在管理一个活动和事物的网络或网络，一个图数据库是正确的选择。未来，我们应该期待看到企业数据组采用**关系数据库进行孤立分析**，以及**知识图谱处理跨功能的复杂网络过程**的组合。
+这些都是事件、人员和资源网络的示例，这些网络给使用关系数据库的 SQL 分析师带来了巨大的头痛。随着网络规模的增加，关系数据库的速度会呈指数级下降，而图数据库则具有相对线性的关系。如果你在管理一个活动和事物的网络或网络，一个图数据库是正确的选择。未来，我们应该期待看到企业数据组采用**关系数据库进行孤立分析**，以及**知识图谱处理跨功能的复杂网络过程**的组合。
 
-基于图数据库技术的知识图谱，是为了处理多样的过程和实体网络而构建的。在知识图谱中，你会有代表人员、事件、地点、资源、文档等的节点。你还有表示节点之间链接的关系（边）。这些关系在数据库中物理存储，并具有名称和方向。并非所有的图数据库都是知识图谱。要被视为知识图谱，设计必须**嵌入业务** [**语义模型**](https://medium.com/@nripapathak/semantic-data-modelling-92aa64582dc7)，通过清晰的业务名称反映在多个业务功能跨越的节点集合中。你实际上是在创建一个**无缝的网络**，连接所有交互的业务部分，并使用业务语义将数据紧密地与其代表的过程联系起来。这可以作为**未来生成型LLM模型**使用的**基础**。
+基于图数据库技术的知识图谱，是为了处理多样的过程和实体网络而构建的。在知识图谱中，你会有代表人员、事件、地点、资源、文档等的节点。你还有表示节点之间链接的关系（边）。这些关系在数据库中物理存储，并具有名称和方向。并非所有的图数据库都是知识图谱。要被视为知识图谱，设计必须**嵌入业务** [**语义模型**](https://medium.com/@nripapathak/semantic-data-modelling-92aa64582dc7)，通过清晰的业务名称反映在多个业务功能跨越的节点集合中。你实际上是在创建一个**无缝的网络**，连接所有交互的业务部分，并使用业务语义将数据紧密地与其代表的过程联系起来。这可以作为**未来生成型 LLM 模型**使用的**基础**。
 
 为了在知识图谱中展示多样的数据集，我们来看一个关于供应链物流的简单示例。业务流程可能被建模为如下：
 
-![](../Images/157b14bda8e08226239735ed7c22e643.png)
+![](img/157b14bda8e08226239735ed7c22e643.png)
 
 供应链图数据库模型。图像由作者提供。
 
@@ -42,13 +42,13 @@
 
 现在，让我们通过将一个典型的关系数据库模型转换为图模型的过程，使用电子商务供应商的场景。假设该供应商正在进行一系列数字营销活动，在其网站上接收订单，并向客户发货。关系模型可能如下所示：
 
-![](../Images/6c7d862fcce9e6eb6d2b748783c195e3.png)
+![](img/6c7d862fcce9e6eb6d2b748783c195e3.png)
 
 电子商务关系数据库模型。图像由作者提供。
 
 如果我们将其转换为数据仓库中的维度模型，该模型可能如下所示：
 
-![](../Images/8ec4f138c2ec97e3157f82e4c312601c.png)
+![](img/8ec4f138c2ec97e3157f82e4c312601c.png)
 
 电子商务维度模型（数据仓库）。图片由作者提供。
 
@@ -56,23 +56,23 @@
 
 图形模型通过将过程建模为如下方式，解决了显示实体间相互关系的问题：
 
-![](../Images/b95db77f848760ca2063af1978deaf7d.png)
+![](img/b95db77f848760ca2063af1978deaf7d.png)
 
 电子商务图形数据库模型。图片由作者提供。
 
-首次查看，这个图形模型与关系模型的相似性多于与维度模型的相似性，但它可以用于与数据仓库相同的分析目的。注意每个关系都有名称和方向。而且，可以在任何节点之间创建关系——事件与事件、人际与人际、文档与事件等。**图形查询还允许你以SQL无法实现的方式遍历图形。**
+首次查看，这个图形模型与关系模型的相似性多于与维度模型的相似性，但它可以用于与数据仓库相同的分析目的。注意每个关系都有名称和方向。而且，可以在任何节点之间创建关系——事件与事件、人际与人际、文档与事件等。**图形查询还允许你以 SQL 无法实现的方式遍历图形。**
 
 例如，你可以收集与关键事件相关的任何节点，并研究其出现模式。层次结构得到保留，每个层级可以单独引用，这不同于非规范化的维度表。最重要的是，图形在建模业务中的任何事件或实体时更具灵活性，不需要遵循严格的模式约束。图形设计旨在匹配业务的语义模型。
 
 # 提取、转换和加载（ETL）
 
-现在让我们看一个示例关系数据库表，并创建一些示例脚本以提取、转换和加载数据到图形数据库中。在这篇文章中，我将使用由[Neo4j](https://neo4j.com/)提供的Cypher语言，Neo4j是最受欢迎的商业图形数据库。但这些概念也适用于其他变体的[图形查询语言（GQL）](https://www.gqlstandards.org/)。我们将使用以下示例产品表：
+现在让我们看一个示例关系数据库表，并创建一些示例脚本以提取、转换和加载数据到图形数据库中。在这篇文章中，我将使用由[Neo4j](https://neo4j.com/)提供的 Cypher 语言，Neo4j 是最受欢迎的商业图形数据库。但这些概念也适用于其他变体的[图形查询语言（GQL）](https://www.gqlstandards.org/)。我们将使用以下示例产品表：
 
-![](../Images/974529f665138bed48974a12b4720e57.png)
+![](img/974529f665138bed48974a12b4720e57.png)
 
 产品表。图片由作者提供。
 
-使用这个查询，我们可以提取过去24小时内更新的新产品：
+使用这个查询，我们可以提取过去 24 小时内更新的新产品：
 
 ```py
 SELECT product_id,
@@ -119,7 +119,7 @@ RETURN ag.group_name,
 
 这个查询将返回广告组名称和订单数量，筛选自亚利桑那州。请注意，Cypher 中不需要 Group By 子句，与 SQL 不同。从该查询中，我们将收到以下示例输出：
 
-![](../Images/b05c0476daa8caf01376779c1ee5a8e1.png)
+![](img/b05c0476daa8caf01376779c1ee5a8e1.png)
 
 图查询的示例结果。图片由作者提供。
 
@@ -135,7 +135,7 @@ RETURN cp.campaign_name,
 
 我使用了一个示例查询路径，但用户可以采取多种路径来回答不同的业务问题。在查询中，请注意从 Campaign 到 Delivery 的路径通过 Order 和 Delivery 之间的关系。此外，为了提高可读性，我将路径拆分为两部分，第二行以 Ad 的别名开始。查询的输出结果如下所示：
 
-![](../Images/2f735ace47c047c8fb2c2caf55a7fc29.png)
+![](img/2f735ace47c047c8fb2c2caf55a7fc29.png)
 
 图查询的示例结果。图片由作者提供。
 

@@ -1,18 +1,18 @@
 # 在数据科学中通过真实生活模拟训练解决问题的技能：一种角色扮演的双聊天机器人方法
 
-> 原文：[https://towardsdatascience.com/training-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c?source=collection_archive---------7-----------------------#2023-09-04](https://towardsdatascience.com/training-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c?source=collection_archive---------7-----------------------#2023-09-04)
+> 原文：[`towardsdatascience.com/training-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c?source=collection_archive---------7-----------------------#2023-09-04`](https://towardsdatascience.com/training-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c?source=collection_archive---------7-----------------------#2023-09-04)
 
-## 一个完整的LLM项目演示，包括代码实现
+## 一个完整的 LLM 项目演示，包括代码实现
 
-[](https://shuaiguo.medium.com/?source=post_page-----c80dec3dd08c--------------------------------)[![Shuai Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----c80dec3dd08c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c80dec3dd08c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c80dec3dd08c--------------------------------) [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----c80dec3dd08c--------------------------------)
+[](https://shuaiguo.medium.com/?source=post_page-----c80dec3dd08c--------------------------------)![Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----c80dec3dd08c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c80dec3dd08c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c80dec3dd08c--------------------------------) [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----c80dec3dd08c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7b08bf52bf9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c&user=Shuai+Guo&userId=7b08bf52bf9c&source=post_page-7b08bf52bf9c----c80dec3dd08c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c80dec3dd08c--------------------------------) ·22 分钟阅读·2023年9月4日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7b08bf52bf9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c&user=Shuai+Guo&userId=7b08bf52bf9c&source=post_page-7b08bf52bf9c----c80dec3dd08c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c80dec3dd08c--------------------------------) ·22 分钟阅读·2023 年 9 月 4 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc80dec3dd08c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c&source=-----c80dec3dd08c---------------------bookmark_footer-----------)![](../Images/7e415cad17323447a7606ec41a90f893.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc80dec3dd08c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c&source=-----c80dec3dd08c---------------------bookmark_footer-----------)![](img/7e415cad17323447a7606ec41a90f893.png)
 
 图片由 [Headway](https://unsplash.com/@headwayio?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

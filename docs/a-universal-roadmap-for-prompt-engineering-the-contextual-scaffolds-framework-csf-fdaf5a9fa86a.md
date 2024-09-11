@@ -1,18 +1,18 @@
 # 一种通用的提示工程路线图：背景支架框架（CSF）
 
-> 原文：[https://towardsdatascience.com/a-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a?source=collection_archive---------3-----------------------#2023-10-25](https://towardsdatascience.com/a-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a?source=collection_archive---------3-----------------------#2023-10-25)
+> 原文：[`towardsdatascience.com/a-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a?source=collection_archive---------3-----------------------#2023-10-25`](https://towardsdatascience.com/a-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a?source=collection_archive---------3-----------------------#2023-10-25)
 
 ## 一种有效提示工程的通用心理模型。
 
-[](https://medium.com/@hominum_universalis?source=post_page-----fdaf5a9fa86a--------------------------------)[![Giuseppe Scalamogna](../Images/ff7b3bec7c26e5684fba26211b6f027a.png)](https://medium.com/@hominum_universalis?source=post_page-----fdaf5a9fa86a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdaf5a9fa86a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fdaf5a9fa86a--------------------------------) [Giuseppe Scalamogna](https://medium.com/@hominum_universalis?source=post_page-----fdaf5a9fa86a--------------------------------)
+[](https://medium.com/@hominum_universalis?source=post_page-----fdaf5a9fa86a--------------------------------)![Giuseppe Scalamogna](https://medium.com/@hominum_universalis?source=post_page-----fdaf5a9fa86a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdaf5a9fa86a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdaf5a9fa86a--------------------------------) [Giuseppe Scalamogna](https://medium.com/@hominum_universalis?source=post_page-----fdaf5a9fa86a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe039aa8b7221&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a&user=Giuseppe+Scalamogna&userId=e039aa8b7221&source=post_page-e039aa8b7221----fdaf5a9fa86a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdaf5a9fa86a--------------------------------) ·7分钟阅读·2023年10月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffdaf5a9fa86a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a&user=Giuseppe+Scalamogna&userId=e039aa8b7221&source=-----fdaf5a9fa86a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe039aa8b7221&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a&user=Giuseppe+Scalamogna&userId=e039aa8b7221&source=post_page-e039aa8b7221----fdaf5a9fa86a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdaf5a9fa86a--------------------------------) ·7 分钟阅读·2023 年 10 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffdaf5a9fa86a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a&user=Giuseppe+Scalamogna&userId=e039aa8b7221&source=-----fdaf5a9fa86a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffdaf5a9fa86a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a&source=-----fdaf5a9fa86a---------------------bookmark_footer-----------)![](../Images/11bd757f9b0539829373e16710b28052.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffdaf5a9fa86a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-universal-roadmap-for-prompt-engineering-the-contextual-scaffolds-framework-csf-fdaf5a9fa86a&source=-----fdaf5a9fa86a---------------------bookmark_footer-----------)![](img/11bd757f9b0539829373e16710b28052.png)
 
 图片由作者提供并通过 DALL·E 3 生成
 
@@ -44,7 +44,7 @@
 
 这是框架的一个简单的视觉表示：
 
-![](../Images/aba20fb5c80e673f2206b404c7a2e8b8.png)
+![](img/aba20fb5c80e673f2206b404c7a2e8b8.png)
 
 作者提供的图片
 
@@ -58,7 +58,7 @@
 
 你们会得到一些稍有不同的内容，但在大多数情况下，应该类似于此：
 
-![](../Images/be5e425228737da6003a2cbcdd4c9773.png)
+![](img/be5e425228737da6003a2cbcdd4c9773.png)
 
 从输出中可以看出，ChatGPT-4 启动了一个程序模拟，大致上满足了我的“期望背景”。我通过在两个框架中指定语言，这些框架发出了丰富的“意义光环”，对其产生了显著影响。
 
@@ -68,7 +68,7 @@
 
 **提示工程的背景框架优化**
 
-当使用选定的LLM时，我们最终希望模型能生成符合或超出我们期望的输出。如果我们从优化的角度看待我们的框架，我们可以设想一个框架，其中的目标是确定一个或多个最佳满足“期望背景”的“操作背景”。对于那些对数学术语感到陌生的人，请耐心等待；这是一个简短的绕道。
+当使用选定的 LLM 时，我们最终希望模型能生成符合或超出我们期望的输出。如果我们从优化的角度看待我们的框架，我们可以设想一个框架，其中的目标是确定一个或多个最佳满足“期望背景”的“操作背景”。对于那些对数学术语感到陌生的人，请耐心等待；这是一个简短的绕道。
 
 我们可以将这样的函数表示如下：
 
@@ -90,13 +90,13 @@
 
 *OC*={*o*₁​,*o*₂​,…,*o*ₙ​}
 
-最终，目标函数可以表示为在给定的EC下，最大化所有可能的*OC*在集合*O*中的效用函数 *U*：
+最终，目标函数可以表示为在给定的 EC 下，最大化所有可能的*OC*在集合*O*中的效用函数 *U*：
 
-![](../Images/d501c7847711564be8bb650f66762d26.png)
+![](img/d501c7847711564be8bb650f66762d26.png)
 
 这些数学抽象试图系统化地将期望背景转化为操作背景，同时承认对于给定的期望背景可能存在多个最佳操作背景。我们将在未来探讨使用这种框架对模型进行微调的可能性，但现在，让我们看看这些想法的实际应用。
 
-假设你已经很好地掌握了如何表达你的期望背景框架，但不确定在操作背景框架中包含哪些元素。ChatGPT-4可以提供帮助吗？
+假设你已经很好地掌握了如何表达你的期望背景框架，但不确定在操作背景框架中包含哪些元素。ChatGPT-4 可以提供帮助吗？
 
 让我们根据此创建一个提示，并查看我们得到的反馈。
 
@@ -106,7 +106,7 @@
 
 *你的操作背景 — 为了最大化实现我的期望背景，请建议至少一个但不超过五个你可以使用的操作背景。你可以建议以某种人物、团队、组织类型、程序或系统的身份来进行，并具备一个或多个特定的能力。你还可以建议引入外部数据或要求提供训练示例。你也可以建议使用特定的技术或方法。你可以建议上述任何元素的任意组合。操作背景应按从最优到最不优的顺序排列。对于每一个，请提供一个导致其特定排名的理由。”*
 
-![](../Images/b325d18bd1a84427819075f5770166df.png)
+![](img/b325d18bd1a84427819075f5770166df.png)
 
 诚如预期，ChatGPT-4 为我们提供了 5 种操作上下文；其中 2 种是组织实体，1 种是系统，2 种是个人。这些操作上下文已被排序，并附上了每个排序的理由。考虑一下“文学智囊团”或“历史与科幻研究所”等概念的“意义光环”。我相信你会同意，它们的上下文密集且充满了意义和暗示。通过这种方法，我们可以装备自己以大量操作上下文，这些上下文可能是我们自己无法发现的。这也降低了有效提示创建的门槛，将我们的起点集中在阐述“预期上下文支架”上。
 

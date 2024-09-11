@@ -1,14 +1,14 @@
-# 为什么数据项目无法产生实际影响：作为分析经理需要关注的5个关键因素
+# 为什么数据项目无法产生实际影响：作为分析经理需要关注的 5 个关键因素
 
-> 原文：[https://towardsdatascience.com/why-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe?source=collection_archive---------2-----------------------#2023-12-14](https://towardsdatascience.com/why-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe?source=collection_archive---------2-----------------------#2023-12-14)
+> 原文：[`towardsdatascience.com/why-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe?source=collection_archive---------2-----------------------#2023-12-14`](https://towardsdatascience.com/why-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe?source=collection_archive---------2-----------------------#2023-12-14)
 
 ## 一份简单的指南，用于理解那些可能对你的工作产生负面影响的宏观因素
 
-[](https://medium.com/@jordangom?source=post_page-----46015a82ddfe--------------------------------)[![Jordan Gomes](../Images/d08bb9fd8b084687599a67a2221ec68c.png)](https://medium.com/@jordangom?source=post_page-----46015a82ddfe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46015a82ddfe--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----46015a82ddfe--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----46015a82ddfe--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----46015a82ddfe--------------------------------)![Jordan Gomes](https://medium.com/@jordangom?source=post_page-----46015a82ddfe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46015a82ddfe--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----46015a82ddfe--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----46015a82ddfe--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----46015a82ddfe---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46015a82ddfe--------------------------------) ·7分钟阅读·2023年12月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F46015a82ddfe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----46015a82ddfe---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----46015a82ddfe---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46015a82ddfe--------------------------------) ·7 分钟阅读·2023 年 12 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F46015a82ddfe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-data-projects-fail-to-deliver-real-life-impact-5-critical-elements-to-watch-out-for-as-an-46015a82ddfe&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----46015a82ddfe---------------------clap_footer-----------)
 
 --
 
@@ -18,13 +18,13 @@
 
 +   [VentureBeat](https://venturebeat.com/ai/why-do-87-of-data-science-projects-never-make-it-into-production/) 报道称，87%的数据科学项目没有投入生产
 
-+   [Gartner](https://www.gartner.com/en/newsroom/press-releases/2018-02-13-gartner-says-nearly-half-of-cios-are-planning-to-deploy-artificial-intelligence) 在2018年预测，到2022年85%的人工智能项目将会产生错误的结果。在2016年，他们估计60%的大数据项目会失败。
++   [Gartner](https://www.gartner.com/en/newsroom/press-releases/2018-02-13-gartner-says-nearly-half-of-cios-are-planning-to-deploy-artificial-intelligence) 在 2018 年预测，到 2022 年 85%的人工智能项目将会产生错误的结果。在 2016 年，他们估计 60%的大数据项目会失败。
 
 两周前我们讨论了如何进行[高质量数据分析](https://medium.com/towards-data-science/the-art-of-making-quality-data-analyses-a91ea319b573)，但制作高质量分析实际上只是战斗的一半。许多令人印象深刻的工作从未真正实现，最终只是“数据敏锐性的展示”（充其量）。那么，如何跨越质量工作和有影响力工作的差距呢？
 
 第一步是理解游戏规则——并且对决定你的项目是成功还是失败的宏观元素有一个清晰的了解。
 
-![](../Images/9d50f3bafe8fe3c543c34dbddd55c774.png)
+![](img/9d50f3bafe8fe3c543c34dbddd55c774.png)
 
 影响数据分析成功的宏观元素（作者提供的图片）
 
@@ -42,7 +42,7 @@
 
 # 技能组
 
-现在你已经有了数据——你是否有正确的技能来进行调查？这不仅仅是掌握SQL或Python等技术技能，同样也是具备进行你正在进行的分析所需的特定知识。当项目的要求超出你通常的专业领域时，这变得尤为关键。例如，如果你擅长构建数据管道，但手头的项目集中在复杂的预测上，这种技能上的不匹配可能成为一个重大障碍。根据团队当前技能与他们需要掌握的技能之间的差距，你可能考虑对团队进行技能提升——这在长远来看也可能是非常有益的——前提是它与项目的时间表相符。这是在找到适当平衡的问题：抓住发展机会，同时又要对项目的时间表和优先事项保持现实的看法。
+现在你已经有了数据——你是否有正确的技能来进行调查？这不仅仅是掌握 SQL 或 Python 等技术技能，同样也是具备进行你正在进行的分析所需的特定知识。当项目的要求超出你通常的专业领域时，这变得尤为关键。例如，如果你擅长构建数据管道，但手头的项目集中在复杂的预测上，这种技能上的不匹配可能成为一个重大障碍。根据团队当前技能与他们需要掌握的技能之间的差距，你可能考虑对团队进行技能提升——这在长远来看也可能是非常有益的——前提是它与项目的时间表相符。这是在找到适当平衡的问题：抓住发展机会，同时又要对项目的时间表和优先事项保持现实的看法。
 
 **示例：** 你管理一个在患者数据分析方面经验丰富的医疗研究团队，现在有一个项目要求他们运用流行病学建模来预测疾病的传播。虽然他们擅长处理患者数据，但流行病学预测的特定要求——一个不同领域的专业——可能会带来重大挑战。
 
@@ -54,7 +54,7 @@
 
 +   过了一段时间，你会遇到收益递减的情况，这时投入更多时间并不一定能够带来同样增加的质量水平。
 
-[这个视频](https://www.youtube.com/watch?v=x9wn633vl_c)（病毒式的蜘蛛侠画作）很好地展示了这一现象。在10秒钟和1分钟的画作之间质量的飞跃是显著的，仅仅多花50秒就有了明显的提高。但是，当将1分钟的画作与花费10分钟的画作进行比较时，尽管后者无可否认地更好，但是质量的提升幅度却没有那么明显，尽管花费的时间大大增加。
+[这个视频](https://www.youtube.com/watch?v=x9wn633vl_c)（病毒式的蜘蛛侠画作）很好地展示了这一现象。在 10 秒钟和 1 分钟的画作之间质量的飞跃是显著的，仅仅多花 50 秒就有了明显的提高。但是，当将 1 分钟的画作与花费 10 分钟的画作进行比较时，尽管后者无可否认地更好，但是质量的提升幅度却没有那么明显，尽管花费的时间大大增加。
 
 **示例**：你在一家零售公司工作，该公司希望分析客户购买模式，以优化即将到来的假期季节的库存水平。如果你的数据团队被给予一周时间来进行分析，他们可以提供基本的见解，识别出一般趋势和畅销商品。然而，如果他们得到一个月的时间，分析质量会显著提高，能够更深入地理解客户偏好、区域差异和潜在的库存问题。然而，将时间延长到三个月可能只会提供略微更详细的见解，同时延迟关键决策，并可能错过市场机会。
 
@@ -80,18 +80,18 @@
 
 **如果你想读更多我的文章，这里有几篇你可能会喜欢**：
 
-[](/how-to-build-a-successful-dashboard-359c8cb0f610?source=post_page-----46015a82ddfe--------------------------------) [## 如何建立成功的仪表板
+[](/how-to-build-a-successful-dashboard-359c8cb0f610?source=post_page-----46015a82ddfe--------------------------------) ## 如何建立成功的仪表板
 
 ### 一个建立了几个不成功的人的清单
 
-[towardsdatascience.com](/how-to-build-a-successful-dashboard-359c8cb0f610?source=post_page-----46015a82ddfe--------------------------------) [](/building-analytically-mature-organizations-amo-b54f8243ef3a?source=post_page-----46015a82ddfe--------------------------------) [## 建立分析成熟组织（AMO）
+[towardsdatascience.com [](/building-analytically-mature-organizations-amo-b54f8243ef3a?source=post_page-----46015a82ddfe--------------------------------) ## 建立分析成熟组织（AMO）
 
 ### 几个简单的框架，用于准确确定组织的分析需求以及如何使其更…
 
-[towardsdatascience.com](/building-analytically-mature-organizations-amo-b54f8243ef3a?source=post_page-----46015a82ddfe--------------------------------) [](/generating-more-quality-insights-per-month-0d932930d99c?source=post_page-----46015a82ddfe--------------------------------) [## 每月生成更多质量见解的方法
+[towardsdatascience.com [](/generating-more-quality-insights-per-month-0d932930d99c?source=post_page-----46015a82ddfe--------------------------------) ## 每月生成更多质量见解的方法
 
 ### 如何建立系统以更少的资源生成更多的产出
 
-[towardsdatascience.com](/generating-more-quality-insights-per-month-0d932930d99c?source=post_page-----46015a82ddfe--------------------------------)
+[towardsdatascience.com
 
 *附注：本文已转载至* [*Analytics Explained*](https://analyticsexplained.substack.com/)*，这是一个我在各种分析角色中提炼所学的新闻通讯（从新加坡初创公司到旧金山的大型科技公司），并回答有关分析、增长和职业的问题。*

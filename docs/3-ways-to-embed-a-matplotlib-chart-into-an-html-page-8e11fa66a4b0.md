@@ -1,20 +1,20 @@
 # 将 Matplotlib 图表嵌入 HTML 页面的 3 种方法
 
-> 原文：[https://towardsdatascience.com/3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0?source=collection_archive---------4-----------------------#2023-06-22](https://towardsdatascience.com/3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0?source=collection_archive---------4-----------------------#2023-06-22)
+> 原文：[`towardsdatascience.com/3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0?source=collection_archive---------4-----------------------#2023-06-22`](https://towardsdatascience.com/3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0?source=collection_archive---------4-----------------------#2023-06-22)
 
 ## 数据可视化，Web 应用
 
 ## 关于如何将 Matplotlib 图表导入 HTML 文件的教程
 
-[](https://alod83.medium.com/?source=post_page-----8e11fa66a4b0--------------------------------)[![Angelica Lo Duca](../Images/45aa2e2e504bb3af6d3b8009dc6f030e.png)](https://alod83.medium.com/?source=post_page-----8e11fa66a4b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e11fa66a4b0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8e11fa66a4b0--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----8e11fa66a4b0--------------------------------)
+[](https://alod83.medium.com/?source=post_page-----8e11fa66a4b0--------------------------------)![Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----8e11fa66a4b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e11fa66a4b0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e11fa66a4b0--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----8e11fa66a4b0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----8e11fa66a4b0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e11fa66a4b0--------------------------------) · 5 分钟阅读 · 2023年6月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8e11fa66a4b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=-----8e11fa66a4b0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----8e11fa66a4b0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e11fa66a4b0--------------------------------) · 5 分钟阅读 · 2023 年 6 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8e11fa66a4b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=-----8e11fa66a4b0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e11fa66a4b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0&source=-----8e11fa66a4b0---------------------bookmark_footer-----------)![](../Images/9bd880bbd7d376888cc03445b9d25e44.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e11fa66a4b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-embed-a-matplotlib-chart-into-an-html-page-8e11fa66a4b0&source=-----8e11fa66a4b0---------------------bookmark_footer-----------)![](img/9bd880bbd7d376888cc03445b9d25e44.png)
 
 作者提供的图片
 

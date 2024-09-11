@@ -1,14 +1,14 @@
 # 使用大型语言模型的最简单方法？
 
-> 原文：[https://towardsdatascience.com/the-easiest-way-to-interact-with-language-models-4da158cfb5c5?source=collection_archive---------0-----------------------#2023-03-26](https://towardsdatascience.com/the-easiest-way-to-interact-with-language-models-4da158cfb5c5?source=collection_archive---------0-----------------------#2023-03-26)
+> 原文：[`towardsdatascience.com/the-easiest-way-to-interact-with-language-models-4da158cfb5c5?source=collection_archive---------0-----------------------#2023-03-26`](https://towardsdatascience.com/the-easiest-way-to-interact-with-language-models-4da158cfb5c5?source=collection_archive---------0-----------------------#2023-03-26)
 
 ## LangChain 概述
 
-[](https://sophiamyang.medium.com/?source=post_page-----4da158cfb5c5--------------------------------)[![Sophia Yang, Ph.D.](../Images/c133f918245ea4857dc46df3a07fc2b1.png)](https://sophiamyang.medium.com/?source=post_page-----4da158cfb5c5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4da158cfb5c5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4da158cfb5c5--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----4da158cfb5c5--------------------------------)
+[](https://sophiamyang.medium.com/?source=post_page-----4da158cfb5c5--------------------------------)![Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----4da158cfb5c5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4da158cfb5c5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4da158cfb5c5--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----4da158cfb5c5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-easiest-way-to-interact-with-language-models-4da158cfb5c5&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----4da158cfb5c5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4da158cfb5c5--------------------------------) ·7分钟阅读·2023年3月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4da158cfb5c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-easiest-way-to-interact-with-language-models-4da158cfb5c5&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----4da158cfb5c5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-easiest-way-to-interact-with-language-models-4da158cfb5c5&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----4da158cfb5c5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4da158cfb5c5--------------------------------) ·7 分钟阅读·2023 年 3 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4da158cfb5c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-easiest-way-to-interact-with-language-models-4da158cfb5c5&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----4da158cfb5c5---------------------clap_footer-----------)
 
 --
 
@@ -47,7 +47,7 @@ flan = HuggingFaceHub(repo_id="google/flan-t5-xl")
 
 然后我们可以给每个模型提供一个提示，看看它们返回什么。需要注意的是，对于聊天模型，我们可以指定消息是人类消息、AI 消息还是系统消息。这就是为什么对于 ChatGPT 模型，我将我的消息指定为人类消息。
 
-![](../Images/bd4593009c4667ef1c8fd92a9f67c520.png)
+![](img/bd4593009c4667ef1c8fd92a9f67c520.png)
 
 # 2\. 外部文档的问答
 
@@ -57,15 +57,15 @@ flan = HuggingFaceHub(repo_id="google/flan-t5-xl")
 
 这里是一个示例，我们使用 TextLoader 加载本地 txt 文件，创建 VectoreStore 索引，并查询你的索引。直观地说，你的文档将被拆分并嵌入到向量中，并存储在向量数据库中。查询将找到在向量数据库中最接近问题向量的向量。
 
-![](../Images/60aed63ceea8b70ddd55e25a959101f4.png)
+![](img/60aed63ceea8b70ddd55e25a959101f4.png)
 
-令人兴奋的消息是LangChain最近集成了**ChatGPT Retrieval Plugin**，因此人们可以使用这个检索器代替索引。索引和检索器有什么区别？根据[LangChain](https://blog.langchain.dev/retrieval/)， “索引是一种支持高效搜索的数据结构，而检索器是使用索引来查找并返回与用户查询相关的文档的组件。索引是检索器执行其功能所依赖的关键组件。”
+令人兴奋的消息是 LangChain 最近集成了**ChatGPT Retrieval Plugin**，因此人们可以使用这个检索器代替索引。索引和检索器有什么区别？根据[LangChain](https://blog.langchain.dev/retrieval/)， “索引是一种支持高效搜索的数据结构，而检索器是使用索引来查找并返回与用户查询相关的文档的组件。索引是检索器执行其功能所依赖的关键组件。”
 
 # 3\. 保留/总结聊天历史
 
-当您与ChatGPT聊天时，它不会保留您的聊天历史记录。您需要将聊天内容复制并粘贴到新的提示中，以便它能够了解历史记录。LangChain通过提供处理聊天历史记录的几种不同选项来解决这个问题——保留所有对话、保留最新的k次对话、总结对话以及上述选项的组合。
+当您与 ChatGPT 聊天时，它不会保留您的聊天历史记录。您需要将聊天内容复制并粘贴到新的提示中，以便它能够了解历史记录。LangChain 通过提供处理聊天历史记录的几种不同选项来解决这个问题——保留所有对话、保留最新的 k 次对话、总结对话以及上述选项的组合。
 
-这是一个示例，我们使用`ConversationBufferWindowMemory`来保持最新的1轮对话，使用`ConversationSummaryMemory`来总结之前的对话，并使用`CombinedMemory`来结合这两种方法：
+这是一个示例，我们使用`ConversationBufferWindowMemory`来保持最新的 1 轮对话，使用`ConversationSummaryMemory`来总结之前的对话，并使用`CombinedMemory`来结合这两种方法：
 
 ```py
 from langchain.llms import OpenAI
@@ -104,19 +104,19 @@ conversation = ConversationChain(
 
 这里是结果，您可以看到对话摘要以及最新对话传递到提示中的内容。
 
-![](../Images/a17e134f38ad90bd1124fb108d84168b.png)
+![](img/a17e134f38ad90bd1124fb108d84168b.png)
 
 # 4\. 链接
 
-有时您可能想要链式连接不同的LLM。例如，
+有时您可能想要链式连接不同的 LLM。例如，
 
-+   您可能希望第一个LLM的输出作为第二个LLM的输入。
++   您可能希望第一个 LLM 的输出作为第二个 LLM 的输入。
 
-+   或者，您可能希望总结第一和第二个LLM的输出，并将摘要作为输入传递给第三个LLM。
++   或者，您可能希望总结第一和第二个 LLM 的输出，并将摘要作为输入传递给第三个 LLM。
 
-+   或者，您可能希望将您的语言模型与另一个实用工具链进行链式操作，以进行数学运算或Python操作。
++   或者，您可能希望将您的语言模型与另一个实用工具链进行链式操作，以进行数学运算或 Python 操作。
 
-这是最基本的`SimpleSequentialChain`方法的一个示例。第一个链要求ChatGPT为一家制造彩色袜子的公司提供一个好的产品名称。ChatGPT返回了“Rainbow Sox Co.”。第二个链使用这个名称作为输入，并要求ChatGPT为公司“Rainbow Sox Co.”编写一句广告语。ChatGPT写道：“让Rainbow Sox Co.为您的步伐增添一抹色彩！”
+这是最基本的`SimpleSequentialChain`方法的一个示例。第一个链要求 ChatGPT 为一家制造彩色袜子的公司提供一个好的产品名称。ChatGPT 返回了“Rainbow Sox Co.”。第二个链使用这个名称作为输入，并要求 ChatGPT 为公司“Rainbow Sox Co.”编写一句广告语。ChatGPT 写道：“让 Rainbow Sox Co.为您的步伐增添一抹色彩！”
 
 ```py
 from langchain.chat_models import ChatOpenAI
@@ -147,19 +147,19 @@ catchphrase = overall_chain.run("colorful socks")
 print(catchphrase)
 ```
 
-![](../Images/3474d1f20325434ecbcfde3f5b498db0.png)
+![](img/3474d1f20325434ecbcfde3f5b498db0.png)
 
 # 5\. 代理
 
-代理可以访问语言模型和一套工具，例如Google搜索、Python REPL、数学计算器等。代理使用LLM和各种框架来决定为哪些任务使用哪些工具。这与ChatGPT插件非常相似。以下是一个示例：
+代理可以访问语言模型和一套工具，例如 Google 搜索、Python REPL、数学计算器等。代理使用 LLM 和各种框架来决定为哪些任务使用哪些工具。这与 ChatGPT 插件非常相似。以下是一个示例：
 
-在这个示例中，我们加载了两个工具：serpapi用于Google搜索，llm-math用于数学计算。我们询问了“莱昂纳多·迪卡普里奥的女朋友是谁？她目前的年龄提高到0.43的幂是多少？”语言模型首先理解了问题，并决定执行搜索操作以触发搜索API调用。然后它从搜索代理那里获取了结果，决定使用llm-math进行计算，最后得到了最终结果。
+在这个示例中，我们加载了两个工具：serpapi 用于 Google 搜索，llm-math 用于数学计算。我们询问了“莱昂纳多·迪卡普里奥的女朋友是谁？她目前的年龄提高到 0.43 的幂是多少？”语言模型首先理解了问题，并决定执行搜索操作以触发搜索 API 调用。然后它从搜索代理那里获取了结果，决定使用 llm-math 进行计算，最后得到了最终结果。
 
-![](../Images/1aa0b362e5fa6c8d2fe819ab5c42c647.png)
+![](img/1aa0b362e5fa6c8d2fe819ab5c42c647.png)
 
 在另一个例子中，我们可以使用 Python REPL 执行 Python 代码进行计算，而不是使用 llm-math 作为计算器：
 
-![](../Images/af00b22b37ab09942dea8a6b48b74772.png)
+![](img/af00b22b37ab09942dea8a6b48b74772.png)
 
 # 6\. ChatGPT 插件
 
@@ -179,13 +179,13 @@ agent_chain = initialize_agent(tools, llm, agent="zero-shot-react-description", 
 agent_chain.run("what t shirts are available in klarna?")
 ```
 
-![](../Images/23b73b914df2773ae8e336adefc90589.png)
+![](img/23b73b914df2773ae8e336adefc90589.png)
 
 # 结论
 
 总体而言，我对 LangChain 的能力和社区快速添加新功能的速度感到非常印象深刻。还有许多其他功能我在这篇博客文章中没有提到，包括数据增强、少量学习、评估、模型比较等。我希望这篇博客文章能帮助你更好地理解各种 LangChain 功能。祝你探索愉快！
 
-![](../Images/efc10ee5a6acd9672df91dd7b66ed549.png)
+![](img/efc10ee5a6acd9672df91dd7b66ed549.png)
 
 照片由 [Aida L](https://unsplash.com/@aidamarie_photography?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上
 

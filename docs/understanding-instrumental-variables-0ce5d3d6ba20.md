@@ -1,20 +1,20 @@
 # 理解工具变量
 
-> 原文：[https://towardsdatascience.com/understanding-instrumental-variables-0ce5d3d6ba20?source=collection_archive---------2-----------------------#2023-11-13](https://towardsdatascience.com/understanding-instrumental-variables-0ce5d3d6ba20?source=collection_archive---------2-----------------------#2023-11-13)
+> 原文：[`towardsdatascience.com/understanding-instrumental-variables-0ce5d3d6ba20?source=collection_archive---------2-----------------------#2023-11-13`](https://towardsdatascience.com/understanding-instrumental-variables-0ce5d3d6ba20?source=collection_archive---------2-----------------------#2023-11-13)
 
 ## [因果数据科学](https://towardsdatascience.com/tagged/causal-data-science)
 
 ## *当你无法随机化处理时如何估计因果效应*
 
-[](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)[![Matteo Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)
+[](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)![Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-instrumental-variables-0ce5d3d6ba20&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----0ce5d3d6ba20---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------) ·12 分钟阅读·2023年11月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0ce5d3d6ba20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-instrumental-variables-0ce5d3d6ba20&user=Matteo+Courthoud&userId=666130fb420f&source=-----0ce5d3d6ba20---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-instrumental-variables-0ce5d3d6ba20&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----0ce5d3d6ba20---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------) ·12 分钟阅读·2023 年 11 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0ce5d3d6ba20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-instrumental-variables-0ce5d3d6ba20&user=Matteo+Courthoud&userId=666130fb420f&source=-----0ce5d3d6ba20---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F0ce5d3d6ba20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-instrumental-variables-0ce5d3d6ba20&source=-----0ce5d3d6ba20---------------------bookmark_footer-----------)![](../Images/9caba9cc613fed76bb306ba2e72466d9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F0ce5d3d6ba20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-instrumental-variables-0ce5d3d6ba20&source=-----0ce5d3d6ba20---------------------bookmark_footer-----------)![](img/9caba9cc613fed76bb306ba2e72466d9.png)
 
 封面，图片由作者提供
 

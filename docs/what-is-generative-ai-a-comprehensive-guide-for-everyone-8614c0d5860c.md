@@ -1,18 +1,18 @@
 # 什么是生成式 AI？适用于所有人的全面指南
 
-> 原文：[https://towardsdatascience.com/what-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c?source=collection_archive---------6-----------------------#2023-10-03](https://towardsdatascience.com/what-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c?source=collection_archive---------6-----------------------#2023-10-03)
+> 原文：[`towardsdatascience.com/what-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c?source=collection_archive---------6-----------------------#2023-10-03`](https://towardsdatascience.com/what-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c?source=collection_archive---------6-----------------------#2023-10-03)
 
 ## 理解机器学习在生成式 AI 中的作用。
 
-[](https://medium.com/@mary.newhauser?source=post_page-----8614c0d5860c--------------------------------)[![Mary Newhauser](../Images/7f0d7287f7b735bb9391858f1fc641ee.png)](https://medium.com/@mary.newhauser?source=post_page-----8614c0d5860c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8614c0d5860c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8614c0d5860c--------------------------------) [Mary Newhauser](https://medium.com/@mary.newhauser?source=post_page-----8614c0d5860c--------------------------------)
+[](https://medium.com/@mary.newhauser?source=post_page-----8614c0d5860c--------------------------------)![Mary Newhauser](https://medium.com/@mary.newhauser?source=post_page-----8614c0d5860c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8614c0d5860c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8614c0d5860c--------------------------------) [Mary Newhauser](https://medium.com/@mary.newhauser?source=post_page-----8614c0d5860c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b27bdb820b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c&user=Mary+Newhauser&userId=6b27bdb820b9&source=post_page-6b27bdb820b9----8614c0d5860c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8614c0d5860c--------------------------------) · 15 分钟阅读 · 2023年10月3日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8614c0d5860c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c&user=Mary+Newhauser&userId=6b27bdb820b9&source=-----8614c0d5860c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b27bdb820b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c&user=Mary+Newhauser&userId=6b27bdb820b9&source=post_page-6b27bdb820b9----8614c0d5860c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8614c0d5860c--------------------------------) · 15 分钟阅读 · 2023 年 10 月 3 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8614c0d5860c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c&user=Mary+Newhauser&userId=6b27bdb820b9&source=-----8614c0d5860c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8614c0d5860c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c&source=-----8614c0d5860c---------------------bookmark_footer-----------)![](../Images/d1b5fab86e81e87f6e5a241223326ba9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8614c0d5860c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-generative-ai-a-comprehensive-guide-for-everyone-8614c0d5860c&source=-----8614c0d5860c---------------------bookmark_footer-----------)![](img/d1b5fab86e81e87f6e5a241223326ba9.png)
 
 作者提供的图片。
 

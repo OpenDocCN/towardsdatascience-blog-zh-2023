@@ -1,10 +1,10 @@
-# 使用 FP8 加速 PyTorch 训练工作负载 — 第 1 部分
+# 使用 FP8 加速 PyTorch 训练工作负载 — 第一部分
 
-> 原文：[https://towardsdatascience.com/accelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7?source=collection_archive---------4-----------------------#2023-11-15](https://towardsdatascience.com/accelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7?source=collection_archive---------4-----------------------#2023-11-15)
+> 原文：[`towardsdatascience.com/accelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7?source=collection_archive---------4-----------------------#2023-11-15`](https://towardsdatascience.com/accelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7?source=collection_archive---------4-----------------------#2023-11-15)
 
 ## 如何最大化利用现代 GPU
 
-[](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a5123aec7d7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5a5123aec7d7--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a5123aec7d7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a5123aec7d7--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a5123aec7d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7&source=-----5a5123aec7d7---------------------bookmark_footer-----------)![](../Images/39337db002266767825d449c2f59b599.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a5123aec7d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7&source=-----5a5123aec7d7---------------------bookmark_footer-----------)![](img/39337db002266767825d449c2f59b599.png)
 
 图片来源于 [Deva Darshan](https://unsplash.com/@darshan394?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,7 +30,7 @@
 
 在 AWS 中，H100 GPU 作为 [最近宣布的](https://aws.amazon.com/blogs/aws/new-amazon-ec2-p5-instances-powered-by-nvidia-h100-tensor-core-gpus-for-accelerating-generative-ai-and-hpc-applications/) [AWS EC2 p5 实例系列](https://aws.amazon.com/ec2/instance-types/p5/)的一部分提供。这些实例被宣称能够**“相比于前一代基于 GPU 的 EC2 实例，将解决问题的时间缩短最多 4 倍，并将训练 ML 模型的成本降低最多 40%”**。
 
-在 [最近的一篇文章](/instance-selection-for-deep-learning-7463d774cff0) 中，我们讨论了选择 ML 训练实例时应考虑的一些因素。我们强调了最优化的实例类型将非常依赖于具体项目。特别是在 ML 训练实例方面 — **更大并*不*总是更好**。这一点在 p5 实例系列中尤为明显。确实，p5 实例可能会超越其他任何实例类型 — 毕竟，H100 是无可争议的性能怪兽。但一旦你考虑到 p5 的成本（在撰写本文时，8-GPU p5.48xlarge 实例的价格为每小时 $98.32），你可能会发现其他实例类型更为合适。
+在 最近的一篇文章 中，我们讨论了选择 ML 训练实例时应考虑的一些因素。我们强调了最优化的实例类型将非常依赖于具体项目。特别是在 ML 训练实例方面 — **更大并*不*总是更好**。这一点在 p5 实例系列中尤为明显。确实，p5 实例可能会超越其他任何实例类型 — 毕竟，H100 是无可争议的性能怪兽。但一旦你考虑到 p5 的成本（在撰写本文时，8-GPU p5.48xlarge 实例的价格为每小时 $98.32），你可能会发现其他实例类型更为合适。
 
 在下一节中，我们将会在 p5.48xlarge 上训练一个相对较大的计算机视觉模型，并将其性能与包含 8 个 [Nvidia A100 GPU](https://www.nvidia.com/en-eu/data-center/a100/) 的 [p4d.24xlarge](https://aws.amazon.com/ec2/instance-types/p4/) 进行比较。
 
@@ -137,17 +137,17 @@ if __name__ == '__main__':
 
 尽管使用 FP8 进行训练的理论超出了本文的范围（例如，见[这里](https://arxiv.org/pdf/2209.05433.pdf)），但重要的是要知道**使用 FP8 的机制比**[**16 位替代方案**](https://pytorch.org/docs/stable/amp.html)（float16 和 bfloat16）**复杂得多**。幸运的是，TE 实现隐藏了所有繁琐的细节。有关如何使用 TE API，请参阅官方[文档](https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/examples/fp8_primer.html)以及这个简单的[示例](https://github.com/NVIDIA/TransformerEngine/blob/main/examples/pytorch/mnist/main.py)。要了解更多幕后情况，请务必查看以下两个视频教程。
 
-[](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s51393/?source=post_page-----5a5123aec7d7--------------------------------) [## 使用Transformer Engine进行FP8训练 | NVIDIA On-Demand
+[](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s51393/?source=post_page-----5a5123aec7d7--------------------------------) [## 使用 Transformer Engine 进行 FP8 训练 | NVIDIA On-Demand
 
-### 本次会话将包括FP8和混合精度介绍，Transformer Engine特性概述以及...
+### 本次会话将包括 FP8 和混合精度介绍，Transformer Engine 特性概述以及...
 
-www.nvidia.com](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s51393/?source=post_page-----5a5123aec7d7--------------------------------) [](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s52166/?source=post_page-----5a5123aec7d7--------------------------------) [## 深度学习的FP8 | NVIDIA On-Demand
+www.nvidia.com](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s51393/?source=post_page-----5a5123aec7d7--------------------------------) [](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s52166/?source=post_page-----5a5123aec7d7--------------------------------) [## 深度学习的 FP8 | NVIDIA On-Demand
 
-### FP8是加速深度学习（DL）训练的自然进展，超越了现代常见的16位格式…
+### FP8 是加速深度学习（DL）训练的自然进展，超越了现代常见的 16 位格式…
 
 www.nvidia.com](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s52166/?source=post_page-----5a5123aec7d7--------------------------------)
 
-要修改我们的模型以使用TE，我们将TE的专用Transformer层包装在一个符合timm的[block layer signature](https://github.com/huggingface/pytorch-image-models/blob/v0.9.10/timm/models/vision_transformer.py#L114)的自定义Transformer块类中。
+要修改我们的模型以使用 TE，我们将 TE 的专用 Transformer 层包装在一个符合 timm 的[block layer signature](https://github.com/huggingface/pytorch-image-models/blob/v0.9.10/timm/models/vision_transformer.py#L114)的自定义 Transformer 块类中。
 
 ```py
 import transformer_engine.pytorch as te
@@ -178,7 +178,7 @@ class TE_Block(te.transformer.TransformerLayer):
             )
 ```
 
-接下来，我们修改VisionTransformer初始化以使用我们的自定义块层：
+接下来，我们修改 VisionTransformer 初始化以使用我们的自定义块层：
 
 ```py
  model = VisionTransformer(
@@ -189,7 +189,7 @@ class TE_Block(te.transformer.TransformerLayer):
       ).cuda(device)
 ```
 
-到目前为止，我们没有对H100做任何特定的更改 —— 相同的代码可以在我们的A100-powered p4d实例上运行。最后一个修改是将模型前向传递包装在[te.fp8_autocast](https://github.com/NVIDIA/TransformerEngine/blob/release_v0.12/transformer_engine/pytorch/fp8.py#L453)上下文管理器中。此更改需要支持FP8的GPU：
+到目前为止，我们没有对 H100 做任何特定的更改 —— 相同的代码可以在我们的 A100-powered p4d 实例上运行。最后一个修改是将模型前向传递包装在[te.fp8_autocast](https://github.com/NVIDIA/TransformerEngine/blob/release_v0.12/transformer_engine/pytorch/fp8.py#L453)上下文管理器中。此更改需要支持 FP8 的 GPU：
 
 ```py
 with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
@@ -198,15 +198,15 @@ with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
     loss = criterion(outputs, label)
 ```
 
-## 关于使用FP8的一些注意事项
+## 关于使用 FP8 的一些注意事项
 
-使用8位浮点表示（而不是16位或32位表示）意味着较低的精度和较小的动态范围。这些因素可能会对模型的收敛速度和/或速度产生显著影响。尽管底层TE FP8实现旨在解决这一挑战，但不能保证适用于您的模型。您可能需要调整底层FP8机制（例如使用TE [recipe](https://github.com/NVIDIA/TransformerEngine/blob/release_v0.12/transformer_engine/common/recipe.py) API）、调整一些超参数，和/或限制FP8在模型子部分的应用。您可能会发现，尽管尽了最大努力，您的模型仍然无法与FP8兼容。
+使用 8 位浮点表示（而不是 16 位或 32 位表示）意味着较低的精度和较小的动态范围。这些因素可能会对模型的收敛速度和/或速度产生显著影响。尽管底层 TE FP8 实现旨在解决这一挑战，但不能保证适用于您的模型。您可能需要调整底层 FP8 机制（例如使用 TE [recipe](https://github.com/NVIDIA/TransformerEngine/blob/release_v0.12/transformer_engine/common/recipe.py) API）、调整一些超参数，和/或限制 FP8 在模型子部分的应用。您可能会发现，尽管尽了最大努力，您的模型仍然无法与 FP8 兼容。
 
 # 结果
 
-在下表中，我们总结了在p4d.24xlarge和p5.48xlarge EC2实例类型上的实验结果，包括使用和不使用TE库的情况。对于p5.48xlarge实验，我们增加了批量大小以增加80 GB GPU内存的利用率。使用FP8可以减少GPU内存消耗，从而进一步增加批量大小。
+在下表中，我们总结了在 p4d.24xlarge 和 p5.48xlarge EC2 实例类型上的实验结果，包括使用和不使用 TE 库的情况。对于 p5.48xlarge 实验，我们增加了批量大小以增加 80 GB GPU 内存的利用率。使用 FP8 可以减少 GPU 内存消耗，从而进一步增加批量大小。
 
-![](../Images/51d33ff0bf6fc87a8a5cd2712726b5e2.png)
+![](img/51d33ff0bf6fc87a8a5cd2712726b5e2.png)
 
 实验结果（作者提供）
 
@@ -220,4 +220,4 @@ with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
 
 本文继续了关于优化机器学习工作负载的长期系列出版物。务必查看我们关于这一重要主题的[其他文章](https://chaimrand.medium.com/)。
 
-**更新**（2024年5月21日）：请查看我们的[续篇](https://chaimrand.medium.com/pytorch-native-fp8-fedc06f1c9f7)，其中涵盖了新发布的 PyTorch 原生 FP8 数据类型。
+**更新**（2024 年 5 月 21 日）：请查看我们的[续篇](https://chaimrand.medium.com/pytorch-native-fp8-fedc06f1c9f7)，其中涵盖了新发布的 PyTorch 原生 FP8 数据类型。

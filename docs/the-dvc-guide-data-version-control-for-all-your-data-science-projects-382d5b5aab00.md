@@ -1,18 +1,18 @@
-# DVC指南：适用于所有数据科学项目的数据版本控制
+# DVC 指南：适用于所有数据科学项目的数据版本控制
 
-> 原文：[https://towardsdatascience.com/the-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00?source=collection_archive---------6-----------------------#2023-02-17](https://towardsdatascience.com/the-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00?source=collection_archive---------6-----------------------#2023-02-17)
+> 原文：[`towardsdatascience.com/the-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00?source=collection_archive---------6-----------------------#2023-02-17`](https://towardsdatascience.com/the-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00?source=collection_archive---------6-----------------------#2023-02-17)
 
 ## 让数据版本控制像代码版本控制一样熟悉
 
-[](https://ipom.medium.com/?source=post_page-----382d5b5aab00--------------------------------)[![Yash Prakash](../Images/6cfe15667aa78356af800a4854e9517f.png)](https://ipom.medium.com/?source=post_page-----382d5b5aab00--------------------------------)[](https://towardsdatascience.com/?source=post_page-----382d5b5aab00--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----382d5b5aab00--------------------------------) [Yash Prakash](https://ipom.medium.com/?source=post_page-----382d5b5aab00--------------------------------)
+[](https://ipom.medium.com/?source=post_page-----382d5b5aab00--------------------------------)![Yash Prakash](https://ipom.medium.com/?source=post_page-----382d5b5aab00--------------------------------)[](https://towardsdatascience.com/?source=post_page-----382d5b5aab00--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----382d5b5aab00--------------------------------) [Yash Prakash](https://ipom.medium.com/?source=post_page-----382d5b5aab00--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9ba949960063&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00&user=Yash+Prakash&userId=9ba949960063&source=post_page-9ba949960063----382d5b5aab00---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----382d5b5aab00--------------------------------) ·6 分钟阅读·2023年2月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F382d5b5aab00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00&user=Yash+Prakash&userId=9ba949960063&source=-----382d5b5aab00---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9ba949960063&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00&user=Yash+Prakash&userId=9ba949960063&source=post_page-9ba949960063----382d5b5aab00---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----382d5b5aab00--------------------------------) ·6 分钟阅读·2023 年 2 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F382d5b5aab00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00&user=Yash+Prakash&userId=9ba949960063&source=-----382d5b5aab00---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F382d5b5aab00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00&source=-----382d5b5aab00---------------------bookmark_footer-----------)![](../Images/aa7bec53d0532117c63382ccdc27c733.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F382d5b5aab00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dvc-guide-data-version-control-for-all-your-data-science-projects-382d5b5aab00&source=-----382d5b5aab00---------------------bookmark_footer-----------)![](img/aa7bec53d0532117c63382ccdc27c733.png)
 
 图片由 [Dmitri Sobolevski](https://unsplash.com/@dbrenan?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

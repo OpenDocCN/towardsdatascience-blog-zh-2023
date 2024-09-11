@@ -1,22 +1,22 @@
 # 解剖推特顶尖声音的影响力和覆盖面
 
-> 原文：[https://towardsdatascience.com/dissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40?source=collection_archive---------13-----------------------#2023-04-06](https://towardsdatascience.com/dissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40?source=collection_archive---------13-----------------------#2023-04-06)
+> 原文：[`towardsdatascience.com/dissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40?source=collection_archive---------13-----------------------#2023-04-06`](https://towardsdatascience.com/dissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40?source=collection_archive---------13-----------------------#2023-04-06)
 
 ## 利用数据科学绘制推特影响力的全景图
 
 ## 深入探讨塑造推特界最有影响力声音的关系和模式
 
-[](https://johnadeojo.medium.com/?source=post_page-----52262ef58b40--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----52262ef58b40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52262ef58b40--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----52262ef58b40--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----52262ef58b40--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----52262ef58b40--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----52262ef58b40--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52262ef58b40--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----52262ef58b40--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----52262ef58b40--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----52262ef58b40---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52262ef58b40--------------------------------) ·16 min read·2023年4月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F52262ef58b40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40&user=John+Adeojo&userId=f933e1637e40&source=-----52262ef58b40---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----52262ef58b40---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52262ef58b40--------------------------------) ·16 min read·2023 年 4 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F52262ef58b40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40&user=John+Adeojo&userId=f933e1637e40&source=-----52262ef58b40---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F52262ef58b40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40&source=-----52262ef58b40---------------------bookmark_footer-----------)![](../Images/877907422ebf12aa0b47cd80c3a6882f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F52262ef58b40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdissecting-the-reach-and-impact-of-twitters-top-voices-52262ef58b40&source=-----52262ef58b40---------------------bookmark_footer-----------)![](img/877907422ebf12aa0b47cd80c3a6882f.png)
 
-图片由作者使用 Midjourney 提示“描绘2023年推特状态的巴洛克风格杰作”生成
+图片由作者使用 Midjourney 提示“描绘 2023 年推特状态的巴洛克风格杰作”生成
 
 # 引言
 

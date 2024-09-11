@@ -1,18 +1,18 @@
-# 2023年8种最佳数据版本控制工具
+# 2023 年 8 种最佳数据版本控制工具
 
-> 原文：[https://towardsdatascience.com/8-best-data-version-control-tools-in-2023-cc9045d37bb8?source=collection_archive---------9-----------------------#2023-03-24](https://towardsdatascience.com/8-best-data-version-control-tools-in-2023-cc9045d37bb8?source=collection_archive---------9-----------------------#2023-03-24)
+> 原文：[`towardsdatascience.com/8-best-data-version-control-tools-in-2023-cc9045d37bb8?source=collection_archive---------9-----------------------#2023-03-24`](https://towardsdatascience.com/8-best-data-version-control-tools-in-2023-cc9045d37bb8?source=collection_archive---------9-----------------------#2023-03-24)
 
 ## 通过全面概述，揭示每种数据版本控制工具的多样化优缺点
 
-[](https://zoumanakeita.medium.com/?source=post_page-----cc9045d37bb8--------------------------------)[![Zoumana Keita](../Images/34a15c1d03687816dbdbc065f5719f80.png)](https://zoumanakeita.medium.com/?source=post_page-----cc9045d37bb8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cc9045d37bb8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cc9045d37bb8--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----cc9045d37bb8--------------------------------)
+[](https://zoumanakeita.medium.com/?source=post_page-----cc9045d37bb8--------------------------------)![Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----cc9045d37bb8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cc9045d37bb8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc9045d37bb8--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----cc9045d37bb8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe6ae785a30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-best-data-version-control-tools-in-2023-cc9045d37bb8&user=Zoumana+Keita&userId=e6ae785a30d&source=post_page-e6ae785a30d----cc9045d37bb8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc9045d37bb8--------------------------------) ·8分钟阅读·2023年3月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcc9045d37bb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-best-data-version-control-tools-in-2023-cc9045d37bb8&user=Zoumana+Keita&userId=e6ae785a30d&source=-----cc9045d37bb8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe6ae785a30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-best-data-version-control-tools-in-2023-cc9045d37bb8&user=Zoumana+Keita&userId=e6ae785a30d&source=post_page-e6ae785a30d----cc9045d37bb8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc9045d37bb8--------------------------------) ·8 分钟阅读·2023 年 3 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcc9045d37bb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-best-data-version-control-tools-in-2023-cc9045d37bb8&user=Zoumana+Keita&userId=e6ae785a30d&source=-----cc9045d37bb8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcc9045d37bb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-best-data-version-control-tools-in-2023-cc9045d37bb8&source=-----cc9045d37bb8---------------------bookmark_footer-----------)![](../Images/71e6a65d8be04ae2dec4567edd942ca4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcc9045d37bb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-best-data-version-control-tools-in-2023-cc9045d37bb8&source=-----cc9045d37bb8---------------------bookmark_footer-----------)![](img/71e6a65d8be04ae2dec4567edd942ca4.png)
 
 照片由 [Alina Grubnyak](https://unsplash.com/@alinnnaaaa) 提供，来源于 [Unsplash](https://unsplash.com/photos/ZiQkhI7417A)
 

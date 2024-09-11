@@ -1,14 +1,14 @@
 # 迁移学习初学者指南
 
-> 原文：[https://towardsdatascience.com/transfer-learning-for-beginner-9b59490d1b9d?source=collection_archive---------1-----------------------#2023-10-29](https://towardsdatascience.com/transfer-learning-for-beginner-9b59490d1b9d?source=collection_archive---------1-----------------------#2023-10-29)
+> 原文：[`towardsdatascience.com/transfer-learning-for-beginner-9b59490d1b9d?source=collection_archive---------1-----------------------#2023-10-29`](https://towardsdatascience.com/transfer-learning-for-beginner-9b59490d1b9d?source=collection_archive---------1-----------------------#2023-10-29)
 
 ## 图像分类中的迁移学习实用指南
 
-[](https://medium.com/@mina.ghashami?source=post_page-----9b59490d1b9d--------------------------------)[![Mina Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----9b59490d1b9d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9b59490d1b9d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9b59490d1b9d--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----9b59490d1b9d--------------------------------)
+[](https://medium.com/@mina.ghashami?source=post_page-----9b59490d1b9d--------------------------------)![Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----9b59490d1b9d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9b59490d1b9d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b59490d1b9d--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----9b59490d1b9d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransfer-learning-for-beginner-9b59490d1b9d&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----9b59490d1b9d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b59490d1b9d--------------------------------) ·7分钟阅读·2023年10月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9b59490d1b9d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransfer-learning-for-beginner-9b59490d1b9d&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----9b59490d1b9d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransfer-learning-for-beginner-9b59490d1b9d&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----9b59490d1b9d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b59490d1b9d--------------------------------) ·7 分钟阅读·2023 年 10 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9b59490d1b9d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransfer-learning-for-beginner-9b59490d1b9d&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----9b59490d1b9d---------------------clap_footer-----------)
 
 --
 
@@ -22,7 +22,7 @@
 
 这涉及到使用一个已经在源任务中学习到丰富且通用的特征表示的预训练模型，并在目标任务上进行微调。
 
-例如，ImageNet 是一个大型数据集（包含1400万张图片和1000个类别），通常用于训练大型卷积神经网络，如 VGGNet 或 ResNet。
+例如，ImageNet 是一个大型数据集（包含 1400 万张图片和 1000 个类别），通常用于训练大型卷积神经网络，如 VGGNet 或 ResNet。
 
 如果我们在 ImageNet 上训练这些网络，这些模型会学习提取强大且富有信息的特征。我们称这种训练为*预训练*，这些模型是*在 ImageNet 上预训练的*。注意，它们是针对 ImageNet 上的图像分类任务进行训练的，我们称之为*源任务*。
 

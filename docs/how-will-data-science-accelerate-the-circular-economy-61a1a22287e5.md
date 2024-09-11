@@ -1,24 +1,24 @@
 # 数据科学如何加速循环经济？
 
-> 原文：[https://towardsdatascience.com/how-will-data-science-accelerate-the-circular-economy-61a1a22287e5?source=collection_archive---------5-----------------------#2023-10-19](https://towardsdatascience.com/how-will-data-science-accelerate-the-circular-economy-61a1a22287e5?source=collection_archive---------5-----------------------#2023-10-19)
+> 原文：[`towardsdatascience.com/how-will-data-science-accelerate-the-circular-economy-61a1a22287e5?source=collection_archive---------5-----------------------#2023-10-19`](https://towardsdatascience.com/how-will-data-science-accelerate-the-circular-economy-61a1a22287e5?source=collection_archive---------5-----------------------#2023-10-19)
 
 ## 克服向循环经济过渡中的操作挑战的可行数据科学技巧
 
-[](https://s-saci95.medium.com/?source=post_page-----61a1a22287e5--------------------------------)[![Samir Saci](../Images/722d1f56a3308f6527d82b5ab97064ec.png)](https://s-saci95.medium.com/?source=post_page-----61a1a22287e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----61a1a22287e5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----61a1a22287e5--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----61a1a22287e5--------------------------------)
+[](https://s-saci95.medium.com/?source=post_page-----61a1a22287e5--------------------------------)![Samir Saci](https://s-saci95.medium.com/?source=post_page-----61a1a22287e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----61a1a22287e5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----61a1a22287e5--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----61a1a22287e5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-will-data-science-accelerate-the-circular-economy-61a1a22287e5&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----61a1a22287e5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----61a1a22287e5--------------------------------) ·11分钟阅读·2023年10月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F61a1a22287e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-will-data-science-accelerate-the-circular-economy-61a1a22287e5&user=Samir+Saci&userId=bb0f26d52754&source=-----61a1a22287e5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-will-data-science-accelerate-the-circular-economy-61a1a22287e5&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----61a1a22287e5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----61a1a22287e5--------------------------------) ·11 分钟阅读·2023 年 10 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F61a1a22287e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-will-data-science-accelerate-the-circular-economy-61a1a22287e5&user=Samir+Saci&userId=bb0f26d52754&source=-----61a1a22287e5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F61a1a22287e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-will-data-science-accelerate-the-circular-economy-61a1a22287e5&source=-----61a1a22287e5---------------------bookmark_footer-----------)[![](../Images/b9ed50368ad8d9a020950d00b20a78c5.png)](http://samirsaci.com)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F61a1a22287e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-will-data-science-accelerate-the-circular-economy-61a1a22287e5&source=-----61a1a22287e5---------------------bookmark_footer-----------)![](http://samirsaci.com)
 
 （图源：作者）
 
 循环经济是一个在其中尽量减少废物，并且资源不断被重复使用或回收的系统。
 
-![](../Images/51ad3907dfff3bb420c49f50c311fff5.png)
+![](img/51ad3907dfff3bb420c49f50c311fff5.png)
 
 循环经济的好处 — （图源：作者）
 
@@ -38,7 +38,7 @@
 
 我们可以利用系统生成的数据，识别机会，通过数据科学创建**可持续**的循环经济，以克服这些障碍。
 
-![](../Images/d70959beecc35e7bd8edfeef47919d58.png)
+![](img/d70959beecc35e7bd8edfeef47919d58.png)
 
 用于管理供应链网络的系统生成的数据 —（作者图片）
 
@@ -70,21 +70,21 @@ IV. Conclusion
 
 这需要我们在设计、生产、销售和使用商品或服务的方式上进行全面变革。
 
-![](../Images/279a16194d3577c6dd6839be5ad7ed8d.png)
+![](img/279a16194d3577c6dd6839be5ad7ed8d.png)
 
 线性模型与循环模型 —（作者图片）
 
 在实施**循环经济**之前，第一步是**估算我们当前线性模型的环境影响**。
 
-## **一件T恤的环境影响是什么？**
+## **一件 T 恤的环境影响是什么？**
 
-以您在**快时尚店**购买的**T恤**为例。
+以您在**快时尚店**购买的**T 恤**为例。
 
 > 它在其生命周期中的环境影响是什么？
 
 生命周期评估（LCA）是一种评估产品或服务在其整个生命周期内环境影响的方法论。
 
-[![](../Images/79887472f77a716f88b35deebff81715.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
 快速时尚服装的生命周期评估 —（作者图片）
 
@@ -98,7 +98,7 @@ IV. Conclusion
 
 > 我们如何支持生命周期评估的自动化？
 
-这种描述性分析方法可以通过我们分析团队实施的[商业智能](/what-is-business-intelligence-bf1de730319c)解决方案来自动化。
+这种描述性分析方法可以通过我们分析团队实施的商业智能解决方案来自动化。
 
 挑战在于**收集和处理交易数据**。
 
@@ -108,15 +108,15 @@ IV. Conclusion
 
 +   使用不同的格式*(非结构化 vs. 结构化)*
 
-    *Excel实用报告 vs. WMS交易数据库*
+    *Excel 实用报告 vs. WMS 交易数据库*
 
-[![](../Images/6fc2e141a8f872f09cb040704062ad15.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
-构建您的LCA的数据来源 —（作者图片）
+构建您的 LCA 的数据来源 —（作者图片）
 
-**💡** 数据分析师和工程师可以使用**中央数据仓库**来实施管道，以收集和处理原始数据，供LCA计算使用。
+**💡** 数据分析师和工程师可以使用**中央数据仓库**来实施管道，以收集和处理原始数据，供 LCA 计算使用。
 
-[![](../Images/2664739cdaf4a892850bbf91caaec81a.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
 多系统数据协调的示例 — （图像由作者提供）
 
@@ -124,23 +124,23 @@ IV. Conclusion
 
 **💡 欲了解更多详情，**
 
-[](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----61a1a22287e5--------------------------------) [## 什么是生命周期评估？LCA
+[](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----61a1a22287e5--------------------------------) ## 什么是生命周期评估？LCA
 
 ### 了解生命周期评估如何帮助企业评估产品在其整个生命周期中的环境影响……
 
-towardsdatascience.com](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
-然后，您的可持续发展部门可以使用这些表格进行计算，并估算每个过程的资源使用量或CO2排放量。
+然后，您的可持续发展部门可以使用这些表格进行计算，并估算每个过程的资源使用量或 CO2 排放量。
 
 > 我们可以做些什么来减少我们的环境足迹？
 
 ## 解决方案设计的数据分析
 
-现在您已经自动化了[生命周期评估](/what-is-a-life-cycle-assessment-lca-e32a5078483a)，您的可持续发展团队已经能够设定基准。
+现在您已经自动化了生命周期评估，您的可持续发展团队已经能够设定基准。
 
-> 2022年的总CO2排放量为75k吨CO2eq。
+> 2022 年的总 CO2 排放量为 75k 吨 CO2eq。
 
-根据[联合国可持续发展目标（SDG）](https://s-saci95.medium.com/what-are-the-sustainable-development-goals-sdgs-988a1eb2b62b)，您的公司承诺在2023年前减少**30%**。
+根据[联合国可持续发展目标（SDG）](https://s-saci95.medium.com/what-are-the-sustainable-development-goals-sdgs-988a1eb2b62b)，您的公司承诺在 2023 年前减少**30%**。
 
 下一步是制定实现这一目标的路线图。
 
@@ -148,27 +148,27 @@ towardsdatascience.com](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source
 
 +   **可持续采购**：选择一组最小化原材料采购环境影响的供应商
 
-[](/data-science-for-sustainable-sourcing-a72f2c4db424?source=post_page-----61a1a22287e5--------------------------------) [## 数据科学与可持续采购
+[](/data-science-for-sustainable-sourcing-a72f2c4db424?source=post_page-----61a1a22287e5--------------------------------) ## 数据科学与可持续采购
 
 ### 如何利用数据科学来选择最佳供应商，同时考虑可持续性和社会指标……
 
-towardsdatascience.com](/data-science-for-sustainable-sourcing-a72f2c4db424?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
 +   **可持续供应链优化**：设计一个最佳的工厂和仓库网络，以最小化排放
 
-[](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----61a1a22287e5--------------------------------) [## 创建一个可持续供应链优化网页应用程序
+[](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----61a1a22287e5--------------------------------) ## 创建一个可持续供应链优化网页应用程序
 
 ### 帮助您的组织将可持续采购与供应链优化结合起来，以抑制成本和环境影响……
 
-towardsdatascience.com](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
 +   **循环经济**：创建一个物流链以收集和再利用顾客退回的物品，从而节省原材料
 
-[](/data-science-to-implement-a-circular-economy-c9de824e73be?source=post_page-----61a1a22287e5--------------------------------) [## 数据科学支持实施循环经济
+[](/data-science-to-implement-a-circular-economy-c9de824e73be?source=post_page-----61a1a22287e5--------------------------------) ## 数据科学支持实施循环经济
 
 ### 你如何利用数据科学支持快时尚零售商实施循环经济？
 
-towardsdatascience.com](/data-science-to-implement-a-circular-economy-c9de824e73be?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
 **循环模型**可以减少最高的碳排放，因为它直接影响产品。
 
@@ -196,7 +196,7 @@ towardsdatascience.com](/data-science-to-implement-a-circular-economy-c9de824e73
 
 在传统线性经济中，从原材料到最终产品的货物来源和路径通常需要澄清。
 
-[![](../Images/fb68f27c79548ba563ec7a509de9f03e.png)](http://samirsaci.com)
+![](http://samirsaci.com)
 
 你能追踪从工厂到商店的货物吗？ — (图像由作者提供)
 
@@ -210,7 +210,7 @@ towardsdatascience.com](/data-science-to-implement-a-circular-economy-c9de824e73
 
 这在采用循环经济实践方面造成了障碍。
 
-[![](../Images/e6341efa24c2be36b07aec8c1ba0d851.png)](http://samisaci.com)
+![](http://samisaci.com)
 
 循环供应链网络的示例 — (图像由作者提供)
 
@@ -220,7 +220,7 @@ towardsdatascience.com](/data-science-to-implement-a-circular-economy-c9de824e73
 
 你可能也会错过减少废物、简化操作和更有效使用资源的机会。
 
-![](../Images/288d3de4e089c1fba912e25b204fd7d7.png)
+![](img/288d3de4e089c1fba912e25b204fd7d7.png)
 
 循环经济的绩效指标示例 — (图像由作者提供)
 
@@ -240,7 +240,7 @@ towardsdatascience.com](/data-science-to-implement-a-circular-economy-c9de824e73
 
 这些物流和制造关键绩效指标需要来自多个系统的数据，这些系统具有不同的数据格式和数据库结构。
 
-![](../Images/6c85b14cb036d3c56a4624ab2502d712.png)
+![](img/6c85b14cb036d3c56a4624ab2502d712.png)
 
 （图像来源于作者）
 
@@ -256,11 +256,11 @@ towardsdatascience.com](/data-science-to-implement-a-circular-economy-c9de824e73
 
 获取更多供应链可追溯性的分析解决方案，
 
-[](/logistic-performance-management-using-data-analytics-82b2da978e5f?source=post_page-----61a1a22287e5--------------------------------) [## 物流性能管理使用数据分析
+[](/logistic-performance-management-using-data-analytics-82b2da978e5f?source=post_page-----61a1a22287e5--------------------------------) ## 物流性能管理使用数据分析
 
 ### 实施运营指标以监控和改进国际分销网络的性能
 
-towardsdatascience.com](/logistic-performance-management-using-data-analytics-82b2da978e5f?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
 > 我们能否利用数据确保这一模型的经济可行性？
 
@@ -278,13 +278,13 @@ towardsdatascience.com](/logistic-performance-management-using-data-analytics-82
 
 这危害了循环商业模式的经济可行性，并使企业不愿意过渡。
 
-![](../Images/aa5e8f57cf2ea7b9464af1ba3ce8cd1a.png)
+![](img/aa5e8f57cf2ea7b9464af1ba3ce8cd1a.png)
 
 正向物流与逆向物流 — （图像来源于作者）
 
-比如，以我们的T恤为例
+比如，以我们的 T 恤为例
 
-+   **正向物流**成本效益高，因为我们通过大型卡车使用优化路线将T恤装载到完整的集装箱中
++   **正向物流**成本效益高，因为我们通过大型卡车使用优化路线将 T 恤装载到完整的集装箱中
 
 +   相比之下，**逆向物流**非常昂贵，因为我们以单件收集使用过的衣物，涉及复杂的分类和回收流程，这些流程需要定制化的处理方式。
 
@@ -298,7 +298,7 @@ towardsdatascience.com](/logistic-performance-management-using-data-analytics-82
 
 [## 数据科学与可持续性 - 绿色库存管理](https://www.example.com/data-science-for-sustainability-green-inventory-management-e7ddfd97696f?source=post_page-----61a1a22287e5--------------------------------)
 
-### 模拟商店配送频率对时尚零售商CO2排放的影响
+### 模拟商店配送频率对时尚零售商 CO2 排放的影响
 
 [towardsdatascience.com](https://www.example.com/data-science-for-sustainability-green-inventory-management-e7ddfd97696f?source=post_page-----61a1a22287e5--------------------------------)
 
@@ -306,7 +306,7 @@ towardsdatascience.com](/logistic-performance-management-using-data-analytics-82
 
 [## 你的循环经济有多可持续？](https://www.samirsaci.com/how-sustainable-is-your-circular-economy/?source=post_page-----61a1a22287e5--------------------------------)
 
-### 使用数据分析模拟循环模型对快时尚行业的CO2排放和水使用的影响…
+### 使用数据分析模拟循环模型对快时尚行业的 CO2 排放和水使用的影响…
 
 [www.samirsaci.com](https://www.samirsaci.com/how-sustainable-is-your-circular-economy/?source=post_page-----61a1a22287e5--------------------------------)
 
@@ -326,7 +326,7 @@ towardsdatascience.com](/logistic-performance-management-using-data-analytics-82
 
 我们可以使用各种类型的面料，包括棉花、聚酯、亚麻和丝绸。
 
-![](../Images/e440e81a235a9b0bbb310757a073a93d.png)
+![](img/e440e81a235a9b0bbb310757a073a93d.png)
 
 材料混合与最终产品特性 — （作者提供的图片）
 
@@ -334,7 +334,7 @@ towardsdatascience.com](/logistic-performance-management-using-data-analytics-82
 
 制造商的目标是最小化生产的总体成本，同时满足必要的质量和可持续性标准。
 
-![](../Images/50d58b1259798c0bf3d26c5858c1842f.png)
+![](img/50d58b1259798c0bf3d26c5858c1842f.png)
 
 原材料优化问题 — （作者提供的图片）
 
@@ -352,7 +352,7 @@ towardsdatascience.com](/logistic-performance-management-using-data-analytics-82
 
 这个问题可以通过**线性（或非线性）优化与 Python**来建模和解决。
 
-![](../Images/fd9d1a75da3b094e68f7d230da9f9a02.png)
+![](img/fd9d1a75da3b094e68f7d230da9f9a02.png)
 
 线性/非线性规划问题的制定 — （图片由作者提供）
 
@@ -366,11 +366,11 @@ towardsdatascience.com](/logistic-performance-management-using-data-analytics-82
 
 **查看这个示例以获取更多细节，**
 
-[](/raw-materials-optimization-for-food-manufacturing-with-python-fbf2be4a74?source=post_page-----61a1a22287e5--------------------------------) [## 使用 Python 的食品制造原材料优化
+[](/raw-materials-optimization-for-food-manufacturing-with-python-fbf2be4a74?source=post_page-----61a1a22287e5--------------------------------) ## 使用 Python 的食品制造原材料优化
 
 ### 使用线性规划创建一个满足营养要求的廉价餐条的最佳配方
 
-towardsdatascience.com](/raw-materials-optimization-for-food-manufacturing-with-python-fbf2be4a74?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
 > 我们需要在哪里生产，以最可持续的方式交付到市场？
 
@@ -380,7 +380,7 @@ towardsdatascience.com](/raw-materials-optimization-for-food-manufacturing-with-
 
 供应链优化可以帮助我们利用数据分析来找到最佳的**工厂、配送**和**回收**中心组合，从而最小化成本影响。
 
-[![](../Images/befe3bec136f35c3a213ffe693c932b3.png)](https://towardsdatascience.com/robust-supply-chain-network-with-monte-carlo-simulation-21ef5adb1722)
+![](https://towardsdatascience.com/robust-supply-chain-network-with-monte-carlo-simulation-21ef5adb1722)
 
 供应链网络设计问题 — （图片由作者提供）
 
@@ -396,11 +396,11 @@ towardsdatascience.com](/raw-materials-optimization-for-food-manufacturing-with-
 
 有关如何创建网络优化模型的更多细节，
 
-[](/robust-supply-chain-network-with-monte-carlo-simulation-21ef5adb1722?source=post_page-----61a1a22287e5--------------------------------) [## 使用蒙特卡罗模拟的稳健供应链网络
+[](/robust-supply-chain-network-with-monte-carlo-simulation-21ef5adb1722?source=post_page-----61a1a22287e5--------------------------------) ## 使用蒙特卡罗模拟的稳健供应链网络
 
 ### 你在设计供应链网络时是否考虑了需求波动？
 
-towardsdatascience.com](/robust-supply-chain-network-with-monte-carlo-simulation-21ef5adb1722?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
 我希望这些示例能为你提供足够的灵感，以支持你的可持续发展部门努力过渡到更可行的经济模型。
 
@@ -418,33 +418,33 @@ towardsdatascience.com](/robust-supply-chain-network-with-monte-carlo-simulation
 
 你可以通过将这个解决方案部署到一个供运营和业务人员使用的网页应用上，将其产品化。
 
-我已经使用VIKTOR平台部署了三个模型，这些模型我在文章中进行了介绍。
+我已经使用 VIKTOR 平台部署了三个模型，这些模型我在文章中进行了介绍。
 
 **可持续供应链优化网页应用**
 
-[![](../Images/c298c14ade24b9a607d73add6b063545.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 访问应用程序试用一下！ — [[应用程序](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)]
 
-**ABC分析和帕累托图应用**
+**ABC 分析和帕累托图应用**
 
-[![](../Images/c0108a9094d56bee7c5eda3d30a0a3ac.png)](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)
+![](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)
 
 访问应用程序试用一下！ — [[应用程序](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)]
 
 ## 生产规划
 
-[![](../Images/52342d15e1bf2995d573591b82748109.png)](https://cloud.viktor.ai/public/production-planning-optimization)
+![](https://cloud.viktor.ai/public/production-planning-optimization)
 
 访问应用程序试用一下！ — [[应用程序](https://cloud.viktor.ai/public/production-planning-optimization)]
 
 有关我如何做到的更多细节，请查看这篇文章
 
-[](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----61a1a22287e5--------------------------------) [## 创建一个可持续供应链优化网页应用
+[](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----61a1a22287e5--------------------------------) ## 创建一个可持续供应链优化网页应用
 
 ### 帮助你的组织将可持续采购与供应链优化相结合，以遏制成本和环境影响……
 
-towardsdatascience.com](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----61a1a22287e5--------------------------------)
+towardsdatascience.com
 
 # 关于我
 
@@ -460,10 +460,10 @@ samirsaci.com](https://samirsaci.com/?source=post_page-----61a1a22287e5---------
 
 # 参考资料
 
-+   **利用数据分析的物流绩效管理**，[萨米尔·萨西](https://medium.com/u/bb0f26d52754?source=post_page-----61a1a22287e5--------------------------------)，[Towards Data Science](/logistic-performance-management-using-data-analytics-82b2da978e5f)
++   **利用数据分析的物流绩效管理**，[萨米尔·萨西](https://medium.com/u/bb0f26d52754?source=post_page-----61a1a22287e5--------------------------------)，Towards Data Science
 
 +   **什么是循环经济？**，[萨米尔·萨西](https://medium.com/u/bb0f26d52754?source=post_page-----61a1a22287e5--------------------------------)，[Towards Data Science](https://medium.com/@s-saci95/what-is-a-circular-economy-d0fd7c46cd94)
 
-+   **蒙特卡罗模拟下的强健供应链网络**，[萨米尔·萨西](https://medium.com/u/bb0f26d52754?source=post_page-----61a1a22287e5--------------------------------)，[Towards Data Science](/robust-supply-chain-network-with-monte-carlo-simulation-21ef5adb1722)
++   **蒙特卡罗模拟下的强健供应链网络**，[萨米尔·萨西](https://medium.com/u/bb0f26d52754?source=post_page-----61a1a22287e5--------------------------------)，Towards Data Science
 
-+   **食品制造中的原材料优化与 Python**，[萨米尔·萨西](https://medium.com/u/bb0f26d52754?source=post_page-----61a1a22287e5--------------------------------)，[Towards Data Science](/raw-materials-optimization-for-food-manufacturing-with-python-fbf2be4a74)
++   **食品制造中的原材料优化与 Python**，[萨米尔·萨西](https://medium.com/u/bb0f26d52754?source=post_page-----61a1a22287e5--------------------------------)，Towards Data Science

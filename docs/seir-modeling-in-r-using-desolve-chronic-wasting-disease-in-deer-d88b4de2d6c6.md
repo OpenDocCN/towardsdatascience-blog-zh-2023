@@ -1,30 +1,30 @@
 # R 中的 SEIR 建模使用 deSolve — 鹿中的慢性消耗性疾病
 
-> 原文：[https://towardsdatascience.com/seir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6?source=collection_archive---------12-----------------------#2023-03-01](https://towardsdatascience.com/seir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6?source=collection_archive---------12-----------------------#2023-03-01)
+> 原文：[`towardsdatascience.com/seir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6?source=collection_archive---------12-----------------------#2023-03-01`](https://towardsdatascience.com/seir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6?source=collection_archive---------12-----------------------#2023-03-01)
 
 ## 使用小数据集获取健康政策洞察
 
-[](https://medium.com/@gspmalloy?source=post_page-----d88b4de2d6c6--------------------------------)[![Giovanni Malloy](../Images/e94218e244fab1af845c68e63e5706a1.png)](https://medium.com/@gspmalloy?source=post_page-----d88b4de2d6c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d88b4de2d6c6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d88b4de2d6c6--------------------------------) [Giovanni Malloy](https://medium.com/@gspmalloy?source=post_page-----d88b4de2d6c6--------------------------------)
+[](https://medium.com/@gspmalloy?source=post_page-----d88b4de2d6c6--------------------------------)![Giovanni Malloy](https://medium.com/@gspmalloy?source=post_page-----d88b4de2d6c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d88b4de2d6c6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d88b4de2d6c6--------------------------------) [Giovanni Malloy](https://medium.com/@gspmalloy?source=post_page-----d88b4de2d6c6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa0442a984e63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6&user=Giovanni+Malloy&userId=a0442a984e63&source=post_page-a0442a984e63----d88b4de2d6c6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d88b4de2d6c6--------------------------------) ·14 分钟阅读·2023年3月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd88b4de2d6c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6&user=Giovanni+Malloy&userId=a0442a984e63&source=-----d88b4de2d6c6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa0442a984e63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6&user=Giovanni+Malloy&userId=a0442a984e63&source=post_page-a0442a984e63----d88b4de2d6c6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d88b4de2d6c6--------------------------------) ·14 分钟阅读·2023 年 3 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd88b4de2d6c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6&user=Giovanni+Malloy&userId=a0442a984e63&source=-----d88b4de2d6c6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd88b4de2d6c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6&source=-----d88b4de2d6c6---------------------bookmark_footer-----------)![](../Images/0a1a70d5bb8444161e406c3ff1450a5b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd88b4de2d6c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseir-modeling-in-r-using-desolve-chronic-wasting-disease-in-deer-d88b4de2d6c6&source=-----d88b4de2d6c6---------------------bookmark_footer-----------)![](img/0a1a70d5bb8444161e406c3ff1450a5b.png)
 
 图片由 [Acton Crawford](https://unsplash.com/es/@acton_crawford?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 收集大量数据是训练和测试监督学习模型以及进行预测的前提。然而，使用少量数据和简单但基础的数学模型，我们可以生成大量见解，从而为缓解传染病威胁提供政策参考。这些类型的模型在数据科学界经常被忽视，但它们同样是生成见解的重要工具。
 
-目前，困扰鹿和麋鹿种群的最突出疾病之一是慢性消耗病（CWD）。CWD是一种“传染性海绵状脑病或朊病毒病”，类似于疯牛病，主要“影响鹿、麋鹿、驯鹿、四不像和驼鹿”[[1](https://pubmed.ncbi.nlm.nih.gov/11974617/), [2](https://www.cdc.gov/prions/cwd/index.html)]。这种疾病存在于自由放养的鹿种群中，并且可以通过“体液如粪便、唾液、血液或尿液的直接接触，或通过土壤、食物或水的环境污染进行间接传播”[2]。目前，它不会影响人类，但保持CWD感染动物不进入食品供应链是健康安全的重要目标。建模这种疾病的传播对于理解未来CWD发生率如何增加是很重要的。利用我在[上一篇博客文章](https://medium.com/dev-genius/a-quick-intro-to-infectious-disease-modeling-in-r-for-beginners-5f4dbdf68e9e)中描述的一些简单建模工具，我们可以使用在威斯康星州白尾鹿种群上收集的数据，在R中建立一个CWD的SEIR模型。
+目前，困扰鹿和麋鹿种群的最突出疾病之一是慢性消耗病（CWD）。CWD 是一种“传染性海绵状脑病或朊病毒病”，类似于疯牛病，主要“影响鹿、麋鹿、驯鹿、四不像和驼鹿”[[1](https://pubmed.ncbi.nlm.nih.gov/11974617/), [2](https://www.cdc.gov/prions/cwd/index.html)]。这种疾病存在于自由放养的鹿种群中，并且可以通过“体液如粪便、唾液、血液或尿液的直接接触，或通过土壤、食物或水的环境污染进行间接传播”[2]。目前，它不会影响人类，但保持 CWD 感染动物不进入食品供应链是健康安全的重要目标。建模这种疾病的传播对于理解未来 CWD 发生率如何增加是很重要的。利用我在[上一篇博客文章](https://medium.com/dev-genius/a-quick-intro-to-infectious-disease-modeling-in-r-for-beginners-5f4dbdf68e9e)中描述的一些简单建模工具，我们可以使用在威斯康星州白尾鹿种群上收集的数据，在 R 中建立一个 CWD 的 SEIR 模型。
 
 **SEIR 模型**
 
-首先，我们将为鹿种群中的CWD开发简单的SEIR模型。SEIR代表易感、暴露、传染、恢复/移除，这些疾病状态将构成我们分隔模型的基础。一般来说，易感状态包括所有尚未感染CWD但可能会被感染的鹿。通过模型中的出生、死亡以及感染，易感状态会有进出。模型中的暴露状态将包括感染了CWD但尚未传染的鹿种群。鹿在暴露于CWD后进入这个阶段，直到[潜伏期](https://en.wikipedia.org/wiki/Latent_period_(epidemiology))（从感染到具有传染性的时间）过去。传染状态是吸收性的。也就是说，唯一的出路是通过死亡。现在，让我们在数学上描述SEIR模型：
+首先，我们将为鹿种群中的 CWD 开发简单的 SEIR 模型。SEIR 代表易感、暴露、传染、恢复/移除，这些疾病状态将构成我们分隔模型的基础。一般来说，易感状态包括所有尚未感染 CWD 但可能会被感染的鹿。通过模型中的出生、死亡以及感染，易感状态会有进出。模型中的暴露状态将包括感染了 CWD 但尚未传染的鹿种群。鹿在暴露于 CWD 后进入这个阶段，直到[潜伏期](https://en.wikipedia.org/wiki/Latent_period_(epidemiology))（从感染到具有传染性的时间）过去。传染状态是吸收性的。也就是说，唯一的出路是通过死亡。现在，让我们在数学上描述 SEIR 模型：
 
-![](../Images/257c4a57adfa3ce349899df9a0abd150.png)
+![](img/257c4a57adfa3ce349899df9a0abd150.png)
 
 作者提供的图像
 
@@ -32,11 +32,11 @@
 
 许多参数值可以通过文献综述或与主题专家咨询后的假设来实例化。理想情况下，我们希望最小化校准的参数数量。许多不同的参数集可以实现对数据的近似相同拟合，没有一个参数集能完美拟合。
 
-有时，我们会在文献中找到可以调整以适应我们模型的数据。例如，一只鹿的预期寿命约为4.5年[[3](https://www.jstor.org/stable/3803059?seq=7#metadata_info_tab_contents)]，CWD的潜伏期约为15个月[1]，CWD将死亡率提高到健康鹿的约4.5倍[[4](https://www.dec.ny.gov/docs/wildlife_pdf/cwdfactsheet.pdf)]。此外，威斯康星州公布了猎物采集数据[[5](https://dnr.wi.gov/wideermetrics/DeerStats.aspx)]，这将影响我们的死亡率，并且公布了猎杀天数的数据[[9](https://dnr.wi.gov/wideermetrics/DeerStats.aspx?R=HunterSurvey)]。我们将在模型中使用的CWD发生率数据（1999–2019年）直接来自威斯康星州公布的检测结果，可以在此处找到：[CWD全州监测总结](https://dnr.wi.gov/wmcwd/Summary/Zone) [8]。在我们拥有数据的时期，大约99%的报告CWD病例发生在威斯康星州南部农田区，因此我们将把模型人口限制在该区域。
+有时，我们会在文献中找到可以调整以适应我们模型的数据。例如，一只鹿的预期寿命约为 4.5 年[[3](https://www.jstor.org/stable/3803059?seq=7#metadata_info_tab_contents)]，CWD 的潜伏期约为 15 个月[1]，CWD 将死亡率提高到健康鹿的约 4.5 倍[[4](https://www.dec.ny.gov/docs/wildlife_pdf/cwdfactsheet.pdf)]。此外，威斯康星州公布了猎物采集数据[[5](https://dnr.wi.gov/wideermetrics/DeerStats.aspx)]，这将影响我们的死亡率，并且公布了猎杀天数的数据[[9](https://dnr.wi.gov/wideermetrics/DeerStats.aspx?R=HunterSurvey)]。我们将在模型中使用的 CWD 发生率数据（1999–2019 年）直接来自威斯康星州公布的检测结果，可以在此处找到：[CWD 全州监测总结](https://dnr.wi.gov/wmcwd/Summary/Zone) [8]。在我们拥有数据的时期，大约 99%的报告 CWD 病例发生在威斯康星州南部农田区，因此我们将把模型人口限制在该区域。
 
 **R 编程**
 
-我们首先导入数据，并使用deSolve库定义我们的模型。在这里，我们将模型定义为一个函数。注意，我们明确考虑了自然死亡和因狩猎而死亡的情况，以及遗传（beta_CWD_Natural）和传染性（beta_CWD_Deer）CWD。
+我们首先导入数据，并使用 deSolve 库定义我们的模型。在这里，我们将模型定义为一个函数。注意，我们明确考虑了自然死亡和因狩猎而死亡的情况，以及遗传（beta_CWD_Natural）和传染性（beta_CWD_Deer）CWD。
 
 ```py
 require('deSolve')
@@ -61,7 +61,7 @@ CWD_mod <- function(Time, State, Pars)
 }
 ```
 
-现在，我们使用文献回顾和一些经过充分考量的假设来定义除CWD传播率之外的所有参数。为了方便起见，我在注释中包含了用于参数化模型的网站/参考资料。
+现在，我们使用文献回顾和一些经过充分考量的假设来定义除 CWD 传播率之外的所有参数。为了方便起见，我在注释中包含了用于参数化模型的网站/参考资料。
 
 ```py
 ##########################
@@ -90,9 +90,9 @@ hunter_kill_rate_month <- hunter_kill_rate_year/12
 beta_CWD_Natural <- .000001
 ```
 
-现在，我们已经到了至关重要的校准步骤。正如我之前提到的，有许多不同的参数集可以生成适合的模型。我们现在的任务是估计CWD的传播率，该传播率最能符合威斯康星州的发病数据，同时保持所有其他参数不变。
+现在，我们已经到了至关重要的校准步骤。正如我之前提到的，有许多不同的参数集可以生成适合的模型。我们现在的任务是估计 CWD 的传播率，该传播率最能符合威斯康星州的发病数据，同时保持所有其他参数不变。
 
-校准模型的方法有很多种，因为参数值具有无限的可能范围。对于CWD的传播率，传播率的可能值可以从0到正无穷。在这种情况下，我进行了一些初步探索，认为beta_CWD_Deer的值会在0.01和0.5之间。在这种情况下，我将测试0.01到0.5之间的所有值，增量为0.001。这是最简单的方法，但当我们关注政策或简单性时，它完全可以满足需求。我们将寻找使得每年记录的病例数与模型每年报告的病例数之间的均方误差最小化的beta_CWD_Deer值。
+校准模型的方法有很多种，因为参数值具有无限的可能范围。对于 CWD 的传播率，传播率的可能值可以从 0 到正无穷。在这种情况下，我进行了一些初步探索，认为 beta_CWD_Deer 的值会在 0.01 和 0.5 之间。在这种情况下，我将测试 0.01 到 0.5 之间的所有值，增量为 0.001。这是最简单的方法，但当我们关注政策或简单性时，它完全可以满足需求。我们将寻找使得每年记录的病例数与模型每年报告的病例数之间的均方误差最小化的 beta_CWD_Deer 值。
 
 ```py
 ##########################
@@ -151,7 +151,7 @@ for(i in 1:length(list_beta_CWD_Deer))
   CWD_Results_Year$Prevalence_Data <- as.numeric(as.character(CWD_Results_Year$Prevalence_Data))
   CWD_Results_Year$Prevalence <- as.numeric(as.character(CWD_Results_Year$Prevalence))
   # Calculate the mean squared error
-  curr_mean_sq_err <- mean((CWD_Results_Year$Prevalence - CWD_Results_Year$Prevalence_Data)^2)
+  curr_mean_sq_err <- mean((CWD_Results_Year$Prevalence - CWD_Results_Year$Prevalence_Data)²)
 
   list_all_betas <- c(list_all_betas, beta_CWD_Deer)
   list_all_mse_scores <- c(list_all_mse_scores, curr_mean_sq_err)
@@ -167,7 +167,7 @@ for(i in 1:length(list_beta_CWD_Deer))
 }
 ```
 
-我们可以使用ggplot绘制均方误差随时间的变化，以直观地查看模型在不同参数值下的改进情况。
+我们可以使用 ggplot 绘制均方误差随时间的变化，以直观地查看模型在不同参数值下的改进情况。
 
 ```py
 plot_df <- as.data.frame(matrix(c(list_all_betas, list_all_mse_scores), ncol = 2, byrow = FALSE))
@@ -191,7 +191,7 @@ ggplot()+
   labs(color=' ', shape = '')
 ```
 
-![](../Images/c4ae197475267f4278cb881f782347a8.png)
+![](img/c4ae197475267f4278cb881f782347a8.png)
 
 图片由作者提供
 
@@ -263,7 +263,7 @@ ggplot()+
   labs(color=' ', shape = '')
 ```
 
-![](../Images/d4216258f71fe15933c41ae9a1e78d02.png)
+![](img/d4216258f71fe15933c41ae9a1e78d02.png)
 
 图片来源：作者
 
@@ -333,7 +333,7 @@ ggplot()+
   labs(color=' ', shape = '')
 ```
 
-![](../Images/01db55d9fd2b2c3c88f0341f713d0646.png)
+![](img/01db55d9fd2b2c3c88f0341f713d0646.png)
 
 图片来源：作者
 
@@ -540,7 +540,7 @@ ggplot()+
   labs(color=' ', shape = '')
 ```
 
-![](../Images/b09c188530a7efb9a7bb1b5f28eca2fe.png)
+![](img/b09c188530a7efb9a7bb1b5f28eca2fe.png)
 
 图片来源：作者
 
@@ -556,11 +556,11 @@ ggplot()+
 
 **参考文献**
 
-[1] Williams ES, Miller MW. 北美鹿和麋鹿的慢性消耗病。Rev Sci Tech. 2002年8月;21(2):305–16\. doi: 10.20506/rst.21.2.1340\. PMID: 11974617.
+[1] Williams ES, Miller MW. 北美鹿和麋鹿的慢性消耗病。Rev Sci Tech. 2002 年 8 月;21(2):305–16\. doi: 10.20506/rst.21.2.1340\. PMID: 11974617.
 
 [2] 疾病控制与预防中心。 [慢性消耗病 (CWD) | 普里昂病 | CDC](https://www.cdc.gov/prions/cwd/index.html). 2023.
 
-[3] Lopez, R. R., Mark E. P. Vieira, Silvy, N. J., Frank, P. A., Whisenant, S. W., & Jones, D. A. (2003). 佛罗里达群岛鹿的生存、死亡率和预期寿命。*野生动物管理杂志*, *67*(1), 34–45\. [https://doi.org/10.2307/3803059](https://doi.org/10.2307/3803059)
+[3] Lopez, R. R., Mark E. P. Vieira, Silvy, N. J., Frank, P. A., Whisenant, S. W., & Jones, D. A. (2003). 佛罗里达群岛鹿的生存、死亡率和预期寿命。*野生动物管理杂志*, *67*(1), 34–45\. [`doi.org/10.2307/3803059`](https://doi.org/10.2307/3803059)
 
 [4] 纽约州环境保护部。 [慢性消耗病 — 纽约州环境保护部](https://www.dec.ny.gov/animals/7191.html). 2016.
 

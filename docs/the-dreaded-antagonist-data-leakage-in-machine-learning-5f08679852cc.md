@@ -1,30 +1,30 @@
 # 恐怖的对手：机器学习中的数据泄漏
 
-> 原文：[https://towardsdatascience.com/the-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc?source=collection_archive---------6-----------------------#2023-05-19](https://towardsdatascience.com/the-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc?source=collection_archive---------6-----------------------#2023-05-19)
+> 原文：[`towardsdatascience.com/the-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc?source=collection_archive---------6-----------------------#2023-05-19`](https://towardsdatascience.com/the-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc?source=collection_archive---------6-----------------------#2023-05-19)
 
 ## 可能是机器学习中最被低估的概念之一
 
-[](https://medium.com/@andreas030503?source=post_page-----5f08679852cc--------------------------------)[![Andreas Lukita](../Images/8660ca1fea5da34ce3475281c1f52152.png)](https://medium.com/@andreas030503?source=post_page-----5f08679852cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5f08679852cc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5f08679852cc--------------------------------) [Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----5f08679852cc--------------------------------)
+[](https://medium.com/@andreas030503?source=post_page-----5f08679852cc--------------------------------)![Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----5f08679852cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5f08679852cc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5f08679852cc--------------------------------) [Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----5f08679852cc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----5f08679852cc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5f08679852cc--------------------------------) · 13分钟阅读 · 2023年5月19日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5f08679852cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc&user=Andreas+Lukita&userId=955ef38ea7b&source=-----5f08679852cc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----5f08679852cc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5f08679852cc--------------------------------) · 13 分钟阅读 · 2023 年 5 月 19 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5f08679852cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc&user=Andreas+Lukita&userId=955ef38ea7b&source=-----5f08679852cc---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5f08679852cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dreaded-antagonist-data-leakage-in-machine-learning-5f08679852cc&source=-----5f08679852cc---------------------bookmark_footer-----------)
 
-我参加了超过5门商务分析和机器学习课程，包括面对面课程和在线课程。令人惊讶的是，只有一门课程稍微触及了数据泄漏的话题。
+我参加了超过 5 门商务分析和机器学习课程，包括面对面课程和在线课程。令人惊讶的是，只有一门课程稍微触及了数据泄漏的话题。
 
-![](../Images/27869387f3796925a3534d992a08e29b.png)
+![](img/27869387f3796925a3534d992a08e29b.png)
 
 图片由 [Luis Tosta](https://unsplash.com/@luis_tosta?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-讨论数据泄漏时，在没有机器学习背景的情况下，我们通常指的是机密信息在没有适当安全措施或许可的情况下转移到第三方，导致隐私和安全的泄露[¹](#21ca)。
+讨论数据泄漏时，在没有机器学习背景的情况下，我们通常指的是机密信息在没有适当安全措施或许可的情况下转移到第三方，导致隐私和安全的泄露¹。
 
 尽管这个概念有些类似，但在机器学习的背景下并不完全是这样。这在机器学习领域的含义是：
 
-> 数据泄漏发生在测试数据集的信息错误地被包含在训练数据集中。[²](#0b31)
+> 数据泄漏发生在测试数据集的信息错误地被包含在训练数据集中。²
 
 **结果是什么？** 训练过程中性能指标表现得不切实际地好，但当模型真正投入使用时表现很差。
 
@@ -34,21 +34,21 @@
 
 **目录**
 
-+   机器学习中的数据泄漏类型（[**目标泄漏**](#9db8)，[**训练-测试污染，数据预处理中的泄漏**](#501a)）
++   机器学习中的数据泄漏类型（**目标泄漏**，**训练-测试污染，数据预处理中的泄漏**）
 
-+   [**机器学习中数据泄漏的后果**](#91a0)
++   **机器学习中数据泄漏的后果**
 
-+   预防机器学习中的数据泄漏（[**手动审查**](#29c5)，**数据清理和预处理**，[**使用管道**](#fde0)，[**适当的验证技术**](#7dbc)）
++   预防机器学习中的数据泄漏（**手动审查**，**数据清理和预处理**，**使用管道**，**适当的验证技术**）
 
-+   [**现实世界数据集示例：泰坦尼克号数据集**](#7912)
++   **现实世界数据集示例：泰坦尼克号数据集**
 
-+   [**数据泄漏第一种示例：将目标存活作为特征包含**](#35b6)
++   **数据泄漏第一种示例：将目标存活作为特征包含**
 
-+   [**数据泄漏第二种示例：混淆训练和测试数据的记录**](#b38e)
++   **数据泄漏第二种示例：混淆训练和测试数据的记录**
 
-+   [**数据泄漏第三种示例：错误的数据预处理步骤**](#c37d)
++   **数据泄漏第三种示例：错误的数据预处理步骤**
 
-+   [**数据泄漏第四种示例：将特征舱位包含为模型中的一部分**](#eb28)
++   **数据泄漏第四种示例：将特征舱位包含为模型中的一部分**
 
 # 目标泄漏
 
@@ -60,7 +60,7 @@
 
 # 训练-测试污染和数据预处理中的泄漏
 
-这些情况指的是对训练集和测试集应用相同的预处理步骤。例如，当我们进行特征缩放、估计缺失值和去除异常值等数据预处理步骤时，我们应该确保不会像下面所示的那样从测试数据集中“学习”[³](#f24a)。
+这些情况指的是对训练集和测试集应用相同的预处理步骤。例如，当我们进行特征缩放、估计缺失值和去除异常值等数据预处理步骤时，我们应该确保不会像下面所示的那样从测试数据集中“学习”³。
 
 ```py
 scaler = StandardScaler()
@@ -75,7 +75,7 @@ scaler.transform(X_test)
 
 # 机器学习中数据泄漏的后果
 
-在机器学习项目中未能检测到数据泄漏的后果是巨大的——它们带来了虚假的希望。有没有遇到过训练性能极高而测试数据集表现非常差的情况？数据泄漏可能是罪魁祸首。这里的关键字是过拟合和无法泛化。这是因为模型学会了记忆噪声和无关信息，导致在面对真实测试数据集时表现不佳[²](#0b31)。
+在机器学习项目中未能检测到数据泄漏的后果是巨大的——它们带来了虚假的希望。有没有遇到过训练性能极高而测试数据集表现非常差的情况？数据泄漏可能是罪魁祸首。这里的关键字是过拟合和无法泛化。这是因为模型学会了记忆噪声和无关信息，导致在面对真实测试数据集时表现不佳²。
 
 最终结果？
 
@@ -91,15 +91,15 @@ scaler.transform(X_test)
 
 # 防止数据泄漏：管道是王道
 
-我之前参加的商业分析和机器学习课程中，没有提到构建机器学习预处理管道。最常见的做法是编写到处都是的“意大利面条”代码，而没有任何工作流程标准化。虽然这对很多人来说可能很熟悉，但这并不是最佳实践——其中一个原因是可能会将数据泄漏引入模型。我第一次接触到利用管道的想法是来自于书籍*Data Cleaning and Exploration with Machine Learning*[⁴](#0654)。从这本书中，我学到的关键经验包括通过将每个预处理步骤作为变量参数嵌入到`make_pipeline`方法中，并分别为数值型、分类变量和二进制变量分开处理。
+我之前参加的商业分析和机器学习课程中，没有提到构建机器学习预处理管道。最常见的做法是编写到处都是的“意大利面条”代码，而没有任何工作流程标准化。虽然这对很多人来说可能很熟悉，但这并不是最佳实践——其中一个原因是可能会将数据泄漏引入模型。我第一次接触到利用管道的想法是来自于书籍*Data Cleaning and Exploration with Machine Learning*⁴。从这本书中，我学到的关键经验包括通过将每个预处理步骤作为变量参数嵌入到`make_pipeline`方法中，并分别为数值型、分类变量和二进制变量分开处理。
 
-简单来说，管道是一系列线性的数据预处理步骤，依次执行。管道提供了一个清晰有序的链式过程，用于自动化机器学习项目的工作流程。我们可以利用 scikit-learn 的 Pipeline 类[⁵](#60b9)，它接受一个元组列表作为输入，每个元组代表管道中的一个步骤。每个元组的第一个元素是表示步骤名称的字符串，第二个元素是 scikit-learn 转换器或估计器对象的实例。当然，还有一个简化的方法，就是`**make_pipeline**`，它不要求我们命名估计器（我们都是懒惰的生物）。记住，估计器需要具有`**fit**`和`**transform**`方法。
+简单来说，管道是一系列线性的数据预处理步骤，依次执行。管道提供了一个清晰有序的链式过程，用于自动化机器学习项目的工作流程。我们可以利用 scikit-learn 的 Pipeline 类⁵，它接受一个元组列表作为输入，每个元组代表管道中的一个步骤。每个元组的第一个元素是表示步骤名称的字符串，第二个元素是 scikit-learn 转换器或估计器对象的实例。当然，还有一个简化的方法，就是`**make_pipeline**`，它不要求我们命名估计器（我们都是懒惰的生物）。记住，估计器需要具有`**fit**`和`**transform**`方法。
 
 **为什么要使用 Pipeline？**
 
 > **管道自动处理所有数据处理过程。它还确保每个步骤仅在训练数据上进行拟合，从而防止数据泄漏，并确保各阶段按正确顺序进行。**
 
-这里有一个示例：我们需要对数据集中不同类型的数据进行数据预处理，即数值型、分类型和二元特征，每种特征都有不同的步骤。我们可以利用`**make_pipeline**`将过程按顺序安排，让Pipeline处理所有后台工作。这将返回一个`**Pipeline**`对象，该对象具有多个属性和方法可供调用。例如，我们可以调用`**fit**(X_train, y_train)`和`**score**(X_test, y_test)`来分别拟合和评估模型。
+这里有一个示例：我们需要对数据集中不同类型的数据进行数据预处理，即数值型、分类型和二元特征，每种特征都有不同的步骤。我们可以利用`**make_pipeline**`将过程按顺序安排，让 Pipeline 处理所有后台工作。这将返回一个`**Pipeline**`对象，该对象具有多个属性和方法可供调用。例如，我们可以调用`**fit**(X_train, y_train)`和`**score**(X_test, y_test)`来分别拟合和评估模型。
 
 ```py
 from sklearn.preprocessing import StandardScaler
@@ -131,17 +131,17 @@ pipe = make_pipeline(columntrans, KNNImputer(n_neighbors=5), lr)
 
 # 防止数据泄漏：交叉验证
 
-本节内容受到《*数据清洗与机器学习探索*》[⁴](#0654)一书的启发。我从书中获得的另一个观点是将Pipeline和交叉验证的概念结合起来。是的，它们并不是互相排斥的！训练和测试数据集的选择非常关键，如果做得不对可能会导致数据泄漏。当我们不执行交叉验证来评估模型时，我们面临着对训练数据过拟合以及在新的、未见过的数据上表现不佳的风险。我们进行的一次性训练测试拆分可能使模型学习到某个特定特征，这个特征可能对该拆分是独有的，而不具有普遍性。
+本节内容受到《*数据清洗与机器学习探索*》⁴一书的启发。我从书中获得的另一个观点是将 Pipeline 和交叉验证的概念结合起来。是的，它们并不是互相排斥的！训练和测试数据集的选择非常关键，如果做得不对可能会导致数据泄漏。当我们不执行交叉验证来评估模型时，我们面临着对训练数据过拟合以及在新的、未见过的数据上表现不佳的风险。我们进行的一次性训练测试拆分可能使模型学习到某个特定特征，这个特征可能对该拆分是独有的，而不具有普遍性。
 
 **为什么要进行交叉验证？**
 
 > **交叉验证使我们能够更精确地预测模型在全新、未测试数据上的表现。通过使用交叉验证，我们可以在多个数据子集上测试模型的有效性。**
 
-我们可以利用**scikit-learn**的K折交叉验证来实现这一点。
+我们可以利用**scikit-learn**的 K 折交叉验证来实现这一点。
 
-K折交叉验证的工作原理是什么？数据首先被分成**k**个大小相等的折叠，然后在**k-1**个折叠上训练模型，再在最后一个折叠上测试模型。在这个过程中，每个折叠都作为一次测试集，这个过程重复进行k次。在迭代结束时，通过对k次迭代结果的平均来估算模型的性能。当k设置为1时，这意味着我们回退到通常的训练测试拆分。我们在整个数据集上训练模型，并在一个独立的数据集上进行测试。
+K 折交叉验证的工作原理是什么？数据首先被分成**k**个大小相等的折叠，然后在**k-1**个折叠上训练模型，再在最后一个折叠上测试模型。在这个过程中，每个折叠都作为一次测试集，这个过程重复进行 k 次。在迭代结束时，通过对 k 次迭代结果的平均来估算模型的性能。当 k 设置为 1 时，这意味着我们回退到通常的训练测试拆分。我们在整个数据集上训练模型，并在一个独立的数据集上进行测试。
 
-好消息是，我们可以从Pipeline中未完成的地方继续进行。
+好消息是，我们可以从 Pipeline 中未完成的地方继续进行。
 
 ```py
 from sklearn.model_selection import cross_validate, KFold
@@ -159,7 +159,7 @@ scores = cross_validate(ttr,
 
 # 真实世界数据集示例：泰坦尼克号数据集
 
-泰坦尼克号。经典。泰坦尼克号数据集是经典的机器学习问题，我们为每个乘客提供了一组特征，例如他们的年龄、性别、票务等级、登船地点，以及他们是否有家人在船上[⁶](#d470)。使用这些特征，目标是训练一个机器学习模型来预测乘客是否`**幸存**`。以下是一个简短的预测版本，未涉及超参数调整和特征选择。
+泰坦尼克号。经典。泰坦尼克号数据集是经典的机器学习问题，我们为每个乘客提供了一组特征，例如他们的年龄、性别、票务等级、登船地点，以及他们是否有家人在船上⁶。使用这些特征，目标是训练一个机器学习模型来预测乘客是否`**幸存**`。以下是一个简短的预测版本，未涉及超参数调整和特征选择。
 
 ***使用以下代码清理原始数据集。***
 
@@ -238,9 +238,9 @@ def tweak_titanic_cleaned(train_df):
 
 1.  创建了一个特征 `Title` 用于表示乘客的头衔
 
-1.  创建了一个特征 `AgeGroup` 用于将乘客划分为5个不同的年龄组。
+1.  创建了一个特征 `AgeGroup` 用于将乘客划分为 5 个不同的年龄组。
 
-# **数据泄漏第1种示例：将目标** `**survived**` **作为特征**
+# **数据泄漏第 1 种示例：将目标** `**survived**` **作为特征**
 
 ```py
 #Intentionally add target variable to list of features
@@ -275,9 +275,9 @@ acc_val = round(accuracy_score(y_val, y_pred_val) * 100, 2)
 print("Logistic Regression Model accuracy on validation data:", acc_val)
 ```
 
-正如你可能预期的那样，将目标变量 `survived` 作为特征有效地使我们的模型变得毫无用处，因为它在验证数据上的准确率现在是100.0%。进行预测没有意义。这种错误很容易发现，但不常见。
+正如你可能预期的那样，将目标变量 `survived` 作为特征有效地使我们的模型变得毫无用处，因为它在验证数据上的准确率现在是 100.0%。进行预测没有意义。这种错误很容易发现，但不常见。
 
-# 数据泄漏第2种示例：混淆训练数据和测试数据的记录
+# 数据泄漏第 2 种示例：混淆训练数据和测试数据的记录
 
 如果测试数据被意外地包含在训练集中，模型可能会在这些泄漏的信息上进行训练，从而在测试集上表现得不切实际。以下是一个***故意编造的例子***，展示了如何将部分测试集包含到训练集中。
 
@@ -315,7 +315,7 @@ acc_val = round(accuracy_score(y_val, y_pred_val) * 100, 2)
 print("Logistic Regression Model accuracy on validation data:", acc_val)
 ```
 
-# 数据泄漏第3种示例：错误的数据预处理步骤
+# 数据泄漏第 3 种示例：错误的数据预处理步骤
 
 在这里，我们应该在预处理步骤之前将数据集分成训练集和测试集。如果我们在拆分数据集之前进行预处理步骤，我们可能会意外地从测试数据集中学习，从而导致模型性能被过度夸大。
 
@@ -335,7 +335,7 @@ X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_siz
 
 正确的步骤是对训练数据集进行 `fit_transform`，对测试数据集进行 `transform`。
 
-# 数据泄漏第4种示例：将舱位特征作为模型的一部分
+# 数据泄漏第 4 种示例：将舱位特征作为模型的一部分
 
 这个数据泄漏问题不容易发现，可能需要一些领域知识来理解。主要问题是**“这个特征是否包含在预测时不可用的信息？”** 如果答案是肯定的，那么很有可能存在数据泄漏。
 
@@ -359,16 +359,16 @@ X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_siz
 
 ***参考文献:***
 
-1.  Forcepoint. *什么是数据泄露？数据泄露的定义、解释和探索*。 [https://www.forcepoint.com/cyber-edu/data-leakage](https://www.forcepoint.com/cyber-edu/data-leakage)
+1.  Forcepoint. *什么是数据泄露？数据泄露的定义、解释和探索*。 [`www.forcepoint.com/cyber-edu/data-leakage`](https://www.forcepoint.com/cyber-edu/data-leakage)
 
-1.  Analytics Vidhya. *数据泄露及其对机器学习模型性能的影响*。 [https://www.analyticsvidhya.com/blog/2021/07/data-leakage-and-its-effect-on-the-performance-of-an-ml-model/](https://www.analyticsvidhya.com/blog/2021/07/data-leakage-and-its-effect-on-the-performance-of-an-ml-model/)
+1.  Analytics Vidhya. *数据泄露及其对机器学习模型性能的影响*。 [`www.analyticsvidhya.com/blog/2021/07/data-leakage-and-its-effect-on-the-performance-of-an-ml-model/`](https://www.analyticsvidhya.com/blog/2021/07/data-leakage-and-its-effect-on-the-performance-of-an-ml-model/)
 
-1.  JFrog. *小心数据泄露——你的机器学习模型中的潜在陷阱*。 [https://jfrog.com/community/data-science/be-careful-from-data-leakage-2/](https://jfrog.com/community/data-science/be-careful-from-data-leakage-2/)
+1.  JFrog. *小心数据泄露——你的机器学习模型中的潜在陷阱*。 [`jfrog.com/community/data-science/be-careful-from-data-leakage-2/`](https://jfrog.com/community/data-science/be-careful-from-data-leakage-2/)
 
-1.  Michael Walker 的《机器学习中的数据清理与探索》：[https://www.packtpub.com/product/data-cleaning-and-exploration-with-machine-learning/9781803241678](https://www.packtpub.com/product/data-cleaning-and-exploration-with-machine-learning/9781803241678)
+1.  Michael Walker 的《机器学习中的数据清理与探索》：[`www.packtpub.com/product/data-cleaning-and-exploration-with-machine-learning/9781803241678`](https://www.packtpub.com/product/data-cleaning-and-exploration-with-machine-learning/9781803241678)
 
-1.  Scikit-learn Pipeline. [https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline)
+1.  Scikit-learn Pipeline. [`scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline)
 
-1.  Titanic 数据集。 [https://www.openml.org/search?type=data&status=active&id=40945&sort=runs](https://www.openml.org/search?type=data&status=active&id=40945&sort=runs)
+1.  Titanic 数据集。 [`www.openml.org/search?type=data&status=active&id=40945&sort=runs`](https://www.openml.org/search?type=data&status=active&id=40945&sort=runs)
 
-1.  [https://github.com/datasciencedojo/datasets/blob/master/titanic.csv](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv)
+1.  [`github.com/datasciencedojo/datasets/blob/master/titanic.csv`](https://github.com/datasciencedojo/datasets/blob/master/titanic.csv)

@@ -1,14 +1,14 @@
 # 提升您的 MLflow 模型实验的 5 个快速技巧
 
-> 原文：[https://towardsdatascience.com/5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825?source=collection_archive---------11-----------------------#2023-03-13](https://towardsdatascience.com/5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825?source=collection_archive---------11-----------------------#2023-03-13)
+> 原文：[`towardsdatascience.com/5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825?source=collection_archive---------11-----------------------#2023-03-13`](https://towardsdatascience.com/5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825?source=collection_archive---------11-----------------------#2023-03-13)
 
 ## 使用 MLflow Python API 来驱动更好的模型开发
 
-[](https://medium.com/@mc12338?source=post_page-----dae346db825--------------------------------)[![Matt Collins](../Images/b28ac8100d6fb287e3fa6926eec7939a.png)](https://medium.com/@mc12338?source=post_page-----dae346db825--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dae346db825--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dae346db825--------------------------------) [Matt Collins](https://medium.com/@mc12338?source=post_page-----dae346db825--------------------------------)
+[](https://medium.com/@mc12338?source=post_page-----dae346db825--------------------------------)![Matt Collins](https://medium.com/@mc12338?source=post_page-----dae346db825--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dae346db825--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dae346db825--------------------------------) [Matt Collins](https://medium.com/@mc12338?source=post_page-----dae346db825--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----dae346db825---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dae346db825--------------------------------) ·7分钟阅读·2023年3月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdae346db825&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825&user=Matt+Collins&userId=d1970f1605f1&source=-----dae346db825---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----dae346db825---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dae346db825--------------------------------) ·7 分钟阅读·2023 年 3 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdae346db825&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-quick-tips-to-improve-your-mlflow-model-experimentation-dae346db825&user=Matt+Collins&userId=d1970f1605f1&source=-----dae346db825---------------------clap_footer-----------)
 
 --
 
@@ -18,9 +18,9 @@ MLflow 是加速机器学习模型开发过程的绝佳工具，其强大的实�
 
 本博客旨在展示如何充分利用 MLflow 实验。我们将重点介绍`start_run()`及其参数，这些参数可以增强您的实验过程。此外，我们还将介绍`search_runs()`函数，它提供了您实验历史的广泛视图，并在分析中提供更大的灵活性。
 
-如果你是MLflow的新手，我建议在进入此博客之前，查看一下MLflow [网站](https://mlflow.org/)、[文档](https://mlflow.org/docs/latest/quickstart.html)、一些博客文章或教程视频。
+如果你是 MLflow 的新手，我建议在进入此博客之前，查看一下 MLflow [网站](https://mlflow.org/)、[文档](https://mlflow.org/docs/latest/quickstart.html)、一些博客文章或教程视频。
 
-![](../Images/442306b0e9734d0b0e6634b25f2ea0aa.png)
+![](img/442306b0e9734d0b0e6634b25f2ea0aa.png)
 
 照片由[Adrien Converse](https://unsplash.com/@adrienconverse?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,11 +28,11 @@ MLflow 是加速机器学习模型开发过程的绝佳工具，其强大的实�
 
 这些技巧大多数是`start_run()`函数的参数。我们调用此函数来启动实验运行，它成为活动运行，我们可以在其中记录参数、指标和其他信息。
 
-这是我在MLflow中使用最频繁的函数，它为用户提供了最即时的价值。
+这是我在 MLflow 中使用最频繁的函数，它为用户提供了最即时的价值。
 
 ## 1\. run_id
 
-`run_id`是一个特定于每个实验运行的UUID。一旦运行启动，就无法覆盖诸如模型类型或参数值等属性。然而，你可以使用`run_id`来回溯记录额外的值，如指标、标签或描述。
+`run_id`是一个特定于每个实验运行的 UUID。一旦运行启动，就无法覆盖诸如模型类型或参数值等属性。然而，你可以使用`run_id`来回溯记录额外的值，如指标、标签或描述。
 
 ```py
 # Start MLflow run for this experiment
@@ -83,7 +83,7 @@ with mlflow.start_run(run_id="3fcf403e1566422493cd6e625693829d") as run:
 
 ## 2\. experiment_id
 
-在MLflow中，你可以通过几种不同的方式设置要记录的实验。第一个命令将所有后续运行的实验设置为“mlflow_sdk_test”。
+在 MLflow 中，你可以通过几种不同的方式设置要记录的实验。第一个命令将所有后续运行的实验设置为“mlflow_sdk_test”。
 
 ```py
 mlflow.set_experiment("/mlflow_sdk_test")
@@ -137,7 +137,7 @@ with mlflow.start_run(experiment_id=experiment_id):
 
 ## 3\. run_name
 
-当你指定运行名称时，你可以比依赖MLflow生成的默认名称更好地控制命名过程。这使你能够建立一致的实验运行命名约定，类似于你管理环境中其他资源的方式。
+当你指定运行名称时，你可以比依赖 MLflow 生成的默认名称更好地控制命名过程。这使你能够建立一致的实验运行命名约定，类似于你管理环境中其他资源的方式。
 
 ```py
 # Start MLflow run for this experiment
@@ -183,11 +183,11 @@ with mlflow.start_run(run_name=run_name) as run:
     mlflow.log_metric("r2", r2_score(diabetes_y_test, diabetes_y_pred))
 ```
 
-但是，请注意`run_name`在MLflow中并不是唯一约束。这意味着你可能会有多个实验（具有唯一的运行ID）共享相同的名称。
+但是，请注意`run_name`在 MLflow 中并不是唯一约束。这意味着你可能会有多个实验（具有唯一的运行 ID）共享相同的名称。
 
-![](../Images/d277256abc60b26566e6cb00d36afc1f.png)
+![](img/d277256abc60b26566e6cb00d36afc1f.png)
 
-MLflow实验表视图——重复的运行名称：作者提供的图片
+MLflow 实验表视图——重复的运行名称：作者提供的图片
 
 这意味着每次在*with*语句中执行新运行时，它将创建一个同名的新实验，而不是将细节附加到此运行中。
 
@@ -195,13 +195,13 @@ MLflow实验表视图——重复的运行名称：作者提供的图片
 
 ## 4\. 嵌套
 
-如果你使用过scikit-learn的`GridSearchCV`函数来执行超参数优化，你可能对嵌套实验运行有所了解。
+如果你使用过 scikit-learn 的`GridSearchCV`函数来执行超参数优化，你可能对嵌套实验运行有所了解。
 
-在MLflow中，嵌套实验看起来像下面这样：
+在 MLflow 中，嵌套实验看起来像下面这样：
 
-![](../Images/49ae15fc83fb1d28da5a7e6789aec16f.png)
+![](img/49ae15fc83fb1d28da5a7e6789aec16f.png)
 
-MLflow实验表视图——嵌套实验：作者提供的图片
+MLflow 实验表视图——嵌套实验：作者提供的图片
 
 注意，这里的指标是针对父运行保存的，它返回子运行记录的最佳值。子运行值本身是空白的。
 
@@ -337,7 +337,7 @@ runs_df
 pd.DataFrame(runs_df.groupby("start_date")["run_id"].count()).reset_index()
 ```
 
-![](../Images/1909bb8381a5429b15c509d2488abeb5.png)
+![](img/1909bb8381a5429b15c509d2488abeb5.png)
 
 上述查询的输出：作者提供的图像
 
@@ -347,7 +347,7 @@ pd.DataFrame(runs_df.groupby("start_date")["run_id"].count()).reset_index()
 pd.DataFrame(runs_df.groupby("tags.estimator_name")["run_id"].count()).reset_index()
 ```
 
-![](../Images/6d75e04dc94ff05a7245682a7d9565b3.png)
+![](img/6d75e04dc94ff05a7245682a7d9565b3.png)
 
 上述查询的输出：作者提供的图像
 

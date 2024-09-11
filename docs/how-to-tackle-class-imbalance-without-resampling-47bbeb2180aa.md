@@ -1,20 +1,20 @@
 # 如何在不重采样的情况下应对类别不平衡
 
-> 原文：[https://towardsdatascience.com/how-to-tackle-class-imbalance-without-resampling-47bbeb2180aa?source=collection_archive---------5-----------------------#2023-03-01](https://towardsdatascience.com/how-to-tackle-class-imbalance-without-resampling-47bbeb2180aa?source=collection_archive---------5-----------------------#2023-03-01)
+> 原文：[`towardsdatascience.com/how-to-tackle-class-imbalance-without-resampling-47bbeb2180aa?source=collection_archive---------5-----------------------#2023-03-01`](https://towardsdatascience.com/how-to-tackle-class-imbalance-without-resampling-47bbeb2180aa?source=collection_archive---------5-----------------------#2023-03-01)
 
 ## 超越重采样、阈值调整或成本敏感模型的不平衡分类
 
-[](https://vcerq.medium.com/?source=post_page-----47bbeb2180aa--------------------------------)[![Vitor Cerqueira](../Images/9e52f462c6bc20453d3ea273eb52114b.png)](https://vcerq.medium.com/?source=post_page-----47bbeb2180aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----47bbeb2180aa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----47bbeb2180aa--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----47bbeb2180aa--------------------------------)
+[](https://vcerq.medium.com/?source=post_page-----47bbeb2180aa--------------------------------)![Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----47bbeb2180aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----47bbeb2180aa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----47bbeb2180aa--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----47bbeb2180aa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-tackle-class-imbalance-without-resampling-47bbeb2180aa&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----47bbeb2180aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----47bbeb2180aa--------------------------------) ·7分钟阅读·2023年3月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F47bbeb2180aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-tackle-class-imbalance-without-resampling-47bbeb2180aa&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----47bbeb2180aa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-tackle-class-imbalance-without-resampling-47bbeb2180aa&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----47bbeb2180aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----47bbeb2180aa--------------------------------) ·7 分钟阅读·2023 年 3 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F47bbeb2180aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-tackle-class-imbalance-without-resampling-47bbeb2180aa&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----47bbeb2180aa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F47bbeb2180aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-tackle-class-imbalance-without-resampling-47bbeb2180aa&source=-----47bbeb2180aa---------------------bookmark_footer-----------)![](../Images/f9ebb8f645bb4e67587a6f3ae607c680.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F47bbeb2180aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-tackle-class-imbalance-without-resampling-47bbeb2180aa&source=-----47bbeb2180aa---------------------bookmark_footer-----------)![](img/f9ebb8f645bb4e67587a6f3ae607c680.png)
 
-[照片由Denise Johnson](https://unsplash.com/@auntneecey?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+[照片由 Denise Johnson](https://unsplash.com/@auntneecey?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 不平衡分类是一个相关的机器学习任务。这个问题通常通过三种方法之一来处理：重采样、成本敏感模型或阈值调整。
 

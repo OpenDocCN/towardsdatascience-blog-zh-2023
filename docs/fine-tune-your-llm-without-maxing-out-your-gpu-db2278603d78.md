@@ -1,18 +1,18 @@
 # 在不超负荷 GPU 的情况下微调你的大型语言模型
 
-> 原文：[https://towardsdatascience.com/fine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78?source=collection_archive---------5-----------------------#2023-08-01](https://towardsdatascience.com/fine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78?source=collection_archive---------5-----------------------#2023-08-01)
+> 原文：[`towardsdatascience.com/fine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78?source=collection_archive---------5-----------------------#2023-08-01`](https://towardsdatascience.com/fine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78?source=collection_archive---------5-----------------------#2023-08-01)
 
 ## 如何在有限的硬件和紧张的预算下微调你的大型语言模型
 
-[](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----db2278603d78---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------) ·8 min read·2023年8月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb2278603d78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78&user=John+Adeojo&userId=f933e1637e40&source=-----db2278603d78---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----db2278603d78---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------) ·8 min read·2023 年 8 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb2278603d78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78&user=John+Adeojo&userId=f933e1637e40&source=-----db2278603d78---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb2278603d78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78&source=-----db2278603d78---------------------bookmark_footer-----------)![](../Images/ebaa7adc1f03dc619e66b6d330a31748.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb2278603d78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78&source=-----db2278603d78---------------------bookmark_footer-----------)![](img/ebaa7adc1f03dc619e66b6d330a31748.png)
 
 作者图片：由 Midjourney 生成
 
@@ -32,4 +32,4 @@
 
 企业通常拥有驱动其某些流程的私有数据集。
 
-举个例子，我曾在一家银行工作，我们将客户投诉记录在一个Excel电子表格中。一个……
+举个例子，我曾在一家银行工作，我们将客户投诉记录在一个 Excel 电子表格中。一个……

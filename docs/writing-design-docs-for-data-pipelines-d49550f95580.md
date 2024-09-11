@@ -1,28 +1,28 @@
 # 为数据管道编写设计文档
 
-> 原文：[https://towardsdatascience.com/writing-design-docs-for-data-pipelines-d49550f95580?source=collection_archive---------0-----------------------#2023-05-22](https://towardsdatascience.com/writing-design-docs-for-data-pipelines-d49550f95580?source=collection_archive---------0-----------------------#2023-05-22)
+> 原文：[`towardsdatascience.com/writing-design-docs-for-data-pipelines-d49550f95580?source=collection_archive---------0-----------------------#2023-05-22`](https://towardsdatascience.com/writing-design-docs-for-data-pipelines-d49550f95580?source=collection_archive---------0-----------------------#2023-05-22)
 
 ## 探索数据组件设计文档的内容、意义和方法——以及它们为何重要。
 
-[](https://mahdiqb.medium.com/?source=post_page-----d49550f95580--------------------------------)[![Mahdi Karabiben](../Images/f1aac76435b8db295c306c76796a3201.png)](https://mahdiqb.medium.com/?source=post_page-----d49550f95580--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d49550f95580--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d49550f95580--------------------------------) [Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----d49550f95580--------------------------------)
+[](https://mahdiqb.medium.com/?source=post_page-----d49550f95580--------------------------------)![Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----d49550f95580--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d49550f95580--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d49550f95580--------------------------------) [Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----d49550f95580--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cda12823b7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwriting-design-docs-for-data-pipelines-d49550f95580&user=Mahdi+Karabiben&userId=7cda12823b7a&source=post_page-7cda12823b7a----d49550f95580---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d49550f95580--------------------------------) ·8分钟阅读·2023年5月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd49550f95580&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwriting-design-docs-for-data-pipelines-d49550f95580&user=Mahdi+Karabiben&userId=7cda12823b7a&source=-----d49550f95580---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cda12823b7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwriting-design-docs-for-data-pipelines-d49550f95580&user=Mahdi+Karabiben&userId=7cda12823b7a&source=post_page-7cda12823b7a----d49550f95580---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d49550f95580--------------------------------) ·8 分钟阅读·2023 年 5 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd49550f95580&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwriting-design-docs-for-data-pipelines-d49550f95580&user=Mahdi+Karabiben&userId=7cda12823b7a&source=-----d49550f95580---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd49550f95580&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwriting-design-docs-for-data-pipelines-d49550f95580&source=-----d49550f95580---------------------bookmark_footer-----------)![](../Images/d12760e985fd64ff99850a2c4a5b4525.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd49550f95580&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwriting-design-docs-for-data-pipelines-d49550f95580&source=-----d49550f95580---------------------bookmark_footer-----------)![](img/d12760e985fd64ff99850a2c4a5b4525.png)
 
 图片来源：[Mike Kononov](https://unsplash.com/es/@mikofilm?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 近年来，采纳软件工程最佳实践已成为数据工程领域的一个共同主题。从 dbt 的软件工程灵感功能到数据可观察性的兴起，数据工程师们正越来越习惯于软件工程师的工具集和原则。
 
-这种转变对我们设计和构建数据管道的方式产生了重大影响。它使数据管道更加健壮（因为我们从硬编码的业务逻辑和复杂的SQL查询转向了模块化的dbt模型和宏），并大幅减少了“*嘿，你能检查一下这个表吗？*”这种Slack消息（通过自动化的数据质量监控和警报）。
+这种转变对我们设计和构建数据管道的方式产生了重大影响。它使数据管道更加健壮（因为我们从硬编码的业务逻辑和复杂的 SQL 查询转向了模块化的 dbt 模型和宏），并大幅减少了“*嘿，你能检查一下这个表吗？*”这种 Slack 消息（通过自动化的数据质量监控和警报）。
 
 这些变化帮助我们将行业导向正确的方向——但我们仍然有很多领域需要向软件工程同行学习。
 
-根据[dbt Labs最近发布的数据](https://www.getdbt.com/blog/analytics-engineering-next-step-forwards/#:~:text=Complexity%20in%20the%20dbt%20ecosystem)，大约20%的dbt项目有超过1,000个模型（5%有超过5,000个）。这些数据突出了我们数据管道中的一个根本问题：**我们在设计它们时不够有意图**。我们在临时模型和特定用例的转换层层叠加，最终得到十个表示相同逻辑实体的模型，“*仅有细微差别*”。
+根据[dbt Labs 最近发布的数据](https://www.getdbt.com/blog/analytics-engineering-next-step-forwards/#:~:text=Complexity%20in%20the%20dbt%20ecosystem)，大约 20%的 dbt 项目有超过 1,000 个模型（5%有超过 5,000 个）。这些数据突出了我们数据管道中的一个根本问题：**我们在设计它们时不够有意图**。我们在临时模型和特定用例的转换层层叠加，最终得到十个表示相同逻辑实体的模型，“*仅有细微差别*”。
 
 在本文中，我们将讨论一个可以帮助我们为数据平台设计（和构建）稳健基础的文档：设计文档。
 
@@ -34,13 +34,13 @@
 
 +   **架构决策记录（ADR）**记录了一个具体的决策。这个文档更多的是一个书面快照，包含了形成技术决策的核心因素以及决策/设计本身的不同方面。
 
-公司通常有一个内部模板用于这类文档（或其变体），以便不同团队可以利用它来标准化技术决策的制定方式。Gergely Orosz写了[一篇很好的文章](https://blog.pragmaticengineer.com/rfcs-and-design-docs/)提供了多个示例，我也推荐查看[谷歌设计文档流程的公开概述](https://www.industrialempathy.com/posts/design-docs-at-google/)。
+公司通常有一个内部模板用于这类文档（或其变体），以便不同团队可以利用它来标准化技术决策的制定方式。Gergely Orosz 写了[一篇很好的文章](https://blog.pragmaticengineer.com/rfcs-and-design-docs/)提供了多个示例，我也推荐查看[谷歌设计文档流程的公开概述](https://www.industrialempathy.com/posts/design-docs-at-google/)。
 
 # 为什么我们需要数据管道的设计文档？
 
-基于dbt的方法构建数据管道的一个意外后果是，它使得向图中添加更多节点/模型变得*过于容易*。这让数据工程团队沉溺于构建***临时数据管道***的循环：数据管道没有经过适当的设计阶段或统一的整体规划，而是直接构建，导致了这种非常常见的dbt谱系图：
+基于 dbt 的方法构建数据管道的一个意外后果是，它使得向图中添加更多节点/模型变得*过于容易*。这让数据工程团队沉溺于构建***临时数据管道***的循环：数据管道没有经过适当的设计阶段或统一的整体规划，而是直接构建，导致了这种非常常见的 dbt 谱系图：
 
-![](../Images/8ebb8849f29547890d122f89b85fa41c.png)
+![](img/8ebb8849f29547890d122f89b85fa41c.png)
 
 一个带有临时方法的示例 dbt 图：复杂性的增加以及缺乏治理的基础层（图片由作者提供）
 
@@ -60,7 +60,7 @@
 
 # 流水线与组件
 
-在开始讨论设计文档的细节之前，需要注意的是，范围的概念、数据平台的整体设计以及数据工程团队的组织方式会因公司而异（基于众多因素）。这意味着本文介绍的概念应根据你自己的数据平台进行调整。例如，在Zendesk，我们将数据资产划分为***数据域***，因此设计文档的范围将是一个特定的数据域（从其数据源到基础且高度治理的消费层）。
+在开始讨论设计文档的细节之前，需要注意的是，范围的概念、数据平台的整体设计以及数据工程团队的组织方式会因公司而异（基于众多因素）。这意味着本文介绍的概念应根据你自己的数据平台进行调整。例如，在 Zendesk，我们将数据资产划分为***数据域***，因此设计文档的范围将是一个特定的数据域（从其数据源到基础且高度治理的消费层）。
 
 这同样适用于“*数据流水线*”的定义；本文中使用了这个术语，因为它是数据工程领域中的一个常见逻辑组件，但更准确的统称应为“***数据组件***”（这可以是一组数据产品：流水线、表格或其他工件）。
 
@@ -78,7 +78,7 @@
 
 +   **技术元数据**：这将根据你的平台而有所不同，但必须包括开始日期（数据何时开始可用？）和建议的历史回填（最早可用的日期是什么？）
 
-+   **审阅者及审阅状态（可选）**：这些信息可以在设计文档之外进行管理（例如通过单独的ADR文档），但为了简化流程并使其更为顺畅，本节还可以包括审阅者的信息（最好是中央团队的一部分，能够评估组件如何适应整体设计）以及设计的当前状态（无论是已批准还是处于中间状态）。
++   **审阅者及审阅状态（可选）**：这些信息可以在设计文档之外进行管理（例如通过单独的 ADR 文档），但为了简化流程并使其更为顺畅，本节还可以包括审阅者的信息（最好是中央团队的一部分，能够评估组件如何适应整体设计）以及设计的当前状态（无论是已批准还是处于中间状态）。
 
 这个部分不能有“过多”的元数据。如果有值得记录的信息，那么它肯定有其存在的必要。
 
@@ -104,11 +104,11 @@
 
 既然已经列出了下游指标，数据建模阶段变得不那么棘手，因为它将包括定义可以服务于所有下游使用场景的基础数据模型。在这里，具体设计将取决于设计文档本身之外的因素——你可以利用维度数据建模或其他技术，只要保持各组件之间的一致性，并避免创建孤立或重复的实体。
 
-![](../Images/037ffeb16f40b7e69ec02321af18b336.png)
+![](img/037ffeb16f40b7e69ec02321af18b336.png)
 
 新的数据组件将如何更新全球消费数据模型（图由作者提供）
 
-直到目前为止，我们还没有讨论数据管道或dbt模型。相反，重点在于定义我们希望如何呈现能够满足所有预期下游用例和指标的数据资产。
+直到目前为止，我们还没有讨论数据管道或 dbt 模型。相反，重点在于定义我们希望如何呈现能够满足所有预期下游用例和指标的数据资产。
 
 ## 5\. 表级（和列级）的元数据
 
@@ -130,7 +130,7 @@
 
 本节将包含我们希望作为数据组件的一部分使用的所有源/原始表的列表（以及这些表是否已是平台的一部分，或者我们是否需要通过提取-加载过程引入数据），以及我们希望构建的 dbt 模型（或数据管道）以达到消费层的期望状态。
 
-![](../Images/2cf5c20ea2258be7a1eb34c630e61f31.png)
+![](img/2cf5c20ea2258be7a1eb34c630e61f31.png)
 
 数据管道（或 dbt 模型）的示例设计，作为数据组件的一部分（图片作者提供）
 
@@ -152,6 +152,6 @@
 
 [](https://dataespresso.substack.com/?source=post_page-----d49550f95580--------------------------------) [## 数据浓缩 | Mahdi Karabiben | Substack
 
-### 数据工程更新和评论，伴随你的下午浓缩咖啡。点击阅读Mahdi的《数据浓缩》……
+### 数据工程更新和评论，伴随你的下午浓缩咖啡。点击阅读 Mahdi 的《数据浓缩》……
 
 dataespresso.substack.com](https://dataespresso.substack.com/?source=post_page-----d49550f95580--------------------------------)

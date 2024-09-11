@@ -1,20 +1,20 @@
 # 前向传播与神经网络中的反向传播
 
-> 原文：[https://towardsdatascience.com/forward-pass-backpropagation-neural-networks-101-3a75996ada3b?source=collection_archive---------6-----------------------#2023-11-04](https://towardsdatascience.com/forward-pass-backpropagation-neural-networks-101-3a75996ada3b?source=collection_archive---------6-----------------------#2023-11-04)
+> 原文：[`towardsdatascience.com/forward-pass-backpropagation-neural-networks-101-3a75996ada3b?source=collection_archive---------6-----------------------#2023-11-04`](https://towardsdatascience.com/forward-pass-backpropagation-neural-networks-101-3a75996ada3b?source=collection_archive---------6-----------------------#2023-11-04)
 
 ## 解释神经网络如何通过手工和代码使用 PyTorch 进行“训练”和“学习”数据中的模式
 
-[](https://medium.com/@egorhowell?source=post_page-----3a75996ada3b--------------------------------)[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----3a75996ada3b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3a75996ada3b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3a75996ada3b--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----3a75996ada3b--------------------------------)
+[](https://medium.com/@egorhowell?source=post_page-----3a75996ada3b--------------------------------)![Egor Howell](https://medium.com/@egorhowell?source=post_page-----3a75996ada3b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3a75996ada3b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3a75996ada3b--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----3a75996ada3b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforward-pass-backpropagation-neural-networks-101-3a75996ada3b&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----3a75996ada3b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3a75996ada3b--------------------------------) ·10分钟阅读·2023年11月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3a75996ada3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforward-pass-backpropagation-neural-networks-101-3a75996ada3b&user=Egor+Howell&userId=1cac491223b2&source=-----3a75996ada3b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforward-pass-backpropagation-neural-networks-101-3a75996ada3b&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----3a75996ada3b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3a75996ada3b--------------------------------) ·10 分钟阅读·2023 年 11 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3a75996ada3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforward-pass-backpropagation-neural-networks-101-3a75996ada3b&user=Egor+Howell&userId=1cac491223b2&source=-----3a75996ada3b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3a75996ada3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforward-pass-backpropagation-neural-networks-101-3a75996ada3b&source=-----3a75996ada3b---------------------bookmark_footer-----------)![](../Images/a894bd9e34501e8413c8bf96a918f1e5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3a75996ada3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforward-pass-backpropagation-neural-networks-101-3a75996ada3b&source=-----3a75996ada3b---------------------bookmark_footer-----------)![](img/a894bd9e34501e8413c8bf96a918f1e5.png)
 
-神经网络图标由 juicy_fish 创建 — Flaticon。 [https://www.flaticon.com/free-icons/neural-network](https://www.flaticon.com/free-icons/neural-network).
+神经网络图标由 juicy_fish 创建 — Flaticon。 [`www.flaticon.com/free-icons/neural-network`](https://www.flaticon.com/free-icons/neural-network).
 
 # 背景
 

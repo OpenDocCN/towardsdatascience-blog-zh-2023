@@ -1,18 +1,18 @@
 # 指导大型语言模型进行任务特定推理 — 提示设计与软提示
 
-> 原文：[https://towardsdatascience.com/guiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4?source=collection_archive---------1-----------------------#2023-02-27](https://towardsdatascience.com/guiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4?source=collection_archive---------1-----------------------#2023-02-27)
+> 原文：[`towardsdatascience.com/guiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4?source=collection_archive---------1-----------------------#2023-02-27`](https://towardsdatascience.com/guiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4?source=collection_archive---------1-----------------------#2023-02-27)
 
-## 了解提示设计和软提示如何用于开发和部署SOTA模型。
+## 了解提示设计和软提示如何用于开发和部署 SOTA 模型。
 
-[](https://thedataoracle.medium.com/?source=post_page-----7c45ef4794e4--------------------------------)[![Prem Oommen](../Images/b75bc0cea8eadfb2d75c33012a9520fa.png)](https://thedataoracle.medium.com/?source=post_page-----7c45ef4794e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7c45ef4794e4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7c45ef4794e4--------------------------------) [Prem Oommen](https://thedataoracle.medium.com/?source=post_page-----7c45ef4794e4--------------------------------)
+[](https://thedataoracle.medium.com/?source=post_page-----7c45ef4794e4--------------------------------)![Prem Oommen](https://thedataoracle.medium.com/?source=post_page-----7c45ef4794e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7c45ef4794e4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7c45ef4794e4--------------------------------) [Prem Oommen](https://thedataoracle.medium.com/?source=post_page-----7c45ef4794e4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Facf7c5b0eda6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4&user=Prem+Oommen&userId=acf7c5b0eda6&source=post_page-acf7c5b0eda6----7c45ef4794e4---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7c45ef4794e4--------------------------------) ·8分钟阅读·2023年2月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7c45ef4794e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4&user=Prem+Oommen&userId=acf7c5b0eda6&source=-----7c45ef4794e4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Facf7c5b0eda6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4&user=Prem+Oommen&userId=acf7c5b0eda6&source=post_page-acf7c5b0eda6----7c45ef4794e4---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7c45ef4794e4--------------------------------) ·8 分钟阅读·2023 年 2 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7c45ef4794e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4&user=Prem+Oommen&userId=acf7c5b0eda6&source=-----7c45ef4794e4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7c45ef4794e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4&source=-----7c45ef4794e4---------------------bookmark_footer-----------)![](../Images/441c401a9375a3331a2c4370b6c08e0e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7c45ef4794e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fguiding-a-huge-language-model-lm-to-perform-specific-tasks-prompt-design-and-soft-prompts-7c45ef4794e4&source=-----7c45ef4794e4---------------------bookmark_footer-----------)![](img/441c401a9375a3331a2c4370b6c08e0e.png)
 
 图片来源：[camilo jimenez](https://unsplash.com/@camstejim?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,11 +30,11 @@
 
 # 1\. 使用纯文本进行编程 — 提示设计
 
-多任务学习一直是克服这些限制和提高模型总体性能的一个有前途的框架。实现这一目标的一个最突出的方式是元学习，其中模型在训练过程中被教会执行多个任务，以便它能够发展广泛的技能和模式识别能力，这些能力在推断时可以被利用来生成期望的输出。随着变换器的引入，GPT2展示了通过学习* p(output | input, task)* 的条件概率，可以实现这一点，使其成为多任务学习者*。* 尽管沿着这些方向已有一些类似的研究，如 [MAML](https://paperswithcode.com/method/maml#:~:text=MAML%2C%20or%20Model%2DAgnostic%20Meta,a%20parametrized%20function%20with%20parameters%20.)（模型无关元学习）和 [MQAN](https://arxiv.org/abs/1806.08730)（多任务问答网络），变换器的可扩展性和大量数据的可用性使研究人员能够开发出任务无关的模型，这些模型可以与现有的精细调优模型相媲美。此外，MQAN展示了常见NLP任务的特性提供了将它们转化为带有执行每个任务说明的问答任务的灵活性。这是其中之一。
+多任务学习一直是克服这些限制和提高模型总体性能的一个有前途的框架。实现这一目标的一个最突出的方式是元学习，其中模型在训练过程中被教会执行多个任务，以便它能够发展广泛的技能和模式识别能力，这些能力在推断时可以被利用来生成期望的输出。随着变换器的引入，GPT2 展示了通过学习* p(output | input, task)* 的条件概率，可以实现这一点，使其成为多任务学习者*。* 尽管沿着这些方向已有一些类似的研究，如 [MAML](https://paperswithcode.com/method/maml#:~:text=MAML%2C%20or%20Model%2DAgnostic%20Meta,a%20parametrized%20function%20with%20parameters%20.)（模型无关元学习）和 [MQAN](https://arxiv.org/abs/1806.08730)（多任务问答网络），变换器的可扩展性和大量数据的可用性使研究人员能够开发出任务无关的模型，这些模型可以与现有的精细调优模型相媲美。此外，MQAN 展示了常见 NLP 任务的特性提供了将它们转化为带有执行每个任务说明的问答任务的灵活性。这是其中之一。
 
 虽然 GPT2 显示出大型模型可以进行多任务学习，但 GPT3，主要在模型大小、数据规模和多样性以及训练时间上与前者有所不同，表明在少量样本设置中（通过文本交互指定）可以改善大型语言模型的下游任务，而无需任何梯度更新或微调。这节省了训练、存储和部署不同任务特定模型的需求。这里的少量样本(*K*)表示模型只需几个示例，*K* 从 0 到模型令牌限制能容纳的最大值。为了对比基于 *K* 的性能差异，*图 1* 显示了模型在 [LAMBADA](https://arxiv.org/abs/1606.06031)（语言建模拓展到话语方面）基准数据集上的准确率。该基准的目标是通过要求模型预测段落末尾最可能的词来评估模型理解文本段落的能力。这也可以间接测量模型捕捉长程依赖的能力。有关 GPT-3 在各种语言建模基准上的表现，请参阅其原始论文 [这里](https://arxiv.org/pdf/2005.14165.pdf)。
 
-![](../Images/3fe5442717025669dd888878b3a298ab.png)
+![](img/3fe5442717025669dd888878b3a298ab.png)
 
 图 1\. GPT-3 在不同少量样本（K）设置下的 LAMBADA 性能。来源: [语言模型是少样本学习者](https://arxiv.org/abs/2005.14165)
 
@@ -46,7 +46,7 @@
 
 虽然用于*提示设计*的输入令牌的嵌入来自模型自身的嵌入空间，但用于*提示调优*的令牌嵌入则是从特定任务的数据集中单独学习得到的。此外，与*模型调优*中更新模型权重的方法不同，此方法仅更新提示权重，同时保持模型权重不变。
 
-![](../Images/6b90670bfab77d11952e7d29b6727983.png)
+![](img/6b90670bfab77d11952e7d29b6727983.png)
 
 图 2\. 对比模型调优和提示调优的服务效果。来源：[参数高效提示调优的规模力量](https://aclanthology.org/2021.emnlp-main.243.pdf)
 
@@ -54,7 +54,7 @@
 
 提示调优的另一个优势是它能够调节模型的输入表示，从而防止模型修改其学习到的语言通用理解。他们认为，这将帮助模型在使用这些数据集时克服分布外错误。为了证明这一点，研究人员调查了提示调优在问答和同义句检测上的零样本领域转移性能。提示在 SQuAD 上进行了训练，结果显示提示调优在大多数常见的领域外数据集上优于模型调优（图 3\. 有关详细结果，请参见[论文](https://aclanthology.org/2021.emnlp-main.243.pdf)）。这表明，在领域外任务中，用轻量级提示代替重型模型可以以更低的计算和内存成本获得更好的性能。
 
-![](../Images/02684eca5cb0053d37efee8276681809.png)
+![](img/02684eca5cb0053d37efee8276681809.png)
 
 图 3\. 在不同的领域外数据集上对比提示调优和模型调优的 F1 分数。来源：[参数高效提示调优的规模力量](https://aclanthology.org/2021.emnlp-main.243.pdf)
 
@@ -64,7 +64,7 @@
 
 # 关键要点：
 
-![](../Images/2b42fedeca57f5c209df10367aa322ff.png)
+![](img/2b42fedeca57f5c209df10367aa322ff.png)
 
 图 4\. 比较模型调优、提示设计和提示调优。来源：[缩放的力量：高效参数提示调优](https://aclanthology.org/2021.emnlp-main.243.pdf)
 

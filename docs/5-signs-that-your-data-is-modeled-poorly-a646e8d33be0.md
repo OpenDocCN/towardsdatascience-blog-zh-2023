@@ -1,18 +1,18 @@
 # **5 个迹象显示你的数据建模不佳**
 
-> 原文：[https://towardsdatascience.com/5-signs-that-your-data-is-modeled-poorly-a646e8d33be0?source=collection_archive---------7-----------------------#2023-06-20](https://towardsdatascience.com/5-signs-that-your-data-is-modeled-poorly-a646e8d33be0?source=collection_archive---------7-----------------------#2023-06-20)
+> 原文：[`towardsdatascience.com/5-signs-that-your-data-is-modeled-poorly-a646e8d33be0?source=collection_archive---------7-----------------------#2023-06-20`](https://towardsdatascience.com/5-signs-that-your-data-is-modeled-poorly-a646e8d33be0?source=collection_archive---------7-----------------------#2023-06-20)
 
 ## 云时代的常见挑战
 
-[](https://medium.com/@mattgazzano?source=post_page-----a646e8d33be0--------------------------------)[![Matthew Gazzano](../Images/23f154b154d05847c2c13ea17ceb7a57.png)](https://medium.com/@mattgazzano?source=post_page-----a646e8d33be0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a646e8d33be0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a646e8d33be0--------------------------------) [Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----a646e8d33be0--------------------------------)
+[](https://medium.com/@mattgazzano?source=post_page-----a646e8d33be0--------------------------------)![Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----a646e8d33be0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a646e8d33be0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a646e8d33be0--------------------------------) [Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----a646e8d33be0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F626000912ce9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-signs-that-your-data-is-modeled-poorly-a646e8d33be0&user=Matthew+Gazzano&userId=626000912ce9&source=post_page-626000912ce9----a646e8d33be0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a646e8d33be0--------------------------------) · 7分钟阅读 · 2023年6月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa646e8d33be0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-signs-that-your-data-is-modeled-poorly-a646e8d33be0&user=Matthew+Gazzano&userId=626000912ce9&source=-----a646e8d33be0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F626000912ce9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-signs-that-your-data-is-modeled-poorly-a646e8d33be0&user=Matthew+Gazzano&userId=626000912ce9&source=post_page-626000912ce9----a646e8d33be0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a646e8d33be0--------------------------------) · 7 分钟阅读 · 2023 年 6 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa646e8d33be0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-signs-that-your-data-is-modeled-poorly-a646e8d33be0&user=Matthew+Gazzano&userId=626000912ce9&source=-----a646e8d33be0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa646e8d33be0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-signs-that-your-data-is-modeled-poorly-a646e8d33be0&source=-----a646e8d33be0---------------------bookmark_footer-----------)![](../Images/6ab63520d19e990128b66de3607dc34e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa646e8d33be0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-signs-that-your-data-is-modeled-poorly-a646e8d33be0&source=-----a646e8d33be0---------------------bookmark_footer-----------)![](img/6ab63520d19e990128b66de3607dc34e.png)
 
 [照片](https://unsplash.com/photos/lRoX0shwjUQ) 由 [Jan Antonin Kolar](https://unsplash.com/@jankolar) 在 [Unsplash](https://unsplash.com/)
 
@@ -24,7 +24,7 @@
 
 ## 什么是数据建模？它面临哪些挑战？
 
-对数据工程师来说，向高层管理人员传达一个良好建模生态系统的价值往往是困难的。这是因为利益相关者能看到的只是展示出的BI工具和预测模型。然而，建模不良的数据从数据治理的角度来看会给分析团队带来重大挫折。这不可避免地会拖慢工作流程，引入重复任务，降低报告准确性，以及产生许多其他负面副作用。
+对数据工程师来说，向高层管理人员传达一个良好建模生态系统的价值往往是困难的。这是因为利益相关者能看到的只是展示出的 BI 工具和预测模型。然而，建模不良的数据从数据治理的角度来看会给分析团队带来重大挫折。这不可避免地会拖慢工作流程，引入重复任务，降低报告准确性，以及产生许多其他负面副作用。
 
 定义“良好建模”数据是一个独立的话题。但你可以通过以下概念在你的数据仓库中考虑它：
 
@@ -34,19 +34,19 @@
 
 +   表格和字段命名约定是一致的，文档化良好，并且具有业务价值。
 
-还应注意到，数据建模采用的是一种整体性和多系统的方法。它从你的OLTP（在线事务处理）系统开始，这是数据最初被记录的地方。以下是一些例子：
+还应注意到，数据建模采用的是一种整体性和多系统的方法。它从你的 OLTP（在线事务处理）系统开始，这是数据最初被记录的地方。以下是一些例子：
 
-+   CRM系统如[Salesforce](https://www.salesforce.com/)
++   CRM 系统如[Salesforce](https://www.salesforce.com/)
 
 +   销售点系统如[Stripe](https://stripe.com/)
 
 +   电子商务平台如[亚马逊](https://www.amazon.com/)
 
-理想情况下，你的数据在通过源系统收集时应该被规范化到[第三范式](https://www.geeksforgeeks.org/third-normal-form-3nf/)。然后，它应该被摄取到分析环境中，也就是一个OLAP（在线分析处理）系统，在这里应用了分析建模技术。在本文的背景下，OLAP系统与云数据仓库同义。但OLAP系统也可以包括像SQL Server、MySQL或PostgreSQL这样的独立托管工具。
+理想情况下，你的数据在通过源系统收集时应该被规范化到[第三范式](https://www.geeksforgeeks.org/third-normal-form-3nf/)。然后，它应该被摄取到分析环境中，也就是一个 OLAP（在线分析处理）系统，在这里应用了分析建模技术。在本文的背景下，OLAP 系统与云数据仓库同义。但 OLAP 系统也可以包括像 SQL Server、MySQL 或 PostgreSQL 这样的独立托管工具。
 
 尽管数据分析师和数据科学家只与 OLAP 系统互动，但组织的数据建模策略需要考虑 OLTP 和 OLAP，才能保持可持续性。
 
-# 以下是说明您的分析环境建模不佳的5个关键迹象。
+# 以下是说明您的分析环境建模不佳的 5 个关键迹象。
 
 ## 1.) 需要部落知识来理解数据的位置
 
@@ -56,7 +56,7 @@
 
 如果只有少数分析师知道如何回答基本的业务问题，那就是一个问题。采用这种孤立的方式无法扩展，并且只会限制团队能够解决的问题数量。
 
-![](../Images/ba6eb54e39b719cb755fb9048b9fbe69.png)
+![](img/ba6eb54e39b719cb755fb9048b9fbe69.png)
 
 [照片](https://unsplash.com/photos/IgUR1iX0mqM) by [Desola Lanre-Ologun](https://unsplash.com/@disruptxn) on [Unsplash](https://unsplash.com/)
 
@@ -64,17 +64,17 @@
 
 如果没有单一的真实来源，不同团队成员很容易以不同的方式计算相同的指标。例如，收入是如何定义的？计算这一指标使用了哪些表？需要有一个明确的路径来定义业务逻辑，这一切都始于一个有意图的数据模型。
 
-我曾在这样的环境中工作，那里有3个不同的表表示相同的业务实体，它们使用了不同的 SQL 逻辑来得出相似但不完全相同的记录输出。再加上管理不善的报告请求队列，就会导致两个不同的分析师用不同的结果回答相同的问题。这不仅导致利益相关者对数据失去信任，还需要跨团队进行繁琐且不必要的调解工作。
+我曾在这样的环境中工作，那里有 3 个不同的表表示相同的业务实体，它们使用了不同的 SQL 逻辑来得出相似但不完全相同的记录输出。再加上管理不善的报告请求队列，就会导致两个不同的分析师用不同的结果回答相同的问题。这不仅导致利益相关者对数据失去信任，还需要跨团队进行繁琐且不必要的调解工作。
 
 ## 3.) 团队需要重用冗余的业务逻辑代码块
 
 我见过团队使用 Google 表格记录 SQL CASE 语句，以概述具体的业务指标。这些语句往往很长且难以阅读。虽然这种做法试图在团队之间提供一致性，但问题在于它违反了组织内的 DRY（不要重复自己）原则。
 
-对于许多面临此类问题的团队，使用像DBT这样的转换工具可以让分析工程师在一个地方定义业务逻辑，然后让分析师在多个地方引用它。
+对于许多面临此类问题的团队，使用像 DBT 这样的转换工具可以让分析工程师在一个地方定义业务逻辑，然后让分析师在多个地方引用它。
 
-想象以下例子——如果你是一个电子商务公司，且有一种复杂的方式来计算页面浏览量（这是可以的），那么为什么要在你的BI工具中分发和重复这个业务逻辑呢？不仅在逻辑没有被逐字复制和粘贴的情况下风险较大，而且还浪费计算资源，而这通常是大多数云服务提供商的最大开支。
+想象以下例子——如果你是一个电子商务公司，且有一种复杂的方式来计算页面浏览量（这是可以的），那么为什么要在你的 BI 工具中分发和重复这个业务逻辑呢？不仅在逻辑没有被逐字复制和粘贴的情况下风险较大，而且还浪费计算资源，而这通常是大多数云服务提供商的最大开支。
 
-为了解决这个问题，考虑绘制出需要进行的常见聚合和业务逻辑，运行一个每天（或根据需要的频率）进行的转换作业，并将其写入一个表中。然后让你的BI层基于这个表运行。
+为了解决这个问题，考虑绘制出需要进行的常见聚合和业务逻辑，运行一个每天（或根据需要的频率）进行的转换作业，并将其写入一个表中。然后让你的 BI 层基于这个表运行。
 
 ## 4.) 你的数据仓库表现不佳
 
@@ -82,15 +82,15 @@
 
 任何数据工程师都会告诉你，单纯购买额外资源并不是解决这个问题的可持续方案。
 
-长且复杂的查询不仅执行时间长，还会消耗环境中的可用资源。考虑一个需要执行涉及20个连接的查询的例子。在这种情况下，理想的解决方案非常少，因为它表明用于解决业务问题的数据没有以易于访问的格式存储。这么多的连接可能会计算开销很大，尤其是当相关表的数据量很大或ON子句涉及多个列时。如果你正在实施一个维度模型，你的团队可能需要考虑在这些场景下在数据库中创建一个新的事实表。
+长且复杂的查询不仅执行时间长，还会消耗环境中的可用资源。考虑一个需要执行涉及 20 个连接的查询的例子。在这种情况下，理想的解决方案非常少，因为它表明用于解决业务问题的数据没有以易于访问的格式存储。这么多的连接可能会计算开销很大，尤其是当相关表的数据量很大或 ON 子句涉及多个列时。如果你正在实施一个维度模型，你的团队可能需要考虑在这些场景下在数据库中创建一个新的事实表。
 
-资源的衡量方式因所使用的云服务提供商而异，但它们都遵循使用固定数量虚拟CPU的相同概念。例如，BigQuery使用[槽位](https://cloud.google.com/bigquery/docs/slots)的概念，槽位实际上是执行查询时可用的计算资源数量。采用按需定价的组织在任何给定时刻可使用2000个槽位。因此，如果一个查询非常复杂并且占用的槽位超过了可用数量，其他查询将会排队，直到它们能够被执行。
+资源的衡量方式因所使用的云服务提供商而异，但它们都遵循使用固定数量虚拟 CPU 的相同概念。例如，BigQuery 使用[槽位](https://cloud.google.com/bigquery/docs/slots)的概念，槽位实际上是执行查询时可用的计算资源数量。采用按需定价的组织在任何给定时刻可使用 2000 个槽位。因此，如果一个查询非常复杂并且占用的槽位超过了可用数量，其他查询将会排队，直到它们能够被执行。
 
-## 5.) 你经常需要在SQL中硬编码值
+## 5.) 你经常需要在 SQL 中硬编码值
 
 硬编码的值通常是数据仓库中缺失所需数据的明显迹象。在维度模型的上下文中，这通常意味着需要创建一个新的维度表来提供额外的列。
 
-[扎克·奎因](https://zachl-quinn.medium.com/) 写了一篇 [文章](https://medium.com/learning-sql/sql-users-reduce-your-case-statements-with-a-lookup-table-d09da47bf65)，很好地阐述了这个概念，演示了如何通过查找表消除冗长的CASE语句。将这个示例放在维度模型的背景下——假设你的组织需要进行大量的地理空间分析。你有一个*customer_dimension*表，它提供了州的缩写，但你想将其显示为完整的州名。你可以写这样的代码：
+[扎克·奎因](https://zachl-quinn.medium.com/) 写了一篇 [文章](https://medium.com/learning-sql/sql-users-reduce-your-case-statements-with-a-lookup-table-d09da47bf65)，很好地阐述了这个概念，演示了如何通过查找表消除冗长的 CASE 语句。将这个示例放在维度模型的背景下——假设你的组织需要进行大量的地理空间分析。你有一个*customer_dimension*表，它提供了州的缩写，但你想将其显示为完整的州名。你可以写这样的代码：
 
 ```py
 SELECT
@@ -109,9 +109,9 @@ customer_id
 FROM customer_dimension
 ```
 
-但这种CASE语句并不可持续。如果我们想更详细地改进这个解决方案，我们需要将*zip_code_dimension*表连接到*customer_dimension*表。你会看到下面的*zip_code_dimension*表将为我们的分析提供更大的粒度。这个表可能看起来像这样：
+但这种 CASE 语句并不可持续。如果我们想更详细地改进这个解决方案，我们需要将*zip_code_dimension*表连接到*customer_dimension*表。你会看到下面的*zip_code_dimension*表将为我们的分析提供更大的粒度。这个表可能看起来像这样：
 
-![](../Images/80b22cf424ec049028ea0f961df9694a.png)
+![](img/80b22cf424ec049028ea0f961df9694a.png)
 
 作者拍摄
 

@@ -1,18 +1,18 @@
 # 现代数据科学家的 GitHub：你无法 .gitignore 的 7 个概念
 
-> 原文：[https://towardsdatascience.com/github-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9?source=collection_archive---------1-----------------------#2023-05-17](https://towardsdatascience.com/github-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9?source=collection_archive---------1-----------------------#2023-05-17)
+> 原文：[`towardsdatascience.com/github-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9?source=collection_archive---------1-----------------------#2023-05-17`](https://towardsdatascience.com/github-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9?source=collection_archive---------1-----------------------#2023-05-17)
 
 ## 用一点乐趣、智慧和视觉效果来解释
 
-[](https://ibexorigin.medium.com/?source=post_page-----c082b1e882e9--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----c082b1e882e9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c082b1e882e9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c082b1e882e9--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----c082b1e882e9--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----c082b1e882e9--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----c082b1e882e9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c082b1e882e9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c082b1e882e9--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----c082b1e882e9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgithub-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----c082b1e882e9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c082b1e882e9--------------------------------) ·11分钟阅读·2023年5月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc082b1e882e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgithub-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9&user=Bex+T.&userId=39db050c2ac2&source=-----c082b1e882e9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgithub-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----c082b1e882e9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c082b1e882e9--------------------------------) ·11 分钟阅读·2023 年 5 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc082b1e882e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgithub-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9&user=Bex+T.&userId=39db050c2ac2&source=-----c082b1e882e9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc082b1e882e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgithub-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9&source=-----c082b1e882e9---------------------bookmark_footer-----------)![](../Images/d9add96480d3a682d10b6fcc7ad06fe8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc082b1e882e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgithub-for-the-modern-data-scientist-7-concepts-you-cant-gitignore-c082b1e882e9&source=-----c082b1e882e9---------------------bookmark_footer-----------)![](img/d9add96480d3a682d10b6fcc7ad06fe8.png)
 
 我的菠萝伙伴们。出自 Midjourney。
 

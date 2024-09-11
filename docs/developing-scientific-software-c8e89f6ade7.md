@@ -1,26 +1,26 @@
 # 开发科学软件
 
-> 原文：[https://towardsdatascience.com/developing-scientific-software-c8e89f6ade7?source=collection_archive---------8-----------------------#2023-07-01](https://towardsdatascience.com/developing-scientific-software-c8e89f6ade7?source=collection_archive---------8-----------------------#2023-07-01)
+> 原文：[`towardsdatascience.com/developing-scientific-software-c8e89f6ade7?source=collection_archive---------8-----------------------#2023-07-01`](https://towardsdatascience.com/developing-scientific-software-c8e89f6ade7?source=collection_archive---------8-----------------------#2023-07-01)
 
-## 第1部分：测试驱动开发的原则
+## 第一部分：测试驱动开发的原则
 
-[](https://medium.com/@cdacostaf?source=post_page-----c8e89f6ade7--------------------------------)[![Carlos Costa, Ph.D.](../Images/fc5e03e455f11b963086355fe0ccc077.png)](https://medium.com/@cdacostaf?source=post_page-----c8e89f6ade7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c8e89f6ade7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c8e89f6ade7--------------------------------) [Carlos Costa, Ph.D.](https://medium.com/@cdacostaf?source=post_page-----c8e89f6ade7--------------------------------)
+[](https://medium.com/@cdacostaf?source=post_page-----c8e89f6ade7--------------------------------)![Carlos Costa, Ph.D.](https://medium.com/@cdacostaf?source=post_page-----c8e89f6ade7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c8e89f6ade7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8e89f6ade7--------------------------------) [Carlos Costa, Ph.D.](https://medium.com/@cdacostaf?source=post_page-----c8e89f6ade7--------------------------------)
 
 ·
 
-[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1d045b63ee9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-c8e89f6ade7&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=post_page-c1d045b63ee9----c8e89f6ade7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8e89f6ade7--------------------------------) · 10分钟阅读 · 2023年7月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc8e89f6ade7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-c8e89f6ade7&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=-----c8e89f6ade7---------------------clap_footer-----------)
+[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1d045b63ee9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-c8e89f6ade7&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=post_page-c1d045b63ee9----c8e89f6ade7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8e89f6ade7--------------------------------) · 10 分钟阅读 · 2023 年 7 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc8e89f6ade7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-c8e89f6ade7&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=-----c8e89f6ade7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc8e89f6ade7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-c8e89f6ade7&source=-----c8e89f6ade7---------------------bookmark_footer-----------)![](../Images/72729e33f225858ae5308356bbeb08f7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc8e89f6ade7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-c8e89f6ade7&source=-----c8e89f6ade7---------------------bookmark_footer-----------)![](img/72729e33f225858ae5308356bbeb08f7.png)
 
-[照片由Noah Windler](https://unsplash.com/@noahwindler?utm_source=medium&utm_medium=referral)提供，拍摄于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+[照片由 Noah Windler](https://unsplash.com/@noahwindler?utm_source=medium&utm_medium=referral)提供，拍摄于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 我们生活在一个计算世界快速扩展可能性的时代。人工智能在解决旧问题和新问题方面不断取得进展，常常以完全意想不到的方式进行。庞大的数据集现在几乎在任何领域都变得普遍，而不仅仅是科学家们在昂贵设施中才能获得的东西。
 
 然而，在过去几十年中，处理数据的软件开发面临的许多挑战依然存在——或者在处理这些新的、大量的数据时问题更加严重。
 
-科学计算领域，传统上专注于开发快速而准确的方法来解决科学问题，近年来已超越其原始的狭窄范围变得相关。在本文中，我将揭示在开发高质量科学软件时出现的一些挑战，以及一些克服这些挑战的策略。我们的最终目标是制定一个逐步指南，以确保准确和高效的开发过程。在后续文章中，我将跟随这个逐步指南解决一个 Python 示例问题。[阅读后查看](/developing-scientific-software-d023a96188a3)！
+科学计算领域，传统上专注于开发快速而准确的方法来解决科学问题，近年来已超越其原始的狭窄范围变得相关。在本文中，我将揭示在开发高质量科学软件时出现的一些挑战，以及一些克服这些挑战的策略。我们的最终目标是制定一个逐步指南，以确保准确和高效的开发过程。在后续文章中，我将跟随这个逐步指南解决一个 Python 示例问题。阅读后查看！
 
 # TDD 和科学计算：**不是**天作之合？
 
@@ -60,7 +60,7 @@
 
 +   在不同机器上运行测试数千次时，精度单元测试失败并不罕见。如果这种情况持续发生，则要么精度要求过于严格，要么引入了错误。在我的经验中，后一种情况更为常见。
 
-![](../Images/096a69dff1d4b0e2260f948b18bda23a.png)
+![](img/096a69dff1d4b0e2260f948b18bda23a.png)
 
 浮点数 :P（照片由 [Johannes W](https://unsplash.com/@johanneswre?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)）
 
@@ -116,7 +116,7 @@
 
 1.  **勾画设计**。创建一个模板，无论是代码还是图示，以建立满足上述要求的设计。
 
-1.  **实现初始测试**。你在第3步，迫不及待想开始编码。深呼吸！你会开始编码，但不是你的方法/功能。在这个步骤你编写超简单的测试。真的很小。从简单的验证测试开始，然后转到基本的验证测试。对于验证测试，我建议在开始时尽可能利用分析预设。如果无法做到，请跳过它们。
+1.  **实现初始测试**。你在第 3 步，迫不及待想开始编码。深呼吸！你会开始编码，但不是你的方法/功能。在这个步骤你编写超简单的测试。真的很小。从简单的验证测试开始，然后转到基本的验证测试。对于验证测试，我建议在开始时尽可能利用分析预设。如果无法做到，请跳过它们。
 
 1.  **实现你的 alpha 版本**。你已经有了测试（验证），可以开始实际实现代码来满足这些测试，而不必担心（很）错误。这个初始实现不必是最快的，但*需要是正确的*（验证）！我的建议是：从一个简单的实现开始，利用标准库。依赖标准库可以大大降低不正确实现的风险，因为它们利用了自己的测试套件。
 
@@ -130,11 +130,11 @@
 
 1.  **优化**。你现在要使这个函数在你的应用中尽可能快速。利用你的测试和性能分析工具，你可以发挥你的科学计算知识来加速它。
 
-1.  **重新实现**。在这里你可以考虑新的实现方式，例如使用硬件加速库如GPU、分布式计算等。我建议使用 NVIDIA 的 APOD（[评估、并行化、优化、部署](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#assess-parallelize-optimize-deploy)）作为一种良好的优化方法论。你可以返回实现周期，但现在你总是拥有一堆预设和测试。如果你预期功能会改变，请参见下面。
+1.  **重新实现**。在这里你可以考虑新的实现方式，例如使用硬件加速库如 GPU、分布式计算等。我建议使用 NVIDIA 的 APOD（[评估、并行化、优化、部署](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#assess-parallelize-optimize-deploy)）作为一种良好的优化方法论。你可以返回实现周期，但现在你总是拥有一堆预设和测试。如果你预期功能会改变，请参见下面。
 
 ## 新方法周期
 
-1.  **实现新方法**。按照实现周期进行操作，直到第6步，包括第6步，就像你没有任何预设一样。
+1.  **实现新方法**。按照实现周期进行操作，直到第 6 步，包括第 6 步，就像你没有任何预设一样。
 
 1.  **验证与之前策划的神谕的对比**。在神谕构建步骤之后，你可以利用之前实施中的神谕示例，以确保新的神谕在某种程度上“更好”。这一步骤在开发对各种数据都具有鲁棒性的算法和方法中至关重要。在工业界，这一过程被频繁使用，以确保新算法在各种相关情况下表现良好。
 

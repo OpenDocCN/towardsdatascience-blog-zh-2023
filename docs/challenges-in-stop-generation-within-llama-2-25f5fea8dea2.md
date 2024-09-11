@@ -1,34 +1,34 @@
-# Llama 2中的停止生成挑战
+# Llama 2 中的停止生成挑战
 
-> 原文：[https://towardsdatascience.com/challenges-in-stop-generation-within-llama-2-25f5fea8dea2?source=collection_archive---------1-----------------------#2023-09-10](https://towardsdatascience.com/challenges-in-stop-generation-within-llama-2-25f5fea8dea2?source=collection_archive---------1-----------------------#2023-09-10)
+> 原文：[`towardsdatascience.com/challenges-in-stop-generation-within-llama-2-25f5fea8dea2?source=collection_archive---------1-----------------------#2023-09-10`](https://towardsdatascience.com/challenges-in-stop-generation-within-llama-2-25f5fea8dea2?source=collection_archive---------1-----------------------#2023-09-10)
 
 ## 潜在解决方案的探索
 
-[](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)[![Shuyang Xiang](../Images/36a5fd18fd9b7b88cb41094f09b83882.png)](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------) [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)
+[](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)![Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------) [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----25f5fea8dea2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------) · 9 分钟阅读 · 2023年9月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F25f5fea8dea2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----25f5fea8dea2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----25f5fea8dea2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------) · 9 分钟阅读 · 2023 年 9 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F25f5fea8dea2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----25f5fea8dea2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25f5fea8dea2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&source=-----25f5fea8dea2---------------------bookmark_footer-----------)![](../Images/919c3755f4c37f74e7796e7097458f19.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25f5fea8dea2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&source=-----25f5fea8dea2---------------------bookmark_footer-----------)![](img/919c3755f4c37f74e7796e7097458f19.png)
 
 Llama: 图片由[柳德米拉·舒瓦洛娃](https://unsplash.com/@liudmila19)提供
 
-Meta发布的Llama 2在社区中引发了兴奋，标志着一个新的时代的开始，此前大型语言模型的良好表现只能通过公司特定的API访问。
+Meta 发布的 Llama 2 在社区中引发了兴奋，标志着一个新的时代的开始，此前大型语言模型的良好表现只能通过公司特定的 API 访问。
 
 然而，重要的是要承认这些模型固有的一些缺陷。其中，生成停止问题尤为突出。我的个人经历表明，这些模型往往难以确定合适的‘停止’点，使它们在何时结束文本生成方面感到不确定。
 
-在这篇博客文章中，我将深入探讨最小的Llama 2模型——Llama 2–7b模型中停止生成失败的问题，并讨论几种潜在的解决方案。接下来的实现可以在这个GoogleGolab [notebook](https://colab.research.google.com/drive/12R6HXUYMbhGh6dhMUH6FiOWWUIrJCaz6?authuser=1#scrollTo=VjJCzLmYmWEo)中找到，运行时类型为T4。
+在这篇博客文章中，我将深入探讨最小的 Llama 2 模型——Llama 2–7b 模型中停止生成失败的问题，并讨论几种潜在的解决方案。接下来的实现可以在这个 GoogleGolab [notebook](https://colab.research.google.com/drive/12R6HXUYMbhGh6dhMUH6FiOWWUIrJCaz6?authuser=1#scrollTo=VjJCzLmYmWEo)中找到，运行时类型为 T4。
 
 # 停止生成失败
 
-在本节中，我们将利用Google Colab中配备充足高RAM资源的T4 GPU来操作Llama 2–7b模型（2.21积分/小时）。需要记住的是，T4 GPU具有16 GB的VRAM容量，刚好可以容纳Llama 2–7b的权重（7b × 2 字节 = 14 GB的FP16）。
+在本节中，我们将利用 Google Colab 中配备充足高 RAM 资源的 T4 GPU 来操作 Llama 2–7b 模型（2.21 积分/小时）。需要记住的是，T4 GPU 具有 16 GB 的 VRAM 容量，刚好可以容纳 Llama 2–7b 的权重（7b × 2 字节 = 14 GB 的 FP16）。
 
-为了有效管理VRAM的使用，我们将采用一种叫做量化的技术。量化是一种在推理过程中通过使用低精度数据类型表示权重和激活值来最小化计算和内存需求的方法。
+为了有效管理 VRAM 的使用，我们将采用一种叫做量化的技术。量化是一种在推理过程中通过使用低精度数据类型表示权重和激活值来最小化计算和内存需求的方法。
 
-现在让我们深入研究以下代码片段。在这里，我们将演示如何加载带有Bite和Byte配置的“meta-llama/Llama-2–7b-chat-hf”模型，并基于该加载模型设置文本生成管道。
+现在让我们深入研究以下代码片段。在这里，我们将演示如何加载带有 Bite 和 Byte 配置的“meta-llama/Llama-2–7b-chat-hf”模型，并基于该加载模型设置文本生成管道。
 
 ```py
 # bit and byte configuration
@@ -82,7 +82,7 @@ Paris, the capital of France, is known for its stunning architecture, art museum
 Of course, there are countless
 ```
 
-很明显，这个模型难以生成令人满意的响应；它似乎在确定何时结束输出方面存在困难。通过对生成的文本进行分词处理，可以明显看出最终的标记不是2，而2代表了模型分词器中的eos（序列结束）标记。
+很明显，这个模型难以生成令人满意的响应；它似乎在确定何时结束输出方面存在困难。通过对生成的文本进行分词处理，可以明显看出最终的标记不是 2，而 2 代表了模型分词器中的 eos（序列结束）标记。
 
 通过仔细检查模型提供的标记分数（概率），我注意到**token_id 2 (eso_token_id) 的分数为“-inf。”**这意味着它不可能被生成。
 
@@ -90,9 +90,9 @@ Of course, there are countless
 
 在本节中，我们将探讨几种旨在解决当前问题的潜在解决方案。需要记住的是，这里讨论的解决方案代表了积极的努力，但它们可能并不总是能解决所面临的问题。
 
-## Logits处理器
+## Logits 处理器
 
-像Llama 2这样的语言模型处理一系列文本标记作为输入，并根据从初始标记到当前标记的上下文生成下一标记的条件概率。鉴于此，值得考虑在接近最大标记限制时手动调整这些概率，以提高遇到eos标记的可能性。我们通过定义一个名为“EosTokenRewardLogitsProcessor”的自定义Logits处理器来实现这一点，该处理器具有两个初始输入eos_token_id和max_length，其中后者表示模型应生成eos标记的最大长度：
+像 Llama 2 这样的语言模型处理一系列文本标记作为输入，并根据从初始标记到当前标记的上下文生成下一标记的条件概率。鉴于此，值得考虑在接近最大标记限制时手动调整这些概率，以提高遇到 eos 标记的可能性。我们通过定义一个名为“EosTokenRewardLogitsProcessor”的自定义 Logits 处理器来实现这一点，该处理器具有两个初始输入 eos_token_id 和 max_length，其中后者表示模型应生成 eos 标记的最大长度：
 
 ```py
 class EosTokenRewardLogitsProcessor(LogitsProcessor):
@@ -119,9 +119,9 @@ class EosTokenRewardLogitsProcessor(LogitsProcessor):
     return scores
 ```
 
-在类的“__call__”方法中，我们根据序列的长度增强eos_token的概率（得分）。当长度接近指定最大长度的80%时，我们将eos_token_id的得分设置为1e2乘以长度比例，并相应地调整其他令牌的得分。
+在类的“__call__”方法中，我们根据序列的长度增强 eos_token 的概率（得分）。当长度接近指定最大长度的 80%时，我们将 eos_token_id 的得分设置为 1e2 乘以长度比例，并相应地调整其他令牌的得分。
 
-现在在管道的定义中声明logits处理器：
+现在在管道的定义中声明 logits 处理器：
 
 ```py
 pipe = transformers.pipeline(model=model,
@@ -146,17 +146,17 @@ Paris, the capital of France, is known for its stunning architecture, art museum
 
 ## 微调
 
-如果模型未能生成EOS令牌，为什么不考虑指示它这样做呢？通过使用包括以EOS令牌结尾的答案的数据集来微调模型，以提高模型性能的概念无疑是一个值得探索的有前景的途径。
+如果模型未能生成 EOS 令牌，为什么不考虑指示它这样做呢？通过使用包括以 EOS 令牌结尾的答案的数据集来微调模型，以提高模型性能的概念无疑是一个值得探索的有前景的途径。
 
-在这一部分，我将毫不掩饰地使用这篇博客文章中奠定的基础，这篇文章采用了参数高效的微调（PEFT）方法，如QLoRA，来微调Llama 2–7b模型。与其前身LoRA类似，QLoRA利用一小组可训练的参数（适配器），同时保持核心模型参数不变。它引入了两个值得注意的创新：4-bit NormalFloat (NF4)，一种对正常数据信息理论上最优的数据量化方法，以及双重量化。欲了解更多深入信息，请参考[原始论文](https://arxiv.org/abs/2305.14314)，如果您对该主题有进一步的兴趣。
+在这一部分，我将毫不掩饰地使用这篇博客文章中奠定的基础，这篇文章采用了参数高效的微调（PEFT）方法，如 QLoRA，来微调 Llama 2–7b 模型。与其前身 LoRA 类似，QLoRA 利用一小组可训练的参数（适配器），同时保持核心模型参数不变。它引入了两个值得注意的创新：4-bit NormalFloat (NF4)，一种对正常数据信息理论上最优的数据量化方法，以及双重量化。欲了解更多深入信息，请参考[原始论文](https://arxiv.org/abs/2305.14314)，如果您对该主题有进一步的兴趣。
 
-让我们在一个名为‘timdettmers/openassistant-guanaco’的数据集上训练模型，您可以在hugging face数据库中找到这个数据集。该数据集的格式如下，其中人类和助手的对话由“###”分隔。
+让我们在一个名为‘timdettmers/openassistant-guanaco’的数据集上训练模型，您可以在 hugging face 数据库中找到这个数据集。该数据集的格式如下，其中人类和助手的对话由“###”分隔。
 
-![](../Images/a593fefb022a90da04e27e82ecb7e454.png)
+![](img/a593fefb022a90da04e27e82ecb7e454.png)
 
 图片作者：“timdettmers/openassistant-guanaco”的数据集
 
-在训练之前，我们需要将数据转换为Llama 2提示模板：
+在训练之前，我们需要将数据转换为 Llama 2 提示模板：
 
 ```py
 <s>[INST] <<SYS>>
@@ -192,15 +192,15 @@ trainer = SFTTrainer(
 trainer.train()
 ```
 
-在一个包含指令和响应的数据集中，我们的方法涉及使用监督训练器（SFTainer）与QLoRA方法相结合，以微调语言模型（LLM）中的权重参数。我们的主要目标是最小化生成的答案与真实响应之间的差异，真实响应作为我们的参考标签。
+在一个包含指令和响应的数据集中，我们的方法涉及使用监督训练器（SFTainer）与 QLoRA 方法相结合，以微调语言模型（LLM）中的权重参数。我们的主要目标是最小化生成的答案与真实响应之间的差异，真实响应作为我们的参考标签。
 
 在这个配置中，一个重要的参数是“lora r”，它代表了一个相对较小的值，涉及到秩分解权重矩阵的第二维和第一维。训练仅在这两个矩阵上进行，补充了现有的权重。
 
-我们训练模型250步，训练损失如下图所示：
+我们训练模型 250 步，训练损失如下图所示：
 
-![](../Images/21bae74012046266638a79cc1aba0c4c.png)
+![](img/21bae74012046266638a79cc1aba0c4c.png)
 
-图片来源：Llama 2训练250步的损失
+图片来源：Llama 2 训练 250 步的损失
 
 现在让我们使用微调后的模型运行管道。这一次，我们得到了：
 
@@ -235,7 +235,7 @@ Sure! Here are five things you can do in Paris: 1\. Visit the Eiffel Tower, a ic
 
 ## 停止标准：一个失败的尝试
 
-对于感兴趣的用户，Hugging Face推出了另一个名为StoppingCriteria的API，旨在建立特定条件以强制序列停止。然而，当涉及到定义一个在遇到某些标记（例如‘\n’）时停止模型的自定义标准时，它可能无法提供一个全面的解决方案。例如，我尝试创建一个StopOnTokens类：
+对于感兴趣的用户，Hugging Face 推出了另一个名为 StoppingCriteria 的 API，旨在建立特定条件以强制序列停止。然而，当涉及到定义一个在遇到某些标记（例如‘\n’）时停止模型的自定义标准时，它可能无法提供一个全面的解决方案。例如，我尝试创建一个 StopOnTokens 类：
 
 ```py
 # define custom stopping criteria object
@@ -253,9 +253,9 @@ stopping_criteria = StoppingCriteriaList([StopOnTokens()])
 
 # 结论
 
-在这篇博客文章中，我强调了Llama 2中生成停止的问题，并介绍了几种临时解决方案。再次，我跳过了很多实施细节，我建议你深入查看我的笔记本。
+在这篇博客文章中，我强调了 Llama 2 中生成停止的问题，并介绍了几种临时解决方案。再次，我跳过了很多实施细节，我建议你深入查看我的笔记本。
 
-![](../Images/d6efeaff2e28e01d03f2e75eca9f4d09.png)
+![](img/d6efeaff2e28e01d03f2e75eca9f4d09.png)
 
 图片由[Jose Aragones](https://unsplash.com/@jodaarba)提供
 

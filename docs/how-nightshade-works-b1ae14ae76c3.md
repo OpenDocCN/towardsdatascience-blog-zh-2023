@@ -1,18 +1,18 @@
 # Nightshade 的工作原理
 
-> 原文：[https://towardsdatascience.com/how-nightshade-works-b1ae14ae76c3?source=collection_archive---------1-----------------------#2023-11-03](https://towardsdatascience.com/how-nightshade-works-b1ae14ae76c3?source=collection_archive---------1-----------------------#2023-11-03)
+> 原文：[`towardsdatascience.com/how-nightshade-works-b1ae14ae76c3?source=collection_archive---------1-----------------------#2023-11-03`](https://towardsdatascience.com/how-nightshade-works-b1ae14ae76c3?source=collection_archive---------1-----------------------#2023-11-03)
 
 ## 将生成图像的人工智能与被污染的数据混淆
 
-[](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----b1ae14ae76c3---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------) ·10 分钟阅读·2023年11月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb1ae14ae76c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&user=Dorian+Drost&userId=1d49ea537d1c&source=-----b1ae14ae76c3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----b1ae14ae76c3---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------) ·10 分钟阅读·2023 年 11 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb1ae14ae76c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&user=Dorian+Drost&userId=1d49ea537d1c&source=-----b1ae14ae76c3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb1ae14ae76c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&source=-----b1ae14ae76c3---------------------bookmark_footer-----------)![](../Images/06b719db201217808f3920a3b86de4c9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb1ae14ae76c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&source=-----b1ae14ae76c3---------------------bookmark_footer-----------)![](img/06b719db201217808f3920a3b86de4c9.png)
 
 就像城堡的高墙一样，*Nightshade* 可以成为保护知识产权不受非法使用的一种方式。照片由 [Nabih El Boustani](https://unsplash.com/@nounouis?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 ## 数据中毒
 
-![](../Images/af49aea3e5964e2f1d180c6f498af741.png)
+![](img/af49aea3e5964e2f1d180c6f498af741.png)
 
 毒性还是无毒？图片由 [Fiona Smallwood](https://unsplash.com/@thepeoplesdigital?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -36,65 +36,65 @@
 
 ## 幼稚的数据中毒攻击
 
-![](../Images/8632fa35f988b5aed9475c9f689dd709.png)
+![](img/8632fa35f988b5aed9475c9f689dd709.png)
 
 一只戴着眼镜的可爱狗狗，想着如何攻击图像生成模型。照片由[Jamie Street](https://unsplash.com/@jamie452?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-作为一种简单的方法，你可以使用上述想法来混淆像Stable Diffusion这样的机器学习模型。假设你想让Stable Diffusion在被提示为狗时生成猫的图片。为此，你需要创建许多猫的图片，将它们标记为*狗*，并将它们上传到互联网。然后你希望这些图片被抓取用于Stable Diffusion模型的下次训练。
+作为一种简单的方法，你可以使用上述想法来混淆像 Stable Diffusion 这样的机器学习模型。假设你想让 Stable Diffusion 在被提示为狗时生成猫的图片。为此，你需要创建许多猫的图片，将它们标记为*狗*，并将它们上传到互联网。然后你希望这些图片被抓取用于 Stable Diffusion 模型的下次训练。
 
 如果你许多图片成为下次训练的一部分，这确实可能导致猫和狗之间的混淆。然而，这种方法也有一些缺点：
 
-+   你需要很多图片。由于有许多其他未中毒的猫的图片，你需要大量的图片才能产生影响。如果你只提供10张中毒图片，而另一边有1000张未中毒的猫的图片，你对训练几乎没有影响。通常，你需要对所有图片中20%或更多的图片进行中毒才能产生效果。
++   你需要很多图片。由于有许多其他未中毒的猫的图片，你需要大量的图片才能产生影响。如果你只提供 10 张中毒图片，而另一边有 1000 张未中毒的猫的图片，你对训练几乎没有影响。通常，你需要对所有图片中 20%或更多的图片进行中毒才能产生效果。
 
-+   请注意，你不知道哪些图片会成为训练的一部分。因此，如果你想将500张中毒图片引入训练中，你可能需要创建5000张并将它们散布在整个互联网，因为只有其中的一些可能会实际被抓取用于训练。
++   请注意，你不知道哪些图片会成为训练的一部分。因此，如果你想将 500 张中毒图片引入训练中，你可能需要创建 5000 张并将它们散布在整个互联网，因为只有其中的一些可能会实际被抓取用于训练。
 
-+   如果你上传标记为*狗*的猫的图片，人类可以很容易地识别出来。在使用你的图片进行训练之前，它们可能会被质量门槛过滤掉（无论是人类还是专门的AI）。
++   如果你上传标记为*狗*的猫的图片，人类可以很容易地识别出来。在使用你的图片进行训练之前，它们可能会被质量门槛过滤掉（无论是人类还是专门的 AI）。
 
 ## Nightshade
 
-![](../Images/89ec939d3c8c67ec4065cc2af1df3fee.png)
+![](img/89ec939d3c8c67ec4065cc2af1df3fee.png)
 
-Nightshade算法的名字源自一种非常毒性的植物。照片由[Georg Eiermann](https://unsplash.com/@georgeiermann?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+Nightshade 算法的名字源自一种非常毒性的植物。照片由[Georg Eiermann](https://unsplash.com/@georgeiermann?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-现在让我们来看看*Nightshade*，这是一种旨在克服这些缺点的算法。为此，Nightshade使用两个关键概念：它创建对模型产生最大影响的图片（这意味着总共需要更少的图片），以及这些图片在人类眼中无法与非中毒图片区分开来。
+现在让我们来看看*Nightshade*，这是一种旨在克服这些缺点的算法。为此，Nightshade 使用两个关键概念：它创建对模型产生最大影响的图片（这意味着总共需要更少的图片），以及这些图片在人类眼中无法与非中毒图片区分开来。
 
 首先，如何从图像中获得最大效果？理论上，你会希望使用那些在训练过程中导致梯度变化最大的图像。然而，要找出这些图像，你需要观察训练过程，这在一般情况下是做不到的。不过，Nightshade 的作者提出了一种不同的解决方案：你可以使用一个由你想要破坏的模型生成的图像。也就是说，如果你想让猫的图像被标记为狗，你可以用一个简单的提示词来提示模型，比如*一只猫的图像*。模型生成的图像将是它理解为猫的一个非常典型的表现。如果这个图像在训练中出现，它将对猫的概念理解产生很高的影响（比那些不典型的猫图像要高得多）。因此，如果你破坏这个图像，你将对模型的训练产生非常大的影响。
 
 其次，我们说过，Nightshade 的图像应该与未被破坏的图像难以区分。为了达到这个目标，Nightshade 采用自然图像并施加扰动（即像素值的小变化），直到图像被模型以不同方式感知。继续使用我们之前的狗与猫的例子，我们会取一个由模型生成的显示猫的图像。这个图像我们称之为*锚图像*或接下来的公式中的 xᵃ。接下来，我们取一张非常典型的狗图像，我们称之为 xₜ。现在，我们对这张图像 xₜ 添加扰动 δ，使其优化以下目标：
 
-![](../Images/9a43af97d7fafd49aa3a4825c482c826.png)
+![](img/9a43af97d7fafd49aa3a4825c482c826.png)
 
 其中 *F()* 是模型使用的图像特征提取器，*Dist* 是距离函数，*p* 是 δ 的上界，以避免图像变化过大。这意味着我们希望找到 δ，使得扰动后的狗图像（F(xₜ + δ)）和锚图像（显示猫的 F(xᵃ)）的特征之间的距离尽可能小。换句话说，我们希望从模型的角度来看，这两个图像是相似的。请注意，F(x) 是特征提取器的结果，它是模型在特征空间中*看见*的图像，这与你在像素空间中看到的图像不同。
 
 在接下来的图像中，你将无法发现原始图像和被破坏图像之间的任何差异（至少我看不到）。然而，在它们的特征空间中，它们的差异很大。例如，被破坏的狗图像的特征非常接近猫图像的特征，因此对于模型来说，它几乎看起来像一只猫。
 
-![](../Images/3ab1ef415b193785dc81a66adfde6204.png)
+![](img/3ab1ef415b193785dc81a66adfde6204.png)
 
 两个被破坏图像的例子。下排的图像是上排图像的扰动版本。尽管人眼无法看出差异，但从模型的角度看，原始图像和被破坏的图像非常不同。图像取自 Nightshade 论文[1]。
 
-使用这种技术，我们能够生成对模型训练产生巨大影响且无法被检测为被毒化的图像。如果你将这些图像上传到互联网上，没有人会对其产生怀疑，因此这些图像很不可能被任何质量门槛过滤掉。此外，由于这些图像的威力如此之大，你不需要像采用简单方法时那样毒化20%的狗图像。使用Nightshade，通常50到100张图像就足以破坏模型在特定概念上的表现。
+使用这种技术，我们能够生成对模型训练产生巨大影响且无法被检测为被毒化的图像。如果你将这些图像上传到互联网上，没有人会对其产生怀疑，因此这些图像很不可能被任何质量门槛过滤掉。此外，由于这些图像的威力如此之大，你不需要像采用简单方法时那样毒化 20%的狗图像。使用 Nightshade，通常 50 到 100 张图像就足以破坏模型在特定概念上的表现。
 
 ## 泛化能力
 
-除了我们刚才看到的要点外，Nightshade还有另一个有趣的优势，即其多种方式的概括能力。
+除了我们刚才看到的要点外，Nightshade 还有另一个有趣的优势，即其多种方式的概括能力。
 
 首先，毒化某个关键词也会影响那些在语言或语义上相关的概念。例如，毒化*狗*的图像也会影响像*小狗*或*哈士奇*这样的关键词，这些概念与*狗*相关。在以下示例中，*狗*概念已被毒化，这也阻碍了*小狗*和*哈士奇*的生成。
 
-![](../Images/d7ee38ee05cb93705b036d29642c55f7.png)
+![](img/d7ee38ee05cb93705b036d29642c55f7.png)
 
-这是一个示例，说明了如何通过毒化一个概念（狗）也会阻碍相关概念（小狗、哈士奇、狼）的生成。图像摘自Nightshade论文[1]。
+这是一个示例，说明了如何通过毒化一个概念（狗）也会阻碍相关概念（小狗、哈士奇、狼）的生成。图像摘自 Nightshade 论文[1]。
 
 同样地，毒化一个如*幻想*的概念也会影响语义上相关的概念，但不会影响其他概念，如下例所示。你可以看到，像*龙*这样的概念，它与被毒化的*幻想*相近，受到了影响，而像*椅子*这样的概念则没有。
 
-![](../Images/cacb3836b0f65edcff5ece31a9a62e37.png)
+![](img/cacb3836b0f65edcff5ece31a9a62e37.png)
 
-这是一个示例，说明了如何通过毒化一个概念（幻想）也会阻碍相关概念（例如龙）的生成。注意，非相关概念（例如椅子）没有受到影响。图像摘自Nightshade论文[1]。
+这是一个示例，说明了如何通过毒化一个概念（幻想）也会阻碍相关概念（例如龙）的生成。注意，非相关概念（例如椅子）没有受到影响。图像摘自 Nightshade 论文[1]。
 
-此外，当毒化多个概念时，生成图像的能力可能会完全崩溃。在以下示例中，100、250或500个概念已被毒化。随着毒化概念的增加，即使是那些完全未被毒化的其他概念（如*人*或*绘画*），其生成也会受到严重阻碍。
+此外，当毒化多个概念时，生成图像的能力可能会完全崩溃。在以下示例中，100、250 或 500 个概念已被毒化。随着毒化概念的增加，即使是那些完全未被毒化的其他概念（如*人*或*绘画*），其生成也会受到严重阻碍。
 
-![](../Images/00245ac22b1a1cb87635c2fa244f56b9.png)
+![](img/00245ac22b1a1cb87635c2fa244f56b9.png)
 
-一个例子是如何毒化多个概念会阻碍生成图像的能力。注意，*人*、绘画和*海贝*这些概念并没有特别被毒化。图像摘自Nightshade论文[1]。
+一个例子是如何毒化多个概念会阻碍生成图像的能力。注意，*人*、绘画和*海贝*这些概念并没有特别被毒化。图像摘自 Nightshade 论文[1]。
 
 此外，Nightshade 的效果也会对不同的目标模型产生普遍影响。请记住，我们使用了我们想攻击的模型来生成锚定图像，这帮助我们构建了被污染的图像。其背后的想法是，这些图像具有很强的原型特征，因此会对训练产生强烈影响。我们还需要访问特征提取器来优化扰动。自然，Nightshade 的影响在这些锚定图像由被攻击的模型生成，并且该模型的特征提取器可以用于优化时最强。然而，即使锚定图像和特征提取器来自其他模型，中毒效果也相当好。也就是说，你可以使用例如 Stable Diffusion 2 来生成你的中毒图像，即使你想攻击的是 Stable Diffusion XL。如果你没有访问实际想攻击的模型，这可能会很有趣。
 

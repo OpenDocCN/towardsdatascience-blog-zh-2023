@@ -1,10 +1,10 @@
 # 使用维基百科生成知识图谱
 
-> 原文：[https://towardsdatascience.com/generating-knowledge-graphs-with-wikipedia-ec17030a40f6?source=collection_archive---------3-----------------------#2023-01-01](https://towardsdatascience.com/generating-knowledge-graphs-with-wikipedia-ec17030a40f6?source=collection_archive---------3-----------------------#2023-01-01)
+> 原文：[`towardsdatascience.com/generating-knowledge-graphs-with-wikipedia-ec17030a40f6?source=collection_archive---------3-----------------------#2023-01-01`](https://towardsdatascience.com/generating-knowledge-graphs-with-wikipedia-ec17030a40f6?source=collection_archive---------3-----------------------#2023-01-01)
 
 ## Python 快速生成知识图谱指南
 
-[](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)[![Jye Sawtell-Rickson](../Images/e16c2b5020d24331812a4f35e9bd7890.png)](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec17030a40f6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ec17030a40f6--------------------------------) [Jye Sawtell-Rickson](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)
+[](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)![Jye Sawtell-Rickson](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec17030a40f6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec17030a40f6--------------------------------) [Jye Sawtell-Rickson](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fec17030a40f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-knowledge-graphs-with-wikipedia-ec17030a40f6&source=-----ec17030a40f6---------------------bookmark_footer-----------)![](../Images/946ca13307226697062b4dccf607ae8d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fec17030a40f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-knowledge-graphs-with-wikipedia-ec17030a40f6&source=-----ec17030a40f6---------------------bookmark_footer-----------)![](img/946ca13307226697062b4dccf607ae8d.png)
 
 图片由 [DeepMind](https://unsplash.com/@deepmind?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/LIlsk-UFVxk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 

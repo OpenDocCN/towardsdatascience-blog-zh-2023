@@ -1,18 +1,18 @@
-# 保护LLM的防护措施
+# 保护 LLM 的防护措施
 
-> 原文：[https://towardsdatascience.com/safeguarding-llms-with-guardrails-4f5d9f57cff2?source=collection_archive---------0-----------------------#2023-09-01](https://towardsdatascience.com/safeguarding-llms-with-guardrails-4f5d9f57cff2?source=collection_archive---------0-----------------------#2023-09-01)
+> 原文：[`towardsdatascience.com/safeguarding-llms-with-guardrails-4f5d9f57cff2?source=collection_archive---------0-----------------------#2023-09-01`](https://towardsdatascience.com/safeguarding-llms-with-guardrails-4f5d9f57cff2?source=collection_archive---------0-----------------------#2023-09-01)
 
-![](../Images/db29b1bf04778fcce3379ae9003c47b4.png)
+![](img/db29b1bf04778fcce3379ae9003c47b4.png)
 
-图片由作者使用Dall-E 2创建
+图片由作者使用 Dall-E 2 创建
 
-## 实用指南：实施防护措施，涵盖了Guardrails AI和NVIDIA的NeMo Guardrails
+## 实用指南：实施防护措施，涵盖了 Guardrails AI 和 NVIDIA 的 NeMo Guardrails
 
-[](https://aparnadhinak.medium.com/?source=post_page-----4f5d9f57cff2--------------------------------)[![Aparna Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----4f5d9f57cff2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4f5d9f57cff2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4f5d9f57cff2--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----4f5d9f57cff2--------------------------------)
+[](https://aparnadhinak.medium.com/?source=post_page-----4f5d9f57cff2--------------------------------)![Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----4f5d9f57cff2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4f5d9f57cff2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f5d9f57cff2--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----4f5d9f57cff2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsafeguarding-llms-with-guardrails-4f5d9f57cff2&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----4f5d9f57cff2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f5d9f57cff2--------------------------------) ·11分钟阅读·2023年9月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4f5d9f57cff2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsafeguarding-llms-with-guardrails-4f5d9f57cff2&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----4f5d9f57cff2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsafeguarding-llms-with-guardrails-4f5d9f57cff2&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----4f5d9f57cff2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f5d9f57cff2--------------------------------) ·11 分钟阅读·2023 年 9 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4f5d9f57cff2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsafeguarding-llms-with-guardrails-4f5d9f57cff2&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----4f5d9f57cff2---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 *本文由* [*Hakan Tekgul*](https://www.linkedin.com/in/hakantekgul/) *合著*
 
-随着大型语言模型（LLM）应用进入主流并扩展到更大的企业，确立有效的生产化应用治理变得尤为重要。鉴于LLM驱动的应用具有开放性特征，可能产生不符合组织指南或政策的响应，一系列安全措施和行动正成为维护生成式AI信任的必要条件。
+随着大型语言模型（LLM）应用进入主流并扩展到更大的企业，确立有效的生产化应用治理变得尤为重要。鉴于 LLM 驱动的应用具有开放性特征，可能产生不符合组织指南或政策的响应，一系列安全措施和行动正成为维护生成式 AI 信任的必要条件。
 
 本指南旨在带你了解几种可用的框架以及如何考虑实施。
 
@@ -56,7 +56,7 @@
 
 Guardrails [基于 RAIL](https://www.guardrailsai.com/docs/how_to_guides/rail) (.rail) 规范，以强制 LLM 输出的特定规则，并为 LLM API 调用提供轻量级的包装器。为了理解 Guardrails AI 的工作原理，我们首先需要了解 RAIL 规范，这是护栏的核心。
 
-**RAIL（可靠的AI标记语言）**
+**RAIL（可靠的 AI 标记语言）**
 
 RAIL 是一种与语言无关且人类可读的格式，用于指定 LLM 输出的特定规则和纠正措施。它是一种 XML 方言，每个 RAIL 规范包含三个主要组成部分：
 
@@ -205,7 +205,7 @@ define flow
 
 还值得注意的是：“可以使用表达式为上下文变量设置值”和“动作是可从流程中调用的自定义函数。”
 
-![](../Images/a5654488b2164fa8ae6c6f95944145c5.png)
+![](img/a5654488b2164fa8ae6c6f95944145c5.png)
 
 作者绘制的图表
 
@@ -326,13 +326,13 @@ result = app.generate(messages=history)
 
 在比较 Guardrails AI 和 NeMo 包时，每个都有其独特的优点和限制。这两个包都提供了对任何 LLM 应用的实时护栏，并支持 LlamaIndex 或 LangChain 进行协调。
 
-如果你对XML语法感到舒适，并希望在笔记本中测试保护措施的概念，以进行简单的输出审核和格式化，Guardrails AI可能是一个不错的选择。Guardrails AI还提供了广泛的文档和多种示例，可以引导你朝着正确的方向前进。
+如果你对 XML 语法感到舒适，并希望在笔记本中测试保护措施的概念，以进行简单的输出审核和格式化，Guardrails AI 可能是一个不错的选择。Guardrails AI 还提供了广泛的文档和多种示例，可以引导你朝着正确的方向前进。
 
-然而，如果你想将LLM应用程序投入生产，并希望为你的流程定义高级对话指南和策略，NeMo保护措施可能是一个值得检查的好软件包。使用NeMo保护措施，你可以在管理LLM应用程序方面有很大的灵活性。通过定义不同的对话流程和自定义机器人动作，你可以为你的AI模型创建任何类型的保护措施。
+然而，如果你想将 LLM 应用程序投入生产，并希望为你的流程定义高级对话指南和策略，NeMo 保护措施可能是一个值得检查的好软件包。使用 NeMo 保护措施，你可以在管理 LLM 应用程序方面有很大的灵活性。通过定义不同的对话流程和自定义机器人动作，你可以为你的 AI 模型创建任何类型的保护措施。
 
 ## 一个视角
 
-根据我们在组织内实现保护措施用于内部产品文档聊天机器人的经验，我们建议使用NeMo保护措施来推进生产。尽管缺乏广泛的文档可能会成为将工具纳入你的LLM基础设施堆栈的挑战，但该软件包在定义受限用户流程方面的灵活性确实改善了我们的用户体验。通过为平台的不同功能定义特定流程，我们创建的问答服务开始被我们的客户成功工程师积极使用。使用NeMo保护措施，我们还能够更容易地理解某些功能缺乏文档的情况，并改进我们的文档，从而帮助整个对话流程。
+根据我们在组织内实现保护措施用于内部产品文档聊天机器人的经验，我们建议使用 NeMo 保护措施来推进生产。尽管缺乏广泛的文档可能会成为将工具纳入你的 LLM 基础设施堆栈的挑战，但该软件包在定义受限用户流程方面的灵活性确实改善了我们的用户体验。通过为平台的不同功能定义特定流程，我们创建的问答服务开始被我们的客户成功工程师积极使用。使用 NeMo 保护措施，我们还能够更容易地理解某些功能缺乏文档的情况，并改进我们的文档，从而帮助整个对话流程。
 
 一旦你确定了一个框架，值得牢记一些最佳实践。
 
@@ -340,7 +340,7 @@ result = app.generate(messages=history)
 
 同样值得考虑的是**动态保护措施**。少量提示——通过将近期攻击示例添加到提示中来提高保护识别——以及基于嵌入的保护措施，这些措施将输入嵌入与已知攻击模式进行比较，阻止那些超过相似性阈值的内容，可以帮助面对复杂的提示注入或越狱尝试的团队（完全披露：我领导一家公司，提供开源基于嵌入的保护措施）。
 
-![](../Images/51c4a361b0bcf3365c2a7bb268ff0b9f.png)
+![](img/51c4a361b0bcf3365c2a7bb268ff0b9f.png)
 
 作者图示
 

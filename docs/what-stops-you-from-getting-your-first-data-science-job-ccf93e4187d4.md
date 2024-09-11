@@ -1,18 +1,18 @@
 # 什么阻碍了你获得第一个数据科学工作？
 
-> 原文：[https://towardsdatascience.com/what-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4?source=collection_archive---------8-----------------------#2023-03-23](https://towardsdatascience.com/what-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4?source=collection_archive---------8-----------------------#2023-03-23)
+> 原文：[`towardsdatascience.com/what-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4?source=collection_archive---------8-----------------------#2023-03-23`](https://towardsdatascience.com/what-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4?source=collection_archive---------8-----------------------#2023-03-23)
 
 ## 数据科学面试流程和获得第一个工作机会的步骤
 
-[](https://medium.com/@alex.vamvakaris.ds?source=post_page-----ccf93e4187d4--------------------------------)[![亚历克斯·瓦姆瓦卡里斯](../Images/bf8cf7c92a94d2b0d9242afcc03bf425.png)](https://medium.com/@alex.vamvakaris.ds?source=post_page-----ccf93e4187d4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ccf93e4187d4--------------------------------)[![迈向数据科学](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ccf93e4187d4--------------------------------) [亚历克斯·瓦姆瓦卡里斯](https://medium.com/@alex.vamvakaris.ds?source=post_page-----ccf93e4187d4--------------------------------)
+[](https://medium.com/@alex.vamvakaris.ds?source=post_page-----ccf93e4187d4--------------------------------)![亚历克斯·瓦姆瓦卡里斯](https://medium.com/@alex.vamvakaris.ds?source=post_page-----ccf93e4187d4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ccf93e4187d4--------------------------------)![迈向数据科学](https://towardsdatascience.com/?source=post_page-----ccf93e4187d4--------------------------------) [亚历克斯·瓦姆瓦卡里斯](https://medium.com/@alex.vamvakaris.ds?source=post_page-----ccf93e4187d4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8072260dd591&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4&user=Alex+Vamvakaris&userId=8072260dd591&source=post_page-8072260dd591----ccf93e4187d4---------------------post_header-----------) 发表在 [迈向数据科学](https://towardsdatascience.com/?source=post_page-----ccf93e4187d4--------------------------------) ·12分钟阅读·2023年3月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fccf93e4187d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4&user=Alex+Vamvakaris&userId=8072260dd591&source=-----ccf93e4187d4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8072260dd591&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4&user=Alex+Vamvakaris&userId=8072260dd591&source=post_page-8072260dd591----ccf93e4187d4---------------------post_header-----------) 发表在 [迈向数据科学](https://towardsdatascience.com/?source=post_page-----ccf93e4187d4--------------------------------) ·12 分钟阅读·2023 年 3 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fccf93e4187d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4&user=Alex+Vamvakaris&userId=8072260dd591&source=-----ccf93e4187d4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fccf93e4187d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4&source=-----ccf93e4187d4---------------------bookmark_footer-----------)![](../Images/d071cd45a093a343e9668c8a4d50e371.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fccf93e4187d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-stops-you-from-getting-your-first-data-science-job-ccf93e4187d4&source=-----ccf93e4187d4---------------------bookmark_footer-----------)![](img/d071cd45a093a343e9668c8a4d50e371.png)
 
 图片由 [Rod Long](https://unsplash.com/@rodlong?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/7oGqlI-edAU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -34,7 +34,7 @@
 
 # 1\. 数据科学面试流程图
 
-![](../Images/74540aeddc0a2ca47e1dd43a80000214.png)
+![](img/74540aeddc0a2ca47e1dd43a80000214.png)
 
 由 [Brett Zeck](https://unsplash.com/@iambrettzeck?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 拍摄，来源于 [Unsplash](https://unsplash.com/photos/eyfMgGvo9PA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -50,7 +50,7 @@
 
 +   **最终面试：** 这一阶段并非总是存在，但在成熟的数据科学团队中，作为最后的关卡，你将与数据科学团队的高级领导（负责人或总监）进行简短的通话。目的是让他们了解你并给出“绿灯”或发现任何红旗。
 
-![](../Images/d202b89f3a46619b58a125673b13698d.png)
+![](img/d202b89f3a46619b58a125673b13698d.png)
 
 数据科学面试流程 [作者提供的图像]
 
@@ -58,7 +58,7 @@
 
 # 2\. 用你的简历打开大门
 
-![](../Images/8b6e58e0a4da1730fc85f0b619fd589d.png)
+![](img/8b6e58e0a4da1730fc85f0b619fd589d.png)
 
 照片由 [João Ferrão](https://unsplash.com/@joaoscferrao?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/4YzrcDNcRVg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供
 
@@ -72,11 +72,11 @@
 
 虽然典型的钥匙是一个小块形状金属，上面有切口以适配特定锁的钥匙孔，但你的简历将包含 **关键词** 和 **工作经验**。
 
-不幸的是，即使你打造了正确的“钥匙”，在这个阶段的成功率仍将是整个面试过程中最低的。这主要是由于这个阶段的随机性和匆忙性（你可能听说过，大多数简历在做出决定之前只会被查看2到3秒）。
+不幸的是，即使你打造了正确的“钥匙”，在这个阶段的成功率仍将是整个面试过程中最低的。这主要是由于这个阶段的随机性和匆忙性（你可能听说过，大多数简历在做出决定之前只会被查看 2 到 3 秒）。
 
 尽管申请后没有回应可能会让人感到沮丧，但另一方面，你也获得了所有需要的“弹药”来打造合适的“钥匙”。大多数职位描述通常会列出这些关键词，因此你需要做的是 a) 确定哪些职位适合你，b) 收集常见的关键词和所需的技能，并 c) 确保它们在你的简历中得到清晰的体现。相信这个简单的过程，凭借适当数量的申请，你将进入下一个阶段（这只是由于大数法则的一个简单情况）。
 
-如前所述，筛选过程的第二部分是与招聘人员的电话面试。这通常持续15到20分钟，招聘人员首先会给你介绍公司的背景和职位情况。之后，招聘人员会询问你的工作经历、通知期、签证要求、薪资预期以及一些关于职位的问题。常见的问题包括：
+如前所述，筛选过程的第二部分是与招聘人员的电话面试。这通常持续 15 到 20 分钟，招聘人员首先会给你介绍公司的背景和职位情况。之后，招聘人员会询问你的工作经历、通知期、签证要求、薪资预期以及一些关于职位的问题。常见的问题包括：
 
 +   你能快速介绍一下你的简历/工作经历吗？
 
@@ -90,13 +90,13 @@
 
 # 3\. 技术（家庭作业）评估
 
-![](../Images/1752956c8723818d62d3a26293f7fb99.png)
+![](img/1752956c8723818d62d3a26293f7fb99.png)
 
 图片由 [Nguyen Dang Hoang Nhu](https://unsplash.com/@nguyendhn?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/qDgTQOYk6B8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 技术性家庭作业通常以一系列问题的形式呈现。这些问题通常包括以下内容：
 
-+   编写一个函数来解决一个简单的问题（比如计算大于1000的前10个斐波那契数），使用 R 或 Python。
++   编写一个函数来解决一个简单的问题（比如计算大于 1000 的前 10 个斐波那契数），使用 R 或 Python。
 
 +   给定一个或多个表（通常不超过两个），你需要用 SQL 编写代码来提取或操作数据。这些问题通常从简单开始，例如计算符合某些条件的行总数，最后的问题则需要使用不同类型的连接和窗口函数。
 
@@ -106,23 +106,23 @@
 
 我无法过于强调双重（或三重）检查你的答案和验证代码的重要性。我还建议尽可能将这些检查加入到你的解决方案或代码中。你可以在下面的文章中找到有关 SQL 语句和测试代码的更多信息。
 
-[](/how-to-take-your-sql-from-zero-to-data-scientist-level-part-2-3-bc1cbb48299e?source=post_page-----ccf93e4187d4--------------------------------) [## 如何将你的 SQL 从零提升到数据科学家水平 — 第 2/3 部分
+[](/how-to-take-your-sql-from-zero-to-data-scientist-level-part-2-3-bc1cbb48299e?source=post_page-----ccf93e4187d4--------------------------------) ## 如何将你的 SQL 从零提升到数据科学家水平 — 第 2/3 部分
 
 ### SQL 完全指南：学习数据科学家常用的基础和高级 SQL 查询
 
-[towardsdatascience.com](/how-to-take-your-sql-from-zero-to-data-scientist-level-part-2-3-bc1cbb48299e?source=post_page-----ccf93e4187d4--------------------------------)
+[towardsdatascience.com
 
 或者，你可能会被给予一个数据挑战。更具体地说，你将获得一个数据集和一个任务或问题的概述。例如，在我为 Deliveroo 完成的家庭作业中，任务是分析他们的“骑手推荐骑手”项目与其他营销渠道的表现。任务的最后一步涉及向高级非技术利益相关者展示信息摘要，并建议可能的下一步。如果你在这一步需要更多帮助，我推荐阅读下面的指南。
 
-[](/how-to-transform-a-take-home-assignment-into-a-data-science-job-f06878d71d26?source=post_page-----ccf93e4187d4--------------------------------) [## 如何将家庭作业转化为数据科学职位
+[](/how-to-transform-a-take-home-assignment-into-a-data-science-job-f06878d71d26?source=post_page-----ccf93e4187d4--------------------------------) ## 如何将家庭作业转化为数据科学职位
 
 ### 如何从数据集中创建一个引人注目的故事的逐步指南
 
-[towardsdatascience.com](/how-to-transform-a-take-home-assignment-into-a-data-science-job-f06878d71d26?source=post_page-----ccf93e4187d4--------------------------------)
+[towardsdatascience.com
 
 # 4\. **与招聘数据科学家的现场面试**
 
-![](../Images/ffde06ddba5940625a61633a56a1ed1a.png)
+![](img/ffde06ddba5940625a61633a56a1ed1a.png)
 
 照片由 [GR Stocks](https://unsplash.com/@grstocks?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，照片来源于 [Unsplash](https://unsplash.com/photos/Iq9SaJezkOE?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -146,33 +146,33 @@
 
 +   我们最近启动了一个活动或优惠，并希望评估其表现。描述你会如何从头到尾处理这个问题（与业务相关者沟通，理解目标，获取所需数据，分析和展示结果）。
 
-+   描述你将如何为特定功能或倡议设计AB测试。
++   描述你将如何为特定功能或倡议设计 AB 测试。
 
-+   如果AB测试显示期望的指标在下降，而另一个指标在上升，你会如何决定是否发布或放弃这个功能？
++   如果 AB 测试显示期望的指标在下降，而另一个指标在上升，你会如何决定是否发布或放弃这个功能？
 
 不要害怕向面试官提出澄清问题，并将你的思路阐明给他们。面试官会根据你对模糊描述的理解能力（因为这些描述大多出现在实际环境中）以及你解决问题的方法来评估你。同时，不要犹豫向面试官请求几分钟时间来整理问题后再回答。最后，记住他们在寻找新员工时关注的是为业务提供价值的能力，因此始终以这个北极星为目标来组织你的回答。
 
 ## 4.3 技术技能评估
 
-在这一部分，你将被评估在统计学、AB测试和机器学习方面的技术技能。示例问题包括：
+在这一部分，你将被评估在统计学、AB 测试和机器学习方面的技术技能。示例问题包括：
 
-+   你将如何向一个5岁的小孩描述p值和置信区间？
++   你将如何向一个 5 岁的小孩描述 p 值和置信区间？
 
 +   你能解释什么是引导法以及它是如何使用的吗？
 
-+   你将如何在启动AB测试前估计样本大小？
++   你将如何在启动 AB 测试前估计样本大小？
 
-+   你将如何分析AB测试结果中异常值和测试前的不平衡？
++   你将如何分析 AB 测试结果中异常值和测试前的不平衡？
 
-如果你需要复习或了解上述问题，可以在下面的链接中找到关于商业环境中AB测试的完整指南。
+如果你需要复习或了解上述问题，可以在下面的链接中找到关于商业环境中 AB 测试的完整指南。
 
-[](/what-i-learned-after-running-ab-tests-for-one-year-as-a-data-scientist-part-1-2-5277911e89ec?source=post_page-----ccf93e4187d4--------------------------------) [## 我作为数据科学家运行AB测试一年的经验——第1/2部分]
+[](/what-i-learned-after-running-ab-tests-for-one-year-as-a-data-scientist-part-1-2-5277911e89ec?source=post_page-----ccf93e4187d4--------------------------------) [## 我作为数据科学家运行 AB 测试一年的经验——第 1/2 部分]
 
-### 像数据科学家一样设置你的A/B测试，按照这些简单的步骤操作。
+### 像数据科学家一样设置你的 A/B 测试，按照这些简单的步骤操作。
 
-[towardsdatascience.com](/what-i-learned-after-running-ab-tests-for-one-year-as-a-data-scientist-part-1-2-5277911e89ec?source=post_page-----ccf93e4187d4--------------------------------)
+towardsdatascience.com
 
-我还强烈推荐免费书籍[《统计学习导论：R语言应用》（An Introduction to Statistical Learning: With Applications in R）](https://www.statlearning.com/)以了解统计学习中的关键主题。书中还涵盖了以下问题：
+我还强烈推荐免费书籍[《统计学习导论：R 语言应用》（An Introduction to Statistical Learning: With Applications in R）](https://www.statlearning.com/)以了解统计学习中的关键主题。书中还涵盖了以下问题：
 
 +   你能解释一下机器学习中的偏差-方差权衡吗？
 
@@ -184,7 +184,7 @@
 
 # **5\. 从错误中学习**
 
-![](../Images/dd8a7fbff5d0026ca7ff55aaf2052b50.png)
+![](img/dd8a7fbff5d0026ca7ff55aaf2052b50.png)
 
 由[Patrick Tomasso](https://unsplash.com/@impatrickt?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄的照片，来自[Unsplash](https://unsplash.com/photos/1NTFSnV-KLs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

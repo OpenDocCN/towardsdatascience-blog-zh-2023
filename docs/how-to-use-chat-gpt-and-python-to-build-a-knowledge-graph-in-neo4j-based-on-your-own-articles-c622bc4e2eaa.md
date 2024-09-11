@@ -1,18 +1,18 @@
-# 如何使用Chat-GPT和Python在Neo4j中基于自己的文章构建知识图谱
+# 如何使用 Chat-GPT 和 Python 在 Neo4j 中基于自己的文章构建知识图谱
 
-> 原文：[https://towardsdatascience.com/how-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa?source=collection_archive---------0-----------------------#2023-08-26](https://towardsdatascience.com/how-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa?source=collection_archive---------0-----------------------#2023-08-26)
+> 原文：[`towardsdatascience.com/how-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa?source=collection_archive---------0-----------------------#2023-08-26`](https://towardsdatascience.com/how-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa?source=collection_archive---------0-----------------------#2023-08-26)
 
-## 一个包含超过120篇关于数学和数据科学的文章结构化知识的图表
+## 一个包含超过 120 篇关于数学和数据科学的文章结构化知识的图表
 
-[](https://kaspermuller.medium.com/?source=post_page-----c622bc4e2eaa--------------------------------)[![Kasper Müller](../Images/336cad595544ba68e3376a038d44df62.png)](https://kaspermuller.medium.com/?source=post_page-----c622bc4e2eaa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c622bc4e2eaa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c622bc4e2eaa--------------------------------) [Kasper Müller](https://kaspermuller.medium.com/?source=post_page-----c622bc4e2eaa--------------------------------)
+[](https://kaspermuller.medium.com/?source=post_page-----c622bc4e2eaa--------------------------------)![Kasper Müller](https://kaspermuller.medium.com/?source=post_page-----c622bc4e2eaa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c622bc4e2eaa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c622bc4e2eaa--------------------------------) [Kasper Müller](https://kaspermuller.medium.com/?source=post_page-----c622bc4e2eaa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F877b7991f678&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa&user=Kasper+M%C3%BCller&userId=877b7991f678&source=post_page-877b7991f678----c622bc4e2eaa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c622bc4e2eaa--------------------------------) ·8分钟阅读·2023年8月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc622bc4e2eaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa&user=Kasper+M%C3%BCller&userId=877b7991f678&source=-----c622bc4e2eaa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F877b7991f678&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa&user=Kasper+M%C3%BCller&userId=877b7991f678&source=post_page-877b7991f678----c622bc4e2eaa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c622bc4e2eaa--------------------------------) ·8 分钟阅读·2023 年 8 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc622bc4e2eaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa&user=Kasper+M%C3%BCller&userId=877b7991f678&source=-----c622bc4e2eaa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc622bc4e2eaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa&source=-----c622bc4e2eaa---------------------bookmark_footer-----------)![](../Images/c43ea8409a8a04894916f41afe7075dc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc622bc4e2eaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-chat-gpt-and-python-to-build-a-knowledge-graph-in-neo4j-based-on-your-own-articles-c622bc4e2eaa&source=-----c622bc4e2eaa---------------------bookmark_footer-----------)![](img/c43ea8409a8a04894916f41afe7075dc.png)
 
 作者截图
 

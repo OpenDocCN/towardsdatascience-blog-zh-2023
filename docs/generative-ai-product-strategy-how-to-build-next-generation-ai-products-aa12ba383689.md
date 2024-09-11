@@ -1,22 +1,22 @@
-# 生成式AI产品策略：如何构建下一代AI产品
+# 生成式 AI 产品策略：如何构建下一代 AI 产品
 
-> 原文：[https://towardsdatascience.com/generative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689?source=collection_archive---------5-----------------------#2023-01-25](https://towardsdatascience.com/generative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689?source=collection_archive---------5-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/generative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689?source=collection_archive---------5-----------------------#2023-01-25`](https://towardsdatascience.com/generative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689?source=collection_archive---------5-----------------------#2023-01-25)
 
-## 垂直AI产品与水平AI产品以及可防御的商业护城河
+## 垂直 AI 产品与水平 AI 产品以及可防御的商业护城河
 
-[](https://amogh-vaishampayan.medium.com/?source=post_page-----aa12ba383689--------------------------------)[![Amogh Vaishampayan](../Images/b650249f4bfdbc7a2f4ee4364000885e.png)](https://amogh-vaishampayan.medium.com/?source=post_page-----aa12ba383689--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aa12ba383689--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aa12ba383689--------------------------------) [Amogh Vaishampayan](https://amogh-vaishampayan.medium.com/?source=post_page-----aa12ba383689--------------------------------)
+[](https://amogh-vaishampayan.medium.com/?source=post_page-----aa12ba383689--------------------------------)![Amogh Vaishampayan](https://amogh-vaishampayan.medium.com/?source=post_page-----aa12ba383689--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aa12ba383689--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aa12ba383689--------------------------------) [Amogh Vaishampayan](https://amogh-vaishampayan.medium.com/?source=post_page-----aa12ba383689--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5ea805d911ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689&user=Amogh+Vaishampayan&userId=5ea805d911ae&source=post_page-5ea805d911ae----aa12ba383689---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aa12ba383689--------------------------------) ·12分钟阅读·2023年1月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faa12ba383689&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689&user=Amogh+Vaishampayan&userId=5ea805d911ae&source=-----aa12ba383689---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5ea805d911ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689&user=Amogh+Vaishampayan&userId=5ea805d911ae&source=post_page-5ea805d911ae----aa12ba383689---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aa12ba383689--------------------------------) ·12 分钟阅读·2023 年 1 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faa12ba383689&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689&user=Amogh+Vaishampayan&userId=5ea805d911ae&source=-----aa12ba383689---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faa12ba383689&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689&source=-----aa12ba383689---------------------bookmark_footer-----------)![](../Images/94ee498e4d2f3a247e18afa2ac789d47.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faa12ba383689&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-product-strategy-how-to-build-next-generation-ai-products-aa12ba383689&source=-----aa12ba383689---------------------bookmark_footer-----------)![](img/94ee498e4d2f3a247e18afa2ac789d47.png)
 
-图片由作者使用Midjourney生成
+图片由作者使用 Midjourney 生成
 
-人工智能在2022年取得了如此显著的进展，以至于世界似乎终于接受了这一技术现已普及到普通人日常使用的程度。
+人工智能在 2022 年取得了如此显著的进展，以至于世界似乎终于接受了这一技术现已普及到普通人日常使用的程度。
 
 生成型 AI 模型如 GPT3 和 Stable Diffusion 将使我们能够以以前难以想象的规模和速度进行创作。这将从根本上改变人类创造价值的方式。我们用于创作的每一个数字工具——从编码环境到视频编辑器到 3D 建模软件——都将经历剧烈的变化。
 
@@ -24,7 +24,7 @@
 
 当我作为一个对时尚业务知之甚少的人，尝试使用 Stable Diffusion 进行时尚设计时，我意识到这一点。对我来说，为时尚设计师提供一个无限创意的生成 AI 产品似乎是一个显而易见的想法。怀着热情，我使用 Stable Diffusion 生成了这张裙子图像，并与我的时尚设计师朋友分享了。
 
-![](../Images/66d0286381fc00707d2620f4d58efe5c.png)
+![](img/66d0286381fc00707d2620f4d58efe5c.png)
 
 这是一张由作者使用开箱即用的 Stable Diffusion 生成的裙子图像。
 
@@ -38,19 +38,19 @@
 
 **水平**方法涵盖了跨行业需求的产品，比如平面设计、广告设计或法律合同起草。广告创意在从汽车到食品等各行业都是必需的。在这里，产品不需要行业特定的工具。最重要的是一个出色的用户界面，使用户可以在比以前更短的时间内进行平面设计工作，并且质量更高。
 
-# 垂直AI产品
+# 垂直 AI 产品
 
-在为特定行业构建AI支持的产品的同时，除了部署最先进的AI模型，还需要构建它们特定工作流程所需的工具。下面是为时尚业生成面料印花设计的AI产品需要涵盖的内容-
+在为特定行业构建 AI 支持的产品的同时，除了部署最先进的 AI 模型，还需要构建它们特定工作流程所需的工具。下面是为时尚业生成面料印花设计的 AI 产品需要涵盖的内容-
 
-+   用户必须能够将情绪板图像与文本提示一起作为输入提供给生成式AI扩散模型。情绪板和提示文本通常是通过当前高销售趋势的数据分析得出的。
++   用户必须能够将情绪板图像与文本提示一起作为输入提供给生成式 AI 扩散模型。情绪板和提示文本通常是通过当前高销售趋势的数据分析得出的。
 
-+   AI模型必须生成适用于整体印花的无缝纹理。无缝纹理是一种图像，可以在自身的上方、下方或侧边放置，而不会在图像的副本之间产生明显的接缝、连接或边界。以下是我通过调整稳定扩散代码生成的无缝纹理的示例图像。该图像由四个生成的图像并排放置而成。
++   AI 模型必须生成适用于整体印花的无缝纹理。无缝纹理是一种图像，可以在自身的上方、下方或侧边放置，而不会在图像的副本之间产生明显的接缝、连接或边界。以下是我通过调整稳定扩散代码生成的无缝纹理的示例图像。该图像由四个生成的图像并排放置而成。
 
-![](../Images/9a73c7e13ebcd415b6a70c1942170c19.png)
+![](img/9a73c7e13ebcd415b6a70c1942170c19.png)
 
 作者通过微调稳定扩散生成的无缝面料印花图案
 
-+   创造力是一个迭代的过程。设计师应该能够通过手动编辑或者在后续的AI生成中引入特定的修改来迭代地修改每一代AI的输出。
++   创造力是一个迭代的过程。设计师应该能够通过手动编辑或者在后续的 AI 生成中引入特定的修改来迭代地修改每一代 AI 的输出。
 
 +   需要由不同角色的用户进行多层次的审批。设计主管可能需要签署最终设计。
 
@@ -58,9 +58,9 @@
 
 +   最后，输出必须转换为可以发送给布料打印机的矢量文件格式。
 
-时尚设计师需要围绕生成式AI模型的输出构建这种面向行业的工具。
+时尚设计师需要围绕生成式 AI 模型的输出构建这种面向行业的工具。
 
-考虑另一个AI辅助室内设计的例子，它通过生成图像展示了房间如何以特定风格进行改造。以下是专业室内设计师在使用[AI室内设计](https://interiorai.com/)工具时分享反馈的[文章摘录](https://businessofhome.com/articles/we-had-designers-test-an-ai-design-tool-here-s-how-it-went) 。
+考虑另一个 AI 辅助室内设计的例子，它通过生成图像展示了房间如何以特定风格进行改造。以下是专业室内设计师在使用[AI 室内设计](https://interiorai.com/)工具时分享反馈的[文章摘录](https://businessofhome.com/articles/we-had-designers-test-an-ai-design-tool-here-s-how-it-went) 。
 
 > 当我们要求其创建一个“波西米亚”客厅时，霍勒斯指出算法选择了她为希望看起来相同的客户使用过的类似调色板。“我可以看到将其用作开发情绪板图像的工具，”她补充说。“所有的参考都很准确。”
 > 
@@ -70,7 +70,7 @@
 > 
 > 这个工具经常会生成一个房间的基本近似图，但改变了比例、去掉了窗户或将天花板降低了几英尺。
 
-![](../Images/6a38d17613d8b76558ccf1769762cb56.png)
+![](img/6a38d17613d8b76558ccf1769762cb56.png)
 
 不错的浴室，但马桶在哪里？作者使用 Midjourney 生成的图像
 
@@ -84,7 +84,7 @@
 
 ## **垂直 AI 产品中的护城河**
 
-![](../Images/9de01b1766ca798ae2d29ad1bcc97901.png)
+![](img/9de01b1766ca798ae2d29ad1bcc97901.png)
 
 作者使用 Midjourney 生成的图像
 
@@ -112,7 +112,7 @@ Canva 是一个很好的例子，展示了这一点。Canva 使得一个会计�
 
 RunwayML 是一个由 AI 驱动的视频创作和编辑工具，表现出色。RunwayML 通过从擦除和替换对象到自动化视频运动跟踪等功能，降低了内容创作的门槛。他们对 Stable Diffusion 的贡献意味着他们正在投资推动最先进 AI 的边界。通过这些方法的结合，RunwayML 获得了大量客户，并在其业务周围建立了长期的护城河。
 
-![](../Images/66700e526b573034a1cc051cda5a1a58.png)
+![](img/66700e526b573034a1cc051cda5a1a58.png)
 
 来源: [RunwayML](https://runwayml.com/) 网站
 
@@ -124,7 +124,7 @@ Canva 的成功很大程度上归因于其作为非设计师工具的定位护�
 
 人工智能工具用于内容推荐、图像重照、光学字符识别和语音转文字等应用已经存在了几年，并已经成为我们每天使用的产品的一部分。活跃地协助我们的创意过程的人工智能产品潮流刚刚开始。每个人都在关心但似乎没有一个明确答案的问题是，这会对人类的工作岗位产生什么影响？这是一个非常困难的问题，没有一个单一的答案。不过，我可以肯定的是答案既不在于人工智能完全取代人类，也不在于人类的思维不可替代。在我看来，不可能有一种能经得住时间考验的确定答案。细微的答案将在两者之间，根据技术随时间的发展而不断在这两个极端之间移动。
 
-数字艺术家一段时间以来一直在Photoshop中使用由人工智能提供动力的功能，例如智能背景去除和内容感知填充。它只是在幕后，没有公开宣传为人工智能。如今，生成式人工智能扩散模型能够从创意过程的第一步（让我们考虑第0步为决定为什么和什么来创作）开始做出贡献。虽然人工智能之前只对创意产出做出了少量贡献，但随着时间的推移，它将会做出更多的贡献。我看到这些新创作工具有两个明显的后果：
+数字艺术家一段时间以来一直在 Photoshop 中使用由人工智能提供动力的功能，例如智能背景去除和内容感知填充。它只是在幕后，没有公开宣传为人工智能。如今，生成式人工智能扩散模型能够从创意过程的第一步（让我们考虑第 0 步为决定为什么和什么来创作）开始做出贡献。虽然人工智能之前只对创意产出做出了少量贡献，但随着时间的推移，它将会做出更多的贡献。我看到这些新创作工具有两个明显的后果：
 
 1.  它们将大大降低进入许多领域的门槛，从而导致创作者数量激增
 
@@ -136,10 +136,10 @@ Canva 的成功很大程度上归因于其作为非设计师工具的定位护�
 
 那些构建这些产品的人将获得巨大的回报。我们正处于一个很可能被视为人类历史上最具决定性的时期的边缘。
 
-如果你是一位致力于建立人工智能产品的产品经理，我已经编写了一份由3部分组成的实用指南，告诉你如何执行：
+如果你是一位致力于建立人工智能产品的产品经理，我已经编写了一份由 3 部分组成的实用指南，告诉你如何执行：
 
-+   [**第1部分**](https://medium.com/swlh/a-practical-guide-to-ai-product-management-part-1-5b629da25131)**:**基础知识——什么使人工智能产品管理与众不同，你是否应该在项目中使用机器学习，人工智能产品经理的先决知识
++   [**第一部分**](https://medium.com/swlh/a-practical-guide-to-ai-product-management-part-1-5b629da25131)**:**基础知识——什么使人工智能产品管理与众不同，你是否应该在项目中使用机器学习，人工智能产品经理的先决知识
 
-+   [**第 2 部分**](https://medium.com/swlh/a-practical-guide-to-ai-product-management-part-3-75f14312aa8d)**:** AI 团队管理、产品规划和开发战略
++   [**第二部分**](https://medium.com/swlh/a-practical-guide-to-ai-product-management-part-3-75f14312aa8d)**:** AI 团队管理、产品规划和开发战略
 
-+   [**第 3 部分**](https://medium.com/swlh/a-practical-guide-to-ai-product-management-part-3-75f14312aa8d)**:** 模型选择、部署到生产环境、模型维护和成本管理
++   [**第三部分**](https://medium.com/swlh/a-practical-guide-to-ai-product-management-part-3-75f14312aa8d)**:** 模型选择、部署到生产环境、模型维护和成本管理

@@ -1,18 +1,18 @@
 # 使用 Streamlit 进行简单调查
 
-> 原文：[https://towardsdatascience.com/simple-surveys-with-streamlit-and-databutton-d027586f1c71?source=collection_archive---------11-----------------------#2023-06-19](https://towardsdatascience.com/simple-surveys-with-streamlit-and-databutton-d027586f1c71?source=collection_archive---------11-----------------------#2023-06-19)
+> 原文：[`towardsdatascience.com/simple-surveys-with-streamlit-and-databutton-d027586f1c71?source=collection_archive---------11-----------------------#2023-06-19`](https://towardsdatascience.com/simple-surveys-with-streamlit-and-databutton-d027586f1c71?source=collection_archive---------11-----------------------#2023-06-19)
 
 ## Streamlit 的用户界面组件使得构建简单调查变得容易
 
-[](https://medium.com/@alan-jones?source=post_page-----d027586f1c71--------------------------------)[![Alan Jones](../Images/359379fab1d6685ff08080b98173e67c.png)](https://medium.com/@alan-jones?source=post_page-----d027586f1c71--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d027586f1c71--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d027586f1c71--------------------------------) [Alan Jones](https://medium.com/@alan-jones?source=post_page-----d027586f1c71--------------------------------)
+[](https://medium.com/@alan-jones?source=post_page-----d027586f1c71--------------------------------)![Alan Jones](https://medium.com/@alan-jones?source=post_page-----d027586f1c71--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d027586f1c71--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d027586f1c71--------------------------------) [Alan Jones](https://medium.com/@alan-jones?source=post_page-----d027586f1c71--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d3f5fb94faa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-surveys-with-streamlit-and-databutton-d027586f1c71&user=Alan+Jones&userId=7d3f5fb94faa&source=post_page-7d3f5fb94faa----d027586f1c71---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d027586f1c71--------------------------------) ·10 min read·2023年6月19日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d3f5fb94faa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-surveys-with-streamlit-and-databutton-d027586f1c71&user=Alan+Jones&userId=7d3f5fb94faa&source=post_page-7d3f5fb94faa----d027586f1c71---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d027586f1c71--------------------------------) ·10 min read·2023 年 6 月 19 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd027586f1c71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-surveys-with-streamlit-and-databutton-d027586f1c71&source=-----d027586f1c71---------------------bookmark_footer-----------)![](../Images/054e1e498d5035ba5a4e7c90024ebc1e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd027586f1c71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-surveys-with-streamlit-and-databutton-d027586f1c71&source=-----d027586f1c71---------------------bookmark_footer-----------)![](img/054e1e498d5035ba5a4e7c90024ebc1e.png)
 
 图片来源：[Nguyen Dang Hoang Nhu](https://unsplash.com/@nguyendhn?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

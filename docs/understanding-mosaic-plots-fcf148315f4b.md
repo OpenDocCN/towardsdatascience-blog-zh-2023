@@ -1,20 +1,20 @@
 # 理解马赛克图
 
-> 原文：[https://towardsdatascience.com/understanding-mosaic-plots-fcf148315f4b?source=collection_archive---------19-----------------------#2023-06-13](https://towardsdatascience.com/understanding-mosaic-plots-fcf148315f4b?source=collection_archive---------19-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/understanding-mosaic-plots-fcf148315f4b?source=collection_archive---------19-----------------------#2023-06-13`](https://towardsdatascience.com/understanding-mosaic-plots-fcf148315f4b?source=collection_archive---------19-----------------------#2023-06-13)
 
 ## PYTHON | 数据 | 可视化
 
-## 一份全面的指南，教你如何使用statsmodels和Matplotlib有效地绘制多变量数据集
+## 一份全面的指南，教你如何使用 statsmodels 和 Matplotlib 有效地绘制多变量数据集
 
-[](https://david-farrugia.medium.com/?source=post_page-----fcf148315f4b--------------------------------)[![David Farrugia](../Images/082ed61e24c7c26a4ae1c77343a87824.png)](https://david-farrugia.medium.com/?source=post_page-----fcf148315f4b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcf148315f4b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fcf148315f4b--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----fcf148315f4b--------------------------------)
+[](https://david-farrugia.medium.com/?source=post_page-----fcf148315f4b--------------------------------)![David Farrugia](https://david-farrugia.medium.com/?source=post_page-----fcf148315f4b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcf148315f4b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcf148315f4b--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----fcf148315f4b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-mosaic-plots-fcf148315f4b&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----fcf148315f4b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcf148315f4b--------------------------------) · 7 分钟阅读 · 2023年6月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcf148315f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-mosaic-plots-fcf148315f4b&user=David+Farrugia&userId=3916826092a6&source=-----fcf148315f4b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-mosaic-plots-fcf148315f4b&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----fcf148315f4b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcf148315f4b--------------------------------) · 7 分钟阅读 · 2023 年 6 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcf148315f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-mosaic-plots-fcf148315f4b&user=David+Farrugia&userId=3916826092a6&source=-----fcf148315f4b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffcf148315f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-mosaic-plots-fcf148315f4b&source=-----fcf148315f4b---------------------bookmark_footer-----------)![](../Images/1c4dabd212163540cd516eceede2f4b4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffcf148315f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-mosaic-plots-fcf148315f4b&source=-----fcf148315f4b---------------------bookmark_footer-----------)![](img/1c4dabd212163540cd516eceede2f4b4.png)
 
 照片由 [Dimitry B](https://unsplash.com/fr/@dimitry_b?utm_source=medium&utm_medium=referral) 拍摄，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

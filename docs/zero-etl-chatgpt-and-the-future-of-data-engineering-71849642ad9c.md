@@ -1,24 +1,24 @@
-# Zero-ETL、ChatGPT与数据工程的未来
+# Zero-ETL、ChatGPT 与数据工程的未来
 
-> 原文：[https://towardsdatascience.com/zero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c?source=collection_archive---------0-----------------------#2023-04-03](https://towardsdatascience.com/zero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c?source=collection_archive---------0-----------------------#2023-04-03)
+> 原文：[`towardsdatascience.com/zero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c?source=collection_archive---------0-----------------------#2023-04-03`](https://towardsdatascience.com/zero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c?source=collection_archive---------0-----------------------#2023-04-03)
 
 ## *后现代数据栈即将到来。我们准备好了吗？*
 
-[](https://barrmoses.medium.com/?source=post_page-----71849642ad9c--------------------------------)[![Barr Moses](../Images/4c74558ee692a85196d5a55ac1920718.png)](https://barrmoses.medium.com/?source=post_page-----71849642ad9c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----71849642ad9c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----71849642ad9c--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----71849642ad9c--------------------------------)
+[](https://barrmoses.medium.com/?source=post_page-----71849642ad9c--------------------------------)![Barr Moses](https://barrmoses.medium.com/?source=post_page-----71849642ad9c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----71849642ad9c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----71849642ad9c--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----71849642ad9c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----71849642ad9c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----71849642ad9c--------------------------------) ·9分钟阅读·2023年4月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F71849642ad9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c&user=Barr+Moses&userId=2818bac48708&source=-----71849642ad9c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----71849642ad9c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----71849642ad9c--------------------------------) ·9 分钟阅读·2023 年 4 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F71849642ad9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c&user=Barr+Moses&userId=2818bac48708&source=-----71849642ad9c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F71849642ad9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c&source=-----71849642ad9c---------------------bookmark_footer-----------)![](../Images/ebb6da7687de8bfa3305f977a6b9af5b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F71849642ad9c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzero-etl-chatgpt-and-the-future-of-data-engineering-71849642ad9c&source=-----71849642ad9c---------------------bookmark_footer-----------)![](img/ebb6da7687de8bfa3305f977a6b9af5b.png)
 
 图片由作者提供。
 
 如果你不喜欢变化，那么数据工程可能不适合你。这个领域几乎没有什么能逃脱再创造。
 
-最近最显著的例子是Snowflake和Databricks颠覆了数据库的概念，开启了现代数据栈时代。
+最近最显著的例子是 Snowflake 和 Databricks 颠覆了数据库的概念，开启了现代数据栈时代。
 
 作为这一运动的一部分，Fivetran 和 dbt 从 ETL 到 ELT 根本改变了数据管道。Hightouch 在试图将重心转移到数据仓库的过程中中断了 SaaS 颠覆世界的趋势。Monte Carlo 也加入了争论，并说：“也许让工程师手动编写单元测试并不是确保[数据质量](https://www.montecarlodata.com/blog-what-is-data-observability/)的最佳方式。”
 
@@ -40,7 +40,7 @@
 
 # 实用性和权衡
 
-![](../Images/28d17f17d5963a293653541bc2ae4bd5.png)
+![](img/28d17f17d5963a293653541bc2ae4bd5.png)
 
 图片由[Tingey Injury Law Firm](https://unsplash.com/pt-br/@tingeyinjurylawfirm?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来源于[Unsplash](https://unsplash.com/s/photos/balancing-scales?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -52,7 +52,7 @@
 
 # Zero-ETL
 
-![](../Images/d489673d77e0fda119d06174852e3953.png)
+![](img/d489673d77e0fda119d06174852e3953.png)
 
 **它是什么**：一个误称；数据管道仍然存在。
 
@@ -80,7 +80,7 @@ Zero-ETL 通过让事务数据库在自动加载数据到数据仓库之前进�
 
 # 一个大表与大型语言模型
 
-![](../Images/c839082df453d6f5221ee12002197faf.png)
+![](img/c839082df453d6f5221ee12002197faf.png)
 
 **现状**：目前，业务利益相关者需要将他们的需求、指标和逻辑表达给数据专业人员，后者将其翻译成 SQL 查询，甚至可能还会生成一个仪表盘。即便所有数据已存在于数据仓库中，这一过程仍需要时间。更不用说在数据团队最喜欢的活动清单上，临时数据请求的排名介于根管治疗和文档编写之间。
 
@@ -92,7 +92,7 @@ Zero-ETL 通过让事务数据库在自动加载数据到数据仓库之前进�
 
 但如果通过将所有原始数据塞入一个大表来简化这种复杂性会怎样呢？
 
-那[是Benn Stancil提出的想法](https://benn.substack.com/p/the-rapture-and-the-reckoning#footnote-anchor-12-99275606)，他是数据领域最优秀且前瞻性的作家/创始人之一。没有人比他[更多地想象过](https://benn.substack.com/p/how-fivetran-fails)现代数据栈的[死亡](https://benn.substack.com/p/how-dbt-fails)。
+那[是 Benn Stancil 提出的想法](https://benn.substack.com/p/the-rapture-and-the-reckoning#footnote-anchor-12-99275606)，他是数据领域最优秀且前瞻性的作家/创始人之一。没有人比他[更多地想象过](https://benn.substack.com/p/how-fivetran-fails)现代数据栈的[死亡](https://benn.substack.com/p/how-dbt-fails)。
 
 作为一个概念，这并不*那么*不切实际。一些数据团队已经利用了一个大表（OBT）策略，该策略有[支持者和反对者](https://twitter.com/pdrmnvd/status/1619463942392389632)。
 
@@ -102,7 +102,7 @@ Zero-ETL 通过让事务数据库在自动加载数据到数据仓库之前进�
 
 **缺点**：这是否意味着过多的自由？数据专业人员对数据的痛苦怪癖（[时区](https://www.explainxkcd.com/wiki/index.php/1883:_Supervillain_Plan)！什么是“账户”？）比大多数业务利益相关者更为熟悉。我们是否从具有代表性而非直接的数据民主中受益？
 
-**谁在推动**：像[Delphi](https://www.delphihq.com/)和[GetDot.AI](https://getdot.ai/)这样的超级早期初创公司。像[Narrator](https://www.narratordata.com/)这样的初创公司。像Amazon [QuickSight](https://docs.aws.amazon.com/managedservices/latest/userguide/quicksight.html)、Tableau [Ask Data](https://help.tableau.com/current/pro/desktop/en-us/ask_data.htm)或ThoughtSpot这样的更成熟的公司在做一些类似的事情。
+**谁在推动**：像[Delphi](https://www.delphihq.com/)和[GetDot.AI](https://getdot.ai/)这样的超级早期初创公司。像[Narrator](https://www.narratordata.com/)这样的初创公司。像 Amazon [QuickSight](https://docs.aws.amazon.com/managedservices/latest/userguide/quicksight.html)、Tableau [Ask Data](https://help.tableau.com/current/pro/desktop/en-us/ask_data.htm)或 ThoughtSpot 这样的更成熟的公司在做一些类似的事情。
 
 实用性和价值释放潜力：令人耳目一新的是，这不是一项[寻求应用场景的技术](https://en.wikipedia.org/wiki/Blockchain)。价值和效率显而易见，但技术挑战也是如此。这个愿景仍在构建中，需要更多的时间来发展。也许最大的障碍是所需的基础设施干扰，这对于更成熟的组织来说风险过高。
 
@@ -118,25 +118,25 @@ Zero-ETL 通过让事务数据库在自动加载数据到数据仓库之前进�
 
 **缺点**：这一概念是否会使组织更容易或更难扩展他们的数据产品？另一个基本问题是，这些未来数据趋势中的许多是否都存在这样的问题：数据管道的副产品（代码、数据、元数据）是否对数据团队有价值，值得保留？
 
-**谁在推动它**： [Nextdata](https://www.nextdata.com/)，由数据网格创始人Zhamak Dehgahni创办。 [Nexla](https://www.nexla.com/nexsets-modern-data-building-blocks/) 也在这个领域发挥作用。
+**谁在推动它**： [Nextdata](https://www.nextdata.com/)，由数据网格创始人 Zhamak Dehgahni 创办。 [Nexla](https://www.nexla.com/nexsets-modern-data-building-blocks/) 也在这个领域发挥作用。
 
-实用性和价值解锁潜力：虽然Nextdata最近才从隐秘中浮出水面，数据产品容器仍在不断发展，但许多数据团队已经从数据网格实现中看到了证明的结果。数据表的未来将取决于这些容器的确切形状和执行。
+实用性和价值解锁潜力：虽然 Nextdata 最近才从隐秘中浮出水面，数据产品容器仍在不断发展，但许多数据团队已经从数据网格实现中看到了证明的结果。数据表的未来将取决于这些容器的确切形状和执行。
 
 # 数据生命周期的无尽重新想象
 
-![](../Images/eb8fb02d6640429c8ab06c6d65e66465.png)
+![](img/eb8fb02d6640429c8ab06c6d65e66465.png)
 
 图片来源：[zero take](https://unsplash.com/fr/@zerotake?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/s/photos/seasons?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 要洞察数据的未来，我们需要回顾数据的过去和现在。过去、现在、未来——数据基础设施处于持续的破坏和重生状态（尽管也许我们需要一些[更多混乱](https://medium.com/towards-data-science/the-chaos-data-engineering-manifesto-5dc09a182e85)）。
 
-数据仓库的意义已经从比尔·英门在1990年代引入的术语发生了剧烈变化。ETL管道现在是ELT管道。数据湖不像两年前那样模糊。
+数据仓库的意义已经从比尔·英门在 1990 年代引入的术语发生了剧烈变化。ETL 管道现在是 ELT 管道。数据湖不像两年前那样模糊。
 
 随着现代数据栈带来的这些创新，数据工程师在决定数据如何流动以及数据消费者如何访问数据方面仍然发挥了核心的技术角色。但有些变化比其他变化更大、更可怕。
 
-“零ETL”这个术语看起来很威胁，因为它（不准确地）暗示了数据管道的死亡，没有数据管道，我们还需要数据工程师吗？
+“零 ETL”这个术语看起来很威胁，因为它（不准确地）暗示了数据管道的死亡，没有数据管道，我们还需要数据工程师吗？
 
-尽管对ChatGPT生成代码能力的宣传不少，但这个过程仍然在技术数据工程师的手中，他们仍然需要进行审查和调试。大型语言模型令人担忧的一点是，它们可能从根本上扭曲数据管道或我们与数据消费者的关系（以及数据如何提供给他们）。
+尽管对 ChatGPT 生成代码能力的宣传不少，但这个过程仍然在技术数据工程师的手中，他们仍然需要进行审查和调试。大型语言模型令人担忧的一点是，它们可能从根本上扭曲数据管道或我们与数据消费者的关系（以及数据如何提供给他们）。
 
 然而，无论这个未来是否会实现，它仍然强烈依赖于数据工程师。
 

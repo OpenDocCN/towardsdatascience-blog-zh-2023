@@ -1,14 +1,14 @@
 # 类别不平衡策略 — 带代码的视觉指南
 
-> 原文：[https://towardsdatascience.com/class-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a?source=collection_archive---------2-----------------------#2023-04-24](https://towardsdatascience.com/class-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a?source=collection_archive---------2-----------------------#2023-04-24)
+> 原文：[`towardsdatascience.com/class-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a?source=collection_archive---------2-----------------------#2023-04-24`](https://towardsdatascience.com/class-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a?source=collection_archive---------2-----------------------#2023-04-24)
 
 ## 了解随机欠采样、过采样、SMOTE、ADASYN 和 Tomek 链接
 
-[](https://travis-tang.medium.com/?source=post_page-----8bc8fae71e1a--------------------------------)[![Travis Tang](../Images/8372ea73b8cf8fe344de6274b5d9ad17.png)](https://travis-tang.medium.com/?source=post_page-----8bc8fae71e1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8bc8fae71e1a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8bc8fae71e1a--------------------------------) [Travis Tang](https://travis-tang.medium.com/?source=post_page-----8bc8fae71e1a--------------------------------)
+[](https://travis-tang.medium.com/?source=post_page-----8bc8fae71e1a--------------------------------)![Travis Tang](https://travis-tang.medium.com/?source=post_page-----8bc8fae71e1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8bc8fae71e1a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8bc8fae71e1a--------------------------------) [Travis Tang](https://travis-tang.medium.com/?source=post_page-----8bc8fae71e1a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F169b6a57c01e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a&user=Travis+Tang&userId=169b6a57c01e&source=post_page-169b6a57c01e----8bc8fae71e1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8bc8fae71e1a--------------------------------) ·13分钟阅读·2023年4月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8bc8fae71e1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a&user=Travis+Tang&userId=169b6a57c01e&source=-----8bc8fae71e1a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F169b6a57c01e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a&user=Travis+Tang&userId=169b6a57c01e&source=post_page-169b6a57c01e----8bc8fae71e1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8bc8fae71e1a--------------------------------) ·13 分钟阅读·2023 年 4 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8bc8fae71e1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-strategies-a-visual-guide-with-code-8bc8fae71e1a&user=Travis+Tang&userId=169b6a57c01e&source=-----8bc8fae71e1a---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 在不平衡的数据集上训练的模型在少数类别上表现不佳。在最佳情况下，这可能会导致业务损失，如客户流失分析。而在最糟糕的情况下，它可能会蔓延到面部识别系统的系统性偏见中。
 
-![](../Images/7e0577b405b22eaa703f8b6695043510.png)
+![](img/7e0577b405b22eaa703f8b6695043510.png)
 
 一个平衡的数据集可能就是缺少的关键（来源：
 
@@ -34,21 +34,21 @@ Elena Mozhvilo 在 [Unsplash](https://unsplash.com/photos/j06gLuKK0GM))
 
 1.  随机欠采样
 
-1.  使用SMOTE进行过采样
+1.  使用 SMOTE 进行过采样
 
 1.  使用 ADASYN 进行过采样
 
-1.  使用Tomek Link进行欠采样
+1.  使用 Tomek Link 进行欠采样
 
-1.  使用SMOTE过采样，然后使用TOMEK Link进行欠采样（SMOTE-Tomek）
+1.  使用 SMOTE 过采样，然后使用 TOMEK Link 进行欠采样（SMOTE-Tomek）
 
 我还将在真实世界数据集上使用这些策略，并评估它们对机器学习模型的影响。让我们开始吧。
 
 > 所有源代码都在这里。
 
-# 使用Imbalance-learn
+# 使用 Imbalance-learn
 
-我们将使用Python中的`imbalanced-learn`包来解决类别不平衡的问题。这是一个开源库，依赖于scikit-learn，并提供在处理不平衡类别分类时的工具。
+我们将使用 Python 中的`imbalanced-learn`包来解决类别不平衡的问题。这是一个开源库，依赖于 scikit-learn，并提供在处理不平衡类别分类时的工具。
 
 要安装它，请使用以下命令。
 
@@ -58,11 +58,11 @@ pip install -U imbalanced-learn
 
 # 数据集
 
-我们使用的数据集是[**UCI社区与犯罪数据集（CC BY 4.0）**](https://archive.ics.uci.edu/ml/datasets/communities+and+crime)，包含1994年美国社区的100个属性。我们可以用它来预测是否**犯罪率高**（定义为**人均暴力犯罪**超过0.65）。数据来源于UCI机器学习库，由La Salle大学的Michael Redmond于2009年发布。
+我们使用的数据集是[**UCI 社区与犯罪数据集（CC BY 4.0）**](https://archive.ics.uci.edu/ml/datasets/communities+and+crime)，包含 1994 年美国社区的 100 个属性。我们可以用它来预测是否**犯罪率高**（定义为**人均暴力犯罪**超过 0.65）。数据来源于 UCI 机器学习库，由 La Salle 大学的 Michael Redmond 于 2009 年发布。
 
 > 数据集中包含的变量涉及社区，如被视为城市的人口比例和家庭收入中位数，以及涉及执法，如人均警官数量和分配给毒品单位的警官比例。
 
-此数据集存在类别不平衡。对于每一个高犯罪率社区，有12个低犯罪率社区。这非常适合我们的案例说明。
+此数据集存在类别不平衡。对于每一个高犯罪率社区，有 12 个低犯罪率社区。这非常适合我们的案例说明。
 
 ```py
 >>> from imblearn.datasets import fetch_datasets
@@ -83,7 +83,7 @@ pip install -U imbalanced-learn
  'DESCR': 'us_crime'}
 ```
 
-我们将把这个字典转换成Pandas数据框架，然后分割成训练-测试集。
+我们将把这个字典转换成 Pandas 数据框架，然后分割成训练-测试集。
 
 ```py
 # Convert the dictionary to a pandas dataframe
@@ -102,17 +102,17 @@ X_train, X_test, y_train, y_test = train_test_split(crime_df.drop('target', axis
 
 ## 数据集预处理
 
-我们的目标是可视化一个不平衡的数据集。为了在二维图中可视化128维的数据集，在训练集上进行以下操作。
+我们的目标是可视化一个不平衡的数据集。为了在二维图中可视化 128 维的数据集，在训练集上进行以下操作。
 
 +   缩放数据集，
 
-+   对特征执行主成分分析（PCA），将100个特征转换为2个主成分，
++   对特征执行主成分分析（PCA），将 100 个特征转换为 2 个主成分，
 
 +   可视化数据。
 
-这是数据在2D中的可视化。
+这是数据在 2D 中的可视化。
 
-![](../Images/86931b188116c9c87693d8ef51c041c2.png)
+![](img/86931b188116c9c87693d8ef51c041c2.png)
 
 作者提供的图片
 
@@ -154,11 +154,11 @@ plot_data(X_train_pca, y_train, ax, title='Original Dataset')
 
 预处理完成后，我们准备对数据集进行重采样。
 
-# 策略1\. 随机过采样
+# 策略 1\. 随机过采样
 
 随机过采样通过替换从少数类别中复制现有样本来增加例子。每个少数类别中的数据点有相同的复制概率。
 
-![](../Images/ceecf5a6b76f1149935c8efbbb4780d8.png)
+![](img/ceecf5a6b76f1149935c8efbbb4780d8.png)
 
 作者提供的图片
 
@@ -174,17 +174,17 @@ X_train_ros, y_train_ros = ros.fit_resample(X_train_pca, y_train)
 
 让我们比较随机过采样前（左）和随机过采样后（右）的数据。
 
-![](../Images/e8d5473774d60edf316cace663f86b4a.png)
+![](img/e8d5473774d60edf316cace663f86b4a.png)
 
-在Github上绘图的代码。图片来源：作者
+在 Github 上绘图的代码。图片来源：作者
 
 唯一的区别？在随机过采样之后，少数类中的**重叠数据点更多**。因此，少数类的数据点看起来更暗。
 
-# **策略2：随机欠采样**
+# **策略 2：随机欠采样**
 
 相反，随机欠采样会从多数类中移除现有样本。多数类中的每个数据点被移除的机会是相等的。
 
-![](../Images/8eeea9953f7b07db8e240e34bbf4b009.png)
+![](img/8eeea9953f7b07db8e240e34bbf4b009.png)
 
 图片来源：作者
 
@@ -203,7 +203,7 @@ X_train_rus, y_train_rus = rus.fit_resample(X_train_pca, y_train)
 
 让我们比较随机欠采样前（左）和后（右）的数据。
 
-![](../Images/783b6e0d87a1ebec3168b582b8d21975.png)
+![](img/783b6e0d87a1ebec3168b582b8d21975.png)
 
 图片来源：作者
 
@@ -211,7 +211,7 @@ X_train_rus, y_train_rus = rus.fit_resample(X_train_pca, y_train)
 
 ## 将机器学习应用于欠采样和过采样数据集
 
-让我们比较在上面三个数据集（未修改数据集、欠采样数据集和过采样数据集）上训练的分类机器学习模型（SVM模型）的表现
+让我们比较在上面三个数据集（未修改数据集、欠采样数据集和过采样数据集）上训练的分类机器学习模型（SVM 模型）的表现
 
 在这里，我们在三个数据集上训练了三种支持向量机分类器（SVC）：
 
@@ -240,9 +240,9 @@ clf_rus.fit(X_train_rus, y_train_rus)
 # Insert link here.
 ```
 
-然后，我们可以可视化每个SVC从数据集中学到的内容。
+然后，我们可以可视化每个 SVC 从数据集中学到的内容。
 
-![](../Images/c790f8a28ebcf0e5a45dbd055b11cc7f.png)
+![](img/c790f8a28ebcf0e5a45dbd055b11cc7f.png)
 
 图片来源：作者
 
@@ -254,17 +254,17 @@ clf_rus.fit(X_train_rus, y_train_rus)
 
 这里有一些观察：
 
-+   训练在*原始*数据集上的SVC…相当无用。它基本上将所有社区预测为紫色。它学会忽视所有黄色点。
++   训练在*原始*数据集上的 SVC…相当无用。它基本上将所有社区预测为紫色。它学会忽视所有黄色点。
 
-+   训练在过采样和欠采样数据集上的SVC的偏差较小。它们更不容易错误分类少数类。
++   训练在过采样和欠采样数据集上的 SVC 的偏差较小。它们更不容易错误分类少数类。
 
-+   训练在过采样和欠采样数据集上的SVC的决策边界有所不同。
++   训练在过采样和欠采样数据集上的 SVC 的决策边界有所不同。
 
-## 使用ROC评估重采样模型
+## 使用 ROC 评估重采样模型
 
-为了评估哪个SVC最佳，我们将评估SVC在测试集上的表现。我们将使用的指标是接收者操作特征曲线（ROC），以找到曲线下面积（AUC）。请搜索（Cmd+F）“**附录1**”以了解ROC的介绍。
+为了评估哪个 SVC 最佳，我们将评估 SVC 在测试集上的表现。我们将使用的指标是接收者操作特征曲线（ROC），以找到曲线下面积（AUC）。请搜索（Cmd+F）“**附录 1**”以了解 ROC 的介绍。
 
-![](../Images/efe1e7a50daeb633bc071de887eb0593.png)
+![](img/efe1e7a50daeb633bc071de887eb0593.png)
 
 图片来源：作者
 
@@ -294,17 +294,17 @@ plot_roc(ax, X_train_ros, y_train_ros, X_test_pca, y_test, 'Randomly Oversampled
 plot_roc(ax, X_train_rus, y_train_rus, X_test_pca, y_test, 'Randomly Undersampled Dataset') 
 ```
 
-在原始数据上训练的SVC表现不佳。它的表现比我们随机猜测结果还要差。
+在原始数据上训练的 SVC 表现不佳。它的表现比我们随机猜测结果还要差。
 
 随机过采样的数据集优于欠采样的数据集。一个可能的原因是，从欠采样过程中移除数据点会丧失信息。相反，过采样不会丢失信息。
 
 现在我们对过采样和欠采样技术有了理解，让我们深入探讨过采样和欠采样。
 
-# 策略 3\. 使用SMOTE进行过采样
+# 策略 3\. 使用 SMOTE 进行过采样
 
-SMOTE是一种过采样方法。直观地说，SMOTE通过在彼此之间插值的少数数据点之间创建合成数据点。
+SMOTE 是一种过采样方法。直观地说，SMOTE 通过在彼此之间插值的少数数据点之间创建合成数据点。
 
-这是SMOTE工作的简化说明。
+这是 SMOTE 工作的简化说明。
 
 1.  随机选择少数类中的一些数据点。
 
@@ -312,13 +312,13 @@ SMOTE是一种过采样方法。直观地说，SMOTE通过在彼此之间插值�
 
 1.  对于每个邻居，添加一个新点，该点位于数据点和邻居之间的某处。
 
-1.  重复步骤2到4，直到生成足够的合成数据点。
+1.  重复步骤 2 到 4，直到生成足够的合成数据点。
 
-*请搜索（Cmd+F）“附录2”以查找其创作者对SMOTE算法的确切描述。*
+*请搜索（Cmd+F）“附录 2”以查找其创作者对 SMOTE 算法的确切描述。*
 
 这是一个可视化。
 
-让我们使用SMOTE对数据集进行过采样，并在其上训练一个SVC。
+让我们使用 SMOTE 对数据集进行过采样，并在其上训练一个 SVC。
 
 ```py
 from imblearn.over_sampling import SMOTE
@@ -339,19 +339,19 @@ clf_smote.fit(X_train_smote, y_train_smote)
 
 这是结果。
 
-![](../Images/93afb26c0ba1103f7dee31647bb1d0ea.png)
+![](img/93afb26c0ba1103f7dee31647bb1d0ea.png)
 
 作者提供的图像
 
-# 策略 4\. 使用ADASYN进行过采样（+它与SMOTE的不同之处）
+# 策略 4\. 使用 ADASYN 进行过采样（+它与 SMOTE 的不同之处）
 
-ADASYN是SMOTE的一个变种：SMOTE和ADASYN都通过插值生成新样本。
+ADASYN 是 SMOTE 的一个变种：SMOTE 和 ADASYN 都通过插值生成新样本。
 
-但有一个关键的区别。ADASYN会在被KNN分类器错误分类的原始样本旁边生成样本。相反，SMOTE区分了被KNN分类器正确或错误分类的样本。
+但有一个关键的区别。ADASYN 会在被 KNN 分类器错误分类的原始样本旁边生成样本。相反，SMOTE 区分了被 KNN 分类器正确或错误分类的样本。
 
-这是ADASYN工作原理的可视化。
+这是 ADASYN 工作原理的可视化。
 
-让我们使用ADASYN对数据集进行过采样，并在其上训练一个SVC。
+让我们使用 ADASYN 对数据集进行过采样，并在其上训练一个 SVC。
 
 ```py
 from imblearn.over_sampling import ADASYN
@@ -370,31 +370,31 @@ clf_adasyn.fit(X_train_adasyn, y_train_adasyn)
 # Link:
 ```
 
-让我们比较SMOTE、ADASYN和原始数据集。
+让我们比较 SMOTE、ADASYN 和原始数据集。
 
-![](../Images/b0508f63d53bdbdac8559a5ced5afb8c.png)
+![](img/b0508f63d53bdbdac8559a5ced5afb8c.png)
 
 作者提供的图像
 
 这里有几点观察。
 
-首先，两种过采样方法都会在原始数据点之间创建更多的合成数据点。这是因为SMOTE和ADASYN都使用插值来创建新的数据点。
+首先，两种过采样方法都会在原始数据点之间创建更多的合成数据点。这是因为 SMOTE 和 ADASYN 都使用插值来创建新的数据点。
 
-其次，比较SMOTE和ADASYN时，我们注意到ADASYN会在少数（*黄色*）点附近的多数（*紫色*）数据点创建数据点。
+其次，比较 SMOTE 和 ADASYN 时，我们注意到 ADASYN 会在少数（*黄色*）点附近的多数（*紫色*）数据点创建数据点。
 
-+   比较上面用蓝色圈出的区域，ADASYN在只有少数紫色数据点的区域创建了*较少*的黄色数据点。
++   比较上面用蓝色圈出的区域，ADASYN 在只有少数紫色数据点的区域创建了*较少*的黄色数据点。
 
-+   比较上面用棕色圈出的区域，ADASYN在紫色数据点较多的区域创建了*更多*的黄色数据点。
++   比较上面用棕色圈出的区域，ADASYN 在紫色数据点较多的区域创建了*更多*的黄色数据点。
 
-让我们比较到目前为止我们描述的所有过采样方法的ROC曲线。在这个例子中，它们表现同样出色。
+让我们比较到目前为止我们描述的所有过采样方法的 ROC 曲线。在这个例子中，它们表现同样出色。
 
-![](../Images/3efbe5c0f92b3f979af1a495623abe81.png)
+![](img/3efbe5c0f92b3f979af1a495623abe81.png)
 
 作者提供的图像
 
 # 策略 5\. 使用汤姆克链接进行欠采样
 
-汤姆克链接是一对非常接近但属于不同类别的点。*汤姆克链接的数学定义可以在附录3中找到。*
+汤姆克链接是一对非常接近但属于不同类别的点。*汤姆克链接的数学定义可以在附录 3 中找到。*
 
 这是一个可视化。
 
@@ -422,7 +422,7 @@ clf_tomek.fit(X_train_tomek, y_train_tomek)
 
 现在让我们比较 Tomek 欠采样和随机欠采样。
 
-![](../Images/a0d832d1141b4bd1673e53d1bef2c71f.png)
+![](img/a0d832d1141b4bd1673e53d1bef2c71f.png)
 
 图片来源于作者
 
@@ -430,7 +430,7 @@ clf_tomek.fit(X_train_tomek, y_train_tomek)
 
 让我们看看 Tomek Link 欠采样的表现与随机欠采样有何不同。
 
-![](../Images/b45b058004a2d9c4af8eec5d33d36a39.png)
+![](img/b45b058004a2d9c4af8eec5d33d36a39.png)
 
 图片来源于作者
 
@@ -459,7 +459,7 @@ clf_smotetomek.fit(X_train_smotetomek, y_train_smotetomek)
 
 让我们比较 SMOTE、Tomek 和 SMOTE-Tomek。
 
-![](../Images/798077ce2d76cec375453ddcf4493c0a.png)
+![](img/798077ce2d76cec375453ddcf4493c0a.png)
 
 图片来源于作者
 
@@ -467,7 +467,7 @@ clf_smotetomek.fit(X_train_smotetomek, y_train_smotetomek)
 
 最终，我们将比较上述描述的所有技术。结果是，SMOTE-TOMEK 表现最佳。
 
-![](../Images/1bf9ed2d4e34e8377859560edbbfc7c3.png)
+![](img/1bf9ed2d4e34e8377859560edbbfc7c3.png)
 
 图片来源于作者
 
@@ -487,9 +487,9 @@ clf_smotetomek.fit(X_train_smotetomek, y_train_smotetomek)
 
 ROC 对类别不平衡不敏感，使其成为评估类别不平衡模型的绝佳工具。它不依赖于类别的普遍性。这与像准确率这样的评估指标形成对比，后者在类别不平衡时可能会产生误导。
 
-![](../Images/ea7535e53d252dd13478c5d82f190260.png)
+![](img/ea7535e53d252dd13478c5d82f190260.png)
 
-由 CMG Lee 绘制，基于 [http://commons.wikimedia.org/wiki/File:roc-draft-xkcd-style.svg](https://commons.wikimedia.org/wiki/File:roc-draft-xkcd-style.svg)。
+由 CMG Lee 绘制，基于 [`commons.wikimedia.org/wiki/File:roc-draft-xkcd-style.svg`](https://commons.wikimedia.org/wiki/File:roc-draft-xkcd-style.svg)。
 
 ROC 曲线绘制了 y 轴上的真实正例率 (TPR) 对 x 轴上的假正例率 (FPR) 的图像，用于所有可能的分类阈值。TPR 是正确分类为正例的正例实例的比例，而 FPR 是错误分类为正例的负例实例的比例。
 

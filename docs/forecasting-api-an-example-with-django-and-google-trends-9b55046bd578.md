@@ -1,10 +1,10 @@
 # 预测 API：Django 和 Google Trends 示例
 
-> 原文：[https://towardsdatascience.com/forecasting-api-an-example-with-django-and-google-trends-9b55046bd578?source=collection_archive---------13-----------------------#2023-08-01](https://towardsdatascience.com/forecasting-api-an-example-with-django-and-google-trends-9b55046bd578?source=collection_archive---------13-----------------------#2023-08-01)
+> 原文：[`towardsdatascience.com/forecasting-api-an-example-with-django-and-google-trends-9b55046bd578?source=collection_archive---------13-----------------------#2023-08-01`](https://towardsdatascience.com/forecasting-api-an-example-with-django-and-google-trends-9b55046bd578?source=collection_archive---------13-----------------------#2023-08-01)
 
 ## 构建一个 web 应用程序来预测 Google Trends 的发展。
 
-[](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)[![Davide Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9b55046bd578--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9b55046bd578--------------------------------) [Davide Burba](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)
+[](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)![Davide Burba](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9b55046bd578--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b55046bd578--------------------------------) [Davide Burba](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)
 
 ·
 
@@ -12,19 +12,19 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9b55046bd578&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecasting-api-an-example-with-django-and-google-trends-9b55046bd578&source=-----9b55046bd578---------------------bookmark_footer-----------)![](../Images/8e462ec58405d206471214cd10c1d9ea.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9b55046bd578&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecasting-api-an-example-with-django-and-google-trends-9b55046bd578&source=-----9b55046bd578---------------------bookmark_footer-----------)![](img/8e462ec58405d206471214cd10c1d9ea.png)
 
 “Google Trends”，由 [Giulia Roggia](https://www.instagram.com/giulia_roggia__/). 经许可使用。
 
-+   [介绍](#7d44)
++   介绍
 
-+   [Django 模型](#3fbd)
++   Django 模型
 
-+   [服务](#68d5)：[数据源](#7d4e)，[预处理](#cca9)，[机器学习](#b276)，[任务](#1912)
++   服务：数据源，预处理，机器学习，任务
 
-+   [交互层](#aeaa)：[序列化器](#f468)，[视图](#665f)，[端点](#e0f4)
++   交互层：序列化器，视图，端点
 
-+   [结论](#476d)
++   结论
 
 # 介绍
 

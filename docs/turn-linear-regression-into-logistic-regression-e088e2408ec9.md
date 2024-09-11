@@ -1,18 +1,18 @@
 # 将线性回归转化为逻辑回归
 
-> 原文：[https://towardsdatascience.com/turn-linear-regression-into-logistic-regression-e088e2408ec9?source=collection_archive---------12-----------------------#2023-03-27](https://towardsdatascience.com/turn-linear-regression-into-logistic-regression-e088e2408ec9?source=collection_archive---------12-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/turn-linear-regression-into-logistic-regression-e088e2408ec9?source=collection_archive---------12-----------------------#2023-03-27`](https://towardsdatascience.com/turn-linear-regression-into-logistic-regression-e088e2408ec9?source=collection_archive---------12-----------------------#2023-03-27)
 
 ## 从零开始实现逻辑回归的全面指南
 
-[](https://zubairhossain.medium.com/?source=post_page-----e088e2408ec9--------------------------------)[![Md. Zubair](../Images/1b983a23226ce7561796fa5b28c00d65.png)](https://zubairhossain.medium.com/?source=post_page-----e088e2408ec9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e088e2408ec9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e088e2408ec9--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----e088e2408ec9--------------------------------)
+[](https://zubairhossain.medium.com/?source=post_page-----e088e2408ec9--------------------------------)![Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----e088e2408ec9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e088e2408ec9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e088e2408ec9--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----e088e2408ec9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-linear-regression-into-logistic-regression-e088e2408ec9&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----e088e2408ec9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e088e2408ec9--------------------------------) ·10分钟阅读·2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe088e2408ec9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-linear-regression-into-logistic-regression-e088e2408ec9&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----e088e2408ec9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-linear-regression-into-logistic-regression-e088e2408ec9&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----e088e2408ec9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e088e2408ec9--------------------------------) ·10 分钟阅读·2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe088e2408ec9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-linear-regression-into-logistic-regression-e088e2408ec9&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----e088e2408ec9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe088e2408ec9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-linear-regression-into-logistic-regression-e088e2408ec9&source=-----e088e2408ec9---------------------bookmark_footer-----------)![](../Images/764eaf14aa790304658c9ca236dfedb0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe088e2408ec9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-linear-regression-into-logistic-regression-e088e2408ec9&source=-----e088e2408ec9---------------------bookmark_footer-----------)![](img/764eaf14aa790304658c9ca236dfedb0.png)
 
 照片由 [Rutger Leistra](https://unsplash.com/ko/@rutgerleistra?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,12 +24,12 @@
 
 ## 目录
 
-1.  `[**是什么使得线性回归变成逻辑回归？**](#b874)`
+1.  `**是什么使得线性回归变成逻辑回归？**`
 
-1.  `[**哪个函数起关键作用？**](#a923)`
+1.  `**哪个函数起关键作用？**`
 
-1.  `[**线性回归如何转化为逻辑回归？**](#8b86)`
+1.  `**线性回归如何转化为逻辑回归？**`
 
-1.  `[**生成损失函数**](#7623)`
+1.  `**生成损失函数**`
 
-1.  `[**为什么我们不能使用均方误差作为成本函数？**](#7222)`
+1.  `**为什么我们不能使用均方误差作为成本函数？**`

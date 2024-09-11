@@ -1,18 +1,18 @@
-# 带误差条的分组条形图（R语言）
+# 带误差条的分组条形图（R 语言）
 
-> 原文：[https://towardsdatascience.com/grouped-barplot-with-error-bars-in-r-ee87b112204d?source=collection_archive---------4-----------------------#2023-11-01](https://towardsdatascience.com/grouped-barplot-with-error-bars-in-r-ee87b112204d?source=collection_archive---------4-----------------------#2023-11-01)
+> 原文：[`towardsdatascience.com/grouped-barplot-with-error-bars-in-r-ee87b112204d?source=collection_archive---------4-----------------------#2023-11-01`](https://towardsdatascience.com/grouped-barplot-with-error-bars-in-r-ee87b112204d?source=collection_archive---------4-----------------------#2023-11-01)
 
 ## 数据准备和可视化的全面指南
 
-[](https://medium.com/@bhaskartigp?source=post_page-----ee87b112204d--------------------------------)[![Bhaskara Govinal Badiger](../Images/7c14288687e96546a7a5a3974c110dc8.png)](https://medium.com/@bhaskartigp?source=post_page-----ee87b112204d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee87b112204d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ee87b112204d--------------------------------) [Bhaskara Govinal Badiger](https://medium.com/@bhaskartigp?source=post_page-----ee87b112204d--------------------------------)
+[](https://medium.com/@bhaskartigp?source=post_page-----ee87b112204d--------------------------------)![Bhaskara Govinal Badiger](https://medium.com/@bhaskartigp?source=post_page-----ee87b112204d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee87b112204d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee87b112204d--------------------------------) [Bhaskara Govinal Badiger](https://medium.com/@bhaskartigp?source=post_page-----ee87b112204d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc2084c3fd87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrouped-barplot-with-error-bars-in-r-ee87b112204d&user=Bhaskara+Govinal+Badiger&userId=c2084c3fd87&source=post_page-c2084c3fd87----ee87b112204d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee87b112204d--------------------------------) · 10分钟阅读 · 2023年11月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee87b112204d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrouped-barplot-with-error-bars-in-r-ee87b112204d&user=Bhaskara+Govinal+Badiger&userId=c2084c3fd87&source=-----ee87b112204d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc2084c3fd87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrouped-barplot-with-error-bars-in-r-ee87b112204d&user=Bhaskara+Govinal+Badiger&userId=c2084c3fd87&source=post_page-c2084c3fd87----ee87b112204d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee87b112204d--------------------------------) · 10 分钟阅读 · 2023 年 11 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee87b112204d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrouped-barplot-with-error-bars-in-r-ee87b112204d&user=Bhaskara+Govinal+Badiger&userId=c2084c3fd87&source=-----ee87b112204d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee87b112204d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrouped-barplot-with-error-bars-in-r-ee87b112204d&source=-----ee87b112204d---------------------bookmark_footer-----------)![](../Images/79cc7d6144d1b3e1aba099cd52a6b3ce.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee87b112204d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrouped-barplot-with-error-bars-in-r-ee87b112204d&source=-----ee87b112204d---------------------bookmark_footer-----------)![](img/79cc7d6144d1b3e1aba099cd52a6b3ce.png)
 
 图片由[Paulius Dragunas](https://unsplash.com/@paulius005?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -61,13 +61,13 @@ df <- data.frame(Animals = c("cats", "dogs", "cows",
 view(df)
 ```
 
-![](../Images/91bfb3b436eacb1b445e852b6dbe356b.png)
+![](img/91bfb3b436eacb1b445e852b6dbe356b.png)
 
-`**Animals**` 列包含不同种类动物的名称。该列中有三种独特的动物： “cats”、 “dogs”和“cows”。我们对每种动物进行了四次采样，共得到12行数据。`**Category**` 列将动物分类为“Domestic”或“Stray”。其中有六个“Domestic”和六个“Strays”。`**Counts**` 列表示在给定的‘Category’和‘Animals’列中每种动物的计数。
+`**Animals**` 列包含不同种类动物的名称。该列中有三种独特的动物： “cats”、 “dogs”和“cows”。我们对每种动物进行了四次采样，共得到 12 行数据。`**Category**` 列将动物分类为“Domestic”或“Stray”。其中有六个“Domestic”和六个“Strays”。`**Counts**` 列表示在给定的‘Category’和‘Animals’列中每种动物的计数。
 
 # 数据类型和数据操作
 
-在R中，了解数据框中列（变量）的[**数据类型**](https://rpubs.com/STEMResearch/data-types-in-r)至关重要，因为不同的数据类型可能适用于不同的操作和函数。在`**df**`数据框中，`**Animals**`和`**Category**`列具有**字符**数据类型，而`**Counts**`列具有**数值**数据类型。字符数据类型对于处理文本数据（如名称、标签、描述和文本信息）非常重要。数值数据类型表示数值，包括整数和实数（浮点值）。
+在 R 中，了解数据框中列（变量）的[**数据类型**](https://rpubs.com/STEMResearch/data-types-in-r)至关重要，因为不同的数据类型可能适用于不同的操作和函数。在`**df**`数据框中，`**Animals**`和`**Category**`列具有**字符**数据类型，而`**Counts**`列具有**数值**数据类型。字符数据类型对于处理文本数据（如名称、标签、描述和文本信息）非常重要。数值数据类型表示数值，包括整数和实数（浮点值）。
 
 我们使用`**glimpse()**`函数获取数据框的摘要，以了解数据框`**df**`中变量的数据类型。
 
@@ -83,7 +83,7 @@ $ Category <chr> "Domestic", "Domestic", "Domestic", "Domestic", "Domestic", "Do
 $ Counts  <chr> "28", "22", "45", "30", "18", "43", "40", "65", "10", "35", "72", "8"
 ```
 
-我们可以观察到`**df**`数据框包含12行（观测值）和3列（变量）。值得注意的是，`**Animals**`和`**Category**`变量被识别为字符数据类型，标记为`**<chr>**`。这些变量中的值被双引号括起来，使其成为字符字符串。然而，值得注意的是，`**Counts**`变量也被识别为字符数据类型。这是意外的，因为该变量中的值实际上是数字，而不是字符字符串。这种数据类型的误分类可能会在进行数值操作时引发问题。为了解决这个问题并便于数值操作，我们必须采取必要步骤将`**Counts**`变量转换为数字数据类型。
+我们可以观察到`**df**`数据框包含 12 行（观测值）和 3 列（变量）。值得注意的是，`**Animals**`和`**Category**`变量被识别为字符数据类型，标记为`**<chr>**`。这些变量中的值被双引号括起来，使其成为字符字符串。然而，值得注意的是，`**Counts**`变量也被识别为字符数据类型。这是意外的，因为该变量中的值实际上是数字，而不是字符字符串。这种数据类型的误分类可能会在进行数值操作时引发问题。为了解决这个问题并便于数值操作，我们必须采取必要步骤将`**Counts**`变量转换为数字数据类型。
 
 你可能注意到，当我最初创建数据框`**df**`时，我故意将数值用双引号括起来，从而将`**Counts**`变量设为字符数据类型。现在我们已经清楚了解数据框的结构，让我们继续解决这个问题。我们将通过将`**df**`数据框中的`**Counts**`变量从当前的字符数据类型转换为数字数据类型来完成这项任务。
 
@@ -190,7 +190,7 @@ barplot <- mean_df %>%
 plot(barplot)
 ```
 
-![](../Images/1b2f9e27c78e668980507a77b0e47f06.png)
+![](img/1b2f9e27c78e668980507a77b0e47f06.png)
 
 太好了！我们已经成功创建了一个条形图，但目前条形图缺少标准误差。让我们将标准误差加入到图表中。
 
@@ -220,7 +220,7 @@ barplot <- mean_df %>%
 plot(barplot)
 ```
 
-![](../Images/2a40329b930210349e1dfdcc06e3e564.png)
+![](img/2a40329b930210349e1dfdcc06e3e564.png)
 
 太好了！我们现在创建了一个带有误差条的分组条形图。这个图表几乎准备好发表了，但一些小的调整可以大大改善其外观。例如，你可能已经注意到条形图和 x 轴标签之间有一个间隙。让我们将其去除。此外，改变条形图颜色、将图例放置在图表内部以及提供预定义的主题以获得简洁的视觉效果，将改善其整体表现。
 
@@ -248,7 +248,7 @@ barplot <- mean_df %>%
 
 1.  `scale_y_continuous` 允许我们修改 y 轴的各个方面，例如范围、刻度、标签等。在上述代码中，`**scale_y_continuous()**` 的 `**expand**` 参数设置为 expansion(0)，以去除 y 轴限制周围的任何填充，而 `**limits**` 参数设置为 `**c(0,100)**`，以将 y 轴限制设置为 0 到 100。
 
-1.  `**scale_fill_manual()**` 允许我们手动指定填充不同类别或变量水平的颜色。注意，在代码的第2行中，填充美学设置为`**fill = Category**`**。** 因此，在这种情况下，参数`**values = c("blue", "gray")**`根据`**Category**`中的值填充条的颜色：`**"Domestic"**`的条为蓝色，`**"Stray"**`的条为灰色。
+1.  `**scale_fill_manual()**` 允许我们手动指定填充不同类别或变量水平的颜色。注意，在代码的第 2 行中，填充美学设置为`**fill = Category**`**。** 因此，在这种情况下，参数`**values = c("blue", "gray")**`根据`**Category**`中的值填充条的颜色：`**"Domestic"**`的条为蓝色，`**"Stray"**`的条为灰色。
 
 1.  `**theme_par()**` 允许我们自定义图的主题，提供了干净的白色背景和紧凑的图形。它有其自身的优缺点。
 
@@ -262,13 +262,13 @@ barplot <- mean_df %>%
 plot(barplot)
 ```
 
-![](../Images/bf6f3406a8e29a9853798f51fc52f15f.png)
+![](img/bf6f3406a8e29a9853798f51fc52f15f.png)
 
 这是一个视觉上吸引人并适合发表的带误差条的条形图。该图有效地展示了动物种群的变化。在“流浪”类别中，狗的数量超过了猫和牛，而在“家庭”类别中，牛的数量明显超过了猫和狗。
 
 # 保存图以用于发表
 
-下面的代码利用了`**ggsave()**`函数来自`**ggpubr**`库。为了将图保存为图像，我们需要指定要保存的对象（在这种情况下是“**barplot**”）并定义所需的文件名及所选的图形格式。在本例中，我们选择了文件名“**barplot_animals.tiff**”，这将把图保存为TIFF图像。此外，我们设置了以英寸为单位的`**width**`和`**height**`的尺寸，以及指定为`**dpi**`（每英寸点数）的分辨率。
+下面的代码利用了`**ggsave()**`函数来自`**ggpubr**`库。为了将图保存为图像，我们需要指定要保存的对象（在这种情况下是“**barplot**”）并定义所需的文件名及所选的图形格式。在本例中，我们选择了文件名“**barplot_animals.tiff**”，这将把图保存为 TIFF 图像。此外，我们设置了以英寸为单位的`**width**`和`**height**`的尺寸，以及指定为`**dpi**`（每英寸点数）的分辨率。
 
 ```py
 ggsave(barplot, filename = "barplot_animals.tiff", width = 5, height = 4, dpi = 300)

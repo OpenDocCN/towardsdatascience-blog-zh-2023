@@ -1,18 +1,18 @@
 # OpenAI 功能调用简介
 
-> 原文：[https://towardsdatascience.com/an-introduction-to-openai-function-calling-e47e7cd7680e?source=collection_archive---------1-----------------------#2023-07-09](https://towardsdatascience.com/an-introduction-to-openai-function-calling-e47e7cd7680e?source=collection_archive---------1-----------------------#2023-07-09)
+> 原文：[`towardsdatascience.com/an-introduction-to-openai-function-calling-e47e7cd7680e?source=collection_archive---------1-----------------------#2023-07-09`](https://towardsdatascience.com/an-introduction-to-openai-function-calling-e47e7cd7680e?source=collection_archive---------1-----------------------#2023-07-09)
 
 ## 不再有非结构化数据输出；将 ChatGPT 的完成结果转换为结构化的 JSON！
 
-[](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)[![David Hundley](../Images/1779ef96ec3d338f8fe4a9567ba7b194.png)](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------) [David Hundley](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)
+[](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)![David Hundley](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------) [David Hundley](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F82498630db6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-openai-function-calling-e47e7cd7680e&user=David+Hundley&userId=82498630db6&source=post_page-82498630db6----e47e7cd7680e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------) ·16分钟阅读·2023年7月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe47e7cd7680e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-openai-function-calling-e47e7cd7680e&user=David+Hundley&userId=82498630db6&source=-----e47e7cd7680e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F82498630db6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-openai-function-calling-e47e7cd7680e&user=David+Hundley&userId=82498630db6&source=post_page-82498630db6----e47e7cd7680e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------) ·16 分钟阅读·2023 年 7 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe47e7cd7680e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-openai-function-calling-e47e7cd7680e&user=David+Hundley&userId=82498630db6&source=-----e47e7cd7680e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe47e7cd7680e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-openai-function-calling-e47e7cd7680e&source=-----e47e7cd7680e---------------------bookmark_footer-----------)![](../Images/14ae6814c08319c738cd14cdd99e5771.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe47e7cd7680e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-openai-function-calling-e47e7cd7680e&source=-----e47e7cd7680e---------------------bookmark_footer-----------)![](img/14ae6814c08319c738cd14cdd99e5771.png)
 
 题图由作者创建
 

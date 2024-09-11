@@ -1,18 +1,18 @@
 # 非欧几里得空间中的机器学习
 
-> 原文：[https://towardsdatascience.com/machine-learning-in-a-non-euclidean-space-99b0a776e92e?source=collection_archive---------2-----------------------#2023-06-16](https://towardsdatascience.com/machine-learning-in-a-non-euclidean-space-99b0a776e92e?source=collection_archive---------2-----------------------#2023-06-16)
+> 原文：[`towardsdatascience.com/machine-learning-in-a-non-euclidean-space-99b0a776e92e?source=collection_archive---------2-----------------------#2023-06-16`](https://towardsdatascience.com/machine-learning-in-a-non-euclidean-space-99b0a776e92e?source=collection_archive---------2-----------------------#2023-06-16)
 
-![](../Images/33e8dc96ecf4a66659e0c47e33bde03e.png)
+![](img/33e8dc96ecf4a66659e0c47e33bde03e.png)
 
 图片由 [Greg Rosenke](https://unsplash.com/@greg_rosenke?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 第一章：为什么你应该了解非欧几里得机器学习
 
-[](https://medium.com/@mastafa.foufa?source=post_page-----99b0a776e92e--------------------------------)[![Mastafa Foufa](../Images/2e0b26ed83f04e943438afa1aab462a8.png)](https://medium.com/@mastafa.foufa?source=post_page-----99b0a776e92e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99b0a776e92e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----99b0a776e92e--------------------------------) [Mastafa Foufa](https://medium.com/@mastafa.foufa?source=post_page-----99b0a776e92e--------------------------------)
+[](https://medium.com/@mastafa.foufa?source=post_page-----99b0a776e92e--------------------------------)![Mastafa Foufa](https://medium.com/@mastafa.foufa?source=post_page-----99b0a776e92e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99b0a776e92e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----99b0a776e92e--------------------------------) [Mastafa Foufa](https://medium.com/@mastafa.foufa?source=post_page-----99b0a776e92e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1e28ced4c3b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-in-a-non-euclidean-space-99b0a776e92e&user=Mastafa+Foufa&userId=1e28ced4c3b5&source=post_page-1e28ced4c3b5----99b0a776e92e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99b0a776e92e--------------------------------) · 10分钟阅读 · 2023年6月16日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99b0a776e92e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-in-a-non-euclidean-space-99b0a776e92e&user=Mastafa+Foufa&userId=1e28ced4c3b5&source=-----99b0a776e92e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1e28ced4c3b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-in-a-non-euclidean-space-99b0a776e92e&user=Mastafa+Foufa&userId=1e28ced4c3b5&source=post_page-1e28ced4c3b5----99b0a776e92e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99b0a776e92e--------------------------------) · 10 分钟阅读 · 2023 年 6 月 16 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99b0a776e92e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-in-a-non-euclidean-space-99b0a776e92e&user=Mastafa+Foufa&userId=1e28ced4c3b5&source=-----99b0a776e92e---------------------clap_footer-----------)
 
 --
 

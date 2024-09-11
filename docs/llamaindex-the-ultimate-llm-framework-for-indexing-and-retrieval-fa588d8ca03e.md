@@ -1,20 +1,20 @@
-# LlamaIndex：终极LLM框架，用于索引和检索
+# LlamaIndex：终极 LLM 框架，用于索引和检索
 
-> 原文：[https://towardsdatascience.com/llamaindex-the-ultimate-llm-framework-for-indexing-and-retrieval-fa588d8ca03e?source=collection_archive---------1-----------------------#2023-06-20](https://towardsdatascience.com/llamaindex-the-ultimate-llm-framework-for-indexing-and-retrieval-fa588d8ca03e?source=collection_archive---------1-----------------------#2023-06-20)
+> 原文：[`towardsdatascience.com/llamaindex-the-ultimate-llm-framework-for-indexing-and-retrieval-fa588d8ca03e?source=collection_archive---------1-----------------------#2023-06-20`](https://towardsdatascience.com/llamaindex-the-ultimate-llm-framework-for-indexing-and-retrieval-fa588d8ca03e?source=collection_archive---------1-----------------------#2023-06-20)
 
-## LlamaIndex简介
+## LlamaIndex 简介
 
-[](https://sophiamyang.medium.com/?source=post_page-----fa588d8ca03e--------------------------------)[![Sophia Yang, Ph.D.](../Images/c133f918245ea4857dc46df3a07fc2b1.png)](https://sophiamyang.medium.com/?source=post_page-----fa588d8ca03e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa588d8ca03e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fa588d8ca03e--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----fa588d8ca03e--------------------------------)
+[](https://sophiamyang.medium.com/?source=post_page-----fa588d8ca03e--------------------------------)![Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----fa588d8ca03e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa588d8ca03e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa588d8ca03e--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----fa588d8ca03e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllamaindex-the-ultimate-llm-framework-for-indexing-and-retrieval-fa588d8ca03e&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----fa588d8ca03e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa588d8ca03e--------------------------------) ·8分钟阅读·2023年6月20日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllamaindex-the-ultimate-llm-framework-for-indexing-and-retrieval-fa588d8ca03e&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----fa588d8ca03e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa588d8ca03e--------------------------------) ·8 分钟阅读·2023 年 6 月 20 日
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffa588d8ca03e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllamaindex-the-ultimate-llm-framework-for-indexing-and-retrieval-fa588d8ca03e&source=-----fa588d8ca03e---------------------bookmark_footer-----------)
 
-LlamaIndex，之前称为GPT Index，是一个出色的数据框架，旨在帮助您通过提供必要的工具来构建与LLM的应用程序，这些工具可以促进数据摄取、结构化、检索以及与各种应用程序框架的集成。LlamaIndex提供的功能众多且极具价值：
+LlamaIndex，之前称为 GPT Index，是一个出色的数据框架，旨在帮助您通过提供必要的工具来构建与 LLM 的应用程序，这些工具可以促进数据摄取、结构化、检索以及与各种应用程序框架的集成。LlamaIndex 提供的功能众多且极具价值：
 
 ✅ 从不同的数据源和数据格式中获取数据，使用数据连接器（Llama Hub）。
 
@@ -26,21 +26,21 @@ LlamaIndex，之前称为GPT Index，是一个出色的数据框架，旨在帮�
 
 ✅ 允许假设文档嵌入以提高输出质量
 
-✅ 提供与各种向量存储、ChatGPT插件、跟踪工具以及LangChain等的广泛集成。
+✅ 提供与各种向量存储、ChatGPT 插件、跟踪工具以及 LangChain 等的广泛集成。
 
-✅ 支持全新的OpenAI函数调用API。
+✅ 支持全新的 OpenAI 函数调用 API。
 
-这些只是LlamaIndex提供的广泛功能中的一些示例。在这篇博客文章中，我们将探讨一些我发现与LlamaIndex非常有用的功能。
+这些只是 LlamaIndex 提供的广泛功能中的一些示例。在这篇博客文章中，我们将探讨一些我发现与 LlamaIndex 非常有用的功能。
 
 # **数据连接器（LlamaHub）**
 
-在开发LLM应用程序时，使LLM能够有效地与外部数据源交互是至关重要的。如何获取数据是关键。Llama Hub提供了超过100种数据源和格式，使LlamaIndex或LangChain能够以一致的方式获取数据。
+在开发 LLM 应用程序时，使 LLM 能够有效地与外部数据源交互是至关重要的。如何获取数据是关键。Llama Hub 提供了超过 100 种数据源和格式，使 LlamaIndex 或 LangChain 能够以一致的方式获取数据。
 
-![](../Images/fe02f58ae92b5c4448beff7572f9307d.png)
+![](img/fe02f58ae92b5c4448beff7572f9307d.png)
 
-LlamaHub。来源：[https://llama-hub-ui.vercel.app/](https://llama-hub-ui.vercel.app/)。
+LlamaHub。来源：[`llama-hub-ui.vercel.app/`](https://llama-hub-ui.vercel.app/)。
 
-默认情况下，你可以`pip install llama-hub`并将其作为独立包使用。你还可以选择使用我们的`download_loader`方法单独下载一个数据加载器，以便与LlamaIndex一起使用。
+默认情况下，你可以`pip install llama-hub`并将其作为独立包使用。你还可以选择使用我们的`download_loader`方法单独下载一个数据加载器，以便与 LlamaIndex 一起使用。
 
 这里是一个示例，我们从`llama-hub`包中加载维基百科数据加载器。统一的语法非常好。
 
@@ -53,9 +53,9 @@ documents = loader.load_data(pages=['Berlin', 'Rome', 'Tokyo', 'Canberra', 'Sant
 
 检查输出：
 
-![](../Images/17289b051cc62fcc71c2393680a0415b.png)
+![](img/17289b051cc62fcc71c2393680a0415b.png)
 
-Llama Hub还支持多模态文档。例如，[ImageReader](https://llamahub.ai/l/file-image)加载器使用pytesseract或Donut转换器模型从图像中提取文本。
+Llama Hub 还支持多模态文档。例如，[ImageReader](https://llamahub.ai/l/file-image)加载器使用 pytesseract 或 Donut 转换器模型从图像中提取文本。
 
 # 基本查询功能
 
@@ -78,7 +78,7 @@ query_engine = index.as_query_engine()
 response = query_engine.query("Who is Paul Graham.")
 ```
 
-有各种类型的索引、检索方法和查询引擎，你可以在LlamaIndex文档中进一步阅读。接下来，我想介绍一些我认为有用的酷功能。
+有各种类型的索引、检索方法和查询引擎，你可以在 LlamaIndex 文档中进一步阅读。接下来，我想介绍一些我认为有用的酷功能。
 
 # 处理文档更新
 
@@ -142,7 +142,7 @@ response = s_engine.query('Analyze Uber revenue growth over the latest two quart
 
 如下所示，LlamaIndex 将复杂查询分解为 2 个子查询，并能够比较来自多个文档的信息以获得最终答案。
 
-![](../Images/e19591b076d1d0b861c4955ca8f50ca9.png)
+![](img/e19591b076d1d0b861c4955ca8f50ca9.png)
 
 # **使用“Router”在不同查询引擎之间进行选择**
 
@@ -175,7 +175,7 @@ response = query_engine.query(
 )
 ```
 
-这有很多令人兴奋的应用案例。以下是一个完整的示例，使用路由器在 SQL 和向量数据库之间进行选择：[https://gpt-index.readthedocs.io/en/latest/examples/query_engine/SQLRouterQueryEngine.html](https://gpt-index.readthedocs.io/en/latest/examples/query_engine/SQLRouterQueryEngine.html)。
+这有很多令人兴奋的应用案例。以下是一个完整的示例，使用路由器在 SQL 和向量数据库之间进行选择：[`gpt-index.readthedocs.io/en/latest/examples/query_engine/SQLRouterQueryEngine.html`](https://gpt-index.readthedocs.io/en/latest/examples/query_engine/SQLRouterQueryEngine.html)。
 
 # 假设文档嵌入（HyDE）
 
@@ -212,13 +212,13 @@ LlamaIndex 快速集成了这一功能，并新增了一个全新的 `OpenAIAgen
 
 LlmaIndex 提供了与各种向量存储、ChatGPT 插件、追踪工具和 LangChain 的广泛集成。
 
-![](../Images/891c857e8348eec985fbfd411d777ab5.png)
+![](img/891c857e8348eec985fbfd411d777ab5.png)
 
-来源：[https://imgflip.com/memegenerator](https://imgflip.com/memegenerator)。
+来源：[`imgflip.com/memegenerator`](https://imgflip.com/memegenerator)。
 
 ## LlamaIndex 如何与 LangChain 区别开来？
 
-如果你使用过 LangChain，你可能会想知道 LlamaIndex 如何与 LangChain 区别开来。如果你对 LangChain 不太熟悉，请查看我之前的 [博客文章](/the-easiest-way-to-interact-with-language-models-4da158cfb5c5?sk=271c9c82a16282f93ef3df37f034babe) 和 [视频](https://www.youtube.com/watch?v=kmbS6FDQh7c)。你会发现 LlamaIndex 和 LangChain 在功能上有显著的相似之处，包括索引、语义搜索、检索和向量数据库。它们都在任务如问答、文档总结和构建聊天机器人方面表现出色。
+如果你使用过 LangChain，你可能会想知道 LlamaIndex 如何与 LangChain 区别开来。如果你对 LangChain 不太熟悉，请查看我之前的 博客文章 和 [视频](https://www.youtube.com/watch?v=kmbS6FDQh7c)。你会发现 LlamaIndex 和 LangChain 在功能上有显著的相似之处，包括索引、语义搜索、检索和向量数据库。它们都在任务如问答、文档总结和构建聊天机器人方面表现出色。
 
 然而，它们各自有独特的关注领域。LangChain 具有广泛的功能列表，范围较广，专注于使用链和代理来连接外部 API。另一方面，LlamaIndex 则有更狭窄的重点，在数据索引和文档检索方面表现突出。
 
@@ -253,7 +253,7 @@ llm = OpenAIChat(temperature=0)
 agent_executor = initialize_agent([], llm, agent="conversational-react-description", memory=memory)
 ```
 
-![](../Images/4b644e445698a714a2618c1af1b0c061.png)
+![](img/4b644e445698a714a2618c1af1b0c061.png)
 
 # 结论
 
@@ -263,12 +263,12 @@ agent_executor = initialize_agent([], llm, agent="conversational-react-descripti
 
 感谢 Jerry Liu 的建议和反馈！
 
-![](../Images/7f6ab4af852a267c4deacaef1b99aa63.png)
+![](img/7f6ab4af852a267c4deacaef1b99aa63.png)
 
 图片由 [Danielle Barnes](https://unsplash.com/@ghost_cat?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/RUSijmFDm0M?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 . . .
 
-作者 [Sophia Yang](https://www.linkedin.com/in/sophiamyang/) ，日期为 2023年6月19日
+作者 [Sophia Yang](https://www.linkedin.com/in/sophiamyang/) ，日期为 2023 年 6 月 19 日
 
 **Sophia Yang** 是一名高级数据科学家。通过 [LinkedIn](https://www.linkedin.com/in/sophiamyang/)、[Twitter](https://twitter.com/sophiamyang) 和 [YouTube](https://www.youtube.com/SophiaYangDS) 与我联系，并加入 DS/ML [读书俱乐部](https://dsbookclub.github.io/) ❤️

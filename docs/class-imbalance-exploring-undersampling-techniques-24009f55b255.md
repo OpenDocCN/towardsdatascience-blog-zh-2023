@@ -1,32 +1,32 @@
 # 类别不平衡：探索欠采样技术
 
-> 原文：[https://towardsdatascience.com/class-imbalance-exploring-undersampling-techniques-24009f55b255?source=collection_archive---------10-----------------------#2023-10-07](https://towardsdatascience.com/class-imbalance-exploring-undersampling-techniques-24009f55b255?source=collection_archive---------10-----------------------#2023-10-07)
+> 原文：[`towardsdatascience.com/class-imbalance-exploring-undersampling-techniques-24009f55b255?source=collection_archive---------10-----------------------#2023-10-07`](https://towardsdatascience.com/class-imbalance-exploring-undersampling-techniques-24009f55b255?source=collection_archive---------10-----------------------#2023-10-07)
 
 ## 让我们了解一下欠采样及其如何帮助解决类别不平衡问题
 
-[](https://essamwissam.medium.com/?source=post_page-----24009f55b255--------------------------------)[![Essam Wisam](../Images/6320ce88ba2e5d56d70ce3e0f97ceb1d.png)](https://essamwissam.medium.com/?source=post_page-----24009f55b255--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24009f55b255--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----24009f55b255--------------------------------) [Essam Wisam](https://essamwissam.medium.com/?source=post_page-----24009f55b255--------------------------------)
+[](https://essamwissam.medium.com/?source=post_page-----24009f55b255--------------------------------)![Essam Wisam](https://essamwissam.medium.com/?source=post_page-----24009f55b255--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24009f55b255--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----24009f55b255--------------------------------) [Essam Wisam](https://essamwissam.medium.com/?source=post_page-----24009f55b255--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccb82b9f3b87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-exploring-undersampling-techniques-24009f55b255&user=Essam+Wisam&userId=ccb82b9f3b87&source=post_page-ccb82b9f3b87----24009f55b255---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----24009f55b255--------------------------------) ·5分钟阅读·2023年10月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24009f55b255&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-exploring-undersampling-techniques-24009f55b255&user=Essam+Wisam&userId=ccb82b9f3b87&source=-----24009f55b255---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccb82b9f3b87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-exploring-undersampling-techniques-24009f55b255&user=Essam+Wisam&userId=ccb82b9f3b87&source=post_page-ccb82b9f3b87----24009f55b255---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----24009f55b255--------------------------------) ·5 分钟阅读·2023 年 10 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24009f55b255&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-exploring-undersampling-techniques-24009f55b255&user=Essam+Wisam&userId=ccb82b9f3b87&source=-----24009f55b255---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F24009f55b255&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-exploring-undersampling-techniques-24009f55b255&source=-----24009f55b255---------------------bookmark_footer-----------)
 
-我们已经正式解释了[之前](https://essamwissam.medium.com/class-imbalance-and-oversampling-a-formal-introduction-c77b918e586d)类别不平衡的影响及其原因，并解释了几种能够解决这一问题的过采样技术，如随机过采样、ROSE、RWO、SMOTE、BorderlineSMOTE1、SMOTE-NC和SMOTE-N。在这个故事中，我们将尝试对欠采样技术进行类似的探讨，同时假设在之前的解释中，欠采样如何帮助解决不平衡问题已经显而易见。
+我们已经正式解释了[之前](https://essamwissam.medium.com/class-imbalance-and-oversampling-a-formal-introduction-c77b918e586d)类别不平衡的影响及其原因，并解释了几种能够解决这一问题的过采样技术，如随机过采样、ROSE、RWO、SMOTE、BorderlineSMOTE1、SMOTE-NC 和 SMOTE-N。在这个故事中，我们将尝试对欠采样技术进行类似的探讨，同时假设在之前的解释中，欠采样如何帮助解决不平衡问题已经显而易见。
 
 ## 目录
 
-∘ [简介](#86fd)
+∘ 简介
 
-∘ [朴素随机欠采样](#3667)
+∘ 朴素随机欠采样
 
-∘ [K均值欠采样](#42ea)
+∘ K 均值欠采样
 
-∘ [Tomek 链下采样](#1967)
+∘ Tomek 链下采样
 
-∘ [编辑最近邻下采样](#f69a)
+∘ 编辑最近邻下采样
 
 ## 介绍
 
@@ -38,13 +38,13 @@
 
 下面展示了一个在有三个类 0、1 和 2 的数据中下采样两个主要类的示例。
 
-![](../Images/f371e62e5265461af19aec389093eb71.png)
+![](img/f371e62e5265461af19aec389093eb71.png)
 
 作者使用 Julia 的 Imbalance.jl 包绘制的图
 
 下面是一个动画，展示了不同下采样程度下的输出
 
-![](../Images/b306cbc84ead4662b94625913ee41ae9.png)
+![](img/b306cbc84ead4662b94625913ee41ae9.png)
 
 作者使用 Julia 的 Imbalance.jl 包制作的动画
 
@@ -56,13 +56,13 @@
 
 下面展示了一个在有三个类 0、1 和 2 的数据中下采样两个主要类的示例。
 
-![](../Images/425a287df6bfd8bb15bfa0a504d221b5.png)
+![](img/425a287df6bfd8bb15bfa0a504d221b5.png)
 
 作者使用 Julia 的 Imbalance.jl 包绘制的图
 
 注意，相比于随机下采样，这种方法在保持数据结构方面更为小心，这在更多下采样的情况下尤为明显。我们用一个动画进一步说明这一点：
 
-![](../Images/a08a5d2c19a54be9f15ab1ec0bcc83bf.png)
+![](img/a08a5d2c19a54be9f15ab1ec0bcc83bf.png)
 
 作者使用 Julia 的 Imbalance.jl 包制作的动画
 
@@ -78,17 +78,17 @@
 
 这里的理由是，这些点无法帮助改进决策边界（例如，可能更容易导致过拟合），并且它们可能是噪声。以下是应用托梅克链接的示例：
 
-![](../Images/944b071a947c077d41ce2bcb3031a2c4.png)
+![](img/944b071a947c077d41ce2bcb3031a2c4.png)
 
-作者使用Julia中的Imbalance.jl包制作的图
+作者使用 Julia 中的 Imbalance.jl 包制作的图
 
 注意下采样后如何更容易找到更线性的决策边界，并且这也使数据更好地平衡。在此过程中，我们跳过了绿色的少数类下采样，并在一个类别的点数接近时停止下采样。
 
 要更近距离地观察这种情况，其中所有类别最终都被下采样，可以参考以下动画：
 
-![](../Images/2ad59401e111a8c0347accb48b982d67.png)
+![](img/2ad59401e111a8c0347accb48b982d67.png)
 
-作者使用Julia中的Imbalance.jl包制作的动画
+作者使用 Julia 中的 Imbalance.jl 包制作的动画
 
 ## 编辑最近邻下采样
 
@@ -96,15 +96,15 @@
 
 这个动画展示了算法的实际操作：
 
-![](../Images/d70c87c8af65cfb5033eb6a0cc0592ad.png)
+![](img/d70c87c8af65cfb5033eb6a0cc0592ad.png)
 
-作者使用Julia中的Imbalance.jl包制作的动画
+作者使用 Julia 中的 Imbalance.jl 包制作的动画
 
-注意它如何清除更多不利于决策边界或是噪声的点。如果邻居数k或保留条件以正确的方式改变，还可以进一步清除。这是另一种说明效果的动画。
+注意它如何清除更多不利于决策边界或是噪声的点。如果邻居数 k 或保留条件以正确的方式改变，还可以进一步清除。这是另一种说明效果的动画。
 
-![](../Images/837b337e4d2de73c33609370c1bf3d86.png)
+![](img/837b337e4d2de73c33609370c1bf3d86.png)
 
-作者使用Julia中的Imbalance.jl包制作的动画
+作者使用 Julia 中的 Imbalance.jl 包制作的动画
 
 “模式”和“仅模式”条件之间的区别在于，前者保留一个点，只有当它的类别是邻居中最常见的类别之一时；而后者仅在它的类别是唯一最常见的类别时保留点。
 
@@ -114,6 +114,6 @@
 
 [1] 魏超，李志锋，夏汉，& 井尚杰。（2017）。基于聚类的类别不平衡数据下采样。信息科学，409–410，17–26。
 
-[2] 伊万·托梅克。cnn的两种修改。IEEE 系统、人类与控制论杂志，6:769–772，1976年。
+[2] 伊万·托梅克。cnn 的两种修改。IEEE 系统、人类与控制论杂志，6:769–772，1976 年。
 
-[3] Dennis L Wilson. 使用编辑数据的最近邻规则的渐近性质。IEEE系统、人与控制论汇刊，页面408–421，1972年。
+[3] Dennis L Wilson. 使用编辑数据的最近邻规则的渐近性质。IEEE 系统、人与控制论汇刊，页面 408–421，1972 年。

@@ -1,18 +1,18 @@
 # 说话探针：自解释模型？
 
-> 原文：[https://towardsdatascience.com/speaking-probes-self-interpreting-models-7a3dc6cb33d6?source=collection_archive---------20-----------------------#2023-01-16](https://towardsdatascience.com/speaking-probes-self-interpreting-models-7a3dc6cb33d6?source=collection_archive---------20-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/speaking-probes-self-interpreting-models-7a3dc6cb33d6?source=collection_archive---------20-----------------------#2023-01-16`](https://towardsdatascience.com/speaking-probes-self-interpreting-models-7a3dc6cb33d6?source=collection_archive---------20-----------------------#2023-01-16)
 
 ## 语言模型能帮助解释自己吗？
 
-[](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)[![Guy Dar](../Images/0a3b1ddd33d595e97e7a0dad551b2708.png)](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------) [Guy Dar](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)
+[](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)![Guy Dar](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------) [Guy Dar](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffab216dbde3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&user=Guy+Dar&userId=fab216dbde3e&source=post_page-fab216dbde3e----7a3dc6cb33d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------) ·16分钟阅读·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a3dc6cb33d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&user=Guy+Dar&userId=fab216dbde3e&source=-----7a3dc6cb33d6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffab216dbde3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&user=Guy+Dar&userId=fab216dbde3e&source=post_page-fab216dbde3e----7a3dc6cb33d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------) ·16 分钟阅读·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a3dc6cb33d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&user=Guy+Dar&userId=fab216dbde3e&source=-----7a3dc6cb33d6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a3dc6cb33d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&source=-----7a3dc6cb33d6---------------------bookmark_footer-----------)![](../Images/cd19726fc34b00c30807dcb8a268bad7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a3dc6cb33d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&source=-----7a3dc6cb33d6---------------------bookmark_footer-----------)![](img/cd19726fc34b00c30807dcb8a268bad7.png)
 
 照片由 [Kane Reinholdtsen](https://unsplash.com/@kanereinholdtsen?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -26,7 +26,7 @@
 
 近年来，许多可解释性方法在自然语言处理领域得到了发展 [*Kadar et al., 2017; Na et al., 2019; Geva et al., 2020; Dar et al., 2022*]。与此同时，强大的语言模型在该领域引起了轰动。有人可能会想知道强大的语言技能是否使语言模型能够对其内在状态进行交流。这项工作是对这一猜测的简要报告。在这项工作中，我们将设计自然语言提示，并将模型参数作为虚拟标记注入输入中。提示的目的是指示模型解释单词——但不是一个真实的单词，而是一个表示模型参数的虚拟标记。然后，模型生成一个继续提示的序列。我们将观察该技术解释模型参数的能力，我们已有现有解释。我们称这种新技术为*“发言探针”*。我们还将在高层次上讨论为什么可能期望这种方法有效的理由。
 
-![](../Images/fd43ad0917dede573b6130631c936a7a.png)
+![](img/fd43ad0917dede573b6130631c936a7a.png)
 
 图示：发言探针的插图
 
@@ -34,7 +34,7 @@
 
 我们为有兴趣自己探索这一技术的研究人员提供以下两个资源：
 
-+   **代码：** [https://github.com/guyd1995/speaking-probes](https://github.com/guyd1995/speaking-probes)
++   **代码：** [`github.com/guyd1995/speaking-probes`](https://github.com/guyd1995/speaking-probes)
 
 [](https://github.com/guyd1995/speaking-probes?source=post_page-----7a3dc6cb33d6--------------------------------) [## GitHub - guyd1995/speaking-probes
 
@@ -42,15 +42,15 @@
 
 [github.com](https://github.com/guyd1995/speaking-probes?source=post_page-----7a3dc6cb33d6--------------------------------)
 
-+   **演示** (🤗 *HuggingFace*): [https://huggingface.co/spaces/guy-tau/speaking-probes](https://huggingface.co/spaces/guy-tau/speaking-probes) — 这可能会很慢，因此除了基本实验外，最好在 Colab 上打开存储库中的一个笔记本
++   **演示** (🤗 *HuggingFace*): [`huggingface.co/spaces/guy-tau/speaking-probes`](https://huggingface.co/spaces/guy-tau/speaking-probes) — 这可能会很慢，因此除了基本实验外，最好在 Colab 上打开存储库中的一个笔记本
 
 # 背景：残差流
 
-*这在我之前的帖子中的背景部分已更详细地解释：* [*在嵌入空间中分析 Transformers — 解释*](/analyzing-transformers-in-embedding-space-explained-ef72130a6844)
+*这在我之前的帖子中的背景部分已更详细地解释：* *在嵌入空间中分析 Transformers — 解释*
 
 我们依赖于通过其残差连接对变换器的有用视图，这一视图最初由 *nostalgebraist* [*2020*] 提出。具体而言，每一层将隐藏状态作为输入，并通过其残差连接向隐藏状态添加信息。在这种视图下，隐藏状态是沿层传递的残差流，从中读取信息，并在每一层写入信息。*Elhage 等人* [*2021*] 和 *Geva 等人* [*2022b*] 观察到残差流在最后几层通常几乎没有更新，因此最终预测是在早期层中确定的，隐藏状态大多在后续层中传递。残差流视图的一个令人兴奋的结果是，我们可以通过将隐藏状态与嵌入矩阵 *E* 相乘，将每层的隐藏状态投影到嵌入空间，将隐藏状态视为最后一层的输出。*Geva 等人* [*2022a*] 使用这种方法来解释基于变换器的语言模型的预测，我们也采取了类似的方法。
 
-![](../Images/ddefd4b7d10a39c3803b93127af7134d.png)
+![](img/ddefd4b7d10a39c3803b93127af7134d.png)
 
 图：残差流视图——可视化
 
@@ -330,7 +330,7 @@ their web pages (see for instance this article).
 If you like what we do, please consider supporting
 ```
 
-看起来我们在这里运气用尽了。词语“show”似乎已经被“google”吸收了。我们来试着通过将“google”的令牌嵌入系数设置为更小的值来缓解这个问题——我们将其乘以0.9，得到：
+看起来我们在这里运气用尽了。词语“show”似乎已经被“google”吸收了。我们来试着通过将“google”的令牌嵌入系数设置为更小的值来缓解这个问题——我们将其乘以 0.9，得到：
 
 ```py
 The invented word ' <neuron>' is a combination of the words
@@ -408,34 +408,34 @@ by Oxford University Press; it looks
 
 *这不是直接的后续，但你可能还对我与合作者合作的相关论文的另一篇博客帖子感兴趣：*
 
-[](/analyzing-transformers-in-embedding-space-explained-ef72130a6844?source=post_page-----7a3dc6cb33d6--------------------------------) [## Analyzing Transformers in Embedding Space — Explained
+[](/analyzing-transformers-in-embedding-space-explained-ef72130a6844?source=post_page-----7a3dc6cb33d6--------------------------------) ## Analyzing Transformers in Embedding Space — Explained
 
-### 在这篇文章中，我介绍了Guy Dar、Mor Geva、Ankit Gupta等人于2022年发表的论文《分析嵌入空间中的转换器》。
+### 在这篇文章中，我介绍了 Guy Dar、Mor Geva、Ankit Gupta 等人于 2022 年发表的论文《分析嵌入空间中的转换器》。
 
-towardsdatascience.com](/analyzing-transformers-in-embedding-space-explained-ef72130a6844?source=post_page-----7a3dc6cb33d6--------------------------------)
+towardsdatascience.com
 
 # References
 
-Dai D, Dong L, Hao Y, Sui Z, Chang B, 以及 Wei F. *预训练转换器中的知识神经元*，2021\. URL [https://arxiv.org/abs/2104.08696](https://arxiv.org/abs/2104.08696)。
+Dai D, Dong L, Hao Y, Sui Z, Chang B, 以及 Wei F. *预训练转换器中的知识神经元*，2021\. URL [`arxiv.org/abs/2104.08696`](https://arxiv.org/abs/2104.08696)。
 
-Dar G, Geva M, Gupta A, 以及 Berant J.《在嵌入空间中分析转换器》，2022\. URL [https://arxiv.org/abs/2209.02535](https://arxiv.org/abs/2209.02535)。
+Dar G, Geva M, Gupta A, 以及 Berant J.《在嵌入空间中分析转换器》，2022\. URL [`arxiv.org/abs/2209.02535`](https://arxiv.org/abs/2209.02535)。
 
-Elhage N, Nanda N, Olsson C, Henighan T, Joseph N, Mann B, Askell A, Bai Y, Chen A, Conerly T, DasSarma N, Drain D, Ganguli D, Hatfield-Dodds Z, Hernandez D, Jones A, Kernion J, Lovitt L, Ndousse K, Amodei D, Brown T, Clark J, Kaplan J, McCandlish S, 以及 Olah C. *转换器电路的数学框架*，2021\. URL [https://transformer-circuits.pub/2021/framework/index.html](https://transformer-circuits.pub/2021/framework/index.html)。
+Elhage N, Nanda N, Olsson C, Henighan T, Joseph N, Mann B, Askell A, Bai Y, Chen A, Conerly T, DasSarma N, Drain D, Ganguli D, Hatfield-Dodds Z, Hernandez D, Jones A, Kernion J, Lovitt L, Ndousse K, Amodei D, Brown T, Clark J, Kaplan J, McCandlish S, 以及 Olah C. *转换器电路的数学框架*，2021\. URL [`transformer-circuits.pub/2021/framework/index.html`](https://transformer-circuits.pub/2021/framework/index.html)。
 
-Geva M, Schuster R, Berant J, 以及 Levy O. *转换器前馈层是键-值存储器*，2020\. URL [https://arxiv.org/abs/2012.14913](https://arxiv.org/abs/2012.14913)。
+Geva M, Schuster R, Berant J, 以及 Levy O. *转换器前馈层是键-值存储器*，2020\. URL [`arxiv.org/abs/2012.14913`](https://arxiv.org/abs/2012.14913)。
 
 Geva M, Caciularu A, Dar G, Roit P, Sadde S, Shlain M, Tamir B, 以及 Goldberg Y.《Lm-debugger: 一个交互式工具，用于检查和干预基于转换器的语言模型》[Lm-debugger: An interactive tool for inspection and intervention in transformer-based language models]. arXiv preprint arXiv:2204.12130, 2022a。
 
-Geva M, Caciularu A, Wang K R, 以及 Goldberg Y.《转换器前馈层通过推动词汇空间中的概念来构建预测*，2022b。URL [https://arxiv.org/abs/2203.14680](https://arxiv.org/abs/2203.14680).
+Geva M, Caciularu A, Wang K R, 以及 Goldberg Y.《转换器前馈层通过推动词汇空间中的概念来构建预测*，2022b。URL [`arxiv.org/abs/2203.14680`](https://arxiv.org/abs/2203.14680).
 
-Hao Y, Song H, Dong L, Huang S, Chi Z, Wang W, Ma S, 以及 Wei F. *语言模型是通用接口*，2022\. URL [https://arxiv.org/abs/2206.06336](https://arxiv.org/abs/2206.06336)。
+Hao Y, Song H, Dong L, Huang S, Chi Z, Wang W, Ma S, 以及 Wei F. *语言模型是通用接口*，2022\. URL [`arxiv.org/abs/2206.06336`](https://arxiv.org/abs/2206.06336)。
 
-Kadar A, Chrupala G, 以及 Alishahi A. *在递归神经网络中表示语言形式和函数*。计算语言学, 43(4):761–780, 2017。ISSN 0891–2017. doi: 10.1162/COLI a 00300. URL [https://doi.org/10.1162/COLI_a_00300](https://doi.org/10.1162/COLI_a_00300)。
+Kadar A, Chrupala G, 以及 Alishahi A. *在递归神经网络中表示语言形式和函数*。计算语言学, 43(4):761–780, 2017。ISSN 0891–2017. doi: 10.1162/COLI a 00300. URL [`doi.org/10.1162/COLI_a_00300`](https://doi.org/10.1162/COLI_a_00300)。
 
-B. Lester, R. Al-Rfou 和 N. Constant. *参数高效提示调整的规模力量*，2021\. 网址 [https://arxiv.org/abs/2104.08691](https://arxiv.org/abs/2104.08691)。
+B. Lester, R. Al-Rfou 和 N. Constant. *参数高效提示调整的规模力量*，2021\. 网址 [`arxiv.org/abs/2104.08691`](https://arxiv.org/abs/2104.08691)。
 
-J. Liu, D. Shen, Y. Zhang, B. Dolan, L. Carin 和 W. Chen. *什么构成了 GPT-3 的优秀上下文示例*？CoRR, abs/2101.06804, 2021\. 网址 [https://arxiv.org/abs/2101.06804](https://arxiv.org/abs/2101.06804)。
+J. Liu, D. Shen, Y. Zhang, B. Dolan, L. Carin 和 W. Chen. *什么构成了 GPT-3 的优秀上下文示例*？CoRR, abs/2101.06804, 2021\. 网址 [`arxiv.org/abs/2101.06804`](https://arxiv.org/abs/2101.06804)。
 
-S. Na, Y. J. Choe, D.-H. Lee 和 G. Kim. *发现 CNN 单元中的自然语言概念*，2019\. 网址 [https://arxiv.org/abs/1902.07249](https://arxiv.org/abs/1902.07249)。
+S. Na, Y. J. Choe, D.-H. Lee 和 G. Kim. *发现 CNN 单元中的自然语言概念*，2019\. 网址 [`arxiv.org/abs/1902.07249`](https://arxiv.org/abs/1902.07249)。
 
-nostalgebraist. 解释 GPT：logit 视角，2020\. 网址 [https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens](https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens)。
+nostalgebraist. 解释 GPT：logit 视角，2020\. 网址 [`www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens`](https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens)。

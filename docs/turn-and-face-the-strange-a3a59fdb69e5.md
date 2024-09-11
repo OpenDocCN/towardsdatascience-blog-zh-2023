@@ -1,10 +1,10 @@
 # 转身面对陌生事物
 
-> 原文：[https://towardsdatascience.com/turn-and-face-the-strange-a3a59fdb69e5?source=collection_archive---------7-----------------------#2023-08-11](https://towardsdatascience.com/turn-and-face-the-strange-a3a59fdb69e5?source=collection_archive---------7-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/turn-and-face-the-strange-a3a59fdb69e5?source=collection_archive---------7-----------------------#2023-08-11`](https://towardsdatascience.com/turn-and-face-the-strange-a3a59fdb69e5?source=collection_archive---------7-----------------------#2023-08-11)
 
 ## 如何利用异常检测方法来改善您的监督学习
 
-[](https://medium.com/@efowler_86027?source=post_page-----a3a59fdb69e5--------------------------------)[![Evie Fowler](../Images/74aa5bfa8932dbca98a4bde7777e03ea.png)](https://medium.com/@efowler_86027?source=post_page-----a3a59fdb69e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a3a59fdb69e5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a3a59fdb69e5--------------------------------) [Evie Fowler](https://medium.com/@efowler_86027?source=post_page-----a3a59fdb69e5--------------------------------)
+[](https://medium.com/@efowler_86027?source=post_page-----a3a59fdb69e5--------------------------------)![Evie Fowler](https://medium.com/@efowler_86027?source=post_page-----a3a59fdb69e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a3a59fdb69e5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a3a59fdb69e5--------------------------------) [Evie Fowler](https://medium.com/@efowler_86027?source=post_page-----a3a59fdb69e5--------------------------------)
 
 ·
 
@@ -12,15 +12,15 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa3a59fdb69e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-and-face-the-strange-a3a59fdb69e5&source=-----a3a59fdb69e5---------------------bookmark_footer-----------)![](../Images/b8b76ad770f0f7491e6863f3e079d911.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa3a59fdb69e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fturn-and-face-the-strange-a3a59fdb69e5&source=-----a3a59fdb69e5---------------------bookmark_footer-----------)![](img/b8b76ad770f0f7491e6863f3e079d911.png)
 
 照片由 [Stefan Fluck](https://unsplash.com/@sfluck?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供于 [Unsplash](https://unsplash.com/photos/twIzCL3YSRI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-传统的预测分析提供了两种视角来查看大多数问题：点估计和分类。现代数据科学主要关注后者，将许多问题框定为分类（想想保险公司如何试图识别哪些客户会产生高成本，而不是预测每个客户的成本；或者营销人员如何更感兴趣于哪些广告会带来正的ROI，而不是预测每个广告的具体ROI）。鉴于此，数据科学家已经开发并熟悉了多种分类方法，从逻辑回归到基于树和森林的方法，再到神经网络。然而，有一个问题——许多这些方法在数据结果类别大致平衡时效果最佳，而现实世界中的应用往往无法提供这种平衡。在这篇文章中，我将展示如何使用异常检测方法来缓解监督学习中不平衡结果类别所带来的问题。
+传统的预测分析提供了两种视角来查看大多数问题：点估计和分类。现代数据科学主要关注后者，将许多问题框定为分类（想想保险公司如何试图识别哪些客户会产生高成本，而不是预测每个客户的成本；或者营销人员如何更感兴趣于哪些广告会带来正的 ROI，而不是预测每个广告的具体 ROI）。鉴于此，数据科学家已经开发并熟悉了多种分类方法，从逻辑回归到基于树和森林的方法，再到神经网络。然而，有一个问题——许多这些方法在数据结果类别大致平衡时效果最佳，而现实世界中的应用往往无法提供这种平衡。在这篇文章中，我将展示如何使用异常检测方法来缓解监督学习中不平衡结果类别所带来的问题。
 
 设想一下，我计划从我的家乡宾夕法尼亚州的匹兹堡出发。我对去哪里不挑剔，但我真的希望避免旅行中的问题，比如航班被取消、转机，甚至是严重延误。分类模型可以帮助我识别哪些航班可能会遇到问题，而[Kaggle](https://www.kaggle.com/datasets/robikscube/flight-delay-dataset-20182022)有一些数据可以帮助我构建这样一个模型。
 
-我从读取数据并制定自己对糟糕航班的定义开始——任何被取消、转机或到达延迟超过30分钟的航班。
+我从读取数据并制定自己对糟糕航班的定义开始——任何被取消、转机或到达延迟超过 30 分钟的航班。
 
 ```py
 import pandas as pd
@@ -52,7 +52,7 @@ print(airlines2022PIT.badFlight.mean())
 # 0.15873411412908048
 ```
 
-大约15%的航班属于我的“糟糕航班”类别。这还不够低，不能传统地认为这是一个异常检测问题，但也足够低，以至于监督方法的表现可能没有我希望的那么好。尽管如此，我会开始构建一个简单的梯度提升树模型，以预测航班是否会遇到我想要避免的问题。
+大约 15%的航班属于我的“糟糕航班”类别。这还不够低，不能传统地认为这是一个异常检测问题，但也足够低，以至于监督方法的表现可能没有我希望的那么好。尽管如此，我会开始构建一个简单的梯度提升树模型，以预测航班是否会遇到我想要避免的问题。
 
 首先，我需要确定在我的模型中使用哪些特征。为了这个例子，我将选择一些看起来有前景的特征进行建模；实际上，特征选择是任何数据科学项目中非常重要的一部分。这里大多数可用的特征是分类特征，需要在数据准备阶段进行编码；城市之间的距离需要进行缩放。
 
@@ -244,7 +244,7 @@ print(comb.groupby('Outlier').agg(badFlightRate = ('badFlight', 'mean')))
 #1             0.202597
 ```
 
-这里有几点需要注意。一点是监督模型在预测“好”航班方面优于“坏”航班——这是稀有事件预测中的常见动态，因此查看精准度和召回率等指标而不仅仅是简单的准确性很重要。更有趣的是，“坏航班”率在被隔离森林分类为异常的航班中几乎高出1.5倍。尽管隔离森林是一种无监督方法，并且一般识别的是非典型航班，而不是那些在我想要避免的特定方式上非典型的航班，这似乎对监督模型来说是有价值的信息。二元异常标志已经是一个很好的格式，可以用作我的监督模型中的预测因子，因此我将其纳入并看看是否能提高模型性能。
+这里有几点需要注意。一点是监督模型在预测“好”航班方面优于“坏”航班——这是稀有事件预测中的常见动态，因此查看精准度和召回率等指标而不仅仅是简单的准确性很重要。更有趣的是，“坏航班”率在被隔离森林分类为异常的航班中几乎高出 1.5 倍。尽管隔离森林是一种无监督方法，并且一般识别的是非典型航班，而不是那些在我想要避免的特定方式上非典型的航班，这似乎对监督模型来说是有价值的信息。二元异常标志已经是一个很好的格式，可以用作我的监督模型中的预测因子，因此我将其纳入并看看是否能提高模型性能。
 
 ```py
 # build a second model with outlier labels as input features

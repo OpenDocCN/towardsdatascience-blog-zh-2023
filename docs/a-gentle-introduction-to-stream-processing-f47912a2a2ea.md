@@ -1,18 +1,18 @@
 # 对分析流处理的温和介绍
 
-> 原文：[https://towardsdatascience.com/a-gentle-introduction-to-stream-processing-f47912a2a2ea?source=collection_archive---------13-----------------------#2023-03-31](https://towardsdatascience.com/a-gentle-introduction-to-stream-processing-f47912a2a2ea?source=collection_archive---------13-----------------------#2023-03-31)
+> 原文：[`towardsdatascience.com/a-gentle-introduction-to-stream-processing-f47912a2a2ea?source=collection_archive---------13-----------------------#2023-03-31`](https://towardsdatascience.com/a-gentle-introduction-to-stream-processing-f47912a2a2ea?source=collection_archive---------13-----------------------#2023-03-31)
 
 ## 为工程师及其他相关人员构建心理模型
 
-[](https://newfrontcreative.medium.com/?source=post_page-----f47912a2a2ea--------------------------------)[![Scott Haines](../Images/b53c166b64314b4a5fe41abbe1839716.png)](https://newfrontcreative.medium.com/?source=post_page-----f47912a2a2ea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f47912a2a2ea--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f47912a2a2ea--------------------------------) [Scott Haines](https://newfrontcreative.medium.com/?source=post_page-----f47912a2a2ea--------------------------------)
+[](https://newfrontcreative.medium.com/?source=post_page-----f47912a2a2ea--------------------------------)![Scott Haines](https://newfrontcreative.medium.com/?source=post_page-----f47912a2a2ea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f47912a2a2ea--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f47912a2a2ea--------------------------------) [Scott Haines](https://newfrontcreative.medium.com/?source=post_page-----f47912a2a2ea--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3b4cab6af83e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-stream-processing-f47912a2a2ea&user=Scott+Haines&userId=3b4cab6af83e&source=post_page-3b4cab6af83e----f47912a2a2ea---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f47912a2a2ea--------------------------------) · 17 分钟阅读 · 2023年3月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff47912a2a2ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-stream-processing-f47912a2a2ea&user=Scott+Haines&userId=3b4cab6af83e&source=-----f47912a2a2ea---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3b4cab6af83e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-stream-processing-f47912a2a2ea&user=Scott+Haines&userId=3b4cab6af83e&source=post_page-3b4cab6af83e----f47912a2a2ea---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f47912a2a2ea--------------------------------) · 17 分钟阅读 · 2023 年 3 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff47912a2a2ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-stream-processing-f47912a2a2ea&user=Scott+Haines&userId=3b4cab6af83e&source=-----f47912a2a2ea---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff47912a2a2ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-stream-processing-f47912a2a2ea&source=-----f47912a2a2ea---------------------bookmark_footer-----------)![](../Images/fd0a84c03854cae7fa6ec7e862e56b1c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff47912a2a2ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-stream-processing-f47912a2a2ea&source=-----f47912a2a2ea---------------------bookmark_footer-----------)![](img/fd0a84c03854cae7fa6ec7e862e56b1c.png)
 
 流处理可以被温柔而细致地处理，也可以被狂野而几乎失控地处理！你可以判断你更愿意拥抱哪种未来。来源：[@psalms](https://unsplash.com/@psalms) [原始照片](https://unsplash.com/photos/o3Ggpo3BvqM)
 
@@ -24,15 +24,15 @@
 
 ## 从庞大的数据回到大数据
 
-假设你负责构建一个分析应用程序，该应用程序必须处理大约*10亿个事件*（1,000,000,000）每天。虽然这在开始时可能感觉难以实现，但由于数据的巨大规模，通常有助于退后一步，思考应用程序的意图（它做了什么？）和你正在处理的内容（数据是什么样的）？问问自己事件数据是否可以被分解（划分和分区）并作为流处理操作（即流内）并行处理，还是必须通过多个步骤串行处理？无论哪种情况，如果你将应用程序的视角修改为查看有限的时间窗口，那么你现在只需要创建一个可以摄取和处理仅*每秒11,500个事件（k）*（或者如果事件流是恒定的，则每分钟约695k个事件）的应用程序，这是一个更容易理解的数字。
+假设你负责构建一个分析应用程序，该应用程序必须处理大约*10 亿个事件*（1,000,000,000）每天。虽然这在开始时可能感觉难以实现，但由于数据的巨大规模，通常有助于退后一步，思考应用程序的意图（它做了什么？）和你正在处理的内容（数据是什么样的）？问问自己事件数据是否可以被分解（划分和分区）并作为流处理操作（即流内）并行处理，还是必须通过多个步骤串行处理？无论哪种情况，如果你将应用程序的视角修改为查看有限的时间窗口，那么你现在只需要创建一个可以摄取和处理仅*每秒 11,500 个事件（k）*（或者如果事件流是恒定的，则每分钟约 695k 个事件）的应用程序，这是一个更容易理解的数字。
 
 虽然这些数字仍然可能显得难以触及，但这正是分布式流处理真正发挥光芒的地方。从本质上讲，你是在减少问题的视角或范围，以在时间上跨越分区数据集实现目标。虽然并非所有问题都能在流处理中解决，但许多问题确实适合这种处理模式。
 
-***注意****：本章是我书中的一部分* [*“现代数据工程与Apache Spark：构建关键流应用程序的实用指南”*](https://www.amazon.com/Modern-Engineering-Apache-Spark-Hands/dp/1484274512)*。本书带你从简单的脚本编写，到应用程序的构建，最后到部署和监控你的关键Apache Spark应用程序。*
+***注意****：本章是我书中的一部分* [*“现代数据工程与 Apache Spark：构建关键流应用程序的实用指南”*](https://www.amazon.com/Modern-Engineering-Apache-Spark-Hands/dp/1484274512)*。本书带你从简单的脚本编写，到应用程序的构建，最后到部署和监控你的关键 Apache Spark 应用程序。*
 
 # 本章学习内容
 
-本章将作为流处理的温和介绍，为我们直接进入[第10章](https://github.com/newfront/spark-moderndataengineering/tree/main/ch-10)构建自己的端到端结构化流应用程序做好准备，而无需回顾和讨论许多决策过程背后的理论。
+本章将作为流处理的温和介绍，为我们直接进入[第十章](https://github.com/newfront/spark-moderndataengineering/tree/main/ch-10)构建自己的端到端结构化流应用程序做好准备，而无需回顾和讨论许多决策过程背后的理论。
 
 到本章结束时，你应该能高层次地理解以下内容：
 
@@ -48,7 +48,7 @@
 
 # 用例：实时停车可用性
 
-![](../Images/f425e52790bbff4b82e5041a3807a16b.png)
+![](img/f425e52790bbff4b82e5041a3807a16b.png)
 
 停车是个噩梦：大多数停车基础设施的问题，或客户的常见痛点，往往是在确保按时到达的情况下找到一个可用的车位。[照片来自 Unspash](https://unsplash.com/photos/k1AFA4N8O0g) 和 [@ryansearle](https://unsplash.com/@ryansearle)
 
@@ -95,7 +95,7 @@ message ParkingSensorStatus {
 
 从一个关于固定视图或时间点的静态数据思维方式，转变为一个将数据视为在时间中流动的视角，涉及到对许多视图和时间点中无限数据流的解释，这是一个视角上的练习，但起初可能具有挑战性。通常，当你考虑流式系统时，连续事件流的概念会浮现出来。这是一个更常见的用例，可以作为对*流数据*概念的温和引入。例如，**图 9–1**中所示的抽象时间序列。
 
-![](../Images/e4f2326ca1f17b6a665e79c34c4ee4ef.png)
+![](img/e4f2326ca1f17b6a665e79c34c4ee4ef.png)
 
 **图 9–1**：事件发生在精确的时间点，可以单独收集和处理（t1->t4），也可以在时间窗口（w1）中聚合。图片来源：作者（Scott Haines）
 
@@ -113,7 +113,7 @@ message ParkingSensorStatus {
 
 # 用例：追踪客户满意度
 
-![](../Images/1dd83636a68554e1777872533261238b.png)
+![](img/1dd83636a68554e1777872533261238b.png)
 
 一家安静的咖啡店，每杯咖啡都倾注爱心。照片由 [Nafinia Putra](https://unsplash.com/@nputra?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -121,7 +121,7 @@ message ParkingSensorStatus {
 
 如果我告诉你***两位客户***进入我们的咖啡店，点了饮料并带着饮料离开了店里。你可能会问我为什么要告诉你这些，因为这正是咖啡店里发生的事情。如果我告诉你这两个咖啡订单是在***差不多同时*** 下的，并且*故事中的第一位客户在咖啡店待了不到五分钟*。如果我告诉你这是**一个工作日**，且这个故事发生在**早高峰时段**？如果我告诉你第二位客户，恰好排在第一位客户之后，在咖啡店里待了三十分钟？你可能会问这个客户是否在读报纸或者使用设施。*这两个问题都是合理的*。
 
-如果我告诉你第二位客户因为在四步**咖啡生产线**的*第3步和第4步之间*发生错误而等待，那么我们将更好地理解如何在未来简化客户体验。
+如果我告诉你第二位客户因为在四步**咖啡生产线**的*第 3 步和第 4 步之间*发生错误而等待，那么我们将更好地理解如何在未来简化客户体验。
 
 四个步骤是：
 
@@ -139,9 +139,9 @@ message ParkingSensorStatus {
 
 ## 事件时间、事件捕捉顺序和事件间的延迟都讲述了一个故事
 
-如果不了解从第一个事件（customer.order:initialized）到终端事件（customer.order:fulfilled）之间的*时间经过了多久*，或者每个步骤通常需要多长时间来完成，我们将无法对体验进行评分或真正理解发生了什么，基本上就会在系统中创造出对异常延迟或故障的盲点。了解客户通常等待不同大小订单的时间的统计数据（平均值、中位数和99百分位数）是有益的，因为这些历史数据点可以通过自动化用于预先解决问题，例如当一个订单的处理时间比预期的要长时。这可能意味着客户的不满和终身客户之间的差别。
+如果不了解从第一个事件（customer.order:initialized）到终端事件（customer.order:fulfilled）之间的*时间经过了多久*，或者每个步骤通常需要多长时间来完成，我们将无法对体验进行评分或真正理解发生了什么，基本上就会在系统中创造出对异常延迟或故障的盲点。了解客户通常等待不同大小订单的时间的统计数据（平均值、中位数和 99 百分位数）是有益的，因为这些历史数据点可以通过自动化用于预先解决问题，例如当一个订单的处理时间比预期的要长时。这可能意味着客户的不满和终身客户之间的差别。
 
-这是公司请求客户反馈的主要原因之一——无论是对体验的好评/差评，奖励基于应用程序的参与（用你的积分换取免费商品和服务），还是跟踪实时反馈，比如“你的订单比预期的时间长，这里有$2折扣下次咖啡使用。只需使用应用程序兑换”。这些通过现实世界互动收集和捕获的数据，以事件形式编码，并为你的利益处理，最终是值得的，如果它积极影响公司的运营和声誉。只要确保遵循数据隐私规则和法规，最终不要让客户感到不适。
+这是公司请求客户反馈的主要原因之一——无论是对体验的好评/差评，奖励基于应用程序的参与（用你的积分换取免费商品和服务），还是跟踪实时反馈，比如“你的订单比预期的时间长，这里有$2 折扣下次咖啡使用。只需使用应用程序兑换”。这些通过现实世界互动收集和捕获的数据，以事件形式编码，并为你的利益处理，最终是值得的，如果它积极影响公司的运营和声誉。只要确保遵循数据隐私规则和法规，最终不要让客户感到不适。
 
 这个小小的思想实验旨在揭示事件数据中捕获的细节（以及数据故事随时间的演变）可以是一个游戏规则改变者，并进一步说明时间是赋予这些旅程动力或速度的维度。只有一个时间的问题。
 
@@ -157,7 +157,7 @@ message ParkingSensorStatus {
 
 ## **时间校正**
 
-在任何现代云基础设施中运行的服务器都利用一个称为[网络时间协议](https://en.wikipedia.org/wiki/Network_Time_Protocol)（NTP）的过程来校正时间漂移的问题。*ntp*过程负责使用一个可靠的中央时间服务器同步本地服务器时钟。这个过程将本地时间校正到与协调世界时间（UTC）相差几毫秒。这是一个重要的概念，因为在大型网络中运行的应用程序，产生事件数据，将负责创建时间戳，而这些时间戳需要非常精确，以便分布式事件能够对齐。还有一个狡猾的问题是夏令时（每6个月增加或减少一小时），因此，协调跨时区以及跨本地日期时间语义（全球）的系统数据需要从这个中央、同步的视角来看待时间。
+在任何现代云基础设施中运行的服务器都利用一个称为[网络时间协议](https://en.wikipedia.org/wiki/Network_Time_Protocol)（NTP）的过程来校正时间漂移的问题。*ntp*过程负责使用一个可靠的中央时间服务器同步本地服务器时钟。这个过程将本地时间校正到与协调世界时间（UTC）相差几毫秒。这是一个重要的概念，因为在大型网络中运行的应用程序，产生事件数据，将负责创建时间戳，而这些时间戳需要非常精确，以便分布式事件能够对齐。还有一个狡猾的问题是夏令时（每 6 个月增加或减少一小时），因此，协调跨时区以及跨本地日期时间语义（全球）的系统数据需要从这个中央、同步的视角来看待时间。
 
 我们已经从理论上看过时间如何与事件驱动的数据相关，但为了全面了解背景，我们还应该考虑时间如何与数据在系统（无论是流式还是其他）中需要被捕获和处理的*优先级*相关。
 
@@ -175,7 +175,7 @@ message ParkingSensorStatus {
 
 近实时是大多数人在考虑实时时的想法。这里发生的模式类似于你刚刚在实时部分阅读的，唯一的区别是端到端延迟的期望放宽到高秒级别到几分钟。对于大多数系统而言，没有真正的理由对每个到达的事件做出立即反应，因此，虽然时间仍然很重要，但数据可用性的 SLA 优先级会有所延长。
 
-操作仪表板和度量系统通常更新迅速（每30秒—5分钟刷新图表和检查监控），足够快以捕捉问题，并给出接近现实的表示。对于所有其他数据系统，你会有批处理或按需处理的概念。
+操作仪表板和度量系统通常更新迅速（每 30 秒—5 分钟刷新图表和检查监控），足够快以捕捉问题，并给出接近现实的表示。对于所有其他数据系统，你会有批处理或按需处理的概念。
 
 # 批处理
 
@@ -193,13 +193,13 @@ message ParkingSensorStatus {
 
 例如，自定义报告任务和探索性数据分析是两种适合这些范式的数据访问风格。大多数情况下，回答这些查询的后端数据直接从数据湖中加载，然后使用共享计算资源或隔离计算集群进行处理。为这些查询提供的数据可能是其他实时或接近实时系统的副产品，这些系统被处理和存储用于批处理或历史分析。
 
-使用这种模式，数据可以解冻，并通过将记录从较慢的对象存储（如Amazon S3）导入内存，或通过快速访问的固态硬盘（SSD），或者根据数据的大小、格式和布局，直接从云对象存储中查询。这种模式可以轻松委托给Apache Spark，使用*SparkSQL*。这使得通过像Apache Zeppelin这样的工具进行临时分析成为可能，或通过JDBC绑定直接在应用程序中使用[Apache Spark thrift-server](https://spark.apache.org/docs/latest/sql-distributed-sql-engine.html)和Apache Hive Metastore。
+使用这种模式，数据可以解冻，并通过将记录从较慢的对象存储（如 Amazon S3）导入内存，或通过快速访问的固态硬盘（SSD），或者根据数据的大小、格式和布局，直接从云对象存储中查询。这种模式可以轻松委托给 Apache Spark，使用*SparkSQL*。这使得通过像 Apache Zeppelin 这样的工具进行临时分析成为可能，或通过 JDBC 绑定直接在应用程序中使用[Apache Spark thrift-server](https://spark.apache.org/docs/latest/sql-distributed-sql-engine.html)和 Apache Hive Metastore。
 
 这四种处理方式之间的区别在于*时间*。
 
 回到视角和观点的概念，每种方法或模式都有其*时间和地点*。流处理处理的是在特定*时间点*捕获的事件，正如我们在本章前半部分讨论的那样，我们如何关联时间，以及我们如何捕捉和测量一系列事件（作为数据），共同绘制了当前发生的情况或过去发生的情况的画面。在我们对流处理的温和介绍中，重要的是还要讨论流处理的基础。在下一节中，我们将讨论处理连续、无界数据流的一些常见问题和解决方案。因此，讨论数据作为核心支柱并从那里扩展开来是有意义的。
 
-希望你喜欢第9章的前半部分。如果你想继续阅读第2部分，它在下面有链接。👇
+希望你喜欢第九章的前半部分。如果你想继续阅读第二部分，它在下面有链接。👇
 
 [## 谦逊的分析流处理介绍](https://towardsdatascience.com/a-modest-introduction-to-analytical-stream-processing-db58b3694263?source=post_page-----f47912a2a2ea--------------------------------)
 
@@ -209,8 +209,8 @@ message ParkingSensorStatus {
 
 如果你想了解更多，请查看我的书！
 
-[现代数据工程与Apache Spark：构建关键任务流处理的实用指南](https://www.amazon.com/Modern-Engineering-Apache-Spark-Hands/dp/1484274512?source=post_page-----f47912a2a2ea--------------------------------)
+[现代数据工程与 Apache Spark：构建关键任务流处理的实用指南](https://www.amazon.com/Modern-Engineering-Apache-Spark-Hands/dp/1484274512?source=post_page-----f47912a2a2ea--------------------------------)
 
-### 亚马逊网站：现代数据工程与Apache Spark：构建关键任务流处理的实用指南…
+### 亚马逊网站：现代数据工程与 Apache Spark：构建关键任务流处理的实用指南…
 
 [www.amazon.com](https://www.amazon.com/Modern-Engineering-Apache-Spark-Hands/dp/1484274512?source=post_page-----f47912a2a2ea--------------------------------)

@@ -1,22 +1,22 @@
 # 为什么你的数据管道需要闭环反馈控制
 
-> 原文：[https://towardsdatascience.com/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f?source=collection_archive---------3-----------------------#2023-09-10](https://towardsdatascience.com/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f?source=collection_archive---------3-----------------------#2023-09-10)
+> 原文：[`towardsdatascience.com/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f?source=collection_archive---------3-----------------------#2023-09-10`](https://towardsdatascience.com/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f?source=collection_archive---------3-----------------------#2023-09-10)
 
 ## 公司和云的复杂性现实要求新的控制和自主水平，以在规模上实现业务目标
 
-[](https://medium.com/@jeff.b.chou?source=post_page-----76e28e3565f--------------------------------)[![Jeff Chou](../Images/4b5b7a7f880209faf1e81806a0f9dfba.png)](https://medium.com/@jeff.b.chou?source=post_page-----76e28e3565f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76e28e3565f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76e28e3565f--------------------------------) [Jeff Chou](https://medium.com/@jeff.b.chou?source=post_page-----76e28e3565f--------------------------------)
+[](https://medium.com/@jeff.b.chou?source=post_page-----76e28e3565f--------------------------------)![Jeff Chou](https://medium.com/@jeff.b.chou?source=post_page-----76e28e3565f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76e28e3565f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----76e28e3565f--------------------------------) [Jeff Chou](https://medium.com/@jeff.b.chou?source=post_page-----76e28e3565f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F124878bdd082&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f&user=Jeff+Chou&userId=124878bdd082&source=post_page-124878bdd082----76e28e3565f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----76e28e3565f--------------------------------) ·9分钟阅读·2023年9月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76e28e3565f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f&user=Jeff+Chou&userId=124878bdd082&source=-----76e28e3565f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F124878bdd082&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f&user=Jeff+Chou&userId=124878bdd082&source=post_page-124878bdd082----76e28e3565f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----76e28e3565f--------------------------------) ·9 分钟阅读·2023 年 9 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76e28e3565f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f&user=Jeff+Chou&userId=124878bdd082&source=-----76e28e3565f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F76e28e3565f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f&source=-----76e28e3565f---------------------bookmark_footer-----------)![](../Images/68dd4aa14a8847d5996f295619aad536.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F76e28e3565f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f&source=-----76e28e3565f---------------------bookmark_footer-----------)![](img/68dd4aa14a8847d5996f295619aad536.png)
 
 图片由[**Cosmin Paduraru**](https://www.pexels.com/@padurarul/)提供
 
-*随着数据团队在云上规模化，数据平台团队需要确保他们负责的工作负载达到业务目标，* [*这是我们Sync的主要任务*](https://www.synccomputing.com)*。在拥有数十名数据工程师和数百个生产作业的大规模环境下，由于技术和人为因素的种种原因，控制其性能变得不可行。*
+*随着数据团队在云上规模化，数据平台团队需要确保他们负责的工作负载达到业务目标，* [*这是我们 Sync 的主要任务*](https://www.synccomputing.com)*。在拥有数十名数据工程师和数百个生产作业的大规模环境下，由于技术和人为因素的种种原因，控制其性能变得不可行。*
 
 今天缺失的环节是建立一个 [闭环反馈系统](https://en.wikipedia.org/wiki/Closed-loop_controller)，它可以自动驱动管道基础设施向业务目标前进。这句话有些冗长，所以让我们深入探讨一下这个问题。
 
@@ -26,7 +26,7 @@
 
 我们与平台经理和数据工程师的许多实际对话通常是这样的：
 
-> *“我们的CEO希望我降低云成本，并确保我们的服务水平协议得到满足，以保持客户满意。”*
+> *“我们的 CEO 希望我降低云成本，并确保我们的服务水平协议得到满足，以保持客户满意。”*
 
 好的，那么问题是什么？
 
@@ -36,9 +36,9 @@
 
 ## **是什么阻碍了平台团队？**
 
-+   **数据团队超出了技术范围 —** 调整集群或复杂配置（Databricks、Snowflake）是一项耗时的任务，数据团队更愿意集中精力在实际管道和SQL代码上。许多工程师没有相应的技能、支持结构，甚至不了解他们工作的成本。识别和解决根本原因问题也是一项令人生畏的任务，这阻碍了建立一个功能正常的管道。
++   **数据团队超出了技术范围 —** 调整集群或复杂配置（Databricks、Snowflake）是一项耗时的任务，数据团队更愿意集中精力在实际管道和 SQL 代码上。许多工程师没有相应的技能、支持结构，甚至不了解他们工作的成本。识别和解决根本原因问题也是一项令人生畏的任务，这阻碍了建立一个功能正常的管道。
 
-+   **过多的抽象层 —** 让我们聚焦于一个堆栈：Databricks运行其自己版本的Apache Spark，该Spark运行在云提供商的虚拟计算上（AWS、Azure、GCP），配有不同的网络选项和不同的存储选项（DBFS、S3、Blob），而且所有这些都可以在一年中的任何时候独立和随机更新。选项的数量令人不堪重负，平台人员难以确保一切都是最新和最优的。
++   **过多的抽象层 —** 让我们聚焦于一个堆栈：Databricks 运行其自己版本的 Apache Spark，该 Spark 运行在云提供商的虚拟计算上（AWS、Azure、GCP），配有不同的网络选项和不同的存储选项（DBFS、S3、Blob），而且所有这些都可以在一年中的任何时候独立和随机更新。选项的数量令人不堪重负，平台人员难以确保一切都是最新和最优的。
 
 +   **遗留代码 —** 一个不幸的现实就是遗留代码。公司内部的团队往往会发生变化，人来人往，随着时间的推移，任何一个特定工作所需的知识可能会逐渐消失。这种现象使得调整或优化特定工作变得更加困难。
 
@@ -50,25 +50,25 @@
 
 ## **闭环反馈控制对于管道意味着什么？**
 
-当前的管道属于“开环”系统，即作业只是运行而没有任何反馈。为了说明我说的内容，下面的图片展示了“作业1”每天运行，每次运行的成本为$50。假设业务目标是将该作业的成本降至$30。那么，除非有人实际采取行动，否则成本将会在可预见的未来保持在$50，如成本与时间的图表所示。
+当前的管道属于“开环”系统，即作业只是运行而没有任何反馈。为了说明我说的内容，下面的图片展示了“作业 1”每天运行，每次运行的成本为$50。假设业务目标是将该作业的成本降至$30。那么，除非有人实际采取行动，否则成本将会在可预见的未来保持在$50，如成本与时间的图表所示。
 
-![](../Images/5afa5613ac0347d3e68e56e2ec2b2ac3.png)
+![](img/5afa5613ac0347d3e68e56e2ec2b2ac3.png)
 
 作者提供的图片
 
 如果我们有一个系统，实际反馈作业的输出统计数据，以便第二天的部署可以得到改进，会是什么样的呢？它可能会像这样：
 
-![](../Images/56cb4fb26f7528c2ac4365daf93ad6a6.png)
+![](img/56cb4fb26f7528c2ac4365daf93ad6a6.png)
 
 作者提供的图片
 
-你看到的是一个[经典反馈循环](https://en.wikipedia.org/wiki/Control_loop#Open-loop_and_closed-loop)，在这种情况下，期望的“设定点”是$30的成本。由于这个任务每天运行，我们可以将实际成本的反馈发送到一个“更新配置”模块，该模块接收成本差异（在此例中为$20），从而对“作业1”的配置进行更改。例如，“更新配置”模块可能会减少Databricks集群中的节点数量。
+你看到的是一个[经典反馈循环](https://en.wikipedia.org/wiki/Control_loop#Open-loop_and_closed-loop)，在这种情况下，期望的“设定点”是$30 的成本。由于这个任务每天运行，我们可以将实际成本的反馈发送到一个“更新配置”模块，该模块接收成本差异（在此例中为$20），从而对“作业 1”的配置进行更改。例如，“更新配置”模块可能会减少 Databricks 集群中的节点数量。
 
 ## **这在生产环境中看起来是什么样的？**
 
-实际上，这并不是一蹴而就的。“更新配置”模型现在负责调整基础设施，尝试将成本降低到$30。正如你所想的，随着时间的推移，系统将会改进，并最终达到期望的$30成本，如下图所示。
+实际上，这并不是一蹴而就的。“更新配置”模型现在负责调整基础设施，尝试将成本降低到$30。正如你所想的，随着时间的推移，系统将会改进，并最终达到期望的$30 成本，如下图所示。
 
-![](../Images/1c8481d46b6ab156e9f3f1a16d6625d1.png)
+![](img/1c8481d46b6ab156e9f3f1a16d6625d1.png)
 
 作者提供的图片
 
@@ -78,23 +78,23 @@
 
 ## **没有人可以预测未来**
 
-一个微妙的事情是，“更新配置”模型并不是100%准确的。在第四个蓝点中，您实际上可以看到成本在某一点上上升。这是因为模型试图预测一次配置变更将降低成本，但由于没有什么能够100%准确预测，有时它在局部上可能是错误的，因此成本可能在单次运行中上升，而系统正在“训练”。
+一个微妙的事情是，“更新配置”模型并不是 100%准确的。在第四个蓝点中，您实际上可以看到成本在某一点上上升。这是因为模型试图预测一次配置变更将降低成本，但由于没有什么能够 100%准确预测，有时它在局部上可能是错误的，因此成本可能在单次运行中上升，而系统正在“训练”。
 
-但是，随着时间的推移，我们可以看到总成本实际上是在下降的。您可以将其视为一个智能的试错过程，因为以100%准确度预测配置变更的影响是完全不可能的。
+但是，随着时间的推移，我们可以看到总成本实际上是在下降的。您可以将其视为一个智能的试错过程，因为以 100%准确度预测配置变更的影响是完全不可能的。
 
 ## **“那么，有什么关系？” — 设定任何目标并行动**
 
 上述方法是一种通用策略，而不仅仅是节省成本。上述的“设定点”只是数据平台人员设定的一个目标。它可以是任何可测量的目标，例如运行时间就是一个很好的例子。
 
-假设我们希望一个工作在1小时（或SLA）内完成。我们可以让上述系统调整配置，直到达到SLA。或者更复杂一点，同时考虑成本和SLA目标？完全没有问题，系统可以优化以达到您在多个参数上的目标。除了成本和运行时间外，其他业务用例目标还包括：
+假设我们希望一个工作在 1 小时（或 SLA）内完成。我们可以让上述系统调整配置，直到达到 SLA。或者更复杂一点，同时考虑成本和 SLA 目标？完全没有问题，系统可以优化以达到您在多个参数上的目标。除了成本和运行时间外，其他业务用例目标还包括：
 
 +   **资源利用率：** 独立于成本和运行时间，我是否正确地利用了我的资源？
 
 +   **能源效率：** 我是否尽可能少地消耗资源，以减少碳足迹？
 
-+   **容错性：** 我的工作实际上是否对故障具有弹性？这意味着我是否需要过度规格化它，以防我被抢占，或者以防没有可用的SPOT实例？
++   **容错性：** 我的工作实际上是否对故障具有弹性？这意味着我是否需要过度规格化它，以防我被抢占，或者以防没有可用的 SPOT 实例？
 
-+   **可扩展性：** 我的工作是否具备可扩展性？如果输入数据增加10倍，我的工作会崩溃吗？
++   **可扩展性：** 我的工作是否具备可扩展性？如果输入数据增加 10 倍，我的工作会崩溃吗？
 
 +   **延迟：** 我的工作是否达到了延迟目标？响应时间目标？
 
@@ -106,19 +106,19 @@
 
 假设您是一个数据平台经理，负责监督数百个生产作业的运行。目前，它们都有自己的成本和运行时间。下面的简单图表显示了一个卡通示例，基本上所有作业都随机分布在成本和运行时间图表上。
 
-如果你想在大规模上降低成本怎么办？如果你想一次性改变许多作业的运行时间（或SLA）怎么办？现在，你可能得请求工程师帮助你修改所有作业（祝好运）。
+如果你想在大规模上降低成本怎么办？如果你想一次性改变许多作业的运行时间（或 SLA）怎么办？现在，你可能得请求工程师帮助你修改所有作业（祝好运）。
 
-![](../Images/64ae8b41dd93b68a2d7171661a4fce0e.png)
-
-作者提供的图片
-
-现在假设你对所有作业实施了上述闭环控制系统。你只需设定作业的高级业务目标（在此案例中为SLA运行时间要求），反馈控制系统将尽力找到实现这些目标的基础设施。最终状态将是这样的：
-
-![](../Images/5b18e5f4f29997498e0f77b64bfe4b77.png)
+![](img/64ae8b41dd93b68a2d7171661a4fce0e.png)
 
 作者提供的图片
 
-在这里，我们看到每个作业的颜色代表了不同的业务目标，依据SLA定义。幕后闭环反馈控制系统改变了集群/仓库的大小、各种配置，甚至调整了整个管道，以尽可能低的成本达到SLA运行时间目标。通常，较长的作业运行时间会导致更低的成本机会。
+现在假设你对所有作业实施了上述闭环控制系统。你只需设定作业的高级业务目标（在此案例中为 SLA 运行时间要求），反馈控制系统将尽力找到实现这些目标的基础设施。最终状态将是这样的：
+
+![](img/5b18e5f4f29997498e0f77b64bfe4b77.png)
+
+作者提供的图片
+
+在这里，我们看到每个作业的颜色代表了不同的业务目标，依据 SLA 定义。幕后闭环反馈控制系统改变了集群/仓库的大小、各种配置，甚至调整了整个管道，以尽可能低的成本达到 SLA 运行时间目标。通常，较长的作业运行时间会导致更低的成本机会。
 
 ## **示例功能 #2：自愈作业**
 
@@ -128,11 +128,11 @@
 
 +   **开始：** 假设你有一个作业，并且随着时间的推移数据规模增长。通常情况下，你的集群保持不变，因此成本和运行时间都会增加。
 
-+   **开始反馈：** 随着时间的推移，运行时间接近SLA要求，反馈控制系统在绿色箭头处介入。此时，控制系统会调整集群，以保持在红色虚线下，同时最小化成本。
++   **开始反馈：** 随着时间的推移，运行时间接近 SLA 要求，反馈控制系统在绿色箭头处介入。此时，控制系统会调整集群，以保持在红色虚线下，同时最小化成本。
 
 +   **代码变更：** 在某个时点，开发者推送了一个新的代码更新，导致成本和运行时间的激增。反馈控制系统介入，并调整集群以更好地适应新的代码变更。
 
-![](../Images/b629a0c1e46d551d765d95cabbfe864a.png)
+![](img/b629a0c1e46d551d765d95cabbfe864a.png)
 
 作者提供的图片
 

@@ -1,18 +1,18 @@
 # 盲目相信 GridSearchCV 的最佳模型是一种错误
 
-> 原文：[https://towardsdatascience.com/its-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad?source=collection_archive---------5-----------------------#2023-01-04](https://towardsdatascience.com/its-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad?source=collection_archive---------5-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/its-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad?source=collection_archive---------5-----------------------#2023-01-04`](https://towardsdatascience.com/its-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad?source=collection_archive---------5-----------------------#2023-01-04)
 
 ## 通过四个例子解释了“最佳模型”实际上并不是最佳模型的情况
 
-[](https://medium.com/@tomergabay?source=post_page-----536a73e835ad--------------------------------)[![Tomer Gabay](../Images/1fb1d408bc89415918c1aa6733df44e1.png)](https://medium.com/@tomergabay?source=post_page-----536a73e835ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----536a73e835ad--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----536a73e835ad--------------------------------) [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----536a73e835ad--------------------------------)
+[](https://medium.com/@tomergabay?source=post_page-----536a73e835ad--------------------------------)![Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----536a73e835ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----536a73e835ad--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----536a73e835ad--------------------------------) [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----536a73e835ad--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc9c352dba00a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad&user=Tomer+Gabay&userId=c9c352dba00a&source=post_page-c9c352dba00a----536a73e835ad---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----536a73e835ad--------------------------------) ·6 分钟阅读·2023年1月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F536a73e835ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad&user=Tomer+Gabay&userId=c9c352dba00a&source=-----536a73e835ad---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc9c352dba00a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad&user=Tomer+Gabay&userId=c9c352dba00a&source=post_page-c9c352dba00a----536a73e835ad---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----536a73e835ad--------------------------------) ·6 分钟阅读·2023 年 1 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F536a73e835ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad&user=Tomer+Gabay&userId=c9c352dba00a&source=-----536a73e835ad---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F536a73e835ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad&source=-----536a73e835ad---------------------bookmark_footer-----------)![](../Images/e21cbcd59ca104b1b7dcf6a964510800.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F536a73e835ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-a-mistake-to-trust-the-best-model-of-a-gridsearchcv-536a73e835ad&source=-----536a73e835ad---------------------bookmark_footer-----------)![](img/e21cbcd59ca104b1b7dcf6a964510800.png)
 
 图片由 [Choong Deng Xiang](https://unsplash.com/@dengxiangs?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

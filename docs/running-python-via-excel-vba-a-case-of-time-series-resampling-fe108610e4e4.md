@@ -1,14 +1,14 @@
 # 通过 Excel VBA 运行 Python —— 时间序列重采样的案例
 
-> 原文：[https://towardsdatascience.com/running-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4?source=collection_archive---------8-----------------------#2023-04-17](https://towardsdatascience.com/running-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4?source=collection_archive---------8-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/running-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4?source=collection_archive---------8-----------------------#2023-04-17`](https://towardsdatascience.com/running-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4?source=collection_archive---------8-----------------------#2023-04-17)
 
 ## 对使用 VBA、Python 和通过 Excel VBA 运行 Python 进行太阳辐射时间序列重采样的综合评估
 
-[](https://medium.com/@himalaya.birshrestha?source=post_page-----fe108610e4e4--------------------------------)[![Himalaya Bir Shrestha](../Images/9766140c1c44381029d0a78154217775.png)](https://medium.com/@himalaya.birshrestha?source=post_page-----fe108610e4e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe108610e4e4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe108610e4e4--------------------------------) [Himalaya Bir Shrestha](https://medium.com/@himalaya.birshrestha?source=post_page-----fe108610e4e4--------------------------------)
+[](https://medium.com/@himalaya.birshrestha?source=post_page-----fe108610e4e4--------------------------------)![Himalaya Bir Shrestha](https://medium.com/@himalaya.birshrestha?source=post_page-----fe108610e4e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe108610e4e4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe108610e4e4--------------------------------) [Himalaya Bir Shrestha](https://medium.com/@himalaya.birshrestha?source=post_page-----fe108610e4e4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba33e6d0d27b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=post_page-ba33e6d0d27b----fe108610e4e4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe108610e4e4--------------------------------) ·11 min read·2023年4月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffe108610e4e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=-----fe108610e4e4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba33e6d0d27b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=post_page-ba33e6d0d27b----fe108610e4e4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe108610e4e4--------------------------------) ·11 min read·2023 年 4 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffe108610e4e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-via-excel-vba-a-case-of-time-series-resampling-fe108610e4e4&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=-----fe108610e4e4---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 在这篇文章中，我将分享使用 Excel VBA 和 Python 执行一个简单任务的经验——对太阳辐射数据进行时间序列重采样。此外，我还将展示如何通过 Excel VBA 运行 Python 脚本来执行相同的任务。让我们开始吧。
 
-![](../Images/0d95a391ba99fb3f6fd922f3c4bbba8f.png)
+![](img/0d95a391ba99fb3f6fd922f3c4bbba8f.png)
 
 图片来自 [Aron Visuals](https://unsplash.com/@aronvisuals) 的 [Unsplash](http://www.unsplash.com)。
 
@@ -36,7 +36,7 @@
 
 由于 2020 年是闰年，我获得了四个城市的 8784 小时太阳辐射值。这些值被放置在如下 Excel 文件中的列 B、C、D 和 E 中。
 
-![](../Images/983b135d28914c1d007e3e3442184821.png)
+![](img/983b135d28914c1d007e3e3442184821.png)
 
 2020 年四个城市的小时太阳辐射值放置在 Excel 文件中。公式栏显示了在突出显示的单元格 A2 中使用的公式。作者插图。
 
@@ -52,7 +52,7 @@
 
 在 Excel 中绘制 2020 年四个城市的原始小时太阳辐射数据如下：
 
-![](../Images/dba008c168b4ceec74ce33f579a13496.png)
+![](img/dba008c168b4ceec74ce33f579a13496.png)
 
 使用 Excel 绘制小时太阳辐射值。作者插图。
 
@@ -214,7 +214,7 @@ End Sub
 
 在上面的代码片段中，`Debug.Print` 命令用于在 VBA 开发空间中的中间窗口打印中间结果，如下所示：
 
-![](../Images/6e2cf6df88168f0938345df4b2ebceb0.png)
+![](img/6e2cf6df88168f0938345df4b2ebceb0.png)
 
 Debug.Print 的输出在即时窗口中可见。由作者插图。
 
@@ -224,7 +224,7 @@ Python 中的 pandas 库提供了一个内置的 [方法](https://pandas.pydata.
 
 时间序列重采样的前提条件是数据框索引需要使用 `pd.to_datetime()` 转换为 datetime 类型。
 
-![](../Images/57fae4fdafbaffe229db543eb68781bc.png)
+![](img/57fae4fdafbaffe229db543eb68781bc.png)
 
 数据框索引需要是 DatetimeIndex 类型，这是进行时间序列重采样的前提条件。由作者插图
 
@@ -253,7 +253,7 @@ if frequency == "Original":
     print (df)
     df.plot()
     plt.title("Original solar irradiance in 2020")
-    plt.ylabel("Wh/m$^2$")
+    plt.ylabel("Wh/m$²$")
     plt.legend()
     plt.show()
 
@@ -261,7 +261,7 @@ elif frequency == "Monthly average":
     print (df.resample(rule = "M").mean())
     df.resample(rule = "M").mean().plot()
     plt.title("Monthly average solar irradiance in 2022")
-    plt.ylabel("Wh/m$^2$")
+    plt.ylabel("Wh/m$²$")
     plt.legend()
     plt.show()
 
@@ -269,14 +269,14 @@ elif frequency == "Daily average":
     print (df.resample(rule = "D").mean())
     df.resample(rule = "D").mean().plot()
     plt.title("Daily average solar irradiance in 2022")
-    plt.ylabel("Wh/m$^2$")
+    plt.ylabel("Wh/m$²$")
     plt.show()
 
 elif frequency == "Weekly average":
     print (df.resample(rule = "W").mean())
     df.resample(rule = "W").mean().plot()
     plt.title("Weekly average solar irradiance in 2022")
-    plt.ylabel("Wh/m$^2$")
+    plt.ylabel("Wh/m$²$")
     plt.legend()
     plt.show()
 
@@ -284,7 +284,7 @@ elif frequency == "Quarterly average":
     print (df.resample(rule = "Q").mean())
     df.resample(rule = "Q").mean().plot()
     plt.title("Quarterly average solar irradiance in 2022")
-    plt.ylabel("Wh/m$^2$")
+    plt.ylabel("Wh/m$²$")
     plt.legend()
     plt.show()
 
@@ -292,12 +292,12 @@ elif frequency == "All of the above":
     fig, axs = plt.subplots(2, 2, figsize = (20, 10), sharex = True, sharey = True)
     df.resample(rule = "D").mean().plot(ax = axs[0, 0])
     axs[0, 0].set_title("Daily mean")
-    axs[0, 0].set_ylabel("Wh/m$^2$")
+    axs[0, 0].set_ylabel("Wh/m$²$")
     df.resample(rule = "W").mean().plot(ax = axs[0, 1])
     axs[0, 1].set_title("Weekly mean")
     df.resample(rule = "M").mean().plot(ax = axs[1, 0])
     axs[1, 0].set_title("Monthly mean")
-    axs[1, 0].set_ylabel("Wh/m$^2$")
+    axs[1, 0].set_ylabel("Wh/m$²$")
     df.resample(rule = "Q").mean().plot(ax = axs[1, 1])
     axs[1, 1].set_title("Quarterly mean")fig.suptitle("Mean solar irradiance in four locations converted to different temporal frequencies")
     plt.show()
@@ -307,7 +307,7 @@ elif frequency == "Hourly average":
     print (df.groupby(df.index.hour).mean())
     df.groupby(df.index.hour).mean().plot()
     plt.title("Hourly average solar irradiance in 2022")
-    plt.ylabel("Wh/m$^2$")
+    plt.ylabel("Wh/m$²$")
     plt.legend()
     plt.show()
 
@@ -319,9 +319,9 @@ else:
 
 ## 3\. 通过 Excel VBA 运行 Python 脚本
 
-上述Python脚本也可以通过Excel VBA运行。为此，我将上述脚本保存为`python_script.py`文件。
+上述 Python 脚本也可以通过 Excel VBA 运行。为此，我将上述脚本保存为`python_script.py`文件。
 
-下面的代码片段给出了完整的VBA子程序，用于运行Python脚本。
+下面的代码片段给出了完整的 VBA 子程序，用于运行 Python 脚本。
 
 ```py
 Sub RunPythonScript()
@@ -350,47 +350,47 @@ ChDir Application.ThisWorkbook.Path
 End Sub
 ```
 
-首先，我声明了`objShell`变量以引用对象的地址（Wscript.shell）。该对象允许访问Windows功能以运行外部程序（此处为Python脚本）。
+首先，我声明了`objShell`变量以引用对象的地址（Wscript.shell）。该对象允许访问 Windows 功能以运行外部程序（此处为 Python 脚本）。
 
-`PythonExePath`指的是计算机系统中Python应用程序的路径。在Windows系统中，可以通过在Windows命令提示符中输入`where python`来找到该路径。
+`PythonExePath`指的是计算机系统中 Python 应用程序的路径。在 Windows 系统中，可以通过在 Windows 命令提示符中输入`where python`来找到该路径。
 
-Python脚本的路径被定义为`PythonScriptPath`中的字符串。请注意，此路径**不应包含空格**，以确保脚本正常运行。
+Python 脚本的路径被定义为`PythonScriptPath`中的字符串。请注意，此路径**不应包含空格**，以确保脚本正常运行。
 
-最后，以下行用于通过Excel VBA接口使用Python应用程序运行Python脚本。
+最后，以下行用于通过 Excel VBA 接口使用 Python 应用程序运行 Python 脚本。
 
 `objShell.Run PythonExePath & PythonScriptPath`
 
 ## 输出
 
-我将上述子程序/宏（使用VBA语言编写的命令）分配给了Excel文件中的一个按钮，如下所示：
+我将上述子程序/宏（使用 VBA 语言编写的命令）分配给了 Excel 文件中的一个按钮，如下所示：
 
-![](../Images/ffa376dad3846bad9822819ba596cea0.png)
+![](img/ffa376dad3846bad9822819ba596cea0.png)
 
-将宏分配到按钮以运行Python脚本。作者插图。
+将宏分配到按钮以运行 Python 脚本。作者插图。
 
-点击按钮会运行Python脚本，如下所示，并要求用户输入希望显示输出的频率：
+点击按钮会运行 Python 脚本，如下所示，并要求用户输入希望显示输出的频率：
 
-![](../Images/ce867f9992f695e2b0c5d5cdbc5c70aa.png)
+![](img/ce867f9992f695e2b0c5d5cdbc5c70aa.png)
 
-Python会要求用户输入选项。作者插图。
+Python 会要求用户输入选项。作者插图。
 
-选择“所有上述选项”后，我得到了2020年四个城市日、周、月和季度的太阳辐射平均值输出图。可以观察到，随着时间分辨率从右到左、从上到下增加，线条/曲线变得更加平滑，因为较低时间分辨率的变异性被平均化了。
+选择“所有上述选项”后，我得到了 2020 年四个城市日、周、月和季度的太阳辐射平均值输出图。可以观察到，随着时间分辨率从右到左、从上到下增加，线条/曲线变得更加平滑，因为较低时间分辨率的变异性被平均化了。
 
-![](../Images/cfafd868b73e5229360ae9284b7bf4a1.png)
+![](img/cfafd868b73e5229360ae9284b7bf4a1.png)
 
 选择所有上述选项时的输出显示了按日、周、月和季度水平平均化的小时太阳辐射值。作者插图。
 
 ## 结论
 
-在这篇文章中，我介绍了三种2020年四个城市小时太阳辐射数据时间序列重采样的技术：
+在这篇文章中，我介绍了三种 2020 年四个城市小时太阳辐射数据时间序列重采样的技术：
 
-1.  使用Excel VBA
+1.  使用 Excel VBA
 
-1.  使用Python中的pandas
+1.  使用 Python 中的 pandas
 
-1.  通过Excel VBA接口运行Python脚本
+1.  通过 Excel VBA 接口运行 Python 脚本
 
-Excel VBA在处理Excel数据时非常有用，因为它允许我们执行各种操作，并与同一或不同Excel文件中的不同工作表中的数据进行直接交互。此外，通过编写宏并将其分配给交互式按钮/用户表单或其他小部件，可以轻松地与其他用户共享Excel文件，对他们而言，功能才是关键，而不是后台代码的具体内容。
+Excel VBA 在处理 Excel 数据时非常有用，因为它允许我们执行各种操作，并与同一或不同 Excel 文件中的不同工作表中的数据进行直接交互。此外，通过编写宏并将其分配给交互式按钮/用户表单或其他小部件，可以轻松地与其他用户共享 Excel 文件，对他们而言，功能才是关键，而不是后台代码的具体内容。
 
 Python 的主要优势之一是其包含多个内置功能的包，这使得为常规任务编写单独的代码变得多余。在这种情况下，结合 Excel VBA 和 Python 的优势可能非常有利。这体现在我通过在 Excel 文件上点击按钮来运行时间序列重采样的 Python 脚本的方式上，这与几行简单的 VBA 代码相关联。
 

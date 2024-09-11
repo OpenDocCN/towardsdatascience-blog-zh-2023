@@ -1,18 +1,18 @@
-# 同时在Spark上训练多个时间序列模型，使用XGBoost
+# 同时在 Spark 上训练多个时间序列模型，使用 XGBoost
 
-> 原文：[https://towardsdatascience.com/concurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430?source=collection_archive---------5-----------------------#2023-03-17](https://towardsdatascience.com/concurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430?source=collection_archive---------5-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/concurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430?source=collection_archive---------5-----------------------#2023-03-17`](https://towardsdatascience.com/concurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430?source=collection_archive---------5-----------------------#2023-03-17)
 
-## 利用Apache Spark的分布式计算能力，同时在大数据上训练成千上万的自回归时间序列模型。
+## 利用 Apache Spark 的分布式计算能力，同时在大数据上训练成千上万的自回归时间序列模型。
 
-[](https://medium.com/@alon.agmon?source=post_page-----c6d5ec4a6430--------------------------------)[![Alon Agmon](../Images/c64e33ca886da4f4984c96acc7116a4d.png)](https://medium.com/@alon.agmon?source=post_page-----c6d5ec4a6430--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6d5ec4a6430--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6d5ec4a6430--------------------------------) [Alon Agmon](https://medium.com/@alon.agmon?source=post_page-----c6d5ec4a6430--------------------------------)
+[](https://medium.com/@alon.agmon?source=post_page-----c6d5ec4a6430--------------------------------)![Alon Agmon](https://medium.com/@alon.agmon?source=post_page-----c6d5ec4a6430--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6d5ec4a6430--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6d5ec4a6430--------------------------------) [Alon Agmon](https://medium.com/@alon.agmon?source=post_page-----c6d5ec4a6430--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbcd1e3126cdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconcurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430&user=Alon+Agmon&userId=bcd1e3126cdc&source=post_page-bcd1e3126cdc----c6d5ec4a6430---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6d5ec4a6430--------------------------------) ·12分钟阅读·2023年3月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6d5ec4a6430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconcurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430&user=Alon+Agmon&userId=bcd1e3126cdc&source=-----c6d5ec4a6430---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbcd1e3126cdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconcurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430&user=Alon+Agmon&userId=bcd1e3126cdc&source=post_page-bcd1e3126cdc----c6d5ec4a6430---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6d5ec4a6430--------------------------------) ·12 分钟阅读·2023 年 3 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6d5ec4a6430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconcurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430&user=Alon+Agmon&userId=bcd1e3126cdc&source=-----c6d5ec4a6430---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6d5ec4a6430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconcurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430&source=-----c6d5ec4a6430---------------------bookmark_footer-----------)![](../Images/1987a9fe765a50a4ebf82e7533592137.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6d5ec4a6430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconcurrently-train-multiple-time-series-models-over-spark-with-xgboost-c6d5ec4a6430&source=-----c6d5ec4a6430---------------------bookmark_footer-----------)![](img/1987a9fe765a50a4ebf82e7533592137.png)
 
 照片由[Ricardo Gomez Angel](https://unsplash.com/@rgaleriacom?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 
@@ -20,15 +20,15 @@
 
 假设你有一个包含客户每小时交易的大型数据集，并且你的任务是帮助公司预测和识别其交易模式中的异常。产品经理解释道：“如果某些客户的交易率突然下降，我们希望了解这一点，问题是我们必须自动化这一过程，因为我们有太多客户需要跟踪。”你有足够的数据来训练一个不错的时间序列模型，但由于客户之间的交易模式差异较大，你需要为*每个客户*训练一个*模型*，以准确预测和检测*他们*特定的使用模式中的异常。
 
-我认为这对许多处理SaaS或零售客户数据的数据科学家和机器学习工程师来说是相当常见的任务。从机器学习的角度来看，这似乎不是一个复杂的任务，但它很快可能变成工程噩梦。如果我们有数千甚至数十万的客户怎么办？我们应该如何训练和管理数千个模型？如果我们需要相对频繁地创建这些预测，甚至是实时预测怎么办？当数据量不断增长时，即使是简单的需求也可能变得要求苛刻，我们需要确保拥有一个可以随着数据增长而可靠扩展的基础设施。
+我认为这对许多处理 SaaS 或零售客户数据的数据科学家和机器学习工程师来说是相当常见的任务。从机器学习的角度来看，这似乎不是一个复杂的任务，但它很快可能变成工程噩梦。如果我们有数千甚至数十万的客户怎么办？我们应该如何训练和管理数千个模型？如果我们需要相对频繁地创建这些预测，甚至是实时预测怎么办？当数据量不断增长时，即使是简单的需求也可能变得要求苛刻，我们需要确保拥有一个可以随着数据增长而可靠扩展的基础设施。
 
-同时在巨大数据集上训练多个模型实际上是为分布式集群（如Spark）训练提供合理性的一种少数情况之一。我知道这是一种有争议的说法，但对于结构化的表格数据，通常在分布式集群上训练（而不是在抽样数据上，例如）往往并不合理。然而，当我们需要处理的数据确实是“庞大的”，并且我们需要将其拆分成多个数据集并在每个数据集上训练一个ML模型时，那么Spark似乎是正确的方向。
+同时在巨大数据集上训练多个模型实际上是为分布式集群（如 Spark）训练提供合理性的一种少数情况之一。我知道这是一种有争议的说法，但对于结构化的表格数据，通常在分布式集群上训练（而不是在抽样数据上，例如）往往并不合理。然而，当我们需要处理的数据确实是“庞大的”，并且我们需要将其拆分成多个数据集并在每个数据集上训练一个 ML 模型时，那么 Spark 似乎是正确的方向。
 
-使用Spark进行模型训练提供了很多功能，但也带来了相当多的挑战，主要集中在数据如何组织和格式化上。本文的目的是展示至少一种使用Spark（和Scala）从数据格式化到模型训练和预测的完整解决方案。
+使用 Spark 进行模型训练提供了很多功能，但也带来了相当多的挑战，主要集中在数据如何组织和格式化上。本文的目的是展示至少一种使用 Spark（和 Scala）从数据格式化到模型训练和预测的完整解决方案。
 
-具体而言，在接下来的内容中，我们将使用XGBoost在每个客户的时间序列数据上训练一个自回归（“AR”）时间序列模型。简而言之，AR模型将待预测值作为其先前值的线性函数。换句话说，它将给定客户在小时*h*的交易数量建模为他们在小时*h -1, h -2, h -3, h -n*的交易数量的函数。这类模型通常能为此类任务提供相当可靠的预测，也可以使用广泛可用且易于使用的提升树模型来实现。实际上，我们将简单地使用XGBoost回归来实现这一点。
+具体而言，在接下来的内容中，我们将使用 XGBoost 在每个客户的时间序列数据上训练一个自回归（“AR”）时间序列模型。简而言之，AR 模型将待预测值作为其先前值的线性函数。换句话说，它将给定客户在小时*h*的交易数量建模为他们在小时*h -1, h -2, h -3, h -n*的交易数量的函数。这类模型通常能为此类任务提供相当可靠的预测，也可以使用广泛可用且易于使用的提升树模型来实现。实际上，我们将简单地使用 XGBoost 回归来实现这一点。
 
-时间序列训练和预测中最棘手的部分是正确“工程化”特征。第 2 节简要说明了自回归在时间序列中的工作原理，并展示了如何使用纯 SQL 对时间序列数据进行 AR 任务建模。第 3 节重点讲述了如何将数据集加载到 Spark 中，并展示了如何将其“拆分”成多个训练任务和数据集。最后，使用 Spark 的 MLlib 进行机器学习模型训练所涉及的一些复杂性被认为是繁琐且直观不易的。我将演示如何在不使用 MLlib API 的情况下完成这一任务。第 4 节专注于预测或预报阶段。第 5 节进行总结。
+时间序列训练和预测中最棘手的部分是正确“工程化”特征。第二部分简要说明了自回归在时间序列中的工作原理，并展示了如何使用纯 SQL 对时间序列数据进行 AR 任务建模。第三部分重点讲述了如何将数据集加载到 Spark 中，并展示了如何将其“拆分”成多个训练任务和数据集。最后，使用 Spark 的 MLlib 进行机器学习模型训练所涉及的一些复杂性被认为是繁琐且直观不易的。我将演示如何在不使用 MLlib API 的情况下完成这一任务。第四部分专注于预测或预报阶段。第五部分进行总结。
 
 ## 2\. AR 时间序列模型的基本特征工程
 
@@ -36,7 +36,7 @@
 
 假设我们有收集了 6 小时的每小时交易数据——从上午 8 点到下午 1 点，我们想要预测每个客户在下午 2 点的交易次数。
 
-![](../Images/d45587374fff440ab8213bd8dca64ac7.png)
+![](img/d45587374fff440ab8213bd8dca64ac7.png)
 
 数据集 A — 我们开始使用的数据格式
 
@@ -44,7 +44,7 @@
 
 要训练这样的模型，我们需要创建一个具有 4 个特征的训练集。我们训练集中的每一行将包括一个目标变量，该变量表示给定小时的交易次数，以及 4 个捕捉前 4 小时交易次数的参数。通过“透视”上表，并创建一个滑动窗口（4 小时），我们可以创建一个类似于下面的数据集（按客户划分）：
 
-![](../Images/13363e9afd51e529d77e240ef3031f36.png)
+![](img/13363e9afd51e529d77e240ef3031f36.png)
 
 数据集 B（前两行表示实际数据），下面的行解释了这些数据代表什么）
 
@@ -146,28 +146,28 @@ predict 函数展开为三个阶段，最终返回一个类型为*PredictionResu
 
 ## 4 预测和预报
 
-理想情况下，在训练过程中，我们的模型已经“看到”了许多4小时的样本，并学会了如何预测第5小时。这对于两种任务非常有用：简单预测和异常检测。后者在此背景下是一个有趣且有用的任务。常见的技术非常简单：如果我们利用最后几个小时的时间序列数据，并用我们的模型预测最后一个小时，那么一个训练良好的模型应该会给我们一个与实际数字非常接近的预测。然而，如果预测的数字过高或过低，则可能意味着两种情况：要么模型不准确，要么最后一个小时的真实数据是意外的或异常的。例如，假设我们学会了识别特定交汇点24小时内的交通压力，一天由于事故出现了异常交通拥堵。如果我们预测这一小时并与实际数据进行比较，我们会发现预测的压力明显低于实际压力。这可能意味着模型完全错误，或者它准确地捕捉到当前存在异常的事实。
+理想情况下，在训练过程中，我们的模型已经“看到”了许多 4 小时的样本，并学会了如何预测第 5 小时。这对于两种任务非常有用：简单预测和异常检测。后者在此背景下是一个有趣且有用的任务。常见的技术非常简单：如果我们利用最后几个小时的时间序列数据，并用我们的模型预测最后一个小时，那么一个训练良好的模型应该会给我们一个与实际数字非常接近的预测。然而，如果预测的数字过高或过低，则可能意味着两种情况：要么模型不准确，要么最后一个小时的真实数据是意外的或异常的。例如，假设我们学会了识别特定交汇点 24 小时内的交通压力，一天由于事故出现了异常交通拥堵。如果我们预测这一小时并与实际数据进行比较，我们会发现预测的压力明显低于实际压力。这可能意味着模型完全错误，或者它准确地捕捉到当前存在异常的事实。
 
-我们将遵循这个逻辑，通过将预测值与实际值进行除法运算来衡量它们之间的差异。这样，假设我们的模型是准确的，值为1将表明实际数据确实被预测并期望，而值小于1将意味着实际数据似乎低于预期，我们可能需要对此客户发出警报。
+我们将遵循这个逻辑，通过将预测值与实际值进行除法运算来衡量它们之间的差异。这样，假设我们的模型是准确的，值为 1 将表明实际数据确实被预测并期望，而值小于 1 将意味着实际数据似乎低于预期，我们可能需要对此客户发出警报。
 
 为了进行预测，我们将使用一个名为 *PredictionResult* 的 case 类，该类将包含一个 *key*（客户）、*ts*（时间戳）、*label*（实际数据）、*prediction*（预测值）和 *ratio*（两者之间的差异）。
 
-我们通过在特征向量上调用 Booster 的 *predict()* 方法来生成预测。接下来，我们将特征记录与相关的预测结果 *zip()* 在一起，以构建每个预测的 *PredictionResult* 对象（第11行），该对象还将计算实际值与预测值之间的比率。最后，我们使用 PredictionResult 的列表构建一个类型化的数据集，其样例如下：
+我们通过在特征向量上调用 Booster 的 *predict()* 方法来生成预测。接下来，我们将特征记录与相关的预测结果 *zip()* 在一起，以构建每个预测的 *PredictionResult* 对象（第 11 行），该对象还将计算实际值与预测值之间的比率。最后，我们使用 PredictionResult 的列表构建一个类型化的数据集，其样例如下：
 
-![](../Images/0d279d2ab4efe6e6be71bbd13ff5eb16.png)
+![](img/0d279d2ab4efe6e6be71bbd13ff5eb16.png)
 
-正如你所见，比例列可以帮助我们识别有趣的异常。对于大多数记录，你可以看到值非常接近1，这意味着实际值几乎与预测值相同，但我们确实可以找到一些异常，主要是实际值比预测值高出20%–40%。
+正如你所见，比例列可以帮助我们识别有趣的异常。对于大多数记录，你可以看到值非常接近 1，这意味着实际值几乎与预测值相同，但我们确实可以找到一些异常，主要是实际值比预测值高出 20%–40%。
 
 ## 5\. 结论
 
 大规模多模型训练是一项工程挑战，特别是当数据不断增长时，我们希望从更多数据中获益。对于一个、五个或十个模型表现良好的机器学习管道，当同时训练的模型数量增加到数百甚至上千时，可能会开始出现瓶颈。
 
-Apache Spark是一个很棒的大规模训练工具，但用于机器学习任务时，它与常见的基于Python的框架有所不同，并且并不适合所有项目。在这篇文章中，我演示了如何创建一个能够扩展的训练管道。我选择了时间序列预测作为示例，因为从工程角度来看，它被认为是相对复杂的任务，尽管可以很容易地使用相同的技术栈适应回归和分类问题。
+Apache Spark 是一个很棒的大规模训练工具，但用于机器学习任务时，它与常见的基于 Python 的框架有所不同，并且并不适合所有项目。在这篇文章中，我演示了如何创建一个能够扩展的训练管道。我选择了时间序列预测作为示例，因为从工程角度来看，它被认为是相对复杂的任务，尽管可以很容易地使用相同的技术栈适应回归和分类问题。
 
-我们看到，创建训练集中的大量工作可以（也应该）通过SQL在支持SQL的查询引擎上完成，例如Spark，以获得更好的可读性和速度。接下来，我们使用Spark的Dataset APIs将一个巨大的数据集拆分成多个小的训练任务。最后，我们使用XGBoost的booster API来训练一个自回归时间序列模型，并用它来检测客户数据中的异常。如前所述，多模型训练是一项很快变得非常复杂的任务。在这篇文章中，我试图展示Spark的API为我们提供了足够的工具，使其相对简单，并尽可能保持简洁。
+我们看到，创建训练集中的大量工作可以（也应该）通过 SQL 在支持 SQL 的查询引擎上完成，例如 Spark，以获得更好的可读性和速度。接下来，我们使用 Spark 的 Dataset APIs 将一个巨大的数据集拆分成多个小的训练任务。最后，我们使用 XGBoost 的 booster API 来训练一个自回归时间序列模型，并用它来检测客户数据中的异常。如前所述，多模型训练是一项很快变得非常复杂的任务。在这篇文章中，我试图展示 Spark 的 API 为我们提供了足够的工具，使其相对简单，并尽可能保持简洁。
 
 祝工程愉快！希望这对你有帮助。
 
 ** 你可以在[这里](https://github.com/a-agmon/spark-ml/blob/main/spark-ts-xb.scala)找到完整示例代码的链接
 
-*** 关于时间序列分析和自回归有很多资源。我认为我从中学到最多的资源是：*Forecasting: Principles and Practice (2nd ed)*，作者Rob J Hyndman和George Athanasopoulos（在线获取地址：[这里](https://otexts.com/fpp2/advanced.html)）
+*** 关于时间序列分析和自回归有很多资源。我认为我从中学到最多的资源是：*Forecasting: Principles and Practice (2nd ed)*，作者 Rob J Hyndman 和 George Athanasopoulos（在线获取地址：[这里](https://otexts.com/fpp2/advanced.html)）

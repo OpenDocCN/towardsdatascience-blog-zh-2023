@@ -1,34 +1,34 @@
 # 利用数据分析进行可持续商业转型
 
-> 原文：[https://towardsdatascience.com/leveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5?source=collection_archive---------0-----------------------#2023-03-22](https://towardsdatascience.com/leveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5?source=collection_archive---------0-----------------------#2023-03-22)
+> 原文：[`towardsdatascience.com/leveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5?source=collection_archive---------0-----------------------#2023-03-22`](https://towardsdatascience.com/leveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5?source=collection_archive---------0-----------------------#2023-03-22)
 
 ## 了解如何使用数据分析克服扩展绿色举措的挑战，这些举措阻碍了组织实现可持续发展目标。
 
-[](https://s-saci95.medium.com/?source=post_page-----cfd8d71f97f5--------------------------------)[![Samir Saci](../Images/722d1f56a3308f6527d82b5ab97064ec.png)](https://s-saci95.medium.com/?source=post_page-----cfd8d71f97f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cfd8d71f97f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cfd8d71f97f5--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----cfd8d71f97f5--------------------------------)
+[](https://s-saci95.medium.com/?source=post_page-----cfd8d71f97f5--------------------------------)![Samir Saci](https://s-saci95.medium.com/?source=post_page-----cfd8d71f97f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cfd8d71f97f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfd8d71f97f5--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----cfd8d71f97f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----cfd8d71f97f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfd8d71f97f5--------------------------------) · 12分钟阅读 · 2023年3月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcfd8d71f97f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5&user=Samir+Saci&userId=bb0f26d52754&source=-----cfd8d71f97f5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----cfd8d71f97f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfd8d71f97f5--------------------------------) · 12 分钟阅读 · 2023 年 3 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcfd8d71f97f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5&user=Samir+Saci&userId=bb0f26d52754&source=-----cfd8d71f97f5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcfd8d71f97f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5&source=-----cfd8d71f97f5---------------------bookmark_footer-----------)![](../Images/98342b3109d6ccb6db8db7503d2df9d2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcfd8d71f97f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-data-analytics-for-sustainable-business-transformation-cfd8d71f97f5&source=-----cfd8d71f97f5---------------------bookmark_footer-----------)![](img/98342b3109d6ccb6db8db7503d2df9d2.png)
 
 (图片来源：作者)
 
-目前，财务法规推动公司承诺到2030年减少碳排放。
+目前，财务法规推动公司承诺到 2030 年减少碳排放。
 
 > 数据分析如何帮助组织克服可持续供应链管理的障碍？
 
 然而，对于组织来说，扩大绿色举措和实现可持续发展目标可能面临挑战。
 
-[![](../Images/d3eddda4ec64e04ecde07854c5bb4db1.png)](https://youtu.be/j85tA8WuiwA)
+![](https://youtu.be/j85tA8WuiwA)
 
 将供应链定义为多个参与方交换物料和信息流 — （作者提供的图片）
 
 主要挑战在于供应链管理处于**复杂系统**的核心，涉及制造和物流团队。
 
-[![](../Images/a1d8db67b3733821504cee18b71edd81.png)](https://youtu.be/j85tA8WuiwA)
+![](https://youtu.be/j85tA8WuiwA)
 
 不同团队专注于优化其在供应链中的操作范围 — （作者提供的图片）
 
@@ -65,7 +65,7 @@ II. Leveraging Data Analytics
 
 ## 绿色转型的“四个隐藏敌人”
 
-可持续性已经成为商业运营的关键方面，因为公司面临着越来越大的压力，需要解决环境和社会问题以进行ESG报告。
+可持续性已经成为商业运营的关键方面，因为公司面临着越来越大的压力，需要解决环境和社会问题以进行 ESG 报告。
 
 然而，实施碳足迹减少和有效的可持续性举措的路线图往往说起来容易做起来难。
 
@@ -79,7 +79,7 @@ II. Leveraging Data Analytics
 
 +   **方法和技能**：传统工具阻碍变化。
 
-[![](../Images/2db3133df66d98202a85291c7bb32cdc.png)](https://youtu.be/j85tA8WuiwA)
+![](https://youtu.be/j85tA8WuiwA)
 
 绿色转型的四个隐藏敌人 — （作者提供的图片）
 
@@ -89,15 +89,15 @@ II. Leveraging Data Analytics
 
 **供应链**可以定义为多个参与方交换**物料** **和信息流以满足**客户需求。
 
-![](../Images/70afbeb7b9c1f2ee87f2a8188af858cf.png)
+![](img/70afbeb7b9c1f2ee87f2a8188af858cf.png)
 
 将供应链定义为多个参与方交换物料和信息流 — （作者提供的图片）
 
-在[之前的文章](/what-is-supply-chain-analytics-42f1b2df4a2)中，**供应链分析**被介绍为一组帮助公司利用系统生成的数据获得洞察并优化操作的工具。
+在之前的文章中，**供应链分析**被介绍为一组帮助公司利用系统生成的数据获得洞察并优化操作的工具。
 
 > 分析的不同类型是什么？
 
-![](../Images/759c2affb32c6a6421b65f6ef2a51ab2.png)
+![](img/759c2affb32c6a6421b65f6ef2a51ab2.png)
 
 发现四种供应链分析类型 — （图片来源：作者）[[原文](https://www.samirsaci.com/what-is-supply-chain-analytics-2/)]
 
@@ -107,7 +107,7 @@ II. Leveraging Data Analytics
 
 +   **诊断性分析**通过部署[自动化事件根本原因分析](https://youtu.be/V6qnuZ-QcKE)过程。
 
-+   **预测性分析**通过支持[客户需求预测](https://www.samirsaci.com/machine-learning-for-retail-sales-forecasting-features-engineering/)、供应能力和CO2排放量。
++   **预测性分析**通过支持[客户需求预测](https://www.samirsaci.com/machine-learning-for-retail-sales-forecasting-features-engineering/)、供应能力和 CO2 排放量。
 
 +   **规范性分析**通过支持[决策过程](https://youtu.be/gF9ds3CH3N4)来优化资源利用。
 
@@ -115,7 +115,7 @@ II. Leveraging Data Analytics
 
 # 利用数据分析实现绿色转型。
 
-## 隐藏的敌人1：结构和治理
+## 隐藏的敌人 1：结构和治理
 
 组织结构的孤岛性质可能会阻碍可持续性的有效合作。
 
@@ -123,7 +123,7 @@ II. Leveraging Data Analytics
 
 这**限制了可持续性**从而无法转变整个组织，并限制了其在公司中的力量和相关性。
 
-[![](../Images/ab42796c3ec3e711ade6e28fae11f32f.png)](https://youtu.be/j85tA8WuiwA)
+![](https://youtu.be/j85tA8WuiwA)
 
 孤岛优化对供应链管理中可持续性努力的影响 — （图片来源：作者）
 
@@ -139,7 +139,7 @@ II. Leveraging Data Analytics
 
 +   仓库操作必须[**应对这些约束**](https://youtu.be/KR_ziEiPcDk)
 
-> 谁负责减少CO2排放？每个人都应该负责，但实际上没有人负责。
+> 谁负责减少 CO2 排放？每个人都应该负责，但实际上没有人负责。
 
 这种缺乏合作严重影响了[运输](https://youtu.be/lhDBTlsGDVc)和[生产计划](https://youtu.be/130AKb2DejM)的效率，阻碍了可持续性努力的进展。
 
@@ -147,7 +147,7 @@ II. Leveraging Data Analytics
 
 欲了解更多详情，您可以查看
 
-+   一个实际案例研究[绿色库存管理](https://www.samirsaci.com/green-inventory-management-case-study/)以展示**订单频率**对**CO2排放**的影响。
++   一个实际案例研究[绿色库存管理](https://www.samirsaci.com/green-inventory-management-case-study/)以展示**订单频率**对**CO2 排放**的影响。
 
 +   [生产计划优化](https://youtu.be/130AKb2DejM)以了解批次数量对生产成本的影响。
 
@@ -167,19 +167,19 @@ II. Leveraging Data Analytics
 
 📊 **示例 1：生命周期评估**
 
-[![](../Images/44a3b0f84ed706d96d90100456049a02.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
 评估产品在其生命周期中的环境影响 — （作者提供的图片）
 
 生命周期评估（LCA）是一种评估产品在其整个生命周期中环境影响的方法。
 
-[![](../Images/013a29035e952b23190d228cf745f6a9.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
 使用的数据类型 — （作者提供的图片）
 
 在我们的例子中，它可以用来估算产品的足迹，考虑到端到端的供应链过程。
 
-[![](../Images/d03302e6cc9882f317dd31a95057a66e.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
 分析供应链中的排放和资源使用，以获得可持续性见解 — （作者提供的图片）
 
@@ -201,7 +201,7 @@ II. Leveraging Data Analytics
 
 我们可以为整个供应链部门设定一个共同的排放减少目标。
 
-[![](../Images/3b916501c53b97e64e4d17cac38e286d.png)](https://youtu.be/j85tA8WuiwA)
+![](https://youtu.be/j85tA8WuiwA)
 
 实施数据驱动的协作行动以实现可持续供应链转型 — （作者提供的图片）
 
@@ -229,7 +229,7 @@ II. Leveraging Data Analytics
 
 它们设计于**利润是主要关注点的时代**，而环境和社会因素未被考虑。
 
-[![](../Images/e9b5a9a2061986d7e0844708bea4e852.png)](https://youtu.be/ssdni_n6HDc)
+![](https://youtu.be/ssdni_n6HDc)
 
 供应链管理中的常见业务和运营 KPI — （图片来源：作者）
 
@@ -253,7 +253,7 @@ II. Leveraging Data Analytics
 
 目标是找到正确的参数，以优化特定指标，考虑外部和内部约束。
 
-![](../Images/51ba2eba2621a6bd502521ef9d0d8f95.png)
+![](img/51ba2eba2621a6bd502521ef9d0d8f95.png)
 
 可持续供应链网络问题声明 — （图片来源：作者）
 
@@ -273,13 +273,13 @@ II. Leveraging Data Analytics
 
 > 如果我们想要最小化总 CO2 排放会怎样？
 
-[![](../Images/0410579e690816b5b7165fdcaf651250.png)](https://www.samirsaci.com/robust-supply-chain-networks-with-monte-carlo-simulation/)
+![](https://www.samirsaci.com/robust-supply-chain-networks-with-monte-carlo-simulation/)
 
 基于成本和基于 CO2 的供应链优化方法比较 — （图片来源：作者）
 
 右侧，我们建议使用相同的模型，采用适应的目标函数以最小化总碳排放。
 
-![](../Images/d9a10285c100318dfb0812a6392564bd.png)
+![](img/d9a10285c100318dfb0812a6392564bd.png)
 
 低成本解决方案与低碳解决方案的供应链网络设计 — （图像来源：作者）
 
@@ -299,7 +299,7 @@ II. Leveraging Data Analytics
 
 当领导层和运营团队未与可持续性和绿色转型目标对齐时，努力可能会遇到抵制或漠视。
 
-![](../Images/88b6ff570bc02229fc57cb4e60c31397.png)
+![](img/88b6ff570bc02229fc57cb4e60c31397.png)
 
 异质托盘的卸货过程及其环境影响 — （图像来源：作者）
 
@@ -321,7 +321,7 @@ II. Leveraging Data Analytics
 
 它涉及检查历史数据以确定导致特定结果的因素。
 
-> 可持续性团队对工厂物流经理说：“根据我们的诊断工具：我们每年额外消耗2吨薄膜，因为你们将物品混合在同一托盘中。”
+> 可持续性团队对工厂物流经理说：“根据我们的诊断工具：我们每年额外消耗 2 吨薄膜，因为你们将物品混合在同一托盘中。”
 
 这些工具可以帮助你的组织通过**客观的外部评估**理解失败的原因。
 
@@ -329,17 +329,17 @@ II. Leveraging Data Analytics
 
 一个 [供应链控制塔](https://youtu.be/V6qnuZ-QcKE) 传统上被定义为一组与各种系统连接的仪表板，利用数据监控供应链中的关键事件。
 
-![](../Images/6800913da64cbd3f618b318c16704c01.png)
+![](img/6800913da64cbd3f618b318c16704c01.png)
 
 利用供应链控制塔进行高效分销网络管理 — （图像来源：作者）
 
 如果你以时尚零售公司的分销网络监控为例，
 
-+   绩效指标是 [按时按量](https://www.youtube.com/watch?v=qhLqu6M7lcA)，也称为OTIF
++   绩效指标是 [按时按量](https://www.youtube.com/watch?v=qhLqu6M7lcA)，也称为 OTIF
 
 +   诊断算法进行根本原因分析，以了解谁对延迟负责。
 
-[![](../Images/c726c57e08fdc1a7aaf607a6b9aa0313.png)](https://www.youtube.com/watch?v=V6qnuZ-QcKE)
+![](https://www.youtube.com/watch?v=V6qnuZ-QcKE)
 
 使用数据分析进行晚交货根本原因分析过程—（图像由作者提供）
 
@@ -355,7 +355,7 @@ II. Leveraging Data Analytics
 
 1.  选择要跟踪的指标：*例如，CO2 排放*
 
-1.  设定每个过程的排放目标：*例如，工厂仓库补货的目标为160（克 CO2e/单位）*
+1.  设定每个过程的排放目标：*例如，工厂仓库补货的目标为 160（克 CO2e/单位）*
 
 1.  使用生命周期评估（LCA）方法比较实际排放与目标。
 
@@ -371,19 +371,19 @@ II. Leveraging Data Analytics
 
 在解决了文化障碍之后，我们可以集中精力于推动绿色转型所需的方法和技能。
 
-## 隐藏的敌人4：方法和技能
+## 隐藏的敌人 4：方法和技能
 
 传统工具和技能集可能需要改进，以管理可持续性计划的复杂性。
 
 缺乏使用分析的专业知识可能会阻碍组织利用数据来优化供应链过程，并做出基于数据的可持续性和绿色转型决策。
 
-## *解决方案4：员工培训*
+## *解决方案 4：员工培训*
 
 它并不是直接与特定类型的分析相关联，但表明需要装备员工掌握利用数据分析的必要技能。
 
 通过提供分析工具的培训计划，公司可以培养能够推动可持续性计划的员工队伍。
 
-例如，我在这个简短的教程中分享了我学习Python和VBA用于供应链分析的经验。 👇
+例如，我在这个简短的教程中分享了我学习 Python 和 VBA 用于供应链分析的经验。 👇
 
 对隐藏敌人及其解决方案的快速回顾使您信服于数据推动绿色转型的力量。
 
@@ -401,19 +401,19 @@ II. Leveraging Data Analytics
 
 > 如何衡量您举措的影响？
 
-## 推动以ESG为导向的商业转型。
+## 推动以 ESG 为导向的商业转型。
 
-所有这些举措都可以对您的ESG评分产生积极影响。
+所有这些举措都可以对您的 ESG 评分产生积极影响。
 
 环境、社会和治理（ESG）报告方法披露了公司的治理结构、社会影响和生态足迹。
 
-![](../Images/27895e19708de4e7b9bdfa977ae3978e.png)
+![](img/27895e19708de4e7b9bdfa977ae3978e.png)
 
-ESG支柱展示 — （图片来源：作者）
+ESG 支柱展示 — （图片来源：作者）
 
 这三个维度提供了对公司可持续性和道德影响的深入理解，这可以通过数据驱动的举措来改善。
 
-[![](../Images/9a0d0a9901546a307723d044d9e6f798.png)](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
+![](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
 
 报告类别示例 — （图片来源：作者）
 
@@ -423,21 +423,21 @@ ESG支柱展示 — （图片来源：作者）
 
 我在下面链接的文章中提出了几种工具和方法，用于提取和处理数据以生成这些评分。👇
 
-[](/what-is-esg-reporting-d610535eed9c?source=post_page-----cfd8d71f97f5--------------------------------) [## 什么是ESG报告？
+[](/what-is-esg-reporting-d610535eed9c?source=post_page-----cfd8d71f97f5--------------------------------) ## 什么是 ESG 报告？
 
 ### 利用数据分析进行公司全面有效的环境、社会和治理报告
 
-towardsdatascience.com](/what-is-esg-reporting-d610535eed9c?source=post_page-----cfd8d71f97f5--------------------------------)
+towardsdatascience.com
 
 > **我们为什么要这样做？[…]**
 > 
 > **你听说过可持续发展目标吗？**
 
-可持续发展目标（SDGs）是联合国制定的**17个目标**，旨在应对全球挑战。
+可持续发展目标（SDGs）是联合国制定的**17 个目标**，旨在应对全球挑战。
 
-![](../Images/5a9e99cd3286a5da35b492e0853c435e.png)
+![](img/5a9e99cd3286a5da35b492e0853c435e.png)
 
-5类可持续发展目标 — （图片来源：作者）
+5 类可持续发展目标 — （图片来源：作者）
 
 > 作为数据科学家，你如何帮助你的公司为这些目标做出贡献？
 
@@ -471,8 +471,8 @@ samirsaci.com](https://samirsaci.com/?source=post_page-----cfd8d71f97f5---------
 
 +   “什么是供应链控制塔？”，[Towards Data Science](https://medium.com/towards-data-science/automated-supply-chain-control-tower-with-python-17dbf93a18d0)，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----cfd8d71f97f5--------------------------------)
 
-+   “什么是供应链分析？”，[Towards Data Science](/what-is-supply-chain-analytics-42f1b2df4a2)，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----cfd8d71f97f5--------------------------------)
++   “什么是供应链分析？”，Towards Data Science，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----cfd8d71f97f5--------------------------------)
 
-+   “什么是生命周期评估？LCA”，[Towards Data Science](/what-is-a-life-cycle-assessment-lca-e32a5078483a)，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----cfd8d71f97f5--------------------------------)
++   “什么是生命周期评估？LCA”，Towards Data Science，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----cfd8d71f97f5--------------------------------)
 
-+   “4 个影响深远的项目来开始你的供应链数据科学之旅”，[Towards Data Science](/4-impacting-projects-to-start-your-data-science-for-supply-chain-journey-fe068e503c29)，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----cfd8d71f97f5--------------------------------)
++   “4 个影响深远的项目来开始你的供应链数据科学之旅”，Towards Data Science，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----cfd8d71f97f5--------------------------------)

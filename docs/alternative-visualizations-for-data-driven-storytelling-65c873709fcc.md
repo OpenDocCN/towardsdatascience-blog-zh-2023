@@ -1,18 +1,18 @@
 # 数据驱动故事讲述的替代可视化方法
 
-> 原文：[https://towardsdatascience.com/alternative-visualizations-for-data-driven-storytelling-65c873709fcc?source=collection_archive---------3-----------------------#2023-11-02](https://towardsdatascience.com/alternative-visualizations-for-data-driven-storytelling-65c873709fcc?source=collection_archive---------3-----------------------#2023-11-02)
+> 原文：[`towardsdatascience.com/alternative-visualizations-for-data-driven-storytelling-65c873709fcc?source=collection_archive---------3-----------------------#2023-11-02`](https://towardsdatascience.com/alternative-visualizations-for-data-driven-storytelling-65c873709fcc?source=collection_archive---------3-----------------------#2023-11-02)
 
 ## 为什么选择它们，以及如何创建它们
 
-[](https://medium.com/@michalszudejko?source=post_page-----65c873709fcc--------------------------------)[![Michal Szudejko](../Images/d4c303d02a79ad29df193ed3b25910d9.png)](https://medium.com/@michalszudejko?source=post_page-----65c873709fcc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65c873709fcc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65c873709fcc--------------------------------) [Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----65c873709fcc--------------------------------)
+[](https://medium.com/@michalszudejko?source=post_page-----65c873709fcc--------------------------------)![Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----65c873709fcc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65c873709fcc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----65c873709fcc--------------------------------) [Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----65c873709fcc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd3b37fc311f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternative-visualizations-for-data-driven-storytelling-65c873709fcc&user=Michal+Szudejko&userId=d3b37fc311f7&source=post_page-d3b37fc311f7----65c873709fcc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65c873709fcc--------------------------------) ·16分钟阅读·2023年11月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65c873709fcc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternative-visualizations-for-data-driven-storytelling-65c873709fcc&user=Michal+Szudejko&userId=d3b37fc311f7&source=-----65c873709fcc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd3b37fc311f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternative-visualizations-for-data-driven-storytelling-65c873709fcc&user=Michal+Szudejko&userId=d3b37fc311f7&source=post_page-d3b37fc311f7----65c873709fcc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65c873709fcc--------------------------------) ·16 分钟阅读·2023 年 11 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65c873709fcc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternative-visualizations-for-data-driven-storytelling-65c873709fcc&user=Michal+Szudejko&userId=d3b37fc311f7&source=-----65c873709fcc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65c873709fcc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternative-visualizations-for-data-driven-storytelling-65c873709fcc&source=-----65c873709fcc---------------------bookmark_footer-----------)![](../Images/6e4e37e38f67478eb935e9d8f303e6ed.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65c873709fcc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternative-visualizations-for-data-driven-storytelling-65c873709fcc&source=-----65c873709fcc---------------------bookmark_footer-----------)![](img/6e4e37e38f67478eb935e9d8f303e6ed.png)
 
 来源：图像由作者在 ChatGPT 和 DALL-e 3 中生成。
 

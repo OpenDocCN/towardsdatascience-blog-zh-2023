@@ -1,10 +1,10 @@
-# 降低你的 Cloud Composer 账单（第 1 部分）
+# 降低你的 Cloud Composer 账单（第一部分）
 
-> 原文：[https://towardsdatascience.com/reduce-your-cloud-composer-bills-f03e112df689?source=collection_archive---------5-----------------------#2023-03-24](https://towardsdatascience.com/reduce-your-cloud-composer-bills-f03e112df689?source=collection_archive---------5-----------------------#2023-03-24)
+> 原文：[`towardsdatascience.com/reduce-your-cloud-composer-bills-f03e112df689?source=collection_archive---------5-----------------------#2023-03-24`](https://towardsdatascience.com/reduce-your-cloud-composer-bills-f03e112df689?source=collection_archive---------5-----------------------#2023-03-24)
 
 ## 使用计划化的 CICD 管道来关闭环境并将其恢复到之前的状态。
 
-[](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)[![Marc Djohossou](../Images/096f7877d14b7671e48500175931dbea.png)](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f03e112df689--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f03e112df689--------------------------------) [Marc Djohossou](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)
+[](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)![Marc Djohossou](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f03e112df689--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f03e112df689--------------------------------) [Marc Djohossou](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff03e112df689&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freduce-your-cloud-composer-bills-f03e112df689&source=-----f03e112df689---------------------bookmark_footer-----------)![](../Images/527a433072b680b844334d17b96d7046.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff03e112df689&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freduce-your-cloud-composer-bills-f03e112df689&source=-----f03e112df689---------------------bookmark_footer-----------)![](img/527a433072b680b844334d17b96d7046.png)
 
 照片由 [Sasun Bughdaryan](https://unsplash.com/@sasun1990?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -22,7 +22,7 @@
 
 在这篇文章中，我将分享一种**有效减少 Cloud Composer 账单**的方法。尽管代码片段仅适用于 Cloud Composer 2，但所倡导的策略对 Cloud Composer 1 用户仍然适用。
 
-请注意，这是一系列两部分的第一部分。第二篇文章可以在[这里](/reduce-your-cloud-composer-bills-part-2-af63da03806f)查阅。
+请注意，这是一系列两部分的第一部分。第二篇文章可以在这里查阅。
 
 以下是将要讨论的主要主题：
 

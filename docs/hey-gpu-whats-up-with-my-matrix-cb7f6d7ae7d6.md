@@ -1,18 +1,18 @@
 # 嘿 GPU，我的矩阵怎么了？
 
-> 原文：[https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6?source=collection_archive---------16-----------------------#2023-06-13](https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6?source=collection_archive---------16-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6?source=collection_archive---------16-----------------------#2023-06-13`](https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6?source=collection_archive---------16-----------------------#2023-06-13)
 
 ## 一份温和的指南，帮助你理解 GPU 如何执行矩阵乘法
 
-[](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Thushan Ganegedara](../Images/3fabfa37132f7d3a9e7679c3b8d7e061.png)](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------) [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
+[](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)![Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------) [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0b045d5681&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6&user=Thushan+Ganegedara&userId=6f0b045d5681&source=post_page-6f0b045d5681----cb7f6d7ae7d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------) ·8分钟阅读·2023年6月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb7f6d7ae7d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6&user=Thushan+Ganegedara&userId=6f0b045d5681&source=-----cb7f6d7ae7d6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0b045d5681&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6&user=Thushan+Ganegedara&userId=6f0b045d5681&source=post_page-6f0b045d5681----cb7f6d7ae7d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------) ·8 分钟阅读·2023 年 6 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb7f6d7ae7d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6&user=Thushan+Ganegedara&userId=6f0b045d5681&source=-----cb7f6d7ae7d6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb7f6d7ae7d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6&source=-----cb7f6d7ae7d6---------------------bookmark_footer-----------)![](../Images/a911c1d35115175bbfe3894ea74e8d00.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb7f6d7ae7d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6&source=-----cb7f6d7ae7d6---------------------bookmark_footer-----------)![](img/a911c1d35115175bbfe3894ea74e8d00.png)
 
 照片由 [Thomas Foster](https://unsplash.com/@thomasfos?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/vWgoeEYdtIY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

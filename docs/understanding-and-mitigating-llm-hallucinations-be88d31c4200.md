@@ -1,10 +1,10 @@
-# 理解和减轻LLM幻觉
+# 理解和减轻 LLM 幻觉
 
-> 原文：[https://towardsdatascience.com/understanding-and-mitigating-llm-hallucinations-be88d31c4200?source=collection_archive---------1-----------------------#2023-10-23](https://towardsdatascience.com/understanding-and-mitigating-llm-hallucinations-be88d31c4200?source=collection_archive---------1-----------------------#2023-10-23)
+> 原文：[`towardsdatascience.com/understanding-and-mitigating-llm-hallucinations-be88d31c4200?source=collection_archive---------1-----------------------#2023-10-23`](https://towardsdatascience.com/understanding-and-mitigating-llm-hallucinations-be88d31c4200?source=collection_archive---------1-----------------------#2023-10-23)
 
 ## LLM 幻觉检测挑战及其在一篇重要研究论文中提出的可能解决方案。
 
-[](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)[![Felipe de Pontes Adachi](../Images/58c9544ae85f43548c5e5b56fda31bb4.png)](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be88d31c4200--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be88d31c4200--------------------------------) [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)
+[](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)![Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be88d31c4200--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----be88d31c4200--------------------------------) [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe88d31c4200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-and-mitigating-llm-hallucinations-be88d31c4200&source=-----be88d31c4200---------------------bookmark_footer-----------)![](../Images/ada358f0bc7233d554233f71e47aa0b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe88d31c4200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-and-mitigating-llm-hallucinations-be88d31c4200&source=-----be88d31c4200---------------------bookmark_footer-----------)![](img/ada358f0bc7233d554233f71e47aa0b8.png)
 
 [由 Enrique 提供的图片](https://pixabay.com/photos/forest-person-surreal-poisoning-7772371/)
 
@@ -50,31 +50,31 @@
 
 用户提示：**菲利普·海沃斯是谁？**
 
-LLM 响应：**菲利普·海沃斯是英国的一名律师和政治家，曾于1859年至1868年担任特特福德的国会议员。**
+LLM 响应：**菲利普·海沃斯是英国的一名律师和政治家，曾于 1859 年至 1868 年担任特特福德的国会议员。**
 
 初看起来，这似乎是一个连贯的回答，但过一段时间，我们可能会问一个非常合理的问题：这是真的吗？
 
-不过，我们并没有足够的信息来回答这个新问题。我们没有可以用来验证陈述的经过验证的事实的背景。LLM通常在大量文本中进行训练，因此很难验证陈述是否基于特定的信息来源。快速的Google搜索没有显示出匹配回答的人的任何信息。什么确切构成幻觉仍然没有很好地建立，但这个例子可以被理解为幻觉，因为这个名字、地点和职业的主题可能根本不存在。
+不过，我们并没有足够的信息来回答这个新问题。我们没有可以用来验证陈述的经过验证的事实的背景。LLM 通常在大量文本中进行训练，因此很难验证陈述是否基于特定的信息来源。快速的 Google 搜索没有显示出匹配回答的人的任何信息。什么确切构成幻觉仍然没有很好地建立，但这个例子可以被理解为幻觉，因为这个名字、地点和职业的主题可能根本不存在。
 
 让我们再试一次另一个问题：
 
 用户提示：**比尔·盖茨是谁？**
 
-LLM回应：**比尔·盖茨是技术企业家、投资者和慈善家。他是微软公司的共同创始人，也是世界上最富有的人之一。**
+LLM 回应：**比尔·盖茨是技术企业家、投资者和慈善家。他是微软公司的共同创始人，也是世界上最富有的人之一。**
 
-好的，这些陈述更容易验证，并且通过快速检查维基百科得到了支持，所以这不太可能是幻觉。在训练过程中，LLM很可能见过很多关于比尔·盖茨的陈述，因此“比尔·盖茨是_”之后的令牌很可能会以较高的信心生成。另一方面，LLM可能对“Philip Hayworth 是_”之后使用哪些词不太确定。这一见解使我们能够将不确定性与真实性联系起来，因为事实句子通常会包含预测概率较高的令牌，而幻觉句子则不然。然而，对于许多案例，我们可能没有手头的输出概率分布。
+好的，这些陈述更容易验证，并且通过快速检查维基百科得到了支持，所以这不太可能是幻觉。在训练过程中，LLM 很可能见过很多关于比尔·盖茨的陈述，因此“比尔·盖茨是 _”之后的令牌很可能会以较高的信心生成。另一方面，LLM 可能对“Philip Hayworth 是 _”之后使用哪些词不太确定。这一见解使我们能够将不确定性与真实性联系起来，因为事实句子通常会包含预测概率较高的令牌，而幻觉句子则不然。然而，对于许多案例，我们可能没有手头的输出概率分布。
 
 本次会议的示例和内容基于原始论文[1]，我们将在接下来的章节中继续探索论文的方法。
 
 # 方法：SelfCheckGPT
 
-在上一节中，我们考虑了我们方法的两个重要因素：访问外部背景和访问LLM的输出概率分布。当一种方法不需要外部背景或数据库来进行一致性检查时，我们可以称其为**零资源**方法。类似地，当一种方法只需要LLM生成的文本时，可以称之为**黑箱**方法。
+在上一节中，我们考虑了我们方法的两个重要因素：访问外部背景和访问 LLM 的输出概率分布。当一种方法不需要外部背景或数据库来进行一致性检查时，我们可以称其为**零资源**方法。类似地，当一种方法只需要 LLM 生成的文本时，可以称之为**黑箱**方法。
 
 我们在这篇博客文章中要讨论的方法是一种零资源黑箱幻觉检测方法，基于这样一个前提：**对相同提示的采样回答对于幻觉事实可能会出现分歧和矛盾，而对于事实陈述则可能会相似和一致**。
 
-让我们重新审视之前的例子。为了应用检测方法，我们需要更多的样本，所以让我们再向LLM提出三个相同的问题：
+让我们重新审视之前的例子。为了应用检测方法，我们需要更多的样本，所以让我们再向 LLM 提出三个相同的问题：
 
-![](../Images/6a353b00255ca73e9f5e6b8a22b0adbe.png)
+![](img/6a353b00255ca73e9f5e6b8a22b0adbe.png)
 
 作者提供的表格
 
@@ -82,7 +82,7 @@ LLM回应：**比尔·盖茨是技术企业家、投资者和慈善家。他是�
 
 让我们以比尔·盖茨的例子进行比较：
 
-![](../Images/3c9d9bc9e5e6b6c8712ed29f0cf3eb18.png)
+![](img/3c9d9bc9e5e6b6c8712ed29f0cf3eb18.png)
 
 表格作者提供
 
@@ -100,7 +100,7 @@ LLM回应：**比尔·盖茨是技术企业家、投资者和慈善家。他是�
 
 让我们展示如何用原始答案的第一个句子与第一个样本进行检查：
 
-![](../Images/00483d188ef30cfd8e58a5c812887998.png)
+![](img/00483d188ef30cfd8e58a5c812887998.png)
 
 图片作者提供
 
@@ -118,7 +118,7 @@ LLM回应：**比尔·盖茨是技术企业家、投资者和慈善家。他是�
 
 考虑到我们已经使用 LLM 来生成答案和样本，我们不妨使用 LLM 来执行一致性检查。我们可以对每个原始句子和每个样本进行一致性检查，将 LLM 作为我们的上下文。下面的图片，来自原始论文的仓库，说明了如何进行这个操作：
 
-![](../Images/d0c3428d1c9cb81ab76b5d1a1b75ec9b.png)
+![](img/d0c3428d1c9cb81ab76b5d1a1b75ec9b.png)
 
 **SELFCHECKGPT WITH LLM PROMPT. 来源：** [**HTTPS://GITHUB.COM/POTSAWEE/SELFCHECKGPT/TREE/MAIN**](https://github.com/potsawee/selfcheckgpt/tree/main?ref=content.whylabs.ai)
 
@@ -130,7 +130,7 @@ LLM回应：**比尔·盖茨是技术企业家、投资者和慈善家。他是�
 
 让我们看看在三种方法中讨论的两个示例的结果如何。
 
-![](../Images/bbb277288b2562da66001aba60dd5e1d.png)
+![](img/bbb277288b2562da66001aba60dd5e1d.png)
 
 作者提供的表格
 
@@ -140,18 +140,18 @@ LLM回应：**比尔·盖茨是技术企业家、投资者和慈善家。他是�
 
 我们希望这篇博客文章有助于解释幻觉问题，并提供一种可能的幻觉检测解决方案。这是一个相对较新的问题，很高兴看到已经有努力在解决它。
 
-讨论的方法具有不需要外部上下文（零资源）和不需要LLM的输出概率分布（黑箱）的优点。然而，这也带来了成本：除了原始响应外，我们还需要生成额外的样本来执行一致性检查，从而增加了延迟和成本。一致性检查还需要额外的计算和语言模型来将响应编码为嵌入，进行文本蕴含，或查询LLM，这取决于所选的方法。
+讨论的方法具有不需要外部上下文（零资源）和不需要 LLM 的输出概率分布（黑箱）的优点。然而，这也带来了成本：除了原始响应外，我们还需要生成额外的样本来执行一致性检查，从而增加了延迟和成本。一致性检查还需要额外的计算和语言模型来将响应编码为嵌入，进行文本蕴含，或查询 LLM，这取决于所选的方法。
 
 # 参考文献
 
-[1] — Manakul, Potsawee, Adian Liusie, 和 Mark JF Gales。“Selfcheckgpt：用于生成大型语言模型的零资源黑箱幻觉检测。” arXiv预印本 arXiv:2303.08896 (2023)。
+[1] — Manakul, Potsawee, Adian Liusie, 和 Mark JF Gales。“Selfcheckgpt：用于生成大型语言模型的零资源黑箱幻觉检测。” arXiv 预印本 arXiv:2303.08896 (2023)。
 
-[2] — JI, Ziwei 等人。《自然语言生成中的幻觉调查》。**ACM计算调查**，第55卷，第12期，页码1–38，2023年。
+[2] — JI, Ziwei 等人。《自然语言生成中的幻觉调查》。**ACM 计算调查**，第 55 卷，第 12 期，页码 1–38，2023 年。
 
-[3] — ZHANG, Tianyi 等人。Bertscore：使用bert评估文本生成。**arXiv预印本 arXiv:1904.09675**，2019年。
+[3] — ZHANG, Tianyi 等人。Bertscore：使用 bert 评估文本生成。**arXiv 预印本 arXiv:1904.09675**，2019 年。
 
-[4] — [https://nlpprogress.com/english/natural_language_inference.html](https://nlpprogress.com/english/natural_language_inference.html?ref=content.whylabs.ai)
+[4] — [`nlpprogress.com/english/natural_language_inference.html`](https://nlpprogress.com/english/natural_language_inference.html?ref=content.whylabs.ai)
 
-[5] — Williams, A., Nangia, N., & Bowman, S. R. (2017)。用于通过推理理解句子的广泛覆盖挑战语料库。arXiv预印本 arXiv:1704.05426。
+[5] — Williams, A., Nangia, N., & Bowman, S. R. (2017)。用于通过推理理解句子的广泛覆盖挑战语料库。arXiv 预印本 arXiv:1704.05426。
 
-[6] — [https://github.com/potsawee/selfcheckgpt/tree/main#selfcheckgpt-usage-nli](https://github.com/potsawee/selfcheckgpt/tree/main#selfcheckgpt-usage-nli)
+[6] — [`github.com/potsawee/selfcheckgpt/tree/main#selfcheckgpt-usage-nli`](https://github.com/potsawee/selfcheckgpt/tree/main#selfcheckgpt-usage-nli)

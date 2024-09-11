@@ -1,28 +1,28 @@
-# 从零开始使用Pytorch构建自己的Transformer
+# 从零开始使用 Pytorch 构建自己的 Transformer
 
-> 原文：[https://towardsdatascience.com/build-your-own-transformer-from-scratch-using-pytorch-84c850470dcb?source=collection_archive---------0-----------------------#2023-04-26](https://towardsdatascience.com/build-your-own-transformer-from-scratch-using-pytorch-84c850470dcb?source=collection_archive---------0-----------------------#2023-04-26)
+> 原文：[`towardsdatascience.com/build-your-own-transformer-from-scratch-using-pytorch-84c850470dcb?source=collection_archive---------0-----------------------#2023-04-26`](https://towardsdatascience.com/build-your-own-transformer-from-scratch-using-pytorch-84c850470dcb?source=collection_archive---------0-----------------------#2023-04-26)
 
-## 在Pytorch中逐步构建一个Transformer模型
+## 在 Pytorch 中逐步构建一个 Transformer 模型
 
-[](https://arjun-sarkar786.medium.com/?source=post_page-----84c850470dcb--------------------------------)[![Arjun Sarkar](../Images/de141f1ab68c2b85c9d7a1f31be0d9b5.png)](https://arjun-sarkar786.medium.com/?source=post_page-----84c850470dcb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----84c850470dcb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----84c850470dcb--------------------------------) [Arjun Sarkar](https://arjun-sarkar786.medium.com/?source=post_page-----84c850470dcb--------------------------------)
+[](https://arjun-sarkar786.medium.com/?source=post_page-----84c850470dcb--------------------------------)![Arjun Sarkar](https://arjun-sarkar786.medium.com/?source=post_page-----84c850470dcb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----84c850470dcb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----84c850470dcb--------------------------------) [Arjun Sarkar](https://arjun-sarkar786.medium.com/?source=post_page-----84c850470dcb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffa31366b2eda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-own-transformer-from-scratch-using-pytorch-84c850470dcb&user=Arjun+Sarkar&userId=fa31366b2eda&source=post_page-fa31366b2eda----84c850470dcb---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----84c850470dcb--------------------------------) ·7分钟阅读·2023年4月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F84c850470dcb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-own-transformer-from-scratch-using-pytorch-84c850470dcb&user=Arjun+Sarkar&userId=fa31366b2eda&source=-----84c850470dcb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffa31366b2eda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-own-transformer-from-scratch-using-pytorch-84c850470dcb&user=Arjun+Sarkar&userId=fa31366b2eda&source=post_page-fa31366b2eda----84c850470dcb---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----84c850470dcb--------------------------------) ·7 分钟阅读·2023 年 4 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F84c850470dcb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-own-transformer-from-scratch-using-pytorch-84c850470dcb&user=Arjun+Sarkar&userId=fa31366b2eda&source=-----84c850470dcb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F84c850470dcb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-own-transformer-from-scratch-using-pytorch-84c850470dcb&source=-----84c850470dcb---------------------bookmark_footer-----------)![](../Images/3f54c2f78af8d6ca5052e7b2b898034a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F84c850470dcb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-own-transformer-from-scratch-using-pytorch-84c850470dcb&source=-----84c850470dcb---------------------bookmark_footer-----------)![](img/3f54c2f78af8d6ca5052e7b2b898034a.png)
 
-图1\. 照片由[Kevin Ku](https://unsplash.com/@ikukevk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，来自[Unsplash](https://unsplash.com/s/photos/deep-learning?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+图 1\. 照片由[Kevin Ku](https://unsplash.com/@ikukevk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，来自[Unsplash](https://unsplash.com/s/photos/deep-learning?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 在本教程中，我们将使用 PyTorch 从头开始构建一个基本的 Transformer 模型。Transformer 模型由 Vaswani 等人提出，在论文“Attention is All You Need”中介绍，是一种针对序列到序列任务（如机器翻译和文本摘要）设计的深度学习架构。它基于自注意力机制，已成为许多最先进自然语言处理模型的基础，如 GPT 和 BERT。
 
 要详细了解 Transformer 模型，请访问这两篇文章：
 
-## [1\. 关于“注意力”和“Transformer”的一切——深入理解——第 1 部分](https://medium.com/towards-data-science/all-you-need-to-know-about-attention-and-transformers-in-depth-understanding-part-1-552f0b41d021)
+## [1\. 关于“注意力”和“Transformer”的一切——深入理解——第一部分](https://medium.com/towards-data-science/all-you-need-to-know-about-attention-and-transformers-in-depth-understanding-part-1-552f0b41d021)
 
-## [2\. 关于“注意力”和“Transformer”的一切——深入理解——第 2 部分](https://medium.com/towards-data-science/all-you-need-to-know-about-attention-and-transformers-in-depth-understanding-part-2-bf2403804ada)
+## [2\. 关于“注意力”和“Transformer”的一切——深入理解——第二部分](https://medium.com/towards-data-science/all-you-need-to-know-about-attention-and-transformers-in-depth-understanding-part-2-bf2403804ada)
 
 要构建我们的 Transformer 模型，我们将遵循以下步骤：
 
@@ -53,7 +53,7 @@ import copy
 
 # 多头注意力
 
-![](../Images/e8b7aaf2849d3b0b0b0bd006f7dae3aa.png)
+![](img/e8b7aaf2849d3b0b0b0bd006f7dae3aa.png)
 
 图 2\. 多头注意力（来源：作者创建的图像）
 
@@ -146,7 +146,7 @@ PositionalEncoding 类初始化时包含输入参数 d_model 和 max_seq_length�
 
 # 编码器层
 
-![](../Images/9e8ab3e83decd7c9ea8305b7563b5cb0.png)
+![](img/9e8ab3e83decd7c9ea8305b7563b5cb0.png)
 
 图 3\. Transformer 网络的编码器部分（来源：原始论文中的图像）
 
@@ -174,7 +174,7 @@ EncoderLayer 类初始化时包含输入参数和组件，包括一个多头注�
 
 # 解码器层
 
-![](../Images/28187d88b42ade5225fcc50d80e20c31.png)
+![](img/28187d88b42ade5225fcc50d80e20c31.png)
 
 图 4\. Transformer 网络的解码器部分（来源：原始论文中的图像）
 
@@ -220,7 +220,7 @@ forward 方法通过执行以下步骤计算解码器层输出：
 
 # Transformer 模型
 
-![](../Images/c141dc670d42086d53956ee42bada0be.png)
+![](img/c141dc670d42086d53956ee42bada0be.png)
 
 图 5\. Transformer 网络（来源：原始论文中的图像）
 

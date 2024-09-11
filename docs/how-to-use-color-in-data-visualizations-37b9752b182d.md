@@ -1,18 +1,18 @@
 # 如何在数据可视化中使用颜色
 
-> 原文：[https://towardsdatascience.com/how-to-use-color-in-data-visualizations-37b9752b182d?source=collection_archive---------5-----------------------#2023-10-07](https://towardsdatascience.com/how-to-use-color-in-data-visualizations-37b9752b182d?source=collection_archive---------5-----------------------#2023-10-07)
+> 原文：[`towardsdatascience.com/how-to-use-color-in-data-visualizations-37b9752b182d?source=collection_archive---------5-----------------------#2023-10-07`](https://towardsdatascience.com/how-to-use-color-in-data-visualizations-37b9752b182d?source=collection_archive---------5-----------------------#2023-10-07)
 
 ## **利用颜色提升数据理解**
 
-[](https://medium.com/@michalszudejko?source=post_page-----37b9752b182d--------------------------------)[![Michal Szudejko](../Images/d4c303d02a79ad29df193ed3b25910d9.png)](https://medium.com/@michalszudejko?source=post_page-----37b9752b182d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37b9752b182d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----37b9752b182d--------------------------------) [Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----37b9752b182d--------------------------------)
+[](https://medium.com/@michalszudejko?source=post_page-----37b9752b182d--------------------------------)![Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----37b9752b182d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37b9752b182d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b9752b182d--------------------------------) [Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----37b9752b182d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd3b37fc311f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-color-in-data-visualizations-37b9752b182d&user=Michal+Szudejko&userId=d3b37fc311f7&source=post_page-d3b37fc311f7----37b9752b182d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b9752b182d--------------------------------) ·15分钟阅读·2023年10月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37b9752b182d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-color-in-data-visualizations-37b9752b182d&user=Michal+Szudejko&userId=d3b37fc311f7&source=-----37b9752b182d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd3b37fc311f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-color-in-data-visualizations-37b9752b182d&user=Michal+Szudejko&userId=d3b37fc311f7&source=post_page-d3b37fc311f7----37b9752b182d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b9752b182d--------------------------------) ·15 分钟阅读·2023 年 10 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37b9752b182d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-color-in-data-visualizations-37b9752b182d&user=Michal+Szudejko&userId=d3b37fc311f7&source=-----37b9752b182d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37b9752b182d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-color-in-data-visualizations-37b9752b182d&source=-----37b9752b182d---------------------bookmark_footer-----------)![](../Images/b292bcc6f1f8c9b6928475f0b172e33d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37b9752b182d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-color-in-data-visualizations-37b9752b182d&source=-----37b9752b182d---------------------bookmark_footer-----------)![](img/b292bcc6f1f8c9b6928475f0b172e33d.png)
 
 **长尾猕猴。** 来源：Adobe Stock，[标准许可](https://wwwimages2.adobe.com/content/dam/cc/en/legal/servicetou/Stock-Additional-Terms_en_US_20230915.pdf)。
 

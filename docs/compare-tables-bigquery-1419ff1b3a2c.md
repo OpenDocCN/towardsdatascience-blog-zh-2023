@@ -1,18 +1,18 @@
 # 如何在 BigQuery 中比较两个表的相等性
 
-> 原文：[https://towardsdatascience.com/compare-tables-bigquery-1419ff1b3a2c?source=collection_archive---------0-----------------------#2023-01-26](https://towardsdatascience.com/compare-tables-bigquery-1419ff1b3a2c?source=collection_archive---------0-----------------------#2023-01-26)
+> 原文：[`towardsdatascience.com/compare-tables-bigquery-1419ff1b3a2c?source=collection_archive---------0-----------------------#2023-01-26`](https://towardsdatascience.com/compare-tables-bigquery-1419ff1b3a2c?source=collection_archive---------0-----------------------#2023-01-26)
 
 ## 使用标准 SQL 比较表格并提取它们的差异
 
-[](https://gmyrianthous.medium.com/?source=post_page-----1419ff1b3a2c--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----1419ff1b3a2c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1419ff1b3a2c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1419ff1b3a2c--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----1419ff1b3a2c--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----1419ff1b3a2c--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----1419ff1b3a2c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1419ff1b3a2c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1419ff1b3a2c--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----1419ff1b3a2c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompare-tables-bigquery-1419ff1b3a2c&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----1419ff1b3a2c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1419ff1b3a2c--------------------------------) ·6 分钟阅读·2023年1月26日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompare-tables-bigquery-1419ff1b3a2c&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----1419ff1b3a2c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1419ff1b3a2c--------------------------------) ·6 分钟阅读·2023 年 1 月 26 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1419ff1b3a2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompare-tables-bigquery-1419ff1b3a2c&source=-----1419ff1b3a2c---------------------bookmark_footer-----------)![](../Images/d91f79f374c08c8dffd598f1df953ed3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1419ff1b3a2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompare-tables-bigquery-1419ff1b3a2c&source=-----1419ff1b3a2c---------------------bookmark_footer-----------)![](img/d91f79f374c08c8dffd598f1df953ed3.png)
 
 图片由 [Zakaria Ahada](https://unsplash.com/@zakariahada?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/0xOCVe7nUU0?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

@@ -1,18 +1,18 @@
 # 使用 spacy-llm 进行优雅的提示版本管理和 LLM 模型配置
 
-> 原文：[https://towardsdatascience.com/elegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1?source=collection_archive---------3-----------------------#2023-07-26](https://towardsdatascience.com/elegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1?source=collection_archive---------3-----------------------#2023-07-26)
+> 原文：[`towardsdatascience.com/elegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1?source=collection_archive---------3-----------------------#2023-07-26`](https://towardsdatascience.com/elegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1?source=collection_archive---------3-----------------------#2023-07-26)
 
 ## 使用 spacy-llm 简化提示管理并创建数据提取任务
 
-[](https://medium.com/@dehhmesquita?source=post_page-----126b836daad1--------------------------------)[![Déborah Mesquita](../Images/3b77b7eb569e24f2679875429173daf1.png)](https://medium.com/@dehhmesquita?source=post_page-----126b836daad1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----126b836daad1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----126b836daad1--------------------------------) [Déborah Mesquita](https://medium.com/@dehhmesquita?source=post_page-----126b836daad1--------------------------------)
+[](https://medium.com/@dehhmesquita?source=post_page-----126b836daad1--------------------------------)![Déborah Mesquita](https://medium.com/@dehhmesquita?source=post_page-----126b836daad1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----126b836daad1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----126b836daad1--------------------------------) [Déborah Mesquita](https://medium.com/@dehhmesquita?source=post_page-----126b836daad1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdd9e06a0a640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Felegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=post_page-dd9e06a0a640----126b836daad1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----126b836daad1--------------------------------) ·5分钟阅读·2023年7月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F126b836daad1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Felegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=-----126b836daad1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdd9e06a0a640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Felegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=post_page-dd9e06a0a640----126b836daad1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----126b836daad1--------------------------------) ·5 分钟阅读·2023 年 7 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F126b836daad1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Felegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=-----126b836daad1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F126b836daad1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Felegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1&source=-----126b836daad1---------------------bookmark_footer-----------)![](../Images/64fa1ffb2743af291cb93acc5f61d321.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F126b836daad1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Felegant-prompt-versioning-and-llm-model-configuration-with-spacy-llm-126b836daad1&source=-----126b836daad1---------------------bookmark_footer-----------)![](img/64fa1ffb2743af291cb93acc5f61d321.png)
 
 一张 [整洁的桌子](https://unsplash.com/pt-br/fotografias/zCQsBI7ZltQ)，如果你使用 spacy-llm，你的代码将会像这样哈哈
 
@@ -72,7 +72,7 @@ lang = "en"
 
 # 创建一个从文本中提取数据的任务
 
-我们将使用 [https://dummyjson.com/](https://dummyjson.com/quotes) 上的引用，并创建一个任务来从每个引用中提取上下文。我们将创建提示、注册任务，并最终创建配置文件。
+我们将使用 [`dummyjson.com/`](https://dummyjson.com/quotes) 上的引用，并创建一个任务来从每个引用中提取上下文。我们将创建提示、注册任务，并最终创建配置文件。
 
 ## **1\. 提示**
 
@@ -257,6 +257,6 @@ Context: Business ethics.
 
 处理 OpenAI REST 请求的能力及其直接存储和版本控制提示的方法是我最喜欢 spacy-llm 的地方。此外，该库提供了一个用于缓存每个文档的提示和响应的缓存功能，一个为少量示例提示提供示例的方法，以及日志记录功能等。
 
-你可以在这里查看今天的完整代码：[https://github.com/dmesquita/spacy-llm-elegant-prompt-versioning](https://github.com/dmesquita/spacy-llm-elegant-prompt-versioning)。
+你可以在这里查看今天的完整代码：[`github.com/dmesquita/spacy-llm-elegant-prompt-versioning`](https://github.com/dmesquita/spacy-llm-elegant-prompt-versioning)。
 
 一如既往，谢谢你的阅读！

@@ -1,12 +1,12 @@
 # 在 PyTorch 中实现可解释的神经模型！
 
-> 原文：[https://towardsdatascience.com/implement-interpretable-neural-models-in-pytorch-6a5932bdb078?source=collection_archive---------4-----------------------#2023-05-29](https://towardsdatascience.com/implement-interpretable-neural-models-in-pytorch-6a5932bdb078?source=collection_archive---------4-----------------------#2023-05-29)
+> 原文：[`towardsdatascience.com/implement-interpretable-neural-models-in-pytorch-6a5932bdb078?source=collection_archive---------4-----------------------#2023-05-29`](https://towardsdatascience.com/implement-interpretable-neural-models-in-pytorch-6a5932bdb078?source=collection_archive---------4-----------------------#2023-05-29)
 
-[](https://medium.com/@pb737?source=post_page-----6a5932bdb078--------------------------------)[![Pietro Barbiero](../Images/28a6cfc89e32de0401ec3d732c085410.png)](https://medium.com/@pb737?source=post_page-----6a5932bdb078--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a5932bdb078--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a5932bdb078--------------------------------) [Pietro Barbiero](https://medium.com/@pb737?source=post_page-----6a5932bdb078--------------------------------)
+[](https://medium.com/@pb737?source=post_page-----6a5932bdb078--------------------------------)![Pietro Barbiero](https://medium.com/@pb737?source=post_page-----6a5932bdb078--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a5932bdb078--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a5932bdb078--------------------------------) [Pietro Barbiero](https://medium.com/@pb737?source=post_page-----6a5932bdb078--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc3b867b869ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-interpretable-neural-models-in-pytorch-6a5932bdb078&user=Pietro+Barbiero&userId=c3b867b869ca&source=post_page-c3b867b869ca----6a5932bdb078---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a5932bdb078--------------------------------) · 11 分钟阅读 · 2023年5月29日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a5932bdb078&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-interpretable-neural-models-in-pytorch-6a5932bdb078&user=Pietro+Barbiero&userId=c3b867b869ca&source=-----6a5932bdb078---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc3b867b869ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-interpretable-neural-models-in-pytorch-6a5932bdb078&user=Pietro+Barbiero&userId=c3b867b869ca&source=post_page-c3b867b869ca----6a5932bdb078---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a5932bdb078--------------------------------) · 11 分钟阅读 · 2023 年 5 月 29 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a5932bdb078&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-interpretable-neural-models-in-pytorch-6a5932bdb078&user=Pietro+Barbiero&userId=c3b867b869ca&source=-----6a5932bdb078---------------------clap_footer-----------)
 
 --
 
@@ -14,7 +14,7 @@
 
 **总结 —** 体验可解释性的强大力量，通过 “[PyTorch, Explain!](https://github.com/pietrobarbiero/pytorch_explain)” —— 一个能够帮助你实现最先进且可解释的基于概念的模型的 Python 库！ [[GitHub](https://github.com/pietrobarbiero/pytorch_explain)]
 
-![](../Images/424bbb13c1b438e116c9cc6b35e31bd1.png)
+![](img/424bbb13c1b438e116c9cc6b35e31bd1.png)
 
 可解释的 AI 模型会给出人类能够理解的预测理由。图片由作者提供。
 
@@ -44,9 +44,9 @@
 
 ## 概念瓶颈模型简介
 
-在这个介绍性会议中，我们将深入探讨概念瓶颈模型。这些模型在2020年国际机器学习会议上发表的论文 [1] 中首次提出，旨在首先学习和预测一组概念，例如“颜色”或“形状”，然后利用这些概念来解决下游分类任务：
+在这个介绍性会议中，我们将深入探讨概念瓶颈模型。这些模型在 2020 年国际机器学习会议上发表的论文 [1] 中首次提出，旨在首先学习和预测一组概念，例如“颜色”或“形状”，然后利用这些概念来解决下游分类任务：
 
-![](../Images/3266d868c1f5d009d12463ed3c44186d.png)
+![](img/3266d868c1f5d009d12463ed3c44186d.png)
 
 概念瓶颈模型将任务（**Y**）学习为概念（**C**）的函数。图像由作者提供。
 
@@ -123,7 +123,7 @@ concept_accuracy = accuracy_score(c_test, c_pred > 0.5)
 task_accuracy = accuracy_score(y_test, y_pred > 0)
 ```
 
-现在，经过仅仅几个epochs之后，我们可以观察到概念和任务的准确率在测试集上相当不错（~98% 准确率）！
+现在，经过仅仅几个 epochs 之后，我们可以观察到概念和任务的准确率在测试集上相当不错（~98% 准确率）！
 
 多亏了这种架构，我们可以通过观察任务预测器对输入概念的响应来为模型的预测提供解释，方法如下：
 
@@ -147,7 +147,7 @@ print(f"f({c_different}) = {int(task_predictor(c_different).item() > 0)}")
 
 在视觉上，这种权衡可以表示为下图所示：
 
-![](../Images/ba3b17e1ca59b6c3cabc0f81395f1077.png)
+![](img/ba3b17e1ca59b6c3cabc0f81395f1077.png)
 
 准确性-可解释性权衡的视觉表示。图片
 
@@ -164,7 +164,7 @@ x, c, y = datasets.trigonometry(500)
 x_train, x_test, c_train, c_test, y_train, y_test = train_test_split(x, c, y, test_size=0.33, random_state=42)
 ```
 
-在这个数据集上训练相同的网络架构后，我们观察到明显降低的任务准确性，仅达到约80%。
+在这个数据集上训练相同的网络架构后，我们观察到明显降低的任务准确性，仅达到约 80%。
 
 > 概念瓶颈模型未能在任务准确性和解释质量之间取得平衡。
 
@@ -176,21 +176,21 @@ x_train, x_test, c_train, c_test, y_train, y_test = train_test_split(x, c, y, te
 
 ## 概念嵌入模型简介
 
-最近提出的解决这一挑战的方法是在 *神经信息处理系统的进展* 会议上介绍的，一篇名为“概念嵌入模型：超越准确性和可解释性之间的折衷”的论文 [2]（如果你想了解更多，我在[这篇](/concept-embedding-models-beyond-the-accuracy-explainability-trade-off-f7ba02f28fad)博客文章中更详细地讨论了这种方法！）。 这篇论文的关键创新是设计了受监督的高维概念表示。与用单个神经元激活表示每个概念的标准概念瓶颈模型不同：
+最近提出的解决这一挑战的方法是在 *神经信息处理系统的进展* 会议上介绍的，一篇名为“概念嵌入模型：超越准确性和可解释性之间的折衷”的论文 [2]（如果你想了解更多，我在这篇博客文章中更详细地讨论了这种方法！）。 这篇论文的关键创新是设计了受监督的高维概念表示。与用单个神经元激活表示每个概念的标准概念瓶颈模型不同：
 
-![](../Images/15b64307f135319265cae5970401a4c4.png)
+![](img/15b64307f135319265cae5970401a4c4.png)
 
 概念瓶颈模型将任务（**Y**）作为概念（**C**）的函数进行学习。图片由作者提供。
 
 … 一个概念嵌入模型用一组神经元表示每个概念，有效地克服了与概念层相关的信息瓶颈：
 
-![](../Images/eec3e417a7fcbc25c6982010803deb6a.png)
+![](img/eec3e417a7fcbc25c6982010803deb6a.png)
 
 概念嵌入模型将每个概念表示为一个受监督的向量。图片由作者提供。
 
 因此，概念嵌入模型使我们能够同时实现高准确性和高质量解释：
 
-![](../Images/8cc20b7417da10e603aa681a9e8d3cbe.png)
+![](img/8cc20b7417da10e603aa681a9e8d3cbe.png)
 
 概念嵌入模型在概念瓶颈模型中超越了准确性和可解释性的折衷，几乎实现了最佳的任务准确性和概念对齐。 最佳折衷由红色星星（右上方）表示。 任务是学习两个向量之间点积的符号（+/-）。图片由作者提供。
 
@@ -257,7 +257,7 @@ concept_accuracy = accuracy_score(c_test, c_pred > 0.5)
 task_accuracy = accuracy_score(y_test, y_pred > 0)
 ```
 
-现在，仅经过几轮训练，我们可以观察到概念和任务的准确性在测试集上都相当好（约96%的准确率），比标准概念瓶颈模型高出近15%！
+现在，仅经过几轮训练，我们可以观察到概念和任务的准确性在测试集上都相当好（约 96%的准确率），比标准概念瓶颈模型高出近 15%！
 
 ## 为什么可解释性>可解释性？
 
@@ -265,7 +265,7 @@ task_accuracy = accuracy_score(y_test, y_pred > 0)
 
 实际上，即使我们使用像决策树或逻辑回归这样的透明机器学习模型，它也不一定能缓解使用概念嵌入时的问题。这是因为概念向量的个别维度对人类缺乏明确的语义解释。例如，决策树中的逻辑句子*“如果 {yellow[2]>0.3} 和 {yellow[3]<-1.9} 和 {round[1]>4.2} 那么 {banana}”* 的术语如*“{yellow[2]>0.3}”*（指概念向量“yellow”的第二维大于“0.3”）对我们来说并没有太大语义意义。
 
-![](../Images/c634d0f0dd1554ef247f98676266e0e7.png)
+![](img/c634d0f0dd1554ef247f98676266e0e7.png)
 
 标准的可解释分类器无法使用概念嵌入提供可解释的预测，因为个别嵌入维度缺乏明确的语义意义。图片由作者提供。
 
@@ -273,21 +273,21 @@ task_accuracy = accuracy_score(y_test, y_pred > 0)
 
 我们这次如何克服这个挑战？！
 
-# 第3步：无妥协的可解释性
+# 第 3 步：无妥协的可解释性
 
 再次，解决方案确实存在！
 
 ## 深度概念推理简介
 
-深度概念推理器 [3]（一篇被2023年*国际机器学习大会*接受的最新论文）通过实现完全的可解释性来解决概念嵌入模型的局限性。该方法的关键创新在于设计了一个任务预测器，分别处理概念嵌入和概念真实性度。标准的机器学习模型则会同时处理概念嵌入和概念真实性度：
+深度概念推理器 [3]（一篇被 2023 年*国际机器学习大会*接受的最新论文）通过实现完全的可解释性来解决概念嵌入模型的局限性。该方法的关键创新在于设计了一个任务预测器，分别处理概念嵌入和概念真实性度。标准的机器学习模型则会同时处理概念嵌入和概念真实性度：
 
-![](../Images/c634d0f0dd1554ef247f98676266e0e7.png)
+![](img/c634d0f0dd1554ef247f98676266e0e7.png)
 
 标准的可解释分类器无法使用概念嵌入提供可解释的预测，因为个别嵌入维度缺乏明确的语义意义。图片由作者提供。
 
 深度概念推理器生成（***可解释的***！）逻辑规则，使用概念嵌入，然后以符号化方式执行规则，将相应的真实性值分配给概念符号：
 
-![](../Images/32b9923c40fcb6be424da5d743252162.png)
+![](img/32b9923c40fcb6be424da5d743252162.png)
 
 深度概念推理器使用神经模型在概念嵌入上生成模糊逻辑规则，然后
 
@@ -297,9 +297,9 @@ task_accuracy = accuracy_score(y_test, y_pred > 0)
 
 这种独特的技术使我们能够实现**完全可解释的模型，因为它们基于逻辑规则进行预测，如决策树一样！** 使它们与众不同的是在挑战性任务中的卓越表现，超越了传统的可解释模型，如决策树或逻辑回归：
 
-![](../Images/3ea093fae88bfa1d3f630952ae078f92.png)
+![](img/3ea093fae88bfa1d3f630952ae078f92.png)
 
-深度概念推理器超越了可解释的基于概念的模型，并且与黑箱模型的准确性相匹配。CE代表概念嵌入，CT代表概念真值。图片由作者提供。
+深度概念推理器超越了可解释的基于概念的模型，并且与黑箱模型的准确性相匹配。CE 代表概念嵌入，CT 代表概念真值。图片由作者提供。
 
 通过利用深度概念推理，我们可以释放出具有高解释性的模型的潜力，这些模型在复杂任务上表现出色。
 
@@ -352,7 +352,7 @@ for epoch in range(2001):
     optimizer.step()
 ```
 
-训练模型后，我们可以在测试集上评估其性能，并检查其是否与概念嵌入模型的准确性相匹配（约99%）：
+训练模型后，我们可以在测试集上评估其性能，并检查其是否与概念嵌入模型的准确性相匹配（约 99%）：
 
 ```py
 c_emb, c_pred = concept_encoder.forward(x_test)
@@ -408,8 +408,8 @@ global_explanations = task_predictor.explain(c_emb, c_pred, 'global')
 
 # 参考文献
 
-[1] Koh, Pang Wei, 等人. “概念瓶颈模型。” *国际机器学习大会*。PMLR，2020年。
+[1] Koh, Pang Wei, 等人. “概念瓶颈模型。” *国际机器学习大会*。PMLR，2020 年。
 
-[2] Zarlenga, Mateo Espinosa, 等人. “概念嵌入模型：超越准确性与可解释性权衡。” *神经信息处理系统进展*。第35卷。Curran Associates, Inc.，2022年。21400–21413。
+[2] Zarlenga, Mateo Espinosa, 等人. “概念嵌入模型：超越准确性与可解释性权衡。” *神经信息处理系统进展*。第 35 卷。Curran Associates, Inc.，2022 年。21400–21413。
 
-[3] Barbiero, Pietro, 等人. “可解释的神经符号概念推理。” *arXiv预印本 arXiv:2304.14068*（2023年）。
+[3] Barbiero, Pietro, 等人. “可解释的神经符号概念推理。” *arXiv 预印本 arXiv:2304.14068*（2023 年）。

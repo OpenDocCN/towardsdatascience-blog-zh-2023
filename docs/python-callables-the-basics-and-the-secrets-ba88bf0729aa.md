@@ -1,20 +1,20 @@
 # Python 可调用对象：基础与秘密
 
-> 原文：[https://towardsdatascience.com/python-callables-the-basics-and-the-secrets-ba88bf0729aa?source=collection_archive---------5-----------------------#2023-10-27](https://towardsdatascience.com/python-callables-the-basics-and-the-secrets-ba88bf0729aa?source=collection_archive---------5-----------------------#2023-10-27)
+> 原文：[`towardsdatascience.com/python-callables-the-basics-and-the-secrets-ba88bf0729aa?source=collection_archive---------5-----------------------#2023-10-27`](https://towardsdatascience.com/python-callables-the-basics-and-the-secrets-ba88bf0729aa?source=collection_archive---------5-----------------------#2023-10-27)
 
 ## PYTHON 编程
 
 ## 了解 Python 可调用对象的强大功能。
 
-[](https://medium.com/@nyggus?source=post_page-----ba88bf0729aa--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----ba88bf0729aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba88bf0729aa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ba88bf0729aa--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ba88bf0729aa--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----ba88bf0729aa--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ba88bf0729aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba88bf0729aa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba88bf0729aa--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ba88bf0729aa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-callables-the-basics-and-the-secrets-ba88bf0729aa&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----ba88bf0729aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba88bf0729aa--------------------------------) ·10分钟阅读·2023年10月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba88bf0729aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-callables-the-basics-and-the-secrets-ba88bf0729aa&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----ba88bf0729aa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-callables-the-basics-and-the-secrets-ba88bf0729aa&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----ba88bf0729aa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba88bf0729aa--------------------------------) ·10 分钟阅读·2023 年 10 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba88bf0729aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-callables-the-basics-and-the-secrets-ba88bf0729aa&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----ba88bf0729aa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fba88bf0729aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-callables-the-basics-and-the-secrets-ba88bf0729aa&source=-----ba88bf0729aa---------------------bookmark_footer-----------)![](../Images/16289801bda2c8ec8dfa0b3a3bba76f4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fba88bf0729aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-callables-the-basics-and-the-secrets-ba88bf0729aa&source=-----ba88bf0729aa---------------------bookmark_footer-----------)![](img/16289801bda2c8ec8dfa0b3a3bba76f4.png)
 
 在 Python 中，有许多可调用对象可以选择。照片由 [Pavan Trikutam](https://unsplash.com/@ptrikutam?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

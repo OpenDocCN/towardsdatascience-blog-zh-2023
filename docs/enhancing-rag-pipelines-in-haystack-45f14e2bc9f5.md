@@ -1,14 +1,14 @@
 # 提升 Haystack 中的 RAG 流水线：引入 DiversityRanker 和 LostInTheMiddleRanker
 
-> 原文：[https://towardsdatascience.com/enhancing-rag-pipelines-in-haystack-45f14e2bc9f5?source=collection_archive---------1-----------------------#2023-08-08](https://towardsdatascience.com/enhancing-rag-pipelines-in-haystack-45f14e2bc9f5?source=collection_archive---------1-----------------------#2023-08-08)
+> 原文：[`towardsdatascience.com/enhancing-rag-pipelines-in-haystack-45f14e2bc9f5?source=collection_archive---------1-----------------------#2023-08-08`](https://towardsdatascience.com/enhancing-rag-pipelines-in-haystack-45f14e2bc9f5?source=collection_archive---------1-----------------------#2023-08-08)
 
 ## 最新的排名器如何优化 LLM 上下文窗口在检索增强生成（RAG）流水线中的利用
 
-[](https://medium.com/@dovlex?source=post_page-----45f14e2bc9f5--------------------------------)[![Vladimir Blagojevic](../Images/ed7e836d5fd7e6484d90858dcc4afe5e.png)](https://medium.com/@dovlex?source=post_page-----45f14e2bc9f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45f14e2bc9f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----45f14e2bc9f5--------------------------------) [Vladimir Blagojevic](https://medium.com/@dovlex?source=post_page-----45f14e2bc9f5--------------------------------)
+[](https://medium.com/@dovlex?source=post_page-----45f14e2bc9f5--------------------------------)![Vladimir Blagojevic](https://medium.com/@dovlex?source=post_page-----45f14e2bc9f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45f14e2bc9f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----45f14e2bc9f5--------------------------------) [Vladimir Blagojevic](https://medium.com/@dovlex?source=post_page-----45f14e2bc9f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1fc40f79c2f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-rag-pipelines-in-haystack-45f14e2bc9f5&user=Vladimir+Blagojevic&userId=f1fc40f79c2f&source=post_page-f1fc40f79c2f----45f14e2bc9f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45f14e2bc9f5--------------------------------) · 8分钟阅读 · 2023年8月8日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F45f14e2bc9f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-rag-pipelines-in-haystack-45f14e2bc9f5&user=Vladimir+Blagojevic&userId=f1fc40f79c2f&source=-----45f14e2bc9f5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1fc40f79c2f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-rag-pipelines-in-haystack-45f14e2bc9f5&user=Vladimir+Blagojevic&userId=f1fc40f79c2f&source=post_page-f1fc40f79c2f----45f14e2bc9f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45f14e2bc9f5--------------------------------) · 8 分钟阅读 · 2023 年 8 月 8 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F45f14e2bc9f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-rag-pipelines-in-haystack-45f14e2bc9f5&user=Vladimir+Blagojevic&userId=f1fc40f79c2f&source=-----45f14e2bc9f5---------------------clap_footer-----------)
 
 --
 
@@ -40,7 +40,7 @@ DiversityRanker 增强了上下文窗口中选定段落的多样性。LostInTheM
 
 DiversityRanker 是一个新型组件，旨在增强 RAG 流水线中上下文窗口选定段落的多样性。它基于一个原则，即多样化的文档集可以提高 LLM 生成答案的广度和深度。
 
-![](../Images/8d5d8883d306689625739a1271204ec6.png)
+![](img/8d5d8883d306689625739a1271204ec6.png)
 
 图 1：DiversityRanker 算法文档排序过程的艺术表现，由 MidJourney 提供。请注意，此可视化更多是说明性的，而非精确的。
 
@@ -62,56 +62,56 @@ DiversityRanker 使用以下算法处理文档：
 
 ## **LostInTheMiddleRanker**
 
-LostInTheMiddleRanker优化了所选文档在LLM上下文窗口中的布局。这个组件是解决最近研究中识别出的一个问题的一种方法[1]，该研究表明LLM难以关注长上下文中间的相关段落。LostInTheMiddleRanker将最佳文档交替放置在上下文窗口的开头和结尾，使LLM的注意力机制更容易访问和使用它们。为了理解LostInTheMiddleRanker如何排序给定的文档，可以想象一个简单的例子，其中文档由从1到10的单个数字按升序排列。LostInTheMiddleRanker将这十个文档按以下顺序排序：[1 3 5 7 9 10 8 6 4 2]。
+LostInTheMiddleRanker 优化了所选文档在 LLM 上下文窗口中的布局。这个组件是解决最近研究中识别出的一个问题的一种方法[1]，该研究表明 LLM 难以关注长上下文中间的相关段落。LostInTheMiddleRanker 将最佳文档交替放置在上下文窗口的开头和结尾，使 LLM 的注意力机制更容易访问和使用它们。为了理解 LostInTheMiddleRanker 如何排序给定的文档，可以想象一个简单的例子，其中文档由从 1 到 10 的单个数字按升序排列。LostInTheMiddleRanker 将这十个文档按以下顺序排序：[1 3 5 7 9 10 8 6 4 2]。
 
-尽管这项研究的作者专注于一个问答任务——从文本中提取相关的答案片段——我们推测LLM的注意力机制在生成答案时，也会更容易关注上下文窗口开头和结尾的段落。
+尽管这项研究的作者专注于一个问答任务——从文本中提取相关的答案片段——我们推测 LLM 的注意力机制在生成答案时，也会更容易关注上下文窗口开头和结尾的段落。
 
-![](../Images/4c89795f5fc907acca68b02a2cc441a7.png)
+![](img/4c89795f5fc907acca68b02a2cc441a7.png)
 
-图2\. LLM在提取上下文中间的答案时遇到困难，改编自Liu等（2023）[1]
+图 2\. LLM 在提取上下文中间的答案时遇到困难，改编自 Liu 等（2023）[1]
 
-LostInTheMiddleRanker最适合作为RAG管道中的最后一个排名器，因为所给的文档已经基于相似性（相关性）进行选择，并按多样性排序。
+LostInTheMiddleRanker 最适合作为 RAG 管道中的最后一个排名器，因为所给的文档已经基于相似性（相关性）进行选择，并按多样性排序。
 
 ## **在管道中使用新的排名器**
 
-在本节中，我们将探讨LFQA/RAG管道的实际应用案例，重点是如何集成DiversityRanker和LostInTheMiddleRanker。我们还将讨论这些组件如何相互作用以及与管道中的其他组件的互动。
+在本节中，我们将探讨 LFQA/RAG 管道的实际应用案例，重点是如何集成 DiversityRanker 和 LostInTheMiddleRanker。我们还将讨论这些组件如何相互作用以及与管道中的其他组件的互动。
 
-管道中的第一个组件是WebRetriever，它使用程序化搜索引擎API（如SerperDev、Google、Bing等）从网络中检索查询相关的文档。检索到的文档首先去除HTML标签，转换为原始文本，并可选择性地预处理成较短的段落。然后，这些文档会传递给TopPSampler组件，该组件根据与查询的相似性选择最相关的段落。
+管道中的第一个组件是 WebRetriever，它使用程序化搜索引擎 API（如 SerperDev、Google、Bing 等）从网络中检索查询相关的文档。检索到的文档首先去除 HTML 标签，转换为原始文本，并可选择性地预处理成较短的段落。然后，这些文档会传递给 TopPSampler 组件，该组件根据与查询的相似性选择最相关的段落。
 
-在TopPSampler选择相关段落集之后，它们会传递给DiversityRanker。DiversityRanker则根据段落的多样性对其进行排序，减少TopPSampler排序文档的重复性。
+在 TopPSampler 选择相关段落集之后，它们会传递给 DiversityRanker。DiversityRanker 则根据段落的多样性对其进行排序，减少 TopPSampler 排序文档的重复性。
 
-选定的文档随后传递给LostInTheMiddleRanker。如前所述，LostInTheMiddleRanker将最相关的段落放置在上下文窗口的开头和结尾，同时将排名最差的文档推到中间。
+选定的文档随后传递给 LostInTheMiddleRanker。如前所述，LostInTheMiddleRanker 将最相关的段落放置在上下文窗口的开头和结尾，同时将排名最差的文档推到中间。
 
-最终，合并的段落会传递给PromptNode，PromptNode将LLM调整为基于这些选定的段落回答问题。
+最终，合并的段落会传递给 PromptNode，PromptNode 将 LLM 调整为基于这些选定的段落回答问题。
 
-![](../Images/82e967a7370d98025712457debeb5125.png)
+![](img/82e967a7370d98025712457debeb5125.png)
 
-图3\. LFQA/RAG管道 — 作者提供的图像
+图 3\. LFQA/RAG 管道 — 作者提供的图像
 
-新排序器已经合并到Haystack的主分支中，并将在2023年8月底的1.20版本中发布。我们在项目的示例文件夹中添加了新的LFQA/RAG管道演示。
+新排序器已经合并到 Haystack 的主分支中，并将在 2023 年 8 月底的 1.20 版本中发布。我们在项目的示例文件夹中添加了新的 LFQA/RAG 管道演示。
 
-演示展示了DiversityRanker和LostInTheMiddleRanker如何轻松集成到RAG管道中，以提高生成答案的质量。
+演示展示了 DiversityRanker 和 LostInTheMiddleRanker 如何轻松集成到 RAG 管道中，以提高生成答案的质量。
 
 ## **案例研究**
 
-为了展示包含两个新排序器的LFQA/RAG管道的有效性，我们将使用一个包含半打问题的小样本，这些问题需要详细的回答。问题包括：“俄罗斯和波兰长期敌对的主要原因是什么？”，“全球和地方尺度上气候变化的主要原因是什么？”等等。要很好地回答这些问题，LLM需要广泛的历史、政治、科学和文化来源，这使得它们非常适合我们的用例。
+为了展示包含两个新排序器的 LFQA/RAG 管道的有效性，我们将使用一个包含半打问题的小样本，这些问题需要详细的回答。问题包括：“俄罗斯和波兰长期敌对的主要原因是什么？”，“全球和地方尺度上气候变化的主要原因是什么？”等等。要很好地回答这些问题，LLM 需要广泛的历史、政治、科学和文化来源，这使得它们非常适合我们的用例。
 
-比较RAG管道生成的答案与两个新排序器（优化管道）以及没有这些排序器的管道（未优化管道）会涉及复杂的评估，需要人工专家的判断。为了简化评估并主要评估DiversityRanker的效果，我们改为计算注入LLM上下文中的上下文文档的平均成对余弦距离。我们将两个管道的上下文窗口大小限制为1024个词。通过运行这些示例Python脚本[2]，我们发现优化管道中注入LLM上下文的文档的平均成对余弦距离增加了约20–30%[3]。这种成对余弦距离的增加本质上意味着所使用的文档更具多样性（而且重复性更少），从而为LLM提供了更广泛和丰富的段落供其回答参考。我们将把对LostInTheMiddleRanker及其对生成答案的影响的评估留到我们即将发布的文章中。
+比较 RAG 管道生成的答案与两个新排序器（优化管道）以及没有这些排序器的管道（未优化管道）会涉及复杂的评估，需要人工专家的判断。为了简化评估并主要评估 DiversityRanker 的效果，我们改为计算注入 LLM 上下文中的上下文文档的平均成对余弦距离。我们将两个管道的上下文窗口大小限制为 1024 个词。通过运行这些示例 Python 脚本[2]，我们发现优化管道中注入 LLM 上下文的文档的平均成对余弦距离增加了约 20–30%[3]。这种成对余弦距离的增加本质上意味着所使用的文档更具多样性（而且重复性更少），从而为 LLM 提供了更广泛和丰富的段落供其回答参考。我们将把对 LostInTheMiddleRanker 及其对生成答案的影响的评估留到我们即将发布的文章中。
 
 ## **结论**
 
-我们探索了Haystack用户如何通过使用两个创新排序器：DiversityRanker和LostInTheMiddleRanker来增强他们的RAG管道。
+我们探索了 Haystack 用户如何通过使用两个创新排序器：DiversityRanker 和 LostInTheMiddleRanker 来增强他们的 RAG 管道。
 
-DiversityRanker确保LLM的上下文窗口中填充了多样且不重复的文档，为LLM提供了更广泛的段落以便综合答案。同时，LostInTheMiddleRanker优化了最相关段落在上下文窗口中的位置，使得模型更容易访问和利用最支持的文档。
+DiversityRanker 确保 LLM 的上下文窗口中填充了多样且不重复的文档，为 LLM 提供了更广泛的段落以便综合答案。同时，LostInTheMiddleRanker 优化了最相关段落在上下文窗口中的位置，使得模型更容易访问和利用最支持的文档。
 
-我们的小案例研究通过计算注入LLM上下文窗口中的文档的平均成对余弦距离，确认了DiversityRanker的有效性，比较了优化的RAG管道（使用两个新排序器）和未优化管道（未使用排序器）。结果显示，优化的RAG管道使得平均成对余弦距离增加了约20–30%。
+我们的小案例研究通过计算注入 LLM 上下文窗口中的文档的平均成对余弦距离，确认了 DiversityRanker 的有效性，比较了优化的 RAG 管道（使用两个新排序器）和未优化管道（未使用排序器）。结果显示，优化的 RAG 管道使得平均成对余弦距离增加了约 20–30%。
 
-我们已经展示了这些新型排名器如何有可能增强长篇问答和其他RAG管道。通过继续投资并扩展这些及类似的想法，我们可以进一步提升Haystack的RAG管道的能力，使我们更接近于打造看起来更像魔法而非现实的NLP解决方案。
+我们已经展示了这些新型排名器如何有可能增强长篇问答和其他 RAG 管道。通过继续投资并扩展这些及类似的想法，我们可以进一步提升 Haystack 的 RAG 管道的能力，使我们更接近于打造看起来更像魔法而非现实的 NLP 解决方案。
 
 ## **参考文献**：
 
-[1] “迷失在中间：语言模型如何使用长上下文” [https://arxiv.org/abs/2307.03172](https://arxiv.org/abs/2307.03172)
+[1] “迷失在中间：语言模型如何使用长上下文” [`arxiv.org/abs/2307.03172`](https://arxiv.org/abs/2307.03172)
 
-[2] 脚本： [https://gist.github.com/vblagoje/430def6cda347c0b65f5f244bc0f2ede](https://gist.github.com/vblagoje/430def6cda347c0b65f5f244bc0f2ede)
+[2] 脚本： [`gist.github.com/vblagoje/430def6cda347c0b65f5f244bc0f2ede`](https://gist.github.com/vblagoje/430def6cda347c0b65f5f244bc0f2ede)
 
-[3] 脚本输出（答案）： [https://gist.github.com/vblagoje/738253f87b7590b1c014e3d598c8300b](https://gist.github.com/vblagoje/738253f87b7590b1c014e3d598c8300b)
+[3] 脚本输出（答案）： [`gist.github.com/vblagoje/738253f87b7590b1c014e3d598c8300b`](https://gist.github.com/vblagoje/738253f87b7590b1c014e3d598c8300b)

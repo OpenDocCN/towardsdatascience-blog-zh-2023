@@ -1,20 +1,20 @@
 # Optuna 的 MLOps
 
-> 原文：[https://towardsdatascience.com/mlops-with-optuna-b7c52d931b4b?source=collection_archive---------10-----------------------#2023-03-01](https://towardsdatascience.com/mlops-with-optuna-b7c52d931b4b?source=collection_archive---------10-----------------------#2023-03-01)
+> 原文：[`towardsdatascience.com/mlops-with-optuna-b7c52d931b4b?source=collection_archive---------10-----------------------#2023-03-01`](https://towardsdatascience.com/mlops-with-optuna-b7c52d931b4b?source=collection_archive---------10-----------------------#2023-03-01)
 
 ## 不要浪费时间，使用 Optuna
 
-[](https://zjwarnes.medium.com/?source=post_page-----b7c52d931b4b--------------------------------)[![Zachary Warnes](../Images/c05c5245aa640e016f730ef7c258a424.png)](https://zjwarnes.medium.com/?source=post_page-----b7c52d931b4b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b7c52d931b4b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b7c52d931b4b--------------------------------) [Zachary Warnes](https://zjwarnes.medium.com/?source=post_page-----b7c52d931b4b--------------------------------)
+[](https://zjwarnes.medium.com/?source=post_page-----b7c52d931b4b--------------------------------)![Zachary Warnes](https://zjwarnes.medium.com/?source=post_page-----b7c52d931b4b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b7c52d931b4b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b7c52d931b4b--------------------------------) [Zachary Warnes](https://zjwarnes.medium.com/?source=post_page-----b7c52d931b4b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8a13d1fdc28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-with-optuna-b7c52d931b4b&user=Zachary+Warnes&userId=a8a13d1fdc28&source=post_page-a8a13d1fdc28----b7c52d931b4b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b7c52d931b4b--------------------------------) ·7 min 阅读·2023年3月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb7c52d931b4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-with-optuna-b7c52d931b4b&user=Zachary+Warnes&userId=a8a13d1fdc28&source=-----b7c52d931b4b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8a13d1fdc28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-with-optuna-b7c52d931b4b&user=Zachary+Warnes&userId=a8a13d1fdc28&source=post_page-a8a13d1fdc28----b7c52d931b4b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b7c52d931b4b--------------------------------) ·7 min 阅读·2023 年 3 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb7c52d931b4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-with-optuna-b7c52d931b4b&user=Zachary+Warnes&userId=a8a13d1fdc28&source=-----b7c52d931b4b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb7c52d931b4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-with-optuna-b7c52d931b4b&source=-----b7c52d931b4b---------------------bookmark_footer-----------)![](../Images/52d8b8b6c3b6e3792658e18a40051b48.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb7c52d931b4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-with-optuna-b7c52d931b4b&source=-----b7c52d931b4b---------------------bookmark_footer-----------)![](img/52d8b8b6c3b6e3792658e18a40051b48.png)
 
-由DALLE-2生成，超参数优化（作者照片）
+由 DALLE-2 生成，超参数优化（作者照片）
 
 对于任何熟悉超参数调优艰巨过程的人来说，Optuna 是一个救星。
 

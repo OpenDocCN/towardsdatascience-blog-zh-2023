@@ -1,21 +1,21 @@
 # LLMs 的无限巴别图书馆
 
-> 原文：[https://towardsdatascience.com/the-infinite-babel-library-of-llms-90e203b2f6b0?source=collection_archive---------8-----------------------#2023-05-08](https://towardsdatascience.com/the-infinite-babel-library-of-llms-90e203b2f6b0?source=collection_archive---------8-----------------------#2023-05-08)
+> 原文：[`towardsdatascience.com/the-infinite-babel-library-of-llms-90e203b2f6b0?source=collection_archive---------8-----------------------#2023-05-08`](https://towardsdatascience.com/the-infinite-babel-library-of-llms-90e203b2f6b0?source=collection_archive---------8-----------------------#2023-05-08)
 
 ## | 人工智能 | 未来 | 变革者 |
 ## | --- | --- | --- |
 
 ## 开源、数据和关注：LLMs 未来将如何改变
 
-[](https://salvatore-raieli.medium.com/?source=post_page-----90e203b2f6b0--------------------------------)[![Salvatore Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----90e203b2f6b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----90e203b2f6b0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----90e203b2f6b0--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----90e203b2f6b0--------------------------------)
+[](https://salvatore-raieli.medium.com/?source=post_page-----90e203b2f6b0--------------------------------)![Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----90e203b2f6b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----90e203b2f6b0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----90e203b2f6b0--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----90e203b2f6b0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-infinite-babel-library-of-llms-90e203b2f6b0&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----90e203b2f6b0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----90e203b2f6b0--------------------------------) · 16 分钟阅读 · 2023年5月8日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F90e203b2f6b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-infinite-babel-library-of-llms-90e203b2f6b0&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----90e203b2f6b0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-infinite-babel-library-of-llms-90e203b2f6b0&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----90e203b2f6b0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----90e203b2f6b0--------------------------------) · 16 分钟阅读 · 2023 年 5 月 8 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F90e203b2f6b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-infinite-babel-library-of-llms-90e203b2f6b0&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----90e203b2f6b0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F90e203b2f6b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-infinite-babel-library-of-llms-90e203b2f6b0&source=-----90e203b2f6b0---------------------bookmark_footer-----------)![](../Images/662b901cf99f5b6eb661b1c961669369.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F90e203b2f6b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-infinite-babel-library-of-llms-90e203b2f6b0&source=-----90e203b2f6b0---------------------bookmark_footer-----------)![](img/662b901cf99f5b6eb661b1c961669369.png)
 
 图片由作者使用 OpenAI DALL-E 制作
 
@@ -23,7 +23,7 @@
 
 # 对开源运动的呼唤
 
-![](../Images/6d9b96a4ae8fdb8e31a90144a6a87261.png)
+![](img/6d9b96a4ae8fdb8e31a90144a6a87261.png)
 
 图片由 [Nik Shuliahin](https://unsplash.com/it/@tjump) 提供，来源于 Unsplash.com
 
@@ -31,6 +31,6 @@
 
 最近，[《自然》也提到了这个问题](https://www.nature.com/articles/d41586-023-01295-4)：我们需要[大语言模型](https://en.wikipedia.org/wiki/Large_language_model)（LLMs）成为开源的。
 
-许多LLMs是专有的，没有公开，我们不知道它们是用什么数据进行训练的。这使得我们无法检查和测试它们的局限性，尤其是偏见方面。
+许多 LLMs 是专有的，没有公开，我们不知道它们是用什么数据进行训练的。这使得我们无法检查和测试它们的局限性，尤其是偏见方面。
 
-此外，与ChatGPT共享信息和代码有泄漏的风险，[三星发现了这一点](https://gizmodo.com/chatgpt-ai-samsung-employees-leak-data-1850307376)。更不用说……
+此外，与 ChatGPT 共享信息和代码有泄漏的风险，[三星发现了这一点](https://gizmodo.com/chatgpt-ai-samsung-employees-leak-data-1850307376)。更不用说……

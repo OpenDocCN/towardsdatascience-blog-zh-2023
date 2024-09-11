@@ -1,28 +1,28 @@
 # 人工智能技能缺口的（哲学）视角
 
-> 原文：[https://towardsdatascience.com/a-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a?source=collection_archive---------8-----------------------#2023-09-29](https://towardsdatascience.com/a-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a?source=collection_archive---------8-----------------------#2023-09-29)
+> 原文：[`towardsdatascience.com/a-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a?source=collection_archive---------8-----------------------#2023-09-29`](https://towardsdatascience.com/a-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a?source=collection_archive---------8-----------------------#2023-09-29)
 
 ## 什么将初级机器学习从业者与高级解决方案架构师区分开来，特别是在快速发展的行业中？
 
-[](https://medium.com/@lsci?source=post_page-----98292dc7c48a--------------------------------)[![Mathieu Lemay](../Images/39db2877c94829bef1d6642daf3ccecb.png)](https://medium.com/@lsci?source=post_page-----98292dc7c48a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98292dc7c48a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----98292dc7c48a--------------------------------) [Mathieu Lemay](https://medium.com/@lsci?source=post_page-----98292dc7c48a--------------------------------)
+[](https://medium.com/@lsci?source=post_page-----98292dc7c48a--------------------------------)![Mathieu Lemay](https://medium.com/@lsci?source=post_page-----98292dc7c48a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98292dc7c48a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----98292dc7c48a--------------------------------) [Mathieu Lemay](https://medium.com/@lsci?source=post_page-----98292dc7c48a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff84a70d8f74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a&user=Mathieu+Lemay&userId=f84a70d8f74&source=post_page-f84a70d8f74----98292dc7c48a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98292dc7c48a--------------------------------) ·8分钟阅读·2023年9月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98292dc7c48a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a&user=Mathieu+Lemay&userId=f84a70d8f74&source=-----98292dc7c48a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff84a70d8f74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a&user=Mathieu+Lemay&userId=f84a70d8f74&source=post_page-f84a70d8f74----98292dc7c48a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98292dc7c48a--------------------------------) ·8 分钟阅读·2023 年 9 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98292dc7c48a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a&user=Mathieu+Lemay&userId=f84a70d8f74&source=-----98292dc7c48a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98292dc7c48a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a&source=-----98292dc7c48a---------------------bookmark_footer-----------)![](../Images/9ffa03986811ef1e329620874fa78278.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98292dc7c48a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-perspective-on-skills-gaps-in-ai-98292dc7c48a&source=-----98292dc7c48a---------------------bookmark_footer-----------)![](img/9ffa03986811ef1e329620874fa78278.png)
 
 在机器学习中，挫折是自然的，但也是可以避免的。图片来自 [Tim Gouw](https://www.pexels.com/photo/man-in-white-shirt-using-macbook-pro-52608/) [Pexels.com](https://pexels.com)。
 
 *尽管有很多人工智能课程可供选择，我们常常发现许多申请者缺乏看似至关重要的能力。本文是一种通过轶事探索为什么会出现这种情况。*
 
-+   [背景：思维模型与T型技能](#1a3b)
++   背景：思维模型与 T 型技能
 
-+   [机器学习中的不同之处](#5683)
++   机器学习中的不同之处
 
-+   [知识缺失的感知成本](#fb2d)
++   知识缺失的感知成本
 
 +   [推荐](http://4792)
 
@@ -62,15 +62,15 @@
 
 因此，我们能够概念化、理解、分析、调查、原型设计、构建和部署任何级别的基于机器学习的自动化的能力，需要在多个知识领域中保持概念上的流动性，包括项目的技术和管理方面。
 
-## T型技能
+## T 型技能
 
-*在现代社会，“T型技能”这个术语有些不准确；真正有用的是在多个领域具有深度专长的多面手。*
+*在现代社会，“T 型技能”这个术语有些不准确；真正有用的是在多个领域具有深度专长的多面手。*
 
-具有T型技能的个人通常会在多个相关知识领域拥有广泛的知识，同时在某一特定主题或职能上具有深入的专长。
+具有 T 型技能的个人通常会在多个相关知识领域拥有广泛的知识，同时在某一特定主题或职能上具有深入的专长。
 
 随着机器学习工程（即*科学机器学习原则的现实世界、风险意识应用*）的兴起，对同时具备多学科能力的需求显而易见。
 
-描述T型个人的另一种方式是，某人在项目或职责范围内，能够成功处理多个必要的职能，并在其中一些方面是专家。他们在所有工作中都有危险，但在某些方面极具威胁。
+描述 T 型个人的另一种方式是，某人在项目或职责范围内，能够成功处理多个必要的职能，并在其中一些方面是专家。他们在所有工作中都有危险，但在某些方面极具威胁。
 
 这些个人通常表现为对他们整个工作范围有整体把握。尽管他们可能在某些任务方面不是专家，但他们至少知道如何将这些不熟悉的任务分解成具有明确输入和输出边界的工作项，因此他们对整个项目有可见性和能力。
 
@@ -78,11 +78,11 @@
 
 # 机器学习中的不同之处
 
-与云迁移项目或SaaS相比，机器学习通常具有许多按序堆叠的概念（与并发或树状结构相对），以及一系列针对生产级机器学习部署的额外考虑因素。部署依赖于模型类型，模型类型依赖于数据科学，而探索性数据分析依赖于项目需求。
+与云迁移项目或 SaaS 相比，机器学习通常具有许多按序堆叠的概念（与并发或树状结构相对），以及一系列针对生产级机器学习部署的额外考虑因素。部署依赖于模型类型，模型类型依赖于数据科学，而探索性数据分析依赖于项目需求。
 
 在论文 *“机器学习软件应用程序在软件开发生命周期阶段的质量保证挑战”* ([Alamin2021](https://arxiv.org/abs/2105.01195)) 中，作者解释了传统软件开发与机器学习软件应用程序之间的明显差异。来自论文的内容：
 
-> 在传统软件开发中，我们首先收集需求。然后设计、开发、测试、部署和维护应用程序。对于机器学习系统，我们仍需确定应用程序的目标，但不是设计算法，而是让机器学习模型从数据中学习所需的逻辑 [1]。这些观察引发了一个问题，即机器学习模型是否以及如何在不破坏软件开发生命周期（SDLC）的情况下被采纳。理想情况下，机器学习工作流/管道和SDLC阶段应该协同进行，以确保适当的质量保证。然而，如我们上面所提到的，由于机器学习模型设计和传统软件应用开发之间的固有差异，这些期望可能是不切实际的。
+> 在传统软件开发中，我们首先收集需求。然后设计、开发、测试、部署和维护应用程序。对于机器学习系统，我们仍需确定应用程序的目标，但不是设计算法，而是让机器学习模型从数据中学习所需的逻辑 [1]。这些观察引发了一个问题，即机器学习模型是否以及如何在不破坏软件开发生命周期（SDLC）的情况下被采纳。理想情况下，机器学习工作流/管道和 SDLC 阶段应该协同进行，以确保适当的质量保证。然而，如我们上面所提到的，由于机器学习模型设计和传统软件应用开发之间的固有差异，这些期望可能是不切实际的。
 
 ([Lwakatare2019](https://link.springer.com/chapter/10.1007/978-3-030-19034-7_14)) 在她的论文 *“机器学习系统的软件工程挑战分类：一项实证研究”* 中进一步阐述了：
 
@@ -90,29 +90,29 @@
 > 
 > 因此，在机器学习系统的开发和维护过程中遇到了一些挑战 [6]。为了解决这个问题，新兴证据强调了在机器学习系统开发中需要考虑和扩展已建立的软件工程（SE）原则、方法和工具 [11,19]。
 
-因此，我们可以将AI项目描述为需要稍多的思维模型来完成类似规模的项目。但AI软件通常需要更多地顺序堆叠这些原则，而云和SaaS似乎在理念上更具并发性，从而导致它们之间的关键性相互依赖减少。
+因此，我们可以将 AI 项目描述为需要稍多的思维模型来完成类似规模的项目。但 AI 软件通常需要更多地顺序堆叠这些原则，而云和 SaaS 似乎在理念上更具并发性，从而导致它们之间的关键性相互依赖减少。
 
 # 知识缺失的感知成本
 
-让我们以一个简单的项目模型为例，其中需要在9个假设领域中进行一系列活动。这些领域可以代表项目管理、需求工程、数据科学、机器学习、云计算和MLOps技能的混合。虽然非常简化，但我们遇到的大多数项目都有类似的顺序变化的专业技能。
+让我们以一个简单的项目模型为例，其中需要在 9 个假设领域中进行一系列活动。这些领域可以代表项目管理、需求工程、数据科学、机器学习、云计算和 MLOps 技能的混合。虽然非常简化，但我们遇到的大多数项目都有类似的顺序变化的专业技能。
 
-![](../Images/43d448cd4312b5197fb6ee18b0c45846.png)
+![](img/43d448cd4312b5197fb6ee18b0c45846.png)
 
 作者插图。
 
-然而，随着新技术的出现，有时你会被要求使用新技术。有时这些是小的变化（例如，用DVC替换Git LFS），有时则是更大、更复杂的变化（如从单体虚拟机方法转向Kubernetes）。理想情况下，你和你的团队应该完全胜任所有这些任务；实际上，随着行业变化的速度，你可能对大多数这些任务都比较熟悉，有些可能是新的或尚未完全掌握的。
+然而，随着新技术的出现，有时你会被要求使用新技术。有时这些是小的变化（例如，用 DVC 替换 Git LFS），有时则是更大、更复杂的变化（如从单体虚拟机方法转向 Kubernetes）。理想情况下，你和你的团队应该完全胜任所有这些任务；实际上，随着行业变化的速度，你可能对大多数这些任务都比较熟悉，有些可能是新的或尚未完全掌握的。
 
 在这种情况下，存在一个知识缺失的单一点。
 
-![](../Images/8ef79cca3c6a6a1ec76e6cc743bec814.png)
+![](img/8ef79cca3c6a6a1ec76e6cc743bec814.png)
 
 作者插图。
 
-我认为这是一种非常正常的操作状态。客户想尝试一个新的库；有人建议使用不同的数据库。这种情况时有发生。需要更改的模块可以在心理上进行热插拔，除了阅读一些API或学习不同的项目管理方法外，没有其他重大后果。
+我认为这是一种非常正常的操作状态。客户想尝试一个新的库；有人建议使用不同的数据库。这种情况时有发生。需要更改的模块可以在心理上进行热插拔，除了阅读一些 API 或学习不同的项目管理方法外，没有其他重大后果。
 
-在MLOps中，问题在于通常两个或更多的问题领域会导致在项目中感知到的知识缺失更大。
+在 MLOps 中，问题在于通常两个或更多的问题领域会导致在项目中感知到的知识缺失更大。
 
-![](../Images/b3b1d7bf3de4ecdd67657b9a8a4af62c.png)
+![](img/b3b1d7bf3de4ecdd67657b9a8a4af62c.png)
 
 作者插图。
 
@@ -134,16 +134,16 @@
 
 # 其他你可能喜欢的文章
 
-+   [我们如何赢得第一个政府AI项目](https://medium.com/towards-data-science/how-we-won-our-first-government-ai-project-8c67e58c22f0)
++   [我们如何赢得第一个政府 AI 项目](https://medium.com/towards-data-science/how-we-won-our-first-government-ai-project-8c67e58c22f0)
 
-+   [解读MLOps的业务考量](https://medium.com/towards-data-science/interpreting-the-business-considerations-of-mlops-f32613c4bcb4)
++   [解读 MLOps 的业务考量](https://medium.com/towards-data-science/interpreting-the-business-considerations-of-mlops-f32613c4bcb4)
 
-+   [PyTorch 与 TensorFlow 在基于 Transformer 的 NLP 应用中的比较](/pytorch-vs-tensorflow-for-transformer-based-nlp-applications-b851bdbf229a)
++   PyTorch 与 TensorFlow 在基于 Transformer 的 NLP 应用中的比较
 
-+   [MLOps 批处理：在 GPU 上运行 Airflow](/mlops-for-batch-processing-running-airflow-on-gpus-dc94367869c6)
++   MLOps 批处理：在 GPU 上运行 Airflow
 
-+   [数据集偏见：制度化歧视还是充分透明？](/dataset-biases-institutionalized-discrimination-or-adequate-transparency-ae4119e2a65c)
++   数据集偏见：制度化歧视还是充分透明？
 
-*如果你对这篇文章或我们的 AI 咨询有其他问题，请随时通过* [***LinkedIn***](https://www.linkedin.com/in/mnlemay/)*或通过* [***电子邮件***](mailto:matt@lemay.ai)*联系我。*
+*如果你对这篇文章或我们的 AI 咨询有其他问题，请随时通过* [***LinkedIn***](https://www.linkedin.com/in/mnlemay/)*或通过* ***电子邮件****联系我。*
 
 -Matt.

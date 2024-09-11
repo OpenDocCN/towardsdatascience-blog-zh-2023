@@ -1,36 +1,36 @@
 # 使用 LLMs 为你的移动应用提供语音和自然语言输入
 
-> 原文：[https://towardsdatascience.com/speech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd?source=collection_archive---------5-----------------------#2023-07-25](https://towardsdatascience.com/speech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd?source=collection_archive---------5-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/speech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd?source=collection_archive---------5-----------------------#2023-07-25`](https://towardsdatascience.com/speech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd?source=collection_archive---------5-----------------------#2023-07-25)
 
 ## 如何利用 OpenAI GPT-4 功能来导航你的 GUI
 
-[](https://medium.com/@hgwvandam?source=post_page-----e79e23d3c5fd--------------------------------)[![Hans van Dam](../Images/52846b7417b271767597c468edfaec46.png)](https://medium.com/@hgwvandam?source=post_page-----e79e23d3c5fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e79e23d3c5fd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e79e23d3c5fd--------------------------------) [Hans van Dam](https://medium.com/@hgwvandam?source=post_page-----e79e23d3c5fd--------------------------------)
+[](https://medium.com/@hgwvandam?source=post_page-----e79e23d3c5fd--------------------------------)![Hans van Dam](https://medium.com/@hgwvandam?source=post_page-----e79e23d3c5fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e79e23d3c5fd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e79e23d3c5fd--------------------------------) [Hans van Dam](https://medium.com/@hgwvandam?source=post_page-----e79e23d3c5fd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6ce6c6116a37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd&user=Hans+van+Dam&userId=6ce6c6116a37&source=post_page-6ce6c6116a37----e79e23d3c5fd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e79e23d3c5fd--------------------------------) · 14 分钟阅读 · 2023年7月25日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe79e23d3c5fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd&user=Hans+van+Dam&userId=6ce6c6116a37&source=-----e79e23d3c5fd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6ce6c6116a37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd&user=Hans+van+Dam&userId=6ce6c6116a37&source=post_page-6ce6c6116a37----e79e23d3c5fd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e79e23d3c5fd--------------------------------) · 14 分钟阅读 · 2023 年 7 月 25 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe79e23d3c5fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd&user=Hans+van+Dam&userId=6ce6c6116a37&source=-----e79e23d3c5fd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe79e23d3c5fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd&source=-----e79e23d3c5fd---------------------bookmark_footer-----------)![](../Images/e9ebbfb4cc7e7ae96821d7ba97ed5661.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe79e23d3c5fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeech-and-natural-language-input-for-your-mobile-app-using-llms-e79e23d3c5fd&source=-----e79e23d3c5fd---------------------bookmark_footer-----------)![](img/e9ebbfb4cc7e7ae96821d7ba97ed5661.png)
 
 图片由 [Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布于 [Unsplash](https://unsplash.com/photos/v9FQR4tbIq8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 # 介绍
 
-大型语言模型（LLM）是一个可以有效处理自然语言的机器学习系统。目前最先进的LLM是GPT-4，它为付费版ChatGPT提供支持。在这篇文章中，你将学习如何通过GPT-4功能调用，为你的应用程序提供高度灵活的语音解释，与应用程序的图形用户界面（GUI）完全协同。这篇文章旨在为产品负责人、用户体验设计师和移动开发者提供指导。
+大型语言模型（LLM）是一个可以有效处理自然语言的机器学习系统。目前最先进的 LLM 是 GPT-4，它为付费版 ChatGPT 提供支持。在这篇文章中，你将学习如何通过 GPT-4 功能调用，为你的应用程序提供高度灵活的语音解释，与应用程序的图形用户界面（GUI）完全协同。这篇文章旨在为产品负责人、用户体验设计师和移动开发者提供指导。
 
-![](../Images/dd3be11e362fdfc3a7b672287aec81ad.png)
+![](img/dd3be11e362fdfc3a7b672287aec81ad.png)
 
 # 背景
 
-移动电话（Android和iOS）上的数字助手未能普及，有几个原因，其中包括它们有缺陷、功能有限且使用起来往往很麻烦。LLM，特别是OpenAI GPT-4，拥有更深入理解用户意图的潜力，而不是粗略地模式匹配口语表达，从而有可能带来改变。
+移动电话（Android 和 iOS）上的数字助手未能普及，有几个原因，其中包括它们有缺陷、功能有限且使用起来往往很麻烦。LLM，特别是 OpenAI GPT-4，拥有更深入理解用户意图的潜力，而不是粗略地模式匹配口语表达，从而有可能带来改变。
 
-Android有Google Assistant的“应用操作”，iOS有SiriKit意图。这些提供了简单的模板来注册你的应用可以处理的语音请求。Google Assistant和Siri在过去几年中已经有了很大改进——甚至超出你的想象。然而，它们的覆盖范围在很大程度上取决于哪些应用实现了对它们的支持。尽管如此，你仍然可以通过语音在Spotify上播放你喜欢的歌曲。然而，这些操作系统提供的服务的自然语言解释早于LLM在这一领域带来的巨大进步——所以是时候迈出下一步：利用LLM的力量使语音输入更可靠和灵活。
+Android 有 Google Assistant 的“应用操作”，iOS 有 SiriKit 意图。这些提供了简单的模板来注册你的应用可以处理的语音请求。Google Assistant 和 Siri 在过去几年中已经有了很大改进——甚至超出你的想象。然而，它们的覆盖范围在很大程度上取决于哪些应用实现了对它们的支持。尽管如此，你仍然可以通过语音在 Spotify 上播放你喜欢的歌曲。然而，这些操作系统提供的服务的自然语言解释早于 LLM 在这一领域带来的巨大进步——所以是时候迈出下一步：利用 LLM 的力量使语音输入更可靠和灵活。
 
-尽管我们可以预期操作系统服务（如Siri和Google Assistant）会很快调整策略，以利用LLM，但我们已经可以使我们的应用程序在不受这些服务限制的情况下使用语音。一旦你掌握了本文中的概念，你的应用也将准备好接入[新助手](https://www.axios.com/2023/07/31/google-assistant-artificial-intelligence-news)，一旦它们上线。
+尽管我们可以预期操作系统服务（如 Siri 和 Google Assistant）会很快调整策略，以利用 LLM，但我们已经可以使我们的应用程序在不受这些服务限制的情况下使用语音。一旦你掌握了本文中的概念，你的应用也将准备好接入[新助手](https://www.axios.com/2023/07/31/google-assistant-artificial-intelligence-news)，一旦它们上线。
 
-你选择的LLM（GPT、PaLM、LLama2、MPT、Falcon等）确实会影响可靠性，但你将在这里学到的核心原理可以应用于任何LLM。我们将让用户通过一句话表达他们的需求，从而访问应用程序的全部功能。LLM将自然语言表达映射到我们应用的导航结构和功能上的函数调用上。这不一定要像机器人一样说出一句完整的句子。**LLM的解释能力允许用户像人类一样说话，使用他们自己的词汇或语言；犹豫、犯错并纠正错误**。用户之所以拒绝语音助手，是因为它们经常无法理解他们的意思，而LLM的灵活性可以让交互变得更加自然和可靠，从而提高用户的接受度。
+你选择的 LLM（GPT、PaLM、LLama2、MPT、Falcon 等）确实会影响可靠性，但你将在这里学到的核心原理可以应用于任何 LLM。我们将让用户通过一句话表达他们的需求，从而访问应用程序的全部功能。LLM 将自然语言表达映射到我们应用的导航结构和功能上的函数调用上。这不一定要像机器人一样说出一句完整的句子。**LLM 的解释能力允许用户像人类一样说话，使用他们自己的词汇或语言；犹豫、犯错并纠正错误**。用户之所以拒绝语音助手，是因为它们经常无法理解他们的意思，而 LLM 的灵活性可以让交互变得更加自然和可靠，从而提高用户的接受度。
 
 # 为什么现在在你的应用中使用语音输入？
 
@@ -68,7 +68,7 @@ Android有Google Assistant的“应用操作”，iOS有SiriKit意图。这些�
 
 下图展示了一个典型应用的导航结构，以您可能熟悉的火车旅行规划器为例。在顶部，您可以看到触摸导航的默认导航结构。该结构由导航组件控制。所有导航点击都委托给导航组件，后者执行导航操作。底部展示了我们如何利用语音输入来接入这一结构。
 
-![](../Images/20896ca68632952ea9be1a1ee07da5d4.png)
+![](img/20896ca68632952ea9be1a1ee07da5d4.png)
 
 使用 LLM 功能调用来启用您的应用的语音功能
 
@@ -96,15 +96,15 @@ LLM 的函数调用工作如下：
 
 这在下图中进行了说明：
 
-![](../Images/b8ae7bc16f62cd81d969e202d45f53c9.png)
+![](img/b8ae7bc16f62cd81d969e202d45f53c9.png)
 
 将 LLM 功能映射到你的移动应用程序的 GUI
 
-它展示了添加到LLM提示中的函数模板的精简版本。要查看用户消息‘我在阿姆斯特丹可以做些什么？’的完整提示，[点击这里 (Github Gist)](https://gist.github.com/hansvdam/8b9269390e16fa0bf394d7656bec1ea5)。它包含了你可以从命令行使用或导入到Postman中的完整curl请求。你需要将你自己的O[penAI-key](https://platform.openai.com/account/api-keys)放入占位符中以运行它。
+它展示了添加到 LLM 提示中的函数模板的精简版本。要查看用户消息‘我在阿姆斯特丹可以做些什么？’的完整提示，[点击这里 (Github Gist)](https://gist.github.com/hansvdam/8b9269390e16fa0bf394d7656bec1ea5)。它包含了你可以从命令行使用或导入到 Postman 中的完整 curl 请求。你需要将你自己的 O[penAI-key](https://platform.openai.com/account/api-keys)放入占位符中以运行它。
 
 # 没有参数的屏幕
 
-你应用中的一些屏幕没有任何参数，或者至少没有LLM需要了解的参数。为了减少令牌使用和杂乱，我们可以将这些屏幕触发器合并到一个单一的函数中，并使用一个参数：要打开的屏幕。
+你应用中的一些屏幕没有任何参数，或者至少没有 LLM 需要了解的参数。为了减少令牌使用和杂乱，我们可以将这些屏幕触发器合并到一个单一的函数中，并使用一个参数：要打开的屏幕。
 
 ```py
 {
@@ -134,11 +134,11 @@ LLM 的函数调用工作如下：
 
 判断触发函数是否需要参数的标准是用户是否有选择：屏幕上是否进行某种形式的搜索或导航，即是否有可以选择的搜索（类似）字段或标签？
 
-如果没有，那么LLM不需要知道这些信息，并且屏幕触发可以添加到你应用的通用屏幕触发函数中。这主要是一个关于屏幕目的描述的实验问题。如果你需要更长的描述，考虑给它一个自己的函数定义，以便比通用参数的枚举更分开地强调它的描述。
+如果没有，那么 LLM 不需要知道这些信息，并且屏幕触发可以添加到你应用的通用屏幕触发函数中。这主要是一个关于屏幕目的描述的实验问题。如果你需要更长的描述，考虑给它一个自己的函数定义，以便比通用参数的枚举更分开地强调它的描述。
 
 # 提示指令指导和修复：
 
-在你提示的系统消息中，你提供了一般性的引导信息。在我们的示例中，了解当前的日期和时间可能很重要，例如，如果你想为明天计划一个旅行。另一个重要的方面是引导其假设性。我们通常更希望LLM表现得过于自信，而不是因为不确定性而打扰用户。对于我们的示例应用，一个好的系统消息是：
+在你提示的系统消息中，你提供了一般性的引导信息。在我们的示例中，了解当前的日期和时间可能很重要，例如，如果你想为明天计划一个旅行。另一个重要的方面是引导其假设性。我们通常更希望 LLM 表现得过于自信，而不是因为不确定性而打扰用户。对于我们的示例应用，一个好的系统消息是：
 
 ```py
 "messages": [
@@ -164,7 +164,7 @@ LLM 的函数调用工作如下：
                   },
 ```
 
-所以如果现在是15:00，而用户说他们想在8点离开，他们实际上指的是20:00，除非他们特别提到一天中的时间。上述指令对GPT-4的效果相当好。但在某些极端情况下，它仍然会失败。我们可以例如添加额外的参数到函数模板中，以便在我们自己的代码中进行进一步修正。例如，我们可以添加：
+所以如果现在是 15:00，而用户说他们想在 8 点离开，他们实际上指的是 20:00，除非他们特别提到一天中的时间。上述指令对 GPT-4 的效果相当好。但在某些极端情况下，它仍然会失败。我们可以例如添加额外的参数到函数模板中，以便在我们自己的代码中进行进一步修正。例如，我们可以添加：
 
 ```py
 "explicit_day_part_reference": {
@@ -179,21 +179,21 @@ LLM 的函数调用工作如下：
 
 # 系统请求澄清
 
-有时，用户的请求缺乏继续处理所需的信息。可能没有适合处理用户请求的函数。在这种情况下，LLM会用自然语言响应，你可以通过例如Toast的方式展示给用户。
+有时，用户的请求缺乏继续处理所需的信息。可能没有适合处理用户请求的函数。在这种情况下，LLM 会用自然语言响应，你可以通过例如 Toast 的方式展示给用户。
 
-也可能存在这样一种情况，即大型语言模型（LLM）确实识别出了一个潜在的函数调用，但缺乏填充所有必需函数参数的信息。在这种情况下，可以考虑将参数设置为可选。但如果这不可行，LLM可能会用用户的语言发送自然语言请求，询问缺失的参数。你应该将这段文本展示给用户，例如通过吐司提示或文本转语音，让他们提供缺失的信息（通过语音）。例如，当用户说“我想去阿姆斯特丹”（而你的应用没有通过系统消息提供默认或当前位置）时，LLM可能会回应“我知道你想要乘火车旅行，你想从哪里出发？”。
+也可能存在这样一种情况，即大型语言模型（LLM）确实识别出了一个潜在的函数调用，但缺乏填充所有必需函数参数的信息。在这种情况下，可以考虑将参数设置为可选。但如果这不可行，LLM 可能会用用户的语言发送自然语言请求，询问缺失的参数。你应该将这段文本展示给用户，例如通过吐司提示或文本转语音，让他们提供缺失的信息（通过语音）。例如，当用户说“我想去阿姆斯特丹”（而你的应用没有通过系统消息提供默认或当前位置）时，LLM 可能会回应“我知道你想要乘火车旅行，你想从哪里出发？”。
 
-这提出了对话历史的问题。我建议你始终在提示中包含用户的最后4条消息，以便信息请求可以分多次进行。为了简化起见，可以省略系统的响应，因为在这种用例中，它们往往弊大于利。
+这提出了对话历史的问题。我建议你始终在提示中包含用户的最后 4 条消息，以便信息请求可以分多次进行。为了简化起见，可以省略系统的响应，因为在这种用例中，它们往往弊大于利。
 
 # 语音识别
 
-语音识别是将语音转换为应用中的参数化导航动作的关键部分。当解释的质量较高时，语音识别的质量较差可能会成为最薄弱的环节。手机具有合理质量的内置语音识别，但基于LLM的语音识别如[Whisper](https://openai.com/research/whisper)、谷歌的[Chirp/USM](https://cloud.google.com/speech-to-text/v2/docs/chirp-model)、Meta的[MMS](https://ai.meta.com/blog/multilingual-model-speech-recognition/?utm_source=twitter&utm_medium=organic_social&utm_campaign=blog&utm_content=card)或[DeepGram](https://developers.deepgram.com/reference/streaming)往往会取得更好的结果，特别是当你可以为你的用例[调整](https://cloud.google.com/speech-to-text/docs/adaptation-model)它们时。
+语音识别是将语音转换为应用中的参数化导航动作的关键部分。当解释的质量较高时，语音识别的质量较差可能会成为最薄弱的环节。手机具有合理质量的内置语音识别，但基于 LLM 的语音识别如[Whisper](https://openai.com/research/whisper)、谷歌的[Chirp/USM](https://cloud.google.com/speech-to-text/v2/docs/chirp-model)、Meta 的[MMS](https://ai.meta.com/blog/multilingual-model-speech-recognition/?utm_source=twitter&utm_medium=organic_social&utm_campaign=blog&utm_content=card)或[DeepGram](https://developers.deepgram.com/reference/streaming)往往会取得更好的结果，特别是当你可以为你的用例[调整](https://cloud.google.com/speech-to-text/docs/adaptation-model)它们时。
 
 # 架构
 
-最好将函数定义存储在服务器上，但它们也可以由应用管理，并随每个请求发送。这两种方式各有利弊。随每个请求发送函数定义更灵活，函数和界面的对齐也可能更容易维护。然而，函数模板不仅包含函数名称和参数，还包含我们可能希望比应用商店更新流程更快更新的描述。这些描述或多或少依赖于LLM，并且根据实际效果进行设计。你可能会想要用更好的或更便宜的LLM来替换当前的LLM，或者甚至在某些时候动态切换。将函数模板存储在服务器上也可能有一个好处，即如果你的应用在iOS和Android上都是原生的，那么可以在一个地方维护它们。如果你同时使用OpenAI的服务进行语音识别和自然语言处理，那么整个流程的技术大图如下：
+最好将函数定义存储在服务器上，但它们也可以由应用管理，并随每个请求发送。这两种方式各有利弊。随每个请求发送函数定义更灵活，函数和界面的对齐也可能更容易维护。然而，函数模板不仅包含函数名称和参数，还包含我们可能希望比应用商店更新流程更快更新的描述。这些描述或多或少依赖于 LLM，并且根据实际效果进行设计。你可能会想要用更好的或更便宜的 LLM 来替换当前的 LLM，或者甚至在某些时候动态切换。将函数模板存储在服务器上也可能有一个好处，即如果你的应用在 iOS 和 Android 上都是原生的，那么可以在一个地方维护它们。如果你同时使用 OpenAI 的服务进行语音识别和自然语言处理，那么整个流程的技术大图如下：
 
-![](../Images/ca4debb6ef8e0f616fcb21be2a997df9.png)
+![](img/ca4debb6ef8e0f616fcb21be2a997df9.png)
 
 使用 Whisper 和 OpenAI 函数调用为你的移动应用启用语音的架构
 
@@ -256,15 +256,15 @@ router.path.append("outing?area=Amsterdam")
 
 ‘ams utr’：给我显示从阿姆斯特丹中央车站到乌特勒支中央车站的列车时刻表，从现在起出发。
 
-‘utr ams arr 9’：（假设现在是13:00）。给我显示从乌特勒支中央车站到阿姆斯特丹中央车站的列车时刻表，要求到达时间在21:00之前。
+‘utr ams arr 9’：（假设现在是 13:00）。给我显示从乌特勒支中央车站到阿姆斯特丹中央车站的列车时刻表，要求到达时间在 21:00 之前。
 
 **后续交互**
 
 就像在 ChatGPT 中一样，你可以通过发送一小段交互历史来细化你的查询：
 
-使用历史记录功能，以下内容也非常有效（假设现在是早上9:00）：
+使用历史记录功能，以下内容也非常有效（假设现在是早上 9:00）：
 
-输入：‘ams utr’ 并获得上述答案。然后在下一轮输入‘arr 7’。是的，它实际上可以将其翻译为从阿姆斯特丹中央到乌特勒支中央的旅行，预计在19:00之前到达。
+输入：‘ams utr’ 并获得上述答案。然后在下一轮输入‘arr 7’。是的，它实际上可以将其翻译为从阿姆斯特丹中央到乌特勒支中央的旅行，预计在 19:00 之前到达。
 
 我制作了一个关于此的示例网页应用程序，你可以在[这里](https://www.youtube.com/watch?v=XBjiqLD578I)找到相关视频。实际应用程序的链接在描述中。
 
@@ -282,7 +282,7 @@ VR 和 AR（XR）为语音识别提供了极好的机会，因为用户的双手
 
 # 结论
 
-在本文中，你学会了如何应用函数调用来为你的应用程序启用语音功能。以提供的 [Gist](https://gist.github.com/hansvdam/8b9269390e16fa0bf394d7656bec1ea5) 为出发点，你可以在 Postman 或命令行中进行实验，了解函数调用的强大功能。如果你想在你的应用上运行一个语音启用的POC（概念验证），我建议将架构部分的服务器代码直接集成到你的应用中。整体来说，这归结为 2 次 HTTP 调用，一些提示构建和实现麦克风录音。根据你的技能和代码库，你将在几天内完成 POC 的搭建。
+在本文中，你学会了如何应用函数调用来为你的应用程序启用语音功能。以提供的 [Gist](https://gist.github.com/hansvdam/8b9269390e16fa0bf394d7656bec1ea5) 为出发点，你可以在 Postman 或命令行中进行实验，了解函数调用的强大功能。如果你想在你的应用上运行一个语音启用的 POC（概念验证），我建议将架构部分的服务器代码直接集成到你的应用中。整体来说，这归结为 2 次 HTTP 调用，一些提示构建和实现麦克风录音。根据你的技能和代码库，你将在几天内完成 POC 的搭建。
 
 编程愉快！
 

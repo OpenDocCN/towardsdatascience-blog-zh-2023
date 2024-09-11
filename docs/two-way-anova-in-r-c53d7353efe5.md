@@ -1,18 +1,18 @@
 # R 中的双因素 ANOVA
 
-> 原文：[https://towardsdatascience.com/two-way-anova-in-r-c53d7353efe5?source=collection_archive---------17-----------------------#2023-06-19](https://towardsdatascience.com/two-way-anova-in-r-c53d7353efe5?source=collection_archive---------17-----------------------#2023-06-19)
+> 原文：[`towardsdatascience.com/two-way-anova-in-r-c53d7353efe5?source=collection_archive---------17-----------------------#2023-06-19`](https://towardsdatascience.com/two-way-anova-in-r-c53d7353efe5?source=collection_archive---------17-----------------------#2023-06-19)
 
 ## 学习如何在 R 中进行双因素 ANOVA。你还将了解其目标、假设、前提条件以及如何解读结果。
 
-[](https://antoinesoetewey.medium.com/?source=post_page-----c53d7353efe5--------------------------------)[![Antoine Soetewey](../Images/51d7837d18ff15a62cac2343a485e35d.png)](https://antoinesoetewey.medium.com/?source=post_page-----c53d7353efe5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c53d7353efe5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c53d7353efe5--------------------------------) [Antoine Soetewey](https://antoinesoetewey.medium.com/?source=post_page-----c53d7353efe5--------------------------------)
+[](https://antoinesoetewey.medium.com/?source=post_page-----c53d7353efe5--------------------------------)![Antoine Soetewey](https://antoinesoetewey.medium.com/?source=post_page-----c53d7353efe5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c53d7353efe5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c53d7353efe5--------------------------------) [Antoine Soetewey](https://antoinesoetewey.medium.com/?source=post_page-----c53d7353efe5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca32a96e6dc7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-way-anova-in-r-c53d7353efe5&user=Antoine+Soetewey&userId=ca32a96e6dc7&source=post_page-ca32a96e6dc7----c53d7353efe5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c53d7353efe5--------------------------------) · 23 分钟阅读 · 2023年6月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc53d7353efe5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-way-anova-in-r-c53d7353efe5&user=Antoine+Soetewey&userId=ca32a96e6dc7&source=-----c53d7353efe5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca32a96e6dc7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-way-anova-in-r-c53d7353efe5&user=Antoine+Soetewey&userId=ca32a96e6dc7&source=post_page-ca32a96e6dc7----c53d7353efe5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c53d7353efe5--------------------------------) · 23 分钟阅读 · 2023 年 6 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc53d7353efe5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-way-anova-in-r-c53d7353efe5&user=Antoine+Soetewey&userId=ca32a96e6dc7&source=-----c53d7353efe5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc53d7353efe5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-way-anova-in-r-c53d7353efe5&source=-----c53d7353efe5---------------------bookmark_footer-----------)![](../Images/5186e1c2999fc5da63a55327a6f00454.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc53d7353efe5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-way-anova-in-r-c53d7353efe5&source=-----c53d7353efe5---------------------bookmark_footer-----------)![](img/5186e1c2999fc5da63a55327a6f00454.png)
 
 图片来源：[Nathan Dumlao](https://unsplash.com/@nate_dumlao?utm_source=medium&utm_medium=referral)
 

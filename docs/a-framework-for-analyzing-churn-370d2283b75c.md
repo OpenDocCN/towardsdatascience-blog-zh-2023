@@ -1,18 +1,18 @@
 # 分析流失的框架
 
-> 原文：[https://towardsdatascience.com/a-framework-for-analyzing-churn-370d2283b75c?source=collection_archive---------4-----------------------#2023-01-13](https://towardsdatascience.com/a-framework-for-analyzing-churn-370d2283b75c?source=collection_archive---------4-----------------------#2023-01-13)
+> 原文：[`towardsdatascience.com/a-framework-for-analyzing-churn-370d2283b75c?source=collection_archive---------4-----------------------#2023-01-13`](https://towardsdatascience.com/a-framework-for-analyzing-churn-370d2283b75c?source=collection_archive---------4-----------------------#2023-01-13)
 
 ## 使用模拟数据集进行客户流失分析的逐步指南
 
-[](https://gabri-albini.medium.com/?source=post_page-----370d2283b75c--------------------------------)[![Gabriele Albini](../Images/153b88c71ea4e5e221a90de3caa71cdb.png)](https://gabri-albini.medium.com/?source=post_page-----370d2283b75c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----370d2283b75c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----370d2283b75c--------------------------------) [Gabriele Albini](https://gabri-albini.medium.com/?source=post_page-----370d2283b75c--------------------------------)
+[](https://gabri-albini.medium.com/?source=post_page-----370d2283b75c--------------------------------)![Gabriele Albini](https://gabri-albini.medium.com/?source=post_page-----370d2283b75c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----370d2283b75c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----370d2283b75c--------------------------------) [Gabriele Albini](https://gabri-albini.medium.com/?source=post_page-----370d2283b75c--------------------------------)
 
 ·
 
-[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93c18fcb4ee6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-framework-for-analyzing-churn-370d2283b75c&user=Gabriele+Albini&userId=93c18fcb4ee6&source=post_page-93c18fcb4ee6----370d2283b75c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----370d2283b75c--------------------------------) ·14分钟阅读·2023年1月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F370d2283b75c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-framework-for-analyzing-churn-370d2283b75c&user=Gabriele+Albini&userId=93c18fcb4ee6&source=-----370d2283b75c---------------------clap_footer-----------)
+[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93c18fcb4ee6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-framework-for-analyzing-churn-370d2283b75c&user=Gabriele+Albini&userId=93c18fcb4ee6&source=post_page-93c18fcb4ee6----370d2283b75c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----370d2283b75c--------------------------------) ·14 分钟阅读·2023 年 1 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F370d2283b75c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-framework-for-analyzing-churn-370d2283b75c&user=Gabriele+Albini&userId=93c18fcb4ee6&source=-----370d2283b75c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F370d2283b75c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-framework-for-analyzing-churn-370d2283b75c&source=-----370d2283b75c---------------------bookmark_footer-----------)![](../Images/62f0f24f3727ca4e6109e0031b5222d6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F370d2283b75c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-framework-for-analyzing-churn-370d2283b75c&source=-----370d2283b75c---------------------bookmark_footer-----------)![](img/62f0f24f3727ca4e6109e0031b5222d6.png)
 
 图片来源：[JESHOOTS.COM](https://unsplash.com/@jeshoots?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -36,31 +36,31 @@
 
 ## 目录：
 
-1- [数据](#5487)
+1- 数据
 
-1.1- [开发流失模型时应考虑哪些数据？](#d95f)
+1.1- 开发流失模型时应考虑哪些数据？
 
-1.2- [原始数据](#d95f)
+1.2- 原始数据
 
-2- [数据预处理：流失指标](#c74a)
+2- 数据预处理：流失指标
 
-2.1- [创建客户指标](#652c)
+2.1- 创建客户指标
 
-2.2- [分析流失指标](#048e)
+2.2- 分析流失指标
 
-3- [使用机器学习进行流失预测](#179c)
+3- 使用机器学习进行流失预测
 
-3.1- [逻辑回归](#179c)
+3.1- 逻辑回归
 
-3.2- [随机森林](#ba22)
+3.2- 随机森林
 
-3.3- [XGBoost](#481c)
+3.3- XGBoost
 
-4- [生成流失预测](#bd49)
+4- 生成流失预测
 
-5- [下一步](#f279)
+5- 下一步
 
-[参考文献](#f062)
+参考文献
 
 # 1. 数据
 
@@ -100,7 +100,7 @@
 
 原始数据将如下所示：
 
-![](../Images/6a32434a393847910e9f5f5026ede0a6.png)
+![](img/6a32434a393847910e9f5f5026ede0a6.png)
 
 虚拟原始数据 | 图片来源作者
 
@@ -114,11 +114,11 @@
 
 ## 2.1 创建客户指标
 
-考虑到以上原始数据，我们可以生成哪些KPI？以下是一些想法（它们是我们[数据集](https://github.com/gabri-al/churn_analysis)的列）：
+考虑到以上原始数据，我们可以生成哪些 KPI？以下是一些想法（它们是我们[数据集](https://github.com/gabri-al/churn_analysis)的列）：
 
 +   “mrr_ratio” = 这是按订阅计算的每月经常性收入。因此，对于每个客户：我们对每个有效订阅求和([每月费用 — 折扣])，然后计算有效订阅的数量，并将两者相除。
 
-+   “mrr_ratio_A”和“mrr_ratio_B” = 这些是按领域计算的每月经常性收入（A是机器学习；B是吉他），考虑领域内的mrr和活跃订阅数量。
++   “mrr_ratio_A”和“mrr_ratio_B” = 这些是按领域计算的每月经常性收入（A 是机器学习；B 是吉他），考虑领域内的 mrr 和活跃订阅数量。
 
 +   “subs_A”和“subs_B” = 按领域的活跃订阅数量
 
@@ -130,33 +130,33 @@
 
 +   “is_churn” = 一个标志，指示客户是否将要流失（1）或不流失（0）
 
-我认为使用我们历史原始数据来计算这些KPI的最佳方法是：
+我认为使用我们历史原始数据来计算这些 KPI 的最佳方法是：
 
-+   确定一些固定的观察期（例如每月20号），留出一些合理的时间从我们的续订（我们假设每月30号发生）。
++   确定一些固定的观察期（例如每月 20 号），留出一些合理的时间从我们的续订（我们假设每月 30 号发生）。
 
 +   创建一个表“A”，在其中，对于每一个“流失”的客户，我们包括他们过去的流失日期。
 
-+   创建另一个表“B”，其中，对于每个客户，在每月20号，我们根据过去30天的数据计算KPI。换句话说，我们每月20号对客户指标进行月度快照。
++   创建另一个表“B”，其中，对于每个客户，在每月 20 号，我们根据过去 30 天的数据计算 KPI。换句话说，我们每月 20 号对客户指标进行月度快照。
 
-+   我们将表“A”和“B”按客户ID连接，并标记所有将在下一个观察日期流失的行。
++   我们将表“A”和“B”按客户 ID 连接，并标记所有将在下一个观察日期流失的行。
 
-这些观察期和KPI通常在数据仓库中计算，然后导出到Python。我为项目模拟的数据正好代表了这种情况。假设我们刚刚从数据仓库中获得了以下数据集：
+这些观察期和 KPI 通常在数据仓库中计算，然后导出到 Python。我为项目模拟的数据正好代表了这种情况。假设我们刚刚从数据仓库中获得了以下数据集：
 
-![](../Images/d22561b15385296e33661df0a17cb897.png)
+![](img/d22561b15385296e33661df0a17cb897.png)
 
 虚拟流失指标 | 图片由作者提供
 
-(*注意：这是一个模拟数据集。所有连续指标都从一个多变量高斯分布中提取，近似真实数据。这就是为什么我们有负值和应不为负值或小数的KPI的原因。此外，每一行应对应一个客户ID，但此信息并不相关*)。
+(*注意：这是一个模拟数据集。所有连续指标都从一个多变量高斯分布中提取，近似真实数据。这就是为什么我们有负值和应不为负值或小数的 KPI 的原因。此外，每一行应对应一个客户 ID，但此信息并不相关*)。
 
 ## 2.2 分析流失指标
 
 一旦我们拥有一些指标，我们可以开始检查它们与流失的关系。
 
-最直观的方式来调查这种关系是通过**队列分析**。通常，通过将每个指标数据拆分成10个相等大小的桶来生成10个队列，具体取决于它们的值。然后，我们通过计算每个队列中的流失率，将每个指标与“is_churn”标志相关联。如果指标不是连续的且具有少于10个分类值，那么我们只考虑每个类别一个队列。
+最直观的方式来调查这种关系是通过**队列分析**。通常，通过将每个指标数据拆分成 10 个相等大小的桶来生成 10 个队列，具体取决于它们的值。然后，我们通过计算每个队列中的流失率，将每个指标与“is_churn”标志相关联。如果指标不是连续的且具有少于 10 个分类值，那么我们只考虑每个类别一个队列。
 
-在左侧图表中，我们可以看到，平均而言，拥有更高mrr_ratio的客户流失更多，因为他们每个订阅支付更多：
+在左侧图表中，我们可以看到，平均而言，拥有更高 mrr_ratio 的客户流失更多，因为他们每个订阅支付更多：
 
-![](../Images/635ff9d13ee409337f67d4cb586b2783.png)
+![](img/635ff9d13ee409337f67d4cb586b2783.png)
 
 流失指标队列 | 作者提供的图像
 
@@ -170,17 +170,17 @@
 
 请注意，流失的预测是*不简单*的。决定流失是主观的，而且可能并不总是一个逻辑选择：一个客户可能因为费用问题而流失，其他客户可能因为质量问题而流失。此外，糟糕的客户服务或对产品/品牌的负面感受也可能主观地引发流失决定。
 
-基于这些原因，模型的表现不会像其他机器学习任务那样高。根据Carl S. Gold [1]的说法，一个健康的流失预测模型的AUC得分应在0.6到0.8之间。
+基于这些原因，模型的表现不会像其他机器学习任务那样高。根据 Carl S. Gold [1]的说法，一个健康的流失预测模型的 AUC 得分应在 0.6 到 0.8 之间。
 
 需要考虑的一些因素：
 
-+   流失是一个二分类任务：模型将学习预测记录是否属于类1（流失客户）或类0（未流失）。然而，我们将关注***每条记录属于每个类别的概率***。在选择模型时，请记住这一点。
++   流失是一个二分类任务：模型将学习预测记录是否属于类 1（流失客户）或类 0（未流失）。然而，我们将关注***每条记录属于每个类别的概率***。在选择模型时，请记住这一点。
 
-+   模型表现不能通过准确率来衡量。通常，少数客户流失，因此我们的数据集是不平衡的：仅约10%的虚拟数据属于类1（流失客户）。任何总是预测类0的模型将具有90%的准确率，但这样的模型完全没有帮助。相反，我们将使用***roc_auc得分***来衡量性能。
++   模型表现不能通过准确率来衡量。通常，少数客户流失，因此我们的数据集是不平衡的：仅约 10%的虚拟数据属于类 1（流失客户）。任何总是预测类 0 的模型将具有 90%的准确率，但这样的模型完全没有帮助。相反，我们将使用***roc_auc 得分***来衡量性能。
 
 +   我们将使用交叉验证来调整模型的超参数。由于我们处理的是时间序列数据集，我们不能简单地使用随机记录分配到每个折叠。我们需要训练我们的模型使用当前或过去的数据，而不是未来的数据。因此，最佳实践建议使用***时间序列分割***（来自[sklearn](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html) [2]），它适用于任何按时间排序的数据集。
 
-*(注意：在交叉验证中，通常使用10个拆分。这里由于数据量有限和数据对类0极度不平衡，使用了3个拆分)。*
+*(注意：在交叉验证中，通常使用 10 个拆分。这里由于数据量有限和数据对类 0 极度不平衡，使用了 3 个拆分)。*
 
 现在让我们比较三种分类模型。
 
@@ -190,7 +190,7 @@
 
 尽管这很容易验证，我可以预见逻辑回归不会是性能最好的模型，因此我们不会使用我们可能获得的任何无效结果。
 
-![](../Images/ddf9b140349ae80c8918d589f967f132.png)
+![](img/ddf9b140349ae80c8918d589f967f132.png)
 
 逻辑回归 | 作者插图
 
@@ -210,7 +210,7 @@
 
 现在让我们在数据集上调整 RF 的超参数，选择最佳模型，并展示最“重要”的特征（即每个特征用于生成决策分裂的频率）：
 
-![](../Images/7740711313d8cd5ad8592673f7393a6e.png)
+![](img/7740711313d8cd5ad8592673f7393a6e.png)
 
 随机森林 | 作者插图
 
@@ -224,7 +224,7 @@ XGBoost 是“*梯度提升*”方法的一个进化（“极端”）版本。�
 
 +   从“梯度提升”开始，“**极端梯度提升**”是一个完整的算法，包括对梯度提升方法的几项改进，如性能优化和正则化参数（可以避免过拟合）。最重要的是，得益于这些附加元素，XGBoost 可以在像普通笔记本电脑这样的简单机器上运行。
 
-![](../Images/96ab1b8c02fcb003325095f5156fd0db.png)
+![](img/96ab1b8c02fcb003325095f5156fd0db.png)
 
 # 4\. 生成流失预测
 
@@ -232,13 +232,13 @@ XGBoost 是“*梯度提升*”方法的一个进化（“极端”）版本。�
 
 在导入测试集后，我们计算每条记录属于类别 1（流失客户）的模型预测概率，并绘制 ROC_AUC 分数：
 
-![](../Images/4d6614cfc76923e1c41fea03710f7904.png)
+![](img/4d6614cfc76923e1c41fea03710f7904.png)
 
 测试集 AUC 分数 | 图片由作者提供
 
 让我们将预测的类别添加到原始数据中。默认情况下，所有预测概率 ≥ .5 的记录将被分配到类别 1。我们可以降低这个阈值，并比较结果的混淆矩阵：
 
-![](../Images/73e0e8b5c3e031a17c9c1ba91e67bca9.png)
+![](img/73e0e8b5c3e031a17c9c1ba91e67bca9.png)
 
 混淆矩阵 | 图片由作者提供
 
@@ -262,17 +262,17 @@ XGBoost 是“*梯度提升*”方法的一个进化（“极端”）版本。�
 
 ## 确定导致流失减少的行动：
 
-让我们结合上面看到的特征重要性与我们的预测。例如，两个基于树的模型将“**subs_B**”列为树中使用最多的特征。我们需要深入了解流失和非流失客户在subs_B方面的情况。之前看到的群体分析将有助于这里：
+让我们结合上面看到的特征重要性与我们的预测。例如，两个基于树的模型将“**subs_B**”列为树中使用最多的特征。我们需要深入了解流失和非流失客户在 subs_B 方面的情况。之前看到的群体分析将有助于这里：
 
-![](../Images/1da13d54c6f5d5cd0201a9bd691951a4.png)
+![](img/1da13d54c6f5d5cd0201a9bd691951a4.png)
 
 在训练数据上进行群体分析 | 作者图像
 
-看起来高流失的客户有最低值（即0订阅，数据已经被转换，因此x轴值在这里不太易于解释），或者“subs_B”的数量过多。我们必须小心地得出“subs_B”和“is_churn”之间的因果结论，因为此分析并未证明任何因果关系。然而，我们可以测试一些假设：
+看起来高流失的客户有最低值（即 0 订阅，数据已经被转换，因此 x 轴值在这里不太易于解释），或者“subs_B”的数量过多。我们必须小心地得出“subs_B”和“is_churn”之间的因果结论，因为此分析并未证明任何因果关系。然而，我们可以测试一些假设：
 
-+   看起来客户对我们的B产品感到满意，将“B”产品交叉销售给仅拥有A产品的客户，是否有助于减少流失？
++   看起来客户对我们的 B 产品感到满意，将“B”产品交叉销售给仅拥有 A 产品的客户，是否有助于减少流失？
 
-+   我们还应该了解客户拥有这么多“B”订阅背后的业务原因。我们可以教育他们更有效地使用我们的产品，从而减少B订阅。
++   我们还应该了解客户拥有这么多“B”订阅背后的业务原因。我们可以教育他们更有效地使用我们的产品，从而减少 B 订阅。
 
 ## **如何衡量我们行动的成功**：
 
@@ -294,6 +294,6 @@ A/B 测试是一种非常常见的方式：
 
 # 参考文献
 
-[1] Carl S. Gold — “用数据对抗流失：客户保留的科学与策略”，2020年
+[1] Carl S. Gold — “用数据对抗流失：客户保留的科学与策略”，2020 年
 
-[2] [Scikit-learn: Python中的机器学习](https://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html)，Pedregosa *等*，JMLR 12，第2825–2830页，2011年
+[2] [Scikit-learn: Python 中的机器学习](https://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html)，Pedregosa *等*，JMLR 12，第 2825–2830 页，2011 年

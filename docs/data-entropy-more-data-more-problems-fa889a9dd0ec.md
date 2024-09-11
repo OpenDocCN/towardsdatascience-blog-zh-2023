@@ -1,26 +1,26 @@
 # 数据熵：数据越多，问题越多？
 
-> 原文：[https://towardsdatascience.com/data-entropy-more-data-more-problems-fa889a9dd0ec?source=collection_archive---------0-----------------------#2023-05-18](https://towardsdatascience.com/data-entropy-more-data-more-problems-fa889a9dd0ec?source=collection_archive---------0-----------------------#2023-05-18)
+> 原文：[`towardsdatascience.com/data-entropy-more-data-more-problems-fa889a9dd0ec?source=collection_archive---------0-----------------------#2023-05-18`](https://towardsdatascience.com/data-entropy-more-data-more-problems-fa889a9dd0ec?source=collection_archive---------0-----------------------#2023-05-18)
 
 ## 如何在现代数据组织中应对和拥抱复杂性。
 
-[](https://medium.com/@salmabakouk?source=post_page-----fa889a9dd0ec--------------------------------)[![Salma Bakouk](../Images/d315182e2e6adf4ce5af03d5b8a48ef0.png)](https://medium.com/@salmabakouk?source=post_page-----fa889a9dd0ec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa889a9dd0ec--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fa889a9dd0ec--------------------------------) [Salma Bakouk](https://medium.com/@salmabakouk?source=post_page-----fa889a9dd0ec--------------------------------)
+[](https://medium.com/@salmabakouk?source=post_page-----fa889a9dd0ec--------------------------------)![Salma Bakouk](https://medium.com/@salmabakouk?source=post_page-----fa889a9dd0ec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa889a9dd0ec--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa889a9dd0ec--------------------------------) [Salma Bakouk](https://medium.com/@salmabakouk?source=post_page-----fa889a9dd0ec--------------------------------)
 
 ·
 
-[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F738a4a8bdba9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-entropy-more-data-more-problems-fa889a9dd0ec&user=Salma+Bakouk&userId=738a4a8bdba9&source=post_page-738a4a8bdba9----fa889a9dd0ec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa889a9dd0ec--------------------------------) ·10 分钟阅读·2023年5月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffa889a9dd0ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-entropy-more-data-more-problems-fa889a9dd0ec&user=Salma+Bakouk&userId=738a4a8bdba9&source=-----fa889a9dd0ec---------------------clap_footer-----------)
+[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F738a4a8bdba9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-entropy-more-data-more-problems-fa889a9dd0ec&user=Salma+Bakouk&userId=738a4a8bdba9&source=post_page-738a4a8bdba9----fa889a9dd0ec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa889a9dd0ec--------------------------------) ·10 分钟阅读·2023 年 5 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffa889a9dd0ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-entropy-more-data-more-problems-fa889a9dd0ec&user=Salma+Bakouk&userId=738a4a8bdba9&source=-----fa889a9dd0ec---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffa889a9dd0ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-entropy-more-data-more-problems-fa889a9dd0ec&source=-----fa889a9dd0ec---------------------bookmark_footer-----------)![](../Images/676f725b70edf29a6871e65145a2c8f0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffa889a9dd0ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-entropy-more-data-more-problems-fa889a9dd0ec&source=-----fa889a9dd0ec---------------------bookmark_footer-----------)![](img/676f725b70edf29a6871e65145a2c8f0.png)
 
-来源：[https://unsplash.com/@brett_jordan](https://unsplash.com/@brett_jordan)
+来源：[`unsplash.com/@brett_jordan`](https://unsplash.com/@brett_jordan)
 
 “就像我们遇到的钱越多，我们看到的问题也越多。” —— **Notorious B.I.G**
 
 [Webster’s](https://www.merriam-webster.com/dictionary/entropy#:~:text=1%20thermodynamics%20%3A%20a%20measure%20of,with%20the%20temperature%20of%20the) 词典将热力学中的熵定义为一个封闭热力学系统中不可用能量的度量，同时通常也被认为是系统混乱程度的度量。
 
-在信息论中，信息熵的概念由[克劳德·香农](https://en.wikipedia.org/wiki/A_Mathematical_Theory_of_Communication)于1948年提出，表示一个随机变量的“惊讶”、“信息”以及与各种可能结果相关的“不确定性”水平。对我的数学迷们来说，推荐一些有趣的阅读材料（[这里](/the-intuition-behind-shannons-entropy-e74820fe9800)和[这里](https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf)）。
+在信息论中，信息熵的概念由[克劳德·香农](https://en.wikipedia.org/wiki/A_Mathematical_Theory_of_Communication)于 1948 年提出，表示一个随机变量的“惊讶”、“信息”以及与各种可能结果相关的“不确定性”水平。对我的数学迷们来说，推荐一些有趣的阅读材料（这里和[这里](https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf)）。
 
 在更广泛的背景下，熵是指事物随着时间推移而趋向无序的倾向，以及系统或环境中一般的混乱和不确定性增加。
 
@@ -48,7 +48,7 @@
 
 **基础设施与技术**
 
-根据[IDC的研究](https://www.businesswire.com/news/home/20210817005182/en/Global-Spending-on-Big-Data-and-Analytics-Solutions-Will-Reach-215.7-Billion-in-2021-According-to-a-New-IDC-Spending-Guide)，全球公司每年在数据和分析解决方案上花费超过2000亿美元，以利用数据推动创新和业务繁荣。然而，由于缺乏方向和糟糕的战略，大多数公司最终会陷入技术和数据堆栈膨胀的困境，技术债务和维护成本不断上升。
+根据[IDC 的研究](https://www.businesswire.com/news/home/20210817005182/en/Global-Spending-on-Big-Data-and-Analytics-Solutions-Will-Reach-215.7-Billion-in-2021-According-to-a-New-IDC-Spending-Guide)，全球公司每年在数据和分析解决方案上花费超过 2000 亿美元，以利用数据推动创新和业务繁荣。然而，由于缺乏方向和糟糕的战略，大多数公司最终会陷入技术和数据堆栈膨胀的困境，技术债务和维护成本不断上升。
 
 基础设施和技术熵可以以一种或几种以下方式表现出来
 
@@ -62,11 +62,11 @@
 
 “文化比战略更重要” 彼得·德鲁克。
 
-奥地利裔美国管理顾问和作者的名言在组织的数据战略方面特别适用。数据在现代组织中扮演着核心角色；这种中心性不仅仅是一个比喻，因为数据团队通常介于传统IT和不同业务职能之间。因此，数据从业人员被期望管理和应对不同背景和沟通风格的利益相关者。这可能导致以下一种或多种情况：
+奥地利裔美国管理顾问和作者的名言在组织的数据战略方面特别适用。数据在现代组织中扮演着核心角色；这种中心性不仅仅是一个比喻，因为数据团队通常介于传统 IT 和不同业务职能之间。因此，数据从业人员被期望管理和应对不同背景和沟通风格的利益相关者。这可能导致以下一种或多种情况：
 
-+   IT与业务之间缺乏对齐。业务和IT团队在组织中有着根本不同的目的和责任。然而，他们都朝着相同的目标努力：提高整体业务表现，降低成本，实现可持续增长。
++   IT 与业务之间缺乏对齐。业务和 IT 团队在组织中有着根本不同的目的和责任。然而，他们都朝着相同的目标努力：提高整体业务表现，降低成本，实现可持续增长。
 
-+   IT与数据管理功能之间缺乏对齐。对于大多数组织来说，数据实践相对于软件来说是新兴的。虽然将数据管理视为一个独立实体是有意义的，但完全与IT和工程分隔开并不是一个明智的选择。完全分离可能会损害数据生产周期，并导致许多低效，更不用说对知识转移的负面影响了。
++   IT 与数据管理功能之间缺乏对齐。对于大多数组织来说，数据实践相对于软件来说是新兴的。虽然将数据管理视为一个独立实体是有意义的，但完全与 IT 和工程分隔开并不是一个明智的选择。完全分离可能会损害数据生产周期，并导致许多低效，更不用说对知识转移的负面影响了。
 
 +   数据生产者和数据消费者在数据服务级别协议（SLAs）方面缺乏对齐。我们称他们为消费者，但他们真的被这样对待吗？
 
@@ -74,11 +74,11 @@
 
 +   数据被视为二等公民。每家公司都希望成为数据驱动型，但即使在今天的环境下，数据驱动决策对许多人来说仍然是一个难以捉摸的理念。在启用和促进强大的数据驱动文化时，购买软件无疑是最简单的部分。
 
-+   数据工程师将超过50%的时间用于处理数据事件。让数据工程师专注于创造收入的活动而不是解决数据管道问题，可以带来很多价值。这样做不仅减少了他们在重复任务上花费的时间，还使他们能够关注更重要的事情。
++   数据工程师将超过 50%的时间用于处理数据事件。让数据工程师专注于创造收入的活动而不是解决数据管道问题，可以带来很多价值。这样做不仅减少了他们在重复任务上花费的时间，还使他们能够关注更重要的事情。
 
 **数据质量或其缺乏**
 
-+   数据质量事件频繁，涉及的影响和严重程度各异。在[2021](https://www.gartner.com/smarterwithgartner/how-to-improve-your-data-quality) [Gartner 报告](https://www.gartner.com/smarterwithgartner/how-to-improve-your-data-quality)中，不良数据每年给企业带来的成本约为1300万美元。但数据质量问题到底是什么样的？有各种指标可以衡量数据质量并评估数据偏离预期的程度。更多信息可以在[这篇博客](https://medium.com/the-observatory-by-sifflet/getting-started-with-data-observability-60ad64044f04)中找到。
++   数据质量事件频繁，涉及的影响和严重程度各异。在[2021](https://www.gartner.com/smarterwithgartner/how-to-improve-your-data-quality) [Gartner 报告](https://www.gartner.com/smarterwithgartner/how-to-improve-your-data-quality)中，不良数据每年给企业带来的成本约为 1300 万美元。但数据质量问题到底是什么样的？有各种指标可以衡量数据质量并评估数据偏离预期的程度。更多信息可以在[这篇博客](https://medium.com/the-observatory-by-sifflet/getting-started-with-data-observability-60ad64044f04)中找到。
 
 +   看似相同的事物有多个版本。什么是单一的真实来源？这尤其受到孤岛现象和团队之间缺乏协调的加剧。因此，试图根据数据做出决策的利益相关者之间的混乱和挫折不断升级，导致他们质疑数据团队生产的所有内容，有时甚至质疑其存在。
 
@@ -90,7 +90,7 @@
 
 **人员与文化**
 
-+   数据驱动的文化始于（非常）高层。为了创建和培养数据驱动的文化，公司高层管理和C级管理者需要灌输和培养基于事实的决策思维。当高层管理者普遍期望每个业务案例和每个决策都需要以事实为依据，并以身作则时，操作人员自然会跟随。关于这一点的精彩阅读[在这里](https://hbr.org/2020/02/10-steps-to-creating-a-data-driven-culture)。
++   数据驱动的文化始于（非常）高层。为了创建和培养数据驱动的文化，公司高层管理和 C 级管理者需要灌输和培养基于事实的决策思维。当高层管理者普遍期望每个业务案例和每个决策都需要以事实为依据，并以身作则时，操作人员自然会跟随。关于这一点的精彩阅读[在这里](https://hbr.org/2020/02/10-steps-to-creating-a-data-driven-culture)。
 
 +   数据领导者也是业务领导者。作为数据领导者，你在设计上是一个混合角色，因为数据需要服务于特定的业务目的。没有公司是为了分析而进行分析的。你不仅凭借出色的技术领导力赢得了席位，还可以在整体业务表现中发挥重要作用。为此，你需要像业务领导者一样思考，这意味着要对数据和数据项目采取务实的以结果为导向的方法。
 
@@ -114,7 +114,7 @@
 
 +   **数据可观测性**。数据可观测性指的是理解和衡量数据平台中不同数据资产及其组件健康状态的能力。由于数据熵代表了数据平台内部的混乱和混沌，数据可观测性解决方案应运而生，旨在解决这类问题。
 
-    如[这篇博文](https://medium.com/the-observatory-by-sifflet/getting-started-with-data-observability-60ad64044f04)中所解释的，数据可观测性是一个源自软件及控制理论的概念。软件可观测性的概念——比如Datadog和New Relic这样的公司——旨在帮助软件工程师更好地了解其应用程序内部的运行情况并监控其健康状态。现在这一概念可以应用到数据领域。因此，可观测性可以被定义为组织获得关于其数据健康状态的可操作见解的能力。正如我在[这篇博文](https://medium.com/the-observatory-by-sifflet/data-quality-monitoring-is-dead-say-hello-to-full-data-stack-observability-f73cac27ea52)中所解释的，数据可观测性有四大支柱：
+    如[这篇博文](https://medium.com/the-observatory-by-sifflet/getting-started-with-data-observability-60ad64044f04)中所解释的，数据可观测性是一个源自软件及控制理论的概念。软件可观测性的概念——比如 Datadog 和 New Relic 这样的公司——旨在帮助软件工程师更好地了解其应用程序内部的运行情况并监控其健康状态。现在这一概念可以应用到数据领域。因此，可观测性可以被定义为组织获得关于其数据健康状态的可操作见解的能力。正如我在[这篇博文](https://medium.com/the-observatory-by-sifflet/data-quality-monitoring-is-dead-say-hello-to-full-data-stack-observability-f73cac27ea52)中所解释的，数据可观测性有四大支柱：
 
 +   **指标**：衡量数据质量
 
@@ -124,12 +124,12 @@
 
 +   **日志**：数据与“外部世界”互动的方式
 
-    理解数据可观察性的最佳方式是将其视为现代数据基础设施的一个监督层，旨在使数据从业者能够洞察和理解构成现代企业数据平台的日益复杂的数据资产网络。通过连接到数据堆栈的每个部分，从数据摄取、ETL/ELT、建模、数据仓库，一直到BI/分析、反向ETL、机器学习等，数据可观察性解决方案应能够提供对数据资产在管道各阶段健康状态的可操作见解。
+    理解数据可观察性的最佳方式是将其视为现代数据基础设施的一个监督层，旨在使数据从业者能够洞察和理解构成现代企业数据平台的日益复杂的数据资产网络。通过连接到数据堆栈的每个部分，从数据摄取、ETL/ELT、建模、数据仓库，一直到 BI/分析、反向 ETL、机器学习等，数据可观察性解决方案应能够提供对数据资产在管道各阶段健康状态的可操作见解。
 
-![](../Images/7b29f81583c48ac91459718367b75e29.png)
+![](img/7b29f81583c48ac91459718367b75e29.png)
 
 图片由作者提供
 
 # 结论
 
-数据熵是昂贵的。根据[IBM](https://www.lightsondata.com/estimating-cost-poor-data-quality/)的研究，数据质量差每年给美国经济造成高达3.1万亿美元的损失，更不用说它对组织竞争地位和声誉的影响了。数据中的熵是否不可避免？它是否是规模和扩展的直接结果？是否应该接受它？是的，是的，还是。面对不可避免的复杂性增加，领先的组织正在寻求切实的解决方案，以帮助他们应对数据熵，确保他们昂贵的软件和数据平台投资能够获得最佳的投资回报。数据可观察性作为应对数据熵的解决方案，通过提供数据资产健康状态的全面视图以及它们如何与平台内的数据交互，帮助数据从业者最终将时间投入到推动业务前进的有价值的任务中。
+数据熵是昂贵的。根据[IBM](https://www.lightsondata.com/estimating-cost-poor-data-quality/)的研究，数据质量差每年给美国经济造成高达 3.1 万亿美元的损失，更不用说它对组织竞争地位和声誉的影响了。数据中的熵是否不可避免？它是否是规模和扩展的直接结果？是否应该接受它？是的，是的，还是。面对不可避免的复杂性增加，领先的组织正在寻求切实的解决方案，以帮助他们应对数据熵，确保他们昂贵的软件和数据平台投资能够获得最佳的投资回报。数据可观察性作为应对数据熵的解决方案，通过提供数据资产健康状态的全面视图以及它们如何与平台内的数据交互，帮助数据从业者最终将时间投入到推动业务前进的有价值的任务中。

@@ -1,18 +1,18 @@
 # 使用 Google Cloud Recommendation AI 构建推荐系统
 
-> 原文：[https://towardsdatascience.com/build-a-recommender-system-using-google-cloud-c0929f0c3080?source=collection_archive---------0-----------------------#2023-06-21](https://towardsdatascience.com/build-a-recommender-system-using-google-cloud-c0929f0c3080?source=collection_archive---------0-----------------------#2023-06-21)
+> 原文：[`towardsdatascience.com/build-a-recommender-system-using-google-cloud-c0929f0c3080?source=collection_archive---------0-----------------------#2023-06-21`](https://towardsdatascience.com/build-a-recommender-system-using-google-cloud-c0929f0c3080?source=collection_archive---------0-----------------------#2023-06-21)
 
 ## 使用 Google Cloud Recommendation AI 实现高度先进的推荐系统
 
-[](https://muffaddal-qutbuddin.medium.com/?source=post_page-----c0929f0c3080--------------------------------)[![Muffaddal Qutbuddin](../Images/2c97b8f972adb48a513a0f5a361ac947.png)](https://muffaddal-qutbuddin.medium.com/?source=post_page-----c0929f0c3080--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0929f0c3080--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c0929f0c3080--------------------------------) [Muffaddal Qutbuddin](https://muffaddal-qutbuddin.medium.com/?source=post_page-----c0929f0c3080--------------------------------)
+[](https://muffaddal-qutbuddin.medium.com/?source=post_page-----c0929f0c3080--------------------------------)![Muffaddal Qutbuddin](https://muffaddal-qutbuddin.medium.com/?source=post_page-----c0929f0c3080--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0929f0c3080--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0929f0c3080--------------------------------) [Muffaddal Qutbuddin](https://muffaddal-qutbuddin.medium.com/?source=post_page-----c0929f0c3080--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F13dafa14dc1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-recommender-system-using-google-cloud-c0929f0c3080&user=Muffaddal+Qutbuddin&userId=13dafa14dc1c&source=post_page-13dafa14dc1c----c0929f0c3080---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0929f0c3080--------------------------------) ·14 分钟阅读·2023年6月21日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F13dafa14dc1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-recommender-system-using-google-cloud-c0929f0c3080&user=Muffaddal+Qutbuddin&userId=13dafa14dc1c&source=post_page-13dafa14dc1c----c0929f0c3080---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0929f0c3080--------------------------------) ·14 分钟阅读·2023 年 6 月 21 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc0929f0c3080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-recommender-system-using-google-cloud-c0929f0c3080&source=-----c0929f0c3080---------------------bookmark_footer-----------)![](../Images/ef26bc024ae7ebec5beef70760064e63.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc0929f0c3080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-recommender-system-using-google-cloud-c0929f0c3080&source=-----c0929f0c3080---------------------bookmark_footer-----------)![](img/ef26bc024ae7ebec5beef70760064e63.png)
 
 [来源 pixabay](https://pixabay.com/illustrations/ai-generated-robot-technology-8015425/)
 
@@ -24,7 +24,7 @@
 
 Noon、IKEA、KINGUIN 以及许多其他公司使用 Google Cloud Recommendation AI 提供跨渠道的高性能推荐。
 
-![](../Images/762b18e441829676eb250a8ff2429ad9.png)
+![](img/762b18e441829676eb250a8ff2429ad9.png)
 
 Muffaddal 关于 Google Cloud Recommendation AI 对某些企业的初步影响
 
@@ -78,7 +78,7 @@ Google Cloud Recommendation AI 提供了一系列机器学习模型和配置，�
 
 让我们逐一详细了解这些内容。
 
-![](../Images/f1f561461cbd711ce53536681ab9c749.png)
+![](img/f1f561461cbd711ce53536681ab9c749.png)
 
 使用 Google Cloud 推荐 AI 的数据管道，由 Muffaddal 提供
 
@@ -90,7 +90,7 @@ Google Cloud Recommendation AI 提供了一系列机器学习模型和配置，�
 
 假设我们的产品详细信息已经存在于 BigQuery 中，我们将利用 BigQuery 和 Recommendation AI 的集成来导入目录数据。
 
-![](../Images/6ae5cc2476f47292852a38f49868d14b.png)
+![](img/6ae5cc2476f47292852a38f49868d14b.png)
 
 Google Cloud Recommendation AI 的产品目录导入过程，由 Muffaddal 提供
 
@@ -175,13 +175,13 @@ FROM `product.product_details`
 
 在 [Google Cloud 的零售 AI 数据标签](https://console.cloud.google.com/ai/retail/catalogs/default_catalog/data/catalog?cloudshell=false&project=test-prod)中，点击左上角的导入以导入数据。
 
-![](../Images/055a7b65294fc3318814aaa1a59f161b.png)
+![](img/055a7b65294fc3318814aaa1a59f161b.png)
 
 向 Google Cloud Recommendation AI 导入目录详细信息，由 Muffaddal 提供
 
 将出现一个面板，如下图所示。选择导入类型中的“产品目录”和数据源中的“BigQuery”。提供 BigQuery 表路径，选择一个分支并点击导入。
 
-![](../Images/d706837814880b92b738ca27d5fa9644.png)
+![](img/d706837814880b92b738ca27d5fa9644.png)
 
 Google Cloud Recommendation AI 的目录导入面板，由 Muffaddal 提供
 
@@ -191,15 +191,15 @@ Google Cloud Recommendation AI 的目录导入面板，由 Muffaddal 提供
 
 接下来，我们需要将用户的历史数据导入 Recommendation AI。此步骤是可选的，但这样做有助于构建更好的机器学习模型。
 
-类似于目录，我们需要在BigQuery表中拥有符合要求格式的事件。
+类似于目录，我们需要在 BigQuery 表中拥有符合要求格式的事件。
 
-以下是Google Cloud Recommendation AI接受的事件
+以下是 Google Cloud Recommendation AI 接受的事件
 
-![](../Images/47ff0ac09b832560b90c6d9f0111834f.png)
+![](img/47ff0ac09b832560b90c6d9f0111834f.png)
 
-可以发送到Google Cloud Recommendation AI的事件，由Muffaddal提供
+可以发送到 Google Cloud Recommendation AI 的事件，由 Muffaddal 提供
 
-在所有这些事件中，`home-page-view`、`detail-page-viewed`、`add-to-cart`和`purchase-complete`对于全面激活AI模型是必要的。
+在所有这些事件中，`home-page-view`、`detail-page-viewed`、`add-to-cart`和`purchase-complete`对于全面激活 AI 模型是必要的。
 
 每个事件都有一个特定的表模式，用于数据导入。[你可以在这里详细查看](https://cloud.google.com/retail/docs/user-events#bigquery_6)。
 
@@ -365,7 +365,7 @@ Google Cloud Recommendation AI 的目录导入面板，由 Muffaddal 提供
 
 一旦你创建了表，可以使用以下查询将数据插入到新表中。
 
-1- `home-page-viewed`的SQL插入查询如下
+1- `home-page-viewed`的 SQL 插入查询如下
 
 ```py
 insert into `recommendersystem.user_event_home_page_view` (eventType, visitorId,eventTime,attributes)
@@ -383,7 +383,7 @@ insert into `recommendersystem.user_event_home_page_view` (eventType, visitorId,
  deviceType from  `recommendersystem.user_event_history` 
 ```
 
-2- `detail-page-viewed`、`add-to-cart`的SQL插入查询为
+2- `detail-page-viewed`、`add-to-cart`的 SQL 插入查询为
 
 ```py
 insert into `recommendersystem.user_event_add_to_cart` (eventType, visitorId,eventTime,productDetails,attributes)
@@ -407,7 +407,7 @@ from (
 )
 ```
 
-3- `purchase-complete`事件的SQL插入查询为
+3- `purchase-complete`事件的 SQL 插入查询为
 
 ```py
 insert into `recommendersystem.user_event_purchase_complete` (eventType, visitorId,eventTime,productDetails,purchaseTransaction,attributes)
@@ -431,29 +431,29 @@ deviceType from  `recommendersystem.user_purchase_event`
 )
 ```
 
-注：访客ID和用户ID可以相同，也可以不同。这取决于用户是否需要在使用你的产品之前登录。
+注：访客 ID 和用户 ID 可以相同，也可以不同。这取决于用户是否需要在使用你的产品之前登录。
 
-注：Google Cloud [推荐AI也支持Google Analytics 4原始数据](https://cloud.google.com/retail/docs/import-user-events#bq-ga4)。如果你有这些数据，则无需进行转换，可以直接导入。
+注：Google Cloud [推荐 AI 也支持 Google Analytics 4 原始数据](https://cloud.google.com/retail/docs/import-user-events#bq-ga4)。如果你有这些数据，则无需进行转换，可以直接导入。
 
-要导入历史数据，请像以前一样转到零售AI的数据标签页，然后点击顶部的导入。
+要导入历史数据，请像以前一样转到零售 AI 的数据标签页，然后点击顶部的导入。
 
 在导入面板中，选择导入类型为用户事件，选择以下选项，然后点击导入。
 
-![](../Images/7d4fbcd860b347c0b5df29d4c9310e28.png)
+![](img/7d4fbcd860b347c0b5df29d4c9310e28.png)
 
-将历史事件导入Google Cloud Recommendation AI，由Muffaddal提供
+将历史事件导入 Google Cloud Recommendation AI，由 Muffaddal 提供
 
-我们已经成功将用户事件导入到Google Cloud Recommendation AI中。
+我们已经成功将用户事件导入到 Google Cloud Recommendation AI 中。
 
 ## 3- 发送实时事件
 
-接下来，我们需要向用户发送实时事件，以便AI模型可以重新训练并在用户与平台互动的过程中提升推荐效果。
+接下来，我们需要向用户发送实时事件，以便 AI 模型可以重新训练并在用户与平台互动的过程中提升推荐效果。
 
-有三种方法将用户事件发送到Google Cloud Recommendation AI。使用 [javascript pixel](https://cloud.google.com/retail/docs/record-events#pixel)、[使用API](https://cloud.google.com/retail/docs/record-events#write) 和 [GTM](https://cloud.google.com/retail/docs/record-events#gtm)。
+有三种方法将用户事件发送到 Google Cloud Recommendation AI。使用 [javascript pixel](https://cloud.google.com/retail/docs/record-events#pixel)、[使用 API](https://cloud.google.com/retail/docs/record-events#write) 和 [GTM](https://cloud.google.com/retail/docs/record-events#gtm)。
 
-本文将使用API，因为它可以覆盖所有情况，无论网站或应用的性质如何。
+本文将使用 API，因为它可以覆盖所有情况，无论网站或应用的性质如何。
 
-这是发送`home-page-viewed`事件的curl调用
+这是发送`home-page-viewed`事件的 curl 调用
 
 ```py
 curl -X POST \
@@ -480,7 +480,7 @@ curl -X POST \
 "https://retail.googleapis.com/v2/projects/test-prod/locations/global/catalogs/default_catalog/userEvents:write"
 ```
 
-`detail-page-view`的Curl调用
+`detail-page-view`的 Curl 调用
 
 ```py
 curl -X POST \
@@ -512,7 +512,7 @@ curl -X POST \
 "https://retail.googleapis.com/v2/projects/test-prod/locations/global/catalogs/default_catalog/userEvents:write"
 ```
 
-`add-to-cart`的Curl调用
+`add-to-cart`的 Curl 调用
 
 ```py
 curl -X POST \
@@ -545,7 +545,7 @@ curl -X POST \
 "https://retail.googleapis.com/v2/projects/test-prod/locations/global/catalogs/default_catalog/userEvents:write"
 ```
 
-`purchase-complete`的Curl调用
+`purchase-complete`的 Curl 调用
 
 ```py
 curl -X POST \
@@ -584,13 +584,13 @@ curl -X POST \
 "https://retail.googleapis.com/v2/projects/test-prod/locations/global/catalogs/default_catalog/userEvents:write"
 ```
 
-你需要使用Google Cloud生成授权令牌以发送事件。
+你需要使用 Google Cloud 生成授权令牌以发送事件。
 
-你可以在Retail AI的事件标签页中查看实时事件。
+你可以在 Retail AI 的事件标签页中查看实时事件。
 
-![](../Images/094cc3a159a1943f6c15461b0b489081.png)
+![](img/094cc3a159a1943f6c15461b0b489081.png)
 
-Retail AI用户事件，由Muffaddal提供
+Retail AI 用户事件，由 Muffaddal 提供
 
 注意：如果你在导入目录之前或期间记录了用户事件，请 [重新加入任何事件](https://cloud.google.com/retail/docs/manage-user-events#rejoin-event) 这些事件是在目录导入完成之前记录的。
 
@@ -600,7 +600,7 @@ Retail AI用户事件，由Muffaddal提供
 
 Google Cloud Recommendation AI 支持以下机器学习模型。
 
-![](../Images/448690cbe365527801083f3b00e1b9c3.png)
+![](img/448690cbe365527801083f3b00e1b9c3.png)
 
 Google Cloud Recommendation AI 支持的 AI 模型，由 Muffaddal 提供
 
@@ -608,25 +608,25 @@ Google Cloud Recommendation AI 支持的 AI 模型，由 Muffaddal 提供
 
 进入模型选项卡，点击“创建模型”开始配置你的 ML 模型。
 
-![](../Images/ced464572c69732b1838de5d9c775d40.png)
+![](img/ced464572c69732b1838de5d9c775d40.png)
 
 Google Cloud Recommendation AI 中的模型创建，由 Muffaddal 提供
 
 接下来，在模型类型中选择 `Recommended For You` 模型。
 
-![](../Images/598f6fc420bb22d96a1737fca183546a.png)
+![](img/598f6fc420bb22d96a1737fca183546a.png)
 
 Google Cloud Recommendation AI 中的 AI 模型选择，由 Muffaddal 提供
 
 我们的目标是提高购买量，因此我们希望我们的 ML 模型优化转换率。选择 `conversion rate (CVR)` 作为模型目标。
 
-![](../Images/0bfdb3e48588937f6476748a0a3d591f.png)
+![](img/0bfdb3e48588937f6476748a0a3d591f.png)
 
 Google Cloud Recommendation AI 中的模型目标，由 Muffaddal 提供
 
 设置调优频率为 `every three month`，并按属性值过滤为 `auto`
 
-![](../Images/0d82870cd623370b78128512ed895b2b.png)
+![](img/0d82870cd623370b78128512ed895b2b.png)
 
 Google Cloud Recommendation AI 模型的调优和选项卡设置，由 Muffaddal 提供
 
@@ -638,7 +638,7 @@ Google Cloud Recommendation AI 模型的调优和选项卡设置，由 Muffaddal
 
 进入服务配置，点击顶部的“创建服务”按钮。选择下图所示的推荐设置。
 
-![](../Images/05ac59af229bbc0f8c78378d0abc32aa.png)
+![](img/05ac59af229bbc0f8c78378d0abc32aa.png)
 
 Google Cloud Recommendation AI 中的模型服务配置，由 Muffaddal 提供
 
@@ -648,7 +648,7 @@ Google Cloud Recommendation AI 中的模型服务配置，由 Muffaddal 提供
 
 偏好选项卡是你决定模型行为的地方。我们可以使用自动设置。
 
-![](../Images/ff1e4fec696af54506eaca7c2bcf8413.png)
+![](img/ff1e4fec696af54506eaca7c2bcf8413.png)
 
 Google Cloud Recommendation AI 的偏好设置，由 Muffaddal 提供
 
@@ -706,12 +706,12 @@ Google Cloud Recommendation AI 不仅允许你使用 Google 自有的机器学�
 
 ## 类似阅读
 
-[](/similar-products-you-may-like-237953b3d320?source=post_page-----c0929f0c3080--------------------------------) [## 你可能喜欢的类似产品
+[](/similar-products-you-may-like-237953b3d320?source=post_page-----c0929f0c3080--------------------------------) ## 你可能喜欢的类似产品
 
 ### 推荐系统用于在产品详细页面上向用户推荐类似的项目。
 
-towardsdatascience.com](/similar-products-you-may-like-237953b3d320?source=post_page-----c0929f0c3080--------------------------------) [](/rfm-analysis-using-bigquery-ml-bfaa51b83086?source=post_page-----c0929f0c3080--------------------------------) [## 使用 BigQuery ML 进行 RFM 分析
+towardsdatascience.com [](/rfm-analysis-using-bigquery-ml-bfaa51b83086?source=post_page-----c0929f0c3080--------------------------------) ## 使用 BigQuery ML 进行 RFM 分析
 
 ### 使用 RFM 分析在 BigQuery ML 中进行用户细分，并在 Data Studio 中进行可视化。
 
-towardsdatascience.com](/rfm-analysis-using-bigquery-ml-bfaa51b83086?source=post_page-----c0929f0c3080--------------------------------)
+towardsdatascience.com

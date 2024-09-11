@@ -1,18 +1,18 @@
 # 算术推理问题的提示工程
 
-> 原文：[https://towardsdatascience.com/prompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e?source=collection_archive---------1-----------------------#2023-11-18](https://towardsdatascience.com/prompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e?source=collection_archive---------1-----------------------#2023-11-18)
+> 原文：[`towardsdatascience.com/prompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e?source=collection_archive---------1-----------------------#2023-11-18`](https://towardsdatascience.com/prompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e?source=collection_archive---------1-----------------------#2023-11-18)
 
 ## 探索针对算术推理问题的各种提示工程技术、最佳实践以及通过 Vellum.ai 进行生产级提示的快速实验。
 
-[](https://medium.com/@kaustubhbhavsar?source=post_page-----28c8bcd5bf0e--------------------------------)[![Kaustubh Bhavsar](../Images/82103ac231ab9e8a5581fd12d7d61c2a.png)](https://medium.com/@kaustubhbhavsar?source=post_page-----28c8bcd5bf0e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----28c8bcd5bf0e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----28c8bcd5bf0e--------------------------------) [Kaustubh Bhavsar](https://medium.com/@kaustubhbhavsar?source=post_page-----28c8bcd5bf0e--------------------------------)
+[](https://medium.com/@kaustubhbhavsar?source=post_page-----28c8bcd5bf0e--------------------------------)![Kaustubh Bhavsar](https://medium.com/@kaustubhbhavsar?source=post_page-----28c8bcd5bf0e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----28c8bcd5bf0e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----28c8bcd5bf0e--------------------------------) [Kaustubh Bhavsar](https://medium.com/@kaustubhbhavsar?source=post_page-----28c8bcd5bf0e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c727e10b97f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e&user=Kaustubh+Bhavsar&userId=3c727e10b97f&source=post_page-3c727e10b97f----28c8bcd5bf0e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----28c8bcd5bf0e--------------------------------) · 14分钟阅读 · 2023年11月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F28c8bcd5bf0e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e&user=Kaustubh+Bhavsar&userId=3c727e10b97f&source=-----28c8bcd5bf0e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c727e10b97f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e&user=Kaustubh+Bhavsar&userId=3c727e10b97f&source=post_page-3c727e10b97f----28c8bcd5bf0e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----28c8bcd5bf0e--------------------------------) · 14 分钟阅读 · 2023 年 11 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F28c8bcd5bf0e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e&user=Kaustubh+Bhavsar&userId=3c727e10b97f&source=-----28c8bcd5bf0e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F28c8bcd5bf0e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e&source=-----28c8bcd5bf0e---------------------bookmark_footer-----------)![](../Images/ad64d3dd5f3b645f4ecda8a7905df74b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F28c8bcd5bf0e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-for-arithmetic-reasoning-problems-28c8bcd5bf0e&source=-----28c8bcd5bf0e---------------------bookmark_footer-----------)![](img/ad64d3dd5f3b645f4ecda8a7905df74b.png)
 
 四种不同提示技术的架构：输入-输出、链式思维（CoT）、链式思维下的自我一致性（CoT）和思维树（ToT）（图源：[Yao et al. (2023)](https://arxiv.org/abs/2305.10601)）
 
@@ -140,7 +140,7 @@ A:
 
 # 程序辅助语言模型（PAL）
 
-[程序辅助语言模型（PAL）](https://arxiv.org/abs/2211.10435)不是一种提示技术；相反，它是提示工程的应用。与CoT类似，PAL旨在推理中间步骤。然而，PAL使用程序运行时的中间编程步骤，如Python解释器，而不是使用常规文本作为推理步骤。
+[程序辅助语言模型（PAL）](https://arxiv.org/abs/2211.10435)不是一种提示技术；相反，它是提示工程的应用。与 CoT 类似，PAL 旨在推理中间步骤。然而，PAL 使用程序运行时的中间编程步骤，如 Python 解释器，而不是使用常规文本作为推理步骤。
 
 ## ***提示：***
 
@@ -200,11 +200,11 @@ total_cans_brought_home=initial_cans_bought+total_additional_cans_bought=40+60=1
 The answer is 100 cans of milk.
 ```
 
-即使使用少量示例CoT技术的无关示例未能得出正确答案，PAL仍成功找到了正确的最终解决方案。
+即使使用少量示例 CoT 技术的无关示例未能得出正确答案，PAL 仍成功找到了正确的最终解决方案。
 
-# 零-Shot链式思维（CoT）提示
+# 零-Shot 链式思维（CoT）提示
 
-在没有少量示例链式思维（CoT）技术演示的情况下，一个直接且有效的方法是让模型自行推理中间步骤。这被称为零-shot链式思维（CoT）。你可以通过在提示问题中添加类似于“我们一步一步来想…”的文本来实现这一点。这种简单的技术已经显示出卓越的效果。
+在没有少量示例链式思维（CoT）技术演示的情况下，一个直接且有效的方法是让模型自行推理中间步骤。这被称为零-shot 链式思维（CoT）。你可以通过在提示问题中添加类似于“我们一步一步来想…”的文本来实现这一点。这种简单的技术已经显示出卓越的效果。
 
 ## ***提示：***
 
@@ -390,7 +390,7 @@ Answer is 100 cans.
 
 [Vellum](https://www.vellum.ai/) 提供了一套工具，旨在支持提示工程、语义搜索、版本控制、定量测试和性能监控，以帮助开发生产级 LLM 应用。在提示工程的背景下，它支持在市场上所有主要 LLM 中测试和评估给定的提示。它还促进了对提示的协作。
 
-![](../Images/e6bcc602b5a9c2e18a7ecc48a18f35d1.png)
+![](img/e6bcc602b5a9c2e18a7ecc48a18f35d1.png)
 
 Vellum 沙箱的截图（作者截图）
 
@@ -408,6 +408,6 @@ Vellum 沙箱的截图（作者截图）
 
 随后，我们学习了一些编写更好提示的最佳实践。一般来说，建议具体明确，提供清晰的细节，通过迭代不断完善提示，适当地格式化提示以保持清晰的分隔，并提及应做的事项和不应做的事项。
 
-最后，为了应对跟踪和评估提示以及在团队成员之间共享提示的挑战，我们研究了Vellum工具。
+最后，为了应对跟踪和评估提示以及在团队成员之间共享提示的挑战，我们研究了 Vellum 工具。
 
-如果你喜欢这篇文章，确保在[这里](https://medium.com/@kaustubhbhavsar)关注我。你也可以通过[LinkedIn](http://www.linkedin.com/in/kaustubhbhavsar)和[X](https://twitter.com/bhavsarkaustubh)（正式名称为Twitter）与我联系。
+如果你喜欢这篇文章，确保在[这里](https://medium.com/@kaustubhbhavsar)关注我。你也可以通过[LinkedIn](http://www.linkedin.com/in/kaustubhbhavsar)和[X](https://twitter.com/bhavsarkaustubh)（正式名称为 Twitter）与我联系。

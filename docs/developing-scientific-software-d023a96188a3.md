@@ -1,22 +1,22 @@
 # 开发科学软件
 
-> 原文：[https://towardsdatascience.com/developing-scientific-software-d023a96188a3?source=collection_archive---------4-----------------------#2023-07-01](https://towardsdatascience.com/developing-scientific-software-d023a96188a3?source=collection_archive---------4-----------------------#2023-07-01)
+> 原文：[`towardsdatascience.com/developing-scientific-software-d023a96188a3?source=collection_archive---------4-----------------------#2023-07-01`](https://towardsdatascience.com/developing-scientific-software-d023a96188a3?source=collection_archive---------4-----------------------#2023-07-01)
 
-## 第2部分：Python的实际应用
+## 第二部分：Python 的实际应用
 
-[](https://medium.com/@cdacostaf?source=post_page-----d023a96188a3--------------------------------)[![Carlos Costa, Ph.D.](../Images/fc5e03e455f11b963086355fe0ccc077.png)](https://medium.com/@cdacostaf?source=post_page-----d023a96188a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d023a96188a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d023a96188a3--------------------------------) [Carlos Costa, Ph.D.](https://medium.com/@cdacostaf?source=post_page-----d023a96188a3--------------------------------)
+[](https://medium.com/@cdacostaf?source=post_page-----d023a96188a3--------------------------------)![Carlos Costa, Ph.D.](https://medium.com/@cdacostaf?source=post_page-----d023a96188a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d023a96188a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d023a96188a3--------------------------------) [Carlos Costa, Ph.D.](https://medium.com/@cdacostaf?source=post_page-----d023a96188a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1d045b63ee9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-d023a96188a3&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=post_page-c1d045b63ee9----d023a96188a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d023a96188a3--------------------------------) · 14 min read · 2023年7月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd023a96188a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-d023a96188a3&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=-----d023a96188a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1d045b63ee9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-d023a96188a3&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=post_page-c1d045b63ee9----d023a96188a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d023a96188a3--------------------------------) · 14 min read · 2023 年 7 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd023a96188a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-d023a96188a3&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=-----d023a96188a3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd023a96188a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-d023a96188a3&source=-----d023a96188a3---------------------bookmark_footer-----------)![](../Images/5bdfc44e42db7093048e6fc163c86a15.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd023a96188a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-scientific-software-d023a96188a3&source=-----d023a96188a3---------------------bookmark_footer-----------)![](img/5bdfc44e42db7093048e6fc163c86a15.png)
 
 图片由 [Elton Luz](https://unsplash.com/@eltonluz?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在本文中，我们将遵循 [本系列第一部分](https://medium.com/@cdacostaf/developing-of-scientific-software-c8e89f6ade7) 中提出的TDD原则，开发一种称为Sobel滤波器的边缘检测滤波器。
+在本文中，我们将遵循 [本系列第一部分](https://medium.com/@cdacostaf/developing-of-scientific-software-c8e89f6ade7) 中提出的 TDD 原则，开发一种称为 Sobel 滤波器的边缘检测滤波器。
 
 在第一篇文章中，我们讨论了为科学软件开发可靠测试方法的重要性——以及它的复杂性。我们还看到如何通过遵循受 TDD 启发但适用于科学计算的开发周期来克服这些问题。下面是这些指令的简化版本。
 
@@ -52,7 +52,7 @@
 
 在本文中，我们将按照上述指令开发一个应用 [Sobel 滤波器](https://en.wikipedia.org/wiki/Sobel_operator) 的函数。Sobel 滤波器是常用的计算机视觉工具，用于检测或增强图像中的边缘。继续阅读以查看一些示例！
 
-![](../Images/cfbc96a259c3e52a657bdb93cb6ffc7e.png)
+![](img/cfbc96a259c3e52a657bdb93cb6ffc7e.png)
 
 图 1\. Sobel–Feldman 算子的核心。来源：自己的工作。
 
@@ -264,13 +264,13 @@ $ pytest -qq -s -x -vv --durations=0 test_zero_constant.py
 
 1.  实现了一些测试。
 
-1.  实现了通过这些测试的alpha版本。
+1.  实现了通过这些测试的 alpha 版本。
 
-这些测试为未来版本提供了*验证*，以及一个非常基础的*oracle库*。但是，尽管单元测试在捕捉与预期结果的细微偏差方面非常出色，它们在区分错误结果与数量上不同——但仍然正确——的结果方面表现并不好。假设明天我们要实现另一个Sobel型操作符，它有一个更长的内核。我们不期望结果与当前版本完全匹配，但我们期望两个函数的输出在质量上非常相似。
+这些测试为未来版本提供了*验证*，以及一个非常基础的*oracle 库*。但是，尽管单元测试在捕捉与预期结果的细微偏差方面非常出色，它们在区分错误结果与数量上不同——但仍然正确——的结果方面表现并不好。假设明天我们要实现另一个 Sobel 型操作符，它有一个更长的内核。我们不期望结果与当前版本完全匹配，但我们期望两个函数的输出在质量上非常相似。
 
 此外，尝试对我们的函数进行多种不同输入是一个很好的做法，以了解它们对不同输入的表现。这确保了我们科学地验证结果。
 
-[Scikit-image](https://scikit-image.org/)拥有一个出色的图像库，我们可以用它来创建oracles。
+[Scikit-image](https://scikit-image.org/)拥有一个出色的图像库，我们可以用它来创建 oracles。
 
 ```py
 # !pip installscikit-image pooch
@@ -324,13 +324,13 @@ for name, data in bwimages.items():
     axs[1].set(title=f"{name} sobel")
 ```
 
-![](../Images/de4b988a164f8358ce0be4f820e561b3.png)
+![](img/de4b988a164f8358ce0be4f820e561b3.png)
 
-图2\. “Binary blobs”数据集在Sobel滤波之前（左）和之后（右）。来源：自制。
+图 2\. “Binary blobs”数据集在 Sobel 滤波之前（左）和之后（右）。来源：自制。
 
-![](../Images/0f81e0b5a1e993918b4e395d54c7bad5.png)
+![](img/0f81e0b5a1e993918b4e395d54c7bad5.png)
 
-图3\. “Text”数据集在Sobel滤波之前（左）和之后（右）。来源：自制。
+图 3\. “Text”数据集在 Sobel 滤波之前（左）和之后（右）。来源：自制。
 
 这些看起来非常好！我建议将这些数据存储为数组和图形，以便我能快速对照新版本。我强烈推荐[HD5F](https://docs.h5py.org/en/stable/)用于数组存储。你还可以设置一个[Sphinx Gallery](https://sphinx-gallery.github.io/stable/index.html)，在更新文档时直接生成图形，这样你就有了一个可重复的图形构建，可以用来与以前的版本进行对比。
 
@@ -365,9 +365,9 @@ def test_oracles(name: str, input: NDArray, output: NDArray):
 
 # 性能分析
 
-计算这些数据集的Sobel滤波器花费了一段时间！因此下一步是对代码进行性能分析。我建议为每个测试创建一个`benchmark_xyz.py`文件，并定期重新运行它们，以探测性能回归。这甚至可以成为你的单元测试的一部分，但在这个示例中我们不会深入探讨。另一个想法是使用上述oracles进行基准测试。
+计算这些数据集的 Sobel 滤波器花费了一段时间！因此下一步是对代码进行性能分析。我建议为每个测试创建一个`benchmark_xyz.py`文件，并定期重新运行它们，以探测性能回归。这甚至可以成为你的单元测试的一部分，但在这个示例中我们不会深入探讨。另一个想法是使用上述 oracles 进行基准测试。
 
-有许多方法来计时代码执行。要获得系统范围的“真实”经过时间，使用内置`time`模块中的`perf_counter_ns`来以纳秒为单位测量时间。在Jupyter notebook中，内置的`[%%timeit](https://ipython.readthedocs.io/en/stable/interactive/magics.html#cell-magics)` [cell magic](https://ipython.readthedocs.io/en/stable/interactive/magics.html#cell-magics)会对某个单元执行时间进行计时。下面的装饰器灵感来源于这个cell magic，并可以用来计时任何函数。
+有许多方法来计时代码执行。要获得系统范围的“真实”经过时间，使用内置`time`模块中的`perf_counter_ns`来以纳秒为单位测量时间。在 Jupyter notebook 中，内置的`[%%timeit](https://ipython.readthedocs.io/en/stable/interactive/magics.html#cell-magics)` [cell magic](https://ipython.readthedocs.io/en/stable/interactive/magics.html#cell-magics)会对某个单元执行时间进行计时。下面的装饰器灵感来源于这个 cell magic，并可以用来计时任何函数。
 
 ```py
 import time
@@ -576,7 +576,7 @@ Biggest 10 allocations:
 ...
 ```
 
-![](../Images/2b106bd52126ee51a1ea2a70056455bf.png)
+![](img/2b106bd52126ee51a1ea2a70056455bf.png)
 
 图 4\. Memray 火焰图（alpha 版本）。来源：自制作品。
 
@@ -626,7 +626,7 @@ sobel_timed(arr_test)
 
 好得多！但它是正确的吗？
 
-![](../Images/d91418b7e9c4454f28cdec7c5a290f17.png)
+![](img/d91418b7e9c4454f28cdec7c5a290f17.png)
 
 图 5\. “微动脉瘤” 数据集在使用两个版本的 Sobel 滤波前（左）和后（中间和右）。来源：自制作品。
 
@@ -657,6 +657,6 @@ def sobel_v2(arr: NDArray, axes: Tuple[int, int] = (-2, -1)) -> NDArray:
 
 我们展示了如何在[这篇文章](https://medium.com/@cdacostaf/developing-of-scientific-software-c8e89f6ade7)中探讨的一些软件开发理念中付诸实践。我们还介绍了一些工具，你可以使用它们来开发高质量、高性能的代码。
 
-我建议你在自己的项目中尝试这些想法。特别是，练习代码分析和改进。我们编写的Sobel滤波器函数非常低效，我建议尝试改进它。
+我建议你在自己的项目中尝试这些想法。特别是，练习代码分析和改进。我们编写的 Sobel 滤波器函数非常低效，我建议尝试改进它。
 
-例如，可以尝试使用如[Numba](https://numba.readthedocs.io/en/stable/user/5minguide.html)的JIT编译器进行CPU并行化，将内部循环移植到[Cython](https://cython.readthedocs.io/en/latest/src/tutorial/cython_tutorial.html)，或者使用[Numba](https://numba.readthedocs.io/en/stable/cuda/index.html)或[CuPy](https://docs.cupy.dev/en/stable/user_guide/basic.html)实现CUDA GPU函数。欢迎查看[我关于用Numba编写CUDA内核的系列文章](/cuda-by-numba-examples-1-4-e0d06651612f)。
+例如，可以尝试使用如[Numba](https://numba.readthedocs.io/en/stable/user/5minguide.html)的 JIT 编译器进行 CPU 并行化，将内部循环移植到[Cython](https://cython.readthedocs.io/en/latest/src/tutorial/cython_tutorial.html)，或者使用[Numba](https://numba.readthedocs.io/en/stable/cuda/index.html)或[CuPy](https://docs.cupy.dev/en/stable/user_guide/basic.html)实现 CUDA GPU 函数。欢迎查看我关于用 Numba 编写 CUDA 内核的系列文章。

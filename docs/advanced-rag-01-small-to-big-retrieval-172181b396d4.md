@@ -1,14 +1,14 @@
 # 高级 RAG 01：从小到大的检索
 
-> 原文：[https://towardsdatascience.com/advanced-rag-01-small-to-big-retrieval-172181b396d4?source=collection_archive---------0-----------------------#2023-11-04](https://towardsdatascience.com/advanced-rag-01-small-to-big-retrieval-172181b396d4?source=collection_archive---------0-----------------------#2023-11-04)
+> 原文：[`towardsdatascience.com/advanced-rag-01-small-to-big-retrieval-172181b396d4?source=collection_archive---------0-----------------------#2023-11-04`](https://towardsdatascience.com/advanced-rag-01-small-to-big-retrieval-172181b396d4?source=collection_archive---------0-----------------------#2023-11-04)
 
 ## Child-Parent 递归检索器和 LlamaIndex 的句子窗口检索
 
-[](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)[![Sophia Yang, Ph.D.](../Images/c133f918245ea4857dc46df3a07fc2b1.png)](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)
+[](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)![Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-rag-01-small-to-big-retrieval-172181b396d4&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----172181b396d4---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------) ·7分钟阅读·2023年11月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F172181b396d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-rag-01-small-to-big-retrieval-172181b396d4&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----172181b396d4---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-rag-01-small-to-big-retrieval-172181b396d4&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----172181b396d4---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------) ·7 分钟阅读·2023 年 11 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F172181b396d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-rag-01-small-to-big-retrieval-172181b396d4&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----172181b396d4---------------------clap_footer-----------)
 
 --
 
@@ -98,7 +98,7 @@ response = query_engine_base.query(
 print(str(response))
 ```
 
-![](../Images/9b2a0ffe21724a1924606ac62e2c7e20.png)
+![](img/9b2a0ffe21724a1924606ac62e2c7e20.png)
 
 # 高级方法 1：较小的子块引用更大的父块
 
@@ -139,7 +139,7 @@ all_nodes_dict = {n.node_id: n for n in all_nodes}
 
 当我们查看所有的文本块`all_nodes_dict`时，我们可以看到许多更小的块与每个原始文本块相关联，例如`node-0`。实际上，所有更小的块在元数据中引用大块，索引 ID 指向较大块的索引 ID。
 
-![](../Images/ecafaa8666c5f4d709895e6509f251af.png)
+![](img/ecafaa8666c5f4d709895e6509f251af.png)
 
 **步骤 2：创建索引、检索器和查询引擎**
 
@@ -165,7 +165,7 @@ retriever_chunk = RecursiveRetriever(
 
 当我们提出一个问题并检索最相关的文本块时，它实际上会检索指向父块的节点 ID 的文本块，从而检索到父块。
 
-![](../Images/745e9d631b07b5bcb9c452f36573e737.png)
+![](img/745e9d631b07b5bcb9c452f36573e737.png)
 
 +   现在，按照之前的步骤，我们可以创建一个查询引擎作为通用接口来提问关于我们数据的问题。
 
@@ -179,7 +179,7 @@ response = query_engine_chunk.query(
 print(str(response))
 ```
 
-![](../Images/b650da5b25213cf97602caf2808e003a.png)
+![](img/b650da5b25213cf97602caf2808e003a.png)
 
 # 高级方法 2：句子窗口检索
 
@@ -220,11 +220,11 @@ print(window_response)
 
 句子窗口检索能够回答“你能告诉我安全微调的关键概念吗”：
 
-![](../Images/4ab8ad213fe4335b4aa98bcea6f7159f.png)
+![](img/4ab8ad213fe4335b4aa98bcea6f7159f.png)
 
 在这里你可以看到实际检索到的句子和句子的窗口，这提供了更多的背景和细节。
 
-![](../Images/a837434f74e6571a46044db2ca09ac23.png)
+![](img/a837434f74e6571a46044db2ca09ac23.png)
 
 # **结论**
 
@@ -232,11 +232,11 @@ print(window_response)
 
 # 参考文献：
 
-+   [https://docs.llamaindex.ai/en/latest/examples/node_postprocessor/MetadataReplacementDemo.html](https://docs.llamaindex.ai/en/latest/examples/node_postprocessor/MetadataReplacementDemo.html)
++   [`docs.llamaindex.ai/en/latest/examples/node_postprocessor/MetadataReplacementDemo.html`](https://docs.llamaindex.ai/en/latest/examples/node_postprocessor/MetadataReplacementDemo.html)
 
-+   [https://docs.llamaindex.ai/en/stable/examples/retrievers/recursive_retriever_nodes.html](https://docs.llamaindex.ai/en/stable/examples/retrievers/recursive_retriever_nodes.html)
++   [`docs.llamaindex.ai/en/stable/examples/retrievers/recursive_retriever_nodes.html`](https://docs.llamaindex.ai/en/stable/examples/retrievers/recursive_retriever_nodes.html)
 
-![](../Images/5deefebaf7043e111b40052de0e361dc.png)
+![](img/5deefebaf7043e111b40052de0e361dc.png)
 
 . . .
 

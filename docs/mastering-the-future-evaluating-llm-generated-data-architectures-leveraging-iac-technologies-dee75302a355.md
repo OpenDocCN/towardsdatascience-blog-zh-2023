@@ -1,18 +1,18 @@
 # 掌握未来：评估利用 IaC 技术生成 LLM 数据架构
 
-> 原文：[https://towardsdatascience.com/mastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355?source=collection_archive---------4-----------------------#2023-10-16](https://towardsdatascience.com/mastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355?source=collection_archive---------4-----------------------#2023-10-16)
+> 原文：[`towardsdatascience.com/mastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355?source=collection_archive---------4-----------------------#2023-10-16`](https://towardsdatascience.com/mastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355?source=collection_archive---------4-----------------------#2023-10-16)
 
 ## 评估 LLM 在生成基础设施代码以配置、配置和部署现代应用程序方面的适用性
 
-[](https://medium.com/@josu.arcaya?source=post_page-----dee75302a355--------------------------------)[![Josu Diaz de Arcaya](../Images/1476305f0be9c4171a7dd09ae5a2a662.png)](https://medium.com/@josu.arcaya?source=post_page-----dee75302a355--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dee75302a355--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dee75302a355--------------------------------) [Josu Diaz de Arcaya](https://medium.com/@josu.arcaya?source=post_page-----dee75302a355--------------------------------)
+[](https://medium.com/@josu.arcaya?source=post_page-----dee75302a355--------------------------------)![Josu Diaz de Arcaya](https://medium.com/@josu.arcaya?source=post_page-----dee75302a355--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dee75302a355--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dee75302a355--------------------------------) [Josu Diaz de Arcaya](https://medium.com/@josu.arcaya?source=post_page-----dee75302a355--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97cdebb24692&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355&user=Josu+Diaz+de+Arcaya&userId=97cdebb24692&source=post_page-97cdebb24692----dee75302a355---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dee75302a355--------------------------------) ·9分钟阅读·2023年10月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdee75302a355&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355&user=Josu+Diaz+de+Arcaya&userId=97cdebb24692&source=-----dee75302a355---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97cdebb24692&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355&user=Josu+Diaz+de+Arcaya&userId=97cdebb24692&source=post_page-97cdebb24692----dee75302a355---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dee75302a355--------------------------------) ·9 分钟阅读·2023 年 10 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdee75302a355&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355&user=Josu+Diaz+de+Arcaya&userId=97cdebb24692&source=-----dee75302a355---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdee75302a355&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355&source=-----dee75302a355---------------------bookmark_footer-----------)![](../Images/7fe40321056c9eb3d7292d48e6c4dbae.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdee75302a355&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-future-evaluating-llm-generated-data-architectures-leveraging-iac-technologies-dee75302a355&source=-----dee75302a355---------------------bookmark_footer-----------)![](img/7fe40321056c9eb3d7292d48e6c4dbae.png)
 
 照片由 [ZHENYU LUO](https://unsplash.com/@mrnuclear?utm_source=medium&utm_medium=referral) 提供，出处为 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,7 +30,7 @@
 
 然而，应用生命周期超出了基础设施提供的范围。下图显示了不同 IaC 技术支持的应用生命周期⁵。
 
-![](../Images/171a40d7108f995f9712816d2860a60e.png)
+![](img/171a40d7108f995f9712816d2860a60e.png)
 
 基础设施即代码技术支持的应用生命周期。| 来源：Josu Diaz-de-Arcaya 等⁵
 
@@ -40,33 +40,33 @@
 
 大型语言模型（LLMs）是指一类人工智能模型，它们旨在根据提供给它们的输入理解和生成类似人类的文本。这些模型以其大量的参数而闻名，这使它们能够捕捉语言中复杂的模式和细微的差异⁹。
 
-+   **文本生成**：LLMs生成的文本可以与其周围的内容连贯且相关。它们被用于完成文本、生成材料，甚至进行创意写作活动。
++   **文本生成**：LLMs 生成的文本可以与其周围的内容连贯且相关。它们被用于完成文本、生成材料，甚至进行创意写作活动。
 
-+   **语言理解**：LLMs能够理解并从文本中提取信息。它们能够进行态度分析、文本分类和信息检索。
++   **语言理解**：LLMs 能够理解并从文本中提取信息。它们能够进行态度分析、文本分类和信息检索。
 
-+   **翻译**：LLMs可以将文本从一种语言翻译成另一种语言。这对机器翻译应用非常有益。
++   **翻译**：LLMs 可以将文本从一种语言翻译成另一种语言。这对机器翻译应用非常有益。
 
-+   **回答问题**：LLMs可以根据给定的上下文回答问题。它们用于聊天机器人和虚拟助手以回答用户的查询。
++   **回答问题**：LLMs 可以根据给定的上下文回答问题。它们用于聊天机器人和虚拟助手以回答用户的查询。
 
-+   **文本摘要**：LLMs可以将长篇文章总结为更短、更连贯的摘要。这对于快速消化信息非常有用。
++   **文本摘要**：LLMs 可以将长篇文章总结为更短、更连贯的摘要。这对于快速消化信息非常有用。
 
-在上述能力中，我们将专注于文本生成。特别是在根据输入提示生成正确的IaC代码方面，大型语言模型（LLMs）在自然语言处理领域取得了显著进展，但也提出了**几个挑战和关注点**。当时与LLMs相关的一些关键问题和关注点包括：
+在上述能力中，我们将专注于文本生成。特别是在根据输入提示生成正确的 IaC 代码方面，大型语言模型（LLMs）在自然语言处理领域取得了显著进展，但也提出了**几个挑战和关注点**。当时与 LLMs 相关的一些关键问题和关注点包括：
 
-+   **偏见和公平性**：LLMs可以学习数据中存在的偏见，这可能导致有偏见或不公平的结果。
++   **偏见和公平性**：LLMs 可以学习数据中存在的偏见，这可能导致有偏见或不公平的结果。
 
-+   **错误信息和虚假信息**：LLMs可能生成虚假或误导性信息，这可能促成在线错误信息和虚假信息的传播。这些模型有潜力创建看似可信但事实上不正确的内容。
++   **错误信息和虚假信息**：LLMs 可能生成虚假或误导性信息，这可能促成在线错误信息和虚假信息的传播。这些模型有潜力创建看似可信但事实上不正确的内容。
 
-+   **安全和隐私**：LLMs可能被误用来生成恶意内容，例如深度伪造文本、假新闻或钓鱼邮件。
++   **安全和隐私**：LLMs 可能被误用来生成恶意内容，例如深度伪造文本、假新闻或钓鱼邮件。
 
-下表显示了各种LLMs的比较¹⁰。
+下表显示了各种 LLMs 的比较¹⁰。
 
-# 使用LLMs生成IaC
+# 使用 LLMs 生成 IaC
 
-为了测试当前LLM工具在IaC领域的表现，设计了一个用例。最终目标是使用FastAPI框架在虚拟机中构建一个API，允许客户端使用HTTP方法在Elasticsearch集群中执行搜索和删除任务。该集群将由三个节点组成，每个节点都在自己的虚拟机中，并且在另一台机器上将是Kibana，这是支持可视化的集群管理工具。所有内容都必须在AWS云中完成。下图显示了这个架构：
+为了测试当前 LLM 工具在 IaC 领域的表现，设计了一个用例。最终目标是使用 FastAPI 框架在虚拟机中构建一个 API，允许客户端使用 HTTP 方法在 Elasticsearch 集群中执行搜索和删除任务。该集群将由三个节点组成，每个节点都在自己的虚拟机中，并且在另一台机器上将是 Kibana，这是支持可视化的集群管理工具。所有内容都必须在 AWS 云中完成。下图显示了这个架构：
 
-![架构图](../Images/ec4f6f1048255259e2ed89c1e5c1056c.png)
+![架构图](img/ec4f6f1048255259e2ed89c1e5c1056c.png)
 
-设计用例，旨在测试LLMs生成IaC的可行性。
+设计用例，旨在测试 LLMs 生成 IaC 的可行性。
 
 挑战是使用 LLM 工具成功完成以下三个任务。在这篇文章中，我们使用了 OpenAI 的 ChatGPT。
 
@@ -172,7 +172,7 @@ kibana.yml.j2 的代码摘录
 
 # 致谢
 
-本工作由巴斯克政府资助的SIIRSE Elkartek项目（面向工业5.0的鲁棒、安全和伦理的智能工业系统：规范、设计、评估和监控的先进范式）（ELKARTEK 2022 KK-2022/00007）提供资金支持。
+本工作由巴斯克政府资助的 SIIRSE Elkartek 项目（面向工业 5.0 的鲁棒、安全和伦理的智能工业系统：规范、设计、评估和监控的先进范式）（ELKARTEK 2022 KK-2022/00007）提供资金支持。
 
 # 作者贡献
 
@@ -180,26 +180,26 @@ kibana.yml.j2 的代码摘录
 
 # 参考文献
 
-1.  *什么是基础设施即代码（IaC）？*（2022）。 [https://www.redhat.com/en/topics/automation/what-is-infrastructure-as-code-iac](https://www.redhat.com/en/topics/automation/what-is-infrastructure-as-code-iac)
+1.  *什么是基础设施即代码（IaC）？*（2022）。 [`www.redhat.com/en/topics/automation/what-is-infrastructure-as-code-iac`](https://www.redhat.com/en/topics/automation/what-is-infrastructure-as-code-iac)
 
-1.  *Terraform by HashiCorp*。（无日期）。检索于2023年10月5日，来自 [https://www.terraform.io](https://www.terraform.io/)
+1.  *Terraform by HashiCorp*。（无日期）。检索于 2023 年 10 月 5 日，来自 [`www.terraform.io`](https://www.terraform.io/)
 
-1.  *Pulumi — 通用基础设施即代码*。（无日期）。检索于2023年10月5日，来自 [https://www.pulumi.com/](https://www.pulumi.com/)
+1.  *Pulumi — 通用基础设施即代码*。（无日期）。检索于 2023 年 10 月 5 日，来自 [`www.pulumi.com/`](https://www.pulumi.com/)
 
-1.  *基础设施即代码的七大主要好处 — DevOps*。（无日期）。检索于2023年10月5日，来自 [https://duplocloud.com/blog/infrastructure-as-code-benefits/](https://duplocloud.com/blog/infrastructure-as-code-benefits/)
+1.  *基础设施即代码的七大主要好处 — DevOps*。（无日期）。检索于 2023 年 10 月 5 日，来自 [`duplocloud.com/blog/infrastructure-as-code-benefits/`](https://duplocloud.com/blog/infrastructure-as-code-benefits/)
 
-1.  Diaz-De-Arcaya, J., Lobo, J. L., Alonso, J., Almeida, A., Osaba, E., Benguria, G., Etxaniz, I., & Torre-Bastida, A. I.（2023）。*IEM: 用于多语言 IaC 部署的统一生命周期编排器 ACM 引用格式*。 [https://doi.org/10.1145/3578245.3584938](https://doi.org/10.1145/3578245.3584938)
+1.  Diaz-De-Arcaya, J., Lobo, J. L., Alonso, J., Almeida, A., Osaba, E., Benguria, G., Etxaniz, I., & Torre-Bastida, A. I.（2023）。*IEM: 用于多语言 IaC 部署的统一生命周期编排器 ACM 引用格式*。 [`doi.org/10.1145/3578245.3584938`](https://doi.org/10.1145/3578245.3584938)
 
-1.  *Ansible 是简单的 IT 自动化*。（无日期）。检索于2023年10月5日，来自 [https://www.ansible.com/](https://www.ansible.com/)
+1.  *Ansible 是简单的 IT 自动化*。（无日期）。检索于 2023 年 10 月 5 日，来自 [`www.ansible.com/`](https://www.ansible.com/)
 
-1.  *Chef 软件 DevOps 自动化解决方案 | Chef*。（无日期）。检索于2023年10月5日，来自 [https://www.chef.io/](https://www.chef.io/)
+1.  *Chef 软件 DevOps 自动化解决方案 | Chef*。（无日期）。检索于 2023 年 10 月 5 日，来自 [`www.chef.io/`](https://www.chef.io/)
 
-1.  *Puppet Infrastructure & IT Automation at Scale | Puppet by Perforce*。（无日期）。检索于2023年10月5日，来自 [https://www.puppet.com/](https://www.puppet.com/)
+1.  *Puppet Infrastructure & IT Automation at Scale | Puppet by Perforce*。（无日期）。检索于 2023 年 10 月 5 日，来自 [`www.puppet.com/`](https://www.puppet.com/)
 
-1.  Kerner, S. M. （无日期）。*什么是大语言模型？ | TechTarget 定义*。检索于2023年10月5日，来自 [https://www.techtarget.com/whatis/definition/large-language-model-LLM](https://www.techtarget.com/whatis/definition/large-language-model-LLM)
+1.  Kerner, S. M. （无日期）。*什么是大语言模型？ | TechTarget 定义*。检索于 2023 年 10 月 5 日，来自 [`www.techtarget.com/whatis/definition/large-language-model-LLM`](https://www.techtarget.com/whatis/definition/large-language-model-LLM)
 
-1.  Sha, A. （2023）。*2023年12大最佳大语言模型（LLMs） | Beebom*。 [https://beebom.com/best-large-language-models-llms/](https://beebom.com/best-large-language-models-llms/)
+1.  Sha, A. （2023）。*2023 年 12 大最佳大语言模型（LLMs） | Beebom*。 [`beebom.com/best-large-language-models-llms/`](https://beebom.com/best-large-language-models-llms/)
 
-1.  Diaz-de-Arcaya, J.，Lopez de Armentia, J.，& Zarate, G. （无日期）。*iac-llms GitHub*。检索于2023年10月5日，来自 [https://github.com/josu-arcaya/iac-llms](https://github.com/josu-arcaya/iac-llms)
+1.  Diaz-de-Arcaya, J.，Lopez de Armentia, J.，& Zarate, G. （无日期）。*iac-llms GitHub*。检索于 2023 年 10 月 5 日，来自 [`github.com/josu-arcaya/iac-llms`](https://github.com/josu-arcaya/iac-llms)
 
-1.  Elastic Client Library 维护者。（2023）。*elasticsearch · PyPI*。 [https://pypi.org/project/elasticsearch/](https://pypi.org/project/elasticsearch/)
+1.  Elastic Client Library 维护者。（2023）。*elasticsearch · PyPI*。 [`pypi.org/project/elasticsearch/`](https://pypi.org/project/elasticsearch/)

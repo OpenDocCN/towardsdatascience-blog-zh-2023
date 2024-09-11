@@ -1,14 +1,14 @@
 # 使用自编码器方法在 TensorFlow 和 Keras 中进行异常检测
 
-> 原文：[https://towardsdatascience.com/anomaly-detection-in-tensorflow-and-keras-using-the-autoencoder-method-5600aca29c50?source=collection_archive---------4-----------------------#2023-09-23](https://towardsdatascience.com/anomaly-detection-in-tensorflow-and-keras-using-the-autoencoder-method-5600aca29c50?source=collection_archive---------4-----------------------#2023-09-23)
+> 原文：[`towardsdatascience.com/anomaly-detection-in-tensorflow-and-keras-using-the-autoencoder-method-5600aca29c50?source=collection_archive---------4-----------------------#2023-09-23`](https://towardsdatascience.com/anomaly-detection-in-tensorflow-and-keras-using-the-autoencoder-method-5600aca29c50?source=collection_archive---------4-----------------------#2023-09-23)
 
-![](../Images/06b21f76fa65b8247eabeb45da835d72.png)
+![](img/06b21f76fa65b8247eabeb45da835d72.png)
 
 图片由 [Leiada Krozjhen](https://unsplash.com/@leiadakrozjhen?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 一种前沿的无监督方法，用于噪声去除、降维、异常检测等
 
-[](https://rashida00.medium.com/?source=post_page-----5600aca29c50--------------------------------)[![Rashida Nasrin Sucky](../Images/42bd057e8eca255907c43c29a498f2ca.png)](https://rashida00.medium.com/?source=post_page-----5600aca29c50--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5600aca29c50--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5600aca29c50--------------------------------) [Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----5600aca29c50--------------------------------)
+[](https://rashida00.medium.com/?source=post_page-----5600aca29c50--------------------------------)![Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----5600aca29c50--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5600aca29c50--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5600aca29c50--------------------------------) [Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----5600aca29c50--------------------------------)
 
 ·
 

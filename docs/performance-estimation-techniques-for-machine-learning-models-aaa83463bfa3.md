@@ -1,26 +1,26 @@
 # 机器学习模型的性能评估技术
 
-> 原文：[https://towardsdatascience.com/performance-estimation-techniques-for-machine-learning-models-aaa83463bfa3?source=collection_archive---------7-----------------------#2023-03-02](https://towardsdatascience.com/performance-estimation-techniques-for-machine-learning-models-aaa83463bfa3?source=collection_archive---------7-----------------------#2023-03-02)
+> 原文：[`towardsdatascience.com/performance-estimation-techniques-for-machine-learning-models-aaa83463bfa3?source=collection_archive---------7-----------------------#2023-03-02`](https://towardsdatascience.com/performance-estimation-techniques-for-machine-learning-models-aaa83463bfa3?source=collection_archive---------7-----------------------#2023-03-02)
 
-[](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)[![Felipe de Pontes Adachi](../Images/58c9544ae85f43548c5e5b56fda31bb4.png)](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------) [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)
+[](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)![Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------) [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa038269245d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=post_page-a038269245d5----aaa83463bfa3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------) ·6分钟阅读·2023年3月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faaa83463bfa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=-----aaa83463bfa3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa038269245d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=post_page-a038269245d5----aaa83463bfa3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------) ·6 分钟阅读·2023 年 3 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faaa83463bfa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=-----aaa83463bfa3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faaa83463bfa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&source=-----aaa83463bfa3---------------------bookmark_footer-----------)![](../Images/90680db7d0ae093f76c7997e6d1a97ee.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faaa83463bfa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&source=-----aaa83463bfa3---------------------bookmark_footer-----------)![](img/90680db7d0ae093f76c7997e6d1a97ee.png)
 
 图片由 [Isaac Smith](https://unsplash.com/@isaacmsmith?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-一旦你的模型部署完成，监控其性能在确保机器学习系统质量方面扮演着至关重要的角色。为了计算如准确率、精确率、召回率或f1-score等指标，需要标签。然而，在许多情况下，标签可能不可用、部分可用或有延迟。在这些情况下，估计模型性能的能力会很有帮助。
+一旦你的模型部署完成，监控其性能在确保机器学习系统质量方面扮演着至关重要的角色。为了计算如准确率、精确率、召回率或 f1-score 等指标，需要标签。然而，在许多情况下，标签可能不可用、部分可用或有延迟。在这些情况下，估计模型性能的能力会很有帮助。
 
 在这篇文章中，我想讨论一些在没有真实数据的情况下估计性能的方法。
 
 # NannyML
 
-[NannyML](https://nannyml.readthedocs.io/en/stable/index.html) 是一个用于检测模型静默失败、在没有标记数据的情况下估计部署后性能和检测数据漂移的Python包。目前，NannyML有两种性能估计方法：**基于置信度的性能估计** (**CBPE**) 和 **直接损失估计** (**DLE**)。有关这些方法的详细描述，请参阅 [NannyML原始文档](https://nannyml.readthedocs.io/en/stable/how_it_works/performance_estimation.html#)。
+[NannyML](https://nannyml.readthedocs.io/en/stable/index.html) 是一个用于检测模型静默失败、在没有标记数据的情况下估计部署后性能和检测数据漂移的 Python 包。目前，NannyML 有两种性能估计方法：**基于置信度的性能估计** (**CBPE**) 和 **直接损失估计** (**DLE**)。有关这些方法的详细描述，请参阅 [NannyML 原始文档](https://nannyml.readthedocs.io/en/stable/how_it_works/performance_estimation.html#)。
 
 **a. 基于置信度的性能估计**
 
@@ -28,11 +28,11 @@
 
 **注意事项：**使用这种方法时需要注意一些要求和假设。
 
-+   **置信度作为概率：**置信度分数应该代表概率——例如，如果对于一大组观察对象分数为0.9，那么它大约会正确90%的时间。
++   **置信度作为概率：**置信度分数应该代表概率——例如，如果对于一大组观察对象分数为 0.9，那么它大约会正确 90%的时间。
 
-+   **良好校准的概率：**另一个要求是分数应该经过良好的校准，但这并不总是能做到。好消息是NannyML会在需要时内部进行校准。
++   **良好校准的概率：**另一个要求是分数应该经过良好的校准，但这并不总是能做到。好消息是 NannyML 会在需要时内部进行校准。
 
-+   **没有对之前未见过的空间区域的协变量偏移：**例如，如果你的模型是在10-70岁的人群上训练的，而在生产中你的观察对象是70岁以上的人，这种方法可能无法提供可靠的估计。
++   **没有对之前未见过的空间区域的协变量偏移：**例如，如果你的模型是在 10-70 岁的人群上训练的，而在生产中你的观察对象是 70 岁以上的人，这种方法可能无法提供可靠的估计。
 
 +   **没有概念漂移：**如果模型的输入与目标之间的关系发生变化，这种方法可能无法提供可靠的估计（我个人不知晓任何方法能做到这一点）。
 
@@ -48,15 +48,15 @@
 
 +   **适用于回归：**这种方法非常适合回归任务。例如，保姆模型可以被训练来预测均方误差（MSE）或平均绝对误差（MAE）。
 
-+   **没有对之前未见过的空间区域的协变量偏移：**对CBPE的相同考虑也适用于这种方法。
++   **没有对之前未见过的空间区域的协变量偏移：**对 CBPE 的相同考虑也适用于这种方法。
 
-+   **没有概念漂移：**对CBPE的相同考虑也适用于这种方法。
++   **没有概念漂移：**对 CBPE 的相同考虑也适用于这种方法。
 
 +   **不同性能区域：** 监控的模型在不同区域应该表现出不同的性能。例如，如果你的模型在一天的不同时间段或不同季节的表现有所不同。
 
 # 重要性加权
 
-我首次了解这种方法是通过参加了一个O’Reilly课程，名为[实时机器学习性能监控](https://learning.oreilly.com/live-events/monitor-real-time-machine-learning-performance/0636920075104/0636920075102/)，讲师是[Shreya Shankar](https://twitter.com/sh_reya)。直观上，你可以利用一个你已经有标签的参考数据集来估计未标记目标数据集的性能。这可以是你在部署前阶段使用的数据集，比如你最初训练模型时的测试集。为此，我们首先定义具有明确标准的分段，然后计算每个数据段的性能，比如准确性。这可以是根据年龄、职业或产品类别进行分段。例如，要估计目标数据集的准确性，你需要对数据应用相同的分段规则，并根据目标数据集的分段比例加权原始参考分段的准确性。
+我首次了解这种方法是通过参加了一个 O’Reilly 课程，名为[实时机器学习性能监控](https://learning.oreilly.com/live-events/monitor-real-time-machine-learning-performance/0636920075104/0636920075102/)，讲师是[Shreya Shankar](https://twitter.com/sh_reya)。直观上，你可以利用一个你已经有标签的参考数据集来估计未标记目标数据集的性能。这可以是你在部署前阶段使用的数据集，比如你最初训练模型时的测试集。为此，我们首先定义具有明确标准的分段，然后计算每个数据段的性能，比如准确性。这可以是根据年龄、职业或产品类别进行分段。例如，要估计目标数据集的准确性，你需要对数据应用相同的分段规则，并根据目标数据集的分段比例加权原始参考分段的准确性。
 
 我非常喜欢这种方法，因为直观上非常清晰，实施也很简单。
 
@@ -78,9 +78,9 @@
 
 与前一节中介绍的方法有相似之处，因为两者都使用了类似的桶/切片/段的概念，并且都利用这些分组来重新加权源数据。在 Mandoline 中，创建的切片将帮助指导后续的密度估计过程，这些估计结果然后用于重新加权源数据集，并输出性能估计。
 
-![](../Images/8643e31a6e64f49d9b9423de9da0207f.png)
+![](img/8643e31a6e64f49d9b9423de9da0207f.png)
 
-Mandoline: 分布转移下的模型评估 — [https://arxiv.org/abs/2107.00643](https://arxiv.org/abs/2107.00643)
+Mandoline: 分布转移下的模型评估 — [`arxiv.org/abs/2107.00643`](https://arxiv.org/abs/2107.00643)
 
 [这篇论文](https://arxiv.org/abs/2107.00643)非常有趣，值得一读，结果看起来也很有前景。他们还提供了一个[框架的 Python 实现](https://github.com/HazyResearch/mandoline)，我计划在未来的文章中深入探讨。
 

@@ -1,16 +1,16 @@
 # 将文本转化为向量：TSDAE 的无监督方法用于增强嵌入
 
-> 原文：[https://towardsdatascience.com/transforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701?source=collection_archive---------1-----------------------#2023-10-16](https://towardsdatascience.com/transforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701?source=collection_archive---------1-----------------------#2023-10-16)
+> 原文：[`towardsdatascience.com/transforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701?source=collection_archive---------1-----------------------#2023-10-16`](https://towardsdatascience.com/transforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701?source=collection_archive---------1-----------------------#2023-10-16)
 
-[](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)[![Silvia Onofrei](../Images/198b04b2063b4269eaff52402dc5f8d5.png)](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)[](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------) [Silvia Onofrei](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)
+[](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)![Silvia Onofrei](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)[](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------) [Silvia Onofrei](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab562e798558&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&user=Silvia+Onofrei&userId=ab562e798558&source=post_page-ab562e798558----728eb28ea701---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------) ·11分钟阅读·2023年10月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F728eb28ea701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&user=Silvia+Onofrei&userId=ab562e798558&source=-----728eb28ea701---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab562e798558&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&user=Silvia+Onofrei&userId=ab562e798558&source=post_page-ab562e798558----728eb28ea701---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------) ·11 分钟阅读·2023 年 10 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F728eb28ea701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&user=Silvia+Onofrei&userId=ab562e798558&source=-----728eb28ea701---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F728eb28ea701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&source=-----728eb28ea701---------------------bookmark_footer-----------)![](../Images/ce4e9809888d34f2f0ee66fa4f5a7089.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F728eb28ea701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&source=-----728eb28ea701---------------------bookmark_footer-----------)![](img/ce4e9809888d34f2f0ee66fa4f5a7089.png)
 
 [设计来自 Freepik](http://www.freepik.com)
 
@@ -40,7 +40,7 @@
 
 [领域适应](https://www.sbert.net/examples/domain_adaptation/README.html)是将文本嵌入调整到特定领域而无需标注训练数据。在本实验中，我使用了一个两步法，根据[[tsdae_article](https://arxiv.org/abs/2104.06979)]，这种方法比仅在目标领域上训练效果更好。
 
-![](../Images/6bb26c7aa0c2ff05cfbd30aa19fcf5c0.png)
+![](img/6bb26c7aa0c2ff05cfbd30aa19fcf5c0.png)
 
 图片由作者提供
 
@@ -54,7 +54,7 @@ TSDAE（*基于变换器的序列去噪自编码器*）是一种无监督的句�
 
 TSDAE 使用了修改过的编码器-解码器变换器设计，其中交叉注意力的键和值被限制在句子嵌入中。我将详细说明原文中突出显示的最佳架构选择 [[tsdae_article](https://arxiv.org/abs/2104.06979)]。
 
-![](../Images/696638076de7ed5792bc391838896cd4.png)
+![](img/696638076de7ed5792bc391838896cd4.png)
 
 图片由作者提供
 
@@ -72,7 +72,7 @@ TSDAE 使用了修改过的编码器-解码器变换器设计，其中交叉注�
 
 该模型经过训练，以从损坏的句子中重建干净的句子，这通过最大化目标来完成：
 
-![](../Images/680c448c34b890f8685787af0730455e.png)
+![](img/680c448c34b890f8685787af0730455e.png)
 
 图片由作者提供
 
@@ -271,7 +271,7 @@ for sent1, others in train_data.items():
                      random.choice(list(others['contradiction']))]))															random.choice(list(others['contradiction']))]))
 ```
 
-训练数据集大约有 56万3千 个训练样本。最后，使用一个特殊的数据加载器以批量形式加载数据，并避免批量内的重复：
+训练数据集大约有 56 万 3 千 个训练样本。最后，使用一个特殊的数据加载器以批量形式加载数据，并避免批量内的重复：
 
 ```py
 train_dataloader = datasets.NoDuplicatesDataLoader(train_samples,
@@ -311,11 +311,11 @@ finetuned_model_save_path = 'output/finetuned-bert-uncased-math'
 local_model.save(finetuned_model_save_path)
 ```
 
-*我在整个 50万 数据集上对模型进行了微调，这大约花了 40 分钟，在 Google Colab Pro 上，进行了 1 个周期，批量大小为 32。*
+*我在整个 50 万 数据集上对模型进行了微调，这大约花了 40 分钟，在 Google Colab Pro 上，进行了 1 个周期，批量大小为 32。*
 
 ## 评估 TSDAE 预训练模型和微调模型
 
-我将对 HuggingFace 的 STS（语义文本相似性）数据集进行一些初步评估，使用 `EmbeddingSimilarityEvaluator`，它返回斯皮尔曼等级相关系数。然而，这些评估并没有使用我关注的特定领域，可能未能展示模型的真实表现。详细信息见 [[tsdae_article](https://arxiv.org/abs/2104.06979)] 第4节。
+我将对 HuggingFace 的 STS（语义文本相似性）数据集进行一些初步评估，使用 `EmbeddingSimilarityEvaluator`，它返回斯皮尔曼等级相关系数。然而，这些评估并没有使用我关注的特定领域，可能未能展示模型的真实表现。详细信息见 [[tsdae_article](https://arxiv.org/abs/2104.06979)] 第四部分。
 
 我从 HuggingFace 下载数据集，并指定 `validation` 子集：
 
@@ -348,7 +348,7 @@ sts['idx'][100], sts['sentence1'][100], sts['sentence2'][100], sts['label'][100]
  0.0)
 ```
 
-从这个例子中我们可以看到，每个条目有4个特征，一个是索引，两个句子和一个标签（由人工标注者创建）。标签的值可以在 `0` 和 `5` 之间，并测量两个句子的相似程度（`5` 为最相似）。在这个例子中，这两个句子完全在不同的主题上。
+从这个例子中我们可以看到，每个条目有 4 个特征，一个是索引，两个句子和一个标签（由人工标注者创建）。标签的值可以在 `0` 和 `5` 之间，并测量两个句子的相似程度（`5` 为最相似）。在这个例子中，这两个句子完全在不同的主题上。
 
 为了评估模型，我们为句子对创建句子嵌入，并计算每对的余弦相似度分数。标签与相似度分数之间的斯皮尔曼等级相关性作为评估分数。
 
@@ -382,7 +382,7 @@ evaluator = EmbeddingSimilarityEvaluator.from_input_examples(samples)
 
 我们计算了 TSDAE 模型、微调模型和几个预训练句子转换器的得分：
 
-![](../Images/c4b1c1e0ea3727afee930f65f6b50c6b.png)
+![](img/c4b1c1e0ea3727afee930f65f6b50c6b.png)
 
 作者提供的图片
 

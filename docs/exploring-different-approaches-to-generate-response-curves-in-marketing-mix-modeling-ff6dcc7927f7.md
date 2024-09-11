@@ -1,18 +1,18 @@
 # 探索生成市场营销组合建模中响应曲线的不同方法
 
-> 原文：[https://towardsdatascience.com/exploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7?source=collection_archive---------2-----------------------#2023-06-14](https://towardsdatascience.com/exploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7?source=collection_archive---------2-----------------------#2023-06-14)
+> 原文：[`towardsdatascience.com/exploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7?source=collection_archive---------2-----------------------#2023-06-14`](https://towardsdatascience.com/exploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7?source=collection_archive---------2-----------------------#2023-06-14)
 
 ## 比较饱和度函数和部分依赖性用于响应曲线生成
 
-[](https://medium.com/@slavax?source=post_page-----ff6dcc7927f7--------------------------------)[![Slava Kisilevich](../Images/5a2a00fb7a9d4c33868d071b6cc1a009.png)](https://medium.com/@slavax?source=post_page-----ff6dcc7927f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff6dcc7927f7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ff6dcc7927f7--------------------------------) [Slava Kisilevich](https://medium.com/@slavax?source=post_page-----ff6dcc7927f7--------------------------------)
+[](https://medium.com/@slavax?source=post_page-----ff6dcc7927f7--------------------------------)![Slava Kisilevich](https://medium.com/@slavax?source=post_page-----ff6dcc7927f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff6dcc7927f7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff6dcc7927f7--------------------------------) [Slava Kisilevich](https://medium.com/@slavax?source=post_page-----ff6dcc7927f7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba0d56f8b910&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7&user=Slava+Kisilevich&userId=ba0d56f8b910&source=post_page-ba0d56f8b910----ff6dcc7927f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff6dcc7927f7--------------------------------) ·6分钟阅读·2023年6月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fff6dcc7927f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7&user=Slava+Kisilevich&userId=ba0d56f8b910&source=-----ff6dcc7927f7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba0d56f8b910&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7&user=Slava+Kisilevich&userId=ba0d56f8b910&source=post_page-ba0d56f8b910----ff6dcc7927f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff6dcc7927f7--------------------------------) ·6 分钟阅读·2023 年 6 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fff6dcc7927f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7&user=Slava+Kisilevich&userId=ba0d56f8b910&source=-----ff6dcc7927f7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fff6dcc7927f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7&source=-----ff6dcc7927f7---------------------bookmark_footer-----------)![](../Images/c5688f8eb203cf429f5760f1961c49c8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fff6dcc7927f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-different-approaches-to-generate-response-curves-in-marketing-mix-modeling-ff6dcc7927f7&source=-----ff6dcc7927f7---------------------bookmark_footer-----------)![](img/c5688f8eb203cf429f5760f1961c49c8.png)
 
 图片由 [Alexander Grey](https://unsplash.com/@sharonmccutcheon?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -90,9 +90,9 @@ towardsdatascience.com](/improving-marketing-mix-modeling-using-machine-learning
 
 ## **关于系数的说明**
 
-在 scikit-learn 中，岭回归没有提供内置选项来强制对变量子集施加正系数。然而，一个潜在的解决方法是，如果发现任何媒体系数为负值，则拒绝 optuna 解决方案。这可以通过返回一个异常大的值来实现，表示负系数不可接受，应从模型中排除。另一种方法是参考 [我关于如何在 Python 中封装 R glmnet 的文章](/modeling-marketing-mix-with-constrained-coefficients-234b23190ee2)，它允许对变量子集施加系数约束。
+在 scikit-learn 中，岭回归没有提供内置选项来强制对变量子集施加正系数。然而，一个潜在的解决方法是，如果发现任何媒体系数为负值，则拒绝 optuna 解决方案。这可以通过返回一个异常大的值来实现，表示负系数不可接受，应从模型中排除。另一种方法是参考 我关于如何在 Python 中封装 R glmnet 的文章，它允许对变量子集施加系数约束。
 
-对于岭回归，我应用了饱和度变换，并使用饱和度函数和部分依赖方法生成响应曲线。使用LightGBM时，我允许模型自然捕捉非线性，并使用部分依赖方法生成响应曲线。此外，我在响应曲线上叠加了SHAP值，以提供进一步的见解。
+对于岭回归，我应用了饱和度变换，并使用饱和度函数和部分依赖方法生成响应曲线。使用 LightGBM 时，我允许模型自然捕捉非线性，并使用部分依赖方法生成响应曲线。此外，我在响应曲线上叠加了 SHAP 值，以提供进一步的见解。
 
 # 结果
 
@@ -100,41 +100,41 @@ towardsdatascience.com](/improving-marketing-mix-modeling-using-machine-learning
 
 如可以观察到的，使用饱和度函数和部分依赖生成的响应曲线都显示出重叠的模式，表明这两种方法捕捉了营销变量与响应之间的相似关系。
 
-![](../Images/c4b55d0e6fe0c2f0f26a52be90c4d3e0.png)
+![](img/c4b55d0e6fe0c2f0f26a52be90c4d3e0.png)
 
 ## LightGBM
 
 如前所述，由部分依赖生成的响应曲线可能不一定光滑。这可能是由于梯度提升算法的性质，该算法涉及将特征空间划分为区域，并结合多个决策树之间的交互作用。
 
-![](../Images/1fc8b66a758afb99b34d4bd270a3553e.png)
+![](img/1fc8b66a758afb99b34d4bd270a3553e.png)
 
 图片来源于作者
 
-下面的图表展示了岭回归和LightGBM的响应曲线，突出了这两种算法在捕捉递减收益方面的差异。此外，我们观察到SHAP值提供了对部分依赖方法生成的响应曲线的可靠近似。
+下面的图表展示了岭回归和 LightGBM 的响应曲线，突出了这两种算法在捕捉递减收益方面的差异。此外，我们观察到 SHAP 值提供了对部分依赖方法生成的响应曲线的可靠近似。
 
-![](../Images/c9fc2a84374e53791b4c234926cea56e.png)
-
-图片来源于作者
-
-![](../Images/11a5101ebf043c76a783fa3a9095fe5b.png)
+![](img/c9fc2a84374e53791b4c234926cea56e.png)
 
 图片来源于作者
 
-![](../Images/dcc171e3c0b8619c5bcc9da73ac22ac2.png)
+![](img/11a5101ebf043c76a783fa3a9095fe5b.png)
 
 图片来源于作者
 
-![](../Images/43f2065bf05edf17c67bf0440f7cc023.png)
+![](img/dcc171e3c0b8619c5bcc9da73ac22ac2.png)
 
 图片来源于作者
 
-![](../Images/06cc4f639c46c3d8d28fbc3b939048a3.png)
+![](img/43f2065bf05edf17c67bf0440f7cc023.png)
+
+图片来源于作者
+
+![](img/06cc4f639c46c3d8d28fbc3b939048a3.png)
 
 图片来源于作者
 
 # 结论
 
-响应曲线在营销组合建模中起着关键作用，通过提供不同营销变量的有效性和它们对整体响应的贡献的见解。在本文中，我探讨了生成响应曲线的两种主要方法：使用饱和度变换的直接方法和部分依赖方法。我使用线性回归和梯度提升两种算法家族来评估这些方法，并展示了不同算法捕捉非线性响应的对比方式。此外，我将使用SHAP值生成的响应与通过部分依赖方法获得的结果进行了比较。
+响应曲线在营销组合建模中起着关键作用，通过提供不同营销变量的有效性和它们对整体响应的贡献的见解。在本文中，我探讨了生成响应曲线的两种主要方法：使用饱和度变换的直接方法和部分依赖方法。我使用线性回归和梯度提升两种算法家族来评估这些方法，并展示了不同算法捕捉非线性响应的对比方式。此外，我将使用 SHAP 值生成的响应与通过部分依赖方法获得的结果进行了比较。
 
 完整代码可以从我的[Github repo](https://github.com/slavakx/medium_posts)下载
 

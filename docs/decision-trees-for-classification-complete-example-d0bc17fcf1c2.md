@@ -1,20 +1,20 @@
 # 分类决策树——完整示例
 
-> 原文：[https://towardsdatascience.com/decision-trees-for-classification-complete-example-d0bc17fcf1c2?source=collection_archive---------1-----------------------#2023-01-01](https://towardsdatascience.com/decision-trees-for-classification-complete-example-d0bc17fcf1c2?source=collection_archive---------1-----------------------#2023-01-01)
+> 原文：[`towardsdatascience.com/decision-trees-for-classification-complete-example-d0bc17fcf1c2?source=collection_archive---------1-----------------------#2023-01-01`](https://towardsdatascience.com/decision-trees-for-classification-complete-example-d0bc17fcf1c2?source=collection_archive---------1-----------------------#2023-01-01)
 
 ## 关于如何构建分类决策树的详细示例
 
-[](https://medium.com/@pumaline?source=post_page-----d0bc17fcf1c2--------------------------------)[![Datamapu](../Images/63b0c7f9a3d160c5bb039bbebd791f7e.png)](https://medium.com/@pumaline?source=post_page-----d0bc17fcf1c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0bc17fcf1c2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d0bc17fcf1c2--------------------------------) [Datamapu](https://medium.com/@pumaline?source=post_page-----d0bc17fcf1c2--------------------------------)
+[](https://medium.com/@pumaline?source=post_page-----d0bc17fcf1c2--------------------------------)![Datamapu](https://medium.com/@pumaline?source=post_page-----d0bc17fcf1c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0bc17fcf1c2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0bc17fcf1c2--------------------------------) [Datamapu](https://medium.com/@pumaline?source=post_page-----d0bc17fcf1c2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffcd72d75ae6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-for-classification-complete-example-d0bc17fcf1c2&user=Datamapu&userId=fcd72d75ae6e&source=post_page-fcd72d75ae6e----d0bc17fcf1c2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0bc17fcf1c2--------------------------------) ·8分钟阅读·2023年1月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0bc17fcf1c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-for-classification-complete-example-d0bc17fcf1c2&user=Datamapu&userId=fcd72d75ae6e&source=-----d0bc17fcf1c2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffcd72d75ae6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-for-classification-complete-example-d0bc17fcf1c2&user=Datamapu&userId=fcd72d75ae6e&source=post_page-fcd72d75ae6e----d0bc17fcf1c2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0bc17fcf1c2--------------------------------) ·8 分钟阅读·2023 年 1 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0bc17fcf1c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-for-classification-complete-example-d0bc17fcf1c2&user=Datamapu&userId=fcd72d75ae6e&source=-----d0bc17fcf1c2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd0bc17fcf1c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-for-classification-complete-example-d0bc17fcf1c2&source=-----d0bc17fcf1c2---------------------bookmark_footer-----------)![](../Images/a45b59b3ef0c4737f791d8f710bbf118.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd0bc17fcf1c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-for-classification-complete-example-d0bc17fcf1c2&source=-----d0bc17fcf1c2---------------------bookmark_footer-----------)![](img/a45b59b3ef0c4737f791d8f710bbf118.png)
 
-图片由Fabrice Villard提供，来自Unsplash
+图片由 Fabrice Villard 提供，来自 Unsplash
 
 本文解释了我们如何使用决策树来解决分类问题。在解释重要术语后，我们将为一个简单的示例数据集构建一个决策树。
 
@@ -24,13 +24,13 @@
 
 传统上，决策树是手动绘制的，但可以通过机器学习进行学习。它们可用于回归和分类问题。在这篇文章中，我们将重点关注分类问题。让我们考虑以下示例数据：
 
-![](../Images/0ff178c454666a8b72804aec2f7de623.png)
+![](img/0ff178c454666a8b72804aec2f7de623.png)
 
 示例数据（由作者构建）
 
 使用这个简化的例子，我们将预测一个人是否会成为宇航员，取决于他们的年龄、是否喜欢狗以及是否喜欢重力。在讨论如何构建决策树之前，让我们看一下我们示例数据的最终决策树。
 
-![](../Images/36dbbe9e24de192c40ec14269cf0efa3.png)
+![](img/36dbbe9e24de192c40ec14269cf0efa3.png)
 
 示例数据的最终决策树
 
@@ -72,7 +72,7 @@
 
 移除父节点的（子）节点称为剪枝。树通过切分生长，通过剪枝缩小。在我们的例子中，如果我们移除节点“年龄 < 40.5”，我们将对树进行剪枝。
 
-![](../Images/1556654976019b99810dc7f15c6695ca.png)
+![](img/1556654976019b99810dc7f15c6695ca.png)
 
 决策树插图
 
@@ -86,11 +86,11 @@
 
 数据集 *D* 的基尼不纯度计算如下：
 
-![](../Images/dcd4ca062f20d515c6c01822250af8fa.png)
+![](img/dcd4ca062f20d515c6c01822250af8fa.png)
 
 其中 n = n_1 + n_2 表示数据集 (D) 的大小，并且
 
-![](../Images/55268b5346592788b91d1ebd51acdd75.png)
+![](img/55268b5346592788b91d1ebd51acdd75.png)
 
 *D_1* 和 *D_2* 是 *D* 的子集，𝑝_𝑗 是在给定节点上样本属于类别 𝑗 的概率，𝑐 是类别的数量。基尼不纯度越低，节点的同质性越高。纯节点的基尼不纯度为零。为了使用基尼不纯度来分裂决策树，需要执行以下步骤。
 
@@ -110,7 +110,7 @@
 
 我们首先需要决定哪个特征将作为 *根节点*。我们通过仅用一个特征来预测目标，然后选择基尼不纯度最低的特征作为根节点。也就是说，在我们的案例中，我们构建了两个浅层树，只有根节点和两个叶子。在第一个案例中，我们使用“喜欢重力”作为根节点，在第二个案例中使用“喜欢狗”。然后我们计算两个树的基尼不纯度。这些树的样子如下：
 
-![](../Images/a7cbf81c91434e4974dd0fa52e21864a.png)
+![](img/a7cbf81c91434e4974dd0fa52e21864a.png)
 
 图片由作者提供
 
@@ -120,33 +120,33 @@
 
 数据集 1：
 
-![](../Images/079a8cfb48bd78791b73edbf569b2bd3.png)
+![](img/079a8cfb48bd78791b73edbf569b2bd3.png)
 
 数据集 2：
 
-![](../Images/39cfa1633b7fbf37959ff0cbc29f8383.png)
+![](img/39cfa1633b7fbf37959ff0cbc29f8383.png)
 
 基尼不纯度是两者的加权均值：
 
-![](../Images/bc97ce3e7eae3f23478251857c2e9b13.png)
+![](img/bc97ce3e7eae3f23478251857c2e9b13.png)
 
 **案例 2：**
 
 数据集 1：
 
-![](../Images/bee46fd6beab0ec0c42e071c3899739c.png)
+![](img/bee46fd6beab0ec0c42e071c3899739c.png)
 
 数据集 2：
 
-![](../Images/220e31774ee921f5ec8ecd3b0865c8a8.png)
+![](img/220e31774ee921f5ec8ecd3b0865c8a8.png)
 
 基尼不纯度是两者的加权均值：
 
-![](../Images/7b00d2fb5b4c651548228a07a25bdcd0.png)
+![](img/7b00d2fb5b4c651548228a07a25bdcd0.png)
 
 即，第一个案例的基尼不纯度较低，是选择的拆分。在这个简单的示例中，只剩下一个特征，我们可以构建最终的决策树。
 
-![](../Images/74ab2bd34dbd66e8504ea62a5a88a2b2.png)
+![](img/74ab2bd34dbd66e8504ea62a5a88a2b2.png)
 
 只考虑特征‘喜欢重力’和‘喜欢狗’的最终决策树
 
@@ -162,37 +162,37 @@
 
 这又是我们的数据，按年龄排序，左侧给出了邻近值的均值。
 
-![](../Images/d825cb583abd383d6979f1e7996dddaf.png)
+![](img/d825cb583abd383d6979f1e7996dddaf.png)
 
 按年龄排序的数据集。左侧显示了年龄的邻近值的均值。
 
 我们得到以下可能的拆分。
 
-![](../Images/260539e5a4dd3b1394dc0e5015ae71d8.png)
+![](img/260539e5a4dd3b1394dc0e5015ae71d8.png)
 
 年龄的可能拆分及其基尼不纯度。
 
 我们可以看到，所有可能的‘年龄’拆分的基尼不纯度都高于‘喜欢重力’和‘喜欢狗’的基尼不纯度。当使用‘喜欢重力’时，基尼不纯度最低，即这是我们的*根节点*和第一次拆分。
 
-![](../Images/cd3c81e701f1cdd6bf1fe61bddf6ce7d.png)
+![](img/cd3c81e701f1cdd6bf1fe61bddf6ce7d.png)
 
 树的第一次拆分。‘喜欢重力’是根节点。
 
-子集数据集2已经是纯净的，即这个节点是一个*叶子节点*，无需进一步拆分。左侧的*分支*，数据集1不是纯净的，可以进一步拆分。我们像之前一样计算每个特征的基尼不纯度：‘喜欢狗’和‘年龄’。
+子集数据集 2 已经是纯净的，即这个节点是一个*叶子节点*，无需进一步拆分。左侧的*分支*，数据集 1 不是纯净的，可以进一步拆分。我们像之前一样计算每个特征的基尼不纯度：‘喜欢狗’和‘年龄’。
 
-![](../Images/70d756f4890d3d097c10e1e251c8af18.png)
+![](img/70d756f4890d3d097c10e1e251c8af18.png)
 
-数据集2的可能拆分。
+数据集 2 的可能拆分。
 
 我们看到最低的基尼不纯度是由“喜欢狗”的拆分给出的。我们现在可以构建我们的最终决策树。
 
-![](../Images/36dbbe9e24de192c40ec14269cf0efa3.png)
+![](img/36dbbe9e24de192c40ec14269cf0efa3.png)
 
 最终决策树。
 
-## 使用Python
+## 使用 Python
 
-在Python中，我们可以使用scikit-learn方法[DecisionTreeClassifier](https://scikit-learn.org/stable/modules/tree.html#classification)来构建分类决策树。请注意，scikit-learn还提供了[DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor)，这是一个用于回归的决策树方法。假设我们的数据存储在数据框‘df’中，我们可以使用‘fit’方法进行训练：
+在 Python 中，我们可以使用 scikit-learn 方法[DecisionTreeClassifier](https://scikit-learn.org/stable/modules/tree.html#classification)来构建分类决策树。请注意，scikit-learn 还提供了[DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor)，这是一个用于回归的决策树方法。假设我们的数据存储在数据框‘df’中，我们可以使用‘fit’方法进行训练：
 
 ```py
 from sklearn.tree import DecisionTreeClassifier
@@ -208,9 +208,9 @@ clf.fit(X,y)
 plot_tree(clf, feature_names=[‘age’,‘likes_dogs’,‘likes_gravity’], fontsize=8);
 ```
 
-![](../Images/4acd653ec0c964848a0e2b58da27225f.png)
+![](img/4acd653ec0c964848a0e2b58da27225f.png)
 
-使用scikit-learn生成的决策树。
+使用 scikit-learn 生成的决策树。
 
 # 决策树的优缺点
 
@@ -238,13 +238,13 @@ plot_tree(clf, feature_names=[‘age’,‘likes_dogs’,‘likes_gravity’], f
 
 # 结论
 
-在这篇文章中，我们讨论了一个简单但详细的示例，说明了如何为分类问题构建决策树，以及如何利用它进行预测。创建决策树的关键步骤是找到将数据分成两个子集的最佳分割方式。常用的方法是基尼不纯度。这也被Python中的scikit-learn库所使用，该库在实际中常用于构建决策树。重要的是要记住决策树的局限性，其中最突出的就是过拟合的倾向。
+在这篇文章中，我们讨论了一个简单但详细的示例，说明了如何为分类问题构建决策树，以及如何利用它进行预测。创建决策树的关键步骤是找到将数据分成两个子集的最佳分割方式。常用的方法是基尼不纯度。这也被 Python 中的 scikit-learn 库所使用，该库在实际中常用于构建决策树。重要的是要记住决策树的局限性，其中最突出的就是过拟合的倾向。
 
 # 参考文献
 
 +   克里斯·尼科尔森，《决策树》（2020），pathmind — A.I. Wiki，《AI、机器学习和深度学习中的重要主题初学者指南》https://wiki.pathmind.com/decision-tree。
 
-+   阿比谢克·夏尔马，[4种简单的方式来拆分决策树](https://www.analyticsvidhya.com/blog/2020/06/4-ways-split-decision-tree/#:~:text=Steps%20to%20split%20a%20decision%20tree%20using%20Information%20Gain%3A,entropy%20or%20highest%20information%20gain) （2020），analyticsvidhya
++   阿比谢克·夏尔马，[4 种简单的方式来拆分决策树](https://www.analyticsvidhya.com/blog/2020/06/4-ways-split-decision-tree/#:~:text=Steps%20to%20split%20a%20decision%20tree%20using%20Information%20Gain%3A,entropy%20or%20highest%20information%20gain) （2020），analyticsvidhya
 
 除非另有说明，所有图片均为作者所用。
 
@@ -254,9 +254,9 @@ plot_tree(clf, feature_names=[‘age’,‘likes_dogs’,‘likes_gravity’], f
 
 ### 数据科学和机器学习博客
 
-datamapu.com](https://datamapu.com/?source=post_page-----d0bc17fcf1c2--------------------------------) [](https://medium.com/@pumaline/subscribe?source=post_page-----d0bc17fcf1c2--------------------------------) [## 订阅Pumaline发布的内容时会收到电子邮件。
+datamapu.com](https://datamapu.com/?source=post_page-----d0bc17fcf1c2--------------------------------) [](https://medium.com/@pumaline/subscribe?source=post_page-----d0bc17fcf1c2--------------------------------) [## 订阅 Pumaline 发布的内容时会收到电子邮件。
 
-### 订阅Pumaline发布的内容时会收到电子邮件。通过注册，如果你还没有Medium账号，将会创建一个…
+### 订阅 Pumaline 发布的内容时会收到电子邮件。通过注册，如果你还没有 Medium 账号，将会创建一个…
 
 [medium.com](https://medium.com/@pumaline/subscribe?source=post_page-----d0bc17fcf1c2--------------------------------) [](https://www.buymeacoffee.com/pumaline?source=post_page-----d0bc17fcf1c2--------------------------------) [## Pumaline
 

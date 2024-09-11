@@ -1,18 +1,18 @@
 # 你暂时不需要数据域
 
-> 原文：[https://towardsdatascience.com/you-dont-need-data-domains-yet-23af8ffc3e69?source=collection_archive---------17-----------------------#2023-05-23](https://towardsdatascience.com/you-dont-need-data-domains-yet-23af8ffc3e69?source=collection_archive---------17-----------------------#2023-05-23)
+> 原文：[`towardsdatascience.com/you-dont-need-data-domains-yet-23af8ffc3e69?source=collection_archive---------17-----------------------#2023-05-23`](https://towardsdatascience.com/you-dont-need-data-domains-yet-23af8ffc3e69?source=collection_archive---------17-----------------------#2023-05-23)
 
 ## 揭开数据网格域的神秘面纱
 
-[](https://medium.com/@louise.de.leyritz?source=post_page-----23af8ffc3e69--------------------------------)[![Louise de Leyritz](../Images/7223761fa288aa730d1bb5751f29e8ce.png)](https://medium.com/@louise.de.leyritz?source=post_page-----23af8ffc3e69--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23af8ffc3e69--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----23af8ffc3e69--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----23af8ffc3e69--------------------------------)
+[](https://medium.com/@louise.de.leyritz?source=post_page-----23af8ffc3e69--------------------------------)![Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----23af8ffc3e69--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23af8ffc3e69--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----23af8ffc3e69--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----23af8ffc3e69--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-dont-need-data-domains-yet-23af8ffc3e69&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----23af8ffc3e69---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23af8ffc3e69--------------------------------) ·7 分钟阅读·2023年5月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23af8ffc3e69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-dont-need-data-domains-yet-23af8ffc3e69&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----23af8ffc3e69---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-dont-need-data-domains-yet-23af8ffc3e69&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----23af8ffc3e69---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23af8ffc3e69--------------------------------) ·7 分钟阅读·2023 年 5 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23af8ffc3e69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-dont-need-data-domains-yet-23af8ffc3e69&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----23af8ffc3e69---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23af8ffc3e69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-dont-need-data-domains-yet-23af8ffc3e69&source=-----23af8ffc3e69---------------------bookmark_footer-----------)![](../Images/64bb5602719305309c55e5ca400d12e4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23af8ffc3e69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-dont-need-data-domains-yet-23af8ffc3e69&source=-----23af8ffc3e69---------------------bookmark_footer-----------)![](img/64bb5602719305309c55e5ca400d12e4.png)
 
 你暂时不需要数据域 — 图片来源于 [Castor](https://www.castordoc.com)
 

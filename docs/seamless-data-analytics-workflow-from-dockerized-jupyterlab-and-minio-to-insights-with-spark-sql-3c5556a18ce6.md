@@ -1,16 +1,16 @@
 # 无缝数据分析工作流：从 Docker 化的 JupyterLab 和 MinIO 到利用 Spark SQL 的洞察
 
-> 原文：[https://towardsdatascience.com/seamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6?source=collection_archive---------5-----------------------#2023-12-21](https://towardsdatascience.com/seamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6?source=collection_archive---------5-----------------------#2023-12-21)
+> 原文：[`towardsdatascience.com/seamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6?source=collection_archive---------5-----------------------#2023-12-21`](https://towardsdatascience.com/seamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6?source=collection_archive---------5-----------------------#2023-12-21)
 
-[](https://medium.com/@sarbahi.sarthak?source=post_page-----3c5556a18ce6--------------------------------)[![Sarthak Sarbahi](../Images/b2ee093e0bcb95d515f10eac906f9890.png)](https://medium.com/@sarbahi.sarthak?source=post_page-----3c5556a18ce6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c5556a18ce6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c5556a18ce6--------------------------------) [Sarthak Sarbahi](https://medium.com/@sarbahi.sarthak?source=post_page-----3c5556a18ce6--------------------------------)
+[](https://medium.com/@sarbahi.sarthak?source=post_page-----3c5556a18ce6--------------------------------)![Sarthak Sarbahi](https://medium.com/@sarbahi.sarthak?source=post_page-----3c5556a18ce6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c5556a18ce6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c5556a18ce6--------------------------------) [Sarthak Sarbahi](https://medium.com/@sarbahi.sarthak?source=post_page-----3c5556a18ce6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F35908b3630e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6&user=Sarthak+Sarbahi&userId=35908b3630e1&source=post_page-35908b3630e1----3c5556a18ce6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c5556a18ce6--------------------------------) ·17分钟阅读·2023年12月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c5556a18ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6&user=Sarthak+Sarbahi&userId=35908b3630e1&source=-----3c5556a18ce6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F35908b3630e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6&user=Sarthak+Sarbahi&userId=35908b3630e1&source=post_page-35908b3630e1----3c5556a18ce6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c5556a18ce6--------------------------------) ·17 分钟阅读·2023 年 12 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c5556a18ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6&user=Sarthak+Sarbahi&userId=35908b3630e1&source=-----3c5556a18ce6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3c5556a18ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6&source=-----3c5556a18ce6---------------------bookmark_footer-----------)![](../Images/ac76545d848b73236b080b88369d5d1b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3c5556a18ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseamless-data-analytics-workflow-from-dockerized-jupyterlab-and-minio-to-insights-with-spark-sql-3c5556a18ce6&source=-----3c5556a18ce6---------------------bookmark_footer-----------)![](img/ac76545d848b73236b080b88369d5d1b.png)
 
 照片由 [Ian Taylor](https://unsplash.com/@carrier_lost?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -18,19 +18,19 @@
 
 # 目录
 
-1.  [理解构建模块](#320a)
+1.  理解构建模块
 
-1.  [设置 Docker Desktop](#fa16)
+1.  设置 Docker Desktop
 
-1.  [配置 MinIO](#22ad)
+1.  配置 MinIO
 
-1.  [开始使用 JupyterLab](#4848)
+1.  开始使用 JupyterLab
 
-1.  [数据管道：ETL 过程](#00d0)
+1.  数据管道：ETL 过程
 
-1.  [分析半结构化数据](#a204)
+1.  分析半结构化数据
 
-1.  [资源清理](#dae2)
+1.  资源清理
 
 ## 理解构建模块
 
@@ -62,7 +62,7 @@ Docker 是一个使创建、部署和运行应用程序变得更容易的工具�
 
 要设置 Docker，我们使用**Docker Desktop**应用程序。Docker Desktop 对个人和教育用途是免费的。你可以从[这里](https://www.docker.com/products/docker-desktop/)下载。
 
-![](../Images/e9afbb67e0ad31f212fdd12a5accbb47.png)
+![](img/e9afbb67e0ad31f212fdd12a5accbb47.png)
 
 Docker Desktop 应用程序（图片由作者提供）
 
@@ -76,7 +76,7 @@ Docker Compose 文件（图片由作者提供）
 
 如果这是你第一次遇到这样的文件，不用担心。我会在接下来的部分详细讲解。现在，只需在该文件所在目录运行命令`docker-compose up -d`。此命令将首先从**Docker Hub**获取 JupyterLab 和 MinIO 的 Docker 镜像。
 
-![](../Images/67ab984418c5b6ecc0800f9d4912fb9a.png)
+![](img/67ab984418c5b6ecc0800f9d4912fb9a.png)
 
 运行命令的结果（图片由作者提供）
 
@@ -86,13 +86,13 @@ Docker Compose 文件（图片由作者提供）
 
 [Docker Hub](https://hub.docker.com/) 就像是一个在线库或商店，大家可以在这里找到和分享 Docker 镜像。
 
-![](../Images/55fbf2aaa77be9573711431faca31600.png)
+![](img/55fbf2aaa77be9573711431faca31600.png)
 
 所需的镜像已下载（作者提供的图片）
 
 镜像下载完成后，它将为每个镜像启动一个容器。这个过程将启动两个容器——一个用于 JupyterLab，另一个用于 MinIO。
 
-![](../Images/86e5a4c4c83629fbb97519320f8bb708.png)
+![](img/86e5a4c4c83629fbb97519320f8bb708.png)
 
 两个容器正在运行（作者提供的图片）
 
@@ -108,7 +108,7 @@ MinIO 是一种开源对象存储解决方案，专门设计用于处理大量�
 
 文件中的 `services` 部分概述了我们将运行的容器以及它们将启动的软件实例。我们这里重点关注 MinIO 服务。
 
-![](../Images/1979feec7c9e7d6e01282ea23201a5a5.png)
+![](img/1979feec7c9e7d6e01282ea23201a5a5.png)
 
 **docker-compose.yml** 文件中的 MinIO 服务（作者提供的图片）
 
@@ -126,15 +126,15 @@ MinIO 是一种开源对象存储解决方案，专门设计用于处理大量�
 
 +   `command: server /data --console-address ":9001"` 是将在 MinIO 容器内运行的命令。它启动 MinIO 服务器并指示使用 `/data` 目录。
 
-MinIO 设置完成后，让我们开始使用它。你可以通过 `[http://localhost:9001](http://localhost:9001/)` 访问 MinIO 的 Web 界面。在首次访问时，你需要使用 `docker-compose` 文件中指定的用户名（`minio`）和密码（`minio123`）登录。
+MinIO 设置完成后，让我们开始使用它。你可以通过 `[`localhost:9001`](http://localhost:9001/)` 访问 MinIO 的 Web 界面。在首次访问时，你需要使用 `docker-compose` 文件中指定的用户名（`minio`）和密码（`minio123`）登录。
 
-![](../Images/16bab217bc1b4cdccc55dd0d2c6b25cb.png)
+![](img/16bab217bc1b4cdccc55dd0d2c6b25cb.png)
 
 MinIO 门户（作者提供的图片）
 
 登录后，继续创建一个桶。点击“创建桶”，并将其命名为 `**mybucket**`。命名后，点击“创建桶”。默认设置现在没问题，但可以随时查看页面右侧的设置说明。
 
-![](../Images/a09022fb27cbb231673a46fef71bcb79.png)
+![](img/a09022fb27cbb231673a46fef71bcb79.png)
 
 在 MinIO 中创建的桶（作者提供的图片）
 
@@ -144,7 +144,7 @@ MinIO 门户（作者提供的图片）
 
 JupyterLab 是一个互动的基于网页的界面，帮助我们编写代码、在笔记本上进行分析和处理数据。事实上，JupyterLab 镜像已经包括了 Python 和 PySpark，因此不需要麻烦地设置它们。
 
-![](../Images/4432377abc513c0fbf507b34f842c44a.png)
+![](img/4432377abc513c0fbf507b34f842c44a.png)
 
 JupyterLab 服务在 **docker-compose.yml** 文件中的配置（作者提供的图片）
 
@@ -156,13 +156,13 @@ JupyterLab 服务在 **docker-compose.yml** 文件中的配置（作者提供的
 
 要访问其网页界面，请在 Docker Desktop 应用程序中导航到“Containers”选项卡。找到并点击标记为 `jupyter-1` 的 JupyterLab 容器。这将显示容器日志。
 
-![](../Images/02a91268fd1e6df5b57dfdcf305d9605.png)
+![](img/02a91268fd1e6df5b57dfdcf305d9605.png)
 
 JupyterLab 容器日志（作者提供的图片）
 
-在这些日志中，您会找到一个类似于这样的 URL：`[http://127.0.0.1:8888/lab?token=4f1c9d4f1aeb460f1ebbf224dfa9417c88eab1691fa64b04](http://127.0.0.1:8888/lab?token=4f1c9d4f1aeb460f1ebbf224dfa9417c88eab1691fa64b04)`。点击这个 URL 启动网页界面。
+在这些日志中，您会找到一个类似于这样的 URL：`[`127.0.0.1:8888/lab?token=4f1c9d4f1aeb460f1ebbf224dfa9417c88eab1691fa64b04`](http://127.0.0.1:8888/lab?token=4f1c9d4f1aeb460f1ebbf224dfa9417c88eab1691fa64b04)`。点击这个 URL 启动网页界面。
 
-![](../Images/e1accc3b8272213751be56fedcdce35a.png)
+![](img/e1accc3b8272213751be56fedcdce35a.png)
 
 JupyterLab 网页界面（作者提供的图片）
 
@@ -313,7 +313,7 @@ country_raw_data.count()
 
 在 MinIO Web 界面中，从左侧菜单中选择“对象浏览器”，然后打开桶。
 
-![](../Images/6ecee02d2ca6d13aee6712007b6de074.png)
+![](img/6ecee02d2ca6d13aee6712007b6de074.png)
 
 在 MinIO 中浏览桶的内容（图片来自作者）
 
@@ -514,7 +514,7 @@ show_results(sql_string)
 +----------+--------------------------------------------------------------------------------+-------------+
 ```
 
-这揭示了中国是邻国最多的国家——总共有16个。
+这揭示了中国是邻国最多的国家——总共有 16 个。
 
 ***Q3\. 哪些国家拥有最多的首都城市？***
 
@@ -647,7 +647,7 @@ show_results(sql_string)
 
 完成后，不要忘记保存你的笔记本。然后，是时候停止 Docker 容器了。在 Docker Desktop 应用程序中，只需点击 *stop* 按钮。
 
-![](../Images/d3a0d65b7a92d27eb8d3331ba76bd7c2.png)
+![](img/d3a0d65b7a92d27eb8d3331ba76bd7c2.png)
 
 一次停止所有容器（作者提供的图片）
 
@@ -665,10 +665,10 @@ show_results(sql_string)
 
 ## 参考资料
 
-+   GitHub repository: [https://github.com/sarthak-sarbahi/data-analytics-minio-spark/tree/main](https://github.com/sarthak-sarbahi/data-analytics-minio-spark/tree/main)
++   GitHub repository: [`github.com/sarthak-sarbahi/data-analytics-minio-spark/tree/main`](https://github.com/sarthak-sarbahi/data-analytics-minio-spark/tree/main)
 
-+   Docker Compose: [https://docs.docker.com/compose/](https://docs.docker.com/compose/)
++   Docker Compose: [`docs.docker.com/compose/`](https://docs.docker.com/compose/)
 
-+   MinIO: [https://min.io/docs/minio/linux/index.html](https://min.io/docs/minio/linux/index.html)
++   MinIO: [`min.io/docs/minio/linux/index.html`](https://min.io/docs/minio/linux/index.html)
 
-+   PySpark: [https://spark.apache.org/docs/latest/api/python/index.html](https://spark.apache.org/docs/latest/api/python/index.html)
++   PySpark: [`spark.apache.org/docs/latest/api/python/index.html`](https://spark.apache.org/docs/latest/api/python/index.html)

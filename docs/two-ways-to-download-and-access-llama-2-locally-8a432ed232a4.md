@@ -1,18 +1,18 @@
 # 在本地下载和访问 Llama 2 的两种方式
 
-> 原文：[https://towardsdatascience.com/two-ways-to-download-and-access-llama-2-locally-8a432ed232a4?source=collection_archive---------0-----------------------#2023-09-05](https://towardsdatascience.com/two-ways-to-download-and-access-llama-2-locally-8a432ed232a4?source=collection_archive---------0-----------------------#2023-09-05)
+> 原文：[`towardsdatascience.com/two-ways-to-download-and-access-llama-2-locally-8a432ed232a4?source=collection_archive---------0-----------------------#2023-09-05`](https://towardsdatascience.com/two-ways-to-download-and-access-llama-2-locally-8a432ed232a4?source=collection_archive---------0-----------------------#2023-09-05)
 
 ## 使用 Llama 2 在你的 PC 上的逐步指南
 
-[](https://medium.com/@anna.bildea?source=post_page-----8a432ed232a4--------------------------------)[![Ana Bildea, PhD](../Images/60567c2b09bd0be5b25e508905dfe4c6.png)](https://medium.com/@anna.bildea?source=post_page-----8a432ed232a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a432ed232a4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8a432ed232a4--------------------------------) [Ana Bildea, PhD](https://medium.com/@anna.bildea?source=post_page-----8a432ed232a4--------------------------------)
+[](https://medium.com/@anna.bildea?source=post_page-----8a432ed232a4--------------------------------)![Ana Bildea, PhD](https://medium.com/@anna.bildea?source=post_page-----8a432ed232a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a432ed232a4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a432ed232a4--------------------------------) [Ana Bildea, PhD](https://medium.com/@anna.bildea?source=post_page-----8a432ed232a4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc57d3db39a47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-ways-to-download-and-access-llama-2-locally-8a432ed232a4&user=Ana+Bildea%2C+PhD&userId=c57d3db39a47&source=post_page-c57d3db39a47----8a432ed232a4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a432ed232a4--------------------------------) ·10 分钟阅读·2023年9月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a432ed232a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-ways-to-download-and-access-llama-2-locally-8a432ed232a4&user=Ana+Bildea%2C+PhD&userId=c57d3db39a47&source=-----8a432ed232a4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc57d3db39a47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-ways-to-download-and-access-llama-2-locally-8a432ed232a4&user=Ana+Bildea%2C+PhD&userId=c57d3db39a47&source=post_page-c57d3db39a47----8a432ed232a4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a432ed232a4--------------------------------) ·10 分钟阅读·2023 年 9 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a432ed232a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-ways-to-download-and-access-llama-2-locally-8a432ed232a4&user=Ana+Bildea%2C+PhD&userId=c57d3db39a47&source=-----8a432ed232a4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8a432ed232a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-ways-to-download-and-access-llama-2-locally-8a432ed232a4&source=-----8a432ed232a4---------------------bookmark_footer-----------)![](../Images/8096320260dd4a194856f7b6ae2ee973.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8a432ed232a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-ways-to-download-and-access-llama-2-locally-8a432ed232a4&source=-----8a432ed232a4---------------------bookmark_footer-----------)![](img/8096320260dd4a194856f7b6ae2ee973.png)
 
 作者提供的图片（Dreamstudio）
 

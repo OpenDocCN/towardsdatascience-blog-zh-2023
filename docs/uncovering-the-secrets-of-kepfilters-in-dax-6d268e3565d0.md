@@ -1,18 +1,18 @@
 # 揭开 DAX 中 KEEPFILTERS 的秘密
 
-> 原文：[https://towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0?source=collection_archive---------13-----------------------#2023-07-13](https://towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0?source=collection_archive---------13-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0?source=collection_archive---------13-----------------------#2023-07-13`](https://towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0?source=collection_archive---------13-----------------------#2023-07-13)
 
 ## *DAX 中的 KEEPFILTERS() 函数被低估了。因此，我决定深入研究这个函数，并向你们提供一些有趣的细节和一个令人惊讶的效果。*
 
-[](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)[![Salvatore Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------) [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)
+[](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)![Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------) [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39cccb39e92a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funcovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0&user=Salvatore+Cagliari&userId=39cccb39e92a&source=post_page-39cccb39e92a----6d268e3565d0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------) · 8 分钟阅读 · 2023年7月13日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39cccb39e92a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funcovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0&user=Salvatore+Cagliari&userId=39cccb39e92a&source=post_page-39cccb39e92a----6d268e3565d0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------) · 8 分钟阅读 · 2023 年 7 月 13 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6d268e3565d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funcovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0&source=-----6d268e3565d0---------------------bookmark_footer-----------)![](../Images/d3f91fccfe4690bda82bbb16d3e42861.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6d268e3565d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funcovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0&source=-----6d268e3565d0---------------------bookmark_footer-----------)![](img/d3f91fccfe4690bda82bbb16d3e42861.png)
 
 照片由 [Ian Tuck](https://unsplash.com/@iantuck?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

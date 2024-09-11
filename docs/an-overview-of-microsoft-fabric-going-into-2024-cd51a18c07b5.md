@@ -1,10 +1,10 @@
 # 2024 年 Microsoft Fabric 概述
 
-> 原文：[https://towardsdatascience.com/an-overview-of-microsoft-fabric-going-into-2024-cd51a18c07b5?source=collection_archive---------2-----------------------#2023-12-31](https://towardsdatascience.com/an-overview-of-microsoft-fabric-going-into-2024-cd51a18c07b5?source=collection_archive---------2-----------------------#2023-12-31)
+> 原文：[`towardsdatascience.com/an-overview-of-microsoft-fabric-going-into-2024-cd51a18c07b5?source=collection_archive---------2-----------------------#2023-12-31`](https://towardsdatascience.com/an-overview-of-microsoft-fabric-going-into-2024-cd51a18c07b5?source=collection_archive---------2-----------------------#2023-12-31)
 
 ## 2024 年 Microsoft Fabric 能带来什么？
 
-[](https://medium.com/@ebbeberge?source=post_page-----cd51a18c07b5--------------------------------)[![Eirik Berge, PhD](../Images/7507374e75980fd0c1056af3cd299eaa.png)](https://medium.com/@ebbeberge?source=post_page-----cd51a18c07b5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd51a18c07b5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cd51a18c07b5--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----cd51a18c07b5--------------------------------)
+[](https://medium.com/@ebbeberge?source=post_page-----cd51a18c07b5--------------------------------)![Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----cd51a18c07b5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd51a18c07b5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd51a18c07b5--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----cd51a18c07b5--------------------------------)
 
 ·
 
@@ -12,25 +12,25 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd51a18c07b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-overview-of-microsoft-fabric-going-into-2024-cd51a18c07b5&source=-----cd51a18c07b5---------------------bookmark_footer-----------)![](../Images/c3664aa339af4550c24ad7ad7d09a833.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd51a18c07b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-overview-of-microsoft-fabric-going-into-2024-cd51a18c07b5&source=-----cd51a18c07b5---------------------bookmark_footer-----------)![](img/c3664aa339af4550c24ad7ad7d09a833.png)
 
 照片由 [Ricardo Loaiza](https://unsplash.com/@rickpekar?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上提供
 
 # 概述
 
-1.  [介绍](#a6cb)
+1.  介绍
 
-1.  [什么是 Microsoft Fabric？](#4b3e)
+1.  什么是 Microsoft Fabric？
 
-1.  [Microsoft Fabric 的主要组成部分](#05d1)
+1.  Microsoft Fabric 的主要组成部分
 
-1.  [使用 Microsoft Fabric 的 3 个优点](#d2a4)
+1.  使用 Microsoft Fabric 的 3 个优点
 
-1.  [使用 Microsoft Fabric 的 3 个缺点](#aea1)
+1.  使用 Microsoft Fabric 的 3 个缺点
 
-1.  [你应该改变吗？](#911a)
+1.  你应该改变吗？
 
-1.  [总结](#c801)
+1.  总结
 
 # 介绍
 

@@ -1,24 +1,24 @@
 # 应用强化学习 V：用于连续控制的归一化优势函数（NAF）
 
-> 原文：[https://towardsdatascience.com/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095?source=collection_archive---------11-----------------------#2023-01-19](https://towardsdatascience.com/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095?source=collection_archive---------11-----------------------#2023-01-19)
+> 原文：[`towardsdatascience.com/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095?source=collection_archive---------11-----------------------#2023-01-19`](https://towardsdatascience.com/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095?source=collection_archive---------11-----------------------#2023-01-19)
 
 ## 介绍和解释 NAF 算法，该算法广泛应用于连续控制任务
 
-[](https://medium.com/@JavierMtz5?source=post_page-----62ad143d3095--------------------------------)[![哈维尔·马丁内斯·奥赫达](../Images/5b5df4220fa64c13232c29de9b4177af.png)](https://medium.com/@JavierMtz5?source=post_page-----62ad143d3095--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62ad143d3095--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----62ad143d3095--------------------------------) [哈维尔·马丁内斯·奥赫达](https://medium.com/@JavierMtz5?source=post_page-----62ad143d3095--------------------------------)
+[](https://medium.com/@JavierMtz5?source=post_page-----62ad143d3095--------------------------------)![哈维尔·马丁内斯·奥赫达](https://medium.com/@JavierMtz5?source=post_page-----62ad143d3095--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62ad143d3095--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----62ad143d3095--------------------------------) [哈维尔·马丁内斯·奥赫达](https://medium.com/@JavierMtz5?source=post_page-----62ad143d3095--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F74d7213a71a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095&user=Javier+Mart%C3%ADnez+Ojeda&userId=74d7213a71a8&source=post_page-74d7213a71a8----62ad143d3095---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62ad143d3095--------------------------------) ·9 min read·2023年1月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62ad143d3095&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095&user=Javier+Mart%C3%ADnez+Ojeda&userId=74d7213a71a8&source=-----62ad143d3095---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F74d7213a71a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095&user=Javier+Mart%C3%ADnez+Ojeda&userId=74d7213a71a8&source=post_page-74d7213a71a8----62ad143d3095---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62ad143d3095--------------------------------) ·9 min read·2023 年 1 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62ad143d3095&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095&user=Javier+Mart%C3%ADnez+Ojeda&userId=74d7213a71a8&source=-----62ad143d3095---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F62ad143d3095&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095&source=-----62ad143d3095---------------------bookmark_footer-----------)![](../Images/980806b6e676bcf2f2e28c3dca2000f0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F62ad143d3095&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapplied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095&source=-----62ad143d3095---------------------bookmark_footer-----------)![](img/980806b6e676bcf2f2e28c3dca2000f0.png)
 
 照片由 [Sufyan](https://unsplash.com/@blenderdesigner_1688?utm_source=medium&utm_medium=referral) 提供，刊登在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 > 如果你想在没有 Premium Medium 账户的情况下阅读这篇文章，可以通过这个朋友链接访问 :)
 > 
-> [https://www.learnml.wiki/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control/](https://www.learnml.wiki/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control/)
+> [`www.learnml.wiki/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control/`](https://www.learnml.wiki/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control/)
 
 本系列的前几篇文章介绍并解释了两种自其诞生以来被广泛使用的强化学习算法：[**Q-Learning**](https://medium.com/towards-data-science/applied-reinforcement-learning-i-q-learning-d6086c1f437) 和 [**DQN**](https://medium.com/towards-data-science/applied-reinforcement-learning-iii-deep-q-networks-dqn-8f0e38196ba9)。
 

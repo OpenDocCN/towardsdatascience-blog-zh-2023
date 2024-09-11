@@ -1,20 +1,20 @@
-# 使用Neo4j和APOC将LLM工作流与知识图谱集成
+# 使用 Neo4j 和 APOC 将 LLM 工作流与知识图谱集成
 
-> 原文：[https://towardsdatascience.com/integrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2?source=collection_archive---------0-----------------------#2023-06-07](https://towardsdatascience.com/integrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2?source=collection_archive---------0-----------------------#2023-06-07)
+> 原文：[`towardsdatascience.com/integrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2?source=collection_archive---------0-----------------------#2023-06-07`](https://towardsdatascience.com/integrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2?source=collection_archive---------0-----------------------#2023-06-07)
 
-## OpenAI和VertexAI端点现已作为APOC扩展程序提供
+## OpenAI 和 VertexAI 端点现已作为 APOC 扩展程序提供
 
-[](https://bratanic-tomaz.medium.com/?source=post_page-----27ef7e9900a2--------------------------------)[![Tomaz Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----27ef7e9900a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27ef7e9900a2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----27ef7e9900a2--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----27ef7e9900a2--------------------------------)
+[](https://bratanic-tomaz.medium.com/?source=post_page-----27ef7e9900a2--------------------------------)![Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----27ef7e9900a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27ef7e9900a2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----27ef7e9900a2--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----27ef7e9900a2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----27ef7e9900a2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----27ef7e9900a2--------------------------------) ·8 分钟阅读·2023年6月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F27ef7e9900a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----27ef7e9900a2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----27ef7e9900a2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----27ef7e9900a2--------------------------------) ·8 分钟阅读·2023 年 6 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F27ef7e9900a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----27ef7e9900a2---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F27ef7e9900a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrate-llm-workflows-with-knowledge-graph-using-neo4j-and-apoc-27ef7e9900a2&source=-----27ef7e9900a2---------------------bookmark_footer-----------)
 
-或许每天都有新鲜激动人心的事情发生在大型语言模型（LLM）领域。任何公司都有众多机会和应用场景，可以利用LLM的力量来提升生产力，转化或处理数据，以及用于对话AI和问答系统。
+或许每天都有新鲜激动人心的事情发生在大型语言模型（LLM）领域。任何公司都有众多机会和应用场景，可以利用 LLM 的力量来提升生产力，转化或处理数据，以及用于对话 AI 和问答系统。
 
 为了让你更容易[将 LLM 与知识图谱集成](https://neo4j.com/generativeai/)，Neo4j 的团队已经开始了添加对 LLM 集成支持的旅程。这些集成作为 APOC 扩展过程提供。目前支持 OpenAI 和 VertexAI 端点，但我们计划添加更多的支持。
 
@@ -26,7 +26,7 @@
 
 在这个示例中，我们将同时使用 APOC 和图数据科学库。幸运的是，[Neo4j Sandbox](https://neo4j.com/sandbox/) 项目已经安装了这两个库，并且附带了一个预填充的数据库。因此，你可以通过几次点击设置环境。我们将使用[小型电影项目](https://sandbox.neo4j.com/?usecase=movies)以避免产生更高的 LLM API 成本。
 
-![](../Images/75628fd51fac874fdfaa7a0be250c4b9.png)
+![](img/75628fd51fac874fdfaa7a0be250c4b9.png)
 
 电影图谱的示例。图像由作者提供。
 
@@ -38,15 +38,15 @@
 
 如前所述，这个想法是使用节点的邻域来构建其文本嵌入表示。由于图谱模型简单，我们没有太多的创造性自由。我们将通过使用电影的属性和邻居信息来创建电影的文本嵌入表示。在这种情况下，邻居信息仅包括其演员和导演。然而，我相信这个概念可以应用于更复杂的图谱模式，并用于改进你的向量相似性搜索应用。
 
-![](../Images/8c63ba0a64729b916c5864a9117df353.png)
+![](img/8c63ba0a64729b916c5864a9117df353.png)
 
 利用邻居节点的信息来丰富中心节点的文本嵌入表示。图像由作者提供。图标来自[flaticon](https://www.flaticon.com/)。
 
 我们现在看到的典型方法是简单地分块并嵌入文档，但当寻找跨越多个文档的信息时，这种方法可能会失败。这种问题也被称为多跳问答。然而，多跳问答问题可以使用知识图谱来解决。看待知识图谱的一种方式是将其视为浓缩的信息存储。例如，可以使用[信息提取管道](https://medium.com/neo4j/creating-a-knowledge-graph-from-video-transcripts-with-gpt-4-52d7c7b9f32c)从各种记录中提取相关信息。使用知识图谱，您可以将跨越多个文档的高度连接的信息表示为各种实体之间的关系。
 
-一种解决方案是使用[LLMs生成Cypher语句，以从数据库中检索连接的信息](/langchain-has-added-cypher-search-cb9d821120d5)。另一种解决方案是使用连接信息来丰富文本嵌入表示。此外，增强的信息可以在查询时检索，以向LLM提供额外的上下文，从而作为其回答的基础。
+一种解决方案是使用 LLMs 生成 Cypher 语句，以从数据库中检索连接的信息。另一种解决方案是使用连接信息来丰富文本嵌入表示。此外，增强的信息可以在查询时检索，以向 LLM 提供额外的上下文，从而作为其回答的基础。
 
-以下Cypher查询可用于从邻居节点中检索所有相关的电影信息。
+以下 Cypher 查询可用于从邻居节点中检索所有相关的电影信息。
 
 ```py
 MATCH (m:Movie)
@@ -59,7 +59,7 @@ WITH m, "Movie title: "+ m.title + " year: "+coalesce(m.released,"") +" plot: "+
 RETURN context LIMIT 1
 ```
 
-查询返回了以下Matrix电影的上下文。
+查询返回了以下 Matrix 电影的上下文。
 
 ```py
 Movie title: The Matrix year: 1999 plot: Welcome to the Real World
@@ -69,7 +69,7 @@ DIRECTED: Lana Wachowski, Lilly Wachowski
 
 根据您的领域，您可能还会使用自定义查询来检索多跳之外的信息，或者有时需要聚合一些结果。
 
-我们将使用OpenAI的嵌入端点来生成表示电影及其上下文的文本嵌入，并将其存储为节点属性。
+我们将使用 OpenAI 的嵌入端点来生成表示电影及其上下文的文本嵌入，并将其存储为节点属性。
 
 ```py
 CALL apoc.periodic.iterate(
@@ -87,25 +87,25 @@ CALL apoc.periodic.iterate(
   {batchSize:1, retries:3, params: {apiKey: $apiKey}})
 ```
 
-新增的`apoc.ml.openai.embedding`过程使使用OpenAI的API生成文本嵌入变得非常容易。我们用`apoc.periodic.iterate`来包装API调用，以批处理事务并引入重试策略。
+新增的`apoc.ml.openai.embedding`过程使使用 OpenAI 的 API 生成文本嵌入变得非常容易。我们用`apoc.periodic.iterate`来包装 API 调用，以批处理事务并引入重试策略。
 
-## 检索增强型LLMs
+## 检索增强型 LLMs
 
-看起来主流趋势是查询时向LLMs提供外部信息。我们甚至可以找到OpenAI的指南，了解如何[将相关信息作为提示的一部分来生成答案](https://platform.openai.com/docs/guides/gpt-best-practices/strategy-provide-reference-text)。
+看起来主流趋势是查询时向 LLMs 提供外部信息。我们甚至可以找到 OpenAI 的指南，了解如何[将相关信息作为提示的一部分来生成答案](https://platform.openai.com/docs/guides/gpt-best-practices/strategy-provide-reference-text)。
 
-![](../Images/f5ef0f66b66657b98f3ad70c49cdc01a.png)
+![](img/f5ef0f66b66657b98f3ad70c49cdc01a.png)
 
-检索增强型LLMs的方法。图片由作者提供。
+检索增强型 LLMs 的方法。图片由作者提供。
 
 在这里，我们将使用向量相似度搜索来根据用户输入查找相关电影。工作流程如下：
 
 +   我们使用与嵌入节点上下文信息相同的文本嵌入模型来嵌入用户问题
 
-+   我们使用余弦相似度来找到前三个最相关的节点，并将它们的信息返回给LLM
++   我们使用余弦相似度来找到前三个最相关的节点，并将它们的信息返回给 LLM
 
-+   LLM根据提供的信息构建最终答案
++   LLM 根据提供的信息构建最终答案
 
-由于我们将使用**gpt-3.5-turbo**模型来生成最终答案，因此定义系统提示是一个良好的实践。为了使其更具可读性，我们将系统提示定义为Python变量，然后在执行Cypher语句时使用查询参数。
+由于我们将使用**gpt-3.5-turbo**模型来生成最终答案，因此定义系统提示是一个良好的实践。为了使其更具可读性，我们将系统提示定义为 Python 变量，然后在执行 Cypher 语句时使用查询参数。
 
 ```py
 system_prompt = """
@@ -186,7 +186,7 @@ def generate_answer(question):
 
 让我们测试一下增强检索的语言模型工作流程。
 
-![](../Images/f4ad9a6afe98b3ac53152fa3af87d238.png)
+![](img/f4ad9a6afe98b3ac53152fa3af87d238.png)
 
 图片由作者提供
 
@@ -194,13 +194,13 @@ def generate_answer(question):
 
 让我们再试一个。
 
-![](../Images/0ebe8f13410cbda6aa3ac7502bee8955.png)
+![](img/0ebe8f13410cbda6aa3ac7502bee8955.png)
 
 图片由作者提供
 
 向量相似性搜索能够检索提到 Jack Nicholson 的电影，并使用这些信息构建答案。如前所述，我们可以从图形中检索未包含在节点文本嵌入生成中的信息。
 
-![](../Images/8f14fe8b412d9c0081644345562a4358.png)
+![](img/8f14fe8b412d9c0081644345562a4358.png)
 
 图片由作者提供
 

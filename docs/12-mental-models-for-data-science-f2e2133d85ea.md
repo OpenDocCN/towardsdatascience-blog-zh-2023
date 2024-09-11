@@ -1,18 +1,18 @@
-# 12个数据科学的思维模型
+# 12 个数据科学的思维模型
 
-> 原文：[https://towardsdatascience.com/12-mental-models-for-data-science-f2e2133d85ea?source=collection_archive---------5-----------------------#2023-06-13](https://towardsdatascience.com/12-mental-models-for-data-science-f2e2133d85ea?source=collection_archive---------5-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/12-mental-models-for-data-science-f2e2133d85ea?source=collection_archive---------5-----------------------#2023-06-13`](https://towardsdatascience.com/12-mental-models-for-data-science-f2e2133d85ea?source=collection_archive---------5-----------------------#2023-06-13)
 
 ## 应对数据科学领域的强大概念
 
-[](https://data-professor.medium.com/?source=post_page-----f2e2133d85ea--------------------------------)[![Chanin Nantasenamat](../Images/db835baa5f00e4b006ebd43724367136.png)](https://data-professor.medium.com/?source=post_page-----f2e2133d85ea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2e2133d85ea--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2e2133d85ea--------------------------------) [Chanin Nantasenamat](https://data-professor.medium.com/?source=post_page-----f2e2133d85ea--------------------------------)
+[](https://data-professor.medium.com/?source=post_page-----f2e2133d85ea--------------------------------)![Chanin Nantasenamat](https://data-professor.medium.com/?source=post_page-----f2e2133d85ea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2e2133d85ea--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e2133d85ea--------------------------------) [Chanin Nantasenamat](https://data-professor.medium.com/?source=post_page-----f2e2133d85ea--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff94b47c3cfca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-mental-models-for-data-science-f2e2133d85ea&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=post_page-f94b47c3cfca----f2e2133d85ea---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e2133d85ea--------------------------------) ·8分钟阅读·2023年6月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2e2133d85ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-mental-models-for-data-science-f2e2133d85ea&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=-----f2e2133d85ea---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff94b47c3cfca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-mental-models-for-data-science-f2e2133d85ea&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=post_page-f94b47c3cfca----f2e2133d85ea---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e2133d85ea--------------------------------) ·8 分钟阅读·2023 年 6 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2e2133d85ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-mental-models-for-data-science-f2e2133d85ea&user=Chanin+Nantasenamat&userId=f94b47c3cfca&source=-----f2e2133d85ea---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2e2133d85ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-mental-models-for-data-science-f2e2133d85ea&source=-----f2e2133d85ea---------------------bookmark_footer-----------)![](../Images/91a56baa3e77703ea7aa46398d564e30.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2e2133d85ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-mental-models-for-data-science-f2e2133d85ea&source=-----f2e2133d85ea---------------------bookmark_footer-----------)![](img/91a56baa3e77703ea7aa46398d564e30.png)
 
 照片由[Júnior Ferreira](https://unsplash.com/ja/@juniorferreir_?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

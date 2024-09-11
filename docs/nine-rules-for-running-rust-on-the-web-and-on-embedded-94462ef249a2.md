@@ -1,82 +1,82 @@
 # 在网络和嵌入式系统上运行 Rust 的九条规则
 
-> 原文：[https://towardsdatascience.com/nine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2?source=collection_archive---------3-----------------------#2023-07-05](https://towardsdatascience.com/nine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2?source=collection_archive---------3-----------------------#2023-07-05)
+> 原文：[`towardsdatascience.com/nine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2?source=collection_archive---------3-----------------------#2023-07-05`](https://towardsdatascience.com/nine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2?source=collection_archive---------3-----------------------#2023-07-05)
 
 ## 从将 `range-set-blaze` 移植到 no_std 和 WASM 的实际经验
 
-[](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)[![Carl M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)
+[](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)![Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----94462ef249a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------) ·17 分钟阅读·2023年7月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F94462ef249a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----94462ef249a2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----94462ef249a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------) ·17 分钟阅读·2023 年 7 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F94462ef249a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----94462ef249a2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F94462ef249a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&source=-----94462ef249a2---------------------bookmark_footer-----------)![](../Images/59da1d54d5821d92e578ab92da9a5abb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F94462ef249a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&source=-----94462ef249a2---------------------bookmark_footer-----------)![](img/59da1d54d5821d92e578ab92da9a5abb.png)
 
-微控制器上的螃蟹 — 来源：[https://openai.com/dall-e-2/](https://openai.com/dall-e-2/)
+微控制器上的螃蟹 — 来源：[`openai.com/dall-e-2/`](https://openai.com/dall-e-2/)
 
 我推荐使用 Rust，当你需要 C++ 的速度和 Python 的内存安全时。此外，使用 Rust 你可以构建在超过 100,000 个 [软件库](https://crates.io/) 上。除此之外，Rust 还提供了将你的代码运行在不仅是传统计算机上，还有网页甚至机器人上的潜力。
 
-然而，“几乎所有地方”运行会带来复杂性。本文是为那些希望减轻这些复杂性的Rust程序员准备的。（它也可能对那些想了解Rust的“几乎所有地方”运行故事的人感兴趣。）
+然而，“几乎所有地方”运行会带来复杂性。本文是为那些希望减轻这些复杂性的 Rust 程序员准备的。（它也可能对那些想了解 Rust 的“几乎所有地方”运行故事的人感兴趣。）
 
-第一个复杂性：网页和机器人的嵌入式处理器不支持通用文件IO。如果你的项目主要涉及读写文件，它不适合在机器人、其他嵌入式处理器或网页上运行。
+第一个复杂性：网页和机器人的嵌入式处理器不支持通用文件 IO。如果你的项目主要涉及读写文件，它不适合在机器人、其他嵌入式处理器或网页上运行。
 
 第二个复杂性：将代码移植到几乎所有地方需要多个步骤和选择。导航这些选择可能会耗时。遗漏一步可能导致失败。本文旨在通过提供这九条规则来减少第二个复杂性，稍后我们将详细探讨这些规则：
 
-1.  将你的lib.rs或main.rs标记为no_std。
+1.  将你的 lib.rs 或 main.rs 标记为 no_std。
 
 1.  如果可能的话，使用内置的“crate alloc”。
 
 1.  切换到“no std”依赖项。
 
-1.  创建std和alloc功能，并将你的std-only函数设为可选。
+1.  创建 std 和 alloc 功能，并将你的 std-only 函数设为可选。
 
-1.  为WASM构建你的项目。使用cargo tree来使其正常工作。
+1.  为 WASM 构建你的项目。使用 cargo tree 来使其正常工作。
 
-1.  创建WASM测试和WASM演示。
+1.  创建 WASM 测试和 WASM 演示。
 
 1.  [可选] 为嵌入式设备构建你的项目。
 
 1.  [可选] 创建一个嵌入式测试和嵌入式演示。
 
-1.  完成CI测试、Cargo.toml元数据和更新的README.md。
+1.  完成 CI 测试、Cargo.toml 元数据和更新的 README.md。
 
-遵循这些规则将帮助你创建运行在从PC到智能手机网页（[demo](https://carlkcarlk.github.io/range-set-blaze/wasm-demo/)）到机器人等所有地方的非常快速且内存安全的代码。代码可以非常小，并且可以利用庞大的Rust crate库。
+遵循这些规则将帮助你创建运行在从 PC 到智能手机网页（[demo](https://carlkcarlk.github.io/range-set-blaze/wasm-demo/)）到机器人等所有地方的非常快速且内存安全的代码。代码可以非常小，并且可以利用庞大的 Rust crate 库。
 
-为了说明这些规则，我们将把`[range-set-blaze](https://github.com/CarlKCarlK/range-set-blaze)` crate移植到网页——WASM——和微控制器——嵌入式。 （这个crate操作“块状”整数的集合。这个crate的用户请求了这个移植。）
+为了说明这些规则，我们将把`[range-set-blaze](https://github.com/CarlKCarlK/range-set-blaze)` crate 移植到网页——WASM——和微控制器——嵌入式。 （这个 crate 操作“块状”整数的集合。这个 crate 的用户请求了这个移植。）
 
-移植到WASM和嵌入式要求你避免使用Rust的标准库“std”。转换到“no std”比我预期的既容易又困难。容易是因为你仍然可以使用`Vec`和`String`。困难主要是因为测试。基于我在`range-set-blaze`上的经验，以下是我推荐的决策，逐一描述。为了避免优柔寡断，我将这些建议表达为规则。
+移植到 WASM 和嵌入式要求你避免使用 Rust 的标准库“std”。转换到“no std”比我预期的既容易又困难。容易是因为你仍然可以使用`Vec`和`String`。困难主要是因为测试。基于我在`range-set-blaze`上的经验，以下是我推荐的决策，逐一描述。为了避免优柔寡断，我将这些建议表达为规则。
 
-# 规则1：将你的lib.rs或main.rs标记为no_std。
+# 规则 1：将你的 lib.rs 或 main.rs 标记为 no_std。
 
-> 附注1：首先，使用Git为你的项目创建一个新分支。这样，如果出现问题，你可以轻松地撤销所有更改。
+> 附注 1：首先，使用 Git 为你的项目创建一个新分支。这样，如果出现问题，你可以轻松地撤销所有更改。
 > 
-> 附注2：*实际上*，[WASM部分支持std](https://github.com/paritytech/substrate/issues/4043)。例如，它支持`vec`、`String`和`HashSet`。它不支持文件IO。如果你只需要WASM支持，你可能可以跳过本文中的所有“no_std”工作。
+> 附注 2：*实际上*，[WASM 部分支持 std](https://github.com/paritytech/substrate/issues/4043)。例如，它支持`vec`、`String`和`HashSet`。它不支持文件 IO。如果你只需要 WASM 支持，你可能可以跳过本文中的所有“no_std”工作。
 > 
-> 附注 3：来自[Reddit](https://www.reddit.com/r/rust/comments/14rc70l/)的一个提示，我还没有测试过：“你真的不需要为Wasm设置任何`no_std`。如果你使用诸如`wasm-opt`或`wasm-gc`，甚至只是一个完整的集成管道与`trunk`，你不会看到二进制文件大小的差异，因为任何你没有使用的东西都会被剥离。无需设置`no_std`并寻找`no_std`依赖项。”
+> 附注 3：来自[Reddit](https://www.reddit.com/r/rust/comments/14rc70l/)的一个提示，我还没有测试过：“你真的不需要为 Wasm 设置任何`no_std`。如果你使用诸如`wasm-opt`或`wasm-gc`，甚至只是一个完整的集成管道与`trunk`，你不会看到二进制文件大小的差异，因为任何你没有使用的东西都会被剥离。无需设置`no_std`并寻找`no_std`依赖项。”
 
 在`lib.rs`的顶部标记为：
 
 `#![cfg_attr(not(test), no_std)]`
 
-这告诉Rust编译器除非在测试时，否则不要包含标准库。
+这告诉 Rust 编译器除非在测试时，否则不要包含标准库。
 
 > 附注 1：我的项目是一个具有`lib.rs`的库项目。我认为具有`main.rs`的二进制项目的步骤大致相同，但我还没有测试过。
 > 
 > 附注 2：我们将在后面的规则中详细讨论代码测试。
 
-在`range-set-blaze`的`lib.rs`中添加“no_std”行，会导致40个编译器问题，大多数问题形式如下：
+在`range-set-blaze`的`lib.rs`中添加“no_std”行，会导致 40 个编译器问题，大多数问题形式如下：
 
-![](../Images/cd34403675a277899925aa81efd0278e.png)
+![](img/cd34403675a277899925aa81efd0278e.png)
 
-通过将主代码中的“std::”更改为“core::”来修复其中的一些问题（不包括测试代码）。对于`range-set-blaze`，这将问题数量从40个减少到12个。这个修复很有效，因为许多项，如`std::cmp::max`，在`core::cmp::max`中也可以找到。
+通过将主代码中的“std::”更改为“core::”来修复其中的一些问题（不包括测试代码）。对于`range-set-blaze`，这将问题数量从 40 个减少到 12 个。这个修复很有效，因为许多项，如`std::cmp::max`，在`core::cmp::max`中也可以找到。
 
 可悲的是，像`Vec`和`Box`这样的项不能在`core`中，因为它们需要分配内存。幸运的是，如果你愿意支持内存分配，你仍然可以使用它们。
 
 # 规则 2：如果可以的话，使用内置的“crate alloc”。
 
-你是否应该允许你的crate分配内存？对于WASM，你应该允许。对于许多嵌入式应用程序，你也应该允许。然而，对于一些嵌入式应用程序，你不应该允许。如果你决定允许内存分配，那么在`lib.rs`的顶部添加：
+你是否应该允许你的 crate 分配内存？对于 WASM，你应该允许。对于许多嵌入式应用程序，你也应该允许。然而，对于一些嵌入式应用程序，你不应该允许。如果你决定允许内存分配，那么在`lib.rs`的顶部添加：
 
 `extern crate alloc;`
 
@@ -93,13 +93,13 @@ use alloc::{format, string::String};
 use alloc::vec;
 ```
 
-使用`range-set-blaze`，这将问题数量从12个减少到两个。我们将在规则 3 中解决这些问题。
+使用`range-set-blaze`，这将问题数量从 12 个减少到两个。我们将在规则 3 中解决这些问题。
 
-> 附注：如果你在编写一个不能使用内存分配的嵌入式环境，并且遇到了例如`Vec`的问题，你可以尝试重写。例如，你可以尝试用数组替代向量。如果这样不行，可以查看其他规则。如果都不行，你可能无法将你的crate移植到`no_std`。
+> 附注：如果你在编写一个不能使用内存分配的嵌入式环境，并且遇到了例如`Vec`的问题，你可以尝试重写。例如，你可以尝试用数组替代向量。如果这样不行，可以查看其他规则。如果都不行，你可能无法将你的 crate 移植到`no_std`。
 
 # 规则 3：切换到“no std”依赖项。
 
-如果你的项目使用了将“std”函数引入你代码中的crate，Rust编译器会发出警告。有时，你可以搜索[crates.io](https://crates.io/search?q=thiserror+no_std)并找到替代的“no_std” crate。例如，流行的`thiserror` crate会将“std”注入你的代码。然而，社区已经创建了[不含](https://crates.io/search?q=thiserror+no_std)“std”的替代品。
+如果你的项目使用了将“std”函数引入你代码中的 crate，Rust 编译器会发出警告。有时，你可以搜索[crates.io](https://crates.io/search?q=thiserror+no_std)并找到替代的“no_std” crate。例如，流行的`thiserror` crate 会将“std”注入你的代码。然而，社区已经创建了[不含](https://crates.io/search?q=thiserror+no_std)“std”的替代品。
 
 对于 `range-set-blaze`，剩下的两个问题与 crate `[gen_ops](https://crates.io/crates/gen_ops)` 相关——这是一个方便地定义操作符如 “+” 和 “&” 的绝妙 crate。`gen_ops` 的版本 0.3.0 未完全支持 “no std”。然而，版本 0.4.0 支持。我更新了 `Cargo.toml` 中的依赖项，并改进了我的“no std”兼容性。
 
@@ -383,7 +383,7 @@ wasm-pack build --target web
 
 接下来，启动本地网络服务器并查看页面。我使用了 [Live Preview](https://marketplace.visualstudio.com/items?itemName=ms-vscode.live-server) 扩展到 VS Code。许多人使用 `python -m http.server`。`range-set-blaze` 演示看起来像这样（也可以[在 GitHub 上实时查看](https://carlkcarlk.github.io/range-set-blaze/wasm-demo/)）：
 
-![](../Images/0413748bafff879c803c0c63b28d809b.png)
+![](img/0413748bafff879c803c0c63b28d809b.png)
 
 我发现看到我的 Rust 项目在网页中运行非常令人满意。如果 WASM 兼容性是你所寻找的一切，你可以跳到规则 9。
 
@@ -402,11 +402,11 @@ cargo check --target thumbv7m-none-eabi --features alloc --no-default-features
 
 当我在`range-set-blaze`上执行此操作时，我得到与四组依赖项相关的错误：
 
-+   `thiserror` — 我的项目依赖于这个crate，但实际上没有使用它。我删除了这个依赖。
++   `thiserror` — 我的项目依赖于这个 crate，但实际上没有使用它。我删除了这个依赖。
 
 +   `rand`和`getrandom` — 我的项目只需要在本地测试中使用随机数，所以我将依赖项移动到了`[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]`。我还更新了我的主代码和测试代码。
 
-+   `itertools`、`num-traits`和`num-integer` — 这些crate为“std”和“alloc”提供了功能。我将`Cargo.toml`更新为如下：
++   `itertools`、`num-traits`和`num-integer` — 这些 crate 为“std”和“alloc”提供了功能。我将`Cargo.toml`更新为如下：
 
 ```py
 ...
@@ -427,7 +427,7 @@ rand = "0.8.4"
 #...
 ```
 
-我怎么知道使用哪个依赖项的哪个功能？理解像`itertools`这样的crate的功能需要阅读[其文档](https://docs.rs/itertools/latest/itertools/#crate-features)并（通常）访问[其GitHub仓库](https://github.com/rust-itertools/itertools/blob/master/Cargo.toml)并阅读其`Cargo.toml`。你还应该使用`cargo tree`来检查你是否从每个依赖项中获得了所需的功能。例如，这种使用`cargo tree`的方法显示了对于默认编译，我得到了`range-set-blaze`、`num-integer`和`num-traits`的“std”功能，以及`itertools`和`either`的“use-std”功能：
+我怎么知道使用哪个依赖项的哪个功能？理解像`itertools`这样的 crate 的功能需要阅读[其文档](https://docs.rs/itertools/latest/itertools/#crate-features)并（通常）访问[其 GitHub 仓库](https://github.com/rust-itertools/itertools/blob/master/Cargo.toml)并阅读其`Cargo.toml`。你还应该使用`cargo tree`来检查你是否从每个依赖项中获得了所需的功能。例如，这种使用`cargo tree`的方法显示了对于默认编译，我得到了`range-set-blaze`、`num-integer`和`num-traits`的“std”功能，以及`itertools`和`either`的“use-std”功能：
 
 ```py
 cargo tree --edges no-dev --format "{p} {f}"
@@ -467,7 +467,7 @@ range-set-blaze v0.1.6 (O:\Projects\Science\wasmetc\wasm4) alloc,itertools,num-i
 └── num-traits v0.2.15  (*)
 ```
 
-当你认为一切正常时，使用这些命令来检查/测试本地、WASM和嵌入式：
+当你认为一切正常时，使用这些命令来检查/测试本地、WASM 和嵌入式：
 
 ```py
 # test native
@@ -484,15 +484,15 @@ cargo check --target thumbv7m-none-eabi --features alloc --no-default-features
 
 # 规则 8：创建一个单一的嵌入式测试和一个嵌入式演示。
 
-让我们通过创建一个综合测试和演示来发挥我们的嵌入式功能。我们将它运行在一个叫做QEMU的模拟器上。
+让我们通过创建一个综合测试和演示来发挥我们的嵌入式功能。我们将它运行在一个叫做 QEMU 的模拟器上。
 
-测试本地Rust很简单。测试WASM Rust还可以。测试嵌入式Rust很困难。我们将只进行一次简单的测试。
+测试本地 Rust 很简单。测试 WASM Rust 还可以。测试嵌入式 Rust 很困难。我们将只进行一次简单的测试。
 
-> 附注 1：有关运行和模拟嵌入式Rust的更多信息，请参见：[The Embedded Rust Book](https://docs.rust-embedded.org/book/start/index.html)。
+> 附注 1：有关运行和模拟嵌入式 Rust 的更多信息，请参见：[The Embedded Rust Book](https://docs.rust-embedded.org/book/start/index.html)。
 > 
-> 附注 2：有关更完整的嵌入式Rust测试框架的想法，请参见[defmt-test](https://github.com/knurling-rs/defmt/tree/main/firmware/defmt-test)。遗憾的是，我无法搞清楚如何在模拟下运行它。[cortex-m/testsuite](https://github.com/rust-embedded/cortex-m/tree/master/testsuite)项目使用了defmt-test的一个分支，并且可以在模拟下运行，但没有提供独立的测试crate，并且需要三个额外的（子）项目。
+> 附注 2：有关更完整的嵌入式 Rust 测试框架的想法，请参见[defmt-test](https://github.com/knurling-rs/defmt/tree/main/firmware/defmt-test)。遗憾的是，我无法搞清楚如何在模拟下运行它。[cortex-m/testsuite](https://github.com/rust-embedded/cortex-m/tree/master/testsuite)项目使用了 defmt-test 的一个分支，并且可以在模拟下运行，但没有提供独立的测试 crate，并且需要三个额外的（子）项目。
 > 
-> 附注 3：一个嵌入式测试要比没有测试好得多。我们将在本地和WASM级别进行其余的测试。
+> 附注 3：一个嵌入式测试要比没有测试好得多。我们将在本地和 WASM 级别进行其余的测试。
 
 我们将在当前的`tests`文件夹内创建嵌入式测试和演示。文件将是：
 
@@ -509,7 +509,7 @@ tests/embedded
 
 这里是创建文件和设置的步骤。
 
-1.  安装[QEMU模拟器](https://www.qemu.org/)。在Windows上，这涉及运行安装程序，然后手动将`"C:\Program Files\qemu\"`添加到你的路径中。
+1.  安装[QEMU 模拟器](https://www.qemu.org/)。在 Windows 上，这涉及运行安装程序，然后手动将`"C:\Program Files\qemu\"`添加到你的路径中。
 
 2\. 创建一个依赖于本地项目的 `tests/embedded/Cargo.toml`，并包含“无默认功能”和“alloc”。这是我的：
 

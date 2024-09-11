@@ -1,18 +1,18 @@
 # 为什么所有地图都不准确？
 
-> 原文：[https://towardsdatascience.com/why-are-all-maps-inaccurate-e566f08d91fe?source=collection_archive---------5-----------------------#2023-12-31](https://towardsdatascience.com/why-are-all-maps-inaccurate-e566f08d91fe?source=collection_archive---------5-----------------------#2023-12-31)
+> 原文：[`towardsdatascience.com/why-are-all-maps-inaccurate-e566f08d91fe?source=collection_archive---------5-----------------------#2023-12-31`](https://towardsdatascience.com/why-are-all-maps-inaccurate-e566f08d91fe?source=collection_archive---------5-----------------------#2023-12-31)
 
 ## 了解地图投影以及为什么它们在一些最受欢迎的地图中被使用
 
-[](https://medium.com/@teosiyang?source=post_page-----e566f08d91fe--------------------------------)[![Jake Teo](../Images/9687f43822fab69befb750a8ec58516d.png)](https://medium.com/@teosiyang?source=post_page-----e566f08d91fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e566f08d91fe--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e566f08d91fe--------------------------------) [Jake Teo](https://medium.com/@teosiyang?source=post_page-----e566f08d91fe--------------------------------)
+[](https://medium.com/@teosiyang?source=post_page-----e566f08d91fe--------------------------------)![Jake Teo](https://medium.com/@teosiyang?source=post_page-----e566f08d91fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e566f08d91fe--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e566f08d91fe--------------------------------) [Jake Teo](https://medium.com/@teosiyang?source=post_page-----e566f08d91fe--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52b0d82d5bf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-all-maps-inaccurate-e566f08d91fe&user=Jake+Teo&userId=52b0d82d5bf5&source=post_page-52b0d82d5bf5----e566f08d91fe---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e566f08d91fe--------------------------------) ·7 min read·2023年12月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe566f08d91fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-all-maps-inaccurate-e566f08d91fe&user=Jake+Teo&userId=52b0d82d5bf5&source=-----e566f08d91fe---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52b0d82d5bf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-all-maps-inaccurate-e566f08d91fe&user=Jake+Teo&userId=52b0d82d5bf5&source=post_page-52b0d82d5bf5----e566f08d91fe---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e566f08d91fe--------------------------------) ·7 min read·2023 年 12 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe566f08d91fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-all-maps-inaccurate-e566f08d91fe&user=Jake+Teo&userId=52b0d82d5bf5&source=-----e566f08d91fe---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe566f08d91fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-all-maps-inaccurate-e566f08d91fe&source=-----e566f08d91fe---------------------bookmark_footer-----------)![](../Images/0e3763678c08b8971449f644ba864129.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe566f08d91fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-are-all-maps-inaccurate-e566f08d91fe&source=-----e566f08d91fe---------------------bookmark_footer-----------)![](img/0e3763678c08b8971449f644ba864129.png)
 
 图片由[Kyle Glenn](https://unsplash.com/@kylejglenn?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,17 +22,17 @@
 
 # 目录
 
-[正射投影](#a835)
+正射投影
 
-[墨卡托投影](#d413)
+墨卡托投影
 
-[横轴墨卡托投影](#216c)
+横轴墨卡托投影
 
-[朗伯特正形圆锥投影](#fcca)
+朗伯特正形圆锥投影
 
-[罗宾逊投影](#032e)
+罗宾逊投影
 
-[总结](#2736)
+总结
 
 # 源代码
 

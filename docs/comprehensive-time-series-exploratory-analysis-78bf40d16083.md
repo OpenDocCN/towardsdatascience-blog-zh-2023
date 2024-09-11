@@ -1,10 +1,10 @@
 # 全面的时间序列探索分析
 
-> 原文：[https://towardsdatascience.com/comprehensive-time-series-exploratory-analysis-78bf40d16083?source=collection_archive---------1-----------------------#2023-11-25](https://towardsdatascience.com/comprehensive-time-series-exploratory-analysis-78bf40d16083?source=collection_archive---------1-----------------------#2023-11-25)
+> 原文：[`towardsdatascience.com/comprehensive-time-series-exploratory-analysis-78bf40d16083?source=collection_archive---------1-----------------------#2023-11-25`](https://towardsdatascience.com/comprehensive-time-series-exploratory-analysis-78bf40d16083?source=collection_archive---------1-----------------------#2023-11-25)
 
 ## 深入探讨空气质量数据
 
-[](https://medium.com/@erich.hs?source=post_page-----78bf40d16083--------------------------------)[![Erich Silva](../Images/448dee1644d3f3e092bbbcfbbf07592d.png)](https://medium.com/@erich.hs?source=post_page-----78bf40d16083--------------------------------)[](https://towardsdatascience.com/?source=post_page-----78bf40d16083--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----78bf40d16083--------------------------------) [Erich Silva](https://medium.com/@erich.hs?source=post_page-----78bf40d16083--------------------------------)
+[](https://medium.com/@erich.hs?source=post_page-----78bf40d16083--------------------------------)![Erich Silva](https://medium.com/@erich.hs?source=post_page-----78bf40d16083--------------------------------)[](https://towardsdatascience.com/?source=post_page-----78bf40d16083--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----78bf40d16083--------------------------------) [Erich Silva](https://medium.com/@erich.hs?source=post_page-----78bf40d16083--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F78bf40d16083&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehensive-time-series-exploratory-analysis-78bf40d16083&source=-----78bf40d16083---------------------bookmark_footer-----------)![](../Images/a6c9e51ca7e3e5d265d6379258366dc9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F78bf40d16083&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomprehensive-time-series-exploratory-analysis-78bf40d16083&source=-----78bf40d16083---------------------bookmark_footer-----------)![](img/a6c9e51ca7e3e5d265d6379258366dc9.png)
 
 照片由[Jason Blackeye](https://unsplash.com/@jeisblack?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)在[Unsplash](https://unsplash.com/collections/55366/my-first-collection/981603704225affe48a9007fc5094d84?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄。
 
@@ -20,20 +20,20 @@
 
 ## 目录
 
-+   [本文的目标](#d55f)
++   本文的目标
 
-+   [数据集描述](#f0f7)
++   数据集描述
 
-+   [库和依赖项](#d791)
++   库和依赖项
 
-+   [开始使用](#85bf)
++   开始使用
 
-+   [全景](#b967)
++   全景
 
-+   [详细视图](#fa99)
++   详细视图
 
-+   [缺失值](#9720)
++   缺失值
 
-+   [间歇性](#ce22)
++   间歇性
 
-+   [季节性](#3002)
++   季节性

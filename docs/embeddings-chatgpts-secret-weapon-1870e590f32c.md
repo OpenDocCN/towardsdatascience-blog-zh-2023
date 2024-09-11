@@ -1,18 +1,18 @@
 # 嵌入技术：ChatGPT 的终极武器
 
-> 原文：[https://towardsdatascience.com/embeddings-chatgpts-secret-weapon-1870e590f32c?source=collection_archive---------1-----------------------#2023-03-06](https://towardsdatascience.com/embeddings-chatgpts-secret-weapon-1870e590f32c?source=collection_archive---------1-----------------------#2023-03-06)
+> 原文：[`towardsdatascience.com/embeddings-chatgpts-secret-weapon-1870e590f32c?source=collection_archive---------1-----------------------#2023-03-06`](https://towardsdatascience.com/embeddings-chatgpts-secret-weapon-1870e590f32c?source=collection_archive---------1-----------------------#2023-03-06)
 
 ## 嵌入技术，以及它们如何帮助 ChatGPT 预测下一个词
 
-[](https://emmaccode.medium.com/?source=post_page-----1870e590f32c--------------------------------)[![艾玛·布德罗](../Images/f7201d012b733643d6e97957f73fd1fa.png)](https://emmaccode.medium.com/?source=post_page-----1870e590f32c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1870e590f32c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1870e590f32c--------------------------------) [艾玛·布德罗](https://emmaccode.medium.com/?source=post_page-----1870e590f32c--------------------------------)
+[](https://emmaccode.medium.com/?source=post_page-----1870e590f32c--------------------------------)![艾玛·布德罗](https://emmaccode.medium.com/?source=post_page-----1870e590f32c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1870e590f32c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1870e590f32c--------------------------------) [艾玛·布德罗](https://emmaccode.medium.com/?source=post_page-----1870e590f32c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembeddings-chatgpts-secret-weapon-1870e590f32c&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----1870e590f32c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1870e590f32c--------------------------------) ·5分钟阅读·2023年3月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1870e590f32c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembeddings-chatgpts-secret-weapon-1870e590f32c&user=Emma+Boudreau&userId=ea170050148c&source=-----1870e590f32c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea170050148c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembeddings-chatgpts-secret-weapon-1870e590f32c&user=Emma+Boudreau&userId=ea170050148c&source=post_page-ea170050148c----1870e590f32c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1870e590f32c--------------------------------) ·5 分钟阅读·2023 年 3 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1870e590f32c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembeddings-chatgpts-secret-weapon-1870e590f32c&user=Emma+Boudreau&userId=ea170050148c&source=-----1870e590f32c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1870e590f32c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembeddings-chatgpts-secret-weapon-1870e590f32c&source=-----1870e590f32c---------------------bookmark_footer-----------)![](../Images/b73140f2b26fd1fb712cffe14b2f354e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1870e590f32c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembeddings-chatgpts-secret-weapon-1870e590f32c&source=-----1870e590f32c---------------------bookmark_footer-----------)![](img/b73140f2b26fd1fb712cffe14b2f354e.png)
 
 (图片由作者提供)
 

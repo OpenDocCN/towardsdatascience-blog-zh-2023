@@ -1,12 +1,12 @@
 # 数据泄漏如何影响模型性能声明
 
-> 原文：[https://towardsdatascience.com/how-data-leakage-affects-model-performance-claims-841eb01276bb?source=collection_archive---------12-----------------------#2023-01-02](https://towardsdatascience.com/how-data-leakage-affects-model-performance-claims-841eb01276bb?source=collection_archive---------12-----------------------#2023-01-02)
+> 原文：[`towardsdatascience.com/how-data-leakage-affects-model-performance-claims-841eb01276bb?source=collection_archive---------12-----------------------#2023-01-02`](https://towardsdatascience.com/how-data-leakage-affects-model-performance-claims-841eb01276bb?source=collection_archive---------12-----------------------#2023-01-02)
 
-[](https://medium.com/@georgiadeaconu?source=post_page-----841eb01276bb--------------------------------)[![Georgia Deaconu](../Images/39ba1bea77aa46bb39b2975108c3adaa.png)](https://medium.com/@georgiadeaconu?source=post_page-----841eb01276bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----841eb01276bb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----841eb01276bb--------------------------------) [Georgia Deaconu](https://medium.com/@georgiadeaconu?source=post_page-----841eb01276bb--------------------------------)
+[](https://medium.com/@georgiadeaconu?source=post_page-----841eb01276bb--------------------------------)![Georgia Deaconu](https://medium.com/@georgiadeaconu?source=post_page-----841eb01276bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----841eb01276bb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----841eb01276bb--------------------------------) [Georgia Deaconu](https://medium.com/@georgiadeaconu?source=post_page-----841eb01276bb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc4a98f38b0e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-data-leakage-affects-model-performance-claims-841eb01276bb&user=Georgia+Deaconu&userId=c4a98f38b0e&source=post_page-c4a98f38b0e----841eb01276bb---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----841eb01276bb--------------------------------) ·4 min read·2023年1月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F841eb01276bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-data-leakage-affects-model-performance-claims-841eb01276bb&user=Georgia+Deaconu&userId=c4a98f38b0e&source=-----841eb01276bb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc4a98f38b0e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-data-leakage-affects-model-performance-claims-841eb01276bb&user=Georgia+Deaconu&userId=c4a98f38b0e&source=post_page-c4a98f38b0e----841eb01276bb---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----841eb01276bb--------------------------------) ·4 min read·2023 年 1 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F841eb01276bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-data-leakage-affects-model-performance-claims-841eb01276bb&user=Georgia+Deaconu&userId=c4a98f38b0e&source=-----841eb01276bb---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 数据泄露可以以几种不同的方式发生。本帖的目标是展示一些最常遇到的类型，并提供一些识别和减轻它们的技巧。
 
-![](../Images/a384eb770d0aa46df6ec4405d4a75f92.png)
+![](img/a384eb770d0aa46df6ec4405d4a75f92.png)
 
 作者使用 dreamstudio.ai 生成的图像
 

@@ -1,10 +1,10 @@
-# 普通人的数据建模，第1部分：什么是数据建模？
+# 普通人的数据建模，第一部分：什么是数据建模？
 
-> 原文：[https://towardsdatascience.com/data-modeling-for-mere-mortals-part-1-what-is-data-modeling-103eb184930e?source=collection_archive---------6-----------------------#2023-08-02](https://towardsdatascience.com/data-modeling-for-mere-mortals-part-1-what-is-data-modeling-103eb184930e?source=collection_archive---------6-----------------------#2023-08-02)
+> 原文：[`towardsdatascience.com/data-modeling-for-mere-mortals-part-1-what-is-data-modeling-103eb184930e?source=collection_archive---------6-----------------------#2023-08-02`](https://towardsdatascience.com/data-modeling-for-mere-mortals-part-1-what-is-data-modeling-103eb184930e?source=collection_archive---------6-----------------------#2023-08-02)
 
 ## 数据建模有时可能看起来很吓人（所有那些复杂的图表！），但其实并不必如此。
 
-[](https://datamozart.medium.com/?source=post_page-----103eb184930e--------------------------------)[![Nikola Ilic](../Images/9fab894b9696c0dfd80c5173188b720b.png)](https://datamozart.medium.com/?source=post_page-----103eb184930e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----103eb184930e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----103eb184930e--------------------------------) [Nikola Ilic](https://datamozart.medium.com/?source=post_page-----103eb184930e--------------------------------)
+[](https://datamozart.medium.com/?source=post_page-----103eb184930e--------------------------------)![Nikola Ilic](https://datamozart.medium.com/?source=post_page-----103eb184930e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----103eb184930e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----103eb184930e--------------------------------) [Nikola Ilic](https://datamozart.medium.com/?source=post_page-----103eb184930e--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F103eb184930e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-for-mere-mortals-part-1-what-is-data-modeling-103eb184930e&source=-----103eb184930e---------------------bookmark_footer-----------)![](../Images/f68e515f2767c1fe53db6c0958c7de5f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F103eb184930e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-for-mere-mortals-part-1-what-is-data-modeling-103eb184930e&source=-----103eb184930e---------------------bookmark_footer-----------)![](img/f68e515f2767c1fe53db6c0958c7de5f.png)
 
 [Alina Grubnyak 在 Unsplash 的照片](https://unsplash.com/de/fotos/ZiQkhI7417A)
 

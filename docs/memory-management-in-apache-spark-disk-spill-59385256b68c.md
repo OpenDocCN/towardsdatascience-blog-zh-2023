@@ -1,18 +1,18 @@
 # 《Apache Spark 的内存管理：磁盘溢出》
 
-> 原文：[https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c?source=collection_archive---------3-----------------------#2023-09-15](https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c?source=collection_archive---------3-----------------------#2023-09-15)
+> 原文：[`towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c?source=collection_archive---------3-----------------------#2023-09-15`](https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c?source=collection_archive---------3-----------------------#2023-09-15)
 
 ## 它是什么以及如何处理它
 
-[](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[![Tom Corbin](../Images/e410c9b88920cd3a221538e08eebe6f0.png)](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------) [Tom Corbin](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)
+[](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)![Tom Corbin](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------) [Tom Corbin](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F96fa70c9b31d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemory-management-in-apache-spark-disk-spill-59385256b68c&user=Tom+Corbin&userId=96fa70c9b31d&source=post_page-96fa70c9b31d----59385256b68c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------) ·12分钟阅读·2023年9月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F59385256b68c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemory-management-in-apache-spark-disk-spill-59385256b68c&user=Tom+Corbin&userId=96fa70c9b31d&source=-----59385256b68c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F96fa70c9b31d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemory-management-in-apache-spark-disk-spill-59385256b68c&user=Tom+Corbin&userId=96fa70c9b31d&source=post_page-96fa70c9b31d----59385256b68c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------) ·12 分钟阅读·2023 年 9 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F59385256b68c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemory-management-in-apache-spark-disk-spill-59385256b68c&user=Tom+Corbin&userId=96fa70c9b31d&source=-----59385256b68c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F59385256b68c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemory-management-in-apache-spark-disk-spill-59385256b68c&source=-----59385256b68c---------------------bookmark_footer-----------)![](../Images/96049b2bcf518a5a2922df320a077a51.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F59385256b68c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemory-management-in-apache-spark-disk-spill-59385256b68c&source=-----59385256b68c---------------------bookmark_footer-----------)![](img/96049b2bcf518a5a2922df320a077a51.png)
 
 图片来源于 [benjamin lehman](https://unsplash.com/@benjaminlehman?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,56 +1,56 @@
 # 社会工作学生的生成式人工智能：第一部分
 
-> 原文：[https://towardsdatascience.com/generative-ai-for-social-work-students-part-i-1f19ee9cbbe1?source=collection_archive---------4-----------------------#2023-03-20](https://towardsdatascience.com/generative-ai-for-social-work-students-part-i-1f19ee9cbbe1?source=collection_archive---------4-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/generative-ai-for-social-work-students-part-i-1f19ee9cbbe1?source=collection_archive---------4-----------------------#2023-03-20`](https://towardsdatascience.com/generative-ai-for-social-work-students-part-i-1f19ee9cbbe1?source=collection_archive---------4-----------------------#2023-03-20)
 
 ## 一个范式转变
 
-[](https://b-r-i-a-n.medium.com/?source=post_page-----1f19ee9cbbe1--------------------------------)[![Brian Perron, PhD](../Images/8f9056642a4fd5e334a92dded0278961.png)](https://b-r-i-a-n.medium.com/?source=post_page-----1f19ee9cbbe1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f19ee9cbbe1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1f19ee9cbbe1--------------------------------) [Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----1f19ee9cbbe1--------------------------------)
+[](https://b-r-i-a-n.medium.com/?source=post_page-----1f19ee9cbbe1--------------------------------)![Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----1f19ee9cbbe1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f19ee9cbbe1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f19ee9cbbe1--------------------------------) [Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----1f19ee9cbbe1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbee210a2a20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-i-1f19ee9cbbe1&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=post_page-bee210a2a20----1f19ee9cbbe1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f19ee9cbbe1--------------------------------) ·12分钟阅读·2023年3月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f19ee9cbbe1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-i-1f19ee9cbbe1&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=-----1f19ee9cbbe1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbee210a2a20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-i-1f19ee9cbbe1&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=post_page-bee210a2a20----1f19ee9cbbe1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f19ee9cbbe1--------------------------------) ·12 分钟阅读·2023 年 3 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f19ee9cbbe1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-i-1f19ee9cbbe1&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=-----1f19ee9cbbe1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1f19ee9cbbe1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-i-1f19ee9cbbe1&source=-----1f19ee9cbbe1---------------------bookmark_footer-----------)![](../Images/0e42442d2a20ff63d8972bd9d5dbc436.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1f19ee9cbbe1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-i-1f19ee9cbbe1&source=-----1f19ee9cbbe1---------------------bookmark_footer-----------)![](img/0e42442d2a20ff63d8972bd9d5dbc436.png)
 
-作者使用ChatGPT制作的ASCII艺术小狗。
+作者使用 ChatGPT 制作的 ASCII 艺术小狗。
 
-近年来，人工智能（AI）发展迅速，产生了强大的工具，如生成式人工智能和大型语言模型。生成式人工智能是一种可以根据从现有数据中学到的模式创造新内容的人工智能，比如文本、图像或音乐。大型语言模型，如OpenAI的GPT系列，是生成式人工智能的一个子集，经过专门训练以理解和生成类人语言。这些模型变得越来越复杂，能够生成连贯、符合上下文甚至富有创造性的输出。
+近年来，人工智能（AI）发展迅速，产生了强大的工具，如生成式人工智能和大型语言模型。生成式人工智能是一种可以根据从现有数据中学到的模式创造新内容的人工智能，比如文本、图像或音乐。大型语言模型，如 OpenAI 的 GPT 系列，是生成式人工智能的一个子集，经过专门训练以理解和生成类人语言。这些模型变得越来越复杂，能够生成连贯、符合上下文甚至富有创造性的输出。
 
-一年多前，我开始使用GPT，并对其生成与人类作者难以区分的文本的能力感到惊讶。这种能力也引发了对学术不端行为的担忧。因此，我在Medium上撰写了一篇文章，[预测AI辅助学术不端行为的出现](/anticipating-the-emergence-of-ai-assisted-academic-misconduct-cf05f70a592c)。
+一年多前，我开始使用 GPT，并对其生成与人类作者难以区分的文本的能力感到惊讶。这种能力也引发了对学术不端行为的担忧。因此，我在 Medium 上撰写了一篇文章，预测 AI 辅助学术不端行为的出现。
 
-从那时起，我密切关注生成式AI的发展，并探索它们如何与我对传统AI系统的兴趣互补。最近，我和我的同事评估了ChatGPT通过模拟的硕士级社会工作执照考试的能力——它做到了。我们研究的预印本可以在[这里](https://www.researchgate.net/publication/369181098_Time_to_Move_Beyond_the_ASWB_Licensing_Exams_Can_Generative_Artificial_Intelligence_Offer_a_Way_Forward_for_Social_Work)查看，并将很快在[《社会工作实践研究》](https://journals.sagepub.com/home/rsw)上发表。ChatGPT现在能以我在一年之前无法想象的闪电速度完成各种复杂任务。
+从那时起，我密切关注生成式 AI 的发展，并探索它们如何与我对传统 AI 系统的兴趣互补。最近，我和我的同事评估了 ChatGPT 通过模拟的硕士级社会工作执照考试的能力——它做到了。我们研究的预印本可以在[这里](https://www.researchgate.net/publication/369181098_Time_to_Move_Beyond_the_ASWB_Licensing_Exams_Can_Generative_Artificial_Intelligence_Offer_a_Way_Forward_for_Social_Work)查看，并将很快在[《社会工作实践研究》](https://journals.sagepub.com/home/rsw)上发表。ChatGPT 现在能以我在一年之前无法想象的闪电速度完成各种复杂任务。
 
-![](../Images/3ac8ebf589bdc47900f1d3b21a11dde0.png)
+![](img/3ac8ebf589bdc47900f1d3b21a11dde0.png)
 
 作者提供的图片。
 
-作为社会工作专业的学生，你可能会想这些技术进步如何影响你的教育体验。AI可以彻底改变你学习、研究和应对社会工作复杂挑战的方式。大型语言模型不仅仅是生成或重写文本。你可以利用这些模型来总结冗长的政策文件，分析定量和定性数据，生成项目评估的见解，自动化社区组织中的日常功能，创建营销材料，构建网络应用和网站——还有更多。
+作为社会工作专业的学生，你可能会想这些技术进步如何影响你的教育体验。AI 可以彻底改变你学习、研究和应对社会工作复杂挑战的方式。大型语言模型不仅仅是生成或重写文本。你可以利用这些模型来总结冗长的政策文件，分析定量和定性数据，生成项目评估的见解，自动化社区组织中的日常功能，创建营销材料，构建网络应用和网站——还有更多。
 
-我坚信，通过建立对AI技术的扎实基础和有效使用这些技术的技能，你可以提升学习体验并开启新的职业机会。同时，如果没有正确的心态、培训和经验，这些模型对你的学习和职业生涯也会带来重大挑战和风险。
+我坚信，通过建立对 AI 技术的扎实基础和有效使用这些技术的技能，你可以提升学习体验并开启新的职业机会。同时，如果没有正确的心态、培训和经验，这些模型对你的学习和职业生涯也会带来重大挑战和风险。
 
-本文是一个系列的第一部分，旨在为MSW学生提供学习和建立AI技术能力的起点，重点介绍大型语言模型。第一篇文章概述了生成式AI在社会工作中的不同应用，并对伦理问题进行了初步讨论，后续文章将继续探讨这些问题。即将讨论的主题包括：
+本文是一个系列的第一部分，旨在为 MSW 学生提供学习和建立 AI 技术能力的起点，重点介绍大型语言模型。第一篇文章概述了生成式 AI 在社会工作中的不同应用，并对伦理问题进行了初步讨论，后续文章将继续探讨这些问题。即将讨论的主题包括：
 
-+   第二部分：AI的基本知识、能力和实践
++   第二部分：AI 的基本知识、能力和实践
 
-+   第三部分：通过AI提升教育体验的策略
++   第三部分：通过 AI 提升教育体验的策略
 
 +   第四部分：提示工程的艺术与科学
 
-# 生成式AI在社会工作中的应用
+# 生成式 AI 在社会工作中的应用
 
-生成式AI工具正作为一种变革性力量出现在各种领域，包括商业、医学和法律。尽管AI技术在社会工作领域刚刚开始受到关注，但现在是学生积极思考如何利用这一工具以提升和简化服务交付、赋能弱势群体、促进更加公平结果的最佳时机。
+生成式 AI 工具正作为一种变革性力量出现在各种领域，包括商业、医学和法律。尽管 AI 技术在社会工作领域刚刚开始受到关注，但现在是学生积极思考如何利用这一工具以提升和简化服务交付、赋能弱势群体、促进更加公平结果的最佳时机。
 
-我将提供几个例子来说明我们如何使用生成式AI。这些例子并不全面或完全代表生成式AI的能力。请记住，AI技术的领域广泛且不断发展。根据谷歌和Alphabet的首席执行官**桑达尔·皮查伊**的说法，[AI的能力每六个月翻一番](https://blog.google/technology/ai/bard-google-ai-search-updates/#:~:text=Today%2C%20the%20scale%20of%20the,of%20people%20around%20the%20world.)。
+我将提供几个例子来说明我们如何使用生成式 AI。这些例子并不全面或完全代表生成式 AI 的能力。请记住，AI 技术的领域广泛且不断发展。根据谷歌和 Alphabet 的首席执行官**桑达尔·皮查伊**的说法，[AI 的能力每六个月翻一番](https://blog.google/technology/ai/bard-google-ai-search-updates/#:~:text=Today%2C%20the%20scale%20of%20the,of%20people%20around%20the%20world.)。
 
 ## ***心理健康服务***
 
-大型语言模型在社会工作领域中的一个有前景的应用是心理健康服务。由AI驱动的虚拟治疗助手可以在治疗会议之间或当社会工作者不立即可用时，向客户提供支持和指导。例如，虚拟助手可以帮助客户练习应对策略、提供心理教育或提供简短的压力减轻干预。这些将是可以支持各种任务的助手，但不会替代社会工作者。
+大型语言模型在社会工作领域中的一个有前景的应用是心理健康服务。由 AI 驱动的虚拟治疗助手可以在治疗会议之间或当社会工作者不立即可用时，向客户提供支持和指导。例如，虚拟助手可以帮助客户练习应对策略、提供心理教育或提供简短的压力减轻干预。这些将是可以支持各种任务的助手，但不会替代社会工作者。
 
-大型语言模型可以帮助社会工作者更好地理解客户的语言模式。通过分析基于文本的沟通或治疗会议的转录，AI可以识别模式、主题和情感，这些可能为客户的情感状态、挑战和治疗进展提供有价值的见解。例如，AI可以通过分析客户的用词选择、语调或情感表达来帮助检测抑郁、焦虑或其他心理健康问题的迹象。
+大型语言模型可以帮助社会工作者更好地理解客户的语言模式。通过分析基于文本的沟通或治疗会议的转录，AI 可以识别模式、主题和情感，这些可能为客户的情感状态、挑战和治疗进展提供有价值的见解。例如，AI 可以通过分析客户的用词选择、语调或情感表达来帮助检测抑郁、焦虑或其他心理健康问题的迹象。
 
-大型语言模型的另一个实际应用是简化文档处理过程。社会工作者可以从帮助管理大量文书工作的工具中受益，例如撰写案例记录、治疗计划和进展报告，这些工作可能耗时且会减少与客户的接触时间。通过利用AI，社会工作者可以减少在行政任务上花费的时间和精力，从而可以更多地专注于直接的客户护理，提升整体心理健康服务的质量。
+大型语言模型的另一个实际应用是简化文档处理过程。社会工作者可以从帮助管理大量文书工作的工具中受益，例如撰写案例记录、治疗计划和进展报告，这些工作可能耗时且会减少与客户的接触时间。通过利用 AI，社会工作者可以减少在行政任务上花费的时间和精力，从而可以更多地专注于直接的客户护理，提升整体心理健康服务的质量。
 
 ## ***项目管理***
 
@@ -80,23 +80,23 @@
 
 大型语言模型可以帮助社会工作者创建有针对性、吸引人且具有文化敏感性的消息，这些消息能够与不同受众产生共鸣。通过根据不同社区成员的偏好、语言和关注点定制消息，人工智能驱动的工具可以提高外展活动的效果，并帮助与社区成员建立更强的联系。此外，人工智能还可以帮助识别在线对话和社交媒体中的趋势和新兴问题，使社会工作者能够保持对社区需求和优先事项的了解和回应。
 
-生成式人工智能还可以帮助简化社区组织工作中的协作和资源管理。通过自动化创建和更新共享文档、跟踪任务进度和协调日程安排，AI驱动的工具可以节省时间，提高组织工作整体的效率。此外，社会工作者和社区组织者可以利用AI分析社区资源和需求的数据，从而识别出协作的缺口和机会。这种支持使社会工作者能够就资源分配和合作伙伴关系做出明智的决策，从而最大化他们工作的影响力。
+生成式人工智能还可以帮助简化社区组织工作中的协作和资源管理。通过自动化创建和更新共享文档、跟踪任务进度和协调日程安排，AI 驱动的工具可以节省时间，提高组织工作整体的效率。此外，社会工作者和社区组织者可以利用 AI 分析社区资源和需求的数据，从而识别出协作的缺口和机会。这种支持使社会工作者能够就资源分配和合作伙伴关系做出明智的决策，从而最大化他们工作的影响力。
 
-生成式人工智能可以在社区组织中提供宝贵的帮助，通过帮助开发倡导材料和政策提案来实现。这种实际应用涉及AI驱动的工具分析现有政策、研究和最佳实践，帮助社会工作者创建有说服力、基于证据的材料，准确传达社区的需求和优先事项。社会工作者和社区组织者可以利用这些材料与决策者、资助者以及其他利益相关者进行互动，推动系统性变革的倡导工作。
+生成式人工智能可以在社区组织中提供宝贵的帮助，通过帮助开发倡导材料和政策提案来实现。这种实际应用涉及 AI 驱动的工具分析现有政策、研究和最佳实践，帮助社会工作者创建有说服力、基于证据的材料，准确传达社区的需求和优先事项。社会工作者和社区组织者可以利用这些材料与决策者、资助者以及其他利益相关者进行互动，推动系统性变革的倡导工作。
 
 ## ***国际社会工作***
 
 生成式人工智能在国际社会工作中可以成为有价值的工具，社会工作者经常面临语言障碍和文化差异的挑战。凭借其先进的自然语言处理能力，大型语言模型可以通过提供实时翻译和生成具有文化敏感性的消息，帮助社会工作者与多样化的群体更有效地沟通。
 
-大型语言模型可以改善跨文化理解，并促进社会工作者与他们服务的社区之间的合作。在国际社会工作中，了解全球趋势、 emerging issues 和可以为干预和政策建议提供指导的最佳实践至关重要。生成式人工智能可以帮助社会工作者访问和分析来自不同来源、国家和语言的大量信息。通过综合这些信息，AI驱动的工具可以为社会工作者提供有价值的见解和基于证据的策略，以应对不同背景下的复杂社会问题。
+大型语言模型可以改善跨文化理解，并促进社会工作者与他们服务的社区之间的合作。在国际社会工作中，了解全球趋势、 emerging issues 和可以为干预和政策建议提供指导的最佳实践至关重要。生成式人工智能可以帮助社会工作者访问和分析来自不同来源、国家和语言的大量信息。通过综合这些信息，AI 驱动的工具可以为社会工作者提供有价值的见解和基于证据的策略，以应对不同背景下的复杂社会问题。
 
-生成式人工智能可以促进不同国家和环境中的社会工作专业人员之间的合作与知识交流。AI驱动的工具可以通过促进沟通、生成研究和报告的摘要，以及识别共同的挑战和机会，帮助社会工作者分享他们的专业知识、互相学习并开发超越国界和文化的创新解决方案。
+生成式人工智能可以促进不同国家和环境中的社会工作专业人员之间的合作与知识交流。AI 驱动的工具可以通过促进沟通、生成研究和报告的摘要，以及识别共同的挑战和机会，帮助社会工作者分享他们的专业知识、互相学习并开发超越国界和文化的创新解决方案。
 
 国际社会工作通常涉及在不同的文化、社会和政治背景下设计、实施和评估项目和干预措施。生成性 AI 可以通过帮助社会工作者分析背景因素、识别本地相关的策略，并评估不同环境下干预措施的有效性来支持这些努力。通过提供基于数据的见解和建议，AI 可以帮助社会工作者调整和改进他们的项目，以更好地服务于多样化的社区，并应对全球社会挑战。
 
 生成性 AI 在社会工作中提供了有前景的机会；然而，承认这项技术的不完美至关重要。通过仔细权衡潜在的好处和弊端，我们可以确保在支持弱势群体时负责任和合乎伦理地使用它。
 
-![](../Images/9319586b25492fde1055a96467ad45cb.png)
+![](img/9319586b25492fde1055a96467ad45cb.png)
 
 GPT-4 生成的不完美计算机图像
 

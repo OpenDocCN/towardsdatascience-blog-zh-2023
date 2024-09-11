@@ -1,10 +1,10 @@
 # 为企业构建机器学习操作
 
-> 原文：[https://towardsdatascience.com/building-machine-learning-operations-for-businesses-6d0bfbbf2139?source=collection_archive---------12-----------------------#2023-06-20](https://towardsdatascience.com/building-machine-learning-operations-for-businesses-6d0bfbbf2139?source=collection_archive---------12-----------------------#2023-06-20)
+> 原文：[`towardsdatascience.com/building-machine-learning-operations-for-businesses-6d0bfbbf2139?source=collection_archive---------12-----------------------#2023-06-20`](https://towardsdatascience.com/building-machine-learning-operations-for-businesses-6d0bfbbf2139?source=collection_archive---------12-----------------------#2023-06-20)
 
 ## 有效 MLOps 方案以支持您的 AI 策略
 
-[](https://johnadeojo.medium.com/?source=post_page-----6d0bfbbf2139--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----6d0bfbbf2139--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d0bfbbf2139--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6d0bfbbf2139--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----6d0bfbbf2139--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----6d0bfbbf2139--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----6d0bfbbf2139--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d0bfbbf2139--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d0bfbbf2139--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----6d0bfbbf2139--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6d0bfbbf2139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-machine-learning-operations-for-businesses-6d0bfbbf2139&source=-----6d0bfbbf2139---------------------bookmark_footer-----------)![](../Images/4ea4fe645f53e8e55cf846fb65f88f51.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6d0bfbbf2139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-machine-learning-operations-for-businesses-6d0bfbbf2139&source=-----6d0bfbbf2139---------------------bookmark_footer-----------)![](img/4ea4fe645f53e8e55cf846fb65f88f51.png)
 
 作者图片：由 Midjourney 生成
 
@@ -24,7 +24,7 @@
 
 # MLOps 超越了技术
 
-![](../Images/901a4d0642db9fedd5769cf01e93fb4f.png)
+![](img/901a4d0642db9fedd5769cf01e93fb4f.png)
 
 作者提供的图像：成功 MLOps 策略的组成部分
 

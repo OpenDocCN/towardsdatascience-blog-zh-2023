@@ -1,18 +1,18 @@
 # 具有多个数据源的神经网络
 
-> 原文：[https://towardsdatascience.com/neural-networks-with-multiple-data-sources-ef91d7b4ad5a?source=collection_archive---------4-----------------------#2023-01-06](https://towardsdatascience.com/neural-networks-with-multiple-data-sources-ef91d7b4ad5a?source=collection_archive---------4-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/neural-networks-with-multiple-data-sources-ef91d7b4ad5a?source=collection_archive---------4-----------------------#2023-01-06`](https://towardsdatascience.com/neural-networks-with-multiple-data-sources-ef91d7b4ad5a?source=collection_archive---------4-----------------------#2023-01-06)
 
 ## 如何使用 Tensorflow 设计一个具有多个数据源输入的神经网络
 
-[](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)[![Morgan Lynch](../Images/731f65c99b8bedc3e07ca6f281596f09.png)](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------) [Morgan Lynch](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)
+[](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)![Morgan Lynch](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------) [Morgan Lynch](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4b5483121384&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&user=Morgan+Lynch&userId=4b5483121384&source=post_page-4b5483121384----ef91d7b4ad5a---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------) ·5 分钟阅读·2023年1月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef91d7b4ad5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&user=Morgan+Lynch&userId=4b5483121384&source=-----ef91d7b4ad5a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4b5483121384&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&user=Morgan+Lynch&userId=4b5483121384&source=post_page-4b5483121384----ef91d7b4ad5a---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------) ·5 分钟阅读·2023 年 1 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef91d7b4ad5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&user=Morgan+Lynch&userId=4b5483121384&source=-----ef91d7b4ad5a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef91d7b4ad5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&source=-----ef91d7b4ad5a---------------------bookmark_footer-----------)![](../Images/b642d0d8398604490bcb3b4dd45695fc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef91d7b4ad5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&source=-----ef91d7b4ad5a---------------------bookmark_footer-----------)![](img/b642d0d8398604490bcb3b4dd45695fc.png)
 
 具有多个数据源的卷积神经网络。图片来源：作者。
 
@@ -34,7 +34,7 @@
 
 图像数据也被转换为 numpy 数组，以保持与从文件中加载的患者数据的一致性。
 
-![](../Images/973fb21675363cb370788210ba1674fd.png)
+![](img/973fb21675363cb370788210ba1674fd.png)
 
 加载数据的形状。图片由作者提供
 
@@ -58,7 +58,7 @@
 
 网络的设计可以有所不同，但最好包括一个归一化层。归一化层仅适应于训练数据。
 
-重要的是，输入层的形状设置为数据中的列数（在此示例中为3）。
+重要的是，输入层的形状设置为数据中的列数（在此示例中为 3）。
 
 输出层的形状也很关键，因为这是将与图像处理分支合并的形状。这由最后的 Dense 层决定。在此示例中，输出层的形状将是：
 
@@ -68,7 +68,7 @@
 
 数据分支现在已经完成，我们可以查看图像处理分支。虽然可以设计自己的网络，但在实践中使用预设计的模型更为方便。在此示例中，我们将使用 Keras Applications 中的 Resnet-50。
 
-如上所示，输入形状是每个图像的大小，加上一个额外的维度用于图像通道（在此案例中为1）。
+如上所示，输入形状是每个图像的大小，加上一个额外的维度用于图像通道（在此案例中为 1）。
 
 在 Resnet 模型的末尾添加一个全连接的 Dense 层，以使输出与数据分支的形状相同：
 
@@ -80,7 +80,7 @@
 
 CNN 的最终设计总结如下：
 
-![](../Images/dd2da001a98f1ee9fd06d02b4297ad05.png)
+![](img/dd2da001a98f1ee9fd06d02b4297ad05.png)
 
 最终 CNN 设计。图片由作者提供
 
@@ -90,6 +90,6 @@ CNN 的最终设计总结如下：
 
 **参考文献：**
 
-[1] Yu Sun, Lin Zhu, Guan Wang, Fang Zhao, “Multi-Input Convolutional Neural Network for Flower Grading”, *Journal of Electrical and Computer Engineering*, vol. 2017, Article ID 9240407, 8 pages, 2017\. [https://doi.org/10.1155/2017/9240407](https://doi.org/10.1155/2017/9240407)
+[1] Yu Sun, Lin Zhu, Guan Wang, Fang Zhao, “Multi-Input Convolutional Neural Network for Flower Grading”, *Journal of Electrical and Computer Engineering*, vol. 2017, Article ID 9240407, 8 pages, 2017\. [`doi.org/10.1155/2017/9240407`](https://doi.org/10.1155/2017/9240407)
 
-[2] Seeland M, Mäder P (2021) Multi-view classification with convolutional neural networks. PLoS ONE 16(1): e0245230\. [https://doi.org/10.1371/journal.pone.0245230](https://doi.org/10.1371/journal.pone.0245230)
+[2] Seeland M, Mäder P (2021) Multi-view classification with convolutional neural networks. PLoS ONE 16(1): e0245230\. [`doi.org/10.1371/journal.pone.0245230`](https://doi.org/10.1371/journal.pone.0245230)

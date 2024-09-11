@@ -1,20 +1,20 @@
 # 数据驱动的客户获取完整指南
 
-> 原文：[https://towardsdatascience.com/a-complete-guide-to-data-driven-customer-acquisition-f0f1708b328?source=collection_archive---------2-----------------------#2023-01-18](https://towardsdatascience.com/a-complete-guide-to-data-driven-customer-acquisition-f0f1708b328?source=collection_archive---------2-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/a-complete-guide-to-data-driven-customer-acquisition-f0f1708b328?source=collection_archive---------2-----------------------#2023-01-18`](https://towardsdatascience.com/a-complete-guide-to-data-driven-customer-acquisition-f0f1708b328?source=collection_archive---------2-----------------------#2023-01-18)
 
-[](https://ivylc.medium.com/?source=post_page-----f0f1708b328--------------------------------)[![Ivy Liu](../Images/74483fd84a1b4e4a0e013474496d9925.png)](https://ivylc.medium.com/?source=post_page-----f0f1708b328--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0f1708b328--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0f1708b328--------------------------------) [Ivy Liu](https://ivylc.medium.com/?source=post_page-----f0f1708b328--------------------------------)
+[](https://ivylc.medium.com/?source=post_page-----f0f1708b328--------------------------------)![Ivy Liu](https://ivylc.medium.com/?source=post_page-----f0f1708b328--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0f1708b328--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----f0f1708b328--------------------------------) [Ivy Liu](https://ivylc.medium.com/?source=post_page-----f0f1708b328--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F71fa5614d897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-guide-to-data-driven-customer-acquisition-f0f1708b328&user=Ivy+Liu&userId=71fa5614d897&source=post_page-71fa5614d897----f0f1708b328---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f0f1708b328--------------------------------) ·6分钟阅读·2023年1月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0f1708b328&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-guide-to-data-driven-customer-acquisition-f0f1708b328&user=Ivy+Liu&userId=71fa5614d897&source=-----f0f1708b328---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F71fa5614d897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-guide-to-data-driven-customer-acquisition-f0f1708b328&user=Ivy+Liu&userId=71fa5614d897&source=post_page-71fa5614d897----f0f1708b328---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f0f1708b328--------------------------------) ·6 分钟阅读·2023 年 1 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0f1708b328&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-guide-to-data-driven-customer-acquisition-f0f1708b328&user=Ivy+Liu&userId=71fa5614d897&source=-----f0f1708b328---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0f1708b328&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-guide-to-data-driven-customer-acquisition-f0f1708b328&source=-----f0f1708b328---------------------bookmark_footer-----------)
 
-在过去的十年中，我有幸与超过100位企业家合作。不论他们的地理位置、产品、财务状况或行业经验如何，他们都有一个共同点：客户获取让他们寝食难安。为了推动客户获取，公司不懈地努力建立其营销引擎。出色的营销带来流量，提高转化率，并降低成本。
+在过去的十年中，我有幸与超过 100 位企业家合作。不论他们的地理位置、产品、财务状况或行业经验如何，他们都有一个共同点：客户获取让他们寝食难安。为了推动客户获取，公司不懈地努力建立其营销引擎。出色的营销带来流量，提高转化率，并降低成本。
 
-![](../Images/73a706eb5f37bc03962f118a39b4af3d.png)
+![](img/73a706eb5f37bc03962f118a39b4af3d.png)
 
 作者提供的图片
 
@@ -26,27 +26,27 @@
 
 正如古话所说，做出选择比花费精力更具影响力。当公司资源有限时，这总是情况，过于分散的努力会导致在激烈的市场竞争中失去优势。投资于正确的顾客提供了更多成功的可能性。
 
-如在[重点关注最有价值的顾客](/double-down-on-the-most-valuable-customers-c6ad97689595)中讨论的那样，顾客价值可以通过以下方式计算：
+如在重点关注最有价值的顾客中讨论的那样，顾客价值可以通过以下方式计算：
 
 **顾客的长期价值 = 顾客重复购买的收入 — 获取成本**
 
 例如，一家奢侈珠宝品牌的顾客不会频繁购买。在这种情况下，可以将顾客价值计算的时间框架设置为一年。基于其销售和营销归因系统，该品牌可以计算每位顾客（或未转化的访客）的年度收入和获取成本。通过这些数据，品牌可以迅速得出每位顾客的价值，并决定谁值得投入营销预算。
 
-在大多数公司中，顾客价值分布图如下所示。大多数顾客对公司带来的价值较低或为负，因此应予以忽视或劝阻。下图中的左右分界通常遵循80/20法则。
+在大多数公司中，顾客价值分布图如下所示。大多数顾客对公司带来的价值较低或为负，因此应予以忽视或劝阻。下图中的左右分界通常遵循 80/20 法则。
 
-![](../Images/19dd1a2c2e4fa74fd74ad4d422a2d12c.png)
+![](img/19dd1a2c2e4fa74fd74ad4d422a2d12c.png)
 
 作者提供的图片
 
 # 确定对目标顾客有效的营销活动
 
-商业的本质是一种实验，这意味着大多数商业活动注定不会产生积极的结果。在初创公司中，多达95%的工作是无效的。公司必须迅速在噪声中找出有效的部分才能成功。通过实时监控市场营销表现，公司有最佳的机会立即区分出好的信号与坏的信号，并[采取行动](https://seizing-the-low-hanging-fruit-in-business-with-data-science-7b3a3265e07e)。
+商业的本质是一种实验，这意味着大多数商业活动注定不会产生积极的结果。在初创公司中，多达 95%的工作是无效的。公司必须迅速在噪声中找出有效的部分才能成功。通过实时监控市场营销表现，公司有最佳的机会立即区分出好的信号与坏的信号，并[采取行动](https://seizing-the-low-hanging-fruit-in-business-with-data-science-7b3a3265e07e)。
 
-![](../Images/5f0fb14b69029e1461619318dac5fc8c.png)
+![](img/5f0fb14b69029e1461619318dac5fc8c.png)
 
 图片由作者提供
 
-根据客户价值分析，该珠宝品牌决定针对高价值群体推出营销活动。这些活动在Google、Facebook、TikTok等广告平台上进行。品牌根据假设实施所有策略——它认为客户喜欢某些东西，但不确定。只有当品牌收集并评估活动表现数据后，才能确定哪些活动值得投资，哪些不值得。
+根据客户价值分析，该珠宝品牌决定针对高价值群体推出营销活动。这些活动在 Google、Facebook、TikTok 等广告平台上进行。品牌根据假设实施所有策略——它认为客户喜欢某些东西，但不确定。只有当品牌收集并评估活动表现数据后，才能确定哪些活动值得投资，哪些不值得。
 
 尽管上述图表的含义似乎很明显，但大多数公司却忽略了这些信号。因此，当公司开始关注时，通过简单地削减那些无效的市场营销举措的预算，它们将获得巨大的增长机会。
 
@@ -60,7 +60,7 @@
 
 [客户细分](https://ivylc.medium.com/empower-precise-marketing-with-customer-segmentation-97fe69027d57)是一种有价值的技术，可以简化上述分析。通过客户细分提供的详细信息，公司可以识别出对每个客户群体最有吸引力的活动、购物体验和产品，并回顾它们为何具有吸引力。
 
-![](../Images/fbc65b195d2bbd5d479397b41a1e1d29.png)
+![](img/fbc65b195d2bbd5d479397b41a1e1d29.png)
 
 图片由作者提供
 
@@ -70,9 +70,9 @@
 
 通过实验发现有效的方法后，企业可以在新客户获取机会出现时，应用成功的方案。来自客户细分的丰富信息帮助公司在业务迭代中领先一步。
 
-在大规模实施之前，公司必须通过对样本进行测试和学习，验证经验是否适用于新的机会。常见的测试和学习方法包括A/B测试和可视化。
+在大规模实施之前，公司必须通过对样本进行测试和学习，验证经验是否适用于新的机会。常见的测试和学习方法包括 A/B 测试和可视化。
 
-![](../Images/916dc71129535a2a7c21960d4aadb871.png)
+![](img/916dc71129535a2a7c21960d4aadb871.png)
 
 图片由作者提供
 
@@ -82,7 +82,7 @@
 
 与常识相反，对于大多数企业来说，个性化是一种一对多的营销机制。一旦公司找出如何通过营销渠道、活动、创意、信息传达等吸引每个客户细分，他们就准备在客户获取计划中推广个性化。例如，公司可以为每个客户细分预定义其网站、浏览体验和产品推荐。当一个符合特定细分的访问者进入网站时，公司可以自动为他们提供合适的购物体验。
 
-![](../Images/23a356a83fc24db28f2d470eb04dfcc4.png)
+![](img/23a356a83fc24db28f2d470eb04dfcc4.png)
 
 图片由作者提供
 
@@ -92,6 +92,6 @@
 
 两组数据科学技术对于实现上述分析至关重要。第一组包括能够[连接点滴](https://medium.com/towards-data-science/connect-the-dots-in-data-strategy-56f65a1e63a5)的数据工程技术。常听说数据管道基础设施是数据科学项目最大的障碍。得益于数据行业的发展，越来越多的连接工具简化了从多个来源获取数据的过程。
 
-第二个关键因素是身份技术。由于iOS隐私政策的变化，使用唯一用户标识符来关联用户旅程中的不同接触点变得越来越具有挑战性。幸运的是，独立于个人标识符的营销技术，如[营销混合建模](/supercharge-your-cross-channel-customer-acquisition-with-marketing-mix-modeling-21ba1bc5f2e8)，提供了另一种选择。
+第二个关键因素是身份技术。由于 iOS 隐私政策的变化，使用唯一用户标识符来关联用户旅程中的不同接触点变得越来越具有挑战性。幸运的是，独立于个人标识符的营销技术，如营销混合建模，提供了另一种选择。
 
-我在文章中讨论了如何利用数据科学提升业务和优化营销。如果你想讨论客户获取或其他数据科学主题，请在[LinkedIn](https://www.linkedin.com/in/ivylc/)关注我或通过[newsletter@ivyliu.io](mailto:newsletter@ivyliu.io)联系我。下次见。
+我在文章中讨论了如何利用数据科学提升业务和优化营销。如果你想讨论客户获取或其他数据科学主题，请在[LinkedIn](https://www.linkedin.com/in/ivylc/)关注我或通过 newsletter@ivyliu.io 联系我。下次见。

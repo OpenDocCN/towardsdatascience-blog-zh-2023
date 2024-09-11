@@ -1,14 +1,14 @@
-# 使用Python的自然语言处理：知识图谱
+# 使用 Python 的自然语言处理：知识图谱
 
-> 原文：[https://towardsdatascience.com/nlp-with-python-knowledge-graph-12b93146a458?source=collection_archive---------1-----------------------#2023-04-19](https://towardsdatascience.com/nlp-with-python-knowledge-graph-12b93146a458?source=collection_archive---------1-----------------------#2023-04-19)
+> 原文：[`towardsdatascience.com/nlp-with-python-knowledge-graph-12b93146a458?source=collection_archive---------1-----------------------#2023-04-19`](https://towardsdatascience.com/nlp-with-python-knowledge-graph-12b93146a458?source=collection_archive---------1-----------------------#2023-04-19)
 
 ## SpaCy，句子分割，词性标注，D**依存解析，**命名实体识别，等等……
 
-[](https://maurodp.medium.com/?source=post_page-----12b93146a458--------------------------------)[![毛罗·迪·皮埃特罗](../Images/3586d9d3238d904a1e1fa39c77b59d3f.png)](https://maurodp.medium.com/?source=post_page-----12b93146a458--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12b93146a458--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12b93146a458--------------------------------) [毛罗·迪·皮埃特罗](https://maurodp.medium.com/?source=post_page-----12b93146a458--------------------------------)
+[](https://maurodp.medium.com/?source=post_page-----12b93146a458--------------------------------)![毛罗·迪·皮埃特罗](https://maurodp.medium.com/?source=post_page-----12b93146a458--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12b93146a458--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----12b93146a458--------------------------------) [毛罗·迪·皮埃特罗](https://maurodp.medium.com/?source=post_page-----12b93146a458--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44a176cd070a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnlp-with-python-knowledge-graph-12b93146a458&user=Mauro+Di+Pietro&userId=44a176cd070a&source=post_page-44a176cd070a----12b93146a458---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----12b93146a458--------------------------------) ·14分钟阅读·2023年4月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12b93146a458&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnlp-with-python-knowledge-graph-12b93146a458&user=Mauro+Di+Pietro&userId=44a176cd070a&source=-----12b93146a458---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44a176cd070a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnlp-with-python-knowledge-graph-12b93146a458&user=Mauro+Di+Pietro&userId=44a176cd070a&source=post_page-44a176cd070a----12b93146a458---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----12b93146a458--------------------------------) ·14 分钟阅读·2023 年 4 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12b93146a458&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnlp-with-python-knowledge-graph-12b93146a458&user=Mauro+Di+Pietro&userId=44a176cd070a&source=-----12b93146a458---------------------clap_footer-----------)
 
 --
 
@@ -16,9 +16,9 @@
 
 ## 摘要
 
-在本文中，我将展示如何使用Python和自然语言处理构建知识图谱。
+在本文中，我将展示如何使用 Python 和自然语言处理构建知识图谱。
 
-![](../Images/321c5d15bba2bcd22a3328c17f2827ac.png)
+![](img/321c5d15bba2bcd22a3328c17f2827ac.png)
 
 照片由[莫里茨·金德勒](https://unsplash.com/@moritz_photography?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 
@@ -26,9 +26,9 @@
 
 一个[**知识库**](https://en.wikipedia.org/wiki/Knowledge_base)是来自不同来源的信息的统一存储库，比如*维基百科*。
 
-一个 [**知识图谱**](https://en.wikipedia.org/wiki/Knowledge_graph) 是一种使用图结构数据模型的知识库。简单来说，它是一种特定类型的网络图，展示了现实世界实体、事实、概念和事件之间的定性关系。*Google* 在2012年首次使用了“知识图谱”这一术语，以介绍 [他们的模型](https://en.wikipedia.org/wiki/Google_Knowledge_Graph)。
+一个 [**知识图谱**](https://en.wikipedia.org/wiki/Knowledge_graph) 是一种使用图结构数据模型的知识库。简单来说，它是一种特定类型的网络图，展示了现实世界实体、事实、概念和事件之间的定性关系。*Google* 在 2012 年首次使用了“知识图谱”这一术语，以介绍 [他们的模型](https://en.wikipedia.org/wiki/Google_Knowledge_Graph)。
 
-![](../Images/1c6b4397f08ef1f66cf0e7624bae5507.png)
+![](img/1c6b4397f08ef1f66cf0e7624bae5507.png)
 
 图片来自作者
 

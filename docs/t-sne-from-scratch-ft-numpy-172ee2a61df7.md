@@ -1,18 +1,18 @@
 # 从头实现 t-SNE（配合 NumPy）
 
-> 原文：[https://towardsdatascience.com/t-sne-from-scratch-ft-numpy-172ee2a61df7?source=collection_archive---------2-----------------------#2023-04-14](https://towardsdatascience.com/t-sne-from-scratch-ft-numpy-172ee2a61df7?source=collection_archive---------2-----------------------#2023-04-14)
+> 原文：[`towardsdatascience.com/t-sne-from-scratch-ft-numpy-172ee2a61df7?source=collection_archive---------2-----------------------#2023-04-14`](https://towardsdatascience.com/t-sne-from-scratch-ft-numpy-172ee2a61df7?source=collection_archive---------2-----------------------#2023-04-14)
 
-![](../Images/4d9ef097294cb21259a550a26efce328.png)
+![](img/4d9ef097294cb21259a550a26efce328.png)
 
 封面图片由作者提供
 
 ## 通过从头实现 t-SNE 并使用 Python，深入理解其内部工作原理
 
-[](https://medium.com/@jakepenzak?source=post_page-----172ee2a61df7--------------------------------)[![Jacob Pieniazek](../Images/2d9c6295d39fcaaec4e62f11c359cb29.png)](https://medium.com/@jakepenzak?source=post_page-----172ee2a61df7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----172ee2a61df7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----172ee2a61df7--------------------------------) [Jacob Pieniazek](https://medium.com/@jakepenzak?source=post_page-----172ee2a61df7--------------------------------)
+[](https://medium.com/@jakepenzak?source=post_page-----172ee2a61df7--------------------------------)![Jacob Pieniazek](https://medium.com/@jakepenzak?source=post_page-----172ee2a61df7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----172ee2a61df7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----172ee2a61df7--------------------------------) [Jacob Pieniazek](https://medium.com/@jakepenzak?source=post_page-----172ee2a61df7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0948d99b1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ft-sne-from-scratch-ft-numpy-172ee2a61df7&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=post_page-6f0948d99b1c----172ee2a61df7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----172ee2a61df7--------------------------------) ·17分钟阅读·2023年4月14日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F172ee2a61df7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ft-sne-from-scratch-ft-numpy-172ee2a61df7&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=-----172ee2a61df7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0948d99b1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ft-sne-from-scratch-ft-numpy-172ee2a61df7&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=post_page-6f0948d99b1c----172ee2a61df7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----172ee2a61df7--------------------------------) ·17 分钟阅读·2023 年 4 月 14 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F172ee2a61df7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ft-sne-from-scratch-ft-numpy-172ee2a61df7&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=-----172ee2a61df7---------------------clap_footer-----------)
 
 --
 
@@ -54,7 +54,7 @@ t-SNE 主要通过两种方式改进 SNE：
 
 现在让我们继续了解 t-SNE，方法是实现 Laurens van der Maaten 和 Geoffrey Hinton 在[论文](https://lvdmaaten.github.io/publications/papers/JMLR_2008.pdf)中提出的算法原版。我们将首先逐步实现下面的算法 1，这将涵盖主算法的 95%。作者还提到了两个额外的改进：1) 早期夸张和 2) 自适应学习率。我们将仅讨论添加早期夸张，因为这有助于解释实际算法的内部工作原理，而自适应学习率则侧重于提高收敛速度。
 
-![](../Images/2e3f7799e417a127b3257121722fa4d7.png)
+![](img/2e3f7799e417a127b3257121722fa4d7.png)
 
 算法 1（见[论文](https://lvdmaaten.github.io/publications/papers/JMLR_2008.pdf)）
 
@@ -83,7 +83,7 @@ X = PCA(n_components=30).fit_transform(X_reduced)
 
 这将是我们的 *X* 数据集，每一*行*是一个图像，每一*列*是一个特征，或者在这种情况下是主成分（即原始像素的线性组合）：
 
-![](../Images/6dd2af5bc94d63503a5bf3c96b53c64b.png)
+![](img/6dd2af5bc94d63503a5bf3c96b53c64b.png)
 
 从 MNIST 数据集中抽取的 1000 个样本及前 30 个主成分
 
@@ -91,7 +91,7 @@ X = PCA(n_components=30).fit_transform(X_reduced)
 
 就输出而言，请记住，我们寻求的是原始数据集 *X* 的低维映射。在整个示例中，我们将把原始空间映射到二维空间。因此，我们的新输出将是现在以二维空间表示的 1000 张图像，而不是原始的 30 维空间：
 
-![](../Images/dc89f27e6f8c53c7539ca276e6d0ff4b.png)
+![](img/dc89f27e6f8c53c7539ca276e6d0ff4b.png)
 
 所需的二维空间输出
 
@@ -99,7 +99,7 @@ X = PCA(n_components=30).fit_transform(X_reduced)
 
 现在我们有了输入，第一步是计算原始高维空间中的成对相似度。即，对于每个图像 *i*，我们计算 *i* 在原始空间中选择图像 *j* 作为其邻居的概率。这些概率是通过围绕每个点的正态分布计算的，然后归一化为总和为 1。数学上，我们有：
 
-![](../Images/e4da47d9af18e17d9a3356bd293c0585.png)
+![](img/e4da47d9af18e17d9a3356bd293c0585.png)
 
 Eq. (1) — 高维亲和力
 
@@ -147,13 +147,13 @@ def get_original_pairwise_affinities(X: np.ndarray, perplexity: int = 10) -> np.
 
 在我们查看这段代码的结果之前，让我们讨论一下如何通过 grid_search() 函数确定 σ 的值。给定一个指定的 perplexity 值（在这种情况下可以大致理解为每个点的最近邻数量），我们对一系列 σ 值进行网格搜索，以便使以下方程对于每个 *i* 尽可能接近等式：
 
-![](../Images/5f487e931a57b04a170b15731b946439.png)
+![](img/5f487e931a57b04a170b15731b946439.png)
 
 Perplexity
 
 其中 H(P) 是 P 的香农 [熵](https://en.wikipedia.org/wiki/Entropy_(information_theory))。
 
-![](../Images/59b1bbe330ddaf7cdc88d57200ed76e9.png)
+![](img/59b1bbe330ddaf7cdc88d57200ed76e9.png)
 
 P 的香农熵
 
@@ -202,13 +202,13 @@ def grid_search(diff_i: np.ndarray, i: int, perplexity: int) -> float:
 
 有了这些函数，我们可以通过`p_ij = get_original_pairwise_affinities(X)`计算亲和矩阵，从而得到以下矩阵：
 
-![](../Images/15c579861c711dad1aaecc25972b5c4e.png)
+![](img/15c579861c711dad1aaecc25972b5c4e.png)
 
 原始高维空间中条件概率的亲和矩阵
 
 请注意，主对角线元素按构造设置为 ε ≈ 0（每当 *i = j* 时）。请记住，t-SNE 算法的一个关键扩展是计算联合概率而不是条件概率。这可以简单地按如下方式计算：
 
-![](../Images/1985cc2d53d64bd1f1913a4845acf957.png)
+![](img/1985cc2d53d64bd1f1913a4845acf957.png)
 
 将条件概率转换为联合概率
 
@@ -245,7 +245,7 @@ def get_symmetric_p_ij(p_ij: np.ndarray) -> np.ndarray:
 
 将上面的`p_ij`代入，我们得到`p_ij_symmetric = get_symmetric_p_ij(p_ij)`，从而获得以下*symmetric*亲和矩阵：
 
-![](../Images/06c5403b356c0c8d8e7d821d85fb8c82.png)
+![](img/06c5403b356c0c8d8e7d821d85fb8c82.png)
 
 原始高维空间中联合概率的对称亲和矩阵
 
@@ -289,13 +289,13 @@ def initialization(
 
 其中调用 `y0 = initialization(X)` 我们得到一个随机的起始解决方案：
 
-![](../Images/dcdd43442d43ea88a02a0b8f811a7100.png)
+![](img/dcdd43442d43ea88a02a0b8f811a7100.png)
 
 2-D 初始随机解决方案
 
 现在，我们想在这个低维空间中计算亲和矩阵。然而，请记住，我们是利用具有 1 个自由度的学生-t 分布来完成的：
 
-![](../Images/73872a630d696cbefd02c6945aafd94a.png)
+![](img/73872a630d696cbefd02c6945aafd94a.png)
 
 方程 (4) — 低维亲和
 
@@ -337,7 +337,7 @@ def get_low_dimensional_affinities(Y: np.ndarray) -> np.ndarray:
 
 这里我们正在寻找一个 *1000* x *1000* 的亲和矩阵，但现在是在低维空间中。调用 `q_ij = get_low_dimensional_affinities(y0)` 我们得到：
 
-![](../Images/e51d9873343526bd4ece743d437dd250.png)
+![](img/e51d9873343526bd4ece743d437dd250.png)
 
 新低维空间中联合概率的对称亲和矩阵
 
@@ -345,13 +345,13 @@ def get_low_dimensional_affinities(Y: np.ndarray) -> np.ndarray:
 
 回顾一下，我们的成本函数是高维空间和低维空间中联合概率分布的 Kullback-Leibler 散度：
 
-![](../Images/4cb5562aab6cfcef0a783763d828dbad.png)
+![](img/4cb5562aab6cfcef0a783763d828dbad.png)
 
 联合概率分布的 Kullback-Leibler 散度
 
 直观上，我们希望最小化亲和矩阵 `p_ij` 和 `q_ij` 之间的差异，从而最好地保留原始空间的“邻域”结构。使用梯度下降法来解决优化问题，但首先让我们看看如何计算上面成本函数的梯度。作者推导了成本函数的梯度（见 [论文](https://lvdmaaten.github.io/publications/papers/JMLR_2008.pdf) 的附录 A）如下：
 
-![](../Images/30cc398d3c3e508cf2cba4714373e815.png)
+![](img/30cc398d3c3e508cf2cba4714373e815.png)
 
 成本函数的梯度（公式 5，但来自附录）
 
@@ -388,7 +388,7 @@ def get_gradient(p_ij: np.ndarray, q_ij: np.ndarray, Y: np.ndarray) -> np.ndarra
 
 输入相关参数，我们通过 `gradient = get_gradient(p_ij_symmetric,q_ij,y0)` 得到在 `y0` 处的梯度及相应输出：
 
-![](../Images/c9256b70c406c44ed02b0e937ede1b64.png)
+![](img/c9256b70c406c44ed02b0e937ede1b64.png)
 
 初始解（y0）下成本函数的梯度
 
@@ -398,7 +398,7 @@ def get_gradient(p_ij: np.ndarray, q_ij: np.ndarray, Y: np.ndarray) -> np.ndarra
 
 为了更新我们的低维映射，我们使用 [带动量的梯度下降](https://en.wikipedia.org/wiki/Gradient_descent)，正如作者所述：
 
-![](../Images/be5237cff646cf09c85ace0b11217c67.png)
+![](img/be5237cff646cf09c85ace0b11217c67.png)
 
 更新规则（带动量的梯度下降）
 
@@ -482,11 +482,11 @@ def tsne(
 
 调用 `solution, Y = tSNE(X)` 我们得到以下输出：
 
-![](../Images/548265c99338dbfcfa90a14fc1767c8b.png)
+![](img/548265c99338dbfcfa90a14fc1767c8b.png)
 
 其中 `solution` 是最终的 2-D 映射，`Y` 是我们在每次迭代步骤中的 2-D 映射值。绘制 `Y` 的演变，其中 `Y[-1]` 是我们的最终 2-D 映射，我们得到（注意算法在早期夸张开启和关闭时的表现）：
 
-![](../Images/32a2288b18c398e80e34977388109036.png)
+![](img/32a2288b18c398e80e34977388109036.png)
 
 t-SNE 算法中的 2-D 映射演变
 
@@ -504,6 +504,6 @@ t-SNE 算法中的 2-D 映射演变
 
 [2] LeCun *et al.* (1999)：手写数字 (图像) 的 MNIST 数据集 许可证：CC BY-SA 3.0
 
-*通过这个 GitHub 仓库访问所有代码：* [https://github.com/jakepenzak/Blog-Posts](https://github.com/jakepenzak/Blog-Posts)
+*通过这个 GitHub 仓库访问所有代码：* [`github.com/jakepenzak/Blog-Posts`](https://github.com/jakepenzak/Blog-Posts)
 
 *感谢你阅读我的帖子！我在 Medium 上的帖子旨在探讨利用* ***计量经济学*** *和* ***统计学/机器学习*** *技术的实际和理论应用。此外，我还希望通过理论和模拟提供有关各种方法论的理论基础的帖子。最重要的是，我写作是为了学习并帮助他人学习！我希望使复杂的主题对大家稍微更加易懂。如果你喜欢这篇帖子，请考虑* [***在 Medium 上关注我***](https://medium.com/@jakepenzak)*！*

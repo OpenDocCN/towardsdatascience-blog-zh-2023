@@ -1,12 +1,12 @@
 # Python 类型：Optional 可以意味着强制
 
-> 原文：[https://towardsdatascience.com/python-types-optional-can-mean-mandatory-8e3b7ac2e805?source=collection_archive---------5-----------------------#2023-11-21](https://towardsdatascience.com/python-types-optional-can-mean-mandatory-8e3b7ac2e805?source=collection_archive---------5-----------------------#2023-11-21)
+> 原文：[`towardsdatascience.com/python-types-optional-can-mean-mandatory-8e3b7ac2e805?source=collection_archive---------5-----------------------#2023-11-21`](https://towardsdatascience.com/python-types-optional-can-mean-mandatory-8e3b7ac2e805?source=collection_archive---------5-----------------------#2023-11-21)
 
 ## PYTHON 编程
 
 ## 学习如何避免对 typing.Optional 的频繁误用和误解。
 
-[](https://medium.com/@nyggus?source=post_page-----8e3b7ac2e805--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----8e3b7ac2e805--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e3b7ac2e805--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8e3b7ac2e805--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----8e3b7ac2e805--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----8e3b7ac2e805--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----8e3b7ac2e805--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e3b7ac2e805--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e3b7ac2e805--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----8e3b7ac2e805--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e3b7ac2e805&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-types-optional-can-mean-mandatory-8e3b7ac2e805&source=-----8e3b7ac2e805---------------------bookmark_footer-----------)![](../Images/7d449c5d156e16fcbe145e74f261329c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e3b7ac2e805&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-types-optional-can-mean-mandatory-8e3b7ac2e805&source=-----8e3b7ac2e805---------------------bookmark_footer-----------)![](img/7d449c5d156e16fcbe145e74f261329c.png)
 
 照片由 [Caroline Hall](https://unsplash.com/@notcarolyn?utm_source=medium&utm_medium=referral) 拍摄，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

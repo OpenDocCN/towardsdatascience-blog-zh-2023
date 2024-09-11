@@ -1,14 +1,14 @@
 # 提高零-shot CLIP 性能的简单方法
 
-> 原文：[https://towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447?source=collection_archive---------5-----------------------#2023-11-03](https://towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447?source=collection_archive---------5-----------------------#2023-11-03)
+> 原文：[`towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447?source=collection_archive---------5-----------------------#2023-11-03`](https://towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447?source=collection_archive---------5-----------------------#2023-11-03)
 
-## 第1部分 — 通过语言模型定制提示（CuPL）
+## 第一部分 — 通过语言模型定制提示（CuPL）
 
-[](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)[![Alexey Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)
+[](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)![Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-way-of-improving-zero-shot-clip-performance-4eae474cb447&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----4eae474cb447---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------) · 12 min 阅读 · 2023年11月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4eae474cb447&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-way-of-improving-zero-shot-clip-performance-4eae474cb447&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----4eae474cb447---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-way-of-improving-zero-shot-clip-performance-4eae474cb447&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----4eae474cb447---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------) · 12 min 阅读 · 2023 年 11 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4eae474cb447&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-way-of-improving-zero-shot-clip-performance-4eae474cb447&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----4eae474cb447---------------------clap_footer-----------)
 
 --
 

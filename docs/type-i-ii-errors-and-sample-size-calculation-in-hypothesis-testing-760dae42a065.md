@@ -1,10 +1,10 @@
 # 类型 I 和 II 错误以及假设检验中的样本量计算
 
-> 原文：[https://towardsdatascience.com/type-i-ii-errors-and-sample-size-calculation-in-hypothesis-testing-760dae42a065?source=collection_archive---------3-----------------------#2023-02-23](https://towardsdatascience.com/type-i-ii-errors-and-sample-size-calculation-in-hypothesis-testing-760dae42a065?source=collection_archive---------3-----------------------#2023-02-23)
+> 原文：[`towardsdatascience.com/type-i-ii-errors-and-sample-size-calculation-in-hypothesis-testing-760dae42a065?source=collection_archive---------3-----------------------#2023-02-23`](https://towardsdatascience.com/type-i-ii-errors-and-sample-size-calculation-in-hypothesis-testing-760dae42a065?source=collection_archive---------3-----------------------#2023-02-23)
 
 ## 影响假设检验结果的因素
 
-[](https://aaron-zhu.medium.com/?source=post_page-----760dae42a065--------------------------------)[![Aaron Zhu](../Images/42e9690c4b4aad63f396b171a74e29f7.png)](https://aaron-zhu.medium.com/?source=post_page-----760dae42a065--------------------------------)[](https://towardsdatascience.com/?source=post_page-----760dae42a065--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----760dae42a065--------------------------------) [Aaron Zhu](https://aaron-zhu.medium.com/?source=post_page-----760dae42a065--------------------------------)
+[](https://aaron-zhu.medium.com/?source=post_page-----760dae42a065--------------------------------)![Aaron Zhu](https://aaron-zhu.medium.com/?source=post_page-----760dae42a065--------------------------------)[](https://towardsdatascience.com/?source=post_page-----760dae42a065--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----760dae42a065--------------------------------) [Aaron Zhu](https://aaron-zhu.medium.com/?source=post_page-----760dae42a065--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F760dae42a065&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-i-ii-errors-and-sample-size-calculation-in-hypothesis-testing-760dae42a065&source=-----760dae42a065---------------------bookmark_footer-----------)![](../Images/7bb1699da57b004d15cbc9d02301f4be.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F760dae42a065&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-i-ii-errors-and-sample-size-calculation-in-hypothesis-testing-760dae42a065&source=-----760dae42a065---------------------bookmark_footer-----------)![](img/7bb1699da57b004d15cbc9d02301f4be.png)
 
 照片来源：[Scott Graham](https://unsplash.com/@homajob?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,8 +1,8 @@
 # 转型到数据分析的路线图
 
-> 原文：[https://towardsdatascience.com/how-to-transition-to-data-analytics-128a3dca54d5?source=collection_archive---------0-----------------------#2023-11-06](https://towardsdatascience.com/how-to-transition-to-data-analytics-128a3dca54d5?source=collection_archive---------0-----------------------#2023-11-06)
+> 原文：[`towardsdatascience.com/how-to-transition-to-data-analytics-128a3dca54d5?source=collection_archive---------0-----------------------#2023-11-06`](https://towardsdatascience.com/how-to-transition-to-data-analytics-128a3dca54d5?source=collection_archive---------0-----------------------#2023-11-06)
 
-[](https://medium.com/@vuthihienthu.ueb?source=post_page-----128a3dca54d5--------------------------------)[![Thu Vu](../Images/d5d1b5895e241983b5853cb22583b6bf.png)](https://medium.com/@vuthihienthu.ueb?source=post_page-----128a3dca54d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----128a3dca54d5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----128a3dca54d5--------------------------------) [Thu Vu](https://medium.com/@vuthihienthu.ueb?source=post_page-----128a3dca54d5--------------------------------)
+[](https://medium.com/@vuthihienthu.ueb?source=post_page-----128a3dca54d5--------------------------------)![Thu Vu](https://medium.com/@vuthihienthu.ueb?source=post_page-----128a3dca54d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----128a3dca54d5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----128a3dca54d5--------------------------------) [Thu Vu](https://medium.com/@vuthihienthu.ueb?source=post_page-----128a3dca54d5--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@
 
 你可能拥有与数据分析无关的大学学位，或者一直在完全不同的领域工作。你可能对转型为数据分析师感兴趣，但不知道从何开始。如果这听起来像你，继续阅读吧！😉
 
-![](../Images/4a2173f095495defa35e03d9af49aedf.png)
+![](img/4a2173f095495defa35e03d9af49aedf.png)
 
 照片来源：[Myriam Jessier](https://unsplash.com/@mjessier?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

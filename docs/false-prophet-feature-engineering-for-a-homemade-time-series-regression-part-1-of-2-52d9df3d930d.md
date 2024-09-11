@@ -1,10 +1,10 @@
 # 假预言者：自制时间序列回归的特征工程。
 
-> 原文：[https://towardsdatascience.com/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=collection_archive---------4-----------------------#2023-10-13](https://towardsdatascience.com/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=collection_archive---------4-----------------------#2023-10-13)
+> 原文：[`towardsdatascience.com/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=collection_archive---------4-----------------------#2023-10-13`](https://towardsdatascience.com/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=collection_archive---------4-----------------------#2023-10-13)
 
 ## 基于 Meta 的 Prophet 包的理念，创造出强大的时间序列机器学习模型特性。
 
-[![Bradley Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----52d9df3d930d--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----52d9df3d930d--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----52d9df3d930d--------------------------------)
+![Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----52d9df3d930d--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----52d9df3d930d--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----52d9df3d930d--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-![](../Images/11454c39c829e4be351a11be4cce5a77.png)
+![](img/11454c39c829e4be351a11be4cce5a77.png)
 
 [Scott Rodgerson](https://unsplash.com/@scottrodgerson?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片。
 

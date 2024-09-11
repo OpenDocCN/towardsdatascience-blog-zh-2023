@@ -1,10 +1,10 @@
 # 跨越桥梁：学术界和工业界数据科学的比较
 
-> 原文：[https://towardsdatascience.com/crossing-the-bridge-a-comparison-of-data-science-in-academia-and-industry-f9c4cb3fda92?source=collection_archive---------10-----------------------#2023-05-29](https://towardsdatascience.com/crossing-the-bridge-a-comparison-of-data-science-in-academia-and-industry-f9c4cb3fda92?source=collection_archive---------10-----------------------#2023-05-29)
+> 原文：[`towardsdatascience.com/crossing-the-bridge-a-comparison-of-data-science-in-academia-and-industry-f9c4cb3fda92?source=collection_archive---------10-----------------------#2023-05-29`](https://towardsdatascience.com/crossing-the-bridge-a-comparison-of-data-science-in-academia-and-industry-f9c4cb3fda92?source=collection_archive---------10-----------------------#2023-05-29)
 
 ## 一位博士生对学术界和工业界数据科学之间令人惊讶的相似之处的探索
 
-[](https://medium.com/@nalagoz13?source=post_page-----f9c4cb3fda92--------------------------------)[![Nazlı Alagöz](../Images/7275df914f7e3e492861ffe20df10b8f.png)](https://medium.com/@nalagoz13?source=post_page-----f9c4cb3fda92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9c4cb3fda92--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f9c4cb3fda92--------------------------------) [Nazlı Alagöz](https://medium.com/@nalagoz13?source=post_page-----f9c4cb3fda92--------------------------------)
+[](https://medium.com/@nalagoz13?source=post_page-----f9c4cb3fda92--------------------------------)![Nazlı Alagöz](https://medium.com/@nalagoz13?source=post_page-----f9c4cb3fda92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9c4cb3fda92--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f9c4cb3fda92--------------------------------) [Nazlı Alagöz](https://medium.com/@nalagoz13?source=post_page-----f9c4cb3fda92--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9c4cb3fda92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcrossing-the-bridge-a-comparison-of-data-science-in-academia-and-industry-f9c4cb3fda92&source=-----f9c4cb3fda92---------------------bookmark_footer-----------)![](../Images/a2ff0559ba8c478b40828f751aa528ed.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9c4cb3fda92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcrossing-the-bridge-a-comparison-of-data-science-in-academia-and-industry-f9c4cb3fda92&source=-----f9c4cb3fda92---------------------bookmark_footer-----------)![](img/a2ff0559ba8c478b40828f751aa528ed.png)
 
 ![Campaign Creators](https://unsplash.com/photos/pypeCEaJeZY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)的照片，由[Unsplash](https://unsplash.com/photos/pypeCEaJeZY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供
 

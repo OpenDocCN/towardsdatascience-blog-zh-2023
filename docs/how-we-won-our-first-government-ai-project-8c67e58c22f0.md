@@ -1,36 +1,36 @@
-# 我们如何赢得了第一个政府AI项目
+# 我们如何赢得了第一个政府 AI 项目
 
-> 原文：[https://towardsdatascience.com/how-we-won-our-first-government-ai-project-8c67e58c22f0?source=collection_archive---------16-----------------------#2023-04-14](https://towardsdatascience.com/how-we-won-our-first-government-ai-project-8c67e58c22f0?source=collection_archive---------16-----------------------#2023-04-14)
+> 原文：[`towardsdatascience.com/how-we-won-our-first-government-ai-project-8c67e58c22f0?source=collection_archive---------16-----------------------#2023-04-14`](https://towardsdatascience.com/how-we-won-our-first-government-ai-project-8c67e58c22f0?source=collection_archive---------16-----------------------#2023-04-14)
 
 ## 加拿大先导参与项目的故事
 
-[](https://medium.com/@lsci?source=post_page-----8c67e58c22f0--------------------------------)[![Mathieu Lemay](../Images/39db2877c94829bef1d6642daf3ccecb.png)](https://medium.com/@lsci?source=post_page-----8c67e58c22f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c67e58c22f0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8c67e58c22f0--------------------------------) [Mathieu Lemay](https://medium.com/@lsci?source=post_page-----8c67e58c22f0--------------------------------)
+[](https://medium.com/@lsci?source=post_page-----8c67e58c22f0--------------------------------)![Mathieu Lemay](https://medium.com/@lsci?source=post_page-----8c67e58c22f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c67e58c22f0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c67e58c22f0--------------------------------) [Mathieu Lemay](https://medium.com/@lsci?source=post_page-----8c67e58c22f0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff84a70d8f74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-we-won-our-first-government-ai-project-8c67e58c22f0&user=Mathieu+Lemay&userId=f84a70d8f74&source=post_page-f84a70d8f74----8c67e58c22f0---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c67e58c22f0--------------------------------) ·14分钟阅读·2023年4月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c67e58c22f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-we-won-our-first-government-ai-project-8c67e58c22f0&user=Mathieu+Lemay&userId=f84a70d8f74&source=-----8c67e58c22f0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff84a70d8f74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-we-won-our-first-government-ai-project-8c67e58c22f0&user=Mathieu+Lemay&userId=f84a70d8f74&source=post_page-f84a70d8f74----8c67e58c22f0---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c67e58c22f0--------------------------------) ·14 分钟阅读·2023 年 4 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c67e58c22f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-we-won-our-first-government-ai-project-8c67e58c22f0&user=Mathieu+Lemay&userId=f84a70d8f74&source=-----8c67e58c22f0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8c67e58c22f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-we-won-our-first-government-ai-project-8c67e58c22f0&source=-----8c67e58c22f0---------------------bookmark_footer-----------)![](../Images/69260b730c7c08fad9f671aa50c5ef7a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8c67e58c22f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-we-won-our-first-government-ai-project-8c67e58c22f0&source=-----8c67e58c22f0---------------------bookmark_footer-----------)![](img/69260b730c7c08fad9f671aa50c5ef7a.png)
 
-照片由[Tetyana Kovyrina](https://www.pexels.com/photo/photo-of-beige-and-green-castle-1045915/)拍摄，来源于pexels.com。此外，骑行时可以欣赏到[亚历山大桥](https://goo.gl/maps/etXAjFNn4JGyHfKf9)的美丽景色。
+照片由[Tetyana Kovyrina](https://www.pexels.com/photo/photo-of-beige-and-green-castle-1045915/)拍摄，来源于 pexels.com。此外，骑行时可以欣赏到[亚历山大桥](https://goo.gl/maps/etXAjFNn4JGyHfKf9)的美丽景色。
 
 # **目录**
 
-+   [概述](#4ab2)
++   概述
 
-+   [保持法律法规的最新](#f0c7)
++   保持法律法规的最新
 
-+   [定义新的采购流程](#8e9d)
++   定义新的采购流程
 
-+   [人工智能引擎](#415f)
++   人工智能引擎
 
-+   [导航监管库存](#828c)
++   导航监管库存
 
 # 概述
 
-早在2018年初，我们参与了加拿大联邦政府的创新采购工具，目标很简单：找到有助于现代化所有法律和法规的创新。这一创新采购工具有许多目标：
+早在 2018 年初，我们参与了加拿大联邦政府的创新采购工具，目标很简单：找到有助于现代化所有法律和法规的创新。这一创新采购工具有许多目标：
 
 +   识别过时、负担沉重或根本不适用的法律；
 
@@ -62,7 +62,7 @@
 
 +   标准将包含所有规定的公民和组织所需的活动。
 
-![](../Images/7f756a26d5424d15d1b14636a72b6451.png)
+![](img/7f756a26d5424d15d1b14636a72b6451.png)
 
 法律、法规与技术参考之间的关系。图片由作者提供。
 
@@ -72,17 +72,17 @@
 
 然而，这一过程的另一面是相当严重的问题：**将专业知识外包给外部代理可能构成非法放弃民主**。简单来说，非选举产生的官员在法规中制定指令。
 
-如果技术监督的责任被推给SDO，那么民主如何保持对其法律的控制？通过审查、更新和管理每次监管审查中要纳入的标准。
+如果技术监督的责任被推给 SDO，那么民主如何保持对其法律的控制？通过审查、更新和管理每次监管审查中要纳入的标准。
 
 然而，快速发生的情况是，这些法规中出现的参考资料过多，审查法规以查找散布的参考资料的认知负担急剧上升，每次审查需耗费数千小时。
 
-实际上，这个项目的真正动机是手动工作的成本。所有这些复杂性加在一起意味着需要大量的人力来审查和更新这些法规。与我们共享的KPI是：**每次审查需要1,500个工时**。
+实际上，这个项目的真正动机是手动工作的成本。所有这些复杂性加在一起意味着需要大量的人力来审查和更新这些法规。与我们共享的 KPI 是：**每次审查需要 1,500 个工时**。
 
 *想在家里玩？尝试查找* [*加拿大职业健康与安全法规*](https://laws-lois.justice.gc.ca/eng/regulations/sor-86-304/FullText.html)*中的所有参考资料！提示：其中一些以“CSA”开头，但并非全部！*
 
 ## 自动化的需求
 
-为什么这是一个机器学习问题？从逻辑上讲，人们应该认为IBR列表在某处是可用的。另外，为什么我们不能简单地从几个SDO下载列表并进行字符串匹配呢？
+为什么这是一个机器学习问题？从逻辑上讲，人们应该认为 IBR 列表在某处是可用的。另外，为什么我们不能简单地从几个 SDO 下载列表并进行字符串匹配呢？
 
 我们尝试了所有这些。我们很快确认了加拿大司法部和各部门提出的问题。主列表更像是遗留知识而非系统记录，许多团队成员离开时带走了所有参考位置。
 
@@ -94,11 +94,11 @@
 
 +   **简短名称。** 在一个文件被完整纳入后，缩写版本（例如，“ISO 13485”）。
 
-+   **地理名称。** 国家级标准制定组织（如NIST或CSA）会重新解释标准，使其在本国稍微更具适用性，因此标题会略微变化（前缀为“CAN/CSA”）。
++   **地理名称。** 国家级标准制定组织（如 NIST 或 CSA）会重新解释标准，使其在本国稍微更具适用性，因此标题会略微变化（前缀为“CAN/CSA”）。
 
-回到ISO 13485的例子，这里是[医疗器械法规](https://laws.justice.gc.ca/eng/regulations/SOR-98-282/FullText.html)中的一个引用：“[…] *(f) 一份质量管理体系证书的副本，证明制造该设备的质量管理体系符合 N****ational Standard of Canada CAN/CSA-ISO 13485, Medical devices — Quality management systems — Requirements for regulatory purposes****，并根据需要进行修订。[…]”*
+回到 ISO 13485 的例子，这里是[医疗器械法规](https://laws.justice.gc.ca/eng/regulations/SOR-98-282/FullText.html)中的一个引用：“[…] *(f) 一份质量管理体系证书的副本，证明制造该设备的质量管理体系符合 N****ational Standard of Canada CAN/CSA-ISO 13485, Medical devices — Quality management systems — Requirements for regulatory purposes****，并根据需要进行修订。[…]”*
 
-![](../Images/e55b21792e83fa9d502dc33b7e138f10.png)
+![](img/e55b21792e83fa9d502dc33b7e138f10.png)
 
 不一样。这个问题在所有标准中都存在。图片由作者提供。
 
@@ -122,17 +122,17 @@
 
 推动政府创新，任何衡量标准下都绝非易事。在这个特定的情况下，时机更是糟糕。许多公开的谴责导致部门不愿与这一过程相关联，加拿大公共服务学院（CSPS，一个帮助改善政府功能的非政治实体）承担了责任的负担。
 
-为了克服这些挑战，采购人员主导了定义新的采购流程，该流程更紧密地与技术领域的采购对接，允许根据能力选择大量供应商，然后根据愿意投标的意愿从中选择少数供应商，最后邀请这些供应商提交投标。这个监管创新列表是今天AI供应商列表的原型。
+为了克服这些挑战，采购人员主导了定义新的采购流程，该流程更紧密地与技术领域的采购对接，允许根据能力选择大量供应商，然后根据愿意投标的意愿从中选择少数供应商，最后邀请这些供应商提交投标。这个监管创新列表是今天 AI 供应商列表的原型。
 
 以下是导致制定此列表的一些总结因素：
 
-+   2016年3月：监管法规审查常务委员会发布了一系列建议，解决与引用实践相关的问题。初步努力旨在解决建议4，“*[…] 修改《法定文书法》，建立一个包含引用材料的中央存储库，并要求制定法规的机关每年提供一份所有引用文档的列表。*” 这是在一系列诉讼之后，诉讼声称任何和所有在监管文档中表示的文件都应免费提供。因此，需要识别所有可用的参考资料，以评估参与特定行业的财政负担。
++   2016 年 3 月：监管法规审查常务委员会发布了一系列建议，解决与引用实践相关的问题。初步努力旨在解决建议 4，“*[…] 修改《法定文书法》，建立一个包含引用材料的中央存储库，并要求制定法规的机关每年提供一份所有引用文档的列表。*” 这是在一系列诉讼之后，诉讼声称任何和所有在监管文档中表示的文件都应免费提供。因此，需要识别所有可用的参考资料，以评估参与特定行业的财政负担。
 
-+   2018年春季：**尖锐**的审计长2018年报告公布，涉及加拿大最大IT迁移项目，结果确实不尽如人意。[列举了许多关于凤凰薪酬系统改革的忽视问题](https://www.oag-bvg.gc.ca/internet/English/parl_oag_201805_00_e_43032.html)，审计长称其为“[***难以理解的失败***](https://www.theregister.com/2018/05/29/canada_phoenix_payroll_system_audit/)”。IT采购过程必须发生改变，这威胁到最初的AI采购工作和IBR项目。
++   2018 年春季：**尖锐**的审计长 2018 年报告公布，涉及加拿大最大 IT 迁移项目，结果确实不尽如人意。[列举了许多关于凤凰薪酬系统改革的忽视问题](https://www.oag-bvg.gc.ca/internet/English/parl_oag_201805_00_e_43032.html)，审计长称其为“[***难以理解的失败***](https://www.theregister.com/2018/05/29/canada_phoenix_payroll_system_audit/)”。IT 采购过程必须发生改变，这威胁到最初的 AI 采购工作和 IBR 项目。
 
-+   2018年5月：在踏入任何风险投资之前，财政委员会秘书处（在[之前的文章](/understanding-canadas-algorithmic-impact-assessment-tool-cd0d3c8cafab)中描述）决定邀请行业参与者，以更好地了解AI在管理法规库存方面的潜力。在[人工智能行业日](https://buyandsell.gc.ca/procurement-data/tender-notice/PW-18-00828244)上，“*[…] TBS [在] 寻找行业合作伙伴和学术研究人员，以帮助将人工智能方法如高级数据分析（ADA）和机器学习（ML）应用于各种类型、范围和复杂性的法规。*”
++   2018 年 5 月：在踏入任何风险投资之前，财政委员会秘书处（在之前的文章中描述）决定邀请行业参与者，以更好地了解 AI 在管理法规库存方面的潜力。在[人工智能行业日](https://buyandsell.gc.ca/procurement-data/tender-notice/PW-18-00828244)上，“*[…] TBS [在] 寻找行业合作伙伴和学术研究人员，以帮助将人工智能方法如高级数据分析（ADA）和机器学习（ML）应用于各种类型、范围和复杂性的法规。*”
 
-+   2018年6月至9月：尽管对最新技术的发展感到自信，但担心另一个IT采购灾难，TBS请求加拿大公共服务学院（一个尽可能不带政治色彩的政府组织）主导[制定一个能够提供AI服务的公司列表](https://buyandsell.gc.ca/procurement-data/tender-notice/PW-18-00832114)的采购过程。获胜者的总合同金额？***$1.00。***
++   2018 年 6 月至 9 月：尽管对最新技术的发展感到自信，但担心另一个 IT 采购灾难，TBS 请求加拿大公共服务学院（一个尽可能不带政治色彩的政府组织）主导[制定一个能够提供 AI 服务的公司列表](https://buyandsell.gc.ca/procurement-data/tender-notice/PW-18-00832114)的采购过程。获胜者的总合同金额？***$1.00。***
 
 +   2018 年 11 月：与我们的咨询合作伙伴 [MNP](https://www.mnp.ca/) 一起，我们受邀竞标 *CSPS-RFP-18LL-1593：演示项目，试点应用人工智能方法于引用法规*，这是一个仅限预审供应商的项目。所有供应商都从演示日资格审查过程中选出。
 
@@ -174,23 +174,23 @@
 
 我们坚持选择这个特定模型的原因在于它在识别从未见过的实体方面的强大能力，特别是在第三方标准的背景下。此外，识别实体的开始和结束的精确机制几乎与加拿大司法部的个体处理方式完全一致：通过查看触发词、大小写变化和字母数字序列的变化。
 
-![](../Images/b093f88be5747f4dfd8a4399ee0487c3.png)
+![](img/b093f88be5747f4dfd8a4399ee0487c3.png)
 
 图片由作者提供。
 
-这里有一篇关于原始论文的 [深入文章](/deep-learning-for-named-entity-recognition-2-implementing-the-state-of-the-art-bidirectional-lstm-4603491087f1)。
+这里有一篇关于原始论文的 深入文章。
 
 这个模型真正创新之处在于它采用了 Frankenstein 方法，重新利用为 LSTM（专注于词）和 CNN（专注于字符）准备的特征。与其选择最佳方法，不如将所有内容混合在一起，让命运决定。
 
 这是 LSTM 方面：
 
-![](../Images/9e494555e3cd016326af64098df8aba6.png)
+![](img/9e494555e3cd016326af64098df8aba6.png)
 
 “[……] 用于命名实体标注的（展开的）BLSTM。多个表格查找词级特征向量。CNN 从字符级特征中提取固定长度的特征向量。对于每个词，这些向量被连接在一起并输入到 BLSTM 网络，然后进入输出层。”（来自 [论文](https://arxiv.org/abs/1511.08308)）
 
 这就是 CNN 方面：
 
-![](../Images/c5fa9fe45002aa93b4844ab0eb134d49.png)
+![](img/c5fa9fe45002aa93b4844ab0eb134d49.png)
 
 “[……] 卷积神经网络从每个词中提取字符特征。字符嵌入和（可选的）字符类型特征向量通过查找表计算。然后，这些特征被连接在一起并传入 CNN。”（来自 [论文](https://arxiv.org/abs/1511.08308)）
 
@@ -222,17 +222,17 @@
 
 这个前端是许多需求开始被澄清和调整的地方，因为客户看到工具的功能。
 
-![](../Images/3f6dc98c6419ac274f718a1ad774a6de.png)
+![](img/3f6dc98c6419ac274f718a1ad774a6de.png)
 
 SA/IBR 门户的视图，查看法规搜索页面。图片由作者提供。
 
-![](../Images/b3ad1add49505c54bafc20e310f449c3.png)
+![](img/b3ad1add49505c54bafc20e310f449c3.png)
 
 SA/IBR 门户的视图，查看医疗设备法规页面。图片由作者提供。
 
-![](../Images/4520486e7c17dc1a76d15a2ae19e14c8.png)
+![](img/4520486e7c17dc1a76d15a2ae19e14c8.png)
 
-高亮显示的详细视图。这是在**SOR-86–304: 加拿大职业健康和安全法规**第 9 节中。图片由作者提供。
+高亮显示的详细视图。这是在**SOR-86–304: 加拿大职业健康和安全法规**第九部分中。图片由作者提供。
 
 # 验证和可用性
 
@@ -244,26 +244,26 @@ SA/IBR 门户的视图，查看医疗设备法规页面。图片由作者提供�
 
 加拿大司法部团队对结果进行了多次审查。经过几周的讨论，他们确认**我们的工具没有遗漏任何一个参考文献。**我们进行了项目后质量控制，确保没有未解决的问题，但我们的工作已经完成。❤️
 
-***免责声明***：这篇文章还涉及到一个原型采购清单，这个清单是加拿大联邦政府现在著名的AI供应商清单的前身。第一个***实际的***项目由[*KPMG和Lixar（现为BDO）*](https://buyandsell.gc.ca/procurement-data/tender-notice/PW-EE-017-34665)获得；我们在这篇文章中绝不声称我们赢得了那个特定的项目，或者我们是公共职能领域中第一个AI项目。然而，在AI供应商清单之前，确实有一个用于采用AI技术的原型采购工具，我们提供了一个非常有趣的方法。这是那个项目的故事。
+***免责声明***：这篇文章还涉及到一个原型采购清单，这个清单是加拿大联邦政府现在著名的 AI 供应商清单的前身。第一个***实际的***项目由[*KPMG 和 Lixar（现为 BDO）*](https://buyandsell.gc.ca/procurement-data/tender-notice/PW-EE-017-34665)获得；我们在这篇文章中绝不声称我们赢得了那个特定的项目，或者我们是公共职能领域中第一个 AI 项目。然而，在 AI 供应商清单之前，确实有一个用于采用 AI 技术的原型采购工具，我们提供了一个非常有趣的方法。这是那个项目的故事。
 
 # 其他你可能感兴趣的文章
 
-+   [解读MLOps的业务考虑因素](https://medium.com/towards-data-science/interpreting-the-business-considerations-of-mlops-f32613c4bcb4)
++   [解读 MLOps 的业务考虑因素](https://medium.com/towards-data-science/interpreting-the-business-considerations-of-mlops-f32613c4bcb4)
 
-+   [PyTorch与TensorFlow在基于Transformer的NLP应用中的比较](/pytorch-vs-tensorflow-for-transformer-based-nlp-applications-b851bdbf229a)
++   PyTorch 与 TensorFlow 在基于 Transformer 的 NLP 应用中的比较
 
-+   [用于批处理的MLOps：在GPU上运行Airflow](/mlops-for-batch-processing-running-airflow-on-gpus-dc94367869c6)
++   用于批处理的 MLOps：在 GPU 上运行 Airflow
 
-+   [数据集偏见：制度化歧视还是足够的透明度？](/dataset-biases-institutionalized-discrimination-or-adequate-transparency-ae4119e2a65c)
++   数据集偏见：制度化歧视还是足够的透明度？
 
 +   [人工智能如何创造价值？](https://medium.com/@lsci/how-does-artificial-intelligence-create-value-bec14c785b40)
 
-+   [实施企业AI战略](/implementing-a-corporate-ai-strategy-a64e641384c8)
++   实施企业 AI 战略
 
-+   [异常值感知聚类：超越K均值](/outlier-aware-clustering-beyond-k-means-76f7bf8b4899)
++   异常值感知聚类：超越 K 均值
 
-+   [Rorschach测试在深度学习图像分类中的应用](/rorschach-tests-for-deep-learning-image-classifiers-68c019fcc9a9)
++   Rorschach 测试在深度学习图像分类中的应用
 
-*如果您对这篇文章或我们的AI咨询有额外的问题，请随时通过* [***LinkedIn***](https://www.linkedin.com/in/mnlemay/)*或通过* [***电子邮件***](mailto:matt@lemay.ai)*联系我们。*
+*如果您对这篇文章或我们的 AI 咨询有额外的问题，请随时通过* [***LinkedIn***](https://www.linkedin.com/in/mnlemay/)*或通过* ***电子邮件****联系我们。*
 
 -Matt.

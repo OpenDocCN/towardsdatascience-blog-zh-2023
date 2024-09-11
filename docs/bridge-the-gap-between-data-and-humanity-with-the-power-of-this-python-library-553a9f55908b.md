@@ -1,10 +1,10 @@
 # 利用这个 Python 库的强大功能弥合数据与人类之间的差距
 
-> 原文：[https://towardsdatascience.com/bridge-the-gap-between-data-and-humanity-with-the-power-of-this-python-library-553a9f55908b?source=collection_archive---------15-----------------------#2023-02-22](https://towardsdatascience.com/bridge-the-gap-between-data-and-humanity-with-the-power-of-this-python-library-553a9f55908b?source=collection_archive---------15-----------------------#2023-02-22)
+> 原文：[`towardsdatascience.com/bridge-the-gap-between-data-and-humanity-with-the-power-of-this-python-library-553a9f55908b?source=collection_archive---------15-----------------------#2023-02-22`](https://towardsdatascience.com/bridge-the-gap-between-data-and-humanity-with-the-power-of-this-python-library-553a9f55908b?source=collection_archive---------15-----------------------#2023-02-22)
 
 ## 使您的 Python 输出对人类更易于理解
 
-[](https://zoumanakeita.medium.com/?source=post_page-----553a9f55908b--------------------------------)[![Zoumana Keita](../Images/34a15c1d03687816dbdbc065f5719f80.png)](https://zoumanakeita.medium.com/?source=post_page-----553a9f55908b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----553a9f55908b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----553a9f55908b--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----553a9f55908b--------------------------------)
+[](https://zoumanakeita.medium.com/?source=post_page-----553a9f55908b--------------------------------)![Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----553a9f55908b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----553a9f55908b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----553a9f55908b--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----553a9f55908b--------------------------------)
 
 ·
 
@@ -22,7 +22,7 @@
 
 # 入门
 
-要使用`humanize`，第一步是通过Python包管理器`pip`进行安装，如下所示：
+要使用`humanize`，第一步是通过 Python 包管理器`pip`进行安装，如下所示：
 
 ```py
 !pip3 install humanize

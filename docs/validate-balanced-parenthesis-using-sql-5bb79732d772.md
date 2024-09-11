@@ -1,14 +1,14 @@
 # 使用 SQL 验证平衡括号
 
-> 原文：[https://towardsdatascience.com/validate-balanced-parenthesis-using-sql-5bb79732d772?source=collection_archive---------22-----------------------#2023-01-04](https://towardsdatascience.com/validate-balanced-parenthesis-using-sql-5bb79732d772?source=collection_archive---------22-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/validate-balanced-parenthesis-using-sql-5bb79732d772?source=collection_archive---------22-----------------------#2023-01-04`](https://towardsdatascience.com/validate-balanced-parenthesis-using-sql-5bb79732d772?source=collection_archive---------22-----------------------#2023-01-04)
 
 ## 使用 SQL 检查一个包含开括号和闭括号的字符串的格式是否正确
 
-[](https://medium.com/@dhruvbird?source=post_page-----5bb79732d772--------------------------------)[![Dhruv Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----5bb79732d772--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5bb79732d772--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5bb79732d772--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----5bb79732d772--------------------------------)
+[](https://medium.com/@dhruvbird?source=post_page-----5bb79732d772--------------------------------)![Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----5bb79732d772--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5bb79732d772--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5bb79732d772--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----5bb79732d772--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-balanced-parenthesis-using-sql-5bb79732d772&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----5bb79732d772---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5bb79732d772--------------------------------) ·5 分钟阅读·2023年1月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5bb79732d772&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-balanced-parenthesis-using-sql-5bb79732d772&user=Dhruv+Matani&userId=63f5d5495279&source=-----5bb79732d772---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-balanced-parenthesis-using-sql-5bb79732d772&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----5bb79732d772---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5bb79732d772--------------------------------) ·5 分钟阅读·2023 年 1 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5bb79732d772&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-balanced-parenthesis-using-sql-5bb79732d772&user=Dhruv+Matani&userId=63f5d5495279&source=-----5bb79732d772---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 验证一个字符串是否包含平衡的括号是一个实际问题，来源于各种实际场景中的字符串/表达式解析/验证。本文将探讨如何仅使用声明式 SQL 来验证一个只包含开括号‘(’和闭括号‘)’的字符串。
 
-![](../Images/d2fee6c8922213106725258d8446a8ab.png)
+![](img/d2fee6c8922213106725258d8446a8ab.png)
 
 照片由 [Elena Mozhvilo](https://unsplash.com/@miracleday?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -69,7 +69,7 @@ INSERT INTO inputs(parens) VALUES
 SELECT * FROM inputs;
 ```
 
-![](../Images/c9a13d40328fc769891665fb2137c855.png)
+![](img/c9a13d40328fc769891665fb2137c855.png)
 
 平衡括号问题的输入表（作者提供的图片）
 
@@ -158,15 +158,15 @@ ORDER BY lhs.idx ASC;
 
 在上述解决方案中，使用了相当多的中间表来帮助可读性，并将各种处理步骤分开。
 
-这是我们第一次在SQL中使用[UNNEST](https://www.postgresql.org/docs/9.2/functions-array.html)关键字。这也是我第一次编写一个批量处理多个输入并一次性解决的解决方案。我利用了**idx**字段，它表示输入字符串的索引。所有中间表都使用**idx**字段来分离不同问题的解决方案。
+这是我们第一次在 SQL 中使用[UNNEST](https://www.postgresql.org/docs/9.2/functions-array.html)关键字。这也是我第一次编写一个批量处理多个输入并一次性解决的解决方案。我利用了**idx**字段，它表示输入字符串的索引。所有中间表都使用**idx**字段来分离不同问题的解决方案。
 
-![](../Images/e14566348e6942080cd3bc54742515d8.png)
+![](img/e14566348e6942080cd3bc54742515d8.png)
 
 O(n)解决方案的结果（作者提供的图片）
 
-**估计成本：** 在一个具有5个不同输入行的表上，该查询的估计成本为[45k](https://explain.depesz.com/s/mN2y)。这个成本大部分似乎来自于使用窗口聚合函数。
+**估计成本：** 在一个具有 5 个不同输入行的表上，该查询的估计成本为[45k](https://explain.depesz.com/s/mN2y)。这个成本大部分似乎来自于使用窗口聚合函数。
 
-虽然我标记了运行时间为**O(n)**，但这取决于数据库引擎如何内部执行查询。例如，如果引擎发现使用**ROW_NUMBER()**分配的**row_num**列结果具有该列值严格递增，并且数据库能够在CTE表中保持这一行顺序，那么它可以避免在遇到**ORDER BY**子句时在窗口函数执行中进行排序。
+虽然我标记了运行时间为**O(n)**，但这取决于数据库引擎如何内部执行查询。例如，如果引擎发现使用**ROW_NUMBER()**分配的**row_num**列结果具有该列值严格递增，并且数据库能够在 CTE 表中保持这一行顺序，那么它可以避免在遇到**ORDER BY**子句时在窗口函数执行中进行排序。
 
 ```py
 SUM(ctr) OVER(PARTITION BY idx ORDER BY row_num ASC) AS running_sum,
@@ -176,7 +176,7 @@ SUM(ctr) OVER(PARTITION BY idx ORDER BY row_num ASC) AS running_sum,
 
 # SQL Fiddle
 
-这篇文章中SQL Fiddle解决方案的链接可以在[这里](http://sqlfiddle.com/#!17/e83e88/20)找到。
+这篇文章中 SQL Fiddle 解决方案的链接可以在[这里](http://sqlfiddle.com/#!17/e83e88/20)找到。
 
 # 扩展和练习
 
@@ -184,4 +184,4 @@ SUM(ctr) OVER(PARTITION BY idx ORDER BY row_num ASC) AS running_sum,
 
 1.  如果组成开括号和闭括号对的字符串不是固定的，而是在另一个维度表中指定的，你会如何演变解决方案来适应这一变化？
 
-我们将看到（在后续文章中）这些扩展如何解决SQL从业者遇到的实际问题。
+我们将看到（在后续文章中）这些扩展如何解决 SQL 从业者遇到的实际问题。

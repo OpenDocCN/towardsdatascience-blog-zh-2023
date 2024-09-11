@@ -1,18 +1,18 @@
-# 改进您的数据治理团队的4种革命性方法
+# 改进您的数据治理团队的 4 种革命性方法
 
-> 原文：[https://towardsdatascience.com/4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5?source=collection_archive---------16-----------------------#2023-07-24](https://towardsdatascience.com/4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5?source=collection_archive---------16-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5?source=collection_archive---------16-----------------------#2023-07-24`](https://towardsdatascience.com/4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5?source=collection_archive---------16-----------------------#2023-07-24)
 
-## 用这4种革命性方法增强您的数据治理实践
+## 用这 4 种革命性方法增强您的数据治理实践
 
-[](https://hanzalaqureshi.medium.com/?source=post_page-----56acdb6f1ab5--------------------------------)[![Hanzala Qureshi](../Images/6241f863e3e0159e39fdec753095f792.png)](https://hanzalaqureshi.medium.com/?source=post_page-----56acdb6f1ab5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----56acdb6f1ab5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----56acdb6f1ab5--------------------------------) [Hanzala Qureshi](https://hanzalaqureshi.medium.com/?source=post_page-----56acdb6f1ab5--------------------------------)
+[](https://hanzalaqureshi.medium.com/?source=post_page-----56acdb6f1ab5--------------------------------)![Hanzala Qureshi](https://hanzalaqureshi.medium.com/?source=post_page-----56acdb6f1ab5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----56acdb6f1ab5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----56acdb6f1ab5--------------------------------) [Hanzala Qureshi](https://hanzalaqureshi.medium.com/?source=post_page-----56acdb6f1ab5--------------------------------)
 
 ·
 
-[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F467270b83111&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5&user=Hanzala+Qureshi&userId=467270b83111&source=post_page-467270b83111----56acdb6f1ab5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----56acdb6f1ab5--------------------------------) ·5 分钟阅读·2023年7月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F56acdb6f1ab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5&user=Hanzala+Qureshi&userId=467270b83111&source=-----56acdb6f1ab5---------------------clap_footer-----------)
+[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F467270b83111&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5&user=Hanzala+Qureshi&userId=467270b83111&source=post_page-467270b83111----56acdb6f1ab5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----56acdb6f1ab5--------------------------------) ·5 分钟阅读·2023 年 7 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F56acdb6f1ab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5&user=Hanzala+Qureshi&userId=467270b83111&source=-----56acdb6f1ab5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F56acdb6f1ab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5&source=-----56acdb6f1ab5---------------------bookmark_footer-----------)![](../Images/54b3ebd34c2152b05dfd0a20553933c3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F56acdb6f1ab5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-revolutionary-ways-to-improve-your-data-governance-team-56acdb6f1ab5&source=-----56acdb6f1ab5---------------------bookmark_footer-----------)![](img/54b3ebd34c2152b05dfd0a20553933c3.png)
 
 照片由[Shubham Dhage](https://unsplash.com/@theshubhamdhage?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
-# 使用PyTorch和SHAP进行图像分类：你能信任自动驾驶汽车吗？
+# 使用 PyTorch 和 SHAP 进行图像分类：你能信任自动驾驶汽车吗？
 
-> 原文：[https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea?source=collection_archive---------7-----------------------#2023-03-21](https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea?source=collection_archive---------7-----------------------#2023-03-21)
+> 原文：[`towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea?source=collection_archive---------7-----------------------#2023-03-21`](https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea?source=collection_archive---------7-----------------------#2023-03-21)
 
-## 构建一个对象检测模型，将其与强度阈值进行比较，评估并使用DeepSHAP进行解释。
+## 构建一个对象检测模型，将其与强度阈值进行比较，评估并使用 DeepSHAP 进行解释。
 
-[](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[![Conor O'Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)
+[](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)![Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----4d8d12714eea---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------) ·14 min read·2023年3月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d8d12714eea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----4d8d12714eea---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----4d8d12714eea---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------) ·14 min read·2023 年 3 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d8d12714eea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----4d8d12714eea---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d8d12714eea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea&source=-----4d8d12714eea---------------------bookmark_footer-----------)![](../Images/e0f878484110a05545a3b8a001d4b868.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d8d12714eea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimage-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea&source=-----4d8d12714eea---------------------bookmark_footer-----------)![](img/e0f878484110a05545a3b8a001d4b868.png)
 
 （来源：作者）
 
@@ -24,10 +24,10 @@
 
 +   使用强度阈值创建基准
 
-+   使用PyTorch构建卷积神经网络（CNN）
++   使用 PyTorch 构建卷积神经网络（CNN）
 
 +   使用准确率、精确率和召回率来评估模型
 
-+   使用SHAP来解释模型
++   使用 SHAP 来解释模型
 
 我们将看到模型不仅表现良好，而且它的*预测方式*似乎也很合理。在过程中，我们将讨论……

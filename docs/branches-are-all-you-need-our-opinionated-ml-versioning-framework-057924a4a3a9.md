@@ -1,14 +1,14 @@
 # Branches Are All You Need: Our Opinionated ML Versioning Framework
 
-> 原文：[https://towardsdatascience.com/branches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9?source=collection_archive---------3-----------------------#2023-10-10](https://towardsdatascience.com/branches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9?source=collection_archive---------3-----------------------#2023-10-10)
+> 原文：[`towardsdatascience.com/branches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9?source=collection_archive---------3-----------------------#2023-10-10`](https://towardsdatascience.com/branches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9?source=collection_archive---------3-----------------------#2023-10-10)
 
-## 一个实用的机器学习项目版本控制方法，使用Git分支简化工作流程，组织数据和模型
+## 一个实用的机器学习项目版本控制方法，使用 Git 分支简化工作流程，组织数据和模型
 
-[](https://medium.com/@xdss?source=post_page-----057924a4a3a9--------------------------------)[![乔纳森（约纳坦）·亚历山大](../Images/7b2182b7048b5baffc642f8926d7a11b.png)](https://medium.com/@xdss?source=post_page-----057924a4a3a9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----057924a4a3a9--------------------------------)[![走向数据科学](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----057924a4a3a9--------------------------------) [乔纳森（约纳坦）·亚历山大](https://medium.com/@xdss?source=post_page-----057924a4a3a9--------------------------------)
+[](https://medium.com/@xdss?source=post_page-----057924a4a3a9--------------------------------)![乔纳森（约纳坦）·亚历山大](https://medium.com/@xdss?source=post_page-----057924a4a3a9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----057924a4a3a9--------------------------------)![走向数据科学](https://towardsdatascience.com/?source=post_page-----057924a4a3a9--------------------------------) [乔纳森（约纳坦）·亚历山大](https://medium.com/@xdss?source=post_page-----057924a4a3a9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feba261287b37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbranches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9&user=Jonathan+%28Yonatan%29+Alexander&userId=eba261287b37&source=post_page-eba261287b37----057924a4a3a9---------------------post_header-----------) 发表在 [走向数据科学](https://towardsdatascience.com/?source=post_page-----057924a4a3a9--------------------------------) ·10 分钟阅读·2023年10月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F057924a4a3a9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbranches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9&user=Jonathan+%28Yonatan%29+Alexander&userId=eba261287b37&source=-----057924a4a3a9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feba261287b37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbranches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9&user=Jonathan+%28Yonatan%29+Alexander&userId=eba261287b37&source=post_page-eba261287b37----057924a4a3a9---------------------post_header-----------) 发表在 [走向数据科学](https://towardsdatascience.com/?source=post_page-----057924a4a3a9--------------------------------) ·10 分钟阅读·2023 年 10 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F057924a4a3a9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbranches-are-all-you-need-our-opinionated-ml-versioning-framework-057924a4a3a9&user=Jonathan+%28Yonatan%29+Alexander&userId=eba261287b37&source=-----057924a4a3a9---------------------clap_footer-----------)
 
 --
 
@@ -16,17 +16,17 @@
 
 # 简而言之
 
-一个简单的机器学习项目版本控制方法，使用Git分支简化工作流程，组织数据和模型，并将项目相关部分紧密联系在一起。
+一个简单的机器学习项目版本控制方法，使用 Git 分支简化工作流程，组织数据和模型，并将项目相关部分紧密联系在一起。
 
 # 介绍
 
-在管理机器学习解决方案时，解决方案的各个方面通常分布在多个平台和位置，如GitHub用于代码，HuggingFace用于模型，Weights and Biases用于追踪，S3用于一切的备份等等。
+在管理机器学习解决方案时，解决方案的各个方面通常分布在多个平台和位置，如 GitHub 用于代码，HuggingFace 用于模型，Weights and Biases 用于追踪，S3 用于一切的备份等等。
 
 在数据方面，我们有训练数据、处理过的数据、训练跟踪数据和模型监控数据。我们保存用于推理的模型，包括旧版本和用于在线测试的实验模型。我们还有用于预处理、训练、推理、实验、数据科学分析和监控警报的代码。
 
 这很容易失控。
 
-![](../Images/5b381eb0161c9606fe03f632ac0bde0b.png)
+![](img/5b381eb0161c9606fe03f632ac0bde0b.png)
 
 作者提供的图像
 
@@ -76,7 +76,7 @@
 
 # 分支类型
 
-![](../Images/3798c98ea6ed53167fd70c7c61003eaa.png)
+![](img/3798c98ea6ed53167fd70c7c61003eaa.png)
 
 图片来自作者
 
@@ -108,7 +108,7 @@
 
 > 在之前的分类项目中，我是一个由个体贡献者组成的团队的一员，每个人从头开始运行整个管道；我们每个人使用了不同的数据拆分百分比和种子，这导致了在生产中因错误和数据偏见而产生较弱的模型。
 
-![](../Images/9e919b0d26f2d300c17892580d9ba93d.png)
+![](img/9e919b0d26f2d300c17892580d9ba93d.png)
 
 作者提供的图片
 
@@ -116,7 +116,7 @@
 
 # 稳定分支
 
-这些分支是**活跃的**分支，用于**训练和推断**。在这里，你可以运行训练，保存模型、检查点和模型卡，运行测试，构建和测试Docker镜像，在训练周期结束时提交所有内容，然后**标记**。它们应能处理新数据的检索和重新训练。这是自动化发生的地方。
+这些分支是**活跃的**分支，用于**训练和推断**。在这里，你可以运行训练，保存模型、检查点和模型卡，运行测试，构建和测试 Docker 镜像，在训练周期结束时提交所有内容，然后**标记**。它们应能处理新数据的检索和重新训练。这是自动化发生的地方。
 
 > ⚠️ **这些分支中不编写代码。**
 
@@ -144,7 +144,7 @@
 
 这种方法让你可以逐步改进模型，同时保留稳定分支中之前模型的完整上下文。
 
-![](../Images/849e4c8126f79385b6641dc638a6e122.png)
+![](img/849e4c8126f79385b6641dc638a6e122.png)
 
 图片由作者提供
 
@@ -164,9 +164,9 @@
 
 > 💡 你可以为每个环境（开发、稳定和生产）使用多个监控分支。
 
-我们可以在数据提交上设置警报，以测试任何特征分布的[漂移](/drift-in-machine-learning-e49df46803a)、异常值、[校准](https://machinelearningmastery.com/probability-calibration-for-imbalanced-classification/)的合理性测试，并保存警报代码；这使得我们可以实现更高级的解决方案，比如异常值检测模型，因为我们也可以在这个分支中保存模型。
+我们可以在数据提交上设置警报，以测试任何特征分布的漂移、异常值、[校准](https://machinelearningmastery.com/probability-calibration-for-imbalanced-classification/)的合理性测试，并保存警报代码；这使得我们可以实现更高级的解决方案，比如异常值检测模型，因为我们也可以在这个分支中保存模型。
 
-![](../Images/5a51b65d89c5a4d83317f23c3ad83ba9.png)
+![](img/5a51b65d89c5a4d83317f23c3ad83ba9.png)
 
 作者提供的图片
 
@@ -176,25 +176,25 @@
 
 数据科学和分析是项目的另一个方面，通常被分离到不同的项目中。这是数据科学家的分析代码和非训练数据汇聚的地方。
 
-数据科学家可以从*monitoring*分支中检查和提取数据，以进行分析、A/B测试和其他在线与离线实验。他们也可以使用*raw*分支中的数据进行这些目的。
+数据科学家可以从*monitoring*分支中检查和提取数据，以进行分析、A/B 测试和其他在线与离线实验。他们也可以使用*raw*分支中的数据进行这些目的。
 
 在线示例更简单，因为每个实验组对应一个分支。
 
 > 💡 **提示：常见的在线实验：**
 > 
-> **前向测试** - 比较当前模型的99%与候选模型的1%。
+> **前向测试** - 比较当前模型的 99%与候选模型的 1%。
 > 
-> **回测** - 在合并新模型后，保留1%在旧模型上以验证预期效果的反向。
+> **回测** - 在合并新模型后，保留 1%在旧模型上以验证预期效果的反向。
 
 将模型标签作为监控数据中的参数，有助于你精确定位度量潜在原因的每一变化。
 
 # 总结
 
-![](../Images/d22900bc55d5305f480797d7cc00fed0.png)
+![](img/d22900bc55d5305f480797d7cc00fed0.png)
 
 作者提供的图片
 
-本文介绍了使用Git分支对机器学习项目进行版本控制的框架。该框架简化了工作流程，组织了数据和模型，并将项目的相关部分耦合在一起。它强调了将分支用作环境的使用，每个分支包含特定任务所需的数据、代码、模型和文档。文章还讨论了如使用不同的活跃分支类别等关键概念。总体而言，该框架旨在提高机器学习项目的工作流程效率、治理和协作。
+本文介绍了使用 Git 分支对机器学习项目进行版本控制的框架。该框架简化了工作流程，组织了数据和模型，并将项目的相关部分耦合在一起。它强调了将分支用作环境的使用，每个分支包含特定任务所需的数据、代码、模型和文档。文章还讨论了如使用不同的活跃分支类别等关键概念。总体而言，该框架旨在提高机器学习项目的工作流程效率、治理和协作。
 
 如果你想聊天或了解更多信息，加入我们的[discord](https://discord.gg/KCzmjDaDdC)或关注我们的[博客](https://about.xethub.com/blog)。
 
@@ -202,6 +202,6 @@
 
 关于我的本地挑战，我们为每个相关的训练代码和数据集组合维护了一个“稳定”的分支。训练完成后，我们会用一个合适的标签（<*client-id>-<incremental version*>）标记提交。客户可以像其他发布版本一样拉取最新的标签。
 
-![](../Images/3a43492def7f6cbed15d8d3ef8520784.png)
+![](img/3a43492def7f6cbed15d8d3ef8520784.png)
 
 在“调试”客户端时，我们会参考特定时刻的标签来审查代码和相应的数据。我们还可以使用相同的标签匹配监控数据，这个标签也添加到监控数据中。分析笔记本可以在我们的*ds/client-id*分支中找到。

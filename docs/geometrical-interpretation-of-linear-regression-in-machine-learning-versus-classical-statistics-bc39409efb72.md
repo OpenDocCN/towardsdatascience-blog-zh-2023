@@ -1,46 +1,46 @@
 # 机器学习与经典统计中的线性回归几何解释
 
-> 原文：[https://towardsdatascience.com/geometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72?source=collection_archive---------4-----------------------#2023-12-12](https://towardsdatascience.com/geometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72?source=collection_archive---------4-----------------------#2023-12-12)
+> 原文：[`towardsdatascience.com/geometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72?source=collection_archive---------4-----------------------#2023-12-12`](https://towardsdatascience.com/geometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72?source=collection_archive---------4-----------------------#2023-12-12)
 
 ## **通过视觉和分析来揭示线性回归的困惑**
 
-[](https://medium.com/@rishabh29288?source=post_page-----bc39409efb72--------------------------------)[![Rishabh Raman](../Images/041c1c6dd8713bbd2fab5408d5236213.png)](https://medium.com/@rishabh29288?source=post_page-----bc39409efb72--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bc39409efb72--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bc39409efb72--------------------------------) [Rishabh Raman](https://medium.com/@rishabh29288?source=post_page-----bc39409efb72--------------------------------)
+[](https://medium.com/@rishabh29288?source=post_page-----bc39409efb72--------------------------------)![Rishabh Raman](https://medium.com/@rishabh29288?source=post_page-----bc39409efb72--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bc39409efb72--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc39409efb72--------------------------------) [Rishabh Raman](https://medium.com/@rishabh29288?source=post_page-----bc39409efb72--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F12323e77e1e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72&user=Rishabh+Raman&userId=12323e77e1e2&source=post_page-12323e77e1e2----bc39409efb72---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc39409efb72--------------------------------) ·9 分钟阅读·2023年12月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbc39409efb72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72&user=Rishabh+Raman&userId=12323e77e1e2&source=-----bc39409efb72---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F12323e77e1e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72&user=Rishabh+Raman&userId=12323e77e1e2&source=post_page-12323e77e1e2----bc39409efb72---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc39409efb72--------------------------------) ·9 分钟阅读·2023 年 12 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbc39409efb72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72&user=Rishabh+Raman&userId=12323e77e1e2&source=-----bc39409efb72---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbc39409efb72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72&source=-----bc39409efb72---------------------bookmark_footer-----------)![](../Images/facef23d7c152cc1e5e168e448bdcba6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbc39409efb72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeometrical-interpretation-of-linear-regression-in-machine-learning-versus-classical-statistics-bc39409efb72&source=-----bc39409efb72---------------------bookmark_footer-----------)![](img/facef23d7c152cc1e5e168e448bdcba6.png)
 
-图片：线性回归插图，作者 Stpasha，通过维基共享资源（公共领域）。原始图片链接：[https://upload.wikimedia.org/wikipedia/commons/8/87/OLS_geometric_interpretation.svg](https://upload.wikimedia.org/wikipedia/commons/8/87/OLS_geometric_interpretation.svg)
+图片：线性回归插图，作者 Stpasha，通过维基共享资源（公共领域）。原始图片链接：[`upload.wikimedia.org/wikipedia/commons/8/87/OLS_geometric_interpretation.svg`](https://upload.wikimedia.org/wikipedia/commons/8/87/OLS_geometric_interpretation.svg)
 
 上述图像表示了普通最小二乘法（OLS）或线性回归的几何解释（在经典统计中这两个词可以互换使用）。让我们以直观的方式解析我们所看到的内容：
 
-+   **变量（X1和X2）：** 想象你有两个变量X1和X2。这些变量可以代表任何东西，比如你学习的小时数和你参加的练习考试次数。
++   **变量（X1 和 X2）：** 想象你有两个变量 X1 和 X2。这些变量可以代表任何东西，比如你学习的小时数和你参加的练习考试次数。
 
 +   **数据点（y）：** 现在，你有了你的结果或你试图预测的内容，我们称之为‘y’。在我们的例子中，这可能是你在实际考试中的成绩。
 
-+   **平面（colX）：** 平面代表通过组合不同数量的变量X1和X2可以得到的所有可能预测值。在我们的例子中，它可能代表基于不同的学习时间和练习考试次数你可能预测的所有可能考试成绩。
++   **平面（colX）：** 平面代表通过组合不同数量的变量 X1 和 X2 可以得到的所有可能预测值。在我们的例子中，它可能代表基于不同的学习时间和练习考试次数你可能预测的所有可能考试成绩。
 
-+   **估计系数（Beta1和Beta2）：** 这些是OLS方法对每个变量对你的成绩影响程度的最佳猜测。因此，Beta1可能告诉你每多学一个小时成绩预计会增加多少，而Beta2可能告诉你每增加一个练习考试成绩会增加多少。
++   **估计系数（Beta1 和 Beta2）：** 这些是 OLS 方法对每个变量对你的成绩影响程度的最佳猜测。因此，Beta1 可能告诉你每多学一个小时成绩预计会增加多少，而 Beta2 可能告诉你每增加一个练习考试成绩会增加多少。
 
-+   **预测点（XB^）：** 这是基于估计系数你得到的预测成绩。它位于平面上，因为它是使用OLS估计的变量X1和X2的组合。
++   **预测点（XB^）：** 这是基于估计系数你得到的预测成绩。它位于平面上，因为它是使用 OLS 估计的变量 X1 和 X2 的组合。
 
 +   **实际点（y）：** 这是你的实际考试成绩。
 
 +   **误差（ε）：** 这是你实际成绩和预测成绩之间的差异。换句话说，就是预测与现实的偏差。
 
-# **那么，OLS如何运作呢？**
+# **那么，OLS 如何运作呢？**
 
-OLS尝试找到Beta1和Beta2的值，使得当你使用X1和X2（学习小时数和练习考试次数）来预测‘y’（考试成绩）时，所有数据点的误差（ε）尽可能小。在图形中，这就像是调整平面，直到垂直虚线（表示误差）总长度尽可能短。实际数据点（y）到平面（colX）的最短距离总是垂直于平面的直线。OLS找到一个特定的平面，使这些垂直距离对于所有点都达到最小。
+OLS 尝试找到 Beta1 和 Beta2 的值，使得当你使用 X1 和 X2（学习小时数和练习考试次数）来预测‘y’（考试成绩）时，所有数据点的误差（ε）尽可能小。在图形中，这就像是调整平面，直到垂直虚线（表示误差）总长度尽可能短。实际数据点（y）到平面（colX）的最短距离总是垂直于平面的直线。OLS 找到一个特定的平面，使这些垂直距离对于所有点都达到最小。
 
-换句话说，OLS试图“拟合”平面，使其尽可能接近你的实际成绩，同时认识到它通常不会通过所有实际点，因为现实生活中很少有那么完美的情况。
+换句话说，OLS 试图“拟合”平面，使其尽可能接近你的实际成绩，同时认识到它通常不会通过所有实际点，因为现实生活中很少有那么完美的情况。
 
 **这就像把最好的纸张贴在一群铅笔点下面，使纸张尽可能接近所有点。**
 
-让我们回顾OLS的主要假设，并将其与上述视觉图像联系起来：
+让我们回顾 OLS 的主要假设，并将其与上述视觉图像联系起来：
 
 **1\. 线性性**
 
@@ -86,21 +86,21 @@ OLS尝试找到Beta1和Beta2的值，使得当你使用X1和X2（学习小时数
 
 # 线性回归在机器学习宇宙中如何不同于经典统计学中的普通最小二乘法线性回归？
 
-在经典统计学中，普通最小二乘法（OLS）可以通过最大似然估计（MLE）的视角来接近。MLE和OLS都旨在找到模型的最佳参数，但它们来自不同的理论，并使用不同的方法来实现这一目标。
+在经典统计学中，普通最小二乘法（OLS）可以通过最大似然估计（MLE）的视角来接近。MLE 和 OLS 都旨在找到模型的最佳参数，但它们来自不同的理论，并使用不同的方法来实现这一目标。
 
 **最大似然估计 (MLE) 方法：**
 
-MLE基于概率。它提出的问题是：“给定一组数据点，什么是最可能的模型参数，这些参数能够生成这些数据？”MLE假设误差具有某种概率分布（通常是正态分布），然后找到最大化观察到实际数据的可能性的参数值。在几何视觉中，这类似于调整平面（colX）的角度和位置，使得看到实际数据点（y）的概率最高。似然不仅考虑点到平面（误差）的距离，还考虑误差分布的形状。
+MLE 基于概率。它提出的问题是：“给定一组数据点，什么是最可能的模型参数，这些参数能够生成这些数据？”MLE 假设误差具有某种概率分布（通常是正态分布），然后找到最大化观察到实际数据的可能性的参数值。在几何视觉中，这类似于调整平面（colX）的角度和位置，使得看到实际数据点（y）的概率最高。似然不仅考虑点到平面（误差）的距离，还考虑误差分布的形状。
 
 **机器学习 (ML) 中目标函数的最小化：**
 
-另一方面，ML方法通常将回归框架作为优化问题。目标是找到那些使某个目标函数（通常是平方误差总和（SSE））最小的参数。这是一种比MLE更直接的方法，因为它对误差的底层概率分布假设较少。它只是试图在平方意义上将数据点到预测平面的距离尽可能小，以更严厉地惩罚较大的误差。几何解释是你在倾斜和移动平面（colX），以最小化从实际点（y）到平面的垂直距离的平方和（虚线）。
+另一方面，ML 方法通常将回归框架作为优化问题。目标是找到那些使某个目标函数（通常是平方误差总和（SSE））最小的参数。这是一种比 MLE 更直接的方法，因为它对误差的底层概率分布假设较少。它只是试图在平方意义上将数据点到预测平面的距离尽可能小，以更严厉地惩罚较大的误差。几何解释是你在倾斜和移动平面（colX），以最小化从实际点（y）到平面的垂直距离的平方和（虚线）。
 
 **两者比较：**
 
-尽管程序有所不同——一种是基于概率的方法，另一种是优化技术——但在OLS的情况下，它们往往会产生相同的结果。这是因为当误差服从正态分布时，线性模型系数的MLE会得出与最小化平方误差总和相同的方程。从视觉上看，两种方法实际上都是在尝试在变量X1和X2的空间中定位同一个平面，以便它最好地表示与y的关系。
+尽管程序有所不同——一种是基于概率的方法，另一种是优化技术——但在 OLS 的情况下，它们往往会产生相同的结果。这是因为当误差服从正态分布时，线性模型系数的 MLE 会得出与最小化平方误差总和相同的方程。从视觉上看，两种方法实际上都是在尝试在变量 X1 和 X2 的空间中定位同一个平面，以便它最好地表示与 y 的关系。
 
-主要区别在于解释和潜在的泛化。MLE的框架允许在建模误差结构时有更多灵活性，并且可以扩展到误差不被假设为正态分布的模型中。ML方法通常更直接，专注于平方差的总和，而不关注底层概率分布。
+主要区别在于解释和潜在的泛化。MLE 的框架允许在建模误差结构时有更多灵活性，并且可以扩展到误差不被假设为正态分布的模型中。ML 方法通常更直接，专注于平方差的总和，而不关注底层概率分布。
 
 总之，虽然最大似然估计 (MLE) 和最小化方法可能会得到相同的最小二乘回归系数，但它们在概念上是不同的。MLE 是概率性的，根植于在给定模型下观察数据的可能性，而最小化方法是算法性的，专注于直接减少误差。几何视觉对两者来说是相同的，但平面位置的原理不同。
 
@@ -138,6 +138,6 @@ MLE基于概率。它提出的问题是：“给定一组数据点，什么是�
 
 总结来说，线性回归的几何解释弥合了经典统计学与机器学习之间的差距，提供了对这一基本技术的直观理解。虽然经典统计学通过普通最小二乘法（Ordinary Least Squares）来处理线性回归，而机器学习则通常使用最大似然估计（Maximum Likelihood Estimation）或目标函数最小化，但这两种方法最终都旨在以视觉上易于理解的方式最小化预测误差。
 
-引入像Lasso和Ridge这样的正则化技术进一步丰富了这种解释，突出了模型准确性和泛化能力之间的平衡。这些方法防止了过拟合，确保模型对新的、未见过的数据保持稳健和有效。
+引入像 Lasso 和 Ridge 这样的正则化技术进一步丰富了这种解释，突出了模型准确性和泛化能力之间的平衡。这些方法防止了过拟合，确保模型对新的、未见过的数据保持稳健和有效。
 
 总体而言，这种几何视角不仅揭示了线性回归的奥秘，还强调了在不断发展的数据分析和机器学习领域中基础概念的重要性。这是一个强有力的提醒，表明复杂的算法可以根植于简单而深刻的几何原理中。

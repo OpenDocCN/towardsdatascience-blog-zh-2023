@@ -1,18 +1,18 @@
 # 解读随机森林
 
-> 原文：[https://towardsdatascience.com/interpreting-random-forests-638bca8b49ea?source=collection_archive---------0-----------------------#2023-10-08](https://towardsdatascience.com/interpreting-random-forests-638bca8b49ea?source=collection_archive---------0-----------------------#2023-10-08)
+> 原文：[`towardsdatascience.com/interpreting-random-forests-638bca8b49ea?source=collection_archive---------0-----------------------#2023-10-08`](https://towardsdatascience.com/interpreting-random-forests-638bca8b49ea?source=collection_archive---------0-----------------------#2023-10-08)
 
 ## 关于随机森林算法及其解读的全面指南
 
-[](https://miptgirl.medium.com/?source=post_page-----638bca8b49ea--------------------------------)[![Mariya Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----638bca8b49ea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----638bca8b49ea--------------------------------)[![数据科学的前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----638bca8b49ea--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----638bca8b49ea--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----638bca8b49ea--------------------------------)![Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----638bca8b49ea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----638bca8b49ea--------------------------------)![数据科学的前沿](https://towardsdatascience.com/?source=post_page-----638bca8b49ea--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----638bca8b49ea--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterpreting-random-forests-638bca8b49ea&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----638bca8b49ea---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----638bca8b49ea--------------------------------) ·13分钟阅读·2023年10月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F638bca8b49ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterpreting-random-forests-638bca8b49ea&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----638bca8b49ea---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterpreting-random-forests-638bca8b49ea&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----638bca8b49ea---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----638bca8b49ea--------------------------------) ·13 分钟阅读·2023 年 10 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F638bca8b49ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterpreting-random-forests-638bca8b49ea&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----638bca8b49ea---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F638bca8b49ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterpreting-random-forests-638bca8b49ea&source=-----638bca8b49ea---------------------bookmark_footer-----------)![](../Images/9f7911c6b8fe778a06e12e9223eea45a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F638bca8b49ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterpreting-random-forests-638bca8b49ea&source=-----638bca8b49ea---------------------bookmark_footer-----------)![](img/9f7911c6b8fe778a06e12e9223eea45a.png)
 
 图片由 [Sergei A](https://unsplash.com/@sakulich?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -78,7 +78,7 @@ print(categories)
 {'type': Index(['red', 'white'], dtype='object')}
 ```
 
-现在，`df['type']` 对于红酒等于0，对于白酒等于1。
+现在，`df['type']` 对于红酒等于 0，对于白酒等于 1。
 
 数据预处理的另一个关键部分是将数据集拆分为训练集和验证集。这样，我们可以使用验证集来评估模型的质量。
 
@@ -135,11 +135,11 @@ with open('decision_tree.png','wb') as f:
     f.write(png_bytes)
 ```
 
-![](../Images/f551a7b5db06e0750cdf6e88f832ebc9.png)
+![](img/f551a7b5db06e0750cdf6e88f832ebc9.png)
 
 作者提供的图表
 
-如你所见，决策树由二元分裂组成。在每个节点上，我们将数据集拆分为2部分。
+如你所见，决策树由二元分裂组成。在每个节点上，我们将数据集拆分为 2 部分。
 
 最后，我们计算叶子节点的预测值作为该节点中所有数据点的平均值。
 
@@ -147,13 +147,13 @@ with open('decision_tree.png','wb') as f:
 
 让我们头脑风暴一下如何确定数据集的最佳分裂。我们可以从一个变量开始，定义其最佳划分。
 
-假设我们有一个具有四个唯一值的特征：1、2、3和4。那么，它们之间有三个可能的阈值。
+假设我们有一个具有四个唯一值的特征：1、2、3 和 4。那么，它们之间有三个可能的阈值。
 
-![](../Images/ab26cac2feda483eeef4fd4f32694100.png)
+![](img/ab26cac2feda483eeef4fd4f32694100.png)
 
 图表由作者提供
 
-我们可以逐一取每个阈值，并计算数据的预测值作为叶节点的平均值。然后，我们可以使用这些预测值来计算每个阈值的MSE（均方误差）。最佳分裂将是具有最低MSE的那个。默认情况下，[DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor)在scikit-learn中也以类似方式工作，并使用MSE作为标准。
+我们可以逐一取每个阈值，并计算数据的预测值作为叶节点的平均值。然后，我们可以使用这些预测值来计算每个阈值的 MSE（均方误差）。最佳分裂将是具有最低 MSE 的那个。默认情况下，[DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor)在 scikit-learn 中也以类似方式工作，并使用 MSE 作为标准。
 
 为了更好地理解其工作原理，我们可以手动计算`sulphates`特征的最佳分裂。
 
@@ -203,7 +203,7 @@ get_binary_split_for_param('sulphates', train_X, train_y).head(5)
 | sulphates |       0.635 | 0.759495 |
 ```
 
-我们可以看到，对于`sulphates`，最佳阈值是0.685，因为它提供了最低的MSE。
+我们可以看到，对于`sulphates`，最佳阈值是 0.685，因为它提供了最低的 MSE。
 
 现在，我们可以将此函数应用于我们所有的特征，以定义整体最佳分裂。
 
@@ -230,17 +230,17 @@ get_binary_split(train_X, train_y).head(5)
 
 为了构建整个决策树，我们可以递归地计算每个数据集`alcohol <= 10.625`和`alcohol > 10.625`的最佳分裂，并获得决策树的下一层。然后，重复这一过程。
 
-递归的停止标准可以是深度或叶节点的最小大小。这里是一个决策树的示例，叶节点中至少有420个项目。
+递归的停止标准可以是深度或叶节点的最小大小。这里是一个决策树的示例，叶节点中至少有 420 个项目。
 
 ```py
 model = sklearn.tree.DecisionTreeRegressor(min_samples_leaf = 420)
 ```
 
-![](../Images/d31101f15f8e1b0322f86dc3ffe8f735.png)
+![](img/d31101f15f8e1b0322f86dc3ffe8f735.png)
 
 图表由作者提供
 
-让我们计算验证集上的平均绝对误差，以了解我们的模型表现如何。我更喜欢MAE而非MSE（均方误差），因为MAE对离群值的影响较小。
+让我们计算验证集上的平均绝对误差，以了解我们的模型表现如何。我更喜欢 MAE 而非 MSE（均方误差），因为 MAE 对离群值的影响较小。
 
 ```py
 import sklearn.metrics
@@ -258,13 +258,13 @@ print(sklearn.metrics.mean_absolute_error(model.predict(val_X), val_y))
 
 假设我们只有两个类别，且第一类的项目占比为`p`。然后，我们可以使用以下公式计算基尼系数：
 
-![](../Images/bbad8f997ff9894f263bdab832ae5b93.png)
+![](img/bbad8f997ff9894f263bdab832ae5b93.png)
 
-如果我们的分类模型是完美的，基尼系数等于0。最坏情况下（`p = 0.5`），基尼系数等于0.5。
+如果我们的分类模型是完美的，基尼系数等于 0。最坏情况下（`p = 0.5`），基尼系数等于 0.5。
 
 要计算二元分裂的度量，我们计算两个部分（左侧和右侧）的基尼系数，并对每个分区中的样本数进行归一化。
 
-![](../Images/708b9e202a2290157cd93405ed5cdeec.png)
+![](img/708b9e202a2290157cd93405ed5cdeec.png)
 
 然后，我们可以类似地计算不同阈值下的优化度量，并使用最佳选项。
 
@@ -276,7 +276,7 @@ print(sklearn.metrics.mean_absolute_error(model.predict(val_X), val_y))
 
 我们如何获得许多独立的模型呢？这很简单：我们可以在随机的行和特征子集上训练决策树。这样就会形成一个随机森林。
 
-让我们训练一个包含100棵树且叶节点最小大小为100的基本随机森林。
+让我们训练一个包含 100 棵树且叶节点最小大小为 100 的基本随机森林。
 
 ```py
 import sklearn.ensemble
@@ -289,7 +289,7 @@ print(sklearn.metrics.mean_absolute_error(model.predict(val_X), val_y))
 0.5592536196736408
 ```
 
-使用随机森林，我们实现了比单棵决策树更好的质量：0.5592对比0.5891。
+使用随机森林，我们实现了比单棵决策树更好的质量：0.5592 对比 0.5891。
 
 ## 过拟合
 
@@ -297,7 +297,7 @@ print(sklearn.metrics.mean_absolute_error(model.predict(val_X), val_y))
 
 实际上不会。由于我们在平均不相关的误差，添加更多的树不会使模型过拟合。随着树木数量的增加，质量将渐近提高。
 
-![](../Images/49be396d4feb06c09eeba98f918ff332.png)
+![](img/49be396d4feb06c09eeba98f918ff332.png)
 
 作者绘图
 
@@ -307,7 +307,7 @@ print(sklearn.metrics.mean_absolute_error(model.predict(val_X), val_y))
 
 由于在随机森林中每棵树只使用部分行，我们可以利用它们来估计误差。对于每一行，我们可以选择没有使用该行的树，并用它们来进行预测。然后，我们可以根据这些预测计算误差。这种方法称为“袋外误差”。
 
-我们可以看到OOB误差比训练集上的误差更接近验证集上的误差，这意味着它是一个好的近似值。
+我们可以看到 OOB 误差比训练集上的误差更接近验证集上的误差，这意味着它是一个好的近似值。
 
 ```py
 # we need to specify oob_score = True to be able to calculate OOB error
@@ -339,11 +339,11 @@ print(sklearn.metrics.mean_absolute_error(model.oob_prediction_, train_y))
 
 让我们看看我们初始决策树的第一个`alcohol`分裂。
 
-![](../Images/3c28c776fe6bc0e1408a5e9ff3609c50.png)![](../Images/51b302bc71cd34b8b710b6e21c9ef5d0.png)
+![](img/3c28c776fe6bc0e1408a5e9ff3609c50.png)![](img/51b302bc71cd34b8b710b6e21c9ef5d0.png)
 
 然后，我们可以对所有决策树中的所有二元分裂进行相同的计算，汇总所有结果，进行归一化，从而得到每个特征的相对重要性。
 
-如果你使用scikit-learn，你不需要手动计算特征重要性。你只需获取`model.feature_importances_`即可。
+如果你使用 scikit-learn，你不需要手动计算特征重要性。你只需获取`model.feature_importances_`即可。
 
 ```py
 def plot_feature_importance(model, names, threshold = None):
@@ -369,7 +369,7 @@ plot_feature_importance(model, train_X.columns)
 
 我们可以看到，总体上最重要的特征是`alcohol`和`volatile acidity`。
 
-![](../Images/063ae65bbcf00de796cfe4571a702c15.png)
+![](img/063ae65bbcf00de796cfe4571a702c15.png)
 
 作者绘制的图表
 
@@ -379,7 +379,7 @@ plot_feature_importance(model, train_X.columns)
 
 我们可以直接从数据集中获取数据并按酒精含量绘制平均值，但这不准确，因为可能存在某些相关性。例如，我们的数据集中较高的酒精含量可能还对应更高的糖分和更好的质量。
 
-为了仅估计酒精的影响，我们可以取数据集中所有行，并使用机器学习模型预测每一行在不同酒精含量下的质量：9、9.1、9.2等。然后，我们可以平均结果，获得酒精水平与酒质之间的实际关系。所以，所有数据是相同的，我们只是改变酒精水平。
+为了仅估计酒精的影响，我们可以取数据集中所有行，并使用机器学习模型预测每一行在不同酒精含量下的质量：9、9.1、9.2 等。然后，我们可以平均结果，获得酒精水平与酒质之间的实际关系。所以，所有数据是相同的，我们只是改变酒精水平。
 
 > 这种方法可以与任何机器学习模型一起使用，而不仅仅是随机森林。
 
@@ -392,20 +392,20 @@ sklearn.inspection.PartialDependenceDisplay.from_estimator(clf, train_X,
 
 我们可以从这些图表中获得很多洞察，例如：
 
-+   酒质随着游离二氧化硫的增加而提高，直到30，但在这一阈值后保持稳定；
++   酒质随着游离二氧化硫的增加而提高，直到 30，但在这一阈值后保持稳定；
 
 +   酒精含量越高，质量越好。
 
-![](../Images/92b71652cf4a54d3b503ac3db8aa296e.png)
+![](img/92b71652cf4a54d3b503ac3db8aa296e.png)
 
-我们甚至可以查看两个变量之间的关系。这可能相当复杂。例如，如果酒精含量超过11.5，挥发性酸度没有影响。但对于较低的酒精含量，挥发性酸度对质量有显著影响。
+我们甚至可以查看两个变量之间的关系。这可能相当复杂。例如，如果酒精含量超过 11.5，挥发性酸度没有影响。但对于较低的酒精含量，挥发性酸度对质量有显著影响。
 
 ```py
 sklearn.inspection.PartialDependenceDisplay.from_estimator(clf, train_X, 
     [(1, 10)])
 ```
 
-![](../Images/6261b9202a6fb1282941e3c4a6ec3f03.png)
+![](img/6261b9202a6fb1282941e3c4a6ec3f03.png)
 
 ## **预测的置信度**
 
@@ -421,11 +421,11 @@ ax = val_df.predictions_std.hist(bins = 10)
 ax.set_title('Distribution of predictions std')
 ```
 
-我们可以看到，有些预测的标准差很低（即低于0.15），而有些预测的`std`则高于0.3。
+我们可以看到，有些预测的标准差很低（即低于 0.15），而有些预测的`std`则高于 0.3。
 
-![](../Images/4631de9eb676c2bf7915fcddba6c734f.png)
+![](img/4631de9eb676c2bf7915fcddba6c734f.png)
 
-如果我们将模型用于业务目的，我们可以以不同的方式处理这种情况。例如，如果`std`超过`X`，则不考虑预测，或向客户展示区间（即25百分位数和75百分位数）。
+如果我们将模型用于业务目的，我们可以以不同的方式处理这种情况。例如，如果`std`超过`X`，则不考虑预测，或向客户展示区间（即 25 百分位数和 75 百分位数）。
 
 ## 预测是如何产生的？
 
@@ -433,7 +433,7 @@ ax.set_title('Distribution of predictions std')
 
 我们将以其中一种酒为例。它具有相对较低的酒精含量和较高的挥发性酸度。
 
-![](../Images/d48d317caa71734745606b63cf9137fb.png)
+![](img/d48d317caa71734745606b63cf9137fb.png)
 
 ```py
 from treeinterpreter import treeinterpreter
@@ -448,7 +448,7 @@ waterfall(val_X.columns, contributions[0], threshold=0.03,
 
 图表显示这款酒的质量优于平均水平。提高质量的主要因素是低挥发性酸度，而主要缺点是低酒精度。
 
-![](../Images/a5ec8eadcafc2a31cf285a9ce472698d.png)
+![](img/a5ec8eadcafc2a31cf285a9ce472698d.png)
 
 作者绘图
 
@@ -460,11 +460,11 @@ waterfall(val_X.columns, contributions[0], threshold=0.03,
 
 更多的数据并不总是意味着更好的质量。此外，它还可能影响你的模型在训练和推断阶段的表现。
 
-由于我们初始的葡萄酒数据集中只有12个特征，所以在这种情况下，我们将使用一个稍大的数据集——[在线新闻受欢迎程度](https://archive.ics.uci.edu/dataset/332/online+news+popularity)。
+由于我们初始的葡萄酒数据集中只有 12 个特征，所以在这种情况下，我们将使用一个稍大的数据集——[在线新闻受欢迎程度](https://archive.ics.uci.edu/dataset/332/online+news+popularity)。
 
 ## 查看特征重要性
 
-首先，让我们构建一个随机森林并查看特征重要性。在59个特征中，有34个特征的重要性低于0.01。
+首先，让我们构建一个随机森林并查看特征重要性。在 59 个特征中，有 34 个特征的重要性低于 0.01。
 
 让我们尝试移除这些特征并查看准确性。
 
@@ -478,11 +478,11 @@ model_imp = sklearn.ensemble.RandomForestRegressor(100, min_samples_leaf=100)
 model_imp.fit(train_X_sm, train_y)
 ```
 
-+   ***所有特征在验证集上的MAE***：2969.73
++   ***所有特征在验证集上的 MAE***：2969.73
 
-+   ***25个重要特征在验证集上的MAE***：2975.61
++   ***25 个重要特征在验证集上的 MAE***：2975.61
 
-质量的差异并不大，但我们可以使模型在训练和推断阶段更快。我们已经去除了初始特征的近60%——做得不错。
+质量的差异并不大，但我们可以使模型在训练和推断阶段更快。我们已经去除了初始特征的近 60%——做得不错。
 
 ## 查看冗余特征
 
@@ -493,7 +493,7 @@ import fastbook
 fastbook.cluster_columns(train_X_imp)
 ```
 
-![](../Images/605fb7a9d7b4700df6e962317668ae53.png)
+![](img/605fb7a9d7b4700df6e962317668ae53.png)
 
 我们可以看到以下特征彼此接近：
 
@@ -519,7 +519,7 @@ sklearn.metrics.mean_absolute_error(model_imp_uniq.predict(val_X_imp_uniq),
 2974.853274034488
 ```
 
-质量即使稍微有所改善。因此，我们将特征数量从59个减少到22个，并且仅将错误增加了0.17%。这证明了这种方法的有效性。
+质量即使稍微有所改善。因此，我们将特征数量从 59 个减少到 22 个，并且仅将错误增加了 0.17%。这证明了这种方法的有效性。
 
 > 你可以在 [GitHub](https://github.com/miptgirl/miptgirl_medium/tree/main/random_forests_101) 上找到完整的代码。
 
@@ -541,14 +541,14 @@ sklearn.metrics.mean_absolute_error(model_imp_uniq.predict(val_X_imp_uniq),
 
 +   *Cortez, Paulo, Cerdeira, A., Almeida, F., Matos, T., 和 Reis, J.. (2009). 葡萄酒质量. UCI 机器学习库。* [*https://doi.org/10.24432/C56S3T*](https://doi.org/10.24432/C56S3T)
 
-+   *Fernandes, Kelwin, Vinagre, Pedro, Cortez, Paulo, 和 Sernadela, Pedro. (2015). 在线新闻流行度. UCI机器学习库。* [*https://doi.org/10.24432/C5NS3V*](https://doi.org/10.24432/C5NS3V)
++   *Fernandes, Kelwin, Vinagre, Pedro, Cortez, Paulo, 和 Sernadela, Pedro. (2015). 在线新闻流行度. UCI 机器学习库。* [*https://doi.org/10.24432/C5NS3V*](https://doi.org/10.24432/C5NS3V)
 
 ## 来源
 
 本文灵感来自***Fast.AI 深度学习课程***
 
-+   [第6课：随机森林](https://course.fast.ai/Lessons/lesson6.html)
++   [第 6 课：随机森林](https://course.fast.ai/Lessons/lesson6.html)
 
-+   “[《深度学习实战：Fast.AI与Pytorch实现AI应用，无需博士学位》](https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb)”第9章由J. Howard和S. Gugger编写。
++   “[《深度学习实战：Fast.AI 与 Pytorch 实现 AI 应用，无需博士学位》](https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb)”第九章由 J. Howard 和 S. Gugger 编写。
 
 +   来自`scikit-learn`的[决策树](https://scikit-learn.org/stable/modules/tree.html)和[随机森林](https://scikit-learn.org/stable/modules/ensemble.html#random-forests-and-other-randomized-tree-ensembles)文档

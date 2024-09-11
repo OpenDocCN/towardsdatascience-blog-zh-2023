@@ -1,18 +1,18 @@
 # 高级 Python： metaclasses
 
-> 原文：[https://towardsdatascience.com/advanced-python-metaclasses-e32d46e0ebe3?source=collection_archive---------1-----------------------#2023-10-06](https://towardsdatascience.com/advanced-python-metaclasses-e32d46e0ebe3?source=collection_archive---------1-----------------------#2023-10-06)
+> 原文：[`towardsdatascience.com/advanced-python-metaclasses-e32d46e0ebe3?source=collection_archive---------1-----------------------#2023-10-06`](https://towardsdatascience.com/advanced-python-metaclasses-e32d46e0ebe3?source=collection_archive---------1-----------------------#2023-10-06)
 
 ## 对 Python 类对象及其创建方式的简要介绍
 
-[](https://medium.com/@ilija.lazarevic?source=post_page-----e32d46e0ebe3--------------------------------)[![Ilija Lazarevic](../Images/4a0d84af6d8fa97705ee35444d319b07.png)](https://medium.com/@ilija.lazarevic?source=post_page-----e32d46e0ebe3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e32d46e0ebe3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e32d46e0ebe3--------------------------------) [Ilija Lazarevic](https://medium.com/@ilija.lazarevic?source=post_page-----e32d46e0ebe3--------------------------------)
+[](https://medium.com/@ilija.lazarevic?source=post_page-----e32d46e0ebe3--------------------------------)![Ilija Lazarevic](https://medium.com/@ilija.lazarevic?source=post_page-----e32d46e0ebe3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e32d46e0ebe3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e32d46e0ebe3--------------------------------) [Ilija Lazarevic](https://medium.com/@ilija.lazarevic?source=post_page-----e32d46e0ebe3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe73ea2eae8e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-metaclasses-e32d46e0ebe3&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=post_page-e73ea2eae8e6----e32d46e0ebe3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e32d46e0ebe3--------------------------------) ·8分钟阅读·2023年10月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe32d46e0ebe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-metaclasses-e32d46e0ebe3&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=-----e32d46e0ebe3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe73ea2eae8e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-metaclasses-e32d46e0ebe3&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=post_page-e73ea2eae8e6----e32d46e0ebe3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e32d46e0ebe3--------------------------------) ·8 分钟阅读·2023 年 10 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe32d46e0ebe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-metaclasses-e32d46e0ebe3&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=-----e32d46e0ebe3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe32d46e0ebe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-metaclasses-e32d46e0ebe3&source=-----e32d46e0ebe3---------------------bookmark_footer-----------)![](../Images/e409921158233f95efc4e3cb4cd1ba6f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe32d46e0ebe3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-metaclasses-e32d46e0ebe3&source=-----e32d46e0ebe3---------------------bookmark_footer-----------)![](img/e409921158233f95efc4e3cb4cd1ba6f.png)
 
 正如阿特拉斯之于天空，metaclasses 之于类。照片由 [Alexander Nikitenko](https://unsplash.com/@quintonik?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/H6obC_biCSk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -77,7 +77,7 @@ Python 被广泛认为是一种解释型语言。这意味着有一个解释器�
 
 当解释器完成读取类代码块时，会触发什么“过程”？我们可以直接进入细节，但一张图胜过千言万语：
 
-![](../Images/8b234379df93408228ea4868c29df990.png)
+![](img/8b234379df93408228ea4868c29df990.png)
 
 对象、类和元类之间的关系。图像由 Ilija Lazarevic 提供。
 

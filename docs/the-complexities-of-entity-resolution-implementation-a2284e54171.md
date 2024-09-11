@@ -1,18 +1,18 @@
 # 实体解析实现的复杂性
 
-> 原文：[https://towardsdatascience.com/the-complexities-of-entity-resolution-implementation-a2284e54171?source=collection_archive---------11-----------------------#2023-08-14](https://towardsdatascience.com/the-complexities-of-entity-resolution-implementation-a2284e54171?source=collection_archive---------11-----------------------#2023-08-14)
+> 原文：[`towardsdatascience.com/the-complexities-of-entity-resolution-implementation-a2284e54171?source=collection_archive---------11-----------------------#2023-08-14`](https://towardsdatascience.com/the-complexities-of-entity-resolution-implementation-a2284e54171?source=collection_archive---------11-----------------------#2023-08-14)
 
 ## 关于数据匹配时一些典型挑战的实用示例
 
-[](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)[![Stefan Berkner](../Images/a84ebfb24744984c0de8f2e77c2070e6.png)](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------) [Stefan Berkner](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)
+[](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)![Stefan Berkner](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------) [Stefan Berkner](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F704fdfc8efaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&user=Stefan+Berkner&userId=704fdfc8efaa&source=post_page-704fdfc8efaa----a2284e54171---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------) ·11 min read·2023年8月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa2284e54171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&user=Stefan+Berkner&userId=704fdfc8efaa&source=-----a2284e54171---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F704fdfc8efaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&user=Stefan+Berkner&userId=704fdfc8efaa&source=post_page-704fdfc8efaa----a2284e54171---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------) ·11 min read·2023 年 8 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa2284e54171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&user=Stefan+Berkner&userId=704fdfc8efaa&source=-----a2284e54171---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa2284e54171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&source=-----a2284e54171---------------------bookmark_footer-----------)![](../Images/1796f00e2295895c1e15056138d13ef5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa2284e54171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&source=-----a2284e54171---------------------bookmark_footer-----------)![](img/1796f00e2295895c1e15056138d13ef5.png)
 
 实体的艺术表现（图像由作者提供）
 
@@ -22,7 +22,7 @@
 
 让我们开始比较著名艺术家 Vincent Van Gogh 的两个记录——还是 Van Gough？
 
-![](../Images/30f4ee24c32fce80c0b5f28833b1b4df.png)
+![](img/30f4ee24c32fce80c0b5f28833b1b4df.png)
 
 第二条记录中有一些错误（除了出生在一个世纪之后和一个电子邮件地址）：名字拼写错误，出生日期混淆，邮政编码缺失，电子邮件地址略有不同。
 
@@ -67,15 +67,15 @@ func main() {
 }
 ```
 
-在 Go Playground 中尝试：[https://go.dev/play/p/IJtanpXEdyu](https://go.dev/play/p/IJtanpXEdyu)
+在 Go Playground 中尝试：[`go.dev/play/p/IJtanpXEdyu`](https://go.dev/play/p/IJtanpXEdyu)
 
-两个名字之间的Levenshtein距离为3。原因是有三个额外的字符（名字中的“en”和姓氏中的“u”）。注意，这适用于这个特定输入。然而，距离仍然远未完美。例如，“Joe Smith”和“Amy Smith”之间的Levenshtein距离也是三，但显然不是同一个人。结合距离算法和语音算法可能解决这个问题，但超出了本文的范围。
+两个名字之间的 Levenshtein 距离为 3。原因是有三个额外的字符（名字中的“en”和姓氏中的“u”）。注意，这适用于这个特定输入。然而，距离仍然远未完美。例如，“Joe Smith”和“Amy Smith”之间的 Levenshtein 距离也是三，但显然不是同一个人。结合距离算法和语音算法可能解决这个问题，但超出了本文的范围。
 
 使用基于规则的方法而不是基于机器学习的方法时，选择能够为你的用例提供最佳结果的算法是商业成功的关键方面。这是你应该花费大部分时间的地方。不幸的是，正如我们现在将发现的那样，如果你决定自己开发实体解析引擎，还有很多其他事情会让你分心，妨碍你优化这些规则。
 
 ## 天真的实体解析
 
-既然我们知道了如何比较两个记录，我们需要找到所有匹配的记录。最简单的方法是将每条记录与所有其他记录进行比较。为了这个例子，我们使用随机选择的名字和城市。对于名字，我们强制引入最多三个错误（将任何字符替换为x）。
+既然我们知道了如何比较两个记录，我们需要找到所有匹配的记录。最简单的方法是将每条记录与所有其他记录进行比较。为了这个例子，我们使用随机选择的名字和城市。对于名字，我们强制引入最多三个错误（将任何字符替换为 x）。
 
 ```py
 var firstNames = [...]string{"Wade", "Dave", "Seth", "Ivan", "Riley", "Gilbert", "Jorge", "Dan", "Brian", "Roberto", "Daisy", "Deborah", "Isabel", "Stella", "Debra", "Berverly", "Vera", "Angela", "Lucy", "Lauren"}
@@ -134,7 +134,7 @@ func main() {
 }
 ```
 
-在Go Playground中尝试：[https://go.dev/play/p/ky80W_hk4S3](https://go.dev/play/p/ky80W_hk4S3)
+在 Go Playground 中尝试：[`go.dev/play/p/ky80W_hk4S3`](https://go.dev/play/p/ky80W_hk4S3)
 
 你应该看到一些类似这样的输出（如果没有匹配的随机数据，你可能需要运行多次）：
 
@@ -146,11 +146,11 @@ Dan Willxams and Dave Williams are probably the same person
 made 9900 comparisons and found 16 matches
 ```
 
-如果你运气好的话，你也会得到像“Daisy”和“Dave”这样的不匹配。这是因为我们使用了三的Levenshtein距离，而对于短名字来说，这个值太高了。欢迎你自己改进这个方法。
+如果你运气好的话，你也会得到像“Daisy”和“Dave”这样的不匹配。这是因为我们使用了三的 Levenshtein 距离，而对于短名字来说，这个值太高了。欢迎你自己改进这个方法。
 
-性能方面，真正的问题在于需要进行9,900次比较才能得到结果，因为输入量的增加会大约使所需的比较次数增加四倍。200条记录需要39,800次比较。对于仅有100,000条记录的小数据量，这意味着需要近100亿次比较。不管你的系统多么强大，数据量增加到一定程度时，系统将无法在可接受的时间内完成。
+性能方面，真正的问题在于需要进行 9,900 次比较才能得到结果，因为输入量的增加会大约使所需的比较次数增加四倍。200 条记录需要 39,800 次比较。对于仅有 100,000 条记录的小数据量，这意味着需要近 100 亿次比较。不管你的系统多么强大，数据量增加到一定程度时，系统将无法在可接受的时间内完成。
 
-一个快速但几乎无用的优化是不要将每个组合比较两次。A与B或B与A的比较结果应无差别。然而，这只能将所需比较次数减少一半，由于二次增长，这种减少微不足道。
+一个快速但几乎无用的优化是不要将每个组合比较两次。A 与 B 或 B 与 A 的比较结果应无差别。然而，这只能将所需比较次数减少一半，由于二次增长，这种减少微不足道。
 
 ## 通过阻塞减少复杂性
 
@@ -180,7 +180,7 @@ func main() {
 }
 ```
 
-在 Go Playground 中尝试: [https://go.dev/play/p/1z_j0nhX-tU](https://go.dev/play/p/1z_j0nhX-tU)
+在 Go Playground 中尝试: [`go.dev/play/p/1z_j0nhX-tU`](https://go.dev/play/p/1z_j0nhX-tU)
 
 结果现在将是相同的，但比较次数仅为之前的十分之一，因为我们有十个不同的城市。在实际应用中，由于城市的方差更大，这一效果会更为显著。此外，每个块可以独立处理，例如，在相同或不同的服务器上并行处理。
 
@@ -273,7 +273,7 @@ func main() {
 }
 ```
 
-在 Go Playground 中尝试: [https://go.dev/play/p/vP3tzlzJ2LN](https://go.dev/play/p/vP3tzlzJ2LN)
+在 Go Playground 中尝试: [`go.dev/play/p/vP3tzlzJ2LN`](https://go.dev/play/p/vP3tzlzJ2LN)
 
 连通组件函数遍历所有边，创建新的组件、将新 id 添加到现有组件中，或将两个组件合并为一个。结果看起来大致如下：
 
@@ -285,7 +285,7 @@ found the following entity: Brxan Williams, Brian Williams from Cape Town
 
 保留这些边缘给我们带来了一些优势。我们可以利用它们使结果实体易于理解和解释，理想情况下，还能提供一个漂亮的用户界面，展示实体的记录是如何连接的。或者在使用实时实体解析系统时，我们可以利用这些边缘来拆分实体，特别是在数据被移除时。或者你可以在构建 [图神经网络 (GNN)](https://en.wikipedia.org/wiki/Graph_neural_network) 时使用它们，从而获得比仅仅记录本身更好的机器学习结果。
 
-![](../Images/b1a6b9d79c3aa9defb431b1244e9d2cf.png)
+![](img/b1a6b9d79c3aa9defb431b1244e9d2cf.png)
 
 实体的可视化表示（图像由作者提供）
 

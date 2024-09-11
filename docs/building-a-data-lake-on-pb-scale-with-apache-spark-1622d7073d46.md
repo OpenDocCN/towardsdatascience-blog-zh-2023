@@ -1,18 +1,18 @@
 # 使用 Apache Spark 构建 PB 规模的数据湖
 
-> 原文：[https://towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46?source=collection_archive---------1-----------------------#2023-01-26](https://towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46?source=collection_archive---------1-----------------------#2023-01-26)
+> 原文：[`towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46?source=collection_archive---------1-----------------------#2023-01-26`](https://towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46?source=collection_archive---------1-----------------------#2023-01-26)
 
 ## 我们在 Emplifi 处理大数据的方式
 
-[](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)[![David Vrba](../Images/7689bf42fcfc0c029de87450d01069ba.png)](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------) [David Vrba](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)
+[](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)![David Vrba](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------) [David Vrba](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb7f216c64e33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46&user=David+Vrba&userId=b7f216c64e33&source=post_page-b7f216c64e33----1622d7073d46---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------) ·15 分钟阅读·2023年1月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1622d7073d46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46&user=David+Vrba&userId=b7f216c64e33&source=-----1622d7073d46---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb7f216c64e33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46&user=David+Vrba&userId=b7f216c64e33&source=post_page-b7f216c64e33----1622d7073d46---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------) ·15 分钟阅读·2023 年 1 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1622d7073d46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46&user=David+Vrba&userId=b7f216c64e33&source=-----1622d7073d46---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1622d7073d46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46&source=-----1622d7073d46---------------------bookmark_footer-----------)![](../Images/ec428d788058b2d1569bf4768b4938db.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1622d7073d46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46&source=-----1622d7073d46---------------------bookmark_footer-----------)![](img/ec428d788058b2d1569bf4768b4938db.png)
 
 图片来源：[Victor Hanacek](https://picjumbo.com/author/viktorhanacek/) 于 [picjumbo](https://picjumbo.com/big-data/)
 

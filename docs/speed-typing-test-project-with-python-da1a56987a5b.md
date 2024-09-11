@@ -1,18 +1,18 @@
 # 使用 Python 开发的速度打字测试项目
 
-> 原文：[https://towardsdatascience.com/speed-typing-test-project-with-python-da1a56987a5b?source=collection_archive---------8-----------------------#2023-03-22](https://towardsdatascience.com/speed-typing-test-project-with-python-da1a56987a5b?source=collection_archive---------8-----------------------#2023-03-22)
+> 原文：[`towardsdatascience.com/speed-typing-test-project-with-python-da1a56987a5b?source=collection_archive---------8-----------------------#2023-03-22`](https://towardsdatascience.com/speed-typing-test-project-with-python-da1a56987a5b?source=collection_archive---------8-----------------------#2023-03-22)
 
 ## 使用 Python 开发一个速度打字测试项目，以评估准确性和打字速度
 
-[](https://bharath-k1297.medium.com/?source=post_page-----da1a56987a5b--------------------------------)[![Bharath K](../Images/b6f215f28132a953bcae80842301e303.png)](https://bharath-k1297.medium.com/?source=post_page-----da1a56987a5b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da1a56987a5b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----da1a56987a5b--------------------------------) [Bharath K](https://bharath-k1297.medium.com/?source=post_page-----da1a56987a5b--------------------------------)
+[](https://bharath-k1297.medium.com/?source=post_page-----da1a56987a5b--------------------------------)![Bharath K](https://bharath-k1297.medium.com/?source=post_page-----da1a56987a5b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da1a56987a5b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----da1a56987a5b--------------------------------) [Bharath K](https://bharath-k1297.medium.com/?source=post_page-----da1a56987a5b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2b0fa005e971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeed-typing-test-project-with-python-da1a56987a5b&user=Bharath+K&userId=2b0fa005e971&source=post_page-2b0fa005e971----da1a56987a5b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da1a56987a5b--------------------------------) · 8 分钟阅读 · 2023年3月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda1a56987a5b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeed-typing-test-project-with-python-da1a56987a5b&user=Bharath+K&userId=2b0fa005e971&source=-----da1a56987a5b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2b0fa005e971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeed-typing-test-project-with-python-da1a56987a5b&user=Bharath+K&userId=2b0fa005e971&source=post_page-2b0fa005e971----da1a56987a5b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da1a56987a5b--------------------------------) · 8 分钟阅读 · 2023 年 3 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda1a56987a5b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeed-typing-test-project-with-python-da1a56987a5b&user=Bharath+K&userId=2b0fa005e971&source=-----da1a56987a5b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda1a56987a5b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeed-typing-test-project-with-python-da1a56987a5b&source=-----da1a56987a5b---------------------bookmark_footer-----------)![](../Images/4b3a669097f8eafc60c07a7201eda640.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda1a56987a5b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeed-typing-test-project-with-python-da1a56987a5b&source=-----da1a56987a5b---------------------bookmark_footer-----------)![](img/4b3a669097f8eafc60c07a7201eda640.png)
 
 图片来源：[Spencer Davis](https://unsplash.com/@spencerdavis?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

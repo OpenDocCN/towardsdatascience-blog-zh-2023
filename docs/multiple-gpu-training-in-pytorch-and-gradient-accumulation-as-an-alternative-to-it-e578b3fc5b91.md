@@ -1,22 +1,22 @@
-# **PyTorch中的多GPU训练及梯度累积作为其替代方案**
+# **PyTorch 中的多 GPU 训练及梯度累积作为其替代方案**
 
-> 原文：[https://towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91?source=collection_archive---------10-----------------------#2023-07-24](https://towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91?source=collection_archive---------10-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91?source=collection_archive---------10-----------------------#2023-07-24`](https://towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91?source=collection_archive---------10-----------------------#2023-07-24)
 
 ## **代码与理论**
 
-[](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)[![Alexey Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)
+[](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)![Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------) [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----e578b3fc5b91---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------) ·7分钟阅读·2023年7月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe578b3fc5b91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----e578b3fc5b91---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf3e4a05b535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91&user=Alexey+Kravets&userId=cf3e4a05b535&source=post_page-cf3e4a05b535----e578b3fc5b91---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------) ·7 分钟阅读·2023 年 7 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe578b3fc5b91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91&user=Alexey+Kravets&userId=cf3e4a05b535&source=-----e578b3fc5b91---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe578b3fc5b91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91&source=-----e578b3fc5b91---------------------bookmark_footer-----------)![](../Images/ed6fca5026469bec09b620c9620bc331.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe578b3fc5b91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91&source=-----e578b3fc5b91---------------------bookmark_footer-----------)![](img/ed6fca5026469bec09b620c9620bc331.png)
 
-[https://unsplash.com/photos/vBzJ0UFOA70](https://unsplash.com/photos/vBzJ0UFOA70)
+[`unsplash.com/photos/vBzJ0UFOA70`](https://unsplash.com/photos/vBzJ0UFOA70)
 
-在这篇文章中，我们将首先了解数据并行（DP）和分布式数据并行（DDP）算法之间的区别，然后解释什么是梯度累积（GA），最后展示如何在PyTorch中实现DDP和GA，并使它们得到相同的结果。
+在这篇文章中，我们将首先了解数据并行（DP）和分布式数据并行（DDP）算法之间的区别，然后解释什么是梯度累积（GA），最后展示如何在 PyTorch 中实现 DDP 和 GA，并使它们得到相同的结果。
 
 ## **简介**
 

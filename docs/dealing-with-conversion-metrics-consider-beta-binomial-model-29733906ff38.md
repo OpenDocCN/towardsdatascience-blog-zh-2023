@@ -1,18 +1,18 @@
 # 处理转换指标？考虑贝塔-二项模型
 
-> 原文：[https://towardsdatascience.com/dealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38?source=collection_archive---------8-----------------------#2023-07-26](https://towardsdatascience.com/dealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38?source=collection_archive---------8-----------------------#2023-07-26)
+> 原文：[`towardsdatascience.com/dealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38?source=collection_archive---------8-----------------------#2023-07-26`](https://towardsdatascience.com/dealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38?source=collection_archive---------8-----------------------#2023-07-26)
 
-![](../Images/52c7b004ff37e2cbacac7625eaf7ab8d.png)
+![](img/52c7b004ff37e2cbacac7625eaf7ab8d.png)
 
 图片由 [Karim MANJRA](https://unsplash.com/@karim_manjra?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-## 学习一种特征工程技术，使基于转换的指标如CTR/CVR更加具代表性和稳定
+## 学习一种特征工程技术，使基于转换的指标如 CTR/CVR 更加具代表性和稳定
 
-[](https://medium.com/@pararawendy19?source=post_page-----29733906ff38--------------------------------)[![Pararawendy Indarjo](../Images/afba0cb7f3af9554a187bbc7a3c00e60.png)](https://medium.com/@pararawendy19?source=post_page-----29733906ff38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29733906ff38--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----29733906ff38--------------------------------) [Pararawendy Indarjo](https://medium.com/@pararawendy19?source=post_page-----29733906ff38--------------------------------)
+[](https://medium.com/@pararawendy19?source=post_page-----29733906ff38--------------------------------)![Pararawendy Indarjo](https://medium.com/@pararawendy19?source=post_page-----29733906ff38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29733906ff38--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----29733906ff38--------------------------------) [Pararawendy Indarjo](https://medium.com/@pararawendy19?source=post_page-----29733906ff38--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf29bfb08abb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38&user=Pararawendy+Indarjo&userId=cf29bfb08abb&source=post_page-cf29bfb08abb----29733906ff38---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29733906ff38--------------------------------) ·10分钟阅读·2023年7月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F29733906ff38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38&user=Pararawendy+Indarjo&userId=cf29bfb08abb&source=-----29733906ff38---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf29bfb08abb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38&user=Pararawendy+Indarjo&userId=cf29bfb08abb&source=post_page-cf29bfb08abb----29733906ff38---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29733906ff38--------------------------------) ·10 分钟阅读·2023 年 7 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F29733906ff38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-conversion-metrics-consider-beta-binomial-model-29733906ff38&user=Pararawendy+Indarjo&userId=cf29bfb08abb&source=-----29733906ff38---------------------clap_footer-----------)
 
 --
 
@@ -28,6 +28,6 @@
 
 1.  Beta-二项式模型的理论基础
 
-1.  调整模型Beta-先验分布参数的指南
+1.  调整模型 Beta-先验分布参数的指南
 
-1.  进行Beta-二项式转换的Python代码（提示：非常简单！）
+1.  进行 Beta-二项式转换的 Python 代码（提示：非常简单！）

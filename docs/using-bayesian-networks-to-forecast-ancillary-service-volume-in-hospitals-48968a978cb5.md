@@ -1,18 +1,18 @@
 # 使用贝叶斯网络预测医院中的辅助服务量
 
-> 原文：[https://towardsdatascience.com/using-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5?source=collection_archive---------9-----------------------#2023-08-11](https://towardsdatascience.com/using-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5?source=collection_archive---------9-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/using-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5?source=collection_archive---------9-----------------------#2023-08-11`](https://towardsdatascience.com/using-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5?source=collection_archive---------9-----------------------#2023-08-11)
 
 ## 使用诊断输入变量的 Python 示例
 
-[](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)[![Gabe Verzino](../Images/36452afec54430c55594a26247136f6f.png)](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------) [Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)
+[](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)![Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------) [Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb4abbbfdcbbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=post_page-b4abbbfdcbbb----48968a978cb5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------) ·8 min read·2023年8月11日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb4abbbfdcbbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=post_page-b4abbbfdcbbb----48968a978cb5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------) ·8 min read·2023 年 8 月 11 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48968a978cb5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5&source=-----48968a978cb5---------------------bookmark_footer-----------)![](../Images/c3b96d094baa9f9c53fa03129dce892c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48968a978cb5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5&source=-----48968a978cb5---------------------bookmark_footer-----------)![](img/c3b96d094baa9f9c53fa03129dce892c.png)
 
 来自 Unsplash 的照片，作者 EJ Strat
 
@@ -36,7 +36,7 @@
 
 *（实际上，将有数十个因素影响未来的患者量，其中一些具有单一或多重依赖关系，其他的则完全独立但仍会影响结果）。*
 
-![](../Images/e93fd7c2e5bca03f13e65dcb8a6546ce.png)
+![](img/e93fd7c2e5bca03f13e65dcb8a6546ce.png)
 
 现在，假设我们同意工作流程如上所示：Stage 依赖于其症状，但治疗类型独立于这些并且还会影响 2 个月后的预约发生。
 
@@ -74,13 +74,13 @@ Appointment_2weeks = BbnNode(Variable(3, 'Appointment_2weeks', ['No', 'Yes']), [
 
 以症状变量为例。我会得到它们的 2 个级别的频率，大约 31% 是良性的，69% 是恶性的。
 
-![](../Images/91806075439e19fb9571ee7ce118208f.png)
+![](img/91806075439e19fb9571ee7ce118208f.png)
 
 作者提供的照片
 
 然后，我们考虑下一个变量 Stage，并与 Symptom 交叉表以获得这些频率。我们这样做是因为 Stage 对 Symptom *依赖*，并且由于它们每个都有两个场景，它们实际上有 4 种概率结果。
 
-![](../Images/a6240c8140b2074fa50749accc12fb69.png)
+![](img/a6240c8140b2074fa50749accc12fb69.png)
 
 作者提供的照片
 
@@ -248,4 +248,4 @@ Values:
 
 [**特征工程 CPT 代码**](https://medium.com/mlearning-ai/working-with-cpt-codes-5a2b04a4d183)
 
-[**设计基础神经网络的 7 个步骤**](/7-steps-to-design-a-basic-neural-network-part-1-of-2-ff0d391bf32b)
+**设计基础神经网络的 7 个步骤**

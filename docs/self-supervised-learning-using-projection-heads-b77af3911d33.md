@@ -1,18 +1,18 @@
 # 使用投影头的自监督学习
 
-> 原文：[https://towardsdatascience.com/self-supervised-learning-using-projection-heads-b77af3911d33?source=collection_archive---------7-----------------------#2023-06-29](https://towardsdatascience.com/self-supervised-learning-using-projection-heads-b77af3911d33?source=collection_archive---------7-----------------------#2023-06-29)
+> 原文：[`towardsdatascience.com/self-supervised-learning-using-projection-heads-b77af3911d33?source=collection_archive---------7-----------------------#2023-06-29`](https://towardsdatascience.com/self-supervised-learning-using-projection-heads-b77af3911d33?source=collection_archive---------7-----------------------#2023-06-29)
 
 ## 使用未标记的数据提升性能
 
-[](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)[![Daniel Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)
+[](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)![Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbdc4072cbfdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fself-supervised-learning-using-projection-heads-b77af3911d33&user=Daniel+Warfield&userId=bdc4072cbfdc&source=post_page-bdc4072cbfdc----b77af3911d33---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------) ·13 min 阅读·2023年6月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb77af3911d33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fself-supervised-learning-using-projection-heads-b77af3911d33&user=Daniel+Warfield&userId=bdc4072cbfdc&source=-----b77af3911d33---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbdc4072cbfdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fself-supervised-learning-using-projection-heads-b77af3911d33&user=Daniel+Warfield&userId=bdc4072cbfdc&source=post_page-bdc4072cbfdc----b77af3911d33---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------) ·13 min 阅读·2023 年 6 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb77af3911d33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fself-supervised-learning-using-projection-heads-b77af3911d33&user=Daniel+Warfield&userId=bdc4072cbfdc&source=-----b77af3911d33---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb77af3911d33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fself-supervised-learning-using-projection-heads-b77af3911d33&source=-----b77af3911d33---------------------bookmark_footer-----------)![](../Images/289279afe6fc5596e60b7f246b366c9d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb77af3911d33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fself-supervised-learning-using-projection-heads-b77af3911d33&source=-----b77af3911d33---------------------bookmark_footer-----------)![](img/289279afe6fc5596e60b7f246b366c9d.png)
 
 “自监督学习”由 Daniel Warfield 使用 p5.js 编写
 

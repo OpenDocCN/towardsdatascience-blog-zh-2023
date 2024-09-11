@@ -1,18 +1,18 @@
-# 《构建更好的机器学习系统》—— 第2章：驯服数据混乱
+# 《构建更好的机器学习系统》—— 第二章：驯服数据混乱
 
-> 原文：[https://towardsdatascience.com/building-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39?source=collection_archive---------8-----------------------#2023-05-24](https://towardsdatascience.com/building-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39?source=collection_archive---------8-----------------------#2023-05-24)
+> 原文：[`towardsdatascience.com/building-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39?source=collection_archive---------8-----------------------#2023-05-24`](https://towardsdatascience.com/building-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39?source=collection_archive---------8-----------------------#2023-05-24)
 
-## *关于数据中心的人工智能、训练数据、数据标注和清洗、合成数据，以及一些数据工程和ETL。*
+## *关于数据中心的人工智能、训练数据、数据标注和清洗、合成数据，以及一些数据工程和 ETL。*
 
-[](https://olga-chernytska.medium.com/?source=post_page-----841d5a04b39--------------------------------)[![Olga Chernytska](../Images/3a1a1b5f3c92d3b86283911cd90a9259.png)](https://olga-chernytska.medium.com/?source=post_page-----841d5a04b39--------------------------------)[](https://towardsdatascience.com/?source=post_page-----841d5a04b39--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----841d5a04b39--------------------------------) [Olga Chernytska](https://olga-chernytska.medium.com/?source=post_page-----841d5a04b39--------------------------------)
+[](https://olga-chernytska.medium.com/?source=post_page-----841d5a04b39--------------------------------)![Olga Chernytska](https://olga-chernytska.medium.com/?source=post_page-----841d5a04b39--------------------------------)[](https://towardsdatascience.com/?source=post_page-----841d5a04b39--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----841d5a04b39--------------------------------) [Olga Chernytska](https://olga-chernytska.medium.com/?source=post_page-----841d5a04b39--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcc932e019245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39&user=Olga+Chernytska&userId=cc932e019245&source=post_page-cc932e019245----841d5a04b39---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----841d5a04b39--------------------------------) ·12分钟阅读·2023年5月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F841d5a04b39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39&user=Olga+Chernytska&userId=cc932e019245&source=-----841d5a04b39---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcc932e019245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39&user=Olga+Chernytska&userId=cc932e019245&source=post_page-cc932e019245----841d5a04b39---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----841d5a04b39--------------------------------) ·12 分钟阅读·2023 年 5 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F841d5a04b39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39&user=Olga+Chernytska&userId=cc932e019245&source=-----841d5a04b39---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F841d5a04b39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39&source=-----841d5a04b39---------------------bookmark_footer-----------)![](../Images/c2524f7f25bf0d9e8058f1acc2c82fe5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F841d5a04b39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-better-ml-systems-chapter-2-taming-data-chaos-841d5a04b39&source=-----841d5a04b39---------------------bookmark_footer-----------)![](img/c2524f7f25bf0d9e8058f1acc2c82fe5.png)
 
 照片由 [charlesdeluvio](https://unsplash.com/@sloppyperfectionist?utm_source=medium&utm_medium=referral%5C) 拍摄，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 在这个系列中，我们讨论了构建良好的机器学习系统所需解决的重要主题：商业价值和需求、数据收集和标注、模型开发、实验跟踪、在线和离线评估、部署、监控、再训练以及更多。
 
-[在上一章](/building-better-ml-systems-chapter-1-every-project-must-start-with-a-plan-907a36774a32)中，我们了解到每个项目都必须从计划开始，因为机器学习系统过于复杂，不能随意实现。我们回顾了机器学习项目的生命周期，讨论了为什么以及如何估计项目的商业价值，如何收集需求，然后冷静地重新评估是否真的需要机器学习。我们学习了如何通过“PoC”和“MVP”等概念从小处着手，快速失败。最后，我们谈到了规划阶段设计文档的重要性。
+在上一章中，我们了解到每个项目都必须从计划开始，因为机器学习系统过于复杂，不能随意实现。我们回顾了机器学习项目的生命周期，讨论了为什么以及如何估计项目的商业价值，如何收集需求，然后冷静地重新评估是否真的需要机器学习。我们学习了如何通过“PoC”和“MVP”等概念从小处着手，快速失败。最后，我们谈到了规划阶段设计文档的重要性。
 
 本章完全关于数据。我们将深入探讨机器学习系统中数据的各个方面——数据中心 AI、训练数据、数据标注和清洗、合成数据，以及一些数据工程和 ETL。本帖是系列中最长的一篇，但原因正当：数据科学家的大部分工作时间都投入在数据上。
 
@@ -44,7 +44,7 @@
 
 建立优秀 AI 产品的公司也采用数据中心方法。前特斯拉 AI 总监安德烈·卡帕西（Andrey Karpathy）分享了他在特斯拉的大部分时间都投入在数据上。
 
-![](../Images/78deba94e9ee3c4d9722ae0245275dce.png)
+![](img/78deba94e9ee3c4d9722ae0245275dce.png)
 
 *图片。优秀的 AI 公司更关注数据而非算法。*
 
@@ -74,9 +74,9 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 要深入了解 ETL，请查看 NIX United 的文章 [什么是 ETL 过程：概述、工具和最佳实践](https://nix-united.com/blog/what-is-etl-process-overview-tools-and-best-practices/)。
 
-![](../Images/5d7e1f332f589ce2c0728bab1f970b0d.png)
+![](img/5d7e1f332f589ce2c0728bab1f970b0d.png)
 
-*图像。ETL管道。* [*图像由 NIX United 提供*](https://nix-united.com/blog/what-is-etl-process-overview-tools-and-best-practices/)*。*
+*图像。ETL 管道。* [*图像由 NIX United 提供*](https://nix-united.com/blog/what-is-etl-process-overview-tools-and-best-practices/)*。*
 
 这是一种高层次的数据管道概述。这个话题要广泛得多，更加复杂，因此越来越多的公司正在雇用数据工程师来处理数据存储和管道，同时让数据科学家和机器学习工程师专注于数据分析和建模。
 
@@ -100,7 +100,7 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 +   如果某些类别或分段在训练数据中表现不足或缺失，模型将无法很好地学习这些类别，并会产生不正确的预测。
 
-训练数据应该是相关的、一致的、具有代表性的和全面的。这些术语的含义在Amal Joby的文章[什么是训练数据？它在机器学习中的作用](https://learn.g2.com/training-data)中解释得很好。
+训练数据应该是相关的、一致的、具有代表性的和全面的。这些术语的含义在 Amal Joby 的文章[什么是训练数据？它在机器学习中的作用](https://learn.g2.com/training-data)中解释得很好。
 
 在我们都一致同意在高质量数据上训练模型至关重要之后，让我分享一些实用的技巧。
 
@@ -108,7 +108,7 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 **训练数据必须与模型在生产中‘看到’的数据非常相似。** 从理论上讲，模型可以推广到未见过的数据，但在实践中，这种推广能力是相当有限的。例如，如果你为室内环境训练一个计算机视觉模型，它在户外效果会很差。类似地，在推特上训练的情感模型对于分析经典文学文本片段也不会有效。我个人经历过计算机视觉模型在面对较小的差异时，如光照、肤色、天气条件和压缩方法的微小变化，难以推广的情况。为了克服训练数据和生产数据之间的差异，一种流行的方法是使用生产中的最新数据作为训练数据集。
 
-![](../Images/bf9d7689fbb5016855ffa7c30775bc89.png)
+![](img/bf9d7689fbb5016855ffa7c30775bc89.png)
 
 *图像。训练数据和生产（测试）数据之间的不匹配示例。来源：* [*Google Research Blog*](https://ai.googleblog.com/2020/10/estimating-impact-of-training-data-with.html)*。*
 
@@ -118,7 +118,7 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 **分块获取数据。** 从一个小数据集开始，标注它，训练一个模型，检查准确性，分析错误，并计划下一轮的数据收集和标注。
 
-**训练数据不是静态的。** 正如你从[前一章](/building-better-ml-systems-chapter-1-every-project-must-start-with-a-plan-907a36774a32)中回忆的那样，你将在研究阶段和模型已投入生产时多次训练和重新训练模型。每次新的迭代和模型更新时，都需要一个新的训练数据集。没有休息的机会，记住了吗？ :)
+**训练数据不是静态的。** 正如你从前一章中回忆的那样，你将在研究阶段和模型已投入生产时多次训练和重新训练模型。每次新的迭代和模型更新时，都需要一个新的训练数据集。没有休息的机会，记住了吗？ :)
 
 # 数据标注
 
@@ -132,23 +132,23 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 **人工数据标注是一个极其复杂、缓慢且昂贵的过程。** 不要把它当作机器学习项目中的一个任务来考虑；最好将其视为一个独立的数据注释项目，具有自己的范围、预算、时间线、团队、工具和关键绩效指标（KPI）。
 
-![](../Images/d9201dd2d272975fd15d308c9f288564.png)
+![](img/d9201dd2d272975fd15d308c9f288564.png)
 
 *图像。数据注释项目的阶段。来源：* [*管理数据注释项目的最佳实践*](https://arxiv.org/abs/2009.11654)
 
-如果你与数据注释紧密合作，我推荐你查看Tina Tseng等人关于[数据注释项目管理最佳实践](https://arxiv.org/abs/2009.11654)的30页报告。对于较短版本和我自己的见解，请继续阅读这篇文章。
+如果你与数据注释紧密合作，我推荐你查看 Tina Tseng 等人关于[数据注释项目管理最佳实践](https://arxiv.org/abs/2009.11654)的 30 页报告。对于较短版本和我自己的见解，请继续阅读这篇文章。
 
-**首先要决定的是：谁来标注数据？** 需要考虑三个选项：众包、供应商和内部标注团队。我记得大约五年前，围绕像[亚马逊机械土耳其](https://www.mturk.com/)这样的众包工具的兴奋。然而，很快发现众包标注只适用于需要最少或不需要员工培训的非常简单的任务。因此，大多数公司在供应商和内部标注团队之间进行选择。初创公司通常倾向于选择供应商，因为这提供了一个更简单的起点，而大型AI公司则建立自己的标注团队，以控制过程并实现更高的标注质量。举例来说，[特斯拉有1000名全职员工在其人工数据标注团队中](https://techcrunch.com/2021/08/19/top-five-highlights-of-elon-musks-tesla-ai-day/#:~:text=The%20company%20flexed%20its%20over%201%2C000%2Dperson%20manual%20data%20labeling%20team%20and%20walked%20the%20audience%20through%20how%20Tesla%20auto%2Dlabels%20certain%20clips)。仅仅是个例子。
+**首先要决定的是：谁来标注数据？** 需要考虑三个选项：众包、供应商和内部标注团队。我记得大约五年前，围绕像[亚马逊机械土耳其](https://www.mturk.com/)这样的众包工具的兴奋。然而，很快发现众包标注只适用于需要最少或不需要员工培训的非常简单的任务。因此，大多数公司在供应商和内部标注团队之间进行选择。初创公司通常倾向于选择供应商，因为这提供了一个更简单的起点，而大型 AI 公司则建立自己的标注团队，以控制过程并实现更高的标注质量。举例来说，[特斯拉有 1000 名全职员工在其人工数据标注团队中](https://techcrunch.com/2021/08/19/top-five-highlights-of-elon-musks-tesla-ai-day/#:~:text=The%20company%20flexed%20its%20over%201%2C000%2Dperson%20manual%20data%20labeling%20team%20and%20walked%20the%20audience%20through%20how%20Tesla%20auto%2Dlabels%20certain%20clips)。仅仅是个例子。
 
 **创建指导方针并根据它们培训标注者。** 指导方针是提供应标注内容及其方式的解释和视觉示例的文件。然后，将指导方针转化为标注者在进行实际标注任务之前必须完成的培训材料。如果你与供应商合作，请确保他们的员工培训过程设置得当。
 
 现实世界的数据是模糊和混乱的，因此允许标注者说：“我不知道如何标注这个样本。” 然后，收集这些混淆样本，并用它们来改进指导方针。
 
-**标注工具很重要**。标注员通常按小时计费，因此帮助他们更快、更准确地标注会节省你很多钱。在大规模上，标注员每小时标注100个样本与300个样本的差别尤其明显。所以明智选择，并关注以下几点：
+**标注工具很重要**。标注员通常按小时计费，因此帮助他们更快、更准确地标注会节省你很多钱。在大规模上，标注员每小时标注 100 个样本与 300 个样本的差别尤其明显。所以明智选择，并关注以下几点：
 
-+   标注单个样本所需的时间。一些工具专门为NLP任务开发；完全不同的工具用于2D或3D计算机视觉。
++   标注单个样本所需的时间。一些工具专门为 NLP 任务开发；完全不同的工具用于 2D 或 3D 计算机视觉。
 
-+   是否支持AI驱动的标注。这是你想要使用的功能。该工具可能通过用户点击对象来预测分割掩码，或者允许你部署自己的模型来协助标注过程。
++   是否支持 AI 驱动的标注。这是你想要使用的功能。该工具可能通过用户点击对象来预测分割掩码，或者允许你部署自己的模型来协助标注过程。
 
 +   它与您的基础设施的契合程度。标注工具将集成到数据管道中。一旦数据到达，它会自动采样并发送给标注员。他们标注数据，标签会自动存储在数据库中。一些工具可能比其他工具更适合你的基础设施，考虑一下这一点。
 
@@ -160,15 +160,15 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 1.  标注时间（工时）= 标注一个样本的时间（小时） * 数据集大小（样本数量） + 预留的训练和错误修正时间（工时）
 
-1.  标注时间（工作天数）= 标注时间（工时） / 员工人数 / 8小时
+1.  标注时间（工作天数）= 标注时间（工时） / 员工人数 / 8 小时
 
 1.  成本（$）= 标注员的小时费率（$） * 标注时间（工时）
 
 **无论你多么努力，数据标签不可避免地会出现错误。** 人类会犯错，他们可能会分心或误解任务。因此，检查标签的质量是必需的。当然，你为此选择的算法或工具也必须集成到数据管道中。我会一再强调：一切必须自动化。
 
-一个这样的工具是[Cleanlab](https://github.com/cleanlab/cleanlab)。它由麻省理工学院毕业生开发，最近获得了很大的人气。Cleanlab使用统计方法和机器学习算法改进图像、文本和表格数据的标签（有关它能做什么的示例，请查看[Cleanlab博客](https://cleanlab.ai/blog/)）。
+一个这样的工具是[Cleanlab](https://github.com/cleanlab/cleanlab)。它由麻省理工学院毕业生开发，最近获得了很大的人气。Cleanlab 使用统计方法和机器学习算法改进图像、文本和表格数据的标签（有关它能做什么的示例，请查看[Cleanlab 博客](https://cleanlab.ai/blog/)）。
 
-关于数据标注的最后一点，我推荐这篇Synced的深刻文章——[数据标注：AI突破背后的十亿美元生意](https://medium.com/syncedreview/data-annotation-the-billion-dollar-business-behind-ai-breakthroughs-d929b0a50d23)。标题已经很自解释了，文章确实值得一读。
+关于数据标注的最后一点，我推荐这篇 Synced 的深刻文章——[数据标注：AI 突破背后的十亿美元生意](https://medium.com/syncedreview/data-annotation-the-billion-dollar-business-behind-ai-breakthroughs-d929b0a50d23)。标题已经很自解释了，文章确实值得一读。
 
 # 合成数据
 
@@ -178,7 +178,7 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 一旦合成数据生成设置好，就可以相对快速且经济地获得大量多样化的数据集，并且具有极高的标签准确性。即使合成数据看起来不完美，它仍然可以用于模型的预训练。
 
-如果你对扩展这一主题的知识感兴趣，这里有一个很好的资源：[什么是合成数据？](https://blogs.nvidia.com/blog/2021/06/08/what-is-synthetic-data/) 由NVIDIA提供。
+如果你对扩展这一主题的知识感兴趣，这里有一个很好的资源：[什么是合成数据？](https://blogs.nvidia.com/blog/2021/06/08/what-is-synthetic-data/) 由 NVIDIA 提供。
 
 # 结论
 
@@ -188,8 +188,8 @@ ETL（提取-转换-加载）是一个广泛用于数据分析和机器学习的
 
 下一章已经可以阅读：
 
-[## 构建更好的机器学习系统 — 第3章：建模。让乐趣开始](https://towardsdatascience.com/building-better-ml-systems-chapter-3-modeling-let-the-fun-begin-73059c75e1d5?source=post_page-----841d5a04b39--------------------------------)
+[## 构建更好的机器学习系统 — 第三章：建模。让乐趣开始](https://towardsdatascience.com/building-better-ml-systems-chapter-3-modeling-let-the-fun-begin-73059c75e1d5?source=post_page-----841d5a04b39--------------------------------)
 
 ### 关于基准、实验跟踪、适当的测试集和指标。关于让算法发挥作用。
 
-[towardsdatascience.com](/building-better-ml-systems-chapter-3-modeling-let-the-fun-begin-73059c75e1d5?source=post_page-----841d5a04b39--------------------------------)
+towardsdatascience.com

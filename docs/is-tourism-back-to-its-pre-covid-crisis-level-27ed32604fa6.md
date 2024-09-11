@@ -1,20 +1,20 @@
 # 旅游业是否恢复到疫情前的水平？
 
-> 原文：[https://towardsdatascience.com/is-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6?source=collection_archive---------8-----------------------#2023-02-18](https://towardsdatascience.com/is-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6?source=collection_archive---------8-----------------------#2023-02-18)
+> 原文：[`towardsdatascience.com/is-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6?source=collection_archive---------8-----------------------#2023-02-18`](https://towardsdatascience.com/is-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6?source=collection_archive---------8-----------------------#2023-02-18)
 
 ## 数据分析
 
 ## 进行端到端分析，以回答一个社会经济问题，并附有精美的图表
 
-[](https://marielefevre.medium.com/?source=post_page-----27ed32604fa6--------------------------------)[![Marie Lefevre](../Images/9d9fb8263109eb840c16f1cdef539981.png)](https://marielefevre.medium.com/?source=post_page-----27ed32604fa6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27ed32604fa6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----27ed32604fa6--------------------------------) [Marie Lefevre](https://marielefevre.medium.com/?source=post_page-----27ed32604fa6--------------------------------)
+[](https://marielefevre.medium.com/?source=post_page-----27ed32604fa6--------------------------------)![Marie Lefevre](https://marielefevre.medium.com/?source=post_page-----27ed32604fa6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27ed32604fa6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----27ed32604fa6--------------------------------) [Marie Lefevre](https://marielefevre.medium.com/?source=post_page-----27ed32604fa6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a04bf49928f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6&user=Marie+Lefevre&userId=2a04bf49928f&source=post_page-2a04bf49928f----27ed32604fa6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----27ed32604fa6--------------------------------) ·5分钟阅读·2023年2月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F27ed32604fa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6&user=Marie+Lefevre&userId=2a04bf49928f&source=-----27ed32604fa6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a04bf49928f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6&user=Marie+Lefevre&userId=2a04bf49928f&source=post_page-2a04bf49928f----27ed32604fa6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----27ed32604fa6--------------------------------) ·5 分钟阅读·2023 年 2 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F27ed32604fa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6&user=Marie+Lefevre&userId=2a04bf49928f&source=-----27ed32604fa6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F27ed32604fa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6&source=-----27ed32604fa6---------------------bookmark_footer-----------)![](../Images/824a9eacac7633eaa9d9453fa46a6697.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F27ed32604fa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-tourism-back-to-its-pre-covid-crisis-level-27ed32604fa6&source=-----27ed32604fa6---------------------bookmark_footer-----------)![](img/824a9eacac7633eaa9d9453fa46a6697.png)
 
 图片由 [Alexandra Luniel](https://unsplash.com/@luniel?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/86T5I7ZtjmM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

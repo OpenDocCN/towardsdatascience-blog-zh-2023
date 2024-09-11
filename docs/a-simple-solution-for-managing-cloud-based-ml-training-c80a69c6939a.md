@@ -1,26 +1,26 @@
 # 管理基于云的机器学习训练的简单解决方案
 
-> 原文：[https://towardsdatascience.com/a-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a?source=collection_archive---------10-----------------------#2023-12-21](https://towardsdatascience.com/a-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a?source=collection_archive---------10-----------------------#2023-12-21)
+> 原文：[`towardsdatascience.com/a-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a?source=collection_archive---------10-----------------------#2023-12-21`](https://towardsdatascience.com/a-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a?source=collection_archive---------10-----------------------#2023-12-21)
 
 ## 如何使用基础（非托管）云服务 API 实现自定义训练解决方案
 
-[](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----c80a69c6939a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------) · 18 分钟阅读 · 2023年12月21日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----c80a69c6939a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------) · 18 分钟阅读 · 2023 年 12 月 21 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc80a69c6939a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a&source=-----c80a69c6939a---------------------bookmark_footer-----------)![](../Images/708f7fdb7efc84080b4ea5662f37e3dd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc80a69c6939a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a&source=-----c80a69c6939a---------------------bookmark_footer-----------)![](img/708f7fdb7efc84080b4ea5662f37e3dd.png)
 
 `照片由 [Aditya Chinchure](https://unsplash.com/@adityachinchure?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)`
 
-在之前的帖子中（例如，[这里](/6-steps-to-migrating-your-machine-learning-project-to-the-cloud-6d9b6e4f18e0)），我们已经扩展了在云中开发AI模型的好处。机器学习项目，特别是大型项目，通常需要**访问**专用设备（例如，训练加速器）、**按需扩展**的能力、用于维护大量数据的适当**基础设施**以及用于管理大规模实验的**工具**。像[Amazon Web Services (AWS)](https://aws.amazon.com/)、[Google Cloud Platform (GCP)](https://cloud.google.com/)和[Microsoft Azure](https://azure.microsoft.com/)这样的云服务提供商提供了大量针对AI开发的服务，从低级基础设施（例如，GPU和几乎无限的对象存储）到用于创建自定义ML模型的高度自动化工具（例如，[AWS AutoML](https://aws.amazon.com/machine-learning/automl/)）。特别是，管理培训服务（如[Amazon SageMaker](https://aws.amazon.com/sagemaker/)、[Google Vertex AI](https://cloud.google.com/vertex-ai)和[Microsoft Azure ML](https://azure.microsoft.com/en-us/products/machine-learning)）使得在云中进行培训变得特别容易，并提高了潜在ML工程师的可及性。要使用管理的ML服务，您只需指定所需的实例类型，选择ML框架和版本，并指向您的训练脚本，服务将自动启动所选实例并配置所需环境，运行脚本以训练AI模型，将结果保存到持久存储位置，并在完成后拆除一切。
+在之前的帖子中（例如，这里），我们已经扩展了在云中开发 AI 模型的好处。机器学习项目，特别是大型项目，通常需要**访问**专用设备（例如，训练加速器）、**按需扩展**的能力、用于维护大量数据的适当**基础设施**以及用于管理大规模实验的**工具**。像[Amazon Web Services (AWS)](https://aws.amazon.com/)、[Google Cloud Platform (GCP)](https://cloud.google.com/)和[Microsoft Azure](https://azure.microsoft.com/)这样的云服务提供商提供了大量针对 AI 开发的服务，从低级基础设施（例如，GPU 和几乎无限的对象存储）到用于创建自定义 ML 模型的高度自动化工具（例如，[AWS AutoML](https://aws.amazon.com/machine-learning/automl/)）。特别是，管理培训服务（如[Amazon SageMaker](https://aws.amazon.com/sagemaker/)、[Google Vertex AI](https://cloud.google.com/vertex-ai)和[Microsoft Azure ML](https://azure.microsoft.com/en-us/products/machine-learning)）使得在云中进行培训变得特别容易，并提高了潜在 ML 工程师的可及性。要使用管理的 ML 服务，您只需指定所需的实例类型，选择 ML 框架和版本，并指向您的训练脚本，服务将自动启动所选实例并配置所需环境，运行脚本以训练 AI 模型，将结果保存到持久存储位置，并在完成后拆除一切。
 
-虽然管理培训服务可能是许多ML开发人员的理想解决方案，但正如我们将看到的，有些情况下需要直接在“未管理”机器实例上运行并以非中介方式训练您的模型。在这些情况下，即在没有官方管理层的情况下，可能需要包含一个自定义解决方案来控制和监控您的培训实验。在这篇文章中，我们将提出一些步骤，用于使用低级未管理云服务的API构建一个非常简单的“穷人”解决方案来管理培训实验。
+虽然管理培训服务可能是许多 ML 开发人员的理想解决方案，但正如我们将看到的，有些情况下需要直接在“未管理”机器实例上运行并以非中介方式训练您的模型。在这些情况下，即在没有官方管理层的情况下，可能需要包含一个自定义解决方案来控制和监控您的培训实验。在这篇文章中，我们将提出一些步骤，用于使用低级未管理云服务的 API 构建一个非常简单的“穷人”解决方案来管理培训实验。
 
-我们将首先说明在未管理机器上进行训练而不是通过管理服务进行训练的一些动机。接下来，我们将识别一些我们期望的基本训练管理功能。最后，我们将演示一种使用GCP API来[创建虚拟机实例](https://cloud.google.com/compute/docs/instances/create-start-instance)的简单管理系统的实现方法。
+我们将首先说明在未管理机器上进行训练而不是通过管理服务进行训练的一些动机。接下来，我们将识别一些我们期望的基本训练管理功能。最后，我们将演示一种使用 GCP API 来[创建虚拟机实例](https://cloud.google.com/compute/docs/instances/create-start-instance)的简单管理系统的实现方法。
 
 尽管我们将在 GCP 上演示我们的解决方案，但类似的解决方案也可以在其他云平台上开发。请不要将我们选择 GCP 或任何其他工具、框架或服务视为对其使用的推荐。云端训练有多种选择，每种都有其优缺点。对你来说，最佳选择将很大程度上取决于你项目的具体细节。请务必在阅读时对照最新版本的 API 和文档重新评估本文内容。
 
@@ -32,11 +32,11 @@
 
 ## 1\. 机器类型选择的限制
 
-管理训练服务中提供的机器类型的种类并不总是涵盖云服务提供商支持的所有机器类型。例如，Amazon SageMaker 不支持其 [DL1](/training-on-aws-with-habana-gaudi-3126e183048) 和 [Inf2](/dl-training-on-aws-inferentia-53e103597a03) 系列的实例类型（截至本文撰写时）。由于各种原因（如节省成本），你可能需要或希望在这些实例类型上进行训练。在这种情况下，你将不得不放弃使用 Amazon SageMaker 进行训练的奢华。
+管理训练服务中提供的机器类型的种类并不总是涵盖云服务提供商支持的所有机器类型。例如，Amazon SageMaker 不支持其 DL1 和 Inf2 系列的实例类型（截至本文撰写时）。由于各种原因（如节省成本），你可能需要或希望在这些实例类型上进行训练。在这种情况下，你将不得不放弃使用 Amazon SageMaker 进行训练的奢华。
 
 ## 2\. 对底层机器镜像的控制有限
 
-管理训练工作负载通常在专用的 [Docker](https://www.docker.com/) 容器内运行。你可以依赖服务选择最合适的容器，从服务提供商预定义的容器列表中选择特定容器（例如 [AWS Deep Learning Containers](https://github.com/aws/deep-learning-containers)），或者定义适合你特定需求的自定义 Docker 镜像（例如见 [这里](/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812)）。但是，虽然你对 Docker 镜像容器有相当大的控制权，但你对底层的 [机器镜像](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) *没有* 控制权。在大多数情况下，这不会成为问题，因为 Docker 旨在减少对主机系统的依赖。然而，在处理专用硬件（如训练时）的情况下，我们需要依赖主机镜像中的特定驱动程序安装。
+管理训练工作负载通常在专用的 [Docker](https://www.docker.com/) 容器内运行。你可以依赖服务选择最合适的容器，从服务提供商预定义的容器列表中选择特定容器（例如 [AWS Deep Learning Containers](https://github.com/aws/deep-learning-containers)），或者定义适合你特定需求的自定义 Docker 镜像（例如见 这里）。但是，虽然你对 Docker 镜像容器有相当大的控制权，但你对底层的 [机器镜像](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) *没有* 控制权。在大多数情况下，这不会成为问题，因为 Docker 旨在减少对主机系统的依赖。然而，在处理专用硬件（如训练时）的情况下，我们需要依赖主机镜像中的特定驱动程序安装。
 
 ## 3\. 对多节点部署控制的限制
 
@@ -108,7 +108,7 @@ gcloud compute instances create test-vm \
 
 ## 2\. 自动启动训练
 
-一旦机器实例启动并运行，我们希望自动开始训练工作负载。在下面的示例中，我们将通过将[startup script](https://cloud.google.com/compute/docs/instances/startup-scripts/linux)传递给gcloud [compute-instances-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)命令来演示这一点。我们的启动脚本将执行一些基本的环境设置步骤，然后运行训练作业。我们首先调整*PATH*环境变量以指向我们的conda环境，然后从Google Storage下载包含源代码的tarball，解压它，安装项目依赖项，最后运行我们的训练脚本。演示假设tarball已经创建并上传到云中，并且它包含两个文件：一个要求文件（*requirements.txt*）和一个独立的训练脚本（*train.py*）。实际上，启动脚本的具体内容将取决于项目。
+一旦机器实例启动并运行，我们希望自动开始训练工作负载。在下面的示例中，我们将通过将[startup script](https://cloud.google.com/compute/docs/instances/startup-scripts/linux)传递给 gcloud [compute-instances-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)命令来演示这一点。我们的启动脚本将执行一些基本的环境设置步骤，然后运行训练作业。我们首先调整*PATH*环境变量以指向我们的 conda 环境，然后从 Google Storage 下载包含源代码的 tarball，解压它，安装项目依赖项，最后运行我们的训练脚本。演示假设 tarball 已经创建并上传到云中，并且它包含两个文件：一个要求文件（*requirements.txt*）和一个独立的训练脚本（*train.py*）。实际上，启动脚本的具体内容将取决于项目。
 
 ```py
 gcloud compute instances create test-vm \
@@ -128,7 +128,7 @@ gcloud compute instances create test-vm \
 
 ## 3\. 完成后自毁
 
-管理培训的一个引人注目的特点是您只需为所需的部分付费。更具体地说，一旦您的训练作业完成，训练实例将自动拆除。实现这一点的一种方法是在训练脚本的末尾附加一个自毁命令。请注意，为了启用自毁功能，实例需要使用适当的*scopes*设置进行创建。有关更多详细信息，请参阅[API文档](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)。
+管理培训的一个引人注目的特点是您只需为所需的部分付费。更具体地说，一旦您的训练作业完成，训练实例将自动拆除。实现这一点的一种方法是在训练脚本的末尾附加一个自毁命令。请注意，为了启用自毁功能，实例需要使用适当的*scopes*设置进行创建。有关更多详细信息，请参阅[API 文档](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)。
 
 ```py
 gcloud compute instances create test-vm \
@@ -148,7 +148,7 @@ gcloud compute instances create test-vm \
     yes | gcloud compute instances delete $(hostname) --zone=zone=us-east1-d'
 ```
 
-需要记住的是，尽管我们有意这样做，但有时实例可能不会被正确删除。这可能是由于特定错误导致启动脚本提前退出，或由于进程停滞而阻止其完成运行。我们强烈建议引入后端机制，以验证未使用的实例是否被识别并终止。实现这一点的一种方法是调度定期的[Cloud Function](https://cloud.google.com/functions?hl=en)。请参阅我们的[近期文章](https://medium.com/towards-data-science/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b)，我们在其中提出了使用无服务器函数来解决在Amazon SageMaker上训练时出现的问题。
+需要记住的是，尽管我们有意这样做，但有时实例可能不会被正确删除。这可能是由于特定错误导致启动脚本提前退出，或由于进程停滞而阻止其完成运行。我们强烈建议引入后端机制，以验证未使用的实例是否被识别并终止。实现这一点的一种方法是调度定期的[Cloud Function](https://cloud.google.com/functions?hl=en)。请参阅我们的[近期文章](https://medium.com/towards-data-science/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b)，我们在其中提出了使用无服务器函数来解决在 Amazon SageMaker 上训练时出现的问题。
 
 ## 4\. 将应用程序日志写入持久存储
 
@@ -242,9 +242,9 @@ gsutil cp test-vm-2-instance-id gs://my-bucket/test-vm/metadata/
 
 1.  我们在启动脚本中添加了多个环境变量定义。这些将用于正确配置训练脚本以在所有节点上运行。
 
-1.  要删除VM实例，我们需要知道它创建时的*zone*。由于在运行批量创建命令时我们并不知道这一点，我们需要在启动脚本中以编程方式提取它。
+1.  要删除 VM 实例，我们需要知道它创建时的*zone*。由于在运行批量创建命令时我们并不知道这一点，我们需要在启动脚本中以编程方式提取它。
 
-1.  我们现在捕获并存储*both*创建的VM实例的ID。
+1.  我们现在捕获并存储*both*创建的 VM 实例的 ID。
 
 在下面的脚本中，我们演示如何使用环境设置在[PyTorch](https://pytorch.org/)中配置[data parallel training](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)。
 
@@ -279,7 +279,7 @@ if __name__ == '__main__':
 
 ## 7. 实验总结报告
 
-托管服务通常会暴露一个API和/或一个仪表盘，以查看训练作业的状态和结果。你可能会想在自定义管理解决方案中包含类似功能。实现此功能的方法有很多，包括使用[Google Cloud Database](https://cloud.google.com/products/databases?hl=en)来维护训练作业的元数据，或者使用第三方工具（如 [neptune.ai](https://neptune.ai/), [Comet](https://www.comet.com/site/), 或 [Weights & Biases](https://wandb.ai/site)）来记录和比较训练结果。以下函数假设训练应用程序的返回代码已被上传（来自启动脚本）到我们的专用*metadata*文件夹，并简单地遍历Google Storage中的作业：
+托管服务通常会暴露一个 API 和/或一个仪表盘，以查看训练作业的状态和结果。你可能会想在自定义管理解决方案中包含类似功能。实现此功能的方法有很多，包括使用[Google Cloud Database](https://cloud.google.com/products/databases?hl=en)来维护训练作业的元数据，或者使用第三方工具（如 [neptune.ai](https://neptune.ai/), [Comet](https://www.comet.com/site/), 或 [Weights & Biases](https://wandb.ai/site)）来记录和比较训练结果。以下函数假设训练应用程序的返回代码已被上传（来自启动脚本）到我们的专用*metadata*文件夹，并简单地遍历 Google Storage 中的作业：
 
 ```py
 import os
@@ -315,13 +315,13 @@ print(tabulate(entries,
 
 上述代码将生成以下格式的表格：
 
-![](../Images/3753e9bf01d0e1dea9d613cacf4a58f1.png)
+![](img/3753e9bf01d0e1dea9d613cacf4a58f1.png)
 
 训练实验表（按作者分类）
 
-## 8. 支持Spot实例使用
+## 8. 支持 Spot 实例使用
 
-我们可以通过将[*provisioning-model*](https://cloud.google.com/compute/docs/instances/create-use-spot#create)标志设置为*SPOT*，以及将[*instance-termination-action*](https://cloud.google.com/compute/docs/instances/create-use-spot#create)标志设置为*DELETE*，轻松修改我们的单节点创建脚本以使用[Spot VM](https://cloud.google.com/compute/docs/instances/spot)。不过，我们希望我们的训练管理解决方案能够管理Spot VM使用的完整生命周期，即识别Spot抢占并在可能时重新启动未完成的作业。支持此功能的方法有很多。在下面的示例中，我们定义了一个专用的Google Storage路径 *gs://my-bucket/preempted-jobs/* ，该路径维护一个未完成训练作业名称的列表，并定义一个关闭脚本以识别Spot抢占并将当前作业名称添加到列表中。我们的关闭脚本是[文档](https://cloud.google.com/compute/docs/instances/create-use-spot#handle-preemption)中推荐脚本的精简版本。实际上，你可能希望包含捕获和上传最新模型状态的逻辑。
+我们可以通过将[*provisioning-model*](https://cloud.google.com/compute/docs/instances/create-use-spot#create)标志设置为*SPOT*，以及将[*instance-termination-action*](https://cloud.google.com/compute/docs/instances/create-use-spot#create)标志设置为*DELETE*，轻松修改我们的单节点创建脚本以使用[Spot VM](https://cloud.google.com/compute/docs/instances/spot)。不过，我们希望我们的训练管理解决方案能够管理 Spot VM 使用的完整生命周期，即识别 Spot 抢占并在可能时重新启动未完成的作业。支持此功能的方法有很多。在下面的示例中，我们定义了一个专用的 Google Storage 路径 *gs://my-bucket/preempted-jobs/* ，该路径维护一个未完成训练作业名称的列表，并定义一个关闭脚本以识别 Spot 抢占并将当前作业名称添加到列表中。我们的关闭脚本是[文档](https://cloud.google.com/compute/docs/instances/create-use-spot#handle-preemption)中推荐脚本的精简版本。实际上，你可能希望包含捕获和上传最新模型状态的逻辑。
 
 ```py
 #!/bin/bash

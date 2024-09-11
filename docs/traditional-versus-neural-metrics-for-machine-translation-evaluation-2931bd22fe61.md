@@ -1,18 +1,18 @@
 # 传统与神经网络指标在机器翻译评估中的对比
 
-> 原文：[https://towardsdatascience.com/traditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61?source=collection_archive---------5-----------------------#2023-03-09](https://towardsdatascience.com/traditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61?source=collection_archive---------5-----------------------#2023-03-09)
+> 原文：[`towardsdatascience.com/traditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61?source=collection_archive---------5-----------------------#2023-03-09`](https://towardsdatascience.com/traditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61?source=collection_archive---------5-----------------------#2023-03-09)
 
-## 自2010年以来新增了100多个指标
+## 自 2010 年以来新增了 100 多个指标
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----2931bd22fe61--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----2931bd22fe61--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2931bd22fe61--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2931bd22fe61--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----2931bd22fe61--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----2931bd22fe61--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----2931bd22fe61--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2931bd22fe61--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2931bd22fe61--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----2931bd22fe61--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----2931bd22fe61---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2931bd22fe61--------------------------------) ·15 min read·2023年3月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2931bd22fe61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61&user=Benjamin+Marie&userId=ad2a414578b3&source=-----2931bd22fe61---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----2931bd22fe61---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2931bd22fe61--------------------------------) ·15 min read·2023 年 3 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2931bd22fe61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61&user=Benjamin+Marie&userId=ad2a414578b3&source=-----2931bd22fe61---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2931bd22fe61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61&source=-----2931bd22fe61---------------------bookmark_footer-----------)![](../Images/6177bf23f91d84b81a888a899af3c75e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2931bd22fe61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraditional-versus-neural-metrics-for-machine-translation-evaluation-2931bd22fe61&source=-----2931bd22fe61---------------------bookmark_footer-----------)![](img/6177bf23f91d84b81a888a899af3c75e.png)
 
 图片来自 [Pixabay](https://pixabay.com/photos/tunnel-light-grim-dark-art-6786462/)
 
@@ -24,14 +24,14 @@
 
 由于机器翻译的研究领域非常动态，需要对新系统进行大规模且快速的人工评估，这往往是不切实际的。
 
-因此，机器翻译的自动评估在过去20多年里一直是**非常活跃且富有成效的研究领域**。
+因此，机器翻译的自动评估在过去 20 多年里一直是**非常活跃且富有成效的研究领域**。
 
-尽管BLEU仍然是最常用的评估指标，但有无数更好的替代方案。
+尽管 BLEU 仍然是最常用的评估指标，但有无数更好的替代方案。
 
 [## BLEU: 一个被误解的指标](https://towardsdatascience.com/bleu-a-misunderstood-metric-from-another-age-d434e18f1b37?source=post_page-----2931bd22fe61--------------------------------)
 
-### 但在今天的AI研究中仍然被使用
+### 但在今天的 AI 研究中仍然被使用
 
-[towardsdatascience.com](/bleu-a-misunderstood-metric-from-another-age-d434e18f1b37?source=post_page-----2931bd22fe61--------------------------------)
+towardsdatascience.com
 
-自2010年以来，已经提出了100多种自动化指标来改进机器翻译评估。
+自 2010 年以来，已经提出了 100 多种自动化指标来改进机器翻译评估。

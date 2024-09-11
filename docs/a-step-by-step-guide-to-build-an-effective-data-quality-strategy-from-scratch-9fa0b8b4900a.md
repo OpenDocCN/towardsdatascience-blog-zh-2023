@@ -1,18 +1,18 @@
 # 从零开始构建有效的数据质量策略的逐步指南
 
-> 原文：[https://towardsdatascience.com/a-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a?source=collection_archive---------2-----------------------#2023-08-03](https://towardsdatascience.com/a-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a?source=collection_archive---------2-----------------------#2023-08-03)
+> 原文：[`towardsdatascience.com/a-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a?source=collection_archive---------2-----------------------#2023-08-03`](https://towardsdatascience.com/a-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a?source=collection_archive---------2-----------------------#2023-08-03)
 
 ## 如何根据用户期望建立一个可解释的数据质量框架
 
-[](https://medium.com/@david.rubio_63959?source=post_page-----9fa0b8b4900a--------------------------------)[![David Rubio](../Images/6a828bf368bd40aa5b1efda618dffed8.png)](https://medium.com/@david.rubio_63959?source=post_page-----9fa0b8b4900a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9fa0b8b4900a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9fa0b8b4900a--------------------------------) [David Rubio](https://medium.com/@david.rubio_63959?source=post_page-----9fa0b8b4900a--------------------------------)
+[](https://medium.com/@david.rubio_63959?source=post_page-----9fa0b8b4900a--------------------------------)![David Rubio](https://medium.com/@david.rubio_63959?source=post_page-----9fa0b8b4900a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9fa0b8b4900a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9fa0b8b4900a--------------------------------) [David Rubio](https://medium.com/@david.rubio_63959?source=post_page-----9fa0b8b4900a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84ec73ba69c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a&user=David+Rubio&userId=84ec73ba69c&source=post_page-84ec73ba69c----9fa0b8b4900a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9fa0b8b4900a--------------------------------) ·8 分钟阅读·2023年8月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9fa0b8b4900a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a&user=David+Rubio&userId=84ec73ba69c&source=-----9fa0b8b4900a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84ec73ba69c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a&user=David+Rubio&userId=84ec73ba69c&source=post_page-84ec73ba69c----9fa0b8b4900a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9fa0b8b4900a--------------------------------) ·8 分钟阅读·2023 年 8 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9fa0b8b4900a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a&user=David+Rubio&userId=84ec73ba69c&source=-----9fa0b8b4900a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9fa0b8b4900a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a&source=-----9fa0b8b4900a---------------------bookmark_footer-----------)![](../Images/d08070239edc3b5360173fc7fbb1770d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9fa0b8b4900a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-step-by-step-guide-to-build-an-effective-data-quality-strategy-from-scratch-9fa0b8b4900a&source=-----9fa0b8b4900a---------------------bookmark_footer-----------)![](img/d08070239edc3b5360173fc7fbb1770d.png)
 
 由 [Rémi Müller](https://unsplash.com/@remimullercha?utm_source=medium&utm_medium=referral) 拍摄，刊登于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -52,7 +52,7 @@
 
 这将是我们实际例子的成果，即用于营销活动报告工具的数据整合。
 
-![](../Images/3d1e0a5a082c4dc66a8011b56329466c.png)
+![](img/3d1e0a5a082c4dc66a8011b56329466c.png)
 
 数据使用模式结果示例（图像由作者提供）
 
@@ -68,9 +68,9 @@
 
 ## 服务水平目标
 
-这个实践的最终结果是为我们的服务水平目标（SLO）绘制基准。在数据质量中，服务水平目标（SLO）是定义特定数据服务或过程的数据质量期望水平的具体且可测量的目标。SLO设定了可量化的指标和阈值，以确保数据符合预定义的质量标准，并与用户和利益相关者的需求和期望保持一致。
+这个实践的最终结果是为我们的服务水平目标（SLO）绘制基准。在数据质量中，服务水平目标（SLO）是定义特定数据服务或过程的数据质量期望水平的具体且可测量的目标。SLO 设定了可量化的指标和阈值，以确保数据符合预定义的质量标准，并与用户和利益相关者的需求和期望保持一致。
 
-在我们的场景中，我们可以定义一个SLO，即我们的数据应每6小时重新计算一次。如果数据超过了这个阈值，就不符合这个特定的SLO。
+在我们的场景中，我们可以定义一个 SLO，即我们的数据应每 6 小时重新计算一次。如果数据超过了这个阈值，就不符合这个特定的 SLO。
 
 # 我应该关注数据质量的哪些方面？
 
@@ -88,9 +88,9 @@
 
 +   **唯一性**：每条记录在数据集中是唯一且未重复的程度。
 
-通过了解我们的数据和SLO的使用模式，我们确定了需要改进的维度，并将它们与我们场景中带来的实际价值关联。这有助于我们识别需要关注的数据质量最相关方面，并开始思考具体的行动。
+通过了解我们的数据和 SLO 的使用模式，我们确定了需要改进的维度，并将它们与我们场景中带来的实际价值关联。这有助于我们识别需要关注的数据质量最相关方面，并开始思考具体的行动。
 
-![](../Images/bbc3294cd95d7391781369f2e6d2178c.png)
+![](img/bbc3294cd95d7391781369f2e6d2178c.png)
 
 数据质量维度直接与业务实际价值相关联的示例（图像由作者提供）
 
@@ -102,7 +102,7 @@
 
 过程中发现的所有行动将被添加到我们的待办事项列表中，并由团队进行优先级排序。最终结果是一个针对业务需求定制的数据质量框架，使我们能够跟踪进展。
 
-![](../Images/643e254b79efa165a464aa2dfba48fae.png)
+![](img/643e254b79efa165a464aa2dfba48fae.png)
 
 我们的目标和行动的数据质量框架，以确保我们数据的业务价值（图片由作者提供）
 
@@ -130,7 +130,7 @@
 
 记录事件并根据其影响的维度进行分类也是至关重要的。这种做法使你能够集中精力关注特定领域，并识别策略中的潜在差距。更好的是，如果你维护一个事件报告，它可以让你反思你在特定领域的工作如何有助于随着时间的推移减少事件数量。
 
-![](../Images/e9d4124d6d98606d1c0b35e0905f1573.png)
+![](img/e9d4124d6d98606d1c0b35e0905f1573.png)
 
 按月和数据质量维度的事件日志。在贴纸上会有事件的简要描述（图片由作者提供）
 
@@ -140,9 +140,9 @@
 
 ## 服务水平指标和透明度
 
-测量你服务水平目标的实现情况是必要的。对于每个SLO，你应该有一个服务水平指标（SLI），显示SLO的实现情况。例如，在我们的例子中，你可以有一个SLI，显示在过去X天内生产中没有超过6小时的旧数据的成功百分比（时效性维度）。这帮助用户了解数据的表现，并建立对其质量的信任。
+测量你服务水平目标的实现情况是必要的。对于每个 SLO，你应该有一个服务水平指标（SLI），显示 SLO 的实现情况。例如，在我们的例子中，你可以有一个 SLI，显示在过去 X 天内生产中没有超过 6 小时的旧数据的成功百分比（时效性维度）。这帮助用户了解数据的表现，并建立对其质量的信任。
 
-![](../Images/962bab81b0d111d0b6b0c883eebbc93f.png)
+![](img/962bab81b0d111d0b6b0c883eebbc93f.png)
 
 我们的数据质量维度的服务水平指标（图片由作者提供）
 
@@ -166,11 +166,11 @@
 
 根据定义，数据网中的数据产品是自包含的、特定于业务的数据能力单元。它们封装数据、处理逻辑和数据质量检查，促进去中心化的数据所有权，并与更广泛的数据生态系统无缝集成。它们旨在满足特定的业务需求，易于查找和透明。作为我们数据质量框架的组成部分，数据产品确保我们的策略与独特的业务需求精准对齐，为业务特定的数据质量提供清晰和透明。
 
-数据产品在数据质量背景下的一个关键优势是它们能够持有自己的SLI。通过将数据质量指标直接集成到数据产品中，并通过用户友好的目录使其可见，我们赋予用户完全了解数据质量的能力，进行搜索、请求访问和探索。这种透明性和清晰性增强了用户信心，鼓励更大的采纳。
+数据产品在数据质量背景下的一个关键优势是它们能够持有自己的 SLI。通过将数据质量指标直接集成到数据产品中，并通过用户友好的目录使其可见，我们赋予用户完全了解数据质量的能力，进行搜索、请求访问和探索。这种透明性和清晰性增强了用户信心，鼓励更大的采纳。
 
 # 结论
 
-在本逐步指南中，我们已经学习了如何设定覆盖业务需求的可衡量服务水平目标（SLO），识别数据质量维度，并使我们的行动与目标一致，以实现SLO定义的期望。通过拥抱数据产品所提供的透明性和可理解性，我们可以有效地共享我们的数据质量指标，建立信任并增加用户采纳。请记住，完美并不存在。持续监控、事件记录和定期修订帮助我们保持数据质量框架的最新状态。
+在本逐步指南中，我们已经学习了如何设定覆盖业务需求的可衡量服务水平目标（SLO），识别数据质量维度，并使我们的行动与目标一致，以实现 SLO 定义的期望。通过拥抱数据产品所提供的透明性和可理解性，我们可以有效地共享我们的数据质量指标，建立信任并增加用户采纳。请记住，完美并不存在。持续监控、事件记录和定期修订帮助我们保持数据质量框架的最新状态。
 
 按照这些步骤，你将能够创建一个强大的数据质量框架，并建立一套作为可共享知识库的数据质量文档，这些文档对利益相关者和团队成员都易于解读。更好的是，你的数据质量框架保持了完美的努力-需求平衡，将使你的团队能够在数据准备好以满足业务需求时迅速发布数据。
 
@@ -178,6 +178,6 @@
 
 # 参考资料
 
-[https://www.thoughtworks.com/en-es/insights/blog/digital-transformation/how-to-brew-a-perfect-strategy-responsibly-part-one](https://www.thoughtworks.com/en-es/insights/blog/digital-transformation/how-to-brew-a-perfect-strategy-responsibly-part-one)
+[`www.thoughtworks.com/en-es/insights/blog/digital-transformation/how-to-brew-a-perfect-strategy-responsibly-part-one`](https://www.thoughtworks.com/en-es/insights/blog/digital-transformation/how-to-brew-a-perfect-strategy-responsibly-part-one)
 
 [如何创建数据质量框架](https://towardsdatascience.com/how-to-create-a-data-quality-framework-6887dea268ae)

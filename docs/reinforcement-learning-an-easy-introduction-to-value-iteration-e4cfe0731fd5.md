@@ -1,42 +1,42 @@
 # 强化学习：价值迭代的简单介绍
 
-> 原文：[https://towardsdatascience.com/reinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5?source=collection_archive---------0-----------------------#2023-09-10](https://towardsdatascience.com/reinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5?source=collection_archive---------0-----------------------#2023-09-10)
+> 原文：[`towardsdatascience.com/reinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5?source=collection_archive---------0-----------------------#2023-09-10`](https://towardsdatascience.com/reinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5?source=collection_archive---------0-----------------------#2023-09-10)
 
 ## 学习强化学习（RL）的基础知识以及如何将价值迭代应用于一个简单的示例问题。
 
-[](https://medium.com/@carlbettosi?source=post_page-----e4cfe0731fd5--------------------------------)[![Carl Bettosi](../Images/19c640d8e96fa39583a3c998764aa2b8.png)](https://medium.com/@carlbettosi?source=post_page-----e4cfe0731fd5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e4cfe0731fd5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e4cfe0731fd5--------------------------------) [Carl Bettosi](https://medium.com/@carlbettosi?source=post_page-----e4cfe0731fd5--------------------------------)
+[](https://medium.com/@carlbettosi?source=post_page-----e4cfe0731fd5--------------------------------)![Carl Bettosi](https://medium.com/@carlbettosi?source=post_page-----e4cfe0731fd5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e4cfe0731fd5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4cfe0731fd5--------------------------------) [Carl Bettosi](https://medium.com/@carlbettosi?source=post_page-----e4cfe0731fd5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fabe6f5e189c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5&user=Carl+Bettosi&userId=abe6f5e189c8&source=post_page-abe6f5e189c8----e4cfe0731fd5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4cfe0731fd5--------------------------------) · 15 分钟阅读 · 2023年9月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe4cfe0731fd5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5&user=Carl+Bettosi&userId=abe6f5e189c8&source=-----e4cfe0731fd5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fabe6f5e189c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5&user=Carl+Bettosi&userId=abe6f5e189c8&source=post_page-abe6f5e189c8----e4cfe0731fd5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4cfe0731fd5--------------------------------) · 15 分钟阅读 · 2023 年 9 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe4cfe0731fd5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5&user=Carl+Bettosi&userId=abe6f5e189c8&source=-----e4cfe0731fd5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe4cfe0731fd5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5&source=-----e4cfe0731fd5---------------------bookmark_footer-----------)![](../Images/291df786927604981f62437fda3c5b4f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe4cfe0731fd5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freinforcement-learning-an-easy-introduction-to-value-iteration-e4cfe0731fd5&source=-----e4cfe0731fd5---------------------bookmark_footer-----------)![](img/291df786927604981f62437fda3c5b4f.png)
 
-价值迭代（VI）通常是强化学习（RL）学习路径中首先引入的算法之一。该算法的基本细节介绍了RL的一些最基本的方面，因此，在进阶到更复杂的RL算法之前，掌握VI是很重要的。然而，这可能有些难以理解。
+价值迭代（VI）通常是强化学习（RL）学习路径中首先引入的算法之一。该算法的基本细节介绍了 RL 的一些最基本的方面，因此，在进阶到更复杂的 RL 算法之前，掌握 VI 是很重要的。然而，这可能有些难以理解。
 
 本文旨在成为一个易于理解的价值迭代（VI）介绍，假设读者对强化学习领域是新的。让我们开始吧。
 
-已经了解了RL的基础知识？→ [**跳到如何使用价值迭代**](#dab6)。
+已经了解了 RL 的基础知识？→ **跳到如何使用价值迭代**。
 
 ## 强化学习的基础
 
 让我们从教科书定义开始，然后用一个简单的例子来解释。
 
-![](../Images/bdfd099792f5ee2310c43662522084b7.png)
+![](img/bdfd099792f5ee2310c43662522084b7.png)
 
 强化学习训练过程概述
 
-强化学习（RL）是除了监督学习和无监督学习之外的三大主要机器学习范式之一。RL不是单一的算法，而是一个框架，涵盖了一系列技术和方法，用于教导代理在其环境中学习和做出决策。
+强化学习（RL）是除了监督学习和无监督学习之外的三大主要机器学习范式之一。RL 不是单一的算法，而是一个框架，涵盖了一系列技术和方法，用于教导代理在其环境中学习和做出决策。
 
-在RL中，代理通过采取各种动作与环境互动。当这些动作导致期望的状态时，代理会获得奖励；当动作未达到期望的状态时，代理会受到惩罚。代理的目标是学习一个策略，称为策略（policy），该策略指导其行动以最大化其随着时间积累的奖励。这个试错过程精炼了代理的行为策略，使其在环境中采取最优或接近最优的行为。
+在 RL 中，代理通过采取各种动作与环境互动。当这些动作导致期望的状态时，代理会获得奖励；当动作未达到期望的状态时，代理会受到惩罚。代理的目标是学习一个策略，称为策略（policy），该策略指导其行动以最大化其随着时间积累的奖励。这个试错过程精炼了代理的行为策略，使其在环境中采取最优或接近最优的行为。
 
-*理查德·S·萨顿和安德鲁·G·巴托的《强化学习导论》一书被认为是该领域的最佳读物之一，对于那些希望深入理解RL的人来说..而且它是* [*免费提供的*](http://incompleteideas.net/book/the-book-2nd.html)*！*
+*理查德·S·萨顿和安德鲁·G·巴托的《强化学习导论》一书被认为是该领域的最佳读物之一，对于那些希望深入理解 RL 的人来说..而且它是* [*免费提供的*](http://incompleteideas.net/book/the-book-2nd.html)*！*
 
 ## 让我们定义一个示例问题
 
-![](../Images/25fc75950f08dcf8fbb9ceba748c9fa4.png)
+![](img/25fc75950f08dcf8fbb9ceba748c9fa4.png)
 
 高尔夫游戏中的可能状态
 
@@ -46,21 +46,21 @@
 
 在强化学习（RL）中，这些位置中的每一个被称为***状态***或***环境状态***。你可以把状态看作是当前环境（高尔夫球场）的快照，同时记录球的位置。
 
-![](../Images/2938c430e74f76f0d14cc0001e1ae266.png)
+![](img/2938c430e74f76f0d14cc0001e1ae266.png)
 
 高尔夫球游戏中的可能动作
 
 在我们的游戏中，***代理***进行击球动作，开始时处于*球在球道上*状态。***代理***仅指控制进行***动作***的实体。我们的游戏有三种可用的动作：*击球到球道*；*击球到果岭*；以及*击球进洞*。
 
-![](../Images/110c6f6d02f7fb59ee2b805e836a368b.png)
+![](img/110c6f6d02f7fb59ee2b805e836a368b.png)
 
 高尔夫游戏中的转移概率
 
 当然，当你击球时，球可能不会落在你想要的位置。因此，我们引入了一个***转移函数***，通过一些概率权重将动作与状态关联起来。
 
-例如，当我们从球道上击球时，可能会偏离果岭，仍然停留在球道上。用RL的术语来说，如果我们处于*球在球道上*状态，并采取*击球到果岭*的动作，则有90%的概率进入*球在果岭上*状态，但也有10%的概率重新进入*球在球道上*状态。
+例如，当我们从球道上击球时，可能会偏离果岭，仍然停留在球道上。用 RL 的术语来说，如果我们处于*球在球道上*状态，并采取*击球到果岭*的动作，则有 90%的概率进入*球在果岭上*状态，但也有 10%的概率重新进入*球在球道上*状态。
 
-![](../Images/d9a6e396a04c36b4d5f972989603693b.png)
+![](img/d9a6e396a04c36b4d5f972989603693b.png)
 
 将球击入洞中的奖励为 10
 
@@ -88,7 +88,7 @@ MDP 是一种数学模型，它以结构化的方式描述了我们的问题。�
 
 以 MDP 形式可视化，我们的高尔夫问题看起来与之前描述的图像几乎相同。我们将使用 S = {s1, s2, s3} 作为简写。
 
-![](../Images/d2778219029b8237cd1d52e14e59fb54.png)
+![](img/d2778219029b8237cd1d52e14e59fb54.png)
 
 我们的高尔夫示例问题以 MDP 形式呈现
 
@@ -96,17 +96,17 @@ MDP 是一种数学模型，它以结构化的方式描述了我们的问题。�
 
 ## 什么是价值迭代？
 
-值迭代（VI）是一种用于解决类似于上述高尔夫球例子中的强化学习（RL）问题的算法，其中我们对MDP的所有组件有完全的了解。它通过迭代改进对每个状态“价值”的估计来实现。它通过考虑不同可用动作时的即时奖励和期望的未来奖励来完成这项工作。这些值通过一个值表进行跟踪，该表在每一步都会更新。最终，这一系列的改进将会收敛，产生一个状态 → 动作映射的最优策略，使代理可以在给定环境中做出最佳决策。
+值迭代（VI）是一种用于解决类似于上述高尔夫球例子中的强化学习（RL）问题的算法，其中我们对 MDP 的所有组件有完全的了解。它通过迭代改进对每个状态“价值”的估计来实现。它通过考虑不同可用动作时的即时奖励和期望的未来奖励来完成这项工作。这些值通过一个值表进行跟踪，该表在每一步都会更新。最终，这一系列的改进将会收敛，产生一个状态 → 动作映射的最优策略，使代理可以在给定环境中做出最佳决策。
 
-VI 利用 *动态规划* 的概念，其中将一个大问题分解成较小的子问题来解决。为了在VI中实现这一点，使用 *贝尔曼方程* 来指导迭代更新每个状态的价值估计的过程，提供一个递归关系，用于表示状态的价值与其邻近状态的价值之间的关系。
+VI 利用 *动态规划* 的概念，其中将一个大问题分解成较小的子问题来解决。为了在 VI 中实现这一点，使用 *贝尔曼方程* 来指导迭代更新每个状态的价值估计的过程，提供一个递归关系，用于表示状态的价值与其邻近状态的价值之间的关系。
 
-现在这可能不太容易理解。学习VI的最简单方法是逐步分解，我们就这样做吧。
+现在这可能不太容易理解。学习 VI 的最简单方法是逐步分解，我们就这样做吧。
 
 ## 值迭代算法是如何工作的？
 
 下图展示了算法的步骤。不要被吓到，它比看起来更简单。
 
-![](../Images/b6f032fc68d508cb4d115e760c583e68.png)
+![](img/b6f032fc68d508cb4d115e760c583e68.png)
 
 值迭代算法
 
@@ -114,13 +114,13 @@ VI 利用 *动态规划* 的概念，其中将一个大问题分解成较小的�
 
 +   Theta **θ** 代表收敛的阈值。一旦我们达到 **θ**，就可以终止训练循环并生成策略。它本质上只是一种确保我们创建的策略足够准确的方法。如果我们过早停止训练，可能无法学习到最佳的行动。
 
-+   Gamma **γ** 代表 *折扣因子*。这是一个值，决定了我们的代理对未来奖励的重视程度与对即时奖励的重视程度相比。较高的折扣因子（接近1）表示代理更重视长期奖励，而较低的折扣因子（接近0）则更强调即时奖励。
++   Gamma **γ** 代表 *折扣因子*。这是一个值，决定了我们的代理对未来奖励的重视程度与对即时奖励的重视程度相比。较高的折扣因子（接近 1）表示代理更重视长期奖励，而较低的折扣因子（接近 0）则更强调即时奖励。
 
-*为了更好地理解折扣因子，考虑一个玩国际象棋的RL代理。假设你有机会在下一步捕获对手的皇后，这将带来显著的即时奖励。然而，你还注意到，通过现在牺牲一个不太重要的棋子，你可以为未来的优势铺平道路，可能会导致将死并获得更大的奖励。折扣因子帮助你平衡这个决定。*
+*为了更好地理解折扣因子，考虑一个玩国际象棋的 RL 代理。假设你有机会在下一步捕获对手的皇后，这将带来显著的即时奖励。然而，你还注意到，通过现在牺牲一个不太重要的棋子，你可以为未来的优势铺平道路，可能会导致将死并获得更大的奖励。折扣因子帮助你平衡这个决定。*
 
-**(1) 初始化：** 现在我们已经定义了参数，我们想要初始化我们所有状态的 *价值函数* ***V(s)***。这通常意味着我们将每个状态的所有值设置为0（或其他任意常数）。可以把价值函数想象成一个表格，跟踪每个状态的值，并频繁更新。
+**(1) 初始化：** 现在我们已经定义了参数，我们想要初始化我们所有状态的 *价值函数* ***V(s)***。这通常意味着我们将每个状态的所有值设置为 0（或其他任意常数）。可以把价值函数想象成一个表格，跟踪每个状态的值，并频繁更新。
 
-![](../Images/fb25e69630ea42956f30577387e322b3.png)
+![](img/fb25e69630ea42956f30577387e322b3.png)
 
 初始化的值表
 
@@ -138,11 +138,11 @@ VI 利用 *动态规划* 的概念，其中将一个大问题分解成较小的�
 
 **贝尔曼方程**
 
-![](../Images/ac783b3215bf86884f63526f4edb24b5.png)
+![](img/ac783b3215bf86884f63526f4edb24b5.png)
 
-算法的这一行是最重要的。它要求我们更新当前循环中所看的状态的价值。这个价值是通过考虑从那个特定状态所有可用的动作（前瞻1步）来计算的。当我们采取这些可能的动作时，它会给我们一组可能的下一个状态 ***s*′** 和相应的奖励 ***r.***
+算法的这一行是最重要的。它要求我们更新当前循环中所看的状态的价值。这个价值是通过考虑从那个特定状态所有可用的动作（前瞻 1 步）来计算的。当我们采取这些可能的动作时，它会给我们一组可能的下一个状态 ***s*′** 和相应的奖励 ***r.***
 
-![](../Images/8076df201e89c49f337967581486f369.png)
+![](img/8076df201e89c49f337967581486f369.png)
 
 所以，对于每一个下一个状态 ***s*′** 和相应的奖励 ***r***，我们执行 ***p(s′, r|s, a)[r + γV(s′)].*** 让我们分解一下：
 
@@ -160,29 +160,29 @@ VI 利用 *动态规划* 的概念，其中将一个大问题分解成较小的�
 
 记住，这个过程只涵盖了一个状态 ***s***（树的第一层）
 
-*如果我们在编程，这将是树中每一层的3* ***for*** *循环：*
+*如果我们在编程，这将是树中每一层的 3* ***for*** *循环：*
 
-![](../Images/a949262be65f616b0d6fbd68d7ef07d3.png)
+![](img/a949262be65f616b0d6fbd68d7ef07d3.png)
 
 **(3) 内循环（继续）：** 在移动到内循环的下一次迭代之前，我们对当前***Δ***的值和该状态***v***的前一个值与刚计算的状态新值***V(s)***之间的差异进行比较。我们将***Δ***更新为这两者中的较大者：***Δ ← max(Δ,| v - V(s)|)***。这有助于我们跟踪离收敛的距离。
 
-好的，这个过程完成了一次内循环的操作。 **我们对S中的每个s执行第（3）步**，然后再退出内循环并对收敛条件***Δ < θ***进行检查。如果满足此条件，我们退出外循环，否则返回第（2）步。
+好的，这个过程完成了一次内循环的操作。 **我们对 S 中的每个 s 执行第（3）步**，然后再退出内循环并对收敛条件***Δ < θ***进行检查。如果满足此条件，我们退出外循环，否则返回第（2）步。
 
 **(4) 策略提取：** 到目前为止，我们可能已经进行了多次外循环，直到收敛。这意味着我们的值表将被更新为表示每个状态的最终值（换句话说，‘处于每个状态的好处’）。我们现在可以从中提取策略。
 
-![](../Images/ea3f5ebe2aa38c2fc3d57beabedaeae4.png)
+![](img/ea3f5ebe2aa38c2fc3d57beabedaeae4.png)
 
 记住，策略**π**本质上是**状态 → 动作**的映射，对于每个状态，它选择最大化期望回报的动作。要计算这一点，我们执行与之前完全相同的过程，但不是使用***maxₐ***获得状态***s***的值，而是使用***argmaxₐ***获得给我们最佳值的动作***a***。
 
 就这样！
 
-***策略迭代*** *是另一种动态规划算法。它类似于VI，只是它在通过使策略相对于当前值函数变得贪婪来改进策略和评估策略的表现直到收敛之间交替进行，通常需要较少的迭代但每次迭代需要更多计算。*
+***策略迭代*** *是另一种动态规划算法。它类似于 VI，只是它在通过使策略相对于当前值函数变得贪婪来改进策略和评估策略的表现直到收敛之间交替进行，通常需要较少的迭代但每次迭代需要更多计算。*
 
 ## 使用值迭代解决示例
 
-一旦完成示例问题，VI应该更有意义，所以让我们回到我们的高尔夫MDP。我们已将其形式化为MDP，但目前，代理不知道打高尔夫的最佳策略，因此让我们使用VI解决高尔夫MDP。
+一旦完成示例问题，VI 应该更有意义，所以让我们回到我们的高尔夫 MDP。我们已将其形式化为 MDP，但目前，代理不知道打高尔夫的最佳策略，因此让我们使用 VI 解决高尔夫 MDP。
 
-![](../Images/3bc4524300a1072607e002076d7f28bd.png)
+![](img/3bc4524300a1072607e002076d7f28bd.png)
 
 我们将开始使用相当标准的值来定义我们的模型参数：
 
@@ -191,7 +191,7 @@ VI 利用 *动态规划* 的概念，其中将一个大问题分解成较小的�
 θ = 0.01 // convergence threshold
 ```
 
-然后我们将对***S***中的状态初始化我们的值表为0：
+然后我们将对***S***中的状态初始化我们的值表为 0：
 
 ```py
 // value table
@@ -280,7 +280,7 @@ V(s2) = 0
 Δ = 0
 ```
 
-另进行3次内循环，使用更新后的值表：
+另进行 3 次内循环，使用更新后的值表：
 
 ```py
 //******************* state s0 *******************//
@@ -336,7 +336,7 @@ V(s2) = 0
 
 仍未收敛，所以我们继续上述过程，直到 Δ < θ。我不会展示所有计算，以上两个步骤足以理解过程。
 
-经过6次迭代，我们的策略已经收敛。这是我们的价值和收敛率在每次迭代中的变化情况：
+经过 6 次迭代，我们的策略已经收敛。这是我们的价值和收敛率在每次迭代中的变化情况：
 
 ```py
 Iteration   V(s0)        V(s1)        V(s2)        Δ             Converged
@@ -401,7 +401,7 @@ V(s1) = max[0.9 * (0 + 0.9 * 8.8029969345) +
 
 需要注意的是，价值迭代以及其他动态编程算法都有其局限性。首先，它假设我们对 MDP 的动态有完全的了解（我们称之为***基于模型的 RL***）。然而，在实际问题中这种情况很少见，例如，我们可能不知道转移概率。对于这种情况，我们需要使用其他方法，如*Q-learning*（***无模型 RL***）。
 
-![](../Images/f60ad4bf1fac52b752748a38f8f6dc1f.png)
+![](img/f60ad4bf1fac52b752748a38f8f6dc1f.png)
 
 国际象棋中的维度诅咒
 

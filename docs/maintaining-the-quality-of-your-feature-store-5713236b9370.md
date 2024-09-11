@@ -1,26 +1,26 @@
 # 维护你的特征库的质量
 
-> 原文：[https://towardsdatascience.com/maintaining-the-quality-of-your-feature-store-5713236b9370?source=collection_archive---------6-----------------------#2023-03-30](https://towardsdatascience.com/maintaining-the-quality-of-your-feature-store-5713236b9370?source=collection_archive---------6-----------------------#2023-03-30)
+> 原文：[`towardsdatascience.com/maintaining-the-quality-of-your-feature-store-5713236b9370?source=collection_archive---------6-----------------------#2023-03-30`](https://towardsdatascience.com/maintaining-the-quality-of-your-feature-store-5713236b9370?source=collection_archive---------6-----------------------#2023-03-30)
 
-![](../Images/67d8972239569d1a0dd66035686ebc83.png)
+![](img/67d8972239569d1a0dd66035686ebc83.png)
 
 图片由作者提供
 
 ## 特征库的基本概念以及如何和为什么你应该监控它们的一些提示
 
-[](https://statistician-in-stilettos.medium.com/?source=post_page-----5713236b9370--------------------------------)[![Claire Longo](../Images/5a04940feeba1412688b4f38ec1fe974.png)](https://statistician-in-stilettos.medium.com/?source=post_page-----5713236b9370--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5713236b9370--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5713236b9370--------------------------------) [Claire Longo](https://statistician-in-stilettos.medium.com/?source=post_page-----5713236b9370--------------------------------)
+[](https://statistician-in-stilettos.medium.com/?source=post_page-----5713236b9370--------------------------------)![Claire Longo](https://statistician-in-stilettos.medium.com/?source=post_page-----5713236b9370--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5713236b9370--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5713236b9370--------------------------------) [Claire Longo](https://statistician-in-stilettos.medium.com/?source=post_page-----5713236b9370--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1f6936fe85bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaintaining-the-quality-of-your-feature-store-5713236b9370&user=Claire+Longo&userId=1f6936fe85bb&source=post_page-1f6936fe85bb----5713236b9370---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5713236b9370--------------------------------) ·5分钟阅读·2023年3月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5713236b9370&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaintaining-the-quality-of-your-feature-store-5713236b9370&user=Claire+Longo&userId=1f6936fe85bb&source=-----5713236b9370---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1f6936fe85bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaintaining-the-quality-of-your-feature-store-5713236b9370&user=Claire+Longo&userId=1f6936fe85bb&source=post_page-1f6936fe85bb----5713236b9370---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5713236b9370--------------------------------) ·5 分钟阅读·2023 年 3 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5713236b9370&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaintaining-the-quality-of-your-feature-store-5713236b9370&user=Claire+Longo&userId=1f6936fe85bb&source=-----5713236b9370---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5713236b9370&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaintaining-the-quality-of-your-feature-store-5713236b9370&source=-----5713236b9370---------------------bookmark_footer-----------)
 
-自2017年Uber [首次介绍](https://www.uber.com/blog/michelangelo-machine-learning-platform/)这一概念以来，特征库作为一种支持数据科学家和机器学习工程师定义、发现和访问高质量数据的工具，已经稳步获得了越来越多的关注。
+自 2017 年 Uber [首次介绍](https://www.uber.com/blog/michelangelo-machine-learning-platform/)这一概念以来，特征库作为一种支持数据科学家和机器学习工程师定义、发现和访问高质量数据的工具，已经稳步获得了越来越多的关注。
 
-![](../Images/82245873c37b04b7f2df588511403cb1.png)
+![](img/82245873c37b04b7f2df588511403cb1.png)
 
 图表由作者提供
 
@@ -38,11 +38,11 @@
 
 特征存储可以被认为是一个预计算特征的中央存储。这个数据存储服务于机器学习项目中的每一个步骤。
 
-![](../Images/6c23719f8256ade4a275e0e34550094f.png)
+![](img/6c23719f8256ade4a275e0e34550094f.png)
 
 作者提供的图表
 
-![](../Images/331cec4c32708c49955bf297db8c690b.png)
+![](img/331cec4c32708c49955bf297db8c690b.png)
 
 作者提供的图表
 
@@ -86,7 +86,7 @@
 
 ## 特征存储的类型
 
-一般来说，特征存储要么作为独立的第三方工具提供，要么作为更广泛的云服务的一部分提供。大多数使用特征存储的Arize客户使用像Tecton这样的专用工具，但希望在开源解决方案上构建的团队有几个选项（即Feast、Feathr）。此外，云服务也可以作为现有堆栈的简便附加功能提供。
+一般来说，特征存储要么作为独立的第三方工具提供，要么作为更广泛的云服务的一部分提供。大多数使用特征存储的 Arize 客户使用像 Tecton 这样的专用工具，但希望在开源解决方案上构建的团队有几个选项（即 Feast、Feathr）。此外，云服务也可以作为现有堆栈的简便附加功能提供。
 
 第三方工具示例：
 
@@ -100,9 +100,9 @@
 
 云工具示例
 
-+   Databricks特征存储
++   Databricks 特征存储
 
-+   SageMaker特征存储
++   SageMaker 特征存储
 
 # 维护特征存储的质量
 
@@ -110,17 +110,17 @@
 
 如果数据集中在一个[特征存储](https://arize.com/blog/feature-store/)中，维护起来可能更容易。通过对特征存储应用数据质量监控，实践者可以在数据问题影响模型性能之前自动捕捉到这些问题。
 
-有几种常见的数据问题，监控可以带来重大差异（完全披露：我在Arize工作，Arize提供监控工具，但这些最佳实践来源于我的实际经验，同样适用于内部或其他地方构建的监控平台）。
+有几种常见的数据问题，监控可以带来重大差异（完全披露：我在 Arize 工作，Arize 提供监控工具，但这些最佳实践来源于我的实际经验，同样适用于内部或其他地方构建的监控平台）。
 
-**数据质量**监控可以捕捉到如缺失值、数据格式变化或意外值（数据基数变化）等问题。ML可观察性平台可以用来自动检测并警报这些类型的数据质量问题，这些问题在特征数据中很常见。
+**数据质量**监控可以捕捉到如缺失值、数据格式变化或意外值（数据基数变化）等问题。ML 可观察性平台可以用来自动检测并警报这些类型的数据质量问题，这些问题在特征数据中很常见。
 
-![](../Images/fe4b0b8826799fa3ba38353ecd9f07be.png)
+![](img/fe4b0b8826799fa3ba38353ecd9f07be.png)
 
-*此示例显示了针对模型特征的%-empty度量的触发数据质量监控（图像作者提供）*
+*此示例显示了针对模型特征的%-empty 度量的触发数据质量监控（图像作者提供）*
 
 **数据漂移**监控可以捕捉到由于时间自然变化引起的统计分布偏移。漂移可以通过 PSI、[KL 散度](https://arize.com/blog-course/kl-divergence/)等指标来测量。机器学习可观测性平台可以用来自动检测和警报特征数据中常见的统计漂移类型。
 
-![](../Images/d3757a98e70b83064d6cd076871b969f.png)
+![](img/d3757a98e70b83064d6cd076871b969f.png)
 
 *此示例展示了生产和训练数据分布之间的预测漂移（图像由作者提供）*
 

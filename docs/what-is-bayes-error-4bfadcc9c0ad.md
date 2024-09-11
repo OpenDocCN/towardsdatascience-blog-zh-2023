@@ -1,18 +1,18 @@
 # 什么是贝叶斯误差？
 
-> 原文：[https://towardsdatascience.com/what-is-bayes-error-4bfadcc9c0ad?source=collection_archive---------5-----------------------#2023-06-06](https://towardsdatascience.com/what-is-bayes-error-4bfadcc9c0ad?source=collection_archive---------5-----------------------#2023-06-06)
+> 原文：[`towardsdatascience.com/what-is-bayes-error-4bfadcc9c0ad?source=collection_archive---------5-----------------------#2023-06-06`](https://towardsdatascience.com/what-is-bayes-error-4bfadcc9c0ad?source=collection_archive---------5-----------------------#2023-06-06)
 
 ## 对机器学习基本概念的简单介绍
 
-[](https://medium.com/@wanshunwong?source=post_page-----4bfadcc9c0ad--------------------------------)[![Wanshun Wong](../Images/42d967999b28ba8ab207f1858e6a4e6b.png)](https://medium.com/@wanshunwong?source=post_page-----4bfadcc9c0ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bfadcc9c0ad--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4bfadcc9c0ad--------------------------------) [Wanshun Wong](https://medium.com/@wanshunwong?source=post_page-----4bfadcc9c0ad--------------------------------)
+[](https://medium.com/@wanshunwong?source=post_page-----4bfadcc9c0ad--------------------------------)![Wanshun Wong](https://medium.com/@wanshunwong?source=post_page-----4bfadcc9c0ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bfadcc9c0ad--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bfadcc9c0ad--------------------------------) [Wanshun Wong](https://medium.com/@wanshunwong?source=post_page-----4bfadcc9c0ad--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb145fb04b8bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-bayes-error-4bfadcc9c0ad&user=Wanshun+Wong&userId=b145fb04b8bd&source=post_page-b145fb04b8bd----4bfadcc9c0ad---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bfadcc9c0ad--------------------------------) ·6分钟阅读·2023年6月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4bfadcc9c0ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-bayes-error-4bfadcc9c0ad&user=Wanshun+Wong&userId=b145fb04b8bd&source=-----4bfadcc9c0ad---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb145fb04b8bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-bayes-error-4bfadcc9c0ad&user=Wanshun+Wong&userId=b145fb04b8bd&source=post_page-b145fb04b8bd----4bfadcc9c0ad---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bfadcc9c0ad--------------------------------) ·6 分钟阅读·2023 年 6 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4bfadcc9c0ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-bayes-error-4bfadcc9c0ad&user=Wanshun+Wong&userId=b145fb04b8bd&source=-----4bfadcc9c0ad---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4bfadcc9c0ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-bayes-error-4bfadcc9c0ad&source=-----4bfadcc9c0ad---------------------bookmark_footer-----------)![](../Images/7227c8d6f3145f701b9b4f4de11a018e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4bfadcc9c0ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-bayes-error-4bfadcc9c0ad&source=-----4bfadcc9c0ad---------------------bookmark_footer-----------)![](img/7227c8d6f3145f701b9b4f4de11a018e.png)
 
 作者提供的图片
 
@@ -62,9 +62,9 @@
 
 +   *s_i* = 0 意味着我们 100% 确信该实例属于类别 0，因为它属于类别 1 的概率为 0%。
 
-+   *s_i* = 0.6意味着我们认为实例更可能属于类别1，但我们不是很确定。
++   *s_i* = 0.6 意味着我们认为实例更可能属于类别 1，但我们不是很确定。
 
-注意我们总是可以通过检查*s_i* > 0.5来将软标签转换为硬标签。
+注意我们总是可以通过检查*s_i* > 0.5 来将软标签转换为硬标签。
 
 ## 如何获得软标签
 
@@ -72,9 +72,9 @@
 
 +   最明显的方法是要求我们的数据集标注者提供类别标签及其对标签的置信水平。
 
-+   如果我们有多个标注者，我们可以要求他们为每个实例提供硬标签。然后我们可以将硬标签的比例作为软标签。例如，如果我们有5个标注者，其中4个认为*x_i*属于类别1，剩下的一个认为*x_i*属于类别0，那么*s_i* = 0.8
++   如果我们有多个标注者，我们可以要求他们为每个实例提供硬标签。然后我们可以将硬标签的比例作为软标签。例如，如果我们有 5 个标注者，其中 4 个认为*x_i*属于类别 1，剩下的一个认为*x_i*属于类别 0，那么*s_i* = 0.8
 
-+   如果类别标签来源于某些数据源，那么我们可以使用相同的数据源来计算软标签。例如，我们想预测一个学生是否能通过考试。假设考试总分为100，及格分数为50或更高。因此，硬标签通过检查*score* ≥ 50获得。为了计算软标签，我们可以应用如Platt缩放之类的校准方法到*score*。
++   如果类别标签来源于某些数据源，那么我们可以使用相同的数据源来计算软标签。例如，我们想预测一个学生是否能通过考试。假设考试总分为 100，及格分数为 50 或更高。因此，硬标签通过检查*score* ≥ 50 获得。为了计算软标签，我们可以应用如 Platt 缩放之类的校准方法到*score*。
 
 # 估计贝叶斯误差
 
@@ -84,13 +84,13 @@
 *β* = (1 / n) · ∑ min(s_i, 1 - s_i)
 ```
 
-这是min(*s_i*, 1 - *s_i*)的平均值。这个公式的简便性使其易于使用，并适用于许多数据集。
+这是 min(*s_i*, 1 - *s_i*)的平均值。这个公式的简便性使其易于使用，并适用于许多数据集。
 
 ## 具体示例
 
-+   首先，让我们考虑极端情况，其中软标签为0或1。这意味着我们对类别标签100%确定。术语min(*s_i*, 1 - *s_i*)始终为0，因此*β*也为0。这与我们的直觉一致，即最好的模型能够避免对该数据集产生错误预测。
++   首先，让我们考虑极端情况，其中软标签为 0 或 1。这意味着我们对类别标签 100%确定。术语 min(*s_i*, 1 - *s_i*)始终为 0，因此*β*也为 0。这与我们的直觉一致，即最好的模型能够避免对该数据集产生错误预测。
 
-+   考虑一个更有趣的情况，我们有10个实例，软标签为0.1、0.2、0.3、0.4、0.5、0.6、0.7、0.8、0.9、1。然后
++   考虑一个更有趣的情况，我们有 10 个实例，软标签为 0.1、0.2、0.3、0.4、0.5、0.6、0.7、0.8、0.9、1。然后
 
 ```py
 β = (1 / 10) · (0.1 + 0.2 + 0.3 + 0.4 + 0.5 + 0.4 + 0.3 + 0.2 + 0.1 + 0)
@@ -103,17 +103,17 @@
 
 ## 了解模型性能改进的空间
 
-让我们回顾一下本文开头给出的例子。我们的模型准确率为85%，这意味着错误率为15%。假设贝叶斯误差估计为13%。在这种情况下，改进的空间实际上只有2%。最重要的是，我们不应该向老板承诺模型性能提高5%。
+让我们回顾一下本文开头给出的例子。我们的模型准确率为 85%，这意味着错误率为 15%。假设贝叶斯误差估计为 13%。在这种情况下，改进的空间实际上只有 2%。最重要的是，我们不应该向老板承诺模型性能提高 5%。
 
 ## **确定我们是否需要新的数据集**
 
-我们的机器学习项目通常有最低模型性能要求。例如，我们的模型误差率要求 ≤ 10%，以免客服团队过于繁忙。如果我们数据集的贝叶斯误差估计为13%，那么我们应该寻找新的数据集，而不是改进模型。也许我们需要更好的相机和传感器来收集数据，或者需要新的数据源来增加特征向量中的独立变量。
+我们的机器学习项目通常有最低模型性能要求。例如，我们的模型误差率要求 ≤ 10%，以免客服团队过于繁忙。如果我们数据集的贝叶斯误差估计为 13%，那么我们应该寻找新的数据集，而不是改进模型。也许我们需要更好的相机和传感器来收集数据，或者需要新的数据源来增加特征向量中的独立变量。
 
 ## 理解偏差-方差权衡
 
-假设我们的模型训练误差为8%，测试误差为10%。如果我们知道贝叶斯误差接近0%，则可以得出结论，训练误差和测试误差都很大。因此，我们应该尝试减少模型的偏差。
+假设我们的模型训练误差为 8%，测试误差为 10%。如果我们知道贝叶斯误差接近 0%，则可以得出结论，训练误差和测试误差都很大。因此，我们应该尝试减少模型的偏差。
 
-另一方面，如果贝叶斯误差为7%，则
+另一方面，如果贝叶斯误差为 7%，则
 
 ```py
 Training Error - Bayes Error = 1% < Test Error - Training Error = 2%

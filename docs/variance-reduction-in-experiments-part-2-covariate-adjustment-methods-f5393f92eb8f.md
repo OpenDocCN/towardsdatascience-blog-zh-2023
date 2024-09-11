@@ -1,28 +1,28 @@
-# 实验中的方差减少 —— 第2部分：协变量调整方法
+# 实验中的方差减少 —— 第二部分：协变量调整方法
 
-> 原文：[https://towardsdatascience.com/variance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f?source=collection_archive---------9-----------------------#2023-02-07](https://towardsdatascience.com/variance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f?source=collection_archive---------9-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/variance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f?source=collection_archive---------9-----------------------#2023-02-07`](https://towardsdatascience.com/variance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f?source=collection_archive---------9-----------------------#2023-02-07)
 
 ## 深入探讨 MLRATE —— 机器学习回归调整治疗效应估计器，并与其他方法进行比较
 
-[](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)[![Murat Unal](../Images/9f00db7597d7ece01213a6b0589c87d8.png)](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)
+[](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)![Murat Unal](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------) [Murat Unal](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----f5393f92eb8f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------) ·9 分钟阅读·2023年2月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff5393f92eb8f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&user=Murat+Unal&userId=15a64c9fc55d&source=-----f5393f92eb8f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----f5393f92eb8f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------) ·9 分钟阅读·2023 年 2 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff5393f92eb8f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&user=Murat+Unal&userId=15a64c9fc55d&source=-----f5393f92eb8f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff5393f92eb8f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&source=-----f5393f92eb8f---------------------bookmark_footer-----------)![](../Images/48d8ff13f43f0cda293c05d88c8fd730.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff5393f92eb8f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&source=-----f5393f92eb8f---------------------bookmark_footer-----------)![](img/48d8ff13f43f0cda293c05d88c8fd730.png)
 
 图片由 [Sam Moghadam Khamseh](https://unsplash.com/@sammoghadamkhamseh?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 这是系列文章中的第二篇，我们讨论了实验中的方差减少。在第一篇文章中，我们讨论了为什么在实验中减少结果度量的方差是必要的，并展示了简单的回归调整如何带来显著的好处，同时对这一主题建立了直觉。
 
-[实验中的方差减少 — 第1部分：直觉](/variance-reduction-in-experiments-part-1-intuition-68b270a0df71?source=post_page-----f5393f92eb8f--------------------------------)
+实验中的方差减少 — 第一部分：直觉
 
 ### 方差减少的直觉及其在随机实验中重要的原因。
 
-[towardsdatascience.com](/variance-reduction-in-experiments-part-1-intuition-68b270a0df71?source=post_page-----f5393f92eb8f--------------------------------)
+towardsdatascience.com
 
 在这篇文章中，我们将分析几种已建立的协变量调整方法的方差减少性能。具体而言，我们将对数据生成过程中的不同复杂度运行模拟，并将以下方法应用于每个实验数据：
 
@@ -36,25 +36,25 @@
 
 5\. 机器学习回归调整处理效应估计器（MLRATE）
 
-我们想要找到的平均处理效应（ATE）是处理（用1表示）和控制（用0表示）之间的结果预期差异，*Y*：
+我们想要找到的平均处理效应（ATE）是处理（用 1 表示）和控制（用 0 表示）之间的结果预期差异，*Y*：
 
-思考条件平均处理效应（CATE）也很有用，它是在描述协变量*X*的单位子集上的ATE：
+思考条件平均处理效应（CATE）也很有用，它是在描述协变量*X*的单位子集上的 ATE：
 
-对整个协变量空间的CATE取平均，得到ATE：
+对整个协变量空间的 CATE 取平均，得到 ATE：
 
-由于我们有一个随机分配的实验，每种方法都是ATE的无偏估计。然而，每种方法实现的方差减少水平可能非常不同，具体取决于基础数据生成过程。
+由于我们有一个随机分配的实验，每种方法都是 ATE 的无偏估计。然而，每种方法实现的方差减少水平可能非常不同，具体取决于基础数据生成过程。
 
 首先讨论每种方法的机制。
 
 ## 均值差异（DIM）
 
-DIM是ATE的一个简单而一致的估计，并且将在我们的分析中作为基线，因为它不涉及任何协变量调整：
+DIM 是 ATE 的一个简单而一致的估计，并且将在我们的分析中作为基线，因为它不涉及任何协变量调整：
 
 ## 回归调整（OLS_adj）
 
-这是治疗指示符* T *的系数估计，如果单位*i*处于治疗中则为1，否则为0，它来自包含协变量*X*的结果回归，线性且加性，并假设所有单位的处理效应是恒定的：
+这是治疗指示符* T *的系数估计，如果单位*i*处于治疗中则为 1，否则为 0，它来自包含协变量*X*的结果回归，线性且加性，并假设所有单位的处理效应是恒定的：
 
-要了解为何*τ*的OLS估计量是ATE的一个一致估计量，我们考虑处理组和对照组的回归函数分别计算，然后取差异：
+要了解为何*τ*的 OLS 估计量是 ATE 的一个一致估计量，我们考虑处理组和对照组的回归函数分别计算，然后取差异：
 
 因此：
 
@@ -120,15 +120,15 @@ Y_res = Y - g(X)
 
 ## **机器学习回归调整处理效应估计量（MLRATE）**
 
-DID和MLRATE之间的主要区别在于，DID直接从结果*Y*中减去机器学习预测值*g(X)*，而MLRATE则在后续的线性回归步骤中包括预测值以及T与去均值预测值之间的交互项（Yongyi et al., 2021）。
+DID 和 MLRATE 之间的主要区别在于，DID 直接从结果*Y*中减去机器学习预测值*g(X)*，而 MLRATE 则在后续的线性回归步骤中包括预测值以及 T 与去均值预测值之间的交互项（Yongyi et al., 2021）。
 
-MLRATE的步骤如下：
+MLRATE 的步骤如下：
 
 1.  通过交叉拟合训练*g(X)*并从*X*预测*Y*。
 
 1.  获取*τ*估计值：
 
-研究表明，将预测值作为回归量可以保证估计器对差预测的稳健性，并且MLRATE的渐近方差不大于DIM估计器。
+研究表明，将预测值作为回归量可以保证估计器对差预测的稳健性，并且 MLRATE 的渐近方差不大于 DIM 估计器。
 
 ```py
 def mlpredict(dfml,p):
@@ -170,7 +170,7 @@ def mlpredict(dfml,p):
 
 ## **数据生成过程 (DGP)**
 
-为了比较这5种协变量调整方法在不同复杂度下减少方差的效果，我们有一个DGP，包含*N = 2000*个独立同分布观测值和10个协变量，分布为*N(0,I(10×10))*。处理指示符为*Ti ∼ Bernoulli(0.5)*，误差项分布为*N(0,25²)*。处理与协变量和误差项独立，误差项本身与协变量独立。结果*Yi*和处理效应函数*τ(Xi)*取决于以下函数形式：
+为了比较这 5 种协变量调整方法在不同复杂度下减少方差的效果，我们有一个 DGP，包含*N = 2000*个独立同分布观测值和 10 个协变量，分布为*N(0,I(10×10))*。处理指示符为*Ti ∼ Bernoulli(0.5)*，误差项分布为*N(0,25²)*。处理与协变量和误差项独立，误差项本身与协变量独立。结果*Yi*和处理效应函数*τ(Xi)*取决于以下函数形式：
 
 1.  **协变量的线性效应与恒定处理效应**
 
@@ -207,7 +207,7 @@ def dgp(n=2000, p=10, linear=True, constant=True):
     return df
 ```
 
-我们在每种函数形式下生成1000个数据集，并将每种协变量调整方法应用于这些数据。
+我们在每种函数形式下生成 1000 个数据集，并将每种协变量调整方法应用于这些数据。
 
 ```py
 def experiment(**kwargs):
@@ -273,7 +273,7 @@ def experiment(**kwargs):
     return dct
 ```
 
-最后，我们打印估计值、它们的标准误差和95%置信区间，并绘制分布图。
+最后，我们打印估计值、它们的标准误差和 95%置信区间，并绘制分布图。
 
 ```py
 def plot_experiment(results, constant = True ):
@@ -305,15 +305,15 @@ def plot_experiment(results, constant = True ):
 
 仿真结果显示在下图中，主要发现如下：
 
-1.  每种协变量调整方法在标准误差上都优于DIM估计器，无论DGP是什么，然而，减少的程度取决于DGP的复杂性。
+1.  每种协变量调整方法在标准误差上都优于 DIM 估计器，无论 DGP 是什么，然而，减少的程度取决于 DGP 的复杂性。
 
-1.  当DGP包括协变量的线性效应时，无论是恒定处理效应还是变化处理效应，OLS_adj和OLS_int估计器的标准误差最小。
+1.  当 DGP 包括协变量的线性效应时，无论是恒定处理效应还是变化处理效应，OLS_adj 和 OLS_int 估计器的标准误差最小。
 
-1.  当DGP包括协变量的非线性效应时，基于机器学习的估计器DID和MLRATE在恒定和变化的处理效应下的标准误差最小。
+1.  当 DGP 包括协变量的非线性效应时，基于机器学习的估计器 DID 和 MLRATE 在恒定和变化的处理效应下的标准误差最小。
 
 1.  由于协变量的非线性和变化的处理效应在实际应用中更为常见，因此我们得出结论，基于机器学习的调整方法在实验中减少方差方面优于其他方法。
 
-1.  最终，CUPED在所有场景下的表现都不如其他方法。这主要是因为CUPED的原始版本使用了单一协变量进行调整，我们也是如此实现的。可以扩展CUPED以处理多个协变量。
+1.  最终，CUPED 在所有场景下的表现都不如其他方法。这主要是因为 CUPED 的原始版本使用了单一协变量进行调整，我们也是如此实现的。可以扩展 CUPED 以处理多个协变量。
 
 ```py
 %%time
@@ -329,9 +329,9 @@ results_df1 = pd.DataFrame(results1)
 plot_experiment(results_df1)
 ```
 
-![](../Images/381323e1ea9b81c3e89c5f9ad67384d2.png)
+![](img/381323e1ea9b81c3e89c5f9ad67384d2.png)
 
-**图1：协变量的线性效应与恒定处理效应**
+**图 1：协变量的线性效应与恒定处理效应**
 
 ```py
 results2 = Parallel(n_jobs=8)(delayed(experiment)(n=2000, p=10,linear=True, constant=False,
@@ -343,9 +343,9 @@ results_df2 = pd.DataFrame(results2)
 plot_experiment(results_df2, False)
 ```
 
-![](../Images/5d51176fa47ebfcdcaf8eae475991803.png)
+![](img/5d51176fa47ebfcdcaf8eae475991803.png)
 
-**图2：协变量的线性效应与变化的处理效应**
+**图 2：协变量的线性效应与变化的处理效应**
 
 ```py
 results3 = Parallel(n_jobs=8)(delayed(experiment)(n=2000, p=10,linear=False, constant=True,
@@ -357,9 +357,9 @@ results_df3 = pd.DataFrame(results3)
 plot_experiment(results_df3)
 ```
 
-![](../Images/7216b9a916200745c634a41fd6840ae6.png)
+![](img/7216b9a916200745c634a41fd6840ae6.png)
 
-**图3：协变量的非线性效应与恒定的处理效应**
+**图 3：协变量的非线性效应与恒定的处理效应**
 
 ```py
 results4 = Parallel(n_jobs=8)(delayed(experiment)(n=2000, p=10,linear=False, constant=False,
@@ -371,17 +371,17 @@ results_df4 = pd.DataFrame(results4)
 plot_experiment(results_df4, False)
 ```
 
-![](../Images/c3ccf3a15c8507388d22c1c6aa15f4a2.png)
+![](img/c3ccf3a15c8507388d22c1c6aa15f4a2.png)
 
-**图4：协变量的非线性效应与变化的处理效应**
+**图 4：协变量的非线性效应与变化的处理效应**
 
 ## 结论
 
-这标志着关于实验中方差减少的两篇文章系列的结束。在第1部分中，我们对方差减少在实验中的重要性建立了直觉，而在第2部分中我们分析了不同的协变量调整方法。我们发现所有这些方法都比简单的DIM估计器得到更紧的置信区间。因此，协变量调整应该成为分析实验时的标准实践。至于应用哪种方法，我们已经看到基于机器学习的估计器表现最佳，尤其是当DGP中存在复杂的相互作用时，这无疑更真实地反映了现实世界。
+这标志着关于实验中方差减少的两篇文章系列的结束。在第一部分中，我们对方差减少在实验中的重要性建立了直觉，而在第二部分中我们分析了不同的协变量调整方法。我们发现所有这些方法都比简单的 DIM 估计器得到更紧的置信区间。因此，协变量调整应该成为分析实验时的标准实践。至于应用哪种方法，我们已经看到基于机器学习的估计器表现最佳，尤其是当 DGP 中存在复杂的相互作用时，这无疑更真实地反映了现实世界。
 
 ## 代码
 
-原始笔记本可以在我的github [仓库](https://github.com/muratunalphd/Blog-Posts)中找到。
+原始笔记本可以在我的 github [仓库](https://github.com/muratunalphd/Blog-Posts)中找到。
 
 > 感谢阅读！希望你觉得这值得你花时间。
 > 
@@ -391,7 +391,7 @@ plot_experiment(results_df4, False)
 
 ## 参考文献
 
-[1] W. Lin，[关于回归调整实验数据的无神论笔记：重新审视Freedman的批评](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-7/issue-1/Agnostic-notes-on-regression-adjustments-to-experimental-data--Reexamining/10.1214/12-AOAS583.full)。 (2013)*，《应用统计年鉴》*。
+[1] W. Lin，[关于回归调整实验数据的无神论笔记：重新审视 Freedman 的批评](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-7/issue-1/Agnostic-notes-on-regression-adjustments-to-experimental-data--Reexamining/10.1214/12-AOAS583.full)。 (2013)*，《应用统计年鉴》*。
 
 [2] A. Deng, Y. Xu, R. Kohavi, T. Walker，[通过利用实验前数据提高在线对照实验的敏感性](https://dl.acm.org/doi/abs/10.1145/2433396.2433413) (2013)，*WSDM*。
 

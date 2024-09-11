@@ -1,20 +1,20 @@
 # 优化探索性数据分析中的重复任务
 
-> 原文：[https://towardsdatascience.com/streamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588?source=collection_archive---------7-----------------------#2023-10-24](https://towardsdatascience.com/streamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588?source=collection_archive---------7-----------------------#2023-10-24)
+> 原文：[`towardsdatascience.com/streamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588?source=collection_archive---------7-----------------------#2023-10-24`](https://towardsdatascience.com/streamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588?source=collection_archive---------7-----------------------#2023-10-24)
 
 ## 数据科学中的自动化
 
 ## 邀请您识别重复的 EDA 任务并创建自动化工作流，通过示例工具进行说明。
 
-[](https://medium.com/@christabellecp?source=post_page-----46a40fe1d588--------------------------------)[![Christabelle Pabalan](../Images/24187865b6e9d03ae1aabf873ce1e67c.png)](https://medium.com/@christabellecp?source=post_page-----46a40fe1d588--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46a40fe1d588--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----46a40fe1d588--------------------------------) [Christabelle Pabalan](https://medium.com/@christabellecp?source=post_page-----46a40fe1d588--------------------------------)
+[](https://medium.com/@christabellecp?source=post_page-----46a40fe1d588--------------------------------)![Christabelle Pabalan](https://medium.com/@christabellecp?source=post_page-----46a40fe1d588--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46a40fe1d588--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----46a40fe1d588--------------------------------) [Christabelle Pabalan](https://medium.com/@christabellecp?source=post_page-----46a40fe1d588--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4200eb8e8b26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588&user=Christabelle+Pabalan&userId=4200eb8e8b26&source=post_page-4200eb8e8b26----46a40fe1d588---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46a40fe1d588--------------------------------) ·7分钟阅读·2023年10月24日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4200eb8e8b26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588&user=Christabelle+Pabalan&userId=4200eb8e8b26&source=post_page-4200eb8e8b26----46a40fe1d588---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46a40fe1d588--------------------------------) ·7 分钟阅读·2023 年 10 月 24 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F46a40fe1d588&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588&source=-----46a40fe1d588---------------------bookmark_footer-----------)![](../Images/e5031188e988019bb8a2ffc2e978e858.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F46a40fe1d588&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreamlining-repetitive-tasks-during-exploratory-data-analysis-46a40fe1d588&source=-----46a40fe1d588---------------------bookmark_footer-----------)![](img/e5031188e988019bb8a2ffc2e978e858.png)
 
 图片由作者提供（DALL-E 生成）
 

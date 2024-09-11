@@ -1,14 +1,14 @@
 # 向量化：是什么以及它是如何工作的？
 
-> 原文：[https://towardsdatascience.com/vectorisation-what-is-it-and-how-does-it-work-1dd9cef48407?source=collection_archive---------6-----------------------#2023-04-13](https://towardsdatascience.com/vectorisation-what-is-it-and-how-does-it-work-1dd9cef48407?source=collection_archive---------6-----------------------#2023-04-13)
+> 原文：[`towardsdatascience.com/vectorisation-what-is-it-and-how-does-it-work-1dd9cef48407?source=collection_archive---------6-----------------------#2023-04-13`](https://towardsdatascience.com/vectorisation-what-is-it-and-how-does-it-work-1dd9cef48407?source=collection_archive---------6-----------------------#2023-04-13)
 
-![](../Images/6640ccc3787bc8c5c4bce0fd8d6a2bd4.png)
+![](img/6640ccc3787bc8c5c4bce0fd8d6a2bd4.png)
 
 图片由[Mariana Beltrán](https://unsplash.com/ja/@ostranenie?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来自[Unsplash](https://unsplash.com/s/photos/greek-columns?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-## O(n)比O(1)更快，缓存行，Pandas 2.0和列的持续增长
+## O(n)比 O(1)更快，缓存行，Pandas 2.0 和列的持续增长
 
-[](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)[![Mark Jamison](../Images/11b16af9d84585cff964b6e2b95089cd.png)](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1dd9cef48407--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1dd9cef48407--------------------------------) [Mark Jamison](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)
+[](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)![Mark Jamison](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1dd9cef48407--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1dd9cef48407--------------------------------) [Mark Jamison](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)
 
 ·
 
@@ -18,9 +18,9 @@
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1dd9cef48407&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorisation-what-is-it-and-how-does-it-work-1dd9cef48407&source=-----1dd9cef48407---------------------bookmark_footer-----------)
 
-这是本文的第二次迭代。在完成第一次迭代后，我让它静置一段时间进行编辑，因为标题看起来不太好——一个关于向量化的13分钟长篇，其中包含与数据库理论和历史趋势的松散联系。
+这是本文的第二次迭代。在完成第一次迭代后，我让它静置一段时间进行编辑，因为标题看起来不太好——一个关于向量化的 13 分钟长篇，其中包含与数据库理论和历史趋势的松散联系。
 
-在等待重新草拟时，我发现了几个关于新版本 Pandas 2.0 的[性能比较](/measuring-the-speed-of-new-pandas-2-0-against-polars-and-datatable-still-not-good-enough-e44dc78f6585)——尤其是与 Polars 的比较。此时我必须坦白——Pandas 对我而言是起点，我甚至还没有 `pip install` Polars 进行测试。我总是犹豫在尚未得到广泛支持的新工具和流行工具之间进行替换，直到：
+在等待重新草拟时，我发现了几个关于新版本 Pandas 2.0 的性能比较——尤其是与 Polars 的比较。此时我必须坦白——Pandas 对我而言是起点，我甚至还没有 `pip install` Polars 进行测试。我总是犹豫在尚未得到广泛支持的新工具和流行工具之间进行替换，直到：
 
 +   现有工具开始失败（我在 SQL 聚合后使用的数据不够大）。
 
@@ -46,71 +46,71 @@
 
 理解两者核心概念的重要性在于众多公司用大量的[Leetcode](https://leetcode.com/)动态规划或二叉搜索树等与日常无关的题目来考察他们的候选人。一个典型的例子是——在查找东西时使用哈希映射而不是数组。这是因为：
 
-+   哈希映射的查找是O(1)
++   哈希映射的查找是 O(1)
 
-+   （未排序的）数组是O(n)，因为你可能需要遍历整个数组
++   （未排序的）数组是 O(n)，因为你可能需要遍历整个数组
 
-为什么上述情况并不总是成立？因为*“O(1)算法比O(n)算法更快”*是不完整的。真正的说法应该是*“O(1)算法比O(n)算法更快，***前提是起始点相同****”*。
+为什么上述情况并不总是成立？因为*“O(1)算法比 O(n)算法更快”*是不完整的。真正的说法应该是*“O(1)算法比 O(n)算法更快，***前提是起始点相同****”*。
 
 ## 在纽约驾驶法拉利
 
-现代CPU被描述为类似于在纽约驾驶一辆法拉利。毋庸置疑，这个比喻显然来自于一个认为开车唯一目的就是从A点到B点的计算机科学家，但这一点依然成立。如果你只是不断地停车和启动（尽管停车和启动*非常非常*快），为什么需要这样一辆快车呢？
+现代 CPU 被描述为类似于在纽约驾驶一辆法拉利。毋庸置疑，这个比喻显然来自于一个认为开车唯一目的就是从 A 点到 B 点的计算机科学家，但这一点依然成立。如果你只是不断地停车和启动（尽管停车和启动*非常非常*快），为什么需要这样一辆快车呢？
 
-将‘车’替换为‘处理器’，我们就看到了现代CPU。这是因为**处理器速度与内存速度之间的相对速度改进（尽管近年来速度提升变得较慢）**。这一点在Herb Sutter的[C++导向讲座](https://www.youtube.com/watch?v=L7zSU9HI-6I)中得到了很好的阐述（如果你只想了解概述，可以从12:00开始观看约20分钟），下面的图表也很好地展示了这一点：
+将‘车’替换为‘处理器’，我们就看到了现代 CPU。这是因为**处理器速度与内存速度之间的相对速度改进（尽管近年来速度提升变得较慢）**。这一点在 Herb Sutter 的[C++导向讲座](https://www.youtube.com/watch?v=L7zSU9HI-6I)中得到了很好的阐述（如果你只想了解概述，可以从 12:00 开始观看约 20 分钟），下面的图表也很好地展示了这一点：
 
-![](../Images/db368b943bd050b6f26d24c03505fa1a.png)
+![](img/db368b943bd050b6f26d24c03505fa1a.png)
 
-新的向量时代的机会和选择——[ResearchGate上的科学图](https://www.researchgate.net/figure/CPU-memory-performance-gap-Modelled-after-Computer-Architecture-Hennessy-John-L_fig1_273029990)
+新的向量时代的机会和选择——[ResearchGate 上的科学图](https://www.researchgate.net/figure/CPU-memory-performance-gap-Modelled-after-Computer-Architecture-Hennessy-John-L_fig1_273029990)
 
 简单来说，我们有一个“[摩尔定律](https://en.wikipedia.org/wiki/Moore's_law)引发的”处理器操作速度和将数据送到处理器的速度之间的差距。**如果处理器大部分时间都在空闲等待新数据进行操作，那么就没有必要拥有如此快速的处理器**。
 
 ## 我们如何规避这个问题？缓存、缓存和更多缓存
 
-下面是许多人对计算机架构的标准印象（[跳到Herb Sutter讲座的22:30，观看这个有趣的例子](https://www.youtube.com/watch?v=L7zSU9HI-6I)）：
+下面是许多人对计算机架构的标准印象（[跳到 Herb Sutter 讲座的 22:30，观看这个有趣的例子](https://www.youtube.com/watch?v=L7zSU9HI-6I)）：
 
-![](../Images/885295d81bde4bb243ac8c198ef4fe31.png)
+![](img/885295d81bde4bb243ac8c198ef4fe31.png)
 
 作者提供的图片
 
 换句话说——我们有：
 
-+   我们的CPU执行任务
++   我们的 CPU 执行任务
 
-+   我们的内存（或RAM）‘快速’访问
++   我们的内存（或 RAM）‘快速’访问
 
 +   我们的磁盘访问速度慢
 
 如上图所示，内存可能相对于从硬盘检索数据是快的——但相对于我们当前处理器的数量和速度，检索速度确实不快。为了解决这个问题，硬件开发者决定将内存*放置到*CPU（或‘芯片’）上。**这些被称为缓存，每个处理核心都有多个。** 每个核心包括：
 
-+   L1缓存：这是最快的，并分为指令缓存（存储你代码转化成的指令）和数据缓存（存储你操作的变量）
++   L1 缓存：这是最快的，并分为指令缓存（存储你代码转化成的指令）和数据缓存（存储你操作的变量）
 
-+   L2缓存：比L1大，但较慢
++   L2 缓存：比 L1 大，但较慢
 
-然后，机器上的所有核心共享一个L3缓存——同样比L1和L2大，但再次较慢。
+然后，机器上的所有核心共享一个 L3 缓存——同样比 L1 和 L2 大，但再次较慢。
 
-下图基于来自Intel白皮书的放大照片（[Intel架构基础知识（v.1, Jan. 2014）](https://www.intel.co.uk/content/www/uk/en/intelligent-systems/embedded-systems-training/ia-introduction-basics-paper.html?wapkw=white+paper+introduction+to+intel+architecture)），展示了Intel i7处理器的4核心CPU布局——L1和L2缓存*在*每个‘核心’部分内：
+下图基于来自 Intel 白皮书的放大照片（[Intel 架构基础知识（v.1, Jan. 2014）](https://www.intel.co.uk/content/www/uk/en/intelligent-systems/embedded-systems-training/ia-introduction-basics-paper.html?wapkw=white+paper+introduction+to+intel+architecture)），展示了 Intel i7 处理器的 4 核心 CPU 布局——L1 和 L2 缓存*在*每个‘核心’部分内：
 
-![](../Images/0f2b8d6263ae9dc32c2145d118bfb975.png)
+![](img/0f2b8d6263ae9dc32c2145d118bfb975.png)
 
-图片由作者提供——原图见此文档：[Intel架构基础知识（v.1, Jan. 2014）](https://www.intel.co.uk/content/www/uk/en/intelligent-systems/embedded-systems-training/ia-introduction-basics-paper.html?wapkw=white+paper+introduction+to+intel+architecture)
+图片由作者提供——原图见此文档：[Intel 架构基础知识（v.1, Jan. 2014）](https://www.intel.co.uk/content/www/uk/en/intelligent-systems/embedded-systems-training/ia-introduction-basics-paper.html?wapkw=white+paper+introduction+to+intel+architecture)
 
-但这同样适用于更新的PC。我在Macbook Air M2上写这篇文章， [在维基百科上快速查阅](https://en.wikipedia.org/wiki/Apple_M2)表明M2芯片包含L1、L2和一个共享的‘最后一级缓存’（L3）。
+但这同样适用于更新的 PC。我在 Macbook Air M2 上写这篇文章， [在维基百科上快速查阅](https://en.wikipedia.org/wiki/Apple_M2)表明 M2 芯片包含 L1、L2 和一个共享的‘最后一级缓存’（L3）。
 
 ## 那么，从缓存中检索数据比从内存中快多少呢？
 
-对此——一图胜千言——或者更具体地说，是一个动画。来自游戏软件优化公司Overbyte的以下链接展示了相对性能的极端差异：[http://www.overbyte.com.au/misc/Lesson3/CacheFun.html](http://www.overbyte.com.au/misc/Lesson3/CacheFun.html)。
+对此——一图胜千言——或者更具体地说，是一个动画。来自游戏软件优化公司 Overbyte 的以下链接展示了相对性能的极端差异：[`www.overbyte.com.au/misc/Lesson3/CacheFun.html`](http://www.overbyte.com.au/misc/Lesson3/CacheFun.html)。
 
 速度在机器之间有所不同，但——以标准的[‘时钟周期’](https://en.wikipedia.org/wiki/Clock_rate)单位来衡量，我们大致有：
 
-+   L1：~1–3x时钟周期
++   L1：~1–3x 时钟周期
 
-+   L2：~10x时钟周期
++   L2：~10x 时钟周期
 
-+   L3：~40x时钟周期
++   L3：~40x 时钟周期
 
-+   主内存：~100–300x时钟周期
++   主内存：~100–300x 时钟周期
 
-换句话说：如果我们的数据在L1内存中，我们的计算机会比从主内存中提取数据快30–300倍。主内存指的是RAM，而非硬盘。当你的CPU在L1缓存中找不到数据时，它会搜索L2，然后是L3，最后到主内存**每次这些搜索失败都会标记为‘缓存未命中’。** 缓存未命中越少，你的代码执行越快。
+换句话说：如果我们的数据在 L1 内存中，我们的计算机会比从主内存中提取数据快 30–300 倍。主内存指的是 RAM，而非硬盘。当你的 CPU 在 L1 缓存中找不到数据时，它会搜索 L2，然后是 L3，最后到主内存**每次这些搜索失败都会标记为‘缓存未命中’。** 缓存未命中越少，你的代码执行越快。
 
 ## 那么，我如何将数据加载到缓存中？缓存行
 
@@ -188,4 +188,4 @@ Polars 基于 PyArrow——这是 [Apache Arrow 内存列式数据格式](https:
 
 这可能看起来是一个奇怪的结论话题，但通过 Pandas 创始人的职业生涯可以看出上述向语言无关、一致的数据操作和建模方法的轨迹。他最初在 [AQR Capital Management](https://www.aqr.com/) 使用电子表格处理数据，然后创建并推广了 Pandas（利用 NumPy 的向量友好型 [ndarray](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html)），现在他 [深度参与 Apache Arrow](https://www.youtube.com/watch?v=Hqi_Bw_0y8Q)。
 
-他的职业生涯与现代“数据科学堆栈”（至少在Python中）朝着更加面向列的内存数据表示方式的演变紧密相连。看起来数组的推广势不可挡，并且我个人认为这种趋势不会放缓。请原谅这句双关语。
+他的职业生涯与现代“数据科学堆栈”（至少在 Python 中）朝着更加面向列的内存数据表示方式的演变紧密相连。看起来数组的推广势不可挡，并且我个人认为这种趋势不会放缓。请原谅这句双关语。

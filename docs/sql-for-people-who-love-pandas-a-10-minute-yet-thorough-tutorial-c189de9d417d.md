@@ -1,26 +1,26 @@
 # 30 个 SQL 查询通过其 Pandas 等价物解释
 
-> 原文：[https://towardsdatascience.com/sql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d?source=collection_archive---------5-----------------------#2023-06-09](https://towardsdatascience.com/sql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d?source=collection_archive---------5-----------------------#2023-06-09)
+> 原文：[`towardsdatascience.com/sql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d?source=collection_archive---------5-----------------------#2023-06-09`](https://towardsdatascience.com/sql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d?source=collection_archive---------5-----------------------#2023-06-09)
 
 ## SQL 变得对喜爱 Pandas 的人更加容易
 
-[](https://ibexorigin.medium.com/?source=post_page-----c189de9d417d--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----c189de9d417d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c189de9d417d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c189de9d417d--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----c189de9d417d--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----c189de9d417d--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----c189de9d417d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c189de9d417d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c189de9d417d--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----c189de9d417d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----c189de9d417d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c189de9d417d--------------------------------) · 10 分钟阅读 · 2023年6月9日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc189de9d417d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d&user=Bex+T.&userId=39db050c2ac2&source=-----c189de9d417d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----c189de9d417d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c189de9d417d--------------------------------) · 10 分钟阅读 · 2023 年 6 月 9 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc189de9d417d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d&user=Bex+T.&userId=39db050c2ac2&source=-----c189de9d417d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc189de9d417d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d&source=-----c189de9d417d---------------------bookmark_footer-----------)![](../Images/4804e3d33ecae544cceeee4a0f1df5f4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc189de9d417d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsql-for-people-who-love-pandas-a-10-minute-yet-thorough-tutorial-c189de9d417d&source=-----c189de9d417d---------------------bookmark_footer-----------)![](img/4804e3d33ecae544cceeee4a0f1df5f4.png)
 
 图片由我与 Midjourney 制作
 
 ## 动机
 
-自1974年以来，SQL 主导了数据世界，直到2008年 Pandas 的出现，提供了如内置可视化和灵活的数据处理等吸引人的功能。它迅速成为数据探索的首选工具，超越了 SQL。
+自 1974 年以来，SQL 主导了数据世界，直到 2008 年 Pandas 的出现，提供了如内置可视化和灵活的数据处理等吸引人的功能。它迅速成为数据探索的首选工具，超越了 SQL。
 
-不过不要被迷惑，SQL 仍然占据重要地位。它是数据科学领域第二大需求的语言，也是第三大增长最快的语言（见 [这里](/the-most-in-demand-skills-for-data-scientists-in-2021-4b2a808f4005)）。因此，尽管 Pandas 扮演了主角，SQL 仍然是任何数据科学家必备的技能。
+不过不要被迷惑，SQL 仍然占据重要地位。它是数据科学领域第二大需求的语言，也是第三大增长最快的语言（见 这里）。因此，尽管 Pandas 扮演了主角，SQL 仍然是任何数据科学家必备的技能。
 
 让我们来看看当你已经掌握 Pandas 时，学习 SQL 会有多简单。
 

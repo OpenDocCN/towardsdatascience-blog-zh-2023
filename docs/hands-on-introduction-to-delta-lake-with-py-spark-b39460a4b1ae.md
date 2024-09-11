@@ -1,18 +1,18 @@
 # 实操介绍 Delta Lake 和 (py)Spark
 
-> 原文：[https://towardsdatascience.com/hands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae?source=collection_archive---------0-----------------------#2023-02-16](https://towardsdatascience.com/hands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae?source=collection_archive---------0-----------------------#2023-02-16)
+> 原文：[`towardsdatascience.com/hands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae?source=collection_archive---------0-----------------------#2023-02-16`](https://towardsdatascience.com/hands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae?source=collection_archive---------0-----------------------#2023-02-16)
 
 ## 现代数据存储框架的概念、理论和功能
 
-[](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)[![João Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)
+[](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)![João Pedro](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----b39460a4b1ae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------) ·10 分钟阅读·2023年2月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb39460a4b1ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----b39460a4b1ae---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----b39460a4b1ae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------) ·10 分钟阅读·2023 年 2 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb39460a4b1ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----b39460a4b1ae---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb39460a4b1ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&source=-----b39460a4b1ae---------------------bookmark_footer-----------)![](../Images/303f0065d94538660d3d2564a8209807.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb39460a4b1ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&source=-----b39460a4b1ae---------------------bookmark_footer-----------)![](img/303f0065d94538660d3d2564a8209807.png)
 
 照片由 [Nick Fewings](https://unsplash.com/@jannerboy62?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -151,7 +151,7 @@ df_acidentes = (
 df_acidentes.show(5)
 ```
 
-![](../Images/d72cfddfa1e866eeb230fbc31680a2a5.png)
+![](img/d72cfddfa1e866eeb230fbc31680a2a5.png)
 
 2020 年前 5 行。
 
@@ -168,7 +168,7 @@ df_acidentes\
 
 如前所述，Delta-Lake 表（就文件而言）仅仅是传统的 *parquet* 文件，附带一个记录所有变更的 JSON 事务日志。
 
-![](../Images/3c877b178787f54d87ff170643be3325.png)
+![](img/3c877b178787f54d87ff170643be3325.png)
 
 带有 JSON 事务日志的 Delta 表。
 
@@ -188,7 +188,7 @@ df_acidentes_delta = (
 df_acidentes_delta.select(["id", "data_inversa", "dia_semana", "horario", "uf"]).show(5)
 ```
 
-![](../Images/1681c30993e3e05d2b8ee361a767d1db.png)
+![](img/1681c30993e3e05d2b8ee361a767d1db.png)
 
 让我们计算行数
 
@@ -223,9 +223,9 @@ df_acidentes_2019\
     .save("/data/delta/acidentes/")
 ```
 
-重要的是要强调：Delta表会执行模式强制，因此只能写入与已存在表具有相同模式的数据，否则，Spark会抛出错误。
+重要的是要强调：Delta 表会执行模式强制，因此只能写入与已存在表具有相同模式的数据，否则，Spark 会抛出错误。
 
-让我们检查Delta表中的行数。
+让我们检查 Delta 表中的行数。
 
 ```py
 df_acidentes_delta.count()
@@ -233,11 +233,11 @@ df_acidentes_delta.count()
 >> Output: 131132
 ```
 
-## 4\. 查看Delta表的历史记录（日志）
+## 4\. 查看 Delta 表的历史记录（日志）
 
-Delta表的日志记录了所有对表执行的操作。它包含了对每个操作的详细描述，包括关于操作的所有元数据。
+Delta 表的日志记录了所有对表执行的操作。它包含了对每个操作的详细描述，包括关于操作的所有元数据。
 
-要读取日志，我们需要使用一个名为`DeltaTable`的特殊Python对象。
+要读取日志，我们需要使用一个名为`DeltaTable`的特殊 Python 对象。
 
 ```py
 from delta.tables import DeltaTable
@@ -246,21 +246,21 @@ delta_table = DeltaTable.forPath(spark, "/data/delta/acidentes/")
 delta_table.history().show()
 ```
 
-![](../Images/be4e3d84b827c8be00d4a2507942ae17.png)
+![](img/be4e3d84b827c8be00d4a2507942ae17.png)
 
-历史对象是一个Spark数据框。
+历史对象是一个 Spark 数据框。
 
 ```py
 delta_table.history().select("version", "timestamp", "operation", "operationParameters").show(10, False)
 ```
 
-![](../Images/281f55740f79b0a5d92674832c0b3550.png)
+![](img/281f55740f79b0a5d92674832c0b3550.png)
 
 正如我们所见，目前有两个表版本，每个操作都有一个版本：表创建时的覆盖写入和之前进行的追加写入。
 
-## 5\. 读取Delta表的特定版本
+## 5\. 读取 Delta 表的特定版本
 
-如果没有指定任何内容，Spark将读取Delta表的最新版本。
+如果没有指定任何内容，Spark 将读取 Delta 表的最新版本。
 
 ```py
 df_acidentes_latest = (
@@ -287,19 +287,19 @@ df_acidentes_version_0.count()
 >> Output: 63576
 ```
 
-计数下降了，因为我们正在从版本0读取，在2019年的数据插入之前。
+计数下降了，因为我们正在从版本 0 读取，在 2019 年的数据插入之前。
 
 ## 6\. 恢复到先前版本
 
-可以恢复到表的先前版本。这对于快速解决管道中出现的错误非常有用。此操作也是通过之前创建的DeltaTable对象执行的。
+可以恢复到表的先前版本。这对于快速解决管道中出现的错误非常有用。此操作也是通过之前创建的 DeltaTable 对象执行的。
 
-让我们将表恢复到版本0：
+让我们将表恢复到版本 0：
 
 ```py
 delta_table.restoreToVersion(0)
 ```
 
-现在，最新的计数将再次为=63576，因为我们恢复到了数据尚未包括2019年的版本。
+现在，最新的计数将再次为=63576，因为我们恢复到了数据尚未包括 2019 年的版本。
 
 ```py
 # Counting the number of rows in the latest version
@@ -312,9 +312,9 @@ df_acidentes_latest.count()
 delta_table.history().select("version", "timestamp", "operation", "operationParameters").show(10, False)
 ```
 
-![](../Images/91cd2dbd7153e9e98eb26a74c366d2b9.png)
+![](img/91cd2dbd7153e9e98eb26a74c366d2b9.png)
 
-让我们恢复到版本1。
+让我们恢复到版本 1。
 
 ```py
 delta_table.restoreToVersion(1)
@@ -322,9 +322,9 @@ delta_table.restoreToVersion(1)
 
 ## 7\. 更新
 
-更新操作也可以通过`DeltaTable`对象完成，但我们将使用SQL语法来尝试一种新方法。
+更新操作也可以通过`DeltaTable`对象完成，但我们将使用 SQL 语法来尝试一种新方法。
 
-首先，让我们将2016年的数据写入增量表。这些数据中的“data_inversa”（日期）列格式错误：dd/MM/yy而不是yyyy-MM-dd。
+首先，让我们将 2016 年的数据写入增量表。这些数据中的“data_inversa”（日期）列格式错误：dd/MM/yy 而不是 yyyy-MM-dd。
 
 ```py
 df_acidentes_2016 = (
@@ -340,7 +340,7 @@ df_acidentes_2016 = (
 df_acidentes_2016.select("data_inversa").show(5)
 ```
 
-![](../Images/01ea716ec1c9fa6aef3faddbfe900d64.png)
+![](img/01ea716ec1c9fa6aef3faddbfe900d64.png)
 
 让我们保存数据：
 
@@ -354,9 +354,9 @@ df_acidentes_latest.count()
 >> Output: 227495
 ```
 
-但由于我们的data_inversa字段是字符串类型，因此不会发生错误。现在，我们的表中插入了错误的数据，需要进行修复。当然，我们可以只需恢复这次操作，并再次正确插入数据，但让我们改用UPDATE操作。
+但由于我们的 data_inversa 字段是字符串类型，因此不会发生错误。现在，我们的表中插入了错误的数据，需要进行修复。当然，我们可以只需恢复这次操作，并再次正确插入数据，但让我们改用 UPDATE 操作。
 
-以下SQL代码仅修复年份=2016的数据格式。
+以下 SQL 代码仅修复年份=2016 的数据格式。
 
 ```py
 df_acidentes_latest.createOrReplaceTempView("acidentes_latest")
@@ -370,7 +370,7 @@ spark.sql(
 )
 ```
 
-错误格式化数据的行数为0：
+错误格式化数据的行数为 0：
 
 ```py
 df_acidentes_latest.filter( F.col("data_inversa").like("%/16") ).count()
@@ -379,17 +379,17 @@ df_acidentes_latest.filter( F.col("data_inversa").like("%/16") ).count()
 
 ## 8\. 合并
 
-最后将介绍的操作是MERGE（也称为UPSERT）操作。它是INSERT和UPDATE的混合。
+最后将介绍的操作是 MERGE（也称为 UPSERT）操作。它是 INSERT 和 UPDATE 的混合。
 
 它会尝试将新行插入目标表格，将某些列视为关键列。如果要插入的行已经存在于目标表中（即行键已经在目标表中存在），它将仅更新该行（按照指定的一些逻辑），否则，它将插入新行。
 
 总结来说：如果存在，则更新；如果不存在，则插入。
 
-![](../Images/653b122d4d312b4a778daf114b76f102.png)
+![](img/653b122d4d312b4a778daf114b76f102.png)
 
 合并示例。图片由作者提供。
 
-为了演示这种方法，让我们插入一些2018年的数据，所有行的*人* = 0（*pessoas —* 参与事故的人数），模拟一个包含不完整数据的部分报告。
+为了演示这种方法，让我们插入一些 2018 年的数据，所有行的*人* = 0（*pessoas —* 参与事故的人数），模拟一个包含不完整数据的部分报告。
 
 ```py
 # FULL DATA FROM 2018
@@ -416,9 +416,9 @@ df_acidentes_2018_zero\
     .save("/data/delta/acidentes/")
 ```
 
-如果我们现在想用2018年的完整数据更新表格，我们必须确保已经插入的行仅更新*人*列，并插入所有新的行。
+如果我们现在想用 2018 年的完整数据更新表格，我们必须确保已经插入的行仅更新*人*列，并插入所有新的行。
 
-这可以通过以下MERGE操作来完成，该操作将事故的id和日期视为关键：
+这可以通过以下 MERGE 操作来完成，该操作将事故的 id 和日期视为关键：
 
 ```py
 df_acidentes_latest.createOrReplaceTempView("acidentes_latest")
@@ -443,11 +443,11 @@ spark.sql(
 
 # 结论
 
-定义数据架构对所有旨在创建数据驱动产品的组织（如BI报告和机器学习应用）至关重要。数据架构定义了将确保组织的技术和非技术数据需求得到满足的工具、技术和实践。
+定义数据架构对所有旨在创建数据驱动产品的组织（如 BI 报告和机器学习应用）至关重要。数据架构定义了将确保组织的技术和非技术数据需求得到满足的工具、技术和实践。
 
 在私营公司中，这可以帮助加快此类产品的开发，提升其质量和效率，并带来转化为利润的商业优势。在公共组织中，数据架构的好处转化为更好的公共政策，更好地了解特定领域的现状，如交通、安全、预算，以及提高透明度和管理水平。
 
-在过去几十年中，提出了许多架构，每种架构在不同背景下都有其自身的优势。Lakehouse范式试图将数据湖和数据仓库的优势结合起来。Delta Lake是基于Lakehouse范式的存储框架。简而言之，它将通常仅在经典RDBMS中可用的许多保证（ACID事务、日志、撤销操作、CRUD操作）带到基于*parquet*的文件存储之上。
+在过去几十年中，提出了许多架构，每种架构在不同背景下都有其自身的优势。Lakehouse 范式试图将数据湖和数据仓库的优势结合起来。Delta Lake 是基于 Lakehouse 范式的存储框架。简而言之，它将通常仅在经典 RDBMS 中可用的许多保证（ACID 事务、日志、撤销操作、CRUD 操作）带到基于*parquet*的文件存储之上。
 
 在这篇文章中，我们使用巴西高速公路交通事故的数据探索了这些功能中的一些。我希望我能有所帮助，我对讨论的任何主题都不是专家，我强烈建议进一步阅读（见下方一些参考文献）和讨论。
 
@@ -459,14 +459,14 @@ spark.sql(
 
 [1] Chambers, B., & Zaharia, M. (2018). *Spark: The definitive guide: Big data processing made simple*. “O’Reilly Media, Inc.”
 
-[2] Databricks. (2020年3月26日). *Tech Talk | Diving into Delta Lake Part 1: Unpacking the Transaction Log* [[视频](https://www.youtube.com/watch?v=F91G4RoA8is)]. YouTube.
+[2] Databricks. (2020 年 3 月 26 日). *Tech Talk | Diving into Delta Lake Part 1: Unpacking the Transaction Log* [[视频](https://www.youtube.com/watch?v=F91G4RoA8is)]. YouTube.
 
-[2] *如何使用恢复功能将Delta Lake表回滚到先前版本*。 (2022年10月3日)。Delta Lake。 [链接](https://delta.io/blog/2022-10-03-rollback-delta-lake-restore/)
+[2] *如何使用恢复功能将 Delta Lake 表回滚到先前版本*。 (2022 年 10 月 3 日)。Delta Lake。 [链接](https://delta.io/blog/2022-10-03-rollback-delta-lake-restore/)
 
-[3] *Delta Lake 官方页面*。 (无日期)。Delta Lake。 [https://delta.io/](https://delta.io/)
+[3] *Delta Lake 官方页面*。 (无日期)。Delta Lake。 [`delta.io/`](https://delta.io/)
 
-[4] Databricks. (2020年3月12日). *简化和扩展使用Delta Lake的数据工程管道* [[视频](https://www.youtube.com/watch?v=qtCxNSmTejk)]。YouTube。
+[4] Databricks. (2020 年 3 月 12 日). *简化和扩展使用 Delta Lake 的数据工程管道* [[视频](https://www.youtube.com/watch?v=qtCxNSmTejk)]。YouTube。
 
-[5] Databricks. (2020年9月15日). *利用Delta Lake改进Apache SparkTM* [[视频](https://www.youtube.com/watch?v=LJtShrQqYZY)]。YouTube。
+[5] Databricks. (2020 年 9 月 15 日). *利用 Delta Lake 改进 Apache SparkTM* [[视频](https://www.youtube.com/watch?v=LJtShrQqYZY)]。YouTube。
 
-[6] Reis, J., & Housley, M. (2022年). *数据工程基础：规划和构建稳健的数据系统* (第1版)。O’Reilly Media。
+[6] Reis, J., & Housley, M. (2022 年). *数据工程基础：规划和构建稳健的数据系统* (第 1 版)。O’Reilly Media。

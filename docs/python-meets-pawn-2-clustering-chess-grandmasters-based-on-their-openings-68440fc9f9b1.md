@@ -1,10 +1,10 @@
 # Python 遇见 Pawn 2：基于开局对国际象棋棋大师进行聚类
 
-> 原文：[https://towardsdatascience.com/python-meets-pawn-2-clustering-chess-grandmasters-based-on-their-openings-68440fc9f9b1?source=collection_archive---------13-----------------------#2023-12-22](https://towardsdatascience.com/python-meets-pawn-2-clustering-chess-grandmasters-based-on-their-openings-68440fc9f9b1?source=collection_archive---------13-----------------------#2023-12-22)
+> 原文：[`towardsdatascience.com/python-meets-pawn-2-clustering-chess-grandmasters-based-on-their-openings-68440fc9f9b1?source=collection_archive---------13-----------------------#2023-12-22`](https://towardsdatascience.com/python-meets-pawn-2-clustering-chess-grandmasters-based-on-their-openings-68440fc9f9b1?source=collection_archive---------13-----------------------#2023-12-22)
 
 ## 在这篇博客中，我将指导你如何使用 Python 分析国际象棋大师的开局。
 
-[](https://mikayilahad.medium.com/?source=post_page-----68440fc9f9b1--------------------------------)[![Mikayil Ahadli](../Images/fdef02ad48534456e2bd67e6f22d7705.png)](https://mikayilahad.medium.com/?source=post_page-----68440fc9f9b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----68440fc9f9b1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----68440fc9f9b1--------------------------------) [Mikayil Ahadli](https://mikayilahad.medium.com/?source=post_page-----68440fc9f9b1--------------------------------)
+[](https://mikayilahad.medium.com/?source=post_page-----68440fc9f9b1--------------------------------)![Mikayil Ahadli](https://mikayilahad.medium.com/?source=post_page-----68440fc9f9b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----68440fc9f9b1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----68440fc9f9b1--------------------------------) [Mikayil Ahadli](https://mikayilahad.medium.com/?source=post_page-----68440fc9f9b1--------------------------------)
 
 ·
 
@@ -12,19 +12,19 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F68440fc9f9b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-meets-pawn-2-clustering-chess-grandmasters-based-on-their-openings-68440fc9f9b1&source=-----68440fc9f9b1---------------------bookmark_footer-----------)![](../Images/ad0563bab95de27dccaf51c4c6936779.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F68440fc9f9b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-meets-pawn-2-clustering-chess-grandmasters-based-on-their-openings-68440fc9f9b1&source=-----68440fc9f9b1---------------------bookmark_footer-----------)![](img/ad0563bab95de27dccaf51c4c6936779.png)
 
 图片由 Midjourney 创建
 
-+   [我将回答哪些问题](#7230)
++   我将回答哪些问题
 
-+   [第 1 部分：获取数据](#1af5)
++   第一部分：获取数据
 
-+   [第 2 部分：特征工程](#f93b)
++   第二部分：特征工程
 
-+   [第 3 部分：聚类](#9291)
++   第三部分：聚类
 
-+   [结果和有趣的事实](#0426)
++   结果和有趣的事实
 
 ## 我将回答哪些问题
 

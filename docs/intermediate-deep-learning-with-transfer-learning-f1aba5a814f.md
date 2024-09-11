@@ -1,18 +1,18 @@
 # 中级深度学习与迁移学习
 
-> 原文：[https://towardsdatascience.com/intermediate-deep-learning-with-transfer-learning-f1aba5a814f?source=collection_archive---------2-----------------------#2023-02-22](https://towardsdatascience.com/intermediate-deep-learning-with-transfer-learning-f1aba5a814f?source=collection_archive---------2-----------------------#2023-02-22)
+> 原文：[`towardsdatascience.com/intermediate-deep-learning-with-transfer-learning-f1aba5a814f?source=collection_archive---------2-----------------------#2023-02-22`](https://towardsdatascience.com/intermediate-deep-learning-with-transfer-learning-f1aba5a814f?source=collection_archive---------2-----------------------#2023-02-22)
 
 ## 计算机视觉和自然语言处理中的深度学习模型微调实用指南
 
-[](https://medium.com/@iamleonie?source=post_page-----f1aba5a814f--------------------------------)[![Leonie Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----f1aba5a814f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1aba5a814f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f1aba5a814f--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----f1aba5a814f--------------------------------)
+[](https://medium.com/@iamleonie?source=post_page-----f1aba5a814f--------------------------------)![Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----f1aba5a814f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1aba5a814f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1aba5a814f--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----f1aba5a814f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintermediate-deep-learning-with-transfer-learning-f1aba5a814f&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----f1aba5a814f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1aba5a814f--------------------------------) ·11分钟阅读·2023年2月22日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintermediate-deep-learning-with-transfer-learning-f1aba5a814f&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----f1aba5a814f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1aba5a814f--------------------------------) ·11 分钟阅读·2023 年 2 月 22 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1aba5a814f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintermediate-deep-learning-with-transfer-learning-f1aba5a814f&source=-----f1aba5a814f---------------------bookmark_footer-----------)![](../Images/77c0a9277a5199f8f3fbdf7450e3992a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1aba5a814f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintermediate-deep-learning-with-transfer-learning-f1aba5a814f&source=-----f1aba5a814f---------------------bookmark_footer-----------)![](img/77c0a9277a5199f8f3fbdf7450e3992a.png)
 
 作者提供的图片
 

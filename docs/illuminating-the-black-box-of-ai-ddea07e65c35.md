@@ -1,14 +1,14 @@
 # 揭示文本生成 AI 的黑箱
 
-> 原文：[https://towardsdatascience.com/illuminating-the-black-box-of-ai-ddea07e65c35?source=collection_archive---------3-----------------------#2023-12-17](https://towardsdatascience.com/illuminating-the-black-box-of-ai-ddea07e65c35?source=collection_archive---------3-----------------------#2023-12-17)
+> 原文：[`towardsdatascience.com/illuminating-the-black-box-of-ai-ddea07e65c35?source=collection_archive---------3-----------------------#2023-12-17`](https://towardsdatascience.com/illuminating-the-black-box-of-ai-ddea07e65c35?source=collection_archive---------3-----------------------#2023-12-17)
 
 ## 见解的需求
 
-[](https://medium.com/@alcarazanthony1?source=post_page-----ddea07e65c35--------------------------------)[![Anthony Alcaraz](../Images/6a71a1752677bd07c384246fb0c7f7e8.png)](https://medium.com/@alcarazanthony1?source=post_page-----ddea07e65c35--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ddea07e65c35--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ddea07e65c35--------------------------------) [Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----ddea07e65c35--------------------------------)
+[](https://medium.com/@alcarazanthony1?source=post_page-----ddea07e65c35--------------------------------)![Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----ddea07e65c35--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ddea07e65c35--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ddea07e65c35--------------------------------) [Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----ddea07e65c35--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bc9ffd2f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Filluminating-the-black-box-of-ai-ddea07e65c35&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=post_page-30bc9ffd2f4b----ddea07e65c35---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ddea07e65c35--------------------------------) ·8 分钟阅读·2023年12月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fddea07e65c35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Filluminating-the-black-box-of-ai-ddea07e65c35&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=-----ddea07e65c35---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bc9ffd2f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Filluminating-the-black-box-of-ai-ddea07e65c35&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=post_page-30bc9ffd2f4b----ddea07e65c35---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ddea07e65c35--------------------------------) ·8 分钟阅读·2023 年 12 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fddea07e65c35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Filluminating-the-black-box-of-ai-ddea07e65c35&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=-----ddea07e65c35---------------------clap_footer-----------)
 
 --
 

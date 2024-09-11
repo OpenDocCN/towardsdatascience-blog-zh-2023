@@ -1,10 +1,10 @@
 # 如何跳过 Airflow DAG 中的任务
 
-> 原文：[https://towardsdatascience.com/airflow-skip-task-a5a6ab319378?source=collection_archive---------0-----------------------#2023-02-08](https://towardsdatascience.com/airflow-skip-task-a5a6ab319378?source=collection_archive---------0-----------------------#2023-02-08)
+> 原文：[`towardsdatascience.com/airflow-skip-task-a5a6ab319378?source=collection_archive---------0-----------------------#2023-02-08`](https://towardsdatascience.com/airflow-skip-task-a5a6ab319378?source=collection_archive---------0-----------------------#2023-02-08)
 
 ## 根据特定条件跳过 Airflow DAG 中的任务
 
-[](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa5a6ab319378&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fairflow-skip-task-a5a6ab319378&source=-----a5a6ab319378---------------------bookmark_footer-----------)![](../Images/881b8b4f1e7bf014f76b61f5f78e7900.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa5a6ab319378&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fairflow-skip-task-a5a6ab319378&source=-----a5a6ab319378---------------------bookmark_footer-----------)![](img/881b8b4f1e7bf014f76b61f5f78e7900.png)
 
 照片由 [Hello I’m Nik](https://unsplash.com/@helloimnik?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布在 [Unsplash](https://unsplash.com/photos/l4ADb9OVqTY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -22,11 +22,11 @@
 
 最后，我将讨论 `BranchPythonOperator` 和 `ShortCircuitOperator` 的使用，以及它们如何用来决定任务何时需要跳过。
 
-[](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------) [## 如何在本地使用 Docker 运行 Airflow
+[](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------) ## 如何在本地使用 Docker 运行 Airflow
 
 ### 运行 Airflow 和 Docker 的逐步指南
 
-[towardsdatascience.com](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------)
+[towardsdatascience.com
 
 现在假设我们有一个由三个任务组成的 Airflow DAG
 

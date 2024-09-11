@@ -1,18 +1,18 @@
 # 机器学习变得直观
 
-> 原文：[https://towardsdatascience.com/machine-learning-made-intuitive-fabd26f97f19?source=collection_archive---------7-----------------------#2023-07-05](https://towardsdatascience.com/machine-learning-made-intuitive-fabd26f97f19?source=collection_archive---------7-----------------------#2023-07-05)
+> 原文：[`towardsdatascience.com/machine-learning-made-intuitive-fabd26f97f19?source=collection_archive---------7-----------------------#2023-07-05`](https://towardsdatascience.com/machine-learning-made-intuitive-fabd26f97f19?source=collection_archive---------7-----------------------#2023-07-05)
 
 ## ML：你需要知道的所有内容，没有任何复杂的数学
 
-[](https://medium.com/@jcheigh?source=post_page-----fabd26f97f19--------------------------------)[![Justin Cheigh](../Images/0bafdd733fe57267074a937b4777418c.png)](https://medium.com/@jcheigh?source=post_page-----fabd26f97f19--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fabd26f97f19--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fabd26f97f19--------------------------------) [Justin Cheigh](https://medium.com/@jcheigh?source=post_page-----fabd26f97f19--------------------------------)
+[](https://medium.com/@jcheigh?source=post_page-----fabd26f97f19--------------------------------)![Justin Cheigh](https://medium.com/@jcheigh?source=post_page-----fabd26f97f19--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fabd26f97f19--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fabd26f97f19--------------------------------) [Justin Cheigh](https://medium.com/@jcheigh?source=post_page-----fabd26f97f19--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F24cd781f1018&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-made-intuitive-fabd26f97f19&user=Justin+Cheigh&userId=24cd781f1018&source=post_page-24cd781f1018----fabd26f97f19---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fabd26f97f19--------------------------------) ·9分钟阅读·2023年7月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffabd26f97f19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-made-intuitive-fabd26f97f19&user=Justin+Cheigh&userId=24cd781f1018&source=-----fabd26f97f19---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F24cd781f1018&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-made-intuitive-fabd26f97f19&user=Justin+Cheigh&userId=24cd781f1018&source=post_page-24cd781f1018----fabd26f97f19---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fabd26f97f19--------------------------------) ·9 分钟阅读·2023 年 7 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffabd26f97f19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-made-intuitive-fabd26f97f19&user=Justin+Cheigh&userId=24cd781f1018&source=-----fabd26f97f19---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffabd26f97f19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-made-intuitive-fabd26f97f19&source=-----fabd26f97f19---------------------bookmark_footer-----------)![](../Images/9118274351fce2976f50ba8ce8581545.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffabd26f97f19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-made-intuitive-fabd26f97f19&source=-----fabd26f97f19---------------------bookmark_footer-----------)![](img/9118274351fce2976f50ba8ce8581545.png)
 
 你可能认为的 ML…（照片由 Justin Cheigh 在丹麦比隆拍摄）
 
@@ -28,7 +28,7 @@
 
 机器学习有几个主要类别，其中主要类型包括有监督学习（SL）、无监督学习（UL）和强化学习（RL）。今天我将只描述有监督学习，但在后续的帖子中，我希望能更详细地讲解无监督学习和强化学习。
 
-## 1分钟SL速跑
+## 1 分钟 SL 速跑
 
 看，我明白你可能不想读完整篇文章。在这一部分，我将教你最基础的知识（对很多人来说，这就是你需要了解的全部内容！），然后再深入后面的部分。
 
@@ -52,17 +52,17 @@
 
 所以你花了接下来几天吃蜜瓜，并记录了颜色、硬度以及蜜瓜是否变坏。经过几天痛苦的吃坏掉的蜜瓜后，你得到了以下标注的数据集：
 
-![](../Images/a32c05f661c1dbd504e73e5885bfc1c7.png)
+![](img/a32c05f661c1dbd504e73e5885bfc1c7.png)
 
 [Justin Cheigh 的代码](https://github.com/jcheigh/Medium_Articles)
 
 每一行代表一个特定的蜜瓜，每一列代表相应蜜瓜的特征/标签值。但请注意，我们有的是文字，因为特征是分类的而不是数值的。
 
-实际上，我们需要数字以便计算机处理。有多种技术可以将分类特征转换为数值特征，从[独热编码](https://machinelearningmastery.com/why-one-hot-encode-data-in-machine-learning/)到[嵌入]( /categorical-embedding-and-transfer-learning-dd3c4af6345d)以及其他方法。
+实际上，我们需要数字以便计算机处理。有多种技术可以将分类特征转换为数值特征，从[独热编码](https://machinelearningmastery.com/why-one-hot-encode-data-in-machine-learning/)到嵌入以及其他方法。
 
-我们可以做的最简单的事情是将“Label”列转换为“Good”列，如果蜜瓜好则为1，如果坏则为0。现在，假设有某种方法将颜色和硬度转换为一个从-10到10的尺度，使其合理。作为额外的挑战，考虑将像颜色这样的分类特征放到这样一个尺度上的假设。经过这种预处理后，我们的数据集可能看起来像这样：
+我们可以做的最简单的事情是将“Label”列转换为“Good”列，如果蜜瓜好则为 1，如果坏则为 0。现在，假设有某种方法将颜色和硬度转换为一个从-10 到 10 的尺度，使其合理。作为额外的挑战，考虑将像颜色这样的分类特征放到这样一个尺度上的假设。经过这种预处理后，我们的数据集可能看起来像这样：
 
-![](../Images/ae2aff417c933affbaf146159e93f21e.png)
+![](img/ae2aff417c933affbaf146159e93f21e.png)
 
 [Justin Cheigh 的代码](https://github.com/jcheigh/Medium_Articles)
 
@@ -72,13 +72,13 @@
 
 但使用什么算法呢？有多种监督分类算法，从基本的逻辑回归到一些复杂的深度学习算法。首先，让我们通过进行一些探索性数据分析（EDA）来查看我们的数据：
 
-![](../Images/bdd337c15ebafee46b3f1754fc5f6044.png)
+![](img/bdd337c15ebafee46b3f1754fc5f6044.png)
 
 [Justin Cheigh 的代码](https://github.com/jcheigh/Medium_Articles)
 
-上面的图像是特征空间的图示；我们有两个特征，我们只是将每个例子放到一个坐标图上，两个轴分别是这两个特征。此外，如果相关的蜜瓜是好的，我们将点标记为紫色，如果是坏的，则标记为黄色。显然，通过稍微进行一些EDA，就可以找到一个明显的答案！
+上面的图像是特征空间的图示；我们有两个特征，我们只是将每个例子放到一个坐标图上，两个轴分别是这两个特征。此外，如果相关的蜜瓜是好的，我们将点标记为紫色，如果是坏的，则标记为黄色。显然，通过稍微进行一些 EDA，就可以找到一个明显的答案！
 
-![](../Images/59e5e132fe6861c0b644906ea28fa91c.png)
+![](img/59e5e132fe6861c0b644906ea28fa91c.png)
 
 [Justin Cheigh 的代码](https://github.com/jcheigh/Medium_Articles)
 
@@ -106,13 +106,13 @@ Justin Cheigh 使用 [Embed Fun](https://embed.fun/) 提供的公式
 
 这当然更好，因为我们至少在执行分类，但让我们绘制 PRED 在 x 轴上的图和分类在 y 轴上的图：
 
-![](../Images/6176d2582ddcd7db4900560be4db440e.png)
+![](img/6176d2582ddcd7db4900560be4db440e.png)
 
 [Justin Cheigh 的代码](https://github.com/jcheigh/Medium_Articles)
 
 这有点极端。PRED 的轻微变化可能会完全改变分类。一种解决方案是让我们模型的输出表示 Justin-Melon 是好瓜的概率，我们可以通过平滑曲线来实现：
 
-![](../Images/d8c50fa4a6166836b52c273bb2afcc7f.png)
+![](img/d8c50fa4a6166836b52c273bb2afcc7f.png)
 
 [Justin Cheigh 的代码](https://github.com/jcheigh/Medium_Articles)
 
@@ -134,13 +134,13 @@ Justin Cheigh 使用 [Embed Fun](https://embed.fun/) 提供的公式
 
 所以，我们首先从随机参数开始，因此我们很可能从一个糟糕的损失开始。就像一个滑雪者试图尽快下山一样，算法在各个方向上查找，试图找到最陡的路径（即如何调整参数以最大程度地降低损失）。但是，滑雪者的视力不佳，所以他们只能在每个方向上看一点。我们迭代这个过程，直到我们到达山底（敏锐的观察者可能会注意到我们实际上可能会到达局部最小值）。此时，我们得到的参数就是我们的训练参数。
 
-一旦你训练了你的逻辑回归模型，你会发现你的性能仍然很差，准确率只有大约60%（勉强比猜测好一点！）。这是因为我们违反了模型的一个假设。逻辑回归在数学上只能输出一个线性决策边界，但从我们的 EDA 中我们知道，决策边界应该是圆形的！
+一旦你训练了你的逻辑回归模型，你会发现你的性能仍然很差，准确率只有大约 60%（勉强比猜测好一点！）。这是因为我们违反了模型的一个假设。逻辑回归在数学上只能输出一个线性决策边界，但从我们的 EDA 中我们知道，决策边界应该是圆形的！
 
-有了这个理念，你尝试了不同的、更复杂的模型，结果得到一个准确率达到95%的模型！现在你有了一个完全训练好的分类器，能够区分好的 Justin-Melons 和不好的 Justin-Melons，你终于可以吃到你想要的所有美味水果了！
+有了这个理念，你尝试了不同的、更复杂的模型，结果得到一个准确率达到 95%的模型！现在你有了一个完全训练好的分类器，能够区分好的 Justin-Melons 和不好的 Justin-Melons，你终于可以吃到你想要的所有美味水果了！
 
 ## 结论
 
-让我们退后一步。大约在10分钟内，你学到了很多关于机器学习的知识，包括基本的监督学习流程。那么，接下来是什么呢？
+让我们退后一步。大约在 10 分钟内，你学到了很多关于机器学习的知识，包括基本的监督学习流程。那么，接下来是什么呢？
 
 好吧，那得由你来决定！对于一些人来说，这篇文章足以让他们对机器学习有一个高层次的了解。而对其他人来说，这篇文章可能会留下很多未解的问题。这很好！也许这种好奇心会促使你进一步探讨这个话题。
 

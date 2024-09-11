@@ -1,18 +1,18 @@
-# 基于词级BERT嵌入趋势生成句子级别嵌入
+# 基于词级 BERT 嵌入趋势生成句子级别嵌入
 
-> 原文：[https://towardsdatascience.com/generating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8?source=collection_archive---------16-----------------------#2023-01-05](https://towardsdatascience.com/generating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8?source=collection_archive---------16-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/generating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8?source=collection_archive---------16-----------------------#2023-01-05`](https://towardsdatascience.com/generating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8?source=collection_archive---------16-----------------------#2023-01-05)
 
-![](../Images/9275b61be55a869b9a7d56ef53ce7455.png)
+![](img/9275b61be55a869b9a7d56ef53ce7455.png)
 
-图片由Igor Shabalin提供
+图片由 Igor Shabalin 提供
 
 ## 如何从词嵌入中推导句子级别的嵌入
 
-[](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)[![Yuli Vasiliev](../Images/7a5fbd7fc0d48c87f0163e2ec4622f45.png)](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------) [Yuli Vasiliev](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)
+[](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)![Yuli Vasiliev](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------) [Yuli Vasiliev](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83cfb869ab36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8&user=Yuli+Vasiliev&userId=83cfb869ab36&source=post_page-83cfb869ab36----eb08fa2ad3c8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------) ·5 min read·2023年1月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feb08fa2ad3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8&user=Yuli+Vasiliev&userId=83cfb869ab36&source=-----eb08fa2ad3c8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83cfb869ab36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8&user=Yuli+Vasiliev&userId=83cfb869ab36&source=post_page-83cfb869ab36----eb08fa2ad3c8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------) ·5 min read·2023 年 1 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feb08fa2ad3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8&user=Yuli+Vasiliev&userId=83cfb869ab36&source=-----eb08fa2ad3c8---------------------clap_footer-----------)
 
 --
 
@@ -60,7 +60,7 @@ for i in range(12):
 a = np.delete(a, -1, axis=1)
 ```
 
-所以我们的矩阵现在看起来如下（12x4，即12层和4个单词）
+所以我们的矩阵现在看起来如下（12x4，即 12 层和 4 个单词）
 
 ```py
 print(a)
@@ -81,7 +81,7 @@ print(a)
  [0.77081972 0.79827666 0.45695013 0.36948431]]
 ```
 
-现在让我们确定“Want”（第二列，索引为1）在哪些层中吸引了最多的注意力：
+现在让我们确定“Want”（第二列，索引为 1）在哪些层中吸引了最多的注意力：
 
 ```py
 print(np.argmax(a,axis=1))
@@ -107,7 +107,7 @@ print(np.argmax(counts))
 2
 ```
 
-上述内容表明，我们有单词Apple（在这里删除了“Want”后，Apple的索引为2）作为与单词“Want”在句法上最相关的单词。这是相当意料之中的，因为这些词分别代表了直接宾语和及物动词。
+上述内容表明，我们有单词 Apple（在这里删除了“Want”后，Apple 的索引为 2）作为与单词“Want”在句法上最相关的单词。这是相当意料之中的，因为这些词分别代表了直接宾语和及物动词。
 
 ```py
 _l12_1 = hidden_states[0][12][0][4][:10].numpy()
@@ -116,7 +116,7 @@ _l0_12_1 = np.log(_l12_1/_l0_1)
 _l0_12_1 = np.where(np.isnan(_l0_12_1), 0, _l0_12_1)
 ```
 
-现在让我们比较从单词Apple和Want的嵌入中得到的向量。
+现在让我们比较从单词 Apple 和 Want 的嵌入中得到的向量。
 
 ```py
 print(_l0_12_1)
@@ -153,4 +153,4 @@ array([ 3.753544 , 1.4458075 , -0.56288993, -0.44559467, 0.11527407,
 
 # 结论
 
-本文提供了关于如何基于从静态嵌入到上下文嵌入的转换趋势，在词级BERT嵌入中生成句子级别嵌入的直观理解和代码。这种句子级别的嵌入可以作为BERT生成的CLS标记嵌入的替代方案用于句子分类，这意味着你可以尝试这两种方法，以查看哪一种最适合你的特定问题。
+本文提供了关于如何基于从静态嵌入到上下文嵌入的转换趋势，在词级 BERT 嵌入中生成句子级别嵌入的直观理解和代码。这种句子级别的嵌入可以作为 BERT 生成的 CLS 标记嵌入的替代方案用于句子分类，这意味着你可以尝试这两种方法，以查看哪一种最适合你的特定问题。

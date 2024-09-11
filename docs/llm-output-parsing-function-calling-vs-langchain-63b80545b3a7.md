@@ -1,22 +1,22 @@
-# LLM输出解析：函数调用与LangChain
+# LLM 输出解析：函数调用与 LangChain
 
-> 原文：[https://towardsdatascience.com/llm-output-parsing-function-calling-vs-langchain-63b80545b3a7?source=collection_archive---------2-----------------------#2023-09-21](https://towardsdatascience.com/llm-output-parsing-function-calling-vs-langchain-63b80545b3a7?source=collection_archive---------2-----------------------#2023-09-21)
+> 原文：[`towardsdatascience.com/llm-output-parsing-function-calling-vs-langchain-63b80545b3a7?source=collection_archive---------2-----------------------#2023-09-21`](https://towardsdatascience.com/llm-output-parsing-function-calling-vs-langchain-63b80545b3a7?source=collection_archive---------2-----------------------#2023-09-21)
 
-## 如何使用Open AI API和LangChain函数调用一致地解析LLM的输出：评估这些方法的优缺点
+## 如何使用 Open AI API 和 LangChain 函数调用一致地解析 LLM 的输出：评估这些方法的优缺点
 
-[](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)[![Gabriel Cassimiro](../Images/2cf8a09a706236059c46c7f0f20d4365.png)](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------) [Gabriel Cassimiro](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)
+[](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)![Gabriel Cassimiro](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------) [Gabriel Cassimiro](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3692fb93d7e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&user=Gabriel+Cassimiro&userId=3692fb93d7e5&source=post_page-3692fb93d7e5----63b80545b3a7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------) ·11分钟阅读·2023年9月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63b80545b3a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&user=Gabriel+Cassimiro&userId=3692fb93d7e5&source=-----63b80545b3a7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3692fb93d7e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&user=Gabriel+Cassimiro&userId=3692fb93d7e5&source=post_page-3692fb93d7e5----63b80545b3a7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------) ·11 分钟阅读·2023 年 9 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63b80545b3a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&user=Gabriel+Cassimiro&userId=3692fb93d7e5&source=-----63b80545b3a7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63b80545b3a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&source=-----63b80545b3a7---------------------bookmark_footer-----------)![](../Images/affa0a341f50bd362761ff3898004072.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63b80545b3a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&source=-----63b80545b3a7---------------------bookmark_footer-----------)![](img/affa0a341f50bd362761ff3898004072.png)
 
 图片由 [Victor Barrios](https://unsplash.com/pt-br/@thevictorbarrios?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/pt-br/fotografias/yjygDnvRuaI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-使用LLMs创建工具需要多个组件，例如向量数据库、链、代理、文档分割器和许多其他新工具。
+使用 LLMs 创建工具需要多个组件，例如向量数据库、链、代理、文档分割器和许多其他新工具。
 
 然而，最关键的组件之一是 LLM 输出解析。如果你不能从 LLM 接收到结构化的响应，你将很难处理生成的内容。当我们希望一次调用 LLM 输出多个信息时，这一点变得尤为明显。
 
@@ -84,7 +84,7 @@ Enjoy your homemade fish and chips!
 
 这个功能的目标是提供给 LLM 通过 JSON 输入调用外部函数的能力。模型经过微调，以理解何时需要使用特定函数。一个例子是当前天气的函数。如果你问 GPT 当前的天气，它不能告诉你，但你可以提供一个做这件事的函数并传递给 GPT，这样它就会知道可以根据输入访问它。
 
-如果你想深入了解这个功能，可以查看 [Open AI 的公告](https://openai.com/blog/function-calling-and-other-api-updates)，以及一篇 [很棒的文章](/how-to-use-openais-function-calling-e35bdac88ae7)。
+如果你想深入了解这个功能，可以查看 [Open AI 的公告](https://openai.com/blog/function-calling-and-other-api-updates)，以及一篇 很棒的文章。
 
 那么让我们在代码中看看这个在我们面临的问题下会是什么样子。让我们分解一下代码：
 
@@ -135,7 +135,7 @@ print(response_message)
 print(response_message['function_call']['arguments'])
 ```
 
-这里我们开始通过格式化一个可能是变量输入（食谱）的基础提示来创建对API的查询。然后，我们使用“gpt-3.5-turbo-0613”声明我们的API调用，我们将查询传递到messages参数中，然后传递我们的函数。
+这里我们开始通过格式化一个可能是变量输入（食谱）的基础提示来创建对 API 的查询。然后，我们使用“gpt-3.5-turbo-0613”声明我们的 API 调用，我们将查询传递到 messages 参数中，然后传递我们的函数。
 
 关于我们的函数有两个参数。第一个是我们传递的对象列表，格式如上所示，包含模型可以访问的函数。第二个参数“function_call”我们指定模型应该如何使用这些函数。有三种选项：
 
@@ -177,23 +177,23 @@ function_call={'name':'return_recipe'}
 
 ## 函数调用的结论
 
-可以直接从Open AI API使用函数调用的功能。这允许我们每次调用LLM时都得到具有相同键的字典格式响应。
+可以直接从 Open AI API 使用函数调用的功能。这允许我们每次调用 LLM 时都得到具有相同键的字典格式响应。
 
-使用起来相当直接，你只需声明函数对象，指定名称、描述和关注于你的任务的属性，同时在描述中指定这应该是模型的响应。此外，当调用API时，我们可以强制模型使用我们的函数，从而使其更加一致。
+使用起来相当直接，你只需声明函数对象，指定名称、描述和关注于你的任务的属性，同时在描述中指定这应该是模型的响应。此外，当调用 API 时，我们可以强制模型使用我们的函数，从而使其更加一致。
 
-这种方法的主要缺点是并不是所有的LLM模型和API都支持。所以，如果我们想使用Google PaLM API，我们将不得不使用另一种方法。
+这种方法的主要缺点是并不是所有的 LLM 模型和 API 都支持。所以，如果我们想使用 Google PaLM API，我们将不得不使用另一种方法。
 
 # LangChain 输出解析器
 
-我们可以选择一个与模型无关的替代方案，就是使用LangChain。
+我们可以选择一个与模型无关的替代方案，就是使用 LangChain。
 
-首先，什么是LangChain？
+首先，什么是 LangChain？
 
-> LangChain是一个用于开发由语言模型驱动的应用程序的框架。
+> LangChain 是一个用于开发由语言模型驱动的应用程序的框架。
 
-这是LangChain的官方定义。这个框架最近创建，并已经作为构建由LLM驱动的工具的行业标准。
+这是 LangChain 的官方定义。这个框架最近创建，并已经作为构建由 LLM 驱动的工具的行业标准。
 
-它有一个非常适合我们用例的功能，称为“输出解析器”。在这个模块中，可以创建多个对象来返回和解析来自LLM调用的不同类型的格式。实现的方式是，首先声明格式，并将其传递到LLM的提示中。然后，使用之前创建的对象来解析响应。
+它有一个非常适合我们用例的功能，称为“输出解析器”。在这个模块中，可以创建多个对象来返回和解析来自 LLM 调用的不同类型的格式。实现的方式是，首先声明格式，并将其传递到 LLM 的提示中。然后，使用之前创建的对象来解析响应。
 
 让我们分解代码：
 
@@ -221,7 +221,7 @@ print(response_format)
 prompt = ChatPromptTemplate.from_template("What is the recipe for {recipe}? Return the ingredients list and steps separately. \n {format_instructions}")
 ```
 
-我们首先要做的是创建我们的响应模式，这将作为解析器的输入。我们为成分和步骤各创建一个，每个都包含一个名称，这将是字典的键，以及一个描述，这将指导LLM如何回应。
+我们首先要做的是创建我们的响应模式，这将作为解析器的输入。我们为成分和步骤各创建一个，每个都包含一个名称，这将是字典的键，以及一个描述，这将指导 LLM 如何回应。
 
 然后我们从这些响应模式中创建我们的结构化输出解析器。有多种方法可以做到这一点，使用不同风格的解析器。了解更多信息，请查看[这里](https://python.langchain.com/docs/modules/model_io/output_parsers/)。
 
@@ -387,12 +387,12 @@ www.buymeacoffee.com](https://www.buymeacoffee.com/cassimiro?source=post_page---
 
 这里有一些你可能感兴趣的其他文章：
 
-[](/async-calls-for-chains-with-langchain-3818c16062ed?source=post_page-----63b80545b3a7--------------------------------) [## 使用 Langchain 进行链条的异步调用
+[](/async-calls-for-chains-with-langchain-3818c16062ed?source=post_page-----63b80545b3a7--------------------------------) ## 使用 Langchain 进行链条的异步调用
 
 ### 如何使 Langchain 链条与异步调用 LLM 一起工作，从而加快运行顺序长时间任务的速度…
 
-towardsdatascience.com](/async-calls-for-chains-with-langchain-3818c16062ed?source=post_page-----63b80545b3a7--------------------------------) [](/solving-unity-environment-with-deep-reinforcement-learning-836dc181ee3b?source=post_page-----63b80545b3a7--------------------------------) [## 使用深度强化学习解决 Unity 环境问题
+towardsdatascience.com [](/solving-unity-environment-with-deep-reinforcement-learning-836dc181ee3b?source=post_page-----63b80545b3a7--------------------------------) ## 使用深度强化学习解决 Unity 环境问题
 
 ### 使用 PyTorch 实现深度强化学习代理的端到端项目代码。
 
-towardsdatascience.com](/solving-unity-environment-with-deep-reinforcement-learning-836dc181ee3b?source=post_page-----63b80545b3a7--------------------------------)
+towardsdatascience.com

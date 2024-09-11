@@ -1,24 +1,24 @@
-# 使用Seaborn制作打卡图
+# 使用 Seaborn 制作打卡图
 
-> 原文：[https://towardsdatascience.com/make-a-punchcard-plot-with-seaborn-ee8097bee4e1?source=collection_archive---------4-----------------------#2023-09-17](https://towardsdatascience.com/make-a-punchcard-plot-with-seaborn-ee8097bee4e1?source=collection_archive---------4-----------------------#2023-09-17)
+> 原文：[`towardsdatascience.com/make-a-punchcard-plot-with-seaborn-ee8097bee4e1?source=collection_archive---------4-----------------------#2023-09-17`](https://towardsdatascience.com/make-a-punchcard-plot-with-seaborn-ee8097bee4e1?source=collection_archive---------4-----------------------#2023-09-17)
 
 ## 快速识别周期性趋势
 
-[](https://medium.com/@lee_vaughan?source=post_page-----ee8097bee4e1--------------------------------)[![Lee Vaughan](../Images/9f6b90bb76102f438ab0b9a4a62ffa3f.png)](https://medium.com/@lee_vaughan?source=post_page-----ee8097bee4e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee8097bee4e1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ee8097bee4e1--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----ee8097bee4e1--------------------------------)
+[](https://medium.com/@lee_vaughan?source=post_page-----ee8097bee4e1--------------------------------)![Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----ee8097bee4e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee8097bee4e1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee8097bee4e1--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----ee8097bee4e1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-a-punchcard-plot-with-seaborn-ee8097bee4e1&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----ee8097bee4e1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee8097bee4e1--------------------------------) ·6分钟阅读·2023年9月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee8097bee4e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-a-punchcard-plot-with-seaborn-ee8097bee4e1&user=Lee+Vaughan&userId=5d604015c08b&source=-----ee8097bee4e1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-a-punchcard-plot-with-seaborn-ee8097bee4e1&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----ee8097bee4e1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee8097bee4e1--------------------------------) ·6 分钟阅读·2023 年 9 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee8097bee4e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-a-punchcard-plot-with-seaborn-ee8097bee4e1&user=Lee+Vaughan&userId=5d604015c08b&source=-----ee8097bee4e1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee8097bee4e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-a-punchcard-plot-with-seaborn-ee8097bee4e1&source=-----ee8097bee4e1---------------------bookmark_footer-----------)![](../Images/9d2e6660c00c362b880ffac58e014488.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee8097bee4e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-a-punchcard-plot-with-seaborn-ee8097bee4e1&source=-----ee8097bee4e1---------------------bookmark_footer-----------)![](img/9d2e6660c00c362b880ffac58e014488.png)
 
-带有时间卡的打卡钟（图像来自UnSplash上的Hennie Stander）
+带有时间卡的打卡钟（图像来自 UnSplash 上的 Hennie Stander）
 
 *打卡图*，也称为*表格气泡图*，是一种用于突出数据中周期性趋势的可视化类型。它以严格的*矩阵*或*网格*格式显示数据，通常由一周中的天数与一天中的小时组成。圆圈表示行列交点上的数据点，其大小传达数据值。颜色可以用来包含额外的信息。
 
-![](../Images/2c386b48028bb15000f4a0f66bb298f2.png)
+![](img/2c386b48028bb15000f4a0f66bb298f2.png)
 
 表格气泡图（图像来自作者）
 

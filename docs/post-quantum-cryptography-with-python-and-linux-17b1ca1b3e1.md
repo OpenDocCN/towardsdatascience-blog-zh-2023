@@ -1,18 +1,18 @@
 # 使用 Python 和 Linux 的后量子密码学
 
-> 原文：[https://towardsdatascience.com/post-quantum-cryptography-with-python-and-linux-17b1ca1b3e1?source=collection_archive---------2-----------------------#2023-08-15](https://towardsdatascience.com/post-quantum-cryptography-with-python-and-linux-17b1ca1b3e1?source=collection_archive---------2-----------------------#2023-08-15)
+> 原文：[`towardsdatascience.com/post-quantum-cryptography-with-python-and-linux-17b1ca1b3e1?source=collection_archive---------2-----------------------#2023-08-15`](https://towardsdatascience.com/post-quantum-cryptography-with-python-and-linux-17b1ca1b3e1?source=collection_archive---------2-----------------------#2023-08-15)
 
 ## 初学者指南
 
-[](https://medium.com/@c4ristian?source=post_page-----17b1ca1b3e1--------------------------------)[![Christian Koch](../Images/6daf756236838069bf79f1078b03ae6d.png)](https://medium.com/@c4ristian?source=post_page-----17b1ca1b3e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17b1ca1b3e1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----17b1ca1b3e1--------------------------------) [Christian Koch](https://medium.com/@c4ristian?source=post_page-----17b1ca1b3e1--------------------------------)
+[](https://medium.com/@c4ristian?source=post_page-----17b1ca1b3e1--------------------------------)![Christian Koch](https://medium.com/@c4ristian?source=post_page-----17b1ca1b3e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17b1ca1b3e1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----17b1ca1b3e1--------------------------------) [Christian Koch](https://medium.com/@c4ristian?source=post_page-----17b1ca1b3e1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7633c76cf996&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpost-quantum-cryptography-with-python-and-linux-17b1ca1b3e1&user=Christian+Koch&userId=7633c76cf996&source=post_page-7633c76cf996----17b1ca1b3e1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17b1ca1b3e1--------------------------------) ·9分钟阅读·2023年8月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17b1ca1b3e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpost-quantum-cryptography-with-python-and-linux-17b1ca1b3e1&user=Christian+Koch&userId=7633c76cf996&source=-----17b1ca1b3e1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7633c76cf996&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpost-quantum-cryptography-with-python-and-linux-17b1ca1b3e1&user=Christian+Koch&userId=7633c76cf996&source=post_page-7633c76cf996----17b1ca1b3e1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17b1ca1b3e1--------------------------------) ·9 分钟阅读·2023 年 8 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17b1ca1b3e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpost-quantum-cryptography-with-python-and-linux-17b1ca1b3e1&user=Christian+Koch&userId=7633c76cf996&source=-----17b1ca1b3e1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F17b1ca1b3e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpost-quantum-cryptography-with-python-and-linux-17b1ca1b3e1&source=-----17b1ca1b3e1---------------------bookmark_footer-----------)![](../Images/e6b61071bf55edd2dff757becfe44fee.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F17b1ca1b3e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpost-quantum-cryptography-with-python-and-linux-17b1ca1b3e1&source=-----17b1ca1b3e1---------------------bookmark_footer-----------)![](img/e6b61071bf55edd2dff757becfe44fee.png)
 
 图片由 [Jean-Louis Paulin](https://unsplash.com/@jlxp?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,15 +20,15 @@
 
 # 量子基础
 
-当谷歌科学家在2019年报告首次实现量子[supremacy](https://www.nature.com/articles/s41586-019-1666-5)时，引发了极大的兴奋。量子计算可能对加密产生重大影响。要理解这个问题，我们需要讨论一些基本概念。
+当谷歌科学家在 2019 年报告首次实现量子[supremacy](https://www.nature.com/articles/s41586-019-1666-5)时，引发了极大的兴奋。量子计算可能对加密产生重大影响。要理解这个问题，我们需要讨论一些基本概念。
 
-与经典计算机不同，量子计算机的算法不依赖于位（bits），而是依赖于*量子位（qubits）*。一个位只能取状态0或1。当我们多次测量一个位时，总是得到相同的结果。量子位则不同。尽管听起来很奇怪，但一个量子位可以同时取0和1的值。当我们重复测量时，只能得到0或1的某种概率。在量子位的初始状态下，测量为0的概率通常是百分之百。然而，通过叠加，不同的概率分布可以生成。这些原因源于量子力学，遵循与“正常”生活不同的规律。
+与经典计算机不同，量子计算机的算法不依赖于位（bits），而是依赖于*量子位（qubits）*。一个位只能取状态 0 或 1。当我们多次测量一个位时，总是得到相同的结果。量子位则不同。尽管听起来很奇怪，但一个量子位可以同时取 0 和 1 的值。当我们重复测量时，只能得到 0 或 1 的某种概率。在量子位的初始状态下，测量为 0 的概率通常是百分之百。然而，通过叠加，不同的概率分布可以生成。这些原因源于量子力学，遵循与“正常”生活不同的规律。
 
-量子计算机的主要优势在于其概率特性。经典计算机在我们需要可靠的单一结果时表现出色，而量子计算机则擅长处理概率和组合问题。当我们对处于叠加状态的量子位执行操作时，它同时作用于值0和1。随着量子位数量的增加，量子计算机相对于经典计算机的优势也会增加。一个具有三量子位的量子计算机可以同时处理最多八个值（2³）：即二进制数000、001、010、011、100、101、110和111。
+量子计算机的主要优势在于其概率特性。经典计算机在我们需要可靠的单一结果时表现出色，而量子计算机则擅长处理概率和组合问题。当我们对处于叠加状态的量子位执行操作时，它同时作用于值 0 和 1。随着量子位数量的增加，量子计算机相对于经典计算机的优势也会增加。一个具有三量子位的量子计算机可以同时处理最多八个值（2³）：即二进制数 000、001、010、011、100、101、110 和 111。
 
-科学文献一致认为，量子计算机将有助于解决以前看似难以处理的问题。然而，目前没有理想的量子计算机。当前一代量子计算机被称为噪声中等规模量子（NISQ）。这种机器处理能力有限，对错误很敏感。现代设备提供最多几百个量子位。一个例子是IBM在2022年推出的433量子位[Osprey](https://spectrum.ieee.org/ibm-quantum-computer-osprey)芯片。现在，该公司[计划](https://www.technologyreview.com/2023/05/25/1073606/ibm-wants-to-build-a-100000-qubit-quantum-computer/)到2033年开发一台具有100,000量子位的机器。
+科学文献一致认为，量子计算机将有助于解决以前看似难以处理的问题。然而，目前没有理想的量子计算机。当前一代量子计算机被称为噪声中等规模量子（NISQ）。这种机器处理能力有限，对错误很敏感。现代设备提供最多几百个量子位。一个例子是 IBM 在 2022 年推出的 433 量子位[Osprey](https://spectrum.ieee.org/ibm-quantum-computer-osprey)芯片。现在，该公司[计划](https://www.technologyreview.com/2023/05/25/1073606/ibm-wants-to-build-a-100000-qubit-quantum-computer/)到 2033 年开发一台具有 100,000 量子位的机器。
 
-我们的文章解释了为什么这一进展对数据安全构成威胁。通过代码示例，我们展示了量子计算机如何破解某些加密方法，并讨论了应对策略。源代码可以在[GitHub](https://github.com/c4ristian/encryption)上找到。它是在Kali Linux 2023.2下使用Python 3.10的Anaconda开发的。
+我们的文章解释了为什么这一进展对数据安全构成威胁。通过代码示例，我们展示了量子计算机如何破解某些加密方法，并讨论了应对策略。源代码可以在[GitHub](https://github.com/c4ristian/encryption)上找到。它是在 Kali Linux 2023.2 下使用 Python 3.10 的 Anaconda 开发的。
 
 # 加密与素因数
 
@@ -55,9 +55,9 @@
 >>>
 ```
 
-上述控制台输出说明了每个自然数都可以表示为质数的乘积。这些被称为质因数。回想一下学校的日子，质数只能被1和自身整除。例如，数字10可以用术语10=2¹ * 5¹表示。因此，10的质因数是2和5。类似地，数字55557可以用方程55557=3² * 6173¹表示。所以，55557的质因数是3和6173。找到给定整数的质因数的过程称为质因数分解。
+上述控制台输出说明了每个自然数都可以表示为质数的乘积。这些被称为质因数。回想一下学校的日子，质数只能被 1 和自身整除。例如，数字 10 可以用术语 10=2¹ * 5¹表示。因此，10 的质因数是 2 和 5。类似地，数字 55557 可以用方程 55557=3² * 6173¹表示。所以，55557 的质因数是 3 和 6173。找到给定整数的质因数的过程称为质因数分解。
 
-对于经典计算机，质因数分解对于小数字来说很简单，但对于大整数则变得越来越困难。每增加一个数字都会大幅增加可能组合的总和。超过某个点后，经典计算机几乎无法确定质因数。例如，考虑以下来自RSA因数分解[挑战](https://en.wikipedia.org/wiki/RSA_Factoring_Challenge)的数字（RSA-260），该挑战于2007年结束。在撰写时，它尚未被因数分解。
+对于经典计算机，质因数分解对于小数字来说很简单，但对于大整数则变得越来越困难。每增加一个数字都会大幅增加可能组合的总和。超过某个点后，经典计算机几乎无法确定质因数。例如，考虑以下来自 RSA 因数分解[挑战](https://en.wikipedia.org/wiki/RSA_Factoring_Challenge)的数字（RSA-260），该挑战于 2007 年结束。在撰写时，它尚未被因数分解。
 
 ```py
 #!/usr/bin/env python
@@ -72,13 +72,13 @@ factors = sympy.factorint(rsa_260)
 print(factors)
 ```
 
-像RSA这样的非对称算法利用质因数分解和类似问题的计算难度来确保加密。不幸的是，量子世界遵循自己的规律。
+像 RSA 这样的非对称算法利用质因数分解和类似问题的计算难度来确保加密。不幸的是，量子世界遵循自己的规律。
 
 # 量子算法
 
-关于密码学，有两个量子算法尤其值得关注。[Shor 算法](https://arxiv.org/abs/quant-ph/9508027)提供了一种高效的质因数分解方法。在大型量子设备上运行时，它理论上可以破解像 RSA 这样的非对称加密方法。从实际角度来看，这种情况仍在未来。一篇2023年的《自然》[文章](https://www.nature.com/articles/d41586-023-00017-0)提到至少需要1,000,000个量子比特。撇开硬件不谈，找到能够在大型量子计算机上可靠扩展的算法实现也很困难。IBM 的框架[Qiskit](https://qiskit.org/)曾尝试实现这一功能，但在版本 0.22.0 时[弃用了](https://qiskit.org/documentation/release_notes.html#algorithms-upgrade-notes)。不过，网上可以找到Shor算法的实验性实现。
+关于密码学，有两个量子算法尤其值得关注。[Shor 算法](https://arxiv.org/abs/quant-ph/9508027)提供了一种高效的质因数分解方法。在大型量子设备上运行时，它理论上可以破解像 RSA 这样的非对称加密方法。从实际角度来看，这种情况仍在未来。一篇 2023 年的《自然》[文章](https://www.nature.com/articles/d41586-023-00017-0)提到至少需要 1,000,000 个量子比特。撇开硬件不谈，找到能够在大型量子计算机上可靠扩展的算法实现也很困难。IBM 的框架[Qiskit](https://qiskit.org/)曾尝试实现这一功能，但在版本 0.22.0 时[弃用了](https://qiskit.org/documentation/release_notes.html#algorithms-upgrade-notes)。不过，网上可以找到 Shor 算法的实验性实现。
 
-[Grover 算法](https://arxiv.org/abs/quant-ph/9605043)对对称加密构成威胁。也称为量子搜索算法，它为对给定函数的输入进行无结构搜索提供了加速。量子计算机可以利用它加速对对称加密信息的暴力攻击。然而，与 Shor 算法不同的是，所提供的加速不是指数级的。简单来说，这意味着增加加密密钥的长度会使搜索变得极其昂贵。例如，对128位密钥进行暴力攻击需要最多 2¹²⁸ 次迭代。假设 Grover 的搜索将这个数字减少到 2⁶⁴，那么将密钥长度加倍到 256 位会再次增加到 2¹²⁸ 次迭代。这为可能的解决方案打开了大门。
+[Grover 算法](https://arxiv.org/abs/quant-ph/9605043)对对称加密构成威胁。也称为量子搜索算法，它为对给定函数的输入进行无结构搜索提供了加速。量子计算机可以利用它加速对对称加密信息的暴力攻击。然而，与 Shor 算法不同的是，所提供的加速不是指数级的。简单来说，这意味着增加加密密钥的长度会使搜索变得极其昂贵。例如，对 128 位密钥进行暴力攻击需要最多 2¹²⁸ 次迭代。假设 Grover 的搜索将这个数字减少到 2⁶⁴，那么将密钥长度加倍到 256 位会再次增加到 2¹²⁸ 次迭代。这为可能的解决方案打开了大门。
 
 # 对称加密解决方案
 
@@ -223,11 +223,11 @@ clib.round_trip()
 
 1.  Snowden, Edward: *永久记录*。Macmillan, 2019。
 
-1.  国家标准与技术研究院: [*NIST后量子密码学：常见问题*](https://csrc.nist.gov/Projects/post-quantum-cryptography/faqs)*.* 2023年6月29日。访问日期：2023年8月2日。
+1.  国家标准与技术研究院: [*NIST 后量子密码学：常见问题*](https://csrc.nist.gov/Projects/post-quantum-cryptography/faqs)*.* 2023 年 6 月 29 日。访问日期：2023 年 8 月 2 日。
 
-1.  联邦信息安全办公室 (BSI): [*量子安全密码学——基础知识、当前进展和建议*](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Brochure/quantum-safe-cryptography.pdf?__blob=publicationFile&v=4) *(PDF)*。2021年10月。访问日期：2023年8月2日。
+1.  联邦信息安全办公室 (BSI): [*量子安全密码学——基础知识、当前进展和建议*](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Brochure/quantum-safe-cryptography.pdf?__blob=publicationFile&v=4) *(PDF)*。2021 年 10 月。访问日期：2023 年 8 月 2 日。
 
-1.  CRYSTALS — 代数格加密套件：[*Kyber Home*](https://pq-crystals.org/kyber/index.shtml)*.* 2020年12月。访问时间：2023年8月2日。
+1.  CRYSTALS — 代数格加密套件：[*Kyber Home*](https://pq-crystals.org/kyber/index.shtml)*.* 2020 年 12 月。访问时间：2023 年 8 月 2 日。
 
 # 免责声明
 

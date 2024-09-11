@@ -1,22 +1,22 @@
-# 探索性数据分析：我们对YouTube频道了解多少（第一部分）
+# 探索性数据分析：我们对 YouTube 频道了解多少（第一部分）
 
-> 原文：[https://towardsdatascience.com/exploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438?source=collection_archive---------3-----------------------#2023-10-28](https://towardsdatascience.com/exploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438?source=collection_archive---------3-----------------------#2023-10-28)
+> 原文：[`towardsdatascience.com/exploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438?source=collection_archive---------3-----------------------#2023-10-28`](https://towardsdatascience.com/exploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438?source=collection_archive---------3-----------------------#2023-10-28)
 
-## 使用Pandas和YouTube数据API获取统计见解
+## 使用 Pandas 和 YouTube 数据 API 获取统计见解
 
-[![Dmitrii Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----3688c5cbc438--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----3688c5cbc438--------------------------------)
+![Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----3688c5cbc438--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----3688c5cbc438--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----3688c5cbc438---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------) ·20分钟阅读·2023年10月28日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----3688c5cbc438---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------) ·20 分钟阅读·2023 年 10 月 28 日
 
 --
 
-![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3688c5cbc438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438&source=-----3688c5cbc438---------------------bookmark_footer-----------)![](../Images/c687fb3e4373288c8b36bfc7df3c92ff.png)
+![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3688c5cbc438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438&source=-----3688c5cbc438---------------------bookmark_footer-----------)![](img/c687fb3e4373288c8b36bfc7df3c92ff.png)
 
 图片来源：Glenn Carstens-Peters，[Unsplash](https://unsplash.com/photos/turned-on-flat-screen-television-EOQhsfFBhRk)
 
-目前，全球有超过27亿活跃的YouTube用户，对于许多人来说，YouTube不仅是娱乐，更是重要的收入来源。但它是如何运作的呢？不同的YouTube频道能获得多少观看次数或订阅者？借助Python、Pandas和YouTube数据API，我们可以获得一些有趣的见解。
+目前，全球有超过 27 亿活跃的 YouTube 用户，对于许多人来说，YouTube 不仅是娱乐，更是重要的收入来源。但它是如何运作的呢？不同的 YouTube 频道能获得多少观看次数或订阅者？借助 Python、Pandas 和 YouTube 数据 API，我们可以获得一些有趣的见解。
 
 ## 方法论
 

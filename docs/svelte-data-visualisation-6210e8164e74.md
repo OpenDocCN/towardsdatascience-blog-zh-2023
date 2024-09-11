@@ -1,18 +1,18 @@
 # Svelte 与数据可视化
 
-> 原文：[https://towardsdatascience.com/svelte-data-visualisation-6210e8164e74?source=collection_archive---------15-----------------------#2023-03-20](https://towardsdatascience.com/svelte-data-visualisation-6210e8164e74?source=collection_archive---------15-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/svelte-data-visualisation-6210e8164e74?source=collection_archive---------15-----------------------#2023-03-20`](https://towardsdatascience.com/svelte-data-visualisation-6210e8164e74?source=collection_archive---------15-----------------------#2023-03-20)
 
-![](../Images/81954de2afaf7180320431e00696f500.png)
+![](img/81954de2afaf7180320431e00696f500.png)
 
-Svelte 条形图（来源：作者，2023年）
+Svelte 条形图（来源：作者，2023 年）
 
 ## 使用 Svelte 创建交互式条形图
 
-[](https://sutan.co.uk/?source=post_page-----6210e8164e74--------------------------------)[![Sutan Mufti](../Images/0a7922168ff75a80b2ddb38d4a142f37.png)](https://sutan.co.uk/?source=post_page-----6210e8164e74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6210e8164e74--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6210e8164e74--------------------------------) [Sutan Mufti](https://sutan.co.uk/?source=post_page-----6210e8164e74--------------------------------)
+[](https://sutan.co.uk/?source=post_page-----6210e8164e74--------------------------------)![Sutan Mufti](https://sutan.co.uk/?source=post_page-----6210e8164e74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6210e8164e74--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6210e8164e74--------------------------------) [Sutan Mufti](https://sutan.co.uk/?source=post_page-----6210e8164e74--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b3de0d6aa21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsvelte-data-visualisation-6210e8164e74&user=Sutan+Mufti&userId=6b3de0d6aa21&source=post_page-6b3de0d6aa21----6210e8164e74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6210e8164e74--------------------------------) ·6分钟阅读·2023年3月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6210e8164e74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsvelte-data-visualisation-6210e8164e74&user=Sutan+Mufti&userId=6b3de0d6aa21&source=-----6210e8164e74---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b3de0d6aa21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsvelte-data-visualisation-6210e8164e74&user=Sutan+Mufti&userId=6b3de0d6aa21&source=post_page-6b3de0d6aa21----6210e8164e74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6210e8164e74--------------------------------) ·6 分钟阅读·2023 年 3 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6210e8164e74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsvelte-data-visualisation-6210e8164e74&user=Sutan+Mufti&userId=6b3de0d6aa21&source=-----6210e8164e74---------------------clap_footer-----------)
 
 --
 

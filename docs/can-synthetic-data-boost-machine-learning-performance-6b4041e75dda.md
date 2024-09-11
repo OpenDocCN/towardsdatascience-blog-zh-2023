@@ -1,18 +1,18 @@
 # 合成数据能提升机器学习性能吗？
 
-> 原文：[https://towardsdatascience.com/can-synthetic-data-boost-machine-learning-performance-6b4041e75dda?source=collection_archive---------10-----------------------#2023-07-05](https://towardsdatascience.com/can-synthetic-data-boost-machine-learning-performance-6b4041e75dda?source=collection_archive---------10-----------------------#2023-07-05)
+> 原文：[`towardsdatascience.com/can-synthetic-data-boost-machine-learning-performance-6b4041e75dda?source=collection_archive---------10-----------------------#2023-07-05`](https://towardsdatascience.com/can-synthetic-data-boost-machine-learning-performance-6b4041e75dda?source=collection_archive---------10-----------------------#2023-07-05)
 
 ## 探索合成数据提升模型在不平衡数据集上的表现的能力
 
-[](https://johnadeojo.medium.com/?source=post_page-----6b4041e75dda--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----6b4041e75dda--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b4041e75dda--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6b4041e75dda--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----6b4041e75dda--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----6b4041e75dda--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----6b4041e75dda--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b4041e75dda--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b4041e75dda--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----6b4041e75dda--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-synthetic-data-boost-machine-learning-performance-6b4041e75dda&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----6b4041e75dda---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b4041e75dda--------------------------------) ·7 分钟阅读·2023年7月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6b4041e75dda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-synthetic-data-boost-machine-learning-performance-6b4041e75dda&user=John+Adeojo&userId=f933e1637e40&source=-----6b4041e75dda---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-synthetic-data-boost-machine-learning-performance-6b4041e75dda&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----6b4041e75dda---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b4041e75dda--------------------------------) ·7 分钟阅读·2023 年 7 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6b4041e75dda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-synthetic-data-boost-machine-learning-performance-6b4041e75dda&user=John+Adeojo&userId=f933e1637e40&source=-----6b4041e75dda---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6b4041e75dda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-synthetic-data-boost-machine-learning-performance-6b4041e75dda&source=-----6b4041e75dda---------------------bookmark_footer-----------)![](../Images/71bd354c415afacf5396ba2c0956b4fc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6b4041e75dda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-synthetic-data-boost-machine-learning-performance-6b4041e75dda&source=-----6b4041e75dda---------------------bookmark_footer-----------)![](img/71bd354c415afacf5396ba2c0956b4fc.png)
 
 作者图像：由 Midjourney 生成
 

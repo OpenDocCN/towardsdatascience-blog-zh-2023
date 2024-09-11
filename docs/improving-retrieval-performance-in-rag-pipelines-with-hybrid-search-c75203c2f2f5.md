@@ -1,38 +1,38 @@
 # 在 RAG 管道中通过混合搜索提升检索性能
 
-> 原文：[https://towardsdatascience.com/improving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5?source=collection_archive---------1-----------------------#2023-11-28](https://towardsdatascience.com/improving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5?source=collection_archive---------1-----------------------#2023-11-28)
+> 原文：[`towardsdatascience.com/improving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5?source=collection_archive---------1-----------------------#2023-11-28`](https://towardsdatascience.com/improving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5?source=collection_archive---------1-----------------------#2023-11-28)
 
 ## 如何通过将传统的基于关键词的搜索与现代的向量搜索相结合来找到更相关的搜索结果
 
-[](https://medium.com/@iamleonie?source=post_page-----c75203c2f2f5--------------------------------)[![Leonie Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----c75203c2f2f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c75203c2f2f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c75203c2f2f5--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----c75203c2f2f5--------------------------------)
+[](https://medium.com/@iamleonie?source=post_page-----c75203c2f2f5--------------------------------)![Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----c75203c2f2f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c75203c2f2f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c75203c2f2f5--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----c75203c2f2f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----c75203c2f2f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c75203c2f2f5--------------------------------) · 8分钟阅读 · 2023年11月28日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc75203c2f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----c75203c2f2f5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----c75203c2f2f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c75203c2f2f5--------------------------------) · 8 分钟阅读 · 2023 年 11 月 28 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc75203c2f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----c75203c2f2f5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc75203c2f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5&source=-----c75203c2f2f5---------------------bookmark_footer-----------)![](../Images/3e36eecd3bc19f0e4e6666378bfedc71.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc75203c2f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5&source=-----c75203c2f2f5---------------------bookmark_footer-----------)![](img/3e36eecd3bc19f0e4e6666378bfedc71.png)
 
 具有混合搜索功能的搜索栏
 
-随着对 [检索增强生成](https://medium.com/p/4e9bd5f6a4f2)（RAG）管道的兴趣增加，开发者们开始讨论在构建具有生产就绪性能的RAG管道时面临的挑战。正如生活中的许多方面一样，帕累托原则也在RAG管道中发挥作用，其中实现最初的80%相对简单，但要达到剩下的20%以实现生产就绪则证明具有挑战性。
+随着对 [检索增强生成](https://medium.com/p/4e9bd5f6a4f2)（RAG）管道的兴趣增加，开发者们开始讨论在构建具有生产就绪性能的 RAG 管道时面临的挑战。正如生活中的许多方面一样，帕累托原则也在 RAG 管道中发挥作用，其中实现最初的 80%相对简单，但要达到剩下的 20%以实现生产就绪则证明具有挑战性。
 
-> 一个经常重复的主题是通过混合搜索来改善RAG管道的检索组件。
+> 一个经常重复的主题是通过混合搜索来改善 RAG 管道的检索组件。
 
-已经获得经验的开发者们 [开始分享他们的见解](https://medium.com/towards-data-science/the-untold-side-of-rag-addressing-its-challenges-in-domain-specific-searches-808956e3ecc8)。一个经常重复的主题是通过混合搜索来改善RAG管道的检索组件。
+已经获得经验的开发者们 [开始分享他们的见解](https://medium.com/towards-data-science/the-untold-side-of-rag-addressing-its-challenges-in-domain-specific-searches-808956e3ecc8)。一个经常重复的主题是通过混合搜索来改善 RAG 管道的检索组件。
 
-本文介绍了混合搜索的概念，如何通过检索更相关的结果来提高你的RAG管道性能，以及何时使用它。
+本文介绍了混合搜索的概念，如何通过检索更相关的结果来提高你的 RAG 管道性能，以及何时使用它。
 
-+   [什么是混合搜索](#f7da)
++   什么是混合搜索
 
-+   [混合搜索如何工作？](#fd67)
++   混合搜索如何工作？
 
-+   [混合搜索如何提高你RAG管道的性能？](#6b8c)
++   混合搜索如何提高你 RAG 管道的性能？
 
-+   [你什么时候会使用混合搜索？](#6244)
++   你什么时候会使用混合搜索？
 
-+   [总结](#dec5)
++   总结
 
 # 什么是混合搜索
 
@@ -46,9 +46,9 @@
 
 将基于关键词的搜索与向量搜索结合成混合搜索，使你能够利用这两种搜索技术的优点，从而提高搜索结果的相关性，特别是在文本搜索的使用场景中。
 
-例如，考虑搜索查询“如何使用`.concat()`合并两个Pandas DataFrames？”关键词搜索会帮助找到与方法`.concat()`相关的结果。然而，由于“merge”这个词有诸如“combine”、“join”和“concatenate”等同义词，如果我们能利用语义搜索的上下文感知能力，将会更有帮助（有关更多细节，请参见[何时使用混合搜索](#6244)）。
+例如，考虑搜索查询“如何使用`.concat()`合并两个 Pandas DataFrames？”关键词搜索会帮助找到与方法`.concat()`相关的结果。然而，由于“merge”这个词有诸如“combine”、“join”和“concatenate”等同义词，如果我们能利用语义搜索的上下文感知能力，将会更有帮助（有关更多细节，请参见何时使用混合搜索）。
 
-如果你感兴趣，可以在这个实时[演示](https://awesome-moviate.weaviate.io/)中尝试不同的基于关键词的、语义的和混合搜索查询（其实现细节见[这篇文章](/recreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4)）。
+如果你感兴趣，可以在这个实时[演示](https://awesome-moviate.weaviate.io/)中尝试不同的基于关键词的、语义的和混合搜索查询（其实现细节见这篇文章）。
 
 # 混合搜索是如何工作的？
 
@@ -62,7 +62,7 @@
 [0, 0, 0, 0, 0, 1, 0, 0, 0, 24, 3, 0, 0, 0, 0, ...]
 ```
 
-稀疏嵌入可以通过不同的算法生成。生成稀疏嵌入的最常用算法是[BM25](https://en.wikipedia.org/wiki/Okapi_BM25)（最佳匹配25），它建立在TF-IDF（词频-逆文档频率）方法之上并对其进行了改进。简单来说，BM25根据词汇在文档中的频率相对于其在所有文档中的频率来强调术语的重要性。
+稀疏嵌入可以通过不同的算法生成。生成稀疏嵌入的最常用算法是[BM25](https://en.wikipedia.org/wiki/Okapi_BM25)（最佳匹配 25），它建立在 TF-IDF（词频-逆文档频率）方法之上并对其进行了改进。简单来说，BM25 根据词汇在文档中的频率相对于其在所有文档中的频率来强调术语的重要性。
 
 ## 向量搜索
 
@@ -80,7 +80,7 @@
 
 基于关键词的搜索和向量搜索返回的是一组独立的结果，通常是按计算的相关性排序的搜索结果列表。这些独立的搜索结果集必须被合并。
 
-有许多不同的策略可以将两个列表的排名结果合并为一个单一的排名，正如[Benham和Culpepper](https://rodgerbenham.github.io/bc17-adcs.pdf) [1]的论文中所述。
+有许多不同的策略可以将两个列表的排名结果合并为一个单一的排名，正如[Benham 和 Culpepper](https://rodgerbenham.github.io/bc17-adcs.pdf) [1]的论文中所述。
 
 一般来说，搜索结果通常首先会被**评分**。这些分数可以基于指定的度量计算，如余弦距离，或者仅仅是搜索结果列表中的排名。
 
@@ -90,7 +90,7 @@
 hybrid_score = (1 - alpha) * sparse_score + alpha * dense_score
 ```
 
-通常，`alpha`的值在0到1之间，具体取值为
+通常，`alpha`的值在 0 到 1 之间，具体取值为
 
 +   `alpha = 1`：纯向量搜索
 
@@ -98,17 +98,17 @@ hybrid_score = (1 - alpha) * sparse_score + alpha * dense_score
 
 下面，你可以看到一个基于排名和`alpha = 0.5`评分的关键词与向量搜索融合的最小示例。
 
-![](../Images/bb4ab0d1d032859830964568f7f2fa1d.png)
+![](img/bb4ab0d1d032859830964568f7f2fa1d.png)
 
 这是一个关于如何在混合搜索中融合关键词和向量搜索结果的最小示例，评分基于排名和`alpha = 0.5`（图像由作者提供，灵感来自[混合搜索解释](https://weaviate.io/blog/hybrid-search-explained)）。
 
-# 混合搜索如何提高你的RAG管道性能？
+# 混合搜索如何提高你的 RAG 管道性能？
 
-一个[RAG管道](https://medium.com/p/4e9bd5f6a4f2)有许多可以调整的参数来提高其性能。其中之一是提高检索到的上下文的相关性，这些上下文会被输入到LLM中，因为如果检索到的上下文与回答特定问题不相关，LLM也无法生成相关的答案。
+一个[RAG 管道](https://medium.com/p/4e9bd5f6a4f2)有许多可以调整的参数来提高其性能。其中之一是提高检索到的上下文的相关性，这些上下文会被输入到 LLM 中，因为如果检索到的上下文与回答特定问题不相关，LLM 也无法生成相关的答案。
 
-根据你的上下文类型和查询，你需要确定三种搜索技术中哪一种对你的RAG应用最有利。因此，**参数** `**alpha**`**，用于控制关键词搜索和语义搜索之间的加权，可以视为需要调整的超参数。**
+根据你的上下文类型和查询，你需要确定三种搜索技术中哪一种对你的 RAG 应用最有利。因此，**参数** `**alpha**`**，用于控制关键词搜索和语义搜索之间的加权，可以视为需要调整的超参数。**
 
-在一个常见的[使用LangChain的RAG管道](https://medium.com/p/4e9bd5f6a4f2)中，你会通过以下方式设置检索器组件，将使用的`vectorstore`组件设置为检索器，方法是`.as_retriever()`：
+在一个常见的[使用 LangChain 的 RAG 管道](https://medium.com/p/4e9bd5f6a4f2)中，你会通过以下方式设置检索器组件，将使用的`vectorstore`组件设置为检索器，方法是`.as_retriever()`：
 
 ```py
 # Define and populate vector store
@@ -119,7 +119,7 @@ vectorstore = ...
 retriever = vectorstore.as_retriever()
 ```
 
-然而，这种方法只启用了语义搜索。如果你想在LangChain中启用混合搜索，你需要定义一个具有混合搜索功能的特定`[retriever](https://python.langchain.com/docs/integrations/retrievers)` [组件](https://python.langchain.com/docs/integrations/retrievers)，例如`[WeaviateHybridSearchRetriever](https://python.langchain.com/docs/integrations/retrievers)`：
+然而，这种方法只启用了语义搜索。如果你想在 LangChain 中启用混合搜索，你需要定义一个具有混合搜索功能的特定`[retriever](https://python.langchain.com/docs/integrations/retrievers)` [组件](https://python.langchain.com/docs/integrations/retrievers)，例如`[WeaviateHybridSearchRetriever](https://python.langchain.com/docs/integrations/retrievers)`：
 
 ```py
 from langchain.retrievers.weaviate_hybrid_search import WeaviateHybridSearchRetriever
@@ -133,7 +133,7 @@ retriever = WeaviateHybridSearchRetriever(
 )
 ```
 
-其余的[标准RAG管道](https://medium.com/p/4e9bd5f6a4f2)将保持不变。
+其余的[标准 RAG 管道](https://medium.com/p/4e9bd5f6a4f2)将保持不变。
 
 这个小的代码更改允许你在关键词搜索和向量搜索之间尝试不同的加权。注意，设置`alpha = 1`等于完全的语义搜索，相当于直接从`vectorstore`组件定义检索器（`retriever = vectorstore.as_retriever()`）。
 
@@ -177,15 +177,15 @@ retriever = WeaviateHybridSearchRetriever(
 
 # 免责声明
 
-在撰写本文时，我是Weaviate的开发者倡导者，Weaviate是一个开源向量数据库。
+在撰写本文时，我是 Weaviate 的开发者倡导者，Weaviate 是一个开源向量数据库。
 
 # 参考文献
 
 ## 文献
 
-[1] Benham, R., & Culpepper, J. S. (2017). [排名融合中的风险-收益权衡](https://rodgerbenham.github.io/bc17-adcs.pdf)。发表于*第22届澳大利亚文档计算研讨会*（第1–8页）。
+[1] Benham, R., & Culpepper, J. S. (2017). [排名融合中的风险-收益权衡](https://rodgerbenham.github.io/bc17-adcs.pdf)。发表于*第 22 届澳大利亚文档计算研讨会*（第 1–8 页）。
 
-[2] Haney, D. & Gibson, D. 在 Stack Overflow 博客中。[像人类一样提问：在 Stack Overflow 上实现语义搜索](https://stackoverflow.blog/2023/07/31/ask-like-a-human-implementing-semantic-search-on-stack-overflow/)（访问于2023年11月24日）。
+[2] Haney, D. & Gibson, D. 在 Stack Overflow 博客中。[像人类一样提问：在 Stack Overflow 上实现语义搜索](https://stackoverflow.blog/2023/07/31/ask-like-a-human-implementing-semantic-search-on-stack-overflow/)（访问于 2023 年 11 月 24 日）。
 
 ## 图片
 

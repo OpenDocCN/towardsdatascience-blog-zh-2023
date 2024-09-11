@@ -1,18 +1,18 @@
 # 什么是用于时间序列预测的谐波回归？
 
-> 原文：[https://towardsdatascience.com/take-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295?source=collection_archive---------7-----------------------#2023-03-29](https://towardsdatascience.com/take-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295?source=collection_archive---------7-----------------------#2023-03-29)
+> 原文：[`towardsdatascience.com/take-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295?source=collection_archive---------7-----------------------#2023-03-29`](https://towardsdatascience.com/take-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295?source=collection_archive---------7-----------------------#2023-03-29)
 
 ## 揭示傅里叶级数与时间序列之间的迷人关系
 
-[](https://medium.com/@egorhowell?source=post_page-----5a8515f63295--------------------------------)[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----5a8515f63295--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a8515f63295--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5a8515f63295--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----5a8515f63295--------------------------------)
+[](https://medium.com/@egorhowell?source=post_page-----5a8515f63295--------------------------------)![Egor Howell](https://medium.com/@egorhowell?source=post_page-----5a8515f63295--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a8515f63295--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a8515f63295--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----5a8515f63295--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftake-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----5a8515f63295---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a8515f63295--------------------------------) ·6 min read·2023年3月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5a8515f63295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftake-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295&user=Egor+Howell&userId=1cac491223b2&source=-----5a8515f63295---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftake-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----5a8515f63295---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a8515f63295--------------------------------) ·6 min read·2023 年 3 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5a8515f63295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftake-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295&user=Egor+Howell&userId=1cac491223b2&source=-----5a8515f63295---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a8515f63295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftake-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295&source=-----5a8515f63295---------------------bookmark_footer-----------)![](../Images/22e584d1ffdab7db6faabde247cdda72.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a8515f63295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftake-your-forecasting-to-the-next-level-with-harmonic-regression-5a8515f63295&source=-----5a8515f63295---------------------bookmark_footer-----------)![](img/22e584d1ffdab7db6faabde247cdda72.png)
 
 照片来源：[Pawel Czerwinski](https://unsplash.com/@pawel_czerwinski?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上拍摄的照片
 
@@ -26,7 +26,7 @@
 
 pub.towardsai.net](https://pub.towardsai.net/how-to-forecast-with-sarima-d4b4c98fca7b?source=post_page-----5a8515f63295--------------------------------)
 
-然而，如果我们有日数据，其年度季节性为***365.25天***？或者甚至是具有***52.14***季节性的周数据呢？
+然而，如果我们有日数据，其年度季节性为***365.25 天***？或者甚至是具有***52.14***季节性的周数据呢？
 
 不幸的是，SARIMA 不能处理这种情况，因为它是*非整数*的，并且由于需要处理每个季节的***365***个数据点以寻找模式，计算上也[*很吃力*](https://otexts.com/fpp2/dhr.html)。
 

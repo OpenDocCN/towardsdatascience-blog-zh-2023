@@ -1,18 +1,18 @@
 # 平均绝对对数误差（MALE）：一种更好的“相对”性能指标
 
-> 原文：[https://towardsdatascience.com/mean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75?source=collection_archive---------3-----------------------#2023-01-18](https://towardsdatascience.com/mean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75?source=collection_archive---------3-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/mean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75?source=collection_archive---------3-----------------------#2023-01-18`](https://towardsdatascience.com/mean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75?source=collection_archive---------3-----------------------#2023-01-18)
 
 ## 介绍“相对”性能指标的 MAE 和 MSE
 
-[](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)[![Christopher McDonald](../Images/8e32cbb5f2341d215aa3da02acb83dd4.png)](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------) [Christopher McDonald](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)
+[](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)![Christopher McDonald](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------) [Christopher McDonald](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fafe20c406abe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&user=Christopher+McDonald&userId=afe20c406abe&source=post_page-afe20c406abe----a8fd17bc5f75---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------) ·11分钟阅读·2023年1月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa8fd17bc5f75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&user=Christopher+McDonald&userId=afe20c406abe&source=-----a8fd17bc5f75---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fafe20c406abe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&user=Christopher+McDonald&userId=afe20c406abe&source=post_page-afe20c406abe----a8fd17bc5f75---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------) ·11 分钟阅读·2023 年 1 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa8fd17bc5f75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&user=Christopher+McDonald&userId=afe20c406abe&source=-----a8fd17bc5f75---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa8fd17bc5f75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&source=-----a8fd17bc5f75---------------------bookmark_footer-----------)![](../Images/cffc543319dfc74c5a9b9bedab7131ba.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa8fd17bc5f75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&source=-----a8fd17bc5f75---------------------bookmark_footer-----------)![](img/cffc543319dfc74c5a9b9bedab7131ba.png)
 
 图片来源：[William Warby](https://unsplash.com/@wwarby?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -22,7 +22,7 @@
 
 在这篇文章中，我的目的是说服你，对于许多预测¹问题，你应该使用均值绝对对数误差（MALE）或紧密相关的均方根对数误差（RMSLE）来衡量模型性能。
 
-就像MAE和RMSE使用预测值与真实值之间的“原始”距离一样，MALE和RMSLE使用“相对”（对数）距离；你可以将MALE和RMSLE视为“相对”指标的MAE和RMSE。
+就像 MAE 和 RMSE 使用预测值与真实值之间的“原始”距离一样，MALE 和 RMSLE 使用“相对”（对数）距离；你可以将 MALE 和 RMSLE 视为“相对”指标的 MAE 和 RMSE。
 
 事实上，我有信心可以说服你，这些指标不仅是最佳选择，而且在许多情况下是*显而易见*的选择。
 
@@ -34,15 +34,15 @@
 
 首先，让我们区分两个密切相关的概念：错误度量和性能指标。
 
-*错误度量*（或称*错误*）告诉你预测值*f*与观测值*y*的“距离”有多远。例如，“原始”错误RE = f — y和百分比误差PE = (f — y) / y。
+*错误度量*（或称*错误*）告诉你预测值*f*与观测值*y*的“距离”有多远。例如，“原始”错误 RE = f — y 和百分比误差 PE = (f — y) / y。
 
-相比之下，*性能指标*（或称*指标*）使用错误度量来告诉你某个模型（或一组预测）的整体表现如何。一个例子是MSE，它计算数据集中所有点的“原始”误差的平方均值：
+相比之下，*性能指标*（或称*指标*）使用错误度量来告诉你某个模型（或一组预测）的整体表现如何。一个例子是 MSE，它计算数据集中所有点的“原始”误差的平方均值：
 
 ## 它们有什么用处？
 
 错误度量和性能指标在模型拟合过程中作为模型损失函数的一部分使用；在模型调整过程中，用于选择合适的超参数；以及在模型选择过程中，用于选择最佳的模型类型。它们在决定最终模型时扮演重要角色，因此确保它们能捕捉到你关心的内容非常重要。
 
-当试图理解和解释模型的表现时，它们也会被使用：例如在“我们可以以平均15%的误差预测下一季度的销售额”这样的陈述中。因此，它们也需要具备可解释性。
+当试图理解和解释模型的表现时，它们也会被使用：例如在“我们可以以平均 15%的误差预测下一季度的销售额”这样的陈述中。因此，它们也需要具备可解释性。
 
 到目前为止，都是显而易见的（希望如此）。这些概念稍后会派上用场。
 
@@ -50,7 +50,7 @@
 
 正如我将在另一篇文章中讨论的（敬请期待！），不同的预测指标在不同的情况下是合适的。
 
-例如，如果你关注的是百分比误差（并且你的数据严格为正），那么“相对”指标如MAPE或sMAPE通常被推荐；如果你关注的是以实际单位（例如苹果数量）衡量的误差，或者你的数据可以为零或负数，那么“原始”指标如MAE或MSE更为合适。
+例如，如果你关注的是百分比误差（并且你的数据严格为正），那么“相对”指标如 MAPE 或 sMAPE 通常被推荐；如果你关注的是以实际单位（例如苹果数量）衡量的误差，或者你的数据可以为零或负数，那么“原始”指标如 MAE 或 MSE 更为合适。
 
 如果你想比较或聚合时间序列中的性能指标，那么你可能需要使用标准化指标[1]。
 
@@ -217,7 +217,7 @@ rmsle = sqrt(mean(log(f / y)**2))
 
 绝对百分比误差（APE）、对称绝对百分比误差（sAPE）和绝对对数误差（ALE）在预测值接近真实值时是相似的，如下图所示：
 
-![](../Images/7b427f54c83ab7656a45669bb7de371f.png)
+![](img/7b427f54c83ab7656a45669bb7de371f.png)
 
 绝对百分比误差（APE）、对称绝对百分比误差（sAPE）和绝对对数误差（ALE）的比较，观察值为 y = 1。图片来源于作者。
 

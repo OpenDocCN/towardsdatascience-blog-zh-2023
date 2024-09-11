@@ -1,30 +1,30 @@
 # 《Python 枚举如何使数据配置优雅》
 
-> 原文：[https://towardsdatascience.com/how-python-enumerations-make-data-configuration-elegant-a7d8356657bd?source=collection_archive---------4-----------------------#2023-05-28](https://towardsdatascience.com/how-python-enumerations-make-data-configuration-elegant-a7d8356657bd?source=collection_archive---------4-----------------------#2023-05-28)
+> 原文：[`towardsdatascience.com/how-python-enumerations-make-data-configuration-elegant-a7d8356657bd?source=collection_archive---------4-----------------------#2023-05-28`](https://towardsdatascience.com/how-python-enumerations-make-data-configuration-elegant-a7d8356657bd?source=collection_archive---------4-----------------------#2023-05-28)
 
 ## Python 中用于机器学习项目的枚举介绍
 
-[](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)[![Eirik Berge, PhD](../Images/7507374e75980fd0c1056af3cd299eaa.png)](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)
+[](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)![Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7722f981eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-python-enumerations-make-data-configuration-elegant-a7d8356657bd&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=post_page-7722f981eb----a7d8356657bd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------) · 7 min read · 2023年5月28日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa7d8356657bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-python-enumerations-make-data-configuration-elegant-a7d8356657bd&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=-----a7d8356657bd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7722f981eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-python-enumerations-make-data-configuration-elegant-a7d8356657bd&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=post_page-7722f981eb----a7d8356657bd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------) · 7 min read · 2023 年 5 月 28 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa7d8356657bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-python-enumerations-make-data-configuration-elegant-a7d8356657bd&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=-----a7d8356657bd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa7d8356657bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-python-enumerations-make-data-configuration-elegant-a7d8356657bd&source=-----a7d8356657bd---------------------bookmark_footer-----------)![](../Images/f50c10b5f705134f0d6b76ef93de6254.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa7d8356657bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-python-enumerations-make-data-configuration-elegant-a7d8356657bd&source=-----a7d8356657bd---------------------bookmark_footer-----------)![](img/f50c10b5f705134f0d6b76ef93de6254.png)
 
 图片来源：[Joshua Woroniecki](https://unsplash.com/@joshua_j_woroniecki?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 你的旅程概览
 
-1.  [介绍](#a6cb)
+1.  介绍
 
-1.  [一个初步的方法](#8f4f)
+1.  一个初步的方法
 
-1.  [枚举的救援！](#7cf7)
+1.  枚举的救援！
 
-1.  [总结](#c801)
+1.  总结
 
 # 1 — 介绍
 

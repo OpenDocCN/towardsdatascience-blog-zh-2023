@@ -1,18 +1,18 @@
 # 初学者友好的 MLOps 介绍
 
-> 原文：[https://towardsdatascience.com/a-beginner-friendly-introduction-to-mlops-95282f25325c?source=collection_archive---------2-----------------------#2023-01-04](https://towardsdatascience.com/a-beginner-friendly-introduction-to-mlops-95282f25325c?source=collection_archive---------2-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/a-beginner-friendly-introduction-to-mlops-95282f25325c?source=collection_archive---------2-----------------------#2023-01-04`](https://towardsdatascience.com/a-beginner-friendly-introduction-to-mlops-95282f25325c?source=collection_archive---------2-----------------------#2023-01-04)
 
 ## MLOps 的第一步
 
-[](https://medium.com/@chimso1994?source=post_page-----95282f25325c--------------------------------)[![Chayma Zatout](../Images/341c45f53ddf73dc0851d547cc7cb55a.png)](https://medium.com/@chimso1994?source=post_page-----95282f25325c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----95282f25325c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----95282f25325c--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----95282f25325c--------------------------------)
+[](https://medium.com/@chimso1994?source=post_page-----95282f25325c--------------------------------)![Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----95282f25325c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----95282f25325c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----95282f25325c--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----95282f25325c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-mlops-95282f25325c&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----95282f25325c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----95282f25325c--------------------------------) ·9分钟阅读·2023年1月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F95282f25325c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-mlops-95282f25325c&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----95282f25325c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-mlops-95282f25325c&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----95282f25325c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----95282f25325c--------------------------------) ·9 分钟阅读·2023 年 1 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F95282f25325c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-mlops-95282f25325c&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----95282f25325c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F95282f25325c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-mlops-95282f25325c&source=-----95282f25325c---------------------bookmark_footer-----------)![](../Images/d1a25fc18fe181535406d3367f668517.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F95282f25325c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginner-friendly-introduction-to-mlops-95282f25325c&source=-----95282f25325c---------------------bookmark_footer-----------)![](img/d1a25fc18fe181535406d3367f668517.png)
 
 图片由 [Sarah Dorweiler](https://unsplash.com/@sarahdorweiler?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,24 +22,24 @@
 
 **目录：**
 
-· [1. MLOps 动机](#b624)
+· 1. MLOps 动机
 
-· [2. 定义](#1c5a)
+· 2. 定义
 
-· [3. MLOps 生命周期](#4504)
+· 3. MLOps 生命周期
 
-· [4. MLOps 工作流程](#fc3c)
+· 4. MLOps 工作流程
 
-∘ [4.1. 商业问题](#9dcc)
+∘ 4.1. 商业问题
 
-∘ [4.2. 数据工程](#73c3)
+∘ 4.2. 数据工程
 
-∘ [4.3. ML 模型工程](#aabc)
+∘ 4.3. ML 模型工程
 
-∘ [4.4. 代码工程](#b08f)
+∘ 4.4. 代码工程
 
-· [5. 结论](#e4b0)
+· 5. 结论
 
 **我的 MLOps 教程：**
 
-+   [*教程 1：MLOps 的关键起点：探索*](/a-key-start-to-mlops-exploring-its-essential-components-27646238372d)…
++   *教程 1：MLOps 的关键起点：探索*…

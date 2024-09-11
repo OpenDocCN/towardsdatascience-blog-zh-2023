@@ -1,22 +1,22 @@
 # 寻找你梦想中的人工智能硕士项目
 
-> 原文：[https://towardsdatascience.com/finding-your-dream-masters-program-in-ai-17f525c89151?source=collection_archive---------6-----------------------#2023-06-01](https://towardsdatascience.com/finding-your-dream-masters-program-in-ai-17f525c89151?source=collection_archive---------6-----------------------#2023-06-01)
+> 原文：[`towardsdatascience.com/finding-your-dream-masters-program-in-ai-17f525c89151?source=collection_archive---------6-----------------------#2023-06-01`](https://towardsdatascience.com/finding-your-dream-masters-program-in-ai-17f525c89151?source=collection_archive---------6-----------------------#2023-06-01)
 
 ## 基于价值观的项目选择和网络建设方法。
 
-[![Simon Aytes](../Images/67df06276898f3e3631862441653de17.png)](https://medium.com/@saaytes?source=post_page-----17f525c89151--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----17f525c89151--------------------------------) [Simon Aytes](https://medium.com/@saaytes?source=post_page-----17f525c89151--------------------------------)
+![Simon Aytes](https://medium.com/@saaytes?source=post_page-----17f525c89151--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----17f525c89151--------------------------------) [Simon Aytes](https://medium.com/@saaytes?source=post_page-----17f525c89151--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffd92cb149372&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-your-dream-masters-program-in-ai-17f525c89151&user=Simon+Aytes&userId=fd92cb149372&source=post_page-fd92cb149372----17f525c89151---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17f525c89151--------------------------------) ·9分钟阅读·2023年6月1日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffd92cb149372&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-your-dream-masters-program-in-ai-17f525c89151&user=Simon+Aytes&userId=fd92cb149372&source=post_page-fd92cb149372----17f525c89151---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17f525c89151--------------------------------) ·9 分钟阅读·2023 年 6 月 1 日
 
 --
 
-![](../Images/5c50b3e02555954211b1ef80d7c281bb.png)
+![](img/5c50b3e02555954211b1ef80d7c281bb.png)
 
 摄影师 [Mikael Kristenson](https://unsplash.com/@mikael_k?utm_source=medium&utm_medium=referral) 摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-去年我申请并被接受到12个人工智能研究生项目，包括韩国先进科学技术学院（KAIST）、哥伦比亚大学和伦敦大学学院（UCL）。
+去年我申请并被接受到 12 个人工智能研究生项目，包括韩国先进科学技术学院（KAIST）、哥伦比亚大学和伦敦大学学院（UCL）。
 
 在研究申请研究生项目的最佳实践时，我发现一些资源主张仅根据大学的纸面形象来选择你的项目。虽然这可以很好地反映学校的整体地位，但这种方法没有考虑到包括你希望申请的项目类型在内的许多因素。*你*希望申请什么类型的项目非常重要。
 
@@ -46,7 +46,7 @@
 
 人工智能研究生项目通常分为三大类：MSci、MSc 和 MRes。尽管这三者都将教授与人工智能相关的相似概念，但它们也会教你不同的知识应用方式。下表展示了这些项目的高级别分类。
 
-![](../Images/00981013615048b9dbbdbeed8c1d1c6d.png)
+![](img/00981013615048b9dbbdbeed8c1d1c6d.png)
 
 MSci、MSc 和 MRes 的比较。图像由作者提供。
 
@@ -68,25 +68,25 @@ MSci、MSc 和 MRes 的比较。图像由作者提供。
 
 ## 寻找学校
 
-目前为止，用于识别认证大学的最佳计算机科学工具是[CSRankings.com](http://www.csrankings.com)。CSRankings根据教职员工在计算机科学及相关领域的研究活跃程度对大学进行排名。在这个列表上排名高是行业相关性的良好指标。
+目前为止，用于识别认证大学的最佳计算机科学工具是[CSRankings.com](http://www.csrankings.com)。CSRankings 根据教职员工在计算机科学及相关领域的研究活跃程度对大学进行排名。在这个列表上排名高是行业相关性的良好指标。
 
 为了筛选我的搜索结果，我利用上述数值来匹配我的个人标准，同时将*所有领域*菜单限制在“人工智能”和“机器学习”之间。你可以查看搜索结果[这里](https://csrankings.org/#/fromyear/2020/toyear/2022/index?ai&mlmining&world)。
 
-虽然数量有所不同，但有一个来源建议找到[四到六个课程](https://graduate.northeastern.edu/resources/how-many-grad-schools-should-you-apply-to/#:~:text=That%20being%20said%2C%20most%20experts,a%20maximum%20of%20around%20six.)申请。然而，如果你有额外的时间和额外的资金来支付申请费用，你可以申请任意数量的课程。在我的情况下，我花了两个月的时间研究和申请2022年夏天的各种课程，这就是为什么我选择申请大量的课程。
+虽然数量有所不同，但有一个来源建议找到[四到六个课程](https://graduate.northeastern.edu/resources/how-many-grad-schools-should-you-apply-to/#:~:text=That%20being%20said%2C%20most%20experts,a%20maximum%20of%20around%20six.)申请。然而，如果你有额外的时间和额外的资金来支付申请费用，你可以申请任意数量的课程。在我的情况下，我花了两个月的时间研究和申请 2022 年夏天的各种课程，这就是为什么我选择申请大量的课程。
 
-浏览列表时，我确定了我想要了解的课程。其中，我最喜欢的三个是KAIST（排名第4）、哥伦比亚大学（排名第41）和伦敦大学学院（排名第59）。
+浏览列表时，我确定了我想要了解的课程。其中，我最喜欢的三个是 KAIST（排名第 4）、哥伦比亚大学（排名第 41）和伦敦大学学院（排名第 59）。
 
 ## 寻找一个课程
 
 一旦确定了学校的列表，下一步就是访问该学校的网站，查找他们的研究生课程列表。
 
-我的首选是KAIST，所以我浏览了工程学院的网站，找到了他们的课程列表。然后我选择了对我最相关的课程 —— 人工智能硕士学位。
+我的首选是 KAIST，所以我浏览了工程学院的网站，找到了他们的课程列表。然后我选择了对我最相关的课程 —— 人工智能硕士学位。
 
-![](../Images/d26cd0d6015f75165bec9713621f0ab5.png)
+![](img/d26cd0d6015f75165bec9713621f0ab5.png)
 
-KAIST工程学院研究生课程。图片由作者提供。
+KAIST 工程学院研究生课程。图片由作者提供。
 
-你应该为列表中的每所学校重复此过程，并注意任何其他激起你兴趣的项目。例如，UCL有两个我感兴趣的项目；MSc Data Science 和 MSc AI for Sustainable Development。然而，一些大学限制研究生申请人每个周期只能提交一个申请。在这种情况下，了解大学对多个申请的政策就显得尤为重要。
+你应该为列表中的每所学校重复此过程，并注意任何其他激起你兴趣的项目。例如，UCL 有两个我感兴趣的项目；MSc Data Science 和 MSc AI for Sustainable Development。然而，一些大学限制研究生申请人每个周期只能提交一个申请。在这种情况下，了解大学对多个申请的政策就显得尤为重要。
 
 # 项目特定考虑
 
@@ -100,7 +100,7 @@ KAIST工程学院研究生课程。图片由作者提供。
 
 寻找的最重要的事情之一是财务支持、申请截止日期和住房情况等。幸运的是，大多数大学已经为潜在学生编制了这些信息，以“申请指南”或“学生手册”的形式。
 
-在查看上述项目页面时，我找到了[KAIST申请指南](https://drive.google.com/file/d/1aSnsTTxXxluhBCMDDuATetTAj62xWaN4/view?usp=sharing)，其中详细列出了此处提到的所有内容。此外，一些学校，如哥伦比亚大学，将所有相关信息列在[他们的网站](https://www.gsas.columbia.edu/content/admissions)上。
+在查看上述项目页面时，我找到了[KAIST 申请指南](https://drive.google.com/file/d/1aSnsTTxXxluhBCMDDuATetTAj62xWaN4/view?usp=sharing)，其中详细列出了此处提到的所有内容。此外，一些学校，如哥伦比亚大学，将所有相关信息列在[他们的网站](https://www.gsas.columbia.edu/content/admissions)上。
 
 ## 资金筹措方式
 
@@ -108,7 +108,7 @@ KAIST工程学院研究生课程。图片由作者提供。
 
 如果你计划自掏腰包支付学费，那么在选择项目时你会有更多的灵活性。然而，鉴于大多数人不会自己支付项目费用，确定资金机会对于找到合适的项目至关重要。这也是询问雇主是否有任何为员工高等教育提供资金的计划的好时机。
 
-在美国有许多由[私人机构和政府支持的资金机会](https://www.forbes.com/advisor/student-loans/graduate-school-scholarships-grants/)。然而，其他国家也提供类似的项目，比如[韩国的GKS](https://gksscholarship.com/)和[德国的DAAD](https://www.daad.de/en/study-and-research-in-germany/scholarships/)。
+在美国有许多由[私人机构和政府支持的资金机会](https://www.forbes.com/advisor/student-loans/graduate-school-scholarships-grants/)。然而，其他国家也提供类似的项目，比如[韩国的 GKS](https://gksscholarship.com/)和[德国的 DAAD](https://www.daad.de/en/study-and-research-in-germany/scholarships/)。
 
 一些大学还提供基于需求的资助机会，帮助那些无法自费完成硕士学位的人。[这里](https://cc-seas.financialaid.columbia.edu/how/aid/works#:~:text=Columbia%20meets%20100%25%20of%20the,in%20a%20need%2Dblind%20manner.) 是来自哥伦比亚大学的一个例子。
 
@@ -130,7 +130,7 @@ KAIST工程学院研究生课程。图片由作者提供。
 
 我浏览了我感兴趣的项目的教师页面，挑选了几位研究兴趣与我相符的教授。然后，我创建了一个模板电子邮件和一个电子表格，用于跟踪我联系了谁和何时联系。
 
-![](../Images/e918f55fd22c558e2662f5518f8cb691.png)
+![](img/e918f55fd22c558e2662f5518f8cb691.png)
 
 我（匿名化的）研究生网络联系列表。图片由作者提供。
 
@@ -150,14 +150,14 @@ KAIST工程学院研究生课程。图片由作者提供。
 
 这个模板可以进一步修改，以包含与教职员工有关的研究、工作经验或[活动补助](https://www.nsf.gov/awardsearch/)的信息。
 
-通过遵循这一过程，我给我申请的12个项目中的30多位教授发送了电子邮件。其中，我通过电子邮件与15位教授建立了联系，并与更多教授进行了虚拟的“咖啡聊天”。正是通过这一网络努力，我成功地在我首选的大学获得了导师和研究职位。
+通过遵循这一过程，我给我申请的 12 个项目中的 30 多位教授发送了电子邮件。其中，我通过电子邮件与 15 位教授建立了联系，并与更多教授进行了虚拟的“咖啡聊天”。正是通过这一网络努力，我成功地在我首选的大学获得了导师和研究职位。
 
 # 最后思考
 
-最后，基于价值观的决策和积极的社交网络仅仅是整个难题的一部分。决定您是否被感兴趣的项目录取的因素有很多。工作经验、GPA和标准化考试成绩（如GRE）等因素都严重影响您申请项目的资格。
+最后，基于价值观的决策和积极的社交网络仅仅是整个难题的一部分。决定您是否被感兴趣的项目录取的因素有很多。工作经验、GPA 和标准化考试成绩（如 GRE）等因素都严重影响您申请项目的资格。
 
 找到完美的人工智能研究生项目需要自我反思、研究和积极的社交网络。通过遵循本文概述的过程，您可以在正式申请过程中为自己赢得一个强有力的开端。
 
-*Simon Aytes目前是首尔韩国的* [*KAIST人工智能研究院研究生*](https://gsai.kaist.ac.kr/) *。他曾与NASA、Penta Group和哥伦比亚大学等组织合作过。*
+*Simon Aytes 目前是首尔韩国的* [*KAIST 人工智能研究院研究生*](https://gsai.kaist.ac.kr/) *。他曾与 NASA、Penta Group 和哥伦比亚大学等组织合作过。*
 
 *想了解更多吗？访问他的* [*网站*](http://www.saytes.io/) *或通过* [*LinkedIn*](https://www.linkedin.com/in/simonaytes/)* 与他联系吧！*

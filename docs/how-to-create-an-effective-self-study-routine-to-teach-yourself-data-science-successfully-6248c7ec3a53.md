@@ -1,18 +1,18 @@
 # 如何创建一个有效的自学计划，以成功自学数据科学
 
-> 原文：[https://towardsdatascience.com/how-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53?source=collection_archive---------0-----------------------#2023-02-25](https://towardsdatascience.com/how-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53?source=collection_archive---------0-----------------------#2023-02-25)
+> 原文：[`towardsdatascience.com/how-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53?source=collection_archive---------0-----------------------#2023-02-25`](https://towardsdatascience.com/how-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53?source=collection_archive---------0-----------------------#2023-02-25)
 
 ## 这里介绍了如何设置一个你实际会坚持的自学计划，同时学习数据科学
 
-[](https://madison13.medium.com/?source=post_page-----6248c7ec3a53--------------------------------)[![Madison Hunter](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----6248c7ec3a53--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6248c7ec3a53--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6248c7ec3a53--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----6248c7ec3a53--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----6248c7ec3a53--------------------------------)![Madison Hunter](https://madison13.medium.com/?source=post_page-----6248c7ec3a53--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6248c7ec3a53--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6248c7ec3a53--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----6248c7ec3a53--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----6248c7ec3a53---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6248c7ec3a53--------------------------------) ·9分钟阅读·2023年2月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6248c7ec3a53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53&user=Madison+Hunter&userId=6a8c6841e521&source=-----6248c7ec3a53---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----6248c7ec3a53---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6248c7ec3a53--------------------------------) ·9 分钟阅读·2023 年 2 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6248c7ec3a53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53&user=Madison+Hunter&userId=6a8c6841e521&source=-----6248c7ec3a53---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6248c7ec3a53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53&source=-----6248c7ec3a53---------------------bookmark_footer-----------)![](../Images/51ac72b6663398ff0c79ddfede274680.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6248c7ec3a53&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-effective-self-study-routine-to-teach-yourself-data-science-successfully-6248c7ec3a53&source=-----6248c7ec3a53---------------------bookmark_footer-----------)![](img/51ac72b6663398ff0c79ddfede274680.png)
 
 照片由 [Miquel Parera](https://unsplash.com/@miquel_parera_mila?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,7 +30,7 @@
 
 日常安排是那些能够自学数据科学并在该领域开展职业生涯的少数有纪律的人和那些认为可以“随意应对”但最终因没有根深蒂固的日常安排而早早失败的人之间的区别。
 
-建立自学日常只需要四个步骤。我在过去的6年里在接受高等教育和帮助自己学习数据科学时使用了这些步骤，发现这四个步骤足以创建一个能带来成功的日常安排。这四个步骤简单而不花哨，但足以创建一个你可以轻松坚持的日常。
+建立自学日常只需要四个步骤。我在过去的 6 年里在接受高等教育和帮助自己学习数据科学时使用了这些步骤，发现这四个步骤足以创建一个能带来成功的日常安排。这四个步骤简单而不花哨，但足以创建一个你可以轻松坚持的日常。
 
 # 第一步：每天安排相同的时间
 
@@ -40,7 +40,7 @@
 
 例如，我选择在早晨进行所有需要精神集中的学习（例如任何基于微积分的内容），因为那时我最有活力和专注。下午则留给较少消耗脑力的学习或其他不需要太多脑力的任务（对于我来说通常是学习数据可视化、统计学或进行个人项目）。通过在一天中最有生产力的时段学习，我确保自己尽可能高效和有效。
 
-每个人最有生产力的时间都不同。有些人白天工作效率最高，而有些人晚上工作最佳。关键是每天选择相同的时间来安排学习。不仅如此，你的大脑需要开始将特定的时间与学习关联起来。这将帮助你保持更长时间的专注，并使你在学习开始的那一刻就做好准备（而不是因为需要激励自己学习而在手机上滚动10分钟）。
+每个人最有生产力的时间都不同。有些人白天工作效率最高，而有些人晚上工作最佳。关键是每天选择相同的时间来安排学习。不仅如此，你的大脑需要开始将特定的时间与学习关联起来。这将帮助你保持更长时间的专注，并使你在学习开始的那一刻就做好准备（而不是因为需要激励自己学习而在手机上滚动 10 分钟）。
 
 正如我之前提到的，选择特定的时间来学习数据科学对于保持健康的工作与生活平衡也很重要。例如，今天（星期五），我在早上完成了所有的微积分学习，这意味着我今天已经完成了本周所有学习任务，并留下了整整半天的时间来放松、处理琐事、陪伴我的狗，并享受一个稍长的周末。
 
@@ -80,7 +80,7 @@
 
 # 一些快速提示和故障排除
 
-+   **当你由于外部因素无法完成当天的学习任务时，找出10分钟来复习一些概念。** 决定你是否设立（更重要的是维持和继续）一个例行程序的主要因素是你是否每天坐下来学习。然而，不要被误导成相信你必须每天进行相同量的学习。无论你在某一天有时间学习10小时还是10分钟，重要的是保持这种心态，每天都要花些时间（无论多少）来学习数据科学。有些日子会比其他日子更好，但关键是你以某种方式完成你的例行程序，以保持你的思维训练，预期每天都有一个例行任务要完成。
++   **当你由于外部因素无法完成当天的学习任务时，找出 10 分钟来复习一些概念。** 决定你是否设立（更重要的是维持和继续）一个例行程序的主要因素是你是否每天坐下来学习。然而，不要被误导成相信你必须每天进行相同量的学习。无论你在某一天有时间学习 10 小时还是 10 分钟，重要的是保持这种心态，每天都要花些时间（无论多少）来学习数据科学。有些日子会比其他日子更好，但关键是你以某种方式完成你的例行程序，以保持你的思维训练，预期每天都有一个例行任务要完成。
 
 +   **你的例行程序不适合你？不要害怕做出改变。** 我在自学整个在线大学学位过程中学到的最重要的事情之一是，某一时刻对你有效的东西可能并不总是有效——这没关系。我们的义务会改变，无论是工作、家庭还是其他原因。因此，如果你发现维持例行程序变得困难，并且连续错过几天，别害怕改变一下，尝试一个适合你当时生活的不同例行程序。记住，一个每天都容易做到的例行程序是一个你能在必要时维持多年的例行程序。
 

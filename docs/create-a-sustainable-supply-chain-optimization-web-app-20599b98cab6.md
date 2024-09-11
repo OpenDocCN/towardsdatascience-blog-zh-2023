@@ -1,18 +1,18 @@
 # 创建一个可持续的供应链优化网络应用
 
-> 原文：[https://towardsdatascience.com/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=collection_archive---------10-----------------------#2023-06-15](https://towardsdatascience.com/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=collection_archive---------10-----------------------#2023-06-15)
+> 原文：[`towardsdatascience.com/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=collection_archive---------10-----------------------#2023-06-15`](https://towardsdatascience.com/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=collection_archive---------10-----------------------#2023-06-15)
 
 ## 帮助你的组织结合**可持续采购**和**供应链优化**，以遏制成本和环境影响。
 
-[](https://s-saci95.medium.com/?source=post_page-----20599b98cab6--------------------------------)[![Samir Saci](../Images/722d1f56a3308f6527d82b5ab97064ec.png)](https://s-saci95.medium.com/?source=post_page-----20599b98cab6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20599b98cab6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20599b98cab6--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----20599b98cab6--------------------------------)
+[](https://s-saci95.medium.com/?source=post_page-----20599b98cab6--------------------------------)![Samir Saci](https://s-saci95.medium.com/?source=post_page-----20599b98cab6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20599b98cab6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----20599b98cab6--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----20599b98cab6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-a-sustainable-supply-chain-optimization-web-app-20599b98cab6&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----20599b98cab6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20599b98cab6--------------------------------) ·10 min 阅读·2023年6月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20599b98cab6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-a-sustainable-supply-chain-optimization-web-app-20599b98cab6&user=Samir+Saci&userId=bb0f26d52754&source=-----20599b98cab6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-a-sustainable-supply-chain-optimization-web-app-20599b98cab6&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----20599b98cab6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20599b98cab6--------------------------------) ·10 min 阅读·2023 年 6 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20599b98cab6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-a-sustainable-supply-chain-optimization-web-app-20599b98cab6&user=Samir+Saci&userId=bb0f26d52754&source=-----20599b98cab6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20599b98cab6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-a-sustainable-supply-chain-optimization-web-app-20599b98cab6&source=-----20599b98cab6---------------------bookmark_footer-----------)![](../Images/a9bb044d191368e8201356de3d413009.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20599b98cab6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-a-sustainable-supply-chain-optimization-web-app-20599b98cab6&source=-----20599b98cab6---------------------bookmark_footer-----------)![](img/a9bb044d191368e8201356de3d413009.png)
 
 创建一个可持续的供应链优化网络应用 —（作者图像）
 
@@ -20,7 +20,7 @@
 
 它突显了当企业试图将环境考虑与利润目标协调时出现的复杂性。
 
-![](../Images/e8ac8a5b8e09ab223726cdef995d319a.png)
+![](img/e8ac8a5b8e09ab223726cdef995d319a.png)
 
 供应链网络设计问题：成本与二氧化碳 —（作者图像）
 
@@ -30,7 +30,7 @@
 
 与传统模型优先考虑外包到低成本地区不同，现在有明显的趋势向在环境高效设施中本地化生产。
 
-![](../Images/0ff8765be3e3cbd8fa8d983b3fd98271.png)
+![](img/0ff8765be3e3cbd8fa8d983b3fd98271.png)
 
 低成本解决方案与低碳解决方案的供应链网络设计 — （图片来源：作者）
 
@@ -60,7 +60,7 @@ IV. Introduction to VIKTOR
 V. Conclusion
 ```
 
-[![](../Images/86f0288a0aa6bc896e608913a97b0b9f.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 访问应用程序进行尝试！ — [[应用程序](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)]
 
@@ -68,13 +68,13 @@ V. Conclusion
 
 这个想法是利用线性编程能力，以满足全球需求，同时最小化成本、CO2 排放和资源消耗。
 
-[![](../Images/b2b51be83ebd001eaf2e1a920e4ac8c8.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 供应链网络设计问题 — （图片来源：作者）
 
 在接下来的章节中，我们将深入探讨可持续供应链优化概念以及将可持续性融入战略决策的必要性。
 
-[![](../Images/1fbeb247f03b47415682c10ee18cf4b6.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 问题介绍 [[应用程序用户指南](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)] — （图片来源：作者）
 
@@ -88,13 +88,13 @@ V. Conclusion
 
 这是我在之前的文章中分享的两个概念的结合
 
-![](../Images/440c14fd6f3dee8193f80a3464edec51.png)
+![](img/440c14fd6f3dee8193f80a3464edec51.png)
 
 供应链网络优化 x 可持续采购 — （图片来源：作者）
 
-+   [**可持续采购**](/data-science-for-sustainable-sourcing-a72f2c4db424): 在选择供应商时整合社会和环境绩效因素
++   **可持续采购**: 在选择供应商时整合社会和环境绩效因素
 
-+   [**供应链优化**](/supply-chain-optimization-with-python-23ae9b28fd0b): 设计最佳网络以以最低成本匹配供应和需求
++   **供应链优化**: 设计最佳网络以以最低成本匹配供应和需求
 
 > 什么阻碍了你公司的绿色转型？
 
@@ -102,7 +102,7 @@ V. Conclusion
 
 向可持续供应链优化过渡带来了独特的一组挑战。
 
-[![](../Images/c6d41c522604ef5a1e22d33a2a8917f6.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 选择你想要最小化的指标 [[应用用户指南](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)]——（图片来源：作者）
 
@@ -118,13 +118,13 @@ V. Conclusion
 
 如果你在**本地绿色设施**生产
 
-+   你**增加了成本**，因为**高劳动成本**和**绿色设备的资本支出**，这些设备减少了CO2排放和资源使用。
++   你**增加了成本**，因为**高劳动成本**和**绿色设备的资本支出**，这些设备减少了 CO2 排放和资源使用。
 
 +   通过减少运输和使用高端制造设施，你**降低了环境足迹**。
 
 该应用将提供不同的场景，帮助你平衡这些不同的约束。
 
-[![](../Images/843116a573f7fec944ad9a1d6c259fa4.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 基于环境约束的多个场景——（图片来源：作者）
 
@@ -136,7 +136,7 @@ V. Conclusion
 
 这些模型可以帮助你自动化对**成本参数**（固定、可变和运输）和**足迹指标**的深入分析，以找到满足业务目标的正确平衡。
 
-[![](../Images/03ef76491237a44f54516cee5869d676.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 样本数据集中使用的参数 [[应用用户指南](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)]——（图片来源：作者）
 
@@ -144,7 +144,7 @@ V. Conclusion
 
 +   **需求**：每个市场的需求**（单位/月）**
 
-+   **每个地点的生产能力**：高产能工厂**（XX单位/月）**，低产能工厂**（YY单位/月）**
++   **每个地点的生产能力**：高产能工厂**（XX 单位/月）**，低产能工厂**（YY 单位/月）**
 
 +   **环境足迹**：**CO2 排放**（kgCO2eq/单位）、**资源消耗**（L/单位）或（MJ/单位）和**废物产生**（kg/单位）
 
@@ -158,13 +158,13 @@ V. Conclusion
 
 算法将选择一组制造地点进行开放
 
-+   为**每个潜在地点**定义一个变量：（印度，低容量）= [0或1]
++   为**每个潜在地点**定义一个变量：（印度，低容量）= [0 或 1]
 
-+   如果**值为1，该位置开放**，并且可以**达到其生产能力**
++   如果**值为 1，该位置开放**，并且可以**达到其生产能力**
 
-[![](../Images/2a63053ae7465d81aec3954c81585fe7.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
-在这个示例中开启了4个位置 —（图片由作者提供）
+在这个示例中开启了 4 个位置 —（图片由作者提供）
 
 根据**用户定义的目标指标**，模型可以提出**最优的布尔值集合**，以最小化该指标。
 
@@ -180,7 +180,7 @@ V. Conclusion
 
 主要目标是为供应链工程师提供一个互动平台，以模拟和评估不同的网络设计策略。
 
-需要一个包含多个工作表的Excel文件作为输入，并提供多个模拟场景的结果。
+需要一个包含多个工作表的 Excel 文件作为输入，并提供多个模拟场景的结果。
 
 > 如果没有数据，应用程序中提供了一个示例文件供测试。
 
@@ -190,13 +190,13 @@ V. Conclusion
 
 ## **初步步骤：数据输入**
 
-[![](../Images/15ec360a87783e009965206b3697b1c8.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 数据输入 [[用户指南](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)] —（图片由作者提供）
 
 用户可以输入自己的数据或使用预加载的数据集，其中包含与市场需求和制造设施相关的信息。
 
-[![](../Images/a520a3c5e0541ad844c93fb76453ff12.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 第一步：数据输入 —（图片由作者提供）
 
@@ -204,7 +204,7 @@ V. Conclusion
 
 根据上传文件中包含的数据可视化模型的不同参数。
 
-[![](../Images/03ef76491237a44f54516cee5869d676.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 从数据集中可视化输入参数 [[应用程序用户指南](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)] —（图片由作者提供）
 
@@ -212,7 +212,7 @@ V. Conclusion
 
 **🏭 市场供应** 在数据集中包含的位置，你有潜在的制造地点（低容量和高容量工厂），每个工厂的**每月最大生产量**以*单位/月*为单位。
 
-[![](../Images/4978a28bf0dbf45a152c0f6a0ea8ca59.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 使用甜甜圈图和条形图展示市场需求和生产能力 —（图片由作者提供）
 
@@ -224,9 +224,9 @@ V. Conclusion
 
 每个生产地点生产单个单位所使用的水量 *(L/Unit)*。
 
-**🌲 CO2 排放** 每个生产地点生产单个单位的CO2排放量 *(Kg CO2eq/Unit)*。
+**🌲 CO2 排放** 每个生产地点生产单个单位的 CO2 排放量 *(Kg CO2eq/Unit)*。
 
-[![](../Images/ba16c22fd13a9bce0874f2d58f514e4e.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 每个制造地点每单位生产的环境影响 — (图片来源作者)
 
@@ -234,9 +234,9 @@ V. Conclusion
 
 有多个来源来收集这些输入参数：
 
-+   [什么是生命周期评估？LCA](/what-is-a-life-cycle-assessment-lca-e32a5078483a): 使用数据分析评估产品从生产到处置的整个生命周期中的环境影响。
++   什么是生命周期评估？LCA: 使用数据分析评估产品从生产到处置的整个生命周期中的环境影响。
 
-+   [使用Python进行供应链可持续性报告](/supply-chain-sustainability-reporting-with-python-161c1f63f267): 4个步骤构建一个关注分销网络CO2排放的ESG报告
++   使用 Python 进行供应链可持续性报告: 4 个步骤构建一个关注分销网络 CO2 排放的 ESG 报告
 
 该工具将帮助您决定在哪里设立工厂，以满足所有市场的需求，考虑运输、生产成本和**环境方面**。
 
@@ -246,7 +246,7 @@ V. Conclusion
 
 这将导致明智的战略决策，提高供应链的效率和可持续性。
 
-[![](../Images/8e28e16f9c0f04dd2b869463fd3a9c92.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 当前目标函数集合 [UI] — (图片来源作者)
 
@@ -266,35 +266,35 @@ V. Conclusion
 
 **🌲 CO2 排放**
 
-将每单位生产和交付的CO2排放量最小化 *(kgCO2eq/Unit)*
+将每单位生产和交付的 CO2 排放量最小化 *(kgCO2eq/Unit)*
 
 应用程序会自动返回结果，
 
-[![](../Images/88bf4fabc424ebfadc9a79f7b010a757.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 选择目标函数将触发优化 — (图片来源作者)
 
 ## 最后一步：可视化结果
 
-[![](../Images/5f9de905eeb983b0eac61cb53d1c1010.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 按国家生产细分 — (图片来源作者)
 
 应用程序提供了每种情况的综合结果概述，包括成本和环境影响的详细细分。
 
-[![](../Images/aba608c4428dd6c3480489f56e955b69.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 按来源分类的水资源使用和排放 — (图片来源作者)
 
 Sankey 图帮助你追踪货物从生产地点到各自市场的流动。
 
-[![](../Images/27d30aa9a798d7b8d3736cb94f9b64e0.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 货物流动的 Sankey 图 [应用界面] —（作者提供的图片）
 
 在上面的示例中，
 
-+   巴西每月生产15,000个单位：1,450个单位用于**本地市场**，其余的**用于美国**。
++   巴西每月生产 15,000 个单位：1,450 个单位用于**本地市场**，其余的**用于美国**。
 
 +   美国、德国和日本完全依赖进口
 
@@ -302,7 +302,7 @@ Sankey 图帮助你追踪货物从生产地点到各自市场的流动。
 
 通过使用数据驱动的处方，他们将了解每个目标指标（CO2、水、能源等）的影响。
 
-[![](../Images/33fd0959077088bf1c1c444896f50e55.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 如果你**最小化成本**、**水资源使用**或**CO2 排放**，总预算会如何 [从左到右] —（作者提供的图片）
 
@@ -316,7 +316,7 @@ Sankey 图帮助你追踪货物从生产地点到各自市场的流动。
 
 为了回答**问题 Q3**，我们来看看下面的视觉效果
 
-[![](../Images/cd4b3e63ccee29a21ae49ff881de6851.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 成本最小化场景的排放量 —（作者提供的图片）
 
@@ -338,7 +338,7 @@ VIKTOR 以其快速开发、测试和部署 Web 应用程序的能力而脱颖�
 
 **我的第一个应用程序**是一个简单的工具，用于**自动化 ABC 分析**。
 
-[![](../Images/086e3776b2752f82aab2f577528689e7.png)](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)
+![](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)
 
 [ABC 分析应用程序](https://cloud.viktor.ai/public/product-segmentation-abc-analysis) 截图 —（作者提供的图片）
 
@@ -346,7 +346,7 @@ VIKTOR 以其快速开发、测试和部署 Web 应用程序的能力而脱颖�
 
 尝试这个应用程序，
 
-[![](../Images/c0108a9094d56bee7c5eda3d30a0a3ac.png)](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)
+![](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)
 
 ABC 分析与帕累托图应用程序 — [[链接](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)]
 
@@ -354,31 +354,31 @@ ABC 分析与帕累托图应用程序 — [[链接](https://cloud.viktor.ai/publ
 
 ## 对供应链数据科学家的好处
 
-VIKTOR为数据科学家和分析师提供了一个用户友好的平台，与现有工作流程良好集成，提高了生产力和效率。
+VIKTOR 为数据科学家和分析师提供了一个用户友好的平台，与现有工作流程良好集成，提高了生产力和效率。
 
-对于这个应用程序，我从我在Github上分享的一个模型开始 ([链接](https://github.com/samirsaci/monte-carlo))，与供应链优化的文章相关。
+对于这个应用程序，我从我在 Github 上分享的一个模型开始 ([链接](https://github.com/samirsaci/monte-carlo))，与供应链优化的文章相关。
 
-![](../Images/57d14693b178b56eb4f569faea15191a.png)
+![](img/57d14693b178b56eb4f569faea15191a.png)
 
 供应链优化简单模型——（作者提供的图像）
 
 在“入门指南” ([文档](https://docs.viktor.ai/docs/getting-started/)) 中，你可以找到部署一个简单应用所需的所有不同步骤。
 
-+   采用用户输入，如Excel文件和参数选择，运行优化模型。
++   采用用户输入，如 Excel 文件和参数选择，运行优化模型。
 
-+   使用Plotly展示动态视觉效果
++   使用 Plotly 展示动态视觉效果
 
-+   导出Word和PDF报告 *(ABC分析应用)*
++   导出 Word 和 PDF 报告 *(ABC 分析应用)*
 
-现在，我可以轻松地与需要获得编程技能以运行Python脚本的用户分享这个模型。
+现在，我可以轻松地与需要获得编程技能以运行 Python 脚本的用户分享这个模型。
 
-欲了解更多信息，请查看官方的 [VIKTOR文档](https://docs.viktor.ai/docs/welcome/)。
+欲了解更多信息，请查看官方的 [VIKTOR 文档](https://docs.viktor.ai/docs/welcome/)。
 
 # 结论
 
 企业需要更有效地响应利益相关者和监管机构对环境、社会和治理（ESG）日益增长的需求。
 
-这个简单的原型，通过VIKTOR部署，可以帮助推动他们**向绿色供应链的过渡**。
+这个简单的原型，通过 VIKTOR 部署，可以帮助推动他们**向绿色供应链的过渡**。
 
 可以通过添加更多高级功能来轻松改进，例如，
 
@@ -392,11 +392,11 @@ VIKTOR为数据科学家和分析师提供了一个用户友好的平台，与�
 
 > **你听说过全球可持续未来的路线图吗？**
 
-可持续发展目标（SDGs）是由联合国设立的**17个目标**，旨在应对全球挑战。
+可持续发展目标（SDGs）是由联合国设立的**17 个目标**，旨在应对全球挑战。
 
-![](../Images/b7a4da442cc7c60a2e6e1941c12e534f.png)
+![](img/b7a4da442cc7c60a2e6e1941c12e534f.png)
 
-17个目标可以分为5个类别——（作者提供的图像）
+17 个目标可以分为 5 个类别——（作者提供的图像）
 
 深入了解我的近期见解，探讨数据分析如何支持联合国的可持续发展目标
 
@@ -422,4 +422,4 @@ samirsaci.com](http://samirsaci.com/?source=post_page-----20599b98cab6----------
 
 +   可持续供应链网络优化应用，Samir Saci，[应用](https://cloud.viktor.ai/public/production-planning-optimization)
 
-+   产品细分与ABC分析，Samir Saci，[应用](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)
++   产品细分与 ABC 分析，Samir Saci，[应用](https://cloud.viktor.ai/public/product-segmentation-abc-analysis)

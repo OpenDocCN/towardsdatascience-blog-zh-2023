@@ -1,12 +1,12 @@
 # 熵度量什么？一个直观的解释
 
-> 原文：[https://towardsdatascience.com/what-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421?source=collection_archive---------1-----------------------#2023-01-04](https://towardsdatascience.com/what-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421?source=collection_archive---------1-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/what-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421?source=collection_archive---------1-----------------------#2023-01-04`](https://towardsdatascience.com/what-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421?source=collection_archive---------1-----------------------#2023-01-04)
 
-[](https://tim-lou.medium.com/?source=post_page-----a7f7e5d16421--------------------------------)[![Tim Lou, PhD](../Images/e4931bb6d59e27730529ceaf00a23822.png)](https://tim-lou.medium.com/?source=post_page-----a7f7e5d16421--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a7f7e5d16421--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a7f7e5d16421--------------------------------) [Tim Lou, PhD](https://tim-lou.medium.com/?source=post_page-----a7f7e5d16421--------------------------------)
+[](https://tim-lou.medium.com/?source=post_page-----a7f7e5d16421--------------------------------)![Tim Lou, PhD](https://tim-lou.medium.com/?source=post_page-----a7f7e5d16421--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a7f7e5d16421--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7f7e5d16421--------------------------------) [Tim Lou, PhD](https://tim-lou.medium.com/?source=post_page-----a7f7e5d16421--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d41b438feef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421&user=Tim+Lou%2C+PhD&userId=8d41b438feef&source=post_page-8d41b438feef----a7f7e5d16421---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7f7e5d16421--------------------------------) · 11 分钟阅读 · 2023年1月4日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa7f7e5d16421&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421&user=Tim+Lou%2C+PhD&userId=8d41b438feef&source=-----a7f7e5d16421---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d41b438feef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421&user=Tim+Lou%2C+PhD&userId=8d41b438feef&source=post_page-8d41b438feef----a7f7e5d16421---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7f7e5d16421--------------------------------) · 11 分钟阅读 · 2023 年 1 月 4 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa7f7e5d16421&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-entropy-measure-an-intuitive-explanation-a7f7e5d16421&user=Tim+Lou%2C+PhD&userId=8d41b438feef&source=-----a7f7e5d16421---------------------clap_footer-----------)
 
 --
 
@@ -14,7 +14,7 @@
 
 熵可能看起来抽象，但它有一个直观的方面：即数据中出现特定模式的概率。这是它的工作原理。
 
-![](../Images/4daae7bdad8d3ebc360bb1ef70760dd8.png)
+![](img/4daae7bdad8d3ebc360bb1ef70760dd8.png)
 
 背景图片来源：Joe Maldonado [@unsplash](https://unsplash.com/@joesracingteam)
 

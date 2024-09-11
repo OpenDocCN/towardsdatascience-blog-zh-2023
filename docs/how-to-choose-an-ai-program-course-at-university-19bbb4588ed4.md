@@ -1,14 +1,14 @@
 # 如何选择大学的人工智能（AI）课程/项目
 
-> 原文：[https://towardsdatascience.com/how-to-choose-an-ai-program-course-at-university-19bbb4588ed4?source=collection_archive---------4-----------------------#2023-09-25](https://towardsdatascience.com/how-to-choose-an-ai-program-course-at-university-19bbb4588ed4?source=collection_archive---------4-----------------------#2023-09-25)
+> 原文：[`towardsdatascience.com/how-to-choose-an-ai-program-course-at-university-19bbb4588ed4?source=collection_archive---------4-----------------------#2023-09-25`](https://towardsdatascience.com/how-to-choose-an-ai-program-course-at-university-19bbb4588ed4?source=collection_archive---------4-----------------------#2023-09-25)
 
 ## 影响人生和职业决策的推理框架
 
-[](https://richmondalake.medium.com/?source=post_page-----19bbb4588ed4--------------------------------)[![Richmond Alake](../Images/7d563ac272e730f4f6a9ce8620cd11e3.png)](https://richmondalake.medium.com/?source=post_page-----19bbb4588ed4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----19bbb4588ed4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----19bbb4588ed4--------------------------------) [Richmond Alake](https://richmondalake.medium.com/?source=post_page-----19bbb4588ed4--------------------------------)
+[](https://richmondalake.medium.com/?source=post_page-----19bbb4588ed4--------------------------------)![Richmond Alake](https://richmondalake.medium.com/?source=post_page-----19bbb4588ed4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----19bbb4588ed4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----19bbb4588ed4--------------------------------) [Richmond Alake](https://richmondalake.medium.com/?source=post_page-----19bbb4588ed4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88797ba3f2f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-choose-an-ai-program-course-at-university-19bbb4588ed4&user=Richmond+Alake&userId=88797ba3f2f6&source=post_page-88797ba3f2f6----19bbb4588ed4---------------------post_header-----------) 发布于 [数据科学之路](https://towardsdatascience.com/?source=post_page-----19bbb4588ed4--------------------------------) · 13分钟阅读 · 2023年9月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F19bbb4588ed4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-choose-an-ai-program-course-at-university-19bbb4588ed4&user=Richmond+Alake&userId=88797ba3f2f6&source=-----19bbb4588ed4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88797ba3f2f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-choose-an-ai-program-course-at-university-19bbb4588ed4&user=Richmond+Alake&userId=88797ba3f2f6&source=post_page-88797ba3f2f6----19bbb4588ed4---------------------post_header-----------) 发布于 [数据科学之路](https://towardsdatascience.com/?source=post_page-----19bbb4588ed4--------------------------------) · 13 分钟阅读 · 2023 年 9 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F19bbb4588ed4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-choose-an-ai-program-course-at-university-19bbb4588ed4&user=Richmond+Alake&userId=88797ba3f2f6&source=-----19bbb4588ed4---------------------clap_footer-----------)
 
 --
 
@@ -16,16 +16,16 @@
 
 如果选择适当的学位课程或项目来学习人工智能（AI）在大学里很简单，这篇文章就到此为止了。但事实并非如此。
 
-这意味着选择在大学学习人工智能不仅仅是决定学习AI这么简单，特别是如果目标是在几年后成为AI专业人士的话。
+这意味着选择在大学学习人工智能不仅仅是决定学习 AI 这么简单，特别是如果目标是在几年后成为 AI 专业人士的话。
 
-![](../Images/a7fe4185e1ffff5220112c1dc5263b0c.png)
+![](img/a7fe4185e1ffff5220112c1dc5263b0c.png)
 
-AI相关课程中的常见关键词词云 — 作者提供的图片。
+AI 相关课程中的常见关键词词云 — 作者提供的图片。
 
-上面的图像展示了英国各大学的硕士、博士、文凭和学士学位课程中与AI相关的关键词和主题。我浏览过的每门课程在各自的模块中还有更多关键词。
+上面的图像展示了英国各大学的硕士、博士、文凭和学士学位课程中与 AI 相关的关键词和主题。我浏览过的每门课程在各自的模块中还有更多关键词。
 
-通过学术途径成为AI专业人士并非完全简单。
+通过学术途径成为 AI 专业人士并非完全简单。
 
-假如你没有对大学课程选择给予足够的考虑，你可能会发现自己进入了一个数据导向的课程，而你的兴趣却在AI的硬件方面，这意味着你可能更适合选择一个涉及机器人技术或力学的课程。
+假如你没有对大学课程选择给予足够的考虑，你可能会发现自己进入了一个数据导向的课程，而你的兴趣却在 AI 的硬件方面，这意味着你可能更适合选择一个涉及机器人技术或力学的课程。
 
-在这篇文章中，我揭示了一个实用的框架，提供了一种适应性强的方式来选择适合的AI相关课程。
+在这篇文章中，我揭示了一个实用的框架，提供了一种适应性强的方式来选择适合的 AI 相关课程。

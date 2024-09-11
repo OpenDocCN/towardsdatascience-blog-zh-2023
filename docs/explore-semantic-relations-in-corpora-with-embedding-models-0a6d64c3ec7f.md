@@ -1,12 +1,12 @@
 # 探索语料库中的语义关系与嵌入模型
 
-> 原文：[https://towardsdatascience.com/explore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f?source=collection_archive---------2-----------------------#2023-11-24](https://towardsdatascience.com/explore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f?source=collection_archive---------2-----------------------#2023-11-24)
+> 原文：[`towardsdatascience.com/explore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f?source=collection_archive---------2-----------------------#2023-11-24`](https://towardsdatascience.com/explore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f?source=collection_archive---------2-----------------------#2023-11-24)
 
-[](https://medium.com/@power.up1163?source=post_page-----0a6d64c3ec7f--------------------------------)[![Márton Kardos](../Images/8c86c5ea10391a0031cdc18bb77b0736.png)](https://medium.com/@power.up1163?source=post_page-----0a6d64c3ec7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0a6d64c3ec7f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0a6d64c3ec7f--------------------------------) [Márton Kardos](https://medium.com/@power.up1163?source=post_page-----0a6d64c3ec7f--------------------------------)
+[](https://medium.com/@power.up1163?source=post_page-----0a6d64c3ec7f--------------------------------)![Márton Kardos](https://medium.com/@power.up1163?source=post_page-----0a6d64c3ec7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0a6d64c3ec7f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----0a6d64c3ec7f--------------------------------) [Márton Kardos](https://medium.com/@power.up1163?source=post_page-----0a6d64c3ec7f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e63b1795236&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f&user=M%C3%A1rton+Kardos&userId=6e63b1795236&source=post_page-6e63b1795236----0a6d64c3ec7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0a6d64c3ec7f--------------------------------) ·10 min 阅读·2023年11月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0a6d64c3ec7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f&user=M%C3%A1rton+Kardos&userId=6e63b1795236&source=-----0a6d64c3ec7f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e63b1795236&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f&user=M%C3%A1rton+Kardos&userId=6e63b1795236&source=post_page-6e63b1795236----0a6d64c3ec7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0a6d64c3ec7f--------------------------------) ·10 min 阅读·2023 年 11 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0a6d64c3ec7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-semantic-relations-in-corpora-with-embedding-models-0a6d64c3ec7f&user=M%C3%A1rton+Kardos&userId=6e63b1795236&source=-----0a6d64c3ec7f---------------------clap_footer-----------)
 
 --
 
@@ -26,21 +26,21 @@
 
 如果我们不想将一般知识转移到特定模型中，而是希望得到一个较小语料库的语义特定方面的映射，该怎么办呢？假设我们有一个来自论坛的评论语料库，我们想探索其中可以发现哪些关联关系。
 
-一种方法是从头开始训练一个词嵌入模型，而不是使用已经为我们预训练的模型。在这个例子中，我将使用20Newsgroups数据集作为语料库，我们将在其中探索语义关系。
+一种方法是从头开始训练一个词嵌入模型，而不是使用已经为我们预训练的模型。在这个例子中，我将使用 20Newsgroups 数据集作为语料库，我们将在其中探索语义关系。
 
 ## 训练模型
 
-现在让我们从一个词嵌入模型开始。你可能对Word2Vec有所了解，它是普及静态词嵌入在研究和实践中的方法。另一方面，由斯坦福大学的团队开发的GloVe在大多数情况下似乎是一种更好的方法，我的经验表明，它提供了更高质量的嵌入，特别是在较小的语料库上。
+现在让我们从一个词嵌入模型开始。你可能对 Word2Vec 有所了解，它是普及静态词嵌入在研究和实践中的方法。另一方面，由斯坦福大学的团队开发的 GloVe 在大多数情况下似乎是一种更好的方法，我的经验表明，它提供了更高质量的嵌入，特别是在较小的语料库上。
 
-不幸的是，GloVe在Gensim中没有实现，但幸运的是，我为原始GloVe代码制作了一个完全兼容Gensim的接口，我们将使用它来训练模型。
+不幸的是，GloVe 在 Gensim 中没有实现，但幸运的是，我为原始 GloVe 代码制作了一个完全兼容 Gensim 的接口，我们将使用它来训练模型。
 
-让我们安装gensim、glovpy和scikit-learn，以便我们可以获取20Newsgroups以及embedding-explorer：
+让我们安装 gensim、glovpy 和 scikit-learn，以便我们可以获取 20Newsgroups 以及 embedding-explorer：
 
 ```py
 pip install glovpy gensim scikit-learn
 ```
 
-我们首先需要加载数据集，并对其进行标记化，为此我们将使用gensim内置的标记化工具。我们还将过滤掉停用词，因为它们对当前任务没有任何有意义的信息。
+我们首先需要加载数据集，并对其进行标记化，为此我们将使用 gensim 内置的标记化工具。我们还将过滤掉停用词，因为它们对当前任务没有任何有意义的信息。
 
 ```py
 from gensim.utils import tokenize
@@ -63,7 +63,7 @@ newsgroups = dataset.data
 tokenized_corpus = [clean_tokenize(text) for text in newsgroups]
 ```
 
-之后，我们可以在标记化的语料库上轻松训练一个GloVe模型。
+之后，我们可以在标记化的语料库上轻松训练一个 GloVe 模型。
 
 ```py
 from glovpy import GloVe
@@ -115,7 +115,7 @@ show_network_explorer(vocabulary, embeddings=embeddings)
 
 这将打开一个浏览器窗口，您可以自由探索语料库中的语义关系。这里是我查看围绕“jesus”，“science”和“religion”这些词汇形成的网络的截图。
 
-![](../Images/4eaca92387bf13d4e0e9267ed4f07729.png)
+![](img/4eaca92387bf13d4e0e9267ed4f07729.png)
 
 探索我们 GloVe 模型中的语义关系
 
@@ -179,7 +179,7 @@ show_network_explorer(four_grams, vectorizer=encoder)
 
 请注意，这允许我们指定任何任意种子，而不仅仅是我们四元组词汇表中的种子。这里是我输入两个句子的截图，并查看从它们周围的四元组构建了什么样的网络。
 
-![](../Images/3db5a5c43e29284b149aa94c94740de6.png)
+![](img/3db5a5c43e29284b149aa94c94740de6.png)
 
 探索语料库中的短语和句子
 
@@ -197,11 +197,11 @@ show_network_explorer(four_grams, vectorizer=encoder)
 
 和以前一样，我们需要考虑如何表示单个文档，以便捕捉它们的语义内容。
 
-更传统的机器学习实践通常使用词袋模型表示或训练Doc2Vec模型。这些都是很好的选择（你可以并且应该尝试这些方法），但它们同样缺乏文本的上下文理解。由于我们语料库中的文本不算太长，我们仍然可以使用句子变换器进行嵌入。让我们继续使用我们为短语使用的相同嵌入模型。
+更传统的机器学习实践通常使用词袋模型表示或训练 Doc2Vec 模型。这些都是很好的选择（你可以并且应该尝试这些方法），但它们同样缺乏文本的上下文理解。由于我们语料库中的文本不算太长，我们仍然可以使用句子变换器进行嵌入。让我们继续使用我们为短语使用的相同嵌入模型。
 
 ## 投影与聚类
 
-探索文档的语义表示的一种自然方式是将它们投影到较低维度的空间（通常是2D），并使用这些投影来可视化文档。我们还可以查看文档在某些聚类方法下的聚类情况。
+探索文档的语义表示的一种自然方式是将它们投影到较低维度的空间（通常是 2D），并使用这些投影来可视化文档。我们还可以查看文档在某些聚类方法下的聚类情况。
 
 现在这一切都很棒，但投影、降维和聚类方法的领域如此广泛，以至于我常常会想：*“如果我使用其他方法，结果会有实质性不同吗？”* 为了应对这个问题，我在嵌入探索中添加了另一个应用程序，你可以自由快速地探索不同方法下的可视化效果。
 
@@ -209,11 +209,11 @@ show_network_explorer(four_grams, vectorizer=encoder)
 
 1\. 我们可能会在继续之前减少嵌入的维度。你可以选择各种降维方法，或者关闭它。
 
-2\. 我们想将嵌入投影到2D空间中，以便我们可以对其进行可视化。
+2\. 我们想将嵌入投影到 2D 空间中，以便我们可以对其进行可视化。
 
 3\. 我们可能想要对嵌入进行聚类，以查看哪些文档被归为一组。
 
-![](../Images/46e31c7d58375bcd1946ed521a1779c7.png)
+![](img/46e31c7d58375bcd1946ed521a1779c7.png)
 
 嵌入探索中的聚类与投影工作流
 
@@ -221,7 +221,7 @@ show_network_explorer(four_grams, vectorizer=encoder)
 
 让我们创建一个包含以下列的数据框：
 
-1\. 每个文档的前400个字符，以便我们可以了解文本的内容。
+1\. 每个文档的前 400 个字符，以便我们可以了解文本的内容。
 
 2\. 文本的长度，以便我们可以在可视化中查看哪些文本较长，哪些较短。
 
@@ -262,19 +262,19 @@ show_clustering(
 
 当应用程序启动时，你会首先看到这个屏幕：
 
-![](../Images/4abedd0f5b11143fec215a1b9e2bfcfa.png)
+![](img/4abedd0f5b11143fec215a1b9e2bfcfa.png)
 
 聚类应用中的选项
 
 运行聚类后，你将能够查看按聚类着色的所有文档的地图。你可以悬停在点上以查看文档的元数据……
 
-![](../Images/d7b03a98df2630141f73eaabf56bd9cd.png)
+![](img/d7b03a98df2630141f73eaabf56bd9cd.png)
 
 聚类应用截图
 
 并且在底部你甚至可以选择点的颜色、标签和大小。
 
-![](../Images/bb8c364a297dc4cde2893155fa028f59.png)
+![](img/bb8c364a297dc4cde2893155fa028f59.png)
 
 带有文档大小的聚类
 

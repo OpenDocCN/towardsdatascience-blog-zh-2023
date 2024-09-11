@@ -1,18 +1,18 @@
 # 5 种简单而有效的 Python 日志使用方法
 
-> 原文：[https://towardsdatascience.com/5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd?source=collection_archive---------6-----------------------#2023-06-16](https://towardsdatascience.com/5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd?source=collection_archive---------6-----------------------#2023-06-16)
+> 原文：[`towardsdatascience.com/5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd?source=collection_archive---------6-----------------------#2023-06-16`](https://towardsdatascience.com/5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd?source=collection_archive---------6-----------------------#2023-06-16)
 
 ## 像专家一样使用 Python 日志
 
-[](https://dmitryelj.medium.com/?source=post_page-----a9564bd17ccd--------------------------------)[![Dmitrii Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----a9564bd17ccd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a9564bd17ccd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a9564bd17ccd--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----a9564bd17ccd--------------------------------)
+[](https://dmitryelj.medium.com/?source=post_page-----a9564bd17ccd--------------------------------)![Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----a9564bd17ccd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a9564bd17ccd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a9564bd17ccd--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----a9564bd17ccd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----a9564bd17ccd---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a9564bd17ccd--------------------------------) ·5 分钟阅读·2023年6月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa9564bd17ccd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=-----a9564bd17ccd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----a9564bd17ccd---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a9564bd17ccd--------------------------------) ·5 分钟阅读·2023 年 6 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa9564bd17ccd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=-----a9564bd17ccd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa9564bd17ccd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd&source=-----a9564bd17ccd---------------------bookmark_footer-----------)![](../Images/15b156437e425ed1bab6abb488109fac.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa9564bd17ccd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-easy-and-effective-ways-to-use-python-logging-a9564bd17ccd&source=-----a9564bd17ccd---------------------bookmark_footer-----------)![](img/15b156437e425ed1bab6abb488109fac.png)
 
 图片由作者生成
 

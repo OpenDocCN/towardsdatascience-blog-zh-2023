@@ -1,10 +1,10 @@
 # 你错过了什么
 
-> 原文：[https://towardsdatascience.com/heres-what-you-are-missing-cdf4a6294020?source=collection_archive---------9-----------------------#2023-08-26](https://towardsdatascience.com/heres-what-you-are-missing-cdf4a6294020?source=collection_archive---------9-----------------------#2023-08-26)
+> 原文：[`towardsdatascience.com/heres-what-you-are-missing-cdf4a6294020?source=collection_archive---------9-----------------------#2023-08-26`](https://towardsdatascience.com/heres-what-you-are-missing-cdf4a6294020?source=collection_archive---------9-----------------------#2023-08-26)
 
 ## AI 行业可见性的隐藏力量及如何获得它
 
-[](https://richmondalake.medium.com/?source=post_page-----cdf4a6294020--------------------------------)[![Richmond Alake](../Images/7d563ac272e730f4f6a9ce8620cd11e3.png)](https://richmondalake.medium.com/?source=post_page-----cdf4a6294020--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cdf4a6294020--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cdf4a6294020--------------------------------) [Richmond Alake](https://richmondalake.medium.com/?source=post_page-----cdf4a6294020--------------------------------)
+[](https://richmondalake.medium.com/?source=post_page-----cdf4a6294020--------------------------------)![Richmond Alake](https://richmondalake.medium.com/?source=post_page-----cdf4a6294020--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cdf4a6294020--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdf4a6294020--------------------------------) [Richmond Alake](https://richmondalake.medium.com/?source=post_page-----cdf4a6294020--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@
 
 # 什么是行业可见性？
 
-![](../Images/d64241076cee3d8b2219e6c62c4d61c4.png)
+![](img/d64241076cee3d8b2219e6c62c4d61c4.png)
 
 可见性 — 图像由 MidJourney 生成。
 
@@ -24,6 +24,6 @@
 
 我们都在一个重视技术技能和生产力的领域工作，所以如果你不把个人品牌和行业可见性等非技术活动视为首要任务，也没关系。但是在本文结束时，作为一名 AI 从业者，你将了解什么是行业可见性，它的好处，以及如何在 AI 领域建立和提升你自己的可见性。
 
-行业知名度和个人品牌是两个密切相关的术语，有时它们可以互换使用。你可能是一名中级、高级或经验丰富的AI从业者，从技术角度看，你已经见识了很多。你可能在不同团队中工作过，这些团队有各种结构配置，包括数据工程师、科学家和产品经理。你理解机器学习流程中的关键环节，包括AI模型的生产化。
+行业知名度和个人品牌是两个密切相关的术语，有时它们可以互换使用。你可能是一名中级、高级或经验丰富的 AI 从业者，从技术角度看，你已经见识了很多。你可能在不同团队中工作过，这些团队有各种结构配置，包括数据工程师、科学家和产品经理。你理解机器学习流程中的关键环节，包括 AI 模型的生产化。
 
 现在你已经达到职业生涯的一个阶段，对库、工具、框架以及你的整体技术栈有了相当不错的理解。

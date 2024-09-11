@@ -1,14 +1,14 @@
 # 数据科学软技能
 
-> 原文：[https://towardsdatascience.com/great-applied-data-science-work-5739daf13dd3?source=collection_archive---------4-----------------------#2023-08-23](https://towardsdatascience.com/great-applied-data-science-work-5739daf13dd3?source=collection_archive---------4-----------------------#2023-08-23)
+> 原文：[`towardsdatascience.com/great-applied-data-science-work-5739daf13dd3?source=collection_archive---------4-----------------------#2023-08-23`](https://towardsdatascience.com/great-applied-data-science-work-5739daf13dd3?source=collection_archive---------4-----------------------#2023-08-23)
 
 ## 什么帮助解决从业务需求到结果展示的实际问题
 
-[](https://medium.com/@lars.roemheld?source=post_page-----5739daf13dd3--------------------------------)[![Lars Roemheld](../Images/4618e720c12abfb7c1523e9462eb185b.png)](https://medium.com/@lars.roemheld?source=post_page-----5739daf13dd3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5739daf13dd3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5739daf13dd3--------------------------------) [Lars Roemheld](https://medium.com/@lars.roemheld?source=post_page-----5739daf13dd3--------------------------------)
+[](https://medium.com/@lars.roemheld?source=post_page-----5739daf13dd3--------------------------------)![Lars Roemheld](https://medium.com/@lars.roemheld?source=post_page-----5739daf13dd3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5739daf13dd3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5739daf13dd3--------------------------------) [Lars Roemheld](https://medium.com/@lars.roemheld?source=post_page-----5739daf13dd3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea4059de5473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgreat-applied-data-science-work-5739daf13dd3&user=Lars+Roemheld&userId=ea4059de5473&source=post_page-ea4059de5473----5739daf13dd3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5739daf13dd3--------------------------------) ·14 min read·2023年8月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5739daf13dd3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgreat-applied-data-science-work-5739daf13dd3&user=Lars+Roemheld&userId=ea4059de5473&source=-----5739daf13dd3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea4059de5473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgreat-applied-data-science-work-5739daf13dd3&user=Lars+Roemheld&userId=ea4059de5473&source=post_page-ea4059de5473----5739daf13dd3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5739daf13dd3--------------------------------) ·14 min read·2023 年 8 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5739daf13dd3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgreat-applied-data-science-work-5739daf13dd3&user=Lars+Roemheld&userId=ea4059de5473&source=-----5739daf13dd3---------------------clap_footer-----------)
 
 --
 
@@ -52,7 +52,7 @@
 
 ## 与人合作
 
-很多科学工作需要与他人协作；理解之前的工作，寻找相关的数据集，要求解释，将进展传达给你的利益相关者，说服你的团队成员支持你的项目。最终你负责交付结果——管理协作是工作的一部分。这可能意味着你需要说服团队成员审查你的Pull Request，也可能意味着你需要找到将数据工程需求纳入另一个团队待办事项中的方法。当这个过程陷入困境时，你可以升级问题，领导可以帮助明确优先级——但你有责任完成这一工作。
+很多科学工作需要与他人协作；理解之前的工作，寻找相关的数据集，要求解释，将进展传达给你的利益相关者，说服你的团队成员支持你的项目。最终你负责交付结果——管理协作是工作的一部分。这可能意味着你需要说服团队成员审查你的 Pull Request，也可能意味着你需要找到将数据工程需求纳入另一个团队待办事项中的方法。当这个过程陷入困境时，你可以升级问题，领导可以帮助明确优先级——但你有责任完成这一工作。
 
 ## 跟进
 
@@ -92,7 +92,7 @@
 
 1.  按照估计的验证工作量对你的方法进行排序。
 
-1.  从最低验证工作量的方法开始，头脑风暴如何验证这种方法，并最终使用它来解决你的（子）问题。递归地继续你的树（即对于每个子问题，从1重新开始）。根据需要对树的各个层次重复这一过程。
+1.  从最低验证工作量的方法开始，头脑风暴如何验证这种方法，并最终使用它来解决你的（子）问题。递归地继续你的树（即对于每个子问题，从 1 重新开始）。根据需要对树的各个层次重复这一过程。
 
 使用这种方法，你最终理想的结果是一个结构良好、优先级排序的计划，明确首先尝试什么，成功后怎么做（沿着那一分支），以及失败后怎么做（继续在当前分支下的下一个分支上工作）。你树的“叶子”理想情况下应该是相对容易测试、可以通过数据回答的问题。你的计划结构还应该使描述进展和获取中期结果反馈变得更加容易。
 
@@ -168,13 +168,13 @@
 
 每当展示数值结果时（例如，在表格中）：
 
-1.  针对并展示一个合适的成功指标进行优化。许多应用科学家在这方面花的时间太少：了解何时使用RMSE/MAPE/MAE、对数尺度、F1与ROC与精准度-召回曲线下面积的区别。
+1.  针对并展示一个合适的成功指标进行优化。许多应用科学家在这方面花的时间太少：了解何时使用 RMSE/MAPE/MAE、对数尺度、F1 与 ROC 与精准度-召回曲线下面积的区别。
 
 1.  几乎所有现实世界的问题都涉及*加权*成功度量，然而大多数机器学习课程几乎不涉及这个话题：例如，销售预测的成功度量可能需要根据使用情况加权价格、库存价值或包装尺寸。
 
 1.  如果成功意味着估计反事实（“假如”分析），请明确表达，并找到一个明确的推理，说明你的成功度量如何捕捉这样的反事实。（自然）实验是一个流行的选择。
 
-1.  对于你呈现的任何数字，请提供合理的基准。通常，确定“正确”的基准需要深思熟虑，但这总是值得的。你拟合了一个复杂的机器学习模型？它比线性回归好多少？你建立了下周的预测？它比假设下周等于这周好多少？你正在呈现A/B测试结果？相对于我们的月收入，或者相对于上次改进，增长了多少？
+1.  对于你呈现的任何数字，请提供合理的基准。通常，确定“正确”的基准需要深思熟虑，但这总是值得的。你拟合了一个复杂的机器学习模型？它比线性回归好多少？你建立了下周的预测？它比假设下周等于这周好多少？你正在呈现 A/B 测试结果？相对于我们的月收入，或者相对于上次改进，增长了多少？
 
 ## 清晰的语言
 
@@ -188,11 +188,11 @@
 
 ## 文化
 
-1.  丹·纳：[“用乐观和善良克服摩擦，因为这是工作。”](https://www.youtube.com/watch?v=8bxZuzDKoI0)（30分钟视频）
+1.  丹·纳：[“用乐观和善良克服摩擦，因为这是工作。”](https://www.youtube.com/watch?v=8bxZuzDKoI0)（30 分钟视频）
 
-1.  Netflix宣言：[“我们是一支职业运动队，而不是一个家庭”，以及许多关于高绩效团队的想法](https://www.slideshare.net/reed2001/culture-1798664)
+1.  Netflix 宣言：[“我们是一支职业运动队，而不是一个家庭”，以及许多关于高绩效团队的想法](https://www.slideshare.net/reed2001/culture-1798664)
 
-1.  一个受咨询启发的关于“那么”和假设树的[解释](/the-key-question-for-all-data-scientists-so-what-25139fb352c6)
+1.  一个受咨询启发的关于“那么”和假设树的解释
 
 1.  [更具问题解决能力的工程师的愿景](https://blog.pragmaticengineer.com/what-silicon-valley-gets-right-on-software-engineers/)（而不是“只做票中事项”）
 
@@ -200,28 +200,28 @@
 
 ## 科学与工程：
 
-1.  对ML、统计学、经济学相关观点的精彩总结 — 强烈推荐！ [Matt Taddy的商业数据科学](https://www.amazon.com/Business-Data-Science-Combining-Accelerate/dp/1260452778)
+1.  对 ML、统计学、经济学相关观点的精彩总结 — 强烈推荐！ [Matt Taddy 的商业数据科学](https://www.amazon.com/Business-Data-Science-Combining-Accelerate/dp/1260452778)
 
 1.  独特的现代统计学复习：[Statistical Rethinking 2022](https://www.youtube.com/playlist?list=PLDcUM9US4XdMROZ57-OIRtIK0aOynbgZN)
 
 1.  为迭代工作辩护的一个想法，最初来自软件工程：[“追踪子弹”](https://flylib.com/books/en/1.315.1.25/1/)（来自下面链接的《实用程序员》一书）
 
-1.  Lisa Muth的易懂的 [数据可视化教程](https://blog.datawrapper.de/category/datavis-dos-and-donts/) 
+1.  Lisa Muth 的易懂的 [数据可视化教程](https://blog.datawrapper.de/category/datavis-dos-and-donts/) 
 
-1.  [现代pandas](https://tomaugspurger.github.io/modern-1-intro.html)（和/或直接阅读 [Wes McKinney的书](https://wesmckinney.com/book/)）
+1.  [现代 pandas](https://tomaugspurger.github.io/modern-1-intro.html)（和/或直接阅读 [Wes McKinney 的书](https://wesmckinney.com/book/)）
 
-1.  [超现代Python](https://cjolowicz.github.io/posts/hypermodern-python-01-setup/)：数据科学与良好的工程实践结合
+1.  [超现代 Python](https://cjolowicz.github.io/posts/hypermodern-python-01-setup/)：数据科学与良好的工程实践结合
 
-1.  [宇宙Python](https://www.cosmicpython.com/book/preface.html)：软件架构与开发流程
+1.  [宇宙 Python](https://www.cosmicpython.com/book/preface.html)：软件架构与开发流程
 
 1.  成为一名 [实用程序员](https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/)
 
 ## 沟通
 
-1.  [Dan Luu的写作](https://danluu.com/writing-non-advice/) — 从工程角度看有效的写作。
+1.  [Dan Luu 的写作](https://danluu.com/writing-non-advice/) — 从工程角度看有效的写作。
 
-1.  [Ciechanowski的博客](https://ciechanow.ski/) — 极其美丽的技术写作和插图
+1.  [Ciechanowski 的博客](https://ciechanow.ski/) — 极其美丽的技术写作和插图
 
-![](../Images/daf1dc9132e71214c8ca31b1ab3d504d.png)
+![](img/daf1dc9132e71214c8ca31b1ab3d504d.png)
 
 图片由 [NASA](https://unsplash.com/@nasa?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)

@@ -1,18 +1,18 @@
 # ChatGPT 能推荐带有机器学习的电影吗
 
-> 原文：[https://towardsdatascience.com/can-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90?source=collection_archive---------14-----------------------#2023-04-17](https://towardsdatascience.com/can-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90?source=collection_archive---------14-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/can-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90?source=collection_archive---------14-----------------------#2023-04-17`](https://towardsdatascience.com/can-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90?source=collection_archive---------14-----------------------#2023-04-17)
 
 ## 在推荐的背景下测试 ChatGPT 的极限的有趣旅程
 
-[](https://thushv89.medium.com/?source=post_page-----a5bc6c8fe90--------------------------------)[![Thushan Ganegedara](../Images/3fabfa37132f7d3a9e7679c3b8d7e061.png)](https://thushv89.medium.com/?source=post_page-----a5bc6c8fe90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5bc6c8fe90--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5bc6c8fe90--------------------------------) [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----a5bc6c8fe90--------------------------------)
+[](https://thushv89.medium.com/?source=post_page-----a5bc6c8fe90--------------------------------)![Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----a5bc6c8fe90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5bc6c8fe90--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5bc6c8fe90--------------------------------) [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----a5bc6c8fe90--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0b045d5681&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90&user=Thushan+Ganegedara&userId=6f0b045d5681&source=post_page-6f0b045d5681----a5bc6c8fe90---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5bc6c8fe90--------------------------------) ·6 min read·2023年4月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa5bc6c8fe90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90&user=Thushan+Ganegedara&userId=6f0b045d5681&source=-----a5bc6c8fe90---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0b045d5681&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90&user=Thushan+Ganegedara&userId=6f0b045d5681&source=post_page-6f0b045d5681----a5bc6c8fe90---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5bc6c8fe90--------------------------------) ·6 min read·2023 年 4 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa5bc6c8fe90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90&user=Thushan+Ganegedara&userId=6f0b045d5681&source=-----a5bc6c8fe90---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa5bc6c8fe90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90&source=-----a5bc6c8fe90---------------------bookmark_footer-----------)![](../Images/1bdca70947a7ce0b4d891d683a9c415e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa5bc6c8fe90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-chatgpt-recommend-movies-with-machine-learning-a5bc6c8fe90&source=-----a5bc6c8fe90---------------------bookmark_footer-----------)![](img/1bdca70947a7ce0b4d891d683a9c415e.png)
 
 照片由[Tech Daily](https://unsplash.com/@techdailyca?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来源于[Unsplash](https://unsplash.com/photos/PGuCnUzsRSM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -24,11 +24,11 @@
 
 许多人正在以创意方式使用 ChatGPT，从 [从零开始制作 Flappy Bird](https://www.youtube.com/watch?v=8y7GRYaYYQg) 到 [构建网站](https://www.youtube.com/watch?v=8I3NTE4cn5s)。跟随这一趋势，我决定查看 ChatGPT 是否可以根据数据集计算一个未见过的电影的用户评分。我首先要求 ChatGPT 生成一个数据集。
 
-![](../Images/7c1808336834721093f234d37d427b98.png)
+![](img/7c1808336834721093f234d37d427b98.png)
 
 响应迅速，并生成了如上下文中解释的数据集。
 
-![](../Images/cc0502ec2a8a66467fc6e0663fe75bd0.png)
+![](img/cc0502ec2a8a66467fc6e0663fe75bd0.png)
 
 d
 
@@ -38,25 +38,25 @@ d
 
 我的希望是 ChatGPT 使用协作过滤方法来完成此任务。可以首先创建一个评分矩阵，利用评分矩阵计算与 Jack 的用户相似度。最后，
 
-![](../Images/a56449843370777af4a3e1138e5216bc.png)
+![](img/a56449843370777af4a3e1138e5216bc.png)
 
 请注意，我在计算评分时忽略了对《复仇者联盟》的评分为 0 的用户。以下的 Excel 表展示了这些计算。我们正在寻找的最终答案是 9。
 
-![](../Images/5747bbc4f77e3d1860edd315c1ab4737.png)
+![](img/5747bbc4f77e3d1860edd315c1ab4737.png)
 
 接下来，我提出了如下问题。
 
-![](../Images/bbffab957015265f4030c5e3924c91ad.png)
+![](img/bbffab957015265f4030c5e3924c91ad.png)
 
 看起来 ChatGPT 认为这应该是一个数据点，当前在数据集中缺失。我还尝试了 “[一步步思考](https://github.com/openai/openai-cookbook/blob/main/techniques_to_improve_reliability.md#model-capabilities-depend-on-context)” 的技巧，但这并没有让 ChatGPT 进展太远。
 
 接下来，我尝试使用 [思路链推理](https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/#chain-of-thought-cot) 来阐述计算最终结果所需遵循的方法。
 
-![](../Images/3af83f80ff587a8bfb472e42a1247e33.png)
+![](img/3af83f80ff587a8bfb472e42a1247e33.png)
 
 成功了！这次，ChatGPT 能够按照计划执行，生成中间结果并计算最终答案。
 
-![](../Images/daad76302b608214c252faf213cd0d30.png)
+![](img/daad76302b608214c252faf213cd0d30.png)
 
 但稍等一下！最终结果是错误的。
 
@@ -64,11 +64,11 @@ d
 
 看起来 ChatGPT 得出的最终结果是错的。如果你把最后一步第 2 行的方程式复制到计算器中，你会得到 9，而不是 8.95。此外，余弦距离也毫不意外地错误。但是，考虑到 ChatGPT 只是一个语言模型，它能做到这一点仍然令人印象深刻。让我们给予它怀疑的余地，尝试找出 ChatGPT 出错的地方。
 
-![](../Images/e4d7d60fe9c94fa97abef352b071f133.png)
+![](img/e4d7d60fe9c94fa97abef352b071f133.png)
 
 不幸的是，ChatGPT 无法解决这个问题。这是新响应的一部分内容。
 
-![](../Images/fe6470e2b50fef43305ed841d2b79bad.png)
+![](img/fe6470e2b50fef43305ed841d2b79bad.png)
 
 我无法让 ChatGPT 纠正错误。但它一直承认自己犯了错误，这有点矛盾。这引出了第二个问题。
 
@@ -76,17 +76,17 @@ d
 
 ChatGPT 非常过于奉承，每次你指出它错了，它都会认为自己错了。有趣的是，即使它手头上有正确的解决方案，它也会认为自己错了 😅。
 
-![](../Images/74aba971ec1122479a22e0b05a2ad263.png)
+![](img/74aba971ec1122479a22e0b05a2ad263.png)
 
 在这里，`[0, 10, 0, 8]` 是实际向量。但是 ChatGPT 认为这是错误的，并产生了其他幻觉，以摆脱它当前的困境。这几乎像是 [Bing 聊天是 ChatGPT 的邪恶兄弟](https://www.gizmodo.com.au/2023/02/bing-ai-early-access/)。
 
 经过一番对话后，我想测试一下 ChatGPT 的记忆/注意力跨度。所以我问，
 
-![](../Images/8aaf2dbff37c0b1cf519d8d8e9945295.png)
+![](img/8aaf2dbff37c0b1cf519d8d8e9945295.png)
 
 ChatGPT 说，
 
-![](../Images/0a0960f4700f564353ff7335a08474f4.png)
+![](img/0a0960f4700f564353ff7335a08474f4.png)
 
 哦哦！如果你回顾 ChatGPT 的第一个有意义的回应，评分矩阵已经发生了变化。这就进入了大型语言模型（LLMs）中最棘手的问题之一。
 

@@ -1,18 +1,18 @@
 # 作为分析师的错误——及应对策略
 
-> 原文：[https://towardsdatascience.com/making-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd?source=collection_archive---------8-----------------------#2023-10-17](https://towardsdatascience.com/making-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd?source=collection_archive---------8-----------------------#2023-10-17)
+> 原文：[`towardsdatascience.com/making-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd?source=collection_archive---------8-----------------------#2023-10-17`](https://towardsdatascience.com/making-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd?source=collection_archive---------8-----------------------#2023-10-17)
 
 ## 是否曾因分析错误而感到焦虑？你并不孤单。
 
-[](https://medium.com/@meisnerden?source=post_page-----b4d486d7c4dd--------------------------------)[![Dennis Meisner](../Images/11661d579505b449dc25a88f4c6ac912.png)](https://medium.com/@meisnerden?source=post_page-----b4d486d7c4dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4d486d7c4dd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b4d486d7c4dd--------------------------------) [Dennis Meisner](https://medium.com/@meisnerden?source=post_page-----b4d486d7c4dd--------------------------------)
+[](https://medium.com/@meisnerden?source=post_page-----b4d486d7c4dd--------------------------------)![Dennis Meisner](https://medium.com/@meisnerden?source=post_page-----b4d486d7c4dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4d486d7c4dd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4d486d7c4dd--------------------------------) [Dennis Meisner](https://medium.com/@meisnerden?source=post_page-----b4d486d7c4dd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd242f538e931&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd&user=Dennis+Meisner&userId=d242f538e931&source=post_page-d242f538e931----b4d486d7c4dd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4d486d7c4dd--------------------------------) ·6 分钟阅读·2023年10月17日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd242f538e931&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd&user=Dennis+Meisner&userId=d242f538e931&source=post_page-d242f538e931----b4d486d7c4dd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4d486d7c4dd--------------------------------) ·6 分钟阅读·2023 年 10 月 17 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4d486d7c4dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd&source=-----b4d486d7c4dd---------------------bookmark_footer-----------)![](../Images/c51c84437544fa7e48871a4f111f00ec.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4d486d7c4dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-mistakes-as-an-analyst-and-strategies-to-deal-with-them-b4d486d7c4dd&source=-----b4d486d7c4dd---------------------bookmark_footer-----------)![](img/c51c84437544fa7e48871a4f111f00ec.png)
 
 来源: [Unsplash](https://unsplash.com/photos/5siQcvSxCP8)
 

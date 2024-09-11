@@ -1,16 +1,16 @@
 # 使用 PostgreSQL 和 OpenAI 嵌入实现语义搜索
 
-> 原文：[https://towardsdatascience.com/semantic-search-with-postgresql-and-openai-embeddings-4d327236f41f?source=collection_archive---------3-----------------------#2023-11-21](https://towardsdatascience.com/semantic-search-with-postgresql-and-openai-embeddings-4d327236f41f?source=collection_archive---------3-----------------------#2023-11-21)
+> 原文：[`towardsdatascience.com/semantic-search-with-postgresql-and-openai-embeddings-4d327236f41f?source=collection_archive---------3-----------------------#2023-11-21`](https://towardsdatascience.com/semantic-search-with-postgresql-and-openai-embeddings-4d327236f41f?source=collection_archive---------3-----------------------#2023-11-21)
 
-[](https://curiousdima.medium.com/?source=post_page-----4d327236f41f--------------------------------)[![Dima Timofeev](../Images/a11f81c67f04923c0ca454347f1fe423.png)](https://curiousdima.medium.com/?source=post_page-----4d327236f41f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d327236f41f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d327236f41f--------------------------------) [Dima Timofeev](https://curiousdima.medium.com/?source=post_page-----4d327236f41f--------------------------------)
+[](https://curiousdima.medium.com/?source=post_page-----4d327236f41f--------------------------------)![Dima Timofeev](https://curiousdima.medium.com/?source=post_page-----4d327236f41f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d327236f41f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d327236f41f--------------------------------) [Dima Timofeev](https://curiousdima.medium.com/?source=post_page-----4d327236f41f--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1df0a90be7e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsemantic-search-with-postgresql-and-openai-embeddings-4d327236f41f&user=Dima+Timofeev&userId=1df0a90be7e9&source=post_page-1df0a90be7e9----4d327236f41f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d327236f41f--------------------------------) ·4分钟阅读·2023年11月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d327236f41f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsemantic-search-with-postgresql-and-openai-embeddings-4d327236f41f&user=Dima+Timofeev&userId=1df0a90be7e9&source=-----4d327236f41f---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1df0a90be7e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsemantic-search-with-postgresql-and-openai-embeddings-4d327236f41f&user=Dima+Timofeev&userId=1df0a90be7e9&source=post_page-1df0a90be7e9----4d327236f41f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d327236f41f--------------------------------) ·4 分钟阅读·2023 年 11 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d327236f41f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsemantic-search-with-postgresql-and-openai-embeddings-4d327236f41f&user=Dima+Timofeev&userId=1df0a90be7e9&source=-----4d327236f41f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d327236f41f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsemantic-search-with-postgresql-and-openai-embeddings-4d327236f41f&source=-----4d327236f41f---------------------bookmark_footer-----------)![](../Images/2c0f934e64c66aa85851890637f67bfa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d327236f41f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsemantic-search-with-postgresql-and-openai-embeddings-4d327236f41f&source=-----4d327236f41f---------------------bookmark_footer-----------)![](img/2c0f934e64c66aa85851890637f67bfa.png)
 
 图片由 [Igor Omilaev](https://unsplash.com/@omilaev) 提供，来源于 [Unsplash](https://unsplash.com/photos/a-blue-background-with-a-bunch-of-cookies-and-a-red-object-Z2PahC-Fi08)
 
@@ -18,7 +18,7 @@
 
 从很高的层面来看，具有 LLM 的向量数据库允许对可用数据（存储在数据库、文档等中）进行语义搜索。感谢 “[Efficient Estimation of Word Representations in Vector Space](https://arxiv.org/pdf/1301.3781.pdf)” 论文（也称为 “Word2Vec 论文”），由传奇 [Jeff Dean](https://en.wikipedia.org/wiki/Jeff_Dean) 共同作者，我们知道如何将单词表示为实值向量。词嵌入是单词在向量空间中的密集向量表示，其中意义相似的单词彼此接近。词嵌入捕捉了单词之间的语义关系，并且有多种技术来创建它们。
 
-![](../Images/615281e0ab21b19949fcf1800e50fe06.png)
+![](img/615281e0ab21b19949fcf1800e50fe06.png)
 
 图片由作者提供
 

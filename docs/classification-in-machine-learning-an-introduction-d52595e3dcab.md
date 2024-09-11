@@ -1,18 +1,18 @@
 # 机器学习中的分类：入门
 
-> 原文：[https://towardsdatascience.com/classification-in-machine-learning-an-introduction-d52595e3dcab?source=collection_archive---------10-----------------------#2023-02-24](https://towardsdatascience.com/classification-in-machine-learning-an-introduction-d52595e3dcab?source=collection_archive---------10-----------------------#2023-02-24)
+> 原文：[`towardsdatascience.com/classification-in-machine-learning-an-introduction-d52595e3dcab?source=collection_archive---------10-----------------------#2023-02-24`](https://towardsdatascience.com/classification-in-machine-learning-an-introduction-d52595e3dcab?source=collection_archive---------10-----------------------#2023-02-24)
 
 ## 了解机器学习中的分类，包括它是什么、如何使用以及一些分类算法的示例
 
-[](https://zoumanakeita.medium.com/?source=post_page-----d52595e3dcab--------------------------------)[![Zoumana Keita](../Images/34a15c1d03687816dbdbc065f5719f80.png)](https://zoumanakeita.medium.com/?source=post_page-----d52595e3dcab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d52595e3dcab--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d52595e3dcab--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----d52595e3dcab--------------------------------)
+[](https://zoumanakeita.medium.com/?source=post_page-----d52595e3dcab--------------------------------)![Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----d52595e3dcab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d52595e3dcab--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d52595e3dcab--------------------------------) [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----d52595e3dcab--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe6ae785a30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassification-in-machine-learning-an-introduction-d52595e3dcab&user=Zoumana+Keita&userId=e6ae785a30d&source=post_page-e6ae785a30d----d52595e3dcab---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d52595e3dcab--------------------------------) · 11分钟阅读·2023年2月24日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe6ae785a30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassification-in-machine-learning-an-introduction-d52595e3dcab&user=Zoumana+Keita&userId=e6ae785a30d&source=post_page-e6ae785a30d----d52595e3dcab---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d52595e3dcab--------------------------------) · 11 分钟阅读·2023 年 2 月 24 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd52595e3dcab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassification-in-machine-learning-an-introduction-d52595e3dcab&source=-----d52595e3dcab---------------------bookmark_footer-----------)![](../Images/c16208ec7dde75291c85a0ea05165cfa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd52595e3dcab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassification-in-machine-learning-an-introduction-d52595e3dcab&source=-----d52595e3dcab---------------------bookmark_footer-----------)![](img/c16208ec7dde75291c85a0ea05165cfa.png)
 
 图片由[Markus Winkler](https://unsplash.com/@markuswinkler)拍摄，来自[Unsplash](https://unsplash.com/photos/f57lx37DCM4)
 

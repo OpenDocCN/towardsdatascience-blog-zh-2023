@@ -1,20 +1,20 @@
 # Python 标准库中的 NaN 值
 
-> 原文：[https://towardsdatascience.com/nan-values-in-the-python-standard-library-798d9ed946c0?source=collection_archive---------9-----------------------#2023-10-07](https://towardsdatascience.com/nan-values-in-the-python-standard-library-798d9ed946c0?source=collection_archive---------9-----------------------#2023-10-07)
+> 原文：[`towardsdatascience.com/nan-values-in-the-python-standard-library-798d9ed946c0?source=collection_archive---------9-----------------------#2023-10-07`](https://towardsdatascience.com/nan-values-in-the-python-standard-library-798d9ed946c0?source=collection_archive---------9-----------------------#2023-10-07)
 
 ## PYTHON 编程
 
 ## NaN 意味着 Not-a-Number。你可以在数值库中使用它——也可以在 Python 标准库中使用。
 
-[](https://medium.com/@nyggus?source=post_page-----798d9ed946c0--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----798d9ed946c0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----798d9ed946c0--------------------------------)[![数据科学进展](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----798d9ed946c0--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----798d9ed946c0--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----798d9ed946c0--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----798d9ed946c0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----798d9ed946c0--------------------------------)![数据科学进展](https://towardsdatascience.com/?source=post_page-----798d9ed946c0--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----798d9ed946c0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnan-values-in-the-python-standard-library-798d9ed946c0&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----798d9ed946c0---------------------post_header-----------) 发布于 [数据科学进展](https://towardsdatascience.com/?source=post_page-----798d9ed946c0--------------------------------) · 11分钟阅读 · 2023年10月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F798d9ed946c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnan-values-in-the-python-standard-library-798d9ed946c0&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----798d9ed946c0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnan-values-in-the-python-standard-library-798d9ed946c0&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----798d9ed946c0---------------------post_header-----------) 发布于 [数据科学进展](https://towardsdatascience.com/?source=post_page-----798d9ed946c0--------------------------------) · 11 分钟阅读 · 2023 年 10 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F798d9ed946c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnan-values-in-the-python-standard-library-798d9ed946c0&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----798d9ed946c0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F798d9ed946c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnan-values-in-the-python-standard-library-798d9ed946c0&source=-----798d9ed946c0---------------------bookmark_footer-----------)![](../Images/f4310ba7fa2b1ab8177d7c517788116b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F798d9ed946c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnan-values-in-the-python-standard-library-798d9ed946c0&source=-----798d9ed946c0---------------------bookmark_footer-----------)![](img/f4310ba7fa2b1ab8177d7c517788116b.png)
 
 图片由 [cyrus gomez](https://unsplash.com/@cyrusgomez?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

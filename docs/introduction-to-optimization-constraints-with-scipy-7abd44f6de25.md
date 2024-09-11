@@ -1,38 +1,38 @@
 # SciPy 优化约束介绍
 
-> 原文：[https://towardsdatascience.com/introduction-to-optimization-constraints-with-scipy-7abd44f6de25?source=collection_archive---------2-----------------------#2023-01-31](https://towardsdatascience.com/introduction-to-optimization-constraints-with-scipy-7abd44f6de25?source=collection_archive---------2-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/introduction-to-optimization-constraints-with-scipy-7abd44f6de25?source=collection_archive---------2-----------------------#2023-01-31`](https://towardsdatascience.com/introduction-to-optimization-constraints-with-scipy-7abd44f6de25?source=collection_archive---------2-----------------------#2023-01-31)
 
 ## 探索界限、线性和非线性约束，通过实际的 Python 示例进行学习
 
-[](https://nicolo-albanese.medium.com/?source=post_page-----7abd44f6de25--------------------------------)[![Nicolo Cosimo Albanese](../Images/9a2c26207146741b58c3742927d09450.png)](https://nicolo-albanese.medium.com/?source=post_page-----7abd44f6de25--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7abd44f6de25--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7abd44f6de25--------------------------------) [Nicolo Cosimo Albanese](https://nicolo-albanese.medium.com/?source=post_page-----7abd44f6de25--------------------------------)
+[](https://nicolo-albanese.medium.com/?source=post_page-----7abd44f6de25--------------------------------)![Nicolo Cosimo Albanese](https://nicolo-albanese.medium.com/?source=post_page-----7abd44f6de25--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7abd44f6de25--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7abd44f6de25--------------------------------) [Nicolo Cosimo Albanese](https://nicolo-albanese.medium.com/?source=post_page-----7abd44f6de25--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7430df412ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-optimization-constraints-with-scipy-7abd44f6de25&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=post_page-7430df412ec----7abd44f6de25---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7abd44f6de25--------------------------------) ·8分钟阅读·2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7abd44f6de25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-optimization-constraints-with-scipy-7abd44f6de25&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=-----7abd44f6de25---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7430df412ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-optimization-constraints-with-scipy-7abd44f6de25&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=post_page-7430df412ec----7abd44f6de25---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7abd44f6de25--------------------------------) ·8 分钟阅读·2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7abd44f6de25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-optimization-constraints-with-scipy-7abd44f6de25&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=-----7abd44f6de25---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7abd44f6de25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-optimization-constraints-with-scipy-7abd44f6de25&source=-----7abd44f6de25---------------------bookmark_footer-----------)![](../Images/d21debedc54b93104a0d8720c23d510f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7abd44f6de25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-optimization-constraints-with-scipy-7abd44f6de25&source=-----7abd44f6de25---------------------bookmark_footer-----------)![](img/d21debedc54b93104a0d8720c23d510f.png)
 
 图片作者提供。
 
 # 目录
 
-1.  [介绍](#d414)
+1.  介绍
 
-1.  [实现](#5bb0)
+1.  实现
 
-    2.1 [无约束优化](#b0a9)
+    2.1 无约束优化
 
-    2.2 [界限](#5ca2)
+    2.2 界限
 
-    2.3 [线性约束](#a9d0)
+    2.3 线性约束
 
-    2.4 [非线性约束](#e5dd)
+    2.4 非线性约束
 
-    2.5 [组合不同约束类型](#694a)
+    2.5 组合不同约束类型
 
-1.  [结论](#1887)
+1.  结论
 
 # 1\. 介绍
 

@@ -1,18 +1,18 @@
 # 我们是否应该虚拟化我们的数据科学系统 — 或者不虚拟化？
 
-> 原文：[https://towardsdatascience.com/should-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3?source=collection_archive---------5-----------------------#2023-09-12](https://towardsdatascience.com/should-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3?source=collection_archive---------5-----------------------#2023-09-12)
+> 原文：[`towardsdatascience.com/should-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3?source=collection_archive---------5-----------------------#2023-09-12`](https://towardsdatascience.com/should-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3?source=collection_archive---------5-----------------------#2023-09-12)
 
-![](../Images/5f30971c4f4c248f248ced63c885dacc.png)
+![](img/5f30971c4f4c248f248ced63c885dacc.png)
 
 作者当前的家庭实验室设置
 
 ## 在虚拟化数据科学流程的优缺点上可能很难进行导航，但某些性能和能力的趋势是无法忽视的
 
-[](https://medium.com/@willkeefe?source=post_page-----6cb69b4850f3--------------------------------)[![Will Keefe](../Images/e26b5d394bd268f2b7e333d4b45711eb.png)](https://medium.com/@willkeefe?source=post_page-----6cb69b4850f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6cb69b4850f3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6cb69b4850f3--------------------------------) [Will Keefe](https://medium.com/@willkeefe?source=post_page-----6cb69b4850f3--------------------------------)
+[](https://medium.com/@willkeefe?source=post_page-----6cb69b4850f3--------------------------------)![Will Keefe](https://medium.com/@willkeefe?source=post_page-----6cb69b4850f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6cb69b4850f3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6cb69b4850f3--------------------------------) [Will Keefe](https://medium.com/@willkeefe?source=post_page-----6cb69b4850f3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87087a3fef0b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshould-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3&user=Will+Keefe&userId=87087a3fef0b&source=post_page-87087a3fef0b----6cb69b4850f3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6cb69b4850f3--------------------------------) ·12 min read·2023年9月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6cb69b4850f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshould-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3&user=Will+Keefe&userId=87087a3fef0b&source=-----6cb69b4850f3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87087a3fef0b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshould-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3&user=Will+Keefe&userId=87087a3fef0b&source=post_page-87087a3fef0b----6cb69b4850f3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6cb69b4850f3--------------------------------) ·12 min read·2023 年 9 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6cb69b4850f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshould-we-be-virtualizing-our-data-science-systems-and-or-not-6cb69b4850f3&user=Will+Keefe&userId=87087a3fef0b&source=-----6cb69b4850f3---------------------clap_footer-----------)
 
 --
 

@@ -1,18 +1,18 @@
 # 使用递归 Python 生成器的惰性求值
 
-> 原文：[https://towardsdatascience.com/lazy-evaluation-using-recursive-python-generators-9ee6af0dd803?source=collection_archive---------16-----------------------#2023-01-04](https://towardsdatascience.com/lazy-evaluation-using-recursive-python-generators-9ee6af0dd803?source=collection_archive---------16-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/lazy-evaluation-using-recursive-python-generators-9ee6af0dd803?source=collection_archive---------16-----------------------#2023-01-04`](https://towardsdatascience.com/lazy-evaluation-using-recursive-python-generators-9ee6af0dd803?source=collection_archive---------16-----------------------#2023-01-04)
 
 ## 递归函数能否使用 *“惰性求值”*？——是的，它们可以——通过使用 Python 的生成器函数！
 
-[](https://medium.com/@martin.heinz?source=post_page-----9ee6af0dd803--------------------------------)[![Martin Heinz](../Images/a8d1540fd32998ee9bda4af0f0232f7d.png)](https://medium.com/@martin.heinz?source=post_page-----9ee6af0dd803--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ee6af0dd803--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9ee6af0dd803--------------------------------) [Martin Heinz](https://medium.com/@martin.heinz?source=post_page-----9ee6af0dd803--------------------------------)
+[](https://medium.com/@martin.heinz?source=post_page-----9ee6af0dd803--------------------------------)![Martin Heinz](https://medium.com/@martin.heinz?source=post_page-----9ee6af0dd803--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ee6af0dd803--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ee6af0dd803--------------------------------) [Martin Heinz](https://medium.com/@martin.heinz?source=post_page-----9ee6af0dd803--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4cbd6b36e62a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flazy-evaluation-using-recursive-python-generators-9ee6af0dd803&user=Martin+Heinz&userId=4cbd6b36e62a&source=post_page-4cbd6b36e62a----9ee6af0dd803---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ee6af0dd803--------------------------------) · 5 min read · 2023年1月4日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ee6af0dd803&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flazy-evaluation-using-recursive-python-generators-9ee6af0dd803&user=Martin+Heinz&userId=4cbd6b36e62a&source=-----9ee6af0dd803---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4cbd6b36e62a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flazy-evaluation-using-recursive-python-generators-9ee6af0dd803&user=Martin+Heinz&userId=4cbd6b36e62a&source=post_page-4cbd6b36e62a----9ee6af0dd803---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ee6af0dd803--------------------------------) · 5 min read · 2023 年 1 月 4 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ee6af0dd803&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flazy-evaluation-using-recursive-python-generators-9ee6af0dd803&user=Martin+Heinz&userId=4cbd6b36e62a&source=-----9ee6af0dd803---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ee6af0dd803&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flazy-evaluation-using-recursive-python-generators-9ee6af0dd803&source=-----9ee6af0dd803---------------------bookmark_footer-----------)![](../Images/84db954d46d54cd7ea660368b0737fa3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ee6af0dd803&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flazy-evaluation-using-recursive-python-generators-9ee6af0dd803&source=-----9ee6af0dd803---------------------bookmark_footer-----------)![](img/84db954d46d54cd7ea660368b0737fa3.png)
 
 使用 Stable Diffusion 生成
 

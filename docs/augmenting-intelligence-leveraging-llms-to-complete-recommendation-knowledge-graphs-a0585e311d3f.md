@@ -1,12 +1,12 @@
-# 利用LLMs完善推荐知识图谱
+# 利用 LLMs 完善推荐知识图谱
 
-> 原文：[https://towardsdatascience.com/augmenting-intelligence-leveraging-llms-to-complete-recommendation-knowledge-graphs-a0585e311d3f?source=collection_archive---------2-----------------------#2023-11-06](https://towardsdatascience.com/augmenting-intelligence-leveraging-llms-to-complete-recommendation-knowledge-graphs-a0585e311d3f?source=collection_archive---------2-----------------------#2023-11-06)
+> 原文：[`towardsdatascience.com/augmenting-intelligence-leveraging-llms-to-complete-recommendation-knowledge-graphs-a0585e311d3f?source=collection_archive---------2-----------------------#2023-11-06`](https://towardsdatascience.com/augmenting-intelligence-leveraging-llms-to-complete-recommendation-knowledge-graphs-a0585e311d3f?source=collection_archive---------2-----------------------#2023-11-06)
 
-[](https://medium.com/@alcarazanthony1?source=post_page-----a0585e311d3f--------------------------------)[![安东尼·阿尔卡拉斯](../Images/6a71a1752677bd07c384246fb0c7f7e8.png)](https://medium.com/@alcarazanthony1?source=post_page-----a0585e311d3f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0585e311d3f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0585e311d3f--------------------------------) [安东尼·阿尔卡拉斯](https://medium.com/@alcarazanthony1?source=post_page-----a0585e311d3f--------------------------------)
+[](https://medium.com/@alcarazanthony1?source=post_page-----a0585e311d3f--------------------------------)![安东尼·阿尔卡拉斯](https://medium.com/@alcarazanthony1?source=post_page-----a0585e311d3f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0585e311d3f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0585e311d3f--------------------------------) [安东尼·阿尔卡拉斯](https://medium.com/@alcarazanthony1?source=post_page-----a0585e311d3f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bc9ffd2f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faugmenting-intelligence-leveraging-llms-to-complete-recommendation-knowledge-graphs-a0585e311d3f&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=post_page-30bc9ffd2f4b----a0585e311d3f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0585e311d3f--------------------------------) ·6分钟阅读·2023年11月6日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bc9ffd2f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faugmenting-intelligence-leveraging-llms-to-complete-recommendation-knowledge-graphs-a0585e311d3f&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=post_page-30bc9ffd2f4b----a0585e311d3f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0585e311d3f--------------------------------) ·6 分钟阅读·2023 年 11 月 6 日
 
 --
 

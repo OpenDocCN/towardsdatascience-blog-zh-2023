@@ -1,18 +1,18 @@
 # 如何在 Matplotlib 中绘制垂直线和水平线
 
-> 原文：[https://towardsdatascience.com/plot-vertical-horizontal-lines-matplotlib-34cf7fe86ce?source=collection_archive---------6-----------------------#2023-01-09](https://towardsdatascience.com/plot-vertical-horizontal-lines-matplotlib-34cf7fe86ce?source=collection_archive---------6-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/plot-vertical-horizontal-lines-matplotlib-34cf7fe86ce?source=collection_archive---------6-----------------------#2023-01-09`](https://towardsdatascience.com/plot-vertical-horizontal-lines-matplotlib-34cf7fe86ce?source=collection_archive---------6-----------------------#2023-01-09)
 
 ## 在 Python 绘图中使用 matplotlib 绘制水平线和垂直线
 
-[](https://gmyrianthous.medium.com/?source=post_page-----34cf7fe86ce--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----34cf7fe86ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----34cf7fe86ce--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----34cf7fe86ce--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----34cf7fe86ce--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----34cf7fe86ce--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----34cf7fe86ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----34cf7fe86ce--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----34cf7fe86ce--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----34cf7fe86ce--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplot-vertical-horizontal-lines-matplotlib-34cf7fe86ce&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----34cf7fe86ce---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----34cf7fe86ce--------------------------------) ·5 min read·2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F34cf7fe86ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplot-vertical-horizontal-lines-matplotlib-34cf7fe86ce&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----34cf7fe86ce---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplot-vertical-horizontal-lines-matplotlib-34cf7fe86ce&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----34cf7fe86ce---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----34cf7fe86ce--------------------------------) ·5 min read·2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F34cf7fe86ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplot-vertical-horizontal-lines-matplotlib-34cf7fe86ce&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----34cf7fe86ce---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F34cf7fe86ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplot-vertical-horizontal-lines-matplotlib-34cf7fe86ce&source=-----34cf7fe86ce---------------------bookmark_footer-----------)![](../Images/8981960da03285b8fc0bad6ff64a379f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F34cf7fe86ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplot-vertical-horizontal-lines-matplotlib-34cf7fe86ce&source=-----34cf7fe86ce---------------------bookmark_footer-----------)![](img/8981960da03285b8fc0bad6ff64a379f.png)
 
 图片由 [Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 

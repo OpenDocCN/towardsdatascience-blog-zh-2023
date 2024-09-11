@@ -1,20 +1,20 @@
 # 克服大型语言模型的局限性
 
-> 原文：[https://towardsdatascience.com/overcoming-the-limitations-of-large-language-models-9d4e92ad9823?source=collection_archive---------0-----------------------#2023-01-23](https://towardsdatascience.com/overcoming-the-limitations-of-large-language-models-9d4e92ad9823?source=collection_archive---------0-----------------------#2023-01-23)
+> 原文：[`towardsdatascience.com/overcoming-the-limitations-of-large-language-models-9d4e92ad9823?source=collection_archive---------0-----------------------#2023-01-23`](https://towardsdatascience.com/overcoming-the-limitations-of-large-language-models-9d4e92ad9823?source=collection_archive---------0-----------------------#2023-01-23)
 
 ## 如何通过类人认知技能增强大型语言模型
 
-[](https://medium.com/@janna.lipenkova_52659?source=post_page-----9d4e92ad9823--------------------------------)[![Dr. Janna Lipenkova](../Images/112fe9a8c5936869243f2a43fde6dfee.png)](https://medium.com/@janna.lipenkova_52659?source=post_page-----9d4e92ad9823--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9d4e92ad9823--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9d4e92ad9823--------------------------------) [Dr. Janna Lipenkova](https://medium.com/@janna.lipenkova_52659?source=post_page-----9d4e92ad9823--------------------------------)
+[](https://medium.com/@janna.lipenkova_52659?source=post_page-----9d4e92ad9823--------------------------------)![Dr. Janna Lipenkova](https://medium.com/@janna.lipenkova_52659?source=post_page-----9d4e92ad9823--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9d4e92ad9823--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9d4e92ad9823--------------------------------) [Dr. Janna Lipenkova](https://medium.com/@janna.lipenkova_52659?source=post_page-----9d4e92ad9823--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff215f8e427a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-the-limitations-of-large-language-models-9d4e92ad9823&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=post_page-f215f8e427a2----9d4e92ad9823---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9d4e92ad9823--------------------------------) ·16 分钟阅读·2023年1月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9d4e92ad9823&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-the-limitations-of-large-language-models-9d4e92ad9823&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=-----9d4e92ad9823---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff215f8e427a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-the-limitations-of-large-language-models-9d4e92ad9823&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=post_page-f215f8e427a2----9d4e92ad9823---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9d4e92ad9823--------------------------------) ·16 分钟阅读·2023 年 1 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9d4e92ad9823&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-the-limitations-of-large-language-models-9d4e92ad9823&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=-----9d4e92ad9823---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9d4e92ad9823&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-the-limitations-of-large-language-models-9d4e92ad9823&source=-----9d4e92ad9823---------------------bookmark_footer-----------)![](../Images/fbb74c1f81efccf5fc35f935c5bd8dad.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9d4e92ad9823&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-the-limitations-of-large-language-models-9d4e92ad9823&source=-----9d4e92ad9823---------------------bookmark_footer-----------)![](img/fbb74c1f81efccf5fc35f935c5bd8dad.png)
 
-大型语言模型在人类认知技能方面的表现（来源：自2021年以来约40万篇AI相关在线文本的语义嵌入分析）
+大型语言模型在人类认知技能方面的表现（来源：自 2021 年以来约 40 万篇 AI 相关在线文本的语义嵌入分析）
 
 *免责声明：本文在没有 ChatGPT 支持的情况下撰写。*
 
@@ -48,45 +48,45 @@
 
 *O: 再见！*
 
-然而，随着他们关系的加深，他们的沟通也变得更为强烈和复杂。在接下来的章节中，我们将带着章鱼经历几个需要掌握常识、交流背景和推理的岛屿生活场景。与此同时，我们还将探讨将额外智能融入代理的方法——无论是虚构的章鱼还是LLMs——这些代理最初只接受了语言表层的训练。
+然而，随着他们关系的加深，他们的沟通也变得更为强烈和复杂。在接下来的章节中，我们将带着章鱼经历几个需要掌握常识、交流背景和推理的岛屿生活场景。与此同时，我们还将探讨将额外智能融入代理的方法——无论是虚构的章鱼还是 LLMs——这些代理最初只接受了语言表层的训练。
 
-# 向LLMs注入世界知识
+# 向 LLMs 注入世界知识
 
 一天早上，安娜计划去打猎，并试图预测当天的天气。由于风来自玛丽亚的方向，她向“玛丽亚”询问当前天气情况的报告作为重要信息。被困在深水中的章鱼对描述天气情况感到尴尬。即使他有机会瞥一眼天空，他也不知道像“雨”、“风”、“多云”等具体天气术语在现实世界中指的是什么。他拼命编造一些天气事实。当天晚些时候，安娜在树林里打猎时被一场危险的雷暴惊到。她把预测风暴的失败归因于缺乏气象知识，而不是她对话伙伴的故意幻想。
 
 从表面上看，大型语言模型（LLMs）能够真实地反映许多关于世界的事实。然而，它们的知识仅限于在训练数据中明确遇到的概念和事实。即使有大量的训练数据，这些知识也无法完整。例如，它可能缺少用于商业用例的特定领域知识。目前的另一个重要限制是信息的时效性。由于语言模型缺乏时间上下文的概念，它们无法处理动态信息，如当前天气、股市价格或今天的日期。
 
-这个问题可以通过系统地“注入”额外的知识到LLM中来解决。这些新输入可以来自各种来源，例如结构化的外部数据库（如 FreeBase 或 WikiData）、公司特定的数据源和API。一种注入方法是通过在LLM层之间“插入”的适配器网络来学习新知识：[2]
+这个问题可以通过系统地“注入”额外的知识到 LLM 中来解决。这些新输入可以来自各种来源，例如结构化的外部数据库（如 FreeBase 或 WikiData）、公司特定的数据源和 API。一种注入方法是通过在 LLM 层之间“插入”的适配器网络来学习新知识：[2]
 
-![](../Images/a8a3a7fd1cbed601a86842e218eb0c7c.png)
+![](img/a8a3a7fd1cbed601a86842e218eb0c7c.png)
 
-*图1：适配器基于知识注入到LLMs的架构 [2]*
+*图 1：适配器基于知识注入到 LLMs 的架构 [2]*
 
 这种架构的训练分为两个步骤，即**记忆化**和**利用**：
 
-1\. 在**记忆化**阶段，LLM被冻结，适配器网络从知识库中学习新事实。学习信号通过掩蔽语言建模提供，其中部分事实被隐藏，适配器学习重现这些事实：
+1\. 在**记忆化**阶段，LLM 被冻结，适配器网络从知识库中学习新事实。学习信号通过掩蔽语言建模提供，其中部分事实被隐藏，适配器学习重现这些事实：
 
-![](../Images/eb3b2b046ab0bcbc9bbadd84b51bdf18.png)
+![](img/eb3b2b046ab0bcbc9bbadd84b51bdf18.png)
 
-*图2：适配器在* ***记忆化*** *步骤中进行训练*
+*图 2：适配器在* ***记忆化*** *步骤中进行训练*
 
 2\. 在**利用**阶段，语言模型学习在各自的下游任务中利用适配器记忆的事实。在这里，适配器网络被冻结，同时模型的权重被优化：
 
-![](../Images/8a498c1f61d6a9a7f8df5e8450e33dce.png)
+![](img/8a498c1f61d6a9a7f8df5e8450e33dce.png)
 
-*图3：LLM在* ***利用*** *步骤中学习使用适配器知识*
+*图 3：LLM 在* ***利用*** *步骤中学习使用适配器知识*
 
-在推理过程中，LLM提供给适配器的隐藏状态通过融合函数与适配器的输出融合，以生成最终答案。
+在推理过程中，LLM 提供给适配器的隐藏状态通过融合函数与适配器的输出融合，以生成最终答案。
 
 虽然架构级别的知识注入允许对较小的适配器网络进行高效的模块化再训练，但修改架构也需要相当的工程技能和努力。更简单的替代方案是输入级别注入，即模型直接在新事实上进行微调（参见[3]中的示例）。缺点是每次更改后都需要昂贵的微调——因此不适合动态知识来源。有关现有知识注入方法的完整概述可以在[这篇文章](https://arxiv.org/pdf/2101.12294.pdf)中找到。
 
-知识注入帮助你构建领域智能，这已成为垂直AI产品的关键差异化因素。此外，你还可以利用它建立可追溯性，以便模型可以指引用户到原始信息来源。除了结构化知识注入外，目前还在努力将多模态信息和知识整合到LLM中。例如，在2022年4月，DeepMind推出了Flamingo，一个能够无缝摄取文本、图像和视频的视觉语言模型。[5] 与此同时，谷歌正在开发Socratic Models，这是一个模块化框架，其中多个预训练模型可以通过零-shot，即通过多模态提示，进行组合，以便相互交换信息。[6]
+知识注入帮助你构建领域智能，这已成为垂直 AI 产品的关键差异化因素。此外，你还可以利用它建立可追溯性，以便模型可以指引用户到原始信息来源。除了结构化知识注入外，目前还在努力将多模态信息和知识整合到 LLM 中。例如，在 2022 年 4 月，DeepMind 推出了 Flamingo，一个能够无缝摄取文本、图像和视频的视觉语言模型。[5] 与此同时，谷歌正在开发 Socratic Models，这是一个模块化框架，其中多个预训练模型可以通过零-shot，即通过多模态提示，进行组合，以便相互交换信息。[6]
 
 # 拥抱交流背景和意图
 
 由于安娜不仅想分享她对生活的想法，还想与玛丽亚分享她岛上的美味椰子，她发明了一个椰子弹射器。她给玛丽亚发送了一份关于如何制作椰子弹射器的详细说明，并请她提供优化建议。然而，接收方的章鱼却没有给出有意义的回应。即使他能在水下构建弹射器，他也不知道像绳子和椰子这样的词指的是什么，因此无法在物理上复制和改进这个实验。他只是简单地说“很棒的主意，干得好！我现在需要去打猎了，再见！”安娜对这个不合作的回应感到困扰，但她也需要继续她的日常工作，忘记了这件事。
 
-当我们使用语言时，我们是为了特定的目的，即我们的**交流意图**。例如，交流意图可以是传递信息、社交或要求别人做某事。前两者对于大型语言模型（LLM）来说比较直接（只要它在数据中看到了所需的信息），而后者则更具挑战性。我们不考虑LLM在现实世界中没有行动能力的事实，而是将自己限制在语言领域内的任务——撰写演讲稿、申请信等。LLM不仅需要以连贯的方式组合和组织相关信息，还需要在形式性、创造力、幽默等软标准方面设定正确的情感基调。
+当我们使用语言时，我们是为了特定的目的，即我们的**交流意图**。例如，交流意图可以是传递信息、社交或要求别人做某事。前两者对于大型语言模型（LLM）来说比较直接（只要它在数据中看到了所需的信息），而后者则更具挑战性。我们不考虑 LLM 在现实世界中没有行动能力的事实，而是将自己限制在语言领域内的任务——撰写演讲稿、申请信等。LLM 不仅需要以连贯的方式组合和组织相关信息，还需要在形式性、创造力、幽默等软标准方面设定正确的情感基调。
 
 从经典语言生成转向识别和响应特定的传达意图是实现更好用户接受度的重要步骤，特别是在对话 AI 中。一种方法是来自人类反馈的强化学习（RLHF），该方法最近在 ChatGPT 中实施过（[7]），但在人类偏好学习中已有更长的历史。[8] 简而言之，RLHF “重新引导” LLM 的学习过程，从直接但人为的下一个词预测任务转向学习特定传达情境中的人类偏好。这些人类偏好直接编码在训练数据中：在标注过程中，人们会看到提示并编写期望的回应或对一系列现有回应进行排序。然后优化 LLM 的行为以反映人类偏好。从技术上讲，RLHF 分为三个步骤：
 
@@ -114,21 +114,21 @@ RLHF 方法在 ChatGPT 上取得了令人震惊的成功，特别是在对话 AI
 
 现在，如果玛利亚还在这里会怎样？大多数人能够进行逻辑推理，即使在掌握这项技能方面存在巨大个体差异。利用推理，玛利亚可以如下解决任务：
 
-*前提1（基于情境）*：安娜有几根金属棒。
+*前提 1（基于情境）*：安娜有几根金属棒。
 
-*前提2（基于常识知识）*：熊对噪音感到害怕。
+*前提 2（基于常识知识）*：熊对噪音感到害怕。
 
 *结论*：安娜可以尝试用她的棍子制造噪音来吓跑熊。
 
 LLMs 经常生成具有有效推理链的输出。然而，经过仔细检查，大多数这种连贯性是模式学习的结果，而不是有意且新颖的事实组合。DeepMind 多年来一直在寻求解决因果关系，最近的一次尝试是**忠实推理框架**。[9] 该架构由两个 LLMs 组成——一个用于选择相关前提，另一个用于推断问题的最终结论性答案。当收到一个问题及其上下文时，选择 LLM 首先从数据语料库中挑选相关陈述，并将其传递给推理 LLM。推理 LLM 推导出新的陈述并将其添加到上下文中。当所有陈述排成一个连贯的推理链，提供一个完整的答案时，这一迭代推理过程就结束了：
 
-![](../Images/c74ca4eb7ede6229573406d0fddb4f39.png)
+![](img/c74ca4eb7ede6229573406d0fddb4f39.png)
 
 *图 4：忠实推理组件*
 
 以下展示了我们岛屿事件的推理链：
 
-![](../Images/b34ddaf7d392221669fe823fb8415b7f.png)
+![](img/b34ddaf7d392221669fe823fb8415b7f.png)
 
 *图 5：构建推理痕迹*
 
@@ -136,19 +136,19 @@ LLMs 经常生成具有有效推理链的输出。然而，经过仔细检查，
 
 除了这种一般性的逻辑推理能力，人类还掌握了一整套更具体的推理技能。一个经典的例子是数学计算。LLMs 可以进行一定程度的计算——例如，现代 LLMs 可以自信地进行 2 位或 3 位的加法。然而，当复杂度增加时，例如添加更多数字或需要执行多个操作来解决数学任务，它们开始系统性地失败。而用自然语言提出的“*我有 10 个芒果，丢了 3 个。我还剩下多少个芒果？*”这类“语言”任务比明确的计算任务（“*十减三等于…*”）要困难得多。虽然通过增加训练时间、训练数据和参数规模可以提高 LLM 的性能，但使用简单计算器仍然是更可靠的选择。
 
-就像明确学习数学和其他精确科学定律的孩子一样，LLM也可以从硬编码规则中受益。这听起来像是神经符号AI的一个案例——实际上，像AI21 Labs的MRKL（发音为“奇迹”）这样的模块化系统将理解任务、执行计算和制定输出结果的工作负载分配到不同的模型中。[12] MRKL代表模块化推理、知识和语言，它以务实的插拔式方式结合AI模块，在结构化知识、符号方法和神经模型之间来回切换。回到我们的例子中，为了进行数学计算，LLM首先被微调以提取口头算术任务中的正式参数（数字、操作数、括号）。然后，计算本身被“路由”到确定性的数学模块，最终结果使用输出LLM以自然语言格式呈现。
+就像明确学习数学和其他精确科学定律的孩子一样，LLM 也可以从硬编码规则中受益。这听起来像是神经符号 AI 的一个案例——实际上，像 AI21 Labs 的 MRKL（发音为“奇迹”）这样的模块化系统将理解任务、执行计算和制定输出结果的工作负载分配到不同的模型中。[12] MRKL 代表模块化推理、知识和语言，它以务实的插拔式方式结合 AI 模块，在结构化知识、符号方法和神经模型之间来回切换。回到我们的例子中，为了进行数学计算，LLM 首先被微调以提取口头算术任务中的正式参数（数字、操作数、括号）。然后，计算本身被“路由”到确定性的数学模块，最终结果使用输出 LLM 以自然语言格式呈现。
 
-与黑箱、单一的LLM不同，推理附加组件通过将“思考”过程分解为单独的步骤来创造透明度和信任。它们尤其适用于支持复杂的多步骤决策和行动路径。例如，它们可以被虚拟助手使用，这些助手基于数据驱动的推荐并需要执行多个分析和聚合步骤以得出结论。
+与黑箱、单一的 LLM 不同，推理附加组件通过将“思考”过程分解为单独的步骤来创造透明度和信任。它们尤其适用于支持复杂的多步骤决策和行动路径。例如，它们可以被虚拟助手使用，这些助手基于数据驱动的推荐并需要执行多个分析和聚合步骤以得出结论。
 
 # 结论和要点
 
-在本文中，我们提供了补充LLM智能的各种方法的概述。让我们总结一下最大化LLM益处和潜在增强的指导方针：
+在本文中，我们提供了补充 LLM 智能的各种方法的概述。让我们总结一下最大化 LLM 益处和潜在增强的指导方针：
 
 +   **让它们失败**：不要被初步结果迷惑——当你开始使用语言模型时，它们可以生成令人印象深刻的输出，然而，我们人类倾向于将过多的智能归因于机器。充当一个刻薄的对手用户，对你的模型进行压力测试，探索其弱点。在投入过多精力之前，尽早进行这一过程。
 
-+   **评估和专门探测**：培训任务和评估程序的设计至关重要。尽可能地，它应反映自然语言使用的背景。了解LLM的陷阱，专注于对它们的评估。
++   **评估和专门探测**：培训任务和评估程序的设计至关重要。尽可能地，它应反映自然语言使用的背景。了解 LLM 的陷阱，专注于对它们的评估。
 
-+   **利用神经符号AI的优势**：符号AI并没有过时——在个别业务或产品的背景下，将部分领域知识固定下来可以是提高精准度的有效方法。它允许你在对业务至关重要的地方控制LLM的行为，同时仍能发挥其基于广泛外部知识生成语言的强大能力。
++   **利用神经符号 AI 的优势**：符号 AI 并没有过时——在个别业务或产品的背景下，将部分领域知识固定下来可以是提高精准度的有效方法。它允许你在对业务至关重要的地方控制 LLM 的行为，同时仍能发挥其基于广泛外部知识生成语言的强大能力。
 
 +   **朝着灵活的架构努力**：表面上，LLM 有时感觉像黑箱。然而，正如我们所见，存在许多方法——并且未来还会出现——不仅用于微调，还有用于“调整”其内部行为和学习。如果你具备技术能力，可以使用开源模型和解决方案——这将使你能够在你的产品中适应并最大化 LLM 的价值。
 
@@ -156,19 +156,19 @@ LLMs 经常生成具有有效推理链的输出。然而，经过仔细检查，
 
 # 参考文献
 
-[1] Emily M. Bender 和 Alexander Koller. 2020\. [迈向自然语言理解：在数据时代的意义、形式与理解](https://aclanthology.org/2020.acl-main.463)。载于 *第58届计算语言学协会年会论文集*，第5185–5198页，在线。计算语言学协会。
+[1] Emily M. Bender 和 Alexander Koller. 2020\. [迈向自然语言理解：在数据时代的意义、形式与理解](https://aclanthology.org/2020.acl-main.463)。载于 *第 58 届计算语言学协会年会论文集*，第 5185–5198 页，在线。计算语言学协会。
 
 [2] Emelin, Denis & Bonadiman, Daniele & Alqahtani, Sawsan & Zhang, Yi & Mansour, Saab. (2022). 向任务导向对话系统的语言模型注入领域知识。10.48550/arXiv.2212.08120。
 
-[3] Fedor Moiseev 等. 2022\. [SKILL：大型语言模型的结构化知识注入](https://aclanthology.org/2022.naacl-main.113)。载于 *2022年北美计算语言学协会年会：人类语言技术会议论文集*，第1581–1588页，美国西雅图。计算语言学协会。
+[3] Fedor Moiseev 等. 2022\. [SKILL：大型语言模型的结构化知识注入](https://aclanthology.org/2022.naacl-main.113)。载于 *2022 年北美计算语言学协会年会：人类语言技术会议论文集*，第 1581–1588 页，美国西雅图。计算语言学协会。
 
-[4] Ryan Daws. 2020\. [使用 OpenAI 的 GPT-3 的医疗聊天机器人告诉虚假的病人自杀](https://www.artificialintelligence-news.com/2020/10/28/medical-chatbot-openai-gpt3-patient-kill-themselves/)。检索日期：2022年1月13日。
+[4] Ryan Daws. 2020\. [使用 OpenAI 的 GPT-3 的医疗聊天机器人告诉虚假的病人自杀](https://www.artificialintelligence-news.com/2020/10/28/medical-chatbot-openai-gpt3-patient-kill-themselves/)。检索日期：2022 年 1 月 13 日。
 
-[5] DeepMind. 2022\. [用单一视觉语言模型应对多重任务](https://www.deepmind.com/blog/tackling-multiple-tasks-with-a-single-visual-language-model)。检索日期：2022年1月13日。
+[5] DeepMind. 2022\. [用单一视觉语言模型应对多重任务](https://www.deepmind.com/blog/tackling-multiple-tasks-with-a-single-visual-language-model)。检索日期：2022 年 1 月 13 日。
 
 [6] Zeng 等. 2022\. [苏格拉底模型：用语言进行零样本多模态推理](https://arxiv.org/pdf/2204.00598.pdf)。预印本。
 
-[7] OpenAI. 2022\. [ChatGPT：优化对话的语言模型](https://openai.com/blog/chatgpt/)。检索日期：2022年1月13日。
+[7] OpenAI. 2022\. [ChatGPT：优化对话的语言模型](https://openai.com/blog/chatgpt/)。检索日期：2022 年 1 月 13 日。
 
 [8] Christiano 等. 2017\. 从人类偏好中进行深度强化学习。
 

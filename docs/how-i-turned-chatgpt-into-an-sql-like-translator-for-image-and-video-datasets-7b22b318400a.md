@@ -1,18 +1,18 @@
 # 我是如何将 ChatGPT 转变为类似 SQL 的图像和视频数据集翻译器
 
-> 原文：[https://towardsdatascience.com/how-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a?source=collection_archive---------1-----------------------#2023-06-08](https://towardsdatascience.com/how-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a?source=collection_archive---------1-----------------------#2023-06-08)
+> 原文：[`towardsdatascience.com/how-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a?source=collection_archive---------1-----------------------#2023-06-08`](https://towardsdatascience.com/how-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a?source=collection_archive---------1-----------------------#2023-06-08)
 
 ## 这是一个涉及提示工程、软件工程、试验和错误、以及辛勤工作的过程
 
-[](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)[![Jacob Marks, Ph.D.](../Images/94d9832b8706d1044e3195386613bfab.png)](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)
+[](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)![Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----7b22b318400a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------) ·21分钟阅读·2023年6月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b22b318400a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----7b22b318400a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----7b22b318400a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------) ·21 分钟阅读·2023 年 6 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b22b318400a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----7b22b318400a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b22b318400a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&source=-----7b22b318400a---------------------bookmark_footer-----------)![](../Images/4a82e88fc3efdca9105841c859778660.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b22b318400a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&source=-----7b22b318400a---------------------bookmark_footer-----------)![](img/4a82e88fc3efdca9105841c859778660.png)
 
 VoxelGPT 使用自然语言查询图像数据集。图片由作者提供。
 
@@ -38,27 +38,27 @@ VoxelGPT 使用自然语言查询图像数据集。图片由作者提供。
 
 这篇文章的结构如下：
 
-+   [类似 SQL 的图像和视频查询](#6677)
++   类似 SQL 的图像和视频查询
 
-+   [定义总体任务](#2386)
++   定义总体任务
 
-+   [为模型提供上下文](#ccee)
++   为模型提供上下文
 
-+   [生成和利用示例](#61fc)
++   生成和利用示例
 
-+   [拆解问题](#547d)
++   拆解问题
 
-+   [投入生产](#62a5)
++   投入生产
 
 # 查询语言
 
-![](../Images/77fa4667a6edcd4ac1d4c93c8e576db4.png)
+![](img/77fa4667a6edcd4ac1d4c93c8e576db4.png)
 
 VoxelGPT 使用自然语言查询图像数据集。图片由作者提供。
 
-在我们深入讨论如何使用LLM生成查询之前，值得花一点时间描述一下我们希望模型翻译的查询语言。以下是你需要的基本信息。有关更全面的概述，请参阅[FiftyOne用户指南](https://docs.voxel51.com/user_guide/basics.html)。如果你已经熟悉这些语言，可以直接跳到下一部分。
+在我们深入讨论如何使用 LLM 生成查询之前，值得花一点时间描述一下我们希望模型翻译的查询语言。以下是你需要的基本信息。有关更全面的概述，请参阅[FiftyOne 用户指南](https://docs.voxel51.com/user_guide/basics.html)。如果你已经熟悉这些语言，可以直接跳到下一部分。
 
-+   **数据集：** `Dataset`是SQL中的`Table`或pandas中的`DataFrame`的计算机视觉类比。它包含与一组媒体文件相关的所有信息。
++   **数据集：** `Dataset`是 SQL 中的`Table`或 pandas 中的`DataFrame`的计算机视觉类比。它包含与一组媒体文件相关的所有信息。
 
 +   **样本：** `Sample`类似于数据表中的一行。样本是`Dataset`的基本元素。每个样本都有一个`filepath`，指向一个媒体文件，并存储与该数据片段相关的所有其他信息。
 
@@ -66,21 +66,21 @@ VoxelGPT 使用自然语言查询图像数据集。图片由作者提供。
 
 +   **标签：** `Label`是一个存储语义真实或预测信息的`Field`。例如，对象检测存储在`Detections`标签字段中，而分类存储在`Classification`标签字段中。
 
-与SQL或pandas一样，你可以使用查询操作来过滤数据。例如，你可能想要查询数据表以获取：
+与 SQL 或 pandas 一样，你可以使用查询操作来过滤数据。例如，你可能想要查询数据表以获取：
 
-*所有在“A”列中条目大于0.5的行*
+*所有在“A”列中条目大于 0.5 的行*
 
 然而，与数据表适合进行数字切片和过滤不同，非结构化计算机视觉数据更适合进行*语义切片*，例如：
 
-*在至少有3个非“狗”地面真实检测的图像中，检索高置信度的“大”边界框“狗”预测*
+*在至少有 3 个非“狗”地面真实检测的图像中，检索高置信度的“大”边界框“狗”预测*
 
 对非结构化数据进行语义切片需要更大的灵活性。
 
-为了实现这种灵活性，FiftyOne定义了一组`ViewStage`方法，这些方法封装了允许的查询操作，如过滤、匹配、选择、排序和排除。这些方法大致类似于SQL中的`SELECT`、`WHERE`和`ORDER BY`，但由于查询的空间更大，方法数量也多得多，每个方法都有许多使用场景。有关详细讨论，请参见这个[视图备忘单](https://docs.voxel51.com/cheat_sheets/views_cheat_sheet.html)。
+为了实现这种灵活性，FiftyOne 定义了一组`ViewStage`方法，这些方法封装了允许的查询操作，如过滤、匹配、选择、排序和排除。这些方法大致类似于 SQL 中的`SELECT`、`WHERE`和`ORDER BY`，但由于查询的空间更大，方法数量也多得多，每个方法都有许多使用场景。有关详细讨论，请参见这个[视图备忘单](https://docs.voxel51.com/cheat_sheets/views_cheat_sheet.html)。
 
 你可以通过将多个`ViewStage`操作按顺序组合来获取`Dataset`的任意子集，这个子集称为`DatasetView`。
 
-下面是查询语言在实际操作中的样子：给定一个名为`my_dataset`的数据集，如果我们想要获取所有在包含“猫”的10张随机图片的`"predictions"`标签字段中的“狗”检测，我们可以使用以下查询：
+下面是查询语言在实际操作中的样子：给定一个名为`my_dataset`的数据集，如果我们想要获取所有在包含“猫”的 10 张随机图片的`"predictions"`标签字段中的“狗”检测，我们可以使用以下查询：
 
 ```py
 view = my_dataset.match(
@@ -95,29 +95,29 @@ view = my_dataset.match(
 
 # 定义任务
 
-当我们开始这个旅程时，我们并不知道LLMs能做什么。早在2022年12月，我曾玩过ChatGPT，并撰写了一篇文章[计算机视觉中的隧道视野：ChatGPT能看见吗？](https://medium.com/voxel51/tunnel-vision-in-computer-vision-can-chatgpt-see-e6ef037c535)，探讨了聊天机器人对计算机视觉概念的理解。当时，一个通用语言模型能为基本的图像处理任务编写*大部分*正确的Python代码已经令人印象深刻，但在计算机视觉应用中使用GPT生成的代码（*没有人工验证*）的想法似乎不切实际。
+当我们开始这个旅程时，我们并不知道 LLMs 能做什么。早在 2022 年 12 月，我曾玩过 ChatGPT，并撰写了一篇文章[计算机视觉中的隧道视野：ChatGPT 能看见吗？](https://medium.com/voxel51/tunnel-vision-in-computer-vision-can-chatgpt-see-e6ef037c535)，探讨了聊天机器人对计算机视觉概念的理解。当时，一个通用语言模型能为基本的图像处理任务编写*大部分*正确的 Python 代码已经令人印象深刻，但在计算机视觉应用中使用 GPT 生成的代码（*没有人工验证*）的想法似乎不切实际。
 
-在看到文本到SQL的示例后，并阅读了GPT-4 reportedly以优异的成绩通过BAR考试（以及其他考试）的消息后，我决定再次尝试GPT-for-CV。我让GPT-4生成了一些简单查询的Python代码，对其回应感到惊喜。GPT-4的即用结果的真实性还有待提高，这是可以理解的，因为*我没有提供任何关于FiftyOne库的信息*。但使其有效的前景令人兴奋。
+在看到文本到 SQL 的示例后，并阅读了 GPT-4 reportedly 以优异的成绩通过 BAR 考试（以及其他考试）的消息后，我决定再次尝试 GPT-for-CV。我让 GPT-4 生成了一些简单查询的 Python 代码，对其回应感到惊喜。GPT-4 的即用结果的真实性还有待提高，这是可以理解的，因为*我没有提供任何关于 FiftyOne 库的信息*。但使其有效的前景令人兴奋。
 
 ## 需要统一性
 
 当我们实验不同的提示技术时（我们稍后会讨论），如果我们想将其纳入更大的管道中，立刻就显现出我们需要*明确任务*。
 
-如果任由其自行运作，GPT模型的回应在格式上会因提示而异。
+如果任由其自行运作，GPT 模型的回应在格式上会因提示而异。
 
 这里只是两个例子，我们将很快进行分析：
 
 **提示 1:**
 
-*你的任务是将输入的自然语言查询转换为Python代码，以生成计算机视觉库FiftyOne的ViewStages。*
+*你的任务是将输入的自然语言查询转换为 Python 代码，以生成计算机视觉库 FiftyOne 的 ViewStages。*
 
 *这是你的第一个自然语言查询：“仅包含狗的图像”*
 
-*给我FiftyOne代码。*
+*给我 FiftyOne 代码。*
 
 **回应 1:**
 
-*当然，这里是生成仅包含狗的图像的FiftyOne代码：*
+*当然，这里是生成仅包含狗的图像的 FiftyOne 代码：*
 
 ```py
 import fiftyone as fo
@@ -141,19 +141,19 @@ dataset = dataset.add_stage(view_stage)
 session = fo.launch_app(dataset)
 ```
 
-*这段代码加载了Open Images v6验证数据集，仅包含“检测”标签类型的狗。然后，它创建了一个视图阶段，过滤掉没有狗检测的图像。最后，将视图阶段应用到数据集中，并在FiftyOne应用中启动。*
+*这段代码加载了 Open Images v6 验证数据集，仅包含“检测”标签类型的狗。然后，它创建了一个视图阶段，过滤掉没有狗检测的图像。最后，将视图阶段应用到数据集中，并在 FiftyOne 应用中启动。*
 
 **提示 2:**
 
-*你的任务是将输入的自然语言查询转换为Python代码，以生成FiftyOne机器学习库的ViewStages。*
+*你的任务是将输入的自然语言查询转换为 Python 代码，以生成 FiftyOne 机器学习库的 ViewStages。*
 
 *这是你的第一个自然语言查询：“最独特的假阳性检测图像”*
 
-*给我FiftyOne代码。*
+*给我 FiftyOne 代码。*
 
 **回应 2:**
 
-*当然，这里是使用FiftyOne库在Python中生成“最独特的假阳性检测图像”自然语言查询的FiftyOne代码：*
+*当然，这里是使用 FiftyOne 库在 Python 中生成“最独特的假阳性检测图像”自然语言查询的 FiftyOne 代码：*
 
 ```py
 import fiftyone as fo
@@ -178,17 +178,17 @@ pipeline = [
 view = dataset.aggregate(pipeline).limit(10).display()
 ```
 
-*在这段代码中，我们首先加载FiftyOne库和任何必要的依赖项。然后，我们使用fo.load_dataset()加载你的数据集。*
+*在这段代码中，我们首先加载 FiftyOne 库和任何必要的依赖项。然后，我们使用 fo.load_dataset()加载你的数据集。*
 
-*接下来，我们使用foz.load_zoo_model()定义你的假阳性检测模型。该函数从FiftyOne Zoo Model Zoo加载一个预训练模型，其中包括广泛的计算机视觉最先进模型。*
+*接下来，我们使用 foz.load_zoo_model()定义你的假阳性检测模型。该函数从 FiftyOne Zoo Model Zoo 加载一个预训练模型，其中包括广泛的计算机视觉最先进模型。*
 
-*之后，我们使用$set、$match、$group、$count和$sort聚合阶段定义我们的管道。管道首先使用$set为数据集中每个样本添加一个包含模型预测的字段。然后，我们使用$match过滤样本，仅包括那些检测到假阳性的样本。*
+*之后，我们使用$set、$match、$group、$count 和$sort 聚合阶段定义我们的管道。管道首先使用$set 为数据集中每个样本添加一个包含模型预测的字段。然后，我们使用$match 过滤样本，仅包括那些检测到假阳性的样本。*
 
-*接下来，我们使用$group按文件路径对样本进行分组，并使用$count计算每个组中的图像数量。最后，我们使用$sort按图像数量的降序对组进行排序。*
+*接下来，我们使用$group 按文件路径对样本进行分组，并使用$count 计算每个组中的图像数量。最后，我们使用$sort 按图像数量的降序对组进行排序。*
 
-*最后，我们在你的数据集上运行管道，并使用limit()将结果限制为检测到最多假阳性的前10张图像。然后，我们使用display()在视图阶段展示结果。*
+*最后，我们在你的数据集上运行管道，并使用 limit()将结果限制为检测到最多假阳性的前 10 张图像。然后，我们使用 display()在视图阶段展示结果。*
 
-尽管这两个示例的提示结构相同，但响应在几个关键方面有所不同。响应1尝试通过向数据集添加`ViewStage`来创建`DatasetView`。响应2定义并应用了一个[MongoDB聚合管道](https://www.mongodb.com/docs/manual/core/aggregation-pipeline/)，随后使用`limit()`方法（应用`Limit`阶段）将视图限制为10个样本，并使用了一个不存在（即幻觉）`display()`方法。此外，尽管响应1加载了一个实际的数据集（Open Images V6），响应2实际上是模板代码，因为`"your_dataset_name"`和`"your_model_name"`需要填写。
+尽管这两个示例的提示结构相同，但响应在几个关键方面有所不同。响应 1 尝试通过向数据集添加`ViewStage`来创建`DatasetView`。响应 2 定义并应用了一个[MongoDB 聚合管道](https://www.mongodb.com/docs/manual/core/aggregation-pipeline/)，随后使用`limit()`方法（应用`Limit`阶段）将视图限制为 10 个样本，并使用了一个不存在（即幻觉）`display()`方法。此外，尽管响应 1 加载了一个实际的数据集（Open Images V6），响应 2 实际上是模板代码，因为`"your_dataset_name"`和`"your_model_name"`需要填写。
 
 这些示例还突出了以下问题：
 
@@ -196,7 +196,7 @@ view = dataset.aggregate(pipeline).limit(10).display()
 
 1.  **解释性文本**：在许多情况下——包括教育背景——模型解释其“推理”是一个积极的。如果我们希望代表用户执行查询，这些解释性文本就会成为障碍。一些查询甚至导致多个被文本分隔的代码块。
 
-我们真正想要的是让LLM回应可以直接复制粘贴到Python进程中的代码，而不附带额外的负担。作为对模型进行提示的第一次尝试，我开始将以下文本作为前缀添加到任何自然语言查询中：
+我们真正想要的是让 LLM 回应可以直接复制粘贴到 Python 进程中的代码，而不附带额外的负担。作为对模型进行提示的第一次尝试，我开始将以下文本作为前缀添加到任何自然语言查询中：
 
 ```py
 Your task is to convert input natural language queries into Python code to generate ViewStages for the computer vision library FiftyOne.
@@ -209,7 +209,7 @@ Here are some rules:
 
 关键是，我定义了一个*任务*，并设置了*规则*，指导模型允许和不允许做的事情。
 
-*注意：随着响应格式的更加统一，我在这时从ChatGPT聊天界面转向使用OpenAI的API中的GPT-4。*
+*注意：随着响应格式的更加统一，我在这时从 ChatGPT 聊天界面转向使用 OpenAI 的 API 中的 GPT-4。*
 
 ## 限制范围
 
@@ -225,11 +225,11 @@ Here are some rules:
 
 # 提供上下文
 
-![](../Images/b6238ba569dacd151b120983c5bafd56.png)
+![](img/b6238ba569dacd151b120983c5bafd56.png)
 
 VoxelGPT 使用自然语言查询图像数据集。图片由作者提供。
 
-除了给模型一个明确的“任务”和提供清晰的指示外，我们发现通过提供有关FiftyOne查询语言如何工作的更多信息，可以提高性能。如果没有这些信息，LLM 就像在黑暗中盲目飞行，只是在抓取和伸手进入黑暗中。
+除了给模型一个明确的“任务”和提供清晰的指示外，我们发现通过提供有关 FiftyOne 查询语言如何工作的更多信息，可以提高性能。如果没有这些信息，LLM 就像在黑暗中盲目飞行，只是在抓取和伸手进入黑暗中。
 
 例如，在提示 2 中，当我要求获取假阳性预测时，响应尝试用`predictions.mistakes.false_positive`来引用这些假阳性。就 ChatGPT 而言，这似乎是存储和访问假阳性信息的合理方法。
 
@@ -264,31 +264,31 @@ images_with_fp = dataset.match(F("eval_fp")>0)
 
 *然而，我很快遇到了一个问题：上下文长度。*
 
-使用OpenAI API的基础GPT-4模型时，我已经接近了8,192令牌的上下文长度。这是在添加示例或任何有关数据集的信息之前！
+使用 OpenAI API 的基础 GPT-4 模型时，我已经接近了 8,192 令牌的上下文长度。这是在添加示例或任何有关数据集的信息之前！
 
-OpenAI确实有一个具有32,768令牌上下文的GPT-4模型，理论上我可以使用，但一个粗略的计算让我相信这可能会很贵。如果我们填满了整个32k令牌上下文，根据[OpenAI的定价](https://openai.com/pricing)，每次查询大约需要2美元！
+OpenAI 确实有一个具有 32,768 令牌上下文的 GPT-4 模型，理论上我可以使用，但一个粗略的计算让我相信这可能会很贵。如果我们填满了整个 32k 令牌上下文，根据[OpenAI 的定价](https://openai.com/pricing)，每次查询大约需要 2 美元！
 
 相反，我们的团队重新考虑了我们的方法，并进行了以下操作：
 
-+   切换到GPT-3.5
++   切换到 GPT-3.5
 
 +   最小化令牌数
 
 +   更加挑剔地选择输入信息
 
-## 切换到GPT-3.5
+## 切换到 GPT-3.5
 
 没有什么是免费的——这确实导致了稍微较低的性能，至少在初期。在项目过程中，我们通过提示工程恢复并远远超越了这一点！在我们的案例中，这个努力是值得的。在其他情况下，可能就不是这样了。
 
 ## 最小化令牌数
 
-由于上下文长度成为限制因素，我使用了以下简单的技巧：*使用ChatGPT优化提示！*
+由于上下文长度成为限制因素，我使用了以下简单的技巧：*使用 ChatGPT 优化提示！*
 
-一次处理一个`ViewStage`，我将原始描述和输入列表提供给ChatGPT，并附上一个*要求LLM最小化文本的令牌数*的提示，同时*保留所有语义信息*。使用[tiktoken](https://github.com/openai/tiktoken)来计算原始和压缩版本中的令牌数，我能够将令牌数减少约30%。
+一次处理一个`ViewStage`，我将原始描述和输入列表提供给 ChatGPT，并附上一个*要求 LLM 最小化文本的令牌数*的提示，同时*保留所有语义信息*。使用[tiktoken](https://github.com/openai/tiktoken)来计算原始和压缩版本中的令牌数，我能够将令牌数减少约 30%。
 
 ## 更加挑剔
 
-尽管提供上下文对模型很有帮助，但某些信息比其他信息更有用，具体取决于任务。如果模型仅需要生成涉及两个`ViewStages`的Python查询，它可能不会从其他`ViewStages`的输入信息中获得太大帮助。
+尽管提供上下文对模型很有帮助，但某些信息比其他信息更有用，具体取决于任务。如果模型仅需要生成涉及两个`ViewStages`的 Python 查询，它可能不会从其他`ViewStages`的输入信息中获得太大帮助。
 
 我们知道需要一种方法来根据输入的自然语言查询选择相关信息。然而，这不会像在描述和输入参数上执行相似性搜索那样简单，因为前者通常以与后者非常不同的语言出现。我们需要一种将输入和信息选择联系起来的方法。
 
@@ -298,11 +298,11 @@ OpenAI确实有一个具有32,768令牌上下文的GPT-4模型，理论上我可
 
 ## 生成示例
 
-如果你曾经使用过ChatGPT或其他LLM，你可能亲身体验过，即使只提供一个相关的示例，也能大幅提高性能。
+如果你曾经使用过 ChatGPT 或其他 LLM，你可能亲身体验过，即使只提供一个相关的示例，也能大幅提高性能。
 
-作为起点，我想出了10个完全合成的示例，并将这些示例通过在任务规则和`ViewStage`描述下方添加以下内容传递给GPT-3.5：
+作为起点，我想出了 10 个完全合成的示例，并将这些示例通过在任务规则和`ViewStage`描述下方添加以下内容传递给 GPT-3.5：
 
-以下是A、B形式的输入-输出对的一些示例：
+以下是 A、B 形式的输入-输出对的一些示例：
 
 ```py
 A) "Filepath starts with '/Users'"
@@ -314,7 +314,7 @@ B) `dataset.filter_labels("predictions", F("confidence") > 0.95)`
 …
 ```
 
-仅凭这10个示例，模型响应的质量有了显著提高，因此我们的团队决定对此采取系统化的方式。
+仅凭这 10 个示例，模型响应的质量有了显著提高，因此我们的团队决定对此采取系统化的方式。
 
 1.  首先，我们仔细检查了我们的文档，找出了通过`ViewStages`组合创建的所有视图示例。
 
@@ -326,9 +326,9 @@ B) `dataset.filter_labels("predictions", F("confidence") > 0.95)`
 
 在这个示例生成过程结束时，我们已经有了数百个示例——远远超过了可以容纳的上下文长度。幸运的是，这些示例包含了（作为输入）自然语言查询，我们可以直接与用户的自然语言查询进行比较。
 
-为了进行这种比较，我们使用OpenAI的[text-embedding-ada–002](https://openai.com/blog/new-and-improved-embedding-model)模型预计算了这些示例查询的嵌入。在运行时，用户的查询会使用相同的模型进行嵌入，然后选择与自然语言查询最相似的示例——通过余弦距离来确定。最初，我们使用了[ChromaDB](https://www.trychroma.com/)来构建内存中的向量数据库。然而，由于我们处理的是数百或数千个向量，而不是数十万或数百万个向量，实际上转而使用精确向量搜索更为合理（此外，我们还减少了依赖）。
+为了进行这种比较，我们使用 OpenAI 的[text-embedding-ada–002](https://openai.com/blog/new-and-improved-embedding-model)模型预计算了这些示例查询的嵌入。在运行时，用户的查询会使用相同的模型进行嵌入，然后选择与自然语言查询最相似的示例——通过余弦距离来确定。最初，我们使用了[ChromaDB](https://www.trychroma.com/)来构建内存中的向量数据库。然而，由于我们处理的是数百或数千个向量，而不是数十万或数百万个向量，实际上转而使用精确向量搜索更为合理（此外，我们还减少了依赖）。
 
-管理这些示例和提示的组件变得越来越困难，因此我们在这时开始使用[LangChain的Prompts模块](https://python.langchain.com/en/latest/modules/prompts.html)。最初，我们能够使用他们的[相似性示例选择器](https://python.langchain.com/en/latest/modules/prompts/example_selectors/examples/similarity.html)来选择最相关的示例，但最终我们不得不编写一个自定义的`ExampleSelector`，以便对预过滤有更多控制。
+管理这些示例和提示的组件变得越来越困难，因此我们在这时开始使用[LangChain 的 Prompts 模块](https://python.langchain.com/en/latest/modules/prompts.html)。最初，我们能够使用他们的[相似性示例选择器](https://python.langchain.com/en/latest/modules/prompts/example_selectors/examples/similarity.html)来选择最相关的示例，但最终我们不得不编写一个自定义的`ExampleSelector`，以便对预过滤有更多控制。
 
 ## 过滤适当的示例
 
@@ -336,9 +336,9 @@ B) `dataset.filter_labels("predictions", F("confidence") > 0.95)`
 
 这个想法效果很好，以至于我们最终将相同的考虑应用于数据集的其他特性。在某些情况下，差异仅仅是语法上的——在查询标签时，访问`Detections`标签的语法与访问`Classification`标签的语法不同。其他过滤器则更具战略性：有时我们不希望模型了解查询语言的某些特性。
 
-例如，我们不想给LLM提供使用它无法访问的计算的示例。如果没有为特定数据集构建文本相似性索引，则向模型提供查找与自然语言查询最佳视觉匹配的示例是没有意义的。类似地，如果数据集中没有任何评估运行，则查询真实正例和假阳性将产生错误或空结果。
+例如，我们不想给 LLM 提供使用它无法访问的计算的示例。如果没有为特定数据集构建文本相似性索引，则向模型提供查找与自然语言查询最佳视觉匹配的示例是没有意义的。类似地，如果数据集中没有任何评估运行，则查询真实正例和假阳性将产生错误或空结果。
 
-你可以在GitHub仓库中的[view_stage_example_selector.py](https://github.com/voxel51/voxelgpt/blob/main/links/view_stage_example_selector.py)中查看完整的示例预处理管道。
+你可以在 GitHub 仓库中的[view_stage_example_selector.py](https://github.com/voxel51/voxelgpt/blob/main/links/view_stage_example_selector.py)中查看完整的示例预处理管道。
 
 ## 根据示例选择上下文信息
 
@@ -350,13 +350,13 @@ B) `dataset.filter_labels("predictions", F("confidence") > 0.95)`
 
 # 分而治之
 
-![](../Images/6e1df4b3d2bfed3c2e4862decc4ad83d.png)
+![](img/6e1df4b3d2bfed3c2e4862decc4ad83d.png)
 
-VoxelGPT使用自然语言查询图像数据集。图片由作者提供。
+VoxelGPT 使用自然语言查询图像数据集。图片由作者提供。
 
 到目前为止，我们专注于将尽可能多的相关信息——而且只是相关信息——挤进一个提示中。但这种方法已接近其极限。
 
-即使不考虑每个数据集都有自己的字段和类名，可能的Python查询空间也太大了。
+即使不考虑每个数据集都有自己的字段和类名，可能的 Python 查询空间也太大了。
 
 为了取得进展，我们需要将问题分解成更小的部分。借鉴近期的方法，包括[链式思考提示](https://arxiv.org/abs/2201.11903)和[选择推理提示](https://arxiv.org/abs/2205.09712)，我们将生成`DatasetView`的问题分成了四个不同的选择子问题。
 
@@ -434,7 +434,7 @@ Required fields: "[model2_predictions]"
 
 ## 相关的类名
 
-对于标签字段如分类和检测，将自然语言查询转换为Python代码需要使用数据集中实际类的名称。为此，我让GPT-3.5执行[命名实体识别](https://paperswithcode.com/task/named-entity-recognition-ner)以识别输入查询中的标签类。
+对于标签字段如分类和检测，将自然语言查询转换为 Python 代码需要使用数据集中实际类的名称。为此，我让 GPT-3.5 执行[命名实体识别](https://paperswithcode.com/task/named-entity-recognition-ner)以识别输入查询中的标签类。
 
 在查询“样本中至少有一个牛预测且没有马”的情况下，模型的任务是识别`"horse"`和`"cow"`。这些识别出的名称随后与在之前步骤中选择的标签字段的类名进行比较——首先是区分大小写的，然后是不区分大小写的，最后是不区分复数的。
 
@@ -448,25 +448,25 @@ query: "20 random images with a table"
 query: "20 random images with a dining table"
 ```
 
-## ViewStage推断
+## ViewStage 推断
 
 一旦所有这些选择完成，类似的示例、相关的描述和相关的数据集信息（选择的算法运行、字段和类）将与（可能修改过的）查询一起传递给模型。
 
-与其指示模型以`dataset.view1().view2()…viewn()`的形式返回代码，我们最终去掉了`dataset`部分，而是要求模型将`ViewStages`作为列表返回。当时，我对这种改进性能感到惊讶，但回想起来，它与任务拆分越多，LLM表现越好的见解相一致。
+与其指示模型以`dataset.view1().view2()…viewn()`的形式返回代码，我们最终去掉了`dataset`部分，而是要求模型将`ViewStages`作为列表返回。当时，我对这种改进性能感到惊讶，但回想起来，它与任务拆分越多，LLM 表现越好的见解相一致。
 
 # 使其可用
 
-创建一个LLM驱动的玩具很酷，但将相同的内核转变为LLM驱动的应用程序则更酷。以下是我们如何做到这一点的简要概述。
+创建一个 LLM 驱动的玩具很酷，但将相同的内核转变为 LLM 驱动的应用程序则更酷。以下是我们如何做到这一点的简要概述。
 
 ## 单元测试
 
 当我们将其从一个原则证明转变为一个稳健的工程系统时，我们使用单元测试来压力测试管道并识别薄弱点。链中链接的模块化特性意味着每一步可以单独进行单元测试、验证和迭代，而无需运行整个链。
 
-这导致了*更快的改进*，因为在提示工程团队中，不同的个人或小组可以并行处理链中的不同链接。此外，这还导致了*成本减少*，因为理论上，你只需要运行LLM推断的单个步骤来优化链中的单个链接。
+这导致了*更快的改进*，因为在提示工程团队中，不同的个人或小组可以并行处理链中的不同链接。此外，这还导致了*成本减少*，因为理论上，你只需要运行 LLM 推断的单个步骤来优化链中的单个链接。
 
-## 评估LLM生成的代码
+## 评估 LLM 生成的代码
 
-我们使用Python的`eval()`函数将GPT-3.5的响应转换为`DatasetView`。然后，我们设置FiftyOne App的`session`状态以显示该视图。
+我们使用 Python 的`eval()`函数将 GPT-3.5 的响应转换为`DatasetView`。然后，我们设置 FiftyOne App 的`session`状态以显示该视图。
 
 ## 输入验证
 

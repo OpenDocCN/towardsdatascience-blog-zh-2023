@@ -1,18 +1,18 @@
 # 位置语言：评估生成式 AI 的地理编码能力
 
-> 原文：[https://towardsdatascience.com/the-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575?source=collection_archive---------2-----------------------#2023-09-13](https://towardsdatascience.com/the-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575?source=collection_archive---------2-----------------------#2023-09-13)
+> 原文：[`towardsdatascience.com/the-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575?source=collection_archive---------2-----------------------#2023-09-13`](https://towardsdatascience.com/the-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575?source=collection_archive---------2-----------------------#2023-09-13)
 
 ## 一个应用项目，详细介绍了大型语言模型在地理编码中的表现，并与现代地理编码 API 进行了比较
 
-[](https://medium.com/@lukezaruba?source=post_page-----2878b61c575--------------------------------)[![Luke Zaruba](../Images/84394ce71e12a3416e8dad471d891253.png)](https://medium.com/@lukezaruba?source=post_page-----2878b61c575--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2878b61c575--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2878b61c575--------------------------------) [Luke Zaruba](https://medium.com/@lukezaruba?source=post_page-----2878b61c575--------------------------------)
+[](https://medium.com/@lukezaruba?source=post_page-----2878b61c575--------------------------------)![Luke Zaruba](https://medium.com/@lukezaruba?source=post_page-----2878b61c575--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2878b61c575--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2878b61c575--------------------------------) [Luke Zaruba](https://medium.com/@lukezaruba?source=post_page-----2878b61c575--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F55d98275790e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575&user=Luke+Zaruba&userId=55d98275790e&source=post_page-55d98275790e----2878b61c575---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2878b61c575--------------------------------) · 9分钟阅读 · 2023年9月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2878b61c575&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575&user=Luke+Zaruba&userId=55d98275790e&source=-----2878b61c575---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F55d98275790e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575&user=Luke+Zaruba&userId=55d98275790e&source=post_page-55d98275790e----2878b61c575---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2878b61c575--------------------------------) · 9 分钟阅读 · 2023 年 9 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2878b61c575&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575&user=Luke+Zaruba&userId=55d98275790e&source=-----2878b61c575---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2878b61c575&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575&source=-----2878b61c575---------------------bookmark_footer-----------)![](../Images/27a0f4f9061deff45288050a6fe0266f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2878b61c575&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-language-of-locations-evaluating-generative-ais-geocoding-proficiency-2878b61c575&source=-----2878b61c575---------------------bookmark_footer-----------)![](img/27a0f4f9061deff45288050a6fe0266f.png)
 
 图片由 [Sylwia Bartyzel](https://unsplash.com/@sylwiabartyzel?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -26,29 +26,29 @@ Esri，全球地理空间软件领域的领导者，将地理编码定义为 “
 
 **理解地理编码及其与 AI 的集成** 现代地理编码器由两个基本组件组成，即参考数据集和地理编码算法。参考数据通常包含附加到地理位置的地方的明确和相对描述，这意味着不仅是诸如地址等明确描述与位置相关联，而且地方的非结构化描述也与位置相关联。然后，可以使用匹配算法来找到输入描述与参考数据集中包含的描述之间的合适匹配。一个简单的匹配算法示例可能是使用插值算法，通过估算两个已知地址之间的位置来确定街道地址的位置。
 
-预测性地理编码的概念，利用AI和机器学习来增强地理编码过程，已经有了悠久的历史。包括自然语言处理（NLP）和深度学习在内的技术已经被提出和利用，取得了不同程度的成功。AI和机器学习在地理编码中的应用并不是近期发展。然而，生成性AI的出现为地理编码带来了新的前沿，就像它对许多其他领域一样。
+预测性地理编码的概念，利用 AI 和机器学习来增强地理编码过程，已经有了悠久的历史。包括自然语言处理（NLP）和深度学习在内的技术已经被提出和利用，取得了不同程度的成功。AI 和机器学习在地理编码中的应用并不是近期发展。然而，生成性 AI 的出现为地理编码带来了新的前沿，就像它对许多其他领域一样。
 
-**应对挑战与探索未来机会** 正如你所知，LLMs使用从互联网、书籍、期刊文章以及其他各种来源中提取的大量文本数据进行训练。这些数据通常，甚至总是，缺乏全面的地理空间信息。这种地理空间训练数据的缺乏对LLMs在理解和解决地理空间挑战方面的潜力和适用性有影响。在没有基础领域特定知识的情况下，我们如何期望一个模型在复杂问题上表现良好？
+**应对挑战与探索未来机会** 正如你所知，LLMs 使用从互联网、书籍、期刊文章以及其他各种来源中提取的大量文本数据进行训练。这些数据通常，甚至总是，缺乏全面的地理空间信息。这种地理空间训练数据的缺乏对 LLMs 在理解和解决地理空间挑战方面的潜力和适用性有影响。在没有基础领域特定知识的情况下，我们如何期望一个模型在复杂问题上表现良好？
 
 答案是我们根本做不到。
 
-在本分析中，我评估了LLMs作为单独基准的适用性，以及在使用传统GIScience方法的工作流程中的适用性。结果强调了一个熟悉的观点——虽然新技术可能令人印象深刻，但在解决复杂挑战时，它并不总能带来性能提升。
+在本分析中，我评估了 LLMs 作为单独基准的适用性，以及在使用传统 GIScience 方法的工作流程中的适用性。结果强调了一个熟悉的观点——虽然新技术可能令人印象深刻，但在解决复杂挑战时，它并不总能带来性能提升。
 
 **案例研究：车祸的非结构化位置描述**
 
-**数据收集与准备** 为了测试和量化LLMs的地理编码能力，从一个从[网站](https://app.dps.mn.gov/MSPMedia2/)抓取的数据集中随机选择了100个明尼苏达州车辆事故的非结构化位置描述。所有100个事故的真实坐标通过使用各种地图应用程序，如[谷歌地图](https://www.google.com/maps)和明尼苏达交通部的[交通地图应用（TMA）](https://mndot.maps.arcgis.com/apps/webappviewer/index.html?id=7b3be07daed84e7fa170a91059ce63bb)，手动创建。
+**数据收集与准备** 为了测试和量化 LLMs 的地理编码能力，从一个从[网站](https://app.dps.mn.gov/MSPMedia2/)抓取的数据集中随机选择了 100 个明尼苏达州车辆事故的非结构化位置描述。所有 100 个事故的真实坐标通过使用各种地图应用程序，如[谷歌地图](https://www.google.com/maps)和明尼苏达交通部的[交通地图应用（TMA）](https://mndot.maps.arcgis.com/apps/webappviewer/index.html?id=7b3be07daed84e7fa170a91059ce63bb)，手动创建。
 
 一些示例位置描述如下所示。
 
-> 美国71号公路与明尼苏达60号公路交汇处，温多姆，棉花县
+> 美国 71 号公路与明尼苏达 60 号公路交汇处，温多姆，棉花县
 > 
-> EB 10号高速公路靠近Joplin St NW，厄尔克河，舍伯恩县
+> EB 10 号高速公路靠近 Joplin St NW，厄尔克河，舍伯恩县
 > 
 > EB I 90 / HWY 22，福斯特镇，法里博县
 > 
-> 高速公路75号里程碑403，圣文森特镇，基特森县
+> 高速公路 75 号里程碑 403，圣文森特镇，基特森县
 > 
-> 65号高速公路 / 国王路，布伦瑞克镇，卡纳贝克县
+> 65 号高速公路 / 国王路，布伦瑞克镇，卡纳贝克县
 
 如上述示例所示，描述的结构以及定义位置的方式有多种可能性。例如，第四个描述包含一个里程标记号，这在任何地理编码过程中都不太可能匹配，因为该信息通常不包含在任何参考数据中。像这样的描述的真实坐标的确定很大程度上依赖于明尼苏达州交通部的线性参考系统（LRS），该系统提供了一种标准化的方法来测量全州的道路，其中里程标记起着重要作用。此数据可以通过前面提到的 TMA 应用程序访问。
 
@@ -213,21 +213,21 @@ def _single_google_geocode(input_text):
        | GPT 3.5 Geocoding   | 195.54 | 197.86 | 199.13 | 1m 11.9s |
 ```
 
-这里对指标进行了更详细的解释。均值代表均误差（以曼哈顿距离计算，即与真实值的X和Y差异的总和，以十进制度数表示）。标准差代表误差的标准偏差（以曼哈顿距离计算，以十进制度数表示）。MAE代表均方绝对误差（以曼哈顿距离计算，以十进制度数表示）。RMSE代表均方根误差（以曼哈顿距离计算，以十进制度数表示）。75%、90%、95% ET代表该百分比的误差阈值（以欧几里得距离计算，以十进制度数表示），意味着对于给定的百分比，该百分比的记录落在结果值与真实值的距离之内。最后，运行时间简单地表示在100条记录上运行地理编码过程所花费的总时间。
+这里对指标进行了更详细的解释。均值代表均误差（以曼哈顿距离计算，即与真实值的 X 和 Y 差异的总和，以十进制度数表示）。标准差代表误差的标准偏差（以曼哈顿距离计算，以十进制度数表示）。MAE 代表均方绝对误差（以曼哈顿距离计算，以十进制度数表示）。RMSE 代表均方根误差（以曼哈顿距离计算，以十进制度数表示）。75%、90%、95% ET 代表该百分比的误差阈值（以欧几里得距离计算，以十进制度数表示），意味着对于给定的百分比，该百分比的记录落在结果值与真实值的距离之内。最后，运行时间简单地表示在 100 条记录上运行地理编码过程所花费的总时间。
 
-很明显，GPT 3.5单独表现远不如预期。虽然，如果排除几个被模型标记为位于其他大陆的异常值，大多数结果在视觉上至少看起来并不太突兀。
+很明显，GPT 3.5 单独表现远不如预期。虽然，如果排除几个被模型标记为位于其他大陆的异常值，大多数结果在视觉上至少看起来并不太突兀。
 
-同时，看到LLM标准化过程实际上降低了准确性也颇为有趣，我个人对此感到有些惊讶，因为我引入该组件的全部意图是希望稍微提高地理编码过程的总体准确性。值得注意的是，提示本身可能是问题的一部分，并且值得进一步探索“提示工程”在地理空间背景中的作用。
+同时，看到 LLM 标准化过程实际上降低了准确性也颇为有趣，我个人对此感到有些惊讶，因为我引入该组件的全部意图是希望稍微提高地理编码过程的总体准确性。值得注意的是，提示本身可能是问题的一部分，并且值得进一步探索“提示工程”在地理空间背景中的作用。
 
-从这次分析中得到的最后一个主要结论是执行时间差异，任何使用GPT 3.5的过程都明显较慢。Esri的地理编码API在这种设置下也比Google的慢。然而，严格的测试没有进行，因此这些结果应考虑这一点。
+从这次分析中得到的最后一个主要结论是执行时间差异，任何使用 GPT 3.5 的过程都明显较慢。Esri 的地理编码 API 在这种设置下也比 Google 的慢。然而，严格的测试没有进行，因此这些结果应考虑这一点。
 
 **结论**
 
-尽管OpenAI的GPT 3.5模型的“开箱即用”地理编码能力可能无法与现代地理编码器的复杂性相匹配，但测试突显了一个潜在的有前景的展望。结果突显了显著的改进空间，暗示在可预见的未来，大型语言模型（LLMs）的地理空间能力有很多提升的机会，并最终对我们所知的地理编码产生影响。
+尽管 OpenAI 的 GPT 3.5 模型的“开箱即用”地理编码能力可能无法与现代地理编码器的复杂性相匹配，但测试突显了一个潜在的有前景的展望。结果突显了显著的改进空间，暗示在可预见的未来，大型语言模型（LLMs）的地理空间能力有很多提升的机会，并最终对我们所知的地理编码产生影响。
 
-在许多特定用例中，LLMs可能足以进行地理编码。然而，正如这个例子所示，LLMs的能力与需要高精度和细致空间分辨率的地理编码任务之间存在差距。因此，尽管LLMs具有潜力，但这个例子展示了某些应用对精度和准确性的关键要求。
+在许多特定用例中，LLMs 可能足以进行地理编码。然而，正如这个例子所示，LLMs 的能力与需要高精度和细致空间分辨率的地理编码任务之间存在差距。因此，尽管 LLMs 具有潜力，但这个例子展示了某些应用对精度和准确性的关键要求。
 
-总体而言，生成式人工智能展示出令人兴奋的创新，涵盖了地理和GIS领域的广泛和深远影响和机遇，包括地理编码的应用。每天都在以惊人的速度进行着持续的进展，允许在生成式人工智能与地理空间的集成开发上继续取得进展。
+总体而言，生成式人工智能展示出令人兴奋的创新，涵盖了地理和 GIS 领域的广泛和深远影响和机遇，包括地理编码的应用。每天都在以惊人的速度进行着持续的进展，允许在生成式人工智能与地理空间的集成开发上继续取得进展。
 
 **参考文献：** [1] 维基百科贡献者，[地址地理编码](https://en.wikipedia.org/wiki/Address_geocoding) (2023)，维基百科
 
@@ -235,4 +235,4 @@ def _single_google_geocode(input_text):
 
 [3] L. Mearian，[LLMs 是什么，它们如何在生成式人工智能中使用？](https://www.computerworld.com/article/3697649/what-are-large-language-models-and-how-are-they-used-in-generative-ai.html) (2023)，[计算机世界](https://www.computerworld.com/)
 
-**致谢：** 我要特别感谢Bryan Runck博士在编辑和审阅本文过程中提供的宝贵支持、指导和专业知识。
+**致谢：** 我要特别感谢 Bryan Runck 博士在编辑和审阅本文过程中提供的宝贵支持、指导和专业知识。

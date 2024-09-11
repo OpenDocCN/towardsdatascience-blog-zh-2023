@@ -1,18 +1,18 @@
 # XGBoost 现在支持将 MAE 作为目标
 
-> 原文：[https://towardsdatascience.com/xgboost-now-support-mae-as-objective-fdbbe18e173?source=collection_archive---------10-----------------------#2023-01-18](https://towardsdatascience.com/xgboost-now-support-mae-as-objective-fdbbe18e173?source=collection_archive---------10-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/xgboost-now-support-mae-as-objective-fdbbe18e173?source=collection_archive---------10-----------------------#2023-01-18`](https://towardsdatascience.com/xgboost-now-support-mae-as-objective-fdbbe18e173?source=collection_archive---------10-----------------------#2023-01-18)
 
 ## 既然 MAE 是非光滑的，这怎么可能呢？
 
-[](https://medium.com/@guillaume.saupin?source=post_page-----fdbbe18e173--------------------------------)[![Saupin Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----fdbbe18e173--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdbbe18e173--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fdbbe18e173--------------------------------) [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----fdbbe18e173--------------------------------)
+[](https://medium.com/@guillaume.saupin?source=post_page-----fdbbe18e173--------------------------------)![Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----fdbbe18e173--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdbbe18e173--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdbbe18e173--------------------------------) [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----fdbbe18e173--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F891e27328f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxgboost-now-support-mae-as-objective-fdbbe18e173&user=Saupin+Guillaume&userId=891e27328f3a&source=post_page-891e27328f3a----fdbbe18e173---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdbbe18e173--------------------------------) ·5 分钟阅读·2023年1月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffdbbe18e173&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxgboost-now-support-mae-as-objective-fdbbe18e173&user=Saupin+Guillaume&userId=891e27328f3a&source=-----fdbbe18e173---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F891e27328f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxgboost-now-support-mae-as-objective-fdbbe18e173&user=Saupin+Guillaume&userId=891e27328f3a&source=post_page-891e27328f3a----fdbbe18e173---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdbbe18e173--------------------------------) ·5 分钟阅读·2023 年 1 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffdbbe18e173&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxgboost-now-support-mae-as-objective-fdbbe18e173&user=Saupin+Guillaume&userId=891e27328f3a&source=-----fdbbe18e173---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffdbbe18e173&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxgboost-now-support-mae-as-objective-fdbbe18e173&source=-----fdbbe18e173---------------------bookmark_footer-----------)![](../Images/929fde4fb46becfb224284a1e3507976.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffdbbe18e173&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxgboost-now-support-mae-as-objective-fdbbe18e173&source=-----fdbbe18e173---------------------bookmark_footer-----------)![](img/929fde4fb46becfb224284a1e3507976.png)
 
 照片由 [Ajay Karpur](https://unsplash.com/@ajaykarpur?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,14 +1,14 @@
 # 开发公司特定的 ChatGPT 是技术的三分之一和流程改进的三分之二
 
-> 原文：[https://towardsdatascience.com/developing-a-company-specific-chatgpt-is-one-third-technology-and-two-thirds-process-improvements-2c6b4adf637f?source=collection_archive---------9-----------------------#2023-11-18](https://towardsdatascience.com/developing-a-company-specific-chatgpt-is-one-third-technology-and-two-thirds-process-improvements-2c6b4adf637f?source=collection_archive---------9-----------------------#2023-11-18)
+> 原文：[`towardsdatascience.com/developing-a-company-specific-chatgpt-is-one-third-technology-and-two-thirds-process-improvements-2c6b4adf637f?source=collection_archive---------9-----------------------#2023-11-18`](https://towardsdatascience.com/developing-a-company-specific-chatgpt-is-one-third-technology-and-two-thirds-process-improvements-2c6b4adf637f?source=collection_archive---------9-----------------------#2023-11-18)
 
-![](../Images/0b1606c43069e8460e564579877838ac.png)
+![](img/0b1606c43069e8460e564579877838ac.png)
 
 作者提供的图片
 
 ## 对开发基于 GPT 的公司特定虚拟助手所涉及的流程、角色和复杂性进行了实际概述
 
-[](https://eljand.medium.com/?source=post_page-----2c6b4adf637f--------------------------------)[![Kristjan Eljand](../Images/a51fccb29b33e9d1cd90943ef6eaee4a.png)](https://eljand.medium.com/?source=post_page-----2c6b4adf637f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2c6b4adf637f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2c6b4adf637f--------------------------------) [克里斯蒂安·埃尔扬](https://eljand.medium.com/?source=post_page-----2c6b4adf637f--------------------------------)
+[](https://eljand.medium.com/?source=post_page-----2c6b4adf637f--------------------------------)![Kristjan Eljand](https://eljand.medium.com/?source=post_page-----2c6b4adf637f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2c6b4adf637f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c6b4adf637f--------------------------------) [克里斯蒂安·埃尔扬](https://eljand.medium.com/?source=post_page-----2c6b4adf637f--------------------------------)
 
 ·
 
@@ -18,19 +18,19 @@
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2c6b4adf637f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-a-company-specific-chatgpt-is-one-third-technology-and-two-thirds-process-improvements-2c6b4adf637f&source=-----2c6b4adf637f---------------------bookmark_footer-----------)
 
-在整个2023年，我们一直在为Enefit（波罗的海地区最大的能源公司之一）的员工开发基于GPT模型的虚拟助手。在第一篇文章中（[点击阅读](https://www.linkedin.com/pulse/developing-company-specific-chatgpt-forenefit-kristjan-eljand)），我概述了问题、开发过程和初步结果。在本文中，我将深入探讨开发虚拟助手中非技术相关挑战的重要性。
+在整个 2023 年，我们一直在为 Enefit（波罗的海地区最大的能源公司之一）的员工开发基于 GPT 模型的虚拟助手。在第一篇文章中（[点击阅读](https://www.linkedin.com/pulse/developing-company-specific-chatgpt-forenefit-kristjan-eljand)），我概述了问题、开发过程和初步结果。在本文中，我将深入探讨开发虚拟助手中非技术相关挑战的重要性。
 
 # 介绍
 
-在2023年初，显然大型语言模型的技术已经取得了突破。与过去十年那些常常让用户失望的聊天机器人不同，ChatGPT展现出了精准、多才多艺和真正有用的特性。OpenAI和微软决定通过开放API服务提供对其GPT模型的程序化访问，从而创造了实施公司特定用例的机会。
+在 2023 年初，显然大型语言模型的技术已经取得了突破。与过去十年那些常常让用户失望的聊天机器人不同，ChatGPT 展现出了精准、多才多艺和真正有用的特性。OpenAI 和微软决定通过开放 API 服务提供对其 GPT 模型的程序化访问，从而创造了实施公司特定用例的机会。
 
-我们在启动Enefit虚拟助手项目时知道基础技术已经就绪，内部兴趣很高，而且软件开发挑战虽然新颖且复杂，但有优秀的专家可以解决。
+我们在启动 Enefit 虚拟助手项目时知道基础技术已经就绪，内部兴趣很高，而且软件开发挑战虽然新颖且复杂，但有优秀的专家可以解决。
 
-在开发的早期阶段，这一叙述证明是正确的：近80%的项目活动是软件开发任务，20%是非技术相关活动。随着项目的进展，这些比例发生了剧烈变化，导致需要全新的流程和角色。
+在开发的早期阶段，这一叙述证明是正确的：近 80%的项目活动是软件开发任务，20%是非技术相关活动。随着项目的进展，这些比例发生了剧烈变化，导致需要全新的流程和角色。
 
-# 数据/信息治理2.0
+# 数据/信息治理 2.0
 
-虚拟助手只能根据基础文档的准确性提供公司特定的信息。换句话说，如果基础文档包含不正确、结构不佳或过时的信息，虚拟助手也无法提供更好的答案。这通常被称为GIGO（垃圾进，垃圾出）原则，它设定了AI能力的基本限制。
+虚拟助手只能根据基础文档的准确性提供公司特定的信息。换句话说，如果基础文档包含不正确、结构不佳或过时的信息，虚拟助手也无法提供更好的答案。这通常被称为 GIGO（垃圾进，垃圾出）原则，它设定了 AI 能力的基本限制。
 
 因此，构建虚拟助手的一个重要部分是确保数据/信息的质量。这包括：
 
@@ -76,14 +76,14 @@
 
 # 结论
 
-使用现有技术开发一个80%效率的聊天机器人是很容易的，但创建一个95%质量的虚拟助手则是一个复杂的任务。
+使用现有技术开发一个 80%效率的聊天机器人是很容易的，但创建一个 95%质量的虚拟助手则是一个复杂的任务。
 
-初看之下，人们可能会认为80%已经足够，那么为什么要为最后的20个百分点付出这么多努力呢？实际上，根据过去十年与聊天机器人的经验，我们知道一个80%准确的聊天机器人无法超越用户的“认知有用性门槛”。
+初看之下，人们可能会认为 80%已经足够，那么为什么要为最后的 20 个百分点付出这么多努力呢？实际上，根据过去十年与聊天机器人的经验，我们知道一个 80%准确的聊天机器人无法超越用户的“认知有用性门槛”。
 
 这个认知有用性门槛是一个存在于我们所有人心中的隐性基准，但我们无法准确定义这个限制在哪里。然而，利用技术，我们可以迅速判断是否已超越这个限制。如果技术的质量低于这一门槛，我们将完全放弃使用该技术。
 
-换句话说，80%和95%之间的区别在于，在第一种情况下，没有人会开始使用这项技术，而在第二种情况下，它会成为许多员工的日常助手。
+换句话说，80%和 95%之间的区别在于，在第一种情况下，没有人会开始使用这项技术，而在第二种情况下，它会成为许多员工的日常助手。
 
-> *80%和95%准确率之间的差异在于，第一种情况下没有人会开始使用这项技术，而在第二种情况下，它会成为许多员工的日常助手！*
+> *80%和 95%准确率之间的差异在于，第一种情况下没有人会开始使用这项技术，而在第二种情况下，它会成为许多员工的日常助手！*
 
-为了实现最后的15-20%，需要实施一个数据管理系统，以确保基础信息的相关性，创建与虚拟助手开发相关的新角色和流程，对所有相关方进行新技术的培训，并在战略和运营层面支持实施和采纳。因此，技术仅占虚拟助手开发的三分之一，而组织和流程相关的挑战占其余部分。
+为了实现最后的 15-20%，需要实施一个数据管理系统，以确保基础信息的相关性，创建与虚拟助手开发相关的新角色和流程，对所有相关方进行新技术的培训，并在战略和运营层面支持实施和采纳。因此，技术仅占虚拟助手开发的三分之一，而组织和流程相关的挑战占其余部分。

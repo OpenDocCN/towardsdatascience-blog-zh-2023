@@ -1,18 +1,18 @@
 # 实施 dbt 模型单元测试的简单（但有效）方法
 
-> 原文：[https://towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18](https://towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18)
+> 原文：[`towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18`](https://towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18)
 
 ## 单元测试 dbt 模型一直是 dbt 生态系统中最关键的缺失部分之一。本文提出了一种新的单元测试方法，依赖于标准和 dbt 最佳实践。
 
-[](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)[![Mahdi Karabiben](../Images/f1aac76435b8db295c306c76796a3201.png)](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------) [Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)
+[](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)![Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------) [Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cda12823b7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=post_page-7cda12823b7a----da2583ea8e79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------) · 9分钟阅读 · 2023年8月18日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=-----da2583ea8e79---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cda12823b7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=post_page-7cda12823b7a----da2583ea8e79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------) · 9 分钟阅读 · 2023 年 8 月 18 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=-----da2583ea8e79---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&source=-----da2583ea8e79---------------------bookmark_footer-----------)![](../Images/9fa3a5ea813d037c94ab620c1126f1a6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&source=-----da2583ea8e79---------------------bookmark_footer-----------)![](img/9fa3a5ea813d037c94ab620c1126f1a6.png)
 
 照片由 [Fabio Ballasina](https://unsplash.com/@fabiolog?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -40,29 +40,29 @@
 
 ## 这是一种视角问题
 
-dbt Labs（dbt Core的开发公司）[更倾向于第一种方法](https://www.getdbt.com/analytics-engineering/modular-data-modeling-technique/#data-model-readability)。因此，毫不奇怪，[他们的单元测试提案](https://github.com/dbt-labs/dbt-core/discussions/8275)专注于模型级别的测试，并将CTE级别的测试视为*反目标*。对于小型或新建的dbt项目，这可能是一个非常合理的设计决策。然而，如果你拥有一个成熟或大型的dbt项目，那么为了避免复杂模型而增加不必要的临时模型[可能不是一个好主意](https://medium.com/p/d49550f95580#:~:text=Why%20do%20we%20need%20design%20docs%20for%20data%20pipelines%3F)。
+dbt Labs（dbt Core 的开发公司）[更倾向于第一种方法](https://www.getdbt.com/analytics-engineering/modular-data-modeling-technique/#data-model-readability)。因此，毫不奇怪，[他们的单元测试提案](https://github.com/dbt-labs/dbt-core/discussions/8275)专注于模型级别的测试，并将 CTE 级别的测试视为*反目标*。对于小型或新建的 dbt 项目，这可能是一个非常合理的设计决策。然而，如果你拥有一个成熟或大型的 dbt 项目，那么为了避免复杂模型而增加不必要的临时模型[可能不是一个好主意](https://medium.com/p/d49550f95580#:~:text=Why%20do%20we%20need%20design%20docs%20for%20data%20pipelines%3F)。
 
-对于大多数dbt项目，在一个dbt模型中对同一实体执行多个操作（变换、聚合等）是完全可以接受的：我们可以首先对给定的列进行变换，然后使用它来聚合数据，或者我们可以创建一个新的标志，然后依赖它来应用一些业务逻辑或筛选数据。这些操作可以在同一模型中的不同CTE中进行，使CTE成为一个自然的可测试单元。
+对于大多数 dbt 项目，在一个 dbt 模型中对同一实体执行多个操作（变换、聚合等）是完全可以接受的：我们可以首先对给定的列进行变换，然后使用它来聚合数据，或者我们可以创建一个新的标志，然后依赖它来应用一些业务逻辑或筛选数据。这些操作可以在同一模型中的不同 CTE 中进行，使 CTE 成为一个自然的可测试单元。
 
-本文中介绍的方法将重点关注CTE的单元测试，而不是整个模型，尽管相同的原则可以调整用于模型级别的单元测试。
+本文中介绍的方法将重点关注 CTE 的单元测试，而不是整个模型，尽管相同的原则可以调整用于模型级别的单元测试。
 
 # 秘密武器：缩小宇宙
 
-实施dbt模型的单元测试系统的主要复杂性在于“dbt模型”可以有很多种形式。从一个1000行的庞大`select`语句到一长串CTE和子查询，如果我们想构建一个可以用于任何dbt项目的通用单元测试系统，就需要考虑所有这些场景。
+实施 dbt 模型的单元测试系统的主要复杂性在于“dbt 模型”可以有很多种形式。从一个 1000 行的庞大`select`语句到一长串 CTE 和子查询，如果我们想构建一个可以用于任何 dbt 项目的通用单元测试系统，就需要考虑所有这些场景。
 
-然而，我们可以通过限制问题的范围来完全避免这种复杂性。与其构建一个在任何dbt项目中都能工作的单元测试系统，不如只为***我们的***dbt项目构建一个。[正如Don Draper会告诉你的](https://www.youtube.com/watch?v=ijJonVw7YPY)，我们可以随时“***改变对话***”：
+然而，我们可以通过限制问题的范围来完全避免这种复杂性。与其构建一个在任何 dbt 项目中都能工作的单元测试系统，不如只为***我们的***dbt 项目构建一个。[正如 Don Draper 会告诉你的](https://www.youtube.com/watch?v=ijJonVw7YPY)，我们可以随时“***改变对话***”：
 
-> 与其为dbt模型（***一个我们无法控制的宇宙***）构建单元测试系统，不如为我们的dbt模型（***一个我们可以控制的更小宇宙***）构建系统。
+> 与其为 dbt 模型（***一个我们无法控制的宇宙***）构建单元测试系统，不如为我们的 dbt 模型（***一个我们可以控制的更小宇宙***）构建系统。
 
-改变我们目标宇宙的范围大大简化了问题，因为我们了解我们的dbt模型及其特性。更重要的是，我们可以为它们的结构和内容定义标准和指南。
+改变我们目标宇宙的范围大大简化了问题，因为我们了解我们的 dbt 模型及其特性。更重要的是，我们可以为它们的结构和内容定义标准和指南。
 
-![](../Images/afca9da593d06a0764695eab547f05a0.png)
+![](img/afca9da593d06a0764695eab547f05a0.png)
 
 如何通过“缩小”宇宙来简化单元测试方法的视觉表示（作者提供的图像）
 
-上述原则也可以应用于我们希望构建与dbt相关的自定义和功能的其他领域。设定标准并限制我们对“dbt模型”的期望，可以简化问题，并为直接解决方案打开大门。
+上述原则也可以应用于我们希望构建与 dbt 相关的自定义和功能的其他领域。设定标准并限制我们对“dbt 模型”的期望，可以简化问题，并为直接解决方案打开大门。
 
-# 导航熟悉的宇宙：标准化我们的dbt模型结构
+# 导航熟悉的宇宙：标准化我们的 dbt 模型结构
 
 现在我们已经将工作的范围限制在我们的 dbt 模型上，我们可以通过定义一个强制执行的模型结构来明确我们的输入，这个结构可以通过自动化（如 CI 操作）来强制执行。如果你已经在维护没有推荐模型结构的 dbt 项目，你可以在更新现有模型时逐步开始强制执行它。
 
@@ -76,7 +76,7 @@ dbt Labs（dbt Core的开发公司）[更倾向于第一种方法](https://www.g
 
 然后，作为模型的最后一部分，`select * from final` 语句将生成其输出。
 
-![](../Images/b5463781d6ed959fd945029667e14bff.png)
+![](img/b5463781d6ed959fd945029667e14bff.png)
 
 使用 import-intermediate-final 结构的示例 dbt 模型（作者提供的图像）
 
@@ -88,7 +88,7 @@ dbt Labs（dbt Core的开发公司）[更倾向于第一种方法](https://www.g
 
 基于我们讨论的结构，为了确保对 dbt 模型进行高效的单元测试代码覆盖，我们可以依赖测试中间 CTEs 和最终 CTE——因为导入 CTEs 不包含我们需要测试的代码。
 
-![](../Images/011f38aae61b82b635f72cee65815e1c.png)
+![](img/011f38aae61b82b635f72cee65815e1c.png)
 
 将 dbt 模型分为需要测试的输入和代码（作者提供的图像）
 
@@ -98,7 +98,7 @@ dbt Labs（dbt Core的开发公司）[更倾向于第一种方法](https://www.g
 
 我们系统的第一个组件是模拟输入（基本上是我们希望用来测试不同执行场景的样本数据）。在结构上，这应该类似于我们的导入 CTE 的输出——因此，如果我们从名为 `customers` 的模型中读取两列数据，则模拟输入应包含相同的结构。
 
-![](../Images/fc2574b360143165136dd435a6bc18e5.png)
+![](img/fc2574b360143165136dd435a6bc18e5.png)
 
 将导入 CTE 的输出转换为单元测试的模拟输入（图片由作者提供）
 
@@ -140,7 +140,7 @@ dbt Labs（dbt Core的开发公司）[更倾向于第一种方法](https://www.g
 
 通过上述过程，我们可以在一次执行中测试每个中级 CTE（以及最终 CTE），而不必担心一个 CTE 的实际输出会干扰下一个 CTE。这意味着，对于给定的 CTE，dbt 仅会在运行时使用模拟输入（因为它引用了我们提供的 dbt 种子）——输入包括导入 CTE 的输出和我们引用的其他中级 CTE 的预期输出。
 
-![](../Images/107eb6753a3c94defea5d20318729d39.png)
+![](img/107eb6753a3c94defea5d20318729d39.png)
 
 一个中级 CTE 的示例输入，其中我们引用了两个导入 CTE 和另一个中级 CTE（图像来源：作者）
 

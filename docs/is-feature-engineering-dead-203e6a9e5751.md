@@ -1,18 +1,18 @@
 # 特征工程死了吗?
 
-> 原文：[https://towardsdatascience.com/is-feature-engineering-dead-203e6a9e5751?source=collection_archive---------20-----------------------#2023-01-10](https://towardsdatascience.com/is-feature-engineering-dead-203e6a9e5751?source=collection_archive---------20-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/is-feature-engineering-dead-203e6a9e5751?source=collection_archive---------20-----------------------#2023-01-10`](https://towardsdatascience.com/is-feature-engineering-dead-203e6a9e5751?source=collection_archive---------20-----------------------#2023-01-10)
 
 ## **评估特征工程在现代数据科学中的作用**
 
-[](https://medium.com/@DataScienceRebalanced?source=post_page-----203e6a9e5751--------------------------------)[![Leah Berg and Ray McLendon](../Images/549a5697ea857af5a0f9f7905e2819b1.png)](https://medium.com/@DataScienceRebalanced?source=post_page-----203e6a9e5751--------------------------------)[](https://towardsdatascience.com/?source=post_page-----203e6a9e5751--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----203e6a9e5751--------------------------------) [Leah Berg and Ray McLendon](https://medium.com/@DataScienceRebalanced?source=post_page-----203e6a9e5751--------------------------------)
+[](https://medium.com/@DataScienceRebalanced?source=post_page-----203e6a9e5751--------------------------------)![Leah Berg and Ray McLendon](https://medium.com/@DataScienceRebalanced?source=post_page-----203e6a9e5751--------------------------------)[](https://towardsdatascience.com/?source=post_page-----203e6a9e5751--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----203e6a9e5751--------------------------------) [Leah Berg and Ray McLendon](https://medium.com/@DataScienceRebalanced?source=post_page-----203e6a9e5751--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52338acfb4b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-feature-engineering-dead-203e6a9e5751&user=Leah+Berg+and+Ray+McLendon&userId=52338acfb4b9&source=post_page-52338acfb4b9----203e6a9e5751---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----203e6a9e5751--------------------------------) ·6 min read·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F203e6a9e5751&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-feature-engineering-dead-203e6a9e5751&user=Leah+Berg+and+Ray+McLendon&userId=52338acfb4b9&source=-----203e6a9e5751---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F52338acfb4b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-feature-engineering-dead-203e6a9e5751&user=Leah+Berg+and+Ray+McLendon&userId=52338acfb4b9&source=post_page-52338acfb4b9----203e6a9e5751---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----203e6a9e5751--------------------------------) ·6 min read·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F203e6a9e5751&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-feature-engineering-dead-203e6a9e5751&user=Leah+Berg+and+Ray+McLendon&userId=52338acfb4b9&source=-----203e6a9e5751---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F203e6a9e5751&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-feature-engineering-dead-203e6a9e5751&source=-----203e6a9e5751---------------------bookmark_footer-----------)![](../Images/57a93fc8ab47955efe632b13f0f11810.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F203e6a9e5751&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-feature-engineering-dead-203e6a9e5751&source=-----203e6a9e5751---------------------bookmark_footer-----------)![](img/57a93fc8ab47955efe632b13f0f11810.png)
 
 照片由[Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

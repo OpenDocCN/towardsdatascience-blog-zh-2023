@@ -1,18 +1,18 @@
-# 使用NLP的文本纠正
+# 使用 NLP 的文本纠正
 
-> 原文：[https://towardsdatascience.com/text-correction-using-nlp-b68c7233b86?source=collection_archive---------11-----------------------#2023-01-13](https://towardsdatascience.com/text-correction-using-nlp-b68c7233b86?source=collection_archive---------11-----------------------#2023-01-13)
+> 原文：[`towardsdatascience.com/text-correction-using-nlp-b68c7233b86?source=collection_archive---------11-----------------------#2023-01-13`](https://towardsdatascience.com/text-correction-using-nlp-b68c7233b86?source=collection_archive---------11-----------------------#2023-01-13)
 
 ## **检测和纠正常见错误：问题与方法**
 
-[](https://jagota-arun.medium.com/?source=post_page-----b68c7233b86--------------------------------)[![Arun Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----b68c7233b86--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b68c7233b86--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b68c7233b86--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----b68c7233b86--------------------------------)
+[](https://jagota-arun.medium.com/?source=post_page-----b68c7233b86--------------------------------)![Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----b68c7233b86--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b68c7233b86--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b68c7233b86--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----b68c7233b86--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-correction-using-nlp-b68c7233b86&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----b68c7233b86---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b68c7233b86--------------------------------) ·19分钟阅读·2023年1月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb68c7233b86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-correction-using-nlp-b68c7233b86&user=Arun+Jagota&userId=ef9ed921edad&source=-----b68c7233b86---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-correction-using-nlp-b68c7233b86&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----b68c7233b86---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b68c7233b86--------------------------------) ·19 分钟阅读·2023 年 1 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb68c7233b86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-correction-using-nlp-b68c7233b86&user=Arun+Jagota&userId=ef9ed921edad&source=-----b68c7233b86---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb68c7233b86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-correction-using-nlp-b68c7233b86&source=-----b68c7233b86---------------------bookmark_footer-----------)![](../Images/bcadaafc6c2554d8c8a66ada008560c7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb68c7233b86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-correction-using-nlp-b68c7233b86&source=-----b68c7233b86---------------------bookmark_footer-----------)![](img/bcadaafc6c2554d8c8a66ada008560c7.png)
 
 图片由 [Lorenzo Cafaro](https://pixabay.com/users/3844328-3844328/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1870721) 提供，来自 [Pixabay](https://pixabay.com/)
 
@@ -26,4 +26,4 @@
 
 对于内容非常详细的材料，如整本书籍或甚至短小的博客文章，文本问题自然会更加繁多。这就是为什么我们需要编辑员，他们的职责包括校对和编辑内容。
 
-这也是为什么基于NLP的工具，如Grammarly，越来越受欢迎。这些工具可以帮助人们在几分钟内找到并纠正短文本中的错误，如电子邮件。对于较长的文本，它们可能会发现更多错误，这当然意味着修正这些错误会花费更多时间。
+这也是为什么基于 NLP 的工具，如 Grammarly，越来越受欢迎。这些工具可以帮助人们在几分钟内找到并纠正短文本中的错误，如电子邮件。对于较长的文本，它们可能会发现更多错误，这当然意味着修正这些错误会花费更多时间。

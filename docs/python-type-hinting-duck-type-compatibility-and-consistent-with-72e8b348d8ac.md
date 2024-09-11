@@ -1,20 +1,20 @@
 # Python 类型提示：鸭子类型兼容性与一致性
 
-> 原文：[https://towardsdatascience.com/python-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac?source=collection_archive---------8-----------------------#2023-06-06](https://towardsdatascience.com/python-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac?source=collection_archive---------8-----------------------#2023-06-06)
+> 原文：[`towardsdatascience.com/python-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac?source=collection_archive---------8-----------------------#2023-06-06`](https://towardsdatascience.com/python-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac?source=collection_archive---------8-----------------------#2023-06-06)
 
 ## PYTHON PROGRAMMING
 
 ## 你在提示浮点数时不需要提示`int`，在提示元组时也不需要提示`namedtuple`。为什么？
 
-[](https://medium.com/@nyggus?source=post_page-----72e8b348d8ac--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----72e8b348d8ac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72e8b348d8ac--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72e8b348d8ac--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----72e8b348d8ac--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----72e8b348d8ac--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----72e8b348d8ac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72e8b348d8ac--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----72e8b348d8ac--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----72e8b348d8ac--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----72e8b348d8ac---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72e8b348d8ac--------------------------------) ·8分钟阅读·2023年6月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72e8b348d8ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----72e8b348d8ac---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----72e8b348d8ac---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72e8b348d8ac--------------------------------) ·8 分钟阅读·2023 年 6 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72e8b348d8ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----72e8b348d8ac---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F72e8b348d8ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac&source=-----72e8b348d8ac---------------------bookmark_footer-----------)![](../Images/7661c8753bdda73a66f4cc31ac70bc99.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F72e8b348d8ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-type-hinting-duck-type-compatibility-and-consistent-with-72e8b348d8ac&source=-----72e8b348d8ac---------------------bookmark_footer-----------)![](img/7661c8753bdda73a66f4cc31ac70bc99.png)
 
 图片由 [Markus Winkler](https://unsplash.com/@markuswinkler?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

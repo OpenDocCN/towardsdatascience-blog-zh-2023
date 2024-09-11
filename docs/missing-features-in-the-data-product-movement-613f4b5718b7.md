@@ -1,14 +1,14 @@
 # 您的数据产品中的缺失特性
 
-> 原文：[https://towardsdatascience.com/missing-features-in-the-data-product-movement-613f4b5718b7?source=collection_archive---------14-----------------------#2023-02-15](https://towardsdatascience.com/missing-features-in-the-data-product-movement-613f4b5718b7?source=collection_archive---------14-----------------------#2023-02-15)
+> 原文：[`towardsdatascience.com/missing-features-in-the-data-product-movement-613f4b5718b7?source=collection_archive---------14-----------------------#2023-02-15`](https://towardsdatascience.com/missing-features-in-the-data-product-movement-613f4b5718b7?source=collection_archive---------14-----------------------#2023-02-15)
 
 ## 参与度、愉悦感和信任作为成果
 
-[](https://medium.com/@cisenbe?source=post_page-----613f4b5718b7--------------------------------)[![查德·艾森伯格](../Images/56e50c1ee292ac672df4b8062e460c8e.png)](https://medium.com/@cisenbe?source=post_page-----613f4b5718b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----613f4b5718b7--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----613f4b5718b7--------------------------------) [查德·艾森伯格](https://medium.com/@cisenbe?source=post_page-----613f4b5718b7--------------------------------)
+[](https://medium.com/@cisenbe?source=post_page-----613f4b5718b7--------------------------------)![查德·艾森伯格](https://medium.com/@cisenbe?source=post_page-----613f4b5718b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----613f4b5718b7--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----613f4b5718b7--------------------------------) [查德·艾森伯格](https://medium.com/@cisenbe?source=post_page-----613f4b5718b7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9113837f160&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmissing-features-in-the-data-product-movement-613f4b5718b7&user=Chad+Isenberg&userId=b9113837f160&source=post_page-b9113837f160----613f4b5718b7---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----613f4b5718b7--------------------------------) ·7分钟阅读·2023年2月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F613f4b5718b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmissing-features-in-the-data-product-movement-613f4b5718b7&user=Chad+Isenberg&userId=b9113837f160&source=-----613f4b5718b7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9113837f160&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmissing-features-in-the-data-product-movement-613f4b5718b7&user=Chad+Isenberg&userId=b9113837f160&source=post_page-b9113837f160----613f4b5718b7---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----613f4b5718b7--------------------------------) ·7 分钟阅读·2023 年 2 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F613f4b5718b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmissing-features-in-the-data-product-movement-613f4b5718b7&user=Chad+Isenberg&userId=b9113837f160&source=-----613f4b5718b7---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 我在 Zendesk 领导一个每月的数据讨论小组，我很幸运能够听到来自聪明、多样化和才华横溢的人的各种想法和观点。我们讨论的主题范围从[技术](https://medium.com/airbnb-engineering/how-airbnb-achieved-metric-consistency-at-scale-f23cc53dea70)到[程序性](https://benn.substack.com/p/how-dbt-fails)，并且我们定期将这些与我们的工作流联系起来。在线讨论小组、本地聚会和会议都非常棒，但我觉得将您组织中的人员聚在一起讨论行业趋势会有更多价值，因为这可以为您的团队及其项目提供方向。
 
-我们一直在回到的一个主题是团队的价值以及如何衡量它。在[早期的文章](https://medium.com/towards-data-science/data-teams-as-support-teams-2bb1f1ed31b)中，我讨论了数据团队如何创造价值，但这不是唯一的方法。无论你是在提供业务支持、通过反向ETL实现自动化，还是为高级分析和机器学习用例提供数据，总会存在一个挥之不去的问题：我们是否节省或创造了比花费更多的价值？
+我们一直在回到的一个主题是团队的价值以及如何衡量它。在[早期的文章](https://medium.com/towards-data-science/data-teams-as-support-teams-2bb1f1ed31b)中，我讨论了数据团队如何创造价值，但这不是唯一的方法。无论你是在提供业务支持、通过反向 ETL 实现自动化，还是为高级分析和机器学习用例提供数据，总会存在一个挥之不去的问题：我们是否节省或创造了比花费更多的价值？
 
 正如我们的一位与会者所说，我们的客户经常根据“氛围”来衡量我们的影响力。这不应被视为贬低，而是对围绕影响力和价值创建明确指标的困难的一种让步。此外，这个想法中还隐含了分析输出中存在主观且或许无法量化的价值，我们稍后会讨论这个问题。
 
@@ -32,11 +32,11 @@
 
 第一个观察点更不涉及我们应如何“做数据产品”，而是关于基本要求。在讨论中，我提出了一个观点：我们不一定知道数据驱动型公司成功的原因，但[研究表明它们确实成功](https://cisr.mit.edu/publication/2022_0101_Dashboarding_WeillWoerner)。有人回应道：也许这些仪表盘“没有做任何事情”，至少在推动特定、明确的行动方面没有发挥作用。如果它们的价值在于激励和对齐我们的客户，而不是（或除了）可操作的见解，那会怎样呢？
 
-![](../Images/5ae353fad8599c59240cb1b3370b4419.png)
+![](img/5ae353fad8599c59240cb1b3370b4419.png)
 
 由[Rojan Maharjan](https://unsplash.com/@kathmandude_?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在我的职业生涯的某个阶段，我曾担任一家批发公司的BI开发人员，我们有一份报告向销售团队提供销售指标的汇总。这份报告在整个月的使用情况还算合理，但在月末使用量激增，一些用户每小时刷新好几次。我记得对这种趋势感到非常困惑。
+在我的职业生涯的某个阶段，我曾担任一家批发公司的 BI 开发人员，我们有一份报告向销售团队提供销售指标的汇总。这份报告在整个月的使用情况还算合理，但在月末使用量激增，一些用户每小时刷新好几次。我记得对这种趋势感到非常困惑。
 
 我相信这种行为背后有几个操作性用例，但事后看来，我认为报告的最有价值的输出之一是激励。看到他们的货物几乎实时发出使我们的销售人员感到兴奋；它给了他们额外的“动力”，让他们在争分夺秒地完成或超越配额时进行电话和达成交易。这份报告正在做非常实际的工作，推动业务流程，即使这不是我们通常期望的方式。
 
@@ -48,7 +48,7 @@
 
 # 面包与马戏团
 
-![](../Images/d11108b1ff07cfd487f4590e494790ba.png)
+![](img/d11108b1ff07cfd487f4590e494790ba.png)
 
 图片由 [Mathew Schwartz](https://unsplash.com/@cadop?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -66,7 +66,7 @@
 
 但就像标准化测试中因错误答案而受罚一样，数据质量差会破坏信任。如果你的团队持续产生不准确、过时且不一致的仪表板，你的客户将失去对你的信任。这种损害不仅限于你和你的团队；你还在助长一种需要多年努力和大量人力才能修复的不信任文化。
 
-我们有责任向利益相关者推广数据质量作为我们产品的关键特性，并需要让他们参与权衡取舍。由于数据质量有许多[维度](/the-six-dimensions-of-data-quality-and-how-to-deal-with-them-bdcf9a3dba71)，我们的客户必须参与优先级排序：我们应如何处理异常数据量？遇到模式变化时我们应该怎么做？准时交付不完整的数据与迟交完整的数据，哪个更重要？虽然“差”数据质量有一定的感觉，但在交付“好”数据时的权衡管理要复杂得多且具有上下文敏感性。
+我们有责任向利益相关者推广数据质量作为我们产品的关键特性，并需要让他们参与权衡取舍。由于数据质量有许多维度，我们的客户必须参与优先级排序：我们应如何处理异常数据量？遇到模式变化时我们应该怎么做？准时交付不完整的数据与迟交完整的数据，哪个更重要？虽然“差”数据质量有一定的感觉，但在交付“好”数据时的权衡管理要复杂得多且具有上下文敏感性。
 
 在数据治理领域正进行着重要的工作，现在是时候将这些应用到我们的数据产品中，从一开始就如此，并且每次都如此。质量是一个基本特性，与我们产品的设计、接口和用例同样重要。
 

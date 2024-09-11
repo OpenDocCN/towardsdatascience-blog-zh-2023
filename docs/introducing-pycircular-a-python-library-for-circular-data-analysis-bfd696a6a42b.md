@@ -1,18 +1,18 @@
 # 介绍 PyCircular：一个用于圆形数据分析的 Python 库
 
-> 原文：[https://towardsdatascience.com/introducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b?source=collection_archive---------1-----------------------#2023-01-24](https://towardsdatascience.com/introducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b?source=collection_archive---------1-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/introducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b?source=collection_archive---------1-----------------------#2023-01-24`](https://towardsdatascience.com/introducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b?source=collection_archive---------1-----------------------#2023-01-24)
 
 ## 圆形数据在分析和建模时可能会面临独特的挑战
 
-[](https://medium.com/@albahnsen?source=post_page-----bfd696a6a42b--------------------------------)[![Alejandro Correa Bahnsen](../Images/7e8d6aa827c235962133b4f27e424db8.png)](https://medium.com/@albahnsen?source=post_page-----bfd696a6a42b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bfd696a6a42b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bfd696a6a42b--------------------------------) [Alejandro Correa Bahnsen](https://medium.com/@albahnsen?source=post_page-----bfd696a6a42b--------------------------------)
+[](https://medium.com/@albahnsen?source=post_page-----bfd696a6a42b--------------------------------)![Alejandro Correa Bahnsen](https://medium.com/@albahnsen?source=post_page-----bfd696a6a42b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bfd696a6a42b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bfd696a6a42b--------------------------------) [Alejandro Correa Bahnsen](https://medium.com/@albahnsen?source=post_page-----bfd696a6a42b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F90c9efb3cf7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b&user=Alejandro+Correa+Bahnsen&userId=90c9efb3cf7e&source=post_page-90c9efb3cf7e----bfd696a6a42b---------------------post_header-----------) 发表在 [数据科学的未来](https://towardsdatascience.com/?source=post_page-----bfd696a6a42b--------------------------------) ·8分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbfd696a6a42b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b&user=Alejandro+Correa+Bahnsen&userId=90c9efb3cf7e&source=-----bfd696a6a42b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F90c9efb3cf7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b&user=Alejandro+Correa+Bahnsen&userId=90c9efb3cf7e&source=post_page-90c9efb3cf7e----bfd696a6a42b---------------------post_header-----------) 发表在 [数据科学的未来](https://towardsdatascience.com/?source=post_page-----bfd696a6a42b--------------------------------) ·8 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbfd696a6a42b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b&user=Alejandro+Correa+Bahnsen&userId=90c9efb3cf7e&source=-----bfd696a6a42b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbfd696a6a42b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b&source=-----bfd696a6a42b---------------------bookmark_footer-----------)![](../Images/d663862ab7b6ebf098386fc5f0383cca.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbfd696a6a42b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pycircular-a-python-library-for-circular-data-analysis-bfd696a6a42b&source=-----bfd696a6a42b---------------------bookmark_footer-----------)![](img/d663862ab7b6ebf098386fc5f0383cca.png)
 
 图片由 [Patrick McManaman](https://unsplash.com/@patmcmanaman?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 **PyCircular** 通过提供一组专门针对圆形数据的工具和功能来解决这些挑战。该库包括各种圆形统计方法，如分布、核函数和置信区间。此外，它还包括可视化工具，如圆形直方图和分布图，以帮助你更好地理解数据。
 
-![](../Images/825315eae8e0cf3d1df770add6015336.png)
+![](img/825315eae8e0cf3d1df770add6015336.png)
 
 [**https://github.com/albahnsen/pycircular**](https://github.com/albahnsen/pycircular)
 
@@ -42,15 +42,15 @@
 !pip install pycircular
 ```
 
-![](../Images/91dbcdddd041c6e0dcd9cc9213039071.png)![](../Images/b9da1724fffc0c2b8e0a5e9072dc1e9c.png)
+![](img/91dbcdddd041c6e0dcd9cc9213039071.png)![](img/b9da1724fffc0c2b8e0a5e9072dc1e9c.png)
 
-使用来自 load_transactions 的数据集，我们可以看到从2020年1月1日到2020年7月29日共有349个观察（交易）。
+使用来自 load_transactions 的数据集，我们可以看到从 2020 年 1 月 1 日到 2020 年 7 月 29 日共有 349 个观察（交易）。
 
-![](../Images/969ea77f417981ce7c4f60fcc9d82157.png)
+![](img/969ea77f417981ce7c4f60fcc9d82157.png)
 
 作者提供的图片
 
-然后，绘制每次观察时间的直方图，我们看到大多数例子发生在下午5点到早上7点之间，中午发生的例子很少。此外，当将一天中的小时视为标量变量时，可能会出现一些问题。
+然后，绘制每次观察时间的直方图，我们看到大多数例子发生在下午 5 点到早上 7 点之间，中午发生的例子很少。此外，当将一天中的小时视为标量变量时，可能会出现一些问题。
 
 +   一个问题是一天中的小时具有周期性，这意味着一天结束时的值（24:00）与一天开始时的值（00:00）相关。然而，当一天中的小时被视为标量变量时，这种周期性关系未被考虑，这可能导致不准确或误导性的结果。
 
@@ -62,35 +62,35 @@
 
 对于我们的例子，首先通过使用圆形直方图来更好地理解我们的数据集。
 
-![](../Images/1552a9332c83369874b304505cf2ebdd.png)
+![](img/1552a9332c83369874b304505cf2ebdd.png)
 
 作者提供的图片
 
 然后，计算标量或算术均值
 
-![](../Images/a22edf6ff7e57ff3592ee47c90dbfb64.png)
+![](img/a22edf6ff7e57ff3592ee47c90dbfb64.png)
 
 作者提供的图片
 
-处理示例时间时，特别是分析如时间均值这样的特征时，一个问题是很容易犯下使用算术均值的错误。确实，算术均值不是平均时间的正确方法，因为如上图所示，它未考虑时间特征的周期性行为。例如，四个交易时间分别为2:00、3:00、22:00和23:00的算术均值是12:30，这与实际情况不符，因为没有交易发生在那个时间附近。
+处理示例时间时，特别是分析如时间均值这样的特征时，一个问题是很容易犯下使用算术均值的错误。确实，算术均值不是平均时间的正确方法，因为如上图所示，它未考虑时间特征的周期性行为。例如，四个交易时间分别为 2:00、3:00、22:00 和 23:00 的算术均值是 12:30，这与实际情况不符，因为没有交易发生在那个时间附近。
 
 我们可以通过将交易时间建模为周期变量来克服这一限制，特别是使用 von Mises 分布（Fisher, 1996）。von Mises 分布，也称为周期正态分布，是一种围绕圆周的包裹正态分布变量的分布。von Mises 分布的一个示例集（D）定义为：
 
-![](../Images/d04f50272b7cad264c3a641ec5688d51.png)
+![](img/d04f50272b7cad264c3a641ec5688d51.png)
 
 其中
 
-![](../Images/b71506f390d7066734d52beb74f57959.png)
+![](img/b71506f390d7066734d52beb74f57959.png)
 
 是周期均值和周期标准差。在这篇[论文](https://albahnsen.github.io/files/Feature%20Engineering%20Strategies%20for%20Credit%20Card%20Fraud%20Detection_published.pdf)中，我们展示了它们的计算。
 
-![](../Images/89fe78b67307785fd1f89d147bc37af9.png)
+![](img/89fe78b67307785fd1f89d147bc37af9.png)
 
 图像由作者提供
 
 现在，计算了周期均值和标准差后，我们可以估计 von Mises 分布。
 
-![](../Images/715d9afcb259c0f06bb92504538dd2fc.png)
+![](img/715d9afcb259c0f06bb92504538dd2fc.png)
 
 图像由作者提供
 
@@ -106,7 +106,7 @@ KDE 是一种用于估计随机变量概率密度函数的非参数方法。它�
 
 然而，值得注意的是，选择合适的核函数很重要，且在使用 KDE 时存在一些挑战，如带宽选择和维度诅咒。
 
-![](../Images/6ce7f93aa204a526ee4a9008ad3e79bd.png)
+![](img/6ce7f93aa204a526ee4a9008ad3e79bd.png)
 
 图像由作者提供
 
@@ -116,17 +116,17 @@ KDE 是一种用于估计随机变量概率密度函数的非参数方法。它�
 
 最后，我们可以将核应用于新的观察值，并创建一个可以作为机器学习模型输入的新特征。
 
-![](../Images/1c4a8dc2920ea6fa1fa0812ade992da1.png)![](../Images/f1506aa53be033e99ff96e47c9195ca1.png)
+![](img/1c4a8dc2920ea6fa1fa0812ade992da1.png)![](img/f1506aa53be033e99ff96e47c9195ca1.png)
 
 图片来源于作者
 
 我们可以看到，在中午的观察值概率非常低（0.017），因为在训练核时，该时间没有任何观察值。
 
-总之，这种方法使我们能够通过创建数据中时间信息的更强健的表示来有效处理时间戳。通过在特征工程中使用von Mises核，我们可以生成准确捕捉数据中时间模式细微差别的新特征。这种方法可以克服将日期视为标量变量的局限性，并提升机器学习模型的性能。
+总之，这种方法使我们能够通过创建数据中时间信息的更强健的表示来有效处理时间戳。通过在特征工程中使用 von Mises 核，我们可以生成准确捕捉数据中时间模式细微差别的新特征。这种方法可以克服将日期视为标量变量的局限性，并提升机器学习模型的性能。
 
 # 下一步
 
-+   带宽参数（bw）的选择对于模型的性能至关重要，pycircular库提供了一系列优化方法来为给定的数据集选择最佳的bw。
++   带宽参数（bw）的选择对于模型的性能至关重要，pycircular 库提供了一系列优化方法来为给定的数据集选择最佳的 bw。
 
 +   要评估核的有效性，重要的是要进行准确性测试并与其他方法的结果进行比较。
 
@@ -136,8 +136,8 @@ KDE 是一种用于估计随机变量概率密度函数的非参数方法。它�
 
 我将在后续的帖子中展示如何处理这些问题。
 
-了解更多关于**PyCircular**的信息，请访问[https://github.com/albahnsen/pycircular](https://github.com/albahnsen/pycircular)
+了解更多关于**PyCircular**的信息，请访问[`github.com/albahnsen/pycircular`](https://github.com/albahnsen/pycircular)
 
-+   文档可以在[http://albahnsen.github.io/pycircular](http://albahnsen.github.io/pycircular)找到
++   文档可以在[`albahnsen.github.io/pycircular`](http://albahnsen.github.io/pycircular)找到
 
-+   教程可以在[http://albahnsen.github.io/pycircular/Tutorials.html](http://albahnsen.github.io/pycircular/Tutorials.html)找到
++   教程可以在[`albahnsen.github.io/pycircular/Tutorials.html`](http://albahnsen.github.io/pycircular/Tutorials.html)找到

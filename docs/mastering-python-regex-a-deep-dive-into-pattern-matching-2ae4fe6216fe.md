@@ -1,18 +1,18 @@
 # 掌握 Python RegEx：深入探讨模式匹配
 
-> 原文：[https://towardsdatascience.com/mastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe?source=collection_archive---------2-----------------------#2023-07-24](https://towardsdatascience.com/mastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe?source=collection_archive---------2-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/mastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe?source=collection_archive---------2-----------------------#2023-07-24`](https://towardsdatascience.com/mastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe?source=collection_archive---------2-----------------------#2023-07-24)
 
 ## *Python 正则表达式揭秘：解读使用 Python 的 re 模块进行模式匹配的艺术*
 
-[](https://nathanrosidi.medium.com/?source=post_page-----2ae4fe6216fe--------------------------------)[![Nathan Rosidi](../Images/f500246a4d2fb080a73f6ef740c226d2.png)](https://nathanrosidi.medium.com/?source=post_page-----2ae4fe6216fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ae4fe6216fe--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ae4fe6216fe--------------------------------) [Nathan Rosidi](https://nathanrosidi.medium.com/?source=post_page-----2ae4fe6216fe--------------------------------)
+[](https://nathanrosidi.medium.com/?source=post_page-----2ae4fe6216fe--------------------------------)![Nathan Rosidi](https://nathanrosidi.medium.com/?source=post_page-----2ae4fe6216fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ae4fe6216fe--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----2ae4fe6216fe--------------------------------) [Nathan Rosidi](https://nathanrosidi.medium.com/?source=post_page-----2ae4fe6216fe--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab636cbf3611&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe&user=Nathan+Rosidi&userId=ab636cbf3611&source=post_page-ab636cbf3611----2ae4fe6216fe---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----2ae4fe6216fe--------------------------------) ·16 min read·2023年7月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2ae4fe6216fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe&user=Nathan+Rosidi&userId=ab636cbf3611&source=-----2ae4fe6216fe---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab636cbf3611&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe&user=Nathan+Rosidi&userId=ab636cbf3611&source=post_page-ab636cbf3611----2ae4fe6216fe---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----2ae4fe6216fe--------------------------------) ·16 min read·2023 年 7 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2ae4fe6216fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe&user=Nathan+Rosidi&userId=ab636cbf3611&source=-----2ae4fe6216fe---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2ae4fe6216fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe&source=-----2ae4fe6216fe---------------------bookmark_footer-----------)![](../Images/d5211f787d3686937ee70256f8039e72.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2ae4fe6216fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-python-regex-a-deep-dive-into-pattern-matching-2ae4fe6216fe&source=-----2ae4fe6216fe---------------------bookmark_footer-----------)![](img/d5211f787d3686937ee70256f8039e72.png)
 
 图片由作者在 [Canva](https://www.canva.com/) 上创建
 
@@ -22,11 +22,11 @@
 
 # 正则表达式的历史
 
-![](../Images/355706d0bcfe6d04d89723fe03d035e7.png)
+![](img/355706d0bcfe6d04d89723fe03d035e7.png)
 
 *图像来源:* [*http://serge.mehl.free.fr/chrono/Kleene.html*](http://serge.mehl.free.fr/chrono/Kleene.html)
 
-数学家斯蒂芬·科尔·克利尼在1950年代首次引入了正则表达式，作为描述正规集合或正规语言的记号。
+数学家斯蒂芬·科尔·克利尼在 1950 年代首次引入了正则表达式，作为描述正规集合或正规语言的记号。
 
 今天，正则表达式已成为程序员、数据科学家和 IT 专业人员的必备技能。
 
@@ -96,7 +96,7 @@ print(matches)
 
 下面是输出。
 
-![](../Images/06fbbbbf6dd2e2d0b4bb8738226a45cd.png)
+![](img/06fbbbbf6dd2e2d0b4bb8738226a45cd.png)
 
 在 `re` 模块中还有许多其他函数，我们可以用它们来构建更复杂的模式。
 
@@ -108,7 +108,7 @@ print(matches)
 
 在接下来的部分中，我们将发现其中的一些函数。
 
-![](../Images/316381be82d9bd520f1841735655d0c0.png)
+![](img/316381be82d9bd520f1841735655d0c0.png)
 
 图片由作者在 [Canva](https://www.canva.com/) 创建
 
@@ -137,7 +137,7 @@ else:
 
 下面是输出。
 
-![](../Images/13953395f653add262f3c05dc0f0facc.png)
+![](img/13953395f653add262f3c05dc0f0facc.png)
 
 输出显示模式“Python”匹配文本的开头。
 
@@ -163,7 +163,7 @@ else:
 
 下面是输出。
 
-![](../Images/88ce4b491c7aec745a428317c75614f3.png)
+![](img/88ce4b491c7aec745a428317c75614f3.png)
 
 输出显示我们的代码从给定文本中捕捉到了“amazing”。
 
@@ -186,7 +186,7 @@ print(matches)
 
 下面是输出。
 
-![](../Images/38797c77d84525c72ee82185f20b457e.png)
+![](img/38797c77d84525c72ee82185f20b457e.png)
 
 输出展示了文本中所有非重叠的字母“a”出现的情况。
 
@@ -210,7 +210,7 @@ for match in matches:
 
 下面是输出。
 
-![](../Images/3963aa4048a0e9c8b6c9c48e94102261.png)
+![](img/3963aa4048a0e9c8b6c9c48e94102261.png)
 
 输出显示了模式“a”在文本中的索引。
 
@@ -236,7 +236,7 @@ print(new_text)  # Output: "I love Java. Java is amazing."
 
 这是输出结果。
 
-![](../Images/8486f32dba380145eae49f69b5511d89.png)
+![](img/8486f32dba380145eae49f69b5511d89.png)
 
 输出显示我们可以成功将“Python”替换为“Java”。
 
@@ -270,7 +270,7 @@ print(matches)
 
 这是输出结果。
 
-![](../Images/98d006028b6a64feb2e1ff645130f419.png)
+![](img/98d006028b6a64feb2e1ff645130f419.png)
 
 输出显示我们的 re.findall() 函数找到了所有“python”模式的实例。
 
@@ -298,7 +298,7 @@ print(matches)
 
 这是输出结果。
 
-![](../Images/c44c2a62673674d4ba8391eccf7cd5ba.png)
+![](img/c44c2a62673674d4ba8391eccf7cd5ba.png)
 
 输出显示我们的代码找到了所有以“p”开头并以“t”结尾的三个字符实例。
 
@@ -327,7 +327,7 @@ else:
 
 这是输出结果。
 
-![](../Images/0ea91ccd449a91fec82c5065ed0d4e9a.png)
+![](img/0ea91ccd449a91fec82c5065ed0d4e9a.png)
 
 输出显示我们的代码捕捉到了文本开头的 hello 模式。
 
@@ -354,7 +354,7 @@ else:
 
 这是输出结果。
 
-![](../Images/38c8fc07aee1d66759269dbcc02dd749.png)
+![](img/38c8fc07aee1d66759269dbcc02dd749.png)
 
 输出显示 re.search() 函数找到了以“world”结尾的文本。
 
@@ -387,7 +387,7 @@ print(matches)
 
 这是输出结果。
 
-![](../Images/080282d827bd7bc7b39b86b2566ac7e2.png)
+![](img/080282d827bd7bc7b39b86b2566ac7e2.png)
 
 输出显示所有，因为星号允许“y”出现零次或多次。
 
@@ -412,7 +412,7 @@ print(matches)  # Output: ['py', 'pyy', 'pyyy', 'pyyy']
 
 这是输出。
 
-![](../Images/cf5c1b1d5cc687bada74b5b0da584ac3.png)
+![](img/cf5c1b1d5cc687bada74b5b0da584ac3.png)
 
 从输出中可以看到，加号要求“p”之后至少有一个或多个“y”字符。
 
@@ -436,7 +436,7 @@ print(matches)  # Output: ['p', 'py', 'p', 'p', 'p']
 
 这是输出。
 
-![](../Images/e46075bfa16b69f5e0a23ff4a1397bf1.png)
+![](img/e46075bfa16b69f5e0a23ff4a1397bf1.png)
 
 在输出中，你可以看到它只匹配了“p”和“py”，因为问号允许“y”出现一次或零次。
 
@@ -457,7 +457,7 @@ print(matches)  # Output: ['pyy', 'pyyy', 'pyy']
 
 这是输出。
 
-![](../Images/c1e3852f2a26e8e72cdae20e85c39e85.png)
+![](img/c1e3852f2a26e8e72cdae20e85c39e85.png)
 
 在这个例子中，模式匹配了“pyy”和“pyyy”，但没有匹配“py”或“pyyyy”，因为我们指定了要匹配“p”之后正好有 2 或 3 个“y”字符。
 
@@ -465,7 +465,7 @@ print(matches)  # Output: ['pyy', 'pyyy', 'pyy']
 
 特殊字符可以用来构建更复杂的模式。
 
-![](../Images/dd2fbe5fc6b93a6d4252bbd3800c0e27.png)
+![](img/dd2fbe5fc6b93a6d4252bbd3800c0e27.png)
 
 图片由作者在 [Canva](https://www.canva.com/) 上创建
 
@@ -495,7 +495,7 @@ print(matches)
 
 这是输出。
 
-![](../Images/6b85b1d7d069608beabe2c54938e1b56.png)
+![](img/6b85b1d7d069608beabe2c54938e1b56.png)
 
 输出显示我们找到了文本中的所有数字（0–9）。
 
@@ -519,7 +519,7 @@ print(matches)  # Output: [' ', ' ', ' ', ' ', ' ', ' ', '\t']
 
 这是输出。
 
-![](../Images/e812a7ec8a6577267b96398574bbd7f2.png)
+![](img/e812a7ec8a6577267b96398574bbd7f2.png)
 
 从输出中可以看出，我们可以识别所有的空白字符。
 
@@ -543,7 +543,7 @@ print(matches)
 
 这是输出。
 
-![](../Images/7dc9f617a83454f0068210b047dd7b2b.png)
+![](img/7dc9f617a83454f0068210b047dd7b2b.png)
 
 # b. 预定义字符类
 
@@ -563,7 +563,7 @@ print(matches)
 
 这是输出。
 
-![](../Images/caf0ef71691f62e07213c4de164e3daf.png)
+![](img/caf0ef71691f62e07213c4de164e3daf.png)
 
 输出显示我们的代码在文本中找到了所有的预定义字符类“\d”（代表所有数字）实例。
 
@@ -587,7 +587,7 @@ print(matches)
 
 这是输出结果。
 
-![](../Images/de8ec38f248f91d0205c26f8d01a120b.png)
+![](img/de8ec38f248f91d0205c26f8d01a120b.png)
 
 输出结果显示了文本中所有我们定义的元音字母的实例。
 
@@ -606,7 +606,7 @@ print(matches)
 
 这是输出结果。
 
-![](../Images/d99317e04c37175596423be53e5b9f89.png)
+![](img/d99317e04c37175596423be53e5b9f89.png)
 
 这里我们可以看到输出由文本中的大写字母组成。
 
@@ -635,7 +635,7 @@ print(matches)
 
 这是输出结果。
 
-![](../Images/6b9918f5ae19099cb8a82b7bb8732f06.png)
+![](img/6b9918f5ae19099cb8a82b7bb8732f06.png)
 
 输出结果显示数字。
 
@@ -668,7 +668,7 @@ print(matches1)
 
 这是输出结果。
 
-![](../Images/bdc2aab30fcacd6fc1b3734c7138a6d6.png)
+![](img/bdc2aab30fcacd6fc1b3734c7138a6d6.png)
 
 现在让我们检查第二个文本。
 
@@ -680,7 +680,7 @@ print(matches2)
 
 这是输出结果。
 
-![](../Images/d8c8b8899230ae1a78b6d41a92a162bf.png)
+![](img/d8c8b8899230ae1a78b6d41a92a162bf.png)
 
 上述示例相对简单，帮助你理解可重用性、性能和可读性的重要性，尤其是当我们的模式计划重复使用时。
 
@@ -740,7 +740,7 @@ for phone_number in phone_numbers:
 
 这是输出结果。
 
-![](../Images/3fa87b85a078a729e0a216f2db40a2e4.png)
+![](img/3fa87b85a078a729e0a216f2db40a2e4.png)
 
 # d. 完整示例代码
 
@@ -766,7 +766,7 @@ for phone_number in phone_numbers:
 
 这是输出结果。
 
-![](../Images/611a3a89982a2d5c60f71fd670ace7b7.png)
+![](img/611a3a89982a2d5c60f71fd670ace7b7.png)
 
 # 最佳实践
 

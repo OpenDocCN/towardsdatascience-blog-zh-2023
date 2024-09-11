@@ -1,10 +1,10 @@
 # 用实体解析和图神经网络进行欺诈检测
 
-> 原文：[https://towardsdatascience.com/fraud-detection-with-entity-resolution-and-graph-neural-networks-c70f43b9e1f2?source=collection_archive---------12-----------------------#2023-08-24](https://towardsdatascience.com/fraud-detection-with-entity-resolution-and-graph-neural-networks-c70f43b9e1f2?source=collection_archive---------12-----------------------#2023-08-24)
+> 原文：[`towardsdatascience.com/fraud-detection-with-entity-resolution-and-graph-neural-networks-c70f43b9e1f2?source=collection_archive---------12-----------------------#2023-08-24`](https://towardsdatascience.com/fraud-detection-with-entity-resolution-and-graph-neural-networks-c70f43b9e1f2?source=collection_archive---------12-----------------------#2023-08-24)
 
 ## 一本关于如何利用实体解析提升机器学习检测欺诈的实用指南
 
-[](https://medium.com/@stefan.berkner?source=post_page-----c70f43b9e1f2--------------------------------)[![Stefan Berkner](../Images/a84ebfb24744984c0de8f2e77c2070e6.png)](https://medium.com/@stefan.berkner?source=post_page-----c70f43b9e1f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c70f43b9e1f2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c70f43b9e1f2--------------------------------) [Stefan Berkner](https://medium.com/@stefan.berkner?source=post_page-----c70f43b9e1f2--------------------------------)
+[](https://medium.com/@stefan.berkner?source=post_page-----c70f43b9e1f2--------------------------------)![Stefan Berkner](https://medium.com/@stefan.berkner?source=post_page-----c70f43b9e1f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c70f43b9e1f2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c70f43b9e1f2--------------------------------) [Stefan Berkner](https://medium.com/@stefan.berkner?source=post_page-----c70f43b9e1f2--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc70f43b9e1f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffraud-detection-with-entity-resolution-and-graph-neural-networks-c70f43b9e1f2&source=-----c70f43b9e1f2---------------------bookmark_footer-----------)![](../Images/e57d32077ac975a1f0e648b92dcf4e75.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc70f43b9e1f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffraud-detection-with-entity-resolution-and-graph-neural-networks-c70f43b9e1f2&source=-----c70f43b9e1f2---------------------bookmark_footer-----------)![](img/e57d32077ac975a1f0e648b92dcf4e75.png)
 
 由作者使用 Bing Image Creator 生成的图神经网络的表示
 
@@ -69,17 +69,17 @@
 
 这个想法是非欺诈客户更可能提供准确匹配的相关数据，通常是相同的地址和名字，仅有少量拼写错误。因此，新交易可能会被[识别为重复](https://tilores.io/data-deduplication-software)。
 
-![](../Images/3dcf16149f9257f18987e730f5cbbe08.png)
+![](img/3dcf16149f9257f18987e730f5cbbe08.png)
 
 去重实体（图片由作者提供）
 
-欺诈客户可能会想掩盖他们仍然是计算机背后的同一个人，使用各种名字和地址。然而，实体解析工具仍然可能识别出相似性（例如地理和时间相似性、电子邮件地址中的重复模式、设备ID等），但实体图可能看起来更复杂。
+欺诈客户可能会想掩盖他们仍然是计算机背后的同一个人，使用各种名字和地址。然而，实体解析工具仍然可能识别出相似性（例如地理和时间相似性、电子邮件地址中的重复模式、设备 ID 等），但实体图可能看起来更复杂。
 
-![](../Images/bfeca362a7a7664ad1c8a7dae83a857a.png)
+![](img/bfeca362a7a7664ad1c8a7dae83a857a.png)
 
 复杂的、可能是欺诈性的实体（图片由作者提供）
 
-为了让它不那么简单，生成脚本还具有5%的错误率，这意味着当实体具有星形布局时，会被标记为欺诈，而随机布局则被标记为非欺诈。此外，还有一些情况下数据不足以确定实际布局（例如只有一两条记录）。
+为了让它不那么简单，生成脚本还具有 5%的错误率，这意味着当实体具有星形布局时，会被标记为欺诈，而随机布局则被标记为非欺诈。此外，还有一些情况下数据不足以确定实际布局（例如只有一两条记录）。
 
 ```py
 {
@@ -101,7 +101,7 @@
 
 # 创建数据集
 
-示例使用了python（数据生成除外）和[DGL](https://www.dgl.ai)，并且使用了[pytorch后台](https://pytorch.org)。你可以在[github](https://gist.github.com/stefan-berkner-tilotech/06a9ebaa4e4e52282785e8d5f2b6429c#file-er-and-gnn-ipynb)上找到完整的jupyter笔记本、数据和生成脚本。
+示例使用了 python（数据生成除外）和[DGL](https://www.dgl.ai)，并且使用了[pytorch 后台](https://pytorch.org)。你可以在[github](https://gist.github.com/stefan-berkner-tilotech/06a9ebaa4e4e52282785e8d5f2b6429c#file-er-and-gnn-ipynb)上找到完整的 jupyter 笔记本、数据和生成脚本。
 
 让我们从导入数据集开始：
 
@@ -163,11 +163,11 @@ print(dataset)
 print(dataset[0])
 ```
 
-这处理了实体文件，这是一个JSON行文件，每行表示一个实体。在迭代每个实体时，它生成边特征（形状为[e, 2]的长张量，e=边数）和节点特征（形状为[n, 2]的长张量，n=节点数）。然后，它根据a和b（每个形状为[e, 1]的长张量）构建图，并将边和图特征分配给该图。所有生成的图都被添加到数据集中。
+这处理了实体文件，这是一个 JSON 行文件，每行表示一个实体。在迭代每个实体时，它生成边特征（形状为[e, 2]的长张量，e=边数）和节点特征（形状为[n, 2]的长张量，n=节点数）。然后，它根据 a 和 b（每个形状为[e, 1]的长张量）构建图，并将边和图特征分配给该图。所有生成的图都被添加到数据集中。
 
 # 模型架构
 
-现在我们已经准备好数据了，我们需要考虑GNN的架构。这是我想到的，但可能需要根据实际需求进行更多调整：
+现在我们已经准备好数据了，我们需要考虑 GNN 的架构。这是我想到的，但可能需要根据实际需求进行更多调整：
 
 ```py
 import torch.nn as nn
@@ -191,7 +191,7 @@ class EntityGraphModule(nn.Module):
         return dgl.mean_nodes(g, "h")
 ```
 
-构造函数接受节点特征的数量、边特征的数量、隐藏节点的数量和标签（类别）的数量。然后创建两个层次：[NNConv层](https://docs.dgl.ai/en/latest/generated/dgl.nn.pytorch.conv.NNConv.html)，根据边和节点特征计算隐藏节点，然后是[GraphSAGE层](https://docs.dgl.ai/en/latest/generated/dgl.nn.pytorch.conv.SAGEConv.html)，根据隐藏节点计算结果标签。
+构造函数接受节点特征的数量、边特征的数量、隐藏节点的数量和标签（类别）的数量。然后创建两个层次：[NNConv 层](https://docs.dgl.ai/en/latest/generated/dgl.nn.pytorch.conv.NNConv.html)，根据边和节点特征计算隐藏节点，然后是[GraphSAGE 层](https://docs.dgl.ai/en/latest/generated/dgl.nn.pytorch.conv.SAGEConv.html)，根据隐藏节点计算结果标签。
 
 # 训练和测试
 
@@ -215,7 +215,7 @@ test_dataloader = GraphDataLoader(
 )
 ```
 
-我们使用80/20的比例进行随机抽样，并为每个样本创建数据加载器。
+我们使用 80/20 的比例进行随机抽样，并为每个样本创建数据加载器。
 
 最后一步是用我们的数据初始化模型，进行训练，然后测试结果。
 
@@ -251,9 +251,9 @@ acc = num_correct / num_tests
 print("Test accuracy:", acc)
 ```
 
-我们通过提供节点和边缘的特征大小（在我们的例子中均为2），隐藏节点（64）以及标签数量（2，因为只有欺诈或非欺诈）来初始化模型。然后，优化器以0.01的学习率初始化。之后我们运行总共50次训练迭代。一旦训练完成，我们使用测试数据加载器测试结果，并打印出结果准确率。
+我们通过提供节点和边缘的特征大小（在我们的例子中均为 2），隐藏节点（64）以及标签数量（2，因为只有欺诈或非欺诈）来初始化模型。然后，优化器以 0.01 的学习率初始化。之后我们运行总共 50 次训练迭代。一旦训练完成，我们使用测试数据加载器测试结果，并打印出结果准确率。
 
-对于各种运行，我的典型准确率在70%到85%之间。然而，也有一些例外情况，准确率降到大约55%。
+对于各种运行，我的典型准确率在 70%到 85%之间。然而，也有一些例外情况，准确率降到大约 55%。
 
 # 结论
 

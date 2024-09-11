@@ -1,10 +1,10 @@
 # 生成式 AI 中的任务概念：智能系统的构建模块
 
-> 原文：[https://towardsdatascience.com/decoding-tasks-in-generative-ai-the-building-blocks-of-intelligent-systems-f677e8e2ee22?source=collection_archive---------10-----------------------#2023-09-07](https://towardsdatascience.com/decoding-tasks-in-generative-ai-the-building-blocks-of-intelligent-systems-f677e8e2ee22?source=collection_archive---------10-----------------------#2023-09-07)
+> 原文：[`towardsdatascience.com/decoding-tasks-in-generative-ai-the-building-blocks-of-intelligent-systems-f677e8e2ee22?source=collection_archive---------10-----------------------#2023-09-07`](https://towardsdatascience.com/decoding-tasks-in-generative-ai-the-building-blocks-of-intelligent-systems-f677e8e2ee22?source=collection_archive---------10-----------------------#2023-09-07)
 
-## 大型企业的生成式 AI：从治理到 API 聚合，第 1 部分
+## 大型企业的生成式 AI：从治理到 API 聚合，第一部分
 
-[](https://eavanvalkenburg.medium.com/?source=post_page-----f677e8e2ee22--------------------------------)[![Eduard van Valkenburg](../Images/c0ab8a94cecc4ce247e345a60e9314f1.png)](https://eavanvalkenburg.medium.com/?source=post_page-----f677e8e2ee22--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f677e8e2ee22--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f677e8e2ee22--------------------------------) [Eduard van Valkenburg](https://eavanvalkenburg.medium.com/?source=post_page-----f677e8e2ee22--------------------------------)
+[](https://eavanvalkenburg.medium.com/?source=post_page-----f677e8e2ee22--------------------------------)![Eduard van Valkenburg](https://eavanvalkenburg.medium.com/?source=post_page-----f677e8e2ee22--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f677e8e2ee22--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f677e8e2ee22--------------------------------) [Eduard van Valkenburg](https://eavanvalkenburg.medium.com/?source=post_page-----f677e8e2ee22--------------------------------)
 
 ·
 
@@ -18,7 +18,7 @@
 
 当我深入探索企业生成式 AI 的迷人世界时，我不仅会探讨治理、安全性和可审计性等高层次概念，还将提供关于 API 聚合和理解生成式 AI 架构等主题的实用指导。
 
-![](../Images/2b41403c9cc164c92a040855db7d2004.png)
+![](img/2b41403c9cc164c92a040855db7d2004.png)
 
 图像由 OpenAI 的 DALL-E 模型生成，提示词为：模仿维米尔风格的写作机器人
 

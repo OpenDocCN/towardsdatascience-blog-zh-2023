@@ -1,18 +1,18 @@
 # 可能影响你的决策树和随机森林的微妙偏差
 
-> 原文：[https://towardsdatascience.com/a-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552?source=collection_archive---------5-----------------------#2023-12-28](https://towardsdatascience.com/a-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552?source=collection_archive---------5-----------------------#2023-12-28)
+> 原文：[`towardsdatascience.com/a-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552?source=collection_archive---------5-----------------------#2023-12-28`](https://towardsdatascience.com/a-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552?source=collection_archive---------5-----------------------#2023-12-28)
 
 ## 这可以很容易地被消除
 
-[](https://medium.com/@gyuriofkovacs?source=post_page-----3480756f7552--------------------------------)[![Gyorgy Kovacs](../Images/aa5d1fcc59d738acc1056de3f0cbe7ca.png)](https://medium.com/@gyuriofkovacs?source=post_page-----3480756f7552--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3480756f7552--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3480756f7552--------------------------------) [Gyorgy Kovacs](https://medium.com/@gyuriofkovacs?source=post_page-----3480756f7552--------------------------------)
+[](https://medium.com/@gyuriofkovacs?source=post_page-----3480756f7552--------------------------------)![Gyorgy Kovacs](https://medium.com/@gyuriofkovacs?source=post_page-----3480756f7552--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3480756f7552--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3480756f7552--------------------------------) [Gyorgy Kovacs](https://medium.com/@gyuriofkovacs?source=post_page-----3480756f7552--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4563dd81810c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552&user=Gyorgy+Kovacs&userId=4563dd81810c&source=post_page-4563dd81810c----3480756f7552---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3480756f7552--------------------------------) ·10分钟阅读·2023年12月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3480756f7552&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552&user=Gyorgy+Kovacs&userId=4563dd81810c&source=-----3480756f7552---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4563dd81810c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552&user=Gyorgy+Kovacs&userId=4563dd81810c&source=post_page-4563dd81810c----3480756f7552---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3480756f7552--------------------------------) ·10 分钟阅读·2023 年 12 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3480756f7552&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552&user=Gyorgy+Kovacs&userId=4563dd81810c&source=-----3480756f7552---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3480756f7552&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552&source=-----3480756f7552---------------------bookmark_footer-----------)![](../Images/97c9e93a77a35e474acf2ef359534ccd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3480756f7552&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-subtle-bias-that-could-impact-your-decision-trees-and-random-forests-3480756f7552&source=-----3480756f7552---------------------bookmark_footer-----------)![](img/97c9e93a77a35e474acf2ef359534ccd.png)
 
 Dall-E 生成的艺术决策树
 
@@ -89,7 +89,7 @@ print(f'p-value: {wilcoxon(r2_original, r2_mirrored, zero_method="zsplit").pvalu
 
 目标变量是二元的：申请人是否违约（1）或偿还（0）。
 
-![](../Images/22da8afdd9c919cd18b2cf30bf16d644.png)
+![](img/22da8afdd9c919cd18b2cf30bf16d644.png)
 
 为假设的贷款审批场景构建的决策树
 
@@ -99,27 +99,23 @@ print(f'p-value: {wilcoxon(r2_original, r2_mirrored, zero_method="zsplit").pvalu
 
 # **条件设置与阈值**
 
-一个有限的训练记录集不能暗示特征空间的唯一分割。例如，上图中的树可能是从数据中归纳出的，其中没有毕业=0且收入在]60k，80k[范围内的记录。树的归纳方法确定应在收入值60k和80k之间进行分割。在没有更多信息的情况下，中点（70k）被用作阈值。一般来说，也可以是65k或85k。使用未标记区间的中点是一种常见的做法和合理的选择：与连续特征的假设一致，将未标记区间的50%分配到左分支，50%分配到右分支。
+一个有限的训练记录集不能暗示特征空间的唯一分割。例如，上图中的树可能是从数据中归纳出的，其中没有毕业=0 且收入在]60k，80k 范围内的记录。树的归纳方法确定应在收入值 60k 和 80k 之间进行分割。在没有更多信息的情况下，中点（70k）被用作阈值。一般来说，也可以是 65k 或 85k。使用未标记区间的中点是一种常见的做法和合理的选择：与连续特征的假设一致，将未标记区间的 50%分配到左分支，50%分配到右分支。
 
 由于使用中点作为阈值，**树的归纳完全独立于条件操作符的选择**：使用<=和<都会导致相同的树结构，阈值也相同，只是在条件操作符上有所不同。
 
-然而，**推断确实依赖于条件操作符**。在示例中，如果要推断一个收入为70k的申请人记录，则在所示的设置中，它将被路由到左分支。然而，使用<操作符时，它将被路由到右分支。对于真正的连续特征，收入恰好为70k的记录被推断的可能性微不足道。然而，实际上，收入可能以1k、5k或最终10k为单位，这使得条件操作符的选择对预测有显著影响。
+然而，**推断确实依赖于条件操作符**。在示例中，如果要推断一个收入为 70k 的申请人记录，则在所示的设置中，它将被路由到左分支。然而，使用<操作符时，它将被路由到右分支。对于真正的连续特征，收入恰好为 70k 的记录被推断的可能性微不足道。然而，实际上，收入可能以 1k、5k 或最终 10k 为单位，这使得条件操作符的选择对预测有显著影响。
 
 # **条件操作符和镜像的关系**
 
 *为什么我们谈论条件操作符，而我们观察到的问题是特征的镜像？* 这两者基本上是相同的。条件“feature < threshold”与条件“-feature <= -threshold”在本质上是等价的，因为它们导致相同但镜像的实数轴分割。也就是说，在这两种情况下，如果特征值等于阈值，该值位于特征值大于阈值的相同分区。例如，比较下面的两棵树，一棵是我们之前用于说明的树，除了所有条件操作符都改为<，另一棵是保持操作符不变，但树是镜像的：可以很容易看到，对于任何记录，它们都会导致相同的预测。
 
-![](../Images/35dbb474d158758d688420288278fe48.png)
-
-上一个使用条件操作符<的树
-
-![](../Images/b2462e58505a5011b91b009749a92bfb.png)
+![上一个使用条件操作符<的树![](img/b2462e58505a5011b91b009749a92bfb.png)
 
 基于镜像数据构建的树（仍然使用条件操作符≤）
 
 由于树生成与条件选择无关，**在镜像数据上构建树，然后预测镜像向量，相当于使用非默认的条件运算符（<）对非镜像记录进行推断**。当森林的树拟合到镜像数据时，即使*sklearn*使用‘<=’运算符进行条件处理，它也会像使用‘<’运算符一样工作。因此，**我们发现镜像处理的性能下降是由于阈值与特征值重合**，导致在测试集评估过程中预测结果不同。
 
-为了完整性，我们注意到树生成某些步骤中的随机化可能会导致在拟合镜像数据时出现略微不同的树。然而，这些差异在随机森林中平滑，特别是在2k折的评估中。观察到的性能下降是阈值与特征值重合的系统性效应的结果。
+为了完整性，我们注意到树生成某些步骤中的随机化可能会导致在拟合镜像数据时出现略微不同的树。然而，这些差异在随机森林中平滑，特别是在 2k 折的评估中。观察到的性能下降是阈值与特征值重合的系统性效应的结果。
 
 # **这种情况何时会发生？**
 
@@ -133,11 +129,11 @@ print(f'p-value: {wilcoxon(r2_original, r2_mirrored, zero_method="zsplit").pvalu
 
 +   医疗数据集中的年龄特征。
 
-+   四舍五入的十进制数字（观察到第2位数字的，将形成一个网格）。
++   四舍五入的十进制数字（观察到第 2 位数字的，将形成一个网格）。
 
 +   财务数据集中以百万或十亿为单位引用的货币金额。
 
-此外，在`sklearn.datasets`中的玩具回归和分类数据集中，几乎97%的特征都是这种情况。因此，毫不夸张地说，高概率的等距特征几乎无处不在。因此，作为经验法则，**建立更深的树或森林，阈值干扰特征值的可能性就越大**。
+此外，在`sklearn.datasets`中的玩具回归和分类数据集中，几乎 97%的特征都是这种情况。因此，毫不夸张地说，高概率的等距特征几乎无处不在。因此，作为经验法则，**建立更深的树或森林，阈值干扰特征值的可能性就越大**。
 
 # **这是一种偏差，模型选择无济于事！**
 
@@ -215,8 +211,8 @@ print(f'unbiased r2: {np.mean(r2_unbiased):.4f}')
 
 +   我们详细讨论此主题的预印本，包含更多测试、插图和替代偏差缓解技术：[预印本](https://www.researchgate.net/publication/376591586_The_Conditioning_Bias_in_Binary_Decision_Trees_and_Random_Forests_and_Its_Elimination)。
 
-+   包含可重复分析的 GitHub 仓库：[https://github.com/gykovacs/conditioning_bias](https://github.com/gykovacs/conditioning_bias)
++   包含可重复分析的 GitHub 仓库：[`github.com/gykovacs/conditioning_bias`](https://github.com/gykovacs/conditioning_bias)
 
-+   本文背后的笔记本：[https://github.com/gykovacs/conditioning_bias/blob/main/blogpost/001-analysis.ipynb](https://github.com/gykovacs/conditioning_bias/blob/main/blogpost/001-analysis.ipynb)
++   本文背后的笔记本：[`github.com/gykovacs/conditioning_bias/blob/main/blogpost/001-analysis.ipynb`](https://github.com/gykovacs/conditioning_bias/blob/main/blogpost/001-analysis.ipynb)
 
 *如果你对类似内容感兴趣，不要忘记订阅！你还可以在* [LinkedIn](https://www.linkedin.com/in/gyorgy-kovacs-a9799727/)*上找到我！*

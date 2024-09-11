@@ -1,20 +1,20 @@
-# Pytorch中的Grad-CAM：前向和反向钩子的使用
+# Pytorch 中的 Grad-CAM：前向和反向钩子的使用
 
-> 原文：[https://towardsdatascience.com/grad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569?source=collection_archive---------3-----------------------#2023-04-17](https://towardsdatascience.com/grad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569?source=collection_archive---------3-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/grad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569?source=collection_archive---------3-----------------------#2023-04-17`](https://towardsdatascience.com/grad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569?source=collection_archive---------3-----------------------#2023-04-17)
 
 ## 使用梯度了解你的模型如何进行预测
 
-[](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)[![Vinícius Almeida](../Images/5b757439dc5a5c2ad1b6ae7c26c1091b.png)](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------) [Vinícius Almeida](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)
+[](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)![Vinícius Almeida](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------) [Vinícius Almeida](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa64bbd309&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&user=Vin%C3%ADcius+Almeida&userId=a64bbd309&source=post_page-a64bbd309----7eba5e38d569---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------) ·10分钟阅读·2023年4月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7eba5e38d569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&user=Vin%C3%ADcius+Almeida&userId=a64bbd309&source=-----7eba5e38d569---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa64bbd309&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&user=Vin%C3%ADcius+Almeida&userId=a64bbd309&source=post_page-a64bbd309----7eba5e38d569---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------) ·10 分钟阅读·2023 年 4 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7eba5e38d569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&user=Vin%C3%ADcius+Almeida&userId=a64bbd309&source=-----7eba5e38d569---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7eba5e38d569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&source=-----7eba5e38d569---------------------bookmark_footer-----------)![](../Images/da05b94c0bd22bca614f81df9c7e4411.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7eba5e38d569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&source=-----7eba5e38d569---------------------bookmark_footer-----------)![](img/da05b94c0bd22bca614f81df9c7e4411.png)
 
-图片来源于作者。X射线图像来自[kaggle胸部X射线数据集](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)。
+图片来源于作者。X 射线图像来自[kaggle 胸部 X 射线数据集](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)。
 
 我注意到一种叫做 Grad-CAM 的技术，它可以检查卷积神经网络如何预测其输出。例如，在分类器中，你可以洞察神经网络如何利用输入进行预测。这一切始于 [原始论文](https://arxiv.org/pdf/1610.02391.pdf)，其中描述了这一技术。在本文中，我们将使用 Pytorch 库实现这一技术，方法是你可以将其应用于任何卷积神经网络，而无需改变你已有的神经网络模块。
 
@@ -213,7 +213,7 @@ hook(module, args, output) -> None or modified output
 
 ## 3\. 将反向和前向钩子添加到模型中
 
-首先，我们需要定义我们的反向和前向钩子函数。要计算Grad-CAM，我们需要相对于最后一个卷积层输出的梯度，以及其激活，即该层激活函数的输出。因此，我们的钩子函数将在推理和反向传递过程中仅提取这些值。
+首先，我们需要定义我们的反向和前向钩子函数。要计算 Grad-CAM，我们需要相对于最后一个卷积层输出的梯度，以及其激活，即该层激活函数的输出。因此，我们的钩子函数将在推理和反向传递过程中仅提取这些值。
 
 ```py
 # defines two global scope variables to store our gradients and activations
@@ -246,7 +246,7 @@ forward_hook = model.resnet_blocks[-1].register_forward_hook(forward_hook, prepe
 
 ## 4\. 获取我们需要的梯度和激活
 
-现在我们已经为模型设置了钩子，让我们加载一张图像，计算Grad-CAM。
+现在我们已经为模型设置了钩子，让我们加载一张图像，计算 Grad-CAM。
 
 ```py
 from PIL import Image
@@ -255,9 +255,9 @@ img_path = "/your/image/path/"
 image = Image.open(img_path).convert('RGB')
 ```
 
-![](../Images/2798cafb46a9b31ec0019e9919908330.png)
+![](img/2798cafb46a9b31ec0019e9919908330.png)
 
-这是我们将要使用的图像。图像来源于[kaggle胸部X光数据集](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)。
+这是我们将要使用的图像。图像来源于[kaggle 胸部 X 光数据集](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)。
 
 我们需要对其进行预处理，以准备好输入模型进行推理。
 
@@ -297,11 +297,11 @@ Gradients size: torch.Size([1, 1024, 8, 8])
 
 最终，我们可以使用*梯度*和*激活*变量来计算我们的热图！
 
-## 5\. 计算Grad-CAM
+## 5\. 计算 Grad-CAM
 
-要计算Grad-CAM，我们将使用原始论文的公式和[Stepan Ulyanin](https://medium.com/u/5fb91fc37062?source=post_page-----7eba5e38d569--------------------------------)的实现。
+要计算 Grad-CAM，我们将使用原始论文的公式和[Stepan Ulyanin](https://medium.com/u/5fb91fc37062?source=post_page-----7eba5e38d569--------------------------------)的实现。
 
-![](../Images/61da9f300c996d8a4996f12f22305578.png)
+![](img/61da9f300c996d8a4996f12f22305578.png)
 
 图像摘自[原始文章](https://arxiv.org/pdf/1610.02391.pdf)
 
@@ -310,7 +310,7 @@ Gradients size: torch.Size([1, 1024, 8, 8])
 pooled_gradients = torch.mean(gradients[0], dim=[0, 2, 3])
 ```
 
-![](../Images/8acbcd883249f79bed6f314862bb804f.png)
+![](img/8acbcd883249f79bed6f314862bb804f.png)
 
 图像摘自[原始文章](https://arxiv.org/pdf/1610.02391.pdf)
 
@@ -335,15 +335,15 @@ heatmap /= torch.max(heatmap)
 plt.matshow(heatmap.detach())
 ```
 
-![](../Images/b6e8487f800472175117ec71c45d5b9b.png)
+![](img/b6e8487f800472175117ec71c45d5b9b.png)
 
 这是我们的热图。图像由作者提供。
 
-值得注意的是，我们通过前向钩子获得的激活包含1,024个特征图，每个特征图捕捉输入图像的不同方面，每个特征图的空间分辨率为8x8。
+值得注意的是，我们通过前向钩子获得的激活包含 1,024 个特征图，每个特征图捕捉输入图像的不同方面，每个特征图的空间分辨率为 8x8。
 
 另一方面，我们通过反向钩子获得的梯度代表了每个特征图对最终预测的重要性。通过计算梯度和激活的逐元素乘积，我们得到特征图的加权和，突出显示图像中最相关的部分。
 
-最后，通过计算加权特征图的全局平均值，我们得到一个单一的热图，指示出对模型预测最重要的图像区域。这种技术被称为Grad-CAM，提供了对模型决策过程的视觉解释，有助于我们解读和调试模型的行为。
+最后，通过计算加权特征图的全局平均值，我们得到一个单一的热图，指示出对模型预测最重要的图像区域。这种技术被称为 Grad-CAM，提供了对模型决策过程的视觉解释，有助于我们解读和调试模型的行为。
 
 ## 6\. 结合原始图像和热图
 
@@ -381,13 +381,13 @@ ax.imshow(overlay, alpha=0.4, interpolation='nearest', extent=extent)
 plt.show()
 ```
 
-![](../Images/30a1d5807bfd211f93d31f3b18fab292.png)
+![](img/30a1d5807bfd211f93d31f3b18fab292.png)
 
-这是结果。由于这是正常的X光片，模型主要关注于正常X光片中预期的正常结构。图片由作者提供。
+这是结果。由于这是正常的 X 光片，模型主要关注于正常 X 光片中预期的正常结构。图片由作者提供。
 
-![](../Images/e04552838aa71c2a5c149ca9153ec221.png)
+![](img/e04552838aa71c2a5c149ca9153ec221.png)
 
-在另一个例子中，我们有一张肺炎的X光片。Grad-CAM正确地显示了医生必须检查的胸部X光片区域，以确认肺炎的存在。图片由作者提供。X光图像来自[kaggle胸部X光数据集](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)。
+在另一个例子中，我们有一张肺炎的 X 光片。Grad-CAM 正确地显示了医生必须检查的胸部 X 光片区域，以确认肺炎的存在。图片由作者提供。X 光图像来自[kaggle 胸部 X 光数据集](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)。
 
 最后，要从你的模型中移除钩子，你只需在每个句柄中调用*remove*方法。
 
@@ -398,14 +398,14 @@ forward_hook.remove()
 
 ## 结论
 
-我希望这篇文章有助于澄清Grad-CAM的工作原理、如何使用Pytorch实现它，以及如何通过使用前向和反向钩子而不改变原始模型的前向函数来实现它。
+我希望这篇文章有助于澄清 Grad-CAM 的工作原理、如何使用 Pytorch 实现它，以及如何通过使用前向和反向钩子而不改变原始模型的前向函数来实现它。
 
-我要感谢[Stepan Ulyanin](https://medium.com/u/5fb91fc37062?source=post_page-----7eba5e38d569--------------------------------)的文章，并感谢他帮助我更好地理解Grad-CAM。我希望我也能为读者贡献一些东西。
+我要感谢[Stepan Ulyanin](https://medium.com/u/5fb91fc37062?source=post_page-----7eba5e38d569--------------------------------)的文章，并感谢他帮助我更好地理解 Grad-CAM。我希望我也能为读者贡献一些东西。
 
-我还想推荐Python库torch-cam作为参考。它有Grad-CAM的其他实现，因此你不需要从头开始做这个。
+我还想推荐 Python 库 torch-cam 作为参考。它有 Grad-CAM 的其他实现，因此你不需要从头开始做这个。
 
-[](https://github.com/frgfm/torch-cam?source=post_page-----7eba5e38d569--------------------------------) [## GitHub - frgfm/torch-cam: 用于PyTorch模型的类别激活图（CAM、Grad-CAM、Grad-CAM++…
+[](https://github.com/frgfm/torch-cam?source=post_page-----7eba5e38d569--------------------------------) [## GitHub - frgfm/torch-cam: 用于 PyTorch 模型的类别激活图（CAM、Grad-CAM、Grad-CAM++…
 
-### 在PyTorch中利用卷积层的类别特定激活的简单方法。来源：woopets的图片…
+### 在 PyTorch 中利用卷积层的类别特定激活的简单方法。来源：woopets 的图片…
 
 github.com](https://github.com/frgfm/torch-cam?source=post_page-----7eba5e38d569--------------------------------)

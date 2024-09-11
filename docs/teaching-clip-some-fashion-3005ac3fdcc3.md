@@ -1,18 +1,18 @@
 # 教学 CLIP 时尚
 
-> 原文：[https://towardsdatascience.com/teaching-clip-some-fashion-3005ac3fdcc3?source=collection_archive---------3-----------------------#2023-03-07](https://towardsdatascience.com/teaching-clip-some-fashion-3005ac3fdcc3?source=collection_archive---------3-----------------------#2023-03-07)
+> 原文：[`towardsdatascience.com/teaching-clip-some-fashion-3005ac3fdcc3?source=collection_archive---------3-----------------------#2023-03-07`](https://towardsdatascience.com/teaching-clip-some-fashion-3005ac3fdcc3?source=collection_archive---------3-----------------------#2023-03-07)
 
 ## 训练 FashionCLIP，一个专门用于时尚的 CLIP 模型
 
-[](https://fede-bianchi.medium.com/?source=post_page-----3005ac3fdcc3--------------------------------)[![Federico Bianchi](../Images/fa38ff2051af04df7803af7d84c5cd4d.png)](https://fede-bianchi.medium.com/?source=post_page-----3005ac3fdcc3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3005ac3fdcc3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3005ac3fdcc3--------------------------------) [Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----3005ac3fdcc3--------------------------------)
+[](https://fede-bianchi.medium.com/?source=post_page-----3005ac3fdcc3--------------------------------)![Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----3005ac3fdcc3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3005ac3fdcc3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3005ac3fdcc3--------------------------------) [Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----3005ac3fdcc3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2aff872fe60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fteaching-clip-some-fashion-3005ac3fdcc3&user=Federico+Bianchi&userId=2aff872fe60e&source=post_page-2aff872fe60e----3005ac3fdcc3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3005ac3fdcc3--------------------------------) ·10分钟阅读·2023年3月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3005ac3fdcc3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fteaching-clip-some-fashion-3005ac3fdcc3&user=Federico+Bianchi&userId=2aff872fe60e&source=-----3005ac3fdcc3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2aff872fe60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fteaching-clip-some-fashion-3005ac3fdcc3&user=Federico+Bianchi&userId=2aff872fe60e&source=post_page-2aff872fe60e----3005ac3fdcc3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3005ac3fdcc3--------------------------------) ·10 分钟阅读·2023 年 3 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3005ac3fdcc3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fteaching-clip-some-fashion-3005ac3fdcc3&user=Federico+Bianchi&userId=2aff872fe60e&source=-----3005ac3fdcc3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3005ac3fdcc3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fteaching-clip-some-fashion-3005ac3fdcc3&source=-----3005ac3fdcc3---------------------bookmark_footer-----------)![](../Images/34cea25c9ba0b5d71769a94173d2ba36.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3005ac3fdcc3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fteaching-clip-some-fashion-3005ac3fdcc3&source=-----3005ac3fdcc3---------------------bookmark_footer-----------)![](img/34cea25c9ba0b5d71769a94173d2ba36.png)
 
 图片由 [Domenico Loia](https://unsplash.com/@domenicoloia?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布在 [Unsplash](https://unsplash.com/photos/hGV2TfOh0ns) 上。
 
@@ -58,85 +58,85 @@ FashionCLIP 是一种用于时尚行业的新视觉和语言模型，支持从�
 
 今天我们尝试向前迈出一步，展示如何构建一个用于时尚数据的通用模型。我们描述了 FashionCLIP，它是著名的 [CLIP](https://openai.com/blog/clip/) 模型的微调版本，专门处理时尚数据。我们最近的关于 [FashionCLIP](https://doi.org/10.1038/s41598-022-23052-9) 的论文已在《自然科学报告》中发布。
 
-> Chia, P.J., Attanasio, G., Bianchi, F. *等* **一般时尚概念的对比语言与视觉学习**。*Sci Rep* **12**, 18958 (2022)。 [https://doi.org/10.1038/s41598-022-23052-9](https://doi.org/10.1038/s41598-022-23052-9)
+> Chia, P.J., Attanasio, G., Bianchi, F. *等* **一般时尚概念的对比语言与视觉学习**。*Sci Rep* **12**, 18958 (2022)。 [`doi.org/10.1038/s41598-022-23052-9`](https://doi.org/10.1038/s41598-022-23052-9)
 
-FashionCLIP的诞生源于与[*Farfetch*](https://www.farfetch.com/)的合作，这是一家在纽约证券交易所上市的巨大（且真实的）奢侈品电商。FashionCLIP是与来自业界（Coveo、Farfetch）和学术界（斯坦福、博科尼、比科卡）的人们共同完成的工作。模型权重可以在线获得，格式为[HuggingFace](https://huggingface.co/patrickjohncyh/fashion-clip)。使用示例可以在[Patrick的repo](https://github.com/patrickjohncyh/fashion-clip/blob/master/fashion_clip_api_demo.ipynb)中找到。
+FashionCLIP 的诞生源于与[*Farfetch*](https://www.farfetch.com/)的合作，这是一家在纽约证券交易所上市的巨大（且真实的）奢侈品电商。FashionCLIP 是与来自业界（Coveo、Farfetch）和学术界（斯坦福、博科尼、比科卡）的人们共同完成的工作。模型权重可以在线获得，格式为[HuggingFace](https://huggingface.co/patrickjohncyh/fashion-clip)。使用示例可以在[Patrick 的 repo](https://github.com/patrickjohncyh/fashion-clip/blob/master/fashion_clip_api_demo.ipynb)中找到。
 
 我们将首先介绍用例，并解释一些模型的更深入细节。最后，我们将分享我们用来训练模型的代码以及如何获取权重。
 
 # FashionCLIP: 故事
 
-FashionCLIP是一个通用模型，用于将时尚产品的图像及其描述嵌入到同一个向量空间中：每个图像和每个产品将由一个单独的稠密向量表示。
+FashionCLIP 是一个通用模型，用于将时尚产品的图像及其描述嵌入到同一个向量空间中：每个图像和每个产品将由一个单独的稠密向量表示。
 
-为什么我们要把它们放在同一个向量空间中？ **这样它们才能进行比较。** 这个原则是像CLIP这样的模型成功的关键。
+为什么我们要把它们放在同一个向量空间中？ **这样它们才能进行比较。** 这个原则是像 CLIP 这样的模型成功的关键。
 
-FashionCLIP源自原始的CLIP。这个想法非常简单。如果你：
+FashionCLIP 源自原始的 CLIP。这个想法非常简单。如果你：
 
 +   大量带有标题的图像；
 
-+   一个图像编码器（这可以是CNN或ViT）；
++   一个图像编码器（这可以是 CNN 或 ViT）；
 
-+   一个文本编码器（这可以是基于transformers的语言模型）。
++   一个文本编码器（这可以是基于 transformers 的语言模型）。
 
-你可以训练一个模型（使用对比损失）来使图像的嵌入接近其标题嵌入，并远离不相关的标题。在GIF中，你展示了一个二维的例子。这个概念可以推广到N维。
+你可以训练一个模型（使用对比损失）来使图像的嵌入接近其标题嵌入，并远离不相关的标题。在 GIF 中，你展示了一个二维的例子。这个概念可以推广到 N 维。
 
-![](../Images/d12f8e4672fad8eedc508ddc8bf324ab.png)
+![](img/d12f8e4672fad8eedc508ddc8bf324ab.png)
 
-FashionCLIP将描述和图像嵌入到同一个向量空间中。这对于零-shot分类和图像检索非常有用。*图片由作者使用Farfetch目录提供。*
+FashionCLIP 将描述和图像嵌入到同一个向量空间中。这对于零-shot 分类和图像检索非常有用。*图片由作者使用 Farfetch 目录提供。*
 
 最终结果是一个**多模态空间**，允许你在视觉和文本交互之间移动，使用新的图像和新的文本描述：如果你有一些文本，你可以检索到*对应的图像*（如产品搜索）；如果你有一些图像，你可以*排序*标题基于语义相似性（如分类）。
 
-要微调CLIP，你需要一个好的数据集。我们与Farfetch合作，使用高质量的图像和标题来训练CLIP。这个数据集（即将公开发布）包含了超过80万的样本。
+要微调 CLIP，你需要一个好的数据集。我们与 Farfetch 合作，使用高质量的图像和标题来训练 CLIP。这个数据集（即将公开发布）包含了超过 80 万的样本。
 
-我们训练模型几个周期，并检查在多个基准上的表现，包括零-shot分类、探测和检索。在查看结果之前，让我们深入了解一下现在有了训练好的FashionCLIP后我们可以做什么。
+我们训练模型几个周期，并检查在多个基准上的表现，包括零-shot 分类、探测和检索。在查看结果之前，让我们深入了解一下现在有了训练好的 FashionCLIP 后我们可以做什么。
 
-我们不会深入探讨CLIP本身。如果你想了解更多关于CLIP的内容，我这里有一篇专门的博客文章：
+我们不会深入探讨 CLIP 本身。如果你想了解更多关于 CLIP 的内容，我这里有一篇专门的博客文章：
 
-[](/how-to-train-your-clip-45a451dcd303?source=post_page-----3005ac3fdcc3--------------------------------) [## 如何训练你的CLIP]
+[](/how-to-train-your-clip-45a451dcd303?source=post_page-----3005ac3fdcc3--------------------------------) [## 如何训练你的 CLIP]
 
-### 介绍CLIP以及我们如何在HuggingFace社区周期间为意大利语言微调它。
+### 介绍 CLIP 以及我们如何在 HuggingFace 社区周期间为意大利语言微调它。
 
-[towardsdatascience.com](/how-to-train-your-clip-45a451dcd303?source=post_page-----3005ac3fdcc3--------------------------------)
+towardsdatascience.com
 
-FashionCLIP可以处理的两个关键任务是：
+FashionCLIP 可以处理的两个关键任务是：
 
 +   图像检索
 
-+   零-shot分类
++   零-shot 分类
 
 ## 检索：从文本到图像
 
-我们首先从文本到图像：我们使用FashionCLIP文本编码器对搜索查询（“一件红色连衣裙”）进行编码，并通过简单的点积检索最接近的图像向量。**点积的值越大，文本和图像之间的相似度越高**。在下面的GIF中，搜索以4个产品图像为例进行。
+我们首先从文本到图像：我们使用 FashionCLIP 文本编码器对搜索查询（“一件红色连衣裙”）进行编码，并通过简单的点积检索最接近的图像向量。**点积的值越大，文本和图像之间的相似度越高**。在下面的 GIF 中，搜索以 4 个产品图像为例进行。
 
-![](../Images/6c62314d50e09c9bb8aad4a8e7602a44.png)
+![](img/6c62314d50e09c9bb8aad4a8e7602a44.png)
 
-*对于检索，我们可以在目标目录上预先计算图像嵌入。在运行时，我们编码查询并通过简单的点积对图像进行排名。图片由作者使用Farfetch目录提供。*
+*对于检索，我们可以在目标目录上预先计算图像嵌入。在运行时，我们编码查询并通过简单的点积对图像进行排名。图片由作者使用 Farfetch 目录提供。*
 
 虽然“红色连衣裙”是一个简单的查询，[搜索引擎](https://www.farfetch.com/shopping/women/search/items.aspx?q=red+dress&skipsl=1)可能不需要额外的输入，但稍微模糊一些的查询，如“浅红色连衣裙”与“深红色连衣裙”则变得有趣，其中“浅”和“深”是同一颜色的修饰词：
 
-![](../Images/08c90f64ddd3663a05b31ff1a44d1b7b.png)
+![](img/08c90f64ddd3663a05b31ff1a44d1b7b.png)
 
-*FashionCLIP有助于消歧义几何特征。图片由作者使用Farfetch目录提供。*
+*FashionCLIP 有助于消歧义几何特征。图片由作者使用 Farfetch 目录提供。*
 
-更有趣的是FashionCLIP捕捉到*衣物中代表的物品*的能力。产品描述通常未能明确提及具象图案，FashionCLIP能够识别印刷的物品，即使是类似卡通的形状，如下面T恤上挂着的*猫*：
+更有趣的是 FashionCLIP 捕捉到*衣物中代表的物品*的能力。产品描述通常未能明确提及具象图案，FashionCLIP 能够识别印刷的物品，即使是类似卡通的形状，如下面 T 恤上挂着的*猫*：
 
-![](../Images/489ca1c4a29687e99febe59046b17e22.png)
+![](img/489ca1c4a29687e99febe59046b17e22.png)
 
-*FashionCLIP识别印刷在T恤上的具象物品。图片由作者使用Farfetch目录提供。*
+*FashionCLIP 识别印刷在 T 恤上的具象物品。图片由作者使用 Farfetch 目录提供。*
 
-虽然我们尚未详细评估这一能力，但我们相信这可能来自原始CLIP所具备的“知识”，在微调过程中部分保留。
+虽然我们尚未详细评估这一能力，但我们相信这可能来自原始 CLIP 所具备的“知识”，在微调过程中部分保留。
 
-当然，信息在描述中（例如，品牌通常在描述中提及）比FashionCLIP可能捕获的任何语义细微差别编码得更好。然而，它在增强标准学习排名信号而没有行为数据方面的能力可能大大改善搜索体验，特别是在冷启动场景下。
+当然，信息在描述中（例如，品牌通常在描述中提及）比 FashionCLIP 可能捕获的任何语义细微差别编码得更好。然而，它在增强标准学习排名信号而没有行为数据方面的能力可能大大改善搜索体验，特别是在冷启动场景下。
 
 ## 分类：从图像到文本
 
-我们现在从图像到文本进行分类：我们使用FashionCLIP的图像编码器对要分类的时尚物品图像进行编码，并通过点积检索最接近的标签向量：
+我们现在从图像到文本进行分类：我们使用 FashionCLIP 的图像编码器对要分类的时尚物品图像进行编码，并通过点积检索最接近的标签向量：
 
-![](../Images/335ba8d48b19e52d28ffb351596aa5c1.png)
+![](img/335ba8d48b19e52d28ffb351596aa5c1.png)
 
-*对于零-shot分类，我们计算查询项的图像嵌入和目标标签的文本嵌入。图片由作者使用Farfetch目录提供。*
+*对于零-shot 分类，我们计算查询项的图像嵌入和目标标签的文本嵌入。图片由作者使用 Farfetch 目录提供。*
 
-CLIP-like模型的技巧在于将标签视为语义上有意义的标签，而不是类别变量。
+CLIP-like 模型的技巧在于将标签视为语义上有意义的标签，而不是类别变量。
 
 换句话说，当我们“分类”时，我们在问“这些文本中哪个是这个图像的最佳标题？”。
 
@@ -154,7 +154,7 @@ CLIP 的泛化能力当然是以*某些精度*为代价的：也就是说，如�
 
 对于零样本分类，我们使用了三个不同的数据集（KAGL、DEEP 和 FMNIST），这些数据集应作为分布外数据集（我们知道从其他实验中我们在领域内数据上表现比 CLIP 好得多，但这是预期中的）。
 
-![](../Images/0e48f853336913b2ae8c0da04d530ac8.png)
+![](img/0e48f853336913b2ae8c0da04d530ac8.png)
 
 不同数据集上的加权宏 F1 分数（领域外数据）。FashionCLIP 在这些数据集上显示出相对于 CLIP 的显著提升。
 
@@ -162,7 +162,7 @@ Zero-shot 结果确认我们的模型表现如预期！
 
 对于图像检索，我们使用了在训练时遗漏的原始数据集的一部分。需要注意的是，这显然使我们相对于 CLIP 有优势，因为这个数据集对于我们来说是领域内的。然而，这仍然是一个有趣的实验。以下结果确认我们的模型表现最佳：
 
-![](../Images/4f374e654dfa0c33699501fff4429f67.png)
+![](img/4f374e654dfa0c33699501fff4429f67.png)
 
 在我们内部测试集上的前 5 和前 10 精度（领域内数据）。FashionCLIP 的检索性能明显更好。
 
@@ -208,7 +208,7 @@ print(candidates)
 
 开源的力量是什么？[Pablo](https://www.linkedin.com/in/pablomendes/) 看到这个模型并联系了我们，提供了一个用户界面来帮助我们测试标准的 HuggingFace CLIP 与我们刚刚发布的 FashionCLIP 之间的差异——然后我使用了 [Objective Search](https://www.objective.inc) 来测试使用 FashionCLIP 的几个查询（您可以[在这里](https://www.objective.inc/demos/fashion-clip)亲自查看）：
 
-![](../Images/14f32da68e1f2c2d972fc31f78f7409b.png)
+![](img/14f32da68e1f2c2d972fc31f78f7409b.png)
 
 使用 FashionCLIP 进行搜索。GIF 由作者提供，图片来自 H&M 数据集。
 
@@ -230,7 +230,7 @@ FashionCLIP 的发展经历了漫长的过程，但在等待正式发布期间�
 
 我们在 FashionCLIP 的基础上进行了探索，通过遍历潜在空间来研究推荐。如果你感兴趣，请查看我们的 [论文](https://aclanthology.org/2022.ecnlp-1.22/)！
 
-![](../Images/da83f43146bfb0a834a9359af421fe9a.png)
+![](img/da83f43146bfb0a834a9359af421fe9a.png)
 
 GradedRec。图片由作者提供。
 

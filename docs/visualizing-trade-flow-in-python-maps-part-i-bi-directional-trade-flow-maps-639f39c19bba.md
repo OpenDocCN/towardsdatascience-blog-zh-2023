@@ -1,12 +1,12 @@
 # 使用 Python 地图可视化贸易流量 — 第一部分：双向贸易流量地图
 
-> 原文：[https://towardsdatascience.com/visualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba?source=collection_archive---------4-----------------------#2023-12-16](https://towardsdatascience.com/visualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba?source=collection_archive---------4-----------------------#2023-12-16)
+> 原文：[`towardsdatascience.com/visualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba?source=collection_archive---------4-----------------------#2023-12-16`](https://towardsdatascience.com/visualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba?source=collection_archive---------4-----------------------#2023-12-16)
 
-[](https://medium.com/@himalaya.birshrestha?source=post_page-----639f39c19bba--------------------------------)[![Himalaya Bir Shrestha](../Images/9766140c1c44381029d0a78154217775.png)](https://medium.com/@himalaya.birshrestha?source=post_page-----639f39c19bba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----639f39c19bba--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----639f39c19bba--------------------------------) [Himalaya Bir Shrestha](https://medium.com/@himalaya.birshrestha?source=post_page-----639f39c19bba--------------------------------)
+[](https://medium.com/@himalaya.birshrestha?source=post_page-----639f39c19bba--------------------------------)![Himalaya Bir Shrestha](https://medium.com/@himalaya.birshrestha?source=post_page-----639f39c19bba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----639f39c19bba--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----639f39c19bba--------------------------------) [Himalaya Bir Shrestha](https://medium.com/@himalaya.birshrestha?source=post_page-----639f39c19bba--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba33e6d0d27b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=post_page-ba33e6d0d27b----639f39c19bba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----639f39c19bba--------------------------------) ·7分钟阅读·2023年12月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F639f39c19bba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=-----639f39c19bba---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba33e6d0d27b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=post_page-ba33e6d0d27b----639f39c19bba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----639f39c19bba--------------------------------) ·7 分钟阅读·2023 年 12 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F639f39c19bba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-trade-flow-in-python-maps-part-i-bi-directional-trade-flow-maps-639f39c19bba&user=Himalaya+Bir+Shrestha&userId=ba33e6d0d27b&source=-----639f39c19bba---------------------clap_footer-----------)
 
 --
 
@@ -14,9 +14,9 @@
 
 商品和服务的交换以及它们相应的价值是我们日常生活中的复杂部分。同样，国家之间也会进行各种类型的贸易关系，交换产品和服务，如电力、能源商品、原材料、加工品、旅游等。理解国家之间的贸易流动（进出口）对于评估一个国家的收入和支出、经济实力、供应安全以及国家之间的关系性质至关重要。
 
-在这个两部分系列中，我将分享如何使用Python将国家之间的贸易流动可视化在地图上。本系列的第一部分将重点介绍可视化**双向（进口和出口）贸易流动**。第二部分将重点介绍可视化**净贸易流动**。我将使用一个假设产品的虚拟数据集来进行这种可视化。我将以我的国家和地区（尼泊尔/南亚）作为演示的例子。让我们开始吧。
+在这个两部分系列中，我将分享如何使用 Python 将国家之间的贸易流动可视化在地图上。本系列的第一部分将重点介绍可视化**双向（进口和出口）贸易流动**。第二部分将重点介绍可视化**净贸易流动**。我将使用一个假设产品的虚拟数据集来进行这种可视化。我将以我的国家和地区（尼泊尔/南亚）作为演示的例子。让我们开始吧。
 
-![](../Images/12ae7950c17b8aab24d7838276dea766.png)
+![](img/12ae7950c17b8aab24d7838276dea766.png)
 
 照片由[GeoJango Maps](https://unsplash.com/@geojango_maps?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 
@@ -24,27 +24,27 @@
 
 在贸易流动地图中，我的目标是表示国家之间的双向贸易关系。例如，从尼泊尔到印度的出口将由第一个箭头（A1-A2）表示，从印度到尼泊尔的进口将由第二个箭头（A3-A4）表示。这样，每对国家关系将需要四个坐标点来定义箭头的起点和终点，以分别表示出口和进口。
 
-尽管也可以假设一个可以自动检测到的坐标（例如，国家几何形状的中心点），我打算在地图上标记这些点并逐一获取其坐标。为此，可以在类似Google Earth的应用程序中创建一个项目，导出KML文件，并通过转换器提取坐标（例如，[MyGeodata Cloud](https://mygeodata.cloud/)网站上的GIS数据转换器）。
+尽管也可以假设一个可以自动检测到的坐标（例如，国家几何形状的中心点），我打算在地图上标记这些点并逐一获取其坐标。为此，可以在类似 Google Earth 的应用程序中创建一个项目，导出 KML 文件，并通过转换器提取坐标（例如，[MyGeodata Cloud](https://mygeodata.cloud/)网站上的 GIS 数据转换器）。
 
-> Keyhole Markup Language (KML)是一种用于在应用程序中显示地理数据的文件格式，例如Google Earth。它使用基于标签的结构，具有嵌套的元素和属性，并基于XML标准（Google, 2023）。
+> Keyhole Markup Language (KML)是一种用于在应用程序中显示地理数据的文件格式，例如 Google Earth。它使用基于标签的结构，具有嵌套的元素和属性，并基于 XML 标准（Google, 2023）。
 
 # **数据**
 
-我的输入数据结构如下图所示。它包含了五种不同的邻国之间的贸易关系：**尼泊尔-印度，尼泊尔-孟加拉国，尼泊尔-中国，印度-巴基斯坦，以及印度-斯里兰卡**。对于每对国家，有四个坐标点用于表示两个箭头的起点和终点。Value1表示从Country1到Country2的出口。Value2表示Country1从Country2的进口。目标是将这种关系在Python地图中展示出来。
+我的输入数据结构如下图所示。它包含了五种不同的邻国之间的贸易关系：**尼泊尔-印度，尼泊尔-孟加拉国，尼泊尔-中国，印度-巴基斯坦，以及印度-斯里兰卡**。对于每对国家，有四个坐标点用于表示两个箭头的起点和终点。Value1 表示从 Country1 到 Country2 的出口。Value2 表示 Country1 从 Country2 的进口。目标是将这种关系在 Python 地图中展示出来。
 
-![](../Images/f958bd65599f0ebadb0b11f148220325.png)
+![](img/f958bd65599f0ebadb0b11f148220325.png)
 
 贸易流动地图的数据输入。图片由作者提供。
 
-我将上述数据读入pandas dataframe `df`。此外，我创建了包含每对国家之间出口和进口量的字典对象，例如`transfers`，以及包含第一个箭头起点坐标的字典对象`startarrow1_dict`。
+我将上述数据读入 pandas dataframe `df`。此外，我创建了包含每对国家之间出口和进口量的字典对象，例如`transfers`，以及包含第一个箭头起点坐标的字典对象`startarrow1_dict`。
 
-![](../Images/a585a531a1a562ce73ccd49ff3dfaba6.png)
+![](img/a585a531a1a562ce73ccd49ff3dfaba6.png)
 
 创建必要的字典对象。图片由作者提供。
 
 # 代码描述
 
-在本节中，我将描述用于可视化贸易流图的代码。我将主要使用matplotlib和cartopy包。我还使用了相同的包来可视化[全球表面温度异常](https://assessing-global-temperature-anomaly-using-nasas-space-studies-part-ii-29e5e313a7b3)中的全球表面温度异常。
+在本节中，我将描述用于可视化贸易流图的代码。我将主要使用 matplotlib 和 cartopy 包。我还使用了相同的包来可视化[全球表面温度异常](https://assessing-global-temperature-anomaly-using-nasas-space-studies-part-ii-29e5e313a7b3)中的全球表面温度异常。
 
 1.  **导入所需包**
 
@@ -67,7 +67,7 @@ import os
 
 **2\. 读取形状文件**
 
-作为形状文件，我使用了Natural Earth [Vector](https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-0-countries/)。矢量文件可以直接通过cartopy包的shapereader [模块](https://scitools.org.uk/cartopy/docs/latest/reference/generated/cartopy.io.shapereader.Reader.html)读取。
+作为形状文件，我使用了 Natural Earth [Vector](https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-0-countries/)。矢量文件可以直接通过 cartopy 包的 shapereader [模块](https://scitools.org.uk/cartopy/docs/latest/reference/generated/cartopy.io.shapereader.Reader.html)读取。
 
 ```py
 # get the country border file (10m resolution) and extract
@@ -80,15 +80,15 @@ reader = shpreader.Reader(shpfilename)
 countries = reader.records()
 ```
 
-使用名为Fiona的包，可以读取所有国家的列表，如下所示。
+使用名为 Fiona 的包，可以读取所有国家的列表，如下所示。
 
-![](../Images/aab7c11e4a540ec539451b8549163ff6.png)
+![](img/aab7c11e4a540ec539451b8549163ff6.png)
 
-使用Fiona包来打开形状文件并提取所有国家名称的列表。图片由作者提供。
+使用 Fiona 包来打开形状文件并提取所有国家名称的列表。图片由作者提供。
 
 **3\. 提取所需国家的信息**
 
-接下来，我创建了`required`，这是一个包含六个有贸易关系的国家的列表。我还创建了一个字典对象`c`，其中包含FionaRecord，即所有相关的国家信息，可用于绘图。
+接下来，我创建了`required`，这是一个包含六个有贸易关系的国家的列表。我还创建了一个字典对象`c`，其中包含 FionaRecord，即所有相关的国家信息，可用于绘图。
 
 ```py
 # required countries
@@ -103,15 +103,15 @@ c = {
 
 **4\. 绘制** `**required**` **国家及裁剪**
 
-在这一步，我首先绘制了`required`国家在PlateCarree投影中的几何形状，如下所示：
+在这一步，我首先绘制了`required`国家在 PlateCarree 投影中的几何形状，如下所示：
 
-![](../Images/a9f5242012ec08d75c817328bfd2f179.png)
+![](img/a9f5242012ec08d75c817328bfd2f179.png)
 
 绘制所需的国家。图片由作者提供。
 
-接下来，我希望裁剪掉其余世界的几何形状，以便只查看六个国家的放大视图。我确定了能够覆盖所有六个国家的最大和最小经纬度值，设置了坐标轴的范围，并绘制了这些国家。在for循环中，我还添加了一个代码，显示每个国家的名称在其重心几何形状上。
+接下来，我希望裁剪掉其余世界的几何形状，以便只查看六个国家的放大视图。我确定了能够覆盖所有六个国家的最大和最小经纬度值，设置了坐标轴的范围，并绘制了这些国家。在 for 循环中，我还添加了一个代码，显示每个国家的名称在其重心几何形状上。
 
-matplotlib包的`zorder` [属性](https://matplotlib.org/stable/gallery/misc/zorder_demo.html) 将决定艺术家的绘制顺序。具有较高`zorder`的艺术家会被绘制在顶部。
+matplotlib 包的`zorder` [属性](https://matplotlib.org/stable/gallery/misc/zorder_demo.html) 将决定艺术家的绘制顺序。具有较高`zorder`的艺术家会被绘制在顶部。
 
 ```py
 # get overall boundary box from country bounds
@@ -248,9 +248,9 @@ plt.savefig("trade_flow2_with_labels.jpeg",
 plt.show()
 ```
 
-下面展示了最终产品。在我的虚拟数据集中，贸易流最少的是从斯里兰卡到印度的出口（53单位），用黄色表示。贸易流最多的是从孟加拉国到尼泊尔的出口（98单位），用紫色表示。
+下面展示了最终产品。在我的虚拟数据集中，贸易流最少的是从斯里兰卡到印度的出口（53 单位），用黄色表示。贸易流最多的是从孟加拉国到尼泊尔的出口（98 单位），用紫色表示。
 
-![](../Images/c95a7096d62472f4a7570c42e85afbe2.png)
+![](img/c95a7096d62472f4a7570c42e85afbe2.png)
 
 通过箭头表示的国家间双向贸易流。图像由作者提供。
 

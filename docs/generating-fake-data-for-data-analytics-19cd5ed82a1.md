@@ -1,18 +1,18 @@
 # 生成用于数据分析的虚假数据
 
-> 原文：[https://towardsdatascience.com/generating-fake-data-for-data-analytics-19cd5ed82a1?source=collection_archive---------7-----------------------#2023-03-14](https://towardsdatascience.com/generating-fake-data-for-data-analytics-19cd5ed82a1?source=collection_archive---------7-----------------------#2023-03-14)
+> 原文：[`towardsdatascience.com/generating-fake-data-for-data-analytics-19cd5ed82a1?source=collection_archive---------7-----------------------#2023-03-14`](https://towardsdatascience.com/generating-fake-data-for-data-analytics-19cd5ed82a1?source=collection_archive---------7-----------------------#2023-03-14)
 
 ## 如果你没有真实数据，就得造假数据！
 
-[](https://weimenglee.medium.com/?source=post_page-----19cd5ed82a1--------------------------------)[![魏盟·李](../Images/10fc13e8a6858502d6a7b89fcaad7a10.png)](https://weimenglee.medium.com/?source=post_page-----19cd5ed82a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----19cd5ed82a1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----19cd5ed82a1--------------------------------) [魏盟·李](https://weimenglee.medium.com/?source=post_page-----19cd5ed82a1--------------------------------)
+[](https://weimenglee.medium.com/?source=post_page-----19cd5ed82a1--------------------------------)![魏盟·李](https://weimenglee.medium.com/?source=post_page-----19cd5ed82a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----19cd5ed82a1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----19cd5ed82a1--------------------------------) [魏盟·李](https://weimenglee.medium.com/?source=post_page-----19cd5ed82a1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6599e1e08a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-fake-data-for-data-analytics-19cd5ed82a1&user=Wei-Meng+Lee&userId=6599e1e08a48&source=post_page-6599e1e08a48----19cd5ed82a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----19cd5ed82a1--------------------------------) ·8分钟阅读·2023年3月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F19cd5ed82a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-fake-data-for-data-analytics-19cd5ed82a1&user=Wei-Meng+Lee&userId=6599e1e08a48&source=-----19cd5ed82a1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6599e1e08a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-fake-data-for-data-analytics-19cd5ed82a1&user=Wei-Meng+Lee&userId=6599e1e08a48&source=post_page-6599e1e08a48----19cd5ed82a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----19cd5ed82a1--------------------------------) ·8 分钟阅读·2023 年 3 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F19cd5ed82a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-fake-data-for-data-analytics-19cd5ed82a1&user=Wei-Meng+Lee&userId=6599e1e08a48&source=-----19cd5ed82a1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F19cd5ed82a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-fake-data-for-data-analytics-19cd5ed82a1&source=-----19cd5ed82a1---------------------bookmark_footer-----------)![](../Images/50a67f9bb4a4499679e187efc9c4e02f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F19cd5ed82a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-fake-data-for-data-analytics-19cd5ed82a1&source=-----19cd5ed82a1---------------------bookmark_footer-----------)![](img/50a67f9bb4a4499679e187efc9c4e02f.png)
 
 图片由 [Leif Christoph Gottwald](https://unsplash.com/@project2204?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,38 +1,38 @@
-# 使数据管理成功的5项技能
+# 使数据管理成功的 5 项技能
 
-> 原文：[https://towardsdatascience.com/5-skills-that-make-a-successful-data-manager-fe09bcc29c2?source=collection_archive---------14-----------------------#2023-01-09](https://towardsdatascience.com/5-skills-that-make-a-successful-data-manager-fe09bcc29c2?source=collection_archive---------14-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/5-skills-that-make-a-successful-data-manager-fe09bcc29c2?source=collection_archive---------14-----------------------#2023-01-09`](https://towardsdatascience.com/5-skills-that-make-a-successful-data-manager-fe09bcc29c2?source=collection_archive---------14-----------------------#2023-01-09)
 
 ## 在数据管理中生存并成功
 
-[](https://simon-j-preis.medium.com/?source=post_page-----fe09bcc29c2--------------------------------)[![理查德·费曼博士](../Images/ea0586e8d1fd6ba434fa2cfb9a71e4a5.png)](https://simon-j-preis.medium.com/?source=post_page-----fe09bcc29c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe09bcc29c2--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe09bcc29c2--------------------------------) [理查德·费曼博士](https://simon-j-preis.medium.com/?source=post_page-----fe09bcc29c2--------------------------------)
+[](https://simon-j-preis.medium.com/?source=post_page-----fe09bcc29c2--------------------------------)![理查德·费曼博士](https://simon-j-preis.medium.com/?source=post_page-----fe09bcc29c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe09bcc29c2--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----fe09bcc29c2--------------------------------) [理查德·费曼博士](https://simon-j-preis.medium.com/?source=post_page-----fe09bcc29c2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8c9dbf8eb438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-skills-that-make-a-successful-data-manager-fe09bcc29c2&user=Professor+Simon+J.+Preis%2C+Ph.D.&userId=8c9dbf8eb438&source=post_page-8c9dbf8eb438----fe09bcc29c2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----fe09bcc29c2--------------------------------) ·7分钟阅读·2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffe09bcc29c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-skills-that-make-a-successful-data-manager-fe09bcc29c2&user=Professor+Simon+J.+Preis%2C+Ph.D.&userId=8c9dbf8eb438&source=-----fe09bcc29c2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8c9dbf8eb438&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-skills-that-make-a-successful-data-manager-fe09bcc29c2&user=Professor+Simon+J.+Preis%2C+Ph.D.&userId=8c9dbf8eb438&source=post_page-8c9dbf8eb438----fe09bcc29c2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----fe09bcc29c2--------------------------------) ·7 分钟阅读·2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffe09bcc29c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-skills-that-make-a-successful-data-manager-fe09bcc29c2&user=Professor+Simon+J.+Preis%2C+Ph.D.&userId=8c9dbf8eb438&source=-----fe09bcc29c2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffe09bcc29c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-skills-that-make-a-successful-data-manager-fe09bcc29c2&source=-----fe09bcc29c2---------------------bookmark_footer-----------)![](../Images/8dba5c199c30d436c78d001fb184aa7b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffe09bcc29c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-skills-that-make-a-successful-data-manager-fe09bcc29c2&source=-----fe09bcc29c2---------------------bookmark_footer-----------)![](img/8dba5c199c30d436c78d001fb184aa7b.png)
 
-图片由 [Raj的公路旅行](https://unsplash.com/@roadtripwithraj?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+图片由 [Raj 的公路旅行](https://unsplash.com/@roadtripwithraj?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在我的行业生涯中，我一直从事各种数据相关的角色，如数据管理、数据工程和数据分析。我考虑了哪些方面做得好，哪些方面相当具有挑战性，以及人们和他们的技能（包括我自己！）如何影响数据项目的成功。根据这些经验，我整理了以下一些重要技能，这些技能使得一个数据经理变得出色！请注意，这不是基于实证研究，我在这里不是作为研究者写的——这个列表仅仅是一些个人观察的汇总——所以如果你有其他技能，请在评论中添加 :)
 
 # #1 建模
 
-“一图胜千言”。这在数据管理中同样适用。每个数据项目都会遇到需要绘制表示现状或捕捉利益相关者不同视角的图像的情况。因此，请将模型视为数据项目中高效沟通的关键技术！目前有很多复杂的建模工具支持成熟的建模语言。而且第二点更为重要：请应用成熟的建模语言！你能犯的最大错误之一就是试图将数据项目的每个方面都放在一个混乱的 PowerPoint 图表中。你最终会得到一个既不是好的数据模型也不是好的过程模型的怪物。相反，要意识到你的数据项目有动态方面（→ 过程模型的候选者）和静态方面（数据模型或部署模型的候选者），它们必须能够契合，但不一定要在一个图表中。已有成熟的语言（如 BPMN、UML、陈氏模型）和工具（如 Visual Paradigm、Modelio、Enterprise Architect）支持符合语法的语言应用或回环工程。模型就像是物理建筑的施工图，所以确保你的计划是成熟的，以避免数据架构中由项目人员不同解读模型而造成的倾斜地板和开墙。在物联网时代，[模糊数据模型对物理世界也有影响，](/fuzzy-data-structures-curse-or-blessing-5ee34ff39cd7)。它们限制了比较数据分析的可能性或使得用例扩展变得困难。
+“一图胜千言”。这在数据管理中同样适用。每个数据项目都会遇到需要绘制表示现状或捕捉利益相关者不同视角的图像的情况。因此，请将模型视为数据项目中高效沟通的关键技术！目前有很多复杂的建模工具支持成熟的建模语言。而且第二点更为重要：请应用成熟的建模语言！你能犯的最大错误之一就是试图将数据项目的每个方面都放在一个混乱的 PowerPoint 图表中。你最终会得到一个既不是好的数据模型也不是好的过程模型的怪物。相反，要意识到你的数据项目有动态方面（→ 过程模型的候选者）和静态方面（数据模型或部署模型的候选者），它们必须能够契合，但不一定要在一个图表中。已有成熟的语言（如 BPMN、UML、陈氏模型）和工具（如 Visual Paradigm、Modelio、Enterprise Architect）支持符合语法的语言应用或回环工程。模型就像是物理建筑的施工图，所以确保你的计划是成熟的，以避免数据架构中由项目人员不同解读模型而造成的倾斜地板和开墙。在物联网时代，模糊数据模型对物理世界也有影响，。它们限制了比较数据分析的可能性或使得用例扩展变得困难。
 
 # #2 连接人们
 
-在一个组织中，数据管理者的角色是复杂的。这个人通常既不是独立实施数据库的IT专家，也不是实际负责数据或流程的业务专家（这更属于数据管家（Data Steward）的职责）。那么，数据管理者（甚至数据管理部门）的真正价值是什么呢？在我看来，你需要一个在不同的数据利益相关者之间搭建桥梁的人，从方法论的层面进行连接。很容易找到那些自认为在特定业务领域、数据分析方法或IT工具方面是专家的人，但找到一个愿意将这些人连接起来并组织他们的能力的人则相当复杂，因为这在数据项目中往往是必需的。因此，我所指的是像网络建设、项目管理、利益相关者管理和变更管理这样的技能，这些技能是一步一步建立数据社区作为数据治理的支柱所必需的。没有这些人，数据管理者将失败！因此，在我看来，招聘人员在寻找数据管理者时，不仅应考察技术技能，还应考察这些人际技能。同样，如果你对数据管理者职位感兴趣，评估一下自己是否对超越技术话题的各种组织职责感到舒适。
+在一个组织中，数据管理者的角色是复杂的。这个人通常既不是独立实施数据库的 IT 专家，也不是实际负责数据或流程的业务专家（这更属于数据管家（Data Steward）的职责）。那么，数据管理者（甚至数据管理部门）的真正价值是什么呢？在我看来，你需要一个在不同的数据利益相关者之间搭建桥梁的人，从方法论的层面进行连接。很容易找到那些自认为在特定业务领域、数据分析方法或 IT 工具方面是专家的人，但找到一个愿意将这些人连接起来并组织他们的能力的人则相当复杂，因为这在数据项目中往往是必需的。因此，我所指的是像网络建设、项目管理、利益相关者管理和变更管理这样的技能，这些技能是一步一步建立数据社区作为数据治理的支柱所必需的。没有这些人，数据管理者将失败！因此，在我看来，招聘人员在寻找数据管理者时，不仅应考察技术技能，还应考察这些人际技能。同样，如果你对数据管理者职位感兴趣，评估一下自己是否对超越技术话题的各种组织职责感到舒适。
 
 # #3 领域专长
 
-我见过各种建立数据管理组织的方法。有的团队是更大业务部门的一部分，全球负责数据标准，或者是由小核心团队和其他部门的“虚线”数据管理者组成的联邦组织，或者数据管理团队是IT部门的一部分。不论组织的归属在哪里——我的经验表明，一个好的数据经理应具备基本的领域知识。如果一个人作为某个业务领域的数据经理，她/他应该了解价值链中的情况，关键业务问题是什么，存在哪些数据用于何种目的，哪些业务流程生成和消耗数据，它们如何相互连接。有了这些知识，数据经理在收到数据变更请求时，能总是多想一步。也许管道中还有其他请求可以合并，也许你对流程实施有自己的想法，也许你建议涉及其他利益相关者（→见 #2），也许有必须实施的政策（例如 DSGVO），也许你可以影响数据模型的可持续性……列表很长！假设数据经理最初有IT背景，创建令人满意的领域知识可能是一项具有挑战性的任务，因为它是行业、公司或甚至部门特定的，你不能仅仅通过听有声书来弥补这个差距。然而，保持冷静，并接受随着时间的推移会有学习曲线，但重要的是你愿意学习和吸收这些非IT知识。
+我见过各种建立数据管理组织的方法。有的团队是更大业务部门的一部分，全球负责数据标准，或者是由小核心团队和其他部门的“虚线”数据管理者组成的联邦组织，或者数据管理团队是 IT 部门的一部分。不论组织的归属在哪里——我的经验表明，一个好的数据经理应具备基本的领域知识。如果一个人作为某个业务领域的数据经理，她/他应该了解价值链中的情况，关键业务问题是什么，存在哪些数据用于何种目的，哪些业务流程生成和消耗数据，它们如何相互连接。有了这些知识，数据经理在收到数据变更请求时，能总是多想一步。也许管道中还有其他请求可以合并，也许你对流程实施有自己的想法，也许你建议涉及其他利益相关者（→见 #2），也许有必须实施的政策（例如 DSGVO），也许你可以影响数据模型的可持续性……列表很长！假设数据经理最初有 IT 背景，创建令人满意的领域知识可能是一项具有挑战性的任务，因为它是行业、公司或甚至部门特定的，你不能仅仅通过听有声书来弥补这个差距。然而，保持冷静，并接受随着时间的推移会有学习曲线，但重要的是你愿意学习和吸收这些非 IT 知识。
 
 # #4 技术意识
 
-将数据变更请求从业务相关方的期望转化为真正需要实施的内容是一个过程。在我所在的“家”行业——半导体行业中，业务专家通常也拥有先进的IT知识——这既是福也是祸 :) 一方面，你可以与所有相关方深入探讨技术问题；另一方面，他们倾向于提出IT解决方案建议而不是问题描述，这在IT专家中并不受欢迎，因为这在某种程度上绕过了他们的责任。除了受损的荣誉感之外，还有充分的理由解释为什么构建实施概念与需求分析是分开的。其中之一是没有“唯一”的解决方案，而是各种优缺点的选项。领域专长的重要性与对最新数据管理技术及其能力的意识同样重要。例如，并不是每一条主数据都必须手动输入，即使数据管理员期望如此。也许记录中的某些属性可以通过业务规则系统推导出来，或者通过其他系统的数据集成进行填写。或者，问题可以通过更改业务流程中的任务顺序来解决，这可以通过工作流得到支持和强制执行。此外，数据目录还有一些强大的功能，帮助数据管理者在其全面角色中——[请查看我关于某个工具的系列文章以获取更多信息](https://medium.com/towards-data-science/datahub-hands-on-part-i-f0709e7efec9)。特别是对于那些没有IT背景的数据管理者，这项技能可能具有挑战性。幸运的是，技术知识通常不是公司特有的，因此可以通过官方材料（视频、MOOC、书籍、文章等）来弥补。从教学的角度来看，我建议为初级数据管理者制定一个学习路径，以便概述和深入了解所选技术。
+将数据变更请求从业务相关方的期望转化为真正需要实施的内容是一个过程。在我所在的“家”行业——半导体行业中，业务专家通常也拥有先进的 IT 知识——这既是福也是祸 :) 一方面，你可以与所有相关方深入探讨技术问题；另一方面，他们倾向于提出 IT 解决方案建议而不是问题描述，这在 IT 专家中并不受欢迎，因为这在某种程度上绕过了他们的责任。除了受损的荣誉感之外，还有充分的理由解释为什么构建实施概念与需求分析是分开的。其中之一是没有“唯一”的解决方案，而是各种优缺点的选项。领域专长的重要性与对最新数据管理技术及其能力的意识同样重要。例如，并不是每一条主数据都必须手动输入，即使数据管理员期望如此。也许记录中的某些属性可以通过业务规则系统推导出来，或者通过其他系统的数据集成进行填写。或者，问题可以通过更改业务流程中的任务顺序来解决，这可以通过工作流得到支持和强制执行。此外，数据目录还有一些强大的功能，帮助数据管理者在其全面角色中——[请查看我关于某个工具的系列文章以获取更多信息](https://medium.com/towards-data-science/datahub-hands-on-part-i-f0709e7efec9)。特别是对于那些没有 IT 背景的数据管理者，这项技能可能具有挑战性。幸运的是，技术知识通常不是公司特有的，因此可以通过官方材料（视频、MOOC、书籍、文章等）来弥补。从教学的角度来看，我建议为初级数据管理者制定一个学习路径，以便概述和深入了解所选技术。
 
 # #5 精益思维
 

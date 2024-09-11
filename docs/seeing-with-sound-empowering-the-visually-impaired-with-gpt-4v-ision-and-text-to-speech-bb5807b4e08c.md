@@ -1,10 +1,10 @@
 # 用声音看见：用 GPT-4V(ision) 和文本转语音技术赋能视障人士
 
-> 原文：[https://towardsdatascience.com/seeing-with-sound-empowering-the-visually-impaired-with-gpt-4v-ision-and-text-to-speech-bb5807b4e08c?source=collection_archive---------6-----------------------#2023-11-16](https://towardsdatascience.com/seeing-with-sound-empowering-the-visually-impaired-with-gpt-4v-ision-and-text-to-speech-bb5807b4e08c?source=collection_archive---------6-----------------------#2023-11-16)
+> 原文：[`towardsdatascience.com/seeing-with-sound-empowering-the-visually-impaired-with-gpt-4v-ision-and-text-to-speech-bb5807b4e08c?source=collection_archive---------6-----------------------#2023-11-16`](https://towardsdatascience.com/seeing-with-sound-empowering-the-visually-impaired-with-gpt-4v-ision-and-text-to-speech-bb5807b4e08c?source=collection_archive---------6-----------------------#2023-11-16)
 
 ## 增强视障导航：集成 GPT-4V(ision) 和 TTS 实现高级感知辅助
 
-[](https://medium.com/@luisroque?source=post_page-----bb5807b4e08c--------------------------------)[![Luís Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----bb5807b4e08c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb5807b4e08c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb5807b4e08c--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----bb5807b4e08c--------------------------------)
+[](https://medium.com/@luisroque?source=post_page-----bb5807b4e08c--------------------------------)![Luís Roque](https://medium.com/@luisroque?source=post_page-----bb5807b4e08c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb5807b4e08c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb5807b4e08c--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----bb5807b4e08c--------------------------------)
 
 ·
 

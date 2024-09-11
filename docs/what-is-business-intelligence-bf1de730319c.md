@@ -1,18 +1,18 @@
 # 什么是商业智能？
 
-> 原文：[https://towardsdatascience.com/what-is-business-intelligence-bf1de730319c?source=collection_archive---------5-----------------------#2023-08-04](https://towardsdatascience.com/what-is-business-intelligence-bf1de730319c?source=collection_archive---------5-----------------------#2023-08-04)
+> 原文：[`towardsdatascience.com/what-is-business-intelligence-bf1de730319c?source=collection_archive---------5-----------------------#2023-08-04`](https://towardsdatascience.com/what-is-business-intelligence-bf1de730319c?source=collection_archive---------5-----------------------#2023-08-04)
 
 ## 发现应用于供应链优化的数据驱动决策工具。
 
-[](https://s-saci95.medium.com/?source=post_page-----bf1de730319c--------------------------------)[![Samir Saci](../Images/722d1f56a3308f6527d82b5ab97064ec.png)](https://s-saci95.medium.com/?source=post_page-----bf1de730319c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bf1de730319c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bf1de730319c--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----bf1de730319c--------------------------------)
+[](https://s-saci95.medium.com/?source=post_page-----bf1de730319c--------------------------------)![Samir Saci](https://s-saci95.medium.com/?source=post_page-----bf1de730319c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bf1de730319c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf1de730319c--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----bf1de730319c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-business-intelligence-bf1de730319c&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----bf1de730319c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf1de730319c--------------------------------) ·11分钟阅读·2023年8月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbf1de730319c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-business-intelligence-bf1de730319c&user=Samir+Saci&userId=bb0f26d52754&source=-----bf1de730319c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-business-intelligence-bf1de730319c&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----bf1de730319c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf1de730319c--------------------------------) ·11 分钟阅读·2023 年 8 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbf1de730319c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-business-intelligence-bf1de730319c&user=Samir+Saci&userId=bb0f26d52754&source=-----bf1de730319c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbf1de730319c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-business-intelligence-bf1de730319c&source=-----bf1de730319c---------------------bookmark_footer-----------)![](../Images/4fd0b49dc6098e3ebe164808618006d2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbf1de730319c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-business-intelligence-bf1de730319c&source=-----bf1de730319c---------------------bookmark_footer-----------)![](img/4fd0b49dc6098e3ebe164808618006d2.png)
 
 什么是商业智能？——（作者提供的图片）
 
@@ -20,7 +20,7 @@
 
 这种智能帮助企业洞察其运营情况，提高流程效率，并创造竞争市场优势。
 
-![](../Images/ac883aef66861e6dab3fae3ef926b34c.png)
+![](img/ac883aef66861e6dab3fae3ef926b34c.png)
 
 商业智能过程的五个步骤——（作者提供的图片）
 
@@ -62,7 +62,7 @@ IV. Conclusion
 
 我们可以用一个国际**服装集团**的例子来说明，该集团在全球范围内都有门店。
 
-[![](../Images/2ad4512dfd8bbb9312071249b2461539.png)](https://youtu.be/ssdni_n6HDc)
+![](https://youtu.be/ssdni_n6HDc)
 
 供应链网络 — （作者提供的图片）
 
@@ -70,11 +70,11 @@ IV. Conclusion
 
 作为**分销计划经理**，你会希望**测量交付门店的提前期**（*从订单创建到门店交付的时间*）。
 
-[![](../Images/2487a0c079ceb5032769463662b0ac34.png)](https://youtu.be/ssdni_n6HDc)
+![](https://youtu.be/ssdni_n6HDc)
 
 系统架构 — （作者提供的图片）
 
-多个IT系统协调整个分销过程。
+多个 IT 系统协调整个分销过程。
 
 +   在[**ERP**](https://www.youtube.com/shorts/v0_R8P6MLQ0)中，由分销计划员创建**交货单**。
 
@@ -86,7 +86,7 @@ IV. Conclusion
 
 带有时间戳的交易数据会在这些系统的数据库中创建和存储。
 
-[![](../Images/0b218a79330418c6530ba1c46ca4e536.png)](https://youtu.be/YNvOX3CT3hQ)
+![](https://youtu.be/YNvOX3CT3hQ)
 
 分销过程时间戳 — （作者提供的图片）
 
@@ -104,11 +104,11 @@ IV. Conclusion
 
 ## 运营管理的商业智能
 
-BI可以帮助将这些数据转换为有意义的信息，以支持运营或战略决策的描述性和诊断性分析。
+BI 可以帮助将这些数据转换为有意义的信息，以支持运营或战略决策的描述性和诊断性分析。
 
-对于每个时间戳，BI解决方案可以帮助**自动比较预计时间与实际时间**以检测**延迟**发生的地方。
+对于每个时间戳，BI 解决方案可以帮助**自动比较预计时间与实际时间**以检测**延迟**发生的地方。
 
-[![](../Images/1e9d400485bf34a445e1e6731fd85683.png)](https://youtu.be/YNvOX3CT3hQ)
+![](https://youtu.be/YNvOX3CT3hQ)
 
 两个货运示例（准时：顶部，延迟：底部）— （作者提供的图像）
 
@@ -136,13 +136,13 @@ BI可以帮助将这些数据转换为有意义的信息，以支持运营或战
 
     *例如：由于[传输、装载、海关清关]导致的延迟交货*
 
-[![](../Images/58788f6babf2470533a7fde405e0d237.png)](https://youtu.be/ssdni_n6HDc)
+![](https://youtu.be/ssdni_n6HDc)
 
 延迟交付根本原因分析 — （作者提供的图像）
 
 这个[甜甜圈图](https://youtu.be/eGH4ZQYT3-4)是一个显示迟到的商店交付不同根本原因的视觉示例
 
-+   1,842个运输订单已被延迟交付
++   1,842 个运输订单已被延迟交付
 
 +   37%的延迟仅由于订单传输问题
 
@@ -154,21 +154,21 @@ BI可以帮助将这些数据转换为有意义的信息，以支持运营或战
 
 商业智能**并不是为了建议操作**最佳缓解计划或预测未来表现。
 
-[![](../Images/d710e94fdb0240e3f906363d21aa46fe.png)](https://youtu.be/3d7C4pShykI)
+![](https://youtu.be/3d7C4pShykI)
 
-BI与高级分析 — （作者提供的图像）
+BI 与高级分析 — （作者提供的图像）
 
 商业智能提供[**描述性和诊断性分析**](https://youtu.be/3d7C4pShykI)解决方案，专注于“理解过去的事件”。
 
 +   **发生了什么？** *有多少订单存在延迟交付？*
 
-+   **什么时候？** *订单1878497是否已在仓库装载？*
++   **什么时候？** *订单 1878497 是否已在仓库装载？*
 
-+   **谁？** *上周哪个承运商交付了12号商店？*
++   **谁？** *上周哪个承运商交付了 12 号商店？*
 
-+   **为什么？** *为什么订单1878497在机场晚到1小时？*
++   **为什么？** *为什么订单 1878497 在机场晚到 1 小时？*
 
-![](../Images/6f716a97afabdbb96d1bb16114fcc987.png)
+![](img/6f716a97afabdbb96d1bb16114fcc987.png)
 
 商业智能与高级分析 — （作者提供的图像）
 
@@ -180,17 +180,17 @@ BI与高级分析 — （作者提供的图像）
 
 +   **37.8%的货物因传输问题而被耽搁**
 
-    行动：“我应该联系IT团队解决这些问题。”
+    行动：“我应该联系 IT 团队解决这些问题。”
 
 +   **3.3%的货物因装载延迟而被耽搁**
 
     行动：“与仓库运营对齐以增加[装载能力](https://youtu.be/KR_ziEiPcDk)“
 
-通常，BI解决方案包含在一个[**绩效管理过程**](https://www.samirsaci.com/tag/performance/)中，在该过程中数据被用来
+通常，BI 解决方案包含在一个[**绩效管理过程**](https://www.samirsaci.com/tag/performance/)中，在该过程中数据被用来
 
 +   **了解过去**：衡量绩效，检测问题
 
-+   **实施缓解计划**：[优化流程](https://youtu.be/XXzOCbbXM7s)、[增加资源](https://youtu.be/OdLeRR4rvt0)，解决IT问题
++   **实施缓解计划**：[优化流程](https://youtu.be/XXzOCbbXM7s)、[增加资源](https://youtu.be/OdLeRR4rvt0)，解决 IT 问题
 
 +   **跟踪操作改进**：实施关键绩效指标（KPI），记录问题
 
@@ -206,7 +206,7 @@ BI与高级分析 — （作者提供的图像）
 
 这种整合简化了业务分析和报告。
 
-![](../Images/272e9a67b2f58353ceffd07b5a79202d.png)
+![](img/272e9a67b2f58353ceffd07b5a79202d.png)
 
 数据仓库将来自多个来源的数据进行合并 —— （图像由作者提供）
 
@@ -218,13 +218,13 @@ BI与高级分析 — （作者提供的图像）
 
 +   由**运输管理系统（TMS）**管理，以跟踪从仓库装载到商店交付的运输过程。
 
-BI解决方案与这些系统互动，以：
+BI 解决方案与这些系统互动，以：
 
 +   处理并将获取的数据转换为一个统一的和谐源
 
 +   创建用户友好的报告、图表和地图
 
-![](../Images/a34653c240f639501ae35de4e84fb540.png)
+![](img/a34653c240f639501ae35de4e84fb540.png)
 
 数据处理的简单示例用于和谐化 —— （图像由作者提供）
 
@@ -248,7 +248,7 @@ BI解决方案与这些系统互动，以：
 
     *例如，如果之前的非空时间戳是订单拣货时间：订单状态 = 拣货包装*
 
-[![](../Images/827513d9e9f435c1737b0f80d022e118.png)](https://youtu.be/V6qnuZ-QcKE)
+![](https://youtu.be/V6qnuZ-QcKE)
 
 运输订单图表 — （作者提供的图像）
 
@@ -258,7 +258,7 @@ BI解决方案与这些系统互动，以：
 
 +   **规范模型** 用于优化订单分配，[改善路线](https://youtu.be/lhDBTlsGDVc) 或 [计划仓库资源](https://youtu.be/OdLeRR4rvt0)
 
-[![](../Images/c0b8a63133e20d73965bd94367ac95d5.png)](https://youtu.be/3d7C4pShykI)
+![](https://youtu.be/3d7C4pShykI)
 
 四种分析类型 — （作者提供的图像）
 
@@ -288,7 +288,7 @@ BI解决方案与这些系统互动，以：
 
 生命周期评估（LCA）是一种用于评估产品环境影响的方法。
 
-[![](../Images/e0f2516db817b00b236973d3d4c7a0ea.png)](https://www.samirsaci.com/what-is-a-life-cycle-assessment-lca-2/)
+![](https://www.samirsaci.com/what-is-a-life-cycle-assessment-lca-2/)
 
 生命周期评估 —（作者提供的图像）
 
@@ -298,17 +298,17 @@ BI解决方案与这些系统互动，以：
 
 ## 成为一个数据驱动的绿色组织
 
-我们的时尚零售商可以依靠BI成为一个绿色数据驱动的公司，通过在供应链中实施可持续性指标。
+我们的时尚零售商可以依靠 BI 成为一个绿色数据驱动的公司，通过在供应链中实施可持续性指标。
 
 数据仓库可以集中来自多个来源的数据，以跟踪生命周期每一步的环境影响。
 
-![](../Images/b2ea52aeb65f88bfde3e07345093f8b8.png)
+![](img/b2ea52aeb65f88bfde3e07345093f8b8.png)
 
 跟踪环境影响的数据架构 — （作者提供的图片）
 
 +   通过连接到**工厂系统**来测量生产输出
 
-+   从Excel文件中**收集工厂、仓库和供应商的公用事业和原材料数据使用情况**
++   从 Excel 文件中**收集工厂、仓库和供应商的公用事业和原材料数据使用情况**
 
 +   通过**API**接收物流公司提供的二氧化碳排放、燃料消耗和路线数据
 
@@ -318,15 +318,15 @@ BI解决方案与这些系统互动，以：
 
 例如，
 
-+   每件T恤的水消耗量为3,500升/单位
++   每件 T 恤的水消耗量为 3,500 升/单位
 
 +   25%的二氧化碳排放来自海运
 
-+   每件T恤的生产中排放0.8克SOx和0.5克NOx
++   每件 T 恤的生产中排放 0.8 克 SOx 和 0.5 克 NOx
 
-[![](../Images/51de3656d6148e0b468eb7353e9b02bd.png)](https://www.samirsaci.com/what-is-a-life-cycle-assessment-lca-2/)
+![](https://www.samirsaci.com/what-is-a-life-cycle-assessment-lca-2/)
 
-供应链中与LCA相关的KPI示例 — （作者提供的图片）
+供应链中与 LCA 相关的 KPI 示例 — （作者提供的图片）
 
 这些指标可用于制定可持续发展路线图：
 
@@ -342,19 +342,19 @@ BI解决方案与这些系统互动，以：
 
 ### 了解生命周期评估如何帮助企业评估产品在整个生命周期中的环境影响...
 
-towardsdatascience.com](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----bf1de730319c--------------------------------) [](/supply-chain-sustainability-reporting-with-python-161c1f63f267?source=post_page-----bf1de730319c--------------------------------) [## 使用Python进行供应链可持续性报告]
+towardsdatascience.com](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----bf1de730319c--------------------------------) [](/supply-chain-sustainability-reporting-with-python-161c1f63f267?source=post_page-----bf1de730319c--------------------------------) [## 使用 Python 进行供应链可持续性报告]
 
-### 4个步骤来建立关于分销网络二氧化碳排放的ESG报告。了解如何测量和减少碳...
+### 4 个步骤来建立关于分销网络二氧化碳排放的 ESG 报告。了解如何测量和减少碳...
 
 towardsdatascience.com](/supply-chain-sustainability-reporting-with-python-161c1f63f267?source=post_page-----bf1de730319c--------------------------------)
 
-> 提高贵公司的ESG评分。
+> 提高贵公司的 ESG 评分。
 
-## 支持公司ESG报告
+## 支持公司 ESG 报告
 
-商业智能可以大力支持ESG报告，因为它主要依赖于清晰和可信的数据。
+商业智能可以大力支持 ESG 报告，因为它主要依赖于清晰和可信的数据。
 
-![](../Images/870720dee22095481f3c7e3dc1f5fec4.png)
+![](img/870720dee22095481f3c7e3dc1f5fec4.png)
 
 报告类别示例 — （作者提供的图片）
 
@@ -372,11 +372,11 @@ towardsdatascience.com](/supply-chain-sustainability-reporting-with-python-161c1
 
 💡 有关 ESG 报告数据分析的更多细节，
 
-[](/what-is-esg-reporting-d610535eed9c?source=post_page-----bf1de730319c--------------------------------) [## 什么是 ESG 报告？
+[](/what-is-esg-reporting-d610535eed9c?source=post_page-----bf1de730319c--------------------------------) ## 什么是 ESG 报告？
 
 ### 利用数据分析实现公司环境、社会和治理的全面而有效的报告
 
-towardsdatascience.com](/what-is-esg-reporting-d610535eed9c?source=post_page-----bf1de730319c--------------------------------)
+towardsdatascience.com
 
 # 结论
 
@@ -388,15 +388,15 @@ towardsdatascience.com](/what-is-esg-reporting-d610535eed9c?source=post_page----
 
 > 你听说过生成式 AI 吗？
 
-2022年11月，OpenAI 发布了 ChatGPT 的第一个版本。
+2022 年 11 月，OpenAI 发布了 ChatGPT 的第一个版本。
 
 生成式 AI 已成为利用大型语言模型提升任何分析产品用户体验的机会。
 
 > 想象一下用一个连接到智能代理的提示替代一个静态的“无聊”提示。
 
-![](../Images/5bf330cbf42854dd39d1755005774e00.png)
+![](img/5bf330cbf42854dd39d1755005774e00.png)
 
-使用 LangChain SQL 代理的供应链控制塔代理 [[文章链接](/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0)] — （作者图片）
+使用 LangChain SQL 代理的供应链控制塔代理 [文章链接] — （作者图片）
 
 在 [这个案例研究](https://s-saci95.medium.com/create-gpts-to-automate-supply-chain-analytics-5b44dec8e0f8) 中，我分享了我第一个使用 LLMs 来提升供应链分析的项目。
 
@@ -410,11 +410,11 @@ towardsdatascience.com](/what-is-esg-reporting-d610535eed9c?source=post_page----
 
 有关我如何实现这个解决方案的更多细节，请查看这篇文章，
 
-[](/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0?source=post_page-----bf1de730319c--------------------------------) [## 使用 LangChain 的 LLMs 进行供应链分析——一个由 GPT 驱动的控制塔
+[](/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0?source=post_page-----bf1de730319c--------------------------------) ## 使用 LangChain 的 LLMs 进行供应链分析——一个由 GPT 驱动的控制塔
 
 ### 构建一个与运输数据库连接的 LangChain SQL 代理的自动化供应链控制塔……
 
-[towardsdatascience.com](/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0?source=post_page-----bf1de730319c--------------------------------)
+[towardsdatascience.com
 
 💡 **关注我在 Medium** 以获取更多关于 🏭 供应链分析，🌳 可持续性和 🕜 生产力的文章。
 
@@ -432,12 +432,12 @@ towardsdatascience.com](/what-is-esg-reporting-d610535eed9c?source=post_page----
 
 # 参考文献
 
-+   什么是供应链数字双胞胎？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，[数据科学前沿](/what-is-a-supply-chain-digital-twin-e7a8cd9aeb75)
++   什么是供应链数字双胞胎？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，数据科学前沿
 
-+   什么是供应链分析？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，[数据科学前沿](/what-is-supply-chain-analytics-42f1b2df4a2)
++   什么是供应链分析？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，数据科学前沿
 
-+   什么是供应链控制塔？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，[数据科学前沿](/automated-supply-chain-control-tower-with-python-17dbf93a18d0)
++   什么是供应链控制塔？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，数据科学前沿
 
-+   什么是生命周期评估？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，[数据科学前沿](/what-is-a-life-cycle-assessment-lca-e32a5078483a)
++   什么是生命周期评估？，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，数据科学前沿
 
-+   使用 Python 进行供应链可持续性报告，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，[数据科学前沿](/supply-chain-sustainability-reporting-with-python-161c1f63f267)
++   使用 Python 进行供应链可持续性报告，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----bf1de730319c--------------------------------)，数据科学前沿

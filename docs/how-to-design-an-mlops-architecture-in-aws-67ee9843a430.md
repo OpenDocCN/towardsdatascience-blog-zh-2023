@@ -1,14 +1,14 @@
-# 如何在AWS中设计MLOps架构？
+# 如何在 AWS 中设计 MLOps 架构？
 
-> 原文：[https://towardsdatascience.com/how-to-design-an-mlops-architecture-in-aws-67ee9843a430?source=collection_archive---------12-----------------------#2023-04-14](https://towardsdatascience.com/how-to-design-an-mlops-architecture-in-aws-67ee9843a430?source=collection_archive---------12-----------------------#2023-04-14)
+> 原文：[`towardsdatascience.com/how-to-design-an-mlops-architecture-in-aws-67ee9843a430?source=collection_archive---------12-----------------------#2023-04-14`](https://towardsdatascience.com/how-to-design-an-mlops-architecture-in-aws-67ee9843a430?source=collection_archive---------12-----------------------#2023-04-14)
 
-## 为开发人员和架构师，特别是那些不专门从事机器学习的人员提供设计MLOps架构的指南
+## 为开发人员和架构师，特别是那些不专门从事机器学习的人员提供设计 MLOps 架构的指南
 
-[](https://medium.com/@harminder1?source=post_page-----67ee9843a430--------------------------------)[![哈敏德·辛格](../Images/e02deb224f2943feefe2d075d196c4e8.png)](https://medium.com/@harminder1?source=post_page-----67ee9843a430--------------------------------)[](https://towardsdatascience.com/?source=post_page-----67ee9843a430--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----67ee9843a430--------------------------------) [哈敏德·辛格](https://medium.com/@harminder1?source=post_page-----67ee9843a430--------------------------------)
+[](https://medium.com/@harminder1?source=post_page-----67ee9843a430--------------------------------)![哈敏德·辛格](https://medium.com/@harminder1?source=post_page-----67ee9843a430--------------------------------)[](https://towardsdatascience.com/?source=post_page-----67ee9843a430--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----67ee9843a430--------------------------------) [哈敏德·辛格](https://medium.com/@harminder1?source=post_page-----67ee9843a430--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb46b54d2be3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-an-mlops-architecture-in-aws-67ee9843a430&user=Harminder+Singh&userId=b46b54d2be3f&source=post_page-b46b54d2be3f----67ee9843a430---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----67ee9843a430--------------------------------) ·8分钟阅读·2023年4月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F67ee9843a430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-an-mlops-architecture-in-aws-67ee9843a430&user=Harminder+Singh&userId=b46b54d2be3f&source=-----67ee9843a430---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb46b54d2be3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-an-mlops-architecture-in-aws-67ee9843a430&user=Harminder+Singh&userId=b46b54d2be3f&source=post_page-b46b54d2be3f----67ee9843a430---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----67ee9843a430--------------------------------) ·8 分钟阅读·2023 年 4 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F67ee9843a430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-an-mlops-architecture-in-aws-67ee9843a430&user=Harminder+Singh&userId=b46b54d2be3f&source=-----67ee9843a430---------------------clap_footer-----------)
 
 --
 

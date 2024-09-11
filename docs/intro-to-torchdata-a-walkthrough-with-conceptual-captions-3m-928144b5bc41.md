@@ -1,54 +1,54 @@
-# TorchData介绍：Conceptual Captions 3M的实操指南
+# TorchData 介绍：Conceptual Captions 3M 的实操指南
 
-> 原文：[https://towardsdatascience.com/intro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41?source=collection_archive---------10-----------------------#2023-03-22](https://towardsdatascience.com/intro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41?source=collection_archive---------10-----------------------#2023-03-22)
+> 原文：[`towardsdatascience.com/intro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41?source=collection_archive---------10-----------------------#2023-03-22`](https://towardsdatascience.com/intro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41?source=collection_archive---------10-----------------------#2023-03-22)
 
-## 学习如何使用TorchData和DataPipes高效地流式处理像Conceptual Captions 3M这样的巨大数据集。
+## 学习如何使用 TorchData 和 DataPipes 高效地流式处理像 Conceptual Captions 3M 这样的巨大数据集。
 
-[](https://frank-odom.medium.com/?source=post_page-----928144b5bc41--------------------------------)[![Frank Odom](../Images/31a2789d5ff0e5299fa623c6668563e3.png)](https://frank-odom.medium.com/?source=post_page-----928144b5bc41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----928144b5bc41--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----928144b5bc41--------------------------------) [Frank Odom](https://frank-odom.medium.com/?source=post_page-----928144b5bc41--------------------------------)
+[](https://frank-odom.medium.com/?source=post_page-----928144b5bc41--------------------------------)![Frank Odom](https://frank-odom.medium.com/?source=post_page-----928144b5bc41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----928144b5bc41--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----928144b5bc41--------------------------------) [Frank Odom](https://frank-odom.medium.com/?source=post_page-----928144b5bc41--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f77d545fa4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41&user=Frank+Odom&userId=6f77d545fa4e&source=post_page-6f77d545fa4e----928144b5bc41---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----928144b5bc41--------------------------------) ·8分钟阅读·2023年3月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F928144b5bc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41&user=Frank+Odom&userId=6f77d545fa4e&source=-----928144b5bc41---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f77d545fa4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41&user=Frank+Odom&userId=6f77d545fa4e&source=post_page-6f77d545fa4e----928144b5bc41---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----928144b5bc41--------------------------------) ·8 分钟阅读·2023 年 3 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F928144b5bc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41&user=Frank+Odom&userId=6f77d545fa4e&source=-----928144b5bc41---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F928144b5bc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41&source=-----928144b5bc41---------------------bookmark_footer-----------)![](../Images/0de5ae5a50936751b7539aca8dd3ab1c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F928144b5bc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-torchdata-a-walkthrough-with-conceptual-captions-3m-928144b5bc41&source=-----928144b5bc41---------------------bookmark_footer-----------)![](img/0de5ae5a50936751b7539aca8dd3ab1c.png)
 
 照片由[Quinten de Graaf](https://unsplash.com/@quinten149?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 
 # 概述
 
-在处理大型数据集时，尤其是在深度学习中，直接将数据集下载到本地进行训练可能不切实际。相反，在训练过程中直接流式传输数据集可能是一种更高效的方法。在本教程中，我们将介绍TorchData库，并演示如何使用它来流式传输Conceptual Captions 3M数据集，该数据集包含300万张图片及其对应的说明。
+在处理大型数据集时，尤其是在深度学习中，直接将数据集下载到本地进行训练可能不切实际。相反，在训练过程中直接流式传输数据集可能是一种更高效的方法。在本教程中，我们将介绍 TorchData 库，并演示如何使用它来流式传输 Conceptual Captions 3M 数据集，该数据集包含 300 万张图片及其对应的说明。
 
-> **注意：** Conceptual Captions在开源许可证下免费提供。有关更多信息，请参阅[许可证](https://github.com/google-research-datasets/conceptual-captions/blob/master/LICENSE)和[官方GitHub仓库](https://github.com/google-research-datasets/conceptual-captions)。
+> **注意：** Conceptual Captions 在开源许可证下免费提供。有关更多信息，请参阅[许可证](https://github.com/google-research-datasets/conceptual-captions/blob/master/LICENSE)和[官方 GitHub 仓库](https://github.com/google-research-datasets/conceptual-captions)。
 
-我们将首先简要介绍TorchData及其主要组件。接着，我们会演示如何为Conceptual Captions 3M数据集设置数据管道，最后，我们将展示如何使用该管道实时流式传输数据集的示例。
+我们将首先简要介绍 TorchData 及其主要组件。接着，我们会演示如何为 Conceptual Captions 3M 数据集设置数据管道，最后，我们将展示如何使用该管道实时流式传输数据集的示例。
 
 本教程旨在对完全初学者友好，因此我们会详细解释每个概念和代码片段。让我们开始吧！
 
-![](../Images/7f3d6898c60f6b7bc4a811319008af34.png)
+![](img/7f3d6898c60f6b7bc4a811319008af34.png)
 
 图片由[Braden Collum](https://unsplash.com/@bradencollum?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-# TorchData简介
+# TorchData 简介
 
-TorchData是一个提供常用数据加载方法的库，用于轻松构建灵活且高效的数据管道。以下是[TorchData README](https://github.com/pytorch/data#torchdata)的摘录：
+TorchData 是一个提供常用数据加载方法的库，用于轻松构建灵活且高效的数据管道。以下是[TorchData README](https://github.com/pytorch/data#torchdata)的摘录：
 
-> 它引入了可组合的Iterable风格和Map风格的构建块，称为DataPipes，这些构建块与PyTorch的`DataLoader`能够很好地配合使用。这些内置的DataPipes提供了加载文件（来自本地或云存储）、解析、缓存、转换、过滤等多种功能。
+> 它引入了可组合的 Iterable 风格和 Map 风格的构建块，称为 DataPipes，这些构建块与 PyTorch 的`DataLoader`能够很好地配合使用。这些内置的 DataPipes 提供了加载文件（来自本地或云存储）、解析、缓存、转换、过滤等多种功能。
 
 ## DataPipes
 
-![](../Images/204ac73ab96a4a66ce5bffec893180f6.png)
+![](img/204ac73ab96a4a66ce5bffec893180f6.png)
 
 图片由[T K](https://unsplash.com/@realaxer?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-TorchData的核心是DataPipes，它可以被看作是数据管道的可组合构建块。DataPipes实际上是重命名和重新设计的PyTorch `Dataset`，专为组合使用而设计。它们接受对Python数据结构的访问函数，`IterDataPipes`使用`__iter__`，`MapDataPipes`使用`__getitem__`，并返回一个应用了轻微变换的新访问函数。
+TorchData 的核心是 DataPipes，它可以被看作是数据管道的可组合构建块。DataPipes 实际上是重命名和重新设计的 PyTorch `Dataset`，专为组合使用而设计。它们接受对 Python 数据结构的访问函数，`IterDataPipes`使用`__iter__`，`MapDataPipes`使用`__getitem__`，并返回一个应用了轻微变换的新访问函数。
 
-通过将DataPipes链接在一起，我们可以创建复杂的数据管道，将流式操作作为一等公民。这使我们能够高效地处理大型数据集，并减少对本地存储的需求。
+通过将 DataPipes 链接在一起，我们可以创建复杂的数据管道，将流式操作作为一等公民。这使我们能够高效地处理大型数据集，并减少对本地存储的需求。
 
 ## 示例
 
-让我们从一个示例开始，以熟悉基本概念。我们将创建一个基本的DataPipe，它接收一个整数的可迭代对象，并将其值翻倍：
+让我们从一个示例开始，以熟悉基本概念。我们将创建一个基本的 DataPipe，它接收一个整数的可迭代对象，并将其值翻倍：
 
 ```py
 from torchdata.datapipes.iter import IterDataPipe
@@ -155,7 +155,7 @@ for item in chained_data_pipe:
 
 # 设置 Conceptual Captions 3M
 
-![](../Images/c8bc5e53a8a2eec26b42be6af9b5e661.png)
+![](img/c8bc5e53a8a2eec26b42be6af9b5e661.png)
 
 照片由 [John Schnobrich](https://unsplash.com/@johnschno?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -216,7 +216,7 @@ async def async_batch_get_images(
 
 ## ParallelSampleLoader DataPipe
 
-![](../Images/16b48083c503e4759a6046809a906360.png)
+![](img/16b48083c503e4759a6046809a906360.png)
 
 图片来源：[Tom Strecker](https://unsplash.com/@tom_stre?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -306,6 +306,6 @@ TorchData 提供了一种强大而灵活的方式来处理大数据集，通过�
 
 通过本教程，你现在应该对如何使用 TorchData 库来创建用于流式传输大数据集（如 Conceptual Captions 3M）的数据管道有了更好的理解。这种方法可以应用于其他大型数据集，并且可以轻松地适应各种数据处理和增强任务。
 
-![](../Images/7bd75bdd41f51055eebf971fa0caee84.png)
+![](img/7bd75bdd41f51055eebf971fa0caee84.png)
 
 图片来源于 [瓦西里·科洛达](https://unsplash.com/@napr0tiv?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上。

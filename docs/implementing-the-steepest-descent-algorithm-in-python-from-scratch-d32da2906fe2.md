@@ -1,38 +1,38 @@
 # 从头实现 Python 中的最速下降算法
 
-> 原文：[https://towardsdatascience.com/implementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2?source=collection_archive---------1-----------------------#2023-02-20](https://towardsdatascience.com/implementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2?source=collection_archive---------1-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/implementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2?source=collection_archive---------1-----------------------#2023-02-20`](https://towardsdatascience.com/implementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2?source=collection_archive---------1-----------------------#2023-02-20)
 
-[](https://nicolo-albanese.medium.com/?source=post_page-----d32da2906fe2--------------------------------)[![Nicolo Cosimo Albanese](../Images/9a2c26207146741b58c3742927d09450.png)](https://nicolo-albanese.medium.com/?source=post_page-----d32da2906fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d32da2906fe2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d32da2906fe2--------------------------------) [Nicolo Cosimo Albanese](https://nicolo-albanese.medium.com/?source=post_page-----d32da2906fe2--------------------------------)
+[](https://nicolo-albanese.medium.com/?source=post_page-----d32da2906fe2--------------------------------)![Nicolo Cosimo Albanese](https://nicolo-albanese.medium.com/?source=post_page-----d32da2906fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d32da2906fe2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d32da2906fe2--------------------------------) [Nicolo Cosimo Albanese](https://nicolo-albanese.medium.com/?source=post_page-----d32da2906fe2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7430df412ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=post_page-7430df412ec----d32da2906fe2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d32da2906fe2--------------------------------) ·11分钟阅读·2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd32da2906fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=-----d32da2906fe2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7430df412ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=post_page-7430df412ec----d32da2906fe2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d32da2906fe2--------------------------------) ·11 分钟阅读·2023 年 2 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd32da2906fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2&user=Nicolo+Cosimo+Albanese&userId=7430df412ec&source=-----d32da2906fe2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd32da2906fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2&source=-----d32da2906fe2---------------------bookmark_footer-----------)![](../Images/0fbf614bb4efdb8d5bcf885b4aa8bb4b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd32da2906fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-the-steepest-descent-algorithm-in-python-from-scratch-d32da2906fe2&source=-----d32da2906fe2---------------------bookmark_footer-----------)![](img/0fbf614bb4efdb8d5bcf885b4aa8bb4b.png)
 
 作者提供的图像。
 
 # 目录
 
-1.  [介绍](#8cf1)
+1.  介绍
 
-1.  [最速下降算法](#22bb)
+1.  最速下降算法
 
-    2.1 [搜索方向](#2e50)
+    2.1 搜索方向
 
-    2.2 [步长](#e299)
+    2.2 步长
 
-    2.3 [算法](#b179)
+    2.3 算法
 
-1.  [实现](#43e9)
+1.  实现
 
-    3.1 [常数步长](#e046)
+    3.1 常数步长
 
-    3.2 [使用Armijo条件的线性搜索](#db67)
+    3.2 使用 Armijo 条件的线性搜索
 
-1.  [结论](#6c34)
+1.  结论
 
 # 1. 介绍
 

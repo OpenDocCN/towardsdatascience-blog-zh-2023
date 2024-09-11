@@ -1,18 +1,18 @@
 # Plotly 和 Pandas：结合力量实现有效的数据可视化
 
-> 原文：[https://towardsdatascience.com/plotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9?source=collection_archive---------1-----------------------#2023-07-10](https://towardsdatascience.com/plotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9?source=collection_archive---------1-----------------------#2023-07-10)
+> 原文：[`towardsdatascience.com/plotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9?source=collection_archive---------1-----------------------#2023-07-10`](https://towardsdatascience.com/plotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9?source=collection_archive---------1-----------------------#2023-07-10)
 
 ## 一份受《数据讲故事》启发的快速指南
 
-[](https://medium.com/@andreas030503?source=post_page-----2e2caad52de9--------------------------------)[![Andreas Lukita](../Images/8660ca1fea5da34ce3475281c1f52152.png)](https://medium.com/@andreas030503?source=post_page-----2e2caad52de9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e2caad52de9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e2caad52de9--------------------------------) [安德烈亚斯·卢基塔](https://medium.com/@andreas030503?source=post_page-----2e2caad52de9--------------------------------)
+[](https://medium.com/@andreas030503?source=post_page-----2e2caad52de9--------------------------------)![Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----2e2caad52de9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e2caad52de9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e2caad52de9--------------------------------) [安德烈亚斯·卢基塔](https://medium.com/@andreas030503?source=post_page-----2e2caad52de9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----2e2caad52de9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e2caad52de9--------------------------------) ·13 min read·2023年7月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e2caad52de9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9&user=Andreas+Lukita&userId=955ef38ea7b&source=-----2e2caad52de9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----2e2caad52de9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e2caad52de9--------------------------------) ·13 min read·2023 年 7 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e2caad52de9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9&user=Andreas+Lukita&userId=955ef38ea7b&source=-----2e2caad52de9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e2caad52de9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9&source=-----2e2caad52de9---------------------bookmark_footer-----------)![](../Images/ebf4113c2f0c2035c54b29e283f48bba.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e2caad52de9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotly-and-pandas-combining-forces-for-effective-data-visualization-2e2caad52de9&source=-----2e2caad52de9---------------------bookmark_footer-----------)![](img/ebf4113c2f0c2035c54b29e283f48bba.png)
 
 照片由 [卢克·切瑟](https://unsplash.com/@lukechesser?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上提供
 
@@ -22,23 +22,23 @@
 
 当时我想到的是：我希望在制作图表时更加用心，以便它能直观地传达信息给我的观众。我的意思是，不要过度消耗他们的脑力和时间来理解发生了什么。
 
-我曾经认为从 Matplotlib 切换到 Seaborn，再到 Plotly 可以解决美学问题。事实上，我错了。可视化不仅仅是关于美学的。以下是我尝试复制的两个可视化图表，灵感来自[**《数据讲故事》**](https://www.storytellingwithdata.com/books)[¹](#c0da)由 Cole Nussbaumer Knaflic 编写，这些图表真正激励我改变了我的可视化方法。它们看起来干净、优雅且有目的。我们将在本文中尝试复制这些图表！
+我曾经认为从 Matplotlib 切换到 Seaborn，再到 Plotly 可以解决美学问题。事实上，我错了。可视化不仅仅是关于美学的。以下是我尝试复制的两个可视化图表，灵感来自[**《数据讲故事》**](https://www.storytellingwithdata.com/books)¹由 Cole Nussbaumer Knaflic 编写，这些图表真正激励我改变了我的可视化方法。它们看起来干净、优雅且有目的。我们将在本文中尝试复制这些图表！
 
-![](../Images/e0c7078ff69b9e985ca570ea007dd7fc.png)
+![](img/e0c7078ff69b9e985ca570ea007dd7fc.png)
 
 作者提供的图像
 
-这篇文章的要点是。如果你在寻找关于优秀可视化背后概念的深入解释，查看[**《数据讲故事》**](https://www.storytellingwithdata.com/books)[¹](#c0da)，每一页都是值得你花时间阅读的宝贵内容。如果你在寻找工具特定的实用建议，你来对地方了。Cole 在她的书开头提到，她提供的建议是普遍适用的，与工具无关，尽管她承认她在书中的示例是使用 Excel 创建的。有些人，包括我自己，出于许多原因并不喜欢 Excel 和拖放工具。有些人更喜欢使用 Python、R 及其他一些编程语言来创建可视化。如果你属于这一类，并且将 Python 作为主要工具，那么这篇文章就是为你准备的。
+这篇文章的要点是。如果你在寻找关于优秀可视化背后概念的深入解释，查看[**《数据讲故事》**](https://www.storytellingwithdata.com/books)¹，每一页都是值得你花时间阅读的宝贵内容。如果你在寻找工具特定的实用建议，你来对地方了。Cole 在她的书开头提到，她提供的建议是普遍适用的，与工具无关，尽管她承认她在书中的示例是使用 Excel 创建的。有些人，包括我自己，出于许多原因并不喜欢 Excel 和拖放工具。有些人更喜欢使用 Python、R 及其他一些编程语言来创建可视化。如果你属于这一类，并且将 Python 作为主要工具，那么这篇文章就是为你准备的。
 
 **目录**
 
-+   [链式调用—Pandas 绘图](#1692)
++   链式调用—Pandas 绘图
 
-+   [水平条形图](#3a5b)
++   水平条形图
 
-+   [折线图](#c7c0)
++   折线图
 
-+   [附录：数字图表](#f9bd)
++   附录：数字图表
 
 # 链式调用—Pandas 绘图
 
@@ -87,7 +87,7 @@ df = pd.DataFrame({"concerns": ["Engine power is less than expected",
 
 我们有一个看起来像这样的 DataFrame。
 
-![](../Images/84a2c24ea3bb89a4b19802d54d897513.png)
+![](img/84a2c24ea3bb89a4b19802d54d897513.png)
 
 作者提供的图像
 
@@ -100,7 +100,7 @@ df = pd.DataFrame({"concerns": ["Engine power is less than expected",
 
 这是生成基本可视化图表的最快方法。通过将`**.plot**`属性和`**.line**`方法直接链式调用到 DataFrame，我们获得了下面的图表。
 
-![](../Images/81d8240aa16cfed92f5331d1a743cfb9.png)
+![](img/81d8240aa16cfed92f5331d1a743cfb9.png)
 
 图片由作者提供
 
@@ -112,7 +112,7 @@ pd.options.plotting.backend = 'plotly'
 
 你可能会问，“为什么要换成 Plotly？难道 Matplotlib 不也能做到同样的事情吗？”好吧，这就是区别所在。
 
-如果我们在 Pandas 中使用 Matplotlib 后端，它返回一个 Axes 对象，尝试使用内置的`**type()**`方法自行验证。这很好，因为 axes 对象允许我们访问方法以进一步修改图表。查看[**这份文档**](https://matplotlib.org/stable/api/axes_api.html)[²](#6c79)以了解对 Axes 对象执行的可能方法。我们来选择一个快速演示一下。
+如果我们在 Pandas 中使用 Matplotlib 后端，它返回一个 Axes 对象，尝试使用内置的`**type()**`方法自行验证。这很好，因为 axes 对象允许我们访问方法以进一步修改图表。查看[**这份文档**](https://matplotlib.org/stable/api/axes_api.html)²以了解对 Axes 对象执行的可能方法。我们来选择一个快速演示一下。
 
 ```py
 (df
@@ -122,7 +122,7 @@ pd.options.plotting.backend = 'plotly'
 )
 ```
 
-![](../Images/b2a6718bfd604c840e5a68ec55bb6f37.png)
+![](img/b2a6718bfd604c840e5a68ec55bb6f37.png)
 
 图片由作者提供
 
@@ -137,7 +137,7 @@ pd.options.plotting.backend = 'plotly'
 )
 ```
 
-![](../Images/5475ec8625e7a2707f686231452167a6.png)
+![](img/5475ec8625e7a2707f686231452167a6.png)
 
 图片由作者提供
 
@@ -145,7 +145,7 @@ pd.options.plotting.backend = 'plotly'
 
 另一方面，Plotly 不返回一个 Axes 对象。它返回一个`**go.Figure**`对象。这里的区别在于，负责更新图表的方法也会返回一个`**go.Figure**`对象，这样你可以继续链式调用方法，以进一步更新图表。我们来试试吧！
 
-顺便说一下，如果你想知道我如何获得下面的方法和参数组合，它们都可以在官方文档中找到，[**在这里**](https://plotly.com/python/reference/)[³](#d230)。
+顺便说一下，如果你想知道我如何获得下面的方法和参数组合，它们都可以在官方文档中找到，[**在这里**](https://plotly.com/python/reference/)³。
 
 这里是一些重要的方法，帮助你入门——`**.update_traces**`，`**.add_traces**`，`**.update_layout**`，`**.update_xaxes**`，`**.update_yaxes**`，`**.add_annotation**`，`**.update_annotations**`。
 
@@ -174,7 +174,7 @@ sns.set_palette(gray_palette)
 sns.palplot(sns.color_palette())
 ```
 
-![](../Images/db264fa9ec19163a32fc86bbe4ce0dab.png)
+![](img/db264fa9ec19163a32fc86bbe4ce0dab.png)
 
 图片由作者提供
 
@@ -204,7 +204,7 @@ color[df
 )
 ```
 
-![](../Images/3fe7427a696bcc9dd0e45f64757d7497.png)
+![](img/3fe7427a696bcc9dd0e45f64757d7497.png)
 
 图片由作者提供
 
@@ -234,7 +234,7 @@ color[df
 )
 ```
 
-![](../Images/9f9e680c298b446f2bd4438dba507fd6.png)
+![](img/9f9e680c298b446f2bd4438dba507fd6.png)
 
 作者提供的图片
 
@@ -278,7 +278,7 @@ color[df
 )
 ```
 
-![](../Images/1992c43a88c549ad73cf1f20a019f1cf.png)
+![](img/1992c43a88c549ad73cf1f20a019f1cf.png)
 
 作者提供的图片
 
@@ -350,7 +350,7 @@ annotations.append(dict(xref='paper',
 )
 ```
 
-![](../Images/a14eac1ad8462b42654b67619b3bcab2.png)
+![](img/a14eac1ad8462b42654b67619b3bcab2.png)
 
 作者提供的图片
 
@@ -375,7 +375,7 @@ df = pd.DataFrame({"Received": [160,184,241,149,180,161,132,202,160,139,149,177]
 );
 ```
 
-![](../Images/0a0535be21136b6eb98f29a3ac248407.png)
+![](img/0a0535be21136b6eb98f29a3ac248407.png)
 
 作者提供的图片
 
@@ -393,7 +393,7 @@ pd.options.plotting.backend = 'plotly'
 
 在将 Pandas 绘图后端切换到 Plotly 后，上面的代码给出了以下结果。在这里，我们首先绘制**已接收**系列。
 
-![](../Images/a2b3d92eac1425f37494883be862ff3f.png)
+![](img/a2b3d92eac1425f37494883be862ff3f.png)
 
 作者提供的图片
 
@@ -410,7 +410,7 @@ pd.options.plotting.backend = 'plotly'
 )
 ```
 
-![](../Images/48c6617d8704caf6700058f913a29429.png)
+![](img/48c6617d8704caf6700058f913a29429.png)
 
 作者提供的图片
 
@@ -432,11 +432,11 @@ pd.options.plotting.backend = 'plotly'
 )
 ```
 
-![](../Images/220c575f88cc0b5d4184fa3c871352cd.png)
+![](img/220c575f88cc0b5d4184fa3c871352cd.png)
 
 作者提供的图片
 
-让我们在5月的索引处**添加一条垂直线**，以显示两条线开始分歧的点。
+让我们在 5 月的索引处**添加一条垂直线**，以显示两条线开始分歧的点。
 
 ```py
 (df
@@ -460,7 +460,7 @@ pd.options.plotting.backend = 'plotly'
 )
 ```
 
-![](../Images/e0323738cfa1025cc3dc542a4d29a2ff.png)
+![](img/e0323738cfa1025cc3dc542a4d29a2ff.png)
 
 作者提供的图片
 
@@ -501,7 +501,7 @@ pd.options.plotting.backend = 'plotly'
 )
 ```
 
-![](../Images/14a916f53e579673243c1abd15721a3c.png)
+![](img/14a916f53e579673243c1abd15721a3c.png)
 
 作者提供的图片
 
@@ -567,7 +567,7 @@ pd.options.plotting.backend = 'plotly'
 )
 ```
 
-![](../Images/7888dc10f6998595f2f293c84187902c.png)
+![](img/7888dc10f6998595f2f293c84187902c.png)
 
 作者提供的图片
 
@@ -708,7 +708,7 @@ for ydn, yd, xd in zip(y_r[-5:], y_p[-5:], x_index[-5:]):
 )
 ```
 
-![](../Images/78e372fbe94aef457708aac29d14b017.png)
+![](img/78e372fbe94aef457708aac29d14b017.png)
 
 作者提供的图片
 
@@ -716,7 +716,7 @@ for ydn, yd, xd in zip(y_r[-5:], y_p[-5:], x_index[-5:]):
 
 恭喜你阅读到文章的这一部分！这是一个额外的图表，供你参考！我们在这里创建了一个图表，以美观的方式呈现一个数字。简而言之，这就是我所指的。
 
-![](../Images/2e565f6866894e1b6380310ee9f3bafd.png)
+![](img/2e565f6866894e1b6380310ee9f3bafd.png)
 
 图片来源：作者
 
@@ -826,8 +826,8 @@ for ydn, yd, xd in zip(y_r[-5:], y_p[-5:], x_index[-5:]):
 
 # 参考文献
 
-1.  《用数据讲故事》由 Cole Nussbaumer Knaflic 编著。 [https://www.storytellingwithdata.com/books](https://www.storytellingwithdata.com/books)
+1.  《用数据讲故事》由 Cole Nussbaumer Knaflic 编著。 [`www.storytellingwithdata.com/books`](https://www.storytellingwithdata.com/books)
 
-1.  Matplotlib Axes API. [https://matplotlib.org/stable/api/axes_api.html](https://matplotlib.org/stable/api/axes_api.html)
+1.  Matplotlib Axes API. [`matplotlib.org/stable/api/axes_api.html`](https://matplotlib.org/stable/api/axes_api.html)
 
-1.  Plotly 图形库。 [https://plotly.com/python/reference/](https://plotly.com/python/reference/)
+1.  Plotly 图形库。 [`plotly.com/python/reference/`](https://plotly.com/python/reference/)

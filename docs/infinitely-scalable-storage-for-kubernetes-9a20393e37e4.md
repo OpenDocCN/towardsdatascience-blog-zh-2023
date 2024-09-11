@@ -1,10 +1,10 @@
 # Kubernetes 的无限可扩展存储
 
-> 原文：[https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07](https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07)
+> 原文：[`towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07`](https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07)
 
 ## 一项破坏性实验，确保我们的数据能够恢复
 
-[](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[![Flavien Berwick](../Images/545083139e3cd14233a9a758b4ba762c.png)](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------) [Flavien Berwick](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)
+[](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)![Flavien Berwick](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------) [Flavien Berwick](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)
 
 ·
 
@@ -20,7 +20,7 @@
 
 然后我们将部署一个文件共享应用程序，摧毁部署它的节点，然后看看会发生什么。Ceph 是否会让我们的文件再次可访问？
 
-![](../Images/0adf23b4539f2fc1d127b4ebb0e5336f.png)
+![](img/0adf23b4539f2fc1d127b4ebb0e5336f.png)
 
 看向地平线的容器。[Kelly 摄于 Pexels](https://www.pexels.com/photo/rows-of-colorful-containers-in-industrial-area-6595781/)。
 
@@ -116,7 +116,7 @@ kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['dat
 
 你应该访问以下页面：[*https://localhost:8443*](https://localhost:8443)
 
-![](../Images/3fbc9a0b4427c3e2c71116133ce5d448.png)
+![](img/3fbc9a0b4427c3e2c71116133ce5d448.png)
 
 作者提供的图像：Ceph 控制面板
 
@@ -148,11 +148,11 @@ kubectl get pods -o wide -l app=psitransfer
 
 上传了大约 400MB 的文件后，我们可以看到数据在磁盘之间的复制是一致的。我们看到 3 个磁盘在文件上传时被同时写入。在以下截图中，每个磁盘的使用率为 1%：尽管我在同一主机上上传文件，但似乎复制按预期工作，数据在 3 个磁盘（OSD）之间均匀持久化。磁盘 2 有大量的“读取”活动，因为另外两个磁盘从它那里同步数据。
 
-![](../Images/d5eac05176d2cea5167815e58df40a20.png)
+![](img/d5eac05176d2cea5167815e58df40a20.png)
 
 Ceph 的仪表盘现在应该是这样的：
 
-![](../Images/f85692aa66c5d10385c2ed4e7953ba15.png)
+![](img/f85692aa66c5d10385c2ed4e7953ba15.png)
 
 # C. 销毁并查看
 
@@ -178,11 +178,11 @@ scw-ceph-test-clustr-default-94ef39ea5b1f4b3e8   NotReady   <none>   3d1h   v1.2
 
 而且 Node 3 在我们的 Ceph 仪表盘上不可用：
 
-![](../Images/44c6bfae7fa77f59ce43d5a5e387e61b.png)
+![](img/44c6bfae7fa77f59ce43d5a5e387e61b.png)
 
 Ceph 的仪表盘现在应该是这样：
 
-![](../Images/b6e839f15f8cadbd73b5a670420d3a84.png)
+![](img/b6e839f15f8cadbd73b5a670420d3a84.png)
 
 **3\.** 重新调度我们的 Pod
 
@@ -202,7 +202,7 @@ kubectl delete pod psitransfer-deployment-8448887c9d-mt6wm
 
 检查刚刚重新启动的 Pod 的状态。您的应用程序应该可以通过之前保留的链接再次访问。
 
-![](../Images/24657c632e2ca8c88632d90bd220c2fd.png)
+![](img/24657c632e2ca8c88632d90bd220c2fd.png)
 
 为了避免在节点变为“NotReady”时需要手动删除 Pod 以便重新调度，建议将应用的副本数默认扩展到至少 3。
 

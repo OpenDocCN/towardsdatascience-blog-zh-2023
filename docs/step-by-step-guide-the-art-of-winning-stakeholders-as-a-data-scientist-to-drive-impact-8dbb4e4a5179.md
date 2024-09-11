@@ -1,16 +1,16 @@
 # 数据科学家将见解转化为有影响力行动的指南
 
-> 原文：[https://towardsdatascience.com/step-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179?source=collection_archive---------2-----------------------#2023-07-08](https://towardsdatascience.com/step-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179?source=collection_archive---------2-----------------------#2023-07-08)
+> 原文：[`towardsdatascience.com/step-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179?source=collection_archive---------2-----------------------#2023-07-08`](https://towardsdatascience.com/step-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179?source=collection_archive---------2-----------------------#2023-07-08)
 
 ## 数据科学家在技术领域的初年编年史
 
 ## **将工作转化为有意义结果的关键技能组合**
 
-[](https://medium.com/@elalamik?source=post_page-----8dbb4e4a5179--------------------------------)[![Khouloud El Alami](../Images/58840bfe28a60892b51d40ad6ba7f5e8.png)](https://medium.com/@elalamik?source=post_page-----8dbb4e4a5179--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dbb4e4a5179--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8dbb4e4a5179--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----8dbb4e4a5179--------------------------------)
+[](https://medium.com/@elalamik?source=post_page-----8dbb4e4a5179--------------------------------)![Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----8dbb4e4a5179--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dbb4e4a5179--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dbb4e4a5179--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----8dbb4e4a5179--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----8dbb4e4a5179---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dbb4e4a5179--------------------------------) ·10 min 阅读·2023年7月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dbb4e4a5179&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----8dbb4e4a5179---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----8dbb4e4a5179---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dbb4e4a5179--------------------------------) ·10 min 阅读·2023 年 7 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dbb4e4a5179&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-guide-the-art-of-winning-stakeholders-as-a-data-scientist-to-drive-impact-8dbb4e4a5179&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----8dbb4e4a5179---------------------clap_footer-----------)
 
 --
 
@@ -30,6 +30,6 @@
 
 这也发生在我身上，我在这里详细讲述了我是如何搞砸的，以及我在过程中获得了哪些**技能**来**将我的见解转化为行动**。
 
-![](../Images/a0b4b797f3a350d66d048b3f05ac42ac.png)
+![](img/a0b4b797f3a350d66d048b3f05ac42ac.png)
 
 作者图像（Midjourney）

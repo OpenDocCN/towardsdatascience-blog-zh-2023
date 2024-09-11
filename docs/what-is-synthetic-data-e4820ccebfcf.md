@@ -1,16 +1,16 @@
 # 什么是合成数据？
 
-> 原文：[https://towardsdatascience.com/what-is-synthetic-data-e4820ccebfcf?source=collection_archive---------3-----------------------#2023-06-30](https://towardsdatascience.com/what-is-synthetic-data-e4820ccebfcf?source=collection_archive---------3-----------------------#2023-06-30)
+> 原文：[`towardsdatascience.com/what-is-synthetic-data-e4820ccebfcf?source=collection_archive---------3-----------------------#2023-06-30`](https://towardsdatascience.com/what-is-synthetic-data-e4820ccebfcf?source=collection_archive---------3-----------------------#2023-06-30)
 
 ## 使数据有用
 
 ## 各种伪数据物种的实地指南：第一部分
 
-[](https://kozyrkov.medium.com/?source=post_page-----e4820ccebfcf--------------------------------)[![Cassie Kozyrkov](../Images/ad18dd12979a4a3ec130bdf8b889af23.png)](https://kozyrkov.medium.com/?source=post_page-----e4820ccebfcf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e4820ccebfcf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e4820ccebfcf--------------------------------) [Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----e4820ccebfcf--------------------------------)
+[](https://kozyrkov.medium.com/?source=post_page-----e4820ccebfcf--------------------------------)![Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----e4820ccebfcf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e4820ccebfcf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4820ccebfcf--------------------------------) [Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----e4820ccebfcf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fccb851bb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-synthetic-data-e4820ccebfcf&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=post_page-2fccb851bb5e----e4820ccebfcf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4820ccebfcf--------------------------------) ·6分钟阅读·2023年6月30日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fccb851bb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-synthetic-data-e4820ccebfcf&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=post_page-2fccb851bb5e----e4820ccebfcf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4820ccebfcf--------------------------------) ·6 分钟阅读·2023 年 6 月 30 日
 
 --
 
@@ -24,7 +24,7 @@
 
 让我们深入探讨吧！
 
-![](../Images/9133b114590c5fbddf074fcc5d7a5e53.png)
+![](img/9133b114590c5fbddf074fcc5d7a5e53.png)
 
 一些合成数字！所有图像权利归作者所有。
 

@@ -1,10 +1,10 @@
 # 6 个 Python 使用 * 和 ** 的场景
 
-> 原文：[https://towardsdatascience.com/6-use-cases-in-python-where-and-come-in-handy-530dd9d04875?source=collection_archive---------10-----------------------#2023-06-19](https://towardsdatascience.com/6-use-cases-in-python-where-and-come-in-handy-530dd9d04875?source=collection_archive---------10-----------------------#2023-06-19)
+> 原文：[`towardsdatascience.com/6-use-cases-in-python-where-and-come-in-handy-530dd9d04875?source=collection_archive---------10-----------------------#2023-06-19`](https://towardsdatascience.com/6-use-cases-in-python-where-and-come-in-handy-530dd9d04875?source=collection_archive---------10-----------------------#2023-06-19)
 
 ## 通过示例解释
 
-[](https://sonery.medium.com/?source=post_page-----530dd9d04875--------------------------------)[![Soner Yıldırım](../Images/c589572e9d1ee176cd4f5a0008173f1b.png)](https://sonery.medium.com/?source=post_page-----530dd9d04875--------------------------------)[](https://towardsdatascience.com/?source=post_page-----530dd9d04875--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----530dd9d04875--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----530dd9d04875--------------------------------)
+[](https://sonery.medium.com/?source=post_page-----530dd9d04875--------------------------------)![Soner Yıldırım](https://sonery.medium.com/?source=post_page-----530dd9d04875--------------------------------)[](https://towardsdatascience.com/?source=post_page-----530dd9d04875--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----530dd9d04875--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----530dd9d04875--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F530dd9d04875&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-use-cases-in-python-where-and-come-in-handy-530dd9d04875&source=-----530dd9d04875---------------------bookmark_footer-----------)![](../Images/bee7c0a318f34a43becb83b38cfb4d44.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F530dd9d04875&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-use-cases-in-python-where-and-come-in-handy-530dd9d04875&source=-----530dd9d04875---------------------bookmark_footer-----------)![](img/bee7c0a318f34a43becb83b38cfb4d44.png)
 
 照片由 [Szabolcs Toth](https://unsplash.com/@szabolcs_taking_pictures?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，拍摄于 [Unsplash](https://unsplash.com/photos/FYt8CIOosOw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 
@@ -26,7 +26,7 @@
 
 ## 1\. 使用可迭代对象调用函数
 
-假设你定义了一个函数，它接受5个位置参数，将它们相加并返回总和。
+假设你定义了一个函数，它接受 5 个位置参数，将它们相加并返回总和。
 
 ```py
 # define the function

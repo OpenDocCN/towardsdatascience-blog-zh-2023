@@ -1,10 +1,10 @@
 # 为 TrailForks 构建推荐系统
 
-> 原文：[https://towardsdatascience.com/build-trail-recommender-for-trailforks-8ea64b1a2fe4?source=collection_archive---------13-----------------------#2023-01-04](https://towardsdatascience.com/build-trail-recommender-for-trailforks-8ea64b1a2fe4?source=collection_archive---------13-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/build-trail-recommender-for-trailforks-8ea64b1a2fe4?source=collection_archive---------13-----------------------#2023-01-04`](https://towardsdatascience.com/build-trail-recommender-for-trailforks-8ea64b1a2fe4?source=collection_archive---------13-----------------------#2023-01-04)
 
 ## 我是如何赢得 Outside 2022 创新日奖的
 
-[](https://medium.com/@wen_yang?source=post_page-----8ea64b1a2fe4--------------------------------)[![Wen Yang](../Images/5eac438762d015a0ab128757cc951967.png)](https://medium.com/@wen_yang?source=post_page-----8ea64b1a2fe4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ea64b1a2fe4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ea64b1a2fe4--------------------------------) [Wen Yang](https://medium.com/@wen_yang?source=post_page-----8ea64b1a2fe4--------------------------------)
+[](https://medium.com/@wen_yang?source=post_page-----8ea64b1a2fe4--------------------------------)![Wen Yang](https://medium.com/@wen_yang?source=post_page-----8ea64b1a2fe4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ea64b1a2fe4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ea64b1a2fe4--------------------------------) [Wen Yang](https://medium.com/@wen_yang?source=post_page-----8ea64b1a2fe4--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8ea64b1a2fe4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-trail-recommender-for-trailforks-8ea64b1a2fe4&source=-----8ea64b1a2fe4---------------------bookmark_footer-----------)![](../Images/8c1b04655799b55dc2ea6e187f82f7a4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8ea64b1a2fe4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-trail-recommender-for-trailforks-8ea64b1a2fe4&source=-----8ea64b1a2fe4---------------------bookmark_footer-----------)![](img/8c1b04655799b55dc2ea6e187f82f7a4.png)
 
 摄影：[Kristin Snippe](https://unsplash.com/@frausnippe?utm_source=medium&utm_medium=referral) 摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -42,13 +42,13 @@
 
 协同过滤涉及分析其他具有相似口味的用户的偏好，并基于这些用户的偏好推荐小径。
 
-![](../Images/886a3fc481dc5d4448af5d0f4e0240f7.png)
+![](img/886a3fc481dc5d4448af5d0f4e0240f7.png)
 
 由 Wen Yang 创建的图像
 
 另一方面，基于内容的过滤涉及分析小径本身的特征，并推荐与用户偏好相似的小径。
 
-![](../Images/04c0fdaa440136b442203dbff7fe2393.png)
+![](img/04c0fdaa440136b442203dbff7fe2393.png)
 
 Wen Yang 制作的图像
 
@@ -60,13 +60,13 @@ Wen Yang 制作的图像
 
 +   **交互数据集**：包括 `userid`、`trailid` 和 `activitytype`。前两个最为重要，而第三个特征 `activitytype` 在我的项目中未使用。
 
-![](../Images/53860b726aa3889cc1812f4f65fa82dc.png)
+![](img/53860b726aa3889cc1812f4f65fa82dc.png)
 
 预览 Trailforks 互动数据集
 
 +   **目录数据集**: 包括选定小径的信息，如小径的位置、长度、难度等级、全球排名分数等。
 
-![](../Images/8fbb63a0c303d99b4264c46df888e589.png)
+![](img/8fbb63a0c303d99b4264c46df888e589.png)
 
 **步骤 2: 使用 Altair 进行数据可视化**
 
@@ -90,7 +90,7 @@ text = bars.mark_text(
 (bars + text).properties(height=400)
 ```
 
-![](../Images/cf1c1f11f32a3e3927c4e614e18975a9.png)
+![](img/cf1c1f11f32a3e3927c4e614e18975a9.png)
 
 以下代码可以为每个变量名生成一个柱状图：
 
@@ -106,7 +106,7 @@ def plot_variable(variable):
 
 比如，我们来看看小径方向、物理评分难度标题和国家名称：
 
-![](../Images/ce682760565f644e135762906c6d43b6.png)
+![](img/ce682760565f644e135762906c6d43b6.png)
 
 起初，我尝试使用 `global_rank_score` 作为“流行度”特征，但有太多记录缺少这个特征。幸运的是，`rating` 与 `global_rank_score` 存在正相关。下面是我最喜欢的可视化类型之一，使用 `altair` 可以很容易地完成。
 
@@ -132,7 +132,7 @@ def plot_points_bar():
     return points & bars
 ```
 
-![](../Images/ba5b73d62b18134ec20350beb2406f28.png)
+![](img/ba5b73d62b18134ec20350beb2406f28.png)
 
 同样，我们可以使用 `difficulty_title` 替代 `physical_rating` 来表示难度等级，因为前者的缺失值比后者少。
 
@@ -153,7 +153,7 @@ alt.Chart(dt).mark_circle().encode(
 ).properties(width=400, height=300)
 ```
 
-![](../Images/0ead52bffcd14b16db778c925d14fdfa.png)
+![](img/0ead52bffcd14b16db778c925d14fdfa.png)
 
 **步骤 3a: 使用** `**implicit**` **构建协同过滤模型**
 
@@ -167,7 +167,7 @@ alt.Chart(dt).mark_circle().encode(
 
 思路是使用 `n_times_interacted` 作为隐式反馈特征：用户探索某条小径的次数越多，就越能确定用户喜欢这条小径。
 
-![](../Images/c773975dfc96646a4944a445c1ff8d27.png)
+![](img/c773975dfc96646a4944a445c1ff8d27.png)
 
 模型训练：
 
@@ -231,15 +231,15 @@ def show_map(df_rec):
 
 +   最多被探索的小径：Fitzsimmons Connector（319 次！）
 
-![](../Images/076484d011994423377d05dba4643b31.png)![](../Images/f47ad8752446f8cdccdf56e5a08092f7.png)
+![](img/076484d011994423377d05dba4643b31.png)![](img/f47ad8752446f8cdccdf56e5a08092f7.png)
 
 让我们从协同过滤模型中获取推荐 →
 
-![](../Images/e67b2d492610b6b63dcbb6ea3f458ee1.png)
+![](img/e67b2d492610b6b63dcbb6ea3f458ee1.png)
 
 以及第一个推荐小径的照片和地图：
 
-![](../Images/b06915379122cf1299c6aece3e2436b9.png)
+![](img/b06915379122cf1299c6aece3e2436b9.png)
 
 **步骤 3b: 基于内容的过滤**
 
@@ -313,7 +313,7 @@ def get_similar(idx, n):
 
 让我们找到与 Trevor 的第二条最常探索的路线（‘A-Line — Lower’）相似的路线
 
-![](../Images/6828e474a35e00a6a97a82eff7f6e82d.png)![](../Images/0986a632ebcd8e64f77ca19a62f4c360.png)
+![](img/6828e474a35e00a6a97a82eff7f6e82d.png)![](img/0986a632ebcd8e64f77ca19a62f4c360.png)
 
 哇！基于内容的推荐器非常令人印象深刻，它推荐了大多数中等到困难难度的山地车路线和下坡方向的路线。我的同事 Trevor 是一个资深的山地车骑行者，他对这样的推荐非常满意！
 
@@ -325,7 +325,7 @@ def get_similar(idx, n):
 
 +   EDA 和数据可视化：探索性数据分析就像一个黑洞，它可以把你吸进去，并且没有明显的结束点。数据可视化也是如此，你可能会花费无尽的时间来美化一个图表，但这只会将你的项目从 80 提升到 82，这与 80-20 规则相反。我的解决方案是`pandas-profiling` 和 `altair`。在进行任何数据分析之前，我会使用 `pandas-profiling` 来检查缺失值、总体分布和相关性，这将帮助我缩小可以保留的数据范围并为特征工程做准备。`altair` 使用起来非常简单，通过几行紧凑的代码，你可以轻松制作出漂亮的条形图和散点+分布图。我有一个小技巧，就是提前在笔记本中复制几个代码片段，只使用已经在笔记本中的那些代码，以避免任何进一步的诱惑。
 
-+   演示是关于讲故事的。你可以熬夜制作最华丽和最复杂的黑客松项目，但你需要留出足够的时间来准备如何讲述这个故事。一个故事可以从 Why（你为什么要做这个项目的动机和背景）、What（发生了什么，什么令人惊讶，什么有效）、一点点 How（保持在高层次，方程式和代码本身很令人印象深刻，但它会给那些只有5分钟时间理解你的项目的人带来不必要的威慑和疲惫）开始。例如，这篇文章绝对过长，细节过多，不符合演示标准。最后，加入一些戏剧性和幽默感总是一个优势。
++   演示是关于讲故事的。你可以熬夜制作最华丽和最复杂的黑客松项目，但你需要留出足够的时间来准备如何讲述这个故事。一个故事可以从 Why（你为什么要做这个项目的动机和背景）、What（发生了什么，什么令人惊讶，什么有效）、一点点 How（保持在高层次，方程式和代码本身很令人印象深刻，但它会给那些只有 5 分钟时间理解你的项目的人带来不必要的威慑和疲惫）开始。例如，这篇文章绝对过长，细节过多，不符合演示标准。最后，加入一些戏剧性和幽默感总是一个优势。
 
 # 🏔️ 3\. 将推荐系统生产化的进一步考虑
 
@@ -335,10 +335,10 @@ def get_similar(idx, n):
 
 > 知识存在于某个认知社区中，也许某个社区的核心成员很容易获得，但实际上并没有被写下来，也不清楚如何获取它。
 
-1.  批量 vs 实时推荐系统：批量系统听起来简单直接，但它有其自身的复杂性。如果你使用`implicit`进行协同过滤并使用`cosine similarity`检索类似内容，很可能延迟无法满足你的前端 API 要求。你可以尝试使用像 FAISS 这样的索引来提高速度，但它可能仍然高于500ms。这就是为什么你可能考虑对每个用户和每个项目进行批量计算。根据用户和项目的规模，批量推荐可能需要超过4小时，并且直到你重新训练模型才会刷新。一个快速提示是，仅使用过去90天内有任何互动的用户，或仅对过去90天内发布的项目进行批量更新。
+1.  批量 vs 实时推荐系统：批量系统听起来简单直接，但它有其自身的复杂性。如果你使用`implicit`进行协同过滤并使用`cosine similarity`检索类似内容，很可能延迟无法满足你的前端 API 要求。你可以尝试使用像 FAISS 这样的索引来提高速度，但它可能仍然高于 500ms。这就是为什么你可能考虑对每个用户和每个项目进行批量计算。根据用户和项目的规模，批量推荐可能需要超过 4 小时，并且直到你重新训练模型才会刷新。一个快速提示是，仅使用过去 90 天内有任何互动的用户，或仅对过去 90 天内发布的项目进行批量更新。
 
-1.  “Cold-Start” 可能并不像你想象的那么严重：我记得当我第一次学习推荐系统时，书籍和讲座总是强调“cold-start”问题，好像这是最难解决的场景。然而，对于 Outside Feed 来说，这个问题甚至不在前3名。原因是很多人习惯于在 Outside Feed 上阅读最新的内容，因此通过发布日期对内容进行排序，以便展示新项（冷项）是相当容易的，从而能够保证新项获得页面浏览（互动）数据。对我们来说，更难的问题实际上是“如何推荐永恒的内容”？如果我们推荐一篇最初于2016年撰写的全时热门文章，即使这篇内容可能符合用户的口味，用户可能会觉得我们没有新鲜的内容可以推荐。
+1.  “Cold-Start” 可能并不像你想象的那么严重：我记得当我第一次学习推荐系统时，书籍和讲座总是强调“cold-start”问题，好像这是最难解决的场景。然而，对于 Outside Feed 来说，这个问题甚至不在前 3 名。原因是很多人习惯于在 Outside Feed 上阅读最新的内容，因此通过发布日期对内容进行排序，以便展示新项（冷项）是相当容易的，从而能够保证新项获得页面浏览（互动）数据。对我们来说，更难的问题实际上是“如何推荐永恒的内容”？如果我们推荐一篇最初于 2016 年撰写的全时热门文章，即使这篇内容可能符合用户的口味，用户可能会觉得我们没有新鲜的内容可以推荐。
 
-1.  第三个知识点是我从另一位推荐系统从业者（Andy - 来自[miso.ai](https://miso.ai/)的CTO）那里听到的趣闻：他曾经为一个服装网站构建了一个主页推荐系统。尽管学习排名的系统了解到“黑色”可能是最受欢迎的颜色，因此推荐了首页上全是黑色的不同风格的服装。好吧，模型并没有错，但乍一看效果很糟糕，并且在吸引人们购买衣物方面表现不佳。他开玩笑说，他研究推荐系统已经很多年了，但没有人提到好的颜色搭配设计可能会有很大的影响。
+1.  第三个知识点是我从另一位推荐系统从业者（Andy - 来自[miso.ai](https://miso.ai/)的 CTO）那里听到的趣闻：他曾经为一个服装网站构建了一个主页推荐系统。尽管学习排名的系统了解到“黑色”可能是最受欢迎的颜色，因此推荐了首页上全是黑色的不同风格的服装。好吧，模型并没有错，但乍一看效果很糟糕，并且在吸引人们购买衣物方面表现不佳。他开玩笑说，他研究推荐系统已经很多年了，但没有人提到好的颜色搭配设计可能会有很大的影响。
 
-这就是我在2022年的最后一篇中等帖子。非常感谢你的支持。如果你有任何想法或反思，或者更好——更多的推荐系统趣闻，请发送给我！我很乐意将它们编入我梦想写的迷人书籍《构建推荐系统的乐趣与悲哀》中 < The Pleasure and Sorrow of Building RecSys> 🐳~~~
+这就是我在 2022 年的最后一篇中等帖子。非常感谢你的支持。如果你有任何想法或反思，或者更好——更多的推荐系统趣闻，请发送给我！我很乐意将它们编入我梦想写的迷人书籍《构建推荐系统的乐趣与悲哀》中 < The Pleasure and Sorrow of Building RecSys> 🐳~~~

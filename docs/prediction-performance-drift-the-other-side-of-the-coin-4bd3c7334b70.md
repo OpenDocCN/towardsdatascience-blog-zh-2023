@@ -1,18 +1,18 @@
 # 预测性能漂移：另一面的硬币
 
-> 原文：[https://towardsdatascience.com/prediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70?source=collection_archive---------12-----------------------#2023-02-02](https://towardsdatascience.com/prediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70?source=collection_archive---------12-----------------------#2023-02-02)
+> 原文：[`towardsdatascience.com/prediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70?source=collection_archive---------12-----------------------#2023-02-02`](https://towardsdatascience.com/prediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70?source=collection_archive---------12-----------------------#2023-02-02)
 
 ## 我们知道原因，接下来讨论类型
 
-[](https://medium.com/@valefonsecadiaz?source=post_page-----4bd3c7334b70--------------------------------)[![Valeria Fonseca Diaz](../Images/880222be555e8fa7df660f9dd1233818.png)](https://medium.com/@valefonsecadiaz?source=post_page-----4bd3c7334b70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bd3c7334b70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4bd3c7334b70--------------------------------) [Valeria Fonseca Diaz](https://medium.com/@valefonsecadiaz?source=post_page-----4bd3c7334b70--------------------------------)
+[](https://medium.com/@valefonsecadiaz?source=post_page-----4bd3c7334b70--------------------------------)![Valeria Fonseca Diaz](https://medium.com/@valefonsecadiaz?source=post_page-----4bd3c7334b70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bd3c7334b70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bd3c7334b70--------------------------------) [Valeria Fonseca Diaz](https://medium.com/@valefonsecadiaz?source=post_page-----4bd3c7334b70--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e363caf1c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=post_page-6e363caf1c79----4bd3c7334b70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bd3c7334b70--------------------------------) ·7 min 阅读·2023年2月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4bd3c7334b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=-----4bd3c7334b70---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e363caf1c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=post_page-6e363caf1c79----4bd3c7334b70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bd3c7334b70--------------------------------) ·7 min 阅读·2023 年 2 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4bd3c7334b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=-----4bd3c7334b70---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4bd3c7334b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70&source=-----4bd3c7334b70---------------------bookmark_footer-----------)![](../Images/9b43ea980938020e8a079c13523b8d4c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4bd3c7334b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprediction-performance-drift-the-other-side-of-the-coin-4bd3c7334b70&source=-----4bd3c7334b70---------------------bookmark_footer-----------)![](img/9b43ea980938020e8a079c13523b8d4c.png)
 
 预测性能漂移的两个方面（作者提供的图片）
 
@@ -20,41 +20,41 @@
 
 有人可能认为，模型的预测性能是由测试集的规定质量来保证的，测试集是一组在模型训练过程中未参与的样本，但在那时进行测量或观察。现实是，尽管模型可能在基于该测试集的情况下以某种（希望非常令人满意的）预测性能交付，但随时间推移的观测将不会完全具备与训练集和测试集相同的属性或趋势。请记住，模型是[机器](https://medium.com/towards-data-science/is-interpreting-ml-models-a-dead-end-f5b9dd78ba77)，而不是思考实体。如果它们看到一些新的、未曾训练过的东西，它们无法对这些新事物进行批判。我们，人类，可以。
 
-**预测性能漂移：A面**
+**预测性能漂移：A 面**
 
 我们对预测性能的思考方式涉及将影响模型的变异分布分开。有输入特征的分布*P(X)*、标签的分布*P(Y)*，以及给定输入的标签的条件分布*P(Y|X)*。这些组件中的任何变化都是模型在预测中产生更多不准确结果的潜在*原因*。考虑到这一点，如果我们监控这些组件并且它们中的某些部分发生变化，那么就需要进行深入检查，看看发生了什么，并在必要时修复。
 
-**预测性能漂移：B面**
+**预测性能漂移：B 面**
 
 虽然之前的内容无可争议，但我们也可以从预测性能漂移的另一个维度来观察：*漂移的类型*。当我们观察预测性能时，可以区分不同类型的漂移。那这样做有什么用呢？实际上，这不仅能检测到某些变化，还能更容易地知道如何修复这些变化。
 
 漂移的类型大致可以分为四种：*偏差、斜率、方差和非线性*。虽然这些名称可能更具体地指向线性回归模型，但它们也适用于一般的机器学习模型。这些类型的更通用名称可以是*常量偏移、相对于预测边界的旋转、与边界收敛的分散以及边界形状的变化*。我们可能会同意，后者的名称较长且书写和讨论起来比较费时，因此我们坚持使用前者的名称。在这样做的同时，也不要将任何类型与模型的性质混淆。任何四种类型的漂移都可能发生在任何类型的模型中。
 
-![](../Images/0dc23f137b86b23a721f91e18ed4e4bd.png)
+![](img/0dc23f137b86b23a721f91e18ed4e4bd.png)
 
 回归模型的漂移类型（作者提供的图片）
 
 > 通过检查不同类型的漂移，不仅可以检测到某些变化，还能更容易地知道如何修复这些变化。
 
-**B面：四种类型**
+**B 面：四种类型**
 
 *偏差*漂移指的是恒定的偏移。在回归模型中，如果我们观察到我们的预测值与观察值之间存在恒定差异，则发生了偏差漂移。在分类模型中，如果每个类别的特征有恒定的偏移，这也可能是特定于类别的。这种漂移可能仅仅是由于总体均值的变化，而特征之间及其对目标变量的影响没有其他变化。由于是简单的变化，可以通过重新调整模型的偏差或样本中的均值来轻松修复。
 
 *斜率*漂移发生在回归函数或决策边界相对于中心的旋转时。这种漂移在涉及从不同角度拍摄但本质上相同的图像的学习任务中非常常见。根据旋转的程度以及旋转是否是分类任务特定的，斜率漂移可以通过简单调整旋转或完全重新训练模型来修复。
 
-![](../Images/9efcbaf5c190718c64163767a5db6224.png)
+![](img/9efcbaf5c190718c64163767a5db6224.png)
 
 线性分类器的漂移类型示例（图片作者提供）
 
 *方差*漂移，顾名思义，是指离散度的增加。如果离散度推动样本越过任务边界，它将对预测性能造成损害。在回归的情况下，方差漂移表现为更大的残差。在分类的情况下，这种漂移可能是每个类别中原始特征离散度的扩展。同样，这种漂移也可能是特定于类别的。这种漂移可能由不同原因造成，它可能对应于靠近决策边界的更大采样或输入特征的不均匀偏移。如果是由于采样问题，这个问题可以通过使用更能代表当前采样的更新数据重新计算模型来解决。
 
-![](../Images/6ee32a4efcadeff058bf73a4a6201fcc.png)
+![](img/6ee32a4efcadeff058bf73a4a6201fcc.png)
 
 非线性分类器的漂移类型示例（图片作者提供）
 
-最后一种漂移称为*非线性*漂移。虽然从展示的示例中看起来非常具体和系统化，这种漂移可能包含前面提到的三种类型的所有组合。著名的教学案例涉及使用2个输入特征来分隔2个类别。在二维空间中，这两个类别可能通过一个线性函数来分隔，但2个点的简单旋转会引发非线性变化。如果这些类别不再能通过一条直线来分隔，那么问题就变成了非线性问题。正如其他情况一样，对于分类任务，这种漂移也可能是特定于类别的，如上面线性分类的示例所示。由于这是最复杂的漂移类型，可能在模型的预测质量中观察到的非线性模式可能总是需要对模型进行重新训练。
+最后一种漂移称为*非线性*漂移。虽然从展示的示例中看起来非常具体和系统化，这种漂移可能包含前面提到的三种类型的所有组合。著名的教学案例涉及使用 2 个输入特征来分隔 2 个类别。在二维空间中，这两个类别可能通过一个线性函数来分隔，但 2 个点的简单旋转会引发非线性变化。如果这些类别不再能通过一条直线来分隔，那么问题就变成了非线性问题。正如其他情况一样，对于分类任务，这种漂移也可能是特定于类别的，如上面线性分类的示例所示。由于这是最复杂的漂移类型，可能在模型的预测质量中观察到的非线性模式可能总是需要对模型进行重新训练。
 
-![](../Images/1d0bfad042d282a6aa01ba011a178d8c.png)
+![](img/1d0bfad042d282a6aa01ba011a178d8c.png)
 
 从线性到非线性分类的示例（图片由作者提供）
 

@@ -1,34 +1,34 @@
 # 电子商务：谁最有可能转化？
 
-> 原文：[https://towardsdatascience.com/e-commerce-who-is-likely-to-convert-61702023e94b?source=collection_archive---------12-----------------------#2023-01-23](https://towardsdatascience.com/e-commerce-who-is-likely-to-convert-61702023e94b?source=collection_archive---------12-----------------------#2023-01-23)
+> 原文：[`towardsdatascience.com/e-commerce-who-is-likely-to-convert-61702023e94b?source=collection_archive---------12-----------------------#2023-01-23`](https://towardsdatascience.com/e-commerce-who-is-likely-to-convert-61702023e94b?source=collection_archive---------12-----------------------#2023-01-23)
 
 ## 基于信号的评分比你想象的更简单，你无需使用机器学习
 
-[](https://anastasia-reusova.medium.com/?source=post_page-----61702023e94b--------------------------------)[![Anastasia Reusova](../Images/af6a25e3a055fac471e818ab7ab47ce1.png)](https://anastasia-reusova.medium.com/?source=post_page-----61702023e94b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----61702023e94b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----61702023e94b--------------------------------) [Anastasia Reusova](https://anastasia-reusova.medium.com/?source=post_page-----61702023e94b--------------------------------)
+[](https://anastasia-reusova.medium.com/?source=post_page-----61702023e94b--------------------------------)![Anastasia Reusova](https://anastasia-reusova.medium.com/?source=post_page-----61702023e94b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----61702023e94b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----61702023e94b--------------------------------) [Anastasia Reusova](https://anastasia-reusova.medium.com/?source=post_page-----61702023e94b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a4ac211e98b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fe-commerce-who-is-likely-to-convert-61702023e94b&user=Anastasia+Reusova&userId=6a4ac211e98b&source=post_page-6a4ac211e98b----61702023e94b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----61702023e94b--------------------------------) · 12 分钟阅读 · 2023年1月23日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F61702023e94b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fe-commerce-who-is-likely-to-convert-61702023e94b&user=Anastasia+Reusova&userId=6a4ac211e98b&source=-----61702023e94b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a4ac211e98b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fe-commerce-who-is-likely-to-convert-61702023e94b&user=Anastasia+Reusova&userId=6a4ac211e98b&source=post_page-6a4ac211e98b----61702023e94b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----61702023e94b--------------------------------) · 12 分钟阅读 · 2023 年 1 月 23 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F61702023e94b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fe-commerce-who-is-likely-to-convert-61702023e94b&user=Anastasia+Reusova&userId=6a4ac211e98b&source=-----61702023e94b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F61702023e94b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fe-commerce-who-is-likely-to-convert-61702023e94b&source=-----61702023e94b---------------------bookmark_footer-----------)![](../Images/103e147538c68f507575ba6e3d6458f7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F61702023e94b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fe-commerce-who-is-likely-to-convert-61702023e94b&source=-----61702023e94b---------------------bookmark_footer-----------)![](img/103e147538c68f507575ba6e3d6458f7.png)
 
 图片由 [Robert Katzki](https://unsplash.com/@ro_ka?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 产品经理、分析师、增长黑客、设计师或市场营销人员——理解用户角色对这些角色中的任何一个都是非常宝贵的。虽然第三方工具可以帮助获得初步洞察，但直接获取原始数据对于创建准确的用户行为模型非常有价值。本文讨论了可以用来为个别用户构建相对评分系统的方法，这可以用来识别你电子商务业务中最活跃的用户，并保持他们的参与。我已经分享了我们如何在电子商务中进行应用内用户旅程分析——欢迎查看这些内容：
 
-[寻找电子商务中的核心用户旅程](/looking-for-power-user-journeys-in-e-commerce-746f5f68b697)
+寻找电子商务中的核心用户旅程
 
-[使用 BigQuery Firebase 数据查找你的核心用户](/finding-your-power-users-using-bigquery-firebase-data-ad0e16e0ddea)
+使用 BigQuery Firebase 数据查找你的核心用户
 
-总而言之，你需要积极了解用户的行为。第三方工具对于探索性研究很有帮助，但往往缺乏灵活性，获取原始数据可能会很具挑战性——而这正是你最终想要的，*原始数据*。一旦你拥有原始数据，你可以开始建模用户行为，并将这些模型应用于你电子商务业务中的不同系统——这些系统并不是直接连接的——*例如产品与CRM，通过创建全面的用户旅程、产品与营销、运营、售后服务等等。* 你可以将这些模型视为可以输入到系统中的元层。
+总而言之，你需要积极了解用户的行为。第三方工具对于探索性研究很有帮助，但往往缺乏灵活性，获取原始数据可能会很具挑战性——而这正是你最终想要的，*原始数据*。一旦你拥有原始数据，你可以开始建模用户行为，并将这些模型应用于你电子商务业务中的不同系统——这些系统并不是直接连接的——*例如产品与 CRM，通过创建全面的用户旅程、产品与营销、运营、售后服务等等。* 你可以将这些模型视为可以输入到系统中的元层。
 
 如果我还没有引起你的兴趣——用户生成的信号是一种隐性反馈，可以用于个性化层，这一层已知可以帮助增加业务收入。
 
 # 简单开始
 
-当我说“模型”时，我并不是指机器学习模型。事实上，如果机器学习不是组织文化的一部分，可能很难推广ML的使用。原因有很多，举几个例子：你没有一个大数据科学团队，新项目可能会被积压或需要比你期望的时间更长；业务可能对ML模型的局限性和结果没有足够的理解；你当前的基础设施可能不适合使用和维护ML解决方案。
+当我说“模型”时，我并不是指机器学习模型。事实上，如果机器学习不是组织文化的一部分，可能很难推广 ML 的使用。原因有很多，举几个例子：你没有一个大数据科学团队，新项目可能会被积压或需要比你期望的时间更长；业务可能对 ML 模型的局限性和结果没有足够的理解；你当前的基础设施可能不适合使用和维护 ML 解决方案。
 
 基于常见的商业知识，从构建简单的起始模型开始，可能为更复杂和精细的方法铺平道路——一旦你对用户行为的假设被验证正确或错误，并经过重复验证。
 
@@ -50,7 +50,7 @@
 
 1.  购买
 
-![](../Images/a4e08669c07859c0a7d071918bf489c5.png)
+![](img/a4e08669c07859c0a7d071918bf489c5.png)
 
 随着用户在漏斗中的深入，这些用户的转化率会增加。越深入的用户比例也会减少。图像来源：作者。
 
@@ -60,11 +60,11 @@
 
 一旦你在**用户级别**收集了数据，你可以像这样进行聚合：
 
-![](../Images/dcc289fb66e5f445ff1d3d0cc07031b4.png)
+![](img/dcc289fb66e5f445ff1d3d0cc07031b4.png)
 
 聚合来自电子商务漏斗的用户信号。图像来源：作者。
 
-在上表中，*用户 A* 看起来类似于*逛窗口购物者*，他们足够参与——50% 的 PLP 浏览转化为 PDP 浏览。他们没有将任何东西添加到购物车中，但可能之前的会话中曾有过——这由1次购物车浏览所示。
+在上表中，*用户 A* 看起来类似于*逛窗口购物者*，他们足够参与——50% 的 PLP 浏览转化为 PDP 浏览。他们没有将任何东西添加到购物车中，但可能之前的会话中曾有过——这由 1 次购物车浏览所示。
 
 *用户 B* 很可能是一个积极*尝试做出选择*的客户。他们可能正在为交易准备购物车，但尚未开始结账。
 
@@ -102,43 +102,43 @@
 
 +   总体来说，Q33 和 Q66 是否有意义？
 
-+   我们需要3个细分还是希望更精细一些？
++   我们需要 3 个细分还是希望更精细一些？
 
-+   我们该如何处理0分的用户？他们是否应该参与评分，还是我们可以在基准测试中将他们排除？
++   我们该如何处理 0 分的用户？他们是否应该参与评分，还是我们可以在基准测试中将他们排除？
 
 ## 总体信号
 
-![](../Images/d4d58ff6994a66b4c74ef71706c062dc.png)
+![](img/d4d58ff6994a66b4c74ef71706c062dc.png)
 
 你可以通过每个信号对用户进行评分，并将他们的信号合并成一个总体评分。图像来源于作者。
 
 为了将用户信号聚合成一个评分，最简单的方法是*为每个信号分配权重并将这些权重相加*。
 
-将信号聚合为一个评分可能是一个创造性的过程。需要注意的是，在信号转化概率方面，*每个信号的价值和重要性是不同的*。因为随着用户深入漏斗，他们通常表现出更强的转化意图。为每个信号分配权重的一种方法是通过*专家归因*，即为每项操作（如产品使用、产品点击或添加到购物车事件）商定一个权重百分比。例如，像添加到购物车这样的稀有操作会被分配一个更高的权重，比如50%，而像产品展示这样的常见操作会被分配一个较低的权重，比如10%。
+将信号聚合为一个评分可能是一个创造性的过程。需要注意的是，在信号转化概率方面，*每个信号的价值和重要性是不同的*。因为随着用户深入漏斗，他们通常表现出更强的转化意图。为每个信号分配权重的一种方法是通过*专家归因*，即为每项操作（如产品使用、产品点击或添加到购物车事件）商定一个权重百分比。例如，像添加到购物车这样的稀有操作会被分配一个更高的权重，比如 50%，而像产品展示这样的常见操作会被分配一个较低的权重，比如 10%。
 
 另一种分配信号权重的方法是通过查看*历史数据*，并考虑客户行为和业务季节性如何影响某些行动的信号潜力。我们通过分析在我们的应用或网站上执行某项特定操作的客户比例来自动分配权重。基于探索性数据分析，我们发现事件越稀有，关联的转化率越高。
 
 说到季节性，一些事件在重要的电子商务事件（如黑色星期五）期间可能会变得更加频繁。更多的用户会进行浏览购物，并将他们的购物车用作愿望清单。
 
-为了平滑这种效果，我们决定对参与或显示我们用于漏斗的信号的用户数量进行三天滚动估算。这个比例代表了事件的频率，因此为了量化稀有性，我们只需从100%中减去百分比。
+为了平滑这种效果，我们决定对参与或显示我们用于漏斗的信号的用户数量进行三天滚动估算。这个比例代表了事件的频率，因此为了量化稀有性，我们只需从 100%中减去百分比。
 
-举例来说，如果99%的用户参与了PLP（产品列表页面）或浏览了产品列表页面，那么PLP展示次数的权重将是100-99%，即1%。如果30%的用户将商品添加到购物车中，则添加到购物车信号的权重将估算为100-30%，即70%。依此类推。
+举例来说，如果 99%的用户参与了 PLP（产品列表页面）或浏览了产品列表页面，那么 PLP 展示次数的权重将是 100-99%，即 1%。如果 30%的用户将商品添加到购物车中，则添加到购物车信号的权重将估算为 100-30%，即 70%。依此类推。
 
-一旦分配了权重，信号可以加总以生成单一评分。这个评分可能没有定义的范围，因为它可能会根据日期波动，因此很难在不同日期之间进行比较。为避免这种情况，可以将评分标准化在0到1之间。
+一旦分配了权重，信号可以加总以生成单一评分。这个评分可能没有定义的范围，因为它可能会根据日期波动，因此很难在不同日期之间进行比较。为避免这种情况，可以将评分标准化在 0 到 1 之间。
 
 尽管这种方法可能不完美，但在转化率和每用户收入方面，它在不同客户群体之间生成了合理的区分，并且可以作为其他模型（包括通常需要更多时间进行开发和调整的数据科学模型）的基准。
 
-![](../Images/2b6ddec84fee1862f408f6bcea01b56e.png)
+![](img/2b6ddec84fee1862f408f6bcea01b56e.png)
 
 简单的信号加权可以帮助你获得总体评分。图片由作者提供。
 
 **细分**
 
-3个细分是一个容易的起点，并且允许你*优先考虑客户通信*。例如，很明显，如果一个积极的用户在预期时间内没有转化，根据探索性数据分析，我们希望在我们的通信中优先考虑他们，也许还会提供货币奖励。低于平均水平的用户可能会受益。
+3 个细分是一个容易的起点，并且允许你*优先考虑客户通信*。例如，很明显，如果一个积极的用户在预期时间内没有转化，根据探索性数据分析，我们希望在我们的通信中优先考虑他们，也许还会提供货币奖励。低于平均水平的用户可能会受益。
 
 当我们实施这种客户细分方法并映射每个细分群体的用户转化率以及每用户收入时，结果相当有希望。转化率（CR）的结果是可以预期的，但看到每个转化用户的收入（RPU）更高却是出乎意料的。这可能意味着更活跃的用户与产品的互动更多，并且愿意进行跨类别购物，增加篮子里的商品数量或选择更高价格的商品。
 
-![](../Images/2c11ddc7fd694fd6fa25ef3974d729cc.png)
+![](img/2c11ddc7fd694fd6fa25ef3974d729cc.png)
 
 活跃的细分群体与更高的转化率和每用户收入相关。图片由作者提供。
 
@@ -146,13 +146,13 @@
 
 当然，你希望让这个模型变得可操作。简化模型的目的是让你能够快速迭代并展示业务结果，这些结果希望能够证明你正在朝着正确的方向前进。
 
-在我们的案例中，我们决定首先对CRM通信进行测试，这不会给客户承诺额外的东西。然而，我们围绕用户最后一次在应用上出现的时间来组织通信。在我们的案例中，时机非常重要，对于你们来说可能更重要，因为用户在进入你的应用之前就可能已经做出购买决定。根据你的探索性数据分析，你也许会得出类似的结论。
+在我们的案例中，我们决定首先对 CRM 通信进行测试，这不会给客户承诺额外的东西。然而，我们围绕用户最后一次在应用上出现的时间来组织通信。在我们的案例中，时机非常重要，对于你们来说可能更重要，因为用户在进入你的应用之前就可能已经做出购买决定。根据你的探索性数据分析，你也许会得出类似的结论。
 
-理想情况下，你的第一次迭代和其后的迭代应该在AB测试中推出，这样你可以评估额外联系那些客户的真实结果或真实影响。随着迭代的推进，你可以根据预计的平均订单价值和转化率的提升来增加每个客户的奖励。
+理想情况下，你的第一次迭代和其后的迭代应该在 AB 测试中推出，这样你可以评估额外联系那些客户的真实结果或真实影响。随着迭代的推进，你可以根据预计的平均订单价值和转化率的提升来增加每个客户的奖励。
 
-在进行AB测试时，最好将对照组从其余通信中排除，只保留目标组进行此活动，以获得尽可能纯净的结果，除非你可以将不同活动的结果解耦。由于用户在短时间内非常活跃，你可能需要特别关注他们之前如何接受CRM或营销活动，然后再联系他们。
+在进行 AB 测试时，最好将对照组从其余通信中排除，只保留目标组进行此活动，以获得尽可能纯净的结果，除非你可以将不同活动的结果解耦。由于用户在短时间内非常活跃，你可能需要特别关注他们之前如何接受 CRM 或营销活动，然后再联系他们。
 
-## 为什么不选择DS模型呢？
+## 为什么不选择 DS 模型呢？
 
 有几个原因说明选择一个简单的数据模型可能比选择一个更复杂的数据科学模型更好。
 
@@ -168,6 +168,6 @@
 
 即使你最终选择使用机器学习模型，这种基于识别用户信号及其重要性的简单方法仍然可以提供有价值的见解，并且可以作为更复杂模型的踏脚石。
 
-希望你觉得这些内容有用。告诉我你的想法！也欢迎通过 LinkedIn 联系我 [https://www.linkedin.com/in/areusova/](https://www.linkedin.com/in/areusova/)。
+希望你觉得这些内容有用。告诉我你的想法！也欢迎通过 LinkedIn 联系我 [`www.linkedin.com/in/areusova/`](https://www.linkedin.com/in/areusova/)。
 
-特别感谢 Kritika Aggarwal，她参与了项目实施，并且不懈地整理数据 [https://www.linkedin.com/in/kritikaaggarwal18](https://www.linkedin.com/in/kritikaaggarwal18)。
+特别感谢 Kritika Aggarwal，她参与了项目实施，并且不懈地整理数据 [`www.linkedin.com/in/kritikaaggarwal18`](https://www.linkedin.com/in/kritikaaggarwal18)。

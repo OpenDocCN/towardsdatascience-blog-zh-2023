@@ -1,18 +1,18 @@
 # 通过 Pandera 培养数据科学中的数据完整性
 
-> 原文：[https://towardsdatascience.com/cultivating-data-integrity-in-data-science-with-pandera-2289608626cc?source=collection_archive---------9-----------------------#2023-12-22](https://towardsdatascience.com/cultivating-data-integrity-in-data-science-with-pandera-2289608626cc?source=collection_archive---------9-----------------------#2023-12-22)
+> 原文：[`towardsdatascience.com/cultivating-data-integrity-in-data-science-with-pandera-2289608626cc?source=collection_archive---------9-----------------------#2023-12-22`](https://towardsdatascience.com/cultivating-data-integrity-in-data-science-with-pandera-2289608626cc?source=collection_archive---------9-----------------------#2023-12-22)
 
 ## 使用 Pandera 的高级验证技术以促进数据质量和可靠性
 
-[](https://medium.com/@le_Tomassini?source=post_page-----2289608626cc--------------------------------)[![Alessandro Tomassini](../Images/e5bf527fafd933239bff6b87005ba457.png)](https://medium.com/@le_Tomassini?source=post_page-----2289608626cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2289608626cc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2289608626cc--------------------------------) [Alessandro Tomassini](https://medium.com/@le_Tomassini?source=post_page-----2289608626cc--------------------------------)
+[](https://medium.com/@le_Tomassini?source=post_page-----2289608626cc--------------------------------)![Alessandro Tomassini](https://medium.com/@le_Tomassini?source=post_page-----2289608626cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2289608626cc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2289608626cc--------------------------------) [Alessandro Tomassini](https://medium.com/@le_Tomassini?source=post_page-----2289608626cc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4cb5c2b60ac8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcultivating-data-integrity-in-data-science-with-pandera-2289608626cc&user=Alessandro+Tomassini&userId=4cb5c2b60ac8&source=post_page-4cb5c2b60ac8----2289608626cc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2289608626cc--------------------------------) ·6 分钟阅读·2023年12月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2289608626cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcultivating-data-integrity-in-data-science-with-pandera-2289608626cc&user=Alessandro+Tomassini&userId=4cb5c2b60ac8&source=-----2289608626cc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4cb5c2b60ac8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcultivating-data-integrity-in-data-science-with-pandera-2289608626cc&user=Alessandro+Tomassini&userId=4cb5c2b60ac8&source=post_page-4cb5c2b60ac8----2289608626cc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2289608626cc--------------------------------) ·6 分钟阅读·2023 年 12 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2289608626cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcultivating-data-integrity-in-data-science-with-pandera-2289608626cc&user=Alessandro+Tomassini&userId=4cb5c2b60ac8&source=-----2289608626cc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2289608626cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcultivating-data-integrity-in-data-science-with-pandera-2289608626cc&source=-----2289608626cc---------------------bookmark_footer-----------)![](../Images/496ecd9799362bd2389967b06cf79fa1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2289608626cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcultivating-data-integrity-in-data-science-with-pandera-2289608626cc&source=-----2289608626cc---------------------bookmark_footer-----------)![](img/496ecd9799362bd2389967b06cf79fa1.png)
 
 由 DALL-E 生成的图像
 
@@ -32,7 +32,7 @@ Pandera 是一个 Python 库，为 pandas 数据结构提供灵活而表达力�
 
 # 创建你的第一个模式
 
-![](../Images/f3f8e4e5353cdb195396a0180b6b5cc3.png)
+![](img/f3f8e4e5353cdb195396a0180b6b5cc3.png)
 
 [charlesdeluvio](https://unsplash.com/@charlesdeluvio?utm_source=medium&utm_medium=referral) 提供的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -96,7 +96,7 @@ processed_df = process_data(df)
 
 # 使用自定义检查进行高级数据验证
 
-![](../Images/63a5c18f885fb03d8561166b8c92ace5.png)
+![](img/63a5c18f885fb03d8561166b8c92ace5.png)
 
 [Sigmund](https://unsplash.com/@sigmund?utm_source=medium&utm_medium=referral) 提供的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -177,7 +177,7 @@ SchemaError: expected series 'salary' to have type float64, got int64
 
 # 具有统计假设检验的高级数据验证
 
-![](../Images/c642d2aab10a659a3daeb1fb89ec761e.png)
+![](img/c642d2aab10a659a3daeb1fb89ec761e.png)
 
 由[Daniela Paola Alchapar](https://unsplash.com/@paoalchapar?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

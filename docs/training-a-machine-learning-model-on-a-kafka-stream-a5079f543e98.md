@@ -1,44 +1,44 @@
 # 在 Kafka 流上训练机器学习模型
 
-> 原文：[https://towardsdatascience.com/training-a-machine-learning-model-on-a-kafka-stream-a5079f543e98?source=collection_archive---------6-----------------------#2023-06-09](https://towardsdatascience.com/training-a-machine-learning-model-on-a-kafka-stream-a5079f543e98?source=collection_archive---------6-----------------------#2023-06-09)
+> 原文：[`towardsdatascience.com/training-a-machine-learning-model-on-a-kafka-stream-a5079f543e98?source=collection_archive---------6-----------------------#2023-06-09`](https://towardsdatascience.com/training-a-machine-learning-model-on-a-kafka-stream-a5079f543e98?source=collection_archive---------6-----------------------#2023-06-09)
 
 ## 使用由 Kafka 生产者生成的训练数据在线和近实时地更新机器学习模型
 
-[](https://medium.com/@kylegallatin?source=post_page-----a5079f543e98--------------------------------)[![Kyle Gallatin](../Images/ee2796ba575412e9caf6034a65d741e5.png)](https://medium.com/@kylegallatin?source=post_page-----a5079f543e98--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5079f543e98--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5079f543e98--------------------------------) [Kyle Gallatin](https://medium.com/@kylegallatin?source=post_page-----a5079f543e98--------------------------------)
+[](https://medium.com/@kylegallatin?source=post_page-----a5079f543e98--------------------------------)![Kyle Gallatin](https://medium.com/@kylegallatin?source=post_page-----a5079f543e98--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5079f543e98--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5079f543e98--------------------------------) [Kyle Gallatin](https://medium.com/@kylegallatin?source=post_page-----a5079f543e98--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F51ff4b76ebf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-a-machine-learning-model-on-a-kafka-stream-a5079f543e98&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=post_page-51ff4b76ebf4----a5079f543e98---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5079f543e98--------------------------------) ·5 分钟阅读·2023年6月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa5079f543e98&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-a-machine-learning-model-on-a-kafka-stream-a5079f543e98&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=-----a5079f543e98---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F51ff4b76ebf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-a-machine-learning-model-on-a-kafka-stream-a5079f543e98&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=post_page-51ff4b76ebf4----a5079f543e98---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5079f543e98--------------------------------) ·5 分钟阅读·2023 年 6 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa5079f543e98&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-a-machine-learning-model-on-a-kafka-stream-a5079f543e98&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=-----a5079f543e98---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa5079f543e98&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-a-machine-learning-model-on-a-kafka-stream-a5079f543e98&source=-----a5079f543e98---------------------bookmark_footer-----------)![](../Images/d379c69615c47a586b2e92f500891d1f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa5079f543e98&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-a-machine-learning-model-on-a-kafka-stream-a5079f543e98&source=-----a5079f543e98---------------------bookmark_footer-----------)![](img/d379c69615c47a586b2e92f500891d1f.png)
 
 照片由 [Jonathan Borba](https://unsplash.com/@jonathanborba?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-最近，我对*在线机器学习*越来越感兴趣——即在生产环境中更新ML模型的权重。除了这一主题为我提供的[有趣的架构挑战](/thoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1?sk=d5650f2c6be6af8ef512d9c109da3a65)外，这种方法还具有巨大的潜力。2021年Grubhub的这项[研究](https://arxiv.org/abs/2107.07106)通过利用在线学习展示了+20%的指标提升*和* 45倍的成本节约，我非常支持节省开支以赚取更多收益。
+最近，我对*在线机器学习*越来越感兴趣——即在生产环境中更新 ML 模型的权重。除了这一主题为我提供的有趣的架构挑战外，这种方法还具有巨大的潜力。2021 年 Grubhub 的这项[研究](https://arxiv.org/abs/2107.07106)通过利用在线学习展示了+20%的指标提升*和* 45 倍的成本节约，我非常支持节省开支以赚取更多收益。
 
-![](../Images/d74d07e0c17ed88c29b53dfce38d84a2.png)
+![](img/d74d07e0c17ed88c29b53dfce38d84a2.png)
 
-状态重训练——Chip Huyen授权提供的图片
+状态重训练——Chip Huyen 授权提供的图片
 
-![](../Images/941f78afa2549ce3c1b4779620b3d705.png)
+![](img/941f78afa2549ce3c1b4779620b3d705.png)
 
 在线学习——作者提供的图片
 
 从实际的角度来看，与数据流和流式架构的工作对机器学习从业者来说仍然是相当新的。除了创建实时训练数据流外，关于在在线环境中使用这种数据源来更新模型的资源相对较少。在这篇文章中，我将展示：
 
-+   设置Kafka实例
++   设置 Kafka 实例
 
 +   创建一个生成训练数据的生产者
 
-+   创建一个使用这些训练数据更新ML模型的消费者
++   创建一个使用这些训练数据更新 ML 模型的消费者
 
-# 使用Docker运行Kafka
+# 使用 Docker 运行 Kafka
 
-我在本地使用Kafka的首选方法是通过`docker-compose`。如果你的环境中还没有安装，你可以按照[这里](https://docs.docker.com/compose/install/)的说明进行安装。
+我在本地使用 Kafka 的首选方法是通过`docker-compose`。如果你的环境中还没有安装，你可以按照[这里](https://docs.docker.com/compose/install/)的说明进行安装。
 
-Shuyi Yang的[相关文章](/kafka-docker-python-408baf0e1088)提供了这种方法的高层次概述，我们可以使用一个类似的`docker-compose.yaml`文件来创建本地Kafka和Zookeeper实例，并在9092端口上暴露Kafka：
+Shuyi Yang 的相关文章提供了这种方法的高层次概述，我们可以使用一个类似的`docker-compose.yaml`文件来创建本地 Kafka 和 Zookeeper 实例，并在 9092 端口上暴露 Kafka：
 
 ```py
 version: '3'
@@ -66,21 +66,21 @@ services:
      - /var/run/docker.sock:/var/run/docker.sock
 ```
 
-它还创建了一个名为`ml_training_data`的Kafka主题，我们稍后会用到。你可以通过切换到包含该文件的目录并运行以下命令来执行该文件：
+它还创建了一个名为`ml_training_data`的 Kafka 主题，我们稍后会用到。你可以通过切换到包含该文件的目录并运行以下命令来执行该文件：
 
 ```py
 docker-compose up
 ```
 
-# 一个用于训练数据的Kafka生产者
+# 一个用于训练数据的 Kafka 生产者
 
-首先，让我们安装所需的Python库：
+首先，让我们安装所需的 Python 库：
 
 ```py
 python -m pip install kafka-python river 
 ```
 
-接下来，我们需要创建一个人工生成的训练数据源，将其写入我们的Kafka主题。为此，我们将使用[River Python库](https://riverml.xyz/0.15.0/)，它具有易于使用的流数据API：
+接下来，我们需要创建一个人工生成的训练数据源，将其写入我们的 Kafka 主题。为此，我们将使用[River Python 库](https://riverml.xyz/0.15.0/)，它具有易于使用的流数据 API：
 
 ```py
 from time import sleep
@@ -109,7 +109,7 @@ for x, y in dataset:
     sleep(random.random())
 ```
 
-上面的代码使用了玩具[River Phishing数据集](https://riverml.xyz/0.15.0/api/datasets/Phishing/)（[CC BY 4.0](http://archive.ics.uci.edu/dataset/379/website+phishing)），并将标记的数据观察值逐一发送到我们的Kafka主题。这个数据集包含来自网页的特征，这些特征被分类为钓鱼或非钓鱼。数据集中的样本是这样的元组：
+上面的代码使用了玩具[River Phishing 数据集](https://riverml.xyz/0.15.0/api/datasets/Phishing/)（[CC BY 4.0](http://archive.ics.uci.edu/dataset/379/website+phishing)），并将标记的数据观察值逐一发送到我们的 Kafka 主题。这个数据集包含来自网页的特征，这些特征被分类为钓鱼或非钓鱼。数据集中的样本是这样的元组：
 
 ```py
  [({'empty_server_form_handler': 0.0,
@@ -151,9 +151,9 @@ Sending: ({'empty_server_form_handler': 0.0, 'popup_window': 0.0, 'https': 1.0, 
 Sending: ({'empty_server_form_handler': 1.0, 'popup_window': 1.0, 'https': 1.0, 'request_from_other_domain': 0.5, 'anchor_from_other_domain': 0.0, 'is_popular': 1.0, 'long_url': 1.0, 'age_of_domain': 0, 'ip_in_url': 0}, False)
 ```
 
-# 一个用于训练ML模型的Kafka消费者
+# 一个用于训练 ML 模型的 Kafka 消费者
 
-编写一个简单的Kafka消费者将允许我们读取从流中推送过来的数据，并用来更新模型的权重。
+编写一个简单的 Kafka 消费者将允许我们读取从流中推送过来的数据，并用来更新模型的权重。
 
 ```py
  from json import loads

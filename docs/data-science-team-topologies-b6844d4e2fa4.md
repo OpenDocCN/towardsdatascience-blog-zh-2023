@@ -1,18 +1,18 @@
 # 数据科学团队的顶层设计
 
-> 原文：[https://towardsdatascience.com/data-science-team-topologies-b6844d4e2fa4?source=collection_archive---------10-----------------------#2023-02-03](https://towardsdatascience.com/data-science-team-topologies-b6844d4e2fa4?source=collection_archive---------10-----------------------#2023-02-03)
+> 原文：[`towardsdatascience.com/data-science-team-topologies-b6844d4e2fa4?source=collection_archive---------10-----------------------#2023-02-03`](https://towardsdatascience.com/data-science-team-topologies-b6844d4e2fa4?source=collection_archive---------10-----------------------#2023-02-03)
 
 ## 数据产品开发如何与软件开发不同
 
-[](https://medium.com/@mark.derdzinski?source=post_page-----b6844d4e2fa4--------------------------------)[![Mark Derdzinski](../Images/1143721ac21b9fddcc37abaea727469a.png)](https://medium.com/@mark.derdzinski?source=post_page-----b6844d4e2fa4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b6844d4e2fa4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b6844d4e2fa4--------------------------------) [Mark Derdzinski](https://medium.com/@mark.derdzinski?source=post_page-----b6844d4e2fa4--------------------------------)
+[](https://medium.com/@mark.derdzinski?source=post_page-----b6844d4e2fa4--------------------------------)![Mark Derdzinski](https://medium.com/@mark.derdzinski?source=post_page-----b6844d4e2fa4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b6844d4e2fa4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b6844d4e2fa4--------------------------------) [Mark Derdzinski](https://medium.com/@mark.derdzinski?source=post_page-----b6844d4e2fa4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd35cff0c0373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-team-topologies-b6844d4e2fa4&user=Mark+Derdzinski&userId=d35cff0c0373&source=post_page-d35cff0c0373----b6844d4e2fa4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b6844d4e2fa4--------------------------------) ·7分钟阅读·2023年2月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb6844d4e2fa4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-team-topologies-b6844d4e2fa4&user=Mark+Derdzinski&userId=d35cff0c0373&source=-----b6844d4e2fa4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd35cff0c0373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-team-topologies-b6844d4e2fa4&user=Mark+Derdzinski&userId=d35cff0c0373&source=post_page-d35cff0c0373----b6844d4e2fa4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b6844d4e2fa4--------------------------------) ·7 分钟阅读·2023 年 2 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb6844d4e2fa4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-team-topologies-b6844d4e2fa4&user=Mark+Derdzinski&userId=d35cff0c0373&source=-----b6844d4e2fa4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb6844d4e2fa4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-team-topologies-b6844d4e2fa4&source=-----b6844d4e2fa4---------------------bookmark_footer-----------)![](../Images/7700f36e819c96f727a2ded18a8aa02c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb6844d4e2fa4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-team-topologies-b6844d4e2fa4&source=-----b6844d4e2fa4---------------------bookmark_footer-----------)![](img/7700f36e819c96f727a2ded18a8aa02c.png)
 
 图片来源：Alina Grubnyak via Unsplash
 
@@ -24,7 +24,7 @@
 
 在数据科学中，问题很少围绕特定的技术或编程语言，更多的是围绕数据本身。因此，数据科学团队的组成可能与传统的软件团队大相径庭。多样化的技能和观点在处理数据时是一个优势。这就是为什么跨学科团队，拥有各种背景和领域专长的专家，往往会取得成功。此外，一组能够以新视角解决问题的通才，可以带来宝贵的见解并推动创新。
 
-![](../Images/be4102977eb549181a47e034a3da8339.png)
+![](img/be4102977eb549181a47e034a3da8339.png)
 
 图片由 [Luke Chesser](https://unsplash.com/@lukechesser?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -40,7 +40,7 @@
 
 数据科学团队的拓扑结构通常与典型的软件团队不同，因为它们需要对其所处领域有深入的了解。这种专业知识对构建具有影响力的数据产品至关重要，这些产品能够真正解决问题并为最终用户提供价值。有了领域专长，数据科学家可以避免陷入优化虚荣指标或构建会加剧数据偏见的模型的陷阱。
 
-![](../Images/a78ec154d0e4af0654a3ba4107c23e3c.png)
+![](img/a78ec154d0e4af0654a3ba4107c23e3c.png)
 
 照片来源于 Marjan Blan | @marjanblan 在 Unsplash
 
@@ -50,7 +50,7 @@
 
 # 不同的操作模型
 
-传统DevOps功能所需的结构和技能与数据科学组织所需的DataOps或MLOps技能不同。虽然经典的DevOps团队专注于部署和维护软件所需的基础设施和操作，但DataOps和MLOps团队还必须考虑管理和部署机器学习模型的独特需求。这种细微差别通常强调数据科学家、工程师和运维专业人员之间的协作，以确保模型得到部署并持续监控、测试和更新，以满足用户（不断变化）的需求。支持生产数据产品的运维还需要了解问题领域，以确保所部署的产品以正确的准确性和公平性运行，同时仍能解决它们旨在解决的业务问题。
+传统 DevOps 功能所需的结构和技能与数据科学组织所需的 DataOps 或 MLOps 技能不同。虽然经典的 DevOps 团队专注于部署和维护软件所需的基础设施和操作，但 DataOps 和 MLOps 团队还必须考虑管理和部署机器学习模型的独特需求。这种细微差别通常强调数据科学家、工程师和运维专业人员之间的协作，以确保模型得到部署并持续监控、测试和更新，以满足用户（不断变化）的需求。支持生产数据产品的运维还需要了解问题领域，以确保所部署的产品以正确的准确性和公平性运行，同时仍能解决它们旨在解决的业务问题。
 
 # 数据产品的康威定律
 
@@ -62,9 +62,9 @@
 
 本着健壮性的精神，让我们承认生活是复杂的，尝试反驳我们自己的观点。然后，退一步，问自己：“数据科学团队结构何时最接近典型的软件开发？”
 
-![](../Images/191fdb773a606e16f91cced9281a03b3.png)
+![](img/191fdb773a606e16f91cced9281a03b3.png)
 
-图片由Markus Spiske拍摄于Unsplash
+图片由 Markus Spiske 拍摄于 Unsplash
 
 一个例子是，当一个团队将数据科学功能作为服务提供时。例如，用于实验的平台或被多个下游产品使用的模型可能需要类似于典型软件开发团队的结构和方法。在这种情况下，团队可能会专注于构建和维护支持实验和模型开发过程的基础设施、工具和流程。他们还可能负责确保模型的质量和性能，以及为使用平台或模型的其他团队提供文档和支持。
 

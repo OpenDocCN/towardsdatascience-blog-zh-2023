@@ -1,24 +1,24 @@
 # 如何利用大脑的季节性创建一年的数据科学自学计划
 
-> 原文：[https://towardsdatascience.com/how-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58?source=collection_archive---------2-----------------------#2023-07-06](https://towardsdatascience.com/how-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58?source=collection_archive---------2-----------------------#2023-07-06)
+> 原文：[`towardsdatascience.com/how-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58?source=collection_archive---------2-----------------------#2023-07-06`](https://towardsdatascience.com/how-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58?source=collection_archive---------2-----------------------#2023-07-06)
 
 ## 你的大脑也有季节变化，你可以利用这些变化更高效地学习数据科学
 
-[](https://madison13.medium.com/?source=post_page-----a2876d2f8b58--------------------------------)[![Madison Hunter](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----a2876d2f8b58--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a2876d2f8b58--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a2876d2f8b58--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----a2876d2f8b58--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----a2876d2f8b58--------------------------------)![Madison Hunter](https://madison13.medium.com/?source=post_page-----a2876d2f8b58--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a2876d2f8b58--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a2876d2f8b58--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----a2876d2f8b58--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----a2876d2f8b58---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a2876d2f8b58--------------------------------) ·6 分钟阅读·2023年7月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa2876d2f8b58&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58&user=Madison+Hunter&userId=6a8c6841e521&source=-----a2876d2f8b58---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----a2876d2f8b58---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a2876d2f8b58--------------------------------) ·6 分钟阅读·2023 年 7 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa2876d2f8b58&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58&user=Madison+Hunter&userId=6a8c6841e521&source=-----a2876d2f8b58---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa2876d2f8b58&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58&source=-----a2876d2f8b58---------------------bookmark_footer-----------)![](../Images/01a841b7027b40adcbcc593cf758dbba.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa2876d2f8b58&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-a-1-year-data-science-self-study-plan-using-the-seasonality-of-your-brain-a2876d2f8b58&source=-----a2876d2f8b58---------------------bookmark_footer-----------)![](img/01a841b7027b40adcbcc593cf758dbba.png)
 
 图片由 [Red Zeppelin](https://unsplash.com/@redzeppelin?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-当你在社交媒体上被充斥着那些在三个月内自学数据科学并被FAANG公司聘用的故事时，自学数据科学可能会显得遥不可及。
+当你在社交媒体上被充斥着那些在三个月内自学数据科学并被 FAANG 公司聘用的故事时，自学数据科学可能会显得遥不可及。
 
-当你连一个简单的Python程序都无法在没有错误的情况下运行时，这些故事可能会让人感到最为沮丧。
+当你连一个简单的 Python 程序都无法在没有错误的情况下运行时，这些故事可能会让人感到最为沮丧。
 
 在这样的时刻，自学数据科学并开始新的职业生涯似乎是一个不可能的梦想。当你过去尝试过一切来学习成功所需的概念和工具，却因缺乏承诺、进展或乐趣而在几周内放弃时，这种感觉也会显得毫无意义。
 
@@ -28,7 +28,7 @@
 
 # 你的一年季节性学习计划
 
-大脑功能受季节的影响，和一天中的时间一样。[2016年对大脑活动的年度节律进行了研究](https://www.pnas.org/doi/10.1073/pnas.1518129113)，发现大脑的活动随着季节的变化而波动。研究发现，大脑在夏季的持续注意力任务中表现达到最大，但在冬季则表现达到最低。此外，大脑在秋季的工作记忆（工作记忆指的是[“计划、理解、推理和解决问题”](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4207727/#:~:text=Abstract,reasoning%2C%20and%20problem%2Dsolving.))任务中表现达到最大，而在春季则表现达到最低。虽然还需要更多的研究来巩固这些发现，但我们仍可以利用它们来制定一个一年的数据科学学习计划，使你的大脑发挥最大潜力。
+大脑功能受季节的影响，和一天中的时间一样。[2016 年对大脑活动的年度节律进行了研究](https://www.pnas.org/doi/10.1073/pnas.1518129113)，发现大脑的活动随着季节的变化而波动。研究发现，大脑在夏季的持续注意力任务中表现达到最大，但在冬季则表现达到最低。此外，大脑在秋季的工作记忆（工作记忆指的是[“计划、理解、推理和解决问题”](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4207727/#:~:text=Abstract,reasoning%2C%20and%20problem%2Dsolving.))任务中表现达到最大，而在春季则表现达到最低。虽然还需要更多的研究来巩固这些发现，但我们仍可以利用它们来制定一个一年的数据科学学习计划，使你的大脑发挥最大潜力。
 
 ## 冬季：编程和数据结构
 

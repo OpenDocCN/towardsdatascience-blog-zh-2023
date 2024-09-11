@@ -1,18 +1,18 @@
 # 什么是 Python 中的 pyproject.toml
 
-> 原文：[https://towardsdatascience.com/pyproject-python-9df8cc092f61?source=collection_archive---------4-----------------------#2023-05-09](https://towardsdatascience.com/pyproject-python-9df8cc092f61?source=collection_archive---------4-----------------------#2023-05-09)
+> 原文：[`towardsdatascience.com/pyproject-python-9df8cc092f61?source=collection_archive---------4-----------------------#2023-05-09`](https://towardsdatascience.com/pyproject-python-9df8cc092f61?source=collection_archive---------4-----------------------#2023-05-09)
 
 ## 在 pyproject.toml 文件中管理 Python 项目依赖
 
-[](https://gmyrianthous.medium.com/?source=post_page-----9df8cc092f61--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----9df8cc092f61--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9df8cc092f61--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9df8cc092f61--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9df8cc092f61--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----9df8cc092f61--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9df8cc092f61--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9df8cc092f61--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9df8cc092f61--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9df8cc092f61--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpyproject-python-9df8cc092f61&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----9df8cc092f61---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9df8cc092f61--------------------------------) ·5 分钟阅读·2023年5月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9df8cc092f61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpyproject-python-9df8cc092f61&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----9df8cc092f61---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpyproject-python-9df8cc092f61&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----9df8cc092f61---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9df8cc092f61--------------------------------) ·5 分钟阅读·2023 年 5 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9df8cc092f61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpyproject-python-9df8cc092f61&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----9df8cc092f61---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9df8cc092f61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpyproject-python-9df8cc092f61&source=-----9df8cc092f61---------------------bookmark_footer-----------)![](../Images/f52d5d1a92753c16cb2f548c0ac9aecd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9df8cc092f61&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpyproject-python-9df8cc092f61&source=-----9df8cc092f61---------------------bookmark_footer-----------)![](img/f52d5d1a92753c16cb2f548c0ac9aecd.png)
 
 [Fré Sonneveld](https://unsplash.com/@fresonneveld?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄的照片，来源于[Unsplash](https://unsplash.com/s/photos/chain?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

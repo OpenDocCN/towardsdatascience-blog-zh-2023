@@ -1,20 +1,20 @@
 # 6 个破坏数据科学生产力的坏习惯
 
-> 原文：[https://towardsdatascience.com/6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833?source=collection_archive---------0-----------------------#2023-10-03](https://towardsdatascience.com/6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833?source=collection_archive---------0-----------------------#2023-10-03)
+> 原文：[`towardsdatascience.com/6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833?source=collection_archive---------0-----------------------#2023-10-03`](https://towardsdatascience.com/6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833?source=collection_archive---------0-----------------------#2023-10-03)
 
 ## 如何实现成功
 
-[](https://donatoriccio.medium.com/?source=post_page-----ce9c17c7b833--------------------------------)[![Donato Riccio](../Images/0af2a026e72a023db4635522cbca50eb.png)](https://donatoriccio.medium.com/?source=post_page-----ce9c17c7b833--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce9c17c7b833--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce9c17c7b833--------------------------------) [Donato Riccio](https://donatoriccio.medium.com/?source=post_page-----ce9c17c7b833--------------------------------)
+[](https://donatoriccio.medium.com/?source=post_page-----ce9c17c7b833--------------------------------)![Donato Riccio](https://donatoriccio.medium.com/?source=post_page-----ce9c17c7b833--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce9c17c7b833--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce9c17c7b833--------------------------------) [Donato Riccio](https://donatoriccio.medium.com/?source=post_page-----ce9c17c7b833--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe384fc71d292&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833&user=Donato+Riccio&userId=e384fc71d292&source=post_page-e384fc71d292----ce9c17c7b833---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce9c17c7b833--------------------------------) ·8分钟阅读·2023年10月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce9c17c7b833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833&user=Donato+Riccio&userId=e384fc71d292&source=-----ce9c17c7b833---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe384fc71d292&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833&user=Donato+Riccio&userId=e384fc71d292&source=post_page-e384fc71d292----ce9c17c7b833---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce9c17c7b833--------------------------------) ·8 分钟阅读·2023 年 10 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce9c17c7b833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833&user=Donato+Riccio&userId=e384fc71d292&source=-----ce9c17c7b833---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce9c17c7b833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833&source=-----ce9c17c7b833---------------------bookmark_footer-----------)![](../Images/d046eb0051c8bcc86dfea9d2c7c0c412.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce9c17c7b833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-bad-habits-killing-your-productivity-in-data-science-ce9c17c7b833&source=-----ce9c17c7b833---------------------bookmark_footer-----------)![](img/d046eb0051c8bcc86dfea9d2c7c0c412.png)
 
-图片来源：作者。（AI生成）
+图片来源：作者。（AI 生成）
 
 学习数据科学就像学习演奏乐器——你必须养成良好的习惯并扎实基础才能成功。
 

@@ -1,20 +1,20 @@
 # 超越流失预测和流失提升
 
-> 原文：[https://towardsdatascience.com/beyond-churn-prediction-and-churn-uplift-45225e5a7541?source=collection_archive---------4-----------------------#2023-07-25](https://towardsdatascience.com/beyond-churn-prediction-and-churn-uplift-45225e5a7541?source=collection_archive---------4-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/beyond-churn-prediction-and-churn-uplift-45225e5a7541?source=collection_archive---------4-----------------------#2023-07-25`](https://towardsdatascience.com/beyond-churn-prediction-and-churn-uplift-45225e5a7541?source=collection_archive---------4-----------------------#2023-07-25)
 
 ## [因果数据科学](https://towardsdatascience.com/tagged/causal-data-science)
 
 ## 如何在流失的情况下最佳地制定政策
 
-[](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)[![Matteo Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)
+[](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)![Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-churn-prediction-and-churn-uplift-45225e5a7541&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----45225e5a7541---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------) ·12分钟阅读·2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F45225e5a7541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-churn-prediction-and-churn-uplift-45225e5a7541&user=Matteo+Courthoud&userId=666130fb420f&source=-----45225e5a7541---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-churn-prediction-and-churn-uplift-45225e5a7541&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----45225e5a7541---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------) ·12 分钟阅读·2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F45225e5a7541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-churn-prediction-and-churn-uplift-45225e5a7541&user=Matteo+Courthoud&userId=666130fb420f&source=-----45225e5a7541---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F45225e5a7541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-churn-prediction-and-churn-uplift-45225e5a7541&source=-----45225e5a7541---------------------bookmark_footer-----------)![](../Images/af36704bf3fd645df857033ca3b5e3a6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F45225e5a7541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-churn-prediction-and-churn-uplift-45225e5a7541&source=-----45225e5a7541---------------------bookmark_footer-----------)![](img/af36704bf3fd645df857033ca3b5e3a6.png)
 
 封面，图片由作者提供
 

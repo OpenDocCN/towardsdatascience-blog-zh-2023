@@ -1,10 +1,10 @@
 # 如何使用 Azure Synapse 遮蔽 PII 数据
 
-> 原文：[https://towardsdatascience.com/how-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b?source=collection_archive---------16-----------------------#2023-05-23](https://towardsdatascience.com/how-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b?source=collection_archive---------16-----------------------#2023-05-23)
+> 原文：[`towardsdatascience.com/how-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b?source=collection_archive---------16-----------------------#2023-05-23`](https://towardsdatascience.com/how-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b?source=collection_archive---------16-----------------------#2023-05-23)
 
 ## 学习如何在大规模情况下使用格式保留加密（FPE），安全地将数据从生产环境移动到测试环境
 
-[](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)[![René Bremer](../Images/e422c4b84e225d2a949251ebc24dbd2c.png)](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12902547af2b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12902547af2b--------------------------------) [René Bremer](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)
+[](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)![René Bremer](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12902547af2b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----12902547af2b--------------------------------) [René Bremer](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12902547af2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b&source=-----12902547af2b---------------------bookmark_footer-----------)![](../Images/02304fe2bd3a9beb0af28aeef250db7b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12902547af2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b&source=-----12902547af2b---------------------bookmark_footer-----------)![](img/02304fe2bd3a9beb0af28aeef250db7b.png)
 
 数据遮蔽 — 图片来自[Mika Baumeister](https://unsplash.com/@mbaumi)在[Unsplash](https://unsplash.com/)
 
@@ -20,11 +20,11 @@
 
 许多企业需要其测试环境中的代表性数据。通常，这些数据是从生产环境复制到测试环境中的。但是，个人可识别信息（PII）数据通常是生产环境的一部分，必须先进行遮蔽。Azure Synapse 可以利用[格式保留加密](https://en.wikipedia.org/wiki/Format-preserving_encryption)来遮蔽数据，然后将数据复制到测试环境中。参见下方的架构图。
 
-![](../Images/2b1e55f049c3a995be4bab7adb18308c.png)
+![](img/2b1e55f049c3a995be4bab7adb18308c.png)
 
 1\. 使用 Azure Synapse 的格式保留加密 — 作者图像
 
-在这个博客和库`[azure-synapse_mask-data_format-preserved-encryption](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption)`中，讨论了如何在 Synapse 中创建可扩展且安全的掩码解决方案。在下一章中，将讨论项目的属性。然后在第 3 章中部署项目，第 4 章中测试，并在第 5 章中得出结论。
+在这个博客和库`[azure-synapse_mask-data_format-preserved-encryption](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption)`中，讨论了如何在 Synapse 中创建可扩展且安全的掩码解决方案。在下一章中，将讨论项目的属性。然后在第三章中部署项目，第四章中测试，并在第五章中得出结论。
 
 # 2\. Synapse 中 PII 掩码应用的属性
 
@@ -42,7 +42,7 @@ Synapse 中 PII 掩码应用程序的属性如下：
 
 在下图中，定义了安全属性。
 
-![](../Images/2322a3438bb88e3f22495d29c9ebfbd8.png)
+![](img/2322a3438bb88e3f22495d29c9ebfbd8.png)
 
 2\. 掩码应用程序的安全属性 — 作者图像
 
@@ -74,7 +74,7 @@ Synapse 中 PII 掩码应用程序的属性如下：
 
 +   **3.2.1 Azure Synapse Analytics 工作区：** 部署启用了数据泄露保护的 Synapse。确保创建了主要存储帐户。还要确保 Synapse 部署时 1) 启用了管理 VNET，2) 有指向存储帐户的私有端点，3) 仅允许向批准的目标发送出站流量，见下图：
 
-![](../Images/ea8172eac3eb4312ac797a312835e00a.png)
+![](img/ea8172eac3eb4312ac797a312835e00a.png)
 
 3.2\. 启用管理 VNET 和数据泄露保护的 Azure Synapse — 作者提供的图片
 
@@ -90,31 +90,31 @@ Synapse 中 PII 掩码应用程序的属性如下：
 
 +   **3.3.3 Azure Key Vault - 访问控制：** 确保在 Azure Key Vault 的访问策略中，Synapse 管理标识具有获取秘密的权限，见下图。
 
-![](../Images/4e24becd9000e4df6f72e91beb06a6ec.png)
+![](img/4e24becd9000e4df6f72e91beb06a6ec.png)
 
 3.3.3 Synapse 管理标识在 Key Vault 中具有获取秘密的权限 — 作者提供的图片
 
 +   **3.3.4 Azure Synapse Analytics - 私有链接到 Azure Key Vault**：从 Azure Synapse 工作区管理的 VNET 和你的密钥库创建一个私有终结点。请求从 Synapse 发起，需要在 AKV 网络中进行批准。见下图，其中私有终结点已获批准。
 
-![](../Images/60acccebc45a07fa8529e5d619dfc40e.png)
+![](img/60acccebc45a07fa8529e5d619dfc40e.png)
 
 3.3.4 Synapse 和 Key Vault 之间的私有链接连接 — 作者提供的图片
 
 +   **3.3.5 Azure Synapse Analytics - 链接服务连接到 Azure Key Vault：** 从 Azure Synapse 工作区和你的密钥库创建一个链接服务，见下图。
 
-![](../Images/a3fbd054ad53517bb855bdd05c57ea0e.png)
+![](img/a3fbd054ad53517bb855bdd05c57ea0e.png)
 
 3.3.5 Synapse 和 Key Vault 之间的链接服务以获取密钥 — 作者提供的图片
 
 +   **3.3.6 Azure Synapse Analytics - Spark 集群**：创建一个中型的 Spark 集群，具有 3 到 10 个节点，并且可以扩展到 2 到 3 个执行器，见下图。
 
-![](../Images/682ae3bddc7fc8c9879f3c47545c049c.png)
+![](img/682ae3bddc7fc8c9879f3c47545c049c.png)
 
 3.3.6 在 Synapse 中创建 Spark 集群 — 作者提供的图片
 
 +   **3.3.7 Azure Synapse Analytics - 库上传：** 笔记本`Synapse/mask_data_fpe_ff3.ipynb`使用了[ff3](https://github.com/mysto/python-fpe)进行加密。由于 Azure Synapse Analytics 创建时启用了数据泄露保护，因此不能通过从 pypi.org 拉取进行安装，因为这需要在 Azure AD 租户外的出站连接。下载 pycryptodome wheel [这里](https://files.pythonhosted.org/packages/14/58/77278d7a078241b55b515f6073b90108125fb0d197b384a0f372c5f61c80/pycryptodome-3.17-cp35-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl)、ff3 wheel [这里](https://files.pythonhosted.org/packages/3a/c1/3550f1b97d6eedb2117521a149f379bb0d92cbb02e242110bb174f12c9a2/ff3-1.0.1-py3-none-any.whl) 和 Unidecode 库 [这里](https://files.pythonhosted.org/packages/be/ea/90e14e807da5a39e5b16789acacd48d63ca3e4f23dfa964a840eeadebb13/Unidecode-1.3.6-py3-none-any.whl)（Unidecode 库用于将 Unicode 转换为 ASCII，以防在 ff3 中使用大量字母进行数据加密）。然后将 wheels 上传到工作区以使其可信，最后将其附加到 Spark 集群，见下图。
 
-![](../Images/b6b32ada497a3e326f26a41c0d1d07a0.png)
+![](img/b6b32ada497a3e326f26a41c0d1d07a0.png)
 
 3.3.7 从 Synapse 工作区附加的 Python 包到 Spark 集群 — 作者提供的图片
 
@@ -122,7 +122,7 @@ Synapse 中 PII 掩码应用程序的属性如下：
 
 +   **3.3.9 Azure Synapse Analytics - 笔记本 - Spark 会话**：打开笔记本 `Synapse/mask_data_fpe_prefixcipher.ipynb` 的 Spark 会话，确保选择超过 2 个执行器，并使用托管身份运行，请参见下面的截图。
 
-![](../Images/cebbcf4c41e7e399ce3152e761af51dc.png)
+![](img/cebbcf4c41e7e399ce3152e761af51dc.png)
 
 3.3.9 作为托管身份运行 Spark 会话 — 作者提供的图片
 
@@ -141,7 +141,7 @@ Kožušček123a => Sqxbblkd659p
 
 如果使用 1M 数据集并加密 6 列，处理大约需要 2 分钟。这可以通过 1) 使用更多 vcores（从中型到大型）进行扩展，使用更多执行器进行扩展，或创建第二个 Spark 池来轻松扩展。请参见下面的截图。
 
-![](../Images/76da8ab53bac7a689c6c1deb7b15a49f.png)
+![](img/76da8ab53bac7a689c6c1deb7b15a49f.png)
 
 4\. 笔记本成功运行 — 作者提供的图片
 
@@ -151,6 +151,6 @@ Kožušček123a => Sqxbblkd659p
 
 许多企业需要在测试环境中拥有代表性的样本数据。通常，这些数据是从生产环境复制到测试环境的。在本博客和 Git 仓库 `[-synapse_mask-data_format-preserved-encryption](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption)` 中，讨论了一种可扩展且安全的掩盖解决方案，该方案利用了 Spark、Python 和开源库 [ff3](https://github.com/mysto/python-fpe) 的强大功能，请参见下面的架构。
 
-![](../Images/2b1e55f049c3a995be4bab7adb18308c.png)
+![](img/2b1e55f049c3a995be4bab7adb18308c.png)
 
 5\. 使用 Azure Synapse 的格式保留加密 — 作者提供的图片

@@ -1,14 +1,14 @@
 # 临床试验结果预测
 
-> 原文：[https://towardsdatascience.com/clinical-trial-outcome-prediction-a4c6d279fd42?source=collection_archive---------6-----------------------#2023-10-04](https://towardsdatascience.com/clinical-trial-outcome-prediction-a4c6d279fd42?source=collection_archive---------6-----------------------#2023-10-04)
+> 原文：[`towardsdatascience.com/clinical-trial-outcome-prediction-a4c6d279fd42?source=collection_archive---------6-----------------------#2023-10-04`](https://towardsdatascience.com/clinical-trial-outcome-prediction-a4c6d279fd42?source=collection_archive---------6-----------------------#2023-10-04)
 
-## *第1部分：多模态健康数据嵌入*
+## *第一部分：多模态健康数据嵌入*
 
-[](https://medium.com/@lenlan?source=post_page-----a4c6d279fd42--------------------------------)[![Lennart Langouche](../Images/ca35c7112cb845d17e1148b4f282600e.png)](https://medium.com/@lenlan?source=post_page-----a4c6d279fd42--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a4c6d279fd42--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a4c6d279fd42--------------------------------) [Lennart Langouche](https://medium.com/@lenlan?source=post_page-----a4c6d279fd42--------------------------------)
+[](https://medium.com/@lenlan?source=post_page-----a4c6d279fd42--------------------------------)![Lennart Langouche](https://medium.com/@lenlan?source=post_page-----a4c6d279fd42--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a4c6d279fd42--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4c6d279fd42--------------------------------) [Lennart Langouche](https://medium.com/@lenlan?source=post_page-----a4c6d279fd42--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4bee88ffae4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-a4c6d279fd42&user=Lennart+Langouche&userId=4bee88ffae4&source=post_page-4bee88ffae4----a4c6d279fd42---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4c6d279fd42--------------------------------) ·8分钟阅读·2023年10月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa4c6d279fd42&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-a4c6d279fd42&user=Lennart+Langouche&userId=4bee88ffae4&source=-----a4c6d279fd42---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4bee88ffae4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-a4c6d279fd42&user=Lennart+Langouche&userId=4bee88ffae4&source=post_page-4bee88ffae4----a4c6d279fd42---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4c6d279fd42--------------------------------) ·8 分钟阅读·2023 年 10 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa4c6d279fd42&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-a4c6d279fd42&user=Lennart+Langouche&userId=4bee88ffae4&source=-----a4c6d279fd42---------------------clap_footer-----------)
 
 --
 
@@ -18,15 +18,15 @@
 
 项目的目标是预测临床试验的结果（二元结果：失败与成功），无需实际进行试验。我们将使用来自 [ClinicalTrials.gov](http://clinicaltrials.gov) 的公开临床试验信息，如*药物分子、疾病指示、试验方案、赞助商*和*参与者数量*，并使用不同的工具，如 BioBERT、SBERT 和 DeepPurpose，将其嵌入（转换为向量表示）。
 
-![](../Images/3562ccfd368279055d7b53f61345d436.png)
+![](img/3562ccfd368279055d7b53f61345d436.png)
 
 工作流程示意图（图片由作者提供）
 
 在本系列的第一部分，我专注于嵌入多模态临床试验数据。在 [第二部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-7ce6c27831f9) 中，我使用 XGBoost 模型预测试验结果（二元预测：失败与成功），并简要比较我的简单 XGBoost 模型与 [文章](https://doi.org/10.1016/j.patter.2022.100445) 中的 HINT 模型的性能。
 
-![](../Images/598fd825153e7854fa7a1e821e1cbb35.png)
+![](img/598fd825153e7854fa7a1e821e1cbb35.png)
 
-本系列第 1 部分的重点：将多模态临床试验数据嵌入向量（图片由作者提供）
+本系列第一部分的重点：将多模态临床试验数据嵌入向量（图片由作者提供）
 
 本文中我将遵循以下步骤：
 
@@ -166,7 +166,7 @@ def xmlfile2results(xml_file):
 
 # 使用句子变换器嵌入信息 — 示例
 
-首先我们需要安装sentence-transformers库。
+首先我们需要安装 sentence-transformers 库。
 
 ```py
 pip install -U sentence-transformers
@@ -184,11 +184,11 @@ print(embeddings.shape)
 # (2, 312)
 ```
 
-我们成功地将两个句子转换为一个312维的向量表示。
+我们成功地将两个句子转换为一个 312 维的向量表示。
 
-# 使用tiny-biobert嵌入**疾病指示**
+# 使用 tiny-biobert 嵌入**疾病指示**
 
-首先我们创建一个字典，将每个指示映射到其312维的嵌入表示，使用[tiny-biobert](https://huggingface.co/nlpie/tiny-biobert)。然后，我们创建一个直接将每个试验标识符映射到其疾病嵌入表示的字典。当试验包含多个指示时，我们取它们的均值作为向量表示。
+首先我们创建一个字典，将每个指示映射到其 312 维的嵌入表示，使用[tiny-biobert](https://huggingface.co/nlpie/tiny-biobert)。然后，我们创建一个直接将每个试验标识符映射到其疾病嵌入表示的字典。当试验包含多个指示时，我们取它们的均值作为向量表示。
 
 ```py
 def create_indication2embedding_dict():
@@ -228,7 +228,7 @@ def create_indication2embedding_dict():
 create_indication2embedding_dict()
 ```
 
-# 使用tiny-biobert嵌入临床试验的纳入/排除标准
+# 使用 tiny-biobert 嵌入临床试验的纳入/排除标准
 
 以非常类似的方式，我们编码临床试验的纳入/排除标准。需要进行一些额外的数据清理，以使文本格式正确。我们分别编码纳入标准和排除标准，每个标准的嵌入表示是其包含的句子的均值向量表示。
 
@@ -265,9 +265,9 @@ def create_nctid2protocol_embedding_dict():
 create_nctid2protocol_embedding_dict()
 ```
 
-# 使用all-MiniLM-L6-v2嵌入**赞助商信息**，这是SentenceBERT提供的一个强大的预训练句子编码器
+# 使用 all-MiniLM-L6-v2 嵌入**赞助商信息**，这是 SentenceBERT 提供的一个强大的预训练句子编码器
 
-我选择使用句子嵌入([SBERT](https://www.sbert.net/index.html))来编码试验赞助商。使用Label或One-Hot编码等简单方法也可以，但我希望能够捕捉赞助商名称之间的相似性，以防有拼写错误或多个不同的拼写。我使用预训练的[all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)模型，它在基准数据集上具有高速和高性能。它将每个赞助机构转换为一个384维的向量。
+我选择使用句子嵌入([SBERT](https://www.sbert.net/index.html))来编码试验赞助商。使用 Label 或 One-Hot 编码等简单方法也可以，但我希望能够捕捉赞助商名称之间的相似性，以防有拼写错误或多个不同的拼写。我使用预训练的[all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)模型，它在基准数据集上具有高速和高性能。它将每个赞助机构转换为一个 384 维的向量。
 
 ```py
 def create_sponsor2embedding_dict():
@@ -291,9 +291,9 @@ def create_sponsor2embedding_dict():
 create_sponsor2embedding_dict()
 ```
 
-# 将**药物名称**转换为SMILES表示，然后使用DeepPurpose转换为Morgan指纹
+# 将**药物名称**转换为 SMILES 表示，然后使用 DeepPurpose 转换为 Morgan 指纹
 
-分子可以用SMILES字符串表示。SMILES是一种编码分子结构的线性符号表示法。药物分子数据从[ClinicalTrials.gov](http://ClinicalTrials.gov)提取，并通过[CACTUS](https://cactus.nci.nih.gov/)链接到其分子结构（SMILES字符串）。
+分子可以用 SMILES 字符串表示。SMILES 是一种编码分子结构的线性符号表示法。药物分子数据从[ClinicalTrials.gov](http://ClinicalTrials.gov)提取，并通过[CACTUS](https://cactus.nci.nih.gov/)链接到其分子结构（SMILES 字符串）。
 
 ```py
 import requests
@@ -329,17 +329,17 @@ get_smiles(drug_name)
 # SMILES: CC(=O)Oc1ccccc1C(O)=O
 ```
 
-[DeepPurpose](https://github.com/kexinhuang12345/DeepPurpose)可以用来编码分子化合物。它目前支持15种不同的编码。我们将使用Morgan编码，它将化学的原子组编码为一个二进制向量，以长度和半径作为两个参数。首先我们需要安装DeepPurpose库。
+[DeepPurpose](https://github.com/kexinhuang12345/DeepPurpose)可以用来编码分子化合物。它目前支持 15 种不同的编码。我们将使用 Morgan 编码，它将化学的原子组编码为一个二进制向量，以长度和半径作为两个参数。首先我们需要安装 DeepPurpose 库。
 
 ```py
 pip install DeepPurpose
 ```
 
-![](../Images/7dcdecb43803584e8c4498f653137c4d.png)
+![](img/7dcdecb43803584e8c4498f653137c4d.png)
 
-DeepPurpose编码器概述（图片来自[Huang et al.](https://doi.org/10.1093/bioinformatics/btaa1005)，CC许可）
+DeepPurpose 编码器概述（图片来自[Huang et al.](https://doi.org/10.1093/bioinformatics/btaa1005)，CC 许可）
 
-我们创建一个将SMILES映射到Morgan表示的字典，以及一个将临床试验标识符（NCTIDs）直接映射到其Morgan表示的字典。
+我们创建一个将 SMILES 映射到 Morgan 表示的字典，以及一个将临床试验标识符（NCTIDs）直接映射到其 Morgan 表示的字典。
 
 ```py
 def create_smiles2morgan_dict():
@@ -391,9 +391,9 @@ create_nctid2molecule_embedding_dict()
 
 +   使用[all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)嵌入**赞助商信息**，这是来自[SentenceBERT](https://doi.org/10.48550/arXiv.1908.10084)的强大预训练句子编码器。
 
-+   将**药物名称**转换为其SMILES表示，然后使用[DeepPurpose](https://github.com/kexinhuang12345/DeepPurpose)通过[Huang et al.](https://doi.org/10.1093/bioinformatics/btaa1005)转换为其Morgan指纹。
++   将**药物名称**转换为其 SMILES 表示，然后使用[DeepPurpose](https://github.com/kexinhuang12345/DeepPurpose)通过[Huang et al.](https://doi.org/10.1093/bioinformatics/btaa1005)转换为其 Morgan 指纹。
 
-在本系列的[第二部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-7ce6c27831f9)中，我将运行一个简单的XGBoost模型，以预测临床试验结果，基于我们在这里创建的嵌入向量表示。我将其性能与HINT模型进行比较。
+在本系列的[第二部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-7ce6c27831f9)中，我将运行一个简单的 XGBoost 模型，以预测临床试验结果，基于我们在这里创建的嵌入向量表示。我将其性能与 HINT 模型进行比较。
 
 # 参考文献
 

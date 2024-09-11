@@ -1,26 +1,26 @@
-# 使用TorchServe服务ML模型
+# 使用 TorchServe 服务 ML 模型
 
-> 原文：[https://towardsdatascience.com/serving-ml-models-with-torchserve-1578eca5aa20?source=collection_archive---------9-----------------------#2023-03-29](https://towardsdatascience.com/serving-ml-models-with-torchserve-1578eca5aa20?source=collection_archive---------9-----------------------#2023-03-29)
+> 原文：[`towardsdatascience.com/serving-ml-models-with-torchserve-1578eca5aa20?source=collection_archive---------9-----------------------#2023-03-29`](https://towardsdatascience.com/serving-ml-models-with-torchserve-1578eca5aa20?source=collection_archive---------9-----------------------#2023-03-29)
 
-## 一个完整的端到端图像分类任务ML模型服务示例
+## 一个完整的端到端图像分类任务 ML 模型服务示例
 
-[](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)[![Andrey Golovin](../Images/3afbee89a80374b346e57c8f317c9b3a.png)](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------) [Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)
+[](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)![Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------) [Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc18c39659707&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&user=Andrey+Golovin&userId=c18c39659707&source=post_page-c18c39659707----1578eca5aa20---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------) ·8 min read·2023年3月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1578eca5aa20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&user=Andrey+Golovin&userId=c18c39659707&source=-----1578eca5aa20---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc18c39659707&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&user=Andrey+Golovin&userId=c18c39659707&source=post_page-c18c39659707----1578eca5aa20---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------) ·8 min read·2023 年 3 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1578eca5aa20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&user=Andrey+Golovin&userId=c18c39659707&source=-----1578eca5aa20---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1578eca5aa20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&source=-----1578eca5aa20---------------------bookmark_footer-----------)![](../Images/d444be3fa94d97d5bc6f951f3e33825c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1578eca5aa20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&source=-----1578eca5aa20---------------------bookmark_footer-----------)![](img/d444be3fa94d97d5bc6f951f3e33825c.png)
 
 图片来源：作者
 
 # 动机
 
-本文将引导你通过使用TorchServe框架服务你的深度学习Torch模型的过程。
+本文将引导你通过使用 TorchServe 框架服务你的深度学习 Torch 模型的过程。
 
-关于这个主题有很多文章。然而，通常这些文章要么专注于部署TorchServe本身，要么专注于编写自定义处理程序并获得最终结果。这是我写这篇文章的动机。本文涵盖了这两个部分，并提供了端到端的示例。
+关于这个主题有很多文章。然而，通常这些文章要么专注于部署 TorchServe 本身，要么专注于编写自定义处理程序并获得最终结果。这是我写这篇文章的动机。本文涵盖了这两个部分，并提供了端到端的示例。
 
 以图像分类挑战为例。最终你将能够部署 TorchServe 服务器，提供模型服务，发送任何随机的衣物图片，并最终获得预测的衣物类别标签。我相信这就是人们对作为 API 端点提供分类服务的 ML 模型的期望。
 
@@ -132,7 +132,7 @@ torchserve --start --model-store path --models fmnist=/path/fashion_mnist.mar
 
 如果 TorchServe 正常工作，你应该看到 *{‘status’: ‘Healthy’}*
 
-![](../Images/0df4ccbecb4662d7a41d15f337d6c058.png)
+![](img/0df4ccbecb4662d7a41d15f337d6c058.png)
 
 图片来源于作者
 
@@ -196,14 +196,14 @@ curl -X POST http://localhost:8080/predictions/fmnist -T tshirt4.jpg
 
 在响应中，我们应该看到预测的标签：
 
-![](../Images/7ba3d410efe561befca4dbac6a11f21a.png)
+![](img/7ba3d410efe561befca4dbac6a11f21a.png)
 
 图片由作者提供
 
 # 结论
 
-好吧，通过跟随这篇博客文章，我们能够创建一个REST API端点，我们可以向其发送图像并获取图像的预测标签。通过在服务器上重复相同的过程，而不是本地机器，一个人可以利用它来为面向用户的应用程序、其他服务，或者例如流式机器学习应用程序创建一个端点（参见这篇有趣的论文了解为什么你可能不应该这样做：[*https://sites.bu.edu/casp/files/2022/05/Horchidan22Evaluating.pdf*](https://sites.bu.edu/casp/files/2022/05/Horchidan22Evaluating.pdf)）
+好吧，通过跟随这篇博客文章，我们能够创建一个 REST API 端点，我们可以向其发送图像并获取图像的预测标签。通过在服务器上重复相同的过程，而不是本地机器，一个人可以利用它来为面向用户的应用程序、其他服务，或者例如流式机器学习应用程序创建一个端点（参见这篇有趣的论文了解为什么你可能不应该这样做：[*https://sites.bu.edu/casp/files/2022/05/Horchidan22Evaluating.pdf*](https://sites.bu.edu/casp/files/2022/05/Horchidan22Evaluating.pdf)）
 
-敬请关注，在下一部分中我将扩展示例：让我们为业务逻辑创建一个Flask应用程序的模拟，并通过TorchServe调用一个机器学习模型（并使用Kubernetes部署所有内容）。
+敬请关注，在下一部分中我将扩展示例：让我们为业务逻辑创建一个 Flask 应用程序的模拟，并通过 TorchServe 调用一个机器学习模型（并使用 Kubernetes 部署所有内容）。
 
-一个简单的用例：面向用户的应用程序，具有大量业务逻辑和许多不同的功能。比如，一个功能是上传图像，将所需的样式应用于图像，使用样式迁移机器学习模型。机器学习模型可以通过TorchServe提供，因此机器学习部分将完全与主应用程序中的业务逻辑和其他功能解耦。
+一个简单的用例：面向用户的应用程序，具有大量业务逻辑和许多不同的功能。比如，一个功能是上传图像，将所需的样式应用于图像，使用样式迁移机器学习模型。机器学习模型可以通过 TorchServe 提供，因此机器学习部分将完全与主应用程序中的业务逻辑和其他功能解耦。

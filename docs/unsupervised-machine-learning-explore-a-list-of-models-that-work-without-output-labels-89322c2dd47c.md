@@ -1,18 +1,18 @@
 # 无监督机器学习：探索一系列无需输出标签的模型
 
-> 原文：[https://towardsdatascience.com/unsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c?source=collection_archive---------8-----------------------#2023-05-25](https://towardsdatascience.com/unsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c?source=collection_archive---------8-----------------------#2023-05-25)
+> 原文：[`towardsdatascience.com/unsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c?source=collection_archive---------8-----------------------#2023-05-25`](https://towardsdatascience.com/unsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c?source=collection_archive---------8-----------------------#2023-05-25)
 
 ## 了解各种无监督机器学习模型的基本原理，以及它们如何在没有输出标签的情况下生成预测
 
-[](https://suhas-maddali007.medium.com/?source=post_page-----89322c2dd47c--------------------------------)[![Suhas Maddali](../Images/933f27eab8ba9ee1f06ed2f24746d788.png)](https://suhas-maddali007.medium.com/?source=post_page-----89322c2dd47c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89322c2dd47c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89322c2dd47c--------------------------------) [Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----89322c2dd47c--------------------------------)
+[](https://suhas-maddali007.medium.com/?source=post_page-----89322c2dd47c--------------------------------)![Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----89322c2dd47c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89322c2dd47c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----89322c2dd47c--------------------------------) [Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----89322c2dd47c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----89322c2dd47c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89322c2dd47c--------------------------------) · 12分钟阅读 · 2023年5月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89322c2dd47c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c&user=Suhas+Maddali&userId=2a74f90399ae&source=-----89322c2dd47c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----89322c2dd47c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89322c2dd47c--------------------------------) · 12 分钟阅读 · 2023 年 5 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89322c2dd47c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c&user=Suhas+Maddali&userId=2a74f90399ae&source=-----89322c2dd47c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89322c2dd47c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c&source=-----89322c2dd47c---------------------bookmark_footer-----------)![](../Images/4c734dd8ce705ae62262520e855084db.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89322c2dd47c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-machine-learning-explore-a-list-of-models-that-work-without-output-labels-89322c2dd47c&source=-----89322c2dd47c---------------------bookmark_footer-----------)![](img/4c734dd8ce705ae62262520e855084db.png)
 
 照片由 [Jacopo Maia](https://unsplash.com/@ja_ma?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 那么，我们如何利用未标记的数据而不需要手动标记呢？这就是无监督机器学习的用武之地。顾名思义，这种方法认为在无监督机器学习模型的训练过程中可以使用没有输出标签的数据。这些模型会**识别**数据中固有的模式和趋势，并根据一组特定的属性或特征将其分组到不同的类别中。在将它们分组在一起之后，我们可以找出不同组之间的共同点，并利用这些信息将业务引导到正确的方向。
 
-![](../Images/6ceb06cf1e93dc14a50da6b62ae31d72.png)
+![](img/6ceb06cf1e93dc14a50da6b62ae31d72.png)
 
 照片由[Lucrezia Carnelos](https://unsplash.com/@ciabattespugnose?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上提供引用。
 
@@ -32,17 +32,17 @@
 
 ## K-means 聚类
 
-K-means 聚类是一种流行的无监督机器学习模型，用于将一组项分组到不同的类别中。在此模型中，K是一个超参数，必须根据领域知识或通过标准技术（如肘部法则或轮廓分析）来选择。下面是通常用来将数据中的元素分组到k个簇中的步骤列表。
+K-means 聚类是一种流行的无监督机器学习模型，用于将一组项分组到不同的类别中。在此模型中，K 是一个超参数，必须根据领域知识或通过标准技术（如肘部法则或轮廓分析）来选择。下面是通常用来将数据中的元素分组到 k 个簇中的步骤列表。
 
-1.  随机初始化一组数据点作为质心，基于k的值。例如，如果k的值是10，则会随机选择10个数据点并将其标记为质心。
+1.  随机初始化一组数据点作为质心，基于 k 的值。例如，如果 k 的值是 10，则会随机选择 10 个数据点并将其标记为质心。
 
 1.  在此步骤之后，会计算每个数据点与这些质心之间的距离。距离最小的点会被分配到相应的质心。距离度量可以是欧几里得距离、余弦距离或曼哈顿距离。
 
-1.  这样，所有的数据点都属于在步骤1中随机分配的质心中的一个。
+1.  这样，所有的数据点都属于在步骤 1 中随机分配的质心中的一个。
 
 1.  为了从每个簇中确定一个新的质心，需要计算每个簇的均值，并将其指定为新的质心。这个步骤会对所有形成的簇执行。
 
-1.  在为每个簇找到新的质心集后，步骤2到步骤4会重复进行，直到收敛。换句话说，寻找最佳簇的过程会停止，因为上一轮迭代的质心与当前迭代的质心之间没有太大差异。
+1.  在为每个簇找到新的质心集后，步骤 2 到步骤 4 会重复进行，直到收敛。换句话说，寻找最佳簇的过程会停止，因为上一轮迭代的质心与当前迭代的质心之间没有太大差异。
 
 尽管这种方法直观且具有很好的潜力，但它也有一些缺点，我们将在下文中讨论这些缺点以及优点。
 
@@ -62,11 +62,11 @@ K-means 聚类是一种流行的无监督机器学习模型，用于将一组项
 
 ## 层次聚类
 
-使用k-means聚类方法的一个缺点是，在生成聚类时需要事先确定聚类的总数。然而，这种方法往往耗时，并且导致结果不一致。然而，在层次聚类方法中，最佳的聚类数目可以在没有人工干预的情况下确定。我们将讨论层次聚类的两个子类别。
+使用 k-means 聚类方法的一个缺点是，在生成聚类时需要事先确定聚类的总数。然而，这种方法往往耗时，并且导致结果不一致。然而，在层次聚类方法中，最佳的聚类数目可以在没有人工干预的情况下确定。我们将讨论层次聚类的两个子类别。
 
 **凝聚层次聚类：** 这种方法专注于以自下而上的方式逐个构建聚类。最初，每个数据点被假定为一个单独的聚类。之后，将彼此最接近的聚类合并成一个合并的聚类。此步骤会一直进行，直到我们能够将所有数据点合并为一个最终的单一聚类。该方法可以帮助我们确定聚类形成的层次结构以及它们之间的相似性。树状图显示了这种树状结构，展示了所有聚类的形成方式。
 
-**分裂聚类：** 这种方法遵循自上而下的方法，将所有数据点分配到一个单一的聚类中。我们根据数据点之间的距离将其分割成聚类。这些步骤一直进行，直到我们得到**n**个聚类，其中**n**表示选择用于聚类的数据点总数。n的值较大将导致更多的聚类和更高的计算成本。通过树状图可以更容易地可视化结果，该图也显示了用于划分聚类的相似性。
+**分裂聚类：** 这种方法遵循自上而下的方法，将所有数据点分配到一个单一的聚类中。我们根据数据点之间的距离将其分割成聚类。这些步骤一直进行，直到我们得到**n**个聚类，其中**n**表示选择用于聚类的数据点总数。n 的值较大将导致更多的聚类和更高的计算成本。通过树状图可以更容易地可视化结果，该图也显示了用于划分聚类的相似性。
 
 ## 优点
 
@@ -86,7 +86,7 @@ K-means 聚类是一种流行的无监督机器学习模型，用于将一组项
 
 ## 基于密度的空间聚类算法（DBSCAN）
 
-这是一种无监督的机器学习方法，通过相对密度来确定聚类。以下是DBSCAN方法中遵循的步骤列表。
+这是一种无监督的机器学习方法，通过相对密度来确定聚类。以下是 DBSCAN 方法中遵循的步骤列表。
 
 1.  **选择初始参数：** 选择一个尚未访问的任意起始数据点。设置你的参数：`eps`（epsilon）是两个样本之间被认为在同一邻域中的最大距离，`minPts`是邻域内样本的最小数量，以使数据点符合核心点的条件。
 
@@ -102,7 +102,7 @@ K-means 聚类是一种流行的无监督机器学习模型，用于将一组项
 
 ## 优点
 
-1.  不需要像k-means聚类方法那样指定簇的数量。
+1.  不需要像 k-means 聚类方法那样指定簇的数量。
 
 1.  它对数据中的异常值更加鲁棒，因为它基于核心点和噪声点的概念。
 
@@ -114,29 +114,29 @@ K-means 聚类是一种流行的无监督机器学习模型，用于将一组项
 
 1.  它不能用于对新数据样本进行预测，而只能对训练期间使用的数据点进行聚类。
 
-1.  运行DBSCAN模型多次可能不会总是产生相似的结果，因为它是非确定性的。
+1.  运行 DBSCAN 模型多次可能不会总是产生相似的结果，因为它是非确定性的。
 
 ## 高斯混合模型（GMMs）
 
 该方法基于期望最大化原理，将数据点根据其概率得分放入簇中。此外，这种方法假设数据点服从正态分布。为此，首先需要初始化均值、方差和混合权重。在此步骤之后，我们按照期望最大化方法确定数据点的簇。以下是使用高斯混合模型时采取的详细步骤解释。
 
-1.  第一步是初始化均值、方差和混合权重的集合。这可以随机完成，也可以借助k-means聚类方法完成。
+1.  第一步是初始化均值、方差和混合权重的集合。这可以随机完成，也可以借助 k-means 聚类方法完成。
 
-1.  在这一步之后，我们确定每个数据点属于这些k个簇中的任何一个的后验概率。这也称为期望阶段。
+1.  在这一步之后，我们确定每个数据点属于这些 k 个簇中的任何一个的后验概率。这也称为期望阶段。
 
 1.  一旦确定了每个簇中的数据点，其组合均值、协方差和混合权重会被重新计算，以最大化期望。
 
-1.  步骤2和步骤3会重复进行，直到与期望最大化方法确定的簇相比，数据点在其他簇中的变化不再发生。
+1.  步骤 2 和步骤 3 会重复进行，直到与期望最大化方法确定的簇相比，数据点在其他簇中的变化不再发生。
 
 1.  最终，我们得到的数据点被聚类在一起，假设每个数据点都符合正态分布。
 
 ## 优点
 
-1.  使用这种方法的一个优点是，它能够处理比k-means聚类方法更为复杂的椭圆形或球形簇。
+1.  使用这种方法的一个优点是，它能够处理比 k-means 聚类方法更为复杂的椭圆形或球形簇。
 
 1.  这也导致了软聚类，这非常方便，因为我们可以知道模型在将数据点分配到每个簇时的置信度分数。
 
-1.  与其他模型如k-means相比，它们具有更高的灵活性，因为它们可以处理不同形状和大小的簇。
+1.  与其他模型如 k-means 相比，它们具有更高的灵活性，因为它们可以处理不同形状和大小的簇。
 
 ## 缺点
 
@@ -182,7 +182,7 @@ K-means 聚类是一种流行的无监督机器学习模型，用于将一组项
 
 1.  在执行这一步后，我们使用一组公式和方程来计算特征值和特征向量。为了做到这一点，我们应有一个突出重要信息的协方差矩阵。
 
-1.  在确定特征值和特征向量后，我们应按降序排列特征值，以确定每个特征相对于其他特征解释的方差。根据我们希望PCA分解的组件数量，我们将设置组件数量的值。
+1.  在确定特征值和特征向量后，我们应按降序排列特征值，以确定每个特征相对于其他特征解释的方差。根据我们希望 PCA 分解的组件数量，我们将设置组件数量的值。
 
 1.  我们将对原始数据与特征向量进行矩阵乘法，以获得转换后的特征。这表示减少后的数据集，这样的训练和预测可能计算上更为高效。
 
@@ -198,7 +198,7 @@ K-means 聚类是一种流行的无监督机器学习模型，用于将一组项
 
 1.  由于主成分分析，解释存在的组件是困难的。原始特征更容易解释，因为它们代表了现实世界的数据，而主成分不能作为特征来解释，而是作为变换来理解。
 
-1.  对于缩放非常敏感，数据的不同尺度会极大地影响PCA的性能。
+1.  对于缩放非常敏感，数据的不同尺度会极大地影响 PCA 的性能。
 
 1.  如果数据中存在离群值，它的表现可能不如其他无监督机器学习模型。
 

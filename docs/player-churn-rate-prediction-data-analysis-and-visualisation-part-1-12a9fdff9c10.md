@@ -1,20 +1,20 @@
 # 如何预测玩家流失，借助 ChatGPT 的帮助
 
-> 原文：[https://towardsdatascience.com/player-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10?source=collection_archive---------4-----------------------#2023-06-20](https://towardsdatascience.com/player-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10?source=collection_archive---------4-----------------------#2023-06-20)
+> 原文：[`towardsdatascience.com/player-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10?source=collection_archive---------4-----------------------#2023-06-20`](https://towardsdatascience.com/player-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10?source=collection_archive---------4-----------------------#2023-06-20)
 
 ## 使用低代码机器学习平台的数据科学 | Actable AI
 
 ## 使用低代码平台进行玩家流失预测的数据分析和模型训练
 
-[](https://medium.com/@chrisgalea?source=post_page-----12a9fdff9c10--------------------------------)[![Christian Galea](../Images/1e4e32ce529f7694422f130897eb071b.png)](https://medium.com/@chrisgalea?source=post_page-----12a9fdff9c10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12a9fdff9c10--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12a9fdff9c10--------------------------------) [Christian Galea](https://medium.com/@chrisgalea?source=post_page-----12a9fdff9c10--------------------------------)
+[](https://medium.com/@chrisgalea?source=post_page-----12a9fdff9c10--------------------------------)![Christian Galea](https://medium.com/@chrisgalea?source=post_page-----12a9fdff9c10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12a9fdff9c10--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----12a9fdff9c10--------------------------------) [Christian Galea](https://medium.com/@chrisgalea?source=post_page-----12a9fdff9c10--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa9be78db0c9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplayer-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10&user=Christian+Galea&userId=a9be78db0c9b&source=post_page-a9be78db0c9b----12a9fdff9c10---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12a9fdff9c10--------------------------------) ·22分钟阅读·2023年6月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12a9fdff9c10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplayer-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10&user=Christian+Galea&userId=a9be78db0c9b&source=-----12a9fdff9c10---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa9be78db0c9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplayer-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10&user=Christian+Galea&userId=a9be78db0c9b&source=post_page-a9be78db0c9b----12a9fdff9c10---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12a9fdff9c10--------------------------------) ·22 分钟阅读·2023 年 6 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12a9fdff9c10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplayer-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10&user=Christian+Galea&userId=a9be78db0c9b&source=-----12a9fdff9c10---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12a9fdff9c10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplayer-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10&source=-----12a9fdff9c10---------------------bookmark_footer-----------)![](../Images/b1907bde077d48abe4a7127f8a720a6c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12a9fdff9c10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplayer-churn-rate-prediction-data-analysis-and-visualisation-part-1-12a9fdff9c10&source=-----12a9fdff9c10---------------------bookmark_footer-----------)![](img/b1907bde077d48abe4a7127f8a720a6c.png)
 
 照片由 [Tima Miroshnichenko 在 Pexels](https://www.pexels.com/photo/man-in-white-dress-shirt-with-eyeglasses-feeling-exhausted-7567442/) 提供
 

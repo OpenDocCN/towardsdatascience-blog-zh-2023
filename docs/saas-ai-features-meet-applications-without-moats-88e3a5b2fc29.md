@@ -1,22 +1,22 @@
 # SaaS AI 特性与无护城河的应用相遇
 
-> 原文：[https://towardsdatascience.com/saas-ai-features-meet-applications-without-moats-88e3a5b2fc29?source=collection_archive---------2-----------------------#2023-10-17](https://towardsdatascience.com/saas-ai-features-meet-applications-without-moats-88e3a5b2fc29?source=collection_archive---------2-----------------------#2023-10-17)
+> 原文：[`towardsdatascience.com/saas-ai-features-meet-applications-without-moats-88e3a5b2fc29?source=collection_archive---------2-----------------------#2023-10-17`](https://towardsdatascience.com/saas-ai-features-meet-applications-without-moats-88e3a5b2fc29?source=collection_archive---------2-----------------------#2023-10-17)
 
 ## 几家企业 SaaS 公司最近宣布了生成型 AI 功能，这对缺乏可持续竞争优势的 AI 初创公司构成了直接威胁
 
-[](https://medium.com/@viggybala?source=post_page-----88e3a5b2fc29--------------------------------)[![Viggy Balagopalakrishnan](../Images/a3d6b5d26327892108816c0ef125b90d.png)](https://medium.com/@viggybala?source=post_page-----88e3a5b2fc29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----88e3a5b2fc29--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----88e3a5b2fc29--------------------------------) [Viggy Balagopalakrishnan](https://medium.com/@viggybala?source=post_page-----88e3a5b2fc29--------------------------------)
+[](https://medium.com/@viggybala?source=post_page-----88e3a5b2fc29--------------------------------)![Viggy Balagopalakrishnan](https://medium.com/@viggybala?source=post_page-----88e3a5b2fc29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----88e3a5b2fc29--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----88e3a5b2fc29--------------------------------) [Viggy Balagopalakrishnan](https://medium.com/@viggybala?source=post_page-----88e3a5b2fc29--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb3366eb9a0cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsaas-ai-features-meet-applications-without-moats-88e3a5b2fc29&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=post_page-b3366eb9a0cf----88e3a5b2fc29---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----88e3a5b2fc29--------------------------------) ·12 分钟阅读·2023年10月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F88e3a5b2fc29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsaas-ai-features-meet-applications-without-moats-88e3a5b2fc29&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=-----88e3a5b2fc29---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb3366eb9a0cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsaas-ai-features-meet-applications-without-moats-88e3a5b2fc29&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=post_page-b3366eb9a0cf----88e3a5b2fc29---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----88e3a5b2fc29--------------------------------) ·12 分钟阅读·2023 年 10 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F88e3a5b2fc29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsaas-ai-features-meet-applications-without-moats-88e3a5b2fc29&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=-----88e3a5b2fc29---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F88e3a5b2fc29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsaas-ai-features-meet-applications-without-moats-88e3a5b2fc29&source=-----88e3a5b2fc29---------------------bookmark_footer-----------)
 
-回到七月，我们 [深入探讨了生成型AI初创公司](/ai-startup-trends-insights-from-y-combinators-latest-batch-282efc9080ae) 来自 Y Combinator 的 W23 批次——特别是那些利用大型语言模型（LLM）如 GPT 来驱动 ChatGPT 的初创公司。我们识别出这些初创公司的几个主要趋势——例如专注于非常具体的问题和客户（例如，为中小企业提供营销内容），与现有软件的集成（例如，与 Salesforce 等 CRM 平台的集成），以及为特定环境定制大型语言模型的能力（例如，公司的品牌声音）。
+回到七月，我们 深入探讨了生成型 AI 初创公司 来自 Y Combinator 的 W23 批次——特别是那些利用大型语言模型（LLM）如 GPT 来驱动 ChatGPT 的初创公司。我们识别出这些初创公司的几个主要趋势——例如专注于非常具体的问题和客户（例如，为中小企业提供营销内容），与现有软件的集成（例如，与 Salesforce 等 CRM 平台的集成），以及为特定环境定制大型语言模型的能力（例如，公司的品牌声音）。
 
-文章的一个次要但不常被强调的部分是关于 [护城河风险](/ai-startup-trends-insights-from-y-combinators-latest-batch-282efc9080ae) — 引用自当时的报道：
+文章的一个次要但不常被强调的部分是关于 护城河风险 — 引用自当时的报道：
 
 > 这些初创公司面临的一个关键风险是长期护城河的可能缺乏。鉴于这些初创公司的阶段和有限的公开信息，很难对其进行过多的解读，但长期的防御性却并非难事。例如：
 > 
@@ -34,7 +34,7 @@
 
 # AI 价值链回顾
 
-我们不会在这方面花太多时间，但快速提醒一下，企业如何从 AI 中获得价值的一种方式是通过 [AI 价值链](/ai-startup-trends-insights-from-y-combinators-latest-batch-282efc9080ae) 的概念。具体来说，你可以将价值链分解为三个层次：
+我们不会在这方面花太多时间，但快速提醒一下，企业如何从 AI 中获得价值的一种方式是通过 AI 价值链 的概念。具体来说，你可以将价值链分解为三个层次：
 
 +   基础设施（例如，NVIDIA 制造用于运行 AI 应用程序的芯片，Amazon AWS 提供用于 AI 的云计算，Open AI 提供像 GPT 这样的大型语言模型来构建产品）
 
@@ -42,7 +42,7 @@
 
 +   应用（例如，一家初创公司正在构建一款帮助中小企业快速创建营销内容的产品）
 
-![](../Images/b2867bdfaf6481bc5cffc92816637414.png)
+![](img/b2867bdfaf6481bc5cffc92816637414.png)
 
 AI 价值链；来源：作者
 
@@ -66,19 +66,19 @@ Salesforce 也有了新的宣布。他们的产品 [Einstein GPT](https://www.sa
 
 列表继续：
 
-+   Zoom宣布了[Zoom AI](https://explore.zoom.us/en/ai-assistant/)，它提供会议总结，如果你错过了某些信息并希望赶上进度，还能回答会议中的问题，并总结聊天记录。如今，许多初创公司正在将这些功能作为独立产品（例如笔记工具）进行开发。
++   Zoom 宣布了[Zoom AI](https://explore.zoom.us/en/ai-assistant/)，它提供会议总结，如果你错过了某些信息并希望赶上进度，还能回答会议中的问题，并总结聊天记录。如今，许多初创公司正在将这些功能作为独立产品（例如笔记工具）进行开发。
 
-+   [微软365 Copilot](https://blogs.microsoft.com/blog/2023/09/21/announcing-microsoft-copilot-your-everyday-ai-companion/)将读取你的未读邮件并进行总结，回答所有文档中的问题，并起草文档等。这些功能还将无缝嵌入到Word、Excel、OneNote和OneDrive等产品的界面中。
++   [微软 365 Copilot](https://blogs.microsoft.com/blog/2023/09/21/announcing-microsoft-copilot-your-everyday-ai-companion/)将读取你的未读邮件并进行总结，回答所有文档中的问题，并起草文档等。这些功能还将无缝嵌入到 Word、Excel、OneNote 和 OneDrive 等产品的界面中。
 
 +   谷歌也有一个类似的产品叫[Duet AI](https://workspace.google.com/solutions/ai/)用于他们的生产力套件。
 
-+   即使是OpenAI（虽然不是主导SaaS公司）也推出了[ChatGPT企业版](https://openai.com/blog/introducing-chatgpt-enterprise)，它可以基本上接入公司的所有工具，并为员工提供简单的答案。
++   即使是 OpenAI（虽然不是主导 SaaS 公司）也推出了[ChatGPT 企业版](https://openai.com/blog/introducing-chatgpt-enterprise)，它可以基本上接入公司的所有工具，并为员工提供简单的答案。
 
-我绝不是说战斗已经结束。如果你使用过任何生成性AI产品，会发现有些惊艳的时刻，但更多的则是平平无奇。上述产品的宣传很有吸引力，但大多数要么处于试点阶段，要么是描述产品未来状态的新闻公告。
+我绝不是说战斗已经结束。如果你使用过任何生成性 AI 产品，会发现有些惊艳的时刻，但更多的则是平平无奇。上述产品的宣传很有吸引力，但大多数要么处于试点阶段，要么是描述产品未来状态的新闻公告。
 
-这些产品的采纳也受到几个未解决问题的限制。定价混乱，有些产品提供免费的AI功能以进行竞争，而其他一些更全面的助手产品则按座位收费。微软365 Copilot的定价为[$30/用户/月](https://blogs.microsoft.com/blog/2023/07/18/furthering-our-ai-ambitions-announcing-bing-chat-enterprise-and-microsoft-365-copilot-pricing/)，而ChatGPT企业版的价格约为[$20/用户/月](https://www.thenationalnews.com/business/technology/2023/08/29/chatgpts-new-paid-business-tier-all-you-need-to-know/)——虽然从消费者的角度看，这似乎还算可以，但对于一些企业买家来说，这个价格在大规模应用时可能显得可笑，尤其是当成本快速增加时。数据共享问题也是一个主要障碍，因为企业对与语言模型共享敏感数据持谨慎态度（尽管企业AI产品明确表示不会将客户数据用于训练目的）。
+这些产品的采纳也受到几个未解决问题的限制。定价混乱，有些产品提供免费的 AI 功能以进行竞争，而其他一些更全面的助手产品则按座位收费。微软 365 Copilot 的定价为[$30/用户/月](https://blogs.microsoft.com/blog/2023/07/18/furthering-our-ai-ambitions-announcing-bing-chat-enterprise-and-microsoft-365-copilot-pricing/)，而 ChatGPT 企业版的价格约为[$20/用户/月](https://www.thenationalnews.com/business/technology/2023/08/29/chatgpts-new-paid-business-tier-all-you-need-to-know/)——虽然从消费者的角度看，这似乎还算可以，但对于一些企业买家来说，这个价格在大规模应用时可能显得可笑，尤其是当成本快速增加时。数据共享问题也是一个主要障碍，因为企业对与语言模型共享敏感数据持谨慎态度（尽管企业 AI 产品明确表示不会将客户数据用于训练目的）。
 
-也就是说，这些问题是可以解决的，大型SaaS公司在构建AI功能时的专注意味着这些问题将在短期内得到解决。这就把我们带回了护城河问题——生成性AI初创公司如果想要在面对SaaS公司AI功能时继续繁荣，需要建立强大的护城河。
+也就是说，这些问题是可以解决的，大型 SaaS 公司在构建 AI 功能时的专注意味着这些问题将在短期内得到解决。这就把我们带回了护城河问题——生成性 AI 初创公司如果想要在面对 SaaS 公司 AI 功能时继续繁荣，需要建立强大的护城河。
 
 # 初创公司如何在这种环境中建立护城河
 
@@ -98,7 +98,7 @@ Salesforce 也有了新的宣布。他们的产品 [Einstein GPT](https://www.sa
 
 机器学习模型（包括大型语言模型）的表现随着训练数据量的增加而提升。这是为什么，例如，Google 搜索是世界上表现最好的搜索引擎之一——这不仅仅是因为 Google 索引了世界上所有的页面（其他搜索引擎也可以做到这一点），而是因为数十亿人使用这个产品，每个用户的交互都是一个数据点，反哺到搜索相关性模型中。
 
-然而，企业产品面临的挑战是，企业客户将明确禁止SaaS或AI软件的提供商使用他们的数据进行训练（这是完全正当的）。企业拥有大量敏感信息——从客户数据到公司战略数据——他们不希望这些数据被输入到 OpenAI 或 Google 的大型语言模型中。
+然而，企业产品面临的挑战是，企业客户将明确禁止 SaaS 或 AI 软件的提供商使用他们的数据进行训练（这是完全正当的）。企业拥有大量敏感信息——从客户数据到公司战略数据——他们不希望这些数据被输入到 OpenAI 或 Google 的大型语言模型中。
 
 因此，围绕此问题构建护城河是困难的，但在某些情况下是可能的。例如，AI 工具生成的用于广告或营销目的的内容较不敏感，企业更可能允许这些数据用于改进模型（从而提高自身的未来表现）。另一种方法是拥有一个非企业版的产品，默认情况下用户选择将使用数据用于训练——个人和中小企业用户更可能接受这种方法。
 
@@ -106,7 +106,7 @@ Salesforce 也有了新的宣布。他们的产品 [Einstein GPT](https://www.sa
 
 将大型语言模型应用于特定企业用例的最困难部分不是从货架上挑选一个模型并部署，而是构建所需的管道，以便将公司的相关数据集输送给模型访问。
 
-假设你是一家像 Intuit 这样的公司，向中小企业销售会计和税务软件。你支持成千上万的中小企业客户，当其中一位客户向你提出支持问题时，你希望为他们提供定制的响应。很可能，这位客户使用的产品数据存储在一个内部数据库中，而客户与产品的最新互动数据存储在另一个数据库中，他们过去的支持问题历史则存在于一个帮助台SaaS产品中。生成式AI初创公司构建护城河的一种方法是识别那些需要多个数据源的特定用例，而这些数据源并非由单一大型SaaS公司拥有，并构建集成以引入这些数据。
+假设你是一家像 Intuit 这样的公司，向中小企业销售会计和税务软件。你支持成千上万的中小企业客户，当其中一位客户向你提出支持问题时，你希望为他们提供定制的响应。很可能，这位客户使用的产品数据存储在一个内部数据库中，而客户与产品的最新互动数据存储在另一个数据库中，他们过去的支持问题历史则存在于一个帮助台 SaaS 产品中。生成式 AI 初创公司构建护城河的一种方法是识别那些需要多个数据源的特定用例，而这些数据源并非由单一大型 SaaS 公司拥有，并构建集成以引入这些数据。
 
 这在其他环境中效果极佳——例如，[客户数据平台](https://segment.com/resources/cdp/)市场的整个兴起源于需要从多个来源汇总数据，以便对客户有一个集中化的视图。
 
@@ -114,26 +114,26 @@ Salesforce 也有了新的宣布。他们的产品 [Einstein GPT](https://www.sa
 
 大型企业不愿将敏感数据暴露给模型，尤其是那些由竞争对手或在市场上拥有过多影响力的公司（即由于缺乏替代方案，企业被迫与之共享数据的公司）拥有的模型。
 
-从[YC W23 文章](/ai-startup-trends-insights-from-y-combinators-latest-batch-282efc9080ae)中，CodeComplete 是一个很好的例子，它就是从这一痛点中诞生的。
+从 YC W23 文章中，CodeComplete 是一个很好的例子，它就是从这一痛点中诞生的。
 
-> [CodeComplete](https://www.ycombinator.com/launches/Hxe-codecomplete-github-copilot-for-enterprise)的构思最初源于他们的创始人在Meta时尝试使用GitHub Copilot时，由于数据隐私考虑，他们的请求在内部被拒绝。CodeComplete现在是一个AI编码助手工具，经过针对客户自身代码库的微调，以提供更相关的建议，模型直接部署在本地或客户自己的云中。
+> [CodeComplete](https://www.ycombinator.com/launches/Hxe-codecomplete-github-copilot-for-enterprise)的构思最初源于他们的创始人在 Meta 时尝试使用 GitHub Copilot 时，由于数据隐私考虑，他们的请求在内部被拒绝。CodeComplete 现在是一个 AI 编码助手工具，经过针对客户自身代码库的微调，以提供更相关的建议，模型直接部署在本地或客户自己的云中。
 
 ## 5\. 打造一个更全面的产品
 
-基于以上所有原因，我个人对大多数独立AI应用是否具备长期护城河的潜力持怀疑态度，特别是那些面向企业客户的应用。虽然率先进入市场无疑是一种策略，也确实可能成为快速收购的良好途径，但建立真正强大的护城河的唯一方法是打造一个更全面的产品。
+基于以上所有原因，我个人对大多数独立 AI 应用是否具备长期护城河的潜力持怀疑态度，特别是那些面向企业客户的应用。虽然率先进入市场无疑是一种策略，也确实可能成为快速收购的良好途径，但建立真正强大的护城河的唯一方法是打造一个更全面的产品。
 
-专注于仅仅为营销提供AI文案的公司始终面临被更大营销工具竞争取代的风险，例如来自Google/Meta平台的营销云或创意生成工具。建立在CRM或客服工具之上的AI层的公司也很可能被现有的SaaS公司模仿。
+专注于仅仅为营销提供 AI 文案的公司始终面临被更大营销工具竞争取代的风险，例如来自 Google/Meta 平台的营销云或创意生成工具。建立在 CRM 或客服工具之上的 AI 层的公司也很可能被现有的 SaaS 公司模仿。
 
-解决这个问题的方法是打造一个更全面的产品。例如，如果目标是提升营销内容创作的效果，一个更全面的产品将是一个解决核心用户问题的平台（例如：创建内容所需的时间，必须创建多种尺寸的内容），然后包括一个强大的生成AI功能集（例如：为Instagram生成最佳视觉效果）。
+解决这个问题的方法是打造一个更全面的产品。例如，如果目标是提升营销内容创作的效果，一个更全面的产品将是一个解决核心用户问题的平台（例如：创建内容所需的时间，必须创建多种尺寸的内容），然后包括一个强大的生成 AI 功能集（例如：为 Instagram 生成最佳视觉效果）。
 
 # 结论
 
-我对生成AI能释放的生产力感到兴奋。虽然我个人至今尚未经历生产力的跳跃式提升，但我相信在不久的将来这种情况会迅速发生。考虑到基础设施和平台层的合理商品化，AI驱动的生产力所带来的最大价值将被应用层的产品所捕获。特别是在企业产品领域，我确实认为大量的价值将被现有的SaaS公司所捕获，但我对具有AI前瞻性功能集和因此具备实际护城河的新型全面产品的出现持乐观态度。
+我对生成 AI 能释放的生产力感到兴奋。虽然我个人至今尚未经历生产力的跳跃式提升，但我相信在不久的将来这种情况会迅速发生。考虑到基础设施和平台层的合理商品化，AI 驱动的生产力所带来的最大价值将被应用层的产品所捕获。特别是在企业产品领域，我确实认为大量的价值将被现有的 SaaS 公司所捕获，但我对具有 AI 前瞻性功能集和因此具备实际护城河的新型全面产品的出现持乐观态度。
 
-🚀 如果你喜欢这篇文章，请考虑订阅[**我的每周通讯Unpacked**](https://thisisunpacked.substack.com/?utm_source=medium&utm_medium=article_tds)**。** 每周，我会以10分钟的阅读时间发布一项**深度分析** **关于当前技术话题/产品策略**。祝好，Viggy。
+🚀 如果你喜欢这篇文章，请考虑订阅[**我的每周通讯 Unpacked**](https://thisisunpacked.substack.com/?utm_source=medium&utm_medium=article_tds)**。** 每周，我会以 10 分钟的阅读时间发布一项**深度分析** **关于当前技术话题/产品策略**。祝好，Viggy。
 
 [](https://thisisunpacked.substack.com/?source=post_page-----88e3a5b2fc29--------------------------------) [## Unpacked | Viggy Balagopalakrishnan | Substack
 
-### 每周将一项技术话题/产品策略的深度分析送到你的邮箱。点击阅读Viggy的Unpacked…
+### 每周将一项技术话题/产品策略的深度分析送到你的邮箱。点击阅读 Viggy 的 Unpacked…
 
 [thisisunpacked.substack.com](https://thisisunpacked.substack.com/?source=post_page-----88e3a5b2fc29--------------------------------)

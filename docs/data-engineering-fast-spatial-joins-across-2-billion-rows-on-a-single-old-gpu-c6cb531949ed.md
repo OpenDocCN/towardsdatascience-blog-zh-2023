@@ -1,30 +1,30 @@
-# 数据工程：在单个旧GPU上进行大约2亿行的快速空间连接
+# 数据工程：在单个旧 GPU 上进行大约 2 亿行的快速空间连接
 
-> 原文：[https://towardsdatascience.com/data-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed?source=collection_archive---------11-----------------------#2023-05-30](https://towardsdatascience.com/data-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed?source=collection_archive---------11-----------------------#2023-05-30)
+> 原文：[`towardsdatascience.com/data-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed?source=collection_archive---------11-----------------------#2023-05-30`](https://towardsdatascience.com/data-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed?source=collection_archive---------11-----------------------#2023-05-30)
 
-## 比较在本地机器上的旧款Nvidia GeForce GTX 1060 GPU上进行空间连接时，ORC和Parquet的性能表现
+## 比较在本地机器上的旧款 Nvidia GeForce GTX 1060 GPU 上进行空间连接时，ORC 和 Parquet 的性能表现
 
-[](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)[![Daniel Voyce](../Images/be0549f7c48a07ad7d99cee391d8688c.png)](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------) [Daniel Voyce](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)
+[](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)![Daniel Voyce](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------) [Daniel Voyce](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F558f3984efd6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&user=Daniel+Voyce&userId=558f3984efd6&source=post_page-558f3984efd6----c6cb531949ed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------) · 7分钟阅读 · 2023年5月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6cb531949ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&user=Daniel+Voyce&userId=558f3984efd6&source=-----c6cb531949ed---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F558f3984efd6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&user=Daniel+Voyce&userId=558f3984efd6&source=post_page-558f3984efd6----c6cb531949ed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------) · 7 分钟阅读 · 2023 年 5 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6cb531949ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&user=Daniel+Voyce&userId=558f3984efd6&source=-----c6cb531949ed---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6cb531949ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&source=-----c6cb531949ed---------------------bookmark_footer-----------)![](../Images/b96575517eb800b777c0a570c3f64ca0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6cb531949ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&source=-----c6cb531949ed---------------------bookmark_footer-----------)![](img/b96575517eb800b777c0a570c3f64ca0.png)
 
 图片由 [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在过去几周里，我对自2019年以来GPU数据处理库的进展进行了更深入的探讨。
+在过去几周里，我对自 2019 年以来 GPU 数据处理库的进展进行了更深入的探讨。
 
 在 4 年里，我发现许多在 2019 年处于早期 alpha 阶段的库已经成熟为实际使用的可靠项目。
 
 我在大数据解决方案的 Data Engineering 领域工作了多年，我们定期进行的任务之一是通过多个多边形执行人类运动数据的空间连接。这是一个具有多个优化层次的很好的用例，但“点在多边形内”测试是所有工作的核心。
 
-![](../Images/aa5530ce890f63e4bc4caebe59260699.png)
+![](img/aa5530ce890f63e4bc4caebe59260699.png)
 
-[https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg](https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg)
+[`en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg`](https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg)
 
 之前，我们探索了包括 PostGIS、Redshift 和 BigQuery 在内的多种方法来实现这一目标。最终，我们建立了管道，通过大约 1.4 亿个多边形在 BigQuery 上处理每日 2000 亿行数据。
 
@@ -112,7 +112,7 @@ result
 
 ## Parquet 结果
 
-***3分钟9秒 — 令人印象深刻！***
+***3 分钟 9 秒 — 令人印象深刻！***
 
 ```py
 sums = ddf.map_partitions(wrapped_spatial_join).compute()
@@ -140,7 +140,7 @@ Total: 2,246,360,132 Rows
 
 ## Orc 结果
 
-***6分钟18秒 — Parquet 时间的两倍但仍然*** *值得称道* ***！***
+***6 分钟 18 秒 — Parquet 时间的两倍但仍然*** *值得称道* ***！***
 
 ```py
 sums = ddf.map_partitions(wrapped_spatial_join).compute()
@@ -229,10 +229,10 @@ lon,
 
 ## 未来实验
 
-在未来，我计划对多个多边形进行相同的实验，并探索处理这些多边形的方法。例如，我将对拉斯维加斯地区的邮政编码数据集进行空间连接，以检查处理多个多边形的可行性。此外，我还计划利用空间索引解决方案，如Uber的H3，来对数据进行索引，并评估其对最终结果的影响。
+在未来，我计划对多个多边形进行相同的实验，并探索处理这些多边形的方法。例如，我将对拉斯维加斯地区的邮政编码数据集进行空间连接，以检查处理多个多边形的可行性。此外，我还计划利用空间索引解决方案，如 Uber 的 H3，来对数据进行索引，并评估其对最终结果的影响。
 
 ## 关于作者
 
 ## Dan Voyce
 
-![](../Images/859d5503d457e18d3d762af37aa69ece.png)
+![](img/859d5503d457e18d3d762af37aa69ece.png)

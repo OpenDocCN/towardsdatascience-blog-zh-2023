@@ -1,18 +1,18 @@
-# 梯度提升从理论到实践（第1部分）
+# 梯度提升从理论到实践（第一部分）
 
-> 原文：[https://towardsdatascience.com/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050?source=collection_archive---------4-----------------------#2023-07-11](https://towardsdatascience.com/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050?source=collection_archive---------4-----------------------#2023-07-11)
+> 原文：[`towardsdatascience.com/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050?source=collection_archive---------4-----------------------#2023-07-11`](https://towardsdatascience.com/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050?source=collection_archive---------4-----------------------#2023-07-11)
 
 ## 了解流行的梯度提升算法背后的数学原理以及如何在实践中使用它
 
-[](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)[![Dr. Roi Yehoshua](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)[](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)
+[](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)![Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)[](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-from-theory-to-practice-part-1-940b2c9d8050&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----940b2c9d8050---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------) ·19分钟阅读·2023年7月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F940b2c9d8050&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-from-theory-to-practice-part-1-940b2c9d8050&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----940b2c9d8050---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-from-theory-to-practice-part-1-940b2c9d8050&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----940b2c9d8050---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------) ·19 分钟阅读·2023 年 7 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F940b2c9d8050&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-from-theory-to-practice-part-1-940b2c9d8050&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----940b2c9d8050---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F940b2c9d8050&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-from-theory-to-practice-part-1-940b2c9d8050&source=-----940b2c9d8050---------------------bookmark_footer-----------)![](../Images/24fe276d9c34eff1399a9e28bbbe6c98.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F940b2c9d8050&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-from-theory-to-practice-part-1-940b2c9d8050&source=-----940b2c9d8050---------------------bookmark_footer-----------)![](img/24fe276d9c34eff1399a9e28bbbe6c98.png)
 
 照片由[Jens Lelie](https://unsplash.com/@madebyjens?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，发布于[Unsplash](https://unsplash.com/photos/u0vgcIOQG08?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

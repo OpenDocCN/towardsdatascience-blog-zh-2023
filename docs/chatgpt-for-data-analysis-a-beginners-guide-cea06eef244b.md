@@ -1,10 +1,10 @@
 # ChatGPT 数据分析 — 初学者指南
 
-> 原文：[https://towardsdatascience.com/chatgpt-for-data-analysis-a-beginners-guide-cea06eef244b?source=collection_archive---------1-----------------------#2023-12-23](https://towardsdatascience.com/chatgpt-for-data-analysis-a-beginners-guide-cea06eef244b?source=collection_archive---------1-----------------------#2023-12-23)
+> 原文：[`towardsdatascience.com/chatgpt-for-data-analysis-a-beginners-guide-cea06eef244b?source=collection_archive---------1-----------------------#2023-12-23`](https://towardsdatascience.com/chatgpt-for-data-analysis-a-beginners-guide-cea06eef244b?source=collection_archive---------1-----------------------#2023-12-23)
 
 ## 一个完整的关于如何使用 ChatGPT 进行数据分析的教程。
 
-[](https://natassha6789.medium.com/?source=post_page-----cea06eef244b--------------------------------)[![Natassha Selvaraj](../Images/adea0c904ea1a62e8961d82e4d0dd643.png)](https://natassha6789.medium.com/?source=post_page-----cea06eef244b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cea06eef244b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cea06eef244b--------------------------------) [Natassha Selvaraj](https://natassha6789.medium.com/?source=post_page-----cea06eef244b--------------------------------)
+[](https://natassha6789.medium.com/?source=post_page-----cea06eef244b--------------------------------)![Natassha Selvaraj](https://natassha6789.medium.com/?source=post_page-----cea06eef244b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cea06eef244b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cea06eef244b--------------------------------) [Natassha Selvaraj](https://natassha6789.medium.com/?source=post_page-----cea06eef244b--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcea06eef244b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-for-data-analysis-a-beginners-guide-cea06eef244b&source=-----cea06eef244b---------------------bookmark_footer-----------)![](../Images/73b3342ef34c0d6455741626f3b0bd02.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcea06eef244b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-for-data-analysis-a-beginners-guide-cea06eef244b&source=-----cea06eef244b---------------------bookmark_footer-----------)![](img/73b3342ef34c0d6455741626f3b0bd02.png)
 
 照片由 [Myriam Jessier](https://unsplash.com/@mjessier?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 提供，刊登在 [Unsplash](https://unsplash.com/photos/person-using-macbook-pro-on-black-table-eveI7MOcSmw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 

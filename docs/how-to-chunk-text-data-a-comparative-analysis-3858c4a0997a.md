@@ -1,20 +1,20 @@
 # 如何分块文本数据 — 一项比较分析
 
-> 原文：[https://towardsdatascience.com/how-to-chunk-text-data-a-comparative-analysis-3858c4a0997a?source=collection_archive---------0-----------------------#2023-07-20](https://towardsdatascience.com/how-to-chunk-text-data-a-comparative-analysis-3858c4a0997a?source=collection_archive---------0-----------------------#2023-07-20)
+> 原文：[`towardsdatascience.com/how-to-chunk-text-data-a-comparative-analysis-3858c4a0997a?source=collection_archive---------0-----------------------#2023-07-20`](https://towardsdatascience.com/how-to-chunk-text-data-a-comparative-analysis-3858c4a0997a?source=collection_archive---------0-----------------------#2023-07-20)
 
 ## 探索文本分块的不同方法。
 
-[](https://solano-todeschini.medium.com/?source=post_page-----3858c4a0997a--------------------------------)[![Solano Todeschini](../Images/75e871340659c8df37f558b74c9d73c5.png)](https://solano-todeschini.medium.com/?source=post_page-----3858c4a0997a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3858c4a0997a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3858c4a0997a--------------------------------) [Solano Todeschini](https://solano-todeschini.medium.com/?source=post_page-----3858c4a0997a--------------------------------)
+[](https://solano-todeschini.medium.com/?source=post_page-----3858c4a0997a--------------------------------)![Solano Todeschini](https://solano-todeschini.medium.com/?source=post_page-----3858c4a0997a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3858c4a0997a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3858c4a0997a--------------------------------) [Solano Todeschini](https://solano-todeschini.medium.com/?source=post_page-----3858c4a0997a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F618a52c38c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-chunk-text-data-a-comparative-analysis-3858c4a0997a&user=Solano+Todeschini&userId=618a52c38c0c&source=post_page-618a52c38c0c----3858c4a0997a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3858c4a0997a--------------------------------) ·17分钟阅读·2023年7月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3858c4a0997a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-chunk-text-data-a-comparative-analysis-3858c4a0997a&user=Solano+Todeschini&userId=618a52c38c0c&source=-----3858c4a0997a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F618a52c38c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-chunk-text-data-a-comparative-analysis-3858c4a0997a&user=Solano+Todeschini&userId=618a52c38c0c&source=post_page-618a52c38c0c----3858c4a0997a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3858c4a0997a--------------------------------) ·17 分钟阅读·2023 年 7 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3858c4a0997a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-chunk-text-data-a-comparative-analysis-3858c4a0997a&user=Solano+Todeschini&userId=618a52c38c0c&source=-----3858c4a0997a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3858c4a0997a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-chunk-text-data-a-comparative-analysis-3858c4a0997a&source=-----3858c4a0997a---------------------bookmark_footer-----------)![](../Images/dfd6dd3b7af559b26e33e94122605cf6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3858c4a0997a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-chunk-text-data-a-comparative-analysis-3858c4a0997a&source=-----3858c4a0997a---------------------bookmark_footer-----------)![](img/dfd6dd3b7af559b26e33e94122605cf6.png)
 
-图片由作者整理。菠萝图片来自Canva。
+图片由作者整理。菠萝图片来自 Canva。
 
 # 介绍
 
@@ -22,9 +22,9 @@
 
 从高层次来看，这些方法通常分为两类。第一类是基于规则的方法，依赖于使用明确的分隔符，如标点符号或空格字符，或应用复杂的系统如正则表达式，将文本分成块。第二类是语义聚类方法，利用文本中固有的意义来指导分块过程。这些方法可能利用机器学习算法来辨别上下文，并推断文本中的自然分界。
 
-在本文中，我们将探讨并比较这两种不同的文本分块方法。我们将用NLTK、Spacy和Langchain来表示基于规则的方法，并将其与两种不同的语义聚类技术进行对比：KMeans和一种自定义的邻近句子聚类技术。
+在本文中，我们将探讨并比较这两种不同的文本分块方法。我们将用 NLTK、Spacy 和 Langchain 来表示基于规则的方法，并将其与两种不同的语义聚类技术进行对比：KMeans 和一种自定义的邻近句子聚类技术。
 
-目标是让从业者清楚理解每种方法的优缺点和理想的使用场景，以便在他们的NLP项目中做出更好的决策。
+目标是让从业者清楚理解每种方法的优缺点和理想的使用场景，以便在他们的 NLP 项目中做出更好的决策。
 
 > 在巴西俚语中，“abacaxi”翻译为“菠萝”，意指“某事未能产生良好结果、混乱的局面或毫无价值的事物。”
 
@@ -46,13 +46,13 @@
 
 # 语义分块的不同方法比较
 
-在本文的这一部分，我们将比较流行的非结构化文本语义分块方法：NLTK句子分割器、Langchain文本分割器、KMeans聚类以及基于相似性的邻近句子聚类。
+在本文的这一部分，我们将比较流行的非结构化文本语义分块方法：NLTK 句子分割器、Langchain 文本分割器、KMeans 聚类以及基于相似性的邻近句子聚类。
 
-在下面的例子中，我们将使用从PDF中提取的文本评估这一技术，将其处理为句子及其聚类。
+在下面的例子中，我们将使用从 PDF 中提取的文本评估这一技术，将其处理为句子及其聚类。
 
-我们使用的数据是从[巴西的维基百科页面](https://en.wikipedia.org/wiki/Brazil)导出的PDF。
+我们使用的数据是从[巴西的维基百科页面](https://en.wikipedia.org/wiki/Brazil)导出的 PDF。
 
-为了从PDF中提取文本并用NLTK将其分割成句子，我们使用以下函数：
+为了从 PDF 中提取文本并用 NLTK 将其分割成句子，我们使用以下函数：
 
 ```py
 from PyPDF2 import PdfReader
@@ -70,7 +70,7 @@ def extract_text_from_pdf(file_path):
 text = extract_text_from_pdf(file_path)
 ```
 
-如此，我们得到了一个长度为210964个字符的字符串`text`。
+如此，我们得到了一个长度为 210964 个字符的字符串`text`。
 
 这是维基文本的一个样本：
 
@@ -106,7 +106,7 @@ bicameral legislature, now called the National Congress.
 """
 ```
 
-# NLTK句子分割器
+# NLTK 句子分割器
 
 自然语言工具包 (NLTK) 提供了一个将文本划分为句子的有用功能。这个句子分词器将给定的文本块划分为其组成句子，然后可以用于进一步处理。
 
@@ -299,9 +299,9 @@ half of the continent's land area.[15] Its Amazon basin includes a vast tropical
 
 在使用不同参数将文本拆分成块后，我们获得了两个块列表：`texts` 和 `custom_texts`，分别包含 3205 和 1404 个文本块。现在，让我们绘制这两种情况下块长度的分布图，以更好地理解更改参数的影响。
 
-![](../Images/6bc0fe338ed1534c308f134cf80fa36b.png)
+![](img/6bc0fe338ed1534c308f134cf80fa36b.png)
 
-**图1**：Langchain 分隔器不同参数的块长度分布图（图像由作者提供）
+**图 1**：Langchain 分隔器不同参数的块长度分布图（图像由作者提供）
 
 在这个直方图中，x 轴表示块长度，而 y 轴表示每个长度的频率。蓝色条表示原始参数的块长度分布，橙色条表示自定义参数的分布。通过比较这两种分布，我们可以看到参数变化如何影响生成的块长度。
 
@@ -313,9 +313,9 @@ half of the continent's land area.[15] Its Amazon basin includes a vast tropical
 
 为了更直观地理解这些方法之间的差异，我们可以可视化块长度的分布。下面的图显示了每种方法的块长度密度，让我们可以看到长度的分布情况及其大多数长度的位置。
 
-![](../Images/55d688776a0dcc8cd5b779ba04b3d185.png)
+![](img/55d688776a0dcc8cd5b779ba04b3d185.png)
 
-**图2**：使用自定义参数的 Langchain Splitter 与 NLTK 和 Spacy 的块长度分布图（图像由作者提供）
+**图 2**：使用自定义参数的 Langchain Splitter 与 NLTK 和 Spacy 的块长度分布图（图像由作者提供）
 
 从图 1 中，我们可以看到 Langchain 分割器结果具有更简洁的聚类长度密度，并且更倾向于生成较长的聚类，而 NLTK 和 Spacy 似乎在聚类长度方面产生非常相似的输出，倾向于较小的句子，同时存在许多长度可达 1400 个字符的离群点，并且长度有减少的趋势。
 
@@ -403,15 +403,15 @@ for i in range(num_clusters):
 
 下面是生成的聚类的词云图：
 
-![](../Images/d315eac1d84c9a0a389376dedeab4441.png)
+![](img/d315eac1d84c9a0a389376dedeab4441.png)
 
 **图 3**：KMeans 聚类的词云图 — 聚类 0（图片由作者提供）
 
-![](../Images/2e9fcb7f2635eb6512d863ef5f8aa009.png)
+![](img/2e9fcb7f2635eb6512d863ef5f8aa009.png)
 
 **图 4**：KMeans 聚类的词云图 — 聚类 1（图片由作者提供）
 
-![](../Images/aa981bfdb20ca0356275a6cbc557f8a6.png)
+![](img/aa981bfdb20ca0356275a6cbc557f8a6.png)
 
 **图 5**：KMeans 聚类的词云图 — 聚类 2（图片由作者提供）
 
@@ -541,7 +541,7 @@ final_texts_lengths = [len(chunk) for chunk in final_texts]
 
 现在我们可以绘制三种方法的分布图：
 
-![](../Images/296e3efe4e40f3ca545e546ceb143638.png)
+![](img/296e3efe4e40f3ca545e546ceb143638.png)
 
 **图 3**：测试的所有不同方法生成的片段长度分布图（图像由作者提供）
 
@@ -579,21 +579,21 @@ final_texts_lengths = [len(chunk) for chunk in final_texts]
 
 这种方法生成了更多样的分布，表明了其上下文敏感的方法。通过基于语义相似性进行聚类，确保每个块中的内容是连贯的，同时允许块大小的灵活性。当保持文本数据的语义连续性很重要时，这种方法可能是有利的。
 
-为了更直观和抽象（或有趣）的表示，让我们看看下面的图7，试着找出哪种菠萝“切块”更好地代表所讨论的方法：
+为了更直观和抽象（或有趣）的表示，让我们看看下面的图 7，试着找出哪种菠萝“切块”更好地代表所讨论的方法：
 
-![](../Images/89004ea38220a7f04c73cac9d5616f0f.png)
+![](img/89004ea38220a7f04c73cac9d5616f0f.png)
 
-**图7**：不同的文本分块方法以菠萝切块形式展示（图像由作者整理，菠萝图像来自 Canva）
+**图 7**：不同的文本分块方法以菠萝切块形式展示（图像由作者整理，菠萝图像来自 Canva）
 
 按顺序列出：
 
-1.  切割方法1 代表了基于规则的方法，你可以根据过滤器或正则表达式“剥离”你想要的“垃圾”文本。不过要处理整个菠萝可要花不少功夫，因为它还保留了许多上下文较大的离群点。*这确实需要很多工作*。
+1.  切割方法 1 代表了基于规则的方法，你可以根据过滤器或正则表达式“剥离”你想要的“垃圾”文本。不过要处理整个菠萝可要花不少功夫，因为它还保留了许多上下文较大的离群点。*这确实需要很多工作*。
 
-1.  Langchain 类似于切割方法2。大小非常相似，但未能包含整个所需的上下文（它是一个三角形，所以也可能是一个西瓜）。
+1.  Langchain 类似于切割方法 2。大小非常相似，但未能包含整个所需的上下文（它是一个三角形，所以也可能是一个西瓜）。
 
-1.  切割方法3 绝对是 KMeans。你甚至可以只分组那些对你有意义的部分——最有汁的部分——但你无法得到其核心。没有它，块会失去所有结构和意义。我认为这也需要很多工作…… *特别是对于更大的菠萝*。
+1.  切割方法 3 绝对是 KMeans。你甚至可以只分组那些对你有意义的部分——最有汁的部分——但你无法得到其核心。没有它，块会失去所有结构和意义。我认为这也需要很多工作…… *特别是对于更大的菠萝*。
 
-1.  最后，切割方法4展示了相邻句子聚类方法。块的大小可能有所不同，但通常保持上下文信息，类似于不规则的菠萝块，仍然能显示出水果的整体结构。
+1.  最后，切割方法 4 展示了相邻句子聚类方法。块的大小可能有所不同，但通常保持上下文信息，类似于不规则的菠萝块，仍然能显示出水果的整体结构。
 
 ***总结***：在这篇文章中，我们比较了三种文本分块方法及其独特的好处。Langchain 提供了一致的分块大小，但语言结构却被忽视。NLTK 和 Spacy 提供了语言上连贯的分块，但大小差异较大。相邻序列聚类基于语义相似性进行聚类，提供内容连贯性和灵活的分块大小。*最终，最佳选择取决于你的具体需求，包括语言连贯性、分块大小的一致性和可用的计算能力。*
 

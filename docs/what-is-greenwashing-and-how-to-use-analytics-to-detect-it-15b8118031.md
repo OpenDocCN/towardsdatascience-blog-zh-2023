@@ -1,18 +1,18 @@
 # 什么是绿色洗涤，我们如何利用分析检测它
 
-> 原文：[https://towardsdatascience.com/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031?source=collection_archive---------2-----------------------#2023-08-10](https://towardsdatascience.com/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031?source=collection_archive---------2-----------------------#2023-08-10)
+> 原文：[`towardsdatascience.com/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031?source=collection_archive---------2-----------------------#2023-08-10`](https://towardsdatascience.com/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031?source=collection_archive---------2-----------------------#2023-08-10)
 
 ## 探索数据分析如何帮助我们检测和防止绿色洗涤，以促进真正的可持续发展。
 
-[](https://s-saci95.medium.com/?source=post_page-----15b8118031--------------------------------)[![Samir Saci](../Images/722d1f56a3308f6527d82b5ab97064ec.png)](https://s-saci95.medium.com/?source=post_page-----15b8118031--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15b8118031--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15b8118031--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----15b8118031--------------------------------)
+[](https://s-saci95.medium.com/?source=post_page-----15b8118031--------------------------------)![Samir Saci](https://s-saci95.medium.com/?source=post_page-----15b8118031--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15b8118031--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----15b8118031--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----15b8118031--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----15b8118031---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15b8118031--------------------------------) ·9分钟阅读·2023年8月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15b8118031&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031&user=Samir+Saci&userId=bb0f26d52754&source=-----15b8118031---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----15b8118031---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15b8118031--------------------------------) ·9 分钟阅读·2023 年 8 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15b8118031&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031&user=Samir+Saci&userId=bb0f26d52754&source=-----15b8118031---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F15b8118031&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031&source=-----15b8118031---------------------bookmark_footer-----------)![](../Images/68c584d286441e7a596c9557c3acb260.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F15b8118031&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031&source=-----15b8118031---------------------bookmark_footer-----------)![](img/68c584d286441e7a596c9557c3acb260.png)
 
 使用数据检测绿色洗涤 — （图片由作者提供）
 
@@ -22,7 +22,7 @@
 
 这种修饰或掩盖虚假信息的行为已经成为一个普遍的挑战，因为公司们寻求环保意识强的消费者的关注。
 
-![](../Images/a0919cdf972ccce2273e4865bd20176f.png)
+![](img/a0919cdf972ccce2273e4865bd20176f.png)
 
 绿色洗涤的五大罪恶 — （图片由作者提供）
 
@@ -51,7 +51,7 @@ III. Conclusion
 
 # 理解绿色洗涤
 
-我在进行第一次[supply chain sustainability project.](/supply-chain-sustainability-reporting-with-python-161c1f63f267)时发现了绿色洗涤。
+我在进行第一次 supply chain sustainability project.时发现了绿色洗涤。
 
 作为供应链解决方案经理，我的任务是估算客户物流操作的环境足迹。
 
@@ -77,13 +77,13 @@ III. Conclusion
 
 +   **无关性**：突出显示一种对产品环境影响不重要或无关的环保特性。
 
-    *例如，一家公司强调其产品“无CFC”，而氯氟烃已被禁止了几十年。*
+    *例如，一家公司强调其产品“无 CFC”，而氯氟烃已被禁止了几十年。*
 
 +   **隐性权衡**：宣传产品的一个环保方面，同时忽视其他重大影响。
 
     *例如，一家纸业公司宣传其使用回收纸，但没有提到生产和物流过程中的能源消耗和碳排放。*
 
-![](../Images/a0919cdf972ccce2273e4865bd20176f.png)
+![](img/a0919cdf972ccce2273e4865bd20176f.png)
 
 绿色洗涤是什么？ — (图片来源：作者)
 
@@ -95,7 +95,7 @@ III. Conclusion
 
 通过生命周期评估 (LCA)，你可以使用**数据驱动**的方法来评估这些影响，**通过考虑整个产品生命周期并避免**这种陷阱。
 
-[![](../Images/964f702b84bfc6efd8f10fe93c4125a1.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
 你的“100%天然”回收 T 恤的生命周期评估 — (图片来源：作者)
 
@@ -105,11 +105,11 @@ III. Conclusion
 
 **💡 更多详情，**
 
-[](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----15b8118031--------------------------------) [## 什么是生命周期评估？LCA
+[](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----15b8118031--------------------------------) ## 什么是生命周期评估？LCA
 
 ### 了解生命周期评估如何帮助企业评估产品在整个生命周期中的环境影响……
 
-towardsdatascience.com](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source=post_page-----15b8118031--------------------------------)
+towardsdatascience.com
 
 > 让我们分析一些实际的例子。
 
@@ -123,7 +123,7 @@ towardsdatascience.com](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source
 
 第二种情况可以通过基本的供应链分析和**公开可用的数据**轻松**揭穿**。
 
-![](../Images/6e1c3eb60574357881417344606da264.png)
+![](img/6e1c3eb60574357881417344606da264.png)
 
 供应链流动分析 — （图片来源：作者）
 
@@ -131,17 +131,17 @@ towardsdatascience.com](/what-is-a-life-cycle-assessment-lca-e32a5078483a?source
 
 1.  使用财务报告估算市场销售量
 
-1.  使用[温室气体协议](/supply-chain-sustainability-reporting-with-python-161c1f63f267)计算每瓶的排放量，从制造工厂到市场
+1.  使用温室气体协议计算每瓶的排放量，从制造工厂到市场
 
 1.  将结果与公司发布的图表进行比较
 
-**💡 有关如何使用分析来估算CO2排放的更多细节**
+**💡 有关如何使用分析来估算 CO2 排放的更多细节**
 
-[](/supply-chain-sustainability-reporting-with-python-161c1f63f267?source=post_page-----15b8118031--------------------------------) [## 使用Python进行供应链可持续性报告
+[](/supply-chain-sustainability-reporting-with-python-161c1f63f267?source=post_page-----15b8118031--------------------------------) ## 使用 Python 进行供应链可持续性报告
 
-### 建立一个关于配送网络CO2排放的ESG报告的4个步骤。学习如何测量和减少你的碳……
+### 建立一个关于配送网络 CO2 排放的 ESG 报告的 4 个步骤。学习如何测量和减少你的碳……
 
-towardsdatascience.com](/supply-chain-sustainability-reporting-with-python-161c1f63f267?source=post_page-----15b8118031--------------------------------)
+towardsdatascience.com
 
 > 除了报告之外，数据分析如何帮助我们检测这种欺诈行为？
 
@@ -151,7 +151,7 @@ towardsdatascience.com](/supply-chain-sustainability-reporting-with-python-161c1
 
 虽然监管机构和有意识的消费者在这场斗争中发挥了重要作用，但数据分析可以作为额外的推动力来自动化欺诈检测。
 
-![](../Images/20195843e51ec4406a1c9c632af22c2c.png)
+![](img/20195843e51ec4406a1c9c632af22c2c.png)
 
 使用数据分析检测绿色洗白 — （图片来源：作者）
 
@@ -159,7 +159,7 @@ towardsdatascience.com](/supply-chain-sustainability-reporting-with-python-161c1
 
 +   **公开可用的数据**：财务和可持续性报告、足迹数据库、社交媒体
 
-+   **高级分析模型**，包括NLP、预测或统计模型以检测欺诈行为
++   **高级分析模型**，包括 NLP、预测或统计模型以检测欺诈行为
 
 以下部分将探讨如何使用这些工具来促进一个更透明和可持续的企业环境。
 
@@ -171,7 +171,7 @@ towardsdatascience.com](/supply-chain-sustainability-reporting-with-python-161c1
 
 数据分析可以提供强大的工具，用于过滤大型数据集，识别模式和异常，以及提取有价值的见解。
 
-![](../Images/501969b3196ac4d32568721197d0ada9.png)
+![](img/501969b3196ac4d32568721197d0ada9.png)
 
 数据分析用于绿色洗牌检测 — （作者提供的图像）
 
@@ -189,7 +189,7 @@ NLP 在绿色洗牌检测中的主要应用是 **情感分析**。
 
 我们手头的数据包括这些在其网站上的 PDF 文档。
 
-![](../Images/d97c65ea4991dc02440cc3f31c7ae5f9.png)
+![](img/d97c65ea4991dc02440cc3f31c7ae5f9.png)
 
 报告中的情感分析与二氧化碳排放 — （作者提供的图像）
 
@@ -201,7 +201,7 @@ NLP 在绿色洗牌检测中的主要应用是 **情感分析**。
 
 例如，上述例子
 
-+   2020年二氧化碳总排放量激增：**+26k 吨 CO2eq**
++   2020 年二氧化碳总排放量激增：**+26k 吨 CO2eq**
 
 +   然而，情感评分却不断增加
 
@@ -215,7 +215,7 @@ NLP 在绿色洗牌检测中的主要应用是 **情感分析**。
 
 例如，一家主要的汽车制造商报告了二氧化碳排放量的突然减少。
 
-![](../Images/b86285cacb9b921b0a2192c31b788630.png)
+![](img/b86285cacb9b921b0a2192c31b788630.png)
 
 生产输出与排放的相关性潜在异常示例 — （作者提供的图像）
 
@@ -229,11 +229,11 @@ NLP 在绿色洗牌检测中的主要应用是 **情感分析**。
 
 我使用了一个二氧化碳排放虚拟数据集，并应用了 Python 库 [ruptures](https://centre-borelli.github.io/ruptures-docs/)：
 
-![](../Images/ab55079ef0efb83570ab76080de01e58.png)
+![](img/ab55079ef0efb83570ab76080de01e58.png)
 
 变点检测示例 — （作者提供的图像）
 
-它检测到了第9年的重大变化，我们应该对此进行调查。
+它检测到了第 9 年的重大变化，我们应该对此进行调查。
 
 这是一个初步评估，减少可能是由于实际举措的影响。
 
@@ -269,21 +269,21 @@ NLP 在绿色洗牌检测中的主要应用是 **情感分析**。
 
 **💡 如何检测绿色洗刷？** 数据应包括公司的供应商网络和第三方对供应商实践的报告。
 
-[![](../Images/6d023be2e1a93bfcf01c52e25b89d22a.png)](https://towardsdatascience.com/transportation-network-analysis-with-graph-theory-55eceb7e4de4)
+![](https://towardsdatascience.com/transportation-network-analysis-with-graph-theory-55eceb7e4de4)
 
-使用Python的Networkx进行网络分析 — （图片来源：作者）
+使用 Python 的 Networkx 进行网络分析 — （图片来源：作者）
 
-使用网络分析，我们可以审查供应商的可持续性关键绩效指标（例如ESG评分）及其连接。
+使用网络分析，我们可以审查供应商的可持续性关键绩效指标（例如 ESG 评分）及其连接。
 
 如果网络中的节点有可疑的可持续性实践，这可能暗示潜在的绿色洗刷。
 
-**💡 了解如何使用Python实现网络图的更多细节**
+**💡 了解如何使用 Python 实现网络图的更多细节**
 
-[](/transportation-network-analysis-with-graph-theory-55eceb7e4de4?source=post_page-----15b8118031--------------------------------) [## 交通网络分析与图论
+[](/transportation-network-analysis-with-graph-theory-55eceb7e4de4?source=post_page-----15b8118031--------------------------------) ## 交通网络分析与图论
 
 ### 利用图论来优化零售公司的公路运输网络
 
-towardsdatascience.com](/transportation-network-analysis-with-graph-theory-55eceb7e4de4?source=post_page-----15b8118031--------------------------------)
+towardsdatascience.com
 
 这让你初步了解如何利用先进分析自动检测绿色洗刷和欺诈，使用公开数据。
 
@@ -291,9 +291,9 @@ towardsdatascience.com](/transportation-network-analysis-with-graph-theory-55ece
 
 ## 绿色洗刷的终结？
 
-随着我们考虑未来的ESG法规，绿色洗刷与数据分析之间的联系将显著加深。
+随着我们考虑未来的 ESG 法规，绿色洗刷与数据分析之间的联系将显著加深。
 
-[![](../Images/6a56f21aca3327d6ca0141ee91e52136.png)](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
+![](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
 
 报告类别示例 — （图片来源：作者）
 
@@ -305,13 +305,13 @@ towardsdatascience.com](/transportation-network-analysis-with-graph-theory-55ece
 
 因此，在一个日益数据驱动的世界里，绿色洗涤将面临重大挑战。
 
-**💡 了解更多关于ESG报告的详细信息，**
+**💡 了解更多关于 ESG 报告的详细信息，**
 
-[](/what-is-esg-reporting-d610535eed9c?source=post_page-----15b8118031--------------------------------) [## 什么是ESG报告？
+[](/what-is-esg-reporting-d610535eed9c?source=post_page-----15b8118031--------------------------------) ## 什么是 ESG 报告？
 
 ### 利用数据分析进行全面且有效的公司环境、社会和治理报告
 
-[towardsdatascience.com](/what-is-esg-reporting-d610535eed9c?source=post_page-----15b8118031--------------------------------)
+[towardsdatascience.com
 
 > 我们能否利用数据实际支持绿色转型？
 
@@ -321,7 +321,7 @@ towardsdatascience.com](/transportation-network-analysis-with-graph-theory-55ece
 
 例如，**可持续供应链优化**是一种数据驱动的方法，结合了**成本减少**和**足迹减少**。
 
-[![](../Images/f3921da5c2e5d337811c5f77c0b135de.png)](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
+![](https://cloud.viktor.ai/public/sustainable-supply-chain-network-optimization)
 
 可持续供应链优化 — （图像来源：作者）
 
@@ -333,7 +333,7 @@ towardsdatascience.com](/transportation-network-analysis-with-graph-theory-55ece
 
 +   **每个市场位置的需求**（单位/每月）
 
-+   所有**潜在的制造地点**及其生产成本、环境足迹（CO2，资源）、ESG评分
++   所有**潜在的制造地点**及其生产成本、环境足迹（CO2，资源）、ESG 评分
 
 +   **环境足迹每单位的约束**，社会和治理评分
 
@@ -343,19 +343,19 @@ towardsdatascience.com](/transportation-network-analysis-with-graph-theory-55ece
 
     *我们能尊重环境目标吗？*
 
-+   如果你想专注于可持续性，如何最小化CO2排放
++   如果你想专注于可持续性，如何最小化 CO2 排放
 
     *我们能保持盈利水平吗？*
 
 **💡 了解更多关于此应用程序的信息，**
 
-[](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----15b8118031--------------------------------) [## 创建可持续供应链优化网页应用
+[](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----15b8118031--------------------------------) ## 创建可持续供应链优化网页应用
 
 ### 帮助你的组织将可持续采购与供应链优化相结合，以减少成本和环境影响……
 
-[towardsdatascience.com](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6?source=post_page-----15b8118031--------------------------------)
+[towardsdatascience.com
 
-💡 在Medium上关注我，获取更多关于🏭供应链分析、🌳可持续性和🕜生产力的文章。
+💡 在 Medium 上关注我，获取更多关于🏭供应链分析、🌳可持续性和🕜生产力的文章。
 
 # 关于我
 
@@ -371,8 +371,8 @@ towardsdatascience.com](/transportation-network-analysis-with-graph-theory-55ece
 
 # 参考文献
 
-+   使用 Python 进行供应链可持续性报告，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----15b8118031--------------------------------)，[Towards Data Science](/supply-chain-sustainability-reporting-with-python-161c1f63f267)
++   使用 Python 进行供应链可持续性报告，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----15b8118031--------------------------------)，Towards Data Science
 
-+   使用图论进行交通网络分析，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----15b8118031--------------------------------)，[Towards Data Science](/transportation-network-analysis-with-graph-theory-55eceb7e4de4)
++   使用图论进行交通网络分析，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----15b8118031--------------------------------)，Towards Data Science
 
-+   创建可持续供应链优化的网页应用，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----15b8118031--------------------------------)，[Towards Data Science](/create-a-sustainable-supply-chain-optimization-web-app-20599b98cab6)
++   创建可持续供应链优化的网页应用，[Samir Saci](https://medium.com/u/bb0f26d52754?source=post_page-----15b8118031--------------------------------)，Towards Data Science

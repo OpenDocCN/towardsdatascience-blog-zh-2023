@@ -1,20 +1,20 @@
 # 大模型与大数据：Spark 和 LLMs 的和谐
 
-> 原文：[https://towardsdatascience.com/large-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62?source=collection_archive---------6-----------------------#2023-12-05](https://towardsdatascience.com/large-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62?source=collection_archive---------6-----------------------#2023-12-05)
+> 原文：[`towardsdatascience.com/large-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62?source=collection_archive---------6-----------------------#2023-12-05`](https://towardsdatascience.com/large-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62?source=collection_archive---------6-----------------------#2023-12-05)
 
 ## 数据工程与生成性 AI
 
 ## *逐步指南：如何使用 Apache Spark 和大语言模型*
 
-[](https://tamimi-naser.medium.com/?source=post_page-----5e2976b69b62--------------------------------)[![Naser Tamimi](../Images/8d43c66ea3c0ef9b49c7d33dbc008c28.png)](https://tamimi-naser.medium.com/?source=post_page-----5e2976b69b62--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e2976b69b62--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5e2976b69b62--------------------------------) [Naser Tamimi](https://tamimi-naser.medium.com/?source=post_page-----5e2976b69b62--------------------------------)
+[](https://tamimi-naser.medium.com/?source=post_page-----5e2976b69b62--------------------------------)![Naser Tamimi](https://tamimi-naser.medium.com/?source=post_page-----5e2976b69b62--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e2976b69b62--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e2976b69b62--------------------------------) [Naser Tamimi](https://tamimi-naser.medium.com/?source=post_page-----5e2976b69b62--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff94e8b97c7aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62&user=Naser+Tamimi&userId=f94e8b97c7aa&source=post_page-f94e8b97c7aa----5e2976b69b62---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e2976b69b62--------------------------------) ·6 min read·2023年12月5日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff94e8b97c7aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62&user=Naser+Tamimi&userId=f94e8b97c7aa&source=post_page-f94e8b97c7aa----5e2976b69b62---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e2976b69b62--------------------------------) ·6 min read·2023 年 12 月 5 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5e2976b69b62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62&source=-----5e2976b69b62---------------------bookmark_footer-----------)![](../Images/4b2f8379a79a83aae121976d9e91f2c7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5e2976b69b62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-models-meet-big-data-spark-and-llms-in-harmony-5e2976b69b62&source=-----5e2976b69b62---------------------bookmark_footer-----------)![](img/4b2f8379a79a83aae121976d9e91f2c7.png)
 
 图片由 Midjourney 生成。
 

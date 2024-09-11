@@ -1,20 +1,20 @@
 # ChatGPT 和我们面临的未来（现状）
 
-> 原文：[https://towardsdatascience.com/chatgpt-and-the-future-present-were-facing-9f2a1cfab0e9?source=collection_archive---------3-----------------------#2023-02-02](https://towardsdatascience.com/chatgpt-and-the-future-present-were-facing-9f2a1cfab0e9?source=collection_archive---------3-----------------------#2023-02-02)
+> 原文：[`towardsdatascience.com/chatgpt-and-the-future-present-were-facing-9f2a1cfab0e9?source=collection_archive---------3-----------------------#2023-02-02`](https://towardsdatascience.com/chatgpt-and-the-future-present-were-facing-9f2a1cfab0e9?source=collection_archive---------3-----------------------#2023-02-02)
 
 ## 观点
 
 ## 2023 年将比 2022 年更加激烈和压倒性，所以系好安全带。
 
-[](https://albertoromgar.medium.com/?source=post_page-----9f2a1cfab0e9--------------------------------)[![Alberto Romero](../Images/371e7fae482e9cc764de077a09500d8e.png)](https://albertoromgar.medium.com/?source=post_page-----9f2a1cfab0e9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9f2a1cfab0e9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9f2a1cfab0e9--------------------------------) [Alberto Romero](https://albertoromgar.medium.com/?source=post_page-----9f2a1cfab0e9--------------------------------)
+[](https://albertoromgar.medium.com/?source=post_page-----9f2a1cfab0e9--------------------------------)![Alberto Romero](https://albertoromgar.medium.com/?source=post_page-----9f2a1cfab0e9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9f2a1cfab0e9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f2a1cfab0e9--------------------------------) [Alberto Romero](https://albertoromgar.medium.com/?source=post_page-----9f2a1cfab0e9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ba6be8a3022&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-and-the-future-present-were-facing-9f2a1cfab0e9&user=Alberto+Romero&userId=7ba6be8a3022&source=post_page-7ba6be8a3022----9f2a1cfab0e9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f2a1cfab0e9--------------------------------) ·10 分钟阅读·2023年2月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9f2a1cfab0e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-and-the-future-present-were-facing-9f2a1cfab0e9&user=Alberto+Romero&userId=7ba6be8a3022&source=-----9f2a1cfab0e9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ba6be8a3022&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-and-the-future-present-were-facing-9f2a1cfab0e9&user=Alberto+Romero&userId=7ba6be8a3022&source=post_page-7ba6be8a3022----9f2a1cfab0e9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f2a1cfab0e9--------------------------------) ·10 分钟阅读·2023 年 2 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9f2a1cfab0e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-and-the-future-present-were-facing-9f2a1cfab0e9&user=Alberto+Romero&userId=7ba6be8a3022&source=-----9f2a1cfab0e9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9f2a1cfab0e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-and-the-future-present-were-facing-9f2a1cfab0e9&source=-----9f2a1cfab0e9---------------------bookmark_footer-----------)![](../Images/927f6f493c472e595a970f0c616d9257.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9f2a1cfab0e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-and-the-future-present-were-facing-9f2a1cfab0e9&source=-----9f2a1cfab0e9---------------------bookmark_footer-----------)![](img/927f6f493c472e595a970f0c616d9257.png)
 
 版权归 Midjourney 所有
 

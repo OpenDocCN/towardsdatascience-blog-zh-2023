@@ -1,10 +1,10 @@
 # 关于气候的讨论：Python 中的 Twitter 数据聚类
 
-> 原文：[https://towardsdatascience.com/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906?source=collection_archive---------2-----------------------#2023-05-15](https://towardsdatascience.com/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906?source=collection_archive---------2-----------------------#2023-05-15)
+> 原文：[`towardsdatascience.com/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906?source=collection_archive---------2-----------------------#2023-05-15`](https://towardsdatascience.com/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906?source=collection_archive---------2-----------------------#2023-05-15)
 
 ## 使用 K-Means、TF-IDF、Word2Vec 和 Sentence-BERT 进行 Twitter 数据的聚类
 
-[](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)[![Dmitrii Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fbbd2b95906--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2fbbd2b95906--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)
+[](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)![Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fbbd2b95906--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fbbd2b95906--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2fbbd2b95906&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906&source=-----2fbbd2b95906---------------------bookmark_footer-----------)![](../Images/b562105ac69264137465079315ba7c15.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2fbbd2b95906&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906&source=-----2fbbd2b95906---------------------bookmark_footer-----------)![](img/b562105ac69264137465079315ba7c15.png)
 
 推文集群可视化，图片由作者提供
 

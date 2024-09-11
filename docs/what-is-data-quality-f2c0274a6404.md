@@ -1,18 +1,18 @@
 # 什么是数据质量？
 
-> 原文：[https://towardsdatascience.com/what-is-data-quality-f2c0274a6404?source=collection_archive---------7-----------------------#2023-08-15](https://towardsdatascience.com/what-is-data-quality-f2c0274a6404?source=collection_archive---------7-----------------------#2023-08-15)
+> 原文：[`towardsdatascience.com/what-is-data-quality-f2c0274a6404?source=collection_archive---------7-----------------------#2023-08-15`](https://towardsdatascience.com/what-is-data-quality-f2c0274a6404?source=collection_archive---------7-----------------------#2023-08-15)
 
 ## 发现确保供应链数据准确性、一致性和完整性的方法论
 
-[](https://s-saci95.medium.com/?source=post_page-----f2c0274a6404--------------------------------)[![Samir Saci](../Images/722d1f56a3308f6527d82b5ab97064ec.png)](https://s-saci95.medium.com/?source=post_page-----f2c0274a6404--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2c0274a6404--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2c0274a6404--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----f2c0274a6404--------------------------------)
+[](https://s-saci95.medium.com/?source=post_page-----f2c0274a6404--------------------------------)![Samir Saci](https://s-saci95.medium.com/?source=post_page-----f2c0274a6404--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2c0274a6404--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2c0274a6404--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----f2c0274a6404--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-data-quality-f2c0274a6404&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----f2c0274a6404---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2c0274a6404--------------------------------) · 11分钟阅读 · 2023年8月15日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-data-quality-f2c0274a6404&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----f2c0274a6404---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2c0274a6404--------------------------------) · 11 分钟阅读 · 2023 年 8 月 15 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2c0274a6404&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-data-quality-f2c0274a6404&source=-----f2c0274a6404---------------------bookmark_footer-----------)[![](../Images/7fdaab450b8d1e91d6c83e86c383151a.png)](https://www.samirsaci.com/)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2c0274a6404&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-data-quality-f2c0274a6404&source=-----f2c0274a6404---------------------bookmark_footer-----------)![](https://www.samirsaci.com/)
 
 什么是数据质量？ — （作者提供的图片）
 
@@ -20,7 +20,7 @@
 
 > 你如何管理你系统生成的数据？
 
-![](../Images/d70959beecc35e7bd8edfeef47919d58.png)
+![](img/d70959beecc35e7bd8edfeef47919d58.png)
 
 供应链系统创建和交换信息 — （作者提供的图片）
 
@@ -59,19 +59,19 @@ III. Next Steps
 
 从规划和预测到采购和物流，供应链管理的每个方面都依赖数据来有效运行。
 
-![](../Images/d70959beecc35e7bd8edfeef47919d58.png)
+![](img/d70959beecc35e7bd8edfeef47919d58.png)
 
 供应链系统创建和交换信息 — （作者提供的图片）
 
-+   规划和预测算法依赖于[WMS](https://www.youtube.com/shorts/MW1QRJs3iuE)和ERP数据，以获取历史销售、库存水平和商店订单。
++   规划和预测算法依赖于[WMS](https://www.youtube.com/shorts/MW1QRJs3iuE)和 ERP 数据，以获取历史销售、库存水平和商店订单。
 
-+   运输管理系统依赖WMS数据来正确跟踪从仓库到商店的货物。
++   运输管理系统依赖 WMS 数据来正确跟踪从仓库到商店的货物。
 
 > 有哪些不同类型的分析？
 
 [供应链分析](https://youtu.be/3d7C4pShykI)解决方案可以分为四种类型，每种类型提供不同级别的洞察和可见性。
 
-![](../Images/c0b8a63133e20d73965bd94367ac95d5.png)
+![](img/c0b8a63133e20d73965bd94367ac95d5.png)
 
 四种类型的供应链分析 — （作者提供的图片）
 
@@ -83,13 +83,13 @@ III. Next Steps
 
 让我们以一家时尚零售公司的门店配送过程为例。
 
-[![](../Images/b3fd8ece95059c9bd9fc82a61275d6eb.png)](https://youtu.be/ssdni_n6HDc)
+![](https://youtu.be/ssdni_n6HDc)
 
 零售公司配送过程的时间戳分析 — （作者提供的图片）
 
 一个简单的操作指标是准时交付的订单百分比：[On Time In Full: OTIF](https://youtu.be/qhLqu6M7lcA)
 
-[![](../Images/a34653c240f639501ae35de4e84fb540.png)](https://youtu.be/qhLqu6M7lcA)
+![](https://youtu.be/qhLqu6M7lcA)
 
 OTIF 计算的数据处理简单示例 — （作者提供的图片）
 
@@ -115,7 +115,7 @@ OTIF 计算的数据处理简单示例 — （作者提供的图片）
 
 在深入探讨数据质量之前，理解数据质量如何与相关概念如**数据完整性**或**数据分析**有所不同是至关重要的。
 
-![](../Images/7465d7b3d0c0ed1bbff88d25a21a3843.png)
+![](img/7465d7b3d0c0ed1bbff88d25a21a3843.png)
 
 数据完整性是数据质量的一个子集 —（作者提供的图片）
 
@@ -127,7 +127,7 @@ OTIF 计算的数据处理简单示例 — （作者提供的图片）
 
 数据分析不应与数据挖掘混淆。
 
-![](../Images/a6ec98ba7c04e2b00177d1aecddcd73c.png)
+![](img/a6ec98ba7c04e2b00177d1aecddcd73c.png)
 
 数据挖掘与数据分析 —（作者提供的图片）
 
@@ -137,13 +137,13 @@ OTIF 计算的数据处理简单示例 — （作者提供的图片）
 
 现在我们已经澄清了这些差异，我们可以专注于定义数据质量。
 
-# 数据质量的6个维度是什么？
+# 数据质量的 6 个维度是什么？
 
 数据质量是基于多个维度来评估的，这些维度在保持数据的可靠性和可用性方面发挥着至关重要的作用。
 
-[![](../Images/b71490b96b419039aa92ec7fa219258a.png)](http://samirsaci.com)
+![](http://samirsaci.com)
 
-数据质量的6个维度 —（作者提供的图片）
+数据质量的 6 个维度 —（作者提供的图片）
 
 ## 数据完整性：我们是否拥有所有的数据？
 
@@ -155,11 +155,11 @@ OTIF 计算的数据处理简单示例 — （作者提供的图片）
 
 在公司中，[主数据管理 (MDM)](https://youtu.be/StIshGrxuMc)是确保不同部门之间数据一致性和完整性的关键方面。
 
-[![](../Images/b74e011ca55588822f58449561de38b9.png)](https://youtu.be/StIshGrxuMc)
+![](https://youtu.be/StIshGrxuMc)
 
 示例主数据管理 —（作者提供的图片）
 
-主数据专家在项目创建过程中将与产品相关的信息输入到ERP系统中。
+主数据专家在项目创建过程中将与产品相关的信息输入到 ERP 系统中。
 
 +   **产品信息**：净重、尺寸等
 
@@ -207,7 +207,7 @@ OTIF 计算的数据处理简单示例 — （作者提供的图片）
 
 第一步是测量 [其运输的 CO2 排放](https://youtu.be/ddthuvFQdGY) 网络。
 
-[![](../Images/59d2342f9b7937efc974451bb40e3ed6.png)](https://youtu.be/ddthuvFQdGY)
+![](https://youtu.be/ddthuvFQdGY)
 
 CO2 报告的数据处理 —（图片来源：作者）
 
@@ -231,13 +231,13 @@ CO2 报告的数据处理 —（图片来源：作者）
 
 > **示例：生命周期评估**
 
-[生命周期评估 (LCA)](/what-is-a-life-cycle-assessment-lca-e32a5078483a) 是一种评估产品或服务在其整个生命周期内环境影响的方法。
+生命周期评估 (LCA) 是一种评估产品或服务在其整个生命周期内环境影响的方法。
 
 它严重依赖于数据质量。
 
 在下面的示例中，我们从不同来源收集数据，以估算生产和交付 T 恤所使用的公用设施和自然资源。
 
-[![](../Images/0cff91211adf8f9cbb96882aa8170d96.png)](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
+![](https://towardsdatascience.com/what-is-a-life-cycle-assessment-lca-e32a5078483a)
 
 时尚零售生命周期评估的数据要求 —（图片来源：作者）
 
@@ -269,9 +269,9 @@ CO2 报告的数据处理 —（图片来源：作者）
 
 > **示例：过程挖掘**
 
-[过程挖掘](/what-is-process-mining-683b5eb6547c) 是一种分析方法，专注于发现、监控和改善运营和业务流程。
+过程挖掘 是一种分析方法，专注于发现、监控和改善运营和业务流程。
 
-![](../Images/1bb416b23482d56bfe2ee76828b9328c.png)
+![](img/1bb416b23482d56bfe2ee76828b9328c.png)
 
 时间戳收集——（作者提供的图像）
 
@@ -283,7 +283,7 @@ CO2 报告的数据处理 —（图片来源：作者）
 
     这可能在追踪货物时产生“空白”。
 
-    *例如，我的货物在凌晨12:05送达，但状态仍显示“打包中”。*
+    *例如，我的货物在凌晨 12:05 送达，但状态仍显示“打包中”。*
 
 +   事件可能会被报告
 
@@ -299,9 +299,9 @@ CO2 报告的数据处理 —（图片来源：作者）
 
 这对于维持数据驱动决策的信任是必需的。
 
-**示例：零售销售预测的机器学习** 这些算法使用历史销售数据记录来预测未来X天的按店铺和商品代码的销售情况。
+**示例：零售销售预测的机器学习** 这些算法使用历史销售数据记录来预测未来 X 天的按店铺和商品代码的销售情况。
 
-[![](../Images/11f2d7f1aef0d76ae3430df4e635df94.png)](https://s-saci95.medium.com/machine-learning-for-retail-sales-forecasting-features-engineering-4edfee7c9cbc)
+![](https://s-saci95.medium.com/machine-learning-for-retail-sales-forecasting-features-engineering-4edfee7c9cbc)
 
 零售销售预测的机器学习——（作者提供的图像）
 
@@ -347,21 +347,21 @@ CO2 报告的数据处理 —（图片来源：作者）
 
 其中包括影响组织财务和法律方面的战略报告。
 
-[![](../Images/fd0761a346c0cae6dbaf440c6fb2393c.png)](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
+![](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
 
 战略报告示例：ESG——（作者图片）
 
 **环境、社会和治理（ESG）**方法是一种公司用来报告其环境足迹、社会影响和治理结构的方法论。
 
-[![](../Images/e66e22d5f506a842c5dc8fed5671399e.png)](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
+![](https://towardsdatascience.com/what-is-esg-reporting-d610535eed9c)
 
-生成ESG报告的数据处理能力——（作者图片）
+生成 ESG 报告的数据处理能力——（作者图片）
 
 这依赖于从多个来源收集、处理和协调数据集。
 
 这种报告通常涉及在发布前对数据和假设进行全面审计。
 
-[![](../Images/a1eab80919134910e40e73e2ecd46cae.png)](https://towardsdatascience.com/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031)
+![](https://towardsdatascience.com/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031)
 
 绿色洗涤的五大罪恶——（作者图片）
 
@@ -377,13 +377,13 @@ CO2 报告的数据处理 —（图片来源：作者）
 
 因此，你的可持续部门依赖于高质量的数据，以避免可能导致合规问题的错误计算。
 
-**💡 关于绿色洗涤和ESG报告的更多细节，**
+**💡 关于绿色洗涤和 ESG 报告的更多细节，**
 
-[](/what-is-esg-reporting-d610535eed9c?source=post_page-----f2c0274a6404--------------------------------) [## 什么是ESG报告？
+[](/what-is-esg-reporting-d610535eed9c?source=post_page-----f2c0274a6404--------------------------------) ## 什么是 ESG 报告？
 
 ### 利用数据分析进行公司环境、社会和治理的全面有效报告
 
-towardsdatascience.com](/what-is-esg-reporting-d610535eed9c?source=post_page-----f2c0274a6404--------------------------------) [](/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031?source=post_page-----f2c0274a6404--------------------------------) [## 什么是绿色洗涤？以及如何使用分析检测它？]
+towardsdatascience.com [](/what-is-greenwashing-and-how-to-use-analytics-to-detect-it-15b8118031?source=post_page-----f2c0274a6404--------------------------------) [## 什么是绿色洗涤？以及如何使用分析检测它？]
 
 ### 探索数据分析如何帮助我们检测和防止绿色洗涤，并促进真正的可持续性。
 
@@ -397,13 +397,13 @@ OpenAI 于 2022 年底发布了 ChatGPT 的第一个版本。
 
 从那时起，生成性 AI 成为利用大型语言模型（LLMs）提升用户数据和分析产品体验的机会。
 
-[![](../Images/797d2f7a1779f9032e52c24e1567eb29.png)](https://medium.com/towards-data-science/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0)
+![](https://medium.com/towards-data-science/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0)
 
-使用 LangChain SQL 代理的供应链控制塔代理 [[文章链接](/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0)]——（图片由作者提供）
+使用 LangChain SQL 代理的供应链控制塔代理 [文章链接]——（图片由作者提供）
 
 作为首次尝试探索这项技术，我在这篇[文章中分享了我的实验历程](https://medium.com/towards-data-science/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0)。
 
-[![](../Images/ade703297df6aaa1f622b53151a04269.png)](https://medium.com/towards-data-science/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0)
+![](https://medium.com/towards-data-science/leveraging-llms-with-langchain-for-supply-chain-analytics-a-control-tower-powered-by-gpt-21e19b33b5f0)
 
 由 GPT 增强的智能代理原型——（图片由作者提供）
 

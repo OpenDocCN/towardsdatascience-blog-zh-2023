@@ -1,18 +1,18 @@
 # 利用机器学习开发有效的营销策略
 
-> 原文：[https://towardsdatascience.com/leveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5?source=collection_archive---------9-----------------------#2023-08-01](https://towardsdatascience.com/leveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5?source=collection_archive---------9-----------------------#2023-08-01)
+> 原文：[`towardsdatascience.com/leveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5?source=collection_archive---------9-----------------------#2023-08-01`](https://towardsdatascience.com/leveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5?source=collection_archive---------9-----------------------#2023-08-01)
 
 ## 使用机器学习成功构建营销策略的技巧与窍门
 
-[](https://medium.com/@elenek?source=post_page-----99b1b887f2f5--------------------------------)[![Elena K.](../Images/e16223cedf3ccb167710dfc94ee35321.png)](https://medium.com/@elenek?source=post_page-----99b1b887f2f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99b1b887f2f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----99b1b887f2f5--------------------------------) [Elena K.](https://medium.com/@elenek?source=post_page-----99b1b887f2f5--------------------------------)
+[](https://medium.com/@elenek?source=post_page-----99b1b887f2f5--------------------------------)![Elena K.](https://medium.com/@elenek?source=post_page-----99b1b887f2f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99b1b887f2f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----99b1b887f2f5--------------------------------) [Elena K.](https://medium.com/@elenek?source=post_page-----99b1b887f2f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1a63363b910a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5&user=Elena+K.&userId=1a63363b910a&source=post_page-1a63363b910a----99b1b887f2f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99b1b887f2f5--------------------------------) · 8分钟阅读 · 2023年8月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99b1b887f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5&user=Elena+K.&userId=1a63363b910a&source=-----99b1b887f2f5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1a63363b910a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5&user=Elena+K.&userId=1a63363b910a&source=post_page-1a63363b910a----99b1b887f2f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99b1b887f2f5--------------------------------) · 8 分钟阅读 · 2023 年 8 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F99b1b887f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5&user=Elena+K.&userId=1a63363b910a&source=-----99b1b887f2f5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F99b1b887f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5&source=-----99b1b887f2f5---------------------bookmark_footer-----------)![](../Images/b1c22ad1ee60a9ba1c68c1dc31d44dc6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F99b1b887f2f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-machine-learning-for-effective-marketing-strategy-development-99b1b887f2f5&source=-----99b1b887f2f5---------------------bookmark_footer-----------)![](img/b1c22ad1ee60a9ba1c68c1dc31d44dc6.png)
 
 图片来源于 [unsplash.com](https://unsplash.com/photos/HOrhCnQsxnQ)
 
@@ -36,9 +36,9 @@
 
 Google Analytics (GA4)是一个强大的平台，提供各种网站分析工具，并允许你测量应用程序和网站的参与度和流量。它通常使用*最后点击归因*，不过，你可以通过收集以下*GA4*数据来构建你的*自定义机器学习归因模型*：
 
-+   [自动事件](https://support.google.com/analytics/answer/9234069?sjid=12121454471243228456-NA)（例如*ad_click, ad_impression, app_exception, file_download, first_visit, page_view等*）；
++   [自动事件](https://support.google.com/analytics/answer/9234069?sjid=12121454471243228456-NA)（例如*ad_click, ad_impression, app_exception, file_download, first_visit, page_view 等*）；
 
-+   [增强测量](https://support.google.com/analytics/answer/9216061?hl=en&ref_topic=13367566&sjid=12121454471243228456-NA)（*scroll, click, video_start, video_progress等*）；
++   [增强测量](https://support.google.com/analytics/answer/9216061?hl=en&ref_topic=13367566&sjid=12121454471243228456-NA)（*scroll, click, video_start, video_progress 等*）；
 
 +   [推荐事件](https://support.google.com/analytics/answer/9267735?hl=en&ref_topic=13367566&sjid=12121454471243228456-NA) (*add_to_cart, begin_checkout, add_payment_info, purchase, add_to_wishlist 等*)
 
@@ -127,7 +127,7 @@ Accuracy on the TEST: 0.999
 
 我们将使用我们的数据进行计算，并与营销人员通常通过*last-click attribution*获得的**ROAS**和**CRR**值进行比较。
 
-![](../Images/415aebf796db8b7bdec5c43cebe115d2.png)![](../Images/a2e073e6fa961ba7f76239152397ea3c.png)
+![](img/415aebf796db8b7bdec5c43cebe115d2.png)![](img/a2e073e6fa961ba7f76239152397ea3c.png)
 
 由于我们在分析的期间内只看到三个付费活动，我们将找到这些活动在*GA4*中的指标，并基于*last-click attribution*添加实际**ROAS**和**CRR**。我们在[上一篇文章](https://medium.com/mlearning-ai/the-future-of-marketing-attribution-integrating-machine-learning-for-enhanced-insights-2ffa5cfb3f3e)中讨论了为什么*last-click attribution*不是评估广告活动贡献的准确方法。
 
@@ -135,9 +135,9 @@ Accuracy on the TEST: 0.999
 
 现在我们有了所有数据来得出关于广告活动的结论：
 
-+   我们可以看到活动***“google/cpc/mg_ga_brand_all_categories_every_usa_0_rem_s_bas”***被高估了，因为其预测**ROAS**比基于*last-click attribution*的**ROAS**低*2倍*。很可能，用户在点击这个广告活动后经常进行购买，但他们已经是潜在客户。
++   我们可以看到活动***“google/cpc/mg_ga_brand_all_categories_every_usa_0_rem_s_bas”***被高估了，因为其预测**ROAS**比基于*last-click attribution*的**ROAS**低*2 倍*。很可能，用户在点击这个广告活动后经常进行购买，但他们已经是潜在客户。
 
-+   广告活动***“instagram / cpc / 010323_main”***被低估了，因为其预测**ROAS**比实际**ROAS**高*4倍*。
++   广告活动***“instagram / cpc / 010323_main”***被低估了，因为其预测**ROAS**比实际**ROAS**高*4 倍*。
 
 +   并且活动***“google / cpc / mg_ga_brand_all_categories_every_latvia_0_rem_s_bas”***的预测和实际**ROAS**相似。
 

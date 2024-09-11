@@ -1,18 +1,18 @@
 # 方差减少与重要性抽样
 
-> 原文：[https://towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7?source=collection_archive---------17-----------------------#2023-01-23](https://towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7?source=collection_archive---------17-----------------------#2023-01-23)
+> 原文：[`towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7?source=collection_archive---------17-----------------------#2023-01-23`](https://towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7?source=collection_archive---------17-----------------------#2023-01-23)
 
-## 数学解释与Python实现
+## 数学解释与 Python 实现
 
-[](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)[![Oliver S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------) [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)
+[](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)![Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------) [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff2daf6260cca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-with-importance-sampling-4e5ca4b1c5a7&user=Oliver+S&userId=f2daf6260cca&source=post_page-f2daf6260cca----4e5ca4b1c5a7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------) ·6分钟阅读·2023年1月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e5ca4b1c5a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-with-importance-sampling-4e5ca4b1c5a7&user=Oliver+S&userId=f2daf6260cca&source=-----4e5ca4b1c5a7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff2daf6260cca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-with-importance-sampling-4e5ca4b1c5a7&user=Oliver+S&userId=f2daf6260cca&source=post_page-f2daf6260cca----4e5ca4b1c5a7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------) ·6 分钟阅读·2023 年 1 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e5ca4b1c5a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-with-importance-sampling-4e5ca4b1c5a7&user=Oliver+S&userId=f2daf6260cca&source=-----4e5ca4b1c5a7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e5ca4b1c5a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-with-importance-sampling-4e5ca4b1c5a7&source=-----4e5ca4b1c5a7---------------------bookmark_footer-----------)![](../Images/08c4a7efaed06bcd1a42a2a74b87d3d5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e5ca4b1c5a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-with-importance-sampling-4e5ca4b1c5a7&source=-----4e5ca4b1c5a7---------------------bookmark_footer-----------)![](img/08c4a7efaed06bcd1a42a2a74b87d3d5.png)
 
 照片由 [Edge2Edge Media](https://unsplash.com/@edge2edgemedia?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/uKlneQRwaxY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

@@ -1,20 +1,20 @@
 # 如何使用 Matplotlib 创建六边形地图
 
-> 原文：[https://towardsdatascience.com/how-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c?source=collection_archive---------12-----------------------#2023-11-21](https://towardsdatascience.com/how-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c?source=collection_archive---------12-----------------------#2023-11-21)
+> 原文：[`towardsdatascience.com/how-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c?source=collection_archive---------12-----------------------#2023-11-21`](https://towardsdatascience.com/how-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c?source=collection_archive---------12-----------------------#2023-11-21)
 
 ## Matplotlib 教程
 
 ## 使用形状表示地理信息
 
-[](https://medium.com/@oscarleo?source=post_page-----eb5eef82ab2c--------------------------------)[![Oscar Leo](../Images/7733c9147bad2875a35155fca3903aa8.png)](https://medium.com/@oscarleo?source=post_page-----eb5eef82ab2c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eb5eef82ab2c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eb5eef82ab2c--------------------------------) [Oscar Leo](https://medium.com/@oscarleo?source=post_page-----eb5eef82ab2c--------------------------------)
+[](https://medium.com/@oscarleo?source=post_page-----eb5eef82ab2c--------------------------------)![Oscar Leo](https://medium.com/@oscarleo?source=post_page-----eb5eef82ab2c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eb5eef82ab2c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb5eef82ab2c--------------------------------) [Oscar Leo](https://medium.com/@oscarleo?source=post_page-----eb5eef82ab2c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7e5c1ca65b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c&user=Oscar+Leo&userId=d7e5c1ca65b7&source=post_page-d7e5c1ca65b7----eb5eef82ab2c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb5eef82ab2c--------------------------------) ·7 分钟阅读·2023年11月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feb5eef82ab2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c&user=Oscar+Leo&userId=d7e5c1ca65b7&source=-----eb5eef82ab2c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7e5c1ca65b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c&user=Oscar+Leo&userId=d7e5c1ca65b7&source=post_page-d7e5c1ca65b7----eb5eef82ab2c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb5eef82ab2c--------------------------------) ·7 分钟阅读·2023 年 11 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feb5eef82ab2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c&user=Oscar+Leo&userId=d7e5c1ca65b7&source=-----eb5eef82ab2c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feb5eef82ab2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c&source=-----eb5eef82ab2c---------------------bookmark_footer-----------)![](../Images/8a0c286c2ed1192c80240ba0a37770bf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feb5eef82ab2c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-hexagon-maps-with-matplotlib-eb5eef82ab2c&source=-----eb5eef82ab2c---------------------bookmark_footer-----------)![](img/8a0c286c2ed1192c80240ba0a37770bf.png)
 
 作者创建的图表
 

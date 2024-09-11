@@ -1,18 +1,18 @@
-# 通过这5个简单的方法，让你的数据科学家简历脱颖而出
+# 通过这 5 个简单的方法，让你的数据科学家简历脱颖而出
 
-> 原文：[https://towardsdatascience.com/do-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13?source=collection_archive---------0-----------------------#2023-11-19](https://towardsdatascience.com/do-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13?source=collection_archive---------0-----------------------#2023-11-19)
+> 原文：[`towardsdatascience.com/do-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13?source=collection_archive---------0-----------------------#2023-11-19`](https://towardsdatascience.com/do-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13?source=collection_archive---------0-----------------------#2023-11-19)
 
-## 这5个方法会让招聘人员对你的简历多看一眼
+## 这 5 个方法会让招聘人员对你的简历多看一眼
 
-[](https://madison13.medium.com/?source=post_page-----eaea92cdab13--------------------------------)[![麦迪逊·亨特](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----eaea92cdab13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eaea92cdab13--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eaea92cdab13--------------------------------) [麦迪逊·亨特](https://madison13.medium.com/?source=post_page-----eaea92cdab13--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----eaea92cdab13--------------------------------)![麦迪逊·亨特](https://madison13.medium.com/?source=post_page-----eaea92cdab13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eaea92cdab13--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----eaea92cdab13--------------------------------) [麦迪逊·亨特](https://madison13.medium.com/?source=post_page-----eaea92cdab13--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----eaea92cdab13---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eaea92cdab13--------------------------------) ·13分钟阅读·2023年11月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feaea92cdab13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13&user=Madison+Hunter&userId=6a8c6841e521&source=-----eaea92cdab13---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----eaea92cdab13---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eaea92cdab13--------------------------------) ·13 分钟阅读·2023 年 11 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feaea92cdab13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13&user=Madison+Hunter&userId=6a8c6841e521&source=-----eaea92cdab13---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feaea92cdab13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13&source=-----eaea92cdab13---------------------bookmark_footer-----------)![](../Images/48f3b5e733405ef9d80126eca9370a37.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feaea92cdab13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-these-5-simple-things-to-make-your-data-scientist-resume-stand-out-from-the-crowd-eaea92cdab13&source=-----eaea92cdab13---------------------bookmark_footer-----------)![](img/48f3b5e733405ef9d80126eca9370a37.png)
 
 Photo by [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@ Photo by [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medi
 
 不过，如果你以为这个领域是过度饱和的合格候选人，那就错了。你可能会看到数百名申请者竞争一个职位，但真正能够根据数据分析的需求分析数据的人却少之又少。
 
-几年前，我参与了公司在那个时候招聘的一个职位的简历筛选工作。我在LinkedIn上发布了这个职位，并附上了几个标准问题。在最初的几天里，我们收到了大约20到30份申请，但在审核了这些申请以及筛选了LinkedIn根据标准问题答案而过滤掉的申请后，只有两个是可行的候选人。把这种经验推广到那些数据科学职位的情况，申请了300名候选人，你可以想象其中有多少是真正的竞争者。
+几年前，我参与了公司在那个时候招聘的一个职位的简历筛选工作。我在 LinkedIn 上发布了这个职位，并附上了几个标准问题。在最初的几天里，我们收到了大约 20 到 30 份申请，但在审核了这些申请以及筛选了 LinkedIn 根据标准问题答案而过滤掉的申请后，只有两个是可行的候选人。把这种经验推广到那些数据科学职位的情况，申请了 300 名候选人，你可以想象其中有多少是真正的竞争者。
 
 在技术领域，自称设计师、软件工程师或数据科学家都很容易。在许多情况下，这些职位名称的含义随着时间的推移而发生了变化。例如，“数据科学家”曾经指的是公司中具有硕士或博士学历的高级人员。相比之下，现在，任何完成数据科学训练营的人都可能认为自己有资格称为数据科学家，因为他们懂得统计学并能使用一些数据分析库。
 
@@ -28,13 +28,13 @@ Photo by [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medi
 
 # 招聘者在数据科学家的简历中寻找什么？
 
-+   **课外学习和成长：** 在大学学习数据科学或参加编程训练营固然不错，但这些环境过于封闭，只能让你的技能达到一定水平。虽然许多雇主在招聘新毕业生时心知肚明，但展示你超越课堂所学的能力可能会给他们留下深刻印象。数据科学领域的工作独特之处在于，你的整个职业生涯都将被迫不断学习新技术，应用新技能，总是要随时应对挑战（例如，学会如何与ChatGPT和其他高级AI模型合作，而不是畏惧它们）。因此，你最好从早期就适应终身学习的节奏，并通过展示你如何已经将知识深化到核心基础之外来打动招聘者。
++   **课外学习和成长：** 在大学学习数据科学或参加编程训练营固然不错，但这些环境过于封闭，只能让你的技能达到一定水平。虽然许多雇主在招聘新毕业生时心知肚明，但展示你超越课堂所学的能力可能会给他们留下深刻印象。数据科学领域的工作独特之处在于，你的整个职业生涯都将被迫不断学习新技术，应用新技能，总是要随时应对挑战（例如，学会如何与 ChatGPT 和其他高级 AI 模型合作，而不是畏惧它们）。因此，你最好从早期就适应终身学习的节奏，并通过展示你如何已经将知识深化到核心基础之外来打动招聘者。
 
 +   **既能领导又能作为团队一部分合作的能力：** 由于数据科学领域在过去五年左右的普及，目前似乎有大量初级数据科学家。加上最近几年退休的婴儿潮数据科学家的大规模离职，公司在填补各级别职位（尤其是更高级的“团队领导”或管理职位）方面面临挑战。不仅如此，他们还必须雇佣从未在团队中工作过的初级数据科学家，因为他们在疫情高峰期间完成教育时是孤立的。团队合作和领导能力是无法真正教授的事情（无论他们如何声称在那些你被迫上的组织行为课程中），但你可以通过实践来提高这些技能。这可能只是参加黑客马拉松并与从未见过的人一起工作，或者在你加入的俱乐部或志愿组织中担任领导角色。无论哪种方式，你都可以向雇主证明你可以作为团队的一部分工作，甚至在需要时领导团队。
 
 +   **领域专业知识：** 虽然任何人都可以分析数据，但只有少数人能够得出有意义的结论，帮助公司在前进过程中做出重要决策。这就是为什么在从其他职业（如工程师、教师、护士、科学家等）转向数据科学职业时，保持在该领域并利用你获得的领域知识帮助寻找解决该领域问题的公司是有用的。然而，领域知识也可以通过免费审计大学课程、阅读书籍或参加社交活动来获得。无论你选择哪种方式获取领域专业知识，请确保在各种不同情景下能够讨论它，并创建一个展示你在该领域解决问题的个人项目组合（见下文）。
 
-+   **量化影响：** 正如Ken Jee在他的文章[*避免的数据科学简历错误*](/data-science-resume-mistakes-to-avoid-2867460659ac)中所述，作为一名数据科学家，你的价值与你对公司产生积极影响的能力密切相关。换句话说，招聘人员想要知道你解决了哪些问题，以及项目的结果如何。在你找到一种更有效地向客户营销的方式后，公司是否优化了其流程并增加了收益？你是否发现了附近煤矿与野生动物的关系，这可能引发关于污染管理的讨论？无论你取得了什么成就，招聘人员都想了解你如何通过完成的项目产生影响的细节。
++   **量化影响：** 正如 Ken Jee 在他的文章*避免的数据科学简历错误*中所述，作为一名数据科学家，你的价值与你对公司产生积极影响的能力密切相关。换句话说，招聘人员想要知道你解决了哪些问题，以及项目的结果如何。在你找到一种更有效地向客户营销的方式后，公司是否优化了其流程并增加了收益？你是否发现了附近煤矿与野生动物的关系，这可能引发关于污染管理的讨论？无论你取得了什么成就，招聘人员都想了解你如何通过完成的项目产生影响的细节。
 
 +   **教育和经验：** 不管你是数据科学家的背景或年限如何，招聘人员仍然想知道你在该领域的教育和经验。教育和经验的健康结合是受欢迎的。但是如果你是新毕业生，不要担心 —— 你可能在意想不到的地方积累了经验，比如毕业设计项目、实习或参加的俱乐部。此外，你甚至可能通过开发作品集、开始博客或通讯、或者做义务工作来积累自己的经验。无论你的教育和经验如何，两者都应该在你的简历上占据重要位置。
 
@@ -48,11 +48,11 @@ Photo by [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medi
 
 因为某种原因，我仍然惊讶于如此少的人理解为什么要量身定制他们的简历，尽管网络上有很多资源强调使用关键词和为每份简历做研究的重要性。
 
-根据经验，没有什么比一个未经定制的简历更能让人对其失去兴趣了。通用简历不仅不能告诉招聘人员你是否适合团队，而且还显示出缺乏努力和准备。我完全理解申请200份工作的辛苦。然而，你是否考虑过，如果你花时间坐下来为每一份申请的工作量身定制一份简历，也许你就不需要申请200份工作了呢？也许你只申请了30份工作之后，就开始收到面试邀约了，因为你花时间给招聘人员提供了他们想要的东西。要[有效定制你的简历](https://career.arizona.edu/resources/tailoring-your-resume/)，你需要：
+根据经验，没有什么比一个未经定制的简历更能让人对其失去兴趣了。通用简历不仅不能告诉招聘人员你是否适合团队，而且还显示出缺乏努力和准备。我完全理解申请 200 份工作的辛苦。然而，你是否考虑过，如果你花时间坐下来为每一份申请的工作量身定制一份简历，也许你就不需要申请 200 份工作了呢？也许你只申请了 30 份工作之后，就开始收到面试邀约了，因为你花时间给招聘人员提供了他们想要的东西。要[有效定制你的简历](https://career.arizona.edu/resources/tailoring-your-resume/)，你需要：
 
 +   **尽可能保持简洁**（如果你是应届毕业生，应该保持一页，如果有多年工作经验则可以稍长一些）
 
-+   **只包含绝对相关的内容**（是的，你可能曾在咖啡馆工作了3年，但你可能有更相关和有影响力的经验，例如参与一个教授编程给贫困儿童的俱乐部 —— 然而，我应该提到，包括非相关的工作经验也有一些好处，可以显示你可靠、可培训等，但这些优点可能会被反复辩论）。
++   **只包含绝对相关的内容**（是的，你可能曾在咖啡馆工作了 3 年，但你可能有更相关和有影响力的经验，例如参与一个教授编程给贫困儿童的俱乐部 —— 然而，我应该提到，包括非相关的工作经验也有一些好处，可以显示你可靠、可培训等，但这些优点可能会被反复辩论）。
 
 +   **将简历语言与职位广告保持一致**（这对于通过关键的职位申请软件筛选阶段来说非常重要，同时也表明你花时间仔细阅读了职位描述）
 
@@ -62,25 +62,25 @@ Photo by [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medi
 
 ## 2\. 量化成就、经验和影响
 
-“我写了一个分析销售趋势的程序”比说“我开发了一个使用X技术分析和预测销售趋势的程序，结果提高了未来销售预测的效率20%”要不具说服力得多。第一个陈述会让招聘人员说：“好的，那又怎样？”，而第二个陈述则解释了你做了什么、如何做的以及最重要的是为什么这么做。
+“我写了一个分析销售趋势的程序”比说“我开发了一个使用 X 技术分析和预测销售趋势的程序，结果提高了未来销售预测的效率 20%”要不具说服力得多。第一个陈述会让招聘人员说：“好的，那又怎样？”，而第二个陈述则解释了你做了什么、如何做的以及最重要的是为什么这么做。
 
 量化你的成就、经验和影响是巩固简历的重要小步骤，这为你提供了一些[好处](https://www.indeed.com/career-advice/resumes-cover-letters/how-to-quantify-resume)。首先，它提供了支持你所声称的结果。其次，它向招聘人员表明结果是推动和指导你的优先事项和未来表现的动力。最后，量化是在招聘人员心中留下深刻印象并从竞争对手中脱颖而出的好方法。
 
 量化你的成就、经验和影响确实需要一些工作才能开始，因此在开始新的事物（无论是学校、工作还是项目）时，尽早建立起你的工作流程是非常重要的。以下是我过去四年来使用的一般[工作流程](https://www.indeed.com/career-advice/resumes-cover-letters/how-to-quantify-resume)，用于收集我需要量化的成就、经验和影响的数字：
 
-1.  [**跟踪你的工作：**](https://www.indeed.com/career-advice/resumes-cover-letters/how-to-quantify-resume) 我跟踪我工作中的所有事情，包括我的工作时间、我完成的项目数量、这些项目的详细信息以及这些项目的结果。我甚至记录了我花在调试上的时间！我发现手机上的Notes应用足够使用，因为通常我会在每个月底将所有内容转移到更永久的文档中，但我知道很多人已经开发了使用Notion或电子表格的系统。
+1.  [**跟踪你的工作：**](https://www.indeed.com/career-advice/resumes-cover-letters/how-to-quantify-resume) 我跟踪我工作中的所有事情，包括我的工作时间、我完成的项目数量、这些项目的详细信息以及这些项目的结果。我甚至记录了我花在调试上的时间！我发现手机上的 Notes 应用足够使用，因为通常我会在每个月底将所有内容转移到更永久的文档中，但我知道很多人已经开发了使用 Notion 或电子表格的系统。
 
-1.  [**在确切数字缺失时开发一些范围：**](https://www.indeed.com/career-advice/resumes-cover-letters/how-to-quantify-resume) 如果你已经跟踪了足够长时间的工作数据，你会注意到有时候你没有确切的数字。对于这些情况，制定一些数据范围以指示完成的相对工作量，同时承认有时可能会有所变化。例如，我可以说2021年平均每月完成了5篇数据科学文章。
+1.  [**在确切数字缺失时开发一些范围：**](https://www.indeed.com/career-advice/resumes-cover-letters/how-to-quantify-resume) 如果你已经跟踪了足够长时间的工作数据，你会注意到有时候你没有确切的数字。对于这些情况，制定一些数据范围以指示完成的相对工作量，同时承认有时可能会有所变化。例如，我可以说 2021 年平均每月完成了 5 篇数据科学文章。
 
 1.  [**关注招聘者最喜欢看到的关键绩效指标：**](https://www.indeed.com/career-advice/resumes-cover-letters/how-to-quantify-resume) 金钱、人员、时间和排名是招聘者最看重的四个指标。每个指标的例子包括说明你的项目为公司带来了多少利润、你在团队中管理了多少人、你在一个特定项目上工作了多长时间，或者你为公司提升了某个排名的程度。记录这些数据有助于在项目进行过程中保持记忆的清晰。
 
-收集并检查好你的数据后，你可以开始将其转化为1–2句总结，添加到简历中的教育、项目或经验描述中。
+收集并检查好你的数据后，你可以开始将其转化为 1–2 句总结，添加到简历中的教育、项目或经验描述中。
 
 ## 3\. 包括能够带来影响的项目
 
 你遇到过多少希望进入数据科学领域的人，他们创建了一个“预测股市”的项目？只要想象一下有多少招聘者不得不筛选这些项目的作品集。嗯，不用多说。
 
-如果你对在数据科学领域找到一份工作并从500名其他有相同愿望的人中脱颖而出感到认真，你需要在简历中包括能够带来影响的项目。这将取决于行业，因此做一些初步研究了解该行业面临的问题是个不错的主意。需要注意的是，这些问题不必是巨大的，也不必是前所未有的。你甚至可以找到一个已经解决了的问题的替代解决方案。例如，你可以进行分析，发现污染数据中无法定义的异常来自一个造成大量灰尘的道路建设项目。或者，你可以进行分析，告诉你社区中的一家小企业，他们应该在周五向顾客进行营销，因为这会引起最多的周末购物者。
+如果你对在数据科学领域找到一份工作并从 500 名其他有相同愿望的人中脱颖而出感到认真，你需要在简历中包括能够带来影响的项目。这将取决于行业，因此做一些初步研究了解该行业面临的问题是个不错的主意。需要注意的是，这些问题不必是巨大的，也不必是前所未有的。你甚至可以找到一个已经解决了的问题的替代解决方案。例如，你可以进行分析，发现污染数据中无法定义的异常来自一个造成大量灰尘的道路建设项目。或者，你可以进行分析，告诉你社区中的一家小企业，他们应该在周五向顾客进行营销，因为这会引起最多的周末购物者。
 
 包含有影响力的项目的主要目的是向招聘者展示你能够发现问题并找到解决方案。整个项目生命周期的项目管理并不是一件容易的事，因此展示你能够成功完成它将对招聘者特别有意义，尤其是那些希望候选人能够快速上手或希望候选人成为数据科学部门核心的招聘者。此外，这些行业特定的项目是展示领域知识和提供影响力的好方法，无论这些项目是否会被付诸实施。
 
@@ -92,13 +92,13 @@ Photo by [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medi
 
 ## 5. 使其具有引人注目的可浏览性
 
-如果你无法在15秒内获取简历的要点，就该重新编写了。
+如果你无法在 15 秒内获取简历的要点，就该重新编写了。
 
 当我审阅简历时，面对一大片文字，我的脑子似乎会立即关闭。你可能会发现，当你在线阅读时，如果遇到一大片没有标题的文本墙，也会发生类似的情况，这使得内容难以浏览。
 
 从经验来看，我见过的最引人注目的简历是那些没有用词过多的简历。这些简历总是有足够的留白，大标题用于分隔部分，以及仅包含一到两句话的要点，这些要点提供了详细但简短的总结。当招聘人员不会感到被大量文字压倒时，他们会更愉快地考虑这份简历。
 
-鉴于招聘人员能够在[7.4秒](https://www.hrdive.com/news/eye-tracking-study-shows-recruiters-look-at-resumes-for-7-seconds/541582/#:~:text=In%20its%202018%20Eye%2DTracking,an%20average%20of%207.4%20seconds.)内浏览简历并做出决定，一个好的基准是大约15秒——如果你无法在这段时间内获得简历的总体印象，你需要使其更容易浏览，并使重要信息更易于获取。就像这篇文章一样，我使所有重要点突出显示，这样你可以在不到一分钟的时间内浏览这篇文章，获取重要信息，然后在某些内容对你特别相关时阅读段落的正文。你也需要在你的简历中做到这一点。
+鉴于招聘人员能够在[7.4 秒](https://www.hrdive.com/news/eye-tracking-study-shows-recruiters-look-at-resumes-for-7-seconds/541582/#:~:text=In%20its%202018%20Eye%2DTracking,an%20average%20of%207.4%20seconds.)内浏览简历并做出决定，一个好的基准是大约 15 秒——如果你无法在这段时间内获得简历的总体印象，你需要使其更容易浏览，并使重要信息更易于获取。就像这篇文章一样，我使所有重要点突出显示，这样你可以在不到一分钟的时间内浏览这篇文章，获取重要信息，然后在某些内容对你特别相关时阅读段落的正文。你也需要在你的简历中做到这一点。
 
 使您的简历易于浏览可能就像使用大而粗的标题来命名您的部分，将部分之间的分隔线，以及使用项目符号将文本分解为可读的、易于消化的片段那么容易。如果您发现难以包含所有相关细节，您可以随时选择最有见地的细节，然后在您的作品集或面试中填补剩余的细节。尽管简历中应该说的都应该说完，但在作品集或面试中可以说更多，因此主要焦点应该只集中在传达那些将决定是否有招聘人员给您打电话面试的细节上。
 

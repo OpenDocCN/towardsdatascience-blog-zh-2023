@@ -1,18 +1,18 @@
-# 使用 Sigma 规则进行异常检测（第 1 部分）：利用 Spark SQL 流处理
+# 使用 Sigma 规则进行异常检测（第一部分）：利用 Spark SQL 流处理
 
-> 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457?source=collection_archive---------9-----------------------#2023-01-24](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457?source=collection_archive---------9-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457?source=collection_archive---------9-----------------------#2023-01-24`](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457?source=collection_archive---------9-----------------------#2023-01-24)
 
 ## Sigma 规则用于检测网络安全日志中的异常。我们使用 Spark 结构化流处理来大规模评估 Sigma 规则。
 
-[](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)[![Jean-Claude Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------) [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)
+[](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)![Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------) [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----246900e95457---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------) ·8 min 阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F246900e95457&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&user=Jean-Claude+Cote&userId=444ed0089012&source=-----246900e95457---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----246900e95457---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------) ·8 min 阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F246900e95457&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&user=Jean-Claude+Cote&userId=444ed0089012&source=-----246900e95457---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F246900e95457&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&source=-----246900e95457---------------------bookmark_footer-----------)![](../Images/e01586182f002a7b3841a272a0a406cd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F246900e95457&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&source=-----246900e95457---------------------bookmark_footer-----------)![](img/e01586182f002a7b3841a272a0a406cd.png)
 
 摄影：Tom Carnegie，来源于 Unsplash，加拿大最高法院
 
@@ -40,7 +40,7 @@ Spark 大量利用数据草图，例如：[维度缩减](https://spark.apache.or
 
 让我们来看一下来自 [Sigma HQ](https://github.com/SigmaHQ/sigma/blob/master/rules/web/web_webshell_regeorg.yml) 的一个[示例](https://github.com/SigmaHQ/sigma/blob/master/rules/web/web_webshell_regeorg.yml)。
 
-![](../Images/5ff877108907697beaaf7a34f11c1d3b.png)
+![](img/5ff877108907697beaaf7a34f11c1d3b.png)
 
 规则的核心是检测部分。当条件评估为 true 时，意味着我们进行了检测。条件由命名表达式组成。例如，这里声明了选择和过滤表达式。这些表达式对日志的属性进行测试。在这种情况下是 web 日志。
 
@@ -76,9 +76,9 @@ WHERE
 
 这些 SQL 语句通常由调度器在特定触发间隔（例如 1 小时）下调用。每小时，检测系统会搜索最新的事件。
 
-![](../Images/5929476215d8840014c7f5cbee9e00a9.png)
+![](img/5929476215d8840014c7f5cbee9e00a9.png)
 
-然而，一些Sigma规则应用了时间聚合。例如，[通过全球目录进行枚举](https://github.com/SigmaHQ/sigma/blob/7c36a33ea77e94cbb5ad58fa061a84ed74dd503a/rules/windows/builtin/security/win_global_catalog_enumeration.yml)计算一段时间窗口内事件的发生次数。
+然而，一些 Sigma 规则应用了时间聚合。例如，[通过全球目录进行枚举](https://github.com/SigmaHQ/sigma/blob/7c36a33ea77e94cbb5ad58fa061a84ed74dd503a/rules/windows/builtin/security/win_global_catalog_enumeration.yml)计算一段时间窗口内事件的发生次数。
 
 ```py
 detection:
@@ -91,17 +91,17 @@ detection:
     condition: selection | count() by SourceAddress > 2000
 ```
 
-使用上述批处理模型，这些类型的查询会一遍又一遍地重新处理相同的事件。特别是当相关窗口很大时。此外，如果我们试图通过将触发频率提高到每`5分钟`来减少检测延迟，我们将引入更多对相同事件的重新处理。
+使用上述批处理模型，这些类型的查询会一遍又一遍地重新处理相同的事件。特别是当相关窗口很大时。此外，如果我们试图通过将触发频率提高到每`5 分钟`来减少检测延迟，我们将引入更多对相同事件的重新处理。
 
-理想情况下，为了减少对相同事件的反复处理，我们希望异常检测能够记住上一个处理的事件是什么，以及迄今为止计数器的值。这正是Spark Structured Streaming框架所提供的功能。流式查询每分钟触发一次微批处理（可配置）。它读取新事件，更新所有计数器并将其持久化（用于灾难恢复）。
+理想情况下，为了减少对相同事件的反复处理，我们希望异常检测能够记住上一个处理的事件是什么，以及迄今为止计数器的值。这正是 Spark Structured Streaming 框架所提供的功能。流式查询每分钟触发一次微批处理（可配置）。它读取新事件，更新所有计数器并将其持久化（用于灾难恢复）。
 
-![](../Images/5364db4f9be8cdd1834da5eeb713c863.png)
+![](img/5364db4f9be8cdd1834da5eeb713c863.png)
 
 在这种模型中，每个事件只评估一次。提高触发频率不会像无状态批处理模型那样产生相同的成本。而且由于事件只评估一次，复杂的检测（如正则表达式匹配）不会产生膨胀的成本。
 
-## 使用Spark Streaming运行检测
+## 使用 Spark Streaming 运行检测
 
-Spark Structured Streaming可以轻松评估sigmac编译器生成的SQL。首先，我们通过连接到我们最喜欢的队列机制（EventHubs，Kafka）来创建一个流数据框。在本例中，我们将从一个Iceberg表中`readStream`，该表中事件会被增量插入。了解有关Iceberg流能力的更多信息，[请点击这里](https://iceberg.apache.org/docs/latest/spark-structured-streaming/)。
+Spark Structured Streaming 可以轻松评估 sigmac 编译器生成的 SQL。首先，我们通过连接到我们最喜欢的队列机制（EventHubs，Kafka）来创建一个流数据框。在本例中，我们将从一个 Iceberg 表中`readStream`，该表中事件会被增量插入。了解有关 Iceberg 流能力的更多信息，[请点击这里](https://iceberg.apache.org/docs/latest/spark-structured-streaming/)。
 
 ```py
 # current time in milliseconds
@@ -119,7 +119,7 @@ streamingDf = (
 streamingDf.createOrReplaceTempView("events")
 ```
 
-注意，我们将流数据框别名为视图名称`events`。这样做是为了在SQL语句中引用此流数据框，即：`select * from events`。我们现在要做的就是配置sigmac编译器，以便对`events`表生成SQL语句。例如，生成的sql文件可能如下所示：
+注意，我们将流数据框别名为视图名称`events`。这样做是为了在 SQL 语句中引用此流数据框，即：`select * from events`。我们现在要做的就是配置 sigmac 编译器，以便对`events`表生成 SQL 语句。例如，生成的 sql 文件可能如下所示：
 
 ```py
 SELECT
@@ -140,7 +140,7 @@ FROM
     events
 ```
 
-在我们的分析中，我们加载生成的SQL并要求Spark从中创建一个`hitsDf`数据框。
+在我们的分析中，我们加载生成的 SQL 并要求 Spark 从中创建一个`hitsDf`数据框。
 
 ```py
 # load auto-generated SQL statement
@@ -150,7 +150,7 @@ with open('./generated_sql_statement.sql', 'r') as f:
 hitsDf = spark.sql(detections_sql)
 ```
 
-我们通过调用`writeStream`启动流查询，并配置查询以每分钟触发一次微批处理。此流查询将无限期运行，将检测结果写入我们选择的接收端。这里我们只是将结果写入控制台接收端，但我们也可以写入另一个Iceberg表。或者，我们可以使用`[forEachBatch](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#using-foreach-and-foreachbatch)`执行一些任意的python代码，例如，将通知推送到REST端点。或者我们甚至可以同时做这两件事。
+我们通过调用`writeStream`启动流查询，并配置查询以每分钟触发一次微批处理。此流查询将无限期运行，将检测结果写入我们选择的接收端。这里我们只是将结果写入控制台接收端，但我们也可以写入另一个 Iceberg 表。或者，我们可以使用`[forEachBatch](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#using-foreach-and-foreachbatch)`执行一些任意的 python 代码，例如，将通知推送到 REST 端点。或者我们甚至可以同时做这两件事。
 
 ```py
 # start a streaming query printing results to the console
@@ -203,9 +203,9 @@ detection:
 
 ## 左侧：为每个检测规则设置标志
 
-我们使用 `c` 作为当前进程的约定，使用 `r1` 作为规则1。
+我们使用 `c` 作为当前进程的约定，使用 `r1` 作为规则 1。
 
-因此，在 [Rundll32 执行没有 DLL 文件](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml)（规则1）中，`filter_empty` 被
+因此，在 [Rundll32 执行没有 DLL 文件](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml)（规则 1）中，`filter_empty` 被
 
 ```py
  %%sparksql --view current --output skip
@@ -287,7 +287,7 @@ cr3_selection_atexec AND coalesce(pr3_selection_atexec, FALSE)
 as r3_selection_atexec,
 ```
 
-`r3_selection_atexec` 是规则3中 `selection_atexec` 的最终标志。
+`r3_selection_atexec` 是规则 3 中 `selection_atexec` 的最终标志。
 
 ```py
 %%sparksql --view joined --output skip
@@ -313,7 +313,7 @@ from
 
 ## 最后我们应用 Sigma 规则条件
 
-例如规则1的条件是：
+例如规则 1 的条件是：
 
 ```py
 condition: selection and not 1 of filter*

@@ -1,14 +1,14 @@
 # 倾向得分建模方法综述
 
-> 原文：[https://towardsdatascience.com/a-review-of-propensity-score-modelling-approaches-19af9ecd60d9?source=collection_archive---------0-----------------------#2023-05-17](https://towardsdatascience.com/a-review-of-propensity-score-modelling-approaches-19af9ecd60d9?source=collection_archive---------0-----------------------#2023-05-17)
+> 原文：[`towardsdatascience.com/a-review-of-propensity-score-modelling-approaches-19af9ecd60d9?source=collection_archive---------0-----------------------#2023-05-17`](https://towardsdatascience.com/a-review-of-propensity-score-modelling-approaches-19af9ecd60d9?source=collection_archive---------0-----------------------#2023-05-17)
 
-![](../Images/5f94d633b70e9981d01b64580c1b2e9b.png)
+![](img/5f94d633b70e9981d01b64580c1b2e9b.png)
 
 图片为作者自有。
 
 ## 使用倾向得分在因果推断建模中的不同方法回顾
 
-[](https://drmattcrooks.medium.com/?source=post_page-----19af9ecd60d9--------------------------------)[![Matt Crooks](../Images/7e6c3828d4fc4ed5a7f21429a7db1b57.png)](https://drmattcrooks.medium.com/?source=post_page-----19af9ecd60d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----19af9ecd60d9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----19af9ecd60d9--------------------------------) [Matt Crooks](https://drmattcrooks.medium.com/?source=post_page-----19af9ecd60d9--------------------------------)
+[](https://drmattcrooks.medium.com/?source=post_page-----19af9ecd60d9--------------------------------)![Matt Crooks](https://drmattcrooks.medium.com/?source=post_page-----19af9ecd60d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----19af9ecd60d9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----19af9ecd60d9--------------------------------) [Matt Crooks](https://drmattcrooks.medium.com/?source=post_page-----19af9ecd60d9--------------------------------)
 
 ·
 
@@ -28,6 +28,6 @@
 
 # 引言
 
-评估特定干预或治疗的影响的最佳方法是进行随机对照试验（RCT）。在RCT中，你会将你的群体随机分成两个队列，并仅对其中一个应用干预——这成为你的治疗组。未接受干预的队列是你的对照组。由于控制组和治疗组的随机分配，两组之间的特征应该没有结构性差异。如果治疗后，治疗组的行为有所不同（即发生转化），那么我们可以得出这是干预的结果。
+评估特定干预或治疗的影响的最佳方法是进行随机对照试验（RCT）。在 RCT 中，你会将你的群体随机分成两个队列，并仅对其中一个应用干预——这成为你的治疗组。未接受干预的队列是你的对照组。由于控制组和治疗组的随机分配，两组之间的特征应该没有结构性差异。如果治疗后，治疗组的行为有所不同（即发生转化），那么我们可以得出这是干预的结果。
 
-然而，有许多情况下无法进行RCT，包括但不限于…
+然而，有许多情况下无法进行 RCT，包括但不限于…

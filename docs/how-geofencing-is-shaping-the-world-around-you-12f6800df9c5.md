@@ -1,18 +1,18 @@
 # 地理围栏如何塑造你周围的世界
 
-> 原文：[https://towardsdatascience.com/how-geofencing-is-shaping-the-world-around-you-12f6800df9c5?source=collection_archive---------11-----------------------#2023-02-07](https://towardsdatascience.com/how-geofencing-is-shaping-the-world-around-you-12f6800df9c5?source=collection_archive---------11-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/how-geofencing-is-shaping-the-world-around-you-12f6800df9c5?source=collection_archive---------11-----------------------#2023-02-07`](https://towardsdatascience.com/how-geofencing-is-shaping-the-world-around-you-12f6800df9c5?source=collection_archive---------11-----------------------#2023-02-07)
 
 ## 地理围栏是一种基于位置的技术，为我们打开了新的可能性
 
-[](https://medium.samashti.space/?source=post_page-----12f6800df9c5--------------------------------)[![Nikhil S Hubballi](../Images/780f154572e07e55f7455c4b68b862c1.png)](https://medium.samashti.space/?source=post_page-----12f6800df9c5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12f6800df9c5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12f6800df9c5--------------------------------) [Nikhil S Hubballi](https://medium.samashti.space/?source=post_page-----12f6800df9c5--------------------------------)
+[](https://medium.samashti.space/?source=post_page-----12f6800df9c5--------------------------------)![Nikhil S Hubballi](https://medium.samashti.space/?source=post_page-----12f6800df9c5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12f6800df9c5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----12f6800df9c5--------------------------------) [Nikhil S Hubballi](https://medium.samashti.space/?source=post_page-----12f6800df9c5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F74a67584b759&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-geofencing-is-shaping-the-world-around-you-12f6800df9c5&user=Nikhil+S+Hubballi&userId=74a67584b759&source=post_page-74a67584b759----12f6800df9c5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12f6800df9c5--------------------------------) ·11 分钟阅读·2023年2月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12f6800df9c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-geofencing-is-shaping-the-world-around-you-12f6800df9c5&user=Nikhil+S+Hubballi&userId=74a67584b759&source=-----12f6800df9c5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F74a67584b759&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-geofencing-is-shaping-the-world-around-you-12f6800df9c5&user=Nikhil+S+Hubballi&userId=74a67584b759&source=post_page-74a67584b759----12f6800df9c5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12f6800df9c5--------------------------------) ·11 分钟阅读·2023 年 2 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12f6800df9c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-geofencing-is-shaping-the-world-around-you-12f6800df9c5&user=Nikhil+S+Hubballi&userId=74a67584b759&source=-----12f6800df9c5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12f6800df9c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-geofencing-is-shaping-the-world-around-you-12f6800df9c5&source=-----12f6800df9c5---------------------bookmark_footer-----------)![](../Images/83dc71b9361ee734ee3839e1bf50d4f7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12f6800df9c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-geofencing-is-shaping-the-world-around-you-12f6800df9c5&source=-----12f6800df9c5---------------------bookmark_footer-----------)![](img/83dc71b9361ee734ee3839e1bf50d4f7.png)
 
 DALL-E 所描绘的地理围栏概念（作者提供的图像）
 
@@ -150,19 +150,19 @@ DALL-E 所描绘的地理围栏概念（作者提供的图像）
 
 1.  **社交网络：** 地理围栏可以用来提升社交网络体验，通过基于位置让用户找到并与他人连接。例如，约会应用可能会利用地理围栏根据用户之间的距离进行匹配。
 
-1.  **基于位置的游戏：** 地理围栏可以用来增强基于位置的游戏，如宝可梦GO，通过让玩家根据位置与虚拟物体互动。
+1.  **基于位置的游戏：** 地理围栏可以用来增强基于位置的游戏，如宝可梦 GO，通过让玩家根据位置与虚拟物体互动。
 
 1.  **基于位置的奖励：** 地理围栏可以用来根据位置向用户提供奖励。例如，奖励计划可能会利用地理围栏在用户进入参与商店周围的地理围栏时提供积分或优惠券。
 
 # 设置地理围栏
 
-1.  **定义地理围栏：** 设置地理围栏的第一步是定义虚拟边界或地理围栏。这可以通过在地图上绘制一个圆圈或多边形，或使用一组GPS坐标来定义边界来完成。
+1.  **定义地理围栏：** 设置地理围栏的第一步是定义虚拟边界或地理围栏。这可以通过在地图上绘制一个圆圈或多边形，或使用一组 GPS 坐标来定义边界来完成。
 
-1.  **选择跟踪方法：** 一旦定义了地理围栏，下一步是选择跟踪方法。这将取决于具体的使用案例和需要跟踪的设备。例如，GPS可能是跟踪户外位置的最佳选择，而Wi-Fi或蓝牙可能更适合室内跟踪。
+1.  **选择跟踪方法：** 一旦定义了地理围栏，下一步是选择跟踪方法。这将取决于具体的使用案例和需要跟踪的设备。例如，GPS 可能是跟踪户外位置的最佳选择，而 Wi-Fi 或蓝牙可能更适合室内跟踪。
 
 1.  **与地理围栏平台集成：** 要使用地理围栏，需要将其与地理围栏平台集成。该平台通常包括一个用于管理地理围栏、跟踪设备和目标营销活动的仪表板。
 
-1.  **安装跟踪软件：** 如果使用GPS、Wi-Fi、蓝牙或其他跟踪模式，跟踪软件需要安装在需要跟踪的设备上。
+1.  **安装跟踪软件：** 如果使用 GPS、Wi-Fi、蓝牙或其他跟踪模式，跟踪软件需要安装在需要跟踪的设备上。
 
 1.  **测试和调整：** 在设置好地理围栏平台后，重要的是测试系统以确保其正常运作。这可能包括调整地理围栏的大小和位置，或细化目标营销活动。
 
@@ -178,7 +178,7 @@ DALL-E 所描绘的地理围栏概念（作者提供的图像）
 
 1.  **垃圾邮件：** 地理围栏可能会导致用户被大量不必要的广告和优惠轰炸，这可能会造成烦扰并侵害他们的隐私。此外，恶意行为者可以利用地理围栏来发送垃圾邮件或钓鱼内容，这可能使用户面临身份盗窃或其他类型的诈骗风险。
 
-1.  **Strava热图揭示美国军事位置：** 2018年，揭露了健身追踪应用Strava通过其热图功能暴露了关于美国军事位置和行动的敏感信息。这突显了使用地理围栏和其他基于位置的技术来揭示敏感信息的风险。
+1.  **Strava 热图揭示美国军事位置：** 2018 年，揭露了健身追踪应用 Strava 通过其热图功能暴露了关于美国军事位置和行动的敏感信息。这突显了使用地理围栏和其他基于位置的技术来揭示敏感信息的风险。
 
 1.  **在频繁访问医院时对疾病的预测：**地理围栏技术在用于预测疾病或健康状况时也可能引发隐私问题。例如，如果一个人频繁访问医院，地理围栏技术可能预测他们有某种特定的健康状况，这可能是他们不希望公开的敏感信息。
 

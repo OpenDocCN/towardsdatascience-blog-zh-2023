@@ -1,18 +1,18 @@
 # 多模态入门
 
-> 原文：[https://towardsdatascience.com/getting-started-with-multimodality-eab5f6453080?source=collection_archive---------3-----------------------#2023-12-27](https://towardsdatascience.com/getting-started-with-multimodality-eab5f6453080?source=collection_archive---------3-----------------------#2023-12-27)
+> 原文：[`towardsdatascience.com/getting-started-with-multimodality-eab5f6453080?source=collection_archive---------3-----------------------#2023-12-27`](https://towardsdatascience.com/getting-started-with-multimodality-eab5f6453080?source=collection_archive---------3-----------------------#2023-12-27)
 
-![](../Images/ae8e7dbea616220acfe1963d16441f60.png)
+![](img/ae8e7dbea616220acfe1963d16441f60.png)
 
 图像由 Microsoft Designer 创建
 
 ## 了解大型多模态模型的视觉能力
 
-[](https://valentinaalto.medium.com/?source=post_page-----eab5f6453080--------------------------------)[![Valentina Alto](../Images/888b8aa17759d8dd5332d8fd4653cf05.png)](https://valentinaalto.medium.com/?source=post_page-----eab5f6453080--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eab5f6453080--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eab5f6453080--------------------------------) [Valentina Alto](https://valentinaalto.medium.com/?source=post_page-----eab5f6453080--------------------------------)
+[](https://valentinaalto.medium.com/?source=post_page-----eab5f6453080--------------------------------)![Valentina Alto](https://valentinaalto.medium.com/?source=post_page-----eab5f6453080--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eab5f6453080--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----eab5f6453080--------------------------------) [Valentina Alto](https://valentinaalto.medium.com/?source=post_page-----eab5f6453080--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F341264d69dd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-multimodality-eab5f6453080&user=Valentina+Alto&userId=341264d69dd4&source=post_page-341264d69dd4----eab5f6453080---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eab5f6453080--------------------------------) · 9分钟阅读 · 2023年12月27日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feab5f6453080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-multimodality-eab5f6453080&user=Valentina+Alto&userId=341264d69dd4&source=-----eab5f6453080---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F341264d69dd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-multimodality-eab5f6453080&user=Valentina+Alto&userId=341264d69dd4&source=post_page-341264d69dd4----eab5f6453080---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eab5f6453080--------------------------------) · 9 分钟阅读 · 2023 年 12 月 27 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feab5f6453080&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-multimodality-eab5f6453080&user=Valentina+Alto&userId=341264d69dd4&source=-----eab5f6453080---------------------clap_footer-----------)
 
 --
 
@@ -28,7 +28,7 @@ GPT4V（及其更新版本 GPT-4-turbo vision）展示了卓越的能力，包�
 
 +   对数值问题的数学推理：
 
-![](../Images/22d6be0bb9790388f39c6d37bdf13ce6.png)
+![](img/22d6be0bb9790388f39c6d37bdf13ce6.png)
 
 作者提供的图像
 

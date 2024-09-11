@@ -1,18 +1,18 @@
 # 破解 MySQL 的 JSON_ARRAYAGG 函数以创建动态、多值维度
 
-> 原文：[https://towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25](https://towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25`](https://towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25)
 
 ## 补偿 MySQL 的一个不太为人知的不足
 
-[](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)[![Dakota Smith](../Images/df345239ca070910365d2b6c7fb3e5e7.png)](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------) [Dakota Smith](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)
+[](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)![Dakota Smith](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------) [Dakota Smith](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcadf2cebe12&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=post_page-dcadf2cebe12----211074115d28---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------) ·9分钟阅读·2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=-----211074115d28---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcadf2cebe12&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=post_page-dcadf2cebe12----211074115d28---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------) ·9 分钟阅读·2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=-----211074115d28---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&source=-----211074115d28---------------------bookmark_footer-----------)![](../Images/fe765b373fc96e7eb057ae81d622a993.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&source=-----211074115d28---------------------bookmark_footer-----------)![](img/fe765b373fc96e7eb057ae81d622a993.png)
 
 图片由 [Azamat E](https://unsplash.com/fr/@esen_aza?utm_source=medium&utm_medium=referral) 拍摄，刊登于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。感谢 Azamat！
 
@@ -20,7 +20,7 @@
 
 让我们假设我们是一个订阅盒子公司的数据团队成员。在 MySQL 数据库中，购买的事务记录被写入名为 `subscriptions` 的表中。除了元数据之外，该表包含一个 `customer_id` 和 `subscription` 字段，类似于这样：
 
-![](../Images/8c82c2a747ec45b2f33645f1c8853035.png)
+![](img/8c82c2a747ec45b2f33645f1c8853035.png)
 
 订阅表。（注意：所有图像，除非另有说明，均由作者提供）
 
@@ -36,15 +36,15 @@
 
 ## 目录
 
-+   [聚合作为维度](#0c85)
++   聚合作为维度
 
-+   [MySQL 中 JSON 数据类型的简要概述](#3a1b)
++   MySQL 中 JSON 数据类型的简要概述
 
-+   [JSON_ARRAYAGG](#5b60)
++   JSON_ARRAYAGG
 
-+   [使用 ROW_NUMBER 强制值的排序](#0793)
++   使用 ROW_NUMBER 强制值的排序
 
-+   [回顾](#c0e9)
++   回顾
 
 # 聚合作为维度
 
@@ -54,13 +54,13 @@
 
 通常会想到定量意义上的聚合函数（`SUM`、`COUNT`等），这主要是因为 SQL 中大多数聚合函数的功能。但我们也可以将拼接的字符串值聚合成更长的、类似列表的字符串。
 
-然而，这个挑战在于访问、操控或评估这些连接字符串中的值。MySQL会将`foo, bar, hello, world`的值视为文本，而不是列表。
+然而，这个挑战在于访问、操控或评估这些连接字符串中的值。MySQL 会将`foo, bar, hello, world`的值视为文本，而不是列表。
 
 这有什么相关性？主要是因为在我们的假设场景中，我们想要计算每个组合中的订阅数量。我们不希望得到一个长的以逗号分隔的字符串，我们希望得到一个更真正的列表形式。
 
-在Python中解决这个问题会很简单——使用pandas，也许是polars，甚至只是Python本身的数据结构。但有许多情况下这不是一个选项。也许数据团队只使用dbt；或者更常见的是，你在一个IT部门严密锁定本地环境的公司工作。
+在 Python 中解决这个问题会很简单——使用 pandas，也许是 polars，甚至只是 Python 本身的数据结构。但有许多情况下这不是一个选项。也许数据团队只使用 dbt；或者更常见的是，你在一个 IT 部门严密锁定本地环境的公司工作。
 
-无论如何，如果你只有SQL可以使用，你需要一个能够提供最可读代码和最灵活结果的解决方案。实现这一点并不直观。例如，我遇到这个问题时的第一反应是使用`GROUP_CONCAT`，这是一个根据你定义的分组连接字符串的函数：
+无论如何，如果你只有 SQL 可以使用，你需要一个能够提供最可读代码和最灵活结果的解决方案。实现这一点并不直观。例如，我遇到这个问题时的第一反应是使用`GROUP_CONCAT`，这是一个根据你定义的分组连接字符串的函数：
 
 ```py
 WITH
@@ -80,7 +80,7 @@ GROUP BY subscriptions
 ;
 ```
 
-![](../Images/a6f7a07836f586894a21825cbb0eb247.png)
+![](img/a6f7a07836f586894a21825cbb0eb247.png)
 
 查询结果
 
@@ -106,7 +106,7 @@ GROUP BY subscriptions
 ;
 ```
 
-![](../Images/d600ce04441f86029ced24389ca10d45.png)
+![](img/d600ce04441f86029ced24389ca10d45.png)
 
 查询结果
 
@@ -114,7 +114,7 @@ GROUP BY subscriptions
 
 这样做是可行的。但我认为不仅复杂且不太易读，而且还伴随着一些不太明显的陷阱。
 
-关于如何计算MySQL中以逗号分隔的字符串中的值数量的快速搜索找到了一个[解决方案](https://stackoverflow.com/a/7020024/16018746)，对我们来说，相当于这个（`subscriptions_grouped` CTE除外）：
+关于如何计算 MySQL 中以逗号分隔的字符串中的值数量的快速搜索找到了一个[解决方案](https://stackoverflow.com/a/7020024/16018746)，对我们来说，相当于这个（`subscriptions_grouped` CTE 除外）：
 
 ```py
 SELECT
@@ -126,15 +126,15 @@ GROUP BY subscriptions
 ;
 ```
 
-这本质上是计算逗号的数量，然后将结果加1。这是可行的。但这个答案不仅难以一眼理解，还引入了一个潜在的错误：`LENGTH`和`CHAR_LENGTH`函数[计算的内容不同](https://stackoverflow.com/a/1734340/16018746)。
+这本质上是计算逗号的数量，然后将结果加 1。这是可行的。但这个答案不仅难以一眼理解，还引入了一个潜在的错误：`LENGTH`和`CHAR_LENGTH`函数[计算的内容不同](https://stackoverflow.com/a/1734340/16018746)。
 
 正如你可能猜到的，这篇文章详细描述了我在工作中遇到的障碍，当时我发现自己处于类似的情况。
 
-最终，解决方案是使用本地MySQL JSON数据类型的某种黑客式但非常易懂的变通方法。
+最终，解决方案是使用本地 MySQL JSON 数据类型的某种黑客式但非常易懂的变通方法。
 
-# MySQL中JSON数据类型的简要概述
+# MySQL 中 JSON 数据类型的简要概述
 
-MySQL中的JSON数据类型是在5.7.8版本中新增的，提供了许多对存储和建模非常有用的功能。
+MySQL 中的 JSON 数据类型是在 5.7.8 版本中新增的，提供了许多对存储和建模非常有用的功能。
 
 在 JSON 数据类型的伞下（官方称为“JSON 文档”）有两种不同的数据结构：JSON 数组和 JSON 对象。
 
@@ -192,7 +192,7 @@ GROUP BY subscriptions
 ;
 ```
 
-![](../Images/e43f5434827139bfa31f28338ec75ec2.png)
+![](img/e43f5434827139bfa31f28338ec75ec2.png)
 
 查询结果
 
@@ -213,7 +213,7 @@ FROM subscriptions
 ;
 ```
 
-![](../Images/1066d24e9f6e4a4671f414253647015d.png)
+![](img/1066d24e9f6e4a4671f414253647015d.png)
 
 查询结果
 
@@ -230,7 +230,7 @@ FROM subscriptions
 ;
 ```
 
-![](../Images/4537a7c2f58735eb1c1b44276cf9c635.png)
+![](img/4537a7c2f58735eb1c1b44276cf9c635.png)
 
 查询结果
 
@@ -256,7 +256,7 @@ ORDER BY 2
 ;
 ```
 
-![](../Images/eac71aa011199f26abb7c391f7a0382e.png)
+![](img/eac71aa011199f26abb7c391f7a0382e.png)
 
 查询结果
 
@@ -291,7 +291,7 @@ ORDER BY num_customers DESC
 
 这不仅提供了准确的独特订阅组合，还显示了购买这些组合的客户数量，以及每个组合包含的订阅数量：
 
-![](../Images/5154dd8a5b6457e69f1cbcdeb57b20ae.png)
+![](img/5154dd8a5b6457e69f1cbcdeb57b20ae.png)
 
 查询结果
 

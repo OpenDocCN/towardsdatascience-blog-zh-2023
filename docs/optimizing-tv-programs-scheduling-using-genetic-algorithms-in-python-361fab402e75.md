@@ -1,18 +1,18 @@
 # 使用遗传算法在 Python 中优化电视节目调度
 
-> 原文：[https://towardsdatascience.com/optimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75?source=collection_archive---------6-----------------------#2023-07-26](https://towardsdatascience.com/optimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75?source=collection_archive---------6-----------------------#2023-07-26)
+> 原文：[`towardsdatascience.com/optimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75?source=collection_archive---------6-----------------------#2023-07-26`](https://towardsdatascience.com/optimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75?source=collection_archive---------6-----------------------#2023-07-26)
 
 ## 一个实践教程，讲解如何在 Python 中使用遗传算法优化电视节目调度
 
-[](https://medium.com/@esersaygin?source=post_page-----361fab402e75--------------------------------)[![Eser Saygın](../Images/4ace0a0f71f2887b4cc70f5deab0bc69.png)](https://medium.com/@esersaygin?source=post_page-----361fab402e75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----361fab402e75--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----361fab402e75--------------------------------) [Eser Saygın](https://medium.com/@esersaygin?source=post_page-----361fab402e75--------------------------------)
+[](https://medium.com/@esersaygin?source=post_page-----361fab402e75--------------------------------)![Eser Saygın](https://medium.com/@esersaygin?source=post_page-----361fab402e75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----361fab402e75--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----361fab402e75--------------------------------) [Eser Saygın](https://medium.com/@esersaygin?source=post_page-----361fab402e75--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc6c2253ada5f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75&user=Eser+Sayg%C4%B1n&userId=c6c2253ada5f&source=post_page-c6c2253ada5f----361fab402e75---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----361fab402e75--------------------------------) ·11 分钟阅读·2023年7月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F361fab402e75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75&user=Eser+Sayg%C4%B1n&userId=c6c2253ada5f&source=-----361fab402e75---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc6c2253ada5f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75&user=Eser+Sayg%C4%B1n&userId=c6c2253ada5f&source=post_page-c6c2253ada5f----361fab402e75---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----361fab402e75--------------------------------) ·11 分钟阅读·2023 年 7 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F361fab402e75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75&user=Eser+Sayg%C4%B1n&userId=c6c2253ada5f&source=-----361fab402e75---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F361fab402e75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75&source=-----361fab402e75---------------------bookmark_footer-----------)![](../Images/19841fafc7ef4dd243752825dcddad0e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F361fab402e75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-tv-programs-scheduling-using-genetic-algorithms-in-python-361fab402e75&source=-----361fab402e75---------------------bookmark_footer-----------)![](img/19841fafc7ef4dd243752825dcddad0e.png)
 
 图片来源：[Glenn Carstens-Peters](https://unsplash.com/@glenncarstenspeters?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -54,7 +54,7 @@
 
 你可以看到下面的简单遗传算法流程图。我们的第一步是创建初始种群。初始种群包含随机选择的染色体（更准确地说，初始种群是一组染色体）。创建种群后，为每个个体计算一个适应度函数值。遗传算法使用染色体来表示每个个体。每个个体的适应度值是独立的。在这种方式下，可以同时进行多次计算。适应度值计算完毕后，遗传算法的三个不同阶段就会开始发挥作用——选择、交叉和变异。选择阶段负责从种群中选择染色体。目标是创造更好的世代。交叉过程负责从选择的个体中产生新的后代。这个过程通常是通过一次选择两个个体，然后交换它们的染色体部分，来创建两个新的代表后代的染色体。最后，操作员在变异阶段改变一个或多个基因。这种变化的概率非常低。变异阶段最重要的特点是防止系统陷入局部最小值。
 
-![](../Images/53d1dc20c4d6497ffabace6a82586816.png)
+![](img/53d1dc20c4d6497ffabace6a82586816.png)
 
 遗传算法流程图（Eser Saygın）
 
@@ -64,7 +64,7 @@
 
 ## 步骤
 
-首先，我们从定义数据集开始。正如我之前提到的，下面的集合是一个简单的示例。数据集显示了各种节目在18小时（06:00–24:00）内的收视率。在现实生活中，有必要在每个时间段内播出节目，以测量节目在不同时间段的收视率。
+首先，我们从定义数据集开始。正如我之前提到的，下面的集合是一个简单的示例。数据集显示了各种节目在 18 小时（06:00–24:00）内的收视率。在现实生活中，有必要在每个时间段内播出节目，以测量节目在不同时间段的收视率。
 
 ```py
 # Sample rating programs dataset for each time slot.
@@ -164,7 +164,7 @@ def evaluate_fitness(schedule):
     return fitness_function(schedule)
 ```
 
-我们需要的数据已经准备好。现在我们可以定义算法。这个算法将使用initial_schedule、generations、population_size、crossover_rate、mutation_rate和elitism_size。我们之前已经描述过这些。由于它们是超参数，我们可以修改它们，但不需要。函数首先创建具有提供的初始计划的初始种群，然后添加随机计划。之后，它会对指定的代数运行一个循环，并为每一代生成一个新种群，使用选择、交叉和突变操作。精英策略有助于根据适应度评分保留上一代中最成功的个体。一旦种群更新，它就成为下一代的当前种群。之后，函数返回上一代的最佳计划。
+我们需要的数据已经准备好。现在我们可以定义算法。这个算法将使用 initial_schedule、generations、population_size、crossover_rate、mutation_rate 和 elitism_size。我们之前已经描述过这些。由于它们是超参数，我们可以修改它们，但不需要。函数首先创建具有提供的初始计划的初始种群，然后添加随机计划。之后，它会对指定的代数运行一个循环，并为每一代生成一个新种群，使用选择、交叉和突变操作。精英策略有助于根据适应度评分保留上一代中最成功的个体。一旦种群更新，它就成为下一代的当前种群。之后，函数返回上一代的最佳计划。
 
 ```py
 def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, crossover_rate=CO_R, mutation_rate=MUT_R, elitism_size=EL_S):
@@ -221,7 +221,7 @@ print("Total Ratings:", fitness_function(final_schedule))
 
 在遗传算法运行后，我们将初始最佳计划和遗传计划结合起来，创建最终的*最优计划*。最后，我们打印出分配程序的*最优计划*，显示时间段、相应的程序以及在最终*最优计划*中获得的总评分。
 
-![](../Images/e213f831e6ba9becc21c0c0b615c7ac8.png)
+![](img/e213f831e6ba9becc21c0c0b615c7ac8.png)
 
 ## 结论
 
@@ -229,15 +229,15 @@ print("Total Ratings:", fitness_function(final_schedule))
 
 在我即将发布的文章中，我计划探讨各种遗传算法，如竞争性协同进化（CCQGA）和量子算法（QGA）。我可能还会在中间加入额外的内容。
 
-感谢你抽出时间阅读这篇文章。如果你想与我联系，欢迎通过LinkedIn添加我。
+感谢你抽出时间阅读这篇文章。如果你想与我联系，欢迎通过 LinkedIn 添加我。
 
-[https://www.linkedin.com/in/esersaygin/](https://www.linkedin.com/in/esersaygin/)
+[`www.linkedin.com/in/esersaygin/`](https://www.linkedin.com/in/esersaygin/)
 
 ## 来源
 
-> 《动手实践遗传算法与Python：应用遗传算法解决现实世界的深度学习和人工智能问题》 **作者：埃亚尔·维尔桑斯基**
+> 《动手实践遗传算法与 Python：应用遗传算法解决现实世界的深度学习和人工智能问题》 **作者：埃亚尔·维尔桑斯基**
 > 
-> 《使用Python的工程师应用进化算法（第1版）》
+> 《使用 Python 的工程师应用进化算法（第 1 版）》
 > 
 > **作者：莱昂纳多·阿泽维多·斯卡尔杜亚**
 

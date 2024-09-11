@@ -1,10 +1,10 @@
 # 测试支持 1162 种语言的大规模多语言语音 (MMS) 模型
 
-> 原文：[https://towardsdatascience.com/testing-the-massively-multilingual-speech-mms-model-that-supports-1162-languages-5db957ee1602?source=collection_archive---------3-----------------------#2023-05-26](https://towardsdatascience.com/testing-the-massively-multilingual-speech-mms-model-that-supports-1162-languages-5db957ee1602?source=collection_archive---------3-----------------------#2023-05-26)
+> 原文：[`towardsdatascience.com/testing-the-massively-multilingual-speech-mms-model-that-supports-1162-languages-5db957ee1602?source=collection_archive---------3-----------------------#2023-05-26`](https://towardsdatascience.com/testing-the-massively-multilingual-speech-mms-model-that-supports-1162-languages-5db957ee1602?source=collection_archive---------3-----------------------#2023-05-26)
 
 ## 探索 Meta 最新的自动语音识别 (ASR) 模型的尖端多语言功能
 
-[](https://medium.com/@luisroque?source=post_page-----5db957ee1602--------------------------------)[![Luís Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----5db957ee1602--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5db957ee1602--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5db957ee1602--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----5db957ee1602--------------------------------)
+[](https://medium.com/@luisroque?source=post_page-----5db957ee1602--------------------------------)![Luís Roque](https://medium.com/@luisroque?source=post_page-----5db957ee1602--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5db957ee1602--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5db957ee1602--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----5db957ee1602--------------------------------)
 
 ·
 
@@ -22,6 +22,6 @@ MMS 项目的目标是使人们更容易使用自己偏好的语言获取信息�
 
 在本文中，我们将深入探讨如何使用 MMS 进行英语和葡萄牙语的自动语音识别，并提供逐步指南以设置运行模型的环境。
 
-![](../Images/a2b17ee13d06f5681126543d65c4f142.png)
+![](img/a2b17ee13d06f5681126543d65c4f142.png)
 
 图 1：Massively Multilingual Speech (MMS) 能够识别超过 4,000 种语言，并支持 1162 种语言（[来源](https://unsplash.com/photos/ZzWsHbu2y80)）。

@@ -1,16 +1,16 @@
 # “我写作的主要驱动力一直是学习”
 
-> 原文：[https://towardsdatascience.com/the-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3?source=collection_archive---------8-----------------------#2023-02-14](https://towardsdatascience.com/the-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3?source=collection_archive---------8-----------------------#2023-02-14)
+> 原文：[`towardsdatascience.com/the-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3?source=collection_archive---------8-----------------------#2023-02-14`](https://towardsdatascience.com/the-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3?source=collection_archive---------8-----------------------#2023-02-14)
 
 ## [作者聚焦](https://towardsdatascience.com/tagged/author-spotlights)
 
 ## Matteo Courthoud 反思离开学术界的经历，对因果推断的兴趣，以及公众写作的价值
 
-[](https://towardsdatascience.medium.com/?source=post_page-----ab07ca8c45a3--------------------------------)[![TDS Editors](../Images/4b2d1beaf4f6dcf024ffa6535de3b794.png)](https://towardsdatascience.medium.com/?source=post_page-----ab07ca8c45a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab07ca8c45a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ab07ca8c45a3--------------------------------) [TDS Editors](https://towardsdatascience.medium.com/?source=post_page-----ab07ca8c45a3--------------------------------)
+[](https://towardsdatascience.medium.com/?source=post_page-----ab07ca8c45a3--------------------------------)![TDS Editors](https://towardsdatascience.medium.com/?source=post_page-----ab07ca8c45a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab07ca8c45a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab07ca8c45a3--------------------------------) [TDS Editors](https://towardsdatascience.medium.com/?source=post_page-----ab07ca8c45a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7e12c71dfa81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3&user=TDS+Editors&userId=7e12c71dfa81&source=post_page-7e12c71dfa81----ab07ca8c45a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab07ca8c45a3--------------------------------) ·10 min read·2023年2月14日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fab07ca8c45a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3&user=TDS+Editors&userId=7e12c71dfa81&source=-----ab07ca8c45a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7e12c71dfa81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3&user=TDS+Editors&userId=7e12c71dfa81&source=post_page-7e12c71dfa81----ab07ca8c45a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab07ca8c45a3--------------------------------) ·10 min read·2023 年 2 月 14 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fab07ca8c45a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-main-driver-behind-my-writing-has-always-been-learning-ab07ca8c45a3&user=TDS+Editors&userId=7e12c71dfa81&source=-----ab07ca8c45a3---------------------clap_footer-----------)
 
 --
 
@@ -18,21 +18,21 @@
 
 *在《作者聚焦》系列中，TDS 编辑与我们的社区成员讨论他们在数据科学领域的职业路径、他们的写作以及他们的灵感来源。今天，我们很高兴分享与* [*Matteo Courthoud*](https://medium.com/u/666130fb420f?source=post_page-----ab07ca8c45a3--------------------------------)*的对话。*
 
-![](../Images/b030b3d31d93f97bcfb27419b4db6edc.png)
+![](img/b030b3d31d93f97bcfb27419b4db6edc.png)
 
 图片由 Matteo Courthoud 提供
 
-*Matteo是苏黎世大学经济学博士生，热衷于数据分析和因果推断。他曾在Google担任数据科学实习生，并在攻读博士学位期间为Amazon进行研究咨询。他定期撰写关于社会科学与计算机科学交叉的因果关系文章，试图弥合学术研究与大众之间的差距。*
+*Matteo 是苏黎世大学经济学博士生，热衷于数据分析和因果推断。他曾在 Google 担任数据科学实习生，并在攻读博士学位期间为 Amazon 进行研究咨询。他定期撰写关于社会科学与计算机科学交叉的因果关系文章，试图弥合学术研究与大众之间的差距。*
 
 ## 你的数据科学之旅是如何开始的？
 
-我对因果推断的兴趣一直存在，但直到最近几年才形成明确的方向。我一直是一个好奇的人，并且一直喜欢弄清楚数字。不幸的是，就像意大利的我的大多数同代人一样，我在高中时没有接受过与统计学、编程或任何如今属于数据科学范畴的教育。我只上过几节Pascal编程课，这使我在选择大学专业时有了一个明确的认识：我不想再写代码。另一方面，我在对人际互动和决策的兴趣与对数字的热爱之间感到纠结。因此，尽管我的主要选择是社会学和数学，我还是选择了经济学作为一个公平的折中。
+我对因果推断的兴趣一直存在，但直到最近几年才形成明确的方向。我一直是一个好奇的人，并且一直喜欢弄清楚数字。不幸的是，就像意大利的我的大多数同代人一样，我在高中时没有接受过与统计学、编程或任何如今属于数据科学范畴的教育。我只上过几节 Pascal 编程课，这使我在选择大学专业时有了一个明确的认识：我不想再写代码。另一方面，我在对人际互动和决策的兴趣与对数字的热爱之间感到纠结。因此，尽管我的主要选择是社会学和数学，我还是选择了经济学作为一个公平的折中。
 
 ## 从回顾来看，这对你来说是正确的选择吗？
 
 我很幸运。我对经济学的了解只是模糊的，但它最终正好是我所寻找的：一种研究人际互动的科学方法。有些人鄙视经济学，因为它将一切转化为货币价值，但我认为，借用丘吉尔的话，“钱是衡量人类激励的最糟糕的标准，但除了其他所有曾经尝试过的形式之外”。如果我们想采取一种科学的方法来研究人际互动，我们需要量化激励，而钱正好实现了这一目的，无论我们喜欢与否。
 
-尽管如此，当我学习经济学时，课程并没有包含我认为应该有的数据科学内容（现在有了）。就美国教育而言，我基本上被迫选择法律、会计、管理或金融作为辅修几乎没有投资更多时间在计算机科学、信息学或数据科学上的选择。作为本科生，我只学了Excel，而在我的硕士阶段，我使用了Stata，但没有Python或R课程。此外，计量经济学课程主要包括理论和代数证明，而不是编程和数据分析。因此，我对数据科学的第一次实践是自发的和自学的。幸运的是，那是MOOCs的诞生时期，开放讲座逐渐变得可用，通常是免费的。起初，我只是从互联网上抓取电影信息或本地徒步旅行路线。然后，我转向了更复杂的项目，比如在线卡牌游戏的支持机器人，利用贝叶斯动态决策模型。
+尽管如此，当我学习经济学时，课程并没有包含我认为应该有的数据科学内容（现在有了）。就美国教育而言，我基本上被迫选择法律、会计、管理或金融作为辅修几乎没有投资更多时间在计算机科学、信息学或数据科学上的选择。作为本科生，我只学了 Excel，而在我的硕士阶段，我使用了 Stata，但没有 Python 或 R 课程。此外，计量经济学课程主要包括理论和代数证明，而不是编程和数据分析。因此，我对数据科学的第一次实践是自发的和自学的。幸运的是，那是 MOOCs 的诞生时期，开放讲座逐渐变得可用，通常是免费的。起初，我只是从互联网上抓取电影信息或本地徒步旅行路线。然后，我转向了更复杂的项目，比如在线卡牌游戏的支持机器人，利用贝叶斯动态决策模型。
 
 ## 你是如何决定你的下一步行动的？
 
@@ -44,7 +44,7 @@
 
 ## 你是如何从那次僵局中走出来的？
 
-在2022年冬天，我做出了一个在后台潜伏了一段时间的决定：离开学术界。这不是一个容易的决定，因为在学术界被认为是失败，尤其是在经济学和欧洲。有关可用机会的信息很少，而且“出柜”的风险是失去教授的关注，被降级为二流学生。然而，我的导师非常支持并全力支持我的决定。
+在 2022 年冬天，我做出了一个在后台潜伏了一段时间的决定：离开学术界。这不是一个容易的决定，因为在学术界被认为是失败，尤其是在经济学和欧洲。有关可用机会的信息很少，而且“出柜”的风险是失去教授的关注，被降级为二流学生。然而，我的导师非常支持并全力支持我的决定。
 
 ## 你开始为更广泛的受众写作，时间也差不多——你如何看待这两项发展的联系？
 
@@ -56,7 +56,7 @@
 
 在话题方面，我主要的兴趣是因果推断。我对利用数据回答因果问题的方式感兴趣，无论是通过随机实验还是观察研究。在因果推断领域，我选择话题通常是出于对已知话题的掌握欲望，或探索一个新的话题。通常这两者是相关的：我发现一个听起来很迷人的高级话题，然后在开始阅读后，我很快意识到我需要复习一些基本概念以全面理解它。然后，我开始复习和撰写基础知识，仅在第二阶段才处理高级话题。我发现这种方法特别有效，因为它让我能够在高级话题上更精确，而不会让文章充斥信息，因为我可以参考以前的工作。
 
-话题列表不断增长。我从几个主题开始，每写一篇文章，就会在待写的文章中增加两个新主题。我现在有大约50篇文章的列表想要写。此外，新研究不断发布。Twitter历来是我用来跟踪学术研究的社交网络。大多数经济学家、统计学家和计算机科学家在学术界都会在Twitter上发布和讨论他们的工作。另一方面，我最近也开始重视LinkedIn作为跟进行业动态的一种方式。行业研究人员、从业者和数据科学影响者主要活跃在LinkedIn上，这为我提供了很大的灵感。我最有趣的写作经历之一，[关于 CUPED](/understanding-cuped-a822523641af) 就是源自一篇LinkedIn帖子，讨论了这种提高A/B测试估计器效率的成熟行业技术，我以前从未听说过。这听起来类似于我所知道的其他方法，于是我开始探索它们的相似性和差异。
+话题列表不断增长。我从几个主题开始，每写一篇文章，就会在待写的文章中增加两个新主题。我现在有大约 50 篇文章的列表想要写。此外，新研究不断发布。Twitter 历来是我用来跟踪学术研究的社交网络。大多数经济学家、统计学家和计算机科学家在学术界都会在 Twitter 上发布和讨论他们的工作。另一方面，我最近也开始重视 LinkedIn 作为跟进行业动态的一种方式。行业研究人员、从业者和数据科学影响者主要活跃在 LinkedIn 上，这为我提供了很大的灵感。我最有趣的写作经历之一，关于 CUPED 就是源自一篇 LinkedIn 帖子，讨论了这种提高 A/B 测试估计器效率的成熟行业技术，我以前从未听说过。这听起来类似于我所知道的其他方法，于是我开始探索它们的相似性和差异。
 
 ## 对于那些可能对类似主题的公共写作感兴趣的人，你有什么见解可以分享吗？
 
@@ -76,19 +76,19 @@
 
 另一方面，社会科学领域正在慢慢内化一个事实，即有大量数据存在，这些数据可以用于回答因果问题。特别是，每当我们可以将因果问题框定为预测问题时，就有机会借鉴机器学习文献。主要应用包括用于协变量选择的双重稳健机器学习、用于异质处理效应的广义随机森林、用于潜在结果的矩阵完成方法以及用于动态决策的强化学习。主要的权衡在于大多数（有趣的）数据是私有的，无法用于研究。除了显著阻碍某些领域的科学研究（参见上述竞争政策），它还降低了开发更多数据密集型因果推断方法的激励。
 
-最后，因果推断在行业中的作用已得到确立，并将进一步增长。新兴科技公司将实验和A/B测试作为决策核心，而老牌公司则要么适应，要么落后。我看到两个主要趋势正在出现。首先，扩展实验因果推断。网络和溢出效应可能会影响简单的均值差异估计器。即使随机实验提供了无偏的处理效果估计，额外的数据和/或模型也可以帮助提高估计的精确度。第二，准实验方法将变得更加突出，因为并非所有事情都可以随机化，出于实际、伦理或成本原因。我非常期待见证这些趋势的演变，并希望看到跨学科的因果推断方法趋于一致。
+最后，因果推断在行业中的作用已得到确立，并将进一步增长。新兴科技公司将实验和 A/B 测试作为决策核心，而老牌公司则要么适应，要么落后。我看到两个主要趋势正在出现。首先，扩展实验因果推断。网络和溢出效应可能会影响简单的均值差异估计器。即使随机实验提供了无偏的处理效果估计，额外的数据和/或模型也可以帮助提高估计的精确度。第二，准实验方法将变得更加突出，因为并非所有事情都可以随机化，出于实际、伦理或成本原因。我非常期待见证这些趋势的演变，并希望看到跨学科的因果推断方法趋于一致。
 
-要了解更多关于[Matteo](https://medium.com/u/666130fb420f?source=post_page-----ab07ca8c45a3--------------------------------)的工作并及时获取他的最新文章，请关注他的[Medium](https://medium.com/@matteo.courthoud)、[LinkedIn](https://www.linkedin.com/in/matteo-courthoud)和[Twitter](https://twitter.com/MatteoCourthoud)上的动态。为了体验Matteo的TDS文章，以下是我们档案中的几个亮点：
+要了解更多关于[Matteo](https://medium.com/u/666130fb420f?source=post_page-----ab07ca8c45a3--------------------------------)的工作并及时获取他的最新文章，请关注他的[Medium](https://medium.com/@matteo.courthoud)、[LinkedIn](https://www.linkedin.com/in/matteo-courthoud)和[Twitter](https://twitter.com/MatteoCourthoud)上的动态。为了体验 Matteo 的 TDS 文章，以下是我们档案中的几个亮点：
 
-+   [**如何比较两个或多个分布**](/how-to-compare-two-or-more-distributions-9b06ee4d30bf)（2022年6月，18分钟）
++   **如何比较两个或多个分布**（2022 年 6 月，18 分钟）
 
-+   [**告别散点图，欢迎分箱散点图**](/goodbye-scatterplot-welcome-binned-scatterplot-a928f67413e4)（2022年5月，18分钟）
++   **告别散点图，欢迎分箱散点图**（2022 年 5 月，18 分钟）
 
-+   [**贝叶斯AB测试**](/bayesian-ab-testing-ed45cc8c964d)（2023年1月，11分钟）
++   **贝叶斯 AB 测试**（2023 年 1 月，11 分钟）
 
-+   [**DAGs和控制变量**](/controls-b63dc69e3d8c)（2022年4月，7分钟）
++   **DAGs 和控制变量**（2022 年 4 月，7 分钟）
 
-+   [**理解 CUPED**](/understanding-cuped-a822523641af)（2022年6月，12分钟）
++   **理解 CUPED**（2022 年 6 月，12 分钟）
 
 感到受启发，想将自己的写作分享给更广泛的受众？[我们很想听到你的声音](http://bit.ly/write-for-tds)。
 

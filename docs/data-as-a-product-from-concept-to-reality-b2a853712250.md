@@ -1,18 +1,18 @@
 # 数据作为产品：从概念到现实
 
-> 原文：[https://towardsdatascience.com/data-as-a-product-from-concept-to-reality-b2a853712250?source=collection_archive---------6-----------------------#2023-04-12](https://towardsdatascience.com/data-as-a-product-from-concept-to-reality-b2a853712250?source=collection_archive---------6-----------------------#2023-04-12)
+> 原文：[`towardsdatascience.com/data-as-a-product-from-concept-to-reality-b2a853712250?source=collection_archive---------6-----------------------#2023-04-12`](https://towardsdatascience.com/data-as-a-product-from-concept-to-reality-b2a853712250?source=collection_archive---------6-----------------------#2023-04-12)
 
 ## 创建有效数据产品的蓝图
 
-[![Louise de Leyritz](../Images/7223761fa288aa730d1bb5751f29e8ce.png)](https://medium.com/@louise.de.leyritz?source=post_page-----b2a853712250--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b2a853712250--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----b2a853712250--------------------------------)
+![Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----b2a853712250--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2a853712250--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----b2a853712250--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-as-a-product-from-concept-to-reality-b2a853712250&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----b2a853712250---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2a853712250--------------------------------) ·11分钟阅读·2023年4月12日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-as-a-product-from-concept-to-reality-b2a853712250&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----b2a853712250---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2a853712250--------------------------------) ·11 分钟阅读·2023 年 4 月 12 日
 
 --
 
-![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb2a853712250&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-as-a-product-from-concept-to-reality-b2a853712250&source=-----b2a853712250---------------------bookmark_footer-----------)![](../Images/493f3ca73470257c939a2c07e02547ef.png)
+![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb2a853712250&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-as-a-product-from-concept-to-reality-b2a853712250&source=-----b2a853712250---------------------bookmark_footer-----------)![](img/493f3ca73470257c939a2c07e02547ef.png)
 
 数据作为产品 — 图片由[Castor](https://www.castordoc.com)提供
 

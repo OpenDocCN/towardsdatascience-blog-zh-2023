@@ -1,14 +1,14 @@
-# 如何在消费级硬件上微调Llama2以进行Python编程
+# 如何在消费级硬件上微调 Llama2 以进行 Python 编程
 
-> 原文：[https://towardsdatascience.com/how-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92?source=collection_archive---------0-----------------------#2023-08-17](https://towardsdatascience.com/how-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92?source=collection_archive---------0-----------------------#2023-08-17)
+> 原文：[`towardsdatascience.com/how-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92?source=collection_archive---------0-----------------------#2023-08-17`](https://towardsdatascience.com/how-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92?source=collection_archive---------0-----------------------#2023-08-17)
 
-## *通过监督微调和低秩适应技术提升Llama2在Python中的表现*
+## *通过监督微调和低秩适应技术提升 Llama2 在 Python 中的表现*
 
-[](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)[![路易斯·罗克](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------) [路易斯·罗克](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)
+[](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)![路易斯·罗克](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------) [路易斯·罗克](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----46942fa3cf92---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------) · 18分钟阅读 · 2023年8月17日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F46942fa3cf92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----46942fa3cf92---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----46942fa3cf92---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------) · 18 分钟阅读 · 2023 年 8 月 17 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F46942fa3cf92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----46942fa3cf92---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 # 关于我
 
-连续创业者和AI领域的领导者。我为企业开发AI产品，并投资于AI相关的初创公司。
+连续创业者和 AI 领域的领导者。我为企业开发 AI 产品，并投资于 AI 相关的初创公司。
 
 [创始人 @ ZAAI](http://zaai.ai) | [LinkedIn](https://www.linkedin.com/in/luisbrasroque/) | [X/Twitter](https://x.com/luisbrasroque)
 

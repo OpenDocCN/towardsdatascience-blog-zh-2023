@@ -1,18 +1,18 @@
 # 你应该为你的大数据项目选择哪种数据格式？
 
-> 原文：[https://towardsdatascience.com/which-data-format-to-use-for-your-big-data-project-837a48d3661d?source=collection_archive---------8-----------------------#2023-10-26](https://towardsdatascience.com/which-data-format-to-use-for-your-big-data-project-837a48d3661d?source=collection_archive---------8-----------------------#2023-10-26)
+> 原文：[`towardsdatascience.com/which-data-format-to-use-for-your-big-data-project-837a48d3661d?source=collection_archive---------8-----------------------#2023-10-26`](https://towardsdatascience.com/which-data-format-to-use-for-your-big-data-project-837a48d3661d?source=collection_archive---------8-----------------------#2023-10-26)
 
 ## Pickle、Parquet、CSV、Feather、HDF5、ORC、JSON：你应该使用哪一种，为什么？
 
-[](https://armandsauzay.medium.com/?source=post_page-----837a48d3661d--------------------------------)[![Armand Sauzay](../Images/94b12efc184d75380f293b457c95597f.png)](https://armandsauzay.medium.com/?source=post_page-----837a48d3661d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----837a48d3661d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----837a48d3661d--------------------------------) [Armand Sauzay](https://armandsauzay.medium.com/?source=post_page-----837a48d3661d--------------------------------)
+[](https://armandsauzay.medium.com/?source=post_page-----837a48d3661d--------------------------------)![Armand Sauzay](https://armandsauzay.medium.com/?source=post_page-----837a48d3661d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----837a48d3661d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----837a48d3661d--------------------------------) [Armand Sauzay](https://armandsauzay.medium.com/?source=post_page-----837a48d3661d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6ce70a13b962&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-data-format-to-use-for-your-big-data-project-837a48d3661d&user=Armand+Sauzay&userId=6ce70a13b962&source=post_page-6ce70a13b962----837a48d3661d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----837a48d3661d--------------------------------) · 6 分钟阅读 · 2023年10月26日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F837a48d3661d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-data-format-to-use-for-your-big-data-project-837a48d3661d&user=Armand+Sauzay&userId=6ce70a13b962&source=-----837a48d3661d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6ce70a13b962&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-data-format-to-use-for-your-big-data-project-837a48d3661d&user=Armand+Sauzay&userId=6ce70a13b962&source=post_page-6ce70a13b962----837a48d3661d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----837a48d3661d--------------------------------) · 6 分钟阅读 · 2023 年 10 月 26 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F837a48d3661d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-data-format-to-use-for-your-big-data-project-837a48d3661d&user=Armand+Sauzay&userId=6ce70a13b962&source=-----837a48d3661d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F837a48d3661d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-data-format-to-use-for-your-big-data-project-837a48d3661d&source=-----837a48d3661d---------------------bookmark_footer-----------)![](../Images/f6052f807142ff0736003534edc8f2dc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F837a48d3661d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-data-format-to-use-for-your-big-data-project-837a48d3661d&source=-----837a48d3661d---------------------bookmark_footer-----------)![](img/f6052f807142ff0736003534edc8f2dc.png)
 
 图片由 Maarten van den Heuvel 提供 — [Unsplash](https://unsplash.com/photos/assorted-color-book-lot-8EzNkvLQosk)
 

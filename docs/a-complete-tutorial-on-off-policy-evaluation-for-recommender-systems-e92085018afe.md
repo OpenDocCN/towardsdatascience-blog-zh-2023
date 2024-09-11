@@ -1,20 +1,20 @@
 # 完整的离线策略评估教程：针对推荐系统
 
-> 原文：[https://towardsdatascience.com/a-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe?source=collection_archive---------4-----------------------#2023-03-11](https://towardsdatascience.com/a-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe?source=collection_archive---------4-----------------------#2023-03-11)
+> 原文：[`towardsdatascience.com/a-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe?source=collection_archive---------4-----------------------#2023-03-11`](https://towardsdatascience.com/a-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe?source=collection_archive---------4-----------------------#2023-03-11)
 
 ## 如何缩小离线-在线评估差距
 
-[](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)[![Adrien Biarnes](../Images/105f2bb62cb2bf825d74ea85b14eabfc.png)](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------) [Adrien Biarnes](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)
+[](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)![Adrien Biarnes](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------) [Adrien Biarnes](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F151fca431deb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe&user=Adrien+Biarnes&userId=151fca431deb&source=post_page-151fca431deb----e92085018afe---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------) ·18分钟阅读·2023年3月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe92085018afe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe&user=Adrien+Biarnes&userId=151fca431deb&source=-----e92085018afe---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F151fca431deb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe&user=Adrien+Biarnes&userId=151fca431deb&source=post_page-151fca431deb----e92085018afe---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------) ·18 分钟阅读·2023 年 3 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe92085018afe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe&user=Adrien+Biarnes&userId=151fca431deb&source=-----e92085018afe---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe92085018afe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe&source=-----e92085018afe---------------------bookmark_footer-----------)![](../Images/601eef605ca244782eb4bd4437802193.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe92085018afe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe&source=-----e92085018afe---------------------bookmark_footer-----------)![](img/601eef605ca244782eb4bd4437802193.png)
 
-一种跳过离线-在线评估差距的推荐系统（AI生成的图像）
+一种跳过离线-在线评估差距的推荐系统（AI 生成的图像）
 
 # 介绍
 

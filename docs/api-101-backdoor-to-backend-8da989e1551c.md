@@ -1,18 +1,18 @@
 # API 101：后端的秘密通道
 
-> 原文：[https://towardsdatascience.com/api-101-backdoor-to-backend-8da989e1551c?source=collection_archive---------10-----------------------#2023-01-23](https://towardsdatascience.com/api-101-backdoor-to-backend-8da989e1551c?source=collection_archive---------10-----------------------#2023-01-23)
+> 原文：[`towardsdatascience.com/api-101-backdoor-to-backend-8da989e1551c?source=collection_archive---------10-----------------------#2023-01-23`](https://towardsdatascience.com/api-101-backdoor-to-backend-8da989e1551c?source=collection_archive---------10-----------------------#2023-01-23)
 
-![](../Images/40b9a5b9f2c72bd1a2b7365a09ef5842.png)
+![](img/40b9a5b9f2c72bd1a2b7365a09ef5842.png)
 
 图片由 [Lala Azizli](https://unsplash.com/@lazizli?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 快速深入 API 的世界，以及 API 如何驱动应用
 
-[](https://amansharma2910.medium.com/?source=post_page-----8da989e1551c--------------------------------)[![阿曼·夏尔马](../Images/337a857ff5e919b61237ce2aeeaded63.png)](https://amansharma2910.medium.com/?source=post_page-----8da989e1551c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8da989e1551c--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8da989e1551c--------------------------------) [阿曼·夏尔马](https://amansharma2910.medium.com/?source=post_page-----8da989e1551c--------------------------------)
+[](https://amansharma2910.medium.com/?source=post_page-----8da989e1551c--------------------------------)![阿曼·夏尔马](https://amansharma2910.medium.com/?source=post_page-----8da989e1551c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8da989e1551c--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----8da989e1551c--------------------------------) [阿曼·夏尔马](https://amansharma2910.medium.com/?source=post_page-----8da989e1551c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84e03a4d7261&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapi-101-backdoor-to-backend-8da989e1551c&user=Aman+Sharma&userId=84e03a4d7261&source=post_page-84e03a4d7261----8da989e1551c---------------------post_header-----------) 发布在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8da989e1551c--------------------------------) ·11分钟阅读·2023年1月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8da989e1551c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapi-101-backdoor-to-backend-8da989e1551c&user=Aman+Sharma&userId=84e03a4d7261&source=-----8da989e1551c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84e03a4d7261&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapi-101-backdoor-to-backend-8da989e1551c&user=Aman+Sharma&userId=84e03a4d7261&source=post_page-84e03a4d7261----8da989e1551c---------------------post_header-----------) 发布在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8da989e1551c--------------------------------) ·11 分钟阅读·2023 年 1 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8da989e1551c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapi-101-backdoor-to-backend-8da989e1551c&user=Aman+Sharma&userId=84e03a4d7261&source=-----8da989e1551c---------------------clap_footer-----------)
 
 --
 
@@ -62,7 +62,7 @@ API 是 ***应用程序编程接口*** 的缩写。顾名思义，它是一种�
 
 更准确地说，API 允许跨平台和设备间的通信。
 
-![](../Images/275bc843831971af80adda518226813f.png)
+![](img/275bc843831971af80adda518226813f.png)
 
 图片由作者提供
 
@@ -92,39 +92,39 @@ API 是 ***应用程序编程接口*** 的缩写。顾名思义，它是一种�
 
 # 什么是 REST API？
 
-REST代表表现层状态转移，也称为RESTful Web服务。它是一种标准化的API架构，允许跨平台和设备间通过HTTP网络协议进行通信。
+REST 代表表现层状态转移，也称为 RESTful Web 服务。它是一种标准化的 API 架构，允许跨平台和设备间通过 HTTP 网络协议进行通信。
 
 > 再简单一点，它允许两个应用程序组件互相交互。
 
 典型的客户端-服务器交互主要包括四种操作：
 
-1.  创建：通过API请求执行的创建操作涉及在后端数据层上创建资源。*例如，在TODO列表应用中，创建API请求可用于在数据库中创建一个TODO项。*
+1.  创建：通过 API 请求执行的创建操作涉及在后端数据层上创建资源。*例如，在 TODO 列表应用中，创建 API 请求可用于在数据库中创建一个 TODO 项。*
 
-1.  读取：读取操作可用于从数据库中获取数据。根据客户端的请求和后端资源访问的实现，这些数据可以是某一类型的单个资源、一批单一类型的资源，或不同类型的资源集合。*以同样的TODO应用为例，读取请求可以用于获取用户创建的所有TODO。*
+1.  读取：读取操作可用于从数据库中获取数据。根据客户端的请求和后端资源访问的实现，这些数据可以是某一类型的单个资源、一批单一类型的资源，或不同类型的资源集合。*以同样的 TODO 应用为例，读取请求可以用于获取用户创建的所有 TODO。*
 
-1.  更新：可以执行更新操作以更新数据层中特定资源相关的数据。*在我们的TODO应用中，更新请求可用于更新TODO任务。*
+1.  更新：可以执行更新操作以更新数据层中特定资源相关的数据。*在我们的 TODO 应用中，更新请求可用于更新 TODO 任务。*
 
-1.  删除：顾名思义，删除操作用于删除资源。*对于我们的TODO应用，删除请求可用于从TODO列表中删除TODO对象。*
+1.  删除：顾名思义，删除操作用于删除资源。*对于我们的 TODO 应用，删除请求可用于从 TODO 列表中删除 TODO 对象。*
 
 这些操作统称为**CRUD**（**C**reate，**R**ead，**U**pdate，**D**elete）**操作**。对于任何应用程序，这些都是用户可以执行的一些最基本的操作。
 
-> 简单来说，当用户与应用程序交互时，他们要么在访问数据，要么数据正在被创建或操作。REST API充当前端和后端之间的中介步骤，允许在应用程序中执行CRUD操作。
+> 简单来说，当用户与应用程序交互时，他们要么在访问数据，要么数据正在被创建或操作。REST API 充当前端和后端之间的中介步骤，允许在应用程序中执行 CRUD 操作。
 
-我们之前提到，由于API作为客户端和服务器之间的通信渠道实现，客户端和服务器可以使用完全不同的编程技术栈。然而，必须有一种标准化的，*语言无关*的机制，以便客户端和服务器可以通过API进行交互。为此，REST API使用**JSON**基础的消息传递协议。
+我们之前提到，由于 API 作为客户端和服务器之间的通信渠道实现，客户端和服务器可以使用完全不同的编程技术栈。然而，必须有一种标准化的，*语言无关*的机制，以便客户端和服务器可以通过 API 进行交互。为此，REST API 使用**JSON**基础的消息传递协议。
 
-JSON代表***JavaScript对象表示法***。它是一种开放标准文件格式和数据交换格式，其具有可读性。数据通过JSON以键值对和数组格式传输。
+JSON 代表***JavaScript 对象表示法***。它是一种开放标准文件格式和数据交换格式，其具有可读性。数据通过 JSON 以键值对和数组格式传输。
 
 下图演示了典型的客户端-服务器交互。
 
-![](../Images/63b393a0897290d8365bcd00f1bade3b.png)
+![](img/63b393a0897290d8365bcd00f1bade3b.png)
 
 作者提供的图片
 
-+   客户端通过HTTP协议向服务器发送API请求。*该请求采用JSON格式。*
++   客户端通过 HTTP 协议向服务器发送 API 请求。*该请求采用 JSON 格式。*
 
-+   服务器解析此API请求，处理请求，然后将API响应发送回客户端，*该响应再次以JSON格式呈现。*
++   服务器解析此 API 请求，处理请求，然后将 API 响应发送回客户端，*该响应再次以 JSON 格式呈现。*
 
-+   客户端可以解析JSON响应对象以进行呈现。
++   客户端可以解析 JSON 响应对象以进行呈现。
 
 正如你所观察到的，由于中介通信通道是标准化的，因此客户端和服务器可以在平台和实现方面独立操作。*也就是说，后端可以用一种编程语言（例如 Python）编写，前端可以用另一种（例如 JavaScript）编写，应用程序仍然可以正常工作。*
 
@@ -218,15 +218,15 @@ API 请求的实现可能因编程语言或工具而异。然而，API 请求的
 
 API 响应是后端在处理完 API 请求后返回给前端的响应。响应应告知客户端请求是否成功，如果成功，应返回请求的数据或适当的确认信息。如果请求不成功，客户端应接收到相关的错误信息。
 
-根据这些要求，API响应可以分为两个部分，如下所述。
+根据这些要求，API 响应可以分为两个部分，如下所述。
 
 ## 响应体
 
-响应体包含请求的数据（在GET API请求的情况下），或者在其他API请求类型中包含适当的确认消息。如果API请求失败，响应体将包含适当的失败消息，说明为什么API调用到服务器失败。
+响应体包含请求的数据（在 GET API 请求的情况下），或者在其他 API 请求类型中包含适当的确认消息。如果 API 请求失败，响应体将包含适当的失败消息，说明为什么 API 调用到服务器失败。
 
 ## 响应状态码
 
-API响应包含一个响应状态码，帮助客户端确定请求是成功还是失败。这些状态码已经为HTTP协议标准化，可以大致分为5类 — `1xx` → 信息性，`2xx` → 成功，`3xx` → 重定向，`4xx` → 客户端错误，`5xx` → 服务器错误
+API 响应包含一个响应状态码，帮助客户端确定请求是成功还是失败。这些状态码已经为 HTTP 协议标准化，可以大致分为 5 类 — `1xx` → 信息性，`2xx` → 成功，`3xx` → 重定向，`4xx` → 客户端错误，`5xx` → 服务器错误
 
 一些常见的状态码如下所示。
 
@@ -246,7 +246,7 @@ API响应包含一个响应状态码，帮助客户端确定请求是成功还�
 
 +   500 — *内部服务器错误。*
 
-例如，我们之前发出的GET API请求的响应如下：
+例如，我们之前发出的 GET API 请求的响应如下：
 
 ```py
 {
@@ -257,12 +257,12 @@ API响应包含一个响应状态码，帮助客户端确定请求是成功还�
 }
 ```
 
-响应状态码是200。
+响应状态码是 200。
 
 # 结论
 
-随着这篇文章的结束，我们来总结一下。我们了解了什么是API，以及它们如何在设备和应用程序之间实现通信。最后，我们深入研究了REST API——API请求响应周期是如何工作的。
+随着这篇文章的结束，我们来总结一下。我们了解了什么是 API，以及它们如何在设备和应用程序之间实现通信。最后，我们深入研究了 REST API——API 请求响应周期是如何工作的。
 
-显然，API只是一个基础，或者说是进入广阔的软件开发（更准确地说是后端开发）世界的后门，正如标题所暗示的那样。
+显然，API 只是一个基础，或者说是进入广阔的软件开发（更准确地说是后端开发）世界的后门，正如标题所暗示的那样。
 
 你可以关注我，以阅读更多有趣的概念。在本系列的后续博客中，我们将更深入地探讨后端开发。

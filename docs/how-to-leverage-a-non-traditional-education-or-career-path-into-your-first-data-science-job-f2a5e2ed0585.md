@@ -1,18 +1,18 @@
 # 如何将非传统教育或职业路径转化为你的第一个数据科学工作
 
-> 原文：[https://towardsdatascience.com/how-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585?source=collection_archive---------5-----------------------#2023-02-17](https://towardsdatascience.com/how-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585?source=collection_archive---------5-----------------------#2023-02-17)
+> 原文：[`towardsdatascience.com/how-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585?source=collection_archive---------5-----------------------#2023-02-17`](https://towardsdatascience.com/how-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585?source=collection_archive---------5-----------------------#2023-02-17)
 
 ## 一些关于如何将你的非传统经历作为你的第一个数据科学工作的卖点的建议
 
-[](https://madison13.medium.com/?source=post_page-----f2a5e2ed0585--------------------------------)[![Madison Hunter](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----f2a5e2ed0585--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2a5e2ed0585--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2a5e2ed0585--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----f2a5e2ed0585--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----f2a5e2ed0585--------------------------------)![Madison Hunter](https://madison13.medium.com/?source=post_page-----f2a5e2ed0585--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2a5e2ed0585--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2a5e2ed0585--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----f2a5e2ed0585--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----f2a5e2ed0585---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2a5e2ed0585--------------------------------) ·7 min read·2023年2月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2a5e2ed0585&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585&user=Madison+Hunter&userId=6a8c6841e521&source=-----f2a5e2ed0585---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----f2a5e2ed0585---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2a5e2ed0585--------------------------------) ·7 min read·2023 年 2 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2a5e2ed0585&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585&user=Madison+Hunter&userId=6a8c6841e521&source=-----f2a5e2ed0585---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2a5e2ed0585&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585&source=-----f2a5e2ed0585---------------------bookmark_footer-----------)![](../Images/b0cca654ee27508885fb8c7911605d8d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2a5e2ed0585&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-leverage-a-non-traditional-education-or-career-path-into-your-first-data-science-job-f2a5e2ed0585&source=-----f2a5e2ed0585---------------------bookmark_footer-----------)![](img/b0cca654ee27508885fb8c7911605d8d.png)
 
 图片由 [Joshua Earle](https://unsplash.com/@joshuaearle?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 无论你有什么背景，你都受到数据科学领域的欢迎。
 
-2020年成为了人们开始自学编程并从各种背景过渡到技术领域的一年，这一趋势似乎延续到了2023年。虽然非传统的职业或教育背景可能使进入数据科学变得具有挑战性，但当你知道如何利用现有技能来补充新学到的数据科学技能时，这并不是不可能的。
+2020 年成为了人们开始自学编程并从各种背景过渡到技术领域的一年，这一趋势似乎延续到了 2023 年。虽然非传统的职业或教育背景可能使进入数据科学变得具有挑战性，但当你知道如何利用现有技能来补充新学到的数据科学技能时，这并不是不可能的。
 
 这里分享的技巧并不具有革命性或改变人生的效果——而是我个人在尝试从非传统背景进入数据科学时发现的行之有效的技巧。你的数据科学技能和过往经验将会证明自己，你只需利用这些技巧将它们转化为新的数据科学职业。
 
@@ -48,11 +48,11 @@
 
 例如，我目前正在进行一个个人项目，研究如何更好地标准化失踪人员的寻找概率。我从事搜救工作，虽然没有两个电话是相同的，但可以找到呼叫类型与预期寻找人员的位置之间的关联。换句话说，就是将一个非常现实的问题拆解为其组成部分，确定如何利用失踪人员数据使搜救操作更高效。虽然这可能与我下一个申请的数据科学职位不完全相关，但它肯定能展示我能运用数据科学技能解决问题——这最终才是雇主所寻找的。
 
-[## 如何有效展示个人项目在数据科学简历上的价值](/how-to-effectively-showcase-personal-projects-on-your-data-science-resume-736cbfa1600?source=post_page-----f2a5e2ed0585--------------------------------)
+## 如何有效展示个人项目在数据科学简历上的价值
 
 ### 简洁的项目描述是吸引招聘人员注意的必备条件。
 
-[towardsdatascience.com](/how-to-effectively-showcase-personal-projects-on-your-data-science-resume-736cbfa1600?source=post_page-----f2a5e2ed0585--------------------------------)
+towardsdatascience.com
 
 ## 关键要点
 

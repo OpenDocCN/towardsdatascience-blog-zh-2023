@@ -1,18 +1,18 @@
 # 在视觉中实现独立的自注意力
 
-> 原文：[https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5?source=collection_archive---------8-----------------------#2023-04-28](https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5?source=collection_archive---------8-----------------------#2023-04-28)
+> 原文：[`towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5?source=collection_archive---------8-----------------------#2023-04-28`](https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5?source=collection_archive---------8-----------------------#2023-04-28)
 
 ## *深入探讨变换器架构及其自注意力操作在视觉中的应用*
 
-[](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[![Julian Hatzky](../Images/9f1ce9a29d215feeb5223e8fd659383e.png)](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------) [Julian Hatzky](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)
+[](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)![Julian Hatzky](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------) [Julian Hatzky](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe24e3594d8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftowards-stand-alone-self-attention-in-vision-3d0561c6aee5&user=Julian+Hatzky&userId=e24e3594d8a&source=post_page-e24e3594d8a----3d0561c6aee5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------) ·14 分钟阅读·2023年4月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d0561c6aee5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftowards-stand-alone-self-attention-in-vision-3d0561c6aee5&user=Julian+Hatzky&userId=e24e3594d8a&source=-----3d0561c6aee5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe24e3594d8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftowards-stand-alone-self-attention-in-vision-3d0561c6aee5&user=Julian+Hatzky&userId=e24e3594d8a&source=post_page-e24e3594d8a----3d0561c6aee5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------) ·14 分钟阅读·2023 年 4 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d0561c6aee5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftowards-stand-alone-self-attention-in-vision-3d0561c6aee5&user=Julian+Hatzky&userId=e24e3594d8a&source=-----3d0561c6aee5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d0561c6aee5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftowards-stand-alone-self-attention-in-vision-3d0561c6aee5&source=-----3d0561c6aee5---------------------bookmark_footer-----------)![](../Images/b58911b38409853b14032c171382c9bd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d0561c6aee5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftowards-stand-alone-self-attention-in-vision-3d0561c6aee5&source=-----3d0561c6aee5---------------------bookmark_footer-----------)![](img/b58911b38409853b14032c171382c9bd.png)
 
 图像由作者使用 [craiyon AI](https://www.craiyon.com/) 创建
 

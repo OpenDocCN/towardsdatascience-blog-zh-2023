@@ -1,18 +1,18 @@
 # 使用 SHAP 调试 PyTorch 图像回归模型
 
-> 原文：[https://towardsdatascience.com/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=collection_archive---------14-----------------------#2023-01-10](https://towardsdatascience.com/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=collection_archive---------14-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=collection_archive---------14-----------------------#2023-01-10`](https://towardsdatascience.com/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=collection_archive---------14-----------------------#2023-01-10)
 
 ## 使用 DeepShap 理解和改进驱动自动驾驶汽车的模型
 
-[](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)[![Conor O'Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)
+[](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)![Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----4b562ddef30d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------) ·11 min read·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4b562ddef30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----4b562ddef30d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----4b562ddef30d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------) ·11 min read·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4b562ddef30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----4b562ddef30d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4b562ddef30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d&source=-----4b562ddef30d---------------------bookmark_footer-----------)![](../Images/965f5964b6c98ef14db3694ad7588c2f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4b562ddef30d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d&source=-----4b562ddef30d---------------------bookmark_footer-----------)![](img/965f5964b6c98ef14db3694ad7588c2f.png)
 
 (source: author)
 

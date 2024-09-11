@@ -1,16 +1,16 @@
 # 你应该在 FAANG 还是创业公司开始你的职业生涯？
 
-> 原文：[https://towardsdatascience.com/startup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23?source=collection_archive---------5-----------------------#2023-09-04](https://towardsdatascience.com/startup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23?source=collection_archive---------5-----------------------#2023-09-04)
+> 原文：[`towardsdatascience.com/startup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23?source=collection_archive---------5-----------------------#2023-09-04`](https://towardsdatascience.com/startup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23?source=collection_archive---------5-----------------------#2023-09-04)
 
-![](../Images/c1cd7427ba235e3386ca904658f6dbf0.png)
+![](img/c1cd7427ba235e3386ca904658f6dbf0.png)
 
 ## 在学习环境和技能发展方面可以期待什么
 
-[](https://medium.com/@elalamik?source=post_page-----7ba47f468e23--------------------------------)[![Khouloud El Alami](../Images/58840bfe28a60892b51d40ad6ba7f5e8.png)](https://medium.com/@elalamik?source=post_page-----7ba47f468e23--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ba47f468e23--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ba47f468e23--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----7ba47f468e23--------------------------------)
+[](https://medium.com/@elalamik?source=post_page-----7ba47f468e23--------------------------------)![Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----7ba47f468e23--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ba47f468e23--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ba47f468e23--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----7ba47f468e23--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstartup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----7ba47f468e23---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ba47f468e23--------------------------------) · 10 分钟阅读 · 2023年9月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ba47f468e23&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstartup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----7ba47f468e23---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstartup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----7ba47f468e23---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ba47f468e23--------------------------------) · 10 分钟阅读 · 2023 年 9 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ba47f468e23&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstartup-vs-big-firm-how-will-your-data-science-skills-flourish-as-you-kickstart-your-career-7ba47f468e23&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----7ba47f468e23---------------------clap_footer-----------)
 
 --
 

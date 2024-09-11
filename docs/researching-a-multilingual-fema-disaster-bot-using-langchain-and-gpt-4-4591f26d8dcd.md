@@ -1,18 +1,18 @@
 # 使用 LangChain 和 GPT-4 研究多语言 FEMA 灾难机器人
 
-> 原文：[https://towardsdatascience.com/researching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd?source=collection_archive---------5-----------------------#2023-08-17](https://towardsdatascience.com/researching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd?source=collection_archive---------5-----------------------#2023-08-17)
+> 原文：[`towardsdatascience.com/researching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd?source=collection_archive---------5-----------------------#2023-08-17`](https://towardsdatascience.com/researching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd?source=collection_archive---------5-----------------------#2023-08-17)
 
 ## 高风险聊天应用程序中检索增强生成（RAG）的优缺点
 
-[](https://medium.com/@astrobagel?source=post_page-----4591f26d8dcd--------------------------------)[![Matthew Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----4591f26d8dcd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4591f26d8dcd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4591f26d8dcd--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----4591f26d8dcd--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----4591f26d8dcd--------------------------------)![Matthew Harris](https://medium.com/@astrobagel?source=post_page-----4591f26d8dcd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4591f26d8dcd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4591f26d8dcd--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----4591f26d8dcd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----4591f26d8dcd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4591f26d8dcd--------------------------------) ·54分钟阅读·2023年8月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4591f26d8dcd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----4591f26d8dcd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----4591f26d8dcd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4591f26d8dcd--------------------------------) ·54 分钟阅读·2023 年 8 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4591f26d8dcd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----4591f26d8dcd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4591f26d8dcd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd&source=-----4591f26d8dcd---------------------bookmark_footer-----------)![](../Images/37138d88da2ef33806c505f6c3bcb47e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4591f26d8dcd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-multilingual-fema-disaster-bot-using-langchain-and-gpt-4-4591f26d8dcd&source=-----4591f26d8dcd---------------------bookmark_footer-----------)![](img/37138d88da2ef33806c505f6c3bcb47e.png)
 
 图片由 [DALL-E2](https://openai.com/dall-e-2) 使用提示“一个激流围绕一个机器人泛滥的照片”生成
 
@@ -26,19 +26,19 @@
 
 一个明显的解决方案可能是询问聊天机器人。我认为聊天机器人有时可能会被过度使用，但在时间紧迫的情况下，这确实是一个很好的应用场景，因为对话界面可能更为高效。
 
-这并不是一个新想法，像美国红十字会这样的组织已经开发了类似于[Clara](https://www.redcross.org/get-help/disaster-relief-and-recovery-services/meet-clara.html)的灾害响应机器人。然而，最近出现了一种有前景的新模式，利用生成式人工智能大型语言模型（LLMs），如[OpenAI的GPT-4](https://openai.com/research/gpt-4)、[Meta的LLAMA 2](https://ai.meta.com/llama/)以及在[HuggingFace](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)上不断增长的众多模型。这些模型可以用来索引指定的文档集，并与其进行对话。[这种方法称为检索增强生成（RAG）](https://huggingface.co/blog/ray-rag)，网上有数百个教程展示了使用令人惊叹的[LangChain](https://python.langchain.com/docs/use_cases/question_answering/how_to/vector_db_qa) Python 包，我完全预期这种技术很快会出现在我们每天使用的软件中。有趣的是，它将响应限制在提供的内容范围内，从而减少了幻觉的发生，这有助于在灾害响应等关键情况下使用LLMs。
+这并不是一个新想法，像美国红十字会这样的组织已经开发了类似于[Clara](https://www.redcross.org/get-help/disaster-relief-and-recovery-services/meet-clara.html)的灾害响应机器人。然而，最近出现了一种有前景的新模式，利用生成式人工智能大型语言模型（LLMs），如[OpenAI 的 GPT-4](https://openai.com/research/gpt-4)、[Meta 的 LLAMA 2](https://ai.meta.com/llama/)以及在[HuggingFace](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)上不断增长的众多模型。这些模型可以用来索引指定的文档集，并与其进行对话。[这种方法称为检索增强生成（RAG）](https://huggingface.co/blog/ray-rag)，网上有数百个教程展示了使用令人惊叹的[LangChain](https://python.langchain.com/docs/use_cases/question_answering/how_to/vector_db_qa) Python 包，我完全预期这种技术很快会出现在我们每天使用的软件中。有趣的是，它将响应限制在提供的内容范围内，从而减少了幻觉的发生，这有助于在灾害响应等关键情况下使用 LLMs。
 
 但在信息检索可能拯救生命的情况下，这种方法的安全性如何呢？
 
-在本文中，我简要探讨了创建一个LangChain GPT-4聊天界面，用于基于[美国联邦应急管理署（FEMA）](https://www.fema.gov/about)的一组文档询问有关灾害安全的问题。我们将遇到一些需要考虑的限制，如果在高风险情况下使用这种技术的话。
+在本文中，我简要探讨了创建一个 LangChain GPT-4 聊天界面，用于基于[美国联邦应急管理署（FEMA）](https://www.fema.gov/about)的一组文档询问有关灾害安全的问题。我们将遇到一些需要考虑的限制，如果在高风险情况下使用这种技术的话。
 
-# FEMA灾害准备和安全PDF文档
+# FEMA 灾害准备和安全 PDF 文档
 
-对于这项研究，我从FEMA下载了34个PDF文件（[列表在这里](https://github.com/datakind/stay_safe_bot/blob/main/docs_data/fema_docs.csv)），这些文件涵盖了广泛的灾害相关话题，包括如何准备和应对野火、龙卷风、洪水、地震和冬季风暴。这不是FEMA提供的所有惊人资源，但应该足够测试我们的聊天界面。
+对于这项研究，我从 FEMA 下载了 34 个 PDF 文件（[列表在这里](https://github.com/datakind/stay_safe_bot/blob/main/docs_data/fema_docs.csv)），这些文件涵盖了广泛的灾害相关话题，包括如何准备和应对野火、龙卷风、洪水、地震和冬季风暴。这不是 FEMA 提供的所有惊人资源，但应该足够测试我们的聊天界面。
 
 # 索引文档以进行信息检索
 
-下载后，我们可以使用LangChain读取PDF文档。文档被分割成文本块，并使用嵌入模型给每个块分配一个指纹（嵌入）。在这项分析中，我们将使用[OpenAI的嵌入](https://platform.openai.com/docs/guides/embeddings)，但LangChain支持[许多其他模型](https://python.langchain.com/docs/integrations/text_embedding/)。
+下载后，我们可以使用 LangChain 读取 PDF 文档。文档被分割成文本块，并使用嵌入模型给每个块分配一个指纹（嵌入）。在这项分析中，我们将使用[OpenAI 的嵌入](https://platform.openai.com/docs/guides/embeddings)，但 LangChain 支持[许多其他模型](https://python.langchain.com/docs/integrations/text_embedding/)。
 
 ```py
 import os
@@ -95,7 +95,7 @@ ready_12-ways-to-prepare_postcard.pdf
 ready_document-and-insure-your-property.pdf
 ```
 
-查看为一个文档提取的数据[https://www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf](https://www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf) …
+查看为一个文档提取的数据[`www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf`](https://www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf) …
 
 ```py
 import json
@@ -370,7 +370,7 @@ Remember to consult professionals such as your insurance agent, architects, engi
 
 在这种情况下，我们有一个与一个主题相关的文档，即洪水，即使个别文本部分可能没有明确提到它。如果我们在每个文本摘录中提供一些上下文，即一些文档元数据，可能会获得更好的结果。
 
-对于我们的简单测试，试着将所有文本摘录前缀加上文件名（fema-protect-your-home-flooding.pdf），去掉标点和后缀，再加上“此摘录相关于”这段文字。最终前缀将是“此摘录相关于 fema protect your home flooding:”，这为LLM提供了更多的背景信息……
+对于我们的简单测试，试着将所有文本摘录前缀加上文件名（fema-protect-your-home-flooding.pdf），去掉标点和后缀，再加上“此摘录相关于”这段文字。最终前缀将是“此摘录相关于 fema protect your home flooding:”，这为 LLM 提供了更多的背景信息……
 
 ```py
 def setup_model(
@@ -495,7 +495,7 @@ Remember to consult professionals such as your insurance agent, architects, engi
 }
 ```
 
-成功了！这似乎确实捕获了PDF中的重要页面，并很好地总结了它们。显然，这是一种非常粗略的方法，使用元数据而不仅仅是文件名的更正式方法会更好。使用[模板](https://github.com/langchain-ai/langchain/issues/1136)可能也更优雅，而不仅仅是前缀，但它确实展示了这样一点背景如何帮助。
+成功了！这似乎确实捕获了 PDF 中的重要页面，并很好地总结了它们。显然，这是一种非常粗略的方法，使用元数据而不仅仅是文件名的更正式方法会更好。使用[模板](https://github.com/langchain-ai/langchain/issues/1136)可能也更优雅，而不仅仅是前缀，但它确实展示了这样一点背景如何帮助。
 
 那么如果我们现在使用所有文档集中的文档呢……
 
@@ -587,11 +587,11 @@ Remember to consult professionals such as your insurance agent, architects, engi
 }
 ```
 
-做得很好，它从[https://www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf](https://www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf)中的关键文章提取了信息，还包括[https://www.fema.gov/sites/default/files/documents/fema_protect-your-property-storm-surge.pdf](https://www.fema.gov/sites/default/files/documents/fema_protect-your-property-storm-surge.pdf)中的一篇文章，这是文档集中唯一提到洪水的其他文档。
+做得很好，它从[`www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf`](https://www.fema.gov/sites/default/files/2020-11/fema_protect-your-home_flooding.pdf)中的关键文章提取了信息，还包括[`www.fema.gov/sites/default/files/documents/fema_protect-your-property-storm-surge.pdf`](https://www.fema.gov/sites/default/files/documents/fema_protect-your-property-storm-surge.pdf)中的一篇文章，这是文档集中唯一提到洪水的其他文档。
 
 # 检索提示长度
 
-此时，需要注意的是，最终的总结提示将文档摘录转化为漂亮的答案可能会相当长，具体取决于摘录的大小和数量。与LLM的持续战斗是实现我们的目标而不超出令牌限制。尽管对我们的用例没有重大影响，但其他场景可能需要采用[上下文压缩方法](https://blog.langchain.dev/improving-document-retrieval-with-contextual-compression/)。
+此时，需要注意的是，最终的总结提示将文档摘录转化为漂亮的答案可能会相当长，具体取决于摘录的大小和数量。与 LLM 的持续战斗是实现我们的目标而不超出令牌限制。尽管对我们的用例没有重大影响，但其他场景可能需要采用[上下文压缩方法](https://blog.langchain.dev/improving-document-retrieval-with-contextual-compression/)。
 
 # 问题背景可能很重要
 
@@ -625,7 +625,7 @@ Remember, these steps are general guidelines. Always follow the advice of local 
 
 现在的答案有点混乱，有些点涉及立即行动“将你的车移到高地”，有些点涉及准备“购买洪水保险”。当人们在紧急情况下感到压力时，他们可能不会考虑即时工程，因此我们可以期待稍微模糊的输入。
 
-当然，我们可以通过使用更多的文档元数据来将其拆分为子组来解决此问题，但如果没有这些元数据，则需要工作。另一种选择是向问题提供更多背景，以指示用户是否对灾害准备感兴趣，或需要立即帮助。我们可以为此建立一个分类器，但在这些强大的LLM时代，我们可以使用GPT-4的零样本分类……
+当然，我们可以通过使用更多的文档元数据来将其拆分为子组来解决此问题，但如果没有这些元数据，则需要工作。另一种选择是向问题提供更多背景，以指示用户是否对灾害准备感兴趣，或需要立即帮助。我们可以为此建立一个分类器，但在这些强大的 LLM 时代，我们可以使用 GPT-4 的零样本分类……
 
 ```py
 def get_time_context(question):
@@ -1249,27 +1249,27 @@ If you have an infant, then include baby food, diapers, formula, etc. If you hav
 In addition, consider including portable charging devices in your kit as this will allow you to charge from a motor vehicle. If a loved one is comforted by a certain item (a blanket, photograph, stuffed animal, etc.), be sure to pack the item when evacuating. If a relative requires regularly scheduled mental health therapy, make sure that his/her mental health provider is aware of the location of the shelter.
 ```
 
-我认为这些非常惊人，抽查了一些，它们似乎能够捕捉到所用PDF文档中的关键信息。
+我认为这些非常惊人，抽查了一些，它们似乎能够捕捉到所用 PDF 文档中的关键信息。
 
 [基于上述内容，我的灾难包现在有耳塞了！]
 
 # 性能评估
 
-在这项分析中，我们仅仅对我们的聊天界面在返回一小部分FEMA PDF文档的关键信息方面进行了抽查。这对于说明一些概念是有帮助的，但对于生产应用程序，我们需要比抽查更好的方法。幸运的是，LangChain 提供了一组[评估工具](https://python.langchain.com/docs/guides/evaluation/)，特别值得关注的是一个[Streamlit 应用](https://blog.langchain.dev/auto-eval-of-question-answering-tasks/)，它可以自动生成问答对，然后利用这些数据来评估检索链，从而允许开发者实验一些相关的参数。我还没有尝试过，但使用LLM自动生成评估数据的想法似乎是为测试我们的FEMA灾难机器人构建更系统化方法的好办法。
+在这项分析中，我们仅仅对我们的聊天界面在返回一小部分 FEMA PDF 文档的关键信息方面进行了抽查。这对于说明一些概念是有帮助的，但对于生产应用程序，我们需要比抽查更好的方法。幸运的是，LangChain 提供了一组[评估工具](https://python.langchain.com/docs/guides/evaluation/)，特别值得关注的是一个[Streamlit 应用](https://blog.langchain.dev/auto-eval-of-question-answering-tasks/)，它可以自动生成问答对，然后利用这些数据来评估检索链，从而允许开发者实验一些相关的参数。我还没有尝试过，但使用 LLM 自动生成评估数据的想法似乎是为测试我们的 FEMA 灾难机器人构建更系统化方法的好办法。
 
 # 结论
 
-使用FEMA网站上的34份PDF文档，我们能够轻松地构建一个多语言对话界面，使用LangChain和GPT-4，能够回答广泛的灾难准备和安全协议相关的问题。然而，对于高风险安全关键的聊天机器人，使用这种通用文档检索的LangChain模式面临着与语义搜索相同的挑战。即使使用先进的LLM嵌入捕捉自然语言中的更多细微差别，仍然很容易*丢失*重要内容。
+使用 FEMA 网站上的 34 份 PDF 文档，我们能够轻松地构建一个多语言对话界面，使用 LangChain 和 GPT-4，能够回答广泛的灾难准备和安全协议相关的问题。然而，对于高风险安全关键的聊天机器人，使用这种通用文档检索的 LangChain 模式面临着与语义搜索相同的挑战。即使使用先进的 LLM 嵌入捕捉自然语言中的更多细微差别，仍然很容易*丢失*重要内容。
 
-对于我们的FEMA灾难机器人用例，这种情况是由于：
+对于我们的 FEMA 灾难机器人用例，这种情况是由于：
 
-+   **混合上下文文档** — 在没有包含文档元数据的情况下，响应混合了来自不同上下文的信息。简单地在文档名称前加前缀提高了我们场景中的性能，并且可以应用更复杂的元数据策略。此外，添加一个零样本LLM分类器来丰富用户问题也是有帮助的。
++   **混合上下文文档** — 在没有包含文档元数据的情况下，响应混合了来自不同上下文的信息。简单地在文档名称前加前缀提高了我们场景中的性能，并且可以应用更复杂的元数据策略。此外，添加一个零样本 LLM 分类器来丰富用户问题也是有帮助的。
 
-+   **LLMs中的低代表性语言** — 依赖LLM翻译可能会导致对于代表性较少的语言（如斯瓦希里语）性能较差。添加自动Google翻译提高了我们用例中的性能。
++   **LLMs 中的低代表性语言** — 依赖 LLM 翻译可能会导致对于代表性较少的语言（如斯瓦希里语）性能较差。添加自动 Google 翻译提高了我们用例中的性能。
 
 我们探索了粗略的方法来解决上述问题，但对于生产聊天机器人，需要通过测试和验证找到更先进的技术和其他缓解措施。
 
-尽管如此，LLM现在能做的事情确实令人惊叹！
+尽管如此，LLM 现在能做的事情确实令人惊叹！
 
 # **参考资料**
 

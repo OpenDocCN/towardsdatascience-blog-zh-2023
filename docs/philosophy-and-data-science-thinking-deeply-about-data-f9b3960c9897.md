@@ -1,10 +1,10 @@
 # 哲学与数据科学 — 深入思考数据
 
-> 原文：[https://towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-f9b3960c9897?source=collection_archive---------3-----------------------#2023-11-12](https://towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-f9b3960c9897?source=collection_archive---------3-----------------------#2023-11-12)
+> 原文：[`towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-f9b3960c9897?source=collection_archive---------3-----------------------#2023-11-12`](https://towardsdatascience.com/philosophy-and-data-science-thinking-deeply-about-data-f9b3960c9897?source=collection_archive---------3-----------------------#2023-11-12)
 
 ## Part 1 : Determinism
 
-[](https://medium.com/@jarom.hulet?source=post_page-----f9b3960c9897--------------------------------)[![Jarom Hulet](../Images/0fdeb1a2df90cccdd8f2f4b84d5e54eb.png)](https://medium.com/@jarom.hulet?source=post_page-----f9b3960c9897--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9b3960c9897--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f9b3960c9897--------------------------------) [Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----f9b3960c9897--------------------------------)
+[](https://medium.com/@jarom.hulet?source=post_page-----f9b3960c9897--------------------------------)![Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----f9b3960c9897--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9b3960c9897--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f9b3960c9897--------------------------------) [Jarom Hulet](https://medium.com/@jarom.hulet?source=post_page-----f9b3960c9897--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9b3960c9897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-f9b3960c9897&source=-----f9b3960c9897---------------------bookmark_footer-----------)![](../Images/341332e6a89eedefdad2b419a0230be7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9b3960c9897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fphilosophy-and-data-science-thinking-deeply-about-data-f9b3960c9897&source=-----f9b3960c9897---------------------bookmark_footer-----------)![](img/341332e6a89eedefdad2b419a0230be7.png)
 
 Photo by ‘HH’ on Pexels.com
 

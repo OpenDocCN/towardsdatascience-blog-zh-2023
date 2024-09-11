@@ -1,18 +1,18 @@
 # RecList 2.0：开源系统化测试 ML 模型
 
-> 原文：[https://towardsdatascience.com/reclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c?source=collection_archive---------9-----------------------#2023-08-08](https://towardsdatascience.com/reclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c?source=collection_archive---------9-----------------------#2023-08-08)
+> 原文：[`towardsdatascience.com/reclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c?source=collection_archive---------9-----------------------#2023-08-08`](https://towardsdatascience.com/reclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c?source=collection_archive---------9-----------------------#2023-08-08)
 
 ## 一个新的 RecList 以提供更多灵活性和更好的评估支持
 
-[](https://fede-bianchi.medium.com/?source=post_page-----9c62b654170c--------------------------------)[![Federico Bianchi](../Images/fa38ff2051af04df7803af7d84c5cd4d.png)](https://fede-bianchi.medium.com/?source=post_page-----9c62b654170c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c62b654170c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c62b654170c--------------------------------) [Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----9c62b654170c--------------------------------)
+[](https://fede-bianchi.medium.com/?source=post_page-----9c62b654170c--------------------------------)![Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----9c62b654170c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c62b654170c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c62b654170c--------------------------------) [Federico Bianchi](https://fede-bianchi.medium.com/?source=post_page-----9c62b654170c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2aff872fe60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c&user=Federico+Bianchi&userId=2aff872fe60e&source=post_page-2aff872fe60e----9c62b654170c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c62b654170c--------------------------------) ·7分钟阅读·2023年8月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c62b654170c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c&user=Federico+Bianchi&userId=2aff872fe60e&source=-----9c62b654170c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2aff872fe60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c&user=Federico+Bianchi&userId=2aff872fe60e&source=post_page-2aff872fe60e----9c62b654170c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c62b654170c--------------------------------) ·7 分钟阅读·2023 年 8 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c62b654170c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c&user=Federico+Bianchi&userId=2aff872fe60e&source=-----9c62b654170c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c62b654170c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c&source=-----9c62b654170c---------------------bookmark_footer-----------)![](../Images/d17b7a68ebe3a9dc2e4940a8b7867ef1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c62b654170c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freclist-2-0-open-source-systematic-testing-of-ml-models-9c62b654170c&source=-----9c62b654170c---------------------bookmark_footer-----------)![](img/d17b7a68ebe3a9dc2e4940a8b7867ef1.png)
 
 [照片由 Lucas Pezeta 提供](https://www.pexels.com/photo/black-telescope-under-blue-and-blacksky-2034892/)
 
@@ -26,7 +26,7 @@
 
 RecList 允许你将代码的评估部分分离出来，并封装在一个类中，这个类会自动处理其他几个方面的事情（例如，存储和日志记录）。
 
-![](../Images/e3548430dfd118198443b185c1249228.png)
+![](img/e3548430dfd118198443b185c1249228.png)
 
 RecList 提供了一种简单的方法来系统化测试，并在你训练自己的模型后保存所有需要的信息。
 
@@ -36,13 +36,13 @@ RecList 提供了一种简单的方法来系统化测试，并在你训练自己
 
 RecList 最初是在一篇学术论文中介绍的，但我们也有一个在 Towards Data Science 出版的概述，你可以在这里阅读：
 
-[](/ndcg-is-not-all-you-need-24eb6d2f1227?source=post_page-----9c62b654170c--------------------------------) [## NDCG 并不是你所需要的一切
+[](/ndcg-is-not-all-you-need-24eb6d2f1227?source=post_page-----9c62b654170c--------------------------------) ## NDCG 并不是你所需要的一切
 
 ### 使用 RecList 对推荐系统进行行为测试
 
-towardsdatascience.com](/ndcg-is-not-all-you-need-24eb6d2f1227?source=post_page-----9c62b654170c--------------------------------)
+towardsdatascience.com
 
-> Chia, P. J., Tagliabue, J., Bianchi, F., He, C., & Ko, B. (2022年4月)。超越 nDCG：使用 RecList 对推荐系统进行行为测试。见 *Web Conference 2022 附录*（第 99–104 页）。
+> Chia, P. J., Tagliabue, J., Bianchi, F., He, C., & Ko, B. (2022 年 4 月)。超越 nDCG：使用 RecList 对推荐系统进行行为测试。见 *Web Conference 2022 附录*（第 99–104 页）。
 
 虽然我们最初设计 RecList 是为了推荐系统的测试，但没有什么能阻止你将 RecList 用于测试其他机器学习模型。那么，为什么会有一篇新的博客文章呢？好吧，在开发了第一个版本后，我们意识到它需要一些更新。
 
@@ -207,11 +207,11 @@ rlist(verbose=True)
 
 这个过程的输出是什么？我们将在命令行中看到以下结果：对于每个测试，我们都有一个实际的得分。
 
-![](../Images/e654f565771e8e18b5cbe8a9e7ee25e5.png)
+![](img/e654f565771e8e18b5cbe8a9e7ee25e5.png)
 
 指标也会自动绘制。例如，AccuracyByCountry 应该显示如下内容：
 
-![](../Images/356054d8c1e7af98c49ace17f2c82382.png)
+![](img/356054d8c1e7af98c49ace17f2c82382.png)
 
 RecTest 生成的图示示例。
 

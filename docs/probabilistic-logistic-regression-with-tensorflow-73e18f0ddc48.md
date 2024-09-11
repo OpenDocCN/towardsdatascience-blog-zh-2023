@@ -1,14 +1,14 @@
 # **带 TensorFlow 的概率逻辑回归**
 
-> 原文：[https://towardsdatascience.com/probabilistic-logistic-regression-with-tensorflow-73e18f0ddc48?source=collection_archive---------12-----------------------#2023-01-25](https://towardsdatascience.com/probabilistic-logistic-regression-with-tensorflow-73e18f0ddc48?source=collection_archive---------12-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/probabilistic-logistic-regression-with-tensorflow-73e18f0ddc48?source=collection_archive---------12-----------------------#2023-01-25`](https://towardsdatascience.com/probabilistic-logistic-regression-with-tensorflow-73e18f0ddc48?source=collection_archive---------12-----------------------#2023-01-25)
 
 ## **概率深度学习**
 
-[](https://medium.com/@luisroque?source=post_page-----73e18f0ddc48--------------------------------)[![Luís Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----73e18f0ddc48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----73e18f0ddc48--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----73e18f0ddc48--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----73e18f0ddc48--------------------------------)
+[](https://medium.com/@luisroque?source=post_page-----73e18f0ddc48--------------------------------)![Luís Roque](https://medium.com/@luisroque?source=post_page-----73e18f0ddc48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----73e18f0ddc48--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----73e18f0ddc48--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----73e18f0ddc48--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprobabilistic-logistic-regression-with-tensorflow-73e18f0ddc48&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----73e18f0ddc48---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----73e18f0ddc48--------------------------------) · 9分钟阅读 · 2023年1月25日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F73e18f0ddc48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprobabilistic-logistic-regression-with-tensorflow-73e18f0ddc48&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----73e18f0ddc48---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprobabilistic-logistic-regression-with-tensorflow-73e18f0ddc48&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----73e18f0ddc48---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----73e18f0ddc48--------------------------------) · 9 分钟阅读 · 2023 年 1 月 25 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F73e18f0ddc48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprobabilistic-logistic-regression-with-tensorflow-73e18f0ddc48&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----73e18f0ddc48---------------------clap_footer-----------)
 
 --
 
@@ -26,12 +26,12 @@
 
 1.  [温和介绍 TensorFlow Probability：可训练参数](https://medium.com/towards-data-science/gentle-introduction-to-tensorflow-probability-trainable-parameters-5098ea4fed15)
 
-1.  [从头开始实现 TensorFlow Probability 中的最大似然估计](/maximum-likelihood-estimation-from-scratch-in-tensorflow-probability-2fc0eefdbfc2)
+1.  从头开始实现 TensorFlow Probability 中的最大似然估计
 
-1.  [从头开始实现 TensorFlow 中的概率线性回归](/probabilistic-linear-regression-from-scratch-in-tensorflow-2eb633fffc00)
+1.  从头开始实现 TensorFlow 中的概率线性回归
 
 1.  [Tensorflow 中的概率回归 vs. 确定性回归](https://medium.com/towards-data-science/probabilistic-vs-deterministic-regression-with-tensorflow-85ef791beeef)
 
 1.  [频率主义与贝叶斯统计在 Tensorflow 中的比较](https://medium.com/towards-data-science/frequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5)
 
-1.  [确定性 vs](/deterministic-vs-probabilistic-deep-learning-5325769dc758)…
+1.  确定性 vs…

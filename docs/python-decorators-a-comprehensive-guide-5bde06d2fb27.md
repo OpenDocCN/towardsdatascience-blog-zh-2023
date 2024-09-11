@@ -1,12 +1,12 @@
 # Python 装饰器：一篇全面的指南
 
-> 原文：[https://towardsdatascience.com/python-decorators-a-comprehensive-guide-5bde06d2fb27?source=collection_archive---------1-----------------------#2023-10-19](https://towardsdatascience.com/python-decorators-a-comprehensive-guide-5bde06d2fb27?source=collection_archive---------1-----------------------#2023-10-19)
+> 原文：[`towardsdatascience.com/python-decorators-a-comprehensive-guide-5bde06d2fb27?source=collection_archive---------1-----------------------#2023-10-19`](https://towardsdatascience.com/python-decorators-a-comprehensive-guide-5bde06d2fb27?source=collection_archive---------1-----------------------#2023-10-19)
 
 ## PYTHON 编程
 
 ## 这篇文章介绍了 Python 的令人惊叹的强大语法糖：装饰器。
 
-[](https://medium.com/@nyggus?source=post_page-----5bde06d2fb27--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----5bde06d2fb27--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5bde06d2fb27--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5bde06d2fb27--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----5bde06d2fb27--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----5bde06d2fb27--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----5bde06d2fb27--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5bde06d2fb27--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5bde06d2fb27--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----5bde06d2fb27--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5bde06d2fb27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-a-comprehensive-guide-5bde06d2fb27&source=-----5bde06d2fb27---------------------bookmark_footer-----------)![](../Images/ca223f2a3dbe822cd12c47eb407ef22a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5bde06d2fb27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-a-comprehensive-guide-5bde06d2fb27&source=-----5bde06d2fb27---------------------bookmark_footer-----------)![](img/ca223f2a3dbe822cd12c47eb407ef22a.png)
 
 设计好你的装饰器 — 以及你的 Python 代码。照片由 [Spacejoy](https://unsplash.com/@spacejoy?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 拍摄。
 

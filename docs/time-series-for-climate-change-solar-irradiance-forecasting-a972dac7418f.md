@@ -1,24 +1,24 @@
 # 气候变化的时间序列：太阳辐射预测
 
-> 原文：[https://towardsdatascience.com/time-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f?source=collection_archive---------11-----------------------#2023-04-05](https://towardsdatascience.com/time-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f?source=collection_archive---------11-----------------------#2023-04-05)
+> 原文：[`towardsdatascience.com/time-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f?source=collection_archive---------11-----------------------#2023-04-05`](https://towardsdatascience.com/time-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f?source=collection_archive---------11-----------------------#2023-04-05)
 
 ## 如何使用时间序列分析和预测来应对气候变化
 
-[](https://vcerq.medium.com/?source=post_page-----a972dac7418f--------------------------------)[![Vitor Cerqueira](../Images/9e52f462c6bc20453d3ea273eb52114b.png)](https://vcerq.medium.com/?source=post_page-----a972dac7418f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a972dac7418f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a972dac7418f--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----a972dac7418f--------------------------------)
+[](https://vcerq.medium.com/?source=post_page-----a972dac7418f--------------------------------)![Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----a972dac7418f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a972dac7418f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a972dac7418f--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----a972dac7418f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----a972dac7418f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----a972dac7418f--------------------------------) ·8分钟阅读·2023年4月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa972dac7418f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----a972dac7418f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----a972dac7418f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----a972dac7418f--------------------------------) ·8 分钟阅读·2023 年 4 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa972dac7418f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----a972dac7418f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa972dac7418f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f&source=-----a972dac7418f---------------------bookmark_footer-----------)![](../Images/8cb4875f364354ea926c19d6ebf8674d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa972dac7418f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-for-climate-change-solar-irradiance-forecasting-a972dac7418f&source=-----a972dac7418f---------------------bookmark_footer-----------)![](img/8cb4875f364354ea926c19d6ebf8674d.png)
 
 图片由[Andrey Grinkevich](https://unsplash.com/@grin?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上提供
 
-这是*气候变化的时间序列*系列的第2部分。文章列表：
+这是*气候变化的时间序列*系列的第二部分。文章列表：
 
-+   第1部分：[风力发电预测](/time-series-for-climate-change-forecasting-wind-power-8ed6d653a255)
++   第一部分：风力发电预测
 
 # 太阳能系统
 

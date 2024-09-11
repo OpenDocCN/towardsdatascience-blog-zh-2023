@@ -1,26 +1,26 @@
 # 实用的探索性数据分析改进技巧
 
-> 原文：[https://towardsdatascience.com/practical-tips-for-improving-exploratory-data-analysis-1c43b3484577?source=collection_archive---------3-----------------------#2023-08-11](https://towardsdatascience.com/practical-tips-for-improving-exploratory-data-analysis-1c43b3484577?source=collection_archive---------3-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/practical-tips-for-improving-exploratory-data-analysis-1c43b3484577?source=collection_archive---------3-----------------------#2023-08-11`](https://towardsdatascience.com/practical-tips-for-improving-exploratory-data-analysis-1c43b3484577?source=collection_archive---------3-----------------------#2023-08-11)
 
-## 使EDA更简单（和更美观）的简短指南
+## 使 EDA 更简单（和更美观）的简短指南
 
-[](https://radmilamandzhi.medium.com/?source=post_page-----1c43b3484577--------------------------------)[![Radmila M.](../Images/f3722a0ca0c96b5f6abb8f23a1162488.png)](https://radmilamandzhi.medium.com/?source=post_page-----1c43b3484577--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c43b3484577--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c43b3484577--------------------------------) [Radmila M.](https://radmilamandzhi.medium.com/?source=post_page-----1c43b3484577--------------------------------)
+[](https://radmilamandzhi.medium.com/?source=post_page-----1c43b3484577--------------------------------)![Radmila M.](https://radmilamandzhi.medium.com/?source=post_page-----1c43b3484577--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c43b3484577--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c43b3484577--------------------------------) [Radmila M.](https://radmilamandzhi.medium.com/?source=post_page-----1c43b3484577--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1b144e8ba52a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-tips-for-improving-exploratory-data-analysis-1c43b3484577&user=Radmila+M.&userId=1b144e8ba52a&source=post_page-1b144e8ba52a----1c43b3484577---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c43b3484577--------------------------------) · 11 min read · 2023年8月11日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1b144e8ba52a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-tips-for-improving-exploratory-data-analysis-1c43b3484577&user=Radmila+M.&userId=1b144e8ba52a&source=post_page-1b144e8ba52a----1c43b3484577---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c43b3484577--------------------------------) · 11 min read · 2023 年 8 月 11 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c43b3484577&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-tips-for-improving-exploratory-data-analysis-1c43b3484577&source=-----1c43b3484577---------------------bookmark_footer-----------)![](../Images/301efde45bcd4111da5a4bac594d1621.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c43b3484577&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-tips-for-improving-exploratory-data-analysis-1c43b3484577&source=-----1c43b3484577---------------------bookmark_footer-----------)![](img/301efde45bcd4111da5a4bac594d1621.png)
 
 图片由 [Sam Dan Truong](https://unsplash.com/@sam_truong?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # **介绍**
 
-探索性数据分析（EDA）是使用任何机器学习模型之前的必经步骤。EDA过程需要数据分析师和数据科学家的专注和耐心：在从分析的数据中获得有意义的洞察之前，通常需要花费大量时间积极使用一个或多个可视化库。
+探索性数据分析（EDA）是使用任何机器学习模型之前的必经步骤。EDA 过程需要数据分析师和数据科学家的专注和耐心：在从分析的数据中获得有意义的洞察之前，通常需要花费大量时间积极使用一个或多个可视化库。
 
-在这篇文章中，我将根据个人经验分享一些如何简化EDA过程并提高效率的技巧。特别是，我将给出三条在对抗EDA过程中学到的重要建议：
+在这篇文章中，我将根据个人经验分享一些如何简化 EDA 过程并提高效率的技巧。特别是，我将给出三条在对抗 EDA 过程中学到的重要建议：
 
 1.  使用最适合你任务的非平凡图表；
 
@@ -28,13 +28,13 @@
 
 1.  寻找更快的方法来完成相同的任务。
 
-注：为了在这篇文章中创建信息图，我们将使用Kaggle上的**风电生成数据**[[2](https://www.kaggle.com/datasets/bhavikjikadara/wind-power-generated-data?resource=download)]。我们开始吧！
+注：为了在这篇文章中创建信息图，我们将使用 Kaggle 上的**风电生成数据**[[2](https://www.kaggle.com/datasets/bhavikjikadara/wind-power-generated-data?resource=download)]。我们开始吧！
 
 # 提示 1：不要害怕使用复杂的图表。
 
-当我在处理与风能分析和预测相关的研究论文时，我学会了如何应用这个技巧[[1](https://www.sciencedirect.com/science/article/pii/S2772508122000382)]。在这个项目的EDA过程中，我遇到了需要创建一个总结矩阵的问题，这个矩阵能反映风参数之间的所有关系，以便找出它们之间最强的相互影响。第一个想到的想法是建立一个我在许多数据科学/数据分析项目中看到的‘老牌’**相关矩阵**。
+当我在处理与风能分析和预测相关的研究论文时，我学会了如何应用这个技巧[[1](https://www.sciencedirect.com/science/article/pii/S2772508122000382)]。在这个项目的 EDA 过程中，我遇到了需要创建一个总结矩阵的问题，这个矩阵能反映风参数之间的所有关系，以便找出它们之间最强的相互影响。第一个想到的想法是建立一个我在许多数据科学/数据分析项目中看到的‘老牌’**相关矩阵**。
 
-如你所知，**相关矩阵**用于量化和总结变量之间的线性关系。在以下代码片段中，`corrcoef`函数用于**风电生成数据**的特征列。这里我还应用了Seaborn的`heatmap`函数，将相关矩阵数组绘制为热图：
+如你所知，**相关矩阵**用于量化和总结变量之间的线性关系。在以下代码片段中，`corrcoef`函数用于**风电生成数据**的特征列。这里我还应用了 Seaborn 的`heatmap`函数，将相关矩阵数组绘制为热图：
 
 ```py
 import matplotlib.pyplot as plt
@@ -67,7 +67,7 @@ plt.savefig('image.png', dpi=600, bbox_inches='tight')
 plt.show()
 ```
 
-![](../Images/171c52b7f16c0b6a7b50031b3a884b4c.png)
+![](img/171c52b7f16c0b6a7b50031b3a884b4c.png)
 
 相关矩阵的示例。图像由作者提供。
 
@@ -100,7 +100,7 @@ plt.savefig('image2.png', dpi=600, bbox_inches='tight')
 plt.show()
 ```
 
-![](../Images/8a473f6d19a81c2bb82d63ed4cd6f9cc.png)
+![](img/8a473f6d19a81c2bb82d63ed4cd6f9cc.png)
 
 散点图矩阵的示例。图像由作者提供。
 
@@ -150,19 +150,19 @@ plt.savefig('image3.jpg', dpi = 600, bbox_inches = 'tight')
 plt.show()
 ```
 
-![](../Images/8661c8dff8cc697e4c813c66526e23f7.png)
+![](img/8661c8dff8cc697e4c813c66526e23f7.png)
 
 总结矩阵的示例。图片由作者提供。
 
 > 总结矩阵结合了之前研究的两种图表的优点——它的下半部分（左侧）模拟散点图矩阵，上半部分（右侧）图形化地反映了相关矩阵的数值结果。
 
-# 提示2：充分利用可视化库的功能
+# 提示 2：充分利用可视化库的功能
 
-我时常需要向同事和客户展示EDA的结果，因此可视化是我在这项任务中重要的助手。我总是尽量在图表中添加各种元素，如箭头和注释，以使其更具吸引力和可读性。
+我时常需要向同事和客户展示 EDA 的结果，因此可视化是我在这项任务中重要的助手。我总是尽量在图表中添加各种元素，如箭头和注释，以使其更具吸引力和可读性。
 
-让我们回到前面讨论的风电项目的EDA实施案例。当谈到风能时，**功率曲线**是最重要的参数之一。风力涡轮机（或整个风电场）的功率曲线是一个图表，展示了在不同风速下生成的电力。需要注意的是，涡轮机在低风速下不会运行。它们的启动与切入速度相关，通常在2.5–5 m/s的范围内。风速在12到15 m/s之间时，达到额定功率。最后，每台涡轮机都有一个上限风速，当风速超过此限值时，涡轮机将停止发电，直到风速降回到操作范围内。
+让我们回到前面讨论的风电项目的 EDA 实施案例。当谈到风能时，**功率曲线**是最重要的参数之一。风力涡轮机（或整个风电场）的功率曲线是一个图表，展示了在不同风速下生成的电力。需要注意的是，涡轮机在低风速下不会运行。它们的启动与切入速度相关，通常在 2.5–5 m/s 的范围内。风速在 12 到 15 m/s 之间时，达到额定功率。最后，每台涡轮机都有一个上限风速，当风速超过此限值时，涡轮机将停止发电，直到风速降回到操作范围内。
 
-> 研究的数据集包括理论功率曲线（这是来自制造商的典型曲线，没有任何离群点）和实际曲线（如果我们绘制风力与风速的关系，后者通常包含许多超出理想理论形状的点，这可能是由于涡轮机故障、不正确的SCADA测量或计划外维护所致）。
+> 研究的数据集包括理论功率曲线（这是来自制造商的典型曲线，没有任何离群点）和实际曲线（如果我们绘制风力与风速的关系，后者通常包含许多超出理想理论形状的点，这可能是由于涡轮机故障、不正确的 SCADA 测量或计划外维护所致）。
 
 现在我们将创建一张图像，展示两种类型的功率曲线——首先是没有任何额外项（除了图例）的：
 
@@ -192,7 +192,7 @@ plt.savefig('image4.png', dpi=600, bbox_inches='tight')
 plt.show()
 ```
 
-![](../Images/b209aaa6983664e060421cedcdfb1cf6.png)
+![](img/b209aaa6983664e060421cedcdfb1cf6.png)
 
 一张‘静默’的风力功率曲线图。图片由作者提供。
 
@@ -239,7 +239,7 @@ plt.savefig('image4_2.png', dpi=600, bbox_inches='tight')
 plt.show()
 ```
 
-![](../Images/2728dfe9cb60fefe2cd8e0883336744e.png)
+![](img/2728dfe9cb60fefe2cd8e0883336744e.png)
 
 一张‘多话’的风力曲线图。图像由作者提供。
 
@@ -281,7 +281,7 @@ plt.show()
 
 下面是结果图：
 
-![](../Images/78795512af4c6e737bf93061ae6dafc8.png)
+![](img/78795512af4c6e737bf93061ae6dafc8.png)
 
 风力的动态。图像由作者提供。
 
@@ -317,7 +317,7 @@ plt.savefig('windrose.png', dpi = 600, bbox_inches = 'tight')
 plt.show()
 ```
 
-![](../Images/95b1702803dd9953b27970616165dbdb.png)
+![](img/95b1702803dd9953b27970616165dbdb.png)
 
 基于现有数据获得的风玫瑰图。图像由作者提供。
 
@@ -368,13 +368,13 @@ plt.show()
 
 在这种情况下，结果如下所示：
 
-![](../Images/ef2a04ae18c233be22e2122751e2282a.png)
+![](img/ef2a04ae18c233be22e2122751e2282a.png)
 
 一张风力动力学和风玫瑰图的合成图。图像由作者提供。
 
 > 这里的主要缺点是两个子图的大小不同，因此风玫瑰图周围有很多空白区域。
 
-为了简化操作，我建议采取不同的方法，使用`Python Imaging Library`(PIL) [[4](https://pillow.readthedocs.io/en/stable/index.html)]，仅需11 (!) 行代码：
+为了简化操作，我建议采取不同的方法，使用`Python Imaging Library`(PIL) [[4](https://pillow.readthedocs.io/en/stable/index.html)]，仅需 11 (!) 行代码：
 
 ```py
 import numpy as np
@@ -398,9 +398,9 @@ imgages_comb.save('image5_2.png', dpi=(600,600))
 
 这里的输出看起来更美观，因为两张图片大小相同，代码选择了最小的一张，并将其他图片调整为匹配：
 
-![](../Images/697dd68f13d6c37a28de2eb1f287697c.png)
+![](img/697dd68f13d6c37a28de2eb1f287697c.png)
 
-一张使用PIL获得的风力动力学和风玫瑰图。图像由作者提供。
+一张使用 PIL 获得的风力动力学和风玫瑰图。图像由作者提供。
 
 顺便提一下，在使用`PIL`时，也可以使用水平堆叠——例如，让我们比较和对比一个‘沉默’的和一个‘多话’的功率曲线图：
 
@@ -421,15 +421,15 @@ imgs_comb = PIL.Image.fromarray(imgs_comb)
 imgs_comb.save('image4_merged.png', dpi=(600,600))
 ```
 
-![](../Images/dcb796c254bade88676cf057bbc45cda.png)
+![](img/dcb796c254bade88676cf057bbc45cda.png)
 
 比较和对比两个功率曲线图。图像由作者提供。
 
 # 结论
 
-在这篇文章中，我与您分享了三个使EDA过程更轻松的技巧。希望这些建议对您有所帮助，并且您也能将它们应用到自己的数据任务中。
+在这篇文章中，我与您分享了三个使 EDA 过程更轻松的技巧。希望这些建议对您有所帮助，并且您也能将它们应用到自己的数据任务中。
 
-这些提示完美地匹配了我在进行EDA时总是尝试应用的公式：**定制 → 列出 → 优化**。
+这些提示完美地匹配了我在进行 EDA 时总是尝试应用的公式：**定制 → 列出 → 优化**。
 
 好吧，你可能会问，这到底为什么重要？我可以说，实际上这很重要，因为：
 
@@ -437,20 +437,20 @@ imgs_comb.save('image4_merged.png', dpi=(600,600))
 
 +   你所有的图表都应该能自我说明。因此，你需要知道**如何在图表上列出重要信息，使其详细且易于阅读**。比较一下“沉默”和“健谈”的功率曲线之间的差异。
 
-+   最后，**每个数据专家都应该学习如何优化EDA过程以提高效率**（让生活更轻松）。如果你需要将两张图像合并为一张，并不一定要一直使用`add_subplot`选项。
++   最后，**每个数据专家都应该学习如何优化 EDA 过程以提高效率**（让生活更轻松）。如果你需要将两张图像合并为一张，并不一定要一直使用`add_subplot`选项。
 
-还有什么呢？我可以肯定地说，EDA是处理数据时非常有创意和有趣的一步（更不用说它也非常重要）。
+还有什么呢？我可以肯定地说，EDA 是处理数据时非常有创意和有趣的一步（更不用说它也非常重要）。
 
 让你的信息图表像钻石一样闪耀，不要忘记享受这个过程！
 
 # 参考列表
 
-1.  论文《数据驱动的风能分析与预测应用：“La Haute Borne”风电场的案例》。 [https://doi.org/10.1016/j.dche.2022.100048](https://doi.org/10.1016/j.dche.2022.100048)
+1.  论文《数据驱动的风能分析与预测应用：“La Haute Borne”风电场的案例》。 [`doi.org/10.1016/j.dche.2022.100048`](https://doi.org/10.1016/j.dche.2022.100048)
 
-1.  风力发电数据：[https://www.kaggle.com/datasets/bhavikjikadara/wind-power-generated-data?resource=download](https://www.kaggle.com/datasets/bhavikjikadara/wind-power-generated-data?resource=download)
+1.  风力发电数据：[`www.kaggle.com/datasets/bhavikjikadara/wind-power-generated-data?resource=download`](https://www.kaggle.com/datasets/bhavikjikadara/wind-power-generated-data?resource=download)
 
-1.  关于windrose库的教程：[https://windrose.readthedocs.io/en/latest/index.html](https://windrose.readthedocs.io/en/latest/index.html)
+1.  关于 windrose 库的教程：[`windrose.readthedocs.io/en/latest/index.html`](https://windrose.readthedocs.io/en/latest/index.html)
 
-1.  PIL库：[https://pillow.readthedocs.io/en/stable/index.html](https://pillow.readthedocs.io/en/stable/index.html)
+1.  PIL 库：[`pillow.readthedocs.io/en/stable/index.html`](https://pillow.readthedocs.io/en/stable/index.html)
 
 感谢阅读！

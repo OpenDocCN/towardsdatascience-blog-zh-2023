@@ -1,18 +1,18 @@
-# 7个示例掌握Python Pandas中的分类数据操作
+# 7 个示例掌握 Python Pandas 中的分类数据操作
 
-> 原文：[https://towardsdatascience.com/7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba?source=collection_archive---------3-----------------------#2023-11-09](https://towardsdatascience.com/7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba?source=collection_archive---------3-----------------------#2023-11-09)
+> 原文：[`towardsdatascience.com/7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba?source=collection_archive---------3-----------------------#2023-11-09`](https://towardsdatascience.com/7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba?source=collection_archive---------3-----------------------#2023-11-09)
 
 ## 在处理低基数类别特征时使用类别数据类型
 
-[](https://sonery.medium.com/?source=post_page-----51cdcb0228ba--------------------------------)[![Soner Yıldırım](../Images/c589572e9d1ee176cd4f5a0008173f1b.png)](https://sonery.medium.com/?source=post_page-----51cdcb0228ba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51cdcb0228ba--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51cdcb0228ba--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----51cdcb0228ba--------------------------------)
+[](https://sonery.medium.com/?source=post_page-----51cdcb0228ba--------------------------------)![Soner Yıldırım](https://sonery.medium.com/?source=post_page-----51cdcb0228ba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51cdcb0228ba--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----51cdcb0228ba--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----51cdcb0228ba--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----51cdcb0228ba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51cdcb0228ba--------------------------------) ·8 分钟阅读·2023年11月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51cdcb0228ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----51cdcb0228ba---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----51cdcb0228ba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51cdcb0228ba--------------------------------) ·8 分钟阅读·2023 年 11 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51cdcb0228ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----51cdcb0228ba---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51cdcb0228ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba&source=-----51cdcb0228ba---------------------bookmark_footer-----------)![](../Images/a0de95c1f991d735d8dc687318a5f381.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51cdcb0228ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-examples-to-master-categorical-data-operations-with-python-pandas-51cdcb0228ba&source=-----51cdcb0228ba---------------------bookmark_footer-----------)![](img/a0de95c1f991d735d8dc687318a5f381.png)
 
 （图片由作者创建）
 

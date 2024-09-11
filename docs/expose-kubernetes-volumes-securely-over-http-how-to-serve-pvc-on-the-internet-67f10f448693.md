@@ -1,24 +1,24 @@
-# 通过HTTP安全地暴露Kubernetes卷：如何在互联网上服务PVC
+# 通过 HTTP 安全地暴露 Kubernetes 卷：如何在互联网上服务 PVC
 
-> 原文：[https://towardsdatascience.com/expose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693?source=collection_archive---------10-----------------------#2023-02-08](https://towardsdatascience.com/expose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693?source=collection_archive---------10-----------------------#2023-02-08)
+> 原文：[`towardsdatascience.com/expose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693?source=collection_archive---------10-----------------------#2023-02-08`](https://towardsdatascience.com/expose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693?source=collection_archive---------10-----------------------#2023-02-08)
 
-## 创建Kubernetes清单以暴露PersistentVolumeClaims
+## 创建 Kubernetes 清单以暴露 PersistentVolumeClaims
 
-[](https://meysam.io/?source=post_page-----67f10f448693--------------------------------)[![Meysam](../Images/32fd0f84e6a880a584ee310facb587b9.png)](https://meysam.io/?source=post_page-----67f10f448693--------------------------------)[](https://towardsdatascience.com/?source=post_page-----67f10f448693--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----67f10f448693--------------------------------) [Meysam](https://meysam.io/?source=post_page-----67f10f448693--------------------------------)
+[](https://meysam.io/?source=post_page-----67f10f448693--------------------------------)![Meysam](https://meysam.io/?source=post_page-----67f10f448693--------------------------------)[](https://towardsdatascience.com/?source=post_page-----67f10f448693--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----67f10f448693--------------------------------) [Meysam](https://meysam.io/?source=post_page-----67f10f448693--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feb4a2e2f734a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexpose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693&user=Meysam&userId=eb4a2e2f734a&source=post_page-eb4a2e2f734a----67f10f448693---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----67f10f448693--------------------------------) · 7 min read · 2023年2月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F67f10f448693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexpose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693&user=Meysam&userId=eb4a2e2f734a&source=-----67f10f448693---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feb4a2e2f734a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexpose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693&user=Meysam&userId=eb4a2e2f734a&source=post_page-eb4a2e2f734a----67f10f448693---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----67f10f448693--------------------------------) · 7 min read · 2023 年 2 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F67f10f448693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexpose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693&user=Meysam&userId=eb4a2e2f734a&source=-----67f10f448693---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F67f10f448693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexpose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693&source=-----67f10f448693---------------------bookmark_footer-----------)![](../Images/0699da88213fc3e1b6e62163670dea6f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F67f10f448693&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexpose-kubernetes-volumes-securely-over-http-how-to-serve-pvc-on-the-internet-67f10f448693&source=-----67f10f448693---------------------bookmark_footer-----------)![](img/0699da88213fc3e1b6e62163670dea6f.png)
 
 图片来源：[Uriel Soberanes](https://unsplash.com/@soberanes?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/s/photos/deep-ocean?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 # 介绍
 
-你可能在日常的产品开发中遇到过这样一种情况，需要获取Kubernetes集群中某些持久化文件。一种常见且安全的方法是进行端口转发，无论是通过Kubectl还是使用堡垒主机进行纯SSH。
+你可能在日常的产品开发中遇到过这样一种情况，需要获取 Kubernetes 集群中某些持久化文件。一种常见且安全的方法是进行端口转发，无论是通过 Kubectl 还是使用堡垒主机进行纯 SSH。
 
 无论哪种情况，完成任务后，你会终止会话，并且每次未来的交互中，你都需要重复相同的手动过程。
 
@@ -48,7 +48,7 @@
 
 ## 创建 `htpasswd` 文件
 
-`htpasswd`是一个相当简单的工具，用于将[**基本**认证](https://www.rfc-editor.org/rfc/rfc7617#section-2)机制应用到任何平台。它通过接收用户名和密码作为输入来工作。结果将是一个单向哈希密码，存储在文件或标准输出中，随后可以用来**验证**用户凭证。然而，它[不能在合理的时间内被还原（解哈希）为原始密码](https://www.quora.com/Is-it-possible-to-reverse-a-password-hashed-with-bcrypt)，至少[在2023年，考虑到我们当前的计算能力](https://www.quora.com/How-would-quantum-computers-render-one-way-hashing-algorithms-like-SHA-256-Bitcoin-useless-Would-they-somehow-be-able-to-reverse-the-hashes-or-would-they-just-be-better-at-finding-collisions)!
+`htpasswd`是一个相当简单的工具，用于将[**基本**认证](https://www.rfc-editor.org/rfc/rfc7617#section-2)机制应用到任何平台。它通过接收用户名和密码作为输入来工作。结果将是一个单向哈希密码，存储在文件或标准输出中，随后可以用来**验证**用户凭证。然而，它[不能在合理的时间内被还原（解哈希）为原始密码](https://www.quora.com/Is-it-possible-to-reverse-a-password-hashed-with-bcrypt)，至少[在 2023 年，考虑到我们当前的计算能力](https://www.quora.com/How-would-quantum-computers-render-one-way-hashing-algorithms-like-SHA-256-Bitcoin-useless-Would-they-somehow-be-able-to-reverse-the-hashes-or-would-they-just-be-better-at-finding-collisions)!
 
 要进行简单演示，请查看下面的片段。
 
@@ -62,21 +62,21 @@
 
 Apache 和 Nginx 都可以使用`htpasswd`生成的文件来验证凭证。有关每个的更多信息，请参见以下链接：
 
-+   [https://httpd.apache.org/docs/2.4/howto/auth.html](https://httpd.apache.org/docs/2.4/howto/auth.html)
++   [`httpd.apache.org/docs/2.4/howto/auth.html`](https://httpd.apache.org/docs/2.4/howto/auth.html)
 
-+   [https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/)
++   [`docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/`](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/)
 
-我相信其他Web服务器也可以，做同样的事情。
+我相信其他 Web 服务器也可以，做同样的事情。
 
-在这篇文章中，我将使用Nginx，并且由于这将托管在Kubernetes中，它将是一个Nginx的docker容器。这允许我将任意数量的配置文件挂载到`/etc/nginx/conf.d`目录中，Nginx Web服务器进程会拾取这些配置文件。
+在这篇文章中，我将使用 Nginx，并且由于这将托管在 Kubernetes 中，它将是一个 Nginx 的 docker 容器。这允许我将任意数量的配置文件挂载到`/etc/nginx/conf.d`目录中，Nginx Web 服务器进程会拾取这些配置文件。
 
 因此，如果我可以将任何配置文件挂载到目录中，我可以在[Kubernetes ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)中编写配置文件，并将其挂载到容器的目标目录。这既强大又相当灵活。
 
-这是我即将挂载到Nginx容器中的配置。
+这是我即将挂载到 Nginx 容器中的配置。
 
-配置文件中名为`proxy_pass`的条目指向将通过HTTP协议暴露文件系统目录的文件服务器。更多内容请见下一节。
+配置文件中名为`proxy_pass`的条目指向将通过 HTTP 协议暴露文件系统目录的文件服务器。更多内容请见下一节。
 
-![](../Images/441ddc1ea43bca0cf61688ae43b84759.png)
+![](img/441ddc1ea43bca0cf61688ae43b84759.png)
 
 照片由 [Carl Barcelo](https://unsplash.com/@barcelocarl?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/gymnastic?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -144,7 +144,7 @@ Sam
 
 此外，请记得你需要 HTTPS。你绝不希望有陌生人窃听你的连接，监视你通过互联网传输宝贵的客户数据。
 
-![](../Images/c07e959a8e5d41359349f86ddb138797.png)
+![](img/c07e959a8e5d41359349f86ddb138797.png)
 
 图片由 [Haley Phelps](https://unsplash.com/@haleyephelps?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/s/photos/swimming?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -162,19 +162,19 @@ Sam
 
 希望你觉得这篇文章对你有帮助。以下是一些你可能会喜欢的我以前的工作列表。
 
-[](/how-to-set-up-ingress-controller-in-aws-eks-d745d9107307?source=post_page-----67f10f448693--------------------------------) [## 如何在 AWS EKS 中设置 Ingress Controller
+[](/how-to-set-up-ingress-controller-in-aws-eks-d745d9107307?source=post_page-----67f10f448693--------------------------------) ## 如何在 AWS EKS 中设置 Ingress Controller
 
 ### 在 AWS EKS 上以正确的方式部署 Ingress Controller
 
-towardsdatascience.com](/how-to-set-up-ingress-controller-in-aws-eks-d745d9107307?source=post_page-----67f10f448693--------------------------------) [](https://meysam.io/what-is-haproxy-how-to-get-the-most-from-of-it-a9009b67f618?source=post_page-----67f10f448693--------------------------------) [## 什么是 HAProxy 及如何充分利用它？
+towardsdatascience.com [](https://meysam.io/what-is-haproxy-how-to-get-the-most-from-of-it-a9009b67f618?source=post_page-----67f10f448693--------------------------------) [## 什么是 HAProxy 及如何充分利用它？
 
 ### 负载均衡、SSL/TLS、缓存等等。
 
-meysam.io](https://meysam.io/what-is-haproxy-how-to-get-the-most-from-of-it-a9009b67f618?source=post_page-----67f10f448693--------------------------------) [](/how-to-write-your-own-github-action-59cc4746a57a?source=post_page-----67f10f448693--------------------------------) [## 如何编写自己的 GitHub Action
+meysam.io](https://meysam.io/what-is-haproxy-how-to-get-the-most-from-of-it-a9009b67f618?source=post_page-----67f10f448693--------------------------------) [](/how-to-write-your-own-github-action-59cc4746a57a?source=post_page-----67f10f448693--------------------------------) ## 如何编写自己的 GitHub Action
 
 ### 用 GitHub Workflows 完善你的 CI/CD 工具箱。
 
-towardsdatascience.com](/how-to-write-your-own-github-action-59cc4746a57a?source=post_page-----67f10f448693--------------------------------) [](https://medium.com/licenseware/12-factor-app-for-dummies-d905d894d9f8?source=post_page-----67f10f448693--------------------------------) [## 12-Factor App 入门
+towardsdatascience.com [](https://medium.com/licenseware/12-factor-app-for-dummies-d905d894d9f8?source=post_page-----67f10f448693--------------------------------) [## 12-Factor App 入门
 
 ### 12-Factor App 是一组应用于现代 Web 开发的原则和最佳实践，以使应用程序更加……
 
@@ -186,6 +186,6 @@ medium.com](https://medium.com/licenseware/stop-committing-configurations-to-you
 
 # 参考资料
 
-+   [http://nginx.org/en/docs/](http://nginx.org/en/docs/)
++   [`nginx.org/en/docs/`](http://nginx.org/en/docs/)
 
-+   [https://kubernetes.io/docs/](https://kubernetes.io/docs/)
++   [`kubernetes.io/docs/`](https://kubernetes.io/docs/)

@@ -1,18 +1,18 @@
 # 基于状态的维护：雨流计数
 
-> 原文：[https://towardsdatascience.com/condition-based-maintenance-rainflow-counting-f35abaefdc92?source=collection_archive---------7-----------------------#2023-10-02](https://towardsdatascience.com/condition-based-maintenance-rainflow-counting-f35abaefdc92?source=collection_archive---------7-----------------------#2023-10-02)
+> 原文：[`towardsdatascience.com/condition-based-maintenance-rainflow-counting-f35abaefdc92?source=collection_archive---------7-----------------------#2023-10-02`](https://towardsdatascience.com/condition-based-maintenance-rainflow-counting-f35abaefdc92?source=collection_archive---------7-----------------------#2023-10-02)
 
 ## 剩余使用寿命预测的热循环分析
 
-[](https://medium.com/@aman.steinberg?source=post_page-----f35abaefdc92--------------------------------)[![Aman Steinberg](../Images/1b8c752261ba026631706258f2f7f654.png)](https://medium.com/@aman.steinberg?source=post_page-----f35abaefdc92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f35abaefdc92--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f35abaefdc92--------------------------------) [Aman Steinberg](https://medium.com/@aman.steinberg?source=post_page-----f35abaefdc92--------------------------------)
+[](https://medium.com/@aman.steinberg?source=post_page-----f35abaefdc92--------------------------------)![Aman Steinberg](https://medium.com/@aman.steinberg?source=post_page-----f35abaefdc92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f35abaefdc92--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f35abaefdc92--------------------------------) [Aman Steinberg](https://medium.com/@aman.steinberg?source=post_page-----f35abaefdc92--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8596694b6819&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcondition-based-maintenance-rainflow-counting-f35abaefdc92&user=Aman+Steinberg&userId=8596694b6819&source=post_page-8596694b6819----f35abaefdc92---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f35abaefdc92--------------------------------) ·8 min read·2023年10月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff35abaefdc92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcondition-based-maintenance-rainflow-counting-f35abaefdc92&user=Aman+Steinberg&userId=8596694b6819&source=-----f35abaefdc92---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8596694b6819&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcondition-based-maintenance-rainflow-counting-f35abaefdc92&user=Aman+Steinberg&userId=8596694b6819&source=post_page-8596694b6819----f35abaefdc92---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f35abaefdc92--------------------------------) ·8 min read·2023 年 10 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff35abaefdc92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcondition-based-maintenance-rainflow-counting-f35abaefdc92&user=Aman+Steinberg&userId=8596694b6819&source=-----f35abaefdc92---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff35abaefdc92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcondition-based-maintenance-rainflow-counting-f35abaefdc92&source=-----f35abaefdc92---------------------bookmark_footer-----------)![](../Images/2e8aed03ab44e8fb190335d648633979.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff35abaefdc92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcondition-based-maintenance-rainflow-counting-f35abaefdc92&source=-----f35abaefdc92---------------------bookmark_footer-----------)![](img/2e8aed03ab44e8fb190335d648633979.png)
 
 图像由 [作者](https://www.linkedin.com/in/amansteinberg/) 使用 [此工具](https://huggingface.co/spaces/runwayml/stable-diffusion-v1-5) 按照 [CreativeML Open RAIL-M 许可](https://huggingface.co/spaces/CompVis/stable-diffusion-license) 制作。
 
@@ -32,7 +32,7 @@
 
 +   预测性维护：解决了这些问题，因为它依赖于数据和状态监测来可靠地预测给定组件的故障发生时间。通过这种方式，可以有效地安排检查或维护的停机时间，并以智能的方式准备资源。
 
-在这篇文章中，我想探讨监测半导体场景的技术，灵感来自于参考文献1¹。由于雨流计数法可以扩展到半导体应用之外，这里呈现的结果可以适应各种商业案例。
+在这篇文章中，我想探讨监测半导体场景的技术，灵感来自于参考文献 1¹。由于雨流计数法可以扩展到半导体应用之外，这里呈现的结果可以适应各种商业案例。
 
 因此，无论你是一个希望改善组织维护计划的维护经理，还是一个希望减少停机时间并提高效率的企业主，这篇博客文章都适合你。
 
@@ -44,7 +44,7 @@
 
 假设理想的循环加载，半导体温度的时间序列将是正弦波的，参见图 1。
 
-![](../Images/ad89c4eb1afcaa4913dcd8302d333f65.png)
+![](img/ad89c4eb1afcaa4913dcd8302d333f65.png)
 
 图 1：正弦波温度时间序列。图表由 [Pia Baronetzky](https://www.linkedin.com/in/pia-baronetzky/) 和 [作者](https://www.linkedin.com/in/amansteinberg/) 生成。
 
@@ -52,7 +52,7 @@
 
 实际上，一个可信的温度时间序列如下所示，参见图 2：
 
-![](../Images/8da30ce1469ba3401a37ed897027ad30.png)
+![](img/8da30ce1469ba3401a37ed897027ad30.png)
 
 图 2：更现实的温度时间序列。图表由 [Pia Baronetzky](https://www.linkedin.com/in/pia-baronetzky/) 和 [作者](https://www.linkedin.com/in/amansteinberg/) 生成。
 
@@ -62,7 +62,7 @@
 
 ## 雨流计数
 
-雨流计数是疲劳分析中的标准程序，自1968年由T. Endo和M. Matsuishi开发后，被纳入*疲劳分析中的循环计数标准实践²*等其他循环计数方法中。
+雨流计数是疲劳分析中的标准程序，自 1968 年由 T. Endo 和 M. Matsuishi 开发后，被纳入*疲劳分析中的循环计数标准实践²*等其他循环计数方法中。
 
 在进行雨流分析时，你不仅在评估系统的当前状态，还考虑了给定观测值的整个时间序列历史。这使得雨流计数在状态监测中既强大又可靠。
 
@@ -84,7 +84,7 @@
 
 可视化雨流分析的一种方便方法是绘制底层时间序列的雨流矩阵，参见图 3：
 
-![](../Images/9525c66f1e1999d9bd85acc7b7f3a48e.png)
+![](img/9525c66f1e1999d9bd85acc7b7f3a48e.png)
 
 图 3：图 2 所示温度时间序列的雨流矩阵。对角线上的雨流周期被省略，请参见下面的文字。图由 [Pia Baronetzky](https://www.linkedin.com/in/pia-baronetzky/) 和 [作者](https://www.linkedin.com/in/amansteinberg/) 生成。
 
@@ -104,15 +104,15 @@
 
 现在我们可以正确地量化和监测系统组件所承受的应力负荷，我们希望将这些信息转换为材料损伤和/或疲劳的度量。
 
-对于任何给定的温度或应力区间，即循环幅度`a_i`，存在一个最大疲劳寿命`N_i`，表示材料在给定应力水平下能够承受的最大Rainflow循环次数，直到发生失效。这些信息被编码在Wöhler曲线中，该曲线需要通过实验或仿真来确定。在资源有限的情况下，生成Wöhler曲线是困难的。因此，我们借助于机器学习方法，如下面将要展示的*scikit-learn*的[SGDRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html)。
+对于任何给定的温度或应力区间，即循环幅度`a_i`，存在一个最大疲劳寿命`N_i`，表示材料在给定应力水平下能够承受的最大 Rainflow 循环次数，直到发生失效。这些信息被编码在 Wöhler 曲线中，该曲线需要通过实验或仿真来确定。在资源有限的情况下，生成 Wöhler 曲线是困难的。因此，我们借助于机器学习方法，如下面将要展示的*scikit-learn*的[SGDRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html)。
 
-Palmgren-Miner规则³告诉我们，一个组件所承受的总损伤是各应力水平相对损伤的总和，其中相对损伤由`n_i`（某一应力水平的Rainflow循环次数）与`N_i`（相应疲劳寿命）给出。
+Palmgren-Miner 规则³告诉我们，一个组件所承受的总损伤是各应力水平相对损伤的总和，其中相对损伤由`n_i`（某一应力水平的 Rainflow 循环次数）与`N_i`（相应疲劳寿命）给出。
 
-![](../Images/5694e61a30a3b6fa5a135353a79620ec.png)
+![](img/5694e61a30a3b6fa5a135353a79620ec.png)
 
-方程1：由Palmgren-Miner规则描述的总损伤D。
+方程 1：由 Palmgren-Miner 规则描述的总损伤 D。
 
-当D=1时，组件已经积累了总损伤并发生断裂。因此，总损伤的倒数作为剩余有效寿命的度量。
+当 D=1 时，组件已经积累了总损伤并发生断裂。因此，总损伤的倒数作为剩余有效寿命的度量。
 
 基于条件的维护已经可以通过可靠的实时监控来实现，该监控能够积累应力并衡量何时需要安排下一次维护计划。
 
@@ -120,11 +120,11 @@ Palmgren-Miner规则³告诉我们，一个组件所承受的总损伤是各应�
 
 ## *预测性维护 — 研究合作*
 
-由于Palmgren-Miner规则假设损伤是线性积累的，因此存在一些不足之处：模型忽略了所有发生的应力载荷循环的时间顺序和交叉相关性。它还假设不同应力水平的循环对总损伤的贡献具有相同的权重。
+由于 Palmgren-Miner 规则假设损伤是线性积累的，因此存在一些不足之处：模型忽略了所有发生的应力载荷循环的时间顺序和交叉相关性。它还假设不同应力水平的循环对总损伤的贡献具有相同的权重。
 
 在[慕尼黑数据科学研究所](https://www.mdsi.tum.de/en/mdsi/home/)与[慕尼黑工业大学](https://www.tum.de/en/)和[PROCON IT GmbH](https://www.procon-it.de/)之间的[研究合作](https://www.mdsi.tum.de/en/di-lab/vergangene-projekte/ss2023-procon-it-remaining-lifetime-estimation-in-semiconductor-scenarios)⁴中，我们通过利用*scikit-learn*的[SGDRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html)等机器学习技术来解决这些不足之处。
 
-我们让模型学习相对损伤对总损伤D的权重，而不是假设所有应力水平的权重相等，以准确预测失效概率。结果是有希望的，并且这一过程可以扩展到众多不同的用例、系统和输入观察变量。
+我们让模型学习相对损伤对总损伤 D 的权重，而不是假设所有应力水平的权重相等，以准确预测失效概率。结果是有希望的，并且这一过程可以扩展到众多不同的用例、系统和输入观察变量。
 
 欲了解更多信息，请查看[报告](https://www.mdsi.tum.de/fileadmin/w00cet/di-lab/pdf/Final_Report_ProconIT___TUM-DI-LAB_SS2023-1.pdf)⁵。
 

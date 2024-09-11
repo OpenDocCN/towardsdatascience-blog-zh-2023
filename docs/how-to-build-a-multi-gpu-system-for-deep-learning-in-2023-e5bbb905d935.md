@@ -1,16 +1,16 @@
 # 如何在 2023 年构建多 GPU 系统进行深度学习
 
-> 原文：[https://towardsdatascience.com/how-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935?source=collection_archive---------0-----------------------#2023-09-16](https://towardsdatascience.com/how-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935?source=collection_archive---------0-----------------------#2023-09-16)
+> 原文：[`towardsdatascience.com/how-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935?source=collection_archive---------0-----------------------#2023-09-16`](https://towardsdatascience.com/how-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935?source=collection_archive---------0-----------------------#2023-09-16)
 
-[](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)[![Antonis Makropoulos](../Images/5bdd3826eeb31dfb6d8e6fc393b24d8b.png)](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------) [Antonis Makropoulos](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)
+[](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)![Antonis Makropoulos](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------) [Antonis Makropoulos](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F866c99d649d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&user=Antonis+Makropoulos&userId=866c99d649d0&source=post_page-866c99d649d0----e5bbb905d935---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------) ·10 min read·2023年9月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe5bbb905d935&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&user=Antonis+Makropoulos&userId=866c99d649d0&source=-----e5bbb905d935---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F866c99d649d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&user=Antonis+Makropoulos&userId=866c99d649d0&source=post_page-866c99d649d0----e5bbb905d935---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------) ·10 min read·2023 年 9 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe5bbb905d935&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&user=Antonis+Makropoulos&userId=866c99d649d0&source=-----e5bbb905d935---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe5bbb905d935&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&source=-----e5bbb905d935---------------------bookmark_footer-----------)![](../Images/4bd3724494a1436a98b96b853132d183.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe5bbb905d935&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&source=-----e5bbb905d935---------------------bookmark_footer-----------)![](img/4bd3724494a1436a98b96b853132d183.png)
 
 我的深度学习搭建——始终在进行中 :).
 
@@ -24,7 +24,7 @@
 
 让我们从有趣（和昂贵的 💸💸💸）部分开始吧！
 
-![](../Images/24f9a6334f3f16d591f251fdff672c5f.png)
+![](img/24f9a6334f3f16d591f251fdff672c5f.png)
 
 H100 怪兽！图片来自 [NVIDIA](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/)。
 
@@ -40,57 +40,57 @@ H100 怪兽！图片来自 [NVIDIA](https://developer.nvidia.com/blog/nvidia-hop
 
 ## 内存
 
-现在深度学习任务需要大量内存。即使是微调LLMs也很庞大，而计算机视觉任务，特别是3D网络，也可能变得内存密集。自然，最重要的方面是GPU的**VRAM**。对于LLMs，我建议至少24 GB内存，对于计算机视觉任务，我建议不低于12 GB。
+现在深度学习任务需要大量内存。即使是微调 LLMs 也很庞大，而计算机视觉任务，特别是 3D 网络，也可能变得内存密集。自然，最重要的方面是 GPU 的**VRAM**。对于 LLMs，我建议至少 24 GB 内存，对于计算机视觉任务，我建议不低于 12 GB。
 
 ## 性能
 
-第二个标准是性能，可以通过FLOPS（每秒浮点运算）来估算：
+第二个标准是性能，可以通过 FLOPS（每秒浮点运算）来估算：
 
-![](../Images/8ffc752fed94dc4a6083ed15312f4173.png)
+![](img/8ffc752fed94dc4a6083ed15312f4173.png)
 
-过去的关键数字是电路中的CUDA核心数量。然而，随着深度学习的兴起，NVIDIA推出了专门的**张量核心**，每时钟周期可以执行更多的FMA（融合加法）操作。这些已经被主要深度学习框架支持，2023年您应该关注这些。
+过去的关键数字是电路中的 CUDA 核心数量。然而，随着深度学习的兴起，NVIDIA 推出了专门的**张量核心**，每时钟周期可以执行更多的 FMA（融合加法）操作。这些已经被主要深度学习框架支持，2023 年您应该关注这些。
 
-以下是我在经过大量手动工作后编制的按内存分组的GPU原始性能图表：
+以下是我在经过大量手动工作后编制的按内存分组的 GPU 原始性能图表：
 
-![](../Images/f43767df7f7dec9bff9c18fc1abdeb8b.png)
+![](img/f43767df7f7dec9bff9c18fc1abdeb8b.png)
 
-基于CUDA和张量核心（TFLOPs）的GPU原始性能。
+基于 CUDA 和张量核心（TFLOPs）的 GPU 原始性能。
 
-注意在比较不同GPU的性能时必须*格外小心*。不同代/架构的Tensor核心不可比。例如，A100每时钟周期执行256 FP16 FMA操作，而V100“仅”执行64个。此外，较旧的架构（Turing, Volta）不支持32位张量操作。更难比较的是NVIDIA并不总是报告FMA，甚至在白皮书中也没有，且相同架构的GPU可能有不同的FMA。我一直在[这个](https://forums.developer.nvidia.com/t/tf32-tflops-of-geforce-rtx-3090-vs-a40/265828)上碰壁😵‍💫。还要注意，NVIDIA通常用稀疏性来宣传张量FLOPS，而这一特性仅在推理时可用。
+注意在比较不同 GPU 的性能时必须*格外小心*。不同代/架构的 Tensor 核心不可比。例如，A100 每时钟周期执行 256 FP16 FMA 操作，而 V100“仅”执行 64 个。此外，较旧的架构（Turing, Volta）不支持 32 位张量操作。更难比较的是 NVIDIA 并不总是报告 FMA，甚至在白皮书中也没有，且相同架构的 GPU 可能有不同的 FMA。我一直在[这个](https://forums.developer.nvidia.com/t/tf32-tflops-of-geforce-rtx-3090-vs-a40/265828)上碰壁😵‍💫。还要注意，NVIDIA 通常用稀疏性来宣传张量 FLOPS，而这一特性仅在推理时可用。
 
-为了识别性价比最高的GPU，我使用eBay API收集了eBay价格，并计算了新卡的每美元相对性能：
+为了识别性价比最高的 GPU，我使用 eBay API 收集了 eBay 价格，并计算了新卡的每美元相对性能：
 
-![](../Images/f37be6f51d3986e0438c27fffaafd20f.png)
+![](img/f37be6f51d3986e0438c27fffaafd20f.png)
 
-基于CUDA和张量核心（TFLOPs / USD）的GPU相对性能。价格基于当前eBay价格（2023年9月）。
+基于 CUDA 和张量核心（TFLOPs / USD）的 GPU 相对性能。价格基于当前 eBay 价格（2023 年 9 月）。
 
 我对二手卡做了相同的处理，但由于排名变化不大，所以省略了图表。
 
-为了选择最适合您预算的GPU，您可以选择拥有最大内存的顶级GPU。我的推荐是：
+为了选择最适合您预算的 GPU，您可以选择拥有最大内存的顶级 GPU。我的推荐是：
 
-![](../Images/97e05d42f4b815f70b2fe279adf077eb.png)
+![](img/97e05d42f4b815f70b2fe279adf077eb.png)
 
-根据当前eBay价格（2023年9月），不同预算的GPU推荐。
+根据当前 eBay 价格（2023 年 9 月），不同预算的 GPU 推荐。
 
-如果您想深入了解更多技术细节，建议阅读Tim Dettmers的优秀指南[选择适合深度学习的GPU](https://timdettmers.com/2023/01/30/which-gpu-for-deep-learning/)。
+如果您想深入了解更多技术细节，建议阅读 Tim Dettmers 的优秀指南[选择适合深度学习的 GPU](https://timdettmers.com/2023/01/30/which-gpu-for-deep-learning/)。
 
 ## 插槽宽度
 
-在构建多GPU系统时，我们需要规划如何将GPU物理安装到PC机箱中。由于GPU越来越大，尤其是游戏系列，这成为了一个问题。消费级主板最多有7个PCIe插槽，PC机箱也围绕这个设置进行设计。一块4090根据制造商的不同，可能会占用4个插槽，因此你可以理解为什么这会成为问题。此外，我们应该在非风冷或水冷的GPU之间至少留出1个插槽，以避免过热。我们有以下选项：
+在构建多 GPU 系统时，我们需要规划如何将 GPU 物理安装到 PC 机箱中。由于 GPU 越来越大，尤其是游戏系列，这成为了一个问题。消费级主板最多有 7 个 PCIe 插槽，PC 机箱也围绕这个设置进行设计。一块 4090 根据制造商的不同，可能会占用 4 个插槽，因此你可以理解为什么这会成为问题。此外，我们应该在非风冷或水冷的 GPU 之间至少留出 1 个插槽，以避免过热。我们有以下选项：
 
 **水冷**
 
-水冷变体将占用最多2个插槽，但它们价格更贵。你也可以将风冷GPU改装成水冷，但这会使保修失效。如果你不选择一体式（AIO）解决方案，你将需要构建自定义水冷系统。如果你想安装多个水冷GPU，这一点尤其重要，因为AIO散热器可能无法适配机箱。自行构建系统有风险，我个人不会在昂贵的显卡上尝试。我只会直接从制造商处购买AIO解决方案（风险规避 🙈）。
+水冷变体将占用最多 2 个插槽，但它们价格更贵。你也可以将风冷 GPU 改装成水冷，但这会使保修失效。如果你不选择一体式（AIO）解决方案，你将需要构建自定义水冷系统。如果你想安装多个水冷 GPU，这一点尤其重要，因为 AIO 散热器可能无法适配机箱。自行构建系统有风险，我个人不会在昂贵的显卡上尝试。我只会直接从制造商处购买 AIO 解决方案（风险规避 🙈）。
 
-**风冷2-3槽显卡和PCIe扩展卡**
+**风冷 2-3 槽显卡和 PCIe 扩展卡**
 
-在这种情况下，你可以将显卡交错地安装在PCIe插槽上，并通过PCIe扩展卡连接显卡。PCIe扩展卡可以放置在PC机箱内部的某个位置，或放在开放空气中。在任何情况下，你都应该确保GPU固定好（另见关于PC机箱的部分）。
+在这种情况下，你可以将显卡交错地安装在 PCIe 插槽上，并通过 PCIe 扩展卡连接显卡。PCIe 扩展卡可以放置在 PC 机箱内部的某个位置，或放在开放空气中。在任何情况下，你都应该确保 GPU 固定好（另见关于 PC 机箱的部分）。
 
 ## 功率（TDP）
 
-现代GPU的功耗越来越大。例如，一块4090需要450W，而H100可以达到700W。除了电费，安装三块或更多显卡也成为了一个问题。这在美国尤其如此，因为电源插座的最大功率约为1800w。
+现代 GPU 的功耗越来越大。例如，一块 4090 需要 450W，而 H100 可以达到 700W。除了电费，安装三块或更多显卡也成为了一个问题。这在美国尤其如此，因为电源插座的最大功率约为 1800w。
 
-如果你接近电源/电源插座的最大功率，解决这个问题的一个方案是功率限制。要减少GPU可以吸取的最大功率，你只需：
+如果你接近电源/电源插座的最大功率，解决这个问题的一个方案是功率限制。要减少 GPU 可以吸取的最大功率，你只需：
 
 ```py
 sudo nvidia-smi -i <GPU_index> -pl <power_limit>
@@ -100,17 +100,17 @@ GPU_index: the index (number) of the card as it shown with nvidia-smi
 power_limit: the power in W you want to use
 ```
 
-通过将功率限制在10-20%之间，已被证明可以将性能降低不到5%，并且能使显卡保持更凉爽（[Puget Systems的实验](https://www.pugetsystems.com/labs/hpc/NVIDIA-GPU-Power-Limit-vs-Performance-2296/?utm=)）。例如，将四块3090显卡的功率限制为20%会将其功耗降低到1120w，并且可以轻松适配1600w的电源/1800w的插座（假设其余组件消耗400w）。
+通过将功率限制在 10-20%之间，已被证明可以将性能降低不到 5%，并且能使显卡保持更凉爽（[Puget Systems 的实验](https://www.pugetsystems.com/labs/hpc/NVIDIA-GPU-Power-Limit-vs-Performance-2296/?utm=)）。例如，将四块 3090 显卡的功率限制为 20%会将其功耗降低到 1120w，并且可以轻松适配 1600w 的电源/1800w 的插座（假设其余组件消耗 400w）。
 
-# 步骤2\. 主板和CPU
+# 步骤 2\. 主板和 CPU
 
-构建的下一步是选择一个允许多个GPU的主板。在这里主要考虑的是PCIe通道。我们需要**每块显卡至少有PCIe 3.0 x8通道**（见[Tim Dettmers的帖子](https://timdettmers.com/2018/12/16/deep-learning-hardware-guide/#PCIe_Lanes_and_Multi-GPU_Parallelism)）。PCIe 4.0或5.0更为稀有，对于大多数深度学习用途并不必要。
+构建的下一步是选择一个允许多个 GPU 的主板。在这里主要考虑的是 PCIe 通道。我们需要**每块显卡至少有 PCIe 3.0 x8 通道**（见[Tim Dettmers 的帖子](https://timdettmers.com/2018/12/16/deep-learning-hardware-guide/#PCIe_Lanes_and_Multi-GPU_Parallelism)）。PCIe 4.0 或 5.0 更为稀有，对于大多数深度学习用途并不必要。
 
 除了插槽类型外，插槽的间距将决定你可以放置 GPU 的位置。确保你已经检查了间距，并且你的 GPU 确实可以放在你想要的位置。请注意，大多数主板在使用多个 GPU 时会将一些 x16 插槽配置为 x8。获取这些信息的唯一可靠途径是查阅显卡的手册。
 
 最简单的方法是避免花费数小时的研究，并使你的系统未来-proof，是选择一个到处都有 x16 插槽的主板。你可以使用 PCPartPicker 并筛选出具有 [7+ PCIe x16 插槽](https://pcpartpicker.com/products/motherboard/#h=7,8&xcx=0) 的主板。这给我们提供了 21 种产品选择。然后我们 [缩减列表](https://pcpartpicker.com/products/motherboard/#h=7,8&xcx=0&D=137438953472,2199023255552&mt=ddr4,ddr5) 选择我们想要的最小 RAM 数量（例如 128 GB），并选择 DDR4 / DDR5 类型，将产品数量减少到 10 种：
 
-![](../Images/69337ca759a3ca823c2e554bc1134b3a.png)
+![](img/69337ca759a3ca823c2e554bc1134b3a.png)
 
 基于 [PCPartPicker](https://pcpartpicker.com/products/motherboard/#h=7,8&xcx=0&D=137438953472,2199023255552&mt=ddr4,ddr5) 的主板至少有 7 个 PCIe x16 插槽和 128 GB DDR4/DDR5 RAM。
 
@@ -144,15 +144,15 @@ LGA2011–3 和 LGA2066 插槽都已经非常老旧（分别是 2014 年和 2017
 
 正如我们所见，GPU 是高功耗组件。在设置多 GPU 系统时，选择 PSU 成为一个重要的考虑因素。大多数 PSU 能提供高达 1600w 的功率 —— 这符合美国插座的功率限制。有一些 PSU 可以提供更高的功率，但需要一些研究，并且它们特别针对矿工。
 
-![](../Images/8fe334aa8016473809c613cf470581b1.png)
+![](img/8fe334aa8016473809c613cf470581b1.png)
 
 PCPartPicker 为您的构建提供的估算功率。
 
-要确定系统的功率，您可以再次使用 PCPartPicker 来计算您构建的总功率。为了确保安全，我们需要额外增加10%以上的功率，因为 GPU 的实际功耗有时会超过其规格。
+要确定系统的功率，您可以再次使用 PCPartPicker 来计算您构建的总功率。为了确保安全，我们需要额外增加 10%以上的功率，因为 GPU 的实际功耗有时会超过其规格。
 
 一个重要的标准是**PSU 效率**，这由 80 PLUS 评级标记。电源将达到其宣传的功率，但在过程中会损失一些功率。80 PLUS 铜牌电源的效率为 82%，而例如金牌电源的效率为 87%。如果我们有一个功率需求为 1600w 的系统，并且我们在 20% 的时间内使用它，我们将节省 22 美元每年，前提是电价为 0.16 美元/千瓦时。在比较价格时，请将这一点纳入您的计算中。
 
-![](../Images/f2c585bf5a9b2f3468913cc0cb4d5159.png)
+![](img/f2c585bf5a9b2f3468913cc0cb4d5159.png)
 
 PSU 效率评级。表格来源于 [techguided](https://techguided.com/80-plus-bronze-vs-gold-vs-platinum-vs-titanium-which-psu-rating-do-you-need/)。
 
@@ -166,7 +166,7 @@ PSU 效率评级。表格来源于 [techguided](https://techguided.com/80-plus-b
 
 此外，使用 PCIe 延长条安装 GPU 可能需要一些技巧。有一些较新的机箱允许安装额外的显卡，特别是像 Phanteks Enthoo 719 这样的双系统机箱。另一个选择是 Lian-Li O11D EVO，它可以通过 Lian-Li Upright GPU Bracket 以直立位置容纳 GPU。我没有这些机箱，所以不确定它们如何适配，例如多个 3090 / 4090。然而，即使你的 PC 机箱不直接支持直立安装，你仍然可以使用 Lian-Li 支架来直立安装 GPU。你需要在机箱上钻 2-3 个孔，但并不是很复杂。
 
-![](../Images/f678cf20bc13c76aa0594d1d51c3c98a.png)
+![](img/f678cf20bc13c76aa0594d1d51c3c98a.png)
 
 使用 Lian Li 直立支架将 GPU 安装在直立位置。
 

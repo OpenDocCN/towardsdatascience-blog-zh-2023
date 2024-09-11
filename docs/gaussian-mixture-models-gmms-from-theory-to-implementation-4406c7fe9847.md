@@ -1,14 +1,14 @@
 # **高斯混合模型（GMMs）**：从理论到实现
 
-> 原文：[https://towardsdatascience.com/gaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847?source=collection_archive---------4-----------------------#2023-11-28](https://towardsdatascience.com/gaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847?source=collection_archive---------4-----------------------#2023-11-28)
+> 原文：[`towardsdatascience.com/gaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847?source=collection_archive---------4-----------------------#2023-11-28`](https://towardsdatascience.com/gaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847?source=collection_archive---------4-----------------------#2023-11-28)
 
 ## 对 GMMs 及其训练所使用的期望最大化算法的深入解释
 
-[](https://medium.com/@roiyeho?source=post_page-----4406c7fe9847--------------------------------)[![Dr. Roi Yehoshua](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----4406c7fe9847--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4406c7fe9847--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4406c7fe9847--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----4406c7fe9847--------------------------------)
+[](https://medium.com/@roiyeho?source=post_page-----4406c7fe9847--------------------------------)![Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----4406c7fe9847--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4406c7fe9847--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4406c7fe9847--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----4406c7fe9847--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----4406c7fe9847---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4406c7fe9847--------------------------------) ·17分钟阅读·2023年11月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4406c7fe9847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----4406c7fe9847---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----4406c7fe9847---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4406c7fe9847--------------------------------) ·17 分钟阅读·2023 年 11 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4406c7fe9847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgaussian-mixture-models-gmms-from-theory-to-implementation-4406c7fe9847&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----4406c7fe9847---------------------clap_footer-----------)
 
 --
 
@@ -18,9 +18,9 @@
 
 GMMs 被用于各种机器学习应用，包括 [聚类](https://medium.com/ai-made-simple/introduction-to-clustering-2ffc22673b5a)、密度估计和模式识别。
 
-在本文中，我们将首先探讨混合模型，重点介绍高斯混合模型及其基本原理。然后，我们将研究如何使用一种称为期望最大化（EM）的强大技术来估计这些模型的参数，并提供从头开始在Python中实现它的逐步指南。最后，我们将演示如何使用Scikit-Learn库进行GMM聚类。
+在本文中，我们将首先探讨混合模型，重点介绍高斯混合模型及其基本原理。然后，我们将研究如何使用一种称为期望最大化（EM）的强大技术来估计这些模型的参数，并提供从头开始在 Python 中实现它的逐步指南。最后，我们将演示如何使用 Scikit-Learn 库进行 GMM 聚类。
 
-![](../Images/e3bd2c1d7f6076240b8c9b005b168df4.png)
+![](img/e3bd2c1d7f6076240b8c9b005b168df4.png)
 
 图片来源：[Markéta Klimešová](https://pixabay.com/users/maky_orel-436253/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=5029714)来自[Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=5029714)
 

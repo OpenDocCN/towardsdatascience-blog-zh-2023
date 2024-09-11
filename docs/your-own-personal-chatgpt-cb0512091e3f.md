@@ -1,18 +1,18 @@
 # 您的个人 ChatGPT
 
-> 原文：[https://towardsdatascience.com/your-own-personal-chatgpt-cb0512091e3f?source=collection_archive---------0-----------------------#2023-09-08](https://towardsdatascience.com/your-own-personal-chatgpt-cb0512091e3f?source=collection_archive---------0-----------------------#2023-09-08)
+> 原文：[`towardsdatascience.com/your-own-personal-chatgpt-cb0512091e3f?source=collection_archive---------0-----------------------#2023-09-08`](https://towardsdatascience.com/your-own-personal-chatgpt-cb0512091e3f?source=collection_archive---------0-----------------------#2023-09-08)
 
 ## 如何使用自定义数据微调 OpenAI 的 GPT-3.5 Turbo 模型，以执行新任务
 
-[](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)[![Robert A. Gonsalves](../Images/96b4da0f602a1cd9d1e1d2917868cbee.png)](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------) [Robert A. Gonsalves](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)
+[](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)![Robert A. Gonsalves](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------) [Robert A. Gonsalves](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc97e6c73c13c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-own-personal-chatgpt-cb0512091e3f&user=Robert+A.+Gonsalves&userId=c97e6c73c13c&source=post_page-c97e6c73c13c----cb0512091e3f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------) ·15分钟阅读·2023年9月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb0512091e3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-own-personal-chatgpt-cb0512091e3f&user=Robert+A.+Gonsalves&userId=c97e6c73c13c&source=-----cb0512091e3f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc97e6c73c13c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-own-personal-chatgpt-cb0512091e3f&user=Robert+A.+Gonsalves&userId=c97e6c73c13c&source=post_page-c97e6c73c13c----cb0512091e3f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------) ·15 分钟阅读·2023 年 9 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb0512091e3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-own-personal-chatgpt-cb0512091e3f&user=Robert+A.+Gonsalves&userId=c97e6c73c13c&source=-----cb0512091e3f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb0512091e3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-own-personal-chatgpt-cb0512091e3f&source=-----cb0512091e3f---------------------bookmark_footer-----------)![](../Images/7464d9a6182286a2f69d41a6779a233c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb0512091e3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-own-personal-chatgpt-cb0512091e3f&source=-----cb0512091e3f---------------------bookmark_footer-----------)![](img/7464d9a6182286a2f69d41a6779a233c.png)
 
 **“一幅描绘可爱机器人上艺术课的极简画，”** 该图像使用 AI 图像生成程序 Midjourney 创建，并由作者编辑
 

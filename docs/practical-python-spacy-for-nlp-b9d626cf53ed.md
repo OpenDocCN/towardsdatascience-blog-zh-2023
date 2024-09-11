@@ -1,12 +1,12 @@
 # 实用 Python：spaCy 在 NLP 中的应用
 
-> 原文：[https://towardsdatascience.com/practical-python-spacy-for-nlp-b9d626cf53ed?source=collection_archive---------4-----------------------#2023-01-09](https://towardsdatascience.com/practical-python-spacy-for-nlp-b9d626cf53ed?source=collection_archive---------4-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/practical-python-spacy-for-nlp-b9d626cf53ed?source=collection_archive---------4-----------------------#2023-01-09`](https://towardsdatascience.com/practical-python-spacy-for-nlp-b9d626cf53ed?source=collection_archive---------4-----------------------#2023-01-09)
 
 ## 高效的 Python 编程
 
 ## 自然语言处理初学者指南
 
-[](https://jvision.medium.com/?source=post_page-----b9d626cf53ed--------------------------------)[![Joseph Robinson, Ph.D.](../Images/3117b65a4e10752724585d3457343695.png)](https://jvision.medium.com/?source=post_page-----b9d626cf53ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b9d626cf53ed--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b9d626cf53ed--------------------------------) [Joseph Robinson, Ph.D.](https://jvision.medium.com/?source=post_page-----b9d626cf53ed--------------------------------)
+[](https://jvision.medium.com/?source=post_page-----b9d626cf53ed--------------------------------)![Joseph Robinson, Ph.D.](https://jvision.medium.com/?source=post_page-----b9d626cf53ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b9d626cf53ed--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9d626cf53ed--------------------------------) [Joseph Robinson, Ph.D.](https://jvision.medium.com/?source=post_page-----b9d626cf53ed--------------------------------)
 
 ·
 
@@ -20,26 +20,26 @@ spaCy Python 库是一个流行的自然语言处理（NLP）工具。它旨在�
 
 # 目录
 
-· [概述](#6142)
+· 概述
 
-· [自然语言处理与spaCy简介](#3220)
+· 自然语言处理与 spaCy 简介
 
-· [安装和设置spaCy](#ff71)
+· 安装和设置 spaCy
 
-· [基础spaCy自然语言处理：分词和词性标注](#4964)
+· 基础 spaCy 自然语言处理：分词和词性标注
 
-· [使用spaCy进行高级自然语言处理：命名实体识别和依存句法分析](#cdd0)
+· 使用 spaCy 进行高级自然语言处理：命名实体识别和依存句法分析
 
-· [在spaCy中处理大型语料库和自定义模型](#ae63)
+· 在 spaCy 中处理大型语料库和自定义模型
 
-· [高级spaCy技巧：文本分类和词向量](#1c93)
+· 高级 spaCy 技巧：文本分类和词向量
 
-· [spaCy实践](#6500)
+· spaCy 实践
 
-∘ [spaCy与深度学习](#7495)
+∘ spaCy 与深度学习
 
-∘ [spaCy功能示例](#09ed)
+∘ spaCy 功能示例
 
-· [总结：更多资源和下一步](#0df6)
+· 总结：更多资源和下一步
 
-· [联系方式](#7308)
+· 联系方式

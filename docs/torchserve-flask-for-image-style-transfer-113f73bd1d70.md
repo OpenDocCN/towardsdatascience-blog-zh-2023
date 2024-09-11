@@ -1,22 +1,22 @@
-# TorchServe & Flask用于图像风格迁移
+# TorchServe & Flask 用于图像风格迁移
 
-> 原文：[https://towardsdatascience.com/torchserve-flask-for-image-style-transfer-113f73bd1d70?source=collection_archive---------7-----------------------#2023-04-20](https://towardsdatascience.com/torchserve-flask-for-image-style-transfer-113f73bd1d70?source=collection_archive---------7-----------------------#2023-04-20)
+> 原文：[`towardsdatascience.com/torchserve-flask-for-image-style-transfer-113f73bd1d70?source=collection_archive---------7-----------------------#2023-04-20`](https://towardsdatascience.com/torchserve-flask-for-image-style-transfer-113f73bd1d70?source=collection_archive---------7-----------------------#2023-04-20)
 
-## 一个由TorchServe模型服务器支持的Web应用示例
+## 一个由 TorchServe 模型服务器支持的 Web 应用示例
 
-[](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)[![Andrey Golovin](../Images/3afbee89a80374b346e57c8f317c9b3a.png)](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------) [Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)
+[](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)![Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------) [Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc18c39659707&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&user=Andrey+Golovin&userId=c18c39659707&source=post_page-c18c39659707----113f73bd1d70---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------) · 6分钟阅读 · 2023年4月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F113f73bd1d70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&user=Andrey+Golovin&userId=c18c39659707&source=-----113f73bd1d70---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc18c39659707&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&user=Andrey+Golovin&userId=c18c39659707&source=post_page-c18c39659707----113f73bd1d70---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------) · 6 分钟阅读 · 2023 年 4 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F113f73bd1d70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&user=Andrey+Golovin&userId=c18c39659707&source=-----113f73bd1d70---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F113f73bd1d70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&source=-----113f73bd1d70---------------------bookmark_footer-----------)![](../Images/31d5f10b49cf379849d5f0002f5cd65d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F113f73bd1d70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&source=-----113f73bd1d70---------------------bookmark_footer-----------)![](img/31d5f10b49cf379849d5f0002f5cd65d.png)
 
-作者提供的图像*。将ML模型作为解耦的模型服务器暴露是一种更具可扩展性、可扩展性和可维护性的模式。*
+作者提供的图像*。将 ML 模型作为解耦的模型服务器暴露是一种更具可扩展性、可扩展性和可维护性的模式。*
 
-在[上一篇文章](https://medium.com/p/1578eca5aa20)中，我展示了如何使用TorchServe框架提供图像分类模型的示例。现在，让我们扩展这个示例，使其更贴近现实世界的场景。
+在[上一篇文章](https://medium.com/p/1578eca5aa20)中，我展示了如何使用 TorchServe 框架提供图像分类模型的示例。现在，让我们扩展这个示例，使其更贴近现实世界的场景。
 
 假设我想开发一个 web 应用，让用户将滤镜应用到他们的图像上。如你所知，有很多这样的应用程序。一个功能可以是神经风格迁移——用户可以上传一张内容图像和一张风格图像（或在应用中选择一个滤镜），然后获得一张以所需风格呈现的内容的新图像。让我们从头到尾构建这个示例。
 
@@ -42,7 +42,7 @@ GitHub 代码库在[这里](https://github.com/quasi-researcher/style_transfer)�
 
 # 模型文件
 
-解决方案中使用了预训练的 VGG19 模型。一般来说，我只是按照 PyTorch 的风格迁移官方示例进行了操作：[https://pytorch.org/tutorials/advanced/neural_style_tutorial.html](https://pytorch.org/tutorials/advanced/neural_style_tutorial.html)
+解决方案中使用了预训练的 VGG19 模型。一般来说，我只是按照 PyTorch 的风格迁移官方示例进行了操作：[`pytorch.org/tutorials/advanced/neural_style_tutorial.html`](https://pytorch.org/tutorials/advanced/neural_style_tutorial.html)
 
 我需要稍微修改模型的状态字典，以去除分类器层（80M vs. 500M 的完整 vgg19 模型）。你可以在仓库中的 *model_saving.ipynb* 笔记本里查看 .pth 文件是如何生成的。它生成了 *vgg19.pth* 文件。*model_nst.py* 包含了模型架构的定义。
 
@@ -109,7 +109,7 @@ kubectl port-forward pod/application-pod 8700:5000
 
 我们到了。打开浏览器并访问 *localhost:8700*。
 
-![](../Images/fce46f319881ff3988c067a71dd4a120.png)
+![](img/fce46f319881ff3988c067a71dd4a120.png)
 
 作者提供的图像
 
@@ -119,17 +119,17 @@ kubectl port-forward pod/application-pod 8700:5000
 
 对于下面的屏幕录制，我将使用我手头的个人照片，以避免任何版权问题。让我检查一下是否可以做个疯狂的事情：用国际定向地图规范的符号（[ISOM](https://orienteering.sport/iof/mapping/)）画我的猫。这些符号用于绘制运动定向比赛的地图。
 
-![](../Images/5d7d7ddf62446fd5808ff4b858d9e390.png)
+![](img/5d7d7ddf62446fd5808ff4b858d9e390.png)
 
 作者提供的图像
 
-![](../Images/489f717964f935a6a13a73f9ce1d0fb6.png)
+![](img/489f717964f935a6a13a73f9ce1d0fb6.png)
 
 作者提供的图像
 
 哇，看起来很有趣 🤪
 
-![](../Images/072ad99dc33defcc757c92c26ed33b61.png)
+![](img/072ad99dc33defcc757c92c26ed33b61.png)
 
 作者提供的图像
 
@@ -143,9 +143,9 @@ kubectl port-forward pod/application-pod 8700:5000
 
 作为总结，让我提到一些模型服务器方法所提供的好处：
 
-+   更高效地利用硬件（例如，模型服务器可以部署在配有GPU的机器上，而应用服务器可能不需要GPU）
++   更高效地利用硬件（例如，模型服务器可以部署在配有 GPU 的机器上，而应用服务器可能不需要 GPU）
 
-+   专用服务框架提供了大规模服务模型的功能（例如，TorchServe中的线程和工作进程）
++   专用服务框架提供了大规模服务模型的功能（例如，TorchServe 中的线程和工作进程）
 
 +   服务框架还提供了加速开发的功能（而且避免重复发明轮子）：模型版本控制、日志、指标等。
 

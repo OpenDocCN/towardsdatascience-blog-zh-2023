@@ -1,24 +1,24 @@
 # 如何在新纪元中共同设计 AI/ML 的软件/硬件架构？
 
-> 原文：[https://towardsdatascience.com/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=collection_archive---------1-----------------------#2023-11-22](https://towardsdatascience.com/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=collection_archive---------1-----------------------#2023-11-22)
+> 原文：[`towardsdatascience.com/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=collection_archive---------1-----------------------#2023-11-22`](https://towardsdatascience.com/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=collection_archive---------1-----------------------#2023-11-22)
 
 ## 设计高效 AI/ML 架构的整体视角
 
-[](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)[![Liz Li](../Images/78846add1618c8c095dd97adeca87f81.png)](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------) [Liz Li](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)
+[](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)![Liz Li](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------) [Liz Li](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc3f793d765a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&user=Liz+Li&userId=dc3f793d765a&source=post_page-dc3f793d765a----b296f2842fe2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------) ·8 min read·2023年11月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb296f2842fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&user=Liz+Li&userId=dc3f793d765a&source=-----b296f2842fe2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc3f793d765a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&user=Liz+Li&userId=dc3f793d765a&source=post_page-dc3f793d765a----b296f2842fe2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------) ·8 min read·2023 年 11 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb296f2842fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&user=Liz+Li&userId=dc3f793d765a&source=-----b296f2842fe2---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb296f2842fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&source=-----b296f2842fe2---------------------bookmark_footer-----------)
 
-最新的生成型人工智能技术在计算机视觉、自然语言处理等领域最近取得了爆炸性的进展，涉及到稳定扩散、神经渲染（NeRF）、文本到3D、大型语言模型（LLM）等创新模型架构的研究突破。这些先进技术需要更复杂的人工智能网络，并且需要数量级更多的计算资源和高效能的架构。
+最新的生成型人工智能技术在计算机视觉、自然语言处理等领域最近取得了爆炸性的进展，涉及到稳定扩散、神经渲染（NeRF）、文本到 3D、大型语言模型（LLM）等创新模型架构的研究突破。这些先进技术需要更复杂的人工智能网络，并且需要数量级更多的计算资源和高效能的架构。
 
 为了满足上述架构要求，弥合硬件（HW）和软件（SW）/算法设计之间的差距是必不可少的。共同设计涉及一个迭代的过程，即设计、测试和优化硬件和软件组件，直到系统达到所需的性能要求。然而，软件和硬件通常是独立设计的，因为软件程序员很少需要考虑运行的硬件，而硬件通常设计为支持广泛的软件。关于软件/硬件共同设计的研究非常有限，但这是有效支持 AI 工作负载所强烈需要的。
 
-![](../Images/81d64f98c997268b102e79d7fa02960f.png)
+![](img/81d64f98c997268b102e79d7fa02960f.png)
 
 来源：作者提供的图像。
 
@@ -34,13 +34,13 @@
 
 例如，在神经渲染中，模型需要同时进行渲染和计算（矩阵乘法），您需要检查当前的软件栈是否支持同时进行渲染和计算。在大型语言模型（LLMs）中，随着输入序列长度的增加，键值（KV）缓存的大小也在增加，了解内存需求和潜在的数据传输/内存层次优化以处理大型 KV 缓存至关重要。
 
-![](../Images/fd60ff26a3c617803d90e973317fab91.png)
+![](img/fd60ff26a3c617803d90e973317fab91.png)
 
 左图：服务于 13B 参数的 LLM 时 NVIDIA A100 上的内存布局；右图：内存使用和吞吐量与批量大小的关系。图源：[大规模语言模型服务中的高效内存管理与分页注意力](https://arxiv.org/abs/2309.06180) [1]
 
 ## **3\. 软件启用和原型设计**
 
-下载第2步中识别的开源代码，并在“目标”SW框架/HW上运行。这一步并不简单，尤其是对于新的/颠覆性模型。由于目标是实现可行的性能分析解决方案，因此此阶段不必交付产品级别的代码。对SW进行临时修复而不进行性能调优是可以接受的，以便继续进行第4步。一个主要步骤是将开发框架（Pytorch）中的预训练模型转换为目标新框架所需的新格式。
+下载第 2 步中识别的开源代码，并在“目标”SW 框架/HW 上运行。这一步并不简单，尤其是对于新的/颠覆性模型。由于目标是实现可行的性能分析解决方案，因此此阶段不必交付产品级别的代码。对 SW 进行临时修复而不进行性能调优是可以接受的，以便继续进行第 4 步。一个主要步骤是将开发框架（Pytorch）中的预训练模型转换为目标新框架所需的新格式。
 
 ```py
 torch.onnx.export(model, 
@@ -64,11 +64,11 @@ export_params=True)
 
 **4.2 内存占用和带宽（BW）**
 
-内存占用主要包括权重（网络参数）和输入数据。例如，一个具有 13B 参数的 Llama 模型在 FP16 中消耗约 13*2（FP16=2 字节）= 26GB 内存（输入数据可以忽略，因为权重占用更多空间）。另一个关键因素是 KV 缓存大小。KV 缓存占用最多 30% 的总内存，并且是动态的（请参见第2步中的图片）。大型模型通常受到内存限制，因为速度取决于从系统内存移动数据到本地内存的速度，或者从本地内存到本地缓存/寄存器的速度。可用内存带宽在预测推理延迟（LLMs 的 token 生成时间）方面远比峰值计算 TOPS 更有效。一个性能指标是内存带宽利用率（MBU），定义为实际带宽/峰值带宽。理想情况下，MBU 接近 100% 表示内存带宽被完全利用。
+内存占用主要包括权重（网络参数）和输入数据。例如，一个具有 13B 参数的 Llama 模型在 FP16 中消耗约 13*2（FP16=2 字节）= 26GB 内存（输入数据可以忽略，因为权重占用更多空间）。另一个关键因素是 KV 缓存大小。KV 缓存占用最多 30% 的总内存，并且是动态的（请参见第 2 步中的图片）。大型模型通常受到内存限制，因为速度取决于从系统内存移动数据到本地内存的速度，或者从本地内存到本地缓存/寄存器的速度。可用内存带宽在预测推理延迟（LLMs 的 token 生成时间）方面远比峰值计算 TOPS 更有效。一个性能指标是内存带宽利用率（MBU），定义为实际带宽/峰值带宽。理想情况下，MBU 接近 100% 表示内存带宽被完全利用。
 
 > **足够的内存是不够的！**
 
-![](../Images/44c8e73f4c4049e29c07f22e3c0bf6ea.png)
+![](img/44c8e73f4c4049e29c07f22e3c0bf6ea.png)
 
 Nvidia 正在以数量级的增加 FLOPs，但内存带宽没有增加。来源：Substack/SemiAnalysis
 
@@ -86,25 +86,25 @@ Nvidia 正在以数量级的增加 FLOPs，但内存带宽没有增加。来源�
 
 +   优化带宽受限操作，如归一化、点对点操作、SoftMax 和 ReLU。据估计，归一化和点对点操作的运行时消耗几乎比矩阵乘法多 40%，但仅达到矩阵乘法的 250 倍和 700 倍 FLOPS。为解决此问题，可以利用内核融合来融合多个运算符以节省数据传输成本，或者用轻量级运算符（ReLU）替换昂贵运算符（SoftMax）。
 
-![](../Images/5f043133b92755ff68a5df5aedd4f94b.png)
+![](img/5f043133b92755ff68a5df5aedd4f94b.png)
 
 运算符类别的比例。来源：[Data movement is all you need](https://arxiv.org/pdf/2007.00072.pdf)
 
 +   专用硬件架构。集成专用硬件（AVX、GPU、TPU、NPU）可以显著提高速度并节省能源，对于需要在资源受限设备上进行实时处理的应用尤为重要。例如，Intel AVX 指令可以使速度提高多达原生 Python 代码的 60,000 倍。
 
-![](../Images/d98b5be95079870a147edb0259bd824c.png)
+![](img/d98b5be95079870a147edb0259bd824c.png)
 
 通过对程序进行性能工程优化，可以使两个 4096x4096 矩阵相乘的速度显著提升。来源：[There’s plenty of room at the Top: What will drive computer performance after Moore’s law?](https://www.science.org/doi/10.1126/science.aam9744)[3]
 
 Nvidia 图形卡上的张量核（V100、A100、H100 等）可以在一个时钟周期内乘和加两个 FP16 和/或 FP32 矩阵，而 Cuda 核每周期只能执行一次操作。然而，张量核的利用率非常低（端到端训练仅为 3% — 9%），导致能耗高、性能低下。目前有关提高 systolic 阵列利用率的研究活跃进行中（FlexSA、多方向 SA 等），我将在接下来的系列文章中详细介绍。
 
-![](../Images/19ef15d03c9beb4c8297c88e9671ef35.png)
+![](img/19ef15d03c9beb4c8297c88e9671ef35.png)
 
 systolic 阵列。来源：[Telesens](https://www.telesens.co/2018/07/30/systolic-architectures/)
 
 此外，由于内存和数据流量始终是大型 AI 模型的瓶颈，因此探索更先进的架构以考虑更大、更高效的芯片内存至关重要。一个例子是 Cerebras 核心内存设计，其中内存按核心独立寻址。
 
-![](../Images/57cdd1c3a2b49ffb249e1e09bbcda521.png)
+![](img/57cdd1c3a2b49ffb249e1e09bbcda521.png)
 
 Cerebras 内存架构
 
@@ -114,7 +114,7 @@ Cerebras 内存架构
 
 电力是我们需要关注的另一个问题，尤其是在低功耗用户场景下。性能和功耗之间总是存在权衡。如下面所示，内存访问操作所消耗的能量比计算操作高几个数量级。为了节省电力，强烈需要减少内存传输。
 
-![](../Images/609e1272fef035cfc6def19460cbd88d.png)
+![](img/609e1272fef035cfc6def19460cbd88d.png)
 
 计算和内存的能量成本。来源: [Stanford 的 Song H](https://arxiv.org/pdf/1506.02626v3.pdf) [4]
 

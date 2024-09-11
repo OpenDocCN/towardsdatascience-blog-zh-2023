@@ -1,14 +1,14 @@
 # 如何将数据视为产品
 
-> 原文：[https://towardsdatascience.com/how-to-treat-data-as-a-product-178dd3e0f471?source=collection_archive---------5-----------------------#2023-02-08](https://towardsdatascience.com/how-to-treat-data-as-a-product-178dd3e0f471?source=collection_archive---------5-----------------------#2023-02-08)
+> 原文：[`towardsdatascience.com/how-to-treat-data-as-a-product-178dd3e0f471?source=collection_archive---------5-----------------------#2023-02-08`](https://towardsdatascience.com/how-to-treat-data-as-a-product-178dd3e0f471?source=collection_archive---------5-----------------------#2023-02-08)
 
 ## 通过应用产品管理原则，最大化你从数据中获得的杠杆效应
 
-[](https://lakshmanok.medium.com/?source=post_page-----178dd3e0f471--------------------------------)[![Lak Lakshmanan](../Images/9faaaf72d600f592cbaf3e9089cbb913.png)](https://lakshmanok.medium.com/?source=post_page-----178dd3e0f471--------------------------------)[](https://towardsdatascience.com/?source=post_page-----178dd3e0f471--------------------------------)[![数据科学的前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----178dd3e0f471--------------------------------) [Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----178dd3e0f471--------------------------------)
+[](https://lakshmanok.medium.com/?source=post_page-----178dd3e0f471--------------------------------)![Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----178dd3e0f471--------------------------------)[](https://towardsdatascience.com/?source=post_page-----178dd3e0f471--------------------------------)![数据科学的前沿](https://towardsdatascience.com/?source=post_page-----178dd3e0f471--------------------------------) [Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----178dd3e0f471--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F247b0630b5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-treat-data-as-a-product-178dd3e0f471&user=Lak+Lakshmanan&userId=247b0630b5d6&source=post_page-247b0630b5d6----178dd3e0f471---------------------post_header-----------) 发表于 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----178dd3e0f471--------------------------------) ·10分钟阅读·2023年2月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F178dd3e0f471&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-treat-data-as-a-product-178dd3e0f471&user=Lak+Lakshmanan&userId=247b0630b5d6&source=-----178dd3e0f471---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F247b0630b5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-treat-data-as-a-product-178dd3e0f471&user=Lak+Lakshmanan&userId=247b0630b5d6&source=post_page-247b0630b5d6----178dd3e0f471---------------------post_header-----------) 发表于 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----178dd3e0f471--------------------------------) ·10 分钟阅读·2023 年 2 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F178dd3e0f471&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-treat-data-as-a-product-178dd3e0f471&user=Lak+Lakshmanan&userId=247b0630b5d6&source=-----178dd3e0f471---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 许多组织希望他们的技术从一个成本变成一个差异化的竞争因素——数据技术也是如此。你经常会听到这种愿景被表达为“*我们想要* [*将数据视为产品*](https://www.google.com/search?q=treat+data+as+a+product)”。
 
-![](../Images/3a0b3d79bddba0fc63bf89f64ad03b7f.png)
+![](img/3a0b3d79bddba0fc63bf89f64ad03b7f.png)
 
 图片由 [Brands&People](https://unsplash.com/@brandsandpeople?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/Ax8IA8GAjVg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -30,13 +30,13 @@
 
 我倾向于将其视为结合期望结果和达到结果的过程。
 
-期望的结果是，组织将通过将数据视作产品来最大化数据的杠杆效应，在这里，上述定义中强调的特征（有用性、标准化、治理）很重要。像Tableau一样，我对数据产品的定义持扩展性观点——数据集符合要求，但数据管道、仪表板、依赖数据的应用程序和机器学习模型也是如此。
+期望的结果是，组织将通过将数据视作产品来最大化数据的杠杆效应，在这里，上述定义中强调的特征（有用性、标准化、治理）很重要。像 Tableau 一样，我对数据产品的定义持扩展性观点——数据集符合要求，但数据管道、仪表板、依赖数据的应用程序和机器学习模型也是如此。
 
-期望的结果只有在有通向结果的路径时才有价值。要将数据视作产品，请在构思和构建数据产品时应用产品管理原则。哪些产品管理原则？（1）制定产品战略，（2）以客户为中心，（3）进行轻量级产品发现，以及（4）专注于找到市场契合点。我建议采纳以下与这些原则相一致的10个数据实践：
+期望的结果只有在有通向结果的路径时才有价值。要将数据视作产品，请在构思和构建数据产品时应用产品管理原则。哪些产品管理原则？（1）制定产品战略，（2）以客户为中心，（3）进行轻量级产品发现，以及（4）专注于找到市场契合点。我建议采纳以下与这些原则相一致的 10 个数据实践：
 
-![](../Images/d2572bdd73e8b1d3d0aa9679580f07d0.png)
+![](img/d2572bdd73e8b1d3d0aa9679580f07d0.png)
 
-要将数据视作产品，采纳这些10种实践，将产品管理原则应用于构思和构建数据产品。
+要将数据视作产品，采纳这些 10 种实践，将产品管理原则应用于构思和构建数据产品。
 
 ## 1\. 理解并维护企业中的数据流图
 
@@ -56,7 +56,7 @@
 
 +   客户调查
 
-在下一个粒度层次上，网页流量可能被拆分为会话数据、页面数据等。记录每个数据集是如何收集的、如何处理的、哪些角色可以访问以及如何访问、是否存在PII或其他属性、有哪些质量保证措施等。此外，记录每个数据集的生产使用案例。
+在下一个粒度层次上，网页流量可能被拆分为会话数据、页面数据等。记录每个数据集是如何收集的、如何处理的、哪些角色可以访问以及如何访问、是否存在 PII 或其他属性、有哪些质量保证措施等。此外，记录每个数据集的生产使用案例。
 
 正如你所看到的，当你从较高的粒度层次降到较低的层次时，映射开始包括你的数据平台实现的细节。它开始变成一个*数据目录*。
 
@@ -66,7 +66,7 @@
 
 数据产品策略的一个重要部分是使企业内的关键指标达成一致——你将测量什么、如何测量以及指标的目标数值是什么（目标会随时间变化）。你跟踪的指标范围应包括：
 
-1.  业务KPI：需要通过数据实现哪些业务成果？
+1.  业务 KPI：需要通过数据实现哪些业务成果？
 
 1.  SLA：数据的可用性？数据质量？刷新率？
 
@@ -74,7 +74,7 @@
 
 1.  满意度：客户（可能是内部客户）对可用数据及其易用性满意度如何？
 
-对于我们假设的电子商务网站，业务成果可能包括提高客户生命周期价值、增加免费层转化率等。对于内部采购者（用于补货）显示的库存的服务水平协议（SLA）可能是：其可用率达到99.99%，每小时刷新，并保持在下周预测销售额之上。我们可能希望库存预测不仅被内部采购使用，还被物流团队使用并纳入到仪表盘中。我们还可能会有一个衡量预测库存数量被覆盖的频率的指标。
+对于我们假设的电子商务网站，业务成果可能包括提高客户生命周期价值、增加免费层转化率等。对于内部采购者（用于补货）显示的库存的服务水平协议（SLA）可能是：其可用率达到 99.99%，每小时刷新，并保持在下周预测销售额之上。我们可能希望库存预测不仅被内部采购使用，还被物流团队使用并纳入到仪表盘中。我们还可能会有一个衡量预测库存数量被覆盖的频率的指标。
 
 ## **3\. 已达成的标准、承诺的路线图和远见的待办事项**
 
@@ -94,13 +94,13 @@
 
 ## **4\. 为你已有的客户构建**
 
-数据团队经常被技术口号困扰：他们只提供API，或坚持要求每个人将数据发布到企业数据仓库中，或期望遵循单一词典。
+数据团队经常被技术口号困扰：他们只提供 API，或坚持要求每个人将数据发布到企业数据仓库中，或期望遵循单一词典。
 
-借鉴产品管理的经验，深入了解你的客户是谁。他们在做什么？移动应用还是月度报告？他们知道什么？SQL还是Java？他们使用什么工具？仪表板还是Tensorflow？他们是否需要数据变化时的警报？他们是否需要实时数据的移动平均值？他们是否关心测试覆盖率？
+借鉴产品管理的经验，深入了解你的客户是谁。他们在做什么？移动应用还是月度报告？他们知道什么？SQL 还是 Java？他们使用什么工具？仪表板还是 Tensorflow？他们是否需要数据变化时的警报？他们是否需要实时数据的移动平均值？他们是否关心测试覆盖率？
 
-然后，以目标客户能够使用的方式提供数据。例如，你可能将数据提供在数据仓库中（供数据分析师使用），通过API使其可访问（供开发者使用），在功能存储中发布（供数据科学家使用），或提供一个可以在仪表板中使用的语义层（供业务用户使用）。
+然后，以目标客户能够使用的方式提供数据。例如，你可能将数据提供在数据仓库中（供数据分析师使用），通过 API 使其可访问（供开发者使用），在功能存储中发布（供数据科学家使用），或提供一个可以在仪表板中使用的语义层（供业务用户使用）。
 
-如果我们假设的库存预测数据产品将被内部采购员（即业务用户）使用，预测结果必须在用于订购补货的应用程序中提供。因此，预测结果可能需要通过API供该应用程序的开发者使用。
+如果我们假设的库存预测数据产品将被内部采购员（即业务用户）使用，预测结果必须在用于订购补货的应用程序中提供。因此，预测结果可能需要通过 API 供该应用程序的开发者使用。
 
 ## 5\. 不要将变更管理的负担转移
 
@@ -154,7 +154,7 @@
 
 ## **10\. 在你的数据平台中提供自助服务功能**
 
-你必须在适合你组织的方式下平衡灵活性和标准化。不要过度实施第9条。不构建包含任何人可能想要的所有内容的集中数据集。相反，赋能团队实现自给自足。这是微服务原则在数据中的应用。
+你必须在适合你组织的方式下平衡灵活性和标准化。不要过度实施第 9 条。不构建包含任何人可能想要的所有内容的集中数据集。相反，赋能团队实现自给自足。这是微服务原则在数据中的应用。
 
 实现这一平衡的一种方式是提供小型、自包含的数据集，客户可以通过与其他数据集以特定领域的方式进行联合来定制这些数据集。通常，这种方法实现为*数据网格*，每个业务单元负责其发布到共享*分析中心*的数据集的质量。
 

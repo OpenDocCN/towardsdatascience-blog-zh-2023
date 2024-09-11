@@ -1,22 +1,22 @@
 # 通过智能提示改进希伯来语问答模型
 
-> 原文：[https://towardsdatascience.com/improving-hebrew-q-a-models-via-prompting-20f5fb5a2f36?source=collection_archive---------8-----------------------#2023-03-17](https://towardsdatascience.com/improving-hebrew-q-a-models-via-prompting-20f5fb5a2f36?source=collection_archive---------8-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/improving-hebrew-q-a-models-via-prompting-20f5fb5a2f36?source=collection_archive---------8-----------------------#2023-03-17`](https://towardsdatascience.com/improving-hebrew-q-a-models-via-prompting-20f5fb5a2f36?source=collection_archive---------8-----------------------#2023-03-17)
 
-[](https://medium.com/@erap129?source=post_page-----20f5fb5a2f36--------------------------------)[![Elad Rapaport](../Images/2ad958f92cd8b5735da900ae8f5559f3.png)](https://medium.com/@erap129?source=post_page-----20f5fb5a2f36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20f5fb5a2f36--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20f5fb5a2f36--------------------------------) [Elad Rapaport](https://medium.com/@erap129?source=post_page-----20f5fb5a2f36--------------------------------)
+[](https://medium.com/@erap129?source=post_page-----20f5fb5a2f36--------------------------------)![Elad Rapaport](https://medium.com/@erap129?source=post_page-----20f5fb5a2f36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20f5fb5a2f36--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----20f5fb5a2f36--------------------------------) [Elad Rapaport](https://medium.com/@erap129?source=post_page-----20f5fb5a2f36--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd2d1ff8f0490&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-hebrew-q-a-models-via-prompting-20f5fb5a2f36&user=Elad+Rapaport&userId=d2d1ff8f0490&source=post_page-d2d1ff8f0490----20f5fb5a2f36---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20f5fb5a2f36--------------------------------) ·13分钟阅读·2023年3月17日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd2d1ff8f0490&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-hebrew-q-a-models-via-prompting-20f5fb5a2f36&user=Elad+Rapaport&userId=d2d1ff8f0490&source=post_page-d2d1ff8f0490----20f5fb5a2f36---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20f5fb5a2f36--------------------------------) ·13 分钟阅读·2023 年 3 月 17 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20f5fb5a2f36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-hebrew-q-a-models-via-prompting-20f5fb5a2f36&source=-----20f5fb5a2f36---------------------bookmark_footer-----------)![](../Images/460a2dc30eb62d6e636e117e21cf5c2f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20f5fb5a2f36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-hebrew-q-a-models-via-prompting-20f5fb5a2f36&source=-----20f5fb5a2f36---------------------bookmark_footer-----------)![](img/460a2dc30eb62d6e636e117e21cf5c2f.png)
 
 DALL-E 2: “一个穿着长袍的机器人用希伯来语书写圣经句子。数字艺术。”
 
 大家好，
 
-我分享了一个我参与的短期项目，涉及通过智能提示提高 `text-davinci-003` 模型的性能。我首先要说的是，这项工作受到 [James Briggs](https://www.youtube.com/@jamesbriggs/featured) 的优秀视频教程的启发——特别是这一个 — [https://youtu.be/dRUIGgNBvVk](https://youtu.be/dRUIGgNBvVk)，我使用的许多代码也取自他的示例。
+我分享了一个我参与的短期项目，涉及通过智能提示提高 `text-davinci-003` 模型的性能。我首先要说的是，这项工作受到 [James Briggs](https://www.youtube.com/@jamesbriggs/featured) 的优秀视频教程的启发——特别是这一个 — [`youtu.be/dRUIGgNBvVk`](https://youtu.be/dRUIGgNBvVk)，我使用的许多代码也取自他的示例。
 
 本文的提纲如下：
 
@@ -30,9 +30,9 @@ DALL-E 2: “一个穿着长袍的机器人用希伯来语书写圣经句子。�
 
 1.  结论
 
-完整代码的 Google Colab 笔记本在这里 — [https://colab.research.google.com/drive/1_UqPHGPW1yLf3O_BOySRjf3bWqMe6A4H#scrollTo=4DY7XgilIr-H](https://colab.research.google.com/drive/1_UqPHGPW1yLf3O_BOySRjf3bWqMe6A4H#scrollTo=4DY7XgilIr-H)
+完整代码的 Google Colab 笔记本在这里 — [`colab.research.google.com/drive/1_UqPHGPW1yLf3O_BOySRjf3bWqMe6A4H#scrollTo=4DY7XgilIr-H`](https://colab.research.google.com/drive/1_UqPHGPW1yLf3O_BOySRjf3bWqMe6A4H#scrollTo=4DY7XgilIr-H)
 
-# 第1部分 问题陈述 — 大型语言模型中的独特和专有数据
+# 第一部分 问题陈述 — 大型语言模型中的独特和专有数据
 
 以色列的主要官方语言是希伯来语，作为以色列人，我有兴趣提高大型语言模型在希伯来语中的表现。虽然近期有所改善，但众所周知，ChatGPT 在希伯来语中的表现相较于其在英语中的表现仍有待提高。本文中，希伯来语只是代表那些在大型语言模型中被低估的数据来源，本文将探讨如何尝试帮助 LLM 提供基于这些数据的有用结果。
 
@@ -42,7 +42,7 @@ DALL-E 2: “一个穿着长袍的机器人用希伯来语书写圣经句子。�
 
 ChatGPT 已经广泛为人所知，在许多任务上表现出色，证明了它是一个不可或缺的 AI 助手。然而，如果我希望利用这项技术来帮助说稀有语言的人，或帮助处理公司内部的专有数据（这些数据在线上不可用），那么 ChatGPT 很可能因为之前未见过这些数据而失败。那么我们如何在这些模型中利用特殊/专有数据，而不需要花费数百万美元来使用特殊硬件进行训练呢？一个可行的选择是通过查询提示，这一点我们今天将进行探索。
 
-# **第2部分** 问题陈述 — 希伯来语中的问答
+# **第二部分** 问题陈述 — 希伯来语中的问答
 
 我们将使用 OpenAI API 来回答三个希伯来语问题，这些问题的灵感来自于[SQuAD](https://rajpurkar.github.io/SQuAD-explorer/explore/v2.0/dev/)数据集，并翻译成希伯来语。以下代码片段展示了这些问题、预期的答案和英文翻译。
 
@@ -152,7 +152,7 @@ Expected Answer (translation): Between 75 and 200 million
 
 当然，我们可以！通过查询来进行提示。我们将使用希伯来语的维基百科的一个较小的快照，这个快照中肯定包含了我们问题的答案。我们将把这个快照分割成多行，使用 OpenAI 的嵌入模型对每一行进行嵌入，并将这些嵌入插入到一个名为 Pinecone DB 的向量数据库中。然后，对于我们提出的每一个问题，我们将搜索向量数据库中与问题语义相似的信息片段，并将这些片段附加到模型输入中作为附加信息。这个过程如图 1 所示。希望模型能够利用提供的上下文，并给出我们问题的正确答案。
 
-![](../Images/37163f1f594e22773dcc5dfc74fb4106.png)
+![](img/37163f1f594e22773dcc5dfc74fb4106.png)
 
 图 1\. 通过查询进行提示
 
@@ -160,7 +160,7 @@ Expected Answer (translation): Between 75 and 200 million
 
 # 第四部分\. 实验——希伯来语问答
 
-首先——我们需要用相关信息填充我们的向量数据库。为此，我们将使用一个从这里下载的小型希伯来语维基百科快照——[https://u.cs.biu.ac.il/~yogo/hebwiki/](https://u.cs.biu.ac.il/~yogo/hebwiki/)（在 Creative Commons Attribution-ShareAlike 4.0 International License 下提供）。
+首先——我们需要用相关信息填充我们的向量数据库。为此，我们将使用一个从这里下载的小型希伯来语维基百科快照——[`u.cs.biu.ac.il/~yogo/hebwiki/`](https://u.cs.biu.ac.il/~yogo/hebwiki/)（在 Creative Commons Attribution-ShareAlike 4.0 International License 下提供）。
 
 ```py
 with open('/content/drive/MyDrive/Datasets/hebrew_wikipedia/full.txt') as f:
@@ -540,12 +540,12 @@ Elad
 
 # 参考文献
 
-+   希伯来语维基百科数据 — [https://u.cs.biu.ac.il/~yogo/hebwiki/](https://u.cs.biu.ac.il/~yogo/hebwiki/)
++   希伯来语维基百科数据 — [`u.cs.biu.ac.il/~yogo/hebwiki/`](https://u.cs.biu.ac.il/~yogo/hebwiki/)
 
-+   SQuAD 数据集 — [https://rajpurkar.github.io/SQuAD-explorer/](https://rajpurkar.github.io/SQuAD-explorer/)
++   SQuAD 数据集 — [`rajpurkar.github.io/SQuAD-explorer/`](https://rajpurkar.github.io/SQuAD-explorer/)
 
-+   James Briggs 的视频教程 — [https://youtu.be/dRUIGgNBvVk](https://youtu.be/dRUIGgNBvVk)
++   James Briggs 的视频教程 — [`youtu.be/dRUIGgNBvVk`](https://youtu.be/dRUIGgNBvVk)
 
-+   OpenAI API — [https://openai.com/blog/openai-api](https://openai.com/blog/openai-api)
++   OpenAI API — [`openai.com/blog/openai-api`](https://openai.com/blog/openai-api)
 
-+   Pinecone 数据库 — [https://www.pinecone.io/](https://www.pinecone.io/)
++   Pinecone 数据库 — [`www.pinecone.io/`](https://www.pinecone.io/)

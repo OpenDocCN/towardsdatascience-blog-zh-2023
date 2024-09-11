@@ -1,16 +1,16 @@
 # MLOps — 了解数据漂移
 
-> 原文：[https://towardsdatascience.com/mlops-understanding-data-drift-69f9bf8a2e46?source=collection_archive---------5-----------------------#2023-01-09](https://towardsdatascience.com/mlops-understanding-data-drift-69f9bf8a2e46?source=collection_archive---------5-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/mlops-understanding-data-drift-69f9bf8a2e46?source=collection_archive---------5-----------------------#2023-01-09`](https://towardsdatascience.com/mlops-understanding-data-drift-69f9bf8a2e46?source=collection_archive---------5-----------------------#2023-01-09)
 
-![](../Images/4f77b75cf6eb39741c29f3e73fdc4883.png)
+![](img/4f77b75cf6eb39741c29f3e73fdc4883.png)
 
 照片由 [Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral) 拍摄，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-[](https://esenthil.medium.com/?source=post_page-----69f9bf8a2e46--------------------------------)[![Senthil E](../Images/8750e1769db1d2fe3a3f739e95c60e4b.png)](https://esenthil.medium.com/?source=post_page-----69f9bf8a2e46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69f9bf8a2e46--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----69f9bf8a2e46--------------------------------) [Senthil E](https://esenthil.medium.com/?source=post_page-----69f9bf8a2e46--------------------------------)
+[](https://esenthil.medium.com/?source=post_page-----69f9bf8a2e46--------------------------------)![Senthil E](https://esenthil.medium.com/?source=post_page-----69f9bf8a2e46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69f9bf8a2e46--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----69f9bf8a2e46--------------------------------) [Senthil E](https://esenthil.medium.com/?source=post_page-----69f9bf8a2e46--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d8fcdc16d73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-understanding-data-drift-69f9bf8a2e46&user=Senthil+E&userId=1d8fcdc16d73&source=post_page-1d8fcdc16d73----69f9bf8a2e46---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69f9bf8a2e46--------------------------------) ·18分钟阅读·2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69f9bf8a2e46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-understanding-data-drift-69f9bf8a2e46&user=Senthil+E&userId=1d8fcdc16d73&source=-----69f9bf8a2e46---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d8fcdc16d73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-understanding-data-drift-69f9bf8a2e46&user=Senthil+E&userId=1d8fcdc16d73&source=post_page-1d8fcdc16d73----69f9bf8a2e46---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69f9bf8a2e46--------------------------------) ·18 分钟阅读·2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69f9bf8a2e46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-understanding-data-drift-69f9bf8a2e46&user=Senthil+E&userId=1d8fcdc16d73&source=-----69f9bf8a2e46---------------------clap_footer-----------)
 
 --
 
@@ -52,7 +52,7 @@ MLOps 工程师的重要职能之一是监控模型性能。数据漂移会导�
 
 # 数据漂移的类型：
 
-![](../Images/d92808eba3142a8c1682a65f774fc4eb.png)
+![](img/d92808eba3142a8c1682a65f774fc4eb.png)
 
 图片由作者提供
 
@@ -86,13 +86,13 @@ MLOps 工程师的重要职能之一是监控模型性能。数据漂移会导�
 
 如果 **p(X1)** 和 **p(X2)** 存在显著差异，这可能表明数据中存在特征漂移。这可能导致模型性能下降，因为模型应用于与训练时不同的特征数据。
 
-![](../Images/b4a5bbd92dc29fdd79950ee83d47c25d.png)
+![](img/b4a5bbd92dc29fdd79950ee83d47c25d.png)
 
 图片由作者提供
 
 ## 监控特征漂移所需的措施：
 
-![](../Images/869b5e16bdbe0912252135383905e021.png)
+![](img/869b5e16bdbe0912252135383905e021.png)
 
 图片由作者提供
 
@@ -124,7 +124,7 @@ MLOps 工程师的重要职能之一是监控模型性能。数据漂移会导�
 
 ## **数值特征**
 
-![](../Images/86230a7ac75c29137b6ed815d76bdcb0.png)
+![](img/86230a7ac75c29137b6ed815d76bdcb0.png)
 
 作者提供的图片
 
@@ -134,25 +134,25 @@ MLOps 工程师的重要职能之一是监控模型性能。数据漂移会导�
 
 ## **统计检验：**
 
-![](../Images/0db1cada35bba8f1da6b470c4577030d.png)
+![](img/0db1cada35bba8f1da6b470c4577030d.png)
 
 图片由作者提供
 
 ## **Jensen-Shannon：**
 
-Jensen-Shannon散度是衡量两个概率分布相似度的指标。它被定义为两个分布之间的Kullback-Leibler散度和这两个分布的平均分布之间的Kullback-Leibler散度的平均值。Jensen-Shannon散度总是非负的，当且仅当两个分布相同时，它的值为零。
+Jensen-Shannon 散度是衡量两个概率分布相似度的指标。它被定义为两个分布之间的 Kullback-Leibler 散度和这两个分布的平均分布之间的 Kullback-Leibler 散度的平均值。Jensen-Shannon 散度总是非负的，当且仅当两个分布相同时，它的值为零。
 
-在特征漂移检测的背景下，Jensen-Shannon散度可以用来比较训练集中特征的分布与测试集中特征的分布。如果这两个分布之间的Jensen-Shannon散度超过某个阈值，这可能表明数据中存在漂移。
+在特征漂移检测的背景下，Jensen-Shannon 散度可以用来比较训练集中特征的分布与测试集中特征的分布。如果这两个分布之间的 Jensen-Shannon 散度超过某个阈值，这可能表明数据中存在漂移。
 
 图片由作者提供
 
-这个函数使用`jensen_shannon_divergence()`函数计算训练数据和测试数据中特征分布之间的Jensen-Shannon散度。Jensen-Shannon散度是衡量两个概率分布相似度的指标，散度越低表示相似度越高。如果散度超过某个阈值，这可能表明数据存在漂移。
+这个函数使用`jensen_shannon_divergence()`函数计算训练数据和测试数据中特征分布之间的 Jensen-Shannon 散度。Jensen-Shannon 散度是衡量两个概率分布相似度的指标，散度越低表示相似度越高。如果散度超过某个阈值，这可能表明数据存在漂移。
 
-## **双样本Kolmogorov-Smirnov (KS)、Mann-Whitney或Wilcoxon检验：**
+## **双样本 Kolmogorov-Smirnov (KS)、Mann-Whitney 或 Wilcoxon 检验：**
 
 Kolmogorov-Smirnov (KS) 检验是一种非参数检验，可用于检测机器学习中的特征漂移。它基于比较两个样本的分布以查看它们是否来自同一总体的思想。
 
-要使用KS检验进行特征漂移检测，你首先需要将数据分成两个集合：训练集和测试集。训练集用于训练模型，而测试集用于评估模型的性能。然后，你可以使用KS检验比较训练集中特征的分布与测试集中特征的分布。如果检验的p值低于某个阈值，这可能表明数据存在漂移。
+要使用 KS 检验进行特征漂移检测，你首先需要将数据分成两个集合：训练集和测试集。训练集用于训练模型，而测试集用于评估模型的性能。然后，你可以使用 KS 检验比较训练集中特征的分布与测试集中特征的分布。如果检验的 p 值低于某个阈值，这可能表明数据存在漂移。
 
 图片由作者提供
 
@@ -192,7 +192,7 @@ Kolmogorov-Smirnov (KS) 检验是一种非参数检验，可用于检测机器�
 
 作者提供的图像
 
-此函数使用`scipy.stats`模块中的`chi2_contingency()`函数计算卡方统计量和检验的p值。卡方统计量是数据中类别的观察频率与预期频率之间差异的度量，而p值是观察到的频率在类别独立的情况下出现的概率度量。如果p值低于某个阈值，这可能表明数据中存在漂移。
+此函数使用`scipy.stats`模块中的`chi2_contingency()`函数计算卡方统计量和检验的 p 值。卡方统计量是数据中类别的观察频率与预期频率之间差异的度量，而 p 值是观察到的频率在类别独立的情况下出现的概率度量。如果 p 值低于某个阈值，这可能表明数据中存在漂移。
 
 ## 双向卡方检验：
 
@@ -200,21 +200,21 @@ Kolmogorov-Smirnov (KS) 检验是一种非参数检验，可用于检测机器�
 
 作者提供的图像
 
-此函数使用`scipy.stats`模块中的`chi2_contingency()`函数计算卡方统计量和检验的p值。卡方统计量是数据中类别的观察频率与预期频率之间差异的度量，而p值是观察到的频率在类别独立的情况下出现的概率度量。如果p值低于某个阈值，这可能表明数据中存在漂移。
+此函数使用`scipy.stats`模块中的`chi2_contingency()`函数计算卡方统计量和检验的 p 值。卡方统计量是数据中类别的观察频率与预期频率之间差异的度量，而 p 值是观察到的频率在类别独立的情况下出现的概率度量。如果 p 值低于某个阈值，这可能表明数据中存在漂移。
 
-## Fisher精确检验：
+## Fisher 精确检验：
 
-Fisher精确检验是一种统计检验方法，可用于检测分类数据中的特征漂移。它基于将训练数据和测试数据中不同类别的观察频率与若类别相互独立时预期观察到的频率进行比较的思想。
+Fisher 精确检验是一种统计检验方法，可用于检测分类数据中的特征漂移。它基于将训练数据和测试数据中不同类别的观察频率与若类别相互独立时预期观察到的频率进行比较的思想。
 
 作者提供的图像
 
-此函数使用`scipy.stats`模块中的`fisher_exact()`函数计算Fisher精确检验的p值。p值是观察到的频率在类别独立的情况下出现的概率度量。如果p值低于某个阈值，这可能表明数据中存在漂移。
+此函数使用`scipy.stats`模块中的`fisher_exact()`函数计算 Fisher 精确检验的 p 值。p 值是观察到的频率在类别独立的情况下出现的概率度量。如果 p 值低于某个阈值，这可能表明数据中存在漂移。
 
-需要注意的是，当预期频率较小时，Fisher精确检验（Fisher Exact Test）是比卡方检验更强大的替代方法，但当预期频率较大时，它通常不如卡方检验强大。此外，该检验要求数据为频数而非比例或百分比。如果您的数据形式不同，可能需要在进行检验前调整数据。
+需要注意的是，当预期频率较小时，Fisher 精确检验（Fisher Exact Test）是比卡方检验更强大的替代方法，但当预期频率较大时，它通常不如卡方检验强大。此外，该检验要求数据为频数而非比例或百分比。如果您的数据形式不同，可能需要在进行检验前调整数据。
 
 ## 类-MonitorDrift：
 
-结合以上所有内容，创建一个名为MonitorDrift的类：
+结合以上所有内容，创建一个名为 MonitorDrift 的类：
 
 作者提供的图像
 
@@ -272,7 +272,7 @@ Fisher精确检验是一种统计检验方法，可用于检测分类数据中�
 
 +   基于客户评论的客户情绪分析。如果确定评论是积极还是消极的标准发生变化，则会导致标签漂移。
 
-## Page-Hinkley测试：
+## Page-Hinkley 测试：
 
 作者提供的图片
 
@@ -304,7 +304,7 @@ Fisher精确检验是一种统计检验方法，可用于检测分类数据中�
 
 +   *使用数据拆分。*
 
-使用PaheHinkley方法检测预测漂移。
+使用 PaheHinkley 方法检测预测漂移。
 
 作者提供的图片
 
@@ -334,7 +334,7 @@ Fisher精确检验是一种统计检验方法，可用于检测分类数据中�
 
 ## COVID-19 → 概念漂移：
 
-例如，COVID-19造成了以下影响
+例如，COVID-19 造成了以下影响
 
 1.  **消费者行为的变化**：人们在应对封锁、经济不确定性和其他因素时，改变了他们的购买模式。这导致了依赖消费者数据的行业，如零售、电商和广告，出现了概念漂移。
 
@@ -344,7 +344,7 @@ Fisher精确检验是一种统计检验方法，可用于检测分类数据中�
 
 1.  **教育模式的变化：** 学校和大学关闭或转为在线学习。这导致了用于预测学生结果的教育数据和算法中的概念漂移。
 
-1.  **工作模式的变化：** Covid导致工作模式发生了显著变化，许多人转向远程工作或经历了工作时间表的变化。这导致了用于预测劳动力生产力和员工结果的数据和算法中的概念漂移。
+1.  **工作模式的变化：** Covid 导致工作模式发生了显著变化，许多人转向远程工作或经历了工作时间表的变化。这导致了用于预测劳动力生产力和员工结果的数据和算法中的概念漂移。
 
 1.  **旅行模式的变化：** 人们已根据封锁和其他限制调整了旅行计划。这影响了用于预测旅行需求和模式的算法。
 
@@ -364,19 +364,19 @@ Fisher精确检验是一种统计检验方法，可用于检测分类数据中�
 
 作者提供的图像
 
-上述代码定期在测试集上评估模型，并将准确性存储在列表中。如果过去N次评估间隔的平均准确性低于某个阈值，这可能表明概念漂移，并且模型会在新数据上重新训练。如果平均准确性仍高于阈值，循环继续，模型将在某个间隔后再次评估。
+上述代码定期在测试集上评估模型，并将准确性存储在列表中。如果过去 N 次评估间隔的平均准确性低于某个阈值，这可能表明概念漂移，并且模型会在新数据上重新训练。如果平均准确性仍高于阈值，循环继续，模型将在某个间隔后再次评估。
 
 查看下面关于现实世界概念漂移的文章。
 
-[## Zillow Offers的5亿美元+困境 - AI模型出现了什么问题？ - insideBIGDATA](https://insidebigdata.com/2021/12/13/the-500mm-debacle-at-zillow-offers-what-went-wrong-with-the-ai-models/?source=post_page-----69f9bf8a2e46--------------------------------)
+[## Zillow Offers 的 5 亿美元+困境 - AI 模型出现了什么问题？ - insideBIGDATA](https://insidebigdata.com/2021/12/13/the-500mm-debacle-at-zillow-offers-what-went-wrong-with-the-ai-models/?source=post_page-----69f9bf8a2e46--------------------------------)
 
-### 在这篇贡献文章中，TruEra的联合创始人、总裁兼首席科学家Anupam Datta讨论了Zillow及其……
+### 在这篇贡献文章中，TruEra 的联合创始人、总裁兼首席科学家 Anupam Datta 讨论了 Zillow 及其……
 
-[insideBIGDATA](https://insidebigdata.com/2021/12/13/the-500mm-debacle-at-zillow-offers-what-went-wrong-with-the-ai-models/?source=post_page-----69f9bf8a2e46--------------------------------) [Forbes](https://www.forbes.com/sites/aparnadhinakaran/2022/06/06/when-ai-attacks-earnings/?sh=7f20aa0d7fb6&source=post_page-----69f9bf8a2e46--------------------------------) [## 当AI袭击收益时
+[insideBIGDATA](https://insidebigdata.com/2021/12/13/the-500mm-debacle-at-zillow-offers-what-went-wrong-with-the-ai-models/?source=post_page-----69f9bf8a2e46--------------------------------) [Forbes](https://www.forbes.com/sites/aparnadhinakaran/2022/06/06/when-ai-attacks-earnings/?sh=7f20aa0d7fb6&source=post_page-----69f9bf8a2e46--------------------------------) [## 当 AI 袭击收益时
 
-### AI可以带来惊人的收入增长——直到它不再有效。这一课正在被一家成长中的公司以艰难的方式学习中……
+### AI 可以带来惊人的收入增长——直到它不再有效。这一课正在被一家成长中的公司以艰难的方式学习中……
 
-[Forbes](https://www.forbes.com/sites/aparnadhinakaran/2022/06/06/when-ai-attacks-earnings/?sh=7f20aa0d7fb6&source=post_page-----69f9bf8a2e46--------------------------------) [Aporia](https://www.aporia.com/blog/unity-software-ml-fault-causes-stock-drop/?source=post_page-----69f9bf8a2e46--------------------------------) [## Unity的奇特案例：机器学习与华尔街的碰撞
+[Forbes](https://www.forbes.com/sites/aparnadhinakaran/2022/06/06/when-ai-attacks-earnings/?sh=7f20aa0d7fb6&source=post_page-----69f9bf8a2e46--------------------------------) [Aporia](https://www.aporia.com/blog/unity-software-ml-fault-causes-stock-drop/?source=post_page-----69f9bf8a2e46--------------------------------) [## Unity 的奇特案例：机器学习与华尔街的碰撞
 
 ### 了解 Unity 软件的机器学习模型在生产中出现的故障如何影响他们的财报，以及……
 
@@ -474,21 +474,21 @@ www.aporia.com](https://www.aporia.com/blog/unity-software-ml-fault-causes-stock
 
 **AWS:**
 
-[](https://aws.amazon.com/blogs/architecture/detecting-data-drift-using-amazon-sagemaker/?source=post_page-----69f9bf8a2e46--------------------------------) [## 使用Amazon SageMaker检测数据漂移 | 亚马逊网络服务
+[](https://aws.amazon.com/blogs/architecture/detecting-data-drift-using-amazon-sagemaker/?source=post_page-----69f9bf8a2e46--------------------------------) [## 使用 Amazon SageMaker 检测数据漂移 | 亚马逊网络服务
 
 ### 随着公司继续接受云计算和数字化转型，他们利用历史数据来识别……
 
-aws.amazon.com](https://aws.amazon.com/blogs/architecture/detecting-data-drift-using-amazon-sagemaker/?source=post_page-----69f9bf8a2e46--------------------------------) [](https://aws.amazon.com/sagemaker/model-monitor/?source=post_page-----69f9bf8a2e46--------------------------------) [## Amazon SageMaker模型监控器 | 机器学习模型准确性 | 亚马逊网络服务
+aws.amazon.com](https://aws.amazon.com/blogs/architecture/detecting-data-drift-using-amazon-sagemaker/?source=post_page-----69f9bf8a2e46--------------------------------) [](https://aws.amazon.com/sagemaker/model-monitor/?source=post_page-----69f9bf8a2e46--------------------------------) [## Amazon SageMaker 模型监控器 | 机器学习模型准确性 | 亚马逊网络服务
 
 ### 自动检测模型和数据漂移，并接收不准确预测的警报，以便你可以采取纠正措施……
 
-aws.amazon.com](https://aws.amazon.com/sagemaker/model-monitor/?source=post_page-----69f9bf8a2e46--------------------------------) [](https://aws.amazon.com/blogs/machine-learning/detect-nlp-data-drift-using-custom-amazon-sagemaker-model-monitor/?source=post_page-----69f9bf8a2e46--------------------------------) [## 使用自定义Amazon SageMaker模型监控器检测NLP数据漂移 | 亚马逊网络服务
+aws.amazon.com](https://aws.amazon.com/sagemaker/model-monitor/?source=post_page-----69f9bf8a2e46--------------------------------) [](https://aws.amazon.com/blogs/machine-learning/detect-nlp-data-drift-using-custom-amazon-sagemaker-model-monitor/?source=post_page-----69f9bf8a2e46--------------------------------) [## 使用自定义 Amazon SageMaker 模型监控器检测 NLP 数据漂移 | 亚马逊网络服务
 
 ### 自然语言理解被应用于广泛的使用案例，从聊天机器人和虚拟助手，到……
 
 aws.amazon.com](https://aws.amazon.com/blogs/machine-learning/detect-nlp-data-drift-using-custom-amazon-sagemaker-model-monitor/?source=post_page-----69f9bf8a2e46--------------------------------)
 
-查看此Twitter线程。
+查看此 Twitter 线程。
 
 [查看此白皮书以获取有关统计测试的更多信息。](https://arize.com/wp-content/uploads/2021/09/Statistical-Distances-for-Machine-Learning.pdf)
 
@@ -498,20 +498,20 @@ aws.amazon.com](https://aws.amazon.com/blogs/machine-learning/detect-nlp-data-dr
 
 ## 参考文献：
 
-1.  Databricks-ML in Production-[https://github.com/databricks-academy/ml-in-production-english](https://github.com/databricks-academy/ml-in-production-english)
+1.  Databricks-ML in Production-[`github.com/databricks-academy/ml-in-production-english`](https://github.com/databricks-academy/ml-in-production-english)
 
-1.  Evidently AI-[https://www.youtube.com/watch?v=HGIgUH11nVo](https://www.youtube.com/watch?v=HGIgUH11nVo)
+1.  Evidently AI-[`www.youtube.com/watch?v=HGIgUH11nVo`](https://www.youtube.com/watch?v=HGIgUH11nVo)
 
-1.  AWS re:Invent 2020: 在生产中检测机器学习（ML）模型漂移-[https://www.youtube.com/watch?v=J9T0X9Jxl_w](https://www.youtube.com/watch?v=J9T0X9Jxl_w)
+1.  AWS re:Invent 2020: 在生产中检测机器学习（ML）模型漂移-[`www.youtube.com/watch?v=J9T0X9Jxl_w`](https://www.youtube.com/watch?v=J9T0X9Jxl_w)
 
-1.  Databricks — [https://www.youtube.com/watch?v=tGckE83S-4s](https://www.youtube.com/watch?v=tGckE83S-4s)
+1.  Databricks — [`www.youtube.com/watch?v=tGckE83S-4s`](https://www.youtube.com/watch?v=tGckE83S-4s)
 
-1.  技术讨论 (E15): 机器学习模型漂移与 MLOps 管道-[https://www.youtube.com/watch?v=aW11vOkSScA](https://www.youtube.com/watch?v=aW11vOkSScA)
+1.  技术讨论 (E15): 机器学习模型漂移与 MLOps 管道-[`www.youtube.com/watch?v=aW11vOkSScA`](https://www.youtube.com/watch?v=aW11vOkSScA)
 
-1.  ML Drift — 如何在问题成为麻烦之前识别问题 // Amy Hodler // MLOps Meetup #89-[https://www.youtube.com/watch?v=--KcBoInuqw&t=363s](https://www.youtube.com/watch?v=--KcBoInuqw&t=363s)
+1.  ML Drift — 如何在问题成为麻烦之前识别问题 // Amy Hodler // MLOps Meetup #89-[`www.youtube.com/watch?v=--KcBoInuqw&t=363s`](https://www.youtube.com/watch?v=--KcBoInuqw&t=363s)
 
-1.  部署与监控-[https://fullstackdeeplearning.com/spring2021/lecture-11/](https://fullstackdeeplearning.com/spring2021/lecture-11/)
+1.  部署与监控-[`fullstackdeeplearning.com/spring2021/lecture-11/`](https://fullstackdeeplearning.com/spring2021/lecture-11/)
 
-1.  为全栈解决方案选择正确的监控工具-[https://devops.com/choosing-the-right-monitoring-tools-for-a-full-stack-solution/](https://devops.com/choosing-the-right-monitoring-tools-for-a-full-stack-solution/)
+1.  为全栈解决方案选择正确的监控工具-[`devops.com/choosing-the-right-monitoring-tools-for-a-full-stack-solution/`](https://devops.com/choosing-the-right-monitoring-tools-for-a-full-stack-solution/)
 
-9. Aparna dinakaran 文章-[https://aparnadhinak.medium.com/](https://aparnadhinak.medium.com/)
+9. Aparna dinakaran 文章-[`aparnadhinak.medium.com/`](https://aparnadhinak.medium.com/)

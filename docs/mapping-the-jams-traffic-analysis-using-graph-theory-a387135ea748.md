@@ -1,14 +1,14 @@
 # 《交通拥堵分析：使用图论》
 
-> 原文：[https://towardsdatascience.com/mapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748?source=collection_archive---------0-----------------------#2023-08-19](https://towardsdatascience.com/mapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748?source=collection_archive---------0-----------------------#2023-08-19)
+> 原文：[`towardsdatascience.com/mapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748?source=collection_archive---------0-----------------------#2023-08-19`](https://towardsdatascience.com/mapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748?source=collection_archive---------0-----------------------#2023-08-19)
 
 ## 学习如何使用图论找到城市基础设施中的潜在关键点
 
-[](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)[![Mateusz Praski](../Images/229c7711bef235e4eaa3aa8df918e32c.png)](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------) [Mateusz Praski](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)
+[](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)![Mateusz Praski](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------) [Mateusz Praski](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F61bf49684bbc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748&user=Mateusz+Praski&userId=61bf49684bbc&source=post_page-61bf49684bbc----a387135ea748---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------) ·10分钟阅读·2023年8月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa387135ea748&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748&user=Mateusz+Praski&userId=61bf49684bbc&source=-----a387135ea748---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F61bf49684bbc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748&user=Mateusz+Praski&userId=61bf49684bbc&source=post_page-61bf49684bbc----a387135ea748---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------) ·10 分钟阅读·2023 年 8 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa387135ea748&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748&user=Mateusz+Praski&userId=61bf49684bbc&source=-----a387135ea748---------------------clap_footer-----------)
 
 --
 
@@ -20,23 +20,23 @@
 
 图是顶点及其边的集合：
 
-![](../Images/cb004f1130bfc1d5c601c12c00867cd9.png)
+![](img/cb004f1130bfc1d5c601c12c00867cd9.png)
 
 集合 E 是无序元组 (x, y) 的子集，其中 x 和 y 是图的顶点，且 x 不等于 y。[图像由作者提供]
 
 边表示节点之间的连接。如果边没有方向，我们称之为无向图。无向图的一个现实例子可以是化学分子，其中顶点是原子，化学键表示为边。
 
-![](../Images/d25a830ea2ea7889dc3e32ab9936a250.png)
+![](img/d25a830ea2ea7889dc3e32ab9936a250.png)
 
 血清素分子是一个简单无向图的例子。 [[来源](https://commons.wikimedia.org/wiki/File:Serotonin-Spartan-HF-based-on-xtal-3D-balls-web.png)]
 
 然而，有时我们需要了解边是从 *u* 到 *v*，从 *v* 到 *u*，还是双向的。例如，如果马克喜欢爱丽丝，并不一定意味着这是双向的（ ☹ ）。在这些情况下，我们可以将边定义为有序元组而不是无序元组。
 
-![](../Images/2fb927f2d95f51c9facf34a4375eefb9.png)
+![](img/2fb927f2d95f51c9facf34a4375eefb9.png)
 
 方括号表示公式中的无序元组，而圆括号表示有序元组。[图片由作者提供]
 
-![](../Images/91e1651615b14a5c4ce7bceb25291f1a.png)
+![](img/91e1651615b14a5c4ce7bceb25291f1a.png)
 
 人际互动可以使用有向图来描述。[图片由作者提供]
 
@@ -56,7 +56,7 @@
 
 > “这个人有多受欢迎？”
 
-![](../Images/3c1c54563a723c48e9592a9d68ca1813.png)
+![](img/3c1c54563a723c48e9592a9d68ca1813.png)
 
 空手道俱乐部图的节点度中心性。中心性度量标准按图的最大度数（即节点数减一）进行了归一化。[图片由作者提供]
 
@@ -66,7 +66,7 @@
 
 在图中，我们可以定义路径，即从 A 到 B 需要遍历的顶点列表。路径中的连续顶点是邻居，第一个顶点是 A，最后一个是 B。路径距离是沿途边的权重之和。A 和 B 之间的最短路径是距离最小的路径。
 
-![](../Images/f5544102cafbd5a0dc2fff2691163b2c.png)
+![](img/f5544102cafbd5a0dc2fff2691163b2c.png)
 
 A 和 F 之间的最短路径是 [A, C, E, D, F]，距离为 20。 [[source]](https://en.wikipedia.org/wiki/Shortest_path_problem#/media/File:Shortest_path_with_direct_weights.svg)
 
@@ -74,7 +74,7 @@ A 和 F 之间的最短路径是 [A, C, E, D, F]，距离为 20。 [[source]](ht
 
 拥有所有这些新知识后，我们可以回到我们的指标。下一个是近似中心性，它告诉我们一个节点离图中其余部分的距离。它对特定顶点的定义是图中所有其他顶点的最短路径的平均值的倒数。这样，较短的平均路径转化为更高的近似中心性。
 
-![](../Images/2c538e1e7a2866631eef0b5b68dc08a4.png)
+![](img/2c538e1e7a2866631eef0b5b68dc08a4.png)
 
 Karate Club 图中的节点近似中心性。 [图片由作者提供]
 
@@ -82,7 +82,7 @@ Karate Club 图中的节点近似中心性。 [图片由作者提供]
 
 介数中心性提供了图中哪些节点对交通流量至关重要的信息。想象一个拥有广泛道路网络的城市，其中每个交汇点都是一个节点。这些节点中的一些在日常通勤中作为关键连接点，而其他的可能是交通流量几乎没有影响的死胡同。前者的介数中心性得分较高，计算方法是通过交汇点的最短路径的比例。
 
-![](../Images/89fc3f2029f4a9f57f56022d7034ff2a.png)
+![](img/89fc3f2029f4a9f57f56022d7034ff2a.png)
 
 Karate Club 图中的节点介数中心性。 [图片由作者提供]
 
@@ -96,7 +96,7 @@ Grzegórzki 的行政边界。 [©Google]
 
 让我们从将 OSM 仓库中的数据导入到 Python 图中，并绘制结果开始：
 
-![](../Images/5f42d7350e1c085b62e46144b949a422.png)
+![](img/5f42d7350e1c085b62e46144b949a422.png)
 
 原始 OSM 数据导入。白点是节点，代表道路交汇点。 [图片由作者提供]
 
@@ -104,7 +104,7 @@ Grzegórzki 的行政边界。 [©Google]
 
 我们为单一道路部分获取了多个边缘，结果图形中有近 3000 个“交汇点”。这并没有提供正确的表示（我们不能在路中间掉头，并且每个节点都会使计算变得更慢）。为了解决这种情况，我们将通过删除两个交汇点之间道路上的所有节点来进行**图拓扑简化**。在 OSMnx 中，我们有一个名为*ox.simplify_graph()*的函数来实现这一点。
 
-![](../Images/0012b6bc2ff5be6da6551f4b70f19dd6.png)
+![](img/0012b6bc2ff5be6da6551f4b70f19dd6.png)
 
 拓扑简化后的道路布局。现在每个节点表示道路交叉点。[作者提供的图片]
 
@@ -112,17 +112,17 @@ Grzegórzki 的行政边界。 [©Google]
 
 这就是为什么我们要合并交汇点，这意味着我们将把相互靠近的多个节点合并为一个。我们会选择一个足够大的合并半径，以将交汇点的多个部分合并为一个，但另一方面保持环形交汇点为多个节点结构，因为它们只能部分被阻塞。为此，我们将使用 osmnx 函数*ox.consolidate_intersections()*。
 
-![](../Images/ca6ccff4bdef9ab0d6b498675d6e6c56.png)
+![](img/ca6ccff4bdef9ab0d6b498675d6e6c56.png)
 
 交汇点合并后的道路布局。[作者提供的图片]
 
-![](../Images/252c4c862597b357d5a2f2c1f7585138.png)
+![](img/252c4c862597b357d5a2f2c1f7585138.png)
 
 交汇点的比较。之前和之后。[作者提供的图片]
 
 在这些操作之后，我们几乎准备好进行分析了。最后一个问题是克拉科夫的市政边界——由于许多人从邻近城镇旅行，而图形分析仅包括图形中的数据，我们需要包含这些区域。我将在下一章中介绍不这样做的影响。这里是我们的图形：
 
-![](../Images/ea07855e65f33cb18ea5ff2b2f7da23e.png)
+![](img/ea07855e65f33cb18ea5ff2b2f7da23e.png)
 
 颜色表示最大速度。颜色越亮，值越高。我们可以看到 A4 高速公路用黄色标记。大多数道路，用蓝色标记，为 50 km/h。[作者提供的图片]
 
@@ -134,13 +134,13 @@ Grzegórzki 的行政边界。 [©Google]
 
 我们将从计算道路布局表示中所有节点和边的介数中心性开始。为此，我们将使用[**NetworkX**](https://networkx.org/)库。
 
-![](../Images/2d9b8f4fd097855bd926ea6136faf476.png)
+![](img/2d9b8f4fd097855bd926ea6136faf476.png)
 
 克拉科夫每个道路段的介数中心性。 [作者提供的图片]
 
 由于图中道路数量众多，很难看出哪些组件在交通中最关键。让我们查看图的中心性度量分布。
 
-![](../Images/ec5b60184b208e3d55c7c5123e37e5d9.png)
+![](img/ec5b60184b208e3d55c7c5123e37e5d9.png)
 
 克拉科夫道路布局中街道和交叉口的中心性度量分布。 [作者提供的图片]
 
@@ -150,7 +150,7 @@ Grzegórzki 的行政边界。 [©Google]
 
 +   边的中心性为 0.021。
 
-![](../Images/9fb659e4d79408ee290cc1e5d7490ab7.png)
+![](img/9fb659e4d79408ee290cc1e5d7490ab7.png)
 
 中心性度量在阈值处理后的图。 [作者提供的图片]
 
@@ -168,7 +168,7 @@ Grzegórzki 的行政边界。 [©Google]
 
 让我们将这些信息与 Google Maps 上克拉科夫的实际交通地图进行比较：
 
-![](../Images/18710d95d494f8146b14289e3f183933.png)
+![](img/18710d95d494f8146b14289e3f183933.png)
 
 克拉科夫周一通勤的典型交通 [©2023 Google, [source](https://www.google.com/maps/@50.0527231,19.8925913,12z/data=!5m1!1e1?entry=ttu)]
 
@@ -176,7 +176,7 @@ Grzegórzki 的行政边界。 [©Google]
 
 让我们回到图形工程的最后部分——扩展图形边界。我们可以检查如果仅将城市边界纳入分析会发生什么：
 
-![](../Images/341e0a2e7b29c2fe717ad97eb6e43a87.png)
+![](img/341e0a2e7b29c2fe717ad97eb6e43a87.png)
 
 克拉科夫道路的介数中心性，未考虑邻近城镇。 [作者提供的图片]
 
@@ -186,35 +186,35 @@ A4 高速公路，由于其环城性质，是最重要的组件之一，但在�
 
 让我们来看看图分析的不同场景。假设我们想预测道路封闭（例如由于事故）如何影响交通。我们可以使用中心性测量来比较两个图之间的差异，从而检查中心性的变化。
 
-在本研究中，我们将模拟A4–7高速公路段上的汽车事故，这是一个常见的情况。事故将导致该段完全封闭。
+在本研究中，我们将模拟 A4–7 高速公路段上的汽车事故，这是一个常见的情况。事故将导致该段完全封闭。
 
-我们将通过从图中去除A4–7段并重新计算中心性测量来创建一个新的道路网络。
+我们将通过从图中去除 A4–7 段并重新计算中心性测量来创建一个新的道路网络。
 
-![](../Images/b262e552a258a75c4fd9d4121e295284.png)
+![](img/b262e552a258a75c4fd9d4121e295284.png)
 
-新布局的中心性测量。红色的A4部分代表缺失部分。[作者提供的图片]
+新布局的中心性测量。红色的 A4 部分代表缺失部分。[作者提供的图片]
 
 让我们来看看中心性分布：
 
-![](../Images/b7d263dc10d1082311bd47a1b5f02888.png)
+![](img/b7d263dc10d1082311bd47a1b5f02888.png)
 
-去除A4–7高速公路段后的克拉科夫道路布局中街道和交叉口的中心性测量分布。[作者提供的图片]
+去除 A4–7 高速公路段后的克拉科夫道路布局中街道和交叉口的中心性测量分布。[作者提供的图片]
 
-我们可以看到它仍然与原始情况非常相似。为了检查中心性测量的变化，我们将计算**残差图**，其中中心性测量是原始道路布局与事故后之间的差异。正值将表示事故后的更高中心性。在其中一个图中缺失的节点和交叉口（如A4–7）将不会被包含在残差图中。以下是残差的测量分布：
+我们可以看到它仍然与原始情况非常相似。为了检查中心性测量的变化，我们将计算**残差图**，其中中心性测量是原始道路布局与事故后之间的差异。正值将表示事故后的更高中心性。在其中一个图中缺失的节点和交叉口（如 A4–7）将不会被包含在残差图中。以下是残差的测量分布：
 
-![](../Images/c9a038502f2549fedbc912d8d602d20c.png)
+![](img/c9a038502f2549fedbc912d8d602d20c.png)
 
-去除A4–7高速公路段后的中心性变化分布。[作者提供的图片]
+去除 A4–7 高速公路段后的中心性变化分布。[作者提供的图片]
 
-再次，我们将筛选出受影响的前2%的街道和节点。这次的阈值是：
+再次，我们将筛选出受影响的前 2%的街道和节点。这次的阈值是：
 
-+   节点的测量值为0.018，
++   节点的测量值为 0.018，
 
-+   边的测量值为0.017。
++   边的测量值为 0.017。
 
-![](../Images/df1d12f65b9621bc234eb763d9a547fa.png)
+![](img/df1d12f65b9621bc234eb763d9a547fa.png)
 
-去除A4–7高速公路段后，介于中介中心性增加最大的街道和交叉口。[作者提供的图片]
+去除 A4–7 高速公路段后，介于中介中心性增加最大的街道和交叉口。[作者提供的图片]
 
 我们可以看到，连接环路分段到市中心的道路有所增加，其中第二环路位于城市的西侧，包含两座横跨维斯瓦河的桥梁之一的变化最大。
 
@@ -228,24 +228,24 @@ A4 高速公路，由于其环城性质，是最重要的组件之一，但在�
 
 +   图分析仅考虑图中存在的事物。
 
-在提供的示例中，这一点不易察觉，尤其是对克拉科夫以外的人来说。我们来看一下**Zakopianka**。它是连接市中心和克拉科夫南部大多数市镇的主要交通干道，也是贯穿全国的DK7（国家公路7号）的组成部分。
+在提供的示例中，这一点不易察觉，尤其是对克拉科夫以外的人来说。我们来看一下**Zakopianka**。它是连接市中心和克拉科夫南部大多数市镇的主要交通干道，也是贯穿全国的 DK7（国家公路 7 号）的组成部分。
 
-![](../Images/6eec83cb269da6610c8ee9eec3b0a7a0.png)
+![](img/6eec83cb269da6610c8ee9eec3b0a7a0.png)
 
-DK7公路 [](https://pl.wikipedia.org/wiki/Droga_krajowa_nr_7_(Polska)#/media/Plik:Mapa_DK7.png) — 绿色部分表示快速路。 [[source]](https://pl.wikipedia.org/wiki/Droga_krajowa_nr_7_(Polska)#/media/Plik:Mapa_DK7.png)
+DK7 公路 [](https://pl.wikipedia.org/wiki/Droga_krajowa_nr_7_(Polska)#/media/Plik:Mapa_DK7.png) — 绿色部分表示快速路。 [[source]](https://pl.wikipedia.org/wiki/Droga_krajowa_nr_7_(Polska)#/media/Plik:Mapa_DK7.png)
 
-如果我们将克拉科夫的DK7典型交通情况与我们的中心性测量进行比较，它们完全不同。平均介数中心性约为0.01，这比前2%的阈值小两倍。然而在现实中，它是最拥堵的路段之一。
+如果我们将克拉科夫的 DK7 典型交通情况与我们的中心性测量进行比较，它们完全不同。平均介数中心性约为 0.01，这比前 2%的阈值小两倍。然而在现实中，它是最拥堵的路段之一。
 
-![](../Images/3108379ae12e6e0ada7d78104dd87fe9.png)
+![](img/3108379ae12e6e0ada7d78104dd87fe9.png)
 
-Zakopianka的平均拥堵情况与介数中心性进行比较。 [©2023 Google, [source](https://www.google.com/maps/@49.9953143,19.9187393,14.47z/data=!5m1!1e1?entry=ttu)]
+Zakopianka 的平均拥堵情况与介数中心性进行比较。 [©2023 Google, [source](https://www.google.com/maps/@49.9953143,19.9187393,14.47z/data=!5m1!1e1?entry=ttu)]
 
 # 总结
 
 图论及其分析在多个场景中都有应用，例如本研究中展示的交通分析。通过对图进行基本操作和度量，我们可以在比建立整个模拟模型更短的时间内获得有价值的见解。
 
-这个完整的分析可以通过几十行Python代码来完成，并且不限于一种道路布局。我们也可以很容易地过渡到图论的其他分析工具。
+这个完整的分析可以通过几十行 Python 代码来完成，并且不限于一种道路布局。我们也可以很容易地过渡到图论的其他分析工具。
 
 像所有事物一样，这种方法也有其缺点。主要缺点是对均匀交通分布的假设以及范围仅限于图结构。
 
-包含本研究中使用的代码的Github仓库可以在[这里](https://github.com/Thematiq/cracow-roads-capacity)找到。
+包含本研究中使用的代码的 Github 仓库可以在[这里](https://github.com/Thematiq/cracow-roads-capacity)找到。

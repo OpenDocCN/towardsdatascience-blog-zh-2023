@@ -1,18 +1,18 @@
 # DL 笔记：高级梯度下降
 
-> 原文：[https://towardsdatascience.com/dl-notes-advanced-gradient-descent-4407d84c2515?source=collection_archive---------7-----------------------#2023-12-05](https://towardsdatascience.com/dl-notes-advanced-gradient-descent-4407d84c2515?source=collection_archive---------7-----------------------#2023-12-05)
+> 原文：[`towardsdatascience.com/dl-notes-advanced-gradient-descent-4407d84c2515?source=collection_archive---------7-----------------------#2023-12-05`](https://towardsdatascience.com/dl-notes-advanced-gradient-descent-4407d84c2515?source=collection_archive---------7-----------------------#2023-12-05)
 
 ## 主要的优化算法用于训练神经网络，从头开始在 Python 中解释和实现。
 
-[![Luis Medina](../Images/d83d326290ae3272f0618d0bd28bd875.png)](https://medium.com/@luisdamed?source=post_page-----4407d84c2515--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4407d84c2515--------------------------------) [Luis Medina](https://medium.com/@luisdamed?source=post_page-----4407d84c2515--------------------------------)
+![Luis Medina](https://medium.com/@luisdamed?source=post_page-----4407d84c2515--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4407d84c2515--------------------------------) [Luis Medina](https://medium.com/@luisdamed?source=post_page-----4407d84c2515--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F562a027a34f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdl-notes-advanced-gradient-descent-4407d84c2515&user=Luis+Medina&userId=562a027a34f0&source=post_page-562a027a34f0----4407d84c2515---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4407d84c2515--------------------------------) · 17 分钟阅读 · 2023年12月5日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F562a027a34f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdl-notes-advanced-gradient-descent-4407d84c2515&user=Luis+Medina&userId=562a027a34f0&source=post_page-562a027a34f0----4407d84c2515---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4407d84c2515--------------------------------) · 17 分钟阅读 · 2023 年 12 月 5 日
 
 --
 
-![](../Images/5de63561379eb2ad31ce53a3d33a8cbb.png)
+![](img/5de63561379eb2ad31ce53a3d33a8cbb.png)
 
 图片来源：[Jack Anstey](https://unsplash.com/@jack_anstey?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit) / [Unsplash](https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit)
 
@@ -28,13 +28,13 @@
 
 # 比较使用简单目标函数的算法
 
-![](../Images/214af3276a66868c0dd1d65362456436.png)
+![](img/214af3276a66868c0dd1d65362456436.png)
 
 在这篇文章中，我将展示如何在 Python 中实现不同的算法。
 
 我创建了一个 Jupyter Notebook，你可以通过[**GitHub 访问**](https://github.com/luisdamed/Gradient_Descent_Visualizations/blob/main/Advanced_Gradient_Descent_Trajectories.ipynb?ref=makerluis.com)或直接[**在 Google Colab 上查看**](https://colab.research.google.com/github/luisdamed/Gradient_Descent_Visualizations/blob/main/Advanced_Gradient_Descent_Trajectories.ipynb?ref=makerluis.com)以查看用于创建此处展示的图形的所有代码。
 
-为生成动画，我使用了我之前的文章中展示的[在 Python 中创建动画梯度下降图形的方法](/creating-a-gradient-descent-animation-in-python-3c4dcd20ca51?ref=makerluis.com)。
+为生成动画，我使用了我之前的文章中展示的在 Python 中创建动画梯度下降图形的方法。
 
 函数定义假设已经包含了以下代码，因为它们使用了`numpy`类和方法，并调用了函数`f`及其梯度`grad_f`。
 
@@ -59,7 +59,7 @@ def grad_f(theta):
 
 # 动量
 
-![](../Images/c2cf61a22635cb112694929bb532b4b0.png)
+![](img/c2cf61a22635cb112694929bb532b4b0.png)
 
 图片由[Sharon Pittaway](https://unsplash.com/@sharonp?utm_source=medium&utm_medium=referral)提供，拍摄于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -71,19 +71,19 @@ def grad_f(theta):
 
 从高中物理中我们知道，*平动*动量定义为物体质量与其速度的乘积：
 
-![](../Images/3d3ebc4b9ecd19513eee3a78b3f19a25.png)
+![](img/3d3ebc4b9ecd19513eee3a78b3f19a25.png)
 
 平动动量。
 
 我们还知道，质量为***m***的物体的重力势能与其所处的高度***h***是*成正比*的：
 
-![](../Images/0403422b98dca25d394344ebd5a5dd03.png)
+![](img/0403422b98dca25d394344ebd5a5dd03.png)
 
 重力势能。
 
 此外，物体的势能与施加在其上的力之间存在直接的[关系](https://phys.libretexts.org/Under_Construction/Purgatory/2%3A_Applying_Models_to_Mechanical_Phenomena/2.5%3A_Force_and_Potential_Energy?ref=makerluis.com)
 
-![](../Images/eac99ef0f2de0d84a9b77378f042d61a.png)
+![](img/eac99ef0f2de0d84a9b77378f042d61a.png)
 
 力等于势能的负梯度。
 
@@ -91,7 +91,7 @@ def grad_f(theta):
 
 > 物体的运动变化与施加的力成正比，并且沿着力的施加方向发生。
 
-![](../Images/f58e180d6fece6b73243d282bba9189e.png)
+![](img/f58e180d6fece6b73243d282bba9189e.png)
 
 牛顿第二定律。
 
@@ -105,13 +105,13 @@ def grad_f(theta):
 
 动量在优化中的作用是利用梯度来改变粒子的“速度”，进而改变其位置。
 
-![](../Images/eeacef283ed7c5f063589f3754773bb5.png)
+![](img/eeacef283ed7c5f063589f3754773bb5.png)
 
 动量更新。
 
 由于速度项，“粒子”在具有一致梯度的任何方向上加速。
 
-我将这实现为以下Python函数：
+我将这实现为以下 Python 函数：
 
 ```py
 def gradient_descent(x_init, y_init, step_size, n_iters, momentum):
@@ -146,9 +146,9 @@ def gradient_descent(x_init, y_init, step_size, n_iters, momentum):
 
 另一种解释是，它为优化过程提供了“短期”记忆。
 
-由于小于1，动量参数像是之前梯度的指数加权和，速度更新可以重写为[3][5]：
+由于小于 1，动量参数像是之前梯度的指数加权和，速度更新可以重写为[3][5]：
 
-![](../Images/da422a45d928db3a2feada48ebda9a0f.png)
+![](img/da422a45d928db3a2feada48ebda9a0f.png)
 
 速度项被重写为加权和。
 
@@ -156,29 +156,29 @@ def gradient_descent(x_init, y_init, step_size, n_iters, momentum):
 
 参数**β**控制我们对当前梯度与之前梯度之间新值的权重分配。
 
-通常它的值为0.9，但有时会“调度”，即在迭代过程中从0.5逐步增加到0.99。
+通常它的值为 0.9，但有时会“调度”，即在迭代过程中从 0.5 逐步增加到 0.99。
 
-# Nesterov加速梯度（NAG）
+# Nesterov 加速梯度（NAG）
 
-由Nesterov于1983年提出。
+由 Nesterov 于 1983 年提出。
 
-Nesterov更新实现了“前瞻”功能，以提高动量在凸函数上的稳定性和收敛速度。
+Nesterov 更新实现了“前瞻”功能，以提高动量在凸函数上的稳定性和收敛速度。
 
-![](../Images/5499819332220dbcf8777354761a3983.png)
+![](img/5499819332220dbcf8777354761a3983.png)
 
-NAG更新。
+NAG 更新。
 
-动量使用当前位置来更新梯度，而NAG首先对当前位置进行部分更新，知道
+动量使用当前位置来更新梯度，而 NAG 首先对当前位置进行部分更新，知道
 
-![](../Images/c239638fff8b6cd73262d88f0b93ba0a.png)
+![](img/c239638fff8b6cd73262d88f0b93ba0a.png)
 
 对前瞻性更新的直觉。
 
-![](../Images/15c24caf53126189dff5fd3fbae2b2c9.png)
+![](img/15c24caf53126189dff5fd3fbae2b2c9.png)
 
-动量和NAG更新的矢量表示。
+动量和 NAG 更新的矢量表示。
 
-为了将其实现为Python函数，我对之前展示的“速度更新”代码进行了以下修改：
+为了将其实现为 Python 函数，我对之前展示的“速度更新”代码进行了以下修改：
 
 ```py
 # Update velocity
@@ -194,15 +194,15 @@ v_t = mu*v_t - eta *grad_f(theta[k-1] + mu * v_t)
 
 差异在下图中非常明显。
 
-![](../Images/06e151df4c4996aca7b296f530e03d3c.png)
+![](img/06e151df4c4996aca7b296f530e03d3c.png)
 
-比较动量法和NAG在复杂表面上的下降优化。
+比较动量法和 NAG 在复杂表面上的下降优化。
 
 两个优化器在相同坐标上初始化，并使用相同的动量参数（0.95，固定）。
 
 以下动画也帮助我们理解调度或“退火”动量参数的直观感受。
 
-![](../Images/659217b9fdbdccb3a83429be0bb9cbf8.png)
+![](img/659217b9fdbdccb3a83429be0bb9cbf8.png)
 
 比较不同优化算法在穿越梯度消失区域时的表现。在这种情况下，基于动量的方法表现更好。
 
@@ -212,11 +212,11 @@ v_t = mu*v_t - eta *grad_f(theta[k-1] + mu * v_t)
 
 上面动画中展示的其他优化算法是自适应方法，我将在本节中描述这些方法。
 
-通过这个简单的例子，动量法和NAG似乎比其他方法优越。然而，自适应算法更具鲁棒性。我将在另一篇文章中通过实际例子来展示这一点。
+通过这个简单的例子，动量法和 NAG 似乎比其他方法优越。然而，自适应算法更具鲁棒性。我将在另一篇文章中通过实际例子来展示这一点。
 
 ## 自适应梯度算法（AdaGrad）
 
-AdaGrad 是一类用于随机优化的[次梯度](https://web.stanford.edu/class/ee392o/subgrad_method.pdf?ref=makerluis.com)算法，由[John Duchi、Elad Hazan 和 Yoram Singer于2011年](https://jmlr.org/papers/v12/duchi11a.html?ref=makerluis.com)提出。
+AdaGrad 是一类用于随机优化的[次梯度](https://web.stanford.edu/class/ee392o/subgrad_method.pdf?ref=makerluis.com)算法，由[John Duchi、Elad Hazan 和 Yoram Singer 于 2011 年](https://jmlr.org/papers/v12/duchi11a.html?ref=makerluis.com)提出。
 
 他们提出通过将梯度的历史信息纳入每次新的权重更新中来改进基于梯度的学习。
 
@@ -226,7 +226,7 @@ AdaGrad 是一类用于随机优化的[次梯度](https://web.stanford.edu/class
 
 为此，梯度估计的序列如下存储：
 
-![](../Images/018b04875576d906b9444d027b4adc3f.png)
+![](img/018b04875576d906b9444d027b4adc3f.png)
 
 梯度的平方和或梯度历史的外积。
 
@@ -234,15 +234,15 @@ AdaGrad 是一类用于随机优化的[次梯度](https://web.stanford.edu/class
 
 然后，更新规则如下：
 
-![](../Images/3bc65abe1897974a0676b8470522d9b0.png)
+![](img/3bc65abe1897974a0676b8470522d9b0.png)
 
 AdaGrad 更新。
 
-参数**ε**用于避免除零错误，通常设置为一个小值，如1e-08。
+参数**ε**用于避免除零错误，通常设置为一个小值，如 1e-08。
 
 有趣的是，G**ₜ**的定义类似于梯度分布的非中心（零均值）[方差](https://en.wikipedia.org/wiki/Variance?ref=makerluis.com)。
 
-![](../Images/77d7e86480587b0db5f7d8998e28bfd8.png)
+![](img/77d7e86480587b0db5f7d8998e28bfd8.png)
 
 方差定义。
 
@@ -252,9 +252,9 @@ AdaGrad 更新。
 
 考虑到这一点，我们可以说，梯度分布中离散程度较大的参数将按较大的比例缩小学习率，而梯度较一致（方差较低）的参数将具有较大的学习率。
 
-AdaGrad还根据时间（之前梯度的累积）和目标函数的曲率（“区域”中的梯度方差较低将分配较小的步长）自动实现学习率衰减。这改善了算法的收敛速度。
+AdaGrad 还根据时间（之前梯度的累积）和目标函数的曲率（“区域”中的梯度方差较低将分配较小的步长）自动实现学习率衰减。这改善了算法的收敛速度。
 
-我已将AdaGrad实现为以下Python函数：
+我已将 AdaGrad 实现为以下 Python 函数：
 
 ```py
 def Adagrad(x_init, y_init, step_size, n_iters):
@@ -281,27 +281,27 @@ def Adagrad(x_init, y_init, step_size, n_iters):
   return dataSet
 ```
 
-AdaGrad的一个缺点是，这种训练过程中学习率的衰减可能过于激进，导致在训练人工神经网络时学习过早停止。每次参数更新都很稳健，但变化接近最优点的速度可能会下降得太多。
+AdaGrad 的一个缺点是，这种训练过程中学习率的衰减可能过于激进，导致在训练人工神经网络时学习过早停止。每次参数更新都很稳健，但变化接近最优点的速度可能会下降得太多。
 
-另一个缺点是，虽然学习率在学习过程中会自我调整，但AdaGrad仍然对初始条件敏感。如果优化开始时梯度很大，那么训练过程中学习率会较低。
+另一个缺点是，虽然学习率在学习过程中会自我调整，但 AdaGrad 仍然对初始条件敏感。如果优化开始时梯度很大，那么训练过程中学习率会较低。
 
-我们可以在动画图中看到这一点。AdaGrad很快打破了对称性，但学习非常慢，与其他算法相比。
+我们可以在动画图中看到这一点。AdaGrad 很快打破了对称性，但学习非常慢，与其他算法相比。
 
 为了弥补这一点，可能需要将学习率调整到更高的值，这在一定程度上削弱了自我调整特性的目的。
 
 ## 均方根传播（RMSprop）
 
-未发表的方法，但在课程《神经网络与机器学习》第6讲的[幻灯片](https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf?ref=makerluis.com)中提到，由[Geoffrey Hinton](https://en.wikipedia.org/wiki/Geoffrey_Hinton?ref=makerluis.com)教授提供。
+未发表的方法，但在课程《神经网络与机器学习》第 6 讲的[幻灯片](https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf?ref=makerluis.com)中提到，由[Geoffrey Hinton](https://en.wikipedia.org/wiki/Geoffrey_Hinton?ref=makerluis.com)教授提供。
 
 这个算法的概念类似于动量。它还结合了梯度幅度的短期历史来执行权重更新。
 
-然而，与AdaGrad类似，RMSProp修改的是学习率而不是梯度。
+然而，与 AdaGrad 类似，RMSProp 修改的是学习率而不是梯度。
 
 为此，学习率被除以最近梯度幅度的滑动平均。
 
 首先，算法计算平方成本值及其之前值的加权和。
 
-![](../Images/701f7cc431162487e3d89e088ba1bfc1.png)
+![](img/701f7cc431162487e3d89e088ba1bfc1.png)
 
 平方成本的指数加权和。
 
@@ -311,7 +311,7 @@ AdaGrad的一个缺点是，这种训练过程中学习率的衰减可能过于�
 
 下一步是将学习率除以这个移动平均的平方根。
 
-![](../Images/6d74a625b221b9b4e476c5fb201a4368.png)
+![](img/6d74a625b221b9b4e476c5fb201a4368.png)
 
 RMSProp 更新规则。
 
@@ -319,7 +319,7 @@ RMSProp 更新规则。
 
 注意，计算加权平方和的平方根（或加权平均）等同于计算这些值的均方根（RMS）。
 
-![](../Images/752ab5645f800051560cda31b3e4e5da.png)
+![](img/752ab5645f800051560cda31b3e4e5da.png)
 
 RMS 的定义。
 
@@ -361,7 +361,7 @@ def RMSProp(x_init, y_init, step_size, n_iters, decay):
 
 RMSprop 对学习率的初始选择非常稳健，并且还实现了自动学习率衰减。然而，由于它基于梯度值的短期历史，因此衰减比 AdaGrad 更加温和。
 
-![](../Images/0c6c1edca99d72c5a323f8c2e692bcce.png)
+![](img/0c6c1edca99d72c5a323f8c2e692bcce.png)
 
 图片由 [Gonzalo Kaplanski](https://unsplash.com/@gonzakap?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -375,7 +375,7 @@ RMSprop 对学习率的初始选择非常稳健，并且还实现了自动学习
 
 实际上，这涉及到将学习率除以固定窗口内先前梯度的 RMS，就像 RMSprop 所做的那样：
 
-![](../Images/e3e257fde445b1c8167cd06aa71c2ba6.png)
+![](img/e3e257fde445b1c8167cd06aa71c2ba6.png)
 
 学习率缩放类似于 RMSProp。
 
@@ -383,19 +383,19 @@ AdaGrad 的下一个改进是优化更新单元的修正。
 
 在 AdaGrad（以及我迄今为止描述的所有其他优化算法）中，优化步骤的单位与我们为优化成本函数而修改的参数单位不匹配 [9]：
 
-![](../Images/bfb23bf151501ad39ebfd3a3e9704540.png)
+![](img/bfb23bf151501ad39ebfd3a3e9704540.png)
 
 我们在学校里知道不能将苹果和橙子相加。但使用这些优化算法时，就像我们在加“苹果”（当前参数值，**θₜ** 和一些未知量（优化步骤 **Δθ**），这些在数学上可以加到一起以获得新的苹果（更新后的参数，**θₜ ₊₁**）。这有效，但在现实生活中没有意义。
 
 Zeiler 决定纠正单位，将更新项从[牛顿法](https://en.wikipedia.org/wiki/Newton%27s_method?ref=makerluis.com)重新排列，并假设损失函数的曲率可以用对角[海森矩阵](https://en.wikipedia.org/wiki/Hessian_matrix?ref=makerluis.com)来近似：
 
-![](../Images/d4cb70742f35ebddcf11f40b98d708ac.png)
+![](img/d4cb70742f35ebddcf11f40b98d708ac.png)
 
 将这一观察与类似于 RMSProp 的更新规则进行比较，Zeiler 确定了正确的更新项形式，以保持正确的单位。
 
 直观的解释在原始出版物中更为详尽，但实际上，它导致在更新项的分子中添加了以前更新值的指数加权平均的平方根：
 
-![](../Images/5d7d73b0fd9e37e9727fa810762f744a.png)
+![](img/5d7d73b0fd9e37e9727fa810762f744a.png)
 
 AdaDelta 参数更新步骤。
 
@@ -448,25 +448,25 @@ Adam 类似于动量（Momentum）和 RMSprop 的结合，因为它动态地改�
 
 首先，动量项是成本函数前几个梯度的指数加权和（这类似于加权方差）：
 
-![](../Images/4fcf8fc07a1a6b7e064c47aa116ae596.png)
+![](img/4fcf8fc07a1a6b7e064c47aa116ae596.png)
 
 成本梯度的指数加权平均。
 
 然后，有一个来自 RMSprop 的术语，是平方梯度的指数加权移动平均。
 
-![](../Images/fb2aaf1105d8aebc521a41d67f9b5ed9.png)
+![](img/fb2aaf1105d8aebc521a41d67f9b5ed9.png)
 
 成本梯度的指数加权平均。
 
 将两者与 SGD 算法结合，过去梯度的信息被纳入更新步骤。它们在短窗口内的总能量（RMS）用于缩放学习率，而它们的离散度（方差）有助于调整用于更新权重的当前梯度值。
 
-![](../Images/e1ae4b44a6a1e7fb27694f23883149dc.png)
+![](img/e1ae4b44a6a1e7fb27694f23883149dc.png)
 
 Adam 的更新规则。
 
 带有波浪号 (~) 的值对应于引入的偏差校正项，以减少学习过程中 m 和 v 初始值的贡献：
 
-![](../Images/d9d3e694982e67f5eb6551697682715d.png)
+![](img/d9d3e694982e67f5eb6551697682715d.png)
 
 Adam 的初始化偏差校正项。
 
@@ -521,13 +521,13 @@ def Adam(x_init, y_init, step_size, n_iters,
 
 有趣的是，论文的作者指出了这个术语
 
-![](../Images/e4792c1a703ee073bf8177f34fe9d998.png)
+![](img/e4792c1a703ee073bf8177f34fe9d998.png)
 
 Adam 的学习率缩放。
 
 *类似于* [信噪比 (SNR)](https://en.wikipedia.org/wiki/Signal-to-noise_ratio#Definition) 的定义：
 
-![](../Images/33d9ff2497e564d37438da78b5661d8e.png)
+![](img/33d9ff2497e564d37438da78b5661d8e.png)
 
 信噪比。
 
@@ -541,7 +541,7 @@ Adam 及其变体在训练深度学习模型时通常优于其他算法，特别
 
 这是一个相当简单的例子，但它提供了这些方法如何受到学习率选择影响的一个概念。
 
-![](../Images/d5413170b1b8d1f0cde2cb54ba44551c.png)
+![](img/d5413170b1b8d1f0cde2cb54ba44551c.png)
 
 比较不同算法优化过程中 x 和 y 坐标的演变。对于 Momentum 和 NAG，mu = 0.95。对于 RMSProp 和 AdaDelta，衰减参数 = 0.9。
 
@@ -573,7 +573,7 @@ AdaDelta 对全局学习率设置似乎非常鲁棒，在所有三种情况下�
 
 +   [DL Notes: 前馈人工神经网络](https://medium.com/@luisdamed/feedforward-artificial-neural-networks-52bcf96d6ac3)
 
-+   [在 Python 中创建梯度下降动画（数据科学的前沿）](/creating-a-gradient-descent-animation-in-python-3c4dcd20ca51?ref=makerluis.com)
++   在 Python 中创建梯度下降动画（数据科学的前沿）
 
 # 参考文献
 
@@ -583,20 +583,20 @@ AdaDelta 对全局学习率设置似乎非常鲁棒，在所有三种情况下�
 
 [2] [斯坦福在线：CS231 卷积神经网络进行视觉识别](https://cs231n.github.io/neural-networks-3?ref=makerluis.com)
 
-[3] Goh. “为什么 Momentum 真正有效”，Distill，2017\. [http://doi.org/10.23915/distill.00006](http://doi.org/10.23915/distill.00006?ref=makerluis.com)
+[3] Goh. “为什么 Momentum 真正有效”，Distill，2017\. [`doi.org/10.23915/distill.00006`](http://doi.org/10.23915/distill.00006?ref=makerluis.com)
 
 [4] Villalarga, D. “[AdaGrad](https://optimization.cbe.cornell.edu/index.php?title=AdaGrad&ref=makerluis.com)”。发布于康奈尔大学计算优化开放教材 — 优化维基。
 
 [5] Bengio, Yoshua. “深度架构的梯度训练的实际建议。” *神经网络：实用技巧：第二版*。柏林，海德堡：Springer Berlin Heidelberg, 437–478, 2012\. 在线: [arXiv:1206.5533](https://arxiv.org/abs/1206.5533?ref=makerluis.com) [cs.LG]
 
-[6] Sutskever, I., Martens, J., Dahl, G. & Hinton, G. “在深度学习中初始化和动量的重要性”。*机器学习研究会议论文集,* 28(3):1139–1147, 2013\. 网址: [https://proceedings.mlr.press/v28/sutskever13.html](https://proceedings.mlr.press/v28/sutskever13.html?ref=makerluis.com).
+[6] Sutskever, I., Martens, J., Dahl, G. & Hinton, G. “在深度学习中初始化和动量的重要性”。*机器学习研究会议论文集,* 28(3):1139–1147, 2013\. 网址: [`proceedings.mlr.press/v28/sutskever13.html`](https://proceedings.mlr.press/v28/sutskever13.html?ref=makerluis.com).
 
-[7] Duchi, J., Hazan, E., Singer, Y., “在线学习和随机优化的自适应子梯度方法”。*机器学习研究杂志,* 12(61):2121−2159, 2011\. 网址: [https://jmlr.org/papers/v12/duchi11a.html](https://jmlr.org/papers/v12/duchi11a.html?ref=makerluis.com)
+[7] Duchi, J., Hazan, E., Singer, Y., “在线学习和随机优化的自适应子梯度方法”。*机器学习研究杂志,* 12(61):2121−2159, 2011\. 网址: [`jmlr.org/papers/v12/duchi11a.html`](https://jmlr.org/papers/v12/duchi11a.html?ref=makerluis.com)
 
-[8] Jason Brownlee, [从零开始的AdaGrad梯度下降](https://machinelearningmastery.com/gradient-descent-with-adagrad-from-scratch/?ref=makerluis.com)。2021
+[8] Jason Brownlee, [从零开始的 AdaGrad 梯度下降](https://machinelearningmastery.com/gradient-descent-with-adagrad-from-scratch/?ref=makerluis.com)。2021
 
 [9] Zeiler, M. “ADADELTA: 一种自适应学习率方法”，2012\. [arXiv:1212.5701v1](https://arxiv.org/abs/1212.5701v1?ref=makerluis.com) [cs.LG]
 
 [10] Kingma, D., Ba, J. “Adam: 一种随机优化方法”，2014\. [arXiv:1412.6980](https://arxiv.org/abs/1412.6980?ref=makerluis.com) [cs.LG]
 
-*最初发布于* [*https://www.makerluis.com*](https://www.makerluis.com/dl-notes-advanced-gradient-descent/) *2023年12月5日。*
+*最初发布于* [*https://www.makerluis.com*](https://www.makerluis.com/dl-notes-advanced-gradient-descent/) *2023 年 12 月 5 日。*

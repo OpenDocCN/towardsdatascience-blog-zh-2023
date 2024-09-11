@@ -1,58 +1,58 @@
 # 创建荷兰语问答机器学习模型
 
-> 原文：[https://towardsdatascience.com/creating-a-dutch-question-answering-machine-learning-model-3b666a115be3?source=collection_archive---------3-----------------------#2023-01-29](https://towardsdatascience.com/creating-a-dutch-question-answering-machine-learning-model-3b666a115be3?source=collection_archive---------3-----------------------#2023-01-29)
+> 原文：[`towardsdatascience.com/creating-a-dutch-question-answering-machine-learning-model-3b666a115be3?source=collection_archive---------3-----------------------#2023-01-29`](https://towardsdatascience.com/creating-a-dutch-question-answering-machine-learning-model-3b666a115be3?source=collection_archive---------3-----------------------#2023-01-29)
 
 ## 自然语言处理教程
 
 ## 使用自然语言处理翻译创建新的数据集
 
-[](https://medium.com/@ErwinVanCrasbeek?source=post_page-----3b666a115be3--------------------------------)[![Erwin van Crasbeek](../Images/7eab3fc949f86b80ccd8e99f17a1ed7f.png)](https://medium.com/@ErwinVanCrasbeek?source=post_page-----3b666a115be3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b666a115be3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3b666a115be3--------------------------------) [Erwin van Crasbeek](https://medium.com/@ErwinVanCrasbeek?source=post_page-----3b666a115be3--------------------------------)
+[](https://medium.com/@ErwinVanCrasbeek?source=post_page-----3b666a115be3--------------------------------)![Erwin van Crasbeek](https://medium.com/@ErwinVanCrasbeek?source=post_page-----3b666a115be3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b666a115be3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b666a115be3--------------------------------) [Erwin van Crasbeek](https://medium.com/@ErwinVanCrasbeek?source=post_page-----3b666a115be3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feeab190a1f50&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-dutch-question-answering-machine-learning-model-3b666a115be3&user=Erwin+van+Crasbeek&userId=eeab190a1f50&source=post_page-eeab190a1f50----3b666a115be3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b666a115be3--------------------------------) ·20 min阅读·2023年1月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3b666a115be3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-dutch-question-answering-machine-learning-model-3b666a115be3&user=Erwin+van+Crasbeek&userId=eeab190a1f50&source=-----3b666a115be3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feeab190a1f50&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-dutch-question-answering-machine-learning-model-3b666a115be3&user=Erwin+van+Crasbeek&userId=eeab190a1f50&source=post_page-eeab190a1f50----3b666a115be3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b666a115be3--------------------------------) ·20 min 阅读·2023 年 1 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3b666a115be3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-dutch-question-answering-machine-learning-model-3b666a115be3&user=Erwin+van+Crasbeek&userId=eeab190a1f50&source=-----3b666a115be3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b666a115be3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-dutch-question-answering-machine-learning-model-3b666a115be3&source=-----3b666a115be3---------------------bookmark_footer-----------)![](../Images/c188bc671e83f8a4d731dd53628bac15.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b666a115be3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-dutch-question-answering-machine-learning-model-3b666a115be3&source=-----3b666a115be3---------------------bookmark_footer-----------)![](img/c188bc671e83f8a4d731dd53628bac15.png)
 
 荷兰语问答模型创建流程
 
 自然语言处理模型目前是一个热门话题。谷歌发布的《Attention Is All You Need》[1] 推动了许多像 BERT、GPT-3 和 ChatGPT 这样的 Transformer 模型的发展，这些模型受到了全球的广泛关注。虽然许多语言模型是在英语或多语言上进行训练的，但针对特定语言的模型和数据集可能难以找到或质量堪忧。
 
-NLP有广泛的应用，包括但不限于翻译、信息提取、摘要和问答，而后者是我个人一直在从事的工作。作为应用人工智能的学生，我一直在研究问答NLP模型，并且发现很难找到有用的荷兰语数据集用于训练。为了解决这个问题，我开发了一个翻译解决方案，可以应用于各种NLP问题和几乎所有语言，这可能对其他学生有兴趣。我认为这对人工智能开发和研究社区也具有很大的价值。特别是对于像问答这样的特定任务，几乎没有荷兰语数据集。通过翻译一个大型且知名的数据集，我能够以相对较低的努力创建一个荷兰语问答模型。
+NLP 有广泛的应用，包括但不限于翻译、信息提取、摘要和问答，而后者是我个人一直在从事的工作。作为应用人工智能的学生，我一直在研究问答 NLP 模型，并且发现很难找到有用的荷兰语数据集用于训练。为了解决这个问题，我开发了一个翻译解决方案，可以应用于各种 NLP 问题和几乎所有语言，这可能对其他学生有兴趣。我认为这对人工智能开发和研究社区也具有很大的价值。特别是对于像问答这样的特定任务，几乎没有荷兰语数据集。通过翻译一个大型且知名的数据集，我能够以相对较低的努力创建一个荷兰语问答模型。
 
-如果你有兴趣了解更多关于我的过程、我面临的挑战以及此解决方案的潜在应用，请继续阅读。本文旨在为具有基本NLP背景的学生提供。然而，我还为那些尚未熟悉该领域或仅需复习的人士提供了复习材料和各种概念的介绍。
+如果你有兴趣了解更多关于我的过程、我面临的挑战以及此解决方案的潜在应用，请继续阅读。本文旨在为具有基本 NLP 背景的学生提供。然而，我还为那些尚未熟悉该领域或仅需复习的人士提供了复习材料和各种概念的介绍。
 
 为了正确解释我使用翻译数据集的解决方案，我将本文分为两个主要部分：数据集的翻译和问答模型的训练。我撰写本文的方式旨在展示我在解决方案方面的进展，同时也作为一个逐步指南。文章包括以下章节：
 
-1.  [关于NLP的复习和NLP的简要历史](#6ae5)
+1.  关于 NLP 的复习和 NLP 的简要历史
 
-1.  [问题、数据集和问答](#4fab)
+1.  问题、数据集和问答
 
-1.  [翻译数据集](#137f)
+1.  翻译数据集
 
-1.  [构建一个问答模型](#5e71)
+1.  构建一个问答模型
 
-1.  [已取得的成就与未取得的成就？](#df96)
+1.  已取得的成就与未取得的成就？
 
-1.  [未来计划](#a6ce)
+1.  未来计划
 
-1.  [来源](#c683)
+1.  来源
 
-# 关于NLP的复习和NLP的简要历史
+# 关于 NLP 的复习和 NLP 的简要历史
 
-为了更好地理解这个解决方案的各个元素，我想从对NLP及其近期历史的复习开始。我们所知道的语言可以分为两组，形式语言和自然语言。形式语言指的是专门为特定任务如数学和编程设计的语言。自然语言或普通语言是指由人类自然发展和演变的语言，没有任何形式的预先规划。这可以表现为我们所知道的各种人类言语形式，甚至是手语[2]。
+为了更好地理解这个解决方案的各个元素，我想从对 NLP 及其近期历史的复习开始。我们所知道的语言可以分为两组，形式语言和自然语言。形式语言指的是专门为特定任务如数学和编程设计的语言。自然语言或普通语言是指由人类自然发展和演变的语言，没有任何形式的预先规划。这可以表现为我们所知道的各种人类言语形式，甚至是手语[2]。
 
-NLP在其最广泛的形式上是将计算方法应用于自然语言。通过将基于规则的语言建模与人工智能模型相结合，我们已经能够使计算机以一种能够处理文本和语音形式的方式“理解”我们的自然语言[3]。这种理解的方式——如果它真的可以称为理解的话——仍然存在争议。然而，像ChatGPT这样的最新发展表明，我们人类确实常常觉得这些模型的输出让人感到它有自我意识，并且具有较高的理解水平[4]。
+NLP 在其最广泛的形式上是将计算方法应用于自然语言。通过将基于规则的语言建模与人工智能模型相结合，我们已经能够使计算机以一种能够处理文本和语音形式的方式“理解”我们的自然语言[3]。这种理解的方式——如果它真的可以称为理解的话——仍然存在争议。然而，像 ChatGPT 这样的最新发展表明，我们人类确实常常觉得这些模型的输出让人感到它有自我意识，并且具有较高的理解水平[4]。
 
-当然，这种理解并非凭空而来。NLP有着广泛的历史，可以追溯到二战后的1940年代[5]。在这个时期，人们意识到了翻译的重要性，并希望创造一种能够自动完成翻译的机器。然而，这证明是相当具有挑战性的。大约在1960年左右，NLP研究分为基于规则的和随机的两大类。基于规则的或符号化的主要涉及形式语言和语法生成。这个领域的许多语言学研究者和计算机科学家认为这是人工智能研究的开始。随机研究则更多关注统计学和文本间的模式识别等问题。
+当然，这种理解并非凭空而来。NLP 有着广泛的历史，可以追溯到二战后的 1940 年代[5]。在这个时期，人们意识到了翻译的重要性，并希望创造一种能够自动完成翻译的机器。然而，这证明是相当具有挑战性的。大约在 1960 年左右，NLP 研究分为基于规则的和随机的两大类。基于规则的或符号化的主要涉及形式语言和语法生成。这个领域的许多语言学研究者和计算机科学家认为这是人工智能研究的开始。随机研究则更多关注统计学和文本间的模式识别等问题。
 
-自那时起，NLP（自然语言处理）领域取得了许多进展，研究领域也不断扩展。然而，NLP模型生成的实际文本一直相当有限，且缺乏许多现实世界的应用。直到2000年代初期，NLP的发展才迎来了每隔几年便有显著突破的阶段，这才导致了我们现在的情况。
+自那时起，NLP（自然语言处理）领域取得了许多进展，研究领域也不断扩展。然而，NLP 模型生成的实际文本一直相当有限，且缺乏许多现实世界的应用。直到 2000 年代初期，NLP 的发展才迎来了每隔几年便有显著突破的阶段，这才导致了我们现在的情况。
 
 # 问题、数据集和问答
 
-现在我已经简要回顾了NLP的背景，是时候介绍我一直在研究的实际问题了。简而言之，我的目标是训练一个荷兰语问答的机器学习模型。然而，由于缺乏合适的数据集，这变得相当困难，因此我通过翻译创建了自己的数据集。在本文中，我将逐步讲解数据集的创建和机器学习模型的训练，以便你可以跟随并复制整个解决方案，或选择对你来说重要的部分。
+现在我已经简要回顾了 NLP 的背景，是时候介绍我一直在研究的实际问题了。简而言之，我的目标是训练一个荷兰语问答的机器学习模型。然而，由于缺乏合适的数据集，这变得相当困难，因此我通过翻译创建了自己的数据集。在本文中，我将逐步讲解数据集的创建和机器学习模型的训练，以便你可以跟随并复制整个解决方案，或选择对你来说重要的部分。
 
 本文可以分为两个主要部分。第一个是荷兰语数据集的创建，第二个是问答机器学习模型的训练。在这一章中，我将提供一些背景信息，介绍我的解决方案并解释我的选择。
 
@@ -60,25 +60,25 @@ NLP在其最广泛的形式上是将计算方法应用于自然语言。通过�
 
 如果我们想找到一个有用的荷兰语数据集，那么了解训练一个问答模型所需的具体内容是很重要的。生成答案的主要有两种方法：第一种是抽取式，第二种是生成式。
 
-· **抽取式**问答模型被训练以从上下文（源文本）中提取答案[7]。较早的方法通过训练一个模型来输出答案在上下文中的起始和结束索引来实现这一点。然而，Transformer的引入使这种方法已经过时。
+· **抽取式**问答模型被训练以从上下文（源文本）中提取答案[7]。较早的方法通过训练一个模型来输出答案在上下文中的起始和结束索引来实现这一点。然而，Transformer 的引入使这种方法已经过时。
 
 · **生成式**问答模型被训练以根据上下文和问题生成新文本[8]。
 
-图1展示了抽取式和生成式模型可能产生的输出示例。
+图 1 展示了抽取式和生成式模型可能产生的输出示例。
 
-尽管有不同的方法，但如今抽取式和生成式问答模型通常都基于像BERT这样的Transformer[8]，[9]。
+尽管有不同的方法，但如今抽取式和生成式问答模型通常都基于像 BERT 这样的 Transformer[8]，[9]。
 
-![](../Images/0682a79c2ea32064801f8556b954126a.png)
+![](img/0682a79c2ea32064801f8556b954126a.png)
 
-图1\. 抽取式与生成式方式生成的答案示例。
+图 1\. 抽取式与生成式方式生成的答案示例。
 
 基于关于抽取式和生成式模型的信息，我们现在知道我们需要一个包含上下文、问题、答案以及（可选的）答案在上下文中的起始和结束索引的数据集。我已经探索了以下选项，以寻找合适的数据集。
 
-+   我使用了Cambazoglu *et al* 的2020年论文[10]，以获得有关问答数据集的清晰图像。他们的研究结果提供了一张包含最显著问答数据集的表格。不幸的是，这些大型数据集中没有荷兰语的数据集。
++   我使用了 Cambazoglu *et al* 的 2020 年论文[10]，以获得有关问答数据集的清晰图像。他们的研究结果提供了一张包含最显著问答数据集的表格。不幸的是，这些大型数据集中没有荷兰语的数据集。
 
-+   另一个选择是Huggingface，它托管了大量的数据集[11]。乍一看，有一些荷兰语的问答数据集。然而，进一步检查显示，这些数据集往往不完整，包含网站域名而不是上下文，或者是各种语言的混合。这些数据集完全无法使用，或者不够完整，无法用于我们的目标。
++   另一个选择是 Huggingface，它托管了大量的数据集[11]。乍一看，有一些荷兰语的问答数据集。然而，进一步检查显示，这些数据集往往不完整，包含网站域名而不是上下文，或者是各种语言的混合。这些数据集完全无法使用，或者不够完整，无法用于我们的目标。
 
-从这些观察结果来看，几乎没有公共数据集可以用来训练荷兰语问答模型。手动创建我们自己的数据集将花费太多时间，那么我们还有什么其他选项？首先，我们可以简单地使用一个英语模型，将荷兰语输入翻译成英语，然后将输出再翻译回荷兰语。然而，通过Google翻译进行的快速测试表明，这种方法的结果远非理想，几乎感觉有些消极攻击。也许在双重翻译步骤中丢失了太多信息和上下文？这就引出了第二个选项，即翻译整个数据集并在其上进行训练。在我的研究中，我遇到了一些提到这一点的实例。例如，Zoumana Keita在Towardsdatascience上的一篇文章[16]使用翻译进行数据增强。第三章将深入探讨我如何执行数据集的翻译。
+从这些观察结果来看，几乎没有公共数据集可以用来训练荷兰语问答模型。手动创建我们自己的数据集将花费太多时间，那么我们还有什么其他选项？首先，我们可以简单地使用一个英语模型，将荷兰语输入翻译成英语，然后将输出再翻译回荷兰语。然而，通过 Google 翻译进行的快速测试表明，这种方法的结果远非理想，几乎感觉有些消极攻击。也许在双重翻译步骤中丢失了太多信息和上下文？这就引出了第二个选项，即翻译整个数据集并在其上进行训练。在我的研究中，我遇到了一些提到这一点的实例。例如，Zoumana Keita 在 Towardsdatascience 上的一篇文章[16]使用翻译进行数据增强。第三章将深入探讨我如何执行数据集的翻译。
 
 最后，我们需要选择用于翻译的方法的数据集。既然我们决定翻译整个数据集，那么原始数据集使用什么语言就不重要了。[斯坦福问答数据集](https://rajpurkar.github.io/SQuAD-explorer/)（SQuAD）[12] 似乎相当受欢迎，并被 Paperswithcode 用于问答基准测试[13]。它还包含大量（100,000+）的问答，并且经仔细检查后似乎没有任何意外数据。这就是我们将要使用的数据集。
 
@@ -86,7 +86,7 @@ NLP在其最广泛的形式上是将计算方法应用于自然语言。通过�
 
 现在我们已经确定了如何获取数据集；我们需要决定哪种机器学习模型适合回答问题的目标。在前一章中，我们已经确定可以选择抽取式模型和生成式模型。在我的研究中，我使用了生成式模型，因为它基于较新的技术，并且给出了更有趣的结果。然而，以防有人希望采用抽取式模型，我也会对此进行介绍。这也与数据集的选择一致，因为它包含了答案的起始索引。
 
-从头开始训练一个 Transformer 模型，至少可以说是低效的。P. Azunre 的《自然语言处理中的迁移学习》一书[14]深入探讨了为什么进行迁移学习，并展示了如何进行迁移学习的多个示例。大量大型 NLP 模型托管在 Huggingface[15]上，并可用于迁移学习。我选择了 t5-v1_1-base 模型，因为它经过多语言的多任务训练。第 4 章将介绍该模型的迁移学习。
+从头开始训练一个 Transformer 模型，至少可以说是低效的。P. Azunre 的《自然语言处理中的迁移学习》一书[14]深入探讨了为什么进行迁移学习，并展示了如何进行迁移学习的多个示例。大量大型 NLP 模型托管在 Huggingface[15]上，并可用于迁移学习。我选择了 t5-v1_1-base 模型，因为它经过多语言的多任务训练。第四章将介绍该模型的迁移学习。
 
 # 翻译数据集
 
@@ -433,9 +433,9 @@ def save_model():
     torch.save(model.state_dict(), "answer_gen_models/nlpModel"+date_time+".pt")
 ```
 
-模型的实际训练将在三个时期内完成，我使用的Notebook [17] 和T5文档都表明这是一个不错的训练周期数。在我配备RTX 3090的PC上，这大约需要每个周期24小时。我使用的服务器利用了Nvidia Tesla T4，每个周期大约需要6小时。
+模型的实际训练将在三个时期内完成，我使用的 Notebook [17] 和 T5 文档都表明这是一个不错的训练周期数。在我配备 RTX 3090 的 PC 上，这大约需要每个周期 24 小时。我使用的服务器利用了 Nvidia Tesla T4，每个周期大约需要 6 小时。
 
-Tqdm模块用于对训练状态进行可视化反馈。它提供了关于已过时间和估计训练时间的数据。两个注释箭头之间的步骤对于我们的问答目标很重要，这里我们定义了给模型的输入。该代码块中的其他步骤对于PyTorch模型的训练相当直接。
+Tqdm 模块用于对训练状态进行可视化反馈。它提供了关于已过时间和估计训练时间的数据。两个注释箭头之间的步骤对于我们的问答目标很重要，这里我们定义了给模型的输入。该代码块中的其他步骤对于 PyTorch 模型的训练相当直接。
 
 ```py
 for epoch in range(3):
@@ -464,7 +464,7 @@ save_model()
 
 ## 结果
 
-如果你跟随完成了，恭喜你！你已经创建了自己的荷兰数据集并训练了一个荷兰问答模型！如果你和我一样，可能迫不及待想尝试一下模型的结果。你可以使用以下代码来评估模型。有趣的是，你可能会发现模型不仅能够回答荷兰语问题！它也有能力回答不同（主要是日耳曼语）的语言的问题。这很可能是因为原始T5-v1_1-base模型已经在四种不同语言上进行了训练。
+如果你跟随完成了，恭喜你！你已经创建了自己的荷兰数据集并训练了一个荷兰问答模型！如果你和我一样，可能迫不及待想尝试一下模型的结果。你可以使用以下代码来评估模型。有趣的是，你可能会发现模型不仅能够回答荷兰语问题！它也有能力回答不同（主要是日耳曼语）的语言的问题。这很可能是因为原始 T5-v1_1-base 模型已经在四种不同语言上进行了训练。
 
 ```py
 model = T5ForConditionalGeneration.from_pretrained('google/t5-v1_1-base')
@@ -522,11 +522,11 @@ test("Dit is een voorbeeld", "Wat is dit?")
 
 # 已经实现了什么，未实现什么？
 
-总结一下，我们选择了一个用于问答的英文数据集，通过Google Translate API将其翻译成荷兰语，并训练了一个基于T5-v1_1-base的PyTorch编码器-解码器模型。我们究竟实现了什么，这在实际情况中是否能使用？
+总结一下，我们选择了一个用于问答的英文数据集，通过 Google Translate API 将其翻译成荷兰语，并训练了一个基于 T5-v1_1-base 的 PyTorch 编码器-解码器模型。我们究竟实现了什么，这在实际情况中是否能使用？
 
 首先，重要的是要认识到我们没有对模型进行适当评估，因为这不是本文的范围。然而，为了能够正确解释我们的结果，并能够谈论其可用性，我建议查看如 Rouge [19] 等度量标准或进行人类评估。我采取的方法是人类评估。表 2 显示了五个人对各种上下文来源和问题生成答案的平均评分，评分范围从 1 到 5。平均分为 2.96\。这个数字本身并没有告诉我们很多信息，但我们可以从表中得出结论，我们创建的模型在某些情况下可以生成接近完美的答案。然而，它也经常生成评估小组认为完全无意义的答案。
 
-![](../Images/f55d4a916a6b078f6daa3f1443a294b5.png)
+![](img/f55d4a916a6b078f6daa3f1443a294b5.png)
 
 表 2\. 各种文章、论文和学位论文的人类评估评分（1–5）。
 
@@ -546,38 +546,38 @@ test("Dit is een voorbeeld", "Wat is dit?")
 
 [2] D. Khurana, A. Koli, K. Khatter, 和 S. Singh，“自然语言处理：最新进展、当前趋势和挑战，” *Multimedia Tools and Applications*，2022 年 7 月，doi: 10.1007/s11042–022–13428–4。
 
-[3] “什么是自然语言处理？| IBM，” [*www.ibm.com*](http://www.ibm.com.)。[https://www.ibm.com/topics/natural-language-processing](https://www.ibm.com/topics/natural-language-processing)（访问日期：2023 年 1 月 11 日）。
+[3] “什么是自然语言处理？| IBM，” [*www.ibm.com*](http://www.ibm.com.)。[`www.ibm.com/topics/natural-language-processing`](https://www.ibm.com/topics/natural-language-processing)（访问日期：2023 年 1 月 11 日）。
 
-[4] E. Holloway，“是的，ChatGPT 是有意识的 — 因为实际上是人类在其中，” *Mind Matters*，2022 年 12 月 26 日。[https://mindmatters.ai/2022/12/yes-chatgpt-is-sentient-because-its-really-humans-in-the-loop/](https://mindmatters.ai/2022/12/yes-chatgpt-is-sentient-because-its-really-humans-in-the-loop/)（访问日期：2023 年 1 月 18 日）。
+[4] E. Holloway，“是的，ChatGPT 是有意识的 — 因为实际上是人类在其中，” *Mind Matters*，2022 年 12 月 26 日。[`mindmatters.ai/2022/12/yes-chatgpt-is-sentient-because-its-really-humans-in-the-loop/`](https://mindmatters.ai/2022/12/yes-chatgpt-is-sentient-because-its-really-humans-in-the-loop/)（访问日期：2023 年 1 月 18 日）。
 
-[5] “NLP — 概述，” *cs.stanford.edu*。[https://cs.stanford.edu/people/eroberts/courses/soco/projects/2004-05/nlp/overview_history.html](https://cs.stanford.edu/people/eroberts/courses/soco/projects/2004-05/nlp/overview_history.html)（访问日期：2023 年 1 月 18 日）。
+[5] “NLP — 概述，” *cs.stanford.edu*。[`cs.stanford.edu/people/eroberts/courses/soco/projects/2004-05/nlp/overview_history.html`](https://cs.stanford.edu/people/eroberts/courses/soco/projects/2004-05/nlp/overview_history.html)（访问日期：2023 年 1 月 18 日）。
 
-[6] S. Ruder，“自然语言处理最近历史的回顾，” *Sebastian Ruder*，2018 年 10 月 1 日。[https://ruder.io/a-review-of-the-recent-history-of-nlp/](https://ruder.io/a-review-of-the-recent-history-of-nlp/)（访问日期：2023 年 1 月 18 日）。
+[6] S. Ruder，“自然语言处理最近历史的回顾，” *Sebastian Ruder*，2018 年 10 月 1 日。[`ruder.io/a-review-of-the-recent-history-of-nlp/`](https://ruder.io/a-review-of-the-recent-history-of-nlp/)（访问日期：2023 年 1 月 18 日）。
 
 [7] S. Varanasi, S. Amin, 和 G. Neumann，“AutoEQA：用于提取式问答的自动编码问题，” *计算语言学协会年会论文集：EMNLP 2021*，2021 年。
 
-[8] “什么是问答？ — Hugging Face，” *huggingface.co*。[https://huggingface.co/tasks/question-answering](https://huggingface.co/tasks/question-answering)（访问日期：2023 年 1 月 18 日）。
+[8] “什么是问答？ — Hugging Face，” *huggingface.co*。[`huggingface.co/tasks/question-answering`](https://huggingface.co/tasks/question-answering)（访问日期：2023 年 1 月 18 日）。
 
 [9] R. E. López Condori 和 T. A. Salgueiro Pardo，“观点总结方法：比较和扩展提取式和抽象式方法，” *专家系统应用*，第 78 卷，第 124–134 页，2017 年 7 月，doi: 10.1016/j.eswa.2017.02.006。
 
 [10] B. B. Cambazoglu, M. Sanderson, F. Scholer, 和 B. Croft，“关于问答研究的公共数据集综述，” *ACM SIGIR Forum*，第 54 卷，第 2 期，第 1–23 页，2020 年 12 月，doi: 10.1145/3483382.3483389。
 
-[11] “Hugging Face — 建设未来的人工智能社区，” *huggingface.co*。[https://huggingface.co/datasets?language=language:nl&task_categories=task_categories:question-answering&sort=downloads](https://huggingface.co/datasets?language=language%3Anl&task_categories=task_categories%3Aquestion-answering&sort=downloads)（访问日期：2023 年 1 月 18 日）。
+[11] “Hugging Face — 建设未来的人工智能社区，” *huggingface.co*。[`huggingface.co/datasets?language=language:nl&task_categories=task_categories:question-answering&sort=downloads`](https://huggingface.co/datasets?language=language%3Anl&task_categories=task_categories%3Aquestion-answering&sort=downloads)（访问日期：2023 年 1 月 18 日）。
 
-[12] “斯坦福问答数据集，” *rajpurkar.github.io*。[https://rajpurkar.github.io/SQuAD-explorer/](https://rajpurkar.github.io/SQuAD-explorer/)（访问日期：2023 年 1 月 18 日）。
+[12] “斯坦福问答数据集，” *rajpurkar.github.io*。[`rajpurkar.github.io/SQuAD-explorer/`](https://rajpurkar.github.io/SQuAD-explorer/)（访问日期：2023 年 1 月 18 日）。
 
-[13] “Papers with Code — 问答，” *paperswithcode.com*。[https://paperswithcode.com/task/question-answering](https://paperswithcode.com/task/question-answering)（访问日期：2023 年 1 月 18 日）。
+[13] “Papers with Code — 问答，” *paperswithcode.com*。[`paperswithcode.com/task/question-answering`](https://paperswithcode.com/task/question-answering)（访问日期：2023 年 1 月 18 日）。
 
-[14] P. Azunre，*自然语言处理中的迁移学习*。Simon and Schuster，2021年。
+[14] P. Azunre，*自然语言处理中的迁移学习*。Simon and Schuster，2021 年。
 
-[15] “Hugging Face — 一次提交解决NLP问题的使命。” *huggingface.co*。 [https://huggingface.co/models](https://huggingface.co/models)（访问日期：2023年1月18日）。
+[15] “Hugging Face — 一次提交解决 NLP 问题的使命。” *huggingface.co*。 [`huggingface.co/models`](https://huggingface.co/models)（访问日期：2023 年 1 月 18 日）。
 
-[16] Z. Keita，“使用MarianMT进行NLP中的数据增强，” *Medium*，2022年11月5日。 [https://towardsdatascience.com/data-augmentation-in-nlp-using-back-translation-with-marianmt-a8939dfea50a](/data-augmentation-in-nlp-using-back-translation-with-marianmt-a8939dfea50a)（访问日期：2023年1月18日）。
+[16] Z. Keita，“使用 MarianMT 进行 NLP 中的数据增强，” *Medium*，2022 年 11 月 5 日。 `towardsdatascience.com/data-augmentation-in-nlp-using-back-translation-with-marianmt-a8939dfea50a`（访问日期：2023 年 1 月 18 日）。
 
-[17] P. Suraj，“Google Colaboratory，” *colab.research.google.com*。 [https://colab.research.google.com/github/patil-suraj/exploring-T5/blob/master/T5_on_TPU.ipynb](https://colab.research.google.com/github/patil-suraj/exploring-T5/blob/master/T5_on_TPU.ipynb)（访问日期：2023年1月25日）。
+[17] P. Suraj，“Google Colaboratory，” *colab.research.google.com*。 [`colab.research.google.com/github/patil-suraj/exploring-T5/blob/master/T5_on_TPU.ipynb`](https://colab.research.google.com/github/patil-suraj/exploring-T5/blob/master/T5_on_TPU.ipynb)（访问日期：2023 年 1 月 25 日）。
 
-[18] “T5，” *huggingface.co*。 [https://huggingface.co/docs/transformers/model_doc/t5#transformers.T5Model](https://huggingface.co/docs/transformers/model_doc/t5#transformers.T5Model)（访问日期：2023年1月25日）。
+[18] “T5，” *huggingface.co*。 [`huggingface.co/docs/transformers/model_doc/t5#transformers.T5Model`](https://huggingface.co/docs/transformers/model_doc/t5#transformers.T5Model)（访问日期：2023 年 1 月 25 日）。
 
-[19] “ROUGE — evaluate-metric提供的Hugging Face空间，” *huggingface.co*。 [https://huggingface.co/spaces/evaluate-metric/rouge](https://huggingface.co/spaces/evaluate-metric/rouge)（访问日期：2023年1月25日）。
+[19] “ROUGE — evaluate-metric 提供的 Hugging Face 空间，” *huggingface.co*。 [`huggingface.co/spaces/evaluate-metric/rouge`](https://huggingface.co/spaces/evaluate-metric/rouge)（访问日期：2023 年 1 月 25 日）。
 
 除非另有说明，所有图片均为作者所摄。

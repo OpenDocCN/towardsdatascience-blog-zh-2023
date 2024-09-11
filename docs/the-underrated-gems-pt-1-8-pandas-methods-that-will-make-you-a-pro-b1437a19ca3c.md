@@ -1,32 +1,32 @@
-# 《被低估的珍宝 第1部分：8 个让你成为高手的 Pandas 方法》
+# 《被低估的珍宝 第一部分：8 个让你成为高手的 Pandas 方法》
 
-> 原文：[https://towardsdatascience.com/the-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c?source=collection_archive---------0-----------------------#2023-07-17](https://towardsdatascience.com/the-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c?source=collection_archive---------0-----------------------#2023-07-17)
+> 原文：[`towardsdatascience.com/the-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c?source=collection_archive---------0-----------------------#2023-07-17`](https://towardsdatascience.com/the-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c?source=collection_archive---------0-----------------------#2023-07-17)
 
 ## 被低估的、未被重视的和未被深入探索的
 
-[](https://medium.com/@andreas030503?source=post_page-----b1437a19ca3c--------------------------------)[![Andreas Lukita](../Images/8660ca1fea5da34ce3475281c1f52152.png)](https://medium.com/@andreas030503?source=post_page-----b1437a19ca3c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b1437a19ca3c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b1437a19ca3c--------------------------------) [Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----b1437a19ca3c--------------------------------)
+[](https://medium.com/@andreas030503?source=post_page-----b1437a19ca3c--------------------------------)![Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----b1437a19ca3c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b1437a19ca3c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b1437a19ca3c--------------------------------) [Andreas Lukita](https://medium.com/@andreas030503?source=post_page-----b1437a19ca3c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----b1437a19ca3c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b1437a19ca3c--------------------------------) ·10分钟阅读·2023年7月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb1437a19ca3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c&user=Andreas+Lukita&userId=955ef38ea7b&source=-----b1437a19ca3c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F955ef38ea7b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c&user=Andreas+Lukita&userId=955ef38ea7b&source=post_page-955ef38ea7b----b1437a19ca3c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b1437a19ca3c--------------------------------) ·10 分钟阅读·2023 年 7 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb1437a19ca3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c&user=Andreas+Lukita&userId=955ef38ea7b&source=-----b1437a19ca3c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb1437a19ca3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c&source=-----b1437a19ca3c---------------------bookmark_footer-----------)![](../Images/dfa5d2a3776475bd5e3957104b82b7ae.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb1437a19ca3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-underrated-gems-pt-1-8-pandas-methods-that-will-make-you-a-pro-b1437a19ca3c&source=-----b1437a19ca3c---------------------bookmark_footer-----------)![](img/dfa5d2a3776475bd5e3957104b82b7ae.png)
 
 图片由 [Roman Kraft](https://unsplash.com/@iamromankraft?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 > “在喧嚣的环境中，正是那些低声细语的话语才蕴藏着隐藏的智慧 💎”
 
-暂时忘记ChatGPT。对我们中的一些人来说，我们会因为每次想执行简单的Pandas操作时都要不断地谷歌搜索解决方案而感到疲惫。似乎有无数种方法来做同一件事，那么究竟哪一种才是最佳选择？虽然有很多可能的解决方案确实很好，但也带来了不一致和对代码功能的困惑。
+暂时忘记 ChatGPT。对我们中的一些人来说，我们会因为每次想执行简单的 Pandas 操作时都要不断地谷歌搜索解决方案而感到疲惫。似乎有无数种方法来做同一件事，那么究竟哪一种才是最佳选择？虽然有很多可能的解决方案确实很好，但也带来了不一致和对代码功能的困惑。
 
-到达罗马有1000条可能的路线，可能甚至更多。问题是，你选择隐藏的小路还是复杂的路线？
+到达罗马有 1000 条可能的路线，可能甚至更多。问题是，你选择隐藏的小路还是复杂的路线？
 
-![](../Images/fae6c5a44fa88fad591aaa9d53e554e8.png)
+![](img/fae6c5a44fa88fad591aaa9d53e554e8.png)
 
 图片由作者提供
 
-这里是本文的要点。我将带你了解如何通过处理来自[UCI机器学习的自行车共享数据集](https://doi.org/10.24432/C5W894)[¹](#aba8)来将这些方法付诸实践。通过采用这些方法，你不仅可以简化数据处理代码，还能更深入地理解你编写的代码。让我们开始导入数据集，并快速查看DataFrame！
+这里是本文的要点。我将带你了解如何通过处理来自[UCI 机器学习的自行车共享数据集](https://doi.org/10.24432/C5W894)¹来将这些方法付诸实践。通过采用这些方法，你不仅可以简化数据处理代码，还能更深入地理解你编写的代码。让我们开始导入数据集，并快速查看 DataFrame！
 
 ```py
 import numpy as np
@@ -39,35 +39,35 @@ bike = (pd
 bike
 ```
 
-![](../Images/eb8d9b78b58f0bee83d63227051d66d8.png)
+![](img/eb8d9b78b58f0bee83d63227051d66d8.png)
 
 图片由作者提供
 
 **目录**
 
-+   [方法 #1:](#b318) `[**.assign()**](#b318)`
++   方法 #1: `**.assign()**`
 
-+   [方法 #2:](#987c) `[**.groupby()**](#987c)`
++   方法 #2: `**.groupby()**`
 
-+   [方法 #3:](#e599) `[**.agg()**](#e599)`
++   方法 #3: `**.agg()**`
 
-+   [方法 #4:](#399c) `[**.transform()**](#399c)`
++   方法 #4: `**.transform()**`
 
-+   [方法 #5:](#5c03) `[**.pivot_table()**](#5c03)`
++   方法 #5: `**.pivot_table()**`
 
-+   [方法 #6:](#0c9c) `[**.resample()**](#0c9c)`
++   方法 #6: `**.resample()**`
 
-+   [方法 #7:](#8974) `[**.unstack()**](#8974)`
++   方法 #7: `**.unstack()**`
 
-+   [方法 #8:](#6079) `[**.pipe()**](#6079)`
++   方法 #8: `**.pipe()**`
 
 # ☕️ 方法 #1: .assign()
 
-忘掉使用`**df["new_col"] =**`和`**df.new_col =**`这种操作来创建新列。这里是你应该使用`**.assign()**`方法的原因——它返回一个DataFrame对象，允许你继续链式操作以进一步处理DataFrame。与`**.assign()**`方法不同，上述两种臭名昭著的操作会返回`None`，这意味着你无法进一步链式操作。
+忘掉使用`**df["new_col"] =**`和`**df.new_col =**`这种操作来创建新列。这里是你应该使用`**.assign()**`方法的原因——它返回一个 DataFrame 对象，允许你继续链式操作以进一步处理 DataFrame。与`**.assign()**`方法不同，上述两种臭名昭著的操作会返回`None`，这意味着你无法进一步链式操作。
 
 如果你不信，那么让我重新提起旧的敌人——`**SettingWithCopyWarning**`。相信我们每个人在某个时刻都遇到过这个问题。
 
-![](../Images/f972812fa73304ae581315e1660cd13a.png)
+![](img/f972812fa73304ae581315e1660cd13a.png)
 
 图片由作者提供
 
@@ -95,7 +95,7 @@ bike
 
 好吧，`**.groupby()**`方法虽然不罕见，但在我们深入探讨下一个方法之前，它们是必要的。一个常被忽视且未被提及的事情是，`**.groupby()**`方法具有懒惰特性。也就是说，该方法是延迟评估的。换句话说，它不会立即评估，这就是为什么你在调用`**.groupby()**`方法后常常会看到`**<pandas.core.groupby.generic.DataFrameGroupBy object at 0x14fdc3610>**`。
 
-从 Pandas DataFrame [文档](https://pandas.pydata.org/docs/reference/frame.html)[²](#f249) 中，传递给参数`**by**`的值可以是***映射、函数、标签、pd.Grouper 或此类的列表。*** 然而，你最常遇到的情况可能是按列名分组（用逗号分隔的 Series 名称列表）。在`**.groupby()**`操作之后，我们可以执行诸如`**.mean()**`、`**.median()**`，或使用`**.apply()**`应用自定义函数等操作。
+从 Pandas DataFrame [文档](https://pandas.pydata.org/docs/reference/frame.html)² 中，传递给参数`**by**`的值可以是***映射、函数、标签、pd.Grouper 或此类的列表。*** 然而，你最常遇到的情况可能是按列名分组（用逗号分隔的 Series 名称列表）。在`**.groupby()**`操作之后，我们可以执行诸如`**.mean()**`、`**.median()**`，或使用`**.apply()**`应用自定义函数等操作。
 
 > 我们传递给`**.groupby()**`方法的`**by**`参数中的指定列的值将成为结果的索引。如果我们指定了多个列进行分组，那么我们将获得一个 MultiIndex。
 
@@ -109,13 +109,13 @@ bike
 
 在这里，我们按照列`**season**`和`**weathersit**`对 DataFrame 进行了分组。然后，我们计算了均值，并仅选择了列`**atemp**`。
 
-![](../Images/b9321d008606497cf39b9bdcda719e00.png)
+![](img/b9321d008606497cf39b9bdcda719e00.png)
 
 图片来源于作者
 
 # ☕️ 方法 #3: .agg()
 
-如果你足够细心去深入研究 Pandas [文档](https://pandas.pydata.org/docs/reference/frame.html)[²](#f249)，你可能会遇到`**.agg()**`和`**.aggregate()**`这两种方法。你可能会想知道它们有什么区别，以及什么时候使用哪个？节省你的时间吧！它们是相同的，`**.agg()**`只是`**.aggregate()**`的别名。
+如果你足够细心去深入研究 Pandas [文档](https://pandas.pydata.org/docs/reference/frame.html)²，你可能会遇到`**.agg()**`和`**.aggregate()**`这两种方法。你可能会想知道它们有什么区别，以及什么时候使用哪个？节省你的时间吧！它们是相同的，`**.agg()**`只是`**.aggregate()**`的别名。
 
 `**.agg()**`有一个参数`**func**`，它可以接受函数、字符串函数名或函数列表。顺便提一下，你也可以在列上聚合不同的函数！让我们继续上面的例子！
 
@@ -134,7 +134,7 @@ bike
 )
 ```
 
-![](../Images/3a7641b468ffb53f978a9bd105544194.png)
+![](img/3a7641b468ffb53f978a9bd105544194.png)
 
 图片来源于作者
 
@@ -155,7 +155,7 @@ bike
 )
 ```
 
-![](../Images/57cfdf8e60580a2e42ea2ac46196f4d4.png)
+![](img/57cfdf8e60580a2e42ea2ac46196f4d4.png)
 
 图片由作者提供
 
@@ -176,7 +176,7 @@ bike
 )
 ```
 
-![](../Images/b2cc556fc524085340ac327e66b94545.png)
+![](img/b2cc556fc524085340ac327e66b94545.png)
 
 图片由作者提供
 
@@ -203,9 +203,9 @@ bike = tweak_bike(bike)
 )
 ```
 
-简而言之，我们在上面所做的操作是删除`**instant**`列，用`**dteday**`列覆盖`**dteday**`列，将`**dteday**`列的类型从`object`转换为`**datetime64[ns]**`类型，最后将这个`**datetime64[ns]**`列设为DataFrame的索引。
+简而言之，我们在上面所做的操作是删除`**instant**`列，用`**dteday**`列覆盖`**dteday**`列，将`**dteday**`列的类型从`object`转换为`**datetime64[ns]**`类型，最后将这个`**datetime64[ns]**`列设为 DataFrame 的索引。
 
-![](../Images/5a33370ebfd03d27d90be81dedbadff8.png)
+![](img/5a33370ebfd03d27d90be81dedbadff8.png)
 
 作者提供的图片
 
@@ -217,7 +217,7 @@ bike = tweak_bike(bike)
 )
 ```
 
-![](../Images/1a857d820fb1f9834a0da75717f63f95.png)
+![](img/1a857d820fb1f9834a0da75717f63f95.png)
 
 作者提供的图片
 
@@ -235,13 +235,13 @@ bike = tweak_bike(bike)
 )
 ```
 
-![](../Images/6be4039549c302e00b1da416acef33cb.png)
+![](img/6be4039549c302e00b1da416acef33cb.png)
 
 作者提供的图片
 
-现在，让我们使用一个线图来可视化这一点，通过将`**.plot**`和`**.line()**`方法最小化地链接到上述代码中。在后台，Pandas利用Matplotlib绘图后端来完成绘图任务。这给出了以下结果，我们都不想要，因为图的x轴是按MultiIndex分组的，使其更难以解释，且意义不大。
+现在，让我们使用一个线图来可视化这一点，通过将`**.plot**`和`**.line()**`方法最小化地链接到上述代码中。在后台，Pandas 利用 Matplotlib 绘图后端来完成绘图任务。这给出了以下结果，我们都不想要，因为图的 x 轴是按 MultiIndex 分组的，使其更难以解释，且意义不大。
 
-![](../Images/3654c1d2def7e557a794dec007f3016b.png)
+![](img/3654c1d2def7e557a794dec007f3016b.png)
 
 作者提供的图片
 
@@ -258,17 +258,17 @@ bike = tweak_bike(bike)
 )
 ```
 
-![](../Images/de2067fddba9d0e6526b58bb11ac7515.png)
+![](img/de2067fddba9d0e6526b58bb11ac7515.png)
 
 作者提供的图片
 
-简而言之，`**.unstack()**`方法的作用是解开MultiIndex DataFrame中最内层的索引，在这个例子中是`**weathersit**`。这个所谓的解开索引变成了新DataFrame的列，这使得我们的线图绘制结果更加有意义，方便比较。
+简而言之，`**.unstack()**`方法的作用是解开 MultiIndex DataFrame 中最内层的索引，在这个例子中是`**weathersit**`。这个所谓的解开索引变成了新 DataFrame 的列，这使得我们的线图绘制结果更加有意义，方便比较。
 
-![](../Images/6892843a34315addb39ca843d2dbd08c.png)
+![](img/6892843a34315addb39ca843d2dbd08c.png)
 
 作者提供的图片
 
-你还可以通过指定参数`**level=0**`作为`**.unstack()**`方法的一部分，来解开DataFrame中最外层的索引。让我们看看如何实现这一点。
+你还可以通过指定参数`**level=0**`作为`**.unstack()**`方法的一部分，来解开 DataFrame 中最外层的索引。让我们看看如何实现这一点。
 
 ```py
 (bike
@@ -281,27 +281,27 @@ bike = tweak_bike(bike)
 )
 ```
 
-![](../Images/fcaeb87f0b7cd880bda70f0a457b75a0.png)
+![](img/fcaeb87f0b7cd880bda70f0a457b75a0.png)
 
 作者提供的图片
 
-![](../Images/3c938f38c42c3371f16f5bb6040b6f3b.png)
+![](img/3c938f38c42c3371f16f5bb6040b6f3b.png)
 
 作者提供的图片
 
 # ☕️ 方法 #8: .pipe()
 
-从我的观察来看，当你在线搜索时，你几乎看不到普通人在他们的Pandas代码中实现这个方法。一个原因是，`**.pipe()**`有一种神秘的无法解释的气质，使得它对初学者和中级用户都不友好。当你去Pandas [文档](https://pandas.pydata.org/docs/reference/frame.html)[²](#f249)时，你会发现的简短解释是***“应用期望Series或DataFrame的可链式函数”***。我认为这个解释有些混淆，并且对那些从未使用链式操作的人并不十分有帮助。
+从我的观察来看，当你在线搜索时，你几乎看不到普通人在他们的 Pandas 代码中实现这个方法。一个原因是，`**.pipe()**`有一种神秘的无法解释的气质，使得它对初学者和中级用户都不友好。当你去 Pandas [文档](https://pandas.pydata.org/docs/reference/frame.html)²时，你会发现的简短解释是***“应用期望 Series 或 DataFrame 的可链式函数”***。我认为这个解释有些混淆，并且对那些从未使用链式操作的人并不十分有帮助。
 
-简而言之，`**.pipe()**`为您提供的是使用函数继续方法链技术的能力，在您无法找到直接解决方案执行操作返回DataFrame的情况下。
+简而言之，`**.pipe()**`为您提供的是使用函数继续方法链技术的能力，在您无法找到直接解决方案执行操作返回 DataFrame 的情况下。
 
 方法`**.pipe()**`接受一个函数作为参数，通过这个函数可以定义一个链外方法，然后将该方法作为`**.pipe()**`方法的参数引用。
 
-> 使用`.pipe()`，您可以将DataFrame或Series作为自定义函数的第一个参数传递，并且该函数将应用于传递的对象，随后是指定的任何其他参数。
+> 使用`.pipe()`，您可以将 DataFrame 或 Series 作为自定义函数的第一个参数传递，并且该函数将应用于传递的对象，随后是指定的任何其他参数。
 
-大多数情况下，您会看到`**.pipe()**`方法中的一行lambda函数，以方便使用（例如，在链处理过程中的某些修改步骤后获取最新DataFrame）。
+大多数情况下，您会看到`**.pipe()**`方法中的一行 lambda 函数，以方便使用（例如，在链处理过程中的某些修改步骤后获取最新 DataFrame）。
 
-让我用一个简化的例子来说明。假设我们想要了解以下问题：***“对于2012年，每个季节相对于该年总工作日的工作日比例是多少？”***
+让我用一个简化的例子来说明。假设我们想要了解以下问题：***“对于 2012 年，每个季节相对于该年总工作日的工作日比例是多少？”***
 
 ```py
 (bike
@@ -313,7 +313,7 @@ bike = tweak_bike(bike)
 )
 ```
 
-在这里，我们使用`**.pipe()**`将函数注入到我们的链式方法中。由于执行了`**.agg(sum)**`之后，我们无法继续使用`**.div()**`进行链式处理，因此以下代码将无法工作，因为我们在链式处理过程中失去了对DataFrame的最新状态的访问。
+在这里，我们使用`**.pipe()**`将函数注入到我们的链式方法中。由于执行了`**.agg(sum)**`之后，我们无法继续使用`**.div()**`进行链式处理，因此以下代码将无法工作，因为我们在链式处理过程中失去了对 DataFrame 的最新状态的访问。
 
 ```py
 #Doesn't work out well!
@@ -332,11 +332,11 @@ bike = tweak_bike(bike)
 
 这就是低估的宝石💎第一部分的全部内容！这些都是我以前没有经常使用的方法，也许是因为我的坏习惯——用“只要能用，就够好！”的思维强行解决代码问题。不幸的是，这样做是不够好的！
 
-只有在我花时间学习如何正确使用它们之后，它们才被证明是救命稻草，可以这么说！我还要感谢Matt Harrison和他的书[《高效Pandas》](https://store.metasnake.com/effective-pandas-book)[³](#deae)，这本书彻底改变了我编写Pandas代码的方式。现在，我可以说我的代码更简洁、更可读，而且更有意义。
+只有在我花时间学习如何正确使用它们之后，它们才被证明是救命稻草，可以这么说！我还要感谢 Matt Harrison 和他的书[《高效 Pandas》](https://store.metasnake.com/effective-pandas-book)³，这本书彻底改变了我编写 Pandas 代码的方式。现在，我可以说我的代码更简洁、更可读，而且更有意义。
 
-在低估的宝石第二部分中，我们将介绍其他八个较少为人知的Pandas方法，例如`**.explode()**`、`**.melt()**`和`**.expanding()**`！您可能不会经常使用它们，但在需要它们的时候它们肯定很方便。
+在低估的宝石第二部分中，我们将介绍其他八个较少为人知的 Pandas 方法，例如`**.explode()**`、`**.melt()**`和`**.expanding()**`！您可能不会经常使用它们，但在需要它们的时候它们肯定很方便。
 
-如果你从本文中获得了一些有用的东西，请考虑在Medium上给我[***关注***](https://medium.com/@andreas030503)。每周一篇文章，轻松跟上时代潮流！
+如果你从本文中获得了一些有用的东西，请考虑在 Medium 上给我[***关注***](https://medium.com/@andreas030503)。每周一篇文章，轻松跟上时代潮流！
 
 # 联系我！
 
@@ -346,8 +346,8 @@ bike = tweak_bike(bike)
 
 # 参考资料
 
-1.  Fanaee-T，Hadi。 (2013)。自行车共享数据集。UCI机器学习库。[https://doi.org/10.24432/C5W894](https://doi.org/10.24432/C5W894)。
+1.  Fanaee-T，Hadi。 (2013)。自行车共享数据集。UCI 机器学习库。[`doi.org/10.24432/C5W894`](https://doi.org/10.24432/C5W894)。
 
-1.  Pandas 文档: [https://pandas.pydata.org/docs/reference/frame.html](https://pandas.pydata.org/docs/reference/frame.html)
+1.  Pandas 文档: [`pandas.pydata.org/docs/reference/frame.html`](https://pandas.pydata.org/docs/reference/frame.html)
 
-1.  Matt Harrison的《Effective Pandas》: [https://store.metasnake.com/effective-pandas-book](https://store.metasnake.com/effective-pandas-book)
+1.  Matt Harrison 的《Effective Pandas》: [`store.metasnake.com/effective-pandas-book`](https://store.metasnake.com/effective-pandas-book)

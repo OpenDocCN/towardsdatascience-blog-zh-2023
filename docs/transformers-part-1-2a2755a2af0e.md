@@ -1,12 +1,12 @@
-# 简化 Transformers：使用你理解的词汇的最先进 NLP——第 1 部分——简介
+# 简化 Transformers：使用你理解的词汇的最先进 NLP——第一部分——简介
 
-> 原文：[https://towardsdatascience.com/transformers-part-1-2a2755a2af0e?source=collection_archive---------7-----------------------#2023-07-26](https://towardsdatascience.com/transformers-part-1-2a2755a2af0e?source=collection_archive---------7-----------------------#2023-07-26)
+> 原文：[`towardsdatascience.com/transformers-part-1-2a2755a2af0e?source=collection_archive---------7-----------------------#2023-07-26`](https://towardsdatascience.com/transformers-part-1-2a2755a2af0e?source=collection_archive---------7-----------------------#2023-07-26)
 
-[](https://medium.com/@chenmargalit?source=post_page-----2a2755a2af0e--------------------------------)[![Chen Margalit](../Images/fb37720654b3d1068b448d4d9ad624d5.png)](https://medium.com/@chenmargalit?source=post_page-----2a2755a2af0e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a2755a2af0e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2a2755a2af0e--------------------------------) [Chen Margalit](https://medium.com/@chenmargalit?source=post_page-----2a2755a2af0e--------------------------------)
+[](https://medium.com/@chenmargalit?source=post_page-----2a2755a2af0e--------------------------------)![Chen Margalit](https://medium.com/@chenmargalit?source=post_page-----2a2755a2af0e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a2755a2af0e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a2755a2af0e--------------------------------) [Chen Margalit](https://medium.com/@chenmargalit?source=post_page-----2a2755a2af0e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8e6113b0479&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-part-1-2a2755a2af0e&user=Chen+Margalit&userId=f8e6113b0479&source=post_page-f8e6113b0479----2a2755a2af0e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a2755a2af0e--------------------------------) ·3分钟阅读·2023年7月26日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8e6113b0479&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-part-1-2a2755a2af0e&user=Chen+Margalit&userId=f8e6113b0479&source=post_page-f8e6113b0479----2a2755a2af0e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a2755a2af0e--------------------------------) ·3 分钟阅读·2023 年 7 月 26 日
 
 --
 
@@ -30,7 +30,7 @@ Transformers 是一种深度学习架构，对 AI 的进步做出了杰出的贡
 
 尽管与许多科学进展一样，一些想法以前已经被描述过，但对架构的实际深入、完整描述来自于“[Attention is all you need](https://arxiv.org/pdf/1706.03762.pdf)”论文，该论文声称以下内容是一个“简单的网络架构”。
 
-![](../Images/14f1ba4c207045991554b11ad20ca08a.png)
+![](img/14f1ba4c207045991554b11ad20ca08a.png)
 
 图片来源于[原始论文](https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf)
 

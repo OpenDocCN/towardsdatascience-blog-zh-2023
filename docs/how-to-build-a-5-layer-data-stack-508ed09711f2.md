@@ -1,10 +1,10 @@
 # 如何构建一个五层数据栈
 
-> 原文：[https://towardsdatascience.com/how-to-build-a-5-layer-data-stack-508ed09711f2?source=collection_archive---------4-----------------------#2023-07-21](https://towardsdatascience.com/how-to-build-a-5-layer-data-stack-508ed09711f2?source=collection_archive---------4-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/how-to-build-a-5-layer-data-stack-508ed09711f2?source=collection_archive---------4-----------------------#2023-07-21`](https://towardsdatascience.com/how-to-build-a-5-layer-data-stack-508ed09711f2?source=collection_archive---------4-----------------------#2023-07-21)
 
 ## 构建一个数据平台并不一定要复杂。以下是推动数据产品大规模采用的五个必备层级。
 
-[](https://barrmoses.medium.com/?source=post_page-----508ed09711f2--------------------------------)[![Barr Moses](../Images/4c74558ee692a85196d5a55ac1920718.png)](https://barrmoses.medium.com/?source=post_page-----508ed09711f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----508ed09711f2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----508ed09711f2--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----508ed09711f2--------------------------------)
+[](https://barrmoses.medium.com/?source=post_page-----508ed09711f2--------------------------------)![Barr Moses](https://barrmoses.medium.com/?source=post_page-----508ed09711f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----508ed09711f2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----508ed09711f2--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----508ed09711f2--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F508ed09711f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-5-layer-data-stack-508ed09711f2&source=-----508ed09711f2---------------------bookmark_footer-----------)![](../Images/3ddb77b6e57a66c3a3d179f5c4a36344.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F508ed09711f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-5-layer-data-stack-508ed09711f2&source=-----508ed09711f2---------------------bookmark_footer-----------)![](img/3ddb77b6e57a66c3a3d179f5c4a36344.png)
 
 图片由作者提供。希望它不会让你的眼睛流泪。
 
@@ -28,15 +28,15 @@
 
 在本文中，我们将向你介绍五层数据栈——一个由五个关键工具组成的平台开发模型，这些工具不仅能帮助你最大化影响力，还能让你随着组织需求的增长而发展。这些工具包括：
 
-+   [云存储和计算](#storage)
++   云存储和计算
 
-+   [数据转换](#transform)
++   数据转换
 
-+   [商业智能](#bi)
++   商业智能
 
-+   [数据可观察性](#observability)
++   数据可观察性
 
-+   [和编排](#orchestration)
++   和编排
 
 我们不会再提及食人魔或豆子蘸酱了。
 
@@ -48,11 +48,11 @@
 
 在你为利益相关者建模数据之前，你需要一个收集和存储数据的地方。你的栈的第一层通常属于以下三类之一：处理以结构化数据为主的数据仓库解决方案，如[Snowflake](https://www.snowflake.com/en/)；专注于大量非结构化数据的数据湖；以及结合了两者元素的混合解决方案，如[Databricks’](https://www.databricks.com/)湖屋。
 
-然而，这不仅仅是你存储数据的地方——它也是激活数据的力量。在云数据栈中，你的存储解决方案是其他层次平台的主要计算力量来源。（阅读更多关于何时将存储和计算耦合或解耦的信息，请参考我的同事Shane的文章。）
+然而，这不仅仅是你存储数据的地方——它也是激活数据的力量。在云数据栈中，你的存储解决方案是其他层次平台的主要计算力量来源。（阅读更多关于何时将存储和计算耦合或解耦的信息，请参考我的同事 Shane 的文章。）
 
 现在，我可以深入探讨数据仓库、数据湖、湖屋以及介于两者之间的所有优缺点，但这并不是最重要的。*重要*的是你选择一个既满足当前需求又能适应未来需求的解决方案，同时这个方案的资源成本要适合你的财务团队。它还将决定你将来能连接哪些工具和解决方案，以便为新使用场景微调你的数据栈。
 
-你需要的具体存储和计算解决方案将完全取决于你的业务需求和使用场景，但我们的推荐是选择一些常见的解决方案——如Snowflake、Databricks、BigQuery等——这些方案有良好的支持、集成度高且易于扩展。
+你需要的具体存储和计算解决方案将完全取决于你的业务需求和使用场景，但我们的推荐是选择一些常见的解决方案——如 Snowflake、Databricks、BigQuery 等——这些方案有良好的支持、集成度高且易于扩展。
 
 开源始终是一个诱人的解决方案，但除非你已经达到实际需要它的规模，否则它可能会在存储和计算层面带来一些重大挑战。相信我们，选择一个托管的存储和计算解决方案可以在未来节省大量麻烦——以及可能的痛苦迁移。
 
@@ -62,7 +62,7 @@
 
 当数据首次被摄取时，它以各种有趣的形状和大小出现。不同的格式。不同的结构。不同的值。简单来说，数据转换指的是将所有这些不同格式的数据转换成一致且对建模有用的东西的过程。
 
-![](../Images/8b520dd1d07e0a5421c6037421eb1467.png)
+![](img/8b520dd1d07e0a5421c6037421eb1467.png)
 
 图片由作者提供。
 
@@ -106,11 +106,11 @@
 
 # 数据可观察性
 
-平均而言，数据工程团队每周大约花费[两天时间处理坏数据](https://www.montecarlodata.com/blog-2022-data-quality-survey/)。事实上，根据Gartner最近的一项调查，坏数据每年给组织带来的成本平均为1290万美元。为了降低这些财务风险并保护平台的完整性，你需要第四层：数据可观察性。
+平均而言，数据工程团队每周大约花费[两天时间处理坏数据](https://www.montecarlodata.com/blog-2022-data-quality-survey/)。事实上，根据 Gartner 最近的一项调查，坏数据每年给组织带来的成本平均为 1290 万美元。为了降低这些财务风险并保护平台的完整性，你需要第四层：数据可观察性。
 
-在数据可观察性出现之前，发现数据质量问题的最常见方法之一是通过手动SQL测试。开源数据测试工具如Great Expectations和dbt使数据工程师能够验证组织对数据的假设，并编写逻辑来防止问题向下游传播。
+在数据可观察性出现之前，发现数据质量问题的最常见方法之一是通过手动 SQL 测试。开源数据测试工具如 Great Expectations 和 dbt 使数据工程师能够验证组织对数据的假设，并编写逻辑来防止问题向下游传播。
 
-![](../Images/09e175dfaa54a868d9ea9ff15597088c.png)
+![](img/09e175dfaa54a868d9ea9ff15597088c.png)
 
 图片由作者提供。
 
@@ -118,13 +118,13 @@
 
 数据平台的价值——以及由此衍生的产品——与输入数据的质量密不可分。垃圾进，垃圾出。（或者如果你的数据摄取任务出现故障，则什么都没有输出。）要拥有可靠、可操作和有用的数据产品，基础数据必须是*可信的*。如果你不能信任数据，你就不能信任数据产品。
 
-不幸的是，随着数据的增长，你的数据质量问题也会随之增加。你的平台越复杂，摄取的来源越多，支持的团队越多——你遇到的质量问题就越多。随着团队越来越多地[利用数据来驱动AI模型和机器学习用例](https://www.montecarlodata.com/blog-generative-ai-data-engineering/)，确保数据的可信度和可靠性的需求也呈指数级增长。
+不幸的是，随着数据的增长，你的数据质量问题也会随之增加。你的平台越复杂，摄取的来源越多，支持的团队越多——你遇到的质量问题就越多。随着团队越来越多地[利用数据来驱动 AI 模型和机器学习用例](https://www.montecarlodata.com/blog-generative-ai-data-engineering/)，确保数据的可信度和可靠性的需求也呈指数级增长。
 
 虽然数据测试可以提供一定的质量覆盖，但其功能仅限于已知问题和特定表。而且由于每个检查的手动测试都需要手动编码，因此可扩展性仅与可用的工程资源成正比。另一方面，数据可观察性提供了自动跨每个表的即插即用覆盖，因此你会在数据质量事件——无论是已知还是未知——对下游消费者产生影响之前收到警报。随着平台和数据的扩展，你的质量覆盖也会随之扩展。
 
-此外，数据可观测性提供了从端到端的来源追溯，直到BI层，使得实际查找原因和解决质量事件成为可能。这可以为你的数据团队节省数小时的时间。虽然手动测试可能能够发现部分质量事件，但它无助于解决这些事件。当你意识到[数据团队的解决时间几乎翻了一番](https://www.montecarlodata.com/blog-data-quality-survey)时，这更令人担忧。
+此外，数据可观测性提供了从端到端的来源追溯，直到 BI 层，使得实际查找原因和解决质量事件成为可能。这可以为你的数据团队节省数小时的时间。虽然手动测试可能能够发现部分质量事件，但它无助于解决这些事件。当你意识到[数据团队的解决时间几乎翻了一番](https://www.montecarlodata.com/blog-data-quality-survey)时，这更令人担忧。
 
-与反应性的数据测试不同，数据可观测性提供了对[已知*和*未知](/5-most-important-things-to-include-in-a-modern-data-quality-framework-34695711c992)问题的主动可见性，实时记录你的数据管道源头，以促进数据平台的成长——这一切都不会牺牲团队的时间或资源。
+与反应性的数据测试不同，数据可观测性提供了对已知*和*未知问题的主动可见性，实时记录你的数据管道源头，以促进数据平台的成长——这一切都不会牺牲团队的时间或资源。
 
 # 数据编排
 
@@ -136,7 +136,7 @@
 
 当你提取和处理少量数据时，调度任务只需要少量的努力。但是，当你从多个来源提取和处理大量数据以及无数用例时，调度这些任务需要大量的努力——超出常人的努力。
 
-编排之所以成为5层数据堆栈的功能性必要性——即使不是字面上的——是由于手动编码管道固有的可扩展性不足。就像转换和数据质量一样，工程资源成为调度和管理管道的限制性原则。
+编排之所以成为 5 层数据堆栈的功能性必要性——即使不是字面上的——是由于手动编码管道固有的可扩展性不足。就像转换和数据质量一样，工程资源成为调度和管理管道的限制性原则。
 
 现代数据堆栈的美妙之处在于，它使得工具和集成去除工程瓶颈，解放工程师为其组织提供新的价值。这些工具证明了自己的价值。这正是编排所做的事情。
 

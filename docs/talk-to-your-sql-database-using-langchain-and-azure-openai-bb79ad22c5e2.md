@@ -1,14 +1,14 @@
 # 使用 LangChain 和 Azure OpenAI 与您的 SQL 数据库“对话”
 
-> 原文：[https://towardsdatascience.com/talk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2?source=collection_archive---------0-----------------------#2023-09-28](https://towardsdatascience.com/talk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2?source=collection_archive---------0-----------------------#2023-09-28)
+> 原文：[`towardsdatascience.com/talk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2?source=collection_archive---------0-----------------------#2023-09-28`](https://towardsdatascience.com/talk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2?source=collection_archive---------0-----------------------#2023-09-28)
 
 ## 探索使用 LLM 处理数据库查询的自然语言处理的强大功能
 
-[](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)[![Satwiki De](../Images/868c965bef6bae0c451744bc325eed10.png)](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------) [Satwiki De](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)
+[](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)![Satwiki De](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------) [Satwiki De](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd4bbc4d61092&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftalk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2&user=Satwiki+De&userId=d4bbc4d61092&source=post_page-d4bbc4d61092----bb79ad22c5e2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------) · 10 分钟阅读 · 2023年9月28日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb79ad22c5e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftalk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2&user=Satwiki+De&userId=d4bbc4d61092&source=-----bb79ad22c5e2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd4bbc4d61092&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftalk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2&user=Satwiki+De&userId=d4bbc4d61092&source=post_page-d4bbc4d61092----bb79ad22c5e2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------) · 10 分钟阅读 · 2023 年 9 月 28 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb79ad22c5e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftalk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2&user=Satwiki+De&userId=d4bbc4d61092&source=-----bb79ad22c5e2---------------------clap_footer-----------)
 
 --
 
@@ -24,7 +24,7 @@ LangChain 的 ***Agent*** 组件是一个 LLM 的封装器，它决定解决问�
 
 > 这是一篇探索性文章。它旨在提供对当前可用工具的概述，并在过程中识别任何挑战。
 
-![](../Images/58a5e9d9807e7f7a8770e0f7fe6397fe.png)
+![](img/58a5e9d9807e7f7a8770e0f7fe6397fe.png)
 
 作者提供的图片（使用 Bing 图像创作者创建）
 
@@ -64,7 +64,7 @@ LangChain 的 ***Agent*** 组件是一个 LLM 的封装器，它决定解决问�
 
 1.  订单
 
-![](../Images/0a01abef276c66b45260e815e1eea53a.png)
+![](img/0a01abef276c66b45260e815e1eea53a.png)
 
 作者提供的图片
 
@@ -74,7 +74,7 @@ LangChain 的 ***Agent*** 组件是一个 LLM 的封装器，它决定解决问�
 
 如果你在订阅中创建了 Azure OpenAI 资源，请导航到 Azure OpenAI Studio。为 `gpt-35-turbo` 模型创建一个 `deployment`。
 
-![](../Images/996e8596678ca87575eeff03859929cd.png)
+![](img/996e8596678ca87575eeff03859929cd.png)
 
 作者提供的图片
 
@@ -188,7 +188,7 @@ sqldb_agent.run(final_prompt.format(
 
 > 注意在以下单元格输出中，LangChain Agent Executor 如何以迭代的方式使用 `Action`、`Observation` 和 `Thought` 流，直到达到 `Final Answer`。
 
-![](../Images/dc80bc8bb758a01f49c71be0e5e9e208.png)
+![](img/dc80bc8bb758a01f49c71be0e5e9e208.png)
 
 作者提供的图片
 
@@ -206,7 +206,7 @@ sqldb_agent.run(final_prompt.format(
 
 但这就是我们得到的结果 —
 
-![](../Images/6df046e7da8416c6f52e628bf429474d.png)
+![](img/6df046e7da8416c6f52e628bf429474d.png)
 
 作者提供的图片
 
@@ -226,7 +226,7 @@ sqldb_agent.run(final_prompt.format(
   ))
 ```
 
-![](../Images/b17c40ba6c5169f621273cd1cb3666e5.png)
+![](img/b17c40ba6c5169f621273cd1cb3666e5.png)
 
 图片由作者提供
 
@@ -283,7 +283,7 @@ sqldb_agent.run(final_prompt.format(
   ))
 ```
 
-![](../Images/df0a705e4289d08e6deddb162df978fd.png)
+![](img/df0a705e4289d08e6deddb162df978fd.png)
 
 图片由作者提供
 
@@ -293,7 +293,7 @@ sqldb_agent.run(final_prompt.format(
 
 现在测试所有用户输入 —
 
-![](../Images/80a87b16e47fddd1f271be3bfc8b9171.png)
+![](img/80a87b16e47fddd1f271be3bfc8b9171.png)
 
 # 思考之后 . . .
 
@@ -335,10 +335,10 @@ sqldb_agent.run(final_prompt.format(
 
 # 参考文献：
 
-[https://community.openai.com/t/run-same-query-many-times-different-results/140588](https://community.openai.com/t/run-same-query-many-times-different-results/140588)
+[`community.openai.com/t/run-same-query-many-times-different-results/140588`](https://community.openai.com/t/run-same-query-many-times-different-results/140588)
 
-[https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-openai-api](https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-openai_api)
+[`help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-openai-api`](https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-openai_api)
 
-[https://mlops.community/concepts-for-reliability-of-llms-in-production/](https://mlops.community/concepts-for-reliability-of-llms-in-production/)
+[`mlops.community/concepts-for-reliability-of-llms-in-production/`](https://mlops.community/concepts-for-reliability-of-llms-in-production/)
 
 *如果你想阅读更多关于新兴技术的内容，请关注我。请在评论区留下你的反馈。*

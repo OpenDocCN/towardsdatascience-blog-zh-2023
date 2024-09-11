@@ -1,20 +1,20 @@
 # Google Med-PaLM: AI 临床医生
 
-> 原文：[https://towardsdatascience.com/google-med-palm-the-ai-clinician-a4482143d60e?source=collection_archive---------1-----------------------#2023-03-17](https://towardsdatascience.com/google-med-palm-the-ai-clinician-a4482143d60e?source=collection_archive---------1-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/google-med-palm-the-ai-clinician-a4482143d60e?source=collection_archive---------1-----------------------#2023-03-17`](https://towardsdatascience.com/google-med-palm-the-ai-clinician-a4482143d60e?source=collection_archive---------1-----------------------#2023-03-17)
 
 ## 人工智能 | 医学 | 自然语言处理 |
 
 ## Google 的新模型经过训练以回答医学问题。如何做到的？
 
-[](https://salvatore-raieli.medium.com/?source=post_page-----a4482143d60e--------------------------------)[![Salvatore Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----a4482143d60e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a4482143d60e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a4482143d60e--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----a4482143d60e--------------------------------)
+[](https://salvatore-raieli.medium.com/?source=post_page-----a4482143d60e--------------------------------)![Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----a4482143d60e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a4482143d60e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4482143d60e--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----a4482143d60e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-med-palm-the-ai-clinician-a4482143d60e&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----a4482143d60e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4482143d60e--------------------------------) ·14 min read·2023年3月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa4482143d60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-med-palm-the-ai-clinician-a4482143d60e&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----a4482143d60e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-med-palm-the-ai-clinician-a4482143d60e&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----a4482143d60e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4482143d60e--------------------------------) ·14 min read·2023 年 3 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa4482143d60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-med-palm-the-ai-clinician-a4482143d60e&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----a4482143d60e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa4482143d60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-med-palm-the-ai-clinician-a4482143d60e&source=-----a4482143d60e---------------------bookmark_footer-----------)![](../Images/343cb55205bd7b26fac1907a4976f5de.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa4482143d60e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-med-palm-the-ai-clinician-a4482143d60e&source=-----a4482143d60e---------------------bookmark_footer-----------)![](img/343cb55205bd7b26fac1907a4976f5de.png)
 
 图片由作者使用 OpenAI DALL-E 创建
 
@@ -22,7 +22,7 @@
 
 # 医学的基础模型？
 
-![](../Images/9568bb410aa816f7d631aa907308b6bc.png)
+![](img/9568bb410aa816f7d631aa907308b6bc.png)
 
 图片由 [Myriam Zilles](https://unsplash.com/it/@myriamzilles) 在 Unsplash 提供
 

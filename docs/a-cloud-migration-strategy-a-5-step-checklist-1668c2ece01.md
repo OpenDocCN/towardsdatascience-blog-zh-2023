@@ -1,22 +1,22 @@
-# 云迁移策略：5步检查清单
+# 云迁移策略：5 步检查清单
 
-> 原文：[https://towardsdatascience.com/a-cloud-migration-strategy-a-5-step-checklist-1668c2ece01?source=collection_archive---------18-----------------------#2023-04-18](https://towardsdatascience.com/a-cloud-migration-strategy-a-5-step-checklist-1668c2ece01?source=collection_archive---------18-----------------------#2023-04-18)
+> 原文：[`towardsdatascience.com/a-cloud-migration-strategy-a-5-step-checklist-1668c2ece01?source=collection_archive---------18-----------------------#2023-04-18`](https://towardsdatascience.com/a-cloud-migration-strategy-a-5-step-checklist-1668c2ece01?source=collection_archive---------18-----------------------#2023-04-18)
 
 ## 优化迁移到云端的成本和工作
 
-[](https://medium.com/@a.koptelov?source=post_page-----1668c2ece01--------------------------------)[![Andrey Koptelov](../Images/1092db9f5ce82fdb0d5b166f8cedae94.png)](https://medium.com/@a.koptelov?source=post_page-----1668c2ece01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1668c2ece01--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1668c2ece01--------------------------------) [Andrey Koptelov](https://medium.com/@a.koptelov?source=post_page-----1668c2ece01--------------------------------)
+[](https://medium.com/@a.koptelov?source=post_page-----1668c2ece01--------------------------------)![Andrey Koptelov](https://medium.com/@a.koptelov?source=post_page-----1668c2ece01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1668c2ece01--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1668c2ece01--------------------------------) [Andrey Koptelov](https://medium.com/@a.koptelov?source=post_page-----1668c2ece01--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd222ee3fb918&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cloud-migration-strategy-a-5-step-checklist-1668c2ece01&user=Andrey+Koptelov&userId=d222ee3fb918&source=post_page-d222ee3fb918----1668c2ece01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1668c2ece01--------------------------------) ·6分钟阅读·2023年4月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1668c2ece01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cloud-migration-strategy-a-5-step-checklist-1668c2ece01&user=Andrey+Koptelov&userId=d222ee3fb918&source=-----1668c2ece01---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd222ee3fb918&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cloud-migration-strategy-a-5-step-checklist-1668c2ece01&user=Andrey+Koptelov&userId=d222ee3fb918&source=post_page-d222ee3fb918----1668c2ece01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1668c2ece01--------------------------------) ·6 分钟阅读·2023 年 4 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1668c2ece01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cloud-migration-strategy-a-5-step-checklist-1668c2ece01&user=Andrey+Koptelov&userId=d222ee3fb918&source=-----1668c2ece01---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1668c2ece01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cloud-migration-strategy-a-5-step-checklist-1668c2ece01&source=-----1668c2ece01---------------------bookmark_footer-----------)![](../Images/bce53d506d18eee35b31785e2f4c8032.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1668c2ece01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cloud-migration-strategy-a-5-step-checklist-1668c2ece01&source=-----1668c2ece01---------------------bookmark_footer-----------)![](img/bce53d506d18eee35b31785e2f4c8032.png)
 
 [由 Starline 设计 — Freepik.com](https://www.freepik.com)
 
-云迁移策略在开始带来好处之前需要大量的初始投资。这是一个复杂的过程，通常需要做出许多困难的决策。在某些情况下，迁移到云端的需求会落在你的技术专家身上，从数据科学家到机器学习工程师，他们可能无法单独处理这项任务。为了缓解这种情况，我们的专业IT顾问和 [云迁移服务专家](https://www.itransition.com/cloud) 已经联合努力，帮助你解决问题。
+云迁移策略在开始带来好处之前需要大量的初始投资。这是一个复杂的过程，通常需要做出许多困难的决策。在某些情况下，迁移到云端的需求会落在你的技术专家身上，从数据科学家到机器学习工程师，他们可能无法单独处理这项任务。为了缓解这种情况，我们的专业 IT 顾问和 [云迁移服务专家](https://www.itransition.com/cloud) 已经联合努力，帮助你解决问题。
 
 以下指南提供了控制云迁移项目的五个关键步骤。
 

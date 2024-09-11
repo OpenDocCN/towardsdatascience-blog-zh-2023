@@ -1,22 +1,22 @@
 # 娱乐数据科学：流媒体与影院
 
-> 原文：[https://towardsdatascience.com/entertainment-data-science-streaming-vs-theatrical-af948b69a8f7?source=collection_archive---------6-----------------------#2023-12-08](https://towardsdatascience.com/entertainment-data-science-streaming-vs-theatrical-af948b69a8f7?source=collection_archive---------6-----------------------#2023-12-08)
+> 原文：[`towardsdatascience.com/entertainment-data-science-streaming-vs-theatrical-af948b69a8f7?source=collection_archive---------6-----------------------#2023-12-08`](https://towardsdatascience.com/entertainment-data-science-streaming-vs-theatrical-af948b69a8f7?source=collection_archive---------6-----------------------#2023-12-08)
 
 ## 不同之处与相似之处
 
-[](https://entertainmentdatascience.medium.com/?source=post_page-----af948b69a8f7--------------------------------)[![Danny Kim, PhD](../Images/5d07bbecb199c50909d0a8e3802f834f.png)](https://entertainmentdatascience.medium.com/?source=post_page-----af948b69a8f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af948b69a8f7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----af948b69a8f7--------------------------------) [Danny Kim, PhD](https://entertainmentdatascience.medium.com/?source=post_page-----af948b69a8f7--------------------------------)
+[](https://entertainmentdatascience.medium.com/?source=post_page-----af948b69a8f7--------------------------------)![Danny Kim, PhD](https://entertainmentdatascience.medium.com/?source=post_page-----af948b69a8f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af948b69a8f7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----af948b69a8f7--------------------------------) [Danny Kim, PhD](https://entertainmentdatascience.medium.com/?source=post_page-----af948b69a8f7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e08e5914349&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentertainment-data-science-streaming-vs-theatrical-af948b69a8f7&user=Danny+Kim%2C+PhD&userId=8e08e5914349&source=post_page-8e08e5914349----af948b69a8f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----af948b69a8f7--------------------------------) ·9 分钟阅读·2023年12月8日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e08e5914349&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentertainment-data-science-streaming-vs-theatrical-af948b69a8f7&user=Danny+Kim%2C+PhD&userId=8e08e5914349&source=post_page-8e08e5914349----af948b69a8f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----af948b69a8f7--------------------------------) ·9 分钟阅读·2023 年 12 月 8 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf948b69a8f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentertainment-data-science-streaming-vs-theatrical-af948b69a8f7&source=-----af948b69a8f7---------------------bookmark_footer-----------)![](../Images/11092d1d541e199d594a1f0860a5d8f0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf948b69a8f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentertainment-data-science-streaming-vs-theatrical-af948b69a8f7&source=-----af948b69a8f7---------------------bookmark_footer-----------)![](img/11092d1d541e199d594a1f0860a5d8f0.png)
 
 照片由 [Krists Luhaers](https://unsplash.com/@kristsll?utm_source=medium&utm_medium=referral) 拍摄，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在我在*Towards Data Science*上的[娱乐数据科学的新前沿](/next-frontiers-in-entertainment-data-science-b63860124f3e)文章中，我提到数据科学如何应用于内容生命周期的各个阶段，从绿灯到制作再到发布。虽然很容易理解数据科学应用在决定哪些剧本应该获得绿灯和优化制作成本之间可能会有所不同，但即使在那些乍一看似乎相对相似的背景下，也可能存在显著差异。
+在我在*Towards Data Science*上的娱乐数据科学的新前沿文章中，我提到数据科学如何应用于内容生命周期的各个阶段，从绿灯到制作再到发布。虽然很容易理解数据科学应用在决定哪些剧本应该获得绿灯和优化制作成本之间可能会有所不同，但即使在那些乍一看似乎相对相似的背景下，也可能存在显著差异。
 
 大约一年半前，我在一家大型电影公司开始了新工作。由于之前的工作是在流媒体技术方面，我预期情况会多多少少相似，只是这次我将专注于电影数据，而不是电视和电影数据。使用数据预测受欢迎程度，情况会有多大不同呢？
 
@@ -26,7 +26,7 @@
 
 基于此，以下是我从流媒体娱乐数据科学转到影院娱乐数据科学后的关键观察。我略过了一些显而易见的“显而易见”点（哦，原来没有影院电视剧发布，真是意外），但我触及了一些主要趋势。当然，这些并不是一些绝对真理的陈述；根据公司、团队领导等情况，你的体验可能会有所不同。此外，虽然数据科学可以在娱乐内容生命周期的早期阶段发挥作用，如我上面提到的，这篇文章来源于我在接近发布的下游流程中的经验。如果我有时显得有些模糊，那是故意的，因为我不想泄露任何秘密调料 ;)
 
-![](../Images/12f4de80b0a4ca2400a882fa64ddc4fb.png)
+![](img/12f4de80b0a4ca2400a882fa64ddc4fb.png)
 
 图片由[Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 
@@ -36,7 +36,7 @@
 
 这并不是说你从未在戏剧方面处理更大、更详细的数据集；这些数据集通常与标题或标题的某个元素相关，你常常以某种方式处理它们，以生成与标题相关的见解。但底线是，由于标题空间默认较小，因此数据范围也较小。我希望有一天，我们可以在戏剧领域获得更多像流媒体领域那样的细粒度、个体层面的消费见解，但至少现在情况不是这样。
 
-![](../Images/2a9beda163041ac6221d14388fc989f8.png)
+![](img/2a9beda163041ac6221d14388fc989f8.png)
 
 [Michael Marais](https://unsplash.com/@michael_marais?utm_source=medium&utm_medium=referral) 的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,17 +48,17 @@
 
 **是的，系列和特许经营在某种程度上是这个规则的半例外，但过度依赖续集效应和相似性假设很容易适得其反。是的，在许多情况下，前作的表现可以较好地估计其继任者的表现，但系列可能会随着时间的推移失去动力或因超出认知范围（新角色/情节和与过去标题的弱联系）而无法识别，以至于早期标题的表现对预测新标题的表现可能毫无意义。**
 
-![](../Images/1e79540957093a8614ab927cf6294a9f.png)
+![](img/1e79540957093a8614ab927cf6294a9f.png)
 
 照片由[Scott Graham](https://unsplash.com/@homajob?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
 # 非常特别的数据
 
-来自由技术人员管理的数据团队的初创流媒体技术领域，我花了大量时间研究哪些数据集可能对我们的需求有用。在这一过程中，我发现了许多适合各种需求的冷门数据集，并调查了我们如何能够以低成本收集那些供应商以高价出售的数据（例如，我们如何在不支付昂贵许可费用的情况下获取Google搜索数据？）。
+来自由技术人员管理的数据团队的初创流媒体技术领域，我花了大量时间研究哪些数据集可能对我们的需求有用。在这一过程中，我发现了许多适合各种需求的冷门数据集，并调查了我们如何能够以低成本收集那些供应商以高价出售的数据（例如，我们如何在不支付昂贵许可费用的情况下获取 Google 搜索数据？）。
 
 在戏剧领域，标准和惯例似乎更为成熟。某些消费者和社交媒体数据集或数据集类型在行业内几乎被所有人使用。例如，虽然社交聆听可能作为一个显而易见的当代数据来源，但存在一些主要的成熟供应商提供详细的预发布和发布后消费者数据，这些供应商中的一些已经存在了几十年。这些是许多不在戏剧领域的人可能从未听说过的数据集，但当你身处其中时，它们是你谈论的所有内容。
 
-![](../Images/ce7e27d4db88d73f0e126e0e10197b0f.png)
+![](img/ce7e27d4db88d73f0e126e0e10197b0f.png)
 
 照片由[Marten Bjork](https://unsplash.com/es/@martenbjork?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -68,13 +68,13 @@
 
 正如你所想象的那样，这些顾虑在戏剧数据科学中较少存在——或者更准确地说，除非你在做与“我们是否应该制作这个标题？”或“我们什么时候应该发布这个标题？”相关的上游建模，否则在你参与之前，关于窗口因素的所有问题已经以（可能的）发布日期的形式为你决定好了。你只需担心一个窗口（除非你需要担心错开的发布日期，那是完全不同的情况），而上层决策者已经决定了发布日期。现在你需要在这个窗口的背景下尽力提供所有有用的见解。
 
-![](../Images/97b99f14574608002542ee1a09760e83.png)
+![](img/97b99f14574608002542ee1a09760e83.png)
 
 照片由[Christian Joudrey](https://unsplash.com/@cjoudrey?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
 # 更加重视业务
 
-在我从事流媒体工作的期间，我们很容易将标题和观众视作数字，因为我们拥有成千上万的数据，但这种哲学也反映在方法论上。我们不仅会生成总结性统计数据，还会将所有内容转化为某种向量嵌入（即一系列在某些人类不可观测的维度上有意义的数字），即使这可能会牺牲可解释性；说“内容维度2是模型中最重要的变量”并不真正有意义。
+在我从事流媒体工作的期间，我们很容易将标题和观众视作数字，因为我们拥有成千上万的数据，但这种哲学也反映在方法论上。我们不仅会生成总结性统计数据，还会将所有内容转化为某种向量嵌入（即一系列在某些人类不可观测的维度上有意义的数字），即使这可能会牺牲可解释性；说“内容维度 2 是模型中最重要的变量”并不真正有意义。
 
 流媒体服务更像科技公司运营，而戏剧化方面则更接近传统的制片公司业务。在戏剧化方面，除了数字之外，更注重业务本身。数据的存在不仅仅是为了数字本身，而是为了提供可操作的见解给组织中的各种利益相关者，其中许多人既不是数据科学家，也不在日常工作中使用数据。做出准确的预测很重要，但同样重要的是可解释性，而不是仅仅为了减少模型误差的微小百分比而急于放弃可解释性。因此，我觉得自己在所做的工作中与业务和观众之间有了更多的联系。
 
@@ -94,4 +94,4 @@
 
 显然，我被聘为目前的职位是因为我的技能集与职位职责相关，并且我所做的与我之前做的类似——但与流媒体方面相比，剧院方面的数据科学在某种程度上既相似又不同。如我上文所述，数据不同，流程不同，期望不同。如果你希望进入激动人心的娱乐数据科学领域，或考虑转到相似但不同的工作领域，我希望你能发现这篇文章对你有用！
 
-*在撰写时，丹尼·金（宾夕法尼亚大学博士；《福布斯》30岁以下30人名单2022）是索尼影业娱乐电影集团市场分析与洞察团队的高级数据科学家。丹尼之前在Whip Media和派拉蒙影业工作过，他是宾夕法尼亚大学和南加州大学安纳伯格传播学院、沃顿商学院和南加州大学电影艺术学院的校友。*
+*在撰写时，丹尼·金（宾夕法尼亚大学博士；《福布斯》30 岁以下 30 人名单 2022）是索尼影业娱乐电影集团市场分析与洞察团队的高级数据科学家。丹尼之前在 Whip Media 和派拉蒙影业工作过，他是宾夕法尼亚大学和南加州大学安纳伯格传播学院、沃顿商学院和南加州大学电影艺术学院的校友。*

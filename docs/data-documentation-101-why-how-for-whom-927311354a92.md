@@ -1,12 +1,12 @@
 # 数据文档 101：为什么？如何？为谁？
 
-> 原文：[https://towardsdatascience.com/data-documentation-101-why-how-for-whom-927311354a92?source=collection_archive---------12-----------------------#2023-06-13](https://towardsdatascience.com/data-documentation-101-why-how-for-whom-927311354a92?source=collection_archive---------12-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/data-documentation-101-why-how-for-whom-927311354a92?source=collection_archive---------12-----------------------#2023-06-13`](https://towardsdatascience.com/data-documentation-101-why-how-for-whom-927311354a92?source=collection_archive---------12-----------------------#2023-06-13)
 
 ## 数据管理
 
 ## 在组织内部建立完整可靠的数据文档的最佳实践
 
-[](https://marielefevre.medium.com/?source=post_page-----927311354a92--------------------------------)[![Marie Lefevre](../Images/9d9fb8263109eb840c16f1cdef539981.png)](https://marielefevre.medium.com/?source=post_page-----927311354a92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----927311354a92--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----927311354a92--------------------------------) [Marie Lefevre](https://marielefevre.medium.com/?source=post_page-----927311354a92--------------------------------)
+[](https://marielefevre.medium.com/?source=post_page-----927311354a92--------------------------------)![Marie Lefevre](https://marielefevre.medium.com/?source=post_page-----927311354a92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----927311354a92--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----927311354a92--------------------------------) [Marie Lefevre](https://marielefevre.medium.com/?source=post_page-----927311354a92--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F927311354a92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-documentation-101-why-how-for-whom-927311354a92&source=-----927311354a92---------------------bookmark_footer-----------)![](../Images/712caac2707b24416f2289bc5df2a102.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F927311354a92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-documentation-101-why-how-for-whom-927311354a92&source=-----927311354a92---------------------bookmark_footer-----------)![](img/712caac2707b24416f2289bc5df2a102.png)
 
 图片来源：[Maksym Kaharlytskyi](https://unsplash.com/@qwitka?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

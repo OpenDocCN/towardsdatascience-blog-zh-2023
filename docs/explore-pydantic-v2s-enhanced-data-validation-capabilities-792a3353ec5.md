@@ -1,10 +1,10 @@
 # 探索 Pydantic V2 的增强数据验证能力
 
-> 原文：[https://towardsdatascience.com/explore-pydantic-v2s-enhanced-data-validation-capabilities-792a3353ec5?source=collection_archive---------5-----------------------#2023-10-25](https://towardsdatascience.com/explore-pydantic-v2s-enhanced-data-validation-capabilities-792a3353ec5?source=collection_archive---------5-----------------------#2023-10-25)
+> 原文：[`towardsdatascience.com/explore-pydantic-v2s-enhanced-data-validation-capabilities-792a3353ec5?source=collection_archive---------5-----------------------#2023-10-25`](https://towardsdatascience.com/explore-pydantic-v2s-enhanced-data-validation-capabilities-792a3353ec5?source=collection_archive---------5-----------------------#2023-10-25)
 
 ## 学习 Pydantic V2 的新功能和语法
 
-[](https://lynn-kwong.medium.com/?source=post_page-----792a3353ec5--------------------------------)[![Lynn G. Kwong](../Images/b9a05b6587db5ca41c1d8264adda5b06.png)](https://lynn-kwong.medium.com/?source=post_page-----792a3353ec5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----792a3353ec5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----792a3353ec5--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----792a3353ec5--------------------------------)
+[](https://lynn-kwong.medium.com/?source=post_page-----792a3353ec5--------------------------------)![Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----792a3353ec5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----792a3353ec5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----792a3353ec5--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----792a3353ec5--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F792a3353ec5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-pydantic-v2s-enhanced-data-validation-capabilities-792a3353ec5&source=-----792a3353ec5---------------------bookmark_footer-----------)![](../Images/84d995a0acb8b86cb58dee8da4027427.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F792a3353ec5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexplore-pydantic-v2s-enhanced-data-validation-capabilities-792a3353ec5&source=-----792a3353ec5---------------------bookmark_footer-----------)![](img/84d995a0acb8b86cb58dee8da4027427.png)
 
 图片来自 jackmac34，来源于 Pixabay
 

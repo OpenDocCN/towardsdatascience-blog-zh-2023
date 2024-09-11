@@ -1,24 +1,24 @@
-# 如何使用R创建一张艺术地图
+# 如何使用 R 创建一张艺术地图
 
-> 原文：[https://towardsdatascience.com/how-to-create-an-artistic-map-using-r-2a4932a23d10?source=collection_archive---------17-----------------------#2023-01-24](https://towardsdatascience.com/how-to-create-an-artistic-map-using-r-2a4932a23d10?source=collection_archive---------17-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/how-to-create-an-artistic-map-using-r-2a4932a23d10?source=collection_archive---------17-----------------------#2023-01-24`](https://towardsdatascience.com/how-to-create-an-artistic-map-using-r-2a4932a23d10?source=collection_archive---------17-----------------------#2023-01-24)
 
 ## OpenStreetMap + 数据可视化 = 艺术
 
-[](https://medium.com/@irfanalghani11?source=post_page-----2a4932a23d10--------------------------------)[![Irfan Alghani Khalid](../Images/6a5f58a353463a0c2c8f4192ca9509e6.png)](https://medium.com/@irfanalghani11?source=post_page-----2a4932a23d10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a4932a23d10--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2a4932a23d10--------------------------------) [Irfan Alghani Khalid](https://medium.com/@irfanalghani11?source=post_page-----2a4932a23d10--------------------------------)
+[](https://medium.com/@irfanalghani11?source=post_page-----2a4932a23d10--------------------------------)![Irfan Alghani Khalid](https://medium.com/@irfanalghani11?source=post_page-----2a4932a23d10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a4932a23d10--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a4932a23d10--------------------------------) [Irfan Alghani Khalid](https://medium.com/@irfanalghani11?source=post_page-----2a4932a23d10--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44601cf05927&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-artistic-map-using-r-2a4932a23d10&user=Irfan+Alghani+Khalid&userId=44601cf05927&source=post_page-44601cf05927----2a4932a23d10---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a4932a23d10--------------------------------) ·5分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a4932a23d10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-artistic-map-using-r-2a4932a23d10&user=Irfan+Alghani+Khalid&userId=44601cf05927&source=-----2a4932a23d10---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44601cf05927&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-artistic-map-using-r-2a4932a23d10&user=Irfan+Alghani+Khalid&userId=44601cf05927&source=post_page-44601cf05927----2a4932a23d10---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a4932a23d10--------------------------------) ·5 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a4932a23d10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-artistic-map-using-r-2a4932a23d10&user=Irfan+Alghani+Khalid&userId=44601cf05927&source=-----2a4932a23d10---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a4932a23d10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-artistic-map-using-r-2a4932a23d10&source=-----2a4932a23d10---------------------bookmark_footer-----------)![](../Images/82ec4cdcad55ffba246435203b137111.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a4932a23d10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-an-artistic-map-using-r-2a4932a23d10&source=-----2a4932a23d10---------------------bookmark_footer-----------)![](img/82ec4cdcad55ffba246435203b137111.png)
 
 阿姆斯特丹的地图。这张地图由作者制作。
 
 > 简明扼要
 
-本文将展示如何使用R创建一张艺术地图。我们将使用OpenStreetMap的数据，并通过ggplot库自定义视觉效果。
+本文将展示如何使用 R 创建一张艺术地图。我们将使用 OpenStreetMap 的数据，并通过 ggplot 库自定义视觉效果。
 
 # 介绍
 

@@ -1,14 +1,14 @@
 # Matplotlib 子图形创建复杂多面板图的指南
 
-> 原文：[https://towardsdatascience.com/a-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4?source=collection_archive---------3-----------------------#2023-11-01](https://towardsdatascience.com/a-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4?source=collection_archive---------3-----------------------#2023-11-01)
+> 原文：[`towardsdatascience.com/a-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4?source=collection_archive---------3-----------------------#2023-11-01`](https://towardsdatascience.com/a-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4?source=collection_archive---------3-----------------------#2023-11-01)
 
 ## 子图形——用于美丽的多面板图形的强大工具
 
-[](https://tdrose1.medium.com/?source=post_page-----70fa8f6c38a4--------------------------------)[![Tim Rose](../Images/12bcd585b5dad388dad140b4ca049392.png)](https://tdrose1.medium.com/?source=post_page-----70fa8f6c38a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70fa8f6c38a4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----70fa8f6c38a4--------------------------------) [Tim Rose](https://tdrose1.medium.com/?source=post_page-----70fa8f6c38a4--------------------------------)
+[](https://tdrose1.medium.com/?source=post_page-----70fa8f6c38a4--------------------------------)![Tim Rose](https://tdrose1.medium.com/?source=post_page-----70fa8f6c38a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70fa8f6c38a4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----70fa8f6c38a4--------------------------------) [Tim Rose](https://tdrose1.medium.com/?source=post_page-----70fa8f6c38a4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb2b238bba8ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4&user=Tim+Rose&userId=b2b238bba8ac&source=post_page-b2b238bba8ac----70fa8f6c38a4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70fa8f6c38a4--------------------------------) ·8 分钟阅读·2023年11月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F70fa8f6c38a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4&user=Tim+Rose&userId=b2b238bba8ac&source=-----70fa8f6c38a4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb2b238bba8ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4&user=Tim+Rose&userId=b2b238bba8ac&source=post_page-b2b238bba8ac----70fa8f6c38a4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70fa8f6c38a4--------------------------------) ·8 分钟阅读·2023 年 11 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F70fa8f6c38a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-matplotlib-subfigures-for-creating-complex-multi-panel-figures-70fa8f6c38a4&user=Tim+Rose&userId=b2b238bba8ac&source=-----70fa8f6c38a4---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 然而，这可能会很快变得具有挑战性，特别是如果你想将 seaborn 中的多坐标轴图，如 [jointplot](https://seaborn.pydata.org/generated/seaborn.jointplot.html) 或 [pairgrid](https://seaborn.pydata.org/generated/seaborn.PairGrid.html#seaborn.PairGrid) 集成到你的图形中，因为它们没有提供坐标轴作为输入参数的选项。但在 matplotlib 中还有另一种组合图形的方法，而不仅仅是使用子图：[**Subfigures**](https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subfigures.html)。这是一个强大的框架，可以创建像这样的多面板图形：
 
-![](../Images/d51973be73c935f8aa76c990a9f91967.png)
+![](img/d51973be73c935f8aa76c990a9f91967.png)
 
 本文的目标是向你展示如何制作这个图形。
 
@@ -65,7 +65,7 @@ bottom_axs = bottomfig.subplots(3, 7)
 plt.show()
 ```
 
-![](../Images/4f54a35709dd40f98ad718729e154456.png)
+![](img/4f54a35709dd40f98ad718729e154456.png)
 
 我们现在有两个独立的图形，可以分别设置它们，但将它们放在一个最终的图形中。当然，我们也可以调整子图的大小比例：
 
@@ -82,7 +82,7 @@ for i, fig in enumerate(figs):
 plt.show()
 ```
 
-![](../Images/7d814070c4d843fbf4b69749262e512b.png)
+![](img/7d814070c4d843fbf4b69749262e512b.png)
 
 然而，子图有一个缺点。为了消除标签或图形外部元素的重叠，`plt.tight_layout()` 是一个将所有内容紧凑地放入图形中的好方法。然而，这对子图不支持。这里你可以看到如果尝试使用它会发生什么：
 
@@ -100,7 +100,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-![](../Images/b0e637eec7c27b22e48476cb9a6f08d9.png)
+![](img/b0e637eec7c27b22e48476cb9a6f08d9.png)
 
 这并不是我们想要的……为了在图表之间插入间距并去除任何重叠，我们需要使用 `subplots_adjust` 函数，它允许我们在子图与边框之间插入（或移除）更多空间：
 
@@ -125,7 +125,7 @@ bottomfig.subplots_adjust(wspace=.5, hspace=.8, top=.7, bottom=.3)
 plt.show()
 ```
 
-![](../Images/2e48ccfb91bc205dce89c6fb650be26c.png)
+![](img/2e48ccfb91bc205dce89c6fb650be26c.png)
 
 子图的另一个伟大方面是它们可以嵌套，这意味着我们可以将每个子图分成更多的子图：
 
@@ -155,9 +155,9 @@ bottomright.subplots_adjust(left=.1, right=.9, wspace=.4, hspace=.4)
 plt.show()
 ```
 
-![](../Images/8683969839caafef791e8bd49c4bf8ca.png)
+![](img/8683969839caafef791e8bd49c4bf8ca.png)
 
-让我们将一个[联合图](https://seaborn.pydata.org/generated/seaborn.jointplot.html)插入到这个图形中。不幸的是，这并不简单，因为seaborn函数没有提供图形对象作为输入的选项。但如果我们查看[函数的源代码](https://github.com/seaborn/seaborn/blob/d1c04f2c2c4dbd11ede016405b5ea51380e37f51/seaborn/axisgrid.py#L1640)，我们可以看到这个图由三个共享x和y轴的子图组成，这些子图通过网格规范定义。
+让我们将一个[联合图](https://seaborn.pydata.org/generated/seaborn.jointplot.html)插入到这个图形中。不幸的是，这并不简单，因为 seaborn 函数没有提供图形对象作为输入的选项。但如果我们查看[函数的源代码](https://github.com/seaborn/seaborn/blob/d1c04f2c2c4dbd11ede016405b5ea51380e37f51/seaborn/axisgrid.py#L1640)，我们可以看到这个图由三个共享 x 和 y 轴的子图组成，这些子图通过网格规范定义。
 
 这意味着我们可以轻松地在子图中绘制它：
 
@@ -207,11 +207,11 @@ bottomright.subplots_adjust(left=.1, right=.9, wspace=.4, hspace=.4)
 plt.show()
 ```
 
-![](../Images/f95a47ad62448090ef88650407028719.png)
+![](img/f95a47ad62448090ef88650407028719.png)
 
 你可以调整比例参数，看看图形如何变化。
 
-现在，我们已经具备了创建复杂图形所需的所有工具，包括使用子图（subfigure）、子图布局（subplots）和网格（grids）。对于这种图形，通常需要用字母标注每个图，以便在说明中解释它们或在文本中引用。通常，这些标注是在图形创建后使用其他软件如Adobe Illustrator或Inkscape完成的。但我们也可以直接在Python中完成这项工作，这样可以节省以后额外的努力。
+现在，我们已经具备了创建复杂图形所需的所有工具，包括使用子图（subfigure）、子图布局（subplots）和网格（grids）。对于这种图形，通常需要用字母标注每个图，以便在说明中解释它们或在文本中引用。通常，这些标注是在图形创建后使用其他软件如 Adobe Illustrator 或 Inkscape 完成的。但我们也可以直接在 Python 中完成这项工作，这样可以节省以后额外的努力。
 
 为此，我们将定义一个函数来进行这些标注：
 
@@ -221,7 +221,7 @@ def letter_annotation(ax, xoffset, yoffset, letter):
          size=12, weight='bold')
 ```
 
-该函数将坐标轴作为输入，连同x和y坐标，这些坐标将转换为相对坐标轴坐标。我们可以用它来在我们之前创建的图形中标注一些图：
+该函数将坐标轴作为输入，连同 x 和 y 坐标，这些坐标将转换为相对坐标轴坐标。我们可以用它来在我们之前创建的图形中标注一些图：
 
 ```py
 fig = plt.figure(figsize=(10, 7))
@@ -252,9 +252,9 @@ bottomright.subplots_adjust(left=.1, right=.9, wspace=.4, hspace=.4)
 plt.show()
 ```
 
-![](../Images/36c2342c620bdafac1e5ed2f1bc31e94.png)
+![](img/36c2342c620bdafac1e5ed2f1bc31e94.png)
 
-我们现在可以创建文章开头显示的图形。它由三个子图组成。一个位于顶部，占据第一行，两个位于底部。左下角的子图将用于联合图（如前所示），而右下角的子图将定义一个网格规范（gridspec），以放置4个不同大小的子图。
+我们现在可以创建文章开头显示的图形。它由三个子图组成。一个位于顶部，占据第一行，两个位于底部。左下角的子图将用于联合图（如前所示），而右下角的子图将定义一个网格规范（gridspec），以放置 4 个不同大小的子图。
 
 ```py
 fig = plt.figure(figsize=(10, 7))
@@ -372,14 +372,14 @@ letter_annotation(ax, -.3, 1, 'I')
 plt.show()
 ```
 
-![](../Images/d51973be73c935f8aa76c990a9f91967.png)
+![](img/d51973be73c935f8aa76c990a9f91967.png)
 
 # 结论
 
-子图是matplotlib中相对较新的概念。它们使得组装包含许多图的大型图形变得简单。本文中展示的所有内容也可以完全通过使用gridpec实现。然而，这需要一个大型网格，并且需要考虑每个子图的大小。子图更像是即插即用的，且用更少的工作就可以达到相同的效果。
+子图是 matplotlib 中相对较新的概念。它们使得组装包含许多图的大型图形变得简单。本文中展示的所有内容也可以完全通过使用 gridpec 实现。然而，这需要一个大型网格，并且需要考虑每个子图的大小。子图更像是即插即用的，且用更少的工作就可以达到相同的效果。
 
 对我来说，子图是创建科学图形的一个非常方便的工具，我希望它们对你也能有所帮助。
 
-你还可以在GitHub上找到本文中的所有代码：[https://github.com/tdrose/medium-articles-code](https://github.com/tdrose/medium-articles-code)
+你还可以在 GitHub 上找到本文中的所有代码：[`github.com/tdrose/medium-articles-code`](https://github.com/tdrose/medium-articles-code)
 
 除非另有说明，所有图像均由作者创建。

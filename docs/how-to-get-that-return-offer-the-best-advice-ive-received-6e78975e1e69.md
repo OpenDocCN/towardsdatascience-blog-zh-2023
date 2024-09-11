@@ -1,8 +1,8 @@
 # 如何获得回聘邀请
 
-> 原文：[https://towardsdatascience.com/how-to-get-that-return-offer-the-best-advice-ive-received-6e78975e1e69?source=collection_archive---------11-----------------------#2023-07-24](https://towardsdatascience.com/how-to-get-that-return-offer-the-best-advice-ive-received-6e78975e1e69?source=collection_archive---------11-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/how-to-get-that-return-offer-the-best-advice-ive-received-6e78975e1e69?source=collection_archive---------11-----------------------#2023-07-24`](https://towardsdatascience.com/how-to-get-that-return-offer-the-best-advice-ive-received-6e78975e1e69?source=collection_archive---------11-----------------------#2023-07-24)
 
-[](https://ashleychangg.medium.com/?source=post_page-----6e78975e1e69--------------------------------)[![ashley](../Images/e825ac24a4291a72ea794db5b2ff3ad6.png)](https://ashleychangg.medium.com/?source=post_page-----6e78975e1e69--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6e78975e1e69--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6e78975e1e69--------------------------------) [ashley](https://ashleychangg.medium.com/?source=post_page-----6e78975e1e69--------------------------------)
+[](https://ashleychangg.medium.com/?source=post_page-----6e78975e1e69--------------------------------)![ashley](https://ashleychangg.medium.com/?source=post_page-----6e78975e1e69--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6e78975e1e69--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6e78975e1e69--------------------------------) [ashley](https://ashleychangg.medium.com/?source=post_page-----6e78975e1e69--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@
 
 从学生的角度来看，实习的主要目标是获得回聘邀请，以便你能在下一个夏天作为实习生或正式员工回来。**在我拥有五份来自不同科技公司的实习经历后，我将在本文中分享我获得回聘邀请的指导原则。**
 
-![](../Images/982e2db1ee89163a028dbab7cc93377a.png)
+![](img/982e2db1ee89163a028dbab7cc93377a.png)
 
 照片由 [Jason Goodman](https://unsplash.com/@jasongoodman_youxventures?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,7 +28,7 @@
 
 ## 有意图
 
-在实习开始时，一定要设定你的目标和意图。认真思考为什么你要将接下来的X个月投入到这份工作中。你想从中获得什么？例如，你应该了解在这个特定行业、角色或公司工作的体验。然后，想出实现你设定目标的方法。例如，如果你的目标是确定你想从事的角色，也许你可以与团队中或公司内从事不同职位的人安排咖啡聊天，获取他们的观点。作为实习生，你比平时有更多的人脉和资源。
+在实习开始时，一定要设定你的目标和意图。认真思考为什么你要将接下来的 X 个月投入到这份工作中。你想从中获得什么？例如，你应该了解在这个特定行业、角色或公司工作的体验。然后，想出实现你设定目标的方法。例如，如果你的目标是确定你想从事的角色，也许你可以与团队中或公司内从事不同职位的人安排咖啡聊天，获取他们的观点。作为实习生，你比平时有更多的人脉和资源。
 
 ## 练习有效沟通
 
@@ -36,7 +36,7 @@
 
 准备好解释你在实习期间做出的决策背后的理由。在展示你的想法或建议时，清晰地传达导致你得出特定结论的思考过程。这种沟通展示了你的批判性思维能力、分析技能和做出明智决策的能力——这些都是成为有价值团队成员的关键素质。
 
-我曾经有几次需要真正沟通我对决策的意见和感受。在站立会议上，我学会了简明扼要地解释我的工作，尽管作为实习生很容易感到微不足道，但我不会贬低自己的辛勤工作。通过与公司里的人员意见不合，我学会了有效且专业地沟通我的观点。事后看来，我认为沟通技巧——解释自己和为自己辩护——对获得回聘offer至关重要。
+我曾经有几次需要真正沟通我对决策的意见和感受。在站立会议上，我学会了简明扼要地解释我的工作，尽管作为实习生很容易感到微不足道，但我不会贬低自己的辛勤工作。通过与公司里的人员意见不合，我学会了有效且专业地沟通我的观点。事后看来，我认为沟通技巧——解释自己和为自己辩护——对获得回聘 offer 至关重要。
 
 ## 拥抱好奇心
 
@@ -66,7 +66,7 @@
 
 最后但同样重要的是，保持积极的态度，和蔼可亲地工作。对同事和上司表现出热情、感激和尊重。积极的工作环境促进合作、生产力和友谊。通过散发积极的氛围，你将留下深刻的印象，并提高获得回聘机会的可能性。
 
-![](../Images/0e1ddb9231521a8af6bed1492b28a9fe.png)
+![](img/0e1ddb9231521a8af6bed1492b28a9fe.png)
 
 [Rémi Walle](https://unsplash.com/@walre037?utm_source=medium&utm_medium=referral) 摄影，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -88,4 +88,4 @@
 
 # 结论
 
-从实习中获得回聘offer需要技巧。遵循这些建议，你可以将自己定位为一名出色的实习生，并提高获得回聘offer的可能性。同时，你并不能控制所有的决策，尤其是当这些决策是由于经济波动或上级决定时。归根结底，你只能尽力去控制你能控制的事情，而这份清单是一个良好的开端。
+从实习中获得回聘 offer 需要技巧。遵循这些建议，你可以将自己定位为一名出色的实习生，并提高获得回聘 offer 的可能性。同时，你并不能控制所有的决策，尤其是当这些决策是由于经济波动或上级决定时。归根结底，你只能尽力去控制你能控制的事情，而这份清单是一个良好的开端。

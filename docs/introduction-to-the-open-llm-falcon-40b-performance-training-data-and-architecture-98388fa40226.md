@@ -1,62 +1,62 @@
-# Open LLM Falcon-40B简介：性能、训练数据和架构
+# Open LLM Falcon-40B 简介：性能、训练数据和架构
 
-> 原文：[https://towardsdatascience.com/introduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226?source=collection_archive---------4-----------------------#2023-06-07](https://towardsdatascience.com/introduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226?source=collection_archive---------4-----------------------#2023-06-07)
+> 原文：[`towardsdatascience.com/introduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226?source=collection_archive---------4-----------------------#2023-06-07`](https://towardsdatascience.com/introduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226?source=collection_archive---------4-----------------------#2023-06-07)
 
 ## 开始使用 Falcon-7B、Falcon-40B 及其指令版本
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----98388fa40226--------------------------------)[![本杰明·玛丽](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----98388fa40226--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98388fa40226--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----98388fa40226--------------------------------) [本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----98388fa40226--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----98388fa40226--------------------------------)![本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----98388fa40226--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98388fa40226--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----98388fa40226--------------------------------) [本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----98388fa40226--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----98388fa40226---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98388fa40226--------------------------------) ·6分钟阅读·2023年6月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98388fa40226&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226&user=Benjamin+Marie&userId=ad2a414578b3&source=-----98388fa40226---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----98388fa40226---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98388fa40226--------------------------------) ·6 分钟阅读·2023 年 6 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98388fa40226&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226&user=Benjamin+Marie&userId=ad2a414578b3&source=-----98388fa40226---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98388fa40226&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226&source=-----98388fa40226---------------------bookmark_footer-----------)![](../Images/d5fa442c9fa2a7cd9bcf139978783e6e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98388fa40226&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226&source=-----98388fa40226---------------------bookmark_footer-----------)![](img/d5fa442c9fa2a7cd9bcf139978783e6e.png)
 
 照片由[Brandon](https://unsplash.com/@greener_30?utm_source=medium&utm_medium=referral)拍摄，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-[Falcon模型](https://huggingface.co/tiiuae/falcon-40b)自2023年5月发布以来引起了广泛关注。
+[Falcon 模型](https://huggingface.co/tiiuae/falcon-40b)自 2023 年 5 月发布以来引起了广泛关注。
 
-它们是因果大语言模型（LLM），或所谓的“仅解码器”模型，非常类似于GPT。
+它们是因果大语言模型（LLM），或所谓的“仅解码器”模型，非常类似于 GPT。
 
 > 定义：因果语言模型
 > 
 > 因果语言建模涉及预测一个令牌后面的令牌。在训练期间，模型的注意力仅集中在左侧上下文上。右侧上下文被屏蔽。这些模型通常在数十亿个词上进行训练。
 
-Falcon模型自5月31日起[完全免费，甚至用于商业用途（Apache 2.0许可证）](https://www.tii.ae/news/uaes-falcon-40b-now-royalty-free)。Falcon模型由[阿布扎比技术创新研究所（TII）](https://www.tii.ae/)开发和训练。
+Falcon 模型自 5 月 31 日起[完全免费，甚至用于商业用途（Apache 2.0 许可证）](https://www.tii.ae/news/uaes-falcon-40b-now-royalty-free)。Falcon 模型由[阿布扎比技术创新研究所（TII）](https://www.tii.ae/)开发和训练。
 
-根据初步结果，Falcon-40B，作为Falcon模型中最大的一个，超越了所有其他因果LLM，包括LLaMa-65B和MPT-7B。
+根据初步结果，Falcon-40B，作为 Falcon 模型中最大的一个，超越了所有其他因果 LLM，包括 LLaMa-65B 和 MPT-7B。
 
-在这篇博客文章中，我详细介绍了Falcon-40B、Falcon-7B及其指令版本。我们将看到它们与其他模型的表现对比、训练方式以及如何在自己的GPU上使用QLoRa运行Falcon7-B。
+在这篇博客文章中，我详细介绍了 Falcon-40B、Falcon-7B 及其指令版本。我们将看到它们与其他模型的表现对比、训练方式以及如何在自己的 GPU 上使用 QLoRa 运行 Falcon7-B。
 
-# OpenLLM上的表现
+# OpenLLM 上的表现
 
-Falcon-40B的指令版本在[OpenLLM排行榜](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)中排名第一。标准版本排名第二。
+Falcon-40B 的指令版本在[OpenLLM 排行榜](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)中排名第一。标准版本排名第二。
 
-OpenLLM排行榜评估LLM在4个任务上的表现：
+OpenLLM 排行榜评估 LLM 在 4 个任务上的表现：
 
 +   [AI2 Reasoning Challenge](https://arxiv.org/abs/1803.05457) (25-shot)：小学科学问题。
 
 +   [HellaSwag](https://arxiv.org/abs/1905.07830) (10-shot)：一个常识推理基准测试。
 
-+   [MMLU](https://arxiv.org/abs/2009.03300) (5-shot)：涵盖数学、计算机科学和法律等多个领域的57个任务。
++   [MMLU](https://arxiv.org/abs/2009.03300) (5-shot)：涵盖数学、计算机科学和法律等多个领域的 57 个任务。
 
 +   [TruthfulQA](https://arxiv.org/abs/2109.07958) (0-shot)：一个评估模型回答问题时真实性的基准。
 
-Falcon-40B在所有这些任务上都超越了Meta AI的LLaMa-65B。
+Falcon-40B 在所有这些任务上都超越了 Meta AI 的 LLaMa-65B。
 
 # Falcon RefinedWeb
 
-Falcon模型主要在[Falcon RefinedWeb](https://huggingface.co/datasets/tiiuae/falcon-refinedweb)数据集上进行训练。它也是由TII创建的，并在Apache 2.0许可证下分发。
+Falcon 模型主要在[Falcon RefinedWeb](https://huggingface.co/datasets/tiiuae/falcon-refinedweb)数据集上进行训练。它也是由 TII 创建的，并在 Apache 2.0 许可证下分发。
 
-RefinedWeb从CommonCrawl中提取，并经过彻底策划。TII声称它对多模态友好，因为保留了图片的链接和替代文本。
+RefinedWeb 从 CommonCrawl 中提取，并经过彻底策划。TII 声称它对多模态友好，因为保留了图片的链接和替代文本。
 
-在Hugging Face Hub发布的数据集卡片中，TII写道：“***这个公开提取*** *[…]*”。对我来说，因此不清楚Falcon模型是否在这个仅为“提取”的公开版本数据集上进行训练，还是使用了更大的内部版本。
+在 Hugging Face Hub 发布的数据集卡片中，TII 写道：“***这个公开提取*** *[…]*”。对我来说，因此不清楚 Falcon 模型是否在这个仅为“提取”的公开版本数据集上进行训练，还是使用了更大的内部版本。
 
-这个提取文件解压需要2.8Tb的硬盘空间。
+这个提取文件解压需要 2.8Tb 的硬盘空间。
 
-由于它在Hugging Face Hub中可用，你只需运行以下代码即可开始使用：
+由于它在 Hugging Face Hub 中可用，你只需运行以下代码即可开始使用：
 
 ```py
 from datasets import load_dataset
@@ -65,15 +65,15 @@ rw = load_dataset("tiiuae/falcon-refinedweb")
 
 *注意：你需要“datasets”库。如果没有，你可以通过“pip install datasets”安装。*
 
-RefinedWeb与策划的语料库结合，以训练Falcon模型。
+RefinedWeb 与策划的语料库结合，以训练 Falcon 模型。
 
-这个数据集代表了Falcon模型预训练数据的75%。它仅涵盖英语。为了增加更多语言，他们还准备了“RefinedWeb-Europe”，涵盖了多种欧洲语言：德语、西班牙语、法语、意大利语、葡萄牙语、波兰语、荷兰语、罗马尼亚语、捷克语和瑞典语。
+这个数据集代表了 Falcon 模型预训练数据的 75%。它仅涵盖英语。为了增加更多语言，他们还准备了“RefinedWeb-Europe”，涵盖了多种欧洲语言：德语、西班牙语、法语、意大利语、葡萄牙语、波兰语、荷兰语、罗马尼亚语、捷克语和瑞典语。
 
-最后，为了覆盖更多的体裁和领域，他们添加了书籍、对话（例如，来自Reddit）、代码、技术报告和科学论文（例如，来自arXiv）的语料库。*注意：他们没有透露“代码”的来源。也不清楚他们编制的数据集的许可证是什么。*
+最后，为了覆盖更多的体裁和领域，他们添加了书籍、对话（例如，来自 Reddit）、代码、技术报告和科学论文（例如，来自 arXiv）的语料库。*注意：他们没有透露“代码”的来源。也不清楚他们编制的数据集的许可证是什么。*
 
-总共，这相当于1500亿个标记用于预训练Falcon模型。
+总共，这相当于 1500 亿个标记用于预训练 Falcon 模型。
 
-# Falcon-40B和Falcon-7B的预训练
+# Falcon-40B 和 Falcon-7B 的预训练
 
 对于预训练，他们使用了：
 
@@ -81,9 +81,9 @@ RefinedWeb与策划的语料库结合，以训练Falcon模型。
 
 +   Multiquery ([Shazeer et al., 2019](https://arxiv.org/abs/1911.02150)) 和 FlashAttention ([Dao et al., 2022](https://arxiv.org/abs/2205.14135))
 
-+   并行注意力/MLP与双层规范
++   并行注意力/MLP 与双层规范
 
-Falcon-40B具有以下架构：
+Falcon-40B 具有以下架构：
 
 +   层数：60
 
@@ -95,41 +95,41 @@ Falcon-40B具有以下架构：
 
 +   序列长度：2,048
 
-这与LLaMa的架构非常相似，只是词汇表大了一倍。
+这与 LLaMa 的架构非常相似，只是词汇表大了一倍。
 
-在我看来，序列长度在我们看到LLM接受超过10,000个标记的情况下，如GPT-4和[Claude](https://www.anthropic.com/index/introducing-claude)，显得相当短。
+在我看来，序列长度在我们看到 LLM 接受超过 10,000 个标记的情况下，如 GPT-4 和[Claude](https://www.anthropic.com/index/introducing-claude)，显得相当短。
 
-Falcon-7B有一个较小的架构，使其能够在消费者硬件上进行微调。与40B版本唯一的区别是层数和嵌入维度减少了一半：
+Falcon-7B 有一个较小的架构，使其能够在消费者硬件上进行微调。与 40B 版本唯一的区别是层数和嵌入维度减少了一半：
 
 +   层数：60
 
 +   嵌入维度：4,544
 
-两个版本都使用了bfloat16精度和AdamW。它们使用了AWS SageMaker和384个A100 40GB GPU的P4d实例，但尚未透露训练持续了多长时间。
+两个版本都使用了 bfloat16 精度和 AdamW。它们使用了 AWS SageMaker 和 384 个 A100 40GB GPU 的 P4d 实例，但尚未透露训练持续了多长时间。
 
-# Falcon-40B/7B的指令版本
+# Falcon-40B/7B 的指令版本
 
 [Falcon-40B](https://huggingface.co/tiiuae/falcon-40b-instruct) 和 [7B](https://huggingface.co/tiiuae/falcon-7b-instruct) 的指令版本表现更好。
 
-Falcon-40B-Instruct在AWS SageMaker上训练，使用了配备64个A100 40GB GPU的P4d实例。对于Falcon-7B-Instruct，他们仅使用了32个A100。
+Falcon-40B-Instruct 在 AWS SageMaker 上训练，使用了配备 64 个 A100 40GB GPU 的 P4d 实例。对于 Falcon-7B-Instruct，他们仅使用了 32 个 A100。
 
-它们在250百万个标记的聊天/指令数据集混合数据上进行了微调，这些数据来源于[Bai ze](https://github.com/project-baize/baize-chatbot)、[GPT4all](https://github.com/nomic-ai/gpt4all)、[GPTeacher](https://github.com/teknium1/GPTeacher)和1300万标记的RefinedWeb语料库。
+它们在 250 百万个标记的聊天/指令数据集混合数据上进行了微调，这些数据来源于[Bai ze](https://github.com/project-baize/baize-chatbot)、[GPT4all](https://github.com/nomic-ai/gpt4all)、[GPTeacher](https://github.com/teknium1/GPTeacher)和 1300 万标记的 RefinedWeb 语料库。
 
-Bai ze是由ChatGPT生成的数据集。我会对在商业应用中使用Falcon模型的指令版本保持谨慎。根据OpenAI的[使用条款](https://openai.com/policies/terms-of-use)：
+Bai ze 是由 ChatGPT 生成的数据集。我会对在商业应用中使用 Falcon 模型的指令版本保持谨慎。根据 OpenAI 的[使用条款](https://openai.com/policies/terms-of-use)：
 
-> “限制。你不得 […] (iii) 使用服务的输出开发与OpenAI竞争的模型”
+> “限制。你不得 […] (iii) 使用服务的输出开发与 OpenAI 竞争的模型”
 
-“服务”包括ChatGPT。而Falcon-40B是一个可以与OpenAI的GPT模型“竞争”的模型。
+“服务”包括 ChatGPT。而 Falcon-40B 是一个可以与 OpenAI 的 GPT 模型“竞争”的模型。
 
 # 如何在你的 GPU 上使用 Falcon-7B 和 QLoRa
 
 在上一篇文章中，我介绍了 QLoRa 在消费级硬件上微调 LLMs 的方法：
 
-[## QLoRa: 在你的 GPU 上微调大型语言模型](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b?source=post_page-----98388fa40226--------------------------------)
+## QLoRa: 在你的 GPU 上微调大型语言模型
 
 ### 现在可以在消费级硬件上对具有数十亿参数的模型进行微调。
 
-[towardsdatascience.com](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b?source=post_page-----98388fa40226--------------------------------)
+towardsdatascience.com
 
 你可以对 Falcon-7B 按相同的步骤操作，但它不会在 Google Colab 的免费实例上运行。模型需要过多的 CPU 内存。
 

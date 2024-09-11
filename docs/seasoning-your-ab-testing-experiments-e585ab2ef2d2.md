@@ -1,18 +1,18 @@
-# 调味你的AB测试实验
+# 调味你的 AB 测试实验
 
-> 原文：[https://towardsdatascience.com/seasoning-your-ab-testing-experiments-e585ab2ef2d2?source=collection_archive---------18-----------------------#2023-03-13](https://towardsdatascience.com/seasoning-your-ab-testing-experiments-e585ab2ef2d2?source=collection_archive---------18-----------------------#2023-03-13)
+> 原文：[`towardsdatascience.com/seasoning-your-ab-testing-experiments-e585ab2ef2d2?source=collection_archive---------18-----------------------#2023-03-13`](https://towardsdatascience.com/seasoning-your-ab-testing-experiments-e585ab2ef2d2?source=collection_archive---------18-----------------------#2023-03-13)
 
 ## 盐如何帮助你的实验？
 
-[](https://markeltsefon.medium.com/?source=post_page-----e585ab2ef2d2--------------------------------)[![Mark Eltsefon](../Images/5ab4cccd496f73cd155bbb253f85ec4d.png)](https://markeltsefon.medium.com/?source=post_page-----e585ab2ef2d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e585ab2ef2d2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e585ab2ef2d2--------------------------------) [Mark Eltsefon](https://markeltsefon.medium.com/?source=post_page-----e585ab2ef2d2--------------------------------)
+[](https://markeltsefon.medium.com/?source=post_page-----e585ab2ef2d2--------------------------------)![Mark Eltsefon](https://markeltsefon.medium.com/?source=post_page-----e585ab2ef2d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e585ab2ef2d2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e585ab2ef2d2--------------------------------) [Mark Eltsefon](https://markeltsefon.medium.com/?source=post_page-----e585ab2ef2d2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88f461f6049a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseasoning-your-ab-testing-experiments-e585ab2ef2d2&user=Mark+Eltsefon&userId=88f461f6049a&source=post_page-88f461f6049a----e585ab2ef2d2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e585ab2ef2d2--------------------------------) · 5分钟阅读 · 2023年3月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe585ab2ef2d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseasoning-your-ab-testing-experiments-e585ab2ef2d2&user=Mark+Eltsefon&userId=88f461f6049a&source=-----e585ab2ef2d2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88f461f6049a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseasoning-your-ab-testing-experiments-e585ab2ef2d2&user=Mark+Eltsefon&userId=88f461f6049a&source=post_page-88f461f6049a----e585ab2ef2d2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e585ab2ef2d2--------------------------------) · 5 分钟阅读 · 2023 年 3 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe585ab2ef2d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseasoning-your-ab-testing-experiments-e585ab2ef2d2&user=Mark+Eltsefon&userId=88f461f6049a&source=-----e585ab2ef2d2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe585ab2ef2d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseasoning-your-ab-testing-experiments-e585ab2ef2d2&source=-----e585ab2ef2d2---------------------bookmark_footer-----------)![](../Images/c5d127a9d96144e0d73a0d474cca9844.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe585ab2ef2d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fseasoning-your-ab-testing-experiments-e585ab2ef2d2&source=-----e585ab2ef2d2---------------------bookmark_footer-----------)![](img/c5d127a9d96144e0d73a0d474cca9844.png)
 
 图片由 [Manuel Asturias](https://unsplash.com/es/@manuel_asturias?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

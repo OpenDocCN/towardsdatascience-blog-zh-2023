@@ -1,18 +1,18 @@
 # 使用 OpenAI 和 Python 提升你的简历：一步一步的指南
 
-> 原文：[https://towardsdatascience.com/using-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194?source=collection_archive---------0-----------------------#2023-02-24](https://towardsdatascience.com/using-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194?source=collection_archive---------0-----------------------#2023-02-24)
+> 原文：[`towardsdatascience.com/using-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194?source=collection_archive---------0-----------------------#2023-02-24`](https://towardsdatascience.com/using-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194?source=collection_archive---------0-----------------------#2023-02-24)
 
 ## 这是一个成功故事的经历，只需几个小时的工作
 
-[](https://piero-paialunga.medium.com/?source=post_page-----e2c1a359e194--------------------------------)[![Piero Paialunga](../Images/de2185596a49484698733e85114dd1ff.png)](https://piero-paialunga.medium.com/?source=post_page-----e2c1a359e194--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2c1a359e194--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e2c1a359e194--------------------------------) [Piero Paialunga](https://piero-paialunga.medium.com/?source=post_page-----e2c1a359e194--------------------------------)
+[](https://piero-paialunga.medium.com/?source=post_page-----e2c1a359e194--------------------------------)![Piero Paialunga](https://piero-paialunga.medium.com/?source=post_page-----e2c1a359e194--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2c1a359e194--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2c1a359e194--------------------------------) [Piero Paialunga](https://piero-paialunga.medium.com/?source=post_page-----e2c1a359e194--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F254e653181d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194&user=Piero+Paialunga&userId=254e653181d2&source=post_page-254e653181d2----e2c1a359e194---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2c1a359e194--------------------------------) ·10 min read·2023年2月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2c1a359e194&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194&user=Piero+Paialunga&userId=254e653181d2&source=-----e2c1a359e194---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F254e653181d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194&user=Piero+Paialunga&userId=254e653181d2&source=post_page-254e653181d2----e2c1a359e194---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2c1a359e194--------------------------------) ·10 min read·2023 年 2 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2c1a359e194&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194&user=Piero+Paialunga&userId=254e653181d2&source=-----e2c1a359e194---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2c1a359e194&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194&source=-----e2c1a359e194---------------------bookmark_footer-----------)![](../Images/e0bc7fdecb48039eadb745a3b4c0592c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2c1a359e194&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-openai-and-python-to-enhance-your-resume-a-step-by-step-guide-e2c1a359e194&source=-----e2c1a359e194---------------------bookmark_footer-----------)![](img/e0bc7fdecb48039eadb745a3b4c0592c.png)
 
 图片由作者使用 Midjourney 制作
 
@@ -36,7 +36,7 @@
 
 在我看来，这款应用的工作方式如下：
 
-![](../Images/3c362e165cbb02954370b45f31a78cba.png)
+![](img/3c362e165cbb02954370b45f31a78cba.png)
 
 作者提供的图片
 
@@ -44,7 +44,7 @@
 
 几个小时的工作，这就是结果：
 
-![](../Images/1c3fd7b80dff75ed2bd2693b7c6c4fb5.png)![](../Images/f29df0cd5bc6957416359a85d8ceae87.png)![](../Images/96d46579594de7a88d2893b3e4c01260.png)![](../Images/e5b10b3e0b8d0bab40d6961bd446fe74.png)
+![](img/1c3fd7b80dff75ed2bd2693b7c6c4fb5.png)![](img/f29df0cd5bc6957416359a85d8ceae87.png)![](img/96d46579594de7a88d2893b3e4c01260.png)![](img/e5b10b3e0b8d0bab40d6961bd446fe74.png)
 
 现在，这看起来像是一个已经运营了几个月的初创公司，但事实上，现在只需要我花费几个小时，一些基本的 Python 技巧，加上 Open AI 的 GPT-3 魔力，就能完成这些！
 
@@ -56,7 +56,7 @@
 
 ***一个公平的假设：***
 
-首先，HR和招聘人员的世界因多种原因而充满挑战。例如，求职市场是动态的，并且始终在不断发展。AI使用**训练**模型。这意味着一旦模型被训练，其获得的信息和性能与可能已经过时的数据集有关。
+首先，HR 和招聘人员的世界因多种原因而充满挑战。例如，求职市场是动态的，并且始终在不断发展。AI 使用**训练**模型。这意味着一旦模型被训练，其获得的信息和性能与可能已经过时的数据集有关。
 
 因此，我会说这个模型更多地作为**语法检查**和**文本美化器**工作，而不是一个真正审查你的简历并找到改进方法的专家。
 
@@ -66,17 +66,17 @@
 
 嗯……是的，也不是。
 
-在这篇文章中，我并没有邀请你提交除工作经验之外的任何东西，这些内容并不是什么秘密，因为任何拥有LinkedIn页面的人都能看到。如果你对此仍然感到不安，记住始终可以选择在本地运行我的代码，这样就不会使用任何网络应用程序，你可以将简历的所有信息保留给自己。
+在这篇文章中，我并没有邀请你提交除工作经验之外的任何东西，这些内容并不是什么秘密，因为任何拥有 LinkedIn 页面的人都能看到。如果你对此仍然感到不安，记住始终可以选择在本地运行我的代码，这样就不会使用任何网络应用程序，你可以将简历的所有信息保留给自己。
 
-我不推荐在AI简历改进工具中添加个人信息，如地址、电话号码或电子邮件。
+我不推荐在 AI 简历改进工具中添加个人信息，如地址、电话号码或电子邮件。
 
 ***一个伦理问题：***
 
-在使用AI来改进你的简历时，有一些一般性的伦理考虑需要记住。
+在使用 AI 来改进你的简历时，有一些一般性的伦理考虑需要记住。
 
 +   构建一个没有偏见的数据集是一个非常棘手的概念，因为我们所有人都可能在某种程度上**有偏见**：我们能做的唯一事情就是尽量构建一个尽可能少偏见的数据集。这也适用于这种情况。人工智能在招聘过程中的盲目和不受控制的使用，无论是招聘还是构建简历，都极具风险，因为机器学习决策算法在所有决策阶段和简历的各个部分都可能会出现偏见错误。（阅读更多 [这里](https://hbr.org/2019/05/all-the-ways-hiring-algorithms-can-introduce-bias)）
 
-+   重要的是要对AI在简历中的使用保持透明。**如果你使用AI生成内容或优化格式，我们需要确保在你的简历中披露这一点**。这是我们在工作中应该做的事情。有时由于这些技术与我们的生活如此紧密，容易忘记正确披露，但这仍然需要提醒。还有一些工具可以用来判断文本是否由AI编写（阅读更多 [这里](http://gltr.io/)）
++   重要的是要对 AI 在简历中的使用保持透明。**如果你使用 AI 生成内容或优化格式，我们需要确保在你的简历中披露这一点**。这是我们在工作中应该做的事情。有时由于这些技术与我们的生活如此紧密，容易忘记正确披露，但这仍然需要提醒。还有一些工具可以用来判断文本是否由 AI 编写（阅读更多 [这里](http://gltr.io/)）
 
 +   最后，记住你只是在使用**语言模型**。模型真正做的只是以一种花哨的方式基于全球数十亿文本预测“下一个词”。你对自己了解胜过计算机，因此深入挖掘，提升你的优点，给自己一些肯定，然后**再**使用语言模型来改进你的简历😊
 
@@ -84,7 +84,7 @@
 
 # 1\. Github！
 
-首先，这里没有什么秘密！一切都是公开的，且在Github上！ 👇
+首先，这里没有什么秘密！一切都是公开的，且在 Github 上！ 👇
 
 我现在将描述所有必要的内容，以生成结果。
 
@@ -102,7 +102,7 @@ github.com](https://github.com/PieroPaialungaAI/AI_CV_improver?source=post_page-
 
 它获取我们模板简历的关键，OpenAI 模型的温度，以及我们用来改进简历的提示。这就是他们所谓的“提示工程”。
 
-> 注意！！！你需要使用你的 OpenAI 密钥来更改 OPENAIKEY。它不是公开的，你不应该共享，因此我将其命名为 fake_key。你可以在这里获取密钥 [https://openai.com/api/](https://openai.com/api/)
+> 注意！！！你需要使用你的 OpenAI 密钥来更改 OPENAIKEY。它不是公开的，你不应该共享，因此我将其命名为 fake_key。你可以在这里获取密钥 [`openai.com/api/`](https://openai.com/api/)
 
 你可以通过更改 constants.py 文件来调整提示工程。难道这不是很简单吗？🙃
 
@@ -152,11 +152,11 @@ python main.py
 
 **我的输入总结**如下：
 
-> “我是一名物理学家，已在数据科学和深度学习方面发展了强大的技能。拥有复杂系统物理学和大数据的硕士学位（成绩：110/110 荣誉）。目前在辛辛那提大学航空航天工程与工程力学系担任研究助理，同时攻读博士学位。我的研究目标是寻找使用机器学习和数据科学优化工程实验的方法。为《Towards Data Science》撰写关于流行机器学习应用和技术解决现实问题的技术文章（每月超过6万次浏览）。《青少年人工智能》课程的创作者和教师。图像处理 I 和信号处理 I 课程的开发者。”
+> “我是一名物理学家，已在数据科学和深度学习方面发展了强大的技能。拥有复杂系统物理学和大数据的硕士学位（成绩：110/110 荣誉）。目前在辛辛那提大学航空航天工程与工程力学系担任研究助理，同时攻读博士学位。我的研究目标是寻找使用机器学习和数据科学优化工程实验的方法。为《Towards Data Science》撰写关于流行机器学习应用和技术解决现实问题的技术文章（每月超过 6 万次浏览）。《青少年人工智能》课程的创作者和教师。图像处理 I 和信号处理 I 课程的开发者。”
 
 **人工智能模型**将其输出为一个对招聘人员更具吸引力和趣味性的总结：
 
-> 我拥有**广泛的物理学背景**，拥有复杂系统物理学和大数据的硕士学位（成绩：110/110 荣誉）。我还在数据科学和深度学习方面发展了强大的技能。我目前在辛辛那提大学航空航天工程与工程力学系担任研究助理，同时攻读博士学位。我的研究重点是寻找使用机器学习和数据科学优化工程实验的方法。**此外**，我还是《Towards Data Science》的技术写作者，撰写关于流行的机器学习应用和解决现实世界问题的技术文章（每月超过6万次浏览）。我还是《青少年人工智能》课程的创作者和教师，并且是《图像处理 I》和《信号处理 I》课程的开发者。我在这些领域的经验和知识使我培养了一套在行业中非常受欢迎的独特技能。
+> 我拥有**广泛的物理学背景**，拥有复杂系统物理学和大数据的硕士学位（成绩：110/110 荣誉）。我还在数据科学和深度学习方面发展了强大的技能。我目前在辛辛那提大学航空航天工程与工程力学系担任研究助理，同时攻读博士学位。我的研究重点是寻找使用机器学习和数据科学优化工程实验的方法。**此外**，我还是《Towards Data Science》的技术写作者，撰写关于流行的机器学习应用和解决现实世界问题的技术文章（每月超过 6 万次浏览）。我还是《青少年人工智能》课程的创作者和教师，并且是《图像处理 I》和《信号处理 I》课程的开发者。我在这些领域的经验和知识使我培养了一套在行业中非常受欢迎的独特技能。
 
 我不打算撒谎……这对我来说确实听起来更好。
 
@@ -180,13 +180,13 @@ python main.py
 
 1.  Open AI 模型是一个可以执行各种 NLP 任务的工具，包括令牌分类、文本生成、情感分析和文本分类。它非常有用，以至于许多以前的模型现在基本上已经过时。
 
-1.  这个应用的概念是**下载模板，** **填写**你的简历，**上传回去，**然后让AI为你分析。
+1.  这个应用的概念是**下载模板，** **填写**你的简历，**上传回去，**然后让 AI 为你分析。
 
 1.  创建一个网页应用来提升你的简历非常简单。只需几个小时的代码和一些基础的 Python 编程。
 
 1.  这让我想到，AI 驱动应用的可能性是巨大的，随着像 GPT-3 和 Streamlit 这样的工具变得更加普及，即使是不懂编程（或编程能力不强）的人员，也可以在短短几小时内创造出令人印象深刻的结果。
 
-最后，这次经历再次展示了AI的巨大力量及其改变我们工作和生活方式的潜力。但也许我们早已知道这一点🙃
+最后，这次经历再次展示了 AI 的巨大力量及其改变我们工作和生活方式的潜力。但也许我们早已知道这一点🙃
 
 # 4\. 结论
 

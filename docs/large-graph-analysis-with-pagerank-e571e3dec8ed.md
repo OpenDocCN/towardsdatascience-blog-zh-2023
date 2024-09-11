@@ -1,18 +1,18 @@
 # PageRank 的可视化解释
 
-> 原文：[https://towardsdatascience.com/large-graph-analysis-with-pagerank-e571e3dec8ed?source=collection_archive---------9-----------------------#2023-08-09](https://towardsdatascience.com/large-graph-analysis-with-pagerank-e571e3dec8ed?source=collection_archive---------9-----------------------#2023-08-09)
+> 原文：[`towardsdatascience.com/large-graph-analysis-with-pagerank-e571e3dec8ed?source=collection_archive---------9-----------------------#2023-08-09`](https://towardsdatascience.com/large-graph-analysis-with-pagerank-e571e3dec8ed?source=collection_archive---------9-----------------------#2023-08-09)
 
 ## 了解 Google 搜索引擎如何根据链接结构对文档进行排名
 
-[](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----e571e3dec8ed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------) ·14分钟阅读·2023年8月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe571e3dec8ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----e571e3dec8ed---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----e571e3dec8ed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------) ·14 分钟阅读·2023 年 8 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe571e3dec8ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----e571e3dec8ed---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe571e3dec8ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&source=-----e571e3dec8ed---------------------bookmark_footer-----------)![](../Images/f23509038e4fe63a4a3baf5f188e97a1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe571e3dec8ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&source=-----e571e3dec8ed---------------------bookmark_footer-----------)![](img/f23509038e4fe63a4a3baf5f188e97a1.png)
 
 排名是机器学习中的一个重要问题。给定一组文档，目标是根据特定标准对它们进行排序。排名在信息检索系统中广泛使用，用于排序搜索结果，或在推荐系统中筛选出可能对特定用户感兴趣的内容。
 
@@ -32,9 +32,9 @@
 
 如果一个页面最初被维基百科上的高质量文章引用，那么这样的链接应该具有更大的权重。相反，当一个完全不知名的资源指向另一个网页时，它通常不会有高的重要性。
 
-![](../Images/2619d05b34a9a9a81ac493e26654dc6e.png)
+![](img/2619d05b34a9a9a81ac493e26654dc6e.png)
 
-来自[官方论文](https://arxiv.org/pdf/1002.2858.pdf)的PageRank算法的重要性分布示例。得分被标准化为总和为100。具有38.4值的节点由于有大量其他节点指向它而具有如此高的重要性。另一方面，重要性为34.3的节点只有一个入站链接，但由于其唯一的输入链接来自另一个有影响力的节点，它的重要性仍然相对较高。重要性为1.6的节点没有任何入站链接。
+来自[官方论文](https://arxiv.org/pdf/1002.2858.pdf)的 PageRank 算法的重要性分布示例。得分被标准化为总和为 100。具有 38.4 值的节点由于有大量其他节点指向它而具有如此高的重要性。另一方面，重要性为 34.3 的节点只有一个入站链接，但由于其唯一的输入链接来自另一个有影响力的节点，它的重要性仍然相对较高。重要性为 1.6 的节点没有任何入站链接。
 
 # 正式定义
 
@@ -42,17 +42,17 @@
 
 想象一个重要性为*rᵢ*的节点*i*，它有*k* 个出站链接。我们如何确定每个链接的权重？最直接的方法是将节点的重要性平均分配给所有出站链接。这样，每个出站链接将获得*rᵢ / k*的权重。
 
-![](../Images/1aa89e43a0ee6a6095fef51e9f7c7785.png)
+![](img/1aa89e43a0ee6a6095fef51e9f7c7785.png)
 
 节点排名计算示例
 
-![](../Images/7d2f2575cf6eee5451d256668d55552f.png)
+![](img/7d2f2575cf6eee5451d256668d55552f.png)
 
 节点的排名等于入站节点的排名总和除以它们的总出度。
 
 给定一个 *n* 个网页的图，我们可以创建一个 *n* 个线性方程的系统来找到图的权重。然而，这样的系统可能有无限多个解。这就是为什么我们应该添加另一个约束条件以强加唯一解。顺便说一下，PageRank 添加了归一化条件，即所有节点的重要性之和等于 1。
 
-![](../Images/010fd0358235454b88c63e208722f3ad.png)
+![](img/010fd0358235454b88c63e208722f3ad.png)
 
 寻找描述图结构的线性方程组的解
 
@@ -60,7 +60,7 @@
 
 首先，让我们简化表示法。为此，我们引入了邻接方阵 *G*，它将包含每对链接网页的链接权重（如果两个网页没有链接，我们将在相应的矩阵元素中放置 0）。更正式地：
 
-![](../Images/3a76da3e63295a8f9f2a8b4e0d08b3fd.png)
+![](img/3a76da3e63295a8f9f2a8b4e0d08b3fd.png)
 
 矩阵元素 G[j][i] 的定义
 
@@ -72,13 +72,13 @@
 
 让我们看看如果将矩阵 *G* 乘以向量 *r* 会发生什么。根据上一节的图示，我们可以看到结果仍然是相同的向量 *r*！
 
-![](../Images/367e82305bad992b43ceb17a7b2ef98c.png)
+![](img/367e82305bad992b43ceb17a7b2ef98c.png)
 
 将矩阵 G 乘以向量 r 再次得到向量 r
 
 为什么会这样？这只是巧合吗？请记住，矩阵 *G* 的 *i* -th 行包含所有输入链接到页面 *i* 的权重。当我们将 *i* -th 行的 *j* -th 元素乘以 *r[j]* 时，我们实际上得到的是组件 r*j* / *d[j]out* —— 从节点 *j* 流向 *i* 的重要性。如果节点 *i* 和 *j* 之间没有链接，则相应的组件设置为 0。逻辑上，*i* -th 行与向量 *r* 的乘积的最终结果将等于从图的任何连接节点流向节点 *i* 的所有重要性的总和。根据定义，这个值等于节点 *i* 的排名。一般来说，我们可以写出以下方程：
 
-![](../Images/09e121829ca20698156b8b0901a4f767.png)
+![](img/09e121829ca20698156b8b0901a4f767.png)
 
 PageRank 方程
 
@@ -88,7 +88,7 @@ PageRank 方程
 
 我们可以通过回顾线性代数中关于特征向量的理论来找到上述方程的解。给定一个矩阵 *A*，如果存在一个数 *α* 使得下列方程成立，则向量 *v* 被称为**特征向量**：
 
-![](../Images/62c0e1f08ded53fccaca33f4a76c573b.png)
+![](img/62c0e1f08ded53fccaca33f4a76c573b.png)
 
 特征值定义
 
@@ -98,13 +98,13 @@ PageRank 方程
 
 寻找矩阵特征向量的最流行的方法之一是 **幂迭代** 方法。它包括用一些值（我们将使用 *1 / n*，其中 *n* 是网页数量）初始化初始向量 *r*，然后不断计算 *G * r* 的值，并将该值重新分配给 *r*。如果在任何迭代中，向量 *r* 和 *G * r* 之间的距离小于某个阈值 *ε*，我们就停止算法，因为它已经成功收敛。
 
-![](../Images/759a280818414db10f3f899d86d1f64c.png)
+![](img/759a280818414db10f3f899d86d1f64c.png)
 
 PageRank 算法
 
 在上述示例中，我们可以看到，通过将 *ε* 设置为 0.0005，算法在仅 9 次迭代中正确收敛：
 
-![](../Images/dd71e8506a7bbf15834355e5b082ada6.png)
+![](img/dd71e8506a7bbf15834355e5b082ada6.png)
 
 显然，这只是一个玩具示例，但在实际中，这种方法对于更多变量也能很好地工作。
 
@@ -112,7 +112,7 @@ PageRank 算法
 
 想象一个游览者（行走者）在时刻 *t* 位于图的任何节点上。我们用 *p(t)* 表示一个向量，其中 *i* 位置的分量等于游览者在时刻 *t* 出现在节点 *i* 的概率。然后，游览者随机（以相等的概率）选择另一个链接到当前节点的节点，并在时刻 *t + 1* 移动到那里。最终，我们希望找到时刻 *t + 1* 的分布向量 *p(t + 1)*。
 
-![](../Images/786184a62c210f59cf091bfa695db6e0.png)
+![](img/786184a62c210f59cf091bfa695db6e0.png)
 
 游览者的随机游走
 
@@ -124,7 +124,7 @@ PageRank 算法
 
 通过汇总这些概率，我们得到 *p(t + 1)[i]* 的值。为了找到所有图节点的 *p(t + 1)* 值，我们可以将相同的方程写成矩阵形式：
 
-![](../Images/73dc64949c2dc43287b0bc7bbf53b979.png)
+![](img/73dc64949c2dc43287b0bc7bbf53b979.png)
 
 这个方程的形式与我们之前为 PageRank 得到的完全相同！*这意味着这两个问题有相同的解决方案和解释。*
 
@@ -146,7 +146,7 @@ PageRank 算法
 
 没有出链接的节点称为**死胡同**。这种节点的问题在于它们会使总权重从网络中泄漏。以下是一个示例：
 
-![](../Images/4dbf32d49a466b74634e3bf3058fc73c.png)
+![](img/4dbf32d49a466b74634e3bf3058fc73c.png)
 
 死胡同问题。在时刻 t = 2，权重泄漏。在时刻 t = 3，排名向量收敛。
 
@@ -156,17 +156,17 @@ PageRank 算法
 
 +   算法从不收敛。
 
-+   形成蜘蛛陷阱的节点组吸收了所有图的权重。结果，这些节点的权重非常高，而其他节点的权重为0。
++   形成蜘蛛陷阱的节点组吸收了所有图的权重。结果，这些节点的权重非常高，而其他节点的权重为 0。
 
 第一个问题如下面的图所示：
 
-![](../Images/62a0855f44eea35bcf6a46157cbf815b.png)
+![](img/62a0855f44eea35bcf6a46157cbf815b.png)
 
 蜘蛛陷阱问题。从时刻 t = 0 开始，1 和 0 的排名在两个节点之间无限交替。结果，算法从不收敛。
 
-权重的吸收在下图中展示。虽然在下面的玩具示例中可能看起来不是一个严重的问题，但想象一个有数百万网页的网络，其中几个网页形成了蜘蛛陷阱。因此，这几个页面将分配所有可用的权重，而所有其他网页的权重将被设置为0。显然，这不是我们在现实中通常期望的情况。
+权重的吸收在下图中展示。虽然在下面的玩具示例中可能看起来不是一个严重的问题，但想象一个有数百万网页的网络，其中几个网页形成了蜘蛛陷阱。因此，这几个页面将分配所有可用的权重，而所有其他网页的权重将被设置为 0。显然，这不是我们在现实中通常期望的情况。
 
-![](../Images/6fc95ec057ad88ff91ebadbccbad3894.png)
+![](img/6fc95ec057ad88ff91ebadbccbad3894.png)
 
 节点 b 和 d 形成了一个蜘蛛陷阱。结果，在时刻 t = 18 时，它们已经吸收了所有的权重，而其他节点的权重为零。从此时开始，权重在节点 b 和 d 之间交替，使得算法发散。
 
@@ -182,7 +182,7 @@ Google 提出的一个解决方案是在每次移动前添加以下条件：
 
 下图显示了传送门如何帮助处理蜘蛛陷阱问题。如果冲浪者走到节点 *c*，那么它将永远停留在那里。引入传送门（蓝线）有助于消除这个问题，确保在一段时间后，冲浪者将不得不移动到另一个随机节点。
 
-![](../Images/035f46ce60ec11406c0dbf59520388b6.png)
+![](img/035f46ce60ec11406c0dbf59520388b6.png)
 
 传送门（蓝线）消除了蜘蛛陷阱问题
 
@@ -192,7 +192,7 @@ Google 提出的一个解决方案是在每次移动前添加以下条件：
 
 实际上，我们可以修改初始矩阵 *G* 来满足这一声明：我们只需将所有死胡同节点的列中的所有元素的零替换为 *1 / n*。下面的示例演示了这一原理。
 
-![](../Images/32aeee48af04e636380c61882d60595f.png)
+![](img/32aeee48af04e636380c61882d60595f.png)
 
 节点 *c* 是一个死胡同节点，在矩阵 *G* 中对应一列全零的列。将 *n = 3* 个传送门从 *c* 添加到图中的所有节点，会使从 *c* 到任何节点的移动概率 *p = 1 / 3*。为了考虑这一点，我们用 *1 / 3* 填充矩阵 *G* 中与节点 c 对应的列。
 
@@ -228,23 +228,23 @@ Google 提出的 PageRank 算法以初始矩阵 *G* 为基础，通过将死胡�
 
 在数学上，这导致每个节点的以下等级方程：
 
-![](../Images/b2dd62e416efb0bbbef6f097444b6cfd.png)
+![](img/b2dd62e416efb0bbbef6f097444b6cfd.png)
 
 PageRank 的向量方程
 
 我们可以将这个方程转换成矩阵形式：
 
-![](../Images/cc102c6449df56ea5d1ecf82966beb14.png)
+![](img/cc102c6449df56ea5d1ecf82966beb14.png)
 
 Google 的 PageRank 矩阵方程
 
-![](../Images/854a444ae13eff395a48cdd56c6e1ae9.png)
+![](img/854a444ae13eff395a48cdd56c6e1ae9.png)
 
 矩阵 R 必须满足唯一平稳分布 r 存在的必要条件，而这个分布需要被找到。
 
 让我们绘制修改后的图和上面某个示例的相应转移矩阵 R：
 
-![](../Images/b3ccbea245e7b847d45dd6ecd242bae4.png)
+![](img/b3ccbea245e7b847d45dd6ecd242bae4.png)
 
 从原始链接矩阵 G 和传送门矩阵组成的矩阵 R。在这个例子中 *β = 0.9*。
 
@@ -254,33 +254,33 @@ Google 的 PageRank 矩阵方程
 
 首先，我们可以简单地注意到，添加传送门等同于将初始矩阵 *G* 的元素减少 *(1 — β)*% 并均匀分配到每个节点。牢记这一点，我们可以将 PageRank 的矩阵方程转换成另一种格式：
 
-![](../Images/ccb97176c8743f80c2300dace06e54f7.png)
+![](img/ccb97176c8743f80c2300dace06e54f7.png)
 
 转换 PageRank 方程
 
-让我们看一下最后得到的方程。*G*是初始链接矩阵，大多数元素都等于0。为什么会这样？实际上，如果你查看任何网页，它可能只包含最多几十个指向其他网页的链接。考虑到有超过250亿个网页，我们得到的总链接数相对于网页数量是极其少的。因此，*G*中有很多零，*G*是稀疏的。
+让我们看一下最后得到的方程。*G*是初始链接矩阵，大多数元素都等于 0。为什么会这样？实际上，如果你查看任何网页，它可能只包含最多几十个指向其他网页的链接。考虑到有超过 250 亿个网页，我们得到的总链接数相对于网页数量是极其少的。因此，*G*中有很多零，*G*是稀疏的。
 
-存储稀疏矩阵所需的内存远远少于密集矩阵。假设每个网页平均链接到其他40个网页。现在存储矩阵G所需的总字节数变为*25 * 10⁹ * 40*（字节）* = 10¹²*（字节）* = 1*（TB）。结果是，我们只需要1TB来存储*G*。与之前相比，这是一个巨大的改进！
+存储稀疏矩阵所需的内存远远少于密集矩阵。假设每个网页平均链接到其他 40 个网页。现在存储矩阵 G 所需的总字节数变为*25 * 10⁹ * 40*（字节）* = 10¹²*（字节）* = 1*（TB）。结果是，我们只需要 1TB 来存储*G*。与之前相比，这是一个巨大的改进！
 
 实际上，在每次迭代中，我们只需计算矩阵*G*与向量*r*的乘积，将其乘以*β*，并在结果向量的每个元素中加上常数*(1 — β) / n*。
 
-![](../Images/4ca378c1728b589b1fc29c52ed89c394.png)
+![](img/4ca378c1728b589b1fc29c52ed89c394.png)
 
-结果PageRank方程
+结果 PageRank 方程
 
-还要记住，如果初始链*G*包含死节点，那么每次迭代时向量*r*的总和将小于1。为了解决这个问题，只需对其进行重新归一化，使得所有向量组件的总和为1。
+还要记住，如果初始链*G*包含死节点，那么每次迭代时向量*r*的总和将小于 1。为了解决这个问题，只需对其进行重新归一化，使得所有向量组件的总和为 1。
 
 # 完整算法
 
-在下图中，我们可以看到PageRank算法的完整版本。在每次迭代中，排名更新分为两个阶段。第一阶段仅根据初始矩阵*G*进行更新。然后我们将排名向量的组件汇总到变量*s*中。这样，*(1 — s)*的值就是单个节点的总输入排名减少的值。为了弥补这一点，在第二阶段，我们考虑了传送，并将它们从一个节点添加到所有节点中，值为*(1 — s) / n*。
+在下图中，我们可以看到 PageRank 算法的完整版本。在每次迭代中，排名更新分为两个阶段。第一阶段仅根据初始矩阵*G*进行更新。然后我们将排名向量的组件汇总到变量*s*中。这样，*(1 — s)*的值就是单个节点的总输入排名减少的值。为了弥补这一点，在第二阶段，我们考虑了传送，并将它们从一个节点添加到所有节点中，值为*(1 — s) / n*。
 
-![](../Images/0773d09b8c550ebf9178f9f12bc7710a.png)
+![](img/0773d09b8c550ebf9178f9f12bc7710a.png)
 
-完整的PageRank算法
+完整的 PageRank 算法
 
 # 结论
 
-在本文中，我们探讨了PageRank算法的不同公式，以最终得出其优化版本。尽管存在并发展了其他用于排名搜索结果的方法，PageRank仍然是Google搜索引擎背后最有效的算法之一。
+在本文中，我们探讨了 PageRank 算法的不同公式，以最终得出其优化版本。尽管存在并发展了其他用于排名搜索结果的方法，PageRank 仍然是 Google 搜索引擎背后最有效的算法之一。
 
 # 参考文献
 

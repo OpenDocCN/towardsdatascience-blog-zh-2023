@@ -1,18 +1,18 @@
 # 低代码时间序列分析
 
-> 原文：[https://towardsdatascience.com/low-code-time-series-analysis-2d5d02b5474b?source=collection_archive---------9-----------------------#2023-03-08](https://towardsdatascience.com/low-code-time-series-analysis-2d5d02b5474b?source=collection_archive---------9-----------------------#2023-03-08)
+> 原文：[`towardsdatascience.com/low-code-time-series-analysis-2d5d02b5474b?source=collection_archive---------9-----------------------#2023-03-08`](https://towardsdatascience.com/low-code-time-series-analysis-2d5d02b5474b?source=collection_archive---------9-----------------------#2023-03-08)
 
-## 使用Darts简化Python时间序列分析的开发
+## 使用 Darts 简化 Python 时间序列分析的开发
 
-[](https://pierpaoloippolito28.medium.com/?source=post_page-----2d5d02b5474b--------------------------------)[![Pier Paolo Ippolito](../Images/981abb84149adab275473b76bdbde66f.png)](https://pierpaoloippolito28.medium.com/?source=post_page-----2d5d02b5474b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d5d02b5474b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d5d02b5474b--------------------------------) [Pier Paolo Ippolito](https://pierpaoloippolito28.medium.com/?source=post_page-----2d5d02b5474b--------------------------------)
+[](https://pierpaoloippolito28.medium.com/?source=post_page-----2d5d02b5474b--------------------------------)![Pier Paolo Ippolito](https://pierpaoloippolito28.medium.com/?source=post_page-----2d5d02b5474b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d5d02b5474b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d5d02b5474b--------------------------------) [Pier Paolo Ippolito](https://pierpaoloippolito28.medium.com/?source=post_page-----2d5d02b5474b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb8391a6a5f1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flow-code-time-series-analysis-2d5d02b5474b&user=Pier+Paolo+Ippolito&userId=b8391a6a5f1a&source=post_page-b8391a6a5f1a----2d5d02b5474b---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d5d02b5474b--------------------------------) ·6分钟阅读·2023年3月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d5d02b5474b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flow-code-time-series-analysis-2d5d02b5474b&user=Pier+Paolo+Ippolito&userId=b8391a6a5f1a&source=-----2d5d02b5474b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb8391a6a5f1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flow-code-time-series-analysis-2d5d02b5474b&user=Pier+Paolo+Ippolito&userId=b8391a6a5f1a&source=post_page-b8391a6a5f1a----2d5d02b5474b---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d5d02b5474b--------------------------------) ·6 分钟阅读·2023 年 3 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d5d02b5474b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flow-code-time-series-analysis-2d5d02b5474b&user=Pier+Paolo+Ippolito&userId=b8391a6a5f1a&source=-----2d5d02b5474b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d5d02b5474b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flow-code-time-series-analysis-2d5d02b5474b&source=-----2d5d02b5474b---------------------bookmark_footer-----------)![](../Images/17fb463f57753c82304972f72c3e8f14.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d5d02b5474b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flow-code-time-series-analysis-2d5d02b5474b&source=-----2d5d02b5474b---------------------bookmark_footer-----------)![](img/17fb463f57753c82304972f72c3e8f14.png)
 
 图片由[Afif Ramdhasuma](https://unsplash.com/@javaistan?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,20 +1,20 @@
 # 如何使用 Seaborn 和 Matplotlib 创建美丽的年龄分布图（包括动画）
 
-> 原文：[https://towardsdatascience.com/how-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd?source=collection_archive---------5-----------------------#2023-06-22](https://towardsdatascience.com/how-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd?source=collection_archive---------5-----------------------#2023-06-22)
+> 原文：[`towardsdatascience.com/how-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd?source=collection_archive---------5-----------------------#2023-06-22`](https://towardsdatascience.com/how-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd?source=collection_archive---------5-----------------------#2023-06-22)
 
 ## 图表教程
 
 ## 可视化国家和地区的人口统计数据
 
-[](https://medium.com/@oscarleo?source=post_page-----68ebabff41bd--------------------------------)[![Oscar Leo](../Images/7733c9147bad2875a35155fca3903aa8.png)](https://medium.com/@oscarleo?source=post_page-----68ebabff41bd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----68ebabff41bd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----68ebabff41bd--------------------------------) [Oscar Leo](https://medium.com/@oscarleo?source=post_page-----68ebabff41bd--------------------------------)
+[](https://medium.com/@oscarleo?source=post_page-----68ebabff41bd--------------------------------)![Oscar Leo](https://medium.com/@oscarleo?source=post_page-----68ebabff41bd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----68ebabff41bd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----68ebabff41bd--------------------------------) [Oscar Leo](https://medium.com/@oscarleo?source=post_page-----68ebabff41bd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7e5c1ca65b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd&user=Oscar+Leo&userId=d7e5c1ca65b7&source=post_page-d7e5c1ca65b7----68ebabff41bd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----68ebabff41bd--------------------------------) ·9 分钟阅读·2023年6月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F68ebabff41bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd&user=Oscar+Leo&userId=d7e5c1ca65b7&source=-----68ebabff41bd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7e5c1ca65b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd&user=Oscar+Leo&userId=d7e5c1ca65b7&source=post_page-d7e5c1ca65b7----68ebabff41bd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----68ebabff41bd--------------------------------) ·9 分钟阅读·2023 年 6 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F68ebabff41bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd&user=Oscar+Leo&userId=d7e5c1ca65b7&source=-----68ebabff41bd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F68ebabff41bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd&source=-----68ebabff41bd---------------------bookmark_footer-----------)![](../Images/cfe243e016a2441148f9c3f665be353e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F68ebabff41bd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-beautiful-age-distribution-graphs-with-seaborn-and-matplotlib-including-animation-68ebabff41bd&source=-----68ebabff41bd---------------------bookmark_footer-----------)![](img/cfe243e016a2441148f9c3f665be353e.png)
 
 作者创建的图表
 

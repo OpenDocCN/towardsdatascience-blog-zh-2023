@@ -1,18 +1,18 @@
 # 我的（非常）个人数据仓库
 
-> 原文：[https://towardsdatascience.com/my-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133?source=collection_archive---------3-----------------------#2023-05-31](https://towardsdatascience.com/my-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133?source=collection_archive---------3-----------------------#2023-05-31)
+> 原文：[`towardsdatascience.com/my-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133?source=collection_archive---------3-----------------------#2023-05-31`](https://towardsdatascience.com/my-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133?source=collection_archive---------3-----------------------#2023-05-31)
 
-## 使用DuckDB分析Fitbit活动数据
+## 使用 DuckDB 分析 Fitbit 活动数据
 
-[](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)[![Simon Aubury](../Images/fb757b7175c211450dcfa7249549c31e.png)](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------) [Simon Aubury](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)
+[](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)![Simon Aubury](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------) [Simon Aubury](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb7b3bb643843&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&user=Simon+Aubury&userId=b7b3bb643843&source=post_page-b7b3bb643843----8d1193046133---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------) · 13分钟阅读 · 2023年5月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8d1193046133&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&user=Simon+Aubury&userId=b7b3bb643843&source=-----8d1193046133---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb7b3bb643843&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&user=Simon+Aubury&userId=b7b3bb643843&source=post_page-b7b3bb643843----8d1193046133---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------) · 13 分钟阅读 · 2023 年 5 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8d1193046133&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&user=Simon+Aubury&userId=b7b3bb643843&source=-----8d1193046133---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8d1193046133&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&source=-----8d1193046133---------------------bookmark_footer-----------)![](../Images/d002b45123ebfc0803be779dbe0d1fe1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8d1193046133&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&source=-----8d1193046133---------------------bookmark_footer-----------)![](img/d002b45123ebfc0803be779dbe0d1fe1.png)
 
 图片由[Jake Hills](https://unsplash.com/es/@jakehills?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,13 +24,13 @@
 
 首先，我需要获取我所有的历史健身数据。通过遵循 [导出您的账户存档](https://www.fitbit.com/settings/data/export) 的说明，Fitbit 使得导出您账户生命周期中的 Fitbit 数据变得相当简单。
 
-![](../Images/aa73415b842cc76279e913c0efaac903.png)
+![](img/aa73415b842cc76279e913c0efaac903.png)
 
 使用导出 Fitbit 数据存档的说明 — 作者截图。
 
 您需要确认您的请求……并保持耐心。我的存档创建了超过三天 — 但我最终收到了含有下载 ZIP 文件说明的电子邮件。该文件应包含由我的 Fitbit 或相关服务记录的所有个人健身活动。解压存档后会显示出大量的文件 — 例如，我在解压 79MB 文件后总共有 7,921 个文件。
 
-![](../Images/ce1b07a83af019cead0416c777cb7f8f.png)
+![](img/ce1b07a83af019cead0416c777cb7f8f.png)
 
 数以千计的嵌套文件中的一小部分 — 作者截图。
 
@@ -38,7 +38,7 @@
 
 # 为什么选择 DuckDB？
 
-有许多优秀的博客 ([1](https://betterprogramming.pub/duckdb-whats-the-hype-about-5d46aaa73196),[2](https://mattpalmer.io/posts/whats-the-hype-duckdb/),[3](/a-serverless-query-engine-from-spare-parts-bd6320f10353)) 描述了 DuckDB — [TL;DR](https://www.dictionary.com/browse/tl-dr) 摘要是 DuckDB 是一个开源的内存 OLAP 数据库，专为分析查询而构建。它本地运行，支持广泛的 SQL，并能直接在 Pandas 数据、Parquet、JSON 数据上运行查询。额外加分的是它与 Python 和 R 的无缝集成。它的极速处理能力和大部分内存处理使其成为构建个人数据仓库的好选择。
+有许多优秀的博客 ([1](https://betterprogramming.pub/duckdb-whats-the-hype-about-5d46aaa73196),[2](https://mattpalmer.io/posts/whats-the-hype-duckdb/),3) 描述了 DuckDB — [TL;DR](https://www.dictionary.com/browse/tl-dr) 摘要是 DuckDB 是一个开源的内存 OLAP 数据库，专为分析查询而构建。它本地运行，支持广泛的 SQL，并能直接在 Pandas 数据、Parquet、JSON 数据上运行查询。额外加分的是它与 Python 和 R 的无缝集成。它的极速处理能力和大部分内存处理使其成为构建个人数据仓库的好选择。
 
 # Fitbit 活动数据
 
@@ -64,7 +64,7 @@
   }]
 ```
 
-这些物理活动数据是我笔记本电脑上7,921个文件中的一个。幸运的是，DuckDB 可以使用 [read_json](https://duckdb.org/docs/data/json/overview.html#read_json_auto-function) 函数从 JSON 文件中读取（并自动检测模式），让我可以通过一个 SQL 语句将所有锻炼文件加载到 `physical_activity` 表中。值得注意的是，我需要指定日期格式掩码，因为 Fitbit 导出的日期格式非常 [美国风格](https://en.wikipedia.org/wiki/Date_and_time_notation_in_the_United_States) 😕。
+这些物理活动数据是我笔记本电脑上 7,921 个文件中的一个。幸运的是，DuckDB 可以使用 [read_json](https://duckdb.org/docs/data/json/overview.html#read_json_auto-function) 函数从 JSON 文件中读取（并自动检测模式），让我可以通过一个 SQL 语句将所有锻炼文件加载到 `physical_activity` 表中。值得注意的是，我需要指定日期格式掩码，因为 Fitbit 导出的日期格式非常 [美国风格](https://en.wikipedia.org/wiki/Date_and_time_notation_in_the_United_States) 😕。
 
 ```py
 CREATE OR REPLACE TABLE physical_activity
@@ -124,15 +124,15 @@ plt.show()
 
 执行此操作会生成这个条形图。
 
-![](../Images/0e444629dea3ac0ca0427b4ec89659ba.png)
+![](img/0e444629dea3ac0ca0427b4ec89659ba.png)
 
 锻炼活动细分——作者截图。
 
-看起来我的主要活动仍然是步行，而且我在2023年的新年决心是更频繁地跑步，但实际上并没有发生（还？）。
+看起来我的主要活动仍然是步行，而且我在 2023 年的新年决心是更频繁地跑步，但实际上并没有发生（还？）。
 
 # 睡眠
 
-关于 [三分之一的成年人睡眠不足](https://www.health.harvard.edu/heart-health/are-you-getting-enough-sleep)，所以我想探索我的长期睡眠模式。在我的Fitbit档案中，睡眠数据似乎被记录在以日期命名的文件中，例如`Sleep/sleep-2022-12-28.json`。每个文件包含一个月的数据，但混淆的是，文件的日期为事件发生前的月份。例如，文件`sleep-2022-12-28.json`似乎包含了2023年1月2日至2023年1月27日的数据。不管怎样 — 文件命名的奇怪之处暂且不提，我们可以探讨文件的内容。在记录中有一个扩展的“levels”块，详细描述了睡眠类型（清醒、浅睡、快速眼动、深睡）。
+关于 [三分之一的成年人睡眠不足](https://www.health.harvard.edu/heart-health/are-you-getting-enough-sleep)，所以我想探索我的长期睡眠模式。在我的 Fitbit 档案中，睡眠数据似乎被记录在以日期命名的文件中，例如`Sleep/sleep-2022-12-28.json`。每个文件包含一个月的数据，但混淆的是，文件的日期为事件发生前的月份。例如，文件`sleep-2022-12-28.json`似乎包含了 2023 年 1 月 2 日至 2023 年 1 月 27 日的数据。不管怎样 — 文件命名的奇怪之处暂且不提，我们可以探讨文件的内容。在记录中有一个扩展的“levels”块，详细描述了睡眠类型（清醒、浅睡、快速眼动、深睡）。
 
 ```py
 "logId" : 39958970367,
@@ -150,7 +150,7 @@ plt.show()
     }
 ```
 
-如果查看一些较旧的文件（可能是用我以前的Fitbit Surge设备创建的），会发现睡眠类型的分类有所不同（躁动、不清醒、睡眠）。
+如果查看一些较旧的文件（可能是用我以前的 Fitbit Surge 设备创建的），会发现睡眠类型的分类有所不同（躁动、不清醒、睡眠）。
 
 ```py
 "logId" : 18841054316,
@@ -180,9 +180,9 @@ from read_json('./Sleep/sleep*.json'
 
 # 睡眠数据的模式变化
 
-我想处理我所有的睡眠数据，并处理记录睡眠的模式变化（很可能是因为我更换了Fitbit设备的型号）。一些记录的时间标记在`$.awake`上，这与`$.wake`类似（但不完全相同）。
+我想处理我所有的睡眠数据，并处理记录睡眠的模式变化（很可能是因为我更换了 Fitbit 设备的型号）。一些记录的时间标记在`$.awake`上，这与`$.wake`类似（但不完全相同）。
 
-我使用了SQL中的 [coalesce](https://duckdb.org/docs/sql/functions/utility.html) 函数 — 它返回第一个计算结果为非NULL值的表达式，以结合类似类型的睡眠阶段。
+我使用了 SQL 中的 [coalesce](https://duckdb.org/docs/sql/functions/utility.html) 函数 — 它返回第一个计算结果为非 NULL 值的表达式，以结合类似类型的睡眠阶段。
 
 ```py
 sleep_log_df <<
@@ -196,7 +196,7 @@ sleep_log_df <<
   order by 1;
 ```
 
-使用DuckDB，我可以通过 [json_extract](https://duckdb.org/docs/extensions/json.html#json-extraction-functions) 提取嵌套JSON中的时长阶段，以生成一个 *sleep_log_df* 数据框，将所有历史睡眠阶段进行分组。
+使用 DuckDB，我可以通过 [json_extract](https://duckdb.org/docs/extensions/json.html#json-extraction-functions) 提取嵌套 JSON 中的时长阶段，以生成一个 *sleep_log_df* 数据框，将所有历史睡眠阶段进行分组。
 
 # 绘制睡眠活动图
 
@@ -219,7 +219,7 @@ plt.show()
 
 加载一个月的睡眠数据让我能够进行更广泛的睡眠时长分析。
 
-![](../Images/3e9cfbb697bb69a1449463626e94ab1e.png)
+![](img/3e9cfbb697bb69a1449463626e94ab1e.png)
 
 每晚的睡眠周期时长 — 作者截图。
 
@@ -227,7 +227,7 @@ plt.show()
 
 # 心率
 
-心率数据被非常频繁地捕捉（每`10–15秒`一次），存储在名为`Physical Activity/heart_rate-2023-01-26.json`的每日文件中。这些文件非常大 — 每天约有70,000行 — 所有数据都包装在一个数组中。
+心率数据被非常频繁地捕捉（每`10–15 秒`一次），存储在名为`Physical Activity/heart_rate-2023-01-26.json`的每日文件中。这些文件非常大 — 每天约有 70,000 行 — 所有数据都包装在一个数组中。
 
 ```py
 [{{"dateTime": "01/25/25 13:00:07", "value": {"bpm": 54, "confidence": 2}},
@@ -238,9 +238,9 @@ plt.show()
 }]
 ```
 
-我的理论是文件名表示用户的时区。例如，在我的时区（GMT+11），命名为`heart_rate-2023-01-26.json`的数据覆盖了26日00:00（AEST）至23:59（AEST） - 如果文件中的日期为GMT，则逻辑上是合理的。
+我的理论是文件名表示用户的时区。例如，在我的时区（GMT+11），命名为`heart_rate-2023-01-26.json`的数据覆盖了 26 日 00:00（AEST）至 23:59（AEST） - 如果文件中的日期为 GMT，则逻辑上是合理的。
 
-# 转换JSON文件
+# 转换 JSON 文件
 
 到目前为止，我已经成功处理了包含 DuckDB 函数的 Fitbit 数据。然而，在处理这些巨大的心率文件时，我遇到了问题。当尝试处理 JSON 文件中的大数组记录时，DuckDB 给出了这个错误。
 
@@ -273,7 +273,7 @@ for json_src_file in sorted(glob.glob('./Physical Activity/steps-*.json')):
       ndjson.dump(json_dict, outfile)
 ```
 
-这将查找每个 *.json* 文件，读取内容并将其转换为换行符分隔的 JSON，并用 *.ndjson* 文件扩展名创建新文件。这将一个包含70,000条记录的数组转换为一个包含70,000行的文件——每条 JSON 记录现在存储在新的一行上。
+这将查找每个 *.json* 文件，读取内容并将其转换为换行符分隔的 JSON，并用 *.ndjson* 文件扩展名创建新文件。这将一个包含 70,000 条记录的数组转换为一个包含 70,000 行的文件——每条 JSON 记录现在存储在新的一行上。
 
 # 将心率数据加载到表中
 
@@ -292,7 +292,7 @@ FROM read_json('./Physical Activity/*.ndjson'
 
 我们可以通过将格式设置为 ’newline_delimited’ 来加载所有 .ndjson 文件。注意我们可以通过 JSON 提取来提取 BPM（每分钟心跳次数）并将其转换为整数。
 
-![](../Images/3085503bcdcd2945270d26a383b88a08.png)
+![](img/3085503bcdcd2945270d26a383b88a08.png)
 
 DuckDB 在处理 JSON 时非常快速 — 作者截图。
 
@@ -334,7 +334,7 @@ myplot.set(xlabel='Time of day', ylabel='Heart BPM', title='Heart rate')
 plt.show()
 ```
 
-![](../Images/9962db0f04ea299fd471bc8b221b5da7.png)
+![](img/9962db0f04ea299fd471bc8b221b5da7.png)
 
 一天中的心率 — 作者截图。
 
@@ -392,7 +392,7 @@ myplot.set(xlabel='Day', ylabel='Steps', title='Daily steps')
 plt.show()
 ```
 
-![](../Images/8a95077d4b6046f60e34eef75c8ff1de.png)
+![](img/8a95077d4b6046f60e34eef75c8ff1de.png)
 
 每日步数统计——作者截图。
 
@@ -410,13 +410,13 @@ where tcxLink is not null;
 
 tcxLink 字段是对身体活动文件中位置的 URL 参考。
 
-![](../Images/6037d84f1ca242c03cced5f82d2e7f4f.png)
+![](img/6037d84f1ca242c03cced5f82d2e7f4f.png)
 
 每个 TCX 文件的 URL——作者截图。
 
 我们可以直接在浏览器中使用这个 URL（登录 Fitbit 网站后）来下载 GPS XML 文件。查看 TCX 文件内部，我们会发现每隔几秒钟就有低级别的 GPS 位置数据。
 
-![](../Images/c850bc9f8b7d837fb45767fd1fa6780c.png)
+![](img/c850bc9f8b7d837fb45767fd1fa6780c.png)
 
 TCX GPS XML 文件样本内容——作者截图。
 
@@ -485,7 +485,7 @@ folium.PolyLine(coordinates, weight=8, color='red').add_to(route_map)
 display(route_map)
 ```
 
-![](../Images/9d1e52b607975ce6d097d1cb3e5b5d7f.png)
+![](img/9d1e52b607975ce6d097d1cb3e5b5d7f.png)
 
 跑步的 Folium 地图图示——作者截图。
 
@@ -499,4 +499,4 @@ display(route_map)
 
 # Code
 
-🛠️用于Fitbit活动分析的代码——[https://github.com/saubury/duckdb-fitbit](https://github.com/saubury/duckdb-fitbit)
+🛠️用于 Fitbit 活动分析的代码——[`github.com/saubury/duckdb-fitbit`](https://github.com/saubury/duckdb-fitbit)

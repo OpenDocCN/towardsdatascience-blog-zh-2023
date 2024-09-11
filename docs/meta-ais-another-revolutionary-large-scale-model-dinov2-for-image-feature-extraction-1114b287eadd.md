@@ -1,14 +1,14 @@
 # Meta AI 的另一项革命性大规模模型 — 用于图像特征提取的 DINOv2
 
-> 原文：[https://towardsdatascience.com/meta-ais-another-revolutionary-large-scale-model-dinov2-for-image-feature-extraction-1114b287eadd?source=collection_archive---------6-----------------------#2023-06-26](https://towardsdatascience.com/meta-ais-another-revolutionary-large-scale-model-dinov2-for-image-feature-extraction-1114b287eadd?source=collection_archive---------6-----------------------#2023-06-26)
+> 原文：[`towardsdatascience.com/meta-ais-another-revolutionary-large-scale-model-dinov2-for-image-feature-extraction-1114b287eadd?source=collection_archive---------6-----------------------#2023-06-26`](https://towardsdatascience.com/meta-ais-another-revolutionary-large-scale-model-dinov2-for-image-feature-extraction-1114b287eadd?source=collection_archive---------6-----------------------#2023-06-26)
 
 ## DINOv2 是最好的自监督 ViT 基础深度学习模型之一，用于图像特征提取
 
-[](https://medium.com/@gkeretchashvili?source=post_page-----1114b287eadd--------------------------------)[![Gurami Keretchashvili](../Images/4da78f113a0046c2deb8224e09dd9e3d.png)](https://medium.com/@gkeretchashvili?source=post_page-----1114b287eadd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1114b287eadd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1114b287eadd--------------------------------) [Gurami Keretchashvili](https://medium.com/@gkeretchashvili?source=post_page-----1114b287eadd--------------------------------)
+[](https://medium.com/@gkeretchashvili?source=post_page-----1114b287eadd--------------------------------)![Gurami Keretchashvili](https://medium.com/@gkeretchashvili?source=post_page-----1114b287eadd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1114b287eadd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1114b287eadd--------------------------------) [Gurami Keretchashvili](https://medium.com/@gkeretchashvili?source=post_page-----1114b287eadd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba1f382fdaca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeta-ais-another-revolutionary-large-scale-model-dinov2-for-image-feature-extraction-1114b287eadd&user=Gurami+Keretchashvili&userId=ba1f382fdaca&source=post_page-ba1f382fdaca----1114b287eadd---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1114b287eadd--------------------------------) ·8分钟阅读·2023年6月26日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba1f382fdaca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeta-ais-another-revolutionary-large-scale-model-dinov2-for-image-feature-extraction-1114b287eadd&user=Gurami+Keretchashvili&userId=ba1f382fdaca&source=post_page-ba1f382fdaca----1114b287eadd---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1114b287eadd--------------------------------) ·8 分钟阅读·2023 年 6 月 26 日
 
 --
 
@@ -18,7 +18,7 @@
 
 Meta AI 推出了图像特征提取模型的新版本，称为 DINOv2，它可以自动从图像中提取视觉特征。这是 AI 领域特别是在计算机视觉领域中，数据和模型扩展的另一项革命性进步。
 
-![](../Images/b5509b6f4b08541f8e6df946fd86e4c3.png)
+![](img/b5509b6f4b08541f8e6df946fd86e4c3.png)
 
 DINOv2 的演示由 ai.facebook.com 提供
 

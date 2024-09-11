@@ -1,22 +1,22 @@
 # 部署容器化的 Plotly Dash 应用程序与 CI/CD (P2: GCP)
 
-> 原文：[https://towardsdatascience.com/deploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f?source=collection_archive---------14-----------------------#2023-01-24](https://towardsdatascience.com/deploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f?source=collection_archive---------14-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/deploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f?source=collection_archive---------14-----------------------#2023-01-24`](https://towardsdatascience.com/deploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f?source=collection_archive---------14-----------------------#2023-01-24)
 
-[](https://ropdam.medium.com/?source=post_page-----dfa33edc5f2f--------------------------------)[![Robin Opdam](../Images/9dba1f1b77cb1b0a46a29a41b2b08e54.png)](https://ropdam.medium.com/?source=post_page-----dfa33edc5f2f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dfa33edc5f2f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dfa33edc5f2f--------------------------------) [Robin Opdam](https://ropdam.medium.com/?source=post_page-----dfa33edc5f2f--------------------------------)
+[](https://ropdam.medium.com/?source=post_page-----dfa33edc5f2f--------------------------------)![Robin Opdam](https://ropdam.medium.com/?source=post_page-----dfa33edc5f2f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dfa33edc5f2f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dfa33edc5f2f--------------------------------) [Robin Opdam](https://ropdam.medium.com/?source=post_page-----dfa33edc5f2f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F49ce97f2f8f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f&user=Robin+Opdam&userId=49ce97f2f8f7&source=post_page-49ce97f2f8f7----dfa33edc5f2f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----dfa33edc5f2f--------------------------------) ·5分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdfa33edc5f2f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f&user=Robin+Opdam&userId=49ce97f2f8f7&source=-----dfa33edc5f2f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F49ce97f2f8f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f&user=Robin+Opdam&userId=49ce97f2f8f7&source=post_page-49ce97f2f8f7----dfa33edc5f2f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----dfa33edc5f2f--------------------------------) ·5 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdfa33edc5f2f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f&user=Robin+Opdam&userId=49ce97f2f8f7&source=-----dfa33edc5f2f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdfa33edc5f2f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f&source=-----dfa33edc5f2f---------------------bookmark_footer-----------)![](../Images/17751f3101d4975c25a140430c2c974c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdfa33edc5f2f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-containerised-plotly-dash-app-with-ci-cd-p2-gcp-dfa33edc5f2f&source=-----dfa33edc5f2f---------------------bookmark_footer-----------)![](img/17751f3101d4975c25a140430c2c974c.png)
 
 照片由[Dominik Lückmann](https://unsplash.com/@exdigy?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在 Heroku 将其 dyno 改为付费层后，我希望尝试使用 Google Cloud Platform (GCP) 部署相同的容器，此前该容器已在 Heroku 上通过 CI/CD 部署，详见[第一部分](https://medium.com/towards-data-science/deploy-containerized-plotly-dash-app-to-heroku-with-ci-cd-f82ca833375c)。
 
-![](../Images/325a346e28c1a609e1ef8ceefc70be45.png)
+![](img/325a346e28c1a609e1ef8ceefc70be45.png)
 
 示例应用已通过 [GCP](https://docker-dash-example.com/) 使用 [Github Actions CI/CD Pipeline](https://github.com/ROpdam/docker-dash-example/actions) 部署，镜像由作者提供。请注意最新的操作包含了测试
 
@@ -38,7 +38,7 @@
 
 1.  **通过 Github Actions 部署到 Google Cloud Run**
 
-你可以在 [Github 上找到该仓库](https://github.com/ROpdam/docker-dash-example) 和在 [https://docker-dash-example.com/](https://docker-dash-example.com/) 上找到应用。
+你可以在 [Github 上找到该仓库](https://github.com/ROpdam/docker-dash-example) 和在 [`docker-dash-example.com/`](https://docker-dash-example.com/) 上找到应用。
 
 # 5\. 创建并配置 GCP 项目
 
@@ -78,13 +78,13 @@ gcloud run deploy SERVICE --image IMAGE_URL
 
 其中 SERVICE 是你的 project_id，IMAGE_URL 包含我们在之前的 docker push 命令中填写的 HOSTNAME/PROJECT-ID/IMAGE:TAG。通过访问你应用的 GCRu 页面顶部的 URL 来检查你的容器是否在 Cloud Run 中运行。
 
-![](../Images/147e5a829e3c8e11988ac2cfefac6ceb.png)
+![](img/147e5a829e3c8e11988ac2cfefac6ceb.png)
 
 GCRe（左）GCRu（右）包含 Docker 镜像和将在 Cloud Run 中运行的应用，作者提供的截图
 
 ## 6.2 CI/CD 在 GCP 上的部署
 
-如果你的应用通过手动部署工作，让我们自动化这个过程，并将部署步骤纳入管道[第 1 部分](/deploy-containerized-plotly-dash-app-to-heroku-with-ci-cd-f82ca833375c)。简要回顾，第 1 部分重点介绍了通过 Github Actions 在 Heroku 上部署你的 Plotly Dash 应用。现在，Heroku 的部署被 Github 工作流中的 GCP 部署所取代。
+如果你的应用通过手动部署工作，让我们自动化这个过程，并将部署步骤纳入管道第一部分。简要回顾，第一部分重点介绍了通过 Github Actions 在 Heroku 上部署你的 Plotly Dash 应用。现在，Heroku 的部署被 Github 工作流中的 GCP 部署所取代。
 
 从设置用于部署管道的[Github Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets) 开始：
 
@@ -96,7 +96,7 @@ GCRe（左）GCRu（右）包含 Docker 镜像和将在 Cloud Run 中运行的�
 
 +   **GCP_APP_NAME**: 你应用的名称（在 GCRe 内部）
 
-有了这些密钥，我们可以通过 Github Actions 构建 CI/CD 工作流。请注意，工作流的初始构建步骤保持不变，因为我们首先在 Github Packages 中推送和构建容器，请在[第 1 部分](/deploy-containerized-plotly-dash-app-to-heroku-with-ci-cd-f82ca833375c?gi=ac91abf3ba6e)中查看有关构建部分的完整说明。
+有了这些密钥，我们可以通过 Github Actions 构建 CI/CD 工作流。请注意，工作流的初始构建步骤保持不变，因为我们首先在 Github Packages 中推送和构建容器，请在第一部分中查看有关构建部分的完整说明。
 
 **构建步骤（未更改）:**
 

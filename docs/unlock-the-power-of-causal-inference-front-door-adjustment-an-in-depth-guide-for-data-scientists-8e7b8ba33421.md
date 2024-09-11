@@ -1,10 +1,10 @@
 # 解锁因果推断与前门调整的力量：数据科学家的深入指南
 
-> 原文：[https://towardsdatascience.com/unlock-the-power-of-causal-inference-front-door-adjustment-an-in-depth-guide-for-data-scientists-8e7b8ba33421?source=collection_archive---------6-----------------------#2023-02-14](https://towardsdatascience.com/unlock-the-power-of-causal-inference-front-door-adjustment-an-in-depth-guide-for-data-scientists-8e7b8ba33421?source=collection_archive---------6-----------------------#2023-02-14)
+> 原文：[`towardsdatascience.com/unlock-the-power-of-causal-inference-front-door-adjustment-an-in-depth-guide-for-data-scientists-8e7b8ba33421?source=collection_archive---------6-----------------------#2023-02-14`](https://towardsdatascience.com/unlock-the-power-of-causal-inference-front-door-adjustment-an-in-depth-guide-for-data-scientists-8e7b8ba33421?source=collection_archive---------6-----------------------#2023-02-14)
 
 ## 包含所有 Python 源代码的因果推断前门调整的完整解释及示例
 
-[](https://grahamharrison-86487.medium.com/?source=post_page-----8e7b8ba33421--------------------------------)[![Graham Harrison](../Images/c6bfe00c6e0cfcdf3bd042c7fdc03554.png)](https://grahamharrison-86487.medium.com/?source=post_page-----8e7b8ba33421--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e7b8ba33421--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8e7b8ba33421--------------------------------) [Graham Harrison](https://grahamharrison-86487.medium.com/?source=post_page-----8e7b8ba33421--------------------------------)
+[](https://grahamharrison-86487.medium.com/?source=post_page-----8e7b8ba33421--------------------------------)![Graham Harrison](https://grahamharrison-86487.medium.com/?source=post_page-----8e7b8ba33421--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e7b8ba33421--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e7b8ba33421--------------------------------) [Graham Harrison](https://grahamharrison-86487.medium.com/?source=post_page-----8e7b8ba33421--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e7b8ba33421&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-power-of-causal-inference-front-door-adjustment-an-in-depth-guide-for-data-scientists-8e7b8ba33421&source=-----8e7b8ba33421---------------------bookmark_footer-----------)![](../Images/5e39a34966dc35b7649fbd31372905e3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e7b8ba33421&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlock-the-power-of-causal-inference-front-door-adjustment-an-in-depth-guide-for-data-scientists-8e7b8ba33421&source=-----8e7b8ba33421---------------------bookmark_footer-----------)![](img/5e39a34966dc35b7649fbd31372905e3.png)
 
 图片由 [Evelyn Paris](https://unsplash.com/@evelynparis?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/front-door?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

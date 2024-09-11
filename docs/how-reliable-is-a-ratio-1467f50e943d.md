@@ -1,18 +1,18 @@
 # 比率的可靠性如何？
 
-> 原文：[https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d?source=collection_archive---------7-----------------------#2023-12-08](https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d?source=collection_archive---------7-----------------------#2023-12-08)
+> 原文：[`towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d?source=collection_archive---------7-----------------------#2023-12-08`](https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d?source=collection_archive---------7-----------------------#2023-12-08)
 
-## 了解如何使用经验贝叶斯分析在Python中评估比率的可靠性
+## 了解如何使用经验贝叶斯分析在 Python 中评估比率的可靠性
 
-[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[![Gustavo Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
+[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)![Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-reliable-is-a-ratio-1467f50e943d&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----1467f50e943d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------) ·9 分钟阅读·2023年12月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1467f50e943d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-reliable-is-a-ratio-1467f50e943d&user=Gustavo+Santos&userId=4429d99b1245&source=-----1467f50e943d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-reliable-is-a-ratio-1467f50e943d&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----1467f50e943d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------) ·9 分钟阅读·2023 年 12 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1467f50e943d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-reliable-is-a-ratio-1467f50e943d&user=Gustavo+Santos&userId=4429d99b1245&source=-----1467f50e943d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1467f50e943d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-reliable-is-a-ratio-1467f50e943d&source=-----1467f50e943d---------------------bookmark_footer-----------)![](../Images/101cda4d83b516311142c34ced48fec5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1467f50e943d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-reliable-is-a-ratio-1467f50e943d&source=-----1467f50e943d---------------------bookmark_footer-----------)![](img/101cda4d83b516311142c34ced48fec5.png)
 
 照片由 [rupixen.com](https://unsplash.com/@rupixen?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 提供，来源于 [Unsplash](https://unsplash.com/photos/person-using-laptop-computer-holding-card-Q59HmzK38eQ?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 

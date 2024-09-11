@@ -1,18 +1,18 @@
 # 从备用零件构建的无服务器查询引擎
 
-> 原文：[https://towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27](https://towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27)
+> 原文：[`towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27`](https://towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27)
 
 ## ***一个基于 DuckDB 和 AWS Lambdas 的开源数据湖实现***
 
-[](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)[![Ciro Greco](../Images/4a20e5d435998e8d8ff7aeac1f8ff60d.png)](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------) [Ciro Greco](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)
+[](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)![Ciro Greco](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------) [Ciro Greco](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1a8912e69301&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=post_page-1a8912e69301----bd6320f10353---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------) ·9分钟阅读·2023年4月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=-----bd6320f10353---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1a8912e69301&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=post_page-1a8912e69301----bd6320f10353---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------) ·9 分钟阅读·2023 年 4 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=-----bd6320f10353---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&source=-----bd6320f10353---------------------bookmark_footer-----------)![](../Images/85ce8738302baf64cec9764042261d18.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&source=-----bd6320f10353---------------------bookmark_footer-----------)![](img/85ce8738302baf64cec9764042261d18.png)
 
 云中的一只鸭子。照片由[László Glatz](https://unsplash.com/ko/@glatz0?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -30,7 +30,7 @@
 
 当然，这有些简化，因为在实际生产场景中运行这个项目还需要一些调整。我们提供的是一个通用蓝图，利用存储和计算的分离来在云端构建数据湖和查询引擎。我们展示了如何通过一个（几乎）免费的云端终端、无需仓库设置以及闪电般的性能来支持一个交互式数据应用。在我们的实现中，最终的应用是一个简单的 [Streamlit](https://streamlit.io/) 应用，但这仅仅是为了说明目的：你可以轻松地考虑将其与自己喜欢的 BI 工具连接起来。
 
-![](../Images/1b264fdda718c5e216ad75968adfa68a.png)
+![](img/1b264fdda718c5e216ad75968adfa68a.png)
 
 用我们的系统构建的闪电般快速的分析应用。图片来自作者。
 
@@ -48,13 +48,13 @@
 
 ## **架构**
 
-该项目非常自包含，只需要对云服务和Python有入门级别的熟悉度。
+该项目非常自包含，只需要对云服务和 Python 有入门级别的熟悉度。
 
 思路是从存储数据的数据湖开始。一旦数据以 Parquet 格式上传到我们的 S3 中，我们就可以使用 SQL 查询触发 Lambda。此时，我们的 Lambda 启动，在内存中启动 DuckDB 实例，计算查询并将结果返回给用户，可以直接在终端中呈现为表格。
 
 该架构具有多个优点，主要来自无服务器设计：速度快，接近数据，一键部署很好；当然，系统在不使用时可以缩减至零，因此我们只需按查询付费。
 
-![](../Images/71a6d21d82c6f47b8725b63078a62a92.png)
+![](img/71a6d21d82c6f47b8725b63078a62a92.png)
 
 我们系统的总体架构。来自作者的图片
 
@@ -76,7 +76,7 @@ WHERE pickup_at >= '2019–04–01' AND pickup_at < '2019–04–03'
 LIMIT 10
 ```
 
-![](../Images/921e7cc43ed0ce165484df9dbcb1bfcc.png)
+![](img/921e7cc43ed0ce165484df9dbcb1bfcc.png)
 
 结果会直接在你的终端中可视化。图片来自作者。
 
@@ -96,11 +96,11 @@ LIMIT 10
 
 为了尽可能保持自给自足，我们包括了一个可以在本地机器上运行的版本（请参阅 README 获取更多细节—— dbt 或其背后的引擎对该模式的工作无关紧要）。然而，你可以使用不同的 dbt 运行时，并将最终成果导出为 parquet 文件，使用 [Snowflake](https://docs.snowflake.com/en/user-guide/script-data-load-transform-parquet) 或 [BigQuery](https://cloud.google.com/dataflow/docs/guides/templates/provided/bigquery-to-parquet)。
 
-![](../Images/ba65662b5f905758611fba300eb28d9d.png)
+![](img/ba65662b5f905758611fba300eb28d9d.png)
 
 我们的系统架构与一个 dbt 项目配对。图片来自作者。
 
-目前，我们将坚持使用我们由两个节点构成的超级简单DAG。第一个节点从我们的数据湖中提取pickup_location_id，并按旅行次数排序：
+目前，我们将坚持使用我们由两个节点构成的超级简单 DAG。第一个节点从我们的数据湖中提取 pickup_location_id，并按旅行次数排序：
 
 ```py
 SELECT
@@ -110,7 +110,7 @@ FROM read_parquet(['s3://{{ env_var('S3_BUCKET_NAME') }}/dataset/taxi_2019_04.pa
 GROUP BY 1
 ```
 
-第二个节点提供了数据集中前200个取车地点：
+第二个节点提供了数据集中前 200 个取车地点：
 
 ```py
 SELECT
@@ -121,9 +121,9 @@ ORDER BY 2 DESC
 LIMIT 200
 ```
 
-我们可以使用dbt文档可视化DAG：
+我们可以使用 dbt 文档可视化 DAG：
 
-![](../Images/f1fd934196a5b64422be3235ad0c551a.png)
+![](img/f1fd934196a5b64422be3235ad0c551a.png)
 
 一旦我们的管道完成，最终工件将上传回我们的数据湖中：
 
@@ -131,20 +131,20 @@ LIMIT 200
 s3:/your_s3_bucket/dashboard/my_view.parquet
 ```
 
-然后我们可以重用之前构建的查询引擎，查询DAG的第二个（也是最后一个）节点，以在Streamlit应用中可视化数据，只需在终端中运行：
+然后我们可以重用之前构建的查询引擎，查询 DAG 的第二个（也是最后一个）节点，以在 Streamlit 应用中可视化数据，只需在终端中运行：
 
 ```py
 (venv) cirogreco@Ciros-MBP src % make dashboard
 ```
 
-每次我们访问仪表盘时，仪表盘都会访问幕后运行的lambda。如果你喜欢这种简单的架构，相同的模式可以在你自己的Streamlit应用或你喜欢的BI工具中使用。
+每次我们访问仪表盘时，仪表盘都会访问幕后运行的 lambda。如果你喜欢这种简单的架构，相同的模式可以在你自己的 Streamlit 应用或你喜欢的 BI 工具中使用。
 
 ## **关于“合理规模”的几点说明**
 
-[不久前](https://tenor.com/view/yeah-i-member-memberberries-south-park-i-remember-oh-yeah-gif-20408218)，我们写了一系列关于我们称之为[合理规模下的MLOps](https://towardsdatascience.com/tagged/mlops-without-much-ops)的文章，讨论了在不处理互联网规模数据的公司中构建可靠ML应用的最佳策略，并且这些公司具有真正的大数据公司通常不具备的一些约束条件。我们主要从ML和MLOps的角度进行了讨论，因为成功地运作ML曾经是组织面临的一个主要问题（也许现在仍然是，我不确定），但有一个普遍的观察结果仍然存在：大多数数据组织都是“合理规模”的，他们应该围绕这一假设来设计他们的系统。需要注意的是，成为合理规模的组织并不一定意味着成为小公司。企业界充满了在大型——有时是巨大的——组织中处理复杂性的团队，但这些团队通常有许多合理规模的管道，通常是为了内部利益相关者，从几GB到最多TB不等。
+[不久前](https://tenor.com/view/yeah-i-member-memberberries-south-park-i-remember-oh-yeah-gif-20408218)，我们写了一系列关于我们称之为[合理规模下的 MLOps](https://towardsdatascience.com/tagged/mlops-without-much-ops)的文章，讨论了在不处理互联网规模数据的公司中构建可靠 ML 应用的最佳策略，并且这些公司具有真正的大数据公司通常不具备的一些约束条件。我们主要从 ML 和 MLOps 的角度进行了讨论，因为成功地运作 ML 曾经是组织面临的一个主要问题（也许现在仍然是，我不确定），但有一个普遍的观察结果仍然存在：大多数数据组织都是“合理规模”的，他们应该围绕这一假设来设计他们的系统。需要注意的是，成为合理规模的组织并不一定意味着成为小公司。企业界充满了在大型——有时是巨大的——组织中处理复杂性的团队，但这些团队通常有许多合理规模的管道，通常是为了内部利益相关者，从几 GB 到最多 TB 不等。
 
 最近，我们高兴地见证了一个关于公司是否需要大数据系统来解决数据问题的激烈辩论。从我们的观点来看，最重要的结论仍然是，如果你是一个“合理规模”的组织，处理不必要的基础设施可能会给你的组织流程带来很大的负担，产生许多不利影响。理论上，你可以构建一个完整的数据堆栈来支持低延迟仪表盘——也许你可以使用数据仓库和缓存层——但由于你的资源有限，是否可以有一种更简单、更便宜的方法呢？
 
-在这篇文章中，我们展示了数据优先存储格式、按需计算和内存OLAP处理的组合如何在合理规模下开辟新的可能性。该系统虽然远未完善，且[还需要许多改进](https://github.com/BauplanLabs/quack-reduce#whats-next)，但它表明，人们可以构建一个无需数据仓库设置、性能极快且几乎无成本的互动数据应用。通过从DuckDB中移除数据库，我们可以将本地（“单节点处理是你所需的一切”）和云端（“数据在其他地方处理效果更好”）的优点结合起来。
+在这篇文章中，我们展示了数据优先存储格式、按需计算和内存 OLAP 处理的组合如何在合理规模下开辟新的可能性。该系统虽然远未完善，且[还需要许多改进](https://github.com/BauplanLabs/quack-reduce#whats-next)，但它表明，人们可以构建一个无需数据仓库设置、性能极快且几乎无成本的互动数据应用。通过从 DuckDB 中移除数据库，我们可以将本地（“单节点处理是你所需的一切”）和云端（“数据在其他地方处理效果更好”）的优点结合起来。
 
 我大部分时间都在思考无服务器数据基础设施。如果你感兴趣，或者对这篇文章有反馈，或者只是想聊聊，可以通过 ciros.greco@bauplanlabs.com 联系我。

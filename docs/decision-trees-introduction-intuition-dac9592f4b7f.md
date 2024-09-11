@@ -1,18 +1,18 @@
 # 决策树：介绍与直觉
 
-> 原文：[https://towardsdatascience.com/decision-trees-introduction-intuition-dac9592f4b7f?source=collection_archive---------8-----------------------#2023-02-10](https://towardsdatascience.com/decision-trees-introduction-intuition-dac9592f4b7f?source=collection_archive---------8-----------------------#2023-02-10)
+> 原文：[`towardsdatascience.com/decision-trees-introduction-intuition-dac9592f4b7f?source=collection_archive---------8-----------------------#2023-02-10`](https://towardsdatascience.com/decision-trees-introduction-intuition-dac9592f4b7f?source=collection_archive---------8-----------------------#2023-02-10)
 
 ## 使用 Python 做出数据驱动的决策
 
-[](https://shawhin.medium.com/?source=post_page-----dac9592f4b7f--------------------------------)[![Shaw Talebi](../Images/1449cc7c08890e2078f9e5d07897e3df.png)](https://shawhin.medium.com/?source=post_page-----dac9592f4b7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dac9592f4b7f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dac9592f4b7f--------------------------------) [Shaw Talebi](https://shawhin.medium.com/?source=post_page-----dac9592f4b7f--------------------------------)
+[](https://shawhin.medium.com/?source=post_page-----dac9592f4b7f--------------------------------)![Shaw Talebi](https://shawhin.medium.com/?source=post_page-----dac9592f4b7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dac9592f4b7f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dac9592f4b7f--------------------------------) [Shaw Talebi](https://shawhin.medium.com/?source=post_page-----dac9592f4b7f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff3998e1cd186&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-introduction-intuition-dac9592f4b7f&user=Shaw+Talebi&userId=f3998e1cd186&source=post_page-f3998e1cd186----dac9592f4b7f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dac9592f4b7f--------------------------------) ·10分钟阅读·2023年2月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdac9592f4b7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-introduction-intuition-dac9592f4b7f&user=Shaw+Talebi&userId=f3998e1cd186&source=-----dac9592f4b7f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff3998e1cd186&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-introduction-intuition-dac9592f4b7f&user=Shaw+Talebi&userId=f3998e1cd186&source=post_page-f3998e1cd186----dac9592f4b7f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dac9592f4b7f--------------------------------) ·10 分钟阅读·2023 年 2 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdac9592f4b7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-introduction-intuition-dac9592f4b7f&user=Shaw+Talebi&userId=f3998e1cd186&source=-----dac9592f4b7f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdac9592f4b7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-introduction-intuition-dac9592f4b7f&source=-----dac9592f4b7f---------------------bookmark_footer-----------)![](../Images/13f81f75cc709437ff2192216ceadf8c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdac9592f4b7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-trees-introduction-intuition-dac9592f4b7f&source=-----dac9592f4b7f---------------------bookmark_footer-----------)![](img/13f81f75cc709437ff2192216ceadf8c.png)
 
 图片来源：[niko photos](https://unsplash.com/@niko_photos?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上，配有思考的表情符号。
 

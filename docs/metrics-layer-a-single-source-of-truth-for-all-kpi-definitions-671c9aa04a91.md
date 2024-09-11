@@ -1,18 +1,18 @@
-# 度量层：所有KPI定义的单一真实来源
+# 度量层：所有 KPI 定义的单一真实来源
 
-> 原文：[https://towardsdatascience.com/metrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91?source=collection_archive---------8-----------------------#2023-08-08](https://towardsdatascience.com/metrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91?source=collection_archive---------8-----------------------#2023-08-08)
+> 原文：[`towardsdatascience.com/metrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91?source=collection_archive---------8-----------------------#2023-08-08`](https://towardsdatascience.com/metrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91?source=collection_archive---------8-----------------------#2023-08-08)
 
-![](../Images/219549fd84cf4d6f79fad72adfd89ed4.png)
+![](img/219549fd84cf4d6f79fad72adfd89ed4.png)
 
 图像由 Midjourney 生成
 
 ## 了解为什么实施度量层将使在您的组织中收集数据驱动的洞察变得更加可靠！
 
-[](https://eryk-lewinson.medium.com/?source=post_page-----671c9aa04a91--------------------------------)[![Eryk Lewinson](../Images/56e09e19c0bbfecc582da58761d15078.png)](https://eryk-lewinson.medium.com/?source=post_page-----671c9aa04a91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----671c9aa04a91--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----671c9aa04a91--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----671c9aa04a91--------------------------------)
+[](https://eryk-lewinson.medium.com/?source=post_page-----671c9aa04a91--------------------------------)![Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----671c9aa04a91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----671c9aa04a91--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----671c9aa04a91--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----671c9aa04a91--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmetrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----671c9aa04a91---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----671c9aa04a91--------------------------------) ·8分钟阅读·2023年8月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F671c9aa04a91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmetrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----671c9aa04a91---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmetrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----671c9aa04a91---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----671c9aa04a91--------------------------------) ·8 分钟阅读·2023 年 8 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F671c9aa04a91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmetrics-layer-a-single-source-of-truth-for-all-kpi-definitions-671c9aa04a91&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----671c9aa04a91---------------------clap_footer-----------)
 
 --
 
@@ -24,6 +24,6 @@
 
 # 什么是度量层？
 
-**指标** **层**（也称为**指标** **存储**或**无头** **BI**）是一个标准化指标的框架，即集中化公司计算其指标的方式。它可以被视为定义组织内使用的KPI（或指标，我们将这两个术语交替使用）时的单一真实来源。
+**指标** **层**（也称为**指标** **存储**或**无头** **BI**）是一个标准化指标的框架，即集中化公司计算其指标的方式。它可以被视为定义组织内使用的 KPI（或指标，我们将这两个术语交替使用）时的单一真实来源。
 
-💡 ***额外知识***：如果你想知道，“无头BI”这个术语源于这些解决方案使各种BI工具能够连接到API以访问指标。因此，它们提供了在保持…的同时更换工具的灵活性。
+💡 ***额外知识***：如果你想知道，“无头 BI”这个术语源于这些解决方案使各种 BI 工具能够连接到 API 以访问指标。因此，它们提供了在保持…的同时更换工具的灵活性。

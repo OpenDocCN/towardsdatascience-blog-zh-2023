@@ -1,18 +1,18 @@
 # 使用 Python 获取位置的温度数据
 
-> 原文：[https://towardsdatascience.com/get-temperature-data-by-location-with-python-52ed872dd621?source=collection_archive---------7-----------------------#2023-05-18](https://towardsdatascience.com/get-temperature-data-by-location-with-python-52ed872dd621?source=collection_archive---------7-----------------------#2023-05-18)
+> 原文：[`towardsdatascience.com/get-temperature-data-by-location-with-python-52ed872dd621?source=collection_archive---------7-----------------------#2023-05-18`](https://towardsdatascience.com/get-temperature-data-by-location-with-python-52ed872dd621?source=collection_archive---------7-----------------------#2023-05-18)
 
 ## 通过经纬度检索历史温度数据。
 
-[](https://gustavorsantos.medium.com/?source=post_page-----52ed872dd621--------------------------------)[![Gustavo Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----52ed872dd621--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52ed872dd621--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----52ed872dd621--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----52ed872dd621--------------------------------)
+[](https://gustavorsantos.medium.com/?source=post_page-----52ed872dd621--------------------------------)![Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----52ed872dd621--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52ed872dd621--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----52ed872dd621--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----52ed872dd621--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fget-temperature-data-by-location-with-python-52ed872dd621&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----52ed872dd621---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52ed872dd621--------------------------------) ·3 min read·2023年5月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F52ed872dd621&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fget-temperature-data-by-location-with-python-52ed872dd621&user=Gustavo+Santos&userId=4429d99b1245&source=-----52ed872dd621---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fget-temperature-data-by-location-with-python-52ed872dd621&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----52ed872dd621---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52ed872dd621--------------------------------) ·3 min read·2023 年 5 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F52ed872dd621&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fget-temperature-data-by-location-with-python-52ed872dd621&user=Gustavo+Santos&userId=4429d99b1245&source=-----52ed872dd621---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F52ed872dd621&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fget-temperature-data-by-location-with-python-52ed872dd621&source=-----52ed872dd621---------------------bookmark_footer-----------)![](../Images/0a6e05461c10ccab94bd840c64e8f53b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F52ed872dd621&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fget-temperature-data-by-location-with-python-52ed872dd621&source=-----52ed872dd621---------------------bookmark_footer-----------)![](img/0a6e05461c10ccab94bd840c64e8f53b.png)
 
 图片来源于 [Tom Barrett](https://unsplash.com/es/@wistomsin?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/hgGplX3PFBg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -28,7 +28,7 @@
 
 # 代码
 
-首先，让我们用`pip install meteostat`安装meteostat。接下来，我们可以导入所需的包。
+首先，让我们用`pip install meteostat`安装 meteostat。接下来，我们可以导入所需的包。
 
 ```py
 # Import packages
@@ -38,4 +38,4 @@ import matplotlib.pyplot as plt
 from meteostat import Point, Monthly
 ```
 
-如果你访问[文档](https://dev.meteostat.net/python/#installation)，你会看到这段*入门*代码，这基本上就是让它工作的所需内容。我们设置了一个时间范围——我使用了2022年。然后我们创建一个…
+如果你访问[文档](https://dev.meteostat.net/python/#installation)，你会看到这段*入门*代码，这基本上就是让它工作的所需内容。我们设置了一个时间范围——我使用了 2022 年。然后我们创建一个…

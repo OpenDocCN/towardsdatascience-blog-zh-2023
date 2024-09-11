@@ -1,18 +1,18 @@
-# 使用Python去除Landsat卫星图像中的云层
+# 使用 Python 去除 Landsat 卫星图像中的云层
 
-> 原文：[https://towardsdatascience.com/removing-clouds-from-landsat-satellite-images-with-python-246e73494bc?source=collection_archive---------8-----------------------#2023-05-29](https://towardsdatascience.com/removing-clouds-from-landsat-satellite-images-with-python-246e73494bc?source=collection_archive---------8-----------------------#2023-05-29)
+> 原文：[`towardsdatascience.com/removing-clouds-from-landsat-satellite-images-with-python-246e73494bc?source=collection_archive---------8-----------------------#2023-05-29`](https://towardsdatascience.com/removing-clouds-from-landsat-satellite-images-with-python-246e73494bc?source=collection_archive---------8-----------------------#2023-05-29)
 
 ## 计算你感兴趣区域的云覆盖，去除云层并使用其他卫星图像进行填补
 
-[](https://conorosullyds.medium.com/?source=post_page-----246e73494bc--------------------------------)[![Conor O'Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----246e73494bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246e73494bc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----246e73494bc--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----246e73494bc--------------------------------)
+[](https://conorosullyds.medium.com/?source=post_page-----246e73494bc--------------------------------)![Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----246e73494bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246e73494bc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----246e73494bc--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----246e73494bc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fremoving-clouds-from-landsat-satellite-images-with-python-246e73494bc&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----246e73494bc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246e73494bc--------------------------------) ·14分钟阅读·2023年5月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F246e73494bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fremoving-clouds-from-landsat-satellite-images-with-python-246e73494bc&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----246e73494bc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4ae48256fb37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fremoving-clouds-from-landsat-satellite-images-with-python-246e73494bc&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=post_page-4ae48256fb37----246e73494bc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246e73494bc--------------------------------) ·14 分钟阅读·2023 年 5 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F246e73494bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fremoving-clouds-from-landsat-satellite-images-with-python-246e73494bc&user=Conor+O%27Sullivan&userId=4ae48256fb37&source=-----246e73494bc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F246e73494bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fremoving-clouds-from-landsat-satellite-images-with-python-246e73494bc&source=-----246e73494bc---------------------bookmark_footer-----------)![](../Images/139abceec02d150bde92512b5d84aa21.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F246e73494bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fremoving-clouds-from-landsat-satellite-images-with-python-246e73494bc&source=-----246e73494bc---------------------bookmark_footer-----------)![](img/139abceec02d150bde92512b5d84aa21.png)
 
 (来源: 作者)
 

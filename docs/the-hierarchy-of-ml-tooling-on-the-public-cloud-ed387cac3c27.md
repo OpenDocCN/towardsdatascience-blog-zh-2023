@@ -1,18 +1,18 @@
 # 公有云上的机器学习工具层次结构
 
-> 原文：[https://towardsdatascience.com/the-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27?source=collection_archive---------11-----------------------#2023-03-21](https://towardsdatascience.com/the-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27?source=collection_archive---------11-----------------------#2023-03-21)
+> 原文：[`towardsdatascience.com/the-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27?source=collection_archive---------11-----------------------#2023-03-21`](https://towardsdatascience.com/the-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27?source=collection_archive---------11-----------------------#2023-03-21)
 
 ## 并非所有机器学习服务都是一样的
 
-[](https://natworkeffects.medium.com/?source=post_page-----ed387cac3c27--------------------------------)[![Nathan Cheng](../Images/d7477ae4d208a039ab75e402e1abe3ce.png)](https://natworkeffects.medium.com/?source=post_page-----ed387cac3c27--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ed387cac3c27--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ed387cac3c27--------------------------------) [Nathan Cheng](https://natworkeffects.medium.com/?source=post_page-----ed387cac3c27--------------------------------)
+[](https://natworkeffects.medium.com/?source=post_page-----ed387cac3c27--------------------------------)![Nathan Cheng](https://natworkeffects.medium.com/?source=post_page-----ed387cac3c27--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ed387cac3c27--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ed387cac3c27--------------------------------) [Nathan Cheng](https://natworkeffects.medium.com/?source=post_page-----ed387cac3c27--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9dbd159f0e0a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27&user=Nathan+Cheng&userId=9dbd159f0e0a&source=post_page-9dbd159f0e0a----ed387cac3c27---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ed387cac3c27--------------------------------) · 8分钟阅读·2023年3月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fed387cac3c27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27&user=Nathan+Cheng&userId=9dbd159f0e0a&source=-----ed387cac3c27---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9dbd159f0e0a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27&user=Nathan+Cheng&userId=9dbd159f0e0a&source=post_page-9dbd159f0e0a----ed387cac3c27---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ed387cac3c27--------------------------------) · 8 分钟阅读·2023 年 3 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fed387cac3c27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27&user=Nathan+Cheng&userId=9dbd159f0e0a&source=-----ed387cac3c27---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fed387cac3c27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27&source=-----ed387cac3c27---------------------bookmark_footer-----------)![](../Images/20c61a3cb7e2b3b7579d4ddcfdaddb05.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fed387cac3c27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hierarchy-of-ml-tooling-on-the-public-cloud-ed387cac3c27&source=-----ed387cac3c27---------------------bookmark_footer-----------)![](img/20c61a3cb7e2b3b7579d4ddcfdaddb05.png)
 
 机器学习系统中的隐藏技术债务。图片来自[Google Developers](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)。
 
@@ -32,7 +32,7 @@
 
 下面的图示展示了一个典型的机器学习生命周期（这个循环是迭代的）：
 
-![](../Images/44aace5540cdfe6ec4d2ae291f2d783e.png)
+![](img/44aace5540cdfe6ec4d2ae291f2d783e.png)
 
 机器学习生命周期。图片来源：[作者](https://natworkeffects.medium.com)。
 
@@ -44,11 +44,11 @@
 
 下面是一个支持上述统计数据的视觉解释，[改编自 Google 的论文](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)：
 
-![](../Images/c3e181b30f72df8c61a308649ccb8919.png)
+![](img/c3e181b30f72df8c61a308649ccb8919.png)
 
 机器学习系统中的隐性技术债务。图片来源：[Google 开发者](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)。
 
-我不会详细解释生命周期中的每个阶段，但这里有一个总结的定义列表。如果你有兴趣了解更多，我推荐阅读[《机器学习设计模式》](https://www.oreilly.com/library/view/machine-learning-design/9781098115777/)第9章关于机器学习生命周期和 AI 准备性的详细解答。
+我不会详细解释生命周期中的每个阶段，但这里有一个总结的定义列表。如果你有兴趣了解更多，我推荐阅读[《机器学习设计模式》](https://www.oreilly.com/library/view/machine-learning-design/9781098115777/)第九章关于机器学习生命周期和 AI 准备性的详细解答。
 
 **机器学习生命周期总结定义：**
 
@@ -70,19 +70,19 @@
 
 ## **不要忘记平台基础设施和安全性！**
 
-ML生命周期不考虑支持平台基础设施，这些基础设施必须在加密、网络和身份与访问管理（IAM）方面保持安全。
+ML 生命周期不考虑支持平台基础设施，这些基础设施必须在加密、网络和身份与访问管理（IAM）方面保持安全。
 
-云服务提供托管计算基础设施、开发环境、集中IAM、加密功能和网络保护服务，这些可以实现与内部IT政策的安全合规 —— 因此你真的不应该自己构建这些ML服务，而是利用云的力量将ML能力融入你的产品路线图。
+云服务提供托管计算基础设施、开发环境、集中 IAM、加密功能和网络保护服务，这些可以实现与内部 IT 政策的安全合规 —— 因此你真的不应该自己构建这些 ML 服务，而是利用云的力量将 ML 能力融入你的产品路线图。
 
-本节说明了编写模型训练代码只是整个ML生命周期中的一个相对微小的部分，实际的数据准备、评估、部署和生产中的ML模型监控都非常困难。
+本节说明了编写模型训练代码只是整个 ML 生命周期中的一个相对微小的部分，实际的数据准备、评估、部署和生产中的 ML 模型监控都非常困难。
 
-自然地，结论是构建自己定制的基础设施和ML模型需要相当的时间和精力，这样做的决定应当是最后的手段。
+自然地，结论是构建自己定制的基础设施和 ML 模型需要相当的时间和精力，这样做的决定应当是最后的手段。
 
-# # 3 ML工具层级
+# # 3 ML 工具层级
 
-这里是利用公共云服务来填补空白的地方。这些超大规模提供商主要提供两种服务；**ML工具层级：**
+这里是利用公共云服务来填补空白的地方。这些超大规模提供商主要提供两种服务；**ML 工具层级：**
 
-+   🧰 **AI服务。或者：**
++   🧰 **AI 服务。或者：**
 
 1.  🔨 `**预训练标准**` - 仅使用基础模型，无法通过带来自己的训练数据进行自定义。
 
@@ -90,13 +90,13 @@ ML生命周期不考虑支持平台基础设施，这些基础设施必须在加
 
 1.  ⚙️ `**带来自己的数据**` - 强制要求带来自己的训练数据。
 
-+   🪛 **ML平台。**
++   🪛 **ML 平台。**
 
-## 荣誉AI服务提及
+## 荣誉 AI 服务提及
 
-对于那些阅读此帖的更敏锐的读者，我故意省略了一些在层次结构中的荣誉AI服务提及：
+对于那些阅读此帖的更敏锐的读者，我故意省略了一些在层次结构中的荣誉 AI 服务提及：
 
-+   内置ML模型的数据仓库，通过SQL语法实现ML开发。进一步阅读可以参考 [**BigQuery ML**](https://cloud.google.com/bigquery-ml/docs/introduction), [**Redshift ML**](https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html), 和 [**Synapse专用SQL池PREDICT函数**](https://learn.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-predict)。这些服务旨在供数据分析师使用，前提是你的数据已在云数据仓库中。
++   内置 ML 模型的数据仓库，通过 SQL 语法实现 ML 开发。进一步阅读可以参考 [**BigQuery ML**](https://cloud.google.com/bigquery-ml/docs/introduction), [**Redshift ML**](https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html), 和 [**Synapse 专用 SQL 池 PREDICT 函数**](https://learn.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-predict)。这些服务旨在供数据分析师使用，前提是你的数据已在云数据仓库中。
 
 +   [**AI Builder**](https://learn.microsoft.com/en-us/ai-builder/overview) 适用于 Microsoft Power Platform，以及 [**Amazon SageMaker Canvas**](https://docs.aws.amazon.com/sagemaker/latest/dg/canvas.html)。这些服务旨在供非技术性业务用户即公民数据科学家使用。
 

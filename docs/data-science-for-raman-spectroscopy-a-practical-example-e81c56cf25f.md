@@ -1,18 +1,18 @@
 # 拉曼光谱的数据科学：一个实际示例
 
-> 原文：[https://towardsdatascience.com/data-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f?source=collection_archive---------5-----------------------#2023-01-16](https://towardsdatascience.com/data-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f?source=collection_archive---------5-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/data-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f?source=collection_archive---------5-----------------------#2023-01-16`](https://towardsdatascience.com/data-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f?source=collection_archive---------5-----------------------#2023-01-16)
 
 ## 光谱预处理和建模的实际示例
 
-[](https://medium.com/@nicopez?source=post_page-----e81c56cf25f--------------------------------)[![Nicolas Coca, PhD](../Images/548630c393526a802cf560344990a1e3.png)](https://medium.com/@nicopez?source=post_page-----e81c56cf25f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e81c56cf25f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e81c56cf25f--------------------------------) [Nicolas Coca, PhD](https://medium.com/@nicopez?source=post_page-----e81c56cf25f--------------------------------)
+[](https://medium.com/@nicopez?source=post_page-----e81c56cf25f--------------------------------)![Nicolas Coca, PhD](https://medium.com/@nicopez?source=post_page-----e81c56cf25f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e81c56cf25f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e81c56cf25f--------------------------------) [Nicolas Coca, PhD](https://medium.com/@nicopez?source=post_page-----e81c56cf25f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F60149d1ba899&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f&user=Nicolas+Coca%2C+PhD&userId=60149d1ba899&source=post_page-60149d1ba899----e81c56cf25f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e81c56cf25f--------------------------------) ·10分钟阅读·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe81c56cf25f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f&user=Nicolas+Coca%2C+PhD&userId=60149d1ba899&source=-----e81c56cf25f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F60149d1ba899&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f&user=Nicolas+Coca%2C+PhD&userId=60149d1ba899&source=post_page-60149d1ba899----e81c56cf25f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e81c56cf25f--------------------------------) ·10 分钟阅读·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe81c56cf25f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f&user=Nicolas+Coca%2C+PhD&userId=60149d1ba899&source=-----e81c56cf25f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe81c56cf25f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f&source=-----e81c56cf25f---------------------bookmark_footer-----------)![](../Images/b3e7021c38a14b4e51219a154932f8b1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe81c56cf25f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-raman-spectroscopy-a-practical-example-e81c56cf25f&source=-----e81c56cf25f---------------------bookmark_footer-----------)![](img/b3e7021c38a14b4e51219a154932f8b1.png)
 
 **拉曼光谱的数据科学**。从光谱预处理到建模：峰值检测与去除、基线扣除、平滑处理以及经典最小二乘法应用于成分量化。[作者提供的图片]。
 
@@ -24,7 +24,7 @@
 
 +   [用异常检测去除拉曼光谱中的尖峰](https://medium.com/towards-data-science/removing-spikes-from-raman-spectra-8a9fdda0ac22)
 
-+   [Python中用于定量光谱分析的经典最小二乘法](https://medium.com/towards-data-science/classical-least-squares-method-for-quantitative-spectral-analysis-with-python-1926473a802c)
++   [Python 中用于定量光谱分析的经典最小二乘法](https://medium.com/towards-data-science/classical-least-squares-method-for-quantitative-spectral-analysis-with-python-1926473a802c)
 
 **一个例子**
 
@@ -144,7 +144,7 @@ plt.legend()
 plt.show()
 ```
 
-![](../Images/1a8e4f31d9d08339b431aab3d15bf48c.png)
+![](img/1a8e4f31d9d08339b431aab3d15bf48c.png)
 
 三个（已知的）合成组件光谱。[作者提供的图片]。
 
@@ -169,7 +169,7 @@ plt.ylabel('Intensity',  fontsize = 15)
 plt.show()
 ```
 
-![](../Images/09dc5f1c14e54043a82f854528072574.png)
+![](img/09dc5f1c14e54043a82f854528072574.png)
 
 合成光谱。 [作者提供的图片]。
 
@@ -197,7 +197,7 @@ plt.ylabel('Intensity',  fontsize = 15)
 plt.show()
 ```
 
-![](../Images/b05e1b4afaf9209121f4a4074d9aa52a.png)
+![](img/b05e1b4afaf9209121f4a4074d9aa52a.png)
 
 添加噪声的合成光谱。 [作者提供的图片]。
 
@@ -207,17 +207,17 @@ plt.show()
 
 在我们进行任何建模之前，需要对光谱进行预处理。这些是我们在实际测量光谱时会做的一些工作：清除尖峰、平滑噪声和减去基线。为此，我们将使用一些简单的算法，如下所述。
 
-关于拉曼光谱处理步骤的更完整列表，建议读者查阅B. Barton等人的文章（《应用光谱学》76 (9), 1021–1041）或O. Ryabchykov等人的文章 ([https://doi.org/10.1515/psr-2017-0043](https://doi.org/10.1515/psr-2017-0043))。
+关于拉曼光谱处理步骤的更完整列表，建议读者查阅 B. Barton 等人的文章（《应用光谱学》76 (9), 1021–1041）或 O. Ryabchykov 等人的文章 ([`doi.org/10.1515/psr-2017-0043`](https://doi.org/10.1515/psr-2017-0043))。
 
 # i) 去尖峰光谱
 
-第一步是定位并修正尖峰。为此，我们使用了基于修改后的z-score的算法。修改后的z-score计算如下：
+第一步是定位并修正尖峰。为此，我们使用了基于修改后的 z-score 的算法。修改后的 z-score 计算如下：
 
 z(i) = 0.6745 (x(i)-M) / MAD
 
-其中MAD = median(|x-M|)，|…| 表示绝对值，x 是差分光谱的值。
+其中 MAD = median(|x-M|)，|…| 表示绝对值，x 是差分光谱的值。
 
-更多信息请参见我之前的 [文章](/removing-spikes-from-raman-spectra-8a9fdda0ac22) 或 [这个jupyter笔记本](https://github.com/nicocopez/Outlier_detection_for_Spikes_Removal_from_Raman_Spectra/blob/master/Despiking_Raman_spectra_1.ipynb)。
+更多信息请参见我之前的 文章 或 [这个 jupyter 笔记本](https://github.com/nicocopez/Outlier_detection_for_Spikes_Removal_from_Raman_Spectra/blob/master/Despiking_Raman_spectra_1.ipynb)。
 
 ```py
 # The next function calculates the modified z-scores of a diferentiated spectrum
@@ -250,13 +250,13 @@ despiked_spectrum = fixer(mix_spectrum,ma=10)
 
 并与原始混合光谱进行比较：
 
-![](../Images/ef5db90d71bf420f25b95cd892fc4616.png)
+![](img/ef5db90d71bf420f25b95cd892fc4616.png)
 
 尖峰检测。 [作者提供的图片]。
 
 # ii) 基线分离
 
-为了计算基线，我们使用了一种基于非对称最小二乘法的基线估计算法，如Eilers和Boelens在2005年论文中所述。
+为了计算基线，我们使用了一种基于非对称最小二乘法的基线估计算法，如 Eilers 和 Boelens 在 2005 年论文中所述。
 
 ```py
 # Baseline stimation with asymmetric least squares
@@ -284,7 +284,7 @@ def baseline_als(y, lam, p, niter=100):
 
 基线减法参数：
 
-正如他们在论文中所说，“有两个参数：**p表示非对称性**和**l表示平滑度**。这两个参数都需要根据手头的数据进行调整。我们发现通常0.001 < p < 0.1 是一个不错的选择（对于有正峰的信号），10² < l < 10⁹。” 参见Eilers和Boelens，2005。
+正如他们在论文中所说，“有两个参数：**p 表示非对称性**和**l 表示平滑度**。这两个参数都需要根据手头的数据进行调整。我们发现通常 0.001 < p < 0.1 是一个不错的选择（对于有正峰的信号），10² < l < 10⁹。” 参见 Eilers 和 Boelens，2005。
 
 ```py
 # Parameters for this case:
@@ -320,13 +320,13 @@ ax2.set_ylabel('Intensity',  fontsize = 15)
 plt.show()
 ```
 
-![](../Images/6c866522ebbd05d1f08ffaf54e1a8ce6.png)
+![](img/6c866522ebbd05d1f08ffaf54e1a8ce6.png)
 
 基线减法。 [作者提供的图片]。
 
 # iii) 平滑
 
-为了平滑光谱，我们使用了在SciPy库中实现的Savitzky-Golay滤波器。窗口参数（点数）w和多项式阶数p可以针对每组光谱进行优化。
+为了平滑光谱，我们使用了在 SciPy 库中实现的 Savitzky-Golay 滤波器。窗口参数（点数）w 和多项式阶数 p 可以针对每组光谱进行优化。
 
 ```py
 from scipy.signal import savgol_filter, general_gaussian
@@ -350,7 +350,7 @@ plt.legend()
 plt.show()
 ```
 
-![](../Images/550d47e11792bc83e80628b284fd17b9.png)
+![](img/550d47e11792bc83e80628b284fd17b9.png)
 
 噪声平滑。 [作者提供的图片]。
 
@@ -385,7 +385,7 @@ cs = linear_model.LinearRegression().fit(components.T, query_spectrum).coef_
 print('The expected concentrations for components A, B and C are: ' + str(cs)) 
 ```
 
-![](../Images/6a1d19aa42100e9305c88367a4e45b35.png)
+![](img/6a1d19aa42100e9305c88367a4e45b35.png)
 
 让我们从图形上来看一下：
 
@@ -410,7 +410,7 @@ plt.ylim(ymin = -0.1)
 plt.show()
 ```
 
-![](../Images/7fd96b96a65895d3b76074a8eff3ea41.png)
+![](img/7fd96b96a65895d3b76074a8eff3ea41.png)
 
 光谱拟合。[作者提供的图片]。
 
@@ -430,19 +430,19 @@ plt.show()
 
 你可以在我之前的帖子 [这里](https://medium.com/towards-data-science/removing-spikes-from-raman-spectra-8a9fdda0ac22) 阅读更多关于去尖峰光谱的内容，以及在 [这里](https://medium.com/towards-data-science/classical-least-squares-method-for-quantitative-spectral-analysis-with-python-1926473a802c) 阅读关于经典最小二乘法的内容，或者在我的 GitHub 或 Medium 账户中查看：
 
-+   [https://medium.com/@nicopez](https://medium.com/@nicopez)
++   [`medium.com/@nicopez`](https://medium.com/@nicopez)
 
-+   [https://github.com/nicocopez/](https://github.com/nicocopez/)
++   [`github.com/nicocopez/`](https://github.com/nicocopez/)
 
 原始文献：
 
 +   [修改过的 z 分数去尖峰算法](https://chemrxiv.org/engage/api-gateway/chemrxiv/assets/orp/resource/item/60c73e33469df41c2af4281c/original/a-simple-algorithm-for-despiking-raman-spectra.pdf)。
 
-    Whitaker 等人，《化学计量学与智能实验室系统》第179卷，2018年8月15日。
+    Whitaker 等人，《化学计量学与智能实验室系统》第 179 卷，2018 年 8 月 15 日。
 
 +   使用不对称最小二乘法进行基线校正。
 
-    “基线修正与不对称最小二乘平滑”由 Paul H. C. Eilers 和 Hans F.M. Boelens 著。2005年10月21日。
+    “基线修正与不对称最小二乘平滑”由 Paul H. C. Eilers 和 Hans F.M. Boelens 著。2005 年 10 月 21 日。
 
 关于如何处理和应用化学计量学于拉曼光谱的完整指南，请参见：
 

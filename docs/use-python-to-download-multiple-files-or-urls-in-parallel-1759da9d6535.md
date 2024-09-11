@@ -1,18 +1,18 @@
 # 使用 Python 并行下载多个文件（或 URL）
 
-> 原文：[https://towardsdatascience.com/use-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535?source=collection_archive---------1-----------------------#2023-09-08](https://towardsdatascience.com/use-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535?source=collection_archive---------1-----------------------#2023-09-08)
+> 原文：[`towardsdatascience.com/use-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535?source=collection_archive---------1-----------------------#2023-09-08`](https://towardsdatascience.com/use-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535?source=collection_archive---------1-----------------------#2023-09-08)
 
 ## 在更短时间内获取更多数据
 
-[](https://khafen.medium.com/?source=post_page-----1759da9d6535--------------------------------)[![Konrad Hafen](../Images/146548d8de62ca1d5d15c3c7c3300940.png)](https://khafen.medium.com/?source=post_page-----1759da9d6535--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1759da9d6535--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1759da9d6535--------------------------------) [Konrad Hafen](https://khafen.medium.com/?source=post_page-----1759da9d6535--------------------------------)
+[](https://khafen.medium.com/?source=post_page-----1759da9d6535--------------------------------)![Konrad Hafen](https://khafen.medium.com/?source=post_page-----1759da9d6535--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1759da9d6535--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1759da9d6535--------------------------------) [Konrad Hafen](https://khafen.medium.com/?source=post_page-----1759da9d6535--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F56d662f7324a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535&user=Konrad+Hafen&userId=56d662f7324a&source=post_page-56d662f7324a----1759da9d6535---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1759da9d6535--------------------------------) ·5 min read·2023年9月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1759da9d6535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535&user=Konrad+Hafen&userId=56d662f7324a&source=-----1759da9d6535---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F56d662f7324a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535&user=Konrad+Hafen&userId=56d662f7324a&source=post_page-56d662f7324a----1759da9d6535---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1759da9d6535--------------------------------) ·5 min read·2023 年 9 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1759da9d6535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535&user=Konrad+Hafen&userId=56d662f7324a&source=-----1759da9d6535---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1759da9d6535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535&source=-----1759da9d6535---------------------bookmark_footer-----------)![](../Images/0c55252812a33ed88ec684dce29b169d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1759da9d6535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-python-to-download-multiple-files-or-urls-in-parallel-1759da9d6535&source=-----1759da9d6535---------------------bookmark_footer-----------)![](img/0c55252812a33ed88ec684dce29b169d.png)
 
 图片来源于 [Wesley Tingey](https://unsplash.com/@wesleyphotography?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -141,7 +141,7 @@ url: https://www.northwestknowledge.net/metdata/data/pr_1982.nc time (s): 23.287
 Total time: 23.32273244857788
 ```
 
-请注意，这种方法下载每个单独文件所需的时间更长。这可能是由于网络速度变化，或将下载映射到各自线程所需的开销所致。尽管单独文件下载时间较长，但并行方法使总下载时间减少了50%。
+请注意，这种方法下载每个单独文件所需的时间更长。这可能是由于网络速度变化，或将下载映射到各自线程所需的开销所致。尽管单独文件下载时间较长，但并行方法使总下载时间减少了 50%。
 
 你可以看到并行处理如何大大减少多个文件的处理时间。随着文件数量的增加，使用并行下载方法可以节省更多时间。
 

@@ -1,20 +1,20 @@
 # 探索 Numexpr：Pandas 背后的强大引擎
 
-> 原文：[https://towardsdatascience.com/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a?source=collection_archive---------9-----------------------#2023-09-22](https://towardsdatascience.com/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a?source=collection_archive---------9-----------------------#2023-09-22)
+> 原文：[`towardsdatascience.com/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a?source=collection_archive---------9-----------------------#2023-09-22`](https://towardsdatascience.com/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a?source=collection_archive---------9-----------------------#2023-09-22)
 
 ## [快速计算](https://qtalen.medium.com/list/fast-computing-2a37a7e82be5)
 
 ## 使用 Python 的 Numexpr 和 Pandas 的 eval/query 函数来提升数据分析性能
 
-[](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)[![Peng Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------) [Peng Qian](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)
+[](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)![Peng Qian](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------) [Peng Qian](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e2fe735546d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a&user=Peng+Qian&userId=8e2fe735546d&source=post_page-8e2fe735546d----cdb94965ca3a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------) · 10 分钟阅读 · 2023年9月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcdb94965ca3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a&user=Peng+Qian&userId=8e2fe735546d&source=-----cdb94965ca3a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e2fe735546d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a&user=Peng+Qian&userId=8e2fe735546d&source=post_page-8e2fe735546d----cdb94965ca3a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------) · 10 分钟阅读 · 2023 年 9 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcdb94965ca3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a&user=Peng+Qian&userId=8e2fe735546d&source=-----cdb94965ca3a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcdb94965ca3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a&source=-----cdb94965ca3a---------------------bookmark_footer-----------)![](../Images/fa720ac983cd13291d2bf6c1b49b674d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcdb94965ca3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a&source=-----cdb94965ca3a---------------------bookmark_footer-----------)![](img/fa720ac983cd13291d2bf6c1b49b674d.png)
 
 使用 Numexpr 帮我找到最宜居的城市。照片来源：作者制作，[Canva](https://www.canva.com/)
 

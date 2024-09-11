@@ -1,18 +1,18 @@
 # 利用 PyArrow 改进 pandas 和 Dask 工作流
 
-> 原文：[https://towardsdatascience.com/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b?source=collection_archive---------4-----------------------#2023-06-06](https://towardsdatascience.com/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b?source=collection_archive---------4-----------------------#2023-06-06)
+> 原文：[`towardsdatascience.com/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b?source=collection_archive---------4-----------------------#2023-06-06`](https://towardsdatascience.com/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b?source=collection_archive---------4-----------------------#2023-06-06)
 
 ## *现在最大限度地利用 PyArrow 在 pandas 和 Dask 中的支持*
 
-[](https://medium.com/@patrick_hoefler?source=post_page-----2891d3d96d2b--------------------------------)[![Patrick Hoefler](../Images/35ca9ef1100d8c93dbadd374f0569fe1.png)](https://medium.com/@patrick_hoefler?source=post_page-----2891d3d96d2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2891d3d96d2b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2891d3d96d2b--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----2891d3d96d2b--------------------------------)
+[](https://medium.com/@patrick_hoefler?source=post_page-----2891d3d96d2b--------------------------------)![Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----2891d3d96d2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2891d3d96d2b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2891d3d96d2b--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----2891d3d96d2b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Futilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----2891d3d96d2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2891d3d96d2b--------------------------------) · 13 min 阅读 · 2023年6月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2891d3d96d2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Futilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----2891d3d96d2b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Futilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----2891d3d96d2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2891d3d96d2b--------------------------------) · 13 min 阅读 · 2023 年 6 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2891d3d96d2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Futilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----2891d3d96d2b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2891d3d96d2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Futilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b&source=-----2891d3d96d2b---------------------bookmark_footer-----------)![](../Images/1fd9277102c552e00b0d50732a3c12cd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2891d3d96d2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Futilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b&source=-----2891d3d96d2b---------------------bookmark_footer-----------)![](img/1fd9277102c552e00b0d50732a3c12cd.png)
 
 所有图片均由作者创建
 
@@ -125,7 +125,7 @@ df.groupby(
 
 让我们看看这些操作与字符串列由 NumPy 对象数据类型表示的 DataFrames 的对比。
 
-![](../Images/4194a8e1e1222a4c91881bdafb5fd7f2.png)
+![](img/4194a8e1e1222a4c91881bdafb5fd7f2.png)
 
 结果或多或少符合我们的预期。基于字符串的比较在 PyArrow 字符串上执行时显著更快。大多数字符串访问器应该能提供巨大的性能提升。另一个有趣的观察是内存使用，与 NumPy 对象 dtype 相比，减少了大约 50%。我们将进一步用 Dask 详细研究这一点。
 
@@ -182,7 +182,7 @@ df = df.persist()
 wait(df)
 ```
 
-![](../Images/a371858da38112b3610ddc9d4bf49499.png)
+![](img/a371858da38112b3610ddc9d4bf49499.png)
 
 我们得到了 2 和 3 倍的显著改进。这一点尤其引人注目，因为我们将集群的大小从 30 台机器减少到 15 台，成本降低了 50%。随后，我们还将计算资源减少了 2 倍，这使得我们的性能提升更加令人印象深刻。因此，性能分别提高了 4 倍和 6 倍。我们可以在较小的集群上执行相同的计算，这样既节省了成本，也在总体上更高效，并且仍然能够获得性能提升。
 
@@ -208,7 +208,7 @@ pd.read_csv(
 
 这将返回一个由 PyArrow 数组支持的 `DataFrame`。pandas 并未在所有方面都得到优化，因此这可能会在后续操作中造成减速。如果工作负载特别重 I/O，这可能是值得的。让我们看一下直接比较：
 
-![](../Images/131457fefa9bd06c86d134bcffb68187.png)
+![](img/131457fefa9bd06c86d134bcffb68187.png)
 
 我们可以看到，与 C-engine 相比，PyArrow-engine 和 PyArrow dtypes 提供了 15 倍的加速。
 
@@ -234,19 +234,19 @@ wait(df)
 
 我们将为 `engine="c"`、`engine="pyarrow"` 以及额外的 `engine="pyarrow"` 配置 `dtype_backend="pyarrow"` 执行这个代码片段。让我们来看看一些性能比较。两个示例都在集群上的 30 台机器上执行。
 
-![](../Images/f558e50482cde8aa566482578a74e017.png)
+![](img/f558e50482cde8aa566482578a74e017.png)
 
-PyArrow引擎运行速度约为C引擎的两倍。两种实现使用了相同数量的机器。使用PyArrow `dtype_backend`时内存使用量减少了50%。如果仅将对象列转换为PyArrow字符串，也可以实现相同的减少，这能在后续操作中提供更好的体验。
+PyArrow 引擎运行速度约为 C 引擎的两倍。两种实现使用了相同数量的机器。使用 PyArrow `dtype_backend`时内存使用量减少了 50%。如果仅将对象列转换为 PyArrow 字符串，也可以实现相同的减少，这能在后续操作中提供更好的体验。
 
-我们已经看到Arrow引擎提供了显著的速度提升，超过了自定义C实现。它们尚未支持自定义实现的所有功能，但如果你的使用场景与支持的选项兼容，你应该能免费获得显著的速度提升。
+我们已经看到 Arrow 引擎提供了显著的速度提升，超过了自定义 C 实现。它们尚未支持自定义实现的所有功能，但如果你的使用场景与支持的选项兼容，你应该能免费获得显著的速度提升。
 
-使用PyArrow `dtype_backend`的情况稍微复杂一些。并非所有API区域都经过优化。如果你在I/O函数之外花费大量时间处理数据，那么这可能无法满足你的需求。如果你的工作流程在读取数据时花费大量时间，它会加速你的处理。
+使用 PyArrow `dtype_backend`的情况稍微复杂一些。并非所有 API 区域都经过优化。如果你在 I/O 函数之外花费大量时间处理数据，那么这可能无法满足你的需求。如果你的工作流程在读取数据时花费大量时间，它会加速你的处理。
 
-## PyArrow原生I/O读取器中的dtype_backend
+## PyArrow 原生 I/O 读取器中的 dtype_backend
 
-其他一些I/O方法也有一个engine关键字。`read_parquet`是最常见的例子。不过这里的情况稍有不同。这些I/O方法默认已经使用PyArrow引擎。因此解析尽可能高效。另一个潜在的性能提升是使用`dtype_backend`关键字。通常，PyArrow会返回一个PyArrow表，然后转换为pandas DataFrame。PyArrow的数据类型会转换为其NumPy等效类型。设置`dtype_backend="pyarrow"`可以避免这种转换。这能显著提高性能并节省大量内存。
+其他一些 I/O 方法也有一个 engine 关键字。`read_parquet`是最常见的例子。不过这里的情况稍有不同。这些 I/O 方法默认已经使用 PyArrow 引擎。因此解析尽可能高效。另一个潜在的性能提升是使用`dtype_backend`关键字。通常，PyArrow 会返回一个 PyArrow 表，然后转换为 pandas DataFrame。PyArrow 的数据类型会转换为其 NumPy 等效类型。设置`dtype_backend="pyarrow"`可以避免这种转换。这能显著提高性能并节省大量内存。
 
-让我们看看pandas性能的比较。我们从2022年12月读取了Uber-Lyft出租车数据。
+让我们看看 pandas 性能的比较。我们从 2022 年 12 月读取了 Uber-Lyft 出租车数据。
 
 ```py
 pd.read_parquet("fhvhv_tripdata_2022-10.parquet")
@@ -254,11 +254,11 @@ pd.read_parquet("fhvhv_tripdata_2022-10.parquet")
 
 我们读取了带有和不带有`dtype_backend="pyarrow"`的数据。
 
-![](../Images/ce5a2300466ab2ccfef7c65e92ea5079.png)
+![](img/ce5a2300466ab2ccfef7c65e92ea5079.png)
 
-我们可以很容易地看到，转换所花费的时间最多，读取Parquet文件后完成的转换。如果避免转换为NumPy数据类型，函数运行速度提高了三倍。
+我们可以很容易地看到，转换所花费的时间最多，读取 Parquet 文件后完成的转换。如果避免转换为 NumPy 数据类型，函数运行速度提高了三倍。
 
-Dask为`read_parquet`提供了一个专门的实现，相比于pandas实现，具有一些针对分布式工作负载的优势。共同点是这两个函数都调度到PyArrow来读取parquet文件。两者都共同点是数据在成功读取文件后会转换为NumPy数据类型。我们正在读取整个Uber-Lyft数据集，这在我们的集群上消耗了约240GB的内存。
+Dask 为`read_parquet`提供了一个专门的实现，相比于 pandas 实现，具有一些针对分布式工作负载的优势。共同点是这两个函数都调度到 PyArrow 来读取 parquet 文件。两者都共同点是数据在成功读取文件后会转换为 NumPy 数据类型。我们正在读取整个 Uber-Lyft 数据集，这在我们的集群上消耗了约 240GB 的内存。
 
 ```py
 import dask.dataframe as dd
@@ -272,7 +272,7 @@ df = df.persist()
 wait(df)
 ```
 
-我们在3种不同的配置下读取了数据集。首先是使用默认的NumPy数据类型，然后打开PyArrow字符串选项：
+我们在 3 种不同的配置下读取了数据集。首先是使用默认的 NumPy 数据类型，然后打开 PyArrow 字符串选项：
 
 ```py
 dask.config.set({"dataframe.convert-string": True})
@@ -280,7 +280,7 @@ dask.config.set({"dataframe.convert-string": True})
 
 最后是`dtype_backend="pyarrow"`。让我们看看这在性能方面意味着什么：
 
-![](../Images/3a880dae2241fbb7eb36e94977d32ffb.png)
+![](img/3a880dae2241fbb7eb36e94977d32ffb.png)
 
 类似于我们的 pandas 示例，我们可以看到转换为 NumPy dtypes 会占用我们大量的运行时间。PyArrow dtypes 提供了显著的性能提升。两个 PyArrow 配置所使用的内存是 NumPy dtypes 的一半。
 

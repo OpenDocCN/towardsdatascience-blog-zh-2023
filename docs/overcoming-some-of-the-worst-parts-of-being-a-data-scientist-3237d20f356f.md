@@ -1,20 +1,20 @@
 # 克服成为数据科学家的最糟糕部分
 
-> 原文：[https://towardsdatascience.com/overcoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f?source=collection_archive---------19-----------------------#2023-01-12](https://towardsdatascience.com/overcoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f?source=collection_archive---------19-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/overcoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f?source=collection_archive---------19-----------------------#2023-01-12`](https://towardsdatascience.com/overcoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f?source=collection_archive---------19-----------------------#2023-01-12)
 
 ## 观点
 
 ## 这个领域并不完美，因此最好正确设定期望值
 
-[](https://animadurkar.medium.com/?source=post_page-----3237d20f356f--------------------------------)[![Ani Madurkar](../Images/ad54a9e110c56ba1f4c7f5ce0bc7d7e4.png)](https://animadurkar.medium.com/?source=post_page-----3237d20f356f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3237d20f356f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3237d20f356f--------------------------------) [Ani Madurkar](https://animadurkar.medium.com/?source=post_page-----3237d20f356f--------------------------------)
+[](https://animadurkar.medium.com/?source=post_page-----3237d20f356f--------------------------------)![Ani Madurkar](https://animadurkar.medium.com/?source=post_page-----3237d20f356f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3237d20f356f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3237d20f356f--------------------------------) [Ani Madurkar](https://animadurkar.medium.com/?source=post_page-----3237d20f356f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc9b0adccc01d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f&user=Ani+Madurkar&userId=c9b0adccc01d&source=post_page-c9b0adccc01d----3237d20f356f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3237d20f356f--------------------------------) ·13 min 阅读·2023年1月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3237d20f356f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f&user=Ani+Madurkar&userId=c9b0adccc01d&source=-----3237d20f356f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc9b0adccc01d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f&user=Ani+Madurkar&userId=c9b0adccc01d&source=post_page-c9b0adccc01d----3237d20f356f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3237d20f356f--------------------------------) ·13 min 阅读·2023 年 1 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3237d20f356f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f&user=Ani+Madurkar&userId=c9b0adccc01d&source=-----3237d20f356f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3237d20f356f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f&source=-----3237d20f356f---------------------bookmark_footer-----------)![](../Images/f16ee43558a59e710ebdc4d7bbe93878.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3237d20f356f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-some-of-the-worst-parts-of-being-a-data-scientist-3237d20f356f&source=-----3237d20f356f---------------------bookmark_footer-----------)![](img/f16ee43558a59e710ebdc4d7bbe93878.png)
 
 图片由作者提供
 

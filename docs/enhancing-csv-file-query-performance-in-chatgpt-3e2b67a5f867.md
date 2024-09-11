@@ -1,14 +1,14 @@
 # 提升 ChatGPT 中 CSV 文件查询性能
 
-> 原文：[https://towardsdatascience.com/enhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867?source=collection_archive---------1-----------------------#2023-07-31](https://towardsdatascience.com/enhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867?source=collection_archive---------1-----------------------#2023-07-31)
+> 原文：[`towardsdatascience.com/enhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867?source=collection_archive---------1-----------------------#2023-07-31`](https://towardsdatascience.com/enhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867?source=collection_archive---------1-----------------------#2023-07-31)
 
 ## 基于自定义 CSV 加载器的 LangChain 自查询
 
-[](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)[![Shuyang Xiang](../Images/36a5fd18fd9b7b88cb41094f09b83882.png)](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------) [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)
+[](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)![Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------) [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----3e2b67a5f867---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------) · 9分钟阅读 · 2023年7月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e2b67a5f867&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----3e2b67a5f867---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----3e2b67a5f867---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------) · 9 分钟阅读 · 2023 年 7 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e2b67a5f867&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----3e2b67a5f867---------------------clap_footer-----------)
 
 --
 
@@ -16,19 +16,19 @@
 
 高级语言模型的出现，如 ChatGPT，为查询表格数据带来了新颖而有前途的方法。然而，由于令牌限制，直接执行查询变得具有挑战性，尤其是在没有像检索器这样的 API 协助的情况下。因此，查询的准确性严重依赖于查询的质量，标准检索器往往无法返回所需的确切信息。
 
-在这篇文章中，我将*深入探讨*传统检索方法在某些使用案例中失败的原因。此外，我们提出了一种革命性解决方案，即一种自定义的CSV数据加载器，它整合了元数据。通过利用[LangChain](https://python.langchain.com/docs/get_started/introduction.html)的自查询API及新CSV数据加载器，我们可以以显著提高的性能和精度提取信息。
+在这篇文章中，我将*深入探讨*传统检索方法在某些使用案例中失败的原因。此外，我们提出了一种革命性解决方案，即一种自定义的 CSV 数据加载器，它整合了元数据。通过利用[LangChain](https://python.langchain.com/docs/get_started/introduction.html)的自查询 API 及新 CSV 数据加载器，我们可以以显著提高的性能和精度提取信息。
 
-有关本文中使用的详细代码，请查看[这里](https://github.com/ShuyangenFrance/ChatGPTCSV/blob/main/self-querying.ipynb)的笔记本。我想强调的是，这个笔记本展示了**使用LLM查询大型表格数据可以实现显著准确性**的可能性。
+有关本文中使用的详细代码，请查看[这里](https://github.com/ShuyangenFrance/ChatGPTCSV/blob/main/self-querying.ipynb)的笔记本。我想强调的是，这个笔记本展示了**使用 LLM 查询大型表格数据可以实现显著准确性**的可能性。
 
 # 在疾病人口数据集上的检索
 
-我们希望查询作者创建的以下合成SIR数据集：我们基于一个简单的[SIR模型](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology)模拟10个城市在90天内的三组人口。为了简单起见，我们假设每个城市的人口范围从5e3到2e4，并且城市之间没有人口流动。此外，我们生成了十个介于500到2000之间的随机整数作为原始感染人数。
+我们希望查询作者创建的以下合成 SIR 数据集：我们基于一个简单的[SIR 模型](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology)模拟 10 个城市在 90 天内的三组人口。为了简单起见，我们假设每个城市的人口范围从 5e3 到 2e4，并且城市之间没有人口流动。此外，我们生成了十个介于 500 到 2000 之间的随机整数作为原始感染人数。
 
-![](../Images/07fc21dc197c3e04df872fb527f72224.png)
+![](img/07fc21dc197c3e04df872fb527f72224.png)
 
-作者提供的图像：10个城市的疾病人口
+作者提供的图像：10 个城市的疾病人口
 
-表格的形式如下，有五列：“time”表示测量人口的时间，“city”表示测量数据的城市，“susceptible”、“infectious”和“removed”表示人口的三组。为了简单起见，数据已保存为本地CSV文件。
+表格的形式如下，有五列：“time”表示测量人口的时间，“city”表示测量数据的城市，“susceptible”、“infectious”和“removed”表示人口的三组。为了简单起见，数据已保存为本地 CSV 文件。
 
 ```py
 time susceptible infectious removed city
@@ -39,11 +39,11 @@ time susceptible infectious removed city
 4 2018-01-05 214 12046 5017 city0
 ```
 
-我们希望向ChatGPT提出与数据集相关的问题。为了让ChatGPT与这种表格数据交互，我们按照以下标准步骤使用LangChain：
+我们希望向 ChatGPT 提出与数据集相关的问题。为了让 ChatGPT 与这种表格数据交互，我们按照以下标准步骤使用 LangChain：
 
-1.  使用CSVLoader加载数据，
+1.  使用 CSVLoader 加载数据，
 
-1.  创建一个vectorstore（我们这里使用Chroma）来存储带有OpenAI嵌入的嵌入数据，
+1.  创建一个 vectorstore（我们这里使用 Chroma）来存储带有 OpenAI 嵌入的嵌入数据，
 
 1.  使用检索器返回与给定非结构化查询相关的文档。
 
@@ -62,7 +62,7 @@ vectorstore = Chroma.from_documents(data, embeddings)
 retriever=vectorstore.as_retriever(search_kwargs={"k": 20})
 ```
 
-我们现在可以定义一个*ConversationalRetriverChain*来查询SIR数据集。
+我们现在可以定义一个*ConversationalRetriverChain*来查询 SIR 数据集。
 
 ```py
 llm=ChatOpenAI(model_name="gpt-4",temperature=0)
@@ -88,17 +88,17 @@ memory = ConversationBufferMemory(memory_key="chat_history", return_messages=Tru
 qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), return_source_documents=False,combine_docs_chain_kwargs={"prompt": qa_prompt},memory=memory,verbose=True)
 ```
 
-在上述代码中，我定义了一个对话链，它将使用在上一步中定义的检索器在SIR数据集中搜索查询的相关信息，并根据检索到的信息给出答案。为了给ChatGPT更清晰的指示，我还给出了一个提示，说明了数据集中所有列的定义。
+在上述代码中，我定义了一个对话链，它将使用在上一步中定义的检索器在 SIR 数据集中搜索查询的相关信息，并根据检索到的信息给出答案。为了给 ChatGPT 更清晰的指示，我还给出了一个提示，说明了数据集中所有列的定义。
 
-现在我们来问一个简单的问题：“2018年2月3日哪个城市的感染人数最多？”
+现在我们来问一个简单的问题：“2018 年 2 月 3 日哪个城市的感染人数最多？”
 
-出乎意料的是，我们的聊天机器人说：“提供的数据集中不包括2018年2月3日的数据。”
+出乎意料的是，我们的聊天机器人说：“提供的数据集中不包括 2018 年 2 月 3 日的数据。”
 
 这怎么可能？
 
 # 为什么检索失败了？
 
-为了调查聊天机器人为何未能回答一个其答案仅存在于提供的数据集中的问题，我查看了它用问题“2018年2月3日哪个城市的传染病人数最多？”检索到的相关文档。我得到了以下几行：
+为了调查聊天机器人为何未能回答一个其答案仅存在于提供的数据集中的问题，我查看了它用问题“2018 年 2 月 3 日哪个城市的传染病人数最多？”检索到的相关文档。我得到了以下几行：
 
 ```py
 [Document(page_content=': 31\ntime: 2018-02-01\nsusceptible: 0\ninfectious: 1729\nremoved: 35608\ncity: city3', metadata={'source': 'sir.csv', 'row': 301}),
@@ -123,17 +123,17 @@ qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_ret
  Document(page_content=': 15\ntime: 2018-01-16\nsusceptible: 1\ninfectious: 6350\nremoved: 20708\ncity: city9', metadata={'source': 'sir.csv', 'row': 825})]
 ```
 
-令人惊讶的是，尽管我明确要求了解2018年2月3日发生了什么，但没有返回该日期的任何行。由于该日期的信息从未发送给ChatGPT，因此当然毫无疑问它无法回答这样的问题。
+令人惊讶的是，尽管我明确要求了解 2018 年 2 月 3 日发生了什么，但没有返回该日期的任何行。由于该日期的信息从未发送给 ChatGPT，因此当然毫无疑问它无法回答这样的问题。
 
-深入研究检索器的[源代码](https://github.com/langchain-ai/langchain/blob/df40cd233f0690c1fc82d6fc0a1d25afdd7fdd42/langchain/vectorstores/base.py#L393-L398)，我们可以看到*get_relevant_dcouments*默认调用*similarity_search*。该方法根据计算的距离度量（默认使用[余弦距离](https://en.wikipedia.org/wiki/Cosine_similarity)）返回前n个片段（默认4个，但我在代码中将数量设置为20），这些片段的距离范围从0到1，用于测量查询向量与文档片段向量之间的“相似性”。
+深入研究检索器的[源代码](https://github.com/langchain-ai/langchain/blob/df40cd233f0690c1fc82d6fc0a1d25afdd7fdd42/langchain/vectorstores/base.py#L393-L398)，我们可以看到*get_relevant_dcouments*默认调用*similarity_search*。该方法根据计算的距离度量（默认使用[余弦距离](https://en.wikipedia.org/wiki/Cosine_similarity)）返回前 n 个片段（默认 4 个，但我在代码中将数量设置为 20），这些片段的距离范围从 0 到 1，用于测量查询向量与文档片段向量之间的“相似性”。
 
-回到SIR数据集，我们注意到**每行几乎讲述了相同的故事**：哪个日期、哪个城市、以及多少人被标记为哪个组。毫不奇怪，代表这些行的向量彼此相似。快速检查相似度得分发现很多行的得分接近0.29。
+回到 SIR 数据集，我们注意到**每行几乎讲述了相同的故事**：哪个日期、哪个城市、以及多少人被标记为哪个组。毫不奇怪，代表这些行的向量彼此相似。快速检查相似度得分发现很多行的得分接近 0.29。
 
 因此，相似度得分不足以区分行与查询的相关性：这在表格数据中总是如此，因为行之间没有显著差异。**我们需要更强的过滤器来处理元数据。**
 
-# 带有自定义元数据的CSVLoader
+# 带有自定义元数据的 CSVLoader
 
-显然，聊天机器人的性能提升在很大程度上依赖于检索器的效率。为此，我们首先定义了一个自定义的CSVLoader，它可以将元数据与检索器进行通信。
+显然，聊天机器人的性能提升在很大程度上依赖于检索器的效率。为此，我们首先定义了一个自定义的 CSVLoader，它可以将元数据与检索器进行通信。
 
 我们编写了以下代码：
 
@@ -188,7 +188,7 @@ class MetaDataCSVLoader(BaseLoader):
         return docs
 ```
 
-为节省空间，我省略了与原始API相同的代码，仅包含了主要用于将需要特别注意的某些列写入元数据的附加几行代码。确实，在上面的打印数据中，你可以注意到两个部分：页面内容和元数据。标准CSVLoader将表格的所有列写入页面内容，只将数据资源和行号写入元数据。定义的“MetaDataCSVLoader”允许我们将其他列写入元数据。
+为节省空间，我省略了与原始 API 相同的代码，仅包含了主要用于将需要特别注意的某些列写入元数据的附加几行代码。确实，在上面的打印数据中，你可以注意到两个部分：页面内容和元数据。标准 CSVLoader 将表格的所有列写入页面内容，只将数据资源和行号写入元数据。定义的“MetaDataCSVLoader”允许我们将其他列写入元数据。
 
 现在我们重新创建向量存储，步骤与上述章节相同，只是数据加载器中添加了两个元数据列“time”和“city”。
 
@@ -200,11 +200,11 @@ data = loader.load()
 
 # 自查询元数据通知的向量存储
 
-现在我们准备使用LangChain的[SelfQuerying API](https://js.langchain.com/docs/modules/data_connection/retrievers/how_to/self_query/)：
+现在我们准备使用 LangChain 的[SelfQuerying API](https://js.langchain.com/docs/modules/data_connection/retrievers/how_to/self_query/)：
 
 根据 LangChain 的文档：自查询检索器顾名思义，就是可以对自身进行查询的检索器。… 这使得检索器不仅可以使用用户输入的查询与存储文档的内容进行语义相似性比较，还可以从用户查询中提取关于存储文档的元数据的过滤器，并执行这些过滤器。
 
-![](../Images/c80238ccb42251d10b5d1c3e53533d3c.png)
+![](img/c80238ccb42251d10b5d1c3e53533d3c.png)
 
 图片来源于 LangChain：自查询示意图
 
@@ -230,9 +230,9 @@ retriever = SelfQueryRetriever.from_llm(
 )
 ```
 
-我们现在可以定义一个类似的*ConversationalRetriverChain*来查询SIR数据集，但这次使用*SelfQueryRetriever*。让我们看看当我们问同样的问题时会发生什么：“2018年2月3日哪个城市传染人数最多？”
+我们现在可以定义一个类似的*ConversationalRetriverChain*来查询 SIR 数据集，但这次使用*SelfQueryRetriever*。让我们看看当我们问同样的问题时会发生什么：“2018 年 2 月 3 日哪个城市传染人数最多？”
 
-聊天机器人说：“2018年2月3日传染人数最多的城市是 city3，传染人数为1413。”
+聊天机器人说：“2018 年 2 月 3 日传染人数最多的城市是 city3，传染人数为 1413。”
 
 各位女士们先生们，结果是正确的！聊天机器人在使用更好的检索器时表现更好！
 
@@ -255,4 +255,4 @@ retriever = SelfQueryRetriever.from_llm(
 
 # 结论
 
-在这篇博客文章中，我探讨了 ChatGPT 在查询 CSV 格式数据集时的局限性，以10个城市的SIR数据集在90天内为例。为了应对这些局限性，我提出了一种新方法：**一种感知元数据的CSV数据加载器，使我们能够利用自查询API，显著提高聊天机器人的准确性和性能。**
+在这篇博客文章中，我探讨了 ChatGPT 在查询 CSV 格式数据集时的局限性，以 10 个城市的 SIR 数据集在 90 天内为例。为了应对这些局限性，我提出了一种新方法：**一种感知元数据的 CSV 数据加载器，使我们能够利用自查询 API，显著提高聊天机器人的准确性和性能。**

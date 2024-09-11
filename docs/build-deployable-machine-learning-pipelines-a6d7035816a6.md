@@ -1,18 +1,18 @@
 # 构建可部署的机器学习管道
 
-> 原文：[https://towardsdatascience.com/build-deployable-machine-learning-pipelines-a6d7035816a6?source=collection_archive---------8-----------------------#2023-06-30](https://towardsdatascience.com/build-deployable-machine-learning-pipelines-a6d7035816a6?source=collection_archive---------8-----------------------#2023-06-30)
+> 原文：[`towardsdatascience.com/build-deployable-machine-learning-pipelines-a6d7035816a6?source=collection_archive---------8-----------------------#2023-06-30`](https://towardsdatascience.com/build-deployable-machine-learning-pipelines-a6d7035816a6?source=collection_archive---------8-----------------------#2023-06-30)
 
 ## 利用 Kedro 构建生产就绪的机器学习管道
 
-[](https://johnadeojo.medium.com/?source=post_page-----a6d7035816a6--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----a6d7035816a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6d7035816a6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a6d7035816a6--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----a6d7035816a6--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----a6d7035816a6--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----a6d7035816a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6d7035816a6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6d7035816a6--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----a6d7035816a6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-deployable-machine-learning-pipelines-a6d7035816a6&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----a6d7035816a6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6d7035816a6--------------------------------) · 8 min read · 2023年6月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa6d7035816a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-deployable-machine-learning-pipelines-a6d7035816a6&user=John+Adeojo&userId=f933e1637e40&source=-----a6d7035816a6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-deployable-machine-learning-pipelines-a6d7035816a6&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----a6d7035816a6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6d7035816a6--------------------------------) · 8 min read · 2023 年 6 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa6d7035816a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-deployable-machine-learning-pipelines-a6d7035816a6&user=John+Adeojo&userId=f933e1637e40&source=-----a6d7035816a6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6d7035816a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-deployable-machine-learning-pipelines-a6d7035816a6&source=-----a6d7035816a6---------------------bookmark_footer-----------)![](../Images/ec434ef42ac9cdfcc488fd5ed7688ab9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6d7035816a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-deployable-machine-learning-pipelines-a6d7035816a6&source=-----a6d7035816a6---------------------bookmark_footer-----------)![](img/ec434ef42ac9cdfcc488fd5ed7688ab9.png)
 
 作者提供的图像：由 Midjourney 生成
 

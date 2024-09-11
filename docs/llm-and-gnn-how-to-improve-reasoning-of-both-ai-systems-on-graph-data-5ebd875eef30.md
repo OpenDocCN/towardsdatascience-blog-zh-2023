@@ -1,12 +1,12 @@
 # LLM 和 GNN：如何提升这两种人工智能系统在图数据上的推理能力
 
-> 原文：[https://towardsdatascience.com/llm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30?source=collection_archive---------1-----------------------#2023-12-03](https://towardsdatascience.com/llm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30?source=collection_archive---------1-----------------------#2023-12-03)
+> 原文：[`towardsdatascience.com/llm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30?source=collection_archive---------1-----------------------#2023-12-03`](https://towardsdatascience.com/llm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30?source=collection_archive---------1-----------------------#2023-12-03)
 
-[](https://medium.com/@alcarazanthony1?source=post_page-----5ebd875eef30--------------------------------)[![Anthony Alcaraz](../Images/6a71a1752677bd07c384246fb0c7f7e8.png)](https://medium.com/@alcarazanthony1?source=post_page-----5ebd875eef30--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ebd875eef30--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ebd875eef30--------------------------------) [Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----5ebd875eef30--------------------------------)
+[](https://medium.com/@alcarazanthony1?source=post_page-----5ebd875eef30--------------------------------)![Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----5ebd875eef30--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ebd875eef30--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ebd875eef30--------------------------------) [Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----5ebd875eef30--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bc9ffd2f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=post_page-30bc9ffd2f4b----5ebd875eef30---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ebd875eef30--------------------------------) ·9分钟阅读·2023年12月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ebd875eef30&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=-----5ebd875eef30---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F30bc9ffd2f4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=post_page-30bc9ffd2f4b----5ebd875eef30---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ebd875eef30--------------------------------) ·9 分钟阅读·2023 年 12 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ebd875eef30&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-and-gnn-how-to-improve-reasoning-of-both-ai-systems-on-graph-data-5ebd875eef30&user=Anthony+Alcaraz&userId=30bc9ffd2f4b&source=-----5ebd875eef30---------------------clap_footer-----------)
 
 --
 
@@ -20,8 +20,8 @@
 
 本文探讨了集成图-语言架构，这些架构结合了图神经网络（GNNs）和大型语言模型（LLMs）的互补优势，以增强分析能力。
 
-现实世界的场景通常涉及结构和文本模式相互关联的数据。这就提出了需要集成架构的需求，这种架构能够通过统一GNNs和LLMs的互补优势来执行多方面的推理。
+现实世界的场景通常涉及结构和文本模式相互关联的数据。这就提出了需要集成架构的需求，这种架构能够通过统一 GNNs 和 LLMs 的互补优势来执行多方面的推理。
 
-具体来说，尽管GNNs通过图上的消息传递来聚合局部模式，但节点嵌入在捕捉丰富特征方面存在限制。
+具体来说，尽管 GNNs 通过图上的消息传递来聚合局部模式，但节点嵌入在捕捉丰富特征方面存在限制。
 
-相比之下，LLMs表现出卓越的语义推理能力，但在对GNNs固有理解的结构拓扑进行关系推理时却表现不佳。
+相比之下，LLMs 表现出卓越的语义推理能力，但在对 GNNs 固有理解的结构拓扑进行关系推理时却表现不佳。

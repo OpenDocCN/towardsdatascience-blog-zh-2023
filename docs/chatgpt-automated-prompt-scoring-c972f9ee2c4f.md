@@ -1,20 +1,20 @@
 # ChatGPT：自动化提示评分
 
-> 原文：[https://towardsdatascience.com/chatgpt-automated-prompt-scoring-c972f9ee2c4f?source=collection_archive---------4-----------------------#2023-04-10](https://towardsdatascience.com/chatgpt-automated-prompt-scoring-c972f9ee2c4f?source=collection_archive---------4-----------------------#2023-04-10)
+> 原文：[`towardsdatascience.com/chatgpt-automated-prompt-scoring-c972f9ee2c4f?source=collection_archive---------4-----------------------#2023-04-10`](https://towardsdatascience.com/chatgpt-automated-prompt-scoring-c972f9ee2c4f?source=collection_archive---------4-----------------------#2023-04-10)
 
-![](../Images/1b9b1e6bc46d2e359537b4b1d0aff68d.png)
+![](img/1b9b1e6bc46d2e359537b4b1d0aff68d.png)
 
-此图像的创作得益于DALL·E 2的帮助。
+此图像的创作得益于 DALL·E 2 的帮助。
 
 ## 指南
 
-## 如何使用Python客观选择和改进你的ChatGPT提示
+## 如何使用 Python 客观选择和改进你的 ChatGPT 提示
 
-[](https://michael-malin.medium.com/?source=post_page-----c972f9ee2c4f--------------------------------)[![Michael Malin](../Images/070604c68a50e8f2996f2c8837df3ec9.png)](https://michael-malin.medium.com/?source=post_page-----c972f9ee2c4f--------------------------------) [](https://towardsdatascience.com/?source=post_page-----c972f9ee2c4f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c972f9ee2c4f--------------------------------) [Michael Malin](https://michael-malin.medium.com/?source=post_page-----c972f9ee2c4f--------------------------------)
+[](https://michael-malin.medium.com/?source=post_page-----c972f9ee2c4f--------------------------------)![Michael Malin](https://michael-malin.medium.com/?source=post_page-----c972f9ee2c4f--------------------------------) [](https://towardsdatascience.com/?source=post_page-----c972f9ee2c4f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c972f9ee2c4f--------------------------------) [Michael Malin](https://michael-malin.medium.com/?source=post_page-----c972f9ee2c4f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8225885ee2a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-automated-prompt-scoring-c972f9ee2c4f&user=Michael+Malin&userId=8225885ee2a7&source=post_page-8225885ee2a7----c972f9ee2c4f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c972f9ee2c4f--------------------------------) ·10分钟阅读·2023年4月10日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc972f9ee2c4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-automated-prompt-scoring-c972f9ee2c4f&user=Michael+Malin&userId=8225885ee2a7&source=-----c972f9ee2c4f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8225885ee2a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-automated-prompt-scoring-c972f9ee2c4f&user=Michael+Malin&userId=8225885ee2a7&source=post_page-8225885ee2a7----c972f9ee2c4f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c972f9ee2c4f--------------------------------) ·10 分钟阅读·2023 年 4 月 10 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc972f9ee2c4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchatgpt-automated-prompt-scoring-c972f9ee2c4f&user=Michael+Malin&userId=8225885ee2a7&source=-----c972f9ee2c4f---------------------clap_footer-----------)
 
 --
 

@@ -1,24 +1,24 @@
 # 当机器学习出现错误时，这意味着什么？
 
-> 原文：[https://towardsdatascience.com/what-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697?source=collection_archive---------2-----------------------#2023-09-17](https://towardsdatascience.com/what-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697?source=collection_archive---------2-----------------------#2023-09-17)
+> 原文：[`towardsdatascience.com/what-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697?source=collection_archive---------2-----------------------#2023-09-17`](https://towardsdatascience.com/what-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697?source=collection_archive---------2-----------------------#2023-09-17)
 
 ## 我们对“错误”的定义在机器学习/人工智能领域是否合理？如果不合理，为什么？
 
-[](https://medium.com/@s.kirmer?source=post_page-----37b213200697--------------------------------)[![Stephanie Kirmer](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----37b213200697--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37b213200697--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----37b213200697--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----37b213200697--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----37b213200697--------------------------------)![Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----37b213200697--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37b213200697--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b213200697--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----37b213200697--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----37b213200697---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b213200697--------------------------------) · 11分钟阅读 · 2023年9月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37b213200697&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----37b213200697---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----37b213200697---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b213200697--------------------------------) · 11 分钟阅读 · 2023 年 9 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37b213200697&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----37b213200697---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37b213200697&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697&source=-----37b213200697---------------------bookmark_footer-----------)![](../Images/f53d085f3208ccdbd80d9f536cade3d6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37b213200697&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-mean-when-machine-learning-makes-a-mistake-37b213200697&source=-----37b213200697---------------------bookmark_footer-----------)![](img/f53d085f3208ccdbd80d9f536cade3d6.png)
 
 图片来源：[Kind and Curious](https://unsplash.com/@kindandcurious?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-我最近关于机器学习公众认知的帖子中有一个评论让我思考机器学习中“错误”的含义。读者问我是否认为机器学习模型会一直“犯错误”。正如我在那篇帖子中所描述的，人们有很强的倾向将机器学习模型拟人化。当我们与LLM聊天机器人互动时，我们会运用从与其他人交流中学到的技巧——说服、措辞、论证等。然而，这通常效果不好，最终会导致不满意的回应。
+我最近关于机器学习公众认知的帖子中有一个评论让我思考机器学习中“错误”的含义。读者问我是否认为机器学习模型会一直“犯错误”。正如我在那篇帖子中所描述的，人们有很强的倾向将机器学习模型拟人化。当我们与 LLM 聊天机器人互动时，我们会运用从与其他人交流中学到的技巧——说服、措辞、论证等。然而，这通常效果不好，最终会导致不满意的回应。
 
-在我自己日常的工作中，我也会看到与分类器和回归模型相关的类似问题。我和我的团队花费了大量的时间和精力来帮助客户和同事理解机器学习并不完美（而且现实中也永远不会完美）。“为什么模型说X，而事实是X-5？”是一个永恒的主题。我不完全责怪提问者，因为正如我在上一篇文章中所写，我们广泛的机器学习社区在教授基础机器学习素养方面做得不够好。
+在我自己日常的工作中，我也会看到与分类器和回归模型相关的类似问题。我和我的团队花费了大量的时间和精力来帮助客户和同事理解机器学习并不完美（而且现实中也永远不会完美）。“为什么模型说 X，而事实是 X-5？”是一个永恒的主题。我不完全责怪提问者，因为正如我在上一篇文章中所写，我们广泛的机器学习社区在教授基础机器学习素养方面做得不够好。
 
 但这提出了一个核心问题，我们需要更多的探讨才能真正解决这个素养问题。
 
@@ -30,11 +30,11 @@
 
 从一个非常、非常通用的角度来看，机器学习模型是一个接受一些输入或提示并返回某种概率确定的响应的算法。它决定响应应该是什么的方式可能会有很大差异——它可能使用决策树、神经网络、线性回归或其他任何类型的机器学习方法。
 
-要创建一个模型，我们从反映我们寻找结果的样本数据开始。输入样本可以是各种各样的东西——对于生成式AI，它们可能是大量的人类书写的文本、音乐或图像。对于其他类型的机器学习，它们可能是包含对象特征的大型数据集，或者将图像或文本等分类到类别中的数据集，或更多。
+要创建一个模型，我们从反映我们寻找结果的样本数据开始。输入样本可以是各种各样的东西——对于生成式 AI，它们可能是大量的人类书写的文本、音乐或图像。对于其他类型的机器学习，它们可能是包含对象特征的大型数据集，或者将图像或文本等分类到类别中的数据集，或更多。
 
 有时候，这些回应会被“标记”以便模型学习哪些是可取的，哪些不是，或者哪些属于特定类别，哪些不属于。其他时候，模型会学习底层样本中的模式，并形成自己对这些模式的理解，以复制输入的特征、在选项之间做出选择、将输入分组或进行其他活动。
 
-# 生成式AI模型的训练方式
+# 生成式 AI 模型的训练方式
 
 我们训练生成模型的方式是特定的，比训练一个简单的概率模型要复杂得多。相反，这些模型是估计许多不同元素的概率，并将它们组合在一起以生成响应。以下是我们进行这种训练的一些非常简单的解释。（这些都是极度的过度简化，请原谅细节的缺乏和任何概括。）
 
@@ -74,23 +74,23 @@
 
 这意味着当我们想要定义模型是否成功时，这一过程是明确和简单的。在做出这个判断之后，我们可以探讨模型为何会有这样的表现——这就是在该领域中所说的“模型可解释性”或“模型解释性”。
 
-# 但对于LLMs（大语言模型）呢？
+# 但对于 LLMs（大语言模型）呢？
 
-这个整体框架对像LLM这样的东西意味着什么？谁是ChatGPT的用户？（你刚刚在脑海里回答“每个人”了吗？）当模型的输出可以像LLM那样复杂和多样时，我们开始产生疑问。
+这个整体框架对像 LLM 这样的东西意味着什么？谁是 ChatGPT 的用户？（你刚刚在脑海里回答“每个人”了吗？）当模型的输出可以像 LLM 那样复杂和多样时，我们开始产生疑问。
 
-对于那些构建生成性AI模型的数据科学家来说，虽然他们可能采用不同的训练方法，但我们通常始终尝试创造尽可能接近训练数据的内容，这些数据通常是由人类或自然生成的。为了实现这一目标，模型是通过人类或自然产生的样本内容进行训练的。我们尽力给模型一个数学方式来理解这些内容为何感觉“真实”，以便它可以复制这一点。这就是生成性AI模型能够创造效率并使某些人类工作变得过时的方式。
+对于那些构建生成性 AI 模型的数据科学家来说，虽然他们可能采用不同的训练方法，但我们通常始终尝试创造尽可能接近训练数据的内容，这些数据通常是由人类或自然生成的。为了实现这一目标，模型是通过人类或自然产生的样本内容进行训练的。我们尽力给模型一个数学方式来理解这些内容为何感觉“真实”，以便它可以复制这一点。这就是生成性 AI 模型能够创造效率并使某些人类工作变得过时的方式。
 
-> 对于那些构建生成性AI模型的数据科学家来说，目标是创造尽可能接近训练数据的内容，这些数据通常是由人类或自然生成的。
+> 对于那些构建生成性 AI 模型的数据科学家来说，目标是创造尽可能接近训练数据的内容，这些数据通常是由人类或自然生成的。
 
-这些模型在这方面做得非常出色！然而，这也带来了一些陷阱。由于LLM模型在模仿人类回应方面非常逼真，用户在思维上容易把它们当作人来看待。这就像孩子学习动物的方式——你教孩子说一只有四条腿和湿鼻子的毛茸茸的动物是狗，但当你把一只猫放在他们面前时，他们会倾向于认为那也是狗，因为基本特征似乎非常相似。只有当你解释猫是另一种动物时，他们才开始理解差异并建立不同的心理模型。
+这些模型在这方面做得非常出色！然而，这也带来了一些陷阱。由于 LLM 模型在模仿人类回应方面非常逼真，用户在思维上容易把它们当作人来看待。这就像孩子学习动物的方式——你教孩子说一只有四条腿和湿鼻子的毛茸茸的动物是狗，但当你把一只猫放在他们面前时，他们会倾向于认为那也是狗，因为基本特征似乎非常相似。只有当你解释猫是另一种动物时，他们才开始理解差异并建立不同的心理模型。
 
 > 由于这些模型在模仿人类回应方面非常逼真，用户在思维上容易把它们当作人来看待。
 
-目前，我认为大多数公众仍在建立不同的心理模型，以区分LLM和人类。（正如我之前所写，数据科学家需要像大人一样解释狗和猫的不同，以继续这个比喻。）
+目前，我认为大多数公众仍在建立不同的心理模型，以区分 LLM 和人类。（正如我之前所写，数据科学家需要像大人一样解释狗和猫的不同，以继续这个比喻。）
 
-不过我稍微跑题了。这真正意味着与一个非常基础的模型（例如房价）互动的人理解这是一个有限的算法。它更像一个电子表格公式，而不像一个人，这塑造了我们的期望。但当我们使用ChatGPT时，它带有许多人类在线聊天的特征，这影响了我们。我们开始期望陈述总是准确的，结果包括连贯的批判性思维，并且期望从模型中检索到今天新闻的事实，即使它是去年训练的。
+不过我稍微跑题了。这真正意味着与一个非常基础的模型（例如房价）互动的人理解这是一个有限的算法。它更像一个电子表格公式，而不像一个人，这塑造了我们的期望。但当我们使用 ChatGPT 时，它带有许多人类在线聊天的特征，这影响了我们。我们开始期望陈述总是准确的，结果包括连贯的批判性思维，并且期望从模型中检索到今天新闻的事实，即使它是去年训练的。
 
-> [P]与一个非常基础的模型互动的人理解这是一个有限的算法。……但当我们使用ChatGPT时，它带有许多人类在线聊天的特征，这影响了我们。
+> [P]与一个非常基础的模型互动的人理解这是一个有限的算法。……但当我们使用 ChatGPT 时，它带有许多人类在线聊天的特征，这影响了我们。
 
 在模型结果中出现批判性思维的迹象，是因为模型学会了我们从真实人类来源中解释为“批判性思维”的文本排列听起来更“人类”，因此它模仿这些排列以达到这一目的。当我们与人交谈时，我们会从他们说的话中推断出他们正在进行批判性思维。然而，我们不能用机器学习来做到这一点。
 
@@ -100,7 +100,7 @@
 > 
 > 2\. 一种量化衡量模型是否接近其目标的方式。
 
-对于生成式 AI，包括但不限于大语言模型，我们在第1点上存在问题，部分原因是目标实际上并不清晰（“返回与人类产生的内容无法区分的材料”），但主要原因是数据科学家确实没有成功地向用户传达这个目标。数据科学家在这些模型上达到了第2点，因为他们使用复杂的数学系统来教模型何时生成足够“真实”或类似人类的内容。然而，对于普通用户来说，这要困难得多。判断模型是否做得好的过程更像是评分论文，而不是检查数学问题的结果。主观性悄然渗入。
+对于生成式 AI，包括但不限于大语言模型，我们在第 1 点上存在问题，部分原因是目标实际上并不清晰（“返回与人类产生的内容无法区分的材料”），但主要原因是数据科学家确实没有成功地向用户传达这个目标。数据科学家在这些模型上达到了第 2 点，因为他们使用复杂的数学系统来教模型何时生成足够“真实”或类似人类的内容。然而，对于普通用户来说，这要困难得多。判断模型是否做得好的过程更像是评分论文，而不是检查数学问题的结果。主观性悄然渗入。
 
 即使测量更为简单，我仍然坚决认为，即使是一些技术娴熟且受过高等教育的用户，也未必真正清楚这些模型已经训练成什么样，因此也无法知道什么是现实的期望，什么不是。因此，对于模型而言完全合适的结果，比如一个流畅、雄辩、完美“人类风格”的段落描述月亮是由绿色奶酪制成的，也会被视为“错误”。然而这并不是错误——这个输出达到了它的训练目标——这也是我们许多困惑的根源。
 
@@ -122,7 +122,7 @@ techcrunch.com](https://techcrunch.com/2023/09/04/are-language-models-doomed-to-
 
 www.cloudskillsboost.google](https://www.cloudskillsboost.google/journeys/118?source=post_page-----37b213200697--------------------------------)
 
-Garon, Jon M., 《生成式 AI、合成媒体及最新媒体中的信息实用入门》 (2023年3月14日)。可在 SSRN 上获取：[https://ssrn.com/abstract=4388437](https://ssrn.com/abstract=4388437) 或 [http://dx.doi.org/10.2139/ssrn.4388437](https://dx.doi.org/10.2139/ssrn.4388437)
+Garon, Jon M., 《生成式 AI、合成媒体及最新媒体中的信息实用入门》 (2023 年 3 月 14 日)。可在 SSRN 上获取：[`ssrn.com/abstract=4388437`](https://ssrn.com/abstract=4388437) 或 [`dx.doi.org/10.2139/ssrn.4388437`](https://dx.doi.org/10.2139/ssrn.4388437)
 
 *查看更多我的工作请访问* [*www.stephaniekirmer.com*](http://www.stephaniekirmer.com/)*.*
 

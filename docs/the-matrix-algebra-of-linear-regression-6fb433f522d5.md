@@ -1,18 +1,18 @@
 # 线性回归的矩阵代数
 
-> 原文：[https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-6fb433f522d5?source=collection_archive---------3-----------------------#2023-05-03](https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-6fb433f522d5?source=collection_archive---------3-----------------------#2023-05-03)
+> 原文：[`towardsdatascience.com/the-matrix-algebra-of-linear-regression-6fb433f522d5?source=collection_archive---------3-----------------------#2023-05-03`](https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-6fb433f522d5?source=collection_archive---------3-----------------------#2023-05-03)
 
 ## 查看线性回归背后的矩阵运算
 
-[](https://medium.com/@dataforyou?source=post_page-----6fb433f522d5--------------------------------)[![Rob Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----6fb433f522d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6fb433f522d5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6fb433f522d5--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----6fb433f522d5--------------------------------)
+[](https://medium.com/@dataforyou?source=post_page-----6fb433f522d5--------------------------------)![Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----6fb433f522d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6fb433f522d5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6fb433f522d5--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----6fb433f522d5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-6fb433f522d5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----6fb433f522d5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6fb433f522d5--------------------------------) ·11分钟阅读·2023年5月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6fb433f522d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-6fb433f522d5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----6fb433f522d5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-6fb433f522d5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----6fb433f522d5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6fb433f522d5--------------------------------) ·11 分钟阅读·2023 年 5 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6fb433f522d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-6fb433f522d5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----6fb433f522d5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6fb433f522d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-6fb433f522d5&source=-----6fb433f522d5---------------------bookmark_footer-----------)![](../Images/46a525be79cdfa66f016233756660562.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6fb433f522d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-6fb433f522d5&source=-----6fb433f522d5---------------------bookmark_footer-----------)![](img/46a525be79cdfa66f016233756660562.png)
 
 图片由 [Mingwei Lim](https://unsplash.com/@cmzw?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,7 +30,7 @@
 
 大多数人都对标准回归公式很熟悉，它将响应变量 *Y* 作为单个预测变量 *X* 的线性组合建模：
 
-![](../Images/10fec3de1e6596b67bdfb8735cde4992.png)
+![](img/10fec3de1e6596b67bdfb8735cde4992.png)
 
 线性回归方程（作者提供的图片）。
 
@@ -38,7 +38,7 @@
 
 首先，我们将所有响应放在一个 *n* 维的向量中，这个向量称为 *响应向量*：
 
-![](../Images/3e826f9d3b97b2f3360e9957ad25e81f.png)
+![](img/3e826f9d3b97b2f3360e9957ad25e81f.png)
 
 响应向量（作者提供的图片）。
 
@@ -46,7 +46,7 @@
 
 接下来，预测变量 *X* 被放置在一个 *n* × *p* 的矩阵中，称为设计矩阵：
 
-![](../Images/be8751ab79cbbcdc314506630441a5e9.png)
+![](img/be8751ab79cbbcdc314506630441a5e9.png)
 
 设计矩阵（作者提供的图片）。
 
@@ -54,7 +54,7 @@
 
 回归系数也被放置在一个 *p* × 1 的向量中，这个向量称为 *参数向量*：
 
-![](../Images/7bc5dde3b39840066299f01844d16f71.png)
+![](img/7bc5dde3b39840066299f01844d16f71.png)
 
 参数向量（作者提供的图像）。
 
@@ -62,13 +62,13 @@
 
 不过，在我们进行这些操作之前，还有最后一件事要做——将所有的误差项放入一个 *n* × 1 向量中：
 
-![](../Images/37954d9e73d10f2bfc8dfbae410aaf50.png)
+![](img/37954d9e73d10f2bfc8dfbae410aaf50.png)
 
 误差向量（作者提供的图像）。
 
 有了这些，我们现在可以使用矩阵符号来表示简单线性回归模型，如下所示：
 
-![](../Images/e9cfd5d551172af9b4d6c7c13fe0eefb.png)
+![](img/e9cfd5d551172af9b4d6c7c13fe0eefb.png)
 
 矩阵形式的线性回归模型（作者提供的图像）。
 
@@ -76,7 +76,7 @@
 
 用语言表述，线性回归模型的矩阵形式是两个矩阵 *X* 和 *β* 的乘积加上一个误差向量。*X* 和 *β* 的乘积是一个 *n* × 1 的矩阵，称为*线性预测器*，我在这里表示为：
 
-![](../Images/99504be4d07eea0e14233832c9a8a358.png)
+![](img/99504be4d07eea0e14233832c9a8a358.png)
 
 线性预测器向量（作者提供的图像）。
 
@@ -84,7 +84,7 @@
 
 如果我们有一个 *m* × *q* 矩阵 *A* 和另一个 *q* × *r* 矩阵 *B*，那么它们的乘积是一个 *m* × *r* 矩阵 *C*（注意 *q* 维度从结果中消失了）。这种大小变化的原因是，因为 *C* 中第 *i* 行第 *j* 列的元素是 *A* 中第 *i* 行和 *B* 中第 *j* 列的 *点积*：
 
-![](../Images/4b65503f8cd63f53a462cbe47d08e9bb.png)
+![](img/4b65503f8cd63f53a462cbe47d08e9bb.png)
 
 点积（作者提供的图像）。
 
@@ -92,7 +92,7 @@
 
 对于简单线性回归情况，乘积是一个 *n* × *p* 矩阵 *X* 和一个 *p* × 1 矩阵 *β* 之间的乘积，因此结果是一个 *n* × 1 矩阵 η。根据上述内容，η 中的（*i, j*）元素是使用以下点积计算的：
 
-![](../Images/b4f0289122ae5c6f93db018f43db2b39.png)
+![](img/b4f0289122ae5c6f93db018f43db2b39.png)
 
 扩展的线性预测器（作者提供的图像）。
 
@@ -100,35 +100,35 @@
 
 如果我们将点积代入线性预测器向量，并代入设计矩阵第一列的值，我们得到以下结果（因为 *j* = 1，我将省略那个下标，以简化符号）：
 
-![](../Images/ccf3987424c41599043fc8a7dc727f59.png)
+![](img/ccf3987424c41599043fc8a7dc727f59.png)
 
 完整的线性预测器（作者提供的图像）。
 
-所有这些都简化为非常熟悉的形式：η中的每个元素只是我们的线性回归方程应用于每个*X*值！希望你能理解为什么设计矩阵中包含了全1列。这确保了截距被加到每个观测值上。
+所有这些都简化为非常熟悉的形式：η中的每个元素只是我们的线性回归方程应用于每个*X*值！希望你能理解为什么设计矩阵中包含了全 1 列。这确保了截距被加到每个观测值上。
 
 ## 模型误差
 
 与误差项相关的三个关键假设 — 或*扰动* — 源于*高斯-马尔科夫定理*。第一个假设是误差的期望条件均值为零，这意味着误差的平均值不应依赖于任何特定的*X*值。这被称为*零条件均值假设*：
 
-![](../Images/61bcb0ecb338b1a81a25c1190bd445df.png)
+![](img/61bcb0ecb338b1a81a25c1190bd445df.png)
 
 零条件均值假设（图片由作者提供）。
 
 与此相关的是*同方差性* *假设*，它表明误差的方差不应受到自变量值的影响。也就是说，误差的分布应完全独立于设计矩阵中的任何信息：
 
-![](../Images/0ccadfdd56196652ea6342870ed3a276.png)
+![](img/0ccadfdd56196652ea6342870ed3a276.png)
 
 *同方差性*假设（图片由作者提供）。
 
 最后的假设是*无自相关假设*，它要求误差项是无关的。这意味着对一个误差项的了解不会提供关于另一个误差项的信息，因此它们不会共变：
 
-![](../Images/d035a65aa2873c1e03ca5b81515e4f96.png)
+![](img/d035a65aa2873c1e03ca5b81515e4f96.png)
 
 无自相关假设（图片由作者提供）。
 
 在这些假设下，误差项的协方差矩阵是一个标量矩阵，误差被认为是*球形的*：
 
-![](../Images/b66335a14f27c56bcdaf148a2b4ed269.png)
+![](img/b66335a14f27c56bcdaf148a2b4ed269.png)
 
 高斯-马尔科夫假设下的协方差矩阵（图片由作者提供）。
 
@@ -140,31 +140,31 @@
 
 以矩阵形式，误差向量或*残差*定义如下：
 
-![](../Images/ceb410bad892b2979fe89861fe91ec98.png)
+![](img/ceb410bad892b2979fe89861fe91ec98.png)
 
 模型误差或残差（图片由作者提供）。
 
 其中，*β* 上方的帽子表示估计系数。平方残差的和可以写成误差向量与自身的点积：
 
-![](../Images/ec9eb1ab0d24bb7af6be47ff78ab0f82.png)
+![](img/ec9eb1ab0d24bb7af6be47ff78ab0f82.png)
 
 平方和误差（作者提供的图像）。
 
 其中 *T* 表示转置运算符¹。为了推导最小二乘准则，将误差完全展开是方便的，如下所示：
 
-![](../Images/fcfe51eefc98430d52f0d8b096757fdd.png)
+![](img/fcfe51eefc98430d52f0d8b096757fdd.png)
 
 误差向量的点积展开（作者提供的图像）。
 
 那么，想法是找到使该值最小化的参数。为此，我们需要对向量 *β* 取上面的导数并将其设为零*：*
 
-![](../Images/bc22aa5e4258bdb72358dd656cd5336f.png)
+![](img/bc22aa5e4258bdb72358dd656cd5336f.png)
 
 平方误差的第一导数（作者提供的图像）。
 
 从中可以推导出 *正规方程*：
 
-![](../Images/b1d44c78834574b4e7515cae3829549b.png)
+![](img/b1d44c78834574b4e7515cae3829549b.png)
 
 正规方程（作者提供的图像）。
 
@@ -172,7 +172,7 @@
 
 对于简单的线性回归模型，*X*ᵀ*X* 是一个 2 × 2 的方阵，虽然更一般来说，矩阵将是一个 *p* × *p* 的矩阵*。* 我们接着需要找到另一个 2 × 2 的矩阵，它是 *X*ᵀ*X* 的乘法逆。如果这样的矩阵不存在，则方程无法解决，但如果 *X*ᵀ*X* 确实是可逆的，则我们可以得到参数向量 **b**，如下所示：
 
-![](../Images/a5feb27ce5e6986edffd826732751bc4.png)
+![](img/a5feb27ce5e6986edffd826732751bc4.png)
 
 线性回归的估计方程（作者提供的图像）。
 
@@ -182,37 +182,37 @@
 
 进一步考虑每个矩阵中包含的元素是很有趣的。首先，让我们看一下设计矩阵 *X*ᵀ*X* 的叉积：
 
-![](../Images/b1682048cb8a51d79ef59ef220e99985.png)
+![](img/b1682048cb8a51d79ef59ef220e99985.png)
 
 设计矩阵的叉积（作者提供的图像）。
 
 从这里我们可以看到矩阵包含了设计矩阵中每一列的乘积。但我们需要的是这个矩阵的逆。我不会详细讲解如何推导逆矩阵，但它看起来是这样的：
 
-![](../Images/936f0f5ae04f7aeb3071c1cb3b4ece9c.png)
+![](img/936f0f5ae04f7aeb3071c1cb3b4ece9c.png)
 
 设计矩阵叉积的逆（作者提供的图像）。
 
 最后，我们还需要设计矩阵与响应向量 Y 的叉积，结果如下：
 
-![](../Images/694d2c7c07ee8921b843d9a6cd10f55d.png)
+![](img/694d2c7c07ee8921b843d9a6cd10f55d.png)
 
 设计矩阵与响应向量的叉积（作者提供的图像）。
 
 将矩阵完全写出后，我们可以将其代入估计问题，并按如下方式进行计算：
 
-![](../Images/ba7df46fbb63754e8a9c3e6c2e7a2d5e.png)
+![](img/ba7df46fbb63754e8a9c3e6c2e7a2d5e.png)
 
 参数向量的推导（作者提供的图像）。
 
 公平地说，这一推导过程有些复杂，但最有趣的实际上是最后一行。这一切归结为一个非常方便的东西；我们可以像这样使用样本协方差和方差来估计斜率系数：
 
-![](../Images/34ab197a6dc7deb317ffcd1787e9a765.png)
+![](img/34ab197a6dc7deb317ffcd1787e9a765.png)
 
 斜率系数的估计（作者提供的图像）。
 
 一旦我们有了这个估计值，我们可以利用这个估计值，以及*y*和*x*的均值，来推导截距的估计值：
 
-![](../Images/80d70d35f595c980c8a328469c442ee2.png)
+![](img/80d70d35f595c980c8a328469c442ee2.png)
 
 截距系数的估计（作者提供的图像）。
 
@@ -222,7 +222,7 @@
 
 我们需要获得拟合值的唯一条件是设计矩阵和参数向量**b**。将它们相乘，拟合值的计算如下：
 
-![](../Images/0c48389a0ad0af3b6fde2494f1b54920.png)
+![](img/0c48389a0ad0af3b6fde2494f1b54920.png)
 
 拟合值的向量（作者提供的图像）。
 
@@ -230,13 +230,13 @@
 
 要查看这一点，我们将通过用参数向量的完整方程替代**b**来写出拟合值的方程：
 
-![](../Images/8630753e77222a816dcd02bd2bf1e099.png)
+![](img/8630753e77222a816dcd02bd2bf1e099.png)
 
 替代的参数向量扩展版（作者提供的图像）。
 
 基本上，所有涉及设计矩阵*X*的项被归并在一起，形成了帽子矩阵的定义：
 
-![](../Images/1491dcb685d8e42ca3c91af3b14d9a30.png)
+![](img/1491dcb685d8e42ca3c91af3b14d9a30.png)
 
 ‘帽子’矩阵（作者提供的图像）。
 

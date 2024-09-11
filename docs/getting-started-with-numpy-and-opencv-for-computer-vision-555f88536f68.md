@@ -1,18 +1,18 @@
-# 使用NumPy和OpenCV开始计算机视觉（CV-01）
+# 使用 NumPy 和 OpenCV 开始计算机视觉（CV-01）
 
-> 原文：[https://towardsdatascience.com/getting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68?source=collection_archive---------5-----------------------#2023-03-15](https://towardsdatascience.com/getting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68?source=collection_archive---------5-----------------------#2023-03-15)
+> 原文：[`towardsdatascience.com/getting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68?source=collection_archive---------5-----------------------#2023-03-15`](https://towardsdatascience.com/getting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68?source=collection_archive---------5-----------------------#2023-03-15)
 
-## 用Python开始你的计算机视觉编码之旅
+## 用 Python 开始你的计算机视觉编码之旅
 
-[](https://zubairhossain.medium.com/?source=post_page-----555f88536f68--------------------------------)[![Md. Zubair](../Images/1b983a23226ce7561796fa5b28c00d65.png)](https://zubairhossain.medium.com/?source=post_page-----555f88536f68--------------------------------)[](https://towardsdatascience.com/?source=post_page-----555f88536f68--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----555f88536f68--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----555f88536f68--------------------------------)
+[](https://zubairhossain.medium.com/?source=post_page-----555f88536f68--------------------------------)![Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----555f88536f68--------------------------------)[](https://towardsdatascience.com/?source=post_page-----555f88536f68--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----555f88536f68--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----555f88536f68--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----555f88536f68---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----555f88536f68--------------------------------) ·8分钟阅读·2023年3月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F555f88536f68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----555f88536f68---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----555f88536f68---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----555f88536f68--------------------------------) ·8 分钟阅读·2023 年 3 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F555f88536f68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----555f88536f68---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F555f88536f68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68&source=-----555f88536f68---------------------bookmark_footer-----------)![](../Images/a1f29b1c045ba48aeb7b58ca7d9aece1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F555f88536f68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-numpy-and-opencv-for-computer-vision-555f88536f68&source=-----555f88536f68---------------------bookmark_footer-----------)![](img/a1f29b1c045ba48aeb7b58ca7d9aece1.png)
 
 照片由 [Dan Smedley](https://unsplash.com/@nadyeldems?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

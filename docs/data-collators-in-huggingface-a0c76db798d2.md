@@ -1,10 +1,10 @@
 # HuggingFace 中的数据收集器
 
-> 原文：[https://towardsdatascience.com/data-collators-in-huggingface-a0c76db798d2?source=collection_archive---------3-----------------------#2023-11-08](https://towardsdatascience.com/data-collators-in-huggingface-a0c76db798d2?source=collection_archive---------3-----------------------#2023-11-08)
+> 原文：[`towardsdatascience.com/data-collators-in-huggingface-a0c76db798d2?source=collection_archive---------3-----------------------#2023-11-08`](https://towardsdatascience.com/data-collators-in-huggingface-a0c76db798d2?source=collection_archive---------3-----------------------#2023-11-08)
 
 ## 它们是什么以及它们的作用
 
-[](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)[![Mina Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0c76db798d2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0c76db798d2--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)
+[](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)![Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0c76db798d2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0c76db798d2--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0c76db798d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-collators-in-huggingface-a0c76db798d2&source=-----a0c76db798d2---------------------bookmark_footer-----------)![](../Images/2ddfbf36b4be5c6b3f2d3216d22460d6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0c76db798d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-collators-in-huggingface-a0c76db798d2&source=-----a0c76db798d2---------------------bookmark_footer-----------)![](img/2ddfbf36b4be5c6b3f2d3216d22460d6.png)
 
 来自 [unsplash.com](https://unsplash.com/photos/assorted-source-codes-sp1BZ1atp7M) 的图像
 
@@ -24,7 +24,7 @@
 
 数据收集器在 HuggingFace 中是数据处理的重要部分。在对数据进行标记化之后，我们都会使用它们，并在将数据传递给训练模型的 Trainer 对象之前使用它们。
 
-> 简而言之，它们将一系列样本汇总成一个小型训练批次。它们的具体操作取决于它们所定义的任务，但至少会对输入样本进行填充或截断，以确保所有样本在一个小批次中具有相同的长度。典型的小批量大小范围从16到256个样本，具体取决于模型大小、数据和硬件限制。
+> 简而言之，它们将一系列样本汇总成一个小型训练批次。它们的具体操作取决于它们所定义的任务，但至少会对输入样本进行填充或截断，以确保所有样本在一个小批次中具有相同的长度。典型的小批量大小范围从 16 到 256 个样本，具体取决于模型大小、数据和硬件限制。
 
 数据整理器是**任务特定**的。每个任务都有一个数据整理器：
 

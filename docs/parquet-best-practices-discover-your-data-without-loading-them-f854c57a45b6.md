@@ -1,14 +1,14 @@
 # Parquet 最佳实践：无需加载即可发现你的数据
 
-> 原文：[https://towardsdatascience.com/parquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6?source=collection_archive---------2-----------------------#2023-01-03](https://towardsdatascience.com/parquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6?source=collection_archive---------2-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/parquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6?source=collection_archive---------2-----------------------#2023-01-03`](https://towardsdatascience.com/parquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6?source=collection_archive---------2-----------------------#2023-01-03)
 
 ## 元数据、行组统计、分区发现及重分区
 
-[](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)[![Arli](../Images/7027413407fa83ce2f9b3d7e9cb008e8.png)](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------) [Arli](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)
+[](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)![Arli](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------) [Arli](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b9b5a558522&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6&user=Arli&userId=9b9b5a558522&source=post_page-9b9b5a558522----f854c57a45b6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------) ·8 分钟阅读·2023年1月3日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff854c57a45b6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6&user=Arli&userId=9b9b5a558522&source=-----f854c57a45b6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b9b5a558522&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6&user=Arli&userId=9b9b5a558522&source=post_page-9b9b5a558522----f854c57a45b6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------) ·8 分钟阅读·2023 年 1 月 3 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff854c57a45b6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6&user=Arli&userId=9b9b5a558522&source=-----f854c57a45b6---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 *如果你想亲身体验 Medium，请考虑通过* [***注册会员***](https://medium.com/@arli94/membership)*来支持我和其他成千上万的作者。每月仅需 $5，这对我们作者非常有帮助，而且你还可以访问 Medium 上所有精彩的故事。*
 
-![](../Images/c510a1ca6e02384122e5f50eb2674840.png)
+![](img/c510a1ca6e02384122e5f50eb2674840.png)
 
 照片由 [Jakarta Parquet](https://unsplash.com/@lantai_kayu?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

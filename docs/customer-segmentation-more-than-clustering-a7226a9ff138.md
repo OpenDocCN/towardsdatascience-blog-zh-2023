@@ -1,18 +1,18 @@
 # 客户细分：不仅仅是聚类
 
-> 原文：[https://towardsdatascience.com/customer-segmentation-more-than-clustering-a7226a9ff138?source=collection_archive---------5-----------------------#2023-12-15](https://towardsdatascience.com/customer-segmentation-more-than-clustering-a7226a9ff138?source=collection_archive---------5-----------------------#2023-12-15)
+> 原文：[`towardsdatascience.com/customer-segmentation-more-than-clustering-a7226a9ff138?source=collection_archive---------5-----------------------#2023-12-15`](https://towardsdatascience.com/customer-segmentation-more-than-clustering-a7226a9ff138?source=collection_archive---------5-----------------------#2023-12-15)
 
 ## 帮助你的客户细分工作被业务采纳的框架
 
-[](https://medium.com/@guillaume.colley?source=post_page-----a7226a9ff138--------------------------------)[![Guillaume Colley](../Images/97ea637a566255b6724d4079ca2d5180.png)](https://medium.com/@guillaume.colley?source=post_page-----a7226a9ff138--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a7226a9ff138--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a7226a9ff138--------------------------------) [Guillaume Colley](https://medium.com/@guillaume.colley?source=post_page-----a7226a9ff138--------------------------------)
+[](https://medium.com/@guillaume.colley?source=post_page-----a7226a9ff138--------------------------------)![Guillaume Colley](https://medium.com/@guillaume.colley?source=post_page-----a7226a9ff138--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a7226a9ff138--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7226a9ff138--------------------------------) [Guillaume Colley](https://medium.com/@guillaume.colley?source=post_page-----a7226a9ff138--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F40c66a92e9d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomer-segmentation-more-than-clustering-a7226a9ff138&user=Guillaume+Colley&userId=40c66a92e9d&source=post_page-40c66a92e9d----a7226a9ff138---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7226a9ff138--------------------------------) ·14 min read·2023年12月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa7226a9ff138&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomer-segmentation-more-than-clustering-a7226a9ff138&user=Guillaume+Colley&userId=40c66a92e9d&source=-----a7226a9ff138---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F40c66a92e9d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomer-segmentation-more-than-clustering-a7226a9ff138&user=Guillaume+Colley&userId=40c66a92e9d&source=post_page-40c66a92e9d----a7226a9ff138---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7226a9ff138--------------------------------) ·14 min read·2023 年 12 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa7226a9ff138&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomer-segmentation-more-than-clustering-a7226a9ff138&user=Guillaume+Colley&userId=40c66a92e9d&source=-----a7226a9ff138---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa7226a9ff138&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomer-segmentation-more-than-clustering-a7226a9ff138&source=-----a7226a9ff138---------------------bookmark_footer-----------)![](../Images/a1e4c02b119d53aab6f776be499ea768.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa7226a9ff138&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomer-segmentation-more-than-clustering-a7226a9ff138&source=-----a7226a9ff138---------------------bookmark_footer-----------)![](img/a1e4c02b119d53aab6f776be499ea768.png)
 
 图片由作者提供
 

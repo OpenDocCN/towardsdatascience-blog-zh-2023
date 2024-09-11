@@ -1,16 +1,16 @@
 # 水接触时间与浓缩咖啡中的萃取：一个实验
 
-> 原文：[https://towardsdatascience.com/water-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d?source=collection_archive---------18-----------------------#2023-02-10](https://towardsdatascience.com/water-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d?source=collection_archive---------18-----------------------#2023-02-10)
+> 原文：[`towardsdatascience.com/water-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d?source=collection_archive---------18-----------------------#2023-02-10`](https://towardsdatascience.com/water-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d?source=collection_archive---------18-----------------------#2023-02-10)
 
 ## 咖啡数据科学
 
 ## 一个短期实验以隔离变量
 
-[](https://rmckeon.medium.com/?source=post_page-----9987bd24d35d--------------------------------)[![Robert McKeon Aloe](../Images/ab747f7e39f9f4fdf10d92041d4dc37c.png)](https://rmckeon.medium.com/?source=post_page-----9987bd24d35d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9987bd24d35d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9987bd24d35d--------------------------------) [Robert McKeon Aloe](https://rmckeon.medium.com/?source=post_page-----9987bd24d35d--------------------------------)
+[](https://rmckeon.medium.com/?source=post_page-----9987bd24d35d--------------------------------)![Robert McKeon Aloe](https://rmckeon.medium.com/?source=post_page-----9987bd24d35d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9987bd24d35d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9987bd24d35d--------------------------------) [Robert McKeon Aloe](https://rmckeon.medium.com/?source=post_page-----9987bd24d35d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae592466d35f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwater-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d&user=Robert+McKeon+Aloe&userId=ae592466d35f&source=post_page-ae592466d35f----9987bd24d35d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9987bd24d35d--------------------------------) ·5分钟阅读·2023年2月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9987bd24d35d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwater-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d&user=Robert+McKeon+Aloe&userId=ae592466d35f&source=-----9987bd24d35d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae592466d35f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwater-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d&user=Robert+McKeon+Aloe&userId=ae592466d35f&source=post_page-ae592466d35f----9987bd24d35d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9987bd24d35d--------------------------------) ·5 分钟阅读·2023 年 2 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9987bd24d35d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwater-contact-time-and-extraction-in-espresso-an-experiment-9987bd24d35d&user=Robert+McKeon+Aloe&userId=ae592466d35f&source=-----9987bd24d35d---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 有一种理论认为，较高的水接触时间会导致浓缩咖啡中的提取率更高。虽然有人对这种观点提出了异议，但像许多事情一样，这个理论是可以测试的。关键是设计一个良好的实验（DOE），所以我们来设计一个实验并收集一些数据来开始回答这个问题。
 
-[**总溶解固体 (TDS)**](/coffee-solubility-in-espresso-an-initial-study-88f78a432e2c) 使用折射仪测量，这个数字与射击的输出重量和咖啡的输入重量结合使用，以确定杯中提取的咖啡百分比，称为**提取产率 (EY)**。这是我们试图测量的主要变量。
+**总溶解固体 (TDS)** 使用折射仪测量，这个数字与射击的输出重量和咖啡的输入重量结合使用，以确定杯中提取的咖啡百分比，称为**提取产率 (EY)**。这是我们试图测量的主要变量。
 
 # DOE：修改研磨颗粒大小
 
@@ -30,9 +30,9 @@
 
 1.  较小的研磨颗粒更容易受到通道效应的影响，从而在全球层面上导致提取不足。
 
-![](../Images/7c9f80a752a20f3cd2292fb764ec25e2.png)
+![](img/7c9f80a752a20f3cd2292fb764ec25e2.png)
 
-EY和时间与研磨颗粒大小的关系，所有图像均由作者提供
+EY 和时间与研磨颗粒大小的关系，所有图像均由作者提供
 
 在这两个变量之间是提取产率的火山图。因此，如果你使用了这个实验，你会看到随着研磨变小，提取产率上升直到某个峰值，之后提取产率会下降。从这样的实验中可能得出较长的水接触时间不会导致更高提取的结论，而这个结论是不准确的。
 
@@ -40,25 +40,25 @@ EY和时间与研磨颗粒大小的关系，所有图像均由作者提供
 
 # DOE：使用流量控制
 
-使用带有流量控制的浓缩咖啡机（例如我拥有的Decent Espresso (DE)），可以使用单一的研磨度，并进行3种不同的流量配置。这可以控制由于颗粒分布变化导致的提取速率变化。
+使用带有流量控制的浓缩咖啡机（例如我拥有的 Decent Espresso (DE)），可以使用单一的研磨度，并进行 3 种不同的流量配置。这可以控制由于颗粒分布变化导致的提取速率变化。
 
-![](../Images/749141e22835d2b142971ea1e73a7f5c.png)
+![](img/749141e22835d2b142971ea1e73a7f5c.png)
 
 恒定流量控制的电子邮件。
 
-然而，这仍然可能受到群头设计的影响。许多机器在水进入篮子时将水推到边缘，从而导致侧面通道效应。DE由于水分配器的[独特水分布](https://medium.com/nerd-for-tech/water-distribution-for-espresso-cd361bc0734)导致水在左侧稍微比右侧流入得快。
+然而，这仍然可能受到群头设计的影响。许多机器在水进入篮子时将水推到边缘，从而导致侧面通道效应。DE 由于水分配器的[独特水分布](https://medium.com/nerd-for-tech/water-distribution-for-espresso-cd361bc0734)导致水在左侧稍微比右侧流入得快。
 
 # DOE：流量控制 + 混合废咖啡
 
-为了减少水输入变量，我们可以使用一些[废咖啡](/the-coffee-bean-is-not-homogenous-sifted-salami-espresso-5b861bfbfbb7)。废咖啡不容易受到通道效应的影响，因为它没有CO2和可提取的溶解物质很少。因此，我们可以混合单一咖啡研磨度，并使用多种流量配置。
+为了减少水输入变量，我们可以使用一些废咖啡。废咖啡不容易受到通道效应的影响，因为它没有 CO2 和可提取的溶解物质很少。因此，我们可以混合单一咖啡研磨度，并使用多种流量配置。
 
 另一个改进是拉取一种萨拉米咖啡，以便更好地理解提取速率。
 
 # 测试用废咖啡
 
-对于这个测试，我制作了一些[使用过的咖啡](/fully-extracting-coffee-from-espresso-e2310dc6c289)，与以前的测试一样。然而，我认为可以借此机会在更大实验前获取一些数据。这些咖啡渣来自多个使用过的咖啡饼，我将它们彻底混合在一起。然后，我打算进行 2:1 的萃取并分成两个杯子。然而，第一个萃取时间稍长，所以我对其他两个萃取保持了相同的比例。
+对于这个测试，我制作了一些使用过的咖啡，与以前的测试一样。然而，我认为可以借此机会在更大实验前获取一些数据。这些咖啡渣来自多个使用过的咖啡饼，我将它们彻底混合在一起。然后，我打算进行 2:1 的萃取并分成两个杯子。然而，第一个萃取时间稍长，所以我对其他两个萃取保持了相同的比例。
 
-![](../Images/6878677e84d107a733cd06e71c360aaf.png)
+![](img/6878677e84d107a733cd06e71c360aaf.png)
 
 这个结果表明，较高的流速会降低 EY，并且通常支持水接触时间更长更好的观点（即较慢的流速）。
 
@@ -74,15 +74,15 @@ EY和时间与研磨颗粒大小的关系，所有图像均由作者提供
 
 我在 1 ml/s 的流量下对使用过的咖啡进行了对照萃取，以去除使用过的咖啡对其他测量的影响。
 
-![](../Images/b55fcf803d1ecea9776dd41cf215b748.png)
+![](img/b55fcf803d1ecea9776dd41cf215b748.png)
 
 提取过程使用了 5 杯来处理三种流量曲线。对于 TDS，尽管 4 ml/s 的样品提取时间稍长，但每个样品的 TDS 趋势仍然较高。这一结果由 EY 标准化。
 
-![](../Images/3ae0f905d6a0acb9e7193daaeb766215.png)
+![](img/3ae0f905d6a0acb9e7193daaeb766215.png)
 
 4 ml/s 流量的提取结果难以得到相同的输出重量。我还去除了这些累计 EY 数字中使用过的咖啡渣的影响。
 
-![](../Images/a083dfdeb33b5f62343e2b30cfe60bab.png)
+![](img/a083dfdeb33b5f62343e2b30cfe60bab.png)
 
 添加了 Pump&Dump 作为参考。
 

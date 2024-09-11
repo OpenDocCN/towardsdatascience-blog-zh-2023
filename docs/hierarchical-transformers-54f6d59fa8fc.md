@@ -1,10 +1,10 @@
-# 层次化变换器 — 第 1 部分
+# 层次化变换器 — 第一部分
 
-> 原文：[https://towardsdatascience.com/hierarchical-transformers-54f6d59fa8fc?source=collection_archive---------5-----------------------#2023-10-04](https://towardsdatascience.com/hierarchical-transformers-54f6d59fa8fc?source=collection_archive---------5-----------------------#2023-10-04)
+> 原文：[`towardsdatascience.com/hierarchical-transformers-54f6d59fa8fc?source=collection_archive---------5-----------------------#2023-10-04`](https://towardsdatascience.com/hierarchical-transformers-54f6d59fa8fc?source=collection_archive---------5-----------------------#2023-10-04)
 
 ## 更高效的语言模型
 
-[](https://medium.com/@mina.ghashami?source=post_page-----54f6d59fa8fc--------------------------------)[![Mina Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----54f6d59fa8fc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54f6d59fa8fc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54f6d59fa8fc--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----54f6d59fa8fc--------------------------------)
+[](https://medium.com/@mina.ghashami?source=post_page-----54f6d59fa8fc--------------------------------)![Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----54f6d59fa8fc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54f6d59fa8fc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----54f6d59fa8fc--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----54f6d59fa8fc--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F54f6d59fa8fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhierarchical-transformers-54f6d59fa8fc&source=-----54f6d59fa8fc---------------------bookmark_footer-----------)![](../Images/1b3d6e9ce3c3e6c0dec3c8326bd0faf9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F54f6d59fa8fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhierarchical-transformers-54f6d59fa8fc&source=-----54f6d59fa8fc---------------------bookmark_footer-----------)![](img/1b3d6e9ce3c3e6c0dec3c8326bd0faf9.png)
 
 图片来自 [unsplash.com](https://unsplash.com/photos/x22UAIdif_k)
 

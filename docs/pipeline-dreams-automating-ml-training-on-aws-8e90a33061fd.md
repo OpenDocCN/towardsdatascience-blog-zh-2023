@@ -1,16 +1,16 @@
 # 管道梦想：在 AWS 上自动化 ML 训练
 
-> 原文：[https://towardsdatascience.com/pipeline-dreams-automating-ml-training-on-aws-8e90a33061fd?source=collection_archive---------10-----------------------#2023-10-25](https://towardsdatascience.com/pipeline-dreams-automating-ml-training-on-aws-8e90a33061fd?source=collection_archive---------10-----------------------#2023-10-25)
+> 原文：[`towardsdatascience.com/pipeline-dreams-automating-ml-training-on-aws-8e90a33061fd?source=collection_archive---------10-----------------------#2023-10-25`](https://towardsdatascience.com/pipeline-dreams-automating-ml-training-on-aws-8e90a33061fd?source=collection_archive---------10-----------------------#2023-10-25)
 
-[](https://medium.com/@raicik.zach?source=post_page-----8e90a33061fd--------------------------------)[![Zachary Raicik](../Images/860760b53fcc75013007067190e8ca65.png)](https://medium.com/@raicik.zach?source=post_page-----8e90a33061fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e90a33061fd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8e90a33061fd--------------------------------) [Zachary Raicik](https://medium.com/@raicik.zach?source=post_page-----8e90a33061fd--------------------------------)
+[](https://medium.com/@raicik.zach?source=post_page-----8e90a33061fd--------------------------------)![Zachary Raicik](https://medium.com/@raicik.zach?source=post_page-----8e90a33061fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e90a33061fd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e90a33061fd--------------------------------) [Zachary Raicik](https://medium.com/@raicik.zach?source=post_page-----8e90a33061fd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28b350f36c59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipeline-dreams-automating-ml-training-on-aws-8e90a33061fd&user=Zachary+Raicik&userId=28b350f36c59&source=post_page-28b350f36c59----8e90a33061fd---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8e90a33061fd--------------------------------) ·11分钟阅读·2023年10月25日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28b350f36c59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipeline-dreams-automating-ml-training-on-aws-8e90a33061fd&user=Zachary+Raicik&userId=28b350f36c59&source=post_page-28b350f36c59----8e90a33061fd---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8e90a33061fd--------------------------------) ·11 分钟阅读·2023 年 10 月 25 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e90a33061fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipeline-dreams-automating-ml-training-on-aws-8e90a33061fd&source=-----8e90a33061fd---------------------bookmark_footer-----------)![](../Images/c696ca663854fee564e07b9749427f82.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e90a33061fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpipeline-dreams-automating-ml-training-on-aws-8e90a33061fd&source=-----8e90a33061fd---------------------bookmark_footer-----------)![](img/c696ca663854fee564e07b9749427f82.png)
 
 图片由 [Arnold Francisca](https://unsplash.com/@clark_fransa?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

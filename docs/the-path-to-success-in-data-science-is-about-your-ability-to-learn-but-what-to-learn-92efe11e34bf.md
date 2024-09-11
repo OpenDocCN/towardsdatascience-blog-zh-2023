@@ -1,18 +1,18 @@
 # 数据科学成功的路径在于你的学习能力。但究竟学习什么？
 
-> 原文：[https://towardsdatascience.com/the-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf?source=collection_archive---------1-----------------------#2023-06-29](https://towardsdatascience.com/the-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf?source=collection_archive---------1-----------------------#2023-06-29)
+> 原文：[`towardsdatascience.com/the-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf?source=collection_archive---------1-----------------------#2023-06-29`](https://towardsdatascience.com/the-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf?source=collection_archive---------1-----------------------#2023-06-29)
 
 ## 成功交付数据科学项目的机会最大化当你不断学习，但并不总是明确该关注什么。
 
-[![Erdogan Taskesen](../Images/8e62cdae0502687710d8ae4bbcd8966e.png)](https://erdogant.medium.com/?source=post_page-----92efe11e34bf--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----92efe11e34bf--------------------------------) [Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----92efe11e34bf--------------------------------)
+![Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----92efe11e34bf--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----92efe11e34bf--------------------------------) [Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----92efe11e34bf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e636e2ef813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf&user=Erdogan+Taskesen&userId=4e636e2ef813&source=post_page-4e636e2ef813----92efe11e34bf---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----92efe11e34bf--------------------------------) ·7分钟阅读·2023年6月29日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e636e2ef813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf&user=Erdogan+Taskesen&userId=4e636e2ef813&source=post_page-4e636e2ef813----92efe11e34bf---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----92efe11e34bf--------------------------------) ·7 分钟阅读·2023 年 6 月 29 日
 
 --
 
-![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F92efe11e34bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf&source=-----92efe11e34bf---------------------bookmark_footer-----------)![](../Images/caecab4af7f80a39031238a4f30a3fe9.png)
+![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F92efe11e34bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-path-to-success-in-data-science-is-about-your-ability-to-learn-but-what-to-learn-92efe11e34bf&source=-----92efe11e34bf---------------------bookmark_footer-----------)![](img/caecab4af7f80a39031238a4f30a3fe9.png)
 
 图片由 [Tamara Menzi](https://unsplash.com/@itstamaramenzi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/iu_b3R4YWB8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

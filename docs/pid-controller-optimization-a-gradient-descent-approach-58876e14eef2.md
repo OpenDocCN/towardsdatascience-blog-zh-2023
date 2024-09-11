@@ -1,10 +1,10 @@
 # PID 控制器优化：一种梯度下降方法
 
-> 原文：[https://towardsdatascience.com/pid-controller-optimization-a-gradient-descent-approach-58876e14eef2?source=collection_archive---------4-----------------------#2023-08-01](https://towardsdatascience.com/pid-controller-optimization-a-gradient-descent-approach-58876e14eef2?source=collection_archive---------4-----------------------#2023-08-01)
+> 原文：[`towardsdatascience.com/pid-controller-optimization-a-gradient-descent-approach-58876e14eef2?source=collection_archive---------4-----------------------#2023-08-01`](https://towardsdatascience.com/pid-controller-optimization-a-gradient-descent-approach-58876e14eef2?source=collection_archive---------4-----------------------#2023-08-01)
 
 ## 使用机器学习解决工程优化问题
 
-[](https://medium.com/@callum.bruce1?source=post_page-----58876e14eef2--------------------------------)[![Callum Bruce](../Images/4833a199a9449434777fdf5ce913a9cb.png)](https://medium.com/@callum.bruce1?source=post_page-----58876e14eef2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58876e14eef2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----58876e14eef2--------------------------------) [Callum Bruce](https://medium.com/@callum.bruce1?source=post_page-----58876e14eef2--------------------------------)
+[](https://medium.com/@callum.bruce1?source=post_page-----58876e14eef2--------------------------------)![Callum Bruce](https://medium.com/@callum.bruce1?source=post_page-----58876e14eef2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58876e14eef2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----58876e14eef2--------------------------------) [Callum Bruce](https://medium.com/@callum.bruce1?source=post_page-----58876e14eef2--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58876e14eef2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpid-controller-optimization-a-gradient-descent-approach-58876e14eef2&source=-----58876e14eef2---------------------bookmark_footer-----------)![](../Images/4350abf8767e1ec8d3ce9a121cb47b01.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58876e14eef2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpid-controller-optimization-a-gradient-descent-approach-58876e14eef2&source=-----58876e14eef2---------------------bookmark_footer-----------)![](img/4350abf8767e1ec8d3ce9a121cb47b01.png)
 
 梯度下降算法沿着下坡路径来最小化成本函数
 
@@ -22,7 +22,7 @@
 
 与其从神经网络的角度看梯度下降法——在这种情况下，它用于优化网络的权重和偏置，不如将该算法视作解决经典工程优化问题的工具。
 
-具体来说，我们将使用梯度下降法来调整汽车巡航控制系统中PID（比例-积分-微分）控制器的增益。
+具体来说，我们将使用梯度下降法来调整汽车巡航控制系统中 PID（比例-积分-微分）控制器的增益。
 
 采取这种方法的动机有两个方面：
 

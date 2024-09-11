@@ -1,16 +1,16 @@
 # 偏差和方差之间是否总是存在权衡？
 
-> 原文：[https://towardsdatascience.com/is-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552?source=collection_archive---------4-----------------------#2023-02-15](https://towardsdatascience.com/is-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552?source=collection_archive---------4-----------------------#2023-02-15)
+> 原文：[`towardsdatascience.com/is-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552?source=collection_archive---------4-----------------------#2023-02-15`](https://towardsdatascience.com/is-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552?source=collection_archive---------4-----------------------#2023-02-15)
 
 ## 不敬的解密者
 
-## 偏差-方差权衡，第1部分，共3部分
+## 偏差-方差权衡，第一部分，共 3 部分
 
-[](https://kozyrkov.medium.com/?source=post_page-----5ca44398a552--------------------------------)[![Cassie Kozyrkov](../Images/ad18dd12979a4a3ec130bdf8b889af23.png)](https://kozyrkov.medium.com/?source=post_page-----5ca44398a552--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ca44398a552--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ca44398a552--------------------------------) [Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----5ca44398a552--------------------------------)
+[](https://kozyrkov.medium.com/?source=post_page-----5ca44398a552--------------------------------)![Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----5ca44398a552--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ca44398a552--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ca44398a552--------------------------------) [Cassie Kozyrkov](https://kozyrkov.medium.com/?source=post_page-----5ca44398a552--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fccb851bb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=post_page-2fccb851bb5e----5ca44398a552---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ca44398a552--------------------------------) ·5分钟阅读·2023年2月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ca44398a552&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=-----5ca44398a552---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fccb851bb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=post_page-2fccb851bb5e----5ca44398a552---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ca44398a552--------------------------------) ·5 分钟阅读·2023 年 2 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ca44398a552&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-there-always-a-tradeoff-between-bias-and-variance-5ca44398a552&user=Cassie+Kozyrkov&userId=2fccb851bb5e&source=-----5ca44398a552---------------------clap_footer-----------)
 
 --
 
@@ -28,11 +28,11 @@
 
 好吧，它确实有一定关联，但这个短语实际上指的是一个*实际的方案*，用于选择模型的**复杂性甜点**。当你在调整**正则化** **超参数**时，它最为有用。
 
-![](../Images/45a49487f48458ec80ce35b0cf1a3fd5.png)
+![](img/45a49487f48458ec80ce35b0cf1a3fd5.png)
 
 插图由作者提供。
 
-***注意：*** *如果你从未听说过MSE，可能需要对一些术语进行一些帮助。当你遇到新的术语时，可以通过点击链接查看我其他文章中对这些词汇的详细介绍。*
+***注意：*** *如果你从未听说过 MSE，可能需要对一些术语进行一些帮助。当你遇到新的术语时，可以通过点击链接查看我其他文章中对这些词汇的详细介绍。*
 
 # 理解基础知识
 

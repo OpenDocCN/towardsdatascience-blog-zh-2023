@@ -1,24 +1,24 @@
 # 双曲深度强化学习
 
-> 原文：[https://towardsdatascience.com/hyperbolic-deep-reinforcement-learning-b2de787cf2f7?source=collection_archive---------1-----------------------#2023-04-30](https://towardsdatascience.com/hyperbolic-deep-reinforcement-learning-b2de787cf2f7?source=collection_archive---------1-----------------------#2023-04-30)
+> 原文：[`towardsdatascience.com/hyperbolic-deep-reinforcement-learning-b2de787cf2f7?source=collection_archive---------1-----------------------#2023-04-30`](https://towardsdatascience.com/hyperbolic-deep-reinforcement-learning-b2de787cf2f7?source=collection_archive---------1-----------------------#2023-04-30)
 
 ## RL 遇上双曲几何
 
 ## 许多强化学习问题具有层次树状结构。双曲几何为这些问题提供了强大的先验知识。
 
-[](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)[![Michael Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------) [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)
+[](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)![Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------) [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7b1129ddd572&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperbolic-deep-reinforcement-learning-b2de787cf2f7&user=Michael+Bronstein&userId=7b1129ddd572&source=post_page-7b1129ddd572----b2de787cf2f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------) · 17 分钟阅读 · 2023年4月30日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb2de787cf2f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperbolic-deep-reinforcement-learning-b2de787cf2f7&user=Michael+Bronstein&userId=7b1129ddd572&source=-----b2de787cf2f7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7b1129ddd572&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperbolic-deep-reinforcement-learning-b2de787cf2f7&user=Michael+Bronstein&userId=7b1129ddd572&source=post_page-7b1129ddd572----b2de787cf2f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------) · 17 分钟阅读 · 2023 年 4 月 30 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb2de787cf2f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperbolic-deep-reinforcement-learning-b2de787cf2f7&user=Michael+Bronstein&userId=7b1129ddd572&source=-----b2de787cf2f7---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb2de787cf2f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperbolic-deep-reinforcement-learning-b2de787cf2f7&source=-----b2de787cf2f7---------------------bookmark_footer-----------)
 
-强化学习中的许多问题展现出层次树状的特征。双曲空间可以被概念化为树的连续类比，因此是参数化智能体深度模型的合适候选者。在这篇文章中，我们概述了双曲几何的基础，实证展示了它为许多RL问题提供了良好的归纳偏置，并描述了一种实用的正则化程序，解决了在使用双曲潜在空间的端到端优化中出现的数值不稳定性。我们的方法在广泛的常见基准测试中表现出了几乎普遍的性能提升，无论是在策略内还是策略外的RL算法中。
+强化学习中的许多问题展现出层次树状的特征。双曲空间可以被概念化为树的连续类比，因此是参数化智能体深度模型的合适候选者。在这篇文章中，我们概述了双曲几何的基础，实证展示了它为许多 RL 问题提供了良好的归纳偏置，并描述了一种实用的正则化程序，解决了在使用双曲潜在空间的端到端优化中出现的数值不稳定性。我们的方法在广泛的常见基准测试中表现出了几乎普遍的性能提升，无论是在策略内还是策略外的 RL 算法中。
 
-![](../Images/b6bdc310bab65aab0cc8849bfb1a4359.png)
+![](img/b6bdc310bab65aab0cc8849bfb1a4359.png)
 
 Stable Diffusion 提示：“双曲 Atari Breakout 游戏，图标设计，平面设计，矢量艺术”（由 [David Ha](https://twitter.com/hardmaru?lang=en) 提供）
 

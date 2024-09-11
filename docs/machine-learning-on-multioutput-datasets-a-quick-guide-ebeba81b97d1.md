@@ -1,18 +1,18 @@
 # 多输出数据集上的机器学习：快速指南
 
-> 原文：[https://towardsdatascience.com/machine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1?source=collection_archive---------2-----------------------#2023-03-10](https://towardsdatascience.com/machine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1?source=collection_archive---------2-----------------------#2023-03-10)
+> 原文：[`towardsdatascience.com/machine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1?source=collection_archive---------2-----------------------#2023-03-10`](https://towardsdatascience.com/machine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1?source=collection_archive---------2-----------------------#2023-03-10)
 
 ## 如何在多输出数据集上以最小编码工作量训练和验证机器学习模型
 
-[](https://tvdboom.medium.com/?source=post_page-----ebeba81b97d1--------------------------------)[![Marco vd Boom](../Images/3fc053efda1c23dd84a6418ded2603ca.png)](https://tvdboom.medium.com/?source=post_page-----ebeba81b97d1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ebeba81b97d1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ebeba81b97d1--------------------------------) [Marco vd Boom](https://tvdboom.medium.com/?source=post_page-----ebeba81b97d1--------------------------------)
+[](https://tvdboom.medium.com/?source=post_page-----ebeba81b97d1--------------------------------)![Marco vd Boom](https://tvdboom.medium.com/?source=post_page-----ebeba81b97d1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ebeba81b97d1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ebeba81b97d1--------------------------------) [Marco vd Boom](https://tvdboom.medium.com/?source=post_page-----ebeba81b97d1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe2091b627921&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1&user=Marco+vd+Boom&userId=e2091b627921&source=post_page-e2091b627921----ebeba81b97d1---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ebeba81b97d1--------------------------------) ·6 min read·2023年3月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Febeba81b97d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1&user=Marco+vd+Boom&userId=e2091b627921&source=-----ebeba81b97d1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe2091b627921&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1&user=Marco+vd+Boom&userId=e2091b627921&source=post_page-e2091b627921----ebeba81b97d1---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ebeba81b97d1--------------------------------) ·6 min read·2023 年 3 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Febeba81b97d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1&user=Marco+vd+Boom&userId=e2091b627921&source=-----ebeba81b97d1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Febeba81b97d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1&source=-----ebeba81b97d1---------------------bookmark_footer-----------)![](../Images/c406c9a0eb9fcb1e0cbb132ad550c8e4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Febeba81b97d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-on-multioutput-datasets-a-quick-guide-ebeba81b97d1&source=-----ebeba81b97d1---------------------bookmark_footer-----------)![](img/c406c9a0eb9fcb1e0cbb132ad550c8e4.png)
 
 图片由 [Victor Barrios](https://unsplash.com/@thevictorbarrios?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,15 +20,15 @@
 
 大家熟悉的标准机器学习任务包括分类（二分类和多分类）和回归。在这些情况下，我们尝试预测一个目标列。在多输出情况下，有多个目标列，我们希望训练一个能够同时预测所有目标列的模型。我们识别出三种多输出任务：
 
-+   多标签：多标签是一个分类任务，将每个样本标记为*m*个标签，标签来自*n_classes*个可能的类别，其中*m*的范围是0到*n_classes*。这可以被视为预测样本的非互斥属性。例如，对文本文件相关话题的预测。该文件可能涉及宗教、政治、金融或教育中的一个、多个或所有话题类别。
++   多标签：多标签是一个分类任务，将每个样本标记为*m*个标签，标签来自*n_classes*个可能的类别，其中*m*的范围是 0 到*n_classes*。这可以被视为预测样本的非互斥属性。例如，对文本文件相关话题的预测。该文件可能涉及宗教、政治、金融或教育中的一个、多个或所有话题类别。
 
-+   多类-多输出：多类-多输出（也称为多任务分类）是一个分类任务，其中每个样本都有一组非二元属性标签。属性的数量和每个属性的类别数量都大于2。这不仅是对多标签分类任务的泛化（多标签分类任务只考虑二元属性），也是对多类分类任务的泛化（多类分类任务只考虑一个属性）。例如，对一组水果图像的“水果类型”和“颜色”属性进行分类。属性“水果类型”可能的类别有：苹果、梨和橙子。属性“颜色”可能的类别有：绿色、红色、黄色和橙色。每个样本是一张水果的图像，对两个属性都会输出一个标签，每个标签都是对应属性的可能类别之一。
++   多类-多输出：多类-多输出（也称为多任务分类）是一个分类任务，其中每个样本都有一组非二元属性标签。属性的数量和每个属性的类别数量都大于 2。这不仅是对多标签分类任务的泛化（多标签分类任务只考虑二元属性），也是对多类分类任务的泛化（多类分类任务只考虑一个属性）。例如，对一组水果图像的“水果类型”和“颜色”属性进行分类。属性“水果类型”可能的类别有：苹果、梨和橙子。属性“颜色”可能的类别有：绿色、红色、黄色和橙色。每个样本是一张水果的图像，对两个属性都会输出一个标签，每个标签都是对应属性的可能类别之一。
 
 +   多输出回归：多输出回归预测每个样本的多个数值属性。每个属性是一个数值变量，每个样本需要预测的属性数量>=2。例如，使用在某个位置获得的数据预测风速和风向（以度为单位）。每个样本是从一个位置获得的数据，对每个样本会输出风速和风向。
 
-在这个故事中，我们将解释[ATOM](https://github.com/tvdboom/ATOM)库如何帮助你加快多输出数据集的管道。从数据预处理到模型训练、验证和结果分析。ATOM是一个开源Python包，旨在帮助数据科学家探索机器学习管道。
+在这个故事中，我们将解释[ATOM](https://github.com/tvdboom/ATOM)库如何帮助你加快多输出数据集的管道。从数据预处理到模型训练、验证和结果分析。ATOM 是一个开源 Python 包，旨在帮助数据科学家探索机器学习管道。
 
-**注意**：这个故事专注于使用ATOM处理多输出数据集。库的基础知识教学不在本故事范围之内。如果你想了解库的简单介绍，请阅读[这篇文章](/atom-a-python-package-for-fast-exploration-of-machine-learning-pipelines-653956a16e7b)。
+**注意**：这个故事专注于使用 ATOM 处理多输出数据集。库的基础知识教学不在本故事范围之内。如果你想了解库的简单介绍，请阅读这篇文章。
 
 ## 数据预处理
 
@@ -38,7 +38,7 @@
 atom = ATOMClassifier(X, y=y, verbose=2, random_state=1)
 ```
 
-如果不提供`y=`，atom会认为第二个参数是测试集，就像你用`atom = ATOMClassifier(train, test)`进行初始化一样，这会导致列不匹配异常。
+如果不提供`y=`，atom 会认为第二个参数是测试集，就像你用`atom = ATOMClassifier(train, test)`进行初始化一样，这会导致列不匹配异常。
 
 你还可以提供一系列列名或位置来指定 `X` 中的目标列。例如，要指定最后 3 列作为目标，请使用：
 
@@ -129,7 +129,7 @@ atom.multioutput = RegressorChain
 atom.available_model()[["acronym", "model", "native_multioutput"]]
 ```
 
-![](../Images/fea209a08b54666c72874ae0a8d8bc55.png)
+![](img/fea209a08b54666c72874ae0a8d8bc55.png)
 
 现在，你可以正常训练模型。
 
@@ -139,7 +139,7 @@ atom.run(models=["LDA", "RF"], metric="f1")
 
 并检查估计器。
 
-![](../Images/846e5e36b68b1deea8a8369dbe73c3ac.png)
+![](img/846e5e36b68b1deea8a8369dbe73c3ac.png)
 
 一些模型，如 [MultiLayer Perceptron](https://tvdboom.github.io/ATOM/latest/API/models/mlp/)，对多标签任务有原生支持，但对多类多输出任务没有。因此，它们的 `native_multioutput` 标记为 False，但如果你有一个多标签任务，这些模型不一定需要一个多输出元估计器。在这种情况下，使用 *atom* 的 `multioutput` 属性告诉 atom 不使用任何多输出包装器。
 
@@ -150,9 +150,9 @@ atom.multioutput = None
 atom.run(models=["MLP"])
 ```
 
-![](../Images/bd1b477e3db5d9cd05bf7da82849e8e3.png)
+![](img/bd1b477e3db5d9cd05bf7da82849e8e3.png)
 
-**注意：** sklearn度量不支持多类-多输出分类任务。ATOM计算这种任务的度量方法是对每个目标列的得分取平均值。
+**注意：** sklearn 度量不支持多类-多输出分类任务。ATOM 计算这种任务的度量方法是对每个目标列的得分取平均值。
 
 ## 结果分析
 
@@ -176,25 +176,25 @@ with atom.canvas(figsize=(900, 600)):
 
 ## 结论
 
-我们已经展示了如何轻松使用ATOM包，以便快速探索多输出数据集上的机器学习管道。点击[这里](https://tvdboom.github.io/ATOM/latest/examples/multioutput_regression/)查看多输出回归任务的完整示例，点击[这里](https://tvdboom.github.io/ATOM/latest/examples/multilabel_classification/)查看多标签分类示例。
+我们已经展示了如何轻松使用 ATOM 包，以便快速探索多输出数据集上的机器学习管道。点击[这里](https://tvdboom.github.io/ATOM/latest/examples/multioutput_regression/)查看多输出回归任务的完整示例，点击[这里](https://tvdboom.github.io/ATOM/latest/examples/multilabel_classification/)查看多标签分类示例。
 
-关于ATOM的更多信息，请查看该包的[文档](https://tvdboom.github.io/ATOM/)。如有错误或功能请求，请随时在[GitHub](https://github.com/tvdboom/ATOM)上提交问题或发送电子邮件给我。
+关于 ATOM 的更多信息，请查看该包的[文档](https://tvdboom.github.io/ATOM/)。如有错误或功能请求，请随时在[GitHub](https://github.com/tvdboom/ATOM)上提交问题或发送电子邮件给我。
 
 相关故事：
 
-+   [https://towardsdatascience.com/atom-a-python-package-for-fast-exploration-of-machine-learning-pipelines-653956a16e7b](/atom-a-python-package-for-fast-exploration-of-machine-learning-pipelines-653956a16e7b)
++   `towardsdatascience.com/atom-a-python-package-for-fast-exploration-of-machine-learning-pipelines-653956a16e7b`
 
-+   [https://towardsdatascience.com/how-to-test-multiple-machine-learning-pipelines-with-just-a-few-lines-of-python-1a16cb4686d](/how-to-test-multiple-machine-learning-pipelines-with-just-a-few-lines-of-python-1a16cb4686d)
++   `towardsdatascience.com/how-to-test-multiple-machine-learning-pipelines-with-just-a-few-lines-of-python-1a16cb4686d`
 
-+   [https://towardsdatascience.com/from-raw-data-to-web-app-deployment-with-atom-and-streamlit-d8df381aa19f](/from-raw-data-to-web-app-deployment-with-atom-and-streamlit-d8df381aa19f)
++   `towardsdatascience.com/from-raw-data-to-web-app-deployment-with-atom-and-streamlit-d8df381aa19f`
 
-+   [https://towardsdatascience.com/exploration-of-deep-learning-pipelines-made-easy-e1cf649892bc](/exploration-of-deep-learning-pipelines-made-easy-e1cf649892bc)
++   `towardsdatascience.com/exploration-of-deep-learning-pipelines-made-easy-e1cf649892bc`
 
-+   [https://towardsdatascience.com/deep-feature-synthesis-vs-genetic-feature-generation-6ba4d05a6ca5](/deep-feature-synthesis-vs-genetic-feature-generation-6ba4d05a6ca5)
++   `towardsdatascience.com/deep-feature-synthesis-vs-genetic-feature-generation-6ba4d05a6ca5`
 
-+   [https://towardsdatascience.com/from-raw-text-to-model-prediction-in-under-30-lines-of-python-32133d853407](/from-raw-text-to-model-prediction-in-under-30-lines-of-python-32133d853407)
++   `towardsdatascience.com/from-raw-text-to-model-prediction-in-under-30-lines-of-python-32133d853407`
 
-+   [https://towardsdatascience.com/how-to-make-40-interactive-plots-to-analyze-your-machine-learning-pipeline-ee718afd7bc2](/how-to-make-40-interactive-plots-to-analyze-your-machine-learning-pipeline-ee718afd7bc2)
++   `towardsdatascience.com/how-to-make-40-interactive-plots-to-analyze-your-machine-learning-pipeline-ee718afd7bc2`
 
 参考文献：
 

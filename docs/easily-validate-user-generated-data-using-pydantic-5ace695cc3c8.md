@@ -1,18 +1,18 @@
 # 使用 Pydantic 轻松验证用户生成的数据
 
-> 原文：[https://towardsdatascience.com/easily-validate-user-generated-data-using-pydantic-5ace695cc3c8?source=collection_archive---------0-----------------------#2023-02-05](https://towardsdatascience.com/easily-validate-user-generated-data-using-pydantic-5ace695cc3c8?source=collection_archive---------0-----------------------#2023-02-05)
+> 原文：[`towardsdatascience.com/easily-validate-user-generated-data-using-pydantic-5ace695cc3c8?source=collection_archive---------0-----------------------#2023-02-05`](https://towardsdatascience.com/easily-validate-user-generated-data-using-pydantic-5ace695cc3c8?source=collection_archive---------0-----------------------#2023-02-05)
 
 ## 如何使用 Pydantic 验证 Excel 数据
 
-[](https://medium.com/@Carobert?source=post_page-----5ace695cc3c8--------------------------------)[![Charles Mendelson](../Images/0a8dea9bab2a49da65687095d31065e9.png)](https://medium.com/@Carobert?source=post_page-----5ace695cc3c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ace695cc3c8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ace695cc3c8--------------------------------) [Charles Mendelson](https://medium.com/@Carobert?source=post_page-----5ace695cc3c8--------------------------------)
+[](https://medium.com/@Carobert?source=post_page-----5ace695cc3c8--------------------------------)![Charles Mendelson](https://medium.com/@Carobert?source=post_page-----5ace695cc3c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ace695cc3c8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ace695cc3c8--------------------------------) [Charles Mendelson](https://medium.com/@Carobert?source=post_page-----5ace695cc3c8--------------------------------)
 
 ·
 
-[阅读原文](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f4d278f87e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feasily-validate-user-generated-data-using-pydantic-5ace695cc3c8&user=Charles+Mendelson&userId=a6f4d278f87e&source=post_page-a6f4d278f87e----5ace695cc3c8---------------------post_header-----------) 发表在 [数据科学进展](https://towardsdatascience.com/?source=post_page-----5ace695cc3c8--------------------------------) · 6 分钟阅读 · 2023年2月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ace695cc3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feasily-validate-user-generated-data-using-pydantic-5ace695cc3c8&user=Charles+Mendelson&userId=a6f4d278f87e&source=-----5ace695cc3c8---------------------clap_footer-----------)
+[阅读原文](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f4d278f87e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feasily-validate-user-generated-data-using-pydantic-5ace695cc3c8&user=Charles+Mendelson&userId=a6f4d278f87e&source=post_page-a6f4d278f87e----5ace695cc3c8---------------------post_header-----------) 发表在 [数据科学进展](https://towardsdatascience.com/?source=post_page-----5ace695cc3c8--------------------------------) · 6 分钟阅读 · 2023 年 2 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ace695cc3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feasily-validate-user-generated-data-using-pydantic-5ace695cc3c8&user=Charles+Mendelson&userId=a6f4d278f87e&source=-----5ace695cc3c8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ace695cc3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feasily-validate-user-generated-data-using-pydantic-5ace695cc3c8&source=-----5ace695cc3c8---------------------bookmark_footer-----------)![](../Images/96cde2e366e02c4c391f8c67f7152853.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ace695cc3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feasily-validate-user-generated-data-using-pydantic-5ace695cc3c8&source=-----5ace695cc3c8---------------------bookmark_footer-----------)![](img/96cde2e366e02c4c391f8c67f7152853.png)
 
 图片由 [DeepMind](https://unsplash.com/@deepmind?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/oVm12cylnBw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -28,7 +28,7 @@ Pydantic 是一个 Python 库，它允许你以 Pythonic 的方式定义数据�
 
 在开始之前，让我们检查一下我们的示例数据；一个我使用随机名称生成器创建的 RPG 角色的电子表格：
 
-![](../Images/5825d98934e0724e818ffd407f4dc8f1.png)
+![](img/5825d98934e0724e818ffd407f4dc8f1.png)
 
 作者提供的图片
 
@@ -280,4 +280,4 @@ Pydantic 非常强大，虽然这是一个简单的示例，但它可以处理�
 
 查尔斯·门德尔森是一位驻西雅图的数据工程师，怀有软件工程的幻想。除了作为数据工程师工作外，他还协助华盛顿大学继续教育学院教授 Python。 [与他联系的最佳方式是通过 LinkedIn](https://www.linkedin.com/in/charles-mendelson-carobert/)。
 
-*最初发表于* [*https://charlesmendelson.com*](https://charlesmendelson.com/tds/pydantic-data-validation/) *2023年2月5日。*
+*最初发表于* [*https://charlesmendelson.com*](https://charlesmendelson.com/tds/pydantic-data-validation/) *2023 年 2 月 5 日。*

@@ -1,18 +1,18 @@
 # 现代数据仓储
 
-> 原文：[https://towardsdatascience.com/modern-data-warehousing-2b1b0486ce4a?source=collection_archive---------0-----------------------#2023-12-16](https://towardsdatascience.com/modern-data-warehousing-2b1b0486ce4a?source=collection_archive---------0-----------------------#2023-12-16)
+> 原文：[`towardsdatascience.com/modern-data-warehousing-2b1b0486ce4a?source=collection_archive---------0-----------------------#2023-12-16`](https://towardsdatascience.com/modern-data-warehousing-2b1b0486ce4a?source=collection_archive---------0-----------------------#2023-12-16)
 
 ## 最先进的数据平台设计
 
-[](https://mshakhomirov.medium.com/?source=post_page-----2b1b0486ce4a--------------------------------)[![💡Mike Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----2b1b0486ce4a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2b1b0486ce4a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2b1b0486ce4a--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----2b1b0486ce4a--------------------------------)
+[](https://mshakhomirov.medium.com/?source=post_page-----2b1b0486ce4a--------------------------------)![💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----2b1b0486ce4a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2b1b0486ce4a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b1b0486ce4a--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----2b1b0486ce4a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe06a48b3dd48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-data-warehousing-2b1b0486ce4a&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=post_page-e06a48b3dd48----2b1b0486ce4a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b1b0486ce4a--------------------------------) ·12分钟阅读·2023年12月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2b1b0486ce4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-data-warehousing-2b1b0486ce4a&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=-----2b1b0486ce4a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe06a48b3dd48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-data-warehousing-2b1b0486ce4a&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=post_page-e06a48b3dd48----2b1b0486ce4a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2b1b0486ce4a--------------------------------) ·12 分钟阅读·2023 年 12 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2b1b0486ce4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-data-warehousing-2b1b0486ce4a&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=-----2b1b0486ce4a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2b1b0486ce4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-data-warehousing-2b1b0486ce4a&source=-----2b1b0486ce4a---------------------bookmark_footer-----------)![](../Images/61b0eba3203a5c89ddf3b0bd67553f9a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2b1b0486ce4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-data-warehousing-2b1b0486ce4a&source=-----2b1b0486ce4a---------------------bookmark_footer-----------)![](img/61b0eba3203a5c89ddf3b0bd67553f9a.png)
 
 图片由[Nubelson Fernandes](https://unsplash.com/@nublson?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

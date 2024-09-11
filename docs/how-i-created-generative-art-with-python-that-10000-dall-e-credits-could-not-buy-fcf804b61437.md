@@ -1,12 +1,12 @@
 # 如何使用 Python 创造 DALL-E 10000 份积分无法购买的生成艺术
 
-> 原文：[https://towardsdatascience.com/how-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437?source=collection_archive---------1-----------------------#2023-07-19](https://towardsdatascience.com/how-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437?source=collection_archive---------1-----------------------#2023-07-19)
+> 原文：[`towardsdatascience.com/how-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437?source=collection_archive---------1-----------------------#2023-07-19`](https://towardsdatascience.com/how-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437?source=collection_archive---------1-----------------------#2023-07-19)
 
-[](https://borach.medium.com/?source=post_page-----fcf804b61437--------------------------------)[![Borach Jansema](../Images/02280890ed87239c75cbcbfa7c5d686c.png)](https://borach.medium.com/?source=post_page-----fcf804b61437--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcf804b61437--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fcf804b61437--------------------------------) [Borach Jansema](https://borach.medium.com/?source=post_page-----fcf804b61437--------------------------------)
+[](https://borach.medium.com/?source=post_page-----fcf804b61437--------------------------------)![Borach Jansema](https://borach.medium.com/?source=post_page-----fcf804b61437--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcf804b61437--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcf804b61437--------------------------------) [Borach Jansema](https://borach.medium.com/?source=post_page-----fcf804b61437--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F26c634bbd08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437&user=Borach+Jansema&userId=26c634bbd08&source=post_page-26c634bbd08----fcf804b61437---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcf804b61437--------------------------------) · 11 分钟阅读 · 2023年7月19日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcf804b61437&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437&user=Borach+Jansema&userId=26c634bbd08&source=-----fcf804b61437---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F26c634bbd08&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437&user=Borach+Jansema&userId=26c634bbd08&source=post_page-26c634bbd08----fcf804b61437---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcf804b61437--------------------------------) · 11 分钟阅读 · 2023 年 7 月 19 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcf804b61437&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-created-generative-art-with-python-that-10000-dall-e-credits-could-not-buy-fcf804b61437&user=Borach+Jansema&userId=26c634bbd08&source=-----fcf804b61437---------------------clap_footer-----------)
 
 --
 
@@ -18,27 +18,27 @@ Python 和 Pillow: 如何编写 DALL-E 无法做到的代码
 
 在 2021 年初，我经常浏览 Catawiki，因为我想购买一些艺术品来装饰我的家庭办公室。当我在 2021 年初在 Catawiki 上发现 Haubenstock-Ramati 的作品时，我立刻被他复杂而美丽的参数艺术所吸引。我一直想用我的编程技能做一些创意性的工作，因此受到启发开发了可以生成类似输出的代码。下面的图像是激发我灵感的其中一幅图像，由 Roman Haubenstock-Ramati 创作。
 
-![](../Images/f0d763fe94d9d99a05ffa139f53c29b8.png)
+![](img/f0d763fe94d9d99a05ffa139f53c29b8.png)
 
-[Konstellationen](https://www.mutualart.com/Artwork/-Konstellationen-/9D3C9F0000BAC080)，1970/1971年，由 Roman Haubenstock-Ramati 创作
+[Konstellationen](https://www.mutualart.com/Artwork/-Konstellationen-/9D3C9F0000BAC080)，1970/1971 年，由 Roman Haubenstock-Ramati 创作
 
 在 2022 年 4 月 Dall-E 2 发布后，我尝试使用该模型生成应该类似于 Haubenstock-Ramati 作品的艺术作品。要求模型这样做是一个有争议的话题，因为关于 AI 模型能否生成如此类似于艺术家作品的输出，以至于这些输出可能被视为对原作的版权侵权，存在有效的担忧。这一讨论超出了这篇博客的范围，但我想澄清的是，我输入到 Dall-E 的提示并不是为了生成 Haubenstock-Ramati 作品的精确复制品或贬低他的作品。我编写的代码也是如此，它们并不是为了分发他的作品的副本，而仅仅是演示如何使用 Python 创建视觉几何构图。
 
 DALL-E 的输出很有趣，但并没有完全捕捉到他原作的精髓。输出缺乏 Haubenstock-Ramati 艺术作品中存在的精确约束和复杂性。我尝试了许多不同的提示，但始终无法接近我想要的效果。
 
-![](../Images/cf1d05296b01dbbdc4e8e52b47dad8a3.png)![](../Images/db2e5d309d0197d7951a6b0786d86f2a.png)
+![](img/cf1d05296b01dbbdc4e8e52b47dad8a3.png)![](img/db2e5d309d0197d7951a6b0786d86f2a.png)
 
 Dall-E 根据我的提示生成的一些输出：“创建一幅罗曼·豪本斯托克-拉马蒂风格的绘画作品，融入图形符号和实验音乐构图的元素。画作应以黑白色为主，具有大胆的线条和几何形状，并应包含一个中心主题，代表作品的主题。”
 
 为了简化过程，我向 Dall-E 提出了一个更简单的请求：“画一条垂直线连接到一个矩形，再连接一个正方形到这条线，然后用另一条垂直线将正方形连接到另一个矩形，最后用另一条垂直线将矩形连接到一个圆。”出乎意料的是，结果并不如我所愿。尽管提示很简单，Dall-E 仍然难以理解形状之间的预期关系，产生了意外的结果。
 
-![](../Images/5dd1084d4055b0477b078be052210bf0.png)![](../Images/1823a60e74cfde60397f932c321880ce.png)
+![](img/5dd1084d4055b0477b078be052210bf0.png)![](img/1823a60e74cfde60397f932c321880ce.png)
 
 Dall-E 根据提示生成的图像：“绘制一个垂直线连接一个矩形，将一个方块连接到这条线，再用另一条垂直线连接方块到另一个矩形，最后用另一条垂直线将矩形连接到一个圆形。”
 
 我清楚地意识到 Dall-E 无法处理几何约束的提示，我尝试了一个更简单的提示：“创建一个仅显示两条正交线的图”。这也被证明过于困难。
 
-![](../Images/e15c859898a59c0013db60450f0a5031.png)![](../Images/7df3731a890e4d049fb72a539fa977b7.png)
+![](img/e15c859898a59c0013db60450f0a5031.png)![](img/7df3731a890e4d049fb72a539fa977b7.png)
 
 Dall-E 生成的图像根据提示：“创建一个仅显示两条正交线的图”
 
@@ -46,11 +46,11 @@ Dall-E 不能完成这一任务让我感到惊讶，但考虑到像 Dall-E 这�
 
 接下来，我将展示我生成的图像，并详细讨论如何编写类似的代码。
 
-![](../Images/51e8c59fd457abd3d68e79bd9add5169.png)
+![](img/51e8c59fd457abd3d68e79bd9add5169.png)
 
 使用我的代码生成的图像的单一示例。
 
-![](../Images/58e5a69a4e133c2e19b5e292681dd20c.png)
+![](img/58e5a69a4e133c2e19b5e292681dd20c.png)
 
 一个展示我代码生成不同图像的 gif，显示了相同参数下图像的多样性。
 
@@ -68,7 +68,7 @@ Dall-E 不能完成这一任务让我感到惊讶，但考虑到像 Dall-E 这�
 
 +   步骤 3：在线条的簇中采样并绘制圆形和矩形。
 
-![](../Images/8ca93965e4c1b962b68be02f9a5e2595.png)
+![](img/8ca93965e4c1b962b68be02f9a5e2595.png)
 
 动图显示了单个图像的逐步生成过程。
 
@@ -243,11 +243,11 @@ for _ in range(10):
     img.show()
 ```
 
-**第3步**
+**第 3 步**
 
-我们过程中的第3步是第1步和第2步元素的结合。在第1步中，我们处理了在设定位置采样和绘制矩形的任务。在第2步中，我们学会了如何使用正态分布在画布的一部分上绘制线条。此外，我们还掌握了如何采样和绘制圆形的知识。
+我们过程中的第 3 步是第 1 步和第 2 步元素的结合。在第 1 步中，我们处理了在设定位置采样和绘制矩形的任务。在第 2 步中，我们学会了如何使用正态分布在画布的一部分上绘制线条。此外，我们还掌握了如何采样和绘制圆形的知识。
 
-当我们过渡到第3步时，我们将重新利用前面步骤中的技巧。我们的目标是将方形和圆形和谐地分布在我们之前采样的线条周围。正态分布将在这个任务中再次派上用场。
+当我们过渡到第 3 步时，我们将重新利用前面步骤中的技巧。我们的目标是将方形和圆形和谐地分布在我们之前采样的线条周围。正态分布将在这个任务中再次派上用场。
 
 我们将重用用于创建线条集群的参数。然而，为了增强视觉效果并避免重叠，我们对均值（μ）和标准差值引入了一些噪声。
 

@@ -1,18 +1,18 @@
 # 决策科学与设计的结合
 
-> 原文：[https://towardsdatascience.com/decision-science-meets-design-fb30eaa0ded9?source=collection_archive---------7-----------------------#2023-10-27](https://towardsdatascience.com/decision-science-meets-design-fb30eaa0ded9?source=collection_archive---------7-----------------------#2023-10-27)
+> 原文：[`towardsdatascience.com/decision-science-meets-design-fb30eaa0ded9?source=collection_archive---------7-----------------------#2023-10-27`](https://towardsdatascience.com/decision-science-meets-design-fb30eaa0ded9?source=collection_archive---------7-----------------------#2023-10-27)
 
 ## 深入探讨通过深度强化学习解决生成设计问题
 
-[](https://houssameeddinehsain.medium.com/?source=post_page-----fb30eaa0ded9--------------------------------)[![Houssame E. Hsain](../Images/2f7295dfb473f66e419fabd32ab12ffa.png)](https://houssameeddinehsain.medium.com/?source=post_page-----fb30eaa0ded9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb30eaa0ded9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fb30eaa0ded9--------------------------------) [Houssame E. Hsain](https://houssameeddinehsain.medium.com/?source=post_page-----fb30eaa0ded9--------------------------------)
+[](https://houssameeddinehsain.medium.com/?source=post_page-----fb30eaa0ded9--------------------------------)![Houssame E. Hsain](https://houssameeddinehsain.medium.com/?source=post_page-----fb30eaa0ded9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb30eaa0ded9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb30eaa0ded9--------------------------------) [Houssame E. Hsain](https://houssameeddinehsain.medium.com/?source=post_page-----fb30eaa0ded9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4056727edcf8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-science-meets-design-fb30eaa0ded9&user=Houssame+E.+Hsain&userId=4056727edcf8&source=post_page-4056727edcf8----fb30eaa0ded9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb30eaa0ded9--------------------------------) · 9 分钟阅读 · 2023年10月27日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4056727edcf8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-science-meets-design-fb30eaa0ded9&user=Houssame+E.+Hsain&userId=4056727edcf8&source=post_page-4056727edcf8----fb30eaa0ded9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb30eaa0ded9--------------------------------) · 9 分钟阅读 · 2023 年 10 月 27 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffb30eaa0ded9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-science-meets-design-fb30eaa0ded9&source=-----fb30eaa0ded9---------------------bookmark_footer-----------)![](../Images/0d61041140cffb1f009f720dbad3a024.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffb30eaa0ded9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-science-meets-design-fb30eaa0ded9&source=-----fb30eaa0ded9---------------------bookmark_footer-----------)![](img/0d61041140cffb1f009f720dbad3a024.png)
 
 图片来源：[Igor Omilaev](https://unsplash.com/@omilaev?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

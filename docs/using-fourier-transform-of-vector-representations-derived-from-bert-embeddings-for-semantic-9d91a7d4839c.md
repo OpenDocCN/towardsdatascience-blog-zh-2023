@@ -1,18 +1,18 @@
 # 使用从 BERT 嵌入中衍生的向量表示的傅里叶变换进行语义相似度评估
 
-> 原文：[https://towardsdatascience.com/using-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c?source=collection_archive---------1-----------------------#2023-01-14](https://towardsdatascience.com/using-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c?source=collection_archive---------1-----------------------#2023-01-14)
+> 原文：[`towardsdatascience.com/using-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c?source=collection_archive---------1-----------------------#2023-01-14`](https://towardsdatascience.com/using-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c?source=collection_archive---------1-----------------------#2023-01-14)
 
-![](../Images/7727543fc629cc19f66d6aa3a5236e98.png)
+![](img/7727543fc629cc19f66d6aa3a5236e98.png)
 
 照片由 Igor Shabalin 提供，已获许可
 
 ## 探索通过评估 BERT 嵌入的不同表示来了解句子中词语的相互影响
 
-[](https://jxireal.medium.com/?source=post_page-----9d91a7d4839c--------------------------------)[![Yuli Vasiliev](../Images/7a5fbd7fc0d48c87f0163e2ec4622f45.png)](https://jxireal.medium.com/?source=post_page-----9d91a7d4839c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9d91a7d4839c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9d91a7d4839c--------------------------------) [Yuli Vasiliev](https://jxireal.medium.com/?source=post_page-----9d91a7d4839c--------------------------------)
+[](https://jxireal.medium.com/?source=post_page-----9d91a7d4839c--------------------------------)![Yuli Vasiliev](https://jxireal.medium.com/?source=post_page-----9d91a7d4839c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9d91a7d4839c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9d91a7d4839c--------------------------------) [Yuli Vasiliev](https://jxireal.medium.com/?source=post_page-----9d91a7d4839c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83cfb869ab36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c&user=Yuli+Vasiliev&userId=83cfb869ab36&source=post_page-83cfb869ab36----9d91a7d4839c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9d91a7d4839c--------------------------------) ·5 min read·2023年1月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9d91a7d4839c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c&user=Yuli+Vasiliev&userId=83cfb869ab36&source=-----9d91a7d4839c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83cfb869ab36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c&user=Yuli+Vasiliev&userId=83cfb869ab36&source=post_page-83cfb869ab36----9d91a7d4839c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9d91a7d4839c--------------------------------) ·5 min read·2023 年 1 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9d91a7d4839c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-fourier-transform-of-vector-representations-derived-from-bert-embeddings-for-semantic-9d91a7d4839c&user=Yuli+Vasiliev&userId=83cfb869ab36&source=-----9d91a7d4839c---------------------clap_footer-----------)
 
 --
 
@@ -109,7 +109,7 @@ for i in range(3):
 0.7215733528137207
 ```
 
-现在让我们从BERT提供的嵌入中推导出更复杂的表示。首先，让我们获取每个句子中修饰语的初始嵌入：
+现在让我们从 BERT 提供的嵌入中推导出更复杂的表示。首先，让我们获取每个句子中修饰语的初始嵌入：
 
 ```py
 l0_1 = []
@@ -121,7 +121,7 @@ for i in range(3):
  l0_3.append(hidden_states[2][0][0][i+3][:10].numpy())
 ```
 
-现在，我们可以，例如，通过将上下文嵌入（在第12层编码器中生成）除以相应的初始嵌入（如前面帖子中讨论的），得到一些新的嵌入表示，用于进一步分析。
+现在，我们可以，例如，通过将上下文嵌入（在第 12 层编码器中生成）除以相应的初始嵌入（如前面帖子中讨论的），得到一些新的嵌入表示，用于进一步分析。
 
 ```py
 import numpy as np
@@ -294,4 +294,4 @@ fourier 0.9069805698881434
 
 # 结论
 
-在分析BERT嵌入时，傅里叶变换是否有意义？根据本文所做的实验，我们可以得出结论，这种方法可以有效地与其他方法结合使用。
+在分析 BERT 嵌入时，傅里叶变换是否有意义？根据本文所做的实验，我们可以得出结论，这种方法可以有效地与其他方法结合使用。

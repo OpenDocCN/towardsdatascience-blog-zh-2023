@@ -1,18 +1,18 @@
 # 自然语言处理的分类法
 
-> 原文：[https://towardsdatascience.com/a-taxonomy-of-natural-language-processing-dfc790cb4c01?source=collection_archive---------1-----------------------#2023-09-23](https://towardsdatascience.com/a-taxonomy-of-natural-language-processing-dfc790cb4c01?source=collection_archive---------1-----------------------#2023-09-23)
+> 原文：[`towardsdatascience.com/a-taxonomy-of-natural-language-processing-dfc790cb4c01?source=collection_archive---------1-----------------------#2023-09-23`](https://towardsdatascience.com/a-taxonomy-of-natural-language-processing-dfc790cb4c01?source=collection_archive---------1-----------------------#2023-09-23)
 
 ## 对自然语言处理（NLP）不同研究领域和近期发展的概述
 
-[](https://medium.com/@tim.schopf?source=post_page-----dfc790cb4c01--------------------------------)[![Tim Schopf](../Images/7d98a87af243ae6a82f837aa04ac2675.png)](https://medium.com/@tim.schopf?source=post_page-----dfc790cb4c01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dfc790cb4c01--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dfc790cb4c01--------------------------------) [Tim Schopf](https://medium.com/@tim.schopf?source=post_page-----dfc790cb4c01--------------------------------)
+[](https://medium.com/@tim.schopf?source=post_page-----dfc790cb4c01--------------------------------)![Tim Schopf](https://medium.com/@tim.schopf?source=post_page-----dfc790cb4c01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dfc790cb4c01--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dfc790cb4c01--------------------------------) [Tim Schopf](https://medium.com/@tim.schopf?source=post_page-----dfc790cb4c01--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fe3665aa3e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-taxonomy-of-natural-language-processing-dfc790cb4c01&user=Tim+Schopf&userId=7fe3665aa3e3&source=post_page-7fe3665aa3e3----dfc790cb4c01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dfc790cb4c01--------------------------------) ·11分钟阅读·2023年9月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdfc790cb4c01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-taxonomy-of-natural-language-processing-dfc790cb4c01&user=Tim+Schopf&userId=7fe3665aa3e3&source=-----dfc790cb4c01---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fe3665aa3e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-taxonomy-of-natural-language-processing-dfc790cb4c01&user=Tim+Schopf&userId=7fe3665aa3e3&source=post_page-7fe3665aa3e3----dfc790cb4c01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dfc790cb4c01--------------------------------) ·11 分钟阅读·2023 年 9 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdfc790cb4c01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-taxonomy-of-natural-language-processing-dfc790cb4c01&user=Tim+Schopf&userId=7fe3665aa3e3&source=-----dfc790cb4c01---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdfc790cb4c01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-taxonomy-of-natural-language-processing-dfc790cb4c01&source=-----dfc790cb4c01---------------------bookmark_footer-----------)![](../Images/7d131021511055812d50af30df0951c6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdfc790cb4c01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-taxonomy-of-natural-language-processing-dfc790cb4c01&source=-----dfc790cb4c01---------------------bookmark_footer-----------)![](img/7d131021511055812d50af30df0951c6.png)
 
 NLP 分类法。图片由作者提供。
 
@@ -26,21 +26,21 @@ NLP 分类法。图片由作者提供。
 
 在本文中，我们探讨了以下问题：
 
-+   ***NLP中研究的不同领域有哪些？***
++   ***NLP 中研究的不同领域有哪些？***
 
-+   ***NLP研究文献的特征和发展趋势是什么？***
++   ***NLP 研究文献的特征和发展趋势是什么？***
 
-+   ***NLP中的当前趋势和未来工作方向是什么？***
++   ***NLP 中的当前趋势和未来工作方向是什么？***
 
-尽管自然语言处理（NLP）的大多数研究领域都已为人熟知并得到定义，但目前还没有一种广泛使用的分类法或归类方案来收集和结构化这些研究领域，以便以一致且易于理解的格式展示。因此，要对整个NLP研究领域有一个概览是困难的。虽然在会议和教科书中有NLP主题的列表，但这些列表往往差异很大，并且通常过于宽泛或过于专业。因此，我们开发了一种涵盖广泛NLP研究领域的分类法。虽然这个分类法可能未包含所有可能的NLP概念，但它涵盖了大多数受欢迎的研究领域，其中缺失的研究领域可能被视为所包含领域的子主题。在开发分类法的过程中，我们发现某些较低级的研究领域必须分配给多个较高级的研究领域，而不仅仅是一个。因此，某些研究领域在NLP分类法中列出多次，但分配给不同的较高级研究领域。最终的分类法是在与领域专家的迭代过程中经验性地开发的。
+尽管自然语言处理（NLP）的大多数研究领域都已为人熟知并得到定义，但目前还没有一种广泛使用的分类法或归类方案来收集和结构化这些研究领域，以便以一致且易于理解的格式展示。因此，要对整个 NLP 研究领域有一个概览是困难的。虽然在会议和教科书中有 NLP 主题的列表，但这些列表往往差异很大，并且通常过于宽泛或过于专业。因此，我们开发了一种涵盖广泛 NLP 研究领域的分类法。虽然这个分类法可能未包含所有可能的 NLP 概念，但它涵盖了大多数受欢迎的研究领域，其中缺失的研究领域可能被视为所包含领域的子主题。在开发分类法的过程中，我们发现某些较低级的研究领域必须分配给多个较高级的研究领域，而不仅仅是一个。因此，某些研究领域在 NLP 分类法中列出多次，但分配给不同的较高级研究领域。最终的分类法是在与领域专家的迭代过程中经验性地开发的。
 
-该分类法作为一个总体分类方案，可以根据至少一个包含的研究领域对NLP出版物进行分类，即使它们不直接涉及其中一个研究领域，而只是其子主题。为了分析NLP的最新发展，我们训练了一个弱监督模型，将ACL Anthology论文按照NLP分类法进行分类。
+该分类法作为一个总体分类方案，可以根据至少一个包含的研究领域对 NLP 出版物进行分类，即使它们不直接涉及其中一个研究领域，而只是其子主题。为了分析 NLP 的最新发展，我们训练了一个弱监督模型，将 ACL Anthology 论文按照 NLP 分类法进行分类。
 
-你可以在我们的[论文](https://arxiv.org/abs/2307.10652)中阅读有关分类模型和NLP分类法开发过程的更多详细信息。
+你可以在我们的[论文](https://arxiv.org/abs/2307.10652)中阅读有关分类模型和 NLP 分类法开发过程的更多详细信息。
 
-# NLP中的不同研究领域 📖
+# NLP 中的不同研究领域 📖
 
-以下部分提供了上面NLP分类法中包含的研究领域概念的简短解释。
+以下部分提供了上面 NLP 分类法中包含的研究领域概念的简短解释。
 
 ## 多模态性
 
@@ -76,7 +76,7 @@ NLP 分类法。图片由作者提供。
 
 ## 多语种性
 
-多语言性涉及所有涉及多种自然语言的NLP任务，通常在**机器翻译**中研究。此外，**代码切换**在单句子内或句子之间自由地交替使用多种语言（[Diwan et al., 2021](https://www.isca-speech.org/archive/interspeech_2021/diwan21_interspeech.html)），而**跨语言迁移**技术则利用一种语言的数据和模型来解决另一种语言中的NLP任务。
+多语言性涉及所有涉及多种自然语言的 NLP 任务，通常在**机器翻译**中研究。此外，**代码切换**在单句子内或句子之间自由地交替使用多种语言（[Diwan et al., 2021](https://www.isca-speech.org/archive/interspeech_2021/diwan21_interspeech.html)），而**跨语言迁移**技术则利用一种语言的数据和模型来解决另一种语言中的 NLP 任务。
 
 ## 信息检索
 
@@ -90,27 +90,27 @@ NLP 分类法。图片由作者提供。
 
 文本生成方法的目标是生成既对人类可理解又无法区分于人类创作文本的内容。因此，输入通常是文本，例如**释义**，它将文本输入以不同的表面形式呈现，同时保留语义（[Niu et al., 2021](https://aclanthology.org/2021.emnlp-main.417)），**问题生成**，旨在根据一段文字和目标答案生成流畅且相关的问题（[Song et al., 2018](https://aclanthology.org/N18-2090)），或**对话回应生成**，旨在生成与提示相关的自然文本（[Zhang et al., 2020](https://aclanthology.org/2020.acl-demos.30)）。然而，在许多情况下，文本是通过其他模态的输入生成的，例如**数据到文本生成**，它基于结构化数据如表格或图形生成文本（[Kale and Rastogi, 2020](https://aclanthology.org/2020.inlg-1.14)），**图像或视频的标注**，或**语音识别**，将语音波形转录为文本（[Baevski et al., 2022](https://doi.org/10.48550/arXiv.2105.11084)）。
 
-# NLP中的特点和发展 📈
+# NLP 中的特点和发展 📈
 
-![](../Images/0dcf333d5a5397d5f2d6a1294b734f01.png)
+![](img/0dcf333d5a5397d5f2d6a1294b734f01.png)
 
-从1952年到2022年，ACL Anthology每年的论文数量。图像由作者提供
+从 1952 年到 2022 年，ACL Anthology 每年的论文数量。图像由作者提供
 
-考虑到自然语言处理（NLP）领域的文献，我们将研究兴趣的指标作为分析的起点。上面的图展示了50年观察期内的出版物分布。虽然首篇出版物出现在1952年，但年出版数量增长缓慢，直到2000年。因此，在2000年至2017年间，出版数量大致增长了四倍，而在接下来的五年里，又翻了一倍。因此，我们观察到NLP研究数量的近似指数增长，表明研究社区的关注度不断增加。
+考虑到自然语言处理（NLP）领域的文献，我们将研究兴趣的指标作为分析的起点。上面的图展示了 50 年观察期内的出版物分布。虽然首篇出版物出现在 1952 年，但年出版数量增长缓慢，直到 2000 年。因此，在 2000 年至 2017 年间，出版数量大致增长了四倍，而在接下来的五年里，又翻了一倍。因此，我们观察到 NLP 研究数量的近似指数增长，表明研究社区的关注度不断增加。
 
-![](../Images/64cd2b42e6db0a13970a05aee2f35508.png)
+![](img/64cd2b42e6db0a13970a05aee2f35508.png)
 
-从2002年到2022年，各学科领域论文数量的分布。图像由作者提供。
+从 2002 年到 2022 年，各学科领域论文数量的分布。图像由作者提供。
 
-从上图中可以看出，NLP文献中最受欢迎的研究领域及其近期的发展趋势。尽管大多数NLP研究与*机器翻译*或*语言模型*有关，但这两个领域的进展是不同的。*机器翻译*是一个经过充分研究的领域，已有较长的历史，并且在过去20年中增长缓慢。*语言模型*也进行了长期研究。然而，自2018年起，这一领域的出版数量才经历了显著增长。观察其他热门研究领域时也可以看到类似的差异。*表示学习*和*文本分类*虽然总体上被广泛研究，但其增长略显停滞。相反，*对话系统和会话代理*，尤其是*低资源NLP*，在研究数量上持续展现出较高的增长率。基于其他领域的平均研究数量，我们总体上观察到轻微的正增长。然而，大多数研究领域的研究程度显著低于最受欢迎的领域。
+从上图中可以看出，NLP 文献中最受欢迎的研究领域及其近期的发展趋势。尽管大多数 NLP 研究与*机器翻译*或*语言模型*有关，但这两个领域的进展是不同的。*机器翻译*是一个经过充分研究的领域，已有较长的历史，并且在过去 20 年中增长缓慢。*语言模型*也进行了长期研究。然而，自 2018 年起，这一领域的出版数量才经历了显著增长。观察其他热门研究领域时也可以看到类似的差异。*表示学习*和*文本分类*虽然总体上被广泛研究，但其增长略显停滞。相反，*对话系统和会话代理*，尤其是*低资源 NLP*，在研究数量上持续展现出较高的增长率。基于其他领域的平均研究数量，我们总体上观察到轻微的正增长。然而，大多数研究领域的研究程度显著低于最受欢迎的领域。
 
-# 最近的NLP趋势 🚀
+# 最近的 NLP 趋势 🚀
 
-![](../Images/2c23df7fda812aa446920f988905b397.png)
+![](img/2c23df7fda812aa446920f988905b397.png)
 
-NLP研究领域的增长-份额矩阵。各领域的增长率和总作品数量从2018年初计算到2022年末。图片由作者提供。
+NLP 研究领域的增长-份额矩阵。各领域的增长率和总作品数量从 2018 年初计算到 2022 年末。图片由作者提供。
 
-上图显示了NLP研究领域的增长-份额矩阵。通过分析2018至2022年间各NLP研究领域的增长率和论文总数，我们利用该图检视当前的研究趋势和未来可能的研究方向。矩阵的右上部分包含那些增长率高且论文总数较多的研究领域。鉴于这些领域的日益受欢迎，我们将其归类为*趋势之星*。右下部分包含那些非常受欢迎但增长率低的研究领域。这些领域通常对NLP至关重要，但已相对成熟。因此，我们将其归类为*基础领域*。矩阵的左上部分包含那些增长率高但论文数量很少的研究领域。由于这些领域的进展相当有前景，但总体论文数量较少，使得预测其未来发展变得困难，因此我们将其归类为*上升的问号*。矩阵左下部分的研究领域由于其较少的论文数量和较低的增长率，被归类为*小众领域*。
+上图显示了 NLP 研究领域的增长-份额矩阵。通过分析 2018 至 2022 年间各 NLP 研究领域的增长率和论文总数，我们利用该图检视当前的研究趋势和未来可能的研究方向。矩阵的右上部分包含那些增长率高且论文总数较多的研究领域。鉴于这些领域的日益受欢迎，我们将其归类为*趋势之星*。右下部分包含那些非常受欢迎但增长率低的研究领域。这些领域通常对 NLP 至关重要，但已相对成熟。因此，我们将其归类为*基础领域*。矩阵的左上部分包含那些增长率高但论文数量很少的研究领域。由于这些领域的进展相当有前景，但总体论文数量较少，使得预测其未来发展变得困难，因此我们将其归类为*上升的问号*。矩阵左下部分的研究领域由于其较少的论文数量和较低的增长率，被归类为*小众领域*。
 
 图表显示，*语言模型*目前受到最多的关注。基于该领域的最新发展，这一趋势可能会在不久的将来持续并加速。*文本分类*、*机器翻译*和*表示学习*位列最受欢迎的学科领域，但增长幅度仅为边际水平。从长远来看，它们可能会被增长更快的领域所取代。
 

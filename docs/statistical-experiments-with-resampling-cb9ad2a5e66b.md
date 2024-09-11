@@ -1,18 +1,18 @@
 # 使用重采样的统计实验
 
-> 原文：[https://towardsdatascience.com/statistical-experiments-with-resampling-cb9ad2a5e66b?source=collection_archive---------5-----------------------#2023-08-02](https://towardsdatascience.com/statistical-experiments-with-resampling-cb9ad2a5e66b?source=collection_archive---------5-----------------------#2023-08-02)
+> 原文：[`towardsdatascience.com/statistical-experiments-with-resampling-cb9ad2a5e66b?source=collection_archive---------5-----------------------#2023-08-02`](https://towardsdatascience.com/statistical-experiments-with-resampling-cb9ad2a5e66b?source=collection_archive---------5-----------------------#2023-08-02)
 
 ## 自举法与置换检验
 
-[](https://medium.com/@cretanpan?source=post_page-----cb9ad2a5e66b--------------------------------)[![潘·克雷坦](../Images/8b3fbab70c0e61f7ca516d2f54b646e5.png)](https://medium.com/@cretanpan?source=post_page-----cb9ad2a5e66b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb9ad2a5e66b--------------------------------)[![数据科学](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb9ad2a5e66b--------------------------------) [潘·克雷坦](https://medium.com/@cretanpan?source=post_page-----cb9ad2a5e66b--------------------------------)
+[](https://medium.com/@cretanpan?source=post_page-----cb9ad2a5e66b--------------------------------)![潘·克雷坦](https://medium.com/@cretanpan?source=post_page-----cb9ad2a5e66b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb9ad2a5e66b--------------------------------)![数据科学](https://towardsdatascience.com/?source=post_page-----cb9ad2a5e66b--------------------------------) [潘·克雷坦](https://medium.com/@cretanpan?source=post_page-----cb9ad2a5e66b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff990ba57425&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-experiments-with-resampling-cb9ad2a5e66b&user=Pan+Cretan&userId=ff990ba57425&source=post_page-ff990ba57425----cb9ad2a5e66b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb9ad2a5e66b--------------------------------) ·14 分钟阅读·2023年8月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb9ad2a5e66b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-experiments-with-resampling-cb9ad2a5e66b&user=Pan+Cretan&userId=ff990ba57425&source=-----cb9ad2a5e66b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff990ba57425&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-experiments-with-resampling-cb9ad2a5e66b&user=Pan+Cretan&userId=ff990ba57425&source=post_page-ff990ba57425----cb9ad2a5e66b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb9ad2a5e66b--------------------------------) ·14 分钟阅读·2023 年 8 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb9ad2a5e66b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-experiments-with-resampling-cb9ad2a5e66b&user=Pan+Cretan&userId=ff990ba57425&source=-----cb9ad2a5e66b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb9ad2a5e66b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-experiments-with-resampling-cb9ad2a5e66b&source=-----cb9ad2a5e66b---------------------bookmark_footer-----------)![](../Images/d162f208397b21ce38ce5ca172cc5c09.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb9ad2a5e66b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-experiments-with-resampling-cb9ad2a5e66b&source=-----cb9ad2a5e66b---------------------bookmark_footer-----------)![](img/d162f208397b21ce38ce5ca172cc5c09.png)
 
 图片来自 [Mollyroselee](https://pixabay.com/users/mollyroselee-9214707/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=4241186) 的 [Pixabay](https://pixabay.com)
 
@@ -30,7 +30,7 @@
 
 排列检验当然不是什么新鲜事，但我认为提供一些示例和相应的代码是个好主意。这可以缓解一些数据专家的恐惧，并将基于模拟的统计推断带入他们的日常实践。本文使用排列检验来回答两个问题。还有许多场景可以使用排列检验，对于更复杂的问题，排列检验的设计可能并不显而易见。从这个意义上说，本文并不全面。然而，原则是相同的。理解基础知识将更容易查找权威来源来设计排列检验以回答其他更微妙的商业问题。我的意图是激发一种思维方式，将模拟总体分布作为核心，并利用理论抽样来估计观察到的效应是偶然发生的概率。这就是假设检验的核心。
 
-统计推断始于一个假设，例如，新药对某种疾病的疗效比传统治疗更佳。效果可以通过检查某个血液指标（连续变量）的减少情况，或通过统计接受新药和传统治疗（对照组）后无法检测到疾病的动物数量（离散变量）来测量。这样的两组比较，也称为 A/B 测试，在所有经典统计学教材和流行技术博客中都有广泛讨论，比如这个[链接](https://medium.com/netflix-techblog/what-is-an-a-b-test-b08cc1b57962)。以药物设计为例，我们将测试新药是否比传统治疗更有效（A/B 测试）。基于此，我们将估计需要多少动物来确认新药比传统治疗有效1%（或其他效应大小）。虽然这两个问题看似无关，但其实并非如此。我们将重用第一个问题的代码来回答第二个问题。所有代码可以在我的博客[仓库](https://github.com/karpanGit/myBlogs/tree/master/StatisticalExperimentsWithResampling)中找到。
+统计推断始于一个假设，例如，新药对某种疾病的疗效比传统治疗更佳。效果可以通过检查某个血液指标（连续变量）的减少情况，或通过统计接受新药和传统治疗（对照组）后无法检测到疾病的动物数量（离散变量）来测量。这样的两组比较，也称为 A/B 测试，在所有经典统计学教材和流行技术博客中都有广泛讨论，比如这个[链接](https://medium.com/netflix-techblog/what-is-an-a-b-test-b08cc1b57962)。以药物设计为例，我们将测试新药是否比传统治疗更有效（A/B 测试）。基于此，我们将估计需要多少动物来确认新药比传统治疗有效 1%（或其他效应大小）。虽然这两个问题看似无关，但其实并非如此。我们将重用第一个问题的代码来回答第二个问题。所有代码可以在我的博客[仓库](https://github.com/karpanGit/myBlogs/tree/master/StatisticalExperimentsWithResampling)中找到。
 
 我欢迎评论，但请保持建设性。我并不假装自己是统计学家，我的意图是帮助他人经历类似的学习过程，特别是在排列检验方面。
 
@@ -42,11 +42,11 @@
 
 响应变量是二元的，即治疗是否成功。置换检验在响应变量为连续变量时也能以相同方式工作（这与经典统计检验不同！），但上面的表格会包含均值和标准差，而不是计数。
 
-我们故意不使用相同大小的处理组，因为这不是置换检验的要求。这次假设的A/B测试涉及了大量动物，似乎新药物很有前景。新药比传统治疗效果提高了1.5%。鉴于样本量很大，这看起来很显著。我们会再讨论这个问题。作为人类，我们倾向于将可能不显著的事物视为显著。这就是标准化假设检验如此重要的原因。
+我们故意不使用相同大小的处理组，因为这不是置换检验的要求。这次假设的 A/B 测试涉及了大量动物，似乎新药物很有前景。新药比传统治疗效果提高了 1.5%。鉴于样本量很大，这看起来很显著。我们会再讨论这个问题。作为人类，我们倾向于将可能不显著的事物视为显著。这就是标准化假设检验如此重要的原因。
 
 > “考虑零假设时，假设什么都没有发生，即机会可以解释一切。”
 
-在A/B测试中，我们使用一个基线假设，即没有观察到任何特殊情况。这也被称为零假设。进行测试的人通常希望证明零假设不成立，即发现了某种效果。换句话说，替代假设是真实的。证明这一点的一种方法是显示随机机会导致观察到的差异的概率非常低。我们已经开始看到与置换检验的关联。
+在 A/B 测试中，我们使用一个基线假设，即没有观察到任何特殊情况。这也被称为零假设。进行测试的人通常希望证明零假设不成立，即发现了某种效果。换句话说，替代假设是真实的。证明这一点的一种方法是显示随机机会导致观察到的差异的概率非常低。我们已经开始看到与置换检验的关联。
 
 想象一个程序，其中所有处理的动物被汇总到一个单一的组（2487 + 1785 只动物），然后随机分成两个与原始处理组相同大小的组。对于每只动物，我们知道治疗是否成功，因此我们可以计算每组的治愈动物的百分比。使用观察到的数据，我们确定新药将治愈动物的百分比从 80.34% 提高到 81.79%，即增加了将近 1.5%。如果我们多次重新抽样这两个组，我们会看到新药导致治愈动物的百分比相比于传统治疗的频率是多少？这个“频率”就是统计推断中的普遍 p 值。如果这种情况经常发生，即 p 值大于我们觉得舒适的阈值（通常是 5% 的显著性水平），那么我们在实验中看到的结果可能是由于偶然性，因此零假设未被拒绝。如果这种情况很少发生，那么偶然性无法导致观察到的差异，因此零假设被拒绝（如果你的团队发现了新药，你可以举办一个派对！）。如果你仔细观察，我们实际上用置换来模拟零假设，即两个处理组是等效的。
 
@@ -72,7 +72,7 @@
 
 这给出了以下直方图：
 
-![](../Images/6b6e81869d715c30cac4f70c9526f3bf.png)
+![](img/6b6e81869d715c30cac4f70c9526f3bf.png)
 
 新药与传统治疗在效果差异上的频率分布（作者提供的图片）
 
@@ -82,45 +82,45 @@
 
 还是有一些乐观的理由。我们刚刚进行的 A/B 测试有两种可能的结果：要么存在效果（在我们的案例中，新药比传统治疗更有效），要么没有足够的证据来得出存在效果的结论。测试并没有得出没有效果的结论。新药仍可能更有效。只是我们目前无法在选择的显著性水平下用现有数据证明这一点。测试实质上保护我们免于假阳性（也称为第一类错误）；但可能存在假阴性（也称为第二类错误）。这是团队所希望的。
 
-我们还可以问另一个问题。观察到的差异需要达到多少才能得出新药比传统治疗更有效的结论？显然1.5%是不够的，但多少才算足够呢？答案可以从生成的直方图中直接获得。我们可以将对应于观察到的差异的垂直线向右“移动”，直到红色条形的尾部占总面积的5%；换句话说，使用95%百分位数`np.percentile(differences, 95)`，其值为0.0203或2.03%。比我们观察到的1.5%多一点，虽然不太理想，但也不算太离谱。
+我们还可以问另一个问题。观察到的差异需要达到多少才能得出新药比传统治疗更有效的结论？显然 1.5%是不够的，但多少才算足够呢？答案可以从生成的直方图中直接获得。我们可以将对应于观察到的差异的垂直线向右“移动”，直到红色条形的尾部占总面积的 5%；换句话说，使用 95%百分位数`np.percentile(differences, 95)`，其值为 0.0203 或 2.03%。比我们观察到的 1.5%多一点，虽然不太理想，但也不算太离谱。
 
-使用0.05的显著性水平，如果新药治疗效果的增加在区间（-∞, 0.0203]中，我们将不会拒绝原假设。这也被称为置信区间：观察到的统计量值的集合，这些值不会拒绝原假设。由于我们使用了5%的显著性水平，这就是95%的置信区间。假设新药没有更高的效率，那么多次进行实验将会在95%的时间内得到置信区间内的效果差异。这就是置信区间告诉我们的信息。p值将超过*a*，当且仅当置信区间包含观察到的效果增加，这意味着原假设不能被拒绝。这两种检查原假设是否可以被拒绝的方法当然是等效的。
+使用 0.05 的显著性水平，如果新药治疗效果的增加在区间（-∞, 0.0203]中，我们将不会拒绝原假设。这也被称为置信区间：观察到的统计量值的集合，这些值不会拒绝原假设。由于我们使用了 5%的显著性水平，这就是 95%的置信区间。假设新药没有更高的效率，那么多次进行实验将会在 95%的时间内得到置信区间内的效果差异。这就是置信区间告诉我们的信息。p 值将超过*a*，当且仅当置信区间包含观察到的效果增加，这意味着原假设不能被拒绝。这两种检查原假设是否可以被拒绝的方法当然是等效的。
 
 以目前测试的动物数量，我们不能拒绝原假设，但我们距离置信区间边界还不远。团队持乐观态度，但我们需要收集更多有力证据以证明新药更有效。但需要多少更多的证据呢？我们将在下一节重新审视这个问题，因为运行重采样模拟也可以帮助我们回答这个问题！
 
-在我们结束这一部分之前，重要的是要注意我们还可以使用经典统计测试来近似p值。上面展示的表格也被称为列联表，它提供了两个变量之间的相互关系，并且可以用来确定它们之间是否存在交互作用。可以使用[从列联矩阵开始的卡方检验](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2_contingency.html)来检查这两个变量的独立性，但需要小心不要运行双侧检验（虽然没有广泛尝试，但scipy似乎默认使用双侧检验；这将导致更高的p值）。我们也可以使用[Fisher精确的单侧检验](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.fisher_exact.html)，这会得出一个p值为0.124，与通过采样计算的值差异不大。增加置换次数可能会趋向于这个值。在深入了解统计库用户指南之前，了解如何运行置换检验岂不是很棒？
+在我们结束这一部分之前，重要的是要注意我们还可以使用经典统计测试来近似 p 值。上面展示的表格也被称为列联表，它提供了两个变量之间的相互关系，并且可以用来确定它们之间是否存在交互作用。可以使用[从列联矩阵开始的卡方检验](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2_contingency.html)来检查这两个变量的独立性，但需要小心不要运行双侧检验（虽然没有广泛尝试，但 scipy 似乎默认使用双侧检验；这将导致更高的 p 值）。我们也可以使用[Fisher 精确的单侧检验](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.fisher_exact.html)，这会得出一个 p 值为 0.124，与通过采样计算的值差异不大。增加置换次数可能会趋向于这个值。在深入了解统计库用户指南之前，了解如何运行置换检验岂不是很棒？
 
 ## 功效估计
 
 由于我们无法证明新药的提高效果在统计上是显著的，因此人们可能会感到失望。新药可能确实更好。我们愿意通过处理更多的动物来进行更多的工作，但我们需要多少动物呢？这就是功效的作用所在。
 
-功效是指在给定样本大小和显著性水平下检测到给定效应量的概率。假设我们期望新药将治疗效果提高1.5%与传统治疗相比。假设我们已经用每种治疗处理了3000只动物，并将显著性水平固定为0.05，那么检验的功效为80%。这意味着如果我们重复实验多次，我们会发现5次实验中的4次我们得出新药比传统治疗更有效的结论。换句话说，假阴性率（Type II错误）为20%。上述数字当然是理论上的。重要的是，样本大小、效应量、显著性水平和功效这四个量是相关的，设置其中的任何三个可以计算出第四个。最典型的情况是从其他三个量计算样本大小。这就是我们在本节中要研究的内容。作为简化，我们假设在每个实验中我们用新药和传统治疗处理相同数量的动物。
+功效是指在给定样本大小和显著性水平下检测到给定效应量的概率。假设我们期望新药将治疗效果提高 1.5%与传统治疗相比。假设我们已经用每种治疗处理了 3000 只动物，并将显著性水平固定为 0.05，那么检验的功效为 80%。这意味着如果我们重复实验多次，我们会发现 5 次实验中的 4 次我们得出新药比传统治疗更有效的结论。换句话说，假阴性率（Type II 错误）为 20%。上述数字当然是理论上的。重要的是，样本大小、效应量、显著性水平和功效这四个量是相关的，设置其中的任何三个可以计算出第四个。最典型的情况是从其他三个量计算样本大小。这就是我们在本节中要研究的内容。作为简化，我们假设在每个实验中我们用新药和传统治疗处理相同数量的动物。
 
 下面的过程尝试构建一个以样本大小为函数的功效曲线：
 
-+   创建一个合成数据集，其中的动物假设已经接受了传统治疗，以便治疗效果或多或少地符合我们所知道的效果（下面，我将其设置为0.8034，这与上面的列联矩阵相对应）。
++   创建一个合成数据集，其中的动物假设已经接受了传统治疗，以便治疗效果或多或少地符合我们所知道的效果（下面，我将其设置为 0.8034，这与上面的列联矩阵相对应）。
 
-+   创建一个合成数据集，假设动物接受了新药治疗，通过添加我们希望调查的效应大小（如下所示，我将其设置为0.015和0.020，以观察其对结果的影响）。
++   创建一个合成数据集，假设动物接受了新药治疗，通过添加我们希望调查的效应大小（如下所示，我将其设置为 0.015 和 0.020，以观察其对结果的影响）。
 
-+   从每个合成数据集中抽取大小为n_sample的自助样本（下文我将其设置为3000、4000、5000、6000和7000）。
++   从每个合成数据集中抽取大小为 n_sample 的自助样本（下文我将其设置为 3000、4000、5000、6000 和 7000）。
 
 +   使用我们在上一节中建立的方法进行置换检验，以确定治疗效果的差异是否具有统计学意义。
 
 +   不断生成自助样本并计算治疗效果的差异在多大程度上具有统计学意义；这就是检验的功效。
 
-这当然是一个较长的模拟，因此我们将自助样本的数量限制为200，而显著性检验中的置换次数也减少到500，与上一节相比有所减少。
+这当然是一个较长的模拟，因此我们将自助样本的数量限制为 200，而显著性检验中的置换次数也减少到 500，与上一节相比有所减少。
 
-运行这个自助法/置换法模拟大约需要一个小时左右的时间，在普通计算机上可以受益于多进程，这超出了本文的范围。我们可以使用matplotlib轻松地可视化结果：
+运行这个自助法/置换法模拟大约需要一个小时左右的时间，在普通计算机上可以受益于多进程，这超出了本文的范围。我们可以使用 matplotlib 轻松地可视化结果：
 
 这生成了以下图表：
 
-![](../Images/241b896c81ac908fe1139e45688714f5.png)
+![](img/241b896c81ac908fe1139e45688714f5.png)
 
-两种效应大小和0.05显著性水平下的样本量与统计功效的关系。图像由作者提供。
+两种效应大小和 0.05 显著性水平下的样本量与统计功效的关系。图像由作者提供。
 
-我们从中学到了什么？如果我们期望新药的有效性提高1.5%，那么为了以80%的把握证明这一点，我们需要治疗超过7000只动物。如果效应大小更大，即2%，我们需要的样本量就会减少，大约4500只动物就足够了。这是直观的。检测到大效应比小效应要容易。决定进行这样的大规模实验需要进行成本/收益分析，但至少现在我们知道了证明新药更有效所需的条件。
+我们从中学到了什么？如果我们期望新药的有效性提高 1.5%，那么为了以 80%的把握证明这一点，我们需要治疗超过 7000 只动物。如果效应大小更大，即 2%，我们需要的样本量就会减少，大约 4500 只动物就足够了。这是直观的。检测到大效应比小效应要容易。决定进行这样的大规模实验需要进行成本/收益分析，但至少现在我们知道了证明新药更有效所需的条件。
 
-我们还可以使用statsmodels计算所需的样本量：
+我们还可以使用 statsmodels 计算所需的样本量：
 
 这将打印：
 
@@ -129,7 +129,7 @@ effect size: 0.015, sample size: 8426.09
 effect size: 0.020, sample size: 4690.38
 ```
 
-模拟结果似乎一致。在模拟中，我们将样本量增加到7000，但当效应大小为1.5%时，样本量不足以达到0.8的把握，这一点也通过使用`[proportion_effectsize](https://www.statsmodels.org/dev/generated/statsmodels.stats.proportion.proportion_effectsize.html)`函数得到了验证。
+模拟结果似乎一致。在模拟中，我们将样本量增加到 7000，但当效应大小为 1.5%时，样本量不足以达到 0.8 的把握，这一点也通过使用`[proportion_effectsize](https://www.statsmodels.org/dev/generated/statsmodels.stats.proportion.proportion_effectsize.html)`函数得到了验证。
 
 ## 结论
 

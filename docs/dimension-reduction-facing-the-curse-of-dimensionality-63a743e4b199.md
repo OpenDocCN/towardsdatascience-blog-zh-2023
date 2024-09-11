@@ -1,10 +1,10 @@
 # 维度缩减：面对维度诅咒
 
-> 原文：[https://towardsdatascience.com/dimension-reduction-facing-the-curse-of-dimensionality-63a743e4b199?source=collection_archive---------4-----------------------#2023-04-13](https://towardsdatascience.com/dimension-reduction-facing-the-curse-of-dimensionality-63a743e4b199?source=collection_archive---------4-----------------------#2023-04-13)
+> 原文：[`towardsdatascience.com/dimension-reduction-facing-the-curse-of-dimensionality-63a743e4b199?source=collection_archive---------4-----------------------#2023-04-13`](https://towardsdatascience.com/dimension-reduction-facing-the-curse-of-dimensionality-63a743e4b199?source=collection_archive---------4-----------------------#2023-04-13)
 
 ## PCA 与动态因子模型的比较
 
-[](https://medium.com/@Vgraff?source=post_page-----63a743e4b199--------------------------------)[![Victor Graff](../Images/b6e06690f2b7952c62eaed4cc693ba5b.png)](https://medium.com/@Vgraff?source=post_page-----63a743e4b199--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63a743e4b199--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----63a743e4b199--------------------------------) [Victor Graff](https://medium.com/@Vgraff?source=post_page-----63a743e4b199--------------------------------)
+[](https://medium.com/@Vgraff?source=post_page-----63a743e4b199--------------------------------)![Victor Graff](https://medium.com/@Vgraff?source=post_page-----63a743e4b199--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63a743e4b199--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----63a743e4b199--------------------------------) [Victor Graff](https://medium.com/@Vgraff?source=post_page-----63a743e4b199--------------------------------)
 
 ·
 
@@ -12,15 +12,15 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63a743e4b199&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdimension-reduction-facing-the-curse-of-dimensionality-63a743e4b199&source=-----63a743e4b199---------------------bookmark_footer-----------)![](../Images/442e566f7cd383d1c6d57a443390e89e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63a743e4b199&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdimension-reduction-facing-the-curse-of-dimensionality-63a743e4b199&source=-----63a743e4b199---------------------bookmark_footer-----------)![](img/442e566f7cd383d1c6d57a443390e89e.png)
 
 [Kolleen Gladden](https://unsplash.com/@rockthechaos?utm_source=medium&utm_medium=referral) 的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 许多数据科学家不得不面对维度的挑战。数据集可能包含大量变量，使得理解和计算变得复杂。例如，资产管理者可能会被与其投资组合相关的许多动态变量所困扰，处理大量数据可能导致计算问题。降维是一种将大量变量的信息提取到较小的降维变量集合中的方法，而不会丧失过多的解释性。换句话说，降维方法可以被认为是寻找一个最小化重构误差的子空间。
 
-存在几种方法来进行信息提取，每种方法都适用于不同的用例。本文旨在提供这两种方法的详细比较：主成分分析（PCA）和动态因子模型（DFM）。PCA可以用于任何类型的结构化数据集，而动态因子模型则用于时间序列应用，因为它嵌入了时间序列的演变。
+存在几种方法来进行信息提取，每种方法都适用于不同的用例。本文旨在提供这两种方法的详细比较：主成分分析（PCA）和动态因子模型（DFM）。PCA 可以用于任何类型的结构化数据集，而动态因子模型则用于时间序列应用，因为它嵌入了时间序列的演变。
 
-分析基于经济和金融数据。用于本研究的数据是克拉克、托德；卡里耶罗、安德烈亚；马切利诺、马西米利亚诺的文章*测量不确定性及其对经济的影响*中使用数据的复制版，数据可在[Harvard dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910%2FDVN%2FENTXDD)上获取。数据包括18个宏观经济变量和12个金融变量，涵盖了这些变量从1960年到2014年的演变。在通过降维算法处理之前，数据被转换以确保平稳性。
+分析基于经济和金融数据。用于本研究的数据是克拉克、托德；卡里耶罗、安德烈亚；马切利诺、马西米利亚诺的文章*测量不确定性及其对经济的影响*中使用数据的复制版，数据可在[Harvard dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910%2FDVN%2FENTXDD)上获取。数据包括 18 个宏观经济变量和 12 个金融变量，涵盖了这些变量从 1960 年到 2014 年的演变。在通过降维算法处理之前，数据被转换以确保平稳性。
 
 整个代码可在[Github](https://github.com/graffv/Comparison_PCA_DFM/blob/main/PCA%20-%20DFM%20comparison.ipynb)上获取。
 
@@ -28,9 +28,9 @@
 
 ## 理论
 
-PCA可以看作是一种无监督的降维方法。假设我们有大量的变量。所有这些变量似乎都对分析有用，但没有明显的方法将这些变量汇总成类别。在这种情况下，算法将负责在没有模型师特定输入的情况下进行降维。换句话说，算法将创建更少的变量，称为降维成分，这些成分能够接近地重现初始变量。
+PCA 可以看作是一种无监督的降维方法。假设我们有大量的变量。所有这些变量似乎都对分析有用，但没有明显的方法将这些变量汇总成类别。在这种情况下，算法将负责在没有模型师特定输入的情况下进行降维。换句话说，算法将创建更少的变量，称为降维成分，这些成分能够接近地重现初始变量。
 
-PCA的方法基于变量的协方差。如果两个变量高度协方差，这意味着它们遵循相同的趋势。第一个变量在重现第二个变量方面非常高效，使得只保留第一个变量而不丧失在需要时重建第二个变量的能力成为可能。PCA创建一个变量子集，最大化与初始变量集的协方差，以便在较低维度中存储尽可能多的信息。
+PCA 的方法基于变量的协方差。如果两个变量高度协方差，这意味着它们遵循相同的趋势。第一个变量在重现第二个变量方面非常高效，使得只保留第一个变量而不丧失在需要时重建第二个变量的能力成为可能。PCA 创建一个变量子集，最大化与初始变量集的协方差，以便在较低维度中存储尽可能多的信息。
 
 该方法的思路是计算由原始变量集创建的空间的正交基。创建这个基的向量是方差-协方差矩阵的特征向量。通过选择最能代表初始数据的特征向量，即包含最多协方差的特征向量，可以轻松地减少维度。特征值量化了向量存储的协方差量：特征值越大，其相关的向量就越有趣。
 
@@ -38,7 +38,7 @@ PCA 算法的过程如下：
 
 1\. 计算协方差矩阵
 
-![](../Images/999c7da8504b6b8386f7426b96621622.png)
+![](img/999c7da8504b6b8386f7426b96621622.png)
 
 2\. 计算其特征向量和特征值
 
@@ -56,7 +56,7 @@ pca = PCA(n_components=5).fit(u_data)
 plt.plot(pca.explained_variance_ratio_)
 ```
 
-![](../Images/faa9b39c47a8468accb26fadd63d0b36.png)
+![](img/faa9b39c47a8468accb26fadd63d0b36.png)
 
 选择合适特征向量数量的通常规则是查看图中表示的“肘部”。取到肘部的向量数量提供了信息保留和结果维度之间的有趣折衷。在这种情况下，我们保留前两个组件。
 
@@ -76,7 +76,7 @@ plt.plot(pca.explained_variance_ratio_)
 
 DFM 将向量 Xt 定义为减少因子（ft）过去和当前值的线性组合。这些因子本身是动态的，即以自回归方式定义。减少的成分数量为 q，自回归的滞后为 p。
 
-![](../Images/aab6ab4b5de77c8067d70309ef48018f.png)
+![](img/aab6ab4b5de77c8067d70309ef48018f.png)
 
 每个 λ 是一个 (N x q) 矩阵，其中 q 是减少的成分数量，每个 ft 是一个 (q x 1) 向量，每个 ψ 是一个 (q x q) 矩阵。动态性体现在每个减少的向量 ft 遵循向量自回归过程，因此它本身是基于 f 的过去值计算的。此外，向量 X 受当前和过去数据的影响。
 
@@ -100,9 +100,9 @@ for finance_variable in list(finance_variables.values()):
     factors[finance_variable] = ["Finance"]
 ```
 
-然后，我们定义与每个因子ft相关的VAR模型的滞后阶数，即多少个时间步骤向后影响因子的当前状态。在我们的案例中，一个滞后似乎足够。增加滞后显然会增加计算约束，但通过在每一步提供更长时间的信息，可以显著影响模型的效率。
+然后，我们定义与每个因子 ft 相关的 VAR 模型的滞后阶数，即多少个时间步骤向后影响因子的当前状态。在我们的案例中，一个滞后似乎足够。增加滞后显然会增加计算约束，但通过在每一步提供更长时间的信息，可以显著影响模型的效率。
 
-最后，需要定义特定成分。这个成分表示向量Xt中不能通过ft的当前值和过去值解释的部分。这个成分可以看作是线性回归中的残差。它可以拟合为AR(1)模型或白噪声。从经济学角度来看，这一选择是重要的：我们估计模型的残差是自回归的（即现值和过去值相关）还是独立同分布的？对于经济学研究来说，一个不相关的特定成分通常是不现实的，因为测量方法通常会引入相关误差。
+最后，需要定义特定成分。这个成分表示向量 Xt 中不能通过 ft 的当前值和过去值解释的部分。这个成分可以看作是线性回归中的残差。它可以拟合为 AR(1)模型或白噪声。从经济学角度来看，这一选择是重要的：我们估计模型的残差是自回归的（即现值和过去值相关）还是独立同分布的？对于经济学研究来说，一个不相关的特定成分通常是不现实的，因为测量方法通常会引入相关误差。
 
 ```py
 factor_model = DynamicFactorMQ(u_data,
@@ -137,15 +137,15 @@ model_results = factor_model.fit(disp=30)
 
 +   预先确定的降维成分数量
 
-乍一看，PCA似乎比DFM更受关注，但要做出决定还需要进一步观察。这两者之间的主要区别在于DFM能够提供其结果的有意义解释。
+乍一看，PCA 似乎比 DFM 更受关注，但要做出决定还需要进一步观察。这两者之间的主要区别在于 DFM 能够提供其结果的有意义解释。
 
 ## 可读性
 
 首先，我们来看一下创建的组件。
 
-![](../Images/9f586cfdcfed2e62a8cd6be6f22da72a.png)![](../Images/812e1de4d22dbea8b75bc9cbbb29cefa.png)
+![](img/9f586cfdcfed2e62a8cd6be6f22da72a.png)![](img/812e1de4d22dbea8b75bc9cbbb29cefa.png)
 
-这两个图显示了每个模型中两个选择因子的演变。有趣的是，这两个模型似乎都将一个变量分离为趋势（蓝色）和另一个变量分离为波动性（橙色）。DFM给我们提供了这一观察结果背后的含义：看到宏观变量（例如 GDP、房价等）随着时间的推移而增加并不奇怪。此外，金融变量被认为波动性更大。PCA似乎捕捉到了相同类型的信息，但我们仍然只能对这种现象做出假设。DFM在这一点上有优势。
+这两个图显示了每个模型中两个选择因子的演变。有趣的是，这两个模型似乎都将一个变量分离为趋势（蓝色）和另一个变量分离为波动性（橙色）。DFM 给我们提供了这一观察结果背后的含义：看到宏观变量（例如 GDP、房价等）随着时间的推移而增加并不奇怪。此外，金融变量被认为波动性更大。PCA 似乎捕捉到了相同类型的信息，但我们仍然只能对这种现象做出假设。DFM 在这一点上有优势。
 
 ## 准确性
 
@@ -164,7 +164,7 @@ model_results.fittedvalues
 
 我们可以轻松绘制每个模型的数据表示。下面的图中，我们展示了失业率变量的一个例子。
 
-![](../Images/3d254727c726e70616b95852e26338a2.png)
+![](img/3d254727c726e70616b95852e26338a2.png)
 
 在这个例子中，DFM 显然更适合，因为它始终更接近原始数据，变化更少。为了进行更全面和定量的评估，让我们计算两个模型在整个数据集上的残差。
 
@@ -173,7 +173,7 @@ print(f"Residuals of DFM on global dataset: {np.round(np.abs(model_results.resid
 print(f"Residuals of PCA on global dataset: {np.round(np.abs(resid_pca).sum().sum(), 2)}")
 ```
 
-![](../Images/e605055725e2c7b23028c7291676a03b.png)
+![](img/e605055725e2c7b23028c7291676a03b.png)
 
 残差和
 
@@ -205,4 +205,4 @@ print(f"Residuals of PCA on global dataset: {np.round(np.abs(resid_pca).sum().su
 
 ## 参考文献
 
-Clark, Todd; Carriero, Andrea; Marcellino, Massimiliano, 2017, “Replication Data for: “Measuring Uncertainty and Its Impact on the Economy””, [https://doi.org/10.7910/DVN/ENTXDD](https://doi.org/10.7910/DVN/ENTXDD), Harvard Dataverse, V3
+Clark, Todd; Carriero, Andrea; Marcellino, Massimiliano, 2017, “Replication Data for: “Measuring Uncertainty and Its Impact on the Economy””, [`doi.org/10.7910/DVN/ENTXDD`](https://doi.org/10.7910/DVN/ENTXDD), Harvard Dataverse, V3

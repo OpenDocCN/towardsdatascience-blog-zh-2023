@@ -1,18 +1,18 @@
 # 如何用 Rust 让你的 Python 包真正加速
 
-> 原文：[https://towardsdatascience.com/how-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2?source=collection_archive---------2-----------------------#2023-05-31](https://towardsdatascience.com/how-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2?source=collection_archive---------2-----------------------#2023-05-31)
+> 原文：[`towardsdatascience.com/how-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2?source=collection_archive---------2-----------------------#2023-05-31`](https://towardsdatascience.com/how-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2?source=collection_archive---------2-----------------------#2023-05-31)
 
 ## 告别，慢速代码
 
-[](https://medium.isaacharrisholt.com/?source=post_page-----91a9bebacbc2--------------------------------)[![Isaac Harris-Holt](../Images/723dfa962a9eb9b9d4fcc99502a7a294.png)](https://medium.isaacharrisholt.com/?source=post_page-----91a9bebacbc2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----91a9bebacbc2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----91a9bebacbc2--------------------------------) [Isaac Harris-Holt](https://medium.isaacharrisholt.com/?source=post_page-----91a9bebacbc2--------------------------------)
+[](https://medium.isaacharrisholt.com/?source=post_page-----91a9bebacbc2--------------------------------)![Isaac Harris-Holt](https://medium.isaacharrisholt.com/?source=post_page-----91a9bebacbc2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----91a9bebacbc2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----91a9bebacbc2--------------------------------) [Isaac Harris-Holt](https://medium.isaacharrisholt.com/?source=post_page-----91a9bebacbc2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae5d6a2a28aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2&user=Isaac+Harris-Holt&userId=ae5d6a2a28aa&source=post_page-ae5d6a2a28aa----91a9bebacbc2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----91a9bebacbc2--------------------------------) · 6 分钟阅读 · 2023年5月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F91a9bebacbc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2&user=Isaac+Harris-Holt&userId=ae5d6a2a28aa&source=-----91a9bebacbc2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae5d6a2a28aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2&user=Isaac+Harris-Holt&userId=ae5d6a2a28aa&source=post_page-ae5d6a2a28aa----91a9bebacbc2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----91a9bebacbc2--------------------------------) · 6 分钟阅读 · 2023 年 5 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F91a9bebacbc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2&user=Isaac+Harris-Holt&userId=ae5d6a2a28aa&source=-----91a9bebacbc2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F91a9bebacbc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2&source=-----91a9bebacbc2---------------------bookmark_footer-----------)![](../Images/aa4989d4b59e24e5610fb197df1de377.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F91a9bebacbc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-your-python-packages-really-fast-with-rust-91a9bebacbc2&source=-----91a9bebacbc2---------------------bookmark_footer-----------)![](img/aa4989d4b59e24e5610fb197df1de377.png)
 
 照片由[Chris Liverani](https://unsplash.com/@chrisliverani?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -40,7 +40,7 @@ Rust 是一种内存高效的语言，没有运行时或垃圾回收器。它速
 
 接下来，为你的包创建一个目录。我将其命名为 `fibbers`。最后一步是从你的新目录中运行 `maturin init`。此时，你将被提示选择要使用的 Rust 绑定。选择 `pyo3`。
 
-![](../Images/b909e60c1bf09cc8fdeed5803878c8b8.png)
+![](img/b909e60c1bf09cc8fdeed5803878c8b8.png)
 
 图片来源：作者。
 
@@ -68,65 +68,65 @@ Maturin 已经使用我们之前提到的 PyO3 绑定为我们创建了一个 Py
 
 这段代码的主要部分是 `sum_as_string` 函数，它被标记为 `pyfunction` 属性，以及 `fibbers` 函数，它代表我们的 Python 模块。`fibbers` 函数实际上只是将 `sum_as_string` 函数注册到我们的 `fibbers` 模块中。
 
-如果我们现在安装这个，我们将能够从Python调用`fibbers.sum_as_string()`，一切都会按预期工作。
+如果我们现在安装这个，我们将能够从 Python 调用`fibbers.sum_as_string()`，一切都会按预期工作。
 
 不过，我首先要做的是将`sum_as_string`函数替换为我们的`fib`函数。
 
-这与我们之前编写的Python实现完全相同——它接受一个正整数n并返回第n个斐波那契数。我还将我们的新函数注册到`fibbers`模块，所以我们可以开始使用了！
+这与我们之前编写的 Python 实现完全相同——它接受一个正整数 n 并返回第 n 个斐波那契数。我还将我们的新函数注册到`fibbers`模块，所以我们可以开始使用了！
 
 ## 基准测试我们的函数
 
-要安装我们的`fibbers`包，我们只需在终端中运行`maturin develop`即可。这将下载并编译我们的Rust包，并将其安装到我们的虚拟环境中。
+要安装我们的`fibbers`包，我们只需在终端中运行`maturin develop`即可。这将下载并编译我们的 Rust 包，并将其安装到我们的虚拟环境中。
 
-![](../Images/1403ae627ee0b4a01ea8ad0968f0b11a.png)
-
-图片由作者提供。
-
-现在，在我们的`fib.py`文件中，我们可以导入`fibbers`，打印`fibbers.fib()`的结果，然后为我们的Rust实现添加一个`timeit`案例。
-
-如果我们现在运行第10个斐波那契数，你会发现我们的Rust函数比Python快约5倍，尽管我们使用的是相同的实现！
-
-![](../Images/42faca074401862fe3478468a5e55196.png)
+![](img/1403ae627ee0b4a01ea8ad0968f0b11a.png)
 
 图片由作者提供。
 
-如果我们计算第20和第30个斐波那契数，我们可以看到Rust比Python快约15倍。
+现在，在我们的`fib.py`文件中，我们可以导入`fibbers`，打印`fibbers.fib()`的结果，然后为我们的 Rust 实现添加一个`timeit`案例。
 
-![](../Images/dd9ba721121d38effa68225d2e8f6e41.png)
+如果我们现在运行第 10 个斐波那契数，你会发现我们的 Rust 函数比 Python 快约 5 倍，尽管我们使用的是相同的实现！
 
-第20个斐波那契数结果。图片由作者提供。
+![](img/42faca074401862fe3478468a5e55196.png)
 
-![](../Images/56c728d6b3607441c5f57b78a9dd71dd.png)
+图片由作者提供。
 
-第30个斐波那契数结果。图片由作者提供。
+如果我们计算第 20 和第 30 个斐波那契数，我们可以看到 Rust 比 Python 快约 15 倍。
+
+![](img/dd9ba721121d38effa68225d2e8f6e41.png)
+
+第 20 个斐波那契数结果。图片由作者提供。
+
+![](img/56c728d6b3607441c5f57b78a9dd71dd.png)
+
+第 30 个斐波那契数结果。图片由作者提供。
 
 但如果我告诉你我们还没有达到最大速度呢？
 
-你看，默认情况下，`maturin develop`会构建Rust crate的开发版本，这会放弃许多优化以减少编译时间，这意味着程序运行的速度不会达到最佳。如果我们返回到`fibbers`目录，再次运行`maturin develop`，但这次加上`--release`标志，我们将得到优化后的生产就绪版本的二进制文件。
+你看，默认情况下，`maturin develop`会构建 Rust crate 的开发版本，这会放弃许多优化以减少编译时间，这意味着程序运行的速度不会达到最佳。如果我们返回到`fibbers`目录，再次运行`maturin develop`，但这次加上`--release`标志，我们将得到优化后的生产就绪版本的二进制文件。
 
-![](../Images/7f723ac21a572c815c7dbd8c320a9f7a.png)
+![](img/7f723ac21a572c815c7dbd8c320a9f7a.png)
 
-如果我们现在基准测试第30个斐波那契数，我们会看到Rust现在比Python快了令人惊叹的*40倍*！
+如果我们现在基准测试第 30 个斐波那契数，我们会看到 Rust 现在比 Python 快了令人惊叹的*40 倍*！
 
-![](../Images/f75f3a616edc770b5df0868e54190488.png)
+![](img/f75f3a616edc770b5df0868e54190488.png)
 
-第30个斐波那契数，优化版。图片由作者提供。
+第 30 个斐波那契数，优化版。图片由作者提供。
 
-## Rust的限制
+## Rust 的限制
 
-然而，我们的Rust实现确实有问题。如果我们尝试使用`fibbers.fib()`获取第50个斐波那契数，你会看到我们实际上遇到了溢出错误，并且得到的答案与Python不同。
+然而，我们的 Rust 实现确实有问题。如果我们尝试使用`fibbers.fib()`获取第 50 个斐波那契数，你会看到我们实际上遇到了溢出错误，并且得到的答案与 Python 不同。
 
-![](../Images/8a5ced8efee69a67b0329f1a8c5e7c69.png)
+![](img/8a5ced8efee69a67b0329f1a8c5e7c69.png)
 
-Rust经历了整数溢出。图片由作者提供。
+Rust 经历了整数溢出。图片由作者提供。
 
-这是因为，与Python不同，Rust有固定大小的整数，32位整数不足以容纳我们的第50个斐波那契数。
+这是因为，与 Python 不同，Rust 有固定大小的整数，32 位整数不足以容纳我们的第 50 个斐波那契数。
 
-我们可以通过将Rust函数中的类型从`u32`更改为`u64`来解决这个问题，但这会使用更多的内存，并且可能不是每台机器都支持。我们还可以使用像[num_bigint](https://docs.rs/num-bigint/latest/num_bigint/)这样的crate来解决这个问题，但这超出了本文的范围。
+我们可以通过将 Rust 函数中的类型从`u32`更改为`u64`来解决这个问题，但这会使用更多的内存，并且可能不是每台机器都支持。我们还可以使用像[num_bigint](https://docs.rs/num-bigint/latest/num_bigint/)这样的 crate 来解决这个问题，但这超出了本文的范围。
 
 另一个小限制是使用 PyO3 绑定会有一些开销。你可以在这里看到我仅仅获取第一个斐波那契数，实际上 Python 比 Rust 更快，这要归功于这种开销。
 
-![](../Images/21a63bceb9f6e6ef68242a6c1d67e854.png)
+![](img/21a63bceb9f6e6ef68242a6c1d67e854.png)
 
 Python 在 n=1 时更快。图片来自作者。
 

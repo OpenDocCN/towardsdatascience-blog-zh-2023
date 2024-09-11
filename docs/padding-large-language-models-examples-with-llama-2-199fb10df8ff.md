@@ -1,18 +1,18 @@
 # 填充大型语言模型 — 使用 Llama 2 的示例
 
-> 原文：[https://towardsdatascience.com/padding-large-language-models-examples-with-llama-2-199fb10df8ff?source=collection_archive---------2-----------------------#2023-08-11](https://towardsdatascience.com/padding-large-language-models-examples-with-llama-2-199fb10df8ff?source=collection_archive---------2-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/padding-large-language-models-examples-with-llama-2-199fb10df8ff?source=collection_archive---------2-----------------------#2023-08-11`](https://towardsdatascience.com/padding-large-language-models-examples-with-llama-2-199fb10df8ff?source=collection_archive---------2-----------------------#2023-08-11)
 
 ## 为因果 LLMs 填充训练示例的最佳实践
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)[](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)[](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----199fb10df8ff---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------) · 10分钟阅读·2023年8月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F199fb10df8ff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&user=Benjamin+Marie&userId=ad2a414578b3&source=-----199fb10df8ff---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----199fb10df8ff---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------) · 10 分钟阅读·2023 年 8 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F199fb10df8ff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&user=Benjamin+Marie&userId=ad2a414578b3&source=-----199fb10df8ff---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F199fb10df8ff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&source=-----199fb10df8ff---------------------bookmark_footer-----------)![](../Images/5dee339a0ba5a939a758499baeec9333.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F199fb10df8ff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&source=-----199fb10df8ff---------------------bookmark_footer-----------)![](img/5dee339a0ba5a939a758499baeec9333.png)
 
 作者提供的图像 — 基于来自[Pixabay](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/)的图像
 
@@ -337,11 +337,11 @@ print(input)
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1]])}
 ```
 
-添加了填充标记到Llama 2的词汇表后，不要忘记调整Llama 2的令牌嵌入。我在这篇文章中解释了如何做到这一点：
+添加了填充标记到 Llama 2 的词汇表后，不要忘记调整 Llama 2 的令牌嵌入。我在这篇文章中解释了如何做到这一点：
 
-[## 在你的计算机上使用QLoRa和TRL对Llama 2进行微调](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----199fb10df8ff--------------------------------)
+[## 在你的计算机上使用 QLoRa 和 TRL 对 Llama 2 进行微调](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----199fb10df8ff--------------------------------)
 
-### 在Guanaco和正确的填充设置下
+### 在 Guanaco 和正确的填充设置下
 
 [kaitchup.substack.com](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----199fb10df8ff--------------------------------)
 
@@ -349,6 +349,6 @@ print(input)
 
 一旦你理解了，填充就非常简单。
 
-使用UNK标记进行填充，或者从头创建填充标记，是非常安全的解决方案，几乎适用于所有因果语言模型。但你应该始终查看分词器的工作方式。至少你应该了解它已经支持的特殊标记。例如，并非所有语言模型都有UNK标记，有些语言模型的填充标记在词汇表中没有明确定义为填充标记，等等。
+使用 UNK 标记进行填充，或者从头创建填充标记，是非常安全的解决方案，几乎适用于所有因果语言模型。但你应该始终查看分词器的工作方式。至少你应该了解它已经支持的特殊标记。例如，并非所有语言模型都有 UNK 标记，有些语言模型的填充标记在词汇表中没有明确定义为填充标记，等等。
 
 像往常一样，如果你有任何问题，请留下评论。我会尽量回答。

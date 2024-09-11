@@ -1,18 +1,18 @@
 # 我在每个数据分析师候选人身上寻找的特质
 
-> 原文：[https://towardsdatascience.com/what-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e?source=collection_archive---------5-----------------------#2023-01-03](https://towardsdatascience.com/what-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e?source=collection_archive---------5-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/what-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e?source=collection_archive---------5-----------------------#2023-01-03`](https://towardsdatascience.com/what-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e?source=collection_archive---------5-----------------------#2023-01-03)
 
 ## 从招聘经理的角度
 
-[](https://medium.com/@kingkoa96746?source=post_page-----7d05c52bb19e--------------------------------)[![Galen Okazaki](../Images/6a96d075ba546f59b677b802b3f31232.png)](https://medium.com/@kingkoa96746?source=post_page-----7d05c52bb19e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7d05c52bb19e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7d05c52bb19e--------------------------------) [Galen Okazaki](https://medium.com/@kingkoa96746?source=post_page-----7d05c52bb19e--------------------------------)
+[](https://medium.com/@kingkoa96746?source=post_page-----7d05c52bb19e--------------------------------)![Galen Okazaki](https://medium.com/@kingkoa96746?source=post_page-----7d05c52bb19e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7d05c52bb19e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7d05c52bb19e--------------------------------) [Galen Okazaki](https://medium.com/@kingkoa96746?source=post_page-----7d05c52bb19e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2ffe9e541c63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e&user=Galen+Okazaki&userId=2ffe9e541c63&source=post_page-2ffe9e541c63----7d05c52bb19e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----7d05c52bb19e--------------------------------) ·7分钟阅读·2023年1月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7d05c52bb19e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e&user=Galen+Okazaki&userId=2ffe9e541c63&source=-----7d05c52bb19e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2ffe9e541c63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e&user=Galen+Okazaki&userId=2ffe9e541c63&source=post_page-2ffe9e541c63----7d05c52bb19e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----7d05c52bb19e--------------------------------) ·7 分钟阅读·2023 年 1 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7d05c52bb19e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e&user=Galen+Okazaki&userId=2ffe9e541c63&source=-----7d05c52bb19e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7d05c52bb19e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e&source=-----7d05c52bb19e---------------------bookmark_footer-----------)![](../Images/e9f521e07f35b4e3c765c23b5eb620a5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7d05c52bb19e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-look-for-in-every-data-analyst-candidate-7d05c52bb19e&source=-----7d05c52bb19e---------------------bookmark_footer-----------)![](img/e9f521e07f35b4e3c765c23b5eb620a5.png)
 
 摄影：由[Clem Onojeghuo](https://unsplash.com/@clemono?utm_source=medium&utm_medium=referral)提供，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,15 +22,15 @@
 
 ## **数据分析师的需求是真实的……而且在增长**
 
-准备好让你的思维被颠覆了吗？在2012年至2022年的十年间，数字宇宙中的数据量增加了15倍，[从6.5泽字节（ZB）增加到97 ZB，预计在接下来的三年内（到2025年底）这一数字将几乎翻倍至181 ZB](https://www.statista.com/statistics/871513/worldwide-data-created/)! 换成更易理解的术语，一个泽字节等于一万亿千兆字节的数据。随着数字化转型和物联网（**IoT**）的不断普及，收集的数据量和种类只会继续增长。这一数据爆炸得益于大数据构架的革命性进展，使得所有这些数据能够被捕捉、整理、存储、处理和近乎实时地分析。然而，随着我们生产的数据量的增加，我们从中获得的商业洞察却没有增加。实际上，尽管每年花费数十亿美元来缩小这个差距，但数据收集与洞察收集之间的差距只会继续扩大。这个差距存在的主要原因之一是缺乏合格的人才来完成这些工作。
+准备好让你的思维被颠覆了吗？在 2012 年至 2022 年的十年间，数字宇宙中的数据量增加了 15 倍，[从 6.5 泽字节（ZB）增加到 97 ZB，预计在接下来的三年内（到 2025 年底）这一数字将几乎翻倍至 181 ZB](https://www.statista.com/statistics/871513/worldwide-data-created/)! 换成更易理解的术语，一个泽字节等于一万亿千兆字节的数据。随着数字化转型和物联网（**IoT**）的不断普及，收集的数据量和种类只会继续增长。这一数据爆炸得益于大数据构架的革命性进展，使得所有这些数据能够被捕捉、整理、存储、处理和近乎实时地分析。然而，随着我们生产的数据量的增加，我们从中获得的商业洞察却没有增加。实际上，尽管每年花费数十亿美元来缩小这个差距，但数据收集与洞察收集之间的差距只会继续扩大。这个差距存在的主要原因之一是缺乏合格的人才来完成这些工作。
 
 ## **集中你的技术技能**
 
-当我在2000年代初开始我的数据分析职业时，数据仓库正当风靡。我的技术工具箱包括关系数据库、数据库设计工具（Erwin）、提取转换加载（ETL）工具、商业智能（BI）工具以及当然的结构化查询语言（SQL）。这是一套直观的工具，学习曲线相对较易。但在今天的数据分析环境中，由于现在存储的数据量以各种不同形式和结构级别存在，需要大量的技能组合和角色来进行分析。这甚至催生了备受追捧的多技能数据科学家角色。
+当我在 2000 年代初开始我的数据分析职业时，数据仓库正当风靡。我的技术工具箱包括关系数据库、数据库设计工具（Erwin）、提取转换加载（ETL）工具、商业智能（BI）工具以及当然的结构化查询语言（SQL）。这是一套直观的工具，学习曲线相对较易。但在今天的数据分析环境中，由于现在存储的数据量以各种不同形式和结构级别存在，需要大量的技能组合和角色来进行分析。这甚至催生了备受追捧的多技能数据科学家角色。
 
 在许多不同的技术技能需求中，潜在的数据分析师如何选择学习哪些技能？虽然选择学习什么不是本文的具体重点，但我要告诉你的是，你应该将有限的时间花在**掌握**你所选择的技能上。旧谚语“全才不精通”在这里完全适用。根据我的招聘经理经验，许多新进入数据分析领域的人倾向于列出一长串他们有一定了解的技术技能，希望这能给他们带来优势。这是一个错误。
 
-对我来说重要的是你能展示出将你学到的技能用于实际应用的能力。例如，如果你花时间学习了如何用R语言编程，我希望了解你如何利用它来回答实际问题，而不仅仅是能列出你可以调用的函数。描述一下你从业务角度想要解决的问题，以及你使用了哪些工具的功能来回答这个问题。能够做到这一点会向我展示两件事。首先，你掌握了技术技能，其次（而且更重要的是），你理解如何在业务背景下使用这些技能。  
+对我来说重要的是你能展示出将你学到的技能用于实际应用的能力。例如，如果你花时间学习了如何用 R 语言编程，我希望了解你如何利用它来回答实际问题，而不仅仅是能列出你可以调用的函数。描述一下你从业务角度想要解决的问题，以及你使用了哪些工具的功能来回答这个问题。能够做到这一点会向我展示两件事。首先，你掌握了技术技能，其次（而且更重要的是），你理解如何在业务背景下使用这些技能。  
 
 顺便提一下，许多数据分析师拥有出色的技术技能，但如果没有来自业务的详细指导，他们仍然无法有效应用这些技能。另一方面，如果你能展示出你已经掌握了某项技术技能，如我所描述的那样，我将会有信心，你能在我雇佣你后掌握并正确应用其他有价值的技术技能。  
 
@@ -44,7 +44,7 @@
 
 ## **保持你的技术知识更新**
 
-数据分析的技术格局不断演变，随着越来越多的公司认识到从这些数据中获取洞察的巨大价值，这一进程正在以光速增长。人工智能、机器学习、云计算、Hadoop 集群、Apache Spark、数据湖、数据管道、数据织物、数据网格、数据可视化等新技术、架构和分析方法层出不穷。掌握这些技术显然是不可能的，但我强烈建议你对它们的功能及其在整体数据分析中的角色形成概念性的理解。我几乎可以保证，你会发现通过掌握其中的一项新技能获得极大的机会。此外，保持对数据和分析领域顶尖趋势的关注也很重要。备受尊敬的Gartner每年都会通过其“[数据和分析领域的顶尖趋势](https://www.gartner.com/en/webinar/430318/1035298)”做出出色的记录。构建和维护这个知识库将有助于你全面理解数据分析的各个方面，并使你在这个不断发展的领域保持相关性。记住，保持好奇心！
+数据分析的技术格局不断演变，随着越来越多的公司认识到从这些数据中获取洞察的巨大价值，这一进程正在以光速增长。人工智能、机器学习、云计算、Hadoop 集群、Apache Spark、数据湖、数据管道、数据织物、数据网格、数据可视化等新技术、架构和分析方法层出不穷。掌握这些技术显然是不可能的，但我强烈建议你对它们的功能及其在整体数据分析中的角色形成概念性的理解。我几乎可以保证，你会发现通过掌握其中的一项新技能获得极大的机会。此外，保持对数据和分析领域顶尖趋势的关注也很重要。备受尊敬的 Gartner 每年都会通过其“[数据和分析领域的顶尖趋势](https://www.gartner.com/en/webinar/430318/1035298)”做出出色的记录。构建和维护这个知识库将有助于你全面理解数据分析的各个方面，并使你在这个不断发展的领域保持相关性。记住，保持好奇心！
 
 ## **结论**
 

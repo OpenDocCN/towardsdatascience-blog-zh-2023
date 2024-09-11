@@ -1,18 +1,18 @@
 # 使用 PyTorch (LSTM-RNN) 进行时间序列预测
 
-> 原文：[https://towardsdatascience.com/time-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c?source=collection_archive---------0-----------------------#2023-02-09](https://towardsdatascience.com/time-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c?source=collection_archive---------0-----------------------#2023-02-09)
+> 原文：[`towardsdatascience.com/time-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c?source=collection_archive---------0-----------------------#2023-02-09`](https://towardsdatascience.com/time-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c?source=collection_archive---------0-----------------------#2023-02-09)
 
 ## 一篇关于使用 PyTorch 深度学习进行单变量时间序列预测的深入教程
 
-[](https://zainbaq.medium.com/?source=post_page-----1ba339885f0c--------------------------------)[![Zain Baquar](../Images/27c7941771179fe5731641930c403ff2.png)](https://zainbaq.medium.com/?source=post_page-----1ba339885f0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ba339885f0c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1ba339885f0c--------------------------------) [Zain Baquar](https://zainbaq.medium.com/?source=post_page-----1ba339885f0c--------------------------------)
+[](https://zainbaq.medium.com/?source=post_page-----1ba339885f0c--------------------------------)![Zain Baquar](https://zainbaq.medium.com/?source=post_page-----1ba339885f0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ba339885f0c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ba339885f0c--------------------------------) [Zain Baquar](https://zainbaq.medium.com/?source=post_page-----1ba339885f0c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd16fc4a70186&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c&user=Zain+Baquar&userId=d16fc4a70186&source=post_page-d16fc4a70186----1ba339885f0c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ba339885f0c--------------------------------) ·12 min read·2023年2月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1ba339885f0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c&user=Zain+Baquar&userId=d16fc4a70186&source=-----1ba339885f0c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd16fc4a70186&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c&user=Zain+Baquar&userId=d16fc4a70186&source=post_page-d16fc4a70186----1ba339885f0c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ba339885f0c--------------------------------) ·12 min read·2023 年 2 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1ba339885f0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c&user=Zain+Baquar&userId=d16fc4a70186&source=-----1ba339885f0c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1ba339885f0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c&source=-----1ba339885f0c---------------------bookmark_footer-----------)![](../Images/d2d7047e533c03e443b61973f43ce21a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1ba339885f0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c&source=-----1ba339885f0c---------------------bookmark_footer-----------)![](img/d2d7047e533c03e443b61973f43ce21a.png)
 
 [Unsplash: Maxim Hopman](https://unsplash.com/@nampoh)
 

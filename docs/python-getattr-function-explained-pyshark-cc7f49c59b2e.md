@@ -1,18 +1,18 @@
 # Python getattr() 函数解释
 
-> 原文：[https://towardsdatascience.com/python-getattr-function-explained-pyshark-cc7f49c59b2e?source=collection_archive---------22-----------------------#2023-03-20](https://towardsdatascience.com/python-getattr-function-explained-pyshark-cc7f49c59b2e?source=collection_archive---------22-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/python-getattr-function-explained-pyshark-cc7f49c59b2e?source=collection_archive---------22-----------------------#2023-03-20`](https://towardsdatascience.com/python-getattr-function-explained-pyshark-cc7f49c59b2e?source=collection_archive---------22-----------------------#2023-03-20)
 
 ## 在本文中，我们将探讨如何使用 Python 的 `getattr()` 函数。
 
-[](https://pyshark.medium.com/?source=post_page-----cc7f49c59b2e--------------------------------)[![Misha Sv](../Images/d3f9605e2c7020246ff793869728e218.png)](https://pyshark.medium.com/?source=post_page-----cc7f49c59b2e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cc7f49c59b2e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cc7f49c59b2e--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----cc7f49c59b2e--------------------------------)
+[](https://pyshark.medium.com/?source=post_page-----cc7f49c59b2e--------------------------------)![Misha Sv](https://pyshark.medium.com/?source=post_page-----cc7f49c59b2e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cc7f49c59b2e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc7f49c59b2e--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----cc7f49c59b2e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-getattr-function-explained-pyshark-cc7f49c59b2e&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----cc7f49c59b2e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc7f49c59b2e--------------------------------) ·4分钟阅读·2023年3月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcc7f49c59b2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-getattr-function-explained-pyshark-cc7f49c59b2e&user=Misha+Sv&userId=685c2995a8e&source=-----cc7f49c59b2e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-getattr-function-explained-pyshark-cc7f49c59b2e&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----cc7f49c59b2e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc7f49c59b2e--------------------------------) ·4 分钟阅读·2023 年 3 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcc7f49c59b2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-getattr-function-explained-pyshark-cc7f49c59b2e&user=Misha+Sv&userId=685c2995a8e&source=-----cc7f49c59b2e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcc7f49c59b2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-getattr-function-explained-pyshark-cc7f49c59b2e&source=-----cc7f49c59b2e---------------------bookmark_footer-----------)![](../Images/a5e64fb6704e20c5a2c1070c9a117bc2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcc7f49c59b2e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-getattr-function-explained-pyshark-cc7f49c59b2e&source=-----cc7f49c59b2e---------------------bookmark_footer-----------)![](img/a5e64fb6704e20c5a2c1070c9a117bc2.png)
 
 图片由 [Shane Aldendorff](https://unsplash.com/@pluyar?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/3AzL-IR3v7Y?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

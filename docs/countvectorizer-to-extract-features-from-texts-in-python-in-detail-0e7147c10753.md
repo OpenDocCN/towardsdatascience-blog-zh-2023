@@ -1,18 +1,18 @@
 # CountVectorizer 在 Python 中提取文本特征的详细介绍
 
-> 原文：[https://towardsdatascience.com/countvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753?source=collection_archive---------6-----------------------#2023-10-21](https://towardsdatascience.com/countvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753?source=collection_archive---------6-----------------------#2023-10-21)
+> 原文：[`towardsdatascience.com/countvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753?source=collection_archive---------6-----------------------#2023-10-21`](https://towardsdatascience.com/countvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753?source=collection_archive---------6-----------------------#2023-10-21)
 
-![](../Images/07e11611df2a6a84e10f07ef5553f473.png)
+![](img/07e11611df2a6a84e10f07ef5553f473.png)
 
 图片由 [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 你需要了解的关于如何在 Sklearn 中有效使用 CountVectorizer 的所有知识
 
-[](https://rashida00.medium.com/?source=post_page-----0e7147c10753--------------------------------)[![Rashida Nasrin Sucky](../Images/42bd057e8eca255907c43c29a498f2ca.png)](https://rashida00.medium.com/?source=post_page-----0e7147c10753--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0e7147c10753--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0e7147c10753--------------------------------) [Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----0e7147c10753--------------------------------)
+[](https://rashida00.medium.com/?source=post_page-----0e7147c10753--------------------------------)![Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----0e7147c10753--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0e7147c10753--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----0e7147c10753--------------------------------) [Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----0e7147c10753--------------------------------)
 
 ·
 
-[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a36b941a136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcountvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753&user=Rashida+Nasrin+Sucky&userId=8a36b941a136&source=post_page-8a36b941a136----0e7147c10753---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0e7147c10753--------------------------------) ·7 min read·2023年10月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0e7147c10753&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcountvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753&user=Rashida+Nasrin+Sucky&userId=8a36b941a136&source=-----0e7147c10753---------------------clap_footer-----------)
+[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a36b941a136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcountvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753&user=Rashida+Nasrin+Sucky&userId=8a36b941a136&source=post_page-8a36b941a136----0e7147c10753---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0e7147c10753--------------------------------) ·7 min read·2023 年 10 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0e7147c10753&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcountvectorizer-to-extract-features-from-texts-in-python-in-detail-0e7147c10753&user=Rashida+Nasrin+Sucky&userId=8a36b941a136&source=-----0e7147c10753---------------------clap_footer-----------)
 
 --
 

@@ -1,44 +1,44 @@
 # Mixtral-8x7B: 理解和运行稀疏专家混合模型
 
-> 原文：[https://towardsdatascience.com/mixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818?source=collection_archive---------2-----------------------#2023-12-15](https://towardsdatascience.com/mixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818?source=collection_archive---------2-----------------------#2023-12-15)
+> 原文：[`towardsdatascience.com/mixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818?source=collection_archive---------2-----------------------#2023-12-15`](https://towardsdatascience.com/mixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818?source=collection_archive---------2-----------------------#2023-12-15)
 
 ## 如何高效超越 GPT-3.5 和 Llama 2 70B
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----0e3fc7fde818---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------) ·6分钟阅读·2023年12月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0e3fc7fde818&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&user=Benjamin+Marie&userId=ad2a414578b3&source=-----0e3fc7fde818---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----0e3fc7fde818---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------) ·6 分钟阅读·2023 年 12 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0e3fc7fde818&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&user=Benjamin+Marie&userId=ad2a414578b3&source=-----0e3fc7fde818---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F0e3fc7fde818&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&source=-----0e3fc7fde818---------------------bookmark_footer-----------)![](../Images/938838a6e7257e33be2de06cb5ee0283.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F0e3fc7fde818&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&source=-----0e3fc7fde818---------------------bookmark_footer-----------)![](img/938838a6e7257e33be2de06cb5ee0283.png)
 
 图片来自 [8385](https://pixabay.com/users/8385-8385/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2147790) [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2147790)
 
 最近的大型语言模型（LLMs）使用了非常相似的神经网络架构。例如，Falcon、Mistral 和 Llama 2 模型使用了类似的自注意力和 MLP 模块组合。
 
-相比之下，Mistral AI（也创造了Mistral 7B）刚刚发布了一种具有显著不同架构的新LLM：[Mixtral-8x7B](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1)，这是一个稀疏混合的8个专家模型。
+相比之下，Mistral AI（也创造了 Mistral 7B）刚刚发布了一种具有显著不同架构的新 LLM：[Mixtral-8x7B](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1)，这是一个稀疏混合的 8 个专家模型。
 
-总体而言，Mixtral包含46.7B参数。然而，得益于其架构，Mixtral-8x7B可以高效地在消费者硬件上运行。与其他相似规模的模型相比，Mixtral-8x7B的推理速度显著更快，并且在大多数任务中表现优越。
+总体而言，Mixtral 包含 46.7B 参数。然而，得益于其架构，Mixtral-8x7B 可以高效地在消费者硬件上运行。与其他相似规模的模型相比，Mixtral-8x7B 的推理速度显著更快，并且在大多数任务中表现优越。
 
-在这篇文章中，我解释了什么是稀疏专家混合网络，以及为什么它在推理时比标准模型更快。接着，我们将看到如何在消费者硬件上使用和微调Mixtral-8x7B。
+在这篇文章中，我解释了什么是稀疏专家混合网络，以及为什么它在推理时比标准模型更快。接着，我们将看到如何在消费者硬件上使用和微调 Mixtral-8x7B。
 
-我已经在这里实现了一个笔记本，展示了使用Mixtral-8x7B进行QLoRA微调和推理：
+我已经在这里实现了一个笔记本，展示了使用 Mixtral-8x7B 进行 QLoRA 微调和推理：
 
 [获取笔记本（#32）](https://colab.research.google.com/drive/1VDa0lIfqiwm16hBlIlEaabGVTNB3dN1A?usp=sharing)
 
 # 稀疏专家混合网络
 
-![](../Images/5ee6f895406c035bc0d9f83f707709ef.png)
+![](img/5ee6f895406c035bc0d9f83f707709ef.png)
 
 图片由作者提供
 
-稀疏专家混合网络（SMoE）是一种神经网络架构，旨在提高传统模型的效率和可扩展性。专家混合的概念是为了使模型能够通过专门的“专家”子网络学习输入空间的不同部分。在Mixtral中，共有8个专家子网络。
+稀疏专家混合网络（SMoE）是一种神经网络架构，旨在提高传统模型的效率和可扩展性。专家混合的概念是为了使模型能够通过专门的“专家”子网络学习输入空间的不同部分。在 Mixtral 中，共有 8 个专家子网络。
 
-请注意，模型名称中的“8x7B”略有误导。该模型总共有46.7B参数，比8x7B参数应该有的量少了近10B参数。实际上，Mixtral-8x7B并不是一个56B参数的模型，因为一些模块，比如自注意力模块，与8个专家子网络共享。
+请注意，模型名称中的“8x7B”略有误导。该模型总共有 46.7B 参数，比 8x7B 参数应该有的量少了近 10B 参数。实际上，Mixtral-8x7B 并不是一个 56B 参数的模型，因为一些模块，比如自注意力模块，与 8 个专家子网络共享。
 
-如果你用Transformers加载并打印模型，模型的结构会更容易理解：
+如果你用 Transformers 加载并打印模型，模型的结构会更容易理解：
 
 ```py
 MixtralForCausalLM(
@@ -74,9 +74,9 @@ MixtralForCausalLM(
 )
 ```
 
-我们可以看到MoE模块与自注意力模块是分开的。
+我们可以看到 MoE 模块与自注意力模块是分开的。
 
-每个专家子网络负责处理输入数据的特定区域或方面，而一个门控（或路由器）网络决定每个专家对最终预测的贡献程度。在Mixtral的情况下，只有2个专家会同时激活。在推理过程中仅使用13B参数，因此相比于其他相似规模的模型，推理更加高效。
+每个专家子网络负责处理输入数据的特定区域或方面，而一个门控（或路由器）网络决定每个专家对最终预测的贡献程度。在 Mixtral 的情况下，只有 2 个专家会同时激活。在推理过程中仅使用 13B 参数，因此相比于其他相似规模的模型，推理更加高效。
 
 总结来说，这种稀疏激活在几个方面可能会带来好处：
 

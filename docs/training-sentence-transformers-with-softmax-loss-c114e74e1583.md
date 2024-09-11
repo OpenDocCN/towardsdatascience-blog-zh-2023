@@ -1,20 +1,20 @@
 # 训练句子变换器与 Softmax 损失
 
-> 原文：[https://towardsdatascience.com/training-sentence-transformers-with-softmax-loss-c114e74e1583?source=collection_archive---------17-----------------------#2023-01-12](https://towardsdatascience.com/training-sentence-transformers-with-softmax-loss-c114e74e1583?source=collection_archive---------17-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/training-sentence-transformers-with-softmax-loss-c114e74e1583?source=collection_archive---------17-----------------------#2023-01-12`](https://towardsdatascience.com/training-sentence-transformers-with-softmax-loss-c114e74e1583?source=collection_archive---------17-----------------------#2023-01-12)
 
 ## [NLP 语义搜索](https://jamescalam.medium.com/list/nlp-for-semantic-search-d3a4b96a52fe)
 
 ## 如何构建原始句子变换器（SBERT）
 
-[![James Briggs](../Images/cb34b7011748e4d8607b7ff4a8510a93.png)](https://jamescalam.medium.com/?source=post_page-----c114e74e1583--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c114e74e1583--------------------------------) [James Briggs](https://jamescalam.medium.com/?source=post_page-----c114e74e1583--------------------------------)
+![James Briggs](https://jamescalam.medium.com/?source=post_page-----c114e74e1583--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c114e74e1583--------------------------------) [James Briggs](https://jamescalam.medium.com/?source=post_page-----c114e74e1583--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9d77a4ca1d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-sentence-transformers-with-softmax-loss-c114e74e1583&user=James+Briggs&userId=b9d77a4ca1d1&source=post_page-b9d77a4ca1d1----c114e74e1583---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c114e74e1583--------------------------------) ·9 min read·2023年1月12日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9d77a4ca1d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-sentence-transformers-with-softmax-loss-c114e74e1583&user=James+Briggs&userId=b9d77a4ca1d1&source=post_page-b9d77a4ca1d1----c114e74e1583---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c114e74e1583--------------------------------) ·9 min read·2023 年 1 月 12 日
 
 --
 
-![](../Images/e9e629a36ae10fd37e92fbd2fa3327d2.png) 
+![](img/e9e629a36ae10fd37e92fbd2fa3327d2.png) 
 
 照片由 [Possessed Photography](https://unsplash.com/@possessedphotography?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上。原文发布于 [NLP for Semantic Search ebook](https://www.pinecone.io/learn/sentence-embeddings/) 在 Pinecone（作者的工作单位）。
 

@@ -1,24 +1,24 @@
 # 致力于数据科学家的聚类分析
 
-> 原文：[https://towardsdatascience.com/cluster-analysis-for-aspiring-data-scientists-5ad88b700a1a?source=collection_archive---------8-----------------------#2023-02-23](https://towardsdatascience.com/cluster-analysis-for-aspiring-data-scientists-5ad88b700a1a?source=collection_archive---------8-----------------------#2023-02-23)
+> 原文：[`towardsdatascience.com/cluster-analysis-for-aspiring-data-scientists-5ad88b700a1a?source=collection_archive---------8-----------------------#2023-02-23`](https://towardsdatascience.com/cluster-analysis-for-aspiring-data-scientists-5ad88b700a1a?source=collection_archive---------8-----------------------#2023-02-23)
 
 ## 数据科学家如何进行和执行聚类分析的逐步案例研究
 
-[](https://medium.com/@alex.vamvakaris.ds?source=post_page-----5ad88b700a1a--------------------------------)[![Alex Vamvakaris](../Images/bf8cf7c92a94d2b0d9242afcc03bf425.png)](https://medium.com/@alex.vamvakaris.ds?source=post_page-----5ad88b700a1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ad88b700a1a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ad88b700a1a--------------------------------) [Alex Vamvakaris](https://medium.com/@alex.vamvakaris.ds?source=post_page-----5ad88b700a1a--------------------------------)
+[](https://medium.com/@alex.vamvakaris.ds?source=post_page-----5ad88b700a1a--------------------------------)![Alex Vamvakaris](https://medium.com/@alex.vamvakaris.ds?source=post_page-----5ad88b700a1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ad88b700a1a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ad88b700a1a--------------------------------) [Alex Vamvakaris](https://medium.com/@alex.vamvakaris.ds?source=post_page-----5ad88b700a1a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8072260dd591&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcluster-analysis-for-aspiring-data-scientists-5ad88b700a1a&user=Alex+Vamvakaris&userId=8072260dd591&source=post_page-8072260dd591----5ad88b700a1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ad88b700a1a--------------------------------) ·11分钟阅读·2023年2月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ad88b700a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcluster-analysis-for-aspiring-data-scientists-5ad88b700a1a&user=Alex+Vamvakaris&userId=8072260dd591&source=-----5ad88b700a1a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8072260dd591&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcluster-analysis-for-aspiring-data-scientists-5ad88b700a1a&user=Alex+Vamvakaris&userId=8072260dd591&source=post_page-8072260dd591----5ad88b700a1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ad88b700a1a--------------------------------) ·11 分钟阅读·2023 年 2 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ad88b700a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcluster-analysis-for-aspiring-data-scientists-5ad88b700a1a&user=Alex+Vamvakaris&userId=8072260dd591&source=-----5ad88b700a1a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ad88b700a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcluster-analysis-for-aspiring-data-scientists-5ad88b700a1a&source=-----5ad88b700a1a---------------------bookmark_footer-----------)![](../Images/51486cbac4597e6f2474fa48835e4801.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ad88b700a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcluster-analysis-for-aspiring-data-scientists-5ad88b700a1a&source=-----5ad88b700a1a---------------------bookmark_footer-----------)![](img/51486cbac4597e6f2474fa48835e4801.png)
 
 图片由 [israel palacio](https://unsplash.com/@othentikisra?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，[Unsplash](https://unsplash.com/photos/ImcUkZ72oUs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 回到我本科统计学的时期，有一天特别突出。那是多变量分析模块的第一天。这个课程当时是新的，我们惊讶地发现教授决定做些不同的事情。教授没有讲解学期议程，而是关掉灯宣布今天我们将以不同的方式学习这个模块——通过观看《数字追凶》第一集。
 
-该系列剧集关注FBI特工唐·埃普斯及其弟弟查尔斯·埃普斯，一位利用数据科学追踪最狡猾罪犯的杰出数学家。更具体地说，在首集里，查尔斯利用聚类分析来找出罪犯的起源地。不用说，我们都被吸引住了。
+该系列剧集关注 FBI 特工唐·埃普斯及其弟弟查尔斯·埃普斯，一位利用数据科学追踪最狡猾罪犯的杰出数学家。更具体地说，在首集里，查尔斯利用聚类分析来找出罪犯的起源地。不用说，我们都被吸引住了。
 
 快进到今天，我经历了从电子商务零售到咨询和游戏的不同行业，所有业务利益相关者的一个共同愿望是对他们的客户或用户进行细分（聚类）。看来，聚类引起了数据科学家和业务利益相关者（以及观众）的兴趣。
 
@@ -26,11 +26,11 @@
 
 +   **聚类介绍：** 理解聚类分析的三个基本构建块
 
-+   **逐步案例研究：R中的聚类：** 数据可视化、数据处理、计算相似度矩阵（距离）、选择簇的数量和描述结果
++   **逐步案例研究：R 中的聚类：** 数据可视化、数据处理、计算相似度矩阵（距离）、选择簇的数量和描述结果
 
 # 1\. 聚类介绍
 
-![](../Images/bbf8869d6740330c324feba10a521c9b.png)
+![](img/bbf8869d6740330c324feba10a521c9b.png)
 
 图片来源：[Hans-Peter Gauster](https://unsplash.com/@sloppyperfectionist?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)  via [Unsplash](https://unsplash.com/photos/3y1zF4hIPCg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -48,25 +48,25 @@
 
 1.  计算数据集中每一行与所有其他行的相似性（基于可用的属性）。因此，我们将得到第一行和第二行之间、第一行和第三行之间、第二行和第三行之间等等的相似性值。最常用的相似性函数是距离。我们将在下一个章节的案例研究中更详细地讨论这些，因为它们通过示例解释得更清楚。
 
-1.  将相似性矩阵输入到聚类算法中。R和Python中有许多可用的聚类算法，如k-means、层次聚类和PAM。聚类算法的简单目的就是将观察值分配到簇中，以便簇内的观察值尽可能相似，而不同簇之间的观察值尽可能不同。最后，你将获得每一行（观察值）的簇分配。
+1.  将相似性矩阵输入到聚类算法中。R 和 Python 中有许多可用的聚类算法，如 k-means、层次聚类和 PAM。聚类算法的简单目的就是将观察值分配到簇中，以便簇内的观察值尽可能相似，而不同簇之间的观察值尽可能不同。最后，你将获得每一行（观察值）的簇分配。
 
-# 2\. **R中的逐步聚类案例研究**
+# 2\. **R 中的逐步聚类案例研究**
 
-![](../Images/4c48f930657764eb19f4cdc0c706d50c.png)
+![](img/4c48f930657764eb19f4cdc0c706d50c.png)
 
 图片来源于[Chris Lawton](https://unsplash.com/@chrislawton?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)在[Unsplash](https://unsplash.com/wallpapers/nature/forest?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-尽管我没有找到在系列节目“Numb3rs”首集中使用的数据集，但我认为使用类似的数据集进行案例研究是合适的，所以我选择了[US Arrests数据集](https://r-data.pmagunia.com/dataset/r-dataset-package-datasets-usarrests)，从[**datasets**](https://www.rdocumentation.org/packages/datasets/versions/3.6.2)包中加载（属于R中的**base**库）。
+尽管我没有找到在系列节目“Numb3rs”首集中使用的数据集，但我认为使用类似的数据集进行案例研究是合适的，所以我选择了[US Arrests 数据集](https://r-data.pmagunia.com/dataset/r-dataset-package-datasets-usarrests)，从[**datasets**](https://www.rdocumentation.org/packages/datasets/versions/3.6.2)包中加载（属于 R 中的**base**库）。
 
-数据集包含50行和4个属性。每一行是一个美国州（实体）。这四个属性描述了每个州的以下特征：
+数据集包含 50 行和 4 个属性。每一行是一个美国州（实体）。这四个属性描述了每个州的以下特征：
 
-+   **谋杀：** 1975年每10万人中的谋杀逮捕人数
++   **谋杀：** 1975 年每 10 万人中的谋杀逮捕人数
 
-+   **袭击：** 1975年每10万人中的袭击逮捕人数
++   **袭击：** 1975 年每 10 万人中的袭击逮捕人数
 
-+   **强奸：** 1975年每10万人中的强奸逮捕人数
++   **强奸：** 1975 年每 10 万人中的强奸逮捕人数
 
-+   **城市人口：** 1975年生活在城市地区的人口百分比
++   **城市人口：** 1975 年生活在城市地区的人口百分比
 
 +   我们还有州名作为行名。这不会被用作聚类算法的输入。
 
@@ -90,13 +90,13 @@ data("USArrests")
 head(USArrests)   # head -> header
 ```
 
-![](../Images/a192c79152cb8b36830af00e1c0f604c.png)
+![](img/a192c79152cb8b36830af00e1c0f604c.png)
 
-R中USArrests数据集概述 [作者提供的图片]
+R 中 USArrests 数据集概述 [作者提供的图片]
 
 ## 2.1\. 数据可视化
 
-从下面的箱线图来看，所有四个属性似乎都大致对称（UrbanPop略微右偏，Rape略微左偏）。如果某个属性严重偏斜或存在异常值，我们可以考虑应用不同的转换（例如对数转换）。但我们的数据集不需要这样做。
+从下面的箱线图来看，所有四个属性似乎都大致对称（UrbanPop 略微右偏，Rape 略微左偏）。如果某个属性严重偏斜或存在异常值，我们可以考虑应用不同的转换（例如对数转换）。但我们的数据集不需要这样做。
 
 ```py
 ##############################
@@ -112,7 +112,7 @@ USArrests %>%
   )
 ```
 
-![](../Images/921fe627f879b9192b2289bc05415d57.png)
+![](img/921fe627f879b9192b2289bc05415d57.png)
 
 美国逮捕数据集每个属性的箱线图 [作者提供的图片]
 
@@ -120,11 +120,11 @@ USArrests %>%
 
 ## 2.2\. 计算相似度矩阵
 
-在我们的案例研究中，我们将使用R中的[**daisy**](https://www.rdocumentation.org/packages/cluster/versions/2.1.4/topics/daisy)函数（**cluster** 包）中的Gower距离来计算相似度矩阵。更具体地说，Gower使用不相似度作为距离函数，但概念是相同的（我们最小化不相似度而不是最大化相似度）。
+在我们的案例研究中，我们将使用 R 中的[**daisy**](https://www.rdocumentation.org/packages/cluster/versions/2.1.4/topics/daisy)函数（**cluster** 包）中的 Gower 距离来计算相似度矩阵。更具体地说，Gower 使用不相似度作为距离函数，但概念是相同的（我们最小化不相似度而不是最大化相似度）。
 
-> Gower是少数几种可以处理混合型数据（数值和分类属性）的距离函数之一。另一个优点是Gower将所有距离缩放到0和1之间（高尺度的属性不会过度贡献）。
+> Gower 是少数几种可以处理混合型数据（数值和分类属性）的距离函数之一。另一个优点是 Gower 将所有距离缩放到 0 和 1 之间（高尺度的属性不会过度贡献）。
 
-因此，对于我们有50行（州）的数据集，我们将拥有一个50x50的矩阵，包含1225个独特的值（*n*(n-1)/2*）。对角线是不需要的（一个州与自身的距离），上三角和下三角是相同的（矩阵是对称的）。
+因此，对于我们有 50 行（州）的数据集，我们将拥有一个 50x50 的矩阵，包含 1225 个独特的值（*n*(n-1)/2*）。对角线是不需要的（一个州与自身的距离），上三角和下三角是相同的（矩阵是对称的）。
 
 ```py
 ##############################
@@ -138,17 +138,17 @@ gower_dist <-
 gower_dist
 ```
 
-![](../Images/5c7aefb9ba8a15cc64ff3f09363ead40.png)
+![](img/5c7aefb9ba8a15cc64ff3f09363ead40.png)
 
-Gower距离矩阵快照 [作者提供的图片]
+Gower 距离矩阵快照 [作者提供的图片]
 
 ## 2.3\. 选择簇的数量
 
-在我们的案例研究中，我们将使用PAM（Partitioning Around Medoids）聚类算法，具体来说是[**pam**](https://www.rdocumentation.org/packages/cluster/versions/2.1.4/topics/pam)函数（**cluster** 包）。
+在我们的案例研究中，我们将使用 PAM（Partitioning Around Medoids）聚类算法，具体来说是[**pam**](https://www.rdocumentation.org/packages/cluster/versions/2.1.4/topics/pam)函数（**cluster** 包）。
 
-> PAM（以及所有其他K-媒介算法）是k-means的一个稳健替代方案，因为它使用媒介作为簇中心，而不是均值。因此，相比k-means，算法对噪声和异常值的敏感度较低（但不是免疫的！）。
+> PAM（以及所有其他 K-媒介算法）是 k-means 的一个稳健替代方案，因为它使用媒介作为簇中心，而不是均值。因此，相比 k-means，算法对噪声和异常值的敏感度较低（但不是免疫的！）。
 
-首先，我们需要选择簇的数量。确定簇数量的方法非常简单。我们将使用在前一步计算的Gower相似度矩阵运行PAM算法，并在每次运行中选择不同的簇数量（从2到10）。然后，我们将计算每次运行的平均轮廓宽度（ASW）。我们将使用以下函数来完成这一步。
+首先，我们需要选择簇的数量。确定簇数量的方法非常简单。我们将使用在前一步计算的 Gower 相似度矩阵运行 PAM 算法，并在每次运行中选择不同的簇数量（从 2 到 10）。然后，我们将计算每次运行的平均轮廓宽度（ASW）。我们将使用以下函数来完成这一步。
 
 ```py
 ##############################
@@ -173,7 +173,7 @@ get_asw_using_pam <- function(distance, min_clusters, max_clusters) {
 sil_width <- get_asw_using_pam(gower_dist, 2, 10)
 ```
 
-ASW表示每个观察值与其当前聚类相比与最近邻聚类的匹配程度。其范围从-1到1，较高的值（接近1）表示更好的聚类结果。我们将使用轮廓图（y轴上的ASW和x轴上的聚类数）来直观地检查我们聚类的有前景的候选者。
+ASW 表示每个观察值与其当前聚类相比与最近邻聚类的匹配程度。其范围从-1 到 1，较高的值（接近 1）表示更好的聚类结果。我们将使用轮廓图（y 轴上的 ASW 和 x 轴上的聚类数）来直观地检查我们聚类的有前景的候选者。
 
 ```py
 ##############################
@@ -194,11 +194,11 @@ silhouette_plot %>%
   theme_classic()
 ```
 
-![](../Images/60abd1cebaff284b93b8aa8d1f42d5f6.png)
+![](img/60abd1cebaff284b93b8aa8d1f42d5f6.png)
 
-使用PAM和Gower距离的轮廓图 [Image by the author]
+使用 PAM 和 Gower 距离的轮廓图 [Image by the author]
 
-ASW最高的方案是两个聚类，在急剧下降后，我们有三个和四个聚类，然后ASW再次急剧下降。我们可能的候选方案是这三个选项（2、3和4个聚类）。我们将把每个运行的聚类分配保存为USArrests数据集中的三个新属性（cluster_2、cluster_3和cluster_4）。
+ASW 最高的方案是两个聚类，在急剧下降后，我们有三个和四个聚类，然后 ASW 再次急剧下降。我们可能的候选方案是这三个选项（2、3 和 4 个聚类）。我们将把每个运行的聚类分配保存为 USArrests 数据集中的三个新属性（cluster_2、cluster_3 和 cluster_4）。
 
 ```py
 ## Set the seed of R's random number generator
@@ -229,9 +229,9 @@ USArrests <-
 
 > 结果聚类是否以反映业务利益相关者所考虑的方面的方式进行分离？
 
-因此，最终的决定是基于除最高ASW方案之外的其他因素。它是通过检查每个聚类方案的特征来做出的。你应该始终选择对业务更具可操作性的聚类，而不是仅仅选择ASW最高的那个。
+因此，最终的决定是基于除最高 ASW 方案之外的其他因素。它是通过检查每个聚类方案的特征来做出的。你应该始终选择对业务更具可操作性的聚类，而不是仅仅选择 ASW 最高的那个。
 
-首先，我们希望探讨不同聚类方案之间的关系。我们将使用全uvial图来可视化在三个运行之间观察值（状态）的流动。
+首先，我们希望探讨不同聚类方案之间的关系。我们将使用全 uvial 图来可视化在三个运行之间观察值（状态）的流动。
 
 ```py
 ##############################
@@ -259,13 +259,13 @@ alluvial(
   ) 
 ```
 
-![](../Images/b0e25d6bf3a5809afb09eac65aa24e42.png)
+![](img/b0e25d6bf3a5809afb09eac65aa24e42.png)
 
-PAM不同运行的聚类分配的全uvial图 [Image by the author]
+PAM 不同运行的聚类分配的全 uvial 图 [Image by the author]
 
-在上述全uvial图中，每一列代表一个不同的运行，不同颜色的带子表示固定的状态块，当它们在三个聚类运行之间分裂或重新分配时。
+在上述全 uvial 图中，每一列代表一个不同的运行，不同颜色的带子表示固定的状态块，当它们在三个聚类运行之间分裂或重新分配时。
 
-例如，红色带子代表阿拉巴马州、乔治亚州、路易斯安那州、密西西比州、北卡罗来纳州、南卡罗来纳州和田纳西州（见下方代码）。这些州在两个和三个聚类的运行（cluster_2和cluster_3）中与蓝色带子的州分配到了相同的聚类（“1”），但在四个聚类的运行（cluster_4）中被分开。
+例如，红色带子代表阿拉巴马州、乔治亚州、路易斯安那州、密西西比州、北卡罗来纳州、南卡罗来纳州和田纳西州（见下方代码）。这些州在两个和三个聚类的运行（cluster_2 和 cluster_3）中与蓝色带子的州分配到了相同的聚类（“1”），但在四个聚类的运行（cluster_4）中被分开。
 
 ```py
 ##################################################
@@ -274,9 +274,9 @@ PAM不同运行的聚类分配的全uvial图 [Image by the author]
 USArrests %>% filter(cluster_4 == "1")
 ```
 
-![](../Images/c32d4ba1de826372746eba7b15d4c5a4.png)
+![](img/c32d4ba1de826372746eba7b15d4c5a4.png)
 
-在全uvial图中红色带子的状态 [Image by the author]
+在全 uvial 图中红色带子的状态 [Image by the author]
 
 接下来，我们希望更好地理解每个聚类的特征以及它们在三个解决方案之间的差异。
 
@@ -321,7 +321,7 @@ USArrests %>%
     )
 ```
 
-![](../Images/7ccac6397ba79535347fc9351ca193a6.png)
+![](img/7ccac6397ba79535347fc9351ca193a6.png)
 
 按聚类运行的描述性统计 [Image by the author]
 
@@ -347,7 +347,7 @@ USArrests %>%
 
 +   使用三个簇的运行中的高（簇“1”）被分成了两个簇。簇“1”具有明显较低的平均城市人口百分比，并且强奸和攻击的逮捕率较低
 
-根据簇分析的需求，我们会选择合适的聚类解决方案。记住，不是ASW最高的那个，而是对业务利益相关者更具影响力的那个（可能是在3个和4个簇之间选择）。
+根据簇分析的需求，我们会选择合适的聚类解决方案。记住，不是 ASW 最高的那个，而是对业务利益相关者更具影响力的那个（可能是在 3 个和 4 个簇之间选择）。
 
 # 摘要
 
@@ -361,11 +361,11 @@ USArrests %>%
 
 ✅ 检查每个聚类解决方案的特征，并选择对业务更具操作性的那个（更符合业务目标）
 
-在下面的链接中，你还可以找到一个关于使用数据科学技术和最佳实践在现实商业场景中完成客户簇分析的更深入的免费PDF指南。 👇
+在下面的链接中，你还可以找到一个关于使用数据科学技术和最佳实践在现实商业场景中完成客户簇分析的更深入的免费 PDF 指南。 👇
 
 [](https://www.aspiringdatascientist.net/community?source=post_page-----5ad88b700a1a--------------------------------) [## 数据科学项目检查清单 — 有志数据科学家
 
-### 我是一名拥有7年以上分析经验的数据科学家，目前在英国伦敦的一家游戏公司工作。我的...
+### 我是一名拥有 7 年以上分析经验的数据科学家，目前在英国伦敦的一家游戏公司工作。我的...
 
 www.aspiringdatascientist.net](https://www.aspiringdatascientist.net/community?source=post_page-----5ad88b700a1a--------------------------------)
 
@@ -375,4 +375,4 @@ www.aspiringdatascientist.net](https://www.aspiringdatascientist.net/community?s
 
 # 参考文献
 
-R文档和数据集来自R项目，并且是GPL许可证。OpenIntro文档是Creative Commons BY-SA 3.0许可证。
+R 文档和数据集来自 R 项目，并且是 GPL 许可证。OpenIntro 文档是 Creative Commons BY-SA 3.0 许可证。

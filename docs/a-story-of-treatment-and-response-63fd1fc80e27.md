@@ -1,18 +1,18 @@
 # 治疗与反应的故事
 
-> 原文：[https://towardsdatascience.com/a-story-of-treatment-and-response-63fd1fc80e27?source=collection_archive---------9-----------------------#2023-03-03](https://towardsdatascience.com/a-story-of-treatment-and-response-63fd1fc80e27?source=collection_archive---------9-----------------------#2023-03-03)
+> 原文：[`towardsdatascience.com/a-story-of-treatment-and-response-63fd1fc80e27?source=collection_archive---------9-----------------------#2023-03-03`](https://towardsdatascience.com/a-story-of-treatment-and-response-63fd1fc80e27?source=collection_archive---------9-----------------------#2023-03-03)
 
 ## 《预测营销活动受众治疗效果简介》
 
-[](https://medium.com/@js.schmidl?source=post_page-----63fd1fc80e27--------------------------------)[![Jürgen Schmidl](../Images/d445090530fbee0bb4c2e6d8b1cfd69f.png)](https://medium.com/@js.schmidl?source=post_page-----63fd1fc80e27--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63fd1fc80e27--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----63fd1fc80e27--------------------------------) [Jürgen Schmidl](https://medium.com/@js.schmidl?source=post_page-----63fd1fc80e27--------------------------------)
+[](https://medium.com/@js.schmidl?source=post_page-----63fd1fc80e27--------------------------------)![Jürgen Schmidl](https://medium.com/@js.schmidl?source=post_page-----63fd1fc80e27--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63fd1fc80e27--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----63fd1fc80e27--------------------------------) [Jürgen Schmidl](https://medium.com/@js.schmidl?source=post_page-----63fd1fc80e27--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe7cd77e36518&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-story-of-treatment-and-response-63fd1fc80e27&user=J%C3%BCrgen+Schmidl&userId=e7cd77e36518&source=post_page-e7cd77e36518----63fd1fc80e27---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----63fd1fc80e27--------------------------------) · 9 min read · 2023年3月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63fd1fc80e27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-story-of-treatment-and-response-63fd1fc80e27&user=J%C3%BCrgen+Schmidl&userId=e7cd77e36518&source=-----63fd1fc80e27---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe7cd77e36518&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-story-of-treatment-and-response-63fd1fc80e27&user=J%C3%BCrgen+Schmidl&userId=e7cd77e36518&source=post_page-e7cd77e36518----63fd1fc80e27---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----63fd1fc80e27--------------------------------) · 9 min read · 2023 年 3 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63fd1fc80e27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-story-of-treatment-and-response-63fd1fc80e27&user=J%C3%BCrgen+Schmidl&userId=e7cd77e36518&source=-----63fd1fc80e27---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63fd1fc80e27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-story-of-treatment-and-response-63fd1fc80e27&source=-----63fd1fc80e27---------------------bookmark_footer-----------)![](../Images/a79a431dd08a5b732da34926c72671fb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63fd1fc80e27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-story-of-treatment-and-response-63fd1fc80e27&source=-----63fd1fc80e27---------------------bookmark_footer-----------)![](img/a79a431dd08a5b732da34926c72671fb.png)
 
 图片由 geralt @ pixabay.com 提供
 
@@ -48,17 +48,17 @@
 
 如果广告材料包含一个没有或很低最低订单金额的优惠券，根据我的经验，几乎所有客户都会使用它。然而，对于促销商品编号而言，进行因果分配则更加困难，因为许多客户也会直接在网络上搜索这些商品。这可能会根据具体业务有所不同。
 
-![](../Images/d5b50240b044e06c823691c2aa7b5e91.png)
+![](img/d5b50240b044e06c823691c2aa7b5e91.png)
 
 有处理参考的反应示意图（作者提供的图片）
 
 ## **没有处理参考的反应**
 
-另一种方法是将销售归因于特定时间段的促销活动，例如广告活动后的30天。这可以描述为没有处理参考的反应。
+另一种方法是将销售归因于特定时间段的促销活动，例如广告活动后的 30 天。这可以描述为没有处理参考的反应。
 
 确定最佳时间段需要仔细考虑——评估期应对所有广告材料保持一致，并且不应与后续处理重叠。它还应涵盖大多数可能的反应，同时保持尽可能简短。
 
-![](../Images/9bd778f98f3509c929038c8b38bfde95.png)
+![](img/9bd778f98f3509c929038c8b38bfde95.png)
 
 无处理参考的响应示意图（图片由作者提供）
 
@@ -72,19 +72,19 @@
 
 如引言中所述，我更喜欢将订单价值作为标签。然而，也可以仅预测购买概率。因此，这也应考虑在内。
 
-![](../Images/75df75a9125c7422905ff7f991292673.png)
+![](img/75df75a9125c7422905ff7f991292673.png)
 
 ITE = 个体处理效果 / CATE = 条件平均处理效果（表由作者提供）
 
 上表展示了多种建模处理效果的方法。如你所见，不同的标签定义需要不同的建模方法。
 
-在这篇文章中，我将重点介绍可以建立因果关系的处理相关反应预测方法（见上表：“带处理参考”）。提升建模是一个独立的话题，需要单独的文章。我会在发布后将其链接到这里。在此之前，我很高兴推荐给你Shelby Temple：
+在这篇文章中，我将重点介绍可以建立因果关系的处理相关反应预测方法（见上表：“带处理参考”）。提升建模是一个独立的话题，需要单独的文章。我会在发布后将其链接到这里。在此之前，我很高兴推荐给你 Shelby Temple：
 
-[## 快速提升建模介绍](/a-quick-uplift-modeling-introduction-6e14de32bfe0?source=post_page-----63fd1fc80e27--------------------------------)
+## 快速提升建模介绍
 
 ### 了解提升建模如何改进经典数据科学应用。
 
-[towardsdatascience.com](/a-quick-uplift-modeling-introduction-6e14de32bfe0?source=post_page-----63fd1fc80e27--------------------------------)
+towardsdatascience.com
 
 因此，本文仅处理直接归因于广告活动的销售预测。这种方法对于大多数用例是足够的，特别是因为提升建模需要没有接受任何广告材料的对照组。
 
@@ -100,15 +100,15 @@ ITE = 个体处理效果 / CATE = 条件平均处理效果（表由作者提供�
 
 ## 零膨胀数据集
 
-建模客户响应的下一个挑战是数据集中存在大量零值。这是因为许多客户不会回应促销材料，因此不会进行购买。（相比之下，印刷广告材料的回应率达到10%被认为是非常好的。）
+建模客户响应的下一个挑战是数据集中存在大量零值。这是因为许多客户不会回应促销材料，因此不会进行购买。（相比之下，印刷广告材料的回应率达到 10%被认为是非常好的。）
 
-为了更好地说明这一点，我使用了[Kevin Hillstrom在Scikit-Uplift包中包含的数据集](https://www.uplift-modeling.com/en/latest/api/datasets/fetch_hillstrom.html)作为本文的例子，并在[随附的笔记本中](https://colab.research.google.com/drive/1SOKW5Njv5iN21R_syNVK0S9bpFeLehs8?usp=sharing)展示。
+为了更好地说明这一点，我使用了[Kevin Hillstrom 在 Scikit-Uplift 包中包含的数据集](https://www.uplift-modeling.com/en/latest/api/datasets/fetch_hillstrom.html)作为本文的例子，并在[随附的笔记本中](https://colab.research.google.com/drive/1SOKW5Njv5iN21R_syNVK0S9bpFeLehs8?usp=sharing)展示。
 
 数据集包含多个独立变量以及对电子邮件营销活动的响应。电子邮件活动的响应分布可以通过直方图显示，如下所示：
 
-![](../Images/5a07322e67cb1333b6381faf88148368.png)
+![](img/5a07322e67cb1333b6381faf88148368.png)
 
-Hillstroem数据集中的响应直方图。（图像由作者提供）
+Hillstroem 数据集中的响应直方图。（图像由作者提供）
 
 这类数据集通常被称为零膨胀数据集。处理这类数据集有两种不同的方法：**过采样**或**建模**。
 
@@ -124,7 +124,7 @@ Hillstroem数据集中的响应直方图。（图像由作者提供）
 
 因此，我通常使用两步模型。在这里，数据集被分解为分类问题和回归问题。
 
-![](../Images/af345a9f60523742977b2f2754281efa.png)
+![](img/af345a9f60523742977b2f2754281efa.png)
 
 使用两步模型预测零膨胀数据集的示例（图像由作者提供）
 
@@ -142,17 +142,17 @@ Hillstroem数据集中的响应直方图。（图像由作者提供）
 
 这两种模型的结果可以通过从购买概率和购买时的销售值形成期望购买值来相对容易地结合起来。
 
-![](../Images/35ab00152f007e1d291d035949a67395.png)
+![](img/35ab00152f007e1d291d035949a67395.png)
 
 形成期望值的函数示例（图像由作者提供）
 
 作为期望值主题的复习，我推荐阅读这篇文章。
 
-[](/what-is-expected-value-4815bdbd84de?source=post_page-----63fd1fc80e27--------------------------------) [## 期望值是什么？
+[](/what-is-expected-value-4815bdbd84de?source=post_page-----63fd1fc80e27--------------------------------) ## 期望值是什么？
 
 ### 通过使用游戏的简单示例来直观地解释期望值
 
-towardsdatascience.com](/what-is-expected-value-4815bdbd84de?source=post_page-----63fd1fc80e27--------------------------------)
+towardsdatascience.com
 
 基于这里介绍的程序，我还创建了一个简短的笔记本作为概念验证。在这里，我比较了随机森林回归器与元学习器的表现，后者适配了线性回归和逻辑回归。
 
@@ -162,11 +162,11 @@ towardsdatascience.com](/what-is-expected-value-4815bdbd84de?source=post_page---
 
 元学习器可以作为回归进行评估，或者可以单独评估其组件（回归和分类）。
 
-实际上，如果模型的表现没有传达给数据科学家，通常最好避免使用如RSME或MAE这样的值，而是回答问题：‘模型能多好地区分好客户与坏客户？’
+实际上，如果模型的表现没有传达给数据科学家，通常最好避免使用如 RSME 或 MAE 这样的值，而是回答问题：‘模型能多好地区分好客户与坏客户？’
 
 为了演示这一点，我按预测质量的降序对客户进行排序（从预测最高的客户到预测最低的客户），并绘制在活动中实现的实际或理论销售额。（注意：用于评估的活动必须不包括在训练数据集中）。
 
-![](../Images/039b9e6dc4da1c795c38a7e77c289a6f.png)
+![](img/039b9e6dc4da1c795c38a7e77c289a6f.png)
 
 优秀的接收者选择示例（合成数据，作者提供的图像）
 
@@ -182,12 +182,12 @@ towardsdatascience.com](/what-is-expected-value-4815bdbd84de?source=post_page---
 
 ## 数据集：
 
-数据集来自Kevin Hillstrom的博客 [“MineThatData”](https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html)，并在许多Python包和科学出版物中使用。在我的文章中，我提到数据集在 [Python包“Scikit-Uplift”](https://www.uplift-modeling.com/en/latest/api/datasets/fetch_hillstrom.html) 中的实现，该包在 [MIT许可证](https://github.com/maks-sh/scikit-uplift/blob/master/LICENSE) 下发布。
+数据集来自 Kevin Hillstrom 的博客 [“MineThatData”](https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html)，并在许多 Python 包和科学出版物中使用。在我的文章中，我提到数据集在 [Python 包“Scikit-Uplift”](https://www.uplift-modeling.com/en/latest/api/datasets/fetch_hillstrom.html) 中的实现，该包在 [MIT 许可证](https://github.com/maks-sh/scikit-uplift/blob/master/LICENSE) 下发布。
 
 ## **资源：**
 
-McCrary, M. 使用多阶段模型增强客户定位：预测零售业的客户销售和利润。 *J Target Meas Anal Mark* **17**, 273–295 (2009). [https://doi.org/10.1057/jt.2009.22](https://doi.org/10.1057/jt.2009.22)
+McCrary, M. 使用多阶段模型增强客户定位：预测零售业的客户销售和利润。 *J Target Meas Anal Mark* **17**, 273–295 (2009). [`doi.org/10.1057/jt.2009.22`](https://doi.org/10.1057/jt.2009.22)
 
-Torgo, L., Ribeiro, R.P., Pfahringer, B., Branco, P. (2013). SMOTE回归。载于：Correia, L., Reis, L.P., Cascalho, J. (编辑) 《人工智能进展》。EPIA 2013\. 计算机科学讲义集()，第8154卷\. 施普林格，柏林，海德堡。 [https://doi.org/10.1007/978-3-642-40669-0_33](https://doi.org/10.1007/978-3-642-40669-0_33)
+Torgo, L., Ribeiro, R.P., Pfahringer, B., Branco, P. (2013). SMOTE 回归。载于：Correia, L., Reis, L.P., Cascalho, J. (编辑) 《人工智能进展》。EPIA 2013\. 计算机科学讲义集()，第 8154 卷\. 施普林格，柏林，海德堡。 [`doi.org/10.1007/978-3-642-40669-0_33`](https://doi.org/10.1007/978-3-642-40669-0_33)
 
-Torgo, L., Ribeiro, R.P., Branco P. (2017) SMOGN: 不平衡回归的预处理方法。载于：2017年机器学习研究会议论文集
+Torgo, L., Ribeiro, R.P., Branco P. (2017) SMOGN: 不平衡回归的预处理方法。载于：2017 年机器学习研究会议论文集

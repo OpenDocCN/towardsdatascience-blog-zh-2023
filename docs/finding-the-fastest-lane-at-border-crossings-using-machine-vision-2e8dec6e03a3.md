@@ -1,22 +1,22 @@
 # 使用机器视觉找到边境通行的最快车道
 
-> 原文：[https://towardsdatascience.com/finding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3?source=collection_archive---------14-----------------------#2023-02-16](https://towardsdatascience.com/finding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3?source=collection_archive---------14-----------------------#2023-02-16)
+> 原文：[`towardsdatascience.com/finding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3?source=collection_archive---------14-----------------------#2023-02-16`](https://towardsdatascience.com/finding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3?source=collection_archive---------14-----------------------#2023-02-16)
 
 ## 优化边境通行的目标检测与跟踪
 
-[](https://medium.com/@danilo.najkov?source=post_page-----2e8dec6e03a3--------------------------------)[![Danilo Najkov](../Images/e0e8976f1f9f78ae58ba7efcc90a4f00.png)](https://medium.com/@danilo.najkov?source=post_page-----2e8dec6e03a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e8dec6e03a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e8dec6e03a3--------------------------------) [Danilo Najkov](https://medium.com/@danilo.najkov?source=post_page-----2e8dec6e03a3--------------------------------)
+[](https://medium.com/@danilo.najkov?source=post_page-----2e8dec6e03a3--------------------------------)![Danilo Najkov](https://medium.com/@danilo.najkov?source=post_page-----2e8dec6e03a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e8dec6e03a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e8dec6e03a3--------------------------------) [Danilo Najkov](https://medium.com/@danilo.najkov?source=post_page-----2e8dec6e03a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F19802d0e7d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3&user=Danilo+Najkov&userId=19802d0e7d&source=post_page-19802d0e7d----2e8dec6e03a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e8dec6e03a3--------------------------------) · 12分钟阅读·2023年2月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e8dec6e03a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3&user=Danilo+Najkov&userId=19802d0e7d&source=-----2e8dec6e03a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F19802d0e7d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3&user=Danilo+Najkov&userId=19802d0e7d&source=post_page-19802d0e7d----2e8dec6e03a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e8dec6e03a3--------------------------------) · 12 分钟阅读·2023 年 2 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e8dec6e03a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3&user=Danilo+Najkov&userId=19802d0e7d&source=-----2e8dec6e03a3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e8dec6e03a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3&source=-----2e8dec6e03a3---------------------bookmark_footer-----------)![](../Images/af3adda86dc5315b4d508bf6e84bc172.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e8dec6e03a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-the-fastest-lane-at-border-crossings-using-machine-vision-2e8dec6e03a3&source=-----2e8dec6e03a3---------------------bookmark_footer-----------)![](img/af3adda86dc5315b4d508bf6e84bc172.png)
 
 从[“Blace”边境通行相机](http://www.roads.org.mk/411/live-webcast)（公有领域）生成的图像
 
-穿越边境可以是任何公路旅行中的激动人心的部分，但在边境通行处排长队的挫败感会迅速消磨这种兴奋感。如果我们能确定最快的车道并相应地调整位置呢？感谢机器视觉的进步，这现在已经成为可能。通过利用OpenCV和YOLOv3（一个深度学习算法），现在可以实时检测和追踪移动的车辆。在这篇文章中，我们将探讨如何使用这些技术帮助人们节省时间，避免在边境通行处长时间排队的压力。
+穿越边境可以是任何公路旅行中的激动人心的部分，但在边境通行处排长队的挫败感会迅速消磨这种兴奋感。如果我们能确定最快的车道并相应地调整位置呢？感谢机器视觉的进步，这现在已经成为可能。通过利用 OpenCV 和 YOLOv3（一个深度学习算法），现在可以实时检测和追踪移动的车辆。在这篇文章中，我们将探讨如何使用这些技术帮助人们节省时间，避免在边境通行处长时间排队的压力。
 
 **内容**
 
@@ -52,7 +52,7 @@
 
 +   应用算法来确定车辆的速度（从而确定每条车道的速度）
 
-所有这些步骤都通过docker-compose结合起来，以便在多个边境视频流上运行解决方案。
+所有这些步骤都通过 docker-compose 结合起来，以便在多个边境视频流上运行解决方案。
 
 # 数据
 
@@ -60,7 +60,7 @@
 
 # 目标检测
 
-在运行任何算法之前，我们需要加载视频流并对图像进行预处理。这可以通过OpenCV2轻松完成。我创建了一个将图像调整为416x416像素的函数（这是我使用的YOLOv3模型实现所要求的格式）。
+在运行任何算法之前，我们需要加载视频流并对图像进行预处理。这可以通过 OpenCV2 轻松完成。我创建了一个将图像调整为 416x416 像素的函数（这是我使用的 YOLOv3 模型实现所要求的格式）。
 
 ```py
 def preprocess(image):
@@ -95,11 +95,11 @@ while True:
 
 ## 汽车检测
 
-![](../Images/ebf61150cc4e20d7e4497eca832d44a1.png)
+![](img/ebf61150cc4e20d7e4497eca832d44a1.png)
 
-YOLOv3架构用于检测对象（感谢原始 [YOLOv3 论文](https://arxiv.org/abs/1804.02767)）
+YOLOv3 架构用于检测对象（感谢原始 [YOLOv3 论文](https://arxiv.org/abs/1804.02767)）
 
-现在，我们已经准备好在图像中检测车辆。我使用了YOLOv3来获取模型训练过的所有类别的边界框，但只保留了车辆的边界框。加载此模型需要权重和配置文件，你可以从[官方网站](https://pjreddie.com/darknet/yolo/)下载。这一函数返回边界框、模型对检测对象的置信度、对象的类别（如汽车、卡车、行人等），以及每个边界框的中心点。
+现在，我们已经准备好在图像中检测车辆。我使用了 YOLOv3 来获取模型训练过的所有类别的边界框，但只保留了车辆的边界框。加载此模型需要权重和配置文件，你可以从[官方网站](https://pjreddie.com/darknet/yolo/)下载。这一函数返回边界框、模型对检测对象的置信度、对象的类别（如汽车、卡车、行人等），以及每个边界框的中心点。
 
 ```py
 def detect_cars(image, blob):
@@ -137,15 +137,15 @@ def detect_cars(image, blob):
     return boxes, confidences, class_ids, centers
 ```
 
-![](../Images/6070fbf83d622be655a71e44de616777.png)
+![](img/6070fbf83d622be655a71e44de616777.png)
 
-算法在对[“Blace”边境检查摄像头](http://www.roads.org.mk/411/live-webcast)（公共领域）应用NMS之前的输出
+算法在对[“Blace”边境检查摄像头](http://www.roads.org.mk/411/live-webcast)（公共领域）应用 NMS 之前的输出
 
 我们有了关于边界框的所有信息，但是当我们运行应用程序时，发现有很多重叠的框需要去除。为了解决这个问题，我使用了非极大值抑制（NMS）。非极大值抑制（NMS）是一种后处理算法，用于对象检测任务，特别是用于去除同一对象的冗余或重叠的边界框。
 
-NMS用于过滤冗余的边界框，只保留最合适的框。NMS的基本思路是首先根据检测置信度得分（即边界框包含对象的概率）对边界框进行排序。从置信度得分最高的边界框开始，NMS抑制所有交并比（IoU）值大于某个阈值（例如0.5）的重叠边界框。
+NMS 用于过滤冗余的边界框，只保留最合适的框。NMS 的基本思路是首先根据检测置信度得分（即边界框包含对象的概率）对边界框进行排序。从置信度得分最高的边界框开始，NMS 抑制所有交并比（IoU）值大于某个阈值（例如 0.5）的重叠边界框。
 
-以下函数执行此算法。它的参数包括边界框、边界框的置信度和我们想要过滤掉重复项的阈值。它返回我们需要保留的框的ID。
+以下函数执行此算法。它的参数包括边界框、边界框的置信度和我们想要过滤掉重复项的阈值。它返回我们需要保留的框的 ID。
 
 ```py
 def NMS(boxes, confidences, threshold):
@@ -186,9 +186,9 @@ def NMS(boxes, confidences, threshold):
 
 ## 车道检测
 
-虽然有一些车道检测算法可能对这个任务有效，但它们可能不是最有效的选择。由于摄像头是固定的，车道位置不会变化，使用这些算法会浪费处理时间。为了解决这个问题，我将车道位置保存到了一个JSON文件中，作为点的列表。然而，在确定车道速度之前，还面临一个额外的挑战：识别每辆车所在的车道。
+虽然有一些车道检测算法可能对这个任务有效，但它们可能不是最有效的选择。由于摄像头是固定的，车道位置不会变化，使用这些算法会浪费处理时间。为了解决这个问题，我将车道位置保存到了一个 JSON 文件中，作为点的列表。然而，在确定车道速度之前，还面临一个额外的挑战：识别每辆车所在的车道。
 
-为此，我创建了以下函数，根据车辆的x坐标找到每辆车所在的位置。它返回车道的索引。如果车辆在车道之外，它返回-1。
+为此，我创建了以下函数，根据车辆的 x 坐标找到每辆车所在的位置。它返回车道的索引。如果车辆在车道之外，它返回-1。
 
 ```py
 def get_x_at_y(line, y):
@@ -234,7 +234,7 @@ def track_lanes(car_centers, image, lanes):
 
 光流法是一种技术，通过分析相邻像素在连续视频帧中的强度变化来确定场景中物体的运动方向和速度。光流算法依赖于一个假设，即一个帧中的像素亮度与下一个帧中对应像素的亮度相同，从而允许计算物体在帧之间的位移。
 
-这个算法要复杂得多，所以我不会详细解释。作为参数，它接收图像和前一图像、YOLOv3模型中的汽车中心、车道以确定是否有运动发生在每个车道中，以及车道中的汽车以查看运动是否是由车辆运动或其他因素引起的。它返回每个车道的速度列表。
+这个算法要复杂得多，所以我不会详细解释。作为参数，它接收图像和前一图像、YOLOv3 模型中的汽车中心、车道以确定是否有运动发生在每个车道中，以及车道中的汽车以查看运动是否是由车辆运动或其他因素引起的。它返回每个车道的速度列表。
 
 ```py
 def optical_flow(image, prev_image, features_to_track, lanes, cars_in_lanes):
@@ -306,7 +306,7 @@ def optical_flow(image, prev_image, features_to_track, lanes, cars_in_lanes):
     return lane_speeds
 ```
 
-光流算法的输出被保存并与前一帧的输出进行比较。如果每个车道的光流值发生显著变化，则记录为1个移动点。这在以下函数中实现。
+光流算法的输出被保存并与前一帧的输出进行比较。如果每个车道的光流值发生显著变化，则记录为 1 个移动点。这在以下函数中实现。
 
 ```py
 def calc_movement(new_movement, old_movement, sum_movement):
@@ -347,15 +347,15 @@ def calc_movement(new_movement, old_movement, sum_movement):
     cv2.imshow("image", image)
 ```
 
-在主循环中运行一切后，我们得到以下视频。程序输出显示第二车道（车道2）的移动最多，因此速度最快。
+在主循环中运行一切后，我们得到以下视频。程序输出显示第二车道（车道 2）的移动最多，因此速度最快。
 
-![](../Images/8dc09007c977a239ce532419064c2ab8.png)
+![](img/8dc09007c977a239ce532419064c2ab8.png)
 
-[“Blace”边界穿越](http://www.roads.org.mk/411/live-webcast)的约3分钟加速GIF（公共领域）
+[“Blace”边界穿越](http://www.roads.org.mk/411/live-webcast)的约 3 分钟加速 GIF（公共领域）
 
 # 协调整个过程
 
-尽管这个算法对于检测和跟踪单一边界穿越中的车辆已经完整，我希望将解决方案扩展到多个边界穿越，同时仍然保存速度结果。为实现这一目标，我决定将每个边界摄像头脚本作为一个独立的容器运行，该容器在docker-compose中进行通信。由于为每个摄像头运行单独的YOLOv3模型效率低下，我创建了一个带有flask应用程序的独立容器，用于服务其他容器。然而，为了确保多个请求不会同时使用相同的神经网络，重要的是要采用信号量或其他锁定机制。
+尽管这个算法对于检测和跟踪单一边界穿越中的车辆已经完整，我希望将解决方案扩展到多个边界穿越，同时仍然保存速度结果。为实现这一目标，我决定将每个边界摄像头脚本作为一个独立的容器运行，该容器在 docker-compose 中进行通信。由于为每个摄像头运行单独的 YOLOv3 模型效率低下，我创建了一个带有 flask 应用程序的独立容器，用于服务其他容器。然而，为了确保多个请求不会同时使用相同的神经网络，重要的是要采用信号量或其他锁定机制。
 
 此外，我开发了一个 .Net 网络 API，用于将每条车道的速度和汽车保存到数据库中。由于篇幅限制，这里无法包含完整的代码，但你可以在我的 [GitHub 仓库](https://github.com/dani2221/bordercount) 中找到它。通过这种实现，该解决方案可以部署到多个边境检查点，生成的数据可以高效地收集和分析，为不同地点的交通模式和拥堵情况提供有价值的见解。
 
@@ -401,7 +401,7 @@ services:
 
 此外，考虑到边境检查点的设计可以有很大的差异也很重要。虽然大多数边境检查点可能遵循类似的布局，但也有一些具有更复杂特征，例如弯曲车道和额外障碍物。这些变化可能会导致算法在某些情况下无法使用。值得注意的是，进一步的开发和优化可能会解决这些限制，但目前在实施我们的解决方案时必须考虑这些因素。
 
-![](../Images/2541e9469d4106cdb12d15f8d2a37f77.png)
+![](img/2541e9469d4106cdb12d15f8d2a37f77.png)
 
 [“Tabanovce” 检查点](http://www.roads.org.mk/411/live-webcast)（公共领域）中无法使用车道速度算法的示例边境检查点。
 

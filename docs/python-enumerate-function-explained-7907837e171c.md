@@ -1,18 +1,18 @@
 # Python **enumerate()** 函数详解
 
-> 原文：[https://towardsdatascience.com/python-enumerate-function-explained-7907837e171c?source=collection_archive---------15-----------------------#2023-02-20](https://towardsdatascience.com/python-enumerate-function-explained-7907837e171c?source=collection_archive---------15-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/python-enumerate-function-explained-7907837e171c?source=collection_archive---------15-----------------------#2023-02-20`](https://towardsdatascience.com/python-enumerate-function-explained-7907837e171c?source=collection_archive---------15-----------------------#2023-02-20)
 
 ## 在本文中，我们将深入探讨如何使用 Python **enumerate()** 函数
 
-[](https://pyshark.medium.com/?source=post_page-----7907837e171c--------------------------------)[![Misha Sv](../Images/d3f9605e2c7020246ff793869728e218.png)](https://pyshark.medium.com/?source=post_page-----7907837e171c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7907837e171c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7907837e171c--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----7907837e171c--------------------------------)
+[](https://pyshark.medium.com/?source=post_page-----7907837e171c--------------------------------)![Misha Sv](https://pyshark.medium.com/?source=post_page-----7907837e171c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7907837e171c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7907837e171c--------------------------------) [Misha Sv](https://pyshark.medium.com/?source=post_page-----7907837e171c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-enumerate-function-explained-7907837e171c&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----7907837e171c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7907837e171c--------------------------------) ·3 分钟阅读·2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7907837e171c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-enumerate-function-explained-7907837e171c&user=Misha+Sv&userId=685c2995a8e&source=-----7907837e171c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685c2995a8e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-enumerate-function-explained-7907837e171c&user=Misha+Sv&userId=685c2995a8e&source=post_page-685c2995a8e----7907837e171c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7907837e171c--------------------------------) ·3 分钟阅读·2023 年 2 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7907837e171c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-enumerate-function-explained-7907837e171c&user=Misha+Sv&userId=685c2995a8e&source=-----7907837e171c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7907837e171c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-enumerate-function-explained-7907837e171c&source=-----7907837e171c---------------------bookmark_footer-----------)![](../Images/227b6430ee6fd418032c78c73fbda97f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7907837e171c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-enumerate-function-explained-7907837e171c&source=-----7907837e171c---------------------bookmark_footer-----------)![](img/227b6430ee6fd418032c78c73fbda97f.png)
 
 图片由 [Nick Fewings](https://unsplash.com/ko/@jannerboy62?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，[Unsplash](https://unsplash.com/photos/6H8a6vNGDKg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

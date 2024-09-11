@@ -1,18 +1,18 @@
 # 了解贝叶斯市场营销组合建模：深入探讨先验规格
 
-> 原文：[https://towardsdatascience.com/understanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e?source=collection_archive---------2-----------------------#2023-06-24](https://towardsdatascience.com/understanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e?source=collection_archive---------2-----------------------#2023-06-24)
+> 原文：[`towardsdatascience.com/understanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e?source=collection_archive---------2-----------------------#2023-06-24`](https://towardsdatascience.com/understanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e?source=collection_archive---------2-----------------------#2023-06-24)
 
-## 探索使用Google的LightweightMMM进行模型规格化
+## 探索使用 Google 的 LightweightMMM 进行模型规格化
 
-[](https://medium.com/@slavax?source=post_page-----af400adb836e--------------------------------)[![Slava Kisilevich](../Images/5a2a00fb7a9d4c33868d071b6cc1a009.png)](https://medium.com/@slavax?source=post_page-----af400adb836e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af400adb836e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----af400adb836e--------------------------------) [Slava Kisilevich](https://medium.com/@slavax?source=post_page-----af400adb836e--------------------------------)
+[](https://medium.com/@slavax?source=post_page-----af400adb836e--------------------------------)![Slava Kisilevich](https://medium.com/@slavax?source=post_page-----af400adb836e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af400adb836e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----af400adb836e--------------------------------) [Slava Kisilevich](https://medium.com/@slavax?source=post_page-----af400adb836e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba0d56f8b910&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e&user=Slava+Kisilevich&userId=ba0d56f8b910&source=post_page-ba0d56f8b910----af400adb836e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----af400adb836e--------------------------------) · 8分钟阅读·2023年6月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf400adb836e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e&user=Slava+Kisilevich&userId=ba0d56f8b910&source=-----af400adb836e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba0d56f8b910&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e&user=Slava+Kisilevich&userId=ba0d56f8b910&source=post_page-ba0d56f8b910----af400adb836e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----af400adb836e--------------------------------) · 8 分钟阅读·2023 年 6 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf400adb836e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e&user=Slava+Kisilevich&userId=ba0d56f8b910&source=-----af400adb836e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf400adb836e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e&source=-----af400adb836e---------------------bookmark_footer-----------)![](../Images/4a03e63743ae2b133d6689409a2acd9f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf400adb836e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-bayesian-marketing-mix-modeling-a-deep-dive-into-prior-specifications-af400adb836e&source=-----af400adb836e---------------------bookmark_footer-----------)![](img/4a03e63743ae2b133d6689409a2acd9f.png)
 
 图片由[Pawel Czerwinski](https://unsplash.com/@pawel_czerwinski?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -38,7 +38,7 @@
 
 [LightweightMMM 模型](https://lightweight-mmm.readthedocs.io/en/latest/models.html#)的规范定义如下：
 
-![](../Images/68a5b02a5020d63d65589026dda1b600.png)
+![](img/68a5b02a5020d63d65589026dda1b600.png)
 
 LMMM 模型规范（作者提供的图像）
 
@@ -60,7 +60,7 @@ LMMM 模型规范（作者提供的图像）
 
 ## 截距
 
-![](../Images/a91554c7d9d3ffa17bd455faca15ed46.png)
+![](img/a91554c7d9d3ffa17bd455faca15ed46.png)
 
 截距先验规范（作者提供的图像）
 
@@ -86,13 +86,13 @@ plt.ylabel('P(X=x)')
 plt.show()
 ```
 
-![](../Images/42a658fe5c463f91f41bc8bc9af6750a.png)
+![](img/42a658fe5c463f91f41bc8bc9af6750a.png)
 
 半正态分布（图像由作者提供）
 
 ## 趋势
 
-![](../Images/7abcf759c734f74b0a2d29d58a1174ba.png)
+![](img/7abcf759c734f74b0a2d29d58a1174ba.png)
 
 趋势规范（图像由作者提供）
 
@@ -104,13 +104,13 @@ plt.show()
 
 下图展示了从先验分布中获得的独立组件：截距和趋势的样本，每个组件单独表示。
 
-![](../Images/45e852b1202ae917e1f5fa37343b7d4c.png)
+![](img/45e852b1202ae917e1f5fa37343b7d4c.png)
 
 趋势和截距（图像由作者提供）
 
 ## 季节性
 
-![](../Images/bc168c635788c6ec766641cfb6d2571a.png)
+![](img/bc168c635788c6ec766641cfb6d2571a.png)
 
 季节性规范（图像由作者提供）
 
@@ -120,27 +120,27 @@ plt.show()
 
 下图展示了从先验分布中获得的季节性、截距和趋势的样本。
 
-![](../Images/964b36d329febe38575c58465fd8ce6f.png)
+![](img/964b36d329febe38575c58465fd8ce6f.png)
 
 季节性、趋势和截距（图像由作者提供）
 
 ## 其他因素（控制变量）
 
-![](../Images/1787d9a33bdf30f8cd0c4354294faf7d.png)
+![](img/1787d9a33bdf30f8cd0c4354294faf7d.png)
 
 其他因素规范（图像由作者提供）
 
 每个因子系数 *λ* 取自均值为 0 和标准差为 1 的正态分布，这意味着 *λ* 可以取正值或负值，代表每个因子对结果的影响方向和幅度。
 
-下图描绘了从先验分布中获得的独立组件：一个拦截项、趋势、季节性和控制变量（*竞争对手销售_B, 新闻通讯, 节假日和活动*），每个组件都单独表示。
+下图描绘了从先验分布中获得的独立组件：一个拦截项、趋势、季节性和控制变量（*竞争对手销售 _B, 新闻通讯, 节假日和活动*），每个组件都单独表示。
 
-![](../Images/d0551801a9f51391b3a5664c189380f1.png)
+![](img/d0551801a9f51391b3a5664c189380f1.png)
 
 其他因素（合并）（图像由作者提供）
 
 ## 媒体渠道
 
-![](../Images/278af8fb42495d6db9199aef17c1c644.png)
+![](img/278af8fb42495d6db9199aef17c1c644.png)
 
 媒体渠道的先验规范（图像由作者提供）
 
@@ -148,17 +148,17 @@ plt.show()
 
 ## 媒体变换
 
-![](../Images/fb02d036a7b12a61a851b8ca5ab312d0.png)
+![](img/fb02d036a7b12a61a851b8ca5ab312d0.png)
 
 Adstock 和 Hill 饱和规范（图像由作者提供）
 
 在这些方程中，我们使用一系列变换（如 adstock 和 Hill 饱和）来建模媒体渠道的行为。
 
-[](/modeling-marketing-mix-using-pymc3-ba18dd9e6e68?source=post_page-----af400adb836e--------------------------------) [## 使用 PyMC3 建模营销组合
+[](/modeling-marketing-mix-using-pymc3-ba18dd9e6e68?source=post_page-----af400adb836e--------------------------------) ## 使用 PyMC3 建模营销组合
 
 ### 实验先验、数据标准化，并将贝叶斯建模与 Robyn、Facebook 的开源 MMM 进行比较……
 
-[towardsdatascience.com](/modeling-marketing-mix-using-pymc3-ba18dd9e6e68?source=post_page-----af400adb836e--------------------------------)
+[towardsdatascience.com
 
 变量 *媒体渠道* 代表了在时间点 *t* 上经过变换后的媒体渠道。它是通过对原始媒体渠道值 *x* 应用变换获得的。Hill 变换由参数 *K*（半饱和点，0 < k ≤ 1）和控制曲线陡峭度的形状参数 *S*（s > 0）来控制。
 
@@ -187,13 +187,13 @@ plt.ylabel('P(X=x)')
 plt.show()python
 ```
 
-![](../Images/e4fe6de1bc6a9a8822bd0d6f079df3e3.png)
+![](img/e4fe6de1bc6a9a8822bd0d6f079df3e3.png)
 
 Gamma 分布（图像由作者提供）
 
 adstock 参数 *λ* 的概率密度函数如下图所示：
 
-![](../Images/a135ee52e7e20f76a3e0cddb1b09bca8.png)
+![](img/a135ee52e7e20f76a3e0cddb1b09bca8.png)
 
 Beta 分布（图像由作者提供）
 
@@ -205,13 +205,13 @@ Beta(α = 2, β = 1) 分布的概率密度函数呈现正趋势，表明较高�
 
 或者，在[具有延续性和形状效应的贝叶斯媒体混合建模方法](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46001.pdf)中，衰减参数被定义为 Beta(α = 3, β = 3)，其概率密度函数如下图所示。该分布在 0.5 附近对称，表明在区间 [0, 1] 的两端和中间位置观察到结果的可能性相等。
 
-![](../Images/ef4a5b2752e6e732cf710180beffc221.png)
+![](img/ef4a5b2752e6e732cf710180beffc221.png)
 
 Beta(3,3)（图片由作者提供）
 
 下图描绘了从先验分布中获得的各个独立组件：截距、趋势、季节性、控制变量和媒体渠道的样本，每个组件单独表示。
 
-![](../Images/60ee0427f39d60149b2d85af37873c7b.png)
+![](img/60ee0427f39d60149b2d85af37873c7b.png)
 
 所有模型组件（图片由作者提供）
 
@@ -221,7 +221,7 @@ Beta(3,3)（图片由作者提供）
 
 将单个样本与真实响应值进行可视化，可以观察模型的预测与实际结果在特定参数值集下的比较。这可以直观地理解模型在该特定实例中的表现。
 
-![](../Images/0036621466f5c4583488191a01603221.png)
+![](img/0036621466f5c4583488191a01603221.png)
 
 收入：真实与先验（图片由作者提供）
 
@@ -231,7 +231,7 @@ Beta(3,3)（图片由作者提供）
 
 下面描绘的图表通过显示每个点的预期收入（均值）以及不确定性度量来可视化先验预测分布。我们可以看到真实收入落在标准差范围内，这表明模型规格适合观察到的数据。
 
-![](../Images/42f15e6bd17dd5b0e837f66a4983426c.png)
+![](img/42f15e6bd17dd5b0e837f66a4983426c.png)
 
 先验预测检查（图片由作者提供）
 

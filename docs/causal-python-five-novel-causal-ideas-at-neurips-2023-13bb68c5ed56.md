@@ -1,10 +1,10 @@
-# Causal Python: NeurIPS 2023的五个新颖因果想法
+# Causal Python: NeurIPS 2023 的五个新颖因果想法
 
-> 原文：[https://towardsdatascience.com/causal-python-five-novel-causal-ideas-at-neurips-2023-13bb68c5ed56?source=collection_archive---------2-----------------------#2023-09-24](https://towardsdatascience.com/causal-python-five-novel-causal-ideas-at-neurips-2023-13bb68c5ed56?source=collection_archive---------2-----------------------#2023-09-24)
+> 原文：[`towardsdatascience.com/causal-python-five-novel-causal-ideas-at-neurips-2023-13bb68c5ed56?source=collection_archive---------2-----------------------#2023-09-24`](https://towardsdatascience.com/causal-python-five-novel-causal-ideas-at-neurips-2023-13bb68c5ed56?source=collection_archive---------2-----------------------#2023-09-24)
 
 ## 新的激动人心的想法将因果关系与生成建模、符合预测和拓扑结合在一起。
 
-[](https://aleksander-molak.medium.com/?source=post_page-----13bb68c5ed56--------------------------------)[![Aleksander Molak](../Images/7fca5018f6ce88297fae31cef1fe0e6c.png)](https://aleksander-molak.medium.com/?source=post_page-----13bb68c5ed56--------------------------------)[](https://towardsdatascience.com/?source=post_page-----13bb68c5ed56--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----13bb68c5ed56--------------------------------) [Aleksander Molak](https://aleksander-molak.medium.com/?source=post_page-----13bb68c5ed56--------------------------------)
+[](https://aleksander-molak.medium.com/?source=post_page-----13bb68c5ed56--------------------------------)![Aleksander Molak](https://aleksander-molak.medium.com/?source=post_page-----13bb68c5ed56--------------------------------)[](https://towardsdatascience.com/?source=post_page-----13bb68c5ed56--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----13bb68c5ed56--------------------------------) [Aleksander Molak](https://aleksander-molak.medium.com/?source=post_page-----13bb68c5ed56--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F13bb68c5ed56&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcausal-python-five-novel-causal-ideas-at-neurips-2023-13bb68c5ed56&source=-----13bb68c5ed56---------------------bookmark_footer-----------)![](../Images/e58678914a0248374537c9066bfa9234.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F13bb68c5ed56&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcausal-python-five-novel-causal-ideas-at-neurips-2023-13bb68c5ed56&source=-----13bb68c5ed56---------------------bookmark_footer-----------)![](img/e58678914a0248374537c9066bfa9234.png)
 
 图片由 [**Pixabay** 在 **Pexels.com**](https://www.pexels.com/photo/binocular-blue-sky-daylight-discovery-221538/) 提供
 

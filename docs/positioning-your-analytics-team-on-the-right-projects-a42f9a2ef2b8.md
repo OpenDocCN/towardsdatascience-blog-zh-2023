@@ -1,14 +1,14 @@
 # 将你的分析团队定位到正确的项目上
 
-> 原文：[https://towardsdatascience.com/positioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8?source=collection_archive---------6-----------------------#2023-12-23](https://towardsdatascience.com/positioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8?source=collection_archive---------6-----------------------#2023-12-23)
+> 原文：[`towardsdatascience.com/positioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8?source=collection_archive---------6-----------------------#2023-12-23`](https://towardsdatascience.com/positioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8?source=collection_archive---------6-----------------------#2023-12-23)
 
 ## “好的足球运动员会跟随足球——最好的足球运动员已经在球落地时就在那里”
 
-[](https://medium.com/@jordangom?source=post_page-----a42f9a2ef2b8--------------------------------)[![乔丹·戈梅斯](../Images/d08bb9fd8b084687599a67a2221ec68c.png)](https://medium.com/@jordangom?source=post_page-----a42f9a2ef2b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a42f9a2ef2b8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a42f9a2ef2b8--------------------------------) [乔丹·戈梅斯](https://medium.com/@jordangom?source=post_page-----a42f9a2ef2b8--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----a42f9a2ef2b8--------------------------------)![乔丹·戈梅斯](https://medium.com/@jordangom?source=post_page-----a42f9a2ef2b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a42f9a2ef2b8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a42f9a2ef2b8--------------------------------) [乔丹·戈梅斯](https://medium.com/@jordangom?source=post_page-----a42f9a2ef2b8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpositioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----a42f9a2ef2b8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a42f9a2ef2b8--------------------------------) · 5分钟阅读 · 2023年12月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa42f9a2ef2b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpositioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----a42f9a2ef2b8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpositioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----a42f9a2ef2b8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a42f9a2ef2b8--------------------------------) · 5 分钟阅读 · 2023 年 12 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa42f9a2ef2b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpositioning-your-analytics-team-on-the-right-projects-a42f9a2ef2b8&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----a42f9a2ef2b8---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 然而——我从未真正遇到过适合我需求的分析世界的思维模型，用于帮助决定该参与哪些项目。因此，这就是我们将在本文中尝试的练习——制定一个思维模型来帮助做出更好的优先级决策。
 
-![](../Images/ec084f1f1ebefdb6ef10e792e6b3a347.png)
+![](img/ec084f1f1ebefdb6ef10e792e6b3a347.png)
 
 项目优先级排序表（图片来源于作者）
 
@@ -28,7 +28,7 @@
 
 这些因素中的每一个都可能在你的研究中产生一些风险。如果你没有正确的数据，你很可能无法得到正确的答案。如果你没有合适的技能，或者你当前的技能与需要掌握的技能之间的差距太大，或者你的组织没有准备好实施任何结果，或者可能会有一些政治障碍阻碍实施——你的项目失败的风险就会更高。
 
-尽管有许多不同和复杂的因素在起作用，但在你这边，你可以用简单的方法对潜在项目进行评分——使用1-5分评分系统（或0-100%），基于你克服上述任何障碍的能力的信心。
+尽管有许多不同和复杂的因素在起作用，但在你这边，你可以用简单的方法对潜在项目进行评分——使用 1-5 分评分系统（或 0-100%），基于你克服上述任何障碍的能力的信心。
 
 # 影响有不同的规模和形式。
 
@@ -42,7 +42,7 @@
 
 +   影响需要根据工作的时效性和需求来考虑。如果你的行业正在快速发展，或者公司战略有早期变化的迹象——在你的影响计算中考虑这些因素是很重要的。
 
-同样地，使用5分制评分系统可以是对不同项目进行排序并理解哪些项目可能产生最高价值的简单方法。
+同样地，使用 5 分制评分系统可以是对不同项目进行排序并理解哪些项目可能产生最高价值的简单方法。
 
 # 你的时间有限。
 
@@ -64,7 +64,7 @@
 
 +   使用 [群体智慧](https://en.wikipedia.org/wiki/Wisdom_of_the_crowd) 并询问其他同行他们认为这样的项目需要多少时间。
 
-+   进行一个 “[思想实验](https://fs.blog/thought-experiment/)”（但是真正的实验，而不是仅仅思考2分钟）。花些时间想象整个过程以及你需要经历的所有步骤来完成项目。从你的视觉化练习中，评估一下从开始到完成所需的时间。
++   进行一个 “[思想实验](https://fs.blog/thought-experiment/)”（但是真正的实验，而不是仅仅思考 2 分钟）。花些时间想象整个过程以及你需要经历的所有步骤来完成项目。从你的视觉化练习中，评估一下从开始到完成所需的时间。
 
 # 综合考虑
 

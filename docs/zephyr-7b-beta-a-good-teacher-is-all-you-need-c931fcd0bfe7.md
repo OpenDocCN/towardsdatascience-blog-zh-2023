@@ -1,18 +1,18 @@
 # Zephyr 7B Beta：*一个好老师是你所需的一切*
 
-> 原文：[https://towardsdatascience.com/zephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7?source=collection_archive---------4-----------------------#2023-11-11](https://towardsdatascience.com/zephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7?source=collection_archive---------4-----------------------#2023-11-11)
+> 原文：[`towardsdatascience.com/zephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7?source=collection_archive---------4-----------------------#2023-11-11`](https://towardsdatascience.com/zephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7?source=collection_archive---------4-----------------------#2023-11-11)
 
 ## Mistral 7B 的知识蒸馏
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----c931fcd0bfe7--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----c931fcd0bfe7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c931fcd0bfe7--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c931fcd0bfe7--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----c931fcd0bfe7--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----c931fcd0bfe7--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----c931fcd0bfe7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c931fcd0bfe7--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----c931fcd0bfe7--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----c931fcd0bfe7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----c931fcd0bfe7---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----c931fcd0bfe7--------------------------------) · 8 分钟阅读 · 2023年11月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc931fcd0bfe7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7&user=Benjamin+Marie&userId=ad2a414578b3&source=-----c931fcd0bfe7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----c931fcd0bfe7---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----c931fcd0bfe7--------------------------------) · 8 分钟阅读 · 2023 年 11 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc931fcd0bfe7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7&user=Benjamin+Marie&userId=ad2a414578b3&source=-----c931fcd0bfe7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc931fcd0bfe7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7&source=-----c931fcd0bfe7---------------------bookmark_footer-----------)![](../Images/c9f381fbf16adcf625a9df3101552363.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc931fcd0bfe7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fzephyr-7b-beta-a-good-teacher-is-all-you-need-c931fcd0bfe7&source=-----c931fcd0bfe7---------------------bookmark_footer-----------)![](img/c9f381fbf16adcf625a9df3101552363.png)
 
 图片来自 [Pixabay](https://pixabay.com/illustrations/man-drinking-booze-drinker-5334659/)
 

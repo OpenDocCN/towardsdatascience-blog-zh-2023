@@ -1,18 +1,18 @@
 # Python 开发最佳实践
 
-> 原文：[https://towardsdatascience.com/best-practices-for-python-development-bf74c2880f87?source=collection_archive---------3-----------------------#2023-02-08](https://towardsdatascience.com/best-practices-for-python-development-bf74c2880f87?source=collection_archive---------3-----------------------#2023-02-08)
+> 原文：[`towardsdatascience.com/best-practices-for-python-development-bf74c2880f87?source=collection_archive---------3-----------------------#2023-02-08`](https://towardsdatascience.com/best-practices-for-python-development-bf74c2880f87?source=collection_archive---------3-----------------------#2023-02-08)
 
 ## 设置并使用一个专业的 Python 存储库
 
-[](https://medium.com/@hrmnmichaels?source=post_page-----bf74c2880f87--------------------------------)[![Oliver S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----bf74c2880f87--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bf74c2880f87--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bf74c2880f87--------------------------------) [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----bf74c2880f87--------------------------------)
+[](https://medium.com/@hrmnmichaels?source=post_page-----bf74c2880f87--------------------------------)![Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----bf74c2880f87--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bf74c2880f87--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf74c2880f87--------------------------------) [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----bf74c2880f87--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff2daf6260cca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbest-practices-for-python-development-bf74c2880f87&user=Oliver+S&userId=f2daf6260cca&source=post_page-f2daf6260cca----bf74c2880f87---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf74c2880f87--------------------------------) · 8 分钟阅读 · 2023年2月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbf74c2880f87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbest-practices-for-python-development-bf74c2880f87&user=Oliver+S&userId=f2daf6260cca&source=-----bf74c2880f87---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff2daf6260cca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbest-practices-for-python-development-bf74c2880f87&user=Oliver+S&userId=f2daf6260cca&source=post_page-f2daf6260cca----bf74c2880f87---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf74c2880f87--------------------------------) · 8 分钟阅读 · 2023 年 2 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbf74c2880f87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbest-practices-for-python-development-bf74c2880f87&user=Oliver+S&userId=f2daf6260cca&source=-----bf74c2880f87---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbf74c2880f87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbest-practices-for-python-development-bf74c2880f87&source=-----bf74c2880f87---------------------bookmark_footer-----------)![](../Images/89bfd14b512226b92a7b815046f0d5c8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbf74c2880f87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbest-practices-for-python-development-bf74c2880f87&source=-----bf74c2880f87---------------------bookmark_footer-----------)![](img/89bfd14b512226b92a7b815046f0d5c8.png)
 
 图片由 [Christina @ wocintechchat.com](https://unsplash.com/@wocintechchat?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/EkeThvO9VfM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

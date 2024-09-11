@@ -1,10 +1,10 @@
-# 在数据科学中取得成功：你在大学没学到的4项关键技能
+# 在数据科学中取得成功：你在大学没学到的 4 项关键技能
 
-> 原文：[https://towardsdatascience.com/succeeding-in-data-science-4-essential-skills-you-didnt-learn-in-university-1920815acef3?source=collection_archive---------2-----------------------#2023-05-11](https://towardsdatascience.com/succeeding-in-data-science-4-essential-skills-you-didnt-learn-in-university-1920815acef3?source=collection_archive---------2-----------------------#2023-05-11)
+> 原文：[`towardsdatascience.com/succeeding-in-data-science-4-essential-skills-you-didnt-learn-in-university-1920815acef3?source=collection_archive---------2-----------------------#2023-05-11`](https://towardsdatascience.com/succeeding-in-data-science-4-essential-skills-you-didnt-learn-in-university-1920815acef3?source=collection_archive---------2-----------------------#2023-05-11)
 
 ## 如何弥合数据科学领域中学术与就业之间的鸿沟
 
-[](https://medium.com/@tomergabay?source=post_page-----1920815acef3--------------------------------)[![Tomer Gabay](../Images/1fb1d408bc89415918c1aa6733df44e1.png)](https://medium.com/@tomergabay?source=post_page-----1920815acef3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1920815acef3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1920815acef3--------------------------------) [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----1920815acef3--------------------------------)
+[](https://medium.com/@tomergabay?source=post_page-----1920815acef3--------------------------------)![Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----1920815acef3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1920815acef3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1920815acef3--------------------------------) [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----1920815acef3--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1920815acef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsucceeding-in-data-science-4-essential-skills-you-didnt-learn-in-university-1920815acef3&source=-----1920815acef3---------------------bookmark_footer-----------)![](../Images/d08ac260c10a4ed8700842214ccceada.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1920815acef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsucceeding-in-data-science-4-essential-skills-you-didnt-learn-in-university-1920815acef3&source=-----1920815acef3---------------------bookmark_footer-----------)![](img/d08ac260c10a4ed8700842214ccceada.png)
 
 照片由 [krakenimages](https://unsplash.com/@krakenimages?utm_source=medium&utm_medium=referral) 提供在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,6 +22,6 @@
 
 # 建立坚实的数据科学项目
 
-在大学里，使用 Jupyter Notebooks 进行‘Notebook风格’的工作很常见。我在大学时设置的最坚实的项目结构是从 *main.py* 文件调用不同的模块，并使用 *requirements.txt*。但使用 *setup.py*？或 *pyproject.toml*？不行。
+在大学里，使用 Jupyter Notebooks 进行‘Notebook 风格’的工作很常见。我在大学时设置的最坚实的项目结构是从 *main.py* 文件调用不同的模块，并使用 *requirements.txt*。但使用 *setup.py*？或 *pyproject.toml*？不行。
 
 企业对数据科学项目的要求大相径庭。你的数据科学项目通常应该构建为一个…

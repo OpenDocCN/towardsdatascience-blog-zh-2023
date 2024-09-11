@@ -1,18 +1,18 @@
-# iMAP：实时建模3D场景
+# iMAP：实时建模 3D 场景
 
-> 原文：[https://towardsdatascience.com/imap-modeling-3d-scenes-in-real-time-6202365d80ee?source=collection_archive---------9-----------------------#2023-05-12](https://towardsdatascience.com/imap-modeling-3d-scenes-in-real-time-6202365d80ee?source=collection_archive---------9-----------------------#2023-05-12)
+> 原文：[`towardsdatascience.com/imap-modeling-3d-scenes-in-real-time-6202365d80ee?source=collection_archive---------9-----------------------#2023-05-12`](https://towardsdatascience.com/imap-modeling-3d-scenes-in-real-time-6202365d80ee?source=collection_archive---------9-----------------------#2023-05-12)
 
-## 使用手持RGB-D相机学习3D环境
+## 使用手持 RGB-D 相机学习 3D 环境
 
-[](https://wolfecameron.medium.com/?source=post_page-----6202365d80ee--------------------------------)[![Cameron R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----6202365d80ee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6202365d80ee--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6202365d80ee--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----6202365d80ee--------------------------------)
+[](https://wolfecameron.medium.com/?source=post_page-----6202365d80ee--------------------------------)![Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----6202365d80ee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6202365d80ee--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6202365d80ee--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----6202365d80ee--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimap-modeling-3d-scenes-in-real-time-6202365d80ee&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----6202365d80ee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6202365d80ee--------------------------------) · 15分钟阅读 · 2023年5月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6202365d80ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimap-modeling-3d-scenes-in-real-time-6202365d80ee&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----6202365d80ee---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimap-modeling-3d-scenes-in-real-time-6202365d80ee&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----6202365d80ee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6202365d80ee--------------------------------) · 15 分钟阅读 · 2023 年 5 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6202365d80ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimap-modeling-3d-scenes-in-real-time-6202365d80ee&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----6202365d80ee---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6202365d80ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimap-modeling-3d-scenes-in-real-time-6202365d80ee&source=-----6202365d80ee---------------------bookmark_footer-----------)![](../Images/75c66b8fbe2eb3a7bc26faba5f1ea272.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6202365d80ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimap-modeling-3d-scenes-in-real-time-6202365d80ee&source=-----6202365d80ee---------------------bookmark_footer-----------)![](img/75c66b8fbe2eb3a7bc26faba5f1ea272.png)
 
 （照片由 [Brett Zeck](https://unsplash.com/@iambrettzeck?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，[Unsplash](https://unsplash.com/s/photos/map?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)）
 

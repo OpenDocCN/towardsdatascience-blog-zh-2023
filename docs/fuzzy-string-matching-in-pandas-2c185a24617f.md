@@ -1,18 +1,18 @@
-# 如何在Pandas数据框中进行模糊字符串匹配。
+# 如何在 Pandas 数据框中进行模糊字符串匹配。
 
-> 原文：[https://towardsdatascience.com/fuzzy-string-matching-in-pandas-2c185a24617f?source=collection_archive---------10-----------------------#2023-04-17](https://towardsdatascience.com/fuzzy-string-matching-in-pandas-2c185a24617f?source=collection_archive---------10-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/fuzzy-string-matching-in-pandas-2c185a24617f?source=collection_archive---------10-----------------------#2023-04-17`](https://towardsdatascience.com/fuzzy-string-matching-in-pandas-2c185a24617f?source=collection_archive---------10-----------------------#2023-04-17)
 
 ## 匹配文本时没有完美的匹配。
 
-[](https://thuwarakesh.medium.com/?source=post_page-----2c185a24617f--------------------------------)[![Thuwarakesh Murallie](../Images/44f1a14a899426592bbd8c7f73ce169d.png)](https://thuwarakesh.medium.com/?source=post_page-----2c185a24617f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2c185a24617f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2c185a24617f--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----2c185a24617f--------------------------------)
+[](https://thuwarakesh.medium.com/?source=post_page-----2c185a24617f--------------------------------)![Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----2c185a24617f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2c185a24617f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c185a24617f--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----2c185a24617f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffuzzy-string-matching-in-pandas-2c185a24617f&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----2c185a24617f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c185a24617f--------------------------------) ·6分钟阅读·2023年4月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2c185a24617f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffuzzy-string-matching-in-pandas-2c185a24617f&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----2c185a24617f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffuzzy-string-matching-in-pandas-2c185a24617f&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----2c185a24617f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c185a24617f--------------------------------) ·6 分钟阅读·2023 年 4 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2c185a24617f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffuzzy-string-matching-in-pandas-2c185a24617f&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----2c185a24617f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2c185a24617f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffuzzy-string-matching-in-pandas-2c185a24617f&source=-----2c185a24617f---------------------bookmark_footer-----------)![](../Images/0e2257b146dc3409abf7ce5b742d7da1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2c185a24617f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffuzzy-string-matching-in-pandas-2c185a24617f&source=-----2c185a24617f---------------------bookmark_footer-----------)![](img/0e2257b146dc3409abf7ce5b742d7da1.png)
 
 [Lucas Santos](https://unsplash.com/@_staticvoid?utm_source=medium&utm_medium=referral)拍摄的照片，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -24,11 +24,11 @@
 
 我们可以通过模糊字符串匹配来解决这个问题。这虽然也不完美，但非常有帮助。
 
-[](/python-decorators-for-data-science-6913f717669a?source=post_page-----2c185a24617f--------------------------------) [## 我在几乎所有数据科学项目中使用的 5 个 Python 装饰器
+[](/python-decorators-for-data-science-6913f717669a?source=post_page-----2c185a24617f--------------------------------) ## 我在几乎所有数据科学项目中使用的 5 个 Python 装饰器
 
 ### 装饰器提供了一种新的便利方式，从缓存到发送通知都能使用。
 
-towardsdatascience.com](/python-decorators-for-data-science-6913f717669a?source=post_page-----2c185a24617f--------------------------------)
+towardsdatascience.com
 
 ## Python 中的模糊字符串匹配
 

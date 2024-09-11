@@ -1,18 +1,18 @@
 # 理解 SQL：执行顺序
 
-> 原文：[https://towardsdatascience.com/understanding-sql-order-of-execution-ba2b4e558828?source=collection_archive---------13-----------------------#2023-04-03](https://towardsdatascience.com/understanding-sql-order-of-execution-ba2b4e558828?source=collection_archive---------13-----------------------#2023-04-03)
+> 原文：[`towardsdatascience.com/understanding-sql-order-of-execution-ba2b4e558828?source=collection_archive---------13-----------------------#2023-04-03`](https://towardsdatascience.com/understanding-sql-order-of-execution-ba2b4e558828?source=collection_archive---------13-----------------------#2023-04-03)
 
 ## 关于数据库如何解释你的 SQL 查询的简要指南
 
-[](https://medium.com/@dataforyou?source=post_page-----ba2b4e558828--------------------------------)[![Rob Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----ba2b4e558828--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba2b4e558828--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ba2b4e558828--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----ba2b4e558828--------------------------------)
+[](https://medium.com/@dataforyou?source=post_page-----ba2b4e558828--------------------------------)![Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----ba2b4e558828--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba2b4e558828--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba2b4e558828--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----ba2b4e558828--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-order-of-execution-ba2b4e558828&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----ba2b4e558828---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba2b4e558828--------------------------------) ·7 min 阅读·2023年4月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba2b4e558828&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-order-of-execution-ba2b4e558828&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----ba2b4e558828---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-order-of-execution-ba2b4e558828&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----ba2b4e558828---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba2b4e558828--------------------------------) ·7 min 阅读·2023 年 4 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba2b4e558828&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-order-of-execution-ba2b4e558828&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----ba2b4e558828---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fba2b4e558828&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-order-of-execution-ba2b4e558828&source=-----ba2b4e558828---------------------bookmark_footer-----------)![](../Images/ece046668873e9586d438d6fc8a35928.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fba2b4e558828&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-order-of-execution-ba2b4e558828&source=-----ba2b4e558828---------------------bookmark_footer-----------)![](img/ece046668873e9586d438d6fc8a35928.png)
 
 图片由 [Wengang Zhai](https://unsplash.com/@wgzhai?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -66,7 +66,7 @@
 
 该子句用于通过仅返回满足给定条件的行来筛选基本表或联接输出。可以使用任何支持的数据类型来过滤记录。例如，考虑下表，它列出了少量英联邦城市及其人口：
 
-![](../Images/04f1f103d0beeb10dc6ede0f9113a6ff.png)
+![](img/04f1f103d0beeb10dc6ede0f9113a6ff.png)
 
 一个名为‘cities’的小示例表（作者图片）。
 
@@ -163,7 +163,7 @@ HAVING
 
 SELECT 子句是我们定义所需列的地方，同时还包括任何分组和聚合字段。这也是我们可以使用 AS 操作符应用*列别名*的地方。现在，虽然 select 语句在构建查询时排在首位，但它不会在数据被源化和过滤后执行。这一点很重要，因为这意味着聚合变量和别名*不能*在 WHERE、GROUP BY 或 HAVING 语句中使用。
 
-例如，考虑以下查询，它创建了一个列别名**total_pop**，然后在HAVING子句中使用。这个查询会抛出错误，因为别名尚未创建。HAVING子句*位于* SELECT子句之前，因此没有名为**total_pop**的引用**。
+例如，考虑以下查询，它创建了一个列别名**total_pop**，然后在 HAVING 子句中使用。这个查询会抛出错误，因为别名尚未创建。HAVING 子句*位于* SELECT 子句之前，因此没有名为**total_pop**的引用**。
 
 ```py
 SELECT 
@@ -177,15 +177,15 @@ HAVING
   total_pop > 5000000;
 ```
 
-我不会详细讲解这些内容，但DISTINCT和UNION语句是在SELECT之后*执行*，在ORDER BY子句之前执行，其中DISTINCT在UNION之前执行。
+我不会详细讲解这些内容，但 DISTINCT 和 UNION 语句是在 SELECT 之后*执行*，在 ORDER BY 子句之前执行，其中 DISTINCT 在 UNION 之前执行。
 
 ## ORDER BY 子句
 
 我们现在接近尾声，许多重要的工作已经完成。我们已经来源（并可能联接）了表，应用了一些过滤，分组并汇总了一些字段，并指定了我们希望在最终表中包含的列。
 
-在这个阶段，你可能会考虑你希望目标表中数据的排列方式。例如，你可能希望按时间顺序排列行，或者基于某些排名值进行排序。这正是ORDER BY子句的作用。
+在这个阶段，你可能会考虑你希望目标表中数据的排列方式。例如，你可能希望按时间顺序排列行，或者基于某些排名值进行排序。这正是 ORDER BY 子句的作用。
 
-这个语句的好处在于，因为它位于排序的后端，我们可以在GROUP BY语句中使用聚合和列别名。例如，假设我们想按城市总人口对国家进行排序。我们可以编写如下查询：
+这个语句的好处在于，因为它位于排序的后端，我们可以在 GROUP BY 语句中使用聚合和列别名。例如，假设我们想按城市总人口对国家进行排序。我们可以编写如下查询：
 
 ```py
 SELECT 
@@ -199,7 +199,7 @@ ORDER BY
   total_pop;
 ```
 
-请注意，我们可以在ORDER BY语句中使用列别名**total_pop**。默认情况下，这将按升序返回记录（即从小到大）。要按降序返回行，我们可以使用DESC运算符，如下所示：
+请注意，我们可以在 ORDER BY 语句中使用列别名**total_pop**。默认情况下，这将按升序返回记录（即从小到大）。要按降序返回行，我们可以使用 DESC 运算符，如下所示：
 
 ```py
 SELECT 
@@ -215,7 +215,7 @@ ORDER BY
 
 ## LIMIT 子句
 
-在处理大型表时，通常不建议让查询返回所有行，特别是在你仅进行开发和测试时。LIMIT子句在这里非常有用，允许我们定义希望返回的行数。它也可以与ORDER BY子句结合使用，以返回*前n*或*后n*条记录。例如，假设我们想要表中人口最多的前三个城市。我们可以如下使用ORDER BY和LIMIT子句：
+在处理大型表时，通常不建议让查询返回所有行，特别是在你仅进行开发和测试时。LIMIT 子句在这里非常有用，允许我们定义希望返回的行数。它也可以与 ORDER BY 子句结合使用，以返回*前 n*或*后 n*条记录。例如，假设我们想要表中人口最多的前三个城市。我们可以如下使用 ORDER BY 和 LIMIT 子句：
 
 ```py
 SELECT 
@@ -230,15 +230,15 @@ LIMIT
   3;
 ```
 
-请注意，并非所有数据库都支持LIMIT语句，但它们会有执行类似功能的等效语句。
+请注意，并非所有数据库都支持 LIMIT 语句，但它们会有执行类似功能的等效语句。
 
 ## 总结
 
-语句执行的顺序是构建SQL查询时需要掌握的重要概念，我们已经触及了一些常见的陷阱。虽然我没有提供详细的示例，但我希望这个简短的入门介绍能让你思考如何提高查询性能。如果你刚刚开始接触SQL，希望这篇文章能帮助你在学习的旅程中前进。
+语句执行的顺序是构建 SQL 查询时需要掌握的重要概念，我们已经触及了一些常见的陷阱。虽然我没有提供详细的示例，但我希望这个简短的入门介绍能让你思考如何提高查询性能。如果你刚刚开始接触 SQL，希望这篇文章能帮助你在学习的旅程中前进。
 
 感谢阅读！
 
-如果你喜欢这篇文章并希望保持更新，请考虑[关注我在Medium上的账号。](https://medium.com/@dataforyou) 这将确保你不会错过任何新内容。
+如果你喜欢这篇文章并希望保持更新，请考虑[关注我在 Medium 上的账号。](https://medium.com/@dataforyou) 这将确保你不会错过任何新内容。
 
 要获得所有内容的无限访问权，请考虑订阅[Medium](https://medium.com/membership)。
 

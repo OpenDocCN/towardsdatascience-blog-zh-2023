@@ -1,14 +1,14 @@
 # 补充对数-对数回归的温和介绍
 
-> 原文：[https://towardsdatascience.com/a-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83?source=collection_archive---------1-----------------------#2023-10-02](https://towardsdatascience.com/a-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83?source=collection_archive---------1-----------------------#2023-10-02)
+> 原文：[`towardsdatascience.com/a-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83?source=collection_archive---------1-----------------------#2023-10-02`](https://towardsdatascience.com/a-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83?source=collection_archive---------1-----------------------#2023-10-02)
 
 ## 一种在特殊条件下的逻辑回归替代方法
 
-[](https://medium.com/@akif.iips?source=post_page-----8ac3c5c1cd83--------------------------------)[![Akif Mustafa](../Images/1fb81af6fc0aeefedc1da59b3ba2b7ba.png)](https://medium.com/@akif.iips?source=post_page-----8ac3c5c1cd83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ac3c5c1cd83--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ac3c5c1cd83--------------------------------) [Akif Mustafa](https://medium.com/@akif.iips?source=post_page-----8ac3c5c1cd83--------------------------------)
+[](https://medium.com/@akif.iips?source=post_page-----8ac3c5c1cd83--------------------------------)![Akif Mustafa](https://medium.com/@akif.iips?source=post_page-----8ac3c5c1cd83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ac3c5c1cd83--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ac3c5c1cd83--------------------------------) [Akif Mustafa](https://medium.com/@akif.iips?source=post_page-----8ac3c5c1cd83--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ff7bb988de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83&user=Akif+Mustafa&userId=7ff7bb988de&source=post_page-7ff7bb988de----8ac3c5c1cd83---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ac3c5c1cd83--------------------------------) ·8分钟阅读·2023年10月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8ac3c5c1cd83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83&user=Akif+Mustafa&userId=7ff7bb988de&source=-----8ac3c5c1cd83---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ff7bb988de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83&user=Akif+Mustafa&userId=7ff7bb988de&source=post_page-7ff7bb988de----8ac3c5c1cd83---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ac3c5c1cd83--------------------------------) ·8 分钟阅读·2023 年 10 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8ac3c5c1cd83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-complementary-log-log-regression-8ac3c5c1cd83&user=Akif+Mustafa&userId=7ff7bb988de&source=-----8ac3c5c1cd83---------------------clap_footer-----------)
 
 --
 
@@ -18,63 +18,63 @@
 
 **Cloglog 回归的前身**
 
-Cloglog回归是一种用于分析二元响应变量的统计建模技术。我们知道，当涉及到建模二元结果时，首先想到的模型是逻辑回归。实际上，cloglog是逻辑回归在特殊场景中的替代方案。我假设大家对逻辑回归有基本的了解。然而，如果你对逻辑回归不熟悉，建议首先获得对其的基本了解。网上有大量关于逻辑回归的资源，可以帮助你熟悉这个主题。
+Cloglog 回归是一种用于分析二元响应变量的统计建模技术。我们知道，当涉及到建模二元结果时，首先想到的模型是逻辑回归。实际上，cloglog 是逻辑回归在特殊场景中的替代方案。我假设大家对逻辑回归有基本的了解。然而，如果你对逻辑回归不熟悉，建议首先获得对其的基本了解。网上有大量关于逻辑回归的资源，可以帮助你熟悉这个主题。
 
-Cloglog回归是逻辑回归模型的扩展，当事件的概率非常小或非常大时尤其有用。大多数时候，cloglog回归用于处理稀有事件或结果极度偏斜的情况。
+Cloglog 回归是逻辑回归模型的扩展，当事件的概率非常小或非常大时尤其有用。大多数时候，cloglog 回归用于处理稀有事件或结果极度偏斜的情况。
 
-**对Cloglog回归的需求**
+**对 Cloglog 回归的需求**
 
-众所周知，逻辑回归遵循S型函数的形式。下面展示了S型曲线：
+众所周知，逻辑回归遵循 S 型函数的形式。下面展示了 S 型曲线：
 
-![](../Images/37437d3c266bea3f70d7cf3b7bcd358f.png)
+![](img/37437d3c266bea3f70d7cf3b7bcd358f.png)
 
 作者提供的图像
 
-从这个图形表示中可以明显看出，对于较小的‘x’值，结果的概率保持相对较低，而对于较大的值，结果的概率变得更高。曲线在‘Y’的值为0.5处表现出对称性。这种对称性意味着在逻辑回归中，存在一个潜在的特征，即成功或事件发生的概率（Y = 1）围绕0.5对称分布。这意味着概率的最显著变化发生在图表的中间部分，而在极端的‘x’值下，概率相对较不敏感。当我们的结果变量有大量成功或事件的情况时，这一假设是成立的，示例包括：
+从这个图形表示中可以明显看出，对于较小的‘x’值，结果的概率保持相对较低，而对于较大的值，结果的概率变得更高。曲线在‘Y’的值为 0.5 处表现出对称性。这种对称性意味着在逻辑回归中，存在一个潜在的特征，即成功或事件发生的概率（Y = 1）围绕 0.5 对称分布。这意味着概率的最显著变化发生在图表的中间部分，而在极端的‘x’值下，概率相对较不敏感。当我们的结果变量有大量成功或事件的情况时，这一假设是成立的，示例包括：
 
 抑郁症的流行情况
 
-![](../Images/f0828626f4714ec94d3ddf84596309e3.png)
+![](img/f0828626f4714ec94d3ddf84596309e3.png)
 
 作者提供的图像
 
 或学生考试及格
 
-![](../Images/b46d2c7178ded3de6b8e9476e4ba4364.png)
+![](img/b46d2c7178ded3de6b8e9476e4ba4364.png)
 
 作者提供的图像
 
 然而，当事件非常稀少或非常频繁时，这一假设可能不成立，在这种情况下，成功或事件发生的概率要么极低，要么极高。例如，考虑人们在心脏骤停后的生存情况，其中成功的可能性显著降低：
 
-![](../Images/74fc7852098bed4306a871578829317a.png)
+![](img/74fc7852098bed4306a871578829317a.png)
 
 作者提供的图像
 
 或医院内青光眼手术的成功率（成功的机会非常高）：
 
-![](../Images/73b163a3598998fd717f0673d06a09c6.png)
+![](img/73b163a3598998fd717f0673d06a09c6.png)
 
 作者提供的图像
 
-在这种情况下，0.5处的对称分布并不理想，建议使用不同的建模方法，这就是互补对数-对数回归的应用场景。
+在这种情况下，0.5 处的对称分布并不理想，建议使用不同的建模方法，这就是互补对数-对数回归的应用场景。
 
-与logit和probit不同，Cloglog函数是不对称的，并且偏向一侧。
+与 logit 和 probit 不同，Cloglog 函数是不对称的，并且偏向一侧。
 
 **互补对数-对数回归的工作原理**
 
-Cloglog回归使用互补对数-对数函数，生成一个S形曲线但不对称。Cloglog回归的形式如下：
+Cloglog 回归使用互补对数-对数函数，生成一个 S 形曲线但不对称。Cloglog 回归的形式如下：
 
-![](../Images/92c38fa4d6719d3d4f2c10bdc00b1e68.png)
-
-作者提供的图像
-
-方程的左侧称为互补对数-对数变换。与logit和probit变换类似，这种变换也将二元响应（0或1）转换为（-∞到+∞）。该模型也可以写成：
-
-![](../Images/9bad320bb076efcefb4d81068483e0f1.png)
+![](img/92c38fa4d6719d3d4f2c10bdc00b1e68.png)
 
 作者提供的图像
 
-在下图中，我们可视化了在R中使用logit、probit和cloglog变换生成的曲线。
+方程的左侧称为互补对数-对数变换。与 logit 和 probit 变换类似，这种变换也将二元响应（0 或 1）转换为（-∞到+∞）。该模型也可以写成：
+
+![](img/9bad320bb076efcefb4d81068483e0f1.png)
+
+作者提供的图像
+
+在下图中，我们可视化了在 R 中使用 logit、probit 和 cloglog 变换生成的曲线。
 
 ```py
 # Load the ggplot2 package
@@ -104,15 +104,15 @@ ggplot(data, aes(x = x)) +
   theme_minimal()
 ```
 
-![](../Images/c174599319e5242b314ca2c028b81511.png)
+![](img/c174599319e5242b314ca2c028b81511.png)
 
 作者提供的图像
 
-从图中我们可以观察到明显的差异：虽然logit和probit变换在值0.5附近是对称的，但cloglog变换表现出不对称。在逻辑回归和probit函数中，概率在接近0和1时以类似的速率变化。在数据在[0, 1]区间内不对称，且在小到中等值时变化缓慢但在接近1时急剧变化的情况下，logit和probit模型可能不适合。在这些情况下，当响应变量的非对称性明显时，互补对数-对数模型（cloglog）成为一个有前景的替代方案，提供了更好的建模能力。从Cloglog函数的图中可以看到，P(Y = 1)在接近0时较慢，而在接近1时则急剧上升。
+从图中我们可以观察到明显的差异：虽然 logit 和 probit 变换在值 0.5 附近是对称的，但 cloglog 变换表现出不对称。在逻辑回归和 probit 函数中，概率在接近 0 和 1 时以类似的速率变化。在数据在[0, 1]区间内不对称，且在小到中等值时变化缓慢但在接近 1 时急剧变化的情况下，logit 和 probit 模型可能不适合。在这些情况下，当响应变量的非对称性明显时，互补对数-对数模型（cloglog）成为一个有前景的替代方案，提供了更好的建模能力。从 Cloglog 函数的图中可以看到，P(Y = 1)在接近 0 时较慢，而在接近 1 时则急剧上升。
 
 **让我们以一个例子来说明：检查锌缺乏**
 
-我模拟了一个特定人群中的锌缺乏数据 [注：这些数据是作者为个人使用而创建的模拟数据]。数据集还包括年龄、性别和体重指数（BMI）等因素的数据。值得注意的是，数据集中只有2.3%的人表现出锌缺乏，这表明在这个人群中锌缺乏的发生率相对较低。我们的结果变量是锌缺乏（二元变量（0 = 否，1 = 是）），预测变量是年龄、性别和体重指数（BMI）。我们在R中使用逻辑回归、概率回归和Cloglog回归，并通过AIC比较这三种模型。
+我模拟了一个特定人群中的锌缺乏数据 [注：这些数据是作者为个人使用而创建的模拟数据]。数据集还包括年龄、性别和体重指数（BMI）等因素的数据。值得注意的是，数据集中只有 2.3%的人表现出锌缺乏，这表明在这个人群中锌缺乏的发生率相对较低。我们的结果变量是锌缺乏（二元变量（0 = 否，1 = 是）），预测变量是年龄、性别和体重指数（BMI）。我们在 R 中使用逻辑回归、概率回归和 Cloglog 回归，并通过 AIC 比较这三种模型。
 
 ```py
 > #tabulating zinc deficiency
@@ -225,13 +225,13 @@ model3  4 1866.587
 
 **系数的解释**
 
-在Cloglog回归中，系数的解释类似于逻辑回归。每个系数代表预测变量变化一个单位时，结果对数几率的变化。通过对系数取指数，我们得到比值比。
+在 Cloglog 回归中，系数的解释类似于逻辑回归。每个系数代表预测变量变化一个单位时，结果对数几率的变化。通过对系数取指数，我们得到比值比。
 
-在我们特定的模型中，年龄的系数是-0.034。这意味着年龄每增加一年，锌缺乏的对数几率减少0.034单位。通过对这个系数取指数，我们可以计算出比值比：
+在我们特定的模型中，年龄的系数是-0.034。这意味着年龄每增加一年，锌缺乏的对数几率减少 0.034 单位。通过对这个系数取指数，我们可以计算出比值比：
 
 比值比 = exp(-0.034) = 0.97
 
-这表明年龄增加一年与锌缺乏的几率降低3%相关。
+这表明年龄增加一年与锌缺乏的几率降低 3%相关。
 
 类似地，对于变量‘性别’：
 

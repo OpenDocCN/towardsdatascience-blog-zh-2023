@@ -1,26 +1,26 @@
 # 语言模型简史
 
-> 原文：[https://towardsdatascience.com/a-brief-history-of-language-models-d9e4620e025b?source=collection_archive---------11-----------------------#2023-05-12](https://towardsdatascience.com/a-brief-history-of-language-models-d9e4620e025b?source=collection_archive---------11-----------------------#2023-05-12)
+> 原文：[`towardsdatascience.com/a-brief-history-of-language-models-d9e4620e025b?source=collection_archive---------11-----------------------#2023-05-12`](https://towardsdatascience.com/a-brief-history-of-language-models-d9e4620e025b?source=collection_archive---------11-----------------------#2023-05-12)
 
-## 通向GPT的突破——为非专家解释
+## 通向 GPT 的突破——为非专家解释
 
-[](https://medium.com/@doriandrost?source=post_page-----d9e4620e025b--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----d9e4620e025b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d9e4620e025b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d9e4620e025b--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----d9e4620e025b--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----d9e4620e025b--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----d9e4620e025b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d9e4620e025b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d9e4620e025b--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----d9e4620e025b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-history-of-language-models-d9e4620e025b&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----d9e4620e025b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d9e4620e025b--------------------------------) ·9分钟阅读·2023年5月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd9e4620e025b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-history-of-language-models-d9e4620e025b&user=Dorian+Drost&userId=1d49ea537d1c&source=-----d9e4620e025b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-history-of-language-models-d9e4620e025b&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----d9e4620e025b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d9e4620e025b--------------------------------) ·9 分钟阅读·2023 年 5 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd9e4620e025b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-history-of-language-models-d9e4620e025b&user=Dorian+Drost&userId=1d49ea537d1c&source=-----d9e4620e025b---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd9e4620e025b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-brief-history-of-language-models-d9e4620e025b&source=-----d9e4620e025b---------------------bookmark_footer-----------)
 
-今天大型语言模型如GPT在媒体上获得的压倒性关注，给人一种我们正身处持续革命中的印象。然而，即使是革命也是建立在其前身的成功基础上的，而GPT是数十年研究的结果。
+今天大型语言模型如 GPT 在媒体上获得的压倒性关注，给人一种我们正身处持续革命中的印象。然而，即使是革命也是建立在其前身的成功基础上的，而 GPT 是数十年研究的结果。
 
-在这篇文章中，我想概述一下在语言模型研究领域中一些重要的发展步骤，这些步骤最终导致了我们今天所拥有的大型语言模型。我将简要描述语言模型的一般概念，然后讨论在不同时间主导该领域的一些核心技术，这些技术通过克服其前身的障碍和困难，为今天的技术铺平了道路，其中（Chat-）GPT可能是最著名的代表。
+在这篇文章中，我想概述一下在语言模型研究领域中一些重要的发展步骤，这些步骤最终导致了我们今天所拥有的大型语言模型。我将简要描述语言模型的一般概念，然后讨论在不同时间主导该领域的一些核心技术，这些技术通过克服其前身的障碍和困难，为今天的技术铺平了道路，其中（Chat-）GPT 可能是最著名的代表。
 
 ## 什么是语言模型？
 
-![](../Images/02c4b9a3bb243d65d9c3ef834667b71a.png)
+![](img/02c4b9a3bb243d65d9c3ef834667b71a.png)
 
 将单词转化为语言模型所需的条件是什么？照片由[Glen Carrie](https://unsplash.com/fr/@glencarrie?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -32,11 +32,11 @@
 
 ## 初学者
 
-![](../Images/12fe94508ad0570b055f733f591f30e4.png)
+![](img/12fe94508ad0570b055f733f591f30e4.png)
 
 在我们可以考虑更复杂的技术之前，我们必须从简单的开始。照片由[Jon Cartagena](https://unsplash.com/@cartega?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-让我们从一个直觉上的第一个想法开始：给定大量的文本，我们可以计算在给定上下文中每个单词的频率。上下文仅仅是前面出现的单词。也就是说，例如，我们统计词语“like”在词语“I”之后出现的频率，统计它在词语“don’t”之后出现的频率，依此类推，对于所有在词语“like”之前出现过的单词。如果我们将这个频率除以前面的词语的频率，我们很容易得到概率P(“like” | “I”)，读作*给定词语“I”，单词“like”的概率：*
+让我们从一个直觉上的第一个想法开始：给定大量的文本，我们可以计算在给定上下文中每个单词的频率。上下文仅仅是前面出现的单词。也就是说，例如，我们统计词语“like”在词语“I”之后出现的频率，统计它在词语“don’t”之后出现的频率，依此类推，对于所有在词语“like”之前出现过的单词。如果我们将这个频率除以前面的词语的频率，我们很容易得到概率 P(“like” | “I”)，读作*给定词语“I”，单词“like”的概率：*
 
 P(“like” | “I”) = count(“I like”) / count(“I”)
 
@@ -50,7 +50,7 @@ n 越大，模型在预测下一个单词时能考虑的上下文就越多。然
 
 ## 循环神经网络
 
-![](../Images/921cfd15d94a347c9a0366834c9368ca.png)
+![](img/921cfd15d94a347c9a0366834c9368ca.png)
 
 循环神经网络一遍又一遍地执行相同的步骤。照片由 [Önder Örtel](https://unsplash.com/@onderortel?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -70,7 +70,7 @@ n 越大，模型在预测下一个单词时能考虑的上下文就越多。然
 
 ## 注意力机制的救援：变换器
 
-![](../Images/3e1c6ba208a156426fa9d180a1d6f62c.png)
+![](img/3e1c6ba208a156426fa9d180a1d6f62c.png)
 
 注意力全在于击中正确的位置。照片来自[Afif Ramdhasuma](https://unsplash.com/@javaistan?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -82,11 +82,11 @@ n 越大，模型在预测下一个单词时能考虑的上下文就越多。然
 
 我们希望预测下一个词。注意力机制使模型能够专注于与续写相关的词，并忽略那些不相关的部分。在这个例子中，代词“her”必须指代“Dorothy”（而不是“the scarecrow”），因此模型必须决定专注于“Dorothy”并忽略“the scarecrow”来预测下一个词。对于这个句子，更可能的续写是“Hi, Dorothy”而不是“Hi, scarecrow”或“Hi, together”。
 
-RNN只会有一个隐藏表示向量，这个向量可能包含也可能不包含决定代词“her”指代谁所需的信息。相比之下，利用注意力机制，创建了一个新的隐藏表示，其中包含来自词“Dorothy”的大量信息，但来自其他当前不相关的词的信息较少。对于下一个词的预测，将再次计算新的隐藏表示，这可能看起来非常不同，因为现在模型可能希望更多地关注其他词，例如“scarecrow”。
+RNN 只会有一个隐藏表示向量，这个向量可能包含也可能不包含决定代词“her”指代谁所需的信息。相比之下，利用注意力机制，创建了一个新的隐藏表示，其中包含来自词“Dorothy”的大量信息，但来自其他当前不相关的词的信息较少。对于下一个词的预测，将再次计算新的隐藏表示，这可能看起来非常不同，因为现在模型可能希望更多地关注其他词，例如“scarecrow”。
 
-注意力机制还有一个优点，即它允许训练的并行化。如前所述，在RNN中，你必须一个接一个地计算每个词的隐藏表示。在Transformer中，你在每一步计算隐藏表示，仅需单个词的表示。特别是，对于计算第t步的隐藏表示，你不需要第t-1步的隐藏表示。因此，你可以同时计算两者。
+注意力机制还有一个优点，即它允许训练的并行化。如前所述，在 RNN 中，你必须一个接一个地计算每个词的隐藏表示。在 Transformer 中，你在每一步计算隐藏表示，仅需单个词的表示。特别是，对于计算第 t 步的隐藏表示，你不需要第 t-1 步的隐藏表示。因此，你可以同时计算两者。
 
-近年来模型规模的增加，使得模型每天的表现越来越好，这仅仅是因为技术上实现了这些模型的并行训练。使用循环神经网络，我们无法训练具有数百亿参数的模型，因此无法利用这些模型与自然语言交互的能力。Transformer的注意力机制可以看作是最后一个组成部分，它与大量的训练数据和足够的计算资源一起，为开发像GPT及其兄弟模型并启动人工智能和语言处理的持续革命提供了必要条件。
+近年来模型规模的增加，使得模型每天的表现越来越好，这仅仅是因为技术上实现了这些模型的并行训练。使用循环神经网络，我们无法训练具有数百亿参数的模型，因此无法利用这些模型与自然语言交互的能力。Transformer 的注意力机制可以看作是最后一个组成部分，它与大量的训练数据和足够的计算资源一起，为开发像 GPT 及其兄弟模型并启动人工智能和语言处理的持续革命提供了必要条件。
 
 # 总结
 
@@ -94,7 +94,7 @@ RNN只会有一个隐藏表示向量，这个向量可能包含也可能不包�
 
 +   语言建模的关键方面是给定一段文本序列来预测下一个词。
 
-+   n-gram模型只能表示有限的上下文。
++   n-gram 模型只能表示有限的上下文。
 
 +   循环神经网络具有更灵活的上下文，但它们的隐藏表示可能成为瓶颈，并且无法并行训练。
 
@@ -106,7 +106,7 @@ RNN只会有一个隐藏表示向量，这个向量可能包含也可能不包�
 
 欲了解更多背景和技术细节，可以查看被称为语言建模圣经的书籍：
 
-+   《语音与语言处理》，Dan Jurafsky 和 James H. Martin，第三版草稿。 [https://web.stanford.edu/~jurafsky/slp3/](https://web.stanford.edu/~jurafsky/slp3/)
++   《语音与语言处理》，Dan Jurafsky 和 James H. Martin，第三版草稿。 [`web.stanford.edu/~jurafsky/slp3/`](https://web.stanford.edu/~jurafsky/slp3/)
 
 以下论文介绍了迈向大型语言模型过程中的一些里程碑。
 

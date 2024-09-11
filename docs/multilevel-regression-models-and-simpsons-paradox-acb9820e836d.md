@@ -1,18 +1,18 @@
 # 多层次回归模型与辛普森悖论
 
-> 原文：[https://towardsdatascience.com/multilevel-regression-models-and-simpsons-paradox-acb9820e836d?source=collection_archive---------2-----------------------#2023-08-08](https://towardsdatascience.com/multilevel-regression-models-and-simpsons-paradox-acb9820e836d?source=collection_archive---------2-----------------------#2023-08-08)
+> 原文：[`towardsdatascience.com/multilevel-regression-models-and-simpsons-paradox-acb9820e836d?source=collection_archive---------2-----------------------#2023-08-08`](https://towardsdatascience.com/multilevel-regression-models-and-simpsons-paradox-acb9820e836d?source=collection_archive---------2-----------------------#2023-08-08)
 
 ## 使用适当的工具避免错误结论
 
-[](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----acb9820e836d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------) ·10分钟阅读·2023年8月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Facb9820e836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&user=Dorian+Drost&userId=1d49ea537d1c&source=-----acb9820e836d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----acb9820e836d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------) ·10 分钟阅读·2023 年 8 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Facb9820e836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&user=Dorian+Drost&userId=1d49ea537d1c&source=-----acb9820e836d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Facb9820e836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&source=-----acb9820e836d---------------------bookmark_footer-----------)![](../Images/bf46d552f917233411d7ae5b8eb33e09.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Facb9820e836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&source=-----acb9820e836d---------------------bookmark_footer-----------)![](img/bf46d552f917233411d7ae5b8eb33e09.png)
 
 数据分析会影响我们的结论，但我们应使用适当的工具来走上正确的道路。照片由[Brendan Church](https://unsplash.com/@bdchu614?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 
@@ -22,7 +22,7 @@
 
 ## 问题
 
-我们现在就开始吧！假设我们已经发布了一个智能手机应用，并且想了解更多关于我们的用户及其满意度的信息。因此，我们进行了一项小调查，询问一些用户在1（非常不满意）到4（非常满意）的范围内对我们应用的满意度评分。此外，我们还测量了他们在过去一周内在应用中花费的时间，为了获取丰富的样本，我们询问了不同国家的用户。然后我们的数据可能会像这样（本文使用了生成的数据）：
+我们现在就开始吧！假设我们已经发布了一个智能手机应用，并且想了解更多关于我们的用户及其满意度的信息。因此，我们进行了一项小调查，询问一些用户在 1（非常不满意）到 4（非常满意）的范围内对我们应用的满意度评分。此外，我们还测量了他们在过去一周内在应用中花费的时间，为了获取丰富的样本，我们询问了不同国家的用户。然后我们的数据可能会像这样（本文使用了生成的数据）：
 
 ```py
  Satisfaction  Time_spent  Country
@@ -38,7 +38,7 @@
 
 我们对我们应用中花费时间与报告的满意度之间的关系感兴趣。准确地说，我们想知道在我们的应用中花费更多时间是否与更高或更低的满意度相关，并且我们想量化这种关联，即我们想做出类似于“*在我们的应用中多花一小时与满意度提高 x 倍/降低 x 倍相关*”的陈述。当我们查看数据时，我们可能已经有了第一直觉，即在应用中花费更多时间与较低的满意度相关：
 
-![](../Images/c0c2c20cb95ae60624e40b327fedba30.png)
+![](img/c0c2c20cb95ae60624e40b327fedba30.png)
 
 ## 线性回归
 
@@ -57,9 +57,9 @@ const         3.229412
 Time_spent   -0.655470
 ```
 
-也就是说，我们的模型告诉我们，满意度可以预测为*3.229 –0.655*time_spent*。换句话说，在应用程序中多花一小时的时间会导致满意度下降0.655分（由于负号）。然而，满意度并非从零开始，而是一个人从第一印象（即*time_spent=0*）开始的平均满意度为3.229。我们还可以将其以截距为3.229和斜率为-0.665的线表示出来：
+也就是说，我们的模型告诉我们，满意度可以预测为*3.229 –0.655*time_spent*。换句话说，在应用程序中多花一小时的时间会导致满意度下降 0.655 分（由于负号）。然而，满意度并非从零开始，而是一个人从第一印象（即*time_spent=0*）开始的平均满意度为 3.229。我们还可以将其以截距为 3.229 和斜率为-0.665 的线表示出来：
 
-![](../Images/8ecde136448a59f995e18a6292460751.png)
+![](img/8ecde136448a59f995e18a6292460751.png)
 
 当然，这个预测并不完美，但至少它给出了一个趋势。好的，情况已经清楚了，对吧？在应用程序中花费更多时间会导致满意度下降，我们甚至可以量化这种下降。我们现在可以从中得出结论，并考虑如何改进应用程序（当然，我们希望用户在使用应用程序时更满意），或者进行更详细的调查，以找出用户不满意的原因。
 
@@ -69,13 +69,13 @@ Time_spent   -0.655470
 
 记得我们从不同国家的用户那里收集了数据吗？如果我们分国家查看这些数据会发生什么呢？在下面的图表中，我们看到的是之前相同的数据点，但现在我们将每个国家用不同的颜色突出显示。
 
-![](../Images/ddd206361a3f0dfe4831e0647a266f07.png)
+![](img/ddd206361a3f0dfe4831e0647a266f07.png)
 
 从这个图表中我们可以观察到两点。首先，各国在满意度和在应用程序中花费的时间上似乎有所不同。来自蓝色国家的受访者在应用程序中花费的时间更多，但相比其他国家的受访者，他们的满意度更低。更进一步，当我们将三个国家分开来看时，我们可能会认为应用程序使用时间与满意度之间的关系确实是正向的。这不是与我们之前的分析相矛盾吗？
 
 ## 辛普森悖论
 
-![](../Images/3aef7cab259c0a8f5e95326b9c8a2d69.png)
+![](img/3aef7cab259c0a8f5e95326b9c8a2d69.png)
 
 实际上，这个名字并不是以那些辛普森家族命名的……照片由[Stefan Grage](https://unsplash.com/@stefangrage?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -93,7 +93,7 @@ Time_spent   -0.655470
 
 ## 层次模型的实际效果
 
-让我们通过实际操作来理解发生了什么。我们进行了一项新的分析，但这次我们使用了statsmodels的*mixedlm*函数。我们明确表示希望根据*时间花费*来预测*满意度*（而不是相反），使用公式*“满意度 ~ 时间花费”*，并指出数据框中的“*国家*”列用于确定不同的组。此外，参数*re_formula="时间花费”*告知模型我们希望每个组有一个单独的斜率。如果没有这一点，随机效应只会考虑组特定的截距，而不会考虑组特定的斜率。
+让我们通过实际操作来理解发生了什么。我们进行了一项新的分析，但这次我们使用了 statsmodels 的*mixedlm*函数。我们明确表示希望根据*时间花费*来预测*满意度*（而不是相反），使用公式*“满意度 ~ 时间花费”*，并指出数据框中的“*国家*”列用于确定不同的组。此外，参数*re_formula="时间花费”*告知模型我们希望每个组有一个单独的斜率。如果没有这一点，随机效应只会考虑组特定的截距，而不会考虑组特定的斜率。
 
 ```py
 import statsmodels.formula.api as smf
@@ -123,15 +123,15 @@ satisfaction_1 = (2.286638 + 0.155233) + (0.497657 + 0.274222) * time_spent = 2.
 satisfaction_2 = (2.286638 + 0.803572) + (0.497657 - 0.256044) * time_spent = 3.090210 + 0.241613 * time_spent
 ```
 
-我们看到组0的随机截距为负值（-0.958），组2的随机截距为正值（0.803），所以组0低于固定截距，而组2高于固定截距。因此，组0在其线性函数中的截距最低（1.327），而组2最高（3.090）。换句话说，在国家0中，满意度的起始水平低于国家2。
+我们看到组 0 的随机截距为负值（-0.958），组 2 的随机截距为正值（0.803），所以组 0 低于固定截距，而组 2 高于固定截距。因此，组 0 在其线性函数中的截距最低（1.327），而组 2 最高（3.090）。换句话说，在国家 0 中，满意度的起始水平低于国家 2。
 
-我们还看到组间的斜率存在差异。在组1中，斜率最高为0.771，而在组2中仅为0.241。这意味着在应用中的满意度与时间花费之间的关联在国家1中远高于国家2。换句话说，在国家1中，每增加一个小时的应用时间，满意度会增加0.771分（均值），而在国家2中仅增加0.241分。此外，所有斜率都是正值，这与我们从上图预期的一致，但与我们一开始进行的线性回归的负斜率相矛盾。
+我们还看到组间的斜率存在差异。在组 1 中，斜率最高为 0.771，而在组 2 中仅为 0.241。这意味着在应用中的满意度与时间花费之间的关联在国家 1 中远高于国家 2。换句话说，在国家 1 中，每增加一个小时的应用时间，满意度会增加 0.771 分（均值），而在国家 2 中仅增加 0.241 分。此外，所有斜率都是正值，这与我们从上图预期的一致，但与我们一开始进行的线性回归的负斜率相矛盾。
 
 现在我们可以为每个国家绘制一条回归线：
 
-![](../Images/6b16860efac8c8bfa9d5f2a7c532399a.png)
+![](img/6b16860efac8c8bfa9d5f2a7c532399a.png)
 
-现在我们清楚地看到每个国家的积极趋势和不同的截距（即，当*time_spent*=0时，线条的位置）。
+现在我们清楚地看到每个国家的积极趋势和不同的截距（即，当*time_spent*=0 时，线条的位置）。
 
 ## 结论
 
@@ -151,7 +151,7 @@ satisfaction_2 = (2.286638 + 0.803572) + (0.497657 - 0.256044) * time_spent = 3.
 
 我们使用了在*statsmodels*中实现层次模型的以下方法：
 
-+   [https://www.statsmodels.org/stable/mixed_linear.html](https://www.statsmodels.org/stable/mixed_linear.html)
++   [`www.statsmodels.org/stable/mixed_linear.html`](https://www.statsmodels.org/stable/mixed_linear.html)
 
 我使用了以下统计学教材（遗憾的是，这本书仅有德文版）。
 
@@ -159,7 +159,7 @@ satisfaction_2 = (2.286638 + 0.803572) + (0.497657 - 0.256044) * time_spent = 3.
 
 关于多级模型的背景信息也可以在这里找到：
 
-+   Snijders, T. A. B.; Bosker, R. J. (2011). [*多级分析：基础与高级多级建模导论*](https://books.google.com/books?id=N1BQvcomDdQC)（第2版）。伦敦：Sage。 [ISBN](https://en.wikipedia.org/wiki/ISBN_(identifier)) [9781446254332](https://en.wikipedia.org/wiki/Special:BookSources/9781446254332)。
++   Snijders, T. A. B.; Bosker, R. J. (2011). [*多级分析：基础与高级多级建模导论*](https://books.google.com/books?id=N1BQvcomDdQC)（第 2 版）。伦敦：Sage。 [ISBN](https://en.wikipedia.org/wiki/ISBN_(identifier)) [9781446254332](https://en.wikipedia.org/wiki/Special:BookSources/9781446254332)。
 
 如果你想重现结果，数据是这样生成的：
 

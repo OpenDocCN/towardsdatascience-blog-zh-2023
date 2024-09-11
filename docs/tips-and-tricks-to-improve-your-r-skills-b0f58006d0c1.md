@@ -1,24 +1,24 @@
-# 提高你R技能的技巧和窍门
+# 提高你 R 技能的技巧和窍门
 
-> 原文：[https://towardsdatascience.com/tips-and-tricks-to-improve-your-r-skills-b0f58006d0c1?source=collection_archive---------3-----------------------#2023-05-11](https://towardsdatascience.com/tips-and-tricks-to-improve-your-r-skills-b0f58006d0c1?source=collection_archive---------3-----------------------#2023-05-11)
+> 原文：[`towardsdatascience.com/tips-and-tricks-to-improve-your-r-skills-b0f58006d0c1?source=collection_archive---------3-----------------------#2023-05-11`](https://towardsdatascience.com/tips-and-tricks-to-improve-your-r-skills-b0f58006d0c1?source=collection_archive---------3-----------------------#2023-05-11)
 
-## 学习如何编写高效的R代码
+## 学习如何编写高效的 R 代码
 
-[](https://tinztwinspro.medium.com/?source=post_page-----b0f58006d0c1--------------------------------)[![Janik and Patrick Tinz](../Images/a08aa54f553f606ef5df86f9411c36ac.png)](https://tinztwinspro.medium.com/?source=post_page-----b0f58006d0c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0f58006d0c1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b0f58006d0c1--------------------------------) [Janik and Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----b0f58006d0c1--------------------------------)
+[](https://tinztwinspro.medium.com/?source=post_page-----b0f58006d0c1--------------------------------)![Janik and Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----b0f58006d0c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0f58006d0c1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0f58006d0c1--------------------------------) [Janik and Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----b0f58006d0c1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4eb5d9652d9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-to-improve-your-r-skills-b0f58006d0c1&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=post_page-4eb5d9652d9e----b0f58006d0c1---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0f58006d0c1--------------------------------) ·8分钟阅读·2023年5月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0f58006d0c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-to-improve-your-r-skills-b0f58006d0c1&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=-----b0f58006d0c1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4eb5d9652d9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-to-improve-your-r-skills-b0f58006d0c1&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=post_page-4eb5d9652d9e----b0f58006d0c1---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0f58006d0c1--------------------------------) ·8 分钟阅读·2023 年 5 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0f58006d0c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-to-improve-your-r-skills-b0f58006d0c1&user=Janik+and+Patrick+Tinz&userId=4eb5d9652d9e&source=-----b0f58006d0c1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0f58006d0c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-to-improve-your-r-skills-b0f58006d0c1&source=-----b0f58006d0c1---------------------bookmark_footer-----------)![](../Images/3c7d8cfed6ec4c5e7c742a51f3b4abbc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0f58006d0c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-to-improve-your-r-skills-b0f58006d0c1&source=-----b0f58006d0c1---------------------bookmark_footer-----------)![](img/3c7d8cfed6ec4c5e7c742a51f3b4abbc.png)
 
 1234567890-=照片由[AltumCode](https://unsplash.com/es/@altumcode?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 
-**R**广泛应用于商业和科学领域作为数据分析工具。这个编程语言是数据驱动任务中的重要工具。对许多统计学家和数据科学家来说，R是处理统计问题的首选。
+**R**广泛应用于商业和科学领域作为数据分析工具。这个编程语言是数据驱动任务中的重要工具。对许多统计学家和数据科学家来说，R 是处理统计问题的首选。
 
-数据科学家经常处理大量数据和复杂的统计问题。在这里，内存和运行时间起着核心作用。你需要编写高效的代码以实现最佳性能。本文介绍了一些可以直接在下一个R项目中使用的技巧。
+数据科学家经常处理大量数据和复杂的统计问题。在这里，内存和运行时间起着核心作用。你需要编写高效的代码以实现最佳性能。本文介绍了一些可以直接在下一个 R 项目中使用的技巧。
 
 # 使用代码分析
 

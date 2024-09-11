@@ -1,20 +1,20 @@
 # 数据科学家：问题解决者优先，算法大师其次
 
-> 原文：[https://towardsdatascience.com/data-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131?source=collection_archive---------7-----------------------#2023-03-10](https://towardsdatascience.com/data-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131?source=collection_archive---------7-----------------------#2023-03-10)
+> 原文：[`towardsdatascience.com/data-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131?source=collection_archive---------7-----------------------#2023-03-10`](https://towardsdatascience.com/data-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131?source=collection_archive---------7-----------------------#2023-03-10)
 
 ## 意见
 
 ## 拥有一把锤子却把所有东西都当作钉子
 
-[](https://ilro.medium.com/?source=post_page-----93daa031d131--------------------------------)[![Ilro Lee](../Images/01960325191a3b4477d6724cf1da88e4.png)](https://ilro.medium.com/?source=post_page-----93daa031d131--------------------------------)[](https://towardsdatascience.com/?source=post_page-----93daa031d131--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----93daa031d131--------------------------------) [Ilro Lee](https://ilro.medium.com/?source=post_page-----93daa031d131--------------------------------)
+[](https://ilro.medium.com/?source=post_page-----93daa031d131--------------------------------)![Ilro Lee](https://ilro.medium.com/?source=post_page-----93daa031d131--------------------------------)[](https://towardsdatascience.com/?source=post_page-----93daa031d131--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----93daa031d131--------------------------------) [Ilro Lee](https://ilro.medium.com/?source=post_page-----93daa031d131--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F111ad5b42e0b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131&user=Ilro+Lee&userId=111ad5b42e0b&source=post_page-111ad5b42e0b----93daa031d131---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----93daa031d131--------------------------------) ·5分钟阅读·2023年3月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F93daa031d131&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131&user=Ilro+Lee&userId=111ad5b42e0b&source=-----93daa031d131---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F111ad5b42e0b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131&user=Ilro+Lee&userId=111ad5b42e0b&source=post_page-111ad5b42e0b----93daa031d131---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----93daa031d131--------------------------------) ·5 分钟阅读·2023 年 3 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F93daa031d131&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131&user=Ilro+Lee&userId=111ad5b42e0b&source=-----93daa031d131---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F93daa031d131&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131&source=-----93daa031d131---------------------bookmark_footer-----------)![](../Images/b94f34d529c5565de2e4312321cfedc6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F93daa031d131&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-scientists-problem-solvers-first-algorithm-wizards-second-93daa031d131&source=-----93daa031d131---------------------bookmark_footer-----------)![](img/b94f34d529c5565de2e4312321cfedc6.png)
 
 [Sergei Chuyko](https://www.canva.com/design/DAFcxxZK2c0/NElLV0rZr0j-co1budgsGQ/edit#) 提供的照片，来源于 [Canva](https://www.canva.com/)
 

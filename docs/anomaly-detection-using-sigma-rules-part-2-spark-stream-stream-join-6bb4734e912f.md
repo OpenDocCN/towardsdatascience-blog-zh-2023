@@ -1,22 +1,22 @@
-# 使用Sigma规则的异常检测（第2部分） Spark流-流连接
+# 使用 Sigma 规则的异常检测（第二部分） Spark 流-流连接
 
-> 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f?source=collection_archive---------14-----------------------#2023-02-02](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f?source=collection_archive---------14-----------------------#2023-02-02)
+> 原文：[`towardsdatascience.com/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f?source=collection_archive---------14-----------------------#2023-02-02`](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f?source=collection_archive---------14-----------------------#2023-02-02)
 
-## 一类Sigma规则检测时间相关性。我们评估了Spark的有状态对称流-流连接在执行时间相关性时的可扩展性。
+## 一类 Sigma 规则检测时间相关性。我们评估了 Spark 的有状态对称流-流连接在执行时间相关性时的可扩展性。
 
-[](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)[![Jean-Claude Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------) [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)
+[](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)![Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------) [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----6bb4734e912f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------) ·7分钟阅读·2023年2月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6bb4734e912f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&user=Jean-Claude+Cote&userId=444ed0089012&source=-----6bb4734e912f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----6bb4734e912f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------) ·7 分钟阅读·2023 年 2 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6bb4734e912f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&user=Jean-Claude+Cote&userId=444ed0089012&source=-----6bb4734e912f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6bb4734e912f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&source=-----6bb4734e912f---------------------bookmark_footer-----------)![](../Images/0b89900becc6702163692d4aacdc9d3e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6bb4734e912f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&source=-----6bb4734e912f---------------------bookmark_footer-----------)![](img/0b89900becc6702163692d4aacdc9d3e.png)
 
-由Naveen Kumar拍摄，来自Unsplash
+由 Naveen Kumar 拍摄，来自 Unsplash
 
-跟进我们[之前的文章](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)，我们评估了Spark将一个开始进程事件与其父开始进程事件进行连接的能力。
+跟进我们[之前的文章](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)，我们评估了 Spark 将一个开始进程事件与其父开始进程事件进行连接的能力。
 
 在这篇文章中，我们评估了 Spark [流-流连接](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#stream-stream-joins)的扩展性。具体来说，它能在连接窗口中容纳多少事件。
 
@@ -30,7 +30,7 @@
 
 感兴趣的父项是将过滤条件应用于连接的右侧得到的结果。这可以大大减少需要记住的父项数量。连接完成后，我们对当前处理和父项处理应用条件。
 
-![](../Images/9bbc30b515ae4de9767ee0fb2a40f177.png)
+![](img/9bbc30b515ae4de9767ee0fb2a40f177.png)
 
 ## 与感兴趣的父项特征连接
 
@@ -43,7 +43,7 @@ features = {
 }
 ```
 
-![](../Images/e05fc711d048fe95e60ca80be7188baa.png)
+![](img/e05fc711d048fe95e60ca80be7188baa.png)
 
 在我们的研究中，我们很快意识到减少 Spark 需要存储的状态量至关重要。因此，我们选择只保留感兴趣的父项。这些是我们正在寻找的特征的父项。我们丢弃所有其他父项，只保留这些父项的最小信息集：连接键、时间戳和特征标志。
 
@@ -103,38 +103,38 @@ Linxiao Ma 在他的文章 [Spark Structured Streaming Deep Dive (7) — Stream-
 
 ## 选择合适的状态存储
 
-Spark有两个状态存储实现。最初的是名为HDFSBackedStateStore的，它是一个由HDFS文件支持的简单内存哈希表。最新的状态存储基于RocksDB。[RocksDB 是一个可嵌入的键值持久存储](https://www.confluent.io/blog/how-to-tune-rocksdb-kafka-streams-state-stores-performance/)用C++编写。RocksDB的状态部分保存在内存中，部分保存在本地磁盘上。在每个检查点，Spark将更改的文件副本保存到中央位置（数据湖）。
+Spark 有两个状态存储实现。最初的是名为 HDFSBackedStateStore 的，它是一个由 HDFS 文件支持的简单内存哈希表。最新的状态存储基于 RocksDB。[RocksDB 是一个可嵌入的键值持久存储](https://www.confluent.io/blog/how-to-tune-rocksdb-kafka-streams-state-stores-performance/)用 C++编写。RocksDB 的状态部分保存在内存中，部分保存在本地磁盘上。在每个检查点，Spark 将更改的文件副本保存到中央位置（数据湖）。
 
-当你需要存储大量键时，Spark推荐使用[RocksDB](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#rocksdb-state-store-implementation)。根据[DataBricks](https://docs.databricks.com/structured-streaming/stateful-streaming.html)，一个大型Spark工作节点可以缓存多达1亿个键。
+当你需要存储大量键时，Spark 推荐使用[RocksDB](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#rocksdb-state-store-implementation)。根据[DataBricks](https://docs.databricks.com/structured-streaming/stateful-streaming.html)，一个大型 Spark 工作节点可以缓存多达 1 亿个键。
 
-由于我们的流流连接会缓存大量的感兴趣的父项行，我们决定在评估中使用RocksDB状态存储。
+由于我们的流流连接会缓存大量的感兴趣的父项行，我们决定在评估中使用 RocksDB 状态存储。
 
 ```py
 .config("spark.sql.streaming.stateStore.providerClass", 
   "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider")
 ```
 
-我们所有的实验都在一个具有48G RAM和16 CPU的单个Spark工作节点上进行。我们模拟了来自50,000个主机的日志。
+我们所有的实验都在一个具有 48G RAM 和 16 CPU 的单个 Spark 工作节点上进行。我们模拟了来自 50,000 个主机的日志。
 
 我们的测试框架非常灵活。它允许我们更改许多参数，例如每秒事件数、每个事件的大小、连接的时间窗口、键大小、时间窗口中事件的分布等。
 
-## Spark分区的影响
+## Spark 分区的影响
 
-在我们的第一个实验中，我们在10,000秒（约2.77小时）的窗口中连接效果和原因。我们模拟了每个感兴趣的父项会有12个布尔标志。我们设置了每秒10,000个事件的速率。在这里，我们展示了Spark分区（单个任务）数量变化的影响。
+在我们的第一个实验中，我们在 10,000 秒（约 2.77 小时）的窗口中连接效果和原因。我们模拟了每个感兴趣的父项会有 12 个布尔标志。我们设置了每秒 10,000 个事件的速率。在这里，我们展示了 Spark 分区（单个任务）数量变化的影响。
 
-![](../Images/851031bbf6f8f6033f559af9c816aad5.png)
+![](img/851031bbf6f8f6033f559af9c816aad5.png)
 
-更改分区数量对性能没有影响。执行一个微批次的时间大约是225秒。记住我们每60秒触发一次`.trigger(processingTime="1 minutes")`。Spark将立即开始下一个微批次。因此，事件处理的延迟最多为225秒。
+更改分区数量对性能没有影响。执行一个微批次的时间大约是 225 秒。记住我们每 60 秒触发一次`.trigger(processingTime="1 minutes")`。Spark 将立即开始下一个微批次。因此，事件处理的延迟最多为 225 秒。
 
 ## 窗口大小的影响
 
-在第二个实验中，我们调整了流流连接窗口的大小（时间）。在每秒5,000个事件的速率下，作业不稳定。每个微批次的执行时间越来越长。我们正在落后。
+在第二个实验中，我们调整了流流连接窗口的大小（时间）。在每秒 5,000 个事件的速率下，作业不稳定。每个微批次的执行时间越来越长。我们正在落后。
 
-![](../Images/e9c348879a1d1a4a2579a89409b3c987.png)
+![](img/e9c348879a1d1a4a2579a89409b3c987.png)
 
-如果我们将窗口减少到18小时，并将速率降低到每秒2,500个事件，作业会稳定下来，并在每个微批次约300秒时达到稳定。
+如果我们将窗口减少到 18 小时，并将速率降低到每秒 2,500 个事件，作业会稳定下来，并在每个微批次约 300 秒时达到稳定。
 
-![](../Images/118519c60d87af0830a72b92b10559af.png)
+![](img/118519c60d87af0830a72b92b10559af.png)
 
 然而，实际上，我们不会保留每一个父事件。我们只会保留“感兴趣的父事件”。这些事件中有一个或多个为真的 Sigma 规则表达式。重要的是要衡量 Spark 存储父事件的能力。我们可以轻松计算：2,500 事件/秒 x 64,000 秒。Spark 可以缓存 1.6 亿个“感兴趣的父事件”。我们的实验结果确认了 [Databricks 关于 RocksDB StateStore 的声明](https://docs.databricks.com/structured-streaming/stateful-streaming.html)，即每台机器可以处理 1 亿个键。如果我们假设这些事件来自 50,000 个主机，那么 Spark 可以每台主机保存 3,200 个“感兴趣的父事件”。
 
@@ -156,7 +156,7 @@ Bloom 可以存储一定数量的键。超出这个数量后，假阳性会急�
 
 因此，连接被建模为在 Bloom 过滤器中的查找。
 
-![](../Images/3ba551a067487290b99a1ed4f66d168f.png)
+![](img/3ba551a067487290b99a1ed4f66d168f.png)
 
 在我们的下一篇文章中，我们将构建一个自定义的 Spark 有状态连接函数，利用 Bloom 过滤器。
 

@@ -1,24 +1,24 @@
 # 如何找到独特的数据科学项目创意，让你的作品集脱颖而出
 
-> 原文：[https://towardsdatascience.com/how-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6?source=collection_archive---------3-----------------------#2023-04-25](https://towardsdatascience.com/how-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6?source=collection_archive---------3-----------------------#2023-04-25)
+> 原文：[`towardsdatascience.com/how-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6?source=collection_archive---------3-----------------------#2023-04-25`](https://towardsdatascience.com/how-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6?source=collection_archive---------3-----------------------#2023-04-25)
 
-## 忘掉泰坦尼克号和MNIST：选择一个独特的项目来提升你的技能，并帮助你从人群中脱颖而出
+## 忘掉泰坦尼克号和 MNIST：选择一个独特的项目来提升你的技能，并帮助你从人群中脱颖而出
 
-[](https://medium.com/@mattchapmanmsc?source=post_page-----1c2ddfdbefa6--------------------------------)[![Matt Chapman](../Images/7511deb8d9ed408ece21031f6614c532.png)](https://medium.com/@mattchapmanmsc?source=post_page-----1c2ddfdbefa6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c2ddfdbefa6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c2ddfdbefa6--------------------------------) [Matt Chapman](https://medium.com/@mattchapmanmsc?source=post_page-----1c2ddfdbefa6--------------------------------)
+[](https://medium.com/@mattchapmanmsc?source=post_page-----1c2ddfdbefa6--------------------------------)![Matt Chapman](https://medium.com/@mattchapmanmsc?source=post_page-----1c2ddfdbefa6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c2ddfdbefa6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c2ddfdbefa6--------------------------------) [Matt Chapman](https://medium.com/@mattchapmanmsc?source=post_page-----1c2ddfdbefa6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf7d13fc53db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6&user=Matt+Chapman&userId=bf7d13fc53db&source=post_page-bf7d13fc53db----1c2ddfdbefa6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c2ddfdbefa6--------------------------------) · 10分钟阅读 · 2023年4月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c2ddfdbefa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6&user=Matt+Chapman&userId=bf7d13fc53db&source=-----1c2ddfdbefa6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf7d13fc53db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6&user=Matt+Chapman&userId=bf7d13fc53db&source=post_page-bf7d13fc53db----1c2ddfdbefa6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c2ddfdbefa6--------------------------------) · 10 分钟阅读 · 2023 年 4 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c2ddfdbefa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6&user=Matt+Chapman&userId=bf7d13fc53db&source=-----1c2ddfdbefa6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c2ddfdbefa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6&source=-----1c2ddfdbefa6---------------------bookmark_footer-----------)![](../Images/8acc2da543f9f5156dc66ac5f663a080.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c2ddfdbefa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-find-unique-data-science-project-ideas-that-make-your-portfolio-stand-out-1c2ddfdbefa6&source=-----1c2ddfdbefa6---------------------bookmark_footer-----------)![](img/8acc2da543f9f5156dc66ac5f663a080.png)
 
 图片由 [Rupert Britton](https://unsplash.com/@rupert_britton) 提供，来源于 [Unsplash](https://unsplash.com/photos/l37N7a1lL6w)
 
 如果你想在数据科学领域建立职业，副项目是展示你技能并提升获得工作或晋升机会的可靠方法。
 
-然而，在2023年，仅仅完成一个泰坦尼克号生存预测器或MNIST数字分类器已经不再足够。这些项目已经做了无数次，它们对你的个人资料贡献很小，因为雇主无法验证这些工作是否是你自己的。对他们来说，你可能只是从某个随机的Kaggle大师那里复制粘贴了代码。
+然而，在 2023 年，仅仅完成一个泰坦尼克号生存预测器或 MNIST 数字分类器已经不再足够。这些项目已经做了无数次，它们对你的个人资料贡献很小，因为雇主无法验证这些工作是否是你自己的。对他们来说，你可能只是从某个随机的 Kaggle 大师那里复制粘贴了代码。
 
 从人群中脱颖而出的最佳方式是通过一系列独特、有趣的项目来展示你的技能和兴趣。但是，如果你和我一样，你会知道，想出项目想法并找到独特的数据源是*困难的*。
 

@@ -1,18 +1,18 @@
 # 哪个团队应该负责数据质量？
 
-> 原文：[https://towardsdatascience.com/which-team-should-own-data-quality-44f1d6996eb8?source=collection_archive---------3-----------------------#2023-06-09](https://towardsdatascience.com/which-team-should-own-data-quality-44f1d6996eb8?source=collection_archive---------3-----------------------#2023-06-09)
+> 原文：[`towardsdatascience.com/which-team-should-own-data-quality-44f1d6996eb8?source=collection_archive---------3-----------------------#2023-06-09`](https://towardsdatascience.com/which-team-should-own-data-quality-44f1d6996eb8?source=collection_archive---------3-----------------------#2023-06-09)
 
 ## 专家还是全能型人才？工程师还是分析师？我们探讨了哪些团队结构最适合有效提升数据质量。
 
-[](https://medium.com/@shane.murray5?source=post_page-----44f1d6996eb8--------------------------------)[![shane murray](../Images/8bb1f3acf15dc26273097e12d03dd616.png)](https://medium.com/@shane.murray5?source=post_page-----44f1d6996eb8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44f1d6996eb8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----44f1d6996eb8--------------------------------) [shane murray](https://medium.com/@shane.murray5?source=post_page-----44f1d6996eb8--------------------------------)
+[](https://medium.com/@shane.murray5?source=post_page-----44f1d6996eb8--------------------------------)![shane murray](https://medium.com/@shane.murray5?source=post_page-----44f1d6996eb8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44f1d6996eb8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----44f1d6996eb8--------------------------------) [shane murray](https://medium.com/@shane.murray5?source=post_page-----44f1d6996eb8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8aa0d9ae3ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-team-should-own-data-quality-44f1d6996eb8&user=shane+murray&userId=8aa0d9ae3ebd&source=post_page-8aa0d9ae3ebd----44f1d6996eb8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----44f1d6996eb8--------------------------------) ·8 分钟阅读·2023年6月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F44f1d6996eb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-team-should-own-data-quality-44f1d6996eb8&user=shane+murray&userId=8aa0d9ae3ebd&source=-----44f1d6996eb8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8aa0d9ae3ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-team-should-own-data-quality-44f1d6996eb8&user=shane+murray&userId=8aa0d9ae3ebd&source=post_page-8aa0d9ae3ebd----44f1d6996eb8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----44f1d6996eb8--------------------------------) ·8 分钟阅读·2023 年 6 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F44f1d6996eb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-team-should-own-data-quality-44f1d6996eb8&user=shane+murray&userId=8aa0d9ae3ebd&source=-----44f1d6996eb8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F44f1d6996eb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-team-should-own-data-quality-44f1d6996eb8&source=-----44f1d6996eb8---------------------bookmark_footer-----------)![](../Images/419b607f607025e705b69881db34a03a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F44f1d6996eb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-team-should-own-data-quality-44f1d6996eb8&source=-----44f1d6996eb8---------------------bookmark_footer-----------)![](img/419b607f607025e705b69881db34a03a.png)
 
 图片来源：Shane Murray。
 
@@ -22,7 +22,7 @@
 
 一些组织会尝试将责任广泛分配给数据管理员、数据所有者、数据工程和治理委员会，每个人负责数据价值链的一部分。而另一些组织则将责任集中在少数几个专家身上，期望他们能够跨越整个平台。一些团队将数据质量主要视为技术挑战，而另一些团队则将其视为业务或流程问题。
 
-我在过去一年中与几十位数据领导者交谈，以了解他们如何将数据质量作为整体组织目标的一部分来处理。我们还调查了200名数据专业人士，询问他们的内部团队中哪个负责数据质量等问题。
+我在过去一年中与几十位数据领导者交谈，以了解他们如何将数据质量作为整体组织目标的一部分来处理。我们还调查了 200 名数据专业人士，询问他们的内部团队中哪个负责数据质量等问题。
 
 本文将关注最常见的团队所有权模型，包括：数据工程、数据可靠性工程、分析工程、数据质量分析师和数据治理团队。
 
@@ -44,7 +44,7 @@
 
 # 数据工程
 
-![](../Images/7859e66f7301078d80922b8bea7d2374.png)
+![](img/7859e66f7301078d80922b8bea7d2374.png)
 
 [Luke Chesser](https://unsplash.com/@lukechesser?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 摄影，来源于 [Unsplash](https://unsplash.com/s/photos/data-engineering?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -66,7 +66,7 @@ BlaBlaCar 是一个数据工程负责数据质量的组织的例子。他们经�
 
 # 分析工程
 
-![](../Images/6cbb01144133e453d84101bdf99a1449.png)
+![](img/6cbb01144133e453d84101bdf99a1449.png)
 
 经许可使用：[source**.**](https://resources.montecarlodata.com/impact-2022-on-demand/765881513?lx=a1gE1S)
 
@@ -86,7 +86,7 @@ Upside 的分析工程团队通过将自己定位为不同团队之间的卓越�
 
 # 数据治理
 
-![](../Images/18b3e1a76d51af28317847db6adcf6f1.png)
+![](img/18b3e1a76d51af28317847db6adcf6f1.png)
 
 Contentsquare 如何将数据质量作为其数据治理倡议的一部分来处理。经许可使用：[来源](https://www.montecarlodata.com/blog-how-contentsquare-reduced-time-to-data-incident-detection-by-17-percent-with-monte-carlo/)。
 
@@ -100,21 +100,21 @@ Contentsquare 如何将数据质量作为其数据治理倡议的一部分来处
 
 Contentsquare 的数据治理团队负责数据的访问和应用。数据质量也在他们的职责范围内。
 
-治理团队将每个团队输出视为数据产品。每个数据产品都与使用案例相关联，使用案例又与基础数据相关联。数据质量监控支撑着所有这些基础数据，数据团队定期检查以确保每个数据产品按设计运行。我的同事与他们的前数据治理负责人Octávio Bastos交谈过，[他讨论了](https://www.montecarlodata.com/blog-how-contentsquare-reduced-time-to-data-incident-detection-by-17-percent-with-monte-carlo/)如何设计这一点以帮助团队扩展。
+治理团队将每个团队输出视为数据产品。每个数据产品都与使用案例相关联，使用案例又与基础数据相关联。数据质量监控支撑着所有这些基础数据，数据团队定期检查以确保每个数据产品按设计运行。我的同事与他们的前数据治理负责人 Octávio Bastos 交谈过，[他讨论了](https://www.montecarlodata.com/blog-how-contentsquare-reduced-time-to-data-incident-detection-by-17-percent-with-monte-carlo/)如何设计这一点以帮助团队扩展。
 
 > “有时当我们进展太快时，我们往往只关注价值创造：新的仪表板、新的模型、新的数据探索相关性，”他们的前全球数据治理负责人说。“我们忘记了建立良好的数据工程、良好的数据治理和高效的数据分析团队。这在长期内非常重要，以确保我们能够扩展，并且未来能够用同一个团队做更多的事情。”
 
 # 数据可靠性
 
-数据可靠性工程是数据工程的一个专门子集，专注于响应性和预防性实践，以提高数据系统的质量和可靠性。虽然这种结构不如其他结构常见，但正在迅速获得关注（我们提到它们和[数据团队的专业化](https://www.montecarlodata.com/blog-13-data-engineering-trends-for-2023/)作为我们2023年数据工程趋势的重点之一）。
+数据可靠性工程是数据工程的一个专门子集，专注于响应性和预防性实践，以提高数据系统的质量和可靠性。虽然这种结构不如其他结构常见，但正在迅速获得关注（我们提到它们和[数据团队的专业化](https://www.montecarlodata.com/blog-13-data-engineering-trends-for-2023/)作为我们 2023 年数据工程趋势的重点之一）。
 
 在数据产品面向外部和/或需要满足严格的[数据服务水平协议（SLA）](https://www.montecarlodata.com/blog-how-to-make-your-data-pipelines-more-reliable-with-slas/)的情况下，专门的数据可靠性工程师团队可以将所需的关注点集中于事件响应和主动措施，以解决可靠性问题。
 
-我们在Monte Carlo的产品遥测中看到，采用这种方法的团队在数据可靠性方面的操作指标有所改善，包括事件状态更新明显增加。
+我们在 Monte Carlo 的产品遥测中看到，采用这种方法的团队在数据可靠性方面的操作指标有所改善，包括事件状态更新明显增加。
 
 然而，团队和数据环境需要足够大，以从专业化中获得适当的效率。
 
-Mercari使用数据可靠性工程团队结构。他们成功的关键在于设定明确的目标和责任，例如：
+Mercari 使用数据可靠性工程团队结构。他们成功的关键在于设定明确的目标和责任，例如：
 
 +   入职和支持最重要的管道
 
@@ -144,4 +144,4 @@ PayJoy 是一个成功拥有数据质量的组织的例子，其中数据分析�
 
 这不是一个单独的项目。你能多大程度上赋能团队并促进跨部门协作，你成功的可能性就有多大。
 
-[关注我](/@shane.murray5) 在 Medium 上，获取更多关于数据领导力、数据科学应用及相关话题的故事。[订阅](/subscribe/@shane.murray5) 以便将我的故事送到你的邮箱。
+关注我 在 Medium 上，获取更多关于数据领导力、数据科学应用及相关话题的故事。订阅 以便将我的故事送到你的邮箱。

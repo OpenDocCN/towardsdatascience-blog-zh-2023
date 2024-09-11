@@ -1,20 +1,20 @@
 # 相关系数及如何误解关系
 
-> 原文：[https://towardsdatascience.com/correlation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e?source=collection_archive---------9-----------------------#2023-01-09](https://towardsdatascience.com/correlation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e?source=collection_archive---------9-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/correlation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e?source=collection_archive---------9-----------------------#2023-01-09`](https://towardsdatascience.com/correlation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e?source=collection_archive---------9-----------------------#2023-01-09)
 
 ## 统计学
 
 ## 解读相关性比大多数人认为的要困难得多。而误解相关性，反而不难。
 
-[](https://medium.com/@nyggus?source=post_page-----79a55905e34e--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----79a55905e34e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----79a55905e34e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----79a55905e34e--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----79a55905e34e--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----79a55905e34e--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----79a55905e34e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----79a55905e34e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----79a55905e34e--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----79a55905e34e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrelation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----79a55905e34e---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----79a55905e34e--------------------------------) · 8 分钟阅读 · 2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F79a55905e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrelation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----79a55905e34e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrelation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----79a55905e34e---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----79a55905e34e--------------------------------) · 8 分钟阅读 · 2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F79a55905e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrelation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----79a55905e34e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F79a55905e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrelation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e&source=-----79a55905e34e---------------------bookmark_footer-----------)![](../Images/35088476b13eff4dd60d43eaee2f0779.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F79a55905e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrelation-coefficient-and-how-to-misunderstand-a-relationship-79a55905e34e&source=-----79a55905e34e---------------------bookmark_footer-----------)![](img/35088476b13eff4dd60d43eaee2f0779.png)
 
 完美相关性！照片由 [Matt Seymour](https://unsplash.com/@mattseymour?utm_source=medium&utm_medium=referral) 通过 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 

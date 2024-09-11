@@ -1,18 +1,18 @@
 # 多任务机器学习：同时解决多个问题
 
-> 原文：[https://towardsdatascience.com/multi-task-learning-4531eb32d77b?source=collection_archive---------10-----------------------#2023-04-27](https://towardsdatascience.com/multi-task-learning-4531eb32d77b?source=collection_archive---------10-----------------------#2023-04-27)
+> 原文：[`towardsdatascience.com/multi-task-learning-4531eb32d77b?source=collection_archive---------10-----------------------#2023-04-27`](https://towardsdatascience.com/multi-task-learning-4531eb32d77b?source=collection_archive---------10-----------------------#2023-04-27)
 
 ## 一些有监督的，一些无监督的，一些自监督的，在自然语言处理（NLP）和计算机视觉中
 
-<https://jagota-arun.medium.com/?source=post_page-----4531eb32d77b-------------------------------->[![Arun Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----4531eb32d77b--------------------------------)<https://towardsdatascience.com/?source=post_page-----4531eb32d77b-------------------------------->[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4531eb32d77b--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----4531eb32d77b--------------------------------)
+<https://jagota-arun.medium.com/?source=post_page-----4531eb32d77b-------------------------------->![Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----4531eb32d77b--------------------------------)<https://towardsdatascience.com/?source=post_page-----4531eb32d77b-------------------------------->![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4531eb32d77b--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----4531eb32d77b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-4531eb32d77b&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----4531eb32d77b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4531eb32d77b--------------------------------) ·11分钟阅读·2023年4月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4531eb32d77b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-4531eb32d77b&user=Arun+Jagota&userId=ef9ed921edad&source=-----4531eb32d77b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-4531eb32d77b&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----4531eb32d77b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4531eb32d77b--------------------------------) ·11 分钟阅读·2023 年 4 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4531eb32d77b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-4531eb32d77b&user=Arun+Jagota&userId=ef9ed921edad&source=-----4531eb32d77b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4531eb32d77b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-4531eb32d77b&source=-----4531eb32d77b---------------------bookmark_footer-----------)![](../Images/f245371498b59c216924e720580c26fd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4531eb32d77b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-4531eb32d77b&source=-----4531eb32d77b---------------------bookmark_footer-----------)![](img/f245371498b59c216924e720580c26fd.png)
 
 图片来自 [Gerd Altmann](https://pixabay.com/users/geralt-9301/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3685928) 从 [Pixabay](https://pixabay.com/)
 

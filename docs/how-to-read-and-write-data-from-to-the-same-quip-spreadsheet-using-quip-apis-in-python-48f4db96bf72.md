@@ -1,10 +1,10 @@
-# 如何使用Quip Python APIs从/到相同的Quip电子表格读取和写入数据
+# 如何使用 Quip Python APIs 从/到相同的 Quip 电子表格读取和写入数据
 
-> 原文：[https://towardsdatascience.com/how-to-read-and-write-data-from-to-the-same-quip-spreadsheet-using-quip-apis-in-python-48f4db96bf72?source=collection_archive---------8-----------------------#2023-11-17](https://towardsdatascience.com/how-to-read-and-write-data-from-to-the-same-quip-spreadsheet-using-quip-apis-in-python-48f4db96bf72?source=collection_archive---------8-----------------------#2023-11-17)
+> 原文：[`towardsdatascience.com/how-to-read-and-write-data-from-to-the-same-quip-spreadsheet-using-quip-apis-in-python-48f4db96bf72?source=collection_archive---------8-----------------------#2023-11-17`](https://towardsdatascience.com/how-to-read-and-write-data-from-to-the-same-quip-spreadsheet-using-quip-apis-in-python-48f4db96bf72?source=collection_archive---------8-----------------------#2023-11-17)
 
 ## 我们分析师经常被要求提供一种解决方案，使最终用户能够提供其输入，这些输入随后可以用作最终分析解决方案中的覆盖/附加上下文。
 
-[](https://ishagarg2010.medium.com/?source=post_page-----48f4db96bf72--------------------------------)[![Isha Garg](../Images/bb9632981e38c7bb4f3df7f812e548e4.png)](https://ishagarg2010.medium.com/?source=post_page-----48f4db96bf72--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48f4db96bf72--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----48f4db96bf72--------------------------------) [Isha Garg](https://ishagarg2010.medium.com/?source=post_page-----48f4db96bf72--------------------------------)
+[](https://ishagarg2010.medium.com/?source=post_page-----48f4db96bf72--------------------------------)![Isha Garg](https://ishagarg2010.medium.com/?source=post_page-----48f4db96bf72--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48f4db96bf72--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----48f4db96bf72--------------------------------) [Isha Garg](https://ishagarg2010.medium.com/?source=post_page-----48f4db96bf72--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48f4db96bf72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-read-and-write-data-from-to-the-same-quip-spreadsheet-using-quip-apis-in-python-48f4db96bf72&source=-----48f4db96bf72---------------------bookmark_footer-----------)![](../Images/3a4b61ac25e63da7826df3dcacd6f1dc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48f4db96bf72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-read-and-write-data-from-to-the-same-quip-spreadsheet-using-quip-apis-in-python-48f4db96bf72&source=-----48f4db96bf72---------------------bookmark_footer-----------)![](img/3a4b61ac25e63da7826df3dcacd6f1dc.png)
 
 [Chris Ried](https://unsplash.com/@cdr6934?utm_source=medium&utm_medium=referral)的照片在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上发布
 
@@ -28,13 +28,13 @@
 
 这个任务可以分为两个独立的部分。首先，从 Quip 电子表格读取数据并将其存储在数据库中的表中。其次，我们将对这些数据进行一些操作或检查，并与数据库中现有的数据进行联接，然后将处理后的数据写入到已经存在的 quip 电子表格中。我们将分别讨论这两个情况，以便如果您只想读取或只想写入，这篇文章也能帮助您完成这项工作。让我们来看第一个部分。
 
-# 第 1 部分 — 从 Quip 电子表格读取数据并将其写入数据库中的表。
+# 第一部分 — 从 Quip 电子表格读取数据并将其写入数据库中的表。
 
 **步骤 1: 获取访问令牌以通过 Quip API 连接到 Quip。**
 
-我们需要生成一个访问令牌，以提供对个人 Quip 账户的 API 访问权限。要生成个人访问令牌，请访问此页面：[https://quip.com/dev/token](https://quip.com/dev/token)。如果您有企业 SSO 启用的 Quip 账户，那么 URL 会有所不同，例如 — [https://quip-corporate.com/dev/token](https://quip-corporate.com/dev/token)
+我们需要生成一个访问令牌，以提供对个人 Quip 账户的 API 访问权限。要生成个人访问令牌，请访问此页面：[`quip.com/dev/token`](https://quip.com/dev/token)。如果您有企业 SSO 启用的 Quip 账户，那么 URL 会有所不同，例如 — [`quip-corporate.com/dev/token`](https://quip-corporate.com/dev/token)
 
-![](../Images/278d8b150a4f1c90012c4fd343cc5082.png)
+![](img/278d8b150a4f1c90012c4fd343cc5082.png)
 
 一旦您点击上方的获取个人访问令牌按钮，您将获得一个令牌，我们将在后续部分使用该令牌通过 API 访问 quip 电子表格。
 
@@ -162,9 +162,9 @@ pr.pandas_to_redshift(data_frame = raw_df,
 
 这完成了第一部分，即从 quip 电子表格中读取数据并写入 Redshift 表。现在，让我们看一下第二部分。
 
-# 第 2 部分：将数据写入现有的 Quip 电子表格。
+# 第二部分：将数据写入现有的 Quip 电子表格。
 
-对于这一部分，前三个步骤与第 1 部分相同。所以，请遵循上述第 1、2 和 3 步。我们将从这里的第 4 步开始。
+对于这一部分，前三个步骤与第一部分相同。所以，请遵循上述第 1、2 和 3 步。我们将从这里的第 4 步开始。
 
 **第 4 步：连接到数据库以读取数据**
 
@@ -194,11 +194,11 @@ order by 1 asc
 result = df.to_markdown(index=False) 
 ```
 
-**第5步：将数据写入Quip文件**
+**第 5 步：将数据写入 Quip 文件**
 
-要将数据写入Quip电子表格，可以使用*QuipClient*库中的*edit_document*函数。此函数具有多个参数。格式可以是HTML或markdown。默认为HTML，这就是我们在第4步将数据框转换为markdown的原因。您需要指定*section_id*和*location*来指定要添加数据的位置——追加、前置、在特定部分之后/之前等。针对这种特定情况，我只想将数据追加到现有电子表格的新标签页中。您可以在[这里](https://quip.com/dev/automation/documentation/current#tag/Use-cases)了解更多信息。
+要将数据写入 Quip 电子表格，可以使用*QuipClient*库中的*edit_document*函数。此函数具有多个参数。格式可以是 HTML 或 markdown。默认为 HTML，这就是我们在第 4 步将数据框转换为 markdown 的原因。您需要指定*section_id*和*location*来指定要添加数据的位置——追加、前置、在特定部分之后/之前等。针对这种特定情况，我只想将数据追加到现有电子表格的新标签页中。您可以在[这里](https://quip.com/dev/automation/documentation/current#tag/Use-cases)了解更多信息。
 
-有时，操作已执行，但脚本仍因API响应延迟而失败。try-except错误块用于捕获任何超时错误。
+有时，操作已执行，但脚本仍因 API 响应延迟而失败。try-except 错误块用于捕获任何超时错误。
 
 ```py
 ##########################################

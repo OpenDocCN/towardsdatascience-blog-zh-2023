@@ -1,10 +1,10 @@
 # 高斯混合模型详细解释
 
-> 原文：[https://towardsdatascience.com/gaussian-mixture-model-clearly-explained-115010f7d4cf?source=collection_archive---------0-----------------------#2023-01-10](https://towardsdatascience.com/gaussian-mixture-model-clearly-explained-115010f7d4cf?source=collection_archive---------0-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/gaussian-mixture-model-clearly-explained-115010f7d4cf?source=collection_archive---------0-----------------------#2023-01-10`](https://towardsdatascience.com/gaussian-mixture-model-clearly-explained-115010f7d4cf?source=collection_archive---------0-----------------------#2023-01-10)
 
 ## 学习 GMM 所需的唯一指南
 
-[](https://ransakaravihara.medium.com/?source=post_page-----115010f7d4cf--------------------------------)[![Ransaka Ravihara](../Images/ac09746938c10ad8f157d46ea0de27ca.png)](https://ransakaravihara.medium.com/?source=post_page-----115010f7d4cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----115010f7d4cf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----115010f7d4cf--------------------------------) [Ransaka Ravihara](https://ransakaravihara.medium.com/?source=post_page-----115010f7d4cf--------------------------------)
+[](https://ransakaravihara.medium.com/?source=post_page-----115010f7d4cf--------------------------------)![Ransaka Ravihara](https://ransakaravihara.medium.com/?source=post_page-----115010f7d4cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----115010f7d4cf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----115010f7d4cf--------------------------------) [Ransaka Ravihara](https://ransakaravihara.medium.com/?source=post_page-----115010f7d4cf--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F115010f7d4cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgaussian-mixture-model-clearly-explained-115010f7d4cf&source=-----115010f7d4cf---------------------bookmark_footer-----------)![](../Images/7b9ace71504e42f3bf45229c93dff566.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F115010f7d4cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgaussian-mixture-model-clearly-explained-115010f7d4cf&source=-----115010f7d4cf---------------------bookmark_footer-----------)![](img/7b9ace71504e42f3bf45229c93dff566.png)
 
 图片由 [Planet Volumes](https://unsplash.com/@planetvolumes?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

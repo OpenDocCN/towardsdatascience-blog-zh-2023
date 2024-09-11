@@ -1,18 +1,18 @@
 # 你的数据（终于）在云端了。现在，别再那么依赖本地了
 
-> 原文：[https://towardsdatascience.com/your-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529?source=collection_archive---------2-----------------------#2023-08-16](https://towardsdatascience.com/your-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529?source=collection_archive---------2-----------------------#2023-08-16)
+> 原文：[`towardsdatascience.com/your-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529?source=collection_archive---------2-----------------------#2023-08-16`](https://towardsdatascience.com/your-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529?source=collection_archive---------2-----------------------#2023-08-16)
 
 ## *现代数据栈允许你以不同的方式操作，而不仅仅是在更大的规模上。充分利用它。*
 
-[](https://barrmoses.medium.com/?source=post_page-----bbb7b4f35529--------------------------------)[![Barr Moses](../Images/4c74558ee692a85196d5a55ac1920718.png)](https://barrmoses.medium.com/?source=post_page-----bbb7b4f35529--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bbb7b4f35529--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bbb7b4f35529--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----bbb7b4f35529--------------------------------)
+[](https://barrmoses.medium.com/?source=post_page-----bbb7b4f35529--------------------------------)![Barr Moses](https://barrmoses.medium.com/?source=post_page-----bbb7b4f35529--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bbb7b4f35529--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bbb7b4f35529--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----bbb7b4f35529--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----bbb7b4f35529---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bbb7b4f35529--------------------------------) ·10分钟阅读·2023年8月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbbb7b4f35529&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529&user=Barr+Moses&userId=2818bac48708&source=-----bbb7b4f35529---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----bbb7b4f35529---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bbb7b4f35529--------------------------------) ·10 分钟阅读·2023 年 8 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbbb7b4f35529&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529&user=Barr+Moses&userId=2818bac48708&source=-----bbb7b4f35529---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbbb7b4f35529&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529&source=-----bbb7b4f35529---------------------bookmark_footer-----------)![](../Images/126d8c1cdc8ff37952b613dc6706b95a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbbb7b4f35529&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-datas-finally-in-the-cloud-now-stop-acting-so-on-prem-bbb7b4f35529&source=-----bbb7b4f35529---------------------bookmark_footer-----------)![](img/126d8c1cdc8ff37952b613dc6706b95a.png)
 
 图片由 [Massimo Botturi](https://unsplash.com/@wildmax?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/photos/zFYUsLk_50Y?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -24,15 +24,15 @@
 
 团队很快理解到超弹性计算和存储服务如何使他们能够处理以前从未见过的多样数据类型和速度，但他们并不总是理解云对其工作流程的影响。
 
-所以也许对这些最近迁移的数据团队来说，一个更好的类比是，如果我给你1,000把钉子枪，然后看着你将它们全部横着放，以同时钉1,000个钉子。
+所以也许对这些最近迁移的数据团队来说，一个更好的类比是，如果我给你 1,000 把钉子枪，然后看着你将它们全部横着放，以同时钉 1,000 个钉子。
 
 **无论如何，重要的是要理解现代数据栈不仅仅允许你更大更快地存储和处理数据，它允许你从根本上以不同的方式处理数据，以实现新的目标并提取不同类型的价值**。
 
 这部分是由于规模和速度的增加，但也是由于[更丰富的元数据](https://medium.com/towards-data-science/conscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3)和生态系统中的更无缝集成。
 
-![](../Images/14de43be204cd9ed7b69dc6d8b36f79d.png)
+![](img/14de43be204cd9ed7b69dc6d8b36f79d.png)
 
-图片由Shane Murray和作者提供。
+图片由 Shane Murray 和作者提供。
 
 在这篇文章中，我突出了我看到数据团队在云端行为变化的三种更常见方式，以及五种它们没有做到（但应该做到）的方式。让我们深入探讨一下。
 
@@ -40,13 +40,13 @@
 
 数据团队转向现代数据栈的原因有很多（不仅仅是因为首席财务官最终解放了预算）。这些用例通常是数据团队进入云端后的第一个也是最容易的行为转变。它们包括：
 
-## 从ETL迁移到ELT以加快洞察时间
+## 从 ETL 迁移到 ELT 以加快洞察时间
 
-你不能随便将任何东西加载到本地数据库中——特别是如果你希望查询在周末之前返回的话。因此，这些数据团队需要仔细考虑要提取哪些数据以及如何通过在Python中硬编码的管道将其转换成最终状态。
+你不能随便将任何东西加载到本地数据库中——特别是如果你希望查询在周末之前返回的话。因此，这些数据团队需要仔细考虑要提取哪些数据以及如何通过在 Python 中硬编码的管道将其转换成最终状态。
 
 这就像是为每个数据消费者定制特定的餐点，而不是提供自助餐，就像任何去过邮轮的人都知道的那样，当你需要满足整个组织对数据的无限需求时，自助餐才是最好的选择。
 
-这正是AutoTrader UK技术负责人Edward Kent与[我的团队去年](https://www.montecarlodata.com/blog-scaling-data-trust-how-auto-trader-migrated-to-a-decentralized-data-platform-with-monte-carlo/)讨论数据信任和自助分析需求的情况。
+这正是 AutoTrader UK 技术负责人 Edward Kent 与[我的团队去年](https://www.montecarlodata.com/blog-scaling-data-trust-how-auto-trader-migrated-to-a-decentralized-data-platform-with-monte-carlo/)讨论数据信任和自助分析需求的情况。
 
 “我们希望赋能 AutoTrader 及其客户，使其能够做出数据驱动的决策，并通过自助平台实现数据的民主化……在我们将受信任的本地系统迁移到云端时，那些旧系统的用户需要相信新的云技术与他们过去使用的旧系统一样可靠，”他说。
 
@@ -80,17 +80,17 @@
 
 本地的数据团队没有规模或来自中央查询日志或现代表格格式的丰富元数据，因此无法轻松运行机器学习驱动的异常检测（换句话说，[数据可观察性](https://www.montecarlodata.com/blog-what-is-data-observability/)）。
 
-相反，他们与领域团队合作，以理解数据质量要求，并将这些要求转化为SQL规则或数据测试。例如，customer_id 应该永远不能为NULL，或者 currency_conversion 应该永远不能有负值。还有一些[本地工具](https://www.informatica.com/)旨在帮助加速和管理这一过程。
+相反，他们与领域团队合作，以理解数据质量要求，并将这些要求转化为 SQL 规则或数据测试。例如，customer_id 应该永远不能为 NULL，或者 currency_conversion 应该永远不能有负值。还有一些[本地工具](https://www.informatica.com/)旨在帮助加速和管理这一过程。
 
 当这些数据团队迁移到云端时，他们首先想到的不是以不同的方式处理数据质量，而是以云规模执行数据测试。这是他们所熟悉的做法。
 
-我看到过一些案例研究，读起来像恐怖故事（不，我不会提名字），数据工程团队在数千个DAG上运行数百万个任务，以监控数百个管道中的数据质量。哎呀！
+我看到过一些案例研究，读起来像恐怖故事（不，我不会提名字），数据工程团队在数千个 DAG 上运行数百万个任务，以监控数百个管道中的数据质量。哎呀！
 
 当你运行五十万条数据测试时会发生什么？我告诉你。即使绝大多数测试通过，仍然会有数万条测试失败。而且这些测试明天还会失败，因为没有上下文来加快根本原因分析，甚至不知道从哪里开始分类。
 
 你不知何故使你的团队产生了警报疲劳，却仍未达到所需的覆盖范围。更不用说大规模的数据测试既耗时又昂贵。
 
-![](../Images/01bcccff04c3a66c8a0b2469e336ace6.png)
+![](img/01bcccff04c3a66c8a0b2469e336ace6.png)
 
 图片由作者提供。[来源](https://www.montecarlodata.com/blog-data-quality-survey)。
 
@@ -100,19 +100,19 @@
 
 支持中央数据模型有很多合理的理由，你可能在一篇[精彩的 Chad Sanderson 博客](https://www.linkedin.com/posts/chad-sanderson_dataengineering-activity-7072616818003099648-n41-?utm_source=share&utm_medium=member_desktop)中读到过这些理由。
 
-但每隔一段时间，我会遇到在云端投入大量时间和资源来维护数据模型的团队，唯一的原因是维护和理解 [数据血统](https://www.montecarlodata.com/blog-data-lineage/)。在本地部署时，这基本上是你最好的选择，除非你想阅读长篇的SQL代码，并创建一个满是记忆卡片和纱线的公告板，让你的另一半开始问你是否没事。
+但每隔一段时间，我会遇到在云端投入大量时间和资源来维护数据模型的团队，唯一的原因是维护和理解 [数据血统](https://www.montecarlodata.com/blog-data-lineage/)。在本地部署时，这基本上是你最好的选择，除非你想阅读长篇的 SQL 代码，并创建一个满是记忆卡片和纱线的公告板，让你的另一半开始问你是否没事。
 
-![](../Images/be8f0e63dbd7ed334cf4ecfaa74e864e.png)
+![](img/be8f0e63dbd7ed334cf4ecfaa74e864e.png)
 
 照片由 [Jason Goodman](https://unsplash.com/@jasongoodman_youxventures?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/photos/Oalh2MojUuk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-（“不，Lior！我没事，我只是试图理解这个WHERE子句是如何改变这个JOIN中的列的！”）
+（“不，Lior！我没事，我只是试图理解这个 WHERE 子句是如何改变这个 JOIN 中的列的！”）
 
 现代数据堆栈中的多个工具——包括数据目录、数据可观测性平台和数据仓库——可以利用元数据来创建自动化的数据血统。这只是一个 [选择风味](https://www.montecarlodata.com/blog-data-lineage-and-data-observability/) 的问题。
 
 ## 客户细分
 
-在旧的世界里，对客户的视角是平面的，而我们知道它实际上应该是一个360度的全球视图。
+在旧的世界里，对客户的视角是平面的，而我们知道它实际上应该是一个 360 度的全球视图。
 
 这种有限的客户视角是由于预建数据（ETL）、实验约束和本地数据库计算更复杂查询（独特计数、不同值）所需的时间较长。
 
@@ -136,15 +136,15 @@
 
 然而，在现代数据堆栈中，你通常会看到两种极端情况。
 
-在一些情况下，DBA的角色仍然存在，或者外包给一个中央数据平台团队，如果管理不善，可能会造成瓶颈。然而，更常见的情况是，成本或性能优化变成了“无人区”，直到一笔特别高额的账单送到CFO的桌上。
+在一些情况下，DBA 的角色仍然存在，或者外包给一个中央数据平台团队，如果管理不善，可能会造成瓶颈。然而，更常见的情况是，成本或性能优化变成了“无人区”，直到一笔特别高额的账单送到 CFO 的桌上。
 
-这通常发生在数据团队没有正确的成本监控工具时，且出现了特别激进的异常事件（可能是错误的代码或爆炸性JOIN）。
+这通常发生在数据团队没有正确的成本监控工具时，且出现了特别激进的异常事件（可能是错误的代码或爆炸性 JOIN）。
 
 此外，一些数据团队未能充分利用“按使用付费”的模式，而是选择承诺预定数量的积分（通常有折扣）……然后超出这个数额。虽然积分承诺合同本身没有问题，但如果不加以注意，这种预留时间可能会形成一些坏习惯，随着时间的推移逐渐累积。
 
-云计算使得DevOps/DataOps可以采用更加连续、协作和集成的方法，FinOps也是如此。我看到的[最成功的团队](https://www.montecarlodata.com/blog-data-optimization-tips/)是那些将成本优化融入日常工作流，并激励与成本最相关的人员的团队。
+云计算使得 DevOps/DataOps 可以采用更加连续、协作和集成的方法，FinOps 也是如此。我看到的[最成功的团队](https://www.montecarlodata.com/blog-data-optimization-tips/)是那些将成本优化融入日常工作流，并激励与成本最相关的人员的团队。
 
-“消费型定价的兴起使得这一点更加关键，因为新功能的发布可能导致成本指数级上升，”Tenable的Tom Milner说。“作为我的团队的负责人，我每天检查我们的Snowflake成本，并将任何费用激增作为我们待办事项的优先项。”
+“消费型定价的兴起使得这一点更加关键，因为新功能的发布可能导致成本指数级上升，”Tenable 的 Tom Milner 说。“作为我的团队的负责人，我每天检查我们的 Snowflake 成本，并将任何费用激增作为我们待办事项的优先项。”
 
 这会创建反馈循环、共享学习以及成千上万的小型快速修复，从而带来重大成果。
 

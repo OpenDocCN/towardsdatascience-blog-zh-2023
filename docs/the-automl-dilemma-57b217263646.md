@@ -1,26 +1,26 @@
-# AutoML的困境
+# AutoML 的困境
 
-> 原文：[https://towardsdatascience.com/the-automl-dilemma-57b217263646?source=collection_archive---------4-----------------------#2023-09-16](https://towardsdatascience.com/the-automl-dilemma-57b217263646?source=collection_archive---------4-----------------------#2023-09-16)
+> 原文：[`towardsdatascience.com/the-automl-dilemma-57b217263646?source=collection_archive---------4-----------------------#2023-09-16`](https://towardsdatascience.com/the-automl-dilemma-57b217263646?source=collection_archive---------4-----------------------#2023-09-16)
 
 ## 基础设施工程师的观点
 
-[](https://haifengjin.com/?source=post_page-----57b217263646--------------------------------)[![Haifeng Jin](../Images/705d6ecaed975b6376fac19087f2c02c.png)](https://haifengjin.com/?source=post_page-----57b217263646--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57b217263646--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----57b217263646--------------------------------) [Haifeng Jin](https://haifengjin.com/?source=post_page-----57b217263646--------------------------------)
+[](https://haifengjin.com/?source=post_page-----57b217263646--------------------------------)![Haifeng Jin](https://haifengjin.com/?source=post_page-----57b217263646--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57b217263646--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----57b217263646--------------------------------) [Haifeng Jin](https://haifengjin.com/?source=post_page-----57b217263646--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F663f924902d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-automl-dilemma-57b217263646&user=Haifeng+Jin&userId=663f924902d1&source=post_page-663f924902d1----57b217263646---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----57b217263646--------------------------------) · 8分钟阅读·2023年9月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F57b217263646&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-automl-dilemma-57b217263646&user=Haifeng+Jin&userId=663f924902d1&source=-----57b217263646---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F663f924902d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-automl-dilemma-57b217263646&user=Haifeng+Jin&userId=663f924902d1&source=post_page-663f924902d1----57b217263646---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----57b217263646--------------------------------) · 8 分钟阅读·2023 年 9 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F57b217263646&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-automl-dilemma-57b217263646&user=Haifeng+Jin&userId=663f924902d1&source=-----57b217263646---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F57b217263646&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-automl-dilemma-57b217263646&source=-----57b217263646---------------------bookmark_footer-----------)![](../Images/bbac382bf55fad7a5ae000a5c7a8c2f2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F57b217263646&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-automl-dilemma-57b217263646&source=-----57b217263646---------------------bookmark_footer-----------)![](img/bbac382bf55fad7a5ae000a5c7a8c2f2.png)
 
 图片由[Fabrizio Conti](https://unsplash.com/@conti_photos?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-近年来，AutoML一直是一个热门话题。尽管其炒作声势浩大，甚至有取代人类机器学习专家的雄心，但由于长期未见广泛应用，对AutoML的期望正在迅速下降，这严格遵循Gartner曲线。
+近年来，AutoML 一直是一个热门话题。尽管其炒作声势浩大，甚至有取代人类机器学习专家的雄心，但由于长期未见广泛应用，对 AutoML 的期望正在迅速下降，这严格遵循 Gartner 曲线。
 
-![](../Images/c940b94c8c12f380703a2e3a3ab0dd00.png)
+![](img/c940b94c8c12f380703a2e3a3ab0dd00.png)
 
-AutoML在Gartner曲线上的表现（作者提供的图像）
+AutoML 在 Gartner 曲线上的表现（作者提供的图像）
 
 在此时，我们需要了解 AutoML 的现状，并找出未来的发展方向。我是一名开发了两个 AutoML 库的 软件工程师，[AutoKeras](https://autokeras.com/) 和 [KerasTuner](https://keras.io/keras_tuner/)。在这篇文章中，我将帮助你回顾 AutoML 的概念以及阻碍 AutoML 广泛应用的缺失部分。
 
@@ -30,7 +30,7 @@ AutoML在Gartner曲线上的表现（作者提供的图像）
 
 从输入和输出的角度来看，AutoML 做了以下工作。
 
-![](../Images/62c4f90c73173e5b4f9cc57637fba063.png)
+![](img/62c4f90c73173e5b4f9cc57637fba063.png)
 
 从输入和输出的角度来看 AutoML（作者图片）
 
@@ -64,39 +64,39 @@ AutoML 系统中的智能代理生成配置，并通过学习评估结果逐步�
 
 # AutoML 的影响
 
-正如你所想象的那样，如果AutoML被广泛采用，其影响将是巨大的。它可以显著提高机器学习从业者的生产力。他们不再需要花费大量时间来微调模型配置的细节。他们可能只需要仔细定义任务并手动约束搜索空间，以更快地获得结果。
+正如你所想象的那样，如果 AutoML 被广泛采用，其影响将是巨大的。它可以显著提高机器学习从业者的生产力。他们不再需要花费大量时间来微调模型配置的细节。他们可能只需要仔细定义任务并手动约束搜索空间，以更快地获得结果。
 
-## AutoML今天能做什么？
+## AutoML 今天能做什么？
 
-当前AutoML的应用相当有限，主要集中在以下两个方面。
+当前 AutoML 的应用相当有限，主要集中在以下两个方面。
 
-+   **快速尝试**。一些机器学习工程师可能希望快速尝试他们的任务和数据集上的机器学习。他们可以将AutoML作为起点。如果他们取得了相对良好的结果，可以进一步手动开发机器学习解决方案。
++   **快速尝试**。一些机器学习工程师可能希望快速尝试他们的任务和数据集上的机器学习。他们可以将 AutoML 作为起点。如果他们取得了相对良好的结果，可以进一步手动开发机器学习解决方案。
 
-+   **机器学习教育**。刚开始学习机器学习的学生可能会使用AutoML来了解机器学习能做什么。他们不需要触及机器学习解决方案的所有细节，而是获得对整个过程的快速概览。
++   **机器学习教育**。刚开始学习机器学习的学生可能会使用 AutoML 来了解机器学习能做什么。他们不需要触及机器学习解决方案的所有细节，而是获得对整个过程的快速概览。
 
-## AutoML未来能做什么？
+## AutoML 未来能做什么？
 
-对于AutoML未来的期望远高于目前的能力。我们将其总结为三个主要目标如下。
+对于 AutoML 未来的期望远高于目前的能力。我们将其总结为三个主要目标如下。
 
 +   **对于机器学习专家：** 提高数据科学家和机器学习工程师的生产力。
 
-+   **对于领域专家：** 领域专家，如医疗医生或机械工程师，可以轻松地将AutoML应用于他们的问题。
++   **对于领域专家：** 领域专家，如医疗医生或机械工程师，可以轻松地将 AutoML 应用于他们的问题。
 
 +   **对于生产工程师：** 发现的解决方案可以轻松部署到生产环境中。
 
-# AutoML的问题
+# AutoML 的问题
 
-我们已经了解了我们现在的位置以及AutoML的未来发展方向。问题是我们如何达到那里。我们将今天面临的问题总结为三类。当这些问题得到解决时，AutoML将实现广泛应用。
+我们已经了解了我们现在的位置以及 AutoML 的未来发展方向。问题是我们如何达到那里。我们将今天面临的问题总结为三类。当这些问题得到解决时，AutoML 将实现广泛应用。
 
 ## 问题 1：缺乏商业激励
 
-**建模是微不足道的**，相比于开发一个可用的机器学习解决方案，这可能包括但不限于数据收集、清洗、验证、模型部署和监控。对于任何能够负担得起雇佣人员完成所有这些步骤的公司而言，雇佣机器学习专家进行建模的成本开销是微不足道的。当他们能够在不增加太多成本开销的情况下建立一支专家团队时，他们不会费心去尝试新的技术，如AutoML。
+**建模是微不足道的**，相比于开发一个可用的机器学习解决方案，这可能包括但不限于数据收集、清洗、验证、模型部署和监控。对于任何能够负担得起雇佣人员完成所有这些步骤的公司而言，雇佣机器学习专家进行建模的成本开销是微不足道的。当他们能够在不增加太多成本开销的情况下建立一支专家团队时，他们不会费心去尝试新的技术，如 AutoML。
 
-所以，人们只会在其他所有步骤的成本降到最低时才开始使用AutoML。也就是当雇佣人员进行建模的成本变得显著时。现在，让我们看看我们的路线图。
+所以，人们只会在其他所有步骤的成本降到最低时才开始使用 AutoML。也就是当雇佣人员进行建模的成本变得显著时。现在，让我们看看我们的路线图。
 
 **许多步骤可以自动化。** 我们应该对随着云服务的发展，开发机器学习解决方案中的许多步骤能够被自动化持乐观态度，比如数据验证、监控和服务。然而，有一个关键步骤是永远无法自动化的，那就是数据标注。除非机器能够自我学习，否则人类将始终需要为机器准备数据。
 
-**数据标注可能会成为开发机器学习解决方案的主要成本**。如果我们能减少数据标注的成本，那么他们将有商业动机使用AutoML来消除建模成本，这将是开发机器学习解决方案的唯一成本。
+**数据标注可能会成为开发机器学习解决方案的主要成本**。如果我们能减少数据标注的成本，那么他们将有商业动机使用 AutoML 来消除建模成本，这将是开发机器学习解决方案的唯一成本。
 
 **长期解决方案**：不幸的是，减少数据标注成本的终极解决方案今天并不存在。我们将依赖未来在“小数据学习”方面的研究突破。一种可能的途径是投资于迁移学习。
 
@@ -104,21 +104,21 @@ AutoML 系统中的智能代理生成配置，并通过学习评估结果逐步�
 
 **短期解决方案**：在短期内，我们可以使用小数据对预训练的大模型进行微调，这是一种简单的迁移学习和小数据学习的方法。
 
-**总而言之**，由于大多数机器学习解决方案的开发步骤已经通过云服务自动化，而AutoML可以使用预训练模型从较小的数据集中学习，以减少数据标注成本，企业将有商业动机应用AutoML来降低其机器学习建模成本。
+**总而言之**，由于大多数机器学习解决方案的开发步骤已经通过云服务自动化，而 AutoML 可以使用预训练模型从较小的数据集中学习，以减少数据标注成本，企业将有商业动机应用 AutoML 来降低其机器学习建模成本。
 
-## 问题2：缺乏可维护性
+## 问题 2：缺乏可维护性
 
 **所有深度学习模型都不可靠**。模型的行为有时是不可预测的。很难理解模型为何给出特定的输出。
 
 **工程师维护模型**。如今，我们需要工程师在模型出现问题时进行诊断和修复。公司与工程师沟通，处理他们想要更改的深度学习模型的任何事宜。
 
-**AutoML系统比工程师更难以交互**。如今，你只能将其作为一种一次性的方法来创建深度学习模型，通过提前给AutoML系统提供一系列明确定义的数学目标。如果在实践中遇到问题，它将无法帮助你解决。
+**AutoML 系统比工程师更难以交互**。如今，你只能将其作为一种一次性的方法来创建深度学习模型，通过提前给 AutoML 系统提供一系列明确定义的数学目标。如果在实践中遇到问题，它将无法帮助你解决。
 
-**长期解决方案**：我们需要在HCI（人机交互）领域进行更多研究。我们需要一种更直观的方式来定义目标，以使AutoML创建的模型更可靠。我们还需要更好的方法来与AutoML系统互动，以便在不花费过多资源重新搜索所有不同模型的情况下，更新模型以满足新需求或修复任何问题。
+**长期解决方案**：我们需要在 HCI（人机交互）领域进行更多研究。我们需要一种更直观的方式来定义目标，以使 AutoML 创建的模型更可靠。我们还需要更好的方法来与 AutoML 系统互动，以便在不花费过多资源重新搜索所有不同模型的情况下，更新模型以满足新需求或修复任何问题。
 
-**短期解决方案**：支持更多的目标类型，例如FLOPS和参数数量，以限制模型大小和推理时间，以及加权混淆矩阵以处理不平衡数据。当模型出现问题时，人们可以向AutoML系统添加相关目标，以生成新模型。
+**短期解决方案**：支持更多的目标类型，例如 FLOPS 和参数数量，以限制模型大小和推理时间，以及加权混淆矩阵以处理不平衡数据。当模型出现问题时，人们可以向 AutoML 系统添加相关目标，以生成新模型。
 
-## 问题3：缺乏基础设施支持
+## 问题 3：缺乏基础设施支持
 
 在开发 AutoML 系统时，我们发现一些深度学习框架中需要的功能现在还不存在。没有这些功能，AutoML 系统的能力是有限的。它们总结如下。
 

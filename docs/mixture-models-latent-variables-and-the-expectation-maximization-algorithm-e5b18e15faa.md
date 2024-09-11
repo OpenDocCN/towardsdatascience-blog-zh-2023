@@ -1,16 +1,16 @@
 # 混合模型、潜在变量和期望最大化算法
 
-> 原文：[https://towardsdatascience.com/mixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa?source=collection_archive---------1-----------------------#2023-03-19](https://towardsdatascience.com/mixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa?source=collection_archive---------1-----------------------#2023-03-19)
+> 原文：[`towardsdatascience.com/mixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa?source=collection_archive---------1-----------------------#2023-03-19`](https://towardsdatascience.com/mixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa?source=collection_archive---------1-----------------------#2023-03-19)
 
-[](https://reoneo.medium.com/?source=post_page-----e5b18e15faa--------------------------------)[![Reo Neo](../Images/a3c192dafc1222b06b2e7fcf4d35cb27.png)](https://reoneo.medium.com/?source=post_page-----e5b18e15faa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e5b18e15faa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e5b18e15faa--------------------------------) [Reo Neo](https://reoneo.medium.com/?source=post_page-----e5b18e15faa--------------------------------)
+[](https://reoneo.medium.com/?source=post_page-----e5b18e15faa--------------------------------)![Reo Neo](https://reoneo.medium.com/?source=post_page-----e5b18e15faa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e5b18e15faa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e5b18e15faa--------------------------------) [Reo Neo](https://reoneo.medium.com/?source=post_page-----e5b18e15faa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9fb220b09dcf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa&user=Reo+Neo&userId=9fb220b09dcf&source=post_page-9fb220b09dcf----e5b18e15faa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e5b18e15faa--------------------------------) · 8分钟阅读 · 2023年3月19日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9fb220b09dcf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa&user=Reo+Neo&userId=9fb220b09dcf&source=post_page-9fb220b09dcf----e5b18e15faa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e5b18e15faa--------------------------------) · 8 分钟阅读 · 2023 年 3 月 19 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe5b18e15faa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa&source=-----e5b18e15faa---------------------bookmark_footer-----------)![](../Images/eae2fea5e6268b616a5acfcaca0178b9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe5b18e15faa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixture-models-latent-variables-and-the-expectation-maximization-algorithm-e5b18e15faa&source=-----e5b18e15faa---------------------bookmark_footer-----------)![](img/eae2fea5e6268b616a5acfcaca0178b9.png)
 
 照片由 [Sung Shin](https://unsplash.com/ko/@ironstagram?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

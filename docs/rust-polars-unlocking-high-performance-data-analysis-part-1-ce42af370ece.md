@@ -1,10 +1,10 @@
-# Rust Polars：解锁高性能数据分析 — 第 1 部分
+# Rust Polars：解锁高性能数据分析 — 第一部分
 
-> 原文：[https://towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-1-ce42af370ece?source=collection_archive---------0-----------------------#2023-05-11](https://towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-1-ce42af370ece?source=collection_archive---------0-----------------------#2023-05-11)
+> 原文：[`towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-1-ce42af370ece?source=collection_archive---------0-----------------------#2023-05-11`](https://towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-1-ce42af370ece?source=collection_archive---------0-----------------------#2023-05-11)
 
 ## 探索 Rust Polars 的世界，系列及更多
 
-[](https://wiseai.medium.com/?source=post_page-----ce42af370ece--------------------------------)[![Mahmoud Harmouch](../Images/d61617549d25565399975debaad5908f.png)](https://wiseai.medium.com/?source=post_page-----ce42af370ece--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce42af370ece--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce42af370ece--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----ce42af370ece--------------------------------)
+[](https://wiseai.medium.com/?source=post_page-----ce42af370ece--------------------------------)![Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----ce42af370ece--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce42af370ece--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce42af370ece--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----ce42af370ece--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce42af370ece&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-1-ce42af370ece&source=-----ce42af370ece---------------------bookmark_footer-----------)![](../Images/04aed287279a73e0ed116a7c5a65c6f7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce42af370ece&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-1-ce42af370ece&source=-----ce42af370ece---------------------bookmark_footer-----------)![](img/04aed287279a73e0ed116a7c5a65c6f7.png)
 
 [Kaiwen Sun](https://unsplash.com/@ksun?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
@@ -34,35 +34,35 @@ github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page----
 
 ## 目录表格（TOC）
 
-∘ [介绍](#7211)
+∘ 介绍
 
-∘ [历史背景](#c89a)
+∘ 历史背景
 
-∘ [核心组件](#318c)
+∘ 核心组件
 
-∘ [应用场景](#a837)
+∘ 应用场景
 
-∘ [架构](#b9a9)
+∘ 架构
 
-∘ [核心对象](#d579)
+∘ 核心对象
 
-∘ [系列对象](#4f0d)
+∘ 系列对象
 
-∘ [描述性统计](#40fb)
+∘ 描述性统计
 
-∘ [中心趋势测量](#bb49)
+∘ 中心趋势测量
 
-∘ [传播测量](#58c9)
+∘ 传播测量
 
-∘ [结论](#6902)
+∘ 结论
 
-∘ [结束语](#7e8f)
+∘ 结束语
 
-∘ [资源](#7546)
+∘ 资源
 
 ## 介绍
 
-![](../Images/5c361426a8faf1e9703b452f815c31bf.png)
+![](img/5c361426a8faf1e9703b452f815c31bf.png)
 
 Photo by [Raimond Klavins](https://unsplash.com/@raimondklavins?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -70,59 +70,59 @@ Photo by [Raimond Klavins](https://unsplash.com/@raimondklavins?utm_source=mediu
 
 ## 历史背景
 
-![](../Images/d23a15f013520880b845196dd7c14355.png)
+![](img/d23a15f013520880b845196dd7c14355.png)
 
 Polars 星历史（由作者生成的图像，来自 [star-history.com](https://star-history.com/)）
 
-[在2020年](https://github.com/pola-rs/polars/commit/2714893dd8061644a7aa0fe0e983c2faf17d18c1)，有远见的[Ritchie Vink](https://www.ritchievink.com/about/)从结构工程转行到数据工程，发现市场上对更好数据科学工具的需求未得到满足。对现有工具不满，他决定创建一些真正卓越的东西： [Polars](https://github.com/ritchie46/polars)。
+[在 2020 年](https://github.com/pola-rs/polars/commit/2714893dd8061644a7aa0fe0e983c2faf17d18c1)，有远见的[Ritchie Vink](https://www.ritchievink.com/about/)从结构工程转行到数据工程，发现市场上对更好数据科学工具的需求未得到满足。对现有工具不满，他决定创建一些真正卓越的东西： [Polars](https://github.com/ritchie46/polars)。
 
 这个出色的工具不仅优雅直观，而且代码量少却性能极高。自诞生以来，由于其无与伦比的处理复杂分析任务和轻松操作大量数据的能力，它在数据科学社区内成为了一场革命。
 
-难怪Polars迅速成为今天全球最受欢迎的数据科学工具之一。我们可以说，这个库在某种程度上促使Rust编程语言获得了更多的关注！
+难怪 Polars 迅速成为今天全球最受欢迎的数据科学工具之一。我们可以说，这个库在某种程度上促使 Rust 编程语言获得了更多的关注！
 
-Polars在处理各种数据类型方面表现出色，如“表格数据”、“有序数据”、“观察统计数据”等等。
+Polars 在处理各种数据类型方面表现出色，如“表格数据”、“有序数据”、“观察统计数据”等等。
 
 表格数据作为一种数据类型，其中包含不同类型的数值、文本或分类值填充的行和列。另一种形式是有序或无序的系列数据，本质上是包含按顺序或随机排列的数字的列表。
 
-多维矩阵是另一种需要考虑的类型；这些矩阵可以有三维、四维……甚至更多！它们通常用于科学计算和图像处理。最后但同样重要的是，来自多个来源如SQL数据库的观察统计数据；它们为我们社会中的复杂问题提供了独特的视角。
+多维矩阵是另一种需要考虑的类型；这些矩阵可以有三维、四维……甚至更多！它们通常用于科学计算和图像处理。最后但同样重要的是，来自多个来源如 SQL 数据库的观察统计数据；它们为我们社会中的复杂问题提供了独特的视角。
 
 ## 核心组件
 
-Polars是数据操作和分析的有效工具。为了高效使用它，理解其结构至关重要。因此，让我们深入了解构成这个Polars库的各种组件。
+Polars 是数据操作和分析的有效工具。为了高效使用它，理解其结构至关重要。因此，让我们深入了解构成这个 Polars 库的各种组件。
 
-+   `[**Polars/algo**](https://github.com/pola-rs/polars/tree/main/polars/polars-algo)`：这个模块提供的功能确实很了不起，包括qcut、cut和hist。这些函数使用户能够轻松进行复杂计算，同时生成详细的统计数据，无论是对系列还是数据框。
++   `[**Polars/algo**](https://github.com/pola-rs/polars/tree/main/polars/polars-algo)`：这个模块提供的功能确实很了不起，包括 qcut、cut 和 hist。这些函数使用户能够轻松进行复杂计算，同时生成详细的统计数据，无论是对系列还是数据框。
 
-+   `[**Polars/arrow**](https://github.com/pola-rs/polars/tree/main/polars/polars-arrow)`：Polars的arrow组件包含数组转换、数据类型和内核的实现。这个组件使得在不同格式之间转换数据变得更加容易，例如Polars数据框和Apache Arrow数组。
++   `[**Polars/arrow**](https://github.com/pola-rs/polars/tree/main/polars/polars-arrow)`：Polars 的 arrow 组件包含数组转换、数据类型和内核的实现。这个组件使得在不同格式之间转换数据变得更加容易，例如 Polars 数据框和 Apache Arrow 数组。
 
-+   `[**Polars/core**](https://github.com/pola-rs/polars/tree/main/polars/polars-core)`：此组件实现了Polars的基础数据结构，包括Series和DataFrames。这些数据结构对于有效地处理数据至关重要，通过提供过滤、分组和合并操作等多种功能来支持各种分析任务。
++   `[**Polars/core**](https://github.com/pola-rs/polars/tree/main/polars/polars-core)`：此组件实现了 Polars 的基础数据结构，包括 Series 和 DataFrames。这些数据结构对于有效地处理数据至关重要，通过提供过滤、分组和合并操作等多种功能来支持各种分析任务。
 
-+   `[**Polars/io**](https://github.com/pola-rs/polars/tree/main/polars/polars-io)`：此模块包含文件和数据的输入输出组件，简化了过程。它们使我们能够轻松从各种来源导入数据，包括CSV和文本文件，同时允许轻松导出为文本或CSV等格式。这种功能简化了在多个平台之间读取和写入数据的过程，从而提高了处理大量数据时的效率。
++   `[**Polars/io**](https://github.com/pola-rs/polars/tree/main/polars/polars-io)`：此模块包含文件和数据的输入输出组件，简化了过程。它们使我们能够轻松从各种来源导入数据，包括 CSV 和文本文件，同时允许轻松导出为文本或 CSV 等格式。这种功能简化了在多个平台之间读取和写入数据的过程，从而提高了处理大量数据时的效率。
 
-+   `[**Polars/lazy**](https://github.com/pola-rs/polars/tree/main/polars/polars-lazy)`：Polars中的懒惰API提供了一种高效的数据分析方法，支持急切API的一个子集。此功能类似于Apache Spark的查询语言，其中特定领域的查询转换为逻辑计划，概述了执行过程中每一步的操作。在运行这些计划之前，它们会被优化以实现最大性能，通过必要时重新排列操作并添加隐式类型转换，以防止在运行时发生潜在错误。
++   `[**Polars/lazy**](https://github.com/pola-rs/polars/tree/main/polars/polars-lazy)`：Polars 中的懒惰 API 提供了一种高效的数据分析方法，支持急切 API 的一个子集。此功能类似于 Apache Spark 的查询语言，其中特定领域的查询转换为逻辑计划，概述了执行过程中每一步的操作。在运行这些计划之前，它们会被优化以实现最大性能，通过必要时重新排列操作并添加隐式类型转换，以防止在运行时发生潜在错误。
 
-+   `[**Polars/ops**](https://github.com/pola-rs/polars/tree/main/polars/polars-ops)`：此Polars模块提供了强大的工具来处理DataFrames和Series上的复杂操作。这些高级功能使我们能够轻松提取唯一值、执行整除、计算对数、透视表和连接DataFrames。此外，这些操作经过优化，性能极快，非常适合处理大型数据集！`Polars/ops`组件内的功能使数据处理变得轻而易举，让分析师能够无缝分析数据，挖掘有价值的见解。
++   `[**Polars/ops**](https://github.com/pola-rs/polars/tree/main/polars/polars-ops)`：此 Polars 模块提供了强大的工具来处理 DataFrames 和 Series 上的复杂操作。这些高级功能使我们能够轻松提取唯一值、执行整除、计算对数、透视表和连接 DataFrames。此外，这些操作经过优化，性能极快，非常适合处理大型数据集！`Polars/ops`组件内的功能使数据处理变得轻而易举，让分析师能够无缝分析数据，挖掘有价值的见解。
 
-+   `[**Polars/row**](https://github.com/pola-rs/polars/tree/main/polars/polars-row)`：该模块具有一个显著的功能，包括提供额外实用工具的算法，这些功能包括多种编码技术，如整数编码、浮点编码和字典编码，以减少大型数据集所需的存储空间。此外，排序机制如null排序算法或反向列排序有助于高效组织和分类数据，特别是在处理大量信息时。利用此组件可以显著提高处理和分析数据集的效率。
++   `[**Polars/row**](https://github.com/pola-rs/polars/tree/main/polars/polars-row)`：该模块具有一个显著的功能，包括提供额外实用工具的算法，这些功能包括多种编码技术，如整数编码、浮点编码和字典编码，以减少大型数据集所需的存储空间。此外，排序机制如 null 排序算法或反向列排序有助于高效组织和分类数据，特别是在处理大量信息时。利用此组件可以显著提高处理和分析数据集的效率。
 
-+   `[**Polars/SQL**](https://github.com/pola-rs/polars/tree/main/polars/polars-sql)`：该模块包含许多算法，简化了SQL数据库与Polars函数之间的交互。这些方法包括选择查询、连接操作和其他数据检索技术，简化了与SQL数据库的工作。这个功能对于需要访问存储在这些系统中的信息的数据科学家尤其有用，因为他们可以轻松地将其集成到他们的分析中，使用Polars/sql功能。
++   `[**Polars/SQL**](https://github.com/pola-rs/polars/tree/main/polars/polars-sql)`：该模块包含许多算法，简化了 SQL 数据库与 Polars 函数之间的交互。这些方法包括选择查询、连接操作和其他数据检索技术，简化了与 SQL 数据库的工作。这个功能对于需要访问存储在这些系统中的信息的数据科学家尤其有用，因为他们可以轻松地将其集成到他们的分析中，使用 Polars/sql 功能。
 
-+   `[**Polars/time**](https://github.com/pola-rs/polars/tree/main/polars/polars-time)`：这个Polars组件包含处理时间记录和时间序列数据的功能。时间序列数据是基于时间索引的，例如股票价格或天气数据。Polars/time提供了处理时间数据的功能，如在不同时间格式之间转换、执行时间序列算术运算以及重新采样时间序列数据。这个Polars组件对于任何处理时间序列数据的数据科学家来说都是必不可少的。
++   `[**Polars/time**](https://github.com/pola-rs/polars/tree/main/polars/polars-time)`：这个 Polars 组件包含处理时间记录和时间序列数据的功能。时间序列数据是基于时间索引的，例如股票价格或天气数据。Polars/time 提供了处理时间数据的功能，如在不同时间格式之间转换、执行时间序列算术运算以及重新采样时间序列数据。这个 Polars 组件对于任何处理时间序列数据的数据科学家来说都是必不可少的。
 
-+   `**p**[**olars/util**](https://github.com/pola-rs/polars/tree/main/polars/polars-utils)`：该模块包含有助于调试的工具。这个模块提供了一系列功能和技术，用于跟踪错误、显示调试数据以及评估代码性能。该模块中的实用工具对于解决在使用Polars时遇到的任何问题并提高代码效率，进行更有效的数据操作和分析都非常有帮助。
++   `**p**[**olars/util**](https://github.com/pola-rs/polars/tree/main/polars/polars-utils)`：该模块包含有助于调试的工具。这个模块提供了一系列功能和技术，用于跟踪错误、显示调试数据以及评估代码性能。该模块中的实用工具对于解决在使用 Polars 时遇到的任何问题并提高代码效率，进行更有效的数据操作和分析都非常有帮助。
 
 了解这些组件将使你能够高效地操作和分析数据。
 
 ## 使用案例
 
-![](../Images/3d1e35e08ea16797c19848d8aeb76c93.png)
+![](img/3d1e35e08ea16797c19848d8aeb76c93.png)
 
 Polars 使用案例（图片由作者提供）
 
-Polars具有在各种领域应用的潜力。它帮助专家从数据分析中获得有价值的见解，并做出明智的结论。以下是Polars应用的一些领域：
+Polars 具有在各种领域应用的潜力。它帮助专家从数据分析中获得有价值的见解，并做出明智的结论。以下是 Polars 应用的一些领域：
 
-+   **推荐系统**：推荐系统是像Netflix和Amazon这样的公司强大的工具，因为它们利用数据为用户提供个性化推荐。通过分析用户行为和偏好，Polars可以帮助做出量身定制的推荐，增加用户参与度，同时推动收入增长。这使得推荐系统在任何公司通过定制内容建议提供卓越客户体验的战略中变得至关重要。
++   **推荐系统**：推荐系统是像 Netflix 和 Amazon 这样的公司强大的工具，因为它们利用数据为用户提供个性化推荐。通过分析用户行为和偏好，Polars 可以帮助做出量身定制的推荐，增加用户参与度，同时推动收入增长。这使得推荐系统在任何公司通过定制内容建议提供卓越客户体验的战略中变得至关重要。
 
-+   **市场营销**：在市场营销中实施Polars可以帮助分析消费者行为、偏好和购买模式。这使得公司可以更好地理解目标受众，从而对广告活动做出明智的决策。企业可以通过利用数据驱动的洞察来优化广告效果，从而提高(ROI)。
++   **市场营销**：在市场营销中实施 Polars 可以帮助分析消费者行为、偏好和购买模式。这使得公司可以更好地理解目标受众，从而对广告活动做出明智的决策。企业可以通过利用数据驱动的洞察来优化广告效果，从而提高(ROI)。
 
 +   **股票预测**：金融行业可以利用 Polars 来分析过去和现在的财务数据，从而预测股票价格并监控市场趋势。通过检测这些信息中的模式，投资者获得了做出明智投资决策所需的知识——这种决策可能带来显著的经济回报。
 
@@ -140,7 +140,7 @@ Polars 是一个非常强大的数据处理工具，利用 [**Apache Arrow**](ht
 
 ## 核心对象
 
-![](../Images/5c5f389d66946e656134d5c3116f0147.png)
+![](img/5c5f389d66946e656134d5c3116f0147.png)
 
 Polars 数据帧和系列表示（作者提供的图片）
 
@@ -148,7 +148,7 @@ Polars 数据帧和系列表示（作者提供的图片）
 
 ## Series 对象
 
-![](../Images/0c275c81f2cbd43ed938fe6a3ece353b.png)
+![](img/0c275c81f2cbd43ed938fe6a3ece353b.png)
 
 系列对象表示（作者提供的图片）
 
@@ -237,7 +237,7 @@ dtype: object
 dtype: float64
 ```
 
-重要的是要认识到，`**NaN**` 是合法的浮点数，并符合[**IEEE-754标准**](https://en.wikipedia.org/wiki/IEEE_754)。因此，它可以在数学计算和比较中使用，而不会触发错误。
+重要的是要认识到，`**NaN**` 是合法的浮点数，并符合[**IEEE-754 标准**](https://en.wikipedia.org/wiki/IEEE_754)。因此，它可以在数学计算和比较中使用，而不会触发错误。
 
 然而，在**Rust**中，处理整数时，`**None**`值会转换为`**Null**`。虽然乍看之下这似乎是一个微不足道的差异，但在处理大型数据集或进行复杂分析时，可能会对数据类型的保持产生重要影响。
 
@@ -255,7 +255,7 @@ let s: Series = Series::new("seasons", &[None, Some(1), Some(2)]);
 // ] 
 ```
 
-如前所述，经过对 **Rust Polars** 中创建 Series 对象过程的深入观察，与 **Python Pandas** 相比，存在一些明显的差异。首先，Rust Polars 使用 null 值表示缺失数据，而不是 **Python Pandas** 中的 **NaN** 值。其次，**Rust Polars** 将 Series 的数据类型设置为 **32位整数**，而不是像 **Python Pandas** 中那样自动转换为 **浮点数**。这种行为差异可以归因于 Rust 的显式类型系统，它会隐式地分配数据类型。因此，指定 dtype 为 `**int**` 是合适的，因为 1 和 2 是整数。另一方面，在 **Python pandas** 中，缺失数据通过将 **None** 值转换为 **NaN**（浮点数）来表示，而 **整数** 可以 **cast** 为 **float**。
+如前所述，经过对 **Rust Polars** 中创建 Series 对象过程的深入观察，与 **Python Pandas** 相比，存在一些明显的差异。首先，Rust Polars 使用 null 值表示缺失数据，而不是 **Python Pandas** 中的 **NaN** 值。其次，**Rust Polars** 将 Series 的数据类型设置为 **32 位整数**，而不是像 **Python Pandas** 中那样自动转换为 **浮点数**。这种行为差异可以归因于 Rust 的显式类型系统，它会隐式地分配数据类型。因此，指定 dtype 为 `**int**` 是合适的，因为 1 和 2 是整数。另一方面，在 **Python pandas** 中，缺失数据通过将 **None** 值转换为 **NaN**（浮点数）来表示，而 **整数** 可以 **cast** 为 **float**。
 
 在使用 **Rust** 进行科学计算时，强调 **None** 和 **NaN** 的表示差异至关重要。虽然数据科学家可能会交替使用它们来表示缺失数据，但在底层它们并不以相同的方式表示。一个关键点是 **NaN** 不等于 **None**，并且它们之间的等式测试总是会返回 **False**。
 
@@ -311,13 +311,13 @@ println!("{:?}", s.cast(&DataType::Int64).unwrap());
 // ]
 ```
 
-`[**cast**](https://docs.rs/polars/latest/polars/prelude/struct.Series.html#method.cast)` 函数用于将初始的 `**s**` 序列转换为新的 **64位整数** 类型序列。返回值可以使用 `**println!**` 宏进行显示，但值得注意的是，转换后 `**NaN**` 值将变为 null。
+`[**cast**](https://docs.rs/polars/latest/polars/prelude/struct.Series.html#method.cast)` 函数用于将初始的 `**s**` 序列转换为新的 **64 位整数** 类型序列。返回值可以使用 `**println!**` 宏进行显示，但值得注意的是，转换后 `**NaN**` 值将变为 null。
 
 重要的是要记住，将一个系列从一种数据类型转换为另一种数据类型可能会导致某些值的丢失或修改。例如，如果你将一个 **浮点系列** 转换成 **整数** **系列**，所有的小数点将会被 **截断**。此外，尝试将系列中的 **非数值** 数据转换为 **数值** 类型会导致错误。因此，执行任何潜在转换之前，务必要全面谨慎地权衡其后果。
 
 ## 系列创建
 
-![](../Images/edfb5affe1f7c53c8fb4283743cdbaa1.png)
+![](img/edfb5affe1f7c53c8fb4283743cdbaa1.png)
 
 系列对象（图片由作者提供）
 
@@ -426,7 +426,7 @@ println!("{:?}", s);
 
 ## 索引与切片
 
-![](../Images/107e202c024059b5048def4d3d1153f3.png)
+![](img/107e202c024059b5048def4d3d1153f3.png)
 
 series 的获取和切片方法（作者提供的图片）
 
@@ -462,7 +462,7 @@ println!("{:?}", s.slice(0, 1));
 
 ## 长度
 
-![](../Images/c510311c23cf4ac33f7bd240092e4b1c.png)
+![](img/c510311c23cf4ac33f7bd240092e4b1c.png)
 
 series len 方法（图像由作者提供）
 
@@ -481,7 +481,7 @@ println!("{:?}", s.len());
 
 ## 反转
 
-![](../Images/4a66986c691a8c1578ce61d71e1aa25b.png)
+![](img/4a66986c691a8c1578ce61d71e1aa25b.png)
 
 series reverse 方法（图像由作者提供）
 
@@ -518,7 +518,7 @@ println!("{:?}", s.is_empty());
 
 ## 丢弃空值
 
-![](../Images/ce24d473de70d541d320239c6b8b25d4.png)
+![](img/ce24d473de70d541d320239c6b8b25d4.png)
 
 Series drop_nulls 函数可视化（图像由作者提供）
 
@@ -589,7 +589,7 @@ println!("{:?}", s.tail(None));
 
 ## 追加
 
-![](../Images/e87bf9af623aea3e586c508b41f520f2.png)
+![](img/e87bf9af623aea3e586c508b41f520f2.png)
 
 系列追加功能的可视化（作者提供的图片）
 
@@ -614,7 +614,7 @@ println!("{:?}", s1.append(&s2));
 
 ## 转换
 
-![](../Images/802a79c3ab543dd484c5a8649f2f1397.png)
+![](img/802a79c3ab543dd484c5a8649f2f1397.png)
 
 系列转换功能的可视化（作者提供的图片）
 
@@ -651,7 +651,7 @@ println!("{:?}", s.cast(&DataType::Int32).unwrap());
 
 +   **前向填充**（用**前一个**值替换**None**）：
 
-![](../Images/82b0f038e440e9de2ec49f35329e47d4.png)
+![](img/82b0f038e440e9de2ec49f35329e47d4.png)
 
 系列前向填充策略（作者提供的图像）
 
@@ -676,7 +676,7 @@ println!("{:?}", filled);
 
 +   **后向填充**（用**后一个**值替换**None**）：
 
-![](../Images/07715eab280f9741cee8bcfd8192b165.png)
+![](img/07715eab280f9741cee8bcfd8192b165.png)
 
 系列后向填充策略（作者提供的图像）
 
@@ -701,7 +701,7 @@ println!("{:?}", filled);
 
 +   **均值填充**（用整个数组的**均值**替换**None**）：
 
-![](../Images/46607c1981fe60dc45abcce0f08b7035.png)
+![](img/46607c1981fe60dc45abcce0f08b7035.png)
 
 系列均值填充策略（作者提供的图像）
 
@@ -726,7 +726,7 @@ println!("{:?}", filled);
 
 +   **最小值填充**（用整个数组的**最小值**替换**None**）：
 
-![](../Images/3bd2ffd3a142a27aa934e32cee391169.png)
+![](img/3bd2ffd3a142a27aa934e32cee391169.png)
 
 系列最小值填充策略（作者提供的图像）
 
@@ -751,7 +751,7 @@ println!("{:?}", filled);
 
 +   **最大值填充**（用整个数组的**最大值**替换**None**）：
 
-![](../Images/42217122b301e0030586a1df0268ce51.png)
+![](img/42217122b301e0030586a1df0268ce51.png)
 
 系列最大值填充策略（作者提供的图像）
 
@@ -776,7 +776,7 @@ println!("{:?}", filled);
 
 ## 抽样
 
-![](../Images/6f8c89e9f258368674147813ba1c6d6e.png)
+![](img/6f8c89e9f258368674147813ba1c6d6e.png)
 
 照片由[Testalize.me](https://unsplash.com/@testalizeme?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -807,13 +807,13 @@ println!("{:?}", s.sample_n(4, true, true, Some(9999)));
 
 ## **描述性统计**
 
-![](../Images/479132a5255f39e0cc303f997be8db4f.png)
+![](img/479132a5255f39e0cc303f997be8db4f.png)
 
 [Stephen Dawson](https://unsplash.com/@dawson2406?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 的照片
 
 **描述性统计**在数据分析中的重要性不容小觑，因为它使研究人员能够理解他们收集的数据。**单变量统计**是该领域的一个重要组成部分，允许对**单独的** **变量**进行独立分析和评估。通过对每个**变量**单独使用统计测量，如**均值**、**众数**、**中位数**和**标准差**，我们可以揭示数据集中分布模式的**有价值见解**。
 
-例如，如果提供了**100个观察值**，详细记录了速度和距离对，**单变量统计**将使我们能够单独计算**平均**速度和距离，从而使它们之间的任何**相关性**或**独立性**变得明显。此外，通过这些计算识别**异常值**，我们可以在后续的进一步分析中**最小化**它们对整体结果的影响！
+例如，如果提供了**100 个观察值**，详细记录了速度和距离对，**单变量统计**将使我们能够单独计算**平均**速度和距离，从而使它们之间的任何**相关性**或**独立性**变得明显。此外，通过这些计算识别**异常值**，我们可以在后续的进一步分析中**最小化**它们对整体结果的影响！
 
 数据分析的初步步骤是确定其**集中趋势**，可以通过均值、中位数或众数来评估。这一测量有助于理解大多数数据点的位置，并作为比较的参考点。此外，通过确定值之间的**差距**或**离散程度**，使用**范围**、**方差**或**标准差**等测量指标来识别**值的离散程度**也至关重要。这种分析提供了对数据集中变异性的有价值见解。
 
@@ -821,7 +821,7 @@ println!("{:?}", s.sample_n(4, true, true, Some(9999)));
 
 ## **集中趋势的测量**
 
-![](../Images/130b02dbc258924711b90447b9131d4c.png)
+![](img/130b02dbc258924711b90447b9131d4c.png)
 
 图片由 [Stephen Phillips - Hostreviews.co.uk](https://unsplash.com/@hostreviews?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -831,13 +831,13 @@ println!("{:?}", s.sample_n(4, true, true, Some(9999)));
 
 ## 均值
 
-**均值**是一个常用的统计函数，用于以易于解释的方式**总结数据**。它让我们洞察数据集的**集中趋势**，无论是对于整个总体还是**一个观察样本**。符号**μ**（发音为“**mu**”）代表总体均值，而**𝑥𝑥̅**则表示样本平均值。在数学术语中，均值的公式是**Σxi/n**。这里，**Σ**（希腊字母大写 sigma）表示从**1到n**的求和，其中**n**是观察数。整体变量用大写字母表示，而具体的观察值用小写字母表示。计算这个值涉及到**将所有值相加并除以它们的总数**，就是这么简单！例如，如果我们有数字**0, 4, 3, 2, 和 5**，它们的**总和**（**14**）除以**五**大约等于二点八（**2.8**）。
+**均值**是一个常用的统计函数，用于以易于解释的方式**总结数据**。它让我们洞察数据集的**集中趋势**，无论是对于整个总体还是**一个观察样本**。符号**μ**（发音为“**mu**”）代表总体均值，而**𝑥𝑥̅**则表示样本平均值。在数学术语中，均值的公式是**Σxi/n**。这里，**Σ**（希腊字母大写 sigma）表示从**1 到 n**的求和，其中**n**是观察数。整体变量用大写字母表示，而具体的观察值用小写字母表示。计算这个值涉及到**将所有值相加并除以它们的总数**，就是这么简单！例如，如果我们有数字**0, 4, 3, 2, 和 5**，它们的**总和**（**14**）除以**五**大约等于二点八（**2.8**）。
 
 然而，必须认识到**异常值**可能会显著影响这个度量的准确性。正如你所知，异常值是由完全**不同的过程**生成的，与分布中的其他值相比，可能会**偏斜**结果；例如，一个值远大于或远小于其他值，可能会分别拉高或拉低平均值，从而使其成为不准确的代表数据集的值。
 
-因此，在分析数据时，意识到异常值的存在至关重要。[**正如在之前的一篇文章中讨论的**](/17-clustering-algorithms-used-in-data-science-mining-49dbfa5bf69a)，一种考虑异常值的方法是使用中位数代替均值来测量集中趋势，因为中位数对这些异常值的敏感度较低，同时仍能准确表示数据集中的中间值，即使在这些异常值对整体结果的影响下也是如此。
+因此，在分析数据时，意识到异常值的存在至关重要。**正如在之前的一篇文章中讨论的**，一种考虑异常值的方法是使用中位数代替均值来测量集中趋势，因为中位数对这些异常值的敏感度较低，同时仍能准确表示数据集中的中间值，即使在这些异常值对整体结果的影响下也是如此。
 
-在使用Polars处理数据集时，遇到缺失或空值并不少见。在这种情况下，`[**均值**](https://docs.rs/polars/latest/polars/prelude/trait.SeriesTrait.html#method.mean)`函数可能会非常有用。然而，由于在被分析的数字集合中可能存在缺失条目，因此该函数返回一个其类型标记为`**Option<f64>**`的可选值。本质上，这意味着返回值可能是空值，因此需要用户谨慎处理。
+在使用 Polars 处理数据集时，遇到缺失或空值并不少见。在这种情况下，`[**均值**](https://docs.rs/polars/latest/polars/prelude/trait.SeriesTrait.html#method.mean)`函数可能会非常有用。然而，由于在被分析的数字集合中可能存在缺失条目，因此该函数返回一个其类型标记为`**Option<f64>**`的可选值。本质上，这意味着返回值可能是空值，因此需要用户谨慎处理。
 
 ```py
 let s = Series::new("Measurements", &[-1.01,  0.86, -4.60, 3.98,  0.53, -7.04, 3.98,  0.53, -7.04]);
@@ -855,7 +855,7 @@ println!("{:?}", s.mean().unwrap());
 
 在分析数据时，选择适当的集中趋势度量是至关重要的。**均值**通常被青睐，因为它考虑了所有数据点，并提供了对**平均值**的合理近似。然而，**异常值**可能会轻易影响均值的准确性，并**扭曲**整体结果。这时，使用**中位数**变得尤为重要。
 
-**中位数**是一个在统计学中强大的函数，它准确地代表了数据的集中趋势，即使在存在异常值的情况下也是如此。从**有序列表**中选择**中间值**提供了一个精确且可靠的分析测量。在值数量为偶数的情况下，取两个中间值的平均值可以确保准确性。这使得它在处理具有极端或偏斜值的数据集时特别有用，例如[**美国的收入分布**](https://www.statista.com/statistics/203183/percentage-distribution-of-household-income-in-the-us/)。**前11.6%**的高收入者收入显著高于大多数美国人，这可能会扭曲均值。
+**中位数**是一个在统计学中强大的函数，它准确地代表了数据的集中趋势，即使在存在异常值的情况下也是如此。从**有序列表**中选择**中间值**提供了一个精确且可靠的分析测量。在值数量为偶数的情况下，取两个中间值的平均值可以确保准确性。这使得它在处理具有极端或偏斜值的数据集时特别有用，例如[**美国的收入分布**](https://www.statista.com/statistics/203183/percentage-distribution-of-household-income-in-the-us/)。**前 11.6%**的高收入者收入显著高于大多数美国人，这可能会扭曲均值。
 
 然而，通过使用**中位数**计算，我们可以获得更准确的结果，因为它代表了将**一半**（**50%**）高收入者与低收入者分开的数据点，为我们提供了对现实经济趋势的宝贵见解，而不受极端富裕人士收入所带来的统计异常的影响！
 
@@ -905,7 +905,7 @@ println!("{:?}", s.mode().unwrap());
 
 ## 离散程度度量
 
-![](../Images/0d4b7c074818d57a17f1a4fae87ed608.png)
+![](img/0d4b7c074818d57a17f1a4fae87ed608.png)
 
 [Martin Sanchez](https://unsplash.com/@martinsanchez?utm_source=medium&utm_medium=referral) 提供的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -915,7 +915,7 @@ println!("{:?}", s.mode().unwrap());
 
 ## 四分位数范围
 
-![](../Images/b03f54329f6c4a94e5b14dd65a2537ed.png)
+![](img/b03f54329f6c4a94e5b14dd65a2537ed.png)
 
 箱形图（图片来源：作者）
 
@@ -942,11 +942,11 @@ println!("{:?}", s.quantile_as_series(0.75, QuantileInterpolOptions::Nearest).un
 
 在本节中，我们关注了 Polars 库提供的最基础数据类型之一——**Series**。你已经了解了 Series 的创建、索引等技巧，其中强大的 **get** 和 **slice** 操作已经对你开放，同时也掌握了 Series 创建的相关知识。
 
-诚然，**Series** 提供了一个优秀的**一维数据**管理解决方案，但真正的挑战在于多维数据。这就是**DataFrames** 发挥作用的地方。在第 2 部分，我们将简要介绍 **DataFrames**——这个在众多领域中被广泛有效使用的多维数据结构。
+诚然，**Series** 提供了一个优秀的**一维数据**管理解决方案，但真正的挑战在于多维数据。这就是**DataFrames** 发挥作用的地方。在第二部分，我们将简要介绍 **DataFrames**——这个在众多领域中被广泛有效使用的多维数据结构。
 
 ## 结论
 
-![](../Images/7cde1be2f7dd1a7aee2afb38359a3d48.png)
+![](img/7cde1be2f7dd1a7aee2afb38359a3d48.png)
 
 图片由[Saurav Mahto](https://unsplash.com/@sauravmahto?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 
@@ -966,7 +966,7 @@ println!("{:?}", s.quantile_as_series(0.75, QuantileInterpolOptions::Nearest).un
 
 ## 结束语
 
-![](../Images/c732ae653e11e63222cc5fd9bc49b0e4.png)
+![](img/c732ae653e11e63222cc5fd9bc49b0e4.png)
 
 图片由[Aaron Burden](https://unsplash.com/@aaronburden?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 

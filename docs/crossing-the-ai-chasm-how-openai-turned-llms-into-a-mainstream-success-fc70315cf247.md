@@ -1,14 +1,14 @@
-# 跨越人工智能鸿沟：OpenAI如何将LLMs转变为主流成功
+# 跨越人工智能鸿沟：OpenAI 如何将 LLMs 转变为主流成功
 
-> 原文：[https://towardsdatascience.com/crossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247?source=collection_archive---------2-----------------------#2023-10-19](https://towardsdatascience.com/crossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247?source=collection_archive---------2-----------------------#2023-10-19)
+> 原文：[`towardsdatascience.com/crossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247?source=collection_archive---------2-----------------------#2023-10-19`](https://towardsdatascience.com/crossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247?source=collection_archive---------2-----------------------#2023-10-19)
 
-## 以及为什么LLMOps将会和MLOps遭遇相同的命运
+## 以及为什么 LLMOps 将会和 MLOps 遭遇相同的命运
 
-[](https://medium.com/@clemensm?source=post_page-----fc70315cf247--------------------------------)[![克莱门斯·梅瓦尔德](../Images/c1c9277335dc2a8e238736be824f7fdd.png)](https://medium.com/@clemensm?source=post_page-----fc70315cf247--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fc70315cf247--------------------------------)[![数据科学走向](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fc70315cf247--------------------------------) [克莱门斯·梅瓦尔德](https://medium.com/@clemensm?source=post_page-----fc70315cf247--------------------------------)
+[](https://medium.com/@clemensm?source=post_page-----fc70315cf247--------------------------------)![克莱门斯·梅瓦尔德](https://medium.com/@clemensm?source=post_page-----fc70315cf247--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fc70315cf247--------------------------------)![数据科学走向](https://towardsdatascience.com/?source=post_page-----fc70315cf247--------------------------------) [克莱门斯·梅瓦尔德](https://medium.com/@clemensm?source=post_page-----fc70315cf247--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3214e56806b6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcrossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247&user=Clemens+Mewald&userId=3214e56806b6&source=post_page-3214e56806b6----fc70315cf247---------------------post_header-----------) 发表在 [数据科学走向](https://towardsdatascience.com/?source=post_page-----fc70315cf247--------------------------------) ·15分钟阅读·2023年10月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffc70315cf247&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcrossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247&user=Clemens+Mewald&userId=3214e56806b6&source=-----fc70315cf247---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3214e56806b6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcrossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247&user=Clemens+Mewald&userId=3214e56806b6&source=post_page-3214e56806b6----fc70315cf247---------------------post_header-----------) 发表在 [数据科学走向](https://towardsdatascience.com/?source=post_page-----fc70315cf247--------------------------------) ·15 分钟阅读·2023 年 10 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffc70315cf247&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcrossing-the-ai-chasm-how-openai-turned-llms-into-a-mainstream-success-fc70315cf247&user=Clemens+Mewald&userId=3214e56806b6&source=-----fc70315cf247---------------------clap_footer-----------)
 
 --
 
@@ -22,15 +22,15 @@
 
 根据埃弗雷特·罗杰斯的“[创新扩散](https://en.wikipedia.org/wiki/Diffusion_of_innovations)”，创新产品由具有不同特征的不同采纳者逐步采纳。创新者是最早尝试新产品的，他们愿意冒风险且对失败有较高的容忍度。最后采纳的则是那些对变化持反感态度的滞后者。著名的钟形曲线图展示了每个类别中采纳者的百分比，而累积采纳图类似于创新市场份额随时间变化的熟悉的“s 曲线”模式。
 
-![](../Images/8cc97343867deec8d612ce0f44ce2ce9.png)
+![](img/8cc97343867deec8d612ce0f44ce2ce9.png)
 
 作者提供的图像（修改自 [来源](https://en.wikipedia.org/wiki/Diffusion_of_innovations#/media/File:Diffusion_of_ideas.svg)）
 
-基本思想是，每个群体都受到前面群体的信号和行为的影响，依赖于社会证明来决定是否采纳新产品。这是一个被广泛理解和实证记录的现象，从窗式空调到iPhone都有所观察。
+基本思想是，每个群体都受到前面群体的信号和行为的影响，依赖于社会证明来决定是否采纳新产品。这是一个被广泛理解和实证记录的现象，从窗式空调到 iPhone 都有所观察。
 
 “裂谷”是杰弗里·A·摩尔在其著作“[跨越裂谷](https://en.wikipedia.org/wiki/Crossing_the_Chasm)”中推广的一个概念，该理论基于罗杰斯的理论。摩尔认为早期市场和主流市场之间的差异过大，大多数产品在尝试跨越这一“裂谷”时失败，这在科技初创公司中是相当常见的失败模式。
 
-![](../Images/102e0ec7fd7a53915f746129affc28f8.png)
+![](img/102e0ec7fd7a53915f746129affc28f8.png)
 
 作者提供的图像（修改自 [来源](https://en.wikipedia.org/wiki/Crossing_the_Chasm#/media/File:Technology-Adoption-Lifecycle.png)）
 
@@ -38,7 +38,7 @@
 
 摩尔提供了几种弥合鸿沟的建议，我只部分同意。根据他自己的说法，他的书主要将鸿沟视为“*市场发展问题*”，并专注于“*穿越鸿沟的市场策略和战术*”。他确实涉及了“整体产品管理”的概念，但根据他对西奥多·列维特的《市场营销想象力》的解读，这一概念仅限于通过“服务和附加产品”弥合市场信息和产品真实性之间的差距。他并未讨论产品的实际演变。实际上，创新（即核心产品）被视为一个常量。
 
-考虑到软件（特别是开发者工具）的具体属性，我提出了两种策略（“进化”和“跳过”）来避免鸿沟，并假设它们的应用如何助推了LLMs的快速崛起。
+考虑到软件（特别是开发者工具）的具体属性，我提出了两种策略（“进化”和“跳过”）来避免鸿沟，并假设它们的应用如何助推了 LLMs 的快速崛起。
 
 # 避免鸿沟的两种以产品为中心的方法
 
@@ -46,11 +46,11 @@
 
 产品是常量的限制，而“整体产品”的所有其他方面（如信息传递、分销、定价）随着不同采纳群体的变化而改变，这主要受到物理产品的影响。如果你从事生产和销售小部件的业务，更改供应链或重新配置工厂并非易事。然而，这对于纯软件产品而言完全是另一回事。不进化你的软件产品几乎总是失败的秘诀。
 
-从大多数软件初创公司的起步方式来看，进化的必要性应当显而易见。开发者工具（特别是在AI领域）通常是在特定领域的专家用户基础中诞生和成长的。令人不惊讶的是，这些早期用户通常是创新者，因此并不代表更广泛的市场。创始人很容易将所有时间和精力投入到这一细分市场，根据他们的反馈调整产品。不幸的是，商业成功很少出现在这些早期群体中。创新者非常成熟，通常更倾向于自建而非购买。即便他们决定购买，他们也不会代表足够大的市场。
+从大多数软件初创公司的起步方式来看，进化的必要性应当显而易见。开发者工具（特别是在 AI 领域）通常是在特定领域的专家用户基础中诞生和成长的。令人不惊讶的是，这些早期用户通常是创新者，因此并不代表更广泛的市场。创始人很容易将所有时间和精力投入到这一细分市场，根据他们的反馈调整产品。不幸的是，商业成功很少出现在这些早期群体中。创新者非常成熟，通常更倾向于自建而非购买。即便他们决定购买，他们也不会代表足够大的市场。
 
 解决这个问题的一种方法是随着时间的推移逐步演变产品以适应不同的目标受众。对于设计良好的开发工具，这意味着引入新的抽象层和/或支持更广泛使用的语言。以我之前的雇主为例，Spark 的持续成功（至少在我看来）部分由于产品界面不断被简化，以吸引更广泛的用户（敢说是早期多数人？）。Spark 最初以 RDD（弹性分布式数据集）和 Scala 作为主要编程语言开始。然后它将语言支持扩展到 Python，通过 PySpark（吸引了更多的软件工程师）并引入了更简单的 API，如 DataFrame，以及 SparkSQL（吸引了 SQL 分析师）。最近，Spark 添加了与 Pandas 兼容的 API（吸引了数据科学家），甚至引入了一个“[英语 SDK](https://www.databricks.com/blog/introducing-english-new-programming-language-apache-spark)”使用 LLMs（吸引了，嗯，任何懂英语的人）。如果 Spark 没有以这种方式演变，它将停留在那些懂得用 Scala 编写复杂 MapReduce 程序的创新者领域。
 
-![](../Images/f080c0490cd66af36ad536810a60a344.png)
+![](img/f080c0490cd66af36ad536810a60a344.png)
 
 作者提供的图片
 
@@ -62,7 +62,7 @@
 
 如前所述，这在硬件中尤为重要，因为产品迭代较慢、成本较高，因此核心产品无法轻易演变。iPhone 是一个很好的例子，它经常被创新者批评（即使是最近的 iPhone 15 和其[“令人失望”的 USB-C 端口](https://www.tomsguide.com/opinion/iphone-15-usb-c-is-a-big-disappointment-heres-why)），但却在对技术细节不太关心的早期多数人中取得了迅速的成功。事实上，苹果公司通过他们的宣传不断向行业展示这种策略的典范。最著名的例子可能就是“你口袋里的 1,000 首歌”广告，这个广告针对的是早期多数人，而不是那些关心技术规格的创新者。
 
-![](../Images/746b6dc4d7654e1b34bdfe98c1c58809.png)
+![](img/746b6dc4d7654e1b34bdfe98c1c58809.png)
 
 作者提供的图片
 
@@ -72,7 +72,7 @@
 
 我已经见过足够多的“开源项目转型初创公司”，对此有了一定程度的“模式识别”能力，以识别常见的失败模式。这些初创公司在通过 GitHub stars 或 PyPI 下载量来衡量的增长采纳中获得早期成功（和资金）。然后，他们悲剧性地遵循类似的路径，有时即使有一位“有过成功经验”的创始人（因为他们实际上并不理解他们以前的公司为何成功）。
 
-![](../Images/c455f481591fed01b8dacbed5b0a1cea.png)
+![](img/c455f481591fed01b8dacbed5b0a1cea.png)
 
 作者提供的图片
 
@@ -86,7 +86,7 @@
 
 我所提出的策略是一种混合方法，它仍然允许在创新者的专注用户基础上快速迭代，但通过明确在产品定义中关注早期大众，承认早期市场和主流市场的根本差异。
 
-![](../Images/c858f11d92750e88e2ed03b2441a8acf.png)
+![](img/c858f11d92750e88e2ed03b2441a8acf.png)
 
 通过开源证明与创新者的早期成功，并不一定与找到早期大众的商业可行性相悖，只要你认识到他们需要不同的产品。具体来说，我建议：
 
@@ -108,31 +108,31 @@
 
 1.  **在价值链中更高的、垂直化的、更专注的产品。** Stripe 就是一个很好的例子，他们最初从一个开源支付处理库开始，然后通过像 Checkout（网站的完整支付表单）或 Terminal（销售点结账终端）这样的产品取得成功。
 
-# MLOps如何未能演变而LLM跳过了鸿沟
+# MLOps 如何未能演变而 LLM 跳过了鸿沟
 
-## MLOps困在早期市场
+## MLOps 困在早期市场
 
-关于Spark演变的类似故事，不能套用到ML上。MLOps的堆栈与几年前基本相同，市场的希望在于越来越多的工程师将学会使用它。
+关于 Spark 演变的类似故事，不能套用到 ML 上。MLOps 的堆栈与几年前基本相同，市场的希望在于越来越多的工程师将学会使用它。
 
-不再回忆[我们如何到达这里](https://medium.com/towards-data-science/the-problem-with-ai-developer-tools-for-enterprises-and-what-ikea-has-to-do-with-it-b26277841661)，我只是简要总结一下我对MLOps市场现状的看法：
+不再回忆[我们如何到达这里](https://medium.com/towards-data-science/the-problem-with-ai-developer-tools-for-enterprises-and-what-ikea-has-to-do-with-it-b26277841661)，我只是简要总结一下我对 MLOps 市场现状的看法：
 
-+   MLOps市场尚未形成“主导设计”，因此，你会发现每一个“MLOps平台”在明显和微妙的方面都各不相同。
++   MLOps 市场尚未形成“主导设计”，因此，你会发现每一个“MLOps 平台”在明显和微妙的方面都各不相同。
 
-+   从系统层面来看，MLOps市场没有产生更简单的“形式因素”或抽象层级，因此仍然过于复杂，需要几个专业角色（数据工程师、数据科学家、ML工程师等），这些角色仅在最先进的科技公司中普遍存在。
++   从系统层面来看，MLOps 市场没有产生更简单的“形式因素”或抽象层级，因此仍然过于复杂，需要几个专业角色（数据工程师、数据科学家、ML 工程师等），这些角色仅在最先进的科技公司中普遍存在。
 
 +   **能够**使用这项技术的观众，即创新者和早期采纳者，更愿意保持前沿，使用开源工具而非支付供应商费用。
 
-+   通常，愿意支付供应商费用的观众只是默认选择主要云服务提供商的产品。云提供商免费提供“ML平台”层，并满足于通过存储和计算来收取收入。
++   通常，愿意支付供应商费用的观众只是默认选择主要云服务提供商的产品。云提供商免费提供“ML 平台”层，并满足于通过存储和计算来收取收入。
 
-+   由于云服务供应商尚未明确货币化MLOps，这一市场的价值捕捉极其有限。
++   由于云服务供应商尚未明确货币化 MLOps，这一市场的价值捕捉极其有限。
 
-总之，MLOps已经陷入了鸿沟，且没有迹象显示它会在另一侧重新出现。
+总之，MLOps 已经陷入了鸿沟，且没有迹象显示它会在另一侧重新出现。
 
-## LLM的早期多数吸引
+## LLM 的早期多数吸引
 
-进入LLM。OpenAI 据说已经[超过了13亿美元的年度经常性收入](https://www.theinformation.com/articles/openais-revenue-crossed-1-3-billion-annualized-rate-ceo-tells-staff)，并预计将继续以快速的速度增长，这一点MLOps初创公司无法做到。实际上，你可能将前10名MLOps初创公司的收入加起来也未必接近。请记住，大多数云提供商实际上并不货币化这一层，除非你想从事以商品价格提供云基础设施的业务，否则它们的“ML”收入并不算数。
+进入 LLM。OpenAI 据说已经[超过了 13 亿美元的年度经常性收入](https://www.theinformation.com/articles/openais-revenue-crossed-1-3-billion-annualized-rate-ceo-tells-staff)，并预计将继续以快速的速度增长，这一点 MLOps 初创公司无法做到。实际上，你可能将前 10 名 MLOps 初创公司的收入加起来也未必接近。请记住，大多数云提供商实际上并不货币化这一层，除非你想从事以商品价格提供云基础设施的业务，否则它们的“ML”收入并不算数。
 
-这引出了一个问题：为什么LLM能如此迅速地获得主流成功？我认为它们成功地跳过了两个截然不同的领域的鸿沟。
+这引出了一个问题：为什么 LLM 能如此迅速地获得主流成功？我认为它们成功地跳过了两个截然不同的领域的鸿沟。
 
 ## 跳过开发者领域的鸿沟
 
@@ -140,7 +140,7 @@
 
 另一方面，“生成型”语言模型对于各种用例“直接有效”，使得任何能够进行 API 调用的人都可以将 AI 应用于他们的产品或问题。几乎一夜之间，LLMs 通过赋予每个软件工程师 AI 超能力解决了“应用 AI”领域的人才短缺问题。关键是，同一个 LLM 可以生成诗歌、编写代码、将自然语言问题转换为 SQL 查询，或通过各种标准化测试。这要么是“开箱即用”（零样本），要么是通过给模型提供一些你想解决的问题的示例（少样本），并扩展到各种模态，而不仅仅是文本。
 
-![](../Images/09a7c06b36a5393da65ce424d9f69571.png)
+![](img/09a7c06b36a5393da65ce424d9f69571.png)
 
 图片由作者提供
 
@@ -154,21 +154,21 @@
 
 OpenAI 涉足于两个截然不同的领域：如上所述的开发者领域通过 API 和专用计算能力服务。而 ChatGPT 及其移动应用则非常属于“消费者”产品。ChatGPT 以在`5 days`内达到 1M 用户的速度而闻名，虽然没有 OpenAI 收入数据的官方细分，但有估计认为来自[移动应用的收入为每月 $3M](https://appfigures.com/resources/insights/20231006?f=2)。这听起来不像是一个缓慢增长的早期市场产品，对吧？
 
-尽管名字听起来有些术语化（GPT代表生成预训练变换器），但ChatGPT直接跳过了早期大多数用户，主要是由于其友好且易于使用的形式。无论是记者、教师还是学生，都可以免费访问并立即体验其价值。如果OpenAI仅仅发布了一个工程师可以通过REST API调用的模型，可能不会导致主流的广泛采用。
+尽管名字听起来有些术语化（GPT 代表生成预训练变换器），但 ChatGPT 直接跳过了早期大多数用户，主要是由于其友好且易于使用的形式。无论是记者、教师还是学生，都可以免费访问并立即体验其价值。如果 OpenAI 仅仅发布了一个工程师可以通过 REST API 调用的模型，可能不会导致主流的广泛采用。
 
-大多数高管会告诉你，将焦点分散在两个截然不同的领域通常不是个好主意。然而，我认为ChatGPT在消费者中的广泛成功对开发者领域的需求推动起到了重要作用。事实证明，开发者和企业买家也是人。他们阅读新闻，关注趋势，并尝试消费产品。OpenAI，无论是有意还是无意，都在这方面受益匪浅。
+大多数高管会告诉你，将焦点分散在两个截然不同的领域通常不是个好主意。然而，我认为 ChatGPT 在消费者中的广泛成功对开发者领域的需求推动起到了重要作用。事实证明，开发者和企业买家也是人。他们阅读新闻，关注趋势，并尝试消费产品。OpenAI，无论是有意还是无意，都在这方面受益匪浅。
 
-+   最明显的是，意识和品牌认知对任何业务都至关重要。虽然OpenAI和LLMs在AI圈子里已经相当有名，但ChatGPT使其成为了更广泛开发者群体中的一个品牌名称。
++   最明显的是，意识和品牌认知对任何业务都至关重要。虽然 OpenAI 和 LLMs 在 AI 圈子里已经相当有名，但 ChatGPT 使其成为了更广泛开发者群体中的一个品牌名称。
 
-+   “鸿沟”存在的原因之一是早期大多数用户通常是风险规避型的，不信任来自创新者的信号。克服这一点的一种方法是为他们提供一种简单的方式来体验产品。ChatGPT为早期大多数用户中的非技术决策者提供了完美的“免费试用”体验。
++   “鸿沟”存在的原因之一是早期大多数用户通常是风险规避型的，不信任来自创新者的信号。克服这一点的一种方法是为他们提供一种简单的方式来体验产品。ChatGPT 为早期大多数用户中的非技术决策者提供了完美的“免费试用”体验。
 
-+   像OpenAI这样实现收入增长的“典型”方式是聘请企业销售团队。事实证明，传统的销售主导增长（SLG）模式从经过验证的产品主导增长（PLG）方法中受益匪浅，例如无缝访问产品体验。企业买家越来越期望“[*在承诺大合同之前先看到并体验产品的价值*](https://www.mckinsey.com/industries/technology-media-and-telecommunications/our-insights/from-product-led-growth-to-product-led-sales-beyond-the-plg-hype)”。
++   像 OpenAI 这样实现收入增长的“典型”方式是聘请企业销售团队。事实证明，传统的销售主导增长（SLG）模式从经过验证的产品主导增长（PLG）方法中受益匪浅，例如无缝访问产品体验。企业买家越来越期望“[*在承诺大合同之前先看到并体验产品的价值*](https://www.mckinsey.com/industries/technology-media-and-telecommunications/our-insights/from-product-led-growth-to-product-led-sales-beyond-the-plg-hype)”。
 
 # 结论
 
-我开始撰写这篇文章，作为我关于[开发者工具](https://medium.com/thelaunchpad/your-deep-learning-tools-for-enterprises-startup-will-fail-94fb70683834)的[前文](https://medium.com/towards-data-science/the-problem-with-ai-developer-tools-for-enterprises-and-what-ikea-has-to-do-with-it-b26277841661)的自然续集，因为我看到MLOps的故事在LLMOps中重演。但正如我写到LLMs如何跳过鸿沟，我意识到这些经验可能更广泛适用。
+我开始撰写这篇文章，作为我关于[开发者工具](https://medium.com/thelaunchpad/your-deep-learning-tools-for-enterprises-startup-will-fail-94fb70683834)的[前文](https://medium.com/towards-data-science/the-problem-with-ai-developer-tools-for-enterprises-and-what-ikea-has-to-do-with-it-b26277841661)的自然续集，因为我看到 MLOps 的故事在 LLMOps 中重演。但正如我写到 LLMs 如何跳过鸿沟，我意识到这些经验可能更广泛适用。
 
-**对于像OpenAI、Anthropic等LLM提供商**：我不确定这些公司是否偶然发现了这种策略，但如果有意应用，确实有很多关于如何改进产品开发和市场推广的经验。然而，如果你处于快速增长阶段，优化的时间和需求非常有限。
+**对于像 OpenAI、Anthropic 等 LLM 提供商**：我不确定这些公司是否偶然发现了这种策略，但如果有意应用，确实有很多关于如何改进产品开发和市场推广的经验。然而，如果你处于快速增长阶段，优化的时间和需求非常有限。
 
 **对于 LLMOps 生态系统中的任何人**：我邀请你阅读我之前关于 ML 基础设施的文章，你会看到为什么我认为在这一层面上提取的价值不多。此外，我认为很少有情况真正需要微调 LLM，但其他人已经 [写过](https://www.tidepool.so/2023/08/17/why-you-probably-dont-need-to-fine-tune-an-llm/) [很多](https://www.anyscale.com/blog/fine-tuning-is-for-form-not-facts)。
 

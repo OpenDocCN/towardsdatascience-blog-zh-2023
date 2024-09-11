@@ -1,42 +1,42 @@
 # 图着色问题：精确解和启发式解
 
-> 原文：[https://towardsdatascience.com/the-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab?source=collection_archive---------3-----------------------#2023-11-13](https://towardsdatascience.com/the-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab?source=collection_archive---------3-----------------------#2023-11-13)
+> 原文：[`towardsdatascience.com/the-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab?source=collection_archive---------3-----------------------#2023-11-13`](https://towardsdatascience.com/the-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab?source=collection_archive---------3-----------------------#2023-11-13)
 
 ## 通过自定义构造启发式方法和整数规划在 Python 中探索经典的离散优化问题
 
-[](https://medium.com/@bruscalia12?source=post_page-----169dce4d88ab--------------------------------)[![Bruno Scalia C. F. Leite](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----169dce4d88ab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----169dce4d88ab--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----169dce4d88ab--------------------------------) [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----169dce4d88ab--------------------------------)
+[](https://medium.com/@bruscalia12?source=post_page-----169dce4d88ab--------------------------------)![Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----169dce4d88ab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----169dce4d88ab--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----169dce4d88ab--------------------------------) [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----169dce4d88ab--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----169dce4d88ab---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----169dce4d88ab--------------------------------) ·10分钟阅读·2023年11月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F169dce4d88ab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----169dce4d88ab---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----169dce4d88ab---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----169dce4d88ab--------------------------------) ·10 分钟阅读·2023 年 11 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F169dce4d88ab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----169dce4d88ab---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F169dce4d88ab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab&source=-----169dce4d88ab---------------------bookmark_footer-----------)![](../Images/4509b47d7da81cc86ecf9f75d39735f1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F169dce4d88ab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-graph-coloring-problem-exact-and-heuristic-solutions-169dce4d88ab&source=-----169dce4d88ab---------------------bookmark_footer-----------)![](img/4509b47d7da81cc86ecf9f75d39735f1.png)
 
 32 节点实例的图着色启发式解。（图片由作者提供）。
 
 图着色理论在离散数学中占据核心地位。它出现在许多看似与着色无关的地方。它处理的是将一组对象根据某些规则划分为类别的基本问题（Jensen & Toft, 1995）。
 
-我们可以将问题总结如下：给定一个无向图*G*(*V*, *E*)，为每个节点（顶点）分配颜色，使得相邻节点不共享相同颜色，并且使用的颜色数量最小化。尽管问题陈述简洁明了，但这个问题以其计算复杂性而臭名昭著，属于NP难类问题。
+我们可以将问题总结如下：给定一个无向图*G*(*V*, *E*)，为每个节点（顶点）分配颜色，使得相邻节点不共享相同颜色，并且使用的颜色数量最小化。尽管问题陈述简洁明了，但这个问题以其计算复杂性而臭名昭著，属于 NP 难类问题。
 
 由于其组合复杂性，即使使用最佳可用求解器，整数线性规划（ILP）的精确方法可能无法解决大型实例。在这种情况下，启发式算法和元启发式算法可以是有趣的替代方法。虽然无法证明最优性，但这些方法可以提供快速和高质量的解决方案。
 
-在本文中，我们将使用构造启发式算法*DSatur*（Brélaz, 1979）和整数线性规划模型使用*pyomo*（Bynum等，2021），使用HiGHS求解器解决图着色问题。至于其他故事，你可以在我的[code repository](https://github.com/bruscalia/optimization-demo-files/tree/1fa7a3825421d0b166195d890f2629c576cfbfda/graph-coloring)中找到完整的代码。
+在本文中，我们将使用构造启发式算法*DSatur*（Brélaz, 1979）和整数线性规划模型使用*pyomo*（Bynum 等，2021），使用 HiGHS 求解器解决图着色问题。至于其他故事，你可以在我的[code repository](https://github.com/bruscalia/optimization-demo-files/tree/1fa7a3825421d0b166195d890f2629c576cfbfda/graph-coloring)中找到完整的代码。
 
 如果您还不熟悉*线性规划*，我建议您在继续之前阅读我以前的文章以获得基础知识。
 
-[](/linear-programming-theory-and-applications-c67600591612?source=post_page-----169dce4d88ab--------------------------------) [## 线性规划：理论与应用
+[](/linear-programming-theory-and-applications-c67600591612?source=post_page-----169dce4d88ab--------------------------------) ## 线性规划：理论与应用
 
-### Python中的线性优化的主要概念和实现
+### Python 中的线性优化的主要概念和实现
 
-towardsdatascience.com](/linear-programming-theory-and-applications-c67600591612?source=post_page-----169dce4d88ab--------------------------------)
+towardsdatascience.com
 
 现在让我们动手创建像这样的令人惊叹的解决方案。
 
-![](../Images/e6311f0269b445fe63d866bd5e512c61.png)
+![](img/e6311f0269b445fe63d866bd5e512c61.png)
 
-32个节点实例的图着色启发式解决方案。（作者动画）
+32 个节点实例的图着色启发式解决方案。（作者动画）
 
 # 构造启发式算法 — DSatur
 
@@ -68,13 +68,13 @@ dsatur(N)
 
 函数`assign_color`应该验证最低索引可用的颜色，如果当前集合中的颜色不可行，则包含一个新的备选颜色并增加集合。
 
-让我们把这部分代码写成Python代码。首先是包的导入。我们的启发式算法将用纯Python编写，只需导入一些类型提示。
+让我们把这部分代码写成 Python 代码。首先是包的导入。我们的启发式算法将用纯 Python 编写，只需导入一些类型提示。
 
 ```py
 from typing import List, Tuple
 ```
 
-现在，让我们定义我们的基本建模元素：*Colors*和*Nodes*。类*Color*定义为一个可变的占位符，用于相应实例的索引。在Python中，这可能是内存高效的，因为多个变量可以引用相同的内存位置。每次用给定颜色给新节点上色时，都应该调用`add_node`方法。
+现在，让我们定义我们的基本建模元素：*Colors*和*Nodes*。类*Color*定义为一个可变的占位符，用于相应实例的索引。在 Python 中，这可能是内存高效的，因为多个变量可以引用相同的内存位置。每次用给定颜色给新节点上色时，都应该调用`add_node`方法。
 
 ```py
 class Color:
@@ -206,15 +206,15 @@ dsatur.solve()
 
 创建介绍中结果的有趣可视化的代码可能过于冗长，不便在这里包含，但你可以在我的[代码库](https://github.com/bruscalia/optimization-demo-files/tree/1fa7a3825421d0b166195d890f2629c576cfbfda/graph-coloring)中找到。它可以传达处理多个节点时难度的总体概念…
 
-![](../Images/e51268bd9c6951ed7eb7116e12f481c0.png)
+![](img/e51268bd9c6951ed7eb7116e12f481c0.png)
 
-图着色启发式解决方案针对100个节点实例。（作者动画）。
+图着色启发式解决方案针对 100 个节点实例。（作者动画）。
 
 现在让我们看看如何通过精确方法处理它。
 
 # 整数线性规划
 
-为了优化我们使用启发式方法得到的解决方案，并尝试证明解决方案的最优性，让我们将图着色问题表述为一个整数线性规划模型。请记住，尽管如此，它可能无法处理大型实例。本节介绍的模型以及其他确切算法均在Lewis（2021）的*第三章*中介绍。
+为了优化我们使用启发式方法得到的解决方案，并尝试证明解决方案的最优性，让我们将图着色问题表述为一个整数线性规划模型。请记住，尽管如此，它可能无法处理大型实例。本节介绍的模型以及其他确切算法均在 Lewis（2021）的*第三章*中介绍。
 
 让我们定义在这种方法中考虑的*Sets*：
 
@@ -244,7 +244,7 @@ dsatur.solve()
 
 最终，我们的目标是最小化使用的总颜色数，这是*y*的总和。总结我们有以下方程。
 
-![](../Images/3a8f414140d6685082f65ad6ca27e856.png)
+![](img/3a8f414140d6685082f65ad6ca27e856.png)
 
 图着色整数规划模型。（作者提供的图片）。
 
@@ -254,7 +254,7 @@ dsatur.solve()
 import pyomo.environ as pyo
 ```
 
-*pyomo*中建模问题有两种方法：*抽象*和*具体*模型。在第一种方法中，问题的代数表达式在提供某些数据值之前定义，而在第二种方法中，模型实例在其元素定义后立即创建。您可以在[库文档](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)或Bynum等人（2021）的书中了解更多关于这些方法的信息。在本文中，我们将采用*具体*模型的形式。
+*pyomo*中建模问题有两种方法：*抽象*和*具体*模型。在第一种方法中，问题的代数表达式在提供某些数据值之前定义，而在第二种方法中，模型实例在其元素定义后立即创建。您可以在[库文档](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)或 Bynum 等人（2021）的书中了解更多关于这些方法的信息。在本文中，我们将采用*具体*模型的形式。
 
 ```py
 model = pyo.ConcreteModel()
@@ -321,7 +321,7 @@ def obj(model):
 model.obj = pyo.Objective(rule=obj)
 ```
 
-我们的模型已经准备好解决了！为此，我使用了HiGHS持久求解器，该求解器在*pyomo*中可用，前提是你的Python环境中还安装了*highspy*。
+我们的模型已经准备好解决了！为此，我使用了 HiGHS 持久求解器，该求解器在*pyomo*中可用，前提是你的 Python 环境中还安装了*highspy*。
 
 ```py
 solver = pyo.SolverFactory("appsi_highs")
@@ -330,36 +330,36 @@ res = solver.solve(model)
 print(res)
 ```
 
-对于大型实例，我们的求解器可能很难改善启发式解。然而，对于在[代码仓库](https://github.com/bruscalia/optimization-demo-files/tree/1fa7a3825421d0b166195d890f2629c576cfbfda/graph-coloring)中提供的32节点实例，求解器能够将使用的颜色数量从9减少到8。值得一提的是，完成执行花费了24秒，而对于相同实例的*DSatur*算法仅花费了6毫秒（使用纯Python，这是一个解释型语言）。
+对于大型实例，我们的求解器可能很难改善启发式解。然而，对于在[代码仓库](https://github.com/bruscalia/optimization-demo-files/tree/1fa7a3825421d0b166195d890f2629c576cfbfda/graph-coloring)中提供的 32 节点实例，求解器能够将使用的颜色数量从 9 减少到 8。值得一提的是，完成执行花费了 24 秒，而对于相同实例的*DSatur*算法仅花费了 6 毫秒（使用纯 Python，这是一个解释型语言）。
 
-![](../Images/262d463424737ab0f54c1ddb5159a143.png)
+![](img/262d463424737ab0f54c1ddb5159a143.png)
 
-32节点实例的图着色整数规划解。（图片由作者提供）。
+32 节点实例的图着色整数规划解。（图片由作者提供）。
 
 # 进一步阅读
 
 尽管*DSatur*是一种直观的启发式方法，能提供快速的高质量解，但其他方法可能会带来更好的结果，尤其是在复杂实例上。图着色问题中最著名的元启发式算法之一是*Tabucol*（Hertz & Werra, 1987）。作者提出了一种从初始解开始的方法，初始解具有*k*种颜色，并可能存在连接相同颜色节点的边。然后，执行局部移动，改变给定节点的颜色，以最小化冲突，使用禁忌表逃避局部最优。
 
-比本文中所示的图着色问题的更高效的精确方法依赖于*Column Generation*，使用一种称为*Branch & Price*的算法。对这个主题感兴趣的读者可以在我的其他Medium故事中找到简洁的概述。
+比本文中所示的图着色问题的更高效的精确方法依赖于*Column Generation*，使用一种称为*Branch & Price*的算法。对这个主题感兴趣的读者可以在我的其他 Medium 故事中找到简洁的概述。
 
-[](/column-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b?source=post_page-----169dce4d88ab--------------------------------) [## 线性规划中的列生成和切料问题
+[](/column-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b?source=post_page-----169dce4d88ab--------------------------------) ## 线性规划中的列生成和切料问题
 
-### 如何使用Python示例解决具有大量决策变量的线性问题
+### 如何使用 Python 示例解决具有大量决策变量的线性问题
 
-towardsdatascience.com](/column-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b?source=post_page-----169dce4d88ab--------------------------------)
+towardsdatascience.com
 
 # 结论
 
-在这篇文章中，介绍了两种解决图着色问题的方法：构造性启发式*DSatur*（Brélaz, 1979）和整数线性规划（ILP）模型。启发式方法能够为中等规模的实例提供快速的高质量解，之后的解通过ILP模型进一步改进。实现的代码可在公共仓库中进一步使用。
+在这篇文章中，介绍了两种解决图着色问题的方法：构造性启发式*DSatur*（Brélaz, 1979）和整数线性规划（ILP）模型。启发式方法能够为中等规模的实例提供快速的高质量解，之后的解通过 ILP 模型进一步改进。实现的代码可在公共仓库中进一步使用。
 
 # 参考文献
 
-Brélaz, D., 1979\. 图的顶点着色的新方法。*ACM通讯*，*22*(4)，251–256。
+Brélaz, D., 1979\. 图的顶点着色的新方法。*ACM 通讯*，*22*(4)，251–256。
 
-Bynum, M. L. et al., 2021\. *Pyomo-优化建模在Python中*。Springer。
+Bynum, M. L. et al., 2021\. *Pyomo-优化建模在 Python 中*。Springer。
 
 Hertz, A., & Werra, D. D., 1987\. 使用禁忌搜索技术进行图着色。*计算*，*39*(4)，345–351。
 
 Jensen, T. R., & Toft, B., 1995\. *图着色问题*。John Wiley & Sons。
 
-Lewis, R.M.R., 2021\. 图着色的高级技术。在：*图着色指南*。计算机科学文本。Springer，Cham。[https://doi.org/10.1007/978-3-030-81054-2_4](https://doi.org/10.1007/978-3-030-81054-2_4)
+Lewis, R.M.R., 2021\. 图着色的高级技术。在：*图着色指南*。计算机科学文本。Springer，Cham。[`doi.org/10.1007/978-3-030-81054-2_4`](https://doi.org/10.1007/978-3-030-81054-2_4)

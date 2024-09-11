@@ -1,10 +1,10 @@
-# p值标准的替代方法（附R代码）
+# p 值标准的替代方法（附 R 代码）
 
-> 原文：[https://towardsdatascience.com/alternatives-to-the-p-value-criterion-for-statistical-significance-with-r-code-222cfc259ba7?source=collection_archive---------1-----------------------#2023-03-12](https://towardsdatascience.com/alternatives-to-the-p-value-criterion-for-statistical-significance-with-r-code-222cfc259ba7?source=collection_archive---------1-----------------------#2023-03-12)
+> 原文：[`towardsdatascience.com/alternatives-to-the-p-value-criterion-for-statistical-significance-with-r-code-222cfc259ba7?source=collection_archive---------1-----------------------#2023-03-12`](https://towardsdatascience.com/alternatives-to-the-p-value-criterion-for-statistical-significance-with-r-code-222cfc259ba7?source=collection_archive---------1-----------------------#2023-03-12)
 
 ## 改进统计决策的方法
 
-[](https://medium.com/@jaekim8080?source=post_page-----222cfc259ba7--------------------------------)[![Jae Kim](../Images/34716958ecfe8c0540f5cf5c1640d587.png)](https://medium.com/@jaekim8080?source=post_page-----222cfc259ba7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----222cfc259ba7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----222cfc259ba7--------------------------------) [Jae Kim](https://medium.com/@jaekim8080?source=post_page-----222cfc259ba7--------------------------------)
+[](https://medium.com/@jaekim8080?source=post_page-----222cfc259ba7--------------------------------)![Jae Kim](https://medium.com/@jaekim8080?source=post_page-----222cfc259ba7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----222cfc259ba7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----222cfc259ba7--------------------------------) [Jae Kim](https://medium.com/@jaekim8080?source=post_page-----222cfc259ba7--------------------------------)
 
 ·
 
@@ -12,11 +12,11 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F222cfc259ba7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternatives-to-the-p-value-criterion-for-statistical-significance-with-r-code-222cfc259ba7&source=-----222cfc259ba7---------------------bookmark_footer-----------)![](../Images/3c146903030390702939d348cf3d4753.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F222cfc259ba7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falternatives-to-the-p-value-criterion-for-statistical-significance-with-r-code-222cfc259ba7&source=-----222cfc259ba7---------------------bookmark_footer-----------)![](img/3c146903030390702939d348cf3d4753.png)
 
 照片由 [Rommel Davila](https://unsplash.com/@rommeldav22?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在建立统计显著性时，p值标准几乎被普遍使用。这个标准是当p值小于显著性水平(*α*)时，拒绝原假设（H0），接受备择假设（H1）。用于这个决策阈值的传统值包括0.05、0.10和0.01。
+在建立统计显著性时，p 值标准几乎被普遍使用。这个标准是当 p 值小于显著性水平(*α*)时，拒绝原假设（H0），接受备择假设（H1）。用于这个决策阈值的传统值包括 0.05、0.10 和 0.01。
 
 按定义，p 值衡量样本信息与 H0 的兼容性：即 P(D|H0)，即在 H0 下数据 (D) 的概率或可能性。然而，正如美国统计协会的声明中明确指出的 ([Wasserstein 和 Lazar, 2016](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108))，p 值标准作为决策规则存在若干严重缺陷。主要缺陷包括
 

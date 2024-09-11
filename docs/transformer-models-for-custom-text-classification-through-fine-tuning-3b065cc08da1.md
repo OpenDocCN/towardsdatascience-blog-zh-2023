@@ -1,10 +1,10 @@
 # Transformer 模型用于通过微调进行自定义文本分类
 
-> 原文：[https://towardsdatascience.com/transformer-models-for-custom-text-classification-through-fine-tuning-3b065cc08da1?source=collection_archive---------0-----------------------#2023-01-20](https://towardsdatascience.com/transformer-models-for-custom-text-classification-through-fine-tuning-3b065cc08da1?source=collection_archive---------0-----------------------#2023-01-20)
+> 原文：[`towardsdatascience.com/transformer-models-for-custom-text-classification-through-fine-tuning-3b065cc08da1?source=collection_archive---------0-----------------------#2023-01-20`](https://towardsdatascience.com/transformer-models-for-custom-text-classification-through-fine-tuning-3b065cc08da1?source=collection_archive---------0-----------------------#2023-01-20)
 
 ## 关于如何通过微调 DistilBERT 模型来构建垃圾邮件分类器（或任何其他分类器）的教程
 
-[](https://skanda-vivek.medium.com/?source=post_page-----3b065cc08da1--------------------------------)[![Skanda Vivek](../Images/9d25bee2fb75176ca7f7ea6eff7d7ab5.png)](https://skanda-vivek.medium.com/?source=post_page-----3b065cc08da1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b065cc08da1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3b065cc08da1--------------------------------) [Skanda Vivek](https://skanda-vivek.medium.com/?source=post_page-----3b065cc08da1--------------------------------)
+[](https://skanda-vivek.medium.com/?source=post_page-----3b065cc08da1--------------------------------)![Skanda Vivek](https://skanda-vivek.medium.com/?source=post_page-----3b065cc08da1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b065cc08da1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b065cc08da1--------------------------------) [Skanda Vivek](https://skanda-vivek.medium.com/?source=post_page-----3b065cc08da1--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b065cc08da1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-for-custom-text-classification-through-fine-tuning-3b065cc08da1&source=-----3b065cc08da1---------------------bookmark_footer-----------)![](../Images/b7152fa9d2fbe16e6c1e4d3080b00560.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b065cc08da1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformer-models-for-custom-text-classification-through-fine-tuning-3b065cc08da1&source=-----3b065cc08da1---------------------bookmark_footer-----------)![](img/b7152fa9d2fbe16e6c1e4d3080b00560.png)
 
 [微调的 SMS 垃圾邮件分类器模型](https://huggingface.co/skandavivek2/spam-classifier) 输出 | Skanda Vivek
 

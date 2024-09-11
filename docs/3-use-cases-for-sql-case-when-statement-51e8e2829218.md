@@ -1,18 +1,18 @@
 # SQL CASE WHEN 语句的 3 种使用场景
 
-> 原文：[https://towardsdatascience.com/3-use-cases-for-sql-case-when-statement-51e8e2829218?source=collection_archive---------12-----------------------#2023-07-14](https://towardsdatascience.com/3-use-cases-for-sql-case-when-statement-51e8e2829218?source=collection_archive---------12-----------------------#2023-07-14)
+> 原文：[`towardsdatascience.com/3-use-cases-for-sql-case-when-statement-51e8e2829218?source=collection_archive---------12-----------------------#2023-07-14`](https://towardsdatascience.com/3-use-cases-for-sql-case-when-statement-51e8e2829218?source=collection_archive---------12-----------------------#2023-07-14)
 
 ## 通过示例进行解释
 
-[](https://sonery.medium.com/?source=post_page-----51e8e2829218--------------------------------)[![Soner Yıldırım](../Images/c589572e9d1ee176cd4f5a0008173f1b.png)](https://sonery.medium.com/?source=post_page-----51e8e2829218--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51e8e2829218--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51e8e2829218--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----51e8e2829218--------------------------------)
+[](https://sonery.medium.com/?source=post_page-----51e8e2829218--------------------------------)![Soner Yıldırım](https://sonery.medium.com/?source=post_page-----51e8e2829218--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51e8e2829218--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----51e8e2829218--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----51e8e2829218--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-use-cases-for-sql-case-when-statement-51e8e2829218&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----51e8e2829218---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51e8e2829218--------------------------------) ·4分钟阅读·2023年7月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51e8e2829218&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-use-cases-for-sql-case-when-statement-51e8e2829218&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----51e8e2829218---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-use-cases-for-sql-case-when-statement-51e8e2829218&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----51e8e2829218---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51e8e2829218--------------------------------) ·4 分钟阅读·2023 年 7 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51e8e2829218&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-use-cases-for-sql-case-when-statement-51e8e2829218&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----51e8e2829218---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51e8e2829218&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-use-cases-for-sql-case-when-statement-51e8e2829218&source=-----51e8e2829218---------------------bookmark_footer-----------)![](../Images/37afa1efcbbb7e0ca6e7028dc40e0ad7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51e8e2829218&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-use-cases-for-sql-case-when-statement-51e8e2829218&source=-----51e8e2829218---------------------bookmark_footer-----------)![](img/37afa1efcbbb7e0ca6e7028dc40e0ad7.png)
 
 图片由 [Tobias Fischer](https://unsplash.com/@tofi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/PkbZahEG2Ng?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -30,7 +30,7 @@
 
 我们将查询一个我创建的`product_inventory`表，该表包含[模拟数据](https://medium.com/@sonery/generate-mock-data-of-any-format-with-mockaroo-9345facabc1e)。以下是该表的前五行：
 
-![](../Images/40679f9924069e9dee9f3679a073a7d7.png)
+![](img/40679f9924069e9dee9f3679a073a7d7.png)
 
 （图像由作者提供）
 
@@ -38,6 +38,6 @@
 
 `CASE WHEN`（或`CASE`）语句允许评估条件，其结果可以用于创建新列。
 
-![](../Images/0b9900f1e0a1bb2a071b7ff79fae894e.png)
+![](img/0b9900f1e0a1bb2a071b7ff79fae894e.png)
 
 （图像由作者提供）

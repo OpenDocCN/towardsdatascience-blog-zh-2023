@@ -1,18 +1,18 @@
-# MLOps-技巧与窍门-75个代码片段
+# MLOps-技巧与窍门-75 个代码片段
 
-> 原文：[https://towardsdatascience.com/mlops-tips-and-tricks-75-code-snippets-b8f04036d0a0?source=collection_archive---------1-----------------------#2023-03-15](https://towardsdatascience.com/mlops-tips-and-tricks-75-code-snippets-b8f04036d0a0?source=collection_archive---------1-----------------------#2023-03-15)
+> 原文：[`towardsdatascience.com/mlops-tips-and-tricks-75-code-snippets-b8f04036d0a0?source=collection_archive---------1-----------------------#2023-03-15`](https://towardsdatascience.com/mlops-tips-and-tricks-75-code-snippets-b8f04036d0a0?source=collection_archive---------1-----------------------#2023-03-15)
 
-![](../Images/94790342f00b33d9454657818e9ff29e.png)
+![](img/94790342f00b33d9454657818e9ff29e.png)
 
 摄影：[Aswathy N](https://unsplash.com/@abnair?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## MLOps 和数据工程
 
-[](https://esenthil.medium.com/?source=post_page-----b8f04036d0a0--------------------------------)[![Senthil E](../Images/8750e1769db1d2fe3a3f739e95c60e4b.png)](https://esenthil.medium.com/?source=post_page-----b8f04036d0a0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b8f04036d0a0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b8f04036d0a0--------------------------------) [Senthil E](https://esenthil.medium.com/?source=post_page-----b8f04036d0a0--------------------------------)
+[](https://esenthil.medium.com/?source=post_page-----b8f04036d0a0--------------------------------)![Senthil E](https://esenthil.medium.com/?source=post_page-----b8f04036d0a0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b8f04036d0a0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b8f04036d0a0--------------------------------) [Senthil E](https://esenthil.medium.com/?source=post_page-----b8f04036d0a0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d8fcdc16d73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tips-and-tricks-75-code-snippets-b8f04036d0a0&user=Senthil+E&userId=1d8fcdc16d73&source=post_page-1d8fcdc16d73----b8f04036d0a0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b8f04036d0a0--------------------------------) ·21 min read·2023年3月15日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d8fcdc16d73&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-tips-and-tricks-75-code-snippets-b8f04036d0a0&user=Senthil+E&userId=1d8fcdc16d73&source=post_page-1d8fcdc16d73----b8f04036d0a0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b8f04036d0a0--------------------------------) ·21 min read·2023 年 3 月 15 日
 
 --
 
@@ -20,17 +20,17 @@
 
 ## 介绍：
 
-MLOps，或称机器学习运维，是指一套简化机器学习模型开发、部署和维护的实践方法，旨在弥合数据科学与软件工程之间的差距。本文旨在提供有关MLOps和数据工程的宝贵技巧和窍门，涵盖模型训练、数据预处理、性能优化、监控和部署等广泛主题。
+MLOps，或称机器学习运维，是指一套简化机器学习模型开发、部署和维护的实践方法，旨在弥合数据科学与软件工程之间的差距。本文旨在提供有关 MLOps 和数据工程的宝贵技巧和窍门，涵盖模型训练、数据预处理、性能优化、监控和部署等广泛主题。
 
-![](../Images/f99a09454277747208c1135f4f67fdcb.png)
+![](img/f99a09454277747208c1135f4f67fdcb.png)
 
 作者图片
 
 1.  **Dask-ML-并行化模型训练：**
 
-+   使用Dask-ML并行训练和评估机器学习模型，充分利用硬件的全部能力。
++   使用 Dask-ML 并行训练和评估机器学习模型，充分利用硬件的全部能力。
 
-+   使用Dask-ML，您可以迅速扩展机器学习工作负载，跨多个核心、处理器甚至集群，轻松训练和评估大型数据集上的大型模型。
++   使用 Dask-ML，您可以迅速扩展机器学习工作负载，跨多个核心、处理器甚至集群，轻松训练和评估大型数据集上的大型模型。
 
 ```py
 import dask_ml.model_selection as dcv
@@ -51,7 +51,7 @@ search.fit(X, y)
 
 [有关更多信息，请查看。](https://ml.dask.org/)
 
-**2\. Feature Tools：** Featuretools是一个开源Python库，用于自动化特征工程，允许您从原始数据中生成新特征，手动工作量最小化。
+**2\. Feature Tools：** Featuretools 是一个开源 Python 库，用于自动化特征工程，允许您从原始数据中生成新特征，手动工作量最小化。
 
 ```py
 import featuretools as ft
@@ -69,7 +69,7 @@ feature_matrix, feature_defs = ft.dfs(entityset=es, target_entity="customers", m
 
 [有关更多信息，请查看。](https://www.featuretools.com/)
 
-**3\. Tensorboard：** TensorBoard是一个强大的可视化工具，用于TensorFlow，允许您监控模型的性能并跟踪训练和评估过程中的各种指标。
+**3\. Tensorboard：** TensorBoard 是一个强大的可视化工具，用于 TensorFlow，允许您监控模型的性能并跟踪训练和评估过程中的各种指标。
 
 ```py
 import tensorflow as tf
@@ -92,9 +92,9 @@ model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test), callbac
 
 **4\. Tensorflow Serving：**
 
-+   TensorFlow Serving是一个高性能的机器学习模型服务系统，专为生产环境设计。
++   TensorFlow Serving 是一个高性能的机器学习模型服务系统，专为生产环境设计。
 
-+   TensorFlow Serving支持多个模型、模型版本控制，以及模型的自动加载和卸载，使您能够轻松管理和大规模服务机器学习模型。
++   TensorFlow Serving 支持多个模型、模型版本控制，以及模型的自动加载和卸载，使您能够轻松管理和大规模服务机器学习模型。
 
 ```py
 # Save your TensorFlow model in the SavedModel format
@@ -111,7 +111,7 @@ tensorflow_model_server --rest_api_port=8501 --model_name=my_model --model_base_
 
 [有关更多信息，请查看。](https://www.tensorflow.org/tfx/guide/serving)
 
-**5\. 使用Optuna自动化超参数调优：** Optuna是一个强大且灵活的优化库，可以自动探索和优化机器学习模型的超参数。
+**5\. 使用 Optuna 自动化超参数调优：** Optuna 是一个强大且灵活的优化库，可以自动探索和优化机器学习模型的超参数。
 
 ```py
 import optuna
@@ -135,7 +135,7 @@ best_params = study.best_params
 
 [有关更多信息，请查看。](https://optuna.org/)
 
-**6\. SHAP：** 使用SHAP（SHapley Additive exPlanations）来解释机器学习模型的输出，并深入了解其行为。
+**6\. SHAP：** 使用 SHAP（SHapley Additive exPlanations）来解释机器学习模型的输出，并深入了解其行为。
 
 ```py
 import shap
@@ -160,7 +160,7 @@ shap.plots.waterfall(shap_values[0])
 
 [有关更多信息，请查看。](https://shap.readthedocs.io/en/latest/generated/shap.Explainer.html)
 
-**7\. Ray：** Ray Tune是一个强大且灵活的分布式超参数调优库，使您能够利用硬件的全部能力来优化机器学习模型。
+**7\. Ray：** Ray Tune 是一个强大且灵活的分布式超参数调优库，使您能够利用硬件的全部能力来优化机器学习模型。
 
 ```py
 from ray import tune
@@ -197,7 +197,7 @@ best_params = analysis.best_config
 
 [有关更多信息，请查看。](https://www.ray.io/)
 
-**8\. 使用MLflow进行实验跟踪：** 使用MLflow，您可以比较不同的实验，重现以前的结果，并与他人共享您的工作，使协作和迭代更加高效。
+**8\. 使用 MLflow 进行实验跟踪：** 使用 MLflow，您可以比较不同的实验，重现以前的结果，并与他人共享您的工作，使协作和迭代更加高效。
 
 ```py
 import mlflow
@@ -230,7 +230,7 @@ with mlflow.start_run():
 
 [有关更多信息，请查看。](https://mlflow.org/)
 
-**9\. Scikit-learn：** 流水线：使用Scikit-learn的`**Pipeline**`将多个预处理步骤和最终估算器链接在一起。
+**9\. Scikit-learn：** 流水线：使用 Scikit-learn 的`**Pipeline**`将多个预处理步骤和最终估算器链接在一起。
 
 ```py
 from sklearn.pipeline import Pipeline
@@ -259,7 +259,7 @@ grid_search = GridSearchCV(pipe, param_grid, cv=5)
 grid_search.fit(X_train, y_train)
 ```
 
-**11\. Joblib：** `joblib`是一个流行的库，用于保存和加载Scikit-learn模型。使用`dump()`将模型保存到文件中，使用`load()`从文件中恢复模型。
+**11\. Joblib：** `joblib`是一个流行的库，用于保存和加载 Scikit-learn 模型。使用`dump()`将模型保存到文件中，使用`load()`从文件中恢复模型。
 
 ```py
 import joblib
@@ -271,7 +271,7 @@ joblib.dump(grid_search.best_estimator_, "model.pkl")
 loaded_model = joblib.load("model.pkl")
 ```
 
-**12\. Tensorflow：** 简单神经网络。使用Keras API定义一个具有密集（全连接）层的简单前馈神经网络。
+**12\. Tensorflow：** 简单神经网络。使用 Keras API 定义一个具有密集（全连接）层的简单前馈神经网络。
 
 ```py
 import tensorflow as tf
@@ -325,7 +325,7 @@ tpot.fit(X_train, y_train)
 
 [更多信息请查看。](http://automl.info/tpot/)
 
-![](../Images/06a298b5527402f76502fee4aee02988.png)
+![](img/06a298b5527402f76502fee4aee02988.png)
 
 作者提供的图片
 
@@ -450,7 +450,7 @@ trainer = Trainer(
 context.run(trainer)
 ```
 
-![](../Images/20224b9045d7dc616fa88863bea7c21a.png)
+![](img/20224b9045d7dc616fa88863bea7c21a.png)
 
 作者提供的图片
 
@@ -465,7 +465,7 @@ y = cp.array([6, 7, 8, 9, 10])
 z = cp.dot(x, y)
 ```
 
-**27\. RAPIDS**是一个用于数据科学的GPU加速库套件，包括cuDF（类似于Pandas的GPU加速数据框库）和cuML（类似于Scikit-learn的GPU加速机器学习库）。使用cuDF DataFrames在GPU上执行数据操作任务，使用cuML模型在GPU上训练和评估机器学习模型。
+**27\. RAPIDS**是一个用于数据科学的 GPU 加速库套件，包括 cuDF（类似于 Pandas 的 GPU 加速数据框库）和 cuML（类似于 Scikit-learn 的 GPU 加速机器学习库）。使用 cuDF DataFrames 在 GPU 上执行数据操作任务，使用 cuML 模型在 GPU 上训练和评估机器学习模型。
 
 ```py
 import cudf
@@ -476,11 +476,11 @@ kmeans_model = cuml.KMeans(n_clusters=5)
 kmeans_model.fit(df)
 ```
 
-**28\. FastAPI**是一个现代化的高性能Web框架，用于使用Python构建API，特别适合机器学习模型。
+**28\. FastAPI**是一个现代化的高性能 Web 框架，用于使用 Python 构建 API，特别适合机器学习模型。
 
-+   创建`FastAPI`的实例，并使用装饰器（如`@app.post()`）定义API端点。
++   创建`FastAPI`的实例，并使用装饰器（如`@app.post()`）定义 API 端点。
 
-+   使用`uvicorn`运行FastAPI应用，指定主机和端口。
++   使用`uvicorn`运行 FastAPI 应用，指定主机和端口。
 
 ```py
 from fastapi import FastAPI
@@ -497,11 +497,11 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 ```
 
-**29\. Streamlit**是一个库，用于快速创建机器学习和数据科学的互动Web应用，仅使用Python。
+**29\. Streamlit**是一个库，用于快速创建机器学习和数据科学的互动 Web 应用，仅使用 Python。
 
-+   使用Streamlit的简单API创建用户界面元素，例如文本输入和滑块，并显示输出或可视化。
++   使用 Streamlit 的简单 API 创建用户界面元素，例如文本输入和滑块，并显示输出或可视化。
 
-+   使用命令`streamlit run app.py`在终端中运行Streamlit应用。
++   使用命令`streamlit run app.py`在终端中运行 Streamlit 应用。
 
 ```py
 import streamlit as st
@@ -517,7 +517,7 @@ st.write(f"Slider value: {slider_value}")
 
 [有关更多信息，请查看。](https://streamlit.io/)
 
-**30\. Docker文件：** 创建一个Dockerfile来定义适用于机器学习应用的自定义Docker镜像。
+**30\. Docker 文件：** 创建一个 Dockerfile 来定义适用于机器学习应用的自定义 Docker 镜像。
 
 ```py
 FROM python:3.8
@@ -531,7 +531,7 @@ COPY . .
 CMD ["python", "app.py"]
 ```
 
-+   使用`FROM`关键字指定基础镜像，例如官方Python镜像。
++   使用`FROM`关键字指定基础镜像，例如官方 Python 镜像。
 
 +   使用`WORKDIR`关键字设置后续指令的工作目录。
 
@@ -541,19 +541,19 @@ CMD ["python", "app.py"]
 
 +   使用`CMD`关键字定义容器启动时要运行的默认命令。
 
-**31\. 构建Docker镜像：**
+**31\. 构建 Docker 镜像：**
 
 ```py
 docker build -t my_ml_app:latest .
 ```
 
-**32\. 运行Docker容器**：使用`docker run`命令从镜像创建并启动Docker容器。使用`-p`标志将主机端口映射到容器端口，允许外部访问容器内运行的服务。
+**32\. 运行 Docker 容器**：使用`docker run`命令从镜像创建并启动 Docker 容器。使用`-p`标志将主机端口映射到容器端口，允许外部访问容器内运行的服务。
 
 ```py
 docker run -p 5000:5000 my_ml_app:latest
 ```
 
-**32\. Kubernetes YAML配置文件：**
+**32\. Kubernetes YAML 配置文件：**
 
 ```py
 apiVersion: apps/v1
@@ -592,13 +592,13 @@ spec:
   type: LoadBalancer
 ```
 
-+   使用`apiVersion`、`kind`和`metadata`来定义Kubernetes资源类型和元数据。
++   使用`apiVersion`、`kind`和`metadata`来定义 Kubernetes 资源类型和元数据。
 
 +   使用`spec`来定义资源的期望状态，例如副本数量、容器镜像和暴露的端口。
 
-+   使用`---`分隔符在同一文件中定义多个资源，例如一个Deployment和一个Service。
++   使用`---`分隔符在同一文件中定义多个资源，例如一个 Deployment 和一个 Service。
 
-**33\. kubectl:** 使用`kubectl`命令行工具来管理Kubernetes集群和资源。
+**33\. kubectl:** 使用`kubectl`命令行工具来管理 Kubernetes 集群和资源。
 
 ```py
 # Apply the Kubernetes configuration file
@@ -638,9 +638,9 @@ my_ml_project/
 
 +   进一步细分目录以分开原始数据和处理后的数据或不同类型的源代码模块。
 
-**35\. 模型版本控制：** 使用版本控制工具如DVC或MLflow来跟踪不同版本的训练过的机器学习模型。
+**35\. 模型版本控制：** 使用版本控制工具如 DVC 或 MLflow 来跟踪不同版本的训练过的机器学习模型。
 
-+   将模型工件（例如权重、元数据）存储在集中式存储系统中，例如Amazon S3或Google Cloud Storage。
++   将模型工件（例如权重、元数据）存储在集中式存储系统中，例如 Amazon S3 或 Google Cloud Storage。
 
 +   使用版本控制工具跟踪模型版本、相关训练数据和超参数。
 
@@ -652,13 +652,13 @@ my_ml_project/
 
 +   用单元测试测试单个函数和类，用集成测试测试组件之间的交互。
 
-+   执行端到端测试，以确保整个系统按预期工作，包括模型服务和API端点。
++   执行端到端测试，以确保整个系统按预期工作，包括模型服务和 API 端点。
 
 **37\. Papermill：**
 
-+   Papermill允许你通过为特定单元格注入新值来参数化Jupyter Notebooks。
++   Papermill 允许你通过为特定单元格注入新值来参数化 Jupyter Notebooks。
 
-+   以编程方式执行Notebooks，并生成具有不同参数值的报告，而无需手动干预。
++   以编程方式执行 Notebooks，并生成具有不同参数值的报告，而无需手动干预。
 
 ```py
 import papermill as pm
@@ -670,7 +670,7 @@ pm.execute_notebook(
 )
 ```
 
-**38\. 环境管理：** 使用Conda或virtualenv等工具为项目创建隔离的环境。
+**38\. 环境管理：** 使用 Conda 或 virtualenv 等工具为项目创建隔离的环境。
 
 ```py
 # Create a new Conda environment
@@ -707,7 +707,7 @@ for i, chunk in enumerate(pd.read_csv("large_dataset.csv", chunksize=chunksize))
 
 +   特征编码技术将分类变量转换为机器学习模型可以使用的数值表示。
 
-+   One-hot编码为每个类别创建二进制列，而目标编码则用该类别的目标变量均值替换每个类别。
++   One-hot 编码为每个类别创建二进制列，而目标编码则用该类别的目标变量均值替换每个类别。
 
 ```py
 import pandas as pd
@@ -721,7 +721,7 @@ encoded_data = encoder.fit_transform(data)
 print(encoded_data.toarray())
 ```
 
-**41\. 数据验证：** 使用数据验证框架，如Great Expectations、Pandera或自定义验证函数，验证数据的质量和一致性。
+**41\. 数据验证：** 使用数据验证框架，如 Great Expectations、Pandera 或自定义验证函数，验证数据的质量和一致性。
 
 ```py
 import pandera as pa
@@ -737,7 +737,7 @@ schema = DataFrameSchema({
 validated_df = schema.validate(df)
 ```
 
-**42\. 数据版本控制：** 使用数据版本控制工具，如DVC或Pachyderm，跟踪数据集的变化，并确保在不同实验和模型版本之间的可重复性。
+**42\. 数据版本控制：** 使用数据版本控制工具，如 DVC 或 Pachyderm，跟踪数据集的变化，并确保在不同实验和模型版本之间的可重复性。
 
 ```py
 # Initialize DVC in your project
@@ -751,7 +751,7 @@ git add data/my_dataset.dvc .dvc/config
 git commit -m "Add my_dataset to DVC"
 ```
 
-**43\. 使用特征存储：** 实施像Feast或Hopsworks这样的特征存储来存储、管理和提供机器学习模型的特征。
+**43\. 使用特征存储：** 实施像 Feast 或 Hopsworks 这样的特征存储来存储、管理和提供机器学习模型的特征。
 
 ```py
 from feast import FeatureStore
@@ -774,7 +774,7 @@ feature_vector = store.get_online_features(
 
 特征存储可以帮助你集中管理特征，确保一致性并减少不同模型和实验之间的重复。
 
-**44\. 特征缩放：** 应用特征缩放技术，如MinMax缩放、标准化缩放或归一化，以确保你的特征具有相似的尺度和分布。
+**44\. 特征缩放：** 应用特征缩放技术，如 MinMax 缩放、标准化缩放或归一化，以确保你的特征具有相似的尺度和分布。
 
 ```py
 from sklearn.datasets import load_iris
@@ -787,7 +787,7 @@ scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 ```
 
-**45\. 降维：** 应用降维技术，如PCA、t-SNE或UMAP，以减少数据集中的特征数量，同时保留重要的模式和关系。
+**45\. 降维：** 应用降维技术，如 PCA、t-SNE 或 UMAP，以减少数据集中的特征数量，同时保留重要的模式和关系。
 
 ```py
 from sklearn.datasets import load_iris
@@ -800,7 +800,7 @@ pca = PCA(n_components=2)
 X_reduced = pca.fit_transform(X)
 ```
 
-**46\. Pandas链式操作：** 将Pandas操作链在一起，以创建更具可读性和简洁的数据处理代码。
+**46\. Pandas 链式操作：** 将 Pandas 操作链在一起，以创建更具可读性和简洁的数据处理代码。
 
 ```py
 import pandas as pd
@@ -816,7 +816,7 @@ result = (
 )
 ```
 
-**47\. 使用`pipe`函数：** 使用`pipe`函数在你的Pandas链式操作工作流中集成自定义函数或操作。
+**47\. 使用`pipe`函数：** 使用`pipe`函数在你的 Pandas 链式操作工作流中集成自定义函数或操作。
 
 ```py
 import pandas as pd
@@ -835,7 +835,7 @@ result = (
 )
 ```
 
-**48\. Pandas内置绘图：** 使用Pandas的内置绘图函数进行快速且简单的数据可视化。
+**48\. Pandas 内置绘图：** 使用 Pandas 的内置绘图函数进行快速且简单的数据可视化。
 
 ```py
 import pandas as pd
@@ -846,7 +846,7 @@ data = pd.read_csv("my_data.csv")
 data.groupby("city")["salary"].mean().plot(kind="bar")
 ```
 
-**49\. 使用Missingno可视化缺失数据：** 使用Missingno库可视化数据集中缺失的数据。
+**49\. 使用 Missingno 可视化缺失数据：** 使用 Missingno 库可视化数据集中缺失的数据。
 
 ```py
 import pandas as pd
@@ -858,7 +858,7 @@ data = pd.read_csv("data.csv")
 msno.matrix(data)
 ```
 
-**50\. 使用SQL数据库：** 你可以在Python中使用`sqlite3`库与SQLite数据库进行交互。例如，你可以在SQLite数据库中创建一个表并插入一些数据：
+**50\. 使用 SQL 数据库：** 你可以在 Python 中使用`sqlite3`库与 SQLite 数据库进行交互。例如，你可以在 SQLite 数据库中创建一个表并插入一些数据：
 
 ```py
 import sqlite3
@@ -1435,27 +1435,27 @@ print("Mean of column B for rows where column A > 10:", result)
 
 ## 参考文献：
 
-1.  Mlflow: 一个简化机器学习生命周期的开放平台。 (2021). [https://mlflow.org/](https://mlflow.org/)
+1.  Mlflow: 一个简化机器学习生命周期的开放平台。 (2021). [`mlflow.org/`](https://mlflow.org/)
 
-1.  Prometheus: 一个具有维度数据模型的开源监控系统。 (2021). [https://prometheus.io/](https://prometheus.io/)
+1.  Prometheus: 一个具有维度数据模型的开源监控系统。 (2021). [`prometheus.io/`](https://prometheus.io/)
 
-1.  Grafana: 开放且可组合的可观察性和数据可视化平台。 (2021). [https://grafana.com/](https://grafana.com/)
+1.  Grafana: 开放且可组合的可观察性和数据可视化平台。 (2021). [`grafana.com/`](https://grafana.com/)
 
-1.  Seldon Core: 在 Kubernetes 中部署、扩展和监控你的机器学习模型。 (2021). [https://www.seldon.io/tech/products/core/](https://www.seldon.io/tech/products/core/)
+1.  Seldon Core: 在 Kubernetes 中部署、扩展和监控你的机器学习模型。 (2021). [`www.seldon.io/tech/products/core/`](https://www.seldon.io/tech/products/core/)
 
-1.  Kubeflow: Kubernetes 的机器学习工具包。 (2021). [https://www.kubeflow.org/](https://www.kubeflow.org/)
+1.  Kubeflow: Kubernetes 的机器学习工具包。 (2021). [`www.kubeflow.org/`](https://www.kubeflow.org/)
 
-1.  Dask: 使用任务调度进行并行计算. (2021). 取自 [https://dask.org/](https://dask.org/)
+1.  Dask: 使用任务调度进行并行计算. (2021). 取自 [`dask.org/`](https://dask.org/)
 
-1.  《伟大的期望：始终了解数据中的期望》 (2021). [https://greatexpectations.io/](https://greatexpectations.io/)
+1.  《伟大的期望：始终了解数据中的期望》 (2021). [`greatexpectations.io/`](https://greatexpectations.io/)
 
-1.  Airflow: 用于编程创作、调度和监控工作流的平台. (2021). [https://airflow.apache.org/](https://airflow.apache.org/)
+1.  Airflow: 用于编程创作、调度和监控工作流的平台. (2021). [`airflow.apache.org/`](https://airflow.apache.org/)
 
-1.  TensorFlow Extended: 为 TensorFlow 提供生产就绪的 ML 平台. (2021). [https://www.tensorflow.org/tfx](https://www.tensorflow.org/tfx)
+1.  TensorFlow Extended: 为 TensorFlow 提供生产就绪的 ML 平台. (2021). [`www.tensorflow.org/tfx`](https://www.tensorflow.org/tfx)
 
-1.  Prefect: 数据流自动化的新标准. (2021). [https://www.prefect.io/](https://www.prefect.io/)
+1.  Prefect: 数据流自动化的新标准. (2021). [`www.prefect.io/`](https://www.prefect.io/)
 
-1.  Feast: 机器学习的特征存储. (2021). [https://feast.dev/](https://feast.dev/)
+1.  Feast: 机器学习的特征存储. (2021). [`feast.dev/`](https://feast.dev/)
 
 1.  **安德烈·布尔科夫**的《机器学习工程》
 

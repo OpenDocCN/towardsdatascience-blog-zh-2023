@@ -1,18 +1,18 @@
 # 因果关系的科学与艺术（第一部分）
 
-> 原文：[https://towardsdatascience.com/the-science-and-art-of-causality-part-1-5d6fb55b7a7c?source=collection_archive---------7-----------------------#2023-01-05](https://towardsdatascience.com/the-science-and-art-of-causality-part-1-5d6fb55b7a7c?source=collection_archive---------7-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/the-science-and-art-of-causality-part-1-5d6fb55b7a7c?source=collection_archive---------7-----------------------#2023-01-05`](https://towardsdatascience.com/the-science-and-art-of-causality-part-1-5d6fb55b7a7c?source=collection_archive---------7-----------------------#2023-01-05)
 
 ## 如果我们不能直接测试因果关系，我们应该怎么办？
 
-[](https://medium.com/@quentin.gallea?source=post_page-----5d6fb55b7a7c--------------------------------)[![Quentin Gallea, PhD](../Images/457af55dd9c6121da7ec97f8e2991c43.png)](https://medium.com/@quentin.gallea?source=post_page-----5d6fb55b7a7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5d6fb55b7a7c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5d6fb55b7a7c--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----5d6fb55b7a7c--------------------------------)
+[](https://medium.com/@quentin.gallea?source=post_page-----5d6fb55b7a7c--------------------------------)![Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----5d6fb55b7a7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5d6fb55b7a7c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d6fb55b7a7c--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----5d6fb55b7a7c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa52dcb9793ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-1-5d6fb55b7a7c&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=post_page-a52dcb9793ad----5d6fb55b7a7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d6fb55b7a7c--------------------------------) ·10分钟阅读·2023年1月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5d6fb55b7a7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-1-5d6fb55b7a7c&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=-----5d6fb55b7a7c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa52dcb9793ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-1-5d6fb55b7a7c&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=post_page-a52dcb9793ad----5d6fb55b7a7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d6fb55b7a7c--------------------------------) ·10 分钟阅读·2023 年 1 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5d6fb55b7a7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-1-5d6fb55b7a7c&user=Quentin+Gallea%2C+PhD&userId=a52dcb9793ad&source=-----5d6fb55b7a7c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5d6fb55b7a7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-1-5d6fb55b7a7c&source=-----5d6fb55b7a7c---------------------bookmark_footer-----------)![](../Images/93302174c607fe8960cfbf7967ef0630.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5d6fb55b7a7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-science-and-art-of-causality-part-1-5d6fb55b7a7c&source=-----5d6fb55b7a7c---------------------bookmark_footer-----------)![](img/93302174c607fe8960cfbf7967ef0630.png)
 
 图片由作者提供
 
@@ -44,53 +44,53 @@
 
 # 因果推断的根本问题
 
-关键问题来自于因果推断的根本问题。让我用下面的两个图表来说明这个概念。在左侧，你可以看到全球的直接初级能源消费，分为可再生能源和其他能源生产来源。第二个图表表示世界的CO2排放量，从1900年到2020年。两个数据都在增长。然而，我们倾向于认为使用可再生能源有助于减少CO2排放。利用这样的汇总数据，有些人可能会被诱导认为可再生能源未必有用。
+关键问题来自于因果推断的根本问题。让我用下面的两个图表来说明这个概念。在左侧，你可以看到全球的直接初级能源消费，分为可再生能源和其他能源生产来源。第二个图表表示世界的 CO2 排放量，从 1900 年到 2020 年。两个数据都在增长。然而，我们倾向于认为使用可再生能源有助于减少 CO2 排放。利用这样的汇总数据，有些人可能会被诱导认为可再生能源未必有用。
 
-![](../Images/611ff1355f4b1c7ecfe89b4a289b5db0.png)
-
-作者提供的图像。
-
-显然，凭借如此简单的统计数据无法回答这个问题（可再生能源对CO2排放的影响是什么？）。问题在于，我们不知道如果没有可再生能源会发生什么。我们没有一个没有可再生能源的世界。
-
-![](../Images/40302c04318029342fc14e25dd1dae66.png)
+![](img/611ff1355f4b1c7ecfe89b4a289b5db0.png)
 
 作者提供的图像。
 
-可再生能源与CO2排放之间的关系是复杂的。一方面，像太阳能和风能这样的可再生能源可以作为化石燃料的替代品，从而导致CO2排放减少。另一方面，提取资源以生产光伏电池的过程是耗能的，并且“反弹效应”（即当能源由可再生资源提供时，人们会消耗更多能源）也可能导致CO2排放增加。没有更多的数据，就无法明确回答可再生能源是否导致更高或更低的CO2排放。底线是，仅凭这样的数据无法回答这个问题。
+显然，凭借如此简单的统计数据无法回答这个问题（可再生能源对 CO2 排放的影响是什么？）。问题在于，我们不知道如果没有可再生能源会发生什么。我们没有一个没有可再生能源的世界。
+
+![](img/40302c04318029342fc14e25dd1dae66.png)
+
+作者提供的图像。
+
+可再生能源与 CO2 排放之间的关系是复杂的。一方面，像太阳能和风能这样的可再生能源可以作为化石燃料的替代品，从而导致 CO2 排放减少。另一方面，提取资源以生产光伏电池的过程是耗能的，并且“反弹效应”（即当能源由可再生资源提供时，人们会消耗更多能源）也可能导致 CO2 排放增加。没有更多的数据，就无法明确回答可再生能源是否导致更高或更低的 CO2 排放。底线是，仅凭这样的数据无法回答这个问题。
 
 > 要完美回答这个问题，我们需要两个平行的世界。
 
-在两个世界中，一个世界有可再生能源，而另一个世界没有。而由于这是两个世界之间唯一的不同，如果在CO2排放方面存在差异，那很可能是由于可再生能源的使用造成的。
+在两个世界中，一个世界有可再生能源，而另一个世界没有。而由于这是两个世界之间唯一的不同，如果在 CO2 排放方面存在差异，那很可能是由于可再生能源的使用造成的。
 
-![](../Images/e970fd1a89e769d0dd0dd148b5b3646a.png)
+![](img/e970fd1a89e769d0dd0dd148b5b3646a.png)
 
-可再生能源对CO2排放的影响是什么？要完美回答这个问题，我们需要两个平行的世界。作者提供的图像。
+可再生能源对 CO2 排放的影响是什么？要完美回答这个问题，我们需要两个平行的世界。作者提供的图像。
 
 不幸的是，我们无法访问平行世界，在那里我们可以观察到相同情况在有和没有特定处理或行动时的表现。这就产生了**“因果推断中的基本问题”**，因为我们无法观察反事实——即没有进行处理或行动的替代现实。例如，我们无法同时观察一个既在服药又不在服药的病人。在因果推断中，我们尝试尽可能接近这种理想情况，在这种情况下，我们可以比较相同情况在有和没有特定处理或行动时的结果。这使我们能够更好地理解因果关系。
 
 # 黄金标准
 
-通常，解决这个问题的第一种方法，通常被称为黄金标准，并且可以说是最佳解决方案是随机对照试验（A/B测试）。
+通常，解决这个问题的第一种方法，通常被称为黄金标准，并且可以说是最佳解决方案是随机对照试验（A/B 测试）。
 
-![](../Images/32528aee596397512eac5876cf0940a8.png)
+![](img/32528aee596397512eac5876cf0940a8.png)
 
 随机对照试验的示意图。图片由作者提供。
 
 简而言之，这个概念如下。我们抽取一个样本，这个样本希望能够代表更大的人群，并将受试者随机分配到两个组（处理组和对照组）或更多组中。受试者通常不知道他们是否接受了处理（这个过程称为盲法）。因此，这两个组可以说是可比的。由于唯一的区别是处理，如果我们观察到一个效果，那它可能是因果关系，前提是没有其他偏差存在。
 
-然而，随机对照试验（RCT）有两个主要的缺点。第一个是我们不能总是使用RCT。有时候这是不可能的，例如为了实验的需要改变一个受试者的性别。在其他情况下，这也是不道德的。例如，我有一篇论文评估武器出口对非洲冲突概率的影响。我们不会随机将武器发送到不同的国家，以观察这是否会影响冲突的概率。
+然而，随机对照试验（RCT）有两个主要的缺点。第一个是我们不能总是使用 RCT。有时候这是不可能的，例如为了实验的需要改变一个受试者的性别。在其他情况下，这也是不道德的。例如，我有一篇论文评估武器出口对非洲冲突概率的影响。我们不会随机将武器发送到不同的国家，以观察这是否会影响冲突的概率。
 
 第二个主要缺点是，当我们完全控制实验环境时，可能会以牺牲外部有效性（即我们可以将结果推广到研究范围之外的程度）为代价。例如，医学研究通常使用近交系的老鼠/小鼠。这些动物在基因上几乎是相同的，因此我们接近平行世界的情况。但问题是，我们失去了外部有效性。
 
 > 因此，通常在完美测量因果效应和结果是否能很好地反映现实生活情况之间存在权衡。
 
-![](../Images/5edd4b12a049050454693353514101dc.png)
+![](img/5edd4b12a049050454693353514101dc.png)
 
 图片由作者提供
 
-让我用一篇精彩的论文来说明这个想法：*《使用降落伞预防从飞机上跳下时的死亡和重大创伤：随机对照试验》* ([https://www.bmj.com/content/363/bmj.k5094](https://www.bmj.com/content/363/bmj.k5094))。这篇论文发表在顶级医学期刊：英国医学杂志（BMJ）。
+让我用一篇精彩的论文来说明这个想法：*《使用降落伞预防从飞机上跳下时的死亡和重大创伤：随机对照试验》* ([`www.bmj.com/content/363/bmj.k5094`](https://www.bmj.com/content/363/bmj.k5094))。这篇论文发表在顶级医学期刊：英国医学杂志（BMJ）。
 
-在这个实验（这是一个随机对照试验）中，他们在2017年至2018年间的一年时间内成功招募了23名志愿者，并让他们从飞机上跳下。参与者被随机分为两组，一组使用降落伞，另一组则背着空背包。他们直接在碰撞后测量了死亡或重大身体创伤的概率。作者没有发现两组在这些结果（死亡和重大创伤）之间存在差异。
+在这个实验（这是一个随机对照试验）中，他们在 2017 年至 2018 年间的一年时间内成功招募了 23 名志愿者，并让他们从飞机上跳下。参与者被随机分为两组，一组使用降落伞，另一组则背着空背包。他们直接在碰撞后测量了死亡或重大身体创伤的概率。作者没有发现两组在这些结果（死亡和重大创伤）之间存在差异。
 
 那么，问题在哪里呢？这确实是一个真实的实验，但为了能够进行这些实验，他们当然是在一个从未离开地面的静止飞机上进行的。人们从离地面约一米的高度跳下。论文的目的是强调有时候你试图通过实验来完美控制环境，但结果却不一定真实反映现实。
 
@@ -104,7 +104,7 @@
 
 > 另一个选择是比较城市居民与农村居民，但这些群体可能在其他方面（如饮食、身体活动和工作类型）有所不同，这可能会混淆结果。因此，准确评估污染与健康之间的因果关系可能很困难。
 
-因此，为了回答这样的问题，我们可以借助自然实验。这正是一些研究人员在2016年所做的 ([https://www.sciencedirect.com/science/article/abs/pii/S0095069616300237](https://www.sciencedirect.com/science/article/abs/pii/S0095069616300237))。作者利用北京奥运会来衡量空气污染对死亡率的因果效应。政府在比赛前和比赛期间实施了非常严格的减排法规（例如，关闭电厂，减少汽车使用）。这种情况使得可以精确观察到相同的人在之前、期间和之后。这些个体经历了其污染暴露水平的突然变化，从高水平降到显著较低的水平。作者发现“*PM10 [空气中的细颗粒物] 浓度下降10％会使月度标准化全因死亡率降低8％。*”
+因此，为了回答这样的问题，我们可以借助自然实验。这正是一些研究人员在 2016 年所做的 ([`www.sciencedirect.com/science/article/abs/pii/S0095069616300237`](https://www.sciencedirect.com/science/article/abs/pii/S0095069616300237))。作者利用北京奥运会来衡量空气污染对死亡率的因果效应。政府在比赛前和比赛期间实施了非常严格的减排法规（例如，关闭电厂，减少汽车使用）。这种情况使得可以精确观察到相同的人在之前、期间和之后。这些个体经历了其污染暴露水平的突然变化，从高水平降到显著较低的水平。作者发现“*PM10 [空气中的细颗粒物] 浓度下降 10％会使月度标准化全因死亡率降低 8％。*”
 
 # 如何挑战因果关系？
 
@@ -114,13 +114,13 @@
 
 由于我们不能直接测试因果关系，我们可以做什么？你可以总是询问是否有其他因素解释了这个结果，或者是否在同一时间反向关系成立。使用这些问题来挑战一个因果声明。
 
-![](../Images/f12dbcd4b3decd47feb4cfcc1539773c.png)
+![](img/f12dbcd4b3decd47feb4cfcc1539773c.png)
 
 图片来源于作者
 
-首先让我阐述第一个概念：遗漏变量偏差（是否有其他因素？）。研究发现咖啡消费与心血管疾病之间存在高度负相关 ([https://academic.oup.com/eurjpc/article-abstract/29/17/2240/6704995?redirectedFrom=fulltext](https://academic.oup.com/eurjpc/article-abstract/29/17/2240/6704995?redirectedFrom=fulltext))。论文（Chieng等，2022）中提到的咖啡消费与健康之间的联系可能并不一定是因果关系。需要考虑的是，其他因素可能会影响咖啡消费和整体健康。例如，身体活动更多的人可能会消费更多的咖啡，并且由于其身体活动而更健康。重要的是始终考虑可能存在其他因素，而不是在没有进一步分析的情况下将观察到的关系解释为因果效应。
+首先让我阐述第一个概念：遗漏变量偏差（是否有其他因素？）。研究发现咖啡消费与心血管疾病之间存在高度负相关 ([`academic.oup.com/eurjpc/article-abstract/29/17/2240/6704995?redirectedFrom=fulltext`](https://academic.oup.com/eurjpc/article-abstract/29/17/2240/6704995?redirectedFrom=fulltext))。论文（Chieng 等，2022）中提到的咖啡消费与健康之间的联系可能并不一定是因果关系。需要考虑的是，其他因素可能会影响咖啡消费和整体健康。例如，身体活动更多的人可能会消费更多的咖啡，并且由于其身体活动而更健康。重要的是始终考虑可能存在其他因素，而不是在没有进一步分析的情况下将观察到的关系解释为因果效应。
 
-![](../Images/2940ea8586e158fa05725fa809ed091d.png)
+![](img/2940ea8586e158fa05725fa809ed091d.png)
 
 图片来源于作者
 

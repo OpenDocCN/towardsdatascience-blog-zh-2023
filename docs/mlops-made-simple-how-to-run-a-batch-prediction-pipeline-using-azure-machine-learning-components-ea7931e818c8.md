@@ -1,26 +1,26 @@
 # MLOps 简化版：如何使用 Azure 机器学习组件运行批量预测管道
 
-> 原文：[https://towardsdatascience.com/mlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8?source=collection_archive---------11-----------------------#2023-02-06](https://towardsdatascience.com/mlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8?source=collection_archive---------11-----------------------#2023-02-06)
+> 原文：[`towardsdatascience.com/mlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8?source=collection_archive---------11-----------------------#2023-02-06`](https://towardsdatascience.com/mlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8?source=collection_archive---------11-----------------------#2023-02-06)
 
 ## 你只是想获取你的模型.pt 文件，上传到某个地方并获得预测，对吗？让我们看看如何使用 AML 基础设施来做到这一点。
 
-[](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)[![Déborah Mesquita](../Images/3b77b7eb569e24f2679875429173daf1.png)](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------) [Déborah Mesquita](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)
+[](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)![Déborah Mesquita](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------) [Déborah Mesquita](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdd9e06a0a640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=post_page-dd9e06a0a640----ea7931e818c8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------) ·7分钟阅读·2023年2月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fea7931e818c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=-----ea7931e818c8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdd9e06a0a640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=post_page-dd9e06a0a640----ea7931e818c8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------) ·7 分钟阅读·2023 年 2 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fea7931e818c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=-----ea7931e818c8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fea7931e818c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&source=-----ea7931e818c8---------------------bookmark_footer-----------)![](../Images/591289eeaf235b40ba0fd589b0304db8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fea7931e818c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&source=-----ea7931e818c8---------------------bookmark_footer-----------)![](img/591289eeaf235b40ba0fd589b0304db8.png)
 
 图片由 [Sarah Dorweiler](https://unsplash.com/ko/@sarahdorweiler?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/pt-br/fotografias/x2Tmfd1-SgA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-在日常工作中，作为数据科学家，我们经常需要使用一些模型用于内部目的。如果我们是一个人团队，将其运行在自己的机器上是可以的，但我们通常需要与其他队友共享我们的工作。共享运行脚本的Jupyter笔记本是一种方法，但在实验阶段之后，笔记本会变得难以管理和操作。
+在日常工作中，作为数据科学家，我们经常需要使用一些模型用于内部目的。如果我们是一个人团队，将其运行在自己的机器上是可以的，但我们通常需要与其他队友共享我们的工作。共享运行脚本的 Jupyter 笔记本是一种方法，但在实验阶段之后，笔记本会变得难以管理和操作。
 
-最近，Azure引入了[**组件**](https://learn.microsoft.com/en-us/azure/machine-learning/concept-component)，这是一种“自包含的代码片段，执行机器学习管道中的一个步骤”。我们可以使用这些组件构建独立可执行的工作流，并与其他队友共享。在今天的文章中，我们将使用组件创建一个特征匹配管道。
+最近，Azure 引入了[**组件**](https://learn.microsoft.com/en-us/azure/machine-learning/concept-component)，这是一种“自包含的代码片段，执行机器学习管道中的一个步骤”。我们可以使用这些组件构建独立可执行的工作流，并与其他队友共享。在今天的文章中，我们将使用组件创建一个特征匹配管道。
 
-注意：如果你对Azure Machine Learning完全陌生，阅读[这篇文章](https://medium.com/towards-data-science/automl-for-object-detection-how-to-train-a-model-to-identify-potholes-e22c3f4b774)可能会对你有所帮助，其中简要回顾了一些AML概念。
+注意：如果你对 Azure Machine Learning 完全陌生，阅读[这篇文章](https://medium.com/towards-data-science/automl-for-object-detection-how-to-train-a-model-to-identify-potholes-e22c3f4b774)可能会对你有所帮助，其中简要回顾了一些 AML 概念。
 
 # MLOps 101
 
@@ -32,13 +32,13 @@
 
 +   **计算资源：**代码实际执行的地方
 
-对我们来说，**架构**部分包含我们的python代码。这部分在不同平台上变化不大。**作业调度器**和**计算资源**会根据我们运行工作流的平台而有所不同。
+对我们来说，**架构**部分包含我们的 python 代码。这部分在不同平台上变化不大。**作业调度器**和**计算资源**会根据我们运行工作流的平台而有所不同。
 
-大多数数据科学工作流失败并不是由于代码本身，而是由于数据或我们运行代码的环境发生了变化。每个AML组件都有自己的环境和依赖项，因此它对我们工作流的稳定性贡献很大。
+大多数数据科学工作流失败并不是由于代码本身，而是由于数据或我们运行代码的环境发生了变化。每个 AML 组件都有自己的环境和依赖项，因此它对我们工作流的稳定性贡献很大。
 
-使用AML堆栈，我们可以通过[组件](https://learn.microsoft.com/en-us/azure/machine-learning/concept-component)构建**架构**，使用管道作业作为我们的**作业调度器**，并使用[计算集群](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-compute-cluster?tabs=python#what-is-a-compute-cluster)或[计算实例](https://learn.microsoft.com/en-us/azure/machine-learning/concept-compute-instance)来运行我们的工作流。
+使用 AML 堆栈，我们可以通过[组件](https://learn.microsoft.com/en-us/azure/machine-learning/concept-component)构建**架构**，使用管道作业作为我们的**作业调度器**，并使用[计算集群](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-compute-cluster?tabs=python#what-is-a-compute-cluster)或[计算实例](https://learn.microsoft.com/en-us/azure/machine-learning/concept-compute-instance)来运行我们的工作流。
 
-现在让我们看看如何在AML工作区中使用这些内容。
+现在让我们看看如何在 AML 工作区中使用这些内容。
 
 # 我们的批量预测管道
 
@@ -46,7 +46,7 @@
 
 你听说过 [使用 OpenCV 进行特征匹配](https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html) 吗？
 
-![](../Images/95697fa9ca0c969e1b04ee18f1ecb36c.png)
+![](img/95697fa9ca0c969e1b04ee18f1ecb36c.png)
 
 使用 SIFT 描述符和比率测试的暴力匹配
 
@@ -219,7 +219,7 @@ ml_client.components.create_or_update(superpoint_and_superglue_component, versio
 
 现在我们可以在 AML 工作区中看到这个组件。
 
-![](../Images/9248054cf7d19cb4606c1f15dedabbb5.png)
+![](img/9248054cf7d19cb4606c1f15dedabbb5.png)
 
 我们创建的组件
 
@@ -229,19 +229,19 @@ ml_client.components.create_or_update(superpoint_and_superglue_component, versio
 
 我们可以使用 Azure ML CLI v2、Azure ML SDK v2 或 Designer 来定义管道。由于我们的管道很简单，我们将使用设计器来定义它。要创建输入数据资产，我们也将使用工作区 UI。
 
-![](../Images/3d8c3ec55132766ca60cb08189e85e74.png)
+![](img/3d8c3ec55132766ca60cb08189e85e74.png)
 
 使用 UI 创建数据资产
 
 由于我们的管道有一个自定义组件，我们需要创建一个自定义管道
 
-![](../Images/1828bb84d05885da2f07de30bb6d8019.png)
+![](img/1828bb84d05885da2f07de30bb6d8019.png)
 
 制作自定义管道的选项卡
 
 提交管道运行时，我们需要指定计算资源。您也可以使用 UI 创建一个。
 
-![](../Images/5f3194f47ab79622c55ab371827d4871.png)
+![](img/5f3194f47ab79622c55ab371827d4871.png)
 
 使用 Designer 创建管道
 
@@ -253,8 +253,8 @@ AML 组件是组织我们在数据科学日常活动中代码的绝佳方式。�
 
 # 参考文献
 
-[1] [https://github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition](https://github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition)
+[1] [`github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition`](https://github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition)
 
 [2] DeTone, Daniel, Tomasz Malisiewicz, 和 Andrew Rabinovich. “Superpoint: 自监督兴趣点检测和描述。” *IEEE 计算机视觉与模式识别会议研讨会论文集*. 2018.
 
-[3] [https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-component-pipeline-python](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-component-pipeline-python)
+[3] [`learn.microsoft.com/en-us/azure/machine-learning/how-to-create-component-pipeline-python`](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-component-pipeline-python)

@@ -1,14 +1,14 @@
 # 最佳 ChatGPT 插件
 
-> 原文：[https://towardsdatascience.com/the-best-chatgpt-plugins-96ea60ccf5f8?source=collection_archive---------0-----------------------#2023-05-25](https://towardsdatascience.com/the-best-chatgpt-plugins-96ea60ccf5f8?source=collection_archive---------0-----------------------#2023-05-25)
+> 原文：[`towardsdatascience.com/the-best-chatgpt-plugins-96ea60ccf5f8?source=collection_archive---------0-----------------------#2023-05-25`](https://towardsdatascience.com/the-best-chatgpt-plugins-96ea60ccf5f8?source=collection_archive---------0-----------------------#2023-05-25)
 
 ## 网络浏览、总结、编码等
 
-[](https://sophiamyang.medium.com/?source=post_page-----96ea60ccf5f8--------------------------------)[![Sophia Yang, Ph.D.](../Images/c133f918245ea4857dc46df3a07fc2b1.png)](https://sophiamyang.medium.com/?source=post_page-----96ea60ccf5f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96ea60ccf5f8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----96ea60ccf5f8--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----96ea60ccf5f8--------------------------------)
+[](https://sophiamyang.medium.com/?source=post_page-----96ea60ccf5f8--------------------------------)![Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----96ea60ccf5f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96ea60ccf5f8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----96ea60ccf5f8--------------------------------) [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----96ea60ccf5f8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-best-chatgpt-plugins-96ea60ccf5f8&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----96ea60ccf5f8---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96ea60ccf5f8--------------------------------) ·8 分钟阅读·2023年5月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96ea60ccf5f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-best-chatgpt-plugins-96ea60ccf5f8&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----96ea60ccf5f8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-best-chatgpt-plugins-96ea60ccf5f8&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----96ea60ccf5f8---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96ea60ccf5f8--------------------------------) ·8 分钟阅读·2023 年 5 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96ea60ccf5f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-best-chatgpt-plugins-96ea60ccf5f8&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----96ea60ccf5f8---------------------clap_footer-----------)
 
 --
 

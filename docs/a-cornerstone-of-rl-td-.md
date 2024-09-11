@@ -1,10 +1,10 @@
 # 强化学习的基石——TD(λ) 与 3 个大名鼎鼎的人物
 
-> 原文：[https://towardsdatascience.com/a-cornerstone-of-rl-td-%CE%BB-and-3-big-names-2e547b37c05?source=collection_archive---------8-----------------------#2023-09-14](https://towardsdatascience.com/a-cornerstone-of-rl-td-%CE%BB-and-3-big-names-2e547b37c05?source=collection_archive---------8-----------------------#2023-09-14)
+> 原文：[`towardsdatascience.com/a-cornerstone-of-rl-td-%CE%BB-and-3-big-names-2e547b37c05?source=collection_archive---------8-----------------------#2023-09-14`](https://towardsdatascience.com/a-cornerstone-of-rl-td-%CE%BB-and-3-big-names-2e547b37c05?source=collection_archive---------8-----------------------#2023-09-14)
 
 ## 如何从 TD(λ) 推导 Monte Carlo、SARSA 和 Q-learning
 
-[](https://medium.com/@byjameskoh?source=post_page-----2e547b37c05--------------------------------)[![James Koh, PhD](../Images/8e7af8b567cdcf24805754801683b426.png)](https://medium.com/@byjameskoh?source=post_page-----2e547b37c05--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e547b37c05--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e547b37c05--------------------------------) [James Koh, PhD](https://medium.com/@byjameskoh?source=post_page-----2e547b37c05--------------------------------)
+[](https://medium.com/@byjameskoh?source=post_page-----2e547b37c05--------------------------------)![James Koh, PhD](https://medium.com/@byjameskoh?source=post_page-----2e547b37c05--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e547b37c05--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e547b37c05--------------------------------) [James Koh, PhD](https://medium.com/@byjameskoh?source=post_page-----2e547b37c05--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e547b37c05&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cornerstone-of-rl-td-%25CE%25BB-and-3-big-names-2e547b37c05&source=-----2e547b37c05---------------------bookmark_footer-----------)![](../Images/e98fb2371203cb541956d91ac9f47d66.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e547b37c05&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-cornerstone-of-rl-td-%25CE%25BB-and-3-big-names-2e547b37c05&source=-----2e547b37c05---------------------bookmark_footer-----------)![](img/e98fb2371203cb541956d91ac9f47d66.png)
 
 照片由 [Loïc Barré](https://unsplash.com/@loicbarre?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

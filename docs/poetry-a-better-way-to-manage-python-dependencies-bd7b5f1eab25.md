@@ -1,22 +1,22 @@
 # Python 依赖管理：你应该选择哪个工具？
 
-> 原文：[https://towardsdatascience.com/poetry-a-better-way-to-manage-python-dependencies-bd7b5f1eab25?source=collection_archive---------7-----------------------#2023-06-13](https://towardsdatascience.com/poetry-a-better-way-to-manage-python-dependencies-bd7b5f1eab25?source=collection_archive---------7-----------------------#2023-06-13)
+> 原文：[`towardsdatascience.com/poetry-a-better-way-to-manage-python-dependencies-bd7b5f1eab25?source=collection_archive---------7-----------------------#2023-06-13`](https://towardsdatascience.com/poetry-a-better-way-to-manage-python-dependencies-bd7b5f1eab25?source=collection_archive---------7-----------------------#2023-06-13)
 
 ## 对 Poetry、Pip 和 Conda 的深入比较
 
-[![Khuyen Tran](../Images/98aa66025ad29b618e875c75f1c400a5.png)](https://khuyentran1476.medium.com/?source=post_page-----bd7b5f1eab25--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bd7b5f1eab25--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----bd7b5f1eab25--------------------------------)
+![Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----bd7b5f1eab25--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd7b5f1eab25--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----bd7b5f1eab25--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpoetry-a-better-way-to-manage-python-dependencies-bd7b5f1eab25&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----bd7b5f1eab25---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd7b5f1eab25--------------------------------) · 10分钟阅读 · 2023年6月13日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpoetry-a-better-way-to-manage-python-dependencies-bd7b5f1eab25&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----bd7b5f1eab25---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd7b5f1eab25--------------------------------) · 10 分钟阅读 · 2023 年 6 月 13 日
 
 --
 
-![](../Images/a87494b4a6efa276955127728c116a55.png)
+![](img/a87494b4a6efa276955127728c116a55.png)
 
 作者提供的图片
 
-*最初发布于* [*https://mathdatasimplified.com*](https://mathdatasimplified.com/2023/06/12/poetry-a-better-way-to-manage-python-dependencies/) *于2023年6月13日。*
+*最初发布于* [*https://mathdatasimplified.com*](https://mathdatasimplified.com/2023/06/12/poetry-a-better-way-to-manage-python-dependencies/) *于 2023 年 6 月 13 日。*
 
 # 动机
 

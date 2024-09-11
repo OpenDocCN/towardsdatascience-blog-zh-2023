@@ -1,22 +1,22 @@
 # Loguru：像打印一样简单，像日志记录一样灵活
 
-> 原文：[https://towardsdatascience.com/loguru-simple-as-print-flexible-as-logging-c964467f64aa?source=collection_archive---------5-----------------------#2023-07-17](https://towardsdatascience.com/loguru-simple-as-print-flexible-as-logging-c964467f64aa?source=collection_archive---------5-----------------------#2023-07-17)
+> 原文：[`towardsdatascience.com/loguru-simple-as-print-flexible-as-logging-c964467f64aa?source=collection_archive---------5-----------------------#2023-07-17`](https://towardsdatascience.com/loguru-simple-as-print-flexible-as-logging-c964467f64aa?source=collection_archive---------5-----------------------#2023-07-17)
 
 ## 为你的数据科学项目提供简单的日志记录解决方案
 
-[](https://khuyentran1476.medium.com/?source=post_page-----c964467f64aa--------------------------------)[![Khuyen Tran](../Images/98aa66025ad29b618e875c75f1c400a5.png)](https://khuyentran1476.medium.com/?source=post_page-----c964467f64aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c964467f64aa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c964467f64aa--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----c964467f64aa--------------------------------)
+[](https://khuyentran1476.medium.com/?source=post_page-----c964467f64aa--------------------------------)![Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----c964467f64aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c964467f64aa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c964467f64aa--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----c964467f64aa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floguru-simple-as-print-flexible-as-logging-c964467f64aa&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----c964467f64aa---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c964467f64aa--------------------------------) ·8分钟阅读·2023年7月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc964467f64aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floguru-simple-as-print-flexible-as-logging-c964467f64aa&user=Khuyen+Tran&userId=84a02493194a&source=-----c964467f64aa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floguru-simple-as-print-flexible-as-logging-c964467f64aa&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----c964467f64aa---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c964467f64aa--------------------------------) ·8 分钟阅读·2023 年 7 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc964467f64aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floguru-simple-as-print-flexible-as-logging-c964467f64aa&user=Khuyen+Tran&userId=84a02493194a&source=-----c964467f64aa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc964467f64aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floguru-simple-as-print-flexible-as-logging-c964467f64aa&source=-----c964467f64aa---------------------bookmark_footer-----------)![](../Images/3829b994881a3b1be639cbae3c28152d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc964467f64aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floguru-simple-as-print-flexible-as-logging-c964467f64aa&source=-----c964467f64aa---------------------bookmark_footer-----------)![](img/3829b994881a3b1be639cbae3c28152d.png)
 
 作者提供的图片
 
-*最初发表于* [*https://mathdatasimplified.com*](https://mathdatasimplified.com/2023/07/17/simplify-your-python-logging-with-loguru/) *2023年7月17日。*
+*最初发表于* [*https://mathdatasimplified.com*](https://mathdatasimplified.com/2023/07/17/simplify-your-python-logging-with-loguru/) *2023 年 7 月 17 日。*
 
 # 为什么在数据科学项目中使用日志记录？
 

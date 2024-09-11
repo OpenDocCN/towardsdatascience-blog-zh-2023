@@ -1,18 +1,18 @@
 # 通过可视化掌握 Python 装饰器
 
-> 原文：[https://towardsdatascience.com/become-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb?source=collection_archive---------14-----------------------#2023-01-23](https://towardsdatascience.com/become-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb?source=collection_archive---------14-----------------------#2023-01-23)
+> 原文：[`towardsdatascience.com/become-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb?source=collection_archive---------14-----------------------#2023-01-23`](https://towardsdatascience.com/become-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb?source=collection_archive---------14-----------------------#2023-01-23)
 
 ## 通过可视化理解 Python 装饰器
 
-[](https://chengzhizhao.medium.com/?source=post_page-----4cc6ac06f2cb--------------------------------)[![Chengzhi Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----4cc6ac06f2cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4cc6ac06f2cb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4cc6ac06f2cb--------------------------------) [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----4cc6ac06f2cb--------------------------------)
+[](https://chengzhizhao.medium.com/?source=post_page-----4cc6ac06f2cb--------------------------------)![Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----4cc6ac06f2cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4cc6ac06f2cb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cc6ac06f2cb--------------------------------) [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----4cc6ac06f2cb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff956c63a9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbecome-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb&user=Chengzhi+Zhao&userId=f956c63a9571&source=post_page-f956c63a9571----4cc6ac06f2cb---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cc6ac06f2cb--------------------------------) ·7 分钟阅读·2023年1月23日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff956c63a9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbecome-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb&user=Chengzhi+Zhao&userId=f956c63a9571&source=post_page-f956c63a9571----4cc6ac06f2cb---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cc6ac06f2cb--------------------------------) ·7 分钟阅读·2023 年 1 月 23 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4cc6ac06f2cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbecome-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb&source=-----4cc6ac06f2cb---------------------bookmark_footer-----------)![](../Images/c44b22b6f30e95008253cc13f75711a4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4cc6ac06f2cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbecome-fluent-in-python-decorators-via-visualization-4cc6ac06f2cb&source=-----4cc6ac06f2cb---------------------bookmark_footer-----------)![](img/c44b22b6f30e95008253cc13f75711a4.png)
 
 图片来源于 [Huyen Bui](https://unsplash.com/ja/@huyenbui30?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/vM9R9uu_BKY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

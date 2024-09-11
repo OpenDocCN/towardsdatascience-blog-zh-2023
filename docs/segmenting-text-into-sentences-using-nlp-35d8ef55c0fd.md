@@ -1,18 +1,18 @@
 # 使用 NLP 对文本进行句子分割
 
-> 原文：[https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd?source=collection_archive---------8-----------------------#2023-01-30](https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd?source=collection_archive---------8-----------------------#2023-01-30)
+> 原文：[`towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd?source=collection_archive---------8-----------------------#2023-01-30`](https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd?source=collection_archive---------8-----------------------#2023-01-30)
 
 ## **特征工程、统计模型和从反馈中学习**
 
-[](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)[![Arun Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)
+[](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)![Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-sentences-using-nlp-35d8ef55c0fd&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----35d8ef55c0fd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------) · 10 分钟阅读 · 2023年1月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F35d8ef55c0fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-sentences-using-nlp-35d8ef55c0fd&user=Arun+Jagota&userId=ef9ed921edad&source=-----35d8ef55c0fd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-sentences-using-nlp-35d8ef55c0fd&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----35d8ef55c0fd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------) · 10 分钟阅读 · 2023 年 1 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F35d8ef55c0fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-sentences-using-nlp-35d8ef55c0fd&user=Arun+Jagota&userId=ef9ed921edad&source=-----35d8ef55c0fd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F35d8ef55c0fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-sentences-using-nlp-35d8ef55c0fd&source=-----35d8ef55c0fd---------------------bookmark_footer-----------)![](../Images/b2d3d765f44d8d3e011a1660ef32353e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F35d8ef55c0fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-sentences-using-nlp-35d8ef55c0fd&source=-----35d8ef55c0fd---------------------bookmark_footer-----------)![](img/b2d3d765f44d8d3e011a1660ef32353e.png)
 
 图片来自 [Nile](https://pixabay.com/users/nile-598962/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=623167) 提供的 [Pixabay](https://pixabay.com/)
 

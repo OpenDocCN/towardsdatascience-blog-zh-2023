@@ -1,18 +1,18 @@
 # 使用 GPT-4 进行标签自助标注
 
-> 原文：[https://towardsdatascience.com/bootstrapping-labels-with-gpt-4-8dc85ab5026d?source=collection_archive---------2-----------------------#2023-06-09](https://towardsdatascience.com/bootstrapping-labels-with-gpt-4-8dc85ab5026d?source=collection_archive---------2-----------------------#2023-06-09)
+> 原文：[`towardsdatascience.com/bootstrapping-labels-with-gpt-4-8dc85ab5026d?source=collection_archive---------2-----------------------#2023-06-09`](https://towardsdatascience.com/bootstrapping-labels-with-gpt-4-8dc85ab5026d?source=collection_archive---------2-----------------------#2023-06-09)
 
-![](../Images/7364bb5c4883661737f7aa5783ca675d.png)
+![](img/7364bb5c4883661737f7aa5783ca675d.png)
 
 （来源：作者使用 DALL-E 生成的图像，由作者修改。）
 
 ## 一种具有成本效益的数据标注方法
 
-[](https://jimmymwhitaker.medium.com/?source=post_page-----8dc85ab5026d--------------------------------)[![Jimmy Whitaker](../Images/7aa8c0d58dd1244ffca7ed9003cbb1d3.png)](https://jimmymwhitaker.medium.com/?source=post_page-----8dc85ab5026d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dc85ab5026d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8dc85ab5026d--------------------------------) [Jimmy Whitaker](https://jimmymwhitaker.medium.com/?source=post_page-----8dc85ab5026d--------------------------------)
+[](https://jimmymwhitaker.medium.com/?source=post_page-----8dc85ab5026d--------------------------------)![Jimmy Whitaker](https://jimmymwhitaker.medium.com/?source=post_page-----8dc85ab5026d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dc85ab5026d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dc85ab5026d--------------------------------) [Jimmy Whitaker](https://jimmymwhitaker.medium.com/?source=post_page-----8dc85ab5026d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff40e6fd303f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbootstrapping-labels-with-gpt-4-8dc85ab5026d&user=Jimmy+Whitaker&userId=f40e6fd303f9&source=post_page-f40e6fd303f9----8dc85ab5026d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dc85ab5026d--------------------------------) ·9分钟阅读·2023年6月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dc85ab5026d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbootstrapping-labels-with-gpt-4-8dc85ab5026d&user=Jimmy+Whitaker&userId=f40e6fd303f9&source=-----8dc85ab5026d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff40e6fd303f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbootstrapping-labels-with-gpt-4-8dc85ab5026d&user=Jimmy+Whitaker&userId=f40e6fd303f9&source=post_page-f40e6fd303f9----8dc85ab5026d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dc85ab5026d--------------------------------) ·9 分钟阅读·2023 年 6 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dc85ab5026d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbootstrapping-labels-with-gpt-4-8dc85ab5026d&user=Jimmy+Whitaker&userId=f40e6fd303f9&source=-----8dc85ab5026d---------------------clap_footer-----------)
 
 --
 
@@ -99,7 +99,7 @@ with open(input_file_path, "r") as input_file, open(output_file_path, "w") as ou
 
 一旦我们的预标记数据准备好，我们将其导入到数据标注工具中，例如 Label Studio，以便进行审查。本节将指导你如何设置 Label Studio 项目、导入预标记数据和审查注释。
 
-![](../Images/cb436b1216cf242646e5c6b89f62abb7.png)
+![](img/cb436b1216cf242646e5c6b89f62abb7.png)
 
 图 1：在 Label Studio 中审查情感分类。（图片来源于作者，Label Studio 截图）
 
@@ -161,53 +161,53 @@ label-studio
 
 *注意：以下显示的价格反映了作者在出版时的当前数据。未来价格可能会有所不同，或根据地理位置有所变化。*
 
-对于语言模型，OpenAI根据请求中的令牌数量收费。令牌通常是查询中的单词数量，但特殊字符和表情符号有时也会被视为单个令牌。OpenAI的定价页面指出，“你可以将令牌视为单词的片段，其中1,000个令牌大约是750个单词。”有关令牌计数的更多信息，[请参见此页面](https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them)。
+对于语言模型，OpenAI 根据请求中的令牌数量收费。令牌通常是查询中的单词数量，但特殊字符和表情符号有时也会被视为单个令牌。OpenAI 的定价页面指出，“你可以将令牌视为单词的片段，其中 1,000 个令牌大约是 750 个单词。”有关令牌计数的更多信息，[请参见此页面](https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them)。
 
-每个令牌的成本根据使用的模型不同而有所不同。例如，GPT-4 8K上下文模型的提示费用为$0.03/1K令牌，每个生成的令牌费用为$0.06/1K令牌，而GPT-3.5-turbo模型的费用为$0.002/1K令牌。
+每个令牌的成本根据使用的模型不同而有所不同。例如，GPT-4 8K 上下文模型的提示费用为$0.03/1K 令牌，每个生成的令牌费用为$0.06/1K 令牌，而 GPT-3.5-turbo 模型的费用为$0.002/1K 令牌。
 
-![](../Images/c57de6757c3495e22ac8e276ba4743b7.png)
+![](img/c57de6757c3495e22ac8e276ba4743b7.png)
 
-OpenAI的令牌价格总结。（来源：[OpenAI论坛](https://community.openai.com/t/gpt4-and-gpt-3-5-turb-api-cost-comparison-and-understanding/106192)，图像由作者提供）
+OpenAI 的令牌价格总结。（来源：[OpenAI 论坛](https://community.openai.com/t/gpt4-and-gpt-3-5-turb-api-cost-comparison-and-understanding/106192)，图像由作者提供）
 
 要估算预标记数据集的成本，我们可以使用一个简单的公式，考虑数据集中示例的数量、每令牌的提示和完成价格，以及每个示例的平均令牌数。
 
-![](../Images/273980473542534d60bc3c4169530b21.png)
+![](img/273980473542534d60bc3c4169530b21.png)
 
 其中：
 
-![](../Images/a51bc3523be67652d4ce34503a97a9df.png)
+![](img/a51bc3523be67652d4ce34503a97a9df.png)
 
 此外，我们可以通过以下方式计算数据集中令牌的总数：
 
-![](../Images/8d1c6cb1efb7289bee820553bea2d4c4.png)
+![](img/8d1c6cb1efb7289bee820553bea2d4c4.png)
 
 其中：
 
-![](../Images/2eadd9c6d72e7a06d7acf3404a35b44d.png)
+![](img/2eadd9c6d72e7a06d7acf3404a35b44d.png)
 
 使用这个公式，我们可以通过将示例数量与提示费用和完成费用的总和相乘来估算预标记数据集的成本，并根据每个示例的平均令牌数进行调整。
 
-例如，如果我们有一个包含1,000个示例的数据集，并且我们希望使用GPT-4进行情感分析的预标记，我们可以根据以下条件进行计算：每1K令牌的提示价格为$0.03，每1K令牌的完成价格为$0.06，提示长度为20令牌，每个示例的平均长度为80令牌，每个结果令牌的平均长度为3令牌，则预标记的总成本为：
+例如，如果我们有一个包含 1,000 个示例的数据集，并且我们希望使用 GPT-4 进行情感分析的预标记，我们可以根据以下条件进行计算：每 1K 令牌的提示价格为$0.03，每 1K 令牌的完成价格为$0.06，提示长度为 20 令牌，每个示例的平均长度为 80 令牌，每个结果令牌的平均长度为 3 令牌，则预标记的总成本为：
 
-![](../Images/649674d146b05fa6125f41409ff1fd76.png)
+![](img/649674d146b05fa6125f41409ff1fd76.png)
 
-在这个例子中，使用GPT-4进行数据集的预标记将花费$3.18。注意：相同的数据集使用**GPT-3.5-turbo将花费大约$0.21**。
+在这个例子中，使用 GPT-4 进行数据集的预标记将花费$3.18。注意：相同的数据集使用**GPT-3.5-turbo 将花费大约$0.21**。
 
-如果我们的预标记任务所需的专业知识较少，我们可能会希望使用一个不那么强大的模型以节省成本。通常，手动查看几个不同复杂程度的示例是值得的，以了解一个模型相对于另一个模型的准确性。有关模型的信息，请参见[OpenAI定价页面](https://openai.com/pricing)。
+如果我们的预标记任务所需的专业知识较少，我们可能会希望使用一个不那么强大的模型以节省成本。通常，手动查看几个不同复杂程度的示例是值得的，以了解一个模型相对于另一个模型的准确性。有关模型的信息，请参见[OpenAI 定价页面](https://openai.com/pricing)。
 
-# 超越情感分析：标记任何NLP任务
+# 超越情感分析：标记任何 NLP 任务
 
-![](../Images/2c64712f863815f74d4911ebd4f685df.png)
+![](img/2c64712f863815f74d4911ebd4f685df.png)
 
-Label Studio中的命名实体识别截图。（图像由作者提供，截图来自Label Studio）
+Label Studio 中的命名实体识别截图。（图像由作者提供，截图来自 Label Studio）
 
-这种方法的优点在于它不仅限于情感分析。我们可以通过使用提示工程和引导GPT-4生成正确的输出，预先标注各种NLP任务的数据。以下是不同NLP任务的几个提示示例，所有示例都可以在Label Studio中进行审核和标注（所给示例是使用GPT-4生成的）。请记住，更复杂的任务可能需要更长的提示，这将计入你的令牌数，并因此增加成本。
+这种方法的优点在于它不仅限于情感分析。我们可以通过使用提示工程和引导 GPT-4 生成正确的输出，预先标注各种 NLP 任务的数据。以下是不同 NLP 任务的几个提示示例，所有示例都可以在 Label Studio 中进行审核和标注（所给示例是使用 GPT-4 生成的）。请记住，更复杂的任务可能需要更长的提示，这将计入你的令牌数，并因此增加成本。
 
 ## 总结
 
 +   提示：
 
-> 以JSON格式回应以下文本的总结：{‘summary’: summary}
+> 以 JSON 格式回应以下文本的总结：{‘summary’: summary}
 > 
 > 文本：我喜欢在晴天去公园。客户服务很糟糕；他们无礼且无助。我对新政策的变化既不开心也不难过。蛋糕很美味，摆盘也很棒。我对产品的体验非常糟糕；它在两天后坏了。
 > 
@@ -223,9 +223,9 @@ Label Studio中的命名实体识别截图。（图像由作者提供，截图�
 
 提示：
 
-> 以JSON格式回应以下文本的总结：{‘diagnosis’: diagnosis}，其中可能的诊断包括肺炎、急性支气管炎、哮喘加重、充血性心力衰竭、慢性阻塞性肺病（COPD）、肺栓塞、胸腔积液、间质性肺病或肺癌。
+> 以 JSON 格式回应以下文本的总结：{‘diagnosis’: diagnosis}，其中可能的诊断包括肺炎、急性支气管炎、哮喘加重、充血性心力衰竭、慢性阻塞性肺病（COPD）、肺栓塞、胸腔积液、间质性肺病或肺癌。
 > 
-> 文本：患者出现呼吸急促和持续性咳嗽。体检时在下肺区听到了裂纹音。胸部X光显示双侧浸润，与肺炎一致。患者开始接受抗生素治疗，并在48小时内症状有所改善。
+> 文本：患者出现呼吸急促和持续性咳嗽。体检时在下肺区听到了裂纹音。胸部 X 光显示双侧浸润，与肺炎一致。患者开始接受抗生素治疗，并在 48 小时内症状有所改善。
 > 
 > 诊断：
 
@@ -239,7 +239,7 @@ Label Studio中的命名实体识别截图。（图像由作者提供，截图�
 
 提示：
 
-> 你是一个专业的NER标注员。只返回JSON格式。不要返回解释。以JSON格式返回以下句子的CoNLL格式。
+> 你是一个专业的 NER 标注员。只返回 JSON 格式。不要返回解释。以 JSON 格式返回以下句子的 CoNLL 格式。
 
 响应：
 
@@ -278,16 +278,16 @@ Label Studio中的命名实体识别截图。（图像由作者提供，截图�
 }
 ```
 
-在我看来，没有什么能替代人工评估，但使用GPT模型给我们提供一个起点可能是一个巨大的优势。
+在我看来，没有什么能替代人工评估，但使用 GPT 模型给我们提供一个起点可能是一个巨大的优势。
 
 # 结论
 
-标注数据总是很困难，有时候，甚至得到一个起点也是巨大的优势。在这篇博客中，我们展示了如何使用OpenAI的GPT模型生成数据预测，以作为数据标注工作流的起点。这个过程可以显著减少人工工作量，并将标注员的注意力集中在为他们的工作提供更多价值上。查看资源以获取更多关于本博客中介绍的主题的信息。
+标注数据总是很困难，有时候，甚至得到一个起点也是巨大的优势。在这篇博客中，我们展示了如何使用 OpenAI 的 GPT 模型生成数据预测，以作为数据标注工作流的起点。这个过程可以显著减少人工工作量，并将标注员的注意力集中在为他们的工作提供更多价值上。查看资源以获取更多关于本博客中介绍的主题的信息。
 
 ## 资源
 
-[完整示例笔记本](https://gist.github.com/JimmyWhitaker/e2dbf7403f60489048287dc05ec420f6) — 包含所有代码的笔记本，准备在Colab中运行
+[完整示例笔记本](https://gist.github.com/JimmyWhitaker/e2dbf7403f60489048287dc05ec420f6) — 包含所有代码的笔记本，准备在 Colab 中运行
 
 [Label Studio](https://labelstud.io/) — 开源数据标注工具
 
-[OpenAI定价页面](https://openai.com/pricing) — 本文中的定价估算细节
+[OpenAI 定价页面](https://openai.com/pricing) — 本文中的定价估算细节

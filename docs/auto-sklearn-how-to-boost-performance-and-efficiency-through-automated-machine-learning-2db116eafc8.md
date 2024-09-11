@@ -1,18 +1,18 @@
 # Auto-Sklearn：如何通过自动化机器学习提升性能和效率
 
-> 原文：[https://towardsdatascience.com/auto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8?source=collection_archive---------4-----------------------#2023-04-11](https://towardsdatascience.com/auto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8?source=collection_archive---------4-----------------------#2023-04-11)
+> 原文：[`towardsdatascience.com/auto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8?source=collection_archive---------4-----------------------#2023-04-11`](https://towardsdatascience.com/auto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8?source=collection_archive---------4-----------------------#2023-04-11)
 
 ## 了解如何利用 AutoML 最大化机器学习工作流的结果
 
-[![托马斯·A·多费尔](../Images/9258a1735cee805f1d9b02e2adf01096.png)](https://thomasdorfer.medium.com/?source=post_page-----2db116eafc8--------------------------------) [](https://towardsdatascience.com/?source=post_page-----2db116eafc8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2db116eafc8--------------------------------) [托马斯·A·多费尔](https://thomasdorfer.medium.com/?source=post_page-----2db116eafc8--------------------------------)
+![托马斯·A·多费尔](https://thomasdorfer.medium.com/?source=post_page-----2db116eafc8--------------------------------) [](https://towardsdatascience.com/?source=post_page-----2db116eafc8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2db116eafc8--------------------------------) [托马斯·A·多费尔](https://thomasdorfer.medium.com/?source=post_page-----2db116eafc8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fauto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----2db116eafc8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2db116eafc8--------------------------------) ·6 min read·2023年4月11日[投票](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2db116eafc8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fauto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=-----2db116eafc8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fauto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----2db116eafc8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2db116eafc8--------------------------------) ·6 min read·2023 年 4 月 11 日[投票](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2db116eafc8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fauto-sklearn-how-to-boost-performance-and-efficiency-through-automated-machine-learning-2db116eafc8&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=-----2db116eafc8---------------------clap_footer-----------)
 
 --
 
-![](../Images/0f74ab8af9c187dadb32d4f6575137dd.png)
+![](img/0f74ab8af9c187dadb32d4f6575137dd.png)
 
 图片由作者提供。
 

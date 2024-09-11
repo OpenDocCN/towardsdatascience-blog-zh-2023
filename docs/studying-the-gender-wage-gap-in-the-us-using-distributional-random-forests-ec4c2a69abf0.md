@@ -1,26 +1,26 @@
 # 使用分布式随机森林研究美国性别工资差距
 
-> 原文：[https://towardsdatascience.com/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0?source=collection_archive---------6-----------------------#2023-02-18](https://towardsdatascience.com/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0?source=collection_archive---------6-----------------------#2023-02-18)
+> 原文：[`towardsdatascience.com/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0?source=collection_archive---------6-----------------------#2023-02-18`](https://towardsdatascience.com/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0?source=collection_archive---------6-----------------------#2023-02-18)
 
 ## 分布式随机森林（DRF）的真实数据分析示例
 
-[](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)[![Jeffrey Näf](../Images/0ce6db85501192cdebeeb910eb81a688.png)](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------) [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)
+[](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)![Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------) [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----ec4c2a69abf0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------) · 13 分钟阅读 · 2023年2月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fec4c2a69abf0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----ec4c2a69abf0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----ec4c2a69abf0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------) · 13 分钟阅读 · 2023 年 2 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fec4c2a69abf0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----ec4c2a69abf0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fec4c2a69abf0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&source=-----ec4c2a69abf0---------------------bookmark_footer-----------)![](../Images/83e1f7f686159af39dc754a071bba552.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fec4c2a69abf0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&source=-----ec4c2a69abf0---------------------bookmark_footer-----------)![](img/83e1f7f686159af39dc754a071bba552.png)
 
 图片由 [Ehimetalor Akhere Unuabona](https://unsplash.com/@mettyunuabona?utm_source=medium&utm_medium=referral) 拍摄，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在之前的两篇文章中，我解释了[分布式随机森林（DRFs）](/drf-a-random-forest-for-almost-everything-625fa5c3bcb8)，这是一种能够估计条件分布的随机森林，以及一种[方法的扩展](https://medium.com/@jeffrey_85949/inference-for-distributional-random-forests-64610bbb3927)，它允许进行不确定性量化，如置信区间等。这里我展示了一个实际应用的例子，数据来自2018年美国社区调查，由美国人口普查局提供。 在第一篇[DRF论文](https://www.jmlr.org/papers/v23/21-0585.html)中，我们获得了来自2018年美国社区调查的大约100万名全职员工的数据，从中提取了薪资信息和所有可能与薪资相关的协变量。这些数据非常适合用来实验DRF这种方法（实际上我们将在本分析中只使用一个微小的子集）。
+在之前的两篇文章中，我解释了分布式随机森林（DRFs），这是一种能够估计条件分布的随机森林，以及一种[方法的扩展](https://medium.com/@jeffrey_85949/inference-for-distributional-random-forests-64610bbb3927)，它允许进行不确定性量化，如置信区间等。这里我展示了一个实际应用的例子，数据来自 2018 年美国社区调查，由美国人口普查局提供。 在第一篇[DRF 论文](https://www.jmlr.org/papers/v23/21-0585.html)中，我们获得了来自 2018 年美国社区调查的大约 100 万名全职员工的数据，从中提取了薪资信息和所有可能与薪资相关的协变量。这些数据非常适合用来实验 DRF 这种方法（实际上我们将在本分析中只使用一个微小的子集）。
 
 当研究原始时薪数据时，两个性别之间存在一致的差距，即男性往往赚得更多。一个有趣的问题是，男性（*G=1*）和女性（*G=0*）之间观察到的时薪差距（*W*）是否仅仅由于性别，还是可以通过一些其他混杂变量***X***来解释，这些变量受性别影响并反过来影响工资。也就是说，我们想研究与以下因果图中的粗体箭头对应的效应大小：
 
-![](../Images/892f002898dd8b65c8ad13852a66fedc.png)
+![](img/892f002898dd8b65c8ad13852a66fedc.png)
 
 假设因果图，G=性别，W=工资，**X**是混杂变量
 
@@ -30,21 +30,21 @@
 
 +   我们将***X***固定为一个特定值，并比较在***X****=****x***固定的协变量下两个组的工资分布。这从两个方面来看都很有趣：首先，如果***X***确实包含所有影响工资且与性别相关的其他因素，那么固定***X****=****x***并查看两性工资，就意味着我们真正观察到了性别对工资的影响。其次，它允许对具有给定特征***x***的个体进行整个工资分布的预测。
 
-+   我们使用上面假设的因果图和因果规则，通过DRF估计一个反事实分布：女性工资的分布，假如她们被当作男性来设定工资。如果***X***包含所有相关协变量，并且不存在性别工资差距，这个分布应该与男性的工资分布相同（忽略统计随机性）。
++   我们使用上面假设的因果图和因果规则，通过 DRF 估计一个反事实分布：女性工资的分布，假如她们被当作男性来设定工资。如果***X***包含所有相关协变量，并且不存在性别工资差距，这个分布应该与男性的工资分布相同（忽略统计随机性）。
 
 这篇文章是几个人工作的**最终成果**：代码和数据集来自原始的[DRF 仓库](https://github.com/lorismichel/drf)，然后与我们新论文中在[arXiv](https://arxiv.org/abs/2302.05761)上开发的方法结合，这篇论文由[Corinne Emenegger](http://www.linkedin.com/in/corinne-rahel-emmenegger)共同撰写。
 
-在继续之前，我想指出这*仅仅是一个用来说明DRF使用的例子*。我并不打算在这里做出任何严肃的（因果）声明，因为分析肯定在某些方面存在缺陷，我们下面假设的因果图肯定是错误的。此外，我们只使用了可用数据中的一小部分。
+在继续之前，我想指出这*仅仅是一个用来说明 DRF 使用的例子*。我并不打算在这里做出任何严肃的（因果）声明，因为分析肯定在某些方面存在缺陷，我们下面假设的因果图肯定是错误的。此外，我们只使用了可用数据中的一小部分。
 
-![](../Images/d15a5fee83c73eba20dc6ec8d8bbafd7.png)
+![](img/d15a5fee83c73eba20dc6ec8d8bbafd7.png)
 
-此外，请注意代码运行速度较慢。这是因为，虽然DRF本身是用C语言编写的，但用于置信区间的重复拟合目前是用R实现的。
+此外，请注意代码运行速度较慢。这是因为，虽然 DRF 本身是用 C 语言编写的，但用于置信区间的重复拟合目前是用 R 实现的。
 
 话虽如此，让我们*深入了解*。接下来，除非另有说明，所有图片均由作者提供。
 
 ## 数据
 
-来自2018年1年期美国社区调查的PUMS（公共使用微数据区域）数据来自[美国人口普查局API](https://www.census.gov/content/dam/Census/data/developers/api-user-guide/api-guide.pdf)。该调查每年发送给约350万人，旨在提供比每十年进行一次的官方普查更为最新的数据。2018年的数据集包含大约300万条匿名数据点，涵盖了51个州和哥伦比亚特区。对于上面链接的DRF论文，我们仅提取了可能与工资相关的变量子集，如个人的性别、年龄、种族、婚姻状况、教育水平和英语水平。
+来自 2018 年 1 年期美国社区调查的 PUMS（公共使用微数据区域）数据来自[美国人口普查局 API](https://www.census.gov/content/dam/Census/data/developers/api-user-guide/api-guide.pdf)。该调查每年发送给约 350 万人，旨在提供比每十年进行一次的官方普查更为最新的数据。2018 年的数据集包含大约 300 万条匿名数据点，涵盖了 51 个州和哥伦比亚特区。对于上面链接的 DRF 论文，我们仅提取了可能与工资相关的变量子集，如个人的性别、年龄、种族、婚姻状况、教育水平和英语水平。
 
 预处理的数据可以在[这里](https://github.com/lorismichel/drf/tree/master/applications/wage_data/data/datasets)找到。我们首先进行一些进一步的清理：
 
@@ -99,7 +99,7 @@ Y$sex = (Y$sex == 'male')
 Y = as.matrix(Y)
 ```
 
-实际上，这些观察值远远超过我们需要的，我们在此分析中随机抽样了4'000个训练数据点。
+实际上，这些观察值远远超过我们需要的，我们在此分析中随机抽样了 4'000 个训练数据点。
 
 ```py
 train_idx = sample(1:nrow(data), 4000, replace = FALSE)
@@ -109,7 +109,7 @@ Ytrain=Y[train_idx,]
 Xtrain=X[train_idx,]
 ```
 
-再次说明，这是因为它只是一个示例——实际上，你会希望获取尽可能多的数据点。这4'000个数据点的两性工资估计密度绘制在图1中，使用了以下代码：
+再次说明，这是因为它只是一个示例——实际上，你会希望获取尽可能多的数据点。这 4'000 个数据点的两性工资估计密度绘制在图 1 中，使用了以下代码：
 
 ```py
 ## Plot the test data without adjustment
@@ -134,7 +134,7 @@ ggplot(plotdfunadj, aes(log_wage)) +
   labs(x='log(hourly_wage)')
 ```
 
-![](../Images/bccfbbe14f18245ac0f2b165ead75a19.png)
+![](img/bccfbbe14f18245ac0f2b165ead75a19.png)
 
 每小时工资的（无条件）原始对数的估计密度
 
@@ -142,7 +142,7 @@ ggplot(plotdfunadj, aes(log_wage)) +
 
 （男性中位工资 - 女性中位工资）/（女性中位工资）*100，
 
-我们获得了约18%的结果。也就是说，在未经调整的数据中，男性的中位薪资比女性高18%（!）
+我们获得了约 18%的结果。也就是说，在未经调整的数据中，男性的中位薪资比女性高 18%（!）
 
 ```py
 ## Median Difference before adjustment!
@@ -176,7 +176,7 @@ i<-47
 test_point<-X[i,, drop=F]
 ```
 
-以下图片展示了一些包含在该测试点***x***中的值——我们正在查看具有高中学历、已婚且有1个孩子的保育员。使用DRF，我们可以估计并绘制条件于***X****=****x***的两个组的密度：
+以下图片展示了一些包含在该测试点***x***中的值——我们正在查看具有高中学历、已婚且有 1 个孩子的保育员。使用 DRF，我们可以估计并绘制条件于***X****=****x***的两个组的密度：
 
 ```py
 # Load all relevant functions (the CIdrf.R file can be found at the end of this 
@@ -212,11 +212,11 @@ gg = ggplot(plotdfx, aes(log_wage)) +
 plot(gg)
 ```
 
-![](../Images/7cfec25cce114ab62067703b1ed4d919.png)
+![](img/7cfec25cce114ab62067703b1ed4d919.png)
 
 给定**X**=**x**的两个性别的对数（每小时工资）密度的估计。此图的代码可以在文章末尾找到。
 
-在这个图中，即使在固定的***x***情况下，也明显存在工资差异（记住，在这种情况下所有假定的混杂因素都被固定，因此我们实际上只是直接比较工资）。使用DRF，我们现在估计并测试*中位差异*。
+在这个图中，即使在固定的***x***情况下，也明显存在工资差异（记住，在这种情况下所有假定的混杂因素都被固定，因此我们实际上只是直接比较工资）。使用 DRF，我们现在估计并测试*中位差异*。
 
 ```py
 ## Getting the respective weights
@@ -257,7 +257,7 @@ varx<-var(mediandist)
 
 这个区间非常明显地不包含零，因此中位差异确实是显著的。
 
-使用Witobj函数，我们可以更清楚地显示这种差异。
+使用 Witobj 函数，我们可以更清楚地显示这种差异。
 
 ```py
  Witobj<-Witdrf(drf_fit, x=test_point, groupingvar="sex", alpha=0.05)
@@ -291,7 +291,7 @@ abline(h=0)
 
 这导致了图示：
 
-![](../Images/14fb297f3c3cd618bea9cf420f5d44a6.png)
+![](img/14fb297f3c3cd618bea9cf420f5d44a6.png)
 
 工资的条件见证函数的估计，男性减去女性的工资。
 
@@ -299,7 +299,7 @@ abline(h=0)
 
 *在给定* ***x*** *的情况下，男性的工资对数的条件密度* — *在给定* ***x*** *的情况下，女性的工资对数的条件密度*
 
-即，条件见证函数显示了一个组的密度高于另一个组的位置，而无需实际估计密度。在这个例子中，负值表示女性工资的密度在给定***x***的情况下高于男性工资的密度，正值表示女性工资的密度较低。由于我们已经估计了上述的条件密度，条件见证函数本身并不会增加太多信息。但它对于说明情况很有用。确实，我们看到它在开始时是负的，对于条件密度的女性工资高于条件密度的男性工资的值。相反，它在更大的值下变为正值，对于这些值，男性工资的条件密度高于女性工资。因此，关于两个密度的相关信息在见证函数图中总结：我们看到女性工资的密度在较低工资值时较高，而在较高工资值时较低，表明密度向左偏移，女性赚得更少！此外，我们还可以提供包含真实函数95%的95%置信区间（绿色），*在所有y值上均匀分布*。 （尽管实际上需要大量的数据才能使其有效）由于这个均匀置信区间在2到2.5左右的零线之间不包含，我们再次看到这两个分布之间的差异在统计上是显著的。
+即，条件见证函数显示了一个组的密度高于另一个组的位置，而无需实际估计密度。在这个例子中，负值表示女性工资的密度在给定***x***的情况下高于男性工资的密度，正值表示女性工资的密度较低。由于我们已经估计了上述的条件密度，条件见证函数本身并不会增加太多信息。但它对于说明情况很有用。确实，我们看到它在开始时是负的，对于条件密度的女性工资高于条件密度的男性工资的值。相反，它在更大的值下变为正值，对于这些值，男性工资的条件密度高于女性工资。因此，关于两个密度的相关信息在见证函数图中总结：我们看到女性工资的密度在较低工资值时较高，而在较高工资值时较低，表明密度向左偏移，女性赚得更少！此外，我们还可以提供包含真实函数 95%的 95%置信区间（绿色），*在所有 y 值上均匀分布*。 （尽管实际上需要大量的数据才能使其有效）由于这个均匀置信区间在 2 到 2.5 左右的零线之间不包含，我们再次看到这两个分布之间的差异在统计上是显著的。
 
 对特定的***x***进行条件化，使我们能够详细研究个体效应，并具有不确定性的概念。然而，研究整体效应也很有趣。我们将在下一节中通过估计反事实分布来实现这一点。
 
@@ -307,7 +307,7 @@ abline(h=0)
 
 使用我们假设的因果图的因果性计算法则，可以推导出：
 
-![](../Images/209bafc8d5ab2b422af60b484787a36b.png)
+![](img/209bafc8d5ab2b422af60b484787a36b.png)
 
 即，我们寻找的反事实分布是通过对性别为女性的***x***，平均条件分布*W | G=male*，***X****=****x***获得的。
 
@@ -356,7 +356,7 @@ ggplot(plotdfc, aes(log_wage)) +
   labs(x='log(hourly wage)')
 ```
 
-![](../Images/511ce06576e25650a552e2bd6ffc4572.png)
+![](img/511ce06576e25650a552e2bd6ffc4572.png)
 
 这两个密度现在分别是红色的女性工资密度，以及如果女性被当作男性来设置工资的话的绿色-蓝绿色密度。显然，现在这些密度比之前更接近——调整了混杂因素使得性别薪酬差异变小。然而，中位数差异仍然
 
@@ -368,13 +368,13 @@ quantile_female = wtd.quantile(x=plotdfunadj$log_wage, weights=plotdfunadj$plotw
 
 0.11 或 11 百分比！
 
-因此，如果我们的分析是正确的，那么11%的薪资差异仍然可以归因于性别。换句话说，虽然我们将未调整数据中18%的中位收入差异减少到11%，但仍然存在实质性的差异，表明性别之间存在“非公平”的工资差距（至少如果***X***确实捕捉到了相关的混杂因素）。
+因此，如果我们的分析是正确的，那么 11%的薪资差异仍然可以归因于性别。换句话说，虽然我们将未调整数据中 18%的中位收入差异减少到 11%，但仍然存在实质性的差异，表明性别之间存在“非公平”的工资差距（至少如果***X***确实捕捉到了相关的混杂因素）。
 
 ## 结论
 
-在这篇文章中，我们研究了如何将DRF应用于实际数据分析的一个例子。我们探讨了固定的***x***的情况，对于这种情况，本文讨论的方法允许构建不确定性度量，以及反事实量的分布。在这两种情况下，我们都看到在调整可用的混杂变量时，仍然存在实质性差异，在固定的***x***情况下尤其显著。
+在这篇文章中，我们研究了如何将 DRF 应用于实际数据分析的一个例子。我们探讨了固定的***x***的情况，对于这种情况，本文讨论的方法允许构建不确定性度量，以及反事实量的分布。在这两种情况下，我们都看到在调整可用的混杂变量时，仍然存在实质性差异，在固定的***x***情况下尤其显著。
 
-虽然我没有检查，但看到这个小实验的结果与更严肃的分析相比可能会很有趣。无论如何，我希望这篇文章展示了DRF如何在实际数据分析中使用。
+虽然我没有检查，但看到这个小实验的结果与更严肃的分析相比可能会很有趣。无论如何，我希望这篇文章展示了 DRF 如何在实际数据分析中使用。
 
 ## 额外代码
 

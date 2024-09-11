@@ -1,20 +1,20 @@
 # 多模态思维链：在多模态世界中解决问题
 
-> 原文：[https://towardsdatascience.com/multimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa?source=collection_archive---------8-----------------------#2023-03-13](https://towardsdatascience.com/multimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa?source=collection_archive---------8-----------------------#2023-03-13)
+> 原文：[`towardsdatascience.com/multimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa?source=collection_archive---------8-----------------------#2023-03-13`](https://towardsdatascience.com/multimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa?source=collection_archive---------8-----------------------#2023-03-13)
 
 ## 自然语言处理 | 多模态性 | 思维链 |
 
 ## 世界不仅仅是文字：如何将思维链扩展到图像和文字？
 
-[](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)[![Salvatore Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)
+[](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)![Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----961a8ab9d0fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------) ·14分钟阅读·2023年3月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F961a8ab9d0fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----961a8ab9d0fa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----961a8ab9d0fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------) ·14 分钟阅读·2023 年 3 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F961a8ab9d0fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----961a8ab9d0fa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F961a8ab9d0fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa&source=-----961a8ab9d0fa---------------------bookmark_footer-----------)![](../Images/868bf8d7fafd276e2175a475fa6cc822.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F961a8ab9d0fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa&source=-----961a8ab9d0fa---------------------bookmark_footer-----------)![](img/868bf8d7fafd276e2175a475fa6cc822.png)
 
 图片由 [Giulio Magnifico](https://unsplash.com/it/@giuliomagnifico) 提供，来源于 Unsplash
 
@@ -24,8 +24,8 @@
 
 # 思维链（CoT）：它是什么？
 
-![](../Images/118e0e262bad7b95096ebc2f40b9c948.png)
+![](img/118e0e262bad7b95096ebc2f40b9c948.png)
 
 照片由[Todd Cravens](https://unsplash.com/it/@toddcravens)拍摄，来源于[Unsplash](https://unsplash.com/)
 
-近年来，我们看到模型参数的数量增长（超过100亿个参数）。这是由扩展法则推动的：随着参数数量的增加，误差减少。
+近年来，我们看到模型参数的数量增长（超过 100 亿个参数）。这是由扩展法则推动的：随着参数数量的增加，误差减少。

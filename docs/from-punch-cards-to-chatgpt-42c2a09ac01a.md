@@ -1,56 +1,56 @@
-# 从穿孔卡到ChatGPT
+# 从穿孔卡到 ChatGPT
 
-> 原文：[https://towardsdatascience.com/from-punch-cards-to-chatgpt-42c2a09ac01a?source=collection_archive---------1-----------------------#2023-11-01](https://towardsdatascience.com/from-punch-cards-to-chatgpt-42c2a09ac01a?source=collection_archive---------1-----------------------#2023-11-01)
+> 原文：[`towardsdatascience.com/from-punch-cards-to-chatgpt-42c2a09ac01a?source=collection_archive---------1-----------------------#2023-11-01`](https://towardsdatascience.com/from-punch-cards-to-chatgpt-42c2a09ac01a?source=collection_archive---------1-----------------------#2023-11-01)
 
 ## 我祖父的生成式人工智能一瞥
 
-[](https://medium.com/@ty.stephens2011?source=post_page-----42c2a09ac01a--------------------------------)[![Ty Stephens](../Images/168663b695dd7380ff5ffc9563909a88.png)](https://medium.com/@ty.stephens2011?source=post_page-----42c2a09ac01a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----42c2a09ac01a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----42c2a09ac01a--------------------------------) [Ty Stephens](https://medium.com/@ty.stephens2011?source=post_page-----42c2a09ac01a--------------------------------)
+[](https://medium.com/@ty.stephens2011?source=post_page-----42c2a09ac01a--------------------------------)![Ty Stephens](https://medium.com/@ty.stephens2011?source=post_page-----42c2a09ac01a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----42c2a09ac01a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----42c2a09ac01a--------------------------------) [Ty Stephens](https://medium.com/@ty.stephens2011?source=post_page-----42c2a09ac01a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe75d657968df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-punch-cards-to-chatgpt-42c2a09ac01a&user=Ty+Stephens&userId=e75d657968df&source=post_page-e75d657968df----42c2a09ac01a---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----42c2a09ac01a--------------------------------) ·9分钟阅读·2023年11月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F42c2a09ac01a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-punch-cards-to-chatgpt-42c2a09ac01a&user=Ty+Stephens&userId=e75d657968df&source=-----42c2a09ac01a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe75d657968df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-punch-cards-to-chatgpt-42c2a09ac01a&user=Ty+Stephens&userId=e75d657968df&source=post_page-e75d657968df----42c2a09ac01a---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----42c2a09ac01a--------------------------------) ·9 分钟阅读·2023 年 11 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F42c2a09ac01a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-punch-cards-to-chatgpt-42c2a09ac01a&user=Ty+Stephens&userId=e75d657968df&source=-----42c2a09ac01a---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F42c2a09ac01a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-punch-cards-to-chatgpt-42c2a09ac01a&source=-----42c2a09ac01a---------------------bookmark_footer-----------)
 
-我的母亲的父亲，Skip，在我眼中一直是一名农夫。不幸的是，我母亲在1988年我的出生后仅一个月就因白血病去世。作为家庭中的第一个孙子，我和Skip非常亲密。小时候，我常常坐在拖拉机和联合收割机的扶手上度过我的一天，后来成为青少年时，我也在农场做了一个夏季工作。
+我的母亲的父亲，Skip，在我眼中一直是一名农夫。不幸的是，我母亲在 1988 年我的出生后仅一个月就因白血病去世。作为家庭中的第一个孙子，我和 Skip 非常亲密。小时候，我常常坐在拖拉机和联合收割机的扶手上度过我的一天，后来成为青少年时，我也在农场做了一个夏季工作。
 
-![](../Images/28994a8ba32027a0fadbb2ccdc80067a.png)
+![](img/28994a8ba32027a0fadbb2ccdc80067a.png)
 
-在夏季小麦收割期间，从空中俯瞰一台约翰迪尔联合收割机。在20世纪90年代末/21世纪初，我和我的祖父在我们自己的小麦收割季节中使用了两台这样的机器。那是我的第一份“工作”。照片由[Scott Goodwill](https://unsplash.com/@scottagoodwill?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
+在夏季小麦收割期间，从空中俯瞰一台约翰迪尔联合收割机。在 20 世纪 90 年代末/21 世纪初，我和我的祖父在我们自己的小麦收割季节中使用了两台这样的机器。那是我的第一份“工作”。照片由[Scott Goodwill](https://unsplash.com/@scottagoodwill?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
-然而，Skip早期的生活与我认识的农业世界大相径庭。在我进入这个场景之前，他已经深入学术领域，1972年完成了德州农工大学（Texas A&M, College Station）的统计学博士课程。不久之后，他接受了马里兰大学的教授职位，并于1974年完成了他的论文。他开创性的研究旨在预测和定位工业环境中的安全和材料风险。这项艰巨的任务需要数年的努力。他不得不手动从不同公司收集十年的事故报告，手工处理统计数据，然后将这些见解转换为[大学计算机系统的打孔卡指令](https://en.wikipedia.org/wiki/Computer_programming_in_the_punched_card_era)。获取计算机使用时间*并非*立即可得；这需要提前几周甚至几个月预约。一个编码错误可能意味着从头开始，可能会使他的研究延迟几个月。
+然而，Skip 早期的生活与我认识的农业世界大相径庭。在我进入这个场景之前，他已经深入学术领域，1972 年完成了德州农工大学（Texas A&M, College Station）的统计学博士课程。不久之后，他接受了马里兰大学的教授职位，并于 1974 年完成了他的论文。他开创性的研究旨在预测和定位工业环境中的安全和材料风险。这项艰巨的任务需要数年的努力。他不得不手动从不同公司收集十年的事故报告，手工处理统计数据，然后将这些见解转换为[大学计算机系统的打孔卡指令](https://en.wikipedia.org/wiki/Computer_programming_in_the_punched_card_era)。获取计算机使用时间*并非*立即可得；这需要提前几周甚至几个月预约。一个编码错误可能意味着从头开始，可能会使他的研究延迟几个月。
 
-他在1980年代离开了那种生活，回到东德州接管家族农场，并开始了创业生涯。但在他作为农民的所有工作中，运用统计推断的愿望始终存在——只是我小时候并没有意识到。对我孩子的理解来说，Skip在做他所称的“办公室工作”——但实际上他是在利用IT来预测和确保融资以应对运营开支，优化化肥中的化学成分以提高作物产量，通过在芝加哥商品交易所交易期货来降低现金流的不确定性，这些都是在他用16 KB RAM的[Radio Shack购买的TRS 80](https://en.wikipedia.org/wiki/TRS-80)上完成的，连接了一台点阵打印机。农业可以是一个利润微薄的行业——而Skip的赌注是他可以利用统计数据稍微拉平竞争环境。
+他在 1980 年代离开了那种生活，回到东德州接管家族农场，并开始了创业生涯。但在他作为农民的所有工作中，运用统计推断的愿望始终存在——只是我小时候并没有意识到。对我孩子的理解来说，Skip 在做他所称的“办公室工作”——但实际上他是在利用 IT 来预测和确保融资以应对运营开支，优化化肥中的化学成分以提高作物产量，通过在芝加哥商品交易所交易期货来降低现金流的不确定性，这些都是在他用 16 KB RAM 的[Radio Shack 购买的 TRS 80](https://en.wikipedia.org/wiki/TRS-80)上完成的，连接了一台点阵打印机。农业可以是一个利润微薄的行业——而 Skip 的赌注是他可以利用统计数据稍微拉平竞争环境。
 
-多年来，这个农场没有经受住时间的考验。事实证明，当代际农业被迫跳过一代时，其效果并不好——而且今天的投入成本比以往任何时候都更为严苛——规模经济成为了唯一可以盈利竞争的方式——因此，Skip一代的大多数中小型农场被收购和整合——但这是一种逐步发生的过程——一点一点地（至少我们是这样经历的）。
+多年来，这个农场没有经受住时间的考验。事实证明，当代际农业被迫跳过一代时，其效果并不好——而且今天的投入成本比以往任何时候都更为严苛——规模经济成为了唯一可以盈利竞争的方式——因此，Skip 一代的大多数中小型农场被收购和整合——但这是一种逐步发生的过程——一点一点地（至少我们是这样经历的）。
 
-我当然逐渐欣赏到统计学与农业之间的紧密联系。我仍然记得来自[美国农业部](https://www.usda.gov/topics/data)的年度访问，他们详细采样作物产量（包括我们的农场），作为他们[国家农业统计服务](https://www.nass.usda.gov/)的一部分。在我看来，这是历史上一个伟大的未被充分重视的持续数据项目——帮助一代代农民做出“数据驱动”的决策——在那个词还未成为流行词之前。但我对Skip几十年来所做的一切有了更深的理解，因为我开始了自己的分析与数据科学事业——这是我在20多岁和30多岁时作为美国陆军军官服务和环球旅行后的第二幕。我经常通过电话与他联系，询问他们如何进行回归分析或模拟，或他们如何在“那时候”控制随机抽样。然后偶尔告诉他现在的做法，以评估他对我描述机器学习、深度学习、强化学习等概念的兴奋——对他来说，这有些像科幻小说——但他*喜欢*听这些——即使这在他晚年并不完全*真实*。
+我当然逐渐欣赏到统计学与农业之间的紧密联系。我仍然记得来自[美国农业部](https://www.usda.gov/topics/data)的年度访问，他们详细采样作物产量（包括我们的农场），作为他们[国家农业统计服务](https://www.nass.usda.gov/)的一部分。在我看来，这是历史上一个伟大的未被充分重视的持续数据项目——帮助一代代农民做出“数据驱动”的决策——在那个词还未成为流行词之前。但我对 Skip 几十年来所做的一切有了更深的理解，因为我开始了自己的分析与数据科学事业——这是我在 20 多岁和 30 多岁时作为美国陆军军官服务和环球旅行后的第二幕。我经常通过电话与他联系，询问他们如何进行回归分析或模拟，或他们如何在“那时候”控制随机抽样。然后偶尔告诉他现在的做法，以评估他对我描述机器学习、深度学习、强化学习等概念的兴奋——对他来说，这有些像科幻小说——但他*喜欢*听这些——即使这在他晚年并不完全*真实*。
 
-![](../Images/49d4f7957934a47179af41611156ddab.png)
+![](img/49d4f7957934a47179af41611156ddab.png)
 
-当我看到[约翰·迪尔在2023年1月CES上进行的主题演讲](https://www.youtube.com/watch?v=1kjZMHZl538)——展示了新设备，例如[上图所示的喷雾器](https://www.deere.com/en/sprayers/see-spray-ultimate/)，它使用36台相机、计算机视觉和神经网络实时检测杂草与作物，并最小化除草剂的使用。图像由作者提供。
+当我看到[约翰·迪尔在 2023 年 1 月 CES 上进行的主题演讲](https://www.youtube.com/watch?v=1kjZMHZl538)——展示了新设备，例如[上图所示的喷雾器](https://www.deere.com/en/sprayers/see-spray-ultimate/)，它使用 36 台相机、计算机视觉和神经网络实时检测杂草与作物，并最小化除草剂的使用。图像由作者提供。
 
 实验开始了。
 
-我决定在周末做出一个*展示而不是讲述*的决定。我希望Skip亲自体验新技术，而不仅仅是听我谈论它。如果我们能在不到40分钟内制定一个启动虚拟新农场的商业计划呢？我可以使用启用了高级数据分析的ChatGPT 4，通过屏幕分享给他的iPhone——我们一起合作完成它。
+我决定在周末做出一个*展示而不是讲述*的决定。我希望 Skip 亲自体验新技术，而不仅仅是听我谈论它。如果我们能在不到 40 分钟内制定一个启动虚拟新农场的商业计划呢？我可以使用启用了高级数据分析的 ChatGPT 4，通过屏幕分享给他的 iPhone——我们一起合作完成它。
 
 我们简要讨论了我们的假设：
 
-1.  我们在东德克萨斯州有1000英亩的农田。
+1.  我们在东德克萨斯州有 1000 英亩的农田。
 
-1.  我们有100万美元的启动资金用于购买设备。
+1.  我们有 100 万美元的启动资金用于购买设备。
 
 1.  我们需要从银行获得一笔信用额度，以支付第一年的运营费用以启动项目。
 
-1.  我们有兴趣种植小麦和大豆（Skip曾经种植的作物）。
+1.  我们有兴趣种植小麦和大豆（Skip 曾经种植的作物）。
 
 我们从简单开始：
 
 **提示 1：** “为我写一个商业计划大纲，以启动东德克萨斯州的新农场，种植小麦和大豆”。
 
-Skip立刻对详细结果留下了深刻的印象。但等等，我们才刚刚开始……
+Skip 立刻对详细结果留下了深刻的印象。但等等，我们才刚刚开始……
 
 **提示 2：** “给我一个我需要开始的设备清单”
 
@@ -62,7 +62,7 @@ Skip立刻对详细结果留下了深刻的印象。但等等，我们才刚刚�
 
 结果：
 
-![](../Images/28fb1834f8feb73dc80461b67ae7344f.png)
+![](img/28fb1834f8feb73dc80461b67ae7344f.png)
 
 数据由 GPT-4 生成，图片由作者提供。
 
@@ -70,11 +70,11 @@ Skip立刻对详细结果留下了深刻的印象。但等等，我们才刚刚�
 
 结果：
 
-![](../Images/4620ac2d58795b632cc0e0afe93d01a2.png)
+![](img/4620ac2d58795b632cc0e0afe93d01a2.png)
 
 数据由 ChatGPT 4 生成，图片由作者提供
 
-到了这个时候，我感觉 Skip 就像是再次目睹了阿波罗 11号。他几乎抑制不住他的兴奋。但我们还没完成……
+到了这个时候，我感觉 Skip 就像是再次目睹了阿波罗 11 号。他几乎抑制不住他的兴奋。但我们还没完成……
 
 **提示 6：** “给我写一个 Monte Carlo 模拟，我可以调整输入假设并测试我的预算结果”
 
@@ -125,7 +125,7 @@ plt.show()
 
 现在是关键时刻——代码会运行吗？我们跳到 Jupyter notebook 运行代码。第一次尝试就成功了：
 
-![](../Images/fce3f8c583adcf583463261f0c834df7.png)
+![](img/fce3f8c583adcf583463261f0c834df7.png)
 
 数据由 ChatGPT 4 生成，图片由 Python 生成，图片由作者提供
 
@@ -133,7 +133,7 @@ plt.show()
 
 我们需要创建一个参数列表，允许用户在滑块上动态调整假设。我们再次向 ChatGPT 寻求一些关于这些参数的建议，基于我们之前构建的 Monte Carlo 模拟：
 
-![](../Images/75c0b737529c1f601acb86c339a6d5de.png)
+![](img/75c0b737529c1f601acb86c339a6d5de.png)
 
 数据由 GPT 4 生成，图片由作者提供
 
@@ -231,10 +231,10 @@ plt.show()
 
 只是为了好玩，我们提示 ChatGPT 定义四分位距（IQR）并将其着色为不同的颜色，我们还手动更新了图表标签和 x 轴。其余的只是稍微清理一下 Power BI 中的视觉效果，使其更用户友好。最终结果：
 
-![](../Images/979efdd39382cf33b60dfd34cb03681f.png)
+![](img/979efdd39382cf33b60dfd34cb03681f.png)
 
 数据由用户选择的参数输入生成的 Monte Carlo 模拟，Python 代码由 ChatGPT 4 生成，仪表板在 MS PowerBI 中构建，图片由作者提供
 
 现在我们有了一个动态的 Monte Carlo 模拟，可以用来测试不同的输入成本假设并预测我们启动农业运营所需的变动运营费用。借助 ChatGPT 4，我们几乎没有编写代码，只是稍微调整了一下，大部分工作通过屏幕共享在 iPhone 上完成，最后一部分在 Power BI desktop 中构建，并通过 Power BI iPhone 应用程序屏幕共享。总共花费了大约 30-40 分钟。
 
-我祖父的评判？“我们在40分钟内完成了他自己‘过去’需要2年才能完成的工作。” 是的，我意识到我们还有很多*可以做的——*而且“模拟”远非完美。（例如，我们没有区分投入大豆与小麦的作物百分比。）但40分钟呢？即使是我也感到印象深刻。这就是生成AI的承诺——使数据科学民主化，鼓励实验，并加快在你手掌之间开发的能力。让祖父和孙子有机会通过一些统计数据重新建立联系，并以新的、出乎意料的方式利用技术。
+我祖父的评判？“我们在 40 分钟内完成了他自己‘过去’需要 2 年才能完成的工作。” 是的，我意识到我们还有很多*可以做的——*而且“模拟”远非完美。（例如，我们没有区分投入大豆与小麦的作物百分比。）但 40 分钟呢？即使是我也感到印象深刻。这就是生成 AI 的承诺——使数据科学民主化，鼓励实验，并加快在你手掌之间开发的能力。让祖父和孙子有机会通过一些统计数据重新建立联系，并以新的、出乎意料的方式利用技术。

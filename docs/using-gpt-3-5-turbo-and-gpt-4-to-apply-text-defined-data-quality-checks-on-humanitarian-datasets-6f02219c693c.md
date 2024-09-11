@@ -1,42 +1,42 @@
-# 使用GPT-3.5-Turbo和GPT-4进行人道主义数据类别预测
+# 使用 GPT-3.5-Turbo 和 GPT-4 进行人道主义数据类别预测
 
-> 原文：[https://towardsdatascience.com/using-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c?source=collection_archive---------5-----------------------#2023-03-29](https://towardsdatascience.com/using-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c?source=collection_archive---------5-----------------------#2023-03-29)
+> 原文：[`towardsdatascience.com/using-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c?source=collection_archive---------5-----------------------#2023-03-29`](https://towardsdatascience.com/using-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c?source=collection_archive---------5-----------------------#2023-03-29)
 
-[](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)[![Matthew Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------)[![数据科学之道](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)![Matthew Harris](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------)![数据科学之道](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----6f02219c693c---------------------post_header-----------) 发表在[数据科学之道](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------) · 23分钟阅读 · 2023年3月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6f02219c693c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----6f02219c693c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----6f02219c693c---------------------post_header-----------) 发表在[数据科学之道](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------) · 23 分钟阅读 · 2023 年 3 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6f02219c693c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----6f02219c693c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6f02219c693c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&source=-----6f02219c693c---------------------bookmark_footer-----------)![](../Images/cdad9a981470d96cf832f828beeed3b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6f02219c693c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&source=-----6f02219c693c---------------------bookmark_footer-----------)![](img/cdad9a981470d96cf832f828beeed3b8.png)
 
 图像由[稳定扩散](https://stablediffusionweb.com/#demo)创建，提示词为“预测猫”。
 
 *总结*
 
-*在本文中，我探讨了使用GPT-3.5-Turbo和GPT-4对数据集进行分类，而不需要标记数据或模型训练，通过向模型提供数据摘录和类别定义。使用从令人惊叹的人道主义数据交换（HDX）找到的一小部分已分类的“数据网格”数据集，GPT-4的零-shot提示在预测类别时达到了96%的准确率，而在预测类别和子类别时达到了89%的准确率。GPT-4在相同提示下的表现优于GPT-3.5-Turbo，类别准确率为96%对66%。尤其有用的是，模型能够提供其预测的推理，这有助于识别改进过程。这只是由于成本限制而涉及少量记录的快速分析，但它显示了使用大型语言模型进行数据质量检查和总结的一些前景。由于提示中允许的最大令牌数量影响数据摘录中可以包含的数据量，以及性能和成本挑战——特别是如果你是一个小型非营利组织！——在商业生成AI的早期阶段存在局限性。*
+*在本文中，我探讨了使用 GPT-3.5-Turbo 和 GPT-4 对数据集进行分类，而不需要标记数据或模型训练，通过向模型提供数据摘录和类别定义。使用从令人惊叹的人道主义数据交换（HDX）找到的一小部分已分类的“数据网格”数据集，GPT-4 的零-shot 提示在预测类别时达到了 96%的准确率，而在预测类别和子类别时达到了 89%的准确率。GPT-4 在相同提示下的表现优于 GPT-3.5-Turbo，类别准确率为 96%对 66%。尤其有用的是，模型能够提供其预测的推理，这有助于识别改进过程。这只是由于成本限制而涉及少量记录的快速分析，但它显示了使用大型语言模型进行数据质量检查和总结的一些前景。由于提示中允许的最大令牌数量影响数据摘录中可以包含的数据量，以及性能和成本挑战——特别是如果你是一个小型非营利组织！——在商业生成 AI 的早期阶段存在局限性。*
 
-[人道主义数据交换](https://data.humdata.org/)（HDX）平台有一个很棒的功能叫做[HDX数据网格](https://centre.humdata.org/introducing-the-hdx-data-grid-a-way-to-find-and-fill-data-gaps/)，它提供了按国家划分的六个关键危机类别的高质量数据覆盖概述，查看[这里](https://data.humdata.org/group/tcd)了解乍得的例子。进入网格的数据集会经过HDX团队[一系列严格的测试](https://humanitarian.atlassian.net/wiki/spaces/HDX/pages/682393601/Data+Grid+Data+Completeness+Curation+Procedures)以确定覆盖范围和质量，其中第一个测试是确定数据集是否在批准的类别中。
+[人道主义数据交换](https://data.humdata.org/)（HDX）平台有一个很棒的功能叫做[HDX 数据网格](https://centre.humdata.org/introducing-the-hdx-data-grid-a-way-to-find-and-fill-data-gaps/)，它提供了按国家划分的六个关键危机类别的高质量数据覆盖概述，查看[这里](https://data.humdata.org/group/tcd)了解乍得的例子。进入网格的数据集会经过 HDX 团队[一系列严格的测试](https://humanitarian.atlassian.net/wiki/spaces/HDX/pages/682393601/Data+Grid+Data+Completeness+Curation+Procedures)以确定覆盖范围和质量，其中第一个测试是确定数据集是否在批准的类别中。
 
 我在想，也许大型语言模型（LLMs）可能是一个有效的方法来应用数据质量和分类规则，在那些可能没有标记训练数据的情况下。这也很方便，以人类可读的文本形式提供规则，非技术团队可以轻松维护，并直接使用这些规则以消除对特征工程和模型管理的需求。
 
-哦，我最近也获得了GPT-4的早期访问权限，想要试一试！🙂……所以决定也进行一些分析，比较GPT-3.5-Turbo的表现。
+哦，我最近也获得了 GPT-4 的早期访问权限，想要试一试！🙂……所以决定也进行一些分析，比较 GPT-3.5-Turbo 的表现。
 
 # 数据集是否在已批准的类别中？
 
-查看[《2023年人道主义数据现状 附录B》](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)，其中概述了在评估数据是否具有足够质量和覆盖范围时使用的标准和类别……
+查看[《2023 年人道主义数据现状 附录 B》](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)，其中概述了在评估数据是否具有足够质量和覆盖范围时使用的标准和类别……
 
-> 确定数据集是否应包含在数据网格中的第一步是检查数据集是否符合附录A中定义的主题要求。不相关的数据集将被自动排除。
+> 确定数据集是否应包含在数据网格中的第一步是检查数据集是否符合附录 A 中定义的主题要求。不相关的数据集将被自动排除。
 
-附录A中的类别是……
+附录 A 中的类别是……
 
-![](../Images/e935a601b4060d8d5788b7c76f5754aa.png)
+![](img/e935a601b4060d8d5788b7c76f5754aa.png)
 
-HDX数据网格数据集的接受数据类别（见HDX年度报告，附录A [[1](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)]）
+HDX 数据网格数据集的接受数据类别（见 HDX 年度报告，附录 A [[1](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)]）
 
-我们可以编写分类器将这些类别分配给我们的数据集，但我们只知道已批准的HDX数据网格数据集的子集的类别。如果仅通过提示就能对我们的数据进行分类而不需要手动标记，那将是太棒了。这是一个零-shot任务[[2](https://arxiv.org/pdf/2005.14165.pdf)]，这是大语言模型的一个惊人特性，即可以在没有专门为任务训练或提供示例的情况下进行分类。
+我们可以编写分类器将这些类别分配给我们的数据集，但我们只知道已批准的 HDX 数据网格数据集的子集的类别。如果仅通过提示就能对我们的数据进行分类而不需要手动标记，那将是太棒了。这是一个零-shot 任务[[2](https://arxiv.org/pdf/2005.14165.pdf)]，这是大语言模型的一个惊人特性，即可以在没有专门为任务训练或提供示例的情况下进行分类。
 
 ## 为单个表预测数据集类别
 
@@ -85,7 +85,7 @@ display(category_prompt_text)
 - Category \'Population & Socio-economy : Poverty Rate\' is defined as: Population living under a defined poverty threshold, aggregated by administrative division and represented as a percentage of total population or as an absolute number.'
 ```
 
-这里有一个与农业相关的测试文件，这是一个不受支持的类别，并且不出现在HDX的数据网格中……
+这里有一个与农业相关的测试文件，这是一个不受支持的类别，并且不出现在 HDX 的数据网格中……
 
 ```py
 filename = "./data/number-of-acreage-under-irrigation.xlsx"
@@ -94,13 +94,13 @@ df = df.fillna("")
 display(df)
 ```
 
-![](../Images/e2483882c28d40f0030fe8f55976ba5d.png)
+![](img/e2483882c28d40f0030fe8f55976ba5d.png)
 
-一个数据集表的摘录，该表不属于HDX支持的类别之一
+一个数据集表的摘录，该表不属于 HDX 支持的类别之一
 
-在上述内容中，我故意避免了对表格进行解析以整理内容（有关更多信息，请参见[这里](https://medium.com/towards-data-science/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45)）。相反，我们将原始表格扔给GPT，看看它的表现如何。
+在上述内容中，我故意避免了对表格进行解析以整理内容（有关更多信息，请参见[这里](https://medium.com/towards-data-science/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45)）。相反，我们将原始表格扔给 GPT，看看它的表现如何。
 
-作为提示的CSV字符串表示，表格如下所示……
+作为提示的 CSV 字符串表示，表格如下所示……
 
 ```py
 csv_as_str = df[0:20].to_csv(index=False)
@@ -129,7 +129,7 @@ prompts.append(f"Does the following table from file {filename} fall into one of 
                f"If it does, which category and explain why? \n\n {csv_as_str} \n\n")
 ```
 
-所以提示1……
+所以提示 1……
 
 ```py
 Here is a list of HDX data categories with their definition:
@@ -159,7 +159,7 @@ Here is a list of HDX data categories with their definition:
 - Category \'Population & Socio-economy : Poverty Rate\' is defined as: Population living under a defined poverty threshold, aggregated by administrative division and represented as a percentage of total population or as an absolute number.'
 ```
 
-然后提示2……
+然后提示 2……
 
 ```py
 Does the following table from file ./data/number-of-acreage-under-irrigation.xlsx fall into one of the categories provided, if not say no. If it does, which category and explain why? 
@@ -228,7 +228,7 @@ or population & socio-economy.
 
 **GPT-3.5-turbo**和**GPT-4**都完美地工作，并识别出我们的表格*不*属于所需类别之一（它与农业相关）。我也喜欢这种推理，至少在这个例子中完全正确。
 
-我们用一个在受支持类别中的表进行尝试，[查德的食品价格](https://data.humdata.org/dataset/wfp-food-prices-for-chad)，如在[查德HDX数据网格](https://data.humdata.org/group/tcd)上找到的。这个文件的CSV字符串，取前20行，如下所示……
+我们用一个在受支持类别中的表进行尝试，[查德的食品价格](https://data.humdata.org/dataset/wfp-food-prices-for-chad)，如在[查德 HDX 数据网格](https://data.humdata.org/group/tcd)上找到的。这个文件的 CSV 字符串，取前 20 行，如下所示……
 
 ```py
 date,admin1,admin2,market,latitude,longitude,category,commodity,unit,priceflag,pricetype,currency,price,usdprice
@@ -279,11 +279,11 @@ and currency.
 
 ## 使用来自多个表的摘录预测数据集类别
 
-在HDX中，一个数据集可以有多个“资源”（文件），而对于Excel中的数据，这些文件可能在工作表中包含多个表。因此，只查看数据集中的一个表可能无法完全了解情况，我们需要根据多个表做出决策。这一点很重要，因为在数据集中的所有表中可能会有关于数据集、字段查找等的文档标签，而这些标签本身不足以推断数据集中所有数据的类别。
+在 HDX 中，一个数据集可以有多个“资源”（文件），而对于 Excel 中的数据，这些文件可能在工作表中包含多个表。因此，只查看数据集中的一个表可能无法完全了解情况，我们需要根据多个表做出决策。这一点很重要，因为在数据集中的所有表中可能会有关于数据集、字段查找等的文档标签，而这些标签本身不足以推断数据集中所有数据的类别。
 
-在ChatGPT API推出之前，这会由于令牌限制而变得困难。然而，ChatGPT允许我们指定[多个提示](https://platform.openai.com/docs/guides/chat)，并且有[增加的令牌限制](https://platform.openai.com/docs/guides/rate-limits/overview)。如我们所见，这仍然是一个限制因素，但比以前的模型有所改进。
+在 ChatGPT API 推出之前，这会由于令牌限制而变得困难。然而，ChatGPT 允许我们指定[多个提示](https://platform.openai.com/docs/guides/chat)，并且有[增加的令牌限制](https://platform.openai.com/docs/guides/rate-limits/overview)。如我们所见，这仍然是一个限制因素，但比以前的模型有所改进。
 
-本分析的样本数据——在笔记本仓库中提供——是从HDX中提取的，由…
+本分析的样本数据——在笔记本仓库中提供——是从 HDX 中提取的，由…
 
 1.  遍历数据集
 
@@ -291,9 +291,9 @@ and currency.
 
 1.  对于每个表格文件，下载它
 
-1.  对于文件中的每个标签，创建一个表格摘录（前20行）以CSV格式
+1.  对于文件中的每个标签，创建一个表格摘录（前 20 行）以 CSV 格式
 
-*注意：我没有包含这段代码以避免HDX上的流量过多，但如果对这段代码感兴趣，可以在Medium上给我留言。*
+*注意：我没有包含这段代码以避免 HDX 上的流量过多，但如果对这段代码感兴趣，可以在 Medium 上给我留言。*
 
 所以每个数据集都有一个这样的字段…
 
@@ -451,7 +451,7 @@ What is the second most likely category if you had to pick one (adding a ^ chara
 
 +   我们要求模型指明数据*不*符合我们的类别，以便我们捕捉负面情况，模型不会尝试为每个数据集分配一个类别。有些将不符合批准的类别
 
-+   请求类别“完全匹配”。如果没有这个要求，GPT-3.5-Turbo可能会随意构造新的类别！
++   请求类别“完全匹配”。如果没有这个要求，GPT-3.5-Turbo 可能会随意构造新的类别！
 
 +   如果模型确实识别出一个类别，将其用‘|’括起来，以便更容易解析
 
@@ -459,7 +459,7 @@ What is the second most likely category if you had to pick one (adding a ^ chara
 
 +   最后，为了后续讨论，我们还请求第二个最可能的类别
 
-此外，如果你仔细查看预测函数中的代码，我在这项研究中使用了[温度](https://platform.openai.com/docs/api-reference/chat/create)为0.0。温度控制输出的随机程度，由于我们希望结果既准确又具体，而不是描述量子物理的文本，所以我将其设置为尽可能低。
+此外，如果你仔细查看预测函数中的代码，我在这项研究中使用了[温度](https://platform.openai.com/docs/api-reference/chat/create)为 0.0。温度控制输出的随机程度，由于我们希望结果既准确又具体，而不是描述量子物理的文本，所以我将其设置为尽可能低。
 
 生成我们的预测…
 
@@ -521,7 +521,7 @@ print("\ngpt-4 ...")
 output_prediction_metrics(results, prediction_field="gpt-4_predicted_category", actual_field="actual_category")
 ```
 
-*注意：虽然我们提供了150个数据集进行预测，但GPT-4的API时常超时，且未重试调用以节省成本。这对于处于早期预览阶段的GPT-4是完全可以预期的。有些提示也超出了GPT-3.5-Turbo的令牌长度。因此，以下结果适用于GPT-3.5-turbo和GPT-4做出的53个预测。*
+*注意：虽然我们提供了 150 个数据集进行预测，但 GPT-4 的 API 时常超时，且未重试调用以节省成本。这对于处于早期预览阶段的 GPT-4 是完全可以预期的。有些提示也超出了 GPT-3.5-Turbo 的令牌长度。因此，以下结果适用于 GPT-3.5-turbo 和 GPT-4 做出的 53 个预测。*
 
 比如，仅预测类别，如“Coordination & Context”，当完整类别和子类别为“Coordination & Context : Humanitarian Access”时……
 
@@ -541,7 +541,7 @@ Recall: 0.96
 F1: 0.96
 ```
 
-GPT-4几乎总是能够识别正确的类别（**96%**准确率），在相同提示下表现显著优于GPT-3.5-turbo（66%准确率）。
+GPT-4 几乎总是能够识别正确的类别（**96%**准确率），在相同提示下表现显著优于 GPT-3.5-turbo（66%准确率）。
 
 对于同时预测整个类别*和*子类别……
 
@@ -561,7 +561,7 @@ Recall: 0.89
 F1: 0.89
 ```
 
-再次强调，GPT-4比GPT-3.5表现显著优越。**89%**的准确率实际上相当不错，鉴于……
+再次强调，GPT-4 比 GPT-3.5 表现显著优越。**89%**的准确率实际上相当不错，鉴于……
 
 +   **我们*仅仅*提供了一组文本规则，没有标记数据、训练分类器或提供任何示例**。
 
@@ -664,11 +664,11 @@ Secondary category matched: False
 
 有几件事引起了注意。像‘mozambique-attacks-on-aid-operations-education-health-and-protection’这样的数据集，包含了与医疗保健和攻击相关的数据文件。
 
-![](../Images/0f406a7ab9b745351ab0fb8adb6ef54a.png)
+![](img/0f406a7ab9b745351ab0fb8adb6ef54a.png)
 
 因此，假设每个数据集只有一个类别可能不是解决问题的最佳方式，数据集在类别之间被重复使用。
 
-在GPT-4错误的约一半的案例中，它预测的第二名类别是正确的。查看这些案例中的一个模型输出，[乌克兰边界穿越](https://data.humdata.org/dataset/ukraine-border-crossings)……
+在 GPT-4 错误的约一半的案例中，它预测的第二名类别是正确的。查看这些案例中的一个模型输出，[乌克兰边界穿越](https://data.humdata.org/dataset/ukraine-border-crossings)……
 
 ```py
 Yes, the dataset falls into exactly one of the categories mentioned above.
@@ -694,9 +694,9 @@ permissions related to humanitarian interventions.
 
 > Coordination & Context : Humanitarian Access：表格或矢量数据，描述自然灾害、许可、激烈战斗或其他影响人道干预交付的访问限制的位置。
 
-因此，GPT-4似乎严格遵循类别规则。HDX团队应用的分类有一些更细致的区别，其中跨境数据集与人道主义访问有很合理的关系。因此，也许提高模型在这种情况下预测的一个方法是向类别定义中添加额外的文本，指明边界穿越可能与人道主义访问相关。
+因此，GPT-4 似乎严格遵循类别规则。HDX 团队应用的分类有一些更细致的区别，其中跨境数据集与人道主义访问有很合理的关系。因此，也许提高模型在这种情况下预测的一个方法是向类别定义中添加额外的文本，指明边界穿越可能与人道主义访问相关。
 
-这里的关键是GPT-4表现非常出色，而少数不正确的预测是由于我对问题的框定不当（数据集可以有多个类别），以及定义类别的文本可能存在的问题。
+这里的关键是 GPT-4 表现非常出色，而少数不正确的预测是由于我对问题的框定不当（数据集可以有多个类别），以及定义类别的文本可能存在的问题。
 
 # 结论
 
@@ -706,9 +706,9 @@ permissions related to humanitarian interventions.
 
 +   由于成本和 GPT-4 仍处于早期预览阶段，这项研究所使用的数据量非常有限。未来的研究当然需要使用更多的数据。
 
-+   目前提示长度是一个限制因素，上述研究只包括了少于4个表的数据集，以避免在提示表格摘录时超出 token 限制。HDX 数据集可能包含比这更多的表格，在某些情况下，拥有更大的表格摘录可能会更有价值。像 OpenAI 这样的供应商似乎在逐步增加 token 限制，因此随着时间的推移，这可能会变得不那么成为问题。
++   目前提示长度是一个限制因素，上述研究只包括了少于 4 个表的数据集，以避免在提示表格摘录时超出 token 限制。HDX 数据集可能包含比这更多的表格，在某些情况下，拥有更大的表格摘录可能会更有价值。像 OpenAI 这样的供应商似乎在逐步增加 token 限制，因此随着时间的推移，这可能会变得不那么成为问题。
 
-+   由于早期预览的原因，GPT-4 模型的性能非常慢，每个提示完成需要20秒。
++   由于早期预览的原因，GPT-4 模型的性能非常慢，每个提示完成需要 20 秒。
 
 +   问题的框架并不理想，例如，假设一个数据集只能有一个类别。虽然足以展示大型语言模型在评估数据质量和总结方面的潜力，但未来稍微不同的方法可能会产生更好的结果。例如，为 HDX 平台上的数据集预测每个国家的顶级数据集候选者。
 
@@ -716,9 +716,9 @@ permissions related to humanitarian interventions.
 
 # 参考文献
 
-[1] OCHA, [2023年开放人道数据状态](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)
+[1] OCHA, [2023 年开放人道数据状态](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)
 
-[2] Brown 等人, [语言模型是少样本学习者](https://arxiv.org/pdf/2005.14165.pdf)（2020年）。
+[2] Brown 等人, [语言模型是少样本学习者](https://arxiv.org/pdf/2005.14165.pdf)（2020 年）。
 
 [3] Kojima 等人, [大型语言模型是零样本推理者](https://arxiv.org/abs/2205.11916)。
 

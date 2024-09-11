@@ -1,18 +1,18 @@
 # 如何评估表示
 
-> 原文：[https://towardsdatascience.com/how-to-evaluate-representations-886ce5ef7a66?source=collection_archive---------7-----------------------#2023-09-14](https://towardsdatascience.com/how-to-evaluate-representations-886ce5ef7a66?source=collection_archive---------7-----------------------#2023-09-14)
+> 原文：[`towardsdatascience.com/how-to-evaluate-representations-886ce5ef7a66?source=collection_archive---------7-----------------------#2023-09-14`](https://towardsdatascience.com/how-to-evaluate-representations-886ce5ef7a66?source=collection_archive---------7-----------------------#2023-09-14)
 
 ## 从无监督到监督指标
 
-[](https://medium.com/@mina.ghashami?source=post_page-----886ce5ef7a66--------------------------------)[![Mina Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----886ce5ef7a66--------------------------------)[](https://towardsdatascience.com/?source=post_page-----886ce5ef7a66--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----886ce5ef7a66--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----886ce5ef7a66--------------------------------)
+[](https://medium.com/@mina.ghashami?source=post_page-----886ce5ef7a66--------------------------------)![Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----886ce5ef7a66--------------------------------)[](https://towardsdatascience.com/?source=post_page-----886ce5ef7a66--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----886ce5ef7a66--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----886ce5ef7a66--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-representations-886ce5ef7a66&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----886ce5ef7a66---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----886ce5ef7a66--------------------------------) ·8分钟阅读·2023年9月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F886ce5ef7a66&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-representations-886ce5ef7a66&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----886ce5ef7a66---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-representations-886ce5ef7a66&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----886ce5ef7a66---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----886ce5ef7a66--------------------------------) ·8 分钟阅读·2023 年 9 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F886ce5ef7a66&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-representations-886ce5ef7a66&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----886ce5ef7a66---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F886ce5ef7a66&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-representations-886ce5ef7a66&source=-----886ce5ef7a66---------------------bookmark_footer-----------)![](../Images/92a89b397bf306df6fcef24bd78eb2a7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F886ce5ef7a66&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-representations-886ce5ef7a66&source=-----886ce5ef7a66---------------------bookmark_footer-----------)![](img/92a89b397bf306df6fcef24bd78eb2a7.png)
 
 版权：图片来自 unsplash.com
 

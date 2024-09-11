@@ -1,18 +1,18 @@
 # “实际”构建图像分类器
 
-> 原文：[https://towardsdatascience.com/practically-building-an-image-classifier-531443b3b483?source=collection_archive---------20-----------------------#2023-01-17](https://towardsdatascience.com/practically-building-an-image-classifier-531443b3b483?source=collection_archive---------20-----------------------#2023-01-17)
+> 原文：[`towardsdatascience.com/practically-building-an-image-classifier-531443b3b483?source=collection_archive---------20-----------------------#2023-01-17`](https://towardsdatascience.com/practically-building-an-image-classifier-531443b3b483?source=collection_archive---------20-----------------------#2023-01-17)
 
 ## 以实际方式构建图像分类器（基于真实故事）
 
-[](https://medium.com/@artofsaience?source=post_page-----531443b3b483--------------------------------)[![Sairam Sundaresan](../Images/cb31dad58b14237824168da9b123ad3e.png)](https://medium.com/@artofsaience?source=post_page-----531443b3b483--------------------------------)[](https://towardsdatascience.com/?source=post_page-----531443b3b483--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----531443b3b483--------------------------------) [Sairam Sundaresan](https://medium.com/@artofsaience?source=post_page-----531443b3b483--------------------------------)
+[](https://medium.com/@artofsaience?source=post_page-----531443b3b483--------------------------------)![Sairam Sundaresan](https://medium.com/@artofsaience?source=post_page-----531443b3b483--------------------------------)[](https://towardsdatascience.com/?source=post_page-----531443b3b483--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----531443b3b483--------------------------------) [Sairam Sundaresan](https://medium.com/@artofsaience?source=post_page-----531443b3b483--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa99fbdf99073&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractically-building-an-image-classifier-531443b3b483&user=Sairam+Sundaresan&userId=a99fbdf99073&source=post_page-a99fbdf99073----531443b3b483---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----531443b3b483--------------------------------) ·10 min read·2023年1月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F531443b3b483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractically-building-an-image-classifier-531443b3b483&user=Sairam+Sundaresan&userId=a99fbdf99073&source=-----531443b3b483---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa99fbdf99073&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractically-building-an-image-classifier-531443b3b483&user=Sairam+Sundaresan&userId=a99fbdf99073&source=post_page-a99fbdf99073----531443b3b483---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----531443b3b483--------------------------------) ·10 min read·2023 年 1 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F531443b3b483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractically-building-an-image-classifier-531443b3b483&user=Sairam+Sundaresan&userId=a99fbdf99073&source=-----531443b3b483---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F531443b3b483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractically-building-an-image-classifier-531443b3b483&source=-----531443b3b483---------------------bookmark_footer-----------)![](../Images/96e7741454306b8d9f7d47a08ad99d73.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F531443b3b483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractically-building-an-image-classifier-531443b3b483&source=-----531443b3b483---------------------bookmark_footer-----------)![](img/96e7741454306b8d9f7d47a08ad99d73.png)
 
 图片由 [Elena Mozhvilo](https://unsplash.com/@miracleday?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -40,37 +40,37 @@
 
 你决定先查看数据。毕竟，如果数据不好，再多的机器学习洗发水也无济于事。
 
-初看起来，这些数据处理得当，你可以立即开始使用。总共有近7500张图像，因此应该足够用于微调。数据集包含了特定宠物品种的分类标签，所以你需要对其进行修改，使每张图像都与猫或狗标签相关联。好的，写一个简单的函数来完成这个任务，我们就准备好了。
+初看起来，这些数据处理得当，你可以立即开始使用。总共有近 7500 张图像，因此应该足够用于微调。数据集包含了特定宠物品种的分类标签，所以你需要对其进行修改，使每张图像都与猫或狗标签相关联。好的，写一个简单的函数来完成这个任务，我们就准备好了。
 
-![](../Images/f7a0b8062c3315d1e4697dc2a6174f1a.png)
+![](img/f7a0b8062c3315d1e4697dc2a6174f1a.png)
 
 示例图像和标签：图像由作者创建
 
 所以，猫的图像将有标签“True”，而狗的图像将有标签“False”。
 
-在开始实验之前，你将数据分为训练集和验证集。你足够聪明地知道，简单性总是优于复杂性。因此，作为第一步，你选择了一个知名的深度学习模型——ResNet-18作为基线。然后，你关闭了所有高级设置，比如调度器、数据增强、预训练权重和正则化，并通过它传递一批数据。当你检查模型的预测时，你看到的是这样的结果：
+在开始实验之前，你将数据分为训练集和验证集。你足够聪明地知道，简单性总是优于复杂性。因此，作为第一步，你选择了一个知名的深度学习模型——ResNet-18 作为基线。然后，你关闭了所有高级设置，比如调度器、数据增强、预训练权重和正则化，并通过它传递一批数据。当你检查模型的预测时，你看到的是这样的结果：
 
 ```py
 (TensorBase([0.0056, 0.9944]), TensorBase(1.))
 ```
 
-很好，概率加起来为1。这意味着基本设置是正确的。感到自信，你训练模型几个轮次，并观察发生了什么。损失似乎在减少，但对于这样一个简单的问题和如此*干净*的数据集，准确率却让人失望。
+很好，概率加起来为 1。这意味着基本设置是正确的。感到自信，你训练模型几个轮次，并观察发生了什么。损失似乎在减少，但对于这样一个简单的问题和如此*干净*的数据集，准确率却让人失望。
 
-![](../Images/76ce014c84b2eba613ee89cb65300181.png)
+![](img/76ce014c84b2eba613ee89cb65300181.png)
 
-10轮训练后的结果（未使用迁移学习）：图像由作者创建
+10 轮训练后的结果（未使用迁移学习）：图像由作者创建
 
-![](../Images/fd9b5f49a7963e3c118424381b232850.png)
+![](img/fd9b5f49a7963e3c118424381b232850.png)
 
 训练曲线：图像由作者创建
 
 为了留下良好的第一印象，你可视化了被错误分类的示例，并绘制了混淆矩阵。
 
-![](../Images/31558848675dc6558563fe22afc76a7a.png)
+![](img/31558848675dc6558563fe22afc76a7a.png)
 
 分类结果：图像由作者创建
 
-![](../Images/e21a08a63c373c5daa6accbe75d1e7cd.png)
+![](img/e21a08a63c373c5daa6accbe75d1e7cd.png)
 
 错误分类示例：图像由作者创建
 
@@ -78,29 +78,29 @@
 
 你推测这是因为训练示例不足以从头开始训练。因此，你决定使用一种在你的职业生涯中表现良好的技术——迁移学习。
 
-在用预训练权重初始化Resnet-18后，你重复了相同的实验，保持其他一切不变。这次的结果看起来很棒。几乎没有错误，训练曲线也非常好。
+在用预训练权重初始化 Resnet-18 后，你重复了相同的实验，保持其他一切不变。这次的结果看起来很棒。几乎没有错误，训练曲线也非常好。
 
-![](../Images/34b6f8d916123a78a225b6ecdb8433e4.png)
+![](img/34b6f8d916123a78a225b6ecdb8433e4.png)
 
-10轮训练后的结果（使用迁移学习）：图像由作者创建
+10 轮训练后的结果（使用迁移学习）：图像由作者创建
 
-![](../Images/f5456913e86ab1063ccd7fe41426145c.png)
+![](img/f5456913e86ab1063ccd7fe41426145c.png)
 
 使用迁移学习的训练曲线：图像由作者创建
 
 你重复之前的可视化，发现只有少量的狗被误认为是猫。
 
-![](../Images/d714298a461199cc76225987d586e466.png)
+![](img/d714298a461199cc76225987d586e466.png)
 
 混淆矩阵看起来好多了！图像由作者创建
 
-![](../Images/4e84e380f4c568b63440a90428b74390.png)
+![](img/4e84e380f4c568b63440a90428b74390.png)
 
 错误分类示例：图像由作者创建
 
 高兴的是你的新工作顺利开始，你保存了所有工作并在傍晚回家。
 
-很久以后。凌晨1:30……你被惊醒，汗珠从额头上滑落。
+很久以后。凌晨 1:30……你被惊醒，汗珠从额头上滑落。
 
 你在设置实验时错过了一个非常重要的细节。准确率可能根本不是这个问题的好指标。
 
@@ -110,29 +110,29 @@
 
 你从未检查猫和狗的图像数量是否相似。你在键盘上急速打字，键盘的“哒哒”声后随之而来的沉寂证实了你的怀疑。
 
-**猫：**2400张，占总数据的32.4%
+**猫：**2400 张，占总数据的 32.4%
 
-**狗：**4990张，占总数据的67.6%
+**狗：**4990 张，占总数据的 67.6%
 
-这解释了为什么你训练的第一个模型效果很差。数据不平衡使模型混淆。数据集中狗的数量是猫的两倍多。模型无法收集到足够的信息来区分猫和狗，因为它看到的大多数图像都是狗。但是为什么你训练的第二个模型几乎完美无瑕？因为你用训练了120多万张图像的权重初始化了它，其中许多是狗和猫的图像。
+这解释了为什么你训练的第一个模型效果很差。数据不平衡使模型混淆。数据集中狗的数量是猫的两倍多。模型无法收集到足够的信息来区分猫和狗，因为它看到的大多数图像都是狗。但是为什么你训练的第二个模型几乎完美无瑕？因为你用训练了 120 多万张图像的权重初始化了它，其中许多是狗和猫的图像。
 
 问题解决了！没问题吧？其实不然。迁移学习（你在第二个模型中做的）并不总是有效。当预训练数据集（模型最初训练时的数据）和目标数据集（你正在训练的数据）之间存在领域不匹配时，迁移学习可能会失败。你很幸运，因为预训练数据集与你正在使用的宠物数据集有相似的分布（呼~）。
 
 下面是下一个错误——默认将准确率作为指标。将混淆矩阵并排查看。左侧是你的原始实验，右侧是迁移学习实验。供参考，行是实际情况。第一行对应实际的狗图像，第二行对应实际的猫图像。第一列代表模型*认为*是狗的图像，第二列代表模型认为是猫的图像。
 
-![](../Images/0b6913c151b40fe6d4222339eb54ff72.png)
+![](img/0b6913c151b40fe6d4222339eb54ff72.png)
 
 混淆矩阵并排对比：由作者创建的图像
 
-如果你查看了原始的准确率数字，你会看到在没有迁移学习的情况下准确率为86%，而在进行迁移学习后准确率为99.7%。还不错，对吧？
+如果你查看了原始的准确率数字，你会看到在没有迁移学习的情况下准确率为 86%，而在进行迁移学习后准确率为 99.7%。还不错，对吧？
 
-然而，在左侧的混淆矩阵中，你可以看到44只狗被模型分类为猫，162只猫被分类为狗。这是一个你会因盲目依赖准确率而错过的大问题。这是为什么？
+然而，在左侧的混淆矩阵中，你可以看到 44 只狗被模型分类为猫，162 只猫被分类为狗。这是一个你会因盲目依赖准确率而错过的大问题。这是为什么？
 
-想象一下一个最坏的情况，如果你只有90张狗的图片和10张猫的图片，并且没有预训练的权重。如果你把所有100张图片的答案都猜为狗，你的准确率将是90%。你也会得到一个完全无用的模型。
+想象一下一个最坏的情况，如果你只有 90 张狗的图片和 10 张猫的图片，并且没有预训练的权重。如果你把所有 100 张图片的答案都猜为狗，你的准确率将是 90%。你也会得到一个完全无用的模型。
 
 因此，在另一种情况下，使用准确率作为指标将隐藏模型中的这一根本性缺陷，直到为时已晚。我的意思是，如果哈里斯·皮尔顿这位喜爱小狗的社交名人使用了这个模型，发现它无用，然后在她的社交媒体渠道上谴责了这个产品，那该怎么办？
 
-当你感谢幸运星并整合迁移学习的结果时，你的经理过来问道。“你好啊！你的工作进展如何？”，他问。“还不错，我想我有一些成果。”，你紧张地回答。你向他展示了你的迁移学习成果以及0.003的误差率。他感到惊讶。“我们多久可以为此制作一个演示？”，他问。“我可以在本周开始着手准备”，你回答。
+当你感谢幸运星并整合迁移学习的结果时，你的经理过来问道。“你好啊！你的工作进展如何？”，他问。“还不错，我想我有一些成果。”，你紧张地回答。你向他展示了你的迁移学习成果以及 0.003 的误差率。他感到惊讶。“我们多久可以为此制作一个演示？”，他问。“我可以在本周开始着手准备”，你回答。
 
 “我们的营销团队与顶级网红哈里斯·皮尔顿有联系，我们希望他们尝试一下这个并给我们反馈。”他咧嘴一笑。“嗯……好的”，你吞了吞口水，回忆起你之前的失误。“好的，我们目标是下周末前。快点！”，他说着拍了拍你的肩膀，愉快地走开了。
 
@@ -140,13 +140,13 @@
 
 在接下来的几天里，你构建了一个简单的应用程序界面，以测试模型并查看它在真实世界图像上的表现。毕竟，如果你无法将模型用于实际应用，训练它有什么意义呢？
 
-对初步原型感到满意后，你将注意力转向脑海中那些迫切的问题。翻开一本参考教材，你浏览了F1分数、ROC、[精准度和召回率](/precision-and-recall-88a3776c8007)，所有这些想法涌上心头。你重新运行了实验，但除了测量准确率外，你还测量了精准度和召回率。结果现在更加有意义——在没有迁移学习的模型中，精准度和召回率较低，而准确率掩盖了这些缺陷。另一方面，迁移学习模型的精准度和召回率都非常高。
+对初步原型感到满意后，你将注意力转向脑海中那些迫切的问题。翻开一本参考教材，你浏览了 F1 分数、ROC、精准度和召回率，所有这些想法涌上心头。你重新运行了实验，但除了测量准确率外，你还测量了精准度和召回率。结果现在更加有意义——在没有迁移学习的模型中，精准度和召回率较低，而准确率掩盖了这些缺陷。另一方面，迁移学习模型的精准度和召回率都非常高。
 
-![](../Images/bfbf91080be461de6a14f8f2ee97ba64.png)
+![](img/bfbf91080be461de6a14f8f2ee97ba64.png)
 
 没有迁移学习——一般的精准度和召回率：由作者创建的图像
 
-![](../Images/15627d14ed4218aac814995975abd891.png)
+![](img/15627d14ed4218aac814995975abd891.png)
 
 有了迁移学习——出色的精准度和召回率：由作者创建的图像
 
@@ -154,7 +154,7 @@
 
 但在你开始之前，你的经理过来了。你向他展示了正在开发中的应用，他非常高兴。“这真棒！我们的营销团队与一些影响者进行了交谈，他们希望这个应用能更具个性化——按品种推荐。我试图说服他们，但他们已经承诺在下周末影响者来总部时准备好。你认为到那时能做好吗？我知道这将需要一些艰苦的工程工作。”他说得很歉意。“细粒度分类？到下周末？这要求很高。我可以找个人和我一起工作吗？”你对突然变化的要求和缩短的时间表感到惊讶。“嗯……”他停顿了一下……
 
-（本系列的结论将在2023年某个时候发布——仍在前期制作中）
+（本系列的结论将在 2023 年某个时候发布——仍在前期制作中）
 
 **这是我给你的问题：**
 

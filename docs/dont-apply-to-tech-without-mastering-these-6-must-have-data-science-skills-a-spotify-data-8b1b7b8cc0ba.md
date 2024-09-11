@@ -1,20 +1,20 @@
-# 在掌握这6项必备的数据科学技能之前不要申请科技行业
+# 在掌握这 6 项必备的数据科学技能之前不要申请科技行业
 
-> 原文：[https://towardsdatascience.com/dont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba?source=collection_archive---------0-----------------------#2023-10-27](https://towardsdatascience.com/dont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba?source=collection_archive---------0-----------------------#2023-10-27)
+> 原文：[`towardsdatascience.com/dont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba?source=collection_archive---------0-----------------------#2023-10-27`](https://towardsdatascience.com/dont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba?source=collection_archive---------0-----------------------#2023-10-27)
 
 ## 进入科技魔法世界
 
 ## 一瞥科技魔法世界，以及你需要做什么才能成功成为一名数据魔法师
 
-[](https://medium.com/@elalamik?source=post_page-----8b1b7b8cc0ba--------------------------------)[![Khouloud El Alami](../Images/58840bfe28a60892b51d40ad6ba7f5e8.png)](https://medium.com/@elalamik?source=post_page-----8b1b7b8cc0ba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8b1b7b8cc0ba--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8b1b7b8cc0ba--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----8b1b7b8cc0ba--------------------------------)
+[](https://medium.com/@elalamik?source=post_page-----8b1b7b8cc0ba--------------------------------)![Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----8b1b7b8cc0ba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8b1b7b8cc0ba--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8b1b7b8cc0ba--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----8b1b7b8cc0ba--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----8b1b7b8cc0ba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8b1b7b8cc0ba--------------------------------) ·20分钟阅读·2023年10月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8b1b7b8cc0ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----8b1b7b8cc0ba---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----8b1b7b8cc0ba---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8b1b7b8cc0ba--------------------------------) ·20 分钟阅读·2023 年 10 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8b1b7b8cc0ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----8b1b7b8cc0ba---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8b1b7b8cc0ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba&source=-----8b1b7b8cc0ba---------------------bookmark_footer-----------)![](../Images/b671e1f4733ce6fef46ea372b7a3a321.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8b1b7b8cc0ba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdont-apply-to-tech-without-mastering-these-6-must-have-data-science-skills-a-spotify-data-8b1b7b8cc0ba&source=-----8b1b7b8cc0ba---------------------bookmark_footer-----------)![](img/b671e1f4733ce6fef46ea372b7a3a321.png)
 
 图片来源：[Tuyen Vo](https://unsplash.com/@bitu2104?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

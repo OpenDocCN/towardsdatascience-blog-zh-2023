@@ -1,14 +1,14 @@
 # TensorFlow 中的超参数搜索不再出现 OOM 异常
 
-> 原文：[https://towardsdatascience.com/no-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9?source=collection_archive---------3-----------------------#2023-04-01](https://towardsdatascience.com/no-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9?source=collection_archive---------3-----------------------#2023-04-01)
+> 原文：[`towardsdatascience.com/no-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9?source=collection_archive---------3-----------------------#2023-04-01`](https://towardsdatascience.com/no-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9?source=collection_archive---------3-----------------------#2023-04-01)
 
 ## 使用包装函数来避免 OOM 异常
 
-[](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)[![Pascal Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------) [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)
+[](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)![Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------) [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F672b95fdf976&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fno-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9&user=Pascal+Janetzky&userId=672b95fdf976&source=post_page-672b95fdf976----26e6e3069bc9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------) ·8分钟阅读·2023年4月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F26e6e3069bc9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fno-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9&user=Pascal+Janetzky&userId=672b95fdf976&source=-----26e6e3069bc9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F672b95fdf976&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fno-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9&user=Pascal+Janetzky&userId=672b95fdf976&source=post_page-672b95fdf976----26e6e3069bc9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------) ·8 分钟阅读·2023 年 4 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F26e6e3069bc9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fno-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9&user=Pascal+Janetzky&userId=672b95fdf976&source=-----26e6e3069bc9---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@ OOM 错误。
 
 至少，这就是 TensorFlow 经常发生的情况。
 
-![](../Images/b3e570b3e786fedc8cb8fa13c920d878.png)
+![](img/b3e570b3e786fedc8cb8fa13c920d878.png)
 
 照片由 [İsmail Enes Ayhan](https://unsplash.com/@ismailenesayhan?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
 # 《面向机器学习工程师的 Python 设计模式：原型模式》
 
-> 原文：[https://towardsdatascience.com/design-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d?source=collection_archive---------2-----------------------#2023-12-05](https://towardsdatascience.com/design-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d?source=collection_archive---------2-----------------------#2023-12-05)
+> 原文：[`towardsdatascience.com/design-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d?source=collection_archive---------2-----------------------#2023-12-05`](https://towardsdatascience.com/design-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d?source=collection_archive---------2-----------------------#2023-12-05)
 
-![](../Images/3f4030d397da6e9736107739793eda2b.png)
+![](img/3f4030d397da6e9736107739793eda2b.png)
 
 图片由 [Robert Katzki](https://unsplash.com/@ro_ka?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 学习如何使用原型设计模式来提升你的代码
 
-[](https://medium.com/@marcellopoliti?source=post_page-----fcc1358a862d--------------------------------)[![Marcello Politi](../Images/484e44571bd2e75acfe5fef3146ab3c2.png)](https://medium.com/@marcellopoliti?source=post_page-----fcc1358a862d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcc1358a862d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fcc1358a862d--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----fcc1358a862d--------------------------------)
+[](https://medium.com/@marcellopoliti?source=post_page-----fcc1358a862d--------------------------------)![Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----fcc1358a862d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcc1358a862d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcc1358a862d--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----fcc1358a862d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesign-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----fcc1358a862d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcc1358a862d--------------------------------) ·6 min read·2023年12月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcc1358a862d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesign-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d&user=Marcello+Politi&userId=7390355d40fe&source=-----fcc1358a862d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesign-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----fcc1358a862d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcc1358a862d--------------------------------) ·6 min read·2023 年 12 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcc1358a862d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesign-patterns-with-python-for-machine-learning-engineers-prototype-fcc1358a862d&user=Marcello+Politi&userId=7390355d40fe&source=-----fcc1358a862d---------------------clap_footer-----------)
 
 --
 

@@ -1,16 +1,16 @@
-# 《我在Spotify学到的初级数据科学家必备的五个重要课程（第1部分）》
+# 《我在 Spotify 学到的初级数据科学家必备的五个重要课程（第一部分）》
 
-> 原文：[https://towardsdatascience.com/5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf?source=collection_archive---------2-----------------------#2023-06-29](https://towardsdatascience.com/5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf?source=collection_archive---------2-----------------------#2023-06-29)
+> 原文：[`towardsdatascience.com/5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf?source=collection_archive---------2-----------------------#2023-06-29`](https://towardsdatascience.com/5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf?source=collection_archive---------2-----------------------#2023-06-29)
 
 ## 数据科学家在科技行业的首几年编年史
 
 ## 数据科学家在科技行业的前几年指南，帮助你提升技能。
 
-[](https://medium.com/@elalamik?source=post_page-----7a040a731ecf--------------------------------)[![Khouloud El Alami](../Images/58840bfe28a60892b51d40ad6ba7f5e8.png)](https://medium.com/@elalamik?source=post_page-----7a040a731ecf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a040a731ecf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7a040a731ecf--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----7a040a731ecf--------------------------------)
+[](https://medium.com/@elalamik?source=post_page-----7a040a731ecf--------------------------------)![Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----7a040a731ecf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a040a731ecf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a040a731ecf--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----7a040a731ecf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----7a040a731ecf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a040a731ecf--------------------------------) · 8 分钟阅读 · 2023年6月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a040a731ecf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----7a040a731ecf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c6a36490614&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf&user=Khouloud+El+Alami&userId=9c6a36490614&source=post_page-9c6a36490614----7a040a731ecf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a040a731ecf--------------------------------) · 8 分钟阅读 · 2023 年 6 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a040a731ecf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-essential-lessons-for-aspiring-data-scientists-i-learned-at-spotify-part-1-7a040a731ecf&user=Khouloud+El+Alami&userId=9c6a36490614&source=-----7a040a731ecf---------------------clap_footer-----------)
 
 --
 

@@ -1,24 +1,24 @@
 # 预测多个时间段：以天气数据为例
 
-> 原文：[https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07?source=collection_archive---------4-----------------------#2023-08-06](https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07?source=collection_archive---------4-----------------------#2023-08-06)
+> 原文：[`towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07?source=collection_archive---------4-----------------------#2023-08-06`](https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07?source=collection_archive---------4-----------------------#2023-08-06)
 
 ## 使用预测时间段作为特征来预测瑞士的降水量。
 
-[](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[![Davide Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------) [Davide Burba](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)
+[](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)![Davide Burba](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------) [Davide Burba](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f58aaaeaed7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07&user=Davide+Burba&userId=9f58aaaeaed7&source=post_page-9f58aaaeaed7----8d5fa4321e07---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------) ·8 分钟阅读·2023年8月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8d5fa4321e07&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07&user=Davide+Burba&userId=9f58aaaeaed7&source=-----8d5fa4321e07---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f58aaaeaed7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07&user=Davide+Burba&userId=9f58aaaeaed7&source=post_page-9f58aaaeaed7----8d5fa4321e07---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------) ·8 分钟阅读·2023 年 8 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8d5fa4321e07&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07&user=Davide+Burba&userId=9f58aaaeaed7&source=-----8d5fa4321e07---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8d5fa4321e07&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07&source=-----8d5fa4321e07---------------------bookmark_footer-----------)![](../Images/0a51955e062687c7048d4f894669ee7e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8d5fa4321e07&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07&source=-----8d5fa4321e07---------------------bookmark_footer-----------)![](img/0a51955e062687c7048d4f894669ee7e.png)
 
 天气预报，作者 [Giulia Roggia](https://www.instagram.com/giulia_roggia__/)。经许可使用。
 
-+   [介绍](#38c0)
++   介绍
 
-+   [示例：瑞士降水量](#65d9)
++   示例：瑞士降水量
 
 # 介绍
 

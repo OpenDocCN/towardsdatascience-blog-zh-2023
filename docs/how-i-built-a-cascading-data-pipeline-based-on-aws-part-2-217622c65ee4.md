@@ -1,10 +1,10 @@
-# 我是如何基于 AWS 构建级联数据管道的（第 2 部分）
+# 我是如何基于 AWS 构建级联数据管道的（第二部分）
 
-> 原文：[https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4?source=collection_archive---------12-----------------------#2023-08-25](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4?source=collection_archive---------12-----------------------#2023-08-25)
+> 原文：[`towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4?source=collection_archive---------12-----------------------#2023-08-25`](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4?source=collection_archive---------12-----------------------#2023-08-25)
 
 ## 自动化、可扩展且强大
 
-[](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[![Memphis Meng](../Images/5a2b214eb5d5ab884b18224c471662c0.png)](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------) [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)
+[](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)![Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------) [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F217622c65ee4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4&source=-----217622c65ee4---------------------bookmark_footer-----------)![](../Images/527158d227cde2bf33b0286a233784ff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F217622c65ee4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4&source=-----217622c65ee4---------------------bookmark_footer-----------)![](img/527158d227cde2bf33b0286a233784ff.png)
 
 照片由 [Mehmet Ali Peker](https://unsplash.com/@mrpeker?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 拍摄，发布在 [Unsplash](https://unsplash.com/photos/hfiym43qBpk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

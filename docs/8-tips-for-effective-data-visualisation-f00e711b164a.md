@@ -1,20 +1,20 @@
-# 8个有效数据可视化的技巧
+# 8 个有效数据可视化的技巧
 
-> 原文：[https://towardsdatascience.com/8-tips-for-effective-data-visualisation-f00e711b164a?source=collection_archive---------12-----------------------#2023-04-25](https://towardsdatascience.com/8-tips-for-effective-data-visualisation-f00e711b164a?source=collection_archive---------12-----------------------#2023-04-25)
+> 原文：[`towardsdatascience.com/8-tips-for-effective-data-visualisation-f00e711b164a?source=collection_archive---------12-----------------------#2023-04-25`](https://towardsdatascience.com/8-tips-for-effective-data-visualisation-f00e711b164a?source=collection_archive---------12-----------------------#2023-04-25)
 
 ## 数据 | 可视化 | 分析
 
 ## 一本正确向观众展示洞察和观察结果的指南
 
-[![David Farrugia](../Images/082ed61e24c7c26a4ae1c77343a87824.png)](https://david-farrugia.medium.com/?source=post_page-----f00e711b164a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f00e711b164a--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----f00e711b164a--------------------------------)
+![David Farrugia](https://david-farrugia.medium.com/?source=post_page-----f00e711b164a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f00e711b164a--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----f00e711b164a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-tips-for-effective-data-visualisation-f00e711b164a&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----f00e711b164a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f00e711b164a--------------------------------) · 10 min read · 2023年4月25日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-tips-for-effective-data-visualisation-f00e711b164a&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----f00e711b164a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f00e711b164a--------------------------------) · 10 min read · 2023 年 4 月 25 日
 
 --
 
-[收藏](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff00e711b164a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-tips-for-effective-data-visualisation-f00e711b164a&source=-----f00e711b164a---------------------bookmark_footer-----------)![](../Images/03a3e0fc2cddc85856485b542651792e.png)
+[收藏](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff00e711b164a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F8-tips-for-effective-data-visualisation-f00e711b164a&source=-----f00e711b164a---------------------bookmark_footer-----------)![](img/03a3e0fc2cddc85856485b542651792e.png)
 
 照片由 [Luke Chesser](https://unsplash.com/@lukechesser?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

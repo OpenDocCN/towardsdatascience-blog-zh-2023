@@ -1,14 +1,14 @@
 # 解决压缩轴的终极修复，逐步指导
 
-> 原文：[https://towardsdatascience.com/unscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f?source=collection_archive---------8-----------------------#2023-12-29](https://towardsdatascience.com/unscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f?source=collection_archive---------8-----------------------#2023-12-29)
+> 原文：[`towardsdatascience.com/unscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f?source=collection_archive---------8-----------------------#2023-12-29`](https://towardsdatascience.com/unscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f?source=collection_archive---------8-----------------------#2023-12-29)
 
 ## 使用 matplotlib 制作美丽的多尺度图表，只需三步即可完成。
 
-[](https://medium.com/@mmore500?source=post_page-----69a30e96c68f--------------------------------)[![Matthew Andres Moreno](../Images/ca7da9fd9e5c744ee0ebd2aa5d979eb5.png)](https://medium.com/@mmore500?source=post_page-----69a30e96c68f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69a30e96c68f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----69a30e96c68f--------------------------------) [Matthew Andres Moreno](https://medium.com/@mmore500?source=post_page-----69a30e96c68f--------------------------------)
+[](https://medium.com/@mmore500?source=post_page-----69a30e96c68f--------------------------------)![Matthew Andres Moreno](https://medium.com/@mmore500?source=post_page-----69a30e96c68f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69a30e96c68f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----69a30e96c68f--------------------------------) [Matthew Andres Moreno](https://medium.com/@mmore500?source=post_page-----69a30e96c68f--------------------------------)
 
 ·
 
-[阅读更多](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff226f1e0484b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f&user=Matthew+Andres+Moreno&userId=f226f1e0484b&source=post_page-f226f1e0484b----69a30e96c68f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69a30e96c68f--------------------------------) ·8分钟阅读·2023年12月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69a30e96c68f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f&user=Matthew+Andres+Moreno&userId=f226f1e0484b&source=-----69a30e96c68f---------------------clap_footer-----------)
+[阅读更多](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff226f1e0484b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f&user=Matthew+Andres+Moreno&userId=f226f1e0484b&source=post_page-f226f1e0484b----69a30e96c68f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69a30e96c68f--------------------------------) ·8 分钟阅读·2023 年 12 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69a30e96c68f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funscrunch-your-axes-with-easy-multiscale-data-visualization-in-matplotlib-69a30e96c68f&user=Matthew+Andres+Moreno&userId=f226f1e0484b&source=-----69a30e96c68f---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 在本文中，我们将看看另一种选择：缩放图，它通过面板提供感兴趣区域的放大视图来增强可视化。
 
-![](../Images/5370b3e871481ed907dae7499479456f.png)
+![](img/5370b3e871481ed907dae7499479456f.png)
 
 我们将在本教程中构建的可视化。
 
@@ -30,7 +30,7 @@
 
 短时间的降雨事件和最强降雨的极端强度使问题复杂化。将一个月的 Evett 等人的降雨数据放入一个简单的折线图中，揭示了我们面临的可视化问题。
 
-![](../Images/143b9139676aafd9b459dfcbac2eb94c.png)
+![](img/143b9139676aafd9b459dfcbac2eb94c.png)
 
 我们还有不少工作要做来美化这个图表！在我们的可视化中，我们将重点恢复数据的三个特定组件。
 
@@ -86,7 +86,7 @@ march_df = df[np.clip(df["Decimal DOY"], 59, 90) == df["Decimal DOY"]]
 
 `OutsetGrid`与`FacetGrid`不同，它不仅包括具有分面数据的坐标轴，还准备了一个包含所有数据的初始“源”坐标轴。此外，`OutsetGrid`包括工具来自动生成“标记”注释，显示放大图与原始图的对应关系。下面的示意图概述了`OutsetGrid`的绘图模型。
 
-![](../Images/56239047a77afcac5bc4370ecafed942.png)
+![](img/56239047a77afcac5bc4370ecafed942.png)
 
 回到我们的示例，我们将通过提供我们希望放大的主要绘图区域的列表来构建一个`OutsetGrid`，该列表通过`data`参数传递。随后的参数提供样式和布局信息。
 
@@ -110,7 +110,7 @@ grid = otst.OutsetGrid(  # initialize axes grid manager
 
 这里我们为子图指定了宽于高的纵横比，并决定了我们想要的列数。
 
-![](../Images/a750c4529b72b3719f598328707dbedc.png)
+![](img/a750c4529b72b3719f598328707dbedc.png)
 
 我们的轴网已经设置好，我们准备好进入下一步。
 
@@ -156,7 +156,7 @@ grid.broadcast(
 
 以下是我们在进入下一阶段之前的图形样貌。
 
-![](../Images/6607b2bd755e7b9e43f483a51cf61a9a.png)
+![](img/6607b2bd755e7b9e43f483a51cf61a9a.png)
 
 已经看起来不错——在此阶段我们可以看到放大显示在正确的轴上。
 
@@ -172,7 +172,7 @@ grid.marqueeplot(equalize_aspect=False)  # allow axes aspect ratios to vary
 
 注意传递给 `outset` 绘图的 kwarg，以允许插图图形采用与主图不同的纵横比。这样，插图数据可以完全扩展，以利用所有可用的轴空间。
 
-![](../Images/0391d5d71e232ade77f1bed02bed12dc.png)
+![](img/0391d5d71e232ade77f1bed02bed12dc.png)
 
 我们已经完成了大部分工作——此时只剩下几个最后的修整。
 
@@ -192,7 +192,7 @@ grid.source_axes.legend(  # add legend to primary axes
 
 这样，图形就完成了。
 
-![](../Images/3d66037b0c1430570d042b5fa9bd16d1.png)
+![](img/3d66037b0c1430570d042b5fa9bd16d1.png)
 
 就是这么简单，通过 3 个简单步骤完成了缩放图。
 
@@ -218,7 +218,7 @@ sns.move_legend(  # move legend centered above figure
 
 在这种情况下，我们还使用了 `outset.util.layout_inset_axes` 进行精细调整，以控制插图的大小和位置。
 
-![](../Images/12894e93a41cc6bcce77d9640afac59e.png)
+![](img/12894e93a41cc6bcce77d9640afac59e.png)
 
 就这样，我们在左上角排列了三个缩放插图。
 
@@ -226,29 +226,29 @@ sns.move_legend(  # move legend centered above figure
 
 你可以用 *outset* 做很多其他事情。
 
-![](../Images/53f3e996096a873d38afdce8cfcf3737.png)
+![](img/53f3e996096a873d38afdce8cfcf3737.png)
 
 除了明确的缩放区域指定，*outset* 库还提供了类似于 *seaborn* 的数据导向 API，以推断包含数据框架分类子集的缩放插图。还提供了广泛的样式和布局自定义选项。
 
 这是库[画廊](https://mmore500.com/outset/gallery.html)的一些亮点预览…
 
-![](../Images/58eb3a43b859691b537fcef1bdcec4b8.png)
+![](img/58eb3a43b859691b537fcef1bdcec4b8.png)
 
-你可以在[https://mmore500.com/outset](https://mmore500.com/outset)的库文档中了解有关*outset*的更多信息。特别是，一定要查看[快速入门指南](https://mmore500.com/outset/quickstart.html)。该项目在GitHub上的开源地址是[mmore500/outset](https://github.com/mmore500/outset)，*— 不妨留下一个⭐️！*
+你可以在[`mmore500.com/outset`](https://mmore500.com/outset)的库文档中了解有关*outset*的更多信息。特别是，一定要查看[快速入门指南](https://mmore500.com/outset/quickstart.html)。该项目在 GitHub 上的开源地址是[mmore500/outset](https://github.com/mmore500/outset)，*— 不妨留下一个⭐️！*
 
-*outset*可以通过pip安装，命令为`python3 -m pip install outset`。
+*outset*可以通过 pip 安装，命令为`python3 -m pip install outset`。
 
 # 作者
 
 本教程由我贡献，[Matthew Andres Moreno](https://mmore500.com/)。
 
-![](../Images/19f65ec0566492e40378b517ef0dcd91.png)
+![](img/19f65ec0566492e40378b517ef0dcd91.png)
 
-我目前在[密歇根大学](https://umich.edu)担任博士后学者，我的工作得到了Eric和Wendy Schmidt AI in Science博士后奖学金的支持，这是Schmidt Futures项目的一部分。
+我目前在[密歇根大学](https://umich.edu)担任博士后学者，我的工作得到了 Eric 和 Wendy Schmidt AI in Science 博士后奖学金的支持，这是 Schmidt Futures 项目的一部分。
 
 我的职位在大学的生态与进化生物学系、复杂性研究中心和密歇根数据科学研究所之间分配。
 
-在Twitter上可以找到我[@MorenoMatthewA](https://twitter.com/morenomatthewa)，在GitHub上可以找到我[@mmore500](https://github.com/mmore500/)。
+在 Twitter 上可以找到我[@MorenoMatthewA](https://twitter.com/morenomatthewa)，在 GitHub 上可以找到我[@mmore500](https://github.com/mmore500/)。
 
 *声明：* 我是`outset`库的作者。
 
@@ -256,11 +256,11 @@ sns.move_legend(  # move legend centered above figure
 
 *Evett, Steven R.; Marek, Gary W.; Copeland, Karen S.; Howell, Terry A. Sr.; Colaizzi, Paul D.; Brauer, David K.; Ruthardt, Brice B. (2023). 蒸发蒸腾、灌溉、露水/霜 — The Bushland, Texas 大豆数据集的水分平衡数据。Ag Data Commons.* [*https://doi.org/10.15482/USDA.ADC/1528713.*](https://doi.org/10.15482/USDA.ADC/1528713.) *访问时间 2023–12–26。*
 
-*J. D. Hunter，“Matplotlib: A 2D Graphics Environment”，《计算科学与工程》，第9卷，第3期，90–95页，2007年* [*https://doi.org/10.1109/MCSE.2007.55*](https://doi.org/10.1109/MCSE.2007.55)
+*J. D. Hunter，“Matplotlib: A 2D Graphics Environment”，《计算科学与工程》，第 9 卷，第 3 期，90–95 页，2007 年* [*https://doi.org/10.1109/MCSE.2007.55*](https://doi.org/10.1109/MCSE.2007.55)
 
-Marek, G. W., Evett, S. R., Colaizzi, P. D., & Brauer, D. K. (2021). 迟播短季大豆的初步作物系数：德克萨斯州高平原。《农业系统、地球科学与环境》，4(2)。 [https://doi.org/10.1002/agg2.20177](https://doi.org/10.1002/agg2.20177)
+Marek, G. W., Evett, S. R., Colaizzi, P. D., & Brauer, D. K. (2021). 迟播短季大豆的初步作物系数：德克萨斯州高平原。《农业系统、地球科学与环境》，4(2)。 [`doi.org/10.1002/agg2.20177`](https://doi.org/10.1002/agg2.20177)
 
-*用于统计计算的Python数据结构，McKinney，《第9届Python科学会议论文集》，第445卷，2010年* [*https://doi.org/*](https://doi.org/) *10.25080/Majora-92bf1922–00a*
+*用于统计计算的 Python 数据结构，McKinney，《第 9 届 Python 科学会议论文集》，第 445 卷，2010 年* [*https://doi.org/*](https://doi.org/) *10.25080/Majora-92bf1922–00a*
 
 *Matthew Andres Moreno. (2023). mmore500/outset. Zenodo.* [*https://doi.org/10.5281/zenodo.10426106*](https://doi.org/10.5281/zenodo.10426106)
 

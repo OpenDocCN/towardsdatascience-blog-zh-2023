@@ -1,14 +1,14 @@
 # 图形神经网络中的罗马数字分析
 
-> 原文：[https://towardsdatascience.com/roman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b?source=collection_archive---------9-----------------------#2023-10-24](https://towardsdatascience.com/roman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b?source=collection_archive---------9-----------------------#2023-10-24)
+> 原文：[`towardsdatascience.com/roman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b?source=collection_archive---------9-----------------------#2023-10-24`](https://towardsdatascience.com/roman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b?source=collection_archive---------9-----------------------#2023-10-24)
 
 ## 入门指南
 
-[](https://manoskary.medium.com/?source=post_page-----4d6140cd4c0b--------------------------------)[![Emmanouil Karystinaios](../Images/120d889f330aa7b433a0668a1224e1c8.png)](https://manoskary.medium.com/?source=post_page-----4d6140cd4c0b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d6140cd4c0b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d6140cd4c0b--------------------------------) [Emmanouil Karystinaios](https://manoskary.medium.com/?source=post_page-----4d6140cd4c0b--------------------------------)
+[](https://manoskary.medium.com/?source=post_page-----4d6140cd4c0b--------------------------------)![Emmanouil Karystinaios](https://manoskary.medium.com/?source=post_page-----4d6140cd4c0b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d6140cd4c0b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d6140cd4c0b--------------------------------) [Emmanouil Karystinaios](https://manoskary.medium.com/?source=post_page-----4d6140cd4c0b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9d63e988ed0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b&user=Emmanouil+Karystinaios&userId=9d63e988ed0c&source=post_page-9d63e988ed0c----4d6140cd4c0b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d6140cd4c0b--------------------------------) ·9分钟阅读·2023年10月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d6140cd4c0b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b&user=Emmanouil+Karystinaios&userId=9d63e988ed0c&source=-----4d6140cd4c0b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9d63e988ed0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b&user=Emmanouil+Karystinaios&userId=9d63e988ed0c&source=post_page-9d63e988ed0c----4d6140cd4c0b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d6140cd4c0b--------------------------------) ·9 分钟阅读·2023 年 10 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d6140cd4c0b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froman-numeral-analysis-with-graph-neural-networks-4d6140cd4c0b&user=Emmanouil+Karystinaios&userId=9d63e988ed0c&source=-----4d6140cd4c0b---------------------clap_footer-----------)
 
 --
 
@@ -28,27 +28,27 @@
 
 在罗马数字分析中，每个和弦根据其在给定调性中的位置和功能被分配一个罗马数字。罗马数字表示调性的音阶度数，大写数字表示大调和弦，小写数字表示小调和弦。
 
-例如，在C大调中，C大调和弦用罗马数字“I”表示（大写“I”表示大调和弦）。D小调和弦用“ii”表示（小写“ii”表示小调和弦）。G大调和弦用“V”表示（大写“V”表示大调和弦），因为它是C大调中的第五和弦。
+例如，在 C 大调中，C 大调和弦用罗马数字“I”表示（大写“I”表示大调和弦）。D 小调和弦用“ii”表示（小写“ii”表示小调和弦）。G 大调和弦用“V”表示（大写“V”表示大调和弦），因为它是 C 大调中的第五和弦。
 
-![](../Images/cd24a105a4930479dccbb00ed5d30aef.png)
+![](img/cd24a105a4930479dccbb00ed5d30aef.png)
 
-在C大调中，四声部和声的两个小节的罗马数字分析示例。
+在 C 大调中，四声部和声的两个小节的罗马数字分析示例。
 
-罗马数字总是相对于一个调性。因此，如果调性是C大调，那么罗马数字“V”将是属和弦或G大调和弦。但和弦确实有不同的性质，例如小调或大调。在罗马数字中，大写字母表示大调性质，小写字母表示小调性质。
+罗马数字总是相对于一个调性。因此，如果调性是 C 大调，那么罗马数字“V”将是属和弦或 G 大调和弦。但和弦确实有不同的性质，例如小调或大调。在罗马数字中，大写字母表示大调性质，小写字母表示小调性质。
 
-在音乐分析中，通常最低音是和弦特性的参考点。罗马数字也能传达这一信息。在上面的例子中，第二个和弦的低音（最低和弦音）是F#，但和弦的根音是D，因此和弦处于第一转位，用数字6表示。
+在音乐分析中，通常最低音是和弦特性的参考点。罗马数字也能传达这一信息。在上面的例子中，第二个和弦的低音（最低和弦音）是 F#，但和弦的根音是 D，因此和弦处于第一转位，用数字 6 表示。
 
-罗马数字的另一个有趣的标记能力与借用和弦有关。这种效果称为副级，隐含地，每个罗马数字（主要）都有一个副级的主音（即I或i），然而，当副级被标注时，我们可以知道哪个音阶度数暂时充当主音。上例中的第三个和弦，其主要度数为属七和弦，副级为C大调的属和弦。V*65* 表示在第二转位中的七和弦。
+罗马数字的另一个有趣的标记能力与借用和弦有关。这种效果称为副级，隐含地，每个罗马数字（主要）都有一个副级的主音（即 I 或 i），然而，当副级被标注时，我们可以知道哪个音阶度数暂时充当主音。上例中的第三个和弦，其主要度数为属七和弦，副级为 C 大调的属和弦。V*65* 表示在第二转位中的七和弦。
 
 罗马数字分析帮助音乐家和音乐理论家理解音乐作品中的和弦结构和关系。它使他们能够识别常见和弦进行，分析和声模式，并比较不同的音乐作品。这是作曲家、编曲家和表演者理解潜在和声并根据这些知识做出音乐决策的有用工具。
 
 ## 自动罗马数字分析
 
-现在我们有了关于罗马数字分析在实践中是如何进行的基础，我们可以讨论如何自动化它。在本文中，我们将介绍一种从符号音乐中预测罗马数字的方法，即数字乐谱（MusicXML、MIDI、Mei、Kern、MuseScore等）。请注意，您可以从任何乐谱编辑软件中获取这些格式，如Finale、Sibelius、MuseScore或其他任何软件。通常，这些软件允许导出为musicxml（未压缩）格式。不过，如果您没有这些编辑器，我建议使用MuseScore。
+现在我们有了关于罗马数字分析在实践中是如何进行的基础，我们可以讨论如何自动化它。在本文中，我们将介绍一种从符号音乐中预测罗马数字的方法，即数字乐谱（MusicXML、MIDI、Mei、Kern、MuseScore 等）。请注意，您可以从任何乐谱编辑软件中获取这些格式，如 Finale、Sibelius、MuseScore 或其他任何软件。通常，这些软件允许导出为 musicxml（未压缩）格式。不过，如果您没有这些编辑器，我建议使用 MuseScore。
 
 现在我们将更深入地讨论这些表示方式。与音频表示方式不同，音乐可以在波形级别上视为数字序列，或在频域上视为二维频谱图，而符号表示法则具有包含起始时间、持续时间和音高拼写（音符名称）等信息的单独音符事件。符号表示法通常被视为伪音频表示，将乐谱分解为量化的时间框架，例如下图所示的钢琴卷轴。然而，最近一些研究提出了一种乐谱的图形表示方法，其中每个音符代表图中的一个顶点，边表示音符之间的关系。对于后一种方法，乐谱可以转换为这种图结构，这在涉及机器学习模型时特别有用。
 
-![](../Images/8eab509c26f3a73ea362a53960eabe2d.png)
+![](img/8eab509c26f3a73ea362a53960eabe2d.png)
 
 分数摘录的不同表示方式显示在中间。顶部：量化时间框架表示，底部：图形表示。
 
@@ -60,7 +60,7 @@
 
 +   一个音符在另一个音符发声时开始，即在连接期间。
 
-![](../Images/08a9c8b852ded9e982790771af4c0584.png)
+![](img/08a9c8b852ded9e982790771af4c0584.png)
 
 乐谱的图形可以作为图神经网络的输入，图神经网络通过沿图的边传播信息来隐式学习。但在解释模型如何在乐谱上工作的之前，让我们首先简要解释图神经网络的工作原理。
 
@@ -76,13 +76,13 @@
 
 GNN 的美妙之处在于它们从图数据中提取有意义的表示的能力。通过从局部上下文中学习并结合全局信息，GNN 能够发现隐藏的模式，做出准确的预测，甚至生成新的见解。这使它们在从社交网络分析到药物发现，从交通预测到欺诈检测，再到音乐分析等广泛领域中都显得非常宝贵。
 
-![](../Images/7c49aa38f59547cea7549f8167baf64f.png)
+![](img/7c49aa38f59547cea7549f8167baf64f.png)
 
 用于罗马数字分析的模型叫做 ChordGNN。
 
 正如其名，*ChordGNN* 是一个基于图神经网络的自动罗马数字分析模型。该模型的一个特点是利用了逐音符的信息，但生成的是逐个起始点的预测，即为乐谱中的每个独特起始事件预测一个罗马数字。这意味着在同一个起始点的多个音符将共享相同的罗马数字，就像为乐谱做标注一样。然而，通过使用图卷积，来自每个音符的信息被传递到邻近的音符和起始点。
 
-![](../Images/ad92a77d07f354a06b7a4fa57a94166d.png)
+![](img/ad92a77d07f354a06b7a4fa57a94166d.png)
 
 ChordGNN 模型架构示意图。
 
@@ -98,7 +98,7 @@ ChordGNN 模型架构示意图。
 
 在这一部分，我们将查看一些 *ChordGNN* 的预测，甚至与人工分析进行比较。下面是海顿弦乐四重奏 op.20 №3 第 4 乐章的前几个小节的示例。
 
-![](../Images/db419bcc4a76bea92d271d7f5506788c.png)
+![](img/db419bcc4a76bea92d271d7f5506788c.png)
 
 人工注释与 ChordGNN 在海顿弦乐四重奏中的对比
 
@@ -108,19 +108,19 @@ ChordGNN 模型架构示意图。
 
 人工注释建议第 2 小节的整个后半部分表示一个 viio 和弦。然而，它不应处于第一个反转，因为大提琴演奏的 F# 是最低音（这是 viio 的根音）。然而，对该段落有两种相互冲突的解释。首先，第三拍的 viio 被视为围绕主和弦的经过和弦，导致下一小节的属和弦。或者，viio 可能已经是一个延续的属和声的一部分（在弱拍上有经过和弦），并导致 V7。*ChordGNN* 的解决方案兼顾了这两种解释，因为它不试图在更高层次上对和弦进行分组，而是将每个八分音符视为独立和弦，而非经过事件。
 
-![](../Images/bcbabdee4e444c1db2154fefc6ca5d27.png)
+![](img/bcbabdee4e444c1db2154fefc6ca5d27.png)
 
 人工注释与 ChordGNN 在莫扎特钢琴奏鸣曲 K279 第 1 乐章中的对比。图片由作者提供
 
-上面是另一个例子，将*ChordGNN*的预测与莫扎特钢琴奏鸣曲的原始分析进行比较。在这种情况下，*ChordGNN*的分析略显简单，选择省略了一些和弦。这在两个不同的场合发生，主要和弦七和弦在第4转位（V2）中。这对于*ChordGNN*来说是一个合理的假设，因为缺少了低音。另一个不一致之处发生在接近结尾的半终止。*ChordGNN*将旋律中的C#视为过渡音，而注释者则选择指定#11的扩展。
+上面是另一个例子，将*ChordGNN*的预测与莫扎特钢琴奏鸣曲的原始分析进行比较。在这种情况下，*ChordGNN*的分析略显简单，选择省略了一些和弦。这在两个不同的场合发生，主要和弦七和弦在第 4 转位（V2）中。这对于*ChordGNN*来说是一个合理的假设，因为缺少了低音。另一个不一致之处发生在接近结尾的半终止。*ChordGNN*将旋律中的 C#视为过渡音，而注释者则选择指定#11 的扩展。
 
 # 结论
 
-在本文中，我们讨论了一种使用图神经网络自动化罗马数字分析的新方法。我们讨论了ChordGNN模型的工作原理，并展示了它的一些预测结果。
+在本文中，我们讨论了一种使用图神经网络自动化罗马数字分析的新方法。我们讨论了 ChordGNN 模型的工作原理，并展示了它的一些预测结果。
 
 # 参考文献
 
-E. Karystinaios, G. Widmer. 罗马数字分析与图神经网络：基于音符特征的起始预测。*国际音乐信息检索会议（ISMIR），2023年会议录。*
+E. Karystinaios, G. Widmer. 罗马数字分析与图神经网络：基于音符特征的起始预测。*国际音乐信息检索会议（ISMIR），2023 年会议录。*
 
 # 资源
 

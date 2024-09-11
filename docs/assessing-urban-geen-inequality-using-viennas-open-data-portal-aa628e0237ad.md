@@ -1,14 +1,14 @@
 # 使用维也纳开放数据门户评估城市绿地平等性
 
-> 原文：[https://towardsdatascience.com/assessing-urban-geen-inequality-using-viennas-open-data-portal-aa628e0237ad?source=collection_archive---------2-----------------------#2023-09-11](https://towardsdatascience.com/assessing-urban-geen-inequality-using-viennas-open-data-portal-aa628e0237ad?source=collection_archive---------2-----------------------#2023-09-11)
+> 原文：[`towardsdatascience.com/assessing-urban-geen-inequality-using-viennas-open-data-portal-aa628e0237ad?source=collection_archive---------2-----------------------#2023-09-11`](https://towardsdatascience.com/assessing-urban-geen-inequality-using-viennas-open-data-portal-aa628e0237ad?source=collection_archive---------2-----------------------#2023-09-11)
 
-![](../Images/41e3d2093728fbc151cea2cb522983a7.png)
+![](img/41e3d2093728fbc151cea2cb522983a7.png)
 
 照片来源：[CHUTTERSNAP](https://unsplash.com/@chuttersnap?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 尽管自然环境和绿地的许多优点，但在高度城市化的地区，接触自然变得越来越困难。一些人担心，服务不足的社区更容易面临这些问题。在这里，我提出了一种数据驱动的方法来探讨这一问题。
 
-[](https://medium.com/@janosovm?source=post_page-----aa628e0237ad--------------------------------)[![米兰·贾诺索夫](../Images/77b62460041f66ec4585a81baef81a03.png)](https://medium.com/@janosovm?source=post_page-----aa628e0237ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aa628e0237ad--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aa628e0237ad--------------------------------) [米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----aa628e0237ad--------------------------------)
+[](https://medium.com/@janosovm?source=post_page-----aa628e0237ad--------------------------------)![米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----aa628e0237ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aa628e0237ad--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aa628e0237ad--------------------------------) [米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----aa628e0237ad--------------------------------)
 
 ·
 

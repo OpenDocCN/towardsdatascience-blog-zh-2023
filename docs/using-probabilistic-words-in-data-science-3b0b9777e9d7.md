@@ -1,24 +1,24 @@
 # 数据科学中的概率词使用
 
-> 原文：[https://towardsdatascience.com/using-probabilistic-words-in-data-science-3b0b9777e9d7?source=collection_archive---------15-----------------------#2023-02-07](https://towardsdatascience.com/using-probabilistic-words-in-data-science-3b0b9777e9d7?source=collection_archive---------15-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/using-probabilistic-words-in-data-science-3b0b9777e9d7?source=collection_archive---------15-----------------------#2023-02-07`](https://towardsdatascience.com/using-probabilistic-words-in-data-science-3b0b9777e9d7?source=collection_archive---------15-----------------------#2023-02-07)
 
 ## 将模糊的反馈转化为机器学习的具体概率
 
-[](https://medium.com/@T_Jen?source=post_page-----3b0b9777e9d7--------------------------------)[![Taylor Jensen](../Images/7427ca14fb4f4c85ceedb574016feaa4.png)](https://medium.com/@T_Jen?source=post_page-----3b0b9777e9d7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b0b9777e9d7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3b0b9777e9d7--------------------------------) [Taylor Jensen](https://medium.com/@T_Jen?source=post_page-----3b0b9777e9d7--------------------------------)
+[](https://medium.com/@T_Jen?source=post_page-----3b0b9777e9d7--------------------------------)![Taylor Jensen](https://medium.com/@T_Jen?source=post_page-----3b0b9777e9d7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b0b9777e9d7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b0b9777e9d7--------------------------------) [Taylor Jensen](https://medium.com/@T_Jen?source=post_page-----3b0b9777e9d7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9206d21dd8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-probabilistic-words-in-data-science-3b0b9777e9d7&user=Taylor+Jensen&userId=4d9206d21dd8&source=post_page-4d9206d21dd8----3b0b9777e9d7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b0b9777e9d7--------------------------------) ·9 分钟阅读·2023年2月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3b0b9777e9d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-probabilistic-words-in-data-science-3b0b9777e9d7&user=Taylor+Jensen&userId=4d9206d21dd8&source=-----3b0b9777e9d7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9206d21dd8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-probabilistic-words-in-data-science-3b0b9777e9d7&user=Taylor+Jensen&userId=4d9206d21dd8&source=post_page-4d9206d21dd8----3b0b9777e9d7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b0b9777e9d7--------------------------------) ·9 分钟阅读·2023 年 2 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3b0b9777e9d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-probabilistic-words-in-data-science-3b0b9777e9d7&user=Taylor+Jensen&userId=4d9206d21dd8&source=-----3b0b9777e9d7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b0b9777e9d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-probabilistic-words-in-data-science-3b0b9777e9d7&source=-----3b0b9777e9d7---------------------bookmark_footer-----------)![](../Images/db75d1146b08b09145bdf7bef0f32e4d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b0b9777e9d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-probabilistic-words-in-data-science-3b0b9777e9d7&source=-----3b0b9777e9d7---------------------bookmark_footer-----------)![](img/db75d1146b08b09145bdf7bef0f32e4d.png)
 
 图片由 [Christina @ wocintechchat.com](https://unsplash.com/@wocintechchat?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在开始新的数据科学模型时，你必须评估提供给你的数据。通常，新的数据科学项目始于一个数据集，并与主题专家或其他联系人进行联系。主题专家为数据集的意义提供额外的背景。这包括数据集中的异常值或例外情况，以及主题专家认为的“正常”或“异常”情况，或“总是”或“从不”发生的情况。但如果“从不”并不意味着“从不”，“总是”也不意味着“总是”呢？这些词被称为“概率词”，包含其他地方无法找到的关键信息。本文讨论了如何使用这些概率词来了解你的数据并改进你的模型。
 
-![](../Images/8aa1817f8943761d357dbe717b4da681.png)
+![](img/8aa1817f8943761d357dbe717b4da681.png)
 
 “从不”并不意味着“从不”
 
@@ -26,23 +26,23 @@
 
 概率词是表达不确定性或概率的词语。它们包括“也许”，“可能”，“大概”，“很可能”，“不太可能”，“可能”，“不可能”等词语。这些词用来表示某人对事件的信念或信心的隐性分布。
 
-每个人，无论是有意识还是无意识地，都在脑海中为这些概率词分配一个概率。然而，这些词的确切概率常常被个人对词语的解释所掩盖，从而与数据的关联变差。例如，“通常”是指40%还是80%的时间？这一定义在不同人和情况之间可能有所不同。一旦提取出这些概率的解释，就可以将其融入建模开发过程中。
+每个人，无论是有意识还是无意识地，都在脑海中为这些概率词分配一个概率。然而，这些词的确切概率常常被个人对词语的解释所掩盖，从而与数据的关联变差。例如，“通常”是指 40%还是 80%的时间？这一定义在不同人和情况之间可能有所不同。一旦提取出这些概率的解释，就可以将其融入建模开发过程中。
 
-![](../Images/666c9f710dd8e611464f0e07cd98b4dd.png)
+![](img/666c9f710dd8e611464f0e07cd98b4dd.png)
 
 人们心中的概率范围可以发生剧烈变化。
 
 # 概率词与以往的工作
 
-两项涉及概率词的显著研究包括1993年美国中央情报局（CIA）谢尔曼·肯特的《估计概率的词汇》([Words of Estimative Probability (cia.gov)](https://www.cia.gov/static/0aae8f84700a256abf63f7aad73b0a7d/Words-of-Estimative-Probability.pdf))。第二篇文章是由安德烈·莫博辛和迈克尔·J·莫博辛于2018年在《哈佛商业评论》中撰写的《如果你说某事“很可能”，人们认为它有多可能？》
+两项涉及概率词的显著研究包括 1993 年美国中央情报局（CIA）谢尔曼·肯特的《估计概率的词汇》([Words of Estimative Probability (cia.gov)](https://www.cia.gov/static/0aae8f84700a256abf63f7aad73b0a7d/Words-of-Estimative-Probability.pdf))。第二篇文章是由安德烈·莫博辛和迈克尔·J·莫博辛于 2018 年在《哈佛商业评论》中撰写的《如果你说某事“很可能”，人们认为它有多可能？》
 
-肯特撰写的研究旨在解决在情报行业中，人们常用不具体的陈述来描述事件发生的可能性。在文章中，他利用了一组报告样本来建立单词与概率之间的映射，将数字赋予人们回应的不确定性。原始表格的输出范围从0%的不可能到100%的确定性，中间有一个“可能性的一般区域”。“可能性的一般区域”包含7种概率短语。这些词按确定性递增的顺序为：“不可能”，“几乎不可能”，“可能性不大”，“变化不定”，“可能”，“几乎确定”和“确定”。
+肯特撰写的研究旨在解决在情报行业中，人们常用不具体的陈述来描述事件发生的可能性。在文章中，他利用了一组报告样本来建立单词与概率之间的映射，将数字赋予人们回应的不确定性。原始表格的输出范围从 0%的不可能到 100%的确定性，中间有一个“可能性的一般区域”。“可能性的一般区域”包含 7 种概率短语。这些词按确定性递增的顺序为：“不可能”，“几乎不可能”，“可能性不大”，“变化不定”，“可能”，“几乎确定”和“确定”。
 
 后来，安德烈和迈克尔·莫博辛进行了跟进研究，进行了更新的调查，包含了更多不同的词汇。他们的目标是增加研究参与者的数量，并扩展到情报界之外。他们在网络上调查用户，将词汇与其解释的概率相关联。作者还试图识别其他背景方面的差异，例如性别和将英语作为第二语言的人。研究的一个教训是，人们应该使用概率来解释数据，而不是使用概率词，以避免在分享数据见解时的误解。此外，人们应使用明确的方法来收集概率。
 
 本节仅为文章的简要概述，我强烈推荐完整阅读这些文章。但问题仍然存在——这对数据科学意味着什么？
 
-![](../Images/5d3e63884e4db67ab0613e094ab9f274.png)
+![](img/5d3e63884e4db67ab0613e094ab9f274.png)
 
 “通常”到“罕见”的范围因人而异。
 
@@ -58,7 +58,7 @@
 
 在识别正常数据、异常数据和离群值时，脑海中或画出分布图会有所帮助。通过寻找概率词汇，我们试图识别受访者的事件样本在分布中的位置。然而，必须确保我们从受访者的角度收集数据。在数据中看似正常的事件在业务流程中可能非常意外或不寻常——这种知识在建模时是金子般的宝贵。
 
-![](../Images/89e33b49c4b6e498a03d487e20e18d37.png)
+![](img/89e33b49c4b6e498a03d487e20e18d37.png)
 
 关于利率变化的隐式分布示例。
 
@@ -82,7 +82,7 @@
 
 使用概率词汇，可以增强数据集以包含见解。例如，你可以添加一个分类列，标记“异常”情况。你可以使用这些数据预测更大数据集上的反馈，将其作为机器学习模型的原始输入，并量化这些“人类”信息对数据的价值。
 
-![](../Images/de0c13c0288d848c3d28e836600db3a9.png)
+![](img/de0c13c0288d848c3d28e836600db3a9.png)
 
 一个包含反馈信息的示例数据集。
 
@@ -90,7 +90,7 @@
 
 如果你需要即时反馈以作为模型的一部分进行预测，那么可以使用“**弱学习**”来构建一个“**即时反馈**”系统。随着模型进行在线预测，“**弱学习**”模型接收原始数据，预测反馈内容，然后将原始数据和预测的反馈传递给主在线模型。这允许你构建一个功能齐全的模型，而无需人类时刻参与。
 
-收集这些数据的另一个好处是，它可以用来量化采访提供的信息比原始数据更多。可以通过构建有反馈和没有反馈的模型来评估这一点。在训练完两个模型后，比较模型分数之间的差异，这将给出反馈的相对价值。如果你的模型在使用反馈数据后比仅使用原始数据训练的模型提高了15%，那么这证明采访提高了模型的性能。如果这15%的提升可以与业务影响挂钩，这可以帮助证明采访成本并给出反馈的美元价值。例如，如果一个预测模型的性能提高了15%，而这转化为20万美元的价值，那么反馈的价值就是20万美元。
+收集这些数据的另一个好处是，它可以用来量化采访提供的信息比原始数据更多。可以通过构建有反馈和没有反馈的模型来评估这一点。在训练完两个模型后，比较模型分数之间的差异，这将给出反馈的相对价值。如果你的模型在使用反馈数据后比仅使用原始数据训练的模型提高了 15%，那么这证明采访提高了模型的性能。如果这 15%的提升可以与业务影响挂钩，这可以帮助证明采访成本并给出反馈的美元价值。例如，如果一个预测模型的性能提高了 15%，而这转化为 20 万美元的价值，那么反馈的价值就是 20 万美元。
 
 # 构建你自己的概率调查
 

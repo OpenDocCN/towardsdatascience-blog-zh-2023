@@ -1,18 +1,18 @@
 # SQL 中移动平均和运行总和的简单指南
 
-> 原文：[https://towardsdatascience.com/an-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59?source=collection_archive---------5-----------------------#2023-07-11](https://towardsdatascience.com/an-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59?source=collection_archive---------5-----------------------#2023-07-11)
+> 原文：[`towardsdatascience.com/an-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59?source=collection_archive---------5-----------------------#2023-07-11`](https://towardsdatascience.com/an-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59?source=collection_archive---------5-----------------------#2023-07-11)
 
 ## 解锁 SQL 中的高级数据分析
 
-[](https://iffatm.medium.com/?source=post_page-----f1fa7acc9b59--------------------------------)[![Iffat Malik](../Images/7be3b651053507de2077b3c3c9d3a408.png)](https://iffatm.medium.com/?source=post_page-----f1fa7acc9b59--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1fa7acc9b59--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f1fa7acc9b59--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----f1fa7acc9b59--------------------------------)
+[](https://iffatm.medium.com/?source=post_page-----f1fa7acc9b59--------------------------------)![Iffat Malik](https://iffatm.medium.com/?source=post_page-----f1fa7acc9b59--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1fa7acc9b59--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1fa7acc9b59--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----f1fa7acc9b59--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----f1fa7acc9b59---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1fa7acc9b59--------------------------------) · 10分钟阅读 · 2023年7月11日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff1fa7acc9b59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59&user=Iffat+Malik&userId=88491120e677&source=-----f1fa7acc9b59---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----f1fa7acc9b59---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1fa7acc9b59--------------------------------) · 10 分钟阅读 · 2023 年 7 月 11 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff1fa7acc9b59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59&user=Iffat+Malik&userId=88491120e677&source=-----f1fa7acc9b59---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1fa7acc9b59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59&source=-----f1fa7acc9b59---------------------bookmark_footer-----------)![](../Images/94d341250c8e2d199fd84500cc7e30b4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1fa7acc9b59&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-easy-guide-to-master-moving-average-and-running-total-in-sql-f1fa7acc9b59&source=-----f1fa7acc9b59---------------------bookmark_footer-----------)![](img/94d341250c8e2d199fd84500cc7e30b4.png)
 
 作者图片
 

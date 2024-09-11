@@ -1,14 +1,14 @@
 # 层次化变换器 — 第二部分
 
-> 原文：[https://towardsdatascience.com/hierarchical-transformers-part-2-2616eecacb21?source=collection_archive---------14-----------------------#2023-10-07](https://towardsdatascience.com/hierarchical-transformers-part-2-2616eecacb21?source=collection_archive---------14-----------------------#2023-10-07)
+> 原文：[`towardsdatascience.com/hierarchical-transformers-part-2-2616eecacb21?source=collection_archive---------14-----------------------#2023-10-07`](https://towardsdatascience.com/hierarchical-transformers-part-2-2616eecacb21?source=collection_archive---------14-----------------------#2023-10-07)
 
 ## 层次化注意力更快
 
-[](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)[![Mina Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)
+[](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)![Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhierarchical-transformers-part-2-2616eecacb21&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----2616eecacb21---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------) ·6分钟阅读·2023年10月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2616eecacb21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhierarchical-transformers-part-2-2616eecacb21&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----2616eecacb21---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhierarchical-transformers-part-2-2616eecacb21&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----2616eecacb21---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------) ·6 分钟阅读·2023 年 10 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2616eecacb21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhierarchical-transformers-part-2-2616eecacb21&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----2616eecacb21---------------------clap_footer-----------)
 
 --
 

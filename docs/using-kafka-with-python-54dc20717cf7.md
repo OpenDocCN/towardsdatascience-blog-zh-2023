@@ -1,10 +1,10 @@
 # 使用 Python 与 Kafka
 
-> 原文：[https://towardsdatascience.com/using-kafka-with-python-54dc20717cf7?source=collection_archive---------2-----------------------#2023-03-20](https://towardsdatascience.com/using-kafka-with-python-54dc20717cf7?source=collection_archive---------2-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/using-kafka-with-python-54dc20717cf7?source=collection_archive---------2-----------------------#2023-03-20`](https://towardsdatascience.com/using-kafka-with-python-54dc20717cf7?source=collection_archive---------2-----------------------#2023-03-20)
 
 ## 学习如何使用 Python 创建生产者和消费者，并绘制动态散点图
 
-[](https://weimenglee.medium.com/?source=post_page-----54dc20717cf7--------------------------------)[![李伟明](../Images/10fc13e8a6858502d6a7b89fcaad7a10.png)](https://weimenglee.medium.com/?source=post_page-----54dc20717cf7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54dc20717cf7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54dc20717cf7--------------------------------) [李伟明](https://weimenglee.medium.com/?source=post_page-----54dc20717cf7--------------------------------)
+[](https://weimenglee.medium.com/?source=post_page-----54dc20717cf7--------------------------------)![李伟明](https://weimenglee.medium.com/?source=post_page-----54dc20717cf7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54dc20717cf7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----54dc20717cf7--------------------------------) [李伟明](https://weimenglee.medium.com/?source=post_page-----54dc20717cf7--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F54dc20717cf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-kafka-with-python-54dc20717cf7&source=-----54dc20717cf7---------------------bookmark_footer-----------)![](../Images/189593ad2da51f8a3bf4c211cfa02a53.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F54dc20717cf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-kafka-with-python-54dc20717cf7&source=-----54dc20717cf7---------------------bookmark_footer-----------)![](img/189593ad2da51f8a3bf4c211cfa02a53.png)
 
 照片由 [Markus Winkler](https://unsplash.com/@markuswinkler?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

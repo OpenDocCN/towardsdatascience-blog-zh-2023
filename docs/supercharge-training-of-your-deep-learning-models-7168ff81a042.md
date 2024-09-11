@@ -1,10 +1,10 @@
 # 使用超级收敛加速你的深度学习模型训练
 
-> 原文：[https://towardsdatascience.com/supercharge-training-of-your-deep-learning-models-7168ff81a042?source=collection_archive---------7-----------------------#2023-11-22](https://towardsdatascience.com/supercharge-training-of-your-deep-learning-models-7168ff81a042?source=collection_archive---------7-----------------------#2023-11-22)
+> 原文：[`towardsdatascience.com/supercharge-training-of-your-deep-learning-models-7168ff81a042?source=collection_archive---------7-----------------------#2023-11-22`](https://towardsdatascience.com/supercharge-training-of-your-deep-learning-models-7168ff81a042?source=collection_archive---------7-----------------------#2023-11-22)
 
 ## 使用单周期学习率实现超级收敛
 
-[](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)[![Raghav Bali](../Images/49fea68f38f59d0bc39dab484b55684f.png)](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7168ff81a042--------------------------------)[![走向数据科学](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7168ff81a042--------------------------------) [Raghav Bali](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)
+[](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)![Raghav Bali](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7168ff81a042--------------------------------)![走向数据科学](https://towardsdatascience.com/?source=post_page-----7168ff81a042--------------------------------) [Raghav Bali](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)
 
 ·
 
@@ -12,21 +12,21 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7168ff81a042&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-training-of-your-deep-learning-models-7168ff81a042&source=-----7168ff81a042---------------------bookmark_footer-----------)![](../Images/f3668520565b60e31f7dacbe8189e9fa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7168ff81a042&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-training-of-your-deep-learning-models-7168ff81a042&source=-----7168ff81a042---------------------bookmark_footer-----------)![](img/f3668520565b60e31f7dacbe8189e9fa.png)
 
 照片由[Philip Swinburn](https://unsplash.com/@pjswinburn?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-你是否遇到这样的情况：一开始提高准确率很容易，但一旦达到90%，就必须非常努力才能进一步提高性能？你的模型训练时间太长吗？
+你是否遇到这样的情况：一开始提高准确率很容易，但一旦达到 90%，就必须非常努力才能进一步提高性能？你的模型训练时间太长吗？
 
 在本文中，我们将探讨一种有趣的技术，以加速你的训练设置，并获得你一直寻求的额外性能，提高训练速度。本质上，我们将致力于通过一种称为***一周期学习率***的策略，在训练过程中动态调整学习率。
 
-原本在Leslie Smith的论文中提到的**一周期学习率计划**[[1](https://arxiv.org/abs/1803.09820)], [[2](https://arxiv.org/abs/1708.07120)]，专注于一种独特的策略，在训练过程中动态更新学习率。听起来术语很多，别担心，让我们先从一个典型的训练设置开始，然后逐渐理解如何通过一周期学习率来改进结果。
+原本在 Leslie Smith 的论文中提到的**一周期学习率计划**[[1](https://arxiv.org/abs/1803.09820)], [[2](https://arxiv.org/abs/1708.07120)]，专注于一种独特的策略，在训练过程中动态更新学习率。听起来术语很多，别担心，让我们先从一个典型的训练设置开始，然后逐渐理解如何通过一周期学习率来改进结果。
 
 # 训练图像分类器
 
 当我们致力于学习一种提高模型性能的巧妙技巧（周期率）时，何不在享受经典的***石头剪子布***游戏时进行呢。
 
-![](../Images/69028e843abe371779ee844df84ddd0b.png)
+![](img/69028e843abe371779ee844df84ddd0b.png)
 
 由[Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)拍摄于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -38,7 +38,7 @@
 
 ## 数据集
 
-我们很幸运已经有一个带标签的数据集，我们可以利用这个数据集有效地训练分类模型。数据集托管在[TensorFlow数据集](https://www.tensorflow.org/datasets/catalog/rock_paper_scissors)目录中，由[劳伦斯·莫罗尼](https://laurencemoroney.com/datasets.html#rock-paper-scissors-dataset)（CC BY 2.0）提供。数据集具有以下属性：
+我们很幸运已经有一个带标签的数据集，我们可以利用这个数据集有效地训练分类模型。数据集托管在[TensorFlow 数据集](https://www.tensorflow.org/datasets/catalog/rock_paper_scissors)目录中，由[劳伦斯·莫罗尼](https://laurencemoroney.com/datasets.html#rock-paper-scissors-dataset)（CC BY 2.0）提供。数据集具有以下属性：
 
 +   数据点数量：2800
 
@@ -48,7 +48,7 @@
 
 +   数据集大小：220 MiB
 
-TensorFlow提供了一个干净的API来访问这些数据集，以下代码片段允许我们下载训练和验证拆分
+TensorFlow 提供了一个干净的 API 来访问这些数据集，以下代码片段允许我们下载训练和验证拆分
 
 ```py
 import tensorflow_datasets as tfds
@@ -68,7 +68,7 @@ fig = tfds.show_examples(dataset_train_raw, dataset_info)
 
 以下是该数据集的一些样本图像：
 
-![](../Images/fa32543b74881bdc796de9ca4f8bcc04.png)
+![](img/fa32543b74881bdc796de9ca4f8bcc04.png)
 
 图：石头剪子布数据集中的样本数据点
 
@@ -78,7 +78,7 @@ fig = tfds.show_examples(dataset_train_raw, dataset_info)
 
 对于像我们这样的定制使用案例，获得正确的学习率非常重要。找到最佳值是一项棘手的权衡。学习率设置得过慢（或过小），你的模型几乎无法学到任何东西。设置得过快（或过大），它将超越所有神经网络旨在找到的神秘最小值。下图展示了这一点，以便更好地理解。
 
-![](../Images/c7f45ab8d5b0617894d110992ebd4064.png)
+![](img/c7f45ab8d5b0617894d110992ebd4064.png)
 
 图示：学习率对模型学习目标（最小值）能力的影响。来源：作者
 
@@ -108,7 +108,7 @@ One-Cycle Learning Rate 是一个简单的两步过程，用于在训练过程�
 
 **一周期学习率的实际应用**
 
-首先，我们将通过一个简单的1周期学习率实现进行操作，然后用它来训练我们的模型。我们将利用[Martin Gorner 2019年在*TensorFlow World*](https://docs.google.com/presentation/d/e/2PACX-1vRqvlSpX5CVRC2oQ_e_nRNahOSPoDVL6I36kdjuPR_4y_tCPb-_k98Du1QXBwx4sBvVrzsCPulmuPn8/pub?slide=id.g50ba8fd3eb_0_0)的演讲中现成的1周期LR计划实现，如清单2所示。
+首先，我们将通过一个简单的 1 周期学习率实现进行操作，然后用它来训练我们的模型。我们将利用[Martin Gorner 2019 年在*TensorFlow World*](https://docs.google.com/presentation/d/e/2PACX-1vRqvlSpX5CVRC2oQ_e_nRNahOSPoDVL6I36kdjuPR_4y_tCPb-_k98Du1QXBwx4sBvVrzsCPulmuPn8/pub?slide=id.g50ba8fd3eb_0_0)的演讲中现成的 1 周期 LR 计划实现，如清单 2 所示。
 
 ```py
 def lr_function(epoch):
@@ -137,13 +137,13 @@ def lr_function(epoch):
               rampup_epochs, sustain_epochs, exp_decay)
 ```
 
-我们执行这个函数（*见* *清单2*）来展示学习率如何根据我们之前讨论的两个步骤进行变化。这里我们从**1e-3**的初始学习率开始，并在前几个epoch中将其提升至**2e-3**。然后在剩余的epoch中将其再次降低至**1e-3**。这种动态学习率曲线在以下24个epoch的样本运行中得以展示。
+我们执行这个函数（*见* *清单 2*）来展示学习率如何根据我们之前讨论的两个步骤进行变化。这里我们从**1e-3**的初始学习率开始，并在前几个 epoch 中将其提升至**2e-3**。然后在剩余的 epoch 中将其再次降低至**1e-3**。这种动态学习率曲线在以下 24 个 epoch 的样本运行中得以展示。
 
-![](../Images/160baa91c3ce99fdf821cce2bbfb6683.png)
+![](img/160baa91c3ce99fdf821cce2bbfb6683.png)
 
-24个epoch的1周期学习率策略。学习率线性上升，然后在剩余的epoch中缓慢衰减。图像来源：作者
+24 个 epoch 的 1 周期学习率策略。学习率线性上升，然后在剩余的 epoch 中缓慢衰减。图像来源：作者
 
-我们将通过在使用MobileNetV2模型作为特征提取器，并为当前的石头剪子布分类任务训练一个分类头时，测试我们的1周期学习率调度器。然后我们将其与简单的CNN以及使用标准Adam优化器的MobileNetV2+分类头进行比较。完整的笔记本可以在[github](https://github.com/raghavbali/python_notebooks/blob/master/supercharge_series/supercharge_learning_lr.ipynb)上找到参考。以下片段快速概述了我们如何使用TensorFlow回调来插入我们的1周期学习率工具。
+我们将通过在使用 MobileNetV2 模型作为特征提取器，并为当前的石头剪子布分类任务训练一个分类头时，测试我们的 1 周期学习率调度器。然后我们将其与简单的 CNN 以及使用标准 Adam 优化器的 MobileNetV2+分类头进行比较。完整的笔记本可以在[github](https://github.com/raghavbali/python_notebooks/blob/master/supercharge_series/supercharge_learning_lr.ipynb)上找到参考。以下片段快速概述了我们如何使用 TensorFlow 回调来插入我们的 1 周期学习率工具。
 
 ```py
 # Set Image Shape 
@@ -195,13 +195,13 @@ training_history_lr = model_lr.fit(
 )
 ```
 
-我们用批量大小为64的情况下训练了所有3个模型24个epoch。下图展示了1周期学习率的影响。与其他两个模型相比，它能帮助我们的模型在仅5个epoch内实现收敛。超收敛现象在验证数据集上也可见。
+我们用批量大小为 64 的情况下训练了所有 3 个模型 24 个 epoch。下图展示了 1 周期学习率的影响。与其他两个模型相比，它能帮助我们的模型在仅 5 个 epoch 内实现收敛。超收敛现象在验证数据集上也可见。
 
-![](../Images/f97ad1bd91456177a4c935ba16b42d0a.png)
+![](img/f97ad1bd91456177a4c935ba16b42d0a.png)
 
-使用1周期学习率（mobileNetV2_lr）的MobileNetV2在5个epoch内即可收敛，表现优于MobileNetV2和简单CNN架构。
+使用 1 周期学习率（mobileNetV2_lr）的 MobileNetV2 在 5 个 epoch 内即可收敛，表现优于 MobileNetV2 和简单 CNN 架构。
 
-我们在10个epoch内达到了90–92%的验证准确率，这在所有模型中是迄今为止表现最好的。模型在测试数据集上的表现也显示了同样的情况，即MobileNetV2_lr轻松超越了其他两个模型。
+我们在 10 个 epoch 内达到了 90–92%的验证准确率，这在所有模型中是迄今为止表现最好的。模型在测试数据集上的表现也显示了同样的情况，即 MobileNetV2_lr 轻松超越了其他两个模型。
 
 ```py
 # Simple CNN
@@ -219,4 +219,4 @@ Test accuracy:  0.9166666865348816
 
 # 结论
 
-克服模型性能超过90%准确率的瓶颈并优化训练时间，可以通过实施**One-Cycle Learning Rate**来实现。这一技术由Leslie Smith及其团队提出，在训练过程中动态调整学习率，提供了一种战略性方法以增强模型性能。通过采用这一方法，你可以有效地应对训练设置的复杂性，并发掘更快、更有效的深度学习模型的潜力。拥抱**One-Cycle Learning Rate**的力量，提高你的训练体验，实现卓越的结果！
+克服模型性能超过 90%准确率的瓶颈并优化训练时间，可以通过实施**One-Cycle Learning Rate**来实现。这一技术由 Leslie Smith 及其团队提出，在训练过程中动态调整学习率，提供了一种战略性方法以增强模型性能。通过采用这一方法，你可以有效地应对训练设置的复杂性，并发掘更快、更有效的深度学习模型的潜力。拥抱**One-Cycle Learning Rate**的力量，提高你的训练体验，实现卓越的结果！

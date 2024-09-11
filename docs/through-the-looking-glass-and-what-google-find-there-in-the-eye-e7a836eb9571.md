@@ -1,20 +1,20 @@
 # 透视镜与谷歌在眼睛中发现的东西
 
-> 原文：[https://towardsdatascience.com/through-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571?source=collection_archive---------4-----------------------#2023-03-30](https://towardsdatascience.com/through-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571?source=collection_archive---------4-----------------------#2023-03-30)
+> 原文：[`towardsdatascience.com/through-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571?source=collection_archive---------4-----------------------#2023-03-30`](https://towardsdatascience.com/through-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571?source=collection_archive---------4-----------------------#2023-03-30)
 
 ## | 计算机视觉 | 健康护理中的人工智能 | CNN
 
 ## 或谷歌如何使用深度学习来诊断眼部照片中的疾病
 
-[](https://salvatore-raieli.medium.com/?source=post_page-----e7a836eb9571--------------------------------)[![Salvatore Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----e7a836eb9571--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e7a836eb9571--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e7a836eb9571--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----e7a836eb9571--------------------------------)
+[](https://salvatore-raieli.medium.com/?source=post_page-----e7a836eb9571--------------------------------)![Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----e7a836eb9571--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e7a836eb9571--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e7a836eb9571--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----e7a836eb9571--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthrough-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----e7a836eb9571---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e7a836eb9571--------------------------------) ·12 min read·2023年3月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe7a836eb9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthrough-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----e7a836eb9571---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthrough-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----e7a836eb9571---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e7a836eb9571--------------------------------) ·12 min read·2023 年 3 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe7a836eb9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthrough-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571&user=Salvatore+Raieli&userId=f1a08d9452cd&source=-----e7a836eb9571---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe7a836eb9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthrough-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571&source=-----e7a836eb9571---------------------bookmark_footer-----------)![](../Images/f4f232c4e1c318f5fce9ec857c2775d1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe7a836eb9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthrough-the-looking-glass-and-what-google-find-there-in-the-eye-e7a836eb9571&source=-----e7a836eb9571---------------------bookmark_footer-----------)![](img/f4f232c4e1c318f5fce9ec857c2775d1.png)
 
 作者使用 OpenAI DALL-E 创作的图像
 
@@ -24,7 +24,7 @@
 
 # 眼睛中的隐藏宝藏
 
-![](../Images/35db24ac8670c2348b942cd5ebabcba1.png)
+![](img/35db24ac8670c2348b942cd5ebabcba1.png)
 
 图像由 [v2osk](https://unsplash.com/it/@v2osk) 提供，来源于 Unsplash
 

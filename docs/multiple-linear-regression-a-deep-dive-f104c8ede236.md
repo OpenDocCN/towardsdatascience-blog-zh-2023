@@ -1,18 +1,18 @@
 # 多元线性回归：深入探讨
 
-> 原文：[https://towardsdatascience.com/multiple-linear-regression-a-deep-dive-f104c8ede236?source=collection_archive---------6-----------------------#2023-03-03](https://towardsdatascience.com/multiple-linear-regression-a-deep-dive-f104c8ede236?source=collection_archive---------6-----------------------#2023-03-03)
+> 原文：[`towardsdatascience.com/multiple-linear-regression-a-deep-dive-f104c8ede236?source=collection_archive---------6-----------------------#2023-03-03`](https://towardsdatascience.com/multiple-linear-regression-a-deep-dive-f104c8ede236?source=collection_archive---------6-----------------------#2023-03-03)
 
 ## 从零开始的多元线性回归：深刻理解
 
-[](https://zubairhossain.medium.com/?source=post_page-----f104c8ede236--------------------------------)[![Md. Zubair](../Images/1b983a23226ce7561796fa5b28c00d65.png)](https://zubairhossain.medium.com/?source=post_page-----f104c8ede236--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f104c8ede236--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f104c8ede236--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----f104c8ede236--------------------------------)
+[](https://zubairhossain.medium.com/?source=post_page-----f104c8ede236--------------------------------)![Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----f104c8ede236--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f104c8ede236--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f104c8ede236--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----f104c8ede236--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-linear-regression-a-deep-dive-f104c8ede236&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----f104c8ede236---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f104c8ede236--------------------------------) · 10 分钟阅读 · 2023年3月3日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff104c8ede236&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-linear-regression-a-deep-dive-f104c8ede236&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----f104c8ede236---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-linear-regression-a-deep-dive-f104c8ede236&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----f104c8ede236---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f104c8ede236--------------------------------) · 10 分钟阅读 · 2023 年 3 月 3 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff104c8ede236&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-linear-regression-a-deep-dive-f104c8ede236&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----f104c8ede236---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff104c8ede236&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-linear-regression-a-deep-dive-f104c8ede236&source=-----f104c8ede236---------------------bookmark_footer-----------)![](../Images/7e2b58dacca35db939172a64442a9a1a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff104c8ede236&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultiple-linear-regression-a-deep-dive-f104c8ede236&source=-----f104c8ede236---------------------bookmark_footer-----------)![](img/7e2b58dacca35db939172a64442a9a1a.png)
 
 带有两个特征（x1 和 x2）的多元回归（图片来源：作者）
 

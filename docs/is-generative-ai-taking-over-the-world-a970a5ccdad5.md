@@ -1,34 +1,34 @@
 # 生成性人工智能是否正在接管世界？
 
-> 原文：[https://towardsdatascience.com/is-generative-ai-taking-over-the-world-a970a5ccdad5?source=collection_archive---------2-----------------------#2023-10-03](https://towardsdatascience.com/is-generative-ai-taking-over-the-world-a970a5ccdad5?source=collection_archive---------2-----------------------#2023-10-03)
+> 原文：[`towardsdatascience.com/is-generative-ai-taking-over-the-world-a970a5ccdad5?source=collection_archive---------2-----------------------#2023-10-03`](https://towardsdatascience.com/is-generative-ai-taking-over-the-world-a970a5ccdad5?source=collection_archive---------2-----------------------#2023-10-03)
 
 ## 企业纷纷加入“生成性人工智能”功能或产品的热潮。是什么驱动了这种现象？这为什么会成为问题？
 
-[](https://medium.com/@s.kirmer?source=post_page-----a970a5ccdad5--------------------------------)[![Stephanie Kirmer](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----a970a5ccdad5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a970a5ccdad5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a970a5ccdad5--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a970a5ccdad5--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----a970a5ccdad5--------------------------------)![Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a970a5ccdad5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a970a5ccdad5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a970a5ccdad5--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a970a5ccdad5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-generative-ai-taking-over-the-world-a970a5ccdad5&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----a970a5ccdad5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a970a5ccdad5--------------------------------) · 10 分钟阅读 · 2023年10月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa970a5ccdad5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-generative-ai-taking-over-the-world-a970a5ccdad5&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----a970a5ccdad5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-generative-ai-taking-over-the-world-a970a5ccdad5&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----a970a5ccdad5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a970a5ccdad5--------------------------------) · 10 分钟阅读 · 2023 年 10 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa970a5ccdad5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-generative-ai-taking-over-the-world-a970a5ccdad5&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----a970a5ccdad5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa970a5ccdad5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-generative-ai-taking-over-the-world-a970a5ccdad5&source=-----a970a5ccdad5---------------------bookmark_footer-----------)![](../Images/2ef8a74dd628236f19a55fecf6848a7c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa970a5ccdad5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-generative-ai-taking-over-the-world-a970a5ccdad5&source=-----a970a5ccdad5---------------------bookmark_footer-----------)![](img/2ef8a74dd628236f19a55fecf6848a7c.png)
 
 图片来源：[Mārtiņš Zemlickis](https://unsplash.com/@mzemlickis?utm_source=medium&utm_medium=referral) 由 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
 # 《人工智能炒作周期：奔向何处？》
 
-我最近在追看《Money Stuff》，即Matt Levine在Bloomberg上发表的不可或缺的新闻通讯/博客，里面有一篇有趣的文章讲述了人工智能股票挑选算法实际上并不偏爱人工智能股票（而且它们在所做的挑选上表现也不是很好）。 [去阅读《Money Stuff》了解更多信息。](https://www.bloomberg.com/opinion/articles/2023-08-22/ai-funds-don-t-like-ai-stocks?srnd=undefined)
+我最近在追看《Money Stuff》，即 Matt Levine 在 Bloomberg 上发表的不可或缺的新闻通讯/博客，里面有一篇有趣的文章讲述了人工智能股票挑选算法实际上并不偏爱人工智能股票（而且它们在所做的挑选上表现也不是很好）。 [去阅读《Money Stuff》了解更多信息。](https://www.bloomberg.com/opinion/articles/2023-08-22/ai-funds-don-t-like-ai-stocks?srnd=undefined)
 
-但是在那次分析中提到的一个点是，经济领域各个企业都被**人工智能**的FOMO（错失恐惧症）所困扰。这导致了一系列半开玩笑的“人工智能”应用。
+但是在那次分析中提到的一个点是，经济领域各个企业都被**人工智能**的 FOMO（错失恐惧症）所困扰。这导致了一系列半开玩笑的“人工智能”应用。
 
 > “一些公司声称他们在做人工智能，但实际上只是试图搞清楚自动化的基础。那些伪装者迟早会被揭穿的，”他说。…
 > 
-> 时尚和服装公司Ralph Lauren本月早些时候将人工智能描述为“我们收入增长之旅中的一个重要部分”。餐厅连锁店，如KFC的母公司Yum Brands和Chipotle，宣传了人工智能驱动的技术，以提高配料订单的效率或帮助制作玉米片。
+> 时尚和服装公司 Ralph Lauren 本月早些时候将人工智能描述为“我们收入增长之旅中的一个重要部分”。餐厅连锁店，如 KFC 的母公司 Yum Brands 和 Chipotle，宣传了人工智能驱动的技术，以提高配料订单的效率或帮助制作玉米片。
 > 
-> 几家与旅游相关的企业，如Marriott和Norwegian Cruise Line表示，他们正在开发人工智能驱动的系统，以使预订等流程更高效和个性化。
+> 几家与旅游相关的企业，如 Marriott 和 Norwegian Cruise Line 表示，他们正在开发人工智能驱动的系统，以使预订等流程更高效和个性化。
 > 
-> 上述例子中没有在他们最近的季度报告中提及人工智能，尽管Ralph Lauren确实在其5月的年报中大致提到了一些相关举措。
+> 上述例子中没有在他们最近的季度报告中提及人工智能，尽管 Ralph Lauren 确实在其 5 月的年报中大致提到了一些相关举措。
 
 （摘自《Money Stuff》，但他引用了《金融时报》）
 
@@ -40,13 +40,13 @@
 
 在继续之前，我们先来回顾一下什么是真正的人工智能。如常读者所知，我**非常**讨厌人们随意使用“人工智能”这个词，因为他们大多数时候根本不知道自己在说什么。我更喜欢更具体的描述，或至少解释一下我所指的含义。
 
-对我来说，AI是指我们使用机器学习策略，通常但不总是深度学习，来构建可以完成复杂任务的模型或模型组合，这些任务通常需要人类能力。机器学习模型何时变得足够复杂，才应该称其为AI？这是一个非常困难的问题，而且对此有很多分歧。但这是我的框架：机器学习是我们用来创建AI的技术，机器学习是一个大伞，包括深度学习和许多其他内容。数据科学领域则是一个更大的伞，可能包括部分或全部机器学习，同时也包括许多其他内容。
+对我来说，AI 是指我们使用机器学习策略，通常但不总是深度学习，来构建可以完成复杂任务的模型或模型组合，这些任务通常需要人类能力。机器学习模型何时变得足够复杂，才应该称其为 AI？这是一个非常困难的问题，而且对此有很多分歧。但这是我的框架：机器学习是我们用来创建 AI 的技术，机器学习是一个大伞，包括深度学习和许多其他内容。数据科学领域则是一个更大的伞，可能包括部分或全部机器学习，同时也包括许多其他内容。
 
-> AI是指我们使用机器学习策略，通常是深度学习，来构建可以完成复杂任务的模型或模型组合，这些任务通常需要人类能力。
+> AI 是指我们使用机器学习策略，通常是深度学习，来构建可以完成复杂任务的模型或模型组合，这些任务通常需要人类能力。
 
-还有另一种子类别，即生成式AI，我认为当大多数普通人谈论AI时，这实际上就是他们的意思。这包括你的LLM、图像生成等（参见我之前的帖子以获取更多讨论）。如果说搜索引擎在技术上算是AI，那可以争论，但它绝对不是生成式AI，如果你今天问路上的人，简单的搜索引擎是否是AI，他们可能不会这样认为。
+还有另一种子类别，即生成式 AI，我认为当大多数普通人谈论 AI 时，这实际上就是他们的意思。这包括你的 LLM、图像生成等（参见我之前的帖子以获取更多讨论）。如果说搜索引擎在技术上算是 AI，那可以争论，但它绝对不是生成式 AI，如果你今天问路上的人，简单的搜索引擎是否是 AI，他们可能不会这样认为。
 
-让我们讨论一个例子，也许能帮助澄清自动化以及为什么它们不一定是AI。一个问答聊天机器人是一个很好的例子。
+让我们讨论一个例子，也许能帮助澄清自动化以及为什么它们不一定是 AI。一个问答聊天机器人是一个很好的例子。
 
 一方面，我们有一个相当基础的自动化，已经存在很久了。
 
@@ -54,7 +54,7 @@
 
 +   一个应用程序会查看这个问题或一组词，并去除停用词（例如 a、and、the 等——一种简单的搜索和替换功能）。
 
-+   应用程序然后将剩余的词放入搜索框中，返回数据库/FAQ/wiki的搜索结果到聊天弹出框中。
++   应用程序然后将剩余的词放入搜索框中，返回数据库/FAQ/wiki 的搜索结果到聊天弹出框中。
 
 这是对旧方式的一个非常粗略的近似。人们不喜欢它，如果你请求了错误的东西，你就会陷入困境。它基本上是一个 LMGTFY*。这个工具甚至不模仿人类可能使用的解决问题或回应策略。
 
@@ -62,7 +62,7 @@
 
 +   客户在你的网站的弹出框中输入问题或搜索词。
 
-+   背后的LLM将客户的输入作为提示，解析这些内容，并根据词汇、其句法嵌入和模型的训练，返回极其“类人”的响应。
++   背后的 LLM 将客户的输入作为提示，解析这些内容，并根据词汇、其句法嵌入和模型的训练，返回极其“类人”的响应。
 
 这将带来一些显著的好处。首先，LLM 不仅知道你发送给它的词语，还知道其他具有类似含义和关联的词语，根据它学习到的词嵌入，因此它能够在回应时超越使用的确切词语。如果你询问“买房”，它可以将其关联到“房地产”或“抵押贷款”或“房价”，大致因为它在训练中见过这些词在类似的语境和相邻的位置。
 
@@ -106,7 +106,7 @@
 
 好了，我已经对整个闹剧发牢骚够多了，现在我们来点乐子。我一直在浏览公司发布的新闻稿，这些公司向世界介绍它们的新奇人工智能功能，并反思这些功能是多么荒谬和浪费，我挑选了一些有趣的来分享。
 
-+   [可口可乐利用生成式 AI 设计广告和发明新口味](https://www.coca-colacompany.com/media-center/coca-cola-creations-imagines-year-3000-futuristic-flavor-ai-powered-experience)：这则新闻稿是一篇上乘的文字沙拉，但他们似乎在使用 Dall-E 生成广告视觉效果。坦率地说，这些视觉效果在我看来仍像是2002年的产物，但也许我老了。此外，他们明确承认这是一次炒作周期的冒险。“在去年倾斜于增强现实之后，我们正在拥抱人工智能的力量，并继续在这一令人兴奋的领域构建公司能力。” 元宇宙没能奏效，所以这就是下一个东西了，我猜？
++   [可口可乐利用生成式 AI 设计广告和发明新口味](https://www.coca-colacompany.com/media-center/coca-cola-creations-imagines-year-3000-futuristic-flavor-ai-powered-experience)：这则新闻稿是一篇上乘的文字沙拉，但他们似乎在使用 Dall-E 生成广告视觉效果。坦率地说，这些视觉效果在我看来仍像是 2002 年的产物，但也许我老了。此外，他们明确承认这是一次炒作周期的冒险。“在去年倾斜于增强现实之后，我们正在拥抱人工智能的力量，并继续在这一令人兴奋的领域构建公司能力。” 元宇宙没能奏效，所以这就是下一个东西了，我猜？
 
 +   这似乎是真正的生成式 AI，但这是我听过的最糟糕的想法之一。Afterparty 想要 [让名人通过深度伪造节省与粉丝交流的时间](https://www.businesswire.com/news/home/20230919237357/en/Afterparty-Secures-5M-in-Funding-to-Debut-Afterparty-AI-Enables-Creators-to-Infinitely-Scale-Fan-Interactions) 的同时还能赚钱。有人想要这个吗？我了解到名人通常对 AI 复制他们的肖像持有相当的谨慎，考虑到潜在的价值。我也不明白为什么粉丝会想要这个。（谁拥有深度伪造头像的知识产权？）不过，嘿，还有 NFTs！
 

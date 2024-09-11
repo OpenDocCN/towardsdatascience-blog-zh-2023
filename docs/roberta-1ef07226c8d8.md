@@ -1,28 +1,28 @@
-# 大型语言模型：RoBERTa——一种强健优化的BERT方法
+# 大型语言模型：RoBERTa——一种强健优化的 BERT 方法
 
-> 原文：[https://towardsdatascience.com/roberta-1ef07226c8d8?source=collection_archive---------1-----------------------#2023-09-24](https://towardsdatascience.com/roberta-1ef07226c8d8?source=collection_archive---------1-----------------------#2023-09-24)
+> 原文：[`towardsdatascience.com/roberta-1ef07226c8d8?source=collection_archive---------1-----------------------#2023-09-24`](https://towardsdatascience.com/roberta-1ef07226c8d8?source=collection_archive---------1-----------------------#2023-09-24)
 
-## 了解用于BERT优化的关键技术
+## 了解用于 BERT 优化的关键技术
 
-[](https://medium.com/@slavahead?source=post_page-----1ef07226c8d8--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----1ef07226c8d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ef07226c8d8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1ef07226c8d8--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1ef07226c8d8--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----1ef07226c8d8--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1ef07226c8d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ef07226c8d8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ef07226c8d8--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1ef07226c8d8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froberta-1ef07226c8d8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----1ef07226c8d8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ef07226c8d8--------------------------------) ·5分钟阅读·2023年9月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1ef07226c8d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froberta-1ef07226c8d8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----1ef07226c8d8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froberta-1ef07226c8d8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----1ef07226c8d8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ef07226c8d8--------------------------------) ·5 分钟阅读·2023 年 9 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1ef07226c8d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froberta-1ef07226c8d8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----1ef07226c8d8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1ef07226c8d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froberta-1ef07226c8d8&source=-----1ef07226c8d8---------------------bookmark_footer-----------)![](../Images/0fcff885fed32012c5a3ec2976d5f60c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1ef07226c8d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froberta-1ef07226c8d8&source=-----1ef07226c8d8---------------------bookmark_footer-----------)![](img/0fcff885fed32012c5a3ec2976d5f60c.png)
 
 # 介绍
 
-**BERT**模型的出现带来了NLP领域的重大进展。BERT源自**Transformer**架构，在各种下游任务上实现了最先进的结果：语言建模、下一句预测、问答、命名实体识别标记等。
+**BERT**模型的出现带来了 NLP 领域的重大进展。BERT 源自**Transformer**架构，在各种下游任务上实现了最先进的结果：语言建模、下一句预测、问答、命名实体识别标记等。
 
-[](/bert-3d1bf880386a?source=post_page-----1ef07226c8d8--------------------------------) [## 大型语言模型：BERT——来自Transformer的双向编码表示
+[](/bert-3d1bf880386a?source=post_page-----1ef07226c8d8--------------------------------) ## 大型语言模型：BERT——来自 Transformer 的双向编码表示
 
 ### 了解**BERT**如何构建最先进的嵌入表示
 
-towardsdatascience.com](/bert-3d1bf880386a?source=post_page-----1ef07226c8d8--------------------------------)
+towardsdatascience.com
 
 尽管 BERT 的性能优秀，研究人员仍然继续尝试调整其配置，希望实现更好的指标。幸运的是，他们成功了，并提出了一种新的模型，称为 **RoBERTa**——鲁棒优化 BERT 方法。
 
@@ -34,7 +34,7 @@ towardsdatascience.com](/bert-3d1bf880386a?source=post_page-----1ef07226c8d8----
 
 更准确地说，训练数据集重复了 10 次，因此每个序列仅以 10 种不同的方式进行掩蔽。考虑到 BERT 运行了 40 个训练周期，每个具有相同掩蔽的序列会传递给 BERT 四次。研究人员发现，使用动态掩蔽稍微更好，即每次将序列传递给 BERT 时掩蔽都是唯一生成的。总的来说，这在训练过程中减少了重复的数据，给模型提供了处理更多不同数据和掩蔽模式的机会。
 
-![](../Images/5f0d5098a4da926aa2d2e4e5d5b760a7.png)
+![](img/5f0d5098a4da926aa2d2e4e5d5b760a7.png)
 
 静态掩蔽与动态掩蔽
 
@@ -50,7 +50,7 @@ towardsdatascience.com](/bert-3d1bf880386a?source=post_page-----1ef07226c8d8----
 
 最终，对于 RoBERTa 的最终实现，作者选择保留前两个方面而省略第三个方面。尽管第三个见解带来了观察到的改进，但研究人员没有继续采用它，因为这会使之前实现之间的比较变得更加困难。这是因为达到文档边界并在此停止意味着输入序列将包含少于 512 个标记。为了在所有批次中保持类似的标记数量，在这种情况下需要增加批量大小。这会导致批量大小的变化和更复杂的比较，而研究人员希望避免这种情况。
 
-![](../Images/49279eaf526bc460b7f3d52923f394a1.png)
+![](img/49279eaf526bc460b7f3d52923f394a1.png)
 
 # 3\. 增加批量大小
 
@@ -74,7 +74,7 @@ towardsdatascience.com](/bert-3d1bf880386a?source=post_page-----1ef07226c8d8----
 
 尽管如此，RoBERTa 中词汇表大小的增长使其能够编码几乎任何单词或子词，而无需使用未知标记，这相比于 BERT 是一个显著的优势。这使得 RoBERTa 可以更全面地理解包含稀有词汇的复杂文本。
 
-![](../Images/cdee0913cccc1b2bf6291958373ee900.png)
+![](img/cdee0913cccc1b2bf6291958373ee900.png)
 
 # 预训练
 
@@ -88,7 +88,7 @@ RoBERTa 在五个大规模数据集的组合上进行了预训练，总共达到
 
 类似于 BERT，研究人员开发了两个版本的 RoBERTa。基础版和大型版中的大多数超参数是相同的。下图展示了主要的区别：
 
-![](../Images/a46e3fd0b0d36e07965b858682fb8e91.png)
+![](img/a46e3fd0b0d36e07965b858682fb8e91.png)
 
 RoBERTa 的微调过程类似于 BERT 的过程。
 

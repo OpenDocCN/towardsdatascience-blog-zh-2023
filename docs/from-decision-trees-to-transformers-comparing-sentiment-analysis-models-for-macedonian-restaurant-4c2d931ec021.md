@@ -1,22 +1,22 @@
 # 从决策树到变换器：比较马其顿餐厅评论的情感分析模型
 
-> 原文：[https://towardsdatascience.com/from-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021?source=collection_archive---------4-----------------------#2023-03-03](https://towardsdatascience.com/from-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021?source=collection_archive---------4-----------------------#2023-03-03)
+> 原文：[`towardsdatascience.com/from-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021?source=collection_archive---------4-----------------------#2023-03-03`](https://towardsdatascience.com/from-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021?source=collection_archive---------4-----------------------#2023-03-03)
 
 ## 分析马其顿餐厅评论的机器学习技术
 
-[](https://medium.com/@danilo.najkov?source=post_page-----4c2d931ec021--------------------------------)[![Danilo Najkov](../Images/e0e8976f1f9f78ae58ba7efcc90a4f00.png)](https://medium.com/@danilo.najkov?source=post_page-----4c2d931ec021--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c2d931ec021--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4c2d931ec021--------------------------------) [Danilo Najkov](https://medium.com/@danilo.najkov?source=post_page-----4c2d931ec021--------------------------------)
+[](https://medium.com/@danilo.najkov?source=post_page-----4c2d931ec021--------------------------------)![Danilo Najkov](https://medium.com/@danilo.najkov?source=post_page-----4c2d931ec021--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c2d931ec021--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c2d931ec021--------------------------------) [Danilo Najkov](https://medium.com/@danilo.najkov?source=post_page-----4c2d931ec021--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F19802d0e7d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021&user=Danilo+Najkov&userId=19802d0e7d&source=post_page-19802d0e7d----4c2d931ec021---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c2d931ec021--------------------------------) ·10分钟阅读·2023年3月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4c2d931ec021&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021&user=Danilo+Najkov&userId=19802d0e7d&source=-----4c2d931ec021---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F19802d0e7d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021&user=Danilo+Najkov&userId=19802d0e7d&source=post_page-19802d0e7d----4c2d931ec021---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c2d931ec021--------------------------------) ·10 分钟阅读·2023 年 3 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4c2d931ec021&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021&user=Danilo+Najkov&userId=19802d0e7d&source=-----4c2d931ec021---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4c2d931ec021&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021&source=-----4c2d931ec021---------------------bookmark_footer-----------)![](../Images/af0e8f1d709eb059137751a9703ae73d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4c2d931ec021&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-decision-trees-to-transformers-comparing-sentiment-analysis-models-for-macedonian-restaurant-4c2d931ec021&source=-----4c2d931ec021---------------------bookmark_footer-----------)![](img/af0e8f1d709eb059137751a9703ae73d.png)
 
 作者提供的图形
 
--   尽管自然语言处理的机器学习模型传统上集中于英语和西班牙语等流行语言，但较少使用的语言的发展则相对较少。然而，由于COVID-19大流行导致电子商务的兴起，即使是像马其顿语这样较少使用的语言也通过在线评论产生了大量数据。这为开发和训练马其顿语餐馆评论的情感分析机器学习模型提供了机会，这可以帮助企业更好地理解客户情感并改善服务。在这项研究中，我们解决了这一问题中出现的挑战，并探讨和比较了用于分析马其顿餐馆评论情感的各种情感分析模型，从经典的随机森林到现代的深度学习技术和变压器。
+-   尽管自然语言处理的机器学习模型传统上集中于英语和西班牙语等流行语言，但较少使用的语言的发展则相对较少。然而，由于 COVID-19 大流行导致电子商务的兴起，即使是像马其顿语这样较少使用的语言也通过在线评论产生了大量数据。这为开发和训练马其顿语餐馆评论的情感分析机器学习模型提供了机会，这可以帮助企业更好地理解客户情感并改善服务。在这项研究中，我们解决了这一问题中出现的挑战，并探讨和比较了用于分析马其顿餐馆评论情感的各种情感分析模型，从经典的随机森林到现代的深度学习技术和变压器。
 
 **内容**
 
@@ -52,7 +52,7 @@
 
 -   语言是独特的人类交流工具，计算机在没有适当处理技术的情况下无法解释它。为了让机器分析和理解语言，我们需要以计算机可处理的方式表示复杂的语义和词汇信息。实现这一目标的一种流行方法是使用向量表示。近年来，除了特定语言的表示模型外，多语言模型也出现了。这些模型可以捕捉大量语言的文本语义上下文。
 
--   然而，对于使用西里尔字母的语言，额外的挑战是由于互联网用户经常使用拉丁字母表达自己，导致数据中混合了拉丁和西里尔文本。为了解决这一挑战，我使用了来自本地餐馆的大约500条评论的数据集，其中包含拉丁和西里尔字母。该数据集还包括一小部分英文评论，有助于评估在混合数据上的表现。此外，在线文本可能包含如表情符号等需要去除的符号。因此，数据预处理是进行任何文本嵌入之前的关键步骤。
+-   然而，对于使用西里尔字母的语言，额外的挑战是由于互联网用户经常使用拉丁字母表达自己，导致数据中混合了拉丁和西里尔文本。为了解决这一挑战，我使用了来自本地餐馆的大约 500 条评论的数据集，其中包含拉丁和西里尔字母。该数据集还包括一小部分英文评论，有助于评估在混合数据上的表现。此外，在线文本可能包含如表情符号等需要去除的符号。因此，数据预处理是进行任何文本嵌入之前的关键步骤。
 
 ```py
 import pandas as pd
@@ -70,7 +70,7 @@ df['sentiment'].value_counts()
 # Name: sentiment, dtype: int64
 ```
 
--   数据集包含正类和负类，分布几乎相等。为了去除表情符号，我使用了Python库`emoji`，它可以轻松去除表情符号和其他符号。
+-   数据集包含正类和负类，分布几乎相等。为了去除表情符号，我使用了 Python 库`emoji`，它可以轻松去除表情符号和其他符号。
 
 ```py
 !pip install emoji
@@ -99,23 +99,23 @@ df['comment_latin'] = latin
 df.head()
 ```
 
-![](../Images/df4ff53d87f8ed5066a9fc78eb489af6.png)
+![](img/df4ff53d87f8ed5066a9fc78eb489af6.png)
 
-图1\. 转换后的输出
+图 1\. 转换后的输出
 
 对于我使用的嵌入模型，通常不需要移除标点符号、停用词及其他文本清理。这些模型设计用来处理自然语言文本，包括标点符号，并且当文本保持完整时，通常能够更准确地捕捉句子的含义。这样文本的预处理就完成了。
 
 # 向量嵌入
 
-目前，没有大规模的马其顿语表示模型可用。然而，我们可以使用在马其顿语文本上训练的多语言模型。虽然有几个这样的模型可用，但对于这项任务，我发现LASER和Multilingual Universal Sentence Encoder是最合适的选择。
+目前，没有大规模的马其顿语表示模型可用。然而，我们可以使用在马其顿语文本上训练的多语言模型。虽然有几个这样的模型可用，但对于这项任务，我发现 LASER 和 Multilingual Universal Sentence Encoder 是最合适的选择。
 
 ## LASER
 
-LASER（语言无关句子表示）是一种生成高质量多语言句子嵌入的语言无关方法。LASER模型基于一个两阶段过程，其中第一阶段是预处理文本，包括分词、小写转换和应用sentencepiece。这部分是特定语言的。第二阶段涉及将预处理后的输入文本映射到固定长度的嵌入，使用的是多层双向LSTM。
+LASER（语言无关句子表示）是一种生成高质量多语言句子嵌入的语言无关方法。LASER 模型基于一个两阶段过程，其中第一阶段是预处理文本，包括分词、小写转换和应用 sentencepiece。这部分是特定语言的。第二阶段涉及将预处理后的输入文本映射到固定长度的嵌入，使用的是多层双向 LSTM。
 
-LASER已被证明在一系列基准数据集上优于其他流行的句子嵌入方法，如fastText和InferSent。此外，LASER模型是开源的且免费提供，方便所有人使用。
+LASER 已被证明在一系列基准数据集上优于其他流行的句子嵌入方法，如 fastText 和 InferSent。此外，LASER 模型是开源的且免费提供，方便所有人使用。
 
-使用LASER创建嵌入是一个简单的过程：
+使用 LASER 创建嵌入是一个简单的过程：
 
 ```py
 !pip install laserembeddings
@@ -135,9 +135,9 @@ np.save('/content/laser_multi_l.npy', embeddings_l)
 
 ## 多语言通用句子编码器
 
-多语言通用句子编码器（MUSE）是一个预训练模型，用于生成句子嵌入，由Facebook开发。MUSE旨在将多种语言的句子编码到一个共同的空间中。
+多语言通用句子编码器（MUSE）是一个预训练模型，用于生成句子嵌入，由 Facebook 开发。MUSE 旨在将多种语言的句子编码到一个共同的空间中。
 
-该模型基于一个深度神经网络，使用编码器-解码器架构来学习句子与其对应的高维空间嵌入向量之间的映射。MUSE在一个大规模的多语言语料库上进行训练，该语料库包括维基百科、新闻文章和网页文本。
+该模型基于一个深度神经网络，使用编码器-解码器架构来学习句子与其对应的高维空间嵌入向量之间的映射。MUSE 在一个大规模的多语言语料库上进行训练，该语料库包括维基百科、新闻文章和网页文本。
 
 ```py
 !pip install tensorflow_text
@@ -164,7 +164,7 @@ np.save('/content/muse_l.npy', muse_l)
 
 ## OpenAI Ada v2
 
-在2022年底，OpenAI宣布了他们全新的最先进嵌入模型 [text-embedding-ada-002](https://openai.com/blog/new-and-improved-embedding-model/)。由于该模型建立在GPT-3之上，它具有多语言处理能力。为了比较斯拉夫字母和拉丁字母评论之间的结果，我在这两个数据集上运行了该模型。
+在 2022 年底，OpenAI 宣布了他们全新的最先进嵌入模型 [text-embedding-ada-002](https://openai.com/blog/new-and-improved-embedding-model/)。由于该模型建立在 GPT-3 之上，它具有多语言处理能力。为了比较斯拉夫字母和拉丁字母评论之间的结果，我在这两个数据集上运行了该模型。
 
 ```py
 !pip install openai
@@ -202,9 +202,9 @@ X_train, X_test, y_train, y_test = train_test_split(embeddings_c, df['sentiment'
 
 ## 随机森林
 
-![](../Images/f3c3e1b81c5fa1eb8e8f42e7fb391761.png)
+![](img/f3c3e1b81c5fa1eb8e8f42e7fb391761.png)
 
-图2\. 随机森林分类的简化表示。构建了100棵决策树，结果通过对每棵决策树的结果进行多数投票来计算。（作者绘制）
+图 2\. 随机森林分类的简化表示。构建了 100 棵决策树，结果通过对每棵决策树的结果进行多数投票来计算。（作者绘制）
 
 随机森林是一种广泛使用的机器学习算法，它使用决策树的集成来分类数据点。该算法通过在完整数据集的子集和特征的随机子集上训练每棵决策树来工作。在推断过程中，每棵决策树生成情感的预测，最终输出通过对所有树的多数投票来获得。这种方法有助于防止过拟合，并能导致更稳健和准确的预测。
 
@@ -220,11 +220,11 @@ print(confusion_matrix(y_test,rfc.predict(X_test)))
 
 ## XGBoost
 
-![](../Images/069088713baa3757823045c72cc6597c.png)
+![](img/069088713baa3757823045c72cc6597c.png)
 
-图3\. 提升基算法的顺序过程。每棵后续决策树在前一棵树的残差（错误）上进行训练。（作者绘制）
+图 3\. 提升基算法的顺序过程。每棵后续决策树在前一棵树的残差（错误）上进行训练。（作者绘制）
 
-XGBoost（极端梯度提升）是一种强大的集成方法，主要用于表格数据。与随机森林一样，XGBoost也使用决策树来分类数据点，但采用不同的方法。XGBoost不是一次训练所有树，而是以顺序方式训练每棵树，从前一棵树的错误中学习。这一过程称为提升，即将弱模型组合成一个更强的模型。尽管XGBoost主要在表格数据上产生出色的结果，但用向量嵌入测试它也很有趣。
+XGBoost（极端梯度提升）是一种强大的集成方法，主要用于表格数据。与随机森林一样，XGBoost 也使用决策树来分类数据点，但采用不同的方法。XGBoost 不是一次训练所有树，而是以顺序方式训练每棵树，从前一棵树的错误中学习。这一过程称为提升，即将弱模型组合成一个更强的模型。尽管 XGBoost 主要在表格数据上产生出色的结果，但用向量嵌入测试它也很有趣。
 
 ```py
 from xgboost import XGBClassifier
@@ -238,11 +238,11 @@ print(confusion_matrix(y_test,rfc.predict(X_test)))
 
 ## 支持向量机
 
-![](../Images/a7582c92959dbf18690e24b78a04b7ac.png)
+![](img/a7582c92959dbf18690e24b78a04b7ac.png)
 
-图4\. 支持向量分类的简化表示。在具有1024个输入特征的情感分析中，超平面将是1023维的。（作者绘制）
+图 4\. 支持向量分类的简化表示。在具有 1024 个输入特征的情感分析中，超平面将是 1023 维的。（作者绘制）
 
-支持向量机（SVM）是一种流行且强大的机器学习算法，用于分类和回归任务。它通过寻找将数据分成不同类别的最佳超平面，同时最大化类别之间的间隔来工作。SVM特别适用于高维数据，并可以使用核函数处理非线性边界。
+支持向量机（SVM）是一种流行且强大的机器学习算法，用于分类和回归任务。它通过寻找将数据分成不同类别的最佳超平面，同时最大化类别之间的间隔来工作。SVM 特别适用于高维数据，并可以使用核函数处理非线性边界。
 
 ```py
 from sklearn.svm import SVC
@@ -256,11 +256,11 @@ print(confusion_matrix(y_test,rfc.predict(X_test)))
 
 ## 深度学习
 
-![](../Images/2357db5eea9f7f39d928d7476ad3857d.png)
+![](img/2357db5eea9f7f39d928d7476ad3857d.png)
 
-图5\. 该问题中使用的神经网络的简化表示。（作者绘制）
+图 5\. 该问题中使用的神经网络的简化表示。（作者绘制）
 
-深度学习是一种先进的机器学习方法，利用由多层神经元组成的人工神经网络。深度学习网络在文本和图像数据上表现出色。使用库Keras实现这些网络是一个简单的过程。
+深度学习是一种先进的机器学习方法，利用由多层神经元组成的人工神经网络。深度学习网络在文本和图像数据上表现出色。使用库 Keras 实现这些网络是一个简单的过程。
 
 ```py
 import tensorflow as tf
@@ -303,13 +303,13 @@ def plot_accuracy(history):
     plt.show()
 ```
 
-![](../Images/8848ddc6401ccfdb6b39638a2638dfc6.png)
+![](img/8848ddc6401ccfdb6b39638a2638dfc6.png)
 
 图 6\. 示例训练输出
 
 ## 变换器
 
-![](../Images/4f481ee30e9e5081d647526efa18634f.png)
+![](img/4f481ee30e9e5081d647526efa18634f.png)
 
 图 7\. BERT 大型语言模型的预训练和微调过程。（来源：[原始 BERT 论文](https://arxiv.org/pdf/1810.04805v2.pdf)）
 
@@ -373,7 +373,7 @@ print(confusion_matrix(predictions.label_ids,preds))
 
 # 结果与讨论
 
-![](../Images/9db813559915c7d0a87f0d2eadf8bfcf.png)
+![](img/9db813559915c7d0a87f0d2eadf8bfcf.png)
 
 图 8\. 所有模型的结果
 
@@ -389,6 +389,6 @@ OpenAI 嵌入模型 `textembedding-ada-002` 大幅提升了即使是经典机器
 
 # 结论
 
-总结来说，本文展示了多种机器学习模型和嵌入技术在马其顿餐馆评论情感分析中的有效性。探讨并比较了几种经典的机器学习模型，如随机森林和支持向量机，以及现代深度学习技术，包括神经网络和变压器。结果表明，经过微调的变压器模型和使用最新OpenAI嵌入的深度学习模型表现优于其他方法，验证准确率高达90%。
+总结来说，本文展示了多种机器学习模型和嵌入技术在马其顿餐馆评论情感分析中的有效性。探讨并比较了几种经典的机器学习模型，如随机森林和支持向量机，以及现代深度学习技术，包括神经网络和变压器。结果表明，经过微调的变压器模型和使用最新 OpenAI 嵌入的深度学习模型表现优于其他方法，验证准确率高达 90%。
 
 感谢阅读！

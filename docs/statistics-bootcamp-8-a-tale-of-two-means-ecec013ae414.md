@@ -1,20 +1,20 @@
-# 统计学速成班第8期：两个均值的故事
+# 统计学速成班第 8 期：两个均值的故事
 
-> 原文：[https://towardsdatascience.com/statistics-bootcamp-8-a-tale-of-two-means-ecec013ae414?source=collection_archive---------10-----------------------#2023-01-04](https://towardsdatascience.com/statistics-bootcamp-8-a-tale-of-two-means-ecec013ae414?source=collection_archive---------10-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/statistics-bootcamp-8-a-tale-of-two-means-ecec013ae414?source=collection_archive---------10-----------------------#2023-01-04`](https://towardsdatascience.com/statistics-bootcamp-8-a-tale-of-two-means-ecec013ae414?source=collection_archive---------10-----------------------#2023-01-04)
 
 ## [统计学速成班](https://towardsdatascience.com/tagged/statistics-bootcamp)
 
 ## 学习你作为数据科学家每日使用的库背后的数学和方法
 
-[](https://medium.com/@askline1?source=post_page-----ecec013ae414--------------------------------)[![Adrienne Kline](../Images/0df1738ad37f550e8c1206b93ebbb534.png)](https://medium.com/@askline1?source=post_page-----ecec013ae414--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ecec013ae414--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ecec013ae414--------------------------------) [Adrienne Kline](https://medium.com/@askline1?source=post_page-----ecec013ae414--------------------------------)
+[](https://medium.com/@askline1?source=post_page-----ecec013ae414--------------------------------)![Adrienne Kline](https://medium.com/@askline1?source=post_page-----ecec013ae414--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ecec013ae414--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecec013ae414--------------------------------) [Adrienne Kline](https://medium.com/@askline1?source=post_page-----ecec013ae414--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cd59d41e4d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistics-bootcamp-8-a-tale-of-two-means-ecec013ae414&user=Adrienne+Kline&userId=7cd59d41e4d7&source=post_page-7cd59d41e4d7----ecec013ae414---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecec013ae414--------------------------------) ·13分钟阅读·2023年1月4日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fecec013ae414&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistics-bootcamp-8-a-tale-of-two-means-ecec013ae414&user=Adrienne+Kline&userId=7cd59d41e4d7&source=-----ecec013ae414---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cd59d41e4d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistics-bootcamp-8-a-tale-of-two-means-ecec013ae414&user=Adrienne+Kline&userId=7cd59d41e4d7&source=post_page-7cd59d41e4d7----ecec013ae414---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecec013ae414--------------------------------) ·13 分钟阅读·2023 年 1 月 4 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fecec013ae414&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistics-bootcamp-8-a-tale-of-two-means-ecec013ae414&user=Adrienne+Kline&userId=7cd59d41e4d7&source=-----ecec013ae414---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fecec013ae414&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistics-bootcamp-8-a-tale-of-two-means-ecec013ae414&source=-----ecec013ae414---------------------bookmark_footer-----------)![](../Images/20db195e8720ff5e031223d910ebf4c6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fecec013ae414&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistics-bootcamp-8-a-tale-of-two-means-ecec013ae414&source=-----ecec013ae414---------------------bookmark_footer-----------)![](img/20db195e8720ff5e031223d910ebf4c6.png)
 
 作者提供的图片
 
@@ -24,12 +24,12 @@
 
 我们将提出关于年龄和医学生的问题如下：
 
-1.  人口 1 = 所有注册在UIC的医学生
+1.  人口 1 = 所有注册在 UIC 的医学生
 
     人口 1 = 所有注册在西北医学生
 
 1.  假设（在双尾检验的情况下）：
 
-![](../Images/339e5320628c93e36ef125a7b1fcb013.png)
+![](img/339e5320628c93e36ef125a7b1fcb013.png)
 
 # 比较两个…

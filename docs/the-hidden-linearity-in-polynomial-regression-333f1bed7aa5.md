@@ -1,14 +1,14 @@
 # 多项式回归中的隐藏线性
 
-> 原文：[https://towardsdatascience.com/the-hidden-linearity-in-polynomial-regression-333f1bed7aa5?source=collection_archive---------10-----------------------#2023-03-17](https://towardsdatascience.com/the-hidden-linearity-in-polynomial-regression-333f1bed7aa5?source=collection_archive---------10-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/the-hidden-linearity-in-polynomial-regression-333f1bed7aa5?source=collection_archive---------10-----------------------#2023-03-17`](https://towardsdatascience.com/the-hidden-linearity-in-polynomial-regression-333f1bed7aa5?source=collection_archive---------10-----------------------#2023-03-17)
 
 ## 从两个角度深入理解线性模型
 
-[](https://medium.com/@angela.shi?source=post_page-----333f1bed7aa5--------------------------------)[![Angela and Kezhan Shi](../Images/a89d678f2f3887c0c2ff3928f9d767b4.png)](https://medium.com/@angela.shi?source=post_page-----333f1bed7aa5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----333f1bed7aa5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----333f1bed7aa5--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----333f1bed7aa5--------------------------------)
+[](https://medium.com/@angela.shi?source=post_page-----333f1bed7aa5--------------------------------)![Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----333f1bed7aa5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----333f1bed7aa5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----333f1bed7aa5--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----333f1bed7aa5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-linearity-in-polynomial-regression-333f1bed7aa5&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----333f1bed7aa5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----333f1bed7aa5--------------------------------) ·9分钟阅读·2023年3月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F333f1bed7aa5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-linearity-in-polynomial-regression-333f1bed7aa5&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----333f1bed7aa5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-linearity-in-polynomial-regression-333f1bed7aa5&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----333f1bed7aa5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----333f1bed7aa5--------------------------------) ·9 分钟阅读·2023 年 3 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F333f1bed7aa5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-linearity-in-polynomial-regression-333f1bed7aa5&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----333f1bed7aa5---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 > 多项式回归是一种线性回归。
 
-![](../Images/7a33640069803e36d823adefaa7d337a.png)
+![](img/7a33640069803e36d823adefaa7d337a.png)
 
 图片由 [Denny Müller](https://unsplash.com/de/@redaquamedia?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

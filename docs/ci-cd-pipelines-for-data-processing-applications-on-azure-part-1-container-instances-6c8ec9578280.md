@@ -1,14 +1,14 @@
-# 数据处理应用程序的 CI/CD 管道在 Azure 上 第 1 部分：容器实例
+# 数据处理应用程序的 CI/CD 管道在 Azure 上 第一部分：容器实例
 
-> 原文：[https://towardsdatascience.com/ci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280?source=collection_archive---------4-----------------------#2023-10-31](https://towardsdatascience.com/ci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280?source=collection_archive---------4-----------------------#2023-10-31)
+> 原文：[`towardsdatascience.com/ci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280?source=collection_archive---------4-----------------------#2023-10-31`](https://towardsdatascience.com/ci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280?source=collection_archive---------4-----------------------#2023-10-31)
 
-![](../Images/0c7b6799dc1fa6706ea8e778ef1387dc.png)
+![](img/0c7b6799dc1fa6706ea8e778ef1387dc.png)
 
-图像由 AI Comic Factory 生成：[https://huggingface.co/spaces/jbilcke-hf/ai-comic-factory](https://huggingface.co/spaces/jbilcke-hf/ai-comic-factory)
+图像由 AI Comic Factory 生成：[`huggingface.co/spaces/jbilcke-hf/ai-comic-factory`](https://huggingface.co/spaces/jbilcke-hf/ai-comic-factory)
 
 ## 使用 GitHub Actions 部署 Docker 容器的逐步指南
 
-[](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)[![Peer Christensen](../Images/270e760cccbfed0bf15cb60f968d1377.png)](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c8ec9578280--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6c8ec9578280--------------------------------) [Peer Christensen](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)
+[](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)![Peer Christensen](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c8ec9578280--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c8ec9578280--------------------------------) [Peer Christensen](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)
 
 ·
 
@@ -80,7 +80,7 @@ az ad sp create-for-rbac \
 
 创建一个新的仓库秘密并将其命名为 AZURE_CREDENTIALS。将上述命令的 JSON 输出粘贴进去并保存。
 
-## 第3步：修改脚本
+## 第 3 步：修改脚本
 
 在这种情况下，我们正在部署一个简单的 R 脚本，它的功能不多。因此，Dockerfile 也保持非常简单。这两个文件显然需要根据你的要求和首选编程语言进行修改。然而，如果你对这方面不太熟悉，最好先使用现有代码将你的流水线启动运行，然后再应用自己的代码。
 
@@ -100,7 +100,7 @@ env:
   MEMORY: 1.5
 ```
 
-## 第4步：运行流水线和容器实例
+## 第 4 步：运行流水线和容器实例
 
 当所有相关更改都已提交到“main”分支时，你应该可以在“操作”窗格下看到你的流水线运行。这是因为工作流设置了分支触发器，使其在主分支更新时运行。
 
@@ -114,7 +114,7 @@ env:
 
 workflow.yml 文件定义了我们流水线中的五个步骤或作业，这些步骤将资源部署到测试环境。
 
-![](../Images/6fe04f92a99215b196b3deae95054bb8.png)
+![](img/6fe04f92a99215b196b3deae95054bb8.png)
 
 作者提供的图片
 
@@ -222,18 +222,18 @@ on:
 
 **GitHub Actions**
 
-[https://learn.microsoft.com/zh-cn/training/modules/introduction-to-github-actions/](https://learn.microsoft.com/zh-cn/training/modules/introduction-to-github-actions/)
+[`learn.microsoft.com/zh-cn/training/modules/introduction-to-github-actions/`](https://learn.microsoft.com/zh-cn/training/modules/introduction-to-github-actions/)
 
-[https://learn.microsoft.com/zh-cn/training/modules/learn-continuous-integration-github-actions/](https://learn.microsoft.com/zh-cn/training/modules/learn-continuous-integration-github-actions/)
+[`learn.microsoft.com/zh-cn/training/modules/learn-continuous-integration-github-actions/`](https://learn.microsoft.com/zh-cn/training/modules/learn-continuous-integration-github-actions/)
 
-[https://learn.microsoft.com/zh-cn/training/modules/github-actions-automate-tasks/](https://learn.microsoft.com/zh-cn/training/modules/github-actions-automate-tasks/)
+[`learn.microsoft.com/zh-cn/training/modules/github-actions-automate-tasks/`](https://learn.microsoft.com/zh-cn/training/modules/github-actions-automate-tasks/)
 
-[https://learn.microsoft.com/zh-cn/training/modules/github-actions-ci/](https://learn.microsoft.com/zh-cn/training/modules/github-actions-ci/)
+[`learn.microsoft.com/zh-cn/training/modules/github-actions-ci/`](https://learn.microsoft.com/zh-cn/training/modules/github-actions-ci/)
 
-[https://learn.microsoft.com/zh-cn/training/modules/github-actions-cd/](https://learn.microsoft.com/zh-cn/training/modules/github-actions-cd/)
+[`learn.microsoft.com/zh-cn/training/modules/github-actions-cd/`](https://learn.microsoft.com/zh-cn/training/modules/github-actions-cd/)
 
 **Bicep：**
 
-[https://learn.microsoft.com/zh-cn/training/paths/fundamentals-bicep/](https://learn.microsoft.com/zh-cn/training/paths/fundamentals-bicep/)
+[`learn.microsoft.com/zh-cn/training/paths/fundamentals-bicep/`](https://learn.microsoft.com/zh-cn/training/paths/fundamentals-bicep/)
 
-[https://learn.microsoft.com/zh-cn/training/paths/bicep-github-actions/](https://learn.microsoft.com/zh-cn/training/paths/bicep-github-actions/)
+[`learn.microsoft.com/zh-cn/training/paths/bicep-github-actions/`](https://learn.microsoft.com/zh-cn/training/paths/bicep-github-actions/)

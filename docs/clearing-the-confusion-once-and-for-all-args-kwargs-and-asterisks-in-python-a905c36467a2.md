@@ -1,20 +1,20 @@
-# 一劳永逸地解开疑惑：Python中的`args`、`kwargs`和星号
+# 一劳永逸地解开疑惑：Python 中的`args`、`kwargs`和星号
 
-> 原文：[https://towardsdatascience.com/clearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2?source=collection_archive---------4-----------------------#2023-05-30](https://towardsdatascience.com/clearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2?source=collection_archive---------4-----------------------#2023-05-30)
+> 原文：[`towardsdatascience.com/clearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2?source=collection_archive---------4-----------------------#2023-05-30`](https://towardsdatascience.com/clearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2?source=collection_archive---------4-----------------------#2023-05-30)
 
 ## 并且幸福快乐地生活下去
 
-[](https://ibexorigin.medium.com/?source=post_page-----a905c36467a2--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----a905c36467a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a905c36467a2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a905c36467a2--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----a905c36467a2--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----a905c36467a2--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----a905c36467a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a905c36467a2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a905c36467a2--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----a905c36467a2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----a905c36467a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a905c36467a2--------------------------------) · 9分钟阅读 · 2023年5月30日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa905c36467a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2&user=Bex+T.&userId=39db050c2ac2&source=-----a905c36467a2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----a905c36467a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a905c36467a2--------------------------------) · 9 分钟阅读 · 2023 年 5 月 30 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa905c36467a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2&user=Bex+T.&userId=39db050c2ac2&source=-----a905c36467a2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa905c36467a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2&source=-----a905c36467a2---------------------bookmark_footer-----------)![](../Images/49a1db551c8f925a358bd20c9e9f7d04.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa905c36467a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclearing-the-confusion-once-and-for-all-args-kwargs-and-asterisks-in-python-a905c36467a2&source=-----a905c36467a2---------------------bookmark_footer-----------)![](img/49a1db551c8f925a358bd20c9e9f7d04.png)
 
-图片由我使用Midjourney制作
+图片由我使用 Midjourney 制作
 
 ## 动机
 

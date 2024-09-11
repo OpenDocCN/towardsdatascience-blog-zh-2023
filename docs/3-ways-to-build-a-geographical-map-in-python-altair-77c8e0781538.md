@@ -1,12 +1,12 @@
 # 在 Python Altair 中构建地理地图的 3 种方法
 
-> 原文：[https://towardsdatascience.com/3-ways-to-build-a-geographical-map-in-python-altair-77c8e0781538?source=collection_archive---------6-----------------------#2023-01-30](https://towardsdatascience.com/3-ways-to-build-a-geographical-map-in-python-altair-77c8e0781538?source=collection_archive---------6-----------------------#2023-01-30)
+> 原文：[`towardsdatascience.com/3-ways-to-build-a-geographical-map-in-python-altair-77c8e0781538?source=collection_archive---------6-----------------------#2023-01-30`](https://towardsdatascience.com/3-ways-to-build-a-geographical-map-in-python-altair-77c8e0781538?source=collection_archive---------6-----------------------#2023-01-30)
 
 ## 数据可视化，地理数据
 
 ## 一个关于如何在 Python Altair 中构建三种不同地图的教程：分级图、点密度图和比例符号图
 
-[](https://alod83.medium.com/?source=post_page-----77c8e0781538--------------------------------)[![Angelica Lo Duca](../Images/45aa2e2e504bb3af6d3b8009dc6f030e.png)](https://alod83.medium.com/?source=post_page-----77c8e0781538--------------------------------)[](https://towardsdatascience.com/?source=post_page-----77c8e0781538--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----77c8e0781538--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----77c8e0781538--------------------------------)
+[](https://alod83.medium.com/?source=post_page-----77c8e0781538--------------------------------)![Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----77c8e0781538--------------------------------)[](https://towardsdatascience.com/?source=post_page-----77c8e0781538--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----77c8e0781538--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----77c8e0781538--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F77c8e0781538&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-build-a-geographical-map-in-python-altair-77c8e0781538&source=-----77c8e0781538---------------------bookmark_footer-----------)![](../Images/fa7bf2f1fe3245059ddc44cf4c558620.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F77c8e0781538&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-ways-to-build-a-geographical-map-in-python-altair-77c8e0781538&source=-----77c8e0781538---------------------bookmark_footer-----------)![](img/fa7bf2f1fe3245059ddc44cf4c558620.png)
 
 作者提供的图片
 

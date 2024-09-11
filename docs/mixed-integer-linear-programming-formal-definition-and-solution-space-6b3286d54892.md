@@ -1,22 +1,22 @@
 # 混合整数线性规划：正式定义与解空间
 
-> 原文：[https://towardsdatascience.com/mixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892?source=collection_archive---------2-----------------------#2023-02-21](https://towardsdatascience.com/mixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892?source=collection_archive---------2-----------------------#2023-02-21)
+> 原文：[`towardsdatascience.com/mixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892?source=collection_archive---------2-----------------------#2023-02-21`](https://towardsdatascience.com/mixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892?source=collection_archive---------2-----------------------#2023-02-21)
 
 ## MILP 的理论基础以及其解空间的视觉表现
 
-[](https://medium.com/@modosist?source=post_page-----6b3286d54892--------------------------------)[![István Módos](../Images/23a22dc06f5a5ae26a2ce24e6d69ddf4.png)](https://medium.com/@modosist?source=post_page-----6b3286d54892--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b3286d54892--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6b3286d54892--------------------------------) [István Módos](https://medium.com/@modosist?source=post_page-----6b3286d54892--------------------------------)
+[](https://medium.com/@modosist?source=post_page-----6b3286d54892--------------------------------)![István Módos](https://medium.com/@modosist?source=post_page-----6b3286d54892--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b3286d54892--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b3286d54892--------------------------------) [István Módos](https://medium.com/@modosist?source=post_page-----6b3286d54892--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe14f7a362f6f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892&user=Istv%C3%A1n+M%C3%B3dos&userId=e14f7a362f6f&source=post_page-e14f7a362f6f----6b3286d54892---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b3286d54892--------------------------------) · 10 分钟阅读·2023年2月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6b3286d54892&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892&user=Istv%C3%A1n+M%C3%B3dos&userId=e14f7a362f6f&source=-----6b3286d54892---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe14f7a362f6f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892&user=Istv%C3%A1n+M%C3%B3dos&userId=e14f7a362f6f&source=post_page-e14f7a362f6f----6b3286d54892---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b3286d54892--------------------------------) · 10 分钟阅读·2023 年 2 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6b3286d54892&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892&user=Istv%C3%A1n+M%C3%B3dos&userId=e14f7a362f6f&source=-----6b3286d54892---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6b3286d54892&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892&source=-----6b3286d54892---------------------bookmark_footer-----------)![](../Images/75859fc54c2dc8f3fe724ae323d022b5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6b3286d54892&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-integer-linear-programming-formal-definition-and-solution-space-6b3286d54892&source=-----6b3286d54892---------------------bookmark_footer-----------)![](img/75859fc54c2dc8f3fe724ae323d022b5.png)
 
 图片由 [Ivan Bandura](https://unsplash.com/@unstable_affliction?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-本文是关于混合整数线性规划（MILP）理论和应用系列的延续（[上一篇文章](/mixed-integer-linear-programming-1-bc0ef201ee87)）。今天，我们将探讨
+本文是关于混合整数线性规划（MILP）理论和应用系列的延续（上一篇文章）。今天，我们将探讨
 
 1.  MILP 的正式、一般定义，
 
@@ -30,21 +30,21 @@
 
 在接下来的文本中，我将使用大写粗体字母（例如，***A***、***E***）表示矩阵，使用小写粗体字母表示向量（例如，***x***、***y***）。MILP 是一个*优化问题*，可以用矩阵表示法形式化如下：
 
-![](../Images/173ffb14d08527cfda0d96a3474f2b34.png)
+![](img/173ffb14d08527cfda0d96a3474f2b34.png)
 
 让我们把这个难题拆解开来。我们得到一个由矩阵和向量***A***、***E***、***b***、***f***、***c***、***d*** 代表的*问题实例*，这些矩阵和向量来自不同领域（ℝ代表实数集合，ℤ代表整数集合）。例如，如果我们回到第一个帖子中的预算问题，这个问题实例表示资产、它们的成本、估计的利润以及预算。我们说整数向量***x***和连续向量***y***是给定问题实例的*可行解*，如果满足以下条件：
 
-![](../Images/2767e4ea01ff77949febab73a238dbd2.png)
+![](img/2767e4ea01ff77949febab73a238dbd2.png)
 
 通过逐项写出这些条件，我们得到：
 
-![](../Images/5e4e4824910d02fd570cc0214d88aee7.png)
+![](img/5e4e4824910d02fd570cc0214d88aee7.png)
 
 其中 𝒂ᵢ 是矩阵 ***A*** 的行，𝒆ᵢ 是矩阵 ***E*** 的行。这些不等式被称为*约束*。
 
 在 MILP 中，我们寻找一个可行解 ***x***、***y***，以最小化*目标函数*。
 
-![](../Images/2d0f1d6a67fed19d77d334fd9aa5efff.png)
+![](img/2d0f1d6a67fed19d77d334fd9aa5efff.png)
 
 如果存在这样的解，我们称之为*最优解*。如果你想知道，实际上也可以最大化目标函数；只需将其乘以 -1 并最小化得到的表达式。没有保证存在可行解（更不用说最优解了），但让我们将关于这些情况的讨论推迟到后面的部分。
 
@@ -62,7 +62,7 @@
 
 我们通过以矩阵形式展示前一篇文章中的预算问题的 MILP 公式来结束这一部分。
 
-![](../Images/938e6432d1271aa0fc74dd6e6d388dd2.png)
+![](img/938e6432d1271aa0fc74dd6e6d388dd2.png)
 
 目标使用了 *乘以 -1* 的技巧来最大化预期利润。预算约束编码在约束矩阵的第一行，剩余的行对应于每个变量 𝑥ᵢ 上的约束 0 ≤ 𝑥ᵢ, 𝑥ᵢ ≤ 1（即 𝑥ᵢ 被要求为二进制）。许多求解器允许直接指定变量的域，因此通常不需要手动创建这些约束。此外，请注意我们的模型仅包括整数变量（没有 **y** 变量），因此它是一个 *整数线性规划*。
 
@@ -72,49 +72,49 @@
 
 让我们从以下 MILP 模型开始。为了简化，我们将只考虑两个整数变量 𝑥₁ 和 𝑥₂。
 
-![](../Images/9abbdb5b0074ad32c418ffa2df4fdddd.png)
+![](img/9abbdb5b0074ad32c418ffa2df4fdddd.png)
 
 我们如何将这个模型图形化？我们从一个空的 2D 图开始，表示没有约束的模型。逐渐地，我们一个个地添加约束，直到我们拥有一个完整的模型。在图中，水平和垂直轴分别对应于 𝑥₁ 和 𝑥₂ 的值。
 
-![](../Images/1129d4960fa52909962d650079beba7e.png)
+![](img/1129d4960fa52909962d650079beba7e.png)
 
 由于模型中当前没有约束，𝑥₁ 和 𝑥₂ 的每一种组合都是一个可行解。让我们添加第一个约束 4𝑥₁ ≥ 2𝑥₂ 并查看会发生什么。首先，在解决方案空间中绘制一条直线 4𝑥₁ = 2𝑥₂。
 
-![](../Images/acfe2679fc2c9774b422db5e43b02087.png)
+![](img/acfe2679fc2c9774b422db5e43b02087.png)
 
 这条线是由以下不等式定义的两个*半空间*之间的边界：4𝑥₁ > 2𝑥₂ 和 4𝑥₁ < 2𝑥₂。线的一侧的所有点满足不等式 4𝑥₁ > 2𝑥₂，而另一侧的所有点满足不等式 4𝑥₁ < 2𝑥₂。当我想知道哪个半空间表示特定约束条件时，我会选择一些不在该线上的随机点 𝑥₁, 𝑥₂，将其代入约束条件，并检查约束条件是否得到满足。如果满足，那么包含此点的半空间就是对应于该约束条件的半空间。如果不满足，那么另一个半空间就是正确的。
 
 举个例子，我们选择点 𝑥₁ = 5, 𝑥₂ = 3。将这些值代入约束条件
 
-![](../Images/0eb690e189fe00b1ffb98698ed39f0c7.png)
+![](img/0eb690e189fe00b1ffb98698ed39f0c7.png)
 
 我们可以看到约束条件得到了满足。因此，包含此点的半空间是所有点都满足该约束条件的半空间。在图中，我将用箭头表示满足约束条件的半空间。当然，线上的点也满足约束条件，所以一个约束条件由边界线和半空间共同表示。
 
-![](../Images/df7bf59eb14f3338298bcab39c566b1a.png)
+![](img/df7bf59eb14f3338298bcab39c566b1a.png)
 
 让我们添加另一个约束条件 −2𝑥₁ + 30 ≥ 2𝑥₂。我们从绘制边界线 −2𝑥₁ + 30 = 2𝑥₂ 开始。
 
-![](../Images/296b7291a09da73d404d83e9bf81d263.png)
+![](img/296b7291a09da73d404d83e9bf81d263.png)
 
 哪个半空间满足这个约束条件？对于这个测试，我们选择点 𝑥₁ = 14, 𝑥₂= 6，并将其代入约束条件
 
-![](../Images/9533880bffa9546897e306a6308acab6.png)
+![](img/9533880bffa9546897e306a6308acab6.png)
 
 我们发现选定的点不满足约束条件 −2𝑥₁ + 30 ≥ 2𝑥₂，因此可行的半空间必须是另一个，而不是包含点 𝑥₁ = 14, 𝑥₂= 6 的那个。
 
-![](../Images/462494ac571b28d1925fe680731d0b77.png)
+![](img/462494ac571b28d1925fe680731d0b77.png)
 
 然而，现在模型中有两个约束条件， feasible 解决方案空间是每个约束条件的可行半空间的*交集*。原因在于我们希望所有的约束条件都得到满足，因此只有那些位于所有可行半空间中的解决方案才在整个模型中是可行的。
 
-![](../Images/9798bd7cbba683a5ca64c3be2862e8ff.png)
+![](img/9798bd7cbba683a5ca64c3be2862e8ff.png)
 
 现在应该清楚如何处理约束条件 𝑥₂ ≥ 0, 0.5𝑥₁ + 3.75 ≥ 𝑥₂，所以我将直接绘制新的可行解空间。
 
-![](../Images/a987bfb22e8837cd7ec76e4206d66db1.png)
+![](img/a987bfb22e8837cd7ec76e4206d66db1.png)
 
 还有一件事就是我们最初默默忽略的整数约束 𝑥₁, 𝑥₂ ∈ ℤ。这条约束意味着什么？简单来说，并不是所有彩色区域中的点都是实际可行的，只有那些 𝑥₁ 和 𝑥₂ 都是整数的点才是可行的。我们可以通过网格将它们可视化，因此，示例 MILP 模型的最终可行解空间如下。
 
-![](../Images/b15777d54e00b520383e6d34027d8450.png)
+![](img/b15777d54e00b520383e6d34027d8450.png)
 
 示例 MILP 模型的可行解空间。可行解用红点表示，黑线表示约束条件的边界。
 
@@ -122,15 +122,15 @@
 
 你们中的许多人可能对*梯度*这个概念很熟悉，因为它是许多机器学习训练算法的核心。简而言之，函数的梯度表示在某一点函数最大增加的方向。也就是说，如果我们沿梯度方向移动，我们将增加函数值。知道 MILP 目标函数的梯度可以告诉我们去哪里寻找最优可行解。所以，让我们找到目标函数的梯度，我们通过对每个变量 𝑥₁, 𝑥₂ 进行偏导数来获得。
 
-![](../Images/71c4de42e15397fbad2a7c85ba73050a.png)
+![](img/71c4de42e15397fbad2a7c85ba73050a.png)
 
 由于我们的目标函数是线性的，它在解空间中的每一点梯度都是相同的。由于梯度是一个方向，我们可以在解空间中绘制一个向量，以显示目标函数增加的方向。
 
-![](../Images/4c8c8828827b42f866d88b2795ea82b9.png)
+![](img/4c8c8828827b42f866d88b2795ea82b9.png)
 
 让我们绘制目标的等高线（等高线上的每一点目标值相同）。可以证明等高线与梯度垂直，因此一旦我们有了梯度，就很容易绘制等高线。随着我们沿梯度的相反方向移动，等高线上的目标值会减少，直到我们无法再移动，因为我们将超出可行空间。你可以把这个过程想象成将一把与梯度垂直的尺子沿梯度的相反方向移动，直到你触及最后一个可行解。在我们的例子中，最优解是 𝑥₁ = 8, 𝑥₂ = 7，目标值为 -37。呼！
 
-![](../Images/02b09773755504b4829369004861b919.png)
+![](img/02b09773755504b4829369004861b919.png)
 
 如果你对如何在 Python 中编写这个 MILP 模型感兴趣，这里是代码。
 
@@ -154,11 +154,11 @@ Optimal solution: x1=8, x2=7
 
 不可行的模型是指没有满足所有约束条件的可行解的模型。一个不可行模型的例子如下。
 
-![](../Images/db1aa79553956020c3c06b9c7c22f5f9.png)
+![](img/db1aa79553956020c3c06b9c7c22f5f9.png)
 
 没有任何一个 𝑥₁ 的值可以同时满足 𝑥₁ ≥ 6 和 𝑥₁ ≤ 2，因此这些约束的可行半空间的交集是一个空集。
 
-![](../Images/b49a9ecbd2477c1ba54b3fc5d804dad8.png)
+![](img/b49a9ecbd2477c1ba54b3fc5d804dad8.png)
 
 ## 优化结果：无界目标
 
@@ -166,7 +166,7 @@ Optimal solution: x1=8, x2=7
 
 无界目标意味着对于每个可行解，我们可以找到另一个具有更小目标值的可行解。换句话说，最优目标值趋向于负无穷。以下是一个具有无界目标的模型。
 
-![](../Images/8313cb3c2128852fba51d71957be5b38.png)
+![](img/8313cb3c2128852fba51d71957be5b38.png)
 
 可行解空间没有约束，因此我们可以将 𝑥₂ 增加到我们想要的任何值，从而目标函数值将减小。
 

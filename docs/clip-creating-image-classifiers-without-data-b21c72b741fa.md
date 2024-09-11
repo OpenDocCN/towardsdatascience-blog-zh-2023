@@ -1,42 +1,42 @@
 # CLIP：无需数据即可创建图像分类器
 
-> 原文：[https://towardsdatascience.com/clip-creating-image-classifiers-without-data-b21c72b741fa?source=collection_archive---------1-----------------------#2023-02-22](https://towardsdatascience.com/clip-creating-image-classifiers-without-data-b21c72b741fa?source=collection_archive---------1-----------------------#2023-02-22)
+> 原文：[`towardsdatascience.com/clip-creating-image-classifiers-without-data-b21c72b741fa?source=collection_archive---------1-----------------------#2023-02-22`](https://towardsdatascience.com/clip-creating-image-classifiers-without-data-b21c72b741fa?source=collection_archive---------1-----------------------#2023-02-22)
 
 ## 这是一个实践教程，解释如何使用预训练的 CLIP 模型生成自定义的 Zero-Shot 图像分类器，而无需进行训练。完整代码包含在内。
 
-[](https://medium.com/@lihigurarie?source=post_page-----b21c72b741fa--------------------------------)[![Lihi Gur Arie, 博士](../Images/7a1eb30725a95159401c3672fa5f43ab.png)](https://medium.com/@lihigurarie?source=post_page-----b21c72b741fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b21c72b741fa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b21c72b741fa--------------------------------) [Lihi Gur Arie, 博士](https://medium.com/@lihigurarie?source=post_page-----b21c72b741fa--------------------------------)
+[](https://medium.com/@lihigurarie?source=post_page-----b21c72b741fa--------------------------------)![Lihi Gur Arie, 博士](https://medium.com/@lihigurarie?source=post_page-----b21c72b741fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b21c72b741fa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b21c72b741fa--------------------------------) [Lihi Gur Arie, 博士](https://medium.com/@lihigurarie?source=post_page-----b21c72b741fa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F418175cbf131&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-creating-image-classifiers-without-data-b21c72b741fa&user=Lihi+Gur+Arie%2C+PhD&userId=418175cbf131&source=post_page-418175cbf131----b21c72b741fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b21c72b741fa--------------------------------) ·7 分钟阅读·2023年2月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb21c72b741fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-creating-image-classifiers-without-data-b21c72b741fa&user=Lihi+Gur+Arie%2C+PhD&userId=418175cbf131&source=-----b21c72b741fa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F418175cbf131&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-creating-image-classifiers-without-data-b21c72b741fa&user=Lihi+Gur+Arie%2C+PhD&userId=418175cbf131&source=post_page-418175cbf131----b21c72b741fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b21c72b741fa--------------------------------) ·7 分钟阅读·2023 年 2 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb21c72b741fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-creating-image-classifiers-without-data-b21c72b741fa&user=Lihi+Gur+Arie%2C+PhD&userId=418175cbf131&source=-----b21c72b741fa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb21c72b741fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-creating-image-classifiers-without-data-b21c72b741fa&source=-----b21c72b741fa---------------------bookmark_footer-----------)![](../Images/0f4fc943b125ed58be2a7564ff5da20c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb21c72b741fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-creating-image-classifiers-without-data-b21c72b741fa&source=-----b21c72b741fa---------------------bookmark_footer-----------)![](img/0f4fc943b125ed58be2a7564ff5da20c.png)
 
 图像由作者使用 Midjourney 生成
 
 # **介绍**
 
-想象一下你需要分类判断人们是否戴眼镜，但你没有数据或资源来训练自定义模型。在本教程中，你将学习如何使用预训练的CLIP模型创建一个自定义分类器，无需任何训练。这个方法被称为**零样本**图像分类，它使得对原CLIP模型训练过程中没有明确见过的类别图像进行分类成为可能。下面提供了一个易于使用的Jupyter笔记本，包含完整代码，供你方便使用。
+想象一下你需要分类判断人们是否戴眼镜，但你没有数据或资源来训练自定义模型。在本教程中，你将学习如何使用预训练的 CLIP 模型创建一个自定义分类器，无需任何训练。这个方法被称为**零样本**图像分类，它使得对原 CLIP 模型训练过程中没有明确见过的类别图像进行分类成为可能。下面提供了一个易于使用的 Jupyter 笔记本，包含完整代码，供你方便使用。
 
 # CLIP: 理论背景
 
-CLIP（对比语言-图像预训练）模型，由OpenAI开发，是一个多模态视觉和语言模型。它将图像和文本描述映射到同一潜在空间，从而能够确定图像和描述是否匹配。CLIP以**对比**方式进行训练，以预测数据集中超过4亿对图像-文本对中哪个描述对应哪个图像[1]。令人惊讶的是，预训练CLIP生成的分类器显示出与监督模型基准相当的竞争结果，在本教程中，我们将利用这一预训练模型来生成一个眼镜检测器。
+CLIP（对比语言-图像预训练）模型，由 OpenAI 开发，是一个多模态视觉和语言模型。它将图像和文本描述映射到同一潜在空间，从而能够确定图像和描述是否匹配。CLIP 以**对比**方式进行训练，以预测数据集中超过 4 亿对图像-文本对中哪个描述对应哪个图像[1]。令人惊讶的是，预训练 CLIP 生成的分类器显示出与监督模型基准相当的竞争结果，在本教程中，我们将利用这一预训练模型来生成一个眼镜检测器。
 
-***CLIP对比训练***
+***CLIP 对比训练***
 
-CLIP模型由图像编码器和文本编码器组成（图1）。在训练过程中，一批图像通过图像编码器（ResNet变体或ViT）处理，以获得图像表示张量（嵌入）。与此同时，它们的对应描述通过文本编码器（Transformer）处理，以获得文本嵌入。CLIP模型的训练目的是预测图像嵌入属于哪个文本嵌入。通过联合训练图像编码器和文本编码器来最大化真实配对的图像和文本嵌入的余弦相似度[2]（图1，对角轴上的蓝色方块），同时最小化错误配对的嵌入之间的余弦相似度（图1，白色方块）。优化是通过对这些相似度分数进行对称交叉熵损失来实现的。
+CLIP 模型由图像编码器和文本编码器组成（图 1）。在训练过程中，一批图像通过图像编码器（ResNet 变体或 ViT）处理，以获得图像表示张量（嵌入）。与此同时，它们的对应描述通过文本编码器（Transformer）处理，以获得文本嵌入。CLIP 模型的训练目的是预测图像嵌入属于哪个文本嵌入。通过联合训练图像编码器和文本编码器来最大化真实配对的图像和文本嵌入的余弦相似度[2]（图 1，对角轴上的蓝色方块），同时最小化错误配对的嵌入之间的余弦相似度（图 1，白色方块）。优化是通过对这些相似度分数进行对称交叉熵损失来实现的。
 
-![](../Images/73a32d9c8f11303d6607eedf21b25b46.png)
+![](img/73a32d9c8f11303d6607eedf21b25b46.png)
 
-图1 — CLIP训练过程的迷你批次示意图。T1是class1的嵌入向量，I1是image1的嵌入向量，等等。| 图片来源于Radford等人，2021 [1]
+图 1 — CLIP 训练过程的迷你批次示意图。T1 是 class1 的嵌入向量，I1 是 image1 的嵌入向量，等等。| 图片来源于 Radford 等人，2021 [1]
 
 ***创建自定义分类器***
 
-要使用CLIP创建自定义分类器，首先将类别名称转换为文本嵌入向量，由预训练的文本编码器完成，同时图像则由预训练的图像编码器嵌入（图2）。然后计算图像嵌入与每个文本嵌入之间的余弦相似度，并将图像分配给具有最高余弦相似度分数的类别。
+要使用 CLIP 创建自定义分类器，首先将类别名称转换为文本嵌入向量，由预训练的文本编码器完成，同时图像则由预训练的图像编码器嵌入（图 2）。然后计算图像嵌入与每个文本嵌入之间的余弦相似度，并将图像分配给具有最高余弦相似度分数的类别。
 
-![](../Images/aff008258be6fe18bd9efae5cda75b55.png)
+![](img/aff008258be6fe18bd9efae5cda75b55.png)
 
 图 2 — 使用 CLIP 的零样本分类 | 图像来自 Radford 等人，2021 [1]，由作者编辑。人脸图像取自 Kaggle 上的‘有眼镜还是没有眼镜’数据集 [3]。
 
@@ -46,7 +46,7 @@ CLIP模型由图像编码器和文本编码器组成（图1）。在训练过程
 
 在本教程中，我们将创建一个图像分类器，用于检测人们是否戴眼镜，并使用 Kaggle 上的‘有眼镜还是没有眼镜’数据集 [3] 来评估我们分类器的性能。尽管数据集包含 5000 张图像，但我们仅使用前 100 张以加快演示。数据集包含一个包含所有图像的文件夹和一个包含标签的 CSV 文件。为了方便加载图像路径和标签，我们将自定义 Pytorch `Dataset` 类来创建 `CustomDataset()` 类。您可以在提供的 notebook 中找到相应的代码。
 
-![](../Images/bb29b5a302ddcb5f1827689d1f02a49f.png)
+![](img/bb29b5a302ddcb5f1827689d1f02a49f.png)
 
 来自 Kaggle 上‘有眼镜还是没有眼镜’数据集的随机图像 [3]
 
@@ -193,10 +193,10 @@ CLIP 模型是开发零样本分类器的一个非常强大的工具，适用于
 
 ***参考文献***
 
-[0] 代码: [https://gist.github.com/Lihi-Gur-Arie/844a4c3e98a7561d4e0ddb95879f8c11](https://gist.github.com/Lihi-Gur-Arie/9356a2018c3420a01e3033875405f605)
+[0] 代码: [`gist.github.com/Lihi-Gur-Arie/844a4c3e98a7561d4e0ddb95879f8c11`](https://gist.github.com/Lihi-Gur-Arie/9356a2018c3420a01e3033875405f605)
 
-[1] CLIP 文章: [https://arxiv.org/pdf/2103.00020v1.pdf](https://arxiv.org/pdf/2103.00020v1.pdf)
+[1] CLIP 文章: [`arxiv.org/pdf/2103.00020v1.pdf`](https://arxiv.org/pdf/2103.00020v1.pdf)
 
-[2] 余弦相似度回顾: [https://towardsdatascience.com/understanding-cosine-similarity-and-its-application-fd42f585296a](/understanding-cosine-similarity-and-its-application-fd42f585296a)
+[2] 余弦相似度回顾: `towardsdatascience.com/understanding-cosine-similarity-and-its-application-fd42f585296a`
 
-[3] 来自 Kaggle 的‘眼镜与非眼镜’数据集，许可证 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): [https://www.kaggle.com/datasets/jeffheaton/glasses-or-no-glasses](https://www.kaggle.com/datasets/jeffheaton/glasses-or-no-glasses)
+[3] 来自 Kaggle 的‘眼镜与非眼镜’数据集，许可证 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): [`www.kaggle.com/datasets/jeffheaton/glasses-or-no-glasses`](https://www.kaggle.com/datasets/jeffheaton/glasses-or-no-glasses)

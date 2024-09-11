@@ -1,28 +1,28 @@
 # 将 Neo4j 集成到 LangChain 生态系统中。
 
-> 原文：[https://towardsdatascience.com/integrating-neo4j-into-the-langchain-ecosystem-df0e988344d2?source=collection_archive---------1-----------------------#2023-04-17](https://towardsdatascience.com/integrating-neo4j-into-the-langchain-ecosystem-df0e988344d2?source=collection_archive---------1-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/integrating-neo4j-into-the-langchain-ecosystem-df0e988344d2?source=collection_archive---------1-----------------------#2023-04-17`](https://towardsdatascience.com/integrating-neo4j-into-the-langchain-ecosystem-df0e988344d2?source=collection_archive---------1-----------------------#2023-04-17)
 
 ## 了解如何开发一个可以通过多种方式与 Neo4j 数据库交互的 LangChain 代理。
 
-[](https://bratanic-tomaz.medium.com/?source=post_page-----df0e988344d2--------------------------------)[![Tomaz Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----df0e988344d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----df0e988344d2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----df0e988344d2--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----df0e988344d2--------------------------------)
+[](https://bratanic-tomaz.medium.com/?source=post_page-----df0e988344d2--------------------------------)![Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----df0e988344d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----df0e988344d2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----df0e988344d2--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----df0e988344d2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrating-neo4j-into-the-langchain-ecosystem-df0e988344d2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----df0e988344d2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----df0e988344d2--------------------------------) ·15分钟阅读·2023年4月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdf0e988344d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrating-neo4j-into-the-langchain-ecosystem-df0e988344d2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----df0e988344d2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrating-neo4j-into-the-langchain-ecosystem-df0e988344d2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----df0e988344d2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----df0e988344d2--------------------------------) ·15 分钟阅读·2023 年 4 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdf0e988344d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrating-neo4j-into-the-langchain-ecosystem-df0e988344d2&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----df0e988344d2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdf0e988344d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrating-neo4j-into-the-langchain-ecosystem-df0e988344d2&source=-----df0e988344d2---------------------bookmark_footer-----------)![](../Images/79e7c6ccc5293a96177b339b15d4db39.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdf0e988344d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintegrating-neo4j-into-the-langchain-ecosystem-df0e988344d2&source=-----df0e988344d2---------------------bookmark_footer-----------)![](img/79e7c6ccc5293a96177b339b15d4db39.png)
 
 图片由 [Alex Knight](https://unsplash.com/@agk42?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-*更新：所谓的 Cypher 搜索，即 LLM 生成一个 Cypher 语句以查询 Neo4j 数据库，现已直接集成到 LangChain 库中。了解更多* [*这里*](/langchain-has-added-cypher-search-cb9d821120d5)
+*更新：所谓的 Cypher 搜索，即 LLM 生成一个 Cypher 语句以查询 Neo4j 数据库，现已直接集成到 LangChain 库中。了解更多* *这里*
 
 *第二次更新：现在 Neo4j 的向量索引直接支持向量搜索，因此我已将向量搜索代码更改为使用 5.11 中引入的新索引*
 
 ChatGPT 启发了全球，并引发了新的 AI 革命。然而，最新的趋势似乎是提供 ChatGPT 外部信息，以提高其准确性并使其能够回答公共数据集中不存在答案的问题。关于大型语言模型（LLMs）的另一个趋势是将它们转变为代理，使它们能够通过各种 API 调用或其他集成与环境互动。
 
-由于增强LLMs相对较新，目前还没有很多开源库。然而，看起来用于构建围绕像 ChatGPT 这样的LLMs的应用程序的首选库被称为 [LangChain](https://python.langchain.com/en/latest/index.html)。该库通过给予其访问各种工具和外部数据源的能力来增强LLM。它不仅可以通过访问外部数据来改善其响应，还可以作为代理通过外部端点操作其环境。
+由于增强 LLMs 相对较新，目前还没有很多开源库。然而，看起来用于构建围绕像 ChatGPT 这样的 LLMs 的应用程序的首选库被称为 [LangChain](https://python.langchain.com/en/latest/index.html)。该库通过给予其访问各种工具和外部数据源的能力来增强 LLM。它不仅可以通过访问外部数据来改善其响应，还可以作为代理通过外部端点操作其环境。
 
 我偶然发现了由 [Ibis Prevedello](https://medium.com/u/fd610570f1c7?source=post_page-----df0e988344d2--------------------------------) 开发的 LangChain 项目，该项目通过提供额外的外部上下文来增强 LLMs 的图搜索。
 
@@ -56,7 +56,7 @@ github.com](https://github.com/tomasonjo/langchain2neo4j?source=post_page-----df
 
 Neo4j 数据库实例化后，我们应该拥有一个包含以下模式的图表。
 
-![](../Images/7c83401d58a5c1a58e6cdc6d5294af0b.png)
+![](img/7c83401d58a5c1a58e6cdc6d5294af0b.png)
 
 图谱模式。图像由作者提供。
 
@@ -82,7 +82,7 @@ sh seed_db.sh
 
 根据我所见，使用 LangChain 代理回答用户问题的最常见数据流如下：
 
-![](../Images/7f905a41e80ab8cd9127f4d3ce7b1e7c.png)
+![](img/7f905a41e80ab8cd9127f4d3ce7b1e7c.png)
 
 LangChain 代理流程。图像由作者提供。
 
@@ -135,7 +135,7 @@ json blob with a single action, and NOTHING else):
 
 *请注意，代理提示中没有包括代理在工具返回的上下文中没有提供答案时不应回答问题的内容。*
 
-现在，我们只需定义可用的工具。正如所提到的，我准备了三种与Neo4j数据库交互的方法。
+现在，我们只需定义可用的工具。正如所提到的，我准备了三种与 Neo4j 数据库交互的方法。
 
 ```py
 tools = [
@@ -167,25 +167,25 @@ tools = [
 ]
 ```
 
-工具的描述用于指定工具的能力以及通知代理何时使用它。此外，我们需要指定工具所期望的输入格式。例如，Cypher和向量搜索都期望完整的问题作为输入，而关键字搜索则期望相关电影的列表作为输入。
+工具的描述用于指定工具的能力以及通知代理何时使用它。此外，我们需要指定工具所期望的输入格式。例如，Cypher 和向量搜索都期望完整的问题作为输入，而关键字搜索则期望相关电影的列表作为输入。
 
-LangChain与我在编码中习惯的情况大相径庭。它使用提示来指示LLMs为你完成工作，而不是你自己编码。例如，关键字搜索指示ChatGPT提取相关电影并使用这些作为输入。我花了2小时调试工具输入格式，才意识到可以使用自然语言来指定格式，LLM会处理剩下的工作。
+LangChain 与我在编码中习惯的情况大相径庭。它使用提示来指示 LLMs 为你完成工作，而不是你自己编码。例如，关键字搜索指示 ChatGPT 提取相关电影并使用这些作为输入。我花了 2 小时调试工具输入格式，才意识到可以使用自然语言来指定格式，LLM 会处理剩下的工作。
 
 记得我提到过代理没有指示不回答那些信息未在上下文中提供的问题吗？让我们来看看以下对话。
 
-![](../Images/379650f0d2d96d1a4aefa9d50b1d3db7.png)
+![](img/379650f0d2d96d1a4aefa9d50b1d3db7.png)
 
 作者提供的图片。
 
-LLM（大型语言模型）决定基于工具描述，它无法使用任何工具来检索相关的上下文。然而，LLM默认知道很多东西，由于代理没有约束条件必须依赖外部来源，LLM可以独立形成答案。如果我们想强制执行不同的行为，我们需要更改代理提示。
+LLM（大型语言模型）决定基于工具描述，它无法使用任何工具来检索相关的上下文。然而，LLM 默认知道很多东西，由于代理没有约束条件必须依赖外部来源，LLM 可以独立形成答案。如果我们想强制执行不同的行为，我们需要更改代理提示。
 
-## 生成Cypher语句
+## 生成 Cypher 语句
 
-我已经开发了一个与Neo4j数据库交互的聊天机器人，通过生成Cypher语句使用OpenAI的[对话模型，如GPT-3.5-turbo和GPT-4](https://medium.com/neo4j/context-aware-knowledge-graph-chatbot-with-gpt-4-and-neo4j-d3a99e8ae21e)。因此，我可以借用大部分想法来实现一个工具，允许LangChain代理通过构造Cypher语句从Neo4j数据库中检索信息。
+我已经开发了一个与 Neo4j 数据库交互的聊天机器人，通过生成 Cypher 语句使用 OpenAI 的[对话模型，如 GPT-3.5-turbo 和 GPT-4](https://medium.com/neo4j/context-aware-knowledge-graph-chatbot-with-gpt-4-and-neo4j-d3a99e8ae21e)。因此，我可以借用大部分想法来实现一个工具，允许 LangChain 代理通过构造 Cypher 语句从 Neo4j 数据库中检索信息。
 
-像text-davinci-003和GPT-3.5-turbo这样的旧模型在作为几-shot Cypher生成器时表现更好，我们提供几个Cypher示例供模型生成新的Cypher语句。然而，似乎GPT-4在仅展示图谱模式时表现良好。因此，由于图谱模式可以通过Cypher查询提取，理论上GPT-4可以用于任何图谱模式，而无需人工干预。
+像 text-davinci-003 和 GPT-3.5-turbo 这样的旧模型在作为几-shot Cypher 生成器时表现更好，我们提供几个 Cypher 示例供模型生成新的 Cypher 语句。然而，似乎 GPT-4 在仅展示图谱模式时表现良好。因此，由于图谱模式可以通过 Cypher 查询提取，理论上 GPT-4 可以用于任何图谱模式，而无需人工干预。
 
-我不会详细讲解LangChain在底层是如何工作的。我们只会查看当LangChain代理决定使用Cypher语句与Neo4j数据库交互时执行的函数。
+我不会详细讲解 LangChain 在底层是如何工作的。我们只会查看当 LangChain 代理决定使用 Cypher 语句与 Neo4j 数据库交互时执行的函数。
 
 ```py
 def _call(self, inputs: Dict[str, str]) -> Dict[str, str]:
@@ -204,7 +204,7 @@ def _call(self, inputs: Dict[str, str]) -> Dict[str, str]:
     return {'answer': context}
 ```
 
-Cypher生成工具将问题和聊天历史作为输入。LLM的输入则结合了**系统**消息、**聊天历史**和当前问题。我为Cypher生成工具准备了以下**系统**消息提示。
+Cypher 生成工具将问题和聊天历史作为输入。LLM 的输入则结合了**系统**消息、**聊天历史**和当前问题。我为 Cypher 生成工具准备了以下**系统**消息提示。
 
 ```py
 SYSTEM_TEMPLATE = """
@@ -223,7 +223,7 @@ and state what is the missing context.
 
 在 LLM 构建 Cypher 语句后，我们简单地使用它查询 Neo4j 数据库，并将结果返回给代理。这里是一个示例流程。
 
-![](../Images/d1b1003ba12bf55aa2646189c90598a5.png)
+![](img/d1b1003ba12bf55aa2646189c90598a5.png)
 
 使用 Cypher 生成工具的代理流程。图片由作者提供。
 
@@ -231,7 +231,7 @@ and state what is the missing context.
 
 当然，我们现在可以提出后续问题。
 
-![](../Images/dd80db68f71b28fd477cb57d6e86231a.png)
+![](img/dd80db68f71b28fd477cb57d6e86231a.png)
 
 后续问题。图片由作者提供。
 
@@ -271,7 +271,7 @@ RETURN result LIMIT 100
 
 因此，我们从全文索引中提取出前五个相关实体。接下来，我们通过遍历它们的邻居来生成三元组。我特别排除了**RATED** 关系，因为它们包含无关的信息。我没有进一步探索，但我有一种好感觉，我们还可以指示 LLM 提供一个待调查的相关关系列表以及适当的实体，这将使我们的关键词搜索更加集中。关键词搜索可以通过明确指示代理程序来启动。
 
-![](../Images/56fabe719ae3f80dcaaab4b30fd7d113.png)
+![](img/56fabe719ae3f80dcaaab4b30fd7d113.png)
 
 关键词搜索流程。作者提供的图片。
 
@@ -312,7 +312,7 @@ RETURN result LIMIT 100
 
 Cypher 语句类似于关键字搜索示例。唯一的区别是我们使用向量索引，而不是全文索引来识别相关电影。
 
-![](../Images/670b64f57b90aa96243df90b31c1dc60.png)
+![](img/670b64f57b90aa96243df90b31c1dc60.png)
 
 向量搜索流程。图片由作者提供。
 

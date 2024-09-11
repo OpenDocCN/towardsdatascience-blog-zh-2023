@@ -1,16 +1,16 @@
 # 两个信封问题
 
-> 原文：[https://towardsdatascience.com/the-two-envelopes-problem-896f16e938b7?source=collection_archive---------3-----------------------#2023-09-08](https://towardsdatascience.com/the-two-envelopes-problem-896f16e938b7?source=collection_archive---------3-----------------------#2023-09-08)
+> 原文：[`towardsdatascience.com/the-two-envelopes-problem-896f16e938b7?source=collection_archive---------3-----------------------#2023-09-08`](https://towardsdatascience.com/the-two-envelopes-problem-896f16e938b7?source=collection_archive---------3-----------------------#2023-09-08)
 
 ## 悖论系列 #1
 
 ## 时间和因果关系如何从随机性中出现
 
-[](https://gdelongeaux.medium.com/?source=post_page-----896f16e938b7--------------------------------)[![Gabriel de Longeaux](../Images/8b5cc3be3035af2a852d75498212c776.png)](https://gdelongeaux.medium.com/?source=post_page-----896f16e938b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----896f16e938b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----896f16e938b7--------------------------------) [Gabriel de Longeaux](https://gdelongeaux.medium.com/?source=post_page-----896f16e938b7--------------------------------)
+[](https://gdelongeaux.medium.com/?source=post_page-----896f16e938b7--------------------------------)![Gabriel de Longeaux](https://gdelongeaux.medium.com/?source=post_page-----896f16e938b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----896f16e938b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----896f16e938b7--------------------------------) [Gabriel de Longeaux](https://gdelongeaux.medium.com/?source=post_page-----896f16e938b7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F99542e924b20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-envelopes-problem-896f16e938b7&user=Gabriel+de+Longeaux&userId=99542e924b20&source=post_page-99542e924b20----896f16e938b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----896f16e938b7--------------------------------) · 13分钟阅读 · 2023年9月8日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F896f16e938b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-envelopes-problem-896f16e938b7&user=Gabriel+de+Longeaux&userId=99542e924b20&source=-----896f16e938b7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F99542e924b20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-envelopes-problem-896f16e938b7&user=Gabriel+de+Longeaux&userId=99542e924b20&source=post_page-99542e924b20----896f16e938b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----896f16e938b7--------------------------------) · 13 分钟阅读 · 2023 年 9 月 8 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F896f16e938b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-envelopes-problem-896f16e938b7&user=Gabriel+de+Longeaux&userId=99542e924b20&source=-----896f16e938b7---------------------clap_footer-----------)
 
 --
 
@@ -22,31 +22,31 @@
 
 想象一下，我在桌子上给你展示两个看似相同的信封，告诉你（没有撒谎）这两个信封中都有钱，其中一个是另一个的两倍，并提议你选择一个信封，保留其中的钱。
 
-![](../Images/a74cca5cd22fb2b2c1b663b5ace0d5f2.png)
+![](img/a74cca5cd22fb2b2c1b663b5ace0d5f2.png)
 
-由Midjourney生成的图像
+由 Midjourney 生成的图像
 
 一旦你选择了一个信封，在你打开之前，我会问你是否想修改你的选择，换成另一个信封。
 
 你会怎么做？
 
-你可能会告诉我，换信封是没有意义的，因为无论选择哪个信封，情况都是一样的。然而，你应该注意到你选择了一个未知金额x，另一个信封中的金额y可以是2x或x/2，概率相等，这意味着期望金额y是2x (1/2) + x/2 (1/2) = 5x/4，这大于x。所以，也许你还是应该换信封？
+你可能会告诉我，换信封是没有意义的，因为无论选择哪个信封，情况都是一样的。然而，你应该注意到你选择了一个未知金额 x，另一个信封中的金额 y 可以是 2x 或 x/2，概率相等，这意味着期望金额 y 是 2x (1/2) + x/2 (1/2) = 5x/4，这大于 x。所以，也许你还是应该换信封？
 
-显然，你也可以根据y来计算期望的数量x，因为x有一半的概率是2y或y/2，你会发现期望的数量x是5y/4，这大于y。
+显然，你也可以根据 y 来计算期望的数量 x，因为 x 有一半的概率是 2y 或 y/2，你会发现期望的数量 x 是 5y/4，这大于 y。
 
 那么这个计算有什么问题？哪个信封更有可能包含比另一个信封更多的金额呢？
 
 # 推理中的数学缺陷
 
-我们可以任意地将一个信封标记为“X”，另一个标记为“Y”。现在让我们正确计算在我们知道金额y在Y信封中的情况下，X信封中的金额的条件期望。
+我们可以任意地将一个信封标记为“X”，另一个标记为“Y”。现在让我们正确计算在我们知道金额 y 在 Y 信封中的情况下，X 信封中的金额的条件期望。
 
-在已观察到的y值下X的金额的期望，记作E[X|Y = y]，显然取决于观察到的特定金额y：即使对于所有可能的y值，X中的金额x可以是y/2或2y，每次的概率是1/2，但这并不意味着对于特定的y值也是这样。例如，如果y是“非常小”（在稍后会澄清的意义上），x更有可能大于y，而如果y是“非常大”，x更有可能小于y：对于所有可能的y值，概率可以被平衡，使得X有一半的时间是Y的一半，另一半时间是Y的两倍，但这并不意味着P(X = y/2|Y = y) = 1/2且P(X = 2y|Y = y) = 1/2，只是P(X = Y/2) = P(X = 2Y) = 1/2。
+在已观察到的 y 值下 X 的金额的期望，记作 E[X|Y = y]，显然取决于观察到的特定金额 y：即使对于所有可能的 y 值，X 中的金额 x 可以是 y/2 或 2y，每次的概率是 1/2，但这并不意味着对于特定的 y 值也是这样。例如，如果 y 是“非常小”（在稍后会澄清的意义上），x 更有可能大于 y，而如果 y 是“非常大”，x 更有可能小于 y：对于所有可能的 y 值，概率可以被平衡，使得 X 有一半的时间是 Y 的一半，另一半时间是 Y 的两倍，但这并不意味着 P(X = y/2|Y = y) = 1/2 且 P(X = 2y|Y = y) = 1/2，只是 P(X = Y/2) = P(X = 2Y) = 1/2。
 
-因此，我们将尝试正确计算E[X|Y = y]，但首先我们需要澄清将这两个信封放在桌子上，并标记为“X”和“Y”的过程。我们假设我们用一个随机金额U填充了第一个信封，用金额2U填充了第二个信封。然后我们将它们混合，并随机地将其中一个信封命名为X，而将另一个命名为Y。我们可以将这个命名过程表示如下：我们抽取一个二进制数Z（有一半的概率是0或1）。如果Z = 0，X就是包含U的信封；否则（如果Z = 1），X就是包含2U的信封。
+因此，我们将尝试正确计算 E[X|Y = y]，但首先我们需要澄清将这两个信封放在桌子上，并标记为“X”和“Y”的过程。我们假设我们用一个随机金额 U 填充了第一个信封，用金额 2U 填充了第二个信封。然后我们将它们混合，并随机地将其中一个信封命名为 X，而将另一个命名为 Y。我们可以将这个命名过程表示如下：我们抽取一个二进制数 Z（有一半的概率是 0 或 1）。如果 Z = 0，X 就是包含 U 的信封；否则（如果 Z = 1），X 就是包含 2U 的信封。
 
-现在我们可以看到，对于那个被要求选择但不知道U和Z随机数的外部观察者，信封中的金额如下：
+现在我们可以看到，对于那个被要求选择但不知道 U 和 Z 随机数的外部观察者，信封中的金额如下：
 
-![](../Images/31a51ce7d6b35ec107b24d5e917a690e.png)
+![](img/31a51ce7d6b35ec107b24d5e917a690e.png)
 
 我们可以验证 P(X = 2Y) = P(U + ZU = 4U - 2ZU) = P(3U - 3ZU = 0) = P(U=ZU) = P(Z = 1) = 1/2（对于 P(X = Y/2) 也是如此）。
 
@@ -64,45 +64,45 @@
 
 使用数学形式化：
 
-![](../Images/97e946e3c6f6045872368dcc80f1b58b.png)
+![](img/97e946e3c6f6045872368dcc80f1b58b.png)
 
 其中：
 
-![](../Images/bc4e6e66768dac81b44d10a3bc3a7dc6.png)
+![](img/bc4e6e66768dac81b44d10a3bc3a7dc6.png)
 
 所有这些可以总结为：
 
-![](../Images/9deaff9d61f33e187a0a309547bc375f.png)
+![](img/9deaff9d61f33e187a0a309547bc375f.png)
 
 然后我们需要知道 P(U = u)。我们只能做一个假设，例如 U 在正实数上服从指数分布（参数 λ>0）：
 
-![](../Images/ed861ebb498127a27d250292bb360f7e.png)
+![](img/ed861ebb498127a27d250292bb360f7e.png)
 
 最终，P(U = u|Y = y) 与以下内容成比例：
 
-![](../Images/3a26f9da9d3f6ff57fac7c6a1d9b594d.png)
+![](img/3a26f9da9d3f6ff57fac7c6a1d9b594d.png)
 
 换句话说：
 
-![](../Images/d657fbe6a2bc92a36957e240c24fef83.png)
+![](img/d657fbe6a2bc92a36957e240c24fef83.png)
 
 现在我们拥有所有计算 E[X|Y = y] = 3E[U|Y = y] — y 所需的内容，其值为：
 
-![](../Images/be0573dad2bcb13d891fda684d9d5ea2.png)
+![](img/be0573dad2bcb13d891fda684d9d5ea2.png)
 
 总结一下，我们现在知道：
 
-![](../Images/d28317c3b2c59d9a854ee7eb3c7429bb.png)
+![](img/d28317c3b2c59d9a854ee7eb3c7429bb.png)
 
 这与最初的 5y/4 有很大不同！
 
 x 的期望值（严格）大于 y 若且唯若：
 
-![](../Images/19b49f43ef67a73679ce8848de2f6431.png)
+![](img/19b49f43ef67a73679ce8848de2f6431.png)
 
 或者换句话说，若且唯若：
 
-![](../Images/859e86a2c0af40e33e3549ca77e4a1a0.png)
+![](img/859e86a2c0af40e33e3549ca77e4a1a0.png)
 
 （这是指数分布中位数的两倍，从中抽取的金额）。
 
@@ -128,17 +128,17 @@ X 或 Y 的选择是对称的，因为 E[Y|X = x] = E[3U — X|X = x] = 3E[U|X=x
 
 = (1/2) F(2y) + (1/2) F(y/2)，其中 F 是 X 的累积分布函数（指数分布）
 
-![](../Images/840a2f05a44e6f32237675376a6d9da8.png)
+![](img/840a2f05a44e6f32237675376a6d9da8.png)
 
 对于非负值 y。
 
 通过对 Y = y 求导，我们得到：
 
-![](../Images/1d35fc91ec7f2477c61883427bccff7f.png)
+![](img/1d35fc91ec7f2477c61883427bccff7f.png)
 
 这是两个指数分布的概率密度函数的平均值，一个参数为 λ/2，另一个参数为 2λ，这意味着信封 Y 中的平均值是 2/λ 和 1/(2λ) 的平均值：
 
-![](../Images/08a5b7cd7a0e929b0363eb24d28ed194.png)
+![](img/08a5b7cd7a0e929b0363eb24d28ed194.png)
 
 这超过了 X 的平均值，指数随机变量 λ 的均值为 1/λ（对于那些只关心期望值计算的人，E[Y] = E[HX] = E[H] E[X]，因为 H 和 X 是独立的，因此 E[Y] = [(1/2)(1/2) + 2(1/2)] E[X] = (5/4)E[X]）。
 
@@ -150,7 +150,7 @@ X 或 Y 的选择是对称的，因为 E[Y|X = x] = E[3U — X|X = x] = 3E[U|X=x
 
 这就是所有的说法吗？不，最有趣的部分还在后面。从我们到目前为止所做的工作可以看出，生成信封情况的物理过程必须用随机变量来建模。
 
-但在物理过程中，时间是存在的：例如，我们为X选择一个量，然后从中推导出放入Y中的量，或者反之；统计模型能够重现这一点，如果选择X的量在Y之前或之后，会得出不同的结论。换句话说，我们的统计模型能够在数学上重现时间的物理现实。
+但在物理过程中，时间是存在的：例如，我们为 X 选择一个量，然后从中推导出放入 Y 中的量，或者反之；统计模型能够重现这一点，如果选择 X 的量在 Y 之前或之后，会得出不同的结论。换句话说，我们的统计模型能够在数学上重现时间的物理现实。
 
 # 时间和因果关系从随机性中产生
 

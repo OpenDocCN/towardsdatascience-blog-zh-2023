@@ -1,14 +1,14 @@
 # 建立并玩耍！你自己的 V&L 模型配备 LLM！
 
-> 原文：[https://towardsdatascience.com/build-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e?source=collection_archive---------6-----------------------#2023-09-07](https://towardsdatascience.com/build-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e?source=collection_archive---------6-----------------------#2023-09-07)
+> 原文：[`towardsdatascience.com/build-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e?source=collection_archive---------6-----------------------#2023-09-07`](https://towardsdatascience.com/build-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e?source=collection_archive---------6-----------------------#2023-09-07)
 
 ## 开发集成 LLM 的 GIT 视觉语言模型。
 
-[](https://medium.com/@inoichan?source=post_page-----afa773b9249e--------------------------------)[![Yuichi Inoue](../Images/d25793aea6ddcdb90ecb21be5031a434.png)](https://medium.com/@inoichan?source=post_page-----afa773b9249e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----afa773b9249e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----afa773b9249e--------------------------------) [Yuichi Inoue](https://medium.com/@inoichan?source=post_page-----afa773b9249e--------------------------------)
+[](https://medium.com/@inoichan?source=post_page-----afa773b9249e--------------------------------)![Yuichi Inoue](https://medium.com/@inoichan?source=post_page-----afa773b9249e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----afa773b9249e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----afa773b9249e--------------------------------) [Yuichi Inoue](https://medium.com/@inoichan?source=post_page-----afa773b9249e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff3eff720c79a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e&user=Yuichi+Inoue&userId=f3eff720c79a&source=post_page-f3eff720c79a----afa773b9249e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----afa773b9249e--------------------------------) ·21 分钟阅读·2023年9月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fafa773b9249e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e&user=Yuichi+Inoue&userId=f3eff720c79a&source=-----afa773b9249e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff3eff720c79a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e&user=Yuichi+Inoue&userId=f3eff720c79a&source=post_page-f3eff720c79a----afa773b9249e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----afa773b9249e--------------------------------) ·21 分钟阅读·2023 年 9 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fafa773b9249e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-and-play-your-own-v-l-model-equipped-with-llm-afa773b9249e&user=Yuichi+Inoue&userId=f3eff720c79a&source=-----afa773b9249e---------------------clap_footer-----------)
 
 --
 
@@ -26,45 +26,45 @@
 
 +   *探讨由 GIT 的图像编码器嵌入的“图像嵌入”是否在与“文本嵌入”相同的空间中指示特定字符。*
 
-大型语言模型（LLM）正展现出越来越多的价值。将图像纳入LLM使其作为视觉语言模型更加有用。在这篇文章中，我将解释一个称为GIT-LLM的模型的开发，这是一种简单但强大的视觉语言模型。某些部分，如代码解释，可能会显得有些繁琐，所以可以直接跳到结果部分。我进行了各种实验和分析，希望你能喜欢我所取得的成果。
+大型语言模型（LLM）正展现出越来越多的价值。将图像纳入 LLM 使其作为视觉语言模型更加有用。在这篇文章中，我将解释一个称为 GIT-LLM 的模型的开发，这是一种简单但强大的视觉语言模型。某些部分，如代码解释，可能会显得有些繁琐，所以可以直接跳到结果部分。我进行了各种实验和分析，希望你能喜欢我所取得的成果。
 
 实现已公开发布，所以请试试。
 
 [](https://github.com/turingmotors/heron?source=post_page-----afa773b9249e--------------------------------) [## GitHub - turingmotors/heron
 
-### 通过在GitHub上创建一个账户来为turingmotors/heron的发展做贡献。
+### 通过在 GitHub 上创建一个账户来为 turingmotors/heron 的发展做贡献。
 
 github.com](https://github.com/turingmotors/heron?source=post_page-----afa773b9249e--------------------------------)
 
-# 将GIT转化为LLM
+# 将 GIT 转化为 LLM
 
 让我们深入探讨这篇技术博客的主要话题。
 
-# 什么是GIT？
+# 什么是 GIT？
 
-生成式图像到文本变换器（Generative Image-to-text Transformer），或称GIT，是微软提出的一种视觉语言模型。
+生成式图像到文本变换器（Generative Image-to-text Transformer），或称 GIT，是微软提出的一种视觉语言模型。
 
-arXiv: [https://arxiv.org/abs/2205.14100](https://arxiv.org/abs/2205.14100)
+arXiv: [`arxiv.org/abs/2205.14100`](https://arxiv.org/abs/2205.14100)
 
-代码： [https://github.com/microsoft/GenerativeImage2Text](https://github.com/microsoft/GenerativeImage2Text)
+代码： [`github.com/microsoft/GenerativeImage2Text`](https://github.com/microsoft/GenerativeImage2Text)
 
 它的架构相当简单。它将从图像编码器提取的特征向量转换为可以像文本一样处理的向量，使用一个投影模块。这些向量随后输入到语言模型中，以生成图像的标题或进行问答。该模型也可以以类似的方式处理视频。
 
-![](../Images/e26bc6f23c908cb230eb975a8c6eaac7.png)
+![](img/e26bc6f23c908cb230eb975a8c6eaac7.png)
 
 该图摘自[“GIT: A Generative Image-to-text Transformer for Vision and Language”](https://arxiv.org/abs/2205.14100)
 
 尽管它很简单，但如果你查看“Paper with code”的排行榜，你会发现它在许多任务中排名靠前。
 
-[https://paperswithcode.com/paper/git-a-generative-image-to-text-transformer](https://paperswithcode.com/paper/git-a-generative-image-to-text-transformer)
+[`paperswithcode.com/paper/git-a-generative-image-to-text-transformer`](https://paperswithcode.com/paper/git-a-generative-image-to-text-transformer)
 
-最初，GIT使用像CLIP这样的强大模型作为其图像编码器，并从头开始训练语言模型部分。然而，在这篇文章中，我尝试使用一个强大的LLM并对其进行微调。在这里，我称该模型为“GIT-LLM”。
+最初，GIT 使用像 CLIP 这样的强大模型作为其图像编码器，并从头开始训练语言模型部分。然而，在这篇文章中，我尝试使用一个强大的 LLM 并对其进行微调。在这里，我称该模型为“GIT-LLM”。
 
-# 使用Hugging Face的Transformers来实现LLM
+# 使用 Hugging Face 的 Transformers 来实现 LLM
 
-我将使用Hugging Face的[Transformers](https://huggingface.co/docs/transformers/index)库来开发GIT-LLM。Transformers是一个用于处理机器学习模型的Python库。它提供了许多最先进的预训练模型，你可以立即进行推理。它还提供了训练和微调模型的工具。我相信Transformers在最近的LLM衍生品的发展中做出了重要贡献。几乎所有可用的LLM都可以用Transformers处理，许多从这些LLM衍生出的多模态模型也使用Transformers作为基础进行开发和微调。
+我将使用 Hugging Face 的[Transformers](https://huggingface.co/docs/transformers/index)库来开发 GIT-LLM。Transformers 是一个用于处理机器学习模型的 Python 库。它提供了许多最先进的预训练模型，你可以立即进行推理。它还提供了训练和微调模型的工具。我相信 Transformers 在最近的 LLM 衍生品的发展中做出了重要贡献。几乎所有可用的 LLM 都可以用 Transformers 处理，许多从这些 LLM 衍生出的多模态模型也使用 Transformers 作为基础进行开发和微调。
 
-这是使用Transformers模型的最简单代码。你可以通过使用*AutoModel*和*AutoTokenizer*轻松尝试LLMs。
+这是使用 Transformers 模型的最简单代码。你可以通过使用*AutoModel*和*AutoTokenizer*轻松尝试 LLMs。
 
 ```py
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -82,7 +82,7 @@ print(tokenizer.decode(sample[0]))
 # Hello, I'm am conscious and I'm a bit of a noob. I'm looking for a good place to start.
 ```
 
-让我们查看OPT模型所包含的参数。打印由*AutoModelForCausalLM*创建的模型。
+让我们查看 OPT 模型所包含的参数。打印由*AutoModelForCausalLM*创建的模型。
 
 ```py
 OPTForCausalLM(
@@ -113,26 +113,26 @@ OPTForCausalLM(
 )
 ```
 
-这非常简单。初始*embed_tokens*的输入维度和最终*lm_head*的输出维度为50,272，表示训练此模型时使用的标记数量。让我们验证一下分词器词汇表的大小：
+这非常简单。初始*embed_tokens*的输入维度和最终*lm_head*的输出维度为 50,272，表示训练此模型时使用的标记数量。让我们验证一下分词器词汇表的大小：
 
 ```py
 print(tokenizer.vocab_size)
 # 50265
 ```
 
-包括像*bos_token*、*eos_token*、*unk_token*、*sep_token*、*pad_token*、*cls_token*和*mask_token*这样的特殊标记，它预测了从总共50,272种标记中下一个单词的概率。
+包括像*bos_token*、*eos_token*、*unk_token*、*sep_token*、*pad_token*、*cls_token*和*mask_token*这样的特殊标记，它预测了从总共 50,272 种标记中下一个单词的概率。
 
 你可以通过查看[实现](https://github.com/huggingface/transformers/blob/v4.30.0/src/transformers/models/opt/modeling_opt.py)来理解这些模型是如何连接的。一个简单的图示将表示如下流程：
 
-![](../Images/5352c8349ab3b070c14a69644b854f65.png)
+![](img/5352c8349ab3b070c14a69644b854f65.png)
 
-OPT的简化模型架构（图像由作者制作）
+OPT 的简化模型架构（图像由作者制作）
 
-结构和数据流非常简单。〇〇Model和〇〇ForCausalLM在不同的语言模型中具有类似的框架。〇〇Model类主要表示语言模型的“Transformer”部分。例如，如果你想执行文本分类任务，你只需使用这一部分。〇〇ForCausalLM类用于文本生成，将分类器应用于处理后转换器的向量中的标记计数。损失计算也是在该类的前向方法中完成的。*embed_positions*表示位置编码，它会被加到*project_in*上。
+结构和数据流非常简单。〇〇Model 和〇〇ForCausalLM 在不同的语言模型中具有类似的框架。〇〇Model 类主要表示语言模型的“Transformer”部分。例如，如果你想执行文本分类任务，你只需使用这一部分。〇〇ForCausalLM 类用于文本生成，将分类器应用于处理后转换器的向量中的标记计数。损失计算也是在该类的前向方法中完成的。*embed_positions*表示位置编码，它会被加到*project_in*上。
 
-# 使用GIT与Transformers
+# 使用 GIT 与 Transformers
 
-我将根据[GIT的官方文档页面](https://huggingface.co/docs/transformers/model_doc/git)尝试一下。由于我也会处理图像，所以我会使用一个同时包含Tokenizer的Processor。
+我将根据[GIT 的官方文档页面](https://huggingface.co/docs/transformers/model_doc/git)尝试一下。由于我也会处理图像，所以我会使用一个同时包含 Tokenizer 的 Processor。
 
 ```py
 from PIL import Image
@@ -199,7 +199,7 @@ GitForCausalLM(
 )
 ```
 
-虽然有点长，但如果你拆解开来，它其实也很简单。在GitForCausalLM中，有一个GitModel，内部包含以下模块：
+虽然有点长，但如果你拆解开来，它其实也很简单。在 GitForCausalLM 中，有一个 GitModel，内部包含以下模块：
 
 +   embeddings (GitEmbeddings)
 
@@ -215,7 +215,7 @@ GitForCausalLM(
 
 查看模型的连接；
 
-![](../Images/8b563994c34c6404fe9b5c7dcbd6d595.png)
+![](img/8b563994c34c6404fe9b5c7dcbd6d595.png)
 
 GIT 的简化模型架构（图像由作者制作）
 
@@ -229,7 +229,7 @@ GIT 的简化模型架构（图像由作者制作）
 
 GIT 输入有两种类型的标记：图像标记和文本标记。由于所有图像标记是同时使用的，并且不用于预测下一个标记，因此因果注意力不适用。另一方面，文本标记仍然需要因果注意力。设计了如图右侧所示的掩码来实现这一点。对于图像信息的前三行，自注意力应用于所有标记信息。从文本标记开始，向下移动一列会增加可以参考的单词数量。
 
-![](../Images/2274c8b7bd321af9b8894f9c179b5b3d.png)
+![](img/2274c8b7bd321af9b8894f9c179b5b3d.png)
 
 因果注意力掩码与 Git 注意力掩码的区别（图像由作者制作）
 
@@ -292,13 +292,13 @@ tensor([[[[0., 0., 0., -inf, -inf, -inf, -inf],
 
 现在，让我们连接 GIT 和 OPT。目标是创建如图所示的模型。
 
-![](../Images/15317072b84b09432c4e5fb70e7acb6a.png)
+![](img/15317072b84b09432c4e5fb70e7acb6a.png)
 
-GIT-OPT的简化模型架构（图由作者制作）
+GIT-OPT 的简化模型架构（图由作者制作）
 
 对于通用实现，你可以参考`[modeling_git.py](https://github.com/huggingface/transformers/blob/main/src/transformers/models/git/modeling_git.py)`。
 
-最重要的部分是*GitOPTModel*。在其中，一个视觉编码器需要与LLM连接。我会解释一些关键组件。
+最重要的部分是*GitOPTModel*。在其中，一个视觉编码器需要与 LLM 连接。我会解释一些关键组件。
 
 ```py
 class GitOPTModel(OPTModel):
@@ -309,9 +309,9 @@ class GitOPTModel(OPTModel):
         self.visual_projection = GitProjection(config)
 ```
 
-在*__init__*函数内部，实例化了各种模块。*super*初始化了*OPTModel*。在GIT中，推荐使用训练有素的CLIP图像编码器，因此我使其与CLIP训练的ViT兼容。*GitProjection*来自原始GIT实现。
+在*__init__*函数内部，实例化了各种模块。*super*初始化了*OPTModel*。在 GIT 中，推荐使用训练有素的 CLIP 图像编码器，因此我使其与 CLIP 训练的 ViT 兼容。*GitProjection*来自原始 GIT 实现。
 
-让我们看看forward函数内部。实现基于*OPTDecoder*的forward部分，并添加了来自图像编码器的信息。虽然实现有点冗长，但我在代码中添加了注释，请按步骤进行。
+让我们看看 forward 函数内部。实现基于*OPTDecoder*的 forward 部分，并添加了来自图像编码器的信息。虽然实现有点冗长，但我在代码中添加了注释，请按步骤进行。
 
 ```py
 class GitOPTModel(OPTModel):
@@ -422,15 +422,15 @@ class GitOPTForCausalLM(OPTForCausalLM):
         )
 ```
 
-模型内部的处理很简单。当提供*labels*时，即在训练过程中，损失计算也在forward中进行。在*shifted_logits*中，从第一个token到文本tokens的倒数第二个token被提取。然后，它计算与*labels*偏移一个词的Cross Entropy Loss作为正确答案。
+模型内部的处理很简单。当提供*labels*时，即在训练过程中，损失计算也在 forward 中进行。在*shifted_logits*中，从第一个 token 到文本 tokens 的倒数第二个 token 被提取。然后，它计算与*labels*偏移一个词的 Cross Entropy Loss 作为正确答案。
 
-一点需要注意的是，在初始化函数中分配*GitOPTModel*的变量需要命名为*self.model*。如果你查看[父类*OPTForCausalLM*的实现](https://github.com/huggingface/transformers/blob/v4.31.0/src/transformers/models/opt/modeling_opt.py#L823)，你会看到OPT在*super*初始化期间首先被放置到*self.model*中。如果你更改这个实例变量名，你将最终持有两个OPT，这可能会增加内存负担。
+一点需要注意的是，在初始化函数中分配*GitOPTModel*的变量需要命名为*self.model*。如果你查看[父类*OPTForCausalLM*的实现](https://github.com/huggingface/transformers/blob/v4.31.0/src/transformers/models/opt/modeling_opt.py#L823)，你会看到 OPT 在*super*初始化期间首先被放置到*self.model*中。如果你更改这个实例变量名，你将最终持有两个 OPT，这可能会增加内存负担。
 
-# LoRA扩展
+# LoRA 扩展
 
-为了有效地微调LLM，我将使用一个名为Parameter-Efficient Fine-Tuning（[PEFT](https://github.com/huggingface/peft)）的库。由于它由Hugging Face开发，它与Transformers无缝集成。虽然PEFT中有各种方法，但这次我将使用一种常见的方法，即低秩适配（LoRA）进行实验。
+为了有效地微调 LLM，我将使用一个名为 Parameter-Efficient Fine-Tuning（[PEFT](https://github.com/huggingface/peft)）的库。由于它由 Hugging Face 开发，它与 Transformers 无缝集成。虽然 PEFT 中有各种方法，但这次我将使用一种常见的方法，即低秩适配（LoRA）进行实验。
 
-如果模型支持PEFT，模型可以用LoRA在几行代码中应用。
+如果模型支持 PEFT，模型可以用 LoRA 在几行代码中应用。
 
 ```py
 from transformers import AutoModelForCausalLM
@@ -481,7 +481,7 @@ target_modules = [f"model.image_encoder.vision_model.encoder.{i}.self_attn.v_pro
 )
 ```
 
-在 *v_proj* 线性层内部，你会发现添加了如 *lora_A* 和 *lora_B* 的全连接层。LoRA转换后的 *Linear* 模块是一个名字相同的 Linear 类，继承自 PyTorch 的 *Linear* 和 *LoraLayer*。这是一个有些独特的模块，有兴趣了解细节的人可以查看[实现](https://github.com/huggingface/peft/blob/main/src/peft/tuners/lora/layer.py#L153)。
+在 *v_proj* 线性层内部，你会发现添加了如 *lora_A* 和 *lora_B* 的全连接层。LoRA 转换后的 *Linear* 模块是一个名字相同的 Linear 类，继承自 PyTorch 的 *Linear* 和 *LoraLayer*。这是一个有些独特的模块，有兴趣了解细节的人可以查看[实现](https://github.com/huggingface/peft/blob/main/src/peft/tuners/lora/layer.py#L153)。
 
 请注意，使用 PEFT 创建的模型默认不会保存除 LoRA 部分之外的任何内容。虽然可以通过 *merge_and_unload* 方法保存，但你可能希望在 Trainer 训练过程中保存所有中途保存的模型。重载 Trainer 的 *_save_checkpoints* 方法是一种方法，但为了避免麻烦，我这次通过在训练阶段仅获取 *PeftModel* 中原始模型部分来处理。
 
@@ -503,11 +503,11 @@ model = model.base_model.model
 
 对于实验，我想使用一个将图像与文本配对并且易于集成的数据集。在浏览[Hugging Face 的 *Datasets*](https://huggingface.co/datasets)时，我发现了 M3IT，这是一个由上海 AI 实验室开发的用于 Instruction Tuning 的多模态数据集。Instruction Tuning 是一种即使在数据量有限的情况下也能产生令人印象深刻结果的方法。看起来 M3IT 重新标注了各种现有数据集，专门用于 Instruction Tuning。
 
-[https://huggingface.co/datasets/MMInstruction/M3IT](https://huggingface.co/datasets/MMInstruction/M3IT)
+[`huggingface.co/datasets/MMInstruction/M3IT`](https://huggingface.co/datasets/MMInstruction/M3IT)
 
 这个数据集很容易使用，所以我决定在接下来的实验中利用它。
 
-要使用M3IT进行训练，必须创建一个自定义的Pytorch Dataset。
+要使用 M3IT 进行训练，必须创建一个自定义的 Pytorch Dataset。
 
 ```py
 class SupervisedDataset(Dataset):
@@ -569,7 +569,7 @@ test_dataset = coco_datasets["test"]
 
 示例数据如下：
 
-![](../Images/357b932eebeffa2ad69452bccfd6b0da.png)
+![](img/357b932eebeffa2ad69452bccfd6b0da.png)
 
 图像引用自 M3IT 数据。
 
@@ -626,17 +626,17 @@ for name, p in model.model.named_parameters():
 
 （注意：虽然 LoRA 可以应用于 ViT，但为了避免使实验过于复杂，这次未包含在内。）
 
-![](../Images/45eb87ab254a343616727c1da70b4302.png)
+![](img/45eb87ab254a343616727c1da70b4302.png)
 
 该图显示了训练损失。图例中的 Proj、LoRA、OPT、ViT 和 Head 是上述训练模块。（图由作者制作）
 
 如训练损失图所示，一些组的表现明显不佳。这些情况发生在 OPT 被包括在训练中时。尽管所有实验在相似的条件下进行，但在微调语言模型时可能需要更详细的调整，如学习率。接下来将检查排除 OPT 的训练模型的结果。
 
-![](../Images/74515f8bdfba43737c8cf1dd6be090c1.png)
+![](img/74515f8bdfba43737c8cf1dd6be090c1.png)
 
 该图显示了没有完全微调结果的训练损失。图例中的 Proj、LoRA、OPT、ViT 和 Head 是上述训练模块。（图由作者制作）
 
-![](../Images/1861c8654a743bfba2184aff9fecd01a.png)
+![](img/1861c8654a743bfba2184aff9fecd01a.png)
 
 该图显示了验证损失。图例中的 Proj、LoRA、OPT、ViT 和 Head 是上述训练模块。（图由作者制作）
 
@@ -644,7 +644,7 @@ for name, p in model.model.named_parameters():
 
 评估一些测试数据的推理结果：
 
-![](../Images/a675af6f9da2189db8166911ca6bfccf.png)
+![](img/a675af6f9da2189db8166911ca6bfccf.png)
 
 GIT-OPT 的示例结果。图片引用自 M3IT 数据集，文本结果由作者的模型生成。
 
@@ -652,59 +652,59 @@ GIT-OPT 的示例结果。图片引用自 M3IT 数据集，文本结果由作者
 
 # 实验 2：比较亿级模型
 
-对于早期实验中的微调条件，使用了稍小的语言模型OPT-350m。现在的意图是将语言模型切换到7B模型。不仅仅满足于OPT，还将引入更强的LLM，如LLaMA和MPT。
+对于早期实验中的微调条件，使用了稍小的语言模型 OPT-350m。现在的意图是将语言模型切换到 7B 模型。不仅仅满足于 OPT，还将引入更强的 LLM，如 LLaMA 和 MPT。
 
-将这两个模型集成可以按照与OPT类似的方式进行。参考*LlamaModel*和*MPTModel*的前向函数，将投影的图像向量与文本标记结合，并将掩码从*Causal Attention Mask*更改为*GIT的Attention Mask*。需要注意的是：对于MPT，掩码不是(0, -inf)，而是(False, True)。随后的过程可以类似地实现。
+将这两个模型集成可以按照与 OPT 类似的方式进行。参考*LlamaModel*和*MPTModel*的前向函数，将投影的图像向量与文本标记结合，并将掩码从*Causal Attention Mask*更改为*GIT 的 Attention Mask*。需要注意的是：对于 MPT，掩码不是(0, -inf)，而是(False, True)。随后的过程可以类似地实现。
 
-要使用7B级模型与OPT，只需将模型名称从facebook/opt-350m更改为facebook/opt-6.7b。
+要使用 7B 级模型与 OPT，只需将模型名称从 facebook/opt-350m 更改为 facebook/opt-6.7b。
 
-对于LLaMA，考虑到LLaMA2的可用性，它将是首选模型。使用这个预训练模型需要Meta和Hugging Face的批准。需要一个Hugging Face账户，所以确保设置好。批准通常在几小时内完成。之后，登录到执行训练的终端上的Hugging Face。
+对于 LLaMA，考虑到 LLaMA2 的可用性，它将是首选模型。使用这个预训练模型需要 Meta 和 Hugging Face 的批准。需要一个 Hugging Face 账户，所以确保设置好。批准通常在几小时内完成。之后，登录到执行训练的终端上的 Hugging Face。
 
 ```py
 huggingface-cli login
 ```
 
-你可以使用在Hugging Face账户中创建的令牌登录 → 设置 → 访问令牌。
+你可以使用在 Hugging Face 账户中创建的令牌登录 → 设置 → 访问令牌。
 
-训练参数保持一致，使用COCO数据集并持续3个epoch。根据实验1的结果，微调的模块设置为*Projection + LoRA*。
+训练参数保持一致，使用 COCO 数据集并持续 3 个 epoch。根据实验 1 的结果，微调的模块设置为*Projection + LoRA*。
 
 让我们来看看结果。
 
-![](../Images/89a4c0d67844b35567a3da3cc56f3f41.png)
+![](img/89a4c0d67844b35567a3da3cc56f3f41.png)
 
 此图显示了训练损失（图由作者制作）
 
-![](../Images/4e4594c8d3298607799e0b4d13f9156a.png)
+![](img/4e4594c8d3298607799e0b4d13f9156a.png)
 
 此图显示了验证损失（图由作者制作）
 
-通过查看损失，可以明显看出，使用LLaMA2和MPT作为LLM的模型显示了更令人满意的减少。让我们也观察一下推理结果。
+通过查看损失，可以明显看出，使用 LLaMA2 和 MPT 作为 LLM 的模型显示了更令人满意的减少。让我们也观察一下推理结果。
 
-![](../Images/ad700787927e227b883d10b05f775b25.png)
+![](img/ad700787927e227b883d10b05f775b25.png)
 
-GIT-LLMs的示例结果。图片引用自M3IT数据集，文本结果由作者的模型生成。
+GIT-LLMs 的示例结果。图片引用自 M3IT 数据集，文本结果由作者的模型生成。
 
-关于第一张图片，对于所有模型，与OPT-350m相比，表情似乎更自然。没有像“一个香蕉和一个香蕉”这样的奇怪表情，突出了LLM的优势。对于第二张图片，仍然存在像“交通灯”或“建筑物”这样的短语困难。对于这种复杂的图像，可能需要考虑升级ViT模型。
+关于第一张图片，对于所有模型，与 OPT-350m 相比，表情似乎更自然。没有像“一个香蕉和一个香蕉”这样的奇怪表情，突出了 LLM 的优势。对于第二张图片，仍然存在像“交通灯”或“建筑物”这样的短语困难。对于这种复杂的图像，可能需要考虑升级 ViT 模型。
 
-最后，让我们对在GPT-4中变得流行的图像进行推理。
+最后，让我们对在 GPT-4 中变得流行的图像进行推理。
 
-![](../Images/f4bac505068c01f309f3c06a5caa8a0c.png)
+![](img/f4bac505068c01f309f3c06a5caa8a0c.png)
 
-GIT-LLMs的示例结果。图片引用自[这里](https://www.barnorama.com/wp-content/uploads/2016/12/03-Confusing-Pictures.jpg)，文本结果由作者的模型生成。
+GIT-LLMs 的示例结果。图片引用自[这里](https://www.barnorama.com/wp-content/uploads/2016/12/03-Confusing-Pictures.jpg)，文本结果由作者的模型生成。
 
-尽管使用LLM时预期会有流畅的响应，但结果相当简单。这可能是因为模型仅在COCO上进行了训练。
+尽管使用 LLM 时预期会有流畅的响应，但结果相当简单。这可能是因为模型仅在 COCO 上进行了训练。
 
-# 实验3：增加数据量
+# 实验 3：增加数据量
 
-鉴于之前实验的结果不尽如人意，决定在训练中引入COCO以外的数据。当前使用的M3IT数据集相当全面，能够处理与COCO格式相同的大量数据。
+鉴于之前实验的结果不尽如人意，决定在训练中引入 COCO 以外的数据。当前使用的 M3IT 数据集相当全面，能够处理与 COCO 格式相同的大量数据。
 
-![](../Images/67595c86cfd8ce298c12c80d64cce6aa.png)
+![](img/67595c86cfd8ce298c12c80d64cce6aa.png)
 
-该表格引用自“M3IT：面向多模态多语言指令调优的大规模数据集”的表3
+该表格引用自“M3IT：面向多模态多语言指令调优的大规模数据集”的表 3
 
-打算使用来自该来源的数据，但排除“中文”和“视频”类别。最初，COCO训练数据集包含566,747条数据。通过与其他来源结合，总数增加到1,361,650。尽管规模大致翻倍，但由于任务多样性增加，数据集的质量被认为有所提高。
+打算使用来自该来源的数据，但排除“中文”和“视频”类别。最初，COCO 训练数据集包含 566,747 条数据。通过与其他来源结合，总数增加到 1,361,650。尽管规模大致翻倍，但由于任务多样性增加，数据集的质量被认为有所提高。
 
-使用*ConcatDataset*可以轻松处理多个Pytorch数据集。
+使用*ConcatDataset*可以轻松处理多个 Pytorch 数据集。
 
 ```py
 dataset_list = [
@@ -713,39 +713,39 @@ dataset_list = [
 train_dataset = torch.utils.data.ConcatDataset([d["train"] for d in dataset_list])
 ```
 
-训练进行了1轮，并使用LLaMA2模型对*Projection和LoRA*进行了微调，与实验2类似。
+训练进行了 1 轮，并使用 LLaMA2 模型对*Projection 和 LoRA*进行了微调，与实验 2 类似。
 
 由于这次没有可以比较的损失值，我们直接进入推理结果。
 
-![](../Images/121d2e67860d5e31dd3621bd2155961e.png)
+![](img/121d2e67860d5e31dd3621bd2155961e.png)
 
-GIT-LLaMA2的示例结果。图片来自M3IT数据集，文本结果由作者的模型生成
+GIT-LLaMA2 的示例结果。图片来自 M3IT 数据集，文本结果由作者的模型生成
 
-![](../Images/2a3ec608bceb6afd8eca13d9590fcf4c.png)
+![](img/2a3ec608bceb6afd8eca13d9590fcf4c.png)
 
-GIT-LLaMA2的示例结果。图片来自M3IT数据集，文本结果由作者的模型生成
+GIT-LLaMA2 的示例结果。图片来自 M3IT 数据集，文本结果由作者的模型生成
 
-![](../Images/37f3b927e5e64e8ff16c49504461c639.png)
+![](img/37f3b927e5e64e8ff16c49504461c639.png)
 
-GIT-LLaMA2的示例结果。图片来自M3IT数据集，文本结果由作者的模型生成
+GIT-LLaMA2 的示例结果。图片来自 M3IT 数据集，文本结果由作者的模型生成
 
-除了解决简单问题外，模型现在还处理更复杂的挑战。通过添加比仅仅是描述更复杂的任务数据集，能力显著扩展。仅用1轮训练就达到这样的准确性令人惊讶。
+除了解决简单问题外，模型现在还处理更复杂的挑战。通过添加比仅仅是描述更复杂的任务数据集，能力显著扩展。仅用 1 轮训练就达到这样的准确性令人惊讶。
 
 让我们用以下示例图像进行测试。鉴于数据集的多样性增加，问题的呈现方式略有修改。
 
-![](../Images/f06c8e160a3d026ec3efe7f0224d4be1.png)
+![](img/f06c8e160a3d026ec3efe7f0224d4be1.png)
 
-GIT-LLaMA2的示例结果。一张图片来自[这里](https://www.barnorama.com/wp-content/uploads/2016/12/03-Confusing-Pictures.jpg)，文本结果由作者的模型生成
+GIT-LLaMA2 的示例结果。一张图片来自[这里](https://www.barnorama.com/wp-content/uploads/2016/12/03-Confusing-Pictures.jpg)，文本结果由作者的模型生成
 
-尽管“伞状”这一描述仍有些奇怪，但感觉越来越好。为了进一步改进，需要增加训练轮次，添加更多类型或量的数据集，并利用更强大的ViT或LLM。尽管如此，能够在仅半天内开发出这样的模型，考虑到计算和数据资源，确实令人印象深刻。
+尽管“伞状”这一描述仍有些奇怪，但感觉越来越好。为了进一步改进，需要增加训练轮次，添加更多类型或量的数据集，并利用更强大的 ViT 或 LLM。尽管如此，能够在仅半天内开发出这样的模型，考虑到计算和数据资源，确实令人印象深刻。
 
 # 奖励实验。*图像变成文字了吗？*
 
-再看一下GIT结构。
+再看一下 GIT 结构。
 
-![](../Images/4e2f4f77acb65e4c8a7772a1254074fb.png)
+![](img/4e2f4f77acb65e4c8a7772a1254074fb.png)
 
-GIT-LLM的简化模型架构（图像由作者制作）
+GIT-LLM 的简化模型架构（图像由作者制作）
 
 如图所示，在视觉编码器进行特征提取后，图像通过*Visual Projection*与向量化的文本平等对待。换句话说，*Visual Projection* 可能将图像向量转换为文本向量。进行了调查以查看*Visual Projection*之后的向量是什么样的。
 
@@ -753,7 +753,7 @@ GIT-LLM的简化模型架构（图像由作者制作）
 
 本实验使用的图像是一只猫。
 
-![](../Images/4b8b2f288c78ac4a91884cca6859233e.png)
+![](img/4b8b2f288c78ac4a91884cca6859233e.png)
 
 图片摘自 M3IT 数据集。
 
@@ -840,7 +840,7 @@ plt.clf()
 plt.close()
 ```
 
-![](../Images/e3abd839ef5d0ca7bef4cfd2ad1ebfc4.png)
+![](img/e3abd839ef5d0ca7bef4cfd2ad1ebfc4.png)
 
 图片由作者制作
 
@@ -852,6 +852,6 @@ plt.close()
 
 在这篇技术博客文章中，我介绍了将 LLM 集成到视觉语言模型 GIT 的方法。此外，还使用开发的模型进行了各种实验。虽然有成功也有失败，但我希望继续进行视觉语言模型的实验，以积累见解。请将本文作为参考，并鼓励你创建自己的视觉语言模型，探索其潜力。
 
-![](../Images/c0d65bb574d89d207d2ce05bd90c5dad.png)
+![](img/c0d65bb574d89d207d2ce05bd90c5dad.png)
 
 这是一张使用 Stable Diffusion 创建的 GIT-LLM 插图。（图片由作者制作）

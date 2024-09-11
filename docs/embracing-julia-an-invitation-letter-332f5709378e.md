@@ -1,10 +1,10 @@
 # Embracing Julia: An Invitation Letter
 
-> 原文：[https://towardsdatascience.com/embracing-julia-an-invitation-letter-332f5709378e?source=collection_archive---------2-----------------------#2023-10-13](https://towardsdatascience.com/embracing-julia-an-invitation-letter-332f5709378e?source=collection_archive---------2-----------------------#2023-10-13)
+> 原文：[`towardsdatascience.com/embracing-julia-an-invitation-letter-332f5709378e?source=collection_archive---------2-----------------------#2023-10-13`](https://towardsdatascience.com/embracing-julia-an-invitation-letter-332f5709378e?source=collection_archive---------2-----------------------#2023-10-13)
 
 ## 诚挚地向 Python 爱好者、科学计算大师和数据科学家致敬
 
-[](https://essamwissam.medium.com/?source=post_page-----332f5709378e--------------------------------)[![Essam Wisam](../Images/6320ce88ba2e5d56d70ce3e0f97ceb1d.png)](https://essamwissam.medium.com/?source=post_page-----332f5709378e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----332f5709378e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----332f5709378e--------------------------------) [Essam Wisam](https://essamwissam.medium.com/?source=post_page-----332f5709378e--------------------------------)
+[](https://essamwissam.medium.com/?source=post_page-----332f5709378e--------------------------------)![Essam Wisam](https://essamwissam.medium.com/?source=post_page-----332f5709378e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----332f5709378e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----332f5709378e--------------------------------) [Essam Wisam](https://essamwissam.medium.com/?source=post_page-----332f5709378e--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@
 
 Julia 是一种通用、动态、高性能和高级别的编程语言，采用即时编译。这是一门相对较新的语言，其主要 1.0 版本直到 2018 年才发布。在这篇文章中，我们旨在展示，如果你对数据科学、科学计算或者是 Python 爱好者，那么将这门语言加入你的工具箱绝对是值得的。也许这确实是你*见过的最美的编程语言*。
 
-![](../Images/82c79c88f55be43b1146afcae81a7b3c.png)
+![](img/82c79c88f55be43b1146afcae81a7b3c.png)
 
 紫色、绿色和红色行星的星系数字艺术 — 由作者使用 DALLE 2 生成
 
@@ -24,55 +24,55 @@ Julia 是一种通用、动态、高性能和高级别的编程语言，采用�
 
 ## 目录
 
-· [**Julia 是高级语言**](#a247)
+· **Julia 是高级语言**
 
-∘ [基本语法](#e83b)
+∘ 基本语法
 
-∘ [数学的优雅语法](#c19a)
+∘ 数学的优雅语法
 
-· [**Julia 很快**](#8745)
+· **Julia 很快**
 
-∘ [基准测试](#2330)
+∘ 基准测试
 
-∘ [双语言问题](#baba)
+∘ 双语言问题
 
-∘ [Julia 是即时编译的](#51c2)
+∘ Julia 是即时编译的
 
-· [**Julia 解决了表达式问题**](#0a96)
+· **Julia 解决了表达式问题**
 
-∘ [表达式问题](#597f)
+∘ 表达式问题
 
-∘ [多重分发](#27b3)
+∘ 多重分发
 
-∘ [抽象和具体类型](#fbf2)
+∘ 抽象和具体类型
 
-· [**Julia 功能全面**](#c1b5)
+· **Julia 功能全面**
 
-∘ [数组支持](#7065)
+∘ 数组支持
 
-∘ [字符串支持](#103e)
+∘ 字符串支持
 
-∘ [多线程](#6f11)
+∘ 多线程
 
-∘ [与 C 代码的简单集成](#c5f6)
+∘ 与 C 代码的简单集成
 
-∘ [标准库](#634e)
+∘ 标准库
 
-· [**Julia 是通用的**](#9999)
+· **Julia 是通用的**
 
-∘ [介绍](#d5a5)
+∘ 介绍
 
-∘ [自动化和脚本编写](#2b2b)
+∘ 自动化和脚本编写
 
-· [**Julia 可扩展性广**](#2fc2)
+· **Julia 可扩展性广**
 
-∘ [介绍](#9c86)
+∘ 介绍
 
-∘ [宏](#6c2d)
+∘ 宏
 
-· [**总结**](#12c0)
+· **总结**
 
-![](../Images/758e49b62b7e3d994ce7e4802624b3d2.png)
+![](img/758e49b62b7e3d994ce7e4802624b3d2.png)
 
 照片由 [Daniele Levis Pelusi](https://unsplash.com/@yogidan2012?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -142,7 +142,7 @@ z = 2y + 3x - 5
 α, β, γ = 1, 2, π/2
 
 # one-line functions
-f(r) = π*r^2
+f(r) = π*r²
 
 f'(3)  # derivative (with Flux.jl package)
 
@@ -212,7 +212,7 @@ Bₙ = [(1 - λ*α/d)* b - λ/d * მJⳆმb for b, მJⳆმb in zip(Bₙ, �
 
 你可以尝试用 Python 编写类似的代码，但编辑器通常会在 Unicode 变量周围加上黄色方块（或无法高亮显示它们），而且你的代码可能无法与诸如 Pickle 的第三方包兼容。
 
-![](../Images/a4c591a4efa970f6ff7b1fd06a848df0.png)
+![](img/a4c591a4efa970f6ff7b1fd06a848df0.png)
 
 照片由[Solaiman Hossen](https://unsplash.com/@sh_sumon?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -224,7 +224,7 @@ Bₙ = [(1 - λ*α/d)* b - λ/d * მJⳆმb for b, მJⳆმb in zip(Bₙ, �
 
 作为参考，以下报告了 Julia 的性能，以及其他语言在流行性能基准测试中的表现：
 
-![](../Images/d79a52100be8befa37ae63b7bac86e88.png)
+![](img/d79a52100be8befa37ae63b7bac86e88.png)
 
 *Julia 微基准测试：图片来源于* [*JuliaLang*](https://julialang.org/benchmarks/) *在 MIT 许可下*
 
@@ -254,7 +254,7 @@ Julia 通过保持高级、交互性强且非常快速，即使在生产环境�
 
 这不是问题，因为研究代码或在服务器上运行的代码只需初次编译一次，完成后任何进一步运行（实际 API 调用或进一步实验）的代码都非常快速。
 
-![](../Images/7a1ed7aac2b56fb711d85e7b9c96cd62.png)
+![](img/7a1ed7aac2b56fb711d85e7b9c96cd62.png)
 
 由 [Thom Milkovic](https://unsplash.com/@thommilkovic?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供的照片
 
@@ -308,13 +308,13 @@ class Rectangle(Shape):
 
 同时，向现有类型中添加操作并不容易。如果我们想添加一个 `perimeter` 方法，那么必须修改基础类以及到目前为止实现的每一个子类。
 
-这个问题的一个后果是，如果包*x*由作者X维护，并且最初支持操作集合*Sx*，而另一个操作集合*Sy*对另一组开发者Y有帮助，他们必须能够修改由X维护的包，以添加这些方法。在实践中，开发者Y通常会自己创建另一个包，可能会复制包*x*中的代码以实现该类型，因为开发者X可能不愿意维护更多的代码，而*Sy*可能是一种不同类型的方法，不需要存在于同一个包中。
+这个问题的一个后果是，如果包*x*由作者 X 维护，并且最初支持操作集合*Sx*，而另一个操作集合*Sy*对另一组开发者 Y 有帮助，他们必须能够修改由 X 维护的包，以添加这些方法。在实践中，开发者 Y 通常会自己创建另一个包，可能会复制包*x*中的代码以实现该类型，因为开发者 X 可能不愿意维护更多的代码，而*Sy*可能是一种不同类型的方法，不需要存在于同一个包中。
 
-另一方面，因为添加适用现有操作的新类型很容易，如果开发者Y希望定义一个新的类型，该类型实现了X实现的类型中的操作，他们可以很容易地做到这一点，而无需修改包*x*或复制其中的任何代码。只需导入该类型，然后从中继承即可。
+另一方面，因为添加适用现有操作的新类型很容易，如果开发者 Y 希望定义一个新的类型，该类型实现了 X 实现的类型中的操作，他们可以很容易地做到这一点，而无需修改包*x*或复制其中的任何代码。只需导入该类型，然后从中继承即可。
 
 ## **多重分发**
 
-为了解决表达式问题，这允许不同包之间的大规模集成，Julia完全摒弃了传统的面向对象编程。Julia使用**抽象类型**定义、**结构体**（抽象类型的自定义类型实例）和**方法**以及一种称为**多重分发**的技术，正如我们将看到的，**它完美地解决了表达式问题**。
+为了解决表达式问题，这允许不同包之间的大规模集成，Julia 完全摒弃了传统的面向对象编程。Julia 使用**抽象类型**定义、**结构体**（抽象类型的自定义类型实例）和**方法**以及一种称为**多重分发**的技术，正如我们将看到的，**它完美地解决了表达式问题**。
 
 要查看我们上面所讨论的等效内容：
 
@@ -332,7 +332,7 @@ struct Circle <: Shape
 end
 
 function area(circle::Circle)
-    return 3.14 * circle.radius^2
+    return 3.14 * circle.radius²
 end
 ```
 
@@ -365,7 +365,7 @@ rect = Rectangle(3.0, 6.0)
 println(area(rect))
 ```
 
-我们得到`18.0`。这就是多重分发的作用；`area`方法的正确实例是根据运行时参数的类型动态分发的。如果你有C或C++的背景，这一定会让你想起函数重载。不同之处在于函数重载不是动态的，它依赖于编译时发现的类型。因此，你可以设计一些示例，其中它的行为会有所不同。
+我们得到`18.0`。这就是多重分发的作用；`area`方法的正确实例是根据运行时参数的类型动态分发的。如果你有 C 或 C++的背景，这一定会让你想起函数重载。不同之处在于函数重载不是动态的，它依赖于编译时发现的类型。因此，你可以设计一些示例，其中它的行为会有所不同。
 
 更重要的是，与基于类的 OOP 不同，我们可以向 `Shape`、`Circle` 或 `Rectangle` 添加方法，而无需修改它们的文件。如果所有这些文件都在我的包中，而你希望添加一组方法来生成几何形状的动画和 3D 视觉效果（这是我不关心的），那么你只需导入我的包。现在你可以访问 `Shape`、`Circle` 和 `Rectangle` 类型，你可以编写新的函数，然后将它们导出到你自己的“ShapeVisuals”包中。
 
@@ -401,7 +401,7 @@ Julia 中的任何类型要么是抽象的，如我们上面定义的，要么�
 
 Julia 为数字提供了以下层次化的类型系统：
 
-![](../Images/566fc275758736561329441578abe9fd.png)
+![](img/566fc275758736561329441578abe9fd.png)
 
 *Julia 微基准测试：图片来自 J*[*ulia for Optimization and Learning*](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_06/compositetypes/) *根据 MIT 许可协议*
 
@@ -409,7 +409,7 @@ Julia 为数字提供了以下层次化的类型系统：
 
 Julia 也有一个层次化的类型系统用于 [其他抽象类型](https://www.oreilly.com/library/view/learning-julia-abstract/9781491999585/ch01.html)，如 `AbstractString`，但它们要简单得多。
 
-![](../Images/ddab1ebf8e79e00104559b5292c23fb7.png)
+![](img/ddab1ebf8e79e00104559b5292c23fb7.png)
 
 图片由 [Paul Melki](https://unsplash.com/@paulmelki?utm_source=medium&utm_medium=referral) 提供，[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -570,31 +570,31 @@ py_sum = np.sum(py_array)
 py_max = np.max(py_array)
 ```
 
-除了安装包外，几乎不需要任何先期设置。使用类似的包，也可以调用用Fortran、C++、R、Java、Mathematica、Matlab、Node.js等编写的函数。
+除了安装包外，几乎不需要任何先期设置。使用类似的包，也可以调用用 Fortran、C++、R、Java、Mathematica、Matlab、Node.js 等编写的函数。
 
-另一方面，可以从Python调用Julia，尽管不如优雅。这可能以前用于加速函数，而不需要用C实现它们。
+另一方面，可以从 Python 调用 Julia，尽管不如优雅。这可能以前用于加速函数，而不需要用 C 实现它们。
 
 ## **标准库**
 
-一组包随Julia预安装（但需要显式加载）。这包括**Statistics**和**LinearAlgebra**包、用于访问互联网的**Downloads**包，以及更重要的分布式计算（如Hadoop）的**Distribued**包，还有用于性能分析（帮助优化代码）的**Profile**包，显著的**Tests**包用于单元测试和**Pkg**包用于包管理，以及许多其他包。
+一组包随 Julia 预安装（但需要显式加载）。这包括**Statistics**和**LinearAlgebra**包、用于访问互联网的**Downloads**包，以及更重要的分布式计算（如 Hadoop）的**Distribued**包，还有用于性能分析（帮助优化代码）的**Profile**包，显著的**Tests**包用于单元测试和**Pkg**包用于包管理，以及许多其他包。
 
-我必须说，我是一个热衷于Python的用户，开发了多个Python包。在Python中，第三方包“Setuptools”和Julia中的**Pkg**之间没有可比性，后者确实更干净、更易于使用。我一直无法理解为什么Python没有自己的包管理和测试工具。这些在编程语言中确实是基本需求。
+我必须说，我是一个热衷于 Python 的用户，开发了多个 Python 包。在 Python 中，第三方包“Setuptools”和 Julia 中的**Pkg**之间没有可比性，后者确实更干净、更易于使用。我一直无法理解为什么 Python 没有自己的包管理和测试工具。这些在编程语言中确实是基本需求。
 
-![](../Images/b3db8ea6be5cea905935c76d940bb969.png)
+![](img/b3db8ea6be5cea905935c76d940bb969.png)
 
 摄影师 [Tom M](https://unsplash.com/@t_mac?utm_source=medium&utm_medium=referral) 的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-# Julia是通用的
+# Julia 是通用的
 
 ## 介绍
 
-如果你曾经遇到过Julia，那么你会自然地认为Julia是一个领域特定的语言，科学计算是这个领域。确实，Julia经过精心设计，以便在科学计算中具有表现力和效率，但这并不妨碍它成为通用语言。它只是一个以科学计算为重点构建的语言。语言的通用性有一定的程度。例如，Julia可以用于数据科学和机器学习、网页开发、自动化和脚本编写、机器人技术等，除了科学计算，但目前还没有成熟的包帮助开发者使用Julia进行类似于Python中Pygame的游戏开发。即使Julia包`Genie.jl`非常接近`Flask`，它可能在更全面的框架如`Django`方面有所欠缺。总之，即使Julia目前不像你期望的那样通用，但它是以此为目标构建的，并预计最终会实现这一点。
+如果你曾经遇到过 Julia，那么你会自然地认为 Julia 是一个领域特定的语言，科学计算是这个领域。确实，Julia 经过精心设计，以便在科学计算中具有表现力和效率，但这并不妨碍它成为通用语言。它只是一个以科学计算为重点构建的语言。语言的通用性有一定的程度。例如，Julia 可以用于数据科学和机器学习、网页开发、自动化和脚本编写、机器人技术等，除了科学计算，但目前还没有成熟的包帮助开发者使用 Julia 进行类似于 Python 中 Pygame 的游戏开发。即使 Julia 包`Genie.jl`非常接近`Flask`，它可能在更全面的框架如`Django`方面有所欠缺。总之，即使 Julia 目前不像你期望的那样通用，但它是以此为目标构建的，并预计最终会实现这一点。
 
 ## **自动化和脚本编写**
 
-既然提到Julia可以用于自动化和脚本编写，值得指出的是，它通过优雅的类似Shell的语法帮助实现这一点。
+既然提到 Julia 可以用于自动化和脚本编写，值得指出的是，它通过优雅的类似 Shell 的语法帮助实现这一点。
 
-例如，这里是一组你可以在Julia中执行的文件系统和进程操作：
+例如，这里是一组你可以在 Julia 中执行的文件系统和进程操作：
 
 ```py
 # Create a directory
@@ -626,7 +626,7 @@ println("Contents of the current directory: $result")
 
 注意你在终端中实际输入的内容的相似性。
 
-![](../Images/a4c3d31a9ef21d695a4fe21ac8bb29e9.png)
+![](img/a4c3d31a9ef21d695a4fe21ac8bb29e9.png)
 
 星夜数字艺术的替代品 — 作者使用 DALLE 2 生成
 
@@ -657,7 +657,7 @@ x = 5
 
 这返回 12。发生的事情是，在解析时（编译前），宏执行，返回代码 `5 + 7`，在编译时计算为 `12`。你可以认为宏只是动态执行 `CTRL+H`（查找和替换）操作的一种方式。
 
-对于另一个实际应用场景，假设你有一个包含10个有用方法的包，你想向包中添加一个新接口，这意味着你需要为每个方法编写一个结构体，共10个。假设根据对应的函数编写这些结构体是有系统的，那么你可以简单地编写一个宏，循环遍历这10个函数来生成这10个结构体的代码。实际上，你编写的代码将等同于以通用方式编写一个结构体，因此节省了时间。
+对于另一个实际应用场景，假设你有一个包含 10 个有用方法的包，你想向包中添加一个新接口，这意味着你需要为每个方法编写一个结构体，共 10 个。假设根据对应的函数编写这些结构体是有系统的，那么你可以简单地编写一个宏，循环遍历这 10 个函数来生成这 10 个结构体的代码。实际上，你编写的代码将等同于以通用方式编写一个结构体，因此节省了时间。
 
 宏的存在允许更多的魔法。例如，如果你记得上面，我们能够使用 `Threads.@threads` 宏对一个 for 循环进行多线程。要测量函数调用的执行时间，你只需使用 `@time func()`，如果你使用 `BenchmarkTools` 包，那么 `@benchmark func()` 会多次调用函数，以返回时间统计数据，甚至生成小图。如果你知道什么是[备忘录化](https://en.wikipedia.org/wiki/Memoization)，那么也可以通过一个简单的 `@memoize` 宏将其应用于任何函数，无需以任何方式修改它。还有 `@code_native func()` 可以显示函数生成的原生代码，以及其他宏可以在编译过程中显示代码的其他表示形式。
 
@@ -665,8 +665,8 @@ x = 5
 
 事实证明，我们讨论的所有语言特性最初都是 Julia 计划的一部分。正如 Julia 网站上所述，这是该语言的[愿景](https://julialang.org/blog/2012/02/why-we-created-julia/)：
 
-> “我们想要一种开源的语言，拥有宽松的许可证。我们**想要C语言的速度**，结合**Ruby的动态特性**。我们希望这是一种**同构的**语言，拥有**像Lisp一样的真正宏**，但使用明显的、**类似于Matlab的数学符号**。我们希望它在**通用编程**方面像Python一样好，在**统计分析**方面像R一样简单，在**字符串处理**方面像Perl一样自然，在**线性代数**方面像Matlab一样强大，在**将程序连接在一起**方面像Shell一样出色。我们希望它**简单易学**，但仍能让最严肃的黑客满意。我们希望它是互动式的，并且我们希望它可以编译。”
+> “我们想要一种开源的语言，拥有宽松的许可证。我们**想要 C 语言的速度**，结合**Ruby 的动态特性**。我们希望这是一种**同构的**语言，拥有**像 Lisp 一样的真正宏**，但使用明显的、**类似于 Matlab 的数学符号**。我们希望它在**通用编程**方面像 Python 一样好，在**统计分析**方面像 R 一样简单，在**字符串处理**方面像 Perl 一样自然，在**线性代数**方面像 Matlab 一样强大，在**将程序连接在一起**方面像 Shell 一样出色。我们希望它**简单易学**，但仍能让最严肃的黑客满意。我们希望它是互动式的，并且我们希望它可以编译。”
 
 阅读了这个故事，你现在应该或多或少能够反思愿景声明中提到的每一个词。
 
-我希望阅读这些内容能够帮助你更多地了解Julia语言，并且你会考虑学习这门语言。下次见，再见。
+我希望阅读这些内容能够帮助你更多地了解 Julia 语言，并且你会考虑学习这门语言。下次见，再见。

@@ -1,18 +1,18 @@
 # 用 SQL 整形你的数据
 
-> 原文：[https://towardsdatascience.com/shaping-your-data-with-sql-71822f2fc2f4?source=collection_archive---------15-----------------------#2023-04-18](https://towardsdatascience.com/shaping-your-data-with-sql-71822f2fc2f4?source=collection_archive---------15-----------------------#2023-04-18)
+> 原文：[`towardsdatascience.com/shaping-your-data-with-sql-71822f2fc2f4?source=collection_archive---------15-----------------------#2023-04-18`](https://towardsdatascience.com/shaping-your-data-with-sql-71822f2fc2f4?source=collection_archive---------15-----------------------#2023-04-18)
 
 ## 使用不同的数据整形技术来提升和优化你的数据分析过程
 
-[![Chi Nguyen](../Images/cc6e778a0c64c1c8b3c4d2d96fd62b4f.png)](https://nphchi223.medium.com/?source=post_page-----71822f2fc2f4--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----71822f2fc2f4--------------------------------) [Chi Nguyen](https://nphchi223.medium.com/?source=post_page-----71822f2fc2f4--------------------------------)
+![Chi Nguyen](https://nphchi223.medium.com/?source=post_page-----71822f2fc2f4--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----71822f2fc2f4--------------------------------) [Chi Nguyen](https://nphchi223.medium.com/?source=post_page-----71822f2fc2f4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe982f12a6925&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshaping-your-data-with-sql-71822f2fc2f4&user=Chi+Nguyen&userId=e982f12a6925&source=post_page-e982f12a6925----71822f2fc2f4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----71822f2fc2f4--------------------------------) · 9 分钟阅读 · 2023年4月18日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe982f12a6925&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshaping-your-data-with-sql-71822f2fc2f4&user=Chi+Nguyen&userId=e982f12a6925&source=post_page-e982f12a6925----71822f2fc2f4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----71822f2fc2f4--------------------------------) · 9 分钟阅读 · 2023 年 4 月 18 日
 
 --
 
-![](../Images/f1698cdffbc741feba22e618c4552b93.png)
+![](img/f1698cdffbc741feba22e618c4552b93.png)
 
 图片由 [OB OA](https://unsplash.com/@oboa?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

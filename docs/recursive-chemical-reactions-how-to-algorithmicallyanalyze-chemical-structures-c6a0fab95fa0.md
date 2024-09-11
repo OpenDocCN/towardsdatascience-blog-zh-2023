@@ -1,18 +1,18 @@
 # 递归化学反应
 
-> 原文：[https://towardsdatascience.com/recursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0?source=collection_archive---------11-----------------------#2023-03-07](https://towardsdatascience.com/recursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0?source=collection_archive---------11-----------------------#2023-03-07)
+> 原文：[`towardsdatascience.com/recursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0?source=collection_archive---------11-----------------------#2023-03-07`](https://towardsdatascience.com/recursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0?source=collection_archive---------11-----------------------#2023-03-07)
 
-## 使用RDKit对化学结构进行算法分析
+## 使用 RDKit 对化学结构进行算法分析
 
-[](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)[![Pan Cretan](../Images/8b3fbab70c0e61f7ca516d2f54b646e5.png)](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------) [Pan Cretan](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)
+[](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)![Pan Cretan](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------) [Pan Cretan](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff990ba57425&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&user=Pan+Cretan&userId=ff990ba57425&source=post_page-ff990ba57425----c6a0fab95fa0---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------) ·8分钟阅读·2023年3月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6a0fab95fa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&user=Pan+Cretan&userId=ff990ba57425&source=-----c6a0fab95fa0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff990ba57425&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&user=Pan+Cretan&userId=ff990ba57425&source=post_page-ff990ba57425----c6a0fab95fa0---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------) ·8 分钟阅读·2023 年 3 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6a0fab95fa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&user=Pan+Cretan&userId=ff990ba57425&source=-----c6a0fab95fa0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6a0fab95fa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&source=-----c6a0fab95fa0---------------------bookmark_footer-----------)![](../Images/951ad44edad54a113202aefa02971f67.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6a0fab95fa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&source=-----c6a0fab95fa0---------------------bookmark_footer-----------)![](img/951ad44edad54a113202aefa02971f67.png)
 
 图片来源于[Manuel Darío Fuentes Hernández](https://pixabay.com/users/drfuenteshernandez-7757554/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=4897327)来自[Pixabay](https://pixabay.com)
 
@@ -20,21 +20,21 @@
 
 RDKit 可以应用反应转换，并结合 Python 的递归功能，支持如本文所述的特殊用例。特别是，我们将递归地应用化学反应，以检查输入的分子结构是否为肽，即氨基酸的线性序列。我发现递归应用反应是算法分析化学结构的一个好方法，例如，通过反复分割结构、去除定义明确的片段并分类剩余基团，当不再能应用更多的转换时。
 
-· [介绍](#ec4e)
+· 介绍
 
-· [构建模块：氨基酸](#21e4)
+· 构建模块：氨基酸
 
-· [识别肽键](#4c4d)
+· 识别肽键
 
-· [打破肽键](#af75)
+· 打破肽键
 
-· [结论](#391a)
+· 结论
 
 # 介绍
 
 下图是一个由四个氨基酸组成的线性寡肽，即精氨酸、丙氨酸、苏氨酸和蛋氨酸，最近在我分析的数据集中发现。我从事工业化学工作，看到我们的数据库中有这样的结构感到惊讶，因为我们与生物分子无关，肽也不常见。进一步挖掘发现，我们通过将化学名称解释为化学名称到结构的算法错误地生成了这些结构。除了全名，氨基酸还可以用一个或三个字符表示，这些字符有时出现在文本中，并被错误地解释为化学结构。这种数据质量问题可能会影响公开可用的数据集，因此我认为找到检测这些情况并在其意外出现时加以消除的方法可能会很有用。
 
-![](../Images/6fbc4e6171d073c2ba83cfe24c0d64c0.png)
+![](img/6fbc4e6171d073c2ba83cfe24c0d64c0.png)
 
 一小段含有四个氨基酸的肽。图像来源：作者。
 
@@ -56,7 +56,7 @@ print(Chem.MolToMolBlock(amino_acids['mol'].iloc[0]))
 
 打印出来
 
-![](../Images/560281a1121086646ae141019a20361d.png)
+![](img/560281a1121086646ae141019a20361d.png)
 
 L-丙氨酸 [Mol](https://docs.chemaxon.com/display/docs/mdl-molfiles-rgfiles-sdfiles-rxnfiles-rdfiles-formats.md#src-1806565-safe-id-turmtu9mzmlszxmsukdmawxlcyxtrgzpbgvzlfj4bmzpbgvzlfjezmlszxnmb3jtyxrzlw1vbe1ptfyymdawzmlszxm) 块，其中包含了化学名称。图片由作者提供。
 
@@ -64,25 +64,25 @@ L-丙氨酸 [Mol](https://docs.chemaxon.com/display/docs/mdl-molfiles-rgfiles-sd
 
 最后一行将下方的图像保存为 PNG 文件，你可以在仓库中找到这个文件以及本文中所有其他 [图像](https://github.com/karpanGit/myBlogs/tree/master/RecursiveChemicalReactions/images)。
 
-![](../Images/355a5a5455085fe091df86896064e40a.png)
+![](img/355a5a5455085fe091df86896064e40a.png)
 
-出现在遗传密码中的22种氨基酸。图片来源于作者。
+出现在遗传密码中的 22 种氨基酸。图片来源于作者。
 
-RDKit可以无缝地在jupyter notebooks中使用，其中Draw模块允许通过`Draw.MolsToGridImage()` [函数](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.html)轻松可视化分子结构。但我发现使用matplotlib可以提供更多灵活性，特别是如果遵循这些出色的 [建议](https://medium.com/towards-data-science/advanced-tutorial-how-to-master-matplotlib-like-an-absolute-boss-aae2d4936734) 来调整图表组件。所有氨基酸共享以下对映体骨架。
+RDKit 可以无缝地在 jupyter notebooks 中使用，其中 Draw 模块允许通过`Draw.MolsToGridImage()` [函数](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.html)轻松可视化分子结构。但我发现使用 matplotlib 可以提供更多灵活性，特别是如果遵循这些出色的 [建议](https://medium.com/towards-data-science/advanced-tutorial-how-to-master-matplotlib-like-an-absolute-boss-aae2d4936734) 来调整图表组件。所有氨基酸共享以下对映体骨架。
 
-![](../Images/f5bdda861783ccccdd395fc911ac256d.png)
+![](img/f5bdda861783ccccdd395fc911ac256d.png)
 
 α氨基酸骨架。图片来源于作者。
 
-在这一阶段，我们可以引入一个有用的RDKit功能，即所谓的 [R基团分解](https://greglandrum.github.io/rdkit-blog/posts/2023-01-09-rgd-tutorial.html)。在下面的代码中，我们定义了氨基酸骨架核心，其smiles为 [*:1][C@H](N[*:2])C(O)=O，具有两个明确的R基团标签。使用两个R基团标签的原因是L-脯氨酸中的呋喃环。通过明确设置R基团分解，我们将其约束为仅匹配明确指定的R基团。
+在这一阶段，我们可以引入一个有用的 RDKit 功能，即所谓的 [R 基团分解](https://greglandrum.github.io/rdkit-blog/posts/2023-01-09-rgd-tutorial.html)。在下面的代码中，我们定义了氨基酸骨架核心，其 smiles 为 [*:1]C@HC(O)=O，具有两个明确的 R 基团标签。使用两个 R 基团标签的原因是 L-脯氨酸中的呋喃环。通过明确设置 R 基团分解，我们将其约束为仅匹配明确指定的 R 基团。
 
-其余的代码创建了必要的输入数组，包含分子和图例，用于生成图像，使用的是与之前相同的实用函数。如果你仔细观察，你会注意到甘氨酸未能被分解为R基团。原因是它不是手性分子，而用于分解的核心结构是手性的。如果我们从核心中移除手性中心，甘氨酸的分解会成功，但R基团分解会失去一些特异性，这可能是不希望的。
+其余的代码创建了必要的输入数组，包含分子和图例，用于生成图像，使用的是与之前相同的实用函数。如果你仔细观察，你会注意到甘氨酸未能被分解为 R 基团。原因是它不是手性分子，而用于分解的核心结构是手性的。如果我们从核心中移除手性中心，甘氨酸的分解会成功，但 R 基团分解会失去一些特异性，这可能是不希望的。
 
-![](../Images/d41e8c7140d58eeeff466049e98aac47.png)
+![](img/d41e8c7140d58eeeff466049e98aac47.png)
 
-氨基酸R基团分解。图片来源于作者。
+氨基酸 R 基团分解。图片来源于作者。
 
-R基团分解在氨基酸骨架需要进一步处理的情况下很有用。本文不再对此深入探讨。
+R 基团分解在氨基酸骨架需要进一步处理的情况下很有用。本文不再对此深入探讨。
 
 # 识别肽键
 
@@ -90,7 +90,7 @@ R基团分解在氨基酸骨架需要进一步处理的情况下很有用。本�
 
 这产生了下面的图像。
 
-![](../Images/90e85a8b1b46b85a6410be26f9df649d.png)
+![](img/90e85a8b1b46b85a6410be26f9df649d.png)
 
 苏氨酸、精氨酸、蛋氨酸三肽，突出显示了两个肽键。图片来源于作者。
 
@@ -102,7 +102,7 @@ R基团分解在氨基酸骨架需要进一步处理的情况下很有用。本�
 
 上述代码生成了一个 PNG 图像，其中包含两行的两个反应可能性。
 
-![](../Images/bfb7a940699838858362f2fce95ee56b.png)
+![](img/bfb7a940699838858362f2fce95ee56b.png)
 
 苏氨酸、精氨酸、蛋氨酸三肽的水解。图片由作者提供。
 
@@ -112,14 +112,14 @@ R基团分解在氨基酸骨架需要进一步处理的情况下很有用。本�
 
 使用这个递归函数，我们检查一组九个示例分子是否是肽。
 
-该算法正确地将前8个结构分类为肽，将最后两个分类为非肽。值得注意的是，我们使用了氨基酸本身就是一个肽的约定，这严格来说可能并不准确，但这对于应用递归来说是方便的。
+该算法正确地将前 8 个结构分类为肽，将最后两个分类为非肽。值得注意的是，我们使用了氨基酸本身就是一个肽的约定，这严格来说可能并不准确，但这对于应用递归来说是方便的。
 
-![](../Images/11a0e42b9ff86840c1aec7c6a9e0dc31.png)
+![](img/11a0e42b9ff86840c1aec7c6a9e0dc31.png)
 
 通过递归水解检查结构是否为肽。图像由作者提供。
 
-通过将反应物结果添加到图中，可以增强算法，例如使用[NetworkX](https://networkx.org/)并通过在每个节点上绘制结构来可视化反应进程。叶子节点将是可以进一步分析的氨基酸，以获取肽中氨基酸的确切序列。可能性无穷无尽；RDKit已经完成了它的部分工作，然后可以依赖Python的表现力完成其余部分。
+通过将反应物结果添加到图中，可以增强算法，例如使用[NetworkX](https://networkx.org/)并通过在每个节点上绘制结构来可视化反应进程。叶子节点将是可以进一步分析的氨基酸，以获取肽中氨基酸的确切序列。可能性无穷无尽；RDKit 已经完成了它的部分工作，然后可以依赖 Python 的表现力完成其余部分。
 
 # 结论
 
-RDKit是一个丰富的化学信息学库。现在可以通过pip轻松部署，并打开了在化学应用中使用Python及其数据分析和数据科学生态系统的可能性。RDKit的[文档](https://www.rdkit.org/docs/GettingStartedInPython.html)虽说并非最好，但现在有很多教程和[博客](https://greglandrum.github.io/rdkit-blog/)可以参考。该库不断发展，新增了许多功能。希望这篇文章对展示RDKit的一些功能和潜力有所帮助。
+RDKit 是一个丰富的化学信息学库。现在可以通过 pip 轻松部署，并打开了在化学应用中使用 Python 及其数据分析和数据科学生态系统的可能性。RDKit 的[文档](https://www.rdkit.org/docs/GettingStartedInPython.html)虽说并非最好，但现在有很多教程和[博客](https://greglandrum.github.io/rdkit-blog/)可以参考。该库不断发展，新增了许多功能。希望这篇文章对展示 RDKit 的一些功能和潜力有所帮助。

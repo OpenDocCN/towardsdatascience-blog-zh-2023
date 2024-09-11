@@ -1,18 +1,18 @@
 # 变换器 — 直观而全面的解释
 
-> 原文：[https://towardsdatascience.com/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=collection_archive---------0-----------------------#2023-09-20](https://towardsdatascience.com/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=collection_archive---------0-----------------------#2023-09-20)
+> 原文：[`towardsdatascience.com/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=collection_archive---------0-----------------------#2023-09-20`](https://towardsdatascience.com/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=collection_archive---------0-----------------------#2023-09-20)
 
 ## 探索现代机器学习的浪潮：一步一步拆解变换器
 
-[](https://medium.com/@danielwarfield1?source=post_page-----58a5c5df8dbb--------------------------------)[![Daniel Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----58a5c5df8dbb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58a5c5df8dbb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----58a5c5df8dbb--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----58a5c5df8dbb--------------------------------)
+[](https://medium.com/@danielwarfield1?source=post_page-----58a5c5df8dbb--------------------------------)![Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----58a5c5df8dbb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58a5c5df8dbb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----58a5c5df8dbb--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----58a5c5df8dbb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbdc4072cbfdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-intuitively-and-exhaustively-explained-58a5c5df8dbb&user=Daniel+Warfield&userId=bdc4072cbfdc&source=post_page-bdc4072cbfdc----58a5c5df8dbb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----58a5c5df8dbb--------------------------------) ·15分钟阅读·2023年9月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F58a5c5df8dbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-intuitively-and-exhaustively-explained-58a5c5df8dbb&user=Daniel+Warfield&userId=bdc4072cbfdc&source=-----58a5c5df8dbb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbdc4072cbfdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-intuitively-and-exhaustively-explained-58a5c5df8dbb&user=Daniel+Warfield&userId=bdc4072cbfdc&source=post_page-bdc4072cbfdc----58a5c5df8dbb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----58a5c5df8dbb--------------------------------) ·15 分钟阅读·2023 年 9 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F58a5c5df8dbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-intuitively-and-exhaustively-explained-58a5c5df8dbb&user=Daniel+Warfield&userId=bdc4072cbfdc&source=-----58a5c5df8dbb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58a5c5df8dbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-intuitively-and-exhaustively-explained-58a5c5df8dbb&source=-----58a5c5df8dbb---------------------bookmark_footer-----------)![](../Images/edb20757aa401a62d13a932e35ee4b95.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58a5c5df8dbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-intuitively-and-exhaustively-explained-58a5c5df8dbb&source=-----58a5c5df8dbb---------------------bookmark_footer-----------)![](img/edb20757aa401a62d13a932e35ee4b95.png)
 
 图片由作者使用 MidJourney 制作。除非另有说明，否则所有图片均由作者提供。
 

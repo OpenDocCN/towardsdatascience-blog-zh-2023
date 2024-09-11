@@ -1,18 +1,18 @@
 # 学习机器学习 | Maarten Grootendorst: BERTopic、数据科学、心理学
 
-> 原文：[https://towardsdatascience.com/learning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921?source=collection_archive---------3-----------------------#2023-02-13](https://towardsdatascience.com/learning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921?source=collection_archive---------3-----------------------#2023-02-13)
+> 原文：[`towardsdatascience.com/learning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921?source=collection_archive---------3-----------------------#2023-02-13`](https://towardsdatascience.com/learning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921?source=collection_archive---------3-----------------------#2023-02-13)
 
-## 《学习机器学习》第一期的内容是对BERTopic的幕后 mastermind Maarten Grootendorst的深刻采访。
+## 《学习机器学习》第一期的内容是对 BERTopic 的幕后 mastermind Maarten Grootendorst 的深刻采访。
 
-[](https://medium.com/@levine.seth.p?source=post_page-----9ed9b9b2921--------------------------------)[![Seth Levine](../Images/a660734f5feac433e2d930116ab70986.png)](https://medium.com/@levine.seth.p?source=post_page-----9ed9b9b2921--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ed9b9b2921--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9ed9b9b2921--------------------------------) [Seth Levine](https://medium.com/@levine.seth.p?source=post_page-----9ed9b9b2921--------------------------------)
+[](https://medium.com/@levine.seth.p?source=post_page-----9ed9b9b2921--------------------------------)![Seth Levine](https://medium.com/@levine.seth.p?source=post_page-----9ed9b9b2921--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ed9b9b2921--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ed9b9b2921--------------------------------) [Seth Levine](https://medium.com/@levine.seth.p?source=post_page-----9ed9b9b2921--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F70f6655bd458&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921&user=Seth+Levine&userId=70f6655bd458&source=post_page-70f6655bd458----9ed9b9b2921---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ed9b9b2921--------------------------------) ·43 min read·2023年2月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ed9b9b2921&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921&user=Seth+Levine&userId=70f6655bd458&source=-----9ed9b9b2921---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F70f6655bd458&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921&user=Seth+Levine&userId=70f6655bd458&source=post_page-70f6655bd458----9ed9b9b2921---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ed9b9b2921--------------------------------) ·43 min read·2023 年 2 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ed9b9b2921&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921&user=Seth+Levine&userId=70f6655bd458&source=-----9ed9b9b2921---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ed9b9b2921&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921&source=-----9ed9b9b2921---------------------bookmark_footer-----------)![](../Images/79ec829d6325510c7d3abd49da4c4d3d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ed9b9b2921&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-from-machine-learning-maarten-grootendorst-bertopic-data-science-psychology-9ed9b9b2921&source=-----9ed9b9b2921---------------------bookmark_footer-----------)![](img/79ec829d6325510c7d3abd49da4c4d3d.png)
 
 欢迎来到“[学习机器学习](https://www.youtube.com/@learningfrommachinelearning)”，这是一个探索机器学习令人兴奋世界的[采访系列](https://rss.com/podcasts/learning-from-machine-learning/)，重点关注的不仅仅是算法和数据，还有来自专家的职业建议和生活经验。
 
@@ -22,9 +22,9 @@
 
 # 收获
 
-马尔滕·格罗滕多斯特是许多强大Python库的创建者，包括KeyBERT和BERTopic。他最初从心理学开始他的职业生涯，获得了临床心理学和组织心理学的硕士学位后，转向了数据科学。他通过开发开源库和撰写深刻的数据科学文章迅速在该领域产生了影响。他最常用的库BERTopic是一个主题建模框架，它是一种自动识别文档集中的主题的方法。它可以用于探索性数据分析和跟踪趋势随时间的变化。他还讨论了在创建BERTopic时面临的挑战，以及最新版本的目标和特点。
+马尔滕·格罗滕多斯特是许多强大 Python 库的创建者，包括 KeyBERT 和 BERTopic。他最初从心理学开始他的职业生涯，获得了临床心理学和组织心理学的硕士学位后，转向了数据科学。他通过开发开源库和撰写深刻的数据科学文章迅速在该领域产生了影响。他最常用的库 BERTopic 是一个主题建模框架，它是一种自动识别文档集中的主题的方法。它可以用于探索性数据分析和跟踪趋势随时间的变化。他还讨论了在创建 BERTopic 时面临的挑战，以及最新版本的目标和特点。
 
-马尔滕讨论了类似ChatGPT的 approaches 的含义，这些 approaches 常被误认为是人工通用智能（AGI），以及它们在行业中的接受情况。他分享了对这些拥有数十亿参数的大型语言模型如何融入AGI讨论的好奇，并认为即将到来的一年将会有重大变化。
+马尔滕讨论了类似 ChatGPT 的 approaches 的含义，这些 approaches 常被误认为是人工通用智能（AGI），以及它们在行业中的接受情况。他分享了对这些拥有数十亿参数的大型语言模型如何融入 AGI 讨论的好奇，并认为即将到来的一年将会有重大变化。
 
 马尔滕的建议包括：
 
@@ -42,35 +42,35 @@
 
 # 内容表
 
-> [欢迎](#88a7)
+> 欢迎
 > 
-> [收获](#afc8)
+> 收获
 > 
-> [完整采访](#2a94)
+> 完整采访
 > 
-> — [背景](#962b)
+> — 背景
 > 
-> — [BERTopic深入探讨](#b8f2)
+> — BERTopic 深入探讨
 > 
-> — [从机器学习中学习](#1837)
+> — 从机器学习中学习
 > 
-> [视频采访](#89df)
+> 视频采访
 > 
-> [Spotify音频](#40c6)
+> Spotify 音频
 > 
-> [资源](#34d3)
+> 资源
 > 
-> — [Maarten Grootendorst](#f6c1)
+> — Maarten Grootendorst
 > 
-> — [从机器学习中学习联系](#b586)
+> — 从机器学习中学习联系
 > 
-> [视频内容](#5e01)
+> 视频内容
 
 # 完整采访
 
 ## 背景
 
-**Seth:** 欢迎。很荣幸有Maarten Grootendorst在这里。他是许多有用的Python库的创作者，包括[KeyBERT](https://maartengr.github.io/KeyBERT/)和[BERTopic](https://maartengr.github.io/BERTopic/index.html)。我一直很欣赏您的工作，并且非常喜欢使用您的库。欢迎！
+**Seth:** 欢迎。很荣幸有 Maarten Grootendorst 在这里。他是许多有用的 Python 库的创作者，包括[KeyBERT](https://maartengr.github.io/KeyBERT/)和[BERTopic](https://maartengr.github.io/BERTopic/index.html)。我一直很欣赏您的工作，并且非常喜欢使用您的库。欢迎！
 
 **Maarten:** 太棒了，谢谢你邀请我。我很乐意在这里。
 
@@ -82,7 +82,7 @@
 
 然后我想到，好吧，在荷兰学习相对便宜，所以我决定攻读数据科学硕士学位。那里我真正发现了我的激情，这是我可以找到真正结合了心理学和技术方面的地方。因为在几乎所有情况下，数据科学中我们所做的大部分工作都涉及某种人类方面的因素。
 
-所以我真的可以利用我的心理学背景。然后之后，我开发了一些包，如KeyBERT和BERTopic，写了一些东西之类的。
+所以我真的可以利用我的心理学背景。然后之后，我开发了一些包，如 KeyBERT 和 BERTopic，写了一些东西之类的。
 
 **Seth:** 对，是的，所有那些令人惊叹的有用软件包。所以，你的心理学背景，你想再深入一点吗？
 
@@ -92,7 +92,7 @@
 
 我想，好的，让我在进入职场之前进一步探索和发展自己。因此，我探索了临床心理学，在那里我可以更多地专注于帮助那些有焦虑症、抑郁症或创伤后应激障碍等问题的人。
 
-然后，当然你从中学到很多有趣的东西，但我总觉得有些东西缺失。不是说这些领域不有趣，但你知道，像我这样的人总是试图找到自己的人生目标，找出是什么让自己快乐。虽然这很不错，也很有趣，但我很确定它不会让我在接下来的30、40年里感到快乐。
+然后，当然你从中学到很多有趣的东西，但我总觉得有些东西缺失。不是说这些领域不有趣，但你知道，像我这样的人总是试图找到自己的人生目标，找出是什么让自己快乐。虽然这很不错，也很有趣，但我很确定它不会让我在接下来的 30、40 年里感到快乐。
 
 所以你探索，最终我发现了机器学习。
 
@@ -110,7 +110,7 @@
 
 **Maarten:** 作为心理学家，你并不是最具技术性的人，对吧？你专注于这种互动、人类行为和观察技巧。
 
-里面有一些统计数据，但最初的关键是基础。所以，编程当然很重要，你可以非常了解一个算法，但如果你不能清晰且准确地编写代码，那么一定会出现bug或问题。这一点真的很重要。
+里面有一些统计数据，但最初的关键是基础。所以，编程当然很重要，你可以非常了解一个算法，但如果你不能清晰且准确地编写代码，那么一定会出现 bug 或问题。这一点真的很重要。
 
 与其深入复杂的学习算法，不如从非常简单的回归开始，这实际上可能非常复杂，如果你深入研究其中的一些复杂性。因此，我专注于在进入下一步之前尽可能完美地理解这一点。
 
@@ -136,19 +136,19 @@
 
 你可以用它进行探索性数据分析，看看我的文档中有什么。但它也被广泛应用于社会政治科学中，我们观察过去几年发展起来的某些信息，并查看这些趋势如何发展和变化，针对不同的类别或目标等。
 
-**塞斯：** 是的。我已经关注BERTopic一段时间了，我知道0.13版本最近刚刚发布。我想知道，最初的包的目标是什么？它在过去三年左右有什么变化？
+**塞斯：** 是的。我已经关注 BERTopic 一段时间了，我知道 0.13 版本最近刚刚发布。我想知道，最初的包的目标是什么？它在过去三年左右有什么变化？
 
 **马滕：** 它开始时是作为创建一个流程的方式。好的。所以，聚类和尝试从中提取主题表示的流程已经存在了一段时间。但我想找到一种方法，以一种流程的方式来做，在你使用的步骤之间几乎没有假设。
 
-![](../Images/7607bcb13d24e5c2dc9073ed3b784feb.png)
+![](img/7607bcb13d24e5c2dc9073ed3b784feb.png)
 
-[图片](https://maartengr.github.io/BERTopic/algorithm/algorithm.html) 由Maarten Grootendorst提供
+[图片](https://maartengr.github.io/BERTopic/algorithm/algorithm.html) 由 Maarten Grootendorst 提供
 
-所以我们基本上是在将文档转换为数字，即数值，然后将其缩减到更小的维度。所以，你不再有300个数值，而是将其压缩为五个。我们将对这些文档进行聚类，并从这些聚类中提取主题表示，已经有很多流程可以做到这一点。
+所以我们基本上是在将文档转换为数字，即数值，然后将其缩减到更小的维度。所以，你不再有 300 个数值，而是将其压缩为五个。我们将对这些文档进行聚类，并从这些聚类中提取主题表示，已经有很多流程可以做到这一点。
 
 但你最初想到的主题是以一种方式来实现的，你可以说，好的，我对这个聚类算法不太满意，我要选择完全不同的东西。或者，我对这个降维算法不满意，我要选择不同的东西。
 
-然后，重点主要放在最后一部分，即主题提取方式。我使用了一种修改版的TF-IDF度量，叫做[cTF-IDF](https://maartengr.github.io/BERTopic/api/ctfidf.html)。因为我最初是这样想的，所以很容易开发出许多变体和扩展，通常会成为不同的包。
+然后，重点主要放在最后一部分，即主题提取方式。我使用了一种修改版的 TF-IDF 度量，叫做[cTF-IDF](https://maartengr.github.io/BERTopic/api/ctfidf.html)。因为我最初是这样想的，所以很容易开发出许多变体和扩展，通常会成为不同的包。
 
 所以在主题建模中，你有[LDA](https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf)，这是一种经典的主题建模技术。是的。但如果你想使用某种变体，你必须安装不同的包。在许多情况下（当然不是所有情况），[gensim](https://radimrehurek.com/gensim/)已经实现了很多。但是，如果你想做层次主题建模或动态主题建模，我认为这些功能还没有实现，你需要为此安装不同的包。
 
@@ -158,11 +158,11 @@
 
 还有一些事情即将出现，但到目前为止，过去几年已经有了一个发展轨迹。
 
-**Seth:** 是的。我在行业里工作了几年，并做了主题建模。我可以说我很喜欢使用BERTopic。这非常棒——只需这种抽象级别，你不必了解每一个细节，就可以获得如此出色的结果。
+**Seth:** 是的。我在行业里工作了几年，并做了主题建模。我可以说我很喜欢使用 BERTopic。这非常棒——只需这种抽象级别，你不必了解每一个细节，就可以获得如此出色的结果。
 
 另外，正如你提到的模块化，你可以插拔不同的算法以获得不同的输出。所以，你之前提到了评估主题模型的问题。你能讨论一下为什么评估主题模型如此困难吗？
 
-**Maarten:** 一般来说，你会有，比如说1万份文档，这些文档是某个人或一组人的推文。BERTopic或任何主题建模技术在无监督的情况下（没有真实答案）从这些消息或文档中提取主题。
+**Maarten:** 一般来说，你会有，比如说 1 万份文档，这些文档是某个人或一组人的推文。BERTopic 或任何主题建模技术在无监督的情况下（没有真实答案）从这些消息或文档中提取主题。
 
 但谁来判断这些主题是否准确？那么准确性到底意味着什么？说这些消息中有一百个主题是否准确，还是说有十个主题更准确？这些主题的描述由一定数量的词表示，这些描述是否比其他算法更准确？
 
@@ -172,7 +172,7 @@
 
 所有这些不同类型的事物使得很难说，“这就是事实”。因为在这种情况下，事实往往确实在观察者的眼中。它是你的使用案例。你有一个特定的目标——你想用它做些什么。你想用它实现的目标会改变评估指标。
 
-如果我们谈论一些技术细节，它可以是准确性。如果你有标签，它可以是[一致性](https://example.org/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0)。也就是说，一个主题有多一致，但主题的一致性在于我认为一致和你认为一致之间的差异。因为BERTopic是一个聚类算法。我们可以说，好吧，我们将进行聚类，或者我们将评估聚类。
+如果我们谈论一些技术细节，它可以是准确性。如果你有标签，它可以是[一致性](https://example.org/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0)。也就是说，一个主题有多一致，但主题的一致性在于我认为一致和你认为一致之间的差异。因为 BERTopic 是一个聚类算法。我们可以说，好吧，我们将进行聚类，或者我们将评估聚类。
 
 我们可以评估它在未见文档上的预测。但那将是一个有监督的任务。找出某事是否准确有很多不同的方法，因为这里的准确性定义如此困难，这就是为什么它是一种如此主观的建模方式。
 
@@ -180,9 +180,9 @@
 
 **Maarten:** 没错。地面真相可以被创建，但每次都应该根据使用案例从头开始创建，因为我可以为我的特定使用案例创建一个地面真相，但另一个使用案例的地面真相将完全不同，有时还需要一个完全不同的评估指标。
 
-**Seth:** 你见过的一些最独特或最有趣的BERTopic使用案例是什么？
+**Seth:** 你见过的一些最独特或最有趣的 BERTopic 使用案例是什么？
 
-**Maarten:** 最独特的往往是那些试图做一些BERTopic不真的旨在做的事情的案例。很多情感分析的人想用BERTopic来做。
+**Maarten:** 最独特的往往是那些试图做一些 BERTopic 不真的旨在做的事情的案例。很多情感分析的人想用 BERTopic 来做。
 
 **Seth:** 这很棘手。
 
@@ -220,11 +220,11 @@
 
 **Seth:** 是的。你还提到了一种称为 API 心理学的东西。你想谈谈这个吗？
 
-[](/6-lessons-i-learned-from-developing-open-source-projects-4617e26f247c?source=post_page-----9ed9b9b2921--------------------------------) [## 从开发开源项目中学到的 6 个经验教训
+[](/6-lessons-i-learned-from-developing-open-source-projects-4617e26f247c?source=post_page-----9ed9b9b2921--------------------------------) ## 从开发开源项目中学到的 6 个经验教训
 
 ### 数据科学家的视角
 
-towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-projects-4617e26f247c?source=post_page-----9ed9b9b2921--------------------------------)
+towardsdatascience.com
 
 **Maarten:** 对。所以，这就是我所经历的，对吧？我因为心理学背景极其偏见，所以我称呼所有事物为心理学，只是因为我想这样做。
 
@@ -258,57 +258,57 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 **塞斯：** 你认为在机器学习中还有什么重要的问题没有答案？
 
-**马滕：** 当然有一些，但最近经常出现的一个问题是，这与ChatGPT类型的方法有关。当这样的模型发布时，人们开始把AI谈论得像通用人工智能一样，对吧？
+**马滕：** 当然有一些，但最近经常出现的一个问题是，这与 ChatGPT 类型的方法有关。当这样的模型发布时，人们开始把 AI 谈论得像通用人工智能一样，对吧？
 
 真实的智能，真实的意识，它能够通过图灵测试的那些夸张说法……而且我认为我们距离这些还有一点距离。但现在这开始变成一个有点模糊的领域，因为很多人以那种方式讨论它。
 
-虽然定义可能有所不同，但技术上我们仍然认为我们接近得比较快。如果我们确实在接近，我认为也很重要的是承认ChatGPT当然不是那样的。但它是什么，以及如何被接受到行业中，什么是和什么不是，对我来说，这是一个我们需要关注的重要问题。
+虽然定义可能有所不同，但技术上我们仍然认为我们接近得比较快。如果我们确实在接近，我认为也很重要的是承认 ChatGPT 当然不是那样的。但它是什么，以及如何被接受到行业中，什么是和什么不是，对我来说，这是一个我们需要关注的重要问题。
 
-因为虽然ChatGPT可以做非常了不起、非常有趣的事情，但它不是事实信息。它不一定必须是这样，这并不总是如此。在开发这些类型的模型时，需要考虑到这一点。我们正在看这些拥有数十亿参数的巨大语言模型，它们可以做非常有趣、非常了不起的事情。
+因为虽然 ChatGPT 可以做非常了不起、非常有趣的事情，但它不是事实信息。它不一定必须是这样，这并不总是如此。在开发这些类型的模型时，需要考虑到这一点。我们正在看这些拥有数十亿参数的巨大语言模型，它们可以做非常有趣、非常了不起的事情。
 
-我真的很想知道这将如何融入到AGI（通用人工智能）的讨论中。但我确实认为，按照现在的趋势，未来一年将会非常剧烈。
+我真的很想知道这将如何融入到 AGI（通用人工智能）的讨论中。但我确实认为，按照现在的趋势，未来一年将会非常剧烈。
 
-**塞斯：** 是的。我认为自然语言处理将会有另一个非常激动人心的一年，你知道的，ChatGPT和GPT-4将在几个月内推出。
+**塞斯：** 是的。我认为自然语言处理将会有另一个非常激动人心的一年，你知道的，ChatGPT 和 GPT-4 将在几个月内推出。
 
 当然。这显然会很有趣。但确实存在真正的智能与创建拥有数十亿或数万亿参数的大型语言模型之间的某种差距。这并不一定会转化为理解——这是我的看法。
 
 这引出了我的下一个问题，自从你开始从事这个行业以来，领域发生了怎样的变化？是大型语言模型的出现，还是你看到的其他变化？
 
-**Maarten:** 所以，当我开始做大型语言模型，或者更确切地说，当我开始做机器学习时，[Word2Vec](/word2vec-explained-49c52b4ccb71#:~:text=of%20the%20corpus.-,Word2Vec%20Architecture,other%20words%20in%20the%20corpus.)类型的模型真的开始出现，并展示了它们的可能性。
+**Maarten:** 所以，当我开始做大型语言模型，或者更确切地说，当我开始做机器学习时，Word2Vec 类型的模型真的开始出现，并展示了它们的可能性。
 
-然后慢慢过渡到[变压器](/illustrated-guide-to-transformers-step-by-step-explanation-f74876522bc0)类型的模型。从那里，当然我们现在拥有的就是目前的情况。我会说，大型语言模型真正改变了整个领域，特别是当你考虑到现在的[Hugging Face](https://huggingface.co/)时。考虑到他们托管的大量模型和它们可以做的事情。
+然后慢慢过渡到变压器类型的模型。从那里，当然我们现在拥有的就是目前的情况。我会说，大型语言模型真正改变了整个领域，特别是当你考虑到现在的[Hugging Face](https://huggingface.co/)时。考虑到他们托管的大量模型和它们可以做的事情。
 
 我想说的是，我们看到一个巨大的趋势正在向那些没人能在自己机器上运行的大型语言模型发展。并且，针对这一领域的研究非常有限，更多的是集中在蒸馏和让它对你我更可及上。
 
-我这里有一台带有不错GPU的笔记本电脑，但仅此而已。我希望在不使用API的情况下运行这些模型。这并不总是可能的，因为速度不够快。而且，仍有很多研究包朝这个方向发展。例如，如果你使用[sentence-transformers](https://www.sbert.net/)，它们将其蒸馏，并快速生成对所训练内容的非常准确的表示。
+我这里有一台带有不错 GPU 的笔记本电脑，但仅此而已。我希望在不使用 API 的情况下运行这些模型。这并不总是可能的，因为速度不够快。而且，仍有很多研究包朝这个方向发展。例如，如果你使用[sentence-transformers](https://www.sbert.net/)，它们将其蒸馏，并快速生成对所训练内容的非常准确的表示。
 
 因此，使用这些模型的推理速度非常快，我希望看到更多这样的模型，而不是数十亿的参数。虽然这很不错，不要误解我的意思。我们需要这些模型来最终得到一个蒸馏或更小的版本。但如果对较小的模型的关注程度能与对大型模型的关注一样，那将是很好的，因为我可以使用较小的模型。
 
 我的意思是，较大的模型对我来说实际上是不可接触的。
 
-**Seth:** 你是否看到生成模型如何影响主题建模和BERTopic之类的东西？你是否考虑过将其融入其中？
+**Seth:** 你是否看到生成模型如何影响主题建模和 BERTopic 之类的东西？你是否考虑过将其融入其中？
 
 **Maarten:** 是的。这又回到了依赖性等问题。
 
-但我认为Cohere所做的是，他们创建了一个主题模型，我想它叫做。这基本上是一个在BERTopic之上的GPT。因此，BERTopic生成一些主题和这些主题的描述，通过单词数来描述。然后他们将这些单词输入到GPT模型中，并要求从中创建一个主题——仅仅是自然描述。
+但我认为 Cohere 所做的是，他们创建了一个主题模型，我想它叫做。这基本上是一个在 BERTopic 之上的 GPT。因此，BERTopic 生成一些主题和这些主题的描述，通过单词数来描述。然后他们将这些单词输入到 GPT 模型中，并要求从中创建一个主题——仅仅是自然描述。
 
-而且它做得很好。这样的方法的问题在于，从生产环境的角度来看，很难在你的机器上运行，对吧？你需要有一个API，如果你使用Cohere，那是绝对没问题的，这是一个很棒的服务。但当你在没有互联网连接的情况下本地运行时，拥有一个本地GPT模型几乎是不可能的。
+而且它做得很好。这样的方法的问题在于，从生产环境的角度来看，很难在你的机器上运行，对吧？你需要有一个 API，如果你使用 Cohere，那是绝对没问题的，这是一个很棒的服务。但当你在没有互联网连接的情况下本地运行时，拥有一个本地 GPT 模型几乎是不可能的。
 
-当这些模型变得相对较小并且可以在你的机器上运行时——那时我将开始将这些技术集成到BERTopic中。但如果你想在几百个主题上使用GPT，并将其分配到，比如说，一百个类别中，那就变得非常困难，并且计算时间非常长。
+当这些模型变得相对较小并且可以在你的机器上运行时——那时我将开始将这些技术集成到 BERTopic 中。但如果你想在几百个主题上使用 GPT，并将其分配到，比如说，一百个类别中，那就变得非常困难，并且计算时间非常长。
 
-这就是为什么我现在不想把它集成到BERTopic中的原因，对吧？这就是为什么Cohere所做的事情很了不起。如果你觉得需要的话，这是一种在BERTopic基础上的附加功能。如果你有那种服务或对其感兴趣，我也会强烈建议使用。
+这就是为什么我现在不想把它集成到 BERTopic 中的原因，对吧？这就是为什么 Cohere 所做的事情很了不起。如果你觉得需要的话，这是一种在 BERTopic 基础上的附加功能。如果你有那种服务或对其感兴趣，我也会强烈建议使用。
 
-但在BERTopic中集成这些技术还为时尚早，直到性能达到现在BERTopic的状态。
+但在 BERTopic 中集成这些技术还为时尚早，直到性能达到现在 BERTopic 的状态。
 
-**Seth:** 对。这很有意义。是的，我尝试将一些BERTopic的输出放入一些开源生成模型中，结果让我感到惊喜。
+**Seth:** 对。这很有意义。是的，我尝试将一些 BERTopic 的输出放入一些开源生成模型中，结果让我感到惊喜。
 
 **Maarten:** 啊，这太棒了。
 
 **Seth:** 我认为这绝对是一个有趣的未来研究领域。你怎么看待这些新生成模型所制造的炒作？你觉得炒作与现实之间有很大的差距吗？
 
-**Maarten:** 是也不是。我知道这是个令人恼火的答案，但不，我不认为有差距，因为很多这些模型，拿ChatGPT或者[稳定扩散](https://huggingface.co/spaces/stabilityai/stable-diffusion)来说，可能会更有趣。基本上，我们从文本中创建图像，这真是太惊人了。
+**Maarten:** 是也不是。我知道这是个令人恼火的答案，但不，我不认为有差距，因为很多这些模型，拿 ChatGPT 或者[稳定扩散](https://huggingface.co/spaces/stabilityai/stable-diffusion)来说，可能会更有趣。基本上，我们从文本中创建图像，这真是太惊人了。
 
-![](../Images/71212117f2138754b3e61377cfa87d00.png)
+![](img/71212117f2138754b3e61377cfa87d00.png)
 
 使用[稳定扩散](https://huggingface.co/spaces/stabilityai/stable-diffusion)生成的图像，提示词为：“不可思议的图像，展示某人在学习如何做机器学习”
 
@@ -320,7 +320,7 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 是否会在很多组织中实际使用这一点，我对此表示高度怀疑。但在某些特定的应用场景中，我确实认为这会产生巨大影响，但这些场景只是有限的几个。对于很多人来说，这只是一些有趣的东西，很容易传播开来。
 
-**Seth:** 对吧？是的。ChatGPT的影响确实令人难以置信，短短一周内就获得了超过一百万的用户。与它互动的感觉确实很特别。我认为他们减缓了输出，使其感觉像是在与人交谈。
+**Seth:** 对吧？是的。ChatGPT 的影响确实令人难以置信，短短一周内就获得了超过一百万的用户。与它互动的感觉确实很特别。我认为他们减缓了输出，使其感觉像是在与人交谈。
 
 **Maarten:** 也许这与我不完全确定有关，只是为了确保人们仍然在使用它，而不会过多查询它。
 
@@ -332,9 +332,9 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 我在写文章时使用它来生成十个标题，例如，给我一些灵感，并从中提取，然后我会在十次中改变九次。但我确实认为这是获得你想创建的东西的初步想法的一个了不起的方式。
 
-如果你想写一个关于联邦学习的介绍，只需输入它。它可以返回一些内容，你可以按自己的方式修改，进行调整。看到这一点真的很有趣。也许在某个时候，我们不必自己打出所有这些内容。我们只需请别人或让ChatGPT来做。
+如果你想写一个关于联邦学习的介绍，只需输入它。它可以返回一些内容，你可以按自己的方式修改，进行调整。看到这一点真的很有趣。也许在某个时候，我们不必自己打出所有这些内容。我们只需请别人或让 ChatGPT 来做。
 
-然后，它会迭代地要求你以符合你想实现的方式进行修改。所以我们写作和互动的方式可能会完全改变，如果像这样的东西变得更开放源代码，或最终更易于公众访问，而不仅仅是API的话。
+然后，它会迭代地要求你以符合你想实现的方式进行修改。所以我们写作和互动的方式可能会完全改变，如果像这样的东西变得更开放源代码，或最终更易于公众访问，而不仅仅是 API 的话。
 
 这绝对会很有趣，对吧？
 
@@ -352,23 +352,23 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 **Maarten:** 所以我跟随一些人，但我不会特别说有这些人对我影响巨大。原因是，从心理学背景来看，我倾向于从尽可能多的角度看待事物，这同样适用于那些影响我的人。
 
-所以我尝试摘取人们所说的片段，并将其用于我认为有趣的内容。因为每个人都有自己的优点和缺点，我专注于这些优点，但我挑选20、30个人，他们在特定领域表现出色，然后试图将他们结合起来。
+所以我尝试摘取人们所说的片段，并将其用于我认为有趣的内容。因为每个人都有自己的优点和缺点，我专注于这些优点，但我挑选 20、30 个人，他们在特定领域表现出色，然后试图将他们结合起来。
 
-所以我开始学习基于transformer的模型，使用了[Jay Alammar的可视化](https://jalammar.github.io/illustrated-transformer/)。
+所以我开始学习基于 transformer 的模型，使用了[Jay Alammar 的可视化](https://jalammar.github.io/illustrated-transformer/)。
 
 **Seth:** 非常了不起，经典。
 
 **Maarten:** 他在这方面做了很棒的工作。但这是我从他那里获得的一个方面，然后我从其他完全不同的人那里获得其他东西并使用它。因此，这更多是人员的组合，而不是单独有一个人，我觉得我喜欢那个人做的一切，这种情况很少发生，因为你知道，我们是人，我们并不是在所有方面都很出色。所以，你知道，这个人在这方面更好，那个人在可视化方面更好，那个更好的编码员。
 
-现在，我是[Sentence-Transformers](https://www.sbert.net/)库的超级粉丝。例如，是的。所以有一个采访即将进行，Nils Reimers的工作非常出色，对吧？是的。但如果我需要可视化，我会去找Jay [Alammar]。你知道，这是一种人员的组合，我认为你最终会自己找到他们。
+现在，我是[Sentence-Transformers](https://www.sbert.net/)库的超级粉丝。例如，是的。所以有一个采访即将进行，Nils Reimers 的工作非常出色，对吧？是的。但如果我需要可视化，我会去找 Jay [Alammar]。你知道，这是一种人员的组合，我认为你最终会自己找到他们。
 
-因为我可以说，这里有20个人的名单，我觉得他们很有趣，但我觉得他们有趣是因为我是谁，我以某种方式看待事物，所以也试图用支持我观点的观点来支撑我的思维。我在这方面还是人类。因此，即使我提供这些人，也可能与那些看待事物方式不同的人不合适。
+因为我可以说，这里有 20 个人的名单，我觉得他们很有趣，但我觉得他们有趣是因为我是谁，我以某种方式看待事物，所以也试图用支持我观点的观点来支撑我的思维。我在这方面还是人类。因此，即使我提供这些人，也可能与那些看待事物方式不同的人不合适。
 
 是的。所以抱歉，这算是一种非回答，
 
 **塞思：** 不，这是一个很好的见解。我喜欢这一点。有没有其他领域的人激励你？
 
-**马滕：** 嗯，这是个好问题。我最近为BERTopic做了那个动画。
+**马滕：** 嗯，这是个好问题。我最近为 BERTopic 做了那个动画。
 
 **塞思：** 喜欢它。
 
@@ -376,9 +376,9 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 **塞思：** 我仍然喜欢它。
 
-**马滕：** 我用[3Blue1Brown](https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw)的软件做了那个。我真的很喜欢这个。这个YouTube频道提供了数学相关的内容，呈现方式很棒，还有一个开源的主要包，任何人都可以使用。
+**马滕：** 我用[3Blue1Brown](https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw)的软件做了那个。我真的很喜欢这个。这个 YouTube 频道提供了数学相关的内容，呈现方式很棒，还有一个开源的主要包，任何人都可以使用。
 
-我非常喜欢关注那些类型的人，因为他们以如此愉快的方式提供信息，让我感觉像是在看Netflix。如果你能做到这一点。例如，[Kurzgesagt](https://www.youtube.com/channel/UCsXVk37bltHxD1rDPwtNM8Q)，我最近在一篇[文章](https://medium.com/towards-data-science/using-whisper-and-bertopic-to-model-kurzgesagts-videos-7d8a63139bdf)中提到过，他们的频道也提供了关于不同主题的大量信息。
+我非常喜欢关注那些类型的人，因为他们以如此愉快的方式提供信息，让我感觉像是在看 Netflix。如果你能做到这一点。例如，[Kurzgesagt](https://www.youtube.com/channel/UCsXVk37bltHxD1rDPwtNM8Q)，我最近在一篇[文章](https://medium.com/towards-data-science/using-whisper-and-bertopic-to-model-kurzgesagts-videos-7d8a63139bdf)中提到过，他们的频道也提供了关于不同主题的大量信息。
 
 如果你能以一种像看电影一样的方式呈现复杂的内容，那真的是美妙的。是的，我真的对此印象深刻。所以，也许这些类型的人会影响我。
 
@@ -406,7 +406,7 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 但剩下的部分确实是销售，说服别人，好的，这值得投资。为了做到这一点，你需要解释清楚。你需要吸引人们。作为数据科学家，这并不总是必要的，有时候你有经理为你做这些事情——把这些事情抽象化，因为有很多技术数据科学家不一定想专注于大量的会议和演示，这也是公平的。但仍然需要有人来做好销售。
 
-**Seth:** 学会如何与各种类型的利益相关者打交道，从非技术人员到CEO，再到产品负责人，甚至其他数据科学家，这一点非常重要，了解你的受众是谁，以及传达你所学到的最佳方式。
+**Seth:** 学会如何与各种类型的利益相关者打交道，从非技术人员到 CEO，再到产品负责人，甚至其他数据科学家，这一点非常重要，了解你的受众是谁，以及传达你所学到的最佳方式。
 
 进入从机器学习中学习的领域。
 
@@ -474,17 +474,17 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 通过做所有这些项目，亲自动手分析数据，收集自己的数据，清理自己的数据，应用这些算法并深入研究，这帮助你真正理解这个领域，培养对事物何时有效和何时无效的直觉。
 
-一个著名的例子是，当大多数人刚开始时说的，如果你看到一个模型有99%的准确率。没错。肯定会有什么问题。
+一个著名的例子是，当大多数人刚开始时说的，如果你看到一个模型有 99%的准确率。没错。肯定会有什么问题。
 
 **Seth:** 哦，不
 
-**Maarten:** 这种情况不会发生。一般来说，不会发生。所以这是你逐渐培养出的直觉。当然，这是一个著名的例子，但类似的例子还有很多。许多这样的东西最终被实现到BERTopic中，因为我觉得，哦，这里发生了些奇怪的事情。
+**Maarten:** 这种情况不会发生。一般来说，不会发生。所以这是你逐渐培养出的直觉。当然，这是一个著名的例子，但类似的例子还有很多。许多这样的东西最终被实现到 BERTopic 中，因为我觉得，哦，这里发生了些奇怪的事情。
 
 我不完全确定，但我觉得我应该看看那里和那里。是的。现在，我之所以这样做的唯一原因是因为我在许多这些项目中积累了大量经验，即使这是我之前没有做过的事情，我也会立即知道去哪里找。我认为如果你刚开始，就做好工作吧，
 
 **Seth:** 对了。现实世界或真实项目的经验可以让你大致知道哪里可能会有陷阱，哪里可能会有坑，这些经验可以帮助你更好地应对。
 
-**Maarten:** 是的，绝对的。如果你刚开始，不要怕别人说不要使用Titanic数据集，也不要使用房价数据集。
+**Maarten:** 是的，绝对的。如果你刚开始，不要怕别人说不要使用 Titanic 数据集，也不要使用房价数据集。
 
 每个人都要从某个地方开始，从完全干净的数据开始是可以的。真的可以。然后你可以慢慢过渡到不那么干净的数据，收集自己的数据等等。
 
@@ -520,7 +520,7 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 **马滕：** 你让我思考了困难的问题。不，实际上，对我来说，机器学习在我生命中的出现与慢性疼痛大致是在同一时刻。
 
-处理这些问题相当困难。因此，找到一个健康的生活和我当时最喜欢的事情——机器学习之间的平衡对我来说很困难，因为慢性疼痛使得我每天打字10小时变得困难。
+处理这些问题相当困难。因此，找到一个健康的生活和我当时最喜欢的事情——机器学习之间的平衡对我来说很困难，因为慢性疼痛使得我每天打字 10 小时变得困难。
 
 我真的必须平衡我工作的方式和时间。这很棘手，对吧？所以当你换职业时，这已经很困难了。但当你最终找到你认为“好，这就是我想做的”时，同时你还会有慢性疼痛。
 
@@ -532,7 +532,7 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 > 但我真的学会了退一步看全局。你不需要知道一切。有些事情比其他事情更重要或不重要，你可以跟随，但最终你会赶上发生的事情。
 
-我是说，ChatGPT表现得非常好，这很棒，但如果我不把这个模型变成某种业务，我可能从一开始就不会知道这一点。那时候我不需要知道，所以我可以给自己更多空间来寻找平衡。虽然有了BERTopic和写作以及KeyBERT，仍然很困难。
+我是说，ChatGPT 表现得非常好，这很棒，但如果我不把这个模型变成某种业务，我可能从一开始就不会知道这一点。那时候我不需要知道，所以我可以给自己更多空间来寻找平衡。虽然有了 BERTopic 和写作以及 KeyBERT，仍然很困难。
 
 **Seth:** 是的。我不确定你是如何找到时间来维护如此出色的库并保持日常工作的。
 
@@ -546,15 +546,15 @@ towardsdatascience.com](/6-lessons-i-learned-from-developing-open-source-project
 
 所以总结一下，如果有人对联系你或了解更多关于你感兴趣的话，有没有地方可以去？
 
-**Maarten:** 你可以去Twitter或LinkedIn。这些是我主要的联系渠道。我还有一个网站。
+**Maarten:** 你可以去 Twitter 或 LinkedIn。这些是我主要的联系渠道。我还有一个网站。
 
-它是maartengrootendorst.com，只有荷兰人能理解。只是我的名字，但这是发音的方式。翻译成英语并不是最简单的事。但没有Twitter和LinkedIn，主要是LinkedIn。你可以在那儿很好地联系到我。是的。
+它是 maartengrootendorst.com，只有荷兰人能理解。只是我的名字，但这是发音的方式。翻译成英语并不是最简单的事。但没有 Twitter 和 LinkedIn，主要是 LinkedIn。你可以在那儿很好地联系到我。是的。
 
 **Seth:** 太棒了。Maarten，与你交谈非常愉快。
 
 谢谢。非常感谢。
 
-**Maarten:** 谢谢你邀请我。采访很棒。我喜欢这些问题。真的，其中大部分非常技术性，对吧？如果你有像KeyBERT或BERTopic这样的东西，这就是你主要做的事情。但更关注一点哲学和心理学的方面，我非常感激。
+**Maarten:** 谢谢你邀请我。采访很棒。我喜欢这些问题。真的，其中大部分非常技术性，对吧？如果你有像 KeyBERT 或 BERTopic 这样的东西，这就是你主要做的事情。但更关注一点哲学和心理学的方面，我非常感激。
 
 **Seth:** 绝对的。非常感谢。
 
@@ -634,7 +634,7 @@ Maarten Grootendorst: BERTopic, 数据科学, 心理学 | 机器学习中的学�
 
 +   [32:00](https://www.youtube.com/watch?v=bLW_RH2Y6oI&t=1920s) 自你开始在这个行业工作以来，这个领域发生了什么变化？
 
-+   [34:22](https://www.youtube.com/watch?v=bLW_RH2Y6oI&t=2062s) 生成模型如何影响主题建模和BERTopic？
++   [34:22](https://www.youtube.com/watch?v=bLW_RH2Y6oI&t=2062s) 生成模型如何影响主题建模和 BERTopic？
 
 +   [37:00](https://www.youtube.com/watch?v=bLW_RH2Y6oI&t=2220s) 这些生成模型的炒作和现实之间是否存在差距？
 
@@ -664,4 +664,4 @@ Maarten Grootendorst: BERTopic, 数据科学, 心理学 | 机器学习中的学�
 
 +   [1:07:20](https://www.youtube.com/watch?v=bLW_RH2Y6oI&t=4040s) 结论
 
-![](../Images/fd216b91fec6697499359ae8f3cc001c.png)
+![](img/fd216b91fec6697499359ae8f3cc001c.png)

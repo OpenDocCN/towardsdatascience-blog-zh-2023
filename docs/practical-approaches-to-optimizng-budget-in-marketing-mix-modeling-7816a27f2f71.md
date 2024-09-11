@@ -1,42 +1,42 @@
 # 实用的预算优化方法在营销组合建模中的应用
 
-> 原文：[https://towardsdatascience.com/practical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71?source=collection_archive---------1-----------------------#2023-02-28](https://towardsdatascience.com/practical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71?source=collection_archive---------1-----------------------#2023-02-28)
+> 原文：[`towardsdatascience.com/practical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71?source=collection_archive---------1-----------------------#2023-02-28`](https://towardsdatascience.com/practical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71?source=collection_archive---------1-----------------------#2023-02-28)
 
 ## 如何使用饱和曲线和统计模型优化媒体组合
 
-[](https://medium.com/@slavax?source=post_page-----7816a27f2f71--------------------------------)[![Slava Kisilevich](../Images/5a2a00fb7a9d4c33868d071b6cc1a009.png)](https://medium.com/@slavax?source=post_page-----7816a27f2f71--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7816a27f2f71--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7816a27f2f71--------------------------------) [Slava Kisilevich](https://medium.com/@slavax?source=post_page-----7816a27f2f71--------------------------------)
+[](https://medium.com/@slavax?source=post_page-----7816a27f2f71--------------------------------)![Slava Kisilevich](https://medium.com/@slavax?source=post_page-----7816a27f2f71--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7816a27f2f71--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7816a27f2f71--------------------------------) [Slava Kisilevich](https://medium.com/@slavax?source=post_page-----7816a27f2f71--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba0d56f8b910&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71&user=Slava+Kisilevich&userId=ba0d56f8b910&source=post_page-ba0d56f8b910----7816a27f2f71---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7816a27f2f71--------------------------------) · 9分钟阅读 · 2023年2月28日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7816a27f2f71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71&user=Slava+Kisilevich&userId=ba0d56f8b910&source=-----7816a27f2f71---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba0d56f8b910&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71&user=Slava+Kisilevich&userId=ba0d56f8b910&source=post_page-ba0d56f8b910----7816a27f2f71---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7816a27f2f71--------------------------------) · 9 分钟阅读 · 2023 年 2 月 28 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7816a27f2f71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71&user=Slava+Kisilevich&userId=ba0d56f8b910&source=-----7816a27f2f71---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7816a27f2f71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71&source=-----7816a27f2f71---------------------bookmark_footer-----------)![](../Images/c036f613d716e8185ca185b7300c04d3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7816a27f2f71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-approaches-to-optimizng-budget-in-marketing-mix-modeling-7816a27f2f71&source=-----7816a27f2f71---------------------bookmark_footer-----------)![](img/c036f613d716e8185ca185b7300c04d3.png)
 
 图片由 [Joel Filipe](https://unsplash.com/@joelfilip?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-市场营销组合建模（MMM）是一种数据驱动的方法，用于识别和分析业务结果（如销售或收入）的关键驱动因素，通过检验各种因素对响应的影响。MMM的目标是提供有关如何优化营销活动（包括广告、定价和促销）以改善业务表现的见解。在所有影响业务结果的因素中，营销贡献（例如各种媒体渠道的广告支出）被认为对响应有直接和可衡量的影响。通过分析不同媒体渠道广告支出的效果，MMM可以提供有价值的见解，帮助确定哪些渠道最有效于增加销售或收入，以及哪些渠道可能需要优化或淘汰，以最大化营销投资回报。
+市场营销组合建模（MMM）是一种数据驱动的方法，用于识别和分析业务结果（如销售或收入）的关键驱动因素，通过检验各种因素对响应的影响。MMM 的目标是提供有关如何优化营销活动（包括广告、定价和促销）以改善业务表现的见解。在所有影响业务结果的因素中，营销贡献（例如各种媒体渠道的广告支出）被认为对响应有直接和可衡量的影响。通过分析不同媒体渠道广告支出的效果，MMM 可以提供有价值的见解，帮助确定哪些渠道最有效于增加销售或收入，以及哪些渠道可能需要优化或淘汰，以最大化营销投资回报。
 
-# 对MMM的简短介绍
+# 对 MMM 的简短介绍
 
 市场营销组合建模（MMM）是一个多步骤的过程，涉及一系列独特的步骤，这些步骤由正在分析的营销效果驱动。首先，将媒体渠道的系数限制为正值，以考虑广告活动的正面效应。
 
-[](/modeling-marketing-mix-with-constrained-coefficients-234b23190ee2?source=post_page-----7816a27f2f71--------------------------------) [## 受限系数的市场营销组合建模
+[](/modeling-marketing-mix-with-constrained-coefficients-234b23190ee2?source=post_page-----7816a27f2f71--------------------------------) ## 受限系数的市场营销组合建模
 
-### 如何在Python中使用RPy2接口拟合SciPy线性回归并调用R岭回归
+### 如何在 Python 中使用 RPy2 接口拟合 SciPy 线性回归并调用 R 岭回归
 
-[towardsdatascience.com](/modeling-marketing-mix-with-constrained-coefficients-234b23190ee2?source=post_page-----7816a27f2f71--------------------------------)
+[towardsdatascience.com
 
 其次，应用广告库存转换，以捕捉广告对消费者行为的滞后和衰减影响。
 
-[](/modeling-marketing-mix-using-pymc3-ba18dd9e6e68?source=post_page-----7816a27f2f71--------------------------------) [## 使用PyMC3进行市场营销组合建模
+[](/modeling-marketing-mix-using-pymc3-ba18dd9e6e68?source=post_page-----7816a27f2f71--------------------------------) ## 使用 PyMC3 进行市场营销组合建模
 
-### 实验先验、数据归一化，并将贝叶斯建模与Robyn（Facebook的开源MMM）进行比较…
+### 实验先验、数据归一化，并将贝叶斯建模与 Robyn（Facebook 的开源 MMM）进行比较…
 
-[towardsdatascience.com](/modeling-marketing-mix-using-pymc3-ba18dd9e6e68?source=post_page-----7816a27f2f71--------------------------------)
+[towardsdatascience.com
 
-第三，广告支出与相应业务结果之间的关系不是线性的，而是遵循递减效应法则。在大多数MMM解决方案中，建模者通常采用线性回归来训练模型，这带来了两个主要挑战。首先，建模者必须应用饱和转换步骤来建立媒体活动变量与响应变量之间的非线性关系。其次，建模者必须制定关于适用于每个媒体渠道的可能转换函数的假设。然而，更复杂的机器学习模型可能在不应用饱和转换的情况下捕捉非线性关系。
+第三，广告支出与相应业务结果之间的关系不是线性的，而是遵循递减效应法则。在大多数 MMM 解决方案中，建模者通常采用线性回归来训练模型，这带来了两个主要挑战。首先，建模者必须应用饱和转换步骤来建立媒体活动变量与响应变量之间的非线性关系。其次，建模者必须制定关于适用于每个媒体渠道的可能转换函数的假设。然而，更复杂的机器学习模型可能在不应用饱和转换的情况下捕捉非线性关系。
 
 [## 使用平滑样条建模营销组合](https://towardsdatascience.com/modeling-marketing-mix-using-smoothing-splines-98dc8e84c367?source=post_page-----7816a27f2f71--------------------------------)
 
@@ -44,7 +44,7 @@
 
 [使用平滑样条建模营销组合](https://towardsdatascience.com/modeling-marketing-mix-using-smoothing-splines-98dc8e84c367?source=post_page-----7816a27f2f71--------------------------------) [](/improving-marketing-mix-modeling-using-machine-learning-approaches-25ea4cd6994b?source=post_page-----7816a27f2f71--------------------------------) [## 使用机器学习方法改善营销组合建模
 
-### 使用基于树的集成方法构建MMM模型，并使用SHAP（Shapley加性解释）解释媒体渠道表现
+### 使用基于树的集成方法构建 MMM 模型，并使用 SHAP（Shapley 加性解释）解释媒体渠道表现
 
 [改善营销组合建模使用机器学习方法](https://towardsdatascience.com/improving-marketing-mix-modeling-using-machine-learning-approaches-25ea4cd6994b?source=post_page-----7816a27f2f71--------------------------------)
 
@@ -64,13 +64,13 @@
 
 ## 数据
 
-我继续使用[Robyn](https://github.com/facebookexperimental/Robyn)提供的MIT许可证数据集进行实际示例，并按照相同的数据准备步骤应用Prophet来分解趋势、季节性和假期。
+我继续使用[Robyn](https://github.com/facebookexperimental/Robyn)提供的 MIT 许可证数据集进行实际示例，并按照相同的数据准备步骤应用 Prophet 来分解趋势、季节性和假期。
 
-数据集包括208周的收入（从2015年11月23日到2019年11月11日），包含：
+数据集包括 208 周的收入（从 2015 年 11 月 23 日到 2019 年 11 月 11 日），包含：
 
-+   5个媒体支出渠道：**tv_S, ooh_S, print_S, facebook_S, search_S**
++   5 个媒体支出渠道：**tv_S, ooh_S, print_S, facebook_S, search_S**
 
-+   2个也包含曝光信息（印象，点击）的媒体渠道：facebook_I, search_clicks_P（本文未使用）
++   2 个也包含曝光信息（印象，点击）的媒体渠道：facebook_I, search_clicks_P（本文未使用）
 
 +   无支出的有机媒体：**新闻通讯**
 
@@ -78,7 +78,7 @@
 
 ## 建模
 
-我构建了一个完整的工作MMM流程，可以在现实生活中用于分析媒体支出对响应变量的影响，包含以下组件：
+我构建了一个完整的工作 MMM 流程，可以在现实生活中用于分析媒体支出对响应变量的影响，包含以下组件：
 
 +   [广告库存转换](https://medium.com/towards-data-science/modeling-marketing-mix-using-pymc3-ba18dd9e6e68)具有无限衰减率（0 < α < 1）
 
@@ -132,7 +132,7 @@ class HillSaturation(BaseEstimator, TransformerMixin):
 
 一旦模型训练完成，我们可以使用通过 Hill 饱和变换生成的响应曲线来可视化媒体支出对响应变量的影响。下图展示了五个媒体渠道的响应曲线，描述了每个渠道的支出（按周）与 208 周期间响应之间的关系。
 
-![](../Images/bfd812bc762f0aea5c469ff26aeb588a.png)
+![](img/bfd812bc762f0aea5c469ff26aeb588a.png)
 
 作者提供的图片
 
@@ -211,21 +211,21 @@ solution = optimize.minimize(
 
     *媒体系数* — 每个媒体渠道的岭回归系数，与相应的饱和度水平相乘，以估计每个媒体渠道的响应水平。
 
-    *斜率*和*半饱和度* — Hill变换的两个参数，用于每个媒体渠道的支出最小值和最大值，以正确估计给定媒体支出的响应水平。
+    *斜率*和*半饱和度* — Hill 变换的两个参数，用于每个媒体渠道的支出最小值和最大值，以正确估计给定媒体支出的响应水平。
 
     目标函数遍历所有媒体渠道，并根据每个媒体渠道的个体响应水平的总和计算总响应。为了在优化函数中最大化响应，我们需要将其转换为最小化问题。因此，我们获得总响应的负值，并将其作为优化函数的目标。
 
 +   **method = SLSQP** — 顺序最小二乘规划（SLSQP）算法是一种流行的约束优化问题方法，通常用于优化市场营销组合建模中的预算分配。
 
-+   **x0** — 初始猜测。一个大小为(n,)的实数数组，其中`n`是独立变量的数量。在这种情况下，x0对应于媒体渠道的平均支出，即每个渠道的平均支出数组。
++   **x0** — 初始猜测。一个大小为(n,)的实数数组，其中`n`是独立变量的数量。在这种情况下，x0 对应于媒体渠道的平均支出，即每个渠道的平均支出数组。
 
 +   **bounds** — 指每个渠道的媒体支出范围。
 
-+   **约束条件** — SLSQP的约束条件被定义为字典列表，其中`budget_constraint`是一个确保媒体支出总和等于固定预算的函数：`np.sum(media_channel_average_spend)`。
++   **约束条件** — SLSQP 的约束条件被定义为字典列表，其中`budget_constraint`是一个确保媒体支出总和等于固定预算的函数：`np.sum(media_channel_average_spend)`。
 
 优化过程完成后，我们可以为每个媒体渠道生成响应曲线，并比较优化前后的支出分配，以评估优化过程的影响。
 
-![](../Images/eea054d44c7be24698bbc765843cf951.png)
+![](img/eea054d44c7be24698bbc765843cf951.png)
 
 图片由作者提供
 

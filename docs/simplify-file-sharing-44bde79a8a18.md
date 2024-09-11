@@ -1,14 +1,14 @@
 # 简化文件共享
 
-> 原文：[https://towardsdatascience.com/simplify-file-sharing-44bde79a8a18?source=collection_archive---------4-----------------------#2023-09-12](https://towardsdatascience.com/simplify-file-sharing-44bde79a8a18?source=collection_archive---------4-----------------------#2023-09-12)
+> 原文：[`towardsdatascience.com/simplify-file-sharing-44bde79a8a18?source=collection_archive---------4-----------------------#2023-09-12`](https://towardsdatascience.com/simplify-file-sharing-44bde79a8a18?source=collection_archive---------4-----------------------#2023-09-12)
 
 ## 使用 Python 操作 Google Drive 的共享文件夹的编码示例
 
-[](https://medium.com/@gijs.vandendool?source=post_page-----44bde79a8a18--------------------------------)[![Gijs van den Dool](../Images/46ba2e4b72ad691404e95c1995966332.png)](https://medium.com/@gijs.vandendool?source=post_page-----44bde79a8a18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44bde79a8a18--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----44bde79a8a18--------------------------------) [Gijs van den Dool](https://medium.com/@gijs.vandendool?source=post_page-----44bde79a8a18--------------------------------)
+[](https://medium.com/@gijs.vandendool?source=post_page-----44bde79a8a18--------------------------------)![Gijs van den Dool](https://medium.com/@gijs.vandendool?source=post_page-----44bde79a8a18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44bde79a8a18--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----44bde79a8a18--------------------------------) [Gijs van den Dool](https://medium.com/@gijs.vandendool?source=post_page-----44bde79a8a18--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea289793d3d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-file-sharing-44bde79a8a18&user=Gijs+van+den+Dool&userId=ea289793d3d7&source=post_page-ea289793d3d7----44bde79a8a18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----44bde79a8a18--------------------------------) ·13分钟阅读·2023年9月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F44bde79a8a18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-file-sharing-44bde79a8a18&user=Gijs+van+den+Dool&userId=ea289793d3d7&source=-----44bde79a8a18---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea289793d3d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-file-sharing-44bde79a8a18&user=Gijs+van+den+Dool&userId=ea289793d3d7&source=post_page-ea289793d3d7----44bde79a8a18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----44bde79a8a18--------------------------------) ·13 分钟阅读·2023 年 9 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F44bde79a8a18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimplify-file-sharing-44bde79a8a18&user=Gijs+van+den+Dool&userId=ea289793d3d7&source=-----44bde79a8a18---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 在这篇文章中，我将解释如何在 Google 生态系统中使用 Python 操作共享文件夹。
 
-![](../Images/7709cf663ef03f42fbb954c19ab639cc.png)
+![](img/7709cf663ef03f42fbb954c19ab639cc.png)
 
 [Annie Spratt](https://unsplash.com/@anniespratt?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供的照片，来源于 [Unsplash](https://unsplash.com/photos/QckxruozjRg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -30,9 +30,9 @@
 
 简单解释一下，对于不熟悉 Google Drive 文件共享的人，这个过程从收到一封邀请你贡献特定文件夹的电子邮件开始；请参见下面的邀请（左侧）。在邀请中有一个按钮，点击后会打开一个带有 Google Drive 界面的网页浏览器（右侧），该界面与接收邀请的 Google 邮箱相关联。
 
-![](../Images/e3ed8ab09ea49d94e82a80b19068a5b0.png)
+![](img/e3ed8ab09ea49d94e82a80b19068a5b0.png)
 
-图1：创建共享文件夹（作者提供的图片）
+图 1：创建共享文件夹（作者提供的图片）
 
 界面中隐藏了一些重要信息，尽早了解这些信息将有助于完成后续过程。
 
@@ -54,7 +54,7 @@
 
 1.  将快捷方式重命名为有意义的名称；在此示例中，我使用了“DataDevelopement”。文件位置和名称约定非常个人化，程序不关心文件存储的位置或名称，但有一定结构可以避免以后的一些麻烦。
 
-![](../Images/04d6af0a2a958a7f88b78e4a81e9b795.png)
+![](img/04d6af0a2a958a7f88b78e4a81e9b795.png)
 
 图 2：创建快捷方式（图片由作者提供）
 
@@ -129,7 +129,7 @@ Google API 客户端是一个大型库，功能众多，但在这个项目中，
 
 希望在你跟随并运行代码时，你会在刷新面板后看到右侧的图片。你可以在图像中看到“__Shared”下的快捷方式作为一个文件夹，我们没有看到“Shared with me”部分，但由于我们有快捷方式，所以不需要查看“Shared with me”文件。
 
-![](../Images/1a40ae1b66dd690fa6dfe16d7caa1597.png)
+![](img/1a40ae1b66dd690fa6dfe16d7caa1597.png)
 
 图 3：Google Colab 网络界面中运行时环境的未挂载状态与挂载状态（图片由作者提供）
 

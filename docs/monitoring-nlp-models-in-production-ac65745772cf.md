@@ -1,24 +1,24 @@
-# 监控生产环境中的NLP模型
+# 监控生产环境中的 NLP 模型
 
-> 原文：[https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20](https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20`](https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20)
 
 ## 关于检测文本数据漂移的代码教程
 
-[](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[![Elena Samuylova](../Images/bc3024500f8b90a97f13d82ecaa1c9e7.png)](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------) [Elena Samuylova](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)
+[](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)![Elena Samuylova](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------) [Elena Samuylova](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9621354b583a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=post_page-9621354b583a----ac65745772cf---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------) ·13 min read·2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=-----ac65745772cf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9621354b583a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=post_page-9621354b583a----ac65745772cf---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------) ·13 min read·2023 年 2 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=-----ac65745772cf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&source=-----ac65745772cf---------------------bookmark_footer-----------)![](../Images/29f88501939d130d890f1672efc66d29.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&source=-----ac65745772cf---------------------bookmark_footer-----------)![](img/29f88501939d130d890f1672efc66d29.png)
 
 图片由作者提供。
 
-所有生产环境中的机器学习模型都需要[监控](https://www.evidentlyai.com/blog/pragmatic-ml-monitoring-metrics)。NLP模型也不例外。但是，监控使用文本数据的模型可能与监控基于表格数据的模型有所不同。
+所有生产环境中的机器学习模型都需要[监控](https://www.evidentlyai.com/blog/pragmatic-ml-monitoring-metrics)。NLP 模型也不例外。但是，监控使用文本数据的模型可能与监控基于表格数据的模型有所不同。
 
-**在本教程中，我们将深入探讨一个具体的例子。** 我们将探索影响生产环境中NLP模型性能的问题，使用一个示例玩具数据集模拟这些问题，并展示如何监控和调试它们。
+**在本教程中，我们将深入探讨一个具体的例子。** 我们将探索影响生产环境中 NLP 模型性能的问题，使用一个示例玩具数据集模拟这些问题，并展示如何监控和调试它们。
 
 我们将使用一个药品评论数据集，并按照以下步骤进行操作：
 
@@ -34,7 +34,7 @@
 
 # 用例
 
-![](../Images/70b7ab28a5ca20556f1eb7af415191fe.png)
+![](img/70b7ab28a5ca20556f1eb7af415191fe.png)
 
 图片由作者提供。
 
@@ -50,7 +50,7 @@
 
 要解决这个问题，你首先需要一个标注数据集。
 
-![](../Images/bec67970ac4767dc4d9bbd76ea6d4d8d.png)
+![](img/bec67970ac4767dc4d9bbd76ea6d4d8d.png)
 
 图片由作者提供。
 
@@ -68,7 +68,7 @@
 
 我们可以期待在类似数据中生产中的质量相似。如果准确性大幅低于这一水平，我们应该做出反应并深入探讨发生了什么。
 
-![](../Images/507f774ac6b71d1cfbbdc1e95eba5286.png)
+![](img/507f774ac6b71d1cfbbdc1e95eba5286.png)
 
 **注意：** 这是一个简单的演示。如果你在处理真实用例时，不要忘记交叉验证，以便对模型质量做出更有依据的预期。
 
@@ -80,7 +80,7 @@
 
 ‍ **在这两种情况下，你通常不会得到即时反馈。** 没有快速的方法来知道预测标签是否正确。然而，你确实需要*某种东西*来监控模型的表现，以确保其按预期工作。
 
-![](../Images/995ce8d5d0943125e79b605401c4805e.png)
+![](img/995ce8d5d0943125e79b605401c4805e.png)
 
 图片来源：作者。
 
@@ -98,7 +98,7 @@
 
 # 示例 1：数据质量和完整性
 
-![](../Images/93c8d467152f2715cc8b248474802871.png)
+![](img/93c8d467152f2715cc8b248474802871.png)
 
 图片来源：作者。
 
@@ -110,7 +110,7 @@
 
 现在，让我们检查一下这个修改后的数据上的模型质量：
 
-![](../Images/79b684d8650e9248e80b4fb171f1bd39.png)
+![](img/79b684d8650e9248e80b4fb171f1bd39.png)
 
 图片由作者提供。Evidently 库的截图。
 
@@ -163,51 +163,51 @@ data_drift_report
 
 一旦我们展示报告，可以看到真实标签或预测概率没有漂移。
 
-![](../Images/1ff9eadc4b9e316df5e0b600b7677af4.png)
+![](img/1ff9eadc4b9e316df5e0b600b7677af4.png)
 
 图片由作者提供。Evidently 库的截图。
 
 但有些输入文本属性是不同的！
 
-![](../Images/54d0cbb0432144ee736f70f8ac52bf8a.png)
+![](img/54d0cbb0432144ee736f70f8ac52bf8a.png)
 
 图片由作者提供。Evidently 库的截图。
 
-在后台，Evidently计算这些描述符并应用不同的统计测试和距离度量，以检查两个数据集之间是否存在显著的变化。
+在后台，Evidently 计算这些描述符并应用不同的统计测试和距离度量，以检查两个数据集之间是否存在显著的变化。
 
 特别是，它指出了**文本长度分布的变化**。如果我们扩展报告中的细节，我们可以看到一些附加的图表，这些图表有助于理解这种变化。
 
 一些评论现在疑似变得很长：
 
-![](../Images/dfe31d04294252342c2fcfdaaca6b62f.png)
+![](img/dfe31d04294252342c2fcfdaaca6b62f.png)
 
-作者提供的图片。截图来自Evidently库。
+作者提供的图片。截图来自 Evidently 库。
 
-**词汇量也发生了变化**。多个评论包含超过30%的词汇外单词：
+**词汇量也发生了变化**。多个评论包含超过 30%的词汇外单词：
 
-![](../Images/6fba019ed3de59b38b551767960974db.png)
+![](img/6fba019ed3de59b38b551767960974db.png)
 
-作者提供的图片。截图来自Evidently库。
+作者提供的图片。截图来自 Evidently 库。
 
-这些发现可以帮助我们找到变化的例子，以了解发生了什么。例如，我们可以在数据集中查询所有超过1000字的长评论和超过30%为词汇外单词的评论。
+这些发现可以帮助我们找到变化的例子，以了解发生了什么。例如，我们可以在数据集中查询所有超过 1000 字的长评论和超过 30%为词汇外单词的评论。
 
 一旦我们显示出这些例子，我们可以迅速了解发生了什么：
 
-+   含有HTML标签的文本直接传递给模型
++   含有 HTML 标签的文本直接传递给模型
 
 +   评论使用了新的、意想不到的语言
 
 这是查询结果之一：
 
-![](../Images/73d9980b30bf109fd6af00299f610299.png)
+![](img/73d9980b30bf109fd6af00299f610299.png)
 
 作者提供的图片。截图来自示例笔记本。
 
 知道发生了什么之后，我们可以与数据工程团队（以整理管道）和产品团队（以确保法语评论是预期的，并且是时候为这些评论创建一个单独的模型）解决问题。
 
-# 示例2：数据分布变化
+# 示例 2：数据分布变化
 
-![](../Images/ce069d5fe9c72783104b64de2273ea69.png)
+![](img/ce069d5fe9c72783104b64de2273ea69.png)
 
 作者提供的图片。
 
@@ -225,7 +225,7 @@ data_drift_report
 
 模型没有完全失败，但准确率只有 0.779。
 
-![](../Images/ae6d6708b6c5720ebdc9e3c6b39c4559.png)
+![](img/ae6d6708b6c5720ebdc9e3c6b39c4559.png)
 
 作者提供的图片。截图来自 Evidently 库。
 
@@ -233,13 +233,13 @@ data_drift_report
 
 我们可以再次生成漂移报告，并立即注意到一些变化。特别是，标签的分布已经发生漂移。
 
-![](../Images/7e147694988fe7ed6597367cf8c4cf55.png)
+![](img/7e147694988fe7ed6597367cf8c4cf55.png)
 
 作者提供的图片。截图来自 Evidently 库。
 
 当前数据集中的评论也更长，OOV 词汇出现的频率更高。但没有像上述情况那样明显的变化。
 
-![](../Images/453e3c043d60b54a65131852e8afc109.png)
+![](img/453e3c043d60b54a65131852e8afc109.png)
 
 作者提供的图片。截图来自 Evidently 库。
 
@@ -249,7 +249,7 @@ data_drift_report
 
 ‍**Evidently 使用了不同的文本漂移检测方法：** [**一个领域分类器**](https://www.evidentlyai.com/blog/evidently-data-quality-monitoring-and-drift-detection-for-text-data)**。** 它训练一个背景模型来区分参考数据集和当前数据集。二分类器的 ROC AUC 显示漂移是否被检测到。如果一个模型可以可靠地区分当前或参考数据集中的评论，那么这两个数据集可能足够不同。
 
-![](../Images/1e2b46a3cb38cf68cad5643f7634f1bb.png)
+![](img/1e2b46a3cb38cf68cad5643f7634f1bb.png)
 
 作者提供的图片。
 
@@ -257,11 +257,11 @@ data_drift_report
 
 这并非没有警告。如果你在新数据集中有一些时间信息（例如，每条评论包括日期），模型可能会很快学会区分数据集。这可能只是因为其中一个数据集包含“March”一词，而另一个包含“February”，或者提到了黑色星期五促销。然而，我们可以通过查看领域分类器模型的顶级特征和一些示例来评估这一点。
 
-如果检测到文本数据漂移，Evidently将自动提供一些有用的信息：
+如果检测到文本数据漂移，Evidently 将自动提供一些有用的信息：
 
 +   **当前数据集和参考数据集中的典型词汇**。这些词汇在预测特定评论属于哪个数据集时最具指示性。
 
-+   **文本示例**来自当前和参考数据集，这些文本对分类器来说最容易正确标记（预测概率非常接近0或1）。
++   **文本示例**来自当前和参考数据集，这些文本对分类器来说最容易正确标记（预测概率非常接近 0 或 1）。
 
 为了使用这种方法，我们将创建一个新报告，并在给定列中包含有助于检测漂移的度量。对于包含文本数据的列，领域分类器是默认方法。
 
@@ -279,19 +279,19 @@ data_drift_dataset_report
 
 这是它对我们的数据集的显示情况。
 
-**首先，它确实检测到了分布漂移。** 分类器模型非常自信，ROC AUC为0.94。其次，最具辨识性的特征非常明确地指向了文本内容的可能变化。
+**首先，它确实检测到了分布漂移。** 分类器模型非常自信，ROC AUC 为 0.94。其次，最具辨识性的特征非常明确地指向了文本内容的可能变化。
 
 参考数据集包含“pain”和“migraine”这些词汇。
 
-![](../Images/4a9043c06299641496b3e0f8d03e3619.png)
+![](img/4a9043c06299641496b3e0f8d03e3619.png)
 
-作者提供的图片。来自Evidently库的截图。
+作者提供的图片。来自 Evidently 库的截图。
 
 当前数据集包含“depression”和“antidepressant”这些词汇。
 
-![](../Images/9c1f9519f7804f1dc52681350fc62e2b.png)
+![](img/9c1f9519f7804f1dc52681350fc62e2b.png)
 
-作者提供的图片。来自Evidently库的截图。
+作者提供的图片。来自 Evidently 库的截图。
 
 从具体的示例评论中也可以看出这一点。它们指的是不同的药物类别，作者使用不同的词汇来描述某种药物是否有效。例如，“improve mood”与“relieve pain”不同，使得模型更难以分类评论的情感。
 
@@ -303,7 +303,7 @@ data_drift_dataset_report
 
 **在实践中，你可以主动进行数据质量检查。** 例如，你可以在批量评分流程中实现这个早期质量控制步骤。你可以测试你的数据，以便在获得实际标签或甚至评分模型之前发现潜在问题。
 
-如果你发现评论正文中有HTML标签等问题，你可以立即采取行动解决它们：通过更新和重新运行预处理流程。
+如果你发现评论正文中有 HTML 标签等问题，你可以立即采取行动解决它们：通过更新和重新运行预处理流程。
 
 **你可以对数据漂移检查做同样的事情**。每次获得新一批数据时，你可以评估其关键特征以及它与前一批数据的相似程度。
 

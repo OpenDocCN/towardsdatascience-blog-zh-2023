@@ -1,8 +1,8 @@
 # 增强 Python 文档：链接源代码的逐步指南
 
-> 原文：[https://towardsdatascience.com/enhancing-python-documentation-a-step-by-step-guide-to-linking-source-code-9da102b2bb2a?source=collection_archive---------8-----------------------#2023-12-07](https://towardsdatascience.com/enhancing-python-documentation-a-step-by-step-guide-to-linking-source-code-9da102b2bb2a?source=collection_archive---------8-----------------------#2023-12-07)
+> 原文：[`towardsdatascience.com/enhancing-python-documentation-a-step-by-step-guide-to-linking-source-code-9da102b2bb2a?source=collection_archive---------8-----------------------#2023-12-07`](https://towardsdatascience.com/enhancing-python-documentation-a-step-by-step-guide-to-linking-source-code-9da102b2bb2a?source=collection_archive---------8-----------------------#2023-12-07)
 
-[](https://piskunow.medium.com/?source=post_page-----9da102b2bb2a--------------------------------)[![Pablo Piskunow](../Images/ee0402d41010f97f5e4a51494ae3b517.png)](https://piskunow.medium.com/?source=post_page-----9da102b2bb2a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9da102b2bb2a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9da102b2bb2a--------------------------------) [Pablo Piskunow](https://piskunow.medium.com/?source=post_page-----9da102b2bb2a--------------------------------)
+[](https://piskunow.medium.com/?source=post_page-----9da102b2bb2a--------------------------------)![Pablo Piskunow](https://piskunow.medium.com/?source=post_page-----9da102b2bb2a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9da102b2bb2a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9da102b2bb2a--------------------------------) [Pablo Piskunow](https://piskunow.medium.com/?source=post_page-----9da102b2bb2a--------------------------------)
 
 ·
 
@@ -18,7 +18,7 @@
 
 Python 的强大不仅在于它的简单性和效率，还在于它庞大的社区和丰富的文档。但如果你能让这些文档变得更加互动和信息丰富，会怎么样呢？今天，我将指导你如何通过直接链接到 GitHub 上对应的源代码来增强你由 Sphinx 生成的 Python 文档。
 
-![](../Images/f1ac9810e77866bfc357b8a03fa99355.png)
+![](img/f1ac9810e77866bfc357b8a03fa99355.png)
 
 作者使用 Dalle-3 创建的图片。提示：“抽象图像，浅奶油色画布上的黑色水彩，展示了与机器内部工作相关的手写片段，并用细箭头连接。”
 

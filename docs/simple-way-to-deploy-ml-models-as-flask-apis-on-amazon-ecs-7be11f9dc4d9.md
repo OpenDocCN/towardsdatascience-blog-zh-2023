@@ -1,10 +1,10 @@
 # 在 Amazon ECS 上以简单方式部署 ML 模型作为 Flask APIs
 
-> 原文：[https://towardsdatascience.com/simple-way-to-deploy-ml-models-as-flask-apis-on-amazon-ecs-7be11f9dc4d9?source=collection_archive---------8-----------------------#2023-03-10](https://towardsdatascience.com/simple-way-to-deploy-ml-models-as-flask-apis-on-amazon-ecs-7be11f9dc4d9?source=collection_archive---------8-----------------------#2023-03-10)
+> 原文：[`towardsdatascience.com/simple-way-to-deploy-ml-models-as-flask-apis-on-amazon-ecs-7be11f9dc4d9?source=collection_archive---------8-----------------------#2023-03-10`](https://towardsdatascience.com/simple-way-to-deploy-ml-models-as-flask-apis-on-amazon-ecs-7be11f9dc4d9?source=collection_archive---------8-----------------------#2023-03-10)
 
 ## 在 4 分钟内将 Flask APIs 部署到 Amazon ECS
 
-[](https://medium.com/@nikola.kuzmic945?source=post_page-----7be11f9dc4d9--------------------------------)[![Nikola Kuzmic](../Images/b6be2a8e377bc450ced5260a79a1f4bb.png)](https://medium.com/@nikola.kuzmic945?source=post_page-----7be11f9dc4d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7be11f9dc4d9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7be11f9dc4d9--------------------------------) [Nikola Kuzmic](https://medium.com/@nikola.kuzmic945?source=post_page-----7be11f9dc4d9--------------------------------)
+[](https://medium.com/@nikola.kuzmic945?source=post_page-----7be11f9dc4d9--------------------------------)![Nikola Kuzmic](https://medium.com/@nikola.kuzmic945?source=post_page-----7be11f9dc4d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7be11f9dc4d9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7be11f9dc4d9--------------------------------) [Nikola Kuzmic](https://medium.com/@nikola.kuzmic945?source=post_page-----7be11f9dc4d9--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7be11f9dc4d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-way-to-deploy-ml-models-as-flask-apis-on-amazon-ecs-7be11f9dc4d9&source=-----7be11f9dc4d9---------------------bookmark_footer-----------)![](../Images/e65f1c65818c31933d75bdf5d19ede50.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7be11f9dc4d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimple-way-to-deploy-ml-models-as-flask-apis-on-amazon-ecs-7be11f9dc4d9&source=-----7be11f9dc4d9---------------------bookmark_footer-----------)![](img/e65f1c65818c31933d75bdf5d19ede50.png)
 
 图片由 [Arjan van den Berg](https://unsplash.com/@arjan71?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
 # 我在几乎所有数据科学项目中使用的 5 个 Python 装饰器
 
-> 原文：[https://towardsdatascience.com/python-decorators-for-data-science-6913f717669a?source=collection_archive---------0-----------------------#2023-03-13](https://towardsdatascience.com/python-decorators-for-data-science-6913f717669a?source=collection_archive---------0-----------------------#2023-03-13)
+> 原文：[`towardsdatascience.com/python-decorators-for-data-science-6913f717669a?source=collection_archive---------0-----------------------#2023-03-13`](https://towardsdatascience.com/python-decorators-for-data-science-6913f717669a?source=collection_archive---------0-----------------------#2023-03-13)
 
 ## 装饰器提供了一种新的便捷方式，从缓存到发送通知。
 
-[](https://thuwarakesh.medium.com/?source=post_page-----6913f717669a--------------------------------)[![Thuwarakesh Murallie](../Images/44f1a14a899426592bbd8c7f73ce169d.png)](https://thuwarakesh.medium.com/?source=post_page-----6913f717669a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6913f717669a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6913f717669a--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----6913f717669a--------------------------------)
+[](https://thuwarakesh.medium.com/?source=post_page-----6913f717669a--------------------------------)![Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----6913f717669a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6913f717669a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6913f717669a--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----6913f717669a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-for-data-science-6913f717669a&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----6913f717669a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6913f717669a--------------------------------) ·6 分钟阅读·2023年3月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6913f717669a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-for-data-science-6913f717669a&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----6913f717669a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-for-data-science-6913f717669a&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----6913f717669a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6913f717669a--------------------------------) ·6 分钟阅读·2023 年 3 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6913f717669a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-for-data-science-6913f717669a&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----6913f717669a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6913f717669a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-for-data-science-6913f717669a&source=-----6913f717669a---------------------bookmark_footer-----------)![](../Images/fc0bc39e9f13f04a39005e4e7610a8fe.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6913f717669a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-decorators-for-data-science-6913f717669a&source=-----6913f717669a---------------------bookmark_footer-----------)![](img/fc0bc39e9f13f04a39005e4e7610a8fe.png)
 
 图片由 [Elena Mozhvilo](https://unsplash.com/@miracleday?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

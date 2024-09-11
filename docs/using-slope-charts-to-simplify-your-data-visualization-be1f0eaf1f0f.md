@@ -1,20 +1,20 @@
 # 使用斜率图简化你的数据可视化
 
-> 原文：[https://towardsdatascience.com/using-slope-charts-to-simplify-your-data-visualization-be1f0eaf1f0f?source=collection_archive---------4-----------------------#2023-12-08](https://towardsdatascience.com/using-slope-charts-to-simplify-your-data-visualization-be1f0eaf1f0f?source=collection_archive---------4-----------------------#2023-12-08)
+> 原文：[`towardsdatascience.com/using-slope-charts-to-simplify-your-data-visualization-be1f0eaf1f0f?source=collection_archive---------4-----------------------#2023-12-08`](https://towardsdatascience.com/using-slope-charts-to-simplify-your-data-visualization-be1f0eaf1f0f?source=collection_archive---------4-----------------------#2023-12-08)
 
 ## 数据可视化，数据讲述
 
 ## 使用斜率图简化你的复杂图表：Python Altair 教程
 
-[![Angelica Lo Duca](../Images/45aa2e2e504bb3af6d3b8009dc6f030e.png)](https://alod83.medium.com/?source=post_page-----be1f0eaf1f0f--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be1f0eaf1f0f--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----be1f0eaf1f0f--------------------------------)
+![Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----be1f0eaf1f0f--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----be1f0eaf1f0f--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----be1f0eaf1f0f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-slope-charts-to-simplify-your-data-visualization-be1f0eaf1f0f&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----be1f0eaf1f0f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be1f0eaf1f0f--------------------------------) · 5分钟阅读 · 2023年12月8日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-slope-charts-to-simplify-your-data-visualization-be1f0eaf1f0f&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----be1f0eaf1f0f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be1f0eaf1f0f--------------------------------) · 5 分钟阅读 · 2023 年 12 月 8 日
 
 --
 
-![](../Images/a91cc8910ee07386dbc528c3a8185455.png)
+![](img/a91cc8910ee07386dbc528c3a8185455.png)
 
 作者提供的图片
 

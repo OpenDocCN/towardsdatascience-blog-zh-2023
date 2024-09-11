@@ -1,14 +1,14 @@
-# 使用 PyTorch 的高效图像分割：第 1 部分
+# 使用 PyTorch 的高效图像分割：第一部分
 
-> 原文：[https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-1-89e8297a0923?source=collection_archive---------1-----------------------#2023-06-27](https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-1-89e8297a0923?source=collection_archive---------1-----------------------#2023-06-27)
+> 原文：[`towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-1-89e8297a0923?source=collection_archive---------1-----------------------#2023-06-27`](https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-1-89e8297a0923?source=collection_archive---------1-----------------------#2023-06-27)
 
 ## 概念与想法
 
-[](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)[![Dhruv Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)
+[](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)![Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-1-89e8297a0923&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----89e8297a0923---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------) ·18分钟阅读·2023年6月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89e8297a0923&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-1-89e8297a0923&user=Dhruv+Matani&userId=63f5d5495279&source=-----89e8297a0923---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-1-89e8297a0923&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----89e8297a0923---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------) ·18 分钟阅读·2023 年 6 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89e8297a0923&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-1-89e8297a0923&user=Dhruv+Matani&userId=63f5d5495279&source=-----89e8297a0923---------------------clap_footer-----------)
 
 --
 
@@ -16,9 +16,9 @@
 
 在这个四部分系列中，我们将一步步地使用 PyTorch 的深度学习技术从零开始实现图像分割。我们将从本文开始介绍图像分割所需的基本概念与想法。
 
-![](../Images/bbca4847fd8e7d2bf8725818e1f76773.png)
+![](img/bbca4847fd8e7d2bf8725818e1f76773.png)
 
-图1：宠物图像及其分割掩膜（来源：[The Oxford-IIIT Pet Dataset](https://www.robots.ox.ac.uk/~vgg/data/pets/))
+图 1：宠物图像及其分割掩膜（来源：[The Oxford-IIIT Pet Dataset](https://www.robots.ox.ac.uk/~vgg/data/pets/))
 
 **与** [**Naresh Singh**](https://medium.com/@brocolishbroxoli) **合作撰写**
 
@@ -44,7 +44,7 @@
 
 历史上，我们使用了[专用图像处理工具和流程](https://www.v7labs.com/blog/image-segmentation-guide#h4)来将图像分解为不同区域。然而，由于过去二十年来视觉数据的惊人增长，深度学习已成为图像分割任务的首选解决方案。它显著减少了对专家的依赖，以构建特定领域的图像分割策略，这在过去是必需的。只要有足够的训练数据，深度学习从业者可以训练图像分割模型。
 
-![](../Images/3a397ef2a4ba2c4df9565de6196fe194.png)
+![](img/3a397ef2a4ba2c4df9565de6196fe194.png)
 
 图 2：来自[a2d2 数据集 (CC BY-ND 4.0)](https://aev-autonomous-driving-dataset.s3.eu-central-1.amazonaws.com/LICENSE.txt)的分割场景
 
@@ -56,23 +56,23 @@
 
 +   在**医学成像**中，图像分割帮助医生识别医学扫描中的肿瘤、病变和其他异常区域。
 
-+   在**Zoom视频通话**中，利用虚拟场景替换背景以保护个人隐私。
++   在**Zoom 视频通话**中，利用虚拟场景替换背景以保护个人隐私。
 
 +   在**农业**中，通过图像分割识别的杂草和作物区域的信息被用来[保持健康的作物产量](https://www.sciencedirect.com/science/article/pii/S2214317323000112)。
 
-你可以在[v7labs的这一页面](https://www.v7labs.com/blog/image-segmentation-guide#h6)上阅读有关图像分割实际应用的更多细节。
+你可以在[v7labs 的这一页面](https://www.v7labs.com/blog/image-segmentation-guide#h6)上阅读有关图像分割实际应用的更多细节。
 
 ## 图像分割任务的不同类型有哪些？
 
 图像分割任务有很多不同类型，每种类型都有其优缺点。最常见的两种图像分割任务是：
 
-+   **类别或语义分割**：类别分割为每个图像像素分配一个语义类别，如*背景*、*道路*、*汽车*或*行人*。如果图像中有2辆车，那么与两辆车对应的像素将标记为汽车像素。这通常用于自主驾驶和[场景理解](https://ps.is.mpg.de/research_fields/semantic-scene-understanding)等任务。
++   **类别或语义分割**：类别分割为每个图像像素分配一个语义类别，如*背景*、*道路*、*汽车*或*行人*。如果图像中有 2 辆车，那么与两辆车对应的像素将标记为汽车像素。这通常用于自主驾驶和[场景理解](https://ps.is.mpg.de/research_fields/semantic-scene-understanding)等任务。
 
-+   **对象或实例分割**：对象分割识别图像中的对象，并为每个独特对象分配一个掩膜。如果图像中有2辆车，那么与每辆车对应的像素将被识别为属于不同的对象。对象分割通常用于跟踪单个对象，例如编程为跟随前方特定汽车的自动驾驶汽车。
++   **对象或实例分割**：对象分割识别图像中的对象，并为每个独特对象分配一个掩膜。如果图像中有 2 辆车，那么与每辆车对应的像素将被识别为属于不同的对象。对象分割通常用于跟踪单个对象，例如编程为跟随前方特定汽车的自动驾驶汽车。
 
-![](../Images/9cd15779082c7c510647f283d7f03af8.png)
+![](img/9cd15779082c7c510647f283d7f03af8.png)
 
-图3：对象和类别分割（来源：[MS Coco — 创作共享署名许可](https://cocodataset.org/#home)）
+图 3：对象和类别分割（来源：[MS Coco — 创作共享署名许可](https://cocodataset.org/#home)）
 
 在这一系列中，我们将重点关注类别分割。
 
@@ -92,9 +92,9 @@
 
 在本文的其余部分，我们将深入探讨上述每一个方面，并提供大量链接，以便进一步了解每个主题。
 
-# 高效图像分割的PyTorch
+# 高效图像分割的 PyTorch
 
-## 什么是PyTorch？
+## 什么是 PyTorch？
 
 *“*[*PyTorch*](https://pytorch.org/) *是一个开源深度学习框架，旨在灵活和模块化以便于研究，同时具备生产部署所需的稳定性和支持。PyTorch 提供了一个 Python 包，用于高层次的特性，如张量计算（类似于 NumPy），并具有强大的 GPU 加速和 TorchScript，实现了在急切模式和图模式之间的轻松过渡。最新版本的 PyTorch 框架提供了基于图的执行、分布式训练、移动部署和量化。”*（来源：[Meta AI 页面的 PyTorch](https://ai.facebook.com/tools/pytorch/)）
 
@@ -156,13 +156,13 @@ PyTorch 是深度学习研究和开发的热门选择，因为它提供了一个
 
 +   [**U-Net**](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/): U-Net 是一种常用于图像分割任务的卷积神经网络。它使用跳跃连接，这有助于加快网络训练速度并提高整体准确率。如果必须选择，U-Net 始终是一个**极佳的默认选择**！
 
-+   [**FCN**](/review-fcn-semantic-segmentation-eb8c9b50d2d1)：全卷积网络（FCN）是一个完全卷积的网络，但它[不如 U-Net 深](https://stackoverflow.com/questions/50239795/intuition-behind-u-net-vs-fcn-for-semantic-segmentation)。缺乏深度主要是因为在较高的网络深度下，准确率会下降。这使得它训练更快，但可能不如 U-Net 准确。
++   **FCN**：全卷积网络（FCN）是一个完全卷积的网络，但它[不如 U-Net 深](https://stackoverflow.com/questions/50239795/intuition-behind-u-net-vs-fcn-for-semantic-segmentation)。缺乏深度主要是因为在较高的网络深度下，准确率会下降。这使得它训练更快，但可能不如 U-Net 准确。
 
 +   [**SegNet**](https://arxiv.org/abs/1511.00561)：SegNet 是一种类似于 U-Net 的流行模型架构，并且比 U-Net 使用更少的激活内存。我们在这一系列中也将使用 SegNet。
 
 +   [**视觉 Transformer (ViT)**](https://arxiv.org/abs/2010.11929)：视觉 Transformer 最近因其简单结构和将注意力机制应用于文本、视觉等领域的能力而受到欢迎。与 CNN 相比，视觉 Transformer 在训练和推理时可能更高效，但历史上需要更多数据来训练。我们在这一系列中也将使用 ViT。
 
-![](../Images/616bcf8bc926426b47371e10a626122f.png)
+![](img/616bcf8bc926426b47371e10a626122f.png)
 
 图 4：U-Net 模型架构。来源：[弗莱堡大学，U-Net 的原作者](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)。
 
@@ -200,7 +200,7 @@ PyTorch 是深度学习研究和开发的热门选择，因为它提供了一个
 
 ## 自定义 IoU 损失
 
-[IoU](/intersection-over-union-iou-calculation-for-evaluating-an-image-segmentation-model-8b22e2e84686) 被定义为交集与并集之比。对于图像分割任务，我们可以通过计算每个类别的像素交集来计算 IoU，这些像素是由模型预测的，并且在实际分割掩码中。
+IoU 被定义为交集与并集之比。对于图像分割任务，我们可以通过计算每个类别的像素交集来计算 IoU，这些像素是由模型预测的，并且在实际分割掩码中。
 
 例如，如果我们有 2 个类别：
 
@@ -218,23 +218,23 @@ PyTorch 是深度学习研究和开发的热门选择，因为它提供了一个
 
 *L = 1 — M*
 
-不过，如果你的指标值在0.0和1.0之间，可以使用另一种技巧将指标转换为损失。计算：
+不过，如果你的指标值在 0.0 和 1.0 之间，可以使用另一种技巧将指标转换为损失。计算：
 
 *L = -log(M)*
 
-即计算指标的负对数。这与之前的公式有意义的不同，你可以[在这里]( /why-we-care-about-the-log-loss-50c00c8e777c)和[这里]( /intuition-behind-log-loss-score-4e0c9979680a)了解更多。基本上，这将带来更好的模型学习效果。
+即计算指标的负对数。这与之前的公式有意义的不同，你可以在这里和这里了解更多。基本上，这将带来更好的模型学习效果。
 
-![](../Images/02aaeb2051bb8124a8b565eccf1c584f.png)
+![](img/02aaeb2051bb8124a8b565eccf1c584f.png)
 
-图6：比较1-P(x)与-log(P(x))产生的损失。来源：作者。
+图 6：比较 1-P(x)与-log(P(x))产生的损失。来源：作者。
 
-使用IoU作为损失函数也使得损失函数更接近于捕捉我们真正关心的内容。使用评估指标作为损失函数有利有弊。如果你对深入探讨这个领域感兴趣，可以从[这个讨论](https://stats.stackexchange.com/questions/577556/why-not-use-evaluation-metrics-as-the-loss-function)开始。
+使用 IoU 作为损失函数也使得损失函数更接近于捕捉我们真正关心的内容。使用评估指标作为损失函数有利有弊。如果你对深入探讨这个领域感兴趣，可以从[这个讨论](https://stats.stackexchange.com/questions/577556/why-not-use-evaluation-metrics-as-the-loss-function)开始。
 
 ## 数据增强
 
 为了高效且有效地训练你的模型以获得良好的准确率，需要注意训练数据的数量和种类。所使用的训练数据的选择会显著影响最终模型的准确率，所以如果你希望从这篇文章系列中学到一件事，那就是这一点！
 
-通常情况下，我们会将数据分成3部分，部分之间的大致比例如下所示。
+通常情况下，我们会将数据分成 3 部分，部分之间的大致比例如下所示。
 
 1.  训练 (80%)
 
@@ -246,7 +246,7 @@ PyTorch 是深度学习研究和开发的热门选择，因为它提供了一个
 
 在这一系列中，我们不会使用测试数据集。相反，我们将使用我们的测试数据集作为验证数据集，并对测试数据集应用[数据增强](https://en.wikipedia.org/wiki/Data_augmentation)，以便我们总是在稍有不同的数据上验证我们的模型。这种做法有助于防止我们在验证数据集上过拟合决策。这有点像是一个变通方法，我们这样做只是为了方便和作为一种捷径。对于生产模型开发，你应该尽量坚持上述标准方法。
 
-在这一系列中我们将使用的数据集包含3680张图像作为训练集。虽然这可能看起来图像数量很多，但我们希望确保我们的模型不会在这些图像上过拟合，因为我们将对模型进行多个轮次的训练。
+在这一系列中我们将使用的数据集包含 3680 张图像作为训练集。虽然这可能看起来图像数量很多，但我们希望确保我们的模型不会在这些图像上过拟合，因为我们将对模型进行多个轮次的训练。
 
 在一个训练周期中，我们会在整个训练数据集上训练模型，通常我们会在生产环境中训练模型 60 个周期或更多。在本系列中，我们将只训练模型 20 个周期以加快迭代速度。为了**防止过拟合**，我们将采用一种叫做 [数据增强](https://efficientdlbook.com/#table-of-contents) 的技术，用于从现有输入数据生成新的输入数据。数据增强的基本理念是，如果你稍微更改图像，它对模型来说就像是一张新图像，但可以推测期望的输出是否相同。以下是我们将在本系列中应用的一些数据增强示例。
 
@@ -260,15 +260,15 @@ PyTorch 是深度学习研究和开发的热门选择，因为它提供了一个
 
 接下来，我们将看到 Torchvision 和 Albumentations 库对像素级和几何变换的应用示例。
 
-![](../Images/61329a6abccd37e7631dcc683568d326.png)
+![](img/61329a6abccd37e7631dcc683568d326.png)
 
 图 7：使用 Albumentations 对图像应用的像素级数据增强示例。来源：[Albumentations](https://albumentations.ai/)
 
-![](../Images/5c490cff06d9218c578606c1cb6e3a7e.png)
+![](img/5c490cff06d9218c578606c1cb6e3a7e.png)
 
 图 8：使用 Torchvision 变换对图像应用的数据增强示例。来源：作者 ([notebook](https://www.kaggle.com/code/dhruv4930/starter-for-oxford-iiit-pet-using-torchvision/notebook?scriptVersionId=129839935))
 
-![](../Images/7e9741d85b50584037b6a25aa71e91e0.png)
+![](img/7e9741d85b50584037b6a25aa71e91e0.png)
 
 图 9：使用 Albumentations 应用的空间级变换示例。来源：作者 ([notebook](https://www.kaggle.com/code/dhruv4930/starter-for-oxford-iiit-pet-using-torchvision/notebook?scriptVersionId=129839935))
 
@@ -278,15 +278,15 @@ PyTorch 是深度学习研究和开发的热门选择，因为它提供了一个
 
 你可以将评估指标用作损失函数（为什么不优化你真正关心的东西！），只不过这[可能并不总是可行的](https://jonathan-sands.com/metric/loss/2021/05/13/Metric-vs-Loss.html#what-is-a-loss-function)。
 
-除了[准确率](https://torchmetrics.readthedocs.io/en/stable/classification/accuracy.html)，我们还将跟踪IoU指标（也称为[Jaccard指数](https://torchmetrics.readthedocs.io/en/stable/classification/jaccard_index.html)），以及我们上面定义的自定义IoU指标。
+除了[准确率](https://torchmetrics.readthedocs.io/en/stable/classification/accuracy.html)，我们还将跟踪 IoU 指标（也称为[Jaccard 指数](https://torchmetrics.readthedocs.io/en/stable/classification/jaccard_index.html)），以及我们上面定义的自定义 IoU 指标。
 
 要了解更多适用于图像分割任务的各种准确率指标，请参见：
 
 +   [所有分割指标 — Kaggle](https://www.kaggle.com/code/yassinealouini/all-the-segmentation-metrics)
 
-+   [如何评估图像分割模型](/how-accurate-is-image-segmentation-dd448f896388)
++   如何评估图像分割模型
 
-+   [评估图像分割模型](/evaluating-image-segmentation-models-1e9bb89a001b)
++   评估图像分割模型
 
 ## 使用像素准确率作为性能指标的缺点
 
@@ -298,13 +298,13 @@ PyTorch 是深度学习研究和开发的热门选择，因为它提供了一个
 
 1.  眼睛
 
-假设每张图像中只有1个人，并且98%的像素不对应于眼睛。在这种情况下，模型可以简单地学会将每个像素预测为背景像素，从而在分割任务中实现98%的像素准确率。哇！
+假设每张图像中只有 1 个人，并且 98%的像素不对应于眼睛。在这种情况下，模型可以简单地学会将每个像素预测为背景像素，从而在分割任务中实现 98%的像素准确率。哇！
 
-![](../Images/01e74d83606404a77323179cb7419753.png)
+![](img/01e74d83606404a77323179cb7419753.png)
 
-图10：一个人的面部图像及其眼睛的分割掩码。你可以看到眼睛只占整个图像的很小一部分。来源：改编自[Unsplash](https://unsplash.com/photos/iFgRcqHznqg)
+图 10：一个人的面部图像及其眼睛的分割掩码。你可以看到眼睛只占整个图像的很小一部分。来源：改编自[Unsplash](https://unsplash.com/photos/iFgRcqHznqg)
 
-在这种情况下，使用IoU或Dice指标可能是一个更好的选择，因为IoU会捕捉到预测的正确部分，并且不会受到每个类别或类别在原始图像中所占区域的偏见。你甚至可以考虑将IoU或Dice系数按类别作为指标。这可能更好地反映模型在当前任务中的表现。
+在这种情况下，使用 IoU 或 Dice 指标可能是一个更好的选择，因为 IoU 会捕捉到预测的正确部分，并且不会受到每个类别或类别在原始图像中所占区域的偏见。你甚至可以考虑将 IoU 或 Dice 系数按类别作为指标。这可能更好地反映模型在当前任务中的表现。
 
 当仅考虑像素准确性时，[精确度和召回率](https://developers.google.com/machine-learning/crash-course/classification/precision-and-recall)对于我们计算分割掩膜的对象（如上述示例中的眼睛）可以捕捉我们所寻找的细节。
 
@@ -355,9 +355,9 @@ Estimated Total Size (MB): 2.01
 
 1.  [图像分割简介：深度学习与传统方法 [+示例]](https://www.v7labs.com/blog/image-segmentation-guide#h5)
 
-1.  [图像分割：基础知识和5种关键技术](https://datagen.tech/guides/image-annotation/image-segmentation/)
+1.  [图像分割：基础知识和 5 种关键技术](https://datagen.tech/guides/image-annotation/image-segmentation/)
 
-如果你希望亲自动手处理Oxford IIIT Pet数据集，并使用torchvision和Albumentations进行图像增强，我们提供了一个[在Kaggle上的起始笔记本](https://www.kaggle.com/code/dhruv4930/starter-for-oxford-iiit-pet-using-torchvision/notebook?scriptVersionId=129839935)供你克隆和尝试。本文中的许多图像都是由该笔记本生成的！
+如果你希望亲自动手处理 Oxford IIIT Pet 数据集，并使用 torchvision 和 Albumentations 进行图像增强，我们提供了一个[在 Kaggle 上的起始笔记本](https://www.kaggle.com/code/dhruv4930/starter-for-oxford-iiit-pet-using-torchvision/notebook?scriptVersionId=129839935)供你克隆和尝试。本文中的许多图像都是由该笔记本生成的！
 
 # 文章总结
 
@@ -367,11 +367,11 @@ Estimated Total Size (MB): 2.01
 
 +   图像分割任务主要有两种类型：类别（语义）分割和对象（实例）分割。类别分割将图像中的每个像素分配给一个语义类别。对象分割则识别图像中的每个独立对象，并为每个唯一对象分配一个掩膜。
 
-+   在本系列高效图像分割中，我们将使用PyTorch作为深度学习框架，并使用Oxford IIIT Pet数据集。
++   在本系列高效图像分割中，我们将使用 PyTorch 作为深度学习框架，并使用 Oxford IIIT Pet 数据集。
 
-+   选择合适的深度学习模型进行图像分割时需要考虑许多因素，包括（但不限于）图像分割任务的类型、数据集的大小和复杂性、预训练模型的可用性以及计算资源的情况。一些最受欢迎的图像分割深度学习模型架构包括U-Net、FCN、SegNet和Vision Transformer（ViT）。
++   选择合适的深度学习模型进行图像分割时需要考虑许多因素，包括（但不限于）图像分割任务的类型、数据集的大小和复杂性、预训练模型的可用性以及计算资源的情况。一些最受欢迎的图像分割深度学习模型架构包括 U-Net、FCN、SegNet 和 Vision Transformer（ViT）。
 
-+   图像分割任务中损失函数的选择非常重要，因为它可能对模型的性能和训练效率产生重大影响。对于图像分割任务，我们可以使用交叉熵损失、IoU损失、Dice损失或Focal损失（以及其他一些）。
++   图像分割任务中损失函数的选择非常重要，因为它可能对模型的性能和训练效率产生重大影响。对于图像分割任务，我们可以使用交叉熵损失、IoU 损失、Dice 损失或 Focal 损失（以及其他一些）。
 
 +   数据增强是一种宝贵的技术，用于防止过拟合以及处理训练数据不足的问题。
 
@@ -379,4 +379,4 @@ Estimated Total Size (MB): 2.01
 
 +   模型的大小和推理延迟是开发模型时需要考虑的重要指标，尤其是当你打算将其用于实时应用程序，如面部分割或背景噪声去除时。
 
-在[下一篇文章](https://medium.com/p/bed68cadd7c7/)中，我们将讨论如何使用PyTorch从零开始构建一个卷积神经网络（CNN）来对Oxford IIIT Pet数据集进行图像分割。
+在[下一篇文章](https://medium.com/p/bed68cadd7c7/)中，我们将讨论如何使用 PyTorch 从零开始构建一个卷积神经网络（CNN）来对 Oxford IIIT Pet 数据集进行图像分割。

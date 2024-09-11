@@ -1,18 +1,18 @@
 # 初学者的统计独立性
 
-> 原文：[https://towardsdatascience.com/statistical-independence-for-beginners-69534ce04641?source=collection_archive---------10-----------------------#2023-03-21](https://towardsdatascience.com/statistical-independence-for-beginners-69534ce04641?source=collection_archive---------10-----------------------#2023-03-21)
+> 原文：[`towardsdatascience.com/statistical-independence-for-beginners-69534ce04641?source=collection_archive---------10-----------------------#2023-03-21`](https://towardsdatascience.com/statistical-independence-for-beginners-69534ce04641?source=collection_archive---------10-----------------------#2023-03-21)
 
 ## 使用 R 和 Excel 函数的直观解释
 
-[](https://medium.com/@jaekim8080?source=post_page-----69534ce04641--------------------------------)[![Jae Kim](../Images/34716958ecfe8c0540f5cf5c1640d587.png)](https://medium.com/@jaekim8080?source=post_page-----69534ce04641--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69534ce04641--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----69534ce04641--------------------------------) [Jae Kim](https://medium.com/@jaekim8080?source=post_page-----69534ce04641--------------------------------)
+[](https://medium.com/@jaekim8080?source=post_page-----69534ce04641--------------------------------)![Jae Kim](https://medium.com/@jaekim8080?source=post_page-----69534ce04641--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69534ce04641--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----69534ce04641--------------------------------) [Jae Kim](https://medium.com/@jaekim8080?source=post_page-----69534ce04641--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a7641c3f8c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-independence-for-beginners-69534ce04641&user=Jae+Kim&userId=3a7641c3f8c1&source=post_page-3a7641c3f8c1----69534ce04641---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69534ce04641--------------------------------) ·5分钟阅读·2023年3月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69534ce04641&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-independence-for-beginners-69534ce04641&user=Jae+Kim&userId=3a7641c3f8c1&source=-----69534ce04641---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a7641c3f8c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-independence-for-beginners-69534ce04641&user=Jae+Kim&userId=3a7641c3f8c1&source=post_page-3a7641c3f8c1----69534ce04641---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69534ce04641--------------------------------) ·5 分钟阅读·2023 年 3 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69534ce04641&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-independence-for-beginners-69534ce04641&user=Jae+Kim&userId=3a7641c3f8c1&source=-----69534ce04641---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F69534ce04641&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-independence-for-beginners-69534ce04641&source=-----69534ce04641---------------------bookmark_footer-----------)![](../Images/56e9420c704c0951aa30f3ab824e4e53.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F69534ce04641&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstatistical-independence-for-beginners-69534ce04641&source=-----69534ce04641---------------------bookmark_footer-----------)![](img/56e9420c704c0951aa30f3ab824e4e53.png)
 
 图片由 [Naser Tamimi](https://unsplash.com/ja/@tamiminaser?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

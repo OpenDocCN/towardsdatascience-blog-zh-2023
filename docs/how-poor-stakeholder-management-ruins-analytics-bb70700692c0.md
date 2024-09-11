@@ -1,14 +1,14 @@
 # 《糟糕的利益相关者管理如何毁掉分析》
 
-> 原文：[https://towardsdatascience.com/how-poor-stakeholder-management-ruins-analytics-bb70700692c0?source=collection_archive---------1-----------------------#2023-06-28](https://towardsdatascience.com/how-poor-stakeholder-management-ruins-analytics-bb70700692c0?source=collection_archive---------1-----------------------#2023-06-28)
+> 原文：[`towardsdatascience.com/how-poor-stakeholder-management-ruins-analytics-bb70700692c0?source=collection_archive---------1-----------------------#2023-06-28`](https://towardsdatascience.com/how-poor-stakeholder-management-ruins-analytics-bb70700692c0?source=collection_archive---------1-----------------------#2023-06-28)
 
 ## 为什么掌握分析师与利益相关者接口的主导权可以瞬间改善你的生活并提升你的工作影响力
 
-[](https://ryi.medium.com/?source=post_page-----bb70700692c0--------------------------------)[![Robert Yi](../Images/69f5d0c5860a73ec291f42d34a74d147.png)](https://ryi.medium.com/?source=post_page-----bb70700692c0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb70700692c0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb70700692c0--------------------------------) [Robert Yi](https://ryi.medium.com/?source=post_page-----bb70700692c0--------------------------------)
+[](https://ryi.medium.com/?source=post_page-----bb70700692c0--------------------------------)![Robert Yi](https://ryi.medium.com/?source=post_page-----bb70700692c0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb70700692c0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb70700692c0--------------------------------) [Robert Yi](https://ryi.medium.com/?source=post_page-----bb70700692c0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ac2da8b0742&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-poor-stakeholder-management-ruins-analytics-bb70700692c0&user=Robert+Yi&userId=8ac2da8b0742&source=post_page-8ac2da8b0742----bb70700692c0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb70700692c0--------------------------------) ·9 min read·2023年6月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb70700692c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-poor-stakeholder-management-ruins-analytics-bb70700692c0&user=Robert+Yi&userId=8ac2da8b0742&source=-----bb70700692c0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ac2da8b0742&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-poor-stakeholder-management-ruins-analytics-bb70700692c0&user=Robert+Yi&userId=8ac2da8b0742&source=post_page-8ac2da8b0742----bb70700692c0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb70700692c0--------------------------------) ·9 min read·2023 年 6 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb70700692c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-poor-stakeholder-management-ruins-analytics-bb70700692c0&user=Robert+Yi&userId=8ac2da8b0742&source=-----bb70700692c0---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 你刚刚开始了一个新的分析师角色。你很兴奋能够获得关于，比如说，猫咪家具的数据——这是你非常热爱的领域。你的第一个请求来了：一个高管想知道他们有多少种猫砂盆。你迫不及待地拉取了数据。*“太完美了！你也可以把猫床的数量拉出来吗？”* 你意识到为她创建一个仪表板会更高效，于是你做了一个。高管非常兴奋，而你也觉得自己做得很好，推进了数据驱动的信条。
 
-![](../Images/ffd54f692e23dd9e8acbd68e802f0509.png)
+![](img/ffd54f692e23dd9e8acbd68e802f0509.png)
 
 猫… 家具？图片来自 Midjourney，已获许可使用。
 
@@ -36,23 +36,23 @@
 
 现在，让我们讨论这些问题。
 
-# 问题1：我们需要对我们的数据使用承担更多的责任。
+# 问题 1：我们需要对我们的数据使用承担更多的责任。
 
 分析是一种 [达宁-克鲁格](https://en.wikipedia.org/wiki/Dunning%E2%80%93Kruger_effect) 吸引力：大多数人认为他们理解如何解释数据，但真正做到这一点的人很少。毕竟， [陷阱](https://en.wikipedia.org/wiki/Multiple_comparisons_problem) [多](https://en.wikipedia.org/wiki/Confirmation_bias) [如](https://en.wikipedia.org/wiki/Bias_(statistics)) 此。这种二分法是我们行业的核心问题，我想这也是我们常常被低估、误解，并且在高管裁员时被 [最早剔除](https://timesofindia.indiatimes.com/gadgets-news/photos-of-twitter-data-engineers-fired-this-is-what-elon-musk-has-to-say/articleshow/95160061.cms) 的原因。
 
-![](../Images/a76a26826501d9a2a75e809cdae1a042.png)
+![](img/a76a26826501d9a2a75e809cdae1a042.png)
 
-一个虚假相关性的例子。创意共享许可证来自tylervigen.com。
+一个虚假相关性的例子。创意共享许可证来自 tylervigen.com。
 
 不幸的是，我们分析师通过简单地做我们自己——研究者、科学家、隐士——来助长这种幻想：喜欢：思考、流程、数学、严谨；不喜欢：回答临时请求、说服。当一个同事鼓励我们寻求帮助时，最好的情况是我们会 concoct 出精彩的分析，然后将深奥的结果扔向真正需要它的人。最糟糕的情况是我们会回传原始数据而不提供任何解释，让我们的利益相关者（错误地）自己处理偏见。
 
 这就是问题所在。这种行为背叛了我们对分析如何运作的误解：不应该由其他人来使我们的工作有用——必须**由我们来承担责任**。我以前谈到过分析是一个[接口学科](https://win.hyperquery.ai/p/cooking-is-not-cutting)，但其结果是**我们必须对接口承担一定程度的责任**。
 
-考虑任何其他的接口学科，你会发现最有效的IC（集成电路）都是以这种方式运作的。例如，优秀的设计师在设计时会考虑工程方面的问题。优秀的工程师会仔细审查产品需求文档，并与设计师和产品经理紧密合作。客户服务代表和销售人员会在客户所处的位置与他们会面——想象一下如果销售人员等待潜在客户主动联系*他们*会有多么有效。
+考虑任何其他的接口学科，你会发现最有效的 IC（集成电路）都是以这种方式运作的。例如，优秀的设计师在设计时会考虑工程方面的问题。优秀的工程师会仔细审查产品需求文档，并与设计师和产品经理紧密合作。客户服务代表和销售人员会在客户所处的位置与他们会面——想象一下如果销售人员等待潜在客户主动联系*他们*会有多么有效。
 
 但这就是我们在分析中所做的。我们像一个服务组织一样运作，而不是作为思维合作伙伴，难怪我们最终被如此对待。我认为作为一个行业，我们*深知*这一点。在过去的几年里，我们共同构建了整套操作智慧，这些智慧似乎都指向一个共同的根本原因：我们没有对接口负责。
 
-+   **我们应该把** [**团队管理**](https://locallyoptimistic.com/post/run-your-data-team-like-a-product-team/)[**像产品团队一样**](/how-to-run-your-data-team-like-a-product-team-7efd8a0fd423)**。**
++   **我们应该把** [**团队管理**](https://locallyoptimistic.com/post/run-your-data-team-like-a-product-team/)**像产品团队一样****。**
 
     ……因为产品团队总是关注客户，就像我们应该深切关心我们的分析如何被使用一样——即接口。
 
@@ -66,17 +66,17 @@
 
 因此，最好是尝试掌控你的工作如何被使用。请求访问权限，参加会议，暂时走出你的隐居处，与你的利益相关者分享你更新的理念。这是你和他们的影响力的一个途径。
 
-# 问题2：我们不知道决策是如何运作的
+# 问题 2：我们不知道决策是如何运作的
 
 所以，当然，我敢打赌我们大多数人*确实*会尽力认真管理我们的利益相关者。但是，尽管如此，我们还是会困惑，这让我想到阻碍我们前进的第二个大问题：我们不知道如何参与决策过程。我们中的一些人承担了[迂腐的](https://win.hyperquery.ai/p/truth-is-not-a-weapon)角色，为了严谨而严谨。其他时候，我们则静静地坐在角落里等待被召唤。问题在哪里？我们不知道决策是如何工作的，因此也不知道如何有效地参与其中。让我们讨论一下决策是如何运作的。
 
-我曾经是一个硬核分析师，但在过去几年里，我有幸在Hyperquery负责产品。虽然你可能认为构建数据工具与进行数据工作没什么不同，但我感受到了一种强烈的认知失调，与我过去作为分析师的运作方式相抵触。曾经我的世界完全是量化的，而现在我突然发现自己在做决定时只有定性数据可用。因此，我适应了——我逐步学会了从高度模糊的泥土中塑造合理的决策。但在整个过程中，我最震撼的发现是：**在过去三年中，我做出的每一个决定都不是完全基于SQL查询结果的**。
+我曾经是一个硬核分析师，但在过去几年里，我有幸在 Hyperquery 负责产品。虽然你可能认为构建数据工具与进行数据工作没什么不同，但我感受到了一种强烈的认知失调，与我过去作为分析师的运作方式相抵触。曾经我的世界完全是量化的，而现在我突然发现自己在做决定时只有定性数据可用。因此，我适应了——我逐步学会了从高度模糊的泥土中塑造合理的决策。但在整个过程中，我最震撼的发现是：**在过去三年中，我做出的每一个决定都不是完全基于 SQL 查询结果的**。
 
 即使数据对我来说非常容易获取，甚至数据*在我的血液中*，事实是：数据永远不是主要的东西。由此，我深刻认识到，作为数据从业者，我们对数据在决策中的作用有根本性的误解。**简单明了：数据在我曾经认为的重要性上并不重要**。这并不是说它*不*重要，只是它并不是我曾经自欺欺人的那种无误、客观的真理表现。
 
 数据不是全部的故事。**数据只是一个数据点**。
 
-![](../Images/6708d57e3e34c9390ad61267698fba69.png)
+![](img/6708d57e3e34c9390ad61267698fba69.png)
 
 图片由作者提供。
 

@@ -1,32 +1,32 @@
 # **维度诅咒：直观探索**
 
-> 原文：[https://towardsdatascience.com/curse-of-dimensionality-an-intuitive-exploration-1fbf155e1411?source=collection_archive---------3-----------------------#2023-12-30](https://towardsdatascience.com/curse-of-dimensionality-an-intuitive-exploration-1fbf155e1411?source=collection_archive---------3-----------------------#2023-12-30)
+> 原文：[`towardsdatascience.com/curse-of-dimensionality-an-intuitive-exploration-1fbf155e1411?source=collection_archive---------3-----------------------#2023-12-30`](https://towardsdatascience.com/curse-of-dimensionality-an-intuitive-exploration-1fbf155e1411?source=collection_archive---------3-----------------------#2023-12-30)
 
-[](https://medium.com/@salih.salih?source=post_page-----1fbf155e1411--------------------------------)[![Salih Salih](../Images/220f3c5363989d94c5593eca7ff72c67.png)](https://medium.com/@salih.salih?source=post_page-----1fbf155e1411--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1fbf155e1411--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1fbf155e1411--------------------------------) [Salih Salih](https://medium.com/@salih.salih?source=post_page-----1fbf155e1411--------------------------------)
+[](https://medium.com/@salih.salih?source=post_page-----1fbf155e1411--------------------------------)![Salih Salih](https://medium.com/@salih.salih?source=post_page-----1fbf155e1411--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1fbf155e1411--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1fbf155e1411--------------------------------) [Salih Salih](https://medium.com/@salih.salih?source=post_page-----1fbf155e1411--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2037cbb08e24&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcurse-of-dimensionality-an-intuitive-exploration-1fbf155e1411&user=Salih+Salih&userId=2037cbb08e24&source=post_page-2037cbb08e24----1fbf155e1411---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1fbf155e1411--------------------------------) ·11 分钟阅读·2023年12月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1fbf155e1411&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcurse-of-dimensionality-an-intuitive-exploration-1fbf155e1411&user=Salih+Salih&userId=2037cbb08e24&source=-----1fbf155e1411---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2037cbb08e24&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcurse-of-dimensionality-an-intuitive-exploration-1fbf155e1411&user=Salih+Salih&userId=2037cbb08e24&source=post_page-2037cbb08e24----1fbf155e1411---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1fbf155e1411--------------------------------) ·11 分钟阅读·2023 年 12 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1fbf155e1411&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcurse-of-dimensionality-an-intuitive-exploration-1fbf155e1411&user=Salih+Salih&userId=2037cbb08e24&source=-----1fbf155e1411---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1fbf155e1411&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcurse-of-dimensionality-an-intuitive-exploration-1fbf155e1411&source=-----1fbf155e1411---------------------bookmark_footer-----------)![](../Images/8e1fab29575e7aec7aa57966239b2c2f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1fbf155e1411&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcurse-of-dimensionality-an-intuitive-exploration-1fbf155e1411&source=-----1fbf155e1411---------------------bookmark_footer-----------)![](img/8e1fab29575e7aec7aa57966239b2c2f.png)
 
 照片由 Mathew Schwartz 提供，来源于 Unsplash
 
 # **介绍**
 
-在上一篇文章中，我们讨论了[数据在高维空间中的惊人行为](/the-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee)。我们发现体积在空间的角落里以一种奇怪的方式累积，我们模拟了一个内切在超立方体中的超球体来研究这一点，观察到随着维度的增加，它们的体积比有趣地减少了。展示多维思维优势的例子有 DVD 纸实验和支持向量机(SVM)中的核技巧。
+在上一篇文章中，我们讨论了数据在高维空间中的惊人行为。我们发现体积在空间的角落里以一种奇怪的方式累积，我们模拟了一个内切在超立方体中的超球体来研究这一点，观察到随着维度的增加，它们的体积比有趣地减少了。展示多维思维优势的例子有 DVD 纸实验和支持向量机(SVM)中的核技巧。
 
 今天，我们将探讨一些高维数据的难点，这些难点被称为维度诅咒。我们的目标是对这一概念及其实际影响有一个直观的理解。下图概述了我们文章的结构。
 
-![](../Images/0bcf5fff1009e705ae4a9da30c8ce22e.png)
+![](img/0bcf5fff1009e705ae4a9da30c8ce22e.png)
 
 作者插图
 
 ## 理解维度诅咒
 
-“维度诅咒”是由**理查德·E·贝尔曼**在1960年代首次使用的术语。它起初源于贝尔曼对动态优化的观点，后来成为理解高维空间复杂性的一个基本概念。
+“维度诅咒”是由**理查德·E·贝尔曼**在 1960 年代首次使用的术语。它起初源于贝尔曼对动态优化的观点，后来成为理解高维空间复杂性的一个基本概念。
 
 很好，但“维度诅咒”是什么？
 
@@ -124,7 +124,7 @@ def plot_histograms_and_stats(num_points, dimensions_range, range_min, range_max
 plot_histograms_and_stats(1000, range(1, 101), 1, 100)
 ```
 
-![](../Images/bf5c048e94e5f1e2a0de989d9924256c.png)
+![](img/bf5c048e94e5f1e2a0de989d9924256c.png)
 
 图片由作者提供
 
@@ -170,7 +170,7 @@ def plot_normalized_difference(num_points, dimensions_range, range_min, range_ma
 plot_normalized_difference(500, range(1, 101), 0, 1)
 ```
 
-![](../Images/dd0ddb65e50f1495c27b26f232ce9068.png)
+![](img/dd0ddb65e50f1495c27b26f232ce9068.png)
 
 图片由作者提供
 
@@ -180,17 +180,17 @@ plot_normalized_difference(500, range(1, 101), 0, 1)
 
 但这引出了一个有趣的问题：为什么在高维空间中，点对之间的距离在增加维度时趋于相同？是什么导致了这种情况的发生？
 
-![](../Images/00dea8767aeac0aefd50ef6f96d1b33d.png)
+![](img/00dea8767aeac0aefd50ef6f96d1b33d.png)
 
 图片由 Aakash Dhage 提供，来源于 Unsplash
 
 为了理解为什么高维空间中的点对变得等距，我们可以查看大数法则（LLN）。这一统计原理表明，随着样本大小或维度的增加，我们的观察平均值会越来越接近期望值。
 
-让我们考虑一个公平的六面骰子的掷骰子例子。掷骰子的期望均值是3.5，这是所有可能结果的平均值。最初，仅有几次掷骰子，比如5次或10次，平均值可能会因为随机性而与3.5有显著差异。但当我们将掷骰子的次数增加到几百次或几千次时，平均掷骰子值会逐渐接近3.5。这一现象，即多次试验的平均值与期望值对齐，展示了大数法则（LLN）的本质。它表明，尽管单个结果是不可预测的，但在多次试验中，平均值变得非常可预测。
+让我们考虑一个公平的六面骰子的掷骰子例子。掷骰子的期望均值是 3.5，这是所有可能结果的平均值。最初，仅有几次掷骰子，比如 5 次或 10 次，平均值可能会因为随机性而与 3.5 有显著差异。但当我们将掷骰子的次数增加到几百次或几千次时，平均掷骰子值会逐渐接近 3.5。这一现象，即多次试验的平均值与期望值对齐，展示了大数法则（LLN）的本质。它表明，尽管单个结果是不可预测的，但在多次试验中，平均值变得非常可预测。
 
 那么，这与高维空间中的距离有什么关系呢？
 
-在n维空间中，两点之间的欧几里得距离是通过对每个维度的平方差进行求和来计算的。我们可以将每个平方差看作一个随机变量，类似于掷骰子。随着维度（或掷骰子次数）的增加，这些‘掷骰子’的总和会越来越接近一个期望值。
+在 n 维空间中，两点之间的欧几里得距离是通过对每个维度的平方差进行求和来计算的。我们可以将每个平方差看作一个随机变量，类似于掷骰子。随着维度（或掷骰子次数）的增加，这些‘掷骰子’的总和会越来越接近一个期望值。
 
 大数法则的一个关键要求是随机变量的独立性。在高维向量中，这种独立性可以通过一个有趣的几何属性来显示：**这些向量往往几乎是正交的。**
 
@@ -238,11 +238,11 @@ test_orthogonality(dimensions, n_trials)
 
 尝试运行上面的代码并调整维度/试验次数，你会发现高维空间中的向量几乎是正交的。
 
-两个向量A和B之间的角度由角度的余弦值决定，这个余弦值来源于它们的点积和大小。公式表示为：
+两个向量 A 和 B 之间的角度由角度的余弦值决定，这个余弦值来源于它们的点积和大小。公式表示为：
 
-![](../Images/c4ac1aade2a563f24149ae4c11fd32de.png)
+![](img/c4ac1aade2a563f24149ae4c11fd32de.png)
 
-这里，*A*⋅*B*表示向量A和B的点积，∥*A*∥和∥*B*∥是它们各自的大小。为了使两个向量正交，它们之间的角度必须是90度，这使得cos(*θ*)等于零。通常，这在低维空间中通过点积*A*⋅*B*等于零来实现。
+这里，*A*⋅*B*表示向量 A 和 B 的点积，∥*A*∥和∥*B*∥是它们各自的大小。为了使两个向量正交，它们之间的角度必须是 90 度，这使得 cos(*θ*)等于零。通常，这在低维空间中通过点积*A*⋅*B*等于零来实现。
 
 然而，在高维空间中，出现了另一种现象。**点积与向量大小的比率变得如此之小，以至于我们可以认为这些向量是‘几乎正交’的。**
 
@@ -254,9 +254,9 @@ test_orthogonality(dimensions, n_trials)
 
 要到达一个特定的交叉口，你需要做出一系列独立的决策，就像在高维空间中计算距离一样。每个决策独立地做出，但最终将你引导到目的地。
 
-这个类比也适用于高维向量中的正交性概念。当向量几乎正交时，它们沿着各自的路径移动，互相之间没有显著影响。这种条件补充了LLN对统计独立性的需求。
+这个类比也适用于高维向量中的正交性概念。当向量几乎正交时，它们沿着各自的路径移动，互相之间没有显著影响。这种条件补充了 LLN 对统计独立性的需求。
 
-一个重要的说明：虽然这个LLN类比提供了一个有用的视角，但它可能无法捕捉到这种行为背后的所有思想或原因。然而，它作为一个有用的代理，提供了对点对几乎等距原因的理解**可能**。
+一个重要的说明：虽然这个 LLN 类比提供了一个有用的视角，但它可能无法捕捉到这种行为背后的所有思想或原因。然而，它作为一个有用的代理，提供了对点对几乎等距原因的理解**可能**。
 
 # 实际意义
 
@@ -268,7 +268,7 @@ test_orthogonality(dimensions, n_trials)
 
 # **如何应对维度诅咒？**
 
-有几种策略可以应对维度诅咒。一种方法是降低维度，同时保留重要的信息（例如，PCA算法）。另一种方法是流形学习（可以看作是一种降维方法），它揭示了高维数据中的结构。流形学习的关键思想是，许多高维数据集实际上位于高维空间中的低维流形上（例如，Isomaps）。
+有几种策略可以应对维度诅咒。一种方法是降低维度，同时保留重要的信息（例如，PCA 算法）。另一种方法是流形学习（可以看作是一种降维方法），它揭示了高维数据中的结构。流形学习的关键思想是，许多高维数据集实际上位于高维空间中的低维流形上（例如，Isomaps）。
 
 > 在这里需要注意的是，-一般来说- 传统的降维技术，如主成分分析（PCA），侧重于以线性方式保留全局数据结构和方差。相比之下，流形学习技术，如等距映射（Isomap），强调揭示数据的潜在非线性结构（流形），旨在保留局部关系和几何特征。
 

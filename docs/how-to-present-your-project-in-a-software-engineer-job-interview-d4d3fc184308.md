@@ -1,18 +1,18 @@
 # 如何在软件工程师职位面试中展示你的项目
 
-> 原文：[https://towardsdatascience.com/how-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308?source=collection_archive---------4-----------------------#2023-06-16](https://towardsdatascience.com/how-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308?source=collection_archive---------4-----------------------#2023-06-16)
+> 原文：[`towardsdatascience.com/how-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308?source=collection_archive---------4-----------------------#2023-06-16`](https://towardsdatascience.com/how-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308?source=collection_archive---------4-----------------------#2023-06-16)
 
 ## 软件工程师面试的实用技巧
 
-[](https://naomikriger.medium.com/?source=post_page-----d4d3fc184308--------------------------------)[![Naomi Kriger](../Images/14839f859e1375965c046912f00df5b9.png)](https://naomikriger.medium.com/?source=post_page-----d4d3fc184308--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d4d3fc184308--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d4d3fc184308--------------------------------) [Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----d4d3fc184308--------------------------------)
+[](https://naomikriger.medium.com/?source=post_page-----d4d3fc184308--------------------------------)![Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----d4d3fc184308--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d4d3fc184308--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d4d3fc184308--------------------------------) [Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----d4d3fc184308--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce7969d594d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308&user=Naomi+Kriger&userId=ce7969d594d&source=post_page-ce7969d594d----d4d3fc184308---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d4d3fc184308--------------------------------) · 7分钟阅读·2023年6月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd4d3fc184308&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308&user=Naomi+Kriger&userId=ce7969d594d&source=-----d4d3fc184308---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce7969d594d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308&user=Naomi+Kriger&userId=ce7969d594d&source=post_page-ce7969d594d----d4d3fc184308---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d4d3fc184308--------------------------------) · 7 分钟阅读·2023 年 6 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd4d3fc184308&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308&user=Naomi+Kriger&userId=ce7969d594d&source=-----d4d3fc184308---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd4d3fc184308&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308&source=-----d4d3fc184308---------------------bookmark_footer-----------)![](../Images/c217be93882431efc433bc9bf06df859.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd4d3fc184308&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-present-your-project-in-a-software-engineer-job-interview-d4d3fc184308&source=-----d4d3fc184308---------------------bookmark_footer-----------)![](img/c217be93882431efc433bc9bf06df859.png)
 
 [图片](https://www.pexels.com/photo/woman-in-black-sleeveless-top-writing-on-whiteboard-3861970/)由[ThisIsEngineering](https://www.pexels.com/@thisisengineering/)在[Pexels](http://pexels.com)提供
 
@@ -28,7 +28,7 @@
 
 1.  **一个清楚总结你项目的“标题”句子。**
 
-    从核心内容开始。例如，“我将展示一个我在最近工作中进行的3个月项目，其中我从零开始构建了公司的主要数据增强系统。”
+    从核心内容开始。例如，“我将展示一个我在最近工作中进行的 3 个月项目，其中我从零开始构建了公司的主要数据增强系统。”
 
 1.  **对公司的产品和/或团队的领域的介绍。**
 
@@ -60,13 +60,13 @@
 
 ## 高层次产品概述
 
-![](../Images/9633742019c23b71f86437826c2c38a9.png)
+![](img/9633742019c23b71f86437826c2c38a9.png)
 
 作者草图
 
 ## 深入项目概述
 
-![](../Images/4ba49c7cf44eac791aa236dfb0d4461d.png)
+![](img/4ba49c7cf44eac791aa236dfb0d4461d.png)
 
 作者草图
 
@@ -88,7 +88,7 @@
 
 **以下是一些值得提及的成就示例：**
 
-+   **可衡量的成就：** 将错误率降低X%，将系统延迟提高Y毫秒或Z%，减少每季度W天的手工工作。
++   **可衡量的成就：** 将错误率降低 X%，将系统延迟提高 Y 毫秒或 Z%，减少每季度 W 天的手工工作。
 
 +   **克服障碍（这个项目为何复杂？）** 例如，处理高度复杂的代码库或遗留代码，在低测试覆盖率或有限可见性的环境中调试，独立学习复杂的新技术和系统。
 
@@ -98,7 +98,7 @@
 
 记住，不同的面试官可能对你工作的不同方面有不同的兴趣，这取决于职位的需求或他们想了解的技能。
 
-# 以WOW效果结束
+# 以 WOW 效果结束
 
 从你之前列出的成就中，选择最令人印象深刻的几项纳入你的结尾段落。突出最令人印象深刻的数字或指标，展示你努力工作的回报。这些元素很可能会给面试官留下深刻的印象。
 
@@ -112,7 +112,7 @@
 
 # 从一次面试中改进
 
-![](../Images/ea9ff14b412f453c684e1e0b38ff5614.png)
+![](img/ea9ff14b412f453c684e1e0b38ff5614.png)
 
 [图片](https://www.pexels.com/photo/crop-woman-taking-notes-while-working-on-laptop-4468010/)由 [Karolina Grabowska](https://www.pexels.com/@karolina-grabowska/) 提供，来源于 [Pexels](https://www.pexels.com)
 
@@ -136,7 +136,7 @@
 
 +   **了解你在面试中想提及哪些成就，并以“主动推送而非被动等待”的方式分享**。这意味着在项目展示过程中主动提及这些成就，而不是等到被问及时才说。
 
-+   **以WOW效果收尾**，在你的展示结束时突出你最令人印象深刻的成就，特别是那些可以量化的成就，以在面试官心中留下持久的印象。
++   **以 WOW 效果收尾**，在你的展示结束时突出你最令人印象深刻的成就，特别是那些可以量化的成就，以在面试官心中留下持久的印象。
 
 +   **进行模拟面试并获取反馈**。安排这些模拟面试与经验丰富的开发人员和面试官进行，以学习他们的见解和建议。
 

@@ -1,16 +1,16 @@
 # 使用 NASA 的 Power API 创建气候 GPT
 
-> 原文：[https://towardsdatascience.com/developing-a-climate-gpt-using-nasas-power-api-37b3d9e2a664?source=collection_archive---------4-----------------------#2023-11-20](https://towardsdatascience.com/developing-a-climate-gpt-using-nasas-power-api-37b3d9e2a664?source=collection_archive---------4-----------------------#2023-11-20)
+> 原文：[`towardsdatascience.com/developing-a-climate-gpt-using-nasas-power-api-37b3d9e2a664?source=collection_archive---------4-----------------------#2023-11-20`](https://towardsdatascience.com/developing-a-climate-gpt-using-nasas-power-api-37b3d9e2a664?source=collection_archive---------4-----------------------#2023-11-20)
 
-[](https://medium.com/@astrobagel?source=post_page-----37b3d9e2a664--------------------------------)[![Matthew Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----37b3d9e2a664--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37b3d9e2a664--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----37b3d9e2a664--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----37b3d9e2a664--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----37b3d9e2a664--------------------------------)![Matthew Harris](https://medium.com/@astrobagel?source=post_page-----37b3d9e2a664--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37b3d9e2a664--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b3d9e2a664--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----37b3d9e2a664--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-a-climate-gpt-using-nasas-power-api-37b3d9e2a664&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----37b3d9e2a664---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b3d9e2a664--------------------------------) ·10 min read·2023年11月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37b3d9e2a664&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-a-climate-gpt-using-nasas-power-api-37b3d9e2a664&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----37b3d9e2a664---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-a-climate-gpt-using-nasas-power-api-37b3d9e2a664&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----37b3d9e2a664---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37b3d9e2a664--------------------------------) ·10 min read·2023 年 11 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37b3d9e2a664&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-a-climate-gpt-using-nasas-power-api-37b3d9e2a664&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----37b3d9e2a664---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37b3d9e2a664&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-a-climate-gpt-using-nasas-power-api-37b3d9e2a664&source=-----37b3d9e2a664---------------------bookmark_footer-----------)![](../Images/997c4c83d6acb83a9aec8acb7a4b5a44.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37b3d9e2a664&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeveloping-a-climate-gpt-using-nasas-power-api-37b3d9e2a664&source=-----37b3d9e2a664---------------------bookmark_footer-----------)![](img/997c4c83d6acb83a9aec8acb7a4b5a44.png)
 
 图像由 ChatGPT 创建
 
@@ -28,7 +28,7 @@ GPTs 具有一些非常强大的功能，特别是能够浏览网络、生成和
 
 GPTs 目前仅对 ChatGPT Plus 订阅用户开放。要创建一个，您需要访问 [chat.openai.com/create](https://chat.openai.com/create)，这将提示您提供有关您的 GPT 将做什么的一些细节以及您想使用的缩略图（可以使用 DALL-E-3 自动生成）。
 
-![](../Images/7a583d645f08f12e9d8a2e6a96186de0.png)
+![](img/7a583d645f08f12e9d8a2e6a96186de0.png)
 
 对于这次分析，我使用了提示“**创建一个气候指标聊天机器人，使用 NASA Power API 获取数据**”。这创建了一个具有以下系统提示的 GPT（在“配置”下的“说明”字段中）…
 
@@ -63,13 +63,13 @@ the NASA Power API.
 
 GPT 可以配置各种功能。对于我们的分析，我们将停用生成图像的能力，并保持浏览网页以及使用代码解释器生成和运行代码的能力。对于生产环境的 GPT，我可能会停用网页访问，并确保所有必需的数据由指定的 API 提供，但对于我们的分析，我们将其保留，因为它对于获取经度和纬度来调用 NASA Power API 是很方便的。
 
-![](../Images/71b9c21d3b68bcaa940c9605c6bd633a.png)
+![](img/71b9c21d3b68bcaa940c9605c6bd633a.png)
 
 # 配置 API 访问
 
 这是数据驱动 GPT 的核心，配置 API 集成。要做到这一点，您需要在您的 GPT 顶部点击‘配置’，然后向下滚动，点击‘创建操作’……
 
-![](../Images/a5f93df3c0b03277dca02b4879d05f24.png)
+![](img/a5f93df3c0b03277dca02b4879d05f24.png)
 
 配置 GPT 以与 NASA 的 Power API 进行气候数据通信
 
@@ -91,7 +91,7 @@ GPT 可以配置各种功能。对于我们的分析，我们将停用生成图�
 
 当 GPT 用户界面中的所有异常都得到解决时，openapi.json 中指定的端点出现…
 
-![](../Images/1e4b938c33c6bd242f5eea7ca85cf337.png)
+![](img/1e4b938c33c6bd242f5eea7ca85cf337.png)
 
 NASA Power API 指标端点，GPT 用户界面显示稍作调整的 openapi.json 规范
 
@@ -113,23 +113,23 @@ ALWAYS set 'user' API query parameter to be '<MY API ID>'
 
 在询问“**东京的平均降雨量是多少**”时，我被要求确认使用 API…
 
-![](../Images/cc7a9b0a2b50bb601cb4b0a65e2e6ab3.png)
+![](img/cc7a9b0a2b50bb601cb4b0a65e2e6ab3.png)
 
 在第一次使用 API 操作时，GPT 所有者会被提示确认。
 
 我选择了“始终”，然后 GPT 调用了 API。然而，它收到的响应表明需要一个年份范围…
 
-![](../Images/cd05c3c1bf4888fe78ac8bacc7530955.png)
+![](img/cd05c3c1bf4888fe78ac8bacc7530955.png)
 
 这相当酷，它已经建议使用 2018 年至 2022 年的解决方案，我通过回复“是”的方式接受了…
 
-![](../Images/8e02760c98a2f82c6a33e88b2495e6e2.png)
+![](img/8e02760c98a2f82c6a33e88b2495e6e2.png)
 
 GPT 成功使用 NASA 的 Power API 获取并展示了东京的平均降雨量。
 
 在[API 页面](https://power.larc.nasa.gov/api/pages/?urls.primaryName=Indicators)上使用“试一下”按钮，输入上述年份范围和东京的纬度/经度为 35.6895/139.6917，我得到了一个响应。因为我对变量名称不熟悉，所以我询问了 GPT…
 
-![](../Images/f1e20b4aa1bc22a5b3f308068710c1bb.png)
+![](img/f1e20b4aa1bc22a5b3f308068710c1bb.png)
 
 GPT 在展示 API 变量名称方面非常有帮助。
 
@@ -163,33 +163,33 @@ returned with 12 elements, this is likely a list of monthly means.
 
 再试一次，“**东京的平均降雨量是多少**”…
 
-![](../Images/a40b3bb8fd75f74ef3f91536237434cb.png)
+![](img/a40b3bb8fd75f74ef3f91536237434cb.png)
 
 现在这是正确的。通过一点提示改进性能的好例子。
 
 让我们请求它进行一些分析，“**请绘制月度平均值**”…
 
-![](../Images/87100d827e14c1fb9f2e5e7345138fb1.png)
+![](img/87100d827e14c1fb9f2e5e7345138fb1.png)
 
 GPT 可以使用从 API 检索的数据运行代码，以提供基本数据分析。
 
 这非常巧妙！上图中的值与直接从 API 检索到的值相符。在其响应的末尾，有一个链接，你可以查看它生成并运行的代码…
 
-![](../Images/4c96642524dbd9450c84b0ea2f49e1e6.png)
+![](img/4c96642524dbd9450c84b0ea2f49e1e6.png)
 
 好了，现在让我们尝试一些更复杂的事情。首先我询问可用的变量是什么…
 
-![](../Images/143b7c6d3a59c7abb02a4b57f71f28fb.png)
+![](img/143b7c6d3a59c7abb02a4b57f71f28fb.png)
 
 GPT 可以查询文档 API 终端点。
 
-它自动访问了配置端点以获取元数据。利用这个，让我们问“**在过去5年中，南威尔士的尼思的相对湿度是否与太阳辐射相关？**”…
+它自动访问了配置端点以获取元数据。利用这个，让我们问“**在过去 5 年中，南威尔士的尼思的相对湿度是否与太阳辐射相关？**”…
 
-![](../Images/53117c61c65ffed1dfe7fb39ff62c195.png)
+![](img/53117c61c65ffed1dfe7fb39ff62c195.png)
 
-它查询了API以获取数据，然后生成代码来创建图表。相当惊人，但没有回答完整的问题，所以让我们坚持问“**请计算相关系数**”…
+它查询了 API 以获取数据，然后生成代码来创建图表。相当惊人，但没有回答完整的问题，所以让我们坚持问“**请计算相关系数**”…
 
-![](../Images/60aee58173c646fd101ad11f9cc0a17b.png)
+![](img/60aee58173c646fd101ad11f9cc0a17b.png)
 
 点击链接查看代码…
 
@@ -227,33 +227,33 @@ correlation
 Is asked about multiple locations call the API for each location to get data.
 ```
 
-现在，让我们问“**在过去5年中，斯瓦尔巴比巴戈德威尔士更潮湿吗？**”…
+现在，让我们问“**在过去 5 年中，斯瓦尔巴比巴戈德威尔士更潮湿吗？**”…
 
-![](../Images/ea2b25f246d6e9ff5c1ec9d88a02bc80.png)
+![](img/ea2b25f246d6e9ff5c1ec9d88a02bc80.png)
 
-由于API需要经纬度，GPT确认了这种方法。如果我们配置了地理编码API作为一个操作，这就不需要了，但目前使用中心坐标就足够了。
+由于 API 需要经纬度，GPT 确认了这种方法。如果我们配置了地理编码 API 作为一个操作，这就不需要了，但目前使用中心坐标就足够了。
 
-GPT调用了两个位置的API，提取数据，并进行比较…
+GPT 调用了两个位置的 API，提取数据，并进行比较…
 
-![](../Images/c70e6e7abd1c2d80c463037aa1cb468e.png)
+![](img/c70e6e7abd1c2d80c463037aa1cb468e.png)
 
-我在巴戈德长大，诚实地说，这里是个**非常**多雨的地方。直接调用API，以上数值是正确的。
+我在巴戈德长大，诚实地说，这里是个**非常**多雨的地方。直接调用 API，以上数值是正确的。
 
 # 限制
 
 在这次分析中出现了一些挑战。
 
-首先，似乎每天允许的GPT-4交互次数有限。在测试了一两个小时后达到了这个限制，这似乎低于公布的[GPT-4限制](https://platform.openai.com/account/limits)，所以这可能与GPT的预览性质有关。这将阻止任何生产部署，但希望在GPT商店推出时能解决这个问题。
+首先，似乎每天允许的 GPT-4 交互次数有限。在测试了一两个小时后达到了这个限制，这似乎低于公布的[GPT-4 限制](https://platform.openai.com/account/limits)，所以这可能与 GPT 的预览性质有关。这将阻止任何生产部署，但希望在 GPT 商店推出时能解决这个问题。
 
-性能有时也可能稍慢，但考虑到GPT在调用外部API并运行代码，也不是不合理的。用户体验非常好，清楚地向用户表明事情正在进行中。
+性能有时也可能稍慢，但考虑到 GPT 在调用外部 API 并运行代码，也不是不合理的。用户体验非常好，清楚地向用户表明事情正在进行中。
 
-成本是一个未知数，或者说，我们没有看到成本的显著影响，但会继续跟踪。GPT生成代码并分析来自API的长响应，因此令牌成本可能会成为许多组织使用它们的障碍。
+成本是一个未知数，或者说，我们没有看到成本的显著影响，但会继续跟踪。GPT 生成代码并分析来自 API 的长响应，因此令牌成本可能会成为许多组织使用它们的障碍。
 
 # 结论和未来工作
 
-在这次分析中，我们仅使用了‘指标’NASA Power API端点。使用所有的NASA Power端点并结合地理编码，创建一个真正全面的气候聊天机器人将不会太费力。
+在这次分析中，我们仅使用了‘指标’NASA Power API 端点。使用所有的 NASA Power 端点并结合地理编码，创建一个真正全面的气候聊天机器人将不会太费力。
 
-GPT提供了一种低代码的方式来开发最先进的AI代理，这些代理能够自动与API接口并生成代码以执行数据分析。它们可能会改变游戏规则，我们仅用了几小时就能创建一个相当先进的气候聊天机器人，而无需写一行代码！
+GPT 提供了一种低代码的方式来开发最先进的 AI 代理，这些代理能够自动与 API 接口并生成代码以执行数据分析。它们可能会改变游戏规则，我们仅用了几小时就能创建一个相当先进的气候聊天机器人，而无需写一行代码！
 
 目前它们还远远不完美，配置用户体验非常好，但在一些领域，如 API 错误报告，用户往往不得不猜测。外部 API 设置需要技术知识，有些 API 可能缺少所需的 openapi.json，导致实现难度增加。成本也可能很高，但由于 GPTs 仍处于预览阶段，具体情况难以判断。与 *任何* LLM 应用一样，许多工作将是确保事实准确性，任何软件项目所需的典型设计和工程工作流程仍然适用。
 
@@ -261,4 +261,4 @@ GPTs 非常了不起，但还不是魔法……还没有。
 
 # 参考文献
 
-*对于* [NASA 全球能源资源预测 (POWER)](https://power.larc.nasa.gov/docs/)：*“这些数据来自NASA Langley研究中心（LaRC）POWER项目，该项目由NASA地球科学/应用科学计划资助。”*
+*对于* [NASA 全球能源资源预测 (POWER)](https://power.larc.nasa.gov/docs/)：*“这些数据来自 NASA Langley 研究中心（LaRC）POWER 项目，该项目由 NASA 地球科学/应用科学计划资助。”*

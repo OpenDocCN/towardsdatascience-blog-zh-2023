@@ -1,18 +1,18 @@
 # 改进 NLP 的秘密：深入了解 PyTorch 中的 nn.Embedding 层
 
-> 原文：[https://towardsdatascience.com/the-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16?source=collection_archive---------0-----------------------#2023-01-24](https://towardsdatascience.com/the-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16?source=collection_archive---------0-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/the-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16?source=collection_archive---------0-----------------------#2023-01-24`](https://towardsdatascience.com/the-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16?source=collection_archive---------0-----------------------#2023-01-24)
 
 ## 解析 PyTorch 中的 `nn.Embedding` 层以及它的完整工作指南
 
-[](https://medium.com/@will.badr?source=post_page-----6e901e193e16--------------------------------)[![Will Badr](../Images/46a4737eaedc1cb30f4f11ceb8373528.png)](https://medium.com/@will.badr?source=post_page-----6e901e193e16--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6e901e193e16--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6e901e193e16--------------------------------) [Will Badr](https://medium.com/@will.badr?source=post_page-----6e901e193e16--------------------------------)
+[](https://medium.com/@will.badr?source=post_page-----6e901e193e16--------------------------------)![Will Badr](https://medium.com/@will.badr?source=post_page-----6e901e193e16--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6e901e193e16--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6e901e193e16--------------------------------) [Will Badr](https://medium.com/@will.badr?source=post_page-----6e901e193e16--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F551ba3f6b67d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16&user=Will+Badr&userId=551ba3f6b67d&source=post_page-551ba3f6b67d----6e901e193e16---------------------post_header-----------) 发表在 [数据科学的秘密](https://towardsdatascience.com/?source=post_page-----6e901e193e16--------------------------------) · 8分钟阅读 · 2023年1月24日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F551ba3f6b67d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16&user=Will+Badr&userId=551ba3f6b67d&source=post_page-551ba3f6b67d----6e901e193e16---------------------post_header-----------) 发表在 [数据科学的秘密](https://towardsdatascience.com/?source=post_page-----6e901e193e16--------------------------------) · 8 分钟阅读 · 2023 年 1 月 24 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6e901e193e16&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16&source=-----6e901e193e16---------------------bookmark_footer-----------)![](../Images/78883177665ed8578c3715ef39211129.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6e901e193e16&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-secret-to-improved-nlp-an-in-depth-look-at-the-nn-embedding-layer-in-pytorch-6e901e193e16&source=-----6e901e193e16---------------------bookmark_footer-----------)![](img/78883177665ed8578c3715ef39211129.png)
 
 OpenAI DALL-E 生成的图像
 

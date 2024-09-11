@@ -1,8 +1,8 @@
 # SQL 查询优化的世界
 
-> 原文：[https://towardsdatascience.com/the-world-of-sql-query-optimization-e1d5b5fef20d?source=collection_archive---------10-----------------------#2023-03-27](https://towardsdatascience.com/the-world-of-sql-query-optimization-e1d5b5fef20d?source=collection_archive---------10-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/the-world-of-sql-query-optimization-e1d5b5fef20d?source=collection_archive---------10-----------------------#2023-03-27`](https://towardsdatascience.com/the-world-of-sql-query-optimization-e1d5b5fef20d?source=collection_archive---------10-----------------------#2023-03-27)
 
-![](../Images/83a4adc3c26c7145297a344045db80f7.png)
+![](img/83a4adc3c26c7145297a344045db80f7.png)
 
 图片由 [Jake Blucker](https://unsplash.com/@jakeblucker?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -10,11 +10,11 @@
 
 ## 探索不同的查询优化器及其工作原理
 
-[](https://kovidrathee.medium.com/?source=post_page-----e1d5b5fef20d--------------------------------)[![Kovid Rathee](../Images/2bad5143febe95d28d0cf19698c5c976.png)](https://kovidrathee.medium.com/?source=post_page-----e1d5b5fef20d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e1d5b5fef20d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e1d5b5fef20d--------------------------------) [Kovid Rathee](https://kovidrathee.medium.com/?source=post_page-----e1d5b5fef20d--------------------------------)
+[](https://kovidrathee.medium.com/?source=post_page-----e1d5b5fef20d--------------------------------)![Kovid Rathee](https://kovidrathee.medium.com/?source=post_page-----e1d5b5fef20d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e1d5b5fef20d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1d5b5fef20d--------------------------------) [Kovid Rathee](https://kovidrathee.medium.com/?source=post_page-----e1d5b5fef20d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F13d513db037&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-world-of-sql-query-optimization-e1d5b5fef20d&user=Kovid+Rathee&userId=13d513db037&source=post_page-13d513db037----e1d5b5fef20d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1d5b5fef20d--------------------------------) · 6 分钟阅读 · 2023年3月27日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe1d5b5fef20d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-world-of-sql-query-optimization-e1d5b5fef20d&user=Kovid+Rathee&userId=13d513db037&source=-----e1d5b5fef20d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F13d513db037&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-world-of-sql-query-optimization-e1d5b5fef20d&user=Kovid+Rathee&userId=13d513db037&source=post_page-13d513db037----e1d5b5fef20d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e1d5b5fef20d--------------------------------) · 6 分钟阅读 · 2023 年 3 月 27 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe1d5b5fef20d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-world-of-sql-query-optimization-e1d5b5fef20d&user=Kovid+Rathee&userId=13d513db037&source=-----e1d5b5fef20d---------------------clap_footer-----------)
 
 --
 

@@ -1,10 +1,10 @@
 # Python 中并发和并行的综合指南
 
-> 原文：[https://towardsdatascience.com/comprehensive-guide-to-concurrency-and-parallelism-in-python-415ee5fbec1a?source=collection_archive---------6-----------------------#2023-04-14](https://towardsdatascience.com/comprehensive-guide-to-concurrency-and-parallelism-in-python-415ee5fbec1a?source=collection_archive---------6-----------------------#2023-04-14)
+> 原文：[`towardsdatascience.com/comprehensive-guide-to-concurrency-and-parallelism-in-python-415ee5fbec1a?source=collection_archive---------6-----------------------#2023-04-14`](https://towardsdatascience.com/comprehensive-guide-to-concurrency-and-parallelism-in-python-415ee5fbec1a?source=collection_archive---------6-----------------------#2023-04-14)
 
 ## 使用 multiprocessing、threading 和 asyncio
 
-[](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)[![Oliver S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----415ee5fbec1a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----415ee5fbec1a--------------------------------) [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)
+[](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)![Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----415ee5fbec1a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----415ee5fbec1a--------------------------------) [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@
 
 在这篇文章中，我们将详细介绍 Python 中的并发和并行。我们将介绍这些术语，然后展示如何在 Python 中使用 `multiprocessing`、`threading` 和 `asyncio` 应用它们。我们将学习何时使用多进程，何时使用多线程，并为每种情况提供实际示例。
 
-![](../Images/d46b0e529b898fbbd9fbb143c1f18a48.png)
+![](img/d46b0e529b898fbbd9fbb143c1f18a48.png)
 
 照片由 [Tomas Sobek](https://unsplash.com/@tomas_nz?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/plwud_FPvwU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

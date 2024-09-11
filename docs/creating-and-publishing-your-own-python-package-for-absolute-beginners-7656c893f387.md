@@ -1,18 +1,18 @@
 # 为绝对初学者创建和发布自己的 Python 包
 
-> 原文：[https://towardsdatascience.com/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=collection_archive---------6-----------------------#2023-09-23](https://towardsdatascience.com/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=collection_archive---------6-----------------------#2023-09-23)
+> 原文：[`towardsdatascience.com/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=collection_archive---------6-----------------------#2023-09-23`](https://towardsdatascience.com/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=collection_archive---------6-----------------------#2023-09-23)
 
-## 在5分钟内创建、构建和发布一个 Python 包
+## 在 5 分钟内创建、构建和发布一个 Python 包
 
-[](https://mikehuls.medium.com/?source=post_page-----7656c893f387--------------------------------)[![Mike Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----7656c893f387--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7656c893f387--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7656c893f387--------------------------------) [Mike Huls](https://mikehuls.medium.com/?source=post_page-----7656c893f387--------------------------------)
+[](https://mikehuls.medium.com/?source=post_page-----7656c893f387--------------------------------)![Mike Huls](https://mikehuls.medium.com/?source=post_page-----7656c893f387--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7656c893f387--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7656c893f387--------------------------------) [Mike Huls](https://mikehuls.medium.com/?source=post_page-----7656c893f387--------------------------------)
 
 ·
 
-[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ffb62c607ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387&user=Mike+Huls&userId=7ffb62c607ee&source=post_page-7ffb62c607ee----7656c893f387---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7656c893f387--------------------------------) ·6分钟阅读·2023年9月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7656c893f387&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387&user=Mike+Huls&userId=7ffb62c607ee&source=-----7656c893f387---------------------clap_footer-----------)
+[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ffb62c607ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387&user=Mike+Huls&userId=7ffb62c607ee&source=post_page-7ffb62c607ee----7656c893f387---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7656c893f387--------------------------------) ·6 分钟阅读·2023 年 9 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7656c893f387&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387&user=Mike+Huls&userId=7ffb62c607ee&source=-----7656c893f387---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7656c893f387&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387&source=-----7656c893f387---------------------bookmark_footer-----------)![](../Images/376b56645a3b29e6dba99d79a2a5fd01.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7656c893f387&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387&source=-----7656c893f387---------------------bookmark_footer-----------)![](img/376b56645a3b29e6dba99d79a2a5fd01.png)
 
 （图片由 [Erda Estremera](https://unsplash.com/@erdaest) 提供，来源于 [Unsplash](https://unsplash.com/photos/sxNt9g77PE0)）
 

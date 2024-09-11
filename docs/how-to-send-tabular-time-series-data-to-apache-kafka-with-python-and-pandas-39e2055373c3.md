@@ -1,18 +1,18 @@
 # 如何将表格时间序列数据发送到 Apache Kafka，使用 Python 和 Pandas
 
-> 原文：[https://towardsdatascience.com/how-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3?source=collection_archive---------19-----------------------#2023-01-24](https://towardsdatascience.com/how-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3?source=collection_archive---------19-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/how-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3?source=collection_archive---------19-----------------------#2023-01-24`](https://towardsdatascience.com/how-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3?source=collection_archive---------19-----------------------#2023-01-24)
 
 ## 现在学习如何使用在线零售交易的示例日志在 Kafka 中生成和消费数据
 
-[](https://medium.com/@tomasatquix?source=post_page-----39e2055373c3--------------------------------)[![Tomáš Neubauer](../Images/5eb14b73cfe100ef9a43148db6abd3a9.png)](https://medium.com/@tomasatquix?source=post_page-----39e2055373c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----39e2055373c3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----39e2055373c3--------------------------------) [Tomáš Neubauer](https://medium.com/@tomasatquix?source=post_page-----39e2055373c3--------------------------------)
+[](https://medium.com/@tomasatquix?source=post_page-----39e2055373c3--------------------------------)![Tomáš Neubauer](https://medium.com/@tomasatquix?source=post_page-----39e2055373c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----39e2055373c3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----39e2055373c3--------------------------------) [Tomáš Neubauer](https://medium.com/@tomasatquix?source=post_page-----39e2055373c3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd620afda25db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3&user=Tom%C3%A1%C5%A1+Neubauer&userId=d620afda25db&source=post_page-d620afda25db----39e2055373c3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----39e2055373c3--------------------------------) ·15分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F39e2055373c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3&user=Tom%C3%A1%C5%A1+Neubauer&userId=d620afda25db&source=-----39e2055373c3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd620afda25db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3&user=Tom%C3%A1%C5%A1+Neubauer&userId=d620afda25db&source=post_page-d620afda25db----39e2055373c3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----39e2055373c3--------------------------------) ·15 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F39e2055373c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3&user=Tom%C3%A1%C5%A1+Neubauer&userId=d620afda25db&source=-----39e2055373c3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F39e2055373c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3&source=-----39e2055373c3---------------------bookmark_footer-----------)![](../Images/33c2b7574c7e450bfa10a9e6192ff1ce.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F39e2055373c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-send-tabular-time-series-data-to-apache-kafka-with-python-and-pandas-39e2055373c3&source=-----39e2055373c3---------------------bookmark_footer-----------)![](img/33c2b7574c7e450bfa10a9e6192ff1ce.png)
 
 图片来源于 [Tech Daily](https://unsplash.com/@techdailyca?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/ztYmIQecyH4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -144,7 +144,7 @@ Apache Kafka 是实时数据处理的行业标准。你可以用它来处理大�
 
 你会在 ‘*tabular-timeseries-kafka*’ 子文件夹中找到代码。如果你想直接跳到代码部分，可以使用以下命令克隆我们的教程仓库：
 
-git clone [https://github.com/quixai/tuto...](https://github.com/quixai/tutorial-code.git)
+git clone [`github.com/quixai/tuto...`](https://github.com/quixai/tutorial-code.git)
 
 # 设置 Apache Kafka
 
@@ -261,7 +261,7 @@ Data columns (total 8 columns):
 5 Price 1067371 non-null float64
 6 Customer ID 824364 non-null float64
 7 Country 1067371 non-null object
-dtypes: datetime64[ns](1), float64(2), int64(1), object(4)
+dtypes: datetime64ns, float64(2), int64(1), object(4)
 memory usage: 65.1+ MB
 ```
 
@@ -296,7 +296,7 @@ memory usage: 65.1+ MB
 
 所有这些功能部分依赖于时间的正确格式。
 
-请注意，在这个基础教程中我们不会使用这些功能。但是，如果你打算在生产环境中使用Kafka，了解时间数据在与Kafka交互时所扮演的角色是很重要的。
+请注意，在这个基础教程中我们不会使用这些功能。但是，如果你打算在生产环境中使用 Kafka，了解时间数据在与 Kafka 交互时所扮演的角色是很重要的。
 
 # 使用 DataFrames 与 Kafka 的优点
 
@@ -372,7 +372,7 @@ for chunk in pd.read_csv(file,encoding='unicode_escape',chunksize=10):
 
 +   将 JSON 作为消息发送到 Kafka 主题“transactions”
 
-你可以在我们的 Github 仓库中查看完整的文件。 [https://github.com/quixai/tutorials/timeseries/producer.py](https://github.com/quixai/tutorials/timeseries/producer.py)
+你可以在我们的 Github 仓库中查看完整的文件。 [`github.com/quixai/tutorials/timeseries/producer.py`](https://github.com/quixai/tutorials/timeseries/producer.py)
 
 **3.** 保存你的文件并使用以下命令运行代码：
 
@@ -392,7 +392,7 @@ for chunk in pd.read_csv(file,encoding='unicode_escape',chunksize=10):
 
 创建 Kafka 消费者的过程与前一步非常类似。在这种情况下，我们将读取每个批量的消息，并将其转换回 DataFrame。
 
-我们将假设这个消费者是用于某种库存分析管道，它只关心每个库存项目的总销售额。因此，在数据中，我们只查看StockCode、销售数量和价格。我们将计算每条记录的销售总值，以便按StockCode汇总销售数据。
+我们将假设这个消费者是用于某种库存分析管道，它只关心每个库存项目的总销售额。因此，在数据中，我们只查看 StockCode、销售数量和价格。我们将计算每条记录的销售总值，以便按 StockCode 汇总销售数据。
 
 1.  在你的项目目录中，创建一个名为`consumer.py`的文件，并插入以下代码块以初始化消费者。
 
@@ -413,7 +413,7 @@ consumer = KafkaConsumer('transactions',
 
 +   我们正在用比我们为生产者设置的更多选项来初始化消费者。
 
-+   首先，我们告诉它从哪个主题读取，然后Kafka服务器运行在哪里，最后，我们提供了一个lambda函数用于将消息值反序列化回Python字典。
++   首先，我们告诉它从哪个主题读取，然后 Kafka 服务器运行在哪里，最后，我们提供了一个 lambda 函数用于将消息值反序列化回 Python 字典。
 
 2. 接下来，添加‘for’循环，它将迭代消息并对其进行一些处理。
 
@@ -457,17 +457,17 @@ StockCode
 
 如果你只是把它做在本地机器上，这个过程可能显得平凡无奇，但当你考虑到这种模式如何扩展时，它会变得更加有趣。让我们稍微回顾一下你做了什么——你完成了两个关键任务：
 
-## 1— 你生成了高频率的消息流，并将其流入一个Kafka主题
+## 1— 你生成了高频率的消息流，并将其流入一个 Kafka 主题
 
 在这种情况下，你是在“重放”客户交易的历史日志，并人为地将每条消息延迟半秒。
 
 **它如何扩展**：
 
-+   在生产环境中，可能会有某种前端应用程序生成流数据，我们需要做一些额外的路由工作将其放入主题中（因为前端应用程序和Kafka集群将位于不同的服务器上）。
++   在生产环境中，可能会有某种前端应用程序生成流数据，我们需要做一些额外的路由工作将其放入主题中（因为前端应用程序和 Kafka 集群将位于不同的服务器上）。
 
 +   消息也可能以不规则的频率到达，而不是标准的半秒，并且序列化可能会以某种方式进行优化。
 
-## 2 — 你从Kafka主题中消费了高频率的消息流，并对数据进行了汇总处理
+## 2 — 你从 Kafka 主题中消费了高频率的消息流，并对数据进行了汇总处理
 
 对于这个教程，你只是通过同一台机器进行数据流处理和消费，这可能看起来没什么特别的——但实际上，会有许多不同机器的消费者。
 
@@ -479,7 +479,7 @@ StockCode
 
 +   另一个消费者可能是一个订单履行管道，它只关心最新的未完成订单。它会读取新消息，并将订单发送去处理。
 
-+   另一个消费者可能是一个数据聚合管道，它将数据与CRM中的数据结合，并将其放入数据仓库中供市场营销团队分析。
++   另一个消费者可能是一个数据聚合管道，它将数据与 CRM 中的数据结合，并将其放入数据仓库中供市场营销团队分析。
 
 如你所见，当你使用 Apache Kafka 来利用高频时间序列数据时，它可以变得极其强大。表格时间序列数据在许多应用中都很常见，如金融分析、传感器数据分析和社交媒体分析。
 
@@ -487,7 +487,7 @@ StockCode
 
 +   你可以在我们的 [教程 GitHub 仓库](https://github.com/quixai/tutorial-code.git)中找到本教程及其他教程的源代码。
 
-+   数据来源：*Daqing Chen, Sai Liang Sain, 和 Kun Guo, 数据挖掘在线零售行业：“基于RFM模型的客户细分案例研究”，《数据库营销与客户策略管理期刊》，第19卷，2012年（在线出版日期：2012年8月27日。doi: 10.1057/dbm.2012.17）*
++   数据来源：*Daqing Chen, Sai Liang Sain, 和 Kun Guo, 数据挖掘在线零售行业：“基于 RFM 模型的客户细分案例研究”，《数据库营销与客户策略管理期刊》，第 19 卷，2012 年（在线出版日期：2012 年 8 月 27 日。doi: 10.1057/dbm.2012.17）*
 
 ## 关于作者
 

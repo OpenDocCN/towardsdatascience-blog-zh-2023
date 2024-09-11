@@ -1,10 +1,10 @@
 # 建立一个自定义 GPT：教训与技巧
 
-> 原文：[https://towardsdatascience.com/building-a-custom-gpt-lessons-and-tips-cd1b892ec738?source=collection_archive---------1-----------------------#2023-11-15](https://towardsdatascience.com/building-a-custom-gpt-lessons-and-tips-cd1b892ec738?source=collection_archive---------1-----------------------#2023-11-15)
+> 原文：[`towardsdatascience.com/building-a-custom-gpt-lessons-and-tips-cd1b892ec738?source=collection_archive---------1-----------------------#2023-11-15`](https://towardsdatascience.com/building-a-custom-gpt-lessons-and-tips-cd1b892ec738?source=collection_archive---------1-----------------------#2023-11-15)
 
 ## 从兴奋到失望，最终走向问题的解决与赞赏
 
-[](https://medium.com/@quentin.gallea?source=post_page-----cd1b892ec738--------------------------------)[![Quentin Gallea, PhD](../Images/457af55dd9c6121da7ec97f8e2991c43.png)](https://medium.com/@quentin.gallea?source=post_page-----cd1b892ec738--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd1b892ec738--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cd1b892ec738--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----cd1b892ec738--------------------------------)
+[](https://medium.com/@quentin.gallea?source=post_page-----cd1b892ec738--------------------------------)![Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----cd1b892ec738--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd1b892ec738--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd1b892ec738--------------------------------) [Quentin Gallea, PhD](https://medium.com/@quentin.gallea?source=post_page-----cd1b892ec738--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd1b892ec738&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-custom-gpt-lessons-and-tips-cd1b892ec738&source=-----cd1b892ec738---------------------bookmark_footer-----------)![](../Images/f565a3b6a9b324ae5eda0ac63f4412b0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd1b892ec738&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-custom-gpt-lessons-and-tips-cd1b892ec738&source=-----cd1b892ec738---------------------bookmark_footer-----------)![](img/f565a3b6a9b324ae5eda0ac63f4412b0.png)
 
 The Causal Mindset（Quentin Gallea 的个性化 GPT），由 Dall-E 生成。
 
@@ -24,13 +24,13 @@ The Causal Mindset（Quentin Gallea 的个性化 GPT），由 Dall-E 生成。
 
 # 1\. 我的应用程序：因果思维模式
 
-![](../Images/bad5fdc9e392e456c9eda2bca7797e2e.png)
+![](img/bad5fdc9e392e456c9eda2bca7797e2e.png)
 
 因果思维模式应用程序。作者提供的图片。更多信息请见 thecausalmindset.com
 
-我一直致力于使因果推断变得更易于访问，以帮助人们做出更好的决策并减少被操控的风险。在过去的十年里，我向大约12,000人教授统计学，大多数是在学术界。
+我一直致力于使因果推断变得更易于访问，以帮助人们做出更好的决策并减少被操控的风险。在过去的十年里，我向大约 12,000 人教授统计学，大多数是在学术界。
 
-除了理论和经验课程，我创建了一个框架，“因果思维模式”，本质上是一套基于因果推断和统计学的实用批判性思维工具（不涉及数学），我每周在LinkedIn和Instagram上发布内容。
+除了理论和经验课程，我创建了一个框架，“因果思维模式”，本质上是一套基于因果推断和统计学的实用批判性思维工具（不涉及数学），我每周在 LinkedIn 和 Instagram 上发布内容。
 
 区分事实与虚构对于做出明智决策和保护自己免受操控至关重要。不幸的是，面对信息的泛滥，这一任务变得越来越困难；虚假信息、误导性文章和彻头彻尾的谎言随处可见。
 
@@ -46,19 +46,19 @@ The Causal Mindset（Quentin Gallea 的个性化 GPT），由 Dall-E 生成。
 
 # **2\. 热情（这如何运作？）**
 
-现在，如果你有ChatGPT Plus的访问权限，你可以进入“操作界面”并创建你自己的个性化GPT。OpenAI已经发布了一些他们自制的GPT（公司称之为GPTs），并计划在不久的将来推出一个由用户生产的GPT应用商店（参见：[https://openai.com/blog/introducing-gpts](https://openai.com/blog/introducing-gpts)）。
+现在，如果你有 ChatGPT Plus 的访问权限，你可以进入“操作界面”并创建你自己的个性化 GPT。OpenAI 已经发布了一些他们自制的 GPT（公司称之为 GPTs），并计划在不久的将来推出一个由用户生产的 GPT 应用商店（参见：[`openai.com/blog/introducing-gpts`](https://openai.com/blog/introducing-gpts)）。
 
 基本的方面是，你不需要编程，而是使用自然语言来设置和调整应用程序。以下是这个操作界面的样子：
 
-![](../Images/9f112f45fb75b07ef040778caf6e56b5.png)
+![](img/9f112f45fb75b07ef040778caf6e56b5.png)
 
-作者提供的图片，展示了创建个性化GPT的实验室界面
+作者提供的图片，展示了创建个性化 GPT 的实验室界面
 
-在左侧，你可以与GPT构建器聊天以进行设置，在右侧，你可以尝试它。所以，基本上，这就是我开始的方式。我给出了指示，也向构建器请教建议，并在右侧测试了结果。
+在左侧，你可以与 GPT 构建器聊天以进行设置，在右侧，你可以尝试它。所以，基本上，这就是我开始的方式。我给出了指示，也向构建器请教建议，并在右侧测试了结果。
 
 在左上角，你也可以点击“配置”，在那里你可以直接访问应用的其他方面（见下图）。你也可以通过在“创建”选项卡中与 GPT Builder 讨论来填写所有这些字段。注意，Builder 可以根据你进行的对话决定调整这些字段的内容（这将在下一部分变得重要）。
 
-![](../Images/888b2d94024f5d73da244bff9ba336f7.png)
+![](img/888b2d94024f5d73da244bff9ba336f7.png)
 
 图片来源：作者，创建你个性化 GPT 的实验室截图
 
@@ -84,7 +84,7 @@ The Causal Mindset（Quentin Gallea 的个性化 GPT），由 Dall-E 生成。
 
 然后，我还意识到用户可以找到我的知识库、我的指令，甚至是我用于构建应用的对话（‘提示注入’）。这也是相当令人沮丧的（见下图）。
 
-![](../Images/474921e432fb369a60370900288eb109.png)
+![](img/474921e432fb369a60370900288eb109.png)
 
 作为应用用户，我如何获取知识库中的文档列表的示例。图片来源：作者。
 
@@ -94,13 +94,13 @@ The Causal Mindset（Quentin Gallea 的个性化 GPT），由 Dall-E 生成。
 
 ## 4.1 隐私
 
-我放弃了隐私方面的考虑，仅分享了我已经在网上分享的内容，任何人都可以访问（这不是适用于任何人和任何情况的解决方案）。此外，我认为，与其保护我如何指示模型，不如分享出来让其他人改进他们的GPT（因此这篇文章）。所以我接受了“开源”这一方面。请注意，他们可能在处理这个方面，禁用代码解释器可能会稍微减少风险。
+我放弃了隐私方面的考虑，仅分享了我已经在网上分享的内容，任何人都可以访问（这不是适用于任何人和任何情况的解决方案）。此外，我认为，与其保护我如何指示模型，不如分享出来让其他人改进他们的 GPT（因此这篇文章）。所以我接受了“开源”这一方面。请注意，他们可能在处理这个方面，禁用代码解释器可能会稍微减少风险。
 
 ## 4.2 用户指南
 
-当你进入应用程序时，你的信息有限。我有一个完整的网站提供示例，还有一个指南在其他地方（[thecausalmindset.com](http://thecausalmindset.com)），但在应用程序本身，你只有一个简短的描述，通常不够。因此，这是我的第一个想法。我将“这个应用程序是如何工作的？”作为第一个对话开场白，以便人们在进入应用程序时能够立即点击这个问题。然后，我指示GPT始终给出完全相同的回答（见下图）。我追求简短且带有示例的内容，以邀请人们尝试，而不是阅读手册。
+当你进入应用程序时，你的信息有限。我有一个完整的网站提供示例，还有一个指南在其他地方（[thecausalmindset.com](http://thecausalmindset.com)），但在应用程序本身，你只有一个简短的描述，通常不够。因此，这是我的第一个想法。我将“这个应用程序是如何工作的？”作为第一个对话开场白，以便人们在进入应用程序时能够立即点击这个问题。然后，我指示 GPT 始终给出完全相同的回答（见下图）。我追求简短且带有示例的内容，以邀请人们尝试，而不是阅读手册。
 
-![](../Images/69d681e94f6fc793359a1adfda3b594d.png)
+![](img/69d681e94f6fc793359a1adfda3b594d.png)
 
 我的简短用户指南。图像由作者提供。
 
@@ -108,15 +108,15 @@ The Causal Mindset（Quentin Gallea 的个性化 GPT），由 Dall-E 生成。
 
 尽管这种方法很好，但有时如果我指示应用程序做其他事情，应用程序仍会“忘记”。这是我做出最大更新的地方。
 
-> 我彻底改变了与Builder的工作方式。
+> 我彻底改变了与 Builder 的工作方式。
 
-我创建了一个说明文件，包含了应用程序的所有关键方面，而不仅仅是聊天功能。这个文件在知识库中，并且几乎完整地粘贴在说明中（最大长度为80000字符）。
+我创建了一个说明文件，包含了应用程序的所有关键方面，而不仅仅是聊天功能。这个文件在知识库中，并且几乎完整地粘贴在说明中（最大长度为 80000 字符）。
 
 > **因此，与其讨论这些说明几个小时，我决定编写说明，将其粘贴到知识库中，并仅通过聊天指示始终仔细遵循这些说明（完整说明可以在本文附录中找到）。**
 
 这是我说明的内容：
 
-**应用程序的主要规则：** 在这里，我提供了“应用程序的10条戒律”。
+**应用程序的主要规则：** 在这里，我提供了“应用程序的 10 条戒律”。
 
 **这个应用程序是如何工作的？** 我给出了上面显示的描述，这是我希望应用程序告诉用户的内容。
 
@@ -260,8 +260,8 @@ o 学生/研究人员：应用程序推荐关于因果推理的教育资源和�
 
 示例：健身计划：我跟随一个划船的健身计划一个月。我今天测试了，速度更快了。这是这个计划的功劳吗？
 
-示例：环境政策评估：2022年9月，瑞士政府启动了一项国家广告宣传活动，支持节能以应对因乌克兰战争带来的短缺威胁。它展示了一张图表，显示在实施该政策后，瑞士的每月净消费下降（在冬季）。
+示例：环境政策评估：2022 年 9 月，瑞士政府启动了一项国家广告宣传活动，支持节能以应对因乌克兰战争带来的短缺威胁。它展示了一张图表，显示在实施该政策后，瑞士的每月净消费下降（在冬季）。
 
 示例：公司影响：我看到一家在欧洲城市中心提供免费电动滑板车的公司，并声称他们的服务减少了污染。他们使用生命周期分析来比较汽车每公里和他们的电动滑板车每公里的污染。
 
-示例：冷水澡研究论文：我看到一篇同行评审的文章，介绍了一项随机对照试验，其中2000名荷兰志愿者被分成每天冷水澡和正常淋浴两组。他们发现，洗冷水澡的人因生病缺勤的次数比对照组少1/3。所有结果均为自我报告。你怎么看？
+示例：冷水澡研究论文：我看到一篇同行评审的文章，介绍了一项随机对照试验，其中 2000 名荷兰志愿者被分成每天冷水澡和正常淋浴两组。他们发现，洗冷水澡的人因生病缺勤的次数比对照组少 1/3。所有结果均为自我报告。你怎么看？

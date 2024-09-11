@@ -1,16 +1,16 @@
 # 《提示设计的艺术：提示边界与标记修复》
 
-> 原文：[https://towardsdatascience.com/the-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38?source=collection_archive---------2-----------------------#2023-05-08](https://towardsdatascience.com/the-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38?source=collection_archive---------2-----------------------#2023-05-08)
+> 原文：[`towardsdatascience.com/the-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38?source=collection_archive---------2-----------------------#2023-05-08`](https://towardsdatascience.com/the-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38?source=collection_archive---------2-----------------------#2023-05-08)
 
-[](https://medium.com/@scottmlundberg?source=post_page-----3b2448b0be38--------------------------------)[![Scott Lundberg](../Images/99f1c984f0aaabfe4e348a92fa50a1ee.png)](https://medium.com/@scottmlundberg?source=post_page-----3b2448b0be38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b2448b0be38--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3b2448b0be38--------------------------------) [Scott Lundberg](https://medium.com/@scottmlundberg?source=post_page-----3b2448b0be38--------------------------------)
+[](https://medium.com/@scottmlundberg?source=post_page-----3b2448b0be38--------------------------------)![Scott Lundberg](https://medium.com/@scottmlundberg?source=post_page-----3b2448b0be38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b2448b0be38--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b2448b0be38--------------------------------) [Scott Lundberg](https://medium.com/@scottmlundberg?source=post_page-----3b2448b0be38--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a739af9ef3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38&user=Scott+Lundberg&userId=3a739af9ef3a&source=post_page-3a739af9ef3a----3b2448b0be38---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b2448b0be38--------------------------------) ·7 分钟阅读·2023年5月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3b2448b0be38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38&user=Scott+Lundberg&userId=3a739af9ef3a&source=-----3b2448b0be38---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a739af9ef3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38&user=Scott+Lundberg&userId=3a739af9ef3a&source=post_page-3a739af9ef3a----3b2448b0be38---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b2448b0be38--------------------------------) ·7 分钟阅读·2023 年 5 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3b2448b0be38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38&user=Scott+Lundberg&userId=3a739af9ef3a&source=-----3b2448b0be38---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b2448b0be38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38&source=-----3b2448b0be38---------------------bookmark_footer-----------)![](../Images/7da96052b147da9162ebeb9229095ca5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b2448b0be38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-prompt-design-prompt-boundaries-and-token-healing-3b2448b0be38&source=-----3b2448b0be38---------------------bookmark_footer-----------)![](img/7da96052b147da9162ebeb9229095ca5.png)
 
 所有图像均为原创作品。
 
@@ -33,7 +33,7 @@ generator = transformers.pipeline('text-generation', model='stabilityai/stablelm
 raw_gen('The link is <a href="http:') # helper func to call the generator
 ```
 
-![](../Images/9f08089bdd4af8fb7a57582e30d16f31.png)
+![](img/9f08089bdd4af8fb7a57582e30d16f31.png)
 
 笔记本输出。
 
@@ -43,7 +43,7 @@ raw_gen('The link is <a href="http:') # helper func to call the generator
 raw_gen('The link is <a href="http')
 ```
 
-![](../Images/9a83d183032d3ab835c0a1d65b13dac6.png)
+![](img/9a83d183032d3ab835c0a1d65b13dac6.png)
 
 现在，语言模型生成了我们预期的有效 URL 字符串。要理解 `:` 的重要性，我们需要查看提示的标记化表示。下面是以冒号结尾的提示的标记化（不包含冒号的提示有相同的标记化，除了最后一个标记）：
 
@@ -51,7 +51,7 @@ raw_gen('The link is <a href="http')
 print_tokens(generator.tokenizer.encode('The link is <a href="http:'))
 ```
 
-![](../Images/06ebdcbaf90a7dc92b1e504e2829498b.png)
+![](img/06ebdcbaf90a7dc92b1e504e2829498b.png)
 
 现在注意有效 URL 的标记化是什么样的，特别关注 `http` 后的标记 `1358`：
 
@@ -59,7 +59,7 @@ print_tokens(generator.tokenizer.encode('The link is <a href="http:'))
 print_tokens(generator.tokenizer.encode('The link is <a href="http://www.google.com/search?q'))
 ```
 
-![](../Images/a3c2d8e91a5a4fdc91400781b851273d.png)
+![](img/a3c2d8e91a5a4fdc91400781b851273d.png)
 
 大多数 LLM（包括这个）使用贪婪的标记化方法，总是偏向于选择最长的标记，即 `://` 在完整文本中（例如在训练中）总是优于 `:`。
 
@@ -75,7 +75,7 @@ tokens = generator.tokenizer.convert_ids_to_tokens(range(N))
 print_tokens([i for i,t in enumerate(tokens) if t.startswith(":")])
 ```
 
-![](../Images/bba5fa5bd4edeccb89dafdecbea690df.png)
+![](img/bba5fa5bd4edeccb89dafdecbea690df.png)
 
 请注意，有**34**种不同的令牌以冒号开头，因此以冒号结尾的提示可能不会生成这些**34**种令牌字符串中的任何一种。*这种微妙而强大的偏差可能会带来各种意想不到的后果。* 这适用于**任何**可能被扩展为更长单一令牌的字符串（不仅仅是 `:`）。即使是我们以“http”结尾的“固定”提示也存在内建偏差，因为它向模型传达了“http”后面内容可能不是“s”（否则“http”不会被编码为单独的令牌）：
 
@@ -83,50 +83,50 @@ print_tokens([i for i,t in enumerate(tokens) if t.startswith(":")])
 print_tokens([i for i,t in enumerate(tokens) if t.startswith("http")])
 ```
 
-![](../Images/5722e1eed5f87ab98014368cd2e2dbce.png)
+![](img/5722e1eed5f87ab98014368cd2e2dbce.png)
 
-以为这是只影响URL的深奥问题而不值得担忧，请记住，大多数令牌化器会根据令牌是否以空格、标点、引号等开头来处理令牌，因此**以这些内容结尾的提示可能会导致错误的令牌边界**，从而破坏内容：
+以为这是只影响 URL 的深奥问题而不值得担忧，请记住，大多数令牌化器会根据令牌是否以空格、标点、引号等开头来处理令牌，因此**以这些内容结尾的提示可能会导致错误的令牌边界**，从而破坏内容：
 
 ```py
 # Accidentally adding a space, will lead to weird generation
 raw_gen('I read a book about ')
 ```
 
-![](../Images/fab000c5aac694ca330aa3f9f98055a0.png)
+![](img/fab000c5aac694ca330aa3f9f98055a0.png)
 
 ```py
 # No space, works as expected
 raw_gen('I read a book about')
 ```
 
-![](../Images/c4b67b763845aed5ce9f75a575cefd3c.png)
+![](img/c4b67b763845aed5ce9f75a575cefd3c.png)
 
 另一个例子是“[”字符。考虑以下提示和补全：
 
 ```py
-raw_gen('An example ["like this"] and another example [')
+raw_gen('An example ["like this"] and another example ')
 ```
 
-![](../Images/2e193cde149e2a761afee84cf6cae3b6.png)
+![
 
-为什么第二个字符串没有被引号括起来？因为通过以“`[`”令牌结尾，我们告诉模型不生成与以下27个更长令牌匹配的补全（其中一个增加了引号字符，`15640`）：
+为什么第二个字符串没有被引号括起来？因为通过以“`[`”令牌结尾，我们告诉模型不生成与以下 27 个更长令牌匹配的补全（其中一个增加了引号字符，`15640`）：
 
 ```py
 # note the Ġ is converted to a space by the tokenizer
 print_tokens([i for i,t in enumerate(tokens) if t.startswith("Ġ[")])
 ```
 
-![](../Images/8d0086e91c6df84c0bcdd79736f6f867.png)
+![](img/8d0086e91c6df84c0bcdd79736f6f867.png)
 
-令牌边界偏差无处不在。上述StableLM模型的*70%*最常见令牌是较长可能令牌的前缀，因此在提示中的最后一个令牌时会造成令牌边界偏差。*
+令牌边界偏差无处不在。上述 StableLM 模型的*70%*最常见令牌是较长可能令牌的前缀，因此在提示中的最后一个令牌时会造成令牌边界偏差。*
 
 # **通过“令牌修复”修正无意的偏差**
 
 我们可以做些什么来避免这些无意的偏差？一种选择是始终以不能扩展为更长令牌的令牌结束提示（例如用于基于聊天的模型的角色标签），但这是一种严重限制。
 
-相反，`guidance`具有一个叫做“令牌修复”的功能，它会在提示末尾之前自动将生成过程备份一个令牌，然后约束生成的第一个令牌具有与提示最后一个令牌匹配的前缀。在我们的URL示例中，这将意味着移除 `:` 并强制生成的第一个令牌具有 `:` 前缀。令牌修复允许用户以任何他们希望的方式表达提示，而无需担心令牌边界。
+相反，`guidance`具有一个叫做“令牌修复”的功能，它会在提示末尾之前自动将生成过程备份一个令牌，然后约束生成的第一个令牌具有与提示最后一个令牌匹配的前缀。在我们的 URL 示例中，这将意味着移除 `:` 并强制生成的第一个令牌具有 `:` 前缀。令牌修复允许用户以任何他们希望的方式表达提示，而无需担心令牌边界。
 
-例如，让我们重新运行一些上述URL示例，并开启令牌修复功能（对于Transformer模型，默认是开启的，因此我们去掉 `token_healing=False`）：
+例如，让我们重新运行一些上述 URL 示例，并开启令牌修复功能（对于 Transformer 模型，默认是开启的，因此我们去掉 `token_healing=False`）：
 
 ```py
 from guidance import models, gen
@@ -139,7 +139,7 @@ lm = models.Transformers("stabilityai/stablelm-base-alpha-3b", device=0)
 lm + 'The link is <a href="http:' + gen(max_tokens=10)
 ```
 
-![](../Images/076ec3d9d9243b506a86a061a6e4e78f.png)
+![](img/076ec3d9d9243b506a86a061a6e4e78f.png)
 
 ```py
 # With token healing, we will sometimes generate https URLs,
@@ -147,7 +147,7 @@ lm + 'The link is <a href="http:' + gen(max_tokens=10)
 [str(lm + 'The link is <a href="http' + gen(max_tokens=10, temperature=1)) for i in range(10)]
 ```
 
-![](../Images/143c104e36c53354f3e659a68d58613f.png)
+![](img/143c104e36c53354f3e659a68d58613f.png)
 
 同样，我们无需担心额外的空格：
 
@@ -156,22 +156,22 @@ lm + 'The link is <a href="http:' + gen(max_tokens=10)
 lm + 'I read a book about ' + gen(max_tokens=5)
 ```
 
-![](../Images/e217a0e6ec54dca35357504011974386.png)
+![](img/e217a0e6ec54dca35357504011974386.png)
 
 ```py
 # This will generate the same text as above 
 lm + 'I read a book about' + gen(max_tokens=6)
 ```
 
-![](../Images/0f2d372e350aab9997ee5e61dbd818f9.png)
+![](img/0f2d372e350aab9997ee5e61dbd818f9.png)
 
 现在即使提示以“`[`”令牌结尾，我们也能获得引号括起来的字符串：
 
 ```py
-lm + 'An example ["like this"] and another example [' + gen(max_tokens=10)
+lm + 'An example ["like this"] and another example ' + gen(max_tokens=10)
 ```
 
-![](../Images/7aa6d716e7d702cae0a8567009775452.png)
+![
 
 # **那么子词正则化呢？**
 

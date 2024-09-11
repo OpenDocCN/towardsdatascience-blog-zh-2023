@@ -1,20 +1,20 @@
 # 从因果树到森林
 
-> 原文：[https://towardsdatascience.com/from-causal-trees-to-forests-43c4536f1481?source=collection_archive---------3-----------------------#2023-02-20](https://towardsdatascience.com/from-causal-trees-to-forests-43c4536f1481?source=collection_archive---------3-----------------------#2023-02-20)
+> 原文：[`towardsdatascience.com/from-causal-trees-to-forests-43c4536f1481?source=collection_archive---------3-----------------------#2023-02-20`](https://towardsdatascience.com/from-causal-trees-to-forests-43c4536f1481?source=collection_archive---------3-----------------------#2023-02-20)
 
 ## [因果数据科学](https://towardsdatascience.com/tagged/causal-data-science)
 
 ## *如何使用随机森林进行政策目标定位*
 
-[](https://medium.com/@matteo.courthoud?source=post_page-----43c4536f1481--------------------------------)[![Matteo Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----43c4536f1481--------------------------------)[](https://towardsdatascience.com/?source=post_page-----43c4536f1481--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----43c4536f1481--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----43c4536f1481--------------------------------)
+[](https://medium.com/@matteo.courthoud?source=post_page-----43c4536f1481--------------------------------)![Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----43c4536f1481--------------------------------)[](https://towardsdatascience.com/?source=post_page-----43c4536f1481--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----43c4536f1481--------------------------------) [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----43c4536f1481--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-causal-trees-to-forests-43c4536f1481&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----43c4536f1481---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----43c4536f1481--------------------------------) ·13分钟阅读·2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F43c4536f1481&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-causal-trees-to-forests-43c4536f1481&user=Matteo+Courthoud&userId=666130fb420f&source=-----43c4536f1481---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F666130fb420f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-causal-trees-to-forests-43c4536f1481&user=Matteo+Courthoud&userId=666130fb420f&source=post_page-666130fb420f----43c4536f1481---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----43c4536f1481--------------------------------) ·13 分钟阅读·2023 年 2 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F43c4536f1481&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-causal-trees-to-forests-43c4536f1481&user=Matteo+Courthoud&userId=666130fb420f&source=-----43c4536f1481---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F43c4536f1481&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-causal-trees-to-forests-43c4536f1481&source=-----43c4536f1481---------------------bookmark_footer-----------)![](../Images/2977138a8f4b861a47fb69dc54222ec5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F43c4536f1481&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-causal-trees-to-forests-43c4536f1481&source=-----43c4536f1481---------------------bookmark_footer-----------)![](img/2977138a8f4b861a47fb69dc54222ec5.png)
 
 封面，图片由作者提供
 

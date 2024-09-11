@@ -1,30 +1,30 @@
-# 使用LangChain实现销售与支持代理
+# 使用 LangChain 实现销售与支持代理
 
-> 原文：[https://towardsdatascience.com/implementing-a-sales-support-agent-with-langchain-63c4761193e7?source=collection_archive---------0-----------------------#2023-04-19](https://towardsdatascience.com/implementing-a-sales-support-agent-with-langchain-63c4761193e7?source=collection_archive---------0-----------------------#2023-04-19)
+> 原文：[`towardsdatascience.com/implementing-a-sales-support-agent-with-langchain-63c4761193e7?source=collection_archive---------0-----------------------#2023-04-19`](https://towardsdatascience.com/implementing-a-sales-support-agent-with-langchain-63c4761193e7?source=collection_archive---------0-----------------------#2023-04-19)
 
 ## 了解如何开发一个能够基于公司文档中提供的信息回答问题的聊天机器人
 
-[](https://bratanic-tomaz.medium.com/?source=post_page-----63c4761193e7--------------------------------)[![Tomaz Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----63c4761193e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63c4761193e7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----63c4761193e7--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----63c4761193e7--------------------------------)
+[](https://bratanic-tomaz.medium.com/?source=post_page-----63c4761193e7--------------------------------)![Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----63c4761193e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63c4761193e7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----63c4761193e7--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----63c4761193e7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-sales-support-agent-with-langchain-63c4761193e7&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----63c4761193e7---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----63c4761193e7--------------------------------) ·10分钟阅读·2023年4月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63c4761193e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-sales-support-agent-with-langchain-63c4761193e7&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----63c4761193e7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-sales-support-agent-with-langchain-63c4761193e7&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----63c4761193e7---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----63c4761193e7--------------------------------) ·10 分钟阅读·2023 年 4 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63c4761193e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-sales-support-agent-with-langchain-63c4761193e7&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----63c4761193e7---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63c4761193e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-sales-support-agent-with-langchain-63c4761193e7&source=-----63c4761193e7---------------------bookmark_footer-----------)
 
-最近，我对ChatGPT的强大功能以及其构建各种类型聊天机器人的能力产生了浓厚的兴趣。我尝试并撰写了关于多种方法的文章，这些方法旨在实现一个能够访问外部信息以改善回答的聊天机器人。在我的聊天机器人编码过程中，我加入了一些Discord频道，希望能获得一些帮助，因为这些库相对较新，文档还不多。令我惊讶的是，我发现了一些定制的机器人，它们能够回答大多数有关这些库的问题。
+最近，我对 ChatGPT 的强大功能以及其构建各种类型聊天机器人的能力产生了浓厚的兴趣。我尝试并撰写了关于多种方法的文章，这些方法旨在实现一个能够访问外部信息以改善回答的聊天机器人。在我的聊天机器人编码过程中，我加入了一些 Discord 频道，希望能获得一些帮助，因为这些库相对较新，文档还不多。令我惊讶的是，我发现了一些定制的机器人，它们能够回答大多数有关这些库的问题。
 
-![](../Images/b6412e36fd86059a0c293b5f63d8d361.png)
+![](img/b6412e36fd86059a0c293b5f63d8d361.png)
 
-Discord支持机器人示例。图片由作者提供。
+Discord 支持机器人示例。图片由作者提供。
 
 这个想法是赋予聊天机器人能够深入挖掘各种资源，如公司文档、代码或其他内容，从而允许它回答公司支持问题。由于我已经有一些聊天机器人经验，我决定测试实现一个自定义机器人，访问公司的资源有多困难。
 
 在这篇博客文章中，我将带你了解如何使用 OpenAI 的模型在[LangChain 库](https://python.langchain.com/en/latest/index.html)中实现一个销售和支持代理，该代理可以回答有关应用程序的信息，并且可以与[图形数据库 Neo4j](https://neo4j.com/)配合使用。该代理还可以帮助你调试或生成任何你遇到困难的 Cypher 语句。这样的代理可以部署到 Discord 或其他平台上服务用户。
 
-![](../Images/9ec9e7b7feaa9f81a3bee35083bf94a1.png)
+![](img/9ec9e7b7feaa9f81a3bee35083bf94a1.png)
 
 代理设计。图片由作者提供。
 
@@ -227,13 +227,13 @@ sales_qa = RetrievalQA.from_chain_type(
 
 销售提示中最重要的部分是禁止 LLM 在没有依赖官方公司资源的情况下进行回答。记住，LLMs 在提供无效信息时可能表现得非常自信。然而，我们希望避免这种情况，并避免出现机器人承诺或销售不存在的功能的问题。我们可以通过询问以下问题来测试销售问答流程：
 
-![](../Images/51fd80bad01f9fae580506c01f7a2ca2.png)
+![](img/51fd80bad01f9fae580506c01f7a2ca2.png)
 
 销售问答。作者图片。
 
 对于问题的回答似乎是相关且准确的。记住，构建此回答的信息来自 Medium 文章。
 
-接下来，我们将实现支持问答流程。在这里，我们将允许LLM模型利用其对Cypher和Neo4j的知识来帮助解决用户的问题，前提是上下文信息不足。
+接下来，我们将实现支持问答流程。在这里，我们将允许 LLM 模型利用其对 Cypher 和 Neo4j 的知识来帮助解决用户的问题，前提是上下文信息不足。
 
 ```py
 support_template = """
@@ -258,9 +258,9 @@ support_qa = RetrievalQA.from_chain_type(
 )
 ```
 
-再次，我们可以测试支持问答能力。我从Neo4j的Discord服务器上随机挑了一个问题。
+再次，我们可以测试支持问答能力。我从 Neo4j 的 Discord 服务器上随机挑了一个问题。
 
-![](../Images/7376d8dd9759b3e0de2dbb97c731112d.png)
+![](img/7376d8dd9759b3e0de2dbb97c731112d.png)
 
 支持问答。图片由作者提供。
 
@@ -268,7 +268,7 @@ support_qa = RetrievalQA.from_chain_type(
 
 ## 代理实现
 
-我们现在有两个独立的指令和存储，用于**销售**和**支持**回应。如果我们必须让人来区分这两者，那么聊天机器人的全部意义就会丧失。幸运的是，我们可以使用LangChain代理根据用户输入决定使用哪个工具。首先，我们需要定义代理的可用工具以及使用它们的时机和方式。
+我们现在有两个独立的指令和存储，用于**销售**和**支持**回应。如果我们必须让人来区分这两者，那么聊天机器人的全部意义就会丧失。幸运的是，我们可以使用 LangChain 代理根据用户输入决定使用哪个工具。首先，我们需要定义代理的可用工具以及使用它们的时机和方式。
 
 ```py
 tools = [
@@ -290,7 +290,7 @@ tools = [
 ]
 ```
 
-工具的描述用于帮助代理识别何时以及如何使用工具。例如，支持工具应当用于优化或调试Cypher语句，而工具的输入应为一个完整的问题。
+工具的描述用于帮助代理识别何时以及如何使用工具。例如，支持工具应当用于优化或调试 Cypher 语句，而工具的输入应为一个完整的问题。
 
 我们需要做的最后一件事是初始化代理。
 
@@ -305,11 +305,11 @@ agent = initialize_agent(
 
 现在我们可以继续测试代理在几个问题上的表现。
 
-![](../Images/c41124f57d1518b2aa058f12e21ff37a.png)
+![](img/c41124f57d1518b2aa058f12e21ff37a.png)
 
 销售代理示例。图片由作者提供。
 
-![](../Images/6b5bda832a1d884337d9dd5258180510.png)
+![](img/6b5bda832a1d884337d9dd5258180510.png)
 
 支持代理示例。图片由作者提供。
 
@@ -317,6 +317,6 @@ agent = initialize_agent(
 
 ## 总结
 
-在LLM时代，得益于LangChain库，您可以在一天内开发一个利用公司资源回答问题的聊天机器人，因为它提供了各种文档加载器以及与流行LLM模型的集成。因此，您只需收集公司的资源，将其导入到向量数据库中即可开始使用。请注意，实施并非确定性的，这意味着在相同提示下您可能会获得略微不同的结果。GPT-4模型在提供更准确和一致的回应方面要好得多。
+在 LLM 时代，得益于 LangChain 库，您可以在一天内开发一个利用公司资源回答问题的聊天机器人，因为它提供了各种文档加载器以及与流行 LLM 模型的集成。因此，您只需收集公司的资源，将其导入到向量数据库中即可开始使用。请注意，实施并非确定性的，这意味着在相同提示下您可能会获得略微不同的结果。GPT-4 模型在提供更准确和一致的回应方面要好得多。
 
 如果您对聊天机器人实现有任何想法或反馈，请告诉我。代码总是可以在[GitHub](https://github.com/tomasonjo/blogs/blob/master/neo4jdocs/neo4j_support_bot.ipynb)上找到。

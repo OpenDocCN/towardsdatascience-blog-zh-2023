@@ -1,10 +1,10 @@
 # Going the Next Step with Stock Measures in DAX
 
-> 原文：[https://towardsdatascience.com/going-the-next-step-with-stock-measures-in-dax-cb49d4e21c13?source=collection_archive---------13-----------------------#2023-11-28](https://towardsdatascience.com/going-the-next-step-with-stock-measures-in-dax-cb49d4e21c13?source=collection_archive---------13-----------------------#2023-11-28)
+> 原文：[`towardsdatascience.com/going-the-next-step-with-stock-measures-in-dax-cb49d4e21c13?source=collection_archive---------13-----------------------#2023-11-28`](https://towardsdatascience.com/going-the-next-step-with-stock-measures-in-dax-cb49d4e21c13?source=collection_archive---------13-----------------------#2023-11-28)
 
 ## *在使用 Power BI 中的 Stock Measures 时，我们可能会遇到一些奇怪的效果。让我们看看这种情况是如何出现的以及如何解决它。*
 
-[](https://medium.com/@salvatorecagliari?source=post_page-----cb49d4e21c13--------------------------------)[![Salvatore Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----cb49d4e21c13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb49d4e21c13--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb49d4e21c13--------------------------------) [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----cb49d4e21c13--------------------------------)
+[](https://medium.com/@salvatorecagliari?source=post_page-----cb49d4e21c13--------------------------------)![Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----cb49d4e21c13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb49d4e21c13--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb49d4e21c13--------------------------------) [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----cb49d4e21c13--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb49d4e21c13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-the-next-step-with-stock-measures-in-dax-cb49d4e21c13&source=-----cb49d4e21c13---------------------bookmark_footer-----------)![](../Images/de6275a5ca5ee665dbfaa76b41735898.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb49d4e21c13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoing-the-next-step-with-stock-measures-in-dax-cb49d4e21c13&source=-----cb49d4e21c13---------------------bookmark_footer-----------)![](img/de6275a5ca5ee665dbfaa76b41735898.png)
 
 Photo by [Firmbee.com](https://unsplash.com/@firmbee?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

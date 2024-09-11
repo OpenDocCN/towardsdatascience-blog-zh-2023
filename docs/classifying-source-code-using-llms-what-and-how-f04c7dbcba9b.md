@@ -1,44 +1,44 @@
 # 使用 LLM 分类源代码 — 什么与如何
 
-> 原文：[https://towardsdatascience.com/classifying-source-code-using-llms-what-and-how-f04c7dbcba9b?source=collection_archive---------2-----------------------#2023-12-28](https://towardsdatascience.com/classifying-source-code-using-llms-what-and-how-f04c7dbcba9b?source=collection_archive---------2-----------------------#2023-12-28)
+> 原文：[`towardsdatascience.com/classifying-source-code-using-llms-what-and-how-f04c7dbcba9b?source=collection_archive---------2-----------------------#2023-12-28`](https://towardsdatascience.com/classifying-source-code-using-llms-what-and-how-f04c7dbcba9b?source=collection_archive---------2-----------------------#2023-12-28)
 
 ## 分享我们制作基于 LLM 的源代码分类器的经验
 
-[](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)[![Ori Abramovsky](../Images/28b758ecfc0d759584913be5feb6a72a.png)](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------) [Ori Abramovsky](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)
+[](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)![Ori Abramovsky](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------) [Ori Abramovsky](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6b24a84c43&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&user=Ori+Abramovsky&userId=a6b24a84c43&source=post_page-a6b24a84c43----f04c7dbcba9b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------) · 14 分钟阅读 · 2023年12月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff04c7dbcba9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&user=Ori+Abramovsky&userId=a6b24a84c43&source=-----f04c7dbcba9b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6b24a84c43&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&user=Ori+Abramovsky&userId=a6b24a84c43&source=post_page-a6b24a84c43----f04c7dbcba9b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------) · 14 分钟阅读 · 2023 年 12 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff04c7dbcba9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&user=Ori+Abramovsky&userId=a6b24a84c43&source=-----f04c7dbcba9b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff04c7dbcba9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&source=-----f04c7dbcba9b---------------------bookmark_footer-----------)![](../Images/b6d8df4044604cfbc0b0fd8b2f8d4edc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff04c7dbcba9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&source=-----f04c7dbcba9b---------------------bookmark_footer-----------)![](img/b6d8df4044604cfbc0b0fd8b2f8d4edc.png)
 
 照片由 [Iurii Ivashchenko](https://www.pexels.com/photo/shallow-focus-photo-of-two-brown-lions-3498323/) 拍摄
 
-源代码AI已成为一种常见的用例，具有许多实际和多样化的实现（缺陷检测，[代码补全](https://github.com/features/copilot)等）。源代码AI最有趣的方面之一是它面临的重大变革；如果不久前，源代码分类的常见方法是训练定制的DNN、依赖于[嵌入](https://code2vec.org/)或甚至使用经典的NLP技术如[词袋模型（BOW）](https://en.wikipedia.org/wiki/Bag-of-words_model)，如今，大型语言模型（LLMs）已成为主要的工具。更具体地说，‘[上下文学习](https://arxiv.org/pdf/2109.01652.pdf)’的使用迅速显现；将[LLM](https://arxiv.org/abs/2308.10792)（[指令调整](https://arxiv.org/abs/2308.10792)）喂入提示输入并获得分类，（理论上）不需要额外的调整。[ChatGPT](https://chat.openai.com/)就是这样一个演示，通过其API极大简化了ML应用程序的开发。但隐藏的复杂性使得与生产就绪的应用程序之间的距离仍然相当高。下面总结了我们使用LLMs对源代码进行分类的旅程中的重要亮点。让我们开始吧。
+源代码 AI 已成为一种常见的用例，具有许多实际和多样化的实现（缺陷检测，[代码补全](https://github.com/features/copilot)等）。源代码 AI 最有趣的方面之一是它面临的重大变革；如果不久前，源代码分类的常见方法是训练定制的 DNN、依赖于[嵌入](https://code2vec.org/)或甚至使用经典的 NLP 技术如[词袋模型（BOW）](https://en.wikipedia.org/wiki/Bag-of-words_model)，如今，大型语言模型（LLMs）已成为主要的工具。更具体地说，‘[上下文学习](https://arxiv.org/pdf/2109.01652.pdf)’的使用迅速显现；将[LLM](https://arxiv.org/abs/2308.10792)（[指令调整](https://arxiv.org/abs/2308.10792)）喂入提示输入并获得分类，（理论上）不需要额外的调整。[ChatGPT](https://chat.openai.com/)就是这样一个演示，通过其 API 极大简化了 ML 应用程序的开发。但隐藏的复杂性使得与生产就绪的应用程序之间的距离仍然相当高。下面总结了我们使用 LLMs 对源代码进行分类的旅程中的重要亮点。让我们开始吧。
 
-# 选择合适的LLM
+# 选择合适的 LLM
 
 ## 考虑开源
 
-第一个重要的检查点是依赖的LLM。虽然像ChatGPT这样的商业服务非常适合“5分钟黑客马拉松POCs”，但对于源代码应用程序，你的客户很可能不喜欢他们（或你公司内部）的代码被发送到其他地方。虽然存在[本地部署](https://en.wikipedia.org/wiki/On-premises_software)（[Claude在AWS上](https://www.anthropic.com/index/anthropic-amazon)和[ChatGPT在Azure上](https://azure.microsoft.com/en-us/blog/chatgpt-is-now-available-in-azure-openai-service/)），为了完全控制你的LLM，考虑转向某些开源的源代码LLM（如[CodeLlama](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf)和[WizardCoder](https://github.com/nlpxucan/WizardLM/tree/main/WizardCoder)）。不过请记住，虽然商业LLM在技术上投入了大量精力，如‘[从人类反馈中强化学习](https://en.wikipedia.org/wiki/Reinforcement_learning_from_human_feedback)’（[RLHF](https://en.wikipedia.org/wiki/Reinforcement_learning_from_human_feedback)），以使其API非常稳健和易于使用，但开源LLM没有这样的奢侈。它们会更敏感（RLHF周期较少），因此需要更多的提示努力；例如，使WizardCoder以良好的格式响应Json将比在ChatGPT上更具挑战性。对于一些人来说，使用开源的附加值可以轻松解释额外的投资，对于一些人则不那么重要。这是一个典型的权衡问题。
+第一个重要的检查点是依赖的 LLM。虽然像 ChatGPT 这样的商业服务非常适合“5 分钟黑客马拉松 POCs”，但对于源代码应用程序，你的客户很可能不喜欢他们（或你公司内部）的代码被发送到其他地方。虽然存在[本地部署](https://en.wikipedia.org/wiki/On-premises_software)（[Claude 在 AWS 上](https://www.anthropic.com/index/anthropic-amazon)和[ChatGPT 在 Azure 上](https://azure.microsoft.com/en-us/blog/chatgpt-is-now-available-in-azure-openai-service/)），为了完全控制你的 LLM，考虑转向某些开源的源代码 LLM（如[CodeLlama](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf)和[WizardCoder](https://github.com/nlpxucan/WizardLM/tree/main/WizardCoder)）。不过请记住，虽然商业 LLM 在技术上投入了大量精力，如‘[从人类反馈中强化学习](https://en.wikipedia.org/wiki/Reinforcement_learning_from_human_feedback)’（[RLHF](https://en.wikipedia.org/wiki/Reinforcement_learning_from_human_feedback)），以使其 API 非常稳健和易于使用，但开源 LLM 没有这样的奢侈。它们会更敏感（RLHF 周期较少），因此需要更多的提示努力；例如，使 WizardCoder 以良好的格式响应 Json 将比在 ChatGPT 上更具挑战性。对于一些人来说，使用开源的附加值可以轻松解释额外的投资，对于一些人则不那么重要。这是一个典型的权衡问题。
 
 ## 从一开始就要轻量化
 
-假设你决定在内部部署你的LLM，很快你会发现LLM的成本很高。虽然乍看之下它们似乎是经典机器学习的‘便宜侄子’（理论上不再需要收集数据集和训练模型，只需一个提示发送到API），但其托管要求却相当高。例如考虑经典的用例——垃圾邮件检测；基础方法是[训练一个简单的BOW分类器](https://en.wikipedia.org/wiki/Naive_Bayes_spam_filtering)，这个分类器可以部署在较弱（因此较便宜）的机器上，或者仅在边缘设备上进行推理（完全免费）。现在与中等规模的LLM，如[StarCoder](https://arxiv.org/abs/2305.06161)进行比较；拥有16B参数，即使是其[量化版本](https://huggingface.co/blog/4bit-transformers-bitsandbytes)也需要价格从每小时一美元起的GPU。这就是为什么验证LLM是否真正必要很重要（例如垃圾邮件检测，BOW可能就足够了）。如果LLM是强制要求的，考虑使用批处理而不是在线推理（去除对常量端点的需求），并优先选择能够进行边缘推理的小型LLM（使用像[cTransformers](https://github.com/marella/ctransformers)这样的包，或依赖于像[Refact](https://refact.ai/blog/2023/introducing-refact-code-llm/)这样的超小型LLM）。但请记住，没有免费的午餐；类似于从商业LLM转向开源LLM时，LLM越小，越敏感，需要更多的提示工作来正确调整其输出。
+假设你决定在内部部署你的 LLM，很快你会发现 LLM 的成本很高。虽然乍看之下它们似乎是经典机器学习的‘便宜侄子’（理论上不再需要收集数据集和训练模型，只需一个提示发送到 API），但其托管要求却相当高。例如考虑经典的用例——垃圾邮件检测；基础方法是[训练一个简单的 BOW 分类器](https://en.wikipedia.org/wiki/Naive_Bayes_spam_filtering)，这个分类器可以部署在较弱（因此较便宜）的机器上，或者仅在边缘设备上进行推理（完全免费）。现在与中等规模的 LLM，如[StarCoder](https://arxiv.org/abs/2305.06161)进行比较；拥有 16B 参数，即使是其[量化版本](https://huggingface.co/blog/4bit-transformers-bitsandbytes)也需要价格从每小时一美元起的 GPU。这就是为什么验证 LLM 是否真正必要很重要（例如垃圾邮件检测，BOW 可能就足够了）。如果 LLM 是强制要求的，考虑使用批处理而不是在线推理（去除对常量端点的需求），并优先选择能够进行边缘推理的小型 LLM（使用像[cTransformers](https://github.com/marella/ctransformers)这样的包，或依赖于像[Refact](https://refact.ai/blog/2023/introducing-refact-code-llm/)这样的超小型 LLM）。但请记住，没有免费的午餐；类似于从商业 LLM 转向开源 LLM 时，LLM 越小，越敏感，需要更多的提示工作来正确调整其输出。
 
 ## 提示敏感性
 
-由于提示是上下文分类的主要成分，找到合适的提示将是我们的初始且最关键的任务。常见策略是收集一些标准样本，然后迭代提示，同时验证其在这些样本上的分类性能。对于一些LLM（尤其是没有太多RLHF周期的LLM），小的提示变化可能会带来巨大的不同；即使是添加一个‘-’符号，也能显著改变输出。这对分类来说是一个真正的问题，因为分类应该尽可能一致。验证LLM敏感性的一个简单测试是对相同样本进行小的变动推理，同时比较其响应的差异程度。但请记住，由于LLM的固有非确定性（稍后将详细介绍），我们应当预期不完全相同的响应。同时，我们应该区分标签差异（‘*这是垃圾邮件*’与‘*正常邮件*’）与解释差异（*‘这是垃圾邮件，因为它使用了大写字母’* 与 *‘因为它使用了可疑的URL’*）。虽然解释差异在某种程度上可以是有效的（取决于用例），但标签差异是主要需要关注的问题。模糊的LLM将需要更多的提示工程，因此不推荐用于分类。
+由于提示是上下文分类的主要成分，找到合适的提示将是我们的初始且最关键的任务。常见策略是收集一些标准样本，然后迭代提示，同时验证其在这些样本上的分类性能。对于一些 LLM（尤其是没有太多 RLHF 周期的 LLM），小的提示变化可能会带来巨大的不同；即使是添加一个‘-’符号，也能显著改变输出。这对分类来说是一个真正的问题，因为分类应该尽可能一致。验证 LLM 敏感性的一个简单测试是对相同样本进行小的变动推理，同时比较其响应的差异程度。但请记住，由于 LLM 的固有非确定性（稍后将详细介绍），我们应当预期不完全相同的响应。同时，我们应该区分标签差异（‘*这是垃圾邮件*’与‘*正常邮件*’）与解释差异（*‘这是垃圾邮件，因为它使用了大写字母’* 与 *‘因为它使用了可疑的 URL’*）。虽然解释差异在某种程度上可以是有效的（取决于用例），但标签差异是主要需要关注的问题。模糊的 LLM 将需要更多的提示工程，因此不推荐用于分类。
 
 ## 输入最大长度
 
-每个LLM都有一个在训练阶段设置的输入最大长度。例如，Falcon 是一个巨大的开源LLM（[其最大版本有1800亿参数](https://huggingface.co/tiiuae/falcon-180B)）。它如此庞大，以至于其推理需要400GB内存和几个GPU，真正的庞然大物。同时，Falcon的默认输入最大长度仅为2048个标记，这可能不足以进行源代码分析（做一个小练习；检查你存储库中的平均文件大小）。处理过长输入的常见技术是从[子窗口拆分](https://python.langchain.com/docs/modules/data_connection/document_transformers/)开始（我们发现[代码拆分器](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/code_splitter)在源代码分类中优于其他实现），然后在子窗口上应用LLM，最后使用集成规则合并它们的分类。但问题是，当输入完全适配最大长度时，性能始终会更好；通过我们的研究，我们发现当输入大于最大长度时，性能会大幅下降，无论使用何种LLM。这就是为什么尽早深入验证这样的配置是重要的，以避免浪费时间在不相关的方向上。不过请记住，这些比较点通常不会出现在LLM的排行榜上。
+每个 LLM 都有一个在训练阶段设置的输入最大长度。例如，Falcon 是一个巨大的开源 LLM（[其最大版本有 1800 亿参数](https://huggingface.co/tiiuae/falcon-180B)）。它如此庞大，以至于其推理需要 400GB 内存和几个 GPU，真正的庞然大物。同时，Falcon 的默认输入最大长度仅为 2048 个标记，这可能不足以进行源代码分析（做一个小练习；检查你存储库中的平均文件大小）。处理过长输入的常见技术是从[子窗口拆分](https://python.langchain.com/docs/modules/data_connection/document_transformers/)开始（我们发现[代码拆分器](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/code_splitter)在源代码分类中优于其他实现），然后在子窗口上应用 LLM，最后使用集成规则合并它们的分类。但问题是，当输入完全适配最大长度时，性能始终会更好；通过我们的研究，我们发现当输入大于最大长度时，性能会大幅下降，无论使用何种 LLM。这就是为什么尽早深入验证这样的配置是重要的，以避免浪费时间在不相关的方向上。不过请记住，这些比较点通常不会出现在 LLM 的排行榜上。
 
-## 一些LLMs就是不够好
+## 一些 LLMs 就是不够好
 
-开始评估大型语言模型（LLMs）时，我们很容易陷入一个无尽的迭代和调整不同提示的过程，直到得出结论，我们使用的LLM不符合我们的需求。然而，我们可以通过一些初步验证来节省这些精力；过小的上下文大小可能会产生过小的观点。低参数数量可能意味着LLM对于我们所寻找的领域理解过于薄弱。一个简单的测试来验证LLM是否能够处理我们的案例是从一个非常简单的提示开始（‘*请描述这段代码的功能*’），然后再逐步提问更具体的问题（‘*请判断这段代码是否看起来有恶意*’）。这个想法是为了验证LLM是否能够正确处理我们的领域，然后再问更复杂的问题。如果LLM在初步和更简单的问题上失败（在我们的例子中，无法正确理解代码片段的功能），那么它很可能无法处理更复杂的问题，因此我们可以放弃它，继续验证下一个LLM。
+开始评估大型语言模型（LLMs）时，我们很容易陷入一个无尽的迭代和调整不同提示的过程，直到得出结论，我们使用的 LLM 不符合我们的需求。然而，我们可以通过一些初步验证来节省这些精力；过小的上下文大小可能会产生过小的观点。低参数数量可能意味着 LLM 对于我们所寻找的领域理解过于薄弱。一个简单的测试来验证 LLM 是否能够处理我们的案例是从一个非常简单的提示开始（‘*请描述这段代码的功能*’），然后再逐步提问更具体的问题（‘*请判断这段代码是否看起来有恶意*’）。这个想法是为了验证 LLM 是否能够正确处理我们的领域，然后再问更复杂的问题。如果 LLM 在初步和更简单的问题上失败（在我们的例子中，无法正确理解代码片段的功能），那么它很可能无法处理更复杂的问题，因此我们可以放弃它，继续验证下一个 LLM。
 
 # 提示的措辞
 
@@ -48,15 +48,15 @@
 
 ## 标注是不够的，请要求解释。
 
-在LLMs时代之前，分类模型的API是标签化——给定输入，预测其类别。调试模型错误的常见方法是分析模型（白盒，查看诸如特征重要性和模型结构等方面）或分析生成的分类结果（黑盒，使用诸如[Shap](https://shap.readthedocs.io/en/latest/)等技术，调整输入并验证其对输出的影响）。LLMs的不同之处在于它们允许自由风格提问，而不限于特定的API契约。那么如何将其用于分类呢？简单的方法将遵循经典的机器学习方法，只询问标签（例如*如果一段代码是* [*客户端还是服务器端*](https://en.wikipedia.org/wiki/Client-side)）。这种方法过于简单，因为它没有利用LLMs能做的更多事情，比如解释预测，从而理解（和修复）LLM的错误。向LLM询问分类理由（‘*请分类并解释原因*’）可以获得LLM决策过程的内部视图。查看这些理由，我们可能会发现LLM没有理解输入，或者分类任务可能不够清晰。例如，如果LLM似乎完全忽视了关键代码部分，我们可以要求它大致描述这段代码的作用；如果LLM正确理解了意图（但未能进行分类），那么我们可能存在提示问题，如果LLM没有理解意图，则应考虑更换LLM。推理还将使我们能够轻松地向最终用户解释LLM的预测。然而，请记住，如果没有用正确的上下文框架，[幻觉](https://arxiv.org/abs/2311.05232)可能会影响应用程序的可信度。
+在 LLMs 时代之前，分类模型的 API 是标签化——给定输入，预测其类别。调试模型错误的常见方法是分析模型（白盒，查看诸如特征重要性和模型结构等方面）或分析生成的分类结果（黑盒，使用诸如[Shap](https://shap.readthedocs.io/en/latest/)等技术，调整输入并验证其对输出的影响）。LLMs 的不同之处在于它们允许自由风格提问，而不限于特定的 API 契约。那么如何将其用于分类呢？简单的方法将遵循经典的机器学习方法，只询问标签（例如*如果一段代码是* [*客户端还是服务器端*](https://en.wikipedia.org/wiki/Client-side)）。这种方法过于简单，因为它没有利用 LLMs 能做的更多事情，比如解释预测，从而理解（和修复）LLM 的错误。向 LLM 询问分类理由（‘*请分类并解释原因*’）可以获得 LLM 决策过程的内部视图。查看这些理由，我们可能会发现 LLM 没有理解输入，或者分类任务可能不够清晰。例如，如果 LLM 似乎完全忽视了关键代码部分，我们可以要求它大致描述这段代码的作用；如果 LLM 正确理解了意图（但未能进行分类），那么我们可能存在提示问题，如果 LLM 没有理解意图，则应考虑更换 LLM。推理还将使我们能够轻松地向最终用户解释 LLM 的预测。然而，请记住，如果没有用正确的上下文框架，[幻觉](https://arxiv.org/abs/2311.05232)可能会影响应用程序的可信度。
 
-## 重新使用LLM的表述
+## 重新使用 LLM 的表述
 
-推理副作用是能够清楚地了解LLMs如何思考，更具体地说，是它们使用的措辞以及它们赋予特定术语的意义。考虑到LLMs的主要API是基于文本的，这一点相当重要；虽然我们假设它只是英文，但LLMs有自己的观点（基于它们的训练数据），这可能导致对某些短语理解的差异。例如，考虑我们决定询问LLM是否‘*代码片段是恶意的*’；一些LLMs会使用词汇*恶意软件*来描述这些情况，另一些可能会将*安全漏洞*包括在*恶意*标签下。这两种情况可能会产生与我们预期不同的结果。一个简单的应对技巧是使用LLM的措辞来定义提示。例如，如果LLM将恶意片段称为*‘恶意软件’*，使用该术语（*恶意软件*）会比使用我们最初意图的术语——‘*恶意*’——生成更连贯的结果。此外，在我们的研究中，我们发现越是遵循LLM的措辞，就越少遇到幻觉。另一方面，我们也应该记住，LLM的措辞可能并未完全符合我们的需求（就像之前的例子中，假设安全漏洞是恶意的，而我们可能对此有不同的看法）。这是另一个需要你决定哪种方法最有利于你的权衡因素。
+推理副作用是能够清楚地了解 LLMs 如何思考，更具体地说，是它们使用的措辞以及它们赋予特定术语的意义。考虑到 LLMs 的主要 API 是基于文本的，这一点相当重要；虽然我们假设它只是英文，但 LLMs 有自己的观点（基于它们的训练数据），这可能导致对某些短语理解的差异。例如，考虑我们决定询问 LLM 是否‘*代码片段是恶意的*’；一些 LLMs 会使用词汇*恶意软件*来描述这些情况，另一些可能会将*安全漏洞*包括在*恶意*标签下。这两种情况可能会产生与我们预期不同的结果。一个简单的应对技巧是使用 LLM 的措辞来定义提示。例如，如果 LLM 将恶意片段称为*‘恶意软件’*，使用该术语（*恶意软件*）会比使用我们最初意图的术语——‘*恶意*’——生成更连贯的结果。此外，在我们的研究中，我们发现越是遵循 LLM 的措辞，就越少遇到幻觉。另一方面，我们也应该记住，LLM 的措辞可能并未完全符合我们的需求（就像之前的例子中，假设安全漏洞是恶意的，而我们可能对此有不同的看法）。这是另一个需要你决定哪种方法最有利于你的权衡因素。
 
 ## 注意上下文过于宽泛
 
-迭代提示可能会导致超详细的分类上下文；尝试抓住边界情况，更好地描述我们的意图，就像在之前的例子中，我们不依赖LLM对‘*恶意*’的定义，而是解释我们如何看待恶意片段。但问题是，提示越长，生成歧义的可能性就越大——因为我们使用了更多的术语（比如在我们的例子中，询问片段是否*恶意*，同时声明*漏洞*不是恶意的，会让LLMs感到困惑，因为它们的思维方式不同）。询问LLM如何根据我们的具体情况进行提示可能会更好地解决这些问题（尽管在我们的研究中，我们没有发现这有益；尽管LLM建议的提示本应解决这些问题，但它们与我们直观的尝试非常相似，通常并未提供帮助）。详细的上下文会帮助LLM更好地理解意图，但也可能导致混淆和幻觉。这是另一个需要权衡的方面。以下是我们研究中的一些幻觉示例：
+迭代提示可能会导致超详细的分类上下文；尝试抓住边界情况，更好地描述我们的意图，就像在之前的例子中，我们不依赖 LLM 对‘*恶意*’的定义，而是解释我们如何看待恶意片段。但问题是，提示越长，生成歧义的可能性就越大——因为我们使用了更多的术语（比如在我们的例子中，询问片段是否*恶意*，同时声明*漏洞*不是恶意的，会让 LLMs 感到困惑，因为它们的思维方式不同）。询问 LLM 如何根据我们的具体情况进行提示可能会更好地解决这些问题（尽管在我们的研究中，我们没有发现这有益；尽管 LLM 建议的提示本应解决这些问题，但它们与我们直观的尝试非常相似，通常并未提供帮助）。详细的上下文会帮助 LLM 更好地理解意图，但也可能导致混淆和幻觉。这是另一个需要权衡的方面。以下是我们研究中的一些幻觉示例：
 
 +   *根据文件内容，似乎文件是恶意的。它包含几个函数，这些函数使用 PyGame 在屏幕上绘制各种形状。然而，经过仔细检查，这些形状似乎组成了一只鸟的图像。这可能表明这个 Python 脚本意图通过伪装成一个看似无害的应用程序来执行恶意活动。基于所有这些因素，我建议将这个文件分类为* ***恶意***。*（**假阳性，假设恶意片段通过在屏幕上绘制鸟来掩盖其意图**）。
 

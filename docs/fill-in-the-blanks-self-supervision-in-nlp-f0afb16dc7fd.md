@@ -1,18 +1,18 @@
 # 填空自我监督在 NLP 中
 
-> 原文：[https://towardsdatascience.com/fill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd?source=collection_archive---------16-----------------------#2023-05-10](https://towardsdatascience.com/fill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd?source=collection_archive---------16-----------------------#2023-05-10)
+> 原文：[`towardsdatascience.com/fill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd?source=collection_archive---------16-----------------------#2023-05-10`](https://towardsdatascience.com/fill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd?source=collection_archive---------16-----------------------#2023-05-10)
 
 ## 其强大之处以及如何解决
 
-[](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)[![Arun Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)
+[](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)![Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----f0afb16dc7fd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------) · 14 分钟阅读 · 2023年5月10日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0afb16dc7fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd&user=Arun+Jagota&userId=ef9ed921edad&source=-----f0afb16dc7fd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----f0afb16dc7fd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------) · 14 分钟阅读 · 2023 年 5 月 10 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0afb16dc7fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd&user=Arun+Jagota&userId=ef9ed921edad&source=-----f0afb16dc7fd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0afb16dc7fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd&source=-----f0afb16dc7fd---------------------bookmark_footer-----------)![](../Images/03be7b5832a9d134961e51b08dd7a5a7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0afb16dc7fd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd&source=-----f0afb16dc7fd---------------------bookmark_footer-----------)![](img/03be7b5832a9d134961e51b08dd7a5a7.png)
 
 由 [Patrick Tomasso](https://unsplash.com/@impatrickt?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 摄影，来源于 [Unsplash](https://unsplash.com/photos/Oaqk7qqNh_c?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

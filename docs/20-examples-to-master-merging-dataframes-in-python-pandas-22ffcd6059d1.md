@@ -1,14 +1,14 @@
 # 20 个 Python Pandas 合并 DataFrame 的示例
 
-> 原文：[https://towardsdatascience.com/20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1?source=collection_archive---------3-----------------------#2023-05-30](https://towardsdatascience.com/20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1?source=collection_archive---------3-----------------------#2023-05-30)
+> 原文：[`towardsdatascience.com/20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1?source=collection_archive---------3-----------------------#2023-05-30`](https://towardsdatascience.com/20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1?source=collection_archive---------3-----------------------#2023-05-30)
 
 ## 一份全面的实用指南。
 
-[](https://sonery.medium.com/?source=post_page-----22ffcd6059d1--------------------------------)[![Soner Yıldırım](../Images/c589572e9d1ee176cd4f5a0008173f1b.png)](https://sonery.medium.com/?source=post_page-----22ffcd6059d1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----22ffcd6059d1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----22ffcd6059d1--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----22ffcd6059d1--------------------------------)
+[](https://sonery.medium.com/?source=post_page-----22ffcd6059d1--------------------------------)![Soner Yıldırım](https://sonery.medium.com/?source=post_page-----22ffcd6059d1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----22ffcd6059d1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----22ffcd6059d1--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----22ffcd6059d1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----22ffcd6059d1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----22ffcd6059d1--------------------------------) ·10 分钟阅读·2023年5月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F22ffcd6059d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----22ffcd6059d1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2cf6b549448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=post_page-2cf6b549448----22ffcd6059d1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----22ffcd6059d1--------------------------------) ·10 分钟阅读·2023 年 5 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F22ffcd6059d1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-examples-to-master-merging-dataframes-in-python-pandas-22ffcd6059d1&user=Soner+Y%C4%B1ld%C4%B1r%C4%B1m&userId=2cf6b549448&source=-----22ffcd6059d1---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 合并意味着根据共享列或列中的值来组合 DataFrame。
 
-![](../Images/b06dd333413f88c65677fc3c86734608.png)
+![](img/b06dd333413f88c65677fc3c86734608.png)
 
 合并 DataFrame（作者提供的图片）
 

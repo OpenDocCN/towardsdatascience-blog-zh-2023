@@ -1,18 +1,18 @@
 # 从 TensorFlow 转换到 PyTorch 的细微差别
 
-> 原文：[https://towardsdatascience.com/the-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb?source=collection_archive---------10-----------------------#2023-02-07](https://towardsdatascience.com/the-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb?source=collection_archive---------10-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/the-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb?source=collection_archive---------10-----------------------#2023-02-07`](https://towardsdatascience.com/the-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb?source=collection_archive---------10-----------------------#2023-02-07)
 
 ## 确保成功的建议和技巧
 
-[](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)[![Gil Shomron](../Images/4cd9c4770757a863f477a381d119de32.png)](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------) [Gil Shomron](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)
+[](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)![Gil Shomron](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------) [Gil Shomron](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f73b54221a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&user=Gil+Shomron&userId=6f73b54221a8&source=post_page-6f73b54221a8----e9acc199b8bb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------) · 5分钟阅读 · 2023年2月7日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe9acc199b8bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&user=Gil+Shomron&userId=6f73b54221a8&source=-----e9acc199b8bb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f73b54221a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&user=Gil+Shomron&userId=6f73b54221a8&source=post_page-6f73b54221a8----e9acc199b8bb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------) · 5 分钟阅读 · 2023 年 2 月 7 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe9acc199b8bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&user=Gil+Shomron&userId=6f73b54221a8&source=-----e9acc199b8bb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe9acc199b8bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&source=-----e9acc199b8bb---------------------bookmark_footer-----------)![](../Images/33e5c81524956775a1c3ab84475d8eb7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe9acc199b8bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&source=-----e9acc199b8bb---------------------bookmark_footer-----------)![](img/33e5c81524956775a1c3ab84475d8eb7.png)
 
 图片由 [Jan Böttinger](https://unsplash.com/@bttngr?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -38,25 +38,25 @@ TensorFlow `pb`（protobuf）文件包含模型图的描述以及层权重和参
 
 1.  `MobilenetV1/Conv2d_0/weights` (3-3-3-32) — 这是第一个卷积层。我们将其映射到 `model.0.1.weight`。
 
-1.  `MobilenetV1/Conv2d_0/BatchNorm/gamma` (32) — 这是第一个批量归一化层。gamma对应于PyTorch中的层权重，因此我们将其映射为`model.0.2.weight`。相同的BatchNorm层还包含`beta`、`moving_mean`和`moving_variance`字段，它们分别对应于PyTorch中的`bias`、`running_mean`和`running_var`。
+1.  `MobilenetV1/Conv2d_0/BatchNorm/gamma` (32) — 这是第一个批量归一化层。gamma 对应于 PyTorch 中的层权重，因此我们将其映射为`model.0.2.weight`。相同的 BatchNorm 层还包含`beta`、`moving_mean`和`moving_variance`字段，它们分别对应于 PyTorch 中的`bias`、`running_mean`和`running_var`。
 
 1.  `MobilenetV1/Conv2d_1_depthwise/depthwise_weights` (3, 3, 32, 1) — 这是第二个卷积层（或第一个深度卷积层），它映射到`model.1.weight`。
 
-DNN模型结构通常是重复的，所以一旦掌握了思路，你就可以在`for`循环中编写部分代码。
+DNN 模型结构通常是重复的，所以一旦掌握了思路，你就可以在`for`循环中编写部分代码。
 
-由于`NeuralNetPB`属性不是PyTorch张量，因此需要使用`torch.FloatTensor(...)`进行转换。
+由于`NeuralNetPB`属性不是 PyTorch 张量，因此需要使用`torch.FloatTensor(...)`进行转换。
 
-> **细节 #1: 排列。** TensorFlow卷积层的权重张量排列方式不同。根据TensorFlow [文档](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)，权重张量的形状是`[H, W, IN_C, OUT_C]`，而PyTorch的权重张量形状是`[OUT_C, IN_C, H, W]`。因此，重新排列张量：`torch.FloatTensor(...).permute(3, 2, 0, 1)`。话虽如此，深度卷积应该用`.permute(2, 3, 0, 1)`进行重新排列。
+> **细节 #1: 排列。** TensorFlow 卷积层的权重张量排列方式不同。根据 TensorFlow [文档](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)，权重张量的形状是`[H, W, IN_C, OUT_C]`，而 PyTorch 的权重张量形状是`[OUT_C, IN_C, H, W]`。因此，重新排列张量：`torch.FloatTensor(...).permute(3, 2, 0, 1)`。话虽如此，深度卷积应该用`.permute(2, 3, 0, 1)`进行重新排列。
 
 完成后，你应该保存所有内容，使用`torch.save(...)`。
 
 # 模型修改
 
-完成前一部分后，你的PyTorch模型应该在层组成方面与TensorFlow参考模型匹配。然而，还有一些额外的细节需要注意。
+完成前一部分后，你的 PyTorch 模型应该在层组成方面与 TensorFlow 参考模型匹配。然而，还有一些额外的细节需要注意。
 
-> **细节 #2: 参数。** 权重并不是唯一的参数。例如，批量归一化层包含一个`epsilon`属性（用于数值稳定性）。`epsilon`的默认值在TensorFlow和PyTorch中是不同的。但即使它们相等，TensorFlow ResNet-50模型也会修改epsilon，所以要注意。另一个例子是Dropout层（如果存在的话）。
+> **细节 #2: 参数。** 权重并不是唯一的参数。例如，批量归一化层包含一个`epsilon`属性（用于数值稳定性）。`epsilon`的默认值在 TensorFlow 和 PyTorch 中是不同的。但即使它们相等，TensorFlow ResNet-50 模型也会修改 epsilon，所以要注意。另一个例子是 Dropout 层（如果存在的话）。
 > 
-> **细节 #3: 填充。** TensorFlow中的填充参数包含一个PyTorch中不存在的选项：`SAME`。`SAME`意味着输入特征图将被填充，使输出特征图（即卷积操作结果）的空间维度与输入维度相等。然而，如果填充是不对称的，会发生什么？TensorFlow会在左侧还是右侧填充更多？**TensorFlow在右侧填充，而PyTorch在左侧填充。** 同样的逻辑适用于垂直方向，即**底部可能会有一行额外的零，而在PyTorch中，额外的行将出现在顶部。**
+> **细节 #3: 填充。** TensorFlow 中的填充参数包含一个 PyTorch 中不存在的选项：`SAME`。`SAME`意味着输入特征图将被填充，使输出特征图（即卷积操作结果）的空间维度与输入维度相等。然而，如果填充是不对称的，会发生什么？TensorFlow 会在左侧还是右侧填充更多？**TensorFlow 在右侧填充，而 PyTorch 在左侧填充。** 同样的逻辑适用于垂直方向，即**底部可能会有一行额外的零，而在 PyTorch 中，额外的行将出现在顶部。**
 
 你可以查看我稍微修改过的[ResNet-50](https://github.com/gilshm/mlperf-pytorch/blob/master/models/resnet.py)和[MobileNet-v1](https://github.com/gilshm/mlperf-pytorch/blob/master/models/mobilenet_v1.py)模型，看看我如何相应地进行修改。
 

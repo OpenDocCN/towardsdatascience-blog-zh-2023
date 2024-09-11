@@ -1,10 +1,10 @@
 # U-Net 解析：了解其图像分割架构
 
-> 原文：[https://towardsdatascience.com/u-net-explained-understanding-its-image-segmentation-architecture-56e4842e313a?source=collection_archive---------1-----------------------#2023-03-08](https://towardsdatascience.com/u-net-explained-understanding-its-image-segmentation-architecture-56e4842e313a?source=collection_archive---------1-----------------------#2023-03-08)
+> 原文：[`towardsdatascience.com/u-net-explained-understanding-its-image-segmentation-architecture-56e4842e313a?source=collection_archive---------1-----------------------#2023-03-08`](https://towardsdatascience.com/u-net-explained-understanding-its-image-segmentation-architecture-56e4842e313a?source=collection_archive---------1-----------------------#2023-03-08)
 
 ## 跳跃连接如何让 CNN 在较少数据下进行准确的语义分割
 
-[](https://conorosullyds.medium.com/?source=post_page-----56e4842e313a--------------------------------)[![Conor O'Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----56e4842e313a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----56e4842e313a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----56e4842e313a--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----56e4842e313a--------------------------------)
+[](https://conorosullyds.medium.com/?source=post_page-----56e4842e313a--------------------------------)![Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----56e4842e313a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----56e4842e313a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----56e4842e313a--------------------------------) [Conor O'Sullivan](https://conorosullyds.medium.com/?source=post_page-----56e4842e313a--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F56e4842e313a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fu-net-explained-understanding-its-image-segmentation-architecture-56e4842e313a&source=-----56e4842e313a---------------------bookmark_footer-----------)![](../Images/a5de3c10ab618dd3835101b13560d988.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F56e4842e313a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fu-net-explained-understanding-its-image-segmentation-architecture-56e4842e313a&source=-----56e4842e313a---------------------bookmark_footer-----------)![](img/a5de3c10ab618dd3835101b13560d988.png)
 
 (source: author)
 

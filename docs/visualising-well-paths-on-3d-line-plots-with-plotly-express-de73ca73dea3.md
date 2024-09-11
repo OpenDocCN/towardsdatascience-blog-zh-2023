@@ -1,18 +1,18 @@
 # 使用 Plotly Express 可视化 井路径
 
-> 原文：[https://towardsdatascience.com/visualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3?source=collection_archive---------7-----------------------#2023-06-04](https://towardsdatascience.com/visualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3?source=collection_archive---------7-----------------------#2023-06-04)
+> 原文：[`towardsdatascience.com/visualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3?source=collection_archive---------7-----------------------#2023-06-04`](https://towardsdatascience.com/visualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3?source=collection_archive---------7-----------------------#2023-06-04)
 
 ## 使用 Plotly Express 绘制 3D 线路图
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----de73ca73dea3--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----de73ca73dea3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de73ca73dea3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----de73ca73dea3--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----de73ca73dea3--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----de73ca73dea3--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----de73ca73dea3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de73ca73dea3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----de73ca73dea3--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----de73ca73dea3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----de73ca73dea3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de73ca73dea3--------------------------------) ·7 分钟阅读·2023年6月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fde73ca73dea3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3&user=Andy+McDonald&userId=9c280f85f15c&source=-----de73ca73dea3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----de73ca73dea3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de73ca73dea3--------------------------------) ·7 分钟阅读·2023 年 6 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fde73ca73dea3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3&user=Andy+McDonald&userId=9c280f85f15c&source=-----de73ca73dea3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fde73ca73dea3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3&source=-----de73ca73dea3---------------------bookmark_footer-----------)![](../Images/fec699f8b9ec7e99ce706be52f31fe85.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fde73ca73dea3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualising-well-paths-on-3d-line-plots-with-plotly-express-de73ca73dea3&source=-----de73ca73dea3---------------------bookmark_footer-----------)![](img/fec699f8b9ec7e99ce706be52f31fe85.png)
 
 使用 Plotly Express 可视化 3D 井路径。图像由作者提供。
 

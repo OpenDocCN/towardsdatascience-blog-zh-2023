@@ -1,18 +1,18 @@
 # 一步使决策树产生更好的结果
 
-> 原文：[https://towardsdatascience.com/one-step-to-make-decision-trees-produce-better-results-b0ccd6738200?source=collection_archive---------10-----------------------#2023-11-23](https://towardsdatascience.com/one-step-to-make-decision-trees-produce-better-results-b0ccd6738200?source=collection_archive---------10-----------------------#2023-11-23)
+> 原文：[`towardsdatascience.com/one-step-to-make-decision-trees-produce-better-results-b0ccd6738200?source=collection_archive---------10-----------------------#2023-11-23`](https://towardsdatascience.com/one-step-to-make-decision-trees-produce-better-results-b0ccd6738200?source=collection_archive---------10-----------------------#2023-11-23)
 
 ## 背景、实施和模型改进
 
-[](https://gabeverzino.medium.com/?source=post_page-----b0ccd6738200--------------------------------)[![Gabe Verzino](../Images/36452afec54430c55594a26247136f6f.png)](https://gabeverzino.medium.com/?source=post_page-----b0ccd6738200--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0ccd6738200--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b0ccd6738200--------------------------------) [Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----b0ccd6738200--------------------------------)
+[](https://gabeverzino.medium.com/?source=post_page-----b0ccd6738200--------------------------------)![Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----b0ccd6738200--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0ccd6738200--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0ccd6738200--------------------------------) [Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----b0ccd6738200--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb4abbbfdcbbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fone-step-to-make-decision-trees-produce-better-results-b0ccd6738200&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=post_page-b4abbbfdcbbb----b0ccd6738200---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0ccd6738200--------------------------------) ·7 分钟阅读·2023年11月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0ccd6738200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fone-step-to-make-decision-trees-produce-better-results-b0ccd6738200&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=-----b0ccd6738200---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb4abbbfdcbbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fone-step-to-make-decision-trees-produce-better-results-b0ccd6738200&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=post_page-b4abbbfdcbbb----b0ccd6738200---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0ccd6738200--------------------------------) ·7 分钟阅读·2023 年 11 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0ccd6738200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fone-step-to-make-decision-trees-produce-better-results-b0ccd6738200&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=-----b0ccd6738200---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0ccd6738200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fone-step-to-make-decision-trees-produce-better-results-b0ccd6738200&source=-----b0ccd6738200---------------------bookmark_footer-----------)![](../Images/a66ae08a47ffbe5c590a3f659448b239.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0ccd6738200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fone-step-to-make-decision-trees-produce-better-results-b0ccd6738200&source=-----b0ccd6738200---------------------bookmark_footer-----------)![](img/a66ae08a47ffbe5c590a3f659448b239.png)
 
 在树木中（作者提供的照片）
 
@@ -20,7 +20,7 @@
 
 就像这样发生的：
 
-DT已训练。自然过拟合出现。超参数调整（令人不满意）。最后，树被替换为随机森林。
+DT 已训练。自然过拟合出现。超参数调整（令人不满意）。最后，树被替换为随机森林。
 
 尽管这可能是性能上的快速胜利，但这种替代更注重“黑匣子”算法。这并不理想。只有决策树能产生直观的结果，为业务领导提供比较权衡的能力，并在流程改进中起到关键作用。
 
@@ -38,7 +38,7 @@ DT已训练。自然过拟合出现。超参数调整（令人不满意）。最
 
 我们可以直观地检查我们的特征以寻找正交的决策边界。让我们查看以下公开可用的乳腺癌数据集中的特征。在下面的顶部图中，绘制“最差周长”和“平均周长”可以产生良好的正交决策边界，可以很好地分离恶性和良性类别。因此，这些特征将是 DT 模型中的很好的选择。
 
-![](../Images/7310102f30cae9cd1ec17e361208719b.png)
+![](img/7310102f30cae9cd1ec17e361208719b.png)
 
 作者提供的图片
 
@@ -56,7 +56,7 @@ PCA 在两个重要方面提升了 DT 的性能：
 
 ## 实施过程
 
-请记住，PCA适用于连续数据。乳腺癌数据集完全由连续变量组成。*(另一方面的注释：我看到PCA被用于分类变量，不建议这样做。名义级别没有隐含的距离，序数级别并不总是等距离的，强制在离散特征上进行距离表示通常将变量重构为毫无意义的东西。另一个时间的另一个切入点。)*
+请记住，PCA 适用于连续数据。乳腺癌数据集完全由连续变量组成。*(另一方面的注释：我看到 PCA 被用于分类变量，不建议这样做。名义级别没有隐含的距离，序数级别并不总是等距离的，强制在离散特征上进行距离表示通常将变量重构为毫无意义的东西。另一个时间的另一个切入点。)*
 
 让我们开始下载所需的软件包，并将我们的乳腺癌数据集转换为特征**X**和目标变量**y**。
 
@@ -85,11 +85,11 @@ df = pd.DataFrame(np.c_[cancer['data'], cancer['target']],
 df.head()
 ```
 
-![](../Images/fc4d0bfa4333ed484c878022b7399ab9.png)
+![](img/fc4d0bfa4333ed484c878022b7399ab9.png)
 
 作者的图片
 
-首先，在没有PCA的情况下训练DecisionTreeClassifier，并收集这些预测（original_predictions）。
+首先，在没有 PCA 的情况下训练 DecisionTreeClassifier，并收集这些预测（original_predictions）。
 
 ```py
 # Split the data into training and testing sets
@@ -103,7 +103,7 @@ original_tree.fit(X_train, y_train)
 original_predictions = original_tree.predict(X_test)
 ```
 
-现在，应用PCA来选择能够解释训练集中大部分方差的最小维数。而不是任意选择这个维数，可以使用“拐点法”来确定能够解释99%方差的维数（如下所示硬编码）。
+现在，应用 PCA 来选择能够解释训练集中大部分方差的最小维数。而不是任意选择这个维数，可以使用“拐点法”来确定能够解释 99%方差的维数（如下所示硬编码）。
 
 ```py
 # Finding the optimal number of PCA components using the elbow method
@@ -127,13 +127,13 @@ optimal_num_components = np.where(cumulative_explained_variance >= 0.99999)[0][0
 print(f"Optimal number of PCA components: {optimal_num_components}")
 ```
 
-基于图表形成“拐点”的视觉观察，发现6个PCA成分解释了训练集方差的99%。
+基于图表形成“拐点”的视觉观察，发现 6 个 PCA 成分解释了训练集方差的 99%。
 
-![](../Images/d3b04fc1506cca7b606ecce62b806a74.png)
+![](img/d3b04fc1506cca7b606ecce62b806a74.png)
 
 作者的图片
 
-现在在训练集上应用PCA来捕获6个主成分。您可以使用奇异值分解（SVD）进行此操作，这是一种标准的矩阵分解技术（此处不涉及的过程）。与以前一样，在PCA转换的训练集上训练DecisionTreeClassifier，并收集这些预测（pca_predictions）。
+现在在训练集上应用 PCA 来捕获 6 个主成分。您可以使用奇异值分解（SVD）进行此操作，这是一种标准的矩阵分解技术（此处不涉及的过程）。与以前一样，在 PCA 转换的训练集上训练 DecisionTreeClassifier，并收集这些预测（pca_predictions）。
 
 ```py
 # Apply PCA with the optimal number of components
@@ -168,11 +168,11 @@ print(f"Original Dataset - Precision: {original_precision:.4f}, Recall: {origina
 print(f"PCA-Transformed Dataset - Precision: {pca_precision:.4f}, Recall: {pca_recall:.4f}, Accuracy: {pca_accuracy:.4f}")
 ```
 
-现在我们可以比较我们的原始预测（未经PCA转换）和pca预测（经PCA转换），观察我们评估指标（准确率、精确度和召回率）的任何相对改进。
+现在我们可以比较我们的原始预测（未经 PCA 转换）和 pca 预测（经 PCA 转换），观察我们评估指标（准确率、精确度和召回率）的任何相对改进。
 
-与原始的决策树训练数据相比，当我们首先对数据集进行PCA转换，然后进行决策树训练时，我们在各方面都有所改进：
+与原始的决策树训练数据相比，当我们首先对数据集进行 PCA 转换，然后进行决策树训练时，我们在各方面都有所改进：
 
-![](../Images/3c6d9fd23fc9c6a6528b8be8cd563bcf.png)
+![](img/3c6d9fd23fc9c6a6528b8be8cd563bcf.png)
 
 我们可以绘制混淆矩阵，显示两个决策树在恶性和良性肿瘤分类改进方面的相对改进。
 
@@ -196,11 +196,11 @@ plt.tight_layout()
 plt.show()
 ```
 
-![](../Images/a215acbd7cea6ae1dbf632f4d7c1a012.png)
+![](img/a215acbd7cea6ae1dbf632f4d7c1a012.png)
 
 作者的图片
 
-最后，识别生成6个主成分所使用的我们原始特征是很有价值的。从技术上讲，PCA生成新的特征，这些特征是原始特征的线性组合。这些新特征彼此正交，并按解释的方差排序。但是，调用*components_attribute*可以识别用于创建这些组件的特征。
+最后，识别生成 6 个主成分所使用的我们原始特征是很有价值的。从技术上讲，PCA 生成新的特征，这些特征是原始特征的线性组合。这些新特征彼此正交，并按解释的方差排序。但是，调用*components_attribute*可以识别用于创建这些组件的特征。
 
 ```py
 # Get the explained variance ratio of each principal component
@@ -221,9 +221,9 @@ for i in range(optimal_num_components):
     print("=" * 50)
 ```
 
-因此，对于我们选择的6个主成分，模型使用以下5个特征创建了这些主成分：
+因此，对于我们选择的 6 个主成分，模型使用以下 5 个特征创建了这些主成分：
 
-![](../Images/7191d4b53e502acac5824a68b4f36050.png)
+![](img/7191d4b53e502acac5824a68b4f36050.png)
 
 作者的图片
 

@@ -1,18 +1,18 @@
 # 将正确性带回机器学习
 
-> 原文：[https://towardsdatascience.com/bring-correctness-back-to-machine-learning-a56a96262f17?source=collection_archive---------7-----------------------#2023-10-13](https://towardsdatascience.com/bring-correctness-back-to-machine-learning-a56a96262f17?source=collection_archive---------7-----------------------#2023-10-13)
+> 原文：[`towardsdatascience.com/bring-correctness-back-to-machine-learning-a56a96262f17?source=collection_archive---------7-----------------------#2023-10-13`](https://towardsdatascience.com/bring-correctness-back-to-machine-learning-a56a96262f17?source=collection_archive---------7-----------------------#2023-10-13)
 
 ## 我们是否在基于错误的假设建立我们的领域？
 
-[](https://medium.com/@mattiadigangi?source=post_page-----a56a96262f17--------------------------------)[![Mattia Di Gangi](../Images/ccd89021df6724797d45cc3c655a38a5.png)](https://medium.com/@mattiadigangi?source=post_page-----a56a96262f17--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a56a96262f17--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a56a96262f17--------------------------------) [Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----a56a96262f17--------------------------------)
+[](https://medium.com/@mattiadigangi?source=post_page-----a56a96262f17--------------------------------)![Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----a56a96262f17--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a56a96262f17--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a56a96262f17--------------------------------) [Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----a56a96262f17--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a5b9f193a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbring-correctness-back-to-machine-learning-a56a96262f17&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=post_page-8a5b9f193a3c----a56a96262f17---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----a56a96262f17--------------------------------) · 9分钟阅读·2023年10月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa56a96262f17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbring-correctness-back-to-machine-learning-a56a96262f17&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=-----a56a96262f17---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a5b9f193a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbring-correctness-back-to-machine-learning-a56a96262f17&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=post_page-8a5b9f193a3c----a56a96262f17---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----a56a96262f17--------------------------------) · 9 分钟阅读·2023 年 10 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa56a96262f17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbring-correctness-back-to-machine-learning-a56a96262f17&user=Mattia+Di+Gangi&userId=8a5b9f193a3c&source=-----a56a96262f17---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa56a96262f17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbring-correctness-back-to-machine-learning-a56a96262f17&source=-----a56a96262f17---------------------bookmark_footer-----------)![](../Images/f4abe69e4718d076a4a8eb6168a88bd6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa56a96262f17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbring-correctness-back-to-machine-learning-a56a96262f17&source=-----a56a96262f17---------------------bookmark_footer-----------)![](img/f4abe69e4718d076a4a8eb6168a88bd6.png)
 
 图片由[Andrea De Santis](https://unsplash.com/@santesson89?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

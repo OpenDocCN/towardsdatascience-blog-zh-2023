@@ -1,20 +1,20 @@
 # 四种项目相似性度量的介绍
 
-> 原文：[https://towardsdatascience.com/introduction-of-four-types-of-item-similarity-measures-e0aea70da335?source=collection_archive---------11-----------------------#2023-02-17](https://towardsdatascience.com/introduction-of-four-types-of-item-similarity-measures-e0aea70da335?source=collection_archive---------11-----------------------#2023-02-17)
+> 原文：[`towardsdatascience.com/introduction-of-four-types-of-item-similarity-measures-e0aea70da335?source=collection_archive---------11-----------------------#2023-02-17`](https://towardsdatascience.com/introduction-of-four-types-of-item-similarity-measures-e0aea70da335?source=collection_archive---------11-----------------------#2023-02-17)
 
 ## 数据挖掘
 
 ## 讲解如何在项目嵌入可用时选择相似性度量
 
-[](https://medium.com/@jhwang1992m?source=post_page-----e0aea70da335--------------------------------)[![Jiahui Wang](../Images/91350774d661092f429d1b0591af95f4.png)](https://medium.com/@jhwang1992m?source=post_page-----e0aea70da335--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e0aea70da335--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e0aea70da335--------------------------------) [Jiahui Wang](https://medium.com/@jhwang1992m?source=post_page-----e0aea70da335--------------------------------)
+[](https://medium.com/@jhwang1992m?source=post_page-----e0aea70da335--------------------------------)![Jiahui Wang](https://medium.com/@jhwang1992m?source=post_page-----e0aea70da335--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e0aea70da335--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0aea70da335--------------------------------) [Jiahui Wang](https://medium.com/@jhwang1992m?source=post_page-----e0aea70da335--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4037e6e33535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-of-four-types-of-item-similarity-measures-e0aea70da335&user=Jiahui+Wang&userId=4037e6e33535&source=post_page-4037e6e33535----e0aea70da335---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0aea70da335--------------------------------) ·5分钟阅读·2023年2月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe0aea70da335&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-of-four-types-of-item-similarity-measures-e0aea70da335&user=Jiahui+Wang&userId=4037e6e33535&source=-----e0aea70da335---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4037e6e33535&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-of-four-types-of-item-similarity-measures-e0aea70da335&user=Jiahui+Wang&userId=4037e6e33535&source=post_page-4037e6e33535----e0aea70da335---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0aea70da335--------------------------------) ·5 分钟阅读·2023 年 2 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe0aea70da335&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-of-four-types-of-item-similarity-measures-e0aea70da335&user=Jiahui+Wang&userId=4037e6e33535&source=-----e0aea70da335---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe0aea70da335&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-of-four-types-of-item-similarity-measures-e0aea70da335&source=-----e0aea70da335---------------------bookmark_footer-----------)![](../Images/b75c9c4e4fd412a9e5b9ad5ec3a51357.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe0aea70da335&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-of-four-types-of-item-similarity-measures-e0aea70da335&source=-----e0aea70da335---------------------bookmark_footer-----------)![](img/b75c9c4e4fd412a9e5b9ad5ec3a51357.png)
 
 图片由 [James Yarema](https://unsplash.com/@jamesyarema?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
 # 使用蒙特卡罗模拟传播误差的力量和简单性
 
-> 原文：[https://towardsdatascience.com/the-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d?source=collection_archive---------20-----------------------#2023-07-21](https://towardsdatascience.com/the-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d?source=collection_archive---------20-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/the-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d?source=collection_archive---------20-----------------------#2023-07-21`](https://towardsdatascience.com/the-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d?source=collection_archive---------20-----------------------#2023-07-21)
 
 ## 精通数据分析和模型拟合中的不确定性，提供实际的代码和示例
 
-[![LucianoSphere (Luciano Abriata, PhD)](../Images/a8ae3085d094749bbdd1169cca672b86.png)](https://lucianosphere.medium.com/?source=post_page-----9c8dcca9d90d-----------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c8dcca9d90d-----------------------) [LucianoSphere (Luciano Abriata, PhD)](https://lucianosphere.medium.com/?source=post_page-----9c8dcca9d90d-----------------------)
+![LucianoSphere (Luciano Abriata, PhD)](https://lucianosphere.medium.com/?source=post_page-----9c8dcca9d90d-----------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c8dcca9d90d-----------------------) [LucianoSphere (Luciano Abriata, PhD)](https://lucianosphere.medium.com/?source=post_page-----9c8dcca9d90d-----------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd28939b5ab78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d&user=LucianoSphere+%28Luciano+Abriata%2C+PhD%29&userId=d28939b5ab78&source=post_page-d28939b5ab78----9c8dcca9d90d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c8dcca9d90d--------------------------------) · 15 分钟阅读 · 2023年7月21日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd28939b5ab78&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d&user=LucianoSphere+%28Luciano+Abriata%2C+PhD%29&userId=d28939b5ab78&source=post_page-d28939b5ab78----9c8dcca9d90d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c8dcca9d90d--------------------------------) · 15 分钟阅读 · 2023 年 7 月 21 日
 
 --
 
-![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c8dcca9d90d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d&source=-----9c8dcca9d90d---------------------bookmark_footer-----------)![](../Images/f9b4b497c8b238de0f45eba099ff0d5d.png)
+![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c8dcca9d90d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d&source=-----9c8dcca9d90d---------------------bookmark_footer-----------)![](img/f9b4b497c8b238de0f45eba099ff0d5d.png)
 
 图片由 [eskay lim](https://unsplash.com/es/@eskaylim?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
 # 不确定性原理如何限制时间序列分析？
 
-> 原文：[https://towardsdatascience.com/how-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953?source=collection_archive---------2-----------------------#2023-08-31](https://towardsdatascience.com/how-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953?source=collection_archive---------2-----------------------#2023-08-31)
+> 原文：[`towardsdatascience.com/how-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953?source=collection_archive---------2-----------------------#2023-08-31`](https://towardsdatascience.com/how-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953?source=collection_archive---------2-----------------------#2023-08-31)
 
 ## 为什么我们不能从时间序列中互相提取精确的时间和频率信息，以及小波分析如何解决这一限制
 
-[](https://medium.com/@rodrigodamottacc?source=post_page-----c94c442ba953--------------------------------)[![Rodrigo da Motta C. Carvalho](../Images/ed77f9c38a0a40b3d3ec2c119a350bbb.png)](https://medium.com/@rodrigodamottacc?source=post_page-----c94c442ba953--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c94c442ba953--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c94c442ba953--------------------------------) [Rodrigo da Motta C. Carvalho](https://medium.com/@rodrigodamottacc?source=post_page-----c94c442ba953--------------------------------)
+[](https://medium.com/@rodrigodamottacc?source=post_page-----c94c442ba953--------------------------------)![Rodrigo da Motta C. Carvalho](https://medium.com/@rodrigodamottacc?source=post_page-----c94c442ba953--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c94c442ba953--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c94c442ba953--------------------------------) [Rodrigo da Motta C. Carvalho](https://medium.com/@rodrigodamottacc?source=post_page-----c94c442ba953--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd17b17427c47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953&user=Rodrigo+da+Motta+C.+Carvalho&userId=d17b17427c47&source=post_page-d17b17427c47----c94c442ba953---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c94c442ba953--------------------------------) · 6 分钟阅读 · 2023年8月31日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd17b17427c47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953&user=Rodrigo+da+Motta+C.+Carvalho&userId=d17b17427c47&source=post_page-d17b17427c47----c94c442ba953---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c94c442ba953--------------------------------) · 6 分钟阅读 · 2023 年 8 月 31 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc94c442ba953&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953&source=-----c94c442ba953---------------------bookmark_footer-----------)![](../Images/f598499ff3876f16e054b121077babb8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc94c442ba953&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-does-the-uncertainty-principle-limit-time-series-analysis-c94c442ba953&source=-----c94c442ba953---------------------bookmark_footer-----------)![](img/f598499ff3876f16e054b121077babb8.png)
 
 [照片由 Jamie Street](https://unsplash.com/@jamie452?utm_source=medium&utm_medium=referral) 通过 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -24,23 +24,23 @@
 
 傅里叶变换（FT）作为函数时间域和频率域之间的数学桥梁。FT 可以描述为：
 
-![](../Images/4bf90da2fd330d15fda1260b8a0a9dad.png)
+![](img/4bf90da2fd330d15fda1260b8a0a9dad.png)
 
 我不会详细讲解这个积分，但重要的是**FT 将函数 *f(x)* 变换为频率空间中的另一个函数 g*(ω)*。** 记住这个信息，它会很重要。（为了更好地理解 FT，我强烈推荐 [3Blue1Brow](https://www.youtube.com/watch?v=spUNpyF58BY) 的视频。）
 
 ## 1.2 不确定性原理作为傅里叶变换的结果
 
-1927年，物理学家沃纳·海森堡提出了可能是量子力学中最著名的概念之一——不确定性原理[1]。**该原理基本上是关于傅里叶变换的定理**，当两个函数是彼此的傅里叶变换时，不确定性原理就会发挥作用。
+1927 年，物理学家沃纳·海森堡提出了可能是量子力学中最著名的概念之一——不确定性原理[1]。**该原理基本上是关于傅里叶变换的定理**，当两个函数是彼此的傅里叶变换时，不确定性原理就会发挥作用。
 
 尽管我们暂时绕开了其复杂的物理学，但仅考虑其本质：**位置*x*和动量*p*的不确定性的乘积始终受到限制。** 这一限制突显了以无限精度测量这些量的固有边界（如果你感兴趣，可以查看这个[视频](https://www.youtube.com/watch?v=a8FTr2qMutA)）。
 
-![](../Images/900ab9b23c2af9f7219e9ab3abfffb6b.png)
+![](img/900ab9b23c2af9f7219e9ab3abfffb6b.png)
 
 物理学中的不确定性原理。
 
 **这发生是因为位置和动量是彼此的傅里叶变换！** 在时间序列分析的情况下，*位置* ***x*** 和动量 ***p*** 的类比分别是时间序列中的时间 ***t*** 和频率 ***ω*** 空间。
 
-![](../Images/b82832e03ca8365856e0f84b676cfb0f.png)
+![](img/b82832e03ca8365856e0f84b676cfb0f.png)
 
 信号处理中的不确定性原理。
 
@@ -52,19 +52,19 @@
 
 为了举例说明，我们使用 Mauna Loa 每周大气 CO2 数据集[2]。
 
-![](../Images/050388b44bde5d1995b6332b94e9d3d7.png)
+![](img/050388b44bde5d1995b6332b94e9d3d7.png)
 
-Mauna Loa每周大气CO2时间序列。图像由作者提供。
+Mauna Loa 每周大气 CO2 时间序列。图像由作者提供。
 
 去除线性趋势以消除虚假的低频贡献：
 
-![](../Images/2d6577a47b9676c5d90e42c44954ab50.png)
+![](img/2d6577a47b9676c5d90e42c44954ab50.png)
 
 时间序列已去趋势。图片来源：作者。
 
 使用快速傅里叶变换算法（FFT）计算傅里叶变换：
 
-![](../Images/fa78c9c1a4517c90a27bd2a91059b2aa.png)
+![](img/fa78c9c1a4517c90a27bd2a91059b2aa.png)
 
 时间序列的傅里叶变换。图片来源：作者。
 
@@ -72,17 +72,17 @@ Mauna Loa每周大气CO2时间序列。图像由作者提供。
 
 然而，最有趣的方面发生在时间序列中出现扰动时，这可能是事件或外部变量（例如，火山喷发临近）的影响。为了模拟这一点，我们可以在相同的序列中加上一个随机正弦波：
 
-![](../Images/f49dae0bb49eeed7541656edca19a89f.png)
+![](img/f49dae0bb49eeed7541656edca19a89f.png)
 
-马纳罗亚每周大气CO2去趋势时间序列加上扰动。图片来源：作者。
+马纳罗亚每周大气 CO2 去趋势时间序列加上扰动。图片来源：作者。
 
 应用快速傅里叶变换（FFT）来获取序列的傅里叶变换：
 
-![](../Images/cef7a1f66b39659b5fc107ba1c10f718.png)
+![](img/cef7a1f66b39659b5fc107ba1c10f718.png)
 
 扰动时间序列的傅里叶变换。图片来源：作者。
 
-现在，扰动造成的峰值在0.5到0.75之间出现。
+现在，扰动造成的峰值在 0.5 到 0.75 之间出现。
 
 ## 2.2 限制
 
@@ -94,27 +94,27 @@ Mauna Loa每周大气CO2时间序列。图像由作者提供。
 
 **小波变换（WT）作为一种分辨率平衡的手段，将我们的函数 *f(t)* 转换为 *F(t,ω)*，即时间和频率的组合。** 我不会详细介绍小波变换的工作原理，但总的来说，变换过程使用一系列不同的小波（具有已知频率和形状的信号）通过两个函数的点积来与时间序列匹配时间同步。因此，可以对频率和时间发生有一定了解，但两者的分辨率都有限。
 
-![](../Images/74e71c18079e59e40a890bd5e8cb0e71.png)
+![](img/74e71c18079e59e40a890bd5e8cb0e71.png)
 
 莫尔雷特小波信号的例子（这是一个复杂信号，因此有虚部和实部）。图片来源：作者。
 
-要可视化信号的小波变换，通常将x轴表示为时间尺度，y轴表示为频率尺度，颜色尺度表示为频率的功率。
+要可视化信号的小波变换，通常将 x 轴表示为时间尺度，y 轴表示为频率尺度，颜色尺度表示为频率的功率。
 
 对于没有扰动的去趋势时间序列，
 
-![](../Images/e3d99cbb4a6d894e0d7aaab138857132.png)
+![](img/e3d99cbb4a6d894e0d7aaab138857132.png)
 
-小波变换的毛纳罗阿每周大气CO2时间序列。图片由作者提供。
+小波变换的毛纳罗阿每周大气 CO2 时间序列。图片由作者提供。
 
-从视觉检查可以清楚地看到季节性按预期重复。然而，FT中1年季节性的巨大峰值现在变宽了，因此我们对该值的确定性降低了。
+从视觉检查可以清楚地看到季节性按预期重复。然而，FT 中 1 年季节性的巨大峰值现在变宽了，因此我们对该值的确定性降低了。
 
 最有趣的分析是对于模拟场景的。
 
-![](../Images/786492f03a58acbbbd260ece4979f91a.png)
+![](img/786492f03a58acbbbd260ece4979f91a.png)
 
 扰动时间序列的小波变换。图片由作者提供。
 
-WT显示，在FT中观察到的低频扰动发生在系列的早期，并且在20-25年后产生了显著的后果。**尽管WT在时间和频率上都失去了分辨率，但关于频率出现的新信息是有价值的，并且能够回答各种问题。**
+WT 显示，在 FT 中观察到的低频扰动发生在系列的早期，并且在 20-25 年后产生了显著的后果。**尽管 WT 在时间和频率上都失去了分辨率，但关于频率出现的新信息是有价值的，并且能够回答各种问题。**
 
 # 4\. 结论
 
@@ -134,8 +134,8 @@ WT显示，在FT中观察到的低频扰动发生在系列的早期，并且在2
 
 ## 参考文献
 
-[1] [https://en.wikipedia.org/wiki/Uncertainty_principle](https://en.wikipedia.org/wiki/Uncertainty_principle)
+[1] [`en.wikipedia.org/wiki/Uncertainty_principle`](https://en.wikipedia.org/wiki/Uncertainty_principle)
 
-[2] [https://www.statsmodels.org/dev/datasets/generated/co2.html](https://www.statsmodels.org/dev/datasets/generated/co2.html) (公有领域)
+[2] [`www.statsmodels.org/dev/datasets/generated/co2.html`](https://www.statsmodels.org/dev/datasets/generated/co2.html) (公有领域)
 
 [3] [小波变换 (维基百科)](https://en.wikipedia.org/wiki/Wavelet_transform)

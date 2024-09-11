@@ -1,18 +1,18 @@
 # 使用 SQL 验证字符串是否为 HTML
 
-> 原文：[https://towardsdatascience.com/validate-a-string-as-html-using-sql-d70e81149a2?source=collection_archive---------14-----------------------#2023-01-19](https://towardsdatascience.com/validate-a-string-as-html-using-sql-d70e81149a2?source=collection_archive---------14-----------------------#2023-01-19)
+> 原文：[`towardsdatascience.com/validate-a-string-as-html-using-sql-d70e81149a2?source=collection_archive---------14-----------------------#2023-01-19`](https://towardsdatascience.com/validate-a-string-as-html-using-sql-d70e81149a2?source=collection_archive---------14-----------------------#2023-01-19)
 
 ## 是否可以仅通过 SQL 检查字符串是否包含有效的 HTML？
 
-[](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)[![Dhruv Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)
+[](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)![Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----d70e81149a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------) ·10 min read·2023年1月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd70e81149a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&user=Dhruv+Matani&userId=63f5d5495279&source=-----d70e81149a2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----d70e81149a2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------) ·10 min read·2023 年 1 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd70e81149a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&user=Dhruv+Matani&userId=63f5d5495279&source=-----d70e81149a2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd70e81149a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&source=-----d70e81149a2---------------------bookmark_footer-----------)![](../Images/4b8989017ebbf485a08036972b5fc19a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd70e81149a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&source=-----d70e81149a2---------------------bookmark_footer-----------)![](img/4b8989017ebbf485a08036972b5fc19a.png)
 
 图片由 [Valery Sysoev](https://unsplash.com/@valerysysoev?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 ## 先前的文章
 
-1.  [使用 SQL 验证平衡括号](/validate-balanced-parenthesis-using-sql-5bb79732d772)
+1.  使用 SQL 验证平衡括号
 
 1.  [SQL 中的最少会议室问题](https://medium.com/towards-data-science/minimum-meeting-rooms-problem-in-sql-4d3a92365bdf)
 
@@ -155,7 +155,7 @@ only_paired_tags AS (
 
 1.  我们计算每个根标签的累计和。如果累计和变为负数（对于任何标签前缀），则意味着在开标签之前存在一个闭标签。
 
-1.  我们检查最后前缀中标签的运行总和（基本上是整个文档）。如果这个运行总和对任何标签的值不为0，则文档无效。我们在上面已经涵盖了负面案例。如果这个总和为正，则表示我们在某处有一个未关闭的打开标签。
+1.  我们检查最后前缀中标签的运行总和（基本上是整个文档）。如果这个运行总和对任何标签的值不为 0，则文档无效。我们在上面已经涵盖了负面案例。如果这个总和为正，则表示我们在某处有一个未关闭的打开标签。
 
 ```py
 WITH page_as_rows AS (
@@ -205,7 +205,7 @@ only_paired_tags AS (
 
 self_joined AS (
   -- This the main logic. We generate a prefix of the document
-  -- ending at every tag. We generate O(n^2) such prefixes and
+  -- ending at every tag. We generate O(n²) such prefixes and
   -- use that to check if that prefix is a valid prefix of any
   -- HTML document.
   SELECT
@@ -303,7 +303,7 @@ SELECT * FROM overall_min_max;
 
 这是递归执行的样子，下面的动画展示了打开/关闭标签对的匹配和消除顺序。
 
-![](../Images/e56b2c482547e245dc3ed2d77af48ead.png)
+![](img/e56b2c482547e245dc3ed2d77af48ead.png)
 
 第二种解决方案处理有效的 HTML 字符串（作者提供的图片）
 
@@ -322,7 +322,7 @@ SELECT * FROM overall_min_max;
 
 这是递归执行的样子，下面的动画展示了打开/关闭标签对的匹配和消除顺序。由于这是无效的输入，处理在没有匹配的相邻标签对可以处理时停止。
 
-![](../Images/b9d91a11b5196c20ff44edca11d7e897.png)
+![](img/b9d91a11b5196c20ff44edca11d7e897.png)
 
 第二种解决方案处理无效的 HTML 字符串（作者提供的图片）
 

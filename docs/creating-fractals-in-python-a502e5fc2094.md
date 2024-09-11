@@ -1,18 +1,18 @@
-# 在Python中创建分形
+# 在 Python 中创建分形
 
-> 原文：[https://towardsdatascience.com/creating-fractals-in-python-a502e5fc2094?source=collection_archive---------3-----------------------#2023-03-24](https://towardsdatascience.com/creating-fractals-in-python-a502e5fc2094?source=collection_archive---------3-----------------------#2023-03-24)
+> 原文：[`towardsdatascience.com/creating-fractals-in-python-a502e5fc2094?source=collection_archive---------3-----------------------#2023-03-24`](https://towardsdatascience.com/creating-fractals-in-python-a502e5fc2094?source=collection_archive---------3-----------------------#2023-03-24)
 
 ## **深入几何学、递归算法和三角形……很多很多的！**
 
-[](https://medium.com/@bobby.elmes?source=post_page-----a502e5fc2094--------------------------------)[![Robert Elmes](../Images/a18f0f3f6edfdb7e4ec23712f3620ab7.png)](https://medium.com/@bobby.elmes?source=post_page-----a502e5fc2094--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a502e5fc2094--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a502e5fc2094--------------------------------) [Robert Elmes](https://medium.com/@bobby.elmes?source=post_page-----a502e5fc2094--------------------------------)
+[](https://medium.com/@bobby.elmes?source=post_page-----a502e5fc2094--------------------------------)![Robert Elmes](https://medium.com/@bobby.elmes?source=post_page-----a502e5fc2094--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a502e5fc2094--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a502e5fc2094--------------------------------) [Robert Elmes](https://medium.com/@bobby.elmes?source=post_page-----a502e5fc2094--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F60c271ca8c1f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-fractals-in-python-a502e5fc2094&user=Robert+Elmes&userId=60c271ca8c1f&source=post_page-60c271ca8c1f----a502e5fc2094---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a502e5fc2094--------------------------------) ·8 分钟阅读·2023年3月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa502e5fc2094&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-fractals-in-python-a502e5fc2094&user=Robert+Elmes&userId=60c271ca8c1f&source=-----a502e5fc2094---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F60c271ca8c1f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-fractals-in-python-a502e5fc2094&user=Robert+Elmes&userId=60c271ca8c1f&source=post_page-60c271ca8c1f----a502e5fc2094---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a502e5fc2094--------------------------------) ·8 分钟阅读·2023 年 3 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa502e5fc2094&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-fractals-in-python-a502e5fc2094&user=Robert+Elmes&userId=60c271ca8c1f&source=-----a502e5fc2094---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa502e5fc2094&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-fractals-in-python-a502e5fc2094&source=-----a502e5fc2094---------------------bookmark_footer-----------)![](../Images/2559843ce7d15598d62ec3de02d518d7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa502e5fc2094&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-fractals-in-python-a502e5fc2094&source=-----a502e5fc2094---------------------bookmark_footer-----------)![](img/2559843ce7d15598d62ec3de02d518d7.png)
 
 这是我在今年早些时候拍的一张照片，那天特别阴沉，即使在英格兰也是如此。
 
@@ -20,7 +20,7 @@
 
 通过程序生成分形，我们可以将简单的形状转化为复杂的重复图案。
 
-在这篇文章中，我将探讨如何使用一些基本的A-Level几何知识和一点编程技巧，在Python中构建令人印象深刻的分形。
+在这篇文章中，我将探讨如何使用一些基本的 A-Level 几何知识和一点编程技巧，在 Python 中构建令人印象深刻的分形。
 
 分形在数据科学中扮演着重要角色。例如，在分形分析中，会评估数据集的分形特征，以帮助理解潜在过程的结构。此外，分形生成中心的递归算法可以应用于广泛的数据问题，从二分查找算法到递归神经网络。
 
@@ -28,7 +28,7 @@
 
 我想写一个可以绘制等边三角形的程序。在三角形的每一边上，它还必须能够绘制一个稍小的外向三角形。它应该能够根据我的需要重复这个过程，希望能创造出一些有趣的图案。
 
-![](../Images/b85843885804ec5f00e910a76c929f64.png)
+![](img/b85843885804ec5f00e910a76c929f64.png)
 
 这个粗略的草图展示了我想生成的图案类型。
 
@@ -38,7 +38,7 @@
 
 为了实现这一点，我们可以使用库[**NumPy**](https://numpy.org/install/)生成像素数组，并使用[**Pillow**](https://pillow.readthedocs.io/en/latest/installation.html)将其转换为可以保存的图像。
 
-![](../Images/eee75796763fdfb6ff12d0994022901b.png)
+![](img/eee75796763fdfb6ff12d0994022901b.png)
 
 蓝色像素的 x 值为 3，y 值为 4，可以通过二维数组 **pixels[4][3]** 进行访问
 
@@ -108,7 +108,7 @@ img.show()
 img.save('Line.png')
 ```
 
-![](../Images/447cf94ec4ce65aaaba8829fe64a9545.png)
+![](img/447cf94ec4ce65aaaba8829fe64a9545.png)
 
 当我让这个函数在像素数组的每个角落之间绘制一条黄色直线时的结果
 
@@ -142,7 +142,7 @@ def draw_triangle(center, side_length, thickness, colour, pixels):
     plot_line(bottom_left, bottom_right, thickness, colour, pixels)
 ```
 
-![](../Images/bd2db1465beb955f579cce25c68219ac.png)
+![](img/bd2db1465beb955f579cce25c68219ac.png)
 
 在 500x500 像素的 PNG 图像中心绘制一个三角形的结果
 
@@ -171,9 +171,9 @@ def rotate(coordinate, center_point, degrees):
     return [new_x + center_point[0], new_y + center_point[1]]
 ```
 
-![](../Images/ba950b6f2ac329e4149fd6af97c8e53e.png)
+![](img/ba950b6f2ac329e4149fd6af97c8e53e.png)
 
-一个我们将每个坐标旋转了35度的三角形
+一个我们将每个坐标旋转了 35 度的三角形
 
 现在我可以旋转三角形，我必须将注意力转向在第一个三角形的每一边上绘制一个新的、更小的三角形。
 
@@ -278,7 +278,7 @@ def draw_triangle(center, side_length, degrees_rotate, thickness, colour, \
                           iteration+1, max_depth)
 ```
 
-![](../Images/6f19399b68b1763a7be024446e414a19.png)
+![](img/6f19399b68b1763a7be024446e414a19.png)
 
 三角形分形，*shrink_side_by* = 1/2 和 *max_depth* = 2
 
@@ -288,15 +288,15 @@ def draw_triangle(center, side_length, degrees_rotate, thickness, colour, \
 
 有趣的是，这些大型重复模式通常会创造出更复杂的形状，如六边形，但具有迷人的对称性。
 
-![](../Images/59173552d3ab9bd0be4790d692fce68b.png)
+![](img/59173552d3ab9bd0be4790d692fce68b.png)
 
 在重复三角形的对称性中，开始出现越来越复杂的形状。
 
-![](../Images/33ccff8b7816f00bb7c42646b9fb0dd3.png)
+![](img/33ccff8b7816f00bb7c42646b9fb0dd3.png)
 
 一种类似雪花的分形，使用了修改版的`draw_triangle`函数，该函数还绘制了一个朝内的三角形。
 
-![](../Images/24051971e50a4ea2ca719724ece759f6.png)
+![](img/24051971e50a4ea2ca719724ece759f6.png)
 
 另一种创作，使用每次迭代减少的更小的尺寸
 

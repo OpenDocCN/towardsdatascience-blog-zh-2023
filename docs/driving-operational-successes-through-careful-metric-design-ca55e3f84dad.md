@@ -1,14 +1,14 @@
 # 通过精心设计指标推动运营成功
 
-> 原文：[https://towardsdatascience.com/driving-operational-successes-through-careful-metric-design-ca55e3f84dad?source=collection_archive---------18-----------------------#2023-01-12](https://towardsdatascience.com/driving-operational-successes-through-careful-metric-design-ca55e3f84dad?source=collection_archive---------18-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/driving-operational-successes-through-careful-metric-design-ca55e3f84dad?source=collection_archive---------18-----------------------#2023-01-12`](https://towardsdatascience.com/driving-operational-successes-through-careful-metric-design-ca55e3f84dad?source=collection_archive---------18-----------------------#2023-01-12)
 
 ## 将战略转化为运营指标的艺术
 
-[](https://medium.com/@jordangom?source=post_page-----ca55e3f84dad--------------------------------)[![Jordan Gomes](../Images/d08bb9fd8b084687599a67a2221ec68c.png)](https://medium.com/@jordangom?source=post_page-----ca55e3f84dad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ca55e3f84dad--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ca55e3f84dad--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----ca55e3f84dad--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----ca55e3f84dad--------------------------------)![Jordan Gomes](https://medium.com/@jordangom?source=post_page-----ca55e3f84dad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ca55e3f84dad--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ca55e3f84dad--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----ca55e3f84dad--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdriving-operational-successes-through-careful-metric-design-ca55e3f84dad&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----ca55e3f84dad---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ca55e3f84dad--------------------------------) ·11分钟阅读·2023年1月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fca55e3f84dad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdriving-operational-successes-through-careful-metric-design-ca55e3f84dad&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----ca55e3f84dad---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdriving-operational-successes-through-careful-metric-design-ca55e3f84dad&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----ca55e3f84dad---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ca55e3f84dad--------------------------------) ·11 分钟阅读·2023 年 1 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fca55e3f84dad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdriving-operational-successes-through-careful-metric-design-ca55e3f84dad&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----ca55e3f84dad---------------------clap_footer-----------)
 
 --
 
@@ -24,11 +24,11 @@
 
 +   无论上述框架是否使用，一旦新的指标被设计出来，验证它们并确保它们通过几个测试是很重要的。
 
-定义指标基本上是将战略转化为一组“数量”。 明确定义的指标帮助你确保保持在实现组织目标的正确轨道上。但翻译错误可能会很昂贵：如果你设计的指标没有完全代表战略的精神，组织很容易偏离原来的目标，最终虽然你有人员做得很好（他们达到了你为指标设定的OKR），组织却完全没有达到你的预期状态：
+定义指标基本上是将战略转化为一组“数量”。 明确定义的指标帮助你确保保持在实现组织目标的正确轨道上。但翻译错误可能会很昂贵：如果你设计的指标没有完全代表战略的精神，组织很容易偏离原来的目标，最终虽然你有人员做得很好（他们达到了你为指标设定的 OKR），组织却完全没有达到你的预期状态：
 
-> 想象一下你从洛杉矶飞往纽约市。如果一位从LAX起飞的飞行员将航向调整仅仅3.5度向南，你将会降落在华盛顿特区，而不是纽约。这样一个小的变化在起飞时几乎不易察觉——飞机的机头仅移动了几英尺——但当这种变化放大到整个美国，你最终会相隔数百英里。
+> 想象一下你从洛杉矶飞往纽约市。如果一位从 LAX 起飞的飞行员将航向调整仅仅 3.5 度向南，你将会降落在华盛顿特区，而不是纽约。这样一个小的变化在起飞时几乎不易察觉——飞机的机头仅移动了几英尺——但当这种变化放大到整个美国，你最终会相隔数百英里。
 
-![](../Images/ef1b972c04c1f7f7161041e5b92f7610.png)
+![](img/ef1b972c04c1f7f7161041e5b92f7610.png)
 
 图片来源于 [Mitchel Boot](https://unsplash.com/@valeon?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -44,7 +44,7 @@ James Clear 在 **《原子习惯》** 中写了以上内容。诚然——这�
 
 当这种情况发生时——这通常是你开始看到指标可能存在/存在的不同问题时。
 
-![](../Images/d615533624280aed00355331f4492cf2.png)
+![](img/d615533624280aed00355331f4492cf2.png)
 
 图片来源于 [Pierre Bamin](https://unsplash.com/@bamin?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -56,7 +56,7 @@ James Clear 在 **《原子习惯》** 中写了以上内容。诚然——这�
 
 指标可能会产生意想不到的后果，这些后果可能与公司的整体目标不一致。仔细考虑指标对行为的潜在影响，并确保它们的设计能够激励正确的行为和结果是非常重要的。
 
-比如，假设减少通过电子邮件打开的支持票数是你团队的首要任务。一种解决方案可能是尽可能让联系电子邮件支持变得困难。例如，将你的支持电子邮件地址“隐藏”在你网站的随机页面上，使其非常复杂，并以.png格式展示，以便人们必须手动重新输入。这样做可能会降低联系数量，但这可能会产生其他意想不到的后果（例如，增加“负面”社交媒体互动）。
+比如，假设减少通过电子邮件打开的支持票数是你团队的首要任务。一种解决方案可能是尽可能让联系电子邮件支持变得困难。例如，将你的支持电子邮件地址“隐藏”在你网站的随机页面上，使其非常复杂，并以.png 格式展示，以便人们必须手动重新输入。这样做可能会降低联系数量，但这可能会产生其他意想不到的后果（例如，增加“负面”社交媒体互动）。
 
 这并不一定是因为人们想要操控系统——更可能是因为人们未必对组织及其所有内容有完全的理解。一旦某人的绩效与指标挂钩——那么他们试图改变该指标是合情合理的，因此，指标设计者必须确保“游戏规则”被清晰地阐明。
 
@@ -64,13 +64,13 @@ James Clear 在 **《原子习惯》** 中写了以上内容。诚然——这�
 
 +   你可以设计一个配对指标，即另一个旨在“强制”某种行为的指标（例如，与注册数配对的指标可以是流失率）。当你开始有太多指标，并且这些指标并不一定指向相同方向时，可能会出现一些挑战——从噪音中解读信号，决定该做什么可能会变得困难。
 
-+   你可以设计一个复合指标，考虑多个因素，以确保它不能被轻易操控。在《[可靠的在线控制实验](https://www.amazon.com/Trustworthy-Online-Controlled-Experiments-Practical/dp/1108724264)》（一本我推荐给任何对A/B测试感兴趣的人的好书，别被书名吓到！）中，作者解释了每当你进行实验时，应该构建“**客观实验标准**”（OEC）。OEC是一个复合指标，考虑到你的实验应当影响的指标和你不希望实验负面影响的指标（例如成本指标、警戒指标、健康指标）——这最终将允许你创建一个二元决策规则，以决定你的实验是否成功。这个概念非常有趣，对于实验来说效果很好。说到这里，复合指标在跟踪过程时可能很难使用——你需要理解其底层逻辑，才能理解指标的变化并进行调试——因此你最终会跟踪所有构成复合指标的不同指标。
++   你可以设计一个复合指标，考虑多个因素，以确保它不能被轻易操控。在《[可靠的在线控制实验](https://www.amazon.com/Trustworthy-Online-Controlled-Experiments-Practical/dp/1108724264)》（一本我推荐给任何对 A/B 测试感兴趣的人的好书，别被书名吓到！）中，作者解释了每当你进行实验时，应该构建“**客观实验标准**”（OEC）。OEC 是一个复合指标，考虑到你的实验应当影响的指标和你不希望实验负面影响的指标（例如成本指标、警戒指标、健康指标）——这最终将允许你创建一个二元决策规则，以决定你的实验是否成功。这个概念非常有趣，对于实验来说效果很好。说到这里，复合指标在跟踪过程时可能很难使用——你需要理解其底层逻辑，才能理解指标的变化并进行调试——因此你最终会跟踪所有构成复合指标的不同指标。
 
 **最终**，这项任务落在了度量指标设计师的肩上，确保设置了正确的检查，以保证指标的变动与公司的目标一致。
 
 ## 这个指标具有欺骗性
 
-想象一下：你是一个在大电子商务公司工作的分析师。某处有人发现交易数量与整体收入之间有很大相关性。根据这项研究，一位副总裁决定应对交易数量设定一个OKR，并要求不同的团队去推动这个OKR。
+想象一下：你是一个在大电子商务公司工作的分析师。某处有人发现交易数量与整体收入之间有很大相关性。根据这项研究，一位副总裁决定应对交易数量设定一个 OKR，并要求不同的团队去推动这个 OKR。
 
 团队开始进行一些活动来增加交易数量（重新针对以前的客户、提供折扣等）。他们取得了成功——但目前还不清楚这对收入的影响如何。
 
@@ -88,7 +88,7 @@ James Clear 在 **《原子习惯》** 中写了以上内容。诚然——这�
 
 ## 输入是你可以控制的
 
-+   这就是ROI中的“I”
++   这就是 ROI 中的“I”
 
 +   这就是你带到桌面上的：你在任务上花费的时间、生产某物使用的材料量等。
 
@@ -148,9 +148,9 @@ James Clear 在 **《原子习惯》** 中写了以上内容。诚然——这�
 
 根据杰夫·贝索斯的说法，你应该专注于输入。其他一些商界人士也有相同的想法（例如，基思·拉博伊斯有一句有趣的名言：“为了赢得一场足球比赛，你不是专注于进球，而是专注于训练团队”）。
 
-我个人分享这种想法，但我想提供一个更细致的观点，而且现在感觉你需要在文章中至少提到一次chatGPT——我问了chatGPT它对这件事的“看法”。
+我个人分享这种想法，但我想提供一个更细致的观点，而且现在感觉你需要在文章中至少提到一次 chatGPT——我问了 chatGPT 它对这件事的“看法”。
 
-![](../Images/3302b08d958cc8af174f34f16cbf102d.png)
+![](img/3302b08d958cc8af174f34f16cbf102d.png)
 
 简而言之——“这要看情况”。
 
@@ -158,15 +158,15 @@ James Clear 在 **《原子习惯》** 中写了以上内容。诚然——这�
 
 **如果你想阅读更多我的文章，这里有一些你可能会喜欢的其他文章**：
 
-[](/7-tips-to-avoid-public-embarrassment-as-a-data-analyst-caec8f701e42?source=post_page-----ca55e3f84dad--------------------------------) [## 7个让你的数据分析更强大的技巧
+[](/7-tips-to-avoid-public-embarrassment-as-a-data-analyst-caec8f701e42?source=post_page-----ca55e3f84dad--------------------------------) ## 7 个让你的数据分析更强大的技巧
 
 ### 增强你对结果的信心，打造更强的个人品牌
 
-[towardsdatascience.com](/7-tips-to-avoid-public-embarrassment-as-a-data-analyst-caec8f701e42?source=post_page-----ca55e3f84dad--------------------------------) [](/how-to-build-a-successful-dashboard-359c8cb0f610?source=post_page-----ca55e3f84dad--------------------------------) [## 如何建立一个成功的仪表盘
+[towardsdatascience.com [](/how-to-build-a-successful-dashboard-359c8cb0f610?source=post_page-----ca55e3f84dad--------------------------------) ## 如何建立一个成功的仪表盘
 
 ### 来自那些曾经建立过几个不成功项目的人的检查清单
 
-[towardsdatascience.com](/how-to-build-a-successful-dashboard-359c8cb0f610?source=post_page-----ca55e3f84dad--------------------------------) [](https://medium.com/@jolecoco/how-to-choose-which-data-projects-to-work-on-c6b8310ac04e?source=post_page-----ca55e3f84dad--------------------------------) [## 如何…选择要从事的数据项目
+[towardsdatascience.com [](https://medium.com/@jolecoco/how-to-choose-which-data-projects-to-work-on-c6b8310ac04e?source=post_page-----ca55e3f84dad--------------------------------) [## 如何…选择要从事的数据项目
 
 ### 如果你对如何使用时间有合理的方法，你可以优化你产生的价值。
 

@@ -1,12 +1,12 @@
-# 什么是LDA？通过类似3Blue1Brown的数学动画来解释。
+# 什么是 LDA？通过类似 3Blue1Brown 的数学动画来解释。
 
-> 原文：[https://towardsdatascience.com/but-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84?source=collection_archive---------8-----------------------#2023-06-05](https://towardsdatascience.com/but-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84?source=collection_archive---------8-----------------------#2023-06-05)
+> 原文：[`towardsdatascience.com/but-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84?source=collection_archive---------8-----------------------#2023-06-05`](https://towardsdatascience.com/but-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84?source=collection_archive---------8-----------------------#2023-06-05)
 
-[](https://huonglanchu.medium.com/?source=post_page-----4e8825334d84--------------------------------)[![Lan Chu](../Images/813b24f60d6cfe2c9273e064d850c7fe.png)](https://huonglanchu.medium.com/?source=post_page-----4e8825334d84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e8825334d84--------------------------------)[![数据科学之道](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e8825334d84--------------------------------) [Lan Chu](https://huonglanchu.medium.com/?source=post_page-----4e8825334d84--------------------------------)
+[](https://huonglanchu.medium.com/?source=post_page-----4e8825334d84--------------------------------)![Lan Chu](https://huonglanchu.medium.com/?source=post_page-----4e8825334d84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e8825334d84--------------------------------)![数据科学之道](https://towardsdatascience.com/?source=post_page-----4e8825334d84--------------------------------) [Lan Chu](https://huonglanchu.medium.com/?source=post_page-----4e8825334d84--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916743f0e10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbut-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84&user=Lan+Chu&userId=3916743f0e10&source=post_page-3916743f0e10----4e8825334d84---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----4e8825334d84--------------------------------) ·13分钟阅读·2023年6月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e8825334d84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbut-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84&user=Lan+Chu&userId=3916743f0e10&source=-----4e8825334d84---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916743f0e10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbut-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84&user=Lan+Chu&userId=3916743f0e10&source=post_page-3916743f0e10----4e8825334d84---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----4e8825334d84--------------------------------) ·13 分钟阅读·2023 年 6 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e8825334d84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbut-what-is-lda-explained-using-mathematical-animation-like-3blue1brown-4e8825334d84&user=Lan+Chu&userId=3916743f0e10&source=-----4e8825334d84---------------------clap_footer-----------)
 
 --
 
@@ -14,11 +14,11 @@
 
 并给你的同事留下深刻印象 ;)
 
-你是否曾经为解释数学概念而苦恼？[3Blue1Brown](https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw)是我最喜欢的YouTube频道，用于查找有趣的视频和动画来解释数学和统计主题。我曾经对二项分布一知半解，直到我在这个频道上看到了视觉化的解释 🤷‍♀️
+你是否曾经为解释数学概念而苦恼？[3Blue1Brown](https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw)是我最喜欢的 YouTube 频道，用于查找有趣的视频和动画来解释数学和统计主题。我曾经对二项分布一知半解，直到我在这个频道上看到了视觉化的解释 🤷‍♀️
 
 如果你能学会这些动画是如何制作的，从而创建类似的动画来解释数据科学概念，给你的团队成员和经理留下深刻印象，那岂不是太棒了吗？🤩😍
 
-![](../Images/7ab098d34071bfd7946379f5053adbe6.png)
+![](img/7ab098d34071bfd7946379f5053adbe6.png)
 
 LDA 生成过程。作者提供的动图。
 

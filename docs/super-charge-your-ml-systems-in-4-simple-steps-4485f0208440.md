@@ -1,34 +1,34 @@
-# 4个简单步骤让你的机器学习系统超充电
+# 4 个简单步骤让你的机器学习系统超充电
 
-> 原文：[https://towardsdatascience.com/super-charge-your-ml-systems-in-4-simple-steps-4485f0208440?source=collection_archive---------6-----------------------#2023-10-27](https://towardsdatascience.com/super-charge-your-ml-systems-in-4-simple-steps-4485f0208440?source=collection_archive---------6-----------------------#2023-10-27)
+> 原文：[`towardsdatascience.com/super-charge-your-ml-systems-in-4-simple-steps-4485f0208440?source=collection_archive---------6-----------------------#2023-10-27`](https://towardsdatascience.com/super-charge-your-ml-systems-in-4-simple-steps-4485f0208440?source=collection_archive---------6-----------------------#2023-10-27)
 
-![](../Images/f57a9771668a09508fbbd608c1e742be.png)
+![](img/f57a9771668a09508fbbd608c1e742be.png)
 
 使用 DALL.E-3 生成的图像
 
-[](https://medium.com/@donaljbyrne?source=post_page-----4485f0208440--------------------------------)[![Donal Byrne](../Images/4695fec999da472bbd5116de6ed7cc5d.png)](https://medium.com/@donaljbyrne?source=post_page-----4485f0208440--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4485f0208440--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4485f0208440--------------------------------) [Donal Byrne](https://medium.com/@donaljbyrne?source=post_page-----4485f0208440--------------------------------)
+[](https://medium.com/@donaljbyrne?source=post_page-----4485f0208440--------------------------------)![Donal Byrne](https://medium.com/@donaljbyrne?source=post_page-----4485f0208440--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4485f0208440--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4485f0208440--------------------------------) [Donal Byrne](https://medium.com/@donaljbyrne?source=post_page-----4485f0208440--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdbf9e722f39d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsuper-charge-your-ml-systems-in-4-simple-steps-4485f0208440&user=Donal+Byrne&userId=dbf9e722f39d&source=post_page-dbf9e722f39d----4485f0208440---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4485f0208440--------------------------------) · 8 分钟阅读 · 2023年10月27日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4485f0208440&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsuper-charge-your-ml-systems-in-4-simple-steps-4485f0208440&user=Donal+Byrne&userId=dbf9e722f39d&source=-----4485f0208440---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdbf9e722f39d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsuper-charge-your-ml-systems-in-4-simple-steps-4485f0208440&user=Donal+Byrne&userId=dbf9e722f39d&source=post_page-dbf9e722f39d----4485f0208440---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4485f0208440--------------------------------) · 8 分钟阅读 · 2023 年 10 月 27 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4485f0208440&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsuper-charge-your-ml-systems-in-4-simple-steps-4485f0208440&user=Donal+Byrne&userId=dbf9e722f39d&source=-----4485f0208440---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4485f0208440&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsuper-charge-your-ml-systems-in-4-simple-steps-4485f0208440&source=-----4485f0208440---------------------bookmark_footer-----------)
 
-欢迎来到机器学习优化的过山车之旅！这篇文章将带你了解我的优化任何机器学习系统以实现闪电般快速训练和推理的4个简单步骤。
+欢迎来到机器学习优化的过山车之旅！这篇文章将带你了解我的优化任何机器学习系统以实现闪电般快速训练和推理的 4 个简单步骤。
 
 想象一下：你终于被分配到一个酷炫的新机器学习项目中，你正在训练你的智能体来统计照片中的热狗数量，其成功可能为你的公司带来数十美元的收入！
 
-你在你最喜欢的框架中实现了最新的炙手可热的物体检测模型，该模型有很多 GitHub 星标，运行一些玩具示例，经过一个小时左右，它就像一个在大学第3年重修的穷学生一样准确地识别热狗，生活美好。
+你在你最喜欢的框架中实现了最新的炙手可热的物体检测模型，该模型有很多 GitHub 星标，运行一些玩具示例，经过一个小时左右，它就像一个在大学第 3 年重修的穷学生一样准确地识别热狗，生活美好。
 
-下一步显而易见，我们想将其扩展到更困难的问题，这意味着更多的数据、更大的模型，当然，还有更长的训练时间。现在你需要面对几天的训练时间，而不是几个小时。不过没关系，你已经忽视你的团队3周了，可能应该花一天时间处理积压的代码审查和被动攻击的电子邮件。
+下一步显而易见，我们想将其扩展到更困难的问题，这意味着更多的数据、更大的模型，当然，还有更长的训练时间。现在你需要面对几天的训练时间，而不是几个小时。不过没关系，你已经忽视你的团队 3 周了，可能应该花一天时间处理积压的代码审查和被动攻击的电子邮件。
 
-你在为你在同事的MR上留下的有见地且绝对必要的细节而感到满意的一天后回来，结果发现你的性能崩溃了，在经历了15小时的训练后（因果报应来得很快）。
+你在为你在同事的 MR 上留下的有见地且绝对必要的细节而感到满意的一天后回来，结果发现你的性能崩溃了，在经历了 15 小时的训练后（因果报应来得很快）。
 
 接下来的几天变成了试验、测试和实验的旋风，每个潜在的想法都需要超过一天的运行时间。这些迅速开始积累数百美元的计算成本，所有这些都导致了一个大问题：我们如何才能让这一切变得更快、更便宜？
 
-欢迎来到机器学习优化的情感过山车！这里有一个简单的4步流程，可以使局势对你有利：
+欢迎来到机器学习优化的情感过山车！这里有一个简单的 4 步流程，可以使局势对你有利：
 
 1.  基准测试
 
@@ -38,7 +38,7 @@
 
 1.  重复
 
-这是一个迭代过程，很多时候你会在进行下一步之前重复某些步骤，所以这不只是一个4步系统，更像是一个工具箱，但4步听起来更好。
+这是一个迭代过程，很多时候你会在进行下一步之前重复某些步骤，所以这不只是一个 4 步系统，更像是一个工具箱，但 4 步听起来更好。
 
 # 1 — 基准测试
 
@@ -54,9 +54,9 @@
 
 **Steps Per Second**——（特指强化学习）我们在环境中生成数据的速度是多少，应该尽可能高。这里有一些复杂的步伐时间与训练批次之间的相互作用，我在这里不详细讨论。
 
-**GPU Util**——在训练过程中你的GPU使用了多少？这应该始终接近100%，如果不是，那么你有可以优化的空闲时间。
+**GPU Util**——在训练过程中你的 GPU 使用了多少？这应该始终接近 100%，如果不是，那么你有可以优化的空闲时间。
 
-**CPU Util**——在训练过程中你的CPU使用了多少？同样，这应该尽可能接近100%。
+**CPU Util**——在训练过程中你的 CPU 使用了多少？同样，这应该尽可能接近 100%。
 
 **FLOPS**——每秒浮点运算次数，这能让你了解你是如何有效利用总硬件的。
 
@@ -66,13 +66,13 @@
 
 **时间分析** — 这是最简单且通常最有用的实验。像[cprofiler](https://docs.python.org/3/library/profile.html)这样的分析工具可以帮助你从整体上了解每个组件的时间消耗，或者查看特定组件的时间。
 
-**内存分析** — 另一个优化工具箱中的常见工具。大型系统需要大量内存，所以我们必须确保没有浪费内存！像[memory-profiler](https://pypi.org/project/memory-profiler/)这样的工具将帮助你缩小系统消耗RAM的范围。
+**内存分析** — 另一个优化工具箱中的常见工具。大型系统需要大量内存，所以我们必须确保没有浪费内存！像[memory-profiler](https://pypi.org/project/memory-profiler/)这样的工具将帮助你缩小系统消耗 RAM 的范围。
 
 **模型分析** — 像[Tensorboard](https://www.tensorflow.org/tensorboard/get_started#:~:text=TensorBoard%20is%20a%20tool%20for,dimensional%20space%2C%20and%20much%20more.)这样的工具提供了优秀的分析工具，用于查看你的模型中哪些部分正在消耗性能。
 
-**网络分析** — 网络负载是导致系统瓶颈的常见原因。像[wireshark](https://www.wireshark.org/)这样的工具可以帮助你进行网络分析，但说实话，我从未使用过。相反，我更倾向于对我的组件进行时间分析，测量组件内部所需的总时间，然后隔离网络I/O本身所花费的时间。
+**网络分析** — 网络负载是导致系统瓶颈的常见原因。像[wireshark](https://www.wireshark.org/)这样的工具可以帮助你进行网络分析，但说实话，我从未使用过。相反，我更倾向于对我的组件进行时间分析，测量组件内部所需的总时间，然后隔离网络 I/O 本身所花费的时间。
 
-确保查看这篇关于Python性能分析的优秀文章，[RealPython](https://realpython.com/python-profiling/)，以获取更多信息！
+确保查看这篇关于 Python 性能分析的优秀文章，[RealPython](https://realpython.com/python-profiling/)，以获取更多信息！
 
 # 2 — 简化
 

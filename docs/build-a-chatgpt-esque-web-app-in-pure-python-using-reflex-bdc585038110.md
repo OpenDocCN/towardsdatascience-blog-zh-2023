@@ -1,24 +1,24 @@
-# 使用Reflex在纯Python中构建一个类似ChatGPT的Web应用
+# 使用 Reflex 在纯 Python 中构建一个类似 ChatGPT 的 Web 应用
 
-> 原文：[https://towardsdatascience.com/build-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110?source=collection_archive---------6-----------------------#2023-11-07](https://towardsdatascience.com/build-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110?source=collection_archive---------6-----------------------#2023-11-07)
+> 原文：[`towardsdatascience.com/build-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110?source=collection_archive---------6-----------------------#2023-11-07`](https://towardsdatascience.com/build-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110?source=collection_archive---------6-----------------------#2023-11-07)
 
-## 使用OpenAI的API在纯Python中构建一个聊天Web应用，部署只需一行代码
+## 使用 OpenAI 的 API 在纯 Python 中构建一个聊天 Web 应用，部署只需一行代码
 
-[](https://medium.com/@tgotsman12?source=post_page-----bdc585038110--------------------------------)[![Tom Gotsman](../Images/c19e7853986a9b242c91b7479765fddf.png)](https://medium.com/@tgotsman12?source=post_page-----bdc585038110--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bdc585038110--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bdc585038110--------------------------------) [Tom Gotsman](https://medium.com/@tgotsman12?source=post_page-----bdc585038110--------------------------------)
+[](https://medium.com/@tgotsman12?source=post_page-----bdc585038110--------------------------------)![Tom Gotsman](https://medium.com/@tgotsman12?source=post_page-----bdc585038110--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bdc585038110--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bdc585038110--------------------------------) [Tom Gotsman](https://medium.com/@tgotsman12?source=post_page-----bdc585038110--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9e381e082139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110&user=Tom+Gotsman&userId=9e381e082139&source=post_page-9e381e082139----bdc585038110---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bdc585038110--------------------------------) ·8分钟阅读·2023年11月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbdc585038110&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110&user=Tom+Gotsman&userId=9e381e082139&source=-----bdc585038110---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9e381e082139&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110&user=Tom+Gotsman&userId=9e381e082139&source=post_page-9e381e082139----bdc585038110---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bdc585038110--------------------------------) ·8 分钟阅读·2023 年 11 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbdc585038110&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110&user=Tom+Gotsman&userId=9e381e082139&source=-----bdc585038110---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbdc585038110&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110&source=-----bdc585038110---------------------bookmark_footer-----------)![](../Images/f42717bf89bc9ec158c770603a3fb388.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbdc585038110&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-chatgpt-esque-web-app-in-pure-python-using-reflex-bdc585038110&source=-----bdc585038110---------------------bookmark_footer-----------)![](img/f42717bf89bc9ec158c770603a3fb388.png)
 
-聊天应用GIF由作者提供
+聊天应用 GIF 由作者提供
 
-在过去的几个月里，我一直在玩各种令人惊叹的新LLM聊天机器人，包括Llama 2、GPT-4、Falcon 40B和Claude 2。一个始终困扰我的问题是，我如何构建自己的聊天机器人界面，调用所有这些出色的LLM作为API？
+在过去的几个月里，我一直在玩各种令人惊叹的新 LLM 聊天机器人，包括 Llama 2、GPT-4、Falcon 40B 和 Claude 2。一个始终困扰我的问题是，我如何构建自己的聊天机器人界面，调用所有这些出色的 LLM 作为 API？
 
-现在有无数的选项可以用来构建美丽的用户界面，但作为一名机器学习工程师，我对JavaScript或任何前端语言都没有经验。我在寻找一种只使用我目前知道的语言——Python来构建我的Web应用的方法！
+现在有无数的选项可以用来构建美丽的用户界面，但作为一名机器学习工程师，我对 JavaScript 或任何前端语言都没有经验。我在寻找一种只使用我目前知道的语言——Python 来构建我的 Web 应用的方法！
 
 我决定使用一个相对较新的开源框架 Reflex，它允许我完全用 Python 构建后端和前端。
 
@@ -73,9 +73,9 @@ Compiling:  ━━━━━━━━━━━━━━━━━━━━━━�
 App running at: http://localhost:3000
 ```
 
-你应该能在 [http://localhost:3000](http://localhost:3000/) 看到你的应用运行。
+你应该能在 [`localhost:3000`](http://localhost:3000/) 看到你的应用运行。
 
-Reflex 还会启动后台服务器，处理所有状态管理和与前端的通信。你可以通过访问 [http://localhost:8000/ping](http://localhost:8000/ping) 来测试后台服务器是否正在运行。
+Reflex 还会启动后台服务器，处理所有状态管理和与前端的通信。你可以通过访问 [`localhost:8000/ping`](http://localhost:8000/ping) 来测试后台服务器是否正在运行。
 
 现在我们已经设置好了项目，开始构建我们的应用吧！
 
@@ -87,7 +87,7 @@ Reflex 还会启动后台服务器，处理所有状态管理和与前端的通�
 
 我们将修改 `chatapp/chatapp.py` 文件中的 `index` 函数，以返回一个显示单个问题和答案的组件。
 
-![](../Images/041549be349a849571c46d0ea096bc6b.png)
+![](img/041549be349a849571c46d0ea096bc6b.png)
 
 作者提供的图片（代码如下）
 
@@ -124,7 +124,7 @@ app.compile()
 
 现在我们有了一个显示单个问题和答案的组件，我们可以重用它来显示多个问题和答案。我们将把该组件移动到一个单独的函数 `question_answer` 中，并从 `index` 函数中调用它。
 
-![](../Images/9cf61a98fd6edb5698e80d5f1c630ba3.png)
+![](img/9cf61a98fd6edb5698e80d5f1c630ba3.png)
 
 作者提供的图片（代码如下）
 
@@ -162,7 +162,7 @@ def index() -> rx.Component:
 
 现在我们希望用户能够输入一个问题。为此，我们将使用[input](https://reflex.dev/docs/library/forms/input)组件让用户添加文本，并使用[button](https://reflex.dev/docs/library/forms/button)组件来提交问题。
 
-![](../Images/144b4dc95f7d6ee0316b7ce1f6aecfa1.png)
+![](img/144b4dc95f7d6ee0316b7ce1f6aecfa1.png)
 
 作者提供的图片（下面的代码）
 
@@ -214,7 +214,7 @@ button_style = dict(bg="#CEFFEE", box_shadow=shadow)
 
 我们将导入`chatapp.py`中的样式并在组件中使用它们。此时，应用应该如下所示：
 
-![](../Images/5a48239ff82f9a54c2c04675d426f23e.png)
+![](img/5a48239ff82f9a54c2c04675d426f23e.png)
 
 作者提供的图片
 
@@ -305,7 +305,7 @@ class State(rx.State):
 
 现在我们可以在`chatapp.py`中导入状态，并在前端组件中引用它。我们将修改`chat`组件，以使用状态代替当前固定的问题和答案。
 
-![](../Images/b26582a1c8163c09beca3a8e91972f1c.png)
+![](img/b26582a1c8163c09beca3a8e91972f1c.png)
 
 作者提供的图片
 
@@ -343,7 +343,7 @@ def action_bar() -> rx.Component:
 
 普通的 Python `for` 循环无法用于遍历状态变量，因为这些值可能会变化且在编译时未知。相反，我们使用[foreach](https://reflex.dev/docs/library/layout/foreach)组件来遍历聊天记录。
 
-我们还将输入框的`on_change`事件绑定到`set_question`事件处理程序，这将更新`question`状态变量，而用户在输入框中输入时。我们将按钮的`on_click`事件绑定到`answer`事件处理程序，这将处理问题并将答案添加到聊天记录中。`set_question`事件处理程序是一个内置的隐式定义事件处理程序。每个基础变量都有一个。更多信息请查看[events docs](https://reflex.dev/docs/state/events)中的Setters部分。
+我们还将输入框的`on_change`事件绑定到`set_question`事件处理程序，这将更新`question`状态变量，而用户在输入框中输入时。我们将按钮的`on_click`事件绑定到`answer`事件处理程序，这将处理问题并将答案添加到聊天记录中。`set_question`事件处理程序是一个内置的隐式定义事件处理程序。每个基础变量都有一个。更多信息请查看[events docs](https://reflex.dev/docs/state/events)中的 Setters 部分。
 
 **清空输入框**
 
@@ -407,9 +407,9 @@ async def answer(self):
         yield
 ```
 
-## 使用API
+## 使用 API
 
-我们将使用OpenAI的API为我们的聊天机器人提供一些智能。我们需要修改事件处理程序以向API发送请求。
+我们将使用 OpenAI 的 API 为我们的聊天机器人提供一些智能。我们需要修改事件处理程序以向 API 发送请求。
 
 ```py
 # state.py
@@ -452,11 +452,11 @@ def answer(self):
             yield
 ```
 
-最后，我们有了我们的AI聊天机器人！
+最后，我们有了我们的 AI 聊天机器人！
 
 ## 结论
 
-按照这个教程，我们已经成功创建了使用OpenAI API密钥的聊天应用，完全用Python编写。
+按照这个教程，我们已经成功创建了使用 OpenAI API 密钥的聊天应用，完全用 Python 编写。
 
 要现在运行这个应用，我们可以运行简单的命令：
 
@@ -470,6 +470,6 @@ $ reflex run
 $ reflex deploy
 ```
 
-我希望这个教程能激发你们构建自己的LLM基础应用。我迫不及待想看到你们最终开发出什么，所以请在社交媒体或评论中与我联系。
+我希望这个教程能激发你们构建自己的 LLM 基础应用。我迫不及待想看到你们最终开发出什么，所以请在社交媒体或评论中与我联系。
 
-如果你有问题，请在下方评论或者通过Twitter上的[@tgotsman12](https://twitter.com/tgotsman12)或[LinkedIn](https://www.linkedin.com/in/tom-gotsman/)给我发消息。分享你的应用创作到社交媒体并标记我，我很乐意提供反馈或帮助转发！
+如果你有问题，请在下方评论或者通过 Twitter 上的[@tgotsman12](https://twitter.com/tgotsman12)或[LinkedIn](https://www.linkedin.com/in/tom-gotsman/)给我发消息。分享你的应用创作到社交媒体并标记我，我很乐意提供反馈或帮助转发！

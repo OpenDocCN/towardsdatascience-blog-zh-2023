@@ -1,26 +1,26 @@
 # 科学、激情与多目标优化的未来
 
-> 原文：[https://towardsdatascience.com/science-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c?source=collection_archive---------13-----------------------#2023-10-06](https://towardsdatascience.com/science-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c?source=collection_archive---------13-----------------------#2023-10-06)
+> 原文：[`towardsdatascience.com/science-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c?source=collection_archive---------13-----------------------#2023-10-06`](https://towardsdatascience.com/science-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c?source=collection_archive---------13-----------------------#2023-10-06)
 
-![](../Images/178e180c3d4f65c92e50d921e482e5dd.png)
+![](img/178e180c3d4f65c92e50d921e482e5dd.png)
 
 图片由 [Aarón Blanco Tejedor](https://unsplash.com/@the_meaning_of_love?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 对 Coello Coello 教授的深入采访
 
-[](https://emilrijcken.medium.com/?source=post_page-----5df55cd7327c--------------------------------)[![Emil Rijcken](../Images/d79e867934f45729e6590a20dcf0a440.png)](https://emilrijcken.medium.com/?source=post_page-----5df55cd7327c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5df55cd7327c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5df55cd7327c--------------------------------) [Emil Rijcken](https://emilrijcken.medium.com/?source=post_page-----5df55cd7327c--------------------------------)
+[](https://emilrijcken.medium.com/?source=post_page-----5df55cd7327c--------------------------------)![Emil Rijcken](https://emilrijcken.medium.com/?source=post_page-----5df55cd7327c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5df55cd7327c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5df55cd7327c--------------------------------) [Emil Rijcken](https://emilrijcken.medium.com/?source=post_page-----5df55cd7327c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F95ae6f4e7791&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscience-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c&user=Emil+Rijcken&userId=95ae6f4e7791&source=post_page-95ae6f4e7791----5df55cd7327c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5df55cd7327c--------------------------------) · 12 分钟阅读 · 2023年10月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5df55cd7327c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscience-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c&user=Emil+Rijcken&userId=95ae6f4e7791&source=-----5df55cd7327c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F95ae6f4e7791&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscience-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c&user=Emil+Rijcken&userId=95ae6f4e7791&source=post_page-95ae6f4e7791----5df55cd7327c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5df55cd7327c--------------------------------) · 12 分钟阅读 · 2023 年 10 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5df55cd7327c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscience-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c&user=Emil+Rijcken&userId=95ae6f4e7791&source=-----5df55cd7327c---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5df55cd7327c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscience-passion-and-the-future-of-multi-objective-optimization-5df55cd7327c&source=-----5df55cd7327c---------------------bookmark_footer-----------)
 
-卡洛斯·阿尔特米奥·科埃略·科埃略教授是通过生物启发的元启发式算法在多目标优化领域的先驱。他于1996年在杜兰大学获得计算机科学博士学位，并且是墨西哥城CINVESTAV-IPN计算机科学系的全职教授。他因其开创性的贡献而闻名，Google Scholar数据显示，他的引用次数超过68,000次，H指数为102。特别地，他在2016年由OSPHERE开发的全球学术学科排名中，曾位列前300名最被引用的计算机科学家之一。阅读这篇文章，了解科埃略教授如何看待在Transformer模型突破中多目标优化的角色、科学家的重要性特质，以及多目标优化领域应该如何有所不同。
+卡洛斯·阿尔特米奥·科埃略·科埃略教授是通过生物启发的元启发式算法在多目标优化领域的先驱。他于 1996 年在杜兰大学获得计算机科学博士学位，并且是墨西哥城 CINVESTAV-IPN 计算机科学系的全职教授。他因其开创性的贡献而闻名，Google Scholar 数据显示，他的引用次数超过 68,000 次，H 指数为 102。特别地，他在 2016 年由 OSPHERE 开发的全球学术学科排名中，曾位列前 300 名最被引用的计算机科学家之一。阅读这篇文章，了解科埃略教授如何看待在 Transformer 模型突破中多目标优化的角色、科学家的重要性特质，以及多目标优化领域应该如何有所不同。
 
-**我想深入了解你的个人经历。你在1996年需要为你的博士学位确定一个合适的研究课题。你能简要讲讲你是如何开始研究进化多目标优化的吗？**
+**我想深入了解你的个人经历。你在 1996 年需要为你的博士学位确定一个合适的研究课题。你能简要讲讲你是如何开始研究进化多目标优化的吗？**
 
 这是一个很长的故事，我会尽量简短。当我到杜兰大学攻读硕士和博士学位时，我并不知道自己想研究什么课题。我知道我不想做软件工程或数据库。首先，我尝试了编程语言和机器人学，但都不适合。偶然间，有一天，我读到了一篇使用遗传算法解决结构优化问题的论文。我决定将这篇论文作为课程作业，开发了自己的遗传算法并编写了分析软件。这让我非常兴奋，因为我可以看到遗传算法如何相对轻松地为复杂的优化问题提供良好的解决方案。这种对进化算法的兴奋感伴随了我一生。
 
@@ -44,7 +44,7 @@
 
 **你在这个开发中扮演什么角色？**
 
-随着我的成熟，我的优先级已从单纯的提议转向理解。我相信，如果没有其他人承担这项任务，那么这就落在我们身上。虽然剖析和理解算法有效性背后的机制和原因是一项挑战性的工作，但我认为这种追求对真正的科学进步至关重要。你可能只需要两个或三个方法来解决一个问题，而不是200个。如果没有办法对所有这些方法进行分类，就不能为新工具辩护，我认为继续这个方向没有太大意义。当然，人们会继续生产，这没问题。但如果我们缺乏理解，我认为我们最终会得到一个没有未来的领域。最终，我的目标是将精力集中在掌握现有工具上，然后再决定是否需要新的工具。
+随着我的成熟，我的优先级已从单纯的提议转向理解。我相信，如果没有其他人承担这项任务，那么这就落在我们身上。虽然剖析和理解算法有效性背后的机制和原因是一项挑战性的工作，但我认为这种追求对真正的科学进步至关重要。你可能只需要两个或三个方法来解决一个问题，而不是 200 个。如果没有办法对所有这些方法进行分类，就不能为新工具辩护，我认为继续这个方向没有太大意义。当然，人们会继续生产，这没问题。但如果我们缺乏理解，我认为我们最终会得到一个没有未来的领域。最终，我的目标是将精力集中在掌握现有工具上，然后再决定是否需要新的工具。
 
 **我们如何更好地理解现有方法？**
 
@@ -80,17 +80,17 @@
 
 **你更愿意做出少量有价值的贡献，而不是大量简单跟随类比研究方法的论文。既然类比研究通常缺乏新意，这样的研究是否应该在大学中进行？**
 
-这个问题提出了一个基本的考虑点：大学在研究工作中的目标。通过类比进行研究确实有其存在的必要性，并且随着时间的推移，它逐渐推动了特定方向的知识边界。例如，在多目标优化的背景下，过去18年取得了显著的进展，促使了改进算法的发展。这一成功验证了类比研究的作用。
+这个问题提出了一个基本的考虑点：大学在研究工作中的目标。通过类比进行研究确实有其存在的必要性，并且随着时间的推移，它逐渐推动了特定方向的知识边界。例如，在多目标优化的背景下，过去 18 年取得了显著的进展，促使了改进算法的发展。这一成功验证了类比研究的作用。
 
 然而，潜在的缺点在于过度依赖类比研究，这可能会抑制真正创新想法的接受。新颖的想法在引入时，可能会面临一个主要重视渐进工作的系统中的抵抗。因此，两种研究模式的和谐共存是必不可少的。机构、评估系统和学术期刊应该激励两者并行。类比研究作为稳步进展的基础，而突破性想法的培养推动了领域的发展。这样的共存确保了我们在建立现有知识的同时，也能同时接受通往未知领域的途径。缺少任何一种方法的未来将不尽如人意；因此，培育一个平衡的生态系统确保了该领域保持生机、适应性强并且有增长的潜力。
 
 **你们的期刊也会激励这种做法吗？**
 
-我尽力而为，但这很具有挑战性，因为这并不完全在我的控制范围内。结果取决于副编辑和审稿人的贡献。虽然我努力不拒绝那些具有新颖想法的论文，但这并不总是可行的。不幸的是，我必须承认遇到真正新颖的论文变得越来越稀少。值得注意的是，今年我为一个会议审阅了一篇论文，提出了一个非常引人入胜的想法，让我深受吸引。这是我过去15年中遇到的最显著的发现。然而，这样的情况并不常见。
+我尽力而为，但这很具有挑战性，因为这并不完全在我的控制范围内。结果取决于副编辑和审稿人的贡献。虽然我努力不拒绝那些具有新颖想法的论文，但这并不总是可行的。不幸的是，我必须承认遇到真正新颖的论文变得越来越稀少。值得注意的是，今年我为一个会议审阅了一篇论文，提出了一个非常引人入胜的想法，让我深受吸引。这是我过去 15 年中遇到的最显著的发现。然而，这样的情况并不常见。
 
 **计算智能历史上被划分为*进化计算、模糊逻辑和神经网络*。过去十年见证了神经网络，特别是变压器模型的突破性发展。在这个新环境中，进化计算能发挥什么作用？**
 
-我认为进化算法，传统上用于进化神经网络架构，尚未被完全利用。可能会设计出强大的优化器，能够与现有算法（如Adam）无缝集成来训练神经网络。在这个领域已经有一些尝试，例如粒子群方法，但这些努力主要集中在较小规模的问题上。然而，我预期未来几年将出现更复杂的挑战。
+我认为进化算法，传统上用于进化神经网络架构，尚未被完全利用。可能会设计出强大的优化器，能够与现有算法（如 Adam）无缝集成来训练神经网络。在这个领域已经有一些尝试，例如粒子群方法，但这些努力主要集中在较小规模的问题上。然而，我预期未来几年将出现更复杂的挑战。
 
 此外，我认识的人坚信深度学习的性能可以通过遗传编程来复制。这个想法可以被描述为*“深度遗传编程。”* 通过在遗传编程中引入分层树，结构将类似于深度学习。这是一个相对未被探索的领域，偏离了传统的神经网络方法。潜在的好处？可能会提供更高的计算效率甚至更高的准确性。但真正的优势尚待探索。
 
@@ -100,7 +100,7 @@
 
 **您认为神经网络的关注是一个趋势还是由于其卓越性能造成的结构性变化？**
 
-许多人工智能领域的人会告诉你这很时尚。我不太确定；我认为这是一个非常强大的工具，而且超越深度神经网络将会很困难。也许在10到15年内会发生这种情况，但现在还没有。它们的性能使我难以预见任何即将出现的对手可以轻易超越它们，特别是考虑到在这个领域投入的广泛研究和开发。也许在十年或更久以后，我们可能会看到变化，但目前它们似乎无可匹敌。
+许多人工智能领域的人会告诉你这很时尚。我不太确定；我认为这是一个非常强大的工具，而且超越深度神经网络将会很困难。也许在 10 到 15 年内会发生这种情况，但现在还没有。它们的性能使我难以预见任何即将出现的对手可以轻易超越它们，特别是考虑到在这个领域投入的广泛研究和开发。也许在十年或更久以后，我们可能会看到变化，但目前它们似乎无可匹敌。
 
 然而，人工智能不仅仅关乎深度学习所知的任务。还有许多人工智能挑战和领域并不完全围绕深度学习主要解决的问题。将我们的关注转向这些更广泛的挑战可能会带来好处。
 
@@ -110,4 +110,4 @@
 
 我想强调的是，研究无论哪个领域，对那些充满激情的人都具有迷人的吸引力。激情是任何将职业奉献于研究的人的重要因素。使用工具可以令人满意，但真正的研究涉及到揭示未知问题的解决方案，并在看似不相关的元素之间建立联系。培养年轻一代的兴趣至关重要。科学不断需要充满创造力的新鲜思维，准备迎接越来越复杂的挑战。鉴于气候变化、污染和资源稀缺等关键问题，科学在制定复杂解决方案方面的角色对我们的生存至关重要。尽管并非每个人都可能倾向于研究，但对于那些被吸引的人来说，这是一次有益的旅程。虽然这不是一条通向即时财富的道路，但它在解决复杂问题和贡献于我们对世界的理解方面提供了巨大的满足感。这是一种兴奋、愉悦和成就感的来源，这是我在该领域的旅程中个人所珍惜的。
 
-*此次采访代表* [*BNVKI*](http://www.bnvki.org/)*进行，该组织是比荷卢人工智能协会。我们汇聚了来自比利时、荷兰和卢森堡的AI研究人员。*
+*此次采访代表* [*BNVKI*](http://www.bnvki.org/)*进行，该组织是比荷卢人工智能协会。我们汇聚了来自比利时、荷兰和卢森堡的 AI 研究人员。*

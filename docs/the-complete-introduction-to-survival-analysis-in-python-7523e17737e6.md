@@ -1,10 +1,10 @@
 # Python 中生存分析的完整介绍
 
-> 原文：[https://towardsdatascience.com/the-complete-introduction-to-survival-analysis-in-python-7523e17737e6?source=collection_archive---------0-----------------------#2023-05-09](https://towardsdatascience.com/the-complete-introduction-to-survival-analysis-in-python-7523e17737e6?source=collection_archive---------0-----------------------#2023-05-09)
+> 原文：[`towardsdatascience.com/the-complete-introduction-to-survival-analysis-in-python-7523e17737e6?source=collection_archive---------0-----------------------#2023-05-09`](https://towardsdatascience.com/the-complete-introduction-to-survival-analysis-in-python-7523e17737e6?source=collection_archive---------0-----------------------#2023-05-09)
 
 ## 理解生存分析，其在行业中的应用以及如何在 Python 中应用它
 
-[](https://medium.com/@marcopeixeiro?source=post_page-----7523e17737e6--------------------------------)[![Marco Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----7523e17737e6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7523e17737e6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7523e17737e6--------------------------------) [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----7523e17737e6--------------------------------)
+[](https://medium.com/@marcopeixeiro?source=post_page-----7523e17737e6--------------------------------)![Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----7523e17737e6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7523e17737e6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7523e17737e6--------------------------------) [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----7523e17737e6--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7523e17737e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-introduction-to-survival-analysis-in-python-7523e17737e6&source=-----7523e17737e6---------------------bookmark_footer-----------)![](../Images/2159a9f569567d8f42ea9e0b7a718133.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7523e17737e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-introduction-to-survival-analysis-in-python-7523e17737e6&source=-----7523e17737e6---------------------bookmark_footer-----------)![](img/2159a9f569567d8f42ea9e0b7a718133.png)
 
 照片由[Ricky Kharawala](https://unsplash.com/@sweetmangostudios?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上拍摄。
 

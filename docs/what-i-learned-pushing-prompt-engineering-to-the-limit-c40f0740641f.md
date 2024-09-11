@@ -1,20 +1,20 @@
 # 我在推动提示工程极限时的所学
 
-> 原文：[https://towardsdatascience.com/what-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f?source=collection_archive---------0-----------------------#2023-06-12](https://towardsdatascience.com/what-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f?source=collection_archive---------0-----------------------#2023-06-12)
+> 原文：[`towardsdatascience.com/what-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f?source=collection_archive---------0-----------------------#2023-06-12`](https://towardsdatascience.com/what-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f?source=collection_archive---------0-----------------------#2023-06-12)
 
-[](https://medium.com/@jacob_marks?source=post_page-----c40f0740641f--------------------------------)[![Jacob Marks, Ph.D.](../Images/94d9832b8706d1044e3195386613bfab.png)](https://medium.com/@jacob_marks?source=post_page-----c40f0740641f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c40f0740641f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c40f0740641f--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----c40f0740641f--------------------------------)
+[](https://medium.com/@jacob_marks?source=post_page-----c40f0740641f--------------------------------)![Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----c40f0740641f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c40f0740641f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c40f0740641f--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----c40f0740641f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----c40f0740641f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c40f0740641f--------------------------------) ·10分钟阅读·2023年6月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc40f0740641f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----c40f0740641f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----c40f0740641f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c40f0740641f--------------------------------) ·10 分钟阅读·2023 年 6 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc40f0740641f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----c40f0740641f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc40f0740641f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f&source=-----c40f0740641f---------------------bookmark_footer-----------)![](../Images/ad4b84de610367e97b341392a5b74e5e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc40f0740641f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-pushing-prompt-engineering-to-the-limit-c40f0740641f&source=-----c40f0740641f---------------------bookmark_footer-----------)![](img/ad4b84de610367e97b341392a5b74e5e.png)
 
-对提示工程的讽刺描绘。具有讽刺意味的是，DALL-E2生成的图像是作者使用提示工程生成的，提示为“一个疯狂的科学家把卷轴递给一个人工智能机器人，以复古风格生成”，加上一些变化，以及扩展画布。
+对提示工程的讽刺描绘。具有讽刺意味的是，DALL-E2 生成的图像是作者使用提示工程生成的，提示为“一个疯狂的科学家把卷轴递给一个人工智能机器人，以复古风格生成”，加上一些变化，以及扩展画布。
 
-我花了过去两个月时间构建一个大型语言模型（LLM）驱动的应用程序。这是一次令人兴奋、智力激发且有时令人沮丧的经历。整个项目过程中，我对提示工程的理解——以及LLM的可能性——发生了变化。
+我花了过去两个月时间构建一个大型语言模型（LLM）驱动的应用程序。这是一次令人兴奋、智力激发且有时令人沮丧的经历。整个项目过程中，我对提示工程的理解——以及 LLM 的可能性——发生了变化。
 
 我很乐意与你分享一些我最大的收获，旨在揭示一些常被忽视的提示工程方面。我希望在阅读了我的经历后，你能做出更明智的提示工程决策。如果你已经尝试过提示工程，我希望这能帮助你在自己的旅程中更进一步！
 
@@ -30,13 +30,13 @@
 
 现在，我已经将提示工程课程分为四个类别：
 
-1.  [一般经验](#5220)
+1.  一般经验
 
-1.  [提示技术](#0d68)
+1.  提示技术
 
-1.  [示例](#383e)
+1.  示例
 
-1.  [工具](#9e09)
+1.  工具
 
 # 一般经验
 
@@ -82,25 +82,25 @@
 
 ## 痛苦的后处理是不可避免的
 
-无论你的示例有多好；无论你的提示有多严格——大型语言模型总会产生幻觉，给出格式错误的响应，当它们无法理解输入信息时，还会发脾气。LLM最可预测的特性就是其输出的不可预测性。
+无论你的示例有多好；无论你的提示有多严格——大型语言模型总会产生幻觉，给出格式错误的响应，当它们无法理解输入信息时，还会发脾气。LLM 最可预测的特性就是其输出的不可预测性。
 
-我花费了大量的时间编写例程来匹配模式并纠正幻觉语法。最终，[后处理文件](https://github.com/voxel51/voxelgpt/blob/main/links/dataset_view_generator.py)包含了近1600行Python代码！
+我花费了大量的时间编写例程来匹配模式并纠正幻觉语法。最终，[后处理文件](https://github.com/voxel51/voxelgpt/blob/main/links/dataset_view_generator.py)包含了近 1600 行 Python 代码！
 
-这些子例程中有些非常简单，比如添加括号，或在逻辑表达式中将“and”和“or”更改为“&”和“|”。有些子例程则复杂得多，比如验证LLM响应中的实体名称，如果满足某些条件，将一个ViewStage转换为另一个，确保方法的参数数量和类型有效。
+这些子例程中有些非常简单，比如添加括号，或在逻辑表达式中将“and”和“or”更改为“&”和“|”。有些子例程则复杂得多，比如验证 LLM 响应中的实体名称，如果满足某些条件，将一个 ViewStage 转换为另一个，确保方法的参数数量和类型有效。
 
 如果你在一个相对封闭的代码生成环境中使用提示工程，我推荐以下方法：
 
-1.  使用抽象语法树（Python的[ast](https://docs.python.org/3/library/ast.html)模块）编写你自己的自定义错误解析器。
+1.  使用抽象语法树（Python 的[ast](https://docs.python.org/3/library/ast.html)模块）编写你自己的自定义错误解析器。
 
-1.  如果结果在语法上无效，将生成的错误消息输入到LLM中，让它再试一次。
+1.  如果结果在语法上无效，将生成的错误消息输入到 LLM 中，让它再试一次。
 
-这种方法未能解决更隐蔽的情况，即语法有效但结果不正确。如果有人对这个问题有好的建议（超出AutoGPT和“展示你的工作”风格的方法），请告诉我！
+这种方法未能解决更隐蔽的情况，即语法有效但结果不正确。如果有人对这个问题有好的建议（超出 AutoGPT 和“展示你的工作”风格的方法），请告诉我！
 
 # 提示技术
 
 ## 人越多越好
 
-为了构建VoxelGPT，我使用了几乎所有的提示技术：
+为了构建 VoxelGPT，我使用了几乎所有的提示技术：
 
 +   “你是一个专家”
 
@@ -118,7 +118,7 @@
 
 ## 示例 > 文档
 
-现在已经是常识（也是常识！），示例和其他上下文信息如文档可以帮助引导大型语言模型生成更好的响应。我发现VoxelGPT确实是这样。
+现在已经是常识（也是常识！），示例和其他上下文信息如文档可以帮助引导大型语言模型生成更好的响应。我发现 VoxelGPT 确实是这样。
 
 一旦你添加了所有直接相关的示例和文档，如果上下文窗口中还有额外的空间，你应该怎么做？根据我的经验，我发现间接相关的示例比间接相关的文档更重要。
 
@@ -140,7 +140,7 @@
 
 提示工程的一个重要部分是确定你需要多少个例子来完成特定任务。这是*高度*依赖于问题的。
 
-对于一些任务（[有效查询生成](https://github.com/voxel51/voxelgpt/blob/main/prompts/effective_prompt_generator_prefix.txt) 和 [根据 FiftyOne 文档回答问题](https://github.com/voxel51/voxelgpt/blob/main/prompts/docs_qa_template.txt)），我们能够做到没有*任何*例子。而对于其他任务（[标签选择](https://github.com/voxel51/voxelgpt/blob/main/examples/tag_selection_examples.csv)，[聊天记录是否相关](https://github.com/voxel51/voxelgpt/blob/main/examples/history_relevance_examples.csv)和 [标签类命名实体识别](https://github.com/voxel51/voxelgpt/blob/main/examples/label_class_examples.csv)），我们只需要几个例子就能完成工作。然而，我们的主要推理任务几乎有400个例子（这仍然是整体性能的限制因素），因此我们仅在推理时传入最相关的例子。
+对于一些任务（[有效查询生成](https://github.com/voxel51/voxelgpt/blob/main/prompts/effective_prompt_generator_prefix.txt) 和 [根据 FiftyOne 文档回答问题](https://github.com/voxel51/voxelgpt/blob/main/prompts/docs_qa_template.txt)），我们能够做到没有*任何*例子。而对于其他任务（[标签选择](https://github.com/voxel51/voxelgpt/blob/main/examples/tag_selection_examples.csv)，[聊天记录是否相关](https://github.com/voxel51/voxelgpt/blob/main/examples/history_relevance_examples.csv)和 [标签类命名实体识别](https://github.com/voxel51/voxelgpt/blob/main/examples/label_class_examples.csv)），我们只需要几个例子就能完成工作。然而，我们的主要推理任务几乎有 400 个例子（这仍然是整体性能的限制因素），因此我们仅在推理时传入最相关的例子。
 
 当你生成例子时，尝试遵循两个指南：
 

@@ -1,22 +1,22 @@
 # 临床试验结果预测
 
-> 原文：[https://towardsdatascience.com/clinical-trial-outcome-prediction-7ce6c27831f9?source=collection_archive---------9-----------------------#2023-10-04](https://towardsdatascience.com/clinical-trial-outcome-prediction-7ce6c27831f9?source=collection_archive---------9-----------------------#2023-10-04)
+> 原文：[`towardsdatascience.com/clinical-trial-outcome-prediction-7ce6c27831f9?source=collection_archive---------9-----------------------#2023-10-04`](https://towardsdatascience.com/clinical-trial-outcome-prediction-7ce6c27831f9?source=collection_archive---------9-----------------------#2023-10-04)
 
-## 第2部分：使用XGBoost预测临床试验结果
+## 第二部分：使用 XGBoost 预测临床试验结果
 
-[](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)[![Lennart Langouche](../Images/ca35c7112cb845d17e1148b4f282600e.png)](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------) [Lennart Langouche](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)
+[](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)![Lennart Langouche](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------) [Lennart Langouche](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4bee88ffae4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&user=Lennart+Langouche&userId=4bee88ffae4&source=post_page-4bee88ffae4----7ce6c27831f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------) · 5分钟阅读 · 2023年10月4日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ce6c27831f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&user=Lennart+Langouche&userId=4bee88ffae4&source=-----7ce6c27831f9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4bee88ffae4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&user=Lennart+Langouche&userId=4bee88ffae4&source=post_page-4bee88ffae4----7ce6c27831f9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------) · 5 分钟阅读 · 2023 年 10 月 4 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ce6c27831f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&user=Lennart+Langouche&userId=4bee88ffae4&source=-----7ce6c27831f9---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7ce6c27831f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&source=-----7ce6c27831f9---------------------bookmark_footer-----------)
 
-在[本系列的第一部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中，我重点讨论了如何嵌入从[ClinicalTrials.gov](http://clinicaltrials.gov)获取的多模态现实世界数据。在这篇文章中，我将实现一个基本的XGBoost模型，用我们在[第1部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中创建的嵌入进行训练，并将其性能与HINT模型（一个分层图神经网络）的性能进行比较，HINT模型是本项目的灵感来源。
+在[本系列的第一部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中，我重点讨论了如何嵌入从[ClinicalTrials.gov](http://clinicaltrials.gov)获取的多模态现实世界数据。在这篇文章中，我将实现一个基本的 XGBoost 模型，用我们在[第一部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中创建的嵌入进行训练，并将其性能与 HINT 模型（一个分层图神经网络）的性能进行比较，HINT 模型是本项目的灵感来源。
 
-![](../Images/3562ccfd368279055d7b53f61345d436.png)
+![](img/3562ccfd368279055d7b53f61345d436.png)
 
 工作流程示意图（图像由作者提供）
 
@@ -28,13 +28,13 @@
 
 +   定义评估指标
 
-+   训练XGBoost模型并简要比较与HINT模型性能
++   训练 XGBoost 模型并简要比较与 HINT 模型性能
 
-![](../Images/f95a6a52f07b976351970569dbb08655.png)
+![](img/f95a6a52f07b976351970569dbb08655.png)
 
-本系列第2部分的重点：基于在[第1部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中创建的特征嵌入预测临床试验结果（图片由作者提供）
+本系列第二部分的重点：基于在[第一部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中创建的特征嵌入预测临床试验结果（图片由作者提供）
 
-你可以按照这个Jupyter notebook中的所有步骤操作：[临床试验嵌入教程](https://github.com/lenlan/clinical-trial-prediction/blob/main/predict_clinical_trial_outcome_using_XGBoost.ipynb)。
+你可以按照这个 Jupyter notebook 中的所有步骤操作：[临床试验嵌入教程](https://github.com/lenlan/clinical-trial-prediction/blob/main/predict_clinical_trial_outcome_using_XGBoost.ipynb)。
 
 # 加载训练、验证和测试数据集
 
@@ -65,7 +65,7 @@ print(y_train.shape, y_val.shape, y_test.shape)
 
 # 嵌入药物分子、方案、指示和试验赞助商
 
-在本节中，我们加载了在[第1部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中创建的字典，并使用它们将训练、验证和测试集中的值映射到相应的嵌入中。
+在本节中，我们加载了在[第一部分](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)中创建的字典，并使用它们将训练、验证和测试集中的值映射到相应的嵌入中。
 
 ```py
 def embed_all(df):
@@ -113,9 +113,9 @@ X_test = embed_all(test_df)
 
 # 定义评估指标
 
-我们将使用与[HINT文章](https://doi.org/10.1016/j.patter.2022.100445)中提出的相同的评估指标：ROC AUC、F1、PR-AUC、精确度、召回率和准确率。
+我们将使用与[HINT 文章](https://doi.org/10.1016/j.patter.2022.100445)中提出的相同的评估指标：ROC AUC、F1、PR-AUC、精确度、召回率和准确率。
 
-# 训练XGBoost模型，并预测训练、验证和测试标签
+# 训练 XGBoost 模型，并预测训练、验证和测试标签
 
 ```py
 import xgboost as xgb
@@ -171,15 +171,15 @@ print_results(y_test_pred, y_test)
 # label 1 ratio: 0.606
 ```
 
-# 与HINT模型比较性能
+# 与 HINT 模型比较性能
 
-这个简单的XGBoost模型在*药物分子、纳入/排除标准、疾病指示、试验赞助商*和*参与者人数*的特征嵌入上进行了训练，而HINT作者没有使用最后两个特征：*试验赞助商*和*参与者人数*。我们使用了几个大型语言模型嵌入工具，如BioBERT和SBERT，并采用了Morgan编码进行药物表示，而HINT作者使用了多种神经网络进行所有的嵌入。
+这个简单的 XGBoost 模型在*药物分子、纳入/排除标准、疾病指示、试验赞助商*和*参与者人数*的特征嵌入上进行了训练，而 HINT 作者没有使用最后两个特征：*试验赞助商*和*参与者人数*。我们使用了几个大型语言模型嵌入工具，如 BioBERT 和 SBERT，并采用了 Morgan 编码进行药物表示，而 HINT 作者使用了多种神经网络进行所有的嵌入。
 
-从下面的图中可以看到，我们的特征嵌入在简单的XGBoost模型下的表现相比于更复杂的HINT模型相当好。我们的项目在这个数据集上的精确度和准确性更高，但召回率较低。
+从下面的图中可以看到，我们的特征嵌入在简单的 XGBoost 模型下的表现相比于更复杂的 HINT 模型相当好。我们的项目在这个数据集上的精确度和准确性更高，但召回率较低。
 
-![](../Images/71d338ef8e870b08ccb41d018045cbe7.png)
+![](img/71d338ef8e870b08ccb41d018045cbe7.png)
 
-本项目性能与HINT项目的比较（图片由作者提供）
+本项目性能与 HINT 项目的比较（图片由作者提供）
 
 # 结论
 

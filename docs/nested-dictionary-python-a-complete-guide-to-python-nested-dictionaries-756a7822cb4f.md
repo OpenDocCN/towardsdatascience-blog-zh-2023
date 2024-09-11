@@ -1,10 +1,10 @@
 # Python 嵌套字典 — Python 嵌套字典的完全指南
 
-> 原文：[https://towardsdatascience.com/nested-dictionary-python-a-complete-guide-to-python-nested-dictionaries-756a7822cb4f?source=collection_archive---------13-----------------------#2023-04-18](https://towardsdatascience.com/nested-dictionary-python-a-complete-guide-to-python-nested-dictionaries-756a7822cb4f?source=collection_archive---------13-----------------------#2023-04-18)
+> 原文：[`towardsdatascience.com/nested-dictionary-python-a-complete-guide-to-python-nested-dictionaries-756a7822cb4f?source=collection_archive---------13-----------------------#2023-04-18`](https://towardsdatascience.com/nested-dictionary-python-a-complete-guide-to-python-nested-dictionaries-756a7822cb4f?source=collection_archive---------13-----------------------#2023-04-18)
 
 ## 如何在 Python 中使用嵌套字典？本文教会您有关 Python 嵌套字典的一切知识。
 
-[](https://medium.com/@radecicdario?source=post_page-----756a7822cb4f--------------------------------)[![Dario Radečić](../Images/41882a3b30bab9da43d66a59f1df366b.png)](https://medium.com/@radecicdario?source=post_page-----756a7822cb4f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----756a7822cb4f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----756a7822cb4f--------------------------------) [Dario Radečić](https://medium.com/@radecicdario?source=post_page-----756a7822cb4f--------------------------------)
+[](https://medium.com/@radecicdario?source=post_page-----756a7822cb4f--------------------------------)![Dario Radečić](https://medium.com/@radecicdario?source=post_page-----756a7822cb4f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----756a7822cb4f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----756a7822cb4f--------------------------------) [Dario Radečić](https://medium.com/@radecicdario?source=post_page-----756a7822cb4f--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F756a7822cb4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnested-dictionary-python-a-complete-guide-to-python-nested-dictionaries-756a7822cb4f&source=-----756a7822cb4f---------------------bookmark_footer-----------)![](../Images/393f0346b4e4e357c149ccbef699a1e2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F756a7822cb4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnested-dictionary-python-a-complete-guide-to-python-nested-dictionaries-756a7822cb4f&source=-----756a7822cb4f---------------------bookmark_footer-----------)![](img/393f0346b4e4e357c149ccbef699a1e2.png)
 
 照片由 [Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=medium&utm_medium=referral) 提供于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

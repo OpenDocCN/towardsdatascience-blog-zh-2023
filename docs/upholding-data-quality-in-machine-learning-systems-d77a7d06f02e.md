@@ -1,20 +1,20 @@
 # 在机器学习系统中维护数据质量
 
-> 原文：[https://towardsdatascience.com/upholding-data-quality-in-machine-learning-systems-d77a7d06f02e?source=collection_archive---------17-----------------------#2023-06-29](https://towardsdatascience.com/upholding-data-quality-in-machine-learning-systems-d77a7d06f02e?source=collection_archive---------17-----------------------#2023-06-29)
+> 原文：[`towardsdatascience.com/upholding-data-quality-in-machine-learning-systems-d77a7d06f02e?source=collection_archive---------17-----------------------#2023-06-29`](https://towardsdatascience.com/upholding-data-quality-in-machine-learning-systems-d77a7d06f02e?source=collection_archive---------17-----------------------#2023-06-29)
 
 ## 数据 | 机器学习 | 质量保证
 
 ## 对机器学习中未被察觉的基石的推荐
 
-[](https://david-farrugia.medium.com/?source=post_page-----d77a7d06f02e--------------------------------)[![David Farrugia](../Images/082ed61e24c7c26a4ae1c77343a87824.png)](https://david-farrugia.medium.com/?source=post_page-----d77a7d06f02e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d77a7d06f02e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d77a7d06f02e--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----d77a7d06f02e--------------------------------)
+[](https://david-farrugia.medium.com/?source=post_page-----d77a7d06f02e--------------------------------)![David Farrugia](https://david-farrugia.medium.com/?source=post_page-----d77a7d06f02e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d77a7d06f02e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d77a7d06f02e--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----d77a7d06f02e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fupholding-data-quality-in-machine-learning-systems-d77a7d06f02e&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----d77a7d06f02e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d77a7d06f02e--------------------------------) ·4分钟阅读·2023年6月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd77a7d06f02e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fupholding-data-quality-in-machine-learning-systems-d77a7d06f02e&user=David+Farrugia&userId=3916826092a6&source=-----d77a7d06f02e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fupholding-data-quality-in-machine-learning-systems-d77a7d06f02e&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----d77a7d06f02e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d77a7d06f02e--------------------------------) ·4 分钟阅读·2023 年 6 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd77a7d06f02e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fupholding-data-quality-in-machine-learning-systems-d77a7d06f02e&user=David+Farrugia&userId=3916826092a6&source=-----d77a7d06f02e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd77a7d06f02e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fupholding-data-quality-in-machine-learning-systems-d77a7d06f02e&source=-----d77a7d06f02e---------------------bookmark_footer-----------)![](../Images/00e8f1eff37346506cb9e807b936fcd3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd77a7d06f02e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fupholding-data-quality-in-machine-learning-systems-d77a7d06f02e&source=-----d77a7d06f02e---------------------bookmark_footer-----------)![](img/00e8f1eff37346506cb9e807b936fcd3.png)
 
 图片由 [Battlecreek Coffee Roasters](https://unsplash.com/@battlecreekcoffeeroasters?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

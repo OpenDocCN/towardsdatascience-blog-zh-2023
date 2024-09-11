@@ -1,18 +1,18 @@
 # 理解 NeRFs
 
-> 原文：[https://towardsdatascience.com/understanding-nerfs-2a082e13c6eb?source=collection_archive---------4-----------------------#2023-04-28](https://towardsdatascience.com/understanding-nerfs-2a082e13c6eb?source=collection_archive---------4-----------------------#2023-04-28)
+> 原文：[`towardsdatascience.com/understanding-nerfs-2a082e13c6eb?source=collection_archive---------4-----------------------#2023-04-28`](https://towardsdatascience.com/understanding-nerfs-2a082e13c6eb?source=collection_archive---------4-----------------------#2023-04-28)
 
 ## 场景表示的重大突破
 
-[](https://wolfecameron.medium.com/?source=post_page-----2a082e13c6eb--------------------------------)[![Cameron R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----2a082e13c6eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a082e13c6eb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2a082e13c6eb--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----2a082e13c6eb--------------------------------)
+[](https://wolfecameron.medium.com/?source=post_page-----2a082e13c6eb--------------------------------)![Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----2a082e13c6eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a082e13c6eb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a082e13c6eb--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----2a082e13c6eb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-nerfs-2a082e13c6eb&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----2a082e13c6eb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a082e13c6eb--------------------------------) ·11分钟阅读·2023年4月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a082e13c6eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-nerfs-2a082e13c6eb&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----2a082e13c6eb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-nerfs-2a082e13c6eb&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----2a082e13c6eb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a082e13c6eb--------------------------------) ·11 分钟阅读·2023 年 4 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a082e13c6eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-nerfs-2a082e13c6eb&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----2a082e13c6eb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a082e13c6eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-nerfs-2a082e13c6eb&source=-----2a082e13c6eb---------------------bookmark_footer-----------)![](../Images/0f3a2a80515f0f2c516a9ede3117054f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a082e13c6eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-nerfs-2a082e13c6eb&source=-----2a082e13c6eb---------------------bookmark_footer-----------)![](img/0f3a2a80515f0f2c516a9ede3117054f.png)
 
 （照片由 [nuddle](https://unsplash.com/@nuddle?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/3d-scene?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)）
 

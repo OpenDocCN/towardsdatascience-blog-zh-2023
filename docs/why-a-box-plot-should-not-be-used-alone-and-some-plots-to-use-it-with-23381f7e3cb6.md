@@ -1,18 +1,18 @@
-# 为什么箱线图不应单独使用及与之配合使用的3种图表
+# 为什么箱线图不应单独使用及与之配合使用的 3 种图表
 
-> 原文：[https://towardsdatascience.com/why-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6?source=collection_archive---------12-----------------------#2023-01-16](https://towardsdatascience.com/why-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6?source=collection_archive---------12-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/why-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6?source=collection_archive---------12-----------------------#2023-01-16`](https://towardsdatascience.com/why-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6?source=collection_archive---------12-----------------------#2023-01-16)
 
-## 解释箱线图中的缺失信息及使用Python代码解决该问题的替代方法
+## 解释箱线图中的缺失信息及使用 Python 代码解决该问题的替代方法
 
-[](https://medium.com/@borih.k?source=post_page-----23381f7e3cb6--------------------------------)[![Boriharn K](../Images/1b23a79640f5272c1382918bfdba03b0.png)](https://medium.com/@borih.k?source=post_page-----23381f7e3cb6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23381f7e3cb6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----23381f7e3cb6--------------------------------) [Boriharn K](https://medium.com/@borih.k?source=post_page-----23381f7e3cb6--------------------------------)
+[](https://medium.com/@borih.k?source=post_page-----23381f7e3cb6--------------------------------)![Boriharn K](https://medium.com/@borih.k?source=post_page-----23381f7e3cb6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23381f7e3cb6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----23381f7e3cb6--------------------------------) [Boriharn K](https://medium.com/@borih.k?source=post_page-----23381f7e3cb6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe20a7f1ba78f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6&user=Boriharn+K&userId=e20a7f1ba78f&source=post_page-e20a7f1ba78f----23381f7e3cb6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23381f7e3cb6--------------------------------) ·7分钟阅读·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23381f7e3cb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6&user=Boriharn+K&userId=e20a7f1ba78f&source=-----23381f7e3cb6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe20a7f1ba78f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6&user=Boriharn+K&userId=e20a7f1ba78f&source=post_page-e20a7f1ba78f----23381f7e3cb6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23381f7e3cb6--------------------------------) ·7 分钟阅读·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23381f7e3cb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6&user=Boriharn+K&userId=e20a7f1ba78f&source=-----23381f7e3cb6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23381f7e3cb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6&source=-----23381f7e3cb6---------------------bookmark_footer-----------)![](../Images/ce42d5b8814e2083af77f22afef09db5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23381f7e3cb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-a-box-plot-should-not-be-used-alone-and-some-plots-to-use-it-with-23381f7e3cb6&source=-----23381f7e3cb6---------------------bookmark_footer-----------)![](img/ce42d5b8814e2083af77f22afef09db5.png)
 
 照片由[Lance Asper](https://unsplash.com/@lance_asper)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -20,7 +20,7 @@
 
 然而，没有什么是完美的。箱形图有一些主要的限制。在解释这些限制之前，让我们看看下面的图片。
 
-![](../Images/89a3fd4ee36fd719791d5cbcf47d6b31.png)
+![](img/89a3fd4ee36fd719791d5cbcf47d6b31.png)
 
 箱形图显示了三组数据的分布。图像由作者提供。
 
@@ -28,7 +28,7 @@
 
 事实上，当使用直方图绘制真实数据时，数据完全不同，如下图所示。在这种情况下，使用箱形图可能会误导数据的解释。
 
-![](../Images/4b06924823da179aaaac1046a5db6029.png)
+![](img/4b06924823da179aaaac1046a5db6029.png)
 
 直方图和箱形图显示了三组数据的分布。图像由作者提供。
 
@@ -38,7 +38,7 @@
 
 此外，箱形图的形状为矩形，因此它可能会误导我们认为四分位数范围内有数据。如果四分位数范围内存在空白或没有数据，这些情况可能不会被注意到。
 
-![](../Images/202c1c534403af229b34fa93e1e43a84.png)![](../Images/723f1767f9933c6a9d2029c4169f6a29.png)
+![](img/202c1c534403af229b34fa93e1e43a84.png)![](img/723f1767f9933c6a9d2029c4169f6a29.png)
 
 本文推荐的用于与箱形图配合使用的可视化示例。图像由作者提供。
 
@@ -131,7 +131,7 @@ ax6.set(ylabel=None, yticklabels=[])
 plt.show()
 ```
 
-![](../Images/4b06924823da179aaaac1046a5db6029.png)
+![](img/4b06924823da179aaaac1046a5db6029.png)
 
 直方图和箱线图显示了模拟数据的分布。图片来源：作者。
 
@@ -154,7 +154,7 @@ df = pd.concat([df1_m, df2_m, df3_m])
 df.head()
 ```
 
-![](../Images/f21f70408dd8b2aa04a7bf58a3b3bcb6.png)
+![](img/f21f70408dd8b2aa04a7bf58a3b3bcb6.png)
 
 # 替代的数据可视化
 
@@ -172,7 +172,7 @@ fig.update_layout(legend_title="", xaxis_title=None)
 fig.show()
 ```
 
-![](../Images/d0961bec8c0b642a57375e5ea82df271.png)
+![](img/d0961bec8c0b642a57375e5ea82df271.png)
 
 小提琴图显示了模拟数据的分布。图片来源：作者。
 
@@ -202,7 +202,7 @@ fig2.show()
 fig3.show()
 ```
 
-![](../Images/5c99bf1f7e9cf93952052b7ad0b4cff5.png)
+![](img/5c99bf1f7e9cf93952052b7ad0b4cff5.png)
 
 直方图显示了模拟数据的分布。图片来源：作者。
 
@@ -216,7 +216,7 @@ fig.update_layout(yaxis_title=None, legend_title="", xaxis_title=None)
 fig.show()
 ```
 
-![](../Images/2efd12d106c0cc03f5e40c70f8a30d10.png)
+![](img/2efd12d106c0cc03f5e40c70f8a30d10.png)
 
 叠加直方图和地毯图显示了模拟数据的分布。图片来源：作者。
 
@@ -235,7 +235,7 @@ fig.update_layout(width=900, height=600)
 fig.show()
 ```
 
-![](../Images/4224346f1ca4646b839c414bc45167c7.png)
+![](img/4224346f1ca4646b839c414bc45167c7.png)
 
 叠加直方图、KDE 线和地毯图显示了模拟数据的分布。图片来源：作者。
 
@@ -256,7 +256,7 @@ fig.update_layout(legend_title="", yaxis_title=None,
 fig.show()
 ```
 
-![](../Images/9969bfab864dc56bff5b21dd8e588eb6.png)
+![](img/9969bfab864dc56bff5b21dd8e588eb6.png)
 
 条形图显示了模拟数据的分布。图片来源：作者。
 
@@ -315,7 +315,7 @@ fig.show()
 
 看呐!!
 
-![](../Images/c59792ad9f9fdb9123870445ca77afd8.png)
+![](img/c59792ad9f9fdb9123870445ca77afd8.png)
 
 带有颜色的条形图展示了模拟数据的分布。图像由作者提供。
 
@@ -333,16 +333,16 @@ fig.show()
 
 +   7 种使用 Python 表达排名随时间变化的可视化方法 ([链接](https://medium.com/towards-data-science/7-visualizations-with-python-to-express-changes-in-rank-over-time-71c1f11d7e4b))
 
-+   8 种使用 Python 处理多个时间序列数据的可视化方法 ([链接](/8-visualizations-with-python-to-handle-multiple-time-series-data-19b5b2e66dd0))
++   8 种使用 Python 处理多个时间序列数据的可视化方法 (链接)
 
-+   9 种使用 Python 的可视化方法，比条形图更引人注目 ([链接](/9-visualizations-that-catch-more-attention-than-a-bar-chart-72d3aeb2e091))
++   9 种使用 Python 的可视化方法，比条形图更引人注目 (链接)
 
 +   9 种使用 Python 的可视化方法来展示比例，而不是饼图 ([链接](https://medium.com/p/4e8d81617451/))
 
 ## 参考资料
 
-+   Wikimedia Foundation. (2023年1月4日). *箱线图*。维基百科。取自 2023 年 1 月 8 日，来源于 [https://en.wikipedia.org/wiki/Box_plot](https://en.wikipedia.org/wiki/Box_plot)
++   Wikimedia Foundation. (2023 年 1 月 4 日). *箱线图*。维基百科。取自 2023 年 1 月 8 日，来源于 [`en.wikipedia.org/wiki/Box_plot`](https://en.wikipedia.org/wiki/Box_plot)
 
-+   *用于多峰分布的箱线图*。交叉验证。取自 2023 年 1 月 8 日，来源于 [https://stats.stackexchange.com/questions/137965/box-and-whisker-plot-for-multimodal-distribution](https://stats.stackexchange.com/questions/137965/box-and-whisker-plot-for-multimodal-distribution)
++   *用于多峰分布的箱线图*。交叉验证。取自 2023 年 1 月 8 日，来源于 [`stats.stackexchange.com/questions/137965/box-and-whisker-plot-for-multimodal-distribution`](https://stats.stackexchange.com/questions/137965/box-and-whisker-plot-for-multimodal-distribution)
 
-+   Stephanie. (2022年9月25日). *双峰分布：是什么？* Statistics How To. 取自 2023 年 1 月 10 日，来源于 [https://www.statisticshowto.com/what-is-a-bimodal-distribution](https://www.statisticshowto.com/what-is-a-bimodal-distribution)
++   Stephanie. (2022 年 9 月 25 日). *双峰分布：是什么？* Statistics How To. 取自 2023 年 1 月 10 日，来源于 [`www.statisticshowto.com/what-is-a-bimodal-distribution`](https://www.statisticshowto.com/what-is-a-bimodal-distribution)

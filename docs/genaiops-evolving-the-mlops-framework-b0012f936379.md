@@ -1,10 +1,10 @@
 # GenAIOps：发展中的 MLOps 框架
 
-> 原文：[https://towardsdatascience.com/genaiops-evolving-the-mlops-framework-b0012f936379?source=collection_archive---------5-----------------------#2023-07-18](https://towardsdatascience.com/genaiops-evolving-the-mlops-framework-b0012f936379?source=collection_archive---------5-----------------------#2023-07-18)
+> 原文：[`towardsdatascience.com/genaiops-evolving-the-mlops-framework-b0012f936379?source=collection_archive---------5-----------------------#2023-07-18`](https://towardsdatascience.com/genaiops-evolving-the-mlops-framework-b0012f936379?source=collection_archive---------5-----------------------#2023-07-18)
 
 ## 生成式 AI 需要新的部署和监控能力
 
-[](https://medium.com/@davidsweenor?source=post_page-----b0012f936379--------------------------------)[![David Sweenor](../Images/7dbb5c549ab67bc78f906fb707969ff6.png)](https://medium.com/@davidsweenor?source=post_page-----b0012f936379--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0012f936379--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b0012f936379--------------------------------) [David Sweenor](https://medium.com/@davidsweenor?source=post_page-----b0012f936379--------------------------------)
+[](https://medium.com/@davidsweenor?source=post_page-----b0012f936379--------------------------------)![David Sweenor](https://medium.com/@davidsweenor?source=post_page-----b0012f936379--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0012f936379--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0012f936379--------------------------------) [David Sweenor](https://medium.com/@davidsweenor?source=post_page-----b0012f936379--------------------------------)
 
 ·
 
@@ -12,27 +12,27 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0012f936379&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenaiops-evolving-the-mlops-framework-b0012f936379&source=-----b0012f936379---------------------bookmark_footer-----------)![](../Images/9df3e386524c734cb418954501ab0a90.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0012f936379&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenaiops-evolving-the-mlops-framework-b0012f936379&source=-----b0012f936379---------------------bookmark_footer-----------)![](img/9df3e386524c734cb418954501ab0a90.png)
 
 图片由作者提供 — **David Sweenor**
 
-早在2019年，我曾发表过一篇LinkedIn博客，标题为[为什么你需要ML Ops来实现成功的创新](https://www.linkedin.com/pulse/why-you-need-ml-ops-successful-innovation-david-sweenor/?trackingId=sKI28CkFTfW4Ty7d3%2BBqFA%3D%3D)。快进到今天，将分析、机器学习（ML）和人工智能（AI）模型（或更确切地说，系统）投入实际应用仍然是许多组织面临的挑战。然而，值得注意的是，技术已经发展，新公司也应运而生，帮助解决在生产环境中部署、监控和更新模型的挑战。不过，随着生成性AI的发展，如OpenAI的[GPT-4](https://openai.com/gpt-4)、Google的[PaLM](https://ai.google/discover/palm2/) 2、Meta的[LLaMA](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)以及[GitHub Copilot](https://github.blog/2022-06-21-github-copilot-is-generally-available-to-all-developers/)，组织们竞相了解LLMs的价值、成本、实施时间表和相关风险。由于我们才刚刚开始这段旅程，我认为大多数组织尚未做好精细调优、部署、监控和维护LLMs的准备，因此应谨慎行事。
+早在 2019 年，我曾发表过一篇 LinkedIn 博客，标题为[为什么你需要 ML Ops 来实现成功的创新](https://www.linkedin.com/pulse/why-you-need-ml-ops-successful-innovation-david-sweenor/?trackingId=sKI28CkFTfW4Ty7d3%2BBqFA%3D%3D)。快进到今天，将分析、机器学习（ML）和人工智能（AI）模型（或更确切地说，系统）投入实际应用仍然是许多组织面临的挑战。然而，值得注意的是，技术已经发展，新公司也应运而生，帮助解决在生产环境中部署、监控和更新模型的挑战。不过，随着生成性 AI 的发展，如 OpenAI 的[GPT-4](https://openai.com/gpt-4)、Google 的[PaLM](https://ai.google/discover/palm2/) 2、Meta 的[LLaMA](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)以及[GitHub Copilot](https://github.blog/2022-06-21-github-copilot-is-generally-available-to-all-developers/)，组织们竞相了解 LLMs 的价值、成本、实施时间表和相关风险。由于我们才刚刚开始这段旅程，我认为大多数组织尚未做好精细调优、部署、监控和维护 LLMs 的准备，因此应谨慎行事。
 
-# 什么是MLOps？
+# 什么是 MLOps？
 
-机器学习操作（即MLOps）可以定义为：
+机器学习操作（即 MLOps）可以定义为：
 
-> ML Ops是一个跨职能的、协作的、持续的过程，专注于通过将统计学、数据科学和机器学习模型作为可重用的、高可用的软件工件进行管理，从而使数据科学操作化，并通过可重复的部署过程来实现。它涵盖了模型推理、可扩展性、维护、审计和治理等独特的管理方面，以及对生产环境中模型的持续监控，以确保它们在基础条件变化时仍能提供积极的业务价值。[1]
+> ML Ops 是一个跨职能的、协作的、持续的过程，专注于通过将统计学、数据科学和机器学习模型作为可重用的、高可用的软件工件进行管理，从而使数据科学操作化，并通过可重复的部署过程来实现。它涵盖了模型推理、可扩展性、维护、审计和治理等独特的管理方面，以及对生产环境中模型的持续监控，以确保它们在基础条件变化时仍能提供积极的业务价值。[1]
 
-现在我们对MLOps有了清晰的定义，让我们讨论一下它对组织的重要性。
+现在我们对 MLOps 有了清晰的定义，让我们讨论一下它对组织的重要性。
 
-# 为什么MLOps重要？
+# 为什么 MLOps 重要？
 
-在今天的算法驱动的商业环境中，MLOps的重要性不容忽视。随着组织越来越依赖复杂的机器学习模型来推动日常决策和提高运营效率，部署、管理、监控和更新这些模型的需求变得尤为重要。MLOps提供了一套框架和流程，以便数据科学家和计算机科学家（负责开发模型）与IT运维团队（负责部署、管理和维护模型）之间进行协作，确保模型可靠、最新，并能为业务带来价值。
+在今天的算法驱动的商业环境中，MLOps 的重要性不容忽视。随着组织越来越依赖复杂的机器学习模型来推动日常决策和提高运营效率，部署、管理、监控和更新这些模型的需求变得尤为重要。MLOps 提供了一套框架和流程，以便数据科学家和计算机科学家（负责开发模型）与 IT 运维团队（负责部署、管理和维护模型）之间进行协作，确保模型可靠、最新，并能为业务带来价值。
 
-# MLOps的关键能力
+# MLOps 的关键能力
 
-广义上讲，MLOps功能上包括自动化机器学习工作流、模型版本管理、模型监控和模型治理。
+广义上讲，MLOps 功能上包括自动化机器学习工作流、模型版本管理、模型监控和模型治理。
 
 ●**自动化工作流**简化了训练、验证和部署模型的过程；减少了人工操作并提高了速度。
 
@@ -42,29 +42,29 @@
 
 ● **模型治理** 提供合规性，以满足法规和组织政策。
 
-这些能力共同使组织能够大规模地将ML和AI投入运营，为组织带来业务价值和竞争优势。
+这些能力共同使组织能够大规模地将 ML 和 AI 投入运营，为组织带来业务价值和竞争优势。
 
-# MLOps：指标和KPI
+# MLOps：指标和 KPI
 
 为确保模型在生产系统中按预期表现并提供最佳预测，有几种类型的指标和关键绩效指标（KPI）用于跟踪其效果。与数据科学家交谈时，他们通常会强调以下指标：
 
-● **模型性能指标**：这些是衡量模型预测性能的指标。它们可以包括准确率、精确率、召回率、F1分数、ROC曲线下面积（AUC-ROC）、平均绝对误差（MAE）、均方误差（MSE）等。选择指标取决于问题的类型（分类、回归等）和业务背景。
+● **模型性能指标**：这些是衡量模型预测性能的指标。它们可以包括准确率、精确率、召回率、F1 分数、ROC 曲线下面积（AUC-ROC）、平均绝对误差（MAE）、均方误差（MSE）等。选择指标取决于问题的类型（分类、回归等）和业务背景。
 
-● **数据漂移**：这衡量生产工作流中输入数据与模型训练数据的偏差程度。显著的数据漂移可能表明模型的预测可能随着时间变得不那么可靠。我们在那个小小的“突发事件”COVID中看到了一个很好的例子。消费者习惯和商业规范一夜之间发生了变化，导致每个人的模型都崩溃了！
+● **数据漂移**：这衡量生产工作流中输入数据与模型训练数据的偏差程度。显著的数据漂移可能表明模型的预测可能随着时间变得不那么可靠。我们在那个小小的“突发事件”COVID 中看到了一个很好的例子。消费者习惯和商业规范一夜之间发生了变化，导致每个人的模型都崩溃了！
 
 ● **模型漂移**：类似于数据漂移，这衡量模型性能（通常是下降）随时间变化的程度，而不是衡量数据分布偏离常态的程度。如果基础数据分布发生变化，可能会导致模型假设变得不那么准确。
 
 ● **预测分布**：跟踪模型预测的分布可以帮助检测异常。例如，如果一个二分类模型突然开始预测比平时多得多的正例，这可能表明存在问题。这些通常与业务指标最为接近。
 
-● **资源使用**：IT资源使用包括CPU使用率、内存使用率和延迟等指标。这些指标对于确保模型在系统的基础设施和架构约束内高效运行非常重要。
+● **资源使用**：IT 资源使用包括 CPU 使用率、内存使用率和延迟等指标。这些指标对于确保模型在系统的基础设施和架构约束内高效运行非常重要。
 
 ● **业务指标**：所有指标中最重要的，这些指标衡量模型对业务结果的影响。它们可能包括收入、客户流失率、转化率等指标。这些指标有助于评估模型是否提供了预期的业务价值。
 
-现在我们已经对MLOps有了高层次的理解，知道了它的重要性、关键能力和指标，这与生成式AI有什么关系呢？
+现在我们已经对 MLOps 有了高层次的理解，知道了它的重要性、关键能力和指标，这与生成式 AI 有什么关系呢？
 
-# 生成式AI：主要的跨职能用例
+# 生成式 AI：主要的跨职能用例
 
-在生成式人工智能成为主流之前，组织主要实施的是针对结构化和半结构化数据的AI系统。这些系统主要以数字为训练基础，生成数字输出——预测、概率和分组分配（比如细分和聚类）。换句话说，我们会用历史数字数据如交易、行为、人口统计、技术、公司、地理空间和机器生成的数据来训练我们的AI模型——并输出流失、响应或与优惠互动的可能性。并不是说我们没有使用文本、音频或视频数据——我们有；情感分析、设备维护日志等；但这些用例远远不如基于数字的方法普遍。生成式人工智能具有一组新的能力，使组织能够利用多年来基本上忽视的数据——文本、音频和视频数据。
+在生成式人工智能成为主流之前，组织主要实施的是针对结构化和半结构化数据的 AI 系统。这些系统主要以数字为训练基础，生成数字输出——预测、概率和分组分配（比如细分和聚类）。换句话说，我们会用历史数字数据如交易、行为、人口统计、技术、公司、地理空间和机器生成的数据来训练我们的 AI 模型——并输出流失、响应或与优惠互动的可能性。并不是说我们没有使用文本、音频或视频数据——我们有；情感分析、设备维护日志等；但这些用例远远不如基于数字的方法普遍。生成式人工智能具有一组新的能力，使组织能够利用多年来基本上忽视的数据——文本、音频和视频数据。
 
 用途和应用有很多，但我总结了迄今为止生成式人工智能的关键跨职能用例。
 
@@ -72,13 +72,13 @@
 
 生成式人工智能可以生成类人质量的内容，包括音频、视频/图片和文本。
 
-● **音频内容生成**：生成式人工智能可以制作适用于社交媒体平台如YouTube的音频轨道，或为你的书面内容添加AI驱动的配音，增强多媒体体验。事实上，我的前两本TinyTechGuides在Google Play上的配音完全由AI生成。我可以为AI朗读的书籍选择口音、性别、年龄、语速以及其他几个关键属性。查看这里的AI朗读有声书。
+● **音频内容生成**：生成式人工智能可以制作适用于社交媒体平台如 YouTube 的音频轨道，或为你的书面内容添加 AI 驱动的配音，增强多媒体体验。事实上，我的前两本 TinyTechGuides 在 Google Play 上的配音完全由 AI 生成。我可以为 AI 朗读的书籍选择口音、性别、年龄、语速以及其他几个关键属性。查看这里的 AI 朗读有声书。
 
-○ [人工智能：让AI为您的业务发挥作用的高管指南](https://play.google.com/store/audiobooks/details/Artificial_Intelligence_An_Executive_Guide_to_Make?id=AQAAAECisyHzkM&hl=en_US&gl=US&pli=1)
+○ [人工智能：让 AI 为您的业务发挥作用的高管指南](https://play.google.com/store/audiobooks/details/Artificial_Intelligence_An_Executive_Guide_to_Make?id=AQAAAECisyHzkM&hl=en_US&gl=US&pli=1)
 
-○ [现代B2B营销：营销卓越实务指南](https://play.google.com/store/audiobooks/details/David_Sweenor_Modern_B2B_Marketing?id=AQAAAECiM15z7M&hl=en_US&gl=US)
+○ [现代 B2B 营销：营销卓越实务指南](https://play.google.com/store/audiobooks/details/David_Sweenor_Modern_B2B_Marketing?id=AQAAAECiM15z7M&hl=en_US&gl=US)
 
-● **文本内容生成**：这可能是目前最受欢迎的生成式人工智能形式，从撰写博客文章、社交媒体更新、产品描述、草拟电子邮件、客户信件到RFP提案，生成式人工智能可以轻松生成各种文本内容，为企业节省大量时间和资源。不过请注意，内容虽然生成并听起来权威，并不意味着它在事实上的准确性。
+● **文本内容生成**：这可能是目前最受欢迎的生成式人工智能形式，从撰写博客文章、社交媒体更新、产品描述、草拟电子邮件、客户信件到 RFP 提案，生成式人工智能可以轻松生成各种文本内容，为企业节省大量时间和资源。不过请注意，内容虽然生成并听起来权威，并不意味着它在事实上的准确性。
 
 ● **图像和视频生成**：我们已经看到这种技术在好莱坞慢慢成熟，例如通过 AI 生成的《星球大战》角色到在最新的《夺宝奇兵》电影中 [去老化哈里森·福特](https://www.wired.com/story/indiana-jones-and-the-dial-of-destiny-de-aging-tech/)，AI 可以创建逼真的图像和电影。生成式 AI 可以通过为广告、演示文稿和博客生成内容来加速创意服务。我们已经看到像 [Adobe](https://www.forbes.com/sites/rashishrivastava/2023/06/08/adobe-brings-its-generative-ai-tool-firefly-to-businesses/?sh=14e91793582b) 和 [Canva](https://www.forbes.com/sites/alexkonrad/2023/03/23/canva-launches-magic-ai-tools-reaches-125-million-users/?sh=24f9e02f290e) 等公司在创意服务方面做出了共同努力。
 
@@ -106,27 +106,27 @@
 
 ● **透明度缺失**：对于许多应用，尤其是在金融服务、保险和医疗等行业，模型透明度通常是业务要求。然而，LLMs 本质上并不具有可解释性或可预测性，导致“幻觉”和其他潜在的误差。如果您的企业需要满足审计师或监管机构的要求，您必须问自己，我们是否可以使用 LLMs？
 
-● **知识产权（IP）风险**：用于训练许多基础LLMs的数据通常包括公开的可用信息——我们已经看到有关图像（例如[HBR — 生成性AI存在知识产权问题](https://hbr.org/2023/04/generative-ai-has-an-intellectual-property-problem)）、音乐（[The Verge — AI Drake刚刚给Google设下了一个不可能的法律陷阱](https://www.theverge.com/2023/4/19/23689879/ai-drake-song-google-youtube-fair-use)）和书籍（[LA Times — Sara Silverman和其他畅销书作者起诉Meta和OpenAI侵犯版权](https://www.latimes.com/entertainment-arts/books/story/2023-07-10/sarah-silverman-authors-sue-meta-openai-chatgpt-copyright-infringement)）的不当使用的诉讼。在许多情况下，训练过程不加选择地吸收所有可用数据，导致对IP暴露和版权侵权的潜在诉讼。这引出了一个问题，你的基础模型是用什么数据训练的，细调时又用了什么数据？
+● **知识产权（IP）风险**：用于训练许多基础 LLMs 的数据通常包括公开的可用信息——我们已经看到有关图像（例如[HBR — 生成性 AI 存在知识产权问题](https://hbr.org/2023/04/generative-ai-has-an-intellectual-property-problem)）、音乐（[The Verge — AI Drake 刚刚给 Google 设下了一个不可能的法律陷阱](https://www.theverge.com/2023/4/19/23689879/ai-drake-song-google-youtube-fair-use)）和书籍（[LA Times — Sara Silverman 和其他畅销书作者起诉 Meta 和 OpenAI 侵犯版权](https://www.latimes.com/entertainment-arts/books/story/2023-07-10/sarah-silverman-authors-sue-meta-openai-chatgpt-copyright-infringement)）的不当使用的诉讼。在许多情况下，训练过程不加选择地吸收所有可用数据，导致对 IP 暴露和版权侵权的潜在诉讼。这引出了一个问题，你的基础模型是用什么数据训练的，细调时又用了什么数据？
 
-● **网络安全与欺诈**：随着生成性AI服务的广泛使用，组织必须为恶意行为者的潜在滥用做好准备。生成性AI可以用来制造深度伪造以进行社会工程攻击。你的组织如何确保用于训练的数据没有被欺诈者和恶意行为者篡改？
+● **网络安全与欺诈**：随着生成性 AI 服务的广泛使用，组织必须为恶意行为者的潜在滥用做好准备。生成性 AI 可以用来制造深度伪造以进行社会工程攻击。你的组织如何确保用于训练的数据没有被欺诈者和恶意行为者篡改？
 
-● **环境影响**：训练大规模AI模型需要大量计算资源，这会导致显著的能源消耗。这对环境有影响，因为所用的能源往往来自不可再生的来源，导致碳排放。对于已有环境、社会和治理（ESG）举措的组织来说，你的程序如何考虑LLM的使用？
+● **环境影响**：训练大规模 AI 模型需要大量计算资源，这会导致显著的能源消耗。这对环境有影响，因为所用的能源往往来自不可再生的来源，导致碳排放。对于已有环境、社会和治理（ESG）举措的组织来说，你的程序如何考虑 LLM 的使用？
 
-现在，公司需要考虑的事情有很多，但主要的几个已经被涵盖。这引出了下一个问题，我们如何使生成性AI模型实现操作化？
+现在，公司需要考虑的事情有很多，但主要的几个已经被涵盖。这引出了下一个问题，我们如何使生成性 AI 模型实现操作化？
 
 # GenAIOps：需要一套新的能力
 
-现在我们对生成性AI、关键用途、挑战和考虑因素有了更好的了解，接下来让我们看看MLOps框架必须如何演变——我将其称为GenAIOps，据我所知，我是第一个提出这个术语的人。
+现在我们对生成性 AI、关键用途、挑战和考虑因素有了更好的了解，接下来让我们看看 MLOps 框架必须如何演变——我将其称为 GenAIOps，据我所知，我是第一个提出这个术语的人。
 
 让我们来看看创建大语言模型（LLMs）的高层次流程；该图形改编自[基础模型的机遇与风险](https://arxiv.org/abs/2108.07258)。
 
-**图1.1：训练和部署LLMs的流程**
+**图 1.1：训练和部署 LLMs 的流程**
 
-![](../Images/3388767a92e2f3baa4e5d401a1a9deb5.png)
+![](img/3388767a92e2f3baa4e5d401a1a9deb5.png)
 
-训练和部署LLMs的流程——图片由作者、TinyTechGuides创始人David E Sweenor提供
+训练和部署 LLMs 的流程——图片由作者、TinyTechGuides 创始人 David E Sweenor 提供
 
-在上述过程中，我们看到数据被创建、收集、整理，然后模型被训练、调整和部署。鉴于此，对于一个全面的GenAIOps框架，应考虑哪些因素？
+在上述过程中，我们看到数据被创建、收集、整理，然后模型被训练、调整和部署。鉴于此，对于一个全面的 GenAIOps 框架，应考虑哪些因素？
 
 # GenAIOps：清单
 
@@ -192,7 +192,7 @@
 
 鉴于模型训练需要大量资源和时间，模型创建者将如何确定数据是否在漂移，从而需要新的模型？组织将如何理解他们的数据是否演变到需要重新校准模型的程度？对于数值数据，这相对简单，但我认为我们仍在学习如何处理文本、图像、音频和视频等非结构化数据。
 
-假设我们能够创建一个机制来定期调整我们的模型，我们还应该有一个控制措施来检测数据漂移是否由于真实事件还是AI生成内容的扩散？在我的文章[《AI熵：AI生成内容的恶性循环》](https://medium.com/towards-data-science/ai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f)中，我讨论了当你在AI上训练AI时，它会随着时间变得越来越笨。
+假设我们能够创建一个机制来定期调整我们的模型，我们还应该有一个控制措施来检测数据漂移是否由于真实事件还是 AI 生成内容的扩散？在我的文章[《AI 熵：AI 生成内容的恶性循环》](https://medium.com/towards-data-science/ai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f)中，我讨论了当你在 AI 上训练 AI 时，它会随着时间变得越来越笨。
 
 # 模型漂移
 
@@ -204,22 +204,22 @@
 
 # 资源使用
 
-表面上，这似乎相对直接。然而，随着生成使用的增长，你的组织将需要建立一个系统来跟踪和管理它的使用。定价模型在生成AI领域仍在发展，因此我们需要小心。类似于我们在云数据仓库领域看到的情况，我们开始看到成本失控。因此，如果你的公司有基于使用的定价，你将如何建立财务控制和治理机制，以确保你的成本可预测且不会失控？
+表面上，这似乎相对直接。然而，随着生成使用的增长，你的组织将需要建立一个系统来跟踪和管理它的使用。定价模型在生成 AI 领域仍在发展，因此我们需要小心。类似于我们在云数据仓库领域看到的情况，我们开始看到成本失控。因此，如果你的公司有基于使用的定价，你将如何建立财务控制和治理机制，以确保你的成本可预测且不会失控？
 
 # 业务指标
 
 我之前提到过这一点，但你可以采取的最重要的监控和控制措施与业务指标有关。你的公司需要时刻关注你的模型对业务的实际影响。如果你将其用于关键业务流程，你有哪些服务水平协议保证来确保正常运行？
 
-偏见是任何AI模型面临的重大问题，但在生成性AI中可能更为严重。你如何检测模型输出是否存在偏见，并且是否在延续不平等现象？Tim O’Reilly 写了一篇很棒的博客，标题为 [我们已经放出了瓶中的精灵](https://www.rockefellerfoundation.org/blog/we-have-already-let-the-genie-out-of-the-bottle/)，我鼓励你阅读。
+偏见是任何 AI 模型面临的重大问题，但在生成性 AI 中可能更为严重。你如何检测模型输出是否存在偏见，并且是否在延续不平等现象？Tim O’Reilly 写了一篇很棒的博客，标题为 [我们已经放出了瓶中的精灵](https://www.rockefellerfoundation.org/blog/we-have-already-let-the-genie-out-of-the-bottle/)，我鼓励你阅读。
 
-从知识产权的角度来看，你如何保证专有、敏感或个人信息不会从你的组织中泄漏或流出？考虑到目前关于版权侵权的诉讼，这是你们组织需要面对的重要因素。你是否应该要求供应商保证这些信息不会出现在你的模型中，类似于Adobe的举措 ([FastCompany — Adobe如此自信其Firefly生成性AI不会侵犯版权，以至于愿意承担你的法律费用](https://www.fastcompany.com/90906560/adobe-feels-so-confident-its-firefly-generative-ai-wont-breach-copyright-itll-cover-your-legal-bills))？现在，他们愿意承担你的法律费用虽然很不错，但这会给你的公司带来什么声誉风险？如果你失去了客户的信任，你可能永远无法赢回他们。
+从知识产权的角度来看，你如何保证专有、敏感或个人信息不会从你的组织中泄漏或流出？考虑到目前关于版权侵权的诉讼，这是你们组织需要面对的重要因素。你是否应该要求供应商保证这些信息不会出现在你的模型中，类似于 Adobe 的举措 ([FastCompany — Adobe 如此自信其 Firefly 生成性 AI 不会侵犯版权，以至于愿意承担你的法律费用](https://www.fastcompany.com/90906560/adobe-feels-so-confident-its-firefly-generative-ai-wont-breach-copyright-itll-cover-your-legal-bills))？现在，他们愿意承担你的法律费用虽然很不错，但这会给你的公司带来什么声誉风险？如果你失去了客户的信任，你可能永远无法赢回他们。
 
 最后，数据中毒无疑是一个热门话题。当你使用你们组织的数据来调整和微调模型时，如何确保数据不是有毒的？如何确保用于训练基础模型的数据没有被中毒？
 
 # 总结
 
-归根结底，这并不是为了提供解决GenAIOps的具体方法和指标，而是提出一系列组织在实施LLM之前需要考虑的问题。像任何事物一样，生成性AI具有帮助组织获得竞争优势的巨大潜力，但也存在一系列需要解决的挑战和风险。最终，GenAIOps需要一套跨越采纳组织和提供LLM的供应商的原则和能力。用蜘蛛侠的话说，能力越大，责任越大。
+归根结底，这并不是为了提供解决 GenAIOps 的具体方法和指标，而是提出一系列组织在实施 LLM 之前需要考虑的问题。像任何事物一样，生成性 AI 具有帮助组织获得竞争优势的巨大潜力，但也存在一系列需要解决的挑战和风险。最终，GenAIOps 需要一套跨越采纳组织和提供 LLM 的供应商的原则和能力。用蜘蛛侠的话说，能力越大，责任越大。
 
-如果你想了解更多关于人工智能的内容，可以查看我的书《人工智能： [让AI为你的业务服务的执行指南](https://www.amazon.com/Artificial-Intelligence-Executive-Guide-Business/dp/B09X4KTYS4)》。
+如果你想了解更多关于人工智能的内容，可以查看我的书《人工智能： [让 AI 为你的业务服务的执行指南](https://www.amazon.com/Artificial-Intelligence-Executive-Guide-Business/dp/B09X4KTYS4)》。
 
-[1]Sweenor, David, Steven Hillion, Dan Rope, Dev Kannabiran, Thomas Hill, 和 Michael O’Connell. 2020\. 《ML Ops: 数据科学的操作化》。O’Reilly Media. [https://www.oreilly.com/library/view/ml-ops-operationalizing/9781492074663/](https://www.oreilly.com/library/view/ml-ops-operationalizing/9781492074663/).
+[1]Sweenor, David, Steven Hillion, Dan Rope, Dev Kannabiran, Thomas Hill, 和 Michael O’Connell. 2020\. 《ML Ops: 数据科学的操作化》。O’Reilly Media. [`www.oreilly.com/library/view/ml-ops-operationalizing/9781492074663/`](https://www.oreilly.com/library/view/ml-ops-operationalizing/9781492074663/).

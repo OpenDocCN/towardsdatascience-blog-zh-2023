@@ -1,24 +1,24 @@
 # 实体解析：识别嘈杂数据中的真实世界实体
 
-> 原文：[https://towardsdatascience.com/entity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c?source=collection_archive---------3-----------------------#2023-09-21](https://towardsdatascience.com/entity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c?source=collection_archive---------3-----------------------#2023-09-21)
+> 原文：[`towardsdatascience.com/entity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c?source=collection_archive---------3-----------------------#2023-09-21`](https://towardsdatascience.com/entity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c?source=collection_archive---------3-----------------------#2023-09-21)
 
-## 基本理论和Python实现
+## 基本理论和 Python 实现
 
-[](https://medium.com/@tnmasui?source=post_page-----3e8c59f4f41c--------------------------------)[![Tomonori Masui](../Images/e3c6ffae4b4f748394e743a349ab7e59.png)](https://medium.com/@tnmasui?source=post_page-----3e8c59f4f41c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e8c59f4f41c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e8c59f4f41c--------------------------------) [Tomonori Masui](https://medium.com/@tnmasui?source=post_page-----3e8c59f4f41c--------------------------------)
+[](https://medium.com/@tnmasui?source=post_page-----3e8c59f4f41c--------------------------------)![Tomonori Masui](https://medium.com/@tnmasui?source=post_page-----3e8c59f4f41c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e8c59f4f41c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e8c59f4f41c--------------------------------) [Tomonori Masui](https://medium.com/@tnmasui?source=post_page-----3e8c59f4f41c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F703ffb2ff12d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c&user=Tomonori+Masui&userId=703ffb2ff12d&source=post_page-703ffb2ff12d----3e8c59f4f41c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e8c59f4f41c--------------------------------) ·19分钟阅读·2023年9月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e8c59f4f41c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c&user=Tomonori+Masui&userId=703ffb2ff12d&source=-----3e8c59f4f41c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F703ffb2ff12d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c&user=Tomonori+Masui&userId=703ffb2ff12d&source=post_page-703ffb2ff12d----3e8c59f4f41c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e8c59f4f41c--------------------------------) ·19 分钟阅读·2023 年 9 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e8c59f4f41c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c&user=Tomonori+Masui&userId=703ffb2ff12d&source=-----3e8c59f4f41c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3e8c59f4f41c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c&source=-----3e8c59f4f41c---------------------bookmark_footer-----------)![](../Images/1d691114d0c38478a3a450438730f0fc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3e8c59f4f41c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentity-resolution-identifying-real-world-entities-in-noisy-data-3e8c59f4f41c&source=-----3e8c59f4f41c---------------------bookmark_footer-----------)![](img/1d691114d0c38478a3a450438730f0fc.png)
 
-图片由作者使用Midjourney生成
+图片由作者使用 Midjourney 生成
 
 在当今数据驱动的世界中，组织常常面临多样且不一致的数据来源的挑战。实体解析，也称为记录链接或去重，帮助识别和合并在数据集内或跨数据集没有共享唯一标识符的重复或相关记录。准确的实体解析提高了数据质量，增强了决策制定，并提供了有价值的见解。
 
-![](../Images/7366b7a19c73f8c0febc9bad93abd0bf.png)
+![](img/7366b7a19c73f8c0febc9bad93abd0bf.png)
 
 实体解析在不一致的数据源中识别相同的现实世界实体（图像由作者提供）
 
@@ -28,19 +28,19 @@
 
 ## 目录
 
-+   [实体解析概述](#41b0)
++   实体解析概述
 
-+   [基准数据集](#e9d0)
++   基准数据集
 
-+   [阻断](#b64f)
++   阻断
 
-+   [块处理](#bad6)
++   块处理
 
-+   [实体匹配](#095a)
++   实体匹配
 
-+   [聚类](#12bb)
++   聚类
 
-+   [集群评估](#9478)
++   集群评估
 
 # 实体解析概述
 
@@ -54,7 +54,7 @@
 
 **4\. 聚类**：聚类涉及根据记录的相似性将匹配的记录分组到集群中。创建的集群可以用于获取实体的综合视图。
 
-![](../Images/94784cd78c3e29f33f244772d94ad1e3.png)
+![](img/94784cd78c3e29f33f244772d94ad1e3.png)
 
 实体解析工作流程（图像由作者提供）
 
@@ -62,7 +62,7 @@
 
 在接下来的章节中，我们将深入探讨实体解析过程中的每个步骤的更多细节，并使用基准数据集进行 Python 实现。
 
-该数据集来源于[莱比锡大学数据库组](https://dbs.uni-leipzig.de/research/projects/object_matching/benchmark_datasets_for_entity_resolution)，并获得了[创作共用](https://creativecommons.org/licenses/by/4.0/)许可证，来源于实际的[MusicBrainz](https://musicbrainz.org/)数据库中有关歌曲的记录，但经过[**DAPO** 数据污染工具](https://vsis-www.informatik.uni-hamburg.de/getDoc.php/publications/568/Panse-TBD2021-Preprint.pdf)故意进行了修改。该工具向数据集中注入了重复项和错误，导致数据集中包含了50%原始记录的重复项，覆盖了两个到五个来源。这些重复项具有较高的损坏程度，作为评估ER和聚类方法有效性的严格测试。
+该数据集来源于[莱比锡大学数据库组](https://dbs.uni-leipzig.de/research/projects/object_matching/benchmark_datasets_for_entity_resolution)，并获得了[创作共用](https://creativecommons.org/licenses/by/4.0/)许可证，来源于实际的[MusicBrainz](https://musicbrainz.org/)数据库中有关歌曲的记录，但经过[**DAPO** 数据污染工具](https://vsis-www.informatik.uni-hamburg.de/getDoc.php/publications/568/Panse-TBD2021-Preprint.pdf)故意进行了修改。该工具向数据集中注入了重复项和错误，导致数据集中包含了 50%原始记录的重复项，覆盖了两个到五个来源。这些重复项具有较高的损坏程度，作为评估 ER 和聚类方法有效性的严格测试。
 
 我们可以使用以下代码加载数据。
 
@@ -78,11 +78,11 @@ df = pd.read_csv(BytesIO(res.content))
 
 一些示例记录如下所示。
 
-![](../Images/81dd39eb0071ef0cacb8620dbedf8aba.png)
+![](img/81dd39eb0071ef0cacb8620dbedf8aba.png)
 
-每条记录代表一首歌曲，具有诸如艺术家、标题、专辑、年份等属性（你可以在[这个链接](https://dbs.uni-leipzig.de/files/datasets/saeedi/musicBrainz_readme.txt)中找到字段描述）。`CID`是集群ID，具有相同`CID`的记录是重复的（在上面的示例中，所有三条记录代表同一首歌曲）。我们的目标是在这个嘈杂的数据集中识别这些重复项。
+每条记录代表一首歌曲，具有诸如艺术家、标题、专辑、年份等属性（你可以在[这个链接](https://dbs.uni-leipzig.de/files/datasets/saeedi/musicBrainz_readme.txt)中找到字段描述）。`CID`是集群 ID，具有相同`CID`的记录是重复的（在上面的示例中，所有三条记录代表同一首歌曲）。我们的目标是在这个嘈杂的数据集中识别这些重复项。
 
-为了简化工作，我们只关注英文歌曲。下面的代码识别出具有英文歌曲的集群ID的记录。
+为了简化工作，我们只关注英文歌曲。下面的代码识别出具有英文歌曲的集群 ID 的记录。
 
 ```py
 english_cids = df[
@@ -106,7 +106,7 @@ for col in ["title", "artist", "album"]:
 
 df.loc[df.number.notna(), "number"] = (
     df[df.number.notna()]
-    .number.replace("[^0-9]", "", regex=True)              # removing non-digits
+    .number.replace("[⁰-9]", "", regex=True)              # removing non-digits
     .apply(lambda x: str(int(x)) if len(x) > 0 else None)  # removing leading zeros
 )
 ```
@@ -115,13 +115,13 @@ df.loc[df.number.notna(), "number"] = (
 
 # 阻断
 
-阻断是实体解析的第一步，它根据某些属性将相似记录分组。通过这样做，过程将搜索范围缩小到仅考虑每个块内的比较，而不是检查数据集中的所有可能记录对。这显著减少了比较的数量，加快了ER过程。由于跳过了许多比较，这可能会导致错过真实匹配。因此，阻断应该在效率和准确性之间取得良好的平衡。在本节中，我们将探索三种不同的阻断方法（标准阻断、标记阻断和排序邻域），以找到最佳的平衡点。
+阻断是实体解析的第一步，它根据某些属性将相似记录分组。通过这样做，过程将搜索范围缩小到仅考虑每个块内的比较，而不是检查数据集中的所有可能记录对。这显著减少了比较的数量，加快了 ER 过程。由于跳过了许多比较，这可能会导致错过真实匹配。因此，阻断应该在效率和准确性之间取得良好的平衡。在本节中，我们将探索三种不同的阻断方法（标准阻断、标记阻断和排序邻域），以找到最佳的平衡点。
 
 ## 标准阻断
 
 最直接的块处理技术是根据特定属性将数据集划分为块。例如，在我们的数据集中，可以根据 `Artist` 或 `Title` 字段创建块。这种方法直观且易于实现，但其有效性对噪声非常敏感，因为重复项的阻塞键有一点点不同就会把它们放在不同的块中。
 
-![](../Images/0b30929d7fce27fe4213ffac684fca7a.png)
+![](img/0b30929d7fce27fe4213ffac684fca7a.png)
 
 在艺术家字段上的标准块示例（图像由作者提供）
 
@@ -152,7 +152,7 @@ sb_album = standard_blocking(df.album)
 
 令牌块处理的重点是将属性值分解（即令牌化）为更小的单位，称为令牌，然后使用这些令牌创建用于比较的块。令牌通常是从文本中提取的单个单词或小的 n-gram（长度为`n`的子字符串）。令牌块为每个不同的令牌值创建一个块，而不考虑相关属性：如果两个记录在其任何属性中共享一个令牌，它们将位于同一个块中。这产生了高召回率，因为冗余（即单个记录可以属于多个块），代价是低精确度。
 
-![](../Images/8e81d019b8e4f0d7428eb0e7d3ddd14f.png)
+![](img/8e81d019b8e4f0d7428eb0e7d3ddd14f.png)
 
 令牌块的示例（图像由作者提供）
 
@@ -195,11 +195,11 @@ token_blocks = token_blocking(df[columns], stop_words)
 
 排序邻域按特定字段的值进行字母顺序排序。一个固定大小的窗口在排序后的记录上滑动，窗口内的所有可能对被标识为比较的候选对。请注意，它直接生成一对对的列表，而不是块。虽然这种方法有效处理了阻塞字段中的噪声，但选择较小的窗口会牺牲召回率以提高精度，而较大的窗口具有更高的召回率但精度较低。
 
-![](../Images/358bc5d1ef9c4662d5383dd2c6ff244a.png)
+![](img/358bc5d1ef9c4662d5383dd2c6ff244a.png)
 
-带有窗口大小为3的排序邻域示例（图像由作者提供）
+带有窗口大小为 3 的排序邻域示例（图像由作者提供）
 
-以下代码执行窗口大小为3的排序邻域，使用 `title`、`artist` 和 `album` 字段作为排序键。
+以下代码执行窗口大小为 3 的排序邻域，使用 `title`、`artist` 和 `album` 字段作为排序键。
 
 ```py
 def sorted_neighborhood(
@@ -231,7 +231,7 @@ sn_pairs = sorted_neighborhood(df, columns)
 
 块清理设置块大小的上限，并清除大小超过限制的块。它假设过大的块由冗余比较主导，这意味着这些块中包含的重复项更可能出现在其他较小的块中。
 
-下面的代码按预定的限制值（此处设为1000条记录）清除块。它还过滤掉只有一条记录的块，因为这些块不生成可比较的对。我们在前一节的三个标准块和标记块上执行此`purge_blocks`函数。
+下面的代码按预定的限制值（此处设为 1000 条记录）清除块。它还过滤掉只有一条记录的块，因为这些块不生成可比较的对。我们在前一节的三个标准块和标记块上执行此`purge_blocks`函数。
 
 ```py
 def purge_blocks(
@@ -256,7 +256,7 @@ sb_album = purge_blocks(sb_album)
 
 元块转换输入块集合为图（或邻接矩阵），其中每个节点对应一条记录，边连接每对在块中共同出现的记录。边权重表示跨块对出现频率：权重越高，匹配可能性越大。低权重的边被剪枝，因为它们可能代表多余的比较。因此，对于每个保留的边，生成一个新块，导致精细化的块集合（或作为每个精细化块仅有一对记录的对列表）。
 
-![](../Images/07a052fd6c6e4d3cb0adfdaf29330ca5.png)
+![](img/07a052fd6c6e4d3cb0adfdaf29330ca5.png)
 
 元块示例（作者提供的图片）
 
@@ -289,7 +289,7 @@ pairs = get_pairs_from_blocks(token_blocks)
 adj_matrix = get_adjacency_matrix_from_pairs(pairs, (len(df), len(df)))
 ```
 
-接下来，我们根据边权重在邻接矩阵中剪枝。在这里，我们剪枝所有边权重为1的边，即仅在单个块中出现的对被修剪。
+接下来，我们根据边权重在邻接矩阵中剪枝。在这里，我们剪枝所有边权重为 1 的边，即仅在单个块中出现的对被修剪。
 
 ```py
 def prune_edges(
@@ -343,7 +343,7 @@ sb_pairs = get_pairs_from_adj_matrix(adj_matrix_union)
 
 下表总结了三种不同块处理方法生成的最终候选对数量。
 
-![](../Images/38dec5fe9bbd7727e0eee52531dadc56.png)
+![](img/38dec5fe9bbd7727e0eee52531dadc56.png)
 
 我们将通过查看下一节中的匹配结果来确定哪个最适合我们的数据。
 
@@ -363,11 +363,11 @@ sb_pairs = get_pairs_from_adj_matrix(adj_matrix_union)
 
     对整体相似性分数应用相似性阈值以找到匹配
 
-![](../Images/accddcd7befa2c43c5d341ff7ee8887f.png)
+![](img/accddcd7befa2c43c5d341ff7ee8887f.png)
 
 实体匹配示例（图片由作者提供）
 
-以下函数 `get_field_similarity_scores` 处理上述第1步。如果 `sim_type` 设置为 `“fuzzy”`，则计算 [余弦相似度](https://en.wikipedia.org/wiki/Cosine_similarity)；否则，进行精确匹配。余弦相似度是在字符级 3-grams 上计算的，这些 3-grams 通过使用来自 scikit-learn 的 `[CountVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html)` 模块从输入字符串中向量化。我们计算 `title`、`artist` 和 `album` 字段的余弦相似度，同时对 `number` 字段进行精确匹配。
+以下函数 `get_field_similarity_scores` 处理上述第 1 步。如果 `sim_type` 设置为 `“fuzzy”`，则计算 [余弦相似度](https://en.wikipedia.org/wiki/Cosine_similarity)；否则，进行精确匹配。余弦相似度是在字符级 3-grams 上计算的，这些 3-grams 通过使用来自 scikit-learn 的 `[CountVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html)` 模块从输入字符串中向量化。我们计算 `title`、`artist` 和 `album` 字段的余弦相似度，同时对 `number` 字段进行精确匹配。
 
 ```py
 from sklearn.preprocessing import normalize
@@ -469,11 +469,11 @@ field_scores_sb = get_field_similarity_scores(df, sb_pairs, field_config)
 
 ## 基于规则的匹配
 
-![](../Images/203cc7d2d670653a4fde2a549743cbea.png)
+![](img/203cc7d2d670653a4fde2a549743cbea.png)
 
 基于规则的匹配（图片由作者提供）
 
-在计算特定领域的相似性分数后，我们希望将它们组合成一个整体的相似性分数，如上述第2步所述。我们在这里采用了一个非常简单的方法：仅计算属性分数的平均值，随后应用一个分数阈值来识别匹配（第3步）。下面的阈值值已在这里调整过，但你可能需要通过查看一些匹配/不匹配的示例来调整它，当你处理自己的数据集时。
+在计算特定领域的相似性分数后，我们希望将它们组合成一个整体的相似性分数，如上述第 2 步所述。我们在这里采用了一个非常简单的方法：仅计算属性分数的平均值，随后应用一个分数阈值来识别匹配（第 3 步）。下面的阈值值已在这里调整过，但你可能需要通过查看一些匹配/不匹配的示例来调整它，当你处理自己的数据集时。
 
 ```py
 def calc_overall_scores(field_scores: dict[str, np.ndarray]) -> np.ndarray:
@@ -524,13 +524,13 @@ show_results(is_matched_list, blocking_approach_name_list)
 
 下面是输出结果。
 
-![](../Images/712486e6f28de580c3123493b8ea74f0.png)
+![](img/712486e6f28de580c3123493b8ea74f0.png)
 
 如表中所示，Token Blocking 产生了最多的匹配数，而 Sorted Neighborhood 的匹配率最高。由于 Token Blocking 可能错过的匹配最少，我们将继续使用这种方法的结果。值得注意的是，我们的小数据集并未显示出可扩展性问题。然而，对于较大的数据集，其中 Token Blocking 可能不可行，你可能需要考虑其他更具可扩展性的方法。
 
 ## 机器学习匹配
 
-![](../Images/f6eb09c7745036d3fe672ac729d7f969.png)
+![](img/f6eb09c7745036d3fe672ac729d7f969.png)
 
 机器学习匹配（图片由作者提供）
 
@@ -580,7 +580,7 @@ print(f"Rule-base f1_score: {f1_score(y_test, y_rule_base):.3f}")
 
 以下是输出：
 
-![图片链接](../Images/969acd2480dfd8b7aa2f7713fd3bbe0d.png)
+![图片链接](img/969acd2480dfd8b7aa2f7713fd3bbe0d.png)
 
 尽管模型的性能更好，基于规则的方法的性能仍然可能相当不错。
 
@@ -603,23 +603,23 @@ matched_scores = scores_tb[is_matched_tb]
 
 1.  **处理不完整相似性矩阵的能力**
 
-    由于实体解析过程不会在每个可能的对上计算相似性（可以描述为N乘以N矩阵），因此算法必须能够处理不完整的相似性矩阵（或匹配对列表）。
+    由于实体解析过程不会在每个可能的对上计算相似性（可以描述为 N 乘以 N 矩阵），因此算法必须能够处理不完整的相似性矩阵（或匹配对列表）。
 
 1.  **可扩展性**
 
     实体解析通常处理大型数据集，因此算法能够处理此类数据非常重要。在大数据情况下，像层次聚类这样的高复杂度算法可能不实际。
 
-对于聚类，我们将研究三种主要的单遍聚类算法：分区（即连接组件）、中心聚类和合并中心聚类，它们都满足要求。这些算法非常高效，因为它们通过一次扫描（或O(n)时间复杂度）候选对列表来创建集群，尽管其中一些算法要求列表按相似性分数排序。
+对于聚类，我们将研究三种主要的单遍聚类算法：分区（即连接组件）、中心聚类和合并中心聚类，它们都满足要求。这些算法非常高效，因为它们通过一次扫描（或 O(n)时间复杂度）候选对列表来创建集群，尽管其中一些算法要求列表按相似性分数排序。
 
-![图片链接](../Images/07ea1680d7018fe8a75c87b34d9a83a4.png)
+![图片链接](img/07ea1680d7018fe8a75c87b34d9a83a4.png)
 
-单遍聚类算法（来源：[http://www.vldb.org/pvldb/vol2/vldb09-1025.pdf](http://www.vldb.org/pvldb/vol2/vldb09-1025.pdf)）
+单遍聚类算法（来源：[`www.vldb.org/pvldb/vol2/vldb09-1025.pdf`](http://www.vldb.org/pvldb/vol2/vldb09-1025.pdf)）
 
 ## 划分/连通组件
 
 该算法通过最初将每个节点分配到其单独的集群来启动聚类。然后，它对匹配对的列表进行单次扫描。如果发现不属于同一集群的连接节点，它将合并它们的集群。简而言之，它通过将所有连接节点通过边（即通过配对的匹配记录）分组形成一个集群。该算法可能会创建通过长路径连接不相似记录的集群。
 
-连通组件聚类可以使用Scipy模块执行，如下面的代码所示。在执行之前，你需要将配对列表转换为邻接矩阵。
+连通组件聚类可以使用 Scipy 模块执行，如下面的代码所示。在执行之前，你需要将配对列表转换为邻接矩阵。
 
 ```py
 from scipy.sparse.csgraph import connected_components
@@ -642,7 +642,7 @@ cc_clusters = connected_components_from_pairs(matched_pairs, len(df))
 
 该算法[[5]](#299e)执行聚类，其中每个集群都有一个中心，并且每个集群中的所有记录都与该集群的中心相似。它要求相似对的列表按相似度分数的降序排序。然后，算法通过对排序列表的单次扫描来执行聚类。当第一次在扫描中遇到节点`u`时，它被指定为集群中心。任何后续与`u`相似的节点`v`（即，出现在列表中的对`(u, v)`中）都被分配到`u`的集群中，并且在处理过程中不再考虑。
 
-![](../Images/30e7bb903d184ed17162526ea0dd62e7.png)
+![](img/30e7bb903d184ed17162526ea0dd62e7.png)
 
 中心聚类示例（图像由作者提供）
 
@@ -650,7 +650,7 @@ cc_clusters = connected_components_from_pairs(matched_pairs, len(df))
 
 该算法[[6]](#d172)的功能类似于中心聚类，但每当一个与集群`cᵢ`的中心相似的记录也与`cⱼ`的中心相似时，就会合并两个集群`cᵢ`和`cⱼ`。请注意，当两个集群合并时，它不会选择一个单一的中心节点，这意味着合并的集群可以有多个中心节点。该算法可以通过类似的方式进行，即通过对相似对的列表进行单次扫描，同时跟踪通过合并集群连接的记录。
 
-![](../Images/d7ffac0d99cbdc94df6091902cde9669.png)
+![](img/d7ffac0d99cbdc94df6091902cde9669.png)
 
 合并中心聚类示例（图像由作者提供）
 
@@ -733,13 +733,13 @@ mc_clusters = connected_components_from_pairs(merge_cluster_pairs, len(df))
 
 ***Rand Index*** *= (TP + TN) / 所有可能对数的总数*
 
-![](../Images/64c13a26cc139266e495ea3778ee4fb8.png)
+![](img/64c13a26cc139266e495ea3778ee4fb8.png)
 
 Rand Index 计算示例（图片由作者提供）
 
 调整后的 Rand Index 是 Rand Index 的一种修改版本，已为偶然性进行修正。该调整考虑了随机分配的聚类结果可能产生的随机一致性。
 
-![](../Images/495cfc03deac0d5898fdc893bd4a7a1c.png)
+![](img/495cfc03deac0d5898fdc893bd4a7a1c.png)
 
 调整后的 Rand Index 的方程
 
@@ -792,7 +792,7 @@ compare_clusters(cluster_list, cluster_names, df.CID)
 
 下面是输出结果。
 
-![](../Images/ac1808afd199a87e6b00c6a31850c4e1.png)
+![](img/ac1808afd199a87e6b00c6a31850c4e1.png)
 
 从表中可以看出，连接组件生成的簇较大且簇数最少，而连接组件与 Merge-Center 簇之间的差距最小。相反，Center 簇生成的簇较小且数量最多。请注意，所有三个簇的 Rand Index 都是完美的，因为它们有大量的簇，使得簇间对形成主导地位（即即使是随机簇也会得到相当的 Rand Index）。然而，如果你查看调整后的 Rand Index，Merge-Center 聚类表现最佳，其与连接组件的差异很小。
 

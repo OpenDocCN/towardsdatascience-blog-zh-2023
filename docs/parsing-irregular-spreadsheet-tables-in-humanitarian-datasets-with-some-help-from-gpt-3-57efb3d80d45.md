@@ -1,34 +1,34 @@
 # 在人道主义数据集中解析不规则电子表格（借助 GPT-3 的帮助）
 
-> 原文：[https://towardsdatascience.com/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45?source=collection_archive---------2-----------------------#2023-02-24](https://towardsdatascience.com/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45?source=collection_archive---------2-----------------------#2023-02-24)
+> 原文：[`towardsdatascience.com/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45?source=collection_archive---------2-----------------------#2023-02-24`](https://towardsdatascience.com/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45?source=collection_archive---------2-----------------------#2023-02-24)
 
 ## 处理不规则 Excel 表格，无需使用硬编码规则
 
-[](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)[![马修·哈里斯](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------) [马修·哈里斯](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)![马修·哈里斯](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------) [马修·哈里斯](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----57efb3d80d45---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------) · 26 分钟阅读 · 2023年2月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F57efb3d80d45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----57efb3d80d45---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----57efb3d80d45---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------) · 26 分钟阅读 · 2023 年 2 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F57efb3d80d45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----57efb3d80d45---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F57efb3d80d45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&source=-----57efb3d80d45---------------------bookmark_footer-----------)![](../Images/0fbcce7550af12dc6d701ff00255fbc1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F57efb3d80d45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&source=-----57efb3d80d45---------------------bookmark_footer-----------)![](img/0fbcce7550af12dc6d701ff00255fbc1.png)
 
 由 DALL-E2 根据提示“10 张木桌的画作”创作。上图中有 9 张桌子。
 
 ***简短说明***
 
-*作为* [*之前的研究*](/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d) *的一部分，使用了来自* [*人道主义数据交换*](https://data.humdata.org/) *的数据，我不得不分析成千上万的Excel文件，这些文件中的表格常常难以解析成数据库表。文件来自全球数百个组织时，合并单元格、不规则布局、层次化列和注释难以通过基于规则的解析来预见。在这篇文章中，我探讨了使用GPT-3的零-shot、单-shot和推理补全来重新格式化不规则（小型）表格，并微调模型以预测表格属性，从而用于准确解析。*
+*作为* *之前的研究* *的一部分，使用了来自* [*人道主义数据交换*](https://data.humdata.org/) *的数据，我不得不分析成千上万的 Excel 文件，这些文件中的表格常常难以解析成数据库表。文件来自全球数百个组织时，合并单元格、不规则布局、层次化列和注释难以通过基于规则的解析来预见。在这篇文章中，我探讨了使用 GPT-3 的零-shot、单-shot 和推理补全来重新格式化不规则（小型）表格，并微调模型以预测表格属性，从而用于准确解析。*
 
-在我的旅行中，有不少次需要查看大量Excel文件，以了解它们包含的数据、数据的结构如何，以及将其清理成可以处理的形式所需的工作。大部分情况下，只要数据规则且列标题整齐，这个过程相当简单。然而，现实从未那么简单，这些文件中的表格往往以不完美的格式存在，难以解析成可以上传到关系数据库的数据框。Excel支持许多功能，如数据透视表和单元格合并，人们使用这些功能创建各种各样的布局，包括空白行、随机文本等等！
+在我的旅行中，有不少次需要查看大量 Excel 文件，以了解它们包含的数据、数据的结构如何，以及将其清理成可以处理的形式所需的工作。大部分情况下，只要数据规则且列标题整齐，这个过程相当简单。然而，现实从未那么简单，这些文件中的表格往往以不完美的格式存在，难以解析成可以上传到关系数据库的数据框。Excel 支持许多功能，如数据透视表和单元格合并，人们使用这些功能创建各种各样的布局，包括空白行、随机文本等等！
 
 这里有一个例子来说明……
 
-![](../Images/b8a93c73e798926ce23cb65154d977a4.png)
+![](img/b8a93c73e798926ce23cb65154d977a4.png)
 
-Excel中的不规则表格示例，带有空白顶部行、标签和合并单元格。对人类来说完全可读，但对数据科学来说是解析的挑战。该文件来自[人道主义数据交换](https://data.humdata.org/dataset/kenya-number-of-acreage-under-irrigation-in-bomet-county)
+Excel 中的不规则表格示例，带有空白顶部行、标签和合并单元格。对人类来说完全可读，但对数据科学来说是解析的挑战。该文件来自[人道主义数据交换](https://data.humdata.org/dataset/kenya-number-of-acreage-under-irrigation-in-bomet-county)
 
-如果我们直接将上述文件读入Pandas中……
+如果我们直接将上述文件读入 Pandas 中……
 
 ```py
 import pandas as pd
@@ -39,15 +39,15 @@ display(df)
 
 我们得到这个……
 
-![](../Images/5089756e01020858fd71468ba8fd5fab.png)
+![](img/5089756e01020858fd71468ba8fd5fab.png)
 
-Pandas数据框在解析Excel表格后的示例，其中包含空行和合并单元格，以指示层次列。示例数据来自[人道主义数据交换](https://data.humdata.org/dataset/kenya-production-of-rice-in-irrigation-schemes)
+Pandas 数据框在解析 Excel 表格后的示例，其中包含空行和合并单元格，以指示层次列。示例数据来自[人道主义数据交换](https://data.humdata.org/dataset/kenya-production-of-rice-in-irrigation-schemes)
 
 将其加载到数据库中会导致数据几乎无法使用，因为……
 
 1.  右上角单元格中有一个表格标题。
 
-1.  列‘Unnamed: 1’的标题实际上是第一列第5行的内容“你拥有的土地的平均面积是多少……”
+1.  列‘Unnamed: 1’的标题实际上是第一列第 5 行的内容“你拥有的土地的平均面积是多少……”
 
 1.  列‘Unnamed:2’和‘Unnamed:3’是分为’N‘ 数值和‘%’ 百分比值的汇总总数。
 
@@ -55,19 +55,19 @@ Pandas数据框在解析Excel表格后的示例，其中包含空行和合并单
 
 这也不*那么*糟糕，对吧？
 
-当然，可以向[Pandas read_excel](https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html)提供参数，将层次列转换为索引，然后可以将其合并为一行。或者，我们可以使用[Openpyxl](https://openpyxl.readthedocs.io/en/stable/)中关于Excel自身的合并单元格的信息进行操作。然而，这些方法需要对表格有了解——特别是标题在哪里结束、数据从哪里开始以及层次列的结构——这是我们在处理成千上万的电子表格时可能不总是拥有的奢侈品。对大量文件进行基于规则的解析可能耗时且脆弱，需要随着新布局的出现而持续维护。
+当然，可以向[Pandas read_excel](https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html)提供参数，将层次列转换为索引，然后可以将其合并为一行。或者，我们可以使用[Openpyxl](https://openpyxl.readthedocs.io/en/stable/)中关于 Excel 自身的合并单元格的信息进行操作。然而，这些方法需要对表格有了解——特别是标题在哪里结束、数据从哪里开始以及层次列的结构——这是我们在处理成千上万的电子表格时可能不总是拥有的奢侈品。对大量文件进行基于规则的解析可能耗时且脆弱，需要随着新布局的出现而持续维护。
 
-其实，我并不是唯一一个遇到这个问题的人！解析不规则表格是一项正在积极研究的挑战。例如，微软的作者展示了利用卷积神经网络开发的一个名为‘TableSense’的算法的出色成果[[1](https://arxiv.org/abs/2106.13500)]。这种技术将Excel表格视作图像来处理，但具有更丰富的特征化，因为每个单元格可能具有多种属性和数据类型，还包括格式化和合并特征。非常酷。我希望像这样的精彩工作能尽快纳入微软的产品中，但在此之前，我想探索一些其他的方法。
+其实，我并不是唯一一个遇到这个问题的人！解析不规则表格是一项正在积极研究的挑战。例如，微软的作者展示了利用卷积神经网络开发的一个名为‘TableSense’的算法的出色成果[[1](https://arxiv.org/abs/2106.13500)]。这种技术将 Excel 表格视作图像来处理，但具有更丰富的特征化，因为每个单元格可能具有多种属性和数据类型，还包括格式化和合并特征。非常酷。我希望像这样的精彩工作能尽快纳入微软的产品中，但在此之前，我想探索一些其他的方法。
 
-值得注意的是，我的使用案例不仅仅是识别表格在工作表中的范围（参见[微软论文的训练数据](https://github.com/microsoft/TableSense/blob/main/dataset/Table%20range%20annotations.txt)），还包括表格中的元素，以便将不规则的格式转换为可以轻松导入数据库的格式。主要挑战是Excel中的层次列，将这些层次列展平成一个单独的行，从而捕捉上层合并单元格中的信息。听起来解决起来很简单，但挑战是：标题在哪里结束，数据从哪里开始？这对我们人类来说显而易见，但令人惊讶的是，当用代码处理工作表时，这样简单的事情在现实世界中可能会变得非常嘈杂。
+值得注意的是，我的使用案例不仅仅是识别表格在工作表中的范围（参见[微软论文的训练数据](https://github.com/microsoft/TableSense/blob/main/dataset/Table%20range%20annotations.txt)），还包括表格中的元素，以便将不规则的格式转换为可以轻松导入数据库的格式。主要挑战是 Excel 中的层次列，将这些层次列展平成一个单独的行，从而捕捉上层合并单元格中的信息。听起来解决起来很简单，但挑战是：标题在哪里结束，数据从哪里开始？这对我们人类来说显而易见，但令人惊讶的是，当用代码处理工作表时，这样简单的事情在现实世界中可能会变得非常嘈杂。
 
-鉴于最近对生成式 AI 和大型语言模型（LLMs）的关注，我想知道也许[OpenAI 的 GPT-3](https://openai.com/blog/gpt-3-apps/)可能会接受这个挑战。这些模型在从互联网提取的大量数据上进行了训练，其中包括表格和CSV文件，因此它们可能在处理我们这些疯狂人类拼凑的表格的某些细节方面会很有用。
+鉴于最近对生成式 AI 和大型语言模型（LLMs）的关注，我想知道也许[OpenAI 的 GPT-3](https://openai.com/blog/gpt-3-apps/)可能会接受这个挑战。这些模型在从互联网提取的大量数据上进行了训练，其中包括表格和 CSV 文件，因此它们可能在处理我们这些疯狂人类拼凑的表格的某些细节方面会很有用。
 
 # 提示 GPT-3 清理（一个小的）表格
 
 我们将首先尝试将问题作为零样本和少量样本任务解决，然后再转向使用微调技术。
 
-![](../Images/23eef763f4af285bab56ce5104601dbc.png)
+![](img/23eef763f4af285bab56ce5104601dbc.png)
 
 零样本、单样本和少样本任务，与传统的微调对比。上面的面板展示了用语言模型执行任务的四种方法。来源于 Brown 等人 [[2](https://arxiv.org/pdf/2005.14165.pdf)]。
 
@@ -129,7 +129,7 @@ completions = ai.Completion.create(
 Markdown(completions.choices[0].text)
 ```
 
-![](../Images/d0bff692e6f0aa17d92fe2902f2d8efe.png)
+![](img/d0bff692e6f0aa17d92fe2902f2d8efe.png)
 
 它丢弃了不必要的行，将数据转换为一个规范的表格，带有列标题，但仔细观察会发现，它丢失了一些关键信息，如按性别的分类。这是经典的[幻觉](https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence))现象，看起来很可信，但却是错误的。
 
@@ -155,7 +155,7 @@ completions = ai.Completion.create(
 Markdown(completions.choices[0].text)
 ```
 
-![](../Images/f9ec19a4d12334d819089ceb85fdbbad.png)
+![](img/f9ec19a4d12334d819089ceb85fdbbad.png)
 
 *看起来*不错！几乎所有的正确列标题都来自我们 CSV 文件中的合并单元格，这实际上相当惊人。然而，抽查几个单元格显示，尽管许多是正确的，但也有一些不正确。此外，上面的“总体”被分成了男性和女性，这是不正确的。
 
@@ -174,7 +174,7 @@ completions = ai.Completion.create(
 Markdown(completions.choices[0].text)
 ```
 
-![](../Images/7274d124424e64c6d953449273ad69d4.png)
+![](img/7274d124424e64c6d953449273ad69d4.png)
 
 不无道理，尽管值不正确，但布局完全不同。可重复性对我们的任务非常重要，我们应该能够在每次处理运行中以完全相同的方式处理表格数据。
 
@@ -182,7 +182,7 @@ Markdown(completions.choices[0].text)
 
 如果我们在表格中提供更多上下文会怎么样？CSV 并不是很具表现力，例如，层级标题中的合并列告诉人类这些列是分组的，但 CSV 文件并未捕捉到这一点……
 
-![](../Images/3e5d8eb9550c0dd1d246816daeccfb5d.png)
+![](img/3e5d8eb9550c0dd1d246816daeccfb5d.png)
 
 ```py
 1,,,OVERALL,,Sub county,,,,,,,
@@ -268,7 +268,7 @@ merged_table, sheet, hasmerged = pad_merged_cells(sheet)
 display(merged_table)
 ```
 
-![](../Images/1790b27c754b07ba4517a577447e222c.png)
+![](img/1790b27c754b07ba4517a577447e222c.png)
 
 表格中合并的单元格被取消合并，并用合并值填充，以在 CSV 文件格式中提供上下文。
 
@@ -310,11 +310,11 @@ completions = ai.Completion.create(
 Markdown(completions.choices[0].text)
 ```
 
-![](../Images/780e6bd57ae7ca6db636a442ddae67c0.png)
+![](img/780e6bd57ae7ca6db636a442ddae67c0.png)
 
 同样的，但温度=1.0，只是为了好玩 …
 
-![](../Images/f2a7e421879c0e4b08e1525b6576b50e.png)
+![](img/f2a7e421879c0e4b08e1525b6576b50e.png)
 
 稍微好了一些，但总是*有些*地方不太对。缺失的类别，单元格值偏移，如果我们需要准确表示源数据，两个表格都无法使用。
 
@@ -336,13 +336,13 @@ Markdown(completions.choices[0].text)
 
 现在，让我们在提示中提供一个示例。我从人道数据交换获取了一个类似的 Excel 文件 …
 
-![](../Images/b6734984ce006423ea85a20d05d2a155.png)
+![](img/b6734984ce006423ea85a20d05d2a155.png)
 
 我们将在单次提示中使用的表格。此文件来源于 [人道数据交换](https://data.humdata.org/dataset/kenya-production-of-rice-in-irrigation-schemes)
 
 我们希望这被处理成如下所示 …
 
-![](../Images/7ee9f834c88fea08684d2810cfe5bd4f.png)
+![](img/7ee9f834c88fea08684d2810cfe5bd4f.png)
 
 我们的示例文件在重新格式化后的样子
 
@@ -350,7 +350,7 @@ Markdown(completions.choices[0].text)
 
 将我们的输入表格转换为 CSV 并取消合并合并的单元格，如上所述，我们得到 …
 
-![](../Images/f68f7f17e4a196691c5f3dd6e854da4e.png)
+![](img/f68f7f17e4a196691c5f3dd6e854da4e.png)
 
 我们现在可以构建我们的单次提示（假设温度为零以便可重复） …
 
@@ -485,7 +485,7 @@ Result:
 
 这是 GPT-3 的完成结果，转换为数据框以便更容易显示 …
 
-![](../Images/dce195b89914d22ee19d93cb75f89cf2.png)
+![](img/dce195b89914d22ee19d93cb75f89cf2.png)
 
 从单次提示生成的表格，重新格式化具有层次结构标题的表格（完成结果是 CSV，这里为便于展示转换为 pandas 数据框）
 
@@ -493,11 +493,11 @@ Result:
 
 让我们使用相同的示例表格来重新格式化一个具有不同布局和内容数据的表格 …
 
-![](../Images/9e175fd03da4432492fa789dfb8f5f06.png)
+![](img/9e175fd03da4432492fa789dfb8f5f06.png)
 
 使用相同的代码处理得到的是 …
 
-![](../Images/4362466354eb63c092183ca9952b5ba1.png)
+![](img/4362466354eb63c092183ca9952b5ba1.png)
 
 这很接近，标题完全正确，但农场列向左移动了。我们的单次提示在重新格式化非常相似的表格时表现不错，但稍微的变化导致了较差的结果。
 
@@ -590,19 +590,19 @@ If we combine each colummn of rows 3 to 8 by concatenating vertically, we get
 
 这很正确！重新格式化后的表格正是我们想要的 …
 
-![](../Images/b44674a075c338a587502b102c6d2ca1.png)
+![](img/b44674a075c338a587502b102c6d2ca1.png)
 
 如果我们在单次提示中提供推理，结果会有所改善
 
 也就是说，我们提供的任务并不是很好，因为尽管内容与提供的示例不同，但标题布局仍然相似。事实上，如果我们稍微调整一下要重新格式化的表格并添加一个额外的“有机”列 …
 
-![](../Images/886cf8bea9babb627b68d1e2fa6fb8d2.png)
+![](img/886cf8bea9babb627b68d1e2fa6fb8d2.png)
 
 向输入中添加一个额外的列
 
 预测现在不正确 …
 
-![](../Images/cbfa4266f749d5f3981baee97d382890.png)
+![](img/cbfa4266f749d5f3981baee97d382890.png)
 
 只是标题行中多了*一个*额外的逗号，这导致所有内容向右移动。
 
@@ -610,7 +610,7 @@ If we combine each colummn of rows 3 to 8 by concatenating vertically, we get
 
 # 少量示例…. 或者说不是
 
-下一个方法可能是提供多个示例。然而，表格片段需要大量的令牌（稍后会详细说明），所以如果我们必须在提示中提供多个示例，再加上结果中的令牌，就会触及Open API的令牌限制。对于davinci模型，目前的限制为[4,000](https://platform.openai.com/docs/models/gpt-3)个令牌。此外，由于我们按令牌收费，对于像[DataKind](https://www.datakind.org/)这样的小型非营利组织，发送和接收大量令牌可能会变得昂贵。更长的提示还有性能影响，因此对于这个任务没有探索少样本提示。
+下一个方法可能是提供多个示例。然而，表格片段需要大量的令牌（稍后会详细说明），所以如果我们必须在提示中提供多个示例，再加上结果中的令牌，就会触及 Open API 的令牌限制。对于 davinci 模型，目前的限制为[4,000](https://platform.openai.com/docs/models/gpt-3)个令牌。此外，由于我们按令牌收费，对于像[DataKind](https://www.datakind.org/)这样的小型非营利组织，发送和接收大量令牌可能会变得昂贵。更长的提示还有性能影响，因此对于这个任务没有探索少样本提示。
 
 所以我决定暂时跳过少样本学习。
 
@@ -618,9 +618,9 @@ If we combine each colummn of rows 3 to 8 by concatenating vertically, we get
 
 探索零样本和单样本提示很有趣，如果这些方法在这个用例中有效，将会取得惊人的结果。未来，随着模型的改进，这可能会成为一个可行的选项，但目前，重新定义任务可能更有意义。
 
-另一种方法是通过[微调](https://platform.openai.com/docs/guides/fine-tuning)提供*大量*示例。正如OpenAI所述：
+另一种方法是通过[微调](https://platform.openai.com/docs/guides/fine-tuning)提供*大量*示例。正如 OpenAI 所述：
 
-*微调可以通过提供以下内容来让你更好地利用API提供的模型：*
+*微调可以通过提供以下内容来让你更好地利用 API 提供的模型：*
 
 1.  *比提示设计产生更高质量的结果*
 
@@ -630,21 +630,21 @@ If we combine each colummn of rows 3 to 8 by concatenating vertically, we get
 
 1.  *更低延迟的请求*
 
-起初，我考虑通过提供GPT-3（i）原始表格的提示（合并单元格未合并）和（ii）作为重新格式化表格的完成项来进行微调。然而，这种方法的挑战在于，它仍然使用了大量的令牌，尤其是我们现在需要使用数百个示例。
+起初，我考虑通过提供 GPT-3（i）原始表格的提示（合并单元格未合并）和（ii）作为重新格式化表格的完成项来进行微调。然而，这种方法的挑战在于，它仍然使用了大量的令牌，尤其是我们现在需要使用数百个示例。
 
-与其传递原始表格片段，不如尝试使用该表格的属性，并让GPT-3预测我们可以用来解析的关键进一步属性……
+与其传递原始表格片段，不如尝试使用该表格的属性，并让 GPT-3 预测我们可以用来解析的关键进一步属性……
 
 # 重新定义任务 — 使用表格属性作为提示
 
-作为一个人（好吧，*大部分*是人），当我扫描Excel中的表格时，我可以通过查看值来识别结构，并决定数据的位置。
+作为一个人（好吧，*大部分*是人），当我扫描 Excel 中的表格时，我可以通过查看值来识别结构，并决定数据的位置。
 
-![](../Images/0b92fbbdfffa07263c0ca4bafb60f3c6.png)
+![](img/0b92fbbdfffa07263c0ca4bafb60f3c6.png)
 
 确定表格中的数据部分是将其解析成规则表格结构的关键
 
 一旦我知道数据开始的行，就很容易从上面的行推断出标题层次，并将它们合并成一个单一的标题行，以创建一个整齐、规则的表格来使用……
 
-![](../Images/81f481c588bb27c7779ca9dfc6c34b54.png)
+![](img/81f481c588bb27c7779ca9dfc6c34b54.png)
 
 处理后的表格具有平面标题，容易导入关系数据库
 
@@ -789,7 +789,7 @@ First increased numeric row (excluding years): 6
 
 这些将是我们用于微调模型的提示。
 
-为了创建微调文件的补全，我使用了肯尼亚的人道主义数据交换数据集（有关如何提取 Excel 文件的更多细节，请参见[这里](/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d)）。解析文件并循环遍历每个工作表，我生成了提示。
+为了创建微调文件的补全，我使用了肯尼亚的人道主义数据交换数据集（有关如何提取 Excel 文件的更多细节，请参见这里）。解析文件并循环遍历每个工作表，我生成了提示。
 
 我使用了以下逻辑来估算数据开始的行号，使用了上述表格参数……
 
@@ -1005,13 +1005,13 @@ F1: 0.99
 
 **步骤 1 — 读取我们的数据**
 
-![](../Images/9f631ffdb4c440854098cc64a07b849b.png)
+![](img/9f631ffdb4c440854098cc64a07b849b.png)
 
 示例电子表格，具有不同的层级标题和单元格中的备注
 
 **步骤 2 — 取消合并的列并填充合并值**
 
-![](../Images/e9623db509bee6348ad8d47e1441e67a.png)
+![](img/e9623db509bee6348ad8d47e1441e67a.png)
 
 Pandas 数据框在通过‘pad_merged_cells’函数处理后，用于取消合并并填充合并值
 
@@ -1036,7 +1036,7 @@ GPT-3 prediction: 9
 
 **步骤 5 — 现在我们知道了数据行的开始位置，将上方的列标题连接成一行**
 
-![](../Images/457ae2d038f5792578767b18b888aef2.png)
+![](img/457ae2d038f5792578767b18b888aef2.png)
 
 解析后的表格，具有折叠的层级列，没有随机标签。现在可以导入到数据库中。
 

@@ -1,28 +1,28 @@
 # dbt 增量模型在大数据中的威力
 
-> 原文：[https://towardsdatascience.com/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=collection_archive---------5-----------------------#2023-02-09](https://towardsdatascience.com/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=collection_archive---------5-----------------------#2023-02-09)
+> 原文：[`towardsdatascience.com/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=collection_archive---------5-----------------------#2023-02-09`](https://towardsdatascience.com/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=collection_archive---------5-----------------------#2023-02-09)
 
 ## 在 BigQuery 上的实验
 
-[](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)[![Suela Isaj](../Images/2749bad708a0446216a7e0bb6656026c.png)](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------) [Suela Isaj](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)
+[](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)![Suela Isaj](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------) [Suela Isaj](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6aa4db597456&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&user=Suela+Isaj&userId=6aa4db597456&source=post_page-6aa4db597456----c8ba821eb078---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------) ·5分钟阅读·2023年2月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc8ba821eb078&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&user=Suela+Isaj&userId=6aa4db597456&source=-----c8ba821eb078---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6aa4db597456&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&user=Suela+Isaj&userId=6aa4db597456&source=post_page-6aa4db597456----c8ba821eb078---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------) ·5 分钟阅读·2023 年 2 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc8ba821eb078&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&user=Suela+Isaj&userId=6aa4db597456&source=-----c8ba821eb078---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc8ba821eb078&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&source=-----c8ba821eb078---------------------bookmark_footer-----------)
 
-如果你在使用 dbt 模型处理几MB或GB的数据，这篇文章不适合你；你已经做得很好了！这篇文章是为那些需要在 BigQuery 中扫描 TB 级数据，以便计算某些计数、总和或滚动总计的可怜的灵魂准备的，这些计算可能是每天进行的，甚至更频繁。在这篇文章中，我将介绍一种针对“大数据”进行便宜的数据摄取和数据消费的技术。
+如果你在使用 dbt 模型处理几 MB 或 GB 的数据，这篇文章不适合你；你已经做得很好了！这篇文章是为那些需要在 BigQuery 中扫描 TB 级数据，以便计算某些计数、总和或滚动总计的可怜的灵魂准备的，这些计算可能是每天进行的，甚至更频繁。在这篇文章中，我将介绍一种针对“大数据”进行便宜的数据摄取和数据消费的技术。
 
-![](../Images/a7ab7fb73c98a2f43f123fd1f58a350e.png)
+![](img/a7ab7fb73c98a2f43f123fd1f58a350e.png)
 
 图片由 [Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-让我们假设我们有以时间戳为粒度的原始数据，并且我们需要计算每个客户的总数。此外，我们希望进行按天和按月的分析，因为我们需要在不同粒度上汇总数据。我将以 Twitter 点赞为例，其中 `user_id` 是 Twitter 用户，`post_id` 是 Twitter 帖子，`timestamp` 是 `user_id` 点赞 `post_id` 的时间戳。原始数据以天为粒度存储为分区表。如果你的原始数据没有分区，这已经是你的第一个改进，因此考虑将原始数据迁移到分区表，参考 [这个](https://www.revisitclass.com/gcp/how-to-add-partition-to-existing-table-in-bigquery/) 示例。确保按需设置分区过滤器 [https://cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter](https://cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter)，以避免扫描所有原始数据的意外情况。
+让我们假设我们有以时间戳为粒度的原始数据，并且我们需要计算每个客户的总数。此外，我们希望进行按天和按月的分析，因为我们需要在不同粒度上汇总数据。我将以 Twitter 点赞为例，其中 `user_id` 是 Twitter 用户，`post_id` 是 Twitter 帖子，`timestamp` 是 `user_id` 点赞 `post_id` 的时间戳。原始数据以天为粒度存储为分区表。如果你的原始数据没有分区，这已经是你的第一个改进，因此考虑将原始数据迁移到分区表，参考 [这个](https://www.revisitclass.com/gcp/how-to-add-partition-to-existing-table-in-bigquery/) 示例。确保按需设置分区过滤器 [`cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter`](https://cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter)，以避免扫描所有原始数据的意外情况。
 
-![](../Images/b10e53c96af999ec201f8a59190e72a8.png)
+![](img/b10e53c96af999ec201f8a59190e72a8.png)
 
 Twitter 点赞的原始日志
 
@@ -37,7 +37,7 @@ FROM twitter_likes
 
 然而，Twitter 上的点赞是*不可变*的事件，无法被修改。这允许我逐步加载这些数据。我将遍历原始数据来加载当天的数据，检查每日汇总的数据以加载本月的数据，最后通过每日数据来更新发生变化的用户的点赞数。
 
-对于这两种增量模型，我将使用静态分区技术，这被证明是性能最优的 [https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981)。这意味着我将对分区进行操作而不是扫描数据，因此我会选择最近的两个日期分区（以防我有延迟到达的事件），对它们进行汇总，然后将其添加到我的 dbt 模型 `twitter_likes_daily` 中。
+对于这两种增量模型，我将使用静态分区技术，这被证明是性能最优的 [`discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981`](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981)。这意味着我将对分区进行操作而不是扫描数据，因此我会选择最近的两个日期分区（以防我有延迟到达的事件），对它们进行汇总，然后将其添加到我的 dbt 模型 `twitter_likes_daily` 中。
 
 ```py
 {% set partitions_to_replace = [
@@ -104,7 +104,7 @@ GROUP BY 1, 2
 
 `twitter_likes_monthly` 的大小为 14.32 GB，而一次加载仅扫描 2.5 GB！
 
-现在让我们来看看总数。在这种情况下，我们可以决定运行一个 `merge` 操作，只更新过去 2 天内有新点赞的用户的总数。其余用户没有更新。因此，在这种情况下，我可以从 `twitter_likes_daily` 中挑选出今天有点赞的用户，计算他们在 `twitter_likes_monthly` 中的总数，最后将它们合并到包含总数的表 `twitter_likes_total` 中。请注意，该表使用 `user_id` 进行 `clustered`，因为与 id 的集群合并比常规合并更高效 [https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981)。
+现在让我们来看看总数。在这种情况下，我们可以决定运行一个 `merge` 操作，只更新过去 2 天内有新点赞的用户的总数。其余用户没有更新。因此，在这种情况下，我可以从 `twitter_likes_daily` 中挑选出今天有点赞的用户，计算他们在 `twitter_likes_monthly` 中的总数，最后将它们合并到包含总数的表 `twitter_likes_total` 中。请注意，该表使用 `user_id` 进行 `clustered`，因为与 id 的集群合并比常规合并更高效 [`discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981`](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981)。
 
 ```py
 {{

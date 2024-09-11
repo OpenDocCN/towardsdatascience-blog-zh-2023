@@ -1,16 +1,16 @@
 # 如何设计机器学习项目的路线图
 
-> 原文：[https://towardsdatascience.com/how-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48?source=collection_archive---------3-----------------------#2023-09-04](https://towardsdatascience.com/how-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48?source=collection_archive---------3-----------------------#2023-09-04)
+> 原文：[`towardsdatascience.com/how-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48?source=collection_archive---------3-----------------------#2023-09-04`](https://towardsdatascience.com/how-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48?source=collection_archive---------3-----------------------#2023-09-04)
 
-![](../Images/b9637340628d0d3a5c9ec8e1df41129a.png)
+![](img/b9637340628d0d3a5c9ec8e1df41129a.png)
 
 图片来源: [DreamStudio](https://dreamstudio.ai/)
 
-[](https://medium.com/@hdcouture?source=post_page-----1bbdb88bde48--------------------------------)[![Heather Couture](../Images/1ec5087480d7b9798b3006938619efa2.png)](https://medium.com/@hdcouture?source=post_page-----1bbdb88bde48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1bbdb88bde48--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1bbdb88bde48--------------------------------) [Heather Couture](https://medium.com/@hdcouture?source=post_page-----1bbdb88bde48--------------------------------)
+[](https://medium.com/@hdcouture?source=post_page-----1bbdb88bde48--------------------------------)![Heather Couture](https://medium.com/@hdcouture?source=post_page-----1bbdb88bde48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1bbdb88bde48--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1bbdb88bde48--------------------------------) [Heather Couture](https://medium.com/@hdcouture?source=post_page-----1bbdb88bde48--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe36b7f8e7180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48&user=Heather+Couture&userId=e36b7f8e7180&source=post_page-e36b7f8e7180----1bbdb88bde48---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1bbdb88bde48--------------------------------) ·10 min read·2023年9月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1bbdb88bde48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48&user=Heather+Couture&userId=e36b7f8e7180&source=-----1bbdb88bde48---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe36b7f8e7180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48&user=Heather+Couture&userId=e36b7f8e7180&source=post_page-e36b7f8e7180----1bbdb88bde48---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1bbdb88bde48--------------------------------) ·10 min read·2023 年 9 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1bbdb88bde48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-roadmap-for-a-machine-learning-project-1bbdb88bde48&user=Heather+Couture&userId=e36b7f8e7180&source=-----1bbdb88bde48---------------------clap_footer-----------)
 
 --
 
@@ -30,7 +30,7 @@
 
 这三种方法各有优点。如果新项目与之前建模的内容（包括数据和任务）非常相似，那么尝试已经实施过的建模方法可以非常快速地建立任务的基准。在这样做的过程中，你也可能发现需要在数据预处理或建模中适应的新挑战。
 
-这可能会引导你进入第#2步：探索和理解数据。或者你可能从这里开始。识别新数据集的独特需求至关重要。也许预处理或注释需要不同的处理方式。也许数据中存在需要清理的伪影，或者标签并不总是正确的。理解预处理和建模需要应对的挑战是至关重要的。
+这可能会引导你进入第#2 步：探索和理解数据。或者你可能从这里开始。识别新数据集的独特需求至关重要。也许预处理或注释需要不同的处理方式。也许数据中存在需要清理的伪影，或者标签并不总是正确的。理解预处理和建模需要应对的挑战是至关重要的。
 
 但有些团队忽略的步骤，且是使项目成功的关键步骤，就是文献调研。是否有其他人对类似的数据做过类似的任务建模？如果你所处理的数据类型很常见，那么你可能可以应用一个非常严格的“相似”定义。但如果你正在处理新的成像模式，或者面临新的任务，你可能需要放宽“相似”的定义来找到相关研究。
 
@@ -38,7 +38,7 @@
 
 当我与客户合作新项目时，路线图是第一步。路线图澄清了项目其余部分的工作范围。它减少了对需要实施内容的不确定性。它还降低了打转或在不成功的方法上浪费时间的可能性。通过在从头开始实施之前识别现有工具包，它节省了时间和金钱。而且它增加了项目成功的可能性。
 
-ML路线图涉及什么？让我带你了解核心组件。
+ML 路线图涉及什么？让我带你了解核心组件。
 
 # 1) 定义问题
 
@@ -100,7 +100,7 @@ ML路线图涉及什么？让我带你了解核心组件。
 
 +   需要什么类型的标注？像素级、补丁级和图像级是最常见的。
 
-+   已经使用了什么工具来辅助标注？标注是否可以来自其他模态？比如来自生物样本的分子分析，或像Open Street Map这样的现有标注集用于卫星图像。
++   已经使用了什么工具来辅助标注？标注是否可以来自其他模态？比如来自生物样本的分子分析，或像 Open Street Map 这样的现有标注集用于卫星图像。
 
 +   你的标注有多主观？研究或进行你自己的实验来评估观察者之间的一致性可以揭示这个挑战的程度。
 
@@ -134,9 +134,9 @@ ML路线图涉及什么？让我带你了解核心组件。
 
 通常，训练集、验证集和测试集是从可用数据中随机抽样的，同时保持所需的类别或目标变量的分布，以避免任何无意的偏差。当数据包含不同的组时，例如每个患者的多张图像、来自不同医疗中心的样本或来自不同地理区域的图像，需要对组进行更仔细的分层，以评估模型的泛化能力。来自同一组的所有样本应归入训练集、验证集或测试集中，而不是分布在三者之间。
 
-交叉验证技术，如k折交叉验证或留一法交叉验证，也可以用于通过系统地轮换数据以获得更可靠的性能估计，这在处理小数据集时尤其常见。
+交叉验证技术，如 k 折交叉验证或留一法交叉验证，也可以用于通过系统地轮换数据以获得更可靠的性能估计，这在处理小数据集时尤其常见。
 
-评估模型性能涉及在训练集、验证集和测试集上计算一个或多个指标。适用的指标取决于应用，但可能包括准确率、灵敏度、特异性、F1分数、AUC分数、DICE等。每个指标都将模型的预测与实际情况进行比较。
+评估模型性能涉及在训练集、验证集和测试集上计算一个或多个指标。适用的指标取决于应用，但可能包括准确率、灵敏度、特异性、F1 分数、AUC 分数、DICE 等。每个指标都将模型的预测与实际情况进行比较。
 
 在一些应用中，在测试集上计算指标可能足够进行验证。在其他应用中，这部分保留的数据可能与真实世界场景不够相似。也许你的模型需要在不同地理区域或医疗中心的患者身上进行工作，而你没有可用的标注训练数据。你仍然需要在外部数据集中验证你的模型，以模拟其在真实世界中的表现和泛化能力。
 

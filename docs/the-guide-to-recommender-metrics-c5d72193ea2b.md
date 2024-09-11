@@ -1,10 +1,10 @@
 # 推荐系统指南
 
-> 原文：[https://towardsdatascience.com/the-guide-to-recommender-metrics-c5d72193ea2b?source=collection_archive---------5-----------------------#2023-11-12](https://towardsdatascience.com/the-guide-to-recommender-metrics-c5d72193ea2b?source=collection_archive---------5-----------------------#2023-11-12)
+> 原文：[`towardsdatascience.com/the-guide-to-recommender-metrics-c5d72193ea2b?source=collection_archive---------5-----------------------#2023-11-12`](https://towardsdatascience.com/the-guide-to-recommender-metrics-c5d72193ea2b?source=collection_archive---------5-----------------------#2023-11-12)
 
 ## 在线评估推荐系统可能会比较棘手。
 
-[](https://dr-robert-kuebler.medium.com/?source=post_page-----c5d72193ea2b--------------------------------)[![Dr. Robert Kübler](../Images/3b8d8b88f76c0c43d9c305e3885e7ab9.png)](https://dr-robert-kuebler.medium.com/?source=post_page-----c5d72193ea2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c5d72193ea2b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c5d72193ea2b--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----c5d72193ea2b--------------------------------)
+[](https://dr-robert-kuebler.medium.com/?source=post_page-----c5d72193ea2b--------------------------------)![Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----c5d72193ea2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c5d72193ea2b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c5d72193ea2b--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----c5d72193ea2b--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc5d72193ea2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-guide-to-recommender-metrics-c5d72193ea2b&source=-----c5d72193ea2b---------------------bookmark_footer-----------)![](../Images/a0e23c68bcbb7f9ec133307392f474e1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc5d72193ea2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-guide-to-recommender-metrics-c5d72193ea2b&source=-----c5d72193ea2b---------------------bookmark_footer-----------)![](img/a0e23c68bcbb7f9ec133307392f474e1.png)
 
 图片由[Darius Cotoi](https://unsplash.com/@dariuscotoi?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)拍摄。
 
@@ -24,11 +24,11 @@
 
 要获得更详细的介绍，请参考我的另一篇文章，其中也展示了如何使用 TensorFlow 从零构建推荐系统。
 
-[](/introduction-to-embedding-based-recommender-systems-956faceb1919?source=post_page-----c5d72193ea2b--------------------------------) [## 基于嵌入的推荐系统简介
+[](/introduction-to-embedding-based-recommender-systems-956faceb1919?source=post_page-----c5d72193ea2b--------------------------------) ## 基于嵌入的推荐系统简介
 
 ### 学习在 TensorFlow 中构建一个简单的矩阵分解推荐系统
 
-towardsdatascience.com](/introduction-to-embedding-based-recommender-systems-956faceb1919?source=post_page-----c5d72193ea2b--------------------------------)
+towardsdatascience.com
 
 # 推荐系统的离线评估
 

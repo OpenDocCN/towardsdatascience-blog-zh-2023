@@ -1,16 +1,16 @@
 # 时间差(0)与常数-α蒙特卡洛方法在随机游走任务中的比较
 
-> 原文：[https://towardsdatascience.com/a-comparison-of-temporal-difference-0-and-constant-%CE%B1-monte-carlo-methods-on-the-random-walk-task-bc6497eb7c92?source=collection_archive---------4-----------------------#2023-08-24](https://towardsdatascience.com/a-comparison-of-temporal-difference-0-and-constant-%CE%B1-monte-carlo-methods-on-the-random-walk-task-bc6497eb7c92?source=collection_archive---------4-----------------------#2023-08-24)
+> 原文：[`towardsdatascience.com/a-comparison-of-temporal-difference-0-and-constant-%CE%B1-monte-carlo-methods-on-the-random-walk-task-bc6497eb7c92?source=collection_archive---------4-----------------------#2023-08-24`](https://towardsdatascience.com/a-comparison-of-temporal-difference-0-and-constant-%CE%B1-monte-carlo-methods-on-the-random-walk-task-bc6497eb7c92?source=collection_archive---------4-----------------------#2023-08-24)
 
-[![Tingsong Ou](../Images/459edc4bbd2353895acfb0f57eeddaa3.png)](https://medium.com/@outerrencedl?source=post_page-----bc6497eb7c92--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bc6497eb7c92--------------------------------) [Tingsong Ou](https://medium.com/@outerrencedl?source=post_page-----bc6497eb7c92--------------------------------)
+![Tingsong Ou](https://medium.com/@outerrencedl?source=post_page-----bc6497eb7c92--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc6497eb7c92--------------------------------) [Tingsong Ou](https://medium.com/@outerrencedl?source=post_page-----bc6497eb7c92--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa7aefc686327&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comparison-of-temporal-difference-0-and-constant-%CE%B1-monte-carlo-methods-on-the-random-walk-task-bc6497eb7c92&user=Tingsong+Ou&userId=a7aefc686327&source=post_page-a7aefc686327----bc6497eb7c92---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc6497eb7c92--------------------------------) ·9分钟阅读·2023年8月24日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa7aefc686327&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comparison-of-temporal-difference-0-and-constant-%CE%B1-monte-carlo-methods-on-the-random-walk-task-bc6497eb7c92&user=Tingsong+Ou&userId=a7aefc686327&source=post_page-a7aefc686327----bc6497eb7c92---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bc6497eb7c92--------------------------------) ·9 分钟阅读·2023 年 8 月 24 日
 
 --
 
-![](../Images/ab9d686103362e65da2658ebd5e1455b.png)
+![](img/ab9d686103362e65da2658ebd5e1455b.png)
 
 由 Midjourney 生成的图像，使用了付费订阅，符合一般商业条款[1]。
 
@@ -34,11 +34,11 @@ matplotlib==3.7.1
 
 常数-α MC 方法是一种常数步长参数 α 的常规 MC 方法，这个常数参数有助于使价值估计对最近的经验更加敏感。在实践中，α 值的选择取决于稳定性和适应性之间的权衡。以下是 MC 方法在时间 t 更新状态值函数的方程：
 
-![](../Images/13431a73d76db109b060dd58241e7e67.png)
+![](img/13431a73d76db109b060dd58241e7e67.png)
 
 TD(0) 是 TD(λ) 的一个特例，它只看一步前的状态，是最简单的 TD 学习形式。该方法使用 TD 误差更新状态值函数，TD 误差是指状态的估计值与奖励加上下一个状态的估计值之间的差异。一个常数步长参数 α 与上述 MC 方法中的作用相同。以下是 TD(0) 在时间 t 更新状态值函数的方程：
 
-![](../Images/07e6c9dc15bef8c2e744d21213d111e3.png)
+![](img/07e6c9dc15bef8c2e744d21213d111e3.png)
 
 一般来说，MC 和 TD 方法之间的差异体现在三个方面：
 
@@ -54,7 +54,7 @@ TD(0) 是 TD(λ) 的一个特例，它只看一步前的状态，是最简单的
 
 首先，我们可以用以下代码设置测试环境：
 
-![](../Images/035c80a603c34f01682cf5eda5591d09.png)
+![](img/035c80a603c34f01682cf5eda5591d09.png)
 
 图 1 左：环境设置。右：预设路径。来源：作者绘制的图
 
@@ -64,7 +64,7 @@ TD(0) 是 TD(λ) 的一个特例，它只看一步前的状态，是最简单的
 
 评估结果如下：
 
-![](../Images/e8aa51108e8a85e174624eb62ccfa1c4.png)
+![](img/e8aa51108e8a85e174624eb62ccfa1c4.png)
 
 图 2 TD(0) 和常数-α MC 评估结果。来源：作者绘制的图
 
@@ -74,11 +74,11 @@ TD(0) 是 TD(λ) 的一个特例，它只看一步前的状态，是最简单的
 
 # 随机游走任务
 
-随机游走任务是Sutton等人提出的一个简单的*马尔可夫奖励过程*，用于TD和MC预测目的[2]，如下图所示。在此任务中，代理从中心节点C开始。代理在每个节点上以相等的概率向右或向左迈一步。链条的两端有两个终止状态。进入左端的奖励为0，进入右端的奖励为+1。在终止之前的所有步骤生成的奖励为0。
+随机游走任务是 Sutton 等人提出的一个简单的*马尔可夫奖励过程*，用于 TD 和 MC 预测目的[2]，如下图所示。在此任务中，代理从中心节点 C 开始。代理在每个节点上以相等的概率向右或向左迈一步。链条的两端有两个终止状态。进入左端的奖励为 0，进入右端的奖励为+1。在终止之前的所有步骤生成的奖励为 0。
 
-![](../Images/b9ba3d8ff93a94f91a9f551d52a30843.png)
+![](img/b9ba3d8ff93a94f91a9f551d52a30843.png)
 
-图3 随机游走。来源：作者提供的图
+图 3 随机游走。来源：作者提供的图
 
 我们可以使用以下代码来创建随机游走环境：
 
@@ -103,35 +103,35 @@ Reward:          0 ← Node E → 1
 
 在随机策略下，环境中每个节点的真实值为[1/6, 2/6, 3/6, 4/6, 5/6]。该值通过使用贝尔曼方程的策略评估计算得出：
 
-![](../Images/482b1eb6918db8f72ff9f6a2eec4812c.png)
+![](img/482b1eb6918db8f72ff9f6a2eec4812c.png)
 
 我们的任务是找出两个算法估计的值与真实值的接近程度；我们可以任意假设算法产生的值函数离真实值函数更近，通过平均均方根误差（RMS）来衡量，表示性能更好。
 
-# TD(0)和常数-a MC在随机游走中的表现
+# TD(0)和常数-a MC 在随机游走中的表现
 
 ## 算法
 
 环境准备好后，我们可以开始在随机游走环境中运行这两种方法，并比较它们的表现。首先，让我们看一下这两个算法：
 
-![](../Images/8ea1e405f6d2f5574118c28586af4257.png)
+![](img/8ea1e405f6d2f5574118c28586af4257.png)
 
 来源：[latex](https://gist.github.com/terrence-ou/10dc3571be8fb9ae9dad92a7505633b6)中由作者编写的算法
 
-![](../Images/6b0e1dd91eb93046dfaa8b54d3ca21d5.png)
+![](img/6b0e1dd91eb93046dfaa8b54d3ca21d5.png)
 
 来源：[latex](https://gist.github.com/terrence-ou/5ab148962748c371ccd60b35c4feec51)中由作者编写的算法
 
-如前所述，MC方法应该等到回合结束后才能更新从轨迹尾部得到的值，而TD方法则是逐步更新值。这种差异带来了初始化状态值函数时的一个技巧：在MC中，状态值函数不包括终止状态，而在TD(0)中，该函数应包括终止状态，并且值为0，因为TD(0)方法总是提前一步看未来的状态，直到回合结束。
+如前所述，MC 方法应该等到回合结束后才能更新从轨迹尾部得到的值，而 TD 方法则是逐步更新值。这种差异带来了初始化状态值函数时的一个技巧：在 MC 中，状态值函数不包括终止状态，而在 TD(0)中，该函数应包括终止状态，并且值为 0，因为 TD(0)方法总是提前一步看未来的状态，直到回合结束。
 
 ## 实现
 
-在此实现中的α参数选择参考了书中[2]提出的参数；MC方法的参数为[0.01, 0.02, 0.03, 0.04]，而TD方法的参数为[0.05, 0.10, 0.15]。我曾经疑惑为何作者没有在两个算法中选择相同的参数集，直到我用TD参数运行MD方法：TD参数对MC方法来说太高，因此不能展现MC的最佳性能。因此，我们将坚持书中的参数设置。现在，让我们运行这两个算法，找出它们在随机游走设置下的表现。
+在此实现中的α参数选择参考了书中[2]提出的参数；MC 方法的参数为[0.01, 0.02, 0.03, 0.04]，而 TD 方法的参数为[0.05, 0.10, 0.15]。我曾经疑惑为何作者没有在两个算法中选择相同的参数集，直到我用 TD 参数运行 MD 方法：TD 参数对 MC 方法来说太高，因此不能展现 MC 的最佳性能。因此，我们将坚持书中的参数设置。现在，让我们运行这两个算法，找出它们在随机游走设置下的表现。
 
 ## 结果
 
-![](../Images/eac2e265f1bfe8545a65cb8f5dc1187b.png)
+![](img/eac2e265f1bfe8545a65cb8f5dc1187b.png)
 
-图4 算法比较结果。来源：作者提供的图
+图 4 算法比较结果。来源：作者提供的图
 
 100 次比较后的结果如上图所示。TD 方法通常比 MC 方法提供更好的值估计，且α = 0.05 的 TD 方法可以非常接近真实值。图表还显示，MC 方法的方差比 TD 方法更高，因为兰花线的波动大于钢蓝线。
 
@@ -139,7 +139,7 @@ Reward:          0 ← Node E → 1
 
 现在让我们尝试将初始值降低到 0.1，并再次进行比较，看看问题是否得到缓解：
 
-![](../Images/b1c80040596857301b3f6e5d2318af9c.png)
+![](img/b1c80040596857301b3f6e5d2318af9c.png)
 
 图 5 初始值为 0.1 的算法比较结果。来源：作者绘制的图
 
@@ -155,7 +155,7 @@ Reward:          0 ← Node E → 1
 
 ## 结果
 
-![](../Images/9fa0460989237ec36464dafe755bbc81.png)
+![](img/9fa0460989237ec36464dafe755bbc81.png)
 
 图 6 批量训练结果。来源：作者绘制的图
 
@@ -167,7 +167,7 @@ Reward:          0 ← Node E → 1
 
 ## 参考文献
 
-[1] Midjourney 服务条款: [https://docs.midjourney.com/docs/terms-of-service](https://docs.midjourney.com/docs/terms-of-service)
+[1] Midjourney 服务条款: [`docs.midjourney.com/docs/terms-of-service`](https://docs.midjourney.com/docs/terms-of-service)
 
 [2] Sutton, Richard S., 和 Andrew G. Barto. *强化学习：导论*。麻省理工学院出版社，2018。
 

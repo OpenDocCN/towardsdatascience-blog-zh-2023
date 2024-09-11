@@ -1,18 +1,18 @@
-# Python中美观散点图的快速指南
+# Python 中美观散点图的快速指南
 
-> 原文：[https://towardsdatascience.com/a-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396?source=collection_archive---------10-----------------------#2023-01-12](https://towardsdatascience.com/a-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396?source=collection_archive---------10-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/a-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396?source=collection_archive---------10-----------------------#2023-01-12`](https://towardsdatascience.com/a-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396?source=collection_archive---------10-----------------------#2023-01-12)
 
-## 可视化全球预期寿命与人均GDP
+## 可视化全球预期寿命与人均 GDP
 
-[](https://hair-parra.medium.com/?source=post_page-----75625ae67396--------------------------------)[![Hair Parra](../Images/71a377f0415096dc6fb0a10e64b3b28e.png)](https://hair-parra.medium.com/?source=post_page-----75625ae67396--------------------------------)[](https://towardsdatascience.com/?source=post_page-----75625ae67396--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----75625ae67396--------------------------------) [Hair Parra](https://hair-parra.medium.com/?source=post_page-----75625ae67396--------------------------------)
+[](https://hair-parra.medium.com/?source=post_page-----75625ae67396--------------------------------)![Hair Parra](https://hair-parra.medium.com/?source=post_page-----75625ae67396--------------------------------)[](https://towardsdatascience.com/?source=post_page-----75625ae67396--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----75625ae67396--------------------------------) [Hair Parra](https://hair-parra.medium.com/?source=post_page-----75625ae67396--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ab75afba448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396&user=Hair+Parra&userId=8ab75afba448&source=post_page-8ab75afba448----75625ae67396---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----75625ae67396--------------------------------) · 9分钟阅读 · 2023年1月12日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F75625ae67396&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396&user=Hair+Parra&userId=8ab75afba448&source=-----75625ae67396---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ab75afba448&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396&user=Hair+Parra&userId=8ab75afba448&source=post_page-8ab75afba448----75625ae67396---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----75625ae67396--------------------------------) · 9 分钟阅读 · 2023 年 1 月 12 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F75625ae67396&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396&user=Hair+Parra&userId=8ab75afba448&source=-----75625ae67396---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F75625ae67396&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396&source=-----75625ae67396---------------------bookmark_footer-----------)![](../Images/960686bb3dcfd9fced9a5a64ae1af07d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F75625ae67396&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-quick-guide-to-beautiful-scatter-plots-in-python-75625ae67396&source=-----75625ae67396---------------------bookmark_footer-----------)![](img/960686bb3dcfd9fced9a5a64ae1af07d.png)
 
 图片由作者提供，使用 Python Matplotlib 绘制
 
@@ -20,9 +20,9 @@
 
 这将生成以下图表：
 
-![](../Images/1639ccdc8f7156a3a66b6382425a4058.png)
+![](img/1639ccdc8f7156a3a66b6382425a4058.png)
 
-src: [https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_masked.html#sphx-glr-gallery-lines-bars-and-markers-scatter-masked-py](https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_masked.html#sphx-glr-gallery-lines-bars-and-markers-scatter-masked-py)
+src: [`matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_masked.html#sphx-glr-gallery-lines-bars-and-markers-scatter-masked-py`](https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_masked.html#sphx-glr-gallery-lines-bars-and-markers-scatter-masked-py)
 
 虽然这个图表非常多彩，但相当简单且不太具有洞察力，代码确实解释了它的目的。在这篇文章中，我将展示如何创建像你在本文开头看到的那样美丽且富有洞察力的散点图。
 

@@ -1,42 +1,42 @@
 # 在一个小时内构建你的第一个深度学习应用
 
-> 原文：[https://towardsdatascience.com/build-your-first-deep-learning-app-within-an-hour-4e80c120e99f?source=collection_archive---------6-----------------------#2023-07-21](https://towardsdatascience.com/build-your-first-deep-learning-app-within-an-hour-4e80c120e99f?source=collection_archive---------6-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/build-your-first-deep-learning-app-within-an-hour-4e80c120e99f?source=collection_archive---------6-----------------------#2023-07-21`](https://towardsdatascience.com/build-your-first-deep-learning-app-within-an-hour-4e80c120e99f?source=collection_archive---------6-----------------------#2023-07-21)
 
 ## 使用 HuggingFace Spaces 和 Gradio 部署图像分类模型
 
-[](https://miptgirl.medium.com/?source=post_page-----4e80c120e99f--------------------------------)[![Mariya Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----4e80c120e99f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e80c120e99f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e80c120e99f--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----4e80c120e99f--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----4e80c120e99f--------------------------------)![Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----4e80c120e99f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e80c120e99f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e80c120e99f--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----4e80c120e99f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-first-deep-learning-app-within-an-hour-4e80c120e99f&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----4e80c120e99f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e80c120e99f--------------------------------) ·11分钟阅读·2023年7月21日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-first-deep-learning-app-within-an-hour-4e80c120e99f&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----4e80c120e99f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e80c120e99f--------------------------------) ·11 分钟阅读·2023 年 7 月 21 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e80c120e99f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-first-deep-learning-app-within-an-hour-4e80c120e99f&source=-----4e80c120e99f---------------------bookmark_footer-----------)![](../Images/853574e57387bbbe2b3eab5395f1a971.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e80c120e99f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-your-first-deep-learning-app-within-an-hour-4e80c120e99f&source=-----4e80c120e99f---------------------bookmark_footer-----------)![](img/853574e57387bbbe2b3eab5395f1a971.png)
 
 [Thought Catalog](https://unsplash.com/@thoughtcatalog?utm_source=medium&utm_medium=referral) 提供的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 我从事数据分析工作已经将近十年了。时不时地，我会使用机器学习技术从数据中获取见解，而且我对使用经典的机器学习方法感到很自如。
 
-尽管我通过了一些关于神经网络和深度学习的MOOC课程，但我从未在工作中使用过这些技术，这个领域对我来说似乎非常具有挑战性。我有所有这些偏见：
+尽管我通过了一些关于神经网络和深度学习的 MOOC 课程，但我从未在工作中使用过这些技术，这个领域对我来说似乎非常具有挑战性。我有所有这些偏见：
 
 +   你需要学习很多东西才能开始使用深度学习：数学、不同的框架（我至少听说过三种：`PyTorch`、`TensorFlow`和`Keras`）以及网络架构。
 
 +   训练模型需要大量的数据集。
 
-+   没有强大的计算机（*它们还必须有Nvidia GPU*），就不可能获得令人满意的结果，因此获取这样的设备相当困难。
++   没有强大的计算机（*它们还必须有 Nvidia GPU*），就不可能获得令人满意的结果，因此获取这样的设备相当困难。
 
 +   要使一个机器学习驱动的服务运行起来，需要处理大量的样板工作：你需要处理前端和后端的部分。
 
 我相信分析的主要目标是帮助产品团队根据数据做出正确的决策。如今，神经网络可以显著提升我们的分析能力，例如，自然语言处理可以从文本中获得更多的见解。因此，我决定再尝试一下利用深度学习的力量对我来说会有帮助。
 
-这就是我开始[Fast.AI课程](https://course.fast.ai/)的方式（*它在2022年初进行了更新，所以我猜内容自之前的TDS评论以来可能有所变化*）。我意识到，使用深度学习解决任务并不是那么困难。
+这就是我开始[Fast.AI 课程](https://course.fast.ai/)的方式（*它在 2022 年初进行了更新，所以我猜内容自之前的 TDS 评论以来可能有所变化*）。我意识到，使用深度学习解决任务并不是那么困难。
 
 这个课程采用自上而下的方法。所以你从构建一个工作系统开始，之后才会深入了解所有必要的基础知识和细节。
 
 我在第二周制作了我的第一个机器学习驱动应用程序（*你可以在* [*这里*](https://huggingface.co/spaces/miptgirl/cuttest_dogs) *尝试一下*）。这是一个图像分类模型，可以识别我最喜欢的狗品种。令人惊讶的是，即使我的数据集中只有几千张图片，它的表现也很好。这让我感到振奋，我们现在可以如此轻松地构建一个十年前还完全是魔法的服务。
 
-![](../Images/107bf8a2134762ddc8bf8b330dab6452.png)
+![](img/107bf8a2134762ddc8bf8b330dab6452.png)
 
 照片由[Shakti Rajpurohit](https://unsplash.com/ko/@shaktirajpurohit?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -50,7 +50,7 @@
 
 目前，你可以将这个模型视为一个黑箱，它接受输入（*在我们的例子中——一张狗的图片*）并返回输出（*在我们的例子中——一个标签*）。
 
-![](../Images/880015ebf56f0625e2895e729379b3c3.png)
+![](img/880015ebf56f0625e2895e729379b3c3.png)
 
 作者拍摄的照片
 
@@ -58,15 +58,15 @@
 
 > 你可以在[Kaggle](https://www.kaggle.com/code/miptgirl/fastai-week-2-dogs-breeds-classification-mo/edit/run/136880445)上找到这个阶段的完整代码。
 
-我们将使用 [Kaggle Notebooks](https://www.kaggle.com/docs/notebooks) 来构建我们的深度学习模型。如果您还没有Kaggle账户，值得注册。Kaggle是一个流行的数据科学平台，您可以在这里找到数据集、参与竞赛以及运行和分享代码。
+我们将使用 [Kaggle Notebooks](https://www.kaggle.com/docs/notebooks) 来构建我们的深度学习模型。如果您还没有 Kaggle 账户，值得注册。Kaggle 是一个流行的数据科学平台，您可以在这里找到数据集、参与竞赛以及运行和分享代码。
 
-您可以在Kaggle创建一个Notebook，并像在本地Jupyter Notebook一样执行代码。Kaggle甚至提供GPU，所以我们可以很快训练神经网络模型。
+您可以在 Kaggle 创建一个 Notebook，并像在本地 Jupyter Notebook 一样执行代码。Kaggle 甚至提供 GPU，所以我们可以很快训练神经网络模型。
 
-![](../Images/e7242d7e606433d6e106281b1ac150d6.png)
+![](img/e7242d7e606433d6e106281b1ac150d6.png)
 
 图片来源：作者
 
-让我们先导入所有包，因为我们将使用许多Fast.AI工具。
+让我们先导入所有包，因为我们将使用许多 Fast.AI 工具。
 
 ```py
 from fastcore.all import *
@@ -79,7 +79,7 @@ from fastdownload import download_url
 
 不用说，我们需要一个数据集来训练我们的模型。获取一组图像的最简单方法是使用搜索引擎。
 
-[DuckDuckGo](https://duckduckgo.com/)搜索引擎有一个易于使用的API和方便的Python包`duckduckgo_search`（[*更多信息*](https://pypi.org/project/duckduckgo-search/)），所以我们将使用它。
+[DuckDuckGo](https://duckduckgo.com/)搜索引擎有一个易于使用的 API 和方便的 Python 包`duckduckgo_search`（[*更多信息*](https://pypi.org/project/duckduckgo-search/)），所以我们将使用它。
 
 让我们尝试搜索一张狗的图片。我们已指定`license_image = any`，只使用具有创作共用许可的图片。
 
@@ -91,7 +91,7 @@ with DDGS() as ddgs:
                                 license_image = 'any'), 1))
 ```
 
-在输出中，我们获得了关于图片的所有信息：名称、URL和大小。
+在输出中，我们获得了关于图片的所有信息：名称、URL 和大小。
 
 ```py
 {
@@ -103,9 +103,9 @@ with DDGS() as ddgs:
 }
 ```
 
-现在我们可以使用Fast.AI工具来下载图片并显示缩略图。
+现在我们可以使用 Fast.AI 工具来下载图片并显示缩略图。
 
-![](../Images/5a5ec7ba9995d3de121a3479f3c8a373.png)
+![](img/5a5ec7ba9995d3de121a3479f3c8a373.png)
 
 图片由 [Barcs Tamás](https://unsplash.com/@barcstamaas?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -130,23 +130,23 @@ for b in tqdm.tqdm(breeds):
     resize_images(path/b, max_size=400, dest=path/b)
 ```
 
-运行此代码后，您将看到Kaggle右侧面板上的所有加载的照片。
+运行此代码后，您将看到 Kaggle 右侧面板上的所有加载的照片。
 
-![](../Images/18b15558c734df1045934f6d688c728f.png)
+![](img/18b15558c734df1045934f6d688c728f.png)
 
 图片来源：作者
 
-下一步是将数据转换为适用于Fast.AI模型的格式——`DataBlock`。
+下一步是将数据转换为适用于 Fast.AI 模型的格式——`DataBlock`。
 
 对于这个对象，您需要指定几个参数，但我只会强调最重要的几个：
 
-+   `splitter=RandomSplitter(valid_pct=0.2, seed=18)`：Fast.AI要求选择一个验证集。验证集是用来估计模型质量的保留数据。为了防止过拟合，训练时不会使用验证数据。在我们的例子中，验证集是数据集的20%的随机部分。我们指定了`seed`参数，以便下次能够精确地重复相同的划分。
++   `splitter=RandomSplitter(valid_pct=0.2, seed=18)`：Fast.AI 要求选择一个验证集。验证集是用来估计模型质量的保留数据。为了防止过拟合，训练时不会使用验证数据。在我们的例子中，验证集是数据集的 20%的随机部分。我们指定了`seed`参数，以便下次能够精确地重复相同的划分。
 
 +   `item_tfms=[Resize(256, method=’squish’)]`：神经网络以批量处理图像。这就是为什么我们必须将图片调整为相同的大小。目前我们使用了`squish`方法，但我们会在后面更详细地讨论它。
 
 我们已经定义了一个数据块。函数`show_batch`可以向我们展示一组随机的带标签的图像。
 
-![](../Images/80089b7b745e7af415ea8bbebbf52b48.png)
+![](img/80089b7b745e7af415ea8bbebbf52b48.png)
 
 照片由 [Angel Luciano](https://unsplash.com/@roaming_angel?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) | 照片由 [Brigitta Botrágyi](https://unsplash.com/@bbrigike?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) | 照片由 [Charlotte Freeman](https://unsplash.com/fr/@happyfeijoa?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -156,7 +156,7 @@ for b in tqdm.tqdm(breeds):
 
 你可能会感到惊讶，但下面这两行代码将完成所有工作。
 
-![](../Images/9be3eae20456aaa76396a015f1993f5b.png)
+![](img/9be3eae20456aaa76396a015f1993f5b.png)
 
 我们使用了一个预训练模型（18 层深度的卷积神经网络 — `Resnet18`）。这就是我们称之为 `fine_tune` 的原因。
 
@@ -172,11 +172,11 @@ for b in tqdm.tqdm(breeds):
 
 首先，让我们看看模型的错误：它是否无法区分柯基和哈士奇或博美和拉布拉多。我们可以使用 `confusion_matrix` 来实现。请注意，混淆矩阵也是仅使用验证集计算的。
 
-![](../Images/73499dd9ee674e7da264c85725aaad4e.png)
+![](img/73499dd9ee674e7da264c85725aaad4e.png)
 
 Fast.AI 课程中分享的另一个小窍门是可以使用模型来清理我们的数据。为此，我们可以查看损失最大的图像：这些可能是模型自信度高但错误的情况，或是正确但信心低的情况。
 
-![](../Images/1938f6835432a722044da06b35441f10.png)
+![](img/1938f6835432a722044da06b35441f10.png)
 
 照片由 [Benjamin Vang](https://unsplash.com/ko/@bivphoto?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) | 照片由 [Xennie Moore](https://unsplash.com/@shadowseas?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) | 照片由 [Alvan Nee](https://unsplash.com/@alvannee?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -198,11 +198,11 @@ for idx,breed in cleaner.change(): shutil.move(str(cleaner.fns[idx]), path/breed
 
 现在我们可以再次训练我们的模型，并看到准确率提高了：95.4% 对比 94.5%。
 
-![](../Images/3ff1da7784808a454859c7849aa42bb5.png)
+![](img/3ff1da7784808a454859c7849aa42bb5.png)
 
 正确识别的柯基犬比例已从 88% 提高到 96%。太棒了！
 
-![](../Images/d2ec6baebf1f5947d151aa76cbce0ede.png)
+![](img/d2ec6baebf1f5947d151aa76cbce0ede.png)
 
 改善我们模型的另一种方法是改变我们的缩放方法。我们使用了压缩方法，但正如你所看到的，它可能会改变自然物体的比例。让我们尝试更具创意地使用增强。
 
@@ -210,7 +210,7 @@ for idx,breed in cleaner.change(): shutil.move(str(cleaner.fns[idx]), path/breed
 
 与 Fast.AI 一样，你只需更改几个参数即可添加增强。
 
-![](../Images/643a79780ab0d8ed7f173a63fefa03c4.png)
+![](img/643a79780ab0d8ed7f173a63fefa03c4.png)
 
 [FLOUFFY](https://unsplash.com/@theflouffy?utm_source=medium&utm_medium=referral) 拍摄，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -226,7 +226,7 @@ learn.export('cuttest_dogs_model.pkl')
 
 然后你将有一个标准的 `pickle` 文件（*常见的 Python 对象存储格式*）。只需在 Kaggle Notebook 右侧面板中选择文件旁的 `更多操作`，你将可以将模型下载到你的计算机上。
 
-![](../Images/c984ea0fa54731a25fe28f2ad7c9a6f2.png)
+![](img/c984ea0fa54731a25fe28f2ad7c9a6f2.png)
 
 现在我们有了训练好的模型，让我们部署它，这样你就可以将结果分享给全世界。
 
@@ -250,7 +250,7 @@ HuggingFace 是一家提供实用机器学习工具的公司，例如流行的�
 
 +   **SDK**（在这个示例中我将使用 Gradio）。
 
-![](../Images/d1a51c71256deaace6d3996204d69ca0.png)
+![](img/d1a51c71256deaace6d3996204d69ca0.png)
 
 然后用户友好的 HuggingFace 将向你展示说明。**TL;DR** 现在你有了一个 Git 仓库，你需要将你的代码提交到那里。
 
@@ -326,7 +326,7 @@ git push
 
 在推送文件后，返回到 HuggingFace Space，你将看到类似的图片显示构建过程。如果一切正常，你的应用将在几分钟内运行。
 
-![](../Images/869d2e210d267ff37854208abacef644.png)
+![](img/869d2e210d267ff37854208abacef644.png)
 
 如果出现任何问题，你将看到一个堆栈跟踪。然后你需要返回到你的代码中，修复错误，推送新版本，并再等几分钟。
 
@@ -334,7 +334,7 @@ git push
 
 现在我们可以使用这个模型处理真实照片，例如验证我家狗是否确实是柯基犬。
 
-![](../Images/3ba48ead8cc93a7aae036bc596f42069.png)
+![](img/3ba48ead8cc93a7aae036bc596f42069.png)
 
 作者提供的照片
 

@@ -1,18 +1,18 @@
-# 如何在数据分析师领域脱颖而出：专注于这5个关键主题
+# 如何在数据分析师领域脱颖而出：专注于这 5 个关键主题
 
-> 原文：[https://towardsdatascience.com/how-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3?source=collection_archive---------2-----------------------#2023-04-20](https://towardsdatascience.com/how-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3?source=collection_archive---------2-----------------------#2023-04-20)
+> 原文：[`towardsdatascience.com/how-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3?source=collection_archive---------2-----------------------#2023-04-20`](https://towardsdatascience.com/how-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3?source=collection_archive---------2-----------------------#2023-04-20)
 
 ## SQL、Python 及其他技术技能至关重要，但这只是成功的一半。
 
-[](https://medium.com/@asawhney27?source=post_page-----f50edd644ed3--------------------------------)[![Abhi Sawhney](../Images/21f712d1a325a71c58fe456e93e4c746.png)](https://medium.com/@asawhney27?source=post_page-----f50edd644ed3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f50edd644ed3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f50edd644ed3--------------------------------) [Abhi Sawhney](https://medium.com/@asawhney27?source=post_page-----f50edd644ed3--------------------------------)
+[](https://medium.com/@asawhney27?source=post_page-----f50edd644ed3--------------------------------)![Abhi Sawhney](https://medium.com/@asawhney27?source=post_page-----f50edd644ed3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f50edd644ed3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f50edd644ed3--------------------------------) [Abhi Sawhney](https://medium.com/@asawhney27?source=post_page-----f50edd644ed3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F42ce11c2a627&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3&user=Abhi+Sawhney&userId=42ce11c2a627&source=post_page-42ce11c2a627----f50edd644ed3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f50edd644ed3--------------------------------) ·9分钟阅读·2023年4月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff50edd644ed3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3&user=Abhi+Sawhney&userId=42ce11c2a627&source=-----f50edd644ed3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F42ce11c2a627&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3&user=Abhi+Sawhney&userId=42ce11c2a627&source=post_page-42ce11c2a627----f50edd644ed3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f50edd644ed3--------------------------------) ·9 分钟阅读·2023 年 4 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff50edd644ed3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3&user=Abhi+Sawhney&userId=42ce11c2a627&source=-----f50edd644ed3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff50edd644ed3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3&source=-----f50edd644ed3---------------------bookmark_footer-----------)![](../Images/02d5583bbcb0668dd565c16921b7bf12.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff50edd644ed3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stand-out-as-a-data-analyst-focus-on-these-5-key-themes-f50edd644ed3&source=-----f50edd644ed3---------------------bookmark_footer-----------)![](img/02d5583bbcb0668dd565c16921b7bf12.png)
 
 图片由 [ThisisEngineering RAEng](https://unsplash.com/@thisisengineering?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布在 [Unsplash](https://unsplash.com/s/photos/this-is-engineering?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -48,7 +48,7 @@ a) 核心业务指标的每日值
 
 b) 指标的日变化百分比，以及 [z-scores](https://en.wikipedia.org/wiki/Standard_score)（或其他相关技术以检查显著性）
 
-c) 一个“备注”列，以便将来手动添加评论。你可以用这个来指出在特定日期影响了核心指标的内部或外部事件。例如，*“内部工程问题：移动应用程序停机4小时，负面影响了每日听众和流量计数。”*
+c) 一个“备注”列，以便将来手动添加评论。你可以用这个来指出在特定日期影响了核心指标的内部或外部事件。例如，*“内部工程问题：移动应用程序停机 4 小时，负面影响了每日听众和流量计数。”*
 
 **系统 #2**
 
@@ -58,7 +58,7 @@ c) 一个“备注”列，以便将来手动添加评论。你可以用这个�
 
 下面是每日流量指标下降时的可能情况：
 
-![](../Images/f91d8b497c2b502c8d139c3bc872ceee.png)
+![](img/f91d8b497c2b502c8d139c3bc872ceee.png)
 
 作者提供的图片
 
@@ -66,19 +66,19 @@ c) 一个“备注”列，以便将来手动添加评论。你可以用这个�
 
 > “你不会提升到你目标的水平。你会降到你系统的水平。”
 
-## （2）了解你的20
+## （2）了解你的 20
 
-我们中的大多数人可能都知道[帕累托原则](https://en.wikipedia.org/wiki/Pareto_principle)或80/20法则。最简单来说，它突出了少量项目如何对最终目标或结果产生巨大影响。例如：
+我们中的大多数人可能都知道[帕累托原则](https://en.wikipedia.org/wiki/Pareto_principle)或 80/20 法则。最简单来说，它突出了少量项目如何对最终目标或结果产生巨大影响。例如：
 
-+   80%的流量将来自20%的听众
++   80%的流量将来自 20%的听众
 
-+   80%的收入将来自20%的客户
++   80%的收入将来自 20%的客户
 
-80和20是大致的估算，但它们有助于突出更大的观点。这一原则在评估你工作的最有影响力领域时同样适用。在任何给定时刻，总会有一小部分定义、指标、查询或其他项目是最重要的，需要对其了如指掌。
+80 和 20 是大致的估算，但它们有助于突出更大的观点。这一原则在评估你工作的最有影响力领域时同样适用。在任何给定时刻，总会有一小部分定义、指标、查询或其他项目是最重要的，需要对其了如指掌。
 
-数据分析师能够迅速识别这20%的客户，并花时间深入了解他们的需求，会脱颖而出。假设你最近开始与付费订阅团队合作。该团队负责增加付费客户数量和公司的整体订阅收入。他们非常依赖你的分析意见，并在团队讨论中积极向你询问数据和指导。
+数据分析师能够迅速识别这 20%的客户，并花时间深入了解他们的需求，会脱颖而出。假设你最近开始与付费订阅团队合作。该团队负责增加付费客户数量和公司的整体订阅收入。他们非常依赖你的分析意见，并在团队讨论中积极向你询问数据和指导。
 
-要有意义地参与这些会议，你意识到需要掌握一组核心数据点。这些数据点对这个领域至关重要，在几乎每次讨论中都会出现。你整理出你认为这些数据点的清单，并每天预留20-30分钟来学习它们。你不断重复这个过程，直到这些数据和潜在的见解变得对你而言自动可得。
+要有意义地参与这些会议，你意识到需要掌握一组核心数据点。这些数据点对这个领域至关重要，在几乎每次讨论中都会出现。你整理出你认为这些数据点的清单，并每天预留 20-30 分钟来学习它们。你不断重复这个过程，直到这些数据和潜在的见解变得对你而言自动可得。
 
 “20”的实际列表会根据行业和团队背景有所不同，但以下是一个与付费订阅团队合作时的示例：
 
@@ -98,7 +98,7 @@ c) 一个“备注”列，以便将来手动添加评论。你可以用这个�
 
 初看起来，这似乎需要记住很多信息，但通过一些关注、规划和重复，这变得非常可行。与其记住准确的数字，不如对它们的大致水平和相对排名有一个强烈的感觉更为重要。由于这些指标的实际值不太可能每周剧烈变化，花时间了解它们将对你长期有益。
 
-这并不是说你应该在实时参考相关仪表板或报告方面从不动手。偶尔这样做是必要的。然而，如果每一个数据点都必须参考文档，那么在游戏中领先并主动参与对话就会变得更困难。彻底了解你的20个数据点将帮助你避免这种情况，并使你更加投入。
+这并不是说你应该在实时参考相关仪表板或报告方面从不动手。偶尔这样做是必要的。然而，如果每一个数据点都必须参考文档，那么在游戏中领先并主动参与对话就会变得更困难。彻底了解你的 20 个数据点将帮助你避免这种情况，并使你更加投入。
 
 ## (3) 预见与主动性
 
@@ -120,7 +120,7 @@ c) 一个“备注”列，以便将来手动添加评论。你可以用这个�
 
 想象一下你是一名与编辑团队一起工作的数据分析师。这个团队负责跨多种流派、情绪和其他主题策划播放列表。这个部门的负责人找到你说：“嗨，请分享一份所有播放列表按周流量和听众数排名的清单。谢谢！”
 
-与其立即进行SQL查询或仪表盘操作，不如深入挖掘背后的动机。通过澄清问题和进一步对话，明确团队实际上想要确定的是哪些播放列表具有最高的重复收听和参与度，以便他们可以创建更多主题类似的播放列表。
+与其立即进行 SQL 查询或仪表盘操作，不如深入挖掘背后的动机。通过澄清问题和进一步对话，明确团队实际上想要确定的是哪些播放列表具有最高的重复收听和参与度，以便他们可以创建更多主题类似的播放列表。
 
 有了对团队需求的更深入理解后，你决定在报告中加入播放列表的听众保留率和跳过率指标。此外，由于每位编辑专注于为特定语言创建播放列表，你还提供了按每种语言筛选报告的功能。
 

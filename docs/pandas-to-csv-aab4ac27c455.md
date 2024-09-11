@@ -1,18 +1,18 @@
 # 如何将 Pandas DataFrame 写入 CSV 文件
 
-> 原文：[https://towardsdatascience.com/pandas-to-csv-aab4ac27c455?source=collection_archive---------10-----------------------#2023-01-13](https://towardsdatascience.com/pandas-to-csv-aab4ac27c455?source=collection_archive---------10-----------------------#2023-01-13)
+> 原文：[`towardsdatascience.com/pandas-to-csv-aab4ac27c455?source=collection_archive---------10-----------------------#2023-01-13`](https://towardsdatascience.com/pandas-to-csv-aab4ac27c455?source=collection_archive---------10-----------------------#2023-01-13)
 
 ## 利用在将 pandas DataFrames 写入 CSV 文件时提供的所有选项
 
-[](https://gmyrianthous.medium.com/?source=post_page-----aab4ac27c455--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----aab4ac27c455--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aab4ac27c455--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aab4ac27c455--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----aab4ac27c455--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----aab4ac27c455--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----aab4ac27c455--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aab4ac27c455--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aab4ac27c455--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----aab4ac27c455--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-to-csv-aab4ac27c455&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----aab4ac27c455---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aab4ac27c455--------------------------------) ·5分钟阅读·2023年1月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faab4ac27c455&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-to-csv-aab4ac27c455&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----aab4ac27c455---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-to-csv-aab4ac27c455&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----aab4ac27c455---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aab4ac27c455--------------------------------) ·5 分钟阅读·2023 年 1 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faab4ac27c455&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-to-csv-aab4ac27c455&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----aab4ac27c455---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faab4ac27c455&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-to-csv-aab4ac27c455&source=-----aab4ac27c455---------------------bookmark_footer-----------)![](../Images/881b8b4f1e7bf014f76b61f5f78e7900.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faab4ac27c455&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-to-csv-aab4ac27c455&source=-----aab4ac27c455---------------------bookmark_footer-----------)![](img/881b8b4f1e7bf014f76b61f5f78e7900.png)
 
 图片由 [Hello I’m Nik](https://unsplash.com/fr/@helloimnik?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/l4ADb9OVqTY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

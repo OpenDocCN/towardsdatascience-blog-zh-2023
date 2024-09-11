@@ -1,18 +1,18 @@
 # 使用 R 绘制南美洲地图：深入探讨地理可视化
 
-> 原文：[https://towardsdatascience.com/mapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263?source=collection_archive---------5-----------------------#2023-08-30](https://towardsdatascience.com/mapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263?source=collection_archive---------5-----------------------#2023-08-30)
+> 原文：[`towardsdatascience.com/mapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263?source=collection_archive---------5-----------------------#2023-08-30`](https://towardsdatascience.com/mapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263?source=collection_archive---------5-----------------------#2023-08-30)
 
 ## 导航数据集、地缘政治细节和编码挑战，描绘大陆的全貌
 
-[](https://fernandobarbalho.medium.com/?source=post_page-----2fc8e34ec263--------------------------------)[![Fernando Barbalho](../Images/0d145585cc73b89b4426af47b41844c5.png)](https://fernandobarbalho.medium.com/?source=post_page-----2fc8e34ec263--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fc8e34ec263--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2fc8e34ec263--------------------------------) [Fernando Barbalho](https://fernandobarbalho.medium.com/?source=post_page-----2fc8e34ec263--------------------------------)
+[](https://fernandobarbalho.medium.com/?source=post_page-----2fc8e34ec263--------------------------------)![Fernando Barbalho](https://fernandobarbalho.medium.com/?source=post_page-----2fc8e34ec263--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fc8e34ec263--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fc8e34ec263--------------------------------) [Fernando Barbalho](https://fernandobarbalho.medium.com/?source=post_page-----2fc8e34ec263--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcaa8c7ce010&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263&user=Fernando+Barbalho&userId=dcaa8c7ce010&source=post_page-dcaa8c7ce010----2fc8e34ec263---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fc8e34ec263--------------------------------) · 8 分钟阅读 · 2023年8月30日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2fc8e34ec263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263&user=Fernando+Barbalho&userId=dcaa8c7ce010&source=-----2fc8e34ec263---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcaa8c7ce010&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263&user=Fernando+Barbalho&userId=dcaa8c7ce010&source=post_page-dcaa8c7ce010----2fc8e34ec263---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fc8e34ec263--------------------------------) · 8 分钟阅读 · 2023 年 8 月 30 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2fc8e34ec263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263&user=Fernando+Barbalho&userId=dcaa8c7ce010&source=-----2fc8e34ec263---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2fc8e34ec263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263&source=-----2fc8e34ec263---------------------bookmark_footer-----------)![](../Images/e71adde3706de5aabb654caa506e69a4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2fc8e34ec263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-south-america-with-r-a-deep-dive-into-geo-visualization-2fc8e34ec263&source=-----2fc8e34ec263---------------------bookmark_footer-----------)![](img/e71adde3706de5aabb654caa506e69a4.png)
 
 图片由 [Alexander Schimmeck](https://unsplash.com/@alschim?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/Aohf8gqa7Zc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -26,7 +26,7 @@
 
 让我们从整体图像开始：R 版的*世界地图*。请见下图和代码。
 
-![](../Images/1c60df1557e87e17f4cbd5c7547002f6.png)
+![](img/1c60df1557e87e17f4cbd5c7547002f6.png)
 
 世界地图：图片由作者提供
 
@@ -45,7 +45,7 @@ data("world")
 
 world %>%
   ggplot() +
-  geom_sf(aes(fill=pop/10^6)) +
+  geom_sf(aes(fill=pop/10⁶)) +
   scale_fill_continuous_sequential(palette= "Heat 2" )+
   theme_void() +
   theme(
@@ -56,9 +56,9 @@ world %>%
   )
 ```
 
-我使用[{spData}](https://cran.r-project.org/web/packages/spData/spData.pdf)包作为具有全球领土形状文件几何信息的数据框的参考。aes 函数使用人口信息填充形状。众所周知，中国和印度是世界上人口最多的国家，每个国家都有超过10亿人。热度颜色显示了与其他国家的对比。大多数顺序颜色较弱。我们几乎无法理解图片中的颜色渐变。如果你想要更好的颜色分布，对数是最佳选择。见下文。
+我使用[{spData}](https://cran.r-project.org/web/packages/spData/spData.pdf)包作为具有全球领土形状文件几何信息的数据框的参考。aes 函数使用人口信息填充形状。众所周知，中国和印度是世界上人口最多的国家，每个国家都有超过 10 亿人。热度颜色显示了与其他国家的对比。大多数顺序颜色较弱。我们几乎无法理解图片中的颜色渐变。如果你想要更好的颜色分布，对数是最佳选择。见下文。
 
-![](../Images/f3908f1eff92f38848f7638dc127cf75.png)
+![](img/f3908f1eff92f38848f7638dc127cf75.png)
 
 对数刻度的世界地图。图片由作者提供
 
@@ -78,7 +78,7 @@ world %>%
 
 在世界数据框结构中，有一个“Continent”列。因此，使用该列筛选数据以获取南美洲地图是显而易见的。请查看代码，紧接着是地图。
 
-![](../Images/089f997838d93643ecb65422795c1cdf.png)
+![](img/089f997838d93643ecb65422795c1cdf.png)
 
 南美洲地图：第一版。图片由作者提供
 
@@ -86,7 +86,7 @@ world %>%
 world %>%
   filter(continent == "South America") %>%
   ggplot() +
-  geom_sf(aes(fill=pop/10^6)) +
+  geom_sf(aes(fill=pop/10⁶)) +
   scale_fill_continuous_sequential(palette= "Heat 2" )+
   theme_void() +
   theme(
@@ -101,7 +101,7 @@ world %>%
 
 气候变化是一个巨大的问题，但海平面尚未上升到淹没曾经出现在南美洲北部的明显区域的程度。这到底发生了什么？让我们现在借助坐标绘制另一张地图，并命名多边形。
 
-![](../Images/deae3ce74e9dd8ffe0a1ac3412b02c63.png)
+![](img/deae3ce74e9dd8ffe0a1ac3412b02c63.png)
 
 南美洲地图：第二版。作者图片
 
@@ -115,7 +115,7 @@ southamerica$lat<- sf::st_coordinates(sf::st_centroid(southamerica$geom))[,2]
 
 southamerica %>%
   ggplot() +
-  geom_sf(aes(fill=pop/10^6)) +
+  geom_sf(aes(fill=pop/10⁶)) +
   scale_fill_continuous_sequential(palette= "Heat 2" )+
   theme_light() +
   theme(
@@ -138,7 +138,7 @@ southamerica %>%
 
 我必须将法国从世界其他地方隔离开来，以理解 {spData} 包如何处理这个国家地图的数据。见下文结果。
 
-![](../Images/2ecc88d62e48cc11ecc18630f696ad85.png)
+![](img/2ecc88d62e48cc11ecc18630f696ad85.png)
 
 法国地图。作者图片
 
@@ -164,7 +164,7 @@ france %>%
 
 我的下一个尝试是将包含法国几何数据的数据框添加到我的南美洲过滤器中，但我知道我还需要更多。见下文
 
-![](../Images/9df870266c071dbee436c60750844b82.png)
+![](img/9df870266c071dbee436c60750844b82.png)
 
 南美洲 + 法国。作者图片
 
@@ -172,7 +172,7 @@ france %>%
 southamerica %>%
   bind_rows(france) %>%
   ggplot() +
-  geom_sf(aes(fill=pop/10^6)) +
+  geom_sf(aes(fill=pop/10⁶)) +
   scale_fill_continuous_sequential(palette= "Heat 2" )+
   theme_light() +
   theme(
@@ -191,7 +191,7 @@ southamerica %>%
 
 换句话说，我想要的是这张地图。
 
-![](../Images/31cd893d321f76e97e7d5caacc009de5.png)
+![](img/31cd893d321f76e97e7d5caacc009de5.png)
 
 法属圭亚那在南美洲地图上。作者图片
 
@@ -216,7 +216,7 @@ southamerica %>%
   mutate(lon= ifelse(iso_a2=="FR", france[[11]][[1]][[1]][[1]][1,1], lon),
          lat= ifelse(iso_a2=="FR",france[[11]][[1]][[1]][[1]][1,2], lat)) %>%
   ggplot() +
-  geom_sf(aes(fill=pop/10^6)) +
+  geom_sf(aes(fill=pop/10⁶)) +
   scale_fill_continuous_sequential(palette= "Heat 2" )+
   geom_text_repel(aes(x=lon, y=lat, label= str_wrap(name_long,20)), 
                   color = "black", 
@@ -240,7 +240,7 @@ southamerica %>%
 
 数据普查可以在 [R 包](https://github.com/rpradosiqueira/sidrar) 或 [API](https://servicodados.ibge.gov.br/api/docs/agregados?versao=3) 地址上找到。我选择了使用 API 的更具挑战性的选项。另一次使用其他选项可能是个好主意。查看下面的代码和地图，我展示了巴西各州的人口与其他南美洲领土的对比。
 
-![](../Images/ecac872b5d553f3b6908d5a8b4d11dcd.png)
+![](img/ecac872b5d553f3b6908d5a8b4d11dcd.png)
 
 南美洲 + 巴西各州。图片由作者提供
 
@@ -275,8 +275,8 @@ southamerica %>%
   mutate(lon= ifelse(iso_a2=="FR", france[[11]][[1]][[1]][[1]][1,1], lon),
          lat= ifelse(iso_a2=="FR",france[[11]][[1]][[1]][[1]][1,2], lat)) %>%
   ggplot() +
-  geom_sf(aes(fill=pop/10^6)) +
-  geom_sf(data=estados, aes(fill=pop/10^6)) +
+  geom_sf(aes(fill=pop/10⁶)) +
+  geom_sf(data=estados, aes(fill=pop/10⁶)) +
   geom_sf(data=brasil,fill=NA, color="#00A859", lwd=1.2)+
   geom_sf(data= central_america,fill= "#808080")+
   scale_fill_continuous_sequential(palette= "Heat 2" )+
@@ -301,7 +301,7 @@ southamerica %>%
 
 现在是时候结束我的工作了。我想在地图上显示八个最人口稠密的领土的名称。即使在最后的冲刺阶段，也有一些代码技巧。
 
-![](../Images/7785052f63fb129506f4009e60c81ed9.png)
+![](img/7785052f63fb129506f4009e60c81ed9.png)
 
 最人口密集的领土。图片由作者提供
 
@@ -332,14 +332,14 @@ southamerica %>%
   mutate(lon= ifelse(iso_a2=="FR", france[[11]][[1]][[1]][[1]][1,1], lon),
          lat= ifelse(iso_a2=="FR",france[[11]][[1]][[1]][[1]][1,2], lat)) %>%
   ggplot() +
-  geom_sf(aes(fill=pop/10^6)) +
-  geom_sf(data=estados, aes(fill=pop/10^6)) +
+  geom_sf(aes(fill=pop/10⁶)) +
+  geom_sf(data=estados, aes(fill=pop/10⁶)) +
   geom_sf(data=brasil,fill=NA, color="#00A859", lwd=1.2)+
   geom_sf(data= central_america,fill= "#808080")+
   scale_fill_continuous_sequential(palette= "Heat 2" )+
   geom_text_repel(data= most_populated,
                   aes(x=lon, y=lat, 
-                      label= str_c(str_wrap(name,10),": ",round(pop/10^6,1))), 
+                      label= str_c(str_wrap(name,10),": ",round(pop/10⁶,1))), 
                   color = "black", 
                   fontface = "bold", 
                   size = 2.9)+

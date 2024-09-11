@@ -1,42 +1,42 @@
-# CLIP模型及其多模态嵌入的重要性
+# CLIP 模型及其多模态嵌入的重要性
 
-> 原文：[https://towardsdatascience.com/clip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72?source=collection_archive---------1-----------------------#2023-12-11](https://towardsdatascience.com/clip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72?source=collection_archive---------1-----------------------#2023-12-11)
+> 原文：[`towardsdatascience.com/clip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72?source=collection_archive---------1-----------------------#2023-12-11`](https://towardsdatascience.com/clip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72?source=collection_archive---------1-----------------------#2023-12-11)
 
-[](https://medium.com/@faheemrustamy?source=post_page-----1c8f6b13bf72--------------------------------)[![Fahim Rustamy, PhD](../Images/949c8654bd91d03124d0ba95182d8558.png)](https://medium.com/@faheemrustamy?source=post_page-----1c8f6b13bf72--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c8f6b13bf72--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c8f6b13bf72--------------------------------) [Fahim Rustamy, PhD](https://medium.com/@faheemrustamy?source=post_page-----1c8f6b13bf72--------------------------------)
+[](https://medium.com/@faheemrustamy?source=post_page-----1c8f6b13bf72--------------------------------)![Fahim Rustamy, PhD](https://medium.com/@faheemrustamy?source=post_page-----1c8f6b13bf72--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c8f6b13bf72--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c8f6b13bf72--------------------------------) [Fahim Rustamy, PhD](https://medium.com/@faheemrustamy?source=post_page-----1c8f6b13bf72--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F931fc8afcda1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72&user=Fahim+Rustamy%2C+PhD&userId=931fc8afcda1&source=post_page-931fc8afcda1----1c8f6b13bf72---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c8f6b13bf72--------------------------------) ·10分钟阅读·2023年12月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c8f6b13bf72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72&user=Fahim+Rustamy%2C+PhD&userId=931fc8afcda1&source=-----1c8f6b13bf72---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F931fc8afcda1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72&user=Fahim+Rustamy%2C+PhD&userId=931fc8afcda1&source=post_page-931fc8afcda1----1c8f6b13bf72---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c8f6b13bf72--------------------------------) ·10 分钟阅读·2023 年 12 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c8f6b13bf72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72&user=Fahim+Rustamy%2C+PhD&userId=931fc8afcda1&source=-----1c8f6b13bf72---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c8f6b13bf72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclip-model-and-the-importance-of-multimodal-embeddings-1c8f6b13bf72&source=-----1c8f6b13bf72---------------------bookmark_footer-----------)
 
-CLIP，即对比语言-图像预训练，是OpenAI在2021年开发的深度学习模型。CLIP的图像和文本嵌入共享同一空间，使得两种模态之间可以直接进行比较。这是通过训练模型使相关的图像和文本更接近，同时将不相关的图像和文本推远来实现的。本文将解释CLIP的工作原理，并指导你如何使用flikker和COCO数据集训练CLIP模型。
+CLIP，即对比语言-图像预训练，是 OpenAI 在 2021 年开发的深度学习模型。CLIP 的图像和文本嵌入共享同一空间，使得两种模态之间可以直接进行比较。这是通过训练模型使相关的图像和文本更接近，同时将不相关的图像和文本推远来实现的。本文将解释 CLIP 的工作原理，并指导你如何使用 flikker 和 COCO 数据集训练 CLIP 模型。
 
-你可以在这个GitHub仓库中找到代码：
+你可以在这个 GitHub 仓库中找到代码：
 
-[https://github.com/RustamyF/clip-multimodal-ml](https://github.com/RustamyF/clip-multimodal-ml)
+[`github.com/RustamyF/clip-multimodal-ml`](https://github.com/RustamyF/clip-multimodal-ml)
 
-**CLIP的应用**
+**CLIP 的应用**
 
-CLIP的一些应用包括：
+CLIP 的一些应用包括：
 
-1.  图像分类和检索：CLIP可以用于图像分类任务，通过将图像与自然语言描述关联起来。它允许更为多样和灵活的图像检索系统，用户可以通过文本查询来搜索图像。
+1.  图像分类和检索：CLIP 可以用于图像分类任务，通过将图像与自然语言描述关联起来。它允许更为多样和灵活的图像检索系统，用户可以通过文本查询来搜索图像。
 
-1.  内容审查：CLIP可以通过分析图像及其附带的文本来识别和过滤不适当或有害的内容，从而用于在线平台上的内容审查。
+1.  内容审查：CLIP 可以通过分析图像及其附带的文本来识别和过滤不适当或有害的内容，从而用于在线平台上的内容审查。
 
-原始CLIP模型旨在将图像和文本模态统一到一个共享的嵌入空间中。这个概念及其技术不仅限于图像和文本，还扩展到其他模态。Netflix在[这篇博客文章](https://netflixtechblog.com/building-in-video-search-936766f0017c)中通过在共享嵌入空间中结合视频和文本模态来训练模型，以增强视频应用中的搜索功能。[对比语言-音频预训练 (CLAP)](https://arxiv.org/abs/2206.04769)是另一种将文本和音频模态集成在同一嵌入空间中的模型，有助于改善音频应用中的搜索功能。
+原始 CLIP 模型旨在将图像和文本模态统一到一个共享的嵌入空间中。这个概念及其技术不仅限于图像和文本，还扩展到其他模态。Netflix 在[这篇博客文章](https://netflixtechblog.com/building-in-video-search-936766f0017c)中通过在共享嵌入空间中结合视频和文本模态来训练模型，以增强视频应用中的搜索功能。[对比语言-音频预训练 (CLAP)](https://arxiv.org/abs/2206.04769)是另一种将文本和音频模态集成在同一嵌入空间中的模型，有助于改善音频应用中的搜索功能。
 
-CLIP的基础技术非常简单但却非常强大，为许多多模态机器学习技术打开了大门。Meta AI 最近发布了[**ImageBind**](https://imagebind.metademolab.com/)，该技术在六种模态——图像、文本、音频、深度、热成像和IMU数据之间学习联合嵌入。CLIP是第一个接受两种模态的大规模AI模型，它是理解ImageBind和其他多模态AI系统的前提。
+CLIP 的基础技术非常简单但却非常强大，为许多多模态机器学习技术打开了大门。Meta AI 最近发布了[**ImageBind**](https://imagebind.metademolab.com/)，该技术在六种模态——图像、文本、音频、深度、热成像和 IMU 数据之间学习联合嵌入。CLIP 是第一个接受两种模态的大规模 AI 模型，它是理解 ImageBind 和其他多模态 AI 系统的前提。
 
-![](../Images/1a5691a4c507c3342a3efbd4537d7ee5.png)
+![](img/1a5691a4c507c3342a3efbd4537d7ee5.png)
 
-META AI的Imagebind接受六种不同的模态作为输入（取自[ImageBind的官方GitHub页面](https://github.com/facebookresearch/ImageBind)）。
+META AI 的 Imagebind 接受六种不同的模态作为输入（取自[ImageBind 的官方 GitHub 页面](https://github.com/facebookresearch/ImageBind)）。
 
-**什么是CLIP**
+**什么是 CLIP**
 
-CLIP旨在预测批次中的N × N潜在（图像、文本）配对中哪些是真实匹配的。为此，CLIP通过图像编码器和文本编码器的联合训练建立了一个多模态嵌入空间。**CLIP损失的目标是最大化批次中N个真实配对的图像和文本嵌入之间的余弦相似度，同时最小化N² − N个错误配对的余弦相似度。** 优化过程涉及使用对称交叉熵损失函数，该函数作用于这些相似度得分。以下展示了伪代码（取自原始论文），概述了CLIP的核心实现。
+CLIP 旨在预测批次中的 N × N 潜在（图像、文本）配对中哪些是真实匹配的。为此，CLIP 通过图像编码器和文本编码器的联合训练建立了一个多模态嵌入空间。**CLIP 损失的目标是最大化批次中 N 个真实配对的图像和文本嵌入之间的余弦相似度，同时最小化 N² − N 个错误配对的余弦相似度。** 优化过程涉及使用对称交叉熵损失函数，该函数作用于这些相似度得分。以下展示了伪代码（取自原始论文），概述了 CLIP 的核心实现。
 
 ```py
 # image_encoder - ResNet or Vision Transformer
@@ -61,19 +61,19 @@ loss_t = cross_entropy_loss(logits, labels, axis=1)
 loss = (loss_i + loss_t)/2
 ```
 
-以下是每一行伪代码的逐步描述及其在PyTorch中的实现：
+以下是每一行伪代码的逐步描述及其在 PyTorch 中的实现：
 
 **模型架构：**
 
-CLIP使用两种独立的架构作为视觉和文本数据集编码的骨干：
+CLIP 使用两种独立的架构作为视觉和文本数据集编码的骨干：
 
-+   `image_encoder`：表示负责编码图像的神经网络架构（例如，ResNet或Vision Transformer）。
++   `image_encoder`：表示负责编码图像的神经网络架构（例如，ResNet 或 Vision Transformer）。
 
 +   `text_encoder`：表示神经网络架构（如 CBOW、BERT 或 Text Transformer），负责对文本信息进行编码。
 
 原始 CLIP 模型从头开始训练，没有用预训练权重初始化图像编码器和文本编码器，因为他们用于训练 CLIP 模型的数据集体积巨大（4 亿对图像-文本）。在本博客文章中的示例中，我们会有所不同。我们将从 resnet（用于图像）和 distilbert（用于文本）模型的预训练权重开始，以初始化这些部分。
 
-![](../Images/5c97c5a7d2daac2d6759947f8927d4e1.png)
+![](img/5c97c5a7d2daac2d6759947f8927d4e1.png)
 
 CLIP 模型的架构（取自原始论文）
 
@@ -85,7 +85,7 @@ CLIP 模型的架构（取自原始论文）
 
 +   `T[n, l]`：表示对齐文本的小批量，其中 `n` 是批量大小，`l` 是文本序列的长度。
 
-![](../Images/565a0701a6c33df60c9fb469afa20d20.png)
+![](img/565a0701a6c33df60c9fb469afa20d20.png)
 
 一批图像和标题对，批量大小为 128
 
@@ -174,7 +174,7 @@ T_e = caption_encoder(text["input_ids"])
 
 +   `logits = np.dot(I_e, T_e.T) * np.exp(t)`：计算图像和文本嵌入之间的成对余弦相似度，按学习到的温度参数`t`进行缩放。
 
-在本示例中，我们以与原始论文中相同的方式交替使用相似度和logits。我们将在本博客中不包含温度参数`t`。
+在本示例中，我们以与原始论文中相同的方式交替使用相似度和 logits。我们将在本博客中不包含温度参数`t`。
 
 ```py
 logits = I_e @ T_e.T
@@ -237,7 +237,7 @@ class CustomModel(nn.Module):
 
 **数据集和数据加载器**
 
-我们的自定义 CLIP 模型将使用[flickr30k 数据集](https://huggingface.co/datasets/nlphuji/flickr30k)进行训练。该数据集包含超过31,000张图像，每张图像至少有5个独立的人类生成的标题。我们将在本示例中使用每张图像的两个标题，共有62,000对图像和文本用于训练。尽管传统上用于图像标题任务，但我们打算将图像-标题对适配到我们的双编码器模型，专门用于图像搜索。 [GitHub 存储库](https://github.com/RustamyF/clip-multimodal-ml)中还包括了用于在MS-COCO数据集上训练模型的代码，其中包含164,000对图像和文本。
+我们的自定义 CLIP 模型将使用[flickr30k 数据集](https://huggingface.co/datasets/nlphuji/flickr30k)进行训练。该数据集包含超过 31,000 张图像，每张图像至少有 5 个独立的人类生成的标题。我们将在本示例中使用每张图像的两个标题，共有 62,000 对图像和文本用于训练。尽管传统上用于图像标题任务，但我们打算将图像-标题对适配到我们的双编码器模型，专门用于图像搜索。 [GitHub 存储库](https://github.com/RustamyF/clip-multimodal-ml)中还包括了用于在 MS-COCO 数据集上训练模型的代码，其中包含 164,000 对图像和文本。
 
 ```py
 from torch.utils.data import DataLoader
@@ -274,7 +274,7 @@ class Flickr30kDataset(torch.utils.data.Dataset):
 flickr30k_custom_dataset = Flickr30kDataset()
 ```
 
-关键模型常量包括`embed_dim`用于学习的表示，`transformer_embed_dim`用于变换器层特征，以及`max_len`用于文本输入长度。选择的`text_model`是“distilbert-base-multilingual-cased”。训练跨度为3`epochs`，`batch_size`为128，这些常量将输入到模型构建和训练中。
+关键模型常量包括`embed_dim`用于学习的表示，`transformer_embed_dim`用于变换器层特征，以及`max_len`用于文本输入长度。选择的`text_model`是“distilbert-base-multilingual-cased”。训练跨度为 3`epochs`，`batch_size`为 128，这些常量将输入到模型构建和训练中。
 
 ```py
 from dataclasses import dataclass
@@ -323,7 +323,7 @@ plt.title(f"Caption: {caption}")
 plt.show()
 ```
 
-![](../Images/4069befa5671d85cbb02e7f5ed477411.png)
+![](img/4069befa5671d85cbb02e7f5ed477411.png)
 
 在这里，我们初始化我们的 CustomModel 并将其发送到设备（CPU 或 GPU）。此外，我们指定了在训练过程中需要优化的参数。由于我们已经固定了文本和图像编码器的基础层，因此只有与投影层相关的参数将在新数据集上进行训练。
 

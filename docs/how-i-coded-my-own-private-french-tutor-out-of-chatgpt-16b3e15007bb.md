@@ -1,14 +1,14 @@
 # 我如何用 ChatGPT 编写了自己的私人法语 tutor
 
-> 原文：[https://towardsdatascience.com/how-i-coded-my-own-private-french-tutor-out-of-chatgpt-16b3e15007bb?source=collection_archive---------1-----------------------#2023-06-30](https://towardsdatascience.com/how-i-coded-my-own-private-french-tutor-out-of-chatgpt-16b3e15007bb?source=collection_archive---------1-----------------------#2023-06-30)
+> 原文：[`towardsdatascience.com/how-i-coded-my-own-private-french-tutor-out-of-chatgpt-16b3e15007bb?source=collection_archive---------1-----------------------#2023-06-30`](https://towardsdatascience.com/how-i-coded-my-own-private-french-tutor-out-of-chatgpt-16b3e15007bb?source=collection_archive---------1-----------------------#2023-06-30)
 
 ## 逐步指南，讲述了我如何利用最新的人工智能服务来学习一门新语言，从架构到提示工程
 
-[](https://shakedzy.medium.com/?source=post_page-----16b3e15007bb--------------------------------)[![Shaked Zychlinski 🎗️](../Images/4d050b916bccab64df3c02236b3129eb.png)](https://shakedzy.medium.com/?source=post_page-----16b3e15007bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16b3e15007bb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----16b3e15007bb--------------------------------) [Shaked Zychlinski 🎗️](https://shakedzy.medium.com/?source=post_page-----16b3e15007bb--------------------------------)
+[](https://shakedzy.medium.com/?source=post_page-----16b3e15007bb--------------------------------)![Shaked Zychlinski 🎗️](https://shakedzy.medium.com/?source=post_page-----16b3e15007bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16b3e15007bb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----16b3e15007bb--------------------------------) [Shaked Zychlinski 🎗️](https://shakedzy.medium.com/?source=post_page-----16b3e15007bb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F43218078e688&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-coded-my-own-private-french-tutor-out-of-chatgpt-16b3e15007bb&user=Shaked+Zychlinski+%F0%9F%8E%97%EF%B8%8F&userId=43218078e688&source=post_page-43218078e688----16b3e15007bb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16b3e15007bb--------------------------------) · 10分钟阅读 · 2023年6月30日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F43218078e688&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-coded-my-own-private-french-tutor-out-of-chatgpt-16b3e15007bb&user=Shaked+Zychlinski+%F0%9F%8E%97%EF%B8%8F&userId=43218078e688&source=post_page-43218078e688----16b3e15007bb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16b3e15007bb--------------------------------) · 10 分钟阅读 · 2023 年 6 月 30 日
 
 --
 
@@ -16,39 +16,39 @@
 
 *讨论中提到的外语 tutor 的代码可以在* `[companion](https://github.com/shakedzy/companion)` [*我的 GitHub 页面上的 repo*](https://github.com/shakedzy/companion)*中找到，您可以在任何非商业用途下自由使用。*
 
-![](../Images/77c41f40c1d0441c96b20495c9f79836.png)
+![](img/77c41f40c1d0441c96b20495c9f79836.png)
 
 使用 Dall-E 制作
 
-所以在推迟了一段时间之后，我决定重新开始我的法语学习。当我报名参加课程时，这个想法突然出现——*如果我能编程让ChatGPT成为我的个人法语导师会怎么样？如果我能* ***与它对话*** *，而它会回应我呢？* 作为一名与LLMs合作的数据科学家，这似乎是值得构建的东西。我是说，是的，我可以直接和我的法语妻子对话，但这不如设计一个由ChatGPT构建的个人导师来得酷。爱你，亲爱的❤️。
+所以在推迟了一段时间之后，我决定重新开始我的法语学习。当我报名参加课程时，这个想法突然出现——*如果我能编程让 ChatGPT 成为我的个人法语导师会怎么样？如果我能* ***与它对话*** *，而它会回应我呢？* 作为一名与 LLMs 合作的数据科学家，这似乎是值得构建的东西。我是说，是的，我可以直接和我的法语妻子对话，但这不如设计一个由 ChatGPT 构建的个人导师来得酷。爱你，亲爱的❤️。
 
-但说真的，这个项目不仅仅是“另一个酷炫的代码玩具”。生成性AI正向我们生活的每一个领域进军，而大型语言模型（LLMs）似乎在这里占据主导地位。如今，一个人通过访问这些模型所能做的事情令人瞠目结舌，我认为这个项目值得我投入时间——我相信也值得你的时间——主要有两个原因：
+但说真的，这个项目不仅仅是“另一个酷炫的代码玩具”。生成性 AI 正向我们生活的每一个领域进军，而大型语言模型（LLMs）似乎在这里占据主导地位。如今，一个人通过访问这些模型所能做的事情令人瞠目结舌，我认为这个项目值得我投入时间——我相信也值得你的时间——主要有两个原因：
 
-+   使用ChatGPT作为知名的在线工具是很强大的，但将LLM集成到你的代码中是完全不同的事情。LLMs仍然有些不可预测，当你的产品依赖于LLM——或任何其他生成AI模型——作为核心产品时，你需要学会真正控制生成AI。这并不像听起来那么简单。
++   使用 ChatGPT 作为知名的在线工具是很强大的，但将 LLM 集成到你的代码中是完全不同的事情。LLMs 仍然有些不可预测，当你的产品依赖于 LLM——或任何其他生成 AI 模型——作为核心产品时，你需要学会真正控制生成 AI。这并不像听起来那么简单。
 
-+   获取第一个工作版本只用了几天工作时间。在生成AI和LLMs出现之前，这需要几个月，并且可能需要不止一个人。利用这些工具快速创建强大应用的力量是你真正需要自己尝试的——这是未来，至少在我看来，我们不会回头。
++   获取第一个工作版本只用了几天工作时间。在生成 AI 和 LLMs 出现之前，这需要几个月，并且可能需要不止一个人。利用这些工具快速创建强大应用的力量是你真正需要自己尝试的——这是未来，至少在我看来，我们不会回头。
 
-而且，这个项目实际上可以做一些好事。我妈妈真的希望找一个可以练习英语的对象。现在她可以做到，而且费用不到每月3美元。我的妻子的妈妈想开始学习韩语。情况相同，费用相同。当然，我自己也在使用！这个项目真的帮助了人们，费用比一杯小咖啡还少。如果你问我，这才是真正的生成AI革命。
+而且，这个项目实际上可以做一些好事。我妈妈真的希望找一个可以练习英语的对象。现在她可以做到，而且费用不到每月 3 美元。我的妻子的妈妈想开始学习韩语。情况相同，费用相同。当然，我自己也在使用！这个项目真的帮助了人们，费用比一杯小咖啡还少。如果你问我，这才是真正的生成 AI 革命。
 
 # 从零开始
 
-从高层次来看，我需要的有4个要素：
+从高层次来看，我需要的有 4 个要素：
 
 +   **语音转文本**，将我的声音转录为文字
 
-+   **大型语言模型**，最好是一个聊天型LLM，我可以向它提问并获得回答
++   **大型语言模型**，最好是一个聊天型 LLM，我可以向它提问并获得回答
 
-+   **文本转语音**，将LLM的回答转换为声音
++   **文本转语音**，将 LLM 的回答转换为声音
 
 +   **翻译**，将我不完全理解的法语文本转换为英语（或希伯来语，我的母语）
 
-幸运的是，现在是2023年，以上提到的一切都变得非常*非常*容易获得。我还选择使用托管服务和API，而不是在本地运行这些服务，因为这样推理速度会更快。此外，这些API的个人使用价格非常低，使得这个决定毫无疑问。
+幸运的是，现在是 2023 年，以上提到的一切都变得非常*非常*容易获得。我还选择使用托管服务和 API，而不是在本地运行这些服务，因为这样推理速度会更快。此外，这些 API 的个人使用价格非常低，使得这个决定毫无疑问。
 
 经过尝试几种替代方案后，我选择了 OpenAI 的 Whisper 和 ChatGPT 作为我的语音转文本和大型语言模型，Google 的文本转语音和翻译作为剩余模块。创建 API 密钥并设置这些服务非常简单，我能够通过它们原生的 Python 库在几分钟内与所有服务进行通信。
 
 经过测试这些服务后，我真正震惊的是我正在构建的导师不仅仅是一个英法翻译老师；由于 Whisper、ChatGPT 和 Google Translate & TTS 支持几十种语言，这可以用来学习几乎*任何语言*，同时使用*任何其他语言*进行交流。这真是疯狂！
 
-![](../Images/8bbea41fc4b9ccef5a4b39f60266e911.png)
+![](img/8bbea41fc4b9ccef5a4b39f60266e911.png)
 
 由 Dall-E 制作
 
@@ -56,7 +56,7 @@
 
 首先，让我们确保整体流程得到充分理解：**(1)** 我们从录制用户的声音开始，**(2)** 该声音发送到 Whisper API，并返回文本。**(3)** 文本被添加到聊天记录中，并发送到 ChatGPT，**(4)** ChatGPT 返回书面回复。其回复被**(5)** 发送到 Google Text-to-speech，Google 返回的音频文件将**(6)** 被播放。
 
-![](../Images/d796016494a36f4692161e52032412a3.png)
+![](img/d796016494a36f4692161e52032412a3.png)
 
 高级架构
 
@@ -76,7 +76,7 @@
 
 # 设计用户界面
 
-![](../Images/f6755d93b567e854ae6f1373a6eec390.png)
+![](img/f6755d93b567e854ae6f1373a6eec390.png)
 
 项目的用户界面
 
@@ -114,7 +114,7 @@ all previous messages are kept on screen
 
 *对于这部分内容，我将假设你对如何通过 API 与聊天 LLM（如 ChatGPT）进行通信有一些基本了解。如果没有，你可能会有些迷失。*
 
-![](../Images/c540817f73169cb754ea28c5f3936d12.png)
+![](img/c540817f73169cb754ea28c5f3936d12.png)
 
 由 Dall-E 制作
 
@@ -171,7 +171,7 @@ level. You must reply in {language}.
 
 # 概述
 
-![](../Images/bccd020fb50ed849a1d0f71945c66286.png)
+![](img/bccd020fb50ed849a1d0f71945c66286.png)
 
 使用 Dall-E 制作，已编辑
 

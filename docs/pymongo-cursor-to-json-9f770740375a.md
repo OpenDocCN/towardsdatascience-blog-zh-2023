@@ -1,18 +1,18 @@
 # 如何修复 TypeError: ObjectId 无法序列化为 JSON
 
-> 原文：[https://towardsdatascience.com/pymongo-cursor-to-json-9f770740375a?source=collection_archive---------3-----------------------#2023-01-07](https://towardsdatascience.com/pymongo-cursor-to-json-9f770740375a?source=collection_archive---------3-----------------------#2023-01-07)
+> 原文：[`towardsdatascience.com/pymongo-cursor-to-json-9f770740375a?source=collection_archive---------3-----------------------#2023-01-07`](https://towardsdatascience.com/pymongo-cursor-to-json-9f770740375a?source=collection_archive---------3-----------------------#2023-01-07)
 
 ## 在 Python 中将 mongo 游标转换为 JSON 对象
 
-[](https://gmyrianthous.medium.com/?source=post_page-----9f770740375a--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----9f770740375a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9f770740375a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9f770740375a--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9f770740375a--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----9f770740375a--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9f770740375a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9f770740375a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f770740375a--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9f770740375a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpymongo-cursor-to-json-9f770740375a&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----9f770740375a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f770740375a--------------------------------) · 4 分钟阅读 · 2023年1月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9f770740375a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpymongo-cursor-to-json-9f770740375a&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----9f770740375a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpymongo-cursor-to-json-9f770740375a&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----9f770740375a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f770740375a--------------------------------) · 4 分钟阅读 · 2023 年 1 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9f770740375a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpymongo-cursor-to-json-9f770740375a&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----9f770740375a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9f770740375a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpymongo-cursor-to-json-9f770740375a&source=-----9f770740375a---------------------bookmark_footer-----------)![](../Images/eaab2de46fd1a4afdef1ebe34e4c49af.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9f770740375a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpymongo-cursor-to-json-9f770740375a&source=-----9f770740375a---------------------bookmark_footer-----------)![](img/eaab2de46fd1a4afdef1ebe34e4c49af.png)
 
 图片由 [Ciprian Boiciuc](https://unsplash.com/@ciprian?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/TrNSWatUW5g?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

@@ -1,18 +1,18 @@
-# LLaMA: 适合每个人的LLM！
+# LLaMA: 适合每个人的 LLM！
 
-> 原文：[https://towardsdatascience.com/llama-llms-for-everyone-724e737835be?source=collection_archive---------1-----------------------#2023-07-11](https://towardsdatascience.com/llama-llms-for-everyone-724e737835be?source=collection_archive---------1-----------------------#2023-07-11)
+> 原文：[`towardsdatascience.com/llama-llms-for-everyone-724e737835be?source=collection_archive---------1-----------------------#2023-07-11`](https://towardsdatascience.com/llama-llms-for-everyone-724e737835be?source=collection_archive---------1-----------------------#2023-07-11)
 
 ## 高性能的开源语言模型……
 
-[](https://wolfecameron.medium.com/?source=post_page-----724e737835be--------------------------------)[![Cameron R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----724e737835be--------------------------------)[](https://towardsdatascience.com/?source=post_page-----724e737835be--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----724e737835be--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----724e737835be--------------------------------)
+[](https://wolfecameron.medium.com/?source=post_page-----724e737835be--------------------------------)![Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----724e737835be--------------------------------)[](https://towardsdatascience.com/?source=post_page-----724e737835be--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----724e737835be--------------------------------) [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----724e737835be--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllama-llms-for-everyone-724e737835be&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----724e737835be---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----724e737835be--------------------------------) ·15 min read·2023年7月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F724e737835be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllama-llms-for-everyone-724e737835be&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----724e737835be---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F28aa6026c553&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllama-llms-for-everyone-724e737835be&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=post_page-28aa6026c553----724e737835be---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----724e737835be--------------------------------) ·15 min read·2023 年 7 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F724e737835be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllama-llms-for-everyone-724e737835be&user=Cameron+R.+Wolfe%2C+Ph.D.&userId=28aa6026c553&source=-----724e737835be---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F724e737835be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllama-llms-for-everyone-724e737835be&source=-----724e737835be---------------------bookmark_footer-----------)![](../Images/f673f8c76d03117a2c38c912c91cd911.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F724e737835be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllama-llms-for-everyone-724e737835be&source=-----724e737835be---------------------bookmark_footer-----------)![](img/f673f8c76d03117a2c38c912c91cd911.png)
 
 (照片由 [Raspopova Marina](https://unsplash.com/@raspopovamarisha?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/s/photos/llama?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))
 

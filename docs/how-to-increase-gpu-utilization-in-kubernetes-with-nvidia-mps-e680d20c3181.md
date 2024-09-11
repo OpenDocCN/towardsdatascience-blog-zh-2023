@@ -1,10 +1,10 @@
 # 如何在 Kubernetes 中通过 NVIDIA MPS 提高 GPU 利用率
 
-> 原文：[https://towardsdatascience.com/how-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181?source=collection_archive---------1-----------------------#2023-02-02](https://towardsdatascience.com/how-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181?source=collection_archive---------1-----------------------#2023-02-02)
+> 原文：[`towardsdatascience.com/how-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181?source=collection_archive---------1-----------------------#2023-02-02`](https://towardsdatascience.com/how-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181?source=collection_archive---------1-----------------------#2023-02-02)
 
 ## 在 Kubernetes 中集成 NVIDIA 多进程服务（MPS），以在工作负载之间共享 GPU，最大化利用率并降低基础设施成本
 
-[](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)[![Michele Zanotti](../Images/6350ad98e5f057991b2e6f1a86a5c350.png)](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e680d20c3181--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e680d20c3181--------------------------------) [Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)
+[](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)![Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e680d20c3181--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e680d20c3181--------------------------------) [Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)
 
 ·
 
@@ -12,39 +12,39 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe680d20c3181&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181&source=-----e680d20c3181---------------------bookmark_footer-----------)![](../Images/b62ec1e0ca0e76162ec896ccec566e06.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe680d20c3181&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181&source=-----e680d20c3181---------------------bookmark_footer-----------)![](img/b62ec1e0ca0e76162ec896ccec566e06.png)
 
 图片由 [Growtika](https://unsplash.com/@growtika?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 大多数工作负载并不需要每个 GPU 的全部内存和计算资源。因此，在多个进程之间共享 GPU 对于提高 GPU 利用率和降低基础设施成本至关重要。
 
-在Kubernetes中，这可以通过将单个GPU暴露为多个资源（即切片），每个资源具有特定的内存和计算大小，供单独的容器请求来实现。通过创建每个容器严格需要的GPU切片，你可以释放集群中的资源。这些资源可以用于调度额外的Pod，或者减少集群中的节点数量。无论哪种情况，进程间的GPU共享可以帮助你降低基础设施成本。
+在 Kubernetes 中，这可以通过将单个 GPU 暴露为多个资源（即切片），每个资源具有特定的内存和计算大小，供单独的容器请求来实现。通过创建每个容器严格需要的 GPU 切片，你可以释放集群中的资源。这些资源可以用于调度额外的 Pod，或者减少集群中的节点数量。无论哪种情况，进程间的 GPU 共享可以帮助你降低基础设施成本。
 
-Kubernetes中的GPU支持由[NVIDIA Kubernetes设备插件](https://github.com/NVIDIA/k8s-device-plugin)提供，目前仅支持两种共享策略：时间切片和多实例GPU（MIG）。然而，还有一种平衡时间切片和MIG优缺点的GPU共享策略：[**多进程服务（MPS）**](https://docs.nvidia.com/deploy/mps/index.html)。尽管MPS不受NVIDIA设备插件支持，但在Kubernetes中仍有使用它的方法。
+Kubernetes 中的 GPU 支持由[NVIDIA Kubernetes 设备插件](https://github.com/NVIDIA/k8s-device-plugin)提供，目前仅支持两种共享策略：时间切片和多实例 GPU（MIG）。然而，还有一种平衡时间切片和 MIG 优缺点的 GPU 共享策略：[**多进程服务（MPS）**](https://docs.nvidia.com/deploy/mps/index.html)。尽管 MPS 不受 NVIDIA 设备插件支持，但在 Kubernetes 中仍有使用它的方法。
 
-在本文中，我们将首先审查这三种GPU共享技术的优缺点，然后提供如何在Kubernetes中使用MPS的逐步指南。此外，我们还提出了一种自动化管理MPS资源以优化利用率和降低运营成本的解决方案：**动态MPS分区**。
+在本文中，我们将首先审查这三种 GPU 共享技术的优缺点，然后提供如何在 Kubernetes 中使用 MPS 的逐步指南。此外，我们还提出了一种自动化管理 MPS 资源以优化利用率和降低运营成本的解决方案：**动态 MPS 分区**。
 
-# GPU共享技术概述
+# GPU 共享技术概述
 
-共享GPU的三种方法如下：
+共享 GPU 的三种方法如下：
 
 1.  **时间切片**
 
-1.  **多实例GPU（MIG）**
+1.  **多实例 GPU（MIG）**
 
 1.  **多进程服务（MPS）**
 
-在深入了解动态MPS分区的演示之前，我们先概述这些技术。
+在深入了解动态 MPS 分区的演示之前，我们先概述这些技术。
 
 # 时间切片
 
-时间切片是一种机制，允许落在超额分配GPU上的工作负载彼此交替。时间切片利用GPU时间切片调度器，通过*时间共享*同时执行多个CUDA进程。
+时间切片是一种机制，允许落在超额分配 GPU 上的工作负载彼此交替。时间切片利用 GPU 时间切片调度器，通过*时间共享*同时执行多个 CUDA 进程。
 
-当时间切片被激活时，GPU以公平共享的方式在不同进程之间分配计算资源，通过在固定时间间隔内切换进程。这会产生与持续上下文切换相关的计算时间开销，导致抖动和更高的延迟。
+当时间切片被激活时，GPU 以公平共享的方式在不同进程之间分配计算资源，通过在固定时间间隔内切换进程。这会产生与持续上下文切换相关的计算时间开销，导致抖动和更高的延迟。
 
-> 时间切片几乎被所有GPU架构支持，是在Kubernetes集群中共享GPU的最简单解决方案。然而，进程间的不断切换会产生计算时间开销。此外，时间切片不提供进程间的内存隔离，也没有内存分配限制，这可能导致频繁的内存溢出（OOM）错误。
+> 时间切片几乎被所有 GPU 架构支持，是在 Kubernetes 集群中共享 GPU 的最简单解决方案。然而，进程间的不断切换会产生计算时间开销。此外，时间切片不提供进程间的内存隔离，也没有内存分配限制，这可能导致频繁的内存溢出（OOM）错误。
 
-如果你想在Kubernetes中使用时间切片，你只需编辑NVIDIA设备插件配置。例如，你可以将以下配置应用到一个具有2个GPU的节点。该节点上运行的设备插件将向Kubernetes通告8个`nvidia.com/gpu`资源，而不是2个。这允许每个GPU最多由4个容器共享。
+如果你想在 Kubernetes 中使用时间切片，你只需编辑 NVIDIA 设备插件配置。例如，你可以将以下配置应用到一个具有 2 个 GPU 的节点。该节点上运行的设备插件将向 Kubernetes 通告 8 个`nvidia.com/gpu`资源，而不是 2 个。这允许每个 GPU 最多由 4 个容器共享。
 
 ```py
 version: v1
@@ -94,29 +94,29 @@ data:
             "2g.10gb": 3 
 ```
 
-要有效利用集群中的资源与NVIDIA GPU Operator，集群管理员必须持续修改ConfigMap，以适应不断变化的MIG大小和工作负载计算需求。
+要有效利用集群中的资源与 NVIDIA GPU Operator，集群管理员必须持续修改 ConfigMap，以适应不断变化的 MIG 大小和工作负载计算需求。
 
-这非常不切实际。虽然这种方法确实比通过SSH登录节点并手动创建/删除MIG设备要好，但对于集群管理员来说，这非常费力和耗时。因此，MIG设备的配置往往很少随着时间的推移而变化，或者根本没有应用，这两种情况都会导致GPU利用率低下，从而提高基础设施成本。
+这非常不切实际。虽然这种方法确实比通过 SSH 登录节点并手动创建/删除 MIG 设备要好，但对于集群管理员来说，这非常费力和耗时。因此，MIG 设备的配置往往很少随着时间的推移而变化，或者根本没有应用，这两种情况都会导致 GPU 利用率低下，从而提高基础设施成本。
 
-这个挑战可以通过[动态GPU分区](https://docs.nebuly.com/nos/dynamic-gpu-partitioning/overview/)来克服。稍后在本文中，我们将看到如何使用开源模块`nos`动态分区GPU，这种方法也适用于MIG。
+这个挑战可以通过[动态 GPU 分区](https://docs.nebuly.com/nos/dynamic-gpu-partitioning/overview/)来克服。稍后在本文中，我们将看到如何使用开源模块`nos`动态分区 GPU，这种方法也适用于 MIG。
 
 # 多进程服务（MPS）
 
-多进程服务（MPS）是CUDA应用程序编程接口（API）的客户端-服务器实现，用于在同一GPU上并发运行多个进程。
+多进程服务（MPS）是 CUDA 应用程序编程接口（API）的客户端-服务器实现，用于在同一 GPU 上并发运行多个进程。
 
-服务器管理GPU访问，为客户端提供并发。客户端通过客户端运行时连接到它，该运行时内置于CUDA驱动程序库中，任何CUDA应用程序都可以透明地使用它。
+服务器管理 GPU 访问，为客户端提供并发。客户端通过客户端运行时连接到它，该运行时内置于 CUDA 驱动程序库中，任何 CUDA 应用程序都可以透明地使用它。
 
-> MPS与基本上所有现代GPU兼容，并提供了最高的灵活性，允许创建具有任意限制的GPU切片，包括分配内存量和可用计算量。然而，它不强制执行进程间的完全内存隔离。在大多数情况下，MPS是MIG和时间切片之间的良好折中方案。
+> MPS 与基本上所有现代 GPU 兼容，并提供了最高的灵活性，允许创建具有任意限制的 GPU 切片，包括分配内存量和可用计算量。然而，它不强制执行进程间的完全内存隔离。在大多数情况下，MPS 是 MIG 和时间切片之间的良好折中方案。
 
-与时间切片相比，MPS通过*空间共享*并行运行进程，消除了上下文切换的开销，因此能提供更好的计算性能。此外，MPS为每个进程提供自己的GPU内存地址空间。这允许对进程施加内存限制，克服了时间切片共享的限制。
+与时间切片相比，MPS 通过*空间共享*并行运行进程，消除了上下文切换的开销，因此能提供更好的计算性能。此外，MPS 为每个进程提供自己的 GPU 内存地址空间。这允许对进程施加内存限制，克服了时间切片共享的限制。
 
-然而，在MPS中，客户端进程之间并未完全隔离。实际上，即使MPS允许限制客户端的计算和内存资源，它也不提供错误隔离和内存保护。这意味着客户端进程可能崩溃并导致整个GPU重置，影响在GPU上运行的所有其他进程。
+然而，在 MPS 中，客户端进程之间并未完全隔离。实际上，即使 MPS 允许限制客户端的计算和内存资源，它也不提供错误隔离和内存保护。这意味着客户端进程可能崩溃并导致整个 GPU 重置，影响在 GPU 上运行的所有其他进程。
 
-NVIDIA Kubernetes设备插件不支持MPS分区，这使得在Kubernetes中使用它并不简单。在接下来的部分，我们将探讨通过利用`nos`和另一种Kubernetes设备插件来利用MPS进行GPU共享的替代方法。
+NVIDIA Kubernetes 设备插件不支持 MPS 分区，这使得在 Kubernetes 中使用它并不简单。在接下来的部分，我们将探讨通过利用`nos`和另一种 Kubernetes 设备插件来利用 MPS 进行 GPU 共享的替代方法。
 
-# Kubernetes中的多进程服务（MPS）
+# Kubernetes 中的多进程服务（MPS）
 
-你可以通过使用Helm安装[NVIDIA设备插件的这个分支](https://github.com/nebuly-ai/k8s-device-plugin)来启用Kubernetes集群中的MPS分区：
+你可以通过使用 Helm 安装[NVIDIA 设备插件的这个分支](https://github.com/nebuly-ai/k8s-device-plugin)来启用 Kubernetes 集群中的 MPS 分区：
 
 ```py
 helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin \
@@ -126,9 +126,9 @@ helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin \
   --create-namespace
 ```
 
-默认情况下，Helm图表会在所有标记为`nos.nebuly.com/gpu-partitioning=mps`的节点上启用MPS模式部署设备插件。要在特定节点的GPU上启用MPS分区，你只需将标签`nos.nebuly.com/gpu-partitioning=mps`应用于该节点。
+默认情况下，Helm 图表会在所有标记为`nos.nebuly.com/gpu-partitioning=mps`的节点上启用 MPS 模式部署设备插件。要在特定节点的 GPU 上启用 MPS 分区，你只需将标签`nos.nebuly.com/gpu-partitioning=mps`应用于该节点。
 
-你的集群上很可能已经安装了一个版本的NVIDIA设备插件。如果你不想删除它，可以选择将这个分叉插件与原始NVIDIA设备插件一起安装，并仅在特定节点上运行。为此，重要的是确保在同一节点上同时运行的两个插件中只有一个在运行。如[安装指南](https://github.com/nebuly-ai/k8s-device-plugin#installation)所述，可以通过编辑**原始**NVIDIA设备插件的规格，并在其`spec.template.spec`中添加一个反亲和性规则，以确保它不会在分叉插件所针对的相同节点上运行：
+你的集群上很可能已经安装了一个版本的 NVIDIA 设备插件。如果你不想删除它，可以选择将这个分叉插件与原始 NVIDIA 设备插件一起安装，并仅在特定节点上运行。为此，重要的是确保在同一节点上同时运行的两个插件中只有一个在运行。如[安装指南](https://github.com/nebuly-ai/k8s-device-plugin#installation)所述，可以通过编辑**原始**NVIDIA 设备插件的规格，并在其`spec.template.spec`中添加一个反亲和性规则，以确保它不会在分叉插件所针对的相同节点上运行：
 
 ```py
 affinity:
@@ -142,7 +142,7 @@ affinity:
           - mps
 ```
 
-安装设备插件后，你可以通过编辑其配置中的`sharing.mps`部分来配置它以将GPU暴露为多个MPS资源。例如，下面的配置告诉插件将索引为`0`的GPU暴露给Kubernetes，作为两个GPU资源（名为`nvidia.com/gpu-4gb`），每个资源具有4GB的内存：
+安装设备插件后，你可以通过编辑其配置中的`sharing.mps`部分来配置它以将 GPU 暴露为多个 MPS 资源。例如，下面的配置告诉插件将索引为`0`的 GPU 暴露给 Kubernetes，作为两个 GPU 资源（名为`nvidia.com/gpu-4gb`），每个资源具有 4GB 的内存：
 
 ```py
 version: v1
@@ -156,7 +156,7 @@ sharing:
         devices: ["0"]
 ```
 
-广告给Kubernetes的资源名称、分区大小和副本数量可以根据需要进行配置。回到上面给出的示例，容器可以请求4GB GPU内存的一部分，如下所示：
+广告给 Kubernetes 的资源名称、分区大小和副本数量可以根据需要进行配置。回到上面给出的示例，容器可以请求 4GB GPU 内存的一部分，如下所示：
 
 ```py
 apiVersion: v1
@@ -176,21 +176,21 @@ spec:
           nvidia.com/gpu-4gb: 1 #
 ```
 
-请注意，容器请求MPS资源的Pods存在一些限制：
+请注意，容器请求 MPS 资源的 Pods 存在一些限制：
 
-1.  容器必须以与设备插件部署的MPS服务器相同的用户ID运行，默认情况下为1000。你可以通过编辑设备插件安装图表中的`mps.userID`值来更改它。
+1.  容器必须以与设备插件部署的 MPS 服务器相同的用户 ID 运行，默认情况下为 1000。你可以通过编辑设备插件安装图表中的`mps.userID`值来更改它。
 
-1.  Pod规范必须包含`hostIPC: true`。由于MPS要求客户端和服务器共享相同的内存空间，我们需要允许Pods访问主机节点的IPC命名空间，以便它能够与运行在主机上的MPS服务器进行通信。
+1.  Pod 规范必须包含`hostIPC: true`。由于 MPS 要求客户端和服务器共享相同的内存空间，我们需要允许 Pods 访问主机节点的 IPC 命名空间，以便它能够与运行在主机上的 MPS 服务器进行通信。
 
-在这个例子中，容器最多只能在共享GPU上分配2GB的内存。如果它尝试分配更多内存，将会因内存不足（OOM）错误而崩溃，但不会影响其他Pods。
+在这个例子中，容器最多只能在共享 GPU 上分配 2GB 的内存。如果它尝试分配更多内存，将会因内存不足（OOM）错误而崩溃，但不会影响其他 Pods。
 
-然而，需要指出的是，`nvidia-smi`访问NVIDIA驱动程序时会绕过MPS客户端运行时。因此，在容器内运行`nvidia-smi`将显示其输出中的整个GPU资源：
+然而，需要指出的是，`nvidia-smi`访问 NVIDIA 驱动程序时会绕过 MPS 客户端运行时。因此，在容器内运行`nvidia-smi`将显示其输出中的整个 GPU 资源：
 
-![](../Images/e71cd8b16606e92a4a45eb526a387fe3.png)
+![](img/e71cd8b16606e92a4a45eb526a387fe3.png)
 
-# 动态MPS分区
+# 动态 MPS 分区
 
-总体而言，通过设备插件配置来管理MPS资源是复杂且耗时的。与其如此，不如直接创建请求MPS资源的Pods，并让其他人自动配置和管理它们。
+总体而言，通过设备插件配置来管理 MPS 资源是复杂且耗时的。与其如此，不如直接创建请求 MPS 资源的 Pods，并让其他人自动配置和管理它们。
 
 动态 MPS 分区正是这样做的：它根据集群中工作负载的实时需求自动创建和删除 MPS 资源，确保始终将最佳共享配置应用于可用的 GPU。
 

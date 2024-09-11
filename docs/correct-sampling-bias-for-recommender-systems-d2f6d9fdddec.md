@@ -1,18 +1,18 @@
 # 正确处理推荐系统中的采样偏差
 
-> 原文：[https://towardsdatascience.com/correct-sampling-bias-for-recommender-systems-d2f6d9fdddec?source=collection_archive---------1-----------------------#2023-10-01](https://towardsdatascience.com/correct-sampling-bias-for-recommender-systems-d2f6d9fdddec?source=collection_archive---------1-----------------------#2023-10-01)
+> 原文：[`towardsdatascience.com/correct-sampling-bias-for-recommender-systems-d2f6d9fdddec?source=collection_archive---------1-----------------------#2023-10-01`](https://towardsdatascience.com/correct-sampling-bias-for-recommender-systems-d2f6d9fdddec?source=collection_archive---------1-----------------------#2023-10-01)
 
 ## 什么是推荐系统中的采样偏差，如何纠正
 
-[](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)[![Thao Vu](../Images/9d44a2f199cdc9c29da72d9dc4971561.png)](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------) [Thao Vu](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)
+[](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)![Thao Vu](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------) [Thao Vu](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa836aac352ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrect-sampling-bias-for-recommender-systems-d2f6d9fdddec&user=Thao+Vu&userId=a836aac352ca&source=post_page-a836aac352ca----d2f6d9fdddec---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------) ·8分钟阅读·2023年10月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd2f6d9fdddec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrect-sampling-bias-for-recommender-systems-d2f6d9fdddec&user=Thao+Vu&userId=a836aac352ca&source=-----d2f6d9fdddec---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa836aac352ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrect-sampling-bias-for-recommender-systems-d2f6d9fdddec&user=Thao+Vu&userId=a836aac352ca&source=post_page-a836aac352ca----d2f6d9fdddec---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------) ·8 分钟阅读·2023 年 10 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd2f6d9fdddec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrect-sampling-bias-for-recommender-systems-d2f6d9fdddec&user=Thao+Vu&userId=a836aac352ca&source=-----d2f6d9fdddec---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd2f6d9fdddec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrect-sampling-bias-for-recommender-systems-d2f6d9fdddec&source=-----d2f6d9fdddec---------------------bookmark_footer-----------)![](../Images/c5bbbc4ae0707318b5df926332f23574.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd2f6d9fdddec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcorrect-sampling-bias-for-recommender-systems-d2f6d9fdddec&source=-----d2f6d9fdddec---------------------bookmark_footer-----------)![](img/c5bbbc4ae0707318b5df926332f23574.png)
 
 图片来源：[NordWood Themes](https://unsplash.com/@nordwood?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

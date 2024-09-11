@@ -1,14 +1,14 @@
 # 神经原型树
 
-> 原文：[https://towardsdatascience.com/neural-prototype-trees-f7bac36437a9?source=collection_archive---------6-----------------------#2023-06-02](https://towardsdatascience.com/neural-prototype-trees-f7bac36437a9?source=collection_archive---------6-----------------------#2023-06-02)
+> 原文：[`towardsdatascience.com/neural-prototype-trees-f7bac36437a9?source=collection_archive---------6-----------------------#2023-06-02`](https://towardsdatascience.com/neural-prototype-trees-f7bac36437a9?source=collection_archive---------6-----------------------#2023-06-02)
 
 ## 通过模拟人类推理来解释图像分类。
 
-[](https://medium.com/@upadhyan?source=post_page-----f7bac36437a9--------------------------------)[![Nakul Upadhya](../Images/336cb21272e9b1f098177adbde50e92e.png)](https://medium.com/@upadhyan?source=post_page-----f7bac36437a9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f7bac36437a9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f7bac36437a9--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----f7bac36437a9--------------------------------)
+[](https://medium.com/@upadhyan?source=post_page-----f7bac36437a9--------------------------------)![Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----f7bac36437a9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f7bac36437a9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f7bac36437a9--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----f7bac36437a9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-prototype-trees-f7bac36437a9&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----f7bac36437a9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f7bac36437a9--------------------------------) ·6 分钟阅读·2023年6月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff7bac36437a9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-prototype-trees-f7bac36437a9&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----f7bac36437a9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-prototype-trees-f7bac36437a9&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----f7bac36437a9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f7bac36437a9--------------------------------) ·6 分钟阅读·2023 年 6 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff7bac36437a9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-prototype-trees-f7bac36437a9&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----f7bac36437a9---------------------clap_footer-----------)
 
 --
 

@@ -1,26 +1,26 @@
-# GPT模型简介
+# GPT 模型简介
 
-> 原文：[https://towardsdatascience.com/a-gentle-introduction-to-gpt-models-e02b093a495b?source=collection_archive---------1-----------------------#2023-04-12](https://towardsdatascience.com/a-gentle-introduction-to-gpt-models-e02b093a495b?source=collection_archive---------1-----------------------#2023-04-12)
+> 原文：[`towardsdatascience.com/a-gentle-introduction-to-gpt-models-e02b093a495b?source=collection_archive---------1-----------------------#2023-04-12`](https://towardsdatascience.com/a-gentle-introduction-to-gpt-models-e02b093a495b?source=collection_archive---------1-----------------------#2023-04-12)
 
 ## 欢迎来到新的令牌生成器的世界
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----e02b093a495b--------------------------------)[![本杰明·玛丽](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----e02b093a495b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e02b093a495b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e02b093a495b--------------------------------) [本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----e02b093a495b--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----e02b093a495b--------------------------------)![本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----e02b093a495b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e02b093a495b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e02b093a495b--------------------------------) [本杰明·玛丽](https://medium.com/@bnjmn_marie?source=post_page-----e02b093a495b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-gpt-models-e02b093a495b&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----e02b093a495b---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e02b093a495b--------------------------------) ·9分钟阅读·2023年4月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe02b093a495b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-gpt-models-e02b093a495b&user=Benjamin+Marie&userId=ad2a414578b3&source=-----e02b093a495b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-gpt-models-e02b093a495b&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----e02b093a495b---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e02b093a495b--------------------------------) ·9 分钟阅读·2023 年 4 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe02b093a495b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-gpt-models-e02b093a495b&user=Benjamin+Marie&userId=ad2a414578b3&source=-----e02b093a495b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe02b093a495b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-gpt-models-e02b093a495b&source=-----e02b093a495b---------------------bookmark_footer-----------)![](../Images/db0b10a3b127c9e3fba8e78be613555e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe02b093a495b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-gentle-introduction-to-gpt-models-e02b093a495b&source=-----e02b093a495b---------------------bookmark_footer-----------)![](img/db0b10a3b127c9e3fba8e78be613555e.png)
 
 图片来源于 [Pixabay](https://pixabay.com/illustrations/dinosaur-t-rex-animal-dino-5631999/) — 作者修改
 
-随着ChatGPT和GPT-4的最近发布，GPT模型引起了科学界的极大关注。这些OpenAI的GPT模型新版本如此强大和多才多艺，以至于我们可能需要很长时间才能充分挖掘它们的潜力。
+随着 ChatGPT 和 GPT-4 的最近发布，GPT 模型引起了科学界的极大关注。这些 OpenAI 的 GPT 模型新版本如此强大和多才多艺，以至于我们可能需要很长时间才能充分挖掘它们的潜力。
 
-尽管它们令人印象深刻，但你可能不知道，GPT模型背后的主要思想和算法远非新颖。
+尽管它们令人印象深刻，但你可能不知道，GPT 模型背后的主要思想和算法远非新颖。
 
-无论你是经验丰富的数据科学家还是仅仅对GPT感到好奇的人，了解GPT模型的演变对数据的影响以及未来几年的预期都是特别有启发性的。
+无论你是经验丰富的数据科学家还是仅仅对 GPT 感到好奇的人，了解 GPT 模型的演变对数据的影响以及未来几年的预期都是特别有启发性的。
 
 在这篇文章中，我解释了 GPT 模型如何发展到今天的状态。我将主要关注 OpenAI 如何在这些年里扩展 GPT 模型。如果你想开始使用 GPT 模型，我也会给出一些指引。
 
@@ -38,7 +38,7 @@ GPT 模型是语言模型。
 
 使用 *n*=3，你可以从一个 3-gram 语言模型中获得“*in*”跟在“*cat sleeps*”后面的概率。
 
-*n*-gram 模型在许多自然语言和语音处理任务中仍然很有用，直到2010年代初。
+*n*-gram 模型在许多自然语言和语音处理任务中仍然很有用，直到 2010 年代初。
 
 这些模型存在几个限制。计算复杂性随着 *n* 的增加而急剧增加。因此，这些模型通常限制在 *n*=5 或更低。
 
@@ -46,7 +46,7 @@ GPT 模型是语言模型。
 
 使用这些模型生成文本也是可能的，但它们的输出质量很差，因此很少用于这个目的。
 
-然后，在2018年，[OpenAI 提出了第一个 GPT 模型](https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf)。
+然后，在 2018 年，[OpenAI 提出了第一个 GPT 模型](https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf)。
 
 GPT 代表“生成预训练”。“预训练”意味着模型只是基于大量文本进行训练，以建模概率，除了语言建模没有其他目的。GPT 模型可以进一步微调，即进一步训练，以执行更具体的任务。
 
@@ -56,71 +56,71 @@ GPT 代表“生成预训练”。“预训练”意味着模型只是基于大�
 
 GPT 模型现在在几乎所有自然语言处理任务中表现都很优秀。我特别研究了它们在机器翻译方面的能力，你可以在以下文章中阅读：
 
-[](/translate-with-gpt-3-9903c4a6f385?source=post_page-----e02b093a495b--------------------------------) [## 使用 GPT-3 进行翻译
+[](/translate-with-gpt-3-9903c4a6f385?source=post_page-----e02b093a495b--------------------------------) ## 使用 GPT-3 进行翻译
 
 ### 机器翻译，但没有机器翻译系统
 
-towardsdatascience.com](/translate-with-gpt-3-9903c4a6f385?source=post_page-----e02b093a495b--------------------------------)
+towardsdatascience.com
 
 训练的规模和它们利用的 Transformer 神经网络架构是它们能够生成流畅文本的主要原因。
 
-自2018年首次发布GPT以来，出现了多个版本和子版本的GPT。
+自 2018 年首次发布 GPT 以来，出现了多个版本和子版本的 GPT。
 
-# 4个版本和更多子版本
+# 4 个版本和更多子版本
 
-## GPT和GPT-2
+## GPT 和 GPT-2
 
-[GPT-2在首次发布GPT后的几个月内推出](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)。*注：在描述首次GPT的科学论文中从未提到“GPT”这个术语。可以说，“GPT-1”实际上并不存在。据我所知，它也从未发布。*
+[GPT-2 在首次发布 GPT 后的几个月内推出](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)。*注：在描述首次 GPT 的科学论文中从未提到“GPT”这个术语。可以说，“GPT-1”实际上并不存在。据我所知，它也从未发布。*
 
-*GPT和GPT-2有什么区别？*
+*GPT 和 GPT-2 有什么区别？*
 
-规模。GPT-2比GPT大得多。
+规模。GPT-2 比 GPT 大得多。
 
-GPT是在包含7000本书的BookCorpus上进行训练的。该模型有1.2亿个参数。
+GPT 是在包含 7000 本书的 BookCorpus 上进行训练的。该模型有 1.2 亿个参数。
 
 > 什么是参数？
 > 
 > 参数是模型训练过程中学习到的变量。通常，参数更多的模型更大，表现更好。
 
-120百万在2018年是一个巨大的数字。
+120 百万在 2018 年是一个巨大的数字。
 
-借助GPT-2，OpenAI提出了一个包含15亿参数的更大模型。
+借助 GPT-2，OpenAI 提出了一个包含 15 亿参数的更大模型。
 
-它是在一个未公开的语料库WebText上进行训练的。这个语料库比BookCorpus大10倍（[根据描述GPT-2的论文](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)）。
+它是在一个未公开的语料库 WebText 上进行训练的。这个语料库比 BookCorpus 大 10 倍（[根据描述 GPT-2 的论文](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)）。
 
-OpenAI逐步发布了4个版本的GPT-2：
+OpenAI 逐步发布了 4 个版本的 GPT-2：
 
-+   small: 124百万参数
++   small: 124 百万参数
 
-+   medium: 355百万参数
++   medium: 355 百万参数
 
-+   large: 774百万参数
++   large: 774 百万参数
 
-+   xl: 15亿参数
++   xl: 15 亿参数
 
 它们[都是公开的](https://openai.com/research/gpt-2-1-5b-release)，可以用于商业产品中。
 
-虽然GPT-2-XL在生成自然流畅的文本方面表现出色，即没有任何特定的指令或微调，但在特定任务上仍然远不如更新的GPT模型强大。
+虽然 GPT-2-XL 在生成自然流畅的文本方面表现出色，即没有任何特定的指令或微调，但在特定任务上仍然远不如更新的 GPT 模型强大。
 
-GPT-2-XL的发布是OpenAI最后一次公开发布的GPT模型。GPT-3和GPT-4只能通过OpenAI的API使用。
+GPT-2-XL 的发布是 OpenAI 最后一次公开发布的 GPT 模型。GPT-3 和 GPT-4 只能通过 OpenAI 的 API 使用。
 
 ## GPT-3
 
-GPT-3于2020年发布。其拥有1750亿参数，比GPT-2的跳跃更大。
+GPT-3 于 2020 年发布。其拥有 1750 亿参数，比 GPT-2 的跳跃更大。
 
-[这也是因为OpenAI停止公开GPT模型的精确训练信息。](https://arxiv.org/pdf/2005.14165.pdf)
+[这也是因为 OpenAI 停止公开 GPT 模型的精确训练信息。](https://arxiv.org/pdf/2005.14165.pdf)
 
-今天，通过OpenAI的API提供了7个GPT-3模型，但我们对它们了解甚少。
+今天，通过 OpenAI 的 API 提供了 7 个 GPT-3 模型，但我们对它们了解甚少。
 
-借助GPT-3，OpenAI展示了如果用户提供一些他们希望模型完成的任务示例，GPT模型可以在特定的语言生成任务中表现得极为出色。
+借助 GPT-3，OpenAI 展示了如果用户提供一些他们希望模型完成的任务示例，GPT 模型可以在特定的语言生成任务中表现得极为出色。
 
 ## GPT-3.5
 
-随着GPT-3模型在API中运行并吸引越来越多的用户，OpenAI能够收集到一个非常大的用户输入数据集。
+随着 GPT-3 模型在 API 中运行并吸引越来越多的用户，OpenAI 能够收集到一个非常大的用户输入数据集。
 
 他们利用这些输入进一步改进了他们的模型。
 
-他们使用了一种叫做[人类反馈强化学习（RLHF）](https://openai.com/blog/deep-reinforcement-learning-from-human-preferences/)的技术。我不会在这里详细解释，但你可以在OpenAI发布的[一篇博客文章](https://openai.com/research/instruction-following)中找到这些细节。
+他们使用了一种叫做[人类反馈强化学习（RLHF）](https://openai.com/blog/deep-reinforcement-learning-from-human-preferences/)的技术。我不会在这里详细解释，但你可以在 OpenAI 发布的[一篇博客文章](https://openai.com/research/instruction-following)中找到这些细节。
 
 简而言之，得益于 RLHF，GPT-3.5 在遵循用户指令方面比 GPT-3 好得多。OpenAI 将这类 GPT 模型称为“instructGPT”。
 
@@ -168,7 +168,7 @@ pub.towardsai.net](https://pub.towardsai.net/run-very-large-language-models-on-y
 
 每个模型有不同的设置，你可以进行调整。请注意，GPT 模型是*非确定性的*。如果你用相同的提示两次调用模型，很有可能会得到两个相似但不同的回答。
 
-*注意：如果你想减少相同提示下回答的变异性，可以将模型的“温度”参数设置为0。副作用是，它也会显著减少答案的多样性，换句话说，生成的文本可能会更冗余。*
+*注意：如果你想减少相同提示下回答的变异性，可以将模型的“温度”参数设置为 0。副作用是，它也会显著减少答案的多样性，换句话说，生成的文本可能会更冗余。*
 
 你还需要注意“最大内容长度”。这是你的提示长度加上 GPT 生成的回答长度。例如，GPT-3.5-turbo 的“最大内容长度”是 4,096 *令牌*。
 
@@ -194,7 +194,7 @@ OpenAI 在[API 文档](https://platform.openai.com/docs/guides/chat/introduction
 
 GPT 模型仅仅是基于网络训练的令牌生成器。它们受限于训练数据的内容，因此不能被认为是完全安全的。
 
-自 GPT-3.5 起，OpenAI 已训练其模型以避免回答有害内容。为实现这一目标，他们使用了机器学习技术，因此这种“自我调节”无法100%被信任。
+自 GPT-3.5 起，OpenAI 已训练其模型以避免回答有害内容。为实现这一目标，他们使用了机器学习技术，因此这种“自我调节”无法 100%被信任。
 
 这种自我调节可能对某个特定提示有效，但在仅仅改变一个词后，可能会完全失效。
 

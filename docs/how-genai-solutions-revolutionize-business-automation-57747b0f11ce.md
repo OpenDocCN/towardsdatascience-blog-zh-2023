@@ -1,18 +1,18 @@
-# 如何通过GenAI解决方案彻底改变商业自动化：解读LLM应用的高级管理层
+# 如何通过 GenAI 解决方案彻底改变商业自动化：解读 LLM 应用的高级管理层
 
-> 原文：[https://towardsdatascience.com/how-genai-solutions-revolutionize-business-automation-57747b0f11ce?source=collection_archive---------3-----------------------#2023-09-06](https://towardsdatascience.com/how-genai-solutions-revolutionize-business-automation-57747b0f11ce?source=collection_archive---------3-----------------------#2023-09-06)
+> 原文：[`towardsdatascience.com/how-genai-solutions-revolutionize-business-automation-57747b0f11ce?source=collection_archive---------3-----------------------#2023-09-06`](https://towardsdatascience.com/how-genai-solutions-revolutionize-business-automation-57747b0f11ce?source=collection_archive---------3-----------------------#2023-09-06)
 
 ## 公司如何利用大型语言模型（LLMs）的力量来自动化工作流程并提高成本效率
 
-[](https://medium.com/@ninadsohoni?source=post_page-----57747b0f11ce--------------------------------)[![Ninad Sohoni](../Images/8d6ec40665bb85fb7b4ece99e6a40913.png)](https://medium.com/@ninadsohoni?source=post_page-----57747b0f11ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57747b0f11ce--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----57747b0f11ce--------------------------------) [Ninad Sohoni](https://medium.com/@ninadsohoni?source=post_page-----57747b0f11ce--------------------------------)
+[](https://medium.com/@ninadsohoni?source=post_page-----57747b0f11ce--------------------------------)![Ninad Sohoni](https://medium.com/@ninadsohoni?source=post_page-----57747b0f11ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57747b0f11ce--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----57747b0f11ce--------------------------------) [Ninad Sohoni](https://medium.com/@ninadsohoni?source=post_page-----57747b0f11ce--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5ee93978501b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-genai-solutions-revolutionize-business-automation-57747b0f11ce&user=Ninad+Sohoni&userId=5ee93978501b&source=post_page-5ee93978501b----57747b0f11ce---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----57747b0f11ce--------------------------------) · 11 分钟阅读 · 2023年9月6日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5ee93978501b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-genai-solutions-revolutionize-business-automation-57747b0f11ce&user=Ninad+Sohoni&userId=5ee93978501b&source=post_page-5ee93978501b----57747b0f11ce---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----57747b0f11ce--------------------------------) · 11 分钟阅读 · 2023 年 9 月 6 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F57747b0f11ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-genai-solutions-revolutionize-business-automation-57747b0f11ce&source=-----57747b0f11ce---------------------bookmark_footer-----------)![](../Images/4477eaceddb851489dddad62b6f73539.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F57747b0f11ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-genai-solutions-revolutionize-business-automation-57747b0f11ce&source=-----57747b0f11ce---------------------bookmark_footer-----------)![](img/4477eaceddb851489dddad62b6f73539.png)
 
 照片由 [Gerard Siderius](https://unsplash.com/@siderius_creativ?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -38,29 +38,29 @@
 
 # LLM-based 解决方案的机制
 
-行业内的许多LLM解决方案集中于设计和提供详细的指令，以使LLM执行特定任务（这被称为提示工程）。一种增强LLM影响力的有效方式是通过自动化方式使其访问公司的专有信息。检索增强生成（RAG）已成为实现这一目标的最常见解决方案模式之一。
+行业内的许多 LLM 解决方案集中于设计和提供详细的指令，以使 LLM 执行特定任务（这被称为提示工程）。一种增强 LLM 影响力的有效方式是通过自动化方式使其访问公司的专有信息。检索增强生成（RAG）已成为实现这一目标的最常见解决方案模式之一。
 
 ## 概述 — 10,000 英尺视角
 
-![](../Images/952e9174e519007bdbe8bec637105a73.png)
+![](img/952e9174e519007bdbe8bec637105a73.png)
 
 GenAI 解决方案工作流的高级概览（来源：作者提供的图像）
 
 简而言之，解决方案有两个阶段：
 
-1.  **搜索：** 检索与用户请求相关的公司数据。例如，如果要求以特定格式或风格撰写报告，则会提取并将以前报告的文本发送给LLM作为示例。
+1.  **搜索：** 检索与用户请求相关的公司数据。例如，如果要求以特定格式或风格撰写报告，则会提取并将以前报告的文本发送给 LLM 作为示例。
 
-1.  **生成：** 将在先前阶段检索到的指令和示例（或任何其他相关信息）编译成文本提示，并将其发送给LLM以生成所需的输出。以报告为例，提示可以是，
+1.  **生成：** 将在先前阶段检索到的指令和示例（或任何其他相关信息）编译成文本提示，并将其发送给 LLM 以生成所需的输出。以报告为例，提示可以是，
 
 > 请将以下信息编写成报告，使用提供示例的格式和风格。
 > 
 > 这里是内容：[报告内容…. ]。
 > 
-> 这是示例：[之前的报告标题
+> 这是示例：之前的报告标题
 > 
-> 第 1 部分 …
+> 第一部分 …
 > 
-> 第 2 部分 …
+> 第二部分 …
 > 
 > 结论
 
@@ -68,19 +68,13 @@ GenAI 解决方案工作流的高级概览（来源：作者提供的图像）
 
 让我们深入了解解决方案模式中的搜索和生成两个阶段。
 
-![](../Images/a7f6437d4036bbda8828c4ddc05ce62e.png)
-
-检索增强生成（RAG）解决方案工作流的详细观察（来源：作者提供的图像）
-
-**1\. 词嵌入 — 语言“理解”的基础：** 为了促进自然语言理解，文本通过算法或LLM运行，以获得捕捉数据含义和上下文的数值表示（称为向量嵌入）。表示的长度由用于创建此表示的模型决定——一些模型如 word2vec 的向量长度可达 300，而 GPT-3 使用的向量长度可达 12,288。例如，
-
-![](../Images/038a551a1fdbd0091d7776977a517b61.png)
+![检索增强生成（RAG）解决方案工作流的详细观察（来源：作者提供的图像）**1\. 词嵌入 — 语言“理解”的基础：** 为了促进自然语言理解，文本通过算法或 LLM 运行，以获得捕捉数据含义和上下文的数值表示（称为向量嵌入）。表示的长度由用于创建此表示的模型决定——一些模型如 word2vec 的向量长度可达 300，而 GPT-3 使用的向量长度可达 12,288。例如，![](img/038a551a1fdbd0091d7776977a517b61.png)
 
 使用[Cohere 的 embed-english-v2.0 模型](https://docs.cohere.com/docs/models)的示例句子的向量嵌入（即数值表示）（来源：作者提供的图像）
 
 这些数值表示如何映射到二维空间中是很有趣的。可以看到，相似主题的句子被映射得很近。
 
-![](../Images/ccfd9af9efabd2f81631abce4f794222.png)
+![](img/ccfd9af9efabd2f81631abce4f794222.png)
 
 示例句子的向量嵌入绘制在二维空间中（来源：作者提供的图像，灵感来自课程[具有语义搜索的大型语言模型](https://www.deeplearning.ai/short-courses/large-language-models-semantic-search/)中的演示，课程由[Deeplearning.ai](http://deeplearning.ai/)提供）
 
@@ -88,21 +82,21 @@ GenAI 解决方案工作流的高级概览（来源：作者提供的图像）
 
 **3\. 在知识库中检索相似信息（即检索）：** 当用户提交问题或任务到解决方案时，解决方案使用嵌入模型将问题文本转换为数值表示。这个问题向量会与知识库进行匹配，以寻找最相似的信息。可能会返回一个或多个搜索结果，这些结果可以传递到下一阶段以生成回应或输出。
 
-**4\. 使用LLM生成输出（即生成）：** 现在，解决方案已经成功找到可以帮助LLM生成有意义输出的相关信息，整个包，即“提示”，可以发送到LLM。这个提示包括一个或多个标准的指令集，这些指令引导LLM，还有实际的用户问题，最后是检索阶段得到的信息。LLM生成的结果可以在必要时进行处理（例如，将输出加载到特定格式的Word文档中），然后再交付给用户。
+**4\. 使用 LLM 生成输出（即生成）：** 现在，解决方案已经成功找到可以帮助 LLM 生成有意义输出的相关信息，整个包，即“提示”，可以发送到 LLM。这个提示包括一个或多个标准的指令集，这些指令引导 LLM，还有实际的用户问题，最后是检索阶段得到的信息。LLM 生成的结果可以在必要时进行处理（例如，将输出加载到特定格式的 Word 文档中），然后再交付给用户。
 
 ## 深入了解解决方案组件
 
 让我们更深入地探讨解决方案的组件
 
-![](../Images/c294b5492ed5564bacb0da27b11aef34.png)
+![](img/c294b5492ed5564bacb0da27b11aef34.png)
 
-深入探讨RAG解决方案工作流的组件（紫色块显示可选组件）。(来源：作者提供的图片)
+深入探讨 RAG 解决方案工作流的组件（紫色块显示可选组件）。(来源：作者提供的图片)
 
 **1\. 创建知识库：** 将相关文档加载到知识库中有一些细节和考虑因素。
 
-+   **文档加载：** 可能需要将不同的相关文档（pdf、word、在线资源等）导入到数据存储库中。根据用例，某些文档的只有特定部分可能是相关的。例如，对于为金融分析师设计的查询公司10-K报告的解决方案，标题页、目录、标准合规信息和一些附录可能与财务分析无关。因此，这些部分可以从知识库中省略。避免知识库中的冗余信息至关重要，以确保LLM模型提供多样化和高质量的回应。
++   **文档加载：** 可能需要将不同的相关文档（pdf、word、在线资源等）导入到数据存储库中。根据用例，某些文档的只有特定部分可能是相关的。例如，对于为金融分析师设计的查询公司 10-K 报告的解决方案，标题页、目录、标准合规信息和一些附录可能与财务分析无关。因此，这些部分可以从知识库中省略。避免知识库中的冗余信息至关重要，以确保 LLM 模型提供多样化和高质量的回应。
 
-+   **文档拆分：** 一旦确定了需要包含在知识库中的相关文档部分，下一步是确定如何拆分这些信息并将其加载到向量数据库中。选择方式可能因使用场景而异。一种有效的方法是按段落拆分并留有一定重叠。这涉及到为保留完整段落设置字数（或“令牌”，LLM用于文本处理的单位）限制。如果段落超过此限制，则应将其拆分为多个记录以存储在向量数据库中。通常会故意保留一些词汇重叠以保持上下文。例如，使用每个向量1,000字的限制，并有40字的重叠。
++   **文档拆分：** 一旦确定了需要包含在知识库中的相关文档部分，下一步是确定如何拆分这些信息并将其加载到向量数据库中。选择方式可能因使用场景而异。一种有效的方法是按段落拆分并留有一定重叠。这涉及到为保留完整段落设置字数（或“令牌”，LLM 用于文本处理的单位）限制。如果段落超过此限制，则应将其拆分为多个记录以存储在向量数据库中。通常会故意保留一些词汇重叠以保持上下文。例如，使用每个向量 1,000 字的限制，并有 40 字的重叠。
 
 +   **附加元数据：** 增强知识库中的信息涉及用有意义的元数据标记每条记录。基本的元数据示例包括提取信息的原始文档标题和章节层级。附加元数据可以进一步提升搜索和检索的质量。例如，从 10-K 报告中提取的资产负债表数据可以用以下元数据进行标记：
 
@@ -134,11 +128,11 @@ GenAI 解决方案工作流的高级概览（来源：作者提供的图像）
 
 本文涉及了基础 RAG 概念。下一篇文章将通过构建一个能够回答基于任何指定网站信息的问题的聊天机器人来对这些概念进行实际探索。正如所说，最好的学习方式就是实践！
 
-[](/hands-on-genai-for-product-engineering-leaders-6ee6ad94e058?source=post_page-----57747b0f11ce--------------------------------) [## GenAI 实操指南：面向产品与工程领导者
+[](/hands-on-genai-for-product-engineering-leaders-6ee6ad94e058?source=post_page-----57747b0f11ce--------------------------------) ## GenAI 实操指南：面向产品与工程领导者
 
 ### 通过了解 LLM 基于产品的内部机制来做出更好的产品决策。
 
-towardsdatascience.com](/hands-on-genai-for-product-engineering-leaders-6ee6ad94e058?source=post_page-----57747b0f11ce--------------------------------)
+towardsdatascience.com
 
 ## 常见问题解答（FAQs）
 

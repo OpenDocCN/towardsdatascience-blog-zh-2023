@@ -1,28 +1,28 @@
 # 大型语言模型，StructBERT — 将语言结构融入预训练
 
-> 原文：[https://towardsdatascience.com/large-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3?source=collection_archive---------3-----------------------#2023-11-22](https://towardsdatascience.com/large-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3?source=collection_archive---------3-----------------------#2023-11-22)
+> 原文：[`towardsdatascience.com/large-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3?source=collection_archive---------3-----------------------#2023-11-22`](https://towardsdatascience.com/large-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3?source=collection_archive---------3-----------------------#2023-11-22)
 
 ## 通过融入更好的学习目标来使模型更智能
 
-[](https://medium.com/@slavahead?source=post_page-----be3058ab23b3--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----be3058ab23b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be3058ab23b3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be3058ab23b3--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----be3058ab23b3--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----be3058ab23b3--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----be3058ab23b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be3058ab23b3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----be3058ab23b3--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----be3058ab23b3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----be3058ab23b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be3058ab23b3--------------------------------) ·5分钟阅读·2023年11月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbe3058ab23b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----be3058ab23b3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----be3058ab23b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be3058ab23b3--------------------------------) ·5 分钟阅读·2023 年 11 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbe3058ab23b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----be3058ab23b3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe3058ab23b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3&source=-----be3058ab23b3---------------------bookmark_footer-----------)![](../Images/9950addc5beece240f634d42ca38618b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe3058ab23b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-structbert-incorporating-language-structures-into-pretraining-be3058ab23b3&source=-----be3058ab23b3---------------------bookmark_footer-----------)![](img/9950addc5beece240f634d42ca38618b.png)
 
 # 介绍
 
-自BERT首次出现以来，它在各种NLP任务中显示了惊人的效果，包括情感分析、文本相似度、问答等。从那时起，研究人员就尝试通过修改架构、增加训练数据、扩充词汇量或改变层的隐藏大小等方式，使BERT变得更加高效。
+自 BERT 首次出现以来，它在各种 NLP 任务中显示了惊人的效果，包括情感分析、文本相似度、问答等。从那时起，研究人员就尝试通过修改架构、增加训练数据、扩充词汇量或改变层的隐藏大小等方式，使 BERT 变得更加高效。
 
-[](/bert-3d1bf880386a?source=post_page-----be3058ab23b3--------------------------------) [## 大型语言模型：BERT — 双向编码器表示转换器
+[](/bert-3d1bf880386a?source=post_page-----be3058ab23b3--------------------------------) ## 大型语言模型：BERT — 双向编码器表示转换器
 
 ### 了解 BERT 如何构建最先进的嵌入
 
-[towardsdatascience.com](/bert-3d1bf880386a?source=post_page-----be3058ab23b3--------------------------------)
+[towardsdatascience.com
 
 尽管创建了其他强大的基于 BERT 的模型如 RoBERTa，研究人员发现了另一种提升 BERT 性能的有效方法，这将在本文中讨论。这导致了新模型 **StructBERT** 的发展，该模型在顶级基准上自信地超越了 BERT。
 
@@ -42,7 +42,7 @@
 
 在掩码处理过程中，与 BERT 一样，15% 的随机选择标记会被掩盖并用于语言建模。但在掩码处理后，StructBERT 随机选择 5% 的 K 个连续未掩盖标记，并在每个子序列内对其进行打乱。默认情况下，StructBERT 对三元组（K = 3）进行操作。
 
-![](../Images/ae1dfe76bcdacacb333330b5f75ccc0c.png)
+![](img/ae1dfe76bcdacacb333330b5f75ccc0c.png)
 
 三元组打乱示例
 
@@ -66,7 +66,7 @@
 
 [CLS] 嵌入的输出，最初在 BERT 中用于下一句预测任务，现在在 StructBERT 中用于正确识别与输入序列构建方式相对应的三种可能标签之一。
 
-![](../Images/53c9a4372539ab5637e1fef508e2bc7d.png)
+![](img/53c9a4372539ab5637e1fef508e2bc7d.png)
 
 训练样本的组成
 
@@ -74,7 +74,7 @@
 
 最终目标由词和句子结构目标的线性组合组成。
 
-![](../Images/4d5d17bd852192d75c360c85a07f28c6.png)
+![](img/4d5d17bd852192d75c360c85a07f28c6.png)
 
 BERT 预训练包括词和句子结构目标
 
@@ -98,7 +98,7 @@ BERT 和 StructBERT 的所有主要预训练细节相同：
 
 与原始 BERT 类似，StructBERT 提供了基础版和大型版。所有主要设置，如层数、注意力头、隐藏层大小和参数数量，都分别对应 BERT 的基础版和大型版。
 
-![](../Images/554d81d8503b1480c90ba7c32d3130c4.png)
+![](img/554d81d8503b1480c90ba7c32d3130c4.png)
 
 StructBERT 基础版与 StructBERT 大型版的比较
 

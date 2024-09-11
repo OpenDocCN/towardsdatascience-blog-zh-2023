@@ -1,22 +1,22 @@
 # 使用地理空间关联规则挖掘发现便利店位置中的模式
 
-> 原文：[https://towardsdatascience.com/finding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299?source=collection_archive---------2-----------------------#2023-04-01](https://towardsdatascience.com/finding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299?source=collection_archive---------2-----------------------#2023-04-01)
+> 原文：[`towardsdatascience.com/finding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299?source=collection_archive---------2-----------------------#2023-04-01`](https://towardsdatascience.com/finding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299?source=collection_archive---------2-----------------------#2023-04-01)
 
 ## 理解东京便利店位置的空间趋势
 
-[](https://medium.com/@elz1582?source=post_page-----5bad7e833299--------------------------------)[![Elliot Humphrey](../Images/62f398bd178bd4eae0fb5c4062972e23.png)](https://medium.com/@elz1582?source=post_page-----5bad7e833299--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5bad7e833299--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5bad7e833299--------------------------------) [Elliot Humphrey](https://medium.com/@elz1582?source=post_page-----5bad7e833299--------------------------------)
+[](https://medium.com/@elz1582?source=post_page-----5bad7e833299--------------------------------)![Elliot Humphrey](https://medium.com/@elz1582?source=post_page-----5bad7e833299--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5bad7e833299--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5bad7e833299--------------------------------) [Elliot Humphrey](https://medium.com/@elz1582?source=post_page-----5bad7e833299--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F13e1322246bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299&user=Elliot+Humphrey&userId=13e1322246bb&source=post_page-13e1322246bb----5bad7e833299---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----5bad7e833299--------------------------------) ·7分钟阅读·2023年4月1日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F13e1322246bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299&user=Elliot+Humphrey&userId=13e1322246bb&source=post_page-13e1322246bb----5bad7e833299---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----5bad7e833299--------------------------------) ·7 分钟阅读·2023 年 4 月 1 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5bad7e833299&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299&source=-----5bad7e833299---------------------bookmark_footer-----------)![](../Images/f95c12ffb6708caef8d6d65c6ee57709.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5bad7e833299&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-patterns-in-convenience-store-locations-with-geospatial-association-rule-mining-5bad7e833299&source=-----5bad7e833299---------------------bookmark_footer-----------)![](img/f95c12ffb6708caef8d6d65c6ee57709.png)
 
 摄影：由[Matt Liu](https://unsplash.com/@shams_of_tabiriz?utm_source=medium&utm_medium=referral)拍摄，刊登于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-当你在东京四处逛逛时，你经常会经过很多便利店，本地人称之为“konbinis”，这是有道理的，因为在日本有[**超过56,000**](https://www.statista.com/statistics/810901/japan-convenience-store-numbers/)家便利店。通常会有不同的便利店连锁店彼此靠近，很常见的是在街角或者马路对面看到两家店。考虑到东京的人口密度，竞争激烈的企业被迫靠近对方是可以理解的，但是**这两家便利店连锁店之间可能存在某种关系吗**？
+当你在东京四处逛逛时，你经常会经过很多便利店，本地人称之为“konbinis”，这是有道理的，因为在日本有[**超过 56,000**](https://www.statista.com/statistics/810901/japan-convenience-store-numbers/)家便利店。通常会有不同的便利店连锁店彼此靠近，很常见的是在街角或者马路对面看到两家店。考虑到东京的人口密度，竞争激烈的企业被迫靠近对方是可以理解的，但是**这两家便利店连锁店之间可能存在某种关系吗**？
 
 # 定义任务
 
@@ -92,19 +92,19 @@ convenience_stores = place_finder(place = 'Shinjuku, Tokyo',
 
 我们可以传递每个便利店的名称并将结果合并为一个店铺名称、经度和纬度的表。对于我们的用例，我们可以关注东京的**新宿区**，看看每个便利店的丰富度如何：
 
-![](../Images/acf50fec1bce19be4c37bc6c9b14dd1d.png)
+![](img/acf50fec1bce19be4c37bc6c9b14dd1d.png)
 
 便利店的频次统计。图片作者自拍。
 
 显然，FamilyMart 和 7-Eleven 在店铺频次方面占主导地位，但空间上是什么样子的呢？当使用 [**Kepler.gl**](https://kepler.gl/) 绘制地理空间数据时，非常简单直观，它包括一个不错的界面，可用于创建可视化效果，可保存为 HTML 对象或直接在 Jupyter notebooks 中可视化：
 
-![](../Images/d847364d9f9ed3288317cf3be7dcaaa9.png)
+![](img/d847364d9f9ed3288317cf3be7dcaaa9.png)
 
 新宿便利店的位置地图，店铺名称按颜色编码。图片作者自拍。
 
-![](../Images/63828fe9dac26fd66176363b3228fbd9.png)
+![](img/63828fe9dac26fd66176363b3228fbd9.png)
 
-新宿便利店位置图，颜色编码的两分钟步行半径密度（168米）。图片由作者提供。
+新宿便利店位置图，颜色编码的两分钟步行半径密度（168 米）。图片由作者提供。
 
 # 第二步：寻找最近邻
 
@@ -154,7 +154,7 @@ output_df = pd.DataFrame(counts).fillna(0)[sorted(unique_elements)]
 
 这将给我们一个数据框，其中每行对应一个位置，以及该位置附近哪些便利店连锁的二进制计数：
 
-![](../Images/f50dbf61e63e86f931a1d11164981431.png)
+![](img/f50dbf61e63e86f931a1d11164981431.png)
 
 每个位置的便利店最近邻样本数据框。图片由作者提供。
 
@@ -175,25 +175,25 @@ rules.sort_values(['support'], ascending=False)
 
 这将给我们以下结果表：
 
-![](../Images/b88372e80f7e9e3833bedd411770f65a.png)
+![](img/b88372e80f7e9e3833bedd411770f65a.png)
 
 便利店数据的关联规则。图片由作者提供。
 
 我们现在将解释这些关联规则，以获得一些高级的学习成果。要解释此表，最好阅读更多关于关联规则的内容，使用以下链接：
 
-+   ***关联规则完整指南*** — [https://towardsdatascience.com/association-rules-2-aa9a77241654](/association-rules-2-aa9a77241654)
++   ***关联规则完整指南*** — `towardsdatascience.com/association-rules-2-aa9a77241654`
 
-+   ***使用 Apriori 算法的关联规则 —*** [https://towardsdatascience.com/association-rules-with-apriori-algorithm-574593e35223](/association-rules-with-apriori-algorithm-574593e35223)
++   ***使用 Apriori 算法的关联规则 —*** `towardsdatascience.com/association-rules-with-apriori-algorithm-574593e35223`
 
-+   ***理解关联规则 —*** [https://towardsdatascience.com/a-simple-way-to-understand-association-rule-from-the-customer-basket-analysis-use-case-c7bcd75bdec1](/a-simple-way-to-understand-association-rule-from-the-customer-basket-analysis-use-case-c7bcd75bdec1)
++   ***理解关联规则 —*** `towardsdatascience.com/a-simple-way-to-understand-association-rule-from-the-customer-basket-analysis-use-case-c7bcd75bdec1`
 
 好的，回到表格。
 
-支持度告诉我们不同便利店连锁实际一起出现的频率。因此，我们可以说7-Eleven和FamilyMart在数据中约31%的情况下同时出现。提升值超过1表明前提的存在增加了结论发生的可能性，这表明这两个连锁店的位置在某种程度上是相互依赖的。另一方面，7-Eleven和Lawson之间的关联显示出更高的提升值，但置信度较低。
+支持度告诉我们不同便利店连锁实际一起出现的频率。因此，我们可以说 7-Eleven 和 FamilyMart 在数据中约 31%的情况下同时出现。提升值超过 1 表明前提的存在增加了结论发生的可能性，这表明这两个连锁店的位置在某种程度上是相互依赖的。另一方面，7-Eleven 和 Lawson 之间的关联显示出更高的提升值，但置信度较低。
 
-Daily Yamazaki在我们的截止点附近支持度较低，并且与FamilyMart的位置显示出略高于1的弱关系。
+Daily Yamazaki 在我们的截止点附近支持度较低，并且与 FamilyMart 的位置显示出略高于 1 的弱关系。
 
-其他规则是参考便利店的组合。例如，当7-Eleven和FamilyMart已经共同存在时，1.42的高提升值表明它们与Lawson有较强的关联。
+其他规则是参考便利店的组合。例如，当 7-Eleven 和 FamilyMart 已经共同存在时，1.42 的高提升值表明它们与 Lawson 有较强的关联。
 
 # 那么这为什么有用？
 
@@ -201,10 +201,10 @@ Daily Yamazaki在我们的截止点附近支持度较低，并且与FamilyMart�
 
 地理空间关联规则为何对企业有洞察力的一个例子是确定新店位置。如果一个便利店连锁正在开设新位置，关联规则可以帮助识别哪些商店可能会共同出现。
 
-当量身定制营销活动和定价策略时，这一点变得清晰，因为它提供了关于哪些商店可能会竞争的定量关系。由于我们知道FamilyMart和7-Eleven经常共同出现（我们通过关联规则证明了这一点），因此这两个连锁店都应更多关注它们的产品如何相对于其他连锁店（如Lawson和Daily Yamazaki）进行竞争。
+当量身定制营销活动和定价策略时，这一点变得清晰，因为它提供了关于哪些商店可能会竞争的定量关系。由于我们知道 FamilyMart 和 7-Eleven 经常共同出现（我们通过关联规则证明了这一点），因此这两个连锁店都应更多关注它们的产品如何相对于其他连锁店（如 Lawson 和 Daily Yamazaki）进行竞争。
 
 # 结论
 
-在这篇文章中，我们为东京一个社区的便利店连锁创建了地理空间关联规则。这是通过从OpenStreetMap中提取数据、寻找最近邻便利店连锁、在地图上可视化数据以及使用Apriori算法创建关联规则来完成的。
+在这篇文章中，我们为东京一个社区的便利店连锁创建了地理空间关联规则。这是通过从 OpenStreetMap 中提取数据、寻找最近邻便利店连锁、在地图上可视化数据以及使用 Apriori 算法创建关联规则来完成的。
 
 感谢阅读！

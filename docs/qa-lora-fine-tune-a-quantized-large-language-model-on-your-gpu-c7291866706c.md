@@ -1,22 +1,22 @@
-# QA-LoRA：在你的GPU上微调量化的大型语言模型
+# QA-LoRA：在你的 GPU 上微调量化的大型语言模型
 
-> 原文：[https://towardsdatascience.com/qa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c?source=collection_archive---------0-----------------------#2023-10-14](https://towardsdatascience.com/qa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c?source=collection_archive---------0-----------------------#2023-10-14)
+> 原文：[`towardsdatascience.com/qa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c?source=collection_archive---------0-----------------------#2023-10-14`](https://towardsdatascience.com/qa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c?source=collection_archive---------0-----------------------#2023-10-14)
 
 ## 量化感知微调
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----c7291866706c--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----c7291866706c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c7291866706c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c7291866706c--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----c7291866706c--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----c7291866706c--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----c7291866706c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c7291866706c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7291866706c--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----c7291866706c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----c7291866706c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7291866706c--------------------------------) · 10分钟阅读 · 2023年10月14日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc7291866706c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c&user=Benjamin+Marie&userId=ad2a414578b3&source=-----c7291866706c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----c7291866706c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7291866706c--------------------------------) · 10 分钟阅读 · 2023 年 10 月 14 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc7291866706c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c&user=Benjamin+Marie&userId=ad2a414578b3&source=-----c7291866706c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc7291866706c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c&source=-----c7291866706c---------------------bookmark_footer-----------)![](../Images/eb5cbf8008d012e797a4d1e66f9ca0c6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc7291866706c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqa-lora-fine-tune-a-quantized-large-language-model-on-your-gpu-c7291866706c&source=-----c7291866706c---------------------bookmark_footer-----------)![](img/eb5cbf8008d012e797a4d1e66f9ca0c6.png)
 
-作者插图 — 使用了来自Pixabay的图像 ([1](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/),[2](https://pixabay.com/vectors/skateboard-skating-skate-silhouette-7192315/))
+作者插图 — 使用了来自 Pixabay 的图像 ([1](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/),[2](https://pixabay.com/vectors/skateboard-skating-skate-silhouette-7192315/))
 
-最先进的大型语言模型（LLMs）经过数十亿参数的预训练。虽然预训练的LLMs可以执行许多任务，但经过微调后，它们的性能会大幅提升。
+最先进的大型语言模型（LLMs）经过数十亿参数的预训练。虽然预训练的 LLMs 可以执行许多任务，但经过微调后，它们的性能会大幅提升。
 
 多亏了 LoRA，微调成本可以显著降低。LoRA 在冻结的原始参数上添加了低秩张量，即少量参数（百万级）。在微调过程中，只有添加的张量中的参数会被训练。
 
@@ -56,7 +56,7 @@ NF4 也是 [QA-LoRA](https://arxiv.org/abs/2309.14717) 作者指出的一个弱�
 
 虽然基础模型使用 NF4 进行量化，但训练后的 LoRA 参数仍保持较高的精度，通常是 FP16，如下图所示。
 
-![](../Images/c43d096218c9bbe4f6315cd7d0b00846.png)
+![](img/c43d096218c9bbe4f6315cd7d0b00846.png)
 
 图由作者提供
 
@@ -78,7 +78,7 @@ NF4 也是 [QA-LoRA](https://arxiv.org/abs/2309.14717) 作者指出的一个弱�
 
 这是我获得的[不同配置的结果](https://kaitchup.substack.com/p/lora-adapters-when-a-naive-merge)：
 
-![](../Images/d7606d20e92226d15ea81fa36fb68d5b.png)
+![](img/d7606d20e92226d15ea81fa36fb68d5b.png)
 
 表格和作者提供的结果
 
@@ -106,7 +106,7 @@ QA-LoRA 在这篇 arXiv 论文中提出：
 
 让我们看看 QA-LoRA 的作者报告的性能。他们报告了许多实验，但我认为下面的表格最能概述 QA-LoRA 的性能，相比 QLoRA 以及在各种量化精度下：
 
-![](../Images/21d796605ac260448e91c2c6283f2339.png)
+![](img/21d796605ac260448e91c2c6283f2339.png)
 
 表格来自 [Xu et al. (2023)](https://arxiv.org/abs/2309.14717)
 
@@ -151,7 +151,7 @@ LoraLayer.__init__(self, linear_module.in_features//group_size, linear_module.ou
 
 如果 QA-LoRA 在你阅读本文时仍然无法运行 Llama 2，可以用这个文件替换 “qalora.py”：
 
-[https://about.benjaminmarie.com/data/py/qalora/qalora.py](https://about.benjaminmarie.com/data/py/qalora/qalora.py)
+[`about.benjaminmarie.com/data/py/qalora/qalora.py`](https://about.benjaminmarie.com/data/py/qalora/qalora.py)
 
 我只做了两个修改：
 
@@ -262,13 +262,13 @@ python qalora.py  --model_path kaitchup/Llama-2-7b-4bit-32g-autogptq \
 
 使用 Google Colab 的 T4 GPU，这次微调用了 28 分钟。
 
-我在Hugging Face Hub上上传了最终的检查点：
+我在 Hugging Face Hub 上上传了最终的检查点：
 
 +   [kaitchup/Llama-2-7b-4bit-32g-autogptq-QALoRA](https://huggingface.co/kaitchup/Llama-2-7b-4bit-32g-autogptq-QALoRA/)
 
-# 合并QA-LoRA适配器
+# 合并 QA-LoRA 适配器
 
-与QLoRA相比，QA-LoRA适配器可以在不损失性能的情况下与量化基础LLM合并。
+与 QLoRA 相比，QA-LoRA 适配器可以在不损失性能的情况下与量化基础 LLM 合并。
 
 这里是合并代码：
 
@@ -296,27 +296,27 @@ for tmp_key in tmp_keys:
 torch.save(model, merged_path)
 ```
 
-该代码在CPU上运行，因此你只需要足够的CPU RAM来加载要合并的模型。注意基础LLM和我们微调的QA-LoRA适配器必须在本地可访问。
+该代码在 CPU 上运行，因此你只需要足够的 CPU RAM 来加载要合并的模型。注意基础 LLM 和我们微调的 QA-LoRA 适配器必须在本地可访问。
 
-一旦合并，模型就准备好进行推理。它是一个标准的GPTQ模型。
+一旦合并，模型就准备好进行推理。它是一个标准的 GPTQ 模型。
 
 # 结论
 
-QA-LoRA有效。我们对Llama 2进行了量化感知的LoRA微调。
+QA-LoRA 有效。我们对 Llama 2 进行了量化感知的 LoRA 微调。
 
-我们发现量化感知微调相较于QLoRA有两个显著的优势：
+我们发现量化感知微调相较于 QLoRA 有两个显著的优势：
 
 +   这更快
 
-+   它微调了一个可以与基础LLM完美合并的适配器。
++   它微调了一个可以与基础 LLM 完美合并的适配器。
 
-当前的实现还不够灵活。这仍然是一个非常年轻的项目。主要问题在于它依赖于旧版本的AutoGPTQ。QA-LoRA的作者计划稍后支持最新版本的AutoGPTQ。
+当前的实现还不够灵活。这仍然是一个非常年轻的项目。主要问题在于它依赖于旧版本的 AutoGPTQ。QA-LoRA 的作者计划稍后支持最新版本的 AutoGPTQ。
 
-注意在我的实验中使用了4-bit量化。QA-LoRA已支持2-bit和3-bit量化。你可以尝试这些更低的精度以进一步减少内存消耗。
+注意在我的实验中使用了 4-bit 量化。QA-LoRA 已支持 2-bit 和 3-bit 量化。你可以尝试这些更低的精度以进一步减少内存消耗。
 
 为了支持我的工作，请考虑订阅我的通讯：
 
-[](https://kaitchup.substack.com/?source=post_page-----c7291866706c--------------------------------) [## Kaitchup - 预算内的AI | 本杰明·玛丽，博士 | Substack]
+[](https://kaitchup.substack.com/?source=post_page-----c7291866706c--------------------------------) [## Kaitchup - 预算内的 AI | 本杰明·玛丽，博士 | Substack]
 
 ### 每周的新闻、提示和有关在你的计算机上微调、运行和服务大型语言模型的教程。每个...
 

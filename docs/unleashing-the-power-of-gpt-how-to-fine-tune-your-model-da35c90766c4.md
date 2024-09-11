@@ -1,22 +1,22 @@
 # 释放 GPT-3 的力量：超级英雄描述的微调
 
-> 原文：[https://towardsdatascience.com/unleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4?source=collection_archive---------0-----------------------#2023-02-18](https://towardsdatascience.com/unleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4?source=collection_archive---------0-----------------------#2023-02-18)
+> 原文：[`towardsdatascience.com/unleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4?source=collection_archive---------0-----------------------#2023-02-18`](https://towardsdatascience.com/unleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4?source=collection_archive---------0-----------------------#2023-02-18)
 
 ## GPT-3 微调的逐步指南
 
-[](https://medium.com/@ocaelen?source=post_page-----da35c90766c4--------------------------------)[![奥利维耶·卡伦](../Images/5315295f68999af7c14b456694d19979.png)](https://medium.com/@ocaelen?source=post_page-----da35c90766c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da35c90766c4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----da35c90766c4--------------------------------) [奥利维耶·卡伦](https://medium.com/@ocaelen?source=post_page-----da35c90766c4--------------------------------)
+[](https://medium.com/@ocaelen?source=post_page-----da35c90766c4--------------------------------)![奥利维耶·卡伦](https://medium.com/@ocaelen?source=post_page-----da35c90766c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da35c90766c4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----da35c90766c4--------------------------------) [奥利维耶·卡伦](https://medium.com/@ocaelen?source=post_page-----da35c90766c4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7268030c8a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4&user=Olivier+Caelen&userId=d7268030c8a8&source=post_page-d7268030c8a8----da35c90766c4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da35c90766c4--------------------------------) ·11 min 阅读·2023年2月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda35c90766c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4&user=Olivier+Caelen&userId=d7268030c8a8&source=-----da35c90766c4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7268030c8a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4&user=Olivier+Caelen&userId=d7268030c8a8&source=post_page-d7268030c8a8----da35c90766c4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da35c90766c4--------------------------------) ·11 min 阅读·2023 年 2 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda35c90766c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4&user=Olivier+Caelen&userId=d7268030c8a8&source=-----da35c90766c4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda35c90766c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4&source=-----da35c90766c4---------------------bookmark_footer-----------)![](../Images/d11e6869ddaac2af15c755bc2460aae9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda35c90766c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funleashing-the-power-of-gpt-how-to-fine-tune-your-model-da35c90766c4&source=-----da35c90766c4---------------------bookmark_footer-----------)![](img/d11e6869ddaac2af15c755bc2460aae9.png)
 
 [摄影：h heyerlein](https://unsplash.com/@heyerlein?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-自2022年底以来，OpenAI 推出的 ChatGPT 被许多人认为是人工智能的 iPhone 时刻。然而，OpenAI 的聊天机器人并不是第一个生成式 AI 文本机器学习模型，它跟随的是两年前推出的 GPT-3。
+自 2022 年底以来，OpenAI 推出的 ChatGPT 被许多人认为是人工智能的 iPhone 时刻。然而，OpenAI 的聊天机器人并不是第一个生成式 AI 文本机器学习模型，它跟随的是两年前推出的 GPT-3。
 
 OpenAI 为我们提供了一个现成的 GPT-3 训练模型。此外，特定任务可以在较小的数据集上进行微调。例如，假设你想创建一个针对你公司特定的电子邮件回复生成器。首先，你必须收集大量有关你特定业务领域的数据，如客户电子邮件咨询和回复。然后，你可以使用这些数据来微调 GPT-3，以学习你公司特定的语言模式和短语。通过微调 GPT-3，可以创建一个高度定制和专业化的电子邮件回复生成器，专门针对特定业务领域使用的语言模式和词汇。
 
@@ -28,7 +28,7 @@ OpenAI 为我们提供了一个现成的 GPT-3 训练模型。此外，特定任
 
 获取 OpenAI 的 API 密钥：
 
-+   访问 [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys) ，
++   访问 [`platform.openai.com/account/api-keys`](https://platform.openai.com/account/api-keys) ，
 
 +   创建一个账户，
 
@@ -48,7 +48,7 @@ export OPENAI_API_KEY=sk-t59pgejhtrff5(...)
 
 # 一个超级英雄描述生成工具
 
-![](../Images/96f93f7ff3d3b406b69c8ec1a2ffb322.png)
+![](img/96f93f7ff3d3b406b69c8ec1a2ffb322.png)
 
 来自 DALL-E 2 的超级英雄
 
@@ -56,7 +56,7 @@ export OPENAI_API_KEY=sk-t59pgejhtrff5(...)
 
 在以下示例中，经过模型微调后，我们只需输入'*40, woman, Healing ->*'，模型将自动生成一个描述。
 
-![](../Images/6cd099cf773d7c6e17b6b7f8867d23b5.png)
+![](img/6cd099cf773d7c6e17b6b7f8867d23b5.png)
 
 这就是一切的关键！！ 😃
 
@@ -118,29 +118,29 @@ df.to_csv("out_openai_completion.csv")
 
 变量*f_prompt*包含以下句子，其中*{age}*、*{gender}*和*{power}*是缺失的。
 
-> 想象一下一个详细描述的{age}岁{gender}虚构角色，他拥有{power}的超级能力。用最多100个字写出整个详细描述：
+> 想象一下一个详细描述的{age}岁{gender}虚构角色，他拥有{power}的超级能力。用最多 100 个字写出整个详细描述：
 
-在代码的前三个*for*循环中，我们遍历不同的{age}、{gender}和{power}值。在每一步循环中，我们用不同的值替换3个缺失的变量。然后，我们使用*openai.Completion.create*函数请求GPT生成对我们提示的响应。
+在代码的前三个*for*循环中，我们遍历不同的{age}、{gender}和{power}值。在每一步循环中，我们用不同的值替换 3 个缺失的变量。然后，我们使用*openai.Completion.create*函数请求 GPT 生成对我们提示的响应。
 
 这个函数的最重要参数是
 
-+   *model*：用于生成响应的模型。OpenAI提供了四种标准GPT-3模型（`ada`、`babbage`、`curie`或`davinci`），它们在规模和使用价格上有所不同。这里使用的是*davinci*——最大的模型。
++   *model*：用于生成响应的模型。OpenAI 提供了四种标准 GPT-3 模型（`ada`、`babbage`、`curie`或`davinci`），它们在规模和使用价格上有所不同。这里使用的是*davinci*——最大的模型。
 
-+   *prompt*：我们希望GPT-3完成的提示。
++   *prompt*：我们希望 GPT-3 完成的提示。
 
-+   *temperature*：温度是一个介于0和1之间的数字，控制输出的随机性。我们将温度设置为最大值，以便模型在生成响应时尽可能具有创造力。
++   *temperature*：温度是一个介于 0 和 1 之间的数字，控制输出的随机性。我们将温度设置为最大值，以便模型在生成响应时尽可能具有创造力。
 
 +   *max_tokens*：定义响应的最大长度。
 
-在这个脚本的最后，我们有一个存储在文件*out_openai_completion.csv*中的Pandas表格。这个表格中我们感兴趣的两个主要列是*sub_prompt*和*response_txt*。
+在这个脚本的最后，我们有一个存储在文件*out_openai_completion.csv*中的 Pandas 表格。这个表格中我们感兴趣的两个主要列是*sub_prompt*和*response_txt*。
 
 +   *sub_prompt*例如会是‘*18, man, invisibility*’。它包含了三个用逗号分隔的被替换的值。
 
-+   *response_txt*包含GPT模型的输出。
++   *response_txt*包含 GPT 模型的输出。
 
-# 微调GPT模型
+# 微调 GPT 模型
 
-以下代码检索之前创建的文件*out_openai_completion.csv*，并使用*openai*对GPT-3模型进行微调。
+以下代码检索之前创建的文件*out_openai_completion.csv*，并使用*openai*对 GPT-3 模型进行微调。
 
 ```py
 import pandas as pd
@@ -162,7 +162,7 @@ subprocess.run('openai api fine_tunes.create --training_file prepared_data_prepa
 
 让我们花时间来理解这段代码 🤓！
 
-首先，文件*out_openai_completion.csv*的内容被加载到数据框*df*中。为了提醒一下，在我们的任务中，如果用户输入'40, female, healing'，我们希望得到一个关于40岁女性角色拥有治愈能力的描述。为了进行微调，需要向GPT提供用户可能输入的示例以及相应的期望响应。在数据框*df*中，*sub_prompt*和*response_txt*列包含了输入示例和对应的期望响应。在上面的代码中，我们首先提取这两列，然后将其分别重命名为*prompt*和*completion*。结果数据框被存储在一个新的文件*prepared_data.csv*中，仅包含这两列。
+首先，文件*out_openai_completion.csv*的内容被加载到数据框*df*中。为了提醒一下，在我们的任务中，如果用户输入'40, female, healing'，我们希望得到一个关于 40 岁女性角色拥有治愈能力的描述。为了进行微调，需要向 GPT 提供用户可能输入的示例以及相应的期望响应。在数据框*df*中，*sub_prompt*和*response_txt*列包含了输入示例和对应的期望响应。在上面的代码中，我们首先提取这两列，然后将其分别重命名为*prompt*和*completion*。结果数据框被存储在一个新的文件*prepared_data.csv*中，仅包含这两列。
 
 这个文件*prepared_data.csv*的内容如下：
 
@@ -176,7 +176,7 @@ prompt,completion
 (...)
 ```
 
-Python的*subprocess.run()*函数将命令作为子进程运行。它通常用于执行外部程序，就像在终端中运行一样。
+Python 的*subprocess.run()*函数将命令作为子进程运行。它通常用于执行外部程序，就像在终端中运行一样。
 
 我们使用 *subprocess.run()* 执行‘*openai tools fine_tunes.prepare_data*’。这个函数接受输入文件 *prepared_data.csv*，检查数据是否正确，并生成一个名为 *prepared_data_prepared.jsonl* 的 JSONL 文件。JSONL 文件是一种将每个 JSON 对象存储在单独一行的格式。JSONL 文件包含一系列 JSON 对象，每个对象之间用换行符分隔。
 
@@ -202,23 +202,23 @@ GPT-3 模型的微调实际上是在第二个 *subprocess.run()* 中实现的，
 
 最简单的方法可能是使用 [playground](https://platform.openai.com/playground)。
 
-+   访问 [https://platform.openai.com/playground](https://platform.openai.com/playground)。
++   访问 [`platform.openai.com/playground`](https://platform.openai.com/playground)。
 
 +   点击‘模型’并搜索带有后缀“*超级英雄*”的模型。
 
 +   在‘停止序列’中添加标记‘END’。
 
-![](../Images/94c1ac78c2f2ebb1b5694840743e4dbf.png)
+![](img/94c1ac78c2f2ebb1b5694840743e4dbf.png)
 
-现在是时候要求我们的模型进行新的预测了。我们将要求描述一个18岁的男性角色，他真的有一个不必要的能力😉 我们将要求描述一个拥有‘*吃很多*’能力的角色……看看会发生什么……😆
+现在是时候要求我们的模型进行新的预测了。我们将要求描述一个 18 岁的男性角色，他真的有一个不必要的能力😉 我们将要求描述一个拥有‘*吃很多*’能力的角色……看看会发生什么……😆
 
-![](../Images/e5746b85ae0ca808c0b93c6dc9905c3b.png)
+![](img/e5746b85ae0ca808c0b93c6dc9905c3b.png)
 
 不错 😅
 
 你想用 Python 来做吗？很简单！点击屏幕右上角的‘查看代码’。
 
-![](../Images/17fc2789ecac12e829d6a248e8dd1050.png)
+![](img/17fc2789ecac12e829d6a248e8dd1050.png)
 
 在我们的案例中，在‘查看代码’中我们有：
 

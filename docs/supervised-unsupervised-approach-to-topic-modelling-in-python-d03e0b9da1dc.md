@@ -1,18 +1,18 @@
 # Python 中的监督与非监督主题建模方法
 
-> 原文：[https://towardsdatascience.com/supervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc?source=collection_archive---------10-----------------------#2023-01-31](https://towardsdatascience.com/supervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc?source=collection_archive---------10-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/supervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc?source=collection_archive---------10-----------------------#2023-01-31`](https://towardsdatascience.com/supervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc?source=collection_archive---------10-----------------------#2023-01-31)
 
 ## 从头开始在 Python 中构建主题建模管道
 
-[](https://vatsal12-p.medium.com/?source=post_page-----d03e0b9da1dc--------------------------------)[![Vatsal](../Images/f9648ff1f084b5b3361d90caf8c15959.png)](https://vatsal12-p.medium.com/?source=post_page-----d03e0b9da1dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d03e0b9da1dc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d03e0b9da1dc--------------------------------) [Vatsal](https://vatsal12-p.medium.com/?source=post_page-----d03e0b9da1dc--------------------------------)
+[](https://vatsal12-p.medium.com/?source=post_page-----d03e0b9da1dc--------------------------------)![Vatsal](https://vatsal12-p.medium.com/?source=post_page-----d03e0b9da1dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d03e0b9da1dc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d03e0b9da1dc--------------------------------) [Vatsal](https://vatsal12-p.medium.com/?source=post_page-----d03e0b9da1dc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c849b1a8ec0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc&user=Vatsal&userId=1c849b1a8ec0&source=post_page-1c849b1a8ec0----d03e0b9da1dc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d03e0b9da1dc--------------------------------) ·11分钟阅读·2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd03e0b9da1dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc&user=Vatsal&userId=1c849b1a8ec0&source=-----d03e0b9da1dc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1c849b1a8ec0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc&user=Vatsal&userId=1c849b1a8ec0&source=post_page-1c849b1a8ec0----d03e0b9da1dc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d03e0b9da1dc--------------------------------) ·11 分钟阅读·2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd03e0b9da1dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc&user=Vatsal&userId=1c849b1a8ec0&source=-----d03e0b9da1dc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd03e0b9da1dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc&source=-----d03e0b9da1dc---------------------bookmark_footer-----------)![](../Images/0091d080160c43289a310e2c3495bcb5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd03e0b9da1dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupervised-unsupervised-approach-to-topic-modelling-in-python-d03e0b9da1dc&source=-----d03e0b9da1dc---------------------bookmark_footer-----------)![](img/0091d080160c43289a310e2c3495bcb5.png)
 
 图片来源于 [Unsplash](https://unsplash.com/photos/c9OfrVeD_tQ) 由 [v2osk](https://unsplash.com/@v2osk)
 

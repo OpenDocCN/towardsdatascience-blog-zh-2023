@@ -1,18 +1,18 @@
 # 实用数据质量审计：综合指南
 
-> 原文：[https://towardsdatascience.com/data-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a?source=collection_archive---------6-----------------------#2023-05-01](https://towardsdatascience.com/data-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a?source=collection_archive---------6-----------------------#2023-05-01)
+> 原文：[`towardsdatascience.com/data-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a?source=collection_archive---------6-----------------------#2023-05-01`](https://towardsdatascience.com/data-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a?source=collection_archive---------6-----------------------#2023-05-01)
 
 ## 探索如何利用 Python 生态系统进行数据质量审计
 
-[](https://warsamewords.medium.com/?source=post_page-----66b7bfe2aa1a--------------------------------)[![Mohamed A. Warsame](../Images/181088ce4386d05a1609d352f0fba518.png)](https://warsamewords.medium.com/?source=post_page-----66b7bfe2aa1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----66b7bfe2aa1a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----66b7bfe2aa1a--------------------------------) [Mohamed A. Warsame](https://warsamewords.medium.com/?source=post_page-----66b7bfe2aa1a--------------------------------)
+[](https://warsamewords.medium.com/?source=post_page-----66b7bfe2aa1a--------------------------------)![Mohamed A. Warsame](https://warsamewords.medium.com/?source=post_page-----66b7bfe2aa1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----66b7bfe2aa1a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----66b7bfe2aa1a--------------------------------) [Mohamed A. Warsame](https://warsamewords.medium.com/?source=post_page-----66b7bfe2aa1a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff6e939f8161&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a&user=Mohamed+A.+Warsame&userId=f6e939f8161&source=post_page-f6e939f8161----66b7bfe2aa1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----66b7bfe2aa1a--------------------------------) · 8 分钟阅读 · 2023年5月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F66b7bfe2aa1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a&user=Mohamed+A.+Warsame&userId=f6e939f8161&source=-----66b7bfe2aa1a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff6e939f8161&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a&user=Mohamed+A.+Warsame&userId=f6e939f8161&source=post_page-f6e939f8161----66b7bfe2aa1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----66b7bfe2aa1a--------------------------------) · 8 分钟阅读 · 2023 年 5 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F66b7bfe2aa1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a&user=Mohamed+A.+Warsame&userId=f6e939f8161&source=-----66b7bfe2aa1a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F66b7bfe2aa1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a&source=-----66b7bfe2aa1a---------------------bookmark_footer-----------)![](../Images/8d39ed09c1f0e1e25761929e54bf0277.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F66b7bfe2aa1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-quality-auditing-a-comprehensive-guide-66b7bfe2aa1a&source=-----66b7bfe2aa1a---------------------bookmark_footer-----------)![](img/8d39ed09c1f0e1e25761929e54bf0277.png)
 
 图片由作者提供。
 

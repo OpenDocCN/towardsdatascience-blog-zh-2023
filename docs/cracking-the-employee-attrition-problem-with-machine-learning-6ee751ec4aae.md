@@ -1,18 +1,18 @@
 # 破解员工流失问题的机器学习方法
 
-> 原文：[https://towardsdatascience.com/cracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae?source=collection_archive---------7-----------------------#2023-03-13](https://towardsdatascience.com/cracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae?source=collection_archive---------7-----------------------#2023-03-13)
+> 原文：[`towardsdatascience.com/cracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae?source=collection_archive---------7-----------------------#2023-03-13`](https://towardsdatascience.com/cracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae?source=collection_archive---------7-----------------------#2023-03-13)
 
 ## 为什么这不是一个简单的问题
 
-[](https://lromeo.medium.com/?source=post_page-----6ee751ec4aae--------------------------------)[![Lucas Nicolás Romeo](../Images/40d2bc61ba65f7a3237a38f251c3cc48.png)](https://lromeo.medium.com/?source=post_page-----6ee751ec4aae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6ee751ec4aae--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6ee751ec4aae--------------------------------) [Lucas Nicolás Romeo](https://lromeo.medium.com/?source=post_page-----6ee751ec4aae--------------------------------)
+[](https://lromeo.medium.com/?source=post_page-----6ee751ec4aae--------------------------------)![Lucas Nicolás Romeo](https://lromeo.medium.com/?source=post_page-----6ee751ec4aae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6ee751ec4aae--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ee751ec4aae--------------------------------) [Lucas Nicolás Romeo](https://lromeo.medium.com/?source=post_page-----6ee751ec4aae--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4fe494b2110&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae&user=Lucas+Nicol%C3%A1s+Romeo&userId=4fe494b2110&source=post_page-4fe494b2110----6ee751ec4aae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ee751ec4aae--------------------------------) ·10分钟阅读·2023年3月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6ee751ec4aae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae&user=Lucas+Nicol%C3%A1s+Romeo&userId=4fe494b2110&source=-----6ee751ec4aae---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4fe494b2110&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae&user=Lucas+Nicol%C3%A1s+Romeo&userId=4fe494b2110&source=post_page-4fe494b2110----6ee751ec4aae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ee751ec4aae--------------------------------) ·10 分钟阅读·2023 年 3 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6ee751ec4aae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae&user=Lucas+Nicol%C3%A1s+Romeo&userId=4fe494b2110&source=-----6ee751ec4aae---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6ee751ec4aae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae&source=-----6ee751ec4aae---------------------bookmark_footer-----------)![](../Images/bf77c9d4afd68ebff829ec6823b4c8ce.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6ee751ec4aae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-employee-attrition-problem-with-machine-learning-6ee751ec4aae&source=-----6ee751ec4aae---------------------bookmark_footer-----------)![](img/bf77c9d4afd68ebff829ec6823b4c8ce.png)
 
 图片来源于 [Nick Fewings](https://unsplash.com/@jannerboy62?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -42,17 +42,17 @@
 
 预测员工流失的问题已经被许多研究和机器学习文章所探讨。然而，其中许多只是实现了相同的模型，没有对为何采用某种方法进行任何批判性分析。在这方面，正如之前所暗示的，互联网上的大多数非学术示例建议将问题作为分类任务来处理，其中：
 
-+   目标变量为1如果员工离开公司，0则表示未离开；
++   目标变量为 1 如果员工离开公司，0 则表示未离开；
 
-+   员工的特点主要是分类变量（角色、部门、年龄组、绩效等级等），以及一些低方差的连续变量，如工资，用于预测退出事件（IBM建立了一个总结这些变量的合成数据集）；
++   员工的特点主要是分类变量（角色、部门、年龄组、绩效等级等），以及一些低方差的连续变量，如工资，用于预测退出事件（IBM 建立了一个总结这些变量的合成数据集）；
 
 +   **审查** **问题** 被完全忽略了。但是，什么是审查呢？简单来说，**审查** 是指我们对研究对象或测量值有不完整信息的情况（如果一个事件尚未被测量，并不意味着它不会发生，只是我们还没有见到它）。例如，在员工流失问题中，我们对员工的信息不完全，因为为了获得完整信息，我们需要他们离开公司（这将使我们知道他/她的确切离职时间，从而获得完整的测量）。忽略这个关键概念意味着这些解决方案从一开始就是有缺陷的，即使它们对模型输入进行了某些额外的变换（我们稍后会讨论这些），也永远无法对事件的时间做出正确的回答。
 
-+   每次观察在员工之间和同一员工的时间序列中都是独立的。请注意，除非你使用一个将员工所有信息简化为单一观察的模型，或者确保模型能够处理员工的独立特征序列，即员工A的序列不会与员工B的序列混合，否则这在概念上是错误的。然而，我们知道，尽管概念上错误，但忽略这个错误的影响很难衡量。
++   每次观察在员工之间和同一员工的时间序列中都是独立的。请注意，除非你使用一个将员工所有信息简化为单一观察的模型，或者确保模型能够处理员工的独立特征序列，即员工 A 的序列不会与员工 B 的序列混合，否则这在概念上是错误的。然而，我们知道，尽管概念上错误，但忽略这个错误的影响很难衡量。
 
 +   类别是人为平衡的，因为员工离开公司的事件数相对较少，而留在公司的员工事件数较多；
 
-+   结果是通过混淆矩阵中的指标来测量的，特别关注f1-score、精确度和召回率（如我们所知，对于类别自然不平衡的问题，准确度是一个不好的指标）。
++   结果是通过混淆矩阵中的指标来测量的，特别关注 f1-score、精确度和召回率（如我们所知，对于类别自然不平衡的问题，准确度是一个不好的指标）。
 
 请注意，这种方法有很多缺陷，但有一个特别值得关注：**它没有考虑时间，因此我们无法预测员工在感兴趣时间段内的离职**。这是因为解决方案没有尝试解决实际问题，即时间到事件的问题。简单来说，我们忽略了**所有员工都会在某个时间离开公司，问题是何时离开**。
 
@@ -72,17 +72,17 @@
 
 ## iii) 黑箱模型 + SHAP/LIME 或其他解释模型
 
-一种潜在的解决方案是实施黑箱模型，如传统的集成模型（Catboost或XGBoost与AFT损失函数），然后使用一些附加工具，如SHAP或LIME，以解释结果。但请记住，这种方法并不稳健，因为解释模型是基于主要模型结果构建的新模型，因此它们并不完全代表集成模型中拟合的真实决策函数。
+一种潜在的解决方案是实施黑箱模型，如传统的集成模型（Catboost 或 XGBoost 与 AFT 损失函数），然后使用一些附加工具，如 SHAP 或 LIME，以解释结果。但请记住，这种方法并不稳健，因为解释模型是基于主要模型结果构建的新模型，因此它们并不完全代表集成模型中拟合的真实决策函数。
 
 ## iv) 广义加性模型
 
-第二个选项是实施GAM模型（广义加性模型）。这些模型在预测能力和透明度方面具有潜在的好处。它们是非参数模型，通过加性方式创建复杂模型，总结所使用变量的个体贡献，这意味着可以恢复最终模型的决策函数。然而，要使用GAM模型，我们必须放弃生存分析技术，转而使用常规分类器。不过……删失和时间依赖性问题再次出现。
+第二个选项是实施 GAM 模型（广义加性模型）。这些模型在预测能力和透明度方面具有潜在的好处。它们是非参数模型，通过加性方式创建复杂模型，总结所使用变量的个体贡献，这意味着可以恢复最终模型的决策函数。然而，要使用 GAM 模型，我们必须放弃生存分析技术，转而使用常规分类器。不过……删失和时间依赖性问题再次出现。
 
 ## 我们的替代方案
 
 因此，虽然有强大且透明的模型可用，但我们需要考虑应对审查问题的方法。这时数据转换就发挥了作用。让我们看看我们可以做什么。由于我们知道很难形成即将要说的内容的心理图像，下方展示了问题和解决方案的动态图。
 
-![](../Images/b0ce32f09d4139791bd83af36c3b30c9.png)
+![](img/b0ce32f09d4139791bd83af36c3b30c9.png)
 
 作者提供的图片
 
@@ -94,7 +94,7 @@
 
 然而，建议还要排除活跃员工和在此期间离职员工的最近 12 个月的信息，以避免由于时间分布的变化而对两类员工之一的误表示。一旦我们进行这些更改，我们可以将问题从多类别分类问题简化为二分类问题。为此，我们基于时间索引创建一个虚拟变量，为活跃员工的最后 12 个观察值分配 0，为离职员工的最后 12 个观察值分配 1。
 
-最终，我们将整个数据集缩减为这一子集，同时排除超过12个月时间窗口之外的记录。如果我们不这样做，可能会出现另一个问题，即数据集极度不平衡，这使得训练任何模型都非常困难。然后，我们可以使用我们的GAMs模型来预测员工流失概率。
+最终，我们将整个数据集缩减为这一子集，同时排除超过 12 个月时间窗口之外的记录。如果我们不这样做，可能会出现另一个问题，即数据集极度不平衡，这使得训练任何模型都非常困难。然后，我们可以使用我们的 GAMs 模型来预测员工流失概率。
 
 需要注意的是，我们在这个过程中做了一个强假设——即观察值按月独立，即使这些是同一员工的记录。然而，如果我们想使用一个简单且透明的分类模型，这是我们必须容忍的。虽然有替代方法来解决这个问题，但大多数包括实施一些复杂的模型（例如，神经网络），这可能会影响解决方案的透明度。
 
@@ -108,10 +108,10 @@
 
 ## 参考文献
 
-Cox, DR. (1972). 回归模型与生命表。*皇家统计学会B系列-方法论期刊*, *34*(2), 187–202\. [https://doi.org/10.1111/j.2517-6161.1972.tb00899.x](https://doi.org/10.1111/j.2517-6161.1972.tb00899.x)
+Cox, DR. (1972). 回归模型与生命表。*皇家统计学会 B 系列-方法论期刊*, *34*(2), 187–202\. [`doi.org/10.1111/j.2517-6161.1972.tb00899.x`](https://doi.org/10.1111/j.2517-6161.1972.tb00899.x)
 
-Hastie, T., & Tibshirani, R. (1984). 广义加性模型。*统计科学*, *1*(3). [https://doi.org/10.1214/ss/1177013604](https://doi.org/10.1214/ss/1177013604)
+Hastie, T., & Tibshirani, R. (1984). 广义加性模型。*统计科学*, *1*(3). [`doi.org/10.1214/ss/1177013604`](https://doi.org/10.1214/ss/1177013604)
 
-Kumar, I.E., Venkatasubramanian, S., Scheidegger, C.E., & Friedler, S.A. (2020). Shapley值解释作为特征重要性度量的问题。*国际机器学习会议*。
+Kumar, I.E., Venkatasubramanian, S., Scheidegger, C.E., & Friedler, S.A. (2020). Shapley 值解释作为特征重要性度量的问题。*国际机器学习会议*。
 
-Wei, L. (1992). 加速失效时间模型：生存分析中对Cox回归模型的有用替代。*医学统计*, *11*(14–15), 1871–1879\. [https://doi.org/10.1002/sim.4780111409](https://doi.org/10.1002/sim.4780111409)
+Wei, L. (1992). 加速失效时间模型：生存分析中对 Cox 回归模型的有用替代。*医学统计*, *11*(14–15), 1871–1879\. [`doi.org/10.1002/sim.4780111409`](https://doi.org/10.1002/sim.4780111409)

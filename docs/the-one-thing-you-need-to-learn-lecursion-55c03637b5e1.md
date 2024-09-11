@@ -1,18 +1,18 @@
 # 学习递归所需了解的唯一一件事
 
-> 原文：[https://towardsdatascience.com/the-one-thing-you-need-to-learn-lecursion-55c03637b5e1?source=collection_archive---------18-----------------------#2023-04-14](https://towardsdatascience.com/the-one-thing-you-need-to-learn-lecursion-55c03637b5e1?source=collection_archive---------18-----------------------#2023-04-14)
+> 原文：[`towardsdatascience.com/the-one-thing-you-need-to-learn-lecursion-55c03637b5e1?source=collection_archive---------18-----------------------#2023-04-14`](https://towardsdatascience.com/the-one-thing-you-need-to-learn-lecursion-55c03637b5e1?source=collection_archive---------18-----------------------#2023-04-14)
 
 ## （以及 *更多* ）
 
-[](https://sassoli.medium.com/?source=post_page-----55c03637b5e1--------------------------------)[![Bernardino Sassoli](../Images/b4c956d5070100e4e798264f4947652a.png)](https://sassoli.medium.com/?source=post_page-----55c03637b5e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----55c03637b5e1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----55c03637b5e1--------------------------------) [Bernardino Sassoli](https://sassoli.medium.com/?source=post_page-----55c03637b5e1--------------------------------)
+[](https://sassoli.medium.com/?source=post_page-----55c03637b5e1--------------------------------)![Bernardino Sassoli](https://sassoli.medium.com/?source=post_page-----55c03637b5e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----55c03637b5e1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----55c03637b5e1--------------------------------) [Bernardino Sassoli](https://sassoli.medium.com/?source=post_page-----55c03637b5e1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64ab339d120f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-thing-you-need-to-learn-lecursion-55c03637b5e1&user=Bernardino+Sassoli&userId=64ab339d120f&source=post_page-64ab339d120f----55c03637b5e1---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----55c03637b5e1--------------------------------) ·9分钟阅读·2023年4月14日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64ab339d120f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-thing-you-need-to-learn-lecursion-55c03637b5e1&user=Bernardino+Sassoli&userId=64ab339d120f&source=post_page-64ab339d120f----55c03637b5e1---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----55c03637b5e1--------------------------------) ·9 分钟阅读·2023 年 4 月 14 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F55c03637b5e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-thing-you-need-to-learn-lecursion-55c03637b5e1&source=-----55c03637b5e1---------------------bookmark_footer-----------)![](../Images/0feb822326f96d5b06af9f9b11d93f3f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F55c03637b5e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-thing-you-need-to-learn-lecursion-55c03637b5e1&source=-----55c03637b5e1---------------------bookmark_footer-----------)![](img/0feb822326f96d5b06af9f9b11d93f3f.png)
 
 照片由 [Szabo Viktor](https://unsplash.com/@vmxhu?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上
 
@@ -22,7 +22,7 @@
 
 这是一个只有程序员、数学家或逻辑学家会觉得有趣的笑话。它也不是真的。
 
-像许多其他事物一样，理解递归的唯一方法是*练习*。编写大量简单的递归函数。然后再写更多。再接着写一些更复杂的递归函数。依此类推。但你怎么做呢？我有一个小窍门。这是一本书。它很短（不到200页），引人入胜，并且会教会你比写递归更多的东西。它还会向你介绍计算机科学中一些最基础的概念，例如 Y 组合子、解释器、组合子和停机问题。
+像许多其他事物一样，理解递归的唯一方法是*练习*。编写大量简单的递归函数。然后再写更多。再接着写一些更复杂的递归函数。依此类推。但你怎么做呢？我有一个小窍门。这是一本书。它很短（不到 200 页），引人入胜，并且会教会你比写递归更多的东西。它还会向你介绍计算机科学中一些最基础的概念，例如 Y 组合子、解释器、组合子和停机问题。
 
 这本奇妙的小书叫做*《小程序员》*。¹ 在“前言”中，几乎在一开始，作者明确指出：
 
@@ -84,7 +84,7 @@ print(sum_all_nums([1, 2, 3, 4]))
 
 # 学习递归的最佳书籍
 
-![](../Images/b350f8680dd9e708e14f3af7170cf952.png)
+![](img/b350f8680dd9e708e14f3af7170cf952.png)
 
 我的 TLS 版本 — 还有一杯浓缩咖啡（我来自意大利！）[作者提供的图片]
 
@@ -96,7 +96,7 @@ print(sum_all_nums([1, 2, 3, 4]))
 
 它不给你定义——它向读者提出问题（通常以练习的形式），然后提供答案（或解决方案）。这需要一些适应，但非常有效。
 
-![](../Images/9e674942a67744b3172fa55689b19168.png)
+![](img/9e674942a67744b3172fa55689b19168.png)
 
 TLS 的奇特风格 [作者提供的图片]
 
@@ -135,25 +135,25 @@ print(is_contained(1, [2, 3, 4, 1]))
 
 +   表达条件（例如 `if`）的一种方式
 
-对于更复杂的函数，你还需要一个*构造器*来构建列表。加上一些*定义*函数的方法，仅此而已。这就是为什么几乎所有的语法都在第一章中介绍，在不到 10 页的简洁内容中（唯一的例外是列表构建构造器 cons，它在第 3 章中介绍）。前三章带你了解许多更简单的递归函数。
+对于更复杂的函数，你还需要一个*构造器*来构建列表。加上一些*定义*函数的方法，仅此而已。这就是为什么几乎所有的语法都在第一章中介绍，在不到 10 页的简洁内容中（唯一的例外是列表构建构造器 cons，它在第三章中介绍）。前三章带你了解许多更简单的递归函数。
 
-当你到达第4章时，你应该已经对编写操作列表的递归函数的基本设计模式有所了解：例如上面提到的函数，它们检查特定项是否是列表的成员。或者，替换列表中给定项的第一个（或所有）出现的函数。
+当你到达第四章时，你应该已经对编写操作列表的递归函数的基本设计模式有所了解：例如上面提到的函数，它们检查特定项是否是列表的成员。或者，替换列表中给定项的第一个（或所有）出现的函数。
 
-随后，这些知识应用于从基本原理构建基本的*算术操作*。同样，这通过对数字进行递归以及使用提供的原语（这些原语将数字递增和递减1）来实现。例如，两个数字*n*和*m*的加法定义为：
+随后，这些知识应用于从基本原理构建基本的*算术操作*。同样，这通过对数字进行递归以及使用提供的原语（这些原语将数字递增和递减 1）来实现。例如，两个数字*n*和*m*的加法定义为：
 
 +   基本情况：如果*m*为零，返回*n*
 
 +   否则，递归返回将加法函数应用于递增的*n*和递减的*m*的结果。
 
-第5章和第6章介绍了对任意深度嵌套列表的递归函数：这些列表可能包含列表，而这些列表又可能包含列表，依此类推。基本上，你需要重写前几章中的所有函数，以便它们在“更深”的情况下也能工作。
+第五章和第六章介绍了对任意深度嵌套列表的递归函数：这些列表可能包含列表，而这些列表又可能包含列表，依此类推。基本上，你需要重写前几章中的所有函数，以便它们在“更深”的情况下也能工作。
 
-这些知识在第6章中得到了具体应用，你将在其中编写一个用于算术表达式的解释器。让我强调：我们已经阅读了100页的内容。我们从没有Scheme知识和最简语法开始——而现在我们正在构建一个评估我们*定义*的操作的解释器。如果你对编程的更理论方面感兴趣，你可能会发现这非常有价值和激动人心。
+这些知识在第六章中得到了具体应用，你将在其中编写一个用于算术表达式的解释器。让我强调：我们已经阅读了 100 页的内容。我们从没有 Scheme 知识和最简语法开始——而现在我们正在构建一个评估我们*定义*的操作的解释器。如果你对编程的更理论方面感兴趣，你可能会发现这非常有价值和激动人心。
 
-第7章专注于集合论构造、关系和函数，这些内容同样留给读者在阅读师生对话的过程中发现。
+第七章专注于集合论构造、关系和函数，这些内容同样留给读者在阅读师生对话的过程中发现。
 
-第8章可能是本书中最令人不满意的章节：它相当陡峭，而且很难看出这里引入的一些构造的意义。其关键似乎是引入了[延续](https://en.wikipedia.org/wiki/Continuation-passing_style)，但我必须承认我在这一章中感到困难（显然，许多人也有同样的感受）。
+第八章可能是本书中最令人不满意的章节：它相当陡峭，而且很难看出这里引入的一些构造的意义。其关键似乎是引入了[延续](https://en.wikipedia.org/wiki/Continuation-passing_style)，但我必须承认我在这一章中感到困难（显然，许多人也有同样的感受）。
 
-与前一章类似，第9章是*具有挑战性的*：在几页中介绍了许多基础概念，这些概念引出了对*应用顺序Y组合子*的讨论。我非常喜欢这一章，但我花了很多次尝试和一些在线资源的帮助（见下文）才理解它。顺便说一下，如果你曾经想知道Y组合子到底是什么（既然我们讨论递归的话题）：它是（非常粗略地说）在没有函数命名方式的语言中如何*定义*递归（因此，这种语言中的所有函数都是匿名的——例如Python中的*lambda*函数）。能够理解Y组合子是一次丰富的经历，对我来说，它是本书的亮点之一。
+与前一章类似，第九章是*具有挑战性的*：在几页中介绍了许多基础概念，这些概念引出了对*应用顺序 Y 组合子*的讨论。我非常喜欢这一章，但我花了很多次尝试和一些在线资源的帮助（见下文）才理解它。顺便说一下，如果你曾经想知道 Y 组合子到底是什么（既然我们讨论递归的话题）：它是（非常粗略地说）在没有函数命名方式的语言中如何*定义*递归（因此，这种语言中的所有函数都是匿名的——例如 Python 中的*lambda*函数）。能够理解 Y 组合子是一次丰富的经历，对我来说，它是本书的亮点之一。
 
 最后一章将所有内容整合在一起，你最终会用 Scheme 编写一个 Scheme 解释器 *在 Scheme 中*。让它沉淀下来：只用几个原语，*仅用递归*，你正在通过引导语言本身来编写一个语言的解释器。
 
@@ -163,15 +163,15 @@ print(is_contained(1, [2, 3, 4, 1]))
 
 +   我有一个 GitHub 仓库（正在进行中！），在这里我发布了笔记、解决方案和一个相当全面的 Racket 测试套件，[链接在此](https://github.com/bsassoli/The-Little-Schemer)
 
-+   另一个我喜欢的 GitHub 仓库（同样是 Racket）：[https://github.com/bmitc/the-little-scheme](https://github.com/bmitc/the-little-schemer)
++   另一个我喜欢的 GitHub 仓库（同样是 Racket）：[`github.com/bmitc/the-little-scheme`](https://github.com/bmitc/the-little-schemer)
 
-+   还有另一个：[https://github.com/willprice/little-schemer](https://github.com/willprice/little-schemer)
++   还有另一个：[`github.com/willprice/little-schemer`](https://github.com/willprice/little-schemer)
 
-+   对这本书的一个负面（但不完全不相关）评论：[https://inventwithpython.com/blog/2018/12/09/book-review-the-little-schemer/](https://inventwithpython.com/blog/2018/12/09/book-review-the-little-schemer/)）以平衡我的热情
++   对这本书的一个负面（但不完全不相关）评论：[`inventwithpython.com/blog/2018/12/09/book-review-the-little-schemer/`](https://inventwithpython.com/blog/2018/12/09/book-review-the-little-schemer/)）以平衡我的热情
 
 +   如果你遇到困难，关于 Y 组合子的一个[优秀博客文章](https://mvanier.livejournal.com/2897.html)
 
-[**1**] Friedman, Daniel, P, Felleisen, Matthias [《小Scheme》], 麻省理工学院出版社，剑桥，MA，1986年，1996年第四版 ([https://mitpress.mit.edu/9780262560993/the-little-schemer/](https://mitpress.mit.edu/9780262560993/the-little-schemer/))。最初出版为 *《小LISPer》*。
+[**1**] Friedman, Daniel, P, Felleisen, Matthias [《小 Scheme》], 麻省理工学院出版社，剑桥，MA，1986 年，1996 年第四版 ([`mitpress.mit.edu/9780262560993/the-little-schemer/`](https://mitpress.mit.edu/9780262560993/the-little-schemer/))。最初出版为 *《小 LISPer》*。
 
 [**2**] 事实上，《*计算机程序的结构与解释*》是有史以来最受推崇的计算机科学书籍之一，[*结构与解释计算机程序*](https://web.mit.edu/6.001/6.037/sicp.pdf) 使用了 Scheme。
 

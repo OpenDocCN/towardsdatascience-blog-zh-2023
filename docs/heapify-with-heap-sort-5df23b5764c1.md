@@ -1,18 +1,18 @@
 # 排序算法：堆排序
 
-> 原文：[https://towardsdatascience.com/heapify-with-heap-sort-5df23b5764c1?source=collection_archive---------19-----------------------#2023-01-03](https://towardsdatascience.com/heapify-with-heap-sort-5df23b5764c1?source=collection_archive---------19-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/heapify-with-heap-sort-5df23b5764c1?source=collection_archive---------19-----------------------#2023-01-03`](https://towardsdatascience.com/heapify-with-heap-sort-5df23b5764c1?source=collection_archive---------19-----------------------#2023-01-03)
 
 ## 了解堆数据结构及其在排序中的应用
 
-[](https://medium.com/@slavahead?source=post_page-----5df23b5764c1--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----5df23b5764c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5df23b5764c1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5df23b5764c1--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----5df23b5764c1--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----5df23b5764c1--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----5df23b5764c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5df23b5764c1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5df23b5764c1--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----5df23b5764c1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheapify-with-heap-sort-5df23b5764c1&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----5df23b5764c1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5df23b5764c1--------------------------------) · 7 分钟阅读 · 2023年1月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5df23b5764c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheapify-with-heap-sort-5df23b5764c1&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----5df23b5764c1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheapify-with-heap-sort-5df23b5764c1&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----5df23b5764c1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5df23b5764c1--------------------------------) · 7 分钟阅读 · 2023 年 1 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5df23b5764c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheapify-with-heap-sort-5df23b5764c1&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----5df23b5764c1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5df23b5764c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheapify-with-heap-sort-5df23b5764c1&source=-----5df23b5764c1---------------------bookmark_footer-----------)![](../Images/99d9ca3f43899b65860f0083b86d38d2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5df23b5764c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheapify-with-heap-sort-5df23b5764c1&source=-----5df23b5764c1---------------------bookmark_footer-----------)![](img/99d9ca3f43899b65860f0083b86d38d2.png)
 
 # 介绍
 
@@ -24,11 +24,11 @@
 
 本文中的示例和代码将针对最小堆提供。最大堆的算法工作流程非常类似。下面展示了一个最小堆的示例。
 
-![](../Images/5e5906b224656fbe591da0a80e519b87.png)
+![](img/5e5906b224656fbe591da0a80e519b87.png)
 
 堆通常以数组的形式存储。*如果一个父节点的索引是 i，那么其左子节点和右子节点的位置分别是 2 * i + 1 和 2 * i + 2。反之，如果一个非根节点的索引是* i*，那么其父节点的索引是* (i - 1) // 2*。遵循这一原则，我们得到上述堆的数组表示：
 
-![](../Images/4d80164a8184defd378f330f1263d4d6.png)
+![](img/4d80164a8184defd378f330f1263d4d6.png)
 
 # 操作
 
@@ -70,7 +70,7 @@ class Heap:
 
 从上图中，我们插入了一个值为 3 的节点。
 
-![](../Images/dd988bcb480281d6a9d100c9a769c2cc.png)
+![](img/dd988bcb480281d6a9d100c9a769c2cc.png)
 
 +   插入后，堆规则被破坏，因为 3 < 15（父节点）。我们交换元素 3 和 15。
 
@@ -78,7 +78,7 @@ class Heap:
 
 +   节点 3 位于索引 2，其父节点值为 1。由于 3 ≥ 1，堆规则是正确的。在这一阶段，插入过程结束。
 
-![](../Images/7b9eb6f655a7ee2691ab78145f5e1947.png)
+![](img/7b9eb6f655a7ee2691ab78145f5e1947.png)
 
 让我们来探讨插入的时间复杂度。最坏的情况是需要将新节点从树的底部传播到顶部。由于任何树的高度与其元素总数 *N* 的对数关系成正比，而每次比较花费 *O(1)* 时间，最终估计结果为 *O(logN)* 时间。
 
@@ -126,17 +126,17 @@ class Heap:
 
 最小节点位于堆的顶部。我们提取最小值，并用堆的最后一个节点替换顶部节点。由于违反了堆规则，我们将这个元素向下传播。该算法与我们上面使用的插入元素时相似（插入时元素是向上传播的）：在每一步中，我们将当前元素与具有最小值的子节点交换。此过程持续到堆规则不再被破坏或当前元素没有子节点为止。
 
-![](../Images/30b0db0e5c933bb54dfcb43c7ec78b41.png)
+![](img/30b0db0e5c933bb54dfcb43c7ec78b41.png)
 
-在上图中，值为1的节点被提取，值为15的最后一个节点取代了它的位置。
+在上图中，值为 1 的节点被提取，值为 15 的最后一个节点取代了它的位置。
 
-+   由于节点15违反了堆规则，我们将其与其最小的子节点3交换。
++   由于节点 15 违反了堆规则，我们将其与其最小的子节点 3 交换。
 
-+   然后节点15有子节点7和8，它们都较小。我们再次将15与最小的子节点7交换。
++   然后节点 15 有子节点 7 和 8，它们都较小。我们再次将 15 与最小的子节点 7 交换。
 
-+   之后，15位于索引5，并且只有一个子节点20。由于15 ≤ 20，我们停止堆化过程。
++   之后，15 位于索引 5，并且只有一个子节点 20。由于 15 ≤ 20，我们停止堆化过程。
 
-![](../Images/2aafb5bf033bbf6242d98e50d2c511df.png)
+![](img/2aafb5bf033bbf6242d98e50d2c511df.png)
 
 类似于插入部分的堆化算法，该算法具有相同的渐进复杂度，并在 *O(logN)* 时间内进行。
 
@@ -185,7 +185,7 @@ class Heap:
 
 # 结论
 
-我们已经覆盖了堆的所有四个主要操作。要使用堆数据结构对数组进行排序，必须首先构建堆，然后调用排序方法。构建堆需要 *O(N)* 时间，而排序需要 *O(N * logN)* *时间，这最终导致堆排序的O(N * logN)*渐进复杂度。
+我们已经覆盖了堆的所有四个主要操作。要使用堆数据结构对数组进行排序，必须首先构建堆，然后调用排序方法。构建堆需要 *O(N)* 时间，而排序需要 *O(N * logN)* *时间，这最终导致堆排序的 O(N * logN)*渐进复杂度。
 
 堆类的完整实现如下所示。
 

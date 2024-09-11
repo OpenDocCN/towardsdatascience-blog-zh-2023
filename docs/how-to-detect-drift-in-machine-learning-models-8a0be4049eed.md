@@ -1,14 +1,14 @@
 # 如何检测机器学习模型中的漂移
 
-> 原文：[https://towardsdatascience.com/how-to-detect-drift-in-machine-learning-models-8a0be4049eed?source=collection_archive---------5-----------------------#2023-02-06](https://towardsdatascience.com/how-to-detect-drift-in-machine-learning-models-8a0be4049eed?source=collection_archive---------5-----------------------#2023-02-06)
+> 原文：[`towardsdatascience.com/how-to-detect-drift-in-machine-learning-models-8a0be4049eed?source=collection_archive---------5-----------------------#2023-02-06`](https://towardsdatascience.com/how-to-detect-drift-in-machine-learning-models-8a0be4049eed?source=collection_archive---------5-----------------------#2023-02-06)
 
 ## *这可能是为什么你的模型在生产中性能下降的原因*
 
-[](https://medium.com/@edwin.tan?source=post_page-----8a0be4049eed--------------------------------)[![Edwin Tan](../Images/7db7b2f72bdbeb1675df3a2c6eddf91f.png)](https://medium.com/@edwin.tan?source=post_page-----8a0be4049eed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a0be4049eed--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8a0be4049eed--------------------------------) [Edwin Tan](https://medium.com/@edwin.tan?source=post_page-----8a0be4049eed--------------------------------)
+[](https://medium.com/@edwin.tan?source=post_page-----8a0be4049eed--------------------------------)![Edwin Tan](https://medium.com/@edwin.tan?source=post_page-----8a0be4049eed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a0be4049eed--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a0be4049eed--------------------------------) [Edwin Tan](https://medium.com/@edwin.tan?source=post_page-----8a0be4049eed--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F484e02c96aa7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-detect-drift-in-machine-learning-models-8a0be4049eed&user=Edwin+Tan&userId=484e02c96aa7&source=post_page-484e02c96aa7----8a0be4049eed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a0be4049eed--------------------------------) ·8分钟阅读·2023年2月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a0be4049eed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-detect-drift-in-machine-learning-models-8a0be4049eed&user=Edwin+Tan&userId=484e02c96aa7&source=-----8a0be4049eed---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F484e02c96aa7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-detect-drift-in-machine-learning-models-8a0be4049eed&user=Edwin+Tan&userId=484e02c96aa7&source=post_page-484e02c96aa7----8a0be4049eed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a0be4049eed--------------------------------) ·8 分钟阅读·2023 年 2 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a0be4049eed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-detect-drift-in-machine-learning-models-8a0be4049eed&user=Edwin+Tan&userId=484e02c96aa7&source=-----8a0be4049eed---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 你是否曾在测试集上获得了很好的结果，但在一段时间后模型在生产中表现不佳？如果是这样，你可能正在经历模型衰退。模型衰退是机器学习模型性能随着时间逐渐下降的现象。在这篇文章中，我们将探讨数据漂移如何导致模型衰退以及如何设置早期检测以发现漂移。
 
-![](../Images/848e5f894f69fdf863aa02d8252caf76.png)
+![](img/848e5f894f69fdf863aa02d8252caf76.png)
 
 图片由 [Samuel Wong](https://unsplash.com/@samuelwong?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

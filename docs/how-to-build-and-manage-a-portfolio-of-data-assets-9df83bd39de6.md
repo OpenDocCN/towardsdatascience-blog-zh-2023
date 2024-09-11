@@ -1,10 +1,10 @@
 # 如何构建和管理数据资产组合
 
-> 原文：[https://towardsdatascience.com/how-to-build-and-manage-a-portfolio-of-data-assets-9df83bd39de6?source=collection_archive---------0-----------------------#2023-09-14](https://towardsdatascience.com/how-to-build-and-manage-a-portfolio-of-data-assets-9df83bd39de6?source=collection_archive---------0-----------------------#2023-09-14)
+> 原文：[`towardsdatascience.com/how-to-build-and-manage-a-portfolio-of-data-assets-9df83bd39de6?source=collection_archive---------0-----------------------#2023-09-14`](https://towardsdatascience.com/how-to-build-and-manage-a-portfolio-of-data-assets-9df83bd39de6?source=collection_archive---------0-----------------------#2023-09-14)
 
 ## 一种逐步方法
 
-[](https://medium.com/@willemkoenders?source=post_page-----9df83bd39de6--------------------------------)[![Willem Koenders](../Images/340bb968e9eb62d3d84920a214bfa4dd.png)](https://medium.com/@willemkoenders?source=post_page-----9df83bd39de6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9df83bd39de6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9df83bd39de6--------------------------------) [Willem Koenders](https://medium.com/@willemkoenders?source=post_page-----9df83bd39de6--------------------------------)
+[](https://medium.com/@willemkoenders?source=post_page-----9df83bd39de6--------------------------------)![Willem Koenders](https://medium.com/@willemkoenders?source=post_page-----9df83bd39de6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9df83bd39de6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9df83bd39de6--------------------------------) [Willem Koenders](https://medium.com/@willemkoenders?source=post_page-----9df83bd39de6--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9df83bd39de6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-and-manage-a-portfolio-of-data-assets-9df83bd39de6&source=-----9df83bd39de6---------------------bookmark_footer-----------)![](../Images/00239f24b8b26c50ee075753e35947b3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9df83bd39de6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-and-manage-a-portfolio-of-data-assets-9df83bd39de6&source=-----9df83bd39de6---------------------bookmark_footer-----------)![](img/00239f24b8b26c50ee075753e35947b3.png)
 
 由 [Viktor Forgacs](https://unsplash.com/@sonance) 拍摄，来自 [Unsplash](https://unsplash.com/)。
 

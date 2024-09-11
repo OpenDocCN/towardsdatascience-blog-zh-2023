@@ -1,18 +1,18 @@
-# 深入探讨模型可解释性的PFI
+# 深入探讨模型可解释性的 PFI
 
-> 原文：[https://towardsdatascience.com/deep-dive-into-pfi-for-model-interpretability-f12f0c64226c?source=collection_archive---------11-----------------------#2023-07-20](https://towardsdatascience.com/deep-dive-into-pfi-for-model-interpretability-f12f0c64226c?source=collection_archive---------11-----------------------#2023-07-20)
+> 原文：[`towardsdatascience.com/deep-dive-into-pfi-for-model-interpretability-f12f0c64226c?source=collection_archive---------11-----------------------#2023-07-20`](https://towardsdatascience.com/deep-dive-into-pfi-for-model-interpretability-f12f0c64226c?source=collection_archive---------11-----------------------#2023-07-20)
 
 ## 另一个可供选择的可解释性工具
 
-[](https://medium.com/@tiagotoledojr?source=post_page-----f12f0c64226c--------------------------------)[![Tiago Toledo Jr.](../Images/577748ae15ec9eb7ead9355f94287a9d.png)](https://medium.com/@tiagotoledojr?source=post_page-----f12f0c64226c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f12f0c64226c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f12f0c64226c--------------------------------) [Tiago Toledo Jr.](https://medium.com/@tiagotoledojr?source=post_page-----f12f0c64226c--------------------------------)
+[](https://medium.com/@tiagotoledojr?source=post_page-----f12f0c64226c--------------------------------)![Tiago Toledo Jr.](https://medium.com/@tiagotoledojr?source=post_page-----f12f0c64226c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f12f0c64226c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f12f0c64226c--------------------------------) [Tiago Toledo Jr.](https://medium.com/@tiagotoledojr?source=post_page-----f12f0c64226c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff4eeaf479b0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pfi-for-model-interpretability-f12f0c64226c&user=Tiago+Toledo+Jr.&userId=f4eeaf479b0c&source=post_page-f4eeaf479b0c----f12f0c64226c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f12f0c64226c--------------------------------) ·6分钟阅读·2023年7月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff12f0c64226c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pfi-for-model-interpretability-f12f0c64226c&user=Tiago+Toledo+Jr.&userId=f4eeaf479b0c&source=-----f12f0c64226c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff4eeaf479b0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pfi-for-model-interpretability-f12f0c64226c&user=Tiago+Toledo+Jr.&userId=f4eeaf479b0c&source=post_page-f4eeaf479b0c----f12f0c64226c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f12f0c64226c--------------------------------) ·6 分钟阅读·2023 年 7 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff12f0c64226c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pfi-for-model-interpretability-f12f0c64226c&user=Tiago+Toledo+Jr.&userId=f4eeaf479b0c&source=-----f12f0c64226c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff12f0c64226c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pfi-for-model-interpretability-f12f0c64226c&source=-----f12f0c64226c---------------------bookmark_footer-----------)![](../Images/7eb50e79f4113ff3f3d5a63159eb633f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff12f0c64226c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pfi-for-model-interpretability-f12f0c64226c&source=-----f12f0c64226c---------------------bookmark_footer-----------)![](img/7eb50e79f4113ff3f3d5a63159eb633f.png)
 
 图片由 [fabio](https://unsplash.com/@fabioha?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

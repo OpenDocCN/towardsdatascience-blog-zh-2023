@@ -1,62 +1,62 @@
-# 有效的数据增强用于OCR
+# 有效的数据增强用于 OCR
 
-> 原文：[https://towardsdatascience.com/effective-data-augmentation-for-ocr-8013080aa9fa?source=collection_archive---------10-----------------------#2023-04-06](https://towardsdatascience.com/effective-data-augmentation-for-ocr-8013080aa9fa?source=collection_archive---------10-----------------------#2023-04-06)
+> 原文：[`towardsdatascience.com/effective-data-augmentation-for-ocr-8013080aa9fa?source=collection_archive---------10-----------------------#2023-04-06`](https://towardsdatascience.com/effective-data-augmentation-for-ocr-8013080aa9fa?source=collection_archive---------10-----------------------#2023-04-06)
 
-## 我实现最后几个百分点的（ac）cu(re)teness的秘诀
+## 我实现最后几个百分点的（ac）cu(re)teness 的秘诀
 
-[](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)[![Toon Beerten](../Images/f169eaa8cefa00f17176955596972d57.png)](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------) [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)
+[](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)![Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------) [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----8013080aa9fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------) ·7 min read·2023年4月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8013080aa9fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&user=Toon+Beerten&userId=3aef462e13b5&source=-----8013080aa9fa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----8013080aa9fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------) ·7 min read·2023 年 4 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8013080aa9fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&user=Toon+Beerten&userId=3aef462e13b5&source=-----8013080aa9fa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8013080aa9fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&source=-----8013080aa9fa---------------------bookmark_footer-----------)![](../Images/e6dd122357975bca3efc671c05bae100.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8013080aa9fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&source=-----8013080aa9fa---------------------bookmark_footer-----------)![](img/e6dd122357975bca3efc671c05bae100.png)
 
 作者图片（生成的 [with](https://huggingface.co/spaces/albarji/mixture-of-diffusers)）
 
 ## **背景**
 
-我面临了一个挑战，即手写金额需要尽可能精确地识别。困难在于将误报率保持在0.01%以下。数据集中的样本数量是固定的，所以数据增强是合逻辑的选择。快速搜索发现没有现成的光学字符识别（OCR）方法。因此，我卷起袖子自己创建了一个数据增强程序。这个程序在训练期间被使用，帮助我的模型达到了目标。继续阅读以了解详细情况。
+我面临了一个挑战，即手写金额需要尽可能精确地识别。困难在于将误报率保持在 0.01%以下。数据集中的样本数量是固定的，所以数据增强是合逻辑的选择。快速搜索发现没有现成的光学字符识别（OCR）方法。因此，我卷起袖子自己创建了一个数据增强程序。这个程序在训练期间被使用，帮助我的模型达到了目标。继续阅读以了解详细情况。
 
-> 通过在每次训练图像时引入小的变化，模型不容易过拟合，从而更好地进行泛化。我将其与TROCR结合使用，但任何其他模型也应受益。
+> 通过在每次训练图像时引入小的变化，模型不容易过拟合，从而更好地进行泛化。我将其与 TROCR 结合使用，但任何其他模型也应受益。
 
 ## **测试设置**
 
-由于我不能分享我专有数据集中的图像，我想使用[IAM手写数据库](https://fki.tic.heia-fr.ch/databases/iam-handwriting-database)中的样本，但我没有收到使用这些图像的许可回复。因此，我创建了一些自己的示例来进行演示。
+由于我不能分享我专有数据集中的图像，我想使用[IAM 手写数据库](https://fki.tic.heia-fr.ch/databases/iam-handwriting-database)中的样本，但我没有收到使用这些图像的许可回复。因此，我创建了一些自己的示例来进行演示。
 
-我将使用O[penCV](https://opencv.org/)和[albumentations](https://albumentations.ai/)库，进行三种类型的变换：形态学、噪声和变换。
+我将使用 O[penCV](https://opencv.org/)和[albumentations](https://albumentations.ai/)库，进行三种类型的变换：形态学、噪声和变换。
 
-> OpenCV是一个知名的计算机视觉库。Albumentations是一个相对较新的Python库，提供了简单而强大的图像增强功能。
+> OpenCV 是一个知名的计算机视觉库。Albumentations 是一个相对较新的 Python 库，提供了简单而强大的图像增强功能。
 
-还有一个很棒的[演示网站](https://demo.albumentations.ai/)，你可以试试albumentations能做什么。然而它有一定的限制，因为你不能使用自己的图像进行测试。因此，我创建了一个Jupyter [笔记本](https://github.com/Toon-nooT/notebooks)，用于渲染本文中的所有增强图像。你可以在[colab](https://colab.research.google.com/github/Toon-nooT/notebooks/blob/main/OCR_data_augmentations.ipynb)中打开并进行实验。
+还有一个很棒的[演示网站](https://demo.albumentations.ai/)，你可以试试 albumentations 能做什么。然而它有一定的限制，因为你不能使用自己的图像进行测试。因此，我创建了一个 Jupyter [笔记本](https://github.com/Toon-nooT/notebooks)，用于渲染本文中的所有增强图像。你可以在[colab](https://colab.research.google.com/github/Toon-nooT/notebooks/blob/main/OCR_data_augmentations.ipynb)中打开并进行实验。
 
-我将首先展示这些变换及其一些解释，然后讨论我将它们结合在一起的技术。我假设所有图像都是灰度图像，并且已经进行了对比度增强（例如CLAHE）。
+我将首先展示这些变换及其一些解释，然后讨论我将它们结合在一起的技术。我假设所有图像都是灰度图像，并且已经进行了对比度增强（例如 CLAHE）。
 
 ## 第一种增强技术：**形态学**变换
 
-这些与结构形式有关。简单来说：它们可以用来使文本线条看起来像是用更细或更粗的笔书写的。它们被称为*腐蚀*和*膨胀*。不幸的是，这些还不是（还？）albumentations库的一部分，因此我必须借助opencv来实现。
+这些与结构形式有关。简单来说：它们可以用来使文本线条看起来像是用更细或更粗的笔书写的。它们被称为*腐蚀*和*膨胀*。不幸的是，这些还不是（还？）albumentations 库的一部分，因此我必须借助 opencv 来实现。
 
 为了创造出某人使用了更粗线宽的笔的效果，我们可以对原图进行**膨胀**处理：
 
-![](../Images/4b9a2f4972ba437ab7beb639d560dceb.png)
+![](img/4b9a2f4972ba437ab7beb639d560dceb.png)
 
 原始图像与膨胀效果 (*图片由作者提供*)
 
 另一方面，**腐蚀**（有意的双关）模拟了文本是用更细的笔书写的效果：
 
-![](../Images/518656273e4ca8bd9851b3e271c01fec.png)
+![](img/518656273e4ca8bd9851b3e271c01fec.png)
 
 原始图像与腐蚀效果 (*图片由作者提供*)
 
-在这里要小心，最后一个参数——即迭代次数——不要设置得太高（这里设置为3），否则你最终会得到完全去除的手写字。
+在这里要小心，最后一个参数——即迭代次数——不要设置得太高（这里设置为 3），否则你最终会得到完全去除的手写字。
 
 ```py
 cv2.dilate(img, kernel,iterations=random.randint(1, 3))
 ```
 
-对于我的数据集，我只能设置为1，因此这确实取决于你的数据。
+对于我的数据集，我只能设置为 1，因此这确实取决于你的数据。
 
 ## 第二种增强技术：**噪声引入**
 
@@ -64,31 +64,31 @@ cv2.dilate(img, kernel,iterations=random.randint(1, 3))
 
 **随机降雨**与**黑色**滴水颜色非常具有破坏性。即使对我来说也很难阅读文本。因此，我选择将这种情况发生的概率设置得非常低：
 
-![](../Images/0204f3ade1e653b39a087303d12f0e66.png)
+![](img/0204f3ade1e653b39a087303d12f0e66.png)
 
 RandomRain 示例（*图片来源：作者*）
 
 **RandomShadow** 将用不同强度的线条涂抹文本：
 
-![](../Images/e1ac0e10469d87375b5f5e2a4dffb45b.png)
+![](img/e1ac0e10469d87375b5f5e2a4dffb45b.png)
 
 RandomShadow（*图片来源：作者*）
 
 **PixelDropout** 轻轻将随机像素变为黑色：
 
-![](../Images/be81c47bd860ec1f9fb3693e1dbc18d9.png)
+![](img/be81c47bd860ec1f9fb3693e1dbc18d9.png)
 
 使用 PixelDropout 的黑色像素（*图片来源：作者*）
 
 与黑色滴落不同，**RandomRain** 使用 **白色** 滴落颜色会使书写变得支离破碎，这使得训练变得更加困难。就像你在复印传真复印件时看到的那种劣质效果一样。这种变换发生的概率可以设得更高。
 
-![](../Images/5755ce839ed7e7fc6508076eef3793cd.png)
+![](img/5755ce839ed7e7fc6508076eef3793cd.png)
 
 RandomRain — 白色版本（*图片来源：作者*）
 
 在较小程度上，**PixelDropout** 对 **白色** 的处理也是如此。但它更多地导致了一种更普遍的褪色图像：
 
-![](../Images/32ba83dfe76e12fea60af4a02368b9a4.png)
+![](img/32ba83dfe76e12fea60af4a02368b9a4.png)
 
 使用 PixelDropout 的白色像素（*图片来源：作者*）
 
@@ -96,13 +96,13 @@ RandomRain — 白色版本（*图片来源：作者*）
 
 **ShiftScaleRotate**：在这里需要注意参数。尽量避免文本被切割并超出原始尺寸。这里有缩放和旋转。请确保不要过度使用过大的参数。否则，你会有更大的机会让第一个样本发生。你可以看到它实际上将文本移动到图像之外。这可以通过选择更大的边界框来防止——从而有效地在文本周围添加更多的空白。
 
-![](../Images/0363993a0a4467f8609d17c980a84961.png)
+![](img/0363993a0a4467f8609d17c980a84961.png)
 
 放大和旋转（*图片来源：作者*）
 
 **模糊**。这个旧而可靠的方法，将以不同的强度执行。
 
-![](../Images/7775913f3b1f7790b6ebd6e838e0b9cc.png)
+![](img/7775913f3b1f7790b6ebd6e838e0b9cc.png)
 
 模糊的手写文本（*图片来源：作者*）
 
@@ -168,7 +168,7 @@ def augment_img(img):
 
 那么，让我们看看它的实际效果：
 
-![](../Images/e99d22b622bdf6f7bbcae9fbc5a7bb59.png)![](../Images/598a475fa77f1eefe28a95e47e1162d2.png)![](../Images/375968cfdc0a6ec7874d0b48ee5ea3e9.png)![](../Images/d57b638661a531d581e0a8b3fdcd60ea.png)
+![](img/e99d22b622bdf6f7bbcae9fbc5a7bb59.png)![](img/598a475fa77f1eefe28a95e47e1162d2.png)![](img/375968cfdc0a6ec7874d0b48ee5ea3e9.png)![](img/d57b638661a531d581e0a8b3fdcd60ea.png)
 
 增强的文本（*图片来源：作者*）
 
@@ -180,7 +180,7 @@ def augment_img(img):
 
 它能够做到这一点：
 
-![](../Images/a280195c5c28677c2534bf0d9d10eddd.png)
+![](img/a280195c5c28677c2534bf0d9d10eddd.png)
 
 图像来源：[Kartik Chaudhary / Raghav Bali](https://github.com/kartikgill/taco-box)
 

@@ -1,22 +1,22 @@
-# 基于LLM+RAG的问题回答
+# 基于 LLM+RAG 的问题回答
 
-> 原文：[https://towardsdatascience.com/llm-rag-based-question-answering-6a405c8ad38a?source=collection_archive---------0-----------------------#2023-12-25](https://towardsdatascience.com/llm-rag-based-question-answering-6a405c8ad38a?source=collection_archive---------0-----------------------#2023-12-25)
+> 原文：[`towardsdatascience.com/llm-rag-based-question-answering-6a405c8ad38a?source=collection_archive---------0-----------------------#2023-12-25`](https://towardsdatascience.com/llm-rag-based-question-answering-6a405c8ad38a?source=collection_archive---------0-----------------------#2023-12-25)
 
-## 如何在Kaggle上表现不佳，并从中学习RAG+LLM
+## 如何在 Kaggle 上表现不佳，并从中学习 RAG+LLM
 
-[](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)[![Teemu Kanstrén](../Images/8ad278d60d1fa3f794fccb4c61d607ce.png)](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------) [Teemu Kanstrén](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)
+[](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)![Teemu Kanstrén](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------) [Teemu Kanstrén](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9fc0679190dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&user=Teemu+Kanstr%C3%A9n&userId=9fc0679190dc&source=post_page-9fc0679190dc----6a405c8ad38a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------) ·23分钟阅读·2023年12月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a405c8ad38a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&user=Teemu+Kanstr%C3%A9n&userId=9fc0679190dc&source=-----6a405c8ad38a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9fc0679190dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&user=Teemu+Kanstr%C3%A9n&userId=9fc0679190dc&source=post_page-9fc0679190dc----6a405c8ad38a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------) ·23 分钟阅读·2023 年 12 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a405c8ad38a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&user=Teemu+Kanstr%C3%A9n&userId=9fc0679190dc&source=-----6a405c8ad38a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a405c8ad38a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&source=-----6a405c8ad38a---------------------bookmark_footer-----------)![](../Images/f497014da435709dae04a493366a7919.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a405c8ad38a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&source=-----6a405c8ad38a---------------------bookmark_footer-----------)![](img/f497014da435709dae04a493366a7919.png)
 
-图像由ChatGPT+/DALL-E3生成，展示了关于RAG的文章的插图。
+图像由 ChatGPT+/DALL-E3 生成，展示了关于 RAG 的文章的插图。
 
-检索增强生成（RAG）似乎现在相当受欢迎。随着大语言模型（LLM）的兴起，它成为了使LLM在特定任务上表现更好的热门技术之一，比如对内部文档进行问答。前段时间，我参加了一个 [Kaggle比赛](https://www.kaggle.com/competitions/kaggle-llm-science-exam)，这让我能够尝试它，并比自己随意实验学到更多一些。以下是从这些实验中获得的一些经验教训。
+检索增强生成（RAG）似乎现在相当受欢迎。随着大语言模型（LLM）的兴起，它成为了使 LLM 在特定任务上表现更好的热门技术之一，比如对内部文档进行问答。前段时间，我参加了一个 [Kaggle 比赛](https://www.kaggle.com/competitions/kaggle-llm-science-exam)，这让我能够尝试它，并比自己随意实验学到更多一些。以下是从这些实验中获得的一些经验教训。
 
 除非另有说明，否则所有图片均由作者提供。生成工具为 ChatGPT+/DALL-E3（如有注明），或取自我个人的 Jupyter 笔记本。
 
@@ -76,23 +76,23 @@ print(tokens)
 
 大多数 *section_text* 中的单词本身形成一个 token，因为它们是[文本中的常见单词](https://huggingface.co/docs/transformers/tokenizer_summary)。然而，对于特殊形式的单词或领域词汇，这可能会更复杂。例如，在这里，“uncharacteristic” 这个词变成了三个 tokens [“ *un*”， “ *character*”， “ *istic*”]。这是因为模型的分词器知道这三个部分词汇，但不知道整个单词（“ *uncharacteristic*”）。每个模型都有自己的分词器来匹配输入和模型训练中的这些规则。
 
-在分块中，来自Langchain的[RecursiveCharacterTextSplitter](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/recursive_text_splitter)用于上述代码中，计算这些令牌，并寻找给定的分隔符将文本拆分成请求的块。不同块大小的试验可能会有用。在我的Kaggle实验中，我从嵌入模型的最大大小开始，即512个令牌。然后尝试了256、128和64个令牌的块大小。
+在分块中，来自 Langchain 的[RecursiveCharacterTextSplitter](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/recursive_text_splitter)用于上述代码中，计算这些令牌，并寻找给定的分隔符将文本拆分成请求的块。不同块大小的试验可能会有用。在我的 Kaggle 实验中，我从嵌入模型的最大大小开始，即 512 个令牌。然后尝试了 256、128 和 64 个令牌的块大小。
 
-# 示例RAG查询
+# 示例 RAG 查询
 
-我提到的[Kaggle比赛](https://www.kaggle.com/competitions/kaggle-llm-science-exam)是基于维基百科数据的多项选择题回答。任务是从多个选项中选择每个问题的正确答案。显而易见的方法是使用RAG从维基百科数据中找到所需的信息，并用它来生成正确答案。以下是比赛数据中的第一个问题及其答案选项，用于说明：
+我提到的[Kaggle 比赛](https://www.kaggle.com/competitions/kaggle-llm-science-exam)是基于维基百科数据的多项选择题回答。任务是从多个选项中选择每个问题的正确答案。显而易见的方法是使用 RAG 从维基百科数据中找到所需的信息，并用它来生成正确答案。以下是比赛数据中的第一个问题及其答案选项，用于说明：
 
-![](../Images/35ff5c28169adc2755e25364da4b542b.png)
+![](img/35ff5c28169adc2755e25364da4b542b.png)
 
-示例问题和答案选项A-E。
+示例问题和答案选项 A-E。
 
-多项选择题是尝试RAG的一个有趣话题。但我相信，最常见的RAG用例是根据源文档回答问题。有点像聊天机器人，但通常是针对特定领域或（公司）内部文档的问答。我在本文中使用这个基本的问答用例来展示RAG。
+多项选择题是尝试 RAG 的一个有趣话题。但我相信，最常见的 RAG 用例是根据源文档回答问题。有点像聊天机器人，但通常是针对特定领域或（公司）内部文档的问答。我在本文中使用这个基本的问答用例来展示 RAG。
 
-作为本文的RAG示例问题，我需要一个LLM无法仅凭其训练数据直接回答的问题。我使用了维基百科数据，因为它可能是LLM训练数据的一部分，所以我需要一个与模型训练后相关的问题。我为本文使用的模型是[Zephyr 7B beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)，于2023年初训练完成。最后，我决定询问[Google Bard AI聊天机器人](https://bard.google.com/)。它在Zephyr训练日期之后的一年里有很多发展。我对Bard也有一定了解，以评估LLM的答案。因此，我使用“*what is google bard?*”作为本文的示例问题。
+作为本文的 RAG 示例问题，我需要一个 LLM 无法仅凭其训练数据直接回答的问题。我使用了维基百科数据，因为它可能是 LLM 训练数据的一部分，所以我需要一个与模型训练后相关的问题。我为本文使用的模型是[Zephyr 7B beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)，于 2023 年初训练完成。最后，我决定询问[Google Bard AI 聊天机器人](https://bard.google.com/)。它在 Zephyr 训练日期之后的一年里有很多发展。我对 Bard 也有一定了解，以评估 LLM 的答案。因此，我使用“*what is google bard?*”作为本文的示例问题。
 
 # 嵌入向量
 
-RAG的第一阶段检索基于嵌入向量，这些向量实际上只是多维空间中的点。它们看起来像这样（这里只列出了前10个值）：
+RAG 的第一阶段检索基于嵌入向量，这些向量实际上只是多维空间中的点。它们看起来像这样（这里只列出了前 10 个值）：
 
 ```py
 q_embeddings[:10]
@@ -100,7 +100,7 @@ array([-0.45518905, -0.6450379, 0.3097812, -0.4861114 , -0.08480848,
  -0.1664767 , 0.1875889, 0.3513346, -0.04495572, 0.12551129],
 ```
 
-这些嵌入向量可以用来比较单词/句子及其相互关系。这些向量可以通过嵌入模型构建。可以在[MTEB排行榜](https://huggingface.co/spaces/mteb/leaderboard)找到各种统计数据的模型集。使用这些模型之一就像这样简单：
+这些嵌入向量可以用来比较单词/句子及其相互关系。这些向量可以通过嵌入模型构建。可以在[MTEB 排行榜](https://huggingface.co/spaces/mteb/leaderboard)找到各种统计数据的模型集。使用这些模型之一就像这样简单：
 
 ```py
 from sentence_transformers import SentenceTransformer, util
@@ -109,7 +109,7 @@ embedding_model_path = "/mystuff/llm/bge-small-en"
 embedding_model = SentenceTransformer(embedding_model_path, device='cuda')
 ```
 
-HuggingFace上的模型页面通常显示示例代码。上述代码从本地磁盘加载模型“ [bge-small-en](https://huggingface.co/BAAI/bge-small-en-v1.5) ”。使用此模型创建嵌入只是：
+HuggingFace 上的模型页面通常显示示例代码。上述代码从本地磁盘加载模型“ [bge-small-en](https://huggingface.co/BAAI/bge-small-en-v1.5) ”。使用此模型创建嵌入只是：
 
 ```py
 question = "what is google bard?" 
@@ -150,7 +150,7 @@ article_embeddings = embedding_model.encode(article_chunks)
 
 一旦所有文章的分块和嵌入完成后，我构建了一个包含所有相关信息的 Pandas DataFrame。以下是我使用的维基百科数据转储前 5 个块的示例，文档标题为 *无政府主义*：
 
-![](../Images/b0cad38abdd821b3e885baf39e3bcafb.png)
+![](img/b0cad38abdd821b3e885baf39e3bcafb.png)
 
 我使用的维基百科数据转储中的第一篇文章的前 5 个块。
 
@@ -184,7 +184,7 @@ article_embeddings = embedding_model.encode(article_chunks)
 
 这里是与 *q_embeddings* 语义上最接近的前 10 个块：
 
-![](../Images/fa786f4b953c673500fa0eeb4ed0bf31.png)
+![](img/fa786f4b953c673500fa0eeb4ed0bf31.png)
 
 按照与问题的余弦相似度排序的前 10 个块。
 
@@ -222,19 +222,19 @@ df["rerank_score"] = rerank_scores
 
 在将 *rerank_score* 添加到块 DataFrame 并用它进行排序后：
 
-![](../Images/4fe80155ef3b8e0c33a065708d942c8d.png)
+![](img/4fe80155ef3b8e0c33a065708d942c8d.png)
 
 按照与问题的重新排序得分排序的前 10 个块。
 
-比较上面的两个表格（第一个按*sim_score*排序，现按*rerank_score*排序），可以看到一些明显的差异。按嵌入生成的普通相似性得分（*sim_score*）排序， [Tenor页面](https://en.wikipedia.org/wiki/Tenor_(website)) 是第5个最相似的片段。由于Tenor似乎是一个由Google托管的GIF搜索引擎，我想看到它的嵌入与问题“*what is google bard?*”接近是有道理的。但它实际上与Bard本身没有什么关系，只是Tenor是一个在类似领域的Google产品。
+比较上面的两个表格（第一个按*sim_score*排序，现按*rerank_score*排序），可以看到一些明显的差异。按嵌入生成的普通相似性得分（*sim_score*）排序， [Tenor 页面](https://en.wikipedia.org/wiki/Tenor_(website)) 是第 5 个最相似的片段。由于 Tenor 似乎是一个由 Google 托管的 GIF 搜索引擎，我想看到它的嵌入与问题“*what is google bard?*”接近是有道理的。但它实际上与 Bard 本身没有什么关系，只是 Tenor 是一个在类似领域的 Google 产品。
 
-然而，在按*rerank_score*排序后，结果更有意义。Tenor从前10名中消失了，前10名列表中的最后两个片段似乎不相关。这些片段关于“Bard”和“Bård”的名字。可能是因为有关Google Bard的最佳信息来源似乎是 [Google Bard页面](https://en.wikipedia.org/wiki/Bard_(chatbot))，在上述表格中这是id为6026776的文档。之后，我猜RAG用完了好的文章匹配，并有些偏离了正轨（Bård）。这也可以从表格最后两行/片段的负面重新排序得分中看到。
+然而，在按*rerank_score*排序后，结果更有意义。Tenor 从前 10 名中消失了，前 10 名列表中的最后两个片段似乎不相关。这些片段关于“Bard”和“Bård”的名字。可能是因为有关 Google Bard 的最佳信息来源似乎是 [Google Bard 页面](https://en.wikipedia.org/wiki/Bard_(chatbot))，在上述表格中这是 id 为 6026776 的文档。之后，我猜 RAG 用完了好的文章匹配，并有些偏离了正轨（Bård）。这也可以从表格最后两行/片段的负面重新排序得分中看到。
 
-通常会有许多相关文档和文档中的片段，而不仅仅是上面提到的1份文档和8个片段。但是在这种情况下，这种限制有助于说明基于基本嵌入的相似性搜索和重新排序之间的区别，以及重新排序如何积极地影响最终结果。
+通常会有许多相关文档和文档中的片段，而不仅仅是上面提到的 1 份文档和 8 个片段。但是在这种情况下，这种限制有助于说明基于基本嵌入的相似性搜索和重新排序之间的区别，以及重新排序如何积极地影响最终结果。
 
 # 构建上下文
 
-当我们收集了RAG输入的顶级片段后，我们该怎么做？我们需要从这些片段中为生成模型构建上下文。最简单的方法就是将选择的顶级片段连接成一个长文本序列。该序列的最大长度受所用模型的限制。由于我使用了 [Zephyr 7B模型](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)，所以我将4096个标记作为最大长度。 [Zephyr页面](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)将此作为一个灵活的序列限制（带有滑动注意窗口）。更长的上下文似乎更好，但 [这并不总是如此](https://www-cs.stanford.edu/~nfliu/papers/lost-in-the-middle.arxiv2023.pdf)。最好尝试一下。
+当我们收集了 RAG 输入的顶级片段后，我们该怎么做？我们需要从这些片段中为生成模型构建上下文。最简单的方法就是将选择的顶级片段连接成一个长文本序列。该序列的最大长度受所用模型的限制。由于我使用了 [Zephyr 7B 模型](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)，所以我将 4096 个标记作为最大长度。 [Zephyr 页面](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)将此作为一个灵活的序列限制（带有滑动注意窗口）。更长的上下文似乎更好，但 [这并不总是如此](https://www-cs.stanford.edu/~nfliu/papers/lost-in-the-middle.arxiv2023.pdf)。最好尝试一下。
 
 以下是我用来生成具有此上下文的答案的基本代码：
 
@@ -309,7 +309,7 @@ answer = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
 print(answer[len(query):])
 ```
 
-以下是一个示例答案，使用了按*sim_score*排序的片段作为上下文（包括Tenor和Bård页面片段）：
+以下是一个示例答案，使用了按*sim_score*排序的片段作为上下文（包括 Tenor 和 Bård 页面片段）：
 
 ```py
 ANSWER: 
@@ -327,9 +327,9 @@ masculine given name of Old Norse origin. It is sometimes used as a
 surname. It may refer to several people. Tenor and Bård are not related.
 ```
 
-这不是一个很好的答案，因为它开始谈论完全无关的话题，*Tenor*和*Bård*。部分原因是因为在这种情况下，Tenor块被包含在上下文中，块的顺序也通常较差，因为没有重新排序。
+这不是一个很好的答案，因为它开始谈论完全无关的话题，*Tenor*和*Bård*。部分原因是因为在这种情况下，Tenor 块被包含在上下文中，块的顺序也通常较差，因为没有重新排序。
 
-相比之下，使用*rerank_score*排序的上下文块（更好的块排序和Tenor消失）：
+相比之下，使用*rerank_score*排序的上下文块（更好的块排序和 Tenor 消失）：
 
 ```py
 ANSWER:
@@ -350,17 +350,17 @@ stressing that it remains distinct from Google Search.
 
 现在不相关的主题已经消失，答案总体上更好，更切题。
 
-这突出了不仅要找到适当的上下文以提供给模型，而且还要去除无关的上下文。在这种情况下，Zephyr模型似乎无法直接识别哪个部分的上下文是相关的，而是似乎对所有内容进行了总结。不能真正责怪模型，因为我提供了这些上下文并要求它使用这些内容。
+这突出了不仅要找到适当的上下文以提供给模型，而且还要去除无关的上下文。在这种情况下，Zephyr 模型似乎无法直接识别哪个部分的上下文是相关的，而是似乎对所有内容进行了总结。不能真正责怪模型，因为我提供了这些上下文并要求它使用这些内容。
 
 查看块的重新排序分数，基于诸如负面重新排序分数等指标的一般过滤方法也可以解决上述问题，因为在这种情况下“坏”块具有负面重新排序分数。
 
-值得注意的是，Google在我写这篇文章时发布了一个全新的、显著改进的*Gemini*模型系列。由于维基百科的内容生成有一些延迟，因此这里生成的答案没有提到这个模型。因此，如人们所想，尝试保持上下文的信息是最新的，并保持其相关性和重点是很重要的。
+值得注意的是，Google 在我写这篇文章时发布了一个全新的、显著改进的*Gemini*模型系列。由于维基百科的内容生成有一些延迟，因此这里生成的答案没有提到这个模型。因此，如人们所想，尝试保持上下文的信息是最新的，并保持其相关性和重点是很重要的。
 
 # 可视化嵌入检查
 
 嵌入是一个很好的工具，但有时确实很难真正理解它们是如何工作的，以及相似度搜索发生了什么。一个基本的方法是将嵌入彼此绘制，以获得一些关于它们关系的见解。
 
-构建这样的可视化使用[PCA](https://en.wikipedia.org/wiki/Principal_component_analysis)和可视化库是相当简单的。它涉及将嵌入向量映射到2维或3维，并绘制结果。在这里，我将这384维映射到2维，并绘制了结果：
+构建这样的可视化使用[PCA](https://en.wikipedia.org/wiki/Principal_component_analysis)和可视化库是相当简单的。它涉及将嵌入向量映射到 2 维或 3 维，并绘制结果。在这里，我将这 384 维映射到 2 维，并绘制了结果：
 
 ```py
 import seaborn as sns 
@@ -396,37 +396,37 @@ plt.xlabel('X', fontsize=16)
 plt.ylabel('Y', fontsize=16)
 ```
 
-对于“*what is google bard?*”问题的前10篇文章，这里给出了以下可视化：
+对于“*what is google bard?*”问题的前 10 篇文章，这里给出了以下可视化：
 
-![](../Images/67b91c3adabe96243a9d5e60010483b7.png)
+![](img/67b91c3adabe96243a9d5e60010483b7.png)
 
-基于PCA的2D绘图，比较问题嵌入与文章第一个块嵌入。
+基于 PCA 的 2D 绘图，比较问题嵌入与文章第一个块嵌入。
 
 在这个图中，红点是问题“*what is google bard?*”的嵌入。蓝点是根据*sim_score*找到的最接近的维基百科文章匹配项。
 
-[Bard文章](https://en.wikipedia.org/wiki/Bard_(chatbot))显然是与问题最接近的，而其他的则稍远一些。[Tenor文章](https://en.wikipedia.org/wiki/Tenor_(website))似乎是第二接近的，而[Bård文章](https://en.wikipedia.org/wiki/B%C3%A5rd)则稍远一些，可能是因为从384维映射到2维时信息的丢失。由于这一点，可视化并不是完全准确的，但对快速人工概览是有帮助的。
+[Bard 文章](https://en.wikipedia.org/wiki/Bard_(chatbot))显然是与问题最接近的，而其他的则稍远一些。[Tenor 文章](https://en.wikipedia.org/wiki/Tenor_(website))似乎是第二接近的，而[Bård 文章](https://en.wikipedia.org/wiki/B%C3%A5rd)则稍远一些，可能是因为从 384 维映射到 2 维时信息的丢失。由于这一点，可视化并不是完全准确的，但对快速人工概览是有帮助的。
 
-下图展示了我在Kaggle代码中发现的实际错误，使用了类似的PCA图。为了获取一些见解，我对维基百科转储中的第一篇文章（“ *无政府主义*”）提出了一个简单的问题：“ *无政府主义的定义是什么？*”。下面是PCA可视化的结果，标记的离群点可能是最有趣的部分：
+下图展示了我在 Kaggle 代码中发现的实际错误，使用了类似的 PCA 图。为了获取一些见解，我对维基百科转储中的第一篇文章（“ *无政府主义*”）提出了一个简单的问题：“ *无政府主义的定义是什么？*”。下面是 PCA 可视化的结果，标记的离群点可能是最有趣的部分：
 
-![](../Images/200d00bcdabbf0f98d58bdd7cf0f5802.png)
+![](img/200d00bcdabbf0f98d58bdd7cf0f5802.png)
 
-我在PCA基于2D图的Kaggle嵌入中显示的失败，针对所选的顶级文档。
+我在 PCA 基于 2D 图的 Kaggle 嵌入中显示的失败，针对所选的顶级文档。
 
 左下角的红点再次表示问题。旁边的蓝点簇是所有与无政府主义相关的文章。然后右上角有两个离群点。我删除了图表中的标题以保持其可读性。查看时，这两个离群文章似乎与问题无关。
 
-为什么会这样？由于我使用了512、256、128和64的各种块大小来索引文章，在处理256块大小的所有文章时遇到了一些问题，并在中途重新启动了分块。这导致某些嵌入与我存储的块文本的索引有所不同。在注意到这些奇怪的结果后，我重新计算了256个令牌块大小的嵌入，并将结果与512大小进行比较，注意到这个差异。可惜那时比赛已经结束🙂
+为什么会这样？由于我使用了 512、256、128 和 64 的各种块大小来索引文章，在处理 256 块大小的所有文章时遇到了一些问题，并在中途重新启动了分块。这导致某些嵌入与我存储的块文本的索引有所不同。在注意到这些奇怪的结果后，我重新计算了 256 个令牌块大小的嵌入，并将结果与 512 大小进行比较，注意到这个差异。可惜那时比赛已经结束🙂
 
 # 更高级的上下文选择
 
 上述内容讨论了将文档分块并使用相似度搜索+重新排序作为找到相关块和构建问题回答上下文的方法。我发现有时也有必要考虑初始文档的选择方式，而不仅仅是块本身。
 
-作为示例方法，[高级RAG](https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/)课程在[DeepLearning.AI](https://www.deeplearning.ai/)上介绍了两种方法：句子窗口化和层次块合并。总结来说，这种方法查看附近的块，如果多个块的分数很高，则将它们作为一个大的块。所谓“层次结构”是通过考虑越来越大的块组合来共同相关。旨在提供更连贯的上下文，而不是随机排序的小块，给生成LLM更好的输入。
+作为示例方法，[高级 RAG](https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/)课程在[DeepLearning.AI](https://www.deeplearning.ai/)上介绍了两种方法：句子窗口化和层次块合并。总结来说，这种方法查看附近的块，如果多个块的分数很高，则将它们作为一个大的块。所谓“层次结构”是通过考虑越来越大的块组合来共同相关。旨在提供更连贯的上下文，而不是随机排序的小块，给生成 LLM 更好的输入。
 
-作为一个简单的示例，这是我上面Bard示例的重新排序的前几个块：
+作为一个简单的示例，这是我上面 Bard 示例的重新排序的前几个块：
 
-![](../Images/fa17b950e30b9f3b12c8cb936393317c.png)
+![](img/fa17b950e30b9f3b12c8cb936393317c.png)
 
-我在Bard示例中的前10个块，按重新排序分数排序。
+我在 Bard 示例中的前 10 个块，按重新排序分数排序。
 
 这里最左侧的列是块的索引。在我的生成中，我只是按表中的排序顺序取了顶级块。如果我们想使上下文更连贯，我们可以按文档中的顺序对最终选择的块进行排序。如果在高度排名的块之间有小片段缺失，添加缺失的部分（例如这里的块 ID 7）可能有助于填补空白，类似于层次合并。这可能是作为最终步骤进行尝试的内容，以获得最终的改进。
 
@@ -462,7 +462,7 @@ discrepancy in galaxy clusters?
 
 这里是第一个问题及其给出的 5 个答案选项：
 
-![](../Images/52216d4403a7ac4827efa1264b76eb88.png)
+![](img/52216d4403a7ac4827efa1264b76eb88.png)
 
 示例问题和答案选项 A-E。将所有这些文本合并形成了查询。
 
@@ -476,28 +476,28 @@ discrepancy in galaxy clusters?
 
 [Bing Chat](https://www.bing.com/chat)采用了类似的方法，突出显示答案的部分并添加对源网站的引用。[ChatGPT](https://chat.openai.com/)的方法略有不同；我必须明确要求它验证其答案并更新最新进展，告诉它使用其浏览器工具。之后，它进行了互联网搜索并链接到特定网站作为来源。源的质量似乎有很大的变化，就像任何互联网搜索一样。当然，对于内部文档，这种类型的网络搜索是不可能的。然而，即使在内部，也应该始终可以链接到来源。
 
-我还询问了Bard、ChatGPT+和Bing关于检测幻觉的想法。结果包括一个LLM幻觉[排名指数](https://www.rungalileo.io/blog/hallucination-index)，以及[RAG幻觉](https://www.rungalileo.io/hallucinationindex)。在调优LLM时，将[温度参数设为零](https://txt.cohere.com/llm-parameters-best-outputs-language-ai/)可能有助于LLM生成确定性的、最可能的输出令牌。
+我还询问了 Bard、ChatGPT+和 Bing 关于检测幻觉的想法。结果包括一个 LLM 幻觉[排名指数](https://www.rungalileo.io/blog/hallucination-index)，以及[RAG 幻觉](https://www.rungalileo.io/hallucinationindex)。在调优 LLM 时，将[温度参数设为零](https://txt.cohere.com/llm-parameters-best-outputs-language-ai/)可能有助于 LLM 生成确定性的、最可能的输出令牌。
 
-最后，由于这是一个非常常见的问题，似乎有各种方法正在被构建以更好地解决这一挑战。例如，特定的[LLM来帮助检测幻觉](https://huggingface.co/blog/dhuynh95/automatic-hallucination-detection)似乎是一个有前途的领域。我没有时间尝试它们，但在更大的项目中肯定是相关的。
+最后，由于这是一个非常常见的问题，似乎有各种方法正在被构建以更好地解决这一挑战。例如，特定的[LLM 来帮助检测幻觉](https://huggingface.co/blog/dhuynh95/automatic-hallucination-detection)似乎是一个有前途的领域。我没有时间尝试它们，但在更大的项目中肯定是相关的。
 
 # 评估结果
 
-除了实现一个有效的RAG解决方案之外，能够评估它的效果也是很有价值的。在Kaggle比赛中，这相当简单。我只是运行解决方案以尝试回答训练数据集中的给定问题，并将其与训练数据中提供的正确答案进行比较。或者将模型提交到Kaggle比赛测试集进行评分。答案分数越高，RAG解决方案就越好，即使分数背后还有更多内容。
+除了实现一个有效的 RAG 解决方案之外，能够评估它的效果也是很有价值的。在 Kaggle 比赛中，这相当简单。我只是运行解决方案以尝试回答训练数据集中的给定问题，并将其与训练数据中提供的正确答案进行比较。或者将模型提交到 Kaggle 比赛测试集进行评分。答案分数越高，RAG 解决方案就越好，即使分数背后还有更多内容。
 
-在许多情况下，可能没有适用于领域特定RAG的合适评估数据集。对于这种情况，可以考虑从一些通用NLP评估数据集开始，例如[这个列表](https://paperswithcode.com/task/question-answering#:~:text=Popular%20benchmark%20datasets%20for%20evaluation%20question%20answering%20systems%20include%20SQuAD,models%20are%20T5%20and%20XLNet.)。像LangChain这样的工具还提供了[自动生成问题和答案](https://blog.langchain.dev/auto-eval-of-question-answering-tasks/)并进行评估的支持。在这种情况下，使用一个LLM为给定文档集创建示例问题和答案，另一个LLM用于评估RAG是否能够提供这些问题的正确答案。也许可以在这个[LangChain的RAG评估教程](https://learn.deeplearning.ai/langchain/lesson/6/evaluation)中更好地解释。
+在许多情况下，可能没有适用于领域特定 RAG 的合适评估数据集。对于这种情况，可以考虑从一些通用 NLP 评估数据集开始，例如[这个列表](https://paperswithcode.com/task/question-answering#:~:text=Popular%20benchmark%20datasets%20for%20evaluation%20question%20answering%20systems%20include%20SQuAD,models%20are%20T5%20and%20XLNet.)。像 LangChain 这样的工具还提供了[自动生成问题和答案](https://blog.langchain.dev/auto-eval-of-question-answering-tasks/)并进行评估的支持。在这种情况下，使用一个 LLM 为给定文档集创建示例问题和答案，另一个 LLM 用于评估 RAG 是否能够提供这些问题的正确答案。也许可以在这个[LangChain 的 RAG 评估教程](https://learn.deeplearning.ai/langchain/lesson/6/evaluation)中更好地解释。
 
-虽然通用解决方案在开始时可能很好，但在实际项目中，我会尝试收集来自领域专家和目标用户的真实问题和答案数据集。由于大型语言模型（LLM）通常被期望生成自然语言响应，这些响应可能在正确的前提下变化很大。因此，评估答案是否正确不像正则表达式或类似的模式匹配那么直接。在这种情况下，我发现使用另一种LLM来评估给定的响应是否匹配参考响应是一个非常有用的工具。这些模型能够更好地处理文本变异。
+虽然通用解决方案在开始时可能很好，但在实际项目中，我会尝试收集来自领域专家和目标用户的真实问题和答案数据集。由于大型语言模型（LLM）通常被期望生成自然语言响应，这些响应可能在正确的前提下变化很大。因此，评估答案是否正确不像正则表达式或类似的模式匹配那么直接。在这种情况下，我发现使用另一种 LLM 来评估给定的响应是否匹配参考响应是一个非常有用的工具。这些模型能够更好地处理文本变异。
 
 # 结论
 
-RAG 是一个非常不错的工具，随着对LLM的高度关注，它现在也是一个相当热门的话题。虽然RAG和嵌入技术已经存在了很长时间，但最新的强大LLM及其快速演变可能使它们在许多高级应用场景中更具吸引力。我预计这一领域将持续以良好的速度发展，有时很难跟上所有最新动态。为此，像[RAG 发展综述](https://arxiv.org/pdf/2312.10997.pdf)这样的总结可以提供至少保持主要发展方向的参考。
+RAG 是一个非常不错的工具，随着对 LLM 的高度关注，它现在也是一个相当热门的话题。虽然 RAG 和嵌入技术已经存在了很长时间，但最新的强大 LLM 及其快速演变可能使它们在许多高级应用场景中更具吸引力。我预计这一领域将持续以良好的速度发展，有时很难跟上所有最新动态。为此，像[RAG 发展综述](https://arxiv.org/pdf/2312.10997.pdf)这样的总结可以提供至少保持主要发展方向的参考。
 
-一般来说，RAG 方法相当简单：找到与给定查询类似的一组文本块，将它们拼接成上下文，然后向LLM请求答案。然而，正如我在这里尝试展示的那样，在如何使这一过程对不同需求有效且高效方面，可能会有各种问题需要考虑。从良好的上下文检索，到排名和选择最佳结果，最后能够将结果链接回实际的源文档。还要评估生成的查询上下文和答案。正如[Stack Overflow 的人们指出的](https://stackoverflow.blog/2023/07/31/ask-like-a-human-implementing-semantic-search-on-stack-overflow/)，有时更传统的词汇搜索或混合搜索也非常有用，即使语义搜索也很酷。
+一般来说，RAG 方法相当简单：找到与给定查询类似的一组文本块，将它们拼接成上下文，然后向 LLM 请求答案。然而，正如我在这里尝试展示的那样，在如何使这一过程对不同需求有效且高效方面，可能会有各种问题需要考虑。从良好的上下文检索，到排名和选择最佳结果，最后能够将结果链接回实际的源文档。还要评估生成的查询上下文和答案。正如[Stack Overflow 的人们指出的](https://stackoverflow.blog/2023/07/31/ask-like-a-human-implementing-semantic-search-on-stack-overflow/)，有时更传统的词汇搜索或混合搜索也非常有用，即使语义搜索也很酷。
 
-今天就到这里。RAG继续...
+今天就到这里。RAG 继续...
 
-![](../Images/852104944e2f6138ecb58522d8e91819.png)
+![](img/852104944e2f6138ecb58522d8e91819.png)
 
 ChatGPT+/DALL-E3 对 RAG 的理解..
 
-*最初发布于* [*http://teemukanstren.com*](https://teemukanstren.com/2023/12/25/llmrag-based-question-answering/) *于2023年12月25日。*
+*最初发布于* [*http://teemukanstren.com*](https://teemukanstren.com/2023/12/25/llmrag-based-question-answering/) *于 2023 年 12 月 25 日。*

@@ -1,14 +1,14 @@
 # 使用自然语言处理和知识图谱分析您的网站
 
-> 原文：[https://towardsdatascience.com/analyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4?source=collection_archive---------1-----------------------#2023-01-05](https://towardsdatascience.com/analyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4?source=collection_archive---------1-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/analyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4?source=collection_archive---------1-----------------------#2023-01-05`](https://towardsdatascience.com/analyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4?source=collection_archive---------1-----------------------#2023-01-05)
 
 ## 结合各种自然语言处理技术，构建一个表示您网站的知识图谱
 
-[](https://bratanic-tomaz.medium.com/?source=post_page-----88e291f6cbf4--------------------------------)[![Tomaz Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----88e291f6cbf4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----88e291f6cbf4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----88e291f6cbf4--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----88e291f6cbf4--------------------------------)
+[](https://bratanic-tomaz.medium.com/?source=post_page-----88e291f6cbf4--------------------------------)![Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----88e291f6cbf4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----88e291f6cbf4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----88e291f6cbf4--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----88e291f6cbf4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----88e291f6cbf4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----88e291f6cbf4--------------------------------) · 14分钟阅读 · 2023年1月5日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F88e291f6cbf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----88e291f6cbf4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----88e291f6cbf4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----88e291f6cbf4--------------------------------) · 14 分钟阅读 · 2023 年 1 月 5 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F88e291f6cbf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyze-your-website-with-nlp-and-knowledge-graphs-88e291f6cbf4&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----88e291f6cbf4---------------------clap_footer-----------)
 
 --
 
@@ -18,15 +18,15 @@
 
 你可以使用任何现有的网络爬虫工具提取网站的结构。此外，利用各种自然语言处理技术评估网站的内容也是有意义的。由于大多数网站是受版权保护的，我决定在本教程中使用 Neo4j 文档网站作为示例。文档网站的内容在 [CC 4.0 许可证](https://neo4j.com/docs/license/) 下提供。不过，你可以将类似的工作流程应用于任何你希望的网页。
 
-![](../Images/6ad00f4f0b3e3a40467335675a7bddb2.png)
+![](img/6ad00f4f0b3e3a40467335675a7bddb2.png)
 
 从文档中提取信息以构建知识图谱。图像由作者提供。
 
-这可能看起来有点神奇（如果你忽略我的箭头），如何利用你网站上的信息构建知识图谱。在这篇文章中，我旨在为信息提取带来更多的清晰度，并为你提供可以自己使用的工具。我曾经使用类似的方法处理过 [医疗文档](/construct-a-biomedical-knowledge-graph-with-nlp-1f25eddc54a0)、[新闻](https://medium.com/neo4j/making-sense-of-news-the-knowledge-graph-way-d33810ce5005) 或甚至 [加密货币报告](https://medium.com/neo4j/monitoring-the-cryptocurrency-space-with-nlp-and-knowledge-graphs-92a1cfaebd1a)，现在我们将利用 NLP 和知识图谱来分析一个网站。
+这可能看起来有点神奇（如果你忽略我的箭头），如何利用你网站上的信息构建知识图谱。在这篇文章中，我旨在为信息提取带来更多的清晰度，并为你提供可以自己使用的工具。我曾经使用类似的方法处理过 医疗文档、[新闻](https://medium.com/neo4j/making-sense-of-news-the-knowledge-graph-way-d33810ce5005) 或甚至 [加密货币报告](https://medium.com/neo4j/monitoring-the-cryptocurrency-space-with-nlp-and-knowledge-graphs-92a1cfaebd1a)，现在我们将利用 NLP 和知识图谱来分析一个网站。
 
 ## 数据收集和建模工作流程
 
-![](../Images/8ae215b99d5174684f778dd69e16f5e8.png)
+![](img/8ae215b99d5174684f778dd69e16f5e8.png)
 
 数据收集和建模工作流程。图像由作者提供。
 
@@ -46,21 +46,21 @@
 
 我通常使用[Python Selenium](https://selenium-python.readthedocs.io/)进行网页抓取，但你可以使用任何其他库或语言来从网站中提取相关信息。我不会详细介绍代码，因为这篇文章的目标不是教你如何抓取网站。然而，你可以查看处理网页抓取的[Jupyter notebook](https://github.com/tomasonjo/blogs/blob/master/neo4jdocs/Preprocessing.ipynb)。
 
-对于Neo4j文档网站，我避免抓取左侧和顶部导航栏的链接，因为这会在图中引入大量噪音，因为大多数页面都有相同的导航栏。
+对于 Neo4j 文档网站，我避免抓取左侧和顶部导航栏的链接，因为这会在图中引入大量噪音，因为大多数页面都有相同的导航栏。
 
-![](../Images/bf41ce13ef482afed63dfc518a87ae2f.png)
+![](img/bf41ce13ef482afed63dfc518a87ae2f.png)
 
 在抓取过程中会忽略导航栏中的链接。图片由作者提供。
 
-在Neo4j文档网站中，我希望捕捉到用户如何在不使用导航栏的情况下遍历文档。否则，我们将引入噪音，因为所有页面都会链接到导航栏中的相同页面。此外，我专注于从文档网页中提取文本和链接，因此一些产品或营销页面的内容没有被抓取。
+在 Neo4j 文档网站中，我希望捕捉到用户如何在不使用导航栏的情况下遍历文档。否则，我们将引入噪音，因为所有页面都会链接到导航栏中的相同页面。此外，我专注于从文档网页中提取文本和链接，因此一些产品或营销页面的内容没有被抓取。
 
 **自然语言处理**
 
-自然语言处理步骤包括提取关键词和计算文本嵌入，以检测相似和重复的内容。在考虑训练自己的NLP模型之前，查看[HuggingFace模型库](https://huggingface.co/models)是否有任何公开可用的模型适合你的用例总是一个好主意。
+自然语言处理步骤包括提取关键词和计算文本嵌入，以检测相似和重复的内容。在考虑训练自己的 NLP 模型之前，查看[HuggingFace 模型库](https://huggingface.co/models)是否有任何公开可用的模型适合你的用例总是一个好主意。
 
-经过一些研究，我发现了一个由**Yankı Ekin Yüksel**提供的[关键词提取模型](https://huggingface.co/yanekyuk/bert-uncased-keyword-extractor)。我非常喜欢使用transformers和HuggingFace加载和运行模型的简单性。
+经过一些研究，我发现了一个由**Yankı Ekin Yüksel**提供的[关键词提取模型](https://huggingface.co/yanekyuk/bert-uncased-keyword-extractor)。我非常喜欢使用 transformers 和 HuggingFace 加载和运行模型的简单性。
 
-以下代码加载关键词提取模型并准备一个NLP流水线。
+以下代码加载关键词提取模型并准备一个 NLP 流水线。
 
 ```py
 tokenizer = AutoTokenizer.from_pretrained("yanekyuk/bert-uncased-keyword-extractor")
@@ -71,9 +71,9 @@ model = AutoModelForTokenClassification.from_pretrained(
 nlp = pipeline("ner", model=model, tokenizer=tokenizer)
 ```
 
-你不需要下载模型或担心文件路径。相反，你可以简单地将模型名称定义为tokenizer和模型的参数，transformers库会为你完成所有工作。
+你不需要下载模型或担心文件路径。相反，你可以简单地将模型名称定义为 tokenizer 和模型的参数，transformers 库会为你完成所有工作。
 
-流水线返回的令牌不一定是一个单词。因此，我们需要在NLP流水线完成后从令牌构建回单词。
+流水线返回的令牌不一定是一个单词。因此，我们需要在 NLP 流水线完成后从令牌构建回单词。
 
 ```py
 def extract_keywords(text):
@@ -99,9 +99,9 @@ Broadcom agreed to acquire cloud computing company VMware in a $61 billion (€5
 """) # ['cloud computing', 'vmware', 'broadcom']
 ```
 
-这个示例展示了模型从给定文本中提取了**云计算**、**vmware**和**broadcom**。这些结果似乎非常适合我们的用例，因为我们正在分析Neo4j文档，其中应该包含许多技术关键词。
+这个示例展示了模型从给定文本中提取了**云计算**、**vmware**和**broadcom**。这些结果似乎非常适合我们的用例，因为我们正在分析 Neo4j 文档，其中应该包含许多技术关键词。
 
-接下来，我们还需要计算文本嵌入，以帮助我们识别相似和重复的内容。我在HuggingFace模型库中搜索了一下，发现了一个可以用来识别相似句子或段落的[句子变换模型](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)。此外，该模型只需三行代码即可加载和使用。
+接下来，我们还需要计算文本嵌入，以帮助我们识别相似和重复的内容。我在 HuggingFace 模型库中搜索了一下，发现了一个可以用来识别相似句子或段落的[句子变换模型](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)。此外，该模型只需三行代码即可加载和使用。
 
 ```py
 from sentence_transformers import SentenceTransformer
@@ -113,33 +113,33 @@ def generate_embeddings(text):
     return [float(x) for x in embeddings.tolist()]
 ```
 
-我们需要将结果转换为浮点数列表，因为Neo4j Driver不支持NumPy数组。
+我们需要将结果转换为浮点数列表，因为 Neo4j Driver 不支持 NumPy 数组。
 
 **知识图谱构建**
 
-在完成网页抓取和自然语言处理步骤后，我们可以继续构建知识图谱。你可能已经猜到，我们将使用Neo4j来存储我们的知识图谱。你可以使用[免费云实例](https://neo4j.com/cloud/platform/aura-graph-database/)或设置[本地环境](https://neo4j.com/download/)。
+在完成网页抓取和自然语言处理步骤后，我们可以继续构建知识图谱。你可能已经猜到，我们将使用 Neo4j 来存储我们的知识图谱。你可以使用[免费云实例](https://neo4j.com/cloud/platform/aura-graph-database/)或设置[本地环境](https://neo4j.com/download/)。
 
 初始导入后的图形模式定义如下。
 
-![](../Images/65579d768a46deaf64679cbfb3fb339e.png)
+![](img/65579d768a46deaf64679cbfb3fb339e.png)
 
 初始图形模式。图像由作者提供。
 
-在我们图表的中心是网页。我们知道它们的URL地址、文本嵌入值，以及网页抓取工具是否提取了页面文本。页面还可以链接或重定向到其他页面，这通过相应的关系表示。作为NLP工作流的一部分，我们还检测了网站上的关键词，并将其作为单独的节点存储。
+在我们图表的中心是网页。我们知道它们的 URL 地址、文本嵌入值，以及网页抓取工具是否提取了页面文本。页面还可以链接或重定向到其他页面，这通过相应的关系表示。作为 NLP 工作流的一部分，我们还检测了网站上的关键词，并将其作为单独的节点存储。
 
 如果你对数据导入的代码实现感兴趣，可以查看[预处理笔记本](https://github.com/tomasonjo/blogs/blob/master/neo4jdocs/Preprocessing.ipynb)。否则，我们将直接进入网络分析部分。
 
 ## **网络分析**
 
-*我准备了一个* [*Neo4j数据库转储*](https://drive.google.com/file/d/1vpQe2gfoPiUVXQpUq-J6Fsjxq5BamyXM/view?usp=sharing) *，如果你不想抓取Neo4j文档但仍想跟随网络分析示例，可以使用这个转储。*
+*我准备了一个* [*Neo4j 数据库转储*](https://drive.google.com/file/d/1vpQe2gfoPiUVXQpUq-J6Fsjxq5BamyXM/view?usp=sharing) *，如果你不想抓取 Neo4j 文档但仍想跟随网络分析示例，可以使用这个转储。*
 
-![](../Images/26d47caa8d619cfe56d2ce2b2c1d69f7.png)
+![](img/26d47caa8d619cfe56d2ce2b2c1d69f7.png)
 
-Neo4j文档网站知识图谱的样本子图。图像由作者提供。
+Neo4j 文档网站知识图谱的样本子图。图像由作者提供。
 
-我将带你了解一些我认为有趣的网站网络分析示例。我们将使用[图数据科学Python](https://neo4j.com/docs/graph-data-science/current/python-client/)客户端，这是一个理想的工具，可以用来从Python进行Neo4j网络分析。
+我将带你了解一些我认为有趣的网站网络分析示例。我们将使用[图数据科学 Python](https://neo4j.com/docs/graph-data-science/current/python-client/)客户端，这是一个理想的工具，可以用来从 Python 进行 Neo4j 网络分析。
 
-包含所有相关网络分析代码的Jupyter Notebook[可在GitHub上获得](https://github.com/tomasonjo/blogs/blob/master/neo4jdocs/Analysis.ipynb)。
+包含所有相关网络分析代码的 Jupyter Notebook[可在 GitHub 上获得](https://github.com/tomasonjo/blogs/blob/master/neo4jdocs/Analysis.ipynb)。
 
 **总体统计数据**
 
@@ -213,13 +213,13 @@ RETURN [n in nodes(p) | n.url] AS path
 
 结果显示，用户必须遍历以下网页才能从文档主页到达 Aura 控制台页面：
 
-+   [https://neo4j.com/docs](https://neo4j.com/docs,)
++   [`neo4j.com/docs`](https://neo4j.com/docs,)
 
-+   [https://neo4j.com/docs/aura/auradb](https://neo4j.com/docs/aura/auradb,)
++   [`neo4j.com/docs/aura/auradb`](https://neo4j.com/docs/aura/auradb,)
 
-+   [https://neo4j.com/docs/aura/auradb/getting-started/create-database](https://neo4j.com/docs/aura/auradb/getting-started/create-database,)
++   [`neo4j.com/docs/aura/auradb/getting-started/create-database`](https://neo4j.com/docs/aura/auradb/getting-started/create-database,)
 
-+   [https://console.neo4j.io](https://console.neo4j.io)
++   [`console.neo4j.io`](https://console.neo4j.io)
 
 将你的网站表示为知识图谱可以显著提高对网页设计流程的理解，从而帮助你优化它们。
 
@@ -245,13 +245,13 @@ df.sort_values("score", ascending=False, inplace=True)
 df.head()
 ```
 
-需要注意的一点是，我们使用了图数据科学Python客户端与数据库进行交互，因此如果你习惯于Cypher过程调用，语法可能会略有不同。结果如下：
+需要注意的一点是，我们使用了图数据科学 Python 客户端与数据库进行交互，因此如果你习惯于 Cypher 过程调用，语法可能会略有不同。结果如下：
 
-开发者知识库页面有598个传入链接。许多链接也指向开发者博客和图形摘要的特定标签。我认为，许多文档网站都指向可以在图形摘要的博客中找到的具体示例。如果我们要更好地理解预期流程，我们可以深入分析这些链接的来源等。
+开发者知识库页面有 598 个传入链接。许多链接也指向开发者博客和图形摘要的特定标签。我认为，许多文档网站都指向可以在图形摘要的博客中找到的具体示例。如果我们要更好地理解预期流程，我们可以深入分析这些链接的来源等。
 
-有时传入链接的数量不足以作为排名指标。Google的创始人意识到这个问题，因此他们提出了最著名的图算法PageRank，它考虑了传入链接的数量及其来源。例如，如果网页直接链接自主页或仅有少数人访问的外围文档页面，则有所不同。
+有时传入链接的数量不足以作为排名指标。Google 的创始人意识到这个问题，因此他们提出了最著名的图算法 PageRank，它考虑了传入链接的数量及其来源。例如，如果网页直接链接自主页或仅有少数人访问的外围文档页面，则有所不同。
 
-以下代码将计算PageRank分数并将其与度数据框合并。
+以下代码将计算 PageRank 分数并将其与度数据框合并。
 
 ```py
 pr_df = gds.pageRank.stream(G)
@@ -260,9 +260,9 @@ combined_df = df.merge(pr_df, on="nodeId")
 combined_df.sort_values("pagerank", ascending=False, inplace=True)
 ```
 
-现在我们可以根据PageRank分数检查前五个最重要的网页。
+现在我们可以根据 PageRank 分数检查前五个最重要的网页。
 
-得分列表示传入链接和重定向的数量，而PageRank列则保存PageRank分数。
+得分列表示传入链接和重定向的数量，而 PageRank 列则保存 PageRank 分数。
 
 有趣的是，只有开发者知识库页面在使用 PageRank 而不是度中心性时保留了其位置。看来 GraphConnect 非常重要，因为它仍然是第二个最重要的网页。作为一名网页 UX 设计师，你可以利用这些信息尝试更改网站结构，以便最新的 GraphConnect 可能会更重要。记住，我们只是对这个网络分析进行了初步探索。然而，你可以找到有趣的模式，然后深入了解网页流程并进行优化。
 
@@ -270,7 +270,7 @@ combined_df.sort_values("pagerank", ascending=False, inplace=True)
 
 在本次分析的最后部分，我们将查看关键字分析。
 
-![](../Images/d05668d1485566abd2d6977f4cc1a65d.png)
+![](img/d05668d1485566abd2d6977f4cc1a65d.png)
 
 网页及其关键字的图形表示。图像由作者提供。
 
@@ -309,7 +309,7 @@ LIMIT 5
 
 最后，我们还可以只用几行代码执行关键字共现聚类。关键字共现聚类可以理解为识别主题的任务，其中主题由文本语料库中频繁共现的多个关键字组成。
 
-![](../Images/d729bfd6b956be3df688b531b7b0cae0.png)
+![](img/d729bfd6b956be3df688b531b7b0cae0.png)
 
 关键字共现主题聚类输出的示意图。图像由作者提供。
 
@@ -321,7 +321,7 @@ Neo4j 中关键字共现聚类或主题聚类的工作流程如下：
 
 1.  运行像 Louvain 方法这样的社区检测算法来识别关键字的社区或集群。
 
-我们将开始通过投影一个包含所有相关信息的内存图。我们需要投影Page和Keyword节点以及连接的HAS_KEYWORD关系。由于我们要检查共同出现的关键词集群，而不是相似网页的组，因此我们需要在图投影中反转关系的方向。
+我们将开始通过投影一个包含所有相关信息的内存图。我们需要投影 Page 和 Keyword 节点以及连接的 HAS_KEYWORD 关系。由于我们要检查共同出现的关键词集群，而不是相似网页的组，因此我们需要在图投影中反转关系的方向。
 
 *附注：如果你离开自然方向并按照示例进行操作，你将根据提到的关键词识别出相似网页的集群*
 
@@ -331,9 +331,9 @@ G, metadata = gds.graph.project(
 )
 ```
 
-接下来，我们需要在经常一起出现的关键词之间创建**CO_OCCUR**关系。为了解决这个任务，我们将使用Node Similarity算法。Node Similarity默认使用[Jaccard相似系数](https://en.wikipedia.org/wiki/Jaccard_index)来计算两个节点之间的相似性。
+接下来，我们需要在经常一起出现的关键词之间创建**CO_OCCUR**关系。为了解决这个任务，我们将使用 Node Similarity 算法。Node Similarity 默认使用[Jaccard 相似系数](https://en.wikipedia.org/wiki/Jaccard_index)来计算两个节点之间的相似性。
 
-在这个示例中，每个关键词都有一组包含它的网页。如果基于网页的关键词对之间的Jaccard系数大于0.40，则会在它们之间创建一个新的**CO_OCCUR**关系。我们使用变异模式将算法的结果存储回内存中的投影图。
+在这个示例中，每个关键词都有一组包含它的网页。如果基于网页的关键词对之间的 Jaccard 系数大于 0.40，则会在它们之间创建一个新的**CO_OCCUR**关系。我们使用变异模式将算法的结果存储回内存中的投影图。
 
 ```py
 gds.nodeSimilarity.mutate(
@@ -342,7 +342,7 @@ gds.nodeSimilarity.mutate(
 )
 ```
 
-最后，我们将使用Louvain方法算法，一个社区检测算法，来识别关键词的集群。该算法输出每个节点及其社区ID。因此，我们需要根据社区ID对结果进行分组，以创建形成主题或集群的关键词列表。
+最后，我们将使用 Louvain 方法算法，一个社区检测算法，来识别关键词的集群。该算法输出每个节点及其社区 ID。因此，我们需要根据社区 ID 对结果进行分组，以创建形成主题或集群的关键词列表。
 
 ```py
 topic_df = gds.louvain.stream(G, nodeLabels=["Keyword"], relationshipTypes=["CO_OCCUR"])
@@ -356,12 +356,12 @@ topic_df.groupby("communityId").agg(
 
 *结果*
 
-![](../Images/f7fcca075382867620c5b7a9c8eb250a.png)
+![](img/f7fcca075382867620c5b7a9c8eb250a.png)
 
-由于我们遵循的主题聚类工作流程是一种无监督技术，我们需要手动分配总体主题名称。例如，我们可以观察到第一个最大主题包含chewbacca、jedi、christmas day、independence day等关键词。这是一个有趣的节日与星球大战的混合。我们可以探索为什么节日和星球大战混合在一起。此外，第二大主题似乎谈论了各种panama和paradise papers以及涉及的公司和人物。
+由于我们遵循的主题聚类工作流程是一种无监督技术，我们需要手动分配总体主题名称。例如，我们可以观察到第一个最大主题包含 chewbacca、jedi、christmas day、independence day 等关键词。这是一个有趣的节日与星球大战的混合。我们可以探索为什么节日和星球大战混合在一起。此外，第二大主题似乎谈论了各种 panama 和 paradise papers 以及涉及的公司和人物。
 
 ## 总结
 
-在我看来，知识图谱和自然语言处理技术是天作之合。如前所述，我见过类似的方法来分析[医学文档](/construct-a-biomedical-knowledge-graph-with-nlp-1f25eddc54a0)、[新闻](https://medium.com/neo4j/making-sense-of-news-the-knowledge-graph-way-d33810ce5005)甚至[加密报告](https://medium.com/neo4j/monitoring-the-cryptocurrency-space-with-nlp-and-knowledge-graphs-92a1cfaebd1a)。这个想法是使用NLP和其他工具从非结构化数据中提取有价值的信息，然后用于构建知识图谱。知识图谱提供了一种友好且灵活的提取信息的结构，可用于支持各种分析工作流程。
+在我看来，知识图谱和自然语言处理技术是天作之合。如前所述，我见过类似的方法来分析医学文档、[新闻](https://medium.com/neo4j/making-sense-of-news-the-knowledge-graph-way-d33810ce5005)甚至[加密报告](https://medium.com/neo4j/monitoring-the-cryptocurrency-space-with-nlp-and-knowledge-graphs-92a1cfaebd1a)。这个想法是使用 NLP 和其他工具从非结构化数据中提取有价值的信息，然后用于构建知识图谱。知识图谱提供了一种友好且灵活的提取信息的结构，可用于支持各种分析工作流程。
 
 本博客文章的所有代码都可以在[GitHub](https://github.com/tomasonjo/blogs/tree/master/neo4jdocs)上找到。

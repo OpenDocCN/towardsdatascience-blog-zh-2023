@@ -1,22 +1,22 @@
 # 如何在采用现代数据堆栈时应对数据爆炸
 
-> 原文：[https://towardsdatascience.com/how-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1?source=collection_archive---------12-----------------------#2023-02-03](https://towardsdatascience.com/how-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1?source=collection_archive---------12-----------------------#2023-02-03)
+> 原文：[`towardsdatascience.com/how-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1?source=collection_archive---------12-----------------------#2023-02-03`](https://towardsdatascience.com/how-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1?source=collection_archive---------12-----------------------#2023-02-03)
 
 ## 从多个数据平台中筛选数据可能具有挑战性。以下是我们如何借助数据发现平台解决这个问题的方法。
 
-[](https://medium.com/@veronica.fivetran?source=post_page-----15ff12ec86c1--------------------------------)[![Veronica M. Zhai](../Images/af821739b34fb1ac2824f901fe359c8f.png)](https://medium.com/@veronica.fivetran?source=post_page-----15ff12ec86c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15ff12ec86c1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15ff12ec86c1--------------------------------) [Veronica M. Zhai](https://medium.com/@veronica.fivetran?source=post_page-----15ff12ec86c1--------------------------------)
+[](https://medium.com/@veronica.fivetran?source=post_page-----15ff12ec86c1--------------------------------)![Veronica M. Zhai](https://medium.com/@veronica.fivetran?source=post_page-----15ff12ec86c1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15ff12ec86c1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----15ff12ec86c1--------------------------------) [Veronica M. Zhai](https://medium.com/@veronica.fivetran?source=post_page-----15ff12ec86c1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd8317bbc9d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1&user=Veronica+M.+Zhai&userId=d8317bbc9d&source=post_page-d8317bbc9d----15ff12ec86c1---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----15ff12ec86c1--------------------------------) ·6分钟阅读·2023年2月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15ff12ec86c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1&user=Veronica+M.+Zhai&userId=d8317bbc9d&source=-----15ff12ec86c1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd8317bbc9d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1&user=Veronica+M.+Zhai&userId=d8317bbc9d&source=post_page-d8317bbc9d----15ff12ec86c1---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----15ff12ec86c1--------------------------------) ·6 分钟阅读·2023 年 2 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15ff12ec86c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1&user=Veronica+M.+Zhai&userId=d8317bbc9d&source=-----15ff12ec86c1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F15ff12ec86c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1&source=-----15ff12ec86c1---------------------bookmark_footer-----------)![](../Images/03adf9322b8b74e83c416105df72e628.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F15ff12ec86c1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-survive-the-data-explosion-when-adopting-a-modern-data-stack-15ff12ec86c1&source=-----15ff12ec86c1---------------------bookmark_footer-----------)![](img/03adf9322b8b74e83c416105df72e628.png)
 
 图片由[马克斯·温克勒](https://unsplash.com/@markuswinkler?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 
-我在Fivetran负责分析产品和运营，Fivetran是一家市值56亿美元的“互联网管道工”，在数据集成领域处于市场领先地位。在Fivetran之前，我在J.P.摩根构建了第一个企业数据堆栈。
+我在 Fivetran 负责分析产品和运营，Fivetran 是一家市值 56 亿美元的“互联网管道工”，在数据集成领域处于市场领先地位。在 Fivetran 之前，我在 J.P.摩根构建了第一个企业数据堆栈。
 
 在 Fivetran，我们努力建立一个强大的数据文化。超过 90% 的员工定期使用数据工具。在如此强大的数据文化背后，存在一个普遍存在于所有规模公司中的问题，这些公司都在经历数字化转型——数据爆炸，其中数据的数量和种类变得令人难以承受。今天，我想分享一些工具和最佳实践来解决这个问题。
 

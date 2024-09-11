@@ -1,26 +1,26 @@
-# 关于DALL·E2的哲学与艺术视角
+# 关于 DALL·E2 的哲学与艺术视角
 
-> 原文：[https://towardsdatascience.com/a-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c?source=collection_archive---------21-----------------------#2023-07-25](https://towardsdatascience.com/a-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c?source=collection_archive---------21-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/a-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c?source=collection_archive---------21-----------------------#2023-07-25`](https://towardsdatascience.com/a-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c?source=collection_archive---------21-----------------------#2023-07-25)
 
-## TLDR: 探索AI与艺术的交汇点：关于在创作过程中整合DALL·E2的知识性对话
+## TLDR: 探索 AI 与艺术的交汇点：关于在创作过程中整合 DALL·E2 的知识性对话
 
-[](https://leshem-ido.medium.com/?source=post_page-----b362df74a63c--------------------------------)[![Ido Leshem](../Images/914fd1635e4c34876816956422c357e8.png)](https://leshem-ido.medium.com/?source=post_page-----b362df74a63c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b362df74a63c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b362df74a63c--------------------------------) [Ido Leshem](https://leshem-ido.medium.com/?source=post_page-----b362df74a63c--------------------------------)
+[](https://leshem-ido.medium.com/?source=post_page-----b362df74a63c--------------------------------)![Ido Leshem](https://leshem-ido.medium.com/?source=post_page-----b362df74a63c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b362df74a63c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b362df74a63c--------------------------------) [Ido Leshem](https://leshem-ido.medium.com/?source=post_page-----b362df74a63c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64b979a03bf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c&user=Ido+Leshem&userId=64b979a03bf7&source=post_page-64b979a03bf7----b362df74a63c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b362df74a63c--------------------------------) ·11分钟阅读·2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb362df74a63c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c&user=Ido+Leshem&userId=64b979a03bf7&source=-----b362df74a63c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64b979a03bf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c&user=Ido+Leshem&userId=64b979a03bf7&source=post_page-64b979a03bf7----b362df74a63c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b362df74a63c--------------------------------) ·11 分钟阅读·2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb362df74a63c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c&user=Ido+Leshem&userId=64b979a03bf7&source=-----b362df74a63c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb362df74a63c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c&source=-----b362df74a63c---------------------bookmark_footer-----------)![](../Images/0b5332912c145c668c1e86e1efc2e22a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb362df74a63c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-philosophical-and-artistic-perspective-on-dall-e2-b362df74a63c&source=-----b362df74a63c---------------------bookmark_footer-----------)![](img/0b5332912c145c668c1e86e1efc2e22a.png)
 
-图片来自Pexels的Dids
+图片来自 Pexels 的 Dids
 
-感谢Yaron Senderowicz教授和Liav Isaac Shopen愿意接受本博客文章的采访。
+感谢 Yaron Senderowicz 教授和 Liav Isaac Shopen 愿意接受本博客文章的采访。
 
 ## **介绍和动机**
 
-DALL·E2已经推出一段时间了，我认为从哲学和艺术的角度写一篇关于它的博客文章会很有趣。作为一名数据科学家和业余版画爱好者，我对这种方法在艺术上的看法和使用方式产生了浓厚的兴趣。
+DALL·E2 已经推出一段时间了，我认为从哲学和艺术的角度写一篇关于它的博客文章会很有趣。作为一名数据科学家和业余版画爱好者，我对这种方法在艺术上的看法和使用方式产生了浓厚的兴趣。
 
 尽管工程师们常常专注于让事物正常运作，但值得更多关注其他方面，比如艺术性、美学和社会考量，这些方面往往受到较少关注。这次探索的主要动机是更好地理解和探讨 DALL·E2 在什么意义上具有艺术性和人类特质。换句话说，我们应如何解读 DALL·E2 的输出？
 
@@ -42,7 +42,7 @@ DALL·E2已经推出一段时间了，我认为从哲学和艺术的角度写一
 
 Yaron：技术可以复制梵高的风格，但我们应该质疑的是，我们使用 DALL·E2 创作的艺术作品是否提供了新颖的东西，还是仅仅是现有作品的衍生物。如果你有技术资源可以完美复制梵高的艺术风格，这并不意味着创作出的作品就是艺术。它只是展现了令人印象深刻的模仿能力。
 
-理解DALL·E2的一种可能方法是使用“字面意义”的概念。人类有能力判断语言使用是否正确，即使它没有被明确界定或其真实性条件没有被明确列出。美国哲学家约翰·赛尔（John Searle）广为人知的贡献之一是对“字面意义”的质疑（即对句子的直接和直白的解释，不包含任何比喻或隐喻元素）。
+理解 DALL·E2 的一种可能方法是使用“字面意义”的概念。人类有能力判断语言使用是否正确，即使它没有被明确界定或其真实性条件没有被明确列出。美国哲学家约翰·赛尔（John Searle）广为人知的贡献之一是对“字面意义”的质疑（即对句子的直接和直白的解释，不包含任何比喻或隐喻元素）。
 
 意义的概念与……嗯，背景密切相关。当前的问题是，是否可以提供一个描述，包括一个术语适用于世界上一个物体的必要和充分条件。此外，我们对定义的理解（或者说计算机对定义的理解）是否足够准确，以便在一个我们既没有考虑过也没有遇到过的对话背景中正确使用这个术语。
 
@@ -52,17 +52,17 @@ Yaron：技术可以复制梵高的风格，但我们应该质疑的是，我们
 
 我们能否准确确定什么时候可以说猫在地毯上？让我们进一步说明。想象一下在太空中飞行，你看到一只猫和一块地毯颠倒放置。猫看起来是倒立的，但谁在什么上面？意识到我们使用“在”这个词是基于一个背景——地球的引力。这种无意识的用法只是说明了我们的陈述及其理解中有多少背景。我们的声明总是预设了一个背景，而这个背景从未被明确陈述或充分阐述。
 
-![](../Images/f83406d355f6a1a11bfb5b1ecdd15f87.png)
+![](img/f83406d355f6a1a11bfb5b1ecdd15f87.png)
 
-由Dalle2生成的图像
+由 Dalle2 生成的图像
 
-为了更精确地描述背景，考虑另一个场景，你到美国旅行。你在沙漠中感到饥饿，于是你在一个餐馆停下来，点了一杯可乐和一个汉堡包。突然，你得到一个5米长的汉堡和一个2米高的可乐。这是你点的东西吗？可能不是，但你是怎么在点餐时说明的？任何了解背景——“买一个汉堡意味着什么”——的人都知道这不是你点的东西。而且这个背景在不同文化中显然有所不同。
+为了更精确地描述背景，考虑另一个场景，你到美国旅行。你在沙漠中感到饥饿，于是你在一个餐馆停下来，点了一杯可乐和一个汉堡包。突然，你得到一个 5 米长的汉堡和一个 2 米高的可乐。这是你点的东西吗？可能不是，但你是怎么在点餐时说明的？任何了解背景——“买一个汉堡意味着什么”——的人都知道这不是你点的东西。而且这个背景在不同文化中显然有所不同。
 
 你可能会声称这不是你所要求的，但无数可能的情况无法充分描述。我们总是在上下文中理解。
 
-![](../Images/33de761db1ea89ef4b21e388ae52588b.png)
+![](img/33de761db1ea89ef4b21e388ae52588b.png)
 
-Dalle2生成的图像
+Dalle2 生成的图像
 
 **人类与算法的创造力**
 
@@ -120,21 +120,21 @@ Liav: 我相信艺术作品需要原创性，需要在过去的创作和特定�
 
 绝对是。这个现象很常见。以抽象画为例，每个观众看到的都有些许不同。我们投射出我们熟悉的东西，我们渴望的东西。这是人类的一部分。要有效地使用 DALL·E2，你必须投入到创作过程中，并引导算法，特别是在尝试捕捉更抽象的东西，如感觉或氛围时。
 
-![](../Images/1b758155909a64b2327ee328211f0d6b.png)
+![](img/1b758155909a64b2327ee328211f0d6b.png)
 
 Liav 使用 Dalle2 生成的原始图像
 
-![](../Images/edb5b2cf6f7a2fe933100fcc28337ea9.png)
+![](img/edb5b2cf6f7a2fe933100fcc28337ea9.png)
 
-由Liav创作的 mezzotint 印刷品
+由 Liav 创作的 mezzotint 印刷品
 
-![](../Images/6095231484ef2465557900716626efe8.png)
+![](img/6095231484ef2465557900716626efe8.png)
 
-由Liav创作的 mezzotint 印刷品
+由 Liav 创作的 mezzotint 印刷品
 
 **结论与主要收获**
 
-艺术本质上涉及原创性、发明、好奇心和文化背景的概念。我们应当问自己的根本问题是我们与所使用的AI工具的关系。我们只是使用它们创造输出，还是将我们的独特个性注入其中，以真实地表达自己？
+艺术本质上涉及原创性、发明、好奇心和文化背景的概念。我们应当问自己的根本问题是我们与所使用的 AI 工具的关系。我们只是使用它们创造输出，还是将我们的独特个性注入其中，以真实地表达自己？
 
 在我看来，主要的收获是：
 
@@ -142,7 +142,7 @@ Liav 使用 Dalle2 生成的原始图像
 
 (2) 艺术中的真正创新需要生成新类型并引发文化变革，而不仅仅是现有风格的简单复制。
 
-(3) DALL·E2 应被视为一种增强艺术创作过程的工具，而非完全取代它。它可以作为视觉参考点和想法过滤器，允许艺术家将其独特风格注入AI生成的图像中。
+(3) DALL·E2 应被视为一种增强艺术创作过程的工具，而非完全取代它。它可以作为视觉参考点和想法过滤器，允许艺术家将其独特风格注入 AI 生成的图像中。
 
 (4) 人类倾向于将人类特征投射到非人类事物上，例如 DALL·E2，这不应被误认为现实。
 

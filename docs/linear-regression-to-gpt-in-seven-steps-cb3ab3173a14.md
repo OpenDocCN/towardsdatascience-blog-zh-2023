@@ -1,10 +1,10 @@
 # 将线性回归应用于 GPT 的七个步骤
 
-> 原文：[https://towardsdatascience.com/linear-regression-to-gpt-in-seven-steps-cb3ab3173a14?source=collection_archive---------7-----------------------#2023-04-25](https://towardsdatascience.com/linear-regression-to-gpt-in-seven-steps-cb3ab3173a14?source=collection_archive---------7-----------------------#2023-04-25)
+> 原文：[`towardsdatascience.com/linear-regression-to-gpt-in-seven-steps-cb3ab3173a14?source=collection_archive---------7-----------------------#2023-04-25`](https://towardsdatascience.com/linear-regression-to-gpt-in-seven-steps-cb3ab3173a14?source=collection_archive---------7-----------------------#2023-04-25)
 
 ## 这项朴素的预测方法如何指引我们进入生成式 AI 的世界
 
-[](https://deveshrajadhyax.medium.com/?source=post_page-----cb3ab3173a14--------------------------------)[![Devesh Rajadhyax](../Images/35a81a5f148f83aea8b9353e030f79c7.png)](https://deveshrajadhyax.medium.com/?source=post_page-----cb3ab3173a14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb3ab3173a14--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb3ab3173a14--------------------------------) [Devesh Rajadhyax](https://deveshrajadhyax.medium.com/?source=post_page-----cb3ab3173a14--------------------------------)
+[](https://deveshrajadhyax.medium.com/?source=post_page-----cb3ab3173a14--------------------------------)![Devesh Rajadhyax](https://deveshrajadhyax.medium.com/?source=post_page-----cb3ab3173a14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb3ab3173a14--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb3ab3173a14--------------------------------) [Devesh Rajadhyax](https://deveshrajadhyax.medium.com/?source=post_page-----cb3ab3173a14--------------------------------)
 
 ·
 
@@ -22,7 +22,7 @@
 
 本文的核心观点是生成式 AI 只是预测的一个特例。如果你符合我之前描述的 ML 爱好者的特点，那么你可以在七个简单的步骤中理解生成式 AI 的基本工作原理。我从线性回归（LinReg）开始，这是每个人都知道的 ML 技术。在本文中，我探讨了生成式 AI 的一个特定分支——大型语言模型（LLM），主要是因为广受欢迎的 ChatGPT 就属于这个分支。
 
-![](../Images/bb968188821ce9ae6de24665eb49c2b8.png)
+![](img/bb968188821ce9ae6de24665eb49c2b8.png)
 
 图片来自 Rajashree Rajadhyax
 
@@ -30,7 +30,7 @@
 
 LinReg 确定代表给定数据点的最佳直线。一旦找到这条直线，就用它来预测新输入的输出。
 
-![](../Images/bf77e70265bbc669331743fe3dffd3dc.png)
+![](img/bf77e70265bbc669331743fe3dffd3dc.png)
 
 图片来自作者
 
@@ -42,7 +42,7 @@ new output = Line Function (new input)
 
 我们也可以为其绘制一个示意图：
 
-![](../Images/cc5f44b34cb1b8544c9f88151afc84d1.png)
+![](img/cc5f44b34cb1b8544c9f88151afc84d1.png)
 
 这是最基本的预测。LinReg 模型‘学习’最佳直线并用它进行预测。
 
@@ -52,11 +52,11 @@ new output = Line Function (new input)
 
 此外，现实世界的数据并不总是遵循线性路径。许多时候，最佳拟合形状是非线性的。见下图：
 
-![](../Images/ab7cf3aa9ddecf853a771a22d706ffbd.png)
+![](img/ab7cf3aa9ddecf853a771a22d706ffbd.png)
 
 图片来自作者
 
-在多维数据中学习这样一个函数不可能通过简单的方法如LinReg来实现。这就是神经网络（NN）发挥作用的地方。NN不需要我们决定它们应该学习哪个函数。它们自己找到并学习函数，无论它多么复杂。一旦NN学习了复杂的、多输入的函数，它们就会使用这个函数进行预测。
+在多维数据中学习这样一个函数不可能通过简单的方法如 LinReg 来实现。这就是神经网络（NN）发挥作用的地方。NN 不需要我们决定它们应该学习哪个函数。它们自己找到并学习函数，无论它多么复杂。一旦 NN 学习了复杂的、多输入的函数，它们就会使用这个函数进行预测。
 
 我们可以再次写出类似的方程，但有所变化。我们的输入现在是多个，因此我们必须用一个向量来表示它们。实际上，输出也可以是多个，我们也会为它们使用一个向量。
 
@@ -66,7 +66,7 @@ output vector = NN Function (input vector)
 
 我们将绘制这种新的、更强大预测的示意图：
 
-![](../Images/c8ea3d4bee71906a1eb97dee5bb3afe2.png)
+![](img/c8ea3d4bee71906a1eb97dee5bb3afe2.png)
 
 作者的图片
 
@@ -74,19 +74,19 @@ output vector = NN Function (input vector)
 
 现在考虑我们有一个问题，输入到神经网络中的是某种语言中的一个单词。神经网络只能接受数字和向量。为了适应这一点，单词被转换为向量。你可以把它们想象成是多维空间中的居民，相关的单词彼此靠近。例如，‘Java’的向量将接近其他编程技术的向量；但它也会接近远东地区的地方，如苏门答腊的向量。
 
-![](../Images/3c2a8a1c641f3e005a2f215d86c610d0.png)
+![](img/3c2a8a1c641f3e005a2f215d86c610d0.png)
 
 作者的（非常虚构的）单词嵌入
 
-这样一组与语言中单词对应的向量称为‘嵌入’。有许多方法可以创建这些嵌入；Word2Vec 和 GloVe 是两个流行的例子。这些嵌入的典型大小为256、512或1024。
+这样一组与语言中单词对应的向量称为‘嵌入’。有许多方法可以创建这些嵌入；Word2Vec 和 GloVe 是两个流行的例子。这些嵌入的典型大小为 256、512 或 1024。
 
-一旦我们有了单词的向量，我们可以在它们上使用NN进行预测。但是通过对单词进行预测，我们能实现什么呢？我们可以做很多事情。我们可以将一个单词翻译成另一种语言，找到该单词的同义词或找到它的过去式。这个预测的方程式和示意图看起来与步骤 3 非常相似。
+一旦我们有了单词的向量，我们可以在它们上使用 NN 进行预测。但是通过对单词进行预测，我们能实现什么呢？我们可以做很多事情。我们可以将一个单词翻译成另一种语言，找到该单词的同义词或找到它的过去式。这个预测的方程式和示意图看起来与步骤 3 非常相似。
 
 ```py
 output word embedding = NN Function (input word embedding)
 ```
 
-![](../Images/0dab89793568a814fc8408f37b47e359.png)
+![](img/0dab89793568a814fc8408f37b47e359.png)
 
 作者的图片
 
@@ -96,7 +96,7 @@ output word embedding = NN Function (input word embedding)
 
 这次我们先画出示意图：
 
-![](../Images/20818d988257c4b43d22f9706eb20506.png)
+![](img/20818d988257c4b43d22f9706eb20506.png)
 
 作者的图片
 
@@ -131,7 +131,7 @@ NN Translation Function (Embeddings for word. no 1 in input sentence)
 
 因此，在预测输出时，必须添加句子中其他词的上下文。我们只为一个词绘制示意图：
 
-![](../Images/21b37b734d502deb965f9b7b5e46d1b4.png)
+![](img/21b37b734d502deb965f9b7b5e46d1b4.png)
 
 图片由作者提供
 
@@ -157,7 +157,7 @@ NN Translation Function (Embeddings for word. no 1 in input sentence
 
 幸运的是，已经有了更好的方法。在将输入句子提供给神经网络（NN）之后，我们要求它仅预测一个词，即将作为输出句子第一个词的词。我们可以将其表示为：
 
-![](../Images/d777acbdf5b1d53dab0771ebb7b1baf3.png)
+![](img/d777acbdf5b1d53dab0771ebb7b1baf3.png)
 
 图片由作者提供
 
@@ -183,7 +183,7 @@ Context = Context from input sentence + context from first word in output
 
 神经网络将预测句子的下一个（第二个）词：
 
-![](../Images/dcca414b204059a6613ed6a713233cdf.png)
+![](img/dcca414b204059a6613ed6a713233cdf.png)
 
 这可以写成：
 
@@ -206,7 +206,7 @@ Context for input sentence + context for 'Ashok')
 
 生成模型的输入被称为‘提示’。生成型神经网络预测文章的第一个词，然后继续预测后续的词，直到生成整篇漂亮的文章。这就是大型语言模型如 ChatGPT 所做的。正如你可以想象的那样，这些模型的内部机制远比我在这里描述的要复杂。但它们包含了我们看到的相同基本组件：嵌入、注意力和下一个词预测神经网络。
 
-![](../Images/e46a217c32951d76eb1348afffca73b0.png)
+![](img/e46a217c32951d76eb1348afffca73b0.png)
 
 作者提供的图片
 

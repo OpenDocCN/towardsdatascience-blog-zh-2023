@@ -1,26 +1,26 @@
 # 为什么回测很重要以及如何正确进行回测
 
-> 原文：[https://towardsdatascience.com/why-backtesting-matters-and-how-to-do-it-right-731fb9624a?source=collection_archive---------8-----------------------#2023-07-18](https://towardsdatascience.com/why-backtesting-matters-and-how-to-do-it-right-731fb9624a?source=collection_archive---------8-----------------------#2023-07-18)
+> 原文：[`towardsdatascience.com/why-backtesting-matters-and-how-to-do-it-right-731fb9624a?source=collection_archive---------8-----------------------#2023-07-18`](https://towardsdatascience.com/why-backtesting-matters-and-how-to-do-it-right-731fb9624a?source=collection_archive---------8-----------------------#2023-07-18)
 
 ## 我们如何知道我们的预测模型是否准确可靠，并评估其在未见数据上的表现？这就是回测的作用所在。
 
-[](https://medium.com/@davide.burba?source=post_page-----731fb9624a--------------------------------)[![Davide Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----731fb9624a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----731fb9624a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----731fb9624a--------------------------------) [Davide Burba](https://medium.com/@davide.burba?source=post_page-----731fb9624a--------------------------------)
+[](https://medium.com/@davide.burba?source=post_page-----731fb9624a--------------------------------)![Davide Burba](https://medium.com/@davide.burba?source=post_page-----731fb9624a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----731fb9624a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----731fb9624a--------------------------------) [Davide Burba](https://medium.com/@davide.burba?source=post_page-----731fb9624a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f58aaaeaed7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-backtesting-matters-and-how-to-do-it-right-731fb9624a&user=Davide+Burba&userId=9f58aaaeaed7&source=post_page-9f58aaaeaed7----731fb9624a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----731fb9624a--------------------------------) · 7 分钟阅读 · 2023年7月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F731fb9624a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-backtesting-matters-and-how-to-do-it-right-731fb9624a&user=Davide+Burba&userId=9f58aaaeaed7&source=-----731fb9624a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f58aaaeaed7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-backtesting-matters-and-how-to-do-it-right-731fb9624a&user=Davide+Burba&userId=9f58aaaeaed7&source=post_page-9f58aaaeaed7----731fb9624a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----731fb9624a--------------------------------) · 7 分钟阅读 · 2023 年 7 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F731fb9624a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-backtesting-matters-and-how-to-do-it-right-731fb9624a&user=Davide+Burba&userId=9f58aaaeaed7&source=-----731fb9624a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F731fb9624a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-backtesting-matters-and-how-to-do-it-right-731fb9624a&source=-----731fb9624a---------------------bookmark_footer-----------)![](../Images/a56e7682ea4c901ab7c808da2f123238.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F731fb9624a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-backtesting-matters-and-how-to-do-it-right-731fb9624a&source=-----731fb9624a---------------------bookmark_footer-----------)![](img/a56e7682ea4c901ab7c808da2f123238.png)
 
 “回测”，由 [Giulia Roggia](https://www.instagram.com/giulia_roggia__/). 经许可使用。
 
-+   [什么是回测？](#0326)
++   什么是回测？
 
-+   [Python 示例：航空乘客](#9788)
++   Python 示例：航空乘客
 
-+   [结论](#0172)
++   结论
 
 # 什么是回测？
 

@@ -1,18 +1,18 @@
 # 在本地使用 CPU 运行 Llama 2 进行文档问答
 
-> 原文：[https://towardsdatascience.com/running-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8?source=collection_archive---------0-----------------------#2023-07-18](https://towardsdatascience.com/running-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8?source=collection_archive---------0-----------------------#2023-07-18)
+> 原文：[`towardsdatascience.com/running-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8?source=collection_archive---------0-----------------------#2023-07-18`](https://towardsdatascience.com/running-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8?source=collection_archive---------0-----------------------#2023-07-18)
 
 ## 清晰的指南，介绍如何在 CPU 上运行量化的开源 LLM 应用程序，使用 Llama 2、C Transformers、GGML 和 LangChain
 
-[](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)[![Kenneth Leung](../Images/2514dffb34529d6d757c0c4ec5f98334.png)](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------) [Kenneth Leung](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)
+[](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)![Kenneth Leung](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------) [Kenneth Leung](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcd08e36f2d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8&user=Kenneth+Leung&userId=dcd08e36f2d0&source=post_page-dcd08e36f2d0----3d636037a3d8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------) ·11 分钟阅读·2023年7月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d636037a3d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8&user=Kenneth+Leung&userId=dcd08e36f2d0&source=-----3d636037a3d8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcd08e36f2d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8&user=Kenneth+Leung&userId=dcd08e36f2d0&source=post_page-dcd08e36f2d0----3d636037a3d8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------) ·11 分钟阅读·2023 年 7 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d636037a3d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8&user=Kenneth+Leung&userId=dcd08e36f2d0&source=-----3d636037a3d8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d636037a3d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8&source=-----3d636037a3d8---------------------bookmark_footer-----------)![](../Images/887641ba170cdfdd4548d8d2553f96b1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d636037a3d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8&source=-----3d636037a3d8---------------------bookmark_footer-----------)![](img/887641ba170cdfdd4548d8d2553f96b1.png)
 
 [NOAA](https://unsplash.com/@noaa?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 的照片，来自 [Unsplash](https://unsplash.com/s/photos/computing-cloud?orientation=landscape&license=free&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -26,4 +26,4 @@
 
 # 内容
 
-> ***(1)*** [*量化的快速入门*](#afd1)…
+> ***(1)*** *量化的快速入门*…

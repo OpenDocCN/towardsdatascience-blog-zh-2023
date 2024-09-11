@@ -1,18 +1,18 @@
-# 通过OpenAI API提高表格数据预测的准确性
+# 通过 OpenAI API 提高表格数据预测的准确性
 
-> 原文：[https://towardsdatascience.com/improve-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc?source=collection_archive---------5-----------------------#2023-07-13](https://towardsdatascience.com/improve-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc?source=collection_archive---------5-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/improve-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc?source=collection_archive---------5-----------------------#2023-07-13`](https://towardsdatascience.com/improve-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc?source=collection_archive---------5-----------------------#2023-07-13)
 
-## 使用Python实现机器学习分类、提示工程、文本嵌入的特征工程以及OpenAI API的模型可解释性
+## 使用 Python 实现机器学习分类、提示工程、文本嵌入的特征工程以及 OpenAI API 的模型可解释性
 
-[](https://medium.com/@tonyzhangsky?source=post_page-----3eae3c5e52bc--------------------------------)[![Tony Zhang](../Images/a0551c7d670668297a15468d941672c1.png)](https://medium.com/@tonyzhangsky?source=post_page-----3eae3c5e52bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3eae3c5e52bc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3eae3c5e52bc--------------------------------) [Tony Zhang](https://medium.com/@tonyzhangsky?source=post_page-----3eae3c5e52bc--------------------------------)
+[](https://medium.com/@tonyzhangsky?source=post_page-----3eae3c5e52bc--------------------------------)![Tony Zhang](https://medium.com/@tonyzhangsky?source=post_page-----3eae3c5e52bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3eae3c5e52bc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3eae3c5e52bc--------------------------------) [Tony Zhang](https://medium.com/@tonyzhangsky?source=post_page-----3eae3c5e52bc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F92789d320912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc&user=Tony+Zhang&userId=92789d320912&source=post_page-92789d320912----3eae3c5e52bc---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3eae3c5e52bc--------------------------------) ·11分钟阅读·2023年7月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3eae3c5e52bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc&user=Tony+Zhang&userId=92789d320912&source=-----3eae3c5e52bc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F92789d320912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc&user=Tony+Zhang&userId=92789d320912&source=post_page-92789d320912----3eae3c5e52bc---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3eae3c5e52bc--------------------------------) ·11 分钟阅读·2023 年 7 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3eae3c5e52bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc&user=Tony+Zhang&userId=92789d320912&source=-----3eae3c5e52bc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3eae3c5e52bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc&source=-----3eae3c5e52bc---------------------bookmark_footer-----------)![](../Images/46d4892886bd0e239397790eb79e98a9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3eae3c5e52bc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimprove-tabular-data-prediction-with-large-language-model-through-openai-api-3eae3c5e52bc&source=-----3eae3c5e52bc---------------------bookmark_footer-----------)![](img/46d4892886bd0e239397790eb79e98a9.png)
 
 照片由[Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)拍摄，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

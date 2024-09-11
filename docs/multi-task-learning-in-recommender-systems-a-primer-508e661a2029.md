@@ -1,22 +1,22 @@
 # 推荐系统中的多任务学习：入门指南
 
-> 原文：[https://towardsdatascience.com/multi-task-learning-in-recommender-systems-a-primer-508e661a2029?source=collection_archive---------17-----------------------#2023-07-25](https://towardsdatascience.com/multi-task-learning-in-recommender-systems-a-primer-508e661a2029?source=collection_archive---------17-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/multi-task-learning-in-recommender-systems-a-primer-508e661a2029?source=collection_archive---------17-----------------------#2023-07-25`](https://towardsdatascience.com/multi-task-learning-in-recommender-systems-a-primer-508e661a2029?source=collection_archive---------17-----------------------#2023-07-25)
 
 ## 尝试完成所有任务的算法背后的科学与工程
 
-[](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)[![Samuel Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)[](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------) [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)
+[](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)![Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)[](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------) [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce56d9dcd568&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-in-recommender-systems-a-primer-508e661a2029&user=Samuel+Flender&userId=ce56d9dcd568&source=post_page-ce56d9dcd568----508e661a2029---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------) · 8分钟阅读·2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F508e661a2029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-in-recommender-systems-a-primer-508e661a2029&user=Samuel+Flender&userId=ce56d9dcd568&source=-----508e661a2029---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce56d9dcd568&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-in-recommender-systems-a-primer-508e661a2029&user=Samuel+Flender&userId=ce56d9dcd568&source=post_page-ce56d9dcd568----508e661a2029---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------) · 8 分钟阅读·2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F508e661a2029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-in-recommender-systems-a-primer-508e661a2029&user=Samuel+Flender&userId=ce56d9dcd568&source=-----508e661a2029---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F508e661a2029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-in-recommender-systems-a-primer-508e661a2029&source=-----508e661a2029---------------------bookmark_footer-----------)![](../Images/14dcc1089b980b3a39af30f387ebe796.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F508e661a2029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-task-learning-in-recommender-systems-a-primer-508e661a2029&source=-----508e661a2029---------------------bookmark_footer-----------)![](img/14dcc1089b980b3a39af30f387ebe796.png)
 
 图片来源：[Mike Kononov](https://unsplash.com/@mikofilm?utm_source=medium&utm_medium=referral) 在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-尽管多任务学习在计算机视觉和自然语言处理领域已被广泛应用，但在现代[推荐系统](/deep-learning-in-recommender-systems-a-primer-96e4b07b54ca)中的使用仍相对较新，因此尚未得到充分理解。
+尽管多任务学习在计算机视觉和自然语言处理领域已被广泛应用，但在现代推荐系统中的使用仍相对较新，因此尚未得到充分理解。
 
 在这篇文章中，我们将深入探讨多任务推荐系统中的一些最重要的设计考虑因素和最新的研究突破。我们将涵盖
 

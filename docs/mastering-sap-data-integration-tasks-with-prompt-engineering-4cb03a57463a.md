@@ -1,16 +1,16 @@
-# 掌握来自SAP系统的数据集成与快速工程
+# 掌握来自 SAP 系统的数据集成与快速工程
 
-> 原文：[https://towardsdatascience.com/mastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a?source=collection_archive---------13-----------------------#2023-10-07](https://towardsdatascience.com/mastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a?source=collection_archive---------13-----------------------#2023-10-07)
+> 原文：[`towardsdatascience.com/mastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a?source=collection_archive---------13-----------------------#2023-10-07`](https://towardsdatascience.com/mastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a?source=collection_archive---------13-----------------------#2023-10-07)
 
-[](https://medium.com/@markus.stadi?source=post_page-----4cb03a57463a--------------------------------)[![Markus Stadi](../Images/c3b1c3b040370d4e24e406b172a830d5.png)](https://medium.com/@markus.stadi?source=post_page-----4cb03a57463a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4cb03a57463a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4cb03a57463a--------------------------------) [Markus Stadi](https://medium.com/@markus.stadi?source=post_page-----4cb03a57463a--------------------------------)
+[](https://medium.com/@markus.stadi?source=post_page-----4cb03a57463a--------------------------------)![Markus Stadi](https://medium.com/@markus.stadi?source=post_page-----4cb03a57463a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4cb03a57463a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cb03a57463a--------------------------------) [Markus Stadi](https://medium.com/@markus.stadi?source=post_page-----4cb03a57463a--------------------------------)
 
 ·
 
-[跟进](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88759409b50c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a&user=Markus+Stadi&userId=88759409b50c&source=post_page-88759409b50c----4cb03a57463a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cb03a57463a--------------------------------) ·8 分钟阅读·2023年10月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4cb03a57463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a&user=Markus+Stadi&userId=88759409b50c&source=-----4cb03a57463a---------------------clap_footer-----------)
+[跟进](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88759409b50c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a&user=Markus+Stadi&userId=88759409b50c&source=post_page-88759409b50c----4cb03a57463a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cb03a57463a--------------------------------) ·8 分钟阅读·2023 年 10 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4cb03a57463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a&user=Markus+Stadi&userId=88759409b50c&source=-----4cb03a57463a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4cb03a57463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a&source=-----4cb03a57463a---------------------bookmark_footer-----------)![](../Images/21e67a7c882aeffe929ead60333342e1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4cb03a57463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-sap-data-integration-tasks-with-prompt-engineering-4cb03a57463a&source=-----4cb03a57463a---------------------bookmark_footer-----------)![](img/21e67a7c882aeffe929ead60333342e1.png)
 
 建筑工程师调查他的工作 — 稳定扩散
 
@@ -28,7 +28,7 @@
 
 本文将提供一个逐步指南，通过创建 PySpark 代码来解决描述的业务问题，这些代码可用于构建数据模型，并因此作为任何报告解决方案的基础。
 
-![](../Images/e474925308bd9e8f426d6c767fef7069.png)
+![](img/e474925308bd9e8f426d6c767fef7069.png)
 
 PowerBi 示例报告显示了人员数量
 
@@ -298,7 +298,7 @@ spark.stop()
 
 两个代码版本将创建一个用于扁平化层级组织结构的 DataFrame，该 DataFrame 可以通过简单地将其连接到之前生成的 DataFrame 来用于进一步的数据集成步骤。
 
-![](../Images/0325bb79846b04476b5c5a967469cd3b.png)
+![](img/0325bb79846b04476b5c5a967469cd3b.png)
 
 包含层级信息的数据集
 

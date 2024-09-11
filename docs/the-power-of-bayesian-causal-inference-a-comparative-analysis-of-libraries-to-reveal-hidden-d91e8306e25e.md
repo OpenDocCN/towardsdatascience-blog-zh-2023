@@ -1,18 +1,18 @@
 # 贝叶斯因果推断的力量：对库的比较分析，揭示数据集中的隐藏因果关系。
 
-> 原文：[https://towardsdatascience.com/the-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e?source=collection_archive---------3-----------------------#2023-05-22](https://towardsdatascience.com/the-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e?source=collection_archive---------3-----------------------#2023-05-22)
+> 原文：[`towardsdatascience.com/the-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e?source=collection_archive---------3-----------------------#2023-05-22`](https://towardsdatascience.com/the-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e?source=collection_archive---------3-----------------------#2023-05-22)
 
 ## 通过使用最合适的贝叶斯因果推断库，揭示数据集中的隐藏因果变量：对五个流行库的比较及动手示例。
 
-[](https://erdogant.medium.com/?source=post_page-----d91e8306e25e--------------------------------)[![Erdogan Taskesen](../Images/8e62cdae0502687710d8ae4bbcd8966e.png)](https://erdogant.medium.com/?source=post_page-----d91e8306e25e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d91e8306e25e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d91e8306e25e--------------------------------) [Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----d91e8306e25e--------------------------------)
+[](https://erdogant.medium.com/?source=post_page-----d91e8306e25e--------------------------------)![Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----d91e8306e25e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d91e8306e25e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d91e8306e25e--------------------------------) [Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----d91e8306e25e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e636e2ef813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e&user=Erdogan+Taskesen&userId=4e636e2ef813&source=post_page-4e636e2ef813----d91e8306e25e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d91e8306e25e--------------------------------) ·20分钟阅读·2023年5月22日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4e636e2ef813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e&user=Erdogan+Taskesen&userId=4e636e2ef813&source=post_page-4e636e2ef813----d91e8306e25e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d91e8306e25e--------------------------------) ·20 分钟阅读·2023 年 5 月 22 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd91e8306e25e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e&source=-----d91e8306e25e---------------------bookmark_footer-----------)![](../Images/9da363a089f70e5f5c65add731ae7d3b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd91e8306e25e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-bayesian-causal-inference-a-comparative-analysis-of-libraries-to-reveal-hidden-d91e8306e25e&source=-----d91e8306e25e---------------------bookmark_footer-----------)![](img/9da363a089f70e5f5c65add731ae7d3b.png)
 
 照片由 [Alexander Schimmeck](https://unsplash.com/@alschim?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布在 [Unsplash](https://unsplash.com/photos/Aohf8gqa7Zc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

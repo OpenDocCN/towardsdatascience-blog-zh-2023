@@ -1,34 +1,34 @@
-# 使用Python解决地理旅行推销员问题
+# 使用 Python 解决地理旅行推销员问题
 
-> 原文：[https://towardsdatascience.com/solving-geographic-travelling-salesman-problems-using-python-e57284b14cd7?source=collection_archive---------1-----------------------#2023-07-12](https://towardsdatascience.com/solving-geographic-travelling-salesman-problems-using-python-e57284b14cd7?source=collection_archive---------1-----------------------#2023-07-12)
+> 原文：[`towardsdatascience.com/solving-geographic-travelling-salesman-problems-using-python-e57284b14cd7?source=collection_archive---------1-----------------------#2023-07-12`](https://towardsdatascience.com/solving-geographic-travelling-salesman-problems-using-python-e57284b14cd7?source=collection_archive---------1-----------------------#2023-07-12)
 
-## 使用pyconcorde寻找现实世界路由问题的**最佳解决方案**
+## 使用 pyconcorde 寻找现实世界路由问题的**最佳解决方案**
 
-[](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)[![Mike Jones](../Images/b841e6215298729d051a21fecbd83b12.png)](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------) [Mike Jones](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)
+[](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)![Mike Jones](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------) [Mike Jones](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F253ada1cc4c9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&user=Mike+Jones&userId=253ada1cc4c9&source=post_page-253ada1cc4c9----e57284b14cd7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------) ·12分钟阅读·2023年7月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe57284b14cd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&user=Mike+Jones&userId=253ada1cc4c9&source=-----e57284b14cd7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F253ada1cc4c9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&user=Mike+Jones&userId=253ada1cc4c9&source=post_page-253ada1cc4c9----e57284b14cd7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------) ·12 分钟阅读·2023 年 7 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe57284b14cd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&user=Mike+Jones&userId=253ada1cc4c9&source=-----e57284b14cd7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe57284b14cd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&source=-----e57284b14cd7---------------------bookmark_footer-----------)![](../Images/2e7334e2d22e1e5749ed0fa324793135.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe57284b14cd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&source=-----e57284b14cd7---------------------bookmark_footer-----------)![](img/2e7334e2d22e1e5749ed0fa324793135.png)
 
-一条**最佳的**汽车驾驶路线，连接79个英国城市。图像由作者提供。地图数据来自 [OpenStreetMap](https://www.openstreetmap.org/copyright)。
+一条**最佳的**汽车驾驶路线，连接 79 个英国城市。图像由作者提供。地图数据来自 [OpenStreetMap](https://www.openstreetmap.org/copyright)。
 
-著名的[旅行推销员问题（TSP）](https://en.wikipedia.org/wiki/Travelling_salesman_problem)是关于在一组节点（城市）之间找到最佳路线并返回起点。这听起来很简单，但对于大量节点而言，通过蛮力求解是不可能的，因为`n`个城市的可能排序数量为`n!`。这意味着，即使是30个城市，你需要检查的旅行数量也是265,252,859,812,191,058,636,308,480,000,000。即使是强大的计算机也无法通过蛮力解决大型TSP问题。
+著名的[旅行推销员问题（TSP）](https://en.wikipedia.org/wiki/Travelling_salesman_problem)是关于在一组节点（城市）之间找到最佳路线并返回起点。这听起来很简单，但对于大量节点而言，通过蛮力求解是不可能的，因为`n`个城市的可能排序数量为`n!`。这意味着，即使是 30 个城市，你需要检查的旅行数量也是 265,252,859,812,191,058,636,308,480,000,000。即使是强大的计算机也无法通过蛮力解决大型 TSP 问题。
 
-![](../Images/ffc8bce187e3538ae1b404b70271bbd0.png)
+![](img/ffc8bce187e3538ae1b404b70271bbd0.png)
 
-随机生成的10节点TSP：需要检查3,628,800条可能的路线。图片由作者提供。
+随机生成的 10 节点 TSP：需要检查 3,628,800 条可能的路线。图片由作者提供。
 
-幸运的是，已经开发出一些算法，大大减少了解决大型TSP所需的计算量。几十年前开发的[Concorde](https://www.math.uwaterloo.ca/tsp/concorde/)软件在学术界得到广泛使用。虽然作为独立软件使用时相当技术性，并且仅面向专业人员，但[*pyconcorde*](https://github.com/jvkersch/pyconcorde)作为Concorde的Python包装器被开发出来。Concorde中使用的算法的解释超出了本文的范围。然而，我们将深入探讨在Python中重现这些问题及其解决方案所需的代码。
+幸运的是，已经开发出一些算法，大大减少了解决大型 TSP 所需的计算量。几十年前开发的[Concorde](https://www.math.uwaterloo.ca/tsp/concorde/)软件在学术界得到广泛使用。虽然作为独立软件使用时相当技术性，并且仅面向专业人员，但[*pyconcorde*](https://github.com/jvkersch/pyconcorde)作为 Concorde 的 Python 包装器被开发出来。Concorde 中使用的算法的解释超出了本文的范围。然而，我们将深入探讨在 Python 中重现这些问题及其解决方案所需的代码。
 
-# 现实世界的地理TSP
+# 现实世界的地理 TSP
 
-如何解决实际的地理旅行推销员问题？现实世界的点不像上图那样通过简单的2D线连接。相反，地理特征通过各种可能的路线连接，而这些路线会根据是步行、骑自行车还是开车而变化。
+如何解决实际的地理旅行推销员问题？现实世界的点不像上图那样通过简单的 2D 线连接。相反，地理特征通过各种可能的路线连接，而这些路线会根据是步行、骑自行车还是开车而变化。
 
-数据科学家或软件工程师为何要解决实际的TSP？以下是一些用例示例：
+数据科学家或软件工程师为何要解决实际的 TSP？以下是一些用例示例：
 
 1.  一家公司雇用快递员，需要一种计算城市中最佳路线的方法，以最小化每位司机的道路时间。
 
@@ -36,11 +36,11 @@
 
 1.  废物处理公司或地方当局需要分配资源，以确保尽可能高效地安排取货。
 
-为了解决实际的TSP，可以使用[*routingpy*](https://github.com/gis-ops/routingpy)库来查找路线、距离（以米为单位）和地理点之间的持续时间（以秒为单位），格式为`[经度, 纬度]`对。本文将描述可用于此类问题的方法。
+为了解决实际的 TSP，可以使用[*routingpy*](https://github.com/gis-ops/routingpy)库来查找路线、距离（以米为单位）和地理点之间的持续时间（以秒为单位），格式为`[经度, 纬度]`对。本文将描述可用于此类问题的方法。
 
 # 编码讲解
 
-这里概述了使用Python解决地理TSP的指南。问题解决过程的基本结构如下：
+这里概述了使用 Python 解决地理 TSP 的指南。问题解决过程的基本结构如下：
 
 1.  获取一个包含*n*个坐标的列表，格式为`[经度, 纬度]`对。
 
@@ -62,7 +62,7 @@
 
 对于我们的示例，我们将考虑在英国的 79 个城市之间驾车旅行的问题。下图显示了蓝色的英国城市地图。数据科学家可以通过多种方式找到坐标。如果需要，可以使用 Google Maps 或 [Google Earth](https://earth.google.com/web/) 手动查找坐标。
 
-![](../Images/1c577cb11b1cdb53cb3700979657130f.png)
+![](img/1c577cb11b1cdb53cb3700979657130f.png)
 
 英国的 79 个城市。图像由作者提供。地图数据来自 [OpenStreetMap](https://www.openstreetmap.org/copyright)。
 
@@ -126,15 +126,15 @@ matrix([[    0, 10902, 30375, ..., 23380, 25233, 19845],
 
 ## 第 3 步：将非对称矩阵转换为对称矩阵
 
-在使用该矩阵生成pyconcorde中的最佳排序之前，我们需要使矩阵对称。有关将非对称TSP转化为对称TSP的方法，请参见[Jonker和Volgenant (1983)：将非对称问题转化为对称旅行商问题，《运筹学快报》，2(4)，161–163](https://www.sciencedirect.com/science/article/abs/pii/0167637783900482)。以下是这种转换的理论。如果需要，可以跳过本节（滚动到标题为*将地理非对称TSP转化为对称TSP*的部分）**。
+在使用该矩阵生成 pyconcorde 中的最佳排序之前，我们需要使矩阵对称。有关将非对称 TSP 转化为对称 TSP 的方法，请参见[Jonker 和 Volgenant (1983)：将非对称问题转化为对称旅行商问题，《运筹学快报》，2(4)，161–163](https://www.sciencedirect.com/science/article/abs/pii/0167637783900482)。以下是这种转换的理论。如果需要，可以跳过本节（滚动到标题为*将地理非对称 TSP 转化为对称 TSP*的部分）**。
 
-**Jonker/Volgenant非对称到对称的转换**
+**Jonker/Volgenant 非对称到对称的转换**
 
-以下是具有3个节点的非对称TSP的可视化及其距离矩阵。
+以下是具有 3 个节点的非对称 TSP 的可视化及其距离矩阵。
 
-![](../Images/6666027086298ed86cb89062ad636fb6.png)
+![](img/6666027086298ed86cb89062ad636fb6.png)
 
-具有3个节点的非对称TSP。图片由作者提供。
+具有 3 个节点的非对称 TSP。图片由作者提供。
 
 ```py
 matrix([[0, 5, 2],
@@ -142,23 +142,23 @@ matrix([[0, 5, 2],
         [3, 4, 0]])
 ```
 
-下面是将其转化为对称TSP的方法草图：
+下面是将其转化为对称 TSP 的方法草图：
 
-1.  创建新的*幽灵节点*，A'、B'和C'。将A连接到A'，B连接到B'，C连接到C'，距离为零。
+1.  创建新的*幽灵节点*，A'、B'和 C'。将 A 连接到 A'，B 连接到 B'，C 连接到 C'，距离为零。
 
 1.  以如下方式连接节点并赋予权重：
 
-    A到B现在由A'到B表示；B到A现在由B'到A表示。
+    A 到 B 现在由 A'到 B 表示；B 到 A 现在由 B'到 A 表示。
 
-    B到C现在由B'到C表示；C到B现在由C'到B表示。
+    B 到 C 现在由 B'到 C 表示；C 到 B 现在由 C'到 B 表示。
 
-    C到A现在由C'到A表示；A到C现在由A'到C表示。
+    C 到 A 现在由 C'到 A 表示；A 到 C 现在由 A'到 C 表示。
 
-1.  将所有其他边的权重设为无限，以便任何算法不会尝试在它们之间进行旅行。由于在使用pyconcorde时这将不切实际，因此将所有其他权重设为远高于我们已有的最高权重。在这种情况下，我们将其设置为99。
+1.  将所有其他边的权重设为无限，以便任何算法不会尝试在它们之间进行旅行。由于在使用 pyconcorde 时这将不切实际，因此将所有其他权重设为远高于我们已有的最高权重。在这种情况下，我们将其设置为 99。
 
-![](../Images/df27cbcf58566d17b4115a5d2fe2abcf.png)
+![](img/df27cbcf58566d17b4115a5d2fe2abcf.png)
 
-等效的对称TSP，具有（3 x 2）节点。图片由作者提供。
+等效的对称 TSP，具有（3 x 2）节点。图片由作者提供。
 
 这是生成的距离矩阵。矩阵中节点的顺序是：A、B、C、A'、B'、C'。
 
@@ -173,17 +173,17 @@ matrix([[ 0, 99, 99,  0,  7,  3],
 
 再次注意对角线是零，这符合预期，并且矩阵现在是对称的。原始矩阵位于新矩阵的左下角，其转置矩阵位于右上角。与此同时，左上角和右下角部分包含节点之间非常高的权重。
 
-A、B和C（左上角）不再彼此连接（严格来说，它们是连接的，但具有非常高的权重而不是无限权重，出于实际考虑）。这意味着任何算法都不会尝试在这些节点之间寻找路径。同样，A'、B'和C'（右下角）彼此也没有连接。相反，原始非对称网络的方向性在这里由原始节点A、B和C上的权重以及它们的幽灵节点A'、B'和C'表示。
+A、B 和 C（左上角）不再彼此连接（严格来说，它们是连接的，但具有非常高的权重而不是无限权重，出于实际考虑）。这意味着任何算法都不会尝试在这些节点之间寻找路径。同样，A'、B'和 C'（右下角）彼此也没有连接。相反，原始非对称网络的方向性在这里由原始节点 A、B 和 C 上的权重以及它们的幽灵节点 A'、B'和 C'表示。
 
-原始非对称问题的解与新的对称TSP之间存在一一对应关系：
+原始非对称问题的解与新的对称 TSP 之间存在一一对应关系：
 
-+   A — B — C — A对应于A — A' — B — B' — C — C' — A
++   A — B — C — A 对应于 A — A' — B — B' — C — C' — A
 
-+   A — C — B — A对应于A — A' — C — C' — B — B' — A
++   A — C — B — A 对应于 A — A' — C — C' — B — B' — A
 
-在每种情况下，幽灵节点A'、B'和C'与原始节点A、B和C交替出现，每个原始节点都与其“伙伴”幽灵节点相邻（A与A'相邻，依此类推）。
+在每种情况下，幽灵节点 A'、B'和 C'与原始节点 A、B 和 C 交替出现，每个原始节点都与其“伙伴”幽灵节点相邻（A 与 A'相邻，依此类推）。
 
-**将地理非对称TSP转化为对称TSP**
+**将地理非对称 TSP 转化为对称 TSP**
 
 回到我们的实际示例。我们可以创建一个函数，将不对称 TSP 矩阵转换为对称矩阵：
 
@@ -358,7 +358,7 @@ generate_map(coords_ordered, names_ordered, directions).save('gb_cities.html')
 
 结果显示在本文顶部。[点击这里查看互动地图](https://mikedbjones.github.io/Geographic-TSP/gb_cities.html)。可以放大地图以查看更多细节，并悬停在单个城市上以显示它们在旅游序列中的编号。下面是地图的一部分，显示了经过谢菲尔德的路线（在林肯和切斯特菲尔德之间）。
 
-![](../Images/cc9e4fabdeb1f4050d04f4a4bf26bd86.png)
+![](img/cc9e4fabdeb1f4050d04f4a4bf26bd86.png)
 
 图片由作者提供。地图数据来源于 [OpenStreetMap](https://www.openstreetmap.org/copyright)。
 
@@ -402,12 +402,12 @@ generate_gpx_file(directions, 'gb_cities.gpx')
 
 我们已经看到如何结合以下元素来解决现实世界中的地理旅行推销员问题：
 
-1.  从routingpy库获取的方向和持续时间矩阵，指定适当的`profile`（交通模式）。
+1.  从 routingpy 库获取的方向和持续时间矩阵，指定适当的`profile`（交通模式）。
 
-1.  通过pyconcorde包装器使用高效而强大的Concorde求解器，以提供最佳路线。
+1.  通过 pyconcorde 包装器使用高效而强大的 Concorde 求解器，以提供最佳路线。
 
-1.  使用folium进行可视化，以创建地图。
+1.  使用 folium 进行可视化，以创建地图。
 
-上述的自驾游路线是对79城旅行推销员问题的一个令人信服的解决方案，根据Concorde求解器，它被证明是“最佳的”。然而，由于我们使用的是实际数据，最终结果的准确性取决于输入数据的质量。我们依赖于从routingpy获得的点对点时间矩阵能够代表实际情况。实际上，步行、骑车或驾车在不同时间段或一周中的不同日期之间所需的时间会有所不同。这是我们所使用的方法的一种限制。增强最终结果可信度的一种方式是使用[替代路线服务](https://routingpy.readthedocs.io/en/latest/#module-routingpy.routers)来尝试相同的方法。每个路线服务（如Graphhopper、ORS、Valhalla等）都有自己的API，可以用于解决像这里描述的TSP问题，并且可以比较不同服务的结果。
+上述的自驾游路线是对 79 城旅行推销员问题的一个令人信服的解决方案，根据 Concorde 求解器，它被证明是“最佳的”。然而，由于我们使用的是实际数据，最终结果的准确性取决于输入数据的质量。我们依赖于从 routingpy 获得的点对点时间矩阵能够代表实际情况。实际上，步行、骑车或驾车在不同时间段或一周中的不同日期之间所需的时间会有所不同。这是我们所使用的方法的一种限制。增强最终结果可信度的一种方式是使用[替代路线服务](https://routingpy.readthedocs.io/en/latest/#module-routingpy.routers)来尝试相同的方法。每个路线服务（如 Graphhopper、ORS、Valhalla 等）都有自己的 API，可以用于解决像这里描述的 TSP 问题，并且可以比较不同服务的结果。
 
-尽管解决这样一个问题存在现实世界的限制，上述方法为需要以尽可能高效方式在城市中移动的销售人员或快递员，或者希望在旅行中尽可能多地观光的游客提供了一个良好的起点。通过在互动地图上可视化结果并将路线存储为GPX文件，解决方案对最终用户非常有用，而不仅仅是实现代码的数据科学家。
+尽管解决这样一个问题存在现实世界的限制，上述方法为需要以尽可能高效方式在城市中移动的销售人员或快递员，或者希望在旅行中尽可能多地观光的游客提供了一个良好的起点。通过在互动地图上可视化结果并将路线存储为 GPX 文件，解决方案对最终用户非常有用，而不仅仅是实现代码的数据科学家。

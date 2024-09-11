@@ -1,14 +1,14 @@
 # 对早期排序阶段的原则性方法
 
-> 原文：[https://towardsdatascience.com/the-principled-approach-to-early-ranking-stages-05ce49692f7c?source=collection_archive---------7-----------------------#2023-12-06](https://towardsdatascience.com/the-principled-approach-to-early-ranking-stages-05ce49692f7c?source=collection_archive---------7-----------------------#2023-12-06)
+> 原文：[`towardsdatascience.com/the-principled-approach-to-early-ranking-stages-05ce49692f7c?source=collection_archive---------7-----------------------#2023-12-06`](https://towardsdatascience.com/the-principled-approach-to-early-ranking-stages-05ce49692f7c?source=collection_archive---------7-----------------------#2023-12-06)
 
 ## 一种系统化的方法用于设计和评估推荐系统中的候选生成和早期排序阶段，并对核心指导原则进行深入分析。
 
-[](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)[![Michael Roizner](../Images/bcb68ee626ea57234b62e512ed4b383b.png)](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------) [Michael Roizner](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)
+[](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)![Michael Roizner](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------) [Michael Roizner](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1bee5af37d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-principled-approach-to-early-ranking-stages-05ce49692f7c&user=Michael+Roizner&userId=1bee5af37d8&source=post_page-1bee5af37d8----05ce49692f7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------) ·9分钟阅读·2023年12月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F05ce49692f7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-principled-approach-to-early-ranking-stages-05ce49692f7c&user=Michael+Roizner&userId=1bee5af37d8&source=-----05ce49692f7c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1bee5af37d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-principled-approach-to-early-ranking-stages-05ce49692f7c&user=Michael+Roizner&userId=1bee5af37d8&source=post_page-1bee5af37d8----05ce49692f7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------) ·9 分钟阅读·2023 年 12 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F05ce49692f7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-principled-approach-to-early-ranking-stages-05ce49692f7c&user=Michael+Roizner&userId=1bee5af37d8&source=-----05ce49692f7c---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 众所周知，在推荐系统中，构建推荐有几个阶段：首先是候选生成，也常被称为检索，其次是一个或多个排序阶段。学术论文对早期阶段关注不多，但在实际应用中，这些阶段非常重要。如何衡量它们的质量也同样重要。
 
-![](../Images/ed86ca54d33ececba5f454e7890cc56a.png)
+![](img/ed86ca54d33ececba5f454e7890cc56a.png)
 
 作者插图
 
@@ -28,7 +28,7 @@
 
 +   [ANN](https://en.wikipedia.org/wiki/Nearest_neighbor_search) — 通过嵌入相似（例如，[HNSW](https://github.com/nmslib/hnswlib)），
 
-+   在不同层次上结合之前的方法：例如，从用户的历史记录（或ANN，或热门项目）中提取类别，然后从中选择流行的项目。
++   在不同层次上结合之前的方法：例如，从用户的历史记录（或 ANN，或热门项目）中提取类别，然后从中选择流行的项目。
 
 尽管每种方法本身可能不复杂，但整体组合却相当复杂，促使人们思考：如何优化它？要做到这一点，当然需要定义究竟需要优化什么，即应该使用什么指标来衡量候选生成的质量。
 
@@ -38,7 +38,7 @@
 
 有时，特别是在论文中，会使用*HitRate@k*、*Recall@k*、*Precision@k*、*MRR*、*NDCG*等指标，仅关注正向（相关）文档。如果用户随后与某个文档进行互动，则认为该文档是相关的。我更倾向于这种方法，但它存在显著的偏差问题，例如，用户往往会与系统推荐的项目进行更多互动。
 
-有一段时间，我尝试制定一种不同的候选生成方法，并一直支持它。幸运的是，我不是唯一的支持者 — 这种方法已在各种系统中使用（例如，[这篇关于扩展Instagram Explore推荐系统的文章](https://engineering.fb.com/2023/08/09/ml-applications/scaling-instagram-explore-recommendations-system/)中详细介绍）。然而，我不确定它是否可以称为行业标准 — 确实有一些主要系统没有使用它。
+有一段时间，我尝试制定一种不同的候选生成方法，并一直支持它。幸运的是，我不是唯一的支持者 — 这种方法已在各种系统中使用（例如，[这篇关于扩展 Instagram Explore 推荐系统的文章](https://engineering.fb.com/2023/08/09/ml-applications/scaling-instagram-explore-recommendations-system/)中详细介绍）。然而，我不确定它是否可以称为行业标准 — 确实有一些主要系统没有使用它。
 
 该方法基于以下原则：
 
@@ -64,11 +64,11 @@
 
 +   对于[产品规则](https://roizner.medium.com/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18)的支持有限。这一原则规定，除了硬规则之外的所有规则应在最后阶段应用，早期阶段将会适应它们。这不仅涉及到技巧，还包括改进推荐系统各个方面的合理方法，如探索、多样性等。你必须提供多样化的候选项，因为排名器会选择它们。
 
-[## 从黑客到和谐：在推荐系统中构建产品规则](/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=post_page-----05ce49692f7c--------------------------------)
+## 从黑客到和谐：在推荐系统中构建产品规则
 
 ### 不要让启发式方法削弱你的机器学习，学会将它们结合起来
 
-[towardsdatascience.com](/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=post_page-----05ce49692f7c--------------------------------)
+towardsdatascience.com
 
 在探讨了局限性之后，让我们现在转向这种方法的优势。
 
@@ -100,9 +100,9 @@
 
 不过，我曾经设计了一种方法，结果非常简单有效。到目前为止，我还没有看到它在其他地方提到过。
 
-方法如下。我们向候选源列表中添加一个特殊的源，该源生成随机候选（例如，均匀分布）。我们为这个源分配一个小的固定配额（例如，50个候选）。然后我们观察推荐的文档中有多少比例最终来自这个源。如果我们的主要候选生成足够好，那么随机候选很少能胜过它，即很少进入前列。如果它很差，那么随机候选会经常超越它。
+方法如下。我们向候选源列表中添加一个特殊的源，该源生成随机候选（例如，均匀分布）。我们为这个源分配一个小的固定配额（例如，50 个候选）。然后我们观察推荐的文档中有多少比例最终来自这个源。如果我们的主要候选生成足够好，那么随机候选很少能胜过它，即很少进入前列。如果它很差，那么随机候选会经常超越它。
 
-![](../Images/ad7534c4c7e6b0c8791e4e79820a934f.png)
+![](img/ad7534c4c7e6b0c8791e4e79820a934f.png)
 
 仅用于说明目的的合成数据
 
@@ -112,7 +112,7 @@
 
 顺便提一下，这个特殊来源的随机性可以进行调整。如果你使用的不是均匀分布，而是与文档的受欢迎程度成比例的分布，它会成为更强的‘对抗性’参与者（这也可能增加敏感性）。然而，使用均匀抽样，可以提供一个关于我们的候选生成理想的查询比例的分析估计（即，即使我们将整个数据库添加到候选者中，结果也不会改变）：
 
-![](../Images/5d194aa1ee6b1719b09a6a41b9e4b7bb.png)
+![](img/5d194aa1ee6b1719b09a6a41b9e4b7bb.png)
 
 在这个公式中，*N* 代表数据库中的候选者总数，*k* 是使用的随机候选者数量，*R* 表示至少有一个随机候选者出现在输出中的查询比例。
 

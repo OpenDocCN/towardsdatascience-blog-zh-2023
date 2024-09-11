@@ -1,10 +1,10 @@
 # 哪些特征对你的分类模型有害？
 
-> 原文：[https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6?source=collection_archive---------2-----------------------#2023-09-12](https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6?source=collection_archive---------2-----------------------#2023-09-12)
+> 原文：[`towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6?source=collection_archive---------2-----------------------#2023-09-12`](https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6?source=collection_archive---------2-----------------------#2023-09-12)
 
 ## 如何计算分类器特征的错误贡献，以理解和改进模型
 
-[](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[![Samuele Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------) [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)
+[](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)![Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------) [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6227859a44a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-features-are-harmful-for-your-classification-model-6227859a44a6&source=-----6227859a44a6---------------------bookmark_footer-----------)![](../Images/76d978549f4c414fe424adb41c37db80.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6227859a44a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-features-are-harmful-for-your-classification-model-6227859a44a6&source=-----6227859a44a6---------------------bookmark_footer-----------)![](img/76d978549f4c414fe424adb41c37db80.png)
 
 [Image by Author]
 

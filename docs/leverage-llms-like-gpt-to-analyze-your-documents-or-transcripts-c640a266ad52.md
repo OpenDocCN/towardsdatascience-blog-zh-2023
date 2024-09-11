@@ -1,22 +1,22 @@
-# 利用类似GPT的LLMs分析您的文档或记录
+# 利用类似 GPT 的 LLMs 分析您的文档或记录
 
-> 原文：[https://towardsdatascience.com/leverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52?source=collection_archive---------1-----------------------#2023-03-31](https://towardsdatascience.com/leverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52?source=collection_archive---------1-----------------------#2023-03-31)
+> 原文：[`towardsdatascience.com/leverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52?source=collection_archive---------1-----------------------#2023-03-31`](https://towardsdatascience.com/leverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52?source=collection_archive---------1-----------------------#2023-03-31)
 
-## 使用提示工程以类似ChatGPT的方式通过langchain和openai分析您的文档
+## 使用提示工程以类似 ChatGPT 的方式通过 langchain 和 openai 分析您的文档
 
-[](https://konstantin-rink.medium.com/?source=post_page-----c640a266ad52--------------------------------)[![Konstantin Rink](../Images/41bfc069d7382a0fd56f081eea7eb2d9.png)](https://konstantin-rink.medium.com/?source=post_page-----c640a266ad52--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c640a266ad52--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c640a266ad52--------------------------------) [Konstantin Rink](https://konstantin-rink.medium.com/?source=post_page-----c640a266ad52--------------------------------)
+[](https://konstantin-rink.medium.com/?source=post_page-----c640a266ad52--------------------------------)![Konstantin Rink](https://konstantin-rink.medium.com/?source=post_page-----c640a266ad52--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c640a266ad52--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c640a266ad52--------------------------------) [Konstantin Rink](https://konstantin-rink.medium.com/?source=post_page-----c640a266ad52--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F337427fde9f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52&user=Konstantin+Rink&userId=337427fde9f0&source=post_page-337427fde9f0----c640a266ad52---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c640a266ad52--------------------------------) ·6分钟阅读·2023年3月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc640a266ad52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52&user=Konstantin+Rink&userId=337427fde9f0&source=-----c640a266ad52---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F337427fde9f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52&user=Konstantin+Rink&userId=337427fde9f0&source=post_page-337427fde9f0----c640a266ad52---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c640a266ad52--------------------------------) ·6 分钟阅读·2023 年 3 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc640a266ad52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52&user=Konstantin+Rink&userId=337427fde9f0&source=-----c640a266ad52---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc640a266ad52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52&source=-----c640a266ad52---------------------bookmark_footer-----------)![](../Images/7dd6687f2e85da1c40832aaf26002fc7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc640a266ad52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleverage-llms-like-gpt-to-analyze-your-documents-or-transcripts-c640a266ad52&source=-----c640a266ad52---------------------bookmark_footer-----------)![](img/7dd6687f2e85da1c40832aaf26002fc7.png)
 
 （原始）照片由 [Laura Rivera](https://unsplash.com/@laurar1vera?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，发布在 [Unsplash](https://unsplash.com/de/fotos/9ZQzrLWV52M?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 
-ChatGPT 无疑是最受欢迎的大型语言模型（LLMs）之一。自2022年底发布测试版以来，大家可以使用便捷的聊天功能提问或与语言模型互动。
+ChatGPT 无疑是最受欢迎的大型语言模型（LLMs）之一。自 2022 年底发布测试版以来，大家可以使用便捷的聊天功能提问或与语言模型互动。
 
 **但是如果我们想要向 ChatGPT 提问关于我们自己的文档或我们刚刚听过的播客内容怎么办？**
 

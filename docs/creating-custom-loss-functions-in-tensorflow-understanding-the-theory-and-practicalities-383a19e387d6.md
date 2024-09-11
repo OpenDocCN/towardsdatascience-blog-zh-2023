@@ -1,24 +1,24 @@
-# 在TensorFlow中创建自定义损失函数：理解理论与实际应用
+# 在 TensorFlow 中创建自定义损失函数：理解理论与实际应用
 
-> 原文：[https://towardsdatascience.com/creating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6?source=collection_archive---------7-----------------------#2023-01-12](https://towardsdatascience.com/creating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6?source=collection_archive---------7-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/creating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6?source=collection_archive---------7-----------------------#2023-01-12`](https://towardsdatascience.com/creating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6?source=collection_archive---------7-----------------------#2023-01-12)
 
-## 利用自定义损失函数最大化TensorFlow中的模型性能
+## 利用自定义损失函数最大化 TensorFlow 中的模型性能
 
-[](https://marcosanguineti.medium.com/?source=post_page-----383a19e387d6--------------------------------)[![Marco Sanguineti](../Images/9c426e512b31b77734801912d81f51c1.png)](https://marcosanguineti.medium.com/?source=post_page-----383a19e387d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----383a19e387d6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----383a19e387d6--------------------------------) [Marco Sanguineti](https://marcosanguineti.medium.com/?source=post_page-----383a19e387d6--------------------------------)
+[](https://marcosanguineti.medium.com/?source=post_page-----383a19e387d6--------------------------------)![Marco Sanguineti](https://marcosanguineti.medium.com/?source=post_page-----383a19e387d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----383a19e387d6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----383a19e387d6--------------------------------) [Marco Sanguineti](https://marcosanguineti.medium.com/?source=post_page-----383a19e387d6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33141be0f14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6&user=Marco+Sanguineti&userId=33141be0f14d&source=post_page-33141be0f14d----383a19e387d6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----383a19e387d6--------------------------------) ·7分钟阅读·2023年1月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F383a19e387d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6&user=Marco+Sanguineti&userId=33141be0f14d&source=-----383a19e387d6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33141be0f14d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6&user=Marco+Sanguineti&userId=33141be0f14d&source=post_page-33141be0f14d----383a19e387d6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----383a19e387d6--------------------------------) ·7 分钟阅读·2023 年 1 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F383a19e387d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6&user=Marco+Sanguineti&userId=33141be0f14d&source=-----383a19e387d6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F383a19e387d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6&source=-----383a19e387d6---------------------bookmark_footer-----------)![](../Images/ca25b8e66b5b042aedf727f806276652.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F383a19e387d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-custom-loss-functions-in-tensorflow-understanding-the-theory-and-practicalities-383a19e387d6&source=-----383a19e387d6---------------------bookmark_footer-----------)![](img/ca25b8e66b5b042aedf727f806276652.png)
 
 由[Fotis Fotopoulos](https://unsplash.com/@ffstop?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)拍摄的照片
 
 ## 介绍
 
-在机器学习中，损失函数是训练过程中的一个关键组成部分。它衡量模型预测与真实输出之间的差异，并用于更新模型的参数，以最小化这一差异。虽然许多常用的损失函数都内置于TensorFlow中，但在某些情况下，你可能需要定义一个自定义损失函数，以更好地适应模型的具体要求。
+在机器学习中，损失函数是训练过程中的一个关键组成部分。它衡量模型预测与真实输出之间的差异，并用于更新模型的参数，以最小化这一差异。虽然许多常用的损失函数都内置于 TensorFlow 中，但在某些情况下，你可能需要定义一个自定义损失函数，以更好地适应模型的具体要求。
 
 [## 模块：tf.keras.losses | TensorFlow v2.11.0
 
@@ -26,7 +26,7 @@
 
 www.tensorflow.org](https://www.tensorflow.org/api_docs/python/tf/keras/losses?source=post_page-----383a19e387d6--------------------------------)
 
-这对于处理不平衡的数据集、融入领域知识以及其他特定用例可能非常有用。本文将探讨自定义损失函数的理论、使用自定义损失函数的好处以及在TensorFlow中创建它们的实际操作。
+这对于处理不平衡的数据集、融入领域知识以及其他特定用例可能非常有用。本文将探讨自定义损失函数的理论、使用自定义损失函数的好处以及在 TensorFlow 中创建它们的实际操作。
 
 ## 理解损失函数的作用
 
@@ -112,7 +112,7 @@ model.compile(optimizer='adam', loss=WeightedCrossEntropy(weight=0.8), metrics=[
 
 请记住，这只是一个示例，你可能需要根据你的具体用例调整它，它还应该与过采样、欠采样或合成数据生成等技术结合使用，以便正确处理不平衡数据。
 
-![](../Images/c979dae66ba8c762241c2df6dfc9548f.png)
+![](img/c979dae66ba8c762241c2df6dfc9548f.png)
 
 MNIST 手写数字数据库的一些样本— [来源](https://www.tensorflow.org/datasets/catalog/mnist)
 

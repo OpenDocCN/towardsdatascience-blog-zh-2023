@@ -1,24 +1,24 @@
 # 开始使用 Weaviate：初学者的向量数据库搜索指南
 
-> 原文：[https://towardsdatascience.com/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=collection_archive---------1-----------------------#2023-07-18](https://towardsdatascience.com/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=collection_archive---------1-----------------------#2023-07-18)
+> 原文：[`towardsdatascience.com/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=collection_archive---------1-----------------------#2023-07-18`](https://towardsdatascience.com/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=collection_archive---------1-----------------------#2023-07-18)
 
 ## 如何在 Python 中使用 OpenAI 和 Weaviate 进行语义搜索、问答和生成搜索
 
-[](https://medium.com/@iamleonie?source=post_page-----14bbb9285839--------------------------------)[![Leonie Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----14bbb9285839--------------------------------)[](https://towardsdatascience.com/?source=post_page-----14bbb9285839--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----14bbb9285839--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----14bbb9285839--------------------------------)
+[](https://medium.com/@iamleonie?source=post_page-----14bbb9285839--------------------------------)![Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----14bbb9285839--------------------------------)[](https://towardsdatascience.com/?source=post_page-----14bbb9285839--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----14bbb9285839--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----14bbb9285839--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----14bbb9285839---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----14bbb9285839--------------------------------) ·12分钟阅读·2023年7月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F14bbb9285839&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----14bbb9285839---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----14bbb9285839---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----14bbb9285839--------------------------------) ·12 分钟阅读·2023 年 7 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F14bbb9285839&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----14bbb9285839---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F14bbb9285839&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839&source=-----14bbb9285839---------------------bookmark_footer-----------)![](../Images/6485587f0e926a7c26edc3221c1441f3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F14bbb9285839&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839&source=-----14bbb9285839---------------------bookmark_footer-----------)![](img/6485587f0e926a7c26edc3221c1441f3.png)
 
 如果你看到这篇文章，我假设你已经开始尝试构建使用大语言模型（LLM）的应用，并遇到了“向量数据库”这一术语。
 
 伴随着构建 LLM 应用的工具快速增长，诸如[LangChain](https://python.langchain.com/docs/get_started/introduction.html)和[LlamaIndex](https://www.llamaindex.ai/)等工具正变得越来越受欢迎。
 
-在[最近的一篇文章中，我描述了如何开始使用 LangChain](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c)，在这篇文章中，我想通过玩弄[Weaviate](https://weaviate.io/)来继续探索 LLM 工具的景观。
+在最近的一篇文章中，我描述了如何开始使用 LangChain，在这篇文章中，我想通过玩弄[Weaviate](https://weaviate.io/)来继续探索 LLM 工具的景观。
 
 # 什么是 Weaviate？
 
@@ -38,15 +38,15 @@
 
 ### 从新手到专家：解密不同背景下的向量数据库
 
-[towardsdatascience.com](/explaining-vector-databases-in-3-levels-of-difficulty-fc392e48ab78?source=post_page-----14bbb9285839--------------------------------)
+towardsdatascience.com
 
 在本教程中，我们将演示如何用数据集的嵌入填充 Weaviate 向量数据库。然后，我们将介绍三种从中检索信息的方法：
 
-+   [向量搜索](#abaf)
++   向量搜索
 
-+   [问答系统](#cf85)
++   问答系统
 
-+   [生成搜索](#a30a)
++   生成搜索
 
 # 前提条件
 
@@ -68,7 +68,7 @@
 
 注册后，你可以通过点击“创建集群”按钮来创建一个新的 Weaviate 集群。
 
-![](../Images/cac79d7af6e30a06e44d88de4ee8bee6.png)
+![](img/cac79d7af6e30a06e44d88de4ee8bee6.png)
 
 Weaviate Cloud Services 的截图
 
@@ -80,7 +80,7 @@ Weaviate Cloud Services 的截图
 
 1.  启用身份验证（设置为“是”）
 
-![](../Images/db24341de07f83075b91e11d83f80aef.png)
+![](img/db24341de07f83075b91e11d83f80aef.png)
 
 Weaviate Cloud Services 计划的截图
 
@@ -108,7 +108,7 @@ import weaviate
 
 +   Weaviate API 密钥（在“启用 — 身份验证”下）
 
-![](../Images/5f272ff38d248ed5e5f866d4e61f3c37.png)
+![](img/5f272ff38d248ed5e5f866d4e61f3c37.png)
 
 Weaviate Cloud Services 沙盒的截图
 
@@ -149,7 +149,7 @@ import pandas as pd
 df = pd.read_csv("your_file_path.csv", nrows = 100)
 ```
 
-![](../Images/0537b31ea6ffbae1f3adae0b122ec306.png)
+![](img/0537b31ea6ffbae1f3adae0b122ec306.png)
 
 Kaggle 上的 [200,000+ Jeopardy 问题](https://www.kaggle.com/datasets/ulrikthygepedersen/200000-jeopardy-questions) 数据集的前几行 [1]。
 
@@ -161,7 +161,7 @@ Kaggle 上的 [200,000+ Jeopardy 问题](https://www.kaggle.com/datasets/ulrikth
 
 +   `class`：这个向量空间中的对象集合将被称为什么？
 
-+   `properties`：对象的属性，包括属性名称和数据类型。在Pandas Dataframe类比中，这些就是DataFrame中的列。
++   `properties`：对象的属性，包括属性名称和数据类型。在 Pandas Dataframe 类比中，这些就是 DataFrame 中的列。
 
 +   `vectorizer`：生成嵌入的模型。对于文本对象，通常你会选择一个`[text2vec](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules)`模块（`text2vec-cohere`、`text2vec-huggingface`、`text2vec-openai`或`text2vec-palm`），具体选择取决于你使用的提供商。
 
@@ -203,7 +203,7 @@ class_obj = {
 }
 ```
 
-在上述模式中，你可以看到我们将创建一个名为`"JeopardyQuestion"`的类，具有三个文本属性`"category"`、`"question"`和`"answer"`。我们使用的向量化器是OpenAI的Ada模型（版本2）。所有属性都将被向量化，但类名（`"vectorizeClassName" : False`）不会。如果你有不希望嵌入的属性，可以指定这一点（见[文档](https://weaviate.io/developers/academy/zero_to_mvp/schema_and_imports/schema)）。
+在上述模式中，你可以看到我们将创建一个名为`"JeopardyQuestion"`的类，具有三个文本属性`"category"`、`"question"`和`"answer"`。我们使用的向量化器是 OpenAI 的 Ada 模型（版本 2）。所有属性都将被向量化，但类名（`"vectorizeClassName" : False`）不会。如果你有不希望嵌入的属性，可以指定这一点（见[文档](https://weaviate.io/developers/academy/zero_to_mvp/schema_and_imports/schema)）。
 
 一旦定义了模式，你可以使用`create_class()`方法创建类。
 
@@ -330,11 +330,11 @@ client.schema.get("JeopardyQuestion")
 }
 ```
 
-## 步骤2：将数据导入Weaviate
+## 步骤 2：将数据导入 Weaviate
 
 在此阶段，向量数据库已有模式但仍为空。因此，让我们用数据集填充它。这一过程也称为“upserting”。
 
-我们将以每批200条的方式进行数据的upsert。如果你注意到了，你会知道这里不需要这样做，因为我们只有100行数据。但一旦你准备好进行更大规模的数据upsert，你会希望以批量方式进行。这就是为什么我在这里留下批处理代码：
+我们将以每批 200 条的方式进行数据的 upsert。如果你注意到了，你会知道这里不需要这样做，因为我们只有 100 行数据。但一旦你准备好进行更大规模的数据 upsert，你会希望以批量方式进行。这就是为什么我在这里留下批处理代码：
 
 ```py
 from weaviate.util import generate_uuid5
@@ -356,7 +356,7 @@ with client.batch(
         )
 ```
 
-尽管Weaviate会自动生成一个通用唯一标识符（`uuid`），我们将通过`question_object`的`generate_uuid5()`函数手动生成`uuid`，以避免导入重复的项目。
+尽管 Weaviate 会自动生成一个通用唯一标识符（`uuid`），我们将通过`question_object`的`generate_uuid5()`函数手动生成`uuid`，以避免导入重复的项目。
 
 进行完整性检查时，你可以使用以下代码片段查看导入对象的数量：
 
@@ -368,9 +368,9 @@ client.query.aggregate("JeopardyQuestion").with_meta_count().do()
 {'data': {'Aggregate': {'JeopardyQuestion': [{'meta': {'count': 100}}]}}}
 ```
 
-# 如何查询Weaviate向量数据库
+# 如何查询 Weaviate 向量数据库
 
-你最常做的操作是检索对象。要检索对象，你可以使用`get()`函数查询Weaviate向量数据库：
+你最常做的操作是检索对象。要检索对象，你可以使用`get()`函数查询 Weaviate 向量数据库：
 
 ```py
 client.query.get(
@@ -385,7 +385,7 @@ client.query.get(
 
 +   `arguments`：指定检索对象的搜索标准，例如限制条件或聚合。在以下示例中，我们将介绍一些这些标准。
 
-让我们用`get()`函数从`JeopardyQuestion`类中检索一些条目，以查看它们的样子。在Pandas的类比中，你可以将以下内容视为`df.head(2)`。由于`get()`函数的响应是JSON格式的，我们将导入相关库以以视觉上吸引人的格式显示结果。
+让我们用`get()`函数从`JeopardyQuestion`类中检索一些条目，以查看它们的样子。在 Pandas 的类比中，你可以将以下内容视为`df.head(2)`。由于`get()`函数的响应是 JSON 格式的，我们将导入相关库以以视觉上吸引人的格式显示结果。
 
 ```py
 import json
@@ -430,11 +430,11 @@ print(json.dumps(res, indent=4))
 
 在上述代码片段中，你可以看到我们从`"JeopardyQuestion"`类中检索对象。我们指定了检索属性`"category"`、`"question"`和`"answer"`。
 
-我们指定了两个额外的`arguments`：首先，我们使用`.with_additional()`参数指定检索关于对象ID和向量嵌入的额外信息。然后，使用`.with_limit(2)`参数，我们指定只检索两个对象。这种限制很重要，你将在后续示例中再次看到。这是因为从矢量数据库中检索对象不会返回完全匹配的结果，而是基于相似性返回对象，这需要通过阈值来限制。
+我们指定了两个额外的`arguments`：首先，我们使用`.with_additional()`参数指定检索关于对象 ID 和向量嵌入的额外信息。然后，使用`.with_limit(2)`参数，我们指定只检索两个对象。这种限制很重要，你将在后续示例中再次看到。这是因为从矢量数据库中检索对象不会返回完全匹配的结果，而是基于相似性返回对象，这需要通过阈值来限制。
 
 ## 矢量搜索
 
-现在，我们准备进行一些矢量搜索！从矢量数据库中检索信息的酷炫之处在于，你可以例如要求它检索与`"concepts"`相关的Jeopardy问题。
+现在，我们准备进行一些矢量搜索！从矢量数据库中检索信息的酷炫之处在于，你可以例如要求它检索与`"concepts"`相关的 Jeopardy 问题。
 
 为此，我们可以使用`.with_near_text()`参数，并传入我们感兴趣的`"concepts"`，如下所示：
 
@@ -474,7 +474,7 @@ res = client.query.get(
 
 ## 问答功能
 
-问答是将LLMs与矢量数据库结合使用时最受欢迎的示例之一。
+问答是将 LLMs 与矢量数据库结合使用时最受欢迎的示例之一。
 
 要启用问答功能，你需要在模块配置中指定一个矢量化器（你应该已经有了）和一个问答模块，如下例所示：
 
@@ -531,7 +531,7 @@ res = (
 
 ## 生成搜索
 
-通过结合LLMs，你还可以在返回搜索结果之前转换数据。这一概念称为生成搜索。
+通过结合 LLMs，你还可以在返回搜索结果之前转换数据。这一概念称为生成搜索。
 
 要启用生成搜索，你需要在模块配置中指定一个生成模块，如下例所示：
 
@@ -618,4 +618,4 @@ medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----14bbb92
 
 ## 网络与文献
 
-[2] Weaviate (2023). [Weaviate 文档](https://weaviate.io/developers/weaviate)（访问日期：2023年7月14日）
+[2] Weaviate (2023). [Weaviate 文档](https://weaviate.io/developers/weaviate)（访问日期：2023 年 7 月 14 日）

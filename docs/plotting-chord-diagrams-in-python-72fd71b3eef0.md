@@ -1,18 +1,18 @@
 # 在 Python 中绘制和弦图
 
-> 原文：[https://towardsdatascience.com/plotting-chord-diagrams-in-python-72fd71b3eef0?source=collection_archive---------11-----------------------#2023-02-15](https://towardsdatascience.com/plotting-chord-diagrams-in-python-72fd71b3eef0?source=collection_archive---------11-----------------------#2023-02-15)
+> 原文：[`towardsdatascience.com/plotting-chord-diagrams-in-python-72fd71b3eef0?source=collection_archive---------11-----------------------#2023-02-15`](https://towardsdatascience.com/plotting-chord-diagrams-in-python-72fd71b3eef0?source=collection_archive---------11-----------------------#2023-02-15)
 
 ## 如何使用 Holoviews 绘制和弦图以展示各种数据属性之间的关系
 
-[](https://weimenglee.medium.com/?source=post_page-----72fd71b3eef0--------------------------------)[![Wei-Meng Lee](../Images/10fc13e8a6858502d6a7b89fcaad7a10.png)](https://weimenglee.medium.com/?source=post_page-----72fd71b3eef0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72fd71b3eef0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72fd71b3eef0--------------------------------) [Wei-Meng Lee](https://weimenglee.medium.com/?source=post_page-----72fd71b3eef0--------------------------------)
+[](https://weimenglee.medium.com/?source=post_page-----72fd71b3eef0--------------------------------)![Wei-Meng Lee](https://weimenglee.medium.com/?source=post_page-----72fd71b3eef0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72fd71b3eef0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----72fd71b3eef0--------------------------------) [Wei-Meng Lee](https://weimenglee.medium.com/?source=post_page-----72fd71b3eef0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6599e1e08a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotting-chord-diagrams-in-python-72fd71b3eef0&user=Wei-Meng+Lee&userId=6599e1e08a48&source=post_page-6599e1e08a48----72fd71b3eef0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72fd71b3eef0--------------------------------) ·7 min read·2023年2月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72fd71b3eef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotting-chord-diagrams-in-python-72fd71b3eef0&user=Wei-Meng+Lee&userId=6599e1e08a48&source=-----72fd71b3eef0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6599e1e08a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotting-chord-diagrams-in-python-72fd71b3eef0&user=Wei-Meng+Lee&userId=6599e1e08a48&source=post_page-6599e1e08a48----72fd71b3eef0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72fd71b3eef0--------------------------------) ·7 min read·2023 年 2 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72fd71b3eef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotting-chord-diagrams-in-python-72fd71b3eef0&user=Wei-Meng+Lee&userId=6599e1e08a48&source=-----72fd71b3eef0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F72fd71b3eef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotting-chord-diagrams-in-python-72fd71b3eef0&source=-----72fd71b3eef0---------------------bookmark_footer-----------)![](../Images/142065796e10c421ec28bd82450a0dbf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F72fd71b3eef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fplotting-chord-diagrams-in-python-72fd71b3eef0&source=-----72fd71b3eef0---------------------bookmark_footer-----------)![](img/142065796e10c421ec28bd82450a0dbf.png)
 
 图片由作者提供
 

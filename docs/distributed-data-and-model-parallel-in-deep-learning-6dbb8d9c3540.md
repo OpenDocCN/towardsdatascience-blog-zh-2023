@@ -1,10 +1,10 @@
 # PyTorch 中的分布式数据并行和分布式模型并行
 
-> 原文：[https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540?source=collection_archive---------11-----------------------#2023-05-08](https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540?source=collection_archive---------11-----------------------#2023-05-08)
+> 原文：[`towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540?source=collection_archive---------11-----------------------#2023-05-08`](https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540?source=collection_archive---------11-----------------------#2023-05-08)
 
 ## 学习分布式数据并行和分布式模型并行如何在随机梯度下降中工作，使您能够在庞大的数据集上训练庞大的模型
 
-[](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![Wei Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------) [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)
+[](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)![Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------) [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6dbb8d9c3540&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540&source=-----6dbb8d9c3540---------------------bookmark_footer-----------)![](../Images/ecced4c819e71328af444db89219dc4f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6dbb8d9c3540&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540&source=-----6dbb8d9c3540---------------------bookmark_footer-----------)![](img/ecced4c819e71328af444db89219dc4f.png)
 
 摄影师 [Olga Zhushman](https://unsplash.com/ja/@ori_photostory?utm_source=medium&utm_medium=referral)，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

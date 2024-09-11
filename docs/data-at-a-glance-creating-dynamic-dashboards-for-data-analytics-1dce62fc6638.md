@@ -1,10 +1,10 @@
 # 数据一览：为数据分析创建动态仪表板
 
-> 原文：[https://towardsdatascience.com/data-at-a-glance-creating-dynamic-dashboards-for-data-analytics-1dce62fc6638?source=collection_archive---------5-----------------------#2023-11-20](https://towardsdatascience.com/data-at-a-glance-creating-dynamic-dashboards-for-data-analytics-1dce62fc6638?source=collection_archive---------5-----------------------#2023-11-20)
+> 原文：[`towardsdatascience.com/data-at-a-glance-creating-dynamic-dashboards-for-data-analytics-1dce62fc6638?source=collection_archive---------5-----------------------#2023-11-20`](https://towardsdatascience.com/data-at-a-glance-creating-dynamic-dashboards-for-data-analytics-1dce62fc6638?source=collection_archive---------5-----------------------#2023-11-20)
 
 ## 使用 Tableau 构建交互式数据可视化
 
-[](https://medium.com/@john_lenehan?source=post_page-----1dce62fc6638--------------------------------)[![John Lenehan](../Images/addeeb0bacca7ddec928aa12c2a4fc53.png)](https://medium.com/@john_lenehan?source=post_page-----1dce62fc6638--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1dce62fc6638--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1dce62fc6638--------------------------------) [John Lenehan](https://medium.com/@john_lenehan?source=post_page-----1dce62fc6638--------------------------------)
+[](https://medium.com/@john_lenehan?source=post_page-----1dce62fc6638--------------------------------)![John Lenehan](https://medium.com/@john_lenehan?source=post_page-----1dce62fc6638--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1dce62fc6638--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1dce62fc6638--------------------------------) [John Lenehan](https://medium.com/@john_lenehan?source=post_page-----1dce62fc6638--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1dce62fc6638&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-at-a-glance-creating-dynamic-dashboards-for-data-analytics-1dce62fc6638&source=-----1dce62fc6638---------------------bookmark_footer-----------)![](../Images/2d7eff865295177b406c85f597c9e957.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1dce62fc6638&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-at-a-glance-creating-dynamic-dashboards-for-data-analytics-1dce62fc6638&source=-----1dce62fc6638---------------------bookmark_footer-----------)![](img/2d7eff865295177b406c85f597c9e957.png)
 
 照片来自 Unsplash 上的 Carlos Muza
 

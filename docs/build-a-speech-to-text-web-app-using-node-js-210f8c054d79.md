@@ -1,18 +1,18 @@
 # 使用 Node.js 构建语音转文本的网页应用程序
 
-> 原文：[https://towardsdatascience.com/build-a-speech-to-text-web-app-using-node-js-210f8c054d79?source=collection_archive---------1-----------------------#2023-03-27](https://towardsdatascience.com/build-a-speech-to-text-web-app-using-node-js-210f8c054d79?source=collection_archive---------1-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/build-a-speech-to-text-web-app-using-node-js-210f8c054d79?source=collection_archive---------1-----------------------#2023-03-27`](https://towardsdatascience.com/build-a-speech-to-text-web-app-using-node-js-210f8c054d79?source=collection_archive---------1-----------------------#2023-03-27)
 
 ## 让我们构建一个使用 OpenAI 的 Whisper 模型进行音频转录和翻译的网页应用程序
 
-[](https://shubhamstudent5.medium.com/?source=post_page-----210f8c054d79--------------------------------)[![Kumar Shubham](../Images/64eed4588cc63804a612f01d5c6ec1ea.png)](https://shubhamstudent5.medium.com/?source=post_page-----210f8c054d79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----210f8c054d79--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----210f8c054d79--------------------------------) [Kumar Shubham](https://shubhamstudent5.medium.com/?source=post_page-----210f8c054d79--------------------------------)
+[](https://shubhamstudent5.medium.com/?source=post_page-----210f8c054d79--------------------------------)![Kumar Shubham](https://shubhamstudent5.medium.com/?source=post_page-----210f8c054d79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----210f8c054d79--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----210f8c054d79--------------------------------) [Kumar Shubham](https://shubhamstudent5.medium.com/?source=post_page-----210f8c054d79--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65525b35f68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-speech-to-text-web-app-using-node-js-210f8c054d79&user=Kumar+Shubham&userId=65525b35f68&source=post_page-65525b35f68----210f8c054d79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----210f8c054d79--------------------------------) · 11分钟阅读 · 2023年3月27日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F210f8c054d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-speech-to-text-web-app-using-node-js-210f8c054d79&user=Kumar+Shubham&userId=65525b35f68&source=-----210f8c054d79---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65525b35f68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-speech-to-text-web-app-using-node-js-210f8c054d79&user=Kumar+Shubham&userId=65525b35f68&source=post_page-65525b35f68----210f8c054d79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----210f8c054d79--------------------------------) · 11 分钟阅读 · 2023 年 3 月 27 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F210f8c054d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-speech-to-text-web-app-using-node-js-210f8c054d79&user=Kumar+Shubham&userId=65525b35f68&source=-----210f8c054d79---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F210f8c054d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-speech-to-text-web-app-using-node-js-210f8c054d79&source=-----210f8c054d79---------------------bookmark_footer-----------)![](../Images/25b5d8abf919e8d8c304f803d5948166.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F210f8c054d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-speech-to-text-web-app-using-node-js-210f8c054d79&source=-----210f8c054d79---------------------bookmark_footer-----------)![](img/25b5d8abf919e8d8c304f803d5948166.png)
 
 图片来源：[AltumCode](https://unsplash.com/@altumcode?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
 # 毫秒至关重要——我在性能改进中的旅程
 
-> 原文：[https://towardsdatascience.com/when-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4?source=collection_archive---------19-----------------------#2023-02-15](https://towardsdatascience.com/when-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4?source=collection_archive---------19-----------------------#2023-02-15)
+> 原文：[`towardsdatascience.com/when-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4?source=collection_archive---------19-----------------------#2023-02-15`](https://towardsdatascience.com/when-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4?source=collection_archive---------19-----------------------#2023-02-15)
 
 ## 从延迟改进项目中获得的经验教训
 
-[](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)[![Naomi Kriger](../Images/14839f859e1375965c046912f00df5b9.png)](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------) [Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)
+[](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)![Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------) [Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce7969d594d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&user=Naomi+Kriger&userId=ce7969d594d&source=post_page-ce7969d594d----5a3cd69754c4---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------) · 7 分钟阅读 · 2023年2月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5a3cd69754c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&user=Naomi+Kriger&userId=ce7969d594d&source=-----5a3cd69754c4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce7969d594d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&user=Naomi+Kriger&userId=ce7969d594d&source=post_page-ce7969d594d----5a3cd69754c4---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------) · 7 分钟阅读 · 2023 年 2 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5a3cd69754c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&user=Naomi+Kriger&userId=ce7969d594d&source=-----5a3cd69754c4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a3cd69754c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&source=-----5a3cd69754c4---------------------bookmark_footer-----------)![](../Images/129986d3e73ac8cfaf2312955a537bf7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a3cd69754c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&source=-----5a3cd69754c4---------------------bookmark_footer-----------)![](img/129986d3e73ac8cfaf2312955a537bf7.png)
 
 图片由 [Giallo](https://www.pexels.com/@giallo/) 提供，来自 [Pexels](https://www.pexels.com/photo/assorted-silver-colored-pocket-watch-lot-selective-focus-photo-859895/)
 
@@ -32,7 +32,7 @@
 
 让我们看一下相关系统的简化视图：
 
-![](../Images/605c2309f1d294ebe750048534e3d0e5.png)
+![](img/605c2309f1d294ebe750048534e3d0e5.png)
 
 作者草图
 
@@ -42,29 +42,29 @@
 
 让我们从故事中休息一下。我想向你介绍决策系统的拓扑。这个系统基于[Apache Storm](https://storm.apache.org/releases/2.2.0/Concepts.html)，旨在实时处理无限的数据流。
 
-![](../Images/42e343f65beb71f9073f7722a1a645ab.png)
+![](img/42e343f65beb71f9073f7722a1a645ab.png)
 
 作者草图
 
-简而言之，Spout从数据源（例如Kafka / RabbitMQ）接收数据，并将流输出到拓扑中。每个Bolt是拓扑中的一个组件，它接收并发出一个或多个流。一个Bolt进行简单的逻辑处理，如过滤、聚合、从数据库读取和写入等。
+简而言之，Spout 从数据源（例如 Kafka / RabbitMQ）接收数据，并将流输出到拓扑中。每个 Bolt 是拓扑中的一个组件，它接收并发出一个或多个流。一个 Bolt 进行简单的逻辑处理，如过滤、聚合、从数据库读取和写入等。
 
-一些Bolts并行运行，而另一些则相互依赖。
+一些 Bolts 并行运行，而另一些则相互依赖。
 
-一些Bolts会固定一个相对超时时间值，之后它们会继续（处理流并发出）无论是否接收到所有等待的输入。
+一些 Bolts 会固定一个相对超时时间值，之后它们会继续（处理流并发出）无论是否接收到所有等待的输入。
 
-超时的使用防止了Bolts和组件过长时间延迟拓扑，从而使我们能够满足预期的SLA。
+超时的使用防止了 Bolts 和组件过长时间延迟拓扑，从而使我们能够满足预期的 SLA。
 
 ## 步骤 **4 — 为什么没有增强？**
 
-回到我们的故事。为什么决策系统没有调用增强服务？我添加了一些指标，发现问题交易的一个重要条件达到了——增强过程剩余的时间不够，所以没有执行获取调用以留出足够的时间给未来的Bolts。
+回到我们的故事。为什么决策系统没有调用增强服务？我添加了一些指标，发现问题交易的一个重要条件达到了——增强过程剩余的时间不够，所以没有执行获取调用以留出足够的时间给未来的 Bolts。
 
 这很让人惊讶。增强是流程中的核心组件，发生在拓扑的相对前期。为什么我们没有足够的时间来执行这个调用？
 
 ## 步骤 **5 — 依赖关系和延迟**
 
-为了理解为什么我们超出了（相对）时间，我深入研究了一个内部工具提供的视图，并向后查看了我的增强Bolt所依赖的Bolts。
+为了理解为什么我们超出了（相对）时间，我深入研究了一个内部工具提供的视图，并向后查看了我的增强 Bolt 所依赖的 Bolts。
 
-我发现一个较早的Bolt一直需要大约100毫秒。考虑到我们的SLA和一个Bolt应该花费的平均时间，这被认为是非常多的。
+我发现一个较早的 Bolt 一直需要大约 100 毫秒。考虑到我们的 SLA 和一个 Bolt 应该花费的平均时间，这被认为是非常多的。
 
 这个父 Bolt 中发生了什么事情，花了这么长时间？
 
@@ -74,13 +74,13 @@
 
 在与维护这个集群的团队同步后，我了解到他们已经熟悉其长期的性能问题和逐渐恶化的情况。
 
-## 第6步——这个依赖关系必要吗？
+## 第 6 步——这个依赖关系必要吗？
 
 为什么增值-Bolt 依赖于这个 elasticsearch 查询？它是否值得我们在未增值事务中支付的代价？
 
 在增值上下文中——我们在等待这个查询结果来处理一个特定功能，但进一步调查显示该功能存在一个漏洞，天知道有多久了，因此我们没有利用这个功能的期望输出。
 
-![](../Images/469ba91929ea1e4a3dcafcbedfdf8da1.png)
+![](img/469ba91929ea1e4a3dcafcbedfdf8da1.png)
 
 作者草图
 
@@ -88,17 +88,17 @@
 
 在考虑了几种潜在的解决路径——每种路径的努力和成本效益，并且得到了修复有漏洞的功能所有者的同意删除这段代码——我删除了有漏洞的功能。
 
-## 第7步——何时对我们的拓扑进行微妙的更改
+## 第 7 步——何时对我们的拓扑进行微妙的更改
 
 决策系统是基于依赖的，此时，我希望将增值组件依赖于一个发生在调用问题集群的组件之前的组件。这样的更改可以节省我们等待高延迟查询的时间，而且我们新的依赖组件出现得越早——增值及其后续组件将留有更多的空闲时间。
 
 在调查代码并与高层选择新的父组件后，我进行了这项微妙的更改并监控了结果。
 
-![](../Images/417d38b557468ae61dd8c183ead358c4.png)
+![](img/417d38b557468ae61dd8c183ead358c4.png)
 
 作者草图
 
-## 第8步——结果如何？
+## 第 8 步——结果如何？
 
 起初，我的更改上线后没有看到戏剧性的改善。真令人沮丧！几个月的调查和期待，变化幅度微小。但我们不应绝望！
 
@@ -110,9 +110,9 @@
 
 我删除了那些字段，并很高兴看到结果：
 
-每日未丰富交易的数量从26K减少到200。
+每日未丰富交易的数量从 26K 减少到 200。
 
-此外，在开始时——对于一些商户，这类有问题的交易的百分比高达20%，而在我的更改之后——所有商户的交易中问题的百分比不超过1%。
+此外，在开始时——对于一些商户，这类有问题的交易的百分比高达 20%，而在我的更改之后——所有商户的交易中问题的百分比不超过 1%。
 
 **大获成功！**
 
@@ -124,7 +124,7 @@
 
 +   **代码删除应彻底进行**
 
-    组件A依赖于组件B的原因之一是由于组件中未使用的输入字段。随着我们删除代码，花时间问自己是否删除了与之相关的所有内容并没有留下遗留问题是一个好习惯。
+    组件 A 依赖于组件 B 的原因之一是由于组件中未使用的输入字段。随着我们删除代码，花时间问自己是否删除了与之相关的所有内容并没有留下遗留问题是一个好习惯。
 
 +   **投资于分析工具**
 

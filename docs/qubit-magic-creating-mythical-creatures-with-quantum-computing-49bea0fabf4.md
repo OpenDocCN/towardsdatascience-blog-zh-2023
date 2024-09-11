@@ -1,20 +1,20 @@
 # Qubit 魔法：用量子计算创造神话生物
 
-> 原文：[https://towardsdatascience.com/qubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4?source=collection_archive---------6-----------------------#2023-09-18](https://towardsdatascience.com/qubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4?source=collection_archive---------6-----------------------#2023-09-18)
+> 原文：[`towardsdatascience.com/qubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4?source=collection_archive---------6-----------------------#2023-09-18`](https://towardsdatascience.com/qubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4?source=collection_archive---------6-----------------------#2023-09-18)
 
 ## 教程
 
 ## 利用量子比特和大型语言模型生成美丽的图像。
 
-[](https://medium.com/@KoryBecker?source=post_page-----49bea0fabf4--------------------------------)[![Kory Becker](../Images/53a2493fe53f215d3e715d456b36c553.png)](https://medium.com/@KoryBecker?source=post_page-----49bea0fabf4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----49bea0fabf4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----49bea0fabf4--------------------------------) [Kory Becker](https://medium.com/@KoryBecker?source=post_page-----49bea0fabf4--------------------------------)
+[](https://medium.com/@KoryBecker?source=post_page-----49bea0fabf4--------------------------------)![Kory Becker](https://medium.com/@KoryBecker?source=post_page-----49bea0fabf4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----49bea0fabf4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----49bea0fabf4--------------------------------) [Kory Becker](https://medium.com/@KoryBecker?source=post_page-----49bea0fabf4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f206469e308&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4&user=Kory+Becker&userId=9f206469e308&source=post_page-9f206469e308----49bea0fabf4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----49bea0fabf4--------------------------------) ·6分钟阅读·2023年9月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F49bea0fabf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4&user=Kory+Becker&userId=9f206469e308&source=-----49bea0fabf4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9f206469e308&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4&user=Kory+Becker&userId=9f206469e308&source=post_page-9f206469e308----49bea0fabf4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----49bea0fabf4--------------------------------) ·6 分钟阅读·2023 年 9 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F49bea0fabf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4&user=Kory+Becker&userId=9f206469e308&source=-----49bea0fabf4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F49bea0fabf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4&source=-----49bea0fabf4---------------------bookmark_footer-----------)![](../Images/e61008994db178c8e3ce224c48abc17f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F49bea0fabf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fqubit-magic-creating-mythical-creatures-with-quantum-computing-49bea0fabf4&source=-----49bea0fabf4---------------------bookmark_footer-----------)![](img/e61008994db178c8e3ce224c48abc17f.png)
 
 具有量子态向量 [1/√2 e^(π/2)i 1/√2] 的神话生物。来源：[稳定扩散](https://stablediffusionweb.com)。
 
@@ -30,7 +30,7 @@
 
 量子比特的可视化可能看起来有些抽象。毕竟，量子比特处于微观水平，使它们难以理解。
 
-然而，我们可以利用量子比特的[惊人](/the-magic-of-quantum-computing-a-beginners-guide-to-writing-a-magic-number-guessing-game-c1cdb384f457)属性，将它们以[富有想象力](/ghostly-images-and-qubits-a-new-way-to-visualize-quantum-superposition-94b582889549)和美丽的方式可视化。
+然而，我们可以利用量子比特的惊人属性，将它们以富有想象力和美丽的方式可视化。
 
 一种方法是利用量子比特的独特属性，以生成可用于创建图像、声音等的描述性特征。
 

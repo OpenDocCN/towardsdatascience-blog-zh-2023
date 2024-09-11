@@ -1,20 +1,20 @@
-# 2个最佳SQL技巧来查找表中的重复值
+# 2 个最佳 SQL 技巧来查找表中的重复值
 
-> 原文：[https://towardsdatascience.com/2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74?source=collection_archive---------3-----------------------#2023-06-27](https://towardsdatascience.com/2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74?source=collection_archive---------3-----------------------#2023-06-27)
+> 原文：[`towardsdatascience.com/2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74?source=collection_archive---------3-----------------------#2023-06-27`](https://towardsdatascience.com/2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74?source=collection_archive---------3-----------------------#2023-06-27)
 
 ## 数据科学
 
 ## 删除重复记录以节省时间和金钱
 
-[](https://medium.com/@17.rsuraj?source=post_page-----1197618dcc74--------------------------------)[![Suraj Gurav](../Images/f5dca32861f8c1c428e66fbe2174c04b.png)](https://medium.com/@17.rsuraj?source=post_page-----1197618dcc74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1197618dcc74--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1197618dcc74--------------------------------) [Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----1197618dcc74--------------------------------)
+[](https://medium.com/@17.rsuraj?source=post_page-----1197618dcc74--------------------------------)![Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----1197618dcc74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1197618dcc74--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1197618dcc74--------------------------------) [Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----1197618dcc74--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fdda183cca2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74&user=Suraj+Gurav&userId=1fdda183cca2&source=post_page-1fdda183cca2----1197618dcc74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1197618dcc74--------------------------------) ·7分钟阅读·2023年6月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1197618dcc74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74&user=Suraj+Gurav&userId=1fdda183cca2&source=-----1197618dcc74---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fdda183cca2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74&user=Suraj+Gurav&userId=1fdda183cca2&source=post_page-1fdda183cca2----1197618dcc74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1197618dcc74--------------------------------) ·7 分钟阅读·2023 年 6 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1197618dcc74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74&user=Suraj+Gurav&userId=1fdda183cca2&source=-----1197618dcc74---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1197618dcc74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74&source=-----1197618dcc74---------------------bookmark_footer-----------)![](../Images/ff6a7b3150944efd4023ee12e71b1667.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1197618dcc74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-best-sql-tricks-to-find-duplicate-values-in-a-table-1197618dcc74&source=-----1197618dcc74---------------------bookmark_footer-----------)![](img/ff6a7b3150944efd4023ee12e71b1667.png)
 
 由 [kofookoo.de](https://unsplash.com/@kofookoo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供的照片，来源于 [Unsplash](https://unsplash.com/photos/6EgxRnKU5BI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

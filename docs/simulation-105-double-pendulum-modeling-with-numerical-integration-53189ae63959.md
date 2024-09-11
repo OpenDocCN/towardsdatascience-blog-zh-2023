@@ -1,14 +1,14 @@
 # 模拟 105：双摆模型的数值积分
 
-> 原文：[https://towardsdatascience.com/simulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959?source=collection_archive---------5-----------------------#2023-08-14](https://towardsdatascience.com/simulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959?source=collection_archive---------5-----------------------#2023-08-14)
+> 原文：[`towardsdatascience.com/simulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959?source=collection_archive---------5-----------------------#2023-08-14`](https://towardsdatascience.com/simulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959?source=collection_archive---------5-----------------------#2023-08-14)
 
 ## 模拟一个混沌系统
 
-[](https://medium.com/@ln8378?source=post_page-----53189ae63959--------------------------------)[![Le Nguyen](../Images/05289b40bb528d5ba2a0ee00d1a75990.png)](https://medium.com/@ln8378?source=post_page-----53189ae63959--------------------------------)[](https://towardsdatascience.com/?source=post_page-----53189ae63959--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----53189ae63959--------------------------------) [Le Nguyen](https://medium.com/@ln8378?source=post_page-----53189ae63959--------------------------------)
+[](https://medium.com/@ln8378?source=post_page-----53189ae63959--------------------------------)![Le Nguyen](https://medium.com/@ln8378?source=post_page-----53189ae63959--------------------------------)[](https://towardsdatascience.com/?source=post_page-----53189ae63959--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----53189ae63959--------------------------------) [Le Nguyen](https://medium.com/@ln8378?source=post_page-----53189ae63959--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb34fcbf59198&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959&user=Le+Nguyen&userId=b34fcbf59198&source=post_page-b34fcbf59198----53189ae63959---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----53189ae63959--------------------------------) ·9分钟阅读·2023年8月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F53189ae63959&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959&user=Le+Nguyen&userId=b34fcbf59198&source=-----53189ae63959---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb34fcbf59198&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959&user=Le+Nguyen&userId=b34fcbf59198&source=post_page-b34fcbf59198----53189ae63959---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----53189ae63959--------------------------------) ·9 分钟阅读·2023 年 8 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F53189ae63959&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimulation-105-double-pendulum-modeling-with-numerical-integration-53189ae63959&user=Le+Nguyen&userId=b34fcbf59198&source=-----53189ae63959---------------------clap_footer-----------)
 
 --
 
@@ -16,9 +16,9 @@
 
 摆是一个我们都非常熟悉的经典物理系统。无论是座钟还是秋千上的孩子，我们都见过摆的规律性、周期性运动。单摆在经典物理中定义明确，但双摆（一个摆挂在另一个摆的末端）却是[真正的混沌](https://en.wikipedia.org/wiki/Chaos_theory)。在这篇文章中，我们将基于对摆的直观理解，建立双摆的混沌模型。物理学非常有趣，而所需的数值方法则是每个人工具箱中的重要工具。
 
-![](../Images/d5fc100fbdb7588fd0524ba6653bf8e0.png)
+![](img/d5fc100fbdb7588fd0524ba6653bf8e0.png)
 
-图1: [混沌双摆的示例](https://commons.wikimedia.org/wiki/File:Double_pendulum_predicting_dynamics.gif)
+图 1: [混沌双摆的示例](https://commons.wikimedia.org/wiki/File:Double_pendulum_predicting_dynamics.gif)
 
 在本文中我们将：
 
@@ -32,17 +32,17 @@
 
 ## 简单谐振动
 
-我们将摆的周期性振荡运动描述为[谐振动](https://en.wikipedia.org/wiki/Simple_harmonic_motion)。谐振动发生在系统中存在的运动被与该运动方向相反的比例恢复力平衡时。我们可以在图2中看到一个例子，其中一个质量因重力而被拉向下方，但这将能量传递给弹簧，弹簧随后反弹并将质量拉回。弹簧系统旁边，我们看到质量在一个称为[相量图](https://en.wikipedia.org/wiki/Phasor)的圆周上运动，这进一步说明了系统的规则运动。
+我们将摆的周期性振荡运动描述为[谐振动](https://en.wikipedia.org/wiki/Simple_harmonic_motion)。谐振动发生在系统中存在的运动被与该运动方向相反的比例恢复力平衡时。我们可以在图 2 中看到一个例子，其中一个质量因重力而被拉向下方，但这将能量传递给弹簧，弹簧随后反弹并将质量拉回。弹簧系统旁边，我们看到质量在一个称为[相量图](https://en.wikipedia.org/wiki/Phasor)的圆周上运动，这进一步说明了系统的规则运动。
 
-![](../Images/c2bcaadc06cec4ffcd78e75d63ae954c.png)
+![](img/c2bcaadc06cec4ffcd78e75d63ae954c.png)
 
-图2: [弹簧上质量的简单谐振动示例](https://mathimages.swarthmore.edu/index.php/File:SpringCircle2.gif)
+图 2: [弹簧上质量的简单谐振动示例](https://mathimages.swarthmore.edu/index.php/File:SpringCircle2.gif)
 
-谐振动可以是阻尼的（由于拖拽力而振幅减小）或驱动的（由于外部力的添加而振幅增加），但我们将从最简单的情况——没有外部力作用的无限谐振动（无阻尼运动）开始。这种运动对建模在小角度/低振幅下摆动的单摆是一个很好的近似。在这种情况下，我们可以使用下面的方程1来模拟运动。
+谐振动可以是阻尼的（由于拖拽力而振幅减小）或驱动的（由于外部力的添加而振幅增加），但我们将从最简单的情况——没有外部力作用的无限谐振动（无阻尼运动）开始。这种运动对建模在小角度/低振幅下摆动的单摆是一个很好的近似。在这种情况下，我们可以使用下面的方程 1 来模拟运动。
 
-![](../Images/99380611fb900783b01c62a9c7221444.png)
+![](img/99380611fb900783b01c62a9c7221444.png)
 
-方程1: 小角度摆的简单谐振动
+方程 1: 小角度摆的简单谐振动
 
 我们可以轻松地将这个函数编入代码，并模拟一个简单的摆动随时间变化的过程。
 
@@ -54,7 +54,7 @@ def simple_pendulum(theta_0, omega, t, phi):
 #parameters of our system
 theta_0 = np.radians(15) #degrees to radians
 
-g = 9.8 #m/s^2
+g = 9.8 #m/s²
 l = 1.0 #m
 omega = np.sqrt(g/l)
 
@@ -70,33 +70,33 @@ x = l*np.sin(theta)
 y = -l*np.cos(theta) #negative to make sure the pendulum is facing down
 ```
 
-![](../Images/4319f9bdb1e1b926f305eee27e17190a.png)
+![](img/4319f9bdb1e1b926f305eee27e17190a.png)
 
-图3: 简单摆模拟
+图 3: 简单摆模拟
 
 ## 使用拉格朗日力学分析完整的摆动运动
 
 一个简单的小角度摆动是一个良好的起点，但我们希望超越这一点并模拟完整摆动的运动。由于我们不能再使用[小角度近似](https://en.wikipedia.org/wiki/Small-angle_approximation)，因此最好使用[拉格朗日力学](https://en.wikipedia.org/wiki/Lagrangian_mechanics)来建模摆动。这是物理学中的一个基本工具，它将我们从观察系统中的力转变为观察系统中的能量。我们将参考框架从驱动力与恢复力切换为[动能](https://en.wikipedia.org/wiki/Kinetic_energy)与[势能](https://en.wikipedia.org/wiki/Potential_energy)。
 
-拉格朗日量是方程2中给出的动能与势能之差。
+拉格朗日量是方程 2 中给出的动能与势能之差。
 
-![](../Images/cd59b2b9c3212f5c308c9ac300e3e3d1.png)
+![](img/cd59b2b9c3212f5c308c9ac300e3e3d1.png)
 
-方程2: 拉格朗日量
+方程 2: 拉格朗日量
 
 将方程 3 中给出的摆的动能和势能代入，得到的是方程 4 中显示的摆的拉格朗日量
 
-![](../Images/4626a9fa15c967eea4f06f6ae0a3f5e6.png)
+![](img/4626a9fa15c967eea4f06f6ae0a3f5e6.png)
 
 方程 3：摆的动能和势能
 
-![](../Images/2575a56e48aca50c294f382c5d7891a1.png)
+![](img/2575a56e48aca50c294f382c5d7891a1.png)
 
 方程 4：摆的拉格朗日量
 
 有了摆的拉格朗日量，我们现在描述了系统的能量。还有最后一步数学运算，将其转化为可以构建仿真的内容。我们需要通过[欧拉-拉格朗日方程](https://en.wikipedia.org/wiki/Euler%E2%80%93Lagrange_equation)从能量参考桥接回动态/力导向的参考。使用这个方程，我们可以用拉格朗日量来得到摆的角加速度。
 
-![](../Images/c74ff56138a49800ed2bd957059188f4.png)
+![](img/c74ff56138a49800ed2bd957059188f4.png)
 
 方程 5：欧拉-拉格朗日方程中的角加速度
 
@@ -110,7 +110,7 @@ def full_pendulum(g,l,theta,theta_velocity, time_step):
     theta += time_step*theta_velocity #Update angle with angular velocity
     return theta, theta_velocity
 
-g = 9.8 #m/s^2
+g = 9.8 #m/s²
 l = 1.0 #m
 
 theta = [np.radians(90)] #theta_0
@@ -127,7 +127,7 @@ x = l*np.sin(theta)
 y = -l*np.cos(theta)
 ```
 
-![](../Images/df966baad829d1a82839980c7186c0b9.png)
+![](img/df966baad829d1a82839980c7186c0b9.png)
 
 图 4：完整摆的仿真
 
@@ -139,9 +139,9 @@ y = -l*np.cos(theta)
 
 为了模拟双摆的运动，我们将使用与之前相同的拉格朗日方法（[查看完整推导](https://mse.redwoods.edu/darnold/math55/DEproj/sp08/jaltic/presentation.pdf)）。
 
-![](../Images/62c62acceea8661fa7a1d0cb4d673b80.png)
+![](img/62c62acceea8661fa7a1d0cb4d673b80.png)
 
-我们在将这个方程实现到代码中并找到theta时，将继续使用之前相同的数值积分方案。
+我们在将这个方程实现到代码中并找到 theta 时，将继续使用之前相同的数值积分方案。
 
 ```py
 #Get theta1 acceleration 
@@ -200,7 +200,7 @@ def double_pendulum(m1,m2,l1,l2,theta1,theta2,theta1_velocity,theta2_velocity,g,
 
 ```py
 #Define system parameters
-g = 9.8 #m/s^2
+g = 9.8 #m/s²
 
 m1 = 1 #kg
 m2 = 1 #kg
@@ -223,17 +223,17 @@ time_span = np.linspace(0,20,300)
 x1,y1,x2,y2 = double_pendulum(m1,m2,l1,l2,theta1,theta2,theta1_velocity,theta2_velocity,g,time_step,time_span)
 ```
 
-![](../Images/08913f06219e3671259de47ec97ae3a3.png)
+![](img/08913f06219e3671259de47ec97ae3a3.png)
 
 图 5：双摆仿真
 
-我们终于成功了！我们成功地建模了一个双摆，但现在是观察一些混沌的时候了。我们的最终模拟将是两个双摆，起始条件略有不同。我们将设置一个摆的*theta 1*为90度，另一个为91度。让我们看看会发生什么。
+我们终于成功了！我们成功地建模了一个双摆，但现在是观察一些混沌的时候了。我们的最终模拟将是两个双摆，起始条件略有不同。我们将设置一个摆的*theta 1*为 90 度，另一个为 91 度。让我们看看会发生什么。
 
-![](../Images/aeb23d51e522d12e3787090afee94c7a.png)
+![](img/aeb23d51e522d12e3787090afee94c7a.png)
 
-图6：两个起始条件略有不同的双摆
+图 6：两个起始条件略有不同的双摆
 
-我们可以看到，两个摆开始时的轨迹类似，但很快就发生了分歧。这就是我们所说的混沌，即使是1度的角度差异也会导致截然不同的最终行为。
+我们可以看到，两个摆开始时的轨迹类似，但很快就发生了分歧。这就是我们所说的混沌，即使是 1 度的角度差异也会导致截然不同的最终行为。
 
 # 结论
 
@@ -251,7 +251,7 @@ x1,y1,x2,y2 = double_pendulum(m1,m2,l1,l2,theta1,theta2,theta1_velocity,theta2_v
 
 # 参考文献
 
-本文使用的所有图形要么由作者创建，要么来自[数学图像](https://mathimages.swarthmore.edu/index.php/Main_Page)，并且完全遵循[GNU自由文档许可证1.2](http://www.gnu.org/copyleft/fdl.html)
+本文使用的所有图形要么由作者创建，要么来自[数学图像](https://mathimages.swarthmore.edu/index.php/Main_Page)，并且完全遵循[GNU 自由文档许可证 1.2](http://www.gnu.org/copyleft/fdl.html)
 
 [](https://www.wired.com/2016/07/everything-harmonic-oscillator/?source=post_page-----53189ae63959--------------------------------) [## 一切—是的，一切—都是一个谐振子
 
@@ -259,7 +259,7 @@ x1,y1,x2,y2 = double_pendulum(m1,m2,l1,l2,theta1,theta2,theta1_velocity,theta2_v
 
 www.wired.com](https://www.wired.com/2016/07/everything-harmonic-oscillator/?source=post_page-----53189ae63959--------------------------------)
 
-经典力学，约翰·泰勒 [https://neuroself.files.wordpress.com/2020/09/taylor-2005-classical-mechanics.pdf](https://neuroself.files.wordpress.com/2020/09/taylor-2005-classical-mechanics.pdf)
+经典力学，约翰·泰勒 [`neuroself.files.wordpress.com/2020/09/taylor-2005-classical-mechanics.pdf`](https://neuroself.files.wordpress.com/2020/09/taylor-2005-classical-mechanics.pdf)
 
 # 完整代码
 
@@ -294,7 +294,7 @@ def simple_pendulum(theta_0, omega, t, phi):
 #parameters of our system
 theta_0 = np.radians(15) #degrees to radians
 
-g = 9.8 #m/s^2
+g = 9.8 #m/s²
 l = 1.0 #m
 omega = np.sqrt(g/l)
 
@@ -318,7 +318,7 @@ def full_pendulum(g,l,theta,theta_velocity, time_step):
     theta += time_step*theta_velocity
     return theta, theta_velocity
 
-g = 9.8 #m/s^2
+g = 9.8 #m/s²
 l = 1.0 #m
 
 theta = [np.radians(90)] #theta_0
@@ -392,7 +392,7 @@ def double_pendulum(m1,m2,l1,l2,theta1,theta2,theta1_velocity,theta2_velocity,g,
 
 ```py
 #Define system parameters, run double pendulum
-g = 9.8 #m/s^2
+g = 9.8 #m/s²
 
 m1 = 1 #kg
 m2 = 1 #kg

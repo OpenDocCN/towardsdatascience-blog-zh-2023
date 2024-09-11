@@ -1,14 +1,14 @@
 # 建立分析成熟的组织（AMO）
 
-> 原文：[https://towardsdatascience.com/building-analytically-mature-organizations-amo-b54f8243ef3a?source=collection_archive---------1-----------------------#2023-10-30](https://towardsdatascience.com/building-analytically-mature-organizations-amo-b54f8243ef3a?source=collection_archive---------1-----------------------#2023-10-30)
+> 原文：[`towardsdatascience.com/building-analytically-mature-organizations-amo-b54f8243ef3a?source=collection_archive---------1-----------------------#2023-10-30`](https://towardsdatascience.com/building-analytically-mature-organizations-amo-b54f8243ef3a?source=collection_archive---------1-----------------------#2023-10-30)
 
 ## 一些简单的框架可以帮助确定您组织的分析需求以及如何使其更具数据驱动性
 
-[](https://medium.com/@jordangom?source=post_page-----b54f8243ef3a--------------------------------)[![Jordan Gomes](../Images/d08bb9fd8b084687599a67a2221ec68c.png)](https://medium.com/@jordangom?source=post_page-----b54f8243ef3a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b54f8243ef3a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b54f8243ef3a--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----b54f8243ef3a--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----b54f8243ef3a--------------------------------)![Jordan Gomes](https://medium.com/@jordangom?source=post_page-----b54f8243ef3a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b54f8243ef3a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b54f8243ef3a--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----b54f8243ef3a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-analytically-mature-organizations-amo-b54f8243ef3a&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----b54f8243ef3a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b54f8243ef3a--------------------------------) ·13分钟阅读·2023年10月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb54f8243ef3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-analytically-mature-organizations-amo-b54f8243ef3a&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----b54f8243ef3a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-analytically-mature-organizations-amo-b54f8243ef3a&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----b54f8243ef3a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b54f8243ef3a--------------------------------) ·13 分钟阅读·2023 年 10 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb54f8243ef3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-analytically-mature-organizations-amo-b54f8243ef3a&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----b54f8243ef3a---------------------clap_footer-----------)
 
 --
 
@@ -16,13 +16,13 @@
 
 了解您组织的分析成熟度可以为您作为数据专业人士提供强大的优势。它将使您的“非分析”决策更为明智（从“项目优先级”到“如何展示您的发现”），并帮助您制定长期目标。这确实是一种优势——并非所有数据专业人士都愿意退一步设计长期目标（更少的人能实现这些长期目标）。
 
-本文分为3部分：
+本文分为 3 部分：
 
-+   第1部分：理解分析成熟度
++   第一部分：理解分析成熟度
 
-+   第2部分：移动阶段
++   第二部分：移动阶段
 
-+   第3部分：“成熟”组织是什么
++   第三部分：“成熟”组织是什么
 
 让我们深入探讨！
 
@@ -30,9 +30,9 @@
 
 **任何组织（团队、产品、公司等）在某个时间点都会处于特定的分析成熟度阶段。就像人类“爬行、走路然后跑步”一样，组织也经历相同的阶段。这是自然界的定律之一：一切都经历创作、发展和成熟。**
 
-有[一些有趣的框架](https://www.mdpi.com/2078-2489/11/3/142)¹与分析成熟度相关，具有不同的组件和重点。从个人经验来看，我发现通过以下4个组件来看待一个组织是最有用和可操作的：
+有[一些有趣的框架](https://www.mdpi.com/2078-2489/11/3/142)¹与分析成熟度相关，具有不同的组件和重点。从个人经验来看，我发现通过以下 4 个组件来看待一个组织是最有用和可操作的：
 
-+   其需求：Robert D. Peng 和 Elizabeth Matsui 在“[数据的艺术](https://www.amazon.com/Art-Data-Science-Roger-Peng/dp/1365061469)”中写道，主要有6种类型的问题：描述性问题、探索性问题、推论性问题、预测性问题、因果性问题和机制性问题。你被问到的问题类型通常是组织成熟度水平的一个很好的指标——一个低成熟度的组织通常对描述性和探索性数据研究感兴趣，而一个高级成熟度的组织会提出更多预测性和因果性问题。
++   其需求：Robert D. Peng 和 Elizabeth Matsui 在“[数据的艺术](https://www.amazon.com/Art-Data-Science-Roger-Peng/dp/1365061469)”中写道，主要有 6 种类型的问题：描述性问题、探索性问题、推论性问题、预测性问题、因果性问题和机制性问题。你被问到的问题类型通常是组织成熟度水平的一个很好的指标——一个低成熟度的组织通常对描述性和探索性数据研究感兴趣，而一个高级成熟度的组织会提出更多预测性和因果性问题。
 
 +   其人员：另一个分析成熟度的关键组件是人员，包括能力和资源。取决于组织拥有多少数据资源以及他们的能力有多强。
 
@@ -42,13 +42,13 @@
 
 根据你所在组织在这些组件上的评分，它将落入这三个阶段之一：
 
-+   **启动阶段：** 在这个阶段，组织需要基本的报告来了解已经发生了什么（“事后诸葛亮”）。没有中央数据团队，可能甚至没有数据分析师——数据研究由一些数据敏锐的操作人员在他们的9到5工作之外完成。也没有工具，没有流程，没有关于查看特定现象时应使用什么视角的明确一致意见。这导致了很多噪音（例如，不同团队有不同的流失定义，导致后续意见不一致）。在文化方面，尽管每个人都同意数据应该指导决策过程，但由于数据不足（或对数据的不信任），很多决策都是通过“有依据的直觉”来做出的。
++   **启动阶段：** 在这个阶段，组织需要基本的报告来了解已经发生了什么（“事后诸葛亮”）。没有中央数据团队，可能甚至没有数据分析师——数据研究由一些数据敏锐的操作人员在他们的 9 到 5 工作之外完成。也没有工具，没有流程，没有关于查看特定现象时应使用什么视角的明确一致意见。这导致了很多噪音（例如，不同团队有不同的流失定义，导致后续意见不一致）。在文化方面，尽管每个人都同意数据应该指导决策过程，但由于数据不足（或对数据的不信任），很多决策都是通过“有依据的直觉”来做出的。
 
-+   **发展阶段：** 组织对市场及其应该跟踪的一些关键指标有了良好的可见性。现在，它需要理解为什么事情以某种方式发展（“洞察”）。团队开始得到数据专业人士的支持（无论是嵌入在团队内部还是在集中式数据团队中）。数据基础设施正从Google Spreadsheets缓慢转变为更为强大的工具。为了分类和优先处理所有的数据请求，首批数据专业人士建立了基本的优先级原则和票务系统（即Google Form）。各团队开始采用共同的视角，因此数据在决策中越来越被依赖。非数据专业人士在数据问题上变得更聪明，通过工具，非数据专业人士可以自己查看数据。
++   **发展阶段：** 组织对市场及其应该跟踪的一些关键指标有了良好的可见性。现在，它需要理解为什么事情以某种方式发展（“洞察”）。团队开始得到数据专业人士的支持（无论是嵌入在团队内部还是在集中式数据团队中）。数据基础设施正从 Google Spreadsheets 缓慢转变为更为强大的工具。为了分类和优先处理所有的数据请求，首批数据专业人士建立了基本的优先级原则和票务系统（即 Google Form）。各团队开始采用共同的视角，因此数据在决策中越来越被依赖。非数据专业人士在数据问题上变得更聪明，通过工具，非数据专业人士可以自己查看数据。
 
 +   **成熟阶段：** 组织理解了为什么事情以某种方式发展，并现在可以预测和影响未来的变化（“前瞻性”）。集中式数据团队开始形成，充当主动的思想合作伙伴（与之前阶段的“被动支持”相比）。工具、流程和指标正在标准化。数据在每个决策过程中都被期待。
 
-![](../Images/2703986aa768784ec4b6e6e552674924.png)
+![](img/2703986aa768784ec4b6e6e552674924.png)
 
 了解分析成熟度（图片由作者提供）
 
@@ -64,7 +64,7 @@
 
 理查德·鲁梅特在[《好战略，坏战略》](https://www.amazon.com/Good-Strategy-Bad-Difference-Matters/dp/0307886239)中写道：“战略工作的核心始终是相同的：发现情况中的关键因素，并设计协调和聚焦行动的方法以应对这些因素”。
 
-当你想提升组织的分析成熟度时，这同样适用：你需要找出帮助你迈向下一步的关键因素，并设计一个计划来实现目标。我们上面看到的框架——将分析成熟度分解为4个组件：组织的需求、数据资源、流程与工具以及数据文化——可以帮助你找出组织中的差距——但找出差距只是工作中的20%。让我们讨论剩下的80%。
+当你想提升组织的分析成熟度时，这同样适用：你需要找出帮助你迈向下一步的关键因素，并设计一个计划来实现目标。我们上面看到的框架——将分析成熟度分解为 4 个组件：组织的需求、数据资源、流程与工具以及数据文化——可以帮助你找出组织中的差距——但找出差距只是工作中的 20%。让我们讨论剩下的 80%。
 
 ## 好战略，坏战略框架
 
@@ -76,7 +76,7 @@
 
 +   **遵循上述的连贯行动计划**：凭借你的诊断和指导原则，你的主要任务是决定你希望在什么时间范围内达到什么目标，以及你将如何实现这一目标。
 
-![](../Images/6e2621bbe6c57c9491ce13126af6e5e5.png)
+![](img/6e2621bbe6c57c9491ce13126af6e5e5.png)
 
 良好战略与差劲战略框架（图源：作者）
 
@@ -88,7 +88,7 @@
 
 这里有一些进行良好诊断的技巧：
 
-1.  从我们之前看到的4个维度出发：需求/人员/工具与流程/文化，使用这些视角评估你的组织，并找出每个领域的根本原因。
+1.  从我们之前看到的 4 个维度出发：需求/人员/工具与流程/文化，使用这些视角评估你的组织，并找出每个领域的根本原因。
 
 1.  获取当前痛点和解决方案的数据：
 
@@ -98,9 +98,9 @@
 
 1.  发送调查问卷：根据你的组织规模，发送调查问卷可以帮助你获取更多的定量数据。附加好处：它还可以让你开始跟踪组织对“分析”的感受，并给你一个可以后续报告的基准。
 
-1.  做“文献回顾”，既包括内部（回顾之前的工作，了解人们如何尝试解决之前的问题，成功与否，以及原因），也包括外部（网上有很多免费的内容，你考虑的问题很可能已经被记录和讨论过（无论是在HBR上的一篇好文章，还是在一个晦涩的分析爱好者论坛上）。获取他人对不同问题解决方案的看法总是非常有帮助的）。
+1.  做“文献回顾”，既包括内部（回顾之前的工作，了解人们如何尝试解决之前的问题，成功与否，以及原因），也包括外部（网上有很多免费的内容，你考虑的问题很可能已经被记录和讨论过（无论是在 HBR 上的一篇好文章，还是在一个晦涩的分析爱好者论坛上）。获取他人对不同问题解决方案的看法总是非常有帮助的）。
 
-1.  练习5个“为什么”：每次你发现新的见解时，问自己为什么。你需要从整体的角度来看待问题，理解组织所处状况的关键原因。请注意，这不是一件容易的任务，尤其是当你在公司待了很长时间，并且习惯了现状时。
+1.  练习 5 个“为什么”：每次你发现新的见解时，问自己为什么。你需要从整体的角度来看待问题，理解组织所处状况的关键原因。请注意，这不是一件容易的任务，尤其是当你在公司待了很长时间，并且习惯了现状时。
 
 ## 推导指导政策
 
@@ -162,9 +162,9 @@
 
 # 最终目标：分析成熟组织（AMO）。
 
-我一直在谈论AMO（分析成熟组织），我们也见证了如何发展它——但我从未具体说明什么是分析成熟的组织，以及它为何如此出色。所以这是第3部分——提供了分析成熟组织与众不同的具体例子！
+我一直在谈论 AMO（分析成熟组织），我们也见证了如何发展它——但我从未具体说明什么是分析成熟的组织，以及它为何如此出色。所以这是第三部分——提供了分析成熟组织与众不同的具体例子！
 
-## 一个AMO是一个了解其市场复杂动态的组织，以及哪些活动可以影响它的组织。
+## 一个 AMO 是一个了解其市场复杂动态的组织，以及哪些活动可以影响它的组织。
 
 分析成熟的组织清楚地了解其活动（“输入指标”）如何驱动短期结果（“输出指标”），而这些短期结果又进一步驱动长期成果（“成果指标”）。
 

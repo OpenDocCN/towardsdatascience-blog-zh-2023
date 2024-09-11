@@ -1,18 +1,18 @@
 # CSV 的 5 个极佳替代方案
 
-> 原文：[https://towardsdatascience.com/top-5-ridiculously-better-csv-alternatives-595f70a9c936?source=collection_archive---------12-----------------------#2023-01-05](https://towardsdatascience.com/top-5-ridiculously-better-csv-alternatives-595f70a9c936?source=collection_archive---------12-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/top-5-ridiculously-better-csv-alternatives-595f70a9c936?source=collection_archive---------12-----------------------#2023-01-05`](https://towardsdatascience.com/top-5-ridiculously-better-csv-alternatives-595f70a9c936?source=collection_archive---------12-----------------------#2023-01-05)
 
 ## 大数据存储的 CSV 文件？再考虑一下——有些更好的选择。这 5 个将节省 I/O 时间和磁盘空间。
 
-[](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)[![Dario Radečić](../Images/41882a3b30bab9da43d66a59f1df366b.png)](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)[](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------) [Dario Radečić](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)
+[](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)![Dario Radečić](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)[](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------) [Dario Radečić](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)
 
 ·
 
-[点击查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F689ba04bb8be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-ridiculously-better-csv-alternatives-595f70a9c936&user=Dario+Rade%C4%8Di%C4%87&userId=689ba04bb8be&source=post_page-689ba04bb8be----595f70a9c936---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------) · 6 分钟阅读 · 2023年1月5日
+[点击查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F689ba04bb8be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-ridiculously-better-csv-alternatives-595f70a9c936&user=Dario+Rade%C4%8Di%C4%87&userId=689ba04bb8be&source=post_page-689ba04bb8be----595f70a9c936---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------) · 6 分钟阅读 · 2023 年 1 月 5 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F595f70a9c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-ridiculously-better-csv-alternatives-595f70a9c936&source=-----595f70a9c936---------------------bookmark_footer-----------)![](../Images/582774573716f7e5671bcd9100e45e77.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F595f70a9c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-ridiculously-better-csv-alternatives-595f70a9c936&source=-----595f70a9c936---------------------bookmark_footer-----------)![](img/582774573716f7e5671bcd9100e45e77.png)
 
 图片由 [Maximalfocus](https://unsplash.com/@maximalfocus?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

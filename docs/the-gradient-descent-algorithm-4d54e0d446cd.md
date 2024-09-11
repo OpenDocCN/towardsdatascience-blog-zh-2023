@@ -1,18 +1,18 @@
 # 梯度下降算法及其背后的直觉
 
-> 原文：[https://towardsdatascience.com/the-gradient-descent-algorithm-4d54e0d446cd?source=collection_archive---------6-----------------------#2023-08-19](https://towardsdatascience.com/the-gradient-descent-algorithm-4d54e0d446cd?source=collection_archive---------6-----------------------#2023-08-19)
+> 原文：[`towardsdatascience.com/the-gradient-descent-algorithm-4d54e0d446cd?source=collection_archive---------6-----------------------#2023-08-19`](https://towardsdatascience.com/the-gradient-descent-algorithm-4d54e0d446cd?source=collection_archive---------6-----------------------#2023-08-19)
 
 ## 对梯度下降方法的技术描述，并配有算法运行的图示
 
-[](https://medium.com/@fyi.oamd?source=post_page-----4d54e0d446cd--------------------------------)[![Antonieta Mastrogiuseppe](../Images/3b9e70a54fcb887f5ccee6d305085675.png)](https://medium.com/@fyi.oamd?source=post_page-----4d54e0d446cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d54e0d446cd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d54e0d446cd--------------------------------) [Antonieta Mastrogiuseppe](https://medium.com/@fyi.oamd?source=post_page-----4d54e0d446cd--------------------------------)
+[](https://medium.com/@fyi.oamd?source=post_page-----4d54e0d446cd--------------------------------)![Antonieta Mastrogiuseppe](https://medium.com/@fyi.oamd?source=post_page-----4d54e0d446cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d54e0d446cd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d54e0d446cd--------------------------------) [Antonieta Mastrogiuseppe](https://medium.com/@fyi.oamd?source=post_page-----4d54e0d446cd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8ee237975ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-gradient-descent-algorithm-4d54e0d446cd&user=Antonieta+Mastrogiuseppe&userId=a8ee237975ec&source=post_page-a8ee237975ec----4d54e0d446cd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d54e0d446cd--------------------------------) ·9 分钟阅读·2023年8月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d54e0d446cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-gradient-descent-algorithm-4d54e0d446cd&user=Antonieta+Mastrogiuseppe&userId=a8ee237975ec&source=-----4d54e0d446cd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8ee237975ec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-gradient-descent-algorithm-4d54e0d446cd&user=Antonieta+Mastrogiuseppe&userId=a8ee237975ec&source=post_page-a8ee237975ec----4d54e0d446cd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d54e0d446cd--------------------------------) ·9 分钟阅读·2023 年 8 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d54e0d446cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-gradient-descent-algorithm-4d54e0d446cd&user=Antonieta+Mastrogiuseppe&userId=a8ee237975ec&source=-----4d54e0d446cd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d54e0d446cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-gradient-descent-algorithm-4d54e0d446cd&source=-----4d54e0d446cd---------------------bookmark_footer-----------)![](../Images/6e6a647dfadc374fcf9425097033183a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d54e0d446cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-gradient-descent-algorithm-4d54e0d446cd&source=-----4d54e0d446cd---------------------bookmark_footer-----------)![](img/6e6a647dfadc374fcf9425097033183a.png)
 
 亚瑟·叔本华的名言：“一旦你越过山丘，你会开始加速”。照片由作者拍摄。
 
@@ -44,7 +44,7 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 为了更好地理解梯度下降，我们需要扩展对可微分函数的定义。一个函数，明确地说是 *ƒ(x)*，当其导数在该函数的曲线上的任意点都可以定义时，该函数就是可微分的。这就是说，对于函数 *ƒ(x)* 的定义域中的 *所有* 点。这里，有两个概念支持这个定义：一阶导数和二阶导数。一阶导数公式定义如下：
 
-![](../Images/dbe88c79581bd5d59b2871fba3e17a34.png)
+![](img/dbe88c79581bd5d59b2871fba3e17a34.png)
 
 严格来说，函数的一阶导数，记作 *ƒ’(x)* 或 *df(x)/dx*，是函数 *ƒ(x)* 在给定 x 点的斜率。如果斜率为正（负），则表明函数在增加（减少），以及增加（减少）的幅度。正斜率表示随着 x 值的增加，函数 *ƒ(x)* 也增加。相反，负斜率表示随着 x 值的增加，*ƒ(x)* 减少。二阶导数是函数 *ƒ(x)* 的导数的导数。记作 *ƒ’’(x)* 或 *d2f(x)/dx2*，二阶导数指示了函数 *ƒ(x)* 的形状，即该函数是凹的还是凸的。从数学上讲（这一点很重要！！！），二阶导数可以区分相对最大值和相对最小值。
 
@@ -54,7 +54,7 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 如果 *ƒ’(a)* = 0，则 *a* 是一个临界点，因此是相对最小值。
 
-![](../Images/92b0ff98218d34de751a3104e0fd8502.png)
+![](img/92b0ff98218d34de751a3104e0fd8502.png)
 
 图由作者绘制
 
@@ -64,7 +64,7 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 如果 *ƒ’(a)* = 0，则 *a* 是一个临界点，因此是相对最大值。
 
-![](../Images/15d54f3b0ef54d9df8b2ef80dba5c37b.png)
+![](img/15d54f3b0ef54d9df8b2ef80dba5c37b.png)
 
 图由作者绘制
 
@@ -72,7 +72,7 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 如果 *ƒ’’(x)* = 0，则 *ƒ(x)* 在 x = *2* 处是拐点。
 
-![](../Images/705d5e1f36ea883f6348237a83a1dea8.png)
+![](img/705d5e1f36ea883f6348237a83a1dea8.png)
 
 图由作者绘制
 
@@ -80,15 +80,15 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 **3\. 梯度下降算法的实际应用**
 
-斜率的绝对值越大，我们可以迈出的步伐就越大，或者我们可以继续朝着最陡下降的方向迈步，即局部最小值。随着我们接近最低/最小点，斜率减小，因此可以迈出更小的步伐，直到到达斜率为零（0）的平坦表面，即*ƒ’(x)* = 0，这是下图中红色箭头指向的βi的最低值。这就是曲线的局部最小值，函数参数的最优值也在此处得出。
+斜率的绝对值越大，我们可以迈出的步伐就越大，或者我们可以继续朝着最陡下降的方向迈步，即局部最小值。随着我们接近最低/最小点，斜率减小，因此可以迈出更小的步伐，直到到达斜率为零（0）的平坦表面，即*ƒ’(x)* = 0，这是下图中红色箭头指向的βi 的最低值。这就是曲线的局部最小值，函数参数的最优值也在此处得出。
 
-![](../Images/45f0e3a2e12d36989c395262e5df3fda.png)
+![](img/45f0e3a2e12d36989c395262e5df3fda.png)
 
 作者绘制的图表
 
 因此，如果一个函数是*严格*凸的（凹的），则只有一个临界点。现在，也有可能存在多个局部最小值的情况。在这种情况下，搜索的是函数能够达到的最低值，这被称为全局最小值。
 
-![](../Images/83c582728280d36bd59544b797ffe5a8.png)
+![](img/83c582728280d36bd59544b797ffe5a8.png)
 
 作者绘制的图表
 
@@ -102,7 +102,7 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 步长的大小与学习率有关。这决定了算法学习/移动到最陡下降方向的速度。在最高梯度下，即斜率的绝对值最大时，算法学习最快。当接近局部最小值时，步长会变小。因此，学习率作为超参数在尝试不同值后设置，以便成本函数在迭代中减少。如果学习率过大，可能会错过局部最小值。学习率过小可能导致权重更新较小，使模型没有显著改善。如果学习率过小，可能需要时间才能收敛。收敛是指成本函数不再减少。因此，成本函数是算法性能的指标。在多变量函数的世界中，这表示为：
 
-![](../Images/7967ef48d2b7ebc592bb70eace9eb39e.png)
+![](img/7967ef48d2b7ebc592bb70eace9eb39e.png)
 
 其中，
 
@@ -116,7 +116,7 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 *xi* 表示与数据点相关的第 i 个输入。
 
-![](../Images/650f42910dde7c968ff22971e7f731d7.png)
+![](img/650f42910dde7c968ff22971e7f731d7.png)
 
 其中，
 
@@ -124,7 +124,7 @@ y = β0 + β1 * X1 + … βk * Xk + Ɛ
 
 *df/d*βk 表示函数 *f(x)* 对第 k 个参数 β 的偏导数。
 
-![](../Images/a47daebf7247b61566e975b9730e8eef.png)
+![](img/a47daebf7247b61566e975b9730e8eef.png)
 
 其中，
 

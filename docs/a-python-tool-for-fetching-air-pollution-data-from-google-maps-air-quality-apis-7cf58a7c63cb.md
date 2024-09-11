@@ -1,14 +1,14 @@
 # 从 Google Maps 空气质量 API 获取空气污染数据的 Python 工具
 
-> 原文：[https://towardsdatascience.com/a-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb?source=collection_archive---------0-----------------------#2023-10-16](https://towardsdatascience.com/a-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb?source=collection_archive---------0-----------------------#2023-10-16)
+> 原文：[`towardsdatascience.com/a-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb?source=collection_archive---------0-----------------------#2023-10-16`](https://towardsdatascience.com/a-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb?source=collection_archive---------0-----------------------#2023-10-16)
 
 ## 了解如何从全球各地获取丰富的实时空气质量数据
 
-[](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)[![Robert Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)
+[](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)![Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----7cf58a7c63cb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------) ·16分钟阅读·2023年10月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cf58a7c63cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb&user=Robert+Martin-Short&userId=83d38eb39498&source=-----7cf58a7c63cb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----7cf58a7c63cb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------) ·16 分钟阅读·2023 年 10 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cf58a7c63cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb&user=Robert+Martin-Short&userId=83d38eb39498&source=-----7cf58a7c63cb---------------------clap_footer-----------)
 
 --
 
@@ -18,13 +18,13 @@
 
 # 1\. 背景
 
-2023年8月，Google 宣布将空气质量服务添加到其映射 API 列表中。你可以在[这里](https://cloud.google.com/blog/products/maps-platform/introducing-air-quality-api-promoting-resilience-changing-climate)阅读更多关于此的信息。看来这些信息现在也可以通过 Google Maps 应用获得，不过通过 API 获得的数据要丰富得多。
+2023 年 8 月，Google 宣布将空气质量服务添加到其映射 API 列表中。你可以在[这里](https://cloud.google.com/blog/products/maps-platform/introducing-air-quality-api-promoting-resilience-changing-climate)阅读更多关于此的信息。看来这些信息现在也可以通过 Google Maps 应用获得，不过通过 API 获得的数据要丰富得多。
 
-根据公告，Google 正在结合来自不同分辨率的多种来源的信息——地面污染传感器、卫星数据、实时交通信息和来自数值模型的预测——以生成一个动态更新的空气质量数据集，涵盖100个国家，分辨率高达500米。这听起来像是一个非常有趣且潜在有用的数据集，适用于各种映射、医疗和规划应用！
+根据公告，Google 正在结合来自不同分辨率的多种来源的信息——地面污染传感器、卫星数据、实时交通信息和来自数值模型的预测——以生成一个动态更新的空气质量数据集，涵盖 100 个国家，分辨率高达 500 米。这听起来像是一个非常有趣且潜在有用的数据集，适用于各种映射、医疗和规划应用！
 
 当第一次读到这个消息时，我计划在一个“与数据对话”的应用中尝试它，利用从构建这个[旅行规划器](https://medium.com/towards-data-science/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74)工具中学到的一些东西。也许是一个可以绘制你最喜欢城市空气污染浓度时间序列的系统，或者一个帮助人们规划本地徒步旅行以避免空气质量差的工具？
 
-这里有[三个 API 工具](https://developers.google.com/maps/documentation/air-quality)可以提供帮助——一个“当前条件”服务，它提供给定位置的当前空气质量指数值和污染物浓度；一个“历史条件”服务，它提供相同的信息，但以小时为间隔，覆盖最多30天的历史数据；以及一个“热图”服务，它提供给定区域的当前条件的图像。
+这里有[三个 API 工具](https://developers.google.com/maps/documentation/air-quality)可以提供帮助——一个“当前条件”服务，它提供给定位置的当前空气质量指数值和污染物浓度；一个“历史条件”服务，它提供相同的信息，但以小时为间隔，覆盖最多 30 天的历史数据；以及一个“热图”服务，它提供给定区域的当前条件的图像。
 
 以前，我使用过优秀的`[googlemaps](https://github.com/googlemaps/google-maps-services-python)`包来调用 Python 中的 Google Maps API，但这些新 API 尚未得到支持。令人惊讶的是，除了官方文档，我几乎找不到使用这些新工具的人的示例，也没有预先存在的 Python 包来调用它们。如果有人知道其他信息，我会很高兴地接受纠正！
 
@@ -34,7 +34,7 @@
 
 让我们开始吧！在本节中，我们将介绍如何使用 Google Maps 获取给定位置的空气质量数据。你首先需要一个 API 密钥，你可以通过你的 Google Cloud 账户生成。它们有一个[90 天的免费试用期](https://cloud.google.com/free/docs/free-cloud-features?_ga=2.153672123.-2071471501.1688189408)，之后你将为你使用的 API 服务付费。在开始进行大量调用之前，请确保启用“空气质量 API”，并了解定价政策！
 
-![](../Images/1d30574e462e50678d0a6601a47d2aff.png)
+![](img/1d30574e462e50678d0a6601a47d2aff.png)
 
 Google Cloud API 库的截图，你可以从中激活空气质量 API。图片由作者生成。
 
@@ -241,7 +241,7 @@ current_conditions_data = current_conditions(
 
 能够获取给定位置的这些 AQI 和污染物值的时间序列不是很好吗？这可能会揭示有趣的模式，例如污染物之间的相关性或由交通或天气因素引起的每日波动。
 
-我们可以通过另一个POST请求到[historical conditions API](https://developers.google.com/maps/documentation/air-quality/history)，获取小时历史记录。这个过程与当前条件非常相似，唯一的主要区别是，由于结果可能很长，它们作为多个`pages`返回，需要一些额外的逻辑来处理。
+我们可以通过另一个 POST 请求到[historical conditions API](https://developers.google.com/maps/documentation/air-quality/history)，获取小时历史记录。这个过程与当前条件非常相似，唯一的主要区别是，由于结果可能很长，它们作为多个`pages`返回，需要一些额外的逻辑来处理。
 
 修改`Client`的`request_post`方法以处理这个问题。
 
@@ -283,7 +283,7 @@ current_conditions_data = current_conditions(
     return final_response
 ```
 
-这处理了`response_body`包含一个名为`nextPageToken`的字段的情况，该字段是已生成并准备好提取的下一页数据的ID。如果存在该信息，我们只需使用一个名为`pageToken`的新参数再次调用API，该参数指示到相关页面。我们在while循环中重复执行此操作，直到没有更多页面为止。因此，我们的`final_response`字典现在包含了由页码表示的另一层。对于调用`current_conditions`，将只有一页，但对于调用`historical_conditions`，可能会有多个页面。
+这处理了`response_body`包含一个名为`nextPageToken`的字段的情况，该字段是已生成并准备好提取的下一页数据的 ID。如果存在该信息，我们只需使用一个名为`pageToken`的新参数再次调用 API，该参数指示到相关页面。我们在 while 循环中重复执行此操作，直到没有更多页面为止。因此，我们的`final_response`字典现在包含了由页码表示的另一层。对于调用`current_conditions`，将只有一页，但对于调用`historical_conditions`，可能会有多个页面。
 
 处理完这些事项后，我们可以以与`current_conditions`非常相似的风格编写`historical_conditions`函数。
 
@@ -361,7 +361,7 @@ def historical_conditions(
     return client.request_post("/v1/history:lookup", params)
 ```
 
-为了定义历史时期，API可以接受一个`lag_time`（以小时为单位，最多720小时（30天））。它也可以接受一个`specific_period`字典，其中定义了开始和结束时间，格式如上面的注释所述。最后，要获取单个小时的数据，可以提供由`specific_time`提供的时间戳。还要注意`pageSize`参数的使用，它控制每次调用API返回的时间点数量。这里的默认值是100。
+为了定义历史时期，API 可以接受一个`lag_time`（以小时为单位，最多 720 小时（30 天））。它也可以接受一个`specific_period`字典，其中定义了开始和结束时间，格式如上面的注释所述。最后，要获取单个小时的数据，可以提供由`specific_time`提供的时间戳。还要注意`pageSize`参数的使用，它控制每次调用 API 返回的时间点数量。这里的默认值是 100。
 
 让我们试一下。
 
@@ -378,7 +378,7 @@ history_conditions_data = historical_conditions(
 )
 ```
 
-我们应该得到一个长而嵌套的JSON响应，其中包含过去720小时内每小时增量的AQI指数值和特定污染物值。有许多方法可以将其格式化为更适合可视化和分析的结构，下面的函数将把它转换为“长”格式的pandas数据框，这种格式与`seaborn`绘图非常匹配。
+我们应该得到一个长而嵌套的 JSON 响应，其中包含过去 720 小时内每小时增量的 AQI 指数值和特定污染物值。有许多方法可以将其格式化为更适合可视化和分析的结构，下面的函数将把它转换为“长”格式的 pandas 数据框，这种格式与`seaborn`绘图非常匹配。
 
 ```py
 from itertools import chain
@@ -414,9 +414,9 @@ def historical_conditions_to_df(response_dict):
 df = historical_conditions_to_df(history_conditions_data)
 ```
 
-![](../Images/e61f549b85d8ef15bd87561c93a6329b.png)
+![](img/e61f549b85d8ef15bd87561c93a6329b.png)
 
-准备好绘图的历史AQI数据的示例数据框。
+准备好绘图的历史 AQI 数据的示例数据框。
 
 现在我们可以在`seaborn`或其他可视化工具中绘制结果。
 
@@ -436,9 +436,9 @@ g = sns.relplot(
 g.set_xticklabels(rotation=90)
 ```
 
-![](../Images/0af9f30aa8a88be751ddf642189e34a7.png)
+![](img/0af9f30aa8a88be751ddf642189e34a7.png)
 
-该位置在LA的30天期间的通用AQI，美国AQI，pm25和pm10值。由作者生成的图像。
+该位置在 LA 的 30 天期间的通用 AQI，美国 AQI，pm25 和 pm10 值。由作者生成的图像。
 
 这已经非常有趣了！显然，污染物时间序列中存在几个周期性现象，并且美国 AQI 与 pm25 和 pm10 浓度密切相关，这是预期中的结果。我对 Google 提供的 Universal AQI 并不太熟悉，所以无法解释为什么它与 pm25 和 pm10 显示出反相关。较小的 UAQI 是否意味着更好的空气质量？尽管进行了搜索，我仍未找到一个好的答案。
 
@@ -641,7 +641,7 @@ def air_quality_tile(
   return tiles 
 ```
 
-从阅读代码中，我们可以看出工作流程如下：首先，找到感兴趣位置的瓦片坐标。这指定了我们要提取的网格单元。然后，找到该网格单元的边界坐标。如果我们要提取周围的瓦片，找到边界框的最近角落，然后使用该角落计算三个相邻网格单元的瓦片坐标。然后调用API，并将每个瓦片返回为带有相应边界框的图像。
+从阅读代码中，我们可以看出工作流程如下：首先，找到感兴趣位置的瓦片坐标。这指定了我们要提取的网格单元。然后，找到该网格单元的边界坐标。如果我们要提取周围的瓦片，找到边界框的最近角落，然后使用该角落计算三个相邻网格单元的瓦片坐标。然后调用 API，并将每个瓦片返回为带有相应边界框的图像。
 
 我们可以按标准方式运行，如下所示：
 
@@ -657,7 +657,7 @@ tiles = air_quality_tile(
     get_adjoining_tiles=False)
 ```
 
-然后用folium绘制一个可缩放的地图！请注意，我在这里使用的是leafmap，因为此包可以生成与gradio兼容的Folium地图，gradio是一个强大的工具，用于生成Python应用程序的简单用户界面。有关示例，请查看[这篇文章](http://owardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb)。
+然后用 folium 绘制一个可缩放的地图！请注意，我在这里使用的是 leafmap，因为此包可以生成与 gradio 兼容的 Folium 地图，gradio 是一个强大的工具，用于生成 Python 应用程序的简单用户界面。有关示例，请查看[这篇文章](http://owardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb)。
 
 ```py
 import leafmap.foliumap as leafmap
@@ -680,21 +680,21 @@ for tile in tiles:
 
 也许令人失望的是，在此缩放级别下包含我们位置的瓦片大部分是海洋，尽管看到空气污染绘制在详细地图上仍然不错。如果你放大，可以看到道路交通信息被用来指示城市区域的空气质量信号。
 
-![](../Images/226deb38f0141cebb237f03aaa962717.png)
+![](img/226deb38f0141cebb237f03aaa962717.png)
 
-在Folium地图上绘制空气质量热力图瓦片。图像由作者生成。
+在 Folium 地图上绘制空气质量热力图瓦片。图像由作者生成。
 
 设置`get_adjoining_tiles=True`为我们提供了一个更漂亮的地图，因为它在该缩放级别下提取了三个最近的、不重叠的瓦片。在我们的情况下，这有助于使地图更加美观。
 
-![](../Images/96e16d56618c326b7d8ab1149ac07ece.png)
+![](img/96e16d56618c326b7d8ab1149ac07ece.png)
 
-当我们还提取相邻瓦片时，会产生更有趣的结果。请注意，这里的颜色显示的是通用AQI指数。图像由作者生成。
+当我们还提取相邻瓦片时，会产生更有趣的结果。请注意，这里的颜色显示的是通用 AQI 指数。图像由作者生成。
 
-我个人更喜欢当`pollutant=US_AQI`时生成的图像，但还有几种不同的选项。不幸的是，API未返回颜色尺度，尽管可以使用图像中的像素值和对颜色含义的了解生成一个。
+我个人更喜欢当`pollutant=US_AQI`时生成的图像，但还有几种不同的选项。不幸的是，API 未返回颜色尺度，尽管可以使用图像中的像素值和对颜色含义的了解生成一个。
 
-![](../Images/e38041c08b2bc942c16c5feba779dc1f.png)
+![](img/e38041c08b2bc942c16c5feba779dc1f.png)
 
-上面的相同瓦片根据美国AQI着色。此地图生成于2023年10月12日，根据此工具[https://www.frontlinewildfire.com/california-wildfire-map/](https://www.frontlinewildfire.com/california-wildfire-map/)的描述，中央加州的亮红色区域似乎是位于科阿林加附近山丘的处方火。图像由作者生成。
+上面的相同瓦片根据美国 AQI 着色。此地图生成于 2023 年 10 月 12 日，根据此工具[`www.frontlinewildfire.com/california-wildfire-map/`](https://www.frontlinewildfire.com/california-wildfire-map/)的描述，中央加州的亮红色区域似乎是位于科阿林加附近山丘的处方火。图像由作者生成。
 
 # 结论
 

@@ -1,20 +1,20 @@
 # 数据科学中的认知偏差：类别-规模偏差
 
-> 原文：[https://towardsdatascience.com/cognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3?source=collection_archive---------5-----------------------#2023-11-29](https://towardsdatascience.com/cognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3?source=collection_archive---------5-----------------------#2023-11-29)
+> 原文：[`towardsdatascience.com/cognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3?source=collection_archive---------5-----------------------#2023-11-29`](https://towardsdatascience.com/cognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3?source=collection_archive---------5-----------------------#2023-11-29)
 
 ## [数据偏差黑客](https://towardsdatascience.com/tagged/data-cognitive-bias)
 
 ## 数据科学家的偏差超越指南
 
-[](https://medium.com/@MahamsMultiverse?source=post_page-----8dbd851608c3--------------------------------)[![马哈姆·哈伦](../Images/5a9ac82369ecbf7719b765ec160a70ef.png)](https://medium.com/@MahamsMultiverse?source=post_page-----8dbd851608c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dbd851608c3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8dbd851608c3--------------------------------) [马哈姆·哈伦](https://medium.com/@MahamsMultiverse?source=post_page-----8dbd851608c3--------------------------------)
+[](https://medium.com/@MahamsMultiverse?source=post_page-----8dbd851608c3--------------------------------)![马哈姆·哈伦](https://medium.com/@MahamsMultiverse?source=post_page-----8dbd851608c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dbd851608c3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dbd851608c3--------------------------------) [马哈姆·哈伦](https://medium.com/@MahamsMultiverse?source=post_page-----8dbd851608c3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F398c9514a58b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3&user=Maham+Haroon&userId=398c9514a58b&source=post_page-398c9514a58b----8dbd851608c3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dbd851608c3--------------------------------) ·8分钟阅读·2023年11月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dbd851608c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3&user=Maham+Haroon&userId=398c9514a58b&source=-----8dbd851608c3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F398c9514a58b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3&user=Maham+Haroon&userId=398c9514a58b&source=post_page-398c9514a58b----8dbd851608c3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dbd851608c3--------------------------------) ·8 分钟阅读·2023 年 11 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dbd851608c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3&user=Maham+Haroon&userId=398c9514a58b&source=-----8dbd851608c3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8dbd851608c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3&source=-----8dbd851608c3---------------------bookmark_footer-----------)![](../Images/eee2dc275bfeecb4dd134047e6cab03f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8dbd851608c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcognitive-biases-in-data-science-the-category-size-bias-8dbd851608c3&source=-----8dbd851608c3---------------------bookmark_footer-----------)![](img/eee2dc275bfeecb4dd134047e6cab03f.png)
 
 照片由 [安迪·李](https://unsplash.com/@andylid0?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 提供，拍摄于 [Unsplash](https://unsplash.com/photos/man-in-white-dress-shirt-standing-in-front-of-brown-wooden-shelf-RndRFJ1v1kk?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 

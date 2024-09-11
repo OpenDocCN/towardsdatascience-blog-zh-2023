@@ -1,26 +1,26 @@
 # 在邮政编码级别处理地理空间数据
 
-> 原文：[https://towardsdatascience.com/working-with-geospatial-data-at-the-postcode-level-3c9f79d866b3?source=collection_archive---------9-----------------------#2023-07-06](https://towardsdatascience.com/working-with-geospatial-data-at-the-postcode-level-3c9f79d866b3?source=collection_archive---------9-----------------------#2023-07-06)
+> 原文：[`towardsdatascience.com/working-with-geospatial-data-at-the-postcode-level-3c9f79d866b3?source=collection_archive---------9-----------------------#2023-07-06`](https://towardsdatascience.com/working-with-geospatial-data-at-the-postcode-level-3c9f79d866b3?source=collection_archive---------9-----------------------#2023-07-06)
 
 ## 如何将“点”邮政编码与区域普查数据关联起来
 
-[](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)[![Lak Lakshmanan](../Images/9faaaf72d600f592cbaf3e9089cbb913.png)](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------) [Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)
+[](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)![Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------) [Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F247b0630b5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&user=Lak+Lakshmanan&userId=247b0630b5d6&source=post_page-247b0630b5d6----3c9f79d866b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------) · 9分钟阅读 · 2023年7月6日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c9f79d866b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&user=Lak+Lakshmanan&userId=247b0630b5d6&source=-----3c9f79d866b3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F247b0630b5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&user=Lak+Lakshmanan&userId=247b0630b5d6&source=post_page-247b0630b5d6----3c9f79d866b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------) · 9 分钟阅读 · 2023 年 7 月 6 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c9f79d866b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&user=Lak+Lakshmanan&userId=247b0630b5d6&source=-----3c9f79d866b3---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3c9f79d866b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&source=-----3c9f79d866b3---------------------bookmark_footer-----------)
 
-在一些国家，邮政编码是点或路线，而非区域。例如，加拿大邮政编码的最后三位数字对应于本地投递单元，可能对应于街道一侧或乡村路线上的房屋。类似地，英国的邮政编码形式为“YO8 9UR”。这可以小到伦敦的一座建筑。在5+4的美国邮政编码中，最后四位数字决定了一个邮政投递路线（即一组地址），而不是一个区域。与普遍认为的相反，美国5位数的邮政编码也不是区域——它们只是5+4邮政路线的集合，通常由一个邮局提供服务。
+在一些国家，邮政编码是点或路线，而非区域。例如，加拿大邮政编码的最后三位数字对应于本地投递单元，可能对应于街道一侧或乡村路线上的房屋。类似地，英国的邮政编码形式为“YO8 9UR”。这可以小到伦敦的一座建筑。在 5+4 的美国邮政编码中，最后四位数字决定了一个邮政投递路线（即一组地址），而不是一个区域。与普遍认为的相反，美国 5 位数的邮政编码也不是区域——它们只是 5+4 邮政路线的集合，通常由一个邮局提供服务。
 
 法国作为公制系统的发源地，非常逻辑化。在法国，邮政编码对应于一个区域——最后两位数字对应于区，因此 75008 对应于巴黎的第八区，确实是一个区域。然而，邮件配送路线可能并不最佳。
 
 由于人们和商店有地址，而这些地址有相关的邮政编码，大多数消费者数据都是以邮政编码级别报告的。为了进行区域覆盖、市场份额等计算，有必要确定邮政编码的区域范围。这在法国很容易，但在那些邮政编码是邮政路线而不是区域的国家中则会很困难。
 
-![](../Images/55b0a9e4ec5886def068a563d03fa27b.png)
+![](img/55b0a9e4ec5886def068a563d03fa27b.png)
 
 英国邮政编码是皇家邮政的配送地址，而不是区域。加拿大和美国也是如此。照片由 [Monty Allen](https://unsplash.com/@monty_a?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 拍摄，发布在 [Unsplash](https://unsplash.com/photos/vOPhBFg4Ldw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 
@@ -30,7 +30,7 @@
 
 ## 下载链接
 
-如果你很急，可以从 [https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode](https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode) 下载我分析的结果——那里有几个 CSV 文件，包含你可能需要的数据。
+如果你很急，可以从 [`github.com/lakshmanok/lakblogs/tree/main/uk_postcode`](https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode) 下载我分析的结果——那里有几个 CSV 文件，包含你可能需要的数据。
 
 [ukpopulation.csv.gz](https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/ukpopulation.csv.gz) 具有以下列：
 
@@ -83,7 +83,7 @@ pd.read_csv(POSTCODES_CSV)
 
 这为我提供了每个邮政编码的中心点纬度和经度：
 
-![](../Images/d556ab2c8fdffdc20bea403a145851e6.png)
+![](img/d556ab2c8fdffdc20bea403a145851e6.png)
 
 每个邮政编码的中心点纬度和经度
 
@@ -197,7 +197,7 @@ for col in ['females', 'males', 'all_persons']:
 
 目前，我们拥有每个邮政编码的数量——这是我们需要的关联：
 
-![](../Images/5d6d8463c1d7ede6394a5582f05452b5.png)
+![](img/5d6d8463c1d7ede6394a5582f05452b5.png)
 
 所以，写出来：
 
@@ -209,7 +209,7 @@ ukpop.to_csv("ukpopulation.csv", index=False)
 
 对于许多分析，我们希望邮政编码不是点，而是区域。尽管有无数种多边形可以将英国划分为每个多边形中仅有一个邮政编码质心，但确实存在一个“最佳”多边形的概念。那就是[沃罗诺伊划分](https://en.wikipedia.org/wiki/Voronoi_diagram)，它将区域划分为每个点都属于距离它最近的邮政编码：
 
-![](../Images/5b96a1b8d8dcf021a26844d2c2bc70ce.png)
+![](img/5b96a1b8d8dcf021a26844d2c2bc70ce.png)
 
 20 个点的沃罗诺伊分析，来自 Wikipedia
 
@@ -259,7 +259,7 @@ gdf = gpd.GeoDataFrame(df, geometry='geometry')
 gdf[gdf['area_name'] == 'St Albans'].plot()
 ```
 
-![](../Images/868480570d8fce494971efd3c3def988.png)
+![](img/868480570d8fce494971efd3c3def988.png)
 
 圣奥尔本斯的邮政编码空间范围。由作者生成的图像。
 
@@ -269,7 +269,7 @@ gdf[gdf['area_name'] == 'St Albans'].plot()
 gdf[gdf['area_name'] == 'Birmingham'].plot()
 ```
 
-![](../Images/f4d207c37815f65293336b580442b1ca.png)
+![](img/f4d207c37815f65293336b580442b1ca.png)
 
 伯明翰的邮政编码空间范围。由作者生成的图像。
 
@@ -277,7 +277,7 @@ gdf[gdf['area_name'] == 'Birmingham'].plot()
 
 注意顶部的喇叭和中间的大块蓝色区域。发生了什么？让我们在 Google Maps 中查看伯明翰：
 
-![](../Images/df427ee197d0fa38368486ed2960472d.png)
+![](img/df427ee197d0fa38368486ed2960472d.png)
 
 伯明翰，作者的 Google Maps 截图。
 
@@ -325,7 +325,7 @@ gdf = gpd.GeoDataFrame(df2, geometry='geometry')
 
 现在，当我们绘制伯明翰时，我们得到的效果要好得多：
 
-![](../Images/7d356fbe0032c8050dd8de72e477ae85.png)
+![](img/7d356fbe0032c8050dd8de72e477ae85.png)
 
 伯明翰的邮政编码多边形。图片由作者生成
 
@@ -369,6 +369,6 @@ SELECT
 
 ## 下一步
 
-1.  查看完整的代码 [https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/uk_postcodes.ipynb](https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/uk_postcodes.ipynb)
+1.  查看完整的代码 [`github.com/lakshmanok/lakblogs/blob/main/uk_postcode/uk_postcodes.ipynb`](https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/uk_postcodes.ipynb)
 
-1.  从 [https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode](https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode) 下载数据
+1.  从 [`github.com/lakshmanok/lakblogs/tree/main/uk_postcode`](https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode) 下载数据

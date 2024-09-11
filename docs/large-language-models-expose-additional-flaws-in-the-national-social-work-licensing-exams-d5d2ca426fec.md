@@ -1,32 +1,32 @@
 # 大型语言模型揭示了国家社会工作执照考试中的额外缺陷
 
-> 原文：[https://towardsdatascience.com/large-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec?source=collection_archive---------12-----------------------#2023-04-11](https://towardsdatascience.com/large-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec?source=collection_archive---------12-----------------------#2023-04-11)
+> 原文：[`towardsdatascience.com/large-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec?source=collection_archive---------12-----------------------#2023-04-11`](https://towardsdatascience.com/large-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec?source=collection_archive---------12-----------------------#2023-04-11)
 
 ## 变革的需求
 
-[](https://b-r-i-a-n.medium.com/?source=post_page-----d5d2ca426fec--------------------------------)[![Brian Perron, PhD](../Images/8f9056642a4fd5e334a92dded0278961.png)](https://b-r-i-a-n.medium.com/?source=post_page-----d5d2ca426fec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5d2ca426fec--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d5d2ca426fec--------------------------------) [Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----d5d2ca426fec--------------------------------)
+[](https://b-r-i-a-n.medium.com/?source=post_page-----d5d2ca426fec--------------------------------)![Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----d5d2ca426fec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5d2ca426fec--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5d2ca426fec--------------------------------) [Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----d5d2ca426fec--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbee210a2a20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=post_page-bee210a2a20----d5d2ca426fec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5d2ca426fec--------------------------------) ·14 分钟阅读·2023年4月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd5d2ca426fec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=-----d5d2ca426fec---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbee210a2a20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=post_page-bee210a2a20----d5d2ca426fec---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5d2ca426fec--------------------------------) ·14 分钟阅读·2023 年 4 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd5d2ca426fec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=-----d5d2ca426fec---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd5d2ca426fec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec&source=-----d5d2ca426fec---------------------bookmark_footer-----------)![](../Images/4fa56e0093c4a24fedac02120dfca516.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd5d2ca426fec&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec&source=-----d5d2ca426fec---------------------bookmark_footer-----------)![](img/4fa56e0093c4a24fedac02120dfca516.png)
 
-图片来自作者通过Midjourney创建。
+图片来自作者通过 Midjourney 创建。
 
 作为一名以数据为驱动的社会工作教授，我正在为人工智能技术对我们领域的变革性影响做准备。虽然人工智能不会取代社会工作者，但它将显著重塑研究、实践和教育。
 
-普林斯顿大学经济学家**埃德·费尔滕**及其同事开发了一种独特的度量指标，称为AI职业暴露度。该度量通过将十种AI应用（如阅读理解、语言建模和翻译）与52种人类能力（包括口头理解和归纳推理）联系起来，突显了AI对特定职业的影响。该团队将这一指标应用于美国劳动部创建的职业信息网络数据库中的800多个职业，以确定大型语言模型对各个领域的潜在影响。费尔滕的完整报告可以在[arXiv](https://arxiv.org/pdf/2303.01157)上找到。“高等教育社会工作教师”在所有职业中的AI暴露度排名第11位。AI对该领域的影响将取决于社会工作领域如何迅速适应这一技术，并应对这些进步所带来的挑战。
+普林斯顿大学经济学家**埃德·费尔滕**及其同事开发了一种独特的度量指标，称为 AI 职业暴露度。该度量通过将十种 AI 应用（如阅读理解、语言建模和翻译）与 52 种人类能力（包括口头理解和归纳推理）联系起来，突显了 AI 对特定职业的影响。该团队将这一指标应用于美国劳动部创建的职业信息网络数据库中的 800 多个职业，以确定大型语言模型对各个领域的潜在影响。费尔滕的完整报告可以在[arXiv](https://arxiv.org/pdf/2303.01157)上找到。“高等教育社会工作教师”在所有职业中的 AI 暴露度排名第 11 位。AI 对该领域的影响将取决于社会工作领域如何迅速适应这一技术，并应对这些进步所带来的挑战。
 
-生成性AI的潜在影响引起了我的关注，尤其是有报告显示ChatGPT在法律、商业和医学考试中表现出色。我和我的同事决定在社会工作背景下评估ChatGPT，因此我们准备了全国社会工作执业考试的模拟测试。ChatGPT在某些考试版本中轻松超越了合格门槛（更多内容见下文）。评估还揭示了考试中存在的重要有效性问题，超出了以往研究结果的范围。
+生成性 AI 的潜在影响引起了我的关注，尤其是有报告显示 ChatGPT 在法律、商业和医学考试中表现出色。我和我的同事决定在社会工作背景下评估 ChatGPT，因此我们准备了全国社会工作执业考试的模拟测试。ChatGPT 在某些考试版本中轻松超越了合格门槛（更多内容见下文）。评估还揭示了考试中存在的重要有效性问题，超出了以往研究结果的范围。
 
-我们的评估紧随[社会工作委员会2022年报告](https://www.aswb.org/wp-content/uploads/2022/07/2022-ASWB-Exam-Pass-Rate-Analysis.pdf)之后，该组织负责管理考试，报告强调了按种族、年龄和主要语言划分的显著通过率差异。以下是一些硕士级考试的差异：
+我们的评估紧随[社会工作委员会 2022 年报告](https://www.aswb.org/wp-content/uploads/2022/07/2022-ASWB-Exam-Pass-Rate-Analysis.pdf)之后，该组织负责管理考试，报告强调了按种族、年龄和主要语言划分的显著通过率差异。以下是一些硕士级考试的差异：
 
-![](../Images/821f48b66435c72189f7e3250f9310da.png)
+![](img/821f48b66435c72189f7e3250f9310da.png)
 
-由作者根据2022年ASWB考试通过率分析重新制作的图表 — [最终报告](https://www.aswb.org/wp-content/uploads/2022/07/2022-ASWB-Exam-Pass-Rate-Analysis.pdf)。 “最终通过率”指的是在第一次尝试时通过考试，或在多次尝试后通过考试，直到获得合格分数为止。有关首次尝试通过率差异的更多信息，请参阅最终报告。
+由作者根据 2022 年 ASWB 考试通过率分析重新制作的图表 — [最终报告](https://www.aswb.org/wp-content/uploads/2022/07/2022-ASWB-Exam-Pass-Rate-Analysis.pdf)。 “最终通过率”指的是在第一次尝试时通过考试，或在多次尝试后通过考试，直到获得合格分数为止。有关首次尝试通过率差异的更多信息，请参阅最终报告。
 
 这些差异提出了重要的社会公正和伦理问题，因为社会工作执照对于进入劳动力市场至关重要。请注意，临床级和学士级考试也存在显著差异。
 
@@ -40,35 +40,35 @@
 
 对于那些不在该行业中的人，每道 ASWB 考试题都呈现一个与社会工作相关的场景，并附有四个多项选择答案。原始问题受版权保护，因此我不能直接分享它们。相反，我提供了一个由 ChatGPT-3.5 编写的示例。我给模型提供了问题的示例以及一个提示，以模仿测试题的写作风格、内容、长度和结构。
 
-![](../Images/2a2f01c8092e154028b4943a068c95f7.png)
+![](img/2a2f01c8092e154028b4943a068c95f7.png)
 
 测试题是由 ChatGPT-3.5 根据社会工作委员会（www.aswb.org）出售的模拟测试题的风格、结构和内容生成的。截图由作者提供。
 
 ChatGPT-3.5 的表现非常出色，因为我们使用了一个简单的提示，没有上下文或示例。我们要求模型阅读场景并选择最佳回答。实际上，ChatGPT-3.5 的表现被低估了，因为我们的评估假设 ASWB 提供的答案钥匙是绝对标准。然而，如[ASWB 最近的通过率分析](https://www.aswb.org/exam/contributing-to-the-conversation/)中所述，考试存在记录的缺陷和偏见。ChatGPT-3.5 对错误答案的某些解释非常有说服力，并且在某些情况下，优于 ASWB 答案钥匙上的解释。
 
-我们最近在学术期刊《社会工作实践研究》中发布了我们的评估结果，您可以在这里[访问](https://journals.sagepub.com/doi/10.1177/10497315231166125)。随着新型大语言模型（LLMs）的出现，我自然对它们的能力以及它们与ChatGPT-3.5的表现感到好奇。然而，社会工作领域的学术期刊无法跟上快速发展的技术格局，其内容往往需要昂贵的访问费用。幸运的是，《Toward Data Science (TDS)》解决了这两个问题。
+我们最近在学术期刊《社会工作实践研究》中发布了我们的评估结果，您可以在这里[访问](https://journals.sagepub.com/doi/10.1177/10497315231166125)。随着新型大语言模型（LLMs）的出现，我自然对它们的能力以及它们与 ChatGPT-3.5 的表现感到好奇。然而，社会工作领域的学术期刊无法跟上快速发展的技术格局，其内容往往需要昂贵的访问费用。幸运的是，《Toward Data Science (TDS)》解决了这两个问题。
 
 # 大语言模型的对比
 
-表现最好的模型是ChatGPT-4，其准确率达到了92%，相比于其前身ChatGPT-3.5的80%有了显著提升。Bard的得分足以通过考试。Bing的低表现（68%）让人意外，考虑到它是基于ChatGPT-4语言模型构建的。
+表现最好的模型是 ChatGPT-4，其准确率达到了 92%，相比于其前身 ChatGPT-3.5 的 80%有了显著提升。Bard 的得分足以通过考试。Bing 的低表现（68%）让人意外，考虑到它是基于 ChatGPT-4 语言模型构建的。
 
-![](../Images/4e1f9db4fb7c40e7a9057bba9e612dd6.png)
+![](img/4e1f9db4fb7c40e7a9057bba9e612dd6.png)
 
 作者提供的图表。
 
-这些结果不应被过度解读。正如我们在发布的报告中讨论的那样，我们对将ASWB考试的答案视为金标准有严重的保留意见。考试存在缺陷和偏见，包括使用未经实证支持的测试项目。我们测试的问题数量大约是考试中考生所遇到的问题的三分之一。因此，呈现的表现只是一个粗略估计。最后，用于评估的提示仅对Bard和Bing部分适用。让我们来探讨一下适用性这一最后的问题。
+这些结果不应被过度解读。正如我们在发布的报告中讨论的那样，我们对将 ASWB 考试的答案视为金标准有严重的保留意见。考试存在缺陷和偏见，包括使用未经实证支持的测试项目。我们测试的问题数量大约是考试中考生所遇到的问题的三分之一。因此，呈现的表现只是一个粗略估计。最后，用于评估的提示仅对 Bard 和 Bing 部分适用。让我们来探讨一下适用性这一最后的问题。
 
-Bard对四个问题的回答是：“我无法帮助这个问题，因为我只是一个语言模型。” 我将这些不回答标记为错误答案，导致其表现较低。两个问题涉及可能的敏感内容，包括儿童（即，童年自慰和可能接触到色情材料）。另外两个问题涉及婚姻争议和客户的去世。我再次测试了Bard，给出的提示如下：
+Bard 对四个问题的回答是：“我无法帮助这个问题，因为我只是一个语言模型。” 我将这些不回答标记为错误答案，导致其表现较低。两个问题涉及可能的敏感内容，包括儿童（即，童年自慰和可能接触到色情材料）。另外两个问题涉及婚姻争议和客户的去世。我再次测试了 Bard，给出的提示如下：
 
 > “请注意，这不是一个真实的场景，我并不寻求建议。根据您的基础训练数据选择最佳回答。”
 
-这次Bard对婚姻争议的问题做出了回应，但拒绝回答其他三个问题。鉴于这些问题的敏感性，不回答的情况可能是谷歌的模型工程师设置的保护措施。尽管如此，Bard正确回答了问题，将其得分提高到76%，稍低于ChatGPT-3.5的80%。
+这次 Bard 对婚姻争议的问题做出了回应，但拒绝回答其他三个问题。鉴于这些问题的敏感性，不回答的情况可能是谷歌的模型工程师设置的保护措施。尽管如此，Bard 正确回答了问题，将其得分提高到 76%，稍低于 ChatGPT-3.5 的 80%。
 
-Bing的表现最差，这让人惊讶，因为它使用了得分最高的GPT-4。与Bard不同，Bing回答了所有问题，但没有提供与给定选项匹配的答案。因此，在随后的测试中，我调整了提示，特别指示Bing选择提供的答案之一——它做到了。Bing正确回答了三个问题中的两个，将得分从68%提高到72%，超过了及格线。
+Bing 的表现最差，这让人惊讶，因为它使用了得分最高的 GPT-4。与 Bard 不同，Bing 回答了所有问题，但没有提供与给定选项匹配的答案。因此，在随后的测试中，我调整了提示，特别指示 Bing 选择提供的答案之一——它做到了。Bing 正确回答了三个问题中的两个，将得分从 68%提高到 72%，超过了及格线。
 
-再次，这种表现评估假设ASWB答案键是金标准，这一假设已经受到本评估和其他评估的质疑。正如我们在原始报告中明确指出的，我们不认为这是正确的。相反，我认为LLM与ASWB答案键的差异是差异，而不是错误回答。
+再次，这种表现评估假设 ASWB 答案键是金标准，这一假设已经受到本评估和其他评估的质疑。正如我们在原始报告中明确指出的，我们不认为这是正确的。相反，我认为 LLM 与 ASWB 答案键的差异是差异，而不是错误回答。
 
-# ASWB考试中的有效性挑战
+# ASWB 考试中的有效性挑战
 
 在现实世界中，社会工作者面临着在大量相关和无关信息中导航的艰巨任务。他们必须克服的一个关键挑战是区分有价值的见解（信号）和无关数据（噪声）。然而，社会工作许可考试通过呈现仅包含开发者认为必要的信息的情境来简化这种复杂性。因此，考试中的决策过程与社会工作实践的现实有显著差异，导致对测试有效性的额外担忧。
 
@@ -78,41 +78,41 @@ Bing的表现最差，这让人惊讶，因为它使用了得分最高的GPT-4�
 
 ## ***构念无关方差***
 
-构念无关方差发生在测试测量与其预期目的无关的因素时。在ASWB考试的情况下，目标是评估社会工作者在伦理和安全方面的实践能力。然而，构念无关方差的一个例子是，当具有强大考试技巧的个人在标准化测试中表现更好时，无论他们在社会工作方面的知识或能力如何。
+构念无关方差发生在测试测量与其预期目的无关的因素时。在 ASWB 考试的情况下，目标是评估社会工作者在伦理和安全方面的实践能力。然而，构念无关方差的一个例子是，当具有强大考试技巧的个人在标准化测试中表现更好时，无论他们在社会工作方面的知识或能力如何。
 
-几乎十年前，一项研究发现了ASWB考试中构念无关方差的证据。研究人员[David Albright和Bruce Thyer](https://academic.oup.com/swr/article-abstract/34/4/229/1607505?redirectedFrom=fulltext)给一年级MSW学生进行了修改后的ASWB实践考试。他们移除了所有问题，只留下了四个选择项。在随机猜测的假设下，考生应该能正确回答25%的问题。令人惊讶的是，他们在没有问题的情况下准确猜测了52%的选项。这一结果表明，参与者可能是根据答案选择中的语言模式做出推测的。
+几乎十年前，一项研究发现了 ASWB 考试中构念无关方差的证据。研究人员[David Albright 和 Bruce Thyer](https://academic.oup.com/swr/article-abstract/34/4/229/1607505?redirectedFrom=fulltext)给一年级 MSW 学生进行了修改后的 ASWB 实践考试。他们移除了所有问题，只留下了四个选择项。在随机猜测的假设下，考生应该能正确回答 25%的问题。令人惊讶的是，他们在没有问题的情况下准确猜测了 52%的选项。这一结果表明，参与者可能是根据答案选择中的语言模式做出推测的。
 
-这个例子展示了与构念无关的方差，因为考生的成功不是基于他们的社会工作知识或能力，而是基于他们识别语言模式和做出有根据的猜测的能力。因此，ASWB考试无意中测量了他们的考试技能，而这些与评估伦理和安全社会工作实践的预期构念无关。
+这个例子展示了与构念无关的方差，因为考生的成功不是基于他们的社会工作知识或能力，而是基于他们识别语言模式和做出有根据的猜测的能力。因此，ASWB 考试无意中测量了他们的考试技能，而这些与评估伦理和安全社会工作实践的预期构念无关。
 
 我使用一种特定策略来最小化潜在偏差并提高标准化多项选择测试的准确性。首先，我遮住答案选项，根据我对主题的理解来制定回应。接下来，我揭示答案选项，选择与我最初回应最接近的选项。
 
-我在LLM评估期间在几个问题上使用了这个策略。例如，一个问题要求确定社会工作者用来帮助经历婚姻困境的夫妇的治疗框架。最初，我想到的是“家庭系统理论”，但这不在可选项中。然而，“结构性家庭疗法”是一个选项。家庭治疗不在我的专业领域内。我对家庭系统理论了解甚少，对结构性家庭疗法知之更少。鉴于语言模式的相似性，我选择了结构性家庭疗法，这也是正确的。我的考试策略使我能够猜测出正确答案。
+我在 LLM 评估期间在几个问题上使用了这个策略。例如，一个问题要求确定社会工作者用来帮助经历婚姻困境的夫妇的治疗框架。最初，我想到的是“家庭系统理论”，但这不在可选项中。然而，“结构性家庭疗法”是一个选项。家庭治疗不在我的专业领域内。我对家庭系统理论了解甚少，对结构性家庭疗法知之更少。鉴于语言模式的相似性，我选择了结构性家庭疗法，这也是正确的。我的考试策略使我能够猜测出正确答案。
 
 这个情境展示了与构念无关的方差，因为我回答问题的成功并不是基于我的社会工作知识或特定的治疗框架。相反，它依赖于我的考试策略和识别语言模式的能力。因此，测试无意中测量了我的考试技能，而不是评估社会工作实践能力的预期构念。
 
-我想知道LLMs在回答多项选择题时是否使用了类似的策略。我进行了一项小型实验，将它们对开放性问题的回答与对多项选择题的回答进行比较。如果LLMs对两种问题格式的回答有所不同，那么这些模型可能使用了类似于我所描述的策略。不同的回答也可能表明问题本身存在问题。
+我想知道 LLMs 在回答多项选择题时是否使用了类似的策略。我进行了一项小型实验，将它们对开放性问题的回答与对多项选择题的回答进行比较。如果 LLMs 对两种问题格式的回答有所不同，那么这些模型可能使用了类似于我所描述的策略。不同的回答也可能表明问题本身存在问题。
 
-我向Bard展示了有关婚姻冲突的情境。这是一个需要迅速重构问题才能让Bard作出回应的问题之一。最终，Bard选择了“结构性家庭”疗法。当以开放性问题的形式呈现相同情境时，Bard回应了“家庭系统理论”，同时承认“结构性家庭疗法”可能也是一个答案。以下是Bard的完整回答：
+我向 Bard 展示了有关婚姻冲突的情境。这是一个需要迅速重构问题才能让 Bard 作出回应的问题之一。最终，Bard 选择了“结构性家庭”疗法。当以开放性问题的形式呈现相同情境时，Bard 回应了“家庭系统理论”，同时承认“结构性家庭疗法”可能也是一个答案。以下是 Bard 的完整回答：
 
-![](../Images/c56c31d358ad2953ca230248a29c3836.png)
+![](img/c56c31d358ad2953ca230248a29c3836.png)
 
-Bard的回应。作者截图。
+Bard 的回应。作者截图。
 
 Bing 对这个场景的首次回应是“家庭系统理论”，这不是多项选择中的选项之一。当明确指示从可用的多项选择中选择时，Bing 选择了“结构家庭”治疗。我也以类似的方式回答了这个问题。再次，我最初想到的答案是“家庭系统理论”，然后从多项选择中选择了“结构家庭”治疗。当将场景呈现为开放式问题时，Bing 说“系统理论”，这是一个包含“家庭系统理论”的类别。换句话说，家庭系统理论是系统理论的一种。以下是 Bing 的完整回应：
 
-![](../Images/a4c251a8e4af7c5c828083e88874ff79.png)
+![](img/a4c251a8e4af7c5c828083e88874ff79.png)
 
 Bing 的回应。截图由作者提供。
 
 ChatGPT4 和 ChatGPT3.5 在多项选择格式中选择了“结构家庭”治疗。作为开放式问题，ChatGPT-4 识别了“系统理论”，回应与 Bing 类似。然而，这种相似性不应令人惊讶，因为 Bing 使用了 ChatGPT-4。
 
-![](../Images/5014af1322cc3ce657cc87ae47eb6b41.png)
+![](img/5014af1322cc3ce657cc87ae47eb6b41.png)
 
 ChatGPT-4 的回应。截图由作者提供。
 
 最终，ChatGPT-3.5 识别了“生态系统理论”，一种系统理论。我认为特别有趣的是，ChatGPT-3.5 明确承认根据提供的场景确定准确的框架是困难的。
 
-![](../Images/efe1e54f3ac04054dc04260ab7579a64.png)
+![](img/efe1e54f3ac04054dc04260ab7579a64.png)
 
 ChatGPT-3.5 的回应。作者的回应。
 
@@ -122,7 +122,7 @@ ChatGPT-3.5 的回应。作者的回应。
 
 一道测试题涉及一个单句场景——即要求一名社会工作者分析将影响社区的新社会福利政策。社会工作者应该首先做什么？这就是整个场景。ChatGPT-4 错误回答了四个问题，这其中之一就是这个。以下是 ChatGPT-4 的回应：
 
-![](../Images/58a782f3cbbbaeca5e819cbdf0c7b405.png)
+![](img/58a782f3cbbbaeca5e819cbdf0c7b405.png)
 
 ChatGPT-4 的回应。截图由作者提供。
 
@@ -130,7 +130,7 @@ ChatGPT-4 的回应。截图由作者提供。
 
 我将问题从多项选择改为开放性问题，以更全面地调查问题。这种修改允许更好地理解 ChatGPT-4 分析政策的步骤，而不受限于预定的选项。如你所见，ChatGPT-4 建议的初步步骤是彻底审查新政策，包括检查所有相关文件和背景信息，以提供变化的背景。我也赞赏 ChatGPT-4 对脆弱群体潜在影响的认可。
 
-![](../Images/0a8a1a5f6b58a935a7d8485949260d49.png)
+![](img/0a8a1a5f6b58a935a7d8485949260d49.png)
 
 ChatGPT-4 的回应。作者截图。
 
@@ -144,13 +144,13 @@ ChatGPT-4 的回应。作者截图。
 
 ChatGPT-4 提出了三个澄清问题：
 
-![](../Images/4b048c1dcaf872d4fb218b5cdfcc673b.png)
+![](img/4b048c1dcaf872d4fb218b5cdfcc673b.png)
 
 ChatGPT-4 的回应。作者截图。
 
 我以应该影响答案的方式作出了回应。以下是我的回应和 ChatGPT-4 的答案。
 
-![](../Images/de3e914d8c22232783ec042a62c69c29.png)
+![](img/de3e914d8c22232783ec042a62c69c29.png)
 
 ChatGPT-4 的回应。作者截图。
 
@@ -158,19 +158,19 @@ ChatGPT-4 的回应。作者截图。
 
 # **ChatGPT 对有效性的看法是什么？**
 
-在性犯罪者的相同场景中，我修改了问题提示，并要求ChatGPT-4识别任何潜在的有效性问题。令我惊讶的是，ChatGPT-4超出了我的期望，提供了高质量的回应，特别是在标准有效性方面。
+在性犯罪者的相同场景中，我修改了问题提示，并要求 ChatGPT-4 识别任何潜在的有效性问题。令我惊讶的是，ChatGPT-4 超出了我的期望，提供了高质量的回应，特别是在标准有效性方面。
 
-![](../Images/96e75c1814f7151b8ba12f9c2497c6e6.png)
+![](img/96e75c1814f7151b8ba12f9c2497c6e6.png)
 
-ChatGPT-4的回应。作者截图。
+ChatGPT-4 的回应。作者截图。
 
 考试旨在促进安全、称职和伦理的实践，从而增强公众保护。然而，目前没有证据明确证明社会工作者在现实世界中执行伦理和安全工作的能力与其在此特定考试中的表现之间存在直接联系。如果考试未能准确测量其声称测量的构念，则很难——也许是不可能——基于考试结果得出可靠和有效的结论。
 
 # 下一步
 
-社会工作执照考试应设计以确保社会工作者能够提供安全和伦理的服务。然而，考试有效性长期以来的担忧以及最近发布的ASWB通过率突显的种族和年龄差异，强调了需要更多公平和充分的保障措施。
+社会工作执照考试应设计以确保社会工作者能够提供安全和伦理的服务。然而，考试有效性长期以来的担忧以及最近发布的 ASWB 通过率突显的种族和年龄差异，强调了需要更多公平和充分的保障措施。
 
-ASWB的垄断地位以及考试对有志成为社会工作者的财务负担进一步加剧了变革的紧迫性。随着生成性AI技术提供了全新的机会，现在是超越对话，采取行动解决长期存在的问题的时候了。我将重申我们初步评估中的建议，即州立法者应暂时暂停执照要求，以促使注意力转向更公平的方法。在未来的发展中，该领域需要优先考虑真正的创新，而不仅仅是重新修订一个有缺陷的设计。
+ASWB 的垄断地位以及考试对有志成为社会工作者的财务负担进一步加剧了变革的紧迫性。随着生成性 AI 技术提供了全新的机会，现在是超越对话，采取行动解决长期存在的问题的时候了。我将重申我们初步评估中的建议，即州立法者应暂时暂停执照要求，以促使注意力转向更公平的方法。在未来的发展中，该领域需要优先考虑真正的创新，而不仅仅是重新修订一个有缺陷的设计。
 
 # 致谢
 

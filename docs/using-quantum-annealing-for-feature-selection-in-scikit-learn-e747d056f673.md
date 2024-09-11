@@ -1,14 +1,14 @@
 # 使用量子退火进行 scikit-learn 特征选择
 
-> 原文：[https://towardsdatascience.com/using-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673?source=collection_archive---------7-----------------------#2023-04-10](https://towardsdatascience.com/using-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673?source=collection_archive---------7-----------------------#2023-04-10)
+> 原文：[`towardsdatascience.com/using-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673?source=collection_archive---------7-----------------------#2023-04-10`](https://towardsdatascience.com/using-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673?source=collection_archive---------7-----------------------#2023-04-10)
 
 ## 对于具有大量特征的数据集，使用量子处理进行 scikit-learn 模型的特征选择
 
-[](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)[![Florin Andrei](../Images/372ac3e80dbc03cbd20295ec1df5fa6f.png)](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------) [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)
+[](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)![Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------) [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----e747d056f673---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------) · 11 分钟阅读 · 2023年4月10日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe747d056f673&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----e747d056f673---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----e747d056f673---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------) · 11 分钟阅读 · 2023 年 4 月 10 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe747d056f673&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----e747d056f673---------------------clap_footer-----------)
 
 --
 
@@ -16,25 +16,25 @@
 
 特征选择是机器学习中的一个广泛话题。正确实施时，它可以帮助减少过拟合、提高可解释性、降低计算负担等。用于特征选择的技术有很多种，它们的共同点在于它们会查看特征集，并尝试将那些能够带来良好结果（准确的预测、可解释的模型等）的特征与那些不利于此目标的特征分开。
 
-特别困难的是特征数量非常大的情况。对所有特征组合进行穷举探索通常计算开销很大。像R中的`regsubsets()`函数那样的逐步搜索算法可能会通过添加/删除特征并比较结果来尝试推断出有前途的特征组合。但最终，当特征数量很大时，搜索成功的程度与寻找最佳特征组合所花费的努力之间仍然存在权衡。
+特别困难的是特征数量非常大的情况。对所有特征组合进行穷举探索通常计算开销很大。像 R 中的`regsubsets()`函数那样的逐步搜索算法可能会通过添加/删除特征并比较结果来尝试推断出有前途的特征组合。但最终，当特征数量很大时，搜索成功的程度与寻找最佳特征组合所花费的努力之间仍然存在权衡。
 
-一般来说，当问题的最佳解涉及到大量组合的搜索时，量子退火可能值得研究。我将展示一个使用D-Wave最近发布的scikit-learn插件进行特征选择的例子，该数据集具有数百个特征。
+一般来说，当问题的最佳解涉及到大量组合的搜索时，量子退火可能值得研究。我将展示一个使用 D-Wave 最近发布的 scikit-learn 插件进行特征选择的例子，该数据集具有数百个特征。
 
-# D-Wave和scikit-learn
+# D-Wave 和 scikit-learn
 
 请记住，这并不是通用的门模型量子计算。这是一种算法，本质上类似于模拟退火，其中有一个目标函数，并且使用类似于模拟退火的方法来找到一个最小化目标的值组合。不同的是，这里的退火并非模拟的，而是通过编程使实际系统的物理能量与目标函数相匹配。系统的能量会降低直到达到最低点（退火），然后解就是系统的状态，这个状态会被读取并返回给用户。
 
-[D-Wave](https://www.dwavesys.com/) 构建了量子退火器，可以有效地解决许多组合复杂度很高的问题。只要你能将问题简化为二次二进制模型（BQM），或者带约束的BQM（CQM），或者上述模型的某些离散推广（DQM），问题就可以提交给量子解算器。更多细节请参见[文档](https://docs.dwavesys.com/docs/latest/doc_getting_started.html)。
+[D-Wave](https://www.dwavesys.com/) 构建了量子退火器，可以有效地解决许多组合复杂度很高的问题。只要你能将问题简化为二次二进制模型（BQM），或者带约束的 BQM（CQM），或者上述模型的某些离散推广（DQM），问题就可以提交给量子解算器。更多细节请参见[文档](https://docs.dwavesys.com/docs/latest/doc_getting_started.html)。
 
-理论上，你可以将特征选择算法表述为BQM，其中特征的存在是值为1的二进制变量，而特征的缺失是值为0的变量，但这需要一些工作。D-Wave提供了一个可以直接插入到scikit-learn管道中的[scikit-learn插件](https://github.com/dwavesystems/dwave-scikit-learn-plugin)，简化了这一过程。
+理论上，你可以将特征选择算法表述为 BQM，其中特征的存在是值为 1 的二进制变量，而特征的缺失是值为 0 的变量，但这需要一些工作。D-Wave 提供了一个可以直接插入到 scikit-learn 管道中的[scikit-learn 插件](https://github.com/dwavesystems/dwave-scikit-learn-plugin)，简化了这一过程。
 
-本文将首先展示显式地表述BQM的整个过程，然后是CQM，将模型发送到量子解算器，然后解析结果。这是解决量子退火器上优化过程的一般方法，并且可以用于许多问题。
+本文将首先展示显式地表述 BQM 的整个过程，然后是 CQM，将模型发送到量子解算器，然后解析结果。这是解决量子退火器上优化过程的一般方法，并且可以用于许多问题。
 
 但如果你只是想选择数据集中最好的特征，一个简单的`SelectFromQuadraticModel()`方法调用就足够了。这将整个算法压缩成一行代码。我们将在最后展示这一点。
 
 # 问题与方法
 
-考虑从OpenML下载的[场景识别数据集](https://www.openml.org/d/312)，最初由[Boutell, M., Luo, J., Shen, X., Brown, C. (2004)](https://www.sciencedirect.com/science/article/abs/pii/S0031320304001074)创建，并由其作者在CC BY许可证下分发。这是一个二分类数据集，具有一个依赖变量（Urban），并有近300个特征。响应变量的值（二元：城市或非城市）需要基于特征的组合进行预测。一个简单的分类模型如`RandomForestClassifier()`应该表现良好，前提是特征选择得当。
+考虑从 OpenML 下载的[场景识别数据集](https://www.openml.org/d/312)，最初由[Boutell, M., Luo, J., Shen, X., Brown, C. (2004)](https://www.sciencedirect.com/science/article/abs/pii/S0031320304001074)创建，并由其作者在 CC BY 许可证下分发。这是一个二分类数据集，具有一个依赖变量（Urban），并有近 300 个特征。响应变量的值（二元：城市或非城市）需要基于特征的组合进行预测。一个简单的分类模型如`RandomForestClassifier()`应该表现良好，前提是特征选择得当。
 
 ```py
 >>> dataset.get_data()[0]
@@ -55,19 +55,19 @@
 [2407 rows x 300 columns]
 ```
 
-一种选择特征的方法，描述在[Milne, Rounds, 和Goddard (2018)的论文](https://1qbit.com/whitepaper/optimal-feature-selection-in-credit-scoring-classification-using-quantum-annealer/)中，适合量子退火机，并可以总结如下：
+一种选择特征的方法，描述在[Milne, Rounds, 和 Goddard (2018)的论文](https://1qbit.com/whitepaper/optimal-feature-selection-in-credit-scoring-classification-using-quantum-annealer/)中，适合量子退火机，并可以总结如下：
 
-将数据集拆分为特征矩阵和响应向量——即scikit-learn中熟悉的(X, y)元组。使用这些，构造一个相关矩阵C，其中Cii表示特征与响应的相关性，Cij是特征之间的相互相关性。对于与响应高度相关的特征，我们希望尽可能多地捕获。对于彼此相关的特征，我们希望尽可能少地捕获，但不影响与响应强相关的特征。显然，我们希望在所有这些标准之间取得平衡。
+将数据集拆分为特征矩阵和响应向量——即 scikit-learn 中熟悉的(X, y)元组。使用这些，构造一个相关矩阵 C，其中 Cii 表示特征与响应的相关性，Cij 是特征之间的相互相关性。对于与响应高度相关的特征，我们希望尽可能多地捕获。对于彼此相关的特征，我们希望尽可能少地捕获，但不影响与响应强相关的特征。显然，我们希望在所有这些标准之间取得平衡。
 
-设Xi为二元变量，指示特征i是否被选择到最终数据集中。如果选择了特征i，则Xi = 1，否则Xi = 0。问题变成了等同于寻找极值：
+设 Xi 为二元变量，指示特征 i 是否被选择到最终数据集中。如果选择了特征 i，则 Xi = 1，否则 Xi = 0。问题变成了等同于寻找极值：
 
-![](../Images/ed33a2a33134634f69b8ea136b01c8f1.png)
+![](img/ed33a2a33134634f69b8ea136b01c8f1.png)
 
 目标函数
 
-第一个项的总和表示来自特征的个别贡献——我们称之为线性项。第二个项的总和可以说包含了二次交互项。alpha是一个偏置系数，它控制目标函数中我们允许的特征之间的交互量；其值需要探索以找到最佳结果。找到最小化目标函数的Xi集合等同于特征选择。
+第一个项的总和表示来自特征的个别贡献——我们称之为线性项。第二个项的总和可以说包含了二次交互项。alpha 是一个偏置系数，它控制目标函数中我们允许的特征之间的交互量；其值需要探索以找到最佳结果。找到最小化目标函数的 Xi 集合等同于特征选择。
 
-目标函数实际上是一个二次二元模型——BQM。它是二元的，因为Xi可以是0或1。它是二次的，因为最高阶的项是二次交互项。这可以很容易地在量子退火机上解决。我们需要应用的唯一约束是，等于1的变量Xi的数量不能超过我们愿意接受的特征总数。
+目标函数实际上是一个二次二元模型——BQM。它是二元的，因为 Xi 可以是 0 或 1。它是二次的，因为最高阶的项是二次交互项。这可以很容易地在量子退火机上解决。我们需要应用的唯一约束是，等于 1 的变量 Xi 的数量不能超过我们愿意接受的特征总数。
 
 # 用困难的方法进行特征选择
 
@@ -138,7 +138,7 @@ show_relevance_redundancy(
 
 结果如下：
 
-![](../Images/d404dc2909d215a51faa41f8e31b8544.png)
+![](img/d404dc2909d215a51faa41f8e31b8544.png)
 
 基线性能
 
@@ -176,7 +176,7 @@ sampleset = sampler.sample_cqm(cqm)
 
 这里发生了很多事情。让我们解释每一步。
 
-我们将特征数量限制为k=30。这是模型的主要限制。
+我们将特征数量限制为 k=30。这是模型的主要限制。
 
 我们稍微偏离了论文中描述的目标函数。我们没有直接定义 alpha，而是使用了一个等效参数 beta，它具有相同的作用。然后我们以一种保持交互项贡献受控的方式定义 alpha——如果特征数量极大，这将确保交互项不会压倒目标函数中的线性项。
 
@@ -218,7 +218,7 @@ show_relevance_redundancy(
 )
 ```
 
-![](../Images/1bdf597311e331f7e012d682fb9a9c3b.png)
+![](img/1bdf597311e331f7e012d682fb9a9c3b.png)
 
 显式优化
 
@@ -247,7 +247,7 @@ show_relevance_redundancy(
 )
 ```
 
-![](../Images/a40d30fc00a2ef4480f93234552d20a2.png)
+![](img/a40d30fc00a2ef4480f93234552d20a2.png)
 
 插件优化
 
@@ -267,9 +267,9 @@ alpha 参数会使特征选择算法偏向于减少冗余但可能质量较低�
 
 # 参考资料
 
-D-Wave 网络研讨会介绍了 scikit-learn 插件。[https://www.youtube.com/watch?v=VHEpe00AXPI](https://www.youtube.com/watch?v=VHEpe00AXPI)
+D-Wave 网络研讨会介绍了 scikit-learn 插件。[`www.youtube.com/watch?v=VHEpe00AXPI`](https://www.youtube.com/watch?v=VHEpe00AXPI)
 
-Milne, A., Rounds, M., & Goddard, P. (2018). *使用量子退火器进行信用评分和分类的最佳特征选择*。1QBit.com。[1QBit.com上的白皮书](https://1qbit.com/whitepaper/optimal-feature-selection-in-credit-scoring-classification-using-quantum-annealer/)
+Milne, A., Rounds, M., & Goddard, P. (2018). *使用量子退火器进行信用评分和分类的最佳特征选择*。1QBit.com。[1QBit.com 上的白皮书](https://1qbit.com/whitepaper/optimal-feature-selection-in-credit-scoring-classification-using-quantum-annealer/)
 
 Boutell, M., Luo, J., Shen, X., Brown, C. (2004). 学习多标签场景分类。《模式识别》期刊，ScienceDirect。[文章链接](https://www.sciencedirect.com/science/article/abs/pii/S0031320304001074)
 

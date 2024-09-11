@@ -1,10 +1,10 @@
 # 随机变量参数的最大似然估计
 
-> 原文：[https://towardsdatascience.com/maximum-likelihood-estimation-4a1a866dfa70?source=collection_archive---------4-----------------------#2023-12-10](https://towardsdatascience.com/maximum-likelihood-estimation-4a1a866dfa70?source=collection_archive---------4-----------------------#2023-12-10)
+> 原文：[`towardsdatascience.com/maximum-likelihood-estimation-4a1a866dfa70?source=collection_archive---------4-----------------------#2023-12-10`](https://towardsdatascience.com/maximum-likelihood-estimation-4a1a866dfa70?source=collection_archive---------4-----------------------#2023-12-10)
 
 ## 通过观察数据最高可能性对参数进行建模
 
-[](https://romanmichaelpaolucci.medium.com/?source=post_page-----4a1a866dfa70--------------------------------)[![Roman Paolucci](../Images/61d8dd3f53507c1d69cc441c4303400b.png)](https://romanmichaelpaolucci.medium.com/?source=post_page-----4a1a866dfa70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a1a866dfa70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4a1a866dfa70--------------------------------) [Roman Paolucci](https://romanmichaelpaolucci.medium.com/?source=post_page-----4a1a866dfa70--------------------------------)
+[](https://romanmichaelpaolucci.medium.com/?source=post_page-----4a1a866dfa70--------------------------------)![Roman Paolucci](https://romanmichaelpaolucci.medium.com/?source=post_page-----4a1a866dfa70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a1a866dfa70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a1a866dfa70--------------------------------) [Roman Paolucci](https://romanmichaelpaolucci.medium.com/?source=post_page-----4a1a866dfa70--------------------------------)
 
 ·
 
@@ -12,9 +12,9 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4a1a866dfa70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaximum-likelihood-estimation-4a1a866dfa70&source=-----4a1a866dfa70---------------------bookmark_footer-----------)![](../Images/3914d7333e71686deb52327047a97ded.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4a1a866dfa70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaximum-likelihood-estimation-4a1a866dfa70&source=-----4a1a866dfa70---------------------bookmark_footer-----------)![](img/3914d7333e71686deb52327047a97ded.png)
 
-弗朗西斯科·温加罗的照片：[https://www.pexels.com/photo/blue-and-white-abstract-painting-1912832/](https://www.pexels.com/photo/blue-and-white-abstract-painting-1912832/)
+弗朗西斯科·温加罗的照片：[`www.pexels.com/photo/blue-and-white-abstract-painting-1912832/`](https://www.pexels.com/photo/blue-and-white-abstract-painting-1912832/)
 
 概率和统计学中的概念可能会有些难以捉摸，因为高级数学、糟糕的符号表示以及随机变量和数据的纠缠。本文阐明了估计器、估计、偏差和方差以及最大似然估计方法在随机变量和数据之间的关系。
 

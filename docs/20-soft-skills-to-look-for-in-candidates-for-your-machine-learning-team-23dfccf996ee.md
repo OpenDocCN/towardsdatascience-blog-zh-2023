@@ -1,12 +1,12 @@
-# 寻找机器学习团队候选人时应关注的20种软技能
+# 寻找机器学习团队候选人时应关注的 20 种软技能
 
-> 原文：[https://towardsdatascience.com/20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee?source=collection_archive---------12-----------------------#2023-02-16](https://towardsdatascience.com/20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee?source=collection_archive---------12-----------------------#2023-02-16)
+> 原文：[`towardsdatascience.com/20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee?source=collection_archive---------12-----------------------#2023-02-16`](https://towardsdatascience.com/20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee?source=collection_archive---------12-----------------------#2023-02-16)
 
-[](https://medium.com/@LydiaNemec?source=post_page-----23dfccf996ee--------------------------------)[![Lydia Nemec](../Images/deb694455eda6cb00416d51b89469eee.png)](https://medium.com/@LydiaNemec?source=post_page-----23dfccf996ee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23dfccf996ee--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----23dfccf996ee--------------------------------) [Lydia Nemec](https://medium.com/@LydiaNemec?source=post_page-----23dfccf996ee--------------------------------)
+[](https://medium.com/@LydiaNemec?source=post_page-----23dfccf996ee--------------------------------)![Lydia Nemec](https://medium.com/@LydiaNemec?source=post_page-----23dfccf996ee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23dfccf996ee--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----23dfccf996ee--------------------------------) [Lydia Nemec](https://medium.com/@LydiaNemec?source=post_page-----23dfccf996ee--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1ddbbb172903&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee&user=Lydia+Nemec&userId=1ddbbb172903&source=post_page-1ddbbb172903----23dfccf996ee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23dfccf996ee--------------------------------) ·9分钟阅读·2023年2月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23dfccf996ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee&user=Lydia+Nemec&userId=1ddbbb172903&source=-----23dfccf996ee---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1ddbbb172903&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee&user=Lydia+Nemec&userId=1ddbbb172903&source=post_page-1ddbbb172903----23dfccf996ee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23dfccf996ee--------------------------------) ·9 分钟阅读·2023 年 2 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23dfccf996ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F20-soft-skills-to-look-for-in-candidates-for-your-machine-learning-team-23dfccf996ee&user=Lydia+Nemec&userId=1ddbbb172903&source=-----23dfccf996ee---------------------clap_footer-----------)
 
 --
 
@@ -14,17 +14,17 @@
 
 尽管教育、技能和经验提供了技术基础，并且对一个有能力的机器学习（ML）团队至关重要，但只有当结合了正确的软技能时，团队才会变得强大和成功。
 
-![](../Images/e9570ecead64ffe7bab075aad5fe1bb1.png)
+![](img/e9570ecead64ffe7bab075aad5fe1bb1.png)
 
-图像阅读机器人ML生成自 [https://creator.nightcafe.studio](https://creator.nightcafe.studio)
+图像阅读机器人 ML 生成自 [`creator.nightcafe.studio`](https://creator.nightcafe.studio)
 
 教育、技能和经验是一个合格的机器学习专家的重要特质。拥有数学、计算机科学、自然科学和统计学的坚实教育背景，为理解驱动机器学习模型的基础理论和算法提供了强有力的基础。此外，通过动手实践各种编程语言、库和工具来获得实际技能，对于实现和部署成功的机器学习解决方案至关重要。[R1, R2]
 
 然而，正确的软技能组合可以将一支有能力的机器学习专家团队转变为成功的团队。这些技能补充了技术技能。[R3] 软技能是个人属性和能力。在机器学习领域，软技能尤为重要，因为它们使专家能够有效地与利益相关者、客户和其他团队成员合作，以确保解决了正确的问题，开发和部署了正确的解决方案。
 
-准备好提升你的团队吧！在接下来的20点中，我将分享我对这些能力的个人见解。所以，让我们深入探讨，发现如何发掘我们自己和团队的最佳表现！
+准备好提升你的团队吧！在接下来的 20 点中，我将分享我对这些能力的个人见解。所以，让我们深入探讨，发现如何发掘我们自己和团队的最佳表现！
 
-![](../Images/8dd9218007b05ae2b344b1ee6d171a23.png)
+![](img/8dd9218007b05ae2b344b1ee6d171a23.png)
 
 阅读机器人的图像由 openAI 的 [dall-e](https://deepai.org/machine-learning-model/cute-creature-generator) 生成
 
@@ -36,13 +36,13 @@
 
 1.  **时间管理**：找到专注工作的时间是困难的。团队可以引入专门的时间用于集中工作，但这只能在每个团队成员充分利用可用时间时才能实现集中工作。时间管理的另一个方面是能够持续工作，设定明确的优先级，以管理项目和团队之间的相互依赖，并按时完成任务。记住：你永远无法完成所有想做的事情，所以一定要优先排序！[R7, R8]
 
-1.  **跨文化能力**：ML专家可能来自不同的教育背景、国籍和年龄群体。每个团队成员都能够处理文化差异非常重要。例如，在我们的团队中，主要使用英语，但对我们大多数人来说，英语是外语。重要的是要仔细倾听并提出问题，直到双方都确认达成了共同的理解。
+1.  **跨文化能力**：ML 专家可能来自不同的教育背景、国籍和年龄群体。每个团队成员都能够处理文化差异非常重要。例如，在我们的团队中，主要使用英语，但对我们大多数人来说，英语是外语。重要的是要仔细倾听并提出问题，直到双方都确认达成了共同的理解。
 
-1.  **终身学习的态度**：ML领域广泛，团队的要求和期望也多种多样。对领域特定主题以及与之相关的内容有深厚的学习态度，加上对其他解决有趣问题领域的广泛兴趣，可以成为解决问题的丰富灵感来源。这种基本态度可以为团队快速熟悉新项目中的主题条件奠定基础。顺便说一下，午餐讨论也会变得更加有趣！[R9]
+1.  **终身学习的态度**：ML 领域广泛，团队的要求和期望也多种多样。对领域特定主题以及与之相关的内容有深厚的学习态度，加上对其他解决有趣问题领域的广泛兴趣，可以成为解决问题的丰富灵感来源。这种基本态度可以为团队快速熟悉新项目中的主题条件奠定基础。顺便说一下，午餐讨论也会变得更加有趣！[R9]
 
-1.  **挫折容忍度**：在开发ML解决方案时，实验和测试未知结果的新方法是日常工作的一部分。ML专家必须承担进入未知领域所带来的风险。事情不应该出错，但往往会出错，例如数据不足（数量、信息内容、质量）、算法可能无法收敛等等。团队需要能够在问题变得困难时坚持下去，能够应对挫折并继续前进。第一次、第二次或第三次都不会总是成功——ML是困难的，我们必须应对。
+1.  **挫折容忍度**：在开发 ML 解决方案时，实验和测试未知结果的新方法是日常工作的一部分。ML 专家必须承担进入未知领域所带来的风险。事情不应该出错，但往往会出错，例如数据不足（数量、信息内容、质量）、算法可能无法收敛等等。团队需要能够在问题变得困难时坚持下去，能够应对挫折并继续前进。第一次、第二次或第三次都不会总是成功——ML 是困难的，我们必须应对。
 
-1.  **责任感**：处理数据意味着处理信任。这带来了极大的责任：对数据、对所应用算法的结果以及对因数据偏差等意外结果负责。ML团队必须认识到这一点，并且不畏惧承担这种责任。[R10]
+1.  **责任感**：处理数据意味着处理信任。这带来了极大的责任：对数据、对所应用算法的结果以及对因数据偏差等意外结果负责。ML 团队必须认识到这一点，并且不畏惧承担这种责任。[R10]
 
 1.  **责任感与所有权**：机器学习解决方案的开发和运作是复杂的，往往意味着团队必须应对不确定性。重要的是团队中的每个人都要对各自的工作负责。具有健康所有权思维的团队通常拥有“如果我搞坏了，我就修复”的文化。然而，所有权需要问责。每个人必须对自己负责，并且必须有空间和安全感，诚实地面对结果。[R11]
 
@@ -72,38 +72,38 @@
 
 # 推荐阅读列表
 
-[R1] 安基塔·尼贾姆；[数据科学家必备的20种技能](https://blog.insaid.co/top-20-must-have-skills-for-a-data-scientist/) blog.insaid.co
+[R1] 安基塔·尼贾姆；[数据科学家必备的 20 种技能](https://blog.insaid.co/top-20-must-have-skills-for-a-data-scientist/) blog.insaid.co
 
-[R2] 西德赫什·辛德；[在这里发现顶级11种数据科学技能](https://emeritus.org/blog/find-the-top-11-data-science-skills-in-demand-here/) emeritus.org/blog（2022年12月8日）
+[R2] 西德赫什·辛德；[在这里发现顶级 11 种数据科学技能](https://emeritus.org/blog/find-the-top-11-data-science-skills-in-demand-here/) emeritus.org/blog（2022 年 12 月 8 日）
 
-[R3] [安迪·麦克唐纳](https://medium.com/u/9c280f85f15c?source=post_page-----23dfccf996ee--------------------------------)；[成功数据科学家必须具备的5种软技能](/5-essential-soft-skills-to-succeed-as-a-data-scientist-1fffbcb74717) towardsdatascience.com（2022年10月28日）
+[R3] [安迪·麦克唐纳](https://medium.com/u/9c280f85f15c?source=post_page-----23dfccf996ee--------------------------------)；成功数据科学家必须具备的 5 种软技能 towardsdatascience.com（2022 年 10 月 28 日）
 
-[R4] 西蒙·西内克；《从为什么开始：伟大的领导者如何激励每个人采取行动》（2011年12月27日）
+[R4] 西蒙·西内克；《从为什么开始：伟大的领导者如何激励每个人采取行动》（2011 年 12 月 27 日）
 
-[R5] 詹姆斯·克利尔；《原子习惯：一种简单且经过验证的方法来建立好习惯并打破坏习惯》（2018年10月16日）
+[R5] 詹姆斯·克利尔；《原子习惯：一种简单且经过验证的方法来建立好习惯并打破坏习惯》（2018 年 10 月 16 日）
 
-[R6] 丹尼尔·戈尔曼；《专注：卓越的隐藏驱动力》（2013年10月8日）
+[R6] 丹尼尔·戈尔曼；《专注：卓越的隐藏驱动力》（2013 年 10 月 8 日）
 
-[R7] 奥利弗·伯克曼；《四千周：凡人的时间管理》（2021年8月10日）
+[R7] 奥利弗·伯克曼；《四千周：凡人的时间管理》（2021 年 8 月 10 日）
 
-[R8] 米哈伊·契克森米哈伊；《心流：最佳体验的心理学》（2008年7月1日）
+[R8] 米哈伊·契克森米哈伊；《心流：最佳体验的心理学》（2008 年 7 月 1 日）
 
-[R9] 大卫·爱泼斯坦；《范围：全才如何在专业化世界中获胜》（2020年10月1日）
+[R9] 大卫·爱泼斯坦；《范围：全才如何在专业化世界中获胜》（2020 年 10 月 1 日）
 
-[R10] 凯特·克劳福德；《人工智能地图：权力、政治与人工智能的全球成本》（2022年8月16日）
+[R10] 凯特·克劳福德；《人工智能地图：权力、政治与人工智能的全球成本》（2022 年 8 月 16 日）
 
-[R11] 乔科·威林克，莱夫·巴宾；《极端责任：美国海豹突击队如何领导和胜利》（2017年11月21日）
+[R11] 乔科·威林克，莱夫·巴宾；《极端责任：美国海豹突击队如何领导和胜利》（2017 年 11 月 21 日）
 
-[R12] 罗伯特·C·马丁；《清洁代码：敏捷软件工艺手册》（2008年8月1日）
+[R12] 罗伯特·C·马丁；《清洁代码：敏捷软件工艺手册》（2008 年 8 月 1 日）
 
-[R13] 南希·杜阿特；《幻灯片学：创造伟大演示的艺术与科学》（2008年8月7日）
+[R13] 南希·杜阿特；《幻灯片学：创造伟大演示的艺术与科学》（2008 年 8 月 7 日）
 
-[R14] 克里斯·沃斯；《从不妥协：谈判如同你的生命依赖于此》（2017年3月23日）
+[R14] 克里斯·沃斯；《从不妥协：谈判如同你的生命依赖于此》（2017 年 3 月 23 日）
 
-[R15] 道格拉斯·斯通，布鲁斯·帕顿，希拉·欣；《困难对话：如何讨论重要的事》（2010年11月2日）
+[R15] 道格拉斯·斯通，布鲁斯·帕顿，希拉·欣；《困难对话：如何讨论重要的事》（2010 年 11 月 2 日）
 
-[R16] 卡琳·艾尔斯特，塔玛拉·克里斯滕森；《在模糊中引领：如何将不确定性转变为可能性》（2022年10月12日）
+[R16] 卡琳·艾尔斯特，塔玛拉·克里斯滕森；《在模糊中引领：如何将不确定性转变为可能性》（2022 年 10 月 12 日）
 
-[R17] 斯科特·伯肯；《实现目标：掌握项目管理》（2008年4月1日）
+[R17] 斯科特·伯肯；《实现目标：掌握项目管理》（2008 年 4 月 1 日）
 
-[R18] [保罗·洛普辛斯基](https://medium.com/u/480db42723df?source=post_page-----23dfccf996ee--------------------------------) 《为什么索尼的联合创始人赤尾守田是我心目中的产品经理英雄，以及他为什么也应该成为你的英雄》（2017年3月7日）
+[R18] [保罗·洛普辛斯基](https://medium.com/u/480db42723df?source=post_page-----23dfccf996ee--------------------------------) 《为什么索尼的联合创始人赤尾守田是我心目中的产品经理英雄，以及他为什么也应该成为你的英雄》（2017 年 3 月 7 日）

@@ -1,18 +1,18 @@
 # 机器学习如何应用于音频分析？
 
-> 原文：[https://towardsdatascience.com/how-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6?source=collection_archive---------18-----------------------#2023-01-10](https://towardsdatascience.com/how-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6?source=collection_archive---------18-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/how-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6?source=collection_archive---------18-----------------------#2023-01-10`](https://towardsdatascience.com/how-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6?source=collection_archive---------18-----------------------#2023-01-10)
 
 ## 了解机器学习如何用于分析音频信号，并为分类和回归任务生成预测
 
-[](https://suhas-maddali007.medium.com/?source=post_page-----847ebbefeb6--------------------------------)[![Suhas Maddali](../Images/933f27eab8ba9ee1f06ed2f24746d788.png)](https://suhas-maddali007.medium.com/?source=post_page-----847ebbefeb6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----847ebbefeb6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----847ebbefeb6--------------------------------) [Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----847ebbefeb6--------------------------------)
+[](https://suhas-maddali007.medium.com/?source=post_page-----847ebbefeb6--------------------------------)![Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----847ebbefeb6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----847ebbefeb6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----847ebbefeb6--------------------------------) [Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----847ebbefeb6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----847ebbefeb6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----847ebbefeb6--------------------------------) ·5分钟阅读·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F847ebbefeb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6&user=Suhas+Maddali&userId=2a74f90399ae&source=-----847ebbefeb6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----847ebbefeb6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----847ebbefeb6--------------------------------) ·5 分钟阅读·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F847ebbefeb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6&user=Suhas+Maddali&userId=2a74f90399ae&source=-----847ebbefeb6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F847ebbefeb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6&source=-----847ebbefeb6---------------------bookmark_footer-----------)![](../Images/d1e975b087ca839a3673a143c82e847a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F847ebbefeb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-can-machine-learning-be-used-in-audio-analysis-847ebbefeb6&source=-----847ebbefeb6---------------------bookmark_footer-----------)![](img/d1e975b087ca839a3673a143c82e847a.png)
 
 图片由 [Jarrod Reed](https://unsplash.com/@jarrodreed?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,13 +20,13 @@
 
 机器学习最有趣的应用之一是在**音频分析**中，理解不同音频格式的质量。因此，使用各种机器学习和深度学习算法可以确保对**音频数据**进行预测并理解其结果。
 
-![](../Images/02331be5af79b613fd7061997c4a26a3.png)
+![](img/02331be5af79b613fd7061997c4a26a3.png)
 
 [Med Badr Chemmaoui](https://unsplash.com/@medbadrc?utm_source=medium&utm_medium=referral)拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在进行音频分析之前，必须单独采样并分析信号。我们采样的频率也称为**采样率**或**奈奎斯特率**。将时域信号转换为频域信号将非常有助于对信号进行逻辑理解，并计算如功率和能量等有用的组件。所有这些特征都可以提供给我们的机器学习模型，用于进行预测。
 
-有一种流行的将音频信号转换为谱图（图像）的方法，这样可以将其输入到**卷积神经网络（CNNs）**中进行预测。谱图可以捕捉音频信号的重要特征，并以2D形式呈现，从而可以与基于图像的网络一起使用。
+有一种流行的将音频信号转换为谱图（图像）的方法，这样可以将其输入到**卷积神经网络（CNNs）**中进行预测。谱图可以捕捉音频信号的重要特征，并以 2D 形式呈现，从而可以与基于图像的网络一起使用。
 
 许多机器学习模型在给定图像的情况下能很好地预测输出标签。因此，包含幅度和不同频率单位的音频信号也可以转换为**图像**，并用于强大的机器学习预测。
 
@@ -34,7 +34,7 @@
 
 ## 读取数据
 
-我们将导入用于读取音频文件的必要库，这些文件通常以**‘.wav’**格式存在。在读取文件后，我们会得到一个数组表示，如上面的代码单元所示。最后，我们将绘制输出，以便使用matplotlib查看它的样子。
+我们将导入用于读取音频文件的必要库，这些文件通常以**‘.wav’**格式存在。在读取文件后，我们会得到一个数组表示，如上面的代码单元所示。最后，我们将绘制输出，以便使用 matplotlib 查看它的样子。
 
 ## 特征工程
 
@@ -54,7 +54,7 @@
 
 ## 模型部署
 
-现在我们已经进行了超参数调优以提供最准确的预测，是时候保存提供最佳结果的机器学习模型了。因此，我们将使用python中的**pickle**库，以便能够保存可以用于服务的机器学习模型。
+现在我们已经进行了超参数调优以提供最准确的预测，是时候保存提供最佳结果的机器学习模型了。因此，我们将使用 python 中的**pickle**库，以便能够保存可以用于服务的机器学习模型。
 
 保存模型后，我们将在构建**生产就绪**代码时再次加载它，并用它来对 incoming batches 或数据流进行预测。需要注意的是，在训练数据期间使用的特征化步骤也必须在测试集上执行，以避免数据偏差。
 

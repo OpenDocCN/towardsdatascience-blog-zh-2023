@@ -1,20 +1,20 @@
 # 12 个 Python 装饰器，助你提升代码水平
 
-> 原文：[https://towardsdatascience.com/12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99?source=collection_archive---------0-----------------------#2023-02-07](https://towardsdatascience.com/12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99?source=collection_archive---------0-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99?source=collection_archive---------0-----------------------#2023-02-07`](https://towardsdatascience.com/12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99?source=collection_archive---------0-----------------------#2023-02-07)
 
 ## 提升你的编程技能
 
 ## 用更少的代码做更多的事情，同时不降低质量
 
-[](https://ahmedbesbes.medium.com/?source=post_page-----a910a1ab3e99--------------------------------)[![Ahmed Besbes](../Images/93804d9291439715e578f204b79c9bdd.png)](https://ahmedbesbes.medium.com/?source=post_page-----a910a1ab3e99--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a910a1ab3e99--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a910a1ab3e99--------------------------------) [Ahmed Besbes](https://ahmedbesbes.medium.com/?source=post_page-----a910a1ab3e99--------------------------------)
+[](https://ahmedbesbes.medium.com/?source=post_page-----a910a1ab3e99--------------------------------)![Ahmed Besbes](https://ahmedbesbes.medium.com/?source=post_page-----a910a1ab3e99--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a910a1ab3e99--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a910a1ab3e99--------------------------------) [Ahmed Besbes](https://ahmedbesbes.medium.com/?source=post_page-----a910a1ab3e99--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fadc8ea174c69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99&user=Ahmed+Besbes&userId=adc8ea174c69&source=post_page-adc8ea174c69----a910a1ab3e99---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a910a1ab3e99--------------------------------) · 11分钟阅读 · 2023年2月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa910a1ab3e99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99&user=Ahmed+Besbes&userId=adc8ea174c69&source=-----a910a1ab3e99---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fadc8ea174c69&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99&user=Ahmed+Besbes&userId=adc8ea174c69&source=post_page-adc8ea174c69----a910a1ab3e99---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a910a1ab3e99--------------------------------) · 11 分钟阅读 · 2023 年 2 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa910a1ab3e99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99&user=Ahmed+Besbes&userId=adc8ea174c69&source=-----a910a1ab3e99---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa910a1ab3e99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99&source=-----a910a1ab3e99---------------------bookmark_footer-----------)![](../Images/e0bd7d091c8ba1bbeef285c525dfb1ba.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa910a1ab3e99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-python-decorators-to-take-your-code-to-the-next-level-a910a1ab3e99&source=-----a910a1ab3e99---------------------bookmark_footer-----------)![](img/e0bd7d091c8ba1bbeef285c525dfb1ba.png)
 
 图片由 [Chris Ried](https://unsplash.com/pt-br/@cdr6934?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

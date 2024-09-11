@@ -1,10 +1,10 @@
 # Makefile 教程
 
-> 原文：[https://towardsdatascience.com/a-data-scientists-guide-to-make-and-makefiles-1595f39e0704?source=collection_archive---------6-----------------------#2023-08-11](https://towardsdatascience.com/a-data-scientists-guide-to-make-and-makefiles-1595f39e0704?source=collection_archive---------6-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/a-data-scientists-guide-to-make-and-makefiles-1595f39e0704?source=collection_archive---------6-----------------------#2023-08-11`](https://towardsdatascience.com/a-data-scientists-guide-to-make-and-makefiles-1595f39e0704?source=collection_archive---------6-----------------------#2023-08-11)
 
 ## 如何使用 Make 和 Makefiles 来优化你的机器学习管道
 
-[](https://medium.com/@egorhowell?source=post_page-----1595f39e0704--------------------------------)[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----1595f39e0704--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1595f39e0704--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1595f39e0704--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----1595f39e0704--------------------------------)
+[](https://medium.com/@egorhowell?source=post_page-----1595f39e0704--------------------------------)![Egor Howell](https://medium.com/@egorhowell?source=post_page-----1595f39e0704--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1595f39e0704--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1595f39e0704--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----1595f39e0704--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1595f39e0704&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-scientists-guide-to-make-and-makefiles-1595f39e0704&source=-----1595f39e0704---------------------bookmark_footer-----------)![](../Images/df1db4763ccc19619b1d790059ed64f7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1595f39e0704&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-scientists-guide-to-make-and-makefiles-1595f39e0704&source=-----1595f39e0704---------------------bookmark_footer-----------)![](img/df1db4763ccc19619b1d790059ed64f7.png)
 
 照片由 [Nubelson Fernandes](https://unsplash.com/@nublson?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

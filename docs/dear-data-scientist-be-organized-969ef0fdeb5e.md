@@ -1,18 +1,18 @@
 # 亲爱的数据科学家，请保持组织有序！
 
-> 原文：[https://towardsdatascience.com/dear-data-scientist-be-organized-969ef0fdeb5e?source=collection_archive---------4-----------------------#2023-02-03](https://towardsdatascience.com/dear-data-scientist-be-organized-969ef0fdeb5e?source=collection_archive---------4-----------------------#2023-02-03)
+> 原文：[`towardsdatascience.com/dear-data-scientist-be-organized-969ef0fdeb5e?source=collection_archive---------4-----------------------#2023-02-03`](https://towardsdatascience.com/dear-data-scientist-be-organized-969ef0fdeb5e?source=collection_archive---------4-----------------------#2023-02-03)
 
 ## 一个快速指南，帮助你提高组织技能，从而提升你的表现。
 
-[](https://alexandrerossetolemos.medium.com/?source=post_page-----969ef0fdeb5e--------------------------------)[![亚历山德雷·罗斯塞托·莱莫斯](../Images/875245dfdc6d10a20a94791a5d88c5ae.png)](https://alexandrerossetolemos.medium.com/?source=post_page-----969ef0fdeb5e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----969ef0fdeb5e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----969ef0fdeb5e--------------------------------) [亚历山德雷·罗斯塞托·莱莫斯](https://alexandrerossetolemos.medium.com/?source=post_page-----969ef0fdeb5e--------------------------------)
+[](https://alexandrerossetolemos.medium.com/?source=post_page-----969ef0fdeb5e--------------------------------)![亚历山德雷·罗斯塞托·莱莫斯](https://alexandrerossetolemos.medium.com/?source=post_page-----969ef0fdeb5e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----969ef0fdeb5e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----969ef0fdeb5e--------------------------------) [亚历山德雷·罗斯塞托·莱莫斯](https://alexandrerossetolemos.medium.com/?source=post_page-----969ef0fdeb5e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fde43cc058e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdear-data-scientist-be-organized-969ef0fdeb5e&user=Alexandre+Rosseto+Lemos&userId=de43cc058e79&source=post_page-de43cc058e79----969ef0fdeb5e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----969ef0fdeb5e--------------------------------) ·8 min read·2023年2月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F969ef0fdeb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdear-data-scientist-be-organized-969ef0fdeb5e&user=Alexandre+Rosseto+Lemos&userId=de43cc058e79&source=-----969ef0fdeb5e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fde43cc058e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdear-data-scientist-be-organized-969ef0fdeb5e&user=Alexandre+Rosseto+Lemos&userId=de43cc058e79&source=post_page-de43cc058e79----969ef0fdeb5e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----969ef0fdeb5e--------------------------------) ·8 min read·2023 年 2 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F969ef0fdeb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdear-data-scientist-be-organized-969ef0fdeb5e&user=Alexandre+Rosseto+Lemos&userId=de43cc058e79&source=-----969ef0fdeb5e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F969ef0fdeb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdear-data-scientist-be-organized-969ef0fdeb5e&source=-----969ef0fdeb5e---------------------bookmark_footer-----------)![](../Images/fcc191b831f2e1bcacc7207d2fbf188e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F969ef0fdeb5e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdear-data-scientist-be-organized-969ef0fdeb5e&source=-----969ef0fdeb5e---------------------bookmark_footer-----------)![](img/fcc191b831f2e1bcacc7207d2fbf188e.png)
 
 照片由 [Matthew Kwong](https://unsplash.com/@mattykwong1?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,7 +48,7 @@
 
 # 数据组织
 
-![](../Images/a59b22c8e1eb6e5e26927670c69496f5.png)
+![](img/a59b22c8e1eb6e5e26927670c69496f5.png)
 
 照片由 [Nana Smirnova](https://unsplash.com/@nananadolgo?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -58,7 +58,7 @@
 
 为了处理这些问题，我喜欢按照以下结构组织我的数据：
 
-![](../Images/7209ea7942e7f3e5981674d23ec277a4.png)
+![](img/7209ea7942e7f3e5981674d23ec277a4.png)
 
 数据组织结构示意图（作者提供的图片）
 
@@ -70,7 +70,7 @@
 
 # 文件组织
 
-![](../Images/6f8e1b655e5391f7210cd841342f712f.png)
+![](img/6f8e1b655e5391f7210cd841342f712f.png)
 
 图片由[Maksym Kaharlytskyi](https://unsplash.com/@qwitka?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -82,7 +82,7 @@
 
 因此，我一直使用并且在项目中对我帮助很大的文件组织方式具有以下格式：
 
-![](../Images/2ebee5e3e816b18f4f7a090736386394.png)
+![](img/2ebee5e3e816b18f4f7a090736386394.png)
 
 文件组织结构示例（图片由作者提供）
 
@@ -94,7 +94,7 @@
 
 # 笔记本结构组织
 
-![](../Images/f536b14b35bf89ca700234854dc9c98a.png)
+![](img/f536b14b35bf89ca700234854dc9c98a.png)
 
 图片由[Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -104,7 +104,7 @@
 
 井然有序的笔记本结构在解释内容时非常有帮助，这在你向同行和上级展示你的分析时尤为重要。
 
-![](../Images/bac5195c24b815c6d353d96b8ff15823.png)
+![](img/bac5195c24b815c6d353d96b8ff15823.png)
 
 笔记本结构组织示例（图像由作者提供）
 
@@ -112,7 +112,7 @@
 
 # 代码组织
 
-![](../Images/5b95086df149d01f5fe74215a1ec07be.png)
+![](img/5b95086df149d01f5fe74215a1ec07be.png)
 
 [Fahrul Razi](https://unsplash.com/@mfrazi?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
@@ -128,7 +128,7 @@
 
 # 总结
 
-![](../Images/e10375bd22631b3f58ccecc008a53230.png)
+![](img/e10375bd22631b3f58ccecc008a53230.png)
 
 照片由[Glenn Carstens-Peters](https://unsplash.com/@glenncarstenspeters?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

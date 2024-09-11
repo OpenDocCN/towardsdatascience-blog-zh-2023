@@ -1,10 +1,10 @@
 # 对量子机器学习感到困惑？
 
-> 原文：[https://towardsdatascience.com/having-trouble-understanding-quantum-machine-learning-ce8a941d8c70?source=collection_archive---------4-----------------------#2023-03-02](https://towardsdatascience.com/having-trouble-understanding-quantum-machine-learning-ce8a941d8c70?source=collection_archive---------4-----------------------#2023-03-02)
+> 原文：[`towardsdatascience.com/having-trouble-understanding-quantum-machine-learning-ce8a941d8c70?source=collection_archive---------4-----------------------#2023-03-02`](https://towardsdatascience.com/having-trouble-understanding-quantum-machine-learning-ce8a941d8c70?source=collection_archive---------4-----------------------#2023-03-02)
 
 ## 使用函数式编程实现量子近似优化算法
 
-[](https://pyqml.medium.com/?source=post_page-----ce8a941d8c70--------------------------------)[![Frank Zickert | Quantum Machine Learning](../Images/ae361c0d68d13dac21bb86c7496d2917.png)](https://pyqml.medium.com/?source=post_page-----ce8a941d8c70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce8a941d8c70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce8a941d8c70--------------------------------) [Frank Zickert | Quantum Machine Learning](https://pyqml.medium.com/?source=post_page-----ce8a941d8c70--------------------------------)
+[](https://pyqml.medium.com/?source=post_page-----ce8a941d8c70--------------------------------)![Frank Zickert | Quantum Machine Learning](https://pyqml.medium.com/?source=post_page-----ce8a941d8c70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce8a941d8c70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce8a941d8c70--------------------------------) [Frank Zickert | Quantum Machine Learning](https://pyqml.medium.com/?source=post_page-----ce8a941d8c70--------------------------------)
 
 ·
 

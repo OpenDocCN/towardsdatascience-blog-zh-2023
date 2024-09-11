@@ -1,16 +1,16 @@
 # 使用 LLM 来评估 LLM
 
-> 原文：[https://towardsdatascience.com/using-llms-to-evaluate-llms-ce390ae575c6?source=collection_archive---------6-----------------------#2023-11-10](https://towardsdatascience.com/using-llms-to-evaluate-llms-ce390ae575c6?source=collection_archive---------6-----------------------#2023-11-10)
+> 原文：[`towardsdatascience.com/using-llms-to-evaluate-llms-ce390ae575c6?source=collection_archive---------6-----------------------#2023-11-10`](https://towardsdatascience.com/using-llms-to-evaluate-llms-ce390ae575c6?source=collection_archive---------6-----------------------#2023-11-10)
 
-[](https://medium.com/@petyak.mi?source=post_page-----ce390ae575c6--------------------------------)[![Maksym Petyak](../Images/0c2d4054352a58537c9e76b5911b8b2e.png)](https://medium.com/@petyak.mi?source=post_page-----ce390ae575c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce390ae575c6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce390ae575c6--------------------------------) [Maksym Petyak](https://medium.com/@petyak.mi?source=post_page-----ce390ae575c6--------------------------------)
+[](https://medium.com/@petyak.mi?source=post_page-----ce390ae575c6--------------------------------)![Maksym Petyak](https://medium.com/@petyak.mi?source=post_page-----ce390ae575c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce390ae575c6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce390ae575c6--------------------------------) [Maksym Petyak](https://medium.com/@petyak.mi?source=post_page-----ce390ae575c6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2ab7d66fcd36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-llms-to-evaluate-llms-ce390ae575c6&user=Maksym+Petyak&userId=2ab7d66fcd36&source=post_page-2ab7d66fcd36----ce390ae575c6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce390ae575c6--------------------------------) ·7 分钟阅读·2023年11月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce390ae575c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-llms-to-evaluate-llms-ce390ae575c6&user=Maksym+Petyak&userId=2ab7d66fcd36&source=-----ce390ae575c6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2ab7d66fcd36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-llms-to-evaluate-llms-ce390ae575c6&user=Maksym+Petyak&userId=2ab7d66fcd36&source=post_page-2ab7d66fcd36----ce390ae575c6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce390ae575c6--------------------------------) ·7 分钟阅读·2023 年 11 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce390ae575c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-llms-to-evaluate-llms-ce390ae575c6&user=Maksym+Petyak&userId=2ab7d66fcd36&source=-----ce390ae575c6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce390ae575c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-llms-to-evaluate-llms-ce390ae575c6&source=-----ce390ae575c6---------------------bookmark_footer-----------)![](../Images/44441b26ad2c878ab0d5fbe3ea98a1b6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce390ae575c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-llms-to-evaluate-llms-ce390ae575c6&source=-----ce390ae575c6---------------------bookmark_footer-----------)![](img/44441b26ad2c878ab0d5fbe3ea98a1b6.png)
 
 图片由 OpenAI 的 DALL-E 3 生成。
 
@@ -58,7 +58,7 @@ G-Eval 包含以下组件：
 
 1.  **评分函数。** 我们不会直接采纳 LLM 的评分，而是查看底层的标记概率以获得最终得分。因此，如果你要求在 1 到 5 之间评分，我们不会仅仅采用 LLM 给出的数字（例如“3”），而是会查看每个等级的概率并计算加权得分。这是因为研究人员发现通常一个数字主导了评估（例如主要输出 3），即使你要求 LLM 给出一个小数值，它仍然倾向于返回整数。
 
-![](../Images/d17a2fd00441c0db75b8a279d9adb929.png)
+![](img/d17a2fd00441c0db75b8a279d9adb929.png)
 
 G-Eval 提供的提示用于在 1 到 5 的范围内计算连贯性。你可以在[原始论文](https://arxiv.org/pdf/2303.16634.pdf)中找到更多示例。
 
@@ -72,7 +72,7 @@ G-Eval 提供的提示用于在 1 到 5 的范围内计算连贯性。你可以�
 
 在论文中，研究人员让 LLM 生成人物传记，然后使用关于他们的维基百科文章作为真实来源。LLM 进行与人类相同程序的错误率低于 2%。
 
-![](../Images/bef8489a9e71bd5102d9e0527dc96a75.png)
+![](img/bef8489a9e71bd5102d9e0527dc96a75.png)
 
 FactScore 用于生成布里奇特·莫伊纳汉的传记。请参阅[原始论文](https://arxiv.org/abs/2305.14251)。
 
@@ -80,40 +80,40 @@ FactScore 用于生成布里奇特·莫伊纳汉的传记。请参阅[原始论�
 
 现在，让我们来看看一些检索增强生成（RAG）的指标。使用 RAG 时，你首先在外部知识库中检索相关的上下文，然后让 LLM 根据这些事实回答问题。
 
-[RAGAS](https://arxiv.org/abs/2309.15217v1)（检索增强生成评估）[6]是一个用于评估RAG的新框架。它不是一个单一的指标，而是一系列指标的集合。论文中提出的三个指标是忠实度、回答相关性和上下文相关性。这些指标完美地展示了如何将评估分解为LLMs的简单任务。
+[RAGAS](https://arxiv.org/abs/2309.15217v1)（检索增强生成评估）[6]是一个用于评估 RAG 的新框架。它不是一个单一的指标，而是一系列指标的集合。论文中提出的三个指标是忠实度、回答相关性和上下文相关性。这些指标完美地展示了如何将评估分解为 LLMs 的简单任务。
 
-**忠实度**衡量回答在给定上下文中的扎实程度。这与FactScore非常相似，你首先将生成的内容分解为一系列陈述，然后询问LLM这些陈述是否得到给定上下文的支持。得分是支持的陈述数除以所有陈述的总数。对于忠实度，研究人员发现与人工标注者有很高的相关性。
+**忠实度**衡量回答在给定上下文中的扎实程度。这与 FactScore 非常相似，你首先将生成的内容分解为一系列陈述，然后询问 LLM 这些陈述是否得到给定上下文的支持。得分是支持的陈述数除以所有陈述的总数。对于忠实度，研究人员发现与人工标注者有很高的相关性。
 
-**回答相关性**试图捕捉回答是否针对实际问题的概念。你可以先要求LLM根据答案生成问题。对于每个生成的问题，你可以计算生成的问题与原始问题之间的相似度（通过创建嵌入并使用余弦相似度）。通过这样做*n*次并计算相似度得分的平均值，你将得到最终的回答相关性值。
+**回答相关性**试图捕捉回答是否针对实际问题的概念。你可以先要求 LLM 根据答案生成问题。对于每个生成的问题，你可以计算生成的问题与原始问题之间的相似度（通过创建嵌入并使用余弦相似度）。通过这样做*n*次并计算相似度得分的平均值，你将得到最终的回答相关性值。
 
-**上下文相关性**指的是提供的上下文的相关性。也就是说，提供的上下文仅包含回答问题所需的信息。在理想情况下，我们只向LLM提供回答问题所需的正确信息。上下文相关性是通过要求LLM提取上下文中与答案相关的句子来计算的。然后只需将相关句子的数量除以总句子数以获得最终得分。
+**上下文相关性**指的是提供的上下文的相关性。也就是说，提供的上下文仅包含回答问题所需的信息。在理想情况下，我们只向 LLM 提供回答问题所需的正确信息。上下文相关性是通过要求 LLM 提取上下文中与答案相关的句子来计算的。然后只需将相关句子的数量除以总句子数以获得最终得分。
 
-你可以在[这里](https://docs.ragas.io/en/latest/getstarted/index.html)找到更多的指标和解释（以及开源的GitHub仓库）。
+你可以在[这里](https://docs.ragas.io/en/latest/getstarted/index.html)找到更多的指标和解释（以及开源的 GitHub 仓库）。
 
-关键点是我们可以将评估转化为更小的子问题。我们不是询问整个文本是否得到上下文支持，而是询问一个小的具体事实是否得到上下文支持。我们不是直接给出答案是否相关的数字，而是要求LLM为给定的答案想出一个问题。
+关键点是我们可以将评估转化为更小的子问题。我们不是询问整个文本是否得到上下文支持，而是询问一个小的具体事实是否得到上下文支持。我们不是直接给出答案是否相关的数字，而是要求 LLM 为给定的答案想出一个问题。
 
 # 结论
 
-评估LLMs是一个极具趣味的研究课题，随着越来越多的系统进入生产阶段并应用于更多安全关键的环境，这一话题将受到越来越多的关注。
+评估 LLMs 是一个极具趣味的研究课题，随着越来越多的系统进入生产阶段并应用于更多安全关键的环境，这一话题将受到越来越多的关注。
 
-我们还可以使用这些指标来监控LLMs在生产中的表现，以便发现输出质量是否开始下降。特别是在错误成本高的应用场景中，如医疗保健，开发保护措施和系统以捕捉和减少错误将是至关重要的。
+我们还可以使用这些指标来监控 LLMs 在生产中的表现，以便发现输出质量是否开始下降。特别是在错误成本高的应用场景中，如医疗保健，开发保护措施和系统以捕捉和减少错误将是至关重要的。
 
-尽管使用LLM作为评估器时肯定存在偏见和问题，我们仍应以研究问题的态度保持开放的心态。当然，人类仍将参与评估过程，但在某些场景中，自动化指标可以部分评估性能。
+尽管使用 LLM 作为评估器时肯定存在偏见和问题，我们仍应以研究问题的态度保持开放的心态。当然，人类仍将参与评估过程，但在某些场景中，自动化指标可以部分评估性能。
 
 这些指标不必总是完美的；它们只需要足够好以正确指导产品的开发。
 
-*特别感谢Daniel Raff和Yevhen Petyak的反馈和建议。*
+*特别感谢 Daniel Raff 和 Yevhen Petyak 的反馈和建议。*
 
 *最初发表于* [*Medplexity substack*](https://medplexity.substack.com/p/using-llms-to-evaluate-llms)*。*
 
-1.  杨成润等人。[*大语言模型作为优化器*](https://arxiv.org/abs/2309.03409)。arXiv，2023年9月6日。*arXiv.org*，[https://doi.org/10.48550/arXiv.2309.03409.](https://doi.org/10.48550/arXiv.2309.03409.)
+1.  杨成润等人。[*大语言模型作为优化器*](https://arxiv.org/abs/2309.03409)。arXiv，2023 年 9 月 6 日。*arXiv.org*，[`doi.org/10.48550/arXiv.2309.03409.`](https://doi.org/10.48550/arXiv.2309.03409.)
 
-1.  李成等人。*大语言模型理解并能通过情感刺激进行增强*。arXiv，2023年11月5日。*arXiv.org*，[https://doi.org/10.48550/arXiv.2307.11760.](https://doi.org/10.48550/arXiv.2307.11760.)
+1.  李成等人。*大语言模型理解并能通过情感刺激进行增强*。arXiv，2023 年 11 月 5 日。*arXiv.org*，[`doi.org/10.48550/arXiv.2307.11760.`](https://doi.org/10.48550/arXiv.2307.11760.)
 
-1.  王培毅等人。[*大语言模型并非公平的评估器*](https://arxiv.org/abs/2305.17926)。arXiv，2023年8月30日。*arXiv.org*，[https://doi.org/10.48550/arXiv.2305.17926.](https://doi.org/10.48550/arXiv.2305.17926.)
+1.  王培毅等人。[*大语言模型并非公平的评估器*](https://arxiv.org/abs/2305.17926)。arXiv，2023 年 8 月 30 日。*arXiv.org*，[`doi.org/10.48550/arXiv.2305.17926.`](https://doi.org/10.48550/arXiv.2305.17926.)
 
-1.  刘洋等人。[*G-Eval: 使用GPT-4进行更好人类对齐的NLG评估*](https://arxiv.org/abs/2303.16634)。arXiv，2023年5月23日。*arXiv.org*，[https://doi.org/10.48550/arXiv.2303.16634.](https://doi.org/10.48550/arXiv.2303.16634.)
+1.  刘洋等人。[*G-Eval: 使用 GPT-4 进行更好人类对齐的 NLG 评估*](https://arxiv.org/abs/2303.16634)。arXiv，2023 年 5 月 23 日。*arXiv.org*，[`doi.org/10.48550/arXiv.2303.16634.`](https://doi.org/10.48550/arXiv.2303.16634.)
 
-1.  闵世温等人。[*FActScore: 长篇文本生成中细粒度原子级事实精确度评估*](https://arxiv.org/abs/2305.14251)。arXiv，2023年10月11日。*arXiv.org*，[https://doi.org/10.48550/arXiv.2305.14251.](https://doi.org/10.48550/arXiv.2305.14251.)
+1.  闵世温等人。[*FActScore: 长篇文本生成中细粒度原子级事实精确度评估*](https://arxiv.org/abs/2305.14251)。arXiv，2023 年 10 月 11 日。*arXiv.org*，[`doi.org/10.48550/arXiv.2305.14251.`](https://doi.org/10.48550/arXiv.2305.14251.)
 
-1.  Shahul Es等人。[*RAGAS: 自动化评估检索增强生成*](https://arxiv.org/abs/2309.15217v1)。1，arXiv，2023年9月26日。*arXiv.org*，[https://doi.org/10.48550/arXiv.2309.15217.](https://doi.org/10.48550/arXiv.2309.15217.)
+1.  Shahul Es 等人。[*RAGAS: 自动化评估检索增强生成*](https://arxiv.org/abs/2309.15217v1)。1，arXiv，2023 年 9 月 26 日。*arXiv.org*，[`doi.org/10.48550/arXiv.2309.15217.`](https://doi.org/10.48550/arXiv.2309.15217.)

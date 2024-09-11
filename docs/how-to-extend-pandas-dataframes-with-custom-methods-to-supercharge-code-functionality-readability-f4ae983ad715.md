@@ -1,18 +1,18 @@
 # 如何通过自定义方法扩展 Pandas DataFrames，以增强代码功能和可读性
 
-> 原文：[https://towardsdatascience.com/how-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715?source=collection_archive---------4-----------------------#2023-10-10](https://towardsdatascience.com/how-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715?source=collection_archive---------4-----------------------#2023-10-10)
+> 原文：[`towardsdatascience.com/how-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715?source=collection_archive---------4-----------------------#2023-10-10`](https://towardsdatascience.com/how-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715?source=collection_archive---------4-----------------------#2023-10-10)
 
 ## **逐步指南：通过自定义方法扩展 Pandas DataFrames，包括如何实现条件概率和期望值扩展的完整示例**
 
-[](https://grahamharrison-86487.medium.com/?source=post_page-----f4ae983ad715--------------------------------)[![Graham Harrison](../Images/c6bfe00c6e0cfcdf3bd042c7fdc03554.png)](https://grahamharrison-86487.medium.com/?source=post_page-----f4ae983ad715--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f4ae983ad715--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f4ae983ad715--------------------------------) [Graham Harrison](https://grahamharrison-86487.medium.com/?source=post_page-----f4ae983ad715--------------------------------)
+[](https://grahamharrison-86487.medium.com/?source=post_page-----f4ae983ad715--------------------------------)![Graham Harrison](https://grahamharrison-86487.medium.com/?source=post_page-----f4ae983ad715--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f4ae983ad715--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f4ae983ad715--------------------------------) [Graham Harrison](https://grahamharrison-86487.medium.com/?source=post_page-----f4ae983ad715--------------------------------)
 
 ·
 
-[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd1c93739f33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715&user=Graham+Harrison&userId=bd1c93739f33&source=post_page-bd1c93739f33----f4ae983ad715---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f4ae983ad715--------------------------------) · 6 min 阅读 · 2023年10月10日
+[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd1c93739f33&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715&user=Graham+Harrison&userId=bd1c93739f33&source=post_page-bd1c93739f33----f4ae983ad715---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f4ae983ad715--------------------------------) · 6 min 阅读 · 2023 年 10 月 10 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff4ae983ad715&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715&source=-----f4ae983ad715---------------------bookmark_footer-----------)![](../Images/a15437590c86b85c8418a6056b45fb95.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff4ae983ad715&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-extend-pandas-dataframes-with-custom-methods-to-supercharge-code-functionality-readability-f4ae983ad715&source=-----f4ae983ad715---------------------bookmark_footer-----------)![](img/a15437590c86b85c8418a6056b45fb95.png)
 
 照片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/hvSr_CVecVI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 

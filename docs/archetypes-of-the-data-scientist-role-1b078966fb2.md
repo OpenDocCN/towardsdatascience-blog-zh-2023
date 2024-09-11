@@ -1,18 +1,18 @@
 # 数据科学家角色的原型
 
-> 原文：[https://towardsdatascience.com/archetypes-of-the-data-scientist-role-1b078966fb2?source=collection_archive---------2-----------------------#2023-08-23](https://towardsdatascience.com/archetypes-of-the-data-scientist-role-1b078966fb2?source=collection_archive---------2-----------------------#2023-08-23)
+> 原文：[`towardsdatascience.com/archetypes-of-the-data-scientist-role-1b078966fb2?source=collection_archive---------2-----------------------#2023-08-23`](https://towardsdatascience.com/archetypes-of-the-data-scientist-role-1b078966fb2?source=collection_archive---------2-----------------------#2023-08-23)
 
 ## 数据科学的角色可以非常不同，而职位描述并不总是清晰的。你想戴上什么帽子？
 
-[](https://medium.com/@s.kirmer?source=post_page-----1b078966fb2--------------------------------)[![Stephanie Kirmer](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----1b078966fb2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1b078966fb2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1b078966fb2--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----1b078966fb2--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----1b078966fb2--------------------------------)![Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----1b078966fb2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1b078966fb2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b078966fb2--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----1b078966fb2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchetypes-of-the-data-scientist-role-1b078966fb2&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----1b078966fb2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b078966fb2--------------------------------) ·9 min read·2023年8月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1b078966fb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchetypes-of-the-data-scientist-role-1b078966fb2&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----1b078966fb2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchetypes-of-the-data-scientist-role-1b078966fb2&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----1b078966fb2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b078966fb2--------------------------------) ·9 min read·2023 年 8 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1b078966fb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchetypes-of-the-data-scientist-role-1b078966fb2&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----1b078966fb2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1b078966fb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchetypes-of-the-data-scientist-role-1b078966fb2&source=-----1b078966fb2---------------------bookmark_footer-----------)![](../Images/9046f128540f7adb92794e63c197c97d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1b078966fb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchetypes-of-the-data-scientist-role-1b078966fb2&source=-----1b078966fb2---------------------bookmark_footer-----------)![](img/9046f128540f7adb92794e63c197c97d.png)
 
 图片由 [Clem Onojeghuo](https://unsplash.com/@clemono?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -46,13 +46,13 @@
 
 我从最被低估和不被欣赏的角色——分析开始。你在那里帮助公司弄清楚他们是否达到了目标，以及事情是否按照预期运作。这是非常重要的，也极其模糊和难以实际执行。你可能每天要做很多事情，比如构建仪表板，分析销售和产品成功等，也可能还要查看内部表现（比如员工流失等）。有些人会认为你的工作只是“给我做一个仪表板”，但即使你在做仪表板，你也会花大量时间考虑仪表板中应该测量什么，它是否应该存在，以及如何计算实际与目标对齐的指标。
 
-在前一个十年，你可能被称为运营分析师或BI专家（或者现在有时你也可能被这样称呼）。你需要处理大量来自奇怪来源的数据，并且你会使用大量的SQL。除非涉及到像反馈回应中的NLP这样的内容，否则你不会做太多机器学习。如果你在分析产品效果，你将进行大量的A/B测试。你可能在市场部门或独立的分析部门，但来自公司各个部门的人可能都会向你索要“数字”。
+在前一个十年，你可能被称为运营分析师或 BI 专家（或者现在有时你也可能被这样称呼）。你需要处理大量来自奇怪来源的数据，并且你会使用大量的 SQL。除非涉及到像反馈回应中的 NLP 这样的内容，否则你不会做太多机器学习。如果你在分析产品效果，你将进行大量的 A/B 测试。你可能在市场部门或独立的分析部门，但来自公司各个部门的人可能都会向你索要“数字”。
 
 # 功能构建者
 
-你则是在这里让产品变得更好，理想情况下，通过某种DS/ML魔法。你的高管们可能希望能够说你的产品包含AI，即使你只是有一个推荐引擎在产品中显示建议，或者对搜索结果进行排序。如果你运气好，你可能会有机会构建创新功能和为产品添加酷炫的东西——但如果你在从空白页和模糊任务开始时表现不好，这可能不是适合你的地方。
+你则是在这里让产品变得更好，理想情况下，通过某种 DS/ML 魔法。你的高管们可能希望能够说你的产品包含 AI，即使你只是有一个推荐引擎在产品中显示建议，或者对搜索结果进行排序。如果你运气好，你可能会有机会构建创新功能和为产品添加酷炫的东西——但如果你在从空白页和模糊任务开始时表现不好，这可能不是适合你的地方。
 
-你需要了解客户和行业，以便你可以构建有用的东西，而不仅仅是酷炫的东西。你应该倾听客户的声音，与面向客户的部门交流，但很多时候这个角色的人不会这样做。（这是个不好的选择。）你可能会进行自己的A/B测试，或者这可能会交给分析专家。你绝对需要分析专家（或者与他们重叠）来评估你构建的东西是否有价值。你使用Python工作。你可能在产品部门，但你会经常与工程部门沟通。
+你需要了解客户和行业，以便你可以构建有用的东西，而不仅仅是酷炫的东西。你应该倾听客户的声音，与面向客户的部门交流，但很多时候这个角色的人不会这样做。（这是个不好的选择。）你可能会进行自己的 A/B 测试，或者这可能会交给分析专家。你绝对需要分析专家（或者与他们重叠）来评估你构建的东西是否有价值。你使用 Python 工作。你可能在产品部门，但你会经常与工程部门沟通。
 
 # 基础设施构建者
 
@@ -98,7 +98,7 @@
 
 # 一些额外的注意事项
 
-我认为，随着你在DS/ML职业生涯中的资历上升，你会承担更多的角色，“我的工作是什么”的界限也会变得模糊。你会发展出在业务不同部分都有用的专业知识和经验，人们会来寻求你的意见。
+我认为，随着你在 DS/ML 职业生涯中的资历上升，你会承担更多的角色，“我的工作是什么”的界限也会变得模糊。你会发展出在业务不同部分都有用的专业知识和经验，人们会来寻求你的意见。
 
 此外，我在这里没有真正讨论战略或规划，但随着你的资历增加，你也会更多地参与这些事务。即使作为个人贡献者，你的经验也是有价值的——你可能以前见过类似的想法或问题。你应该对如何解决这些问题提出意见，即使负责的人选择了不同的方式。这只是高级职位工作的一部分。
 

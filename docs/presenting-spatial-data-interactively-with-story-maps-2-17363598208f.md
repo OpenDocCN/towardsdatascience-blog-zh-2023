@@ -1,18 +1,18 @@
 # 用故事地图互动地呈现空间数据 #2
 
-> 原文：[https://towardsdatascience.com/presenting-spatial-data-interactively-with-story-maps-2-17363598208f?source=collection_archive---------9-----------------------#2023-08-22](https://towardsdatascience.com/presenting-spatial-data-interactively-with-story-maps-2-17363598208f?source=collection_archive---------9-----------------------#2023-08-22)
+> 原文：[`towardsdatascience.com/presenting-spatial-data-interactively-with-story-maps-2-17363598208f?source=collection_archive---------9-----------------------#2023-08-22`](https://towardsdatascience.com/presenting-spatial-data-interactively-with-story-maps-2-17363598208f?source=collection_archive---------9-----------------------#2023-08-22)
 
 ## 用互动地图讲述故事和见解
 
-[](https://sutan.co.uk/?source=post_page-----17363598208f--------------------------------)[![Sutan Mufti](../Images/0a7922168ff75a80b2ddb38d4a142f37.png)](https://sutan.co.uk/?source=post_page-----17363598208f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17363598208f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----17363598208f--------------------------------) [Sutan Mufti](https://sutan.co.uk/?source=post_page-----17363598208f--------------------------------)
+[](https://sutan.co.uk/?source=post_page-----17363598208f--------------------------------)![Sutan Mufti](https://sutan.co.uk/?source=post_page-----17363598208f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17363598208f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----17363598208f--------------------------------) [Sutan Mufti](https://sutan.co.uk/?source=post_page-----17363598208f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b3de0d6aa21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpresenting-spatial-data-interactively-with-story-maps-2-17363598208f&user=Sutan+Mufti&userId=6b3de0d6aa21&source=post_page-6b3de0d6aa21----17363598208f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17363598208f--------------------------------) ·7 分钟阅读·2023年8月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17363598208f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpresenting-spatial-data-interactively-with-story-maps-2-17363598208f&user=Sutan+Mufti&userId=6b3de0d6aa21&source=-----17363598208f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b3de0d6aa21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpresenting-spatial-data-interactively-with-story-maps-2-17363598208f&user=Sutan+Mufti&userId=6b3de0d6aa21&source=post_page-6b3de0d6aa21----17363598208f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17363598208f--------------------------------) ·7 分钟阅读·2023 年 8 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17363598208f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpresenting-spatial-data-interactively-with-story-maps-2-17363598208f&user=Sutan+Mufti&userId=6b3de0d6aa21&source=-----17363598208f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F17363598208f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpresenting-spatial-data-interactively-with-story-maps-2-17363598208f&source=-----17363598208f---------------------bookmark_footer-----------)![](../Images/b1ca83ec0ab746f28d95547ad67c6266.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F17363598208f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpresenting-spatial-data-interactively-with-story-maps-2-17363598208f&source=-----17363598208f---------------------bookmark_footer-----------)![](img/b1ca83ec0ab746f28d95547ad67c6266.png)
 
 自定义故事地图，作者为 Sutan.co.uk（作者，2023）
 
@@ -34,11 +34,11 @@ jakarta.sutan.co.uk](https://jakarta.sutan.co.uk/?source=post_page-----173635982
 
 之前的文章：
 
-[](/presenting-spatial-data-interactively-by-scrolling-502df345dea6?source=post_page-----17363598208f--------------------------------) [## 通过滚动交互式展示空间数据
+[](/presenting-spatial-data-interactively-by-scrolling-502df345dea6?source=post_page-----17363598208f--------------------------------) ## 通过滚动交互式展示空间数据
 
 ### 用响应式地图讲述故事/见解。用地图讲故事！
 
-[towardsdatascience.com](/presenting-spatial-data-interactively-by-scrolling-502df345dea6?source=post_page-----17363598208f--------------------------------)
+[towardsdatascience.com
 
 # 空间数据科学与制图
 

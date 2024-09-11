@@ -1,10 +1,10 @@
-# 使用 PDF 文档训练自定义 Detectron2 模型进行目标检测（第 1 部分）
+# 使用 PDF 文档训练自定义 Detectron2 模型进行目标检测（第一部分）
 
-> 原文：[https://towardsdatascience.com/training-and-deploying-a-custom-detectron2-model-for-object-detection-using-pdf-documents-part-1-c724f61d8b4b?source=collection_archive---------1-----------------------#2023-11-29](https://towardsdatascience.com/training-and-deploying-a-custom-detectron2-model-for-object-detection-using-pdf-documents-part-1-c724f61d8b4b?source=collection_archive---------1-----------------------#2023-11-29)
+> 原文：[`towardsdatascience.com/training-and-deploying-a-custom-detectron2-model-for-object-detection-using-pdf-documents-part-1-c724f61d8b4b?source=collection_archive---------1-----------------------#2023-11-29`](https://towardsdatascience.com/training-and-deploying-a-custom-detectron2-model-for-object-detection-using-pdf-documents-part-1-c724f61d8b4b?source=collection_archive---------1-----------------------#2023-11-29)
 
 ## 让你的机器学会像人类一样读取 PDF 文档
 
-[](https://medium.com/@noahhaglund?source=post_page-----c724f61d8b4b--------------------------------)[![Noah Haglund](../Images/edfcc90677444ebced16549a1524d7fe.png)](https://medium.com/@noahhaglund?source=post_page-----c724f61d8b4b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c724f61d8b4b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c724f61d8b4b--------------------------------) [Noah Haglund](https://medium.com/@noahhaglund?source=post_page-----c724f61d8b4b--------------------------------)
+[](https://medium.com/@noahhaglund?source=post_page-----c724f61d8b4b--------------------------------)![Noah Haglund](https://medium.com/@noahhaglund?source=post_page-----c724f61d8b4b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c724f61d8b4b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c724f61d8b4b--------------------------------) [Noah Haglund](https://medium.com/@noahhaglund?source=post_page-----c724f61d8b4b--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc724f61d8b4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-and-deploying-a-custom-detectron2-model-for-object-detection-using-pdf-documents-part-1-c724f61d8b4b&source=-----c724f61d8b4b---------------------bookmark_footer-----------)![](../Images/ae9cddf5c27f7be9a2175d7ecdc2f571.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc724f61d8b4b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-and-deploying-a-custom-detectron2-model-for-object-detection-using-pdf-documents-part-1-c724f61d8b4b&source=-----c724f61d8b4b---------------------bookmark_footer-----------)![](img/ae9cddf5c27f7be9a2175d7ecdc2f571.png)
 
 我尝试了大半年的时间解决一个商业案例，通过使 PDF 文档机器可读，至少在头部/标题（指定一个部分的文本）可以从文档中提取出来，以及它们相关的内容，从而形成一些类似关系的数据结构。最初，我采用了卷积神经网络（CNN），以及 CNN 和递归神经网络（RNN）的结合，来使用文本和文本特征（字体、字体大小、粗细等）对文档结构进行分类。这个框架由 [Rahman & Finin](https://arxiv.org/pdf/1910.03678.pdf) 实现，并通过使用长短期记忆（LSTM）进行语义分类超越了推断文档结构的能力。我面临的问题是没有足够的时间和精力来准备和标注足够的数据，以便使用类似的框架制作准确的模型。
 
@@ -40,7 +40,7 @@ pip install torchvision && pip install "detectron2@git+https://github.com/facebo
 
 紧密按照 [这里](https://layout-parser.readthedocs.io/en/latest/notes/installation.html#for-windows-users) Layout Parser 包提供的说明进行操作（这是一个很有用的包，如果你不想训练自己的 Detectron2 模型用于 PDF 结构/内容推断而希望依赖预标注数据！这无疑更省时间，但你会发现针对特定用例，你可以在自己的数据上训练一个更准确且更小的模型，这对于部署中的内存管理非常有利，稍后我会讨论）。确保安装 pycocotools，以及 Detectron2，因为这个包将帮助加载、解析和可视化 [COCO](https://cocodataset.org/#home) 数据，这是我们训练 Detectron2 模型所需的数据格式。
 
-本文系列的第2部分将使用本地 Detectron2 安装，我们将在文章的后续部分使用 AWS EC2 实例进行 Detectron2 训练。
+本文系列的第二部分将使用本地 Detectron2 安装，我们将在文章的后续部分使用 AWS EC2 实例进行 Detectron2 训练。
 
 # **Detectron2 自定义训练 — 使用 LabelMe 进行标注**
 
@@ -73,13 +73,13 @@ while index < len(dir_list):
 
 一旦你有了一个图像目录，我们将使用 LabelMe 工具，安装说明请见 [这里](https://github.com/wkentaro/labelme#installation)。安装完成后，只需在命令行或终端中运行 labelme 命令。这将打开一个具有以下布局的窗口：
 
-![](../Images/602961b6c75732530f4b0da3152bc93d.png)
+![](img/602961b6c75732530f4b0da3152bc93d.png)
 
-点击左侧的“打开目录”选项，打开保存图像的目录（我们也称这个目录为“train”）。LabelMe 将打开目录中的第一张图像，并允许你对每张图像进行标注。右键单击图像以找到各种标注选项，例如创建多边形以点击图像中给定对象周围的每个点，或创建矩形以捕捉对象，同时确保90度角。
+点击左侧的“打开目录”选项，打开保存图像的目录（我们也称这个目录为“train”）。LabelMe 将打开目录中的第一张图像，并允许你对每张图像进行标注。右键单击图像以找到各种标注选项，例如创建多边形以点击图像中给定对象周围的每个点，或创建矩形以捕捉对象，同时确保 90 度角。
 
-一旦放置了边界框/多边形，LabelMe 会要求输入标签。在下面的示例中，我为页面上的每个标题实例提供了标签头。你可以使用多个标签来识别图像中的各种对象（对于 PDF 示例，这可能是标题/头部、表格、段落、列表等），但出于我的目的，我将仅识别标题/头部，然后在模型推断后通过算法将每个标题与其相应的内容关联起来（见第2部分）。
+一旦放置了边界框/多边形，LabelMe 会要求输入标签。在下面的示例中，我为页面上的每个标题实例提供了标签头。你可以使用多个标签来识别图像中的各种对象（对于 PDF 示例，这可能是标题/头部、表格、段落、列表等），但出于我的目的，我将仅识别标题/头部，然后在模型推断后通过算法将每个标题与其相应的内容关联起来（见第二部分）。
 
-![](../Images/e10b5f7e2ac5c5de670c867b7fde0d81.png)
+![](img/e10b5f7e2ac5c5de670c867b7fde0d81.png)
 
 注释完成后，点击保存按钮，然后点击下一张图片以注释给定目录中的下一张图片。Detectron2 在使用最少的数据进行推断时表现出色，因此可以随意注释大约 100 张图片进行初步训练和测试，然后再进一步注释和训练以提高模型的准确性（请记住，对多个标签类别进行训练会降低一点准确性，需要更大的数据集来提高准确性）。
 
@@ -107,7 +107,7 @@ python labelme2coco.py path/to/train/folder
 
 首先，登录到 [AWS 控制台](https://aws.amazon.com/console/)。登录后，在搜索栏中搜索 EC2 以进入 EC2 仪表板。在这里，点击屏幕左侧的实例，然后点击启动实例按钮。
 
-![](../Images/ad3c3b76c2e8bfcd9367144dafe96ac0.png)
+![](img/ad3c3b76c2e8bfcd9367144dafe96ac0.png)
 
 你需要为实例提供的最低详细信息是：
 
@@ -121,7 +121,7 @@ python labelme2coco.py path/to/train/folder
 
 +   指定一个 **密钥对（登录）。** 如果您尚未创建此密钥对，请创建一个，并可以随意将其命名为 p3key，正如我所做的那样。
 
-![](../Images/e2389169d19bea071a94db6806fc3986.png)
+![](img/e2389169d19bea071a94db6806fc3986.png)
 
 +   最后，**配置存储。** 如果您使用了与我相同的 AMI 和实例类型，您将看到起始默认存储为 45gb。根据您的训练数据集大小，可以将其增加到约 60gb 或更多，以确保实例有足够的空间存储您的图像。
 
@@ -133,15 +133,15 @@ ssh -L 8000:localhost:8888 -i **C:\path\to\p3key.pem** ubuntu@**ec2id.ec2region.
 
 由于这是一个新主机，请对以下消息回答“是”：
 
-![](../Images/1bf5b52c248ee53ee2c20a84d7135356.png)
+![](img/1bf5b52c248ee53ee2c20a84d7135356.png)
 
 然后 Ubuntu 将启动，并带有一个名为 PyTorch（来自 AWS AMI）的预打包虚拟环境。激活 venv 并使用以下两个命令启动预安装的 Jupyter Notebook：
 
-![](../Images/8302201c5df6ed23bbf6e20081fabdfe.png)
+![](img/8302201c5df6ed23bbf6e20081fabdfe.png)
 
 这将返回供您复制并粘贴到浏览器中的 URL。将包含 localhost 的 URL 复制到浏览器中，并将 8888 改为 8000。这样会带您到一个看起来类似于此的 Jupyter Notebook：
 
-![](../Images/ffe5c78684dddb1228cf7479ae0717ea.png)
+![](img/ffe5c78684dddb1228cf7479ae0717ea.png)
 
 从 [我的 GitHub 仓库](https://github.com/nzh2534/detectron2tutorial/blob/main/Detectron2__Tutorial.ipynb) 中，将 Detectron2_Tutorial.ipynb 文件上传到笔记本中。从这里，运行安装头下的命令以完全安装 Detectron2。然后，重启运行时以确保安装生效。
 
@@ -160,18 +160,18 @@ ssh -L 8000:localhost:8888 -i **C:\path\to\p3key.pem** ubuntu@**ec2id.ec2region.
 
 最后，运行 .ipynb 文件中 Training 部分的笔记本单元。最后一个单元将输出类似于以下的响应：
 
-![](../Images/309393f75f12959eba0a6bbc4f9434e5.png)
+![](img/309393f75f12959eba0a6bbc4f9434e5.png)
 
 这将显示用于训练的图像数量，以及你在训练数据集中标注的实例计数（这里，在训练之前找到“title”类别的 470 个实例）。然后，Detectron2 将数据序列化，并按配置中指定的批次加载数据（utils.py）。
 
 一旦训练开始，你将看到 Detectron2 打印事件：
 
-![](../Images/8b88dbef3bd6f86760a4aac08ddea6f4.png)
+![](img/8b88dbef3bd6f86760a4aac08ddea6f4.png)
 
 这让你了解以下信息：估计剩余的训练时间、Detectron2 已执行的迭代次数，以及最重要的监控准确度的 total_loss，它是其他损失计算的指标，表示模型在单个示例上的预测有多差。如果模型的预测是完美的，则损失为零；否则，损失会更大。如果模型不完美也不要担心！我们可以随时添加更多标注数据来提高模型的准确度，或者在我们的应用中使用最终训练好的模型的高分推断（表示模型对推断准确性的信心）。
 
 完成后，在笔记本中会创建一个名为 output 的目录，其中包含一个名为 object detection 的子目录，该子目录包含与训练事件和指标相关的文件、记录模型检查点的文件，以及一个名为 model_final.pth 的 .pth 文件。这是已经保存和训练好的 Detectron2 模型，现在可以用于在部署的应用程序中进行推断！在关闭或终止 AWS EC2 实例之前，请确保下载此文件。
 
-现在我们已经有了 model_final.pth，请继续阅读 *第2部分：设计与部署* 文章，该文章将涵盖使用机器学习的应用程序的部署过程，并提供一些关键提示，帮助提高这一过程的效率。
+现在我们已经有了 model_final.pth，请继续阅读 *第二部分：设计与部署* 文章，该文章将涵盖使用机器学习的应用程序的部署过程，并提供一些关键提示，帮助提高这一过程的效率。
 
 *除非另有说明，本文中使用的所有图片均为作者所用*

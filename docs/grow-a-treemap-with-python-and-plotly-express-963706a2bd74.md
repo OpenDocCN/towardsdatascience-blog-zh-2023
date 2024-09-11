@@ -1,18 +1,18 @@
 # 使用 Python 和 Plotly Express 创建树形图
 
-> 原文：[https://towardsdatascience.com/grow-a-treemap-with-python-and-plotly-express-963706a2bd74?source=collection_archive---------5-----------------------#2023-04-07](https://towardsdatascience.com/grow-a-treemap-with-python-and-plotly-express-963706a2bd74?source=collection_archive---------5-----------------------#2023-04-07)
+> 原文：[`towardsdatascience.com/grow-a-treemap-with-python-and-plotly-express-963706a2bd74?source=collection_archive---------5-----------------------#2023-04-07`](https://towardsdatascience.com/grow-a-treemap-with-python-and-plotly-express-963706a2bd74?source=collection_archive---------5-----------------------#2023-04-07)
 
 ## 将政府 PDF 转换为财务规划工具
 
-[](https://medium.com/@lee_vaughan?source=post_page-----963706a2bd74--------------------------------)[![Lee Vaughan](../Images/9f6b90bb76102f438ab0b9a4a62ffa3f.png)](https://medium.com/@lee_vaughan?source=post_page-----963706a2bd74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----963706a2bd74--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----963706a2bd74--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----963706a2bd74--------------------------------)
+[](https://medium.com/@lee_vaughan?source=post_page-----963706a2bd74--------------------------------)![Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----963706a2bd74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----963706a2bd74--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----963706a2bd74--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----963706a2bd74--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrow-a-treemap-with-python-and-plotly-express-963706a2bd74&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----963706a2bd74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----963706a2bd74--------------------------------) · 8 分钟阅读 · 2023年4月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F963706a2bd74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrow-a-treemap-with-python-and-plotly-express-963706a2bd74&user=Lee+Vaughan&userId=5d604015c08b&source=-----963706a2bd74---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrow-a-treemap-with-python-and-plotly-express-963706a2bd74&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----963706a2bd74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----963706a2bd74--------------------------------) · 8 分钟阅读 · 2023 年 4 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F963706a2bd74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrow-a-treemap-with-python-and-plotly-express-963706a2bd74&user=Lee+Vaughan&userId=5d604015c08b&source=-----963706a2bd74---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F963706a2bd74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrow-a-treemap-with-python-and-plotly-express-963706a2bd74&source=-----963706a2bd74---------------------bookmark_footer-----------)![](../Images/b3a0fa3113923d8d9c7a5a3b1e3e8827.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F963706a2bd74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrow-a-treemap-with-python-and-plotly-express-963706a2bd74&source=-----963706a2bd74---------------------bookmark_footer-----------)![](img/b3a0fa3113923d8d9c7a5a3b1e3e8827.png)
 
 由 Robert Murray 拍摄，图片来源于 Unsplash！
 
@@ -20,7 +20,7 @@
 
 *树形图* 是一种使用嵌套矩形来表示层级数据的图示。每个矩形的面积与其数值对应。树形图已经存在约 30 年了。早期应用之一是用于可视化硬盘使用情况，如下图所示。
 
-![](../Images/5fbfa693cbf1cf386397aaca4297ed39.png)
+![](img/5fbfa693cbf1cf386397aaca4297ed39.png)
 
 硬盘空间的分配通过树图进行可视化（[Carnivore1973 via Wikimedia Commons](https://commons.wikimedia.org/w/index.php?search=Carnivore1973&title=Special%3AMediaSearch&go=Go&type=image)）。
 

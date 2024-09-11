@@ -1,28 +1,28 @@
 # 完整指南：如何通过合同测试和 dbt 有效地扩展你的数据管道和数据产品
 
-> 原文：[https://towardsdatascience.com/how-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443?source=collection_archive---------2-----------------------#2023-10-25](https://towardsdatascience.com/how-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443?source=collection_archive---------2-----------------------#2023-10-25)
+> 原文：[`towardsdatascience.com/how-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443?source=collection_archive---------2-----------------------#2023-10-25`](https://towardsdatascience.com/how-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443?source=collection_archive---------2-----------------------#2023-10-25)
 
 ## 开始使用 dbt 实施合同测试所需了解的一切
 
-[](https://medium.com/@pablo.porto?source=post_page-----10c92ea9a443--------------------------------)[![Pablo Porto](../Images/acfca713c40ae7f2b86756fb39402c60.png)](https://medium.com/@pablo.porto?source=post_page-----10c92ea9a443--------------------------------)[](https://towardsdatascience.com/?source=post_page-----10c92ea9a443--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----10c92ea9a443--------------------------------) [Pablo Porto](https://medium.com/@pablo.porto?source=post_page-----10c92ea9a443--------------------------------)
+[](https://medium.com/@pablo.porto?source=post_page-----10c92ea9a443--------------------------------)![Pablo Porto](https://medium.com/@pablo.porto?source=post_page-----10c92ea9a443--------------------------------)[](https://towardsdatascience.com/?source=post_page-----10c92ea9a443--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----10c92ea9a443--------------------------------) [Pablo Porto](https://medium.com/@pablo.porto?source=post_page-----10c92ea9a443--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f9bc7e34a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443&user=Pablo+Porto&userId=a6f9bc7e34a6&source=post_page-a6f9bc7e34a6----10c92ea9a443---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----10c92ea9a443--------------------------------) ·11 min read·2023年10月25日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f9bc7e34a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443&user=Pablo+Porto&userId=a6f9bc7e34a6&source=post_page-a6f9bc7e34a6----10c92ea9a443---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----10c92ea9a443--------------------------------) ·11 min read·2023 年 10 月 25 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F10c92ea9a443&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443&source=-----10c92ea9a443---------------------bookmark_footer-----------)![](../Images/7762e018a2f9b67dff6d9432dcb7e350.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F10c92ea9a443&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-scale-your-data-pipelines-and-data-products-with-dbt-and-contract-testing-10c92ea9a443&source=-----10c92ea9a443---------------------bookmark_footer-----------)![](img/7762e018a2f9b67dff6d9432dcb7e350.png)
 
 图片由 [Jonas Gerg](https://unsplash.com/@walamana?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-让我讲一个关于数据管理系统和规模的故事，这个故事如果你是一名数据或分析工程师，可能会引起你的共鸣，尤其是在2023年尽力做到最好时。
+让我讲一个关于数据管理系统和规模的故事，这个故事如果你是一名数据或分析工程师，可能会引起你的共鸣，尤其是在 2023 年尽力做到最好时。
 
 不久之前，几乎所有的数据架构和数据团队结构都遵循了[集中式方法](https://www.getdbt.com/data-teams/centralized-vs-decentralized#the-centralized-model)。作为数据或分析工程师，你知道在哪里找到所有的转换逻辑和模型，因为它们都在同一个代码库中。你可能与你的同事紧密合作，那个同事负责构建你所使用的数据管道。数据团队只有一个，最多两个。
 
 这种方法对于数据源和用例有限的小型组织和初创公司是有效的。它也适用于那些没有完全专注于从数据中提取价值的大型企业。然而，随着组织优先考虑数据驱动，有了更多的机器学习、分析和商业智能数据用例的需求。 
 
-![](../Images/aaa21e48e65eaf597be05bb80aa6c87a.png)
+![](img/aaa21e48e65eaf597be05bb80aa6c87a.png)
 
 由一个团队开发和维护的集中式数据架构
 
@@ -32,7 +32,7 @@
 
 在这种架构和组织结构中，往往不清楚每个组件的负责人，导致问题和责任推诿。团队之间的集成点数量也增加，维护不同组件之间的工作接口变得更加困难。
 
-![](../Images/8f43f4b098d08d37d8223b1a4c3947ca.png)
+![](img/8f43f4b098d08d37d8223b1a4c3947ca.png)
 
 多团队和多个组件的去中心化数据架构
 
@@ -46,7 +46,7 @@
 
 当一个分布式系统开始成长为由多个团队开发的多个组件时，团队可能首先尝试的验证系统行为是否符合预期的方法是 **实施端到端测试来测试整个系统**。
 
-![](../Images/670bc60845697f0967a6cf9b588cd5ba.png)
+![](img/670bc60845697f0967a6cf9b588cd5ba.png)
 
 端到端测试范围侧重于验证系统整体
 
@@ -58,9 +58,9 @@
 
 团队仍然可以保留一小部分端到端测试，但他们通过使用更快速、更可靠的测试如合同测试、组件测试和单元测试来向下移动测试金字塔。
 
-不同测试类型的权衡通常通过测试金字塔可视化。我在之前的文章中提到过这个概念，关于 [为 dbt 模型实施单元测试](/improving-the-code-quality-of-your-dbt-models-with-unit-tests-and-tdd-203ed0be791e)。
+不同测试类型的权衡通常通过测试金字塔可视化。我在之前的文章中提到过这个概念，关于 为 dbt 模型实施单元测试。
 
-![](../Images/e35ca1e5c8d8700590bc1bb6c3370145.png)
+![](img/e35ca1e5c8d8700590bc1bb6c3370145.png)
 
 [操作系统的典型测试金字塔](https://martinfowler.com/articles/practical-test-pyramid.html)
 
@@ -70,7 +70,7 @@
 
 +   公开接口，例如 marts 和输出端口。
 
-![](../Images/9473d0a15f28704bca895b443739e3e9.png)
+![](img/9473d0a15f28704bca895b443739e3e9.png)
 
 合同测试范围
 
@@ -94,7 +94,7 @@
 
 这是一个合理的观察，因为合同测试与数据质量测试之间的界限模糊。我喜欢将合同测试视为现代数据测试策略中的质量测试的一个子集。
 
-![](../Images/b2eea1a8d22d90b40c4bc9a962306481.png)
+![](img/b2eea1a8d22d90b40c4bc9a962306481.png)
 
 合同测试可以视为质量测试的一个子集
 
@@ -120,15 +120,15 @@
 
 # 实施我们的第一个合同测试
 
-好了，理论够多了，让我们通过一个简单的示例开始实际操作。我们有一个叫做**health-insights**的dbt应用程序，它从上游数据源获取体重和身高数据，并计算体质指数指标。
+好了，理论够多了，让我们通过一个简单的示例开始实际操作。我们有一个叫做**health-insights**的 dbt 应用程序，它从上游数据源获取体重和身高数据，并计算体质指数指标。
 
-我们来自出色的后台团队的同事负责生成我们需要的体重和身高数据，以构建我们的health-insights应用程序。他们在一个有点忙碌和压力的不同团队工作。有时他们未能通知我们模式的更改。为了测试这些上游接口中的变化，我们决定创建第一个源合同测试。
+我们来自出色的后台团队的同事负责生成我们需要的体重和身高数据，以构建我们的 health-insights 应用程序。他们在一个有点忙碌和压力的不同团队工作。有时他们未能通知我们模式的更改。为了测试这些上游接口中的变化，我们决定创建第一个源合同测试。
 
-![](../Images/9ec94b8abce79c7e5d79a3c97fc152e0.png)
+![](img/9ec94b8abce79c7e5d79a3c97fc152e0.png)
 
 我们示例的系统架构
 
-首先，我们需要添加两个新的dbt包，[dbt-expectations](https://github.com/calogica/dbt-expectations)和dbt-utils，这将允许我们对源的模式和接受的值进行断言。
+首先，我们需要添加两个新的 dbt 包，[dbt-expectations](https://github.com/calogica/dbt-expectations)和 dbt-utils，这将允许我们对源的模式和接受的值进行断言。
 
 ```py
 # packages.yml
@@ -145,7 +145,7 @@ packages:
 
 让我们开始为我们的第一个源定义合同测试。我们从**raw_height**表中提取数据，该表包含来自健身应用程序用户的身高信息。
 
-我们与数据生产者达成一致，我们将接收身高测量值、测量单位和用户ID。我们同意数据类型，并且仅支持‘cm’和‘inches’作为单位。基于这些信息，我们可以在dbt源YAML文件中定义我们的第一个合同。
+我们与数据生产者达成一致，我们将接收身高测量值、测量单位和用户 ID。我们同意数据类型，并且仅支持‘cm’和‘inches’作为单位。基于这些信息，我们可以在 dbt 源 YAML 文件中定义我们的第一个合同。
 
 ## 基础构件
 
@@ -159,7 +159,7 @@ packages:
 
 +   **not null：** 最后，像‘not null’这样的内置断言允许我们定义列约束。
 
-使用这些构建块，我们添加了几个测试来定义上述合同期望。注意我们如何将测试标记为“contract-test-source”。这个标签允许我们在本地和之后在CI/CD管道中隔离地运行所有合同测试：
+使用这些构建块，我们添加了几个测试来定义上述合同期望。注意我们如何将测试标记为“contract-test-source”。这个标签允许我们在本地和之后在 CI/CD 管道中隔离地运行所有合同测试：
 
 ```py
 dbt test --select tag:contract-test-source
@@ -238,7 +238,7 @@ Database Error in model body_mass_indexes (models/marts/body_mass_indexes.sql)
 
 这些失败提供了关于其他团队在这些变化到达生产环境之前引入的违反合同的变化的宝贵信息。
 
-![](../Images/e8652099a68c59a64267a0a9cf807fa2.png)
+![](img/e8652099a68c59a64267a0a9cf807fa2.png)
 
 [Github Actions 中的 dbt CI/CD 管道示例](https://github.com/portovep/dbt-unit-testing-examples/actions/workflows/cd-pipeline.yml)
 

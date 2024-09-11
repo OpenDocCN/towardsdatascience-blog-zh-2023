@@ -1,18 +1,18 @@
 # 如何使用 Python 构建一个类似 Shazam 的 Telegram 机器人
 
-> 原文：[https://towardsdatascience.com/how-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5?source=collection_archive---------11-----------------------#2023-01-24](https://towardsdatascience.com/how-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5?source=collection_archive---------11-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/how-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5?source=collection_archive---------11-----------------------#2023-01-24`](https://towardsdatascience.com/how-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5?source=collection_archive---------11-----------------------#2023-01-24)
 
 ## 一个创建和部署可以实时识别音乐的 Telegram 机器人，并帮助你查找歌曲标题和歌手的教程。
 
-[](https://eugenia-anello.medium.com/?source=post_page-----98dc081c53d5--------------------------------)[![Eugenia Anello](../Images/537f444252cdc60709e7a19e37734c7b.png)](https://eugenia-anello.medium.com/?source=post_page-----98dc081c53d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98dc081c53d5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----98dc081c53d5--------------------------------) [Eugenia Anello](https://eugenia-anello.medium.com/?source=post_page-----98dc081c53d5--------------------------------)
+[](https://eugenia-anello.medium.com/?source=post_page-----98dc081c53d5--------------------------------)![Eugenia Anello](https://eugenia-anello.medium.com/?source=post_page-----98dc081c53d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98dc081c53d5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----98dc081c53d5--------------------------------) [Eugenia Anello](https://eugenia-anello.medium.com/?source=post_page-----98dc081c53d5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F86fdc517c278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5&user=Eugenia+Anello&userId=86fdc517c278&source=post_page-86fdc517c278----98dc081c53d5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98dc081c53d5--------------------------------) ·9 min read·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98dc081c53d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5&user=Eugenia+Anello&userId=86fdc517c278&source=-----98dc081c53d5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F86fdc517c278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5&user=Eugenia+Anello&userId=86fdc517c278&source=post_page-86fdc517c278----98dc081c53d5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98dc081c53d5--------------------------------) ·9 min read·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98dc081c53d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5&user=Eugenia+Anello&userId=86fdc517c278&source=-----98dc081c53d5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98dc081c53d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5&source=-----98dc081c53d5---------------------bookmark_footer-----------)![](../Images/42e32cdfef8d602899d368abc141af42.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98dc081c53d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-shazam-like-telegram-bot-using-python-98dc081c53d5&source=-----98dc081c53d5---------------------bookmark_footer-----------)![](img/42e32cdfef8d602899d368abc141af42.png)
 
 照片来源于 [Austin Neill](https://unsplash.com/@arstyy) 于 [Unsplash](https://unsplash.com/photos/hgO1wFPXl3I)
 
@@ -26,8 +26,8 @@
 
 ## 目录：
 
-+   [**第1部分：使用 Python 创建 Telegram 机器人**](#962f)
++   **第一部分：使用 Python 创建 Telegram 机器人**
 
-+   [**第2部分：将 Telegram 机器人部署到 Fly.io**](#379f)
++   **第二部分：将 Telegram 机器人部署到 Fly.io**
 
-# 第1部分：使用 Python 创建 Telegram 机器人
+# 第一部分：使用 Python 创建 Telegram 机器人

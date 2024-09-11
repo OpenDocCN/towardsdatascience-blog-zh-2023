@@ -1,18 +1,18 @@
 # 理解 Power BI 中的不同缓存类型
 
-> 原文：[https://towardsdatascience.com/understanding-different-cache-types-in-power-bi-f1e205f5956e?source=collection_archive---------5-----------------------#2023-03-22](https://towardsdatascience.com/understanding-different-cache-types-in-power-bi-f1e205f5956e?source=collection_archive---------5-----------------------#2023-03-22)
+> 原文：[`towardsdatascience.com/understanding-different-cache-types-in-power-bi-f1e205f5956e?source=collection_archive---------5-----------------------#2023-03-22`](https://towardsdatascience.com/understanding-different-cache-types-in-power-bi-f1e205f5956e?source=collection_archive---------5-----------------------#2023-03-22)
 
 ## 你知道 Power BI 依赖于两种不同的缓存类型吗？在这篇文章中，我们将揭示它们在实际中的工作原理。
 
-[](https://datamozart.medium.com/?source=post_page-----f1e205f5956e--------------------------------)[![Nikola Ilic](../Images/9fab894b9696c0dfd80c5173188b720b.png)](https://datamozart.medium.com/?source=post_page-----f1e205f5956e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1e205f5956e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f1e205f5956e--------------------------------) [Nikola Ilic](https://datamozart.medium.com/?source=post_page-----f1e205f5956e--------------------------------)
+[](https://datamozart.medium.com/?source=post_page-----f1e205f5956e--------------------------------)![Nikola Ilic](https://datamozart.medium.com/?source=post_page-----f1e205f5956e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f1e205f5956e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1e205f5956e--------------------------------) [Nikola Ilic](https://datamozart.medium.com/?source=post_page-----f1e205f5956e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64005b7daa38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-different-cache-types-in-power-bi-f1e205f5956e&user=Nikola+Ilic&userId=64005b7daa38&source=post_page-64005b7daa38----f1e205f5956e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1e205f5956e--------------------------------) · 9分钟阅读 · 2023年3月22日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff1e205f5956e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-different-cache-types-in-power-bi-f1e205f5956e&user=Nikola+Ilic&userId=64005b7daa38&source=-----f1e205f5956e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64005b7daa38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-different-cache-types-in-power-bi-f1e205f5956e&user=Nikola+Ilic&userId=64005b7daa38&source=post_page-64005b7daa38----f1e205f5956e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f1e205f5956e--------------------------------) · 9 分钟阅读 · 2023 年 3 月 22 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff1e205f5956e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-different-cache-types-in-power-bi-f1e205f5956e&user=Nikola+Ilic&userId=64005b7daa38&source=-----f1e205f5956e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1e205f5956e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-different-cache-types-in-power-bi-f1e205f5956e&source=-----f1e205f5956e---------------------bookmark_footer-----------)![](../Images/e99a5018a6e415699cf2771f590b9514.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff1e205f5956e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-different-cache-types-in-power-bi-f1e205f5956e&source=-----f1e205f5956e---------------------bookmark_footer-----------)![](img/e99a5018a6e415699cf2771f590b9514.png)
 
 作者提供的图片
 

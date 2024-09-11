@@ -1,30 +1,30 @@
 # 定义可解释的特征
 
-> 原文：[https://towardsdatascience.com/defining-interpretable-features-ebd7ed94897?source=collection_archive---------4-----------------------#2023-01-14](https://towardsdatascience.com/defining-interpretable-features-ebd7ed94897?source=collection_archive---------4-----------------------#2023-01-14)
+> 原文：[`towardsdatascience.com/defining-interpretable-features-ebd7ed94897?source=collection_archive---------4-----------------------#2023-01-14`](https://towardsdatascience.com/defining-interpretable-features-ebd7ed94897?source=collection_archive---------4-----------------------#2023-01-14)
 
-![](../Images/3c249d3744da050be86ce0f32278375a.png)
+![](img/3c249d3744da050be86ce0f32278375a.png)
 
 照片由 [Kevin Ku](https://unsplash.com/@ikukevk?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-## 这是MIT研究人员总结的发现和开发的分类法。
+## 这是 MIT 研究人员总结的发现和开发的分类法。
 
-[](https://medium.com/@upadhyan?source=post_page-----ebd7ed94897--------------------------------)[![Nakul Upadhya](../Images/336cb21272e9b1f098177adbde50e92e.png)](https://medium.com/@upadhyan?source=post_page-----ebd7ed94897--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ebd7ed94897--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ebd7ed94897--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----ebd7ed94897--------------------------------)
+[](https://medium.com/@upadhyan?source=post_page-----ebd7ed94897--------------------------------)![Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----ebd7ed94897--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ebd7ed94897--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ebd7ed94897--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----ebd7ed94897--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdefining-interpretable-features-ebd7ed94897&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----ebd7ed94897---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ebd7ed94897--------------------------------) ·9分钟阅读·2023年1月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Febd7ed94897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdefining-interpretable-features-ebd7ed94897&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----ebd7ed94897---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdefining-interpretable-features-ebd7ed94897&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----ebd7ed94897---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ebd7ed94897--------------------------------) ·9 分钟阅读·2023 年 1 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Febd7ed94897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdefining-interpretable-features-ebd7ed94897&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----ebd7ed94897---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Febd7ed94897&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdefining-interpretable-features-ebd7ed94897&source=-----ebd7ed94897---------------------bookmark_footer-----------)
 
-在2022年2月，麻省理工学院[数据到人工智能（DAI）小组](https://dai.lids.mit.edu/)的研究人员发布了一篇名为《可解释特征的必要性：动机和分类法》的论文[1]。在这篇文章中，我旨在总结这些作者的一些主要观点和贡献，并讨论他们工作的潜在影响和批评。如果你对这些内容感兴趣，我强烈推荐阅读[原始论文](https://arxiv.org/abs/2202.11748)。此外，如果你对可解释机器学习不太熟悉，我强烈推荐[Christopher Molnar的免费书籍](https://christophm.github.io/interpretable-ml-book/) [2]。虽然可解释性/解释性的定义在不同的出版物中常常变化[1]，但这本书提供了理解该领域的坚实基础。
+在 2022 年 2 月，麻省理工学院[数据到人工智能（DAI）小组](https://dai.lids.mit.edu/)的研究人员发布了一篇名为《可解释特征的必要性：动机和分类法》的论文[1]。在这篇文章中，我旨在总结这些作者的一些主要观点和贡献，并讨论他们工作的潜在影响和批评。如果你对这些内容感兴趣，我强烈推荐阅读[原始论文](https://arxiv.org/abs/2202.11748)。此外，如果你对可解释机器学习不太熟悉，我强烈推荐[Christopher Molnar 的免费书籍](https://christophm.github.io/interpretable-ml-book/) [2]。虽然可解释性/解释性的定义在不同的出版物中常常变化[1]，但这本书提供了理解该领域的坚实基础。
 
-论文的核心发现是**即使是像线性回归这样高度可解释的模型，非可解释的特征也可能导致难以理解的解释**（例如，特征x12的权重为4对大多数人来说毫无意义）。鉴于此，论文提供了利益相关者的分类、可解释特征的现实世界应用场景、各种特征质量的分类，以及可能的可解释特征转换，这些都帮助数据科学家开发易于理解的特征。
+论文的核心发现是**即使是像线性回归这样高度可解释的模型，非可解释的特征也可能导致难以理解的解释**（例如，特征 x12 的权重为 4 对大多数人来说毫无意义）。鉴于此，论文提供了利益相关者的分类、可解释特征的现实世界应用场景、各种特征质量的分类，以及可能的可解释特征转换，这些都帮助数据科学家开发易于理解的特征。
 
 # 利益相关者的定义
 
-论文的第一个贡献是扩展了Preece等人提出的可能受益于机器学习解释的主要用户类型，并定义了一些他们的兴趣。虽然Preece等人提出了4种主要的利益相关者类型，但本文的作者将该列表扩展到5种：
+论文的第一个贡献是扩展了 Preece 等人提出的可能受益于机器学习解释的主要用户类型，并定义了一些他们的兴趣。虽然 Preece 等人提出了 4 种主要的利益相关者类型，但本文的作者将该列表扩展到 5 种：
 
 +   开发者：那些训练、测试和部署机器学习模型的人，他们关注特征以提高模型性能。
 
@@ -40,25 +40,25 @@
 
 # 现实世界应用场景
 
-除了介绍利益相关者之外，作者还介绍了5个实际领域，在这些领域中，他们在试图解释自己开发的模型时遇到了障碍。
+除了介绍利益相关者之外，作者还介绍了 5 个实际领域，在这些领域中，他们在试图解释自己开发的模型时遇到了障碍。
 
 ## 案例研究
 
 **儿童福利**
 
-在这项案例研究中，DAI团队与社会工作者和科学家（担任决策者和伦理学家）合作，开发了一个解释性LASSO模型，该模型拥有超过400个特征，并输出潜在儿童虐待案件的风险评分。在此过程中，DAI团队发现模型的大多数不信任来源于特征而非机器学习算法。一个突出的问题是关于一热编码分类特征（例如`role of child is sibling == False`）的措辞。此外，许多社会工作者和科学家对他们认为与预测任务无关的特征表示担忧，基于他们的主题领域专业知识。
+在这项案例研究中，DAI 团队与社会工作者和科学家（担任决策者和伦理学家）合作，开发了一个解释性 LASSO 模型，该模型拥有超过 400 个特征，并输出潜在儿童虐待案件的风险评分。在此过程中，DAI 团队发现模型的大多数不信任来源于特征而非机器学习算法。一个突出的问题是关于一热编码分类特征（例如`role of child is sibling == False`）的措辞。此外，许多社会工作者和科学家对他们认为与预测任务无关的特征表示担忧，基于他们的主题领域专业知识。
 
 **教育**
 
-在在线教育领域，作者致力于为大规模开放在线课程（例如Coursera、edX等免费课程）相关的各种决策任务添加可解释性。在与各种课程开发者和讲师合作时，作者发现，最有用的特征是那些将数据组合成对用户有意义的抽象概念（例如将工作完成情况和互动结合成`参与`特征）的特征。此外，研究人员发现，当这些抽象概念的数据来源易于追溯时，利益相关者的反应更好。
+在在线教育领域，作者致力于为大规模开放在线课程（例如 Coursera、edX 等免费课程）相关的各种决策任务添加可解释性。在与各种课程开发者和讲师合作时，作者发现，最有用的特征是那些将数据组合成对用户有意义的抽象概念（例如将工作完成情况和互动结合成`参与`特征）的特征。此外，研究人员发现，当这些抽象概念的数据来源易于追溯时，利益相关者的反应更好。
 
 **网络安全**
 
-在第三个领域，研究人员致力于开发检测领域生成算法的模型，以帮助安全分析师应对潜在的攻击。虽然为识别这些攻击工程了许多特征，但构建这些特征的原始DNS日志对用户的帮助更大，作者面临的挑战是如何将特征值追溯到相关日志。
+在第三个领域，研究人员致力于开发检测领域生成算法的模型，以帮助安全分析师应对潜在的攻击。虽然为识别这些攻击工程了许多特征，但构建这些特征的原始 DNS 日志对用户的帮助更大，作者面临的挑战是如何将特征值追溯到相关日志。
 
 **医疗记录**
 
-在医疗保健领域，研究人员与六位临床医生合作开发了一个预测手术后并发症的模型。在这项案例研究中，作者使用了SHAP值来解释特征贡献，但很快发现仅靠SHAP解释是不够的。延续网络安全领域的趋势，作者发现基于聚合函数的特征不如原始信号数据那样易于解释。
+在医疗保健领域，研究人员与六位临床医生合作开发了一个预测手术后并发症的模型。在这项案例研究中，作者使用了 SHAP 值来解释特征贡献，但很快发现仅靠 SHAP 解释是不够的。延续网络安全领域的趋势，作者发现基于聚合函数的特征不如原始信号数据那样易于解释。
 
 **卫星监测**
 
@@ -120,7 +120,7 @@
 
 +   *汇总数值特征*：当数据中存在许多紧密相关的指标时，将它们汇总为一个特征可能有利于防止数据过载。例如，作者发现将各种身体和情感虐待的推荐汇总为一个单一的推荐计量，有助于决策者。
 
-+   *修改分类粒度*：当许多类别彼此相关时，通过选择变量的适当总结（例如，将 [森林覆盖类型](https://archive.ics.uci.edu/ml/datasets/covertype) 数据集中的土壤区划汇总为主要的8种地质土壤区）可以提高可解释性和性能。
++   *修改分类粒度*：当许多类别彼此相关时，通过选择变量的适当总结（例如，将 [森林覆盖类型](https://archive.ics.uci.edu/ml/datasets/covertype) 数据集中的土壤区划汇总为主要的 8 种地质土壤区）可以提高可解释性和性能。
 
 +   *转换为抽象概念*：应用数值汇总和分类粒度变换器，开发一个手工制作的公式，以生成主题专家可以理解的抽象概念。
 
@@ -132,7 +132,7 @@
 
 # 讨论与结论
 
-![](../Images/42d9acf92415c7189fe583020175ed3b.png)
+![](img/42d9acf92415c7189fe583020175ed3b.png)
 
 图 1：Zytek 等人提出的特征分类总结 [1]（图源自论文）
 
@@ -148,6 +148,6 @@
 
 [2] C. Molnar. [可解释的机器学习](https://christophm.github.io/interpretable-ml-book/)（2020）。LeanPub
 
-[3] A. Preece, D. Harborne, D. Braines, R. Tomsett, S. Chakraborty. [可解释 AI 中的利益相关者](https://arxiv.org/abs/1810.00184)（2018）。《政府与公共部门的人工智能》第6页。
+[3] A. Preece, D. Harborne, D. Braines, R. Tomsett, S. Chakraborty. [可解释 AI 中的利益相关者](https://arxiv.org/abs/1810.00184)（2018）。《政府与公共部门的人工智能》第 6 页。
 
-[3] S. Lundberg, S.I. Lee. [对模型预测的统一解释方法](https://arxiv.org/abs/1705.07874)（2017）。《神经信息处理进展》第31卷第10页。
+[3] S. Lundberg, S.I. Lee. [对模型预测的统一解释方法](https://arxiv.org/abs/1705.07874)（2017）。《神经信息处理进展》第 31 卷第 10 页。

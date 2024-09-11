@@ -1,18 +1,18 @@
 # 使用 Python 对比苹果和橙子
 
-> 原文：[https://towardsdatascience.com/comparing-apples-to-oranges-with-python-51a122252ecf?source=collection_archive---------10-----------------------#2023-10-06](https://towardsdatascience.com/comparing-apples-to-oranges-with-python-51a122252ecf?source=collection_archive---------10-----------------------#2023-10-06)
+> 原文：[`towardsdatascience.com/comparing-apples-to-oranges-with-python-51a122252ecf?source=collection_archive---------10-----------------------#2023-10-06`](https://towardsdatascience.com/comparing-apples-to-oranges-with-python-51a122252ecf?source=collection_archive---------10-----------------------#2023-10-06)
 
 ## 通过水果沙拉示例说明预算优化
 
-[](https://medium.com/@allaei?source=post_page-----51a122252ecf--------------------------------)[![Hamed Seyed-allaei](../Images/9e1c23d75874a886660d22d136456f61.png)](https://medium.com/@allaei?source=post_page-----51a122252ecf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51a122252ecf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51a122252ecf--------------------------------) [Hamed Seyed-allaei](https://medium.com/@allaei?source=post_page-----51a122252ecf--------------------------------)
+[](https://medium.com/@allaei?source=post_page-----51a122252ecf--------------------------------)![Hamed Seyed-allaei](https://medium.com/@allaei?source=post_page-----51a122252ecf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51a122252ecf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----51a122252ecf--------------------------------) [Hamed Seyed-allaei](https://medium.com/@allaei?source=post_page-----51a122252ecf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F117d57551e70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-apples-to-oranges-with-python-51a122252ecf&user=Hamed+Seyed-allaei&userId=117d57551e70&source=post_page-117d57551e70----51a122252ecf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51a122252ecf--------------------------------) ·8分钟阅读·2023年10月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51a122252ecf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-apples-to-oranges-with-python-51a122252ecf&user=Hamed+Seyed-allaei&userId=117d57551e70&source=-----51a122252ecf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F117d57551e70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-apples-to-oranges-with-python-51a122252ecf&user=Hamed+Seyed-allaei&userId=117d57551e70&source=post_page-117d57551e70----51a122252ecf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51a122252ecf--------------------------------) ·8 分钟阅读·2023 年 10 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51a122252ecf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-apples-to-oranges-with-python-51a122252ecf&user=Hamed+Seyed-allaei&userId=117d57551e70&source=-----51a122252ecf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51a122252ecf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-apples-to-oranges-with-python-51a122252ecf&source=-----51a122252ecf---------------------bookmark_footer-----------)![](../Images/1505a80c925bc8439e13eaaacd3bacd4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51a122252ecf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-apples-to-oranges-with-python-51a122252ecf&source=-----51a122252ecf---------------------bookmark_footer-----------)![](img/1505a80c925bc8439e13eaaacd3bacd4.png)
 
 图片属于作者
 

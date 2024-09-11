@@ -1,18 +1,18 @@
-# 创建快速、安全且兼容的数据结构的九条规则（第1部分）
+# 创建快速、安全且兼容的数据结构的九条规则（第一部分）
 
-> 原文：[https://towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3?source=collection_archive---------6-----------------------#2023-04-05](https://towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3?source=collection_archive---------6-----------------------#2023-04-05)
+> 原文：[`towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3?source=collection_archive---------6-----------------------#2023-04-05`](https://towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3?source=collection_archive---------6-----------------------#2023-04-05)
 
 ## 来自 RangeSetBlaze 的经验教训
 
-[](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)[![Carl M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)
+[](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)![Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----c0973092e0a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------) · 13 分钟阅读 · 2023年4月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc0973092e0a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----c0973092e0a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----c0973092e0a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------) · 13 分钟阅读 · 2023 年 4 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc0973092e0a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----c0973092e0a3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc0973092e0a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&source=-----c0973092e0a3---------------------bookmark_footer-----------)![](../Images/77adb3f2a102655781a270954799608d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc0973092e0a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&source=-----c0973092e0a3---------------------bookmark_footer-----------)![](img/77adb3f2a102655781a270954799608d.png)
 
 将数字存储在树中 — 来源：Stable Diffusion
 
@@ -22,45 +22,45 @@
 100..=2_393, 20_303..=30_239_000, 501_000_013..=501_000_016
 ```
 
-而不是30220996个单独的整数。除了潜在的内存节省，`range-set-blaze`还提供了高效的集合操作，如并集、交集、补集、差集和对称差集。
+而不是 30220996 个单独的整数。除了潜在的内存节省，`range-set-blaze`还提供了高效的集合操作，如并集、交集、补集、差集和对称差集。
 
-在创建`range-set-blaze`时，我学到了九条规则，这些规则可以帮助你在Rust中创建数据结构。除了数据结构，这些规则中的许多还可以帮助你提高任何Rust代码的性能和兼容性。
+在创建`range-set-blaze`时，我学到了九条规则，这些规则可以帮助你在 Rust 中创建数据结构。除了数据结构，这些规则中的许多还可以帮助你提高任何 Rust 代码的性能和兼容性。
 
 规则如下：
 
-1.  抄袭你的API、文档，甚至代码——从标准库中抄袭。
+1.  抄袭你的 API、文档，甚至代码——从标准库中抄袭。
 
 1.  设计构造函数以便于使用、兼容性和速度。
 
-1.  创建比预期更多的Rust迭代器。
+1.  创建比预期更多的 Rust 迭代器。
 
-1.  使用traits使非法值不可表示。
+1.  使用 traits 使非法值不可表示。
 
 1.  定义具有保证属性和有用方法的通用迭代器。
 
-*在* [*第2部分*](/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7)*中讨论：*
+*在* *第二部分**中讨论：*
 
 *6\. 定义运算符和快速操作。*
 
-*7\. 遵循“良好API设计的九条规则”，特别是“编写良好的文档”。*
+*7\. 遵循“良好 API 设计的九条规则”，特别是“编写良好的文档”。*
 
-*8\. 使用代表性数据、Criterion Benchmarking和性能分析来优化性能。*
+*8\. 使用代表性数据、Criterion Benchmarking 和性能分析来优化性能。*
 
 *9\. 测试覆盖率、文档、traits、编译器错误和正确性。*
 
-在查看前五条规则之前，让我们先看看`range-set-blaze`可能的使用场景，它的集合操作是如何工作的，以及它与其他范围集crate的比较。
+在查看前五条规则之前，让我们先看看`range-set-blaze`可能的使用场景，它的集合操作是如何工作的，以及它与其他范围集 crate 的比较。
 
-**有用性：** 想象一下在一个不可靠的集群上运行100亿个统计实验。集群上的每个任务运行几个实验。每个实验产生一行带有实验编号的输出。所以，一个任务可能会把这些放入一个文件中：
+**有用性：** 想象一下在一个不可靠的集群上运行 100 亿个统计实验。集群上的每个任务运行几个实验。每个实验产生一行带有实验编号的输出。所以，一个任务可能会把这些放入一个文件中：
 
-![](../Images/39ad3c9b2cde703e0f3e8e37d1c985c9.png)
+![](img/39ad3c9b2cde703e0f3e8e37d1c985c9.png)
 
 你会使用什么数据结构来查找哪些实验缺失并需要重新提交？一个选项是：将输出的实验编号存储在一个`[BTreeSet](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html)`中，然后进行线性扫描以查找间隙。
 
-更快且内存效率更高的选项：使用范围集。八年前，我创建了`[IntRangeSet](https://fastlmm.github.io/PySnpTools/#util-intrangeset)`，一个用Python编写的范围集来解决这个问题。现在，我会在Rust中使用`range-set-blaze`（[示例代码](https://github.com/CarlKCarlK/range-set-blaze/blob/main/examples/missing.rs)）。
+更快且内存效率更高的选项：使用范围集。八年前，我创建了`[IntRangeSet](https://fastlmm.github.io/PySnpTools/#util-intrangeset)`，一个用 Python 编写的范围集来解决这个问题。现在，我会在 Rust 中使用`range-set-blaze`（[示例代码](https://github.com/CarlKCarlK/range-set-blaze/blob/main/examples/missing.rs)）。
 
 **集合操作**：这是一个简单的并集运算符（`|`）示例：
 
-![](../Images/c39d2fc449a075e26bc091e3cdf11e5e.png)
+![](img/c39d2fc449a075e26bc091e3cdf11e5e.png)
 
 ```py
 use range_set_blaze::RangeSetBlaze;
@@ -75,7 +75,7 @@ assert_eq!(c, RangeSetBlaze::from_iter([-20..=-20, 100..=999]));
 
 > 附注：请参阅项目的`[README.md](https://github.com/CarlKCarlK/range-set-blaze)`以获取来自生物学的另一个集合运算符示例。该示例使用`RangeSetBlaze`结构体从转录区域和外显子区域中查找基因的内含子区域。
 
-**与其他范围相关的crate的比较**
+**与其他范围相关的 crate 的比较**
 
 **好处：** 尽管 [Rust 的 crates.io 已经包含了几个范围集合的 crate](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)，我希望我的版本能提供完整的集合操作，同时保持性能。通过各种优化措施，我相信它达到了这些目标（请参见 [基准报告](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)）。例如，它可以比最流行的范围集合 crate 快 75 倍来处理单个整数（因为其他 crate 没有对单个处理做特殊优化——但它可以轻松添加这种优化）。在另一个基准测试中，`range-set-blaze`——使用混合算法——在合并两个集合时比其他 crate 快 30% 到 600%。
 
@@ -83,7 +83,7 @@ assert_eq!(c, RangeSetBlaze::from_iter([-20..=-20, 100..=999]));
 
 创建数据结构需要做出许多决策。根据我在 `range-set-blaze` 上的经验，以下是我推荐的决策。为了避免优柔寡断，我将这些建议表述为规则。当然，每个数据结构都不同，因此并非每条规则都适用于每个数据结构。
 
-本文涵盖规则 1 到 5。[第 2 部分](/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7) 涵盖规则 6 到 9。
+本文涵盖规则 1 到 5。第二部分 涵盖规则 6 到 9。
 
 # 规则 1：抄袭 API、文档甚至代码——来自标准库
 
@@ -93,7 +93,7 @@ assert_eq!(c, RangeSetBlaze::from_iter([-20..=-20, 100..=999]));
 
 `BTreeSet` 提供了 28 个方法，例如，[`clear`](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html#method.clear) 和 [`is_subset`](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html#method.is_subset)。它还实现了 18 个特性，例如，[`FromIterator<T>`](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html#impl-FromIterator%3CT%3E-for-BTreeSet%3CT%2C%20Global%3E)。这是 `BTreeSet` 的 `clear` 文档和 `RangeSetBlaze` 的 `clear` 文档：
 
-![](../Images/7852ec97e3809279c5dfd01079f1fe04.png)
+![](img/7852ec97e3809279c5dfd01079f1fe04.png)
 
 你可以看到我主要是直接复制的。我将“元素”改为“整数元素”，以提醒用户 `RangeSetBlaze` 支持什么。我删除了 `where A: Clone`，因为所有整数必然是可克隆的。注意，Rust 文档包括一个“源”链接，这使得复制变得容易。
 
@@ -163,7 +163,7 @@ let a1: RangeSetBlaze<i32> = [3, 2, 1, 100, 1].into();
 assert!(a0 == a1 && a0.to_string() == "1..=3, 100..=100")
 ```
 
-`RangeSetBlaze`还定义了`from_sorted_disjoint/into_range_set_blaze`，用于保证已排序且不相交的区间的迭代器。（我们将在规则5中看到，如何通过特殊特性和Rust编译器来强制执行这一保证。）
+`RangeSetBlaze`还定义了`from_sorted_disjoint/into_range_set_blaze`，用于保证已排序且不相交的区间的迭代器。（我们将在规则 5 中看到，如何通过特殊特性和 Rust 编译器来强制执行这一保证。）
 
 ```py
 let a0 = RangeSetBlaze::from_sorted_disjoint(CheckSortedDisjoint::from([-10..=-5, 1..=2]));
@@ -185,15 +185,15 @@ assert!(a0 == a1 && a0.to_string() == "-10..=-5, 1..=2");
 
 其中 *n*₁ 是输入整数/区间的数量，n₂ 是不相交且无序的区间数量，*n*₃ 是最终排序且不相交的区间数量。
 
-“块状”整数的影响是什么？如果 *n₂* ≈ sqrt(*n₁*)，则构建时间为O(*n₁*)。（实际上，只要 *n₂* ≤ *n₁*/ln(*n₁*)，构建时间为O(*n₁*)。）在基准测试中，这在块状整数迭代器上变成了比`HashSet`和`BTreeSet`快700倍。
+“块状”整数的影响是什么？如果 *n₂* ≈ sqrt(*n₁*)，则构建时间为 O(*n₁*)。（实际上，只要 *n₂* ≤ *n₁*/ln(*n₁*)，构建时间为 O(*n₁*)。）在基准测试中，这在块状整数迭代器上变成了比`HashSet`和`BTreeSet`快 700 倍。
 
-# 规则3：创建比你预期的更多的Rust迭代器
+# 规则 3：创建比你预期的更多的 Rust 迭代器
 
 你猜测标准`BTreeSet`定义了多少种不同的迭代器类型？
 
-答案是八种：`Iter`，`IntoIter`，`DrainFilter`，`Range`，`Difference`，`SymmetricDifference`，`Intersection`，和`Union`。许多非Rust编程语言可以将任何方法变成迭代器/生成器，只需几个“yield”语句。然而，Rust并不提供这种功能（但[正在讨论中](https://www.reddit.com/r/rust/comments/nsaovn/generatorsyield/)）。因此，几乎每个与迭代相关的方法都需要你定义一个新的迭代器结构类型。这些结构至少会实现一个`next`方法，该方法返回`Some(`值`)`或`None`。
+答案是八种：`Iter`，`IntoIter`，`DrainFilter`，`Range`，`Difference`，`SymmetricDifference`，`Intersection`，和`Union`。许多非 Rust 编程语言可以将任何方法变成迭代器/生成器，只需几个“yield”语句。然而，Rust 并不提供这种功能（但[正在讨论中](https://www.reddit.com/r/rust/comments/nsaovn/generatorsyield/)）。因此，几乎每个与迭代相关的方法都需要你定义一个新的迭代器结构类型。这些结构至少会实现一个`next`方法，该方法返回`Some(`值`)`或`None`。
 
-`RangeSetBlaze`及其相关类型定义了13个迭代器结构。让我们看两个。
+`RangeSetBlaze`及其相关类型定义了 13 个迭代器结构。让我们看两个。
 
 首先，用户可以调用`ranges`并将整数作为一系列排序的不相交区间进行迭代。（请记住，`RangeSetBlaze`接受无序、重叠的区间，但存储排序的不相交区间。）
 
@@ -263,13 +263,13 @@ where
     }
 ```
 
-`SortedDisjoint`特征涉及到保证内部迭代器提供排序的、不相交的范围。我们将在规则5中讨论它。
+`SortedDisjoint`特征涉及到保证内部迭代器提供排序的、不相交的范围。我们将在规则 5 中讨论它。
 
 `option_range` 字段保存我们当前返回整数的范围（如果有的话）。我们使用`loop`和`continue`来填充空的`option_range`。这个循环最多只循环两次，因此我本可以使用递归。然而，其他一些迭代器的递归次数足以导致栈溢出。因此，…
 
-[尾递归优化在Rust中没有保证](https://stackoverflow.com/questions/59257543/when-is-tail-recursion-guaranteed-in-rust)。我的政策是：在`next`函数中从不使用递归。
+[尾递归优化在 Rust 中没有保证](https://stackoverflow.com/questions/59257543/when-is-tail-recursion-guaranteed-in-rust)。我的政策是：在`next`函数中从不使用递归。
 
-> 附注：感谢Michael Roth，当前版本的`Iter::next`现在更简短了。他的拉取请求在[这里](https://github.com/CarlKCarlK/range-set-blaze/commit/b582f30689502993e1079520ce806c3a905e523e)。
+> 附注：感谢 Michael Roth，当前版本的`Iter::next`现在更简短了。他的拉取请求在[这里](https://github.com/CarlKCarlK/range-set-blaze/commit/b582f30689502993e1079520ce806c3a905e523e)。
 
 `BTreeSet`和`RangeSetBlaze`除了`iter`方法外，还定义了一个`into_iter`迭代器方法。同样，`RangeSetBlaze`除了其`ranges`方法外，还定义了一个`into_ranges`迭代器方法。这些`into`*_whatever*方法获取`RangeSetBlaze`的所有权，这在某些情况下很有用。
 
@@ -349,9 +349,9 @@ impl Integer for i32 {
 }
 ```
 
-有了这个，我可以使代码泛型化为`<T: Integer>`，如规则3中的代码示例所示。
+有了这个，我可以使代码泛型化为`<T: Integer>`，如规则 3 中的代码示例所示。
 
-> 附注：为什么Rust没有提供一个标准的“整数”特征来做所有事情？[这里是讨论](https://www.reddit.com/r/rust/comments/qlyn12/how_to_write_a_generic_function_for_only_numeric/)。
+> 附注：为什么 Rust 没有提供一个标准的“整数”特征来做所有事情？[这里是讨论](https://www.reddit.com/r/rust/comments/qlyn12/how_to_write_a_generic_function_for_only_numeric/)。
 
 # 规则 5：定义具有保证属性和有用方法的泛型迭代器
 
@@ -366,7 +366,7 @@ fn _some_fn() {
 }
 ```
 
-与规则4一样，编译器会捕捉错误并返回有用的消息：
+与规则 4 一样，编译器会捕捉错误并返回有用的消息：
 
 ```py
 7 |     let _range_set_int = RangeSetBlaze::from_sorted_disjoint(not_guaranteed);
@@ -460,6 +460,6 @@ pub use crate::{
 };
 ```
 
-这些是创建 Rust 数据结构的前五条规则。请参见 [第 2 部分](/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7) 了解规则 6 到 9。
+这些是创建 Rust 数据结构的前五条规则。请参见 第二部分 了解规则 6 到 9。
 
 > 附言：如果你对未来的文章感兴趣，请[关注我的 Medium](https://medium.com/@carlmkadie)。我写关于 Rust 和 Python 的科学编程、机器学习和统计学的文章。我通常每个月写一篇文章。

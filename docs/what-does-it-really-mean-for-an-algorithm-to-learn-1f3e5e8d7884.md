@@ -1,16 +1,16 @@
 # 算法“学习”究竟意味着什么？
 
-> 原文：[https://towardsdatascience.com/what-does-it-really-mean-for-an-algorithm-to-learn-1f3e5e8d7884?source=collection_archive---------0-----------------------#2023-04-22](https://towardsdatascience.com/what-does-it-really-mean-for-an-algorithm-to-learn-1f3e5e8d7884?source=collection_archive---------0-----------------------#2023-04-22)
+> 原文：[`towardsdatascience.com/what-does-it-really-mean-for-an-algorithm-to-learn-1f3e5e8d7884?source=collection_archive---------0-----------------------#2023-04-22`](https://towardsdatascience.com/what-does-it-really-mean-for-an-algorithm-to-learn-1f3e5e8d7884?source=collection_archive---------0-----------------------#2023-04-22)
 
-![](../Images/4277cf3340bee51edbf84b5d3e9a26ed.png)
+![](img/4277cf3340bee51edbf84b5d3e9a26ed.png)
 
 ## 两种一般视角和一些心理学
 
-[](https://andre-ye.medium.com/?source=post_page-----1f3e5e8d7884--------------------------------)[![Andre Ye](../Images/c69b022a665d3ee13f9fec2f1f73bf32.png)](https://andre-ye.medium.com/?source=post_page-----1f3e5e8d7884--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f3e5e8d7884--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1f3e5e8d7884--------------------------------) [Andre Ye](https://andre-ye.medium.com/?source=post_page-----1f3e5e8d7884--------------------------------)
+[](https://andre-ye.medium.com/?source=post_page-----1f3e5e8d7884--------------------------------)![Andre Ye](https://andre-ye.medium.com/?source=post_page-----1f3e5e8d7884--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f3e5e8d7884--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f3e5e8d7884--------------------------------) [Andre Ye](https://andre-ye.medium.com/?source=post_page-----1f3e5e8d7884--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbe743a65b006&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-really-mean-for-an-algorithm-to-learn-1f3e5e8d7884&user=Andre+Ye&userId=be743a65b006&source=post_page-be743a65b006----1f3e5e8d7884---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f3e5e8d7884--------------------------------) ·20分钟阅读·2023年4月22日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbe743a65b006&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-does-it-really-mean-for-an-algorithm-to-learn-1f3e5e8d7884&user=Andre+Ye&userId=be743a65b006&source=post_page-be743a65b006----1f3e5e8d7884---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f3e5e8d7884--------------------------------) ·20 分钟阅读·2023 年 4 月 22 日
 
 --
 

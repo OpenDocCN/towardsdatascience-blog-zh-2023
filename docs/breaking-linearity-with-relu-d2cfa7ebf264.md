@@ -1,18 +1,18 @@
 # 使用 ReLU 打破线性
 
-> 原文：[https://towardsdatascience.com/breaking-linearity-with-relu-d2cfa7ebf264?source=collection_archive---------14-----------------------#2023-03-01](https://towardsdatascience.com/breaking-linearity-with-relu-d2cfa7ebf264?source=collection_archive---------14-----------------------#2023-03-01)
+> 原文：[`towardsdatascience.com/breaking-linearity-with-relu-d2cfa7ebf264?source=collection_archive---------14-----------------------#2023-03-01`](https://towardsdatascience.com/breaking-linearity-with-relu-d2cfa7ebf264?source=collection_archive---------14-----------------------#2023-03-01)
 
 ## 解释 ReLU 激活函数如何以及为何是非线性的
 
-[](https://medium.com/@egorhowell?source=post_page-----d2cfa7ebf264--------------------------------)[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----d2cfa7ebf264--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2cfa7ebf264--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2cfa7ebf264--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----d2cfa7ebf264--------------------------------)
+[](https://medium.com/@egorhowell?source=post_page-----d2cfa7ebf264--------------------------------)![Egor Howell](https://medium.com/@egorhowell?source=post_page-----d2cfa7ebf264--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2cfa7ebf264--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2cfa7ebf264--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----d2cfa7ebf264--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbreaking-linearity-with-relu-d2cfa7ebf264&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----d2cfa7ebf264---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2cfa7ebf264--------------------------------) ·4 min read·2023年3月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd2cfa7ebf264&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbreaking-linearity-with-relu-d2cfa7ebf264&user=Egor+Howell&userId=1cac491223b2&source=-----d2cfa7ebf264---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbreaking-linearity-with-relu-d2cfa7ebf264&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----d2cfa7ebf264---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2cfa7ebf264--------------------------------) ·4 min read·2023 年 3 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd2cfa7ebf264&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbreaking-linearity-with-relu-d2cfa7ebf264&user=Egor+Howell&userId=1cac491223b2&source=-----d2cfa7ebf264---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd2cfa7ebf264&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbreaking-linearity-with-relu-d2cfa7ebf264&source=-----d2cfa7ebf264---------------------bookmark_footer-----------)![](../Images/e9eb0239dd7d7e0b58720e6193479978.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd2cfa7ebf264&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbreaking-linearity-with-relu-d2cfa7ebf264&source=-----d2cfa7ebf264---------------------bookmark_footer-----------)![](img/e9eb0239dd7d7e0b58720e6193479978.png)
 
 图片由 [Alina Grubnyak](https://unsplash.com/@alinnnaaaa?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

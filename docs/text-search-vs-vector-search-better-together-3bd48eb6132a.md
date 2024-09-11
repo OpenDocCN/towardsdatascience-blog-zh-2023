@@ -1,18 +1,18 @@
 # 文本搜索与向量搜索：更好地结合？
 
-> 原文：[https://towardsdatascience.com/text-search-vs-vector-search-better-together-3bd48eb6132a?source=collection_archive---------2-----------------------#2023-02-16](https://towardsdatascience.com/text-search-vs-vector-search-better-together-3bd48eb6132a?source=collection_archive---------2-----------------------#2023-02-16)
+> 原文：[`towardsdatascience.com/text-search-vs-vector-search-better-together-3bd48eb6132a?source=collection_archive---------2-----------------------#2023-02-16`](https://towardsdatascience.com/text-search-vs-vector-search-better-together-3bd48eb6132a?source=collection_archive---------2-----------------------#2023-02-16)
 
 ## 了解如何使用 OpenSearch 设置混合搜索系统，以便您可以同时受益于文本搜索和向量搜索的优势
 
-[](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)[![Noam Schwartz](../Images/c5bf11b1267a95242290ca6105eb0b16.png)](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------) [Noam Schwartz](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)
+[](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)![Noam Schwartz](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------) [Noam Schwartz](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F77ffd6350db9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&user=Noam+Schwartz&userId=77ffd6350db9&source=post_page-77ffd6350db9----3bd48eb6132a---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------) ·8分钟阅读·2023年2月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bd48eb6132a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&user=Noam+Schwartz&userId=77ffd6350db9&source=-----3bd48eb6132a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F77ffd6350db9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&user=Noam+Schwartz&userId=77ffd6350db9&source=post_page-77ffd6350db9----3bd48eb6132a---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------) ·8 分钟阅读·2023 年 2 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bd48eb6132a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&user=Noam+Schwartz&userId=77ffd6350db9&source=-----3bd48eb6132a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3bd48eb6132a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&source=-----3bd48eb6132a---------------------bookmark_footer-----------)![](../Images/aca0f6a6b0a70bba0d30d5f9db3b1511.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3bd48eb6132a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&source=-----3bd48eb6132a---------------------bookmark_footer-----------)![](img/aca0f6a6b0a70bba0d30d5f9db3b1511.png)
 
 图片由 [Aarón Blanco Tejedor](https://unsplash.com/@innernature?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -108,11 +108,11 @@ def store_index(index_name: str, data: np.array, metadata: list, os_client: Open
 
 # **混合搜索实现**
 
-计划是创建一个客户端，该客户端将从用户那里获取输入，使用Sentence Transformers模型生成嵌入，并执行我们的混合搜索。用户还会被要求提供一个提升级别，即他们希望给予文本搜索或向量搜索的相对重要性。这样，用户可以选择优先考虑一种搜索类型。例如，如果用户希望他的查询的语义意义比描述中的简单文本出现更重要，他可以给向量搜索更高的提升等级。
+计划是创建一个客户端，该客户端将从用户那里获取输入，使用 Sentence Transformers 模型生成嵌入，并执行我们的混合搜索。用户还会被要求提供一个提升级别，即他们希望给予文本搜索或向量搜索的相对重要性。这样，用户可以选择优先考虑一种搜索类型。例如，如果用户希望他的查询的语义意义比描述中的简单文本出现更重要，他可以给向量搜索更高的提升等级。
 
 # **搜索**
 
-我们将首先使用OpenSearch的搜索方法在索引上进行文本搜索。此方法接受一个查询字符串，并返回与查询匹配的文档列表。OpenSearch通过利用Okapi BM25作为排名算法来获取文本搜索结果。使用OpenSearch进行文本搜索是通过发送以下请求体进行的：
+我们将首先使用 OpenSearch 的搜索方法在索引上进行文本搜索。此方法接受一个查询字符串，并返回与查询匹配的文档列表。OpenSearch 通过利用 Okapi BM25 作为排名算法来获取文本搜索结果。使用 OpenSearch 进行文本搜索是通过发送以下请求体进行的：
 
 ```py
 bm25_query = {
@@ -126,9 +126,9 @@ bm25_query = {
 }
 ```
 
-其中 *textual_query* 是用户输入的文本。为了使我的结果以干净的方式返回，我添加了“_source”，以便OpenSearch仅返回我感兴趣的特定字段。
+其中 *textual_query* 是用户输入的文本。为了使我的结果以干净的方式返回，我添加了“_source”，以便 OpenSearch 仅返回我感兴趣的特定字段。
 
-由于文本和向量搜索的排名分数算法不同，我们需要将分数调整到相同的尺度，以便结合结果。为此，我们将对每个文档的文本搜索分数进行归一化。最大BM25分数是针对特定查询在集合中分配给文档的最高分数。它表示文档与查询的最大相关性。最大BM25分数的值取决于BM25公式的参数，例如平均文档长度、术语频率和逆文档频率。因此，我取了OpenSearch为每个查询收到的最大分数，并将每个结果分数除以它，得到0到1之间的分数。以下函数演示了我们的归一化算法：
+由于文本和向量搜索的排名分数算法不同，我们需要将分数调整到相同的尺度，以便结合结果。为此，我们将对每个文档的文本搜索分数进行归一化。最大 BM25 分数是针对特定查询在集合中分配给文档的最高分数。它表示文档与查询的最大相关性。最大 BM25 分数的值取决于 BM25 公式的参数，例如平均文档长度、术语频率和逆文档频率。因此，我取了 OpenSearch 为每个查询收到的最大分数，并将每个结果分数除以它，得到 0 到 1 之间的分数。以下函数演示了我们的归一化算法：
 
 ```py
 def normalize_bm25_formula(score, max_score):
@@ -137,7 +137,7 @@ def normalize_bm25_formula(score, max_score):
 
 接下来，我们将使用向量搜索方法进行向量搜索。此方法接受一个嵌入列表，并返回与这些嵌入在语义上相似的文档列表。
 
-对OpenSearch的搜索查询如下所示：
+对 OpenSearch 的搜索查询如下所示：
 
 ```py
 cpu_request_body = {
@@ -166,7 +166,7 @@ cpu_request_body = {
 
 # **插值结果并应用提升**
 
-![](../Images/c9d936ba33da7aa726d3b90eb3535cb9.png)
+![](img/c9d936ba33da7aa726d3b90eb3535cb9.png)
 
 由 [Amol Tyagi](https://unsplash.com/@amoltyagi2?utm_source=medium&utm_medium=referral) 提供的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -207,7 +207,7 @@ def interpolate_results(vector_hits, bm25_hits):
     return results_dictionary
 ```
 
-最终我们将得到一个以文档ID为键，以分数数组为值的字典。数组中的第一个元素是向量搜索分数，第二个元素是文本搜索归一化分数。
+最终我们将得到一个以文档 ID 为键，以分数数组为值的字典。数组中的第一个元素是向量搜索分数，第二个元素是文本搜索归一化分数。
 
 最后，我们对搜索结果应用提升。我们将遍历结果的分数，将第一个元素乘以向量提升水平，第二个元素乘以文本提升水平。
 
@@ -227,35 +227,35 @@ def apply_boost(combined_results, vector_boost_level, bm25_boost_level):
 
 现在是时候看看我们有什么了！这就是完整的工作流程：
 
-![](../Images/000c25b2e146cd2c629b827904ac79d0.png)
+![](img/000c25b2e146cd2c629b827904ac79d0.png)
 
-作者制作的GIF
+作者制作的 GIF
 
-我搜索了一个句子“冰淇淋勺”，为向量搜索和文本搜索分别设置了0.5的提升，这就是我在前几个结果中得到的：
+我搜索了一个句子“冰淇淋勺”，为向量搜索和文本搜索分别设置了 0.5 的提升，这就是我在前几个结果中得到的：
 
 向量搜索返回 —
 
-![](../Images/5e6554daeaa9b29867ea8166fa4922bc.png)
+![](img/5e6554daeaa9b29867ea8166fa4922bc.png)
 
-来自XMarket数据集的图片
+来自 XMarket 数据集的图片
 
 文本搜索返回 —
 
-![](../Images/e58754765f018fd267f896b9de2dc8bc.png)
+![](img/e58754765f018fd267f896b9de2dc8bc.png)
 
-来自XMarket数据集的图片
+来自 XMarket 数据集的图片
 
 混合搜索返回 —
 
-![](../Images/6a74a31afd65dba32864934c3b57be1d.png)
+![](img/6a74a31afd65dba32864934c3b57be1d.png)
 
-来自XMarket数据集的图片
+来自 XMarket 数据集的图片
 
-在这个例子中，我们使用文本和向量搜索来搜索“冰淇淋勺”。文本搜索返回包含关键词“an”、“ice”、“cream”和“scoop”的文档。文本搜索排名第四的结果是一个冰淇淋机，它显然不是一个勺子。它排名如此靠前的原因是其标题“Breville BCI600XL Smart Scoop Ice Cream Maker”包含了句子中的三个关键词：“Scoop”、“Ice”、“Cream”，因此在BM25中的评分很高，尽管它与我们的搜索不匹配。而向量搜索则返回语义上与查询相似的结果，无论关键词是否出现在文档中。它知道“scoop”出现在“ice cream”之前意味着匹配度较低。因此，我们得到了一个更全面的结果集，其中包含了比单纯提到“冰淇淋勺”的文档更多的信息。
+在这个例子中，我们使用文本和向量搜索来搜索“冰淇淋勺”。文本搜索返回包含关键词“an”、“ice”、“cream”和“scoop”的文档。文本搜索排名第四的结果是一个冰淇淋机，它显然不是一个勺子。它排名如此靠前的原因是其标题“Breville BCI600XL Smart Scoop Ice Cream Maker”包含了句子中的三个关键词：“Scoop”、“Ice”、“Cream”，因此在 BM25 中的评分很高，尽管它与我们的搜索不匹配。而向量搜索则返回语义上与查询相似的结果，无论关键词是否出现在文档中。它知道“scoop”出现在“ice cream”之前意味着匹配度较低。因此，我们得到了一个更全面的结果集，其中包含了比单纯提到“冰淇淋勺”的文档更多的信息。
 
 很明显，如果你只使用一种搜索方式，你将错过有价值的结果或显示不准确的结果，从而使客户感到沮丧。当利用两者的优势时，我们会得到更准确的结果。所以，我相信我们的答案是，"更好地结合"已经证明是正确的。
 
-但等等，更好的可以变得**更好**吗？改善搜索体验的一种方法是利用 OpenSearch 中的[APU 力量](/bolster-opensearch-performance-with-5-simple-steps-ca7d21234f6b)（联想处理单元）。通过使用 [Searchium.ai](https://www.searchium.ai/) 的插件在 APU 上进行向量搜索，我们可以利用先进的算法和处理能力来进一步[改善延迟并显著降低成本](https://betterprogramming.pub/tired-of-troubleshooting-idle-search-resources-use-opensearch-benchmark-for-performance-tuning-d4277c9f724)（例如，$0.23 对比 $8.76），同时仍然获得[类似的结果](https://www.youtube.com/watch?v=AqbRTT5Z7h0)。
+但等等，更好的可以变得**更好**吗？改善搜索体验的一种方法是利用 OpenSearch 中的 APU 力量（联想处理单元）。通过使用 [Searchium.ai](https://www.searchium.ai/) 的插件在 APU 上进行向量搜索，我们可以利用先进的算法和处理能力来进一步[改善延迟并显著降低成本](https://betterprogramming.pub/tired-of-troubleshooting-idle-search-resources-use-opensearch-benchmark-for-performance-tuning-d4277c9f724)（例如，$0.23 对比 $8.76），同时仍然获得[类似的结果](https://www.youtube.com/watch?v=AqbRTT5Z7h0)。
 
 我们可以[安装插件](https://www.youtube.com/watch?v=7p08K-Ul1O0)、[将索引上传到 APU](https://www.youtube.com/watch?v=RfoeZKmJcTY&t=3s)，并通过发送略微修改过的请求体进行搜索：
 

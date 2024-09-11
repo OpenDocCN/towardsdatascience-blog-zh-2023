@@ -1,18 +1,18 @@
 # 数据科学家的 Python 类型指南：提升代码清晰度
 
-> 原文：[https://towardsdatascience.com/a-data-scientists-guide-to-python-typing-boosting-code-clarity-194371b4ef05?source=collection_archive---------4-----------------------#2023-07-31](https://towardsdatascience.com/a-data-scientists-guide-to-python-typing-boosting-code-clarity-194371b4ef05?source=collection_archive---------4-----------------------#2023-07-31)
+> 原文：[`towardsdatascience.com/a-data-scientists-guide-to-python-typing-boosting-code-clarity-194371b4ef05?source=collection_archive---------4-----------------------#2023-07-31`](https://towardsdatascience.com/a-data-scientists-guide-to-python-typing-boosting-code-clarity-194371b4ef05?source=collection_archive---------4-----------------------#2023-07-31)
 
 ## 类型的重要性以及如何在 Python 中实现
 
-[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----194371b4ef05--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----194371b4ef05--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----194371b4ef05--------------------------------)
+![Egor Howell](https://medium.com/@egorhowell?source=post_page-----194371b4ef05--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----194371b4ef05--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----194371b4ef05--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-scientists-guide-to-python-typing-boosting-code-clarity-194371b4ef05&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----194371b4ef05---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----194371b4ef05--------------------------------) ·4 分钟阅读·2023年7月31日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-data-scientists-guide-to-python-typing-boosting-code-clarity-194371b4ef05&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----194371b4ef05---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----194371b4ef05--------------------------------) ·4 分钟阅读·2023 年 7 月 31 日
 
 --
 
-![](../Images/76d1ae8f42e8d81de522593a525b0fd6.png)
+![](img/76d1ae8f42e8d81de522593a525b0fd6.png)
 
 图片由 [Pankaj Patel](https://unsplash.com/@pankajpatel?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

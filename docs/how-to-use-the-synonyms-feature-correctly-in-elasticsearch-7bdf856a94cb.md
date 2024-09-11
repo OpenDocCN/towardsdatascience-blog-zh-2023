@@ -1,18 +1,18 @@
-# 如何正确使用Elasticsearch中的同义词功能
+# 如何正确使用 Elasticsearch 中的同义词功能
 
-> 原文：[https://towardsdatascience.com/how-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb?source=collection_archive---------2-----------------------#2023-01-07](https://towardsdatascience.com/how-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb?source=collection_archive---------2-----------------------#2023-01-07)
+> 原文：[`towardsdatascience.com/how-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb?source=collection_archive---------2-----------------------#2023-01-07`](https://towardsdatascience.com/how-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb?source=collection_archive---------2-----------------------#2023-01-07)
 
 ## 学习简单但强大的同义词功能，以提高搜索质量
 
-[](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)[![Lynn G. Kwong](../Images/b9a05b6587db5ca41c1d8264adda5b06.png)](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)
+[](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)![Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff649eccbbc3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=post_page-f649eccbbc3d----7bdf856a94cb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------) ·9分钟阅读·2023年1月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7bdf856a94cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=-----7bdf856a94cb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff649eccbbc3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=post_page-f649eccbbc3d----7bdf856a94cb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------) ·9 分钟阅读·2023 年 1 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7bdf856a94cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=-----7bdf856a94cb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7bdf856a94cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb&source=-----7bdf856a94cb---------------------bookmark_footer-----------)![](../Images/13d37f90a8d511dae87864d18c83d3ca.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7bdf856a94cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb&source=-----7bdf856a94cb---------------------bookmark_footer-----------)![](img/13d37f90a8d511dae87864d18c83d3ca.png)
 
 图片来源：Tumisu，Pixabay
 

@@ -1,14 +1,14 @@
 # 理解机器学习中的噪声数据和不确定性
 
-> 原文：[https://towardsdatascience.com/understanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198?source=collection_archive---------8-----------------------#2023-01-23](https://towardsdatascience.com/understanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198?source=collection_archive---------8-----------------------#2023-01-23)
+> 原文：[`towardsdatascience.com/understanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198?source=collection_archive---------8-----------------------#2023-01-23`](https://towardsdatascience.com/understanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198?source=collection_archive---------8-----------------------#2023-01-23)
 
 ## 你的机器学习模型未能工作的实际原因
 
-[](https://harrisonfhoffman.medium.com/?source=post_page-----4a2995a84198--------------------------------)[![Harrison Hoffman](../Images/5eaa3e2bd0507297eb6c4a7efcf06324.png)](https://harrisonfhoffman.medium.com/?source=post_page-----4a2995a84198--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a2995a84198--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4a2995a84198--------------------------------) [Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----4a2995a84198--------------------------------)
+[](https://harrisonfhoffman.medium.com/?source=post_page-----4a2995a84198--------------------------------)![Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----4a2995a84198--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a2995a84198--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a2995a84198--------------------------------) [Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----4a2995a84198--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----4a2995a84198---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a2995a84198--------------------------------) · 9分钟阅读 · 2023年1月23日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----4a2995a84198---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a2995a84198--------------------------------) · 9 分钟阅读 · 2023 年 1 月 23 日
 
 --
 

@@ -1,24 +1,24 @@
 # 自然语言处理中的知识图谱：十年回顾
 
-> 原文：[https://towardsdatascience.com/a-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3?source=collection_archive---------8-----------------------#2023-03-14](https://towardsdatascience.com/a-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3?source=collection_archive---------8-----------------------#2023-03-14)
+> 原文：[`towardsdatascience.com/a-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3?source=collection_archive---------8-----------------------#2023-03-14`](https://towardsdatascience.com/a-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3?source=collection_archive---------8-----------------------#2023-03-14)
 
 ## 关于结合结构化和非结构化知识在自然语言处理中的研究现状
 
-[](https://medium.com/@tim.schopf?source=post_page-----5fdb15abc2b3--------------------------------)[![Tim Schopf](../Images/7d98a87af243ae6a82f837aa04ac2675.png)](https://medium.com/@tim.schopf?source=post_page-----5fdb15abc2b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5fdb15abc2b3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5fdb15abc2b3--------------------------------) [Tim Schopf](https://medium.com/@tim.schopf?source=post_page-----5fdb15abc2b3--------------------------------)
+[](https://medium.com/@tim.schopf?source=post_page-----5fdb15abc2b3--------------------------------)![Tim Schopf](https://medium.com/@tim.schopf?source=post_page-----5fdb15abc2b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5fdb15abc2b3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5fdb15abc2b3--------------------------------) [Tim Schopf](https://medium.com/@tim.schopf?source=post_page-----5fdb15abc2b3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fe3665aa3e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3&user=Tim+Schopf&userId=7fe3665aa3e3&source=post_page-7fe3665aa3e3----5fdb15abc2b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5fdb15abc2b3--------------------------------) ·8分钟阅读·2023年3月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5fdb15abc2b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3&user=Tim+Schopf&userId=7fe3665aa3e3&source=-----5fdb15abc2b3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fe3665aa3e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3&user=Tim+Schopf&userId=7fe3665aa3e3&source=post_page-7fe3665aa3e3----5fdb15abc2b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5fdb15abc2b3--------------------------------) ·8 分钟阅读·2023 年 3 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5fdb15abc2b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3&user=Tim+Schopf&userId=7fe3665aa3e3&source=-----5fdb15abc2b3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5fdb15abc2b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3&source=-----5fdb15abc2b3---------------------bookmark_footer-----------)![](../Images/c288205bdd2f7682d7f07f8bcfe638d9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5fdb15abc2b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-decade-of-knowledge-graphs-in-natural-language-processing-5fdb15abc2b3&source=-----5fdb15abc2b3---------------------bookmark_footer-----------)![](img/c288205bdd2f7682d7f07f8bcfe638d9.png)
 
 图片由 [Billy Huynh](https://unsplash.com/@billy_huy?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-*这篇文章基于我们在AACL-IJCNLP 2022的论文* [*《自然语言处理中的知识图谱：十年回顾》*](https://aclanthology.org/2022.aacl-main.46/)*。你可以在那里阅读更多细节。*
+*这篇文章基于我们在 AACL-IJCNLP 2022 的论文* [*《自然语言处理中的知识图谱：十年回顾》*](https://aclanthology.org/2022.aacl-main.46/)*。你可以在那里阅读更多细节。*
 
-**知识图谱（KGs）自2012年Google推出KG以来在学术界和工业界都受到了极大关注**（[Singhal, 2012](https://blog.google/products/search/introducing-knowledge-graph-things-not/)）。作为实体之间语义关系的表示，知识图谱已被证明对自然语言处理（NLP）**特别相关**，并且近年来在流行度上迅速增长，这一趋势似乎正在加速🚀。鉴于这一领域的研究工作越来越多，NLP研究社区中已经对几种与知识图谱相关的方法进行了综述。然而，迄今为止，仍缺乏对已建立主题的综合研究，并对个别研究流的成熟度进行回顾。为弥补这一空白，我们系统地分析了507篇关于NLP中知识图谱的文献。因此，我们呈现了研究领域的结构化概述，提供了任务分类法，总结了我们的发现，并强调了未来工作的方向。
+**知识图谱（KGs）自 2012 年 Google 推出 KG 以来在学术界和工业界都受到了极大关注**（[Singhal, 2012](https://blog.google/products/search/introducing-knowledge-graph-things-not/)）。作为实体之间语义关系的表示，知识图谱已被证明对自然语言处理（NLP）**特别相关**，并且近年来在流行度上迅速增长，这一趋势似乎正在加速🚀。鉴于这一领域的研究工作越来越多，NLP 研究社区中已经对几种与知识图谱相关的方法进行了综述。然而，迄今为止，仍缺乏对已建立主题的综合研究，并对个别研究流的成熟度进行回顾。为弥补这一空白，我们系统地分析了 507 篇关于 NLP 中知识图谱的文献。因此，我们呈现了研究领域的结构化概述，提供了任务分类法，总结了我们的发现，并强调了未来工作的方向。
 
 ## 什么是自然语言处理？
 
@@ -28,9 +28,9 @@
 
 知识图谱作为以机器可读格式语义化表示现实世界实体的一个方法已经出现。大多数研究隐含地采用了知识图谱的广泛定义，即*“一个旨在积累和传达现实世界知识的图谱，其中节点代表感兴趣的实体，边代表这些实体之间的关系”*（[Hogan et al., 2022](https://dl.acm.org/doi/10.1145/3447772)）。
 
-# **我们为什么在NLP中使用知识图谱？**
+# **我们为什么在 NLP 中使用知识图谱？**
 
-其基本范式是结构化和非结构化知识的结合可以使所有类型的自然语言处理任务受益。例如，将知识图谱中的结构化知识注入语言模型中的上下文知识，可以提升下游任务的性能（[Colon-Hernandez et al., 2021](https://arxiv.org/abs/2101.12294)）。此外，鉴于目前对大型语言模型（如ChatGPT）的公众讨论，我们可以利用知识图谱来验证并在必要时纠正生成模型中的虚假和错误陈述。随着知识图谱重要性的日益增加，也有越来越多的努力在从非结构化文本中构建新的知识图谱。
+其基本范式是结构化和非结构化知识的结合可以使所有类型的自然语言处理任务受益。例如，将知识图谱中的结构化知识注入语言模型中的上下文知识，可以提升下游任务的性能（[Colon-Hernandez et al., 2021](https://arxiv.org/abs/2101.12294)）。此外，鉴于目前对大型语言模型（如 ChatGPT）的公众讨论，我们可以利用知识图谱来验证并在必要时纠正生成模型中的虚假和错误陈述。随着知识图谱重要性的日益增加，也有越来越多的努力在从非结构化文本中构建新的知识图谱。
 
 # 知识图谱在自然语言处理中的应用是什么？
 
@@ -38,15 +38,15 @@
 
 下图展示了十年观察期内的出版物分布情况。
 
-![](../Images/053913c7ce26b03916cfef5ffd7017a1.png)
+![](img/053913c7ce26b03916cfef5ffd7017a1.png)
 
-2012年至2021年的论文数量分布（图像由作者提供）。
+2012 年至 2021 年的论文数量分布（图像由作者提供）。
 
-尽管第一篇出版物出现于2013年，但2013年至2016年间，年度出版物数量增长缓慢。从2017年起，出版物数量几乎每年翻倍。由于这些年内研究兴趣的显著上升，90%以上的出版物都来源于这五年。尽管2021年的增长趋势似乎停止了，这很可能是因为数据导出发生在2022年第一周，遗漏了许多2021年的研究，这些研究在2022年晚些时候才被列入数据库。然而，这一趋势清楚地表明，知识图谱正受到自然语言处理研究社区越来越多的关注。
+尽管第一篇出版物出现于 2013 年，但 2013 年至 2016 年间，年度出版物数量增长缓慢。从 2017 年起，出版物数量几乎每年翻倍。由于这些年内研究兴趣的显著上升，90%以上的出版物都来源于这五年。尽管 2021 年的增长趋势似乎停止了，这很可能是因为数据导出发生在 2022 年第一周，遗漏了许多 2021 年的研究，这些研究在 2022 年晚些时候才被列入数据库。然而，这一趋势清楚地表明，知识图谱正受到自然语言处理研究社区越来越多的关注。
 
 此外，我们观察到，研究文献中探索的领域数量迅速增长，与年度论文数量相匹配。在下图中，显示了十个最频繁的领域。
 
-![](../Images/621378379fd793ddc615aaa93f948828.png)
+![](img/621378379fd793ddc615aaa93f948828.png)
 
 按最热门应用领域划分的论文数量（图像由作者提供）。
 
@@ -56,7 +56,7 @@
 
 基于文献中关于知识图谱的任务，我们开发了下图所示的实证分类法。
 
-![](../Images/70692a9fa6f645027ae0d7db9eaa4756.png)
+![](img/70692a9fa6f645027ae0d7db9eaa4756.png)
 
 涉及自然语言处理中的知识图谱的任务分类（图像由作者提供）。
 
@@ -72,7 +72,7 @@
 
 ## **知识应用** 🛠️
 
-现有的知识图谱可以用于多种流行的自然语言处理（NLP）任务。这里我们概述了最常见的任务。**问答（QA）**被发现是使用知识图谱的最常见NLP任务。这个任务通常被分为文本问答和基于知识库的问答（KBQA）。文本问答从非结构化文档中提取答案，而KBQA则从预定义的知识库中提取答案。KBQA自然与知识图谱紧密相关，而文本问答也可以通过使用知识图谱作为回答问题的常识知识来源来进行。这种方法不仅有助于生成答案，还使答案更加可解释。**语义搜索**指的是“有意义的搜索”，其目标不仅仅是搜索字面匹配，还要理解搜索意图和查询上下文。这个标签表示了利用知识图谱进行搜索、推荐和分析的研究。例如，大型语义网络概念网（ConceptNet）和学术交流及其关系的知识图谱——微软学术图谱（Microsoft Academic Graph）。**对话界面**是另一个可以受益于知识图谱中世界知识的NLP领域。我们可以利用知识图谱中的知识来生成在特定上下文中更具信息性和适当性的对话代理响应。
+现有的知识图谱可以用于多种流行的自然语言处理（NLP）任务。这里我们概述了最常见的任务。**问答（QA）**被发现是使用知识图谱的最常见 NLP 任务。这个任务通常被分为文本问答和基于知识库的问答（KBQA）。文本问答从非结构化文档中提取答案，而 KBQA 则从预定义的知识库中提取答案。KBQA 自然与知识图谱紧密相关，而文本问答也可以通过使用知识图谱作为回答问题的常识知识来源来进行。这种方法不仅有助于生成答案，还使答案更加可解释。**语义搜索**指的是“有意义的搜索”，其目标不仅仅是搜索字面匹配，还要理解搜索意图和查询上下文。这个标签表示了利用知识图谱进行搜索、推荐和分析的研究。例如，大型语义网络概念网（ConceptNet）和学术交流及其关系的知识图谱——微软学术图谱（Microsoft Academic Graph）。**对话界面**是另一个可以受益于知识图谱中世界知识的 NLP 领域。我们可以利用知识图谱中的知识来生成在特定上下文中更具信息性和适当性的对话代理响应。
 
 **自然语言生成（NLG）** 是 NLP 和计算语言学的一个子领域，关注于从头生成自然语言输出的模型。知识图谱在这个子领域中用于从知识图谱生成自然语言文本、生成问答对、多模态任务中的图像描述，或在低资源环境下进行数据增强。**文本分析** 结合了各种分析性 NLP 技术和方法，用于处理和理解文本数据。典型任务包括情感检测、主题建模或词义消歧。**增强型语言模型** 是将诸如 BERT ([Devlin et al., 2019](https://aclanthology.org/N19-1423.pdf)) 和 GPT ([Radford et al., 2018](https://gwern.net/doc/www/s3-us-west-2.amazonaws.com/d73fdc5ffa8627bce44dcda2fc012da638ffb158.pdf)) 等大型预训练语言模型与知识图谱中包含的知识相结合。由于预训练语言模型从大量的非结构化训练数据中获取知识，一种上升的研究趋势是将它们与结构化知识结合起来。知识图谱中的知识可以注入到语言模型的输入、架构、输出或其组合中。
 
@@ -80,7 +80,7 @@
 
 下图展示了在 NLP 中使用知识图谱的最受欢迎的任务。
 
-![](../Images/35a9cd61c6cb49ed237845051447d341.png)
+![](img/35a9cd61c6cb49ed237845051447d341.png)
 
 2013 年至 2021 年间最受欢迎任务的论文数量分布（图像作者提供）。
 
@@ -96,10 +96,10 @@
 
 [](https://aclanthology.org/2022.aacl-main.46/?source=post_page-----5fdb15abc2b3--------------------------------) [## 十年知识图谱在自然语言处理中的应用：一项调查
 
-### Phillip Schneider, Tim Schopf, Juraj Vladika, Mikhail Galkin, Elena Simperl, Florian Matthes. 第2届会议论文集…
+### Phillip Schneider, Tim Schopf, Juraj Vladika, Mikhail Galkin, Elena Simperl, Florian Matthes. 第 2 届会议论文集…
 
-[aclanthology.org](https://aclanthology.org/2022.aacl-main.46/?source=post_page-----5fdb15abc2b3--------------------------------) [](https://github.com/sebischair/KG-in-NLP-survey?source=post_page-----5fdb15abc2b3--------------------------------) [## GitHub - sebischair/KG-in-NLP-survey: 本仓库包含了507篇被注释的论文…
+[aclanthology.org](https://aclanthology.org/2022.aacl-main.46/?source=post_page-----5fdb15abc2b3--------------------------------) [](https://github.com/sebischair/KG-in-NLP-survey?source=post_page-----5fdb15abc2b3--------------------------------) [## GitHub - sebischair/KG-in-NLP-survey: 本仓库包含了 507 篇被注释的论文…
 
-### 本仓库包含了507篇被注释的论文，这些论文被纳入了研究：“十年知识图谱在自然语言处理中的应用”。
+### 本仓库包含了 507 篇被注释的论文，这些论文被纳入了研究：“十年知识图谱在自然语言处理中的应用”。
 
 [github.com](https://github.com/sebischair/KG-in-NLP-survey?source=post_page-----5fdb15abc2b3--------------------------------)

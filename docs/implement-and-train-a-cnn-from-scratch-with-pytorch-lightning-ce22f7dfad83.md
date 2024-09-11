@@ -1,18 +1,18 @@
 # 使用 PyTorch Lightning 从零实现并训练 CNN
 
-> 原文：[https://towardsdatascience.com/implement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83?source=collection_archive---------7-----------------------#2023-08-08](https://towardsdatascience.com/implement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83?source=collection_archive---------7-----------------------#2023-08-08)
+> 原文：[`towardsdatascience.com/implement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83?source=collection_archive---------7-----------------------#2023-08-08`](https://towardsdatascience.com/implement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83?source=collection_archive---------7-----------------------#2023-08-08)
 
 ## 如果你还没有使用 PyTorch Lightning，你应该尝试一下。
 
-[](https://medium.com/@betty.ld?source=post_page-----ce22f7dfad83--------------------------------)[![Betty LD](../Images/1a908f5bcdb6cbc3be5f889f52d743e6.png)](https://medium.com/@betty.ld?source=post_page-----ce22f7dfad83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce22f7dfad83--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce22f7dfad83--------------------------------) [Betty LD](https://medium.com/@betty.ld?source=post_page-----ce22f7dfad83--------------------------------)
+[](https://medium.com/@betty.ld?source=post_page-----ce22f7dfad83--------------------------------)![Betty LD](https://medium.com/@betty.ld?source=post_page-----ce22f7dfad83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce22f7dfad83--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce22f7dfad83--------------------------------) [Betty LD](https://medium.com/@betty.ld?source=post_page-----ce22f7dfad83--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9e6de59677a9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83&user=Betty+LD&userId=9e6de59677a9&source=post_page-9e6de59677a9----ce22f7dfad83---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce22f7dfad83--------------------------------) ·19分钟阅读·2023年8月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce22f7dfad83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83&user=Betty+LD&userId=9e6de59677a9&source=-----ce22f7dfad83---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9e6de59677a9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83&user=Betty+LD&userId=9e6de59677a9&source=post_page-9e6de59677a9----ce22f7dfad83---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce22f7dfad83--------------------------------) ·19 分钟阅读·2023 年 8 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce22f7dfad83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83&user=Betty+LD&userId=9e6de59677a9&source=-----ce22f7dfad83---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce22f7dfad83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83&source=-----ce22f7dfad83---------------------bookmark_footer-----------)![](../Images/3c624d26acc13295bc8fc840a43add42.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce22f7dfad83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplement-and-train-a-cnn-from-scratch-with-pytorch-lightning-ce22f7dfad83&source=-----ce22f7dfad83---------------------bookmark_footer-----------)![](img/3c624d26acc13295bc8fc840a43add42.png)
 
 PyTorch Lightning 的抽象概念。来源：[Marc Sendra Martorell](https://unsplash.com/@marcsm)。
 

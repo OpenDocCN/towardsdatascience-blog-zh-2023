@@ -1,10 +1,10 @@
 # LLMs 能否替代数据分析师？使用 SQL 获取答案
 
-> 原文：[https://towardsdatascience.com/can-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259?source=collection_archive---------0-----------------------#2023-12-22](https://towardsdatascience.com/can-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259?source=collection_archive---------0-----------------------#2023-12-22)
+> 原文：[`towardsdatascience.com/can-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259?source=collection_archive---------0-----------------------#2023-12-22`](https://towardsdatascience.com/can-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259?source=collection_archive---------0-----------------------#2023-12-22)
 
-## 第 2 部分：深入探讨 LLM 代理
+## 第二部分：深入探讨 LLM 代理
 
-[](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)[![Mariya Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8cf7da132259--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8cf7da132259--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)![Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8cf7da132259--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8cf7da132259--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8cf7da132259&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259&source=-----8cf7da132259---------------------bookmark_footer-----------)![](../Images/a9a7ac47dced35c371073a2c4bd70565.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8cf7da132259&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259&source=-----8cf7da132259---------------------bookmark_footer-----------)![](img/a9a7ac47dced35c371073a2c4bd70565.png)
 
 图片由 DALL-E 3 提供
 
@@ -20,7 +20,7 @@
 
 我们的第一个原型可以使用现成的工具来回答与定义指标相关的问题，如下面的示例所示。
 
-![](../Images/37dd8da1463d0133009b5fea8137b792.png)
+![](img/37dd8da1463d0133009b5fea8137b792.png)
 
 作者插图
 
@@ -61,13 +61,13 @@ def get_clickhouse_data(query, host = CH_HOST, connection_timeout = 1500):
 
 让我们来看一下 `ecommerce.sessions` 表。
 
-![](../Images/8430e5082dd3450b91d9779b4faf0aa1.png)
+![](img/8430e5082dd3450b91d9779b4faf0aa1.png)
 
 作者截图
 
 在这里，你可以看到我们为用户提供了哪些功能。
 
-![](../Images/faf4589845750ce8ac3151e06172aced.png)
+![](img/faf4589845750ce8ac3151e06172aced.png)
 
 作者截图
 
@@ -77,7 +77,7 @@ def get_clickhouse_data(query, host = CH_HOST, connection_timeout = 1500):
 
 LLM 代理的核心思想是将 LLM 作为推理引擎来定义要执行的操作集合。在经典方法中，我们硬编码了一系列操作，但使用代理时，我们给模型提供工具和任务，让它决定如何实现这些任务。
 
-关于LLM代理的最基础论文之一是[“ReAct: Synergizing Reasoning and Acting in Language Models”](https://arxiv.org/abs/2210.03629)，作者是Shunyu Yao等。ReAct（**Re**asoning + **Act**ing）方法建议结合：
+关于 LLM 代理的最基础论文之一是[“ReAct: Synergizing Reasoning and Acting in Language Models”](https://arxiv.org/abs/2210.03629)，作者是 Shunyu Yao 等。ReAct（**Re**asoning + **Act**ing）方法建议结合：
 
 +   帮助制定计划并在出现例外情况时更新计划的推理，
 
@@ -85,17 +85,17 @@ LLM 代理的核心思想是将 LLM 作为推理引擎来定义要执行的操�
 
 这种方法在不同任务上的表现更好。下面是来自论文的一个示例。
 
-![](../Images/35ba2a3b5a9028a1189160df6725e4e1.png)
+![](img/35ba2a3b5a9028a1189160df6725e4e1.png)
 
-来自[Yao等人的论文](https://arxiv.org/abs/2210.03629)的示例
+来自[Yao 等人的论文](https://arxiv.org/abs/2210.03629)的示例
 
-实际上，这就是人类智能的工作方式：我们将内在的推理与任务导向的行动结合起来。假设你需要做晚餐。你将使用推理来制定计划（“客人将在30分钟内到达，我只有时间做意大利面”），调整计划（“本变成了素食者，我应该为他订购一些食物”）或决定委派任务（相当于外部工具，“意大利面没了，我需要问我的伴侣去买”）。同时，你会使用行动来使用一些工具（询问伴侣帮助或使用搅拌机）或获取一些信息（查找互联网了解煮意大利面所需的时间，以使其达到“ al dente”）。所以，使用类似的方法对LLM是合理的，因为它对人类有效（人类无疑是AGI）。
+实际上，这就是人类智能的工作方式：我们将内在的推理与任务导向的行动结合起来。假设你需要做晚餐。你将使用推理来制定计划（“客人将在 30 分钟内到达，我只有时间做意大利面”），调整计划（“本变成了素食者，我应该为他订购一些食物”）或决定委派任务（相当于外部工具，“意大利面没了，我需要问我的伴侣去买”）。同时，你会使用行动来使用一些工具（询问伴侣帮助或使用搅拌机）或获取一些信息（查找互联网了解煮意大利面所需的时间，以使其达到“ al dente”）。所以，使用类似的方法对 LLM 是合理的，因为它对人类有效（人类无疑是 AGI）。
 
-现在，自ReAct以来，LLM代理有许多不同的方法。它们在用于设置模型推理的提示、如何定义工具、输出格式、处理中间步骤的记忆等方面有所不同。
+现在，自 ReAct 以来，LLM 代理有许多不同的方法。它们在用于设置模型推理的提示、如何定义工具、输出格式、处理中间步骤的记忆等方面有所不同。
 
 一些最受欢迎的方法包括：
 
-+   OpenAI函数，
++   OpenAI 函数，
 
 +   AutoGPT，
 
@@ -107,9 +107,9 @@ LLM 代理的核心思想是将 LLM 作为推理引擎来定义要执行的操�
 
 # 从零开始构建代理
 
-让我们开始构建一个代理。我们将从零开始，以了解其内部工作原理。然后，如果你不需要任何自定义，我们将使用LangChain的工具来加快原型制作。
+让我们开始构建一个代理。我们将从零开始，以了解其内部工作原理。然后，如果你不需要任何自定义，我们将使用 LangChain 的工具来加快原型制作。
 
-LLM代理的核心组件包括：
+LLM 代理的核心组件包括：
 
 +   引导模型推理的提示。
 
@@ -117,11 +117,11 @@ LLM代理的核心组件包括：
 
 +   记忆 — 一个将先前迭代传递给模型的机制。
 
-对于LLM代理的第一个版本，我们将使用OpenAI函数作为构建代理的框架。
+对于 LLM 代理的第一个版本，我们将使用 OpenAI 函数作为构建代理的框架。
 
 ## 定义工具
 
-让我们开始定义我们机器人的工具。让我们考虑一下我们的LLM驱动分析师可能需要哪些信息来回答问题：
+让我们开始定义我们机器人的工具。让我们考虑一下我们的 LLM 驱动分析师可能需要哪些信息来回答问题：
 
 +   表格中的列表 — 我们可以将其放入系统提示中，以便模型了解我们拥有的数据，并且每次都不需要执行工具。
 
@@ -129,7 +129,7 @@ LLM代理的核心组件包括：
 
 +   表格中列的前几个值，以便模型可以查找过滤器的值，
 
-+   SQL查询执行的结果，以便获取实际数据。
++   SQL 查询执行的结果，以便获取实际数据。
 
 要在 LangChain 中定义工具，我们需要对函数使用 `@tool` 装饰器。我们将使用 Pydantic 来指定每个函数的参数模式，以便模型知道传递给函数的内容。
 
@@ -327,7 +327,7 @@ while True:
     # calling tool and adding observation to the scratchpad otherwise
     else:
         print(f'Executing tool: {output.tool}, arguments: {output.tool_input}')
-        observation = sql_tools[output.tool](output.tool_input)
+        observation = sql_toolsoutput.tool
         print(f'Observation: {observation}')
         print()
         intermediate_steps.append((output, observation))
@@ -388,7 +388,7 @@ analyst_agent_executor.invoke(
 
 结果是我们得到了一个易于追踪的输出，且结果相同。你可以注意到 LangChain 对代理输出的格式化非常方便。
 
-![](../Images/9af57b26a48a6cae3401a95f913919fd.png)
+![](img/9af57b26a48a6cae3401a95f913919fd.png)
 
 图片由作者提供
 
@@ -425,7 +425,7 @@ analyst_agent_openai = initialize_agent(
 
 让我们从查看 ReAct 代理开始。通过当前的实现，我们可以轻松地更改代理类型，并尝试论文中描述的 ReAct 方法。
 
-最通用的ReAct实现是[零样本ReAct](https://python.langchain.com/docs/modules/agents/agent_types/react)。它不适用于我们，因为它只支持单一字符串作为输入。我们的工具需要多个参数，因此我们需要使用[结构化输入ReAct](https://python.langchain.com/docs/modules/agents/agent_types/structured_chat)。
+最通用的 ReAct 实现是[零样本 ReAct](https://python.langchain.com/docs/modules/agents/agent_types/react)。它不适用于我们，因为它只支持单一字符串作为输入。我们的工具需要多个参数，因此我们需要使用[结构化输入 ReAct](https://python.langchain.com/docs/modules/agents/agent_types/structured_chat)。
 
 我们可以利用使用模块化框架的优势：我们只需更改一个参数`agent = AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION`，就可以了。
 
@@ -457,7 +457,7 @@ analyst_agent_react = initialize_agent(
 
 +   你可以在[代码](https://github.com/langchain-ai/langchain/blob/133971053a0b84a034fb0bc78cd1150cdb7f5dbf/libs/langchain/langchain/agents/structured_chat/base.py#L103)中找到你可以作为`agent_kwargs`传递的所有参数的完整列表。
 
-+   所以，我们可以从[这里](https://github.com/langchain-ai/langchain/blob/133971053a0b84a034fb0bc78cd1150cdb7f5dbf/libs/langchain/langchain/agents/structured_chat/prompt.py#L2)覆盖默认的`PREFIX`值，并将其作为`agent_kwargs`中的`prefix`传递。如果你感兴趣，你可以在这里阅读默认的ReAct提示，并考虑如何根据你的任务对其进行调整。
++   所以，我们可以从[这里](https://github.com/langchain-ai/langchain/blob/133971053a0b84a034fb0bc78cd1150cdb7f5dbf/libs/langchain/langchain/agents/structured_chat/prompt.py#L2)覆盖默认的`PREFIX`值，并将其作为`agent_kwargs`中的`prefix`传递。如果你感兴趣，你可以在这里阅读默认的 ReAct 提示，并考虑如何根据你的任务对其进行调整。
 
 如果你感兴趣，你可以使用以下调用查看最终提示。
 
@@ -513,7 +513,7 @@ Action:
 
 {
 
-"动作": "执行SQL",
+"动作": "执行 SQL",
 
 "动作输入": {
 
@@ -534,7 +534,7 @@ Action:
 
 "动作": "最终答案",
 
-"动作输入": "来自英国的活跃客户有111,469个。"
+"动作输入": "来自英国的活跃客户有 111,469 个。"
 
 }
 
@@ -544,7 +544,7 @@ Action:
 'There are 111,469 active customers from the United Kingdom.'
 ```
 
-尽管模型采用了不同的路径（从理解表格模式开始，然后执行SQL），但它得出了相同的结果。
+尽管模型采用了不同的路径（从理解表格模式开始，然后执行 SQL），但它得出了相同的结果。
 
 现在，让我们继续实验方法。在 LangChain 中，有实验性的代理类型。它们尚不建议用于生产。然而，尝试使用它们并查看它们的工作效果会很有趣。
 
@@ -605,9 +605,9 @@ analyst_agent_plan_and_execute.run("How many active customers from the United Ki
 
 +   然后，模型深入挖掘试图定义`ecommerce.sessions`中近期活动的标准。它查看了`action_date`、`session_duration`和`revenue`的分布情况。
 
-+   最终，它将活跃客户定义为在过去30天内有过会话的客户，并且会话时长和收入高于某些阈值，而忽略了可以直接使用`is_active`。模型计划查看数据以定义这些阈值。
++   最终，它将活跃客户定义为在过去 30 天内有过会话的客户，并且会话时长和收入高于某些阈值，而忽略了可以直接使用`is_active`。模型计划查看数据以定义这些阈值。
 
-+   最终错误是由于尝试加载所有客户的user_ids，因为ChatGPT的令牌太多。
++   最终错误是由于尝试加载所有客户的 user_ids，因为 ChatGPT 的令牌太多。
 
 尽管有很多文本，我鼓励你阅读一下，看看模型是如何思考问题的。
 
@@ -620,7 +620,7 @@ Action:
 
 "action": "Final Answer",
 
-"action_input": "有关客户的数据存储在SQL数据库中，特别是在名为'ecommerce.users'的表中。"
+"action_input": "有关客户的数据存储在 SQL 数据库中，特别是在名为'ecommerce.users'的表中。"
 
 }
 
@@ -801,7 +801,7 @@ Action:
 
 "action": "Final Answer",
 
-"action_input": "根据'ecommerce.users'和'ecommerce.sessions'表中可用的数据，可以初步定义一个'活跃'客户为在过去30天内有过会话的客户，其会话时长和收入高于某些阈值。'users'表中的'is_active'列可能已经反映了这种定义或类似定义，但需要进一步分析以设定'session_duration'和'revenue'的具体阈值。这些阈值可以通过计算数据分布的平均值或百分位数来确定。"
+"action_input": "根据'ecommerce.users'和'ecommerce.sessions'表中可用的数据，可以初步定义一个'活跃'客户为在过去 30 天内有过会话的客户，其会话时长和收入高于某些阈值。'users'表中的'is_active'列可能已经反映了这种定义或类似定义，但需要进一步分析以设定'session_duration'和'revenue'的具体阈值。这些阈值可以通过计算数据分布的平均值或百分位数来确定。"
 
 }
 
@@ -861,13 +861,13 @@ Observation:
 ... <many more lines...>
 ```
 
-这是一个很好的例子，说明代理在问题上过于复杂化并进入了过多细节。人类分析师也会不时犯这样的错误。因此，看到LLM行为中的类似模式是很有趣的。
+这是一个很好的例子，说明代理在问题上过于复杂化并进入了过多细节。人类分析师也会不时犯这样的错误。因此，看到 LLM 行为中的类似模式是很有趣的。
 
 如果我们反思一下如何潜在地解决这个问题，有几种方法：
 
-+   首先，我们可以防止在尝试从数据库获取过多数据时出现问题，如果`execute_sql`函数的输出超过1K行，则返回错误。
++   首先，我们可以防止在尝试从数据库获取过多数据时出现问题，如果`execute_sql`函数的输出超过 1K 行，则返回错误。
 
-+   另一个我会考虑的是允许LLM提出后续问题，并指示它不要做出假设。
++   另一个我会考虑的是允许 LLM 提出后续问题，并指示它不要做出假设。
 
 让我们继续研究启发当前方法的 BabyAGI 方法。
 
@@ -1190,13 +1190,13 @@ System: This reminds you of these events from your past:
 } 
 ```
 
-总体来说，AutoGPT看起来是一种可行的方法。然而，我仍然相信，目前构建代理的最可靠方法是通过OpenAI的函数。
+总体来说，AutoGPT 看起来是一种可行的方法。然而，我仍然相信，目前构建代理的最可靠方法是通过 OpenAI 的函数。
 
 # 我们需要从头开始构建一切吗？
 
-我们在构建集成了SQL数据库的代理时度过了一段美好的学习时光。然而，我必须提到LangChain有自己实现的SQL代理——[SQLDatabaseChain](https://python.langchain.com/docs/integrations/toolkits/sql_database)。
+我们在构建集成了 SQL 数据库的代理时度过了一段美好的学习时光。然而，我必须提到 LangChain 有自己实现的 SQL 代理——[SQLDatabaseChain](https://python.langchain.com/docs/integrations/toolkits/sql_database)。
 
-这种方法使用SQL Alchemy与数据库进行交互。因此，我们需要安装`clickhouse-sqlalchemy`包以连接到ClickHouse。
+这种方法使用 SQL Alchemy 与数据库进行交互。因此，我们需要安装`clickhouse-sqlalchemy`包以连接到 ClickHouse。
 
 ```py
 pip install clickhouse-sqlalchemy
@@ -1212,13 +1212,13 @@ toolkit = SQLDatabaseToolkit(db=db, llm=OpenAI(temperature=0))
 
 工具包是与某个主题相关的有用工具的集合。你可以在[文档](https://python.langchain.com/docs/integrations/toolkits)中找到许多示例。
 
-我们可以看到工具包中拥有的工具列表。这里有用于进行SQL查询或获取与数据库相关信息的工具。
+我们可以看到工具包中拥有的工具列表。这里有用于进行 SQL 查询或获取与数据库相关信息的工具。
 
 ```py
 toolkit.get_tools()
 ```
 
-然后，我们可以快速创建并运行一个基于OpenAI函数的代理。
+然后，我们可以快速创建并运行一个基于 OpenAI 函数的代理。
 
 ```py
 agent_executor = create_sql_agent(
@@ -1292,15 +1292,15 @@ AI: I should look at the tables in the database to see what I can query.
 Then I should query the schema of the most relevant tables.
 ```
 
-因此，我们有了一个相当方便且有效的SQL分析实现。如果你不需要任何自定义更改，你可以直接使用LangChain的实现。
+因此，我们有了一个相当方便且有效的 SQL 分析实现。如果你不需要任何自定义更改，你可以直接使用 LangChain 的实现。
 
 此外，你可以稍作调整，例如，通过将提示传递给`create_sql_agent`函数（[文档](https://api.python.langchain.com/en/latest/agent_toolkits/langchain_community.agent_toolkits.sql.base.create_sql_agent.html?highlight=create_sql_agent#langchain_community.agent_toolkits.sql.base.create_sql_agent)）。
 
 # 摘要
 
-今天，我们学习了如何创建不同类型的代理。我们实现了一个完全从零开始的LLM驱动代理，可以处理SQL数据库。然后，我们利用高层次的LangChain工具，通过几个函数调用实现了相同的结果。
+今天，我们学习了如何创建不同类型的代理。我们实现了一个完全从零开始的 LLM 驱动代理，可以处理 SQL 数据库。然后，我们利用高层次的 LangChain 工具，通过几个函数调用实现了相同的结果。
 
-所以，现在我们的LLM驱动分析师可以使用你的数据库中的数据并回答问题。这是一个重大改进。我们可以将SQL数据库代理作为工具添加到我们的LLM驱动分析师中。这将是我们的第一个技能。
+所以，现在我们的 LLM 驱动分析师可以使用你的数据库中的数据并回答问题。这是一个重大改进。我们可以将 SQL 数据库代理作为工具添加到我们的 LLM 驱动分析师中。这将是我们的第一个技能。
 
 代理现在可以回答与数据相关的问题并自行工作。然而，分析工作的基石是合作。因此，在接下来的文章中，我们将添加记忆功能和学习代理，以便提出后续问题。敬请关注！
 

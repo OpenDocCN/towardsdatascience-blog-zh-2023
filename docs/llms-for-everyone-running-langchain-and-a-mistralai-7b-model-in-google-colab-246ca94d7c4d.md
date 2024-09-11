@@ -1,20 +1,20 @@
-# 面向所有人的LLM：在Google Colab中运行LangChain和MistralAI 7B模型
+# 面向所有人的 LLM：在 Google Colab 中运行 LangChain 和 MistralAI 7B 模型
 
-> 原文：[https://towardsdatascience.com/llms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d?source=collection_archive---------0-----------------------#2023-12-05](https://towardsdatascience.com/llms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d?source=collection_archive---------0-----------------------#2023-12-05)
+> 原文：[`towardsdatascience.com/llms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d?source=collection_archive---------0-----------------------#2023-12-05`](https://towardsdatascience.com/llms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d?source=collection_archive---------0-----------------------#2023-12-05)
 
 ## 免费实验大型语言模型
 
-[](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)[![Dmitrii Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)
+[](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)![Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----246ca94d7c4d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------) ·10分钟阅读·2023年12月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F246ca94d7c4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=-----246ca94d7c4d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----246ca94d7c4d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------) ·10 分钟阅读·2023 年 12 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F246ca94d7c4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=-----246ca94d7c4d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F246ca94d7c4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d&source=-----246ca94d7c4d---------------------bookmark_footer-----------)![](../Images/260367e3c69b2a0784e0677fcb3983bb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F246ca94d7c4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d&source=-----246ca94d7c4d---------------------bookmark_footer-----------)![](img/260367e3c69b2a0784e0677fcb3983bb.png)
 
-LangChain的艺术表现，照片由Ruan Richard Rodrigues提供，[Unsplash](https://unsplash.com/@heeybooy)
+LangChain 的艺术表现，照片由 Ruan Richard Rodrigues 提供，[Unsplash](https://unsplash.com/@heeybooy)
 
 大家都知道，大型语言模型本质上是大型的。甚至不久前，它们仅对高端硬件的拥有者开放，或者至少对那些支付云访问费用或每次 API 调用费用的人开放。现在，时代在变化。本文中，我将展示如何在 Google Colab 中完全免费运行 LangChain Python 库、FAISS 向量数据库和 Mistral-7B 模型，并进行一些有趣的实验。
 

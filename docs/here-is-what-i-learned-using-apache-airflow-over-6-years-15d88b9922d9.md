@@ -1,18 +1,18 @@
-# 这就是我在使用Apache Airflow 6年中学到的东西
+# 这就是我在使用 Apache Airflow 6 年中学到的东西
 
-> 原文：[https://towardsdatascience.com/here-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9?source=collection_archive---------7-----------------------#2023-01-09](https://towardsdatascience.com/here-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9?source=collection_archive---------7-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/here-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9?source=collection_archive---------7-----------------------#2023-01-09`](https://towardsdatascience.com/here-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9?source=collection_archive---------7-----------------------#2023-01-09)
 
-## 一段空中飞行Apache Airflow从实验到无压力的生产之旅
+## 一段空中飞行 Apache Airflow 从实验到无压力的生产之旅
 
-[](https://chengzhizhao.medium.com/?source=post_page-----15d88b9922d9--------------------------------)[![Chengzhi Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----15d88b9922d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15d88b9922d9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15d88b9922d9--------------------------------) [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----15d88b9922d9--------------------------------)
+[](https://chengzhizhao.medium.com/?source=post_page-----15d88b9922d9--------------------------------)![Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----15d88b9922d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15d88b9922d9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----15d88b9922d9--------------------------------) [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----15d88b9922d9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff956c63a9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhere-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9&user=Chengzhi+Zhao&userId=f956c63a9571&source=post_page-f956c63a9571----15d88b9922d9---------------------post_header-----------) 发表在[数据科学前沿](https://towardsdatascience.com/?source=post_page-----15d88b9922d9--------------------------------) ·8 min阅读·2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15d88b9922d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhere-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9&user=Chengzhi+Zhao&userId=f956c63a9571&source=-----15d88b9922d9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff956c63a9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhere-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9&user=Chengzhi+Zhao&userId=f956c63a9571&source=post_page-f956c63a9571----15d88b9922d9---------------------post_header-----------) 发表在[数据科学前沿](https://towardsdatascience.com/?source=post_page-----15d88b9922d9--------------------------------) ·8 min 阅读·2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15d88b9922d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhere-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9&user=Chengzhi+Zhao&userId=f956c63a9571&source=-----15d88b9922d9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F15d88b9922d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhere-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9&source=-----15d88b9922d9---------------------bookmark_footer-----------)![](../Images/2e84fe2488de04a2676a5ff7e1454684.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F15d88b9922d9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhere-is-what-i-learned-using-apache-airflow-over-6-years-15d88b9922d9&source=-----15d88b9922d9---------------------bookmark_footer-----------)![](img/2e84fe2488de04a2676a5ff7e1454684.png)
 
 照片由[Karsten Würth](https://unsplash.com/@karsten_wuerth?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)在[Unsplash](https://unsplash.com/photos/UbGYPMbMYP8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)上发布
 

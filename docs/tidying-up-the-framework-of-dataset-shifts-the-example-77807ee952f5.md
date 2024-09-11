@@ -1,18 +1,18 @@
 # 数据集转移框架的整理：示例
 
-> 原文：[https://towardsdatascience.com/tidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5?source=collection_archive---------4-----------------------#2023-09-01](https://towardsdatascience.com/tidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5?source=collection_archive---------4-----------------------#2023-09-01)
+> 原文：[`towardsdatascience.com/tidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5?source=collection_archive---------4-----------------------#2023-09-01`](https://towardsdatascience.com/tidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5?source=collection_archive---------4-----------------------#2023-09-01)
 
 ## *条件概率如何随三个概率元素的函数变化*
 
-[](https://medium.com/@valefonsecadiaz?source=post_page-----77807ee952f5--------------------------------)[![瓦莱里亚·冯塞卡·迪亚兹](../Images/880222be555e8fa7df660f9dd1233818.png)](https://medium.com/@valefonsecadiaz?source=post_page-----77807ee952f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----77807ee952f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----77807ee952f5--------------------------------) [瓦莱里亚·冯塞卡·迪亚兹](https://medium.com/@valefonsecadiaz?source=post_page-----77807ee952f5--------------------------------)
+[](https://medium.com/@valefonsecadiaz?source=post_page-----77807ee952f5--------------------------------)![瓦莱里亚·冯塞卡·迪亚兹](https://medium.com/@valefonsecadiaz?source=post_page-----77807ee952f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----77807ee952f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----77807ee952f5--------------------------------) [瓦莱里亚·冯塞卡·迪亚兹](https://medium.com/@valefonsecadiaz?source=post_page-----77807ee952f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e363caf1c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=post_page-6e363caf1c79----77807ee952f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----77807ee952f5--------------------------------) ·7 min 阅读·2023年9月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F77807ee952f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=-----77807ee952f5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e363caf1c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=post_page-6e363caf1c79----77807ee952f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----77807ee952f5--------------------------------) ·7 min 阅读·2023 年 9 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F77807ee952f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=-----77807ee952f5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F77807ee952f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5&source=-----77807ee952f5---------------------bookmark_footer-----------)![](../Images/9e31584718ba2bf5d2608bb69b7ab98e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F77807ee952f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftidying-up-the-framework-of-dataset-shifts-the-example-77807ee952f5&source=-----77807ee952f5---------------------bookmark_footer-----------)![](img/9e31584718ba2bf5d2608bb69b7ab98e.png)
 
 作者提供的图片
 
@@ -24,29 +24,29 @@
 
 这是机器学习模型的原因与模型性能的框架：
 
-![](../Images/41a53ba3896a9e14a9b7ada026ce2104.png)
+![](img/41a53ba3896a9e14a9b7ada026ce2104.png)
 
-作者提供的图片。改编自 [https://towardsdatascience.com/tidying-up-the-framework-of-dataset-shifts-cd9f922637b7](/tidying-up-the-framework-of-dataset-shifts-cd9f922637b7)
+作者提供的图片。改编自 `towardsdatascience.com/tidying-up-the-framework-of-dataset-shifts-cd9f922637b7`
 
 在这个框架中，我们可以清晰地看到将原因与我们估计模型的预测性能连接起来的路径。我们在统计学习中需要做的一个基本假设是，我们的模型是对真实模型（真实决策边界、真实回归函数等）的“良好”估计。“良好”可以有不同的含义，例如无偏估计、精确估计、完整估计、充分估计等。但为了简化和接下来的讨论，我们可以说它们在预测误差较小的意义上是好的。换句话说，我们假设它们能够代表真实模型。
 
 在这个假设下，我们可以在概率***P(X)、P(Y)、P(X|Y)***中寻找估计模型退化的原因，并因此***P(Y|X)***。
 
-所以，我们今天要做的就是举例并演示不同的场景，看看***P(Y|X)***如何作为3个概率***P(X|Y)***、***P(X)***和***P(Y)***的函数变化。我们将使用二维空间中的少量点，并按拉普拉斯的方法计算这些样本点的概率。目的是消化模型退化的原因层次结构，将***P(Y|X)***作为全局原因，而其他三个作为具体原因。通过这种方式，我们可以理解，例如，潜在的协变量偏移有时可能是条件偏移的论据，而不是一个独立的偏移。
+所以，我们今天要做的就是举例并演示不同的场景，看看***P(Y|X)***如何作为 3 个概率***P(X|Y)***、***P(X)***和***P(Y)***的函数变化。我们将使用二维空间中的少量点，并按拉普拉斯的方法计算这些样本点的概率。目的是消化模型退化的原因层次结构，将***P(Y|X)***作为全局原因，而其他三个作为具体原因。通过这种方式，我们可以理解，例如，潜在的协变量偏移有时可能是条件偏移的论据，而不是一个独立的偏移。
 
 ## 示例
 
 我们今天课程中要绘制的案例是一个非常简单的。我们有两个协变量***X1***和***X2***，输出***Y***是一个二元变量。这就是我们的模型空间的样子：
 
-![](../Images/9dfb0f5e2a871c9c8f7b8fa4e1f989de.png)
+![](img/9dfb0f5e2a871c9c8f7b8fa4e1f989de.png)
 
 作者提供的图片
 
-你可以看到，空间被划分为4个象限，而这个空间中的决策边界是交叉的。这意味着模型将样本分类为类别1如果它们位于第1象限和第3象限，否则分类为类别0。为了这个练习的目的，我们将通过比较***P(Y=1|X1>a)***来逐步解析不同情况。这将是我们展示的条件概率。如果你在想为什么不考虑***X2***，这是为了简化练习。这不会影响我们想要理解的见解。
+你可以看到，空间被划分为 4 个象限，而这个空间中的决策边界是交叉的。这意味着模型将样本分类为类别 1 如果它们位于第 1 象限和第 3 象限，否则分类为类别 0。为了这个练习的目的，我们将通过比较***P(Y=1|X1>a)***来逐步解析不同情况。这将是我们展示的条件概率。如果你在想为什么不考虑***X2***，这是为了简化练习。这不会影响我们想要理解的见解。
 
 > 如果你仍然有些复杂的感觉，计算**P(Y=1|X1>a)** 相当于 **P(Y=1|X1>a, -inf <X2 < inf)**，所以理论上，我们仍然考虑了**X2**。
 
-![](../Images/d82c6e1f04e4f16ef6d95e5fdc45629e.png)
+![](img/d82c6e1f04e4f16ef6d95e5fdc45629e.png)
 
 图片由作者提供
 
@@ -54,7 +54,7 @@
 
 所以，首先，我们计算我们的展示概率，得到的是***1/2***。在这里，我们的样本组在整个空间中相当均匀，先验概率也很均匀：
 
-![](../Images/88048c01fd014a51c24ce82084572ac3.png)
+![](img/88048c01fd014a51c24ce82084572ac3.png)
 
 图片由作者提供
 
@@ -64,11 +64,11 @@
 
 是的，因为在***X1>a***的区域内的抽样比以前更多。所以，这只是一个*协变量变化*而不是*条件变化*吗？让我们看看。这里是用更新后的点集计算的所有相同概率（变化的概率用橙色标记）：
 
-![](../Images/3109fa31a6427b9b5f6a068653d9ba86.png)
+![](img/3109fa31a6427b9b5f6a068653d9ba86.png)
 
 图片由作者提供
 
-我们在这里看到了什么？实际上，我们不仅仅获得了*协变量变化*，而且所有的概率都发生了变化。*先验*概率也发生了变化，因为协变量变化带来了一个新的类别1的点，使得这一类别的发生率大于类别2。因此，*逆概率* ***P(X1>a|Y=1)*** 正是因为*先验变化*而发生了变化。所有这些最终导致了一个*条件变化*，所以我们现在得到了***P(Y=1|X1>a)=2/3***，而不是***1/2***。
+我们在这里看到了什么？实际上，我们不仅仅获得了*协变量变化*，而且所有的概率都发生了变化。*先验*概率也发生了变化，因为协变量变化带来了一个新的类别 1 的点，使得这一类别的发生率大于类别 2。因此，*逆概率* ***P(X1>a|Y=1)*** 正是因为*先验变化*而发生了变化。所有这些最终导致了一个*条件变化*，所以我们现在得到了***P(Y=1|X1>a)=2/3***，而不是***1/2***。
 
 这是一个思考泡泡。实际上是一个非常重要的思考泡泡。
 
@@ -82,7 +82,7 @@
 
 因此，对于***X1>a***，情况保持不变。让我们看看展示的条件概率及其元素发生了什么变化。
 
-![](../Images/52f461e1e292851cf4fee30558575749.png)
+![](img/52f461e1e292851cf4fee30558575749.png)
 
 图片由作者提供
 
@@ -96,7 +96,7 @@
 
 这里有两个额外的组合。在一种情况下，*先验*保持不变，而其他两个概率发生了变化，但条件概率仍未变化。在第二种情况下，*仅* *逆概率*与条件漂移相关。请查看下面的漂移。后者是一个相当重要的点，所以不要错过！
 
-![](../Images/77461159b07a374577cd8b77cefaaf64.png)
+![](img/77461159b07a374577cd8b77cefaaf64.png)
 
 图片来源于作者
 
@@ -114,7 +114,7 @@
 
 这是一个示例，我们有一个*概念漂移*，自然地伴随着一个*条件漂移*，但实际上*没有协变量或先验漂移*。
 
-![](../Images/a22fa23667500064f5b8917ba4ab1c63.png)
+![](img/a22fa23667500064f5b8917ba4ab1c63.png)
 
 图片来源于作者
 

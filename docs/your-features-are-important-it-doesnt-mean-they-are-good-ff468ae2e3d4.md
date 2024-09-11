@@ -1,10 +1,10 @@
 # 你的特征很重要？这并不意味着它们是好的
 
-> 原文：[https://towardsdatascience.com/your-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4?source=collection_archive---------0-----------------------#2023-08-21](https://towardsdatascience.com/your-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4?source=collection_archive---------0-----------------------#2023-08-21)
+> 原文：[`towardsdatascience.com/your-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4?source=collection_archive---------0-----------------------#2023-08-21`](https://towardsdatascience.com/your-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4?source=collection_archive---------0-----------------------#2023-08-21)
 
 ## “特征重要性”是不够的。如果你想知道哪些特征对模型有益，你还需要查看“误差贡献”。
 
-[](https://medium.com/@mazzanti.sam?source=post_page-----ff468ae2e3d4--------------------------------)[![Samuele Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----ff468ae2e3d4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff468ae2e3d4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ff468ae2e3d4--------------------------------) [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----ff468ae2e3d4--------------------------------)
+[](https://medium.com/@mazzanti.sam?source=post_page-----ff468ae2e3d4--------------------------------)![Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----ff468ae2e3d4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff468ae2e3d4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff468ae2e3d4--------------------------------) [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----ff468ae2e3d4--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fff468ae2e3d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4&source=-----ff468ae2e3d4---------------------bookmark_footer-----------)![](../Images/38f178e94336a144567ffa647733e5b7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fff468ae2e3d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyour-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4&source=-----ff468ae2e3d4---------------------bookmark_footer-----------)![](img/38f178e94336a144567ffa647733e5b7.png)
 
 [作者提供的图片]
 

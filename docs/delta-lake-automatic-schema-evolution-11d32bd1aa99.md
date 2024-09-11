@@ -1,18 +1,18 @@
 # Delta Lake — 自动模式演化
 
-> 原文：[https://towardsdatascience.com/delta-lake-automatic-schema-evolution-11d32bd1aa99?source=collection_archive---------1-----------------------#2023-03-10](https://towardsdatascience.com/delta-lake-automatic-schema-evolution-11d32bd1aa99?source=collection_archive---------1-----------------------#2023-03-10)
+> 原文：[`towardsdatascience.com/delta-lake-automatic-schema-evolution-11d32bd1aa99?source=collection_archive---------1-----------------------#2023-03-10`](https://towardsdatascience.com/delta-lake-automatic-schema-evolution-11d32bd1aa99?source=collection_archive---------1-----------------------#2023-03-10)
 
 ## 当合并进化型 DataFrame 时会发生什么，以及你可以/不能做什么
 
-[](https://medium.com/@vitorf24?source=post_page-----11d32bd1aa99--------------------------------)[![Vitor Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----11d32bd1aa99--------------------------------)[](https://towardsdatascience.com/?source=post_page-----11d32bd1aa99--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----11d32bd1aa99--------------------------------) [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----11d32bd1aa99--------------------------------)
+[](https://medium.com/@vitorf24?source=post_page-----11d32bd1aa99--------------------------------)![Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----11d32bd1aa99--------------------------------)[](https://towardsdatascience.com/?source=post_page-----11d32bd1aa99--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----11d32bd1aa99--------------------------------) [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----11d32bd1aa99--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b05068b69d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-automatic-schema-evolution-11d32bd1aa99&user=Vitor+Teixeira&userId=6b05068b69d8&source=post_page-6b05068b69d8----11d32bd1aa99---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----11d32bd1aa99--------------------------------) · 5 分钟阅读 · 2023年3月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F11d32bd1aa99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-automatic-schema-evolution-11d32bd1aa99&user=Vitor+Teixeira&userId=6b05068b69d8&source=-----11d32bd1aa99---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b05068b69d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-automatic-schema-evolution-11d32bd1aa99&user=Vitor+Teixeira&userId=6b05068b69d8&source=post_page-6b05068b69d8----11d32bd1aa99---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----11d32bd1aa99--------------------------------) · 5 分钟阅读 · 2023 年 3 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F11d32bd1aa99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-automatic-schema-evolution-11d32bd1aa99&user=Vitor+Teixeira&userId=6b05068b69d8&source=-----11d32bd1aa99---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F11d32bd1aa99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-automatic-schema-evolution-11d32bd1aa99&source=-----11d32bd1aa99---------------------bookmark_footer-----------)![](../Images/1b8dfc96acde282413eda93c212cb337.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F11d32bd1aa99&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-automatic-schema-evolution-11d32bd1aa99&source=-----11d32bd1aa99---------------------bookmark_footer-----------)![](img/1b8dfc96acde282413eda93c212cb337.png)
 
 图片由 [McDobbie Hu](https://unsplash.com/@hjx518756?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

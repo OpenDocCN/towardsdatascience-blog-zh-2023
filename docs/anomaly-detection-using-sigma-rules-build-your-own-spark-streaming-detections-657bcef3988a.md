@@ -1,26 +1,26 @@
-# 使用Sigma规则进行异常检测：构建您自己的Spark流处理检测
+# 使用 Sigma 规则进行异常检测：构建您自己的 Spark 流处理检测
 
-> 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a?source=collection_archive---------9-----------------------#2023-06-12](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a?source=collection_archive---------9-----------------------#2023-06-12)
+> 原文：[`towardsdatascience.com/anomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a?source=collection_archive---------9-----------------------#2023-06-12`](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a?source=collection_archive---------9-----------------------#2023-06-12)
 
-## 轻松在Spark流处理管道中部署Sigma规则：一种支持即将发布的Sigma 2规范的未来-proof解决方案
+## 轻松在 Spark 流处理管道中部署 Sigma 规则：一种支持即将发布的 Sigma 2 规范的未来-proof 解决方案
 
-[](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)[![Jean-Claude Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------) [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)
+[](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)![Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------) [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)
 
 ·
 
-[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----657bcef3988a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------) · 13分钟阅读 · 2023年6月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F657bcef3988a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&user=Jean-Claude+Cote&userId=444ed0089012&source=-----657bcef3988a---------------------clap_footer-----------)
+[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----657bcef3988a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------) · 13 分钟阅读 · 2023 年 6 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F657bcef3988a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&user=Jean-Claude+Cote&userId=444ed0089012&source=-----657bcef3988a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F657bcef3988a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&source=-----657bcef3988a---------------------bookmark_footer-----------)![](../Images/4b42af8eea5eda23fe3f372446f76e3e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F657bcef3988a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&source=-----657bcef3988a---------------------bookmark_footer-----------)![](img/4b42af8eea5eda23fe3f372446f76e3e.png)
 
-由Dana Walker拍摄于Unsplash
+由 Dana Walker 拍摄于 Unsplash
 
-在我们之前的文章中，我们详细阐述并设计了一个名为flux-capacitor的有状态函数。
+在我们之前的文章中，我们详细阐述并设计了一个名为 flux-capacitor 的有状态函数。
 
 flux-capacitor 有状态函数可以记住日志事件之间的父子（和祖先）关系。它还可以记住在特定时间窗口内在同一主机上发生的事件，Sigma 规范称之为 [时间临近相关性](https://github.com/SigmaHQ/sigma-specification/blob/version_2/Sigma_meta_rules.md#temporal-proximity-temporal)。
 
-要深入了解 flux-capacitor 的设计，请参阅 [第 1 部分](/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)，[第 2 部分](/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f)，[第 3 部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-3-temporal-correlation-using-bloom-filters-a45ffd5e9069)，[第 4 部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72) 和 [第 5 部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4)。不过，你不需要理解功能的实现就可以使用它。
+要深入了解 flux-capacitor 的设计，请参阅 第一部分，第二部分，[第三部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-3-temporal-correlation-using-bloom-filters-a45ffd5e9069)，[第四部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72) 和 [第五部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4)。不过，你不需要理解功能的实现就可以使用它。
 
 在本文中，我们首先展示一个执行离散检测的 Spark 流处理作业。离散检测是一个 Sigma 规则，它使用单个日志行（单个事件）的特征和值。
 
@@ -32,25 +32,25 @@ flux-capacitor 有状态函数可以记住日志事件之间的父子（和祖�
 
 这里是一个高层次的图示，展示了一个 Spark 流处理作业，它从“start-process”窗口事件的 Iceberg 表中消费事件（1）。一个经典的例子可以在 [Windows Security Logs (事件 ID 4688)](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4688) 中找到。
 
-![](../Images/0eb3451a5438b63e377a4817ab08a34b.png)
+![](img/0eb3451a5438b63e377a4817ab08a34b.png)
 
 离散检测的拓扑结构
 
-源表（1）名为`process_telemetry_table`。Spark作业读取所有事件，检测异常事件，标记这些事件，并将其写入名为`tagged_telemetry_table`的表（3）。被认为异常的事件也会写入一个包含警报的表（4）。
+源表（1）名为`process_telemetry_table`。Spark 作业读取所有事件，检测异常事件，标记这些事件，并将其写入名为`tagged_telemetry_table`的表（3）。被认为异常的事件也会写入一个包含警报的表（4）。
 
-定期我们轮询一个包含我们想要应用的Sigma规则自动生成的SQL的git仓库（5）。如果SQL语句发生变化，我们重新启动流处理作业以将这些新的检测添加到管道中。
+定期我们轮询一个包含我们想要应用的 Sigma 规则自动生成的 SQL 的 git 仓库（5）。如果 SQL 语句发生变化，我们重新启动流处理作业以将这些新的检测添加到管道中。
 
-以[这个Sigma规则](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_rundll32_sys.yml)为例：
+以[这个 Sigma 规则](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_rundll32_sys.yml)为例：
 
-![](../Images/4ca41e731f3209b3cd8ed45e6b459ab8.png)
+![](img/4ca41e731f3209b3cd8ed45e6b459ab8.png)
 
-来自*proc_creation_win_rundll32_sys.yml在* Sigma HQ的截图
+来自*proc_creation_win_rundll32_sys.yml 在* Sigma HQ 的截图
 
-`detection`部分是Sigma规则的核心，包括一个`condition`和一个或多个命名测试。`selection1`和`selection2`是命名的布尔测试。Sigma规则的作者可以为这些测试命名有意义的名称。`condition`是用户可以在最终评估中组合测试的地方。有关编写Sigma规则的更多细节，请参见[Sigma规范](https://github.com/SigmaHQ/sigma-specification/blob/main/Sigma_specification.md)。
+`detection`部分是 Sigma 规则的核心，包括一个`condition`和一个或多个命名测试。`selection1`和`selection2`是命名的布尔测试。Sigma 规则的作者可以为这些测试命名有意义的名称。`condition`是用户可以在最终评估中组合测试的地方。有关编写 Sigma 规则的更多细节，请参见[Sigma 规范](https://github.com/SigmaHQ/sigma-specification/blob/main/Sigma_specification.md)。
 
 > 从现在开始，我们将这些命名的布尔测试称为**标签**。
 
-Spark流处理作业的内部工作分为4个逻辑步骤：
+Spark 流处理作业的内部工作分为 4 个逻辑步骤：
 
 +   读取源表`process_telemetry_table`
 
@@ -60,17 +60,17 @@ Spark流处理作业的内部工作分为4个逻辑步骤：
 
 +   写入结果
 
-**模式匹配**步骤包括评估在Sigma规则中找到的标签，**最终条件评估**评估`condition`。
+**模式匹配**步骤包括评估在 Sigma 规则中找到的标签，**最终条件评估**评估`condition`。
 
-![](../Images/fd233b7e5570fa7d71ae6bb3ef22d63b.png)
+![](img/fd233b7e5570fa7d71ae6bb3ef22d63b.png)
 
-在该图的右侧，我们展示了在此处理阶段该行的样子。蓝色的列表示从源表中读取的值。**模式匹配**步骤添加了一列名为`Sigma tags`，这是所有执行的测试及其通过或失败情况的映射。灰色列包含最终的Sigma规则评估。最后，棕色列是在foreachBatch函数中添加的。生成了一个GUID，从Sigma标签映射中提取出为真的规则名称，并从规则名到规则类型的查找映射中检索检测`action`。这为生成的警报提供了上下文。
+在该图的右侧，我们展示了在此处理阶段该行的样子。蓝色的列表示从源表中读取的值。**模式匹配**步骤添加了一列名为`Sigma tags`，这是所有执行的测试及其通过或失败情况的映射。灰色列包含最终的 Sigma 规则评估。最后，棕色列是在 foreachBatch 函数中添加的。生成了一个 GUID，从 Sigma 标签映射中提取出为真的规则名称，并从规则名到规则类型的查找映射中检索检测`action`。这为生成的警报提供了上下文。
 
 此图描绘了事件的属性如何组合成标签、最终评估和最终上下文信息。
 
-![](../Images/b263bf773a143eb5cfb0592ee7008645.png)
+![](img/b263bf773a143eb5cfb0592ee7008645.png)
 
-现在让我们看看实际的pyspark代码。首先，我们使用`readStream`函数将spark连接到源表，并指定从中读取冰山表的名称。`load`函数返回一个数据帧，我们用它来创建一个名为`process_telemetry_view`的视图。
+现在让我们看看实际的 pyspark 代码。首先，我们使用`readStream`函数将 spark 连接到源表，并指定从中读取冰山表的名称。`load`函数返回一个数据帧，我们用它来创建一个名为`process_telemetry_view`的视图。
 
 ```py
 spark
@@ -211,7 +211,7 @@ def foreach_batch_function(batchdf, epoch_id):
 
 现在检测结果如下：
 
-![](../Images/72738e4cf51dcc5349ebc938550a7b6e.png)
+![](img/72738e4cf51dcc5349ebc938550a7b6e.png)
 
 flux-capacitor 接收 **Pattern Match** 步骤生成的 `Sigma tags`。flux-capacitor 存储这些标签以备后用。红色的列具有与我们之前使用的 `Sigma tags` 列相同的模式。然而，它结合了当前标签和从内部状态检索到的过去标签。
 
@@ -235,7 +235,7 @@ output_df = DataFrame(jdf, spark)
 
 让我们使用 Sigma HQ 的一个具体例子 [proc_creation_win_rundll32_executable_invalid_extension.yml](https://github.com/SigmaHQ/sigma/blob/cd71edc09ca915f389e50df5b1bbb5ecd4b7f89d/rules/windows/process_creation/proc_creation_win_rundll32_executable_invalid_extension.yml)
 
-![](../Images/fde734fc81eb09c0f278e96b1e224af3.png)
+![](img/fde734fc81eb09c0f278e96b1e224af3.png)
 
 来自 Sigma HQ github 的截图
 
@@ -330,7 +330,7 @@ flux-capacitor 函数缓存所有过去的标签。为了节省内存，它使�
 
 例如，在父子 Sigma 规则的情况下，**警报生成器**将读取怀疑的异常 (5)，检索子进程事件。接下来，在 (6) 中，它将检索该子事件的父进程。然后，利用这两个事件重新评估 Sigma 规则。然而，这次 flux-capacitor 配置为将标签存储在哈希映射中，而不是布隆过滤器中。这消除了假阳性，并且作为额外的好处，我们获得了所有参与检测的事件。我们将此警报及证据行（父子事件）存储到警报表中 (7)。
 
-![](../Images/b6575682d95874f7fcb18edd3a782350.png)
+![](img/b6575682d95874f7fcb18edd3a782350.png)
 
 带有状态检测的拓扑（时间）
 
@@ -340,17 +340,17 @@ flux-capacitor 函数缓存所有过去的标签。为了节省内存，它使�
 
 # 性能
 
-为了评估这个概念验证的性能，我们在拥有16个CPU和64G内存的机器上进行了测试。我们编写了一个简单的数据生成器，每秒创建5,000个合成事件，并在30天内进行了实验。
+为了评估这个概念验证的性能，我们在拥有 16 个 CPU 和 64G 内存的机器上进行了测试。我们编写了一个简单的数据生成器，每秒创建 5,000 个合成事件，并在 30 天内进行了实验。
 
 **Spark Streaming Detections** 作业在一台机器上运行。该作业配置为每分钟触发一次。每个微批次（触发）读取 300,000 个事件，平均需要 20 秒完成。该作业可以轻松跟上输入事件的速率。
 
-![](../Images/3bb4704c4c25749eb975554046d78d31.png)
+![](img/3bb4704c4c25749eb975554046d78d31.png)
 
 **Spark Streaming Detections**
 
-**Spark Alert Builder** 在单台机器上运行，并配置为每分钟触发一次。这个作业完成需要30到50秒的时间。该作业对 `tagged_telemetry_table` 的组织方式非常敏感。这里我们看到维护作业的效果，每小时组织并排序最新数据。因此，每小时，**Spark Alert Builder** 的微批处理执行时间恢复到30秒。
+**Spark Alert Builder** 在单台机器上运行，并配置为每分钟触发一次。这个作业完成需要 30 到 50 秒的时间。该作业对 `tagged_telemetry_table` 的组织方式非常敏感。这里我们看到维护作业的效果，每小时组织并排序最新数据。因此，每小时，**Spark Alert Builder** 的微批处理执行时间恢复到 30 秒。
 
-![](../Images/dd1823abdcf1deeef64c22eb56dbec6e.png)
+![](img/dd1823abdcf1deeef64c22eb56dbec6e.png)
 
 **Spark Streaming Alert Builder**
 
@@ -387,7 +387,7 @@ CALL catalog.system.rewrite_data_files(
         )
 ```
 
-我们还执行另一个维护任务，即从流表中删除旧数据。这些表仅用作生产者和消费者之间的缓冲区。因此，每天我们会对流表进行老化处理，保留最近7天的数据。
+我们还执行另一个维护任务，即从流表中删除旧数据。这些表仅用作生产者和消费者之间的缓冲区。因此，每天我们会对流表进行老化处理，保留最近 7 天的数据。
 
 ```py
 delete from catalog.jc_sched.process_telemetry_table

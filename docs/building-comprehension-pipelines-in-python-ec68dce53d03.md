@@ -1,30 +1,30 @@
-# 在Python中构建理解管道
+# 在 Python 中构建理解管道
 
-> 原文：[https://towardsdatascience.com/building-comprehension-pipelines-in-python-ec68dce53d03?source=collection_archive---------4-----------------------#2023-02-17](https://towardsdatascience.com/building-comprehension-pipelines-in-python-ec68dce53d03?source=collection_archive---------4-----------------------#2023-02-17)
+> 原文：[`towardsdatascience.com/building-comprehension-pipelines-in-python-ec68dce53d03?source=collection_archive---------4-----------------------#2023-02-17`](https://towardsdatascience.com/building-comprehension-pipelines-in-python-ec68dce53d03?source=collection_archive---------4-----------------------#2023-02-17)
 
-## PYTHON编程
+## PYTHON 编程
 
-## 理解管道是一个特定于Python的构建管道的概念
+## 理解管道是一个特定于 Python 的构建管道的概念
 
-[](https://medium.com/@nyggus?source=post_page-----ec68dce53d03--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----ec68dce53d03--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec68dce53d03--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ec68dce53d03--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ec68dce53d03--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----ec68dce53d03--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ec68dce53d03--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec68dce53d03--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec68dce53d03--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----ec68dce53d03--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-comprehension-pipelines-in-python-ec68dce53d03&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----ec68dce53d03---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec68dce53d03--------------------------------) · 12分钟阅读 · 2023年2月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fec68dce53d03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-comprehension-pipelines-in-python-ec68dce53d03&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----ec68dce53d03---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-comprehension-pipelines-in-python-ec68dce53d03&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----ec68dce53d03---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec68dce53d03--------------------------------) · 12 分钟阅读 · 2023 年 2 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fec68dce53d03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-comprehension-pipelines-in-python-ec68dce53d03&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----ec68dce53d03---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fec68dce53d03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-comprehension-pipelines-in-python-ec68dce53d03&source=-----ec68dce53d03---------------------bookmark_footer-----------)![](../Images/686b7a1a7f83a53912af9f9378a8391c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fec68dce53d03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-comprehension-pipelines-in-python-ec68dce53d03&source=-----ec68dce53d03---------------------bookmark_footer-----------)![](img/686b7a1a7f83a53912af9f9378a8391c.png)
 
 理解管道将你直接带到目标。照片由[Anika Huizinga](https://unsplash.com/@iam_anih?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
-生成器管道提供了一种Pythonic的方式来创建软件管道，即操作链，其中每个操作（除了第一个）都将前一个操作的输出作为输入：
+生成器管道提供了一种 Pythonic 的方式来创建软件管道，即操作链，其中每个操作（除了第一个）都将前一个操作的输出作为输入：
 
-[](/building-generator-pipelines-in-python-8931535792ff?source=post_page-----ec68dce53d03--------------------------------) [## 在Python中构建生成器管道
+[](/building-generator-pipelines-in-python-8931535792ff?source=post_page-----ec68dce53d03--------------------------------) ## 在 Python 中构建生成器管道
 
 ### 本文提出了一种优雅的方式来构建生成器管道
 
-[towardsdatascience.com](/building-generator-pipelines-in-python-8931535792ff?source=post_page-----ec68dce53d03--------------------------------)
+[towardsdatascience.com
 
 它们使你能够应用**Thomas**和**Hunt**在他们伟大的书籍*《程序员修炼之道》*中描述的转换编程方法。
 

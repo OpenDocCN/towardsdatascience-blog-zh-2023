@@ -1,10 +1,10 @@
 # Tabyl：现代 R 用户的频率表格
 
-> 原文：[https://towardsdatascience.com/tabyl-a-frequency-table-for-the-modern-r-user-e061cd48baef?source=collection_archive---------4-----------------------#2023-05-20](https://towardsdatascience.com/tabyl-a-frequency-table-for-the-modern-r-user-e061cd48baef?source=collection_archive---------4-----------------------#2023-05-20)
+> 原文：[`towardsdatascience.com/tabyl-a-frequency-table-for-the-modern-r-user-e061cd48baef?source=collection_archive---------4-----------------------#2023-05-20`](https://towardsdatascience.com/tabyl-a-frequency-table-for-the-modern-r-user-e061cd48baef?source=collection_archive---------4-----------------------#2023-05-20)
 
 ## 旧的已过时，新的正在兴起！
 
-[](https://medium.com/@zvonimir.boban.mef?source=post_page-----e061cd48baef--------------------------------)[![兹沃尼米尔·博班](../Images/cbad06b7e1f5d021ce9b2dc31b8a6a65.png)](https://medium.com/@zvonimir.boban.mef?source=post_page-----e061cd48baef--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e061cd48baef--------------------------------)[![向数据科学迈进](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e061cd48baef--------------------------------) [兹沃尼米尔·博班](https://medium.com/@zvonimir.boban.mef?source=post_page-----e061cd48baef--------------------------------)
+[](https://medium.com/@zvonimir.boban.mef?source=post_page-----e061cd48baef--------------------------------)![兹沃尼米尔·博班](https://medium.com/@zvonimir.boban.mef?source=post_page-----e061cd48baef--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e061cd48baef--------------------------------)![向数据科学迈进](https://towardsdatascience.com/?source=post_page-----e061cd48baef--------------------------------) [兹沃尼米尔·博班](https://medium.com/@zvonimir.boban.mef?source=post_page-----e061cd48baef--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe061cd48baef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftabyl-a-frequency-table-for-the-modern-r-user-e061cd48baef&source=-----e061cd48baef---------------------bookmark_footer-----------)![](../Images/d48ea5e85a16b163c6b27c381d3e8e90.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe061cd48baef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftabyl-a-frequency-table-for-the-modern-r-user-e061cd48baef&source=-----e061cd48baef---------------------bookmark_footer-----------)![](img/d48ea5e85a16b163c6b27c381d3e8e90.png)
 
 使用 Canva 图像生成器创建的图像
 
@@ -36,7 +36,7 @@
 
 ## 数据集
 
-![](../Images/52c15143fee6d189481988be0cd4dfdb.png)
+![](img/52c15143fee6d189481988be0cd4dfdb.png)
 
 由 [Hans Veth](https://unsplash.com/@hans_veth?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/s/photos/mushroom?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 拍摄的照片
 
@@ -69,9 +69,9 @@ mushrooms <- read_csv("mushrooms.csv") %>%
 
 如果你对上述语法不熟悉，请查看我早期文章中的 tidyverse 实用指南。
 
-[](/diving-into-the-tidyverse-using-the-titanic-data-83f54295d5df?source=post_page-----e061cd48baef--------------------------------) [## 使用泰坦尼克号数据深入了解 tidyverse
+[](/diving-into-the-tidyverse-using-the-titanic-data-83f54295d5df?source=post_page-----e061cd48baef--------------------------------) ## 使用泰坦尼克号数据深入了解 tidyverse
 
-[towardsdatascience.com](/diving-into-the-tidyverse-using-the-titanic-data-83f54295d5df?source=post_page-----e061cd48baef--------------------------------)
+[towardsdatascience.com
 
 ## 旧的
 
@@ -125,7 +125,7 @@ odor            edible   poisonous
   spicy    0.000000000 0.070901034
 ```
 
-默认情况下，这会给我们一个按列的比例表。如果我们想要按行的比例，我们可以指定`margin`参数（1表示按行，2表示按列）。
+默认情况下，这会给我们一个按列的比例表。如果我们想要按行的比例，我们可以指定`margin`参数（1 表示按行，2 表示按列）。
 
 ```py
 prop.table(mush_table, margin = 1)
@@ -147,7 +147,7 @@ odor           edible  poisonous
 
 此外，如果我们使用`class(mush_table)`命令检查创建的对象类型，我们会发现它属于`table`类。
 
-这创建了一个兼容性问题，因为如今R用户大多使用tidyverse生态系统，该系统以将函数应用于`data.frame`类型对象并通过管道（`%>%`）运算符串联结果为中心。
+这创建了一个兼容性问题，因为如今 R 用户大多使用 tidyverse 生态系统，该系统以将函数应用于`data.frame`类型对象并通过管道（`%>%`）运算符串联结果为中心。
 
 ## 新的
 
@@ -179,11 +179,11 @@ mush_tabyl
 
 与相应的`table`输出相比，使用`tabyl`函数生成的表格更整洁，变量名（类别）被明确指出。此外，对于一维表格，除了数字，百分比也会自动生成。
 
-我们还可以注意到，我们不需要使用which函数就可以直接指定变量名。此外，运行`class(mush_tabyl)`告诉我们生成的对象是`data.frame`类，这确保了与tidyverse的兼容性！
+我们还可以注意到，我们不需要使用 which 函数就可以直接指定变量名。此外，运行`class(mush_tabyl)`告诉我们生成的对象是`data.frame`类，这确保了与 tidyverse 的兼容性！
 
-## 装饰过的janitor
+## 装饰过的 janitor
 
-![](../Images/2cc78ca4b68b0faf12ec63349517fdd7.png)
+![](img/2cc78ca4b68b0faf12ec63349517fdd7.png)
 
 使用 Canva 图像生成器创建的图像
 
@@ -258,4 +258,4 @@ odor edible poisonous Total
 
 ## 结论
 
-R中`janitor`包的`tabyl()`函数提供了一个用户友好且灵活的解决方案，用于创建一维、二维或三维列联表。它在自动计算比例和生成整洁的数据框方面表现出色，能够与tidyverse生态系统，特别是`dplyr`，无缝集成。它的输出结构良好且易于解释，并且可以通过adorn函数进一步增强，从而简化生成信息频率表的整体过程。这使得`tabyl()`在R的数据分析中成为一个非常有用的工具。
+R 中`janitor`包的`tabyl()`函数提供了一个用户友好且灵活的解决方案，用于创建一维、二维或三维列联表。它在自动计算比例和生成整洁的数据框方面表现出色，能够与 tidyverse 生态系统，特别是`dplyr`，无缝集成。它的输出结构良好且易于解释，并且可以通过 adorn 函数进一步增强，从而简化生成信息频率表的整体过程。这使得`tabyl()`在 R 的数据分析中成为一个非常有用的工具。

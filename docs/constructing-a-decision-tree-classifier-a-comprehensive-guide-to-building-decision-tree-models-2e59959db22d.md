@@ -1,24 +1,24 @@
 # 《构建决策树分类器：从头构建决策树模型的全面指南》
 
-> 原文：[https://towardsdatascience.com/constructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d?source=collection_archive---------13-----------------------#2023-03-29](https://towardsdatascience.com/constructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d?source=collection_archive---------13-----------------------#2023-03-29)
+> 原文：[`towardsdatascience.com/constructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d?source=collection_archive---------13-----------------------#2023-03-29`](https://towardsdatascience.com/constructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d?source=collection_archive---------13-----------------------#2023-03-29)
 
 ## 了解从头构建决策树分类器所涉及的基本过程
 
-[](https://suhas-maddali007.medium.com/?source=post_page-----2e59959db22d--------------------------------)[![Suhas Maddali](../Images/933f27eab8ba9ee1f06ed2f24746d788.png)](https://suhas-maddali007.medium.com/?source=post_page-----2e59959db22d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e59959db22d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e59959db22d--------------------------------) [苏哈斯·马达利](https://suhas-maddali007.medium.com/?source=post_page-----2e59959db22d--------------------------------)
+[](https://suhas-maddali007.medium.com/?source=post_page-----2e59959db22d--------------------------------)![Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----2e59959db22d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e59959db22d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e59959db22d--------------------------------) [苏哈斯·马达利](https://suhas-maddali007.medium.com/?source=post_page-----2e59959db22d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----2e59959db22d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e59959db22d--------------------------------) ·7分钟阅读·2023年3月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e59959db22d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d&user=Suhas+Maddali&userId=2a74f90399ae&source=-----2e59959db22d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----2e59959db22d---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e59959db22d--------------------------------) ·7 分钟阅读·2023 年 3 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2e59959db22d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d&user=Suhas+Maddali&userId=2a74f90399ae&source=-----2e59959db22d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e59959db22d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d&source=-----2e59959db22d---------------------bookmark_footer-----------)![](../Images/20a9591784f2a489089a025aa9089eb8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2e59959db22d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-a-decision-tree-classifier-a-comprehensive-guide-to-building-decision-tree-models-2e59959db22d&source=-----2e59959db22d---------------------bookmark_footer-----------)![](img/20a9591784f2a489089a025aa9089eb8.png)
 
 照片由 [Jeroen den Otter](https://unsplash.com/@jeroendenotter?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 **决策树**在机器学习中有多种用途，包括分类、回归、特征选择、异常检测和强化学习。它们通过简单的**if-else**语句进行操作，直到达到树的深度。理解某些关键概念对于全面理解决策树的内部工作原理至关重要。
 
-探索决策树时需要掌握两个关键概念：**熵**和**信息增益**。熵量化了训练样本集中的杂质。一个只包含一个类别的训练集的熵为0，而一个包含所有类别样本均匀分布的集合的熵为1。信息增益则表示通过根据特定属性将训练样本划分为子集所获得的熵或杂质的减少。对这些概念的深入理解对于理解决策树的内部机制非常有价值。
+探索决策树时需要掌握两个关键概念：**熵**和**信息增益**。熵量化了训练样本集中的杂质。一个只包含一个类别的训练集的熵为 0，而一个包含所有类别样本均匀分布的集合的熵为 1。信息增益则表示通过根据特定属性将训练样本划分为子集所获得的熵或杂质的减少。对这些概念的深入理解对于理解决策树的内部机制非常有价值。
 
 我们将开发一个**决策树类**并定义进行预测所需的基本属性。如前所述，熵和信息增益是在决定哪个属性进行拆分之前计算的。在训练阶段，节点被拆分，这些值在推断阶段用于进行预测。我们将通过查看代码片段来检查这是如何完成的。
 
@@ -28,7 +28,7 @@
 
 ## **定义决策树类**
 
-在这个代码段中，我们定义了一个决策树类，具有一个**构造函数**，接受max_depth、min_samples_split和min_samples_leaf的值。**max_depth**属性表示算法可以停止节点拆分的最大深度。**min_samples_split**属性考虑节点拆分所需的最小样本数量。**min_samples_leaf**属性指定叶节点中的样本总数，超过此数量算法将限制进一步的分裂。这些超参数以及其他未提及的参数将在稍后定义各种功能的方法时使用。
+在这个代码段中，我们定义了一个决策树类，具有一个**构造函数**，接受 max_depth、min_samples_split 和 min_samples_leaf 的值。**max_depth**属性表示算法可以停止节点拆分的最大深度。**min_samples_split**属性考虑节点拆分所需的最小样本数量。**min_samples_leaf**属性指定叶节点中的样本总数，超过此数量算法将限制进一步的分裂。这些超参数以及其他未提及的参数将在稍后定义各种功能的方法时使用。
 
 ## **熵**
 
@@ -70,15 +70,15 @@
 
 在本节中，我们强调**机器学习（ML）模型的可解释性**。随着各行各业对机器学习需求的激增，不能忽视模型可解释性的重要性。与其将这些模型视为黑箱，不如开发工具和技术来揭示它们的内部工作原理，并阐明其预测背后的理由。通过这样做，我们培养对机器学习算法的信任，并确保它们在各种应用中的负责任整合。
 
-注意：数据集取自[纽约市Airbnb开放数据 | Kaggle](https://www.kaggle.com/datasets/dgomonov/new-york-city-airbnb-open-data)，根据[创作共用 — CC0 1.0 全球](https://creativecommons.org/publicdomain/zero/1.0/)许可协议。
+注意：数据集取自[纽约市 Airbnb 开放数据 | Kaggle](https://www.kaggle.com/datasets/dgomonov/new-york-city-airbnb-open-data)，根据[创作共用 — CC0 1.0 全球](https://creativecommons.org/publicdomain/zero/1.0/)许可协议。
 
-![](../Images/c6f9fdfacf6db3c21bae23f5cac23422.png)
+![](img/c6f9fdfacf6db3c21bae23f5cac23422.png)
 
 决策树回归模型（图片由作者提供）
 
 决策树回归器和分类器因其**可解释性**而闻名，提供了对其预测背后**理由**的宝贵洞察。这种清晰度通过与领域知识对齐来增强对模型预测的信任和信心，并提高我们的理解。此外，它还提供了调试的机会，并处理伦理和法律问题。
 
-在进行超参数调整和优化后，**AirBnb** 房价预测问题的最佳树深度被确定为 **2**。利用这一深度并可视化结果时，Woodside 邻里、经度和Midland Beach 邻里等特征被发现是预测 AirBnb 房价最重要的因素。
+在进行超参数调整和优化后，**AirBnb** 房价预测问题的最佳树深度被确定为 **2**。利用这一深度并可视化结果时，Woodside 邻里、经度和 Midland Beach 邻里等特征被发现是预测 AirBnb 房价最重要的因素。
 
 ## 结论
 

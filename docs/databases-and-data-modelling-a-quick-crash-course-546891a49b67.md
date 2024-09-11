@@ -1,18 +1,18 @@
 # 数据库和数据建模——快速入门课程
 
-> 原文：[https://towardsdatascience.com/databases-and-data-modelling-a-quick-crash-course-546891a49b67?source=collection_archive---------4-----------------------#2023-05-12](https://towardsdatascience.com/databases-and-data-modelling-a-quick-crash-course-546891a49b67?source=collection_archive---------4-----------------------#2023-05-12)
+> 原文：[`towardsdatascience.com/databases-and-data-modelling-a-quick-crash-course-546891a49b67?source=collection_archive---------4-----------------------#2023-05-12`](https://towardsdatascience.com/databases-and-data-modelling-a-quick-crash-course-546891a49b67?source=collection_archive---------4-----------------------#2023-05-12)
 
-## 数据仓库101：初学者的实用指南
+## 数据仓库 101：初学者的实用指南
 
-[](https://col-jung.medium.com/?source=post_page-----546891a49b67--------------------------------)[![Col Jung](../Images/45ef9475b60f22a3c78c9c8e428812c3.png)](https://col-jung.medium.com/?source=post_page-----546891a49b67--------------------------------)[](https://towardsdatascience.com/?source=post_page-----546891a49b67--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----546891a49b67--------------------------------) [Col Jung](https://col-jung.medium.com/?source=post_page-----546891a49b67--------------------------------)
+[](https://col-jung.medium.com/?source=post_page-----546891a49b67--------------------------------)![Col Jung](https://col-jung.medium.com/?source=post_page-----546891a49b67--------------------------------)[](https://towardsdatascience.com/?source=post_page-----546891a49b67--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----546891a49b67--------------------------------) [Col Jung](https://col-jung.medium.com/?source=post_page-----546891a49b67--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d4e2c520037&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatabases-and-data-modelling-a-quick-crash-course-546891a49b67&user=Col+Jung&userId=8d4e2c520037&source=post_page-8d4e2c520037----546891a49b67---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----546891a49b67--------------------------------) · 12分钟阅读 · 2023年5月12日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d4e2c520037&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatabases-and-data-modelling-a-quick-crash-course-546891a49b67&user=Col+Jung&userId=8d4e2c520037&source=post_page-8d4e2c520037----546891a49b67---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----546891a49b67--------------------------------) · 12 分钟阅读 · 2023 年 5 月 12 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F546891a49b67&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatabases-and-data-modelling-a-quick-crash-course-546891a49b67&source=-----546891a49b67---------------------bookmark_footer-----------)![](../Images/9cf91f1f43637c4805c94af41ab2eb8f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F546891a49b67&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdatabases-and-data-modelling-a-quick-crash-course-546891a49b67&source=-----546891a49b67---------------------bookmark_footer-----------)![](img/9cf91f1f43637c4805c94af41ab2eb8f.png)
 
 图片由作者提供
 

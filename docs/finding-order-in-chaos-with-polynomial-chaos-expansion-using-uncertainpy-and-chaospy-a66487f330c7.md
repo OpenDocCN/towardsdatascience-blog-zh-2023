@@ -1,22 +1,22 @@
 # 利用多项式混沌扩展、使用 uncertainpy 和 chaospy 寻找混乱中的秩序
 
-> 原文：[https://towardsdatascience.com/finding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7?source=collection_archive---------6-----------------------#2023-10-12](https://towardsdatascience.com/finding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7?source=collection_archive---------6-----------------------#2023-10-12)
+> 原文：[`towardsdatascience.com/finding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7?source=collection_archive---------6-----------------------#2023-10-12`](https://towardsdatascience.com/finding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7?source=collection_archive---------6-----------------------#2023-10-12)
 
 ## 下面是如何利用数学、物理学、Python 和数据科学来解决混乱问题的方法
 
-[](https://piero-paialunga.medium.com/?source=post_page-----a66487f330c7--------------------------------)[![Piero Paialunga](../Images/de2185596a49484698733e85114dd1ff.png)](https://piero-paialunga.medium.com/?source=post_page-----a66487f330c7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a66487f330c7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a66487f330c7--------------------------------) [Piero Paialunga](https://piero-paialunga.medium.com/?source=post_page-----a66487f330c7--------------------------------)
+[](https://piero-paialunga.medium.com/?source=post_page-----a66487f330c7--------------------------------)![Piero Paialunga](https://piero-paialunga.medium.com/?source=post_page-----a66487f330c7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a66487f330c7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a66487f330c7--------------------------------) [Piero Paialunga](https://piero-paialunga.medium.com/?source=post_page-----a66487f330c7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F254e653181d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7&user=Piero+Paialunga&userId=254e653181d2&source=post_page-254e653181d2----a66487f330c7---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a66487f330c7--------------------------------) ·9 min read·2023年10月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa66487f330c7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7&user=Piero+Paialunga&userId=254e653181d2&source=-----a66487f330c7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F254e653181d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7&user=Piero+Paialunga&userId=254e653181d2&source=post_page-254e653181d2----a66487f330c7---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a66487f330c7--------------------------------) ·9 min read·2023 年 10 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa66487f330c7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7&user=Piero+Paialunga&userId=254e653181d2&source=-----a66487f330c7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa66487f330c7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7&source=-----a66487f330c7---------------------bookmark_footer-----------)![](../Images/d4bb664d6374834cbeda94edc5ee2d95.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa66487f330c7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-order-in-chaos-with-polynomial-chaos-expansion-using-uncertainpy-and-chaospy-a66487f330c7&source=-----a66487f330c7---------------------bookmark_footer-----------)![](img/d4bb664d6374834cbeda94edc5ee2d95.png)
 
 图片由作者使用 Midjourney 生成
 
-三年前，我从意大利罗马搬到了美国俄亥俄州辛辛那提，接受了辛辛那提大学的博士offer。我非常怀念我的城市，有很多东西：美食、天气、永恒之城的美丽。我绝对不怀念我城市的一件事是**疯狂的交通**。
+三年前，我从意大利罗马搬到了美国俄亥俄州辛辛那提，接受了辛辛那提大学的博士 offer。我非常怀念我的城市，有很多东西：美食、天气、永恒之城的美丽。我绝对不怀念我城市的一件事是**疯狂的交通**。
 
 我的一个好朋友前几天给我发了短信说
 
@@ -28,7 +28,7 @@
 
 > “现在决定未来，但近似的现在不能近似决定未来。”
 
-¹ [http://mpe.dimacs.rutgers.edu/2013/03/17/chaos-in-an-atmosphere-hanging-on-a-wall/](http://mpe.dimacs.rutgers.edu/2013/03/17/chaos-in-an-atmosphere-hanging-on-a-wall/)
+¹ [`mpe.dimacs.rutgers.edu/2013/03/17/chaos-in-an-atmosphere-hanging-on-a-wall/`](http://mpe.dimacs.rutgers.edu/2013/03/17/chaos-in-an-atmosphere-hanging-on-a-wall/)
 
 这意味着我们能够预测状态的演变的唯一方法是从**概率视角**考虑它。给定过程的起始点，我们无法准确预测系统的到达点，因为它是混乱的，但我们能够**概率性地**预测，比如我们可以得到平均值和初始偏差。
 
@@ -40,13 +40,13 @@
 
 随机游走是所有阅读的数学家和物理学家都很熟悉的东西。这个模型几乎在所有地方都被使用，从金融到物理，它非常简单。它在文献中也被称为**布朗运动**，其工作原理如下：
 
-1.  我们从点x = 0开始
+1.  我们从点 x = 0 开始
 
-1.  以相同的概率，我们可以从x=0到x=1，或者从x=0到x=-1。我们将这个点定义为x_1
+1.  以相同的概率，我们可以从 x=0 到 x=1，或者从 x=0 到 x=-1。我们将这个点定义为 x_1
 
-1.  再次，我们可以将x_1的值增加或减少1。我们将定义这一点为x_2。
+1.  再次，我们可以将 x_1 的值增加或减少 1。我们将定义这一点为 x_2。
 
-1.  我们用x_2重复第3点N-2次
+1.  我们用 x_2 重复第 3 点 N-2 次
 
 有时候，我觉得伪代码比用文字解释更容易理解
 
@@ -65,15 +65,15 @@ RandomWalk(N):
 
 ## 1.2 代码
 
-在这一部分中，我们将使用Python语言代码描述随机游走。你需要导入像**numpy**和**matplotlib.pyplot**这样的基本库。
+在这一部分中，我们将使用 Python 语言代码描述随机游走。你需要导入像**numpy**和**matplotlib.pyplot**这样的基本库。
 
 这是随机游走代码：
 
-如果我们运行这个，比如100次，我们会得到以下路径：
+如果我们运行这个，比如 100 次，我们会得到以下路径：
 
 很有趣的是，如果你考虑最后一步，你可以发现**高斯分布**。
 
-![](../Images/d1c14e422519e82b378758908effb147.png)
+![](img/d1c14e422519e82b378758908effb147.png)
 
 现在我们先留在这里。我保证，我们会用到这些。
 
@@ -87,7 +87,7 @@ RandomWalk(N):
 
 例如，让我们考虑爬树的松鼠的**y**位置：
 
-![](../Images/c6b50398778a8997ac8e748de167d6c2.png)
+![](img/c6b50398778a8997ac8e748de167d6c2.png)
 
 图片由作者使用 Midjourney 生成
 
@@ -97,13 +97,13 @@ RandomWalk(N):
 
 我们需要做的是积分速度方程，然后得到：
 
-![](../Images/272245bcb161b5f3172af92f70f346b7.png)
+![](img/272245bcb161b5f3172af92f70f346b7.png)
 
 我们如何得到这个 c 常数？我们只是设置 t = 0 时发生的情况。我们假设我们的松鼠从高度 = 0 开始，所以 c = 0。
 
 所以我们爬树的超级松鼠的位置如下：
 
-![](../Images/d5eed2ee3be59a387830ec33e4c50c98.png)
+![](img/d5eed2ee3be59a387830ec33e4c50c98.png)
 
 通常，一个特定的解决方案 **y** 可以看作是另一量，例如 x 的积分以及一个初始条件。
 
@@ -127,7 +127,7 @@ x(t, 参数列表) = y(t, 参数列表) 的积分
 
 一位在物理学上相当出色（哈哈）的家伙，名叫艾萨克·牛顿，在他留给我们的众多礼物中，解释了如何描述热体的热传导。换句话说，他告诉我们物体如何冷却。
 
-![](../Images/04ef256a9a8643a6b3f82259f96b230b.png)
+![](img/04ef256a9a8643a6b3f82259f96b230b.png)
 
 图片由作者使用 Midjourney 生成
 
@@ -135,7 +135,7 @@ x(t, 参数列表) = y(t, 参数列表) 的积分
 
 如果我们想获得**温度（T）**，我们需要积分**热量流失速率（dT/dt）**。**这是方程：**
 
-![](../Images/5e0f6d8b7d153483627f834b21a08185.png)
+![](img/5e0f6d8b7d153483627f834b21a08185.png)
 
 图片由作者提供
 
@@ -195,7 +195,7 @@ pip install uncertainpy
 
 +   我们应用 uncertainpy **并提取给定输入分布的温度可能值分布**
 
-游戏很简单：如果我们知道**得益于Wiener的混沌**参数的可能分布，我们就能知道输出的分布。
+游戏很简单：如果我们知道**得益于 Wiener 的混沌**参数的可能分布，我们就能知道输出的分布。
 
 这可能听起来有点混乱，但我保证展示代码后会更清楚：
 
@@ -211,7 +211,7 @@ pip install uncertainpy
 
 整个内容可以放在这个代码块中：
 
-![](../Images/96b4cb1096b1d0fa4b11ebe07a963aed.png)
+![](img/96b4cb1096b1d0fa4b11ebe07a963aed.png)
 
 这难道不美好吗？我们能够将**输入参数的分布**转化为**输出结果的分布**。在时间 t=0 时，温度是 T= T_0 = 95。随着时间的推移，**参数的不确定性**变得越来越明显。在时间 = 200 分钟时，我们有一个很大的不确定性（假设从 5 到 30），这取决于 k 和 T_env，可能会很冷或稍微有点热。
 
@@ -219,11 +219,11 @@ pip install uncertainpy
 
 在这篇博客文章中，我们描述了美妙的**chaospy 和 uncertainpy 库**。这些库使我们能够处理**Wiener 混沌**问题，它使用**随机游走**来定义一种**多项式混沌**。这种多项式混沌用于处理**带有分布的微分方程**，而不是**参数**。我们按以下顺序进行了操作：
 
-+   我们在第 1 章中描述了**随机游走**。
++   我们在第一章中描述了**随机游走**。
 
-+   我们在第 2 章中描述了**微分方程**。特别是我们描述了牛顿冷却定律。
++   我们在第二章中描述了**微分方程**。特别是我们描述了牛顿冷却定律。
 
-+   我们按照**Wiener**的描述了**混沌**并在第 3 章中应用了**多项式混沌**。
++   我们按照**Wiener**的描述了**混沌**并在第三章中应用了**多项式混沌**。
 
 # 5\. 结论
 

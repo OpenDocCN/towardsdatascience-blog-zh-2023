@@ -1,18 +1,18 @@
 # 使用 Spotify 的 Pedalboard 进行自然音频数据增强
 
-> 原文：[https://towardsdatascience.com/natural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce?source=collection_archive---------12-----------------------#2023-01-09](https://towardsdatascience.com/natural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce?source=collection_archive---------12-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/natural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce?source=collection_archive---------12-----------------------#2023-01-09`](https://towardsdatascience.com/natural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce?source=collection_archive---------12-----------------------#2023-01-09)
 
 ## 带有现成的 Python 代码和预设
 
-[](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)[![Max Hilsdorf](../Images/01da76c553e43d5ed6b6849bdbfd00da.png)](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------) [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)
+[](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)![Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------) [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd0c085a74ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce&user=Max+Hilsdorf&userId=d0c085a74ae8&source=post_page-d0c085a74ae8----212ea59d39ce---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------) ·10分钟阅读·2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F212ea59d39ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce&user=Max+Hilsdorf&userId=d0c085a74ae8&source=-----212ea59d39ce---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd0c085a74ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce&user=Max+Hilsdorf&userId=d0c085a74ae8&source=post_page-d0c085a74ae8----212ea59d39ce---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------) ·10 分钟阅读·2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F212ea59d39ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce&user=Max+Hilsdorf&userId=d0c085a74ae8&source=-----212ea59d39ce---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F212ea59d39ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce&source=-----212ea59d39ce---------------------bookmark_footer-----------)![](../Images/66165831ed554a6df7e20476f30856b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F212ea59d39ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce&source=-----212ea59d39ce---------------------bookmark_footer-----------)![](img/66165831ed554a6df7e20476f30856b8.png)
 
 图像改编自[**戸山 神奈**](https://unsplash.com/de/fotos/Qi32ATTSwp4)**.**
 

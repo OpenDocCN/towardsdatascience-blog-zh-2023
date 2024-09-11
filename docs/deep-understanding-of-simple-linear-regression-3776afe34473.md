@@ -1,18 +1,18 @@
 # 深入理解简单线性回归
 
-> 原文：[https://towardsdatascience.com/deep-understanding-of-simple-linear-regression-3776afe34473?source=collection_archive---------19-----------------------#2023-01-10](https://towardsdatascience.com/deep-understanding-of-simple-linear-regression-3776afe34473?source=collection_archive---------19-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/deep-understanding-of-simple-linear-regression-3776afe34473?source=collection_archive---------19-----------------------#2023-01-10`](https://towardsdatascience.com/deep-understanding-of-simple-linear-regression-3776afe34473?source=collection_archive---------19-----------------------#2023-01-10)
 
 ## 从零开始的线性回归：详细解释
 
-[](https://zubairhossain.medium.com/?source=post_page-----3776afe34473--------------------------------)[![Md. Zubair](../Images/1b983a23226ce7561796fa5b28c00d65.png)](https://zubairhossain.medium.com/?source=post_page-----3776afe34473--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3776afe34473--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3776afe34473--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----3776afe34473--------------------------------)
+[](https://zubairhossain.medium.com/?source=post_page-----3776afe34473--------------------------------)![Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----3776afe34473--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3776afe34473--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3776afe34473--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----3776afe34473--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-understanding-of-simple-linear-regression-3776afe34473&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----3776afe34473---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3776afe34473--------------------------------) ·6 min read·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3776afe34473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-understanding-of-simple-linear-regression-3776afe34473&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----3776afe34473---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-understanding-of-simple-linear-regression-3776afe34473&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----3776afe34473---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3776afe34473--------------------------------) ·6 min read·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3776afe34473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-understanding-of-simple-linear-regression-3776afe34473&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----3776afe34473---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3776afe34473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-understanding-of-simple-linear-regression-3776afe34473&source=-----3776afe34473---------------------bookmark_footer-----------)![](../Images/63a803bc5e9f35621b832e0a453e5409.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3776afe34473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-understanding-of-simple-linear-regression-3776afe34473&source=-----3776afe34473---------------------bookmark_footer-----------)![](img/63a803bc5e9f35621b832e0a453e5409.png)
 
 作者图片
 
@@ -24,13 +24,13 @@
 
 ## 目录
 
-1.  `[**机器学习中的回归问题是什么？**](#9272)`
+1.  `**机器学习中的回归问题是什么？**`
 
-1.  `[**我们什么时候使用简单线性回归？**](#9579)`
+1.  `**我们什么时候使用简单线性回归？**`
 
-1.  `[**详细的简单线性回归**](#9188)`
+1.  `**详细的简单线性回归**`
 
-1.  `[**使用Python的实战实现**](#f03f)`
+1.  `**使用 Python 的实战实现**`
 
 ## 什么是机器学习中的回归问题？
 

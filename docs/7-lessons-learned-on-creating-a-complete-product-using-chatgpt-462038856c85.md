@@ -1,22 +1,22 @@
-# 使用 ChatGPT 创建完整产品的7个经验教训
+# 使用 ChatGPT 创建完整产品的 7 个经验教训
 
-> 原文：[https://towardsdatascience.com/7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85?source=collection_archive---------2-----------------------#2023-08-05](https://towardsdatascience.com/7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85?source=collection_archive---------2-----------------------#2023-08-05)
+> 原文：[`towardsdatascience.com/7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85?source=collection_archive---------2-----------------------#2023-08-05`](https://towardsdatascience.com/7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85?source=collection_archive---------2-----------------------#2023-08-05)
 
 ## ChatGPT 的编码能力使得在短时间内完成整个产品变得非常简单——前提是你知道如何正确使用它
 
-[](https://shakedzy.medium.com/?source=post_page-----462038856c85--------------------------------)[![Shaked Zychlinski 🎗️](../Images/4d050b916bccab64df3c02236b3129eb.png)](https://shakedzy.medium.com/?source=post_page-----462038856c85--------------------------------)[](https://towardsdatascience.com/?source=post_page-----462038856c85--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----462038856c85--------------------------------) [Shaked Zychlinski 🎗️](https://shakedzy.medium.com/?source=post_page-----462038856c85--------------------------------)
+[](https://shakedzy.medium.com/?source=post_page-----462038856c85--------------------------------)![Shaked Zychlinski 🎗️](https://shakedzy.medium.com/?source=post_page-----462038856c85--------------------------------)[](https://towardsdatascience.com/?source=post_page-----462038856c85--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----462038856c85--------------------------------) [Shaked Zychlinski 🎗️](https://shakedzy.medium.com/?source=post_page-----462038856c85--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F43218078e688&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85&user=Shaked+Zychlinski+%F0%9F%8E%97%EF%B8%8F&userId=43218078e688&source=post_page-43218078e688----462038856c85---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----462038856c85--------------------------------) ·9分钟阅读·2023年8月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F462038856c85&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85&user=Shaked+Zychlinski+%F0%9F%8E%97%EF%B8%8F&userId=43218078e688&source=-----462038856c85---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F43218078e688&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85&user=Shaked+Zychlinski+%F0%9F%8E%97%EF%B8%8F&userId=43218078e688&source=post_page-43218078e688----462038856c85---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----462038856c85--------------------------------) ·9 分钟阅读·2023 年 8 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F462038856c85&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85&user=Shaked+Zychlinski+%F0%9F%8E%97%EF%B8%8F&userId=43218078e688&source=-----462038856c85---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F462038856c85&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85&source=-----462038856c85---------------------bookmark_footer-----------)![](../Images/d5f9f954d8d215c025a78ee8ac90a7f1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F462038856c85&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-lessons-learned-on-creating-a-complete-product-using-chatgpt-462038856c85&source=-----462038856c85---------------------bookmark_footer-----------)![](img/d5f9f954d8d215c025a78ee8ac90a7f1.png)
 
 通过 StableDiffusion 生成
 
-不久前，我与您分享了如何[从 ChatGPT 创建我自己的法语导师](/how-i-coded-my-own-private-french-tutor-out-of-chatgpt-16b3e15007bb)（顺便说一下，它是[开源的](https://github.com/shakedzy/companion)）。我描述了如何设计应用（尤其是它的后端）以及如何连接和配置不同的基于 AI 的服务。但有一件事我基本上跳过了，那就是如何创建应用的前端。你看，我不是前端程序员，我对 JavaScript 的了解仅限于知道需要将其放在*<script></script>* 标签内。
+不久前，我与您分享了如何从 ChatGPT 创建我自己的法语导师（顺便说一下，它是[开源的](https://github.com/shakedzy/companion)）。我描述了如何设计应用（尤其是它的后端）以及如何连接和配置不同的基于 AI 的服务。但有一件事我基本上跳过了，那就是如何创建应用的前端。你看，我不是前端程序员，我对 JavaScript 的了解仅限于知道需要将其放在*<script></script>* 标签内。
 
 但我心中设想的应用需要一个动态的用户界面。这意味着 HTML、JavaScript 和 CSS——但我完全不知道如何开始编写这些代码。
 
@@ -30,7 +30,7 @@
 
 LLMs 是创建代码和内容的强大工具，但它们不*思考*——它们只能执行请求（或者至少它们会尝试）。这意味着需要你来进行思考，特别是设计。在开始向生成模型发送请求之前，确保你知道最终产品应该是什么样子的。
 
-关于这点——你需要自行研究什么技术栈最适合你。由于你需要将复杂的应用拆分为步骤（参见下方第2点），LLM 无法预见最终产品的样子，可能会使用次优的库或服务。
+关于这点——你需要自行研究什么技术栈最适合你。由于你需要将复杂的应用拆分为步骤（参见下方第 2 点），LLM 无法预见最终产品的样子，可能会使用次优的库或服务。
 
 例如，ChatGPT 为我生成的第一个 UI 基于*tkinter*，它创建的是一个实际应用而不是网页 UI。这使得创建动态 UI 变得更加复杂（而且现在不太标准）。另一个尝试是基于*steamlit*，它使得创建非复杂 UI 非常简单，但同样没有设计用于复杂请求（例如：*“仅在用户消息旁边添加播放录音按钮，但仅在用户录制了音频时”*）。在我的情况下，最终决定使用*Flask* 是最优的选择。
 
@@ -40,7 +40,7 @@ LLMs 是创建代码和内容的强大工具，但它们不*思考*——它们�
 
 比如，这里是我最终设计的聊天界面，即我最初设计和计划的界面：
 
-![](../Images/bb4cf3a47f2797d501e732b465059387.png)
+![](img/bb4cf3a47f2797d501e732b465059387.png)
 
 聊天机器人界面
 
@@ -109,7 +109,7 @@ and updates the message text one item at a time
 
 这导致对 JavaScript *和* Python 文件进行了修改，从而实现了预期的结果。
 
-![](../Images/38122452e132858f6d754376a14f10a9.png)
+![](img/38122452e132858f6d754376a14f10a9.png)
 
 使用 StableDiffusion 生成
 
@@ -219,6 +219,6 @@ Input: -9, Output: 3
 
 在总结这一切时，我想最重要的是认识到与 LLMs 沟通时*每个词都很重要*。LLMs 不会思考，也不能真正理解我们想要什么，除非明确以*它们需要的方式*向它们解释，因为——谢天谢地——它们还不是人类（还没？），它们只是工具。就像每一个工具一样——如果你不知道怎么使用它，你就无法完成任何工作。我确实希望你能在下一个项目中找到这些提示的用处！
 
-![](../Images/72db9dae8fd870a11c548f15b52a7292.png)
+![](img/72db9dae8fd870a11c548f15b52a7292.png)
 
 使用 StableDiffusion 生成

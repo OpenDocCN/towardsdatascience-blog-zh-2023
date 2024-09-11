@@ -1,14 +1,14 @@
 # 使用 LangChain、Google Maps API 和 Gradio 构建智能旅行路线建议器（第二部分）
 
-> 原文：[https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5?source=collection_archive---------3-----------------------#2023-09-26](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5?source=collection_archive---------3-----------------------#2023-09-26)
+> 原文：[`towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5?source=collection_archive---------3-----------------------#2023-09-26`](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5?source=collection_archive---------3-----------------------#2023-09-26)
 
 ## 学习如何构建一个可能激发你下次公路旅行灵感的应用程序
 
-[](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)[![Robert Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)
+[](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)![Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----86e9d2bcae5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------) ·11分钟阅读·2023年9月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F86e9d2bcae5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5&user=Robert+Martin-Short&userId=83d38eb39498&source=-----86e9d2bcae5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----86e9d2bcae5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------) ·11 分钟阅读·2023 年 9 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F86e9d2bcae5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5&user=Robert+Martin-Short&userId=83d38eb39498&source=-----86e9d2bcae5---------------------clap_footer-----------)
 
 --
 
@@ -18,13 +18,13 @@
 
 # **1\. 第一部分回顾**
 
-在[第一部分](/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74)的三部分系列中，我们使用 LangChain 和提示工程构建了一个系统，该系统顺序调用 LLM API——无论是谷歌的 PaLM 还是 OpenAI 的 ChatGPT——将用户的查询转换为旅行行程和格式化良好的地址列表。现在是时候看看如何将这些地址列表转换为带有路线标记的旅行路线了。为此，我们主要将使用通过[googlemaps](https://pypi.org/project/googlemaps/)包提供的 Google Maps API。我们还将使用[folium](https://pypi.org/project/folium/)进行绘图。让我们开始吧！
+在第一部分的三部分系列中，我们使用 LangChain 和提示工程构建了一个系统，该系统顺序调用 LLM API——无论是谷歌的 PaLM 还是 OpenAI 的 ChatGPT——将用户的查询转换为旅行行程和格式化良好的地址列表。现在是时候看看如何将这些地址列表转换为带有路线标记的旅行路线了。为此，我们主要将使用通过[googlemaps](https://pypi.org/project/googlemaps/)包提供的 Google Maps API。我们还将使用[folium](https://pypi.org/project/folium/)进行绘图。让我们开始吧！
 
 # 2\. 准备进行 API 调用
 
 要生成 Google Maps 的 API 密钥，你首先需要在 Google Cloud 上创建一个账户。他们提供[90 天免费试用期](https://cloud.google.com/free/docs/free-cloud-features?_ga=2.153672123.-2071471501.1688189408)，之后你将按使用的 API 服务支付费用，类似于你在 OpenAI 上的操作。完成后，你可以创建一个项目（我的项目叫 LLMMapper），并导航到 Google Cloud 网站上的 Google Maps Platform 部分。从那里，你应该能访问“密钥与凭据”菜单以生成 API 密钥。你还应该查看“API 和服务”菜单，探索 Google Maps Platform 提供的众多服务。在这个项目中，我们只会使用方向和地理编码服务。我们将对每个途经点进行地理编码，然后查找它们之间的路线。
 
-![](../Images/2592a69158a712deddee1ca9d26f5921.png)
+![](img/2592a69158a712deddee1ca9d26f5921.png)
 
 截图显示了如何导航到 Google Maps Platform 网站的密钥和凭据菜单。在这里你将生成一个 API 密钥。
 
@@ -144,7 +144,7 @@ example_coords = convert_to_coords("The Washington Moment, DC")
       return directions_result
 ```
 
-指南 API 的完整文档在[这里](https://googlemaps.github.io/google-maps-services-python/docs/index.html)，并且可以指定许多不同的选项。注意我们指定了路线的起点和终点，以及途经点的列表，并选择了`optimize_waypoints=True`，这样 Google Maps 就知道可以调整途经点的顺序以减少总旅行时间。我们还可以指定交通类型，默认为`driving`，除非另有设置。请回忆一下在第 1 部分中我们让 LLM 返回交通类型及其行程建议，因此理论上我们也可以在这里利用这一点。
+指南 API 的完整文档在[这里](https://googlemaps.github.io/google-maps-services-python/docs/index.html)，并且可以指定许多不同的选项。注意我们指定了路线的起点和终点，以及途经点的列表，并选择了`optimize_waypoints=True`，这样 Google Maps 就知道可以调整途经点的顺序以减少总旅行时间。我们还可以指定交通类型，默认为`driving`，除非另有设置。请回忆一下在第一部分中我们让 LLM 返回交通类型及其行程建议，因此理论上我们也可以在这里利用这一点。
 
 从方向 API 调用返回的字典具有以下键
 
@@ -277,7 +277,7 @@ f_group.add_to(map)
 
 当运行此代码时，Folium 将生成一个交互式地图，我们可以探索并点击每一个途经点。
 
-![](../Images/0bef881abf974f02c318d7a36bf5c8f7.png)
+![](img/0bef881abf974f02c318d7a36bf5c8f7.png)
 
 从 Google Maps API 调用结果生成的交互式地图
 
@@ -287,13 +287,13 @@ f_group.add_to(map)
 
 1.  在调用 Google Maps 时，使用 `place_id` 来指定起点、终点和航点名称比使用 `formatted_address` 更有效。幸运的是，我们在地理编码调用的结果中获得了 `place_id`，因此我们应该使用它。
 
-1.  单次 API 调用中可以请求的航点数量限制为 25（有关详细信息，请参见 [https://developers.google.com/maps/documentation/directions/get-directions](https://developers.google.com/maps/documentation/directions/get-directions)）。如果我们从 LLM 获得的行程中有超过 25 个停靠点，我们需要向 Google Maps 发出更多调用，然后合并响应。
+1.  单次 API 调用中可以请求的航点数量限制为 25（有关详细信息，请参见 [`developers.google.com/maps/documentation/directions/get-directions`](https://developers.google.com/maps/documentation/directions/get-directions)）。如果我们从 LLM 获得的行程中有超过 25 个停靠点，我们需要向 Google Maps 发出更多调用，然后合并响应。
 
 1.  `overview_polyline` 在放大时分辨率有限，可能是因为它沿线的点数经过了大规模地图视图的优化。这对于一个概念验证来说不是主要问题，但如果能对路线分辨率进行更多控制，使其在高缩放级别下也能保持良好外观，那就更好了。方向 API 为我们提供了更细致的路段折线，我们可以利用这些信息。
 
 1.  在地图上，将路线拆分为单独的路段并允许用户查看与每个路段相关的距离和旅行时间是很好的功能。同样，Google Maps 提供了这些信息，因此我们应该加以利用。
 
-![](../Images/7ba947b395671f85e82c5cf9793fd9ce.png)
+![](img/7ba947b395671f85e82c5cf9793fd9ce.png)
 
 `overview_polyline` 的分辨率有限。在这里，我们已经缩放到圣巴巴拉，但尚不清楚我们应该走哪些道路。
 
@@ -326,7 +326,7 @@ def get_route(directions_result):
 
 现在的问题是 `leg_route_points` 列表可能会变得非常长，当我们在地图上绘制这些点时，可能会导致 folium 崩溃或运行非常缓慢。解决方案是沿路线采样这些点，以确保有足够的点以便进行良好的可视化，但又不至于让地图加载困难。
 
-一种简单且安全的方法是计算总路线应包含的点数（例如5000个点），然后确定每段路线应包含的点的比例，并均匀地从每段中采样相应数量的点。请注意，我们需要确保每段至少包含一个点，以便它能够显示在地图上。
+一种简单且安全的方法是计算总路线应包含的点数（例如 5000 个点），然后确定每段路线应包含的点的比例，并均匀地从每段中采样相应数量的点。请注意，我们需要确保每段至少包含一个点，以便它能够显示在地图上。
 
 以下函数将执行此采样，输入一个来自上面`get_route`函数的`waypoints`字典。
 
@@ -369,7 +369,7 @@ def sample_route_with_legs(route, distance_per_point_in_km=0.25)):
     return sampled_points
 ```
 
-在这里我们指定了我们想要的点间距——每250米一个点——然后相应地选择点的数量。我们还可以考虑从路线长度估算所需的点间距，但这种方法在第一次尝试中似乎效果相当好，在地图上的中等高的缩放级别下提供了可接受的分辨率。
+在这里我们指定了我们想要的点间距——每 250 米一个点——然后相应地选择点的数量。我们还可以考虑从路线长度估算所需的点间距，但这种方法在第一次尝试中似乎效果相当好，在地图上的中等高的缩放级别下提供了可接受的分辨率。
 
 现在我们已经将路线拆分为具有合理样本点数量的段落，我们可以继续将它们绘制在地图上，并使用以下代码对每一段进行标注。
 
@@ -390,13 +390,13 @@ for leg_id, route_points in sampled_points.items():
     f_group.add_to(map)
 ```
 
-![](../Images/eb81e046ba3eae34d2a5cdc93a96294b.png)
+![](img/eb81e046ba3eae34d2a5cdc93a96294b.png)
 
 这是一个标注并注释过的路线段示例，以便它能够出现在地图上。
 
 # **5\. 整合所有内容**
 
-在代码库中，以上提到的所有方法都被打包在两个类中。第一个是`RouteFinder`，它接受`Agent`的结构化输出（见第1部分），并生成采样路线。第二个是`RouteMapper`，它接收采样路线并绘制一个folium地图，可以保存为html文件。
+在代码库中，以上提到的所有方法都被打包在两个类中。第一个是`RouteFinder`，它接受`Agent`的结构化输出（见第一部分），并生成采样路线。第二个是`RouteMapper`，它接收采样路线并绘制一个 folium 地图，可以保存为 html 文件。
 
 由于我们几乎总是希望在请求路线时生成地图，`RouteFinder`的`generate_route`方法处理这两个任务。
 
@@ -434,7 +434,7 @@ class RouteFinder:
         return directions, sampled_route, mapping_dict
 ```
 
-回想一下在第1部分中我们构建了一个名为`Agent`的类，该类处理LLM调用。现在我们还有了`RouteFinder`，我们可以将它们组合到整个旅行映射器项目的基础类中。
+回想一下在第一部分中我们构建了一个名为`Agent`的类，该类处理 LLM 调用。现在我们还有了`RouteFinder`，我们可以将它们组合到整个旅行映射器项目的基础类中。
 
 ```py
 class TravelMapperBase(object):
@@ -483,6 +483,6 @@ def test(query=None):
     mapper.parse(query, make_map=True)
 ```
 
-就路线和地图生成而言，我们现在已经完成了！但是我们如何将所有这些代码打包成一个易于实验的漂亮UI呢？这将会在本系列的[第三部分](https://example.org/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb)中讲解。
+就路线和地图生成而言，我们现在已经完成了！但是我们如何将所有这些代码打包成一个易于实验的漂亮 UI 呢？这将会在本系列的[第三部分](https://example.org/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb)中讲解。
 
-感谢阅读！请随时在这里探索完整的代码库[https://github.com/rmartinshort/travel_mapper](https://github.com/rmartinshort/travel_mapper)。任何改进建议或功能扩展都会非常感谢！
+感谢阅读！请随时在这里探索完整的代码库[`github.com/rmartinshort/travel_mapper`](https://github.com/rmartinshort/travel_mapper)。任何改进建议或功能扩展都会非常感谢！

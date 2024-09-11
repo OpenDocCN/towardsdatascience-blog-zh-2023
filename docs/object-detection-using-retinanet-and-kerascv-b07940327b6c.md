@@ -1,38 +1,38 @@
 # 使用 RetinaNet 和 KerasCV 的目标检测
 
-> 原文：[https://towardsdatascience.com/object-detection-using-retinanet-and-kerascv-b07940327b6c?source=collection_archive---------3-----------------------#2023-12-06](https://towardsdatascience.com/object-detection-using-retinanet-and-kerascv-b07940327b6c?source=collection_archive---------3-----------------------#2023-12-06)
+> 原文：[`towardsdatascience.com/object-detection-using-retinanet-and-kerascv-b07940327b6c?source=collection_archive---------3-----------------------#2023-12-06`](https://towardsdatascience.com/object-detection-using-retinanet-and-kerascv-b07940327b6c?source=collection_archive---------3-----------------------#2023-12-06)
 
 ## 使用 KerasCV 库的力量和简便性进行目标检测。
 
-[](https://medium.com/@ed.izaguirre?source=post_page-----b07940327b6c--------------------------------)[![Ed Izaguirre](../Images/c9eded1f06c47571baa662107428483f.png)](https://medium.com/@ed.izaguirre?source=post_page-----b07940327b6c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b07940327b6c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b07940327b6c--------------------------------) [Ed Izaguirre](https://medium.com/@ed.izaguirre?source=post_page-----b07940327b6c--------------------------------)
+[](https://medium.com/@ed.izaguirre?source=post_page-----b07940327b6c--------------------------------)![Ed Izaguirre](https://medium.com/@ed.izaguirre?source=post_page-----b07940327b6c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b07940327b6c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b07940327b6c--------------------------------) [Ed Izaguirre](https://medium.com/@ed.izaguirre?source=post_page-----b07940327b6c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33a47cfa4187&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fobject-detection-using-retinanet-and-kerascv-b07940327b6c&user=Ed+Izaguirre&userId=33a47cfa4187&source=post_page-33a47cfa4187----b07940327b6c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b07940327b6c--------------------------------) · 21 分钟阅读 · 2023年12月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb07940327b6c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fobject-detection-using-retinanet-and-kerascv-b07940327b6c&user=Ed+Izaguirre&userId=33a47cfa4187&source=-----b07940327b6c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33a47cfa4187&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fobject-detection-using-retinanet-and-kerascv-b07940327b6c&user=Ed+Izaguirre&userId=33a47cfa4187&source=post_page-33a47cfa4187----b07940327b6c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b07940327b6c--------------------------------) · 21 分钟阅读 · 2023 年 12 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb07940327b6c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fobject-detection-using-retinanet-and-kerascv-b07940327b6c&user=Ed+Izaguirre&userId=33a47cfa4187&source=-----b07940327b6c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb07940327b6c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fobject-detection-using-retinanet-and-kerascv-b07940327b6c&source=-----b07940327b6c---------------------bookmark_footer-----------)![](../Images/8393284e99efaccbc4492dd3f58d6a02.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb07940327b6c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fobject-detection-using-retinanet-and-kerascv-b07940327b6c&source=-----b07940327b6c---------------------bookmark_footer-----------)![](img/8393284e99efaccbc4492dd3f58d6a02.png)
 
 一张植物叶子的图像。创建于 [DALL·E 2](https://openai.com/dall-e-2)。
 
 **目录**
 
-1.  [等等，什么是 KerasCV？](#4bc2)
+1.  等等，什么是 KerasCV？
 
-1.  [检查数据](#043c)
+1.  检查数据
 
-1.  [图像预处理](#4e89)
+1.  图像预处理
 
-1.  [RetinaNet 模型背景](#c7dd)
+1.  RetinaNet 模型背景
 
-1.  [训练 RetinaNet](#b137)
+1.  训练 RetinaNet
 
-1.  [做出预测](#c1fe)
+1.  做出预测
 
-1.  [结论](#0b07)
+1.  结论
 
-1.  [参考文献](#fdd7)
+1.  参考文献
 
 **相关链接**
 
@@ -44,7 +44,7 @@
 
 在完成基于图像分割的小项目后（[参见这里](https://medium.com/towards-data-science/image-segmentation-an-in-depth-guide-5e56512eea2e)），我准备转入计算机视觉领域下另一个常见任务：**物体检测**。物体检测指的是对图像进行处理，产生围绕感兴趣对象的框，并分类这些框中的对象。作为一个简单的例子，看看下面的图片：
 
-![图片](../Images/45a73eb52e043b13700a464177192f03.png)
+![图片](img/45a73eb52e043b13700a464177192f03.png)
 
 物体检测的示例。请注意边界框和类标签。图片由作者提供。
 
@@ -141,7 +141,7 @@ for record in train_dataset.take(1):
 
 +   `image/object/class/label` : 这些是与每个边界框关联的标签。
 
-现在我们想把所有图像及其关联的边界框整合到一个 TensorFlow **Dataset 对象**中。Dataset 对象允许你存储大量数据而不会使系统内存超载。这是通过**延迟加载**和**批处理**等功能实现的。延迟加载意味着数据不会被加载到内存中，直到它被显式请求（例如在执行转换或训练时）。批处理意味着一次只加载选择数量的图像（通常为8、16、32等）。简而言之，我建议你始终将数据转换为 Dataset 对象，特别是在处理大量数据时（在目标检测中很常见）。
+现在我们想把所有图像及其关联的边界框整合到一个 TensorFlow **Dataset 对象**中。Dataset 对象允许你存储大量数据而不会使系统内存超载。这是通过**延迟加载**和**批处理**等功能实现的。延迟加载意味着数据不会被加载到内存中，直到它被显式请求（例如在执行转换或训练时）。批处理意味着一次只加载选择数量的图像（通常为 8、16、32 等）。简而言之，我建议你始终将数据转换为 Dataset 对象，特别是在处理大量数据时（在目标检测中很常见）。
 
 要将 TFRecord 转换为 TensorFlow 中的 Dataset 对象，你可以使用 `tf.data.TFRecordDataset` 类从 TFRecord 文件创建数据集，然后使用 `map` 方法应用解析函数来提取和预处理特征。解析代码如下所示。
 
@@ -249,11 +249,11 @@ BBOX_FORMAT = "xyxy"
 
 现在我们可以实现 **数据增强**。数据增强是计算机视觉问题中的一种常见技术。它对训练图像进行轻微的修改，例如轻微旋转、水平翻转图像等。这有助于解决数据不足的问题，并且有助于正则化。在这里，我们将引入以下增强方法：
 
-+   KerasCV的`JitteredResize`函数。这个函数旨在用于目标检测管道，实现了一种图像增强技术，涉及随机缩放、调整大小、裁剪和填充图像及相应的边界框。这一过程引入了尺度和局部特征的变异，提高了训练数据的多样性，从而改善了模型的泛化能力。
++   KerasCV 的`JitteredResize`函数。这个函数旨在用于目标检测管道，实现了一种图像增强技术，涉及随机缩放、调整大小、裁剪和填充图像及相应的边界框。这一过程引入了尺度和局部特征的变异，提高了训练数据的多样性，从而改善了模型的泛化能力。
 
-+   然后我们添加了水平和垂直的`RandomFlips`以及`RandomRotation`。这里的`factor`是一个表示2*π*分数的浮点数。我们使用0.25，这意味着我们的增强器会将图像旋转-25%到25%*π*之间的某个角度。以度数表示，这意味着旋转范围在-45°到45°之间。
++   然后我们添加了水平和垂直的`RandomFlips`以及`RandomRotation`。这里的`factor`是一个表示 2*π*分数的浮点数。我们使用 0.25，这意味着我们的增强器会将图像旋转-25%到 25%*π*之间的某个角度。以度数表示，这意味着旋转范围在-45°到 45°之间。
 
-+   最后，我们添加了`RandomSaturation`和`RandomHue`。饱和度为0.0会留下灰度图像，而1.0则完全饱和。0.5的因子不会造成任何变化，因此选择0.4–0.6的范围会产生细微的变化。色调因子为0.0不会产生变化。设置`factor=0.2`表示范围为0.0–0.2，这是另一种细微变化。
++   最后，我们添加了`RandomSaturation`和`RandomHue`。饱和度为 0.0 会留下灰度图像，而 1.0 则完全饱和。0.5 的因子不会造成任何变化，因此选择 0.4–0.6 的范围会产生细微的变化。色调因子为 0.0 不会产生变化。设置`factor=0.2`表示范围为 0.0–0.2，这是另一种细微变化。
 
 ```py
 augmenter = keras.Sequential(
@@ -273,7 +273,7 @@ train_dataset = train_dataset.map(augmenter, num_parallel_calls=tf.data.AUTOTUNE
 
 我们通常只对*训练*集进行增强，因为我们希望模型避免“记忆”模式，而是确保模型学习到在现实世界中会遇到的通用模式。这增加了模型在训练过程中看到的多样性。
 
-我们还希望将*验证*图像调整为相同的大小（带有填充）。这些图像将在不失真的情况下调整大小。边界框也必须相应地重新调整。KerasCV可以轻松处理这一困难任务：
+我们还希望将*验证*图像调整为相同的大小（带有填充）。这些图像将在不失真的情况下调整大小。边界框也必须相应地重新调整。KerasCV 可以轻松处理这一困难任务：
 
 ```py
 # Resize and pad images
@@ -346,13 +346,13 @@ visualize_dataset(
 )
 ```
 
-这种类型的可视化函数在KerasCV中很常见。它绘制了一组图像和框，行和列由参数指定。我们看到我们的训练图像有些被轻微旋转，有些被水平或垂直翻转，可能还进行了放大或缩小，并且色调/饱和度的细微变化也可以看到。**在KerasCV中，所有增强层也会在必要时增强边界框。** 请注意，`class_mapping`是一个简单的字典。我从之前提到的`leaves_label_map.pbtxt`文本文件中获得了键和标签。
+这种类型的可视化函数在 KerasCV 中很常见。它绘制了一组图像和框，行和列由参数指定。我们看到我们的训练图像有些被轻微旋转，有些被水平或垂直翻转，可能还进行了放大或缩小，并且色调/饱和度的细微变化也可以看到。**在 KerasCV 中，所有增强层也会在必要时增强边界框。** 请注意，`class_mapping`是一个简单的字典。我从之前提到的`leaves_label_map.pbtxt`文本文件中获得了键和标签。
 
-![](../Images/ba2e39bc14c00635799df9b0585f3e84.png)
+![](img/ba2e39bc14c00635799df9b0585f3e84.png)
 
 左侧是原始图像（验证集）的示例，右侧是增强图像（训练集）。图片由作者提供。
 
-在查看RetinaNet模型之前最后要说的一件事是，之前我们需要创建“字典中的字典”以将数据转换为与KerasCV预处理兼容的格式，但现在我们需要将其转换为数字元组以供模型训练。这相当直接：
+在查看 RetinaNet 模型之前最后要说的一件事是，之前我们需要创建“字典中的字典”以将数据转换为与 KerasCV 预处理兼容的格式，但现在我们需要将其转换为数字元组以供模型训练。这相当直接：
 
 ```py
 def dict_to_tuple(inputs):
@@ -364,7 +364,7 @@ train_dataset = train_dataset.map(dict_to_tuple, num_parallel_calls=tf.data.AUTO
 validation_dataset = val_dataset.map(dict_to_tuple, num_parallel_calls=tf.data.AUTOTUNE)
 ```
 
-# RetinaNet模型背景
+# RetinaNet 模型背景
 
 一个用于进行目标检测的流行模型叫做**RetinaNet**。该模型的详细描述超出了本文的范围。简而言之，RetinaNet 是一个单阶段检测器，意味着它在预测边界框和类别之前只查看一次图像。这类似于著名的 YOLO（You Only Look Once）模型，但有一些重要的不同之处。我在这里要强调的是使用的创新分类损失函数：**focal loss**。它解决了图像中的*类别不平衡*问题。
 
@@ -378,7 +378,7 @@ RetinaNet 模型有三个重要组件：
 
 +   **两个任务特定的子网络。** 这些子网络处理金字塔的每一层，并检测每层中的对象。一个子网络用于识别类别（分类），另一个用于识别边界框（回归）。这些子网络尚未训练。
 
-![](../Images/fea3f7047b7ed2e45adb64c47906a800.png)
+![](img/fea3f7047b7ed2e45adb64c47906a800.png)
 
 简化的 RetinaNet 架构。图片由作者提供。
 
@@ -525,7 +525,7 @@ visualize_detections(model, dataset=val_dataset, bounding_box_format=BBOX_FORMAT
 
 现在我们可以加载在训练过程中看到的最佳模型，并用它对验证集进行一些预测：
 
-![](../Images/c2ba62fd10557e95258f2a613654b162.png)
+![](img/c2ba62fd10557e95258f2a613654b162.png)
 
 验证集预测的样本视觉效果。图片由作者提供。
 
@@ -539,23 +539,23 @@ visualize_detections(model, dataset=val_dataset, bounding_box_format=BBOX_FORMAT
 
 +   验证集 mAP: 0.2916
 
-值得尊敬，但还有改进的空间。更多内容将在结论中讨论。（注意：我发现`MultiClassNonMaxSuppression`似乎没有正常工作。上面显示的左下角图像明显有超过20%重叠的框，但较低置信度的框没有被抑制。这是我需要进一步研究的问题。）
+值得尊敬，但还有改进的空间。更多内容将在结论中讨论。（注意：我发现`MultiClassNonMaxSuppression`似乎没有正常工作。上面显示的左下角图像明显有超过 20%重叠的框，但较低置信度的框没有被抑制。这是我需要进一步研究的问题。）
 
 这里是我们每个训练周期和验证周期的损失图。可以看到有些过拟合现象。此外，增加一个学习率调度器以逐渐降低学习率可能是明智的。这可能有助于解决在训练结束时出现的大幅跳跃问题。
 
-![](../Images/18a89c5dacade58fccdc3cc8b6b73220.png)
+![](img/18a89c5dacade58fccdc3cc8b6b73220.png)
 
 每个训练周期和验证周期的损失图。我们看到了一些过拟合的迹象。图片由作者提供。
 
 # 结论
 
-如果你已经做到这一步，给自己一个赞美吧！目标检测是计算机视觉中较为困难的任务之一。幸运的是，我们有新的KerasCV库来简化我们的工作。总结一下创建目标检测管道的工作流程：
+如果你已经做到这一步，给自己一个赞美吧！目标检测是计算机视觉中较为困难的任务之一。幸运的是，我们有新的 KerasCV 库来简化我们的工作。总结一下创建目标检测管道的工作流程：
 
 +   开始时可视化你的数据集。问自己一些问题：“我的边界框格式是什么？是*xyxy*？*Rel*x*yxy*？我处理多少个类别？”确保创建一个类似于`visualize_dataset`的函数来查看你的图像和边界框。
 
-+   将你拥有的任何格式的数据转换为KerasCV所需的“字典中的字典”格式。使用TensorFlow Dataset对象来存储数据特别有帮助。
++   将你拥有的任何格式的数据转换为 KerasCV 所需的“字典中的字典”格式。使用 TensorFlow Dataset 对象来存储数据特别有帮助。
 
-+   进行一些基本的预处理，例如图像缩放和数据增强。KerasCV使这些操作相对简单。请注意查阅你选择的模型的文献，以确保图像尺寸适当。
++   进行一些基本的预处理，例如图像缩放和数据增强。KerasCV 使这些操作相对简单。请注意查阅你选择的模型的文献，以确保图像尺寸适当。
 
 +   将字典转换回元组以用于训练。
 
@@ -563,23 +563,23 @@ visualize_detections(model, dataset=val_dataset, bounding_box_format=BBOX_FORMAT
 
 +   在训练期间可视化你的检测结果可以帮助了解你的模型遗漏了哪些对象。
 
-![](../Images/df0a7bd248b9052967fbb97a513d3f7f.png)
+![](img/df0a7bd248b9052967fbb97a513d3f7f.png)
 
 数据集中问题标签的示例。图片由作者提供。
 
-主要的下一步之一是清理数据集。例如，查看上面的图像。标注者正确地识别了*马铃薯叶晚疫病*，但其他所有健康的马铃薯叶子呢？为什么这些没有标注为*马铃薯叶*？查看Roboflow网站上的健康检查标签，你可以看到某些类别在数据集中严重不足：
+主要的下一步之一是清理数据集。例如，查看上面的图像。标注者正确地识别了*马铃薯叶晚疫病*，但其他所有健康的马铃薯叶子呢？为什么这些没有标注为*马铃薯叶*？查看 Roboflow 网站上的健康检查标签，你可以看到某些类别在数据集中严重不足：
 
-![](../Images/0c473c3d4a8b36a21cf0de2c22302f06.png)
+![](img/0c473c3d4a8b36a21cf0de2c22302f06.png)
 
-显示类别不平衡的图表。[来自Roboflow的网站](https://public.roboflow.com/object-detection/plantdoc/health)。
+显示类别不平衡的图表。[来自 Roboflow 的网站](https://public.roboflow.com/object-detection/plantdoc/health)。
 
 在调整任何超参数之前，先尝试修复这些问题。祝你在目标检测任务中好运！
 
 # 参考文献
 
-[1] F. Chollet, [用Python进行深度学习](https://www.manning.com/books/deep-learning-with-python-second-edition)(2021), Manning Publications Co.
+[1] F. Chollet, [用 Python 进行深度学习](https://www.manning.com/books/deep-learning-with-python-second-edition)(2021), Manning Publications Co.
 
-[2] A. Géron, [动手实践机器学习：使用Scikit-Learn、Keras和TensorFlow](https://www.oreilly.com/library/view/hands-on-machine-learning/9781492032632/) (2022), O’Reily Media Inc.
+[2] A. Géron, [动手实践机器学习：使用 Scikit-Learn、Keras 和 TensorFlow](https://www.oreilly.com/library/view/hands-on-machine-learning/9781492032632/) (2022), O’Reily Media Inc.
 
 [3] A. Ng, [深度学习专项课程](https://www.coursera.org/specializations/deep-learning), DeepLearning.AI
 
@@ -587,4 +587,4 @@ visualize_detections(model, dataset=val_dataset, bounding_box_format=BBOX_FORMAT
 
 [5] T. Lin, P. Dollár, R. Girshick, K. He, B. Hariharan, S. Belongie, [用于目标检测的特征金字塔网络](https://arxiv.org/abs/1612.03144)(2017), CVPR 2017
 
-[6] T. Lin, P. Goyal, R. Girshick, K. He, P. Dollar, [目标检测中的焦点损失](https://arxiv.org/abs/1708.02002)(2020), IEEE模式分析与机器智能学报
+[6] T. Lin, P. Goyal, R. Girshick, K. He, P. Dollar, [目标检测中的焦点损失](https://arxiv.org/abs/1708.02002)(2020), IEEE 模式分析与机器智能学报

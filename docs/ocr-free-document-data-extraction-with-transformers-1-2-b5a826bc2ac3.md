@@ -1,38 +1,38 @@
 # 无需 OCR 的文档数据提取与变换器 (1/2)
 
-> 原文：[https://towardsdatascience.com/ocr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3?source=collection_archive---------3-----------------------#2023-04-28](https://towardsdatascience.com/ocr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3?source=collection_archive---------3-----------------------#2023-04-28)
+> 原文：[`towardsdatascience.com/ocr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3?source=collection_archive---------3-----------------------#2023-04-28`](https://towardsdatascience.com/ocr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3?source=collection_archive---------3-----------------------#2023-04-28)
 
 ## Donut 与 Pix2Struct *在自定义数据上的对比*
 
-[](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)[![图标：Toon Beerten](../Images/f169eaa8cefa00f17176955596972d57.png)](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------)[![图标：Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------) [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)
+[](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)![图标：Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------)![图标：Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------) [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----b5a826bc2ac3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------) ·10分钟阅读·2023年4月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5a826bc2ac3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&user=Toon+Beerten&userId=3aef462e13b5&source=-----b5a826bc2ac3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----b5a826bc2ac3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------) ·10 分钟阅读·2023 年 4 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5a826bc2ac3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&user=Toon+Beerten&userId=3aef462e13b5&source=-----b5a826bc2ac3---------------------clap_footer-----------)
 
 -- 
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5a826bc2ac3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&source=-----b5a826bc2ac3---------------------bookmark_footer-----------)![](../Images/45dc7196c8f321f51a04bce1054c5709.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5a826bc2ac3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&source=-----b5a826bc2ac3---------------------bookmark_footer-----------)![](img/45dc7196c8f321f51a04bce1054c5709.png)
 
 作者提供的图像 ([与](https://huggingface.co/spaces/albarji/mixture-of-diffusers))
 
 > [Donut](https://arxiv.org/abs/2111.15664) 和 [Pix2Struct](https://arxiv.org/abs/2210.03347) 是图像到文本模型，将纯像素输入的简单性与视觉语言理解任务相结合。简单来说：输入一张图像，提取的索引以 JSON 格式输出。
 
-最近我[发布了](https://huggingface.co/spaces/to-be/invoice_document_headers_extraction_with_donut)一个在发票上微调的Donut模型。我经常收到如何使用自定义数据集进行训练的问题。此外，还发布了一个类似的模型：Pix2Struct，它声称性能显著更好。但真的是这样吗？
+最近我[发布了](https://huggingface.co/spaces/to-be/invoice_document_headers_extraction_with_donut)一个在发票上微调的 Donut 模型。我经常收到如何使用自定义数据集进行训练的问题。此外，还发布了一个类似的模型：Pix2Struct，它声称性能显著更好。但真的是这样吗？
 
 该是卷起袖子的时候了。我将展示给你：
 
-+   如何为Donut和Pix2Struct微调准备数据
++   如何为 Donut 和 Pix2Struct 微调准备数据
 
 +   两种模型的训练过程
 
 +   实际数据集上的比较结果
 
-当然，我也会提供colab笔记本，以便于你的实验和/或复制。
+当然，我也会提供 colab 笔记本，以便于你的实验和/或复制。
 
 **数据集**
 
-要进行此比较，我需要一个公开的数据集。我想避免使用通常用于文档理解任务的数据集，例如[CORD](https://github.com/clovaai/cord)，浏览了一下，发现了[Ghega数据集](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset)。它相当小（约250个文档），由2种类型的文档组成：专利申请和数据表。通过不同类型，我们可以模拟一个分类问题。每种类型我们都有多个索引需要提取。这些索引对于每种类型都是唯一的。正是我所需要的。来自的Trieste大学机器学习实验室的[Medvet](https://medvet.inginf.units.it/)教授慷慨批准了这些文章的使用。
+要进行此比较，我需要一个公开的数据集。我想避免使用通常用于文档理解任务的数据集，例如[CORD](https://github.com/clovaai/cord)，浏览了一下，发现了[Ghega 数据集](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset)。它相当小（约 250 个文档），由 2 种类型的文档组成：专利申请和数据表。通过不同类型，我们可以模拟一个分类问题。每种类型我们都有多个索引需要提取。这些索引对于每种类型都是唯一的。正是我所需要的。来自的 Trieste 大学机器学习实验室的[Medvet](https://medvet.inginf.units.it/)教授慷慨批准了这些文章的使用。
 
 数据集似乎比较旧，所以需要调查它是否仍然适合我们的目标。
 
@@ -61,9 +61,9 @@ ghega-dataset
         ...
 ```
 
-我们可以看到两个主要的子文件夹对应两个文档类型：*数据表*和*专利*。在更下一级，我们有一些子文件夹，这些子文件夹本身不重要，但它们包含以某个前缀开头的文件。我们可以看到一个唯一的标识符，例如*document-000–123542*。对于每个这些标识符，我们有4种数据：
+我们可以看到两个主要的子文件夹对应两个文档类型：*数据表*和*专利*。在更下一级，我们有一些子文件夹，这些子文件夹本身不重要，但它们包含以某个前缀开头的文件。我们可以看到一个唯一的标识符，例如*document-000–123542*。对于每个这些标识符，我们有 4 种数据：
 
-+   *blocks.csv* 文件包含有关边界框的信息。由于Donut或Pix2Struct不使用这些信息，我们可以忽略这些文件。
++   *blocks.csv* 文件包含有关边界框的信息。由于 Donut 或 Pix2Struct 不使用这些信息，我们可以忽略这些文件。
 
 +   *out.000.png* 文件是后处理（去倾斜）的图像文件。由于我更愿意测试未处理的文件，我也会忽略这些。
 
@@ -71,7 +71,7 @@ ghega-dataset
 
 +   最后是相应的*groundtruth.csv*文件。这包含我们认为是实际标注的图像索引。
 
-这里是一个示例groundtruth csv文件以及列描述：
+这里是一个示例 groundtruth csv 文件以及列描述：
 
 ```py
 Case,-1,0.0,0.0,0.0,0.0,,0,1.28,2.78,0.79,0.10,MELF CASE
@@ -106,7 +106,7 @@ StorageTemperature    -65 to +200
 
 **索引**
 
-在groundtruth元数据中存在以下索引：
+在 groundtruth 元数据中存在以下索引：
 
 +   **数据表**：型号、类型、外壳、功耗、储存温度、电压、重量、热阻
 
@@ -124,13 +124,13 @@ elements_to_extract = ['FilingDate', 'RepresentiveFL', 'Classification', 'Public
 
 为此，我查看了一些随机图像，并将地面真实值与实际在文档上写的内容进行了比较。以下是两个 OCR 不正确的示例：
 
-![](../Images/798c47d8cb3079a86d6cc8af74e49659.png)
+![](img/798c47d8cb3079a86d6cc8af74e49659.png)
 
 来自 Ghega 数据集的 document-001–109381.in.000.png
 
 键 *Classification* 被设置为 *BGSD 81/00* 作为地面真实值。它应该是 *B65D 81/100*。
 
-![](../Images/da972563105ade20c85a3167784b56a5.png)
+![](img/da972563105ade20c85a3167784b56a5.png)
 
 来自 Ghega 数据集的 document-003–112107.in.000.png
 
@@ -277,15 +277,15 @@ ArrowInvalid: JSON parse error: Missing a comma or '}' after an object member. i
 
 看起来第 7 行的 JSON 格式有问题。我复制了那一行并将其粘贴到一个 [在线 JSON 验证器](https://jsonformatter.curiousconcept.com/#) 中：
 
-![](../Images/fcc1e25cb0180b26712b1496194d27d4.png)
+![](img/fcc1e25cb0180b26712b1496194d27d4.png)
 
 作者提供的图像
 
-![](../Images/732f1846570edeab4c0b07c4006f595b.png)
+![](img/732f1846570edeab4c0b07c4006f595b.png)
 
 作者提供的图像
 
-![](../Images/732f1846570edeab4c0b07c4006f595b.png)
+![](img/732f1846570edeab4c0b07c4006f595b.png)
 
 作者提供的图像
 
@@ -320,19 +320,19 @@ ArrowInvalid: JSON parse error: Missing a comma or '}' after an object member. i
 
 **数据准备：完成**
 
-数据准备的重要性常被忽视且被低估。通过上述步骤，我展示了如何调整自己的数据，以便Donut和Pix2Struct用于文档的关键索引提取。常见的陷阱也得到了修正。包含所有步骤的Jupyter笔记本可以在[这里](https://github.com/Toon-nooT/notebooks/blob/main/Donut_vs_pix2struct_1_Ghega_data_prep.ipynb)找到。我们已经完成了一半。下一步是用这个数据集训练这两个模型。我非常好奇它们的表现如何，但比较和训练将留到下一篇文章中。
+数据准备的重要性常被忽视且被低估。通过上述步骤，我展示了如何调整自己的数据，以便 Donut 和 Pix2Struct 用于文档的关键索引提取。常见的陷阱也得到了修正。包含所有步骤的 Jupyter 笔记本可以在[这里](https://github.com/Toon-nooT/notebooks/blob/main/Donut_vs_pix2struct_1_Ghega_data_prep.ipynb)找到。我们已经完成了一半。下一步是用这个数据集训练这两个模型。我非常好奇它们的表现如何，但比较和训练将留到下一篇文章中。
 
 你可能还喜欢：
 
 [](https://toon-beerten.medium.com/hands-on-document-data-extraction-with-transformer-7130df3b6132?source=post_page-----b5a826bc2ac3--------------------------------) [## 实战：使用🍩变换器进行文档数据提取
 
-### 我使用Donut变换器模型提取发票索引的经验。
+### 我使用 Donut 变换器模型提取发票索引的经验。
 
 toon-beerten.medium.com](https://toon-beerten.medium.com/hands-on-document-data-extraction-with-transformer-7130df3b6132?source=post_page-----b5a826bc2ac3--------------------------------)
 
 参考文献：
 
-[](https://arxiv.org/abs/2111.15664?source=post_page-----b5a826bc2ac3--------------------------------) [## 无OCR文档理解变换器
+[](https://arxiv.org/abs/2111.15664?source=post_page-----b5a826bc2ac3--------------------------------) [## 无 OCR 文档理解变换器
 
 ### 理解文档图像（例如，发票）是一项核心但具有挑战性的任务，因为它需要复杂的功能…
 
@@ -340,12 +340,12 @@ arxiv.org](https://arxiv.org/abs/2111.15664?source=post_page-----b5a826bc2ac3---
 
 ### 视觉位置语言无处不在——来源包括带有图表的教科书到包含图像的网页…
 
-arxiv.org](https://arxiv.org/abs/2210.03347?source=post_page-----b5a826bc2ac3--------------------------------) [](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset?source=post_page-----b5a826bc2ac3--------------------------------) [## 机器学习实验室 - Ghega数据集
+arxiv.org](https://arxiv.org/abs/2210.03347?source=post_page-----b5a826bc2ac3--------------------------------) [](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset?source=post_page-----b5a826bc2ac3--------------------------------) [## 机器学习实验室 - Ghega 数据集
 
-### Ghega数据集：用于文档理解和分类的数据集，我们提供了一个标注数据集，可以…
+### Ghega 数据集：用于文档理解和分类的数据集，我们提供了一个标注数据集，可以…
 
 machinelearning.inginf.units.it](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset?source=post_page-----b5a826bc2ac3--------------------------------) [](https://huggingface.co/to-be/donut-base-finetuned-invoices?source=post_page-----b5a826bc2ac3--------------------------------) [## to-be/donut-base-finetuned-invoices · Hugging Face
 
-### 编辑模型卡 基于Donut基础模型（在论文《无OCR文档理解变换器》中介绍）…
+### 编辑模型卡 基于 Donut 基础模型（在论文《无 OCR 文档理解变换器》中介绍）…
 
 huggingface.co](https://huggingface.co/to-be/donut-base-finetuned-invoices?source=post_page-----b5a826bc2ac3--------------------------------)

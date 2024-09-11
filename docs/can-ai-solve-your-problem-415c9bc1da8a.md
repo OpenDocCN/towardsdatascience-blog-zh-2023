@@ -1,22 +1,22 @@
 # AI 能解决你的问题吗？
 
-> 原文：[https://towardsdatascience.com/can-ai-solve-your-problem-415c9bc1da8a?source=collection_archive---------7-----------------------#2023-11-27](https://towardsdatascience.com/can-ai-solve-your-problem-415c9bc1da8a?source=collection_archive---------7-----------------------#2023-11-27)
+> 原文：[`towardsdatascience.com/can-ai-solve-your-problem-415c9bc1da8a?source=collection_archive---------7-----------------------#2023-11-27`](https://towardsdatascience.com/can-ai-solve-your-problem-415c9bc1da8a?source=collection_archive---------7-----------------------#2023-11-27)
 
-## 识别AI适用项目想法的三个简单启发式方法
+## 识别 AI 适用项目想法的三个简单启发式方法
 
-[](https://medium.com/@danielbakkelund?source=post_page-----415c9bc1da8a--------------------------------)[![Daniel Bakkelund](../Images/9d9b4d1c11719fb29be04777b4d2f450.png)](https://medium.com/@danielbakkelund?source=post_page-----415c9bc1da8a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----415c9bc1da8a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----415c9bc1da8a--------------------------------) [Daniel Bakkelund](https://medium.com/@danielbakkelund?source=post_page-----415c9bc1da8a--------------------------------)
+[](https://medium.com/@danielbakkelund?source=post_page-----415c9bc1da8a--------------------------------)![Daniel Bakkelund](https://medium.com/@danielbakkelund?source=post_page-----415c9bc1da8a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----415c9bc1da8a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----415c9bc1da8a--------------------------------) [Daniel Bakkelund](https://medium.com/@danielbakkelund?source=post_page-----415c9bc1da8a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F169e77f9e788&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-ai-solve-your-problem-415c9bc1da8a&user=Daniel+Bakkelund&userId=169e77f9e788&source=post_page-169e77f9e788----415c9bc1da8a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----415c9bc1da8a--------------------------------) · 6分钟阅读 · 2023年11月27日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F415c9bc1da8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-ai-solve-your-problem-415c9bc1da8a&user=Daniel+Bakkelund&userId=169e77f9e788&source=-----415c9bc1da8a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F169e77f9e788&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-ai-solve-your-problem-415c9bc1da8a&user=Daniel+Bakkelund&userId=169e77f9e788&source=post_page-169e77f9e788----415c9bc1da8a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----415c9bc1da8a--------------------------------) · 6 分钟阅读 · 2023 年 11 月 27 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F415c9bc1da8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-ai-solve-your-problem-415c9bc1da8a&user=Daniel+Bakkelund&userId=169e77f9e788&source=-----415c9bc1da8a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F415c9bc1da8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-ai-solve-your-problem-415c9bc1da8a&source=-----415c9bc1da8a---------------------bookmark_footer-----------)![](../Images/75802edea1a0996ff4af88f5307bb034.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F415c9bc1da8a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-ai-solve-your-problem-415c9bc1da8a&source=-----415c9bc1da8a---------------------bookmark_footer-----------)![](img/75802edea1a0996ff4af88f5307bb034.png)
 
 图片由 [TheDigitalArtist](https://pixabay.com/users/thedigitalartist-202249/) 提供，来源于 [pixabay](https://pixabay.com/illustrations/ai-generated-city-futuristic-8259059/)。
 
-在一个旨在将AI能力融入其产品和服务的产品组织中，总是面临着让非AI领域专家也能参与到AI进程中的挑战。虽然不是每个人都需要成为AI专家，但必须尽可能多地让人们贡献想法，并探索利用AI的力量将公司推向更高水平。这一点尤其适用于领域专家和产品人员，他们对其产品和服务试图解决的问题了如指掌，并且知道问题的关键所在。
+在一个旨在将 AI 能力融入其产品和服务的产品组织中，总是面临着让非 AI 领域专家也能参与到 AI 进程中的挑战。虽然不是每个人都需要成为 AI 专家，但必须尽可能多地让人们贡献想法，并探索利用 AI 的力量将公司推向更高水平。这一点尤其适用于领域专家和产品人员，他们对其产品和服务试图解决的问题了如指掌，并且知道问题的关键所在。
 
 我学到的一个普遍存在的挑战是基本问题“*我们可以用 AI 解决哪些问题？*”。当非专家提出这个问题时，答案竟然很难给出。因此，我设计了三个启发式问题，你可以在面对一个问题时使用这些问题，思考“这个问题可以用 AI 解决吗？”。如果你能对这三个问题都回答“是”，你可能会发现自己有机会启动一个 AI 项目。
 
@@ -42,7 +42,7 @@
 
 我们可以把预言者看作一个将问题映射到答案的函数：
 
-![](../Images/4db9da1803743e7d4fc674a92bab5e33.png)
+![](img/4db9da1803743e7d4fc674a92bab5e33.png)
 
 预言者函数将问题映射到答案。
 
@@ -52,7 +52,7 @@
 
 这可能看起来很奇怪，而且问题还会变得更加奇怪：你应该从形而上学的层面来问这个问题——理论上这个函数是否有可能存在？让我们举几个例子：
 
-![](../Images/f9e9be76cf2bfb631628fdb3957ab633.png)
+![](img/f9e9be76cf2bfb631628fdb3957ab633.png)
 
 可能的预言者函数及其存在。
 
@@ -60,7 +60,7 @@
 
 为什么这很重要？因为机器学习（这就是我们如何制作 AI）是通过从示例中学习来尝试近似函数。
 
-![](../Images/b2f23c42f4bf54007d1ebc854d691d55.png)
+![](img/b2f23c42f4bf54007d1ebc854d691d55.png)
 
 描绘的预言者函数以及它基于 AI 的近似。
 
@@ -78,7 +78,7 @@
 
 这个问题稍微有点技术性。关键在于，预言者函数通常需要比单纯的问题更多的信息来找到答案。有知识的人在担任预言者时，可能需要额外的信息来做出决策或提供答案。这就是我所说的*背景信息*。
 
-![](../Images/f00ca15fc729eff84e4624fdb0471657.png)
+![](img/f00ca15fc729eff84e4624fdb0471657.png)
 
 预言者函数和背景信息一起工作。背景信息通常包含超出问题本身的信息。
 
@@ -88,7 +88,7 @@
 
 之所以这很重要，是因为当我们训练 AI 时，AI 会被问到如下类型的问题：
 
-![](../Images/de9ae0b4fa59ecdcee20f7db4fcfa9dc.png)
+![](img/de9ae0b4fa59ecdcee20f7db4fcfa9dc.png)
 
 AI 训练问题。[图片由 brgfx 提供，来源于 Freepik](https://www.freepik.com/author/brgfx)
 

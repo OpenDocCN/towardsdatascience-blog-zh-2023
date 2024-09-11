@@ -1,22 +1,22 @@
 # 回到未来：使用马尔可夫转移矩阵分析时间序列数据
 
-> 原文：[https://towardsdatascience.com/time-series-data-markov-transition-matrices-7060771e362b?source=collection_archive---------1-----------------------#2023-02-01](https://towardsdatascience.com/time-series-data-markov-transition-matrices-7060771e362b?source=collection_archive---------1-----------------------#2023-02-01)
+> 原文：[`towardsdatascience.com/time-series-data-markov-transition-matrices-7060771e362b?source=collection_archive---------1-----------------------#2023-02-01`](https://towardsdatascience.com/time-series-data-markov-transition-matrices-7060771e362b?source=collection_archive---------1-----------------------#2023-02-01)
 
 ## 概念概述及实际应用
 
-[](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)[![Chinmay Kakatkar](../Images/873531f24cd4ee8a927669a211d61ae8.png)](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------) [Chinmay Kakatkar](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)
+[](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)![Chinmay Kakatkar](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------) [Chinmay Kakatkar](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87ab8c40e0ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=post_page-87ab8c40e0ed----7060771e362b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------) ·11分钟阅读·2023年2月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7060771e362b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=-----7060771e362b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87ab8c40e0ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=post_page-87ab8c40e0ed----7060771e362b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------) ·11 分钟阅读·2023 年 2 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7060771e362b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=-----7060771e362b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7060771e362b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&source=-----7060771e362b---------------------bookmark_footer-----------)![](../Images/6620ab2c70cc6c9e711ca7cedefb60d8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7060771e362b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&source=-----7060771e362b---------------------bookmark_footer-----------)![](img/6620ab2c70cc6c9e711ca7cedefb60d8.png)
 
 图片由 [Oto Godfrey](http://OtoGodfrey.com) 和 [Justin Morton](http://JMortonPhoto.com) 提供，来自 [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:TeamTimeCar.com-BTTF_DeLorean_Time_Machine-OtoGodfrey.com-JMortonPhoto.com-07.jpg)：根据 [CC-BY-SA-4.0](https://commons.wikimedia.org/wiki/Category:CC-BY-SA-4.0) 许可自由使用
 
-在本文中，我们将探讨如何通过使用马尔科夫转移矩阵重新构造时间序列数据，来获得有趣的描述性洞察以及优雅的预测、回溯和收敛分析方法。就像科幻经典《回到未来》中Doc改装的DeLorean时间机器一样，前进和后退时间。
+在本文中，我们将探讨如何通过使用马尔科夫转移矩阵重新构造时间序列数据，来获得有趣的描述性洞察以及优雅的预测、回溯和收敛分析方法。就像科幻经典《回到未来》中 Doc 改装的 DeLorean 时间机器一样，前进和后退时间。
 
 **注意：** 以下章节中的所有方程式和图示均由本文作者创建。
 
@@ -34,17 +34,17 @@
 
 我们现在可以构造以下邻接矩阵，以捕捉事件序列中共现的模式：
 
-![](../Images/bfd60f317863273123ab593a7bef8816.png)
+![](img/bfd60f317863273123ab593a7bef8816.png)
 
 元素 *A(i, j)* 表示在我们的事件序列中，在某个时间步 *t* 上发生事件 *i* 后，接着发生事件 *j* 在时间步 *t+1* 的次数；*i* 和 *j* 分别是行和列索引。请注意，行表示事件的顺序为 *up*、*flat* 和 *down*，从上到下，而列表示从左到右的顺序相同。例如，*A* 的左上角元素表示在给定的事件序列中，一个 *up* 事件后面跟随另一个 *up* 事件的次数为两次。*A* 的中心右侧元素表示在事件序列中，一个 *flat* 事件后面跟随一个 *down* 事件的次数为一次。依此类推。
 
 我们可以通过行或列标准化矩阵 *A* 来得到转移矩阵。如果我们使用基于行的标准化，则元素 *M(i, j)* 将描述在时间步 *t* 给定事件 *E(i)* 的情况下，在时间步 *t+1* 看到事件 *E(j)* 的概率。因此，每一行中的概率应加起来等于 1。在我们的示例中，行标准化矩阵如下所示：
 
-![](../Images/d169d384275fcfb0feda908ffe8ba511.png)
+![](img/d169d384275fcfb0feda908ffe8ba511.png)
 
 类似地，如果我们使用基于列的标准化，则元素 *M(i, j)* 将描述在时间步 *t* 给定事件 *E(j)* 的情况下，在时间步 *t-1* 发生事件 *E(i)* 的概率。现在每一列中的概率应加起来等于 1。在我们的示例中，列标准化矩阵如下所示：
 
-![](../Images/08eac104561338f9b91b673ba4a5881b.png)
+![](img/08eac104561338f9b91b673ba4a5881b.png)
 
 请注意，行标准化的条件概率（名义上是向前看）可能与列标准化的条件概率（向后看）不同。
 
@@ -194,15 +194,15 @@ render_graph('transmat_cnorm', df_cnorm, ls_index)
 
 原始共现：
 
-![](../Images/f25db0921cb6c38575e637365c7edc17.png)
+![](img/f25db0921cb6c38575e637365c7edc17.png)
 
 行标准化的转移概率：
 
-![](../Images/c5973da7968dbced303123fb0d1b6395.png)
+![](img/c5973da7968dbced303123fb0d1b6395.png)
 
 列标准化的转移概率：
 
-![](../Images/ca757e426361a367cbfc9fae62501773.png)
+![](img/ca757e426361a367cbfc9fae62501773.png)
 
 # 实际应用
 
@@ -222,30 +222,30 @@ render_graph('transmat_cnorm', df_cnorm, ls_index)
 
 以上述示例中计算的矩阵为例，假设我们在时间步 *t* = 25 观察到一个 *上升* 事件，我们希望预测在时间步 *t* = 27 时最可能发生的事件是什么。通过检查行归一化转移矩阵的顶行，我们可以直接看到，在紧接着的时间步 *t* = 26，观察到 *上升*、*平稳* 和 *下降* 事件的概率分别为 0.4、0.4 和 0.2。为了推导时间步 *t* = 27（即距离我们参考点两个时间步）的类似事件概率，我们需要将转移矩阵自身相乘，如下所示：
 
-![](../Images/efbfdf13aee5b7747fb1981d5e0331e5.png)
+![](img/efbfdf13aee5b7747fb1981d5e0331e5.png)
 
-注意观察事件概率相对于我们的参考时间步长的变化。例如，假设在*t* = 25时出现一个*上升*事件，那么在*t* = 26时观察到另一个*上升*事件的概率为0.4（向未来进一步一步），并且在*t* = 27时增加到0.56（向未来两步）。与此同时，在*t* = 26时观察到*平稳*事件的概率也为0.4，但在*t* = 27时减少到0.16。关键是，矩阵乘法支持预测和回溯。通常来说，向前或向后推测事件发生的概率*n*步，我们可以分别计算该转移矩阵的n次幂的行规范化或列规范化。
+注意观察事件概率相对于我们的参考时间步长的变化。例如，假设在*t* = 25 时出现一个*上升*事件，那么在*t* = 26 时观察到另一个*上升*事件的概率为 0.4（向未来进一步一步），并且在*t* = 27 时增加到 0.56（向未来两步）。与此同时，在*t* = 26 时观察到*平稳*事件的概率也为 0.4，但在*t* = 27 时减少到 0.16。关键是，矩阵乘法支持预测和回溯。通常来说，向前或向后推测事件发生的概率*n*步，我们可以分别计算该转移矩阵的 n 次幂的行规范化或列规范化。
 
-转移矩阵也可以用于预测原始的基础时间序列数据。假设*上升*或*下降*事件对时间序列数据造成了一单位的变化。现在假设时间序列从1到2（一个*上升*事件）在*t* = 25时发生，并且我们希望预测*t* = 26和*t* = 27时时间序列的进展。在*上升*事件之后，*上升*和*平稳*事件在*t* = 26时都有最高的发生概率（0.4）。因此，我们可以预测，在*t* = 26时，时间序列很可能是[1, 2, 3]或[1, 2, 2]，两者都有可能在*t* = 27时产生两种更可能的情况：[1, 2, 3]可能变成[1, 2, 3, 4]或[1, 2, 3, 3]（概率均为0.4），而[1, 2, 2]可能变成[1, 2, 2, 3]或[1, 2, 2, 1]（概率均为0.5）。一般来说，我们期望所用于生成转移矩阵的数据集越大越丰富，能够捕捉更多事件链，因此每步的预测精度越高。
+转移矩阵也可以用于预测原始的基础时间序列数据。假设*上升*或*下降*事件对时间序列数据造成了一单位的变化。现在假设时间序列从 1 到 2（一个*上升*事件）在*t* = 25 时发生，并且我们希望预测*t* = 26 和*t* = 27 时时间序列的进展。在*上升*事件之后，*上升*和*平稳*事件在*t* = 26 时都有最高的发生概率（0.4）。因此，我们可以预测，在*t* = 26 时，时间序列很可能是[1, 2, 3]或[1, 2, 2]，两者都有可能在*t* = 27 时产生两种更可能的情况：[1, 2, 3]可能变成[1, 2, 3, 4]或[1, 2, 3, 3]（概率均为 0.4），而[1, 2, 2]可能变成[1, 2, 2, 3]或[1, 2, 2, 1]（概率均为 0.5）。一般来说，我们期望所用于生成转移矩阵的数据集越大越丰富，能够捕捉更多事件链，因此每步的预测精度越高。
 
 转移矩阵的乘法链导致了越来越复杂但完全可分解的原始事件转移概率的组合。这种可分解性可以帮助我们更深入地了解构成时间序列数据（或随机过程）的事件相互之间的关系。
 
 ## 收敛分析
 
-连接转移矩阵的概念自然地引出了一个有趣的问题：*转移矩阵M的概率会收敛吗*？具体地说，是否存在一个稳定的转移矩阵*M*使得*MM*=M*？如果是，那么*lim(n → ∞)⁡Mⁿ = M*，也就是说我们期望由矩阵乘法链*⁡Mⁿ*表示的马尔可夫过程在某个时间点收敛到一个稳定状态*M*；在这种情况下，该过程是收敛的并因此稳定。假设我们的转移矩阵是行规范化的，元素*M*(i, j)给出了事件*i*之后紧随事件*j*的稳定长期概率。然而，如果找不到稳定矩阵*M*，那么该过程就不是收敛的也不是稳定的。
+连接转移矩阵的概念自然地引出了一个有趣的问题：*转移矩阵 M 的概率会收敛吗*？具体地说，是否存在一个稳定的转移矩阵*M*使得*MM*=M*？如果是，那么*lim(n → ∞)⁡Mⁿ = M*，也就是说我们期望由矩阵乘法链*⁡Mⁿ*表示的马尔可夫过程在某个时间点收敛到一个稳定状态*M*；在这种情况下，该过程是收敛的并因此稳定。假设我们的转移矩阵是行规范化的，元素*M*(i, j)给出了事件*i*之后紧随事件*j*的稳定长期概率。然而，如果找不到稳定矩阵*M*，那么该过程就不是收敛的也不是稳定的。
 
 利用之前部分的运行示例，我们可以简要描述一下马尔可夫过程的收敛是如何通过分析得出的。
 
 首先，让我们假设存在一个稳定的转移矩阵*M*，使得*MM*=*M*，并且*M*是行归一化的。由于我们知道*M*的样子，我们可以把矩阵乘法写成如下形式：
 
-![](../Images/a30457610de605c2f15446363f1cdbbb.png)
+![](img/a30457610de605c2f15446363f1cdbbb.png)
 
 然后我们有下面的线性方程组：
 
-![](../Images/04e2d2c9faf7b112f3cda4d545d929c8.png)
+![](img/04e2d2c9faf7b112f3cda4d545d929c8.png)
 
 如果这个方程组存在解（我们可以通过高斯消元等方法来检查），那么我们也可以得到一个收敛和稳定的转移矩阵。
 
 # 包裹
 
-一旦你掌握了这个技巧，使用马尔可夫转移矩阵来重构时间序列数据可以成为你数据科学工具箱中的一个有用部分。就像你通常用折线图来可视化时间序列数据以更好地把握整体趋势一样，转移矩阵提供了数据的一个互补表述，它高度压缩但在使用场景上非常多样化。当将其可视化为有向图时，转移矩阵已经可以用于获取高层次的描述性见解。当嵌入到更大的工作流程中时，转移矩阵可以成为预测和逆向预测更复杂方法的基础。此外，虽然我们在上述部分运行的简单例子将转移矩阵视为静态实体，但我们可以针对不同的时间间隔推导出不同的矩阵；这在分析显示数据中体现出明显的趋势逆转，反映在数据中具有显著U形或弯头形式模式的时间序列数据中尤为有用。显然，上面讨论的观点有几种可能的延伸，所以继续尝试吧——它们在你下一个数据科学项目中可能派上用场。
+一旦你掌握了这个技巧，使用马尔可夫转移矩阵来重构时间序列数据可以成为你数据科学工具箱中的一个有用部分。就像你通常用折线图来可视化时间序列数据以更好地把握整体趋势一样，转移矩阵提供了数据的一个互补表述，它高度压缩但在使用场景上非常多样化。当将其可视化为有向图时，转移矩阵已经可以用于获取高层次的描述性见解。当嵌入到更大的工作流程中时，转移矩阵可以成为预测和逆向预测更复杂方法的基础。此外，虽然我们在上述部分运行的简单例子将转移矩阵视为静态实体，但我们可以针对不同的时间间隔推导出不同的矩阵；这在分析显示数据中体现出明显的趋势逆转，反映在数据中具有显著 U 形或弯头形式模式的时间序列数据中尤为有用。显然，上面讨论的观点有几种可能的延伸，所以继续尝试吧——它们在你下一个数据科学项目中可能派上用场。

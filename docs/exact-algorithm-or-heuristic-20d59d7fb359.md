@@ -1,18 +1,18 @@
 # 精确算法还是启发式方法？
 
-> 原文：[https://towardsdatascience.com/exact-algorithm-or-heuristic-20d59d7fb359?source=collection_archive---------5-----------------------#2023-02-28](https://towardsdatascience.com/exact-algorithm-or-heuristic-20d59d7fb359?source=collection_archive---------5-----------------------#2023-02-28)
+> 原文：[`towardsdatascience.com/exact-algorithm-or-heuristic-20d59d7fb359?source=collection_archive---------5-----------------------#2023-02-28`](https://towardsdatascience.com/exact-algorithm-or-heuristic-20d59d7fb359?source=collection_archive---------5-----------------------#2023-02-28)
 
-![](../Images/d9bca324355d53b2b6ba3569da40cb8a.png)
+![](img/d9bca324355d53b2b6ba3569da40cb8a.png)
 
 一队卡车。图片由 Dall-E 2 提供。
 
 ## 逐步指南，帮助您为数学优化问题做出正确选择
 
-[](https://hennie-de-harder.medium.com/?source=post_page-----20d59d7fb359--------------------------------)[![Hennie de Harder](../Images/3e4f2cccd6cb976ca3f8bf15597daea8.png)](https://hennie-de-harder.medium.com/?source=post_page-----20d59d7fb359--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20d59d7fb359--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20d59d7fb359--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----20d59d7fb359--------------------------------)
+[](https://hennie-de-harder.medium.com/?source=post_page-----20d59d7fb359--------------------------------)![Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----20d59d7fb359--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20d59d7fb359--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----20d59d7fb359--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----20d59d7fb359--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexact-algorithm-or-heuristic-20d59d7fb359&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----20d59d7fb359---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20d59d7fb359--------------------------------) ·6分钟阅读·2023年2月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20d59d7fb359&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexact-algorithm-or-heuristic-20d59d7fb359&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----20d59d7fb359---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexact-algorithm-or-heuristic-20d59d7fb359&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----20d59d7fb359---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20d59d7fb359--------------------------------) ·6 分钟阅读·2023 年 2 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20d59d7fb359&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexact-algorithm-or-heuristic-20d59d7fb359&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----20d59d7fb359---------------------clap_footer-----------)
 
 --
 

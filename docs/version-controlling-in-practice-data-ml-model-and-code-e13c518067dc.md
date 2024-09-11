@@ -1,18 +1,18 @@
 # 实践中的版本控制：数据、机器学习模型与代码
 
-> 原文：[https://towardsdatascience.com/version-controlling-in-practice-data-ml-model-and-code-e13c518067dc?source=collection_archive---------4-----------------------#2023-12-02](https://towardsdatascience.com/version-controlling-in-practice-data-ml-model-and-code-e13c518067dc?source=collection_archive---------4-----------------------#2023-12-02)
+> 原文：[`towardsdatascience.com/version-controlling-in-practice-data-ml-model-and-code-e13c518067dc?source=collection_archive---------4-----------------------#2023-12-02`](https://towardsdatascience.com/version-controlling-in-practice-data-ml-model-and-code-e13c518067dc?source=collection_archive---------4-----------------------#2023-12-02)
 
-## MLOps版本控制的逐步指南
+## MLOps 版本控制的逐步指南
 
-[](https://medium.com/@chimso1994?source=post_page-----e13c518067dc--------------------------------)[![Chayma Zatout](../Images/341c45f53ddf73dc0851d547cc7cb55a.png)](https://medium.com/@chimso1994?source=post_page-----e13c518067dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e13c518067dc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e13c518067dc--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----e13c518067dc--------------------------------)
+[](https://medium.com/@chimso1994?source=post_page-----e13c518067dc--------------------------------)![Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----e13c518067dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e13c518067dc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e13c518067dc--------------------------------) [Chayma Zatout](https://medium.com/@chimso1994?source=post_page-----e13c518067dc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fversion-controlling-in-practice-data-ml-model-and-code-e13c518067dc&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----e13c518067dc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e13c518067dc--------------------------------) ·13分钟阅读·2023年12月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe13c518067dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fversion-controlling-in-practice-data-ml-model-and-code-e13c518067dc&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----e13c518067dc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7da1c34b82e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fversion-controlling-in-practice-data-ml-model-and-code-e13c518067dc&user=Chayma+Zatout&userId=f7da1c34b82e&source=post_page-f7da1c34b82e----e13c518067dc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e13c518067dc--------------------------------) ·13 分钟阅读·2023 年 12 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe13c518067dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fversion-controlling-in-practice-data-ml-model-and-code-e13c518067dc&user=Chayma+Zatout&userId=f7da1c34b82e&source=-----e13c518067dc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe13c518067dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fversion-controlling-in-practice-data-ml-model-and-code-e13c518067dc&source=-----e13c518067dc---------------------bookmark_footer-----------)![](../Images/37c9fd4dbfd42fec21a997f19490f28a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe13c518067dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fversion-controlling-in-practice-data-ml-model-and-code-e13c518067dc&source=-----e13c518067dc---------------------bookmark_footer-----------)![](img/37c9fd4dbfd42fec21a997f19490f28a.png)
 
 照片由 [Christopher Gower](https://unsplash.com/@cgower?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,22 +20,22 @@
 
 **目录：**
 
-· [1\. 介绍](#7df7)
+· 1\. 介绍
 
-· [2\. 工具](#51d8)
+· 2\. 工具
 
-· [3\. 设置你的项目](#4d35)
+· 3\. 设置你的项目
 
-∘ [3.1\. 项目文件夹](#65ee)
+∘ 3.1\. 项目文件夹
 
-∘ [3.2\. 项目环境](#fed7)
+∘ 3.2\. 项目环境
 
-· [4\. 代码版本控制](#dfb9)
+· 4\. 代码版本控制
 
-· [5\. 数据版本控制](#c5f4)
+· 5\. 数据版本控制
 
-· [6\. 模型版本控制](#caf0)
+· 6\. 模型版本控制
 
-· [结论](#a958)
+· 结论
 
 # 1\. 介绍

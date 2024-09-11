@@ -1,18 +1,18 @@
 # 数据工程书籍
 
-> 原文：[https://towardsdatascience.com/data-engineering-books-f373005d53fc?source=collection_archive---------1-----------------------#2023-11-12](https://towardsdatascience.com/data-engineering-books-f373005d53fc?source=collection_archive---------1-----------------------#2023-11-12)
+> 原文：[`towardsdatascience.com/data-engineering-books-f373005d53fc?source=collection_archive---------1-----------------------#2023-11-12`](https://towardsdatascience.com/data-engineering-books-f373005d53fc?source=collection_archive---------1-----------------------#2023-11-12)
 
 ## 《读者文摘逐步学习数据工程》
 
-[](https://mshakhomirov.medium.com/?source=post_page-----f373005d53fc--------------------------------)[![💡Mike Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----f373005d53fc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f373005d53fc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f373005d53fc--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----f373005d53fc--------------------------------)
+[](https://mshakhomirov.medium.com/?source=post_page-----f373005d53fc--------------------------------)![💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----f373005d53fc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f373005d53fc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f373005d53fc--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----f373005d53fc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe06a48b3dd48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-books-f373005d53fc&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=post_page-e06a48b3dd48----f373005d53fc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f373005d53fc--------------------------------) ·8 min read·2023年11月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff373005d53fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-books-f373005d53fc&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=-----f373005d53fc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe06a48b3dd48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-books-f373005d53fc&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=post_page-e06a48b3dd48----f373005d53fc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f373005d53fc--------------------------------) ·8 min read·2023 年 11 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff373005d53fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-books-f373005d53fc&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=-----f373005d53fc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff373005d53fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-books-f373005d53fc&source=-----f373005d53fc---------------------bookmark_footer-----------)![](../Images/df3db3d06f1e303478767f804be4672f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff373005d53fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-books-f373005d53fc&source=-----f373005d53fc---------------------bookmark_footer-----------)![](img/df3db3d06f1e303478767f804be4672f.png)
 
 图片来源于 [Tamas Pap](https://unsplash.com/@tamasp?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,10 +20,10 @@
 
 *免责声明：本帖子可能包含附属链接，这意味着如果你通过我的链接购买，我会获得佣金，但对你没有任何费用。*
 
-## **1\.** [**用Python进行数据工程**](https://amzn.to/3QSaHp4)
+## **1\.** [**用 Python 进行数据工程**](https://amzn.to/3QSaHp4)
 
-**利用Python处理海量数据集来设计数据模型和自动化数据管道**
+**利用 Python 处理海量数据集来设计数据模型和自动化数据管道**
 
-保罗·克里卡德，2020年
+保罗·克里卡德，2020 年
 
-这是一本很好的书，适合那些想要学习开源Apache工具用于数据工程的人。它涵盖了数据工程的所有基础主题，如数据建模，并提供了大量最常见的数据转换实例。正如书中描述的那样，它……
+这是一本很好的书，适合那些想要学习开源 Apache 工具用于数据工程的人。它涵盖了数据工程的所有基础主题，如数据建模，并提供了大量最常见的数据转换实例。正如书中描述的那样，它……

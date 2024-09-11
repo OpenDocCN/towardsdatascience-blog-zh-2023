@@ -1,24 +1,24 @@
 # 为什么将人工智能技术成功应用于临床护理如此困难？
 
-> 原文：[https://towardsdatascience.com/why-is-it-so-difficult-to-successfully-get-ai-technologies-adopted-into-clinical-care-4fa549d2c36?source=collection_archive---------7-----------------------#2023-03-30](https://towardsdatascience.com/why-is-it-so-difficult-to-successfully-get-ai-technologies-adopted-into-clinical-care-4fa549d2c36?source=collection_archive---------7-----------------------#2023-03-30)
+> 原文：[`towardsdatascience.com/why-is-it-so-difficult-to-successfully-get-ai-technologies-adopted-into-clinical-care-4fa549d2c36?source=collection_archive---------7-----------------------#2023-03-30`](https://towardsdatascience.com/why-is-it-so-difficult-to-successfully-get-ai-technologies-adopted-into-clinical-care-4fa549d2c36?source=collection_archive---------7-----------------------#2023-03-30)
 
-![](../Images/8bffe4172a8f5286745d2ce17c64136e.png)
+![](img/8bffe4172a8f5286745d2ce17c64136e.png)
 
 图片由 [国家癌症研究所](https://unsplash.com/@nci?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 探讨了一篇科学综述论文，该论文提出了这个问题并找到了答案
 
-[](https://medium.com/@aadutree?source=post_page-----4fa549d2c36--------------------------------)[![Anouk Dutrée](../Images/ee21e2d9fa3e4f35e1932bae7bae3b79.png)](https://medium.com/@aadutree?source=post_page-----4fa549d2c36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4fa549d2c36--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4fa549d2c36--------------------------------) [Anouk Dutrée](https://medium.com/@aadutree?source=post_page-----4fa549d2c36--------------------------------)
+[](https://medium.com/@aadutree?source=post_page-----4fa549d2c36--------------------------------)![Anouk Dutrée](https://medium.com/@aadutree?source=post_page-----4fa549d2c36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4fa549d2c36--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4fa549d2c36--------------------------------) [Anouk Dutrée](https://medium.com/@aadutree?source=post_page-----4fa549d2c36--------------------------------)
 
 ·
 
-[点击这里](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd153542b2be5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-is-it-so-difficult-to-successfully-get-ai-technologies-adopted-into-clinical-care-4fa549d2c36&user=Anouk+Dutr%C3%A9e&userId=d153542b2be5&source=post_page-d153542b2be5----4fa549d2c36---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----4fa549d2c36--------------------------------) · 9分钟阅读 · 2023年3月30日
+[点击这里](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd153542b2be5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-is-it-so-difficult-to-successfully-get-ai-technologies-adopted-into-clinical-care-4fa549d2c36&user=Anouk+Dutr%C3%A9e&userId=d153542b2be5&source=post_page-d153542b2be5----4fa549d2c36---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----4fa549d2c36--------------------------------) · 9 分钟阅读 · 2023 年 3 月 30 日
 
 -- 
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4fa549d2c36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-is-it-so-difficult-to-successfully-get-ai-technologies-adopted-into-clinical-care-4fa549d2c36&source=-----4fa549d2c36---------------------bookmark_footer-----------)
 
-人工智能（AI）在我们日常生活中变得越来越普遍。从几乎每个网络商店中的推荐系统，到自动翻译你访问的网站上的外语。然而，对于某些行业而言，这一过渡似乎比其他行业更加顺利。医疗领域似乎特别难以进入，但为什么呢？虽然有如此多的学术活动专注于医疗领域的人工智能，但是什么让这些技术突破在医疗保健中无法产生切实影响？Sendak 等人在他们的综述论文[《机器学习产品在医疗服务中的转化路径》](https://emj.emg-health.com/wp-content/uploads/sites/2/2020/01/A-Path-for-Translation-of-Machine-Learning.....pdf)（2020年）中尝试寻找这个问题的答案。他们的发现与我在[UbiOps](https://ubiops.com/) 与[MedTech 初创公司合作](https://ubiops.com/medical-breakthrough-from-ellogon-ai-runs-on-ubiops-platform/)的经验非常契合，因此在本文中，我将带您逐步了解他们的论文。
+人工智能（AI）在我们日常生活中变得越来越普遍。从几乎每个网络商店中的推荐系统，到自动翻译你访问的网站上的外语。然而，对于某些行业而言，这一过渡似乎比其他行业更加顺利。医疗领域似乎特别难以进入，但为什么呢？虽然有如此多的学术活动专注于医疗领域的人工智能，但是什么让这些技术突破在医疗保健中无法产生切实影响？Sendak 等人在他们的综述论文[《机器学习产品在医疗服务中的转化路径》](https://emj.emg-health.com/wp-content/uploads/sites/2/2020/01/A-Path-for-Translation-of-Machine-Learning.....pdf)（2020 年）中尝试寻找这个问题的答案。他们的发现与我在[UbiOps](https://ubiops.com/) 与[MedTech 初创公司合作](https://ubiops.com/medical-breakthrough-from-ellogon-ai-runs-on-ubiops-platform/)的经验非常契合，因此在本文中，我将带您逐步了解他们的论文。
 
 # 机器学习在医疗保健中的现状
 
@@ -30,17 +30,17 @@
 
 幸运的是，有一些医疗公司成功地将人工智能/机器学习整合到了他们的产品中。例如，[Ellogon](https://ellogon.ai/) 这样帮助医生选择合适的癌症免疫疗法患者的公司，证明了从概念验证过渡到可以轻松完全融入现有医疗协议的成熟产品是可能的。
 
-**是什么使成功融入医疗保健的机器学习产品与那些停留在概念验证阶段的产品有所不同？** 让我们看看Mark Sendak等人的研究，找出答案。
+**是什么使成功融入医疗保健的机器学习产品与那些停留在概念验证阶段的产品有所不同？** 让我们看看 Mark Sendak 等人的研究，找出答案。
 
-# Sendak等人的研究
+# Sendak 等人的研究
 
-Mark Sendak及其同事开始进行叙述性综述，以帮助理解如何将机器学习转化为医疗保健。他们结合了自己在构建机器学习产品方面的第一手经验，并与21个成功进入临床护理的机器学习模型案例研究相结合。这正是我对他们的研究感兴趣的原因，因为他们尝试从那些*真正*进入生产阶段的人身上学习。
+Mark Sendak 及其同事开始进行叙述性综述，以帮助理解如何将机器学习转化为医疗保健。他们结合了自己在构建机器学习产品方面的第一手经验，并与 21 个成功进入临床护理的机器学习模型案例研究相结合。这正是我对他们的研究感兴趣的原因，因为他们尝试从那些*真正*进入生产阶段的人身上学习。
 
-根据他们对这21个案例研究的分析，**作者确定了在医疗保健世界中将产品推向成熟阶段的核心阶段和挑战。**
+根据他们对这 21 个案例研究的分析，**作者确定了在医疗保健世界中将产品推向成熟阶段的核心阶段和挑战。**
 
 # “转化路径”
 
-作者成功地将21个成功案例映射回他们所称的“转化路径”（见图）。他们指出，在从概念验证到正式产品的过程中，有四个关键阶段。这些阶段是：
+作者成功地将 21 个成功案例映射回他们所称的“转化路径”（见图）。他们指出，在从概念验证到正式产品的过程中，有四个关键阶段。这些阶段是：
 
 1.  **设计与开发：** 这是识别正确问题并设计和开发能够提供*可操作见解*的机器学习工具的过程。
 
@@ -52,9 +52,9 @@ Mark Sendak及其同事开始进行叙述性综述，以帮助理解如何将机
 
 这些阶段不一定是顺序进行的，团队可能会在这些阶段之间反复迭代。有关转化路径的更多细节，请参见下图。
 
-![](../Images/1aac4ab21a848019c7d1bbe4cc74ed17.png)
+![](img/1aac4ab21a848019c7d1bbe4cc74ed17.png)
 
-*图片由Sendak等人提供，摘自《机器学习产品转化为医疗保健服务的路径》。图片描述了转化路径的各个阶段。*
+*图片由 Sendak 等人提供，摘自《机器学习产品转化为医疗保健服务的路径》。图片描述了转化路径的各个阶段。*
 
 # 主要障碍
 
@@ -62,21 +62,21 @@ Mark Sendak及其同事开始进行叙述性综述，以帮助理解如何将机
 
 ## 领域知识与产品化知识
 
-在开发医疗技术工具时，总会存在领域知识与生产化知识之间的紧张关系。你团队中的人员数量有限，同时你需要确保有足够的医学专家参与，还要有能实际构建和部署解决方案的合适人员。关注点的选择高度依赖，但Sendak等人很好地强调了如果你想成功，团队中需要在某种程度上具备这两种能力。
+在开发医疗技术工具时，总会存在领域知识与生产化知识之间的紧张关系。你团队中的人员数量有限，同时你需要确保有足够的医学专家参与，还要有能实际构建和部署解决方案的合适人员。关注点的选择高度依赖，但 Sendak 等人很好地强调了如果你想成功，团队中需要在某种程度上具备这两种能力。
 
 当然，并非每种技能都需要团队中实际有人具备！某些任务也可以外包，或引入可以处理标准任务的工具，以便专家可以专注于你解决方案中的独特之处。我看到许多公司因开源工具的免费而忙于构建自己的平台。但别忘了，团队中需要投入时间和精力来设置这些技术的成本！当他们忙于使部署工具工作时，你正浪费可以用于实际改进模型和创造价值的时间…
 
 ## 什么时候一个模型是“好”的？
 
-好模型和坏模型的区别往往不清晰，也不明确你在特定情况下应追求什么样的性能。如果不讨论这一点，可能会导致期望与现实的不匹配。这里需要注意的是，这不仅仅关乎模型的准确性，还涉及到可用性和潜在的经济性能。一个准确性很高但运行需10小时的模型，可能不会很有用，也不实惠。每个案例都不同，因此在早期进行讨论以识别和达成相关模型性能指标的共识至关重要。
+好模型和坏模型的区别往往不清晰，也不明确你在特定情况下应追求什么样的性能。如果不讨论这一点，可能会导致期望与现实的不匹配。这里需要注意的是，这不仅仅关乎模型的准确性，还涉及到可用性和潜在的经济性能。一个准确性很高但运行需 10 小时的模型，可能不会很有用，也不实惠。每个案例都不同，因此在早期进行讨论以识别和达成相关模型性能指标的共识至关重要。
 
-![](../Images/15c30c817e7764ff44f79a7c88db7605.png)
+![](img/15c30c817e7764ff44f79a7c88db7605.png)
 
 作者提供的图片
 
 ## 在孤立的背景下证明产品的有效性是不够的
 
-仅仅因为产品在受控测试环境和测试数据集上表现良好，并不意味着该产品在实际环境中也会表现良好。重要的是要让真实数据通过产品，并用它来评估产品性能。在UbiOps，我们专注于部署和服务，我们多次看到模型在引入实际生产数据后，性能可能会发生巨大的变化！即使只是作为影子部署，尽早进入这一阶段也很重要。
+仅仅因为产品在受控测试环境和测试数据集上表现良好，并不意味着该产品在实际环境中也会表现良好。重要的是要让真实数据通过产品，并用它来评估产品性能。在 UbiOps，我们专注于部署和服务，我们多次看到模型在引入实际生产数据后，性能可能会发生巨大的变化！即使只是作为影子部署，尽早进入这一阶段也很重要。
 
 ## 集成到生产环境中是困难的
 
@@ -92,9 +92,9 @@ Mark Sendak及其同事开始进行叙述性综述，以帮助理解如何将机
 
 ## 接下来呢？
 
-我已经向你介绍了翻译路径及其主要障碍，那么接下来呢？我认为，当你开始创建一个新型的医疗保健领域的ML驱动产品时，一切都始于**意识和开放讨论**。了解前人遇到的挑战，你如何从他们的错误中学习？
+我已经向你介绍了翻译路径及其主要障碍，那么接下来呢？我认为，当你开始创建一个新型的医疗保健领域的 ML 驱动产品时，一切都始于**意识和开放讨论**。了解前人遇到的挑战，你如何从他们的错误中学习？
 
-![](../Images/7a8763e681dba85a59e60b185279cfb8.png)
+![](img/7a8763e681dba85a59e60b185279cfb8.png)
 
 作者提供的图片
 

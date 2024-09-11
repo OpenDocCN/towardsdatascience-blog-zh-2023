@@ -1,18 +1,18 @@
 # 图表讲故事
 
-> 原文：[https://towardsdatascience.com/storytelling-with-charts-c59c52c49871?source=collection_archive---------17-----------------------#2023-05-08](https://towardsdatascience.com/storytelling-with-charts-c59c52c49871?source=collection_archive---------17-----------------------#2023-05-08)
+> 原文：[`towardsdatascience.com/storytelling-with-charts-c59c52c49871?source=collection_archive---------17-----------------------#2023-05-08`](https://towardsdatascience.com/storytelling-with-charts-c59c52c49871?source=collection_archive---------17-----------------------#2023-05-08)
 
 ## 第三部分：你想比较项目吗？
 
-[](https://medium.com/@dar.wtz?source=post_page-----c59c52c49871--------------------------------)[![Darío Weitz](../Images/28efa942b4c5bd2763d58c44584cf583.png)](https://medium.com/@dar.wtz?source=post_page-----c59c52c49871--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c59c52c49871--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c59c52c49871--------------------------------) [Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----c59c52c49871--------------------------------)
+[](https://medium.com/@dar.wtz?source=post_page-----c59c52c49871--------------------------------)![Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----c59c52c49871--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c59c52c49871--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c59c52c49871--------------------------------) [Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----c59c52c49871--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fb26b001728&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-c59c52c49871&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=post_page-7fb26b001728----c59c52c49871---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c59c52c49871--------------------------------) ·7 分钟阅读·2023年5月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc59c52c49871&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-c59c52c49871&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=-----c59c52c49871---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fb26b001728&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-c59c52c49871&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=post_page-7fb26b001728----c59c52c49871---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c59c52c49871--------------------------------) ·7 分钟阅读·2023 年 5 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc59c52c49871&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-c59c52c49871&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=-----c59c52c49871---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc59c52c49871&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-c59c52c49871&source=-----c59c52c49871---------------------bookmark_footer-----------)![](../Images/560885b13d332454947845149501e80e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc59c52c49871&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-c59c52c49871&source=-----c59c52c49871---------------------bookmark_footer-----------)![](img/560885b13d332454947845149501e80e.png)
 
 照片由 [charlesdeluvio](https://unsplash.com/@charlesdeluvio?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

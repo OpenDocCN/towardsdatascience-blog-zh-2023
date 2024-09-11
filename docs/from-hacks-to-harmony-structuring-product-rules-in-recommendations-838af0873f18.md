@@ -1,14 +1,14 @@
 # 从黑客到和谐：在推荐中构建产品规则
 
-> 原文：[https://towardsdatascience.com/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=collection_archive---------7-----------------------#2023-09-23](https://towardsdatascience.com/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=collection_archive---------7-----------------------#2023-09-23)
+> 原文：[`towardsdatascience.com/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=collection_archive---------7-----------------------#2023-09-23`](https://towardsdatascience.com/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=collection_archive---------7-----------------------#2023-09-23)
 
 ## 不要让启发式规则削弱你的机器学习，学会将它们结合起来
 
-[](https://roizner.medium.com/?source=post_page-----838af0873f18--------------------------------)[![Michael Roizner](../Images/bcb68ee626ea57234b62e512ed4b383b.png)](https://roizner.medium.com/?source=post_page-----838af0873f18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----838af0873f18--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----838af0873f18--------------------------------) [Michael Roizner](https://roizner.medium.com/?source=post_page-----838af0873f18--------------------------------)
+[](https://roizner.medium.com/?source=post_page-----838af0873f18--------------------------------)![Michael Roizner](https://roizner.medium.com/?source=post_page-----838af0873f18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----838af0873f18--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----838af0873f18--------------------------------) [Michael Roizner](https://roizner.medium.com/?source=post_page-----838af0873f18--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1bee5af37d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18&user=Michael+Roizner&userId=1bee5af37d8&source=post_page-1bee5af37d8----838af0873f18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----838af0873f18--------------------------------) ·6 min read·2023年9月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F838af0873f18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18&user=Michael+Roizner&userId=1bee5af37d8&source=-----838af0873f18---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1bee5af37d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18&user=Michael+Roizner&userId=1bee5af37d8&source=post_page-1bee5af37d8----838af0873f18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----838af0873f18--------------------------------) ·6 min read·2023 年 9 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F838af0873f18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18&user=Michael+Roizner&userId=1bee5af37d8&source=-----838af0873f18---------------------clap_footer-----------)
 
 --
 
@@ -26,7 +26,7 @@
 
 +   明确的内容不能被推荐——除非情况适当。
 
-![](../Images/11efea3666e246f87dabb9ab4f9c293b.png)
+![](img/11efea3666e246f87dabb9ab4f9c293b.png)
 
 照片由 [Cam Bradford](https://unsplash.com/@cambradford?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -50,11 +50,11 @@
 
 下面是该方法的关键原则。
 
-1.  结果是通过迭代生成的，从第一个位置开始，直到最后一个位置。在每次迭代中，我们选择最合适的文档放入接下来的位置。这是大多数重新排序策略的工作原理，如著名的DPP用于多样化。对于非线性输出，可以按重要性对位置进行排序。
+1.  结果是通过迭代生成的，从第一个位置开始，直到最后一个位置。在每次迭代中，我们选择最合适的文档放入接下来的位置。这是大多数重新排序策略的工作原理，如著名的 DPP 用于多样化。对于非线性输出，可以按重要性对位置进行排序。
 
 1.  在每次迭代中，我们将所有剩余文档按值函数进行排序。这可以从简单的点击概率模型输出到更复杂的情况：各种模型输出（或多个模型）预测的不同事件、相似性组件（如与之前文档的相似性）以及手动加权等。值函数可以在每次迭代中重新计算，因此可以依赖于位置和最终输出中已有的文档。它必须具备计算效率。设计正确的值函数本身是一个丰富的话题；该框架既不限制也不简化这一方面。
 
-1.  乘积规则表示如下：在一个位置的子集***X***中，具有属性***f***的文档数量应当高于或低于某个阈值***C***。通常，***X***是一个起始位置的范围，例如1到10（第一页）。属性***f***最好表示为某个特征的阈值规则，即**[feature(doc) > threshold]**。如有必要，这种格式可以推广到包含非二元属性的情况。
+1.  乘积规则表示如下：在一个位置的子集***X***中，具有属性***f***的文档数量应当高于或低于某个阈值***C***。通常，***X***是一个起始位置的范围，例如 1 到 10（第一页）。属性***f***最好表示为某个特征的阈值规则，即**[feature(doc) > threshold]**。如有必要，这种格式可以推广到包含非二元属性的情况。
 
 1.  规则具有优先级。如果我们不能满足所有规则，我们将丢弃优先级最低的规则。更准确地说：如果在给定位置可以实现最高优先级的规则，它将被严格执行；否则，将不被执行。如果在这些条件下可以实现下一个最高优先级的规则，它将被执行；否则，我们将跳过它。依此类推。换句话说，我们选择实现规则的字典序最高的掩码。
 
@@ -62,7 +62,7 @@
 
 +   整个输出中至少一半的文档应为订阅内容。然而，如果所有订阅文档已经被阅读，这条规则将变得不可行，并会被丢弃。
 
-+   前10个位置中的低质量文档数量不应超过2个。
++   前 10 个位置中的低质量文档数量不应超过 2 个。
 
 +   在位置 10 和 20 之间，应该至少有一个来自新类别的文档。
 

@@ -1,38 +1,38 @@
 # 关于机器为何能够思考
 
-> 原文：[https://towardsdatascience.com/on-why-machines-can-think-40edafce293d?source=collection_archive---------2-----------------------#2023-12-06](https://towardsdatascience.com/on-why-machines-can-think-40edafce293d?source=collection_archive---------2-----------------------#2023-12-06)
+> 原文：[`towardsdatascience.com/on-why-machines-can-think-40edafce293d?source=collection_archive---------2-----------------------#2023-12-06`](https://towardsdatascience.com/on-why-machines-can-think-40edafce293d?source=collection_archive---------2-----------------------#2023-12-06)
 
 ## 我们如何以最简单的方式思考**思维**呢？
 
-[](https://medium.com/@niya.stoimenova?source=post_page-----40edafce293d--------------------------------)[![Niya Stoimenova](../Images/122b1debc4ae3af4fdf4d78e36071b68.png)](https://medium.com/@niya.stoimenova?source=post_page-----40edafce293d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----40edafce293d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----40edafce293d--------------------------------) [Niya Stoimenova](https://medium.com/@niya.stoimenova?source=post_page-----40edafce293d--------------------------------)
+[](https://medium.com/@niya.stoimenova?source=post_page-----40edafce293d--------------------------------)![Niya Stoimenova](https://medium.com/@niya.stoimenova?source=post_page-----40edafce293d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----40edafce293d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----40edafce293d--------------------------------) [Niya Stoimenova](https://medium.com/@niya.stoimenova?source=post_page-----40edafce293d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbacf8cf8265e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-why-machines-can-think-40edafce293d&user=Niya+Stoimenova&userId=bacf8cf8265e&source=post_page-bacf8cf8265e----40edafce293d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----40edafce293d--------------------------------) ·15分钟阅读·2023年12月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F40edafce293d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-why-machines-can-think-40edafce293d&user=Niya+Stoimenova&userId=bacf8cf8265e&source=-----40edafce293d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbacf8cf8265e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-why-machines-can-think-40edafce293d&user=Niya+Stoimenova&userId=bacf8cf8265e&source=post_page-bacf8cf8265e----40edafce293d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----40edafce293d--------------------------------) ·15 分钟阅读·2023 年 12 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F40edafce293d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-why-machines-can-think-40edafce293d&user=Niya+Stoimenova&userId=bacf8cf8265e&source=-----40edafce293d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F40edafce293d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-why-machines-can-think-40edafce293d&source=-----40edafce293d---------------------bookmark_footer-----------)![](../Images/9a5aaabda3a088a8883480eaf3a3056d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F40edafce293d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-why-machines-can-think-40edafce293d&source=-----40edafce293d---------------------bookmark_footer-----------)![](img/9a5aaabda3a088a8883480eaf3a3056d.png)
 
 打开潘多拉的盒子（图片来源：作者）
 
-在17世纪，[勒内·笛卡尔](https://en.wikipedia.org/wiki/Ren%C3%A9_Descartes)提出了一个相对较新的思想——“**我思故我在**”。这一简单的表述成为了西方哲学的基础，并定义了几个世纪以来我们对人类本质的理解。
+在 17 世纪，[勒内·笛卡尔](https://en.wikipedia.org/wiki/Ren%C3%A9_Descartes)提出了一个相对较新的思想——“**我思故我在**”。这一简单的表述成为了西方哲学的基础，并定义了几个世纪以来我们对人类本质的理解。
 
 从那时起，我们对作为人类的意义的理解发生了变化。然而，实际上，许多人仍然认为思考的能力是人性的最重要标志之一。
 
 因此，ChatGPT（及类似模型）发布的瞬间，我们开始被大量讨论“它是否能够思考”的文章轰炸。
 
-例如，《纽约客》思考了“[ChatGPT有怎样的思维？](https://www.newyorker.com/science/annals-of-artificial-intelligence/what-kind-of-mind-does-chatgpt-have)”；《华盛顿邮报》宣称“[ChatGPT可以通过逻辑测试，但别指望它具有创造力](https://www.washingtonpost.com/technology/2023/03/18/gpt4-review/)”；《大西洋月刊》则得出结论称[“ChatGPT比你想象的更笨”](https://www.theatlantic.com/technology/archive/2022/12/chatgpt-openai-artificial-intelligence-writing-ethics/672386/)。我个人最喜欢的是这个[喜剧演员的视频](https://www.tiktok.com/@dragoscomedy/video/7229402346680339717)，他试图向一位从事人力资源工作的人解释ChatGPT是什么。
+例如，《纽约客》思考了“[ChatGPT 有怎样的思维？](https://www.newyorker.com/science/annals-of-artificial-intelligence/what-kind-of-mind-does-chatgpt-have)”；《华盛顿邮报》宣称“[ChatGPT 可以通过逻辑测试，但别指望它具有创造力](https://www.washingtonpost.com/technology/2023/03/18/gpt4-review/)”；《大西洋月刊》则得出结论称[“ChatGPT 比你想象的更笨”](https://www.theatlantic.com/technology/archive/2022/12/chatgpt-openai-artificial-intelligence-writing-ethics/672386/)。我个人最喜欢的是这个[喜剧演员的视频](https://www.tiktok.com/@dragoscomedy/video/7229402346680339717)，他试图向一位从事人力资源工作的人解释 ChatGPT 是什么。
 
-与任何其他容易引发猜测的复杂话题一样，人们对于AI模型的思维能力既过分夸大又不足代表。因此，让我们深入探讨一下。
+与任何其他容易引发猜测的复杂话题一样，人们对于 AI 模型的思维能力既过分夸大又不足代表。因此，让我们深入探讨一下。
 
 # 思考就是推理
 
 思维是一个复杂的构造，已经代表了许多不同的事物。因此，为了简单起见，我们可以假设思维或多或少与推理同义。
 
-**推理**是一个定义得更清晰的概念，巧合的是，它正被[越来越多地用作**AI的未来**](https://www.deeplearning.ai/the-batch/yoshua-bengio-wants-neural-nets-that-reason/?utm_campaign=The+Batch&utm_source=hs_email&utm_medium=email&_hsenc=p2ANqtz-865CMxeXG2eIMWb7rFgGbKVMVqV6u6UWP8TInA4WfSYvPjc6yOsNPeTNfS_m_et5Atfjyw)。它也是笛卡尔（在很大程度上）谈论思维时的意思。
+**推理**是一个定义得更清晰的概念，巧合的是，它正被[越来越多地用作**AI 的未来**](https://www.deeplearning.ai/the-batch/yoshua-bengio-wants-neural-nets-that-reason/?utm_campaign=The+Batch&utm_source=hs_email&utm_medium=email&_hsenc=p2ANqtz-865CMxeXG2eIMWb7rFgGbKVMVqV6u6UWP8TInA4WfSYvPjc6yOsNPeTNfS_m_et5Atfjyw)。它也是笛卡尔（在很大程度上）谈论思维时的意思。
 
-> 所以，不如问“AI能思考吗？”，不如问“AI能推理吗？”。
+> 所以，不如问“AI 能思考吗？”，不如问“AI 能推理吗？”。
 
 简短的回答是**是的**。长答案是——它可以推理，但仅限于某些方式。
 
@@ -46,25 +46,25 @@
 
 简而言之，演绎是从给定的规则和被假定为真的案例中得出结论的能力。
 
-想象一下：你在锅里加水，打开炉子，然后放入一个温度计。由于你在学校学到的东西，你知道水（通常）在100°C时沸腾。因此，当有人告诉你温度已达到100°C时，你可以安全地推断出水正在沸腾（你不必亲眼看到它发生也能“相当确定”它确实发生了）。
+想象一下：你在锅里加水，打开炉子，然后放入一个温度计。由于你在学校学到的东西，你知道水（通常）在 100°C 时沸腾。因此，当有人告诉你温度已达到 100°C 时，你可以安全地推断出水正在沸腾（你不必亲眼看到它发生也能“相当确定”它确实发生了）。
 
 这里有一个有用的结构需要记住。
 
-> ***1.* 规则：** 水在达到100°C时沸腾
+> ***1.* 规则：** 水在达到 100°C 时沸腾
 > 
-> ***2.* 案例：** 水的温度是100°C
+> ***2.* 案例：** 水的温度是 100°C
 > 
 > ***3.* 结果：** 锅里的水在煮沸
 
 因此，你从**规则**和**案例**推理到**结果**。
 
-![](../Images/2f15238c136a44f7ddb3a0ea2aca6886.png)
+![](img/2f15238c136a44f7ddb3a0ea2aca6886.png)
 
 推理：从规则和案例推理到结果（图片由作者提供）
 
 推理对我们进行科学研究至关重要。它也是机器最容易重现的推理类型。
 
-按设计，几乎每台机器都执行某种形式的推理。你的简单的、毫不起眼的计算器每次你问3+5是多少时都会推导出答案。而它其中没有任何人工智能。
+按设计，几乎每台机器都执行某种形式的推理。你的简单的、毫不起眼的计算器每次你问 3+5 是多少时都会推导出答案。而它其中没有任何人工智能。
 
 如果我们把它放在和上述水的例子相同的结构中，我们得到：
 
@@ -80,23 +80,23 @@
 
 归纳是从给定的观察集合中概括规则的能力。它对我们进行科学研究至关重要，因为它使我们能够*定量*地识别新的模式/规则。
 
-让我们坚持水的沸腾例子。假设你从未被告知水在100°C沸腾。因此，每次你将一锅水加热到沸腾时，你都放入一个温度计并测量温度——100次，1,000次，10,000次。然后，你的朋友们也做同样的事——无论你做多少次，温度总是100°C。因此，你可以**归纳**出规则：“*水在100°C沸腾*”。
+让我们坚持水的沸腾例子。假设你从未被告知水在 100°C 沸腾。因此，每次你将一锅水加热到沸腾时，你都放入一个温度计并测量温度——100 次，1,000 次，10,000 次。然后，你的朋友们也做同样的事——无论你做多少次，温度总是 100°C。因此，你可以**归纳**出规则：“*水在 100°C 沸腾*”。
 
 > 1\. **结果：** 水在沸腾
 > 
-> 2\. **案例：** 每当你放入温度计时，它总是显示100°C。
+> 2\. **案例：** 每当你放入温度计时，它总是显示 100°C。
 > 
-> 3\. **规则：** 水在100°C沸腾。
+> 3\. **规则：** 水在 100°C 沸腾。
 
-![](../Images/173ec6860028897d9e780b6e479a84d3.png)
+![](img/173ec6860028897d9e780b6e479a84d3.png)
 
 归纳：从结果和案例推理到规则（图片由作者提供）
 
 然后，你就根据你观察到的模式定量地识别出了一个新的规则。为此，你从**结果**和**案例**推理到**规则**。
 
-这种推理类型当然并不总是正确的。著名的是，欧洲人曾认为所有天鹅都是白色的，直到他们航行到了澳大利亚。我们也知道水的沸点并不总是100°C（大气压力也起作用）。
+这种推理类型当然并不总是正确的。著名的是，欧洲人曾认为所有天鹅都是白色的，直到他们航行到了澳大利亚。我们也知道水的沸点并不总是 100°C（大气压力也起作用）。
 
-仅仅因为某件事发生了10,000次并不意味着它总是正确的。但10,000次通常是一个安全的选择。
+仅仅因为某件事发生了 10,000 次并不意味着它总是正确的。但 10,000 次通常是一个安全的选择。
 
 归纳对机器来说要困难得多。你的计算器当然无法执行归纳。然而，机器学习模型可以。实际上，这正是它们的主要目标：从一组给定的结果中进行概括。
 
@@ -128,7 +128,7 @@
 
 > 尽管如此，大多数数据科学家会同意，即使是最先进的机器学习模型也无法进行推理。为什么？
 
-水煮沸的例子可以简单地说明为什么仅依靠演绎推理和归纳推理并不足够。确实，我们需要它们来生成**规则**（*“水在100°C时沸腾”*），然后在各种案例中进行验证。然而，这种结合不足以解释我们是如何猜测到*煮沸*的**结果**与*温度*有关的。
+水煮沸的例子可以简单地说明为什么仅依靠演绎推理和归纳推理并不足够。确实，我们需要它们来生成**规则**（*“水在 100°C 时沸腾”*），然后在各种案例中进行验证。然而，这种结合不足以解释我们是如何猜测到*煮沸*的**结果**与*温度*有关的。
 
 除此之外，归纳和演绎推理的额外局限性也变得显而易见——它们在特定的上下文中有所限制，缺乏在不同领域之间转移知识的能力。这正是**演绎推理**发挥作用的地方，它提供了一个更全面的视角，展示了使我们能够进行直觉跃迁并将洞察力连接到不同领域的认知过程。
 
@@ -136,17 +136,17 @@
 
 演绎推理是从单一惊讶的观察（即**结果**）中生成新假设的能力。我们每次依赖经验来解释某些事物时，都会这样做。
 
-我们出去看到一条湿街。我们用之前可能下过雨的猜测来解释。我们不需要看到1万条湿街就知道下雨时街道会变湿。从技术上讲，我们甚至不需要以前遇到过湿街——我们只需知道当水接触物体时，会使物体变湿。
+我们出去看到一条湿街。我们用之前可能下过雨的猜测来解释。我们不需要看到 1 万条湿街就知道下雨时街道会变湿。从技术上讲，我们甚至不需要以前遇到过湿街——我们只需知道当水接触物体时，会使物体变湿。
 
 这意味着，如果我们回到水煮沸的例子，我们将有不同的推理方式：
 
 > 1\. **结果**：水在煮沸
 > 
-> 2\. **规则**：水在100°C时煮沸
+> 2\. **规则**：水在 100°C 时煮沸
 > 
-> 3\. **案例**：水的温度必须是100°C
+> 3\. **案例**：水的温度必须是 100°C
 
-![](../Images/b29d170924efec4a6c41bb81e04ad0c8.png)
+![](img/b29d170924efec4a6c41bb81e04ad0c8.png)
 
 溯因推理：从规则和结果推断到一个案例（作者插图）
 
@@ -154,13 +154,13 @@
 
 溯因推理是所有推理类型中最不可靠的。通过溯因推理得出的假设很可能是不正确的。例如，“湿街”的结果可能与雨无关——也许某个地方的管道在夜间破裂，或者有人认真地用水喷洒了街道。然而，雨似乎是一个合理的解释。
 
-因此，溯因推理允许我们在日常情况中顺利前行，而不会陷入困境。也就是说，我们不需要尝试1万次来做出简单的决策。
+因此，溯因推理允许我们在日常情况中顺利前行，而不会陷入困境。也就是说，我们不需要尝试 1 万次来做出简单的决策。
 
-据我了解，目前没有任何AI模型/算法能够进行**溯因推理**。不是以我刚刚描述的方式。
+据我了解，目前没有任何 AI 模型/算法能够进行**溯因推理**。不是以我刚刚描述的方式。
 
-那些对1960年代和1970年代基于规则的系统熟悉的人，当然可以提到[MYCIN](https://en.wikipedia.org/wiki/Mycin)、[XCON](https://en.wikipedia.org/wiki/Xcon)和[SHRDLU](https://en.wikipedia.org/wiki/SHRDLU)，并声称它们能够进行溯因推理。其他人可能会提到斯坦福AI指数在[2022](https://aiindex.stanford.edu/wp-content/uploads/2022/03/2022-AI-Index-Report_Master.pdf)和[2023](https://aiindex.stanford.edu/wp-content/uploads/2023/04/HAI_AI-Index-Report_2023.pdf)中引用的溯因推理例子，认为这是未来研究中最有前景的领域之一（即，*溯因自然语言推理*）。
+那些对 1960 年代和 1970 年代基于规则的系统熟悉的人，当然可以提到[MYCIN](https://en.wikipedia.org/wiki/Mycin)、[XCON](https://en.wikipedia.org/wiki/Xcon)和[SHRDLU](https://en.wikipedia.org/wiki/SHRDLU)，并声称它们能够进行溯因推理。其他人可能会提到斯坦福 AI 指数在[2022](https://aiindex.stanford.edu/wp-content/uploads/2022/03/2022-AI-Index-Report_Master.pdf)和[2023](https://aiindex.stanford.edu/wp-content/uploads/2023/04/HAI_AI-Index-Report_2023.pdf)中引用的溯因推理例子，认为这是未来研究中最有前景的领域之一（即，*溯因自然语言推理*）。
 
-所以，如果机器在1970年代能够进行“溯因推理”，为什么它们仍然不能做我所称的溯因推理（即常识推理）？
+所以，如果机器在 1970 年代能够进行“溯因推理”，为什么它们仍然不能做我所称的溯因推理（即常识推理）？
 
 # 为什么溯因推理仍然难以捉摸
 
@@ -168,21 +168,21 @@
 
 ## 混淆：溯因推理与最佳解释推理（IBE）不同
 
-历史上，在计算机科学领域，许多人将IBE和推断这两个术语互换使用。即使是ChatGPT也会告诉你这两者是相同的，或者推断是IBE的一个子集（取决于你如何提问）。[斯坦福哲学百科全书](https://plato.stanford.edu/index.html)也反映了这种观点。实际上，你在计算机科学的相关领域阅读的几乎每一篇关于推断的论文，都告诉你它与IBE相同。
+历史上，在计算机科学领域，许多人将 IBE 和推断这两个术语互换使用。即使是 ChatGPT 也会告诉你这两者是相同的，或者推断是 IBE 的一个子集（取决于你如何提问）。[斯坦福哲学百科全书](https://plato.stanford.edu/index.html)也反映了这种观点。实际上，你在计算机科学的相关领域阅读的几乎每一篇关于推断的论文，都告诉你它与 IBE 相同。
 
 然而，这两者是*非常* *不同* 的构建。
 
-一般来说，**推断**涵盖了生成新案例的行为（*将学习转移到不同的背景中*）。另一方面，IBE是一种非常特殊且更具背景特定性的归纳形式，它不一定要求你定量地识别模式（即，你不需要观察一个模式10,000次来制定规则）。这些之间的具体区别是一个相当复杂的哲学讨论。如果你想深入了解这一点，我推荐[这篇论文](https://www.jstor.org/stable/10.2979/trancharpeirsoc.51.3.300)。
+一般来说，**推断**涵盖了生成新案例的行为（*将学习转移到不同的背景中*）。另一方面，IBE 是一种非常特殊且更具背景特定性的归纳形式，它不一定要求你定量地识别模式（即，你不需要观察一个模式 10,000 次来制定规则）。这些之间的具体区别是一个相当复杂的哲学讨论。如果你想深入了解这一点，我推荐[这篇论文](https://www.jstor.org/stable/10.2979/trancharpeirsoc.51.3.300)。
 
-然而，就本文而言，帮助我们的是将其放在**规则**、**案例**和**结果**结构中进行思考，并使用像MYCIN和斯坦福AI指数引用的推断自然语言模型这样的具体例子。
+然而，就本文而言，帮助我们的是将其放在**规则**、**案例**和**结果**结构中进行思考，并使用像 MYCIN 和斯坦福 AI 指数引用的推断自然语言模型这样的具体例子。
 
-MYCIN是20世纪70年代在斯坦福开发的早期专家系统，旨在帮助医生诊断传染病。它依赖于一个知识库，其中每个**规则**都以条件（IF——即**案例**）和结论（THEN——即**结果**）的形式表达。然后它利用了[*逆向推理*](https://en.wikipedia.org/wiki/Backward_chaining)机制，使其能够从一组症状和病人数据（分别是**结果**和**案例**）中，向后推理以识别和分配*从0到1的启发式确定性评分*给那些可能最好地解释情况的**规则**。即，它从结果和案例推理到规则（即，归纳推理遵循的模式）。
+MYCIN 是 20 世纪 70 年代在斯坦福开发的早期专家系统，旨在帮助医生诊断传染病。它依赖于一个知识库，其中每个**规则**都以条件（IF——即**案例**）和结论（THEN——即**结果**）的形式表达。然后它利用了[*逆向推理*](https://en.wikipedia.org/wiki/Backward_chaining)机制，使其能够从一组症状和病人数据（分别是**结果**和**案例**）中，向后推理以识别和分配*从 0 到 1 的启发式确定性评分*给那些可能最好地解释情况的**规则**。即，它从结果和案例推理到规则（即，归纳推理遵循的模式）。
 
-斯坦福AI指数引用的作为*推断自然语言推理*的[例子](https://arxiv.org/abs/1908.05739)（无论是生成假设还是选择最合理的假设）有点棘手。但这仍然不是推断。事实上，我会说，它类似于IBE，但它遵循与我们迄今讨论的其他机器学习模型相同的模式——归纳，接着是演绎。
+斯坦福 AI 指数引用的作为*推断自然语言推理*的[例子](https://arxiv.org/abs/1908.05739)（无论是生成假设还是选择最合理的假设）有点棘手。但这仍然不是推断。事实上，我会说，它类似于 IBE，但它遵循与我们迄今讨论的其他机器学习模型相同的模式——归纳，接着是演绎。
 
-背景：在2020年，Bhagavatula及其同事*，对一个他们称之为ART的数据集（包含约20K由观察对（O1, O2）定义的叙事背景和200K解释性假设）训练了一个变换器模型。训练后，他们给模型提供了一组观察数据，并要求它生成一个合理的假设以匹配（见图4）。
+背景：在 2020 年，Bhagavatula 及其同事*，对一个他们称之为 ART 的数据集（包含约 20K 由观察对（O1, O2）定义的叙事背景和 200K 解释性假设）训练了一个变换器模型。训练后，他们给模型提供了一组观察数据，并要求它生成一个合理的假设以匹配（见图 4）。
 
-![](../Images/722ffbdc9331a51b34baf58481db839e.png)
+![](img/722ffbdc9331a51b34baf58481db839e.png)
 
 图 4：推测自然语言推理（该图取自 [arXiv:1908.05739](https://arxiv.org/abs/1908.05739)）
 
@@ -216,7 +216,7 @@ MYCIN是20世纪70年代在斯坦福开发的早期专家系统，旨在帮助�
 
 > 归纳偏差是机器学习中的一个重要概念，指的是模型对其应学习的函数类型所持有的固有假设或偏好。偏差通过限制可能的假设集来指导学习过程，从而提高学习的效率和准确性。
 
-例如，*决策树*关注于层级结构和简单的决策边界。*支持向量机*旨在找到类别之间的宽边距。*卷积神经网络*强调图像中的平移不变性和层级特征学习。*递归神经网络*偏向于序列模式，*贝叶斯网络*建模概率关系，*正则化线性模型*通过惩罚大系数来偏好简单模型，而通用的*变换器*如GPT-4则以捕捉数据中的序列依赖性和关系为特征。这些偏差塑造了模型的行为及其对不同任务的适用性。它们还使得将学习成果从一个情境转移到另一个情境变得困难。
+例如，*决策树*关注于层级结构和简单的决策边界。*支持向量机*旨在找到类别之间的宽边距。*卷积神经网络*强调图像中的平移不变性和层级特征学习。*递归神经网络*偏向于序列模式，*贝叶斯网络*建模概率关系，*正则化线性模型*通过惩罚大系数来偏好简单模型，而通用的*变换器*如 GPT-4 则以捕捉数据中的序列依赖性和关系为特征。这些偏差塑造了模型的行为及其对不同任务的适用性。它们还使得将学习成果从一个情境转移到另一个情境变得困难。
 
 # 我们仍需的
 
@@ -230,7 +230,7 @@ MYCIN是20世纪70年代在斯坦福开发的早期专家系统，旨在帮助�
 
 ## **那么，什么是归纳推理？**
 
-归纳推理并不是一个单一的构造。我个人遇到过大约10种不同类型，具体取决于它们所涉及的科学领域。即使是引入*归纳推理*概念的哲学家查尔斯·皮尔斯，也并没有以一致的方式提及它。
+归纳推理并不是一个单一的构造。我个人遇到过大约 10 种不同类型，具体取决于它们所涉及的科学领域。即使是引入*归纳推理*概念的哲学家查尔斯·皮尔斯，也并没有以一致的方式提及它。
 
 然而，有三种主要类型可以描述归纳推理所服务的基本功能。确切的功能及其形成过程过于复杂，无法在此文中详细讨论。所以，以下是简要说明。
 
@@ -240,9 +240,9 @@ MYCIN是20世纪70年代在斯坦福开发的早期专家系统，旨在帮助�
 
 最后，我认为我们有了最有趣的一种推断——*操控性推断*。我们在唯一知道**结果**（期望的或其他）部分的情况下使用它。此外，这个结果“存在”的背景由多个隐藏的相互依赖关系定义。因此，不能立刻开始寻找/生成合适的**案例-规则**配对。相反，我们需要更好地理解结果以及它与环境的关系，以便减少不确定性。
 
-这就是所谓的*思维装置/认识中介*发挥作用的地方。这可以采取例如基本草图、原型或3D模型的形式，用于增强我们对问题的理解。通过在目标环境中操控这个*中介*，我们能更深入地理解背景。因此，我们能够更好地探索**规则**和**案例**的潜在组合。此外，它还使我们能够建立关联，帮助将知识从一个领域转移到另一个领域。这种思维的简化版本通常在立体几何中应用。
+这就是所谓的*思维装置/认识中介*发挥作用的地方。这可以采取例如基本草图、原型或 3D 模型的形式，用于增强我们对问题的理解。通过在目标环境中操控这个*中介*，我们能更深入地理解背景。因此，我们能够更好地探索**规则**和**案例**的潜在组合。此外，它还使我们能够建立关联，帮助将知识从一个领域转移到另一个领域。这种思维的简化版本通常在立体几何中应用。
 
-正如我所说，仍需要做大量工作来解释这些推断类型之间的关系及其与其他推理方法的相关性。然而，这项工作变得越来越关键，因为它有可能为不同领域之间的洞察力转移提供宝贵的见解。特别是在我们看到该领域对推理的新兴趣的背景下——无论是通过 IBE、“通过模拟和例子进行推理”，还是系统1和系统2思维。
+正如我所说，仍需要做大量工作来解释这些推断类型之间的关系及其与其他推理方法的相关性。然而，这项工作变得越来越关键，因为它有可能为不同领域之间的洞察力转移提供宝贵的见解。特别是在我们看到该领域对推理的新兴趣的背景下——无论是通过 IBE、“通过模拟和例子进行推理”，还是系统 1 和系统 2 思维。
 
 在所有这些情况中，理解如何区分机器可以进行的不同类型的推理似乎尤为重要。因为，确实，机器是可以进行推理的。它们只是无法进行全方位的推理。
 

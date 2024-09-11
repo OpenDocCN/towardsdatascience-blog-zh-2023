@@ -1,20 +1,20 @@
-# 变压器在预测Twitter账户身份中的强大作用
+# 变压器在预测 Twitter 账户身份中的强大作用
 
-> 原文：[https://towardsdatascience.com/twitter-account-identity-prediction-with-large-language-models-c3ffef114d34?source=collection_archive---------18-----------------------#2023-03-07](https://towardsdatascience.com/twitter-account-identity-prediction-with-large-language-models-c3ffef114d34?source=collection_archive---------18-----------------------#2023-03-07)
+> 原文：[`towardsdatascience.com/twitter-account-identity-prediction-with-large-language-models-c3ffef114d34?source=collection_archive---------18-----------------------#2023-03-07`](https://towardsdatascience.com/twitter-account-identity-prediction-with-large-language-models-c3ffef114d34?source=collection_archive---------18-----------------------#2023-03-07)
 
 ## 利用大型语言模型进行高级自然语言处理
 
 ## 如何使用最先进的模型进行准确的文本分类
 
-[](https://johnadeojo.medium.com/?source=post_page-----c3ffef114d34--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----c3ffef114d34--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3ffef114d34--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c3ffef114d34--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----c3ffef114d34--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----c3ffef114d34--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----c3ffef114d34--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3ffef114d34--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3ffef114d34--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----c3ffef114d34--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwitter-account-identity-prediction-with-large-language-models-c3ffef114d34&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----c3ffef114d34---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3ffef114d34--------------------------------) ·9分钟阅读·2023年3月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc3ffef114d34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwitter-account-identity-prediction-with-large-language-models-c3ffef114d34&user=John+Adeojo&userId=f933e1637e40&source=-----c3ffef114d34---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwitter-account-identity-prediction-with-large-language-models-c3ffef114d34&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----c3ffef114d34---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3ffef114d34--------------------------------) ·9 分钟阅读·2023 年 3 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc3ffef114d34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwitter-account-identity-prediction-with-large-language-models-c3ffef114d34&user=John+Adeojo&userId=f933e1637e40&source=-----c3ffef114d34---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc3ffef114d34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwitter-account-identity-prediction-with-large-language-models-c3ffef114d34&source=-----c3ffef114d34---------------------bookmark_footer-----------)![](../Images/38cebe369eb5ad1ff89e4d19b53744de.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc3ffef114d34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwitter-account-identity-prediction-with-large-language-models-c3ffef114d34&source=-----c3ffef114d34---------------------bookmark_footer-----------)![](img/38cebe369eb5ad1ff89e4d19b53744de.png)
 
 图片由[Jonathan Cooper](https://unsplash.com/ko/@theshuttervision?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

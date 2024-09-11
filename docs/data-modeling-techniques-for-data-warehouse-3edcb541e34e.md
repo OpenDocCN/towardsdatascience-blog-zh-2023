@@ -1,22 +1,22 @@
 # 数据建模技术用于数据仓库
 
-> 原文：[https://towardsdatascience.com/data-modeling-techniques-for-data-warehouse-3edcb541e34e?source=collection_archive---------0-----------------------#2023-06-19](https://towardsdatascience.com/data-modeling-techniques-for-data-warehouse-3edcb541e34e?source=collection_archive---------0-----------------------#2023-06-19)
+> 原文：[`towardsdatascience.com/data-modeling-techniques-for-data-warehouse-3edcb541e34e?source=collection_archive---------0-----------------------#2023-06-19`](https://towardsdatascience.com/data-modeling-techniques-for-data-warehouse-3edcb541e34e?source=collection_archive---------0-----------------------#2023-06-19)
 
-[](https://medium.com/@mariusz_kujawski?source=post_page-----3edcb541e34e--------------------------------)[![Mariusz Kujawski](../Images/72a2dafb84cabfd54b0ef54a6689a001.png)](https://medium.com/@mariusz_kujawski?source=post_page-----3edcb541e34e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3edcb541e34e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3edcb541e34e--------------------------------) [Mariusz Kujawski](https://medium.com/@mariusz_kujawski?source=post_page-----3edcb541e34e--------------------------------)
+[](https://medium.com/@mariusz_kujawski?source=post_page-----3edcb541e34e--------------------------------)![Mariusz Kujawski](https://medium.com/@mariusz_kujawski?source=post_page-----3edcb541e34e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3edcb541e34e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3edcb541e34e--------------------------------) [Mariusz Kujawski](https://medium.com/@mariusz_kujawski?source=post_page-----3edcb541e34e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa60a4246b015&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-techniques-for-data-warehouse-3edcb541e34e&user=Mariusz+Kujawski&userId=a60a4246b015&source=post_page-a60a4246b015----3edcb541e34e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3edcb541e34e--------------------------------) ·11分钟阅读·2023年6月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3edcb541e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-techniques-for-data-warehouse-3edcb541e34e&user=Mariusz+Kujawski&userId=a60a4246b015&source=-----3edcb541e34e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa60a4246b015&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-techniques-for-data-warehouse-3edcb541e34e&user=Mariusz+Kujawski&userId=a60a4246b015&source=post_page-a60a4246b015----3edcb541e34e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3edcb541e34e--------------------------------) ·11 分钟阅读·2023 年 6 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3edcb541e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-techniques-for-data-warehouse-3edcb541e34e&user=Mariusz+Kujawski&userId=a60a4246b015&source=-----3edcb541e34e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3edcb541e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-techniques-for-data-warehouse-3edcb541e34e&source=-----3edcb541e34e---------------------bookmark_footer-----------)![](../Images/bcd0e966ffefd7625453d48e696cd863.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3edcb541e34e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-modeling-techniques-for-data-warehouse-3edcb541e34e&source=-----3edcb541e34e---------------------bookmark_footer-----------)![](img/bcd0e966ffefd7625453d48e696cd863.png)
 
 图片来源：[Zdeněk Macháček](https://unsplash.com/@zmachacek?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 在 [Unsplash](https://unsplash.com/photos/silver-and-diamond-studded-cross-pendant-rGzUMs-QsCM?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 
 数据建模是创建数据及其在组织或系统中关系的概念表示的过程。维度建模是一种先进的技术，旨在以任何用户都能直观理解的方式呈现数据。它还允许高性能的访问、灵活性和可扩展性，以适应业务需求的变化。
 
-在这篇文章中，我将深入概述数据建模，特别关注Kimball的方法。此外，我还将介绍其他用于以用户友好和直观的方式呈现数据的技术。一个特别有趣的技术是将数据存储在一个宽表中，尽管这种方法可能不适用于所有查询引擎。我将介绍在数据仓库、数据湖、数据湖屋等中使用的技术。然而，选择适合特定用例和查询引擎的方法论非常重要。
+在这篇文章中，我将深入概述数据建模，特别关注 Kimball 的方法。此外，我还将介绍其他用于以用户友好和直观的方式呈现数据的技术。一个特别有趣的技术是将数据存储在一个宽表中，尽管这种方法可能不适用于所有查询引擎。我将介绍在数据仓库、数据湖、数据湖屋等中使用的技术。然而，选择适合特定用例和查询引擎的方法论非常重要。
 
 # 什么是维度建模？
 
@@ -40,11 +40,11 @@
 
 # 数据和维度建模方法
 
-虽然我打算主要关注Kimball的方法，但在深入研究之前，让我们简要了解几种其他流行的技术。
+虽然我打算主要关注 Kimball 的方法，但在深入研究之前，让我们简要了解几种其他流行的技术。
 
-# Inmon方法
+# Inmon 方法
 
-Inmon建议在数据仓库中使用规范化的数据模型。这种方法支持数据集市的创建。这些数据集市是数据仓库的较小、专门的子集，服务于特定的业务领域或用户组。它们旨在为特定的业务功能或部门提供更量身定制和高效的数据访问体验。
+Inmon 建议在数据仓库中使用规范化的数据模型。这种方法支持数据集市的创建。这些数据集市是数据仓库的较小、专门的子集，服务于特定的业务领域或用户组。它们旨在为特定的业务功能或部门提供更量身定制和高效的数据访问体验。
 
 # 数据保险库
 
@@ -52,7 +52,7 @@ Inmon建议在数据仓库中使用规范化的数据模型。这种方法支持
 
 **中心**
 
-中心是所有独特实体的集合。例如，一个账户中心将包括账户、account_ID、load_date和src_name。这使我们能够追踪记录最初的来源，并确定是否需要从业务键生成替代键。
+中心是所有独特实体的集合。例如，一个账户中心将包括账户、account_ID、load_date 和 src_name。这使我们能够追踪记录最初的来源，并确定是否需要从业务键生成替代键。
 
 **链接**
 
@@ -68,11 +68,11 @@ Data Vault 的设计允许灵活且可扩展的数据仓库架构。它促进数
 
 OBT 将数据存储在一个宽表中。使用一个大表或非规范化表可以简化查询、提高性能，并简化数据分析。这消除了复杂连接的需求，简化了数据集成，在某些场景中可能有益。然而，它可能导致冗余、数据完整性挑战和维护复杂性增加。在选择单个大表之前，请考虑具体要求。
 
-![](../Images/2b36ef7f7f59f4d90d6c5509f236dba9.png)
+![](img/2b36ef7f7f59f4d90d6c5509f236dba9.png)
 
 *作者提供的图片*
 
-![](../Images/fd80be2f450e6d9bb262696929318624.png)
+![](img/fd80be2f450e6d9bb262696929318624.png)
 
 *作者提供的图片*
 
@@ -102,7 +102,7 @@ transactions
 
 对于一个宽表，我们不需要连接多个表。我们可以使用一个表来聚合数据和进行分析。这种方法提高了 BigQuery 的性能。
 
-![](../Images/38ee5df5fb0b2e9441c4bac0d842af0a.png)
+![](img/38ee5df5fb0b2e9441c4bac0d842af0a.png)
 
 *作者提供的图片*
 
@@ -124,13 +124,13 @@ Kimball 方法论强调创建一个称为数据仓库的集中数据存储库。
 
 在我们的数据仓库中，数据源通常存在于实体模型中，这些模型被规范化为多个表，包含应用程序的业务逻辑。在这种情况下，理解表之间的依赖关系和基础业务逻辑可能很具挑战性。创建分析报告或生成统计数据通常需要连接多个表。
 
-![](../Images/1a947ad8d14ba9efcdc4eddd888dc990.png)
+![](img/1a947ad8d14ba9efcdc4eddd888dc990.png)
 
 *作者提供的图片*
 
 要创建维度模型，数据需要经过提取、转换和加载（ETL）过程，将其反规范化为星型模式或雪花模式。这个过程的关键活动包括识别事实表和维度表，并定义粒度。粒度决定了事实表中存储的详细程度。例如，交易可以按小时或按天汇总。
 
-![](../Images/03b560d9831197a64117c53619483fdb.png)
+![](img/03b560d9831197a64117c53619483fdb.png)
 
 *图片由作者提供*
 
@@ -150,7 +150,7 @@ Kimball 方法论强调创建一个称为数据仓库的集中数据存储库。
 
 事实表通常代表一个业务事件或交易，并包括与该事件相关的指标或度量。这些指标可以包含各种数据点，如销售金额、销售数量、客户互动、网站点击或任何其他提供业务绩效见解的可衡量数据。事实表还包括建立与维度表关系的外键列。
 
-![](../Images/5ae5b71eda11bbbfcdf349d3e6bf204e.png)
+![](img/5ae5b71eda11bbbfcdf349d3e6bf204e.png)
 
 *图片由作者提供*
 
@@ -174,7 +174,7 @@ Kimball 方法论强调创建一个称为数据仓库的集中数据存储库。
 
 创建[代理键](https://docs.getdbt.com/terms/surrogate-key)有几种方法：
 
-+   - 哈希：可以使用类似MD5、SHA256的哈希函数生成代理键（例如 md5(key_1, key_2, key_3)）。
++   - 哈希：可以使用类似 MD5、SHA256 的哈希函数生成代理键（例如 md5(key_1, key_2, key_3)）。
 
 +   - 增量生成：通过使用总是递增的数字（例如 row_number()、identity）生成的替代键
 
@@ -188,13 +188,13 @@ Kimball 方法论强调创建一个称为数据仓库的集中数据存储库。
 
 a) 例如，父子层级可以用来表示员工与其经理之间的关系。
 
-![](../Images/7400319e972334b96a44a27bbf50af4c.png)
+![](img/7400319e972334b96a44a27bbf50af4c.png)
 
 *作者提供的图像*
 
 属性之间的层级关系。例如，一个时间维度可能具有如年份、季度、月份和日期等属性，形成一个层级结构。
 
-![](../Images/b3514eac53f64cdef2228faa0da08fa1.png)
+![](img/b3514eac53f64cdef2228faa0da08fa1.png)
 
 *作者提供的图像*
 
@@ -234,13 +234,13 @@ a) 例如，父子层级可以用来表示员工与其经理之间的关系。
 
 +   **SCD 类型 2**：在这种类型中，新记录被导入，并为更改的属性创建新记录和新值。
 
-例如，当John Smith搬到另一个城市时，我们使用SCD类型2来保留与伦敦相关的事务信息。在这种情况下，我们创建一个新记录并更新之前的记录。结果是，历史报告将保留他在伦敦进行购买的信息。
+例如，当 John Smith 搬到另一个城市时，我们使用 SCD 类型 2 来保留与伦敦相关的事务信息。在这种情况下，我们创建一个新记录并更新之前的记录。结果是，历史报告将保留他在伦敦进行购买的信息。
 
-![](../Images/c306976ff4f127eca061b72ecd2e909b.png)
+![](img/c306976ff4f127eca061b72ecd2e909b.png)
 
 *图片由作者提供*
 
-![](../Images/b4cdc58db4d5b1c5cdd84a8c9438c7c9.png)
+![](img/b4cdc58db4d5b1c5cdd84a8c9438c7c9.png)
 
 *图片由作者提供*
 
@@ -264,15 +264,15 @@ WHEN NOT MATCHED THEN
     VALUES (Client_id, name, Surname, City, ValidFrom, ValidTo,1);
 ```
 
-这是SCD 3的样子，当我们将新值和旧值保存在不同列时。
+这是 SCD 3 的样子，当我们将新值和旧值保存在不同列时。
 
-![](../Images/d2a51a21a63e1326f5dc2f9ecb214dc4.png)
+![](img/d2a51a21a63e1326f5dc2f9ecb214dc4.png)
 
 ## 星型模式与雪花模式
 
 设计数据仓库时最流行的方法是使用星型模式或雪花模式。星型模式包含与事实表相关的事实表和维度表。在星型模式中，事实表和维度表直接与事实表相关。另一方面，雪花模式由一个事实表、与事实表相关的维度表以及与这些维度表相关的附加维度组成。
 
-![](../Images/d41c14bae29ccbc8c586f723e2194ea7.png)
+![](img/d41c14bae29ccbc8c586f723e2194ea7.png)
 
 *图片由作者提供*
 
@@ -290,7 +290,7 @@ WHEN NOT MATCHED THEN
 
 加载数据的最常见策略是首先填充维度表，然后填充事实表。这里的顺序很重要，因为我们需要在事实表中使用维度表的主键来创建表之间的关系。有一个例外情况。当我们需要在维度表之前加载事实表时，这种技术被称为“迟到维度”（late arriving dimensions）。
 
-在这种技术中，我们可以在维度表中创建代理键，并在填充事实表后通过ETL过程更新它。
+在这种技术中，我们可以在维度表中创建代理键，并在填充事实表后通过 ETL 过程更新它。
 
 **总结**
 

@@ -1,14 +1,14 @@
 # 你真的需要一个特征存储吗？
 
-> 原文：[https://towardsdatascience.com/do-you-really-need-a-feature-store-f71cf9586158?source=collection_archive---------7-----------------------#2023-03-17](https://towardsdatascience.com/do-you-really-need-a-feature-store-f71cf9586158?source=collection_archive---------7-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/do-you-really-need-a-feature-store-f71cf9586158?source=collection_archive---------7-----------------------#2023-03-17`](https://towardsdatascience.com/do-you-really-need-a-feature-store-f71cf9586158?source=collection_archive---------7-----------------------#2023-03-17)
 
 ## 特征存储——原始数据和机器学习模型之间的接口
 
-[](https://medium.com/@weiyunna91?source=post_page-----f71cf9586158--------------------------------)[![YUNNA WEI](../Images/ffd0dd5c697dd2b4640ade49274d2bf9.png)](https://medium.com/@weiyunna91?source=post_page-----f71cf9586158--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f71cf9586158--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f71cf9586158--------------------------------) [YUNNA WEI](https://medium.com/@weiyunna91?source=post_page-----f71cf9586158--------------------------------)
+[](https://medium.com/@weiyunna91?source=post_page-----f71cf9586158--------------------------------)![YUNNA WEI](https://medium.com/@weiyunna91?source=post_page-----f71cf9586158--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f71cf9586158--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f71cf9586158--------------------------------) [YUNNA WEI](https://medium.com/@weiyunna91?source=post_page-----f71cf9586158--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4b47aa84fc4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-you-really-need-a-feature-store-f71cf9586158&user=YUNNA+WEI&userId=4b47aa84fc4&source=post_page-4b47aa84fc4----f71cf9586158---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f71cf9586158--------------------------------) · 8分钟阅读 · 2023年3月17日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff71cf9586158&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-you-really-need-a-feature-store-f71cf9586158&user=YUNNA+WEI&userId=4b47aa84fc4&source=-----f71cf9586158---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4b47aa84fc4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-you-really-need-a-feature-store-f71cf9586158&user=YUNNA+WEI&userId=4b47aa84fc4&source=post_page-4b47aa84fc4----f71cf9586158---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f71cf9586158--------------------------------) · 8 分钟阅读 · 2023 年 3 月 17 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff71cf9586158&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdo-you-really-need-a-feature-store-f71cf9586158&user=YUNNA+WEI&userId=4b47aa84fc4&source=-----f71cf9586158---------------------clap_footer-----------)
 
 --
 

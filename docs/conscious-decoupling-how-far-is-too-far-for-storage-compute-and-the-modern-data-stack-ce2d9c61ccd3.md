@@ -1,18 +1,18 @@
 # 意识解耦：存储、计算和现代数据架构的“远”有多远？
 
-> 原文：[https://towardsdatascience.com/conscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3?source=collection_archive---------13-----------------------#2023-07-24](https://towardsdatascience.com/conscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3?source=collection_archive---------13-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/conscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3?source=collection_archive---------13-----------------------#2023-07-24`](https://towardsdatascience.com/conscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3?source=collection_archive---------13-----------------------#2023-07-24)
 
 ## 虽然没有绝对正确的答案，但大多数组织的数据平台可能会有一个最佳的“甜蜜点”。继续阅读，看看这个“甜蜜点”可能在哪里。
 
-[](https://medium.com/@shane.murray5?source=post_page-----ce2d9c61ccd3--------------------------------)[![shane murray](../Images/8bb1f3acf15dc26273097e12d03dd616.png)](https://medium.com/@shane.murray5?source=post_page-----ce2d9c61ccd3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce2d9c61ccd3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce2d9c61ccd3--------------------------------) [shane murray](https://medium.com/@shane.murray5?source=post_page-----ce2d9c61ccd3--------------------------------)
+[](https://medium.com/@shane.murray5?source=post_page-----ce2d9c61ccd3--------------------------------)![shane murray](https://medium.com/@shane.murray5?source=post_page-----ce2d9c61ccd3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce2d9c61ccd3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce2d9c61ccd3--------------------------------) [shane murray](https://medium.com/@shane.murray5?source=post_page-----ce2d9c61ccd3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8aa0d9ae3ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3&user=shane+murray&userId=8aa0d9ae3ebd&source=post_page-8aa0d9ae3ebd----ce2d9c61ccd3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce2d9c61ccd3--------------------------------) ·9 分钟阅读·2023年7月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce2d9c61ccd3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3&user=shane+murray&userId=8aa0d9ae3ebd&source=-----ce2d9c61ccd3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8aa0d9ae3ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3&user=shane+murray&userId=8aa0d9ae3ebd&source=post_page-8aa0d9ae3ebd----ce2d9c61ccd3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce2d9c61ccd3--------------------------------) ·9 分钟阅读·2023 年 7 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce2d9c61ccd3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3&user=shane+murray&userId=8aa0d9ae3ebd&source=-----ce2d9c61ccd3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce2d9c61ccd3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3&source=-----ce2d9c61ccd3---------------------bookmark_footer-----------)![](../Images/f3e44fcbb93ea051c43c15fd0e8178d3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce2d9c61ccd3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconscious-decoupling-how-far-is-too-far-for-storage-compute-and-the-modern-data-stack-ce2d9c61ccd3&source=-----ce2d9c61ccd3---------------------bookmark_footer-----------)![](img/f3e44fcbb93ea051c43c15fd0e8178d3.png)
 
 图片由 [Kelly Sikkema](https://unsplash.com/@kellysikkema?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/breakup?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -38,7 +38,7 @@
 
 # 存储与计算数据平台光谱
 
-![](../Images/2f4f659e54f1c1bb6e80bc05dd5db5ed.png)
+![](img/2f4f659e54f1c1bb6e80bc05dd5db5ed.png)
 
 图片由作者提供。
 
@@ -60,15 +60,15 @@ Databricks 在专注于其 Spark 处理框架时取得了惊人的增长，但�
 
 这就是为什么看到许多最新的前沿数据工程技术开始在供应商层面上分离存储和计算会很有趣。例如，Tabular 将自己描述为一个 “[无头数据仓库](https://www.theregister.com/2023/03/08/tabular_launches_data_warehouse/)” 或者 “你在数据仓库中需要的一切，除了计算”。
 
-更进一步，一些组织正在迁移到数据湖中的Apache Iceberg表，进行“自我管理”后台基础设施，并使用像Trino这样的独立查询引擎。这通常是由于客户面对的用例需要高性能且具有成本效益的互动查询。
+更进一步，一些组织正在迁移到数据湖中的 Apache Iceberg 表，进行“自我管理”后台基础设施，并使用像 Trino 这样的独立查询引擎。这通常是由于客户面对的用例需要高性能且具有成本效益的互动查询。
 
-DuckDB结合了存储和计算，但牺牲了现代数据堆栈几乎无限的计算能力，以追求开发人员的简单性和降低成本。
+DuckDB 结合了存储和计算，但牺牲了现代数据堆栈几乎无限的计算能力，以追求开发人员的简单性和降低成本。
 
 所以问题仍然存在，这些创新是否有可能取代现有的云原生数据平台？
 
-再次强调，这个答案将取决于你是谁。DuckDB是一个非常受欢迎的工具，许多数据分析师喜欢它，但它可能不会成为你构建数据平台的基石。最终，我们正在看到，并且我相信将继续看到这样的分布：
+再次强调，这个答案将取决于你是谁。DuckDB 是一个非常受欢迎的工具，许多数据分析师喜欢它，但它可能不会成为你构建数据平台的基石。最终，我们正在看到，并且我相信将继续看到这样的分布：
 
-![](../Images/0a567937af4b8a8cd67a1bcae68839b8.png)
+![](img/0a567937af4b8a8cd67a1bcae68839b8.png)
 
 图片由作者提供。
 
@@ -76,15 +76,15 @@ DuckDB结合了存储和计算，但牺牲了现代数据堆栈几乎无限的�
 
 # 整合的程度和目的
 
-B2B供应商恭敬地提到“单一视图”这个概念。将多个服务纳入一个统一的框架是否有价值？这取决于每项服务的质量及其如何符合你的需求。
+B2B 供应商恭敬地提到“单一视图”这个概念。将多个服务纳入一个统一的框架是否有价值？这取决于每项服务的质量及其如何符合你的需求。
 
-单一视图的*真正*价值在于将本来会被孤立的信息统一成一个完整的故事，或者将分开的动作整合成一个单一的工作流程。让我们以Microsoft 365为这个概念的例子。
+单一视图的*真正*价值在于将本来会被孤立的信息统一成一个完整的故事，或者将分开的动作整合成一个单一的工作流程。让我们以 Microsoft 365 为这个概念的例子。
 
-将视频和电子邮件整合到他们的Teams协作应用中非常有价值，因为这些是会议安排和视频会议过程中的核心方面。将Sway纳入他们的应用套件是否同样重要？这要回到你对互动报告的需求上。
+将视频和电子邮件整合到他们的 Teams 协作应用中非常有价值，因为这些是会议安排和视频会议过程中的核心方面。将 Sway 纳入他们的应用套件是否同样重要？这要回到你对互动报告的需求上。
 
-回到数据宇宙，计算和存储对于这个单一的故事（数据操作的谁、什么、何时、哪里、为什么、如何）以及诸如成本、质量和访问管理等关键工作流程至关重要。因此，这些平台将拥有最强大的合作伙伴生态系统和更无缝的集成。这可能是你的一个关键标准，除非你是那种使用Windows和Fire手机而不是iPhone和Android的人。
+回到数据宇宙，计算和存储对于这个单一的故事（数据操作的谁、什么、何时、哪里、为什么、如何）以及诸如成本、质量和访问管理等关键工作流程至关重要。因此，这些平台将拥有最强大的合作伙伴生态系统和更无缝的集成。这可能是你的一个关键标准，除非你是那种使用 Windows 和 Fire 手机而不是 iPhone 和 Android 的人。
 
-Choozle的首席执行官Adam Woods，[去年向我们的团队介绍了](https://www.montecarlodata.com/blog-delivering-on-data-quality-how-choozle-reduced-data-downtime-by-88-with-monte-carlo/)他对拥有一个强大而紧密集成的合作伙伴生态系统的重视。
+Choozle 的首席执行官 Adam Woods，[去年向我们的团队介绍了](https://www.montecarlodata.com/blog-delivering-on-data-quality-how-choozle-reduced-data-downtime-by-88-with-monte-carlo/)他对拥有一个强大而紧密集成的合作伙伴生态系统的重视。
 
 “我喜欢这一点……我的数据堆栈始终保持最新，我不需要应用补丁。我们能够将开发人员和数据库分析师本来会花在更新和基础设施上的时间重新投入到构建卓越的客户体验中，”他说。
 
@@ -104,21 +104,21 @@ Choozle的首席执行官Adam Woods，[去年向我们的团队介绍了](https:
 
 根据我的经验，许多团队过于关注平台性能。我们的技术背景会立即开始将平台与汽车进行比较：“这个工作负载的马力是多少？那个工作负载呢？”
 
-别误会，优化的数据平台可以转化为每年数百万的节省。这是重要的。但是，如果你要聘请额外的工程师来管理S3配置，或者每季度都需要启动一个为期数月的项目来将业务的新方面整合到你的数据平台上，那也是一个高昂的成本。
+别误会，优化的数据平台可以转化为每年数百万的节省。这是重要的。但是，如果你要聘请额外的工程师来管理 S3 配置，或者每季度都需要启动一个为期数月的项目来将业务的新方面整合到你的数据平台上，那也是一个高昂的成本。
 
 你会看到同样的决策范式在开源解决方案中发挥作用。前期成本微乎其微，但维护基础设施的时间成本可能很高。
 
 解决方案成本和工程师薪资成本是不一样的，这种错误的等同关系可能会在未来造成问题。原因有两个：
 
-+   假设你的使用情况保持不变（这是一个重要的前提），你的解决方案成本通常保持不变，而效率会提高。这是因为SaaS供应商不断推出新功能。另一方面，手动实施的效率会随着时间的推移而下降，因为关键成员离开，新团队成员需要培训。
++   假设你的使用情况保持不变（这是一个重要的前提），你的解决方案成本通常保持不变，而效率会提高。这是因为 SaaS 供应商不断推出新功能。另一方面，手动实施的效率会随着时间的推移而下降，因为关键成员离开，新团队成员需要培训。
 
 +   当你花费大部分时间来维护基础设施时，你的数据团队开始失去方向。目标会从最大化商业价值逐渐转向在峰值性能下维护基础设施。更多的会议变成了讨论基础设施。专业的基础设施技能变得极其重要，这些专家在组织中变得更加突出。组织文化也很重要，它通常由团队解决的主要任务和问题所塑造。
 
-这一点是Michael Sheldon，Swimply的数据负责人，特别强调的。
+这一点是 Michael Sheldon，Swimply 的数据负责人，特别强调的。
 
-> “因为作为一个数据团队，我们有这个任务来支持整个公司，我们需要一个可以解决两个核心问题的数据堆栈，”Michael说。 “一是将公司各个不同部分的数据集中在一个稳定的地方，大家都可以使用并作为可信来源。**二是让我们有足够的时间真正专注于洞察，而不仅仅是数据基础设施本身**。”
+> “因为作为一个数据团队，我们有这个任务来支持整个公司，我们需要一个可以解决两个核心问题的数据堆栈，”Michael 说。 “一是将公司各个不同部分的数据集中在一个稳定的地方，大家都可以使用并作为可信来源。**二是让我们有足够的时间真正专注于洞察，而不仅仅是数据基础设施本身**。”
 
-![](../Images/64de90fb7f97c975678b64be76fe482e.png)
+![](img/64de90fb7f97c975678b64be76fe482e.png)
 
 他们是在谈论基础设施还是业务价值？照片来自[Desola Lanre-Ologun](https://unsplash.com/@disruptxn?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)于[Unsplash](https://unsplash.com/s/photos/team-collaborating?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -130,7 +130,7 @@ Choozle的首席执行官Adam Woods，[去年向我们的团队介绍了](https:
 
 +   尽管易用性和性能是必须平衡的相关变量，但大多数数据领导者会倾向于易用性，因为维护和文化成本相对隐藏。你的竞争优势更常见于丰富和应用第一方数据，而不是维护复杂的基础设施。
 
-# 为MDS辩护
+# 为 MDS 辩护
 
 我知道抨击现代数据堆栈很流行（[你可能不需要它来完成任务](https://hightouch.com/blog/you-dont-need-the-mds)），但尽管有缺陷，它仍然是大多数数据团队的最佳选择。它是快速生成价值和为长期投资提供未来保障的理想结合。
 
@@ -138,4 +138,4 @@ Choozle的首席执行官Adam Woods，[去年向我们的团队介绍了](https:
 
 然而，虽然计算和存储需要分别操作和扩展，但将这些服务及其相应的元数据集中在同一平台内是过于强大且具有无法忽视的优势。
 
-[关注我](/@shane.murray5) 在Medium上获取更多关于数据领导力、数据科学应用和相关主题的故事。[订阅](/subscribe/@shane.murray5)以将我的故事直接送到你的邮箱。
+关注我 在 Medium 上获取更多关于数据领导力、数据科学应用和相关主题的故事。订阅以将我的故事直接送到你的邮箱。

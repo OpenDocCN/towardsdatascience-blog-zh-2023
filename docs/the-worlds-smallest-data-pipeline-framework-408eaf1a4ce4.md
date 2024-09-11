@@ -1,18 +1,18 @@
 # 世界上最小的数据管道框架
 
-> 原文：[https://towardsdatascience.com/the-worlds-smallest-data-pipeline-framework-408eaf1a4ce4?source=collection_archive---------0-----------------------#2023-11-16](https://towardsdatascience.com/the-worlds-smallest-data-pipeline-framework-408eaf1a4ce4?source=collection_archive---------0-----------------------#2023-11-16)
+> 原文：[`towardsdatascience.com/the-worlds-smallest-data-pipeline-framework-408eaf1a4ce4?source=collection_archive---------0-----------------------#2023-11-16`](https://towardsdatascience.com/the-worlds-smallest-data-pipeline-framework-408eaf1a4ce4?source=collection_archive---------0-----------------------#2023-11-16)
 
 ## 一个简单快速的数据管道基础，具备复杂的功能。
 
-[](https://medium.com/@doug.blank?source=post_page-----408eaf1a4ce4--------------------------------)[![Douglas Blank, PhD](../Images/b2fa86b9fe63a8bcb4f218ef5a6791e9.png)](https://medium.com/@doug.blank?source=post_page-----408eaf1a4ce4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----408eaf1a4ce4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----408eaf1a4ce4--------------------------------) [Douglas Blank, PhD](https://medium.com/@doug.blank?source=post_page-----408eaf1a4ce4--------------------------------)
+[](https://medium.com/@doug.blank?source=post_page-----408eaf1a4ce4--------------------------------)![Douglas Blank, PhD](https://medium.com/@doug.blank?source=post_page-----408eaf1a4ce4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----408eaf1a4ce4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----408eaf1a4ce4--------------------------------) [Douglas Blank, PhD](https://medium.com/@doug.blank?source=post_page-----408eaf1a4ce4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F66e2bac7e7d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-worlds-smallest-data-pipeline-framework-408eaf1a4ce4&user=Douglas+Blank%2C+PhD&userId=66e2bac7e7d8&source=post_page-66e2bac7e7d8----408eaf1a4ce4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----408eaf1a4ce4--------------------------------) · 7分钟阅读 · 2023年11月16日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F66e2bac7e7d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-worlds-smallest-data-pipeline-framework-408eaf1a4ce4&user=Douglas+Blank%2C+PhD&userId=66e2bac7e7d8&source=post_page-66e2bac7e7d8----408eaf1a4ce4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----408eaf1a4ce4--------------------------------) · 7 分钟阅读 · 2023 年 11 月 16 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F408eaf1a4ce4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-worlds-smallest-data-pipeline-framework-408eaf1a4ce4&source=-----408eaf1a4ce4---------------------bookmark_footer-----------)![](../Images/99ca52ffe5163ed83984a01c7a33d07c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F408eaf1a4ce4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-worlds-smallest-data-pipeline-framework-408eaf1a4ce4&source=-----408eaf1a4ce4---------------------bookmark_footer-----------)![](img/99ca52ffe5163ed83984a01c7a33d07c.png)
 
 图片来源：[Ana Lucia Cottone](https://unsplash.com/@fromanalucia?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 有些公司专注于数据管道，这些管道可能很复杂且非常精密。但是为了这次探索，让我们考虑将一个文本文件转化为一组单词或“标记”，并丢弃那些对我们没有用的文本。让我们从简单开始，逐步深入。
 
-首先，让我们定义一系列步骤，以对文本中的单词执行整理函数。我们将使用 Python 的 **text.translate()** 函数来完成一些工作。考虑这4个函数：
+首先，让我们定义一系列步骤，以对文本中的单词执行整理函数。我们将使用 Python 的 **text.translate()** 函数来完成一些工作。考虑这 4 个函数：
 
 ```py
 import string
@@ -130,7 +130,7 @@ def my_pipeline(*steps):
 ['testing', '', 'hello']
 ```
 
-它有效——我们得到了之前得到的完全一样的结果！**step4**过滤器函数怎么样？让我们暂时放下这个问题，试试这个系统在“真实”数据上的表现。好吧，这将是真实的假数据。对于这些实验，我们将创建10,000个文档，每个文档包含10个段落。我们将使用Python包**essential_generators**中的**DocumentGenerator()**。
+它有效——我们得到了之前得到的完全一样的结果！**step4**过滤器函数怎么样？让我们暂时放下这个问题，试试这个系统在“真实”数据上的表现。好吧，这将是真实的假数据。对于这些实验，我们将创建 10,000 个文档，每个文档包含 10 个段落。我们将使用 Python 包**essential_generators**中的**DocumentGenerator()**。
 
 ```py
 from essential_generators import DocumentGenerator
@@ -158,7 +158,7 @@ def generate_documents(
 generate_documents()
 ```
 
-这将需要大约30秒来生成所有数据。要继续我们的简单代码，我们需要引入一个步骤：
+这将需要大约 30 秒来生成所有数据。要继续我们的简单代码，我们需要引入一个步骤：
 
 ```py
 def step0(filename):
@@ -190,7 +190,7 @@ list(p(["documents/doc_00001.txt"]))
 
 1.  可视化管道的能力
 
-对于这三个附加功能，我会推荐你参考我基于上述想法开发的**picopipe**项目。你可以通过pip安装它：
+对于这三个附加功能，我会推荐你参考我基于上述想法开发的**picopipe**项目。你可以通过 pip 安装它：
 
 ```py
 pip install picopipe
@@ -221,9 +221,9 @@ dataset = glob.glob("documents/doc_*.txt")
 results = list(p(dataset))
 ```
 
-在我的笔记本电脑上处理所有10,000个文档大约需要21秒。简短而甜美！我们能让它运行得更快吗？
+在我的笔记本电脑上处理所有 10,000 个文档大约需要 21 秒。简短而甜美！我们能让它运行得更快吗？
 
-是的！现在管道中还有一个**n_jobs**参数，指示你可以并行运行的作业数量。这里有一小段代码，将使用0到9个线程多次处理数据集。你认为使用9个线程并行运行会快多少？
+是的！现在管道中还有一个**n_jobs**参数，指示你可以并行运行的作业数量。这里有一小段代码，将使用 0 到 9 个线程多次处理数据集。你认为使用 9 个线程并行运行会快多少？
 
 ```py
 import time
@@ -240,13 +240,13 @@ for i in range(10):
 
 这将需要几分钟。绘制结果时间与线程数的关系图显示：
 
-![](../Images/9adcf33bc1b49428d2ac99c18d791632.png)
+![](img/9adcf33bc1b49428d2ac99c18d791632.png)
 
 显示将处理拆分为多个并行作业的运行时间的绘图。作者提供的图片。
 
-有趣的是：图表并不随着额外线程的增加而继续减少。也就是说，使用9个线程并不比使用1个线程快9倍。为什么呢？不幸的是，您不能违法。而且有一个法则：[阿姆达尔定律](https://en.wikipedia.org/wiki/Amdahl%27s_law)。它基本上说，您永远不会因为存在无法减少的开销成本而使速度快N倍。在这种情况下，我可以使用4个线程将时间从约21秒减少到8秒。还不错！
+有趣的是：图表并不随着额外线程的增加而继续减少。也就是说，使用 9 个线程并不比使用 1 个线程快 9 倍。为什么呢？不幸的是，您不能违法。而且有一个法则：[阿姆达尔定律](https://en.wikipedia.org/wiki/Amdahl%27s_law)。它基本上说，您永远不会因为存在无法减少的开销成本而使速度快 N 倍。在这种情况下，我可以使用 4 个线程将时间从约 21 秒减少到 8 秒。还不错！
 
-最后，我想要可视化管道。在项目的这一部分，我选择尝试[Mermaid图表格式](https://mermaid.js.org/)。它最近得到了很多支持，包括在github的仓库中。这种格式非常简单，易于创建。对于github的渲染，只需将文件命名为.mmd扩展名即可。以下是使用**picopipe**生成Mermaid脚本的方法：
+最后，我想要可视化管道。在项目的这一部分，我选择尝试[Mermaid 图表格式](https://mermaid.js.org/)。它最近得到了很多支持，包括在 github 的仓库中。这种格式非常简单，易于创建。对于 github 的渲染，只需将文件命名为.mmd 扩展名即可。以下是使用**picopipe**生成 Mermaid 脚本的方法：
 
 ```py
 from picopipe import to_mermaid
@@ -255,20 +255,20 @@ with open("pipeline.mmd", "w") as fp:
     fp.write(to_mermaid(p))
 ```
 
-并且在github的渲染中显示如下：
+并且在 github 的渲染中显示如下：
 
-![](../Images/5ab0ba92cedff16f7180c27157973786.png)
+![](img/5ab0ba92cedff16f7180c27157973786.png)
 
-Github.com直接支持Mermaid文档文件。作者提供的图片。
+Github.com 直接支持 Mermaid 文档文件。作者提供的图片。
 
-不幸的是，github不显示鼠标悬停功能（在CSS中定义）。但是，如果您可以设置自己的CSS，则可以实现不仅可视化管道，还可以在鼠标悬停在步骤框时显示步骤代码：
+不幸的是，github 不显示鼠标悬停功能（在 CSS 中定义）。但是，如果您可以设置自己的 CSS，则可以实现不仅可视化管道，还可以在鼠标悬停在步骤框时显示步骤代码：
 
-![](../Images/acc16cb6c6ee57db0eb49f60136a6ade.png)
+![](img/acc16cb6c6ee57db0eb49f60136a6ade.png)
 
-如Comet的自定义面板中所示的Mermaid图表。作者提供的图片。
+如 Comet 的自定义面板中所示的 Mermaid 图表。作者提供的图片。
 
-上述的带有鼠标悬停支持的Mermaid图表是使用Comet的自定义面板系统创建的（所有用户免费）。创建显示Mermaid文件的自定义面板非常简单。以下是上述Mermaid图表的实时演示：[comet.com/dsblank/picopipe/a4c044c1657b464087ec44f67ae22709](https://www.comet.com/dsblank/picopipe/a4c044c1657b464087ec44f67ae22709?experiment-tab=panels&showOutliers=true&smoothing=0&viewId=QXG0miglwPD2bCyWHGheKEF4j&xAxis=step)
+上述的带有鼠标悬停支持的 Mermaid 图表是使用 Comet 的自定义面板系统创建的（所有用户免费）。创建显示 Mermaid 文件的自定义面板非常简单。以下是上述 Mermaid 图表的实时演示：[comet.com/dsblank/picopipe/a4c044c1657b464087ec44f67ae22709](https://www.comet.com/dsblank/picopipe/a4c044c1657b464087ec44f67ae22709?experiment-tab=panels&showOutliers=true&smoothing=0&viewId=QXG0miglwPD2bCyWHGheKEF4j&xAxis=step)
 
 这完成了我们对开发“世界上最小数据管道框架”的探索，以及对其并行化和可视化的探索。您可以在此处找到所有的代码：[github.com/dsblank/picopipe](https://github.com/dsblank/picopipe) 我希望您觉得这里呈现的想法和最终模块有用。
 
-***对人工智能、机器学习或数据科学感兴趣吗？考虑鼓掌和关注。Doug是*** [***comet.com***](https://www.comet.com/) ***的研究主管。***
+***对人工智能、机器学习或数据科学感兴趣吗？考虑鼓掌和关注。Doug 是*** [***comet.com***](https://www.comet.com/) ***的研究主管。***

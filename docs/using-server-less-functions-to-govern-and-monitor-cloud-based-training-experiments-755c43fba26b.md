@@ -1,18 +1,18 @@
 # 使用无服务器函数来管理和监控基于云的训练实验
 
-> 原文：[https://towardsdatascience.com/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b?source=collection_archive---------4-----------------------#2023-12-17](https://towardsdatascience.com/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b?source=collection_archive---------4-----------------------#2023-12-17)
+> 原文：[`towardsdatascience.com/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b?source=collection_archive---------4-----------------------#2023-12-17`](https://towardsdatascience.com/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b?source=collection_archive---------4-----------------------#2023-12-17)
 
 ## 一种简单的常规方法，可以帮你节省大量金钱
 
-[](https://chaimrand.medium.com/?source=post_page-----755c43fba26b--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----755c43fba26b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----755c43fba26b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----755c43fba26b--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----755c43fba26b--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----755c43fba26b--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----755c43fba26b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----755c43fba26b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----755c43fba26b--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----755c43fba26b--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----755c43fba26b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----755c43fba26b--------------------------------) · 11 min 阅读 · 2023年12月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F755c43fba26b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b&user=Chaim+Rand&userId=9440b37e27fe&source=-----755c43fba26b---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----755c43fba26b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----755c43fba26b--------------------------------) · 11 min 阅读 · 2023 年 12 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F755c43fba26b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b&user=Chaim+Rand&userId=9440b37e27fe&source=-----755c43fba26b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F755c43fba26b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b&source=-----755c43fba26b---------------------bookmark_footer-----------)![](../Images/da83f9c1fe760e7679aaa950ae6c5b1c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F755c43fba26b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b&source=-----755c43fba26b---------------------bookmark_footer-----------)![](img/da83f9c1fe760e7679aaa950ae6c5b1c.png)
 
 图片由 [Ziyou Zhang](https://unsplash.com/@teadrinker42?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -20,13 +20,13 @@
 
 我们很幸运（或者说非常不幸——[这要看你问谁](https://www.bbc.co.uk/news/uk-65746524)）能亲历这场被许多人预期会改变我们所知世界的人工智能革命。得益于硬件开发的进步和对大量数据的获取，这场革命很可能会影响我们日常生活的许多方面——虽然具体如何，没有人能确定。为了满足对人工智能日益增长的需求，基础的机器学习模型规模迅速扩大，训练这些模型所需的资源也在增加。总而言之，要在人工智能开发领域保持相关性，就需要对昂贵的重型设备进行大规模投资。
 
-基于云的托管训练服务，例如Amazon SageMaker、Google Vertex AI和Microsoft Azure ML，通过使开发者能够在他们原本负担不起的机器上进行训练，降低了人工智能开发的门槛。虽然这些服务减少了人工智能的前期成本，并使你**仅**为训练时间付费，但变量成本的潜在累积需要对如何使用训练服务以及它们如何贡献于整体训练费用进行仔细规划。然而，不可避免的是，事情并不总是按计划进行。借用一句古老的意第绪谚语“开发者计划，编程之神笑”。当涉及到高风险时，比如训练人工智能模型——一个错误的实验可能导致数百或数千美元的计算时间浪费，因此明智之举是建立多个防线。
+基于云的托管训练服务，例如 Amazon SageMaker、Google Vertex AI 和 Microsoft Azure ML，通过使开发者能够在他们原本负担不起的机器上进行训练，降低了人工智能开发的门槛。虽然这些服务减少了人工智能的前期成本，并使你**仅**为训练时间付费，但变量成本的潜在累积需要对如何使用训练服务以及它们如何贡献于整体训练费用进行仔细规划。然而，不可避免的是，事情并不总是按计划进行。借用一句古老的意第绪谚语“开发者计划，编程之神笑”。当涉及到高风险时，比如训练人工智能模型——一个错误的实验可能导致数百或数千美元的计算时间浪费，因此明智之举是建立多个防线。
 
 ## 防线第一步——鼓励健康的发展习惯
 
-第一防线应关注机器学习算法工程师的开发实践。以下是一些你可能会考虑的[指导原则](/cloud-ml-performance-checklist-caa51e798002)：
+第一防线应关注机器学习算法工程师的开发实践。以下是一些你可能会考虑的指导原则：
 
-1.  鼓励对用于训练的硬件资源进行适当且成本优化的使用（例如，参见[这里](/instance-selection-for-deep-learning-7463d774cff0)）。
+1.  鼓励对用于训练的硬件资源进行适当且成本优化的使用（例如，参见这里）。
 
 1.  及早识别并终止失败的实验。
 
@@ -50,7 +50,7 @@
 
 # 强制执行开发者合规性
 
-虽然[**云治理**](https://www.redhat.com/en/topics/automation/what-is-cloud-governance)对于成功和高效地使用云服务通常是至关重要的，但其实施有时可能具有挑战性。例如：Amazon SageMaker包含一个用于向训练作业添加[**标签**](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_Tag.html)的API。这些标签可以用来包含与SageMaker作业相关的元数据，比如训练项目的名称、开发阶段、当前试验的目标、运行作业的开发组或用户的名称等等。这些元数据可以用来收集统计信息，比如每个项目或组的开发成本。在下面的代码块中，我们展示了如何将多个标签应用于SageMaker训练作业：
+虽然[**云治理**](https://www.redhat.com/en/topics/automation/what-is-cloud-governance)对于成功和高效地使用云服务通常是至关重要的，但其实施有时可能具有挑战性。例如：Amazon SageMaker 包含一个用于向训练作业添加[**标签**](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_Tag.html)的 API。这些标签可以用来包含与 SageMaker 作业相关的元数据，比如训练项目的名称、开发阶段、当前试验的目标、运行作业的开发组或用户的名称等等。这些元数据可以用来收集统计信息，比如每个项目或组的开发成本。在下面的代码块中，我们展示了如何将多个标签应用于 SageMaker 训练作业：
 
 ```py
 from sagemaker.pytorch import PyTorch
@@ -76,7 +76,7 @@ estimator = PyTorch(
 estimator.fit()
 ```
 
-自然，这些标签只有在我们能够强制执行其应用时才有用。这就是[**AWS Lambda**](https://aws.amazon.com/lambda/)的作用。使用[**Amazon EventBridge**](https://docs.aws.amazon.com/sagemaker/latest/dg/automating-sagemaker-with-eventbridge.html)，我们可以监控SageMaker训练作业状态的变化，并注册一个在每次变化时被触发的函数。在下面的代码块中，我们提出了一个Python例程，每次作业启动时都会验证特定的SageMaker标签。如果缺少某个标签，作业将被自动终止。事件的结构可以在[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/automating-sagemaker-with-eventbridge.html#eventbridge-training)找到。请注意使用（更详细的）[*SecondaryStatus*](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DescribeTrainingJob.html)字段来轮询训练作业的状态（而不是*TrainingJobStatus*）。
+自然，这些标签只有在我们能够强制执行其应用时才有用。这就是[**AWS Lambda**](https://aws.amazon.com/lambda/)的作用。使用[**Amazon EventBridge**](https://docs.aws.amazon.com/sagemaker/latest/dg/automating-sagemaker-with-eventbridge.html)，我们可以监控 SageMaker 训练作业状态的变化，并注册一个在每次变化时被触发的函数。在下面的代码块中，我们提出了一个 Python 例程，每次作业启动时都会验证特定的 SageMaker 标签。如果缺少某个标签，作业将被自动终止。事件的结构可以在[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/automating-sagemaker-with-eventbridge.html#eventbridge-training)找到。请注意使用（更详细的）[*SecondaryStatus*](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DescribeTrainingJob.html)字段来轮询训练作业的状态（而不是*TrainingJobStatus*）。
 
 ```py
 import boto3
@@ -99,7 +99,7 @@ def sagemaker_event_handler(event, _):
         enforce_required_tags(job_name, event)
 ```
 
-AWS提供了多种创建Lambda函数的方法。有关详细信息，请参见[**AWS Lambda**](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html)文档。创建后，请确保将该函数设置为[**EventBridge规则**](https://docs.aws.amazon.com/sagemaker/latest/dg/automating-sagemaker-with-eventbridge.html#eventbridge-model)的目标。
+AWS 提供了多种创建 Lambda 函数的方法。有关详细信息，请参见[**AWS Lambda**](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html)文档。创建后，请确保将该函数设置为[**EventBridge 规则**](https://docs.aws.amazon.com/sagemaker/latest/dg/automating-sagemaker-with-eventbridge.html#eventbridge-model)的目标。
 
 同样的功能可以用来强制执行额外的开发规则，这些规则旨在控制成本，比如：可以使用的实例类型、每个作业的最大实例数量、作业的最大运行时间等等。
 
@@ -189,11 +189,11 @@ AWS 提供了多种机制来订阅 Lambda 函数到 SNS 主题，包括 [AWS 控
 
 我们描述的解决方案总结在下图中：
 
-![](../Images/129dedc3d99a0d37b85e084f33a18beb.png)
+![](img/129dedc3d99a0d37b85e084f33a18beb.png)
 
 AWS 架构图（作者提供）
 
-请注意，相同的架构也可以用于强制执行你机器学习训练项目的最低 GPU 利用率。GPU 通常是训练基础设施中最昂贵的资源，你的目标应是最大化所有训练工作负载的利用率。通过规定最低利用率（例如 80%），你可以确保所有开发者[适当优化他们的工作负载](/cloud-ml-performance-checklist-caa51e798002)。
+请注意，相同的架构也可以用于强制执行你机器学习训练项目的最低 GPU 利用率。GPU 通常是训练基础设施中最昂贵的资源，你的目标应是最大化所有训练工作负载的利用率。通过规定最低利用率（例如 80%），你可以确保所有开发者适当优化他们的工作负载。
 
 # 确保开发的连续性
 

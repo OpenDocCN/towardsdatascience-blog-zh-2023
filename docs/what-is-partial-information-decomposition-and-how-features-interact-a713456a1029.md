@@ -1,18 +1,18 @@
 # 什么是部分信息分解及特征如何交互
 
-> 原文：[https://towardsdatascience.com/what-is-partial-information-decomposition-and-how-features-interact-a713456a1029?source=collection_archive---------3-----------------------#2023-12-08](https://towardsdatascience.com/what-is-partial-information-decomposition-and-how-features-interact-a713456a1029?source=collection_archive---------3-----------------------#2023-12-08)
+> 原文：[`towardsdatascience.com/what-is-partial-information-decomposition-and-how-features-interact-a713456a1029?source=collection_archive---------3-----------------------#2023-12-08`](https://towardsdatascience.com/what-is-partial-information-decomposition-and-how-features-interact-a713456a1029?source=collection_archive---------3-----------------------#2023-12-08)
 
 ## 关于目标变量的信息如何在其多个特征中分布
 
-[![](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------)](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------) [![Rodrigo Silva](../Images/d260f05ed9887c5072e0590db1481be2.png)](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------) [![](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------)](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------) [Rodrigo Silva](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------)
+[![](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------)](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------) ![Rodrigo Silva](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------) [![](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------)](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------) [Rodrigo Silva](https://medium.com/@rodrigopesilva?source=post_page-----a713456a1029--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F222e82adf972&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-partial-information-decomposition-and-how-features-interact-a713456a1029&user=Rodrigo+Silva&userId=222e82adf972&source=post_page-222e82adf972----a713456a1029---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------) · 10 分钟阅读 · 2023年12月8日 [![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa713456a1029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-partial-information-decomposition-and-how-features-interact-a713456a1029&user=Rodrigo+Silva&userId=222e82adf972&source=-----a713456a1029---------------------clap_footer-----------)]
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F222e82adf972&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-partial-information-decomposition-and-how-features-interact-a713456a1029&user=Rodrigo+Silva&userId=222e82adf972&source=post_page-222e82adf972----a713456a1029---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a713456a1029--------------------------------) · 10 分钟阅读 · 2023 年 12 月 8 日 [![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa713456a1029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-partial-information-decomposition-and-how-features-interact-a713456a1029&user=Rodrigo+Silva&userId=222e82adf972&source=-----a713456a1029---------------------clap_footer-----------)]
 
 --
 
-![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa713456a1029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-partial-information-decomposition-and-how-features-interact-a713456a1029&source=-----a713456a1029---------------------bookmark_footer-----------) ![](../Images/1b6c41b4f07a4b381d9da086ab84a80c.png)
+![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa713456a1029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-partial-information-decomposition-and-how-features-interact-a713456a1029&source=-----a713456a1029---------------------bookmark_footer-----------) ![](img/1b6c41b4f07a4b381d9da086ab84a80c.png)
 
 图片来源：Alina Grubnyak，来自 [Unsplash](https://unsplash.com/photos/low-angle-photography-of-metal-structure-ZiQkhI7417A)。
 
@@ -24,17 +24,17 @@
 
 也许从信息的角度定义熵最直观的方法是首先谈谈*惊讶*。惊讶的度量正如我们所期望的那样：不太可能发生的事件更令人惊讶，而更可能发生的事件则不那么令人惊讶。涵盖这些属性的数学定义如下：
 
-![](../Images/504cc18591fa38a92ef3cbae196f492a.png)
+![](img/504cc18591fa38a92ef3cbae196f492a.png)
 
-从图1中的图表可以看出，这一定义与我们讨论的属性非常相关。当某些事件发生的概率很高（p 接近 1）时，惊讶度接近零。另一方面，如果事件发生的概率非常低，则其惊讶度会变得任意大。
+从图 1 中的图表可以看出，这一定义与我们讨论的属性非常相关。当某些事件发生的概率很高（p 接近 1）时，惊讶度接近零。另一方面，如果事件发生的概率非常低，则其惊讶度会变得任意大。
 
-![](../Images/30eaeac06aa5aba94f96381493b2d47c.png)
+![](img/30eaeac06aa5aba94f96381493b2d47c.png)
 
-图1：惊讶的图示。作者提供的图像。
+图 1：惊讶的图示。作者提供的图像。
 
 那么，熵与惊讶有什么关系呢？熵是随机变量所有值的平均惊讶。因此，如果我们有一个随机变量 X，且 X 的所有可能结果的集合称为 A_X（我们称之为 X 的“字母表”），那么熵 H 定义为：
 
-![](../Images/fe145a377dca1c49c7254829cdcbf2cd.png)
+![](img/fe145a377dca1c49c7254829cdcbf2cd.png)
 
 很好。现在我们将熵与惊讶联系起来，可以理解熵的一个有用解释：
 
@@ -56,7 +56,7 @@
 
 由于熵是对某个系统的无知的度量，它的缺乏代表着… *信息*。从这个意义上说，创建一个叫做互信息的度量是很自然的：它衡量的是当你知道系统的一些信息后，你获得的信息量。
 
-![](../Images/c1a89b1c6cd1d70018c7e024903efd3f.png)
+![](img/c1a89b1c6cd1d70018c7e024903efd3f.png)
 
 这个定义是：取随机变量 X 的平均惊讶度，然后取随机变量 X 的平均惊讶度，但现在考虑我们知道另一个随机变量 Y 的结果。将前者减去后者，你就知道通过了解 Y，你从系统 X 中移除了多少 *无知*。
 
@@ -64,7 +64,7 @@
 
 图 2 中有一个清晰易懂的维恩图，展示了两个变量 X 和 Y 之间的熵和共享信息的关系。
 
-![](../Images/0014751e4795774787d549300583f9c7.png)
+![](img/0014751e4795774787d549300583f9c7.png)
 
 图 2：互信息方案。图像由作者提供，受到许多其他图像的启发。
 
@@ -86,29 +86,29 @@
 
 像之前一样，我们可以绘制一个漂亮的维恩图来总结这些量的依赖关系。
 
-![](../Images/290f0c460177727a0f6657892086ec8c.png)
+![](img/290f0c460177727a0f6657892086ec8c.png)
 
-图3：部分信息分解的维恩图。图像由作者提供，受[1]的强烈启发。
+图 3：部分信息分解的维恩图。图像由作者提供，受[1]的强烈启发。
 
 每个这些术语被称为*信息原子*。任何非原子信息都可以分解为原子部分，而原子部分不能再分解。
 
 是威廉姆斯和比尔[1]首次提出了这一框架（并提出了一种计算部分信息的方法）。事实证明，计算这些量并不简单，值得专门写一篇文章。部分信息分解有不止一种测量方法，所有这些方法都遵循相同的过程：他们设想一种满足一系列理想特性并与我们期望的某个量称为“信息”的一致的测量方式。所有这些测量方法都有强项和弱项，它们在`dit`库中得到了很好的实现，并将在接下来的部分中简要介绍并用来给出一些例子。
 
-## 部分信息分解示例和dit库
+## 部分信息分解示例和 dit 库
 
 为了将这些概念结合起来，让我们看一些例子。`dit`库是进行信息理论概念实验的绝佳工具。它是一个创建自定义概率分布的库，然后对其进行测量。这个库有几个功能，可以在他们的[Github](https://github.com/dit/dit)或官方[文档页面](https://dit.readthedocs.io/en/latest/generalinfo.html)中找到。
 
-对于接下来的所有例子，我们可以考虑两个特征X_1和X_2，都是二进制的，目标变量Y是特征的一些布尔操作。所有测量部分信息的形式将基于威廉姆斯和比尔[1]，但其他作者提出的形式也在`dit`中实现。
+对于接下来的所有例子，我们可以考虑两个特征 X_1 和 X_2，都是二进制的，目标变量 Y 是特征的一些布尔操作。所有测量部分信息的形式将基于威廉姆斯和比尔[1]，但其他作者提出的形式也在`dit`中实现。
 
 ## 独特信息
 
-对于这个例子，假设目标变量Y如图4所示。注意输出总是等于特征X_1，这使得特征X_2完全无关紧要。
+对于这个例子，假设目标变量 Y 如图 4 所示。注意输出总是等于特征 X_1，这使得特征 X_2 完全无关紧要。
 
-![](../Images/62395ed9352922437eda396dc65460ea.png)
+![](img/62395ed9352922437eda396dc65460ea.png)
 
-图4：与唯一信息源的AND门示意图。
+图 4：与唯一信息源的 AND 门示意图。
 
-因此，X_1和X_2对Y提供的信息完全集中在X_1中。在到目前为止我们所开发的形式中，我们可以说关于Y的信息对X_1是*唯一*的。
+因此，X_1 和 X_2 对 Y 提供的信息完全集中在 X_1 中。在到目前为止我们所开发的形式中，我们可以说关于 Y 的信息对 X_1 是*唯一*的。
 
 在`dit`库中，我们可以这样创建：
 
@@ -136,23 +136,23 @@ Out:
 
 `dit`库对信息的编码如下：
 
-+   {0:1}: X_1和X_2之间的协同信息
++   {0:1}: X_1 和 X_2 之间的协同信息
 
 +   {0}: X_1 提供的独特信息
 
-+   {1}: X_2提供的唯一信息
++   {1}: X_2 提供的唯一信息
 
-+   {0}{1}: X_1和X_2提供的冗余信息
++   {0}{1}: X_1 和 X_2 提供的冗余信息
 
-从输出中我们可以看到，唯一的部分信息（“pi”列）来自X_1。
+从输出中我们可以看到，唯一的部分信息（“pi”列）来自 X_1。
 
 ## 冗余信息
 
-下一个例子展示了冗余信息。在这里，X_1、X_2和Y的值相等，如图5所示，因此X_1和X_2提供的关于Y的冗余信息是最大的。
+下一个例子展示了冗余信息。在这里，X_1、X_2 和 Y 的值相等，如图 5 所示，因此 X_1 和 X_2 提供的关于 Y 的冗余信息是最大的。
 
-![](../Images/8fbdf8d7dbbd179f741c0705abdb5843.png)
+![](img/8fbdf8d7dbbd179f741c0705abdb5843.png)
 
-图5：完全冗余的信息。
+图 5：完全冗余的信息。
 
 使用`dit`代码如下：
 
@@ -177,17 +177,17 @@ Out:
 """ 
 ```
 
-正如我们所见，X_1和X_2提供的关于Y的唯一信息是冗余的，换句话说，由它们共同提供。
+正如我们所见，X_1 和 X_2 提供的关于 Y 的唯一信息是冗余的，换句话说，由它们共同提供。
 
 ## 协同信息
 
-协同信息的经典例子是XOR门。XOR门的图示见图6。
+协同信息的经典例子是 XOR 门。XOR 门的图示见图 6。
 
-![](../Images/76e8db6da9b520b9098e9af1875d24ed.png)
+![](img/76e8db6da9b520b9098e9af1875d24ed.png)
 
-图6：具有完全协同信息的XOR门
+图 6：具有完全协同信息的 XOR 门
 
-从这种分布中可以看出，只有在知道X_1和X_2的情况下，我们才能知道目标变量Y。因为对于每个X_1的值，我们都有Y的两个值；同样的情况也适用于X_2。`dit`中的代码如下：
+从这种分布中可以看出，只有在知道 X_1 和 X_2 的情况下，我们才能知道目标变量 Y。因为对于每个 X_1 的值，我们都有 Y 的两个值；同样的情况也适用于 X_2。`dit`中的代码如下：
 
 ```py
 import dit                    # importing dit library
@@ -210,7 +210,7 @@ Out:
 """ 
 ```
 
-正如预期的那样，X_1和X_2传递的关于Y的唯一信息是{0:1}，这是协同信息。
+正如预期的那样，X_1 和 X_2 传递的关于 Y 的唯一信息是{0:1}，这是协同信息。
 
 # 最终评论和要点
 
@@ -220,10 +220,10 @@ Out:
 
 # 参考文献
 
-[1] P. L. Williams 和 R. D. Beer, [多变量信息的非负分解](https://arxiv.org/pdf/1004.2515.pdf)，*arXiv预印本arXiv:1004.2515*，2010年
+[1] P. L. Williams 和 R. D. Beer, [多变量信息的非负分解](https://arxiv.org/pdf/1004.2515.pdf)，*arXiv 预印本 arXiv:1004.2515*，2010 年
 
-[2] Shujian Yu等，[通过信息理论理解卷积神经网络：初步探索](https://arxiv.org/pdf/1804.06537.pdf)，*arXiv预印本arXiv:*1804.06537v5，2020年
+[2] Shujian Yu 等，[通过信息理论理解卷积神经网络：初步探索](https://arxiv.org/pdf/1804.06537.pdf)，*arXiv 预印本 arXiv:*1804.06537v5，2020 年
 
-[3] A. J. Gutknecht, M. Wibral 和 A. Makkeh, [Bits and pieces: 理解从部分-整体关系和形式逻辑中的信息分解](https://arxiv.org/pdf/2008.09535.pdf)，*arXiv预印本arXiv:*2008.09535v2，2022年
+[3] A. J. Gutknecht, M. Wibral 和 A. Makkeh, [Bits and pieces: 理解从部分-整体关系和形式逻辑中的信息分解](https://arxiv.org/pdf/2008.09535.pdf)，*arXiv 预印本 arXiv:*2008.09535v2，2022 年
 
-[4] James, R. G., Ellison, C. J. 和 Crutchfield, J. P., [dit: 用于离散信息理论的Python包](https://joss.theoj.org/papers/10.21105/joss.00738.pdf)，《开源软件期刊》，2018年
+[4] James, R. G., Ellison, C. J. 和 Crutchfield, J. P., [dit: 用于离散信息理论的 Python 包](https://joss.theoj.org/papers/10.21105/joss.00738.pdf)，《开源软件期刊》，2018 年

@@ -1,18 +1,18 @@
-# 提升数据可视化的4个关键资源
+# 提升数据可视化的 4 个关键资源
 
-> 原文：[https://towardsdatascience.com/4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0?source=collection_archive---------0-----------------------#2023-08-12](https://towardsdatascience.com/4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0?source=collection_archive---------0-----------------------#2023-08-12)
+> 原文：[`towardsdatascience.com/4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0?source=collection_archive---------0-----------------------#2023-08-12`](https://towardsdatascience.com/4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0?source=collection_archive---------0-----------------------#2023-08-12)
 
 ## 有效且引人注目的数据可视化工具
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----8151e63ce8f0--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----8151e63ce8f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8151e63ce8f0--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8151e63ce8f0--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----8151e63ce8f0--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----8151e63ce8f0--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----8151e63ce8f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8151e63ce8f0--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----8151e63ce8f0--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----8151e63ce8f0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----8151e63ce8f0---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8151e63ce8f0--------------------------------) ·7分钟阅读·2023年8月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8151e63ce8f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0&user=Andy+McDonald&userId=9c280f85f15c&source=-----8151e63ce8f0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----8151e63ce8f0---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8151e63ce8f0--------------------------------) ·7 分钟阅读·2023 年 8 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8151e63ce8f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0&user=Andy+McDonald&userId=9c280f85f15c&source=-----8151e63ce8f0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8151e63ce8f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0&source=-----8151e63ce8f0---------------------bookmark_footer-----------)![](../Images/0bb7907e62eefa9778fbcc90d91d6afc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8151e63ce8f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-essential-resources-to-help-improve-your-data-visualisations-8151e63ce8f0&source=-----8151e63ce8f0---------------------bookmark_footer-----------)![](img/0bb7907e62eefa9778fbcc90d91d6afc.png)
 
 照片由 [Choong Deng Xiang](https://unsplash.com/@dengxiangs?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

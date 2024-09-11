@@ -1,14 +1,14 @@
 # 介绍 p 值和带有示例的显著性测试
 
-> 原文：[https://towardsdatascience.com/introduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1?source=collection_archive---------7-----------------------#2023-01-18](https://towardsdatascience.com/introduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1?source=collection_archive---------7-----------------------#2023-01-18)
+> 原文：[`towardsdatascience.com/introduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1?source=collection_archive---------7-----------------------#2023-01-18`](https://towardsdatascience.com/introduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1?source=collection_archive---------7-----------------------#2023-01-18)
 
 ## 通过示例理解假设检验框架背后的思想
 
-[](https://ms-neerajkrishna.medium.com/?source=post_page-----543fe3beb5a1--------------------------------)[![Neeraj Krishna](../Images/7bea17130a09d3382cba3b12ca5e3d7b.png)](https://ms-neerajkrishna.medium.com/?source=post_page-----543fe3beb5a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----543fe3beb5a1--------------------------------)[![走向数据科学](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----543fe3beb5a1--------------------------------) [Neeraj Krishna](https://ms-neerajkrishna.medium.com/?source=post_page-----543fe3beb5a1--------------------------------)
+[](https://ms-neerajkrishna.medium.com/?source=post_page-----543fe3beb5a1--------------------------------)![Neeraj Krishna](https://ms-neerajkrishna.medium.com/?source=post_page-----543fe3beb5a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----543fe3beb5a1--------------------------------)![走向数据科学](https://towardsdatascience.com/?source=post_page-----543fe3beb5a1--------------------------------) [Neeraj Krishna](https://ms-neerajkrishna.medium.com/?source=post_page-----543fe3beb5a1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d6b9cde0656&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1&user=Neeraj+Krishna&userId=8d6b9cde0656&source=post_page-8d6b9cde0656----543fe3beb5a1---------------------post_header-----------) 发表于 [走向数据科学](https://towardsdatascience.com/?source=post_page-----543fe3beb5a1--------------------------------) ·9 min read·2023年1月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F543fe3beb5a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1&user=Neeraj+Krishna&userId=8d6b9cde0656&source=-----543fe3beb5a1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d6b9cde0656&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1&user=Neeraj+Krishna&userId=8d6b9cde0656&source=post_page-8d6b9cde0656----543fe3beb5a1---------------------post_header-----------) 发表于 [走向数据科学](https://towardsdatascience.com/?source=post_page-----543fe3beb5a1--------------------------------) ·9 min read·2023 年 1 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F543fe3beb5a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-p-value-and-significance-testing-with-examples-543fe3beb5a1&user=Neeraj+Krishna&userId=8d6b9cde0656&source=-----543fe3beb5a1---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 伟大的产品不是一夜之间建成的，而是通过多年的迭代不断改进和完善。最成功的团队在开发产品时遵循*反馈循环*。首先，他们构思一个想法，推向生产环境，并监控这个过程。然后，根据收集的数据，他们分析并确定是否成功。分析获得的见解将指导下一轮的开发。Keras 的创作者弗朗索瓦·肖莱 [称之为进展之环[2]。](https://fchollet.substack.com/p/the-loop-of-progress)
 
-![](../Images/f45d7b482477b4d0f648a39022218fb1.png)
+![](img/f45d7b482477b4d0f648a39022218fb1.png)
 
 进步的循环。图片由作者提供。
 
@@ -26,7 +26,7 @@
 
 # 现实世界中的选择往往并不明确
 
-![](../Images/2e2b8521b35a39c0e1de70f3dbe710a8.png)
+![](img/2e2b8521b35a39c0e1de70f3dbe710a8.png)
 
 由 [Edge2Edge Media](https://unsplash.com/@edge2edgemedia?utm_source=medium&utm_medium=referral) 拍摄，刊登在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,17 +48,17 @@
 
 如果你想了解如何处理第一类问题，可以考虑阅读我的另一篇文章，其中我们从基本原理学习假设检验。
 
-[](/introduction-to-hypothesis-testing-with-examples-60a618fb1799?source=post_page-----543fe3beb5a1--------------------------------) [## 假设检验简介与示例
+[](/introduction-to-hypothesis-testing-with-examples-60a618fb1799?source=post_page-----543fe3beb5a1--------------------------------) ## 假设检验简介与示例
 
 ### 一份关于假设检验的易懂指南，配有示例和可视化
 
-[towardsdatascience.com](/introduction-to-hypothesis-testing-with-examples-60a618fb1799?source=post_page-----543fe3beb5a1--------------------------------)
+[towardsdatascience.com
 
 # 示例——硬币是公平的还是有偏的？
 
 让我们从一个例子开始，并逐步深入。
 
-![](../Images/1beb741dfae9f941f3dc42fbb6df6955.png)
+![](img/1beb741dfae9f941f3dc42fbb6df6955.png)
 
 由 [Jizhidexiaohailang](https://unsplash.com/@jizhidexiaohailang?utm_source=medium&utm_medium=referral) 拍摄，刊登在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -66,7 +66,7 @@
 
 让𝜃表示正面朝上的概率。零假设是𝜃 = 1/2，而替代假设是𝜃 ≠ 1/2。
 
-注意到替代假设不明确。𝜃可以是0到1之间的任何值。
+注意到替代假设不明确。𝜃可以是 0 到 1 之间的任何值。
 
 假设检验的关键思想是实验结果依赖于假设。因此，通过观察结果，我们可以得出结论。
 
@@ -76,17 +76,17 @@
 
 ## 拒绝区域和临界比率
 
-让`S = X1 + X2 + X3 + … + Xn`表示正面朝上的总数。*S*被称为**统计量**，它本质上总结了观察结果。现在，如果零假设成立且硬币是公平的，我们更可能观察到*n*/2个正面。如果不是，那么`|S — n/2|`的差异会很大。所以一个合理的决策规则是：
+让`S = X1 + X2 + X3 + … + Xn`表示正面朝上的总数。*S*被称为**统计量**，它本质上总结了观察结果。现在，如果零假设成立且硬币是公平的，我们更可能观察到*n*/2 个正面。如果不是，那么`|S — n/2|`的差异会很大。所以一个合理的决策规则是：
 
 ```py
 reject the null hypothesis if |S - n/2| > 𝜉
 ```
 
-这意味着如果观察到的正面数与*n*/2之间的绝对差异大于某个值𝜉，我们将拒绝零假设或假设硬币是公平的。𝜉被称为**临界比率**。
+这意味着如果观察到的正面数与*n*/2 之间的绝对差异大于某个值𝜉，我们将拒绝零假设或假设硬币是公平的。𝜉被称为**临界比率**。
 
 基于这个决策规则，我们可以将观察空间分为两个区域：拒绝区域和接受区域。对于满足决策规则`|S — n/2| > 𝜉`的`S`值属于拒绝区域，而其余值属于接受区域。
 
-![](../Images/9f570632c2714996290c22af97915375.png)
+![](img/9f570632c2714996290c22af97915375.png)
 
 作者提供的图片
 
@@ -118,9 +118,9 @@ P(|S - n/2| > 𝜉 ; H0) = 𝛼
 
 在我们的例子中，*S*遵循参数为*n*和𝜃的二项分布。然而，随着*n*的增加，*S*根据中心极限定理接近正态分布[4]。
 
-![](../Images/f0c3c7e6d690905533749cd76abb9122.png)
+![](img/f0c3c7e6d690905533749cd76abb9122.png)
 
-随着n的增加，二项分布趋于正态分布。
+随着 n 的增加，二项分布趋于正态分布。
 
 所以假设*S*遵循正态分布，我们可以通过减去均值并除以标准差来标准化它。二项分布的均值为`n * 𝜃`，而标准差为`sqrt(n * 𝜃 * (1-𝜃))`。
 
@@ -156,7 +156,7 @@ def standardize(S):
 => 𝜉 = 31
 ```
 
-![](../Images/c48fc30578d691c0e20e0fd9a15fb590.png)
+![](img/c48fc30578d691c0e20e0fd9a15fb590.png)
 
 标准正态分布
 
@@ -168,35 +168,35 @@ reject the null hypothesis if |S - n/2| > 𝜉
 
 如果我进行实验并抛掷硬币`n=1000`次，观察到正面次数`S=472`，则`|472–500| = 28 < 31`。
 
-所以我们说**H₀在5%的显著性水平下未被拒绝**。
+所以我们说**H₀在 5%的显著性水平下未被拒绝**。
 
-注意我们说*H₀未被拒绝*而不是说*H₀被接受*。这是因为我们没有足够强的依据来接受H₀。根据数据无法证明𝜃确切等于0.5。𝜃也可能等于0.51或0.49。因此，我们说观察值`S=472`不足以在5%的显著性水平下驳斥原假设H₀。
+注意我们说*H₀未被拒绝*而不是说*H₀被接受*。这是因为我们没有足够强的依据来接受 H₀。根据数据无法证明𝜃确切等于 0.5。𝜃也可能等于 0.51 或 0.49。因此，我们说观察值`S=472`不足以在 5%的显著性水平下驳斥原假设 H₀。
 
 在`𝜉 = 31`的情况下，观察值`S < 469`和`S > 531`落入拒绝区域。此外，如果我增加𝜉的值，拒绝区域会如下面的图所示减小：
 
-![](../Images/6f8c77777b64d9284aabdedd7a78120f.png)
+![](img/6f8c77777b64d9284aabdedd7a78120f.png)
 
 拒绝区域随着`𝜉`的增加而减小。
 
-当我们固定显著性水平𝛼，例如5%时，这意味着在H₀支配的模型下，观察值仅有5%的概率落入拒绝区域。因此，如果观察值最终落入拒绝区域，则提供了H₀可能错误的强有力证据。
+当我们固定显著性水平𝛼，例如 5%时，这意味着在 H₀支配的模型下，观察值仅有 5%的概率落入拒绝区域。因此，如果观察值最终落入拒绝区域，则提供了 H₀可能错误的强有力证据。
 
-# p值
+# p 值
 
-p值的正式定义为：
+p 值的正式定义为：
 
 > ***p*-值**是在假设原假设正确的前提下，获得至少与实际观察结果一样极端的测试结果的概率。 — [维基百科](https://en.wikipedia.org/wiki/P-value) [3]
 
-与在实验前固定的显著性水平不同，p值依赖于实验结果。
+与在实验前固定的显著性水平不同，p 值依赖于实验结果。
 
 假设硬币抛掷实验的结果是`S=430`，那么在假设原假设正确的前提下，“至少同样极端”的结果是`S < 430`和`S > 570`，因为在原假设下的分布是对称的并且围绕均值中心。
 
-我通过改变𝜃模拟了结果*s*，每个结果的p值如下所示：
+我通过改变𝜃模拟了结果*s*，每个结果的 p 值如下所示：
 
-![](../Images/1dee5b20863eb10ddfe37d5a498aad7c.png)
+![](img/1dee5b20863eb10ddfe37d5a498aad7c.png)
 
-基于𝜃变化的p值
+基于𝜃变化的 p 值
 
-实质上，p值是*𝛼*的值，使得*s*恰好处于拒绝与不拒绝的临界值之间。
+实质上，p 值是*𝛼*的值，使得*s*恰好处于拒绝与不拒绝的临界值之间。
 
 # 正态近似的必要性
 
@@ -210,9 +210,9 @@ p值的正式定义为：
 
 假设检验的一般框架可以总结如下[1]：
 
-1.  选择一个代表观察数据的统计量S。它是一个取决于观察结果的标量随机变量。通常，样本均值或样本方差被用作统计量。
+1.  选择一个代表观察数据的统计量 S。它是一个取决于观察结果的标量随机变量。通常，样本均值或样本方差被用作统计量。
 
-1.  制定一个拒绝零假设H₀的决策规则。决策规则是统计量S和临界比率𝜉的函数。根据决策规则和𝜉，可以将观察空间划分为拒绝区域和接受区域。
+1.  制定一个拒绝零假设 H₀的决策规则。决策规则是统计量 S 和临界比率𝜉的函数。根据决策规则和𝜉，可以将观察空间划分为拒绝区域和接受区域。
 
 1.  选择显著性水平𝛼，它是观察结果在零假设下落入拒绝区域的概率。
 
@@ -220,7 +220,7 @@ p值的正式定义为：
 
 一旦我们进行实验并记录了观察结果，就需要做以下事情：
 
-1.  计算统计量S*的值*s*。
+1.  计算统计量 S*的值*s*。
 
 1.  如果*s*属于拒绝区域，则拒绝零假设。
 
@@ -240,10 +240,10 @@ You can also reach out to me on [LinkedIn](https://www.linkedin.com/in/neerajkri
 
 # 参考文献
 
-1.  [Dimitri Bertsekas和John Tsitsiklis的《概率论导论》第9章第4节](https://www.amazon.in/Introduction-Probability-Dimitri-P-Bertsekas/dp/188652923X)
+1.  [Dimitri Bertsekas 和 John Tsitsiklis 的《概率论导论》第九章第四部分](https://www.amazon.in/Introduction-Probability-Dimitri-P-Bertsekas/dp/188652923X)
 
-1.  [Francois Cholle的进步循环](https://fchollet.substack.com/p/the-loop-of-progress)
+1.  [Francois Cholle 的进步循环](https://fchollet.substack.com/p/the-loop-of-progress)
 
-1.  [维基百科上的p值](https://en.wikipedia.org/wiki/P-value)
+1.  [维基百科上的 p 值](https://en.wikipedia.org/wiki/P-value)
 
 1.  [维基百科上的中心极限定理](https://en.wikipedia.org/wiki/Central_limit_theorem)

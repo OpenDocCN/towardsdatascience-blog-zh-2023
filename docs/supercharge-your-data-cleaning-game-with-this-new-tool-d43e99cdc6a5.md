@@ -1,20 +1,20 @@
 # 使用这个新工具提升你的数据清理技巧
 
-> 原文：[https://towardsdatascience.com/supercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5?source=collection_archive---------13-----------------------#2023-04-19](https://towardsdatascience.com/supercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5?source=collection_archive---------13-----------------------#2023-04-19)
+> 原文：[`towardsdatascience.com/supercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5?source=collection_archive---------13-----------------------#2023-04-19`](https://towardsdatascience.com/supercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5?source=collection_archive---------13-----------------------#2023-04-19)
 
 ## PYTHON | 数据 | 分析
 
 ## 一份利用 pandas_dq 轻松进行数据清理的指南
 
-[](https://david-farrugia.medium.com/?source=post_page-----d43e99cdc6a5--------------------------------)[![David Farrugia](../Images/082ed61e24c7c26a4ae1c77343a87824.png)](https://david-farrugia.medium.com/?source=post_page-----d43e99cdc6a5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d43e99cdc6a5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d43e99cdc6a5--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----d43e99cdc6a5--------------------------------)
+[](https://david-farrugia.medium.com/?source=post_page-----d43e99cdc6a5--------------------------------)![David Farrugia](https://david-farrugia.medium.com/?source=post_page-----d43e99cdc6a5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d43e99cdc6a5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43e99cdc6a5--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----d43e99cdc6a5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----d43e99cdc6a5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43e99cdc6a5--------------------------------) ·5分钟阅读·2023年4月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd43e99cdc6a5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5&user=David+Farrugia&userId=3916826092a6&source=-----d43e99cdc6a5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3916826092a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5&user=David+Farrugia&userId=3916826092a6&source=post_page-3916826092a6----d43e99cdc6a5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43e99cdc6a5--------------------------------) ·5 分钟阅读·2023 年 4 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd43e99cdc6a5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5&user=David+Farrugia&userId=3916826092a6&source=-----d43e99cdc6a5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd43e99cdc6a5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5&source=-----d43e99cdc6a5---------------------bookmark_footer-----------)![](../Images/7062261f0283364355b203a6d4dcad89.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd43e99cdc6a5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-your-data-cleaning-game-with-this-new-tool-d43e99cdc6a5&source=-----d43e99cdc6a5---------------------bookmark_footer-----------)![](img/7062261f0283364355b203a6d4dcad89.png)
 
 图片由 [JESHOOTS.COM](https://unsplash.com/@jeshoots?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

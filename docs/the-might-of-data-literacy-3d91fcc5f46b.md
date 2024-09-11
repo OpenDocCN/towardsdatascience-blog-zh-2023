@@ -1,18 +1,18 @@
 # 数据素养的重要性
 
-> 原文：[https://towardsdatascience.com/the-might-of-data-literacy-3d91fcc5f46b?source=collection_archive---------9-----------------------#2023-08-23](https://towardsdatascience.com/the-might-of-data-literacy-3d91fcc5f46b?source=collection_archive---------9-----------------------#2023-08-23)
+> 原文：[`towardsdatascience.com/the-might-of-data-literacy-3d91fcc5f46b?source=collection_archive---------9-----------------------#2023-08-23`](https://towardsdatascience.com/the-might-of-data-literacy-3d91fcc5f46b?source=collection_archive---------9-----------------------#2023-08-23)
 
 ## 这是成功利用数据和分析的关键吗？
 
-[](https://medium.com/@michalszudejko?source=post_page-----3d91fcc5f46b--------------------------------)[![Michal Szudejko](../Images/d4c303d02a79ad29df193ed3b25910d9.png)](https://medium.com/@michalszudejko?source=post_page-----3d91fcc5f46b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d91fcc5f46b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d91fcc5f46b--------------------------------) [Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----3d91fcc5f46b--------------------------------)
+[](https://medium.com/@michalszudejko?source=post_page-----3d91fcc5f46b--------------------------------)![Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----3d91fcc5f46b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d91fcc5f46b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d91fcc5f46b--------------------------------) [Michal Szudejko](https://medium.com/@michalszudejko?source=post_page-----3d91fcc5f46b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd3b37fc311f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-might-of-data-literacy-3d91fcc5f46b&user=Michal+Szudejko&userId=d3b37fc311f7&source=post_page-d3b37fc311f7----3d91fcc5f46b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d91fcc5f46b--------------------------------) ·8分钟阅读·2023年8月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d91fcc5f46b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-might-of-data-literacy-3d91fcc5f46b&user=Michal+Szudejko&userId=d3b37fc311f7&source=-----3d91fcc5f46b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd3b37fc311f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-might-of-data-literacy-3d91fcc5f46b&user=Michal+Szudejko&userId=d3b37fc311f7&source=post_page-d3b37fc311f7----3d91fcc5f46b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d91fcc5f46b--------------------------------) ·8 分钟阅读·2023 年 8 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d91fcc5f46b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-might-of-data-literacy-3d91fcc5f46b&user=Michal+Szudejko&userId=d3b37fc311f7&source=-----3d91fcc5f46b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d91fcc5f46b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-might-of-data-literacy-3d91fcc5f46b&source=-----3d91fcc5f46b---------------------bookmark_footer-----------)![](../Images/fea7880a9074fb65b31eadf0cc645f40.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d91fcc5f46b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-might-of-data-literacy-3d91fcc5f46b&source=-----3d91fcc5f46b---------------------bookmark_footer-----------)![](img/fea7880a9074fb65b31eadf0cc645f40.png)
 
 由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral) 拍摄，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,7 +28,7 @@
 
 如果前面所有问题的答案都是‘否’，那么你可以说：
 
-![](../Images/c01b9661a5d73e04d5c0e0a9d1523beb.png)
+![](img/c01b9661a5d73e04d5c0e0a9d1523beb.png)
 
 图片由 [Dmitrii Ko](https://unsplash.com/@goyongsu?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

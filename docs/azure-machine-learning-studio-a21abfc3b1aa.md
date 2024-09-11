@@ -1,10 +1,10 @@
 # 《Azure 机器学习工作室简介》
 
-> 原文：[https://towardsdatascience.com/azure-machine-learning-studio-a21abfc3b1aa?source=collection_archive---------13-----------------------#2023-01-16](https://towardsdatascience.com/azure-machine-learning-studio-a21abfc3b1aa?source=collection_archive---------13-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/azure-machine-learning-studio-a21abfc3b1aa?source=collection_archive---------13-----------------------#2023-01-16`](https://towardsdatascience.com/azure-machine-learning-studio-a21abfc3b1aa?source=collection_archive---------13-----------------------#2023-01-16)
 
 ## 模型创建、部署和评分
 
-[](https://medium.com/@jonathanbogerd?source=post_page-----a21abfc3b1aa--------------------------------)[![Jonathan Bogerd](../Images/e844961c6ea9766476d3d520dd993ae2.png)](https://medium.com/@jonathanbogerd?source=post_page-----a21abfc3b1aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a21abfc3b1aa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a21abfc3b1aa--------------------------------) [Jonathan Bogerd](https://medium.com/@jonathanbogerd?source=post_page-----a21abfc3b1aa--------------------------------)
+[](https://medium.com/@jonathanbogerd?source=post_page-----a21abfc3b1aa--------------------------------)![Jonathan Bogerd](https://medium.com/@jonathanbogerd?source=post_page-----a21abfc3b1aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a21abfc3b1aa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a21abfc3b1aa--------------------------------) [Jonathan Bogerd](https://medium.com/@jonathanbogerd?source=post_page-----a21abfc3b1aa--------------------------------)
 
 ·
 
@@ -16,31 +16,31 @@
 
 在本文中，我们将涵盖在 Azure 机器学习工作室中创建、部署和使用模型所需的所有步骤。在之前的系列中，我已经介绍过这个主题。然而，在过去一年中，Azure 机器学习工作室（AML Studio）进行了许多更新，包括 Python SDK 的新版本。因此，需要对这个系列进行更新。本文的结构如下：首先，我们将介绍 AML Studio 的概况，然后创建计算资源和环境。第三，我们将创建一个数据存储并上传数据。接下来，在本文的剩余部分，我们将创建模型、部署模型并进行测试。
 
-![](../Images/d2e74147ca6b8ef25a96f90eea6114d0.png)
+![](img/d2e74147ca6b8ef25a96f90eea6114d0.png)
 
 由[Ricardo Resende](https://unsplash.com/@rresenden?utm_source=medium&utm_medium=referral)拍摄的照片，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 **概述介绍**
 
-Azure Machine Learning Studio是微软Azure平台上的机器学习套件。它可以用于创建、部署和使用模型，包括数据和模型的版本控制，并且可以与低代码和SDK选项一起使用。在本文中，我们将讨论Python SDK（V2），但也请务必查看AML Studio的低代码和AutoML功能。
+Azure Machine Learning Studio 是微软 Azure 平台上的机器学习套件。它可以用于创建、部署和使用模型，包括数据和模型的版本控制，并且可以与低代码和 SDK 选项一起使用。在本文中，我们将讨论 Python SDK（V2），但也请务必查看 AML Studio 的低代码和 AutoML 功能。
 
-AML Studio包含用于创建脚本的笔记本，其中可以使用SDK来创建计算、环境和模型。要运行笔记本，我们首先需要一个计算，你可以通过计算选项卡创建。我们还将展示如何使用SDK创建新的计算，但你首先需要一个计算来运行所需的命令。笔记本可以直接在AML Studio中创建和更改，或者你可以连接到Visual Studio Code工作区（如果你愿意）。有关如何做到这一点的详细信息，请参见[此处](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-setup-vs-code)。
+AML Studio 包含用于创建脚本的笔记本，其中可以使用 SDK 来创建计算、环境和模型。要运行笔记本，我们首先需要一个计算，你可以通过计算选项卡创建。我们还将展示如何使用 SDK 创建新的计算，但你首先需要一个计算来运行所需的命令。笔记本可以直接在 AML Studio 中创建和更改，或者你可以连接到 Visual Studio Code 工作区（如果你愿意）。有关如何做到这一点的详细信息，请参见[此处](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-setup-vs-code)。
 
-在本文中，我们将在AML Studio中创建笔记本。在开始之前，有一个非常方便的快捷键可以运行笔记本中的所有单元格：Alt+R。在我们可以在工作区中创建任何内容之前，我们首先需要进行身份验证以获取工作区句柄。这可以通过运行以下脚本来完成：
+在本文中，我们将在 AML Studio 中创建笔记本。在开始之前，有一个非常方便的快捷键可以运行笔记本中的所有单元格：Alt+R。在我们可以在工作区中创建任何内容之前，我们首先需要进行身份验证以获取工作区句柄。这可以通过运行以下脚本来完成：
 
 这是我们在本文中创建的所有其他笔记本所必需的，因此请始终先运行此命令。现在，让我们开始创建一个计算。
 
 **创建计算**
 
-可以使用UI创建计算，确保创建具有所需规格的计算实例。然后可以使用该计算运行例如笔记本。以下代码片段可以用来使用Python SDK创建新的计算实例：
+可以使用 UI 创建计算，确保创建具有所需规格的计算实例。然后可以使用该计算运行例如笔记本。以下代码片段可以用来使用 Python SDK 创建新的计算实例：
 
 如果你需要多个节点，你还可以创建一个计算集群。实现这一点的代码略有不同，下面有示例代码：
 
 **创建环境**
 
-为了训练和部署模型，我们还需要一个指定所需安装包的环境。你还可以提供包的版本，以确保代码按预期运行，并且只有在你首先测试了这些包后才会更新它们。AML Studio中的环境与例如Conda环境非常相似。要创建它们，我们将首先创建一个名为‘dependencies’的子目录。然后我们将创建一个用于训练和部署模型的.yml文件。完成后，我们需要触发实际环境的创建。AML Studio中的环境可以基于微软维护的预定义镜像。详细说明请参见[此处](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-environments-v2?tabs=python)。
+为了训练和部署模型，我们还需要一个指定所需安装包的环境。你还可以提供包的版本，以确保代码按预期运行，并且只有在你首先测试了这些包后才会更新它们。AML Studio 中的环境与例如 Conda 环境非常相似。要创建它们，我们将首先创建一个名为‘dependencies’的子目录。然后我们将创建一个用于训练和部署模型的.yml 文件。完成后，我们需要触发实际环境的创建。AML Studio 中的环境可以基于微软维护的预定义镜像。详细说明请参见[此处](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-environments-v2?tabs=python)。
 
-以下代码在AML Studio中创建并注册一个环境：
+以下代码在 AML Studio 中创建并注册一个环境：
 
 **添加数据**
 

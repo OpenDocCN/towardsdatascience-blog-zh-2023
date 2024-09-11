@@ -1,20 +1,20 @@
 # 实践深度 Q 学习
 
-> 原文：[https://towardsdatascience.com/hands-on-deep-q-learning-9073040ce841?source=collection_archive---------2-----------------------#2023-11-25](https://towardsdatascience.com/hands-on-deep-q-learning-9073040ce841?source=collection_archive---------2-----------------------#2023-11-25)
+> 原文：[`towardsdatascience.com/hands-on-deep-q-learning-9073040ce841?source=collection_archive---------2-----------------------#2023-11-25`](https://towardsdatascience.com/hands-on-deep-q-learning-9073040ce841?source=collection_archive---------2-----------------------#2023-11-25)
 
 ## [强化学习](https://medium.com/tag/reinforcement-learning)
 
 ## 提升你的智能体以赢得更困难的游戏！
 
-[](https://dr-robert-kuebler.medium.com/?source=post_page-----9073040ce841--------------------------------)[![Dr. Robert Kübler](../Images/3b8d8b88f76c0c43d9c305e3885e7ab9.png)](https://dr-robert-kuebler.medium.com/?source=post_page-----9073040ce841--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9073040ce841--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9073040ce841--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----9073040ce841--------------------------------)
+[](https://dr-robert-kuebler.medium.com/?source=post_page-----9073040ce841--------------------------------)![Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----9073040ce841--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9073040ce841--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9073040ce841--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----9073040ce841--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-deep-q-learning-9073040ce841&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----9073040ce841---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9073040ce841--------------------------------) · 14 分钟阅读 · 2023年11月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9073040ce841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-deep-q-learning-9073040ce841&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=-----9073040ce841---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-deep-q-learning-9073040ce841&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----9073040ce841---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9073040ce841--------------------------------) · 14 分钟阅读 · 2023 年 11 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9073040ce841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-deep-q-learning-9073040ce841&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=-----9073040ce841---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9073040ce841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-deep-q-learning-9073040ce841&source=-----9073040ce841---------------------bookmark_footer-----------)![](../Images/8bdefc9ca92e8dc70018967dbcd36267.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9073040ce841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-deep-q-learning-9073040ce841&source=-----9073040ce841---------------------bookmark_footer-----------)![](img/8bdefc9ca92e8dc70018967dbcd36267.png)
 
 图片由 [Sean Stratton](https://unsplash.com/@seanstratton?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,8 +28,8 @@
 
 +   成功和失败是什么样的。
 
-![](../Images/86ef974389efe4be3138d88a39347db3.png)
+![](img/86ef974389efe4be3138d88a39347db3.png)
 
-一个AI代理掌握游戏的例子。接待顾客并将他们送到酒店。图片来源于作者。
+一个 AI 代理掌握游戏的例子。接待顾客并将他们送到酒店。图片来源于作者。
 
 在继续之前，请阅读我关于强化学习的介绍文章。它为你提供了更多背景信息，并展示了如何自行进行一种简单而有效的强化学习方法。它也作为本文的基础。

@@ -1,14 +1,14 @@
 # 常见的 AB 测试错误。第二卷
 
-> 原文：[https://towardsdatascience.com/common-ab-testing-mistakes-vol-2-3f3040a65e8b?source=collection_archive---------15-----------------------#2023-04-13](https://towardsdatascience.com/common-ab-testing-mistakes-vol-2-3f3040a65e8b?source=collection_archive---------15-----------------------#2023-04-13)
+> 原文：[`towardsdatascience.com/common-ab-testing-mistakes-vol-2-3f3040a65e8b?source=collection_archive---------15-----------------------#2023-04-13`](https://towardsdatascience.com/common-ab-testing-mistakes-vol-2-3f3040a65e8b?source=collection_archive---------15-----------------------#2023-04-13)
 
 ## 让我们从错误中学习吧！
 
-[](https://markeltsefon.medium.com/?source=post_page-----3f3040a65e8b--------------------------------)[![Mark Eltsefon](../Images/5ab4cccd496f73cd155bbb253f85ec4d.png)](https://markeltsefon.medium.com/?source=post_page-----3f3040a65e8b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3f3040a65e8b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3f3040a65e8b--------------------------------) [Mark Eltsefon](https://markeltsefon.medium.com/?source=post_page-----3f3040a65e8b--------------------------------)
+[](https://markeltsefon.medium.com/?source=post_page-----3f3040a65e8b--------------------------------)![Mark Eltsefon](https://markeltsefon.medium.com/?source=post_page-----3f3040a65e8b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3f3040a65e8b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3f3040a65e8b--------------------------------) [Mark Eltsefon](https://markeltsefon.medium.com/?source=post_page-----3f3040a65e8b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88f461f6049a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcommon-ab-testing-mistakes-vol-2-3f3040a65e8b&user=Mark+Eltsefon&userId=88f461f6049a&source=post_page-88f461f6049a----3f3040a65e8b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3f3040a65e8b--------------------------------) · 4 分钟阅读 · 2023年4月13日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88f461f6049a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcommon-ab-testing-mistakes-vol-2-3f3040a65e8b&user=Mark+Eltsefon&userId=88f461f6049a&source=post_page-88f461f6049a----3f3040a65e8b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3f3040a65e8b--------------------------------) · 4 分钟阅读 · 2023 年 4 月 13 日
 
 --
 
@@ -18,7 +18,7 @@
 
 避免这些常见错误，我们可以确保实验的可靠性、有效性和信息性，*从而最终实现更好的决策和更成功的结果*。
 
-![](../Images/5fcc613a06f202706f62e105f24a3f48.png)
+![](img/5fcc613a06f202706f62e105f24a3f48.png)
 
 图片由 [Santa Barbara](https://unsplash.com/@barbaris778?utm_source=medium&utm_medium=referral) 提供，[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

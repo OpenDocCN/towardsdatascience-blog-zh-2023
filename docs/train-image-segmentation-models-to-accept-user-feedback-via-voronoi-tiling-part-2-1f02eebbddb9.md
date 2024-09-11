@@ -1,14 +1,14 @@
-# 通过Voronoi分割训练图像分割模型以接受用户反馈，第二部分
+# 通过 Voronoi 分割训练图像分割模型以接受用户反馈，第二部分
 
-> 原文：[https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9?source=collection_archive---------7-----------------------#2023-05-05](https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9?source=collection_archive---------7-----------------------#2023-05-05)
+> 原文：[`towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9?source=collection_archive---------7-----------------------#2023-05-05`](https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9?source=collection_archive---------7-----------------------#2023-05-05)
 
 ## 如何训练现成的图像分割模型以响应用户反馈
 
-[](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)[![Florin Andrei](../Images/372ac3e80dbc03cbd20295ec1df5fa6f.png)](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------) [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)
+[](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)![Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------) [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----1f02eebbddb9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------) ·9分钟阅读·2023年5月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f02eebbddb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----1f02eebbddb9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----1f02eebbddb9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------) ·9 分钟阅读·2023 年 5 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f02eebbddb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----1f02eebbddb9---------------------clap_footer-----------)
 
 --
 
@@ -16,23 +16,23 @@
 
 这是关于训练图像分割模型以便这些模型可以响应用户反馈并根据反馈（鼠标点击）调整预测的系列文章的第二部分。
 
-[第1部分](https://medium.com/towards-data-science/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29)中，我们描述了训练现成图像分割模型以响应用户反馈的一般策略。[第1部分](https://medium.com/towards-data-science/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29)结束时识别出的问题是，手动生成训练模型所需的点击是繁琐且耗时的，如果数据集非常大和/或模型需要频繁重新训练，这可能根本不可行。生成点击需要自动化——这就是本文的主题。
+[第一部分](https://medium.com/towards-data-science/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29)中，我们描述了训练现成图像分割模型以响应用户反馈的一般策略。[第一部分](https://medium.com/towards-data-science/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29)结束时识别出的问题是，手动生成训练模型所需的点击是繁琐且耗时的，如果数据集非常大和/或模型需要频繁重新训练，这可能根本不可行。生成点击需要自动化——这就是本文的主题。
 
 # 问题
 
 让我们再看一看我们试图解决的问题：
 
-![](../Images/8a8ae7bf47de6111503eb31dd631d71e.png)
+![](img/8a8ae7bf47de6111503eb31dd631d71e.png)
 
 来源：乳腺超声图像数据集
 
-左侧框是带有真实标签的图像；人类专家用黄色标记了感兴趣区域（RoI）；这是我们期望模型预测的理想形状。中间框是模型的实际预测。右侧框显示了真实阳性区域（标签和预测重合的地方）、假阳性区域（模型预测为RoI，但标签中没有此区域），以及假阴性区域（模型未预测任何内容，但实际存在RoI）。TP区域以白色显示，FP区域以绿色显示，FN区域以红色显示。
+左侧框是带有真实标签的图像；人类专家用黄色标记了感兴趣区域（RoI）；这是我们期望模型预测的理想形状。中间框是模型的实际预测。右侧框显示了真实阳性区域（标签和预测重合的地方）、假阳性区域（模型预测为 RoI，但标签中没有此区域），以及假阴性区域（模型未预测任何内容，但实际存在 RoI）。TP 区域以白色显示，FP 区域以绿色显示，FN 区域以红色显示。
 
-为了引导模型的预测，我们在TP和FN区域放置了正点击（绿色），在FP区域放置了负点击（红色），然后用包含点击的图像训练了新的模型。
+为了引导模型的预测，我们在 TP 和 FN 区域放置了正点击（绿色），在 FP 区域放置了负点击（红色），然后用包含点击的图像训练了新的模型。
 
 对于人类操作员来说，放置点击直观上是简单的。但如果将过程分解成独立的逻辑步骤和标准，它会变得相当复杂：
 
-+   将TP、FP、FN区域拆分成独立的连续段
++   将 TP、FP、FN 区域拆分成独立的连续段
 
 +   丢弃非常小的段作为无关内容
 
@@ -44,39 +44,39 @@
 
 最后两个标准很困难。模糊性（“不能太近”）以及这两个标准相互矛盾，使得生成点击的过程看似很难保证能收敛到模拟人类操作员所做的解决方案。
 
-然而，我们将展示一种方法，它结合了数学概念（Voronoi镶嵌）与物理学的提示（能量和模拟退火），以产生所需的结果。
+然而，我们将展示一种方法，它结合了数学概念（Voronoi 镶嵌）与物理学的提示（能量和模拟退火），以产生所需的结果。
 
-# Voronoi镶嵌
+# Voronoi 镶嵌
 
 [维基百科页面](https://en.wikipedia.org/wiki/Voronoi_diagram)对该概念的解释相当到位，如果你研究过[聚类算法](https://en.wikipedia.org/wiki/K-means_clustering)，这可能会感到熟悉，但我在这里也补充几句。
 
-![](../Images/3cab9b1020ca213a09e02274f0b7db8f.png)
+![](img/3cab9b1020ca213a09e02274f0b7db8f.png)
 
-在左侧框架中，我们有一个带有几个种子点的正方形区域。对于任何种子点，框架中必须有一个区域（一个瓦片），其中所有像素距离该种子点比距离其他所有种子点更近。在右侧框架中，我们显示了这些瓦片，用颜色编码以匹配种子。每个瓦片被称为Voronoi单元，而寻找这些瓦片的过程称为Voronoi镶嵌。
+在左侧框架中，我们有一个带有几个种子点的正方形区域。对于任何种子点，框架中必须有一个区域（一个瓦片），其中所有像素距离该种子点比距离其他所有种子点更近。在右侧框架中，我们显示了这些瓦片，用颜色编码以匹配种子。每个瓦片被称为 Voronoi 单元，而寻找这些瓦片的过程称为 Voronoi 镶嵌。
 
-这个例子中的种子是随机选择的。我们得到的镶嵌不是均匀的。为了获得均匀的镶嵌，种子还必须是其对应瓦片的质心（或接近质心）——这称为[质心Voronoi镶嵌](https://en.wikipedia.org/wiki/Centroidal_Voronoi_tessellation)。这里是一个非常简单的例子：
+这个例子中的种子是随机选择的。我们得到的镶嵌不是均匀的。为了获得均匀的镶嵌，种子还必须是其对应瓦片的质心（或接近质心）——这称为[质心 Voronoi 镶嵌](https://en.wikipedia.org/wiki/Centroidal_Voronoi_tessellation)。这里是一个非常简单的例子：
 
-![](../Images/fae8daec08441cf7d34fbc971216a2b6.png)
+![](img/fae8daec08441cf7d34fbc971216a2b6.png)
 
-为了找到能导致区域的质心Voronoi镶嵌或其近似的点击坐标（种子），可以使用类似于[Lloyd算法](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm)的东西，它非常快速（是[ k均值聚类](https://en.wikipedia.org/wiki/K-means_clustering)的标准解算器）。这是一个[ Lloyd算法的模拟器](http://www.bitbanging.space/posts/lloyds-algorithm)，可以在你的浏览器中实时运行。但这里有两个问题：
+为了找到能导致区域的质心 Voronoi 镶嵌或其近似的点击坐标（种子），可以使用类似于[Lloyd 算法](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm)的东西，它非常快速（是[ k 均值聚类](https://en.wikipedia.org/wiki/K-means_clustering)的标准解算器）。这是一个[ Lloyd 算法的模拟器](http://www.bitbanging.space/posts/lloyds-algorithm)，可以在你的浏览器中实时运行。但这里有两个问题：
 
-+   Lloyd算法通常用于镶嵌矩形区域。尚不清楚它是否（或如何）推广到我们需要镶嵌的任意区域形状。
++   Lloyd 算法通常用于镶嵌矩形区域。尚不清楚它是否（或如何）推广到我们需要镶嵌的任意区域形状。
 
 +   我们只希望在形状（区域和瓦片）为凸时使用质心镶嵌。当形状为凹时，质心可能会落在我们镶嵌区域之外，这完全不是我们想要的（点击点会在区域之外）。
 
-所以我们需要一种能处理任意形状的方案，它能在形状凹陷时保持点击点在区域内，并且在处理简单矩形区域时表现得像Lloyd算法。这是对任意区域（即使是凹形）的质心Voronoi镶嵌的概括。这是下一节的主题。
+所以我们需要一种能处理任意形状的方案，它能在形状凹陷时保持点击点在区域内，并且在处理简单矩形区域时表现得像 Lloyd 算法。这是对任意区域（即使是凹形）的质心 Voronoi 镶嵌的概括。这是下一节的主题。
 
 # 能量的模拟退火
 
 考虑这种镶嵌：
 
-![](../Images/1a3a4211bf55591d53f1e04fff47ddc9.png)
+![](img/1a3a4211bf55591d53f1e04fff47ddc9.png)
 
 点击分布足够均匀，点击坐标与质心的距离不远（所有形状均为凸形）。这对于我们的目的来说分布还不错。我们能否找到一个与点击坐标对应的目标函数，尝试迭代地最大化或最小化，以达到这样的分布？
 
 让我们看看点击周围的空间：
 
-![](../Images/e9ac35976c0792a2f744c61f498d4b8d.png)
+![](img/e9ac35976c0792a2f744c61f498d4b8d.png)
 
 像素能量的热图
 
@@ -88,7 +88,7 @@
 
 +   计算距离的倒数，即像素的能量
 
-上面展示的图像只是给定点击分布的像素能量热图。Voronoi图块的边缘已经由邻近点击之间最暗的区域所提示。
+上面展示的图像只是给定点击分布的像素能量热图。Voronoi 图块的边缘已经由邻近点击之间最暗的区域所提示。
 
 如果我们计算所有像素的总能量，然后移动点击，寻找提供最高总能量的点击位置，这会导致区域的均匀铺设吗？实际上，这正是上面展示的点击分布的获取方式：
 
@@ -100,7 +100,7 @@
 
 完整代码[在这里展示](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/uniform_clicks.py)。该算法很强大，可以很好地处理凹形状——这是一个在镰刀形分割中以视觉上均匀的方式放置点击的示例：
 
-![](../Images/24776028c12c4a5ee29a732567d07c34.png)
+![](img/24776028c12c4a5ee29a732567d07c34.png)
 
 在凹形中放置点击
 
@@ -108,21 +108,21 @@
 
 点击不会离分割边缘太近，因为那样会减少总能量（分割边缘之外的像素没有能量）。它们也不会彼此靠得太近，因为那样不会“激活”远离紧密点击组的像素。该算法是自我调节的。
 
-注：这个问题与手机塔覆盖问题有相似之处，即你尝试在地图上放置N个手机塔，使得信号在大多数区域尽可能强。
+注：这个问题与手机塔覆盖问题有相似之处，即你尝试在地图上放置 N 个手机塔，使得信号在大多数区域尽可能强。
 
 # 返回到分割模型
 
 总结一下，我们尝试训练图像分割模型，使其对用户反馈（鼠标点击）做出响应。[总体过程](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/train_models.ipynb)是：
 
-+   将图像数据集分成5个折
++   将图像数据集分成 5 个折
 
-+   为每个折训练一个分割模型；这会生成一组5个**基线模型**
++   为每个折训练一个分割模型；这会生成一组 5 个**基线模型**
 
 +   使用基线模型对所有图像进行预测；每个模型对训练中未见过的图像进行预测
 
 +   比较预测与标签；提取所有包含真正阳性、假阳性、假阴性预测的区域
 
-+   将TP、FP、FN区域拆分成连续的段；丢弃最小的段（少于100个像素或更少）
++   将 TP、FP、FN 区域拆分成连续的段；丢弃最小的段（少于 100 个像素或更少）
 
 +   对于每个区域，生成均匀的点击，如本文所示；点击次数取决于区域的大小：较大的区域会收到更多的点击，直到一个合理的限制（例如，512x512 像素的图像大约为 4 … 5 次）。
 
@@ -132,7 +132,7 @@
 
 这里是从实际基线模型预测中生成的图像区域均匀点击的一些示例。我们从数据集中选择了 3 张图像，使用基线模型进行预测，并查看每张图像的 TP、FP、FN 区域。每个区域的颜色比背景色浅，点击是每个区域中最亮的点。
 
-![](../Images/638f6400223efec0ebcd0f6f61ddc3ed.png)
+![](img/638f6400223efec0ebcd0f6f61ddc3ed.png)
 
 来源：乳腺超声图像数据集
 
@@ -154,22 +154,22 @@
 
 # 链接、引用、评论
 
-这个项目是我在数据科学硕士学习最后一个学期的顶点项目的扩展：[https://github.com/FlorinAndrei/datascience_capstone_project](https://github.com/FlorinAndrei/datascience_capstone_project)
+这个项目是我在数据科学硕士学习最后一个学期的顶点项目的扩展：[`github.com/FlorinAndrei/datascience_capstone_project`](https://github.com/FlorinAndrei/datascience_capstone_project)
 
-本毕业设计及相关工作都在威斯康辛大学拉克罗斯分校的乳腺超声图像计算机辅助诊断（CADBUSI）项目中完成，由Jeff Baggett博士监督。[https://datascienceuwl.github.io/CADBUSI/](https://datascienceuwl.github.io/CADBUSI/)
+本毕业设计及相关工作都在威斯康辛大学拉克罗斯分校的乳腺超声图像计算机辅助诊断（CADBUSI）项目中完成，由 Jeff Baggett 博士监督。[`datascienceuwl.github.io/CADBUSI/`](https://datascienceuwl.github.io/CADBUSI/)
 
-这篇文章的GitHub代码库：[https://github.com/FlorinAndrei/segmentation_click_train](https://github.com/FlorinAndrei/segmentation_click_train)
+这篇文章的 GitHub 代码库：[`github.com/FlorinAndrei/segmentation_click_train`](https://github.com/FlorinAndrei/segmentation_click_train)
 
-本文中使用的所有超声图像都属于乳腺超声图像数据集，可在CC BY 4.0许可下使用。引用链接：
+本文中使用的所有超声图像都属于乳腺超声图像数据集，可在 CC BY 4.0 许可下使用。引用链接：
 
-Al-Dhabyani, W., Gomaa, M., Khaled, H., & Fahmy, A. (2019). 乳腺超声图像数据集。*ResearchGate*。2023年5月1日检索自[https://www.sciencedirect.com/science/article/pii/S2352340919312181](https://www.sciencedirect.com/science/article/pii/S2352340919312181)
+Al-Dhabyani, W., Gomaa, M., Khaled, H., & Fahmy, A. (2019). 乳腺超声图像数据集。*ResearchGate*。2023 年 5 月 1 日检索自[`www.sciencedirect.com/science/article/pii/S2352340919312181`](https://www.sciencedirect.com/science/article/pii/S2352340919312181)
 
 其他链接、引用和评论：
 
-Liu, Q., Zheng, M., Planche, B., Karanam, S., Chen, T., Niethammer, M., & Wu, Z. (2022). PseudoClick：带有点击仿真的交互式图像分割。*arXiv.org*。2023年5月1日检索自[https://arxiv.org/abs/2207.05282](https://arxiv.org/abs/2207.05282)
+Liu, Q., Zheng, M., Planche, B., Karanam, S., Chen, T., Niethammer, M., & Wu, Z. (2022). PseudoClick：带有点击仿真的交互式图像分割。*arXiv.org*。2023 年 5 月 1 日检索自[`arxiv.org/abs/2207.05282`](https://arxiv.org/abs/2207.05282)
 
-Xie, E., Wang, W., Yu, Z., Anandkumar, A., Alvarez, J. M., & Luo. P. (2021). SegFormer：用于语义分割的简单高效设计与Transformers。arXiv.org。2023年5月1日检索自[https://arxiv.org/abs/2105.15203](https://arxiv.org/abs/2105.15203)
+Xie, E., Wang, W., Yu, Z., Anandkumar, A., Alvarez, J. M., & Luo. P. (2021). SegFormer：用于语义分割的简单高效设计与 Transformers。arXiv.org。2023 年 5 月 1 日检索自[`arxiv.org/abs/2105.15203`](https://arxiv.org/abs/2105.15203)
 
-HuggingFace的预训练SegFormer模型：[https://huggingface.co/docs/transformers/model_doc/segformer](https://huggingface.co/docs/transformers/model_doc/segformer)
+HuggingFace 的预训练 SegFormer 模型：[`huggingface.co/docs/transformers/model_doc/segformer`](https://huggingface.co/docs/transformers/model_doc/segformer)
 
 本文中不属于乳腺超声图像数据集的图像由作者创建。

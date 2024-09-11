@@ -1,18 +1,18 @@
 # AI 在物流中的应用：利用计算机视觉优化集装箱装载率
 
-> 原文：[https://towardsdatascience.com/ai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242?source=collection_archive---------4-----------------------#2023-12-24](https://towardsdatascience.com/ai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242?source=collection_archive---------4-----------------------#2023-12-24)
+> 原文：[`towardsdatascience.com/ai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242?source=collection_archive---------4-----------------------#2023-12-24`](https://towardsdatascience.com/ai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242?source=collection_archive---------4-----------------------#2023-12-24)
 
 ## 利用 AI 实现更智能的物流管理，并从数据驱动的角度提升集装箱利用率，最大化效率和投资回报率
 
-[](https://jonathanlawhh.medium.com/?source=post_page-----192b89eea242--------------------------------)[![Jonathan Law](../Images/e9f002ac15340f9d85cbb31de928ba4b.png)](https://jonathanlawhh.medium.com/?source=post_page-----192b89eea242--------------------------------)[](https://towardsdatascience.com/?source=post_page-----192b89eea242--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----192b89eea242--------------------------------) [Jonathan Law](https://jonathanlawhh.medium.com/?source=post_page-----192b89eea242--------------------------------)
+[](https://jonathanlawhh.medium.com/?source=post_page-----192b89eea242--------------------------------)![Jonathan Law](https://jonathanlawhh.medium.com/?source=post_page-----192b89eea242--------------------------------)[](https://towardsdatascience.com/?source=post_page-----192b89eea242--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----192b89eea242--------------------------------) [Jonathan Law](https://jonathanlawhh.medium.com/?source=post_page-----192b89eea242--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d14b4b30a02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242&user=Jonathan+Law&userId=8d14b4b30a02&source=post_page-8d14b4b30a02----192b89eea242---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----192b89eea242--------------------------------) ·8 min read·2023年12月24日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d14b4b30a02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242&user=Jonathan+Law&userId=8d14b4b30a02&source=post_page-8d14b4b30a02----192b89eea242---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----192b89eea242--------------------------------) ·8 min read·2023 年 12 月 24 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F192b89eea242&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242&source=-----192b89eea242---------------------bookmark_footer-----------)![](../Images/b5865de2b801a60553df6fdf12f60ead.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F192b89eea242&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-in-logistics-optimizing-container-fill-rate-with-computer-vision-192b89eea242&source=-----192b89eea242---------------------bookmark_footer-----------)![](img/b5865de2b801a60553df6fdf12f60ead.png)
 
 图片由 [Elevate](https://unsplash.com/@elevatebeer?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,7 +30,7 @@
 
 空间增大使得货物不再紧密堆积。这使得箱子、托盘和货物在运输过程中，特别是由于振动和突然停车，能够更自由地移动。
 
-![](../Images/9df918eaf448d0a4b7b496aa1950cd0c.png)
+![](img/9df918eaf448d0a4b7b496aa1950cd0c.png)
 
 作者提供的图片
 
@@ -42,25 +42,25 @@
 
 # 门户
 
-+   [方法](#1325)
++   方法
 
-+   [SAM 自动掩码生成](#516f)
++   SAM 自动掩码生成
 
-+   [基于提示的分割](#ed13)
++   基于提示的分割
 
-+   [结果](#476d)
++   结果
 
-+   [限制](#fd50)
++   限制
 
-+   [关闭](#bff5)
++   关闭
 
 # 方法
 
 解决这一挑战的方法有很多。一种方法是使用[单次检测器](https://www.tensorflow.org/lite/examples/object_detection/overview)（SSD）或[你只看一次](https://pjreddie.com/darknet/yolo/)（YOLO）模型来检测托盘，然后从中计算填充率。Arcgic 在其文档页面[这里](https://developers.arcgis.com/python/guide/how-ssd-works/)详细解释了 SSD 的工作原理。
 
-然而，目的是测试Meta的[Segment Anything Model](https://github.com/facebookresearch/segment-anything/tree/main) (SAM)在这个特定用例中的表现。在Meta AI博客[这里](https://ai.meta.com/blog/segment-anything-foundation-model-image-segmentation/)中，Meta分享了一个演示平台以及SAM的功能概述。这个方法当然不如为这个特定任务训练模型那样领域特定，但通用模型已经取得了长足的进步，值得测试这种任务的可行性。
+然而，目的是测试 Meta 的[Segment Anything Model](https://github.com/facebookresearch/segment-anything/tree/main) (SAM)在这个特定用例中的表现。在 Meta AI 博客[这里](https://ai.meta.com/blog/segment-anything-foundation-model-image-segmentation/)中，Meta 分享了一个演示平台以及 SAM 的功能概述。这个方法当然不如为这个特定任务训练模型那样领域特定，但通用模型已经取得了长足的进步，值得测试这种任务的可行性。
 
-SAM非常多才多艺，提供了两种检测方法，一种是自动掩码生成，它会分割图像上的所有内容，另一种是基于提示的分割，其中图像上的坐标引导分割。Meta在[这里](https://ai.meta.com/blog/segment-anything-foundation-model-image-segmentation/)分享了SAM构建的详细帖子。
+SAM 非常多才多艺，提供了两种检测方法，一种是自动掩码生成，它会分割图像上的所有内容，另一种是基于提示的分割，其中图像上的坐标引导分割。Meta 在[这里](https://ai.meta.com/blog/segment-anything-foundation-model-image-segmentation/)分享了 SAM 构建的详细帖子。
 
 ## SAM 自动掩码生成
 
@@ -70,15 +70,15 @@ mask_generator = SamAutomaticMaskGenerator(sam)
 masks = mask_generator.generate(input_layer_img)
 ```
 
-这种方法效果很好，只需2行Python代码即可轻松设置，所有内容都会在图像中被分割，无需任何指令。
+这种方法效果很好，只需 2 行 Python 代码即可轻松设置，所有内容都会在图像中被分割，无需任何指令。
 
-![](../Images/a703b3472b7e20b4c1e15703c4b13ddd.png)
+![](img/a703b3472b7e20b4c1e15703c4b13ddd.png)
 
 异物分割（作者提供的图像）
 
 然而，挑战在于决定奇怪大小的托盘或异物是否属于该层。在上图中，气囊、一些填充包装物和纸板被分割出来，看起来像是一个托盘。
 
-![](../Images/5efda3aae966a96f34594d0dbf5a000d.png)
+![](img/5efda3aae966a96f34594d0dbf5a000d.png)
 
 多重分割（作者提供的图像）
 
@@ -86,7 +86,7 @@ masks = mask_generator.generate(input_layer_img)
 
 ## 基于提示的分割
 
-基于提示的分割需要提示来指导SAM了解焦点区域的位置和方式。与自动掩码生成方法相比，基于提示的分割方法对该项目更为可行。
+基于提示的分割需要提示来指导 SAM 了解焦点区域的位置和方式。与自动掩码生成方法相比，基于提示的分割方法对该项目更为可行。
 
 以下是程序执行流程的伪代码和代码片段。
 
@@ -115,7 +115,7 @@ mask = cv2.inRange(segmented_img, segment_color - 10, segment_color + 10)
 fill_rate: float = fill_rate_calculation(label_points, mask, segmented_img)
 ```
 
-在这种情况下，可以将每个标签在托盘上的坐标传递给SAM进行分割。标签提取可以使用计算机视觉技术完成，例如定义感兴趣区域、颜色过滤和轮廓。这个过程是业务领域特定的，但通常大多数标签接近白色。
+在这种情况下，可以将每个标签在托盘上的坐标传递给 SAM 进行分割。标签提取可以使用计算机视觉技术完成，例如定义感兴趣区域、颜色过滤和轮廓。这个过程是业务领域特定的，但通常大多数标签接近白色。
 
 更准确的标签检测方式是扫描[序列运输容器代码](https://www.gs1us.org/resources/data-hub-help-center/about-the-serial-shipping-container-code-sscc#:~:text=The%20Serial%20Shipping%20Container%20Code%20%28SSCC%29%20is%20an%2018%2D,units%20through%20the%20supply%20chain.) (SSCC) 条形码，但图像质量不足以检测条形码。
 
@@ -151,11 +151,11 @@ res_final = cv2.bitwise_and(layer_img, layer_img, mask=cv2.bitwise_not(new_mask)
 cv2.imshow("Labels only", res_final)
 ```
 
-对输入图像应用150到255之间的颜色滤镜，如上面的Python代码所示，掩码从输入图像中提取。
+对输入图像应用 150 到 255 之间的颜色滤镜，如上面的 Python 代码所示，掩码从输入图像中提取。
 
-![](../Images/0e26515c33c999cb8801a3b1a5030dac.png)
+![](img/0e26515c33c999cb8801a3b1a5030dac.png)
 
-选择标签的res_final输出（作者提供的图像）
+选择标签的 res_final 输出（作者提供的图像）
 
 提示标签位置将使 SAM 产生更具领域聚焦的结果。尽管提取的标签尺寸不完全准确，但估计足以让提示分割所需部分。
 
@@ -175,13 +175,13 @@ masks, scores, _ = predictor.predict(
 )
 ```
 
-![](../Images/cc9422c6db0d3385aef4f675cf2c09d8.png)
+![](img/cc9422c6db0d3385aef4f675cf2c09d8.png)
 
 另一张图片的 SAM 输出（图片来源于作者）
 
 分割输出如上图所示。采用了一种简单的方法来计算容器的边界，如红色框所示。随后，图像被转换为黑白图像以进行填充率计算。
 
-![](../Images/474cd0c8c49e2c772591a06906d4b13f.png)
+![](img/474cd0c8c49e2c772591a06906d4b13f.png)
 
 填充率使用输出（图片来源于作者）
 
@@ -200,7 +200,7 @@ fill_rate = round(total_white / (total_white + total_black), 2)
 
 # 结果
 
-![](../Images/c6eaeee3c008796cb5db9c0460a8513e.png)
+![](img/c6eaeee3c008796cb5db9c0460a8513e.png)
 
 样本结果（图片来源于作者）
 
@@ -214,7 +214,7 @@ fill_rate = round(total_white / (total_white + total_black), 2)
 
 **Pallets 层**
 
-![](../Images/6003e476e6262c9a6f025de634283684.png)
+![](img/6003e476e6262c9a6f025de634283684.png)
 
 分层检测（图片来源于作者）
 
@@ -222,13 +222,13 @@ fill_rate = round(total_white / (total_white + total_black), 2)
 
 **异物**
 
-![](../Images/ef6c5ae237d830e67b97d5046b977bcc.png)
+![](img/ef6c5ae237d830e67b97d5046b977bcc.png)
 
 气囊误检测（图片来源于作者）
 
 另一个挑战是气囊的分割。在某些情况下，气囊与 pallets 融为一体，导致分割被归为一组。
 
-![](../Images/18c7ad37bb7276b8b517d2a545cbc211.png)
+![](img/18c7ad37bb7276b8b517d2a545cbc211.png)
 
 最近箱体检测（图片来源于作者）
 
@@ -248,14 +248,14 @@ fill_rate = round(total_white / (total_white + total_black), 2)
 
 +   基于填充率阈值计算货物损坏的概率
 
-确保良好输出的最大因素是拥有一致且标准化的输入图像或流。这将大大改善容器高度估计和托盘放置检测。最理想的方式是检测SSCC条形码，并利用条形码的位置来提示分割，然而这会需要更昂贵的摄像头。
+确保良好输出的最大因素是拥有一致且标准化的输入图像或流。这将大大改善容器高度估计和托盘放置检测。最理想的方式是检测 SSCC 条形码，并利用条形码的位置来提示分割，然而这会需要更昂贵的摄像头。
 
 每个人都可以根据[container-fill-rate-ai Github](https://github.com/jonathanlawhh/container-fill-rate-ai)的代码进行适配，遵循[Meta SAM Apache License](https://github.com/facebookresearch/segment-anything/blob/main/LICENSE)。这个项目并不完美，还有很多改进空间。
 
-为自己的业务/用例扩展这个项目可能需要理解代码并调整Python文件中的参数。更重要的是，在进入代码之前，了解业务流程的领域知识是必不可少的。这将帮助你理解如何将代码适配到业务中。
+为自己的业务/用例扩展这个项目可能需要理解代码并调整 Python 文件中的参数。更重要的是，在进入代码之前，了解业务流程的领域知识是必不可少的。这将帮助你理解如何将代码适配到业务中。
 
 要了解更多关于这个项目的信息，请随时联系：
 
-网站：[https://jonathanlawhh.com/](https://jonathanlawhh.com/)
+网站：[`jonathanlawhh.com/`](https://jonathanlawhh.com/)
 
-邮箱：[jon_law98@hotmail.com](mailto:jon_law98@hotmail.com)
+邮箱：jon_law98@hotmail.com

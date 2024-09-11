@@ -1,18 +1,18 @@
 # SQL 中的 RANK() 与 DENSE_RANK() 与 ROW_NUMBER()
 
-> 原文：[https://towardsdatascience.com/rank-vs-dense-rank-vs-row-number-sql-1b6c09097b21?source=collection_archive---------3-----------------------#2023-03-06](https://towardsdatascience.com/rank-vs-dense-rank-vs-row-number-sql-1b6c09097b21?source=collection_archive---------3-----------------------#2023-03-06)
+> 原文：[`towardsdatascience.com/rank-vs-dense-rank-vs-row-number-sql-1b6c09097b21?source=collection_archive---------3-----------------------#2023-03-06`](https://towardsdatascience.com/rank-vs-dense-rank-vs-row-number-sql-1b6c09097b21?source=collection_archive---------3-----------------------#2023-03-06)
 
 ## 理解这些 SQL 窗口函数之间的差异
 
-[](https://gmyrianthous.medium.com/?source=post_page-----1b6c09097b21--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----1b6c09097b21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1b6c09097b21--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1b6c09097b21--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----1b6c09097b21--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----1b6c09097b21--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----1b6c09097b21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1b6c09097b21--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b6c09097b21--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----1b6c09097b21--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frank-vs-dense-rank-vs-row-number-sql-1b6c09097b21&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----1b6c09097b21---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b6c09097b21--------------------------------) ·6分钟阅读·2023年3月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1b6c09097b21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frank-vs-dense-rank-vs-row-number-sql-1b6c09097b21&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----1b6c09097b21---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frank-vs-dense-rank-vs-row-number-sql-1b6c09097b21&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----1b6c09097b21---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b6c09097b21--------------------------------) ·6 分钟阅读·2023 年 3 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1b6c09097b21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frank-vs-dense-rank-vs-row-number-sql-1b6c09097b21&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----1b6c09097b21---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1b6c09097b21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frank-vs-dense-rank-vs-row-number-sql-1b6c09097b21&source=-----1b6c09097b21---------------------bookmark_footer-----------)![](../Images/14a0fd288583774a244801d6caf38161.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1b6c09097b21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frank-vs-dense-rank-vs-row-number-sql-1b6c09097b21&source=-----1b6c09097b21---------------------bookmark_footer-----------)![](img/14a0fd288583774a244801d6caf38161.png)
 
 照片由 [Nik](https://unsplash.com/@helloimnik?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/UNCQklgSUd4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

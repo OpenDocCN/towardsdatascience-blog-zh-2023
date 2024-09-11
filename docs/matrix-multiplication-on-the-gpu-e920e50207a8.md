@@ -1,10 +1,10 @@
 # GPU 上的矩阵乘法
 
-> 原文：[https://towardsdatascience.com/matrix-multiplication-on-the-gpu-e920e50207a8?source=collection_archive---------1-----------------------#2023-10-09](https://towardsdatascience.com/matrix-multiplication-on-the-gpu-e920e50207a8?source=collection_archive---------1-----------------------#2023-10-09)
+> 原文：[`towardsdatascience.com/matrix-multiplication-on-the-gpu-e920e50207a8?source=collection_archive---------1-----------------------#2023-10-09`](https://towardsdatascience.com/matrix-multiplication-on-the-gpu-e920e50207a8?source=collection_archive---------1-----------------------#2023-10-09)
 
 ## 如何在 CUDA 中实现最先进的矩阵乘法性能。
 
-[](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)[![Andy Lo](../Images/07ba4bfa6792696a82c251f5e9d5b9ac.png)](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e920e50207a8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e920e50207a8--------------------------------) [Andy Lo](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)
+[](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)![Andy Lo](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e920e50207a8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e920e50207a8--------------------------------) [Andy Lo](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe920e50207a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmatrix-multiplication-on-the-gpu-e920e50207a8&source=-----e920e50207a8---------------------bookmark_footer-----------)![](../Images/52104d461a859da63d47995f461249b9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe920e50207a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmatrix-multiplication-on-the-gpu-e920e50207a8&source=-----e920e50207a8---------------------bookmark_footer-----------)![](img/52104d461a859da63d47995f461249b9.png)
 
 “从矩阵乘法中汲取灵感的极简艺术，风格为 vaporwave” —— DALLE-2
 
@@ -24,51 +24,51 @@
 
 够了，让我们深入了解吧！
 
-# 回顾GPU架构
+# 回顾 GPU 架构
 
-让我们回顾一下（NVIDIA）GPU的工作原理。GPU通过运行许多**线程**来实现并行处理。每个线程在一个CUDA核心上执行，但在某一时刻，只有一部分线程是活动的，因此可能有比可用的CUDA核心更多的线程。每个线程，无论是否活动，都有自己的**寄存器**。
+让我们回顾一下（NVIDIA）GPU 的工作原理。GPU 通过运行许多**线程**来实现并行处理。每个线程在一个 CUDA 核心上执行，但在某一时刻，只有一部分线程是活动的，因此可能有比可用的 CUDA 核心更多的线程。每个线程，无论是否活动，都有自己的**寄存器**。
 
-一组32个线程称为**warp**。warp中的所有线程必须一起执行（或一起处于非活动状态）。在大多数情况下，非活动warp的数量远多于活动warp，而**warp调度器**负责选择在特定时间执行哪些warp。这使得GPU能够通过调度其他warp在warp等待数据时执行，从而隐藏内存访问的延迟。
+一组 32 个线程称为**warp**。warp 中的所有线程必须一起执行（或一起处于非活动状态）。在大多数情况下，非活动 warp 的数量远多于活动 warp，而**warp 调度器**负责选择在特定时间执行哪些 warp。这使得 GPU 能够通过调度其他 warp 在 warp 等待数据时执行，从而隐藏内存访问的延迟。
 
-一组warp称为**线程块**。所有线程块中的warp在同一个**流处理器**（SM）中执行。每个线程块有自己的**共享内存**，所有线程块中的线程都可以访问。
+一组 warp 称为**线程块**。所有线程块中的 warp 在同一个**流处理器**（SM）中执行。每个线程块有自己的**共享内存**，所有线程块中的线程都可以访问。
 
 > **注意：较新的架构**
 > 
-> 从Volta架构开始，每个线程也有自己的程序计数器和调用栈等。这意味着warp中的每个线程可以同时执行不同的指令。
+> 从 Volta 架构开始，每个线程也有自己的程序计数器和调用栈等。这意味着 warp 中的每个线程可以同时执行不同的指令。
 > 
-> Volta架构还引入了**Tensor Cores**，这些核心专门用于解决特定大小的矩阵乘法。每个活动warp可以访问一个Tensor Core。
+> Volta 架构还引入了**Tensor Cores**，这些核心专门用于解决特定大小的矩阵乘法。每个活动 warp 可以访问一个 Tensor Core。
 > 
-> 在最新的Hopper架构中，引入了**线程块集群**的概念，它表示一组线程块。它使用户能够更细粒度地控制线程块的调度，并允许一个线程块的共享内存在同一集群中的其他线程块访问。
+> 在最新的 Hopper 架构中，引入了**线程块集群**的概念，它表示一组线程块。它使用户能够更细粒度地控制线程块的调度，并允许一个线程块的共享内存在同一集群中的其他线程块访问。
 
 # 并行化矩阵乘法
 
 假设我们想计算：
 
-![](../Images/4428aab079a1a6c5d6c3f9e39a458d3b.png)
+![](img/4428aab079a1a6c5d6c3f9e39a458d3b.png)
 
 我们说在这种情况下问题的规模是(*M*, *N*, *K*)。为了并行化这个操作，我们可以将*A*和*B*拆分成更小的矩阵，分别进行矩阵乘法，然后将结果连接起来形成*C*。
 
 具体来说，我们可以按行分割*A*（即，将*M*分成大小为*M’*的块）和按列分割*B*（即，将*N*分成大小为*N’*的块），得到：
 
-![](../Images/1aebc2d7255e497596700febd57338a9.png)
+![](img/1aebc2d7255e497596700febd57338a9.png)
 
 我们可以看到*C*中的每个子矩阵彼此独立，因此我们可以轻松地并行计算每个子矩阵。
 
 实际上，*K*可能过大，无法直接加载到内存中进行计算。相反，典型的实现也会将*K*分割成大小为*K’*的块，迭代每个块，并对部分结果进行累加（求和）。这被称为串行-*K*归约。（与*parallel-K reduction*相对，见下节）。从数学上看，这样表示：
 
-![](../Images/2a1425f0cb0de36141cd782c6612f755.png)
+![](img/2a1425f0cb0de36141cd782c6612f755.png)
 
 > **注意：Padding**
 > 
-> 在任何问题大小不能被分区大小整除的情况下，我们需要添加**padding**。这通常在我们将分区输入（𝐴ᵢ,ₖ 和 𝐵ₖ,ⱼ）加载到低级内存时隐式完成，我们通过添加零确保加载的分区（𝐴ᵢ,ₖ的大小为M’×K’，𝐵ₖ,ⱼ的大小为K’×N’）总是“满”的。在将结果写回全局内存时需要特别小心，以避免越界错误。
+> 在任何问题大小不能被分区大小整除的情况下，我们需要添加**padding**。这通常在我们将分区输入（𝐴ᵢ,ₖ 和 𝐵ₖ,ⱼ）加载到低级内存时隐式完成，我们通过添加零确保加载的分区（𝐴ᵢ,ₖ的大小为 M’×K’，𝐵ₖ,ⱼ的大小为 K’×N’）总是“满”的。在将结果写回全局内存时需要特别小心，以避免越界错误。
 
-从高层次看，**三层嵌套分区**用于在GPU上并行化矩阵乘法：
+从高层次看，**三层嵌套分区**用于在 GPU 上并行化矩阵乘法：
 
 1. 第一次分区发生在**threadblock**级别。每个线程块负责计算*Cᵢ,ⱼ = Aᵢ Bⱼ*。
 
-2. 第二次分区发生在**warp**级别。线程块级别的问题*Cᵢ,ⱼ* 进一步被分区，每个warp负责计算*Cᵢ,ⱼ⁽ᵐⁿ⁾ = Aᵢ⁽ᵐ⁾ Bⱼ⁽ⁿ⁾*。
+2. 第二次分区发生在**warp**级别。线程块级别的问题*Cᵢ,ⱼ* 进一步被分区，每个 warp 负责计算*Cᵢ,ⱼ⁽ᵐⁿ⁾ = Aᵢ⁽ᵐ⁾ Bⱼ⁽ⁿ⁾*。
 
-3. 第三次分区发生在**instruction**级别。有些指令需要特定大小的输入。例如，第二代Tensor Cores操作大小为(16, 8, 8)的*fp16*问题，而在CUDA核心上通过标量乘法直接实现则仅操作大小为(1, 1, 1)的问题。因此，warp级别的问题被进一步分区，使得每个块有适合指令的大小：*Cᵢ,ⱼ⁽ᵐⁿ⁾⁽ᵃᵇ⁾ = Aᵢ⁽ᵐ⁾⁽ᵃ⁾ Bⱼ⁽ⁿ⁾⁽ᵇ⁾*。
+3. 第三次分区发生在**instruction**级别。有些指令需要特定大小的输入。例如，第二代 Tensor Cores 操作大小为(16, 8, 8)的*fp16*问题，而在 CUDA 核心上通过标量乘法直接实现则仅操作大小为(1, 1, 1)的问题。因此，warp 级别的问题被进一步分区，使得每个块有适合指令的大小：*Cᵢ,ⱼ⁽ᵐⁿ⁾⁽ᵃᵇ⁾ = Aᵢ⁽ᵐ⁾⁽ᵃ⁾ Bⱼ⁽ⁿ⁾⁽ᵇ⁾*。
 
 我们需要三个分区级别是有充分理由的，正如我们在下一节中将看到的。
 
@@ -76,15 +76,15 @@
 
 矩阵乘法如果我们每次计算时都从全局内存重新获取数据，很容易变成内存瓶颈。关键观察是，许多子输入*Aᵢ*和*Bⱼ*在不同的子矩阵乘法中被重复使用。例如，*Aᵢ*需要用于*Cᵢ,₁ , Cᵢ,₂* , ... 和*Bⱼ*需要用于*C*₁*,ⱼ* , *C*₂*,ⱼ* , … 。如果我们能最小化冗余数据移动并尽可能多地重用加载的数据，就能获得最佳的吞吐量。
 
-在CUDA中，有三种用户可访问的内存类型：
+在 CUDA 中，有三种用户可访问的内存类型：
 
-![](../Images/765cbf3a96054ed41752bf1224c377c3.png)
+![](img/765cbf3a96054ed41752bf1224c377c3.png)
 
 下面是每种内存类型如何使用的高级视图：
 
 1.  每个线程块将首先**从全局内存加载其所需输入到共享内存中**。之后对这些数据的访问将由共享内存提供，而不是较慢的全局内存。
 
-1.  在每个线程块中，每个warp将首先**从共享内存加载其所需输入到寄存器中**。随后对这些数据的访问将直接由快速寄存器提供。
+1.  在每个线程块中，每个 warp 将首先**从共享内存加载其所需输入到寄存器中**。随后对这些数据的访问将直接由快速寄存器提供。
 
 # 深入细节
 
@@ -92,33 +92,33 @@
 
 在线程块级别，问题被划分为大小为 (*M’*, *N’*, *K’*) 的子问题。因此，每个线程块负责计算 *C* 的一个片段，记作：
 
-![](../Images/a08a624cc545b2b965a70ec6b47cd807.png)
+![](img/a08a624cc545b2b965a70ec6b47cd807.png)
 
 通过将子输入 *Aᵢ,ₖ* 和 *Bₖ,ⱼ* 加载到共享内存中来最小化冗余的数据移动。当我们完成 *Aᵢ,ₖ Bₖ,ⱼ* 的计算后，下一个块 (*Aᵢ,ₖ₊₁* 和 *Bₖ₊₁,ⱼ*) 将被加载。
 
-## warp级别
+## warp 级别
 
-在warp级别，子问题进一步划分为大小为 (*M’’, N’’, K’’*) 的子子问题。因此，每个 *warp* 负责计算 *Cᵢ,ⱼ,* 记作 *Cᵢ,ⱼ⁽ᵐ ⁿ⁾*：
+在 warp 级别，子问题进一步划分为大小为 (*M’’, N’’, K’’*) 的子子问题。因此，每个 *warp* 负责计算 *Cᵢ,ⱼ,* 记作 *Cᵢ,ⱼ⁽ᵐ ⁿ⁾*：
 
-![](../Images/f37fcc11c765303007fa4ce7af23df12.png)
+![](img/f37fcc11c765303007fa4ce7af23df12.png)
 
-通过将子子输入 *Aᵢ,ₖ⁽ᵐ ˡ⁾* 和 *Bₖ,ⱼ⁽ˡ ⁿ⁾* 加载到**寄存器**中来最小化冗余的数据移动。任何对 *Aᵢ,ₖ⁽ᵐ ˡ⁾* 和 *Bₖ,ⱼ⁽ˡ ⁿ⁾* 的访问*在*warp内将由快速寄存器提供服务。
+通过将子子输入 *Aᵢ,ₖ⁽ᵐ ˡ⁾* 和 *Bₖ,ⱼ⁽ˡ ⁿ⁾* 加载到**寄存器**中来最小化冗余的数据移动。任何对 *Aᵢ,ₖ⁽ᵐ ˡ⁾* 和 *Bₖ,ⱼ⁽ˡ ⁿ⁾* 的访问*在*warp 内将由快速寄存器提供服务。
 
 > **注意：在寄存器之间分配数据**
 > 
-> 值得注意的是，寄存器是**线程级的**。这意味着寄存器中的输入不能被warp中的其他线程访问。如何将 Aᵢ,ₖ⁽ᵐ ˡ⁾ 和 Bₖ,ⱼ⁽ˡ ⁿ⁾ 分配到每个线程的寄存器中，取决于使用的具体指令。NVIDIA 文档中的 [Warp Level Matrix Multiply-Accumulate Instructions](https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-instructions) 对每条指令进行了详细描述。
+> 值得注意的是，寄存器是**线程级的**。这意味着寄存器中的输入不能被 warp 中的其他线程访问。如何将 Aᵢ,ₖ⁽ᵐ ˡ⁾ 和 Bₖ,ⱼ⁽ˡ ⁿ⁾ 分配到每个线程的寄存器中，取决于使用的具体指令。NVIDIA 文档中的 [Warp Level Matrix Multiply-Accumulate Instructions](https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-instructions) 对每条指令进行了详细描述。
 
 ## 张量核心级别
 
 为了实际执行矩阵乘法，我们使用 GPU 上的**张量核心**。我的 GPU (RTX 2060) 具有第二代张量核心，专门解决大小为 (*M’’’, N’’’, K’’’*) = (16, 8, 8) 的 fp16 问题。因此，我们进一步将 *Cᵢ,ⱼ⁽ᵐ ⁿ⁾* 划分为符合指令预期大小的片段：
 
-![](../Images/26652d7248aa29b590f21fc6cbf47814.png)
+![](img/26652d7248aa29b590f21fc6cbf47814.png)
 
 在这里，所有输入已经在寄存器中，因此数据移动开销最小。
 
 > **注意：张量核心**
 > 
-> 张量核心操作是**warp级指令**，意味着warp中的所有线程需要同时执行张量核心指令，协同准备要被**一个**张量核心消费的数据。
+> 张量核心操作是**warp 级指令**，意味着 warp 中的所有线程需要同时执行张量核心指令，协同准备要被**一个**张量核心消费的数据。
 
 # 选择分区大小
 
@@ -128,7 +128,7 @@
 
 从渐近的角度来看，随着问题大小的增加，是的，我们确实希望尽可能使用更多的共享内存和寄存器。然而，对于小问题大小，我们可能会遇到两个问题：
 
-1.  大的分区大小意味着我们将有更少的线程块。由于每个线程块只能在一个SM上执行，这可能意味着我们不能利用所有的SM。
+1.  大的分区大小意味着我们将有更少的线程块。由于每个线程块只能在一个 SM 上执行，这可能意味着我们不能利用所有的 SM。
 
 1.  对于不能被分区大小整除的问题大小，我们需要为输入添加更多的填充。这会降低效率，因为对有意义的输入计算较少。
 
@@ -154,7 +154,7 @@
 
 在 *K* 较大（尽管 *M* 和 *N* 较小）的情况下，我们可以通过进行 **并行-*K* 减少** 来利用更多的并行性。回想一下，在串行-*K* 减少中，每个线程块遍历以下和： 
 
-![](../Images/c3f0c3cbaa4b6a6680fab8fd428b2f57.png)
+![](img/c3f0c3cbaa4b6a6680fab8fd428b2f57.png)
 
 并将中间结果累积到 *Cᵢ,ⱼ*。在并行-*K* 减少中，我们将每个线程块分配为仅计算 *一个和的元素*（即 *Aᵢ,ₖ Bₖ,ⱼ*）。这使我们可以将线程块的数量增加 *K/K’* 倍，从而利用更多的 SMs。
 
@@ -166,30 +166,30 @@
 
 然而，在进行 GEMM 时，warps 的数量通常相对较少。这是因为 warp 的数量受到“每个线程块的可用寄存器数除以每个 warp 需要的寄存器数”的限制。对于矩阵乘法，我们使用大量寄存器以最大化数据重用。因此，我们可能没有足够的 warps 来掩盖延迟。
 
-> “累加器元素通常占用至少一半的线程总寄存器预算。” — CUTLASS文档
+> “累加器元素通常占用至少一半的线程总寄存器预算。” — CUTLASS 文档
 
 为了缓解这一效果，我们可以使用**软件流水线**。本质上，我们可以（手动）使用特殊指令异步预加载下一个迭代的输入。在输入被加载的同时，我们可以继续在当前迭代上进行计算。其总结如下图所示：
 
-![](../Images/d065965816235f5f63c80e4664e724f2.png)
+![](img/d065965816235f5f63c80e4664e724f2.png)
 
 来自[CUTLASS](https://github.com/NVIDIA/cutlass/blob/main/media/docs/efficient_gemm.md)的软件下载流水线
 
-这得益于GPU的特性：它像任何现代CPU一样，可以在没有数据依赖关系的情况下流水化内存访问和算术操作。这被称为**指令级并行**。
+这得益于 GPU 的特性：它像任何现代 CPU 一样，可以在没有数据依赖关系的情况下流水化内存访问和算术操作。这被称为**指令级并行**。
 
 # 矩阵乘法的实际应用
 
-如果你想了解这些概念如何在实际实现中结合起来，可以查看我用CUDA从零开始训练MNIST的实现。在那里，我使用CUDA训练了一个多层感知器，并在隐藏层大小为128时实现了**比优化后的PyTorch快6倍**：
+如果你想了解这些概念如何在实际实现中结合起来，可以查看我用 CUDA 从零开始训练 MNIST 的实现。在那里，我使用 CUDA 训练了一个多层感知器，并在隐藏层大小为 128 时实现了**比优化后的 PyTorch 快 6 倍**：
 
 [](https://github.com/andylolu2/cuda-mnist?source=post_page-----e920e50207a8--------------------------------) [## GitHub - andylolu2/cuda-mnist
 
-### 通过在GitHub上创建账户来参与andylolu2/cuda-mnist的开发。
+### 通过在 GitHub 上创建账户来参与 andylolu2/cuda-mnist 的开发。
 
 [github.com](https://github.com/andylolu2/cuda-mnist?source=post_page-----e920e50207a8--------------------------------)
 
 # 参考资料
 
-1\. [CUTLASS文档](https://github.com/NVIDIA/cutlass/blob/main/media/docs/)
+1\. [CUTLASS 文档](https://github.com/NVIDIA/cutlass/blob/main/media/docs/)
 
-2\. [CUDA文档](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
+2\. [CUDA 文档](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
 
-3\. [CUTLASS示例](https://github.com/NVIDIA/cutlass/tree/main/examples)
+3\. [CUTLASS 示例](https://github.com/NVIDIA/cutlass/tree/main/examples)

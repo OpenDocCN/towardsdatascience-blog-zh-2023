@@ -1,10 +1,10 @@
 # 如何在 2023 年学习地理空间数据科学
 
-> 原文：[https://towardsdatascience.com/how-to-learn-geospatial-data-science-in-2023-441d8386284e?source=collection_archive---------1-----------------------#2023-02-21](https://towardsdatascience.com/how-to-learn-geospatial-data-science-in-2023-441d8386284e?source=collection_archive---------1-----------------------#2023-02-21)
+> 原文：[`towardsdatascience.com/how-to-learn-geospatial-data-science-in-2023-441d8386284e?source=collection_archive---------1-----------------------#2023-02-21`](https://towardsdatascience.com/how-to-learn-geospatial-data-science-in-2023-441d8386284e?source=collection_archive---------1-----------------------#2023-02-21)
 
 ## 对于那些想要学习使用 Python 进行地理空间数据分析的步骤指南 
 
-[](https://cordmaur.medium.com/?source=post_page-----441d8386284e--------------------------------)[![Maurício Cordeiro](../Images/1ec750bf68bbaa0331fabdebebf28eb5.png)](https://cordmaur.medium.com/?source=post_page-----441d8386284e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----441d8386284e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----441d8386284e--------------------------------) [Maurício Cordeiro](https://cordmaur.medium.com/?source=post_page-----441d8386284e--------------------------------)
+[](https://cordmaur.medium.com/?source=post_page-----441d8386284e--------------------------------)![Maurício Cordeiro](https://cordmaur.medium.com/?source=post_page-----441d8386284e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----441d8386284e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----441d8386284e--------------------------------) [Maurício Cordeiro](https://cordmaur.medium.com/?source=post_page-----441d8386284e--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 -- 
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F441d8386284e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-learn-geospatial-data-science-in-2023-441d8386284e&source=-----441d8386284e---------------------bookmark_footer-----------)![](../Images/ed30e52db3fd6f9bee19e96c4a69c338.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F441d8386284e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-learn-geospatial-data-science-in-2023-441d8386284e&source=-----441d8386284e---------------------bookmark_footer-----------)![](img/ed30e52db3fd6f9bee19e96c4a69c338.png)
 
 使用 Dall-E 2 创建的数字图像。说明：一名科学家手持地球的照片。
 
@@ -22,7 +22,7 @@
 
 虽然有很多资源可以用于学习使用 Python 进行地理空间数据分析，但这个领域正在快速发展。在过去，我管理了一个 GIS 团队，我们在水资源映射和水文学分析中严重依赖 ArcGIS 或 ENVI 等软件。然而，我与使用 Python 进行地理空间分析的旅程始于 2019 年，当时我开始了我的博士学习。
 
-本周我偶然发现了《Python Geospatial Development》这本书。起初，我认为这将是提升技能的绝佳机会。然而，在查看了目录后，我感到很惊讶。除了 GDAL（我在开始时简要使用过，但很快被 Rasterio 取代）外，我几乎没有使用第 3 章——地理空间开发的 Python 库中讨论的任何 Python 库。这种差异可以归因于这本书首次出版于 2010 年，且在 2013 年和 2016 年仅进行了小幅更新。在计算机科学的世界里，那已经是很久的时间了。
+本周我偶然发现了《Python Geospatial Development》这本书。起初，我认为这将是提升技能的绝佳机会。然而，在查看了目录后，我感到很惊讶。除了 GDAL（我在开始时简要使用过，但很快被 Rasterio 取代）外，我几乎没有使用第三章——地理空间开发的 Python 库中讨论的任何 Python 库。这种差异可以归因于这本书首次出版于 2010 年，且在 2013 年和 2016 年仅进行了小幅更新。在计算机科学的世界里，那已经是很久的时间了。
 
 尽管由于其驱动程序的原因仍然需要安装 GDAL，但其 Python 绑定已经不再必要，并且使用起来可能会令人困惑（姑且这么说）。此外，我从未听说过如 Mapnik 这样的其他库。此外，像 GeoPandas 或 XArray 这样的基本包在书中甚至没有提及。最后，Google Earth Engine（这一领域的真正变革者）在书籍出版时甚至尚不存在，这突显了实际开发书籍的一个常见问题——它们很快会变得过时。
 
@@ -36,7 +36,7 @@
 
 **1-** **信息过载：** 地理空间数据科学的世界广阔，知道从哪里开始可能会很具挑战性。如果你开始搜索互联网，你会被大量的信息、文章和课程所吓倒。我知道这令人不知所措。突然间，你发现自己只是从一个网站跳到另一个网站，整整一天过去了却没有实际学到任何东西。为了避免感到畏惧，专注于一个主题一次，并避免干扰。使用你喜欢的方法：番茄工作法、Flowtime，或 Deepwork。没关系，只要你保持专注！
 
-![](../Images/8707a3938f76e3f156869adaae71e36f.png)
+![](img/8707a3938f76e3f156869adaae71e36f.png)
 
 照片由 [Usman Yousaf](https://unsplash.com/pt-br/@usmanyousaf?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -44,9 +44,9 @@
 
 > **注意：** 如果你在学习一些基础知识如统计学或物理学，这点可能不太相关，但如果你涉及某些技术方面，它可能会起到重要作用。
 
-**3- 尊重你的学习曲线：** 我开始时遇到的第三个问题是，我试图解决一些高级话题，例如创建一个云中的虚拟机来托管地图服务器，但甚至不了解 Docker 或 Git 是什么。结果，我花了很多时间去解决超出我能力范围的问题。例如，如今，当我想发布一张地图时，我只需将 COG（云优化的 Geotiff）直接发布到 Github 上（例如，[https://cordmaur.github.io/Fastai2-Medium/occurrence_map.html](https://cordmaur.github.io/Fastai2-Medium/occurrence_map.html)），无需设置地图服务器等繁琐操作。但我只有在研究该主题一段时间后才知道 COG 的存在。
+**3- 尊重你的学习曲线：** 我开始时遇到的第三个问题是，我试图解决一些高级话题，例如创建一个云中的虚拟机来托管地图服务器，但甚至不了解 Docker 或 Git 是什么。结果，我花了很多时间去解决超出我能力范围的问题。例如，如今，当我想发布一张地图时，我只需将 COG（云优化的 Geotiff）直接发布到 Github 上（例如，[`cordmaur.github.io/Fastai2-Medium/occurrence_map.html`](https://cordmaur.github.io/Fastai2-Medium/occurrence_map.html)），无需设置地图服务器等繁琐操作。但我只有在研究该主题一段时间后才知道 COG 的存在。
 
-![](../Images/98f871369700b5807563ee0f9990c354.png)
+![](img/98f871369700b5807563ee0f9990c354.png)
 
 图 1: 直接托管在 Github 上的 COG 文件。图片由作者提供。
 
@@ -58,7 +58,7 @@
 
 所以这是我如果从头开始并尽快学习的话，会考虑的“模糊”顺序。
 
-![](../Images/638fbed3096fa5e84df5554afe97b60f.png)
+![](img/638fbed3096fa5e84df5554afe97b60f.png)
 
 使用 Dall-E 2 创建的数字图像。标题：一只泰迪熊爬楼梯的照片，背景是地球。
 
@@ -70,23 +70,23 @@
 
 因此，为了学习最基本的内容，我建议选择像 Codecademy 的‘[**学习 Python 3**](https://www.codecademy.com/learn/learn-python-3)’这样的课程。该课程只需 25 小时即可完成，时间不足一周，并且提供了对语言的快速概述。此外，我在我的 YouTube 频道上发布了四节名为‘[**科学家 Python 入门**](https://www.youtube.com/watch?v=oQaoj6LE5E4&list=PLw8LEAbnPlchA1fO8QMnqUCTP_71VwpGg)’的课程，这也可以是一个很好的主题入门。
 
-![](../Images/fe4a17c0b31803fba03e3246f6d1838c.png)
+![](img/fe4a17c0b31803fba03e3246f6d1838c.png)
 
 使用 Dall-E 2 创建的数字图像。标题：一个小孩在老式计算机上编程的铅笔画。
 
-之后，我建议学习 Jake VanderPlas 编写的《Python 数据科学手册》，可以在作者的 GitHub 上免费获取（[https://jakevdp.github.io/PythonDataScienceHandbook/](https://jakevdp.github.io/PythonDataScienceHandbook/)）。这本书并不专注于讲解 Python 语言的内部工作，如创建复杂函数、定义类、继承或其他面向对象的方面。相反，它提供了对主要库的快速概述，如 **numpy**、**pandas** 和 **matplotlib**，这些都是数据分析中必不可少的工具。
+之后，我建议学习 Jake VanderPlas 编写的《Python 数据科学手册》，可以在作者的 GitHub 上免费获取（[`jakevdp.github.io/PythonDataScienceHandbook/`](https://jakevdp.github.io/PythonDataScienceHandbook/)）。这本书并不专注于讲解 Python 语言的内部工作，如创建复杂函数、定义类、继承或其他面向对象的方面。相反，它提供了对主要库的快速概述，如 **numpy**、**pandas** 和 **matplotlib**，这些都是数据分析中必不可少的工具。
 
 ## 2- GEE 和 GIS 基础
 
 现在你已经对 Python 及其主要的数据分析库有了基本了解，是时候开始接触一些 GIS 概念了。参加一个通用的 GIS 课程可能会让你被关于卫星数据收集、大气中的光路径以及这些如何影响传感器读数的信息轰炸。虽然这些主题对于研究很重要，但对于地理空间数据分析的实际入门可能并不必要。
 
-![](../Images/1bd3df1f32cd59b027d4727976fc8bbb.png)
+![](img/1bd3df1f32cd59b027d4727976fc8bbb.png)
 
 照片来自于[Krzysztof Hepner](https://unsplash.com/@nsx_2000?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 从实际角度出发，我建议通过一个使用 Python 的**Google Earth Engine**实践课程来学习 GIS 基础知识。这样，你将练习 Python 并可以快速访问地理空间数据（包括矢量数据和栅格数据），而无需担心下载或设置复杂的环境。你将立即开始进行首次空间分析。
 
-这样的课程可以在**Udemy**上找到：[Google Earth Engine Python API中的空间数据分析](https://www.udemy.com/course/spatial-data-analysis-with-earth-engine-python-api/)或[完整的 Google Earth Engine Python API & Colab 培训营](https://www.udemy.com/course/complete-google-earth-engine-python-api-colab/)。另一个选择是参加一个完整的 GEE 课程，该课程将使用 JavaScript 环境，但一切可以通过 Python 进行复制，语法仅需稍作调整。
+这样的课程可以在**Udemy**上找到：[Google Earth Engine Python API 中的空间数据分析](https://www.udemy.com/course/spatial-data-analysis-with-earth-engine-python-api/)或[完整的 Google Earth Engine Python API & Colab 培训营](https://www.udemy.com/course/complete-google-earth-engine-python-api-colab/)。另一个选择是参加一个完整的 GEE 课程，该课程将使用 JavaScript 环境，但一切可以通过 Python 进行复制，语法仅需稍作调整。
 
 ## 3- 地理空间 Python 库
 
@@ -128,13 +128,13 @@ Google Earth Engine (GEE) 功能强大，提供大量现成的数据，但也有
 
 +   Docker：Docker 允许你构建、打包和部署作为容器的环境和应用。这些容器可以部署到云服务器上，以提高效率和可扩展性。
 
-![](../Images/903c66c883fb25600fe8d527e08d1bcb.png)
+![](img/903c66c883fb25600fe8d527e08d1bcb.png)
 
 使用 Dall-E 2 创建的数字图像。标题：牛仔骑着火箭飞往月球
 
 ## **7- 数据科学中的数学和统计**
 
-你确定吗？你可能会认为这不是一切的基础？其实，这个话题与陷阱 #4 紧密相关。如果你有良好的数学基础，你应该只挑选那些你真正遇到问题的主题，准确地说。为此，**Khan Academy** ([https://en.khanacademy.org](https://en.khanacademy.org/)) 是一个很棒的免费资源，讲座被分成了大约 10 分钟的短视频。
+你确定吗？你可能会认为这不是一切的基础？其实，这个话题与陷阱 #4 紧密相关。如果你有良好的数学基础，你应该只挑选那些你真正遇到问题的主题，准确地说。为此，**Khan Academy** ([`en.khanacademy.org`](https://en.khanacademy.org/)) 是一个很棒的免费资源，讲座被分成了大约 10 分钟的短视频。
 
 如果你认为你的问题仅在于统计学，你可以考虑 David Forsyth 编写的《计算机科学的概率与统计》这本书，由 Springer 出版。
 

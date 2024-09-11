@@ -1,28 +1,28 @@
 # 机器学习工程师的必备工具
 
-> 原文：[https://towardsdatascience.com/a-machine-learning-engineers-must-have-tools-64605bb227de?source=collection_archive---------4-----------------------#2023-10-19](https://towardsdatascience.com/a-machine-learning-engineers-must-have-tools-64605bb227de?source=collection_archive---------4-----------------------#2023-10-19)
+> 原文：[`towardsdatascience.com/a-machine-learning-engineers-must-have-tools-64605bb227de?source=collection_archive---------4-----------------------#2023-10-19`](https://towardsdatascience.com/a-machine-learning-engineers-must-have-tools-64605bb227de?source=collection_archive---------4-----------------------#2023-10-19)
 
 ## 从技术和生产力两个方面
 
-[](https://medium.com/@cereniyim?source=post_page-----64605bb227de--------------------------------)[![Ceren Iyim](../Images/5a774ece76cff16b65cdf4fcfe01eb06.png)](https://medium.com/@cereniyim?source=post_page-----64605bb227de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----64605bb227de--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----64605bb227de--------------------------------) [Ceren Iyim](https://medium.com/@cereniyim?source=post_page-----64605bb227de--------------------------------)
+[](https://medium.com/@cereniyim?source=post_page-----64605bb227de--------------------------------)![Ceren Iyim](https://medium.com/@cereniyim?source=post_page-----64605bb227de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----64605bb227de--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----64605bb227de--------------------------------) [Ceren Iyim](https://medium.com/@cereniyim?source=post_page-----64605bb227de--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F287e9909d3b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-engineers-must-have-tools-64605bb227de&user=Ceren+Iyim&userId=287e9909d3b5&source=post_page-287e9909d3b5----64605bb227de---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----64605bb227de--------------------------------) ·4 min read·2023年10月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F64605bb227de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-engineers-must-have-tools-64605bb227de&user=Ceren+Iyim&userId=287e9909d3b5&source=-----64605bb227de---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F287e9909d3b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-engineers-must-have-tools-64605bb227de&user=Ceren+Iyim&userId=287e9909d3b5&source=post_page-287e9909d3b5----64605bb227de---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----64605bb227de--------------------------------) ·4 min read·2023 年 10 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F64605bb227de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-engineers-must-have-tools-64605bb227de&user=Ceren+Iyim&userId=287e9909d3b5&source=-----64605bb227de---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F64605bb227de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-engineers-must-have-tools-64605bb227de&source=-----64605bb227de---------------------bookmark_footer-----------)![](../Images/ecd4d387ac807736e75943b74a1fe68d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F64605bb227de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-machine-learning-engineers-must-have-tools-64605bb227de&source=-----64605bb227de---------------------bookmark_footer-----------)![](img/ecd4d387ac807736e75943b74a1fe68d.png)
 
 图片由 [JESHOOTS.COM](https://unsplash.com/@jeshoots?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-大约四年前，我将职业从 [SAP顾问转为数据科学家](/why-i-decided-to-become-a-data-scientist-eec6f8cd435e)。在遵循我为自己设计的课程之后，我在一年内获得了一家初创公司的机器学习工程师职位。
+大约四年前，我将职业从 SAP 顾问转为数据科学家。在遵循我为自己设计的课程之后，我在一年内获得了一家初创公司的机器学习工程师职位。
 
 将我过去四年所学到的知识、使用过的工具和经历凝结成一篇文章并不容易。不过，我会重点介绍那些特别对我有帮助的内容。
 
 随着我角色的进展，我通过使用各种工具和在工作中遵循一些最佳实践来培养软件开发技能：
 
-1.  Git与版本控制
+1.  Git 与版本控制
 
 1.  编写可读且清晰的代码
 
@@ -30,23 +30,23 @@
 
 我不仅会在本文中解释它们，还会提到它们如何帮助我提高软技能和生产力。让我们开始吧🚀
 
-## Git与版本控制
+## Git 与版本控制
 
-[Git](https://en.wikipedia.org/wiki/Git)是一个开源版本控制系统，广泛用于软件开发。它组织项目并管理开发者之间的协作。我在独自工作时并没有使用Git，而是手动管理我的代码和笔记本🙃
+[Git](https://en.wikipedia.org/wiki/Git)是一个开源版本控制系统，广泛用于软件开发。它组织项目并管理开发者之间的协作。我在独自工作时并没有使用 Git，而是手动管理我的代码和笔记本🙃
 
-当涉及到协作时，Git变得必不可少。它有助于跟踪项目进展，并促进协作。
+当涉及到协作时，Git 变得必不可少。它有助于跟踪项目进展，并促进协作。
 
 这是一个广泛的学习主题，很多优秀的资源可供参考（比如[这个](https://www.freecodecamp.org/news/git-and-github-for-beginners/)）。今天，我将重点讲解“commit”这个术语，以及它如何帮助我整理思路。
 
-> Git提交就像是对你代码的一个时间快照。
+> Git 提交就像是对你代码的一个时间快照。
 
-我在早期学习的第一件事之一就是要有组织的Git提交和简洁的提交消息。
+我在早期学习的第一件事之一就是要有组织的 Git 提交和简洁的提交消息。
 
 后来我意识到，提前考虑你的提交及其结构也有助于你组织工作并用更好的逻辑模式设计代码。
 
-这是一个例子，展示了如何在数据科学的背景下组织Git提交，来自我最近的一个项目：
+这是一个例子，展示了如何在数据科学的背景下组织 Git 提交，来自我最近的一个项目：
 
-![](../Images/4f788d949ddc8ee622c370fda7e88d21.png)
+![](img/4f788d949ddc8ee622c370fda7e88d21.png)
 
 作者提供的图片
 
@@ -76,7 +76,7 @@
 
 当涉及到机器学习模型的实验或原型测试其可行性时，使用笔记本通常是首选。
 
-而Jupyter笔记本是一个很好的媒介。
+而 Jupyter 笔记本是一个很好的媒介。
 
 在担任机器学习工程师角色之前，我主要使用 Jupyter 笔记本进行项目开发。当时，我的前团队强制使用 PyCharm，这使我首次接触到集成开发环境（IDE）。
 

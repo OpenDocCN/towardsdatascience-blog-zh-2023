@@ -1,18 +1,18 @@
 # 《人工智能对齐的双面性》
 
-> 原文：[https://towardsdatascience.com/the-two-faces-of-ai-alignment-e58b0c11cc01?source=collection_archive---------14-----------------------#2023-07-18](https://towardsdatascience.com/the-two-faces-of-ai-alignment-e58b0c11cc01?source=collection_archive---------14-----------------------#2023-07-18)
+> 原文：[`towardsdatascience.com/the-two-faces-of-ai-alignment-e58b0c11cc01?source=collection_archive---------14-----------------------#2023-07-18`](https://towardsdatascience.com/the-two-faces-of-ai-alignment-e58b0c11cc01?source=collection_archive---------14-----------------------#2023-07-18)
 
 ## 不对齐的模型与不对齐的代理
 
-[](https://medium.com/@maxhilsdorf?source=post_page-----e58b0c11cc01--------------------------------)[![Max Hilsdorf](../Images/01da76c553e43d5ed6b6849bdbfd00da.png)](https://medium.com/@maxhilsdorf?source=post_page-----e58b0c11cc01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e58b0c11cc01--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e58b0c11cc01--------------------------------) [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----e58b0c11cc01--------------------------------)
+[](https://medium.com/@maxhilsdorf?source=post_page-----e58b0c11cc01--------------------------------)![Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----e58b0c11cc01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e58b0c11cc01--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e58b0c11cc01--------------------------------) [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----e58b0c11cc01--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd0c085a74ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-faces-of-ai-alignment-e58b0c11cc01&user=Max+Hilsdorf&userId=d0c085a74ae8&source=post_page-d0c085a74ae8----e58b0c11cc01---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e58b0c11cc01--------------------------------) ·12分钟阅读·2023年7月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe58b0c11cc01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-faces-of-ai-alignment-e58b0c11cc01&user=Max+Hilsdorf&userId=d0c085a74ae8&source=-----e58b0c11cc01---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd0c085a74ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-faces-of-ai-alignment-e58b0c11cc01&user=Max+Hilsdorf&userId=d0c085a74ae8&source=post_page-d0c085a74ae8----e58b0c11cc01---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e58b0c11cc01--------------------------------) ·12 分钟阅读·2023 年 7 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe58b0c11cc01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-faces-of-ai-alignment-e58b0c11cc01&user=Max+Hilsdorf&userId=d0c085a74ae8&source=-----e58b0c11cc01---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe58b0c11cc01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-faces-of-ai-alignment-e58b0c11cc01&source=-----e58b0c11cc01---------------------bookmark_footer-----------)![](../Images/95518eb41d8df5b41fc07d61b3b3ce53.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe58b0c11cc01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-two-faces-of-ai-alignment-e58b0c11cc01&source=-----e58b0c11cc01---------------------bookmark_footer-----------)![](img/95518eb41d8df5b41fc07d61b3b3ce53.png)
 
 图片改编自 [Tara Winstead](https://www.pexels.com/de-de/foto/hande-verbindung-zukunft-roboter-8386434/)。
 

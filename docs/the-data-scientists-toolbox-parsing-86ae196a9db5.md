@@ -1,20 +1,20 @@
 # 数据科学家的工具箱：解析
 
-> 原文：[https://towardsdatascience.com/the-data-scientists-toolbox-parsing-86ae196a9db5?source=collection_archive---------7-----------------------#2023-11-11](https://towardsdatascience.com/the-data-scientists-toolbox-parsing-86ae196a9db5?source=collection_archive---------7-----------------------#2023-11-11)
+> 原文：[`towardsdatascience.com/the-data-scientists-toolbox-parsing-86ae196a9db5?source=collection_archive---------7-----------------------#2023-11-11`](https://towardsdatascience.com/the-data-scientists-toolbox-parsing-86ae196a9db5?source=collection_archive---------7-----------------------#2023-11-11)
 
 ## 如果您有合适的工具，解析复杂文档将会变得很容易
 
-[](https://medium.com/@doug.blank?source=post_page-----86ae196a9db5--------------------------------)[![Douglas Blank, PhD](../Images/b2fa86b9fe63a8bcb4f218ef5a6791e9.png)](https://medium.com/@doug.blank?source=post_page-----86ae196a9db5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86ae196a9db5--------------------------------)[![向数据科学迈进](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----86ae196a9db5--------------------------------) [Douglas Blank, PhD](https://medium.com/@doug.blank?source=post_page-----86ae196a9db5--------------------------------)
+[](https://medium.com/@doug.blank?source=post_page-----86ae196a9db5--------------------------------)![Douglas Blank, PhD](https://medium.com/@doug.blank?source=post_page-----86ae196a9db5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86ae196a9db5--------------------------------)![向数据科学迈进](https://towardsdatascience.com/?source=post_page-----86ae196a9db5--------------------------------) [Douglas Blank, PhD](https://medium.com/@doug.blank?source=post_page-----86ae196a9db5--------------------------------)
 
 ·
 
-[阅读更多](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F66e2bac7e7d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-data-scientists-toolbox-parsing-86ae196a9db5&user=Douglas+Blank%2C+PhD&userId=66e2bac7e7d8&source=post_page-66e2bac7e7d8----86ae196a9db5---------------------post_header-----------) 发表在[向数据科学迈进](https://towardsdatascience.com/?source=post_page-----86ae196a9db5--------------------------------) ·9分钟读·2023年11月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F86ae196a9db5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-data-scientists-toolbox-parsing-86ae196a9db5&user=Douglas+Blank%2C+PhD&userId=66e2bac7e7d8&source=-----86ae196a9db5---------------------clap_footer-----------)
+[阅读更多](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F66e2bac7e7d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-data-scientists-toolbox-parsing-86ae196a9db5&user=Douglas+Blank%2C+PhD&userId=66e2bac7e7d8&source=post_page-66e2bac7e7d8----86ae196a9db5---------------------post_header-----------) 发表在[向数据科学迈进](https://towardsdatascience.com/?source=post_page-----86ae196a9db5--------------------------------) ·9 分钟读·2023 年 11 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F86ae196a9db5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-data-scientists-toolbox-parsing-86ae196a9db5&user=Douglas+Blank%2C+PhD&userId=66e2bac7e7d8&source=-----86ae196a9db5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F86ae196a9db5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-data-scientists-toolbox-parsing-86ae196a9db5&source=-----86ae196a9db5---------------------bookmark_footer-----------)![](../Images/38272ce6f7419e699fcc02d3a16f4b5c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F86ae196a9db5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-data-scientists-toolbox-parsing-86ae196a9db5&source=-----86ae196a9db5---------------------bookmark_footer-----------)![](img/38272ce6f7419e699fcc02d3a16f4b5c.png)
 
-本文讨论的基于Python的新rd2md解析器和转换器的源代码。图片由作者提供。
+本文讨论的基于 Python 的新 rd2md 解析器和转换器的源代码。图片由作者提供。
 
 对于许多数据科学家来说，将复杂文档转换为可用数据是一个常见问题。让我们看看一个复杂的文档，并探讨不同的转换数据的方法。
 
@@ -77,13 +77,13 @@ retrieve a Comet experiment object.
 
 A comet experiment object can be used to modify or get information about an active
 experiment. All methods documented here are the different ways to interact with an
-experiment. Use [`create_experiment()`](../create_experiment) to create or [`get_experiment()`](../get_experiment) to
+experiment. Use `create_experiment()` to create or `get_experiment()` to
 retrieve a Comet experiment object.
 ```
 
 渲染效果如下：
 
-![](../Images/97565b6721fff6562a8d318ea6f63f61.png)
+![](img/97565b6721fff6562a8d318ea6f63f61.png)
 
 示例的 markdown 输出。图片由作者提供。
 
@@ -318,7 +318,7 @@ doc.add_method(method)
 
 就是这样！要查看完成的项目，请查看新的基于 Python 的 [rd2md](https://github.com/comet-ml/rd2md/)。它是一个 [pip-installable](https://pypi.org/project/rd2md/)，开源的 Python 库，用于从 R 的 Rd 文件生成 markdown。我们在这里使用了它的 R 文档：
 
-[https://www.comet.com/docs/v2/api-and-sdk/r-sdk/overview/](https://www.comet.com/docs/v2/api-and-sdk/r-sdk/overview/)
+[`www.comet.com/docs/v2/api-and-sdk/r-sdk/overview/`](https://www.comet.com/docs/v2/api-and-sdk/r-sdk/overview/)
 
 这是一个下午的临时小项目吗？是的。它由不低于 4 种不同的解析方法组成。但它能完成任务，而且据我所知，它是唯一有效的 Rd 到 markdown 转换器。如果我要重构它，我可能会先分词整个文件，然后使用上面展示的最后一种方法进行处理。记住规则 3：**不要害怕丢弃代码并重新开始！**
 

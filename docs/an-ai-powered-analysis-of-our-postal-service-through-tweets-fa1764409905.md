@@ -1,20 +1,20 @@
 # 通过推文对我们邮政服务进行 AI 驱动的分析
 
-> 原文：[https://towardsdatascience.com/an-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905?source=collection_archive---------9-----------------------#2023-03-22](https://towardsdatascience.com/an-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905?source=collection_archive---------9-----------------------#2023-03-22)
+> 原文：[`towardsdatascience.com/an-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905?source=collection_archive---------9-----------------------#2023-03-22`](https://towardsdatascience.com/an-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905?source=collection_archive---------9-----------------------#2023-03-22)
 
 ## 用 AI 解读客户声音
 
 ## 深入探讨机器学习、主题建模和情感分析，以揭示宝贵的客户观点
 
-[](https://johnadeojo.medium.com/?source=post_page-----fa1764409905--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----fa1764409905--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa1764409905--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fa1764409905--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----fa1764409905--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----fa1764409905--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----fa1764409905--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa1764409905--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa1764409905--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----fa1764409905--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----fa1764409905---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa1764409905--------------------------------) · 13 min 阅读 · 2023年3月22日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffa1764409905&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905&user=John+Adeojo&userId=f933e1637e40&source=-----fa1764409905---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----fa1764409905---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa1764409905--------------------------------) · 13 min 阅读 · 2023 年 3 月 22 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffa1764409905&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905&user=John+Adeojo&userId=f933e1637e40&source=-----fa1764409905---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffa1764409905&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905&source=-----fa1764409905---------------------bookmark_footer-----------)![](../Images/3ca21fa5a67996b27ed77e77c334b936.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffa1764409905&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ai-powered-analysis-of-our-postal-service-through-tweets-fa1764409905&source=-----fa1764409905---------------------bookmark_footer-----------)![](img/3ca21fa5a67996b27ed77e77c334b936.png)
 
 作者提供的图像：为 #royalmail 生成的 AI 情感和主题
 

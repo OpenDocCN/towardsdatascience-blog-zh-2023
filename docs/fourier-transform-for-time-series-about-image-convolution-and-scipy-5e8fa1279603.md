@@ -1,14 +1,14 @@
-# 傅里叶变换在时间序列中的应用：关于图像卷积和SciPy
+# 傅里叶变换在时间序列中的应用：关于图像卷积和 SciPy
 
-> 原文：[https://towardsdatascience.com/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603?source=collection_archive---------17-----------------------#2023-07-21](https://towardsdatascience.com/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603?source=collection_archive---------17-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603?source=collection_archive---------17-----------------------#2023-07-21`](https://towardsdatascience.com/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603?source=collection_archive---------17-----------------------#2023-07-21)
 
 ## 傅里叶变换卷积也适用于图像
 
-[](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)[![Yoann Mocquin](../Images/b30a0f70c56972aabd2bc0a74baa90bb.png)](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)
+[](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)![Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F173731d06320&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603&user=Yoann+Mocquin&userId=173731d06320&source=post_page-173731d06320----5e8fa1279603---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------) ·5分钟阅读·2023年7月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5e8fa1279603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603&user=Yoann+Mocquin&userId=173731d06320&source=-----5e8fa1279603---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F173731d06320&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603&user=Yoann+Mocquin&userId=173731d06320&source=post_page-173731d06320----5e8fa1279603---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------) ·5 分钟阅读·2023 年 7 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5e8fa1279603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603&user=Yoann+Mocquin&userId=173731d06320&source=-----5e8fa1279603---------------------clap_footer-----------)
 
 --
 
@@ -16,11 +16,11 @@
 
 本文是傅里叶变换在时间序列中的第二篇，第一篇请点击这里：
 
-[](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----5e8fa1279603--------------------------------) [## 傅里叶变换在时间序列中的应用：使用numpy解释快速卷积
+[](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----5e8fa1279603--------------------------------) ## 傅里叶变换在时间序列中的应用：使用 numpy 解释快速卷积
 
-### 使用傅里叶变换实现10000倍更快的卷积
+### 使用傅里叶变换实现 10000 倍更快的卷积
 
-towardsdatascience.com](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----5e8fa1279603--------------------------------)
+towardsdatascience.com
 
 # **对上一篇文章的快速回顾**
 

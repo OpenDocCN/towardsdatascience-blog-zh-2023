@@ -1,22 +1,22 @@
 # 是否使用机器学习
 
-> 原文：[https://towardsdatascience.com/to-use-or-not-to-use-machine-learning-d28185382c14?source=collection_archive---------6-----------------------#2023-07-28](https://towardsdatascience.com/to-use-or-not-to-use-machine-learning-d28185382c14?source=collection_archive---------6-----------------------#2023-07-28)
+> 原文：[`towardsdatascience.com/to-use-or-not-to-use-machine-learning-d28185382c14?source=collection_archive---------6-----------------------#2023-07-28`](https://towardsdatascience.com/to-use-or-not-to-use-machine-learning-d28185382c14?source=collection_archive---------6-----------------------#2023-07-28)
 
-## 如何决定是否使用机器学习，以及这在生成式AI的影响下是如何变化的
+## 如何决定是否使用机器学习，以及这在生成式 AI 的影响下是如何变化的
 
-[](https://annaviaba.medium.com/?source=post_page-----d28185382c14--------------------------------)[![Anna Via](../Images/7e8fe5c1a485a789edad3a6d118bcf45.png)](https://annaviaba.medium.com/?source=post_page-----d28185382c14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d28185382c14--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d28185382c14--------------------------------) [Anna Via](https://annaviaba.medium.com/?source=post_page-----d28185382c14--------------------------------)
+[](https://annaviaba.medium.com/?source=post_page-----d28185382c14--------------------------------)![Anna Via](https://annaviaba.medium.com/?source=post_page-----d28185382c14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d28185382c14--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d28185382c14--------------------------------) [Anna Via](https://annaviaba.medium.com/?source=post_page-----d28185382c14--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1a8933ed8b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fto-use-or-not-to-use-machine-learning-d28185382c14&user=Anna+Via&userId=c1a8933ed8b&source=post_page-c1a8933ed8b----d28185382c14---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d28185382c14--------------------------------) ·8分钟阅读·2023年7月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd28185382c14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fto-use-or-not-to-use-machine-learning-d28185382c14&user=Anna+Via&userId=c1a8933ed8b&source=-----d28185382c14---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1a8933ed8b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fto-use-or-not-to-use-machine-learning-d28185382c14&user=Anna+Via&userId=c1a8933ed8b&source=post_page-c1a8933ed8b----d28185382c14---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d28185382c14--------------------------------) ·8 分钟阅读·2023 年 7 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd28185382c14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fto-use-or-not-to-use-machine-learning-d28185382c14&user=Anna+Via&userId=c1a8933ed8b&source=-----d28185382c14---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd28185382c14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fto-use-or-not-to-use-machine-learning-d28185382c14&source=-----d28185382c14---------------------bookmark_footer-----------)![](../Images/8d5c08adb67df49de8a44d9e52766051.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd28185382c14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fto-use-or-not-to-use-machine-learning-d28185382c14&source=-----d28185382c14---------------------bookmark_footer-----------)![](img/8d5c08adb67df49de8a44d9e52766051.png)
 
 图片来源于 [Ivan Aleksic](https://unsplash.com/es/@ivalex) 在 [Unsplash](https://unsplash.com/es/fotos/2RRq1BHPq4E?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-机器学习擅长解决某些复杂问题，通常涉及特征和结果之间的难以用启发式规则或if-else语句编码的复杂关系。然而，在决定是否使用机器学习作为解决方案时，有一些局限性或需考虑的因素。在这篇文章中，我们将深入探讨**“是否使用机器学习”**这一话题，首先理解“传统”机器学习模型，然后讨论随着生成式AI的进展这一图景如何变化。
+机器学习擅长解决某些复杂问题，通常涉及特征和结果之间的难以用启发式规则或 if-else 语句编码的复杂关系。然而，在决定是否使用机器学习作为解决方案时，有一些局限性或需考虑的因素。在这篇文章中，我们将深入探讨**“是否使用机器学习”**这一话题，首先理解“传统”机器学习模型，然后讨论随着生成式 AI 的进展这一图景如何变化。
 
 为了澄清一些要点，我将以以下倡议为例：*“作为一家公司，我想知道我的客户是否满意以及不满的主要原因”*。解决这个问题的“传统”机器学习方法可能是：
 
@@ -26,7 +26,7 @@
 
 +   对预测的“消极情绪”评论使用主题建模，以了解其内容。
 
-![](../Images/ffc441f8fc3babbbb67a76fdab1f0e13.png)
+![](img/ffc441f8fc3babbbb67a76fdab1f0e13.png)
 
 评论的分类分为积极、中性和消极情绪（图像来源于作者）
 
@@ -50,7 +50,7 @@
 
 现在标签的定义已经明确，我们需要能够为一个足够数量且质量高的示例获取这些标签，这些标签将构成我们的训练数据。在我们的例子中，我们可以考虑手动标记一组评论，无论是在公司或团队内部，还是将标记工作外包给专业注释员（是的，有专门的人全职从事机器学习数据集的标记工作！）。获取这些标签的成本和可行性需要被考虑。
 
-![](../Images/55e0ce3919aa814f6b65c54efab18ce4.png)
+![](img/55e0ce3919aa814f6b65c54efab18ce4.png)
 
 对于一个示例的标签，在我们的例子中，是评论（作者提供的图片）
 
@@ -58,7 +58,7 @@
 
 为了实现最终的影响，机器学习模型的预测结果需要是可用的。根据用例，使用预测结果可能需要特定的基础设施（例如机器学习平台）和专家（例如机器学习工程师）。
 
-在我们的例子中，由于我们希望将模型用于分析目的，我们可以离线运行它，并且利用预测结果会相当简单。然而，如果我们希望在评论发布后的5分钟内自动回应负面评论，那将是另一回事：模型需要被部署和集成才能实现这一目标。总体而言，明确使用预测结果的要求非常重要，以确保团队和现有工具能够实现这些要求。
+在我们的例子中，由于我们希望将模型用于分析目的，我们可以离线运行它，并且利用预测结果会相当简单。然而，如果我们希望在评论发布后的 5 分钟内自动回应负面评论，那将是另一回事：模型需要被部署和集成才能实现这一目标。总体而言，明确使用预测结果的要求非常重要，以确保团队和现有工具能够实现这些要求。
 
 # 风险是什么？
 
@@ -80,21 +80,21 @@
 
 这个话题与伦理问题有很强的关系：如果我们不能完全理解模型的决策，就很难知道模型是否学会了具有歧视性。
 
-# 所有这些都随着生成式AI的出现而改变了吗？
+# 所有这些都随着生成式 AI 的出现而改变了吗？
 
-随着生成式AI的进步，各种公司提供了网页和API来使用强大的模型。这是如何改变我之前提到的关于机器学习的限制和考虑的？
+随着生成式 AI 的进步，各种公司提供了网页和 API 来使用强大的模型。这是如何改变我之前提到的关于机器学习的限制和考虑的？
 
-+   **数据相关话题（质量、数量和标签）：** 对于能够利用现有生成式AI模型的用例，这种情况正在发生变化。大量数据已经用于训练生成式AI模型。大多数模型的数据质量未被控制，但这似乎被其使用的大量数据所弥补。由于这些模型，这可能会成为事实（再次强调，非常具体的用例），我们可能不再需要训练数据。这被称为零样本学习（例如，*“询问ChatGPT给定评论的情感”*）和少样本学习（例如，*“向ChatGPT提供一些积极、中性和消极评论的例子，然后要求它对新评论提供情感分析”*）。有关此内容的良好解释可以在[deeplearning.ai新闻通讯](https://www.deeplearning.ai/the-batch/how-prompting-is-changing-machine-learning-development/)中找到。
++   **数据相关话题（质量、数量和标签）：** 对于能够利用现有生成式 AI 模型的用例，这种情况正在发生变化。大量数据已经用于训练生成式 AI 模型。大多数模型的数据质量未被控制，但这似乎被其使用的大量数据所弥补。由于这些模型，这可能会成为事实（再次强调，非常具体的用例），我们可能不再需要训练数据。这被称为零样本学习（例如，*“询问 ChatGPT 给定评论的情感”*）和少样本学习（例如，*“向 ChatGPT 提供一些积极、中性和消极评论的例子，然后要求它对新评论提供情感分析”*）。有关此内容的良好解释可以在[deeplearning.ai 新闻通讯](https://www.deeplearning.ai/the-batch/how-prompting-is-changing-machine-learning-development/)中找到。
 
-+   **部署可行性：** 对于能够利用现有生成式AI模型的用例，部署变得容易得多，因为许多公司和工具提供了易于使用的API。如果这些模型需要微调或因隐私原因引入内部，那么部署自然会变得更困难。
++   **部署可行性：** 对于能够利用现有生成式 AI 模型的用例，部署变得容易得多，因为许多公司和工具提供了易于使用的 API。如果这些模型需要微调或因隐私原因引入内部，那么部署自然会变得更困难。
 
-![](../Images/e5b0a50fec9dd97ae0f24a3b96b08a06.png)
+![](img/e5b0a50fec9dd97ae0f24a3b96b08a06.png)
 
-“传统”机器学习与利用生成式AI模型（图像由作者提供）
+“传统”机器学习与利用生成式 AI 模型（图像由作者提供）
 
-其他限制或考虑因素不会改变，无论是否利用生成式AI：
+其他限制或考虑因素不会改变，无论是否利用生成式 AI：
 
-+   **高风险：** 这个问题仍然存在，因为生成式AI模型在预测中也有一定的误差。谁没见过GhatGPT出现幻觉或给出不合理的答案？更糟糕的是，评估这些模型变得更难，因为无论模型的准确度如何，响应总是听起来很自信，评估变得主观（例如，*“这个回答对我来说是否有意义？”*）。
++   **高风险：** 这个问题仍然存在，因为生成式 AI 模型在预测中也有一定的误差。谁没见过 GhatGPT 出现幻觉或给出不合理的答案？更糟糕的是，评估这些模型变得更难，因为无论模型的准确度如何，响应总是听起来很自信，评估变得主观（例如，*“这个回答对我来说是否有意义？”*）。
 
 +   **伦理：** 依然像以前一样重要。已有证据表明，生成式人工智能模型可能因用于训练的数据输入而存在偏见 ([link](https://news.mit.edu/2023/large-language-models-are-biased-can-logic-help-save-them-0303))。随着越来越多的公司和功能开始使用这些类型的模型，明确它们可能带来的风险是很重要的。
 

@@ -1,18 +1,18 @@
 # 避免神经网络过拟合：深入探讨
 
-> 原文：[https://towardsdatascience.com/avoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507?source=collection_archive---------3-----------------------#2023-11-30](https://towardsdatascience.com/avoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507?source=collection_archive---------3-----------------------#2023-11-30)
+> 原文：[`towardsdatascience.com/avoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507?source=collection_archive---------3-----------------------#2023-11-30`](https://towardsdatascience.com/avoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507?source=collection_archive---------3-----------------------#2023-11-30)
 
 ## 学习如何实施正则化技术以提升性能并防止神经网络过拟合
 
-[](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)[![Riccardo Andreoni](../Images/5e22581e419639b373019a809d6e65c1.png)](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------) [Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)
+[](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)![Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------) [Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76784541161c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&user=Riccardo+Andreoni&userId=76784541161c&source=post_page-76784541161c----b4615a2d9507---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------) ·10分钟阅读·2023年11月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb4615a2d9507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&user=Riccardo+Andreoni&userId=76784541161c&source=-----b4615a2d9507---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76784541161c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&user=Riccardo+Andreoni&userId=76784541161c&source=post_page-76784541161c----b4615a2d9507---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------) ·10 分钟阅读·2023 年 11 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb4615a2d9507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&user=Riccardo+Andreoni&userId=76784541161c&source=-----b4615a2d9507---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4615a2d9507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&source=-----b4615a2d9507---------------------bookmark_footer-----------)![](../Images/9b99bb683b9b10973ea4a001da99621b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4615a2d9507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&source=-----b4615a2d9507---------------------bookmark_footer-----------)![](img/9b99bb683b9b10973ea4a001da99621b.png)
 
 图片来源：[unsplash.com](https://unsplash.com/photos/multicolored-illustration-gpiKdZmDQig)。
 

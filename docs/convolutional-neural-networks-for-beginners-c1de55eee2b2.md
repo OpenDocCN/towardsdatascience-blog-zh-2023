@@ -1,18 +1,18 @@
 # 初学者的卷积神经网络
 
-> 原文：[https://towardsdatascience.com/convolutional-neural-networks-for-beginners-c1de55eee2b2?source=collection_archive---------7-----------------------#2023-10-17](https://towardsdatascience.com/convolutional-neural-networks-for-beginners-c1de55eee2b2?source=collection_archive---------7-----------------------#2023-10-17)
+> 原文：[`towardsdatascience.com/convolutional-neural-networks-for-beginners-c1de55eee2b2?source=collection_archive---------7-----------------------#2023-10-17`](https://towardsdatascience.com/convolutional-neural-networks-for-beginners-c1de55eee2b2?source=collection_archive---------7-----------------------#2023-10-17)
 
 ## 卷积神经网络的基础
 
-[](https://medium.com/@mina.ghashami?source=post_page-----c1de55eee2b2--------------------------------)[![Mina Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----c1de55eee2b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c1de55eee2b2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c1de55eee2b2--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----c1de55eee2b2--------------------------------)
+[](https://medium.com/@mina.ghashami?source=post_page-----c1de55eee2b2--------------------------------)![Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----c1de55eee2b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c1de55eee2b2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c1de55eee2b2--------------------------------) [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----c1de55eee2b2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconvolutional-neural-networks-for-beginners-c1de55eee2b2&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----c1de55eee2b2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c1de55eee2b2--------------------------------) · 6 分钟阅读 · 2023年10月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc1de55eee2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconvolutional-neural-networks-for-beginners-c1de55eee2b2&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----c1de55eee2b2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconvolutional-neural-networks-for-beginners-c1de55eee2b2&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----c1de55eee2b2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c1de55eee2b2--------------------------------) · 6 分钟阅读 · 2023 年 10 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc1de55eee2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconvolutional-neural-networks-for-beginners-c1de55eee2b2&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----c1de55eee2b2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc1de55eee2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconvolutional-neural-networks-for-beginners-c1de55eee2b2&source=-----c1de55eee2b2---------------------bookmark_footer-----------)![](../Images/81572a08a73278e57437c5f0d487cdca.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc1de55eee2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconvolutional-neural-networks-for-beginners-c1de55eee2b2&source=-----c1de55eee2b2---------------------bookmark_footer-----------)![](img/81572a08a73278e57437c5f0d487cdca.png)
 
 图片来自 [unsplash.com](https://unsplash.com/photos/an-abstract-image-of-a-sphere-with-dots-and-lines-nGoCBxiaRO0)
 
@@ -28,4 +28,4 @@
 
 卷积是核心（滤波器）与输入特征图之间的数学操作。
 
-核心通常是一个小矩阵，例如3x3或5x5。输入总是一个具有高度、宽度和通道的特征图。卷积操作的工作原理是*核心在输入上滑动*，*并计算两者之间的点积*……
+核心通常是一个小矩阵，例如 3x3 或 5x5。输入总是一个具有高度、宽度和通道的特征图。卷积操作的工作原理是*核心在输入上滑动*，*并计算两者之间的点积*……

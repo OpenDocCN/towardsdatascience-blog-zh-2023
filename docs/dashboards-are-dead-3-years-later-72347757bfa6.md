@@ -1,26 +1,26 @@
 # 仪表盘已经死了：三年后的回顾
 
-> 原文：[https://towardsdatascience.com/dashboards-are-dead-3-years-later-72347757bfa6?source=collection_archive---------0-----------------------#2023-04-12](https://towardsdatascience.com/dashboards-are-dead-3-years-later-72347757bfa6?source=collection_archive---------0-----------------------#2023-04-12)
+> 原文：[`towardsdatascience.com/dashboards-are-dead-3-years-later-72347757bfa6?source=collection_archive---------0-----------------------#2023-04-12`](https://towardsdatascience.com/dashboards-are-dead-3-years-later-72347757bfa6?source=collection_archive---------0-----------------------#2023-04-12)
 
-## 2023年仪表盘的目的是什么？
+## 2023 年仪表盘的目的是什么？
 
-[](https://taylor-count.medium.com/?source=post_page-----72347757bfa6--------------------------------)[![泰勒·布朗洛](../Images/1b9df2c82aea2920ba4059dba8b7c93b.png)](https://taylor-count.medium.com/?source=post_page-----72347757bfa6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72347757bfa6--------------------------------)[![面向数据科学](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72347757bfa6--------------------------------) [泰勒·布朗洛](https://taylor-count.medium.com/?source=post_page-----72347757bfa6--------------------------------)
+[](https://taylor-count.medium.com/?source=post_page-----72347757bfa6--------------------------------)![泰勒·布朗洛](https://taylor-count.medium.com/?source=post_page-----72347757bfa6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72347757bfa6--------------------------------)![面向数据科学](https://towardsdatascience.com/?source=post_page-----72347757bfa6--------------------------------) [泰勒·布朗洛](https://taylor-count.medium.com/?source=post_page-----72347757bfa6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcdc63fa2a06e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdashboards-are-dead-3-years-later-72347757bfa6&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=post_page-cdc63fa2a06e----72347757bfa6---------------------post_header-----------) 发布于 [面向数据科学](https://towardsdatascience.com/?source=post_page-----72347757bfa6--------------------------------) ·6分钟阅读·2023年4月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72347757bfa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdashboards-are-dead-3-years-later-72347757bfa6&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=-----72347757bfa6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcdc63fa2a06e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdashboards-are-dead-3-years-later-72347757bfa6&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=post_page-cdc63fa2a06e----72347757bfa6---------------------post_header-----------) 发布于 [面向数据科学](https://towardsdatascience.com/?source=post_page-----72347757bfa6--------------------------------) ·6 分钟阅读·2023 年 4 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72347757bfa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdashboards-are-dead-3-years-later-72347757bfa6&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=-----72347757bfa6---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F72347757bfa6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdashboards-are-dead-3-years-later-72347757bfa6&source=-----72347757bfa6---------------------bookmark_footer-----------)
 
-2020年4月9日，我发布了一篇名为“[仪表盘已经死了](/dashboards-are-dead-b9f12eeb2ad2?ref=blog.count.co)”的文章。我写这篇文章主要是为了发泄作为数据分析师的积压情绪，当然也为了挑战当时最流行的数据工具：仪表盘。
+2020 年 4 月 9 日，我发布了一篇名为“仪表盘已经死了”的文章。我写这篇文章主要是为了发泄作为数据分析师的积压情绪，当然也为了挑战当时最流行的数据工具：仪表盘。
 
-令我惊讶的是，很多人读了这篇文章。仅在第一个周末，就有超过60,000人阅读，到目前为止已超过250,000人。这篇现在臭名昭著的文章显然引起了其他人的共鸣（或者只是让他们非常生气）。在过去的三年里，我尝试写了各种后续文章，但总是在最后一刻却退缩了，不确定自己到底想说什么。
+令我惊讶的是，很多人读了这篇文章。仅在第一个周末，就有超过 60,000 人阅读，到目前为止已超过 250,000 人。这篇现在臭名昭著的文章显然引起了其他人的共鸣（或者只是让他们非常生气）。在过去的三年里，我尝试写了各种后续文章，但总是在最后一刻却退缩了，不确定自己到底想说什么。
 
 这个周末标志着那篇文章发布三周年，到现在我可能已经有足够的距离来清楚地看到事情——无论是当时行业的状况，还是我们取得的进展。
 
-![](../Images/bb299a0d44083c03fda310e027af41a6.png)
+![](img/bb299a0d44083c03fda310e027af41a6.png)
 
 图片由[Sonja Langford](https://unsplash.com/@sonjalangford?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)在[Unsplash](https://unsplash.com/photos/eIkbSc3SDtI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供
 
@@ -40,7 +40,7 @@
 
 但如今，情况显然不同了。仪表盘不再是数据社区的宠儿。Tableau 似乎已[从](https://twitter.com/RobertJanezic/status/1612434044024942592?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1612434044024942592%7Ctwgr%5Eda0a846c0dbea47294b79d9175b39be98540921f%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fblog.count.co%2Fp%2F6dc638ff-67e5-482b-85ee-885a849f64d8%2F&ref=blog.count.co)了[青睐](https://www.geekwire.com/2023/tableau-has-been-killed-by-salesforce-past-and-current-tableau-employees-gather-at-irish-wake/?ref=blog.count.co)，而[语义层](https://davidsj.substack.com/p/semantic-superiority-part-1?ref=blog.count.co)承诺从根本上动摇这个领域。
 
-此外，我们从未有过如此多的仪表盘替代方案。现在，数据团队可以选择反向ETL、BI笔记本、数据画布、自助服务解决方案以及嵌入式分析。看到这些新选项的出现令人兴奋，因为每一个选项都略微改变了我们解决问题的方式——这正是关键所在……
+此外，我们从未有过如此多的仪表盘替代方案。现在，数据团队可以选择反向 ETL、BI 笔记本、数据画布、自助服务解决方案以及嵌入式分析。看到这些新选项的出现令人兴奋，因为每一个选项都略微改变了我们解决问题的方式——这正是关键所在……
 
 # 这从来不仅仅是关于仪表盘
 
@@ -52,11 +52,11 @@
 
 ## 分析师不仅仅是图表构建者
 
-当DaD发布时，许多人问了一个问题：“如果分析师不再构建仪表板，他们会做什么？”
+当 DaD 发布时，许多人问了一个问题：“如果分析师不再构建仪表板，他们会做什么？”
 
 现在想到我们曾经认为分析师与仪表板密不可分，真的很疯狂，考虑到他们今天的角色更多。分析师现在是[探索者](https://wrongbutuseful.substack.com/p/analysts-are-explorers?ref=blog.count.co)、数据翻译者和商业的可信顾问。他们终于找回了他们的灵感。
 
-考虑到[AI将在我们的图表构建中扮演的角色](https://www.forbes.com/sites/bernardmarr/2023/02/07/will-chatgpt-put-data-analysts-out-of-work/?sh=57a7b9fe4030&ref=blog.count.co)，分析师的这种观念变化尤为及时。
+考虑到[AI 将在我们的图表构建中扮演的角色](https://www.forbes.com/sites/bernardmarr/2023/02/07/will-chatgpt-put-data-analysts-out-of-work/?sh=57a7b9fe4030&ref=blog.count.co)，分析师的这种观念变化尤为及时。
 
 这个转变不仅仅是防御性的举措，它对我们的福祉是必要的。在过去五年里，我遇到了太多对数据分析师感到愤世嫉俗的人，他们对作为分析师的时光感到失望，完全放弃了他们的数据职业。至少这里有一个人际问题正在得到急需的关注。如果我真的很乐观（这是我出名的），那么我认为我们可能很快会看到一个[分析师文艺复兴](https://blog.count.co/what-will-analyst-2-0-look-like/)的到来。
 
@@ -76,7 +76,7 @@
 
 # 我们还有很长的路要走
 
-尽管这些初步的变革迹象很有希望，但事实仍然是，驱使我编写DaD的大多数问题仍然存在。依我看，要解决这些问题，我们有三个关键问题需要解决：
+尽管这些初步的变革迹象很有希望，但事实仍然是，驱使我编写 DaD 的大多数问题仍然存在。依我看，要解决这些问题，我们有三个关键问题需要解决：
 
 ## 1 — 平衡堆栈
 
@@ -108,11 +108,11 @@
 
 +   **足够灵活**以便我们进行实验：我不相信会有一种工具完全取代仪表盘。我们将需要不同的解决方案来应对不同的需求，有些需求我们甚至尚未预见到。
 
-![](../Images/a39e534a135676d26db5c0c328c3531a.png)
+![](img/a39e534a135676d26db5c0c328c3531a.png)
 
 从仪表盘到笔记本再到白板。作者图片。
 
-> **附注：我知道当我提到count.co在这方面的出色表现时，大家真的很喜欢DaD的这一部分，但这次我会避免提及，只说一句：是的，count.co希望在这里提供帮助。我们已经抛弃了BI笔记本游戏，转而采用一个更具协作性和灵活性的画布。是的，我对它很看好，但这也是我在那里的原因😀。**
+> **附注：我知道当我提到 count.co 在这方面的出色表现时，大家真的很喜欢 DaD 的这一部分，但这次我会避免提及，只说一句：是的，count.co 希望在这里提供帮助。我们已经抛弃了 BI 笔记本游戏，转而采用一个更具协作性和灵活性的画布。是的，我对它很看好，但这也是我在那里的原因😀。**
 
 # 现在怎么办？
 

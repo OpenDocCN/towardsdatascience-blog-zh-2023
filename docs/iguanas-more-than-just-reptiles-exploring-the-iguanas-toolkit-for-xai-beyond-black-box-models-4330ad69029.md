@@ -1,18 +1,18 @@
 # 不只是爬行动物：探索 Iguanas 工具包用于超越黑箱模型的 XAI
 
-> 原文：[https://towardsdatascience.com/iguanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029?source=collection_archive---------10-----------------------#2023-08-25](https://towardsdatascience.com/iguanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029?source=collection_archive---------10-----------------------#2023-08-25)
+> 原文：[`towardsdatascience.com/iguanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029?source=collection_archive---------10-----------------------#2023-08-25`](https://towardsdatascience.com/iguanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029?source=collection_archive---------10-----------------------#2023-08-25)
 
-![](../Images/b5cdab4ddf12010f2ca6dd033103cc41.png)
+![](img/b5cdab4ddf12010f2ca6dd033103cc41.png)
 
 “AI 思维” 来源：作者使用[Dall-E](https://openai.com/dall-e-2)创建
 
 ## 平衡复杂性和透明性以实现有效决策
 
-[](https://medium.com/@vflovik?source=post_page-----4330ad69029--------------------------------)[![Vegard Flovik](../Images/6ebc40cb800e33b4df161f7a152b1ee2.png)](https://medium.com/@vflovik?source=post_page-----4330ad69029--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4330ad69029--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4330ad69029--------------------------------) [Vegard Flovik](https://medium.com/@vflovik?source=post_page-----4330ad69029--------------------------------)
+[](https://medium.com/@vflovik?source=post_page-----4330ad69029--------------------------------)![Vegard Flovik](https://medium.com/@vflovik?source=post_page-----4330ad69029--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4330ad69029--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4330ad69029--------------------------------) [Vegard Flovik](https://medium.com/@vflovik?source=post_page-----4330ad69029--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F17ff8967433&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Figuanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029&user=Vegard+Flovik&userId=17ff8967433&source=post_page-17ff8967433----4330ad69029---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4330ad69029--------------------------------) ·14分钟阅读·2023年8月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4330ad69029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Figuanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029&user=Vegard+Flovik&userId=17ff8967433&source=-----4330ad69029---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F17ff8967433&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Figuanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029&user=Vegard+Flovik&userId=17ff8967433&source=post_page-17ff8967433----4330ad69029---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4330ad69029--------------------------------) ·14 分钟阅读·2023 年 8 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4330ad69029&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Figuanas-more-than-just-reptiles-exploring-the-iguanas-toolkit-for-xai-beyond-black-box-models-4330ad69029&user=Vegard+Flovik&userId=17ff8967433&source=-----4330ad69029---------------------clap_footer-----------)
 
 --
 
@@ -24,7 +24,7 @@
 
 你可以将模型理解能力视为一个谱系：复杂的[深度神经网络](https://en.wikipedia.org/wiki/Deep_learning)处于一端，而透明的[基于规则的系统](https://en.wikipedia.org/wiki/Rule-based_system)则位于另一端。在许多情况下，模型输出的可解释性与准确性同样重要。
 
-![](../Images/a4ffa2208ead88ae092d51c81b21eab8.png)
+![](img/a4ffa2208ead88ae092d51c81b21eab8.png)
 
 可解释性与准确性。来源：作者创建
 
@@ -38,13 +38,13 @@
 
 对于阅读此帖的同行数据科学从业者：我承认这种方法与简单拟合[决策树模型](https://en.wikipedia.org/wiki/Decision_tree_learning)的相似性。然而，随着阅读的深入，你会发现这种方法被调整为模拟人类规则创建，这使其相比于典型决策树模型（通常在实践中可能会很困难）的输出更易于解释。
 
-自动规则生成，如通过[Iguanas框架](https://github.com/paypal/Iguanas)展示的，说明了我们如何直接从原始数据中提取有见解的（且可由人类解释的）规则。虽然这篇博客文章中的示例覆盖了一个特定的案例，但规则生成算法通常也可以适应其他分类挑战。
+自动规则生成，如通过[Iguanas 框架](https://github.com/paypal/Iguanas)展示的，说明了我们如何直接从原始数据中提取有见解的（且可由人类解释的）规则。虽然这篇博客文章中的示例覆盖了一个特定的案例，但规则生成算法通常也可以适应其他分类挑战。
 
 # **示例案例介绍：**
 
 为了说明自动规则生成的过程，我们以管道完整性检查的假设行业相关案例为例。确保管道的结构完整性是一项要求严格审查的任务，并且对于防止环境灾难至关重要。因此，我们的案例代表了一个模型可解释性和解释性至关重要的相关示例。
 
-![](../Images/280d83e6d7f11a24e4acc59f63e53ba0.png)
+![](img/280d83e6d7f11a24e4acc59f63e53ba0.png)
 
 完整性检查。照片由[Paul Teysen](https://unsplash.com/@hooverpaul55?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -52,15 +52,15 @@
 
 我们的第一步是创建一个合成数据集，包含下列各种属性以及相应的违例状态（分类为“真”或“假”）：
 
-+   管道长度：区间1–20米
++   管道长度：区间 1–20 米
 
-+   管道直径：区间1–10厘米
++   管道直径：区间 1–10 厘米
 
-+   测量的管壁厚度（例如，通过检查得出）：区间1–10毫米
++   测量的管壁厚度（例如，通过检查得出）：区间 1–10 毫米
 
-+   焊缝数量：区间0–10（所有管道由最大长度为10米的管段组成。如果总管道长度> 10米，则必须与另一根管道连接/焊接，因此“焊缝数量”> 0）
++   焊缝数量：区间 0–10（所有管道由最大长度为 10 米的管段组成。如果总管道长度> 10 米，则必须与另一根管道连接/焊接，因此“焊缝数量”> 0）
 
-+   弯头数量：区间0–5：管道的弯头数量，其中0表示正常的直管段。
++   弯头数量：区间 0–5：管道的弯头数量，其中 0 表示正常的直管段。
 
 +   腐蚀：分类变量，包括“无”，“轻微”或“严重”（例如，通过检查得出）。
 
@@ -144,13 +144,13 @@ df['corrosion'] = corrosion
 
 在进入自动化规则生成之前，让我们首先通过手动定义一套生成初始数据集的规则来建立基准。然后我们可以定义一些违例的示例规则，例如：
 
-1.  如果管道直径大于8厘米且壁厚测量为2毫米或更薄。
+1.  如果管道直径大于 8 厘米且壁厚测量为 2 毫米或更薄。
 
-1.  如果管道出现严重腐蚀且壁厚测量为5毫米或更薄。
+1.  如果管道出现严重腐蚀且壁厚测量为 5 毫米或更薄。
 
-1.  如果管道总长度超过10米且没有焊缝（因为管道由最大长度为10米的段组成，对于超过这个长度的管道需要进行焊接）。
+1.  如果管道总长度超过 10 米且没有焊缝（因为管道由最大长度为 10 米的段组成，对于超过这个长度的管道需要进行焊接）。
 
-1.  对于直径超过5厘米的管道，如果存在弯头但未检测到焊缝（考虑到这种直径的管道通常以直段形式提供，并需要将弯曲段后续焊接）。
+1.  对于直径超过 5 厘米的管道，如果存在弯头但未检测到焊缝（考虑到这种直径的管道通常以直段形式提供，并需要将弯曲段后续焊接）。
 
 如果违反了这些规则，则应报告为违例。
 
@@ -168,27 +168,27 @@ df[df['violation'] ==True].head()
 
 我们的合成数据集现在包含我们的“管道检查”，其中包含每个管道的属性集合，以及一个二元变量，指示是否应将其报告为违规。上面的代码块还显示了数据集中选定的行，突出了报告违规的示例：
 
-![](../Images/20cd17c13a3226b9bb8fd39b6c0c1247.png)
+![](img/20cd17c13a3226b9bb8fd39b6c0c1247.png)
 
 数据集中的示例行：无违规
 
-![](../Images/2211da035fcd947f329ba6de445e39fc.png)
+![](img/2211da035fcd947f329ba6de445e39fc.png)
 
 数据集中的示例行：报告的违规情况
 
-# **使用Iguanas进行自动规则生成**
+# **使用 Iguanas 进行自动规则生成**
 
-现在，关键问题出现了：我们能否从上述数据集中自动推导出适当的“完整性检查规则”？值得注意的是，这些规则生成算法对我们在上一节中定义的具体规则一无所知。这就是[Iguanas](https://github.com/paypal/Iguanas)登场的时刻（虽然是用于构建规则系统的Python包，而不是实际的蜥蜴）。
+现在，关键问题出现了：我们能否从上述数据集中自动推导出适当的“完整性检查规则”？值得注意的是，这些规则生成算法对我们在上一节中定义的具体规则一无所知。这就是[Iguanas](https://github.com/paypal/Iguanas)登场的时刻（虽然是用于构建规则系统的 Python 包，而不是实际的蜥蜴）。
 
-![](../Images/efa4901332798bd8feb4330ac17410ca.png)
+![](img/efa4901332798bd8feb4330ac17410ca.png)
 
 龟类。照片由[David Clode](https://unsplash.com/@davidclode?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 
-Iguanas提供了一套工具，旨在基于数据生成和优化规则。在我们的示例案例中，我们希望利用这个框架查看是否可以自动生成人类可解释的有意义规则，同时仅依赖数据集中存在的信息。
+Iguanas 提供了一套工具，旨在基于数据生成和优化规则。在我们的示例案例中，我们希望利用这个框架查看是否可以自动生成人类可解释的有意义规则，同时仅依赖数据集中存在的信息。
 
 ## **数据集划分和预处理**
 
-在应用任何规则生成技术之前，我们首先需要将数据集划分为训练集和测试集。训练集将用于构建和优化我们的规则系统，而测试集将用于评估其在未见数据上的表现。我们这里使用随机划分，选择20%的数据用于测试规则在未见数据上的表现。
+在应用任何规则生成技术之前，我们首先需要将数据集划分为训练集和测试集。训练集将用于构建和优化我们的规则系统，而测试集将用于评估其在未见数据上的表现。我们这里使用随机划分，选择 20%的数据用于测试规则在未见数据上的表现。
 
 ```py
 target_column = 'violation'
@@ -206,7 +206,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 ```
 
-然后，我们需要使用[one-hot编码](https://en.wikipedia.org/wiki/One-hot)将分类变量（如腐蚀）转换，使其与规则生成算法兼容：
+然后，我们需要使用[one-hot 编码](https://en.wikipedia.org/wiki/One-hot)将分类变量（如腐蚀）转换，使其与规则生成算法兼容：
 
 ```py
 ohe = OneHotEncoder(use_cat_names=True)
@@ -215,15 +215,15 @@ X_train = ohe.transform(X_train)
 X_test = ohe.transform(X_test)
 ```
 
-## **使用Iguanas生成规则**
+## **使用 Iguanas 生成规则**
 
 在[Iguanas](https://github.com/paypal/Iguanas)框架中，你会找到两个主要的规则生成算法可以选择：[*RuleGeneratorDT*](https://paypal.github.io/Iguanas/api/api/iguanas.rule_generation.RuleGeneratorDT.html)和[*RuleGeneratorOpt*](https://paypal.github.io/Iguanas/api/api/iguanas.rule_generation.RuleGeneratorOpt.html)
 
 +   *RuleGeneratorDT*：通过提取树集成模型中表现最佳的分支来生成规则。
 
-+   *RuleGeneratorOpt*：通过优化单一特征的阈值来生成规则，并将这些单条件规则与AND条件结合，创建更复杂的规则。
++   *RuleGeneratorOpt*：通过优化单一特征的阈值来生成规则，并将这些单条件规则与 AND 条件结合，创建更复杂的规则。
 
-在下面的示例中，我们使用了*RuleGeneratorDT*作为我们选择的算法，尽管我们也可以使用*RuleGeneratorOpt*替代。然后，我们定义了像[F-score](https://en.wikipedia.org/wiki/F-score)和[precision](https://en.wikipedia.org/wiki/Precision_and_recall)这样的指标，并配置了规则生成器的参数。我们选择生成最多4个条件/语句的规则，以避免过于复杂和冗长的规则。我们还使用了[随机森林分类器](https://en.wikipedia.org/wiki/Random_forest)作为提取规则的基础模型。在定义这些参数之后，我们可以将规则生成器拟合到我们的训练数据中。
+在下面的示例中，我们使用了*RuleGeneratorDT*作为我们选择的算法，尽管我们也可以使用*RuleGeneratorOpt*替代。然后，我们定义了像[F-score](https://en.wikipedia.org/wiki/F-score)和[precision](https://en.wikipedia.org/wiki/Precision_and_recall)这样的指标，并配置了规则生成器的参数。我们选择生成最多 4 个条件/语句的规则，以避免过于复杂和冗长的规则。我们还使用了[随机森林分类器](https://en.wikipedia.org/wiki/Random_forest)作为提取规则的基础模型。在定义这些参数之后，我们可以将规则生成器拟合到我们的训练数据中。
 
 ```py
 # Define metrics: F-score and precision
@@ -263,11 +263,11 @@ X_rules_gen_train = rg.fit(
 
 生成的规则集可能包含冗余或性能不佳的规则。为了解决这个问题，我们使用一系列过滤器来改进结果规则集：
 
-+   首先，我们应用[*SimpleFilter*](https://paypal.github.io/Iguanas/api/api/iguanas.rule_selection.SimpleFilter.html)来移除F分数低于某个阈值的规则。
++   首先，我们应用[*SimpleFilter*](https://paypal.github.io/Iguanas/api/api/iguanas.rule_selection.SimpleFilter.html)来移除 F 分数低于某个阈值的规则。
 
 +   然后，我们使用[*CorrelatedFilter*](https://paypal.github.io/Iguanas/api/api/iguanas.rule_selection.CorrelatedFilter.html)和[*AgglomerativeClusteringReducer*](https://paypal.github.io/Iguanas/api/api/iguanas.correlation_reduction.AgglomerativeClusteringReducer.html?highlight=agglomerativeclusteringreducer#iguanas.correlation_reduction.AgglomerativeClusteringReducer)进一步减少相关规则。
 
-+   最后，我们使用[*GreedyFilter*](https://paypal.github.io/Iguanas/api/api/iguanas.rule_selection.GreedyFilter.html)选择一个规则子集，以最大化特定指标（例如，[precision](https://en.wikipedia.org/wiki/Precision_and_recall)）。在这里，我们将按精度对规则进行排序，然后计算前n个组合规则的F1分数。
++   最后，我们使用[*GreedyFilter*](https://paypal.github.io/Iguanas/api/api/iguanas.rule_selection.GreedyFilter.html)选择一个规则子集，以最大化特定指标（例如，[precision](https://en.wikipedia.org/wiki/Precision_and_recall)）。在这里，我们将按精度对规则进行排序，然后计算前 n 个组合规则的 F1 分数。
 
 ```py
 # Apply SimpleFilter
@@ -310,17 +310,17 @@ X_rules_train = gf.fit_transform(
 gf.plot_top_n_performance_on_train()
 ```
 
-上述代码块还绘制了“前n”规则在训练集上的综合表现，如下所示：
+上述代码块还绘制了“前 n”规则在训练集上的综合表现，如下所示：
 
-![](../Images/dcd182cf02676bfdb192e4d66baf1826.png)
+![](img/dcd182cf02676bfdb192e4d66baf1826.png)
 
 “Top n”性能。来源：由作者创建
 
-我们在这里看到的是，对于一组前4条规则，我们可以完美匹配训练数据（这很有意义，因为这是我们用来生成合成数据集的规则数）。
+我们在这里看到的是，对于一组前 4 条规则，我们可以完美匹配训练数据（这很有意义，因为这是我们用来生成合成数据集的规则数）。
 
-## **创建RBS管道**
+## **创建 RBS 管道**
 
-现在，让我们使用这个组合的过滤规则集设置我们的[*RBS管道*](https://paypal.github.io/Iguanas/api/api/iguanas.rbs.RBSPipeline.html)。在这种情况下，我们采用简单的方法：
+现在，让我们使用这个组合的过滤规则集设置我们的[*RBS 管道*](https://paypal.github.io/Iguanas/api/api/iguanas.rbs.RBSPipeline.html)。在这种情况下，我们采用简单的方法：
 
 +   如果有任何规则触发，则标记违例为“True”
 
@@ -328,7 +328,7 @@ gf.plot_top_n_performance_on_train()
 
 要使用上述逻辑设置管道，我们首先需要创建配置参数。这只是一个列表，概述了管道的各个阶段，每个阶段应该使用两个元素的元组来定义：
 
-+   第一个元素应该是一个整数，表示在该阶段做出的决策（0或1）。
++   第一个元素应该是一个整数，表示在该阶段做出的决策（0 或 1）。
 
 +   第二个元素应该是一个列表，用于指定哪些规则应触发该决策。
 
@@ -390,7 +390,7 @@ cm.plot()
 
 如下图所示，我们看到对于训练数据，我们能够完美预测所有数据点的检查状态（违规与否）。
 
-![](../Images/46a7b435f981852991ab868a63ea47f1.png)
+![](img/46a7b435f981852991ab868a63ea47f1.png)
 
 预测违规的指标和混淆矩阵。来源：作者创建
 
@@ -412,19 +412,19 @@ rg.rule_strings
  'RGDT_Rule_20220214_60': "(X['length (m)']>=11)&(X['num welds']<=0)"}
 ```
 
-1.  如果管道出现严重腐蚀且壁厚为5毫米或更薄。
+1.  如果管道出现严重腐蚀且壁厚为 5 毫米或更薄。
 
-1.  对于直径超过5厘米的管道，如果存在弯头但未检测到焊接点
+1.  对于直径超过 5 厘米的管道，如果存在弯头但未检测到焊接点
 
-1.  如果管道直径大于8厘米且壁厚为2毫米或更薄。
+1.  如果管道直径大于 8 厘米且壁厚为 2 毫米或更薄。
 
-1.  如果管道总长度超过10米且没有焊接点
+1.  如果管道总长度超过 10 米且没有焊接点
 
 ## **在测试数据上使用生成的规则**
 
 正如我们已经展示的那样，生成的规则集与我们用于生成数据集的规则完全匹配，我们知道它们也将适用于测试集中的未见数据。然而，在更现实的情况下，我们只有数据集本身，而没有原始规则集进行比较。为了确保生成的规则也能很好地推广到未见数据上，我们还需要在测试集上验证它们：
 
-然后，我们利用优化后的RBS管道预测测试集中的违规情况。与之前的示例一样，我们通过使用[分类报告](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html)和绘制结果的[混淆矩阵](https://en.wikipedia.org/wiki/Confusion_matrix)来评估其性能。
+然后，我们利用优化后的 RBS 管道预测测试集中的违规情况。与之前的示例一样，我们通过使用[分类报告](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html)和绘制结果的[混淆矩阵](https://en.wikipedia.org/wiki/Confusion_matrix)来评估其性能。
 
 ```py
 # Generated rules
@@ -452,7 +452,7 @@ cm = ConfusionMatrixDisplay(
 cm.plot()
 ```
 
-![](../Images/9287f56348a883f195a8602ee7f491bc.png)
+![](img/9287f56348a883f195a8602ee7f491bc.png)
 
 预测违规情况的指标和混淆矩阵。来源：作者创建
 

@@ -1,10 +1,10 @@
-# Python异常测试：清晰而有效的方法
+# Python 异常测试：清晰而有效的方法
 
-> 原文：[https://towardsdatascience.com/python-exception-testing-clean-and-effective-methods-86799da86b90?source=collection_archive---------5-----------------------#2023-07-24](https://towardsdatascience.com/python-exception-testing-clean-and-effective-methods-86799da86b90?source=collection_archive---------5-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/python-exception-testing-clean-and-effective-methods-86799da86b90?source=collection_archive---------5-----------------------#2023-07-24`](https://towardsdatascience.com/python-exception-testing-clean-and-effective-methods-86799da86b90?source=collection_archive---------5-----------------------#2023-07-24)
 
-## 超越基础：针对Pytest和Unittest的高级Python异常测试
+## 超越基础：针对 Pytest 和 Unittest 的高级 Python 异常测试
 
-[](https://naomikriger.medium.com/?source=post_page-----86799da86b90--------------------------------)[![Naomi Kriger](../Images/14839f859e1375965c046912f00df5b9.png)](https://naomikriger.medium.com/?source=post_page-----86799da86b90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86799da86b90--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----86799da86b90--------------------------------) [Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----86799da86b90--------------------------------)
+[](https://naomikriger.medium.com/?source=post_page-----86799da86b90--------------------------------)![Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----86799da86b90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86799da86b90--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----86799da86b90--------------------------------) [Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----86799da86b90--------------------------------)
 
 ·
 
@@ -12,11 +12,11 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F86799da86b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-exception-testing-clean-and-effective-methods-86799da86b90&source=-----86799da86b90---------------------bookmark_footer-----------)![](../Images/57f35113c2a900546ce0274ca735c8b0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F86799da86b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-exception-testing-clean-and-effective-methods-86799da86b90&source=-----86799da86b90---------------------bookmark_footer-----------)![](img/57f35113c2a900546ce0274ca735c8b0.png)
 
 [图片](https://pixabay.com/illustrations/woman-computer-work-working-5576945/) 由 [chenspec](https://pixabay.com/users/chenspec-7784448/) 在 [pixabay](http://pixabay.com) 上提供
 
-测试异常不仅仅是一种形式 - 它是编写可靠代码的关键部分。在本教程中，我们将探讨测试Python代码的方法，这些方法包括处理和不处理异常，验证异常消息的准确性，涵盖`pytest`和`unittest`，并为每个框架提供带有和不带参数化的测试。
+测试异常不仅仅是一种形式 - 它是编写可靠代码的关键部分。在本教程中，我们将探讨测试 Python 代码的方法，这些方法包括处理和不处理异常，验证异常消息的准确性，涵盖`pytest`和`unittest`，并为每个框架提供带有和不带参数化的测试。
 
 在本教程结束时，你将对如何为代码编写干净、高效和有用的异常测试有一个扎实的理解。
 
@@ -118,9 +118,9 @@ def test_division(num_1, num_2, expected_result, exception, message):
         assert result == expected_result
 ```
 
-`ids`参数更改显示在IDE测试栏视图中的测试用例名称。在下面的截图中，我们可以看到它的实际效果：左侧有`ids`，右侧没有`ids`。
+`ids`参数更改显示在 IDE 测试栏视图中的测试用例名称。在下面的截图中，我们可以看到它的实际效果：左侧有`ids`，右侧没有`ids`。
 
-![](../Images/fdc3abb6e70438e37f387e7ad923862e.png)
+![](img/fdc3abb6e70438e37f387e7ad923862e.png)
 
 作者截图
 
@@ -191,10 +191,10 @@ class TestDivision(unittest.TestCase):
 
 在`unittest`中，我们也修改了测试用例名称，类似于上面的`pytest`示例。然而，为了实现这一点，我们使用了`name_func`参数以及一个自定义函数。
 
-总结一下，今天我们探讨了测试Python异常的有效方法。我们学会了如何识别预期的异常是否被抛出，并验证异常消息是否符合我们的期望。我们检查了多种测试`divide`函数的方法，包括使用`pytest`的传统方法和使用`parametrize`的更清晰方法。我们还探索了`unittest`等效的`parameterized`，它需要安装该库，以及不使用它的情况。使用`ids`和自定义测试名称在IDE的测试栏中提供了更清晰和更有信息量的视图，使我们更容易理解和导航测试用例。通过使用这些技术，我们可以改进单元测试，确保代码适当地处理异常。
+总结一下，今天我们探讨了测试 Python 异常的有效方法。我们学会了如何识别预期的异常是否被抛出，并验证异常消息是否符合我们的期望。我们检查了多种测试`divide`函数的方法，包括使用`pytest`的传统方法和使用`parametrize`的更清晰方法。我们还探索了`unittest`等效的`parameterized`，它需要安装该库，以及不使用它的情况。使用`ids`和自定义测试名称在 IDE 的测试栏中提供了更清晰和更有信息量的视图，使我们更容易理解和导航测试用例。通过使用这些技术，我们可以改进单元测试，确保代码适当地处理异常。
 
 祝测试愉快！
 
-![](../Images/24b04dbae0eb55fa6f00e1992c4ff086.png)
+![](img/24b04dbae0eb55fa6f00e1992c4ff086.png)
 
 [图片](https://pixabay.com/photos/code-program-software-digital-7198654/) 来自 [jakob5200](https://pixabay.com/users/jakob5200-10067216/) 在 [pixabay](http://pixabay.com)

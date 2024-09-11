@@ -1,18 +1,18 @@
 # 厌倦了二维码？自己制作一个标志性标记
 
-> 原文：[https://towardsdatascience.com/tired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25?source=collection_archive---------7-----------------------#2023-11-04](https://towardsdatascience.com/tired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25?source=collection_archive---------7-----------------------#2023-11-04)
+> 原文：[`towardsdatascience.com/tired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25?source=collection_archive---------7-----------------------#2023-11-04`](https://towardsdatascience.com/tired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25?source=collection_archive---------7-----------------------#2023-11-04)
 
 ## *二维码无处不在：想要创建一个更原创的解决方案吗？让我们制作自己的标志性标记，并学习如何检测和解码它。*
 
-[](https://medium.com/@vincent.vandenbussche?source=post_page-----aab81cce1f25--------------------------------)[![Vincent Vandenbussche](../Images/b2febfc63ca0efbda0af5501f6080ab7.png)](https://medium.com/@vincent.vandenbussche?source=post_page-----aab81cce1f25--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aab81cce1f25--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aab81cce1f25--------------------------------) [Vincent Vandenbussche](https://medium.com/@vincent.vandenbussche?source=post_page-----aab81cce1f25--------------------------------)
+[](https://medium.com/@vincent.vandenbussche?source=post_page-----aab81cce1f25--------------------------------)![Vincent Vandenbussche](https://medium.com/@vincent.vandenbussche?source=post_page-----aab81cce1f25--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aab81cce1f25--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aab81cce1f25--------------------------------) [Vincent Vandenbussche](https://medium.com/@vincent.vandenbussche?source=post_page-----aab81cce1f25--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6c53f1364ba9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25&user=Vincent+Vandenbussche&userId=6c53f1364ba9&source=post_page-6c53f1364ba9----aab81cce1f25---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----aab81cce1f25--------------------------------) · 15分钟阅读 · 2023年11月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faab81cce1f25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25&user=Vincent+Vandenbussche&userId=6c53f1364ba9&source=-----aab81cce1f25---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6c53f1364ba9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25&user=Vincent+Vandenbussche&userId=6c53f1364ba9&source=post_page-6c53f1364ba9----aab81cce1f25---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----aab81cce1f25--------------------------------) · 15 分钟阅读 · 2023 年 11 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faab81cce1f25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25&user=Vincent+Vandenbussche&userId=6c53f1364ba9&source=-----aab81cce1f25---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faab81cce1f25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25&source=-----aab81cce1f25---------------------bookmark_footer-----------)![](../Images/034b82301b9043a84d0d625806359cd3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faab81cce1f25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftired-of-qr-codes-build-you-own-fiducial-marker-aab81cce1f25&source=-----aab81cce1f25---------------------bookmark_footer-----------)![](img/034b82301b9043a84d0d625806359cd3.png)
 
 照片由[Michael Dziedzic](https://unsplash.com/@lazycreekimages?utm_source=medium&utm_medium=referral)提供，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -30,9 +30,9 @@
 
 目前已经存在很多用于计算机视觉的基准标记，最著名的是二维码。还有其他二维码，使用程度和鲁棒性各不相同，也可以使用。下面是一个不完全的代码列表。
 
-![](../Images/81730a80093a1d4d5ab082f253112dff.png)
+![](img/81730a80093a1d4d5ab082f253112dff.png)
 
-一些最著名的基准标记及其名称和创建日期（来源 [https://www.mdpi.com/1424-8220/21/16/5407](https://www.mdpi.com/1424-8220/21/16/5407)，在CC-BY许可下）
+一些最著名的基准标记及其名称和创建日期（来源 [`www.mdpi.com/1424-8220/21/16/5407`](https://www.mdpi.com/1424-8220/21/16/5407)，在 CC-BY 许可下）
 
 如上图所示，基准标记可以有很大不同，但它们都有相同的目的：包含易于解码的信息。
 
@@ -58,17 +58,17 @@
 
 但它在原始形式下并不完美：两个旋转的标记可能会导致相同或不同的解码结果。
 
-![](../Images/1ea0d86b63988b544c57bfad0ce0d0c2.png)
+![](img/1ea0d86b63988b544c57bfad0ce0d0c2.png)
 
-这两个标签之间的唯一区别是90°的旋转：它们无法被区分。图像作者提供。
+这两个标签之间的唯一区别是 90°的旋转：它们无法被区分。图像作者提供。
 
 为了减轻这个问题，我们将对标记添加一个条件：一个且只有一个扇区没有黑点，如下所示。
 
-![](../Images/b2b822cdc907f2af757ccecc8918c18b.png)
+![](img/b2b822cdc907f2af757ccecc8918c18b.png)
 
 一个只有一行且没有黑点的标签，可以解决旋转问题。图像作者提供。
 
-这样的标记可以很容易解码：假设每个扇区可以有三种可能的值：0、1或2，具体取决于三种可能的情况：
+这样的标记可以很容易解码：假设每个扇区可以有三种可能的值：0、1 或 2，具体取决于三种可能的情况：
 
 +   一个小黑点：0
 
@@ -76,13 +76,13 @@
 
 +   两个点：2
 
-![](../Images/8d0fdf64496a6f6efff68dd92e2c837d.png)
+![](img/8d0fdf64496a6f6efff68dd92e2c837d.png)
 
-一些扇区的表示：扇区0是唯一一个没有黑点的，而其他扇区总是至少有一个黑点。图像作者提供。
+一些扇区的表示：扇区 0 是唯一一个没有黑点的，而其他扇区总是至少有一个黑点。图像作者提供。
 
 更一般地说，考虑一个具有 *C* 圆圈层的标记，一个扇区可以有最多 2ᶜ−1 种值（因为没有黑点的情况保留给扇区 0）。
 
-最终，对于一个有 *d+1* 个点的标记，可能的组合数等于 (2ᶜ— 1)ᵈ。对于一个2个圆圈层和每个圆圈20个点的标签，这意味着 3¹⁹ ~ 11.6亿个可能值。
+最终，对于一个有 *d+1* 个点的标记，可能的组合数等于 (2ᶜ— 1)ᵈ。对于一个 2 个圆圈层和每个圆圈 20 个点的标签，这意味着 3¹⁹ ~ 11.6 亿个可能值。
 
 ## 构建我们的基准标记
 
@@ -90,9 +90,9 @@
 
 生成随机标签的方法概要。有关完整工作的代码链接，请参见文章末尾。
 
-如你所见，第一步是生成一个随机值列表。考虑到*C*为圆圈层数和*d+1*为每层圆圈的点数，我们使用numpy生成一个在0到2ᶜ−1之间的*d*个值的列表。
+如你所见，第一步是生成一个随机值列表。考虑到*C*为圆圈层数和*d+1*为每层圆圈的点数，我们使用 numpy 生成一个在 0 到 2ᶜ−1 之间的*d*个值的列表。
 
-基于这个随机值列表，我们计算点值：0表示白色点，1表示黑色点。最后，我们绘制最终标签，给定一个像素大小，并将输出保存为图像。当然，完整的代码库链接在文章末尾提供并记录。
+基于这个随机值列表，我们计算点值：0 表示白色点，1 表示黑色点。最后，我们绘制最终标签，给定一个像素大小，并将输出保存为图像。当然，完整的代码库链接在文章末尾提供并记录。
 
 我们选择了一个标记设计，并知道如何生成这样的标记。为了能够在实际条件下使用这样的标记，我们需要一个能够在图像中检测和解码这种标记的解决方案。这非常简单，分为两个步骤：
 
@@ -104,7 +104,7 @@
 
 # 检测标记
 
-首先的步骤是检测给定图像中标记的存在和位置。为此，有许多目标检测模型。我们将在这里使用一个[YOLOv8模型](https://github.com/ultralytics/ultralytics)，它非常容易训练和在生产环境中使用。
+首先的步骤是检测给定图像中标记的存在和位置。为此，有许多目标检测模型。我们将在这里使用一个[YOLOv8 模型](https://github.com/ultralytics/ultralytics)，它非常容易训练和在生产环境中使用。
 
 但在实际训练目标检测模型之前，我们需要数据：来自不同背景和环境的图像，包含来自不同缩放级别和视角的标签。
 
@@ -128,7 +128,7 @@
 
 +   生成一个随机标签，图像边界是边界框标签。
 
-+   应用如仿射、透视或缩放等变换，感谢Albumentations。
++   应用如仿射、透视或缩放等变换，感谢 Albumentations。
 
 +   随机将该标签插入到随机选择的背景图像中
 
@@ -136,7 +136,7 @@
 
 使用这种方法，我们可以轻松生成足够大的数据集，包含数百或数千张图像。以下是一些创建的图像示例，带有红色边界框标签。
 
-![](../Images/37c5b7f6a6bfa0839344af22ded275dd.png)
+![](img/37c5b7f6a6bfa0839344af22ded275dd.png)
 
 一些生成的图像，其中标签为红色边框。图像由作者提供。
 
@@ -154,7 +154,7 @@ YOLOv8 小模型在 100 个周期上的训练代码 gist。有关完整代码的
 
 正如我们所见，我们只需要实例化一个模型并在数据上进行训练。经过 100 个周期（如果在训练过程中遇到早停条件，则可以更少，比如我在这里大约 80 个周期后），我得到了约 0.5 的 mAP@50，如下面生成的结果所示。
 
-![](../Images/2301eed6eee7f8854aef835726b31a70.png)
+![](img/2301eed6eee7f8854aef835726b31a70.png)
 
 YOLOv8 库生成的结果。结果的 mAP@50 约为 0.5。图像由作者提供。
 
@@ -174,7 +174,7 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 我用我手机上的标记图像运行了这段代码，正如我们在下面的图像中看到的那样，它效果非常好。
 
-![](../Images/9e394c5ad09069b6ba25a7128bd9354f.png)
+![](img/9e394c5ad09069b6ba25a7128bd9354f.png)
 
 仅在合成数据上训练的 YOLO 模型的检测结果，在我的网络摄像头实况上测试。图像由作者提供。
 
@@ -188,7 +188,7 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 一旦你可以在图像中检测到标签，下一步当然是解码它。让我们从经过我们之前训练的模型检测到的标记的裁剪图像开始。
 
-![](../Images/8f7046a6f75b011ae8d3556f15c66a92.png)
+![](img/8f7046a6f75b011ae8d3556f15c66a92.png)
 
 来自我们目标检测模型的裁剪图像。让我们解码这个标记。
 
@@ -228,7 +228,7 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 使用此代码处理我们的裁剪图像会得到以下的斑点检测结果。
 
-![](../Images/337b88033b7cdb78dc1bba4c09947af0.png)
+![](img/337b88033b7cdb78dc1bba4c09947af0.png)
 
 输入裁剪图像上的斑点检测结果：点检测得很好。图像作者提供。
 
@@ -244,7 +244,7 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 当我应用此代码并将检测到的点作为散点图展示，并展示拟合的椭圆时，得到如下结果：
 
-![](../Images/886b210336c3c6aa9b391ed1b88d9f1c.png)
+![](img/886b210336c3c6aa9b391ed1b88d9f1c.png)
 
 检测到的斑点的散点图和最外圈的拟合椭圆。图像作者提供。
 
@@ -260,13 +260,13 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 现在的目标是找到一些与参考图像匹配的点，以便计算单应性矩阵。
 
-![](../Images/7775a1be9adaed2f3bb45fc1bd005bf7.png)
+![](img/7775a1be9adaed2f3bb45fc1bd005bf7.png)
 
 参考标签的图像，所有点都填充。作者提供的图像。
 
 基于上面的参考图像，我们需要使用正确的单应性矩阵来解扭曲检测到的斑点。
 
-为了计算单应性矩阵，我们可以简单地使用 OpenCV 函数*findHomography*。此函数需要参考图像和输入图像中至少4个匹配点作为输入，以便找到单应性矩阵。这个单应性矩阵将允许我们解扭曲检测到的图像，并与参考图像匹配。
+为了计算单应性矩阵，我们可以简单地使用 OpenCV 函数*findHomography*。此函数需要参考图像和输入图像中至少 4 个匹配点作为输入，以便找到单应性矩阵。这个单应性矩阵将允许我们解扭曲检测到的图像，并与参考图像匹配。
 
 从我们检测到的最外圈上的斑点来看，无法确定这些点在原始参考图像上的位置。因此，我们将选择最外圈中最近邻点的最长链条，以便与参考图像匹配。为此，有两个步骤：
 
@@ -286,21 +286,21 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 这段代码将高效地找到相邻点的最长链条，并返回它们的索引列表。
 
-如果我们在这个输出中至少有4个点，我们可以理论上计算单应性矩阵。不幸的是，在大多数情况下，这不会非常准确，因为这些点几乎在同一条线上，无法准确计算单应性矩阵。为了解决这个问题，我们将添加一个额外的点：一个相对于中心对称放置的点：这将使单应性计算更准确。
+如果我们在这个输出中至少有 4 个点，我们可以理论上计算单应性矩阵。不幸的是，在大多数情况下，这不会非常准确，因为这些点几乎在同一条线上，无法准确计算单应性矩阵。为了解决这个问题，我们将添加一个额外的点：一个相对于中心对称放置的点：这将使单应性计算更准确。
 
 我们可以用以下代码找到相对于中心的对称点（在进行椭圆拟合时计算得到）：
 
 找到对称点的代码，给定输入的最长链和椭圆上的所有关键点。请参见文章末尾的链接以获取完整的工作代码。
 
-请注意，由于我们处于椭圆上，使用中心估计来找到给定点的对称点并不是100%可靠的方法：它可能会输出错误的点。这一点在计算解码时我们会记住。
+请注意，由于我们处于椭圆上，使用中心估计来找到给定点的对称点并不是 100%可靠的方法：它可能会输出错误的点。这一点在计算解码时我们会记住。
 
 最终，我们得到以下图像中的结果，其中蓝色圆圈是最长链上的点，红色圆圈是预期的对称点（其中一个是最长链的一部分）。
 
-![](../Images/e99b0f52b75c4382d2b81c39069ee66c.png)
+![](img/e99b0f52b75c4382d2b81c39069ee66c.png)
 
 点选择的结果。蓝色圆圈中的点是最长链上的点（除了最左侧的点）。红色圆圈中的点是检测到的对称点。中央的红点是估计的椭圆中心。图片由作者提供。
 
-如我们所见，我们确实选择了7个相邻点的链，并选择了另一个点作为链中最左侧点的对称点。
+如我们所见，我们确实选择了 7 个相邻点的链，并选择了另一个点作为链中最左侧点的对称点。
 
 ## 解开图像
 
@@ -316,17 +316,17 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 请注意，我们通过一个名为*symmetry_index_offset*的参数增加了一个自由度：这将允许处理对称点计算中的可能错误，通过将偏移量添加到对称点的位置。
 
-通过正确的点位置在裁剪图像和参考图像中，我们现在可以计算单应性矩阵并解开图像。为了确保我们在对称点上没有犯错误，我们将在[-2, 2]的范围内以1为步长进行计算，如下面的代码片段所示：
+通过正确的点位置在裁剪图像和参考图像中，我们现在可以计算单应性矩阵并解开图像。为了确保我们在对称点上没有犯错误，我们将在[-2, 2]的范围内以 1 为步长进行计算，如下面的代码片段所示：
 
 单应性矩阵计算和图像解开的代码要点。请参见文章末尾的链接以获取完整的工作代码。
 
-我们在这里做的是用OpenCV的*functionfindHomography*计算单应性矩阵，然后用*warpPerspective*解开图像。我们对5个偏移值执行此操作，以便得到5张解开的图像。
+我们在这里做的是用 OpenCV 的*functionfindHomography*计算单应性矩阵，然后用*warpPerspective*解开图像。我们对 5 个偏移值执行此操作，以便得到 5 张解开的图像。
 
 结果图像如下：
 
-![](../Images/a0d545aad406c7d1835421d4a0824e65.png)
+![](img/a0d545aad406c7d1835421d4a0824e65.png)
 
-结果解开的图像。只有-1偏移量的图像正确解开。图片由作者提供。
+结果解开的图像。只有-1 偏移量的图像正确解开。图片由作者提供。
 
 正如我们所看到的，根据偏移量，未校正结果相差甚远。尽管通过视觉检查很容易理解 -1 的偏移量是正确的，但我们希望将这一检查自动化。我们将在下一步中处理这个问题：实际的标记解码。
 
@@ -392,7 +392,7 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 尽管如此，我开发的算法仍然有一些限制，我希望能克服它们。确实，并非所有标记都可以解码：
 
-+   外圈上没有超过2个相邻点的标记将无法正确解码
++   外圈上没有超过 2 个相邻点的标记将无法正确解码
 
 +   对于没有对称点的标记，它会给出不可靠的结果，因为同质变换矩阵不准确。
 
@@ -406,6 +406,6 @@ YOLOv8 模型在网络摄像头实况上的推理代码 gist。有关完整代�
 
 原始 RUNE-Tag 论文：
 
-F. Bergamasco, A. Albarelli, E. Rodolà 和 A. Torsello，"RUNE-Tag: 高精度的具有强遮挡恢复能力的基准标记"，*CVPR 2011*，科罗拉多斯普林斯，美国，2011，第113–120页，doi: 10.1109/CVPR.2011.5995544。
+F. Bergamasco, A. Albarelli, E. Rodolà 和 A. Torsello，"RUNE-Tag: 高精度的具有强遮挡恢复能力的基准标记"，*CVPR 2011*，科罗拉多斯普林斯，美国，2011，第 113–120 页，doi: 10.1109/CVPR.2011.5995544。
 
-原始 RUNE-Tag 仓库: [https://github.com/artursg/RUNEtag](https://github.com/artursg/RUNEtag)
+原始 RUNE-Tag 仓库: [`github.com/artursg/RUNEtag`](https://github.com/artursg/RUNEtag)

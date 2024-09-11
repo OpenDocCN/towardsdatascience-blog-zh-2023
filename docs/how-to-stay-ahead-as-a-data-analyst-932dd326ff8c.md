@@ -1,18 +1,18 @@
 # 如何保持数据分析师的领先地位
 
-> 原文：[https://towardsdatascience.com/how-to-stay-ahead-as-a-data-analyst-932dd326ff8c?source=collection_archive---------0-----------------------#2023-01-31](https://towardsdatascience.com/how-to-stay-ahead-as-a-data-analyst-932dd326ff8c?source=collection_archive---------0-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/how-to-stay-ahead-as-a-data-analyst-932dd326ff8c?source=collection_archive---------0-----------------------#2023-01-31`](https://towardsdatascience.com/how-to-stay-ahead-as-a-data-analyst-932dd326ff8c?source=collection_archive---------0-----------------------#2023-01-31)
 
-![](../Images/d16de520c438346c0e18fb4de622af27.png)
+![](img/d16de520c438346c0e18fb4de622af27.png)
 
 照片由 [Wil Stewart](https://unsplash.com/@wilstewart3?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## ..并让自己在职业市场中保持相关性和竞争力
 
-[](https://tanuwidjajaolivia.medium.com/?source=post_page-----932dd326ff8c--------------------------------)[![Olivia Tanuwidjaja](../Images/52a56de28da9b782b57f1c3928655cfb.png)](https://tanuwidjajaolivia.medium.com/?source=post_page-----932dd326ff8c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----932dd326ff8c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----932dd326ff8c--------------------------------) [Olivia Tanuwidjaja](https://tanuwidjajaolivia.medium.com/?source=post_page-----932dd326ff8c--------------------------------)
+[](https://tanuwidjajaolivia.medium.com/?source=post_page-----932dd326ff8c--------------------------------)![Olivia Tanuwidjaja](https://tanuwidjajaolivia.medium.com/?source=post_page-----932dd326ff8c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----932dd326ff8c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----932dd326ff8c--------------------------------) [Olivia Tanuwidjaja](https://tanuwidjajaolivia.medium.com/?source=post_page-----932dd326ff8c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff43d6dd597&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stay-ahead-as-a-data-analyst-932dd326ff8c&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=post_page-f43d6dd597----932dd326ff8c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----932dd326ff8c--------------------------------) ·7分钟阅读·2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F932dd326ff8c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stay-ahead-as-a-data-analyst-932dd326ff8c&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=-----932dd326ff8c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff43d6dd597&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stay-ahead-as-a-data-analyst-932dd326ff8c&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=post_page-f43d6dd597----932dd326ff8c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----932dd326ff8c--------------------------------) ·7 分钟阅读·2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F932dd326ff8c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-stay-ahead-as-a-data-analyst-932dd326ff8c&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=-----932dd326ff8c---------------------clap_footer-----------)
 
 --
 

@@ -1,18 +1,18 @@
 # 一个用于学术研究（以及其他数据类型）的推荐系统！
 
-> 原文：[https://towardsdatascience.com/a-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5?source=collection_archive---------12-----------------------#2023-03-29](https://towardsdatascience.com/a-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5?source=collection_archive---------12-----------------------#2023-03-29)
+> 原文：[`towardsdatascience.com/a-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5?source=collection_archive---------12-----------------------#2023-03-29`](https://towardsdatascience.com/a-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5?source=collection_archive---------12-----------------------#2023-03-29)
 
 ## 实现自然语言处理和图论来比较和推荐不同类型的文档
 
-[](https://ben-mccloskey20.medium.com/?source=post_page-----db5c5a68f1f5--------------------------------)[![Benjamin McCloskey](../Images/7118f5933f2affe2a7a4d3375452fa4c.png)](https://ben-mccloskey20.medium.com/?source=post_page-----db5c5a68f1f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db5c5a68f1f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db5c5a68f1f5--------------------------------) [Benjamin McCloskey](https://ben-mccloskey20.medium.com/?source=post_page-----db5c5a68f1f5--------------------------------)
+[](https://ben-mccloskey20.medium.com/?source=post_page-----db5c5a68f1f5--------------------------------)![Benjamin McCloskey](https://ben-mccloskey20.medium.com/?source=post_page-----db5c5a68f1f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db5c5a68f1f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5c5a68f1f5--------------------------------) [Benjamin McCloskey](https://ben-mccloskey20.medium.com/?source=post_page-----db5c5a68f1f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F503796fc1483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5&user=Benjamin+McCloskey&userId=503796fc1483&source=post_page-503796fc1483----db5c5a68f1f5---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5c5a68f1f5--------------------------------) ·15分钟阅读·2023年3月29日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F503796fc1483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5&user=Benjamin+McCloskey&userId=503796fc1483&source=post_page-503796fc1483----db5c5a68f1f5---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5c5a68f1f5--------------------------------) ·15 分钟阅读·2023 年 3 月 29 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb5c5a68f1f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5&source=-----db5c5a68f1f5---------------------bookmark_footer-----------)![](../Images/0dd61847b82293c61235cf84a6d1f226.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb5c5a68f1f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-recommendation-system-for-academic-research-and-other-data-types-db5c5a68f1f5&source=-----db5c5a68f1f5---------------------bookmark_footer-----------)![](img/0dd61847b82293c61235cf84a6d1f226.png)
 
 图片由 [Shubham Dhage](https://unsplash.com/@theshubhamdhage?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

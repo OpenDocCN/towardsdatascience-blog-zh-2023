@@ -1,16 +1,16 @@
 # 是时候提升数据分析师的角色了
 
-> 原文：[https://towardsdatascience.com/its-about-time-we-elevate-the-data-analyst-role-e2845d038233?source=collection_archive---------7-----------------------#2023-01-02](https://towardsdatascience.com/its-about-time-we-elevate-the-data-analyst-role-e2845d038233?source=collection_archive---------7-----------------------#2023-01-02)
+> 原文：[`towardsdatascience.com/its-about-time-we-elevate-the-data-analyst-role-e2845d038233?source=collection_archive---------7-----------------------#2023-01-02`](https://towardsdatascience.com/its-about-time-we-elevate-the-data-analyst-role-e2845d038233?source=collection_archive---------7-----------------------#2023-01-02)
 
 ## 意见
 
 ## 数据分析师应成为依靠数据的可信顾问
 
-[](https://joao-antonio-sousa.medium.com/?source=post_page-----e2845d038233--------------------------------)[![João António Sousa](../Images/15c5ae61289404eeec77e4d8dc043181.png)](https://joao-antonio-sousa.medium.com/?source=post_page-----e2845d038233--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2845d038233--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e2845d038233--------------------------------) [João António Sousa](https://joao-antonio-sousa.medium.com/?source=post_page-----e2845d038233--------------------------------)
+[](https://joao-antonio-sousa.medium.com/?source=post_page-----e2845d038233--------------------------------)![João António Sousa](https://joao-antonio-sousa.medium.com/?source=post_page-----e2845d038233--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2845d038233--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2845d038233--------------------------------) [João António Sousa](https://joao-antonio-sousa.medium.com/?source=post_page-----e2845d038233--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab97905ce8fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-about-time-we-elevate-the-data-analyst-role-e2845d038233&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=post_page-ab97905ce8fe----e2845d038233---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2845d038233--------------------------------) ·8分钟阅读·2023年1月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2845d038233&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-about-time-we-elevate-the-data-analyst-role-e2845d038233&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=-----e2845d038233---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab97905ce8fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-about-time-we-elevate-the-data-analyst-role-e2845d038233&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=post_page-ab97905ce8fe----e2845d038233---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2845d038233--------------------------------) ·8 分钟阅读·2023 年 1 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2845d038233&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-about-time-we-elevate-the-data-analyst-role-e2845d038233&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=-----e2845d038233---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 *注意：大多数数据和分析角色定义模糊。本文重点讨论数据分析师角色，通常被描述为 BI 分析师。根据组织的不同，业务分析师和数据科学家的角色也有些重叠。*
 
-![](../Images/928fa6a937e06bb9b8b8fc13c9489751.png)
+![](img/928fa6a937e06bb9b8b8fc13c9489751.png)
 
 图片由 Freepik 提供
 
@@ -28,11 +28,11 @@
 
 数据分析领域的增长和创新改变了数据驱动的含义以及对数据分析师角色的要求。这导致了对专业角色的需求增加，并对最后一公里给予了强烈关注。这样，数据分析师更多地关注于分析、见解和决策。
 
-![](../Images/1c90fdb8e323a64e5e5297c498e69c2f.png)
+![](img/1c90fdb8e323a64e5e5297c498e69c2f.png)
 
 数据分析师角色的演变 —— 作者图片
 
-与此相关，Cassie Kozyrkov将数据分析师的关键角色定义为“查找事实并为你提供灵感”，并通过指出“分析游戏完全是关于优化每分钟的灵感”来强调工作的高要求/节奏。
+与此相关，Cassie Kozyrkov 将数据分析师的关键角色定义为“查找事实并为你提供灵感”，并通过指出“分析游戏完全是关于优化每分钟的灵感”来强调工作的高要求/节奏。
 
 我通常将这一概念定义为“行动见解的速度”。
 
@@ -42,13 +42,13 @@
 
 # 数据分析师的挑战
 
-数据复杂性和业务期望都在上升。同时，传统的BI工具在过去20年中没有太大进展，造成了许多数据团队的差距。以下是今天的数据分析师面临的主要挑战：
+数据复杂性和业务期望都在上升。同时，传统的 BI 工具在过去 20 年中没有太大进展，造成了许多数据团队的差距。以下是今天的数据分析师面临的主要挑战：
 
 ## 定义不清的角色
 
-在数据与分析领域普遍存在角色划分的问题。这不仅限于数据分析师。它的角色与数据科学家和BI分析师（有时也包括业务分析师）有显著的重叠。
+在数据与分析领域普遍存在角色划分的问题。这不仅限于数据分析师。它的角色与数据科学家和 BI 分析师（有时也包括业务分析师）有显著的重叠。
 
-![](../Images/3062ba4c61f4aa84a63ecc1d3330407e.png)
+![](img/3062ba4c61f4aa84a63ecc1d3330407e.png)
 
 数据角色的复杂格局 —— 作者图片
 
@@ -68,7 +68,7 @@
 
 以下是我所见的三种最常见的数据分析师状态的详细说明：
 
-![](../Images/6046eb83b7d582e8be608c09762f9fa2.png)
+![](img/6046eb83b7d582e8be608c09762f9fa2.png)
 
 数据分析师角色的状态 — 作者提供的图像
 
@@ -108,11 +108,11 @@
 
 这种转变需要通过增强技术来实现，同时需要文化和人员的变革。这些是主要要求：
 
-+   **增强** — 这是推动这一转变的主要因素。以业务速度提供可操作的洞察需要对传统BI工作流程进行增强，以消除速度与全面性的权衡 ([了解更多](https://medium.com/towards-data-science/the-analysts-dilemma-too-much-data-too-little-time-9b8774f74e20))。此外，为了成为可信赖的顾问，分析师不应花费大量时间在仪表盘上切割和处理数据。相反，他们应该专注于寻找真实洞察，利用ML进行统计测试，指引业务团队查找相关信息，并与他们紧密合作。这是征服分析最后一公里的唯一途径：提炼洞察，正确传达，并推动行动。
++   **增强** — 这是推动这一转变的主要因素。以业务速度提供可操作的洞察需要对传统 BI 工作流程进行增强，以消除速度与全面性的权衡 ([了解更多](https://medium.com/towards-data-science/the-analysts-dilemma-too-much-data-too-little-time-9b8774f74e20))。此外，为了成为可信赖的顾问，分析师不应花费大量时间在仪表盘上切割和处理数据。相反，他们应该专注于寻找真实洞察，利用 ML 进行统计测试，指引业务团队查找相关信息，并与他们紧密合作。这是征服分析最后一公里的唯一途径：提炼洞察，正确传达，并推动行动。
 
 +   **业务和领域专业知识** — 数据分析师需要对所工作的业务和领域有很好的理解。因此，分析师在一个业务职能（例如，市场分析师）上专业化，并嵌入到相应职能（例如，市场团队）中越来越常见（阅读更多关于领域专业知识的重要性[这篇文章](https://counting.substack.com/p/how-do-we-actually-pull-stories-out)由 Randy Au 撰写）。
 
-+   **软技能** — 要成为可信赖的顾问，数据分析师需要超越SQL语言等技术技能。商业头脑、沟通能力、倾听技能、好奇心、同理心和讲故事能力对于成为战略合作伙伴、发展领域专业知识以及推动建议和行动至关重要。
++   **软技能** — 要成为可信赖的顾问，数据分析师需要超越 SQL 语言等技术技能。商业头脑、沟通能力、倾听技能、好奇心、同理心和讲故事能力对于成为战略合作伙伴、发展领域专业知识以及推动建议和行动至关重要。
 
 +   **数据文化**——合适的数据文化是关键，其中业务利益相关者将数据视为关键资产，并愿意与数据分析师紧密合作。推动这种文化需要数据团队通过关注业务价值来赢得对方的信任。
 

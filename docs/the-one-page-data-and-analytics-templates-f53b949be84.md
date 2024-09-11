@@ -1,18 +1,18 @@
 # 一页数据和分析模板
 
-> 原文：[https://towardsdatascience.com/the-one-page-data-and-analytics-templates-f53b949be84?source=collection_archive---------2-----------------------#2023-03-02](https://towardsdatascience.com/the-one-page-data-and-analytics-templates-f53b949be84?source=collection_archive---------2-----------------------#2023-03-02)
+> 原文：[`towardsdatascience.com/the-one-page-data-and-analytics-templates-f53b949be84?source=collection_archive---------2-----------------------#2023-03-02`](https://towardsdatascience.com/the-one-page-data-and-analytics-templates-f53b949be84?source=collection_archive---------2-----------------------#2023-03-02)
 
 ## 使用五个模板掌握数据和分析报告及流程
 
-[](https://medium.com/@martosi?source=post_page-----f53b949be84--------------------------------)[![Marina Tosic](../Images/cb2168826ed9ed608d61c6c90843c535.png)](https://medium.com/@martosi?source=post_page-----f53b949be84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f53b949be84--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f53b949be84--------------------------------) [Marina Tosic](https://medium.com/@martosi?source=post_page-----f53b949be84--------------------------------)
+[](https://medium.com/@martosi?source=post_page-----f53b949be84--------------------------------)![Marina Tosic](https://medium.com/@martosi?source=post_page-----f53b949be84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f53b949be84--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f53b949be84--------------------------------) [Marina Tosic](https://medium.com/@martosi?source=post_page-----f53b949be84--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe40b4f03cd3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-page-data-and-analytics-templates-f53b949be84&user=Marina+Tosic&userId=e40b4f03cd3e&source=post_page-e40b4f03cd3e----f53b949be84---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f53b949be84--------------------------------) ·6 分钟阅读·2023年3月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff53b949be84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-page-data-and-analytics-templates-f53b949be84&user=Marina+Tosic&userId=e40b4f03cd3e&source=-----f53b949be84---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe40b4f03cd3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-page-data-and-analytics-templates-f53b949be84&user=Marina+Tosic&userId=e40b4f03cd3e&source=post_page-e40b4f03cd3e----f53b949be84---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f53b949be84--------------------------------) ·6 分钟阅读·2023 年 3 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff53b949be84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-page-data-and-analytics-templates-f53b949be84&user=Marina+Tosic&userId=e40b4f03cd3e&source=-----f53b949be84---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff53b949be84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-page-data-and-analytics-templates-f53b949be84&source=-----f53b949be84---------------------bookmark_footer-----------)![](../Images/fc2aaa4155bf7d8d4681ba4c56fabec6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff53b949be84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-one-page-data-and-analytics-templates-f53b949be84&source=-----f53b949be84---------------------bookmark_footer-----------)![](img/fc2aaa4155bf7d8d4681ba4c56fabec6.png)
 
 图片由 [micheile dot com](https://unsplash.com/@micheile?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

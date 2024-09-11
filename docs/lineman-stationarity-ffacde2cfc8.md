@@ -1,14 +1,14 @@
 # 线员稳定性
 
-> 原文：[https://towardsdatascience.com/lineman-stationarity-ffacde2cfc8?source=collection_archive---------14-----------------------#2023-02-06](https://towardsdatascience.com/lineman-stationarity-ffacde2cfc8?source=collection_archive---------14-----------------------#2023-02-06)
+> 原文：[`towardsdatascience.com/lineman-stationarity-ffacde2cfc8?source=collection_archive---------14-----------------------#2023-02-06`](https://towardsdatascience.com/lineman-stationarity-ffacde2cfc8?source=collection_archive---------14-----------------------#2023-02-06)
 
 ## 对进攻线员的数据驱动指标
 
-[](https://harrisonfhoffman.medium.com/?source=post_page-----ffacde2cfc8--------------------------------)[![哈里森·霍夫曼](../Images/5eaa3e2bd0507297eb6c4a7efcf06324.png)](https://harrisonfhoffman.medium.com/?source=post_page-----ffacde2cfc8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ffacde2cfc8--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ffacde2cfc8--------------------------------) [哈里森·霍夫曼](https://harrisonfhoffman.medium.com/?source=post_page-----ffacde2cfc8--------------------------------)
+[](https://harrisonfhoffman.medium.com/?source=post_page-----ffacde2cfc8--------------------------------)![哈里森·霍夫曼](https://harrisonfhoffman.medium.com/?source=post_page-----ffacde2cfc8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ffacde2cfc8--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----ffacde2cfc8--------------------------------) [哈里森·霍夫曼](https://harrisonfhoffman.medium.com/?source=post_page-----ffacde2cfc8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineman-stationarity-ffacde2cfc8&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----ffacde2cfc8---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ffacde2cfc8--------------------------------) · 6 分钟阅读 · 2023年2月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fffacde2cfc8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineman-stationarity-ffacde2cfc8&user=Harrison+Hoffman&userId=38889d0801d0&source=-----ffacde2cfc8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineman-stationarity-ffacde2cfc8&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----ffacde2cfc8---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ffacde2cfc8--------------------------------) · 6 分钟阅读 · 2023 年 2 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fffacde2cfc8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineman-stationarity-ffacde2cfc8&user=Harrison+Hoffman&userId=38889d0801d0&source=-----ffacde2cfc8---------------------clap_footer-----------)
 
 --
 

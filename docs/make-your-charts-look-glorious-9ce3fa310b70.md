@@ -1,18 +1,18 @@
 # 让你的图表看起来辉煌
 
-> 原文：[https://towardsdatascience.com/make-your-charts-look-glorious-9ce3fa310b70?source=collection_archive---------1-----------------------#2023-01-31](https://towardsdatascience.com/make-your-charts-look-glorious-9ce3fa310b70?source=collection_archive---------1-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/make-your-charts-look-glorious-9ce3fa310b70?source=collection_archive---------1-----------------------#2023-01-31`](https://towardsdatascience.com/make-your-charts-look-glorious-9ce3fa310b70?source=collection_archive---------1-----------------------#2023-01-31)
 
-## 一些简单的格式化技巧，使matplotlib图表准备就绪
+## 一些简单的格式化技巧，使 matplotlib 图表准备就绪
 
-[](https://bradley-stephen-shaw.medium.com/?source=post_page-----9ce3fa310b70--------------------------------)[![Bradley Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----9ce3fa310b70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ce3fa310b70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9ce3fa310b70--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----9ce3fa310b70--------------------------------)
+[](https://bradley-stephen-shaw.medium.com/?source=post_page-----9ce3fa310b70--------------------------------)![Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----9ce3fa310b70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ce3fa310b70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ce3fa310b70--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----9ce3fa310b70--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc5cd0a58b5ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-charts-look-glorious-9ce3fa310b70&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=post_page-c5cd0a58b5ae----9ce3fa310b70---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ce3fa310b70--------------------------------) · 12分钟阅读 · 2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ce3fa310b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-charts-look-glorious-9ce3fa310b70&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=-----9ce3fa310b70---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc5cd0a58b5ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-charts-look-glorious-9ce3fa310b70&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=post_page-c5cd0a58b5ae----9ce3fa310b70---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ce3fa310b70--------------------------------) · 12 分钟阅读 · 2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ce3fa310b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-charts-look-glorious-9ce3fa310b70&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=-----9ce3fa310b70---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ce3fa310b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-charts-look-glorious-9ce3fa310b70&source=-----9ce3fa310b70---------------------bookmark_footer-----------)![](../Images/7cd5ecf7803671de7a2ff7c29a064cef.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ce3fa310b70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-charts-look-glorious-9ce3fa310b70&source=-----9ce3fa310b70---------------------bookmark_footer-----------)![](img/7cd5ecf7803671de7a2ff7c29a064cef.png)
 
 图片由[Luke Chesser](https://unsplash.com/@lukechesser?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -30,13 +30,13 @@
 
 1.  改变图表的外观，以真正强调一个信息。
 
-我们将借用一些我们上次讨论的技巧，那时我们探讨了如何通过格式化`pandas` DataFrames来改善信息传递和讲故事。我（显然）建议你阅读一下，如果你对展示一些华丽的表格以及优秀的图表感兴趣：
+我们将借用一些我们上次讨论的技巧，那时我们探讨了如何通过格式化`pandas` DataFrames 来改善信息传递和讲故事。我（显然）建议你阅读一下，如果你对展示一些华丽的表格以及优秀的图表感兴趣：
 
-[全面指南：格式化pandas DataFrames | Towards Data Science](/make-your-tables-look-glorious-2a5ddbfcc0e5)
+全面指南：格式化 pandas DataFrames | Towards Data Science
 
 让我们开始吧——首先检查如何制作美丽的折线图，然后再尝试绘制条形图。在这两种情况下，我们都将接受我们内心的新年决心，并使用（虚构的）关于运动和训练的数据。
 
-*附注：这里的技巧与* `matplotlib` *有关，这是我在Python中绘图的首选包。这并不是说在其他包中，如* `seaborn` *，不能做到相同的技巧和窍门，只是你可能需要调整方法。*
+*附注：这里的技巧与* `matplotlib` *有关，这是我在 Python 中绘图的首选包。这并不是说在其他包中，如* `seaborn` *，不能做到相同的技巧和窍门，只是你可能需要调整方法。*
 
 # 折线图
 
@@ -44,9 +44,9 @@
 
 ## 数据
 
-我已经捏造了一些数据，捕捉了一个虚构调查的受访者比例，该调查询问18-60岁男性他们偏好的运动形式。受访者有4个选项可供选择：跑步、骑自行车、游泳和混合方案。
+我已经捏造了一些数据，捕捉了一个虚构调查的受访者比例，该调查询问 18-60 岁男性他们偏好的运动形式。受访者有 4 个选项可供选择：跑步、骑自行车、游泳和混合方案。
 
-*附注：通过“捏造一些数据”，我真的指的是“在Excel中创建示例数据”。*
+*附注：通过“捏造一些数据”，我真的指的是“在 Excel 中创建示例数据”。*
 
 让我们准备好，查看数据：
 
@@ -73,7 +73,7 @@ df.set_index('Date',inplace = True)
 df
 ```
 
-![](../Images/3f877a720fdaeaa26901352ef6c1ed4c.png)
+![](img/3f877a720fdaeaa26901352ef6c1ed4c.png)
 
 作者提供的图片
 
@@ -109,13 +109,13 @@ plt.show()
 
 ……这就给出了：
 
-![](../Images/4064a7f5aae434288a967cf7bf516aa6.png)
+![](img/4064a7f5aae434288a967cf7bf516aa6.png)
 
 作者提供的图片
 
 现在，我内心的书呆子可能认为这个可视化展示得完全可以。他可能会说一些类似的话：
 
-+   标题、轴标签和图例条目结合在一起，告诉读者该图表与调查受访者（男性，年龄18-60岁）参与某种类型的运动的比例有关。
++   标题、轴标签和图例条目结合在一起，告诉读者该图表与调查受访者（男性，年龄 18-60 岁）参与某种类型的运动的比例有关。
 
 +   数据随着时间的推移被绘制，所以可能存在某种趋势或模式。
 
@@ -179,7 +179,7 @@ plt.show()
 
 … 这给出了：
 
-![](../Images/d3c32f4f94a18703e40b32827537adf4.png)
+![](img/d3c32f4f94a18703e40b32827537adf4.png)
 
 图片由作者提供
 
@@ -201,7 +201,7 @@ plt.show()
 
 所以我们可以得到这样的效果：
 
-![](../Images/dfeafcb841e287f13dc87f0a56347a0f.png)
+![](img/dfeafcb841e287f13dc87f0a56347a0f.png)
 
 图片由作者提供
 
@@ -230,7 +230,7 @@ plt.grid(axis = 'y',alpha = 0.3)
 plt.gca().spines[['left','right', 'top']].set_visible(False)
 ```
 
-![](../Images/ff4f04d7467e12d87985d8f982cd9368.png)
+![](img/ff4f04d7467e12d87985d8f982cd9368.png)
 
 图片由作者提供
 
@@ -238,7 +238,7 @@ plt.gca().spines[['left','right', 'top']].set_visible(False)
 
 我们还需要为 y 轴添加一些描述。我们可能在删除“杂乱”时过于严厉，因此我们会在这里添加一些内容。引用信息来源也是一种良好的做法，所以我们将添加一个脚注来实现这一点。
 
-![](../Images/c25ecf93f1dca1fc48ac96f2b1772990.png)
+![](img/c25ecf93f1dca1fc48ac96f2b1772990.png)
 
 图片由作者提供
 
@@ -289,7 +289,7 @@ plt.text(
 
 1.  将其他线条设置为灰色。
 
-![](../Images/98d0e9826715a1dcc7c75c4a228f3cbf.png)
+![](img/98d0e9826715a1dcc7c75c4a228f3cbf.png)
 
 图片由作者提供
 
@@ -305,7 +305,7 @@ plt.text(
 
 ## 数据
 
-让我们创建一些数据来可视化。再次，这将与健身相关，这次捕捉到按时间段访问健身房的比例。为了简单起见，我们的“时间段”变量将大致分为5个类别。
+让我们创建一些数据来可视化。再次，这将与健身相关，这次捕捉到按时间段访问健身房的比例。为了简单起见，我们的“时间段”变量将大致分为 5 个类别。
 
 ```py
 # data
@@ -342,7 +342,7 @@ plt.xlabel('Time of day')
 plt.show()
 ```
 
-![](../Images/cc7890bd2ef431585605b66e26b129be.png)
+![](img/cc7890bd2ef431585605b66e26b129be.png)
 
 图片由作者提供
 
@@ -366,7 +366,7 @@ plt.show()
 
 这给我们带来了：
 
-![](../Images/b79d5d39aac1974d8ed7f0a71a00ab1c.png)
+![](img/b79d5d39aac1974d8ed7f0a71a00ab1c.png)
 
 图片由作者提供
 
@@ -386,7 +386,7 @@ plt.show()
 
 准备好迎接新的改进版图表了吗？我准备好了！
 
-![](../Images/023db673b3e320db3d9b40118709dc66.png)
+![](img/023db673b3e320db3d9b40118709dc66.png)
 
 图片由作者提供
 
@@ -438,7 +438,7 @@ plt.gca().plot(
 
 最后但绝对重要的是，我们将改变条形图的颜色，以强调大多数人是在晚上锻炼的消息。
 
-![](../Images/081723364a4233fc5c17322988cad832.png)
+![](img/081723364a4233fc5c17322988cad832.png)
 
 图片由作者提供
 
@@ -456,7 +456,7 @@ plt.gca().plot(
 
 就像演示文稿中的幻灯片一样，你需要真正思考图表想要传达什么，然后给它最好的机会去做到这一点。这可能意味着更改图表类型、更换颜色调色板、添加描述性标题，甚至移除一些图表元素。就像出色的室内设计一样，不要害怕做出大胆的决定。如果情况变得更糟，你总可以重新编写图表代码！
 
-如果你缺乏设计灵感，我推荐查看《经济学人》和《金融时报》这类出版物——它们通常在用优美的图表传达信息方面表现出色。我通过阅读`matplotlib`文档和浏览各种StackOverflow帖子，学到了很多代码技巧和窍门。
+如果你缺乏设计灵感，我推荐查看《经济学人》和《金融时报》这类出版物——它们通常在用优美的图表传达信息方面表现出色。我通过阅读`matplotlib`文档和浏览各种 StackOverflow 帖子，学到了很多代码技巧和窍门。
 
 我最后一个——也是可能最重要的——建议是多加练习，然后回顾你的图表。更好的是，请其他人审阅你的图表，看看他们是否“理解”你试图传达的信息。我知道这听起来很无聊，但这确实有帮助。
 

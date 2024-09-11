@@ -1,10 +1,10 @@
 # 数据工程中的数据流处理
 
-> 原文：[https://towardsdatascience.com/streaming-in-data-engineering-2bb2b9b3b603?source=collection_archive---------7-----------------------#2023-12-12](https://towardsdatascience.com/streaming-in-data-engineering-2bb2b9b3b603?source=collection_archive---------7-----------------------#2023-12-12)
+> 原文：[`towardsdatascience.com/streaming-in-data-engineering-2bb2b9b3b603?source=collection_archive---------7-----------------------#2023-12-12`](https://towardsdatascience.com/streaming-in-data-engineering-2bb2b9b3b603?source=collection_archive---------7-----------------------#2023-12-12)
 
 ## 数据流水线和实时分析
 
-[](https://mshakhomirov.medium.com/?source=post_page-----2bb2b9b3b603--------------------------------)[![💡Mike Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----2bb2b9b3b603--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2bb2b9b3b603--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2bb2b9b3b603--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----2bb2b9b3b603--------------------------------)
+[](https://mshakhomirov.medium.com/?source=post_page-----2bb2b9b3b603--------------------------------)![💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----2bb2b9b3b603--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2bb2b9b3b603--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2bb2b9b3b603--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----2bb2b9b3b603--------------------------------)
 
 ·
 
@@ -12,11 +12,11 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2bb2b9b3b603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreaming-in-data-engineering-2bb2b9b3b603&source=-----2bb2b9b3b603---------------------bookmark_footer-----------)![](../Images/b5bdd62c71b5b0a4888786ad3318772d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2bb2b9b3b603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreaming-in-data-engineering-2bb2b9b3b603&source=-----2bb2b9b3b603---------------------bookmark_footer-----------)![](img/b5bdd62c71b5b0a4888786ad3318772d.png)
 
 Photo by [DESIGNECOLOGIST](https://unsplash.com/@designecologist?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-**流数据**是最流行的数据管道设计模式之一。使用事件作为单一数据点创建了从一个点到另一个点的持续数据流，使得实时数据摄取和分析成为可能。如果你想了解数据流，并学习如何构建实时数据管道，那么这篇文章就是为你准备的。学习如何测试解决方案，并模拟事件流的测试数据。本文是一个很好的机会，可以掌握一些受欢迎的数据工程技能，使用流行的流数据工具和框架，如Kinesis、Kafka和Spark。我将讨论数据流的好处、示例和应用场景。
+**流数据**是最流行的数据管道设计模式之一。使用事件作为单一数据点创建了从一个点到另一个点的持续数据流，使得实时数据摄取和分析成为可能。如果你想了解数据流，并学习如何构建实时数据管道，那么这篇文章就是为你准备的。学习如何测试解决方案，并模拟事件流的测试数据。本文是一个很好的机会，可以掌握一些受欢迎的数据工程技能，使用流行的流数据工具和框架，如 Kinesis、Kafka 和 Spark。我将讨论数据流的好处、示例和应用场景。
 
 ## 数据流到底是什么？
 

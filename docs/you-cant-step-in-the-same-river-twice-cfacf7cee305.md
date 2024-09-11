@@ -1,18 +1,18 @@
 # 你不能两次踏入同一条河流
 
-> 原文：[https://towardsdatascience.com/you-cant-step-in-the-same-river-twice-cfacf7cee305?source=collection_archive---------7-----------------------#2023-12-20](https://towardsdatascience.com/you-cant-step-in-the-same-river-twice-cfacf7cee305?source=collection_archive---------7-----------------------#2023-12-20)
+> 原文：[`towardsdatascience.com/you-cant-step-in-the-same-river-twice-cfacf7cee305?source=collection_archive---------7-----------------------#2023-12-20`](https://towardsdatascience.com/you-cant-step-in-the-same-river-twice-cfacf7cee305?source=collection_archive---------7-----------------------#2023-12-20)
 
-![](../Images/5a6342f9f1812f624416fcc0889cb8bd.png)
+![](img/5a6342f9f1812f624416fcc0889cb8bd.png)
 
 图片来源：[Vladislav Babienko](https://unsplash.com/@garri?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-## 《为何之书》第7章和第8章，《跟我读》系列
+## 《为何之书》第七章和第八章，《跟我读》系列
 
-[](https://zzhu17.medium.com/?source=post_page-----cfacf7cee305--------------------------------)[![Zijing Zhu, PhD](../Images/436b22e28798b87261c4814a7e2b20e3.png)](https://zzhu17.medium.com/?source=post_page-----cfacf7cee305--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cfacf7cee305--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cfacf7cee305--------------------------------) [Zijing Zhu, PhD](https://zzhu17.medium.com/?source=post_page-----cfacf7cee305--------------------------------)
+[](https://zzhu17.medium.com/?source=post_page-----cfacf7cee305--------------------------------)![Zijing Zhu, PhD](https://zzhu17.medium.com/?source=post_page-----cfacf7cee305--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cfacf7cee305--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfacf7cee305--------------------------------) [Zijing Zhu, PhD](https://zzhu17.medium.com/?source=post_page-----cfacf7cee305--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d83c09fb5d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-cant-step-in-the-same-river-twice-cfacf7cee305&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=post_page-7d83c09fb5d4----cfacf7cee305---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfacf7cee305--------------------------------) ·18分钟阅读·2023年12月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcfacf7cee305&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-cant-step-in-the-same-river-twice-cfacf7cee305&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=-----cfacf7cee305---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d83c09fb5d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-cant-step-in-the-same-river-twice-cfacf7cee305&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=post_page-7d83c09fb5d4----cfacf7cee305---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfacf7cee305--------------------------------) ·18 分钟阅读·2023 年 12 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcfacf7cee305&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fyou-cant-step-in-the-same-river-twice-cfacf7cee305&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=-----cfacf7cee305---------------------clap_footer-----------)
 
 --
 

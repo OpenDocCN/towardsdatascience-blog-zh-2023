@@ -1,28 +1,28 @@
 # （向量）索引的隐藏世界
 
-> 原文：[https://towardsdatascience.com/the-hidden-world-of-vector-indexes-f320a626c3dd?source=collection_archive---------2-----------------------#2023-11-15](https://towardsdatascience.com/the-hidden-world-of-vector-indexes-f320a626c3dd?source=collection_archive---------2-----------------------#2023-11-15)
+> 原文：[`towardsdatascience.com/the-hidden-world-of-vector-indexes-f320a626c3dd?source=collection_archive---------2-----------------------#2023-11-15`](https://towardsdatascience.com/the-hidden-world-of-vector-indexes-f320a626c3dd?source=collection_archive---------2-----------------------#2023-11-15)
 
 ## 你总是想了解关于（向量）索引的所有信息，但又害怕询问。
 
-[](https://medium.com/@oruas?source=post_page-----f320a626c3dd--------------------------------)[![Olivier Ruas](../Images/84f565f256321de6ddc6e32b86eb2f42.png)](https://medium.com/@oruas?source=post_page-----f320a626c3dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f320a626c3dd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f320a626c3dd--------------------------------) [Olivier Ruas](https://medium.com/@oruas?source=post_page-----f320a626c3dd--------------------------------)
+[](https://medium.com/@oruas?source=post_page-----f320a626c3dd--------------------------------)![Olivier Ruas](https://medium.com/@oruas?source=post_page-----f320a626c3dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f320a626c3dd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f320a626c3dd--------------------------------) [Olivier Ruas](https://medium.com/@oruas?source=post_page-----f320a626c3dd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffac3becb3fd6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-world-of-vector-indexes-f320a626c3dd&user=Olivier+Ruas&userId=fac3becb3fd6&source=post_page-fac3becb3fd6----f320a626c3dd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f320a626c3dd--------------------------------) · 11分钟阅读 · 2023年11月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff320a626c3dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-world-of-vector-indexes-f320a626c3dd&user=Olivier+Ruas&userId=fac3becb3fd6&source=-----f320a626c3dd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffac3becb3fd6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-world-of-vector-indexes-f320a626c3dd&user=Olivier+Ruas&userId=fac3becb3fd6&source=post_page-fac3becb3fd6----f320a626c3dd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f320a626c3dd--------------------------------) · 11 分钟阅读 · 2023 年 11 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff320a626c3dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-world-of-vector-indexes-f320a626c3dd&user=Olivier+Ruas&userId=fac3becb3fd6&source=-----f320a626c3dd---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff320a626c3dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-hidden-world-of-vector-indexes-f320a626c3dd&source=-----f320a626c3dd---------------------bookmark_footer-----------)
 
-自从ChatGPT公开发布以来，几乎没有一天不讨论LLM、RAG和向量数据库。技术界对LLM的可能性感到兴奋，这被视为改变我们生活的最新技术：对一些人来说是最好的，对另一些人来说是最坏的。与此同时，检索增强生成（RAG）作为一种动态解决方案应对不断变化的知识领域。但在幕后有一个关键的角色：向量索引和数据库。
+自从 ChatGPT 公开发布以来，几乎没有一天不讨论 LLM、RAG 和向量数据库。技术界对 LLM 的可能性感到兴奋，这被视为改变我们生活的最新技术：对一些人来说是最好的，对另一些人来说是最坏的。与此同时，检索增强生成（RAG）作为一种动态解决方案应对不断变化的知识领域。但在幕后有一个关键的角色：向量索引和数据库。
 
-尽管LLM、RAG和向量数据库被广泛讨论，但支持这些创新的（向量）索引却鲜为人知。在这篇文章中，我们将揭示索引的概念，帮助你理解索引如何让在浩瀚的数据集中查找信息变得轻松自如。
+尽管 LLM、RAG 和向量数据库被广泛讨论，但支持这些创新的（向量）索引却鲜为人知。在这篇文章中，我们将揭示索引的概念，帮助你理解索引如何让在浩瀚的数据集中查找信息变得轻松自如。
 
 # 1\. 什么是索引？
 
 我们都遇到过这种情况。你正在你朋友家见面。她给你的唯一信息是“我住在地铁镇区”。当你到达所说的地铁镇区时：
 
-![](../Images/caaa02848c67c82b34c512540097a3c2.png)
+![](img/caaa02848c67c82b34c512540097a3c2.png)
 
 摄影师 [Manson Yim](https://unsplash.com/@mansonyms?utm_source=medium&utm_medium=referral) 作品，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -46,13 +46,13 @@
 
 例如，在黄页的例子中，如果索引是按电话号码组织的，而你只知道名字，那么找到他们的地址将会相当具有挑战性！
 
-![](../Images/61615a1e35328f4e00f6e1967da73029.png)
+![](img/61615a1e35328f4e00f6e1967da73029.png)
 
 信息在那里；你最终会找到它，但所需的时间会让你甚至不愿尝试。另一方面，使用黄页，只需一眼查看页面，你就可以准确知道是否需要往前或往后查找！字典顺序允许你进行大致对数级的搜索。这就是为什么索引的选择至关重要。
 
-一般来说，索引有一个非常明确的目的：它可以被设计用于快速插入或检索数据，或者进行更复杂的查询，比如范围查询（“检索从今年5月1日到8月15日之间的所有数据”）。优化操作的选择将决定索引的样子。
+一般来说，索引有一个非常明确的目的：它可以被设计用于快速插入或检索数据，或者进行更复杂的查询，比如范围查询（“检索从今年 5 月 1 日到 8 月 15 日之间的所有数据”）。优化操作的选择将决定索引的样子。
 
-在线事务处理（OLTP）数据库与在线分析处理（OLAP）数据库之间的主要区别在于它们想要优化的操作：OLTP侧重于对行的操作（例如更新条目），而OLAP则侧重于对列的操作（例如计算平均值）。这两种数据库不会使用相同的索引，因为它们的操作目标不同。
+在线事务处理（OLTP）数据库与在线分析处理（OLAP）数据库之间的主要区别在于它们想要优化的操作：OLTP 侧重于对行的操作（例如更新条目），而 OLAP 则侧重于对列的操作（例如计算平均值）。这两种数据库不会使用相同的索引，因为它们的操作目标不同。
 
 # 1.1 索引和数据结构之间有什么区别？
 
@@ -68,7 +68,7 @@
 
 +   哈希索引
 
-+   B树
++   B 树
 
 +   局部敏感哈希（Locality-sensitive-Hashing, LSH）。
 
@@ -88,23 +88,23 @@
 
 首先，你应该有一个表，其中对于每个名字，你都有建筑物（这个表会帮助你找到爱丽丝）：
 
-![](../Images/2db595269580a005da33dc5a44cde5e0.png)
+![](img/2db595269580a005da33dc5a44cde5e0.png)
 
 这个表在每次有人到达或离开地区时都会更新。
 
-如果你想找到谁住在这个表中的B栋楼，你必须遍历整个表。
+如果你想找到谁住在这个表中的 B 栋楼，你必须遍历整个表。
 
 虽然在技术上是可能的，但由于计算时间会随着表的大小线性增加，因此它不会扩展。
 
-想想这个地区的公寓数量：如果你想通过一个个检查所有的档案来找到所有住在B栋楼的人，这会花费很长时间！
+想想这个地区的公寓数量：如果你想通过一个个检查所有的档案来找到所有住在 B 栋楼的人，这会花费很长时间！
 
 另一种解决方案是使用倒排索引：你维护一个表，其中建筑物作为键并与住在其中的人连接：
 
-![](../Images/085db2298e6a0b7260a2bdff98138368.png)
+![](img/085db2298e6a0b7260a2bdff98138368.png)
 
 这个表与前一个表同时维护：添加或删除新人的成本比以前稍高，但检索时间几乎缩短为零！
 
-要查找谁住在B楼，你只需要访问该表的“Building B”这一行，就能得到结果！
+要查找谁住在 B 楼，你只需要访问该表的“Building B”这一行，就能得到结果！
 
 > 反向电话查询是电话号码的倒排索引！
 
@@ -118,7 +118,7 @@
 
 数据库不仅仅是索引，它是一个全面的数据管理系统。它存储、组织和管理实际数据，维护数据完整性，处理事务，并提供超越索引的各种功能，使其成为数据存储和操作的核心枢纽。虽然索引加快了数据库中的数据检索，但数据库作为数据存储、管理和检索的完整生态系统存在。
 
-![](../Images/3d4764aecef1840c6f559651c7169d74.png)
+![](img/3d4764aecef1840c6f559651c7169d74.png)
 
 总结来说，索引就像数据库中的指示牌，指引你找到所需的数据。相反，数据库是实际数据所在的存储库，并配备了各种工具和功能来管理和操作这些数据。
 
@@ -132,9 +132,9 @@
 
 在我们的倒排索引示例中，键是单词（爱好和名字）。在向量索引中，我们处理的是向量：固定大小的数字序列。
 
-![](../Images/35ff2ef33bf4f915ac11e3a045afe67e.png)
+![](img/35ff2ef33bf4f915ac11e3a045afe67e.png)
 
-两个大小为4的向量。
+两个大小为 4 的向量。
 
 我知道，我知道，我能听到你说，“我数学不好，我不想使用向量”。
 
@@ -144,19 +144,19 @@
 
 你可能会问自己第一个问题是，“你的向量有什么有趣之处”？
 
-假设你终于找到了Alice的住处，现在你想找点东西吃。你可能会想找最近的餐馆。你会找一份餐馆列表，结果得到一张包含餐馆、特色菜和地址的表格。让我们来看看你可以找到的信息：
+假设你终于找到了 Alice 的住处，现在你想找点东西吃。你可能会想找最近的餐馆。你会找一份餐馆列表，结果得到一张包含餐馆、特色菜和地址的表格。让我们来看看你可以找到的信息：
 
-![](../Images/7c07b731c47ce75030b0be8b72f98315.png)
+![](img/7c07b731c47ce75030b0be8b72f98315.png)
 
 这看起来没什么帮助，对吧？你唯一的选择是逐一扫描列表，阅读地址，并手动评估它与你的距离有多近。我们可以尝试自动化最近地点的排名，但基于原始地址计算距离是困难的（两条街道可能相近但名称不同）。
 
 不过，假设你现在有一个表，其中 GPS 位置表示每个餐馆的精确纬度和经度：
 
-![](../Images/57e546e41d73fe4d44dc837f97fed7bc.png)
+![](img/57e546e41d73fe4d44dc837f97fed7bc.png)
 
 每个位置是一个大小为 2 的向量。利用这些向量，你可以通过一个简单的 *-而且快速-* 数学操作轻松计算到自己位置的距离。然后你可以迅速检索到最近的那些，也就是说，离你最近的那个！
 
-![](../Images/13067bc197132defec5969f7a2b30174.png)
+![](img/13067bc197132defec5969f7a2b30174.png)
 
 现在你可以轻松找到离你最近的餐馆了！
 
@@ -184,34 +184,34 @@
 
 # 3\. LLMs 和 RAGs 之间的联系是什么？
 
-现在你已经了解了向量索引，你可能会想为什么关于LLMs和RAGs的讨论也涉及到向量索引。要理解原因，我们首先快速解释一下什么是检索增强生成，或者说RAG。RAG作为LLMs固有局限性——即知识有限性——的巧妙解决方案。
+现在你已经了解了向量索引，你可能会想为什么关于 LLMs 和 RAGs 的讨论也涉及到向量索引。要理解原因，我们首先快速解释一下什么是检索增强生成，或者说 RAG。RAG 作为 LLMs 固有局限性——即知识有限性——的巧妙解决方案。
 
-LLMs只知道它们接受训练的数据。提高它们知识的一种技术是*提示工程*，即将额外的数据整合到查询提示中：“给定这些数据{data}，回答这个问题：{question}”。
+LLMs 只知道它们接受训练的数据。提高它们知识的一种技术是*提示工程*，即将额外的数据整合到查询提示中：“给定这些数据{data}，回答这个问题：{question}”。
 
 尽管有效，但这种方法面临一个新挑战：可扩展性。不仅提示的大小有限，包含的数据越多，查询的成本也就越高。
 
 为了克服这个问题，检索增强生成通过只插入最相似的数据来限制数据的数量，这就是向量索引发挥作用的地方！
 
-它的工作原理是：所有文档最初都通过LLMs（1）转换为向量。具体来说，是LLM的编码器部分被使用。
+它的工作原理是：所有文档最初都通过 LLMs（1）转换为向量。具体来说，是 LLM 的编码器部分被使用。
 
 这些向量被用作在向量索引中索引文档的键（2）。
 
-在进行查询时，查询会使用LLM进行向量化（3）。然后，将结果向量在向量索引中查询，以检索最相似的文档（4）。这些文档随后会通过提示工程（5）来回答查询。
+在进行查询时，查询会使用 LLM 进行向量化（3）。然后，将结果向量在向量索引中查询，以检索最相似的文档（4）。这些文档随后会通过提示工程（5）来回答查询。
 
-![](../Images/3e1970f264443b02529b03fdd905421d.png)
+![](img/3e1970f264443b02529b03fdd905421d.png)
 
-检索增强生成（RAG）依赖于LLMs和向量索引。
+检索增强生成（RAG）依赖于 LLMs 和向量索引。
 
 就这些！
 
-正如你所见，类似于LLM，向量索引在RAGs中也占据着核心位置。
+正如你所见，类似于 LLM，向量索引在 RAGs 中也占据着核心位置。
 
 有些人更喜欢使用向量数据库而不是向量索引。这在你想在多个应用中重用相同数据时没问题。然而，如果你主要关注的是检索效率或在每个应用中定义索引的灵活性，那么单个向量索引通常更简单、更快速。
 
 # 结论
 
-恭喜那些勇敢地读到这里的人！我相信你现在已经具备了参与关于LLMs和RAGs的热情讨论所需的所有背景知识。
+恭喜那些勇敢地读到这里的人！我相信你现在已经具备了参与关于 LLMs 和 RAGs 的热情讨论所需的所有背景知识。
 
 索引在数据检索中扮演着核心角色。由于数据检索可能仍将是数据技术中的关键组成部分，因此理解包括向量索引在内的索引是至关重要的。
 
-如果你想了解更多高级索引，我建议你阅读[我关于LSH的文章](https://pathway.com/developers/showcases/lsh/lsh_chapter2)。如果你想了解一些更实用的内容，并且对实时检索增强生成（RAG）的实际应用感兴趣，可以考虑探索[LLM-app](https://github.com/pathwaycom/llm-app)，在这里你可以亲身体验这些技术的力量。
+如果你想了解更多高级索引，我建议你阅读[我关于 LSH 的文章](https://pathway.com/developers/showcases/lsh/lsh_chapter2)。如果你想了解一些更实用的内容，并且对实时检索增强生成（RAG）的实际应用感兴趣，可以考虑探索[LLM-app](https://github.com/pathwaycom/llm-app)，在这里你可以亲身体验这些技术的力量。

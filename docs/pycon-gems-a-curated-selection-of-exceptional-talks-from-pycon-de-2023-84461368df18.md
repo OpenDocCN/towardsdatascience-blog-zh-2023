@@ -1,18 +1,18 @@
 # PyCon 精华：来自 PyCon DE 2023 的精选杰出讲座
 
-> 原文：[https://towardsdatascience.com/pycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18?source=collection_archive---------15-----------------------#2023-05-02](https://towardsdatascience.com/pycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18?source=collection_archive---------15-----------------------#2023-05-02)
+> 原文：[`towardsdatascience.com/pycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18?source=collection_archive---------15-----------------------#2023-05-02`](https://towardsdatascience.com/pycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18?source=collection_archive---------15-----------------------#2023-05-02)
 
-![](../Images/3b400df4d0a02d493062a5da3a1a77eb.png)
+![](img/3b400df4d0a02d493062a5da3a1a77eb.png)
 
 图片由作者提供。
 
-## **孤立的LLMs不是未来**。
+## **孤立的 LLMs 不是未来**。
 
-[](https://medium.com/@mary.newhauser?source=post_page-----84461368df18--------------------------------)[![Mary Newhauser](../Images/7f0d7287f7b735bb9391858f1fc641ee.png)](https://medium.com/@mary.newhauser?source=post_page-----84461368df18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----84461368df18--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----84461368df18--------------------------------) [Mary Newhauser](https://medium.com/@mary.newhauser?source=post_page-----84461368df18--------------------------------)
+[](https://medium.com/@mary.newhauser?source=post_page-----84461368df18--------------------------------)![Mary Newhauser](https://medium.com/@mary.newhauser?source=post_page-----84461368df18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----84461368df18--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----84461368df18--------------------------------) [Mary Newhauser](https://medium.com/@mary.newhauser?source=post_page-----84461368df18--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b27bdb820b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18&user=Mary+Newhauser&userId=6b27bdb820b9&source=post_page-6b27bdb820b9----84461368df18---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----84461368df18--------------------------------) · 8分钟阅读 · 2023年5月2日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F84461368df18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18&user=Mary+Newhauser&userId=6b27bdb820b9&source=-----84461368df18---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b27bdb820b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18&user=Mary+Newhauser&userId=6b27bdb820b9&source=post_page-6b27bdb820b9----84461368df18---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----84461368df18--------------------------------) · 8 分钟阅读 · 2023 年 5 月 2 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F84461368df18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpycon-gems-a-curated-selection-of-exceptional-talks-from-pycon-de-2023-84461368df18&user=Mary+Newhauser&userId=6b27bdb820b9&source=-----84461368df18---------------------clap_footer-----------)
 
 --
 

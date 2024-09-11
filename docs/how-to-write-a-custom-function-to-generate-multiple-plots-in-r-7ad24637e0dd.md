@@ -1,18 +1,18 @@
 # 如何编写自定义函数以在 R 中生成多个图表
 
-> 原文：[https://towardsdatascience.com/how-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd?source=collection_archive---------2-----------------------#2023-04-11](https://towardsdatascience.com/how-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd?source=collection_archive---------2-----------------------#2023-04-11)
+> 原文：[`towardsdatascience.com/how-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd?source=collection_archive---------2-----------------------#2023-04-11`](https://towardsdatascience.com/how-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd?source=collection_archive---------2-----------------------#2023-04-11)
 
 ## 轻松介绍自定义函数的编写
 
-[](https://medium.com/@create_self?source=post_page-----7ad24637e0dd--------------------------------)[![Vivian Peng](../Images/867b8bbfe22ae0881776fef31108fe89.png)](https://medium.com/@create_self?source=post_page-----7ad24637e0dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ad24637e0dd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ad24637e0dd--------------------------------) [Vivian Peng](https://medium.com/@create_self?source=post_page-----7ad24637e0dd--------------------------------)
+[](https://medium.com/@create_self?source=post_page-----7ad24637e0dd--------------------------------)![Vivian Peng](https://medium.com/@create_self?source=post_page-----7ad24637e0dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ad24637e0dd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ad24637e0dd--------------------------------) [Vivian Peng](https://medium.com/@create_self?source=post_page-----7ad24637e0dd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffd5a22d4fcc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd&user=Vivian+Peng&userId=fd5a22d4fcc&source=post_page-fd5a22d4fcc----7ad24637e0dd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ad24637e0dd--------------------------------) · 9 分钟阅读 · 2023年4月11日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffd5a22d4fcc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd&user=Vivian+Peng&userId=fd5a22d4fcc&source=post_page-fd5a22d4fcc----7ad24637e0dd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ad24637e0dd--------------------------------) · 9 分钟阅读 · 2023 年 4 月 11 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7ad24637e0dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd&source=-----7ad24637e0dd---------------------bookmark_footer-----------)![](../Images/a796c3be75f979deddaa04aa1bd47593.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7ad24637e0dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-a-custom-function-to-generate-multiple-plots-in-r-7ad24637e0dd&source=-----7ad24637e0dd---------------------bookmark_footer-----------)![](img/a796c3be75f979deddaa04aa1bd47593.png)
 
 一双手在笔记本电脑上打字，屏幕上显示代码的视觉图像。图片由作者提供
 
@@ -42,7 +42,7 @@
 
 让我们使用可爱的 [Palmer Penguins 数据集](https://allisonhorst.github.io/palmerpenguins/)。该数据集包含三种独特的企鹅种类—— Chinstrap、Gentoo、Adelie：
 
-![](../Images/ab73693b37cdb30493b10c814d498777.png)
+![](img/ab73693b37cdb30493b10c814d498777.png)
 
 Artwork by [@allison_horst](https://allisonhorst.github.io/palmerpenguins/articles/art.html)
 
@@ -86,9 +86,9 @@ plot_ly(
   suppressWarnings()
 ```
 
-![](../Images/be94cb0811c8e75e96430be2d33d5646.png)
+![](img/be94cb0811c8e75e96430be2d33d5646.png)
 
-一个条形图显示了Adelie企鹅在2007年、2008年和2009年的中位体重。
+一个条形图显示了 Adelie 企鹅在 2007 年、2008 年和 2009 年的中位体重。
 
 ## 2\. 理解你想使用哪个变量来创建多个图表
 
@@ -96,17 +96,17 @@ plot_ly(
 
 这是我们`summary`表格的视图。我们希望为每个物种创建相同的条形图。在这个例子中，我们感兴趣的变量是`species`变量。
 
-![](../Images/2d0722fb6735d2e9cc53b58f415bed6f.png)
+![](img/2d0722fb6735d2e9cc53b58f415bed6f.png)
 
-我们的总结表格的视图，展示了每种企鹅物种——Adelie、Chinstrap和Gentoo——在2007年、2008年和2009年的中位体重。
+我们的总结表格的视图，展示了每种企鹅物种——Adelie、Chinstrap 和 Gentoo——在 2007 年、2008 年和 2009 年的中位体重。
 
 ## 3\. 将绘图代码转换为函数
 
 确定绘图代码中需要概括的组件。现在，我们将用一个概括的变量替换任何`Adelie`物种名称的实例：
 
-![](../Images/6f07fe4415ff8e1689c36a3362720ef3.png)
+![](img/6f07fe4415ff8e1689c36a3362720ef3.png)
 
-描述我们的Plotly代码，展示了我们希望概括的变量。在这个例子中，我们希望用一个概括的变量替换任何“Adelie”物种名称的实例，以便为每个新物种创建图表。
+描述我们的 Plotly 代码，展示了我们希望概括的变量。在这个例子中，我们希望用一个概括的变量替换任何“Adelie”物种名称的实例，以便为每个新物种创建图表。
 
 将绘图代码转换为函数。这个函数接收一个变量`species_name`，它将以字符串形式输入。请看这里，我们用变量`species_name`代替了名称`Adelie`：
 
@@ -135,9 +135,9 @@ plot_fx <- function(species_name){
 plot_fx("Chinstrap")
 ```
 
-![](../Images/a77fbd98eab37699a6d2126f4892d8f8.png)
+![](img/a77fbd98eab37699a6d2126f4892d8f8.png)
 
-一个条形图显示了Chinstrap企鹅在2007年、2008年和2009年的中位体重。这是通过我们在帖子中创建的自定义函数生成的。
+一个条形图显示了 Chinstrap 企鹅在 2007 年、2008 年和 2009 年的中位体重。这是通过我们在帖子中创建的自定义函数生成的。
 
 ## 4\. 循环遍历你的唯一值以生成多个图表
 
@@ -163,16 +163,16 @@ for (i in unique(summary$species)){
 plot_list[[1]]
 ```
 
-现在，使用Plotly中的`subplot`函数将所有图表可视化到一个网格中：
+现在，使用 Plotly 中的`subplot`函数将所有图表可视化到一个网格中：
 
 ```py
 # Plot all three visuals in one grid
 subplot(plot_list, nrows = 3, shareX = TRUE, shareY = FALSE) 
 ```
 
-![](../Images/8fb15638ec571d9b222deeb7b7724304.png)
+![](img/8fb15638ec571d9b222deeb7b7724304.png)
 
-三个条形图显示了Adelie、Chinstrap和Gentoo企鹅在2007年、2008年和2009年的中位体重。这是通过循环遍历数据集中每个唯一物种，并使用我们的自定义绘图函数生成的。
+三个条形图显示了 Adelie、Chinstrap 和 Gentoo 企鹅在 2007 年、2008 年和 2009 年的中位体重。这是通过循环遍历数据集中每个唯一物种，并使用我们的自定义绘图函数生成的。
 
 ## 我们做到了！
 
@@ -180,7 +180,7 @@ subplot(plot_list, nrows = 3, shareX = TRUE, shareY = FALSE)
 
 ## 奖励步骤！添加注释以获取每个图表的标题
 
-要在最后的视觉效果中为每个子图添加标题，你必须使用[Plotly中的注释](https://plotly.com/r/text-and-annotations/)。
+要在最后的视觉效果中为每个子图添加标题，你必须使用[Plotly 中的注释](https://plotly.com/r/text-and-annotations/)。
 
 ```py
 # Create a list of annotations
@@ -227,7 +227,7 @@ my_annotations = list(
 
 1.  **为每个子图标题创建注释列表：** 注释将是一个列表的列表。每个元素是一个包含每个子图所有信息的列表。在我们的例子中，我希望每个子图显示物种名称，因此我将有一个包含 3 个元素的列表。每个元素包含以下内容：
 
-![](../Images/4a63ee02469225780840568581b40823.png)
+![](img/4a63ee02469225780840568581b40823.png)
 
 我们的注释代码的描述，展示了‘x’、‘y’和‘text’变量所对应的内容。
 
@@ -241,13 +241,13 @@ my_annotations = list(
 
 +   `xanchor`：设置文本框的水平位置锚点。这个锚点将 `x` 位置绑定到注释的“左边”、“中间”或“右边”。根据你的 x 和 y 坐标想象一下你的点的位置，以及你希望文本如何相对于该位置对齐。
 
-![](../Images/6ec807a1709f8cad8959de33c0c0eff8.png)
+![](img/6ec807a1709f8cad8959de33c0c0eff8.png)
 
 Plotly 布局的 xanchor 对齐描述。
 
 +   `yanchor`：设置文本框的垂直位置锚点。这个锚点将 `y` 位置绑定到注释的“顶部”、“中间”或“底部”。根据你的 x 和 y 坐标想象一下你的点的位置，以及你希望文本如何相对于该位置对齐。
 
-![](../Images/eb8af2b52172494cf5d321c3ecd22e1c.png)
+![](img/eb8af2b52172494cf5d321c3ecd22e1c.png)
 
 Plotly 布局的 yanchor 对齐描述。
 

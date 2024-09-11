@@ -1,18 +1,18 @@
 # 数据科学的善意：超越利润，迈向更美好的世界
 
-> 原文：[https://towardsdatascience.com/data-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28?source=collection_archive---------11-----------------------#2023-08-25](https://towardsdatascience.com/data-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28?source=collection_archive---------11-----------------------#2023-08-25)
+> 原文：[`towardsdatascience.com/data-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28?source=collection_archive---------11-----------------------#2023-08-25`](https://towardsdatascience.com/data-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28?source=collection_archive---------11-----------------------#2023-08-25)
 
 ## 利用数据分析的力量在提升公司盈利能力的同时推动积极变化。
 
-[](https://s-saci95.medium.com/?source=post_page-----2d161e2d2b28--------------------------------)[![Samir Saci](../Images/722d1f56a3308f6527d82b5ab97064ec.png)](https://s-saci95.medium.com/?source=post_page-----2d161e2d2b28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d161e2d2b28--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d161e2d2b28--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----2d161e2d2b28--------------------------------)
+[](https://s-saci95.medium.com/?source=post_page-----2d161e2d2b28--------------------------------)![Samir Saci](https://s-saci95.medium.com/?source=post_page-----2d161e2d2b28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d161e2d2b28--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d161e2d2b28--------------------------------) [Samir Saci](https://s-saci95.medium.com/?source=post_page-----2d161e2d2b28--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----2d161e2d2b28---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d161e2d2b28--------------------------------) ·11分钟阅读·2023年8月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d161e2d2b28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28&user=Samir+Saci&userId=bb0f26d52754&source=-----2d161e2d2b28---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbb0f26d52754&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28&user=Samir+Saci&userId=bb0f26d52754&source=post_page-bb0f26d52754----2d161e2d2b28---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d161e2d2b28--------------------------------) ·11 分钟阅读·2023 年 8 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d161e2d2b28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28&user=Samir+Saci&userId=bb0f26d52754&source=-----2d161e2d2b28---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d161e2d2b28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28&source=-----2d161e2d2b28---------------------bookmark_footer-----------)[![](../Images/3e58bf59b656585a003da9a0a9b4bf6a.png)](http://samirsaci.com)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d161e2d2b28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-for-good-beyond-profits-towards-a-better-world-2d161e2d2b28&source=-----2d161e2d2b28---------------------bookmark_footer-----------)![](http://samirsaci.com)
 
 数据科学的善意 — （作者提供的图片）
 

@@ -1,18 +1,18 @@
 # 使用正则表达式（RegEx）进行 Pandas DataFrame 的特征工程
 
-> 原文：[https://towardsdatascience.com/feature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da?source=collection_archive---------8-----------------------#2023-01-06](https://towardsdatascience.com/feature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da?source=collection_archive---------8-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/feature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da?source=collection_archive---------8-----------------------#2023-01-06`](https://towardsdatascience.com/feature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da?source=collection_archive---------8-----------------------#2023-01-06)
 
 ## 了解如何使用正则表达式轻松处理字符串列
 
-[](https://weimenglee.medium.com/?source=post_page-----c965380316da--------------------------------)[![Wei-Meng Lee](../Images/10fc13e8a6858502d6a7b89fcaad7a10.png)](https://weimenglee.medium.com/?source=post_page-----c965380316da--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c965380316da--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c965380316da--------------------------------) [Wei-Meng Lee](https://weimenglee.medium.com/?source=post_page-----c965380316da--------------------------------)
+[](https://weimenglee.medium.com/?source=post_page-----c965380316da--------------------------------)![Wei-Meng Lee](https://weimenglee.medium.com/?source=post_page-----c965380316da--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c965380316da--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c965380316da--------------------------------) [Wei-Meng Lee](https://weimenglee.medium.com/?source=post_page-----c965380316da--------------------------------)
 
 ·
 
-[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6599e1e08a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffeature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da&user=Wei-Meng+Lee&userId=6599e1e08a48&source=post_page-6599e1e08a48----c965380316da---------------------post_header-----------) 发表在 [数据科学的探索](https://towardsdatascience.com/?source=post_page-----c965380316da--------------------------------) · 13分钟阅读 · 2023年1月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc965380316da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffeature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da&user=Wei-Meng+Lee&userId=6599e1e08a48&source=-----c965380316da---------------------clap_footer-----------)
+[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6599e1e08a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffeature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da&user=Wei-Meng+Lee&userId=6599e1e08a48&source=post_page-6599e1e08a48----c965380316da---------------------post_header-----------) 发表在 [数据科学的探索](https://towardsdatascience.com/?source=post_page-----c965380316da--------------------------------) · 13 分钟阅读 · 2023 年 1 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc965380316da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffeature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da&user=Wei-Meng+Lee&userId=6599e1e08a48&source=-----c965380316da---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc965380316da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffeature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da&source=-----c965380316da---------------------bookmark_footer-----------)![](../Images/30db292baa4a61d31d6260220a331a59.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc965380316da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffeature-engineering-using-regular-expression-regex-in-pandas-dataframe-c965380316da&source=-----c965380316da---------------------bookmark_footer-----------)![](img/30db292baa4a61d31d6260220a331a59.png)
 
 图片由 [Clark Van Der Beken](https://unsplash.com/@snapsbyclark?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -24,6 +24,6 @@
 
 一如既往，我最喜欢用来说明本文概念的数据集是 Titanic 数据集。它包含一些非常适合进行特征工程的字符串列。
 
-> ***数据来源***：本文的数据来源于*[https://www.kaggle.com/datasets/tedllh/titanic-train](https://www.kaggle.com/datasets/tedllh/titanic-train)*。
+> ***数据来源***：本文的数据来源于*[`www.kaggle.com/datasets/tedllh/titanic-train`](https://www.kaggle.com/datasets/tedllh/titanic-train)*。
 > 
 > ***许可 —*** *数据库内容*…

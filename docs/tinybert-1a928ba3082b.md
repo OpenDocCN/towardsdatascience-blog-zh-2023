@@ -1,24 +1,24 @@
 # 大型语言模型：TinyBERT — 为 NLP 蒸馏 BERT
 
-> 原文：[https://towardsdatascience.com/tinybert-1a928ba3082b?source=collection_archive---------1-----------------------#2023-10-21](https://towardsdatascience.com/tinybert-1a928ba3082b?source=collection_archive---------1-----------------------#2023-10-21)
+> 原文：[`towardsdatascience.com/tinybert-1a928ba3082b?source=collection_archive---------1-----------------------#2023-10-21`](https://towardsdatascience.com/tinybert-1a928ba3082b?source=collection_archive---------1-----------------------#2023-10-21)
 
-## 解锁在LLMs中变换器蒸馏的力量
+## 解锁在 LLMs 中变换器蒸馏的力量
 
-[](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----1a928ba3082b---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------) ·8分钟阅读·2023年10月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1a928ba3082b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----1a928ba3082b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----1a928ba3082b---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------) ·8 分钟阅读·2023 年 10 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1a928ba3082b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----1a928ba3082b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a928ba3082b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&source=-----1a928ba3082b---------------------bookmark_footer-----------)![](../Images/e042b2ab6730abf5297f0af4960b2a95.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a928ba3082b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&source=-----1a928ba3082b---------------------bookmark_footer-----------)![](img/e042b2ab6730abf5297f0af4960b2a95.png)
 
 # 介绍
 
 最近几年，大型语言模型的演变迅速发展。BERT 成为最受欢迎且高效的模型之一，能够以高准确率解决广泛的 NLP 任务。BERT 之后，许多其他模型也相继出现，展示了同样出色的结果。
 
-一个显而易见的趋势是，**随着时间的推移，大型语言模型（LLMs）倾向于通过指数级增加其参数和训练数据的数量而变得更加复杂**。深度学习研究表明，这种技术通常会带来更好的结果。不幸的是，机器学习领域已经遇到了一些关于LLMs的问题，而可扩展性已成为有效训练、存储和使用它们的主要障碍。
+一个显而易见的趋势是，**随着时间的推移，大型语言模型（LLMs）倾向于通过指数级增加其参数和训练数据的数量而变得更加复杂**。深度学习研究表明，这种技术通常会带来更好的结果。不幸的是，机器学习领域已经遇到了一些关于 LLMs 的问题，而可扩展性已成为有效训练、存储和使用它们的主要障碍。
 
 针对这个问题，专门制定了压缩 LLM 的方法。在本文中，我们将重点讨论 **Transformer 提炼**，这导致了一个名为 TinyBERT 的小型 BERT 版本的开发。此外，我们将了解 TinyBERT 的学习过程以及使 TinyBERT 如此强大的若干细节。本文基于官方的 [TinyBERT 论文](https://arxiv.org/pdf/1909.10351.pdf)。
 
@@ -26,11 +26,11 @@
 
 最近，我们已经讨论了 DistilBERT 中提炼的工作原理：简而言之，损失函数目标经过修改，以使学生和教师的预测相似。在 DistilBERT 中，损失函数比较了学生和教师的输出分布，并且还考虑了两个模型的输出嵌入（用于相似性损失）。
 
-[## 大型语言模型：DistilBERT — 更小、更快、更便宜、更轻量
+## 大型语言模型：DistilBERT — 更小、更快、更便宜、更轻量
 
 ### 解锁 BERT 压缩的秘密：最大效率的师生框架
 
-[towardsdatascience.com](/distilbert-11c8810d29fc?source=post_page-----1a928ba3082b--------------------------------)
+[towardsdatascience.com
 
 从表面上看，TinyBERT 中的提炼框架与 DistilBERT 没有太大变化：损失函数再次被修改，以使学生模仿教师。然而，在 TinyBERT 的情况下，它更进一步：**损失函数不仅考虑了两个模型产生了什么，还考虑了预测是如何获得的**。根据论文，TinyBERT 的损失函数由三个组成部分构成，涵盖了两个模型的不同方面：
 
@@ -40,7 +40,7 @@
 
 3\. 预测层输出的 logits
 
-![](../Images/e51605f8fc3a47cf1d74b0b8d1c2d40c.png)
+![](img/e51605f8fc3a47cf1d74b0b8d1c2d40c.png)
 
 Transformer 提炼损失
 
@@ -70,7 +70,7 @@ Transformer 提炼损失
 
 > 由于学生和教师的嵌入矩阵大小不同，不能通过 MSE 元素级别地比较它们。这就是为什么学生嵌入矩阵要乘以一个可学习的权重矩阵 W，使得结果矩阵与教师嵌入矩阵具有相同的形状。
 
-![](../Images/7f8f61fb24d312e5effa89253414fc61.png)
+![](img/7f8f61fb24d312e5effa89253414fc61.png)
 
 嵌入层蒸馏损失
 
@@ -78,7 +78,7 @@ Transformer 提炼损失
 
 ## 2\. Transformer 层蒸馏
 
-![](../Images/6e92bf7c292e18da1bbbeead28019102.png)
+![](img/6e92bf7c292e18da1bbbeead28019102.png)
 
 Transformer 层蒸馏损失可视化
 
@@ -88,7 +88,7 @@ Transformer 层蒸馏损失可视化
 
 在 TinyBERT 中，所有注意力层都被考虑，且每层的最终损失值等于所有头部的学生和教师注意力矩阵之间 MSE 值的总和。
 
-![](../Images/ecd2185a565cb6c0d9053e65209d7d51.png)
+![](img/ecd2185a565cb6c0d9053e65209d7d51.png)
 
 注意力层蒸馏损失
 
@@ -98,7 +98,7 @@ Transformer 层蒸馏损失可视化
 
 遵循捕捉丰富语言知识的思想，蒸馏也应用于变换器层的输出。
 
-![](../Images/1a3234bc380e40db7ff6391d11b735b1.png)
+![](img/1a3234bc380e40db7ff6391d11b735b1.png)
 
 隐藏层蒸馏损失
 
@@ -108,7 +108,7 @@ Transformer 层蒸馏损失可视化
 
 最后，为了使学生能够再现教师的输出，考虑预测层损失。它包括计算两个模型预测的 logits 向量之间的交叉熵。
 
-![](../Images/67f453832f6073a1dc6e153509af78eb.png)
+![](img/67f453832f6073a1dc6e153509af78eb.png)
 
 预测层蒸馏损失
 
@@ -118,7 +118,7 @@ Transformer 层蒸馏损失可视化
 
 在 TinyBERT 中，根据其类型，每一层都有自己的损失函数。为了赋予某些层更多或更少的重要性，相应的损失值会乘以一个常数 *a*。最终损失函数等于所有 TinyBERT 层损失值的加权总和。
 
-![](../Images/bf4e8fd2c8eee6edee00a3704dd0d6b5.png)
+![](img/bf4e8fd2c8eee6edee00a3704dd0d6b5.png)
 
 TinyBERT 中的损失函数
 
@@ -138,7 +138,7 @@ TinyBERT 中的损失函数
 
 1.  **任务特定蒸馏**。这一次，经过微调的 BERT 充当教师角色。为了进一步提升性能，研究人员提出在训练数据集上应用数据增强方法。结果显示，在任务特定蒸馏后，TinyBERT 在性能上达到了与 BERT 相当的水平。
 
-![](../Images/4fcfb5ba3bbdba7d68c74235627016f7.png)
+![](img/4fcfb5ba3bbdba7d68c74235627016f7.png)
 
 训练过程
 
@@ -152,7 +152,7 @@ TinyBERT 中的损失函数
 
 尽管模型大小大幅减少，但所描述的数据增强机制对 TinyBERT 的性能产生了很大影响，使其能够学习更多样化的例子。
 
-![](../Images/b6763911054f0e4156a914fc8c30edde.png)
+![](img/b6763911054f0e4156a914fc8c30edde.png)
 
 增强示例
 
@@ -160,13 +160,13 @@ TinyBERT 中的损失函数
 
 **TinyBERT 仅有 14.5M 参数，约为 BERT base 的 7.5 倍更小**。其详细比较见下图：
 
-![](../Images/213ab92b5cd72b99697d1181936387d9.png)
+![](img/213ab92b5cd72b99697d1181936387d9.png)
 
 BERT base 与 TinyBERT 比较
 
 对于层映射，作者提出了**一种** **统一策略，根据该策略，层映射函数将每个 TinyBERT 层映射到每个第三个 BERT 层：*g(m) = 3 * m***。也研究了其他策略（如采用所有底层或顶层 BERT 层），但统一策略显示出最佳结果，这似乎是合乎逻辑的，因为它允许从不同的抽象层转移知识，使得转移的信息更加多样化。
 
-![](../Images/6eefcad8b9d60b7794b850c07484e9a6.png)
+![](img/6eefcad8b9d60b7794b850c07484e9a6.png)
 
 不同的层映射策略。性能结果显示在 GLUE 数据集上。
 

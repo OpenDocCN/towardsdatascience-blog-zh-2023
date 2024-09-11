@@ -1,12 +1,12 @@
 # 变分推断：基础知识
 
-> 原文：[https://towardsdatascience.com/variational-inference-the-basics-f70ac511bcea?source=collection_archive---------1-----------------------#2023-06-16](https://towardsdatascience.com/variational-inference-the-basics-f70ac511bcea?source=collection_archive---------1-----------------------#2023-06-16)
+> 原文：[`towardsdatascience.com/variational-inference-the-basics-f70ac511bcea?source=collection_archive---------1-----------------------#2023-06-16`](https://towardsdatascience.com/variational-inference-the-basics-f70ac511bcea?source=collection_archive---------1-----------------------#2023-06-16)
 
-[](https://medium.com/@hylke.donker?source=post_page-----f70ac511bcea--------------------------------)[![Hylke C. Donker](../Images/bed587d1bb305ded80f7ce21bc4f4856.png)](https://medium.com/@hylke.donker?source=post_page-----f70ac511bcea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f70ac511bcea--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f70ac511bcea--------------------------------) [Hylke C. Donker](https://medium.com/@hylke.donker?source=post_page-----f70ac511bcea--------------------------------)
+[](https://medium.com/@hylke.donker?source=post_page-----f70ac511bcea--------------------------------)![Hylke C. Donker](https://medium.com/@hylke.donker?source=post_page-----f70ac511bcea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f70ac511bcea--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----f70ac511bcea--------------------------------) [Hylke C. Donker](https://medium.com/@hylke.donker?source=post_page-----f70ac511bcea--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea1bfe4db7a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-inference-the-basics-f70ac511bcea&user=Hylke+C.+Donker&userId=ea1bfe4db7a8&source=post_page-ea1bfe4db7a8----f70ac511bcea---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f70ac511bcea--------------------------------) ·9 分钟阅读·2023年6月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff70ac511bcea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-inference-the-basics-f70ac511bcea&user=Hylke+C.+Donker&userId=ea1bfe4db7a8&source=-----f70ac511bcea---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fea1bfe4db7a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-inference-the-basics-f70ac511bcea&user=Hylke+C.+Donker&userId=ea1bfe4db7a8&source=post_page-ea1bfe4db7a8----f70ac511bcea---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f70ac511bcea--------------------------------) ·9 分钟阅读·2023 年 6 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff70ac511bcea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariational-inference-the-basics-f70ac511bcea&user=Hylke+C.+Donker&userId=ea1bfe4db7a8&source=-----f70ac511bcea---------------------clap_footer-----------)
 
 --
 
@@ -30,11 +30,11 @@
 
 ## 1\. 变分推断与少量数据
 
-![](../Images/b18e9b277ce95df955571b2a22eacaf5.png)
+![](img/b18e9b277ce95df955571b2a22eacaf5.png)
 
-图1：变分推断允许你在领域知识与样本信息之间进行权衡。图像由作者提供。
+图 1：变分推断允许你在领域知识与样本信息之间进行权衡。图像由作者提供。
 
-有时候，数据收集是昂贵的。例如，DNA或RNA测量每次观察可能会花费几千欧元。在这种情况下，你可以用领域知识代替额外的样本进行硬编码。变分推断可以帮助你在收集更多样本时系统性地“减少”领域知识，并更多地依赖于数据（见图1）。
+有时候，数据收集是昂贵的。例如，DNA 或 RNA 测量每次观察可能会花费几千欧元。在这种情况下，你可以用领域知识代替额外的样本进行硬编码。变分推断可以帮助你在收集更多样本时系统性地“减少”领域知识，并更多地依赖于数据（见图 1）。
 
 ## 2\. 不确定性的变分推断
 
@@ -56,7 +56,7 @@
 
 ## 证据下界（ELBO）
 
-![](../Images/7e9c650c4357a68ab040bb91dbf5e648.png)
+![](img/7e9c650c4357a68ab040bb91dbf5e648.png)
 
 图 2: **变分推断的示意图。** 我们寻找一个接近 p(Θ|X) 的分布 q(Θ)。图像由作者提供。
 
@@ -70,7 +70,7 @@
 
 # 从头开始进行变分推断
 
-![](../Images/314e056b8af484cffdf103e6a05339d0.png)
+![](img/314e056b8af484cffdf103e6a05339d0.png)
 
 图 3: 来自 scikit-learn 的手写“零”的示例图像。图像由作者提供。
 
@@ -96,7 +96,7 @@ X_train = X_train.reshape((-1, n_pixels))
 
 其中 ***a*** 和 ***b*** 是 [伽马分布](https://en.wikipedia.org/wiki/Gamma_distribution) 的形状参数和速率参数。
 
-![](../Images/c38cb101c63a67e873e7972df308409a.png)
+![](img/c38cb101c63a67e873e7972df308409a.png)
 
 图 4: 使用数字“零”的领域知识作为先验。图像由作者提供。
 
@@ -181,9 +181,9 @@ optimiser = optax.adam(learning_rate=0.2)
 opt_state = optimiser.init(Φ)
 ```
 
-在这里，我们使用[*value_and_grad*](https://jax.readthedocs.io/en/latest/_autosummary/jax.value_and_grad.html)同时评估ELBO及其导数。这对于监控收敛非常方便！然后我们使用[*jit*](https://jax.readthedocs.io/en/latest/jax-101/02-jitting.html)*)* 即时编译结果函数，使其更加高效。
+在这里，我们使用[*value_and_grad*](https://jax.readthedocs.io/en/latest/_autosummary/jax.value_and_grad.html)同时评估 ELBO 及其导数。这对于监控收敛非常方便！然后我们使用[*jit*](https://jax.readthedocs.io/en/latest/jax-101/02-jitting.html)*)* 即时编译结果函数，使其更加高效。
 
-最终，我们将训练模型5000步。由于*损失*是随机的，对于每次评估，我们需要为其提供一个伪随机数生成器（PRNG）密钥。我们通过分配5000个密钥来实现这一点，使用[随机拆分](https://jax.readthedocs.io/en/latest/_autosummary/jax.random.split.html)。
+最终，我们将训练模型 5000 步。由于*损失*是随机的，对于每次评估，我们需要为其提供一个伪随机数生成器（PRNG）密钥。我们通过分配 5000 个密钥来实现这一点，使用[随机拆分](https://jax.readthedocs.io/en/latest/_autosummary/jax.random.split.html)。
 
 ```py
 n_iter = 5_000
@@ -201,11 +201,11 @@ for i, key in enumerate(keys):
 
 ## 结果
 
-![](../Images/f80c3477d3a3f24c3bdc9ba9a16097df.png)
+![](img/f80c3477d3a3f24c3bdc9ba9a16097df.png)
 
-图5：变分分布与精确后验分布的比较。图片来源：作者。
+图 5：变分分布与精确后验分布的比较。图片来源：作者。
 
-让我们退一步欣赏一下我们所构建的（图5）。对于每个像素，替代的 *q*(***Θ***) 描述了关于平均像素强度的 uncertainty（用例2）。特别地，我们选择的 *q*(***Θ***) 捕捉了两个互补的元素：
+让我们退一步欣赏一下我们所构建的（图 5）。对于每个像素，替代的 *q*(***Θ***) 描述了关于平均像素强度的 uncertainty（用例 2）。特别地，我们选择的 *q*(***Θ***) 捕捉了两个互补的元素：
 
 +   典型的像素强度。
 
@@ -217,15 +217,15 @@ for i, key in enumerate(keys):
 
 其中 *m* 是训练集中样本的数量 ***X***。在这里，我们可以明确看到领域知识——以 **a** 和 **b** 形式体现——在我们收集更多样本 ***x***ᵢ 时如何被调节。
 
-我们可以轻松比较学到的形状 ***α*** 和速率 ***β*** 与真实值 ***a +*** Σ***x***ᵢ 和 *m* + ***b***。在图5中，我们比较了两个特定像素的分布——*q*(***Θ|Φ***) 与 *p*(***Θ|X) —***。结果令人惊叹，完美匹配！
+我们可以轻松比较学到的形状 ***α*** 和速率 ***β*** 与真实值 ***a +*** Σ***x***ᵢ 和 *m* + ***b***。在图 5 中，我们比较了两个特定像素的分布——*q*(***Θ|Φ***) 与 *p*(***Θ|X) —***。结果令人惊叹，完美匹配！
 
 ## 附加：生成合成图像
 
-![](../Images/92417d8e5b86b151147a2268acb42b47.png)
+![](img/92417d8e5b86b151147a2268acb42b47.png)
 
-图6：使用变分推断生成的合成图像。图片来源：作者。
+图 6：使用变分推断生成的合成图像。图片来源：作者。
 
-变分推断非常适合生成建模（用例3）。有了替代后验 *q*(***Θ***)，生成新的合成图像是简单的。两步过程是：
+变分推断非常适合生成建模（用例 3）。有了替代后验 *q*(***Θ***)，生成新的合成图像是简单的。两步过程是：
 
 +   样本像素强度 ***Θ ~*** *q*(***Θ***).
 
@@ -248,7 +248,7 @@ new_batch_shape = [m_new_images, n_pixels]
 X_synthetic = random.poisson(key_x, θ_samples)
 ```
 
-你可以在图6中看到结果。请注意，“零”字符的锐度稍逊于预期。这是我们建模假设的一部分：我们将像素建模为相互独立而非相关。要考虑像素相关性，你可以扩展模型以聚类像素强度：这称为泊松分解[4]。
+你可以在图 6 中看到结果。请注意，“零”字符的锐度稍逊于预期。这是我们建模假设的一部分：我们将像素建模为相互独立而非相关。要考虑像素相关性，你可以扩展模型以聚类像素强度：这称为泊松分解[4]。
 
 # 摘要
 

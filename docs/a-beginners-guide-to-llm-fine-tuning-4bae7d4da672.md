@@ -1,24 +1,24 @@
-# LLM微调初学者指南
+# LLM 微调初学者指南
 
-> 原文：[https://towardsdatascience.com/a-beginners-guide-to-llm-fine-tuning-4bae7d4da672?source=collection_archive---------1-----------------------#2023-08-30](https://towardsdatascience.com/a-beginners-guide-to-llm-fine-tuning-4bae7d4da672?source=collection_archive---------1-----------------------#2023-08-30)
+> 原文：[`towardsdatascience.com/a-beginners-guide-to-llm-fine-tuning-4bae7d4da672?source=collection_archive---------1-----------------------#2023-08-30`](https://towardsdatascience.com/a-beginners-guide-to-llm-fine-tuning-4bae7d4da672?source=collection_archive---------1-----------------------#2023-08-30)
 
-## 如何使用一种工具微调Llama和其他LLMs
+## 如何使用一种工具微调 Llama 和其他 LLMs
 
-[](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)[![Maxime Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)
+[](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)![Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginners-guide-to-llm-fine-tuning-4bae7d4da672&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----4bae7d4da672---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------) ·8分钟阅读·2023年8月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4bae7d4da672&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginners-guide-to-llm-fine-tuning-4bae7d4da672&user=Maxime+Labonne&userId=dc89da634938&source=-----4bae7d4da672---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginners-guide-to-llm-fine-tuning-4bae7d4da672&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----4bae7d4da672---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------) ·8 分钟阅读·2023 年 8 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4bae7d4da672&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginners-guide-to-llm-fine-tuning-4bae7d4da672&user=Maxime+Labonne&userId=dc89da634938&source=-----4bae7d4da672---------------------clap_footer-----------)
 
 --
 
-[无](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4bae7d4da672&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginners-guide-to-llm-fine-tuning-4bae7d4da672&source=-----4bae7d4da672---------------------bookmark_footer-----------)![](../Images/3cd56f68c14e07ab9ae3eb624bd064ed.png)
+[无](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4bae7d4da672&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-beginners-guide-to-llm-fine-tuning-4bae7d4da672&source=-----4bae7d4da672---------------------bookmark_footer-----------)![](img/3cd56f68c14e07ab9ae3eb624bd064ed.png)
 
 图片由作者提供
 
 对大型语言模型（LLMs）的兴趣日益增长，导致了**旨在简化其训练过程的工具和封装的激增**。
 
-流行的选择包括 LMSYS 的[FastChat](https://github.com/lm-sys/FastChat)（用于训练[Vicuna](https://huggingface.co/lmsys/vicuna-13b-v1.5)）和 Hugging Face 的[transformers](https://github.com/huggingface/transformers)/[trl](https://github.com/huggingface/trl)库（用于[我之前的文章](/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32)）。此外，每个大型 LLM 项目，如[WizardLM](https://github.com/nlpxucan/WizardLM/tree/main)，往往都有自己的训练脚本，灵感来自原始的[Alpaca](https://github.com/tatsu-lab/stanford_alpaca)实现。
+流行的选择包括 LMSYS 的[FastChat](https://github.com/lm-sys/FastChat)（用于训练[Vicuna](https://huggingface.co/lmsys/vicuna-13b-v1.5)）和 Hugging Face 的[transformers](https://github.com/huggingface/transformers)/[trl](https://github.com/huggingface/trl)库（用于我之前的文章）。此外，每个大型 LLM 项目，如[WizardLM](https://github.com/nlpxucan/WizardLM/tree/main)，往往都有自己的训练脚本，灵感来自原始的[Alpaca](https://github.com/tatsu-lab/stanford_alpaca)实现。
 
 在本文中，我们将使用由 OpenAccess AI Collective 创建的[**Axolotl**](https://github.com/OpenAccess-AI-Collective/axolotl)工具。我们将利用它在一个包含 1,000 个 Python 代码样本的 evol-instruct 数据集上微调一个[**Code Llama 7b**](https://github.com/OpenAccess-AI-Collective/axolotl/blob/main/examples/llama-2/qlora.yml)模型。
 

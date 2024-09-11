@@ -1,22 +1,22 @@
-# 使用Graphcore IPU和PopSparse库加速块稀疏矩阵乘法
+# 使用 Graphcore IPU 和 PopSparse 库加速块稀疏矩阵乘法
 
-> 原文：[https://towardsdatascience.com/accelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127?source=collection_archive---------10-----------------------#2023-04-12](https://towardsdatascience.com/accelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127?source=collection_archive---------10-----------------------#2023-04-12)
+> 原文：[`towardsdatascience.com/accelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127?source=collection_archive---------10-----------------------#2023-04-12`](https://towardsdatascience.com/accelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127?source=collection_archive---------10-----------------------#2023-04-12)
 
-## **使用新库PopSparse加速稀疏矩阵乘法**
+## **使用新库 PopSparse 加速稀疏矩阵乘法**
 
-[](https://medium.com/@dominic.masters.gc?source=post_page-----3791284a2127--------------------------------)[![多米尼克·马斯特斯](../Images/a4bb210cb0a19c81941c50a1e07a11b6.png)](https://medium.com/@dominic.masters.gc?source=post_page-----3791284a2127--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3791284a2127--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3791284a2127--------------------------------) [多米尼克·马斯特斯](https://medium.com/@dominic.masters.gc?source=post_page-----3791284a2127--------------------------------)
+[](https://medium.com/@dominic.masters.gc?source=post_page-----3791284a2127--------------------------------)![多米尼克·马斯特斯](https://medium.com/@dominic.masters.gc?source=post_page-----3791284a2127--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3791284a2127--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3791284a2127--------------------------------) [多米尼克·马斯特斯](https://medium.com/@dominic.masters.gc?source=post_page-----3791284a2127--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb23ad1d05ffe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127&user=Dominic+Masters&userId=b23ad1d05ffe&source=post_page-b23ad1d05ffe----3791284a2127---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3791284a2127--------------------------------) ·10分钟阅读·2023年4月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3791284a2127&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127&user=Dominic+Masters&userId=b23ad1d05ffe&source=-----3791284a2127---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb23ad1d05ffe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127&user=Dominic+Masters&userId=b23ad1d05ffe&source=post_page-b23ad1d05ffe----3791284a2127---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3791284a2127--------------------------------) ·10 分钟阅读·2023 年 4 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3791284a2127&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127&user=Dominic+Masters&userId=b23ad1d05ffe&source=-----3791284a2127---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3791284a2127&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-block-sparse-matrix-multiplication-with-graphcore-ipu-and-the-popsparse-library-3791284a2127&source=-----3791284a2127---------------------bookmark_footer-----------)
 
-作者：**李智怡**，AI工程师，**道格拉斯·奥尔**，研究科学家，**瓦勒留·奥汉**，软件工程师，以及 [**多米尼克·马斯特斯**](https://medium.com/u/b23ad1d05ffe?source=post_page-----3791284a2127--------------------------------)，研究科学家
+作者：**李智怡**，AI 工程师，**道格拉斯·奥尔**，研究科学家，**瓦勒留·奥汉**，软件工程师，以及 [**多米尼克·马斯特斯**](https://medium.com/u/b23ad1d05ffe?source=post_page-----3791284a2127--------------------------------)，研究科学家
 
-![](../Images/5b70b53b06a68360136d4264b945137d.png)
+![](img/5b70b53b06a68360136d4264b945137d.png)
 
 图片由作者提供。
 
@@ -24,15 +24,15 @@
 
 一种显示出显著前景的减少这些成本的方法是使用*稀疏性*。稀疏性通常指通过*剪枝*过程在模型权重中引入尽可能多的零，然后在实际计算时跳过这些值。
 
-尽管在利用稀疏性减少理论成本指标（如FLOPs和参数计数）方面取得了很大成功，但在保持可接受任务性能的同时实现实际速度提升要困难得多，特别是在使用低精度数字格式的通用加速器（如GPU）上。
+尽管在利用稀疏性减少理论成本指标（如 FLOPs 和参数计数）方面取得了很大成功，但在保持可接受任务性能的同时实现实际速度提升要困难得多，特别是在使用低精度数字格式的通用加速器（如 GPU）上。
 
-为了在实践中实现这些理论上的好处，并进一步研究在Graphcore IPUs上的稀疏技术，我们推出了PopSparse，这是一种通过利用IPUs的独特硬件特性以及数据中定义的任何块结构来实现快速稀疏操作的库。我们针对两种不同类型的稀疏性：静态稀疏性，即稀疏模式在编译时固定；和动态稀疏性，即每次运行模型时可以改变。我们在IPU上对这两种模式的稀疏稠密矩阵乘法进行了基准测试。结果表明，PopSparse的实现比IPU上的稠密矩阵乘法在各种稀疏水平、大矩阵尺寸和块尺寸下都更快。此外，静态稀疏性通常优于动态稀疏性。虽然以前在GPU上的研究仅在非常高的稀疏性（通常为99%及以上）下显示出加速效果，但我们展示了Graphcore的静态稀疏实现比在较低稀疏性（约90%）下的等效稠密计算表现更好。
+为了在实践中实现这些理论上的好处，并进一步研究在 Graphcore IPUs 上的稀疏技术，我们推出了 PopSparse，这是一种通过利用 IPUs 的独特硬件特性以及数据中定义的任何块结构来实现快速稀疏操作的库。我们针对两种不同类型的稀疏性：静态稀疏性，即稀疏模式在编译时固定；和动态稀疏性，即每次运行模型时可以改变。我们在 IPU 上对这两种模式的稀疏稠密矩阵乘法进行了基准测试。结果表明，PopSparse 的实现比 IPU 上的稠密矩阵乘法在各种稀疏水平、大矩阵尺寸和块尺寸下都更快。此外，静态稀疏性通常优于动态稀疏性。虽然以前在 GPU 上的研究仅在非常高的稀疏性（通常为 99%及以上）下显示出加速效果，但我们展示了 Graphcore 的静态稀疏实现比在较低稀疏性（约 90%）下的等效稠密计算表现更好。
 
-这些结果已在线发布在[arXiv](https://arxiv.org/abs/2303.16999)上，并被[2023年ICLR Sparse Neural Network工作坊](https://www.sparseneural.net/?)接受。
+这些结果已在线发布在[arXiv](https://arxiv.org/abs/2303.16999)上，并被[2023 年 ICLR Sparse Neural Network 工作坊](https://www.sparseneural.net/?)接受。
 
-# **Graphcore IPU用于深度神经网络中的稀疏稠密矩阵乘法**
+# **Graphcore IPU 用于深度神经网络中的稀疏稠密矩阵乘法**
 
-深度学习中的稀疏性概念最常指的是通过稀疏化模型权重来减少相关的存储和计算成本。通常，这通过在训练结束时的单次剪枝步骤（Zhu & Gupta, 2017）或通过某些稀疏训练机制（Evci et al., 2019）来实现。这些方法通常在保持可接受的准确度水平的同时，实现了模型权重减少90–99%的效果（Hoefler et al., 2021）。
+深度学习中的稀疏性概念最常指的是通过稀疏化模型权重来减少相关的存储和计算成本。通常，这通过在训练结束时的单次剪枝步骤（Zhu & Gupta, 2017）或通过某些稀疏训练机制（Evci et al., 2019）来实现。这些方法通常在保持可接受的准确度水平的同时，实现了模型权重减少 90–99%的效果（Hoefler et al., 2021）。
 
 尽管模型大小的好处很容易实现，但提高计算效率通常更为困难，因为产生的无结构稀疏模式与高度并行的深度学习加速器中的矢量化指令集不太匹配（Qin 等人，2022）。因此，提高稀疏计算效率的一种方法是对稀疏模式施加一定程度的结构。这促使了广泛的结构化剪枝技术，如神经元（Ebrahimi & Klabjan，2021）、通道级（He 等人，2017）、块（Gray 等人，2017）、2:4（Mishra 等人，2021）。然而，这些方法通常会比等效的无结构方法带来性能惩罚。
 
@@ -48,7 +48,7 @@
 
 SpMM 可以写作：
 
-![](../Images/803733b50cd0ffffee604b7f742cf57b.png)
+![](img/803733b50cd0ffffee604b7f742cf57b.png)
 
 其中 ⊙ 表示元素逐一相乘，* 表示内积，*Y ∈ Rᵐ* ˣ*ⁿ*，*X ∈ Rᵏ* ˣ*ⁿ* 分别是稠密的输出和输入矩阵。稀疏权重矩阵 (*M*⊙*W*) 通过 *M ∈ Bᵐ* ˣ*ᵏ (B = {*0,1*})* 定义，这是一种表示稀疏性模式的掩码，来自 *M̂* ∈ *B*⁽ᵐᐟᵇ⁾ˣ⁽ᵏᐟᵇ⁾，块掩码和 *W ∈ Rᵐ* ˣ*ᵏ* 定义权重值。
 
@@ -72,7 +72,7 @@ SpMM 可以写作：
 
 +   当数据不平衡时，需要额外的传播和计算阶段来重新平衡数据。所需的步骤数量取决于不平衡的程度。
 
-![](../Images/9d7f8e5ea83338795d555ffeee22d8ca.png)
+![](img/9d7f8e5ea83338795d555ffeee22d8ca.png)
 
 图 1：输入特征维度 *k* 的静态和动态稀疏分区示意图。图像由作者提供。
 
@@ -80,7 +80,7 @@ SpMM 可以写作：
 
 我们的微基准测试实验探索了 IPU 和 GPU 上的单一稀疏-密集矩阵乘法 SpMM: *Y=(M*⊙*W)***X*。IPU 实验和 GPU 基线使用的 API 如表 1 所示。基准测试的参数范围详见表 2。
 
-![](../Images/2b827a018386682c4aacf6b98a025ea8.png)
+![](img/2b827a018386682c4aacf6b98a025ea8.png)
 
 表 1：基准测试 IPU 和 GPU 时使用的 API。
 
@@ -88,13 +88,13 @@ SpMM 可以写作：
 
 **GPU**：GPU 上的基线稀疏实现由 cuSPARSE 库 v11.6.2（NVIDIA, 2022）提供。这些实现根据使用的稀疏格式进行分类，不区分静态和动态稀疏模式。我们考虑压缩稀疏行（CSR）和块稀疏行（BSR）分别用于非结构化和块稀疏。我们生成随机稀疏模式和数值，复制到设备上，执行 25 次操作迭代，并将结果复制到主机进行验证。我们在 5 次迭代后开始计时，并使用 *cudaEventRecord* 测量壁钟时间。所有实验都在一个 A100 GPU 上进行，该 GPU 运行在 4 x A100-SXM4–40G 机箱中。
 
-![](../Images/3d9b4f3d6e2d0f3bcbf2bb005fec005e.png)
+![](img/3d9b4f3d6e2d0f3bcbf2bb005fec005e.png)
 
 表 2：基准测试中扫取的参数范围。图像作者提供。
 
 本研究的关键结果如图 2 所示。这些图表显示了计算 FLOP/s（对数尺度）与密度的关系，特征大小固定，每条线代表相同操作的不同实现。由于零在 FLOP/s 计算中不被计算，密集实现随着密度的增加呈线性扩展。而在稀疏实现中，完美的扩展应预测 FLOP/s 在密度变化时保持不变。
 
-![](../Images/efcdb9f5f8a9a9edd15a098060cf823b.png)
+![](img/efcdb9f5f8a9a9edd15a098060cf823b.png)
 
 图 2：IPU FP16 和 GPU 块稀疏矩阵乘法性能在不同块大小 b 的密度变化下，平方特征大小 m = k = 4096，以最佳批量大小 n 为准。图像作者提供。
 
@@ -124,20 +124,20 @@ SpMM 可以写作：
 
 ## **参考文献**
 
-[1] Michael Zhu 和 Suyog Gupta. 剪枝，还是不剪枝：探索剪枝在模型压缩中的有效性，2017\. 网址 [https://arxiv.org/abs/1710.01878.](https://arxiv.org/abs/1710.01878.)
+[1] Michael Zhu 和 Suyog Gupta. 剪枝，还是不剪枝：探索剪枝在模型压缩中的有效性，2017\. 网址 [`arxiv.org/abs/1710.01878.`](https://arxiv.org/abs/1710.01878.)
 
-[2] Utku Evci, Trevor Gale, Jacob Menick, Pablo Samuel Castro 和 Erich Elsen. 改变彩票：让所有票据都成为赢家，2019\. URL [https://arxiv.org/abs/1911.11134.](https://arxiv.org/abs/1911.11134.)
+[2] Utku Evci, Trevor Gale, Jacob Menick, Pablo Samuel Castro 和 Erich Elsen. 改变彩票：让所有票据都成为赢家，2019\. URL [`arxiv.org/abs/1911.11134.`](https://arxiv.org/abs/1911.11134.)
 
-[3] Torsten Hoefler, Dan Alistarh, Tal Ben-Nun, Nikoli Dryden 和 Alexandra Peste. 深度学习中的稀疏性：神经网络中的剪枝与增长以实现高效推理和训练，2021\. URL [https://arxiv.org/abs/2102.00554](https://arxiv.org/abs/2102.00554).
+[3] Torsten Hoefler, Dan Alistarh, Tal Ben-Nun, Nikoli Dryden 和 Alexandra Peste. 深度学习中的稀疏性：神经网络中的剪枝与增长以实现高效推理和训练，2021\. URL [`arxiv.org/abs/2102.00554`](https://arxiv.org/abs/2102.00554).
 
-[4] Eric Qin, Raveesh Garg, Abhimanyu Bambhaniya, Michael Pellauer, Angshuman Parashar, Sivasankaran Rajamanickam, Cong Hao 和 Tushar Krishna. 通过异质性实现稀疏张量加速的灵活性，2022\. URL [https://arxiv.org/abs/2201.08916.](https://arxiv.org/abs/2201.08916.)
+[4] Eric Qin, Raveesh Garg, Abhimanyu Bambhaniya, Michael Pellauer, Angshuman Parashar, Sivasankaran Rajamanickam, Cong Hao 和 Tushar Krishna. 通过异质性实现稀疏张量加速的灵活性，2022\. URL [`arxiv.org/abs/2201.08916.`](https://arxiv.org/abs/2201.08916.)
 
-[5] Abdolghani Ebrahimi 和 Diego Klabjan. 基于神经元的深度神经网络剪枝，通过克罗内克因子曲率近似实现更好的泛化，2021\. URL [https://arxiv.org/abs/2111.08577.](https://arxiv.org/abs/2111.08577.)
+[5] Abdolghani Ebrahimi 和 Diego Klabjan. 基于神经元的深度神经网络剪枝，通过克罗内克因子曲率近似实现更好的泛化，2021\. URL [`arxiv.org/abs/2111.08577.`](https://arxiv.org/abs/2111.08577.)
 
-[6] Yihui He, Xiangyu Zhang 和 Jian Sun. 通过通道剪枝加速非常深的神经网络，2017\. URL [https://arxiv.org/abs/1707.06168.](https://arxiv.org/abs/1707.06168.)
+[6] Yihui He, Xiangyu Zhang 和 Jian Sun. 通过通道剪枝加速非常深的神经网络，2017\. URL [`arxiv.org/abs/1707.06168.`](https://arxiv.org/abs/1707.06168.)
 
-[7] Scott Gray, Alec Radford 和 Diederik P. Kingma. 用于块稀疏权重的GPU内核。2017.
+[7] Scott Gray, Alec Radford 和 Diederik P. Kingma. 用于块稀疏权重的 GPU 内核。2017.
 
-[8] Asit Mishra, Jorge Albericio Latorre, Jeff Pool, Darko Stosic, Dusan Stosic, Ganesh Venkatesh, Chong Yu 和 Paulius Micikevicius. 加速稀疏深度神经网络，2021\. URL [https://arxiv.org/abs/2104.08378](https://arxiv.org/abs/2104.08378).
+[8] Asit Mishra, Jorge Albericio Latorre, Jeff Pool, Darko Stosic, Dusan Stosic, Ganesh Venkatesh, Chong Yu 和 Paulius Micikevicius. 加速稀疏深度神经网络，2021\. URL [`arxiv.org/abs/2104.08378`](https://arxiv.org/abs/2104.08378).
 
-[9] NVIDIA. cuSPARSE的API参考指南，2022\. URL [https://docs.nvidia.com/cuda/cusparse/](https://docs.nvidia.com/cuda/cusparse/).
+[9] NVIDIA. cuSPARSE 的 API 参考指南，2022\. URL [`docs.nvidia.com/cuda/cusparse/`](https://docs.nvidia.com/cuda/cusparse/).

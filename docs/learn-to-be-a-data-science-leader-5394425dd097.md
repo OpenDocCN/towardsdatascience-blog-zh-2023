@@ -1,18 +1,18 @@
 # 学习成为一名数据科学领导者
 
-> 原文：[https://towardsdatascience.com/learn-to-be-a-data-science-leader-5394425dd097?source=collection_archive---------1-----------------------#2023-01-15](https://towardsdatascience.com/learn-to-be-a-data-science-leader-5394425dd097?source=collection_archive---------1-----------------------#2023-01-15)
+> 原文：[`towardsdatascience.com/learn-to-be-a-data-science-leader-5394425dd097?source=collection_archive---------1-----------------------#2023-01-15`](https://towardsdatascience.com/learn-to-be-a-data-science-leader-5394425dd097?source=collection_archive---------1-----------------------#2023-01-15)
 
-## 学习那些没人会教你的技能的5个资源
+## 学习那些没人会教你的技能的 5 个资源
 
-[](https://rebeccalvickery.medium.com/?source=post_page-----5394425dd097--------------------------------)[![Rebecca Vickery](../Images/89fbce6868afc6c0309f0ebf722034dd.png)](https://rebeccalvickery.medium.com/?source=post_page-----5394425dd097--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5394425dd097--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5394425dd097--------------------------------) [Rebecca Vickery](https://rebeccalvickery.medium.com/?source=post_page-----5394425dd097--------------------------------)
+[](https://rebeccalvickery.medium.com/?source=post_page-----5394425dd097--------------------------------)![Rebecca Vickery](https://rebeccalvickery.medium.com/?source=post_page-----5394425dd097--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5394425dd097--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5394425dd097--------------------------------) [Rebecca Vickery](https://rebeccalvickery.medium.com/?source=post_page-----5394425dd097--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8b7aca3e5b1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-to-be-a-data-science-leader-5394425dd097&user=Rebecca+Vickery&userId=8b7aca3e5b1c&source=post_page-8b7aca3e5b1c----5394425dd097---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----5394425dd097--------------------------------) ·5分钟阅读·2023年1月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5394425dd097&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-to-be-a-data-science-leader-5394425dd097&user=Rebecca+Vickery&userId=8b7aca3e5b1c&source=-----5394425dd097---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8b7aca3e5b1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-to-be-a-data-science-leader-5394425dd097&user=Rebecca+Vickery&userId=8b7aca3e5b1c&source=post_page-8b7aca3e5b1c----5394425dd097---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----5394425dd097--------------------------------) ·5 分钟阅读·2023 年 1 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5394425dd097&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-to-be-a-data-science-leader-5394425dd097&user=Rebecca+Vickery&userId=8b7aca3e5b1c&source=-----5394425dd097---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5394425dd097&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-to-be-a-data-science-leader-5394425dd097&source=-----5394425dd097---------------------bookmark_footer-----------)![](../Images/bc69d736f8f61e2eaeaa91999cb65025.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5394425dd097&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-to-be-a-data-science-leader-5394425dd097&source=-----5394425dd097---------------------bookmark_footer-----------)![](img/bc69d736f8f61e2eaeaa91999cb65025.png)
 
 图片来源于[Nick Fewings](https://unsplash.com/@jannerboy62?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)在[Unsplash](https://unsplash.com/s/photos/leader?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

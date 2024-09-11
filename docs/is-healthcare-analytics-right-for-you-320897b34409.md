@@ -1,22 +1,22 @@
 # 医疗保健分析适合你吗？
 
-> 原文：[https://towardsdatascience.com/is-healthcare-analytics-right-for-you-320897b34409?source=collection_archive---------11-----------------------#2023-01-02](https://towardsdatascience.com/is-healthcare-analytics-right-for-you-320897b34409?source=collection_archive---------11-----------------------#2023-01-02)
+> 原文：[`towardsdatascience.com/is-healthcare-analytics-right-for-you-320897b34409?source=collection_archive---------11-----------------------#2023-01-02`](https://towardsdatascience.com/is-healthcare-analytics-right-for-you-320897b34409?source=collection_archive---------11-----------------------#2023-01-02)
 
-## 你在这个领域直到退休前将面临的3个挑战
+## 你在这个领域直到退休前将面临的 3 个挑战
 
-[](https://stefanygoradia.medium.com/?source=post_page-----320897b34409--------------------------------)[![Stefany Goradia](../Images/dfbf98c4fd0d277ebb6b0f77ad64ead4.png)](https://stefanygoradia.medium.com/?source=post_page-----320897b34409--------------------------------)[](https://towardsdatascience.com/?source=post_page-----320897b34409--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----320897b34409--------------------------------) [Stefany Goradia](https://stefanygoradia.medium.com/?source=post_page-----320897b34409--------------------------------)
+[](https://stefanygoradia.medium.com/?source=post_page-----320897b34409--------------------------------)![Stefany Goradia](https://stefanygoradia.medium.com/?source=post_page-----320897b34409--------------------------------)[](https://towardsdatascience.com/?source=post_page-----320897b34409--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----320897b34409--------------------------------) [Stefany Goradia](https://stefanygoradia.medium.com/?source=post_page-----320897b34409--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F36e97dd8343d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-healthcare-analytics-right-for-you-320897b34409&user=Stefany+Goradia&userId=36e97dd8343d&source=post_page-36e97dd8343d----320897b34409---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----320897b34409--------------------------------) ·7分钟阅读·2023年1月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F320897b34409&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-healthcare-analytics-right-for-you-320897b34409&user=Stefany+Goradia&userId=36e97dd8343d&source=-----320897b34409---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F36e97dd8343d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-healthcare-analytics-right-for-you-320897b34409&user=Stefany+Goradia&userId=36e97dd8343d&source=post_page-36e97dd8343d----320897b34409---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----320897b34409--------------------------------) ·7 分钟阅读·2023 年 1 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F320897b34409&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-healthcare-analytics-right-for-you-320897b34409&user=Stefany+Goradia&userId=36e97dd8343d&source=-----320897b34409---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F320897b34409&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-healthcare-analytics-right-for-you-320897b34409&source=-----320897b34409---------------------bookmark_footer-----------)![](../Images/03252c2b96d1c81039a57bee264cbb42.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F320897b34409&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-healthcare-analytics-right-for-you-320897b34409&source=-----320897b34409---------------------bookmark_footer-----------)![](img/03252c2b96d1c81039a57bee264cbb42.png)
 
 图片由 [KOBU Agency](https://unsplash.com/@kobuagency?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-目前，当你在Indeed上搜索“医疗保健分析”时，会返回超过8,000个职位列表。这些职位涵盖了从健康IT和信息学到数据分析师等多个领域。当你开始搜索特定类型的职位时，比如：收入周期、风险、质量、EPIC、基于价值的护理（VBC）、人口健康、利用管理等，甚至会找到更多的职位。
+目前，当你在 Indeed 上搜索“医疗保健分析”时，会返回超过 8,000 个职位列表。这些职位涵盖了从健康 IT 和信息学到数据分析师等多个领域。当你开始搜索特定类型的职位时，比如：收入周期、风险、质量、EPIC、基于价值的护理（VBC）、人口健康、利用管理等，甚至会找到更多的职位。
 
 # 为什么会有这么多健康分析职位？
 

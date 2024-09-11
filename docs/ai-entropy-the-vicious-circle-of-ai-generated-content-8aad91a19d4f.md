@@ -1,10 +1,10 @@
-# AI熵：AI生成内容的恶性循环
+# AI 熵：AI 生成内容的恶性循环
 
-> 原文：[https://towardsdatascience.com/ai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f?source=collection_archive---------2-----------------------#2023-07-14](https://towardsdatascience.com/ai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f?source=collection_archive---------2-----------------------#2023-07-14)
+> 原文：[`towardsdatascience.com/ai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f?source=collection_archive---------2-----------------------#2023-07-14`](https://towardsdatascience.com/ai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f?source=collection_archive---------2-----------------------#2023-07-14)
 
 ## 理解和缓解模型坍塌
 
-[](https://medium.com/@davidsweenor?source=post_page-----8aad91a19d4f--------------------------------)[![David Sweenor](../Images/7dbb5c549ab67bc78f906fb707969ff6.png)](https://medium.com/@davidsweenor?source=post_page-----8aad91a19d4f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8aad91a19d4f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8aad91a19d4f--------------------------------) [David Sweenor](https://medium.com/@davidsweenor?source=post_page-----8aad91a19d4f--------------------------------)
+[](https://medium.com/@davidsweenor?source=post_page-----8aad91a19d4f--------------------------------)![David Sweenor](https://medium.com/@davidsweenor?source=post_page-----8aad91a19d4f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8aad91a19d4f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8aad91a19d4f--------------------------------) [David Sweenor](https://medium.com/@davidsweenor?source=post_page-----8aad91a19d4f--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8aad91a19d4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f&source=-----8aad91a19d4f---------------------bookmark_footer-----------)![](../Images/b1948e403976ff023d7ca4393874e587.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8aad91a19d4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fai-entropy-the-vicious-circle-of-ai-generated-content-8aad91a19d4f&source=-----8aad91a19d4f---------------------bookmark_footer-----------)![](img/b1948e403976ff023d7ca4393874e587.png)
 
 照片由作者 — David E Sweenor
 
@@ -44,7 +44,7 @@
 
 比如说，看看这张冲浪者的照片。
 
-![](../Images/635ef37fe79b25bf675baf9d8f41118d.png)
+![](img/635ef37fe79b25bf675baf9d8f41118d.png)
 
 作者照片 — 大卫·E·斯威诺
 
@@ -54,21 +54,21 @@
 
 这是我的照片的四个 AI 生成版本：
 
-![](../Images/0ac99fb1f3e4511f323d30671c86c0bc.png)
+![](img/0ac99fb1f3e4511f323d30671c86c0bc.png)
 
-Midjourney拍摄 — 原始冲浪者照片的第一次迭代
+Midjourney 拍摄 — 原始冲浪者照片的第一次迭代
 
-是的，这些确实很粉色，但第一个看起来最接近原始图像，我之前并不知道Frank Frazetta是谁，但我要求它描述那张图片，最后选择了第一张。
+是的，这些确实很粉色，但第一个看起来最接近原始图像，我之前并不知道 Frank Frazetta 是谁，但我要求它描述那张图片，最后选择了第一张。
 
-> “一个站在粉色冲浪板上的冲浪者雕像，周围有一些花朵，风格为光线追踪、单色构图、reefwave、低角度拍摄、华丽、多彩的街景，开启rttx — ar 77:58”
+> “一个站在粉色冲浪板上的冲浪者雕像，周围有一些花朵，风格为光线追踪、单色构图、reefwave、低角度拍摄、华丽、多彩的街景，开启 rttx — ar 77:58”
 
 使用上述描述，下面四张图像被生成了。
 
-![](../Images/45ea20c678e22d61ab7801fe0e88e4a8.png)
+![](img/45ea20c678e22d61ab7801fe0e88e4a8.png)
 
-Midjourney拍摄 — 原始冲浪者照片的第二次迭代
+Midjourney 拍摄 — 原始冲浪者照片的第二次迭代
 
-这些确实很有趣，但似乎并没有以任何方式代表原始图像。这仅仅是与原始图像隔了两代……如果我们这样做100次、1000次或10000次会怎样？现在，这并不是退化学习的完美示例，而是人工智能熵的一个例子。系统趋向于越来越多的混乱状态。
+这些确实很有趣，但似乎并没有以任何方式代表原始图像。这仅仅是与原始图像隔了两代……如果我们这样做 100 次、1000 次或 10000 次会怎样？现在，这并不是退化学习的完美示例，而是人工智能熵的一个例子。系统趋向于越来越多的混乱状态。
 
 # 智慧人士的见解
 
@@ -80,7 +80,7 @@ Midjourney拍摄 — 原始冲浪者照片的第二次迭代
 
 作者引用了以下示例：
 
-![](../Images/b3a04fd5fe4fbfbb2988abaf5f17339d.png)
+![](img/b3a04fd5fe4fbfbb2988abaf5f17339d.png)
 
 研究论文中的模型崩溃示例
 
@@ -114,15 +114,15 @@ Midjourney拍摄 — 原始冲浪者照片的第二次迭代
 
 # 伦理问题
 
-关于模型崩溃的伦理问题是显著的。当AI生成的内容用于决策、教育或信息传播时，内容的完整性至关重要。模型崩溃可能导致传播有偏见、不准确或同质化的内容，这可能带来伦理问题，特别是当这些内容影响到人们的生活、观点或机会时。
+关于模型崩溃的伦理问题是显著的。当 AI 生成的内容用于决策、教育或信息传播时，内容的完整性至关重要。模型崩溃可能导致传播有偏见、不准确或同质化的内容，这可能带来伦理问题，特别是当这些内容影响到人们的生活、观点或机会时。
 
 # 经济和社会影响
 
-在经济和社会层面，模型崩溃可能会影响对AI技术的信任和采纳。如果企业和消费者不能依赖AI模型生成的内容，他们可能会更不愿意采纳这些技术。这可能对严重依赖AI的行业产生经济影响，并对公众对AI的认知和信任产生社会影响。
+在经济和社会层面，模型崩溃可能会影响对 AI 技术的信任和采纳。如果企业和消费者不能依赖 AI 模型生成的内容，他们可能会更不愿意采纳这些技术。这可能对严重依赖 AI 的行业产生经济影响，并对公众对 AI 的认知和信任产生社会影响。
 
 # 减轻模型崩溃的策略
 
-模型崩溃具有深远的影响，必须制定策略来减轻其影响。以下是可以用来防止或减轻AI系统模型崩溃的一些策略：
+模型崩溃具有深远的影响，必须制定策略来减轻其影响。以下是可以用来防止或减轻 AI 系统模型崩溃的一些策略：
 
 ## 保留原始人工生成的数据集
 
@@ -134,34 +134,34 @@ Midjourney拍摄 — 原始冲浪者照片的第二次迭代
 
 ## 监控和定期评估
 
-定期监控和评估AI模型的表现至关重要。通过设定评估指标和基准，可以检测到模型崩溃的早期迹象。这允许及时采取干预措施，如调整训练数据或调整模型参数。这与我们传统的模型监控指导没有区别，企业需要实施MLOps框架，以持续监控模型和数据的漂移。不仅需要检测这些问题，还需要额外的机制来确保模型不会产生虚假信息，并生成与公司目标一致的结果，这将是许多组织的新能力。
+定期监控和评估 AI 模型的表现至关重要。通过设定评估指标和基准，可以检测到模型崩溃的早期迹象。这允许及时采取干预措施，如调整训练数据或调整模型参数。这与我们传统的模型监控指导没有区别，企业需要实施 MLOps 框架，以持续监控模型和数据的漂移。不仅需要检测这些问题，还需要额外的机制来确保模型不会产生虚假信息，并生成与公司目标一致的结果，这将是许多组织的新能力。
 
 ## 多样化训练数据
 
-确保训练数据的多样性和代表不同观点与经历的特征有助于防止偏见并确保AI生成内容的公平性。这包括确保少数群体和稀有事件的代表性。不言而喻，组织需要了解用于训练模型的源数据，以确保其与现实对齐并代表社会的最佳面貌。盲目使用充满负面、偏见和虚假信息的互联网数据是灾难的根源。
+确保训练数据的多样性和代表不同观点与经历的特征有助于防止偏见并确保 AI 生成内容的公平性。这包括确保少数群体和稀有事件的代表性。不言而喻，组织需要了解用于训练模型的源数据，以确保其与现实对齐并代表社会的最佳面貌。盲目使用充满负面、偏见和虚假信息的互联网数据是灾难的根源。
 
 ## 社区协调与合作
 
-模型崩溃不仅是技术挑战，也是一项伦理和社会挑战。涉及AI公司、内容生产者、研究人员和政策制定者的社区范围内的协调至关重要。共享信息、最佳实践和共同制定标准与指南对于解决模型崩溃问题具有重要作用。尽管指南和框架很重要，但类似于[联合国AI伦理框架](https://unite.un.org/news/unite-paper-framework-ethical-ai-united-nations)，在地缘政治边界上实施和获得支持将面临挑战。
+模型崩溃不仅是技术挑战，也是一项伦理和社会挑战。涉及 AI 公司、内容生产者、研究人员和政策制定者的社区范围内的协调至关重要。共享信息、最佳实践和共同制定标准与指南对于解决模型崩溃问题具有重要作用。尽管指南和框架很重要，但类似于[联合国 AI 伦理框架](https://unite.un.org/news/unite-paper-framework-ethical-ai-united-nations)，在地缘政治边界上实施和获得支持将面临挑战。
 
 # 摘要
 
-在*Multiplicity*中，Doug试图通过克隆自己来管理责任，结果导致了意想不到的混乱和熵。这一情景在AI世界中找到了平行点，即在AI生成的数据上训练模型可能导致一种称为模型崩溃的熵。
+在*Multiplicity*中，Doug 试图通过克隆自己来管理责任，结果导致了意想不到的混乱和熵。这一情景在 AI 世界中找到了平行点，即在 AI 生成的数据上训练模型可能导致一种称为模型崩溃的熵。
 
-就像电影中的克隆随着每一代变得更愚蠢和混乱一样，AI模型在对自身输出进行训练时也可能失去准确代表原始数据多样性和复杂性的能力。
+就像电影中的克隆随着每一代变得更愚蠢和混乱一样，AI 模型在对自身输出进行训练时也可能失去准确代表原始数据多样性和复杂性的能力。
 
-模型崩溃类似于*Multiplicity*中的熵，对AI生成内容的质量、可靠性和公平性具有深远的影响。这提醒我们，无论是电影中的克隆还是AI对自身数据的训练，未经控制的复制都可能导致信息丧失和混乱增加。
+模型崩溃类似于*Multiplicity*中的熵，对 AI 生成内容的质量、可靠性和公平性具有深远的影响。这提醒我们，无论是电影中的克隆还是 AI 对自身数据的训练，未经控制的复制都可能导致信息丧失和混乱增加。
 
-然而，与*Multiplicity*中的不受控制的克隆不同，我们拥有管理和缓解AI系统模型崩溃的工具和知识。通过保留原始人类生成的数据集、多样化训练数据、定期监控AI模型以及促进社区协调，我们可以对抗熵，并确保AI保持可靠和有益的工具。
+然而，与*Multiplicity*中的不受控制的克隆不同，我们拥有管理和缓解 AI 系统模型崩溃的工具和知识。通过保留原始人类生成的数据集、多样化训练数据、定期监控 AI 模型以及促进社区协调，我们可以对抗熵，并确保 AI 保持可靠和有益的工具。
 
-随着AI的不断发展，牢记*Multiplicity*中的教训、熵以及模型崩溃的研究至关重要。通过集体努力，我们可以负责任地使用AI，确保其保持现实基础，并服务于所有社区的多样化需求，而不陷入混乱。
+随着 AI 的不断发展，牢记*Multiplicity*中的教训、熵以及模型崩溃的研究至关重要。通过集体努力，我们可以负责任地使用 AI，确保其保持现实基础，并服务于所有社区的多样化需求，而不陷入混乱。
 
-本质上，通过积极管理AI数据的‘克隆过程’并注意其可能产生的熵，我们可以将AI发展引导到创新且负责任的方向上。
+本质上，通过积极管理 AI 数据的‘克隆过程’并注意其可能产生的熵，我们可以将 AI 发展引导到创新且负责任的方向上。
 
 如果你想了解更多关于人工智能的内容，请查看我的书籍 [《人工智能：让 AI 为您的业务服务的高管指南》在亚马逊上](https://www.amazon.com/Artificial-Intelligence-Executive-Guide-Business/dp/B09X4KTYS4)。
 
-![](../Images/0fd50d9d9ea23633728882eb0159e973.png)
+![](img/0fd50d9d9ea23633728882eb0159e973.png)
 
 《人工智能高管指南》在亚马逊上
 
-[1] Thompson, Stuart A. 2023\. “A.I.-生成内容在新闻网站、内容农场和产品评论中被发现。”《纽约时报》，2023年5月19日，第技术版。[https://www.nytimes.com/2023/05/19/technology/ai-generated-content-discovered-on-news-sites-content-farms-and-product-reviews.html](https://www.nytimes.com/2023/05/19/technology/ai-generated-content-discovered-on-news-sites-content-farms-and-product-reviews.html)
+[1] Thompson, Stuart A. 2023\. “A.I.-生成内容在新闻网站、内容农场和产品评论中被发现。”《纽约时报》，2023 年 5 月 19 日，第技术版。[`www.nytimes.com/2023/05/19/technology/ai-generated-content-discovered-on-news-sites-content-farms-and-product-reviews.html`](https://www.nytimes.com/2023/05/19/technology/ai-generated-content-discovered-on-news-sites-content-farms-and-product-reviews.html)

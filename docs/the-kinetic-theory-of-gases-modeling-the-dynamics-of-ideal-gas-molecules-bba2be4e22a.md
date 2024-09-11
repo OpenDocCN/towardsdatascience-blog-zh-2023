@@ -1,20 +1,20 @@
 # 气体动力学理论：理想气体分子的动力学建模
 
-> 原文：[https://towardsdatascience.com/the-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a?source=collection_archive---------5-----------------------#2023-01-06](https://towardsdatascience.com/the-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a?source=collection_archive---------5-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/the-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a?source=collection_archive---------5-----------------------#2023-01-06`](https://towardsdatascience.com/the-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a?source=collection_archive---------5-----------------------#2023-01-06)
 
 ## 统计力学
 
 ## 开发一个框架来模拟和可视化分子碰撞，并使用 Python 提取热力学洞察。
 
-[](https://medium.com/@ChemAndCode?source=post_page-----bba2be4e22a--------------------------------)[![Gaurav Deshmukh](../Images/98433b1a256f160792a7b2b0874a2081.png)](https://medium.com/@ChemAndCode?source=post_page-----bba2be4e22a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bba2be4e22a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bba2be4e22a--------------------------------) [Gaurav Deshmukh](https://medium.com/@ChemAndCode?source=post_page-----bba2be4e22a--------------------------------)
+[](https://medium.com/@ChemAndCode?source=post_page-----bba2be4e22a--------------------------------)![Gaurav Deshmukh](https://medium.com/@ChemAndCode?source=post_page-----bba2be4e22a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bba2be4e22a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bba2be4e22a--------------------------------) [Gaurav Deshmukh](https://medium.com/@ChemAndCode?source=post_page-----bba2be4e22a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5a75283b2c71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=post_page-5a75283b2c71----bba2be4e22a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bba2be4e22a--------------------------------) ·14 分钟阅读·2023年1月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbba2be4e22a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=-----bba2be4e22a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5a75283b2c71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=post_page-5a75283b2c71----bba2be4e22a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bba2be4e22a--------------------------------) ·14 分钟阅读·2023 年 1 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbba2be4e22a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=-----bba2be4e22a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbba2be4e22a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a&source=-----bba2be4e22a---------------------bookmark_footer-----------)![](../Images/3920606289c067f4ef4a33c03e3bb261.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbba2be4e22a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-kinetic-theory-of-gases-modeling-the-dynamics-of-ideal-gas-molecules-bba2be4e22a&source=-----bba2be4e22a---------------------bookmark_footer-----------)![](img/3920606289c067f4ef4a33c03e3bb261.png)
 
 图片由 [Terry Vlisidis](https://unsplash.com/@vlisidis?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 想象有人不断地将球扔向你的头部。根据球的大小和质量，你可能会感受到从轻微的烦恼到难以忍受的痛苦。然而，实际上有无数个这样的“球”每时每刻撞击着你，不仅是你的头部，还有你的整个身体，而你却没有感觉到。空气中的氮气、氧气和水分子在你周围不断地随机运动，即使空气看起来是静止的。这些分子与您的碰撞的结果是空气对您施加了一定的压力（称为大气压力）。由于我们“习惯”了大气压力，它似乎没有什么特别的，但如果你曾在飞机上或高压舱中，压力偏离了大气压力，你可能会注意到不同的感觉，比如耳朵的“咔嗒”声，这些都是你身体对压力变化的反应。
 
-17世纪，罗伯特·波义耳给出了对压力的宏观理解，以及压力如何随气体占据的体积变化，这被称为波义耳定律。然而，直到一个世纪后，丹尼尔·伯努利才提供了一个定性的分子图像来解释压力，并将其与分子的温度和动能联系起来。然而，这一“动理论”直到19世纪，詹姆斯·克拉克·麦克斯韦在鲁道夫·克劳修斯的工作基础上，将其形式化为统计定律，并且路德维希·玻尔兹曼阐明了其与熵的关系，导致了麦克斯韦-玻尔兹曼速度分布的公式。这最终导致了从分子角度出发的详细气体理论的发展，这与广泛理解的宏观观点相一致。
+17 世纪，罗伯特·波义耳给出了对压力的宏观理解，以及压力如何随气体占据的体积变化，这被称为波义耳定律。然而，直到一个世纪后，丹尼尔·伯努利才提供了一个定性的分子图像来解释压力，并将其与分子的温度和动能联系起来。然而，这一“动理论”直到 19 世纪，詹姆斯·克拉克·麦克斯韦在鲁道夫·克劳修斯的工作基础上，将其形式化为统计定律，并且路德维希·玻尔兹曼阐明了其与熵的关系，导致了麦克斯韦-玻尔兹曼速度分布的公式。这最终导致了从分子角度出发的详细气体理论的发展，这与广泛理解的宏观观点相一致。
 
 在这篇文章中，我们将尝试通过使用 Python 进行一系列数值模拟，将气体的分子图像与其宏观性质——即压力、体积和温度——联系起来。
 
@@ -46,7 +46,7 @@
 
 理想气体是一个假设的气体，其性质通过一个简单的状态方程（即理想气体定律）相关联。
 
-![](../Images/0de1f0da1be9799239ba418fa11d2e37.png)
+![](img/0de1f0da1be9799239ba418fa11d2e37.png)
 
 这里 *P* 指的是气体的压力，*V* 指的是容器的体积，*T* 是温度，*n* 是气体的摩尔数。如果这三个量中的任何一个保持不变，则第四个量也不会改变，这一点通过 *R* 体现，*R* 是通用气体常数。理想气体定律是一个准确的模型，适用于高温或低压下的气体，因为在这些条件下气体动理论的大多数假设是成立的。
 
@@ -239,11 +239,11 @@ class Simulation(object):
 
 +   检查是否存在分子-墙体碰撞，如果有，则相应更新速度和墙体动量
 
-为了筛选出足够接近以发生碰撞的分子，我们遍历距离矩阵并返回距离小于其半径总和的分子对的索引对。分子可能在此截止范围内，却仍然相互远离。因此，我们应用另一个标准（见**图1**）来检查分子是否相互靠近。如果是，我们根据**图1**中给出的方程更新它们的速度。我们通过保持分子的动能和线动量（沿碰撞轴方向）来得到这些方程。
+为了筛选出足够接近以发生碰撞的分子，我们遍历距离矩阵并返回距离小于其半径总和的分子对的索引对。分子可能在此截止范围内，却仍然相互远离。因此，我们应用另一个标准（见**图 1**）来检查分子是否相互靠近。如果是，我们根据**图 1**中给出的方程更新它们的速度。我们通过保持分子的动能和线动量（沿碰撞轴方向）来得到这些方程。
 
-![](../Images/b9879f3e304aa2046ca35f955680f30e.png)
+![](img/b9879f3e304aa2046ca35f955680f30e.png)
 
-**图1**：示意图显示了两个球体在二维平面上的碰撞。蓝色的变量和方程代表速度的切向和法向分量（相对于碰撞轴）。粗体变量是向量，其余的是标量。尖括号表示点积（内积）。
+**图 1**：示意图显示了两个球体在二维平面上的碰撞。蓝色的变量和方程代表速度的切向和法向分量（相对于碰撞轴）。粗体变量是向量，其余的是标量。尖括号表示点积（内积）。
 
 更新分子的位置非常简单。我们将速度向量与时间步长的乘积加到先前的位置，以获得新位置。为了识别与墙壁的碰撞，我们只需检查分子的新位置是否超过了盒子的下限或上限。如果是，我们就改变垂直于墙壁的速度的符号，并根据该速度设置新位置。此外，我们将该速度的两倍大小添加到跟踪与墙壁交换动量的变量中。
 
@@ -503,27 +503,27 @@ if __name__=="__main__":
 
 下面显示了与上述模拟相对应的模拟框和速度直方图的动画。在第一个图中，显示了盒子中分子的运动及其碰撞，一个选定分子的轨迹以红色突出显示，以作说明。在第二个图中，显示了盒子中所有分子在每次迭代时的速度直方图，从动画中可以清楚地看到，最初的高斯分布（如规定的）变化为具有较窄左尾和较宽右尾的分布，模拟了麦克斯韦-玻尔兹曼分布的特征。可以使用更严格的统计测试来定量支持这一点。
 
-**图1：** 模拟框的动画
+**图 1：** 模拟框的动画
 
-**图2：** 速度直方图的动画
+**图 2：** 速度直方图的动画
 
 ## 提取热力学见解
 
 我们回到将各种热力学变量相互关联的理想气体定律。如前所述，我们测试了两个关系——压力与体积的关系以及压力与温度的关系。我们保持盒子中的分子数量在所有后续模拟中不变。这三个变量——压力、体积和温度——的计算方法如下：压力是整个模拟过程中与墙壁交换的净动量除以总模拟时间和盒子周长的乘积。体积定义为盒子的长和宽的乘积（技术上是面积，因为我们在二维中工作，但这些见解可以轻松地推广到三维）。 
 
-定义温度较为复杂——由于温度与盒子中分子的平均动能成正比，我们将初始分布的平均速度的平方视为温度的代理。为了消除这种估计中的任何随机性，这些模拟中分子的初始速度被设置为一个指定的单一值。例如，如果指定值为1 m/s，那么所有分子的初始速度要么是+1 m/s，要么是-1 m/s。这确保了初始的总动能有一个明确定义的值，并且在所有具有相同温度的模拟中保持不变。本质上，当两个模拟中的温度相同时，它们的初始总动能也相同，这应该确保在模拟过程中平均动能也相同。
+定义温度较为复杂——由于温度与盒子中分子的平均动能成正比，我们将初始分布的平均速度的平方视为温度的代理。为了消除这种估计中的任何随机性，这些模拟中分子的初始速度被设置为一个指定的单一值。例如，如果指定值为 1 m/s，那么所有分子的初始速度要么是+1 m/s，要么是-1 m/s。这确保了初始的总动能有一个明确定义的值，并且在所有具有相同温度的模拟中保持不变。本质上，当两个模拟中的温度相同时，它们的初始总动能也相同，这应该确保在模拟过程中平均动能也相同。
 
-模拟结果见**图2**。在恒定温度下，盒子墙壁上的平均压力随着体积倒数的增加而线性增加（见**图2a**）。每条等温线的斜率与温度成正比，与理想气体定律一致。在第二组模拟中，观察到在恒定体积下，压力随着温度的增加而线性增加（见**图2b**）。在这种情况下，每条等容线的斜率与体积成反比，也与理想气体定律一致。因此，这些微观模拟能够重现与理想气体定律等宏观理论一致的热力学变量趋势。
+模拟结果见**图 2**。在恒定温度下，盒子墙壁上的平均压力随着体积倒数的增加而线性增加（见**图 2a**）。每条等温线的斜率与温度成正比，与理想气体定律一致。在第二组模拟中，观察到在恒定体积下，压力随着温度的增加而线性增加（见**图 2b**）。在这种情况下，每条等容线的斜率与体积成反比，也与理想气体定律一致。因此，这些微观模拟能够重现与理想气体定律等宏观理论一致的热力学变量趋势。
 
-![](../Images/2f499719677894ae4a715dee84bb0b12.png)
+![](img/2f499719677894ae4a715dee84bb0b12.png)
 
-**图2：** **（a）** 不同温度下壁面平均压力与体积倒数的变化，**（b）** 不同体积下壁面平均压力与温度的变化
+**图 2：** **（a）** 不同温度下壁面平均压力与体积倒数的变化，**（b）** 不同体积下壁面平均压力与温度的变化
 
 # 结论
 
-本文中呈现的n体模拟是一个简单的分子动力学模拟示例，没有任何交互作用。当然，这对分子如何相互作用的描述是极其简化的，但正如我们所见，它足以预测理想气体的性质。然而，理想气体假设在计算工程应用中气体的性质时很少被使用，例如在蒸汽涡轮中的蒸汽膨胀。需要更复杂的状态方程模型来准确模拟这样的过程，这些模型包括分子之间的相互作用。在本代码中添加分子间的短程相互作用可以更好地再现这些模型对真实气体预测的趋势。此外，使用类似Lennard-Jones的势能和添加温控器也可以允许预测液体的性质。
+本文中呈现的 n 体模拟是一个简单的分子动力学模拟示例，没有任何交互作用。当然，这对分子如何相互作用的描述是极其简化的，但正如我们所见，它足以预测理想气体的性质。然而，理想气体假设在计算工程应用中气体的性质时很少被使用，例如在蒸汽涡轮中的蒸汽膨胀。需要更复杂的状态方程模型来准确模拟这样的过程，这些模型包括分子之间的相互作用。在本代码中添加分子间的短程相互作用可以更好地再现这些模型对真实气体预测的趋势。此外，使用类似 Lennard-Jones 的势能和添加温控器也可以允许预测液体的性质。
 
-本模拟的完整代码可以在[GitHub](https://github.com/gauravsdeshmukh/ktg-python)上获取。如果你有任何问题、建议或评论，请随时通过[电子邮件](mailto:gauravsdeshmukh@outlook.com)或[Twitter](https://twitter.com/intent/follow?screen_name=ChemAndCode)与我联系。除非另有说明，所有图片均由作者提供。
+本模拟的完整代码可以在[GitHub](https://github.com/gauravsdeshmukh/ktg-python)上获取。如果你有任何问题、建议或评论，请随时通过电子邮件或[Twitter](https://twitter.com/intent/follow?screen_name=ChemAndCode)与我联系。除非另有说明，所有图片均由作者提供。
 
 要了解更多关于气体动理论的历史，请参阅：
 

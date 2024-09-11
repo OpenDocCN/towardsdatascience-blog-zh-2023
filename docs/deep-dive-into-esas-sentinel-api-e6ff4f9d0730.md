@@ -1,14 +1,14 @@
 # 深入了解 ESA 的 Sentinel API
 
-> 原文：[https://towardsdatascience.com/deep-dive-into-esas-sentinel-api-e6ff4f9d0730?source=collection_archive---------9-----------------------#2023-10-26](https://towardsdatascience.com/deep-dive-into-esas-sentinel-api-e6ff4f9d0730?source=collection_archive---------9-----------------------#2023-10-26)
+> 原文：[`towardsdatascience.com/deep-dive-into-esas-sentinel-api-e6ff4f9d0730?source=collection_archive---------9-----------------------#2023-10-26`](https://towardsdatascience.com/deep-dive-into-esas-sentinel-api-e6ff4f9d0730?source=collection_archive---------9-----------------------#2023-10-26)
 
-![](../Images/11263c751d93403401ed501eb089fe4b.png)
+![](img/11263c751d93403401ed501eb089fe4b.png)
 
 基于 10 米分辨率的 Sentinel 数据，布达佩斯的 RGB 卫星地图片段。
 
 ## 如何使用 Python 获取、分析和可视化卫星图像
 
-[](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)[![米兰·贾诺索夫](../Images/77b62460041f66ec4585a81baef81a03.png)](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e6ff4f9d0730--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e6ff4f9d0730--------------------------------) [米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)
+[](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)![米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e6ff4f9d0730--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e6ff4f9d0730--------------------------------) [米兰·贾诺索夫](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)
 
 ·
 

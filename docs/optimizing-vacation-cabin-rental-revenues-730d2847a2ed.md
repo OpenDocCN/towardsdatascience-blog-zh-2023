@@ -1,18 +1,18 @@
 # 优化度假小屋租赁收入
 
-> 原文：[https://towardsdatascience.com/optimizing-vacation-cabin-rental-revenues-730d2847a2ed?source=collection_archive---------13-----------------------#2023-03-08](https://towardsdatascience.com/optimizing-vacation-cabin-rental-revenues-730d2847a2ed?source=collection_archive---------13-----------------------#2023-03-08)
+> 原文：[`towardsdatascience.com/optimizing-vacation-cabin-rental-revenues-730d2847a2ed?source=collection_archive---------13-----------------------#2023-03-08`](https://towardsdatascience.com/optimizing-vacation-cabin-rental-revenues-730d2847a2ed?source=collection_archive---------13-----------------------#2023-03-08)
 
-## 简要了解收益管理科学及其Python演示
+## 简要了解收益管理科学及其 Python 演示
 
-[](https://medium.com/@cgarcia_80823?source=post_page-----730d2847a2ed--------------------------------)[![Chris Garcia](../Images/24fb0975ec922ec62469735d48c8a48f.png)](https://medium.com/@cgarcia_80823?source=post_page-----730d2847a2ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----730d2847a2ed--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----730d2847a2ed--------------------------------) [Chris Garcia](https://medium.com/@cgarcia_80823?source=post_page-----730d2847a2ed--------------------------------)
+[](https://medium.com/@cgarcia_80823?source=post_page-----730d2847a2ed--------------------------------)![Chris Garcia](https://medium.com/@cgarcia_80823?source=post_page-----730d2847a2ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----730d2847a2ed--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----730d2847a2ed--------------------------------) [Chris Garcia](https://medium.com/@cgarcia_80823?source=post_page-----730d2847a2ed--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a75b360a94b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vacation-cabin-rental-revenues-730d2847a2ed&user=Chris+Garcia&userId=8a75b360a94b&source=post_page-8a75b360a94b----730d2847a2ed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----730d2847a2ed--------------------------------) ·9分钟阅读·2023年3月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F730d2847a2ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vacation-cabin-rental-revenues-730d2847a2ed&user=Chris+Garcia&userId=8a75b360a94b&source=-----730d2847a2ed---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a75b360a94b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vacation-cabin-rental-revenues-730d2847a2ed&user=Chris+Garcia&userId=8a75b360a94b&source=post_page-8a75b360a94b----730d2847a2ed---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----730d2847a2ed--------------------------------) ·9 分钟阅读·2023 年 3 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F730d2847a2ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vacation-cabin-rental-revenues-730d2847a2ed&user=Chris+Garcia&userId=8a75b360a94b&source=-----730d2847a2ed---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F730d2847a2ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vacation-cabin-rental-revenues-730d2847a2ed&source=-----730d2847a2ed---------------------bookmark_footer-----------)![](../Images/2b3ab9a41515df69fa4f478a1f1124fd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F730d2847a2ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-vacation-cabin-rental-revenues-730d2847a2ed&source=-----730d2847a2ed---------------------bookmark_footer-----------)![](img/2b3ab9a41515df69fa4f478a1f1124fd.png)
 
 图片由 [Evelyn Paris](https://unsplash.com/de/@evelynparis?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,9 +22,9 @@
 
 ## **收入管理的科学**
 
-收入管理（RM）是预测微观市场层面上实时客户需求的科学，并优化产品或服务的价格和可用性[1]。RM由美国航空公司在1980年代首次提出，回应了新兴低票价竞争对手People Express的威胁。美国航空的RM系统在休闲和商务乘客之间区分了价格。它还使用优化算法来决定多少座位开放给早期预订的低票价乘客，多少座位保护给后期预订的高票价商务乘客。这种方法非常成功，恢复了美国航空的盈利能力，同时最终导致了People Express的关闭。因此，许多其他行业也开始采用RM。
+收入管理（RM）是预测微观市场层面上实时客户需求的科学，并优化产品或服务的价格和可用性[1]。RM 由美国航空公司在 1980 年代首次提出，回应了新兴低票价竞争对手 People Express 的威胁。美国航空的 RM 系统在休闲和商务乘客之间区分了价格。它还使用优化算法来决定多少座位开放给早期预订的低票价乘客，多少座位保护给后期预订的高票价商务乘客。这种方法非常成功，恢复了美国航空的盈利能力，同时最终导致了 People Express 的关闭。因此，许多其他行业也开始采用 RM。
 
-RM的目标是通过正确的渠道在正确的时间以正确的价格向正确的客户提供合适的产品或服务。传统上，RM是为在少数条件下运营的企业开发的：
+RM 的目标是通过正确的渠道在正确的时间以正确的价格向正确的客户提供合适的产品或服务。传统上，RM 是为在少数条件下运营的企业开发的：
 
 +   *固定容量：* 例如，航空公司有固定的机队规模，酒店有固定数量的房间。
 
@@ -32,9 +32,9 @@ RM的目标是通过正确的渠道在正确的时间以正确的价格向正确
 
 +   *客户提前预订资源*（例如，预订航班或酒店房间）
 
-如今，RM技术正在超越这些假设，适用于电子商务等新兴行业。然而，总体而言，RM涉及四个相互关联的活动：
+如今，RM 技术正在超越这些假设，适用于电子商务等新兴行业。然而，总体而言，RM 涉及四个相互关联的活动：
 
-![](../Images/eb8afa0aeaafec2c1fc89d298c2d1b47.png)
+![](img/eb8afa0aeaafec2c1fc89d298c2d1b47.png)
 
 关键的收入管理活动
 
@@ -70,7 +70,7 @@ RM的目标是通过正确的渠道在正确的时间以正确的价格向正确
 
 我们将假设我们已经确定了即将到来的长周末的最佳价格和准确的需求预测，如下所示：
 
-![](../Images/34d0162be0c37a675017dea40cc27397.png)
+![](img/34d0162be0c37a675017dea40cc27397.png)
 
 目标是确定每种舱位类型分配到不同需求时间段的数量，以最大化收入。我们从导入关键库和读取数据开始：
 
@@ -78,15 +78,15 @@ RM的目标是通过正确的渠道在正确的时间以正确的价格向正确
 
 我们将制定并解决一个整数规划（IP）模型，将容量分配到需求预测中，以最大化获得的收入。这个模型将舱位分配到需求时间段，形式为（*时间区间，舱位大小*）对，并使用二进制指示器来指定允许的替代。我们从定义模型输入开始：
 
-![](../Images/2f6d9df6e71228436fc891827954c33a.png)
+![](img/2f6d9df6e71228436fc891827954c33a.png)
 
 接下来，我们定义我们的决策变量：
 
-![](../Images/07eec88b6ab374f8f313ea3e9549140c.png)
+![](img/07eec88b6ab374f8f313ea3e9549140c.png)
 
 优化模型现在可以表述如下：
 
-![](../Images/fd5479610f8b4d676ac252f3b9836caf.png)
+![](img/fd5479610f8b4d676ac252f3b9836caf.png)
 
 在上述模型中，目标函数 (1) 只是所有收入在期间内的总和。约束条件 (2) 确保我们不会对任何舱位类型进行超额预订。我们通过确保对于任何舱位类型 *i* 和时间段 *j*，分配到时间段 *j* 或任何与 *j* 起始时间重叠的时间段的 *i* 类型舱位的总数不会超过可用的 *i* 类型舱位数量来实现这一点。约束条件 (3) 确保我们不会为任何时间段分配超过需求的舱位。约束条件 (4) 确保我们不会通过将舱位分配到无法满足的时间段而做出无效替换。最后，约束条件 (5) 确保决策变量的值为非负整数。
 
@@ -100,34 +100,34 @@ RM的目标是通过正确的渠道在正确的时间以正确的价格向正确
 
 运行上述代码将得到如下结果：
 
-![](../Images/c4107f994daf1d51cc26caba75d5f467.png)
+![](img/c4107f994daf1d51cc26caba75d5f467.png)
 
 有趣的是，当我们查看这个**最优分配计划**时，我们注意到经常发生将较大的舱位替换为较小舱位的情况。正如我们将看到的，允许这些类型的替换对收入有很大的影响。
 
 ## **以人为方式解决问题：先到先得**
 
-将最优政策与一个人可能在没有RM的情况下实施的政策进行比较是很有启发性的。在这种情况下，代理将根据请求的到达顺序（先到先得）简单地出售舱位预订。在这种情况下使用替换也没有多大意义，因为我们永远不知道下一个请求是否会是带来更多收入的较大舱位。
+将最优政策与一个人可能在没有 RM 的情况下实施的政策进行比较是很有启发性的。在这种情况下，代理将根据请求的到达顺序（先到先得）简单地出售舱位预订。在这种情况下使用替换也没有多大意义，因为我们永远不知道下一个请求是否会是带来更多收入的较大舱位。
 
-FCFS产生的收入对请求的顺序非常敏感；这些请求可能以一种恰好把我们的舱位绑在非常不理想的方式的顺序到达，或者我们可能会运气好，得到一个接近最大收入的顺序。下面的代码实现了FCFS政策，并附带一个预处理函数，将原始数据转换为算法所需的形式。在预处理函数中，我们随机排列预订请求，以模拟它们在现实世界中的到达方式。
+FCFS 产生的收入对请求的顺序非常敏感；这些请求可能以一种恰好把我们的舱位绑在非常不理想的方式的顺序到达，或者我们可能会运气好，得到一个接近最大收入的顺序。下面的代码实现了 FCFS 政策，并附带一个预处理函数，将原始数据转换为算法所需的形式。在预处理函数中，我们随机排列预订请求，以模拟它们在现实世界中的到达方式。
 
 ## **比较政策**
 
-下面我们将比较两种优化变体（一个不允许替换，另一个允许较大的舱位替换较小的舱位）与FCFS的收入影响。我们将运行FCFS 100次，每次随机排列预订请求，并将最差、中位（即典型）和最佳情况与两种优化结果进行比较。
+下面我们将比较两种优化变体（一个不允许替换，另一个允许较大的舱位替换较小的舱位）与 FCFS 的收入影响。我们将运行 FCFS 100 次，每次随机排列预订请求，并将最差、中位（即典型）和最佳情况与两种优化结果进行比较。
 
 运行这个会产生以下结果：
 
-![](../Images/e66a87c35a4e44f790f922c68b31c9be.png)
+![](img/e66a87c35a4e44f790f922c68b31c9be.png)
 
-比较政策时，我们看到FCFS通常会留下未利用的收入——如果运气不好，这可能是一个相当大的数额。只有在最好的情况下，FCFS才能达到在不允许替换的情况下的最大收入（这总是由优化B政策实现的）。然而，通过允许替换和优化，我们可以大幅提升收入——在最坏情况下增加超过22%（或周末超过4,000美元）。此外，这额外的收入是利用现有容量赚取的，没有产生额外的成本，因此完全是利润。这一比较展示了RM的影响。
+比较政策时，我们看到 FCFS 通常会留下未利用的收入——如果运气不好，这可能是一个相当大的数额。只有在最好的情况下，FCFS 才能达到在不允许替换的情况下的最大收入（这总是由优化 B 政策实现的）。然而，通过允许替换和优化，我们可以大幅提升收入——在最坏情况下增加超过 22%（或周末超过 4,000 美元）。此外，这额外的收入是利用现有容量赚取的，没有产生额外的成本，因此完全是利润。这一比较展示了 RM 的影响。
 
-最后需要指出的是，有效的容量分配依赖于准确的需求预测，以作为优化输入。有些周我们的预测可能会失误。然而，假设预测通常可以 reasonably 精确，使用RM的系统将整体上优于不使用的系统。
+最后需要指出的是，有效的容量分配依赖于准确的需求预测，以作为优化输入。有些周我们的预测可能会失误。然而，假设预测通常可以 reasonably 精确，使用 RM 的系统将整体上优于不使用的系统。
 
 ## **结论**
 
-收入管理是一门能够显著提高现有容量收入的科学。通过将RM的元素纳入销售过程，公司可以开始在不产生额外运营成本的情况下增加收入。
+收入管理是一门能够显著提高现有容量收入的科学。通过将 RM 的元素纳入销售过程，公司可以开始在不产生额外运营成本的情况下增加收入。
 
 *除非另有说明，所有数据和图片均由作者提供。*
 
 ## **参考文献**
 
-[1] Cross, R.B. (1997). *收入管理：市场主导的硬核策略*. 纽约：百老汇书籍，第276页。
+[1] Cross, R.B. (1997). *收入管理：市场主导的硬核策略*. 纽约：百老汇书籍，第 276 页。

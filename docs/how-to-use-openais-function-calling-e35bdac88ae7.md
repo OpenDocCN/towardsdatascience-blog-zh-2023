@@ -1,18 +1,18 @@
 # 如何使用 OpenAI 的函数调用
 
-> 原文：[https://towardsdatascience.com/how-to-use-openais-function-calling-e35bdac88ae7?source=collection_archive---------10-----------------------#2023-07-25](https://towardsdatascience.com/how-to-use-openais-function-calling-e35bdac88ae7?source=collection_archive---------10-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/how-to-use-openais-function-calling-e35bdac88ae7?source=collection_archive---------10-----------------------#2023-07-25`](https://towardsdatascience.com/how-to-use-openais-function-calling-e35bdac88ae7?source=collection_archive---------10-----------------------#2023-07-25)
 
 ## 函数调用概述及其对构建 LLM 应用程序的影响
 
-[](https://johnadeojo.medium.com/?source=post_page-----e35bdac88ae7--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----e35bdac88ae7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e35bdac88ae7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e35bdac88ae7--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----e35bdac88ae7--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----e35bdac88ae7--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----e35bdac88ae7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e35bdac88ae7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e35bdac88ae7--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----e35bdac88ae7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-openais-function-calling-e35bdac88ae7&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----e35bdac88ae7---------------------post_header-----------) 在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e35bdac88ae7--------------------------------) 发表 ·6 分钟阅读·2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe35bdac88ae7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-openais-function-calling-e35bdac88ae7&user=John+Adeojo&userId=f933e1637e40&source=-----e35bdac88ae7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff933e1637e40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-openais-function-calling-e35bdac88ae7&user=John+Adeojo&userId=f933e1637e40&source=post_page-f933e1637e40----e35bdac88ae7---------------------post_header-----------) 在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e35bdac88ae7--------------------------------) 发表 ·6 分钟阅读·2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe35bdac88ae7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-openais-function-calling-e35bdac88ae7&user=John+Adeojo&userId=f933e1637e40&source=-----e35bdac88ae7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe35bdac88ae7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-openais-function-calling-e35bdac88ae7&source=-----e35bdac88ae7---------------------bookmark_footer-----------)![](../Images/a09010bff67cd967314369c4fcabb3a3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe35bdac88ae7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-openais-function-calling-e35bdac88ae7&source=-----e35bdac88ae7---------------------bookmark_footer-----------)![](img/a09010bff67cd967314369c4fcabb3a3.png)
 
 作者提供的图片：使用 Midjourney 生成
 

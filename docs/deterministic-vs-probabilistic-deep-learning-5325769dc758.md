@@ -1,14 +1,14 @@
 # 确定性与概率性深度学习
 
-> 原文：[https://towardsdatascience.com/deterministic-vs-probabilistic-deep-learning-5325769dc758?source=collection_archive---------7-----------------------#2023-01-11](https://towardsdatascience.com/deterministic-vs-probabilistic-deep-learning-5325769dc758?source=collection_archive---------7-----------------------#2023-01-11)
+> 原文：[`towardsdatascience.com/deterministic-vs-probabilistic-deep-learning-5325769dc758?source=collection_archive---------7-----------------------#2023-01-11`](https://towardsdatascience.com/deterministic-vs-probabilistic-deep-learning-5325769dc758?source=collection_archive---------7-----------------------#2023-01-11)
 
 ## 概率性深度学习
 
-[](https://medium.com/@luisroque?source=post_page-----5325769dc758--------------------------------)[![路易斯·罗克](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----5325769dc758--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5325769dc758--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5325769dc758--------------------------------) [路易斯·罗克](https://medium.com/@luisroque?source=post_page-----5325769dc758--------------------------------)
+[](https://medium.com/@luisroque?source=post_page-----5325769dc758--------------------------------)![路易斯·罗克](https://medium.com/@luisroque?source=post_page-----5325769dc758--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5325769dc758--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5325769dc758--------------------------------) [路易斯·罗克](https://medium.com/@luisroque?source=post_page-----5325769dc758--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeterministic-vs-probabilistic-deep-learning-5325769dc758&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----5325769dc758---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5325769dc758--------------------------------) ·9分钟阅读·2023年1月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5325769dc758&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeterministic-vs-probabilistic-deep-learning-5325769dc758&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----5325769dc758---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeterministic-vs-probabilistic-deep-learning-5325769dc758&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----5325769dc758---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5325769dc758--------------------------------) ·9 分钟阅读·2023 年 1 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5325769dc758&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeterministic-vs-probabilistic-deep-learning-5325769dc758&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----5325769dc758---------------------clap_footer-----------)
 
 --
 
@@ -26,9 +26,9 @@
 
 1.  [TensorFlow 概率论的温和介绍：可训练参数](https://medium.com/towards-data-science/gentle-introduction-to-tensorflow-probability-trainable-parameters-5098ea4fed15)
 
-1.  [从头开始进行最大似然估计（TensorFlow Probability）](/maximum-likelihood-estimation-from-scratch-in-tensorflow-probability-2fc0eefdbfc2)
+1.  从头开始进行最大似然估计（TensorFlow Probability）
 
-1.  [从头开始进行概率线性回归（TensorFlow）](/probabilistic-linear-regression-from-scratch-in-tensorflow-2eb633fffc00)
+1.  从头开始进行概率线性回归（TensorFlow）
 
 1.  [Tensorflow 中的概率回归与确定性回归](https://medium.com/towards-data-science/probabilistic-vs-deterministic-regression-with-tensorflow-85ef791beeef)
 

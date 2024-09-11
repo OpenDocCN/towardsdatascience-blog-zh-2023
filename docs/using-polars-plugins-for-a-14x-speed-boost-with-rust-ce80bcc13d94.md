@@ -1,18 +1,18 @@
 # 使用 Polars 插件通过 Rust 实现 14 倍速度提升
 
-> 原文：[https://towardsdatascience.com/using-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94?source=collection_archive---------0-----------------------#2023-11-09](https://towardsdatascience.com/using-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94?source=collection_archive---------0-----------------------#2023-11-09)
+> 原文：[`towardsdatascience.com/using-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94?source=collection_archive---------0-----------------------#2023-11-09`](https://towardsdatascience.com/using-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94?source=collection_archive---------0-----------------------#2023-11-09)
 
 ## 在本地 Polars 库之外实现高速度
 
-[](https://medium.com/@nelsongriffiths123?source=post_page-----ce80bcc13d94--------------------------------)[![Nelson Griffiths](../Images/9c8267aa6b9a3b73ccbc6c69b7804d1f.png)](https://medium.com/@nelsongriffiths123?source=post_page-----ce80bcc13d94--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce80bcc13d94--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce80bcc13d94--------------------------------) [Nelson Griffiths](https://medium.com/@nelsongriffiths123?source=post_page-----ce80bcc13d94--------------------------------)
+[](https://medium.com/@nelsongriffiths123?source=post_page-----ce80bcc13d94--------------------------------)![Nelson Griffiths](https://medium.com/@nelsongriffiths123?source=post_page-----ce80bcc13d94--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce80bcc13d94--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce80bcc13d94--------------------------------) [Nelson Griffiths](https://medium.com/@nelsongriffiths123?source=post_page-----ce80bcc13d94--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7278fd01858d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94&user=Nelson+Griffiths&userId=7278fd01858d&source=post_page-7278fd01858d----ce80bcc13d94---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce80bcc13d94--------------------------------) ·8 min read·2023年11月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce80bcc13d94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94&user=Nelson+Griffiths&userId=7278fd01858d&source=-----ce80bcc13d94---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7278fd01858d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94&user=Nelson+Griffiths&userId=7278fd01858d&source=post_page-7278fd01858d----ce80bcc13d94---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce80bcc13d94--------------------------------) ·8 min read·2023 年 11 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fce80bcc13d94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94&user=Nelson+Griffiths&userId=7278fd01858d&source=-----ce80bcc13d94---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce80bcc13d94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94&source=-----ce80bcc13d94---------------------bookmark_footer-----------)![](../Images/700dc7427382e497ce6db147b1710bd3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fce80bcc13d94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-polars-plugins-for-a-14x-speed-boost-with-rust-ce80bcc13d94&source=-----ce80bcc13d94---------------------bookmark_footer-----------)![](img/700dc7427382e497ce6db147b1710bd3.png)
 
 由 DALL-E 3 生成
 
@@ -83,11 +83,11 @@ def calculate_runs_pd(s: pd.Series) -> pd.Series:
 
 当我们使用 Pandas 的 groupby apply 功能对我们的基准进行测试时，我们得到以下结果：
 
-![](../Images/d90373ff8fef0522195c4de0d467db82.png)
+![](img/d90373ff8fef0522195c4de0d467db82.png)
 
 Pandas Apply Pytest-Benchmark（作者提供的图片）
 
-![](../Images/e4a6902c3af4b49c9f0682a7b0d516ff.png)
+![](img/e4a6902c3af4b49c9f0682a7b0d516ff.png)
 
 Pandas 应用的 Memray 输出（作者提供的图片）
 
@@ -121,11 +121,11 @@ def calculate_runs_pl_apply(s: pl.Series) -> pl.DataFrame:
 
 现在让我们看看这与我们原来的 Pandas 基准测试的比较结果。
 
-![](../Images/c5be090a944c78c64dd6821b473264d1.png)
+![](img/c5be090a944c78c64dd6821b473264d1.png)
 
 Pandas Apply 与 Polars Apply Pytest-Benchmark（作者提供的图片）
 
-![](../Images/6824a7646d8f840556de38010cea796a.png)
+![](img/6824a7646d8f840556de38010cea796a.png)
 
 Polars 应用的 Memray 输出（作者提供的图片）
 
@@ -163,11 +163,11 @@ def calculate_runs_pl_native(df: pl.LazyFrame, col: str, by: str) -> pl.LazyFram
 
 现在我们有了原生的 Polars 函数。让我们再次进行基准测试。
 
-![](../Images/205b9090889f88141aa8ca95d998d531.png)
+![](img/205b9090889f88141aa8ca95d998d531.png)
 
 Pandas Apply 与 Polars Apply 与 Polars Native Pytest-Benchmark（作者提供的图像）
 
-![](../Images/c78fb98fb76fe3663f1def0e2772ce56.png)
+![](img/c78fb98fb76fe3663f1def0e2772ce56.png)
 
 Polars Native 的 Memray 输出（作者提供的图像）
 
@@ -251,11 +251,11 @@ df.select(
 
 好了，现在让我们查看结果吧！
 
-![](../Images/59b180693a66aea9b1ade466a9cc308f.png)
+![](img/59b180693a66aea9b1ade466a9cc308f.png)
 
 所有实现 Pytest-Benchmark（作者提供的图像）
 
-![](../Images/f5545fced9f7c5092e7f9d6846843c58.png)
+![](img/f5545fced9f7c5092e7f9d6846843c58.png)
 
 Polars 插件的内存输出（作者提供的图像）
 

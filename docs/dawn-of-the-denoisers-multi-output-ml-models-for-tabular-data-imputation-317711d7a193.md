@@ -1,30 +1,30 @@
 # **去噪声器的黎明：用于表格数据插补的多输出机器学习模型**
 
-> 原文：[https://towardsdatascience.com/dawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193?source=collection_archive---------6-----------------------#2023-06-28](https://towardsdatascience.com/dawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193?source=collection_archive---------6-----------------------#2023-06-28)
+> 原文：[`towardsdatascience.com/dawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193?source=collection_archive---------6-----------------------#2023-06-28`](https://towardsdatascience.com/dawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193?source=collection_archive---------6-----------------------#2023-06-28)
 
 ## 方法概述与实际应用
 
-[](https://kcpub21.medium.com/?source=post_page-----317711d7a193--------------------------------)[![Chinmay Kakatkar](../Images/873531f24cd4ee8a927669a211d61ae8.png)](https://kcpub21.medium.com/?source=post_page-----317711d7a193--------------------------------)[](https://towardsdatascience.com/?source=post_page-----317711d7a193--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----317711d7a193--------------------------------) [Chinmay Kakatkar](https://kcpub21.medium.com/?source=post_page-----317711d7a193--------------------------------)
+[](https://kcpub21.medium.com/?source=post_page-----317711d7a193--------------------------------)![Chinmay Kakatkar](https://kcpub21.medium.com/?source=post_page-----317711d7a193--------------------------------)[](https://towardsdatascience.com/?source=post_page-----317711d7a193--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----317711d7a193--------------------------------) [Chinmay Kakatkar](https://kcpub21.medium.com/?source=post_page-----317711d7a193--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87ab8c40e0ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=post_page-87ab8c40e0ed----317711d7a193---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----317711d7a193--------------------------------) · 11 分钟阅读 · 2023年6月28日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F317711d7a193&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=-----317711d7a193---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87ab8c40e0ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=post_page-87ab8c40e0ed----317711d7a193---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----317711d7a193--------------------------------) · 11 分钟阅读 · 2023 年 6 月 28 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F317711d7a193&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=-----317711d7a193---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F317711d7a193&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193&source=-----317711d7a193---------------------bookmark_footer-----------)![](../Images/3ac7476e11ca163995f5a03ae562d2f0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F317711d7a193&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdawn-of-the-denoisers-multi-output-ml-models-for-tabular-data-imputation-317711d7a193&source=-----317711d7a193---------------------bookmark_footer-----------)![](img/3ac7476e11ca163995f5a03ae562d2f0.png)
 
 图片由 [Jon Tyson](https://unsplash.com/ja/@jontyson?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 处理表格数据中的缺失值是数据科学中的一个基本问题。如果由于某种原因不能忽略或省略缺失值，那么我们可以尝试*填补*它们，即用其他值替代缺失值。填补有几种简单（但过于简单）的方式和几种先进的（更准确但复杂且可能需要大量资源）方式。本文介绍了一种表格数据填补的新方法，旨在实现简洁性和实用性之间的平衡。
 
-具体来说，我们将看到如何利用*去噪*的概念（通常与非结构化数据相关联）来迅速将几乎任何多输出机器学习算法转变为适用于实际的表格数据填补器。我们将首先介绍一些关于去噪、填补和多输出算法的基本概念，然后深入探讨如何使用去噪将多输出算法转变为填补器。接着，我们将简要地看一下这种新颖的方法如何在实际中应用，并以行业中的一个例子为例。最后，我们将讨论在生成式人工智能和基础模型时代，基于去噪的表格数据填补的未来相关性。为了便于解释，代码示例仅以Python语言展示，尽管概念方法本身是不依赖于语言的。
+具体来说，我们将看到如何利用*去噪*的概念（通常与非结构化数据相关联）来迅速将几乎任何多输出机器学习算法转变为适用于实际的表格数据填补器。我们将首先介绍一些关于去噪、填补和多输出算法的基本概念，然后深入探讨如何使用去噪将多输出算法转变为填补器。接着，我们将简要地看一下这种新颖的方法如何在实际中应用，并以行业中的一个例子为例。最后，我们将讨论在生成式人工智能和基础模型时代，基于去噪的表格数据填补的未来相关性。为了便于解释，代码示例仅以 Python 语言展示，尽管概念方法本身是不依赖于语言的。
 
 # 从去噪到填补
 
 去噪是关于从数据中去除噪声的。去噪算法将含有噪声的数据作为输入，进行一些巧妙的处理以尽可能减少噪声，然后返回去噪后的数据。去噪的典型应用包括去除音频数据中的噪声和锐化模糊的图像。去噪算法可以通过多种方法来构建，从高斯和中值滤波器到自编码器。
 
-尽管去噪的概念主要与涉及非结构化数据（例如，音频、图像）的应用场景相关，但对结构化表格数据的填补是一个密切相关的概念。有许多方法可以替代（或填补）表格数据中的缺失值。例如，数据可以简单地用零（或在特定上下文中等效的值）替代，或用相关行或列的一些统计数据（例如，均值、中位数、众数、最小值、最大值）替代——但这样做可能会扭曲数据，如果作为机器学习训练工作流程中的预处理步骤使用，这种简单的填补可能会对预测性能产生不利影响。其他方法如K近邻（KNN）或关联规则挖掘可能表现更好，但由于它们没有训练的概念，并直接在测试数据上工作，当测试数据量很大时，它们的速度可能会受到影响；这在需要快速在线推理的应用场景中尤其成问题。
+尽管去噪的概念主要与涉及非结构化数据（例如，音频、图像）的应用场景相关，但对结构化表格数据的填补是一个密切相关的概念。有许多方法可以替代（或填补）表格数据中的缺失值。例如，数据可以简单地用零（或在特定上下文中等效的值）替代，或用相关行或列的一些统计数据（例如，均值、中位数、众数、最小值、最大值）替代——但这样做可能会扭曲数据，如果作为机器学习训练工作流程中的预处理步骤使用，这种简单的填补可能会对预测性能产生不利影响。其他方法如 K 近邻（KNN）或关联规则挖掘可能表现更好，但由于它们没有训练的概念，并直接在测试数据上工作，当测试数据量很大时，它们的速度可能会受到影响；这在需要快速在线推理的应用场景中尤其成问题。
 
 现在，可以简单地训练一个 ML 模型，将具有缺失值的特征设置为输出，并使用其余特征作为预测器（或输入）。如果我们有多个具有缺失值的特征，构建每个特征的单输出模型可能既繁琐又昂贵，因此我们可以尝试构建一个多输出模型，一次性预测所有受影响特征的缺失值。至关重要的是，如果缺失值可以被视为噪声，那么我们可能能够应用去噪概念来填补表格数据——这是我们将在以下部分中深入探讨的关键见解。
 
@@ -73,29 +73,29 @@ model = DecisionTreeRegressor(random_state=RANDOM_STATE).fit(xs, ys)
 
 现在我们已经涵盖了去噪、插补和多输出机器学习算法的基础知识，我们准备将所有这些构建块结合起来。通常，训练多输出机器学习模型以使用去噪插补表格数据包括以下步骤。请注意，与前一节中的代码示例不同，在接下来的步骤中我们不会明确区分预测变量和目标变量——这是因为，在表格数据插补的上下文中，如果特征在数据中存在，它们可以作为预测变量，如果缺失，它们可以作为目标变量。
 
-## 第1步：创建训练和验证数据集
+## 第 1 步：创建训练和验证数据集
 
-将数据拆分为训练集和验证集，例如，使用80:20的拆分比例。我们将这些数据集称为*df_training*和*df_validation*。
+将数据拆分为训练集和验证集，例如，使用 80:20 的拆分比例。我们将这些数据集称为*df_training*和*df_validation*。
 
-## 第2步：创建训练和验证数据集的噪声/掩盖副本
+## 第 2 步：创建训练和验证数据集的噪声/掩盖副本
 
 复制*df_training*和*df_validation*，并在这些副本的数据中添加噪声，例如，通过随机掩盖值。我们将这些掩盖后的副本称为*df_training_masked*和*df_validation_masked*。掩盖函数的选择可能会影响最终训练的插补器的预测准确性，因此我们将在下一节中讨论一些掩盖策略。此外，如果*df_training*的大小较小，可以考虑将行数上采样到某个因子*k*，这样如果*df_training*有*n*行和*m*列，则上采样后的*df_training_masked*数据集将有*n*k*行（列数*m*保持不变）。
 
-## 第3步：训练一个基于去噪的多输出模型作为插补器
+## 第 3 步：训练一个基于去噪的多输出模型作为插补器
 
 选择一个你喜欢的多输出算法，并训练一个使用噪声/掩盖副本来预测原始训练数据的模型。从概念上讲，你可以进行类似*model.fit(predictors = df_training_masked, targets = df_training)*的操作。
 
-## 第4步：将插补器应用于被掩盖的验证数据集
+## 第 4 步：将插补器应用于被掩盖的验证数据集
 
-将*df_validation_masked*传递给训练好的模型以预测*df_validation*。从概念上讲，这将类似于*df_validation_imputed = model.predict(df_validation_masked)*。注意，某些拟合函数可能会直接将验证数据集作为参数来计算拟合过程中的验证误差（例如，在TensorFlow中的神经网络）——如果是这样，那么记得在计算验证误差时，使用噪声/掩盖验证集（*df_validation_masked*）作为预测变量，使用原始验证集（*df_validation*）作为目标变量。
+将*df_validation_masked*传递给训练好的模型以预测*df_validation*。从概念上讲，这将类似于*df_validation_imputed = model.predict(df_validation_masked)*。注意，某些拟合函数可能会直接将验证数据集作为参数来计算拟合过程中的验证误差（例如，在 TensorFlow 中的神经网络）——如果是这样，那么记得在计算验证误差时，使用噪声/掩盖验证集（*df_validation_masked*）作为预测变量，使用原始验证集（*df_validation*）作为目标变量。
 
-## 第5步：评估验证数据集的插补准确性
+## 第 5 步：评估验证数据集的插补准确性
 
 通过将*df_validation_imputed*（模型预测的结果）与*df_validation*（真实值）进行比较来评估填补准确性。评估可以按列（以确定每个特征的填补准确性）或按行（以检查预测实例的准确性）进行。为了避免每列得到夸大的准确性结果，可以在计算准确性之前，过滤掉在*df_validation_masked*中未掩盖的待预测列值的行。
 
 最后，尝试上述步骤来优化模型（例如，使用另一种掩码策略或选择不同的多输出机器学习算法）。
 
-以下代码展示了如何实现步骤1–5的一个示例。
+以下代码展示了如何实现步骤 1–5 的一个示例。
 
 ```py
 import pandas as pd
@@ -159,7 +159,7 @@ print(feature_accuracy_dict)
 
 ## 穷举掩码
 
-该策略涉及为数据集中每一行生成所有可能的掩码组合。假设我们有一个包含*n*行和*m*列的数据集。那么穷举掩码将把每一行扩展到最多2^*m*行，每种掩码组合对应一行；该行的最大组合总数等于帕斯卡三角形中行*m*的和，尽管我们可能选择忽略一些对特定用例不有用的组合（例如，所有值都被掩盖的组合）。因此，最终掩盖的数据集将最多包含*n**(2^*m*)行和*m*列。虽然穷举策略具有相当全面的优点，但在*m*较大的情况下可能不太实际，因为生成的掩盖数据集可能过大，以至于大多数计算机难以处理。例如，如果原始数据集仅有1000行和50列，则穷举掩盖的数据集将大约有10¹⁸行（即一千亿亿行）。
+该策略涉及为数据集中每一行生成所有可能的掩码组合。假设我们有一个包含*n*行和*m*列的数据集。那么穷举掩码将把每一行扩展到最多 2^*m*行，每种掩码组合对应一行；该行的最大组合总数等于帕斯卡三角形中行*m*的和，尽管我们可能选择忽略一些对特定用例不有用的组合（例如，所有值都被掩盖的组合）。因此，最终掩盖的数据集将最多包含*n**(2^*m*)行和*m*列。虽然穷举策略具有相当全面的优点，但在*m*较大的情况下可能不太实际，因为生成的掩盖数据集可能过大，以至于大多数计算机难以处理。例如，如果原始数据集仅有 1000 行和 50 列，则穷举掩盖的数据集将大约有 10¹⁸行（即一千亿亿行）。
 
 ## 随机掩码
 
@@ -179,4 +179,4 @@ AI 辅助完成在线表单是行业中的一个例子。随着各种业务流�
 
 随着生成性人工智能和基础模型的最新进展，以及即使在非技术观众中也越来越意识到它们的潜力，自从 ChatGPT 于 2022 年末亮相以来，探讨基于去噪的填补器在未来的相关性是合理的。例如，大型语言模型（LLMs）可以在理论上处理表格数据的填补任务。毕竟，预测句子中的缺失标记是用于训练像**双向编码器表示（BERT）**这样的 LLMs 的典型学习目标。
 
-然而，基于去噪的插补方法——或现今存在的其他更简单的表格数据插补方法——在生成式 AI 和基础模型的时代，不太可能很快变得过时。了解这一点的原因可以通过考虑2010年代末期的情况来感受，那时神经网络已成为在几个以前依赖简单算法（如逻辑回归、决策树和随机森林）的用例中，技术上更可行且经济上更具吸引力的选项。虽然神经网络确实在某些需要大规模训练数据且训练和维护成本被认为是合理的高端用例中取代了这些其他算法，但许多其他用例仍未受到影响。实际上，神经网络的普及得益于存储和计算资源成本的降低，而这种降低也使得其他简单算法受益。从这个角度来看，成本、复杂性、解释性需求、实时用例的快速响应时间以及对可能出现的寡头垄断外部预训练模型提供商的锁定威胁等因素，都似乎指向一个未来，在这个未来中，像基于去噪的表格数据插补这样的务实创新有可能与生成式 AI 和基础模型有意义地共存，而不是被它们取代。
+然而，基于去噪的插补方法——或现今存在的其他更简单的表格数据插补方法——在生成式 AI 和基础模型的时代，不太可能很快变得过时。了解这一点的原因可以通过考虑 2010 年代末期的情况来感受，那时神经网络已成为在几个以前依赖简单算法（如逻辑回归、决策树和随机森林）的用例中，技术上更可行且经济上更具吸引力的选项。虽然神经网络确实在某些需要大规模训练数据且训练和维护成本被认为是合理的高端用例中取代了这些其他算法，但许多其他用例仍未受到影响。实际上，神经网络的普及得益于存储和计算资源成本的降低，而这种降低也使得其他简单算法受益。从这个角度来看，成本、复杂性、解释性需求、实时用例的快速响应时间以及对可能出现的寡头垄断外部预训练模型提供商的锁定威胁等因素，都似乎指向一个未来，在这个未来中，像基于去噪的表格数据插补这样的务实创新有可能与生成式 AI 和基础模型有意义地共存，而不是被它们取代。

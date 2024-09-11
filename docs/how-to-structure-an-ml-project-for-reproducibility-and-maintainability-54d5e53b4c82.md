@@ -1,14 +1,14 @@
 # 如何构建一个便于重现和维护的机器学习项目
 
-> 原文：[https://towardsdatascience.com/how-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82?source=collection_archive---------0-----------------------#2023-01-15](https://towardsdatascience.com/how-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82?source=collection_archive---------0-----------------------#2023-01-15)
+> 原文：[`towardsdatascience.com/how-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82?source=collection_archive---------0-----------------------#2023-01-15`](https://towardsdatascience.com/how-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82?source=collection_archive---------0-----------------------#2023-01-15)
 
 ## 使用此模板启动你的下一个机器学习项目
 
-[](https://khuyentran1476.medium.com/?source=post_page-----54d5e53b4c82--------------------------------)[![Khuyen Tran](../Images/98aa66025ad29b618e875c75f1c400a5.png)](https://khuyentran1476.medium.com/?source=post_page-----54d5e53b4c82--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54d5e53b4c82--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54d5e53b4c82--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----54d5e53b4c82--------------------------------)
+[](https://khuyentran1476.medium.com/?source=post_page-----54d5e53b4c82--------------------------------)![Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----54d5e53b4c82--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54d5e53b4c82--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----54d5e53b4c82--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----54d5e53b4c82--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----54d5e53b4c82---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54d5e53b4c82--------------------------------) ·7分钟阅读·2023年1月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F54d5e53b4c82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82&user=Khuyen+Tran&userId=84a02493194a&source=-----54d5e53b4c82---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----54d5e53b4c82---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54d5e53b4c82--------------------------------) ·7 分钟阅读·2023 年 1 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F54d5e53b4c82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-structure-an-ml-project-for-reproducibility-and-maintainability-54d5e53b4c82&user=Khuyen+Tran&userId=84a02493194a&source=-----54d5e53b4c82---------------------clap_footer-----------)
 
 --
 
@@ -18,13 +18,13 @@
 
 在构建机器学习项目时，开始阶段通常是最具挑战性的部分。你应该如何组织你的代码库？你应该遵循哪些标准？你的团队成员能否重现你实验的结果？
 
-![](../Images/6b3ccaefb22d7a875a1dc960bf0ae24a.png)
+![](img/6b3ccaefb22d7a875a1dc960bf0ae24a.png)
 
 作者提供的图片
 
 与其试图寻找一个理想的代码库结构，不如有一个模板来帮助你开始工作岂不是更好？
 
-![](../Images/794dd15867eacbcbc1c70cfec85b7d7c.png)
+![](img/794dd15867eacbcbc1c70cfec85b7d7c.png)
 
 作者提供的图片
 

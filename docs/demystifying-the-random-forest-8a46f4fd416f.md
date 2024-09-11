@@ -1,18 +1,18 @@
 # 解密随机森林
 
-> 原文：[https://towardsdatascience.com/demystifying-the-random-forest-8a46f4fd416f?source=collection_archive---------7-----------------------#2023-02-07](https://towardsdatascience.com/demystifying-the-random-forest-8a46f4fd416f?source=collection_archive---------7-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/demystifying-the-random-forest-8a46f4fd416f?source=collection_archive---------7-----------------------#2023-02-07`](https://towardsdatascience.com/demystifying-the-random-forest-8a46f4fd416f?source=collection_archive---------7-----------------------#2023-02-07)
 
 ## 解构并理解这个美妙的算法
 
-[](https://medium.com/@siddarth.ramesh?source=post_page-----8a46f4fd416f--------------------------------)[![Siddarth Ramesh](../Images/645d2850a35ef0175a2fb1eeee9472d5.png)](https://medium.com/@siddarth.ramesh?source=post_page-----8a46f4fd416f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a46f4fd416f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8a46f4fd416f--------------------------------) [Siddarth Ramesh](https://medium.com/@siddarth.ramesh?source=post_page-----8a46f4fd416f--------------------------------)
+[](https://medium.com/@siddarth.ramesh?source=post_page-----8a46f4fd416f--------------------------------)![Siddarth Ramesh](https://medium.com/@siddarth.ramesh?source=post_page-----8a46f4fd416f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a46f4fd416f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a46f4fd416f--------------------------------) [Siddarth Ramesh](https://medium.com/@siddarth.ramesh?source=post_page-----8a46f4fd416f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf4e627f4995&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-the-random-forest-8a46f4fd416f&user=Siddarth+Ramesh&userId=cf4e627f4995&source=post_page-cf4e627f4995----8a46f4fd416f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a46f4fd416f--------------------------------) ·15分钟阅读·2023年2月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a46f4fd416f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-the-random-forest-8a46f4fd416f&user=Siddarth+Ramesh&userId=cf4e627f4995&source=-----8a46f4fd416f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcf4e627f4995&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-the-random-forest-8a46f4fd416f&user=Siddarth+Ramesh&userId=cf4e627f4995&source=post_page-cf4e627f4995----8a46f4fd416f---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a46f4fd416f--------------------------------) ·15 分钟阅读·2023 年 2 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8a46f4fd416f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-the-random-forest-8a46f4fd416f&user=Siddarth+Ramesh&userId=cf4e627f4995&source=-----8a46f4fd416f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8a46f4fd416f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-the-random-forest-8a46f4fd416f&source=-----8a46f4fd416f---------------------bookmark_footer-----------)![](../Images/bd5376dded404c13d44399eb9e2aa93f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8a46f4fd416f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-the-random-forest-8a46f4fd416f&source=-----8a46f4fd416f---------------------bookmark_footer-----------)![](img/bd5376dded404c13d44399eb9e2aa93f.png)
 
 照片由[Inggrid Koe](https://unsplash.com/@inggridkoe?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，发布在[Unsplash](https://unsplash.com/photos/kbKEuU-YEIw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -32,9 +32,9 @@
 
 ## 运行随机森林
 
-我们先来调用一个经典的随机森林模式。这是最高水平的，在python训练随机森林的时候，很多人都会这样做。
+我们先来调用一个经典的随机森林模式。这是最高水平的，在 python 训练随机森林的时候，很多人都会这样做。
 
-![](../Images/c6e2edf8aedaeb3086ca8411e9f80d70.png)
+![](img/c6e2edf8aedaeb3086ca8411e9f80d70.png)
 
 模拟数据。图片由作者提供
 
@@ -54,7 +54,7 @@ print(f"accuracy: {simple_rf_model.score(X_test, y_test)}")
 # accuracy: 0.93
 ```
 
-运行随机森林分类器非常简单。我只定义了`n_estimators`参数，并将`random_state`设置为0。我可以告诉你，从个人经验来看，很多人只会看到那个`.93`，感到高兴，并在实际应用中部署它。但我们今天不会这样做。
+运行随机森林分类器非常简单。我只定义了`n_estimators`参数，并将`random_state`设置为 0。我可以告诉你，从个人经验来看，很多人只会看到那个`.93`，感到高兴，并在实际应用中部署它。但我们今天不会这样做。
 
 让我们重新审视一下这条无害的线
 
@@ -72,7 +72,7 @@ simple_rf_model = RandomForestClassifier(n_estimators=100, random_state=0)
 
 此时，让我们更具体地定义一下随机森林。**随机森林**是一个由许多**决策树**共识的**集成**模型。这个定义可能还不完整，但我们会再回来讨论。
 
-![](../Images/91cfa0ae2df0113cc4757ec75d3e0fc8.png)
+![](img/91cfa0ae2df0113cc4757ec75d3e0fc8.png)
 
 许多决策树相互交流并达成共识。图片由作者提供
 
@@ -95,7 +95,7 @@ final_prediction = np.array([np.round((predictions_1[i] + predictions_2[i] + pre
 print(final_prediction)
 ```
 
-在上面的例子中，我们在`X_train`上训练了3棵决策树，这意味着`n_estimators = 3`。在训练了这3棵树之后，我们对同样的测试集上的每棵树进行预测，最后取出其中2棵树的预测结果。
+在上面的例子中，我们在`X_train`上训练了 3 棵决策树，这意味着`n_estimators = 3`。在训练了这 3 棵树之后，我们对同样的测试集上的每棵树进行预测，最后取出其中 2 棵树的预测结果。
 
 这种解释有点有道理，但这看起来不完全正确。如果所有的决策树都是在同样的数据上训练的，它们不会大部分达成相同的结论吗，从而抵消了集成的优势？
 
@@ -109,7 +109,7 @@ print(final_prediction)
 
 1.  你可以利用一种叫做**带放回抽样**的技术。带放回抽样意味着从总体中抽取的样本在下一个样本抽取之前会被放回总体。
 
-为了说明带放回抽样的概念，假设我有5颗珠子，颜色有3种，因此我的总体如下：
+为了说明带放回抽样的概念，假设我有 5 颗珠子，颜色有 3 种，因此我的总体如下：
 
 `blue, blue, red, green, red`
 
@@ -123,7 +123,7 @@ print(final_prediction)
 
 `red, red`
 
-在随机森林中，默认情况下是构建约2/3原始总体大小的样本。如果我的原始训练数据是1000行，那么我输入到树中的训练数据样本可能会有大约670行。也就是说，尝试不同的抽样比例将是构建随机森林时调节的一个很好的参数。
+在随机森林中，默认情况下是构建约 2/3 原始总体大小的样本。如果我的原始训练数据是 1000 行，那么我输入到树中的训练数据样本可能会有大约 670 行。也就是说，尝试不同的抽样比例将是构建随机森林时调节的一个很好的参数。
 
 以下代码，与之前的代码片段不同，更接近于`n_estimators = 3`的随机森林。
 
@@ -161,19 +161,19 @@ preds.columns = ["tree1", "tree2", "tree3", "final", "label"]
 preds
 ```
 
-![](../Images/30d1e6ff15b476f306ff621175bf2f9f.png)
+![](img/30d1e6ff15b476f306ff621175bf2f9f.png)
 
 我们进行带放回抽样，将这些样本输入到树中，生成结果，并达成共识。图片由作者提供。
 
 ## Bagging 分类器
 
-![](../Images/3ef504d907cfa554a6767b1917c186f7.png)
+![](img/3ef504d907cfa554a6767b1917c186f7.png)
 
-之前的架构实际上是一个Bagging分类器。图片由作者提供。
+之前的架构实际上是一个 Bagging 分类器。图片由作者提供。
 
-我们将在此引入一种*新的*算法，称为**Bootstrap Aggregation**，也称为Bagging，但请放心，这将与随机森林相关联。我们引入这个新概念的原因是因为正如我们在下图中看到的，直到现在我们所做的一切实际上就是`BaggingClassifier`所做的！
+我们将在此引入一种*新的*算法，称为**Bootstrap Aggregation**，也称为 Bagging，但请放心，这将与随机森林相关联。我们引入这个新概念的原因是因为正如我们在下图中看到的，直到现在我们所做的一切实际上就是`BaggingClassifier`所做的！
 
-在下面的代码中，`BaggingClassifier`有一个叫做`bootstrap`的参数，它实际上执行了我们刚刚手动完成的带放回抽样步骤。这个参数在`sklearn`的随机森林实现中也存在。如果bootstrapping为false，我们将使用整个总体来训练每个分类器。
+在下面的代码中，`BaggingClassifier`有一个叫做`bootstrap`的参数，它实际上执行了我们刚刚手动完成的带放回抽样步骤。这个参数在`sklearn`的随机森林实现中也存在。如果 bootstrapping 为 false，我们将使用整个总体来训练每个分类器。
 
 ```py
 import numpy as np
@@ -195,7 +195,7 @@ y_pred = bag_clf.predict(X_test)
 pd.DataFrame([y_pred, y_test]).T
 ```
 
-`BaggingClassifiers`非常棒，因为你可以将它们与非决策树的估计器一起使用！你可以插入许多算法，Bagging将其转化为一个集成解决方案。随机森林算法实际上*扩展*了Bagging算法（如果`bootstrapping = true`），因为它部分利用了Bagging来形成不相关的决策树。
+`BaggingClassifiers`非常棒，因为你可以将它们与非决策树的估计器一起使用！你可以插入许多算法，Bagging 将其转化为一个集成解决方案。随机森林算法实际上*扩展*了 Bagging 算法（如果`bootstrapping = true`），因为它部分利用了 Bagging 来形成不相关的决策树。
 
 但是，即使`bootstrapping = false`，随机森林也会进一步*确保*树之间没有相关性——特征抽样。
 
@@ -205,11 +205,11 @@ pd.DataFrame([y_pred, y_test]).T
 
 采样特征的方法有很多种。你可以指定一个固定的特征最大数量进行采样，取特征总数的平方根，或者尝试使用对数。这些方法各有利弊，具体取决于你的数据和使用场景。
 
-![](../Images/ebba61e751cb491987d4eed373570aba.png)
+![](img/ebba61e751cb491987d4eed373570aba.png)
 
 Bagging 扩展了特征采样。图片由作者提供。
 
-下面的代码片段使用`sqrt`技术采样列，采样行，训练3棵决策树，并使用多数规则进行预测。我们首先进行有放回采样，然后采样列，训练我们的单独决策树，让树在测试数据上进行预测，然后采用多数规则的共识。
+下面的代码片段使用`sqrt`技术采样列，采样行，训练 3 棵决策树，并使用多数规则进行预测。我们首先进行有放回采样，然后采样列，训练我们的单独决策树，让树在测试数据上进行预测，然后采用多数规则的共识。
 
 ```py
 import numpy as np
@@ -254,7 +254,7 @@ preds.columns = ["tree1", "tree2", "tree3", "final", "label"]
 
 当我运行这段代码时，我发现我的决策树开始预测不同的结果，这表明我们已经去除了树之间的许多相关性。
 
-![](../Images/b87df62d480d87d06d536fc11c9cdff3.png)
+![](img/b87df62d480d87d06d536fc11c9cdff3.png)
 
 我的树不再总是彼此一致！图片由作者提供。
 
@@ -264,7 +264,7 @@ preds.columns = ["tree1", "tree2", "tree3", "final", "label"]
 
 决策树，顾名思义，看起来像一棵倒立的树。从高层次来看，该算法试图通过提问将数据分裂成不同的节点。下图展示了决策树的样子。
 
-![](../Images/691a0400401b95fbc6a92344d3266917.png)
+![](img/691a0400401b95fbc6a92344d3266917.png)
 
 示例树。图片由作者提供
 
@@ -278,11 +278,11 @@ preds.columns = ["tree1", "tree2", "tree3", "final", "label"]
 
 决策树试图通过将它们提问的节点分裂成更小、更均匀的节点来最小化熵。熵的实际公式是
 
-![](../Images/fce8f09b156d8ccd46d1559dcf681163.png)
+![](img/fce8f09b156d8ccd46d1559dcf681163.png)
 
 为了分解熵，我们回到弹珠的例子：
 
-假设我有10个弹珠，其中5个是蓝色的，5个是绿色的。我数据集的熵为1.0，计算熵的代码如下：
+假设我有 10 个弹珠，其中 5 个是蓝色的，5 个是绿色的。我数据集的熵为 1.0，计算熵的代码如下：
 
 ```py
 from collections import Counter
@@ -303,7 +303,7 @@ def calculate_entropy(data, len_labels):
 calculate_entropy(labels, num_labels)
 ```
 
-如果`data`完全被绿色弹珠填充，那么熵将为0，而熵将随着接近50%分裂而增加。
+如果`data`完全被绿色弹珠填充，那么熵将为 0，而熵将随着接近 50%分裂而增加。
 
 每次我们减少熵时，我们就获得了一些关于数据集的信息，因为我们减少了随机性。**信息增益**告诉我们哪个特征相对最好地减少了熵。计算信息增益的方法是：
 
@@ -311,7 +311,7 @@ calculate_entropy(labels, num_labels)
 
 在这种情况下，父节点是原始节点，子节点是分裂节点后的结果。
 
-![](../Images/9cdb3546196da9296c15c4dbe3cc344b.png)
+![](img/9cdb3546196da9296c15c4dbe3cc344b.png)
 
 分裂一个节点。图片来源：作者
 
@@ -360,7 +360,7 @@ def information_gain(left_labels, right_labels, parent_entropy):
 
 +   选择信息增益最佳的特征，即导致熵减少最多的特征
 
-+   继续生长，直到满足我们的停止条件——在这种情况下是我们的最大深度限制和熵为0的节点。
++   继续生长，直到满足我们的停止条件——在这种情况下是我们的最大深度限制和熵为 0 的节点。
 
 ```py
 import pandas as pd
@@ -427,13 +427,13 @@ print(tree)
 
 在上一节中，我们讨论了单棵决策树如何做出决策。下面的图像将这些概念与我们之前讨论的关于随机森林采样的概念联系起来。
 
-![](../Images/718efa8483662a21fc33d3bef4c6c0fc.png)
+![](img/718efa8483662a21fc33d3bef4c6c0fc.png)
 
 随机森林架构与解构决策树。图像来源：作者
 
 由于决策树实际上检查了每个特征的信息增益，你可以在随机森林中计算**特征重要性**。特征重要性的计算通常被视为*所有*树中杂质的平均减少。随机森林不像逻辑回归那样易于解释，因此特征重要性为我们提供了有关树如何生长的一些洞察。
 
-最后，你可以通过几种方式来测试训练好的随机森林。你可以采用经典的机器学习方法，使用测试集来衡量模型对未见数据的泛化能力。然而，这通常需要额外的计算。随机森林具有一种独特的属性，称为**袋外误差**或**OOB误差**。还记得我们如何只对数据集的一部分进行采样来构建每棵树吗？实际上，你可以使用剩余的样本在*训练时*进行验证，这仅仅因为算法的集成性质才成为可能。这意味着我们可以一次性了解模型对未见数据的泛化能力。
+最后，你可以通过几种方式来测试训练好的随机森林。你可以采用经典的机器学习方法，使用测试集来衡量模型对未见数据的泛化能力。然而，这通常需要额外的计算。随机森林具有一种独特的属性，称为**袋外误差**或**OOB 误差**。还记得我们如何只对数据集的一部分进行采样来构建每棵树吗？实际上，你可以使用剩余的样本在*训练时*进行验证，这仅仅因为算法的集成性质才成为可能。这意味着我们可以一次性了解模型对未见数据的泛化能力。
 
 ## 结论和最终思考
 

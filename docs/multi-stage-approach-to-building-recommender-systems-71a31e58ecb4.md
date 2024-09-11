@@ -1,18 +1,18 @@
 # 多阶段推荐系统构建方法
 
-> 原文：[https://towardsdatascience.com/multi-stage-approach-to-building-recommender-systems-71a31e58ecb4?source=collection_archive---------4-----------------------#2023-01-01](https://towardsdatascience.com/multi-stage-approach-to-building-recommender-systems-71a31e58ecb4?source=collection_archive---------4-----------------------#2023-01-01)
+> 原文：[`towardsdatascience.com/multi-stage-approach-to-building-recommender-systems-71a31e58ecb4?source=collection_archive---------4-----------------------#2023-01-01`](https://towardsdatascience.com/multi-stage-approach-to-building-recommender-systems-71a31e58ecb4?source=collection_archive---------4-----------------------#2023-01-01)
 
 ## 发现构建推荐系统的最先进方法
 
-[](https://natworkeffects.medium.com/?source=post_page-----71a31e58ecb4--------------------------------)[![Nathan Cheng](../Images/d7477ae4d208a039ab75e402e1abe3ce.png)](https://natworkeffects.medium.com/?source=post_page-----71a31e58ecb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----71a31e58ecb4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----71a31e58ecb4--------------------------------) [Nathan Cheng](https://natworkeffects.medium.com/?source=post_page-----71a31e58ecb4--------------------------------)
+[](https://natworkeffects.medium.com/?source=post_page-----71a31e58ecb4--------------------------------)![Nathan Cheng](https://natworkeffects.medium.com/?source=post_page-----71a31e58ecb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----71a31e58ecb4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----71a31e58ecb4--------------------------------) [Nathan Cheng](https://natworkeffects.medium.com/?source=post_page-----71a31e58ecb4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9dbd159f0e0a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-stage-approach-to-building-recommender-systems-71a31e58ecb4&user=Nathan+Cheng&userId=9dbd159f0e0a&source=post_page-9dbd159f0e0a----71a31e58ecb4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----71a31e58ecb4--------------------------------) · 9分钟阅读 · 2023年1月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F71a31e58ecb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-stage-approach-to-building-recommender-systems-71a31e58ecb4&user=Nathan+Cheng&userId=9dbd159f0e0a&source=-----71a31e58ecb4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9dbd159f0e0a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-stage-approach-to-building-recommender-systems-71a31e58ecb4&user=Nathan+Cheng&userId=9dbd159f0e0a&source=post_page-9dbd159f0e0a----71a31e58ecb4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----71a31e58ecb4--------------------------------) · 9 分钟阅读 · 2023 年 1 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F71a31e58ecb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-stage-approach-to-building-recommender-systems-71a31e58ecb4&user=Nathan+Cheng&userId=9dbd159f0e0a&source=-----71a31e58ecb4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F71a31e58ecb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-stage-approach-to-building-recommender-systems-71a31e58ecb4&source=-----71a31e58ecb4---------------------bookmark_footer-----------)![](../Images/156c54eb9b049f036faff64f3704ec2a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F71a31e58ecb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-stage-approach-to-building-recommender-systems-71a31e58ecb4&source=-----71a31e58ecb4---------------------bookmark_footer-----------)![](img/156c54eb9b049f036faff64f3704ec2a.png)
 
 多阶段推荐系统。图像来源 [作者](https://natworkeffects.medium.com)。
 
@@ -102,13 +102,13 @@
 
 ## 构建和设计推荐系统
 
-在现实世界中，IT系统通常是多个服务共同工作的集合。构建推荐系统是一种分层、多阶段的过程，每个阶段使用适当类型的模型。
+在现实世界中，IT 系统通常是多个服务共同工作的集合。构建推荐系统是一种分层、多阶段的过程，每个阶段使用适当类型的模型。
 
 让我们来看看机器学习工程师在构建推荐系统时所经历的阶段。
 
 # # 3 推荐系统设计
 
-![](../Images/fdd8d505e7545bf896a2bf91e60c32e7.png)
+![](img/fdd8d505e7545bf896a2bf91e60c32e7.png)
 
 多阶段推荐系统。图片由 [作者](https://natworkeffects.medium.com) 提供。
 
@@ -144,9 +144,9 @@
 
 1.  候选生成模型的输出旨在建立项或用户之间的相似性。这个想法在大多数推荐系统产品中是基础的。例如**“类似于…”**或**“与你相似的用户也喜欢…”**。
 
-1.  高效服务模型结果。使用近似最近邻（ANN）引擎来服务候选生成模型也很高效。有关ANN算法的更多信息，请参阅视频：[Approximate Nearest Neighbors: Data Science Concepts](https://www.youtube.com/watch?v=DRbjpuqOsjk)。**与评分阶段对比——在评分模型训练过程中，你还需计算所有工程特征，API才能返回模型结果。**
+1.  高效服务模型结果。使用近似最近邻（ANN）引擎来服务候选生成模型也很高效。有关 ANN 算法的更多信息，请参阅视频：[Approximate Nearest Neighbors: Data Science Concepts](https://www.youtube.com/watch?v=DRbjpuqOsjk)。**与评分阶段对比——在评分模型训练过程中，你还需计算所有工程特征，API 才能返回模型结果。**
 
-如前所述，服务这些嵌入是通过暴露ANN引擎来完成的。市场上有许多选择，包括开源和公共云，以下是一些选项：
+如前所述，服务这些嵌入是通过暴露 ANN 引擎来完成的。市场上有许多选择，包括开源和公共云，以下是一些选项：
 
 +   开源：[Facebook faiss library](https://github.com/facebookresearch/faiss)
 
@@ -154,7 +154,7 @@
 
 +   GCP：[Vertex AI Matching Engine](https://cloud.google.com/vertex-ai/docs/matching-engine/ann-service-overview)
 
-只需使用这些服务中的一个，选择你的距离相似性度量，下游消费者可以调用API以检索对象嵌入。
+只需使用这些服务中的一个，选择你的距离相似性度量，下游消费者可以调用 API 以检索对象嵌入。
 
 另一种方法是将对象嵌入写入数据库，下游系统查询数据库以检索这些嵌入。这本质上就是[Spotify 使用 Cloud Bigtable](https://www.youtube.com/watch?v=807uHC0Ia10)所做的。
 
@@ -162,7 +162,7 @@
 
 评分在一些推荐系统文献中也被称为**排名**阶段。它是在候选生成之后发生的阶段。下图展示了这一过程的可视化表示：
 
-![](../Images/ea2a35637c320970aa3aaed4e8199976.png)
+![](img/ea2a35637c320970aa3aaed4e8199976.png)
 
 多候选生成模型。图片由[作者](https://natworkeffects.medium.com)提供。
 

@@ -1,14 +1,14 @@
 # 我的第一周的#30DayMapChallange
 
-> 原文：[https://towardsdatascience.com/my-first-week-of-the-30daymapchallange-1bef0646c88e?source=collection_archive---------12-----------------------#2023-11-07](https://towardsdatascience.com/my-first-week-of-the-30daymapchallange-1bef0646c88e?source=collection_archive---------12-----------------------#2023-11-07)
+> 原文：[`towardsdatascience.com/my-first-week-of-the-30daymapchallange-1bef0646c88e?source=collection_archive---------12-----------------------#2023-11-07`](https://towardsdatascience.com/my-first-week-of-the-30daymapchallange-1bef0646c88e?source=collection_archive---------12-----------------------#2023-11-07)
 
-![](../Images/d9f4e2b84a00fc0fbb83821ed61c4183.png)
+![](img/d9f4e2b84a00fc0fbb83821ed61c4183.png)
 
 作者提供的图片。
 
-## 我对第一周的#30DayMapChallange的个人见解，这是一个每天在11月设计主题地图的社交挑战。
+## 我对第一周的#30DayMapChallange 的个人见解，这是一个每天在 11 月设计主题地图的社交挑战。
 
-[](https://medium.com/@janosovm?source=post_page-----1bef0646c88e--------------------------------)[![Milan Janosov](../Images/77b62460041f66ec4585a81baef81a03.png)](https://medium.com/@janosovm?source=post_page-----1bef0646c88e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1bef0646c88e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1bef0646c88e--------------------------------) [Milan Janosov](https://medium.com/@janosovm?source=post_page-----1bef0646c88e--------------------------------)
+[](https://medium.com/@janosovm?source=post_page-----1bef0646c88e--------------------------------)![Milan Janosov](https://medium.com/@janosovm?source=post_page-----1bef0646c88e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1bef0646c88e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1bef0646c88e--------------------------------) [Milan Janosov](https://medium.com/@janosovm?source=post_page-----1bef0646c88e--------------------------------)
 
 ·
 
@@ -18,7 +18,7 @@
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1bef0646c88e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-first-week-of-the-30daymapchallange-1bef0646c88e&source=-----1bef0646c88e---------------------bookmark_footer-----------)
 
-自2019年以来，地理信息系统（GIS）和空间分析社区每年11月都非常忙碌 —— 这要归功于一个有趣的挑战，叫做[#30DayMapChallange](https://30daymapchallenge.com)。每年，这个挑战都有一个主题时间表，提议一个应该成为当天地图可视化的主要指导原则的主题。虽然这些问题确实意味着一种约束，但它们也帮助参与者找到共同的兴趣，分享数据源，并在视觉和技术上表达个人风格。
+自 2019 年以来，地理信息系统（GIS）和空间分析社区每年 11 月都非常忙碌 —— 这要归功于一个有趣的挑战，叫做[#30DayMapChallange](https://30daymapchallenge.com)。每年，这个挑战都有一个主题时间表，提议一个应该成为当天地图可视化的主要指导原则的主题。虽然这些问题确实意味着一种约束，但它们也帮助参与者找到共同的兴趣，分享数据源，并在视觉和技术上表达个人风格。
 
 在这里，我想简要回顾一下这个挑战的第一周，详细介绍并展示我创建的不同地图——通常是在 Python 中创建的。
 

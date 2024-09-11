@@ -1,32 +1,32 @@
 # 设计运筹学解决方案：一个用户友好的 Streamlit 路由应用
 
-> 原文：[https://towardsdatascience.com/designing-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d?source=collection_archive---------2-----------------------#2023-09-30](https://towardsdatascience.com/designing-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d?source=collection_archive---------2-----------------------#2023-09-30)
+> 原文：[`towardsdatascience.com/designing-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d?source=collection_archive---------2-----------------------#2023-09-30`](https://towardsdatascience.com/designing-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d?source=collection_archive---------2-----------------------#2023-09-30)
 
 ## 从数学模型到 Python 软件工程
 
-[](https://medium.com/@bruscalia12?source=post_page-----17212553861d--------------------------------)[![Bruno Scalia C. F. Leite](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----17212553861d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17212553861d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----17212553861d--------------------------------) [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----17212553861d--------------------------------)
+[](https://medium.com/@bruscalia12?source=post_page-----17212553861d--------------------------------)![Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----17212553861d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17212553861d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----17212553861d--------------------------------) [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----17212553861d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----17212553861d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17212553861d--------------------------------) · 12分钟阅读 · 2023年9月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17212553861d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----17212553861d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----17212553861d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17212553861d--------------------------------) · 12 分钟阅读 · 2023 年 9 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17212553861d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----17212553861d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F17212553861d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d&source=-----17212553861d---------------------bookmark_footer-----------)![](../Images/6f8bc76917461608408820ef00925fab.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F17212553861d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesigning-operations-research-solutions-a-user-friendly-routing-application-with-streamlit-17212553861d&source=-----17212553861d---------------------bookmark_footer-----------)![](img/6f8bc76917461608408820ef00925fab.png)
 
 照片由 [Caspar Camille Rubin](https://unsplash.com/@casparrubin?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在运筹学和数据科学中，弥合理论与应用之间的差距至关重要。虽然理论基础形成了优化解决方案的核心，因为它们提供了解决复杂问题的方法，但我们也应关注如何使这些概念变得可访问并且可用于实际应用。
 
-旅行商问题（TSP）无疑是组合优化中研究最广泛的问题（Rego et al., 2011）。它的描述很简单（至少口头上），并且可以用来展示一些现代路由API的可能组件。因此，我实在无法想到一个更好的替代方案来在这个故事中使用。
+旅行商问题（TSP）无疑是组合优化中研究最广泛的问题（Rego et al., 2011）。它的描述很简单（至少口头上），并且可以用来展示一些现代路由 API 的可能组件。因此，我实在无法想到一个更好的替代方案来在这个故事中使用。
 
-在本教程中，你将学习如何使用Python库*Streamlit*构建一个基于用户提供输入数据来解决TSP的Web应用程序。由于我们关注实际应用，因此解决方案不仅限于欧几里得距离。它应该能够使用坐标提取实际的道路行驶距离，并将这些距离纳入优化过程。为此，将使用OpenStreetMap API。
+在本教程中，你将学习如何使用 Python 库*Streamlit*构建一个基于用户提供输入数据来解决 TSP 的 Web 应用程序。由于我们关注实际应用，因此解决方案不仅限于欧几里得距离。它应该能够使用坐标提取实际的道路行驶距离，并将这些距离纳入优化过程。为此，将使用 OpenStreetMap API。
 
-如果你对深入了解数值优化的理论方面感兴趣，你可能会想查看我关于[*线性规划*](/linear-programming-theory-and-applications-c67600591612)和[*车辆路径问题*](https://medium.com/towards-data-science/the-vehicle-routing-problem-exact-and-heuristic-solutions-c411c0f4d734)（这是TSP的一个推广）的文章。
+如果你对深入了解数值优化的理论方面感兴趣，你可能会想查看我关于*线性规划*和[*车辆路径问题*](https://medium.com/towards-data-science/the-vehicle-routing-problem-exact-and-heuristic-solutions-c411c0f4d734)（这是 TSP 的一个推广）的文章。
 
 你准备好动手了吗？来看看我们的最终结果吧……
 
-![](../Images/32127326f034bc751079e6edc3782952.png)
+![](img/32127326f034bc751079e6edc3782952.png)
 
 最终应用程序的屏幕截图。（动画由作者制作）。
 
@@ -34,13 +34,13 @@
 
 # 旅行商问题
 
-TSP的目标是找到连接*N*个点的最短路径。随着考虑的点数增加，由于问题的组合性质，找到一个最佳或近似最佳的解决方案可能变得非常具有挑战性。
+TSP 的目标是找到连接*N*个点的最短路径。随着考虑的点数增加，由于问题的组合性质，找到一个最佳或近似最佳的解决方案可能变得非常具有挑战性。
 
-![](../Images/4c59efcdeda1e2ef5f4f28f99e63ac43.png)
+![](img/4c59efcdeda1e2ef5f4f28f99e63ac43.png)
 
-使用自定义启发式算法获得的1000个地点的TSP优质解决方案。（图片由作者提供）。
+使用自定义启发式算法获得的 1000 个地点的 TSP 优质解决方案。（图片由作者提供）。
 
-从精确方法到启发式和元启发式，解决TSP的技术必须考虑元素之间的成对距离以获得解决方案。虽然在这篇文章中，我不会深入讨论解决方法的细节，但可以考虑一个通用函数来解决TSP，其签名如下：
+从精确方法到启发式和元启发式，解决 TSP 的技术必须考虑元素之间的成对距离以获得解决方案。虽然在这篇文章中，我不会深入讨论解决方法的细节，但可以考虑一个通用函数来解决 TSP，其签名如下：
 
 ```py
 solve_tsp(distances: np.ndarray) -> List[int]
@@ -191,7 +191,7 @@ if solution is not None:
 
 # 基本配置
 
-如前所述，我们可以在`.streamlit`文件夹中的`config.toml`文件中定义一般的Streamlit设置。在TSP示例中，我使用它来定义颜色和字体。这是一种浅紫色布局，但你可以尝试不同的颜色。只需确保在[Hex颜色代码](https://htmlcolorcodes.com/)中定义它们。
+如前所述，我们可以在`.streamlit`文件夹中的`config.toml`文件中定义一般的 Streamlit 设置。在 TSP 示例中，我使用它来定义颜色和字体。这是一种浅紫色布局，但你可以尝试不同的颜色。只需确保在[Hex 颜色代码](https://htmlcolorcodes.com/)中定义它们。
 
 ```py
 [theme]
@@ -203,9 +203,9 @@ font = "sans serif"
 base = "dark"
 ```
 
-让我们开始用Python导入填充`app.py`的内容。将使用*os*包来管理我们操作系统中的文件路径；*BytesIO*将用于模拟一个保存在内存中的可下载输出文件，而不是磁盘；*json*将用于序列化我们的输出解决方案；*List*只是一个类型提示。
+让我们开始用 Python 导入填充`app.py`的内容。将使用*os*包来管理我们操作系统中的文件路径；*BytesIO*将用于模拟一个保存在内存中的可下载输出文件，而不是磁盘；*json*将用于序列化我们的输出解决方案；*List*只是一个类型提示。
 
-处理数据框时，将使用*pandas*；求解器*Highs*从*pyomo*导入以解决我们的任务（如果是MIP）；*streamlit*是界面的基础；*streamlit_folium*将用于将*folium*地图插入到应用程序中。还导入了在内部包中定义的附加自定义函数。
+处理数据框时，将使用*pandas*；求解器*Highs*从*pyomo*导入以解决我们的任务（如果是 MIP）；*streamlit*是界面的基础；*streamlit_folium*将用于将*folium*地图插入到应用程序中。还导入了在内部包中定义的附加自定义函数。
 
 ```py
 import os
@@ -222,7 +222,7 @@ from optimize.tsp import get_distance_xy, build_mip, solve_mip, TSP, plot_tour, 
     plot_map, get_coord_path
 ```
 
-`session_state`属性将存储当前解决方案的*tour*、给定输入文件的*pandas*数据框、该解决方案的值以及路线坐标路径（从OpenStreetMap获取）。
+`session_state`属性将存储当前解决方案的*tour*、给定输入文件的*pandas*数据框、该解决方案的值以及路线坐标路径（从 OpenStreetMap 获取）。
 
 ```py
 # Create current solution as session_state
@@ -241,7 +241,7 @@ if "route_path" not in st.session_state:
 
 使用的一些实用函数包括：
 
-+   driving_distances: 从OpenStreetMap获取距离矩阵，提供一个数据框（在此处缓存结果非常重要）。
++   driving_distances: 从 OpenStreetMap 获取距离矩阵，提供一个数据框（在此处缓存结果非常重要）。
 
 +   upload_callback: 在加载新输入文件时重置`session_state`属性。
 
@@ -266,7 +266,7 @@ def update_path(tour: List[int], dataframe: pd.DataFrame):
     st.session_state.route_path = path
 ```
 
-然后让我们配置页面布局。在以下脚本中，我们为网页包含一个图标和一个标题；然后我们在侧边栏中包含相同的图标，并用Markdown样式写一个介绍。我建议你运行`streamlit run app.py`并检查到目前为止的结果。
+然后让我们配置页面布局。在以下脚本中，我们为网页包含一个图标和一个标题；然后我们在侧边栏中包含相同的图标，并用 Markdown 样式写一个介绍。我建议你运行`streamlit run app.py`并检查到目前为止的结果。
 
 ```py
 # Path to icon
@@ -307,9 +307,9 @@ if display_tutorial:
 
 我还包括了两个求解器选项：
 
-+   ‘MIP’: 使用*pyomo*创建的模型，并用HiGHS求解。
++   ‘MIP’: 使用*pyomo*创建的模型，并用 HiGHS 求解。
 
-+   ‘Heuristic’: 使用Google OR-Tools路由算法，基于构造性 + 局部搜索启发式与多次启动。
++   ‘Heuristic’: 使用 Google OR-Tools 路由算法，基于构造性 + 局部搜索启发式与多次启动。
 
 这些参数以及求解时间限制将通过以下代码放置在应用程序侧边栏中：
 
@@ -331,7 +331,7 @@ file = st.file_uploader("Upload input file", type=["csv"], on_change=upload_call
 if file is not None:
     dataframe = pd.read_csv(file)
     st.session_state.dataframe = dataframe
-    distances = FORMATS[problem_type](dataframe)
+    distances = FORMATSproblem_type
     start_button = st.button("Optimize")
 ```
 
@@ -396,7 +396,7 @@ if sol is not None and tour is not None:
     )
 ```
 
-在这个简单的例子中，我们提供了一个包含旅游过程中访问点序列的*json*文件。如果我们需要生成更复杂的输出，如Excel文件，*BytesIO*可能是一个有趣的替代方案。假设你想创建一个下载按钮，使得一个* pandas* 数据框字典可用。你可以使用如下内容：
+在这个简单的例子中，我们提供了一个包含旅游过程中访问点序列的*json*文件。如果我们需要生成更复杂的输出，如 Excel 文件，*BytesIO*可能是一个有趣的替代方案。假设你想创建一个下载按钮，使得一个* pandas* 数据框字典可用。你可以使用如下内容：
 
 ```py
 buffer = BytesIO()
@@ -412,9 +412,9 @@ st.download_button(
 )
 ```
 
-# 使用OpenStreetMap的详细路线
+# 使用 OpenStreetMap 的详细路线
 
-在应用程序的早期，我们使用了在内部包中定义的`request_matrix`函数，通过OpenStreetMap API和*Python*库*requests*来获取问题的距离矩阵。在这个函数中，后台执行的请求类似于：
+在应用程序的早期，我们使用了在内部包中定义的`request_matrix`函数，通过 OpenStreetMap API 和*Python*库*requests*来获取问题的距离矩阵。在这个函数中，后台执行的请求类似于：
 
 ```py
 f"https://router.project-osrm.org/table/v1/driving/{points}?sources={sources_str}&destinations={dest_str}&annotations={annotations}"
@@ -426,11 +426,11 @@ f"https://router.project-osrm.org/table/v1/driving/{points}?sources={sources_str
 
 +   sources：一个整数列表，对应于来源（from）节点。
 
-+   destinations：类似于sources，但包含目的地（to）节点。
++   destinations：类似于 sources，但包含目的地（to）节点。
 
 +   annotations：‘distance’，‘duration’或‘duration,distance’。
 
-现在我们想获取解决方案路线的详细坐标以可视化结果。为此，我们将使用不同的请求。考虑两个函数，它们接收作为输入的已排序的旅游元素数据框。通过API获取的输出，我们将创建一个包含*latitude*、*longitude*的元组列表，并将其传递给*folium*以创建地图。
+现在我们想获取解决方案路线的详细坐标以可视化结果。为此，我们将使用不同的请求。考虑两个函数，它们接收作为输入的已排序的旅游元素数据框。通过 API 获取的输出，我们将创建一个包含*latitude*、*longitude*的元组列表，并将其传递给*folium*以创建地图。
 
 ```py
 def get_request_points(coordinates: pd.DataFrame) -> List[str]:
@@ -451,7 +451,7 @@ def get_coord_path(coordinates: pd.DataFrame) -> List[Tuple[float, float]]:
     return coords
 ```
 
-# 使用Folium绘制结果
+# 使用 Folium 绘制结果
 
 现在考虑我们有通过函数`get_coord_path`获得的元组列表。我们现在必须使用它来创建我们的*folium*地图。
 
@@ -498,7 +498,7 @@ if tour is not None and dataframe is not None:
 
 使用我在[代码仓库](https://github.com/bruscalia/tsp-app)中提供的输入文件，你可以找到并可视化经过所有美国大陆州首府的最短驾驶路线。
 
-![](../Images/fc16f439b8452dc192af6ad452477f04.png)
+![](img/fc16f439b8452dc192af6ad452477f04.png)
 
 在所有大陆美国州首府之间的最短驾驶路线。（作者提供的图像）。
 
@@ -508,7 +508,7 @@ if tour is not None and dataframe is not None:
 
 对于这个项目，我选择使用 [Google Cloud Run](https://cloud.google.com/run) 部署应用程序，因为我的想法是部署一个容器化应用程序（使用 Docker），并且我对该环境比较熟悉。类似的简洁而有用的教程可以在这个 [其他故事](https://medium.com/google-cloud/deploying-containers-to-cloud-run-in-5mins-b03f1d8d4a64) 中找到。Streamlit 还提供了一个关于这个主题的快速指南 “[如何使用 Docker 部署 Streamlit](https://docs.streamlit.io/knowledge-base/tutorials/deploy/docker)”。
 
-对于 TSP 应用程序，我在 Dockerfile 中解决了 `ortools` 和 `streamlit` 之间的依赖冲突。其他部署方法严重依赖 `requirements.txt` 文件，这可能使得这种特定情况变得更加困难。然而，值得检查这些“[3 种简单的方法来在线部署你的 Streamlit Web 应用](/3-easy-ways-to-deploy-your-streamlit-web-app-online-7c88bb1024b1)”。
+对于 TSP 应用程序，我在 Dockerfile 中解决了 `ortools` 和 `streamlit` 之间的依赖冲突。其他部署方法严重依赖 `requirements.txt` 文件，这可能使得这种特定情况变得更加困难。然而，值得检查这些“3 种简单的方法来在线部署你的 Streamlit Web 应用”。
 
 祝你在部署你自己的运筹学解决方案的旅程中一切顺利！
 
@@ -516,13 +516,13 @@ if tour is not None and dataframe is not None:
 
 与我之前的 Medium 故事不同，这篇文章强调了优化和运筹学作为软件开发中的组成部分，探讨了它们如何与其他工具集成，以创建简单而有影响力的应用程序。对于那些渴望深入了解数值优化机制的人，我推荐探索我关于它的综合列表，你可以在其中找到几个经典问题、建模策略、求解器的使用和理论方面的内容。
 
-![布鲁诺·斯卡利亚 C. F. 莱特](../Images/0c7396e41d4b598be2349eaea982c984.png)
+![布鲁诺·斯卡利亚 C. F. 莱特](img/0c7396e41d4b598be2349eaea982c984.png)
 
 [布鲁诺·斯卡利亚 C. F. 莱特](https://medium.com/@bruscalia12?source=post_page-----17212553861d--------------------------------)
 
 ## 优化时代的故事
 
-[查看列表](https://medium.com/@bruscalia12/list/tales-of-the-optimization-age-c15faf64a6ca?source=post_page-----17212553861d--------------------------------)15 个故事![](../Images/848ca03a7d7366b8a040f720f5d51f5c.png)![](../Images/b79fd62ce301f6295199d983f7633588.png)![](../Images/a6e8cbe0e088f4e7b1edcf27c524b072.png)
+[查看列表](https://medium.com/@bruscalia12/list/tales-of-the-optimization-age-c15faf64a6ca?source=post_page-----17212553861d--------------------------------)15 个故事![](img/848ca03a7d7366b8a040f720f5d51f5c.png)![](img/b79fd62ce301f6295199d983f7633588.png)![](img/a6e8cbe0e088f4e7b1edcf27c524b072.png)
 
 # 结论
 

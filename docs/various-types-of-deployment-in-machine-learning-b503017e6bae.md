@@ -1,32 +1,32 @@
 # 机器学习中的各种部署类型
 
-> 原文：[https://towardsdatascience.com/various-types-of-deployment-in-machine-learning-b503017e6bae?source=collection_archive---------17-----------------------#2023-01-06](https://towardsdatascience.com/various-types-of-deployment-in-machine-learning-b503017e6bae?source=collection_archive---------17-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/various-types-of-deployment-in-machine-learning-b503017e6bae?source=collection_archive---------17-----------------------#2023-01-06`](https://towardsdatascience.com/various-types-of-deployment-in-machine-learning-b503017e6bae?source=collection_archive---------17-----------------------#2023-01-06)
 
 ## 学习各种部署策略，以成功构建端到端的机器学习管道
 
-[](https://suhas-maddali007.medium.com/?source=post_page-----b503017e6bae--------------------------------)[![Suhas Maddali](../Images/933f27eab8ba9ee1f06ed2f24746d788.png)](https://suhas-maddali007.medium.com/?source=post_page-----b503017e6bae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b503017e6bae--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b503017e6bae--------------------------------) [Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----b503017e6bae--------------------------------)
+[](https://suhas-maddali007.medium.com/?source=post_page-----b503017e6bae--------------------------------)![Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----b503017e6bae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b503017e6bae--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b503017e6bae--------------------------------) [Suhas Maddali](https://suhas-maddali007.medium.com/?source=post_page-----b503017e6bae--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvarious-types-of-deployment-in-machine-learning-b503017e6bae&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----b503017e6bae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b503017e6bae--------------------------------) · 6分钟阅读 · 2023年1月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb503017e6bae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvarious-types-of-deployment-in-machine-learning-b503017e6bae&user=Suhas+Maddali&userId=2a74f90399ae&source=-----b503017e6bae---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2a74f90399ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvarious-types-of-deployment-in-machine-learning-b503017e6bae&user=Suhas+Maddali&userId=2a74f90399ae&source=post_page-2a74f90399ae----b503017e6bae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b503017e6bae--------------------------------) · 6 分钟阅读 · 2023 年 1 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb503017e6bae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvarious-types-of-deployment-in-machine-learning-b503017e6bae&user=Suhas+Maddali&userId=2a74f90399ae&source=-----b503017e6bae---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb503017e6bae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvarious-types-of-deployment-in-machine-learning-b503017e6bae&source=-----b503017e6bae---------------------bookmark_footer-----------)![](../Images/5aebe133a5f888bb2c8983f4938f860d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb503017e6bae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvarious-types-of-deployment-in-machine-learning-b503017e6bae&source=-----b503017e6bae---------------------bookmark_footer-----------)![](img/5aebe133a5f888bb2c8983f4938f860d.png)
 
 图片由 [Jiawei Zhao](https://unsplash.com/@jiaweizhao?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-机器学习有很大的**范围**和**需求**，尤其是在最新的自动驾驶行业中，驾驶员通过AI的帮助获得辅助。此外，还有其他行业受益，如制药行业，它们开始使用AI来开发有趣的产品，这些产品本质上用于**预测性医疗**。其他行业还包括电子商务，在这些行业中，最相关的产品被推荐给用户，提高了客户购买产品的倾向。
+机器学习有很大的**范围**和**需求**，尤其是在最新的自动驾驶行业中，驾驶员通过 AI 的帮助获得辅助。此外，还有其他行业受益，如制药行业，它们开始使用 AI 来开发有趣的产品，这些产品本质上用于**预测性医疗**。其他行业还包括电子商务，在这些行业中，最相关的产品被推荐给用户，提高了客户购买产品的倾向。
 
 通常，关于机器学习的能力以及它们如何在大量任务中取得最先进结果以实现高精度的讨论很多。然而，最少讨论的话题是如何在实时中进行**部署**，以及在**生产阶段**进行持续监控和评估。这是许多在线机器学习和深度学习课程中被忽视的关键因素。一个机器学习模型只有在我们能够将其作为**应用**提供给最终用户时才算优秀。
 
 查看所有依赖机器学习的不同类型行业会让很多人**倾向于**这个领域，并使公司取得成功。有大量的在线课程突出机器学习的关键领域，如特征工程、数据准备、模型构建、超参数调整等等。然而，这些课程中缺少一个重要的元素：部署。
 
-![](../Images/d13450975c5a376cc2f89ddba55b47f4.png)
+![](img/d13450975c5a376cc2f89ddba55b47f4.png)
 
 照片由[Mediamodifier](https://unsplash.com/@mediamodifier?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
-在这篇文章中，我们将详细了解各种部署策略，这些策略对于希望通过建立**AI能力**来给团队留下深刻印象的人来说是至关重要的。现在，让我们详细探讨一下机器学习的部署策略。
+在这篇文章中，我们将详细了解各种部署策略，这些策略对于希望通过建立**AI 能力**来给团队留下深刻印象的人来说是至关重要的。现在，让我们详细探讨一下机器学习的部署策略。
 
 ## 批量推理
 
@@ -60,7 +60,7 @@
 
 这是一种在移动设备（如智能手机和平板电脑）上部署机器学习模型的部署方式。这种类型的部署示例包括个人助理、图像识别和语言翻译应用程序。
 
-由于我们在**资源受限**的环境中部署模型，这与在服务器上部署的环境不同，因此必须在最终形成ML产品之前考虑硬件因素。机器学习应用可能非常有用，并且可以具有合理的准确性。然而，如果模型在硬件资源较少的情况下无法生成预测，那么它可能不适合用于移动应用程序。
+由于我们在**资源受限**的环境中部署模型，这与在服务器上部署的环境不同，因此必须在最终形成 ML 产品之前考虑硬件因素。机器学习应用可能非常有用，并且可以具有合理的准确性。然而，如果模型在硬件资源较少的情况下无法生成预测，那么它可能不适合用于移动应用程序。
 
 在尝试实时在移动设备上部署这些产品时，必须考虑**低延迟**要求、偏差-方差权衡以及其他因素。
 
@@ -70,7 +70,7 @@
 
 在尝试使用这种类型的部署时，必须考虑一些要求。重要的考虑因素包括处理能力、内存容量和连接性。这些因素对用于机器学习的物联网设备的**性能**有很大影响。
 
-另一个重要的考虑因素是优化模型以适应边缘部署，并考虑在云端运行模型的可行性。这可能涉及减少需要在边缘设备上使用的ML模型的**复杂性**或大小。因此，部署类型将取决于用于提供机器学习能力的设备类型。
+另一个重要的考虑因素是优化模型以适应边缘部署，并考虑在云端运行模型的可行性。这可能涉及减少需要在边缘设备上使用的 ML 模型的**复杂性**或大小。因此，部署类型将取决于用于提供机器学习能力的设备类型。
 
 ## 结论
 
@@ -82,7 +82,7 @@
 
 **GitHub:** [suhasmaddali (Suhas Maddali ) (github.com)](https://github.com/suhasmaddali)
 
-**YouTube:** [https://www.youtube.com/channel/UCymdyoyJBC_i7QVfbrIs-4Q](https://www.youtube.com/channel/UCymdyoyJBC_i7QVfbrIs-4Q)
+**YouTube:** [`www.youtube.com/channel/UCymdyoyJBC_i7QVfbrIs-4Q`](https://www.youtube.com/channel/UCymdyoyJBC_i7QVfbrIs-4Q)
 
 **LinkedIn:** [(1) Suhas Maddali, Northeastern University, Data Science | LinkedIn](https://www.linkedin.com/in/suhas-maddali/)
 

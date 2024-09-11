@@ -1,16 +1,16 @@
 # 线性代数 3：向量方程
 
-> 原文：[https://towardsdatascience.com/linear-algebra-3-vector-equations-ec1e01ccaa05?source=collection_archive---------1-----------------------#2023-10-14](https://towardsdatascience.com/linear-algebra-3-vector-equations-ec1e01ccaa05?source=collection_archive---------1-----------------------#2023-10-14)
+> 原文：[`towardsdatascience.com/linear-algebra-3-vector-equations-ec1e01ccaa05?source=collection_archive---------1-----------------------#2023-10-14`](https://towardsdatascience.com/linear-algebra-3-vector-equations-ec1e01ccaa05?source=collection_archive---------1-----------------------#2023-10-14)
 
-![](../Images/76fa77c10480bc764a66d49ed3575b26.png)
+![](img/76fa77c10480bc764a66d49ed3575b26.png)
 
 ## 向量方程和跨度
 
-[](https://medium.com/@t9nz?source=post_page-----ec1e01ccaa05--------------------------------)[![tenzin migmar (t9nz)](../Images/d9a3e1fe10afba1f1dc0fc7e4d241d73.png)](https://medium.com/@t9nz?source=post_page-----ec1e01ccaa05--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec1e01ccaa05--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ec1e01ccaa05--------------------------------) [tenzin migmar (t9nz)](https://medium.com/@t9nz?source=post_page-----ec1e01ccaa05--------------------------------)
+[](https://medium.com/@t9nz?source=post_page-----ec1e01ccaa05--------------------------------)![tenzin migmar (t9nz)](https://medium.com/@t9nz?source=post_page-----ec1e01ccaa05--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec1e01ccaa05--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec1e01ccaa05--------------------------------) [tenzin migmar (t9nz)](https://medium.com/@t9nz?source=post_page-----ec1e01ccaa05--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd6ff685c466&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-3-vector-equations-ec1e01ccaa05&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=post_page-d6ff685c466----ec1e01ccaa05---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ec1e01ccaa05--------------------------------) ·9分钟阅读·2023年10月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fec1e01ccaa05&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-3-vector-equations-ec1e01ccaa05&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=-----ec1e01ccaa05---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd6ff685c466&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-3-vector-equations-ec1e01ccaa05&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=post_page-d6ff685c466----ec1e01ccaa05---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----ec1e01ccaa05--------------------------------) ·9 分钟阅读·2023 年 10 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fec1e01ccaa05&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-3-vector-equations-ec1e01ccaa05&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=-----ec1e01ccaa05---------------------clap_footer-----------)
 
 --
 
@@ -24,29 +24,29 @@
 
 ## ℝ²、ℝ³ 和 ℝⁿ 中的向量
 
-到目前为止，我们已经了解了矩阵，即数字的数组，那么如果我们只有一个数字数组（单数形式）呢？瞧，**向量**：一种特殊类型的矩阵，大小为*m* x *1*，其中m表示向量中的行数或条目数。请回忆，矩阵的大小表示为*m* x *n*，其中*m*等于行数，而*n*对应列数。向量总是只有一列，但可以有任意数量的行。
+到目前为止，我们已经了解了矩阵，即数字的数组，那么如果我们只有一个数字数组（单数形式）呢？瞧，**向量**：一种特殊类型的矩阵，大小为*m* x *1*，其中 m 表示向量中的行数或条目数。请回忆，矩阵的大小表示为*m* x *n*，其中*m*等于行数，而*n*对应列数。向量总是只有一列，但可以有任意数量的行。
 
-![](../Images/da14104cc8b80c4186cca17ac0ab2305.png)![](../Images/b5452d0bffd5cc7106b0d1827622c397.png)
+![](img/da14104cc8b80c4186cca17ac0ab2305.png)![](img/b5452d0bffd5cc7106b0d1827622c397.png)
 
 所有具有两个条目的向量集合是ℝ²。ℝ包含了所有实数集合，因此ℝ²是所有可能的实数点（x, y）的二维空间，这也是合理的。
 
 向量可以位于ℝ²、ℝ³、ℝ⁴ … ℝⁿ中，注意向量空间的维度对应于向量中的条目数量。
 
-![](../Images/a42980563f7717eff73d25ccc5b6da53.png)
+![](img/a42980563f7717eff73d25ccc5b6da53.png)
 
-你可能最终会遇到特殊的零向量（简单地写作0），这是一个所有条目都是零的向量。虽然这可能看起来是一个小细节，但我们稍后会发现它对线性代数中一些最重要的概念有着重要的影响。
+你可能最终会遇到特殊的零向量（简单地写作 0），这是一个所有条目都是零的向量。虽然这可能看起来是一个小细节，但我们稍后会发现它对线性代数中一些最重要的概念有着重要的影响。
 
 ## 几何可视化
 
 到目前为止，矩阵和向量已经以数学方式描述、解释和表示，而物理中的向量被描述为具有大小和方向的量。两者都是正确的；下面的ℝ²中向量的图示结合了这两种定义。
 
-![](../Images/3b1085a8a038682d419a19a53a4c3278.png)
+![](img/3b1085a8a038682d419a19a53a4c3278.png)
 
 重要的是要记住，ℝ²中的向量是有序对，而更高维向量空间中的向量是有序元组（具有定义顺序的数字列表）。两个向量可能具有相同的条目数字，但如果条目的顺序不同，那么这些向量也不相同，如上图所示。
 
 ℝ³中的向量也可以被可视化，我们只需添加第三个轴，因为我们有一个额外的条目。在ℝ³之外，图示化向量变得更加复杂，因为很难想象更高维空间。
 
-![](../Images/a8cbe60a7f3c394d2df426de965aedf5.png)
+![](img/a8cbe60a7f3c394d2df426de965aedf5.png)
 
 ## 向量的代数性质
 
@@ -70,31 +70,31 @@
 
 要添加两个向量，相应的条目被相加以产生向量和。这意味着不同大小的两个向量的加法是未定义的。为了加法，两个向量必须具有相同数量的条目！这个条件源自向量加法的执行方式。
 
-![](../Images/9ead2db859137e7751ac0ab68dc25c48.png)
+![](img/9ead2db859137e7751ac0ab68dc25c48.png)
 
 在标量乘法中，对于给定的标量*c*和向量**u**，标量倍数是*c***u**，其中**u**中的每个条目都被标量*c*所乘。
 
-![](../Images/c534a884de580d7c01220cf8170262b9.png)
+![](img/c534a884de580d7c01220cf8170262b9.png)
 
 这两种操作可以一起使用；正如你在下一节中会发现的，它们结合形成了线性代数的核心概念：线性组合。
 
 ## 线性组合
 
-假设我们有向量v₁, v₂, … vₐ在ℝⁿ中，并且我们有标量（也称为权重）c₁, c₂, … cₐ，它们可以是任何实数，包括零。**线性组合**是由标量倍数组成的向量，c₁v₁ + c₂v₂ + … + cₐvₐ。
+假设我们有向量 v₁, v₂, … vₐ在ℝⁿ中，并且我们有标量（也称为权重）c₁, c₂, … cₐ，它们可以是任何实数，包括零。**线性组合**是由标量倍数组成的向量，c₁v₁ + c₂v₂ + … + cₐvₐ。
 
-![](../Images/cc82f67eaa4dac20015bc1e62651398e.png)
+![](img/cc82f67eaa4dac20015bc1e62651398e.png)
 
 之前，我们探讨了线性代数中的存在性概念，给定一个矩阵，是否存在至少一个解？换句话说，矩阵的简化/行最简形式是否存在不一致？如果存在，则没有解。如果不存在，则至少有一个解。这个基本的存在性问题与线性代数中的许多思想相关，线性组合也不例外。
 
-我们说向量**b**是Rⁿ中一组向量v₁, v₂, .. vₐₚ的线性组合，如果存在一组权重c₁, c₂, … cₐ（一个解），使得c₁v₁ + c₂v₂ + … + cₐvₐ = **b**。
+我们说向量**b**是 Rⁿ中一组向量 v₁, v₂, .. vₐₚ的线性组合，如果存在一组权重 c₁, c₂, … cₐ（一个解），使得 c₁v₁ + c₂v₂ + … + cₐvₐ = **b**。
 
 要确定**b**是否是线性组合，我们可以使用向量加法和标量乘法的操作，将我们的线性组合方程：c₁v₁ + c₂v₂ + … + cₐvₐₚ = **b**重新排列成我们非常熟悉的符号。这种重新排列的过程也阐明了为什么确定向量**b**是否是某组向量的线性组合是一个存在性问题。
 
-![](../Images/684770b48c86760b351f5a52fd98624a.png)
+![](img/684770b48c86760b351f5a52fd98624a.png)
 
 上述解释旨在强调为什么存在性问题和矩阵行简化与线性组合有关，并以一般性方式展示这一概念。让我们来看一个更具体的例子。
 
-![](../Images/08048b2fe00f4c31c736ba20cc836ed3.png)
+![](img/08048b2fe00f4c31c736ba20cc836ed3.png)
 
 在上面的例子中，将增广矩阵行简化为简化行最简形式后，我们发现确实存在解！
 
@@ -108,11 +108,11 @@
 
 如果我们要可视化跨度，它将是经过 v₁ 和原点的直线，因为只有一个向量时，线性组合（向量倍数）不能改变方向。这个观点在下面的图示中进一步说明。
 
-![](../Images/028f9fd06303b5fda92ff77df71c2aed.png)
+![](img/028f9fd06303b5fda92ff77df71c2aed.png)
 
 考虑 ℝ² 中两个不同方向的向量的跨度，这两个向量可以形成什么可能的线性组合？换句话说，ℝ² 中哪些向量可以表示为这两个向量的线性组合？
 
-![](../Images/8d705e1a2462a3c4f9a6f955601838cd.png)
+![](img/8d705e1a2462a3c4f9a6f955601838cd.png)
 
 对于上述情况，经过进一步调查，似乎**u** 和 **v** 张成了整个 ℝ²！这意味着 ℝ² 中的任何向量都可以表示为 **u** 和 **v** 的线性组合。在未来的文章中，我们将探讨线性独立性的概念，这将用于具体证明 **u** 和 **v** 张成了 ℝ²。
 
@@ -136,7 +136,7 @@
 
 ## 备注
 
-¹向量的代数性质参考自 [https://cs.brown.edu/stc/summer/94GeoTrans/94GeoTrans_17.html](https://cs.brown.edu/stc/summer/94GeoTrans/94GeoTrans_17.html)
+¹向量的代数性质参考自 [`cs.brown.edu/stc/summer/94GeoTrans/94GeoTrans_17.html`](https://cs.brown.edu/stc/summer/94GeoTrans/94GeoTrans_17.html)
 
 ²线性组合的定义参考自 David C. Lay、Steven R. Lay 和 Judi J. McDonald 编著的《线性代数及其应用》第六版
 
@@ -148,4 +148,4 @@
 
 *交换律意味着对于加法和乘法操作，数字可以按照任意顺序相加或相乘，结果保持不变。例如，5 + 2 = 2 + 5 = 7 和 5 x 2 = 2 x 5 = 10。
 
-![](../Images/2023850210a44129a364f740e28ff9f0.png)
+![](img/2023850210a44129a364f740e28ff9f0.png)

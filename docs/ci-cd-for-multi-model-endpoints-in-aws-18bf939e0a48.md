@@ -1,18 +1,18 @@
 # CI/CD 在 AWS 的多模型端点
 
-> 原文：[https://towardsdatascience.com/ci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48?source=collection_archive---------7-----------------------#2023-06-22](https://towardsdatascience.com/ci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48?source=collection_archive---------7-----------------------#2023-06-22)
+> 原文：[`towardsdatascience.com/ci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48?source=collection_archive---------7-----------------------#2023-06-22`](https://towardsdatascience.com/ci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48?source=collection_archive---------7-----------------------#2023-06-22)
 
 ## 一个简单、灵活的可持续机器学习解决方案的替代方案
 
-[](https://medium.com/@andrewcharabin?source=post_page-----18bf939e0a48--------------------------------)[![Andrew Charabin](../Images/8cfe2657a9cd16c3ce30b98e3c9e9945.png)](https://medium.com/@andrewcharabin?source=post_page-----18bf939e0a48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18bf939e0a48--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----18bf939e0a48--------------------------------) [Andrew Charabin](https://medium.com/@andrewcharabin?source=post_page-----18bf939e0a48--------------------------------)
+[](https://medium.com/@andrewcharabin?source=post_page-----18bf939e0a48--------------------------------)![Andrew Charabin](https://medium.com/@andrewcharabin?source=post_page-----18bf939e0a48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18bf939e0a48--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----18bf939e0a48--------------------------------) [Andrew Charabin](https://medium.com/@andrewcharabin?source=post_page-----18bf939e0a48--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff282e085f18e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48&user=Andrew+Charabin&userId=f282e085f18e&source=post_page-f282e085f18e----18bf939e0a48---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18bf939e0a48--------------------------------) ·14分钟阅读·2023年6月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18bf939e0a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48&user=Andrew+Charabin&userId=f282e085f18e&source=-----18bf939e0a48---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff282e085f18e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48&user=Andrew+Charabin&userId=f282e085f18e&source=post_page-f282e085f18e----18bf939e0a48---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18bf939e0a48--------------------------------) ·14 分钟阅读·2023 年 6 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18bf939e0a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48&user=Andrew+Charabin&userId=f282e085f18e&source=-----18bf939e0a48---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F18bf939e0a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48&source=-----18bf939e0a48---------------------bookmark_footer-----------)![](../Images/c1424ad7b2588399204bb9dd6c2e504c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F18bf939e0a48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-for-multi-model-endpoints-in-aws-18bf939e0a48&source=-----18bf939e0a48---------------------bookmark_footer-----------)![](img/c1424ad7b2588399204bb9dd6c2e504c.png)
 
 图片来源于 VectorStock，授权给**Andrew Charabin**
 
@@ -66,13 +66,13 @@
 
 虽然 SageMaker 管道允许从 s3 获取输入数据，但如果新输入数据位于数据仓库中，如 AWS Redshift 或 Google BigQuery 呢？当然，可以使用 [ETL](https://www.ibm.com/topics/etl) 或类似过程将数据批量移动到 s3，但这与直接从数据仓库查询数据相比，增加了不必要的复杂性/僵化。
 
-SageMaker Studio提供了几种默认镜像来初始化环境，其中一个例子是包含常用包如numpy和pandas的‘Data Science’镜像。然而，要在Python中连接到PostgreSQL数据库，需要一个驱动程序或适配器。[Psycopg2](https://pypi.org/project/psycopg2/)是Python编程语言中最流行的PostgreSQL数据库适配器。幸运的是，可以使用自定义镜像来初始化Studio环境，尽管有特定的要求。我已经预打包了一个满足这些要求的Docker镜像，并在Python Julia-1.5.2镜像基础上添加了psycopg2驱动程序。该镜像可以在[这个](https://github.com/acharabin/SageMaker-Studio-Image-With-Psycopg2)git仓库中找到。然后，可以使用[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-byoi.html)概述的步骤使镜像在Studio域中可用。
+SageMaker Studio 提供了几种默认镜像来初始化环境，其中一个例子是包含常用包如 numpy 和 pandas 的‘Data Science’镜像。然而，要在 Python 中连接到 PostgreSQL 数据库，需要一个驱动程序或适配器。[Psycopg2](https://pypi.org/project/psycopg2/)是 Python 编程语言中最流行的 PostgreSQL 数据库适配器。幸运的是，可以使用自定义镜像来初始化 Studio 环境，尽管有特定的要求。我已经预打包了一个满足这些要求的 Docker 镜像，并在 Python Julia-1.5.2 镜像基础上添加了 psycopg2 驱动程序。该镜像可以在[这个](https://github.com/acharabin/SageMaker-Studio-Image-With-Psycopg2)git 仓库中找到。然后，可以使用[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-byoi.html)概述的步骤使镜像在 Studio 域中可用。
 
 ## 2\. 动态预热启动超参数调优
 
 模型重新训练在性质上与初始模型训练不同。在重新训练模型时，投资相同数量的资源来搜索最佳模型超参数以及相同的大范围搜索空间是不切实际的。特别是当仅期望对上一生产模型的最佳超参数进行微调时尤其如此。
 
-因此，本文推荐的CI/CD超参数调优解决方案不会尝试通过K折交叉验证、预热池等方式快速重新调优。这些方法对于初始模型训练非常有效。然而，对于重新训练，我们希望从生产中已经有效的地方开始，并对新获取的数据进行小幅调整。因此，使用动态预热启动超参数调优是完美的解决方案。进一步地，可以创建一个动态预热启动调优系统，使用最新的生产调优作业作为父作业。以下是一个示例XGBoost贝叶斯调优作业的解决方案：
+因此，本文推荐的 CI/CD 超参数调优解决方案不会尝试通过 K 折交叉验证、预热池等方式快速重新调优。这些方法对于初始模型训练非常有效。然而，对于重新训练，我们希望从生产中已经有效的地方开始，并对新获取的数据进行小幅调整。因此，使用动态预热启动超参数调优是完美的解决方案。进一步地，可以创建一个动态预热启动调优系统，使用最新的生产调优作业作为父作业。以下是一个示例 XGBoost 贝叶斯调优作业的解决方案：
 
 ```py
 # Set Run Parameters
@@ -160,11 +160,11 @@ boto3.client('sagemaker').describe_hyper_parameter_tuning_job(
 
 调优作业历史将保存在基础目录中的日志文件中，示例输出如下：
 
-![](../Images/329069d473afac7188601c22592ee081.png)
+![](img/329069d473afac7188601c22592ee081.png)
 
 作者提供的图表
 
-日期/时间戳、调优作业名称以及元数据以.csv格式存储，新调优作业会追加到文件中。
+日期/时间戳、调优作业名称以及元数据以.csv 格式存储，新调优作业会追加到文件中。
 
 系统将动态地使用满足要求条件的最新调优作业进行预热启动。在这个例子中，条件在以下代码行中注明：
 
@@ -174,7 +174,7 @@ eligible_parent_tuning_jobs=eligible_parent_tuning_jobs[(eligible_parent_tuning_
 
 因为我们需要测试管道的工作情况，所以提供了`testing=True`运行选项，这将强制仅进行一个超参数调优作业。添加了一个条件，只考虑具有多个调优模型作为父模型的作业，前提是这些是非测试的。此外，调优作业日志文件可以在不同模型间使用，因为理论上可以在模型间使用父作业。在这种情况下，模型通过‘metric’字段进行跟踪，符合条件的调优作业会过滤以匹配当前训练实例中的指标。
 
-一旦重新训练完成，我们将把新的超参数调整作业追加到日志文件中，并将其写入本地以及s3，同时启用[版本控制](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html)。
+一旦重新训练完成，我们将把新的超参数调整作业追加到日志文件中，并将其写入本地以及 s3，同时启用[版本控制](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html)。
 
 ```py
 # Append Last Parent Job for Next Warm Start
@@ -194,21 +194,21 @@ updatetuningjobhistory.to_csv(f"""{base_dir}logs/tuningjobhistory.csv""",index=F
 s3.upload_file(f"""{base_dir}logs/tuningjobhistory.csv""",bucket,'logs/tuningjobhistory.csv')
 ```
 
-**3\. 在单个交互式Python笔记本中将多个模型注册到模型注册表**
+**3\. 在单个交互式 Python 笔记本中将多个模型注册到模型注册表**
 
-通常，组织会有多个AWS账户用于不同的用例（即沙盒、QA和生产）。你需要确定在CI/CD解决方案的每个步骤中使用哪个账户，然后添加[本指南](https://aws.amazon.com/blogs/machine-learning/build-a-cross-account-mlops-workflow-using-the-amazon-sagemaker-model-registry/)中提到的跨账户权限。
+通常，组织会有多个 AWS 账户用于不同的用例（即沙盒、QA 和生产）。你需要确定在 CI/CD 解决方案的每个步骤中使用哪个账户，然后添加[本指南](https://aws.amazon.com/blogs/machine-learning/build-a-cross-account-mlops-workflow-using-the-amazon-sagemaker-model-registry/)中提到的跨账户权限。
 
-推荐在同一账户中进行模型训练和模型注册，特别是沙盒或测试账户。因此，在下图中，‘数据科学’和‘共享服务’账户将是相同的。在该账户中，需要一个s3桶来存放模型工件并跟踪与流水线相关的其他文件的血统。模型/端点将在每个‘部署’账户（即沙盒、QA、生产）中分别部署，引用训练/注册账户中的模型工件和注册表。
+推荐在同一账户中进行模型训练和模型注册，特别是沙盒或测试账户。因此，在下图中，‘数据科学’和‘共享服务’账户将是相同的。在该账户中，需要一个 s3 桶来存放模型工件并跟踪与流水线相关的其他文件的血统。模型/端点将在每个‘部署’账户（即沙盒、QA、生产）中分别部署，引用训练/注册账户中的模型工件和注册表。
 
-![](../Images/62a4d64e3bf6d781dd23ffc4aeb9bfa0.png)
+![](img/62a4d64e3bf6d781dd23ffc4aeb9bfa0.png)
 
 来自[AWS 文档](https://aws.amazon.com/blogs/machine-learning/build-a-cross-account-mlops-workflow-using-the-amazon-sagemaker-model-registry/)
 
-现在我们已经决定了用于训练和存放模型注册表的AWS账户，我们可以构建初始模型并开发CI/CD解决方案。
+现在我们已经决定了用于训练和存放模型注册表的 AWS 账户，我们可以构建初始模型并开发 CI/CD 解决方案。
 
-使用SageMaker Pipelines时，为数据预处理、训练/调整、评估、注册以及任何后处理创建独立的管道步骤。虽然这对于单个模型管道是可以的，但当需要多个模型来解决机器学习方案时，会产生大量的管道代码重复。
+使用 SageMaker Pipelines 时，为数据预处理、训练/调整、评估、注册以及任何后处理创建独立的管道步骤。虽然这对于单个模型管道是可以的，但当需要多个模型来解决机器学习方案时，会产生大量的管道代码重复。
 
-因此，推荐的解决方案是构建并调度三个交互式Python笔记本在SageMaker Studio中。它们按顺序运行，并通过一个自动化的笔记本作业一起完成CI/CD流水线：
+因此，推荐的解决方案是构建并调度三个交互式 Python 笔记本在 SageMaker Studio 中。它们按顺序运行，并通过一个自动化的笔记本作业一起完成 CI/CD 流水线：
 
 > ***A. 数据准备***
 > 
@@ -218,7 +218,7 @@ s3.upload_file(f"""{base_dir}logs/tuningjobhistory.csv""",bucket,'logs/tuningjob
 
 A. 数据准备
 
-在这里，我们将从数据仓库查询并加载数据，然后将其写入本地和s3。我们可以使用当前日期设置动态的日期/时间条件，并将生成的日期下限和上限传递到SQL查询中。
+在这里，我们将从数据仓库查询并加载数据，然后将其写入本地和 s3。我们可以使用当前日期设置动态的日期/时间条件，并将生成的日期下限和上限传递到 SQL 查询中。
 
 ```py
 # Connect to Data Warehouse
@@ -256,7 +256,7 @@ s3 = boto3.client('s3')
 s3.upload_file(f"{base_dir}datasets/{filename}",bucket,f"datasets/{filename}")
 ```
 
-这一步骤以将准备好的训练数据保存到本地以及s3以进行血统追踪结束。
+这一步骤以将准备好的训练数据保存到本地以及 s3 以进行血统追踪结束。
 
 B. 模型训练、评估和注册
 
@@ -355,7 +355,7 @@ print('ModelPackage Version ARN : {}'.format(model_package_arn))
 
 通过打开注册表中的模型包组，您可以查看所有已注册的模型版本、注册日期和批准状态。
 
-![](../Images/0a582302948d0320e279dda5eb3f2bb5.png)
+![](img/0a582302948d0320e279dda5eb3f2bb5.png)
 
 来自 [AWS 文档](https://docs.aws.amazon.com/sagemaker/latest/dg/modelregistryfaq.html) 的图表
 

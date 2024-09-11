@@ -1,18 +1,18 @@
 # 连接优化：图中的数学优化
 
-> 原文：[https://towardsdatascience.com/optimizing-connections-mathematical-optimization-within-graphs-7364e082a984?source=collection_archive---------1-----------------------#2023-07-28](https://towardsdatascience.com/optimizing-connections-mathematical-optimization-within-graphs-7364e082a984?source=collection_archive---------1-----------------------#2023-07-28)
+> 原文：[`towardsdatascience.com/optimizing-connections-mathematical-optimization-within-graphs-7364e082a984?source=collection_archive---------1-----------------------#2023-07-28`](https://towardsdatascience.com/optimizing-connections-mathematical-optimization-within-graphs-7364e082a984?source=collection_archive---------1-----------------------#2023-07-28)
 
-![](../Images/9b3b31ccdb700cdf4e096983187caa65.png)
+![](img/9b3b31ccdb700cdf4e096983187caa65.png)
 
 不连通图。图像由作者使用 Dall-E 2 创建。
 
 ## 图论及其应用简介
 
-[](https://hennie-de-harder.medium.com/?source=post_page-----7364e082a984--------------------------------)[![Hennie de Harder](../Images/3e4f2cccd6cb976ca3f8bf15597daea8.png)](https://hennie-de-harder.medium.com/?source=post_page-----7364e082a984--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7364e082a984--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7364e082a984--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----7364e082a984--------------------------------)
+[](https://hennie-de-harder.medium.com/?source=post_page-----7364e082a984--------------------------------)![Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----7364e082a984--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7364e082a984--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----7364e082a984--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----7364e082a984--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-connections-mathematical-optimization-within-graphs-7364e082a984&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----7364e082a984---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----7364e082a984--------------------------------) ·13分钟阅读·2023年7月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7364e082a984&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-connections-mathematical-optimization-within-graphs-7364e082a984&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----7364e082a984---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-connections-mathematical-optimization-within-graphs-7364e082a984&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----7364e082a984---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----7364e082a984--------------------------------) ·13 分钟阅读·2023 年 7 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7364e082a984&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-connections-mathematical-optimization-within-graphs-7364e082a984&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----7364e082a984---------------------clap_footer-----------)
 
 --
 

@@ -1,18 +1,18 @@
 # 使用 GPT-3.5 进行端到端的机器学习
 
-> 原文：[https://towardsdatascience.com/end-to-end-ml-with-gpt-3-5-8334db3d78e2?source=collection_archive---------2-----------------------#2023-05-24](https://towardsdatascience.com/end-to-end-ml-with-gpt-3-5-8334db3d78e2?source=collection_archive---------2-----------------------#2023-05-24)
+> 原文：[`towardsdatascience.com/end-to-end-ml-with-gpt-3-5-8334db3d78e2?source=collection_archive---------2-----------------------#2023-05-24`](https://towardsdatascience.com/end-to-end-ml-with-gpt-3-5-8334db3d78e2?source=collection_archive---------2-----------------------#2023-05-24)
 
-![](../Images/9ec4de24c2c445ccedaec0940db9619a.png)
+![](img/9ec4de24c2c445ccedaec0940db9619a.png)
 
 插图由我和 Midjourney 生成
 
 ## 了解如何使用 GPT-3.5 来处理数据采集、预处理、模型训练和部署的繁重任务
 
-[](https://georgealexadam.medium.com/?source=post_page-----8334db3d78e2--------------------------------)[![亚历克斯·亚当](../Images/a2c18f61e6ed2bd1e6955ffb6232c9be.png)](https://georgealexadam.medium.com/?source=post_page-----8334db3d78e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8334db3d78e2--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8334db3d78e2--------------------------------) [亚历克斯·亚当](https://georgealexadam.medium.com/?source=post_page-----8334db3d78e2--------------------------------)
+[](https://georgealexadam.medium.com/?source=post_page-----8334db3d78e2--------------------------------)![亚历克斯·亚当](https://georgealexadam.medium.com/?source=post_page-----8334db3d78e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8334db3d78e2--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----8334db3d78e2--------------------------------) [亚历克斯·亚当](https://georgealexadam.medium.com/?source=post_page-----8334db3d78e2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F29fd9b1a62ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fend-to-end-ml-with-gpt-3-5-8334db3d78e2&user=Alex+Adam&userId=29fd9b1a62ae&source=post_page-29fd9b1a62ae----8334db3d78e2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8334db3d78e2--------------------------------) ·14 分钟阅读·2023年5月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8334db3d78e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fend-to-end-ml-with-gpt-3-5-8334db3d78e2&user=Alex+Adam&userId=29fd9b1a62ae&source=-----8334db3d78e2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F29fd9b1a62ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fend-to-end-ml-with-gpt-3-5-8334db3d78e2&user=Alex+Adam&userId=29fd9b1a62ae&source=post_page-29fd9b1a62ae----8334db3d78e2---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----8334db3d78e2--------------------------------) ·14 分钟阅读·2023 年 5 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8334db3d78e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fend-to-end-ml-with-gpt-3-5-8334db3d78e2&user=Alex+Adam&userId=29fd9b1a62ae&source=-----8334db3d78e2---------------------clap_footer-----------)
 
 --
 
@@ -43,7 +43,7 @@ def get_api_result(prompt):
 
 # 提取、转换、加载（ETL）
 
-![](../Images/2665dfe67e5e8e270ff34942dadb03b9.png)
+![](img/2665dfe67e5e8e270ff34942dadb03b9.png)
 
 ETL 由我 + Midjourney 进行说明
 
@@ -82,7 +82,7 @@ df.columns = ["age", "workclass", "fnlwgt", "education", "education-num",
               "native-country", "target"]
 ```
 
-这假设数据在本地可用。有趣的是，结果中有正确的列名列表，即使我们没有在API调用中包含它们！这些名称在网络上随处可见，特别是在[这篇](https://example.org/exploring-the-census-income-dataset-using-bubble-plot-cfa1b366313b) Medium文章中，目标列除外，它是由GPT添加的。下一步是**转换**数据为机器学习模型可以使用的格式。由于GPT需要了解列名及其类型，我们这里需要使用一个更高级的提示模板：
+这假设数据在本地可用。有趣的是，结果中有正确的列名列表，即使我们没有在 API 调用中包含它们！这些名称在网络上随处可见，特别是在[这篇](https://example.org/exploring-the-census-income-dataset-using-bubble-plot-cfa1b366313b) Medium 文章中，目标列除外，它是由 GPT 添加的。下一步是**转换**数据为机器学习模型可以使用的格式。由于 GPT 需要了解列名及其类型，我们这里需要使用一个更高级的提示模板：
 
 ```py
 def transform(columns, column_types, prompt):
@@ -93,7 +93,7 @@ def transform(columns, column_types, prompt):
 
 我接着做如下请求：
 
-> 通过将所有类别列转换为其独热编码等效项，并标准化数值列来预处理数据框。删除任何列中有NA或NaN值的行。删除数值列的异常值行，这些异常值由其z分数确定。数值列的异常值是超出1到99分位范围的值。数值列应使用sklearn中的StandardScaler进行标准化。目标列中的值应转换为0或1，并应为int类型。
+> 通过将所有类别列转换为其独热编码等效项，并标准化数值列来预处理数据框。删除任何列中有 NA 或 NaN 值的行。删除数值列的异常值行，这些异常值由其 z 分数确定。数值列的异常值是超出 1 到 99 分位范围的值。数值列应使用 sklearn 中的 StandardScaler 进行标准化。目标列中的值应转换为 0 或 1，并应为 int 类型。
 
 我们现在得到：
 
@@ -123,7 +123,7 @@ df = df[(z_scores > -3).all(axis=1) & (z_scores < 3).all(axis=1)]
 df['target'] = df['target'].apply(lambda x: 1 if x == '>50K' else 0).astype(int)
 ```
 
-如果我们排除尝试从csv文件加载数据的部分，这几乎是完美的。即使我们明确告诉GPT假设`df`已经存在且不需要加载，也很难说服它排除这一点。最后，我们需要**加载**数据到本地数据库中。虽然对于如此简单的用例来说这有些多余，但这是一个值得养成的好习惯。
+如果我们排除尝试从 csv 文件加载数据的部分，这几乎是完美的。即使我们明确告诉 GPT 假设`df`已经存在且不需要加载，也很难说服它排除这一点。最后，我们需要**加载**数据到本地数据库中。虽然对于如此简单的用例来说这有些多余，但这是一个值得养成的好习惯。
 
 ```py
 def load(prompt):
@@ -134,7 +134,7 @@ def load(prompt):
 
 我使用以下指令：
 
-> 连接到名为“data”的sqlite数据库。使用pandas将名为“df”的DataFrame中的数据插入到名为“income”的表中。不要包括索引列。提交更改后再关闭连接。
+> 连接到名为“data”的 sqlite 数据库。使用 pandas 将名为“df”的 DataFrame 中的数据插入到名为“income”的表中。不要包括索引列。提交更改后再关闭连接。
 
 以获得：
 
@@ -165,11 +165,11 @@ connection.close()
 
 # 模型训练
 
-![](../Images/433e1a6b80dba4d54d04b33977243886.png)
+![](img/433e1a6b80dba4d54d04b33977243886.png)
 
-我和Midjourney绘制的损失函数插图
+我和 Midjourney 绘制的损失函数插图
 
-在资源允许的情况下，尝试几种不同的模型类型以找出适合给定任务的复杂度水平是个好主意。因此，我们让GPT-3.5尝试几种不同的模型。首先，我们设置通用的模型训练提示模板：
+在资源允许的情况下，尝试几种不同的模型类型以找出适合给定任务的复杂度水平是个好主意。因此，我们让 GPT-3.5 尝试几种不同的模型。首先，我们设置通用的模型训练提示模板：
 
 ```py
 def train(prompt):
@@ -283,7 +283,7 @@ mlflow.sklearn.log_model(sk_model=best_model, artifact_path="best_model", signat
 
 # 模型服务
 
-![](../Images/00f90a37907f52b68f7916a92f02cccb.png)
+![](img/00f90a37907f52b68f7916a92f02cccb.png)
 
 由我 + Midjourney 展示的部署示例
 
@@ -317,27 +317,27 @@ def send_request(prompt):
 
 以下请求将插入到`send_request()`的提示模板中：
 
-> 使用“curl”命令将数据“<data here>”发送到本地主机上端口1111的mlflow模型。确保内容类型是“application/json”。
+> 使用“curl”命令将数据“<data here>”发送到本地主机上端口 1111 的 mlflow 模型。确保内容类型是“application/json”。
 
-GPT-3.5生成的输出是：
+GPT-3.5 生成的输出是：
 
 ```py
 curl -X POST -H "Content-Type: application/json" -d '<data here>' http://localhost:1111/invocations
 ```
 
-最好将URL放在`curl`命令后面，而不是命令的最后，即：
+最好将 URL 放在`curl`命令后面，而不是命令的最后，即：
 
 ```py
 curl http://localhost:1111/invocations -X POST -H "Content-Type: application/json" -d '<data here>'
 ```
 
-让GPT-3.5完成这个任务并不容易。以下两个请求都未能成功：
+让 GPT-3.5 完成这个任务并不容易。以下两个请求都未能成功：
 
-> 使用“curl”命令将数据“<data here>”发送到本地主机上端口1111的mlflow模型。将URL放在“curl”后面。确保内容类型是“application/json”。
+> 使用“curl”命令将数据“<data here>”发送到本地主机上端口 1111 的 mlflow 模型。将 URL 放在“curl”后面。确保内容类型是“application/json”。
 > 
-> 使用“curl”命令，将URL放在任何参数之前，将数据“<data here>”发送到本地主机上端口1111的mlflow模型。确保内容类型是“application/json”。
+> 使用“curl”命令，将 URL 放在任何参数之前，将数据“<data here>”发送到本地主机上端口 1111 的 mlflow 模型。确保内容类型是“application/json”。
 
-如果我们让GPT-3.5修改一个现有的命令，而不是从头生成一个，可能会得到所需的输出。以下是修改命令的通用模板：
+如果我们让 GPT-3.5 修改一个现有的命令，而不是从头生成一个，可能会得到所需的输出。以下是修改命令的通用模板：
 
 ```py
 def modify_request(prompt):
@@ -371,9 +371,9 @@ def create_payload(prompt):
 
 为了获得所需的输出格式，这部分提示需要进行相当多的调整：
 
-> 将“df”数据框转换为可以被部署的MLFlow模型接收的json格式。将结果json包裹在一个名为“dataframe_split”的对象中。生成的字符串不应有换行符，也不应转义引号。此外，“dataframe_split”应该用双引号而不是单引号括起来。不要包含“target”列。使用分割的“orient”参数。
+> 将“df”数据框转换为可以被部署的 MLFlow 模型接收的 json 格式。将结果 json 包裹在一个名为“dataframe_split”的对象中。生成的字符串不应有换行符，也不应转义引号。此外，“dataframe_split”应该用双引号而不是单引号括起来。不要包含“target”列。使用分割的“orient”参数。
 
-如果没有明确指示避免换行符和转义引号，则调用`json.dumps()`生成的格式不是MLflow端点期望的格式。生成的命令是：
+如果没有明确指示避免换行符和转义引号，则调用`json.dumps()`生成的格式不是 MLflow 端点期望的格式。生成的命令是：
 
 ```py
 json_data = df.drop("target", axis=1).to_json(orient="split", double_precision=15)
@@ -395,7 +395,7 @@ wrapped_data = f'{{"dataframe_split":{json_data}}}'
 
 而实际的目标是[0, 0, 1, 1, 0]。
 
-就这样了。在这篇文章的开头，我们甚至没有访问数据集，但我们最终成功部署了一个通过交叉验证选定的最佳模型。重要的是，GPT-3.5完成了所有繁重的工作，只需提供最少的辅助。然而，我确实需要指定使用的特定库和调用的方法，但这主要是为了消除模糊性。如果我指定“记录整个过程”而不是“使用MLFlow记录整个过程”，GPT-3.5将有太多库可供选择，生成的模型格式可能不适合使用MLFlow提供服务。因此，成功使用GPT-3.5需要对ML流程中执行各种步骤的工具有一些了解，但相较于从头编写代码所需的知识，这种了解是最小的。
+就这样了。在这篇文章的开头，我们甚至没有访问数据集，但我们最终成功部署了一个通过交叉验证选定的最佳模型。重要的是，GPT-3.5 完成了所有繁重的工作，只需提供最少的辅助。然而，我确实需要指定使用的特定库和调用的方法，但这主要是为了消除模糊性。如果我指定“记录整个过程”而不是“使用 MLFlow 记录整个过程”，GPT-3.5 将有太多库可供选择，生成的模型格式可能不适合使用 MLFlow 提供服务。因此，成功使用 GPT-3.5 需要对 ML 流程中执行各种步骤的工具有一些了解，但相较于从头编写代码所需的知识，这种了解是最小的。
 
 另一个服务模型的选项是将其作为 SageMaker 端点托管在 AWS 上。尽管这在 MLflow 的 [网站](https://mlflow.org/docs/latest/models.html#deploy-a-python-function-model-on-amazon-sagemaker) 上看起来很简单，但我向你保证，就像很多涉及 AWS 的网页示例一样，事情会出错。首先，必须安装 Docker，以便使用以下命令生成 Docker 镜像：
 

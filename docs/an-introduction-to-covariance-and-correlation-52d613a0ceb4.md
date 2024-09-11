@@ -1,18 +1,18 @@
 # 协方差和相关性的介绍
 
-> 原文：[https://towardsdatascience.com/an-introduction-to-covariance-and-correlation-52d613a0ceb4?source=collection_archive---------0-----------------------#2023-03-25](https://towardsdatascience.com/an-introduction-to-covariance-and-correlation-52d613a0ceb4?source=collection_archive---------0-----------------------#2023-03-25)
+> 原文：[`towardsdatascience.com/an-introduction-to-covariance-and-correlation-52d613a0ceb4?source=collection_archive---------0-----------------------#2023-03-25`](https://towardsdatascience.com/an-introduction-to-covariance-and-correlation-52d613a0ceb4?source=collection_archive---------0-----------------------#2023-03-25)
 
 ## 对一些非常常见的关联度量的简要介绍
 
-[](https://medium.com/@dataforyou?source=post_page-----52d613a0ceb4--------------------------------)[![Rob Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----52d613a0ceb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52d613a0ceb4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----52d613a0ceb4--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----52d613a0ceb4--------------------------------)
+[](https://medium.com/@dataforyou?source=post_page-----52d613a0ceb4--------------------------------)![Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----52d613a0ceb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52d613a0ceb4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----52d613a0ceb4--------------------------------) [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----52d613a0ceb4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-covariance-and-correlation-52d613a0ceb4&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----52d613a0ceb4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52d613a0ceb4--------------------------------) · 6 min 阅读 · 2023年3月25日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F52d613a0ceb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-covariance-and-correlation-52d613a0ceb4&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----52d613a0ceb4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-covariance-and-correlation-52d613a0ceb4&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----52d613a0ceb4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52d613a0ceb4--------------------------------) · 6 min 阅读 · 2023 年 3 月 25 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F52d613a0ceb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-covariance-and-correlation-52d613a0ceb4&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----52d613a0ceb4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F52d613a0ceb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-covariance-and-correlation-52d613a0ceb4&source=-----52d613a0ceb4---------------------bookmark_footer-----------)![](../Images/315d5f3a5cac77efb3e1c1e1b233675e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F52d613a0ceb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-introduction-to-covariance-and-correlation-52d613a0ceb4&source=-----52d613a0ceb4---------------------bookmark_footer-----------)![](img/315d5f3a5cac77efb3e1c1e1b233675e.png)
 
 [Richard Horvath](https://unsplash.com/@orwhat?utm_source=medium&utm_medium=referral) 的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,31 +28,31 @@
 
 如果我们把*X*和*Y*看作连续随机变量，那么协方差可以表示为：
 
-![](../Images/c8105cc862bf0c462b003a505c3572bd.png)
+![](img/c8105cc862bf0c462b003a505c3572bd.png)
 
 协方差的定义（图片由作者提供）。
 
 这里的积分使这个方程看起来比实际要复杂，而实际上这里只是对联合空间进行平均计算。这个事实可以通过使用期望值运算符**E**[⋅]来更清楚地呈现，它提供了一个更易于接受的数学表达式来表示协方差：
 
-![](../Images/02c35935bbc7b3ddd47c93f7748f9dc8.png)
+![](img/02c35935bbc7b3ddd47c93f7748f9dc8.png)
 
 使用期望运算符定义协方差（图片由作者提供）。
 
 所以，我们在这里看到的是，协方差是对均值中心化的*X*和*Y*变量的乘积取期望（或平均）。实际上，这可以进一步简化，因为期望具有相当好的线性特性：
 
-![](../Images/c13b23277c410c99ab1feb64825ecd11.png)
+![](img/c13b23277c410c99ab1feb64825ecd11.png)
 
 使用期望的线性特性进一步简化协方差的定义（图片由作者提供）。
 
 我们现在可以看到，协方差只是变量乘积的均值减去它们均值乘积的结果。此外，还有一个有趣的事实：*方差*是协方差的一个特殊情况，简单来说，就是变量与自身的协方差：
 
-![](../Images/eb0e83a0a709d7c156966309082bc930.png)
+![](img/eb0e83a0a709d7c156966309082bc930.png)
 
 变量自身的协方差就是方差（图片由作者提供）。
 
 从根本上说，协方差是任何联合概率分布的一个特性，并且是其本身的一个总体参数。这意味着，如果我们只有*X*和*Y*的样本，我们可以使用以下公式计算样本协方差：
 
-![](../Images/e8346267a57e2e6ddb211f104f6b710e.png)
+![](img/e8346267a57e2e6ddb211f104f6b710e.png)
 
 样本协方差（图片由作者提供）。
 
@@ -64,33 +64,33 @@
 
 ## 相关性
 
-我们通常所说的*相关性*是通过Pearson的积矩相关系数来衡量的，该系数通常用*ρ*表示。如果你觉得协方差听起来很像相关性，那你没错。这是因为相关系数只是协方差的*标准化*版本，其中标准化因子是标准差的乘积。
+我们通常所说的*相关性*是通过 Pearson 的积矩相关系数来衡量的，该系数通常用*ρ*表示。如果你觉得协方差听起来很像相关性，那你没错。这是因为相关系数只是协方差的*标准化*版本，其中标准化因子是标准差的乘积。
 
-![](../Images/f3aeb215df8353cd811984e6425fa05f.png)
+![](img/f3aeb215df8353cd811984e6425fa05f.png)
 
-Pearson的积矩相关系数（作者提供的图片）。
+Pearson 的积矩相关系数（作者提供的图片）。
 
 我们还可以使用以下公式从数据中估计相关系数：
 
-![](../Images/3ba8bd89465d029d2a7f432cfac4e1c3.png)
+![](img/3ba8bd89465d029d2a7f432cfac4e1c3.png)
 
 样本相关系数（作者提供的图片）。
 
-这种标准化的结果是，相关系数的值只能在-1和1之间，其中-1表示完全负相关，1表示完全正相关，0表示没有相关性。这样，它测量了两个变量之间关系的强度和方向。这样做的好处是，相关系数是*标准化的度量*，意味着它不受涉及变量的尺度影响。这解决了协方差的一个内在问题，使得比较不同变量集之间的相关性变得更容易。
+这种标准化的结果是，相关系数的值只能在-1 和 1 之间，其中-1 表示完全负相关，1 表示完全正相关，0 表示没有相关性。这样，它测量了两个变量之间关系的强度和方向。这样做的好处是，相关系数是*标准化的度量*，意味着它不受涉及变量的尺度影响。这解决了协方差的一个内在问题，使得比较不同变量集之间的相关性变得更容易。
 
-然而，虽然相关系数估计了关系的强度，但它无法完全描述数据。Anscombe的四重奏很好地展示了这一点，显示了数据中的不同模式如何产生相同的相关系数。最终，Pearson的相关系数只有在数据是多元正态分布时才提供完整的描述。如果不是这样，则相关系数仅提供指示，并需要与数据的视觉检查结合考虑。
+然而，虽然相关系数估计了关系的强度，但它无法完全描述数据。Anscombe 的四重奏很好地展示了这一点，显示了数据中的不同模式如何产生相同的相关系数。最终，Pearson 的相关系数只有在数据是多元正态分布时才提供完整的描述。如果不是这样，则相关系数仅提供指示，并需要与数据的视觉检查结合考虑。
 
 ## 协方差、相关性与独立性
 
 假设随机变量*X*和*Y*是统计独立的。在独立性假设下，*X*和*Y*的期望值为：
 
-![](../Images/6639cad2183ea41650c9cbefaa783007.png)
+![](img/6639cad2183ea41650c9cbefaa783007.png)
 
 两个独立随机变量的期望（图片由作者提供）。
 
 如果我们将这个代入协方差的表达式中，我们会发现
 
-![](../Images/4c6838cac37318ca39e46159044c9948.png)
+![](img/4c6838cac37318ca39e46159044c9948.png)
 
 独立随机变量的协方差（图片由作者提供）。
 
@@ -98,19 +98,19 @@ Pearson的积矩相关系数（作者提供的图片）。
 
 为了说明这一事实，我们可以借用一个经典的反例。假设*X*是一个有某种围绕零对称分布*f*(*x*)的随机变量。这意味着对于所有*x*，我们有*f*(*-x*) = *f*(*x*)，这进一步意味着以下结论成立：
 
-![](../Images/5b9f4cb3b96759f55e500f3bd098f816.png)
+![](img/5b9f4cb3b96759f55e500f3bd098f816.png)
 
 对称性条件（图片由作者提供）。
 
 根据这个对称性条件，*X*的期望值为：
 
-![](../Images/07bd6ada549e038350a4fd463f49b489.png)
+![](img/07bd6ada549e038350a4fd463f49b489.png)
 
 对称分布的期望（图片由作者提供）。
 
 如果我们现在在*X*和*Y*之间创建一个依赖关系，使得*Y* = *X²*，那么我们就知道对于任何给定的*X*值，*Y*必须是什么。然而，如果我们检查*X*和*Y*之间的协方差，我们会发现：
 
-![](../Images/bcacd4b7f2c0c6bedf07b4d8279828d4.png)
+![](img/bcacd4b7f2c0c6bedf07b4d8279828d4.png)
 
 非线性相关的两个变量的协方差（图片由作者提供）。
 

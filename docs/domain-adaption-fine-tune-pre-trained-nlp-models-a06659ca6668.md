@@ -1,8 +1,8 @@
 # 领域适应：微调预训练的 NLP 模型
 
-> 原文：[https://towardsdatascience.com/domain-adaption-fine-tune-pre-trained-nlp-models-a06659ca6668?source=collection_archive---------1-----------------------#2023-07-04](https://towardsdatascience.com/domain-adaption-fine-tune-pre-trained-nlp-models-a06659ca6668?source=collection_archive---------1-----------------------#2023-07-04)
+> 原文：[`towardsdatascience.com/domain-adaption-fine-tune-pre-trained-nlp-models-a06659ca6668?source=collection_archive---------1-----------------------#2023-07-04`](https://towardsdatascience.com/domain-adaption-fine-tune-pre-trained-nlp-models-a06659ca6668?source=collection_archive---------1-----------------------#2023-07-04)
 
-![](../Images/60b46d488ea28b302a949054bded404e.png)
+![](img/60b46d488ea28b302a949054bded404e.png)
 
 图片由 [Pietro Jeng](https://unsplash.com/@pietrozj?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -10,7 +10,7 @@
 
 ## 关于为任何领域微调预训练 NLP 模型的逐步指南
 
-[](https://medium.com/@shashank.kapadia?source=post_page-----a06659ca6668--------------------------------)[![Shashank Kapadia](../Images/347e4cb92a7d27f032c5761e4526f2fa.png)](https://medium.com/@shashank.kapadia?source=post_page-----a06659ca6668--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a06659ca6668--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a06659ca6668--------------------------------) [Shashank Kapadia](https://medium.com/@shashank.kapadia?source=post_page-----a06659ca6668--------------------------------)
+[](https://medium.com/@shashank.kapadia?source=post_page-----a06659ca6668--------------------------------)![Shashank Kapadia](https://medium.com/@shashank.kapadia?source=post_page-----a06659ca6668--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a06659ca6668--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a06659ca6668--------------------------------) [Shashank Kapadia](https://medium.com/@shashank.kapadia?source=post_page-----a06659ca6668--------------------------------)
 
 ·
 
@@ -42,29 +42,29 @@
 
 # 引言
 
-在当今世界，预训练NLP模型的可用性大大简化了使用深度学习技术解释文本数据的过程。然而，虽然这些模型在一般任务中表现优异，但它们在特定领域的适应性往往不足。本指南旨在带您了解如何微调预训练NLP模型，以在特定领域获得更好的性能。
+在当今世界，预训练 NLP 模型的可用性大大简化了使用深度学习技术解释文本数据的过程。然而，虽然这些模型在一般任务中表现优异，但它们在特定领域的适应性往往不足。本指南旨在带您了解如何微调预训练 NLP 模型，以在特定领域获得更好的性能。
 
 ## 动机
 
-尽管像BERT和通用句子编码器（USE）这样的预训练NLP模型在捕捉语言细节方面很有效，但由于其训练所用数据集的多样性，它们在特定领域应用中的表现可能受到限制。这种限制在分析特定领域内的关系时尤为明显。
+尽管像 BERT 和通用句子编码器（USE）这样的预训练 NLP 模型在捕捉语言细节方面很有效，但由于其训练所用数据集的多样性，它们在特定领域应用中的表现可能受到限制。这种限制在分析特定领域内的关系时尤为明显。
 
 例如，在处理就业数据时，我们希望模型能识别出“数据科学家”和“机器学习工程师”角色之间的更紧密关系，或“Python”和“TensorFlow”之间的更强关联。不幸的是，通用模型往往会遗漏这些细微的关系。
 
-下表演示了从基础多语言USE模型中获得的相似度差异：
+下表演示了从基础多语言 USE 模型中获得的相似度差异：
 
-![](../Images/fd70480995a62829117960a1a4fa1d88.png)
+![](img/fd70480995a62829117960a1a4fa1d88.png)
 
-图1：基础[多语言通用句子编码器模型](https://tfhub.dev/google/universal-sentence-encoder-multilingual/3)中两个文本向量之间的相似度得分
+图 1：基础[多语言通用句子编码器模型](https://tfhub.dev/google/universal-sentence-encoder-multilingual/3)中两个文本向量之间的相似度得分
 
-为了解决这个问题，我们可以通过高质量的领域特定数据集微调预训练模型。这一适应过程显著提升了模型的性能和精准度，充分释放了NLP模型的潜力。
+为了解决这个问题，我们可以通过高质量的领域特定数据集微调预训练模型。这一适应过程显著提升了模型的性能和精准度，充分释放了 NLP 模型的潜力。
 
-> 处理大型预训练NLP模型时，建议先部署基础模型，只有在其性能对具体问题不满足要求时才考虑微调。
+> 处理大型预训练 NLP 模型时，建议先部署基础模型，只有在其性能对具体问题不满足要求时才考虑微调。
 
 本教程专注于使用易于获取的开源数据微调通用句子编码器（USE）模型。
 
 # 理论概述
 
-微调ML模型可以通过多种策略实现，例如监督学习和强化学习。在本教程中，我们将集中于结合了孪生网络架构的一次（少次）学习方法。
+微调 ML 模型可以通过多种策略实现，例如监督学习和强化学习。在本教程中，我们将集中于结合了孪生网络架构的一次（少次）学习方法。
 
 ## 方法论
 
@@ -72,7 +72,7 @@
 
 Siamese 神经网络创建了一个‘嵌入空间’，在该空间中，相关的概念被紧密地放置，使模型能够更好地辨别语义关系。
 
-![](../Images/e04c290c089ac82b1e99511c2e8c6df0.png)
+![](img/e04c290c089ac82b1e99511c2e8c6df0.png)
 
 图 2\. Siamese 架构用于微调预训练 NLP 模型
 
@@ -92,13 +92,13 @@ Siamese 神经网络创建了一个‘嵌入空间’，在该空间中，相关
 
 ### 一次性学习允许深度学习算法测量两个图像之间的相似性和差异。
 
-[对比损失解释](https://bdtechtalks.com/2020/08/12/what-is-one-shot-learning/?source=post_page-----a06659ca6668--------------------------------) [## 对比损失解释
+[对比损失解释](https://bdtechtalks.com/2020/08/12/what-is-one-shot-learning/?source=post_page-----a06659ca6668--------------------------------) ## 对比损失解释
 
 ### 对比损失最近在许多论文中得到应用，展示了最先进的无监督结果…
 
-[towardsdatascience.com](/contrastive-loss-explaned-159f2d4a87ec?source=post_page-----a06659ca6668--------------------------------)
+[towardsdatascience.com
 
-完整代码可以在 [GitHub上的Jupyter Notebook](https://github.com/kapadias/medium-articles/blob/master/natural-language-processing/embedding-models/domain_adaption_fine_tune_nlp_model.ipynb) 中找到
+完整代码可以在 [GitHub 上的 Jupyter Notebook](https://github.com/kapadias/medium-articles/blob/master/natural-language-processing/embedding-models/domain_adaption_fine_tune_nlp_model.ipynb) 中找到
 
 # 数据概述
 
@@ -106,9 +106,9 @@ Siamese 神经网络创建了一个‘嵌入空间’，在该空间中，相关
 
 训练数据遵循以下格式：
 
-![](../Images/002a9075851dd4c80026dc760b2c3255.png)
+![](img/002a9075851dd4c80026dc760b2c3255.png)
 
-图3\. 训练数据的示例格式
+图 3\. 训练数据的示例格式
 
 在本教程中，我们使用来自 [ESCO 分类数据集](https://esco.ec.europa.eu/en) 的数据集，这些数据集已被转换为根据不同数据元素之间的关系生成相似度评分。
 
@@ -128,9 +128,9 @@ data = pd.read_csv("./data/training_data.csv")
 data.head()
 ```
 
-![](../Images/f63c7e896d9f23fa4d83168d3cf29e1f.png)
+![](img/f63c7e896d9f23fa4d83168d3cf29e1f.png)
 
-图4\. 用于微调模型的示例数据
+图 4\. 用于微调模型的示例数据
 
 # 起点：基线模型
 
@@ -170,9 +170,9 @@ pearsonr = sts_benchmark(base_model)
 print("STS Benachmark: " + str(pearsonr))
 ```
 
-![](../Images/ddf3d02dfb50c6ebf6c98aba0e9a055a.png)
+![](img/ddf3d02dfb50c6ebf6c98aba0e9a055a.png)
 
-图5\. 测试词汇的相似度可视化
+图 5\. 测试词汇的相似度可视化
 
 > STS Benchmark (dev)：0.8325
 
@@ -234,9 +234,9 @@ encoder.compile(
 encoder.summary()
 ```
 
-![](../Images/efd1cd25e0ddc3ef8fe842e8185ea96d.png)
+![](img/efd1cd25e0ddc3ef8fe842e8185ea96d.png)
 
-图6\. 微调的模型架构
+图 6\. 微调的模型架构
 
 ## 适应模型
 
@@ -291,19 +291,19 @@ pearsonr = sts_benchmark(tuned_model)
 print("STS Benachmark: " + str(pearsonr))
 ```
 
-![](../Images/c882c7db246a72c1d21308cd8dc462a9.png)
+![](img/c882c7db246a72c1d21308cd8dc462a9.png)
 
 > STS 基准（开发集）：0.8349
 
-基于在相对较小的数据集上对模型进行微调，STS基准得分与基线模型相当，这表明调优后的模型仍具有一定的泛化能力。然而，相似性可视化展示了相似标题之间的相似性得分得到了增强，而不相似标题的得分则减少了。
+基于在相对较小的数据集上对模型进行微调，STS 基准得分与基线模型相当，这表明调优后的模型仍具有一定的泛化能力。然而，相似性可视化展示了相似标题之间的相似性得分得到了增强，而不相似标题的得分则减少了。
 
 # 结束语
 
 对预训练自然语言处理（NLP）模型进行领域适配的微调是一种强大的技术，可以提高其在特定上下文中的表现和精度。通过利用高质量的领域特定数据集和利用孪生神经网络，我们可以增强模型捕捉语义相似性的能力。
 
-本教程提供了微调过程的逐步指南，以Universal Sentence Encoder（USE）模型为例。我们探讨了理论框架、数据准备、基线模型评估以及实际的微调过程。结果展示了在特定领域内微调的有效性，增强了相似性得分。
+本教程提供了微调过程的逐步指南，以 Universal Sentence Encoder（USE）模型为例。我们探讨了理论框架、数据准备、基线模型评估以及实际的微调过程。结果展示了在特定领域内微调的有效性，增强了相似性得分。
 
-通过遵循这种方法并将其适应到你的特定领域，你可以充分发挥预训练NLP模型的潜力，并在自然语言处理任务中取得更好的结果。
+通过遵循这种方法并将其适应到你的特定领域，你可以充分发挥预训练 NLP 模型的潜力，并在自然语言处理任务中取得更好的结果。
 
 感谢阅读。*如果你有任何反馈，请随时通过评论这篇文章、在* [*LinkedIn*](https://www.linkedin.com/in/shashankkapadia/) *上给我发消息，或者发邮件到（smhkapadia[at]gmail.com）与我联系*
 
@@ -317,8 +317,8 @@ print("STS Benachmark: " + str(pearsonr))
 
 ### 语言模型发展的历史视角
 
-[medium.com](https://medium.com/aimonks/the-evolution-of-natural-language-processing-56ce27916e10?source=post_page-----a06659ca6668--------------------------------) [](/recommendation-system-in-python-lightfm-61c85010ce17?source=post_page-----a06659ca6668--------------------------------) [## Python中的推荐系统：LightFM
+[medium.com](https://medium.com/aimonks/the-evolution-of-natural-language-processing-56ce27916e10?source=post_page-----a06659ca6668--------------------------------) [](/recommendation-system-in-python-lightfm-61c85010ce17?source=post_page-----a06659ca6668--------------------------------) ## Python 中的推荐系统：LightFM
 
-### 在Python中使用LightFM构建推荐系统的逐步指南
+### 在 Python 中使用 LightFM 构建推荐系统的逐步指南
 
-[towardsdatascience.com](/recommendation-system-in-python-lightfm-61c85010ce17?source=post_page-----a06659ca6668--------------------------------)
+[towardsdatascience.com

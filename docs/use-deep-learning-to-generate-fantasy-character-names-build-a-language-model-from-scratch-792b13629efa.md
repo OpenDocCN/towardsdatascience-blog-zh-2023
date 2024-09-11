@@ -1,18 +1,18 @@
 # 使用深度学习生成幻想名称：从零开始构建语言模型
 
-> 原文：[https://towardsdatascience.com/use-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa?source=collection_archive---------3-----------------------#2023-09-22](https://towardsdatascience.com/use-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa?source=collection_archive---------3-----------------------#2023-09-22)
+> 原文：[`towardsdatascience.com/use-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa?source=collection_archive---------3-----------------------#2023-09-22`](https://towardsdatascience.com/use-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa?source=collection_archive---------3-----------------------#2023-09-22)
 
 ## 语言模型能否创造独特的幻想角色名称？让我们从零开始构建它
 
-[](https://medium.com/@riccardo.andreoni?source=post_page-----792b13629efa--------------------------------)[![Riccardo Andreoni](../Images/5e22581e419639b373019a809d6e65c1.png)](https://medium.com/@riccardo.andreoni?source=post_page-----792b13629efa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----792b13629efa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----792b13629efa--------------------------------) [Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----792b13629efa--------------------------------)
+[](https://medium.com/@riccardo.andreoni?source=post_page-----792b13629efa--------------------------------)![Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----792b13629efa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----792b13629efa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----792b13629efa--------------------------------) [Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----792b13629efa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76784541161c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa&user=Riccardo+Andreoni&userId=76784541161c&source=post_page-76784541161c----792b13629efa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----792b13629efa--------------------------------) · 11分钟阅读 · 2023年9月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F792b13629efa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa&user=Riccardo+Andreoni&userId=76784541161c&source=-----792b13629efa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76784541161c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa&user=Riccardo+Andreoni&userId=76784541161c&source=post_page-76784541161c----792b13629efa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----792b13629efa--------------------------------) · 11 分钟阅读 · 2023 年 9 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F792b13629efa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa&user=Riccardo+Andreoni&userId=76784541161c&source=-----792b13629efa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F792b13629efa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa&source=-----792b13629efa---------------------bookmark_footer-----------)![](../Images/f64a5c60ba6b75f99b1f391913f9f8be.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F792b13629efa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa&source=-----792b13629efa---------------------bookmark_footer-----------)![](img/f64a5c60ba6b75f99b1f391913f9f8be.png)
 
 来源：[pixabay.com](https://pixabay.com/illustrations/book-old-surreal-fantasy-pages-863418/)
 
@@ -26,4 +26,4 @@ Tensorflow、Keras 和 Pytorch 使得构建深度和复杂的神经网络变得�
 
 标准的全连接神经网络不适用于[自然语言处理](https://en.wikipedia.org/wiki/Natural_language_processing)（NLP）任务，例如文本生成。主要原因是：
 
-+   对于NLP任务，输入和输出可能会有所不同……
++   对于 NLP 任务，输入和输出可能会有所不同……

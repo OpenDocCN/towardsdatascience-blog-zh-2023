@@ -1,28 +1,28 @@
-# 超越英语：实现多语言RAG解决方案
+# 超越英语：实现多语言 RAG 解决方案
 
-> 原文：[https://towardsdatascience.com/beyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6?source=collection_archive---------0-----------------------#2023-12-20](https://towardsdatascience.com/beyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6?source=collection_archive---------0-----------------------#2023-12-20)
+> 原文：[`towardsdatascience.com/beyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6?source=collection_archive---------0-----------------------#2023-12-20`](https://towardsdatascience.com/beyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6?source=collection_archive---------0-----------------------#2023-12-20)
 
 ## 实施非英语检索增强生成（RAG）系统时的注意事项
 
-[](https://medium.com/@jalkestrup?source=post_page-----12ccba0428b6--------------------------------)[![Jesper Alkestrup](../Images/199803c75758a9b943e72746105f3de5.png)](https://medium.com/@jalkestrup?source=post_page-----12ccba0428b6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12ccba0428b6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12ccba0428b6--------------------------------) [Jesper Alkestrup](https://medium.com/@jalkestrup?source=post_page-----12ccba0428b6--------------------------------)
+[](https://medium.com/@jalkestrup?source=post_page-----12ccba0428b6--------------------------------)![Jesper Alkestrup](https://medium.com/@jalkestrup?source=post_page-----12ccba0428b6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12ccba0428b6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----12ccba0428b6--------------------------------) [Jesper Alkestrup](https://medium.com/@jalkestrup?source=post_page-----12ccba0428b6--------------------------------)
 
 ·
 
-[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84e00f9ebe19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6&user=Jesper+Alkestrup&userId=84e00f9ebe19&source=post_page-84e00f9ebe19----12ccba0428b6---------------------post_header-----------) 在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12ccba0428b6--------------------------------) 发布 · 18 分钟阅读 · 2023年12月20日
+[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84e00f9ebe19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6&user=Jesper+Alkestrup&userId=84e00f9ebe19&source=post_page-84e00f9ebe19----12ccba0428b6---------------------post_header-----------) 在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12ccba0428b6--------------------------------) 发布 · 18 分钟阅读 · 2023 年 12 月 20 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12ccba0428b6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6&source=-----12ccba0428b6---------------------bookmark_footer-----------)![](../Images/4b0d38957430dc14c526618b898f1182.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12ccba0428b6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-english-implementing-a-multilingual-rag-solution-12ccba0428b6&source=-----12ccba0428b6---------------------bookmark_footer-----------)![](img/4b0d38957430dc14c526618b898f1182.png)
 
 RAG，一个无所不知的同事，全天候提供服务（图片由作者使用 Dall-E 3 生成）
 
 ## TLDR
 
-这篇文章介绍了在开发非英语RAG系统时应考虑的因素，并提供了具体的示例和技术。关键点包括：
+这篇文章介绍了在开发非英语 RAG 系统时应考虑的因素，并提供了具体的示例和技术。关键点包括：
 
 +   在数据加载过程中优先保持句法结构，因为这对有意义的文本分割至关重要。
 
-+   使用简单分隔符如\n\n来格式化文档，以促进高效的文本拆分。
++   使用简单分隔符如\n\n 来格式化文档，以促进高效的文本拆分。
 
 +   选择基于规则的文本分割器，因为在多语言环境中，基于 ML 的语义分割器计算强度大且性能较差。
 
@@ -44,7 +44,7 @@ RAG 成为 2023 年搜索技术中最流行的术语也就不足为奇了。检�
 
 1.  生成阶段：在此阶段，用户的查询被输入到检索系统中。该系统随后从知识库中提取相关信息片段。利用大语言模型 (LLM)，系统解释这些数据以制定连贯的自然语言响应，有效地解答用户的询问。
 
-![](../Images/0e5538579e680f53cdcb9062d811cc75.png)
+![](img/0e5538579e680f53cdcb9062d811cc75.png)
 
 现在让我们开始吧！
 
@@ -56,7 +56,7 @@ RAG 成为 2023 年搜索技术中最流行的术语也就不足为奇了。检�
 
 # 1\. 数据加载器：关键在于细节
 
-![](../Images/ff11a5cb9d6053f2e24509540b6b2c14.png)
+![](img/ff11a5cb9d6053f2e24509540b6b2c14.png)
 
 一个外观酷炫的多模态数据加载器（图像由作者使用 Dall-E 3 生成）
 
@@ -130,7 +130,7 @@ Open in app\nSearch Write\n'
 
 # 2. 数据格式化：无聊……但重要
 
-![](../Images/82a92d20f1ab6a15b7c2408f5cb9668f.png)
+![](img/82a92d20f1ab6a15b7c2408f5cb9668f.png)
 
 文档分块（图像由作者使用 Dall-E 3 生成）
 
@@ -172,7 +172,7 @@ Let’s first start with understanding the metrics available in Retrieval Evalua
 
 # 3: 文本拆分：大小重要
 
-![](../Images/a4f4db130ed93d7637ff014bd449b7a6.png)
+![](img/a4f4db130ed93d7637ff014bd449b7a6.png)
 
 拆分文本，简单的方法（图像由作者使用 Dall-E 3 生成）
 
@@ -186,7 +186,7 @@ Let’s first start with understanding the metrics available in Retrieval Evalua
 
 此外，还要考虑模型的训练文本长度——一些模型虽然在技术上可以接受更长的输入，但其训练数据却较短，这可能会影响对较长文本的性能。例如，[SBERT 的 Multi QA 基础模型](https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v1) 如下所示，
 
-![](../Images/e0d8262a6f1b3b939051aba7f8901fbb.png)
+![](img/e0d8262a6f1b3b939051aba7f8901fbb.png)
 
 ## **检索效果**
 
@@ -196,7 +196,7 @@ Let’s first start with understanding the metrics available in Retrieval Evalua
 
 ## **文本拆分：文本拆分的方法**
 
-[文本可以通过各种方法进行拆分](/how-to-chunk-text-data-a-comparative-analysis-3858c4a0997a)，主要分为两类：基于规则的（注重字符分析）和基于机器学习的模型。机器学习方法，从简单的 NLTK 和 Spacy 分词器到先进的 transformer 模型，通常依赖于语言特定的训练，主要是英语。尽管像 NLTK 和 Spacy 这样的简单模型支持多种语言，但它们主要处理句子拆分，而非语义划分。
+文本可以通过各种方法进行拆分，主要分为两类：基于规则的（注重字符分析）和基于机器学习的模型。机器学习方法，从简单的 NLTK 和 Spacy 分词器到先进的 transformer 模型，通常依赖于语言特定的训练，主要是英语。尽管像 NLTK 和 Spacy 这样的简单模型支持多种语言，但它们主要处理句子拆分，而非语义划分。
 
 > *由于基于机器学习的句子拆分器目前在大多数非英语语言中效果不佳且计算密集，我建议从简单的基于规则的拆分器开始。如果你保留了原始数据的相关句法结构，并正确地格式化了数据，结果将会质量良好。*
 
@@ -224,7 +224,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 split_texts = text_splitter(formatted_document['Boosting RAG: Picking the Best Embedding & Reranker models'])
 ```
 
-在这里，需要注意的是，应该将分词器定义为拟使用的嵌入模型，因为不同模型对词汇的计数方式不同。函数现在将按照优先顺序，首先通过我们在段落末尾引入的 \n\n 拆分任何超过128个标记的文本，如果不可能，则通过 \n 分隔的段落末尾，依此类推。前三个块将是：
+在这里，需要注意的是，应该将分词器定义为拟使用的嵌入模型，因为不同模型对词汇的计数方式不同。函数现在将按照优先顺序，首先通过我们在段落末尾引入的 \n\n 拆分任何超过 128 个标记的文本，如果不可能，则通过 \n 分隔的段落末尾，依此类推。前三个块将是：
 
 ```py
 Token of text: 111 
@@ -250,25 +250,25 @@ Let’s first start with understanding the metrics available in Retrieval Evalua
 
 # **4\. 嵌入模型：在丛林中导航**
 
-![](../Images/15ebcd61fd4e03d1657cceb920ad2483.png)
+![](img/15ebcd61fd4e03d1657cceb920ad2483.png)
 
 嵌入模型将文本转换为向量（图片由作者使用 Dall-E 3 生成）
 
-选择正确的嵌入模型对于检索增强生成（RAG）系统的成功至关重要，这比英语语言的情况复杂得多。比较模型的一个全面资源是 [Massive Text Embedding Benchmark (MTEB)](https://huggingface.co/spaces/mteb/leaderboard)，其中包含超过100种语言的基准。
+选择正确的嵌入模型对于检索增强生成（RAG）系统的成功至关重要，这比英语语言的情况复杂得多。比较模型的一个全面资源是 [Massive Text Embedding Benchmark (MTEB)](https://huggingface.co/spaces/mteb/leaderboard)，其中包含超过 100 种语言的基准。
 
 > 你选择的模型必须是多语言的，或专门针对你正在使用的语言（单语言）定制的。请记住，最新的高性能模型通常以英语为中心，可能不适用于其他语言。
 
-![](../Images/35f837806d09da41b4fdced9b6bc0438.png)
+![](img/35f837806d09da41b4fdced9b6bc0438.png)
 
-如果有相关资源，请参考与你的任务相关的语言特定基准。例如，在分类任务中，有超过50个语言特定的基准，帮助选择最有效的模型，适用于从丹麦语到西班牙语的语言。然而，重要的是要注意，这些基准可能不会直接指示模型在RAG系统中检索相关信息的效率，因为检索与分类、聚类或其他任务不同。任务是找到训练用于不对称搜索的模型，因为那些没有针对这一特定任务训练的模型可能会不准确地优先考虑较短的段落而非较长且更相关的段落。
+如果有相关资源，请参考与你的任务相关的语言特定基准。例如，在分类任务中，有超过 50 个语言特定的基准，帮助选择最有效的模型，适用于从丹麦语到西班牙语的语言。然而，重要的是要注意，这些基准可能不会直接指示模型在 RAG 系统中检索相关信息的效率，因为检索与分类、聚类或其他任务不同。任务是找到训练用于不对称搜索的模型，因为那些没有针对这一特定任务训练的模型可能会不准确地优先考虑较短的段落而非较长且更相关的段落。
 
-> 该模型应在[非对称检索](https://www.sbert.net/examples/applications/semantic-search/README.html)中表现出色，将短查询匹配到较长的文本块。原因在于，在RAG系统中，你通常需要将简短的查询匹配到更长的段落中以提取有意义的答案。与非对称检索相关的MTEB基准列在检索部分。一个挑战是截至2023年11月，MTEB的检索基准仅包括英语、中文和波兰语。
+> 该模型应在[非对称检索](https://www.sbert.net/examples/applications/semantic-search/README.html)中表现出色，将短查询匹配到较长的文本块。原因在于，在 RAG 系统中，你通常需要将简短的查询匹配到更长的段落中以提取有意义的答案。与非对称检索相关的 MTEB 基准列在检索部分。一个挑战是截至 2023 年 11 月，MTEB 的检索基准仅包括英语、中文和波兰语。
 
 在处理像挪威语这样的语言时，可能没有特定的检索基准，你可能会想知道是否应该选择分类基准中表现最好的模型，还是选择一个在英语检索方面表现出色的通用多语言模型？
 
-对于实际建议，简单的经验法则是选择MTEB检索基准中表现最好的多语言模型。注意，检索评分本身仍然基于英语，因此需要在你自己的语言上进行基准测试以验证性能（第6步）。截至2023年12月，E5-多语言系列是开源模型的一个强有力的选择。该模型经过针对非对称检索的微调，通过在嵌入前将文本标记为“查询”或“段落”，它通过考虑输入的性质优化了检索过程。这种方法确保了查询与知识库中相关信息之间的更有效匹配，从而提升了RAG系统的整体性能。根据基准测试，cohere-embed-multilingual-v3.0可能表现更佳，但需付费。
+对于实际建议，简单的经验法则是选择 MTEB 检索基准中表现最好的多语言模型。注意，检索评分本身仍然基于英语，因此需要在你自己的语言上进行基准测试以验证性能（第 6 步）。截至 2023 年 12 月，E5-多语言系列是开源模型的一个强有力的选择。该模型经过针对非对称检索的微调，通过在嵌入前将文本标记为“查询”或“段落”，它通过考虑输入的性质优化了检索过程。这种方法确保了查询与知识库中相关信息之间的更有效匹配，从而提升了 RAG 系统的整体性能。根据基准测试，cohere-embed-multilingual-v3.0 可能表现更佳，但需付费。
 
-嵌入步骤通常作为存储文档到向量数据库的一部分完成，但使用E5系列对所有分割句子进行嵌入的简单示例如下，使用了Sentence Transformer库。
+嵌入步骤通常作为存储文档到向量数据库的一部分完成，但使用 E5 系列对所有分割句子进行嵌入的简单示例如下，使用了 Sentence Transformer 库。
 
 ```py
 from sentence_transformers import SentenceTransformer
@@ -284,19 +284,19 @@ print(f'We now have {len(embeddings)} embeddings, each of size {len(embeddings[0
 We now have 12 embeddings, each of size 1024
 ```
 
-如果现成的嵌入在你的特定检索领域中表现不够理想，不用担心。随着LLM的出现，现在可以从现有语料库中自动生成训练数据，并通过在你自己的数据上微调现有嵌入提高性能，提升幅度可达5–10%。[LlamaIndex在这里提供了一个指南](https://blog.llamaindex.ai/fine-tuning-embeddings-for-rag-with-synthetic-data-e534409a3971) 或 [SBERTs GenQ方法](https://www.sbert.net/examples/unsupervised_learning/query_generation/README.html#bi-encoder-training)，其中主要是Bi-Encoder训练部分相关。
+如果现成的嵌入在你的特定检索领域中表现不够理想，不用担心。随着 LLM 的出现，现在可以从现有语料库中自动生成训练数据，并通过在你自己的数据上微调现有嵌入提高性能，提升幅度可达 5–10%。[LlamaIndex 在这里提供了一个指南](https://blog.llamaindex.ai/fine-tuning-embeddings-for-rag-with-synthetic-data-e534409a3971) 或 [SBERTs GenQ 方法](https://www.sbert.net/examples/unsupervised_learning/query_generation/README.html#bi-encoder-training)，其中主要是 Bi-Encoder 训练部分相关。
 
 # **5\. 向量数据库：嵌入的家园**
 
-![](../Images/ed7609bab1bea443496512fadd371f33.png)
+![](img/ed7609bab1bea443496512fadd371f33.png)
 
-嵌入存储在数据库中以供检索（图像由作者通过Dall-E 3生成）
+嵌入存储在数据库中以供检索（图像由作者通过 Dall-E 3 生成）
 
-在加载、格式化、拆分数据并选择嵌入模型之后，RAG 系统设置的下一步是嵌入数据并存储这些向量嵌入以供检索。大多数平台，包括 LangChain 和 LlamaIndex，都提供了集成的本地存储解决方案，使用像 Qdrant、Milvus、Chroma DB 这样的向量数据库，或者直接与基于云的存储选项如 Pinecone 或 ActiveLoop 集成。向量存储的选择通常不受数据语言（英语或其他语言）的影响。为了全面了解存储和搜索选项，包括向量数据库，我推荐你探索现有资源，例如这个详细介绍：[关于向量数据库及其如何增强你的 LLM 应用程序的全部知识](/all-you-need-to-know-about-vector-databases-and-how-to-use-them-to-augment-your-llm-apps-596f39adfedb#f02b)。这个指南将为你提供有效管理 RAG 系统存储方面的必要见解。
+在加载、格式化、拆分数据并选择嵌入模型之后，RAG 系统设置的下一步是嵌入数据并存储这些向量嵌入以供检索。大多数平台，包括 LangChain 和 LlamaIndex，都提供了集成的本地存储解决方案，使用像 Qdrant、Milvus、Chroma DB 这样的向量数据库，或者直接与基于云的存储选项如 Pinecone 或 ActiveLoop 集成。向量存储的选择通常不受数据语言（英语或其他语言）的影响。为了全面了解存储和搜索选项，包括向量数据库，我推荐你探索现有资源，例如这个详细介绍：关于向量数据库及其如何增强你的 LLM 应用程序的全部知识。这个指南将为你提供有效管理 RAG 系统存储方面的必要见解。
 
 到目前为止，你已经成功创建了作为检索系统“大脑”的知识库。
 
-![](../Images/34c0e985a66083b497a9e454d51b7d0a.png)
+![](img/34c0e985a66083b497a9e454d51b7d0a.png)
 
 生成响应（图像由作者 w. Dall-E 3 生成）
 
@@ -304,21 +304,21 @@ We now have 12 embeddings, each of size 1024
 
 RAG 系统的第二部分，生成阶段，在确保解决方案成功方面同样重要。严格来说，这是一个搜索优化问题，上面加上了一些 LLM，考虑因素较少依赖语言。这意味着针对英语的检索优化指南通常也适用于其他语言，因此在此未包含。
 
-在最简单的形式中，生成阶段涉及一个直接的过程：获取用户的问题，使用第 4 步中选择的嵌入模型进行嵌入，在新创建的数据库中执行向量相似度搜索，然后将相关的文本块提供给 LLM。这使得系统能够用自然语言回应查询。然而，要实现高性能的 RAG 系统，需要在检索方面进行若干调整，如重新排序、过滤等。有关更多见解，我建议你探索一些文章，例如 [提升检索增强生成系统性能的 10 种方法](/10-ways-to-improve-the-performance-of-retrieval-augmented-generation-systems-5fa2cee7cd5c) 或 [通过混合搜索改进 RAG 管道中的检索性能](/improving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5)。
+在最简单的形式中，生成阶段涉及一个直接的过程：获取用户的问题，使用第 4 步中选择的嵌入模型进行嵌入，在新创建的数据库中执行向量相似度搜索，然后将相关的文本块提供给 LLM。这使得系统能够用自然语言回应查询。然而，要实现高性能的 RAG 系统，需要在检索方面进行若干调整，如重新排序、过滤等。有关更多见解，我建议你探索一些文章，例如 提升检索增强生成系统性能的 10 种方法 或 通过混合搜索改进 RAG 管道中的检索性能。
 
 # **结语：评估你的 RAG 系统**
 
-![](../Images/0943409b8b61f1ab7294a1bf17066d1c.png)
+![](img/0943409b8b61f1ab7294a1bf17066d1c.png)
 
 正确的选择是什么？（图像由作者 w. Dall-E 3 生成）
 
 那么你接下来该做什么？针对你的具体问题和语言，正确的配置是什么？
 
-现在可能已经很清楚，决定RAG系统的最佳设置可能是一项复杂的任务，因为涉及的变量众多。定制的查询和上下文基准对于评估不同配置至关重要，特别是因为针对你特定的多语言数据集和用例的现有基准非常不可能存在。
+现在可能已经很清楚，决定 RAG 系统的最佳设置可能是一项复杂的任务，因为涉及的变量众多。定制的查询和上下文基准对于评估不同配置至关重要，特别是因为针对你特定的多语言数据集和用例的现有基准非常不可能存在。
 
-幸运的是，凭借大型语言模型（LLMs），创建定制的基准数据集已变得可行。检索系统的基准通常包括搜索查询及其对应的上下文（我们在第4步中拆分的文本块）。如果你拥有原始数据，LLMs可以自动生成与数据集相关的虚构查询。[像LlamaIndex这样的工具提供了内置功能来实现这一目的](https://docs.llamaindex.ai/en/stable/examples/evaluation/retrieval/retriever_eval.html)。通过生成自定义查询，你可以系统地测试嵌入模型、块大小或数据格式的调整对你特定场景下检索性能的影响。
+幸运的是，凭借大型语言模型（LLMs），创建定制的基准数据集已变得可行。检索系统的基准通常包括搜索查询及其对应的上下文（我们在第 4 步中拆分的文本块）。如果你拥有原始数据，LLMs 可以自动生成与数据集相关的虚构查询。[像 LlamaIndex 这样的工具提供了内置功能来实现这一目的](https://docs.llamaindex.ai/en/stable/examples/evaluation/retrieval/retriever_eval.html)。通过生成自定义查询，你可以系统地测试嵌入模型、块大小或数据格式的调整对你特定场景下检索性能的影响。
 
-创建一个具有代表性的评估基准涉及许多注意事项，2024年初我将跟进一篇关于如何创建一个表现良好的检索基准的单独文章——敬请期待！
+创建一个具有代表性的评估基准涉及许多注意事项，2024 年初我将跟进一篇关于如何创建一个表现良好的检索基准的单独文章——敬请期待！
 
 感谢你抽出时间阅读这篇文章，希望你觉得这篇文章对你有所帮助。
 
@@ -326,24 +326,24 @@ RAG 系统的第二部分，生成阶段，在确保解决方案成功方面同�
 
 **参考文献：**
 
-+   [使用Llamaindex评估RAG系统的理想块大小](https://blog.llamaindex.ai/evaluating-the-ideal-chunk-size-for-a-rag-system-using-llamaindex-6207e5d3fec5)
++   [使用 Llamaindex 评估 RAG 系统的理想块大小](https://blog.llamaindex.ai/evaluating-the-ideal-chunk-size-for-a-rag-system-using-llamaindex-6207e5d3fec5)
 
-+   [构建基于RAG的LLM应用程序以投入生产](https://www.anyscale.com/blog/a-comprehensive-guide-for-building-rag-based-llm-applications-part-1?utm_source=gradientflow&utm_medium=newsletter#chunk-data)
++   [构建基于 RAG 的 LLM 应用程序以投入生产](https://www.anyscale.com/blog/a-comprehensive-guide-for-building-rag-based-llm-applications-part-1?utm_source=gradientflow&utm_medium=newsletter#chunk-data)
 
-+   [如何分块文本数据的比较分析](/how-to-chunk-text-data-a-comparative-analysis-3858c4a0997a)
++   如何分块文本数据的比较分析
 
 +   [大规模文本嵌入基准 (MTEB)](https://huggingface.co/spaces/mteb/leaderboard)
 
-+   [SBERT在非对称检索中的应用](https://www.sbert.net/examples/applications/semantic-search/README.html)
++   [SBERT 在非对称检索中的应用](https://www.sbert.net/examples/applications/semantic-search/README.html)
 
-+   [使用LlamaIndex微调嵌入](https://blog.llamaindex.ai/fine-tuning-embeddings-for-rag-with-synthetic-data-e534409a3971)
++   [使用 LlamaIndex 微调嵌入](https://blog.llamaindex.ai/fine-tuning-embeddings-for-rag-with-synthetic-data-e534409a3971)
 
-+   [使用SBERT的GenQ方法微调嵌入](https://www.sbert.net/examples/unsupervised_learning/query_generation/README.html#bi-encoder-training)
++   [使用 SBERT 的 GenQ 方法微调嵌入](https://www.sbert.net/examples/unsupervised_learning/query_generation/README.html#bi-encoder-training)
 
-+   [关于向量数据库及其如何增强你的LLM应用程序的所有信息](/all-you-need-to-know-about-vector-databases-and-how-to-use-them-to-augment-your-llm-apps-596f39adfedb#f02b)
++   关于向量数据库及其如何增强你的 LLM 应用程序的所有信息
 
-+   [提高检索增强生成系统性能的10种方法](/10-ways-to-improve-the-performance-of-retrieval-augmented-generation-systems-5fa2cee7cd5c)
++   提高检索增强生成系统性能的 10 种方法
 
-+   [通过混合搜索提高RAG管道中的检索性能](/improving-retrieval-performance-in-rag-pipelines-with-hybrid-search-c75203c2f2f5)
++   通过混合搜索提高 RAG 管道中的检索性能
 
-+   [使用LlamaIndex评估RAG系统的检索性能](https://docs.llamaindex.ai/en/stable/examples/evaluation/retrieval/retriever_eval.html)
++   [使用 LlamaIndex 评估 RAG 系统的检索性能](https://docs.llamaindex.ai/en/stable/examples/evaluation/retrieval/retriever_eval.html)

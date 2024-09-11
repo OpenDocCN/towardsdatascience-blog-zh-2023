@@ -1,18 +1,18 @@
 # 这是我的数据科学工作流程模板
 
-> 原文：[https://towardsdatascience.com/heres-my-data-science-workflow-template-caa83c1e3032?source=collection_archive---------13-----------------------#2023-02-22](https://towardsdatascience.com/heres-my-data-science-workflow-template-caa83c1e3032?source=collection_archive---------13-----------------------#2023-02-22)
+> 原文：[`towardsdatascience.com/heres-my-data-science-workflow-template-caa83c1e3032?source=collection_archive---------13-----------------------#2023-02-22`](https://towardsdatascience.com/heres-my-data-science-workflow-template-caa83c1e3032?source=collection_archive---------13-----------------------#2023-02-22)
 
 ## 一份逐步的、快速的指南，专注于数据科学工作的方面
 
-[](https://datascience2.medium.com/?source=post_page-----caa83c1e3032--------------------------------)[![Matt Przybyla](../Images/3b9e714e012e8846b866e4e4b5d689d7.png)](https://datascience2.medium.com/?source=post_page-----caa83c1e3032--------------------------------)[](https://towardsdatascience.com/?source=post_page-----caa83c1e3032--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----caa83c1e3032--------------------------------) [Matt Przybyla](https://datascience2.medium.com/?source=post_page-----caa83c1e3032--------------------------------)
+[](https://datascience2.medium.com/?source=post_page-----caa83c1e3032--------------------------------)![Matt Przybyla](https://datascience2.medium.com/?source=post_page-----caa83c1e3032--------------------------------)[](https://towardsdatascience.com/?source=post_page-----caa83c1e3032--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----caa83c1e3032--------------------------------) [Matt Przybyla](https://datascience2.medium.com/?source=post_page-----caa83c1e3032--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fabe5272eafd9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheres-my-data-science-workflow-template-caa83c1e3032&user=Matt+Przybyla&userId=abe5272eafd9&source=post_page-abe5272eafd9----caa83c1e3032---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----caa83c1e3032--------------------------------) ·6分钟阅读·2023年2月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcaa83c1e3032&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheres-my-data-science-workflow-template-caa83c1e3032&user=Matt+Przybyla&userId=abe5272eafd9&source=-----caa83c1e3032---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fabe5272eafd9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheres-my-data-science-workflow-template-caa83c1e3032&user=Matt+Przybyla&userId=abe5272eafd9&source=post_page-abe5272eafd9----caa83c1e3032---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----caa83c1e3032--------------------------------) ·6 分钟阅读·2023 年 2 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcaa83c1e3032&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheres-my-data-science-workflow-template-caa83c1e3032&user=Matt+Przybyla&userId=abe5272eafd9&source=-----caa83c1e3032---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcaa83c1e3032&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheres-my-data-science-workflow-template-caa83c1e3032&source=-----caa83c1e3032---------------------bookmark_footer-----------)![](../Images/d4d5b55acda5558f032c25d0eb85673f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcaa83c1e3032&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fheres-my-data-science-workflow-template-caa83c1e3032&source=-----caa83c1e3032---------------------bookmark_footer-----------)![](img/d4d5b55acda5558f032c25d0eb85673f.png)
 
 图片由 [Campaign Creators](https://unsplash.com/@campaign_creators?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，在 [Unsplash](https://unsplash.com/photos/--kQ4tBklJI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) [1]。
 

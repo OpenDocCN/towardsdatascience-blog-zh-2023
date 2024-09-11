@@ -1,18 +1,18 @@
 # 现代图像语义搜索
 
-> 原文：[https://towardsdatascience.com/modern-semantic-search-for-images-cb1a3242631d?source=collection_archive---------7-----------------------#2023-11-14](https://towardsdatascience.com/modern-semantic-search-for-images-cb1a3242631d?source=collection_archive---------7-----------------------#2023-11-14)
+> 原文：[`towardsdatascience.com/modern-semantic-search-for-images-cb1a3242631d?source=collection_archive---------7-----------------------#2023-11-14`](https://towardsdatascience.com/modern-semantic-search-for-images-cb1a3242631d?source=collection_archive---------7-----------------------#2023-11-14)
 
 ## 一篇利用 Python、Pinecone、Hugging Face 和 Open AI CLIP 模型来创建云照片语义搜索应用程序的操作指南。
 
-[](https://medium.com/@joshpoduska?source=post_page-----cb1a3242631d--------------------------------)[![Josh Poduska](../Images/89ee323bac41d31083206a37df1dd0a3.png)](https://medium.com/@joshpoduska?source=post_page-----cb1a3242631d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb1a3242631d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb1a3242631d--------------------------------) [Josh Poduska](https://medium.com/@joshpoduska?source=post_page-----cb1a3242631d--------------------------------)
+[](https://medium.com/@joshpoduska?source=post_page-----cb1a3242631d--------------------------------)![Josh Poduska](https://medium.com/@joshpoduska?source=post_page-----cb1a3242631d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb1a3242631d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb1a3242631d--------------------------------) [Josh Poduska](https://medium.com/@joshpoduska?source=post_page-----cb1a3242631d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb6dae10267e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-semantic-search-for-images-cb1a3242631d&user=Josh+Poduska&userId=b6dae10267e5&source=post_page-b6dae10267e5----cb1a3242631d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb1a3242631d--------------------------------) ·6 min read·2023年11月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb1a3242631d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-semantic-search-for-images-cb1a3242631d&user=Josh+Poduska&userId=b6dae10267e5&source=-----cb1a3242631d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb6dae10267e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-semantic-search-for-images-cb1a3242631d&user=Josh+Poduska&userId=b6dae10267e5&source=post_page-b6dae10267e5----cb1a3242631d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb1a3242631d--------------------------------) ·6 min read·2023 年 11 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcb1a3242631d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-semantic-search-for-images-cb1a3242631d&user=Josh+Poduska&userId=b6dae10267e5&source=-----cb1a3242631d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb1a3242631d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-semantic-search-for-images-cb1a3242631d&source=-----cb1a3242631d---------------------bookmark_footer-----------)![](../Images/1c4e7abefc2b87c21d19e23600a9530b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcb1a3242631d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodern-semantic-search-for-images-cb1a3242631d&source=-----cb1a3242631d---------------------bookmark_footer-----------)![](img/1c4e7abefc2b87c21d19e23600a9530b.png)
 
 作者提供的图片
 
@@ -28,7 +28,7 @@
 
 **结果：** 六张没有甜甜圈的蛋糕图片，接着是一张我想要的图片。
 
-![](../Images/dd7019d79c347a6cfc0832aed02f9513.png)
+![](img/dd7019d79c347a6cfc0832aed02f9513.png)
 
 作者提供的图片
 
@@ -36,7 +36,7 @@
 
 **结果：** 两张和一个视频完全符合我想要的。
 
-![](../Images/7aed89626ffb2d725c711f6c4a81564e.png)
+![](img/7aed89626ffb2d725c711f6c4a81564e.png)
 
 作者提供的图片
 
@@ -48,7 +48,7 @@
 
 **结果：**
 
-![](../Images/dab76c3befff8ce7b26fe2ae9da7df38.png)
+![](img/dab76c3befff8ce7b26fe2ae9da7df38.png)
 
 作者创建的图片
 
@@ -58,7 +58,7 @@
 
 **结果：** 破裂的嘴唇照片（未展示）和破裂嘴唇之前的视频分别是结果一和二。
 
-![](../Images/1c4e7abefc2b87c21d19e23600a9530b.png)
+![](img/1c4e7abefc2b87c21d19e23600a9530b.png)
 
 作者提供的图片
 
@@ -68,25 +68,25 @@
 
 给定图像和文本描述，模型可以预测该图像最相关的文本描述，而无需针对特定任务进行优化。
 
-![](../Images/5b99366aac6000d76388a6ba9ff53b17.png)
+![](img/5b99366aac6000d76388a6ba9ff53b17.png)
 
-[来源: Nikos Karfitsas, Towards Data Science](/clip-the-most-influential-ai-model-from-openai-and-how-to-use-it-f8ee408958b1)
+来源: Nikos Karfitsas, Towards Data Science
 
 大多数在线教程中的 CLIP 架构对于概念验证来说足够好，但不适合企业级应用。在这些教程中，CLIP 和 Hugging Face 处理器将嵌入保持在内存中，以作为运行相似度评分和检索的向量存储。
 
-![](../Images/be21708790b6b623a350f154e8a4e891.png)
+![](img/be21708790b6b623a350f154e8a4e891.png)
 
 作者创建的图片
 
 像 Pinecone 这样的向量数据库是扩展此类应用程序的关键组件。它提供了简化、稳健、企业级的功能，如图像的批处理和流处理、嵌入的企业管理、低延迟检索和元数据过滤。
 
-![](../Images/9fa02718f8ecf9777750b0f46ad35495.png)
+![](img/9fa02718f8ecf9777750b0f46ad35495.png)
 
 作者创建的图片
 
 # 构建应用程序
 
-此应用程序的代码和支持文件可在 GitHub 上找到，链接为 [https://github.com/joshpoduska/llm-image-caption-semantic-search](https://github.com/joshpoduska/llm-image-caption-semantic-search)。使用它们构建一个用于云照片的语义搜索应用程序。
+此应用程序的代码和支持文件可在 GitHub 上找到，链接为 [`github.com/joshpoduska/llm-image-caption-semantic-search`](https://github.com/joshpoduska/llm-image-caption-semantic-search)。使用它们构建一个用于云照片的语义搜索应用程序。
 
 该应用程序在配备足够内存的笔记本电脑上本地运行。我在 MacBook Pro 上进行了测试。
 
@@ -138,7 +138,7 @@ embeddings = img_model.encode(images)
 
 这是我 pandas DataFrame 的第一行，包含图像字段、向量和元数据字典字段。
 
-![](../Images/942e28262b92ccdbd38c53267175c137.png)
+![](img/942e28262b92ccdbd38c53267175c137.png)
 
 图像由作者提供。
 
@@ -158,7 +158,7 @@ index.upsert(vectors=ids_vectors_chunk, async_req=True)
 text_model = SentenceTransformer(‘sentence-transformers/clip-ViT-B-32-multilingual-v1’)
 ```
 
-现在我们可以为我们的搜索短语创建一个嵌入，并将其与存储在Pinecone中的图像嵌入进行比较。
+现在我们可以为我们的搜索短语创建一个嵌入，并将其与存储在 Pinecone 中的图像嵌入进行比较。
 
 ```py
 # create the query vector
@@ -176,4 +176,4 @@ xc = index.query(xq,
 
 # 结论
 
-CLIP模型非常了不起。它是一个通用知识的零样本模型，已经学会了将图像与文本关联，从而摆脱了在预定义类别上训练图像分类器的限制。当我们将这一点与像Pinecone这样的企业级向量数据库的强大功能结合时，我们可以创建具有低延迟和高保真度的语义图像搜索应用。这只是生成性AI每天涌现出的令人兴奋的应用之一。
+CLIP 模型非常了不起。它是一个通用知识的零样本模型，已经学会了将图像与文本关联，从而摆脱了在预定义类别上训练图像分类器的限制。当我们将这一点与像 Pinecone 这样的企业级向量数据库的强大功能结合时，我们可以创建具有低延迟和高保真度的语义图像搜索应用。这只是生成性 AI 每天涌现出的令人兴奋的应用之一。

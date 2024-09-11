@@ -1,18 +1,18 @@
 # MLOps：什么是操作节奏？
 
-> 原文：[https://towardsdatascience.com/mlops-what-is-operational-tempo-91a3e0657ce6?source=collection_archive---------13-----------------------#2023-06-01](https://towardsdatascience.com/mlops-what-is-operational-tempo-91a3e0657ce6?source=collection_archive---------13-----------------------#2023-06-01)
+> 原文：[`towardsdatascience.com/mlops-what-is-operational-tempo-91a3e0657ce6?source=collection_archive---------13-----------------------#2023-06-01`](https://towardsdatascience.com/mlops-what-is-operational-tempo-91a3e0657ce6?source=collection_archive---------13-----------------------#2023-06-01)
 
 ## 快速的周转不仅仅依赖于工具
 
-[](https://blaza.medium.com/?source=post_page-----91a3e0657ce6--------------------------------)[![Matt Blasa](../Images/29a6db36f81799f9b8a3c22ac6672de2.png)](https://blaza.medium.com/?source=post_page-----91a3e0657ce6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----91a3e0657ce6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----91a3e0657ce6--------------------------------) [Matt Blasa](https://blaza.medium.com/?source=post_page-----91a3e0657ce6--------------------------------)
+[](https://blaza.medium.com/?source=post_page-----91a3e0657ce6--------------------------------)![Matt Blasa](https://blaza.medium.com/?source=post_page-----91a3e0657ce6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----91a3e0657ce6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----91a3e0657ce6--------------------------------) [Matt Blasa](https://blaza.medium.com/?source=post_page-----91a3e0657ce6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd78a2c965654&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-what-is-operational-tempo-91a3e0657ce6&user=Matt+Blasa&userId=d78a2c965654&source=post_page-d78a2c965654----91a3e0657ce6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----91a3e0657ce6--------------------------------) ·14 分钟阅读·2023年6月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F91a3e0657ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-what-is-operational-tempo-91a3e0657ce6&user=Matt+Blasa&userId=d78a2c965654&source=-----91a3e0657ce6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd78a2c965654&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-what-is-operational-tempo-91a3e0657ce6&user=Matt+Blasa&userId=d78a2c965654&source=post_page-d78a2c965654----91a3e0657ce6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----91a3e0657ce6--------------------------------) ·14 分钟阅读·2023 年 6 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F91a3e0657ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-what-is-operational-tempo-91a3e0657ce6&user=Matt+Blasa&userId=d78a2c965654&source=-----91a3e0657ce6---------------------clap_footer-----------)
 
 --
 
-![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F91a3e0657ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-what-is-operational-tempo-91a3e0657ce6&source=-----91a3e0657ce6---------------------bookmark_footer-----------)![](../Images/a68fa14c76aca52e066d96c0809e515f.png)
+![](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F91a3e0657ce6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-what-is-operational-tempo-91a3e0657ce6&source=-----91a3e0657ce6---------------------bookmark_footer-----------)![](img/a68fa14c76aca52e066d96c0809e515f.png)
 
 图片由作者提供，灵感来自 [Michele Bitetto](https://unsplash.com/@michelebit_) 在 [Unsplash](https://unsplash.com/photos/0l2PPgrHXX4)
 
@@ -20,7 +20,7 @@
 
 一个良好的操作节奏有助于按时交付项目，控制成本，减少开发时间，并确保机器学习项目的高质量结果。
 
-![](../Images/8ef245a0c0bd4056a2c46ef8210939e6.png)
+![](img/8ef245a0c0bd4056a2c46ef8210939e6.png)
 
 MLOps 节奏因素，作者创作
 
@@ -42,15 +42,15 @@ MLOps 节奏因素，作者创作
 
 # 1\. 战略目标
 
-![](../Images/a6fa855f8bff9fdfe7ff60da7f1e7325.png)
+![](img/a6fa855f8bff9fdfe7ff60da7f1e7325.png)
 
 [Jason Goodman](https://unsplash.com/@jasongoodman_youxventures)拍摄，图片来源于[Unsplash](https://unsplash.com/photos/vbxyFxlgpjM)
 
-战略目标在塑造组织操作节奏中发挥了重要作用。它们提供了意图、焦点、方向和模型构建过程的框架。在构建之前，始终询问用户为什么需要一个ML解决方案，而不是如何做。关注项目目标的功能，而不是模型。
+战略目标在塑造组织操作节奏中发挥了重要作用。它们提供了意图、焦点、方向和模型构建过程的框架。在构建之前，始终询问用户为什么需要一个 ML 解决方案，而不是如何做。关注项目目标的功能，而不是模型。
 
-关注“为什么”可以显著影响MLOps中的操作节奏。通过了解项目的原因和意图，有助于确定你想要构建的方向。缺乏对“为什么”的沟通或明确性是项目未能投入生产的常见原因。这会造成瓶颈，使得开发可能停滞——甚至需要重新开始。
+关注“为什么”可以显著影响 MLOps 中的操作节奏。通过了解项目的原因和意图，有助于确定你想要构建的方向。缺乏对“为什么”的沟通或明确性是项目未能投入生产的常见原因。这会造成瓶颈，使得开发可能停滞——甚至需要重新开始。
 
-![](../Images/e426f02ff0136e2b898b3524e936d439.png)
+![](img/e426f02ff0136e2b898b3524e936d439.png)
 
 作者创作
 
@@ -82,29 +82,29 @@ MLOps 节奏因素，作者创作
 
 我们的团队领导专注于理解“为什么”。重点是最终结果——数据产品。最终目标是个性化购物体验，推动客户参与，并向他们重新营销产品。
 
-这种目的的明确性——产品与模型的心态——简化了整个开发过程。它将模型开发过程与更大的商业战略目标联系起来。它促进了我们咨询团队与业务团队之间的沟通和信任，提高了MLOps的节奏。
+这种目的的明确性——产品与模型的心态——简化了整个开发过程。它将模型开发过程与更大的商业战略目标联系起来。它促进了我们咨询团队与业务团队之间的沟通和信任，提高了 MLOps 的节奏。
 
 根据我们的建议，客户的团队能够有效分配资源，适应意外变化，并将精力集中在实现期望结果上：一个改进的推荐系统。
 
-通过关注“为什么”，他们确保了项目的每个阶段都与提供个性化购物体验的战略目标保持一致。因此，ML解决方案成功实施，显著改善了产品推荐系统，并带来了销售和客户满意度的明显提升。
+通过关注“为什么”，他们确保了项目的每个阶段都与提供个性化购物体验的战略目标保持一致。因此，ML 解决方案成功实施，显著改善了产品推荐系统，并带来了销售和客户满意度的明显提升。
 
-MLOps节奏中的所有其他因素都受到对“为什么”的清晰理解——战略目标和最终使用案例的影响。
+MLOps 节奏中的所有其他因素都受到对“为什么”的清晰理解——战略目标和最终使用案例的影响。
 
 # 2\. 数据
 
-![](../Images/9b888dc927e4e9dd96fcf0e6069bf451.png)
+![](img/9b888dc927e4e9dd96fcf0e6069bf451.png)
 
 照片由[卢克·切瑟](https://unsplash.com/@lukechesser)提供，来源于[Unsplash](https://unsplash.com/photos/JKUTrJ4vK00)
 
-数据和高效的数据操作对MLOps的成功至关重要。没有高质量的数据，良好的流程、经验丰富的工作人员和工具都无效。数据是机器学习模型开发的基础——它在操作节奏中发挥着决定性作用。
+数据和高效的数据操作对 MLOps 的成功至关重要。没有高质量的数据，良好的流程、经验丰富的工作人员和工具都无效。数据是机器学习模型开发的基础——它在操作节奏中发挥着决定性作用。
 
-稳固的DataOps基础对维持良好的MLOps操作节奏至关重要。如果支撑MLOps过程的DataOps不成熟或不完整，可能会导致积压。一个强健的DataOps流程和成熟度确保了用于机器学习模型的数据具有高质量、一致性、及时性和准确性。
+稳固的 DataOps 基础对维持良好的 MLOps 操作节奏至关重要。如果支撑 MLOps 过程的 DataOps 不成熟或不完整，可能会导致积压。一个强健的 DataOps 流程和成熟度确保了用于机器学习模型的数据具有高质量、一致性、及时性和准确性。
 
-![](../Images/1ff9456659cf5253c493380030941fce.png)
+![](img/1ff9456659cf5253c493380030941fce.png)
 
-Data Ops和MLOps流程，作者创作
+Data Ops 和 MLOps 流程，作者创作
 
-MLOps数据操作中的挑战：
+MLOps 数据操作中的挑战：
 
 +   数据不足阻碍了操作的速度。
 
@@ -118,11 +118,11 @@ MLOps数据操作中的挑战：
 
 让我们通过一个例子来说明：一个金融客户试图改善其信用评分模型。目标？提供更好的风险评估，从而做出更好的贷款决策。
 
-我们的客户拥有一支有能力且知识丰富的MLOps团队、良好的流程和模板以及最好的工具。然而，他们遇到了数据问题——没有高质量的相关数据，这些资源不足以构建有效的机器学习模型。这就像一把没有钉子的锤子或没有木材的锯子。
+我们的客户拥有一支有能力且知识丰富的 MLOps 团队、良好的流程和模板以及最好的工具。然而，他们遇到了数据问题——没有高质量的相关数据，这些资源不足以构建有效的机器学习模型。这就像一把没有钉子的锤子或没有木材的锯子。
 
-每个机器学习（ML）模型都需要数据才能工作。数据是创建所有ML模型的基石。我们注意到，客户没有一个良好的系统（DataOps）来确保数据的质量和在需要时的可用性。这个问题拖慢了他们的工作速度和开发进度，影响了他们的MLOps节奏。
+每个机器学习（ML）模型都需要数据才能工作。数据是创建所有 ML 模型的基石。我们注意到，客户没有一个良好的系统（DataOps）来确保数据的质量和在需要时的可用性。这个问题拖慢了他们的工作速度和开发进度，影响了他们的 MLOps 节奏。
 
-我们的咨询团队通过与客户的数据工程团队紧密合作，帮助客户改善了其DataOps基础。目标？确保用于机器学习模型的数据具有高质量、一致性、及时性和准确性。在合同期间，我们的团队负责人强调了建立明确的战略目标和改进数据需求及使用的沟通。
+我们的咨询团队通过与客户的数据工程团队紧密合作，帮助客户改善了其 DataOps 基础。目标？确保用于机器学习模型的数据具有高质量、一致性、及时性和准确性。在合同期间，我们的团队负责人强调了建立明确的战略目标和改进数据需求及使用的沟通。
 
 访问高质量、最新的、可扩展的数据加快了模型开发过程。他们能够提供准确和相关的信息来训练信用评分模型，这显著影响了模型开发的速度和效率。
 
@@ -130,7 +130,7 @@ MLOps数据操作中的挑战：
 
 # 3\. 团队规模、组织和经验
 
-![](../Images/c53be6e16ca3b8c6b641c909fc335db4.png)
+![](img/c53be6e16ca3b8c6b641c909fc335db4.png)
 
 由[MAHDI](https://unsplash.com/@mehdi_safaeimanesh)拍摄的照片，来源于[Unsplash](https://unsplash.com/photos/b7gjIMzLJZc)
 
@@ -146,7 +146,7 @@ MLOps数据操作中的挑战：
 
 +   经验不足的团队需要更多时间进行学习和实验，从而影响项目的整体进度。
 
-![](../Images/57ac4631892b765dd2571b78a5fb4dcf.png)
+![](img/57ac4631892b765dd2571b78a5fb4dcf.png)
 
 团队因素，作者创作
 
@@ -168,7 +168,7 @@ MLOps数据操作中的挑战：
 
 # 基础设施和工具
 
-![](../Images/1e652974c1d03ff49901899919dda578.png)
+![](img/1e652974c1d03ff49901899919dda578.png)
 
 照片由[Tyler Lee](https://unsplash.com/@xxtylerxleexx)在[Unsplash](https://unsplash.com/photos/8LBFzMQsLNo)拍摄
 
@@ -176,7 +176,7 @@ MLOps数据操作中的挑战：
 
 # 基础设施
 
-![](../Images/5325ea15e45f98574927d73324427869.png)
+![](img/5325ea15e45f98574927d73324427869.png)
 
 扩展基础设施，作者创作
 
@@ -190,7 +190,7 @@ MLOps数据操作中的挑战：
 
 工具在 ops 速度中也发挥着作用。它们不仅用于自动化重复的任务和复杂的流程，还用于改进可重现性、模型管理、数据管理、监控和安全性。工具自动化这些流程，但也可能减缓它们的速度 —— 尤其是如果它们不兼容或发生供应商锁定。
 
-![](../Images/0c4613b395e5be23bf19758546646e05.png)
+![](img/0c4613b395e5be23bf19758546646e05.png)
 
 工具和 MLOps 速度，作者创作
 
@@ -206,7 +206,7 @@ MLOps数据操作中的挑战：
 
 对这些工具进行良好的审计和评估需要定期进行。这有助于消除工具冲突、重复、不同格式及其他因素造成的低效。
 
-每一个问题可能都很小，但如果没有定期审计，可能会显著拖慢MLOps流程和模型开发进度。
+每一个问题可能都很小，但如果没有定期审计，可能会显著拖慢 MLOps 流程和模型开发进度。
 
 ## 示例 — 基础设施和工具
 
@@ -218,21 +218,21 @@ MLOps数据操作中的挑战：
 
 为了解决这些问题，我们的咨询团队改善了他们的技术设置，与他们的数据工程师合作以增加数据存储，并简化数据处理流程。基于此基础，客户还建立了更好的流程来跟踪数据版本，这有助于保持数据的完整性并使重新训练模型变得更加容易。
 
-我们还建议定期进行维护审计。客户开始定期检查他们的工具，记录任何不必要的工具，标准化团队之间使用的版本，并更换那些不兼容的工具。这有助于改善他们的MLOps节奏。
+我们还建议定期进行维护审计。客户开始定期检查他们的工具，记录任何不必要的工具，标准化团队之间使用的版本，并更换那些不兼容的工具。这有助于改善他们的 MLOps 节奏。
 
 我看到的这个经验突出了拥有合适的技术和工具相互补充的重要性，特别是随着业务的增长。机器学习操作（MLOps）的节奏可能会发生变化。当前工具和技术在某个阶段运作良好的方法，在规模扩大时可能不再足够。
 
 # 建模复杂性
 
-![](../Images/fc690a2802f1fbfb52680cd02cf83776.png)
+![](img/fc690a2802f1fbfb52680cd02cf83776.png)
 
 图片由[Donny Jiang](https://unsplash.com/@dotnny)拍摄，来源于[Unsplash](https://unsplash.com/photos/42gFAgdIUC8)
 
-建模复杂性以三种方式影响MLOps的操作节奏：*训练、技术和执行*。MLOps常常在这三个点上遇到减速问题。
+建模复杂性以三种方式影响 MLOps 的操作节奏：*训练、技术和执行*。MLOps 常常在这三个点上遇到减速问题。
 
 *训练复杂的模型可能是具有挑战性的。* 数据科学家和工程师可能需要花更多时间进行实验和数据验证。对于*数据工程师*来说，复杂的模型需要额外的验证和数据质量检查。对于*数据科学家*来说，复杂模型的解释、维护、调试和优化难度更大。高复杂性意味着更多的范围界定、开发和测试时间。
 
-![](../Images/fbe91b0e691d30c0369040b96b6566ea.png)
+![](img/fbe91b0e691d30c0369040b96b6566ea.png)
 
 模型复杂性，作者创作
 
@@ -240,7 +240,7 @@ MLOps数据操作中的挑战：
 
 *时间也是一个重要因素*。特别是对于业务单位，你需要保持信息通畅。团队成员可能需要投入额外的时间和精力来规划这些模型，并向业务展示价值。为模型实验和开发设定明确的时间限制至关重要。
 
-平衡模型复杂性与运营效率对于保持可管理的MLOps节奏至关重要。
+平衡模型复杂性与运营效率对于保持可管理的 MLOps 节奏至关重要。
 
 ## 示例 — 模型复杂性
 
@@ -258,7 +258,7 @@ MLOps数据操作中的挑战：
 
 # 数据监管要求
 
-![](../Images/680becbc91feca9b59063c65bdceab0b.png)
+![](img/680becbc91feca9b59063c65bdceab0b.png)
 
 图片由[Growtika](https://unsplash.com/@growtika)提供，来源于[Unsplash](https://unsplash.com/photos/8zB4P0eafrs)
 
@@ -266,9 +266,9 @@ MLOps数据操作中的挑战：
 
 如果你在与国际客户或利益相关者合作，情况会变得更复杂。一些地理区域内的数据不能从一个区域转移到另一个区域使用。在一些地理区域中的模型需要更多文档。
 
-这还扩展到用于构建模型的数据以及存储。GDPR和其他规定可能限制用于构建模型的特征。团队需要实施适当的数据管理实践，并可能调整模型以维护隐私，这可能影响整体操作节奏。
+这还扩展到用于构建模型的数据以及存储。GDPR 和其他规定可能限制用于构建模型的特征。团队需要实施适当的数据管理实践，并可能调整模型以维护隐私，这可能影响整体操作节奏。
 
-![](../Images/851b975abf539c771bad244e150a3f8f.png)
+![](img/851b975abf539c771bad244e150a3f8f.png)
 
 数据法规，作者创作
 
@@ -280,19 +280,19 @@ MLOps数据操作中的挑战：
 
 让我们考虑一个金融客户，他们正在开发一个预测贷款违约的机器学习模型。他们在北美和欧盟都有业务。问题在于数据法规的差异。
 
-在北美，法规相对宽松。而在欧盟，随着GDPR的实施，他们被要求有更严格的审计流程——从数据到他们使用的模型。
+在北美，法规相对宽松。而在欧盟，随着 GDPR 的实施，他们被要求有更严格的审计流程——从数据到他们使用的模型。
 
 他们的工作进展变慢了，因为他们必须遵守各种国际数据保护法律。数据转移受限，他们必须创建更多文书工作。欧洲法律通用数据保护条例（GDPR）要求他们修改模型并严格管理数据以确保用户隐私。
 
-为了遵守这些规则，我看到我们的团队帮助客户创建了单独的云环境。对于欧洲数据，他们在GDPR合规的云环境中构建了机器学习模型。同时，他们将北美客户的数据存储在另一个云中，并用于针对这些客户的模型。
+为了遵守这些规则，我看到我们的团队帮助客户创建了单独的云环境。对于欧洲数据，他们在 GDPR 合规的云环境中构建了机器学习模型。同时，他们将北美客户的数据存储在另一个云中，并用于针对这些客户的模型。
 
 行业特定的规定给机器学习项目增加了更多复杂性。它们通常要求额外的模型验证、审计和全面的文档。这些规定中有些甚至限制了我们客户可以使用的预测模型类型。这要求我们的团队开发定制的合规解决方案——这需要广泛的研究和持续的模型合规性检查。
 
-这个例子说明了跨国监管合规如何为机器学习项目增加时间、成本和复杂性，从而显著影响MLOps的节奏。
+这个例子说明了跨国监管合规如何为机器学习项目增加时间、成本和复杂性，从而显著影响 MLOps 的节奏。
 
 # 结论
 
-操作节奏，尤其是MLOps不仅仅是技术。技术是推动它的一个因素。要加快模型开发时间，你需要
+操作节奏，尤其是 MLOps 不仅仅是技术。技术是推动它的一个因素。要加快模型开发时间，你需要
 
 总结：
 
@@ -308,7 +308,7 @@ MLOps数据操作中的挑战：
 
 +   **检查规定**——尤其是当你处理国际数据时。
 
-我经常写关于数据战略、MLOps和云中的机器学习的文章。请通过[Linkedin](https://www.linkedin.com/in/mblasa/)、[YouTube](https://www.youtube.com/channel/UCi__PAxoR_apUqsKzk8wWXA)和[Twitter](https://twitter.com/blazamatt)与我联系。
+我经常写关于数据战略、MLOps 和云中的机器学习的文章。请通过[Linkedin](https://www.linkedin.com/in/mblasa/)、[YouTube](https://www.youtube.com/channel/UCi__PAxoR_apUqsKzk8wWXA)和[Twitter](https://twitter.com/blazamatt)与我联系。
 
 # 如果你喜欢这篇文章，你也可能会喜欢我的其他文章：
 

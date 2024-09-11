@@ -1,14 +1,14 @@
 # 与大型语言模型的互动
 
-> 原文：[https://towardsdatascience.com/interacting-with-large-language-models-76c11cfd6290?source=collection_archive---------14-----------------------#2023-05-24](https://towardsdatascience.com/interacting-with-large-language-models-76c11cfd6290?source=collection_archive---------14-----------------------#2023-05-24)
+> 原文：[`towardsdatascience.com/interacting-with-large-language-models-76c11cfd6290?source=collection_archive---------14-----------------------#2023-05-24`](https://towardsdatascience.com/interacting-with-large-language-models-76c11cfd6290?source=collection_archive---------14-----------------------#2023-05-24)
 
 ## 丰富提示以引导模型 — 为非专家解释
 
-[](https://medium.com/@doriandrost?source=post_page-----76c11cfd6290--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----76c11cfd6290--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76c11cfd6290--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76c11cfd6290--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----76c11cfd6290--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----76c11cfd6290--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----76c11cfd6290--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76c11cfd6290--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----76c11cfd6290--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----76c11cfd6290--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finteracting-with-large-language-models-76c11cfd6290&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----76c11cfd6290---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76c11cfd6290--------------------------------) · 10 min 阅读 · 2023年5月24日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76c11cfd6290&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finteracting-with-large-language-models-76c11cfd6290&user=Dorian+Drost&userId=1d49ea537d1c&source=-----76c11cfd6290---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finteracting-with-large-language-models-76c11cfd6290&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----76c11cfd6290---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76c11cfd6290--------------------------------) · 10 min 阅读 · 2023 年 5 月 24 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76c11cfd6290&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finteracting-with-large-language-models-76c11cfd6290&user=Dorian+Drost&userId=1d49ea537d1c&source=-----76c11cfd6290---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 # 语言模型与提示
 
-![](../Images/1bd2dcf3272b3f133eea6f460b661a3f.png)
+![](img/1bd2dcf3272b3f133eea6f460b661a3f.png)
 
 提示是对语言模型的指令。照片由 [Markus Winkler](https://unsplash.com/@markuswinkler?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -32,7 +32,7 @@
 
 # Zero-shot 提示
 
-![](../Images/53abcb53e017487806ff1f06f59a0cc2.png)
+![](img/53abcb53e017487806ff1f06f59a0cc2.png)
 
 我们从简单的开始。照片由 [Jan Kahánek](https://unsplash.com/@honza_kahanek?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -50,7 +50,7 @@
 
 # 少量示例提示
 
-![](../Images/d46379676c2396ac401866e877395697.png)
+![](img/d46379676c2396ac401866e877395697.png)
 
 更多的示例可以丰富提示。照片由 [ron dyar](https://unsplash.com/@prolabprints?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -80,7 +80,7 @@
 
 # 思考链
 
-![](../Images/d16f316f99f2629b2267e1746e25c75d.png)
+![](img/d16f316f99f2629b2267e1746e25c75d.png)
 
 这是一个链条，因为这是一个接一个的思考。好吧，我想你应该在没有我解释的情况下明白这一点。照片由 [Karine Avetisyan](https://unsplash.com/@kar111?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -92,15 +92,15 @@
 
 提示的另一个有用扩展被称为思维链提示。主要思想是鼓励模型明确地表达它在完成任务时必须执行的中间步骤。我们通过简单地提供包含这些步骤或推理痕迹的少量示例来实现这一点，这被称为思考。正如你可能猜到的，这个想法受到人类在将任务拆分为子任务并对其进行推理时的思维方式的启发。假设你有如下任务：
 
-> 问：莎莉买了18个苹果来做苹果派。她烤了2个饼，还剩下4个苹果。每个饼里有多少个苹果？
+> 问：莎莉买了 18 个苹果来做苹果派。她烤了 2 个饼，还剩下 4 个苹果。每个饼里有多少个苹果？
 
-你会怎么做才能得出答案？我敢打赌你首先算出她使用了14个苹果（18个买的减去4个剩下的），然后把14个苹果除以两个饼，得到每个饼7个苹果。对你来说这可能听起来很简单，但你是否曾教过孩子解决这样的任务？如果你只是给它任务和答案（7），它不会理解你是如何得出这个答案的。然而，如果你将你所做的步骤表达出来，孩子可以理解并将这些步骤转移到其他任务中，只要它能够进行必要的算术运算。同样，在提示语言模型时，你可以在少量示例中包含思考。对于上述任务，一个示例可能如下所示：
+你会怎么做才能得出答案？我敢打赌你首先算出她使用了 14 个苹果（18 个买的减去 4 个剩下的），然后把 14 个苹果除以两个饼，得到每个饼 7 个苹果。对你来说这可能听起来很简单，但你是否曾教过孩子解决这样的任务？如果你只是给它任务和答案（7），它不会理解你是如何得出这个答案的。然而，如果你将你所做的步骤表达出来，孩子可以理解并将这些步骤转移到其他任务中，只要它能够进行必要的算术运算。同样，在提示语言模型时，你可以在少量示例中包含思考。对于上述任务，一个示例可能如下所示：
 
-> 问：莎莉买了18个苹果来做苹果派。她烤了2个饼，还剩下4个苹果。每个饼里有多少个苹果？
+> 问：莎莉买了 18 个苹果来做苹果派。她烤了 2 个饼，还剩下 4 个苹果。每个饼里有多少个苹果？
 > 
-> 思考：如果她剩下4个苹果，她已经使用了18–4=14个苹果。如果她把14个苹果分配到两个饼里，每个饼里有14/2=7个苹果。
+> 思考：如果她剩下 4 个苹果，她已经使用了 18–4=14 个苹果。如果她把 14 个苹果分配到两个饼里，每个饼里有 14/2=7 个苹果。
 > 
-> 答：每个饼包含7个苹果。
+> 答：每个饼包含 7 个苹果。
 
 如果所有示例都像这样，模型不会直接生成答案，而是会先生成思考，这有两个大的优点：
 
@@ -108,13 +108,13 @@
 
 其次，它有助于理解模型的预测和它所犯的错误。如果你只是得到一个错误的答案，很难找出模型出现问题的原因。然而，这些思考可以给你对模型推理过程的有意义的洞察，使你能够更详细地理解失败的原因。假设模型产生了以下思考：
 
-> 如果她剩下4个苹果，她已经使用了18–4=14个苹果。如果她把14个苹果分配到两个饼里，每个饼里有14/2=9个苹果。
+> 如果她剩下 4 个苹果，她已经使用了 18–4=14 个苹果。如果她把 14 个苹果分配到两个饼里，每个饼里有 14/2=9 个苹果。
 
 在这个示例中，你可以发现，模型执行了正确的步骤，但只是最后一步计算错误。在其他情况下，你可能会看到模型没有理解任务，这可能会鼓励你重新表述任务。
 
 # 添加动作
 
-![](../Images/f74eef02a2714f4f7e1cc7404e5d7e30.png)
+![](img/f74eef02a2714f4f7e1cc7404e5d7e30.png)
 
 更多工具允许更多操作。照片来自 [Eka Cahyadi Hasti](https://unsplash.com/@ekacahyadihasti?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -132,15 +132,15 @@
 > 
 > 行动：query_wikipedia(search_term=’Andrew Scott’)
 > 
-> 观察：“安德鲁·斯科特（Andrew Scott）（1976年10月21日出生）是一位爱尔兰演员*……”*
+> 观察：“安德鲁·斯科特（Andrew Scott）（1976 年 10 月 21 日出生）是一位爱尔兰演员*……”*
 > 
 > 思考：我知道安德鲁·斯科特的出生日期了。现在我需要找出本尼迪克特·康伯巴奇的出生日期。
 > 
 > 行动：query_wikipedia(search_term=’Benedict Cumberbatch’)
 > 
-> 观察：“本尼迪克特·提莫西·卡尔顿·康伯巴奇 CBE（Benedict Timothy Carlton Cumberbatch CBE，1976年7月19日出生）是一位英国演员……”
+> 观察：“本尼迪克特·提莫西·卡尔顿·康伯巴奇 CBE（Benedict Timothy Carlton Cumberbatch CBE，1976 年 7 月 19 日出生）是一位英国演员……”
 > 
-> 思考：我知道安德鲁·斯科特（Andrew Scott）出生于1976年10月21日，而本尼迪克特·康伯巴奇（Benedict Cumberbatch）出生于1976年7月19日。康伯巴奇的出生日期更早。因此，他更年长。
+> 思考：我知道安德鲁·斯科特（Andrew Scott）出生于 1976 年 10 月 21 日，而本尼迪克特·康伯巴奇（Benedict Cumberbatch）出生于 1976 年 7 月 19 日。康伯巴奇的出生日期更早。因此，他更年长。
 > 
 > 答：本尼迪克特·康伯巴奇比安德鲁·斯科特年长。
 

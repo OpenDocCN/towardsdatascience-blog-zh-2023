@@ -1,14 +1,14 @@
 # 使用扩展的 Databricks MLFlow 保障 MLOps 的安全
 
-> 原文：[https://towardsdatascience.com/secure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3?source=collection_archive---------31-----------------------#2023-01-10](https://towardsdatascience.com/secure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3?source=collection_archive---------31-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/secure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3?source=collection_archive---------31-----------------------#2023-01-10`](https://towardsdatascience.com/secure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3?source=collection_archive---------31-----------------------#2023-01-10)
 
 ## 安全管理模型目标环境
 
-[](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)[![Luuk van der Velden](../Images/56280e17ccb18454acbb5fb8be94a850.png)](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------) [Luuk van der Velden](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)
+[](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)![Luuk van der Velden](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------) [Luuk van der Velden](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff6c293b24331&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3&user=Luuk+van+der+Velden&userId=f6c293b24331&source=post_page-f6c293b24331----ee9b7310c5b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------) ·6 分钟阅读·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee9b7310c5b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3&user=Luuk+van+der+Velden&userId=f6c293b24331&source=-----ee9b7310c5b3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff6c293b24331&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3&user=Luuk+van+der+Velden&userId=f6c293b24331&source=post_page-f6c293b24331----ee9b7310c5b3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------) ·6 分钟阅读·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee9b7310c5b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3&user=Luuk+van+der+Velden&userId=f6c293b24331&source=-----ee9b7310c5b3---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@ MLFlow 是一个开源的 Databricks 产品，支持机器学习模型生命周�
 
 github 仓库：[环境 MLFlow 客户端存储库](https://github.com/nederlandsespoorwegen/environment_mlflow_client)
 
-![](../Images/48f61f10f7c7dcae556cfa6085454c82.png)
+![](img/48f61f10f7c7dcae556cfa6085454c82.png)
 
 由 [Aleksa Kalajdzic](https://www.pexels.com/photo/mushroom-on-brown-tree-log-3780917/) 拍摄的照片
 

@@ -1,24 +1,24 @@
-# 使用BERTopic的类别话题
+# 使用 BERTopic 的类别话题
 
-> 原文：[https://towardsdatascience.com/topics-per-class-using-bertopic-252314f2640?source=collection_archive---------0-----------------------#2023-09-09](https://towardsdatascience.com/topics-per-class-using-bertopic-252314f2640?source=collection_archive---------0-----------------------#2023-09-09)
+> 原文：[`towardsdatascience.com/topics-per-class-using-bertopic-252314f2640?source=collection_archive---------0-----------------------#2023-09-09`](https://towardsdatascience.com/topics-per-class-using-bertopic-252314f2640?source=collection_archive---------0-----------------------#2023-09-09)
 
 ## 如何理解按类别分类的文本差异
 
-[](https://miptgirl.medium.com/?source=post_page-----252314f2640--------------------------------)[![玛丽亚·曼苏罗娃](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----252314f2640--------------------------------)[](https://towardsdatascience.com/?source=post_page-----252314f2640--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----252314f2640--------------------------------) [玛丽亚·曼苏罗娃](https://miptgirl.medium.com/?source=post_page-----252314f2640--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----252314f2640--------------------------------)![玛丽亚·曼苏罗娃](https://miptgirl.medium.com/?source=post_page-----252314f2640--------------------------------)[](https://towardsdatascience.com/?source=post_page-----252314f2640--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----252314f2640--------------------------------) [玛丽亚·曼苏罗娃](https://miptgirl.medium.com/?source=post_page-----252314f2640--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopics-per-class-using-bertopic-252314f2640&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----252314f2640---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----252314f2640--------------------------------) ·15 min阅读·2023年9月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F252314f2640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopics-per-class-using-bertopic-252314f2640&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----252314f2640---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopics-per-class-using-bertopic-252314f2640&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----252314f2640---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----252314f2640--------------------------------) ·15 min 阅读·2023 年 9 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F252314f2640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopics-per-class-using-bertopic-252314f2640&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----252314f2640---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F252314f2640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopics-per-class-using-bertopic-252314f2640&source=-----252314f2640---------------------bookmark_footer-----------)![](../Images/33e46ed4709dca6e73fabaadff83025f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F252314f2640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopics-per-class-using-bertopic-252314f2640&source=-----252314f2640---------------------bookmark_footer-----------)![](img/33e46ed4709dca6e73fabaadff83025f.png)
 
 图片由[Fas Khan](https://unsplash.com/@fasbytes?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 
 现在，在产品分析工作中，我们面对许多自由格式的文本：
 
-+   用户在AppStore、Google Play或其他服务中留下评论；
++   用户在 AppStore、Google Play 或其他服务中留下评论；
 
 +   客户联系到我们的客户支持，使用自然语言描述他们的问题；
 
@@ -28,11 +28,11 @@
 
 基本的主题建模可以让你了解文本（例如评论）中的主要主题及其混合情况。但仅凭一个点来做决定是具有挑战性的。例如，14.2%的评论提到了应用中的广告过多。这是好还是坏？我们需要调查一下吗？说实话，我也不太确定。
 
-但如果我们尝试细分客户，我们可能会发现这个比例对于Android用户是34.8%，而对于iOS是3.2%。那么，显然我们需要调查一下我们是否在Android上展示了过多的广告，或者为什么Android用户对广告的容忍度较低。
+但如果我们尝试细分客户，我们可能会发现这个比例对于 Android 用户是 34.8%，而对于 iOS 是 3.2%。那么，显然我们需要调查一下我们是否在 Android 上展示了过多的广告，或者为什么 Android 用户对广告的容忍度较低。
 
 因此，我想分享的不仅是如何建立主题模型，还包括如何在不同类别之间比较主题。最终，我们将得到每个主题的有洞察力的图表。
 
-![](../Images/50eb38c77d141bb59505642199693fa2.png)
+![](img/50eb38c77d141bb59505642199693fa2.png)
 
 作者绘制的图表
 
@@ -42,9 +42,9 @@
 
 我已经筛选了与伦敦几个酒店连锁相关的评论。
 
-在开始文本分析之前，值得先了解一下我们的数据。总共有12,890条关于7个不同酒店连锁的评论。
+在开始文本分析之前，值得先了解一下我们的数据。总共有 12,890 条关于 7 个不同酒店连锁的评论。
 
-![](../Images/797f31ce6919c232d63770e14410fb19.png)
+![](img/797f31ce6919c232d63770e14410fb19.png)
 
 作者绘制的图表
 
@@ -52,13 +52,13 @@
 
 现在我们有数据，并可以应用我们新的炫酷工具主题建模来获取洞察。如我在开始时提到的，我们将使用主题建模和一个强大且易于使用的`BERTopic`包（[文档](https://maartengr.github.io/BERTopic/index.html)）进行这次文本分析。
 
-你可能会想知道什么是主题建模。它是一种与自然语言处理相关的无监督机器学习技术。它允许你在文本（通常称为文档）中发现隐藏的语义模式，并为其分配“主题”。你无需事先准备主题列表。算法会自动定义它们——通常以最重要的单词（标记）或N-gram的形式呈现。
+你可能会想知道什么是主题建模。它是一种与自然语言处理相关的无监督机器学习技术。它允许你在文本（通常称为文档）中发现隐藏的语义模式，并为其分配“主题”。你无需事先准备主题列表。算法会自动定义它们——通常以最重要的单词（标记）或 N-gram 的形式呈现。
 
-`BERTopic`是一个使用HuggingFace transformers进行主题建模的包，[基于类的TF-IDF](https://creating-a-class-based-tf-idf-with-scikit-learn-caea7b15b858)。`BERTopic`是一个高度灵活的模块化包，你可以根据需要进行调整。
+`BERTopic`是一个使用 HuggingFace transformers 进行主题建模的包，[基于类的 TF-IDF](https://creating-a-class-based-tf-idf-with-scikit-learn-caea7b15b858)。`BERTopic`是一个高度灵活的模块化包，你可以根据需要进行调整。
 
-![](../Images/a7f3e9f0124fea2827709869b90467dc.png)
+![](img/a7f3e9f0124fea2827709869b90467dc.png)
 
-来自BERTopic文档的图片（[来源](https://github.com/MaartenGr/BERTopic/tree/master/images)）
+来自 BERTopic 文档的图片（[来源](https://github.com/MaartenGr/BERTopic/tree/master/images)）
 
 如果你想更好地理解其工作原理，我建议你观看这个来自库作者的视频。
 
@@ -66,7 +66,7 @@
 
 > 你可以在[GitHub](https://github.com/miptgirl/miptgirl_medium/tree/main/bertopic_for_hotels)上找到完整的代码。
 
-根据[文档](https://maartengr.github.io/BERTopic/faq.html#should-i-preprocess-the-data)，我们通常不需要预处理数据，除非数据中有大量噪声，例如HTML标签或其他不增加文档意义的标记。这是`BERTopic`的一个显著优势，因为许多NLP方法需要大量的样板代码来预处理数据。如果你对其样子感兴趣，可以查看[这个指南](/topic-modelling-f51e5ebfb40a)了解使用LDA的主题建模。
+根据[文档](https://maartengr.github.io/BERTopic/faq.html#should-i-preprocess-the-data)，我们通常不需要预处理数据，除非数据中有大量噪声，例如 HTML 标签或其他不增加文档意义的标记。这是`BERTopic`的一个显著优势，因为许多 NLP 方法需要大量的样板代码来预处理数据。如果你对其样子感兴趣，可以查看这个指南了解使用 LDA 的主题建模。
 
 你可以使用`BERTopic`处理多语言数据，指定`BERTopic(language= "multilingual")`。然而，根据我的经验，模型在将文本翻译成一种语言时表现略好。因此，我将把所有评论翻译成英语。
 
@@ -101,13 +101,13 @@ df['reviews_transl'] = df.review.map(get_translation)
 
 在我们的案例中，95%以上的评论已经是英语。
 
-![](../Images/51b3b12bb732e846c080aab9542fb1fa.png)
+![](img/51b3b12bb732e846c080aab9542fb1fa.png)
 
 作者图
 
-为了更好地理解我们的数据，让我们看看评论长度的分布。它显示了许多极短的评论（很可能没有意义的评论）——大约5%的评论少于20个符号。
+为了更好地理解我们的数据，让我们看看评论长度的分布。它显示了许多极短的评论（很可能没有意义的评论）——大约 5%的评论少于 20 个符号。
 
-![](../Images/f90489f6e837c08eacd489bb40e4011a.png)
+![](img/f90489f6e837c08eacd489bb40e4011a.png)
 
 作者图
 
@@ -129,11 +129,11 @@ great location                 6
 very nice hotel                5
 ```
 
-所以我们可以过滤掉所有少于20个符号的评论——12,890条评论中的556条（4.3%）。然后，我们只分析具有更多上下文的长评论。这是一个基于示例的任意阈值，你可以尝试几个不同的级别，看看哪些文本被过滤掉了。
+所以我们可以过滤掉所有少于 20 个符号的评论——12,890 条评论中的 556 条（4.3%）。然后，我们只分析具有更多上下文的长评论。这是一个基于示例的任意阈值，你可以尝试几个不同的级别，看看哪些文本被过滤掉了。
 
 值得检查一下这个过滤器是否对某些酒店产生了不成比例的影响。不同类别的短评论比例相当接近。所以，数据看起来还不错。
 
-![](../Images/db00af7437b154c1f3ef37efe8257ab4.png)
+![](img/db00af7437b154c1f3ef37efe8257ab4.png)
 
 作者图
 
@@ -150,24 +150,24 @@ topic_model = BERTopic()
 topics, probs = topic_model.fit_transform(docs)
 ```
 
-默认模型返回了113个主题。我们可以查看顶部主题。
+默认模型返回了 113 个主题。我们可以查看顶部主题。
 
 ```py
 topic_model.get_topic_info().head(7).set_index('Topic')[
    ['Count', 'Name', 'Representation']]
 ```
 
-![](../Images/8e73ff2d0dd373322f265f8d0e382908.png)
+![](img/8e73ff2d0dd373322f265f8d0e382908.png)
 
-最大的组是`Topic -1`，它对应于异常值。默认情况下，`BERTopic`使用`HDBSCAN`进行聚类，它不会强制所有数据点成为聚类的一部分。在我们的案例中，6,356条评论是异常值（约49.3%的所有评论）。这几乎是我们数据的一半，因此我们稍后将处理这一组。
+最大的组是`Topic -1`，它对应于异常值。默认情况下，`BERTopic`使用`HDBSCAN`进行聚类，它不会强制所有数据点成为聚类的一部分。在我们的案例中，6,356 条评论是异常值（约 49.3%的所有评论）。这几乎是我们数据的一半，因此我们稍后将处理这一组。
 
-主题表示通常是一组特定于该主题而非其他主题的最重要的词。因此，理解主题的最佳方法是查看主要术语（在 `BERTopic` 中，使用 [基于类别的 TF-IDF](/creating-a-class-based-tf-idf-with-scikit-learn-caea7b15b858) 分数来对词语进行排序）。
+主题表示通常是一组特定于该主题而非其他主题的最重要的词。因此，理解主题的最佳方法是查看主要术语（在 `BERTopic` 中，使用 基于类别的 TF-IDF 分数来对词语进行排序）。
 
 ```py
 topic_model.visualize_barchart(top_n_topics = 16, n_words = 10)
 ```
 
-![](../Images/a960aeccd8b3c5594637dfb3299752d0.png)
+![](img/a960aeccd8b3c5594637dfb3299752d0.png)
 
 图表由作者提供
 
@@ -181,7 +181,7 @@ topic_model.visualize_topics_per_class(topics_per_class,
     top_n_topics=10, normalize_frequency = True)
 ```
 
-![](../Images/7db8c5297bdcf3ef79213ce4a93cf977.png)
+![](img/7db8c5297bdcf3ef79213ce4a93cf977.png)
 
 图表由作者提供
 
@@ -207,7 +207,7 @@ topic_model.visualize_topics_per_class(topics_per_class,
 
 让我们看一下异常值的例子。尽管这些评论相对较短，但它们包含多个主题。
 
-![](../Images/9f9153957e56f274473142d30aca9d79.png)
+![](img/9f9153957e56f274473142d30aca9d79.png)
 
 `BERTopic` 使用聚类来定义主题。这意味着每个文档分配的不超过一个主题。在大多数实际情况下，你的文本中可能会有多个主题的混合。我们可能无法为这些文档分配一个主题，因为它们有多个主题。
 
@@ -246,7 +246,7 @@ topic_model = BERTopic(nr_topics = 'auto',
 topics, ini_probs = topic_model.fit_transform(docs)
 ```
 
-我指定了`nr_topics = 'auto'`以减少话题数量。然后，所有相似度超过阈值的话题将被自动合并。通过此功能，我们得到了99个话题。
+我指定了`nr_topics = 'auto'`以减少话题数量。然后，所有相似度超过阈值的话题将被自动合并。通过此功能，我们得到了 99 个话题。
 
 我创建了一个函数来获取最热门的话题及其份额，以便我们可以更容易地进行分析。让我们看看新的话题集合。
 
@@ -262,7 +262,7 @@ get_topic_stats(topic_model, ['Aspect1', 'Aspect2']).head(10)\
     .set_index('Topic')
 ```
 
-![](../Images/5d34f53fbcd237badd2812791bbe58b6.png)![](../Images/d0083a5b923beee193a5ff1c7fc2ac5d.png)
+![](img/5d34f53fbcd237badd2812791bbe58b6.png)![](img/d0083a5b923beee193a5ff1c7fc2ac5d.png)
 
 图表由作者提供
 
@@ -272,7 +272,7 @@ get_topic_stats(topic_model, ['Aspect1', 'Aspect2']).head(10)\
 topic_model.visualize_topics()
 ```
 
-![](../Images/bb1397be050d6663681d9e0d2b7314a2.png)
+![](img/bb1397be050d6663681d9e0d2b7314a2.png)
 
 图表由作者提供
 
@@ -290,7 +290,7 @@ topic_model.visualize_topics()
 topic_model.visualize_heatmap(n_clusters = 20)
 ```
 
-![](../Images/0522d0d57f94d7c879c762ea784c2029.png)
+![](img/0522d0d57f94d7c879c762ea784c2029.png)
 
 图表由作者提供
 
@@ -325,18 +325,18 @@ pair_dist_df = pair_dist_df[pair_dist_df.topic1 < pair_dist_df.topic2]
 pair_dist_df.sort_values('distance', ascending = False).head(20)
 ```
 
-我从[GitHub讨论](https://github.com/MaartenGr/BERTopic/issues/292)中找到了获取距离矩阵的指导。
+我从[GitHub 讨论](https://github.com/MaartenGr/BERTopic/issues/292)中找到了获取距离矩阵的指导。
 
 我们现在可以看到按余弦相似度排列的最热门话题对。我们可以合并那些意义相近的话题。
 
-![](../Images/7a1a307bde2c14ca410fc7e52e446507.png)
+![](img/7a1a307bde2c14ca410fc7e52e446507.png)
 
 ```py
 topic_model.merge_topics(docs, [[26, 74], [43, 68, 62], [16, 50, 91]])
 df['merged_topic'] = topic_model.topics_
 ```
 
-***注意：*** 合并后，所有话题的ID和表示将被重新计算，因此如果你使用它们，值得更新。
+***注意：*** 合并后，所有话题的 ID 和表示将被重新计算，因此如果你使用它们，值得更新。
 
 现在，我们已改进了初始模型，准备继续前进。
 
@@ -346,7 +346,7 @@ df['merged_topic'] = topic_model.topics_
 
 # 主题分布
 
-让我们计算主题和词汇的分布。我使用了窗口大小为4（作者建议使用4–8个词汇）和步长为1。
+让我们计算主题和词汇的分布。我使用了窗口大小为 4（作者建议使用 4–8 个词汇）和步长为 1。
 
 ```py
 topic_distr, topic_token_distr = topic_model.approximate_distribution(
@@ -355,9 +355,9 @@ topic_distr, topic_token_distr = topic_model.approximate_distribution(
 
 例如，这条评论将被拆分为子句（或四个词汇的集合），并将为每个子句分配最接近的现有主题。然后，这些主题将被聚合，以计算整个句子的概率。您可以在[文档](https://maartengr.github.io/BERTopic/getting_started/distribution/distribution.html)中找到更多详细信息。
 
-![](../Images/191c15ad06267d8710cbba9a45eb3a8c.png)
+![](img/191c15ad06267d8710cbba9a45eb3a8c.png)
 
-示例显示了如何使用基本的CountVectorizer进行拆分，窗口大小为4，步长为1
+示例显示了如何使用基本的 CountVectorizer 进行拆分，窗口大小为 4，步长为 1
 
 使用这些数据，我们可以获得每条评论的不同主题的概率。
 
@@ -365,7 +365,7 @@ topic_distr, topic_token_distr = topic_model.approximate_distribution(
 topic_model.visualize_distribution(topic_distr[doc_id], min_probability=0.05)
 ```
 
-![](../Images/e980128534ba025d5ffc822c37cddd14.png)
+![](img/e980128534ba025d5ffc822c37cddd14.png)
 
 作者图表
 
@@ -377,7 +377,7 @@ vis_df = topic_model.visualize_approximate_distribution(docs[doc_id],
 vis_df
 ```
 
-![](../Images/d627cb15f2b1e27ef30296031a7091d7.png)
+![](img/d627cb15f2b1e27ef30296031a7091d7.png)
 
 作者图表
 
@@ -429,13 +429,13 @@ px.area(num_topics_stats_df,
       })
 ```
 
-![](../Images/43d349da0086309e4e644c8871cddd43.png)
+![](img/43d349da0086309e4e644c8871cddd43.png)
 
 作者图表
 
-`threshold = 0.05` 看起来是一个不错的候选值，因为在这个水平下，没有任何主题的评论比例仍然足够低（少于6%），而拥有4个以上主题的评论比例也不高。
+`threshold = 0.05` 看起来是一个不错的候选值，因为在这个水平下，没有任何主题的评论比例仍然足够低（少于 6%），而拥有 4 个以上主题的评论比例也不高。
 
-这种方法帮助我们将异常值的比例从53.4%减少到了5.8%。因此，分配多个主题可能是处理异常值的有效方法。
+这种方法帮助我们将异常值的比例从 53.4%减少到了 5.8%。因此，分配多个主题可能是处理异常值的有效方法。
 
 让我们使用这个阈值计算每个文档的主题。
 
@@ -502,7 +502,7 @@ mult_topics_stats_df['topic_other_hotels_share'] = 100*mult_topics_stats_df.topi
 
 +   **统计显著性** — 差异不仅仅是偶然的，
 
-+   **实际显著性** — 差异大于X%点（我使用了1%）。
++   **实际显著性** — 差异大于 X%点（我使用了 1%）。
 
 ```py
 from statsmodels.stats.proportion import proportions_ztest
@@ -613,21 +613,21 @@ for t in top_mult_topics_df.head(32).topic.values:
 
 这里有几个结果图表的例子。让我们尝试根据这些数据得出一些结论。
 
-我们可以看到，Holiday Inn、Travelodge和Park Inn的价格和性价比优于Hilton或Park Plaza。
+我们可以看到，Holiday Inn、Travelodge 和 Park Inn 的价格和性价比优于 Hilton 或 Park Plaza。
 
-![](../Images/17c052fd162fc829d727053e3d3d2d6f.png)
+![](img/17c052fd162fc829d727053e3d3d2d6f.png)
 
 作者绘制的图表
 
-另一个见解是，在Travelodge噪音可能是一个问题。
+另一个见解是，在 Travelodge 噪音可能是一个问题。
 
-![](../Images/3bce345923e1bfb3143b0dc6209bbea8.png)
+![](img/3bce345923e1bfb3143b0dc6209bbea8.png)
 
 作者绘制的图表
 
 对我来说，解读这个结果有点挑战。我不确定这个主题是什么。
 
-![](../Images/d4134f75b10738b3dc523e98ce730948.png)
+![](img/d4134f75b10738b3dc523e98ce730948.png)
 
 作者绘制的图表
 
@@ -637,7 +637,7 @@ for t in top_mult_topics_df.head(32).topic.values:
 
 +   *然而，地毯和家具可能需要* ***翻新****。
 
-+   *它建在Queensway车站上方。请注意，这个地铁站将在* ***翻新*** *一年！所以你可能要考虑噪音问题。*
++   *它建在 Queensway 车站上方。请注意，这个地铁站将在* ***翻新*** *一年！所以你可能要考虑噪音问题。*
 
 所以，这个主题是关于酒店住宿期间出现的临时问题或家具状况不佳的情况。
 
@@ -647,9 +647,9 @@ for t in top_mult_topics_df.head(32).topic.values:
 
 今天，我们完成了一个端到端的主题建模分析：
 
-+   使用BERTopic库构建一个基本的主题模型。
++   使用 BERTopic 库构建一个基本的主题模型。
 
-+   然后，我们处理了离群值，因此只有5.8%的评论没有分配主题。
++   然后，我们处理了离群值，因此只有 5.8%的评论没有分配主题。
 
 +   通过自动和手动方法减少了主题数量，以获得一个简明的列表。
 
@@ -663,12 +663,12 @@ for t in top_mult_topics_df.head(32).topic.values:
 
 *Ganesan, Kavita 和 Zhai, ChengXiang. (2011). OpinRank 评论数据集。*
 
-UCI机器学习资源库。[*https://doi.org/10.24432/C5QW4W*](https://doi.org/10.24432/C5QW4W.)
+UCI 机器学习资源库。[*https://doi.org/10.24432/C5QW4W*](https://doi.org/10.24432/C5QW4W.)
 
-# 如果你想深入了解BERTopic
+# 如果你想深入了解 BERTopic
 
-+   [文章《使用BERTopic进行交互式主题建模》](/interactive-topic-modeling-with-bertopic-1ea55e7d73d8)由Maarten Grootendorst（*BERTopic* *作者*）撰写
++   文章《使用 BERTopic 进行交互式主题建模》由 Maarten Grootendorst（*BERTopic* *作者*）撰写
 
-+   文章 [“使用BERT进行主题建模”](/topic-modeling-with-bert-779f7db187e6) 由Maarten Grootendorst撰写
++   文章 “使用 BERT 进行主题建模” 由 Maarten Grootendorst 撰写
 
-+   论文 [“BERTopic：基于类别的TF-IDF程序的神经主题建模”](https://arxiv.org/abs/2203.05794) 由Maarten Grootendorst撰写
++   论文 [“BERTopic：基于类别的 TF-IDF 程序的神经主题建模”](https://arxiv.org/abs/2203.05794) 由 Maarten Grootendorst 撰写

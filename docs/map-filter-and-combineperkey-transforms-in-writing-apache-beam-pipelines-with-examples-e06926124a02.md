@@ -1,18 +1,18 @@
 # 在编写 Apache Beam 流水线时使用示例的 Map、Filter 和 CombinePerKey 转换
 
-> 原文：[https://towardsdatascience.com/map-filter-and-combineperkey-transforms-in-writing-apache-beam-pipelines-with-examples-e06926124a02?source=collection_archive---------12-----------------------#2023-07-12](https://towardsdatascience.com/map-filter-and-combineperkey-transforms-in-writing-apache-beam-pipelines-with-examples-e06926124a02?source=collection_archive---------12-----------------------#2023-07-12)
+> 原文：[`towardsdatascience.com/map-filter-and-combineperkey-transforms-in-writing-apache-beam-pipelines-with-examples-e06926124a02?source=collection_archive---------12-----------------------#2023-07-12`](https://towardsdatascience.com/map-filter-and-combineperkey-transforms-in-writing-apache-beam-pipelines-with-examples-e06926124a02?source=collection_archive---------12-----------------------#2023-07-12)
 
-![](../Images/3c0bc71612c5632ec1b351c55f68aa03.png)
+![](img/3c0bc71612c5632ec1b351c55f68aa03.png)
 
 照片由 [JJ Ying](https://unsplash.com/@jjying?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 让我们用一些真实的数据来练习
 
-[](https://rashida00.medium.com/?source=post_page-----e06926124a02--------------------------------)[![Rashida Nasrin Sucky](../Images/42bd057e8eca255907c43c29a498f2ca.png)](https://rashida00.medium.com/?source=post_page-----e06926124a02--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e06926124a02--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e06926124a02--------------------------------) [Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----e06926124a02--------------------------------)
+[](https://rashida00.medium.com/?source=post_page-----e06926124a02--------------------------------)![Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----e06926124a02--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e06926124a02--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e06926124a02--------------------------------) [Rashida Nasrin Sucky](https://rashida00.medium.com/?source=post_page-----e06926124a02--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a36b941a136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmap-filter-and-combineperkey-transforms-in-writing-apache-beam-pipelines-with-examples-e06926124a02&user=Rashida+Nasrin+Sucky&userId=8a36b941a136&source=post_page-8a36b941a136----e06926124a02---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e06926124a02--------------------------------) ·8 min read·2023年7月12日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a36b941a136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmap-filter-and-combineperkey-transforms-in-writing-apache-beam-pipelines-with-examples-e06926124a02&user=Rashida+Nasrin+Sucky&userId=8a36b941a136&source=post_page-8a36b941a136----e06926124a02---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e06926124a02--------------------------------) ·8 min read·2023 年 7 月 12 日
 
 --
 

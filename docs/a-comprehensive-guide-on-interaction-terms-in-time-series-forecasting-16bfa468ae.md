@@ -1,18 +1,18 @@
 # 时间序列预测中的交互项全面指南
 
-> 原文：[https://towardsdatascience.com/a-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae?source=collection_archive---------10-----------------------#2023-08-01](https://towardsdatascience.com/a-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae?source=collection_archive---------10-----------------------#2023-08-01)
+> 原文：[`towardsdatascience.com/a-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae?source=collection_archive---------10-----------------------#2023-08-01`](https://towardsdatascience.com/a-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae?source=collection_archive---------10-----------------------#2023-08-01)
 
-![](../Images/1fadc2980072fe9153e186992a828785.png)
+![](img/1fadc2980072fe9153e186992a828785.png)
 
 图片由 Midjourney 创建
 
 ## 学习如何通过使线性模型更灵活以适应趋势变化，从而改善模型的拟合度
 
-[](https://eryk-lewinson.medium.com/?source=post_page-----16bfa468ae--------------------------------)[![Eryk Lewinson](../Images/56e09e19c0bbfecc582da58761d15078.png)](https://eryk-lewinson.medium.com/?source=post_page-----16bfa468ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16bfa468ae--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----16bfa468ae--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----16bfa468ae--------------------------------)
+[](https://eryk-lewinson.medium.com/?source=post_page-----16bfa468ae--------------------------------)![Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----16bfa468ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16bfa468ae--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----16bfa468ae--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----16bfa468ae--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----16bfa468ae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16bfa468ae--------------------------------) ·7分钟阅读·2023年8月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F16bfa468ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----16bfa468ae---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----16bfa468ae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16bfa468ae--------------------------------) ·7 分钟阅读·2023 年 8 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F16bfa468ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----16bfa468ae---------------------clap_footer-----------)
 
 --
 

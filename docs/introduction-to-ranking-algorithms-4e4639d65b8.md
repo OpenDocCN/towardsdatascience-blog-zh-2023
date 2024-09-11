@@ -1,24 +1,24 @@
 # 排名算法介绍
 
-> 原文：[https://towardsdatascience.com/introduction-to-ranking-algorithms-4e4639d65b8?source=collection_archive---------0-----------------------#2023-08-16](https://towardsdatascience.com/introduction-to-ranking-algorithms-4e4639d65b8?source=collection_archive---------0-----------------------#2023-08-16)
+> 原文：[`towardsdatascience.com/introduction-to-ranking-algorithms-4e4639d65b8?source=collection_archive---------0-----------------------#2023-08-16`](https://towardsdatascience.com/introduction-to-ranking-algorithms-4e4639d65b8?source=collection_archive---------0-----------------------#2023-08-16)
 
 ## 了解排序搜索结果的主要排名算法
 
-[](https://medium.com/@slavahead?source=post_page-----4e4639d65b8--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----4e4639d65b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e4639d65b8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e4639d65b8--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----4e4639d65b8--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----4e4639d65b8--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----4e4639d65b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e4639d65b8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e4639d65b8--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----4e4639d65b8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-ranking-algorithms-4e4639d65b8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----4e4639d65b8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e4639d65b8--------------------------------) · 12 分钟阅读 · 2023年8月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e4639d65b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-ranking-algorithms-4e4639d65b8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----4e4639d65b8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-ranking-algorithms-4e4639d65b8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----4e4639d65b8---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e4639d65b8--------------------------------) · 12 分钟阅读 · 2023 年 8 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e4639d65b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-ranking-algorithms-4e4639d65b8&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----4e4639d65b8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e4639d65b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-ranking-algorithms-4e4639d65b8&source=-----4e4639d65b8---------------------bookmark_footer-----------)![](../Images/f8dc54f04406b2e33771a6097cc38bff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e4639d65b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-ranking-algorithms-4e4639d65b8&source=-----4e4639d65b8---------------------bookmark_footer-----------)![](img/f8dc54f04406b2e33771a6097cc38bff.png)
 
 # 介绍
 
-**学习排序**（LTR）是一类监督式机器学习算法，旨在根据与查询的相关性对一组项目进行排序。在经典机器学习中，如分类和回归问题，目标是根据特征向量预测单一值。LTR算法在一组特征向量上操作，并预测项目的最佳排序。
+**学习排序**（LTR）是一类监督式机器学习算法，旨在根据与查询的相关性对一组项目进行排序。在经典机器学习中，如分类和回归问题，目标是根据特征向量预测单一值。LTR 算法在一组特征向量上操作，并预测项目的最佳排序。
 
-LTR有许多不同的应用。以下是其中的一些：
+LTR 有许多不同的应用。以下是其中的一些：
 
 +   *搜索引擎*。用户在浏览器搜索栏中输入查询。搜索引擎应该以一种方式对网页进行排名，使得最相关的结果出现在最上面的位置。
 
@@ -46,9 +46,9 @@ LTR有许多不同的应用。以下是其中的一些：
 
 为了训练模型，我们需要将训练数据输入到模型中。根据训练数据的收集方式，有两种可能的方法。
 
-+   **离线LTR**。数据由人工手动注释。人工对不同查询和文档的对（查询，文档）相关性进行评分。这种方法成本高且耗时，但提供高质量的注释。
++   **离线 LTR**。数据由人工手动注释。人工对不同查询和文档的对（查询，文档）相关性进行评分。这种方法成本高且耗时，但提供高质量的注释。
 
-+   **在线LTR**。数据是通过用户与查询结果的互动（例如，对排序项目的点击次数，网页上的停留时间）隐式收集的。在这种情况下，获得训练数据是简单的，但用户互动的解释并不容易。
++   **在线 LTR**。数据是通过用户与查询结果的互动（例如，对排序项目的点击次数，网页上的停留时间）隐式收集的。在这种情况下，获得训练数据是简单的，但用户互动的解释并不容易。
 
 之后，我们有了特征向量及其对应的标签。这就是训练模型所需的一切。下一步是选择最适合问题的机器学习算法。
 
@@ -72,7 +72,7 @@ LTR有许多不同的应用。以下是其中的一些：
 
 另一种有效的方法是将真实排名转化为独热编码表示，并将这些数据输入模型。在这种情况下，可以使用回归模型或分类模型（带有交叉熵损失）。
 
-![](../Images/19ffa80ba5d625d00d9d6881dc00c920.png)
+![](img/19ffa80ba5d625d00d9d6881dc00c920.png)
 
 逐点模型架构。作为输入，模型接受一个查询和一个特征向量。
 
@@ -92,15 +92,15 @@ LTR有许多不同的应用。以下是其中的一些：
 
 请看下面的例子，其中一个逐点算法对两组文档进行了预测。我们假设在训练过程中优化了均方误差（MSE）损失。
 
-![](../Images/ab96312857422fddf4b78d2abfbdc2fb.png)
+![](img/ab96312857422fddf4b78d2abfbdc2fb.png)
 
-集合包含5个文档，其中1个文档是相关的，其他4个是无关的。对于相关文档，预测相关性为0.7，而对于其他文档为0.5。
+集合包含 5 个文档，其中 1 个文档是相关的，其他 4 个是无关的。对于相关文档，预测相关性为 0.7，而对于其他文档为 0.5。
 
-![](../Images/b3b1559a7b5e01bf22d113b59ee8a45b.png)
+![](img/b3b1559a7b5e01bf22d113b59ee8a45b.png)
 
-集合包含5个文档，其中1个文档是相关的，其他4个是无关的。对于相关文档，预测相关性为0.1，而对于其他文档为0.2。
+集合包含 5 个文档，其中 1 个文档是相关的，其他 4 个是无关的。对于相关文档，预测相关性为 0.1，而对于其他文档为 0.2。
 
-给定两个排名结果，我们可以看到从算法的角度来看，第二个排名更好，因为对应的MSE值较低。然而，选择第二个排名意味着用户会首先看到所有无关的结果。顺便提一下，在第一个例子中，相关结果首先显示，这在用户体验上要好得多。通常，用户不会太关注之后的推荐内容。
+给定两个排名结果，我们可以看到从算法的角度来看，第二个排名更好，因为对应的 MSE 值较低。然而，选择第二个排名意味着用户会首先看到所有无关的结果。顺便提一下，在第一个例子中，相关结果首先显示，这在用户体验上要好得多。通常，用户不会太关注之后的推荐内容。
 
 这个例子表明，在现实生活中，我们更关心的是首先展示相关结果以及项目的相对顺序。通过独立处理文档，逐点模型无法保证这些方面。较低的损失并不等同于更好的排名。
 
@@ -112,7 +112,7 @@ LTR有许多不同的应用。以下是其中的一些：
 
 模型的输入是两个特征向量。模型输出是第一个文档排名高于第二个文档的概率。在训练过程中，这些概率是为不同的特征向量对计算的。模型的权重通过基于真实排名的梯度下降进行调整。
 
-![](../Images/e43a1c5459c83f5e495b0dc047b00b41.png)
+![](img/e43a1c5459c83f5e495b0dc047b00b41.png)
 
 对输入对模型架构。作为输入，模型接受一个查询和两个连接的特征向量。
 
@@ -122,7 +122,7 @@ LTR有许多不同的应用。以下是其中的一些：
 
 +   即使拥有所有文档的成对概率，也不明显如何最终排名，尤其是在像*恶性循环*这样的矛盾情况下，其中有三元组文档*(x, y, z)*，模型以如下方式对其进行排名：*x ▷ y, y ▷ z* 和 *z ▷ x*。
 
-![](../Images/ae4c5599cbc9f028db64eb237e835fdd.png)
+![](img/ae4c5599cbc9f028db64eb237e835fdd.png)
 
 恶性循环问题
 
@@ -132,13 +132,13 @@ LTR有许多不同的应用。以下是其中的一些：
 
 模型接受一个单一的特征向量作为输入。在训练过程中，成对中的每个文档都独立地输入到模型中以接收其分数。然后比较这两个分数，并通过基于真实排名的梯度下降来调整模型。
 
-![](../Images/1a6716a53b044b36d4b440a6bd07286e.png)
+![](img/1a6716a53b044b36d4b440a6bd07286e.png)
 
 单输入模型架构。作为输入，该模型接收一个查询和一个表示文档的特征向量。在模型对两个特征向量独立分配分数后，计算排名预测。
 
 在推理过程中，每个文档通过传递到模型中来接收一个分数。然后对这些分数进行排序，以获得最终排名。
 
-> 对于熟悉Siamese网络（FaceNet，SBERT等）的人来说，单输入模型可以被认为是Siamese网络。
+> 对于熟悉 Siamese 网络（FaceNet，SBERT 等）的人来说，单输入模型可以被认为是 Siamese 网络。
 
 ## 成对损失函数
 
@@ -146,7 +146,7 @@ LTR有许多不同的应用。以下是其中的一些：
 
 一般来说，成对损失函数以*z*为其参数，其中*z*是两个分数*s[i] — s[j]*的差异乘以一个常数σ。根据算法的不同，损失函数可以具有以下形式之一：
 
-![](../Images/48d6a711a440dcab40f232a805397db4.png)
+![](img/48d6a711a440dcab40f232a805397db4.png)
 
 成对排名的不同损失函数
 
@@ -156,11 +156,11 @@ LTR有许多不同的应用。以下是其中的一些：
 
 ## RankNet
 
-在获得文档*i*和*j*的分数后，RankNet使用softmax函数进行归一化。通过这样做，RankNet获得文档*i*比文档*j*排名更高的概率*P[i][j] = P(i ▷ j)*。反之，我们可以计算概率*P̃[j][i] = P(j ▷ i) = 1 — P(i ▷ j)*。为了简便起见，假设实际情况是i的排名高于j，所以*P̃[i][j] = 1*和*P̃[j][i] = 0*。对于模型权重的更新，RankNet使用交叉熵损失，其简化如下：
+在获得文档*i*和*j*的分数后，RankNet 使用 softmax 函数进行归一化。通过这样做，RankNet 获得文档*i*比文档*j*排名更高的概率*P[i][j] = P(i ▷ j)*。反之，我们可以计算概率*P̃[j][i] = P(j ▷ i) = 1 — P(i ▷ j)*。为了简便起见，假设实际情况是 i 的排名高于 j，所以*P̃[i][j] = 1*和*P̃[j][i] = 0*。对于模型权重的更新，RankNet 使用交叉熵损失，其简化如下：
 
-![](../Images/6c4dea9ee17904829712d2ba51356f67.png)
+![](img/6c4dea9ee17904829712d2ba51356f67.png)
 
-RankNet损失函数
+RankNet 损失函数
 
 模型的权重通过梯度下降进行调整。下次模型遇到相同的文档对 i 和 j 时，文档 i 的得分可能会比之前更高，而文档 j 可能会被推得更低。
 
@@ -168,17 +168,17 @@ RankNet损失函数
 
 为了简化，我们不会深入探讨数学内容，但原始论文中提出了一个有趣的研究结果，作者找到了一种简化训练过程的方法。这是通过引入变量 *S[i][j]* 来实现的，该变量可以取三个可能的值之一：
 
-![](../Images/21d81de7d6a67bb40d5efe8f3ed70b5a.png)
+![](img/21d81de7d6a67bb40d5efe8f3ed70b5a.png)
 
 经过一些数学技巧，交叉熵损失的导数被分解为：
 
-![](../Images/207459fd1c021ca1a311c1c0de0af13a.png)
+![](img/207459fd1c021ca1a311c1c0de0af13a.png)
 
 公式中的 λ 值是一个常数，可以相对快速地计算所有文档对的 λ 值。通过取正值或负值，这些 λ 值充当了推动文档上升或下降的力量。
 
 我们可以对单个文档 *i* 汇总所有成对的 λ 值。这个总和表示在排名中应用于文档 *i* 的总力量。
 
-![](../Images/25abcfc6b9f24834aed4f62ca59d95e0.png)
+![](img/25abcfc6b9f24834aed4f62ca59d95e0.png)
 
 对于找到应用于文档的总力量的 λ 值的汇总
 
@@ -194,11 +194,11 @@ RankNet损失函数
 
 这个问题比之前的问题更为严重。大多数成对算法，特别是 RankNet 的根本问题在于它们最小化排名倒置的数量。虽然优化倒置数量可能看起来很自然，但这并不是大多数最终用户真正想要的。考虑以下两个排名。你认为哪个排名更好？
 
-![](../Images/fa57343c1cf76dc55727e424755beff0.png)
+![](img/fa57343c1cf76dc55727e424755beff0.png)
 
 两个相关的文档分别位于列表的开头和结尾。
 
-![](../Images/6ef13f674a8c9dd2ce78e90f20f2b64a.png)
+![](img/6ef13f674a8c9dd2ce78e90f20f2b64a.png)
 
 两个相关的文档位于列表的中间偏左位置。
 
@@ -206,11 +206,11 @@ RankNet损失函数
 
 结果显示，**并非所有文档对都同样重要**。算法需要调整，以更重视正确的顶部排名，而不是底部排名。
 
-论文的研究人员提供了一个很好的例子，说明如何通过RankNet优化排名可能导致非最优结果：
+论文的研究人员提供了一个很好的例子，说明如何通过 RankNet 优化排名可能导致非最优结果：
 
-![](../Images/3f95efbadb4b904721e05be414cc4e41.png)
+![](img/3f95efbadb4b904721e05be414cc4e41.png)
 
-我们可以看到，第1位的文档被推到了第4位，第15位的文档被推到了第10位，所以总的倒排数减少了2。然而，从用户体验来看，新排名变得更糟。核心问题在于RankNet为排名较差的文档分配了更大的梯度。然而，为了优化用户导向的指标，这应该是反向的：排名较好的文档应被进一步推高，而不是排名较差的文档。这样，像*nDCG*这样的用户导向指标将会更高。
+我们可以看到，第 1 位的文档被推到了第 4 位，第 15 位的文档被推到了第 10 位，所以总的倒排数减少了 2。然而，从用户体验来看，新排名变得更糟。核心问题在于 RankNet 为排名较差的文档分配了更大的梯度。然而，为了优化用户导向的指标，这应该是反向的：排名较好的文档应被进一步推高，而不是排名较差的文档。这样，像*nDCG*这样的用户导向指标将会更高。
 
 # 列表排名
 
@@ -218,23 +218,23 @@ RankNet损失函数
 
 与点对点或对对排名方法不同，列表方法一次处理整个文档列表。这有时会导致大量计算，但也提供了更强的鲁棒性，因为算法在每次迭代时获得了更多的信息。
 
-![](../Images/fecd781fb044ed36d9f94774ff070e1a.png)
+![](img/fecd781fb044ed36d9f94774ff070e1a.png)
 
 列表模型架构。作为输入，模型接收一个查询和所有文档的特征向量。
 
 ## LambdaRank
 
-> 根据实现的不同，LambdaRank可以被认为是点对点或列表方法。
+> 根据实现的不同，LambdaRank 可以被认为是点对点或列表方法。
 
 当关注*nDCG*时，似乎最优的做法是为那些位置交换结果能提高*nDCG*的文档对分配更大的梯度。这一核心思想在于**LambdaRank**。
 
-> 算法名称中的“lambda”暗示LambdaRank还使用了RankNet中描述的lambda进行优化。
+> 算法名称中的“lambda”暗示 LambdaRank 还使用了 RankNet 中描述的 lambda 进行优化。
 
-研究人员取得了惊人的成果，并证明如果RankNet中的损失值乘以*|nDCG|*，则算法倾向于直接优化*nDCG*！也就是说，LambdaRank算法与RankNet非常相似，只是这次lambda被乘以*nDCG*的变化：
+研究人员取得了惊人的成果，并证明如果 RankNet 中的损失值乘以*|nDCG|*，则算法倾向于直接优化*nDCG*！也就是说，LambdaRank 算法与 RankNet 非常相似，只是这次 lambda 被乘以*nDCG*的变化：
 
-![](../Images/464e7586c3a73e13a471d9209b253874.png)
+![](img/464e7586c3a73e13a471d9209b253874.png)
 
-nDCG优化公式
+nDCG 优化公式
 
 研究中另一个令人惊讶的事实是，这种技巧不仅对 *nDCG* 有效，而且对其他信息检索度量也有效！类似地，如果将 λ 乘以精度变化，那么 *precision* 将得到优化。
 
@@ -256,11 +256,11 @@ nDCG优化公式
 
 如果你想了解更多关于排名度量的信息，我强烈建议你阅读我关于这个话题的另一篇文章。
 
-[](/comprehensive-guide-to-ranking-evaluation-metrics-7d10382c1025?source=post_page-----4e4639d65b8--------------------------------) [## 排名评估度量的全面指南
+[](/comprehensive-guide-to-ranking-evaluation-metrics-7d10382c1025?source=post_page-----4e4639d65b8--------------------------------) ## 排名评估度量的全面指南
 
 ### 探索丰富的度量选择，找到最适合你问题的度量
 
-towardsdatascience.com](/comprehensive-guide-to-ranking-evaluation-metrics-7d10382c1025?source=post_page-----4e4639d65b8--------------------------------)
+towardsdatascience.com
 
 # 资源
 

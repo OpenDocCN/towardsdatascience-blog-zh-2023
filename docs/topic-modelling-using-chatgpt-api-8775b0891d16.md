@@ -1,88 +1,88 @@
-# 使用ChatGPT API进行主题建模
+# 使用 ChatGPT API 进行主题建模
 
-> 原文：[https://towardsdatascience.com/topic-modelling-using-chatgpt-api-8775b0891d16?source=collection_archive---------0-----------------------#2023-10-04](https://towardsdatascience.com/topic-modelling-using-chatgpt-api-8775b0891d16?source=collection_archive---------0-----------------------#2023-10-04)
+> 原文：[`towardsdatascience.com/topic-modelling-using-chatgpt-api-8775b0891d16?source=collection_archive---------0-----------------------#2023-10-04`](https://towardsdatascience.com/topic-modelling-using-chatgpt-api-8775b0891d16?source=collection_archive---------0-----------------------#2023-10-04)
 
-## 针对新手的ChatGPT API综合指南
+## 针对新手的 ChatGPT API 综合指南
 
-[](https://miptgirl.medium.com/?source=post_page-----8775b0891d16--------------------------------)[![Mariya Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----8775b0891d16--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8775b0891d16--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8775b0891d16--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----8775b0891d16--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----8775b0891d16--------------------------------)![Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----8775b0891d16--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8775b0891d16--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8775b0891d16--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----8775b0891d16--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-using-chatgpt-api-8775b0891d16&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----8775b0891d16---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8775b0891d16--------------------------------) · 16分钟阅读·2023年10月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8775b0891d16&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-using-chatgpt-api-8775b0891d16&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----8775b0891d16---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-using-chatgpt-api-8775b0891d16&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----8775b0891d16---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8775b0891d16--------------------------------) · 16 分钟阅读·2023 年 10 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8775b0891d16&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-using-chatgpt-api-8775b0891d16&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----8775b0891d16---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8775b0891d16&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-using-chatgpt-api-8775b0891d16&source=-----8775b0891d16---------------------bookmark_footer-----------)![](../Images/9b8c199c3e9d4af61dc5e63fdec0154d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8775b0891d16&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-using-chatgpt-api-8775b0891d16&source=-----8775b0891d16---------------------bookmark_footer-----------)![](img/9b8c199c3e9d4af61dc5e63fdec0154d.png)
 
 照片由 [Mia Baker](https://unsplash.com/@miabaker?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在 [上一篇文章](/topics-per-class-using-bertopic-252314f2640) 中，我使用了BERTopic进行主题建模。任务是比较各大酒店连锁的评论中的主要话题。这种使用BERTopic的方法奏效了，我们从数据中获得了一些见解。例如，从评论中我们可以看到假日酒店、Travelodge和Park Inn的价格更为合理。
+在 上一篇文章 中，我使用了 BERTopic 进行主题建模。任务是比较各大酒店连锁的评论中的主要话题。这种使用 BERTopic 的方法奏效了，我们从数据中获得了一些见解。例如，从评论中我们可以看到假日酒店、Travelodge 和 Park Inn 的价格更为合理。
 
-![](../Images/8765ecf920cb7225ac217142a3f0c668.png)
+![](img/8765ecf920cb7225ac217142a3f0c668.png)
 
 作者图表
 
-然而，如今分析文本的最前沿技术是LLMs（大型语言模型）。
+然而，如今分析文本的最前沿技术是 LLMs（大型语言模型）。
 
-LLM改变了构建机器学习应用程序的过程。在LLM出现之前，如果我们想进行情感分析或创建聊天机器人，我们首先要花几个月的时间获取标记数据和训练模型。然后，我们将其部署到生产环境中（这也至少需要几个月）。有了LLM，我们可以在几小时内解决这些问题。
+LLM 改变了构建机器学习应用程序的过程。在 LLM 出现之前，如果我们想进行情感分析或创建聊天机器人，我们首先要花几个月的时间获取标记数据和训练模型。然后，我们将其部署到生产环境中（这也至少需要几个月）。有了 LLM，我们可以在几小时内解决这些问题。
 
-![](../Images/363a3e61def4bbc987e1d238f9383b7d.png)
+![](img/363a3e61def4bbc987e1d238f9383b7d.png)
 
-来自Andrew Ng的讲座[“人工智能中的机会”](https://www.youtube.com/watch?v=5p248yoa3oE)的幻灯片
+来自 Andrew Ng 的讲座[“人工智能中的机会”](https://www.youtube.com/watch?v=5p248yoa3oE)的幻灯片
 
-让我们看看LLM是否能帮助我们解决任务：为客户评论定义一个或多个主题。
+让我们看看 LLM 是否能帮助我们解决任务：为客户评论定义一个或多个主题。
 
-# LLM基础知识
+# LLM 基础知识
 
-在进入我们的任务之前，让我们讨论一下LLM的基础知识及其如何被使用。
+在进入我们的任务之前，让我们讨论一下 LLM 的基础知识及其如何被使用。
 
 大型语言模型在大量文本上进行训练，以预测句子的下一个词。这是一项直接的监督学习任务：我们有一组句子的开头和对应的后续词。
 
-![](../Images/ee392a485821eff34485232efa5746ec.png)
+![](img/ee392a485821eff34485232efa5746ec.png)
 
 作者提供的图表
 
-你可以在[nat.dev](https://nat.dev/)上玩玩基础LLM，例如`text-davinci-003`。
+你可以在[nat.dev](https://nat.dev/)上玩玩基础 LLM，例如`text-davinci-003`。
 
-在大多数商业应用中，我们需要的不是通用模型，而是能够解决问题的模型。基础LLM不适合这种任务，因为它们被训练来预测最可能的下一个词。但是在互联网上，有很多文本的下一个词并不是正确的答案，例如笑话或仅仅是为考试准备的问题列表。
+在大多数商业应用中，我们需要的不是通用模型，而是能够解决问题的模型。基础 LLM 不适合这种任务，因为它们被训练来预测最可能的下一个词。但是在互联网上，有很多文本的下一个词并不是正确的答案，例如笑话或仅仅是为考试准备的问题列表。
 
-因此，如今，经过指令调整的LLM在商业案例中非常受欢迎。这些模型是基础LLM，在带有指令和良好答案的数据集上进行了微调（例如，[OpenOrca数据集](https://huggingface.co/datasets/Open-Orca/OpenOrca)）。此外，RLHF（基于人类反馈的强化学习）方法通常用于训练这些模型。
+因此，如今，经过指令调整的 LLM 在商业案例中非常受欢迎。这些模型是基础 LLM，在带有指令和良好答案的数据集上进行了微调（例如，[OpenOrca 数据集](https://huggingface.co/datasets/Open-Orca/OpenOrca)）。此外，RLHF（基于人类反馈的强化学习）方法通常用于训练这些模型。
 
-指令调整的LLM的另一个重要特性是它们努力提供帮助、诚实和无害，这对于将与客户（尤其是脆弱客户）沟通的模型至关重要。
+指令调整的 LLM 的另一个重要特性是它们努力提供帮助、诚实和无害，这对于将与客户（尤其是脆弱客户）沟通的模型至关重要。
 
-# LLM的主要任务是什么
+# LLM 的主要任务是什么
 
-LLM主要用于处理非结构化数据的任务（而不是拥有大量数字的表格情况）。以下是文本的最常见应用列表：
+LLM 主要用于处理非结构化数据的任务（而不是拥有大量数字的表格情况）。以下是文本的最常见应用列表：
 
 +   **总结**——提供文本的简明概述。
 
 +   **文本分析**，例如，情感分析或提取特定特征（例如，酒店评论中提到的标签）。
 
-+   **文本转换**包括翻译成不同的语言、改变语气或将HTML格式转换为JSON。
++   **文本转换**包括翻译成不同的语言、改变语气或将 HTML 格式转换为 JSON。
 
 +   **生成**，例如，从提示中生成一个故事、回答客户问题或帮助进行问题头脑风暴。
 
-看起来我们的主题建模任务是LLM可以相当有用的一个例子。这是**文本分析**的一个例子。
+看起来我们的主题建模任务是 LLM 可以相当有用的一个例子。这是**文本分析**的一个例子。
 
-# 提示工程101
+# 提示工程 101
 
-我们使用称为提示的指令向LLM提供任务。您可以将LLM看作是一个非常积极和知识丰富的初级专家，愿意帮助但需要清晰的指示来跟随。因此，提示至关重要。
+我们使用称为提示的指令向 LLM 提供任务。您可以将 LLM 看作是一个非常积极和知识丰富的初级专家，愿意帮助但需要清晰的指示来跟随。因此，提示至关重要。
 
 在创建提示时，有几个主要原则需要考虑。
 
 ## 原则#1：尽可能清晰具体
 
-+   使用分隔符来分割提示的不同部分，例如，在指令中分隔不同的步骤或框架用户消息。常见的分隔符有`”””`，`---`，`###`，`<>`或XML标签。
++   使用分隔符来分割提示的不同部分，例如，在指令中分隔不同的步骤或框架用户消息。常见的分隔符有`”””`，`---`，`###`，`<>`或 XML 标签。
 
-+   定义输出的格式。例如，您可以使用JSON或HTML，甚至指定可能的值列表。这将使您的响应解析更加容易。
++   定义输出的格式。例如，您可以使用 JSON 或 HTML，甚至指定可能的值列表。这将使您的响应解析更加容易。
 
 +   向模型展示几个输入和输出示例，以便它可以看到您期望作为单独消息的内容。这种方法称为少数样本提示。
 
-+   同样，指导模型检查假设和条件可能会很有帮助。例如，确保输出格式为JSON并且返回值来自指定列表。
++   同样，指导模型检查假设和条件可能会很有帮助。例如，确保输出格式为 JSON 并且返回值来自指定列表。
 
 ## **原则#2：**推动模型思考答案
 
-丹尼尔·卡尼曼的著名书籍《思考，快与慢》显示，我们的心智由两个系统组成。系统1本能地工作，允许我们以极快速度和最小的努力给出答案（这个系统帮助我们的祖先在遇到老虎后存活下来）。系统2需要更多时间和集中精力才能得出答案。我们倾向于在尽可能多的情况下使用系统1，因为对于基本任务来说，这更有效。令人惊讶的是，LLM也会这样做，并经常草率得下结论。
+丹尼尔·卡尼曼的著名书籍《思考，快与慢》显示，我们的心智由两个系统组成。系统 1 本能地工作，允许我们以极快速度和最小的努力给出答案（这个系统帮助我们的祖先在遇到老虎后存活下来）。系统 2 需要更多时间和集中精力才能得出答案。我们倾向于在尽可能多的情况下使用系统 1，因为对于基本任务来说，这更有效。令人惊讶的是，LLM 也会这样做，并经常草率得下结论。
 
 我们可以促使模型在回答之前进行思考，从而提高质量。
 
@@ -94,7 +94,7 @@ LLM主要用于处理非结构化数据的任务（而不是拥有大量数字�
 
 +   假设我们希望模型检查一些结果（例如来自其他模型或学生的结果）。在这种情况下，我们可以要求它首先独立获取结果或在得出结论之前根据一系列标准进行评估。
 
-你可以在[这个Jupyter笔记本](https://github.com/fastai/lm-hackers/blob/main/lm-hackers.ipynb)中找到Jeremy Howard提供的一个有用的系统提示的例子，这会推动模型进行推理。
+你可以在[这个 Jupyter 笔记本](https://github.com/fastai/lm-hackers/blob/main/lm-hackers.ipynb)中找到 Jeremy Howard 提供的一个有用的系统提示的例子，这会推动模型进行推理。
 
 ## 原则#3：注意幻觉
 
@@ -102,7 +102,7 @@ LLM 的一个著名问题是幻觉。这是指模型告诉你看似可信但不�
 
 例如，如果你要求 GPT 提供关于 DALL-E 3 的最受欢迎的论文，三分之二的网址无效。
 
-![](../Images/b0eb48faf52a7ce342bd161c3fa97fb0.png)
+![](img/b0eb48faf52a7ce342bd161c3fa97fb0.png)
 
 幻觉的常见来源：
 
@@ -148,7 +148,7 @@ OpenAI 的 ChatGPT 现在是最受欢迎的语言模型之一，因此在这个�
 
 让我们看看我们的一个酒店评论将如何被分割成标记。
 
-![](../Images/797d1d2accfd035b12420713b260b7c6.png)
+![](img/797d1d2accfd035b12420713b260b7c6.png)
 
 你可以使用 `tiktoken` Python 库查找你模型的确切标记数。
 
@@ -226,7 +226,7 @@ def get_model_response_with_token_counts(messages,
 
 让我们看一下分两阶段的主题建模的情况。首先，我们将评论翻译成英文，然后定义主要主题。
 
-![](../Images/93f080b59d431989a6693f93e826f0fd.png)
+![](img/93f080b59d431989a6693f93e826f0fd.png)
 
 由于模型不会为会话中的每个问题保持状态，我们需要传递整个上下文。因此，在这种情况下，我们的 `messages` 参数应该如下所示。
 
@@ -322,17 +322,17 @@ customer_input = customer_input.replace('####', '')
 
 **没有正确的答案（主题建模或聊天用例）。**
 
-+   你可以使用另一个LLM来访问该模型的结果。为模型提供一组标准以理解答案的质量是很有帮助的。此外，使用更复杂的模型进行评估也是值得的。例如，你可以在生产中使用ChatGPT-3.5，因为它更便宜并且足够好，但对于样本案例的离线评估，你可以使用ChatGPT-4以确保模型的质量。
++   你可以使用另一个 LLM 来访问该模型的结果。为模型提供一组标准以理解答案的质量是很有帮助的。此外，使用更复杂的模型进行评估也是值得的。例如，你可以在生产中使用 ChatGPT-3.5，因为它更便宜并且足够好，但对于样本案例的离线评估，你可以使用 ChatGPT-4 以确保模型的质量。
 
-+   另一种方法是与“理想”或专家答案进行比较。你可以使用[BLEU评分](https://en.wikipedia.org/wiki/BLEU)或其他LLM（[OpenAI evals项目](https://github.com/openai/evals/blob/main/evals/registry/modelgraded/fact.yaml)有很多有用的提示）。
++   另一种方法是与“理想”或专家答案进行比较。你可以使用[BLEU 评分](https://en.wikipedia.org/wiki/BLEU)或其他 LLM（[OpenAI evals 项目](https://github.com/openai/evals/blob/main/evals/registry/modelgraded/fact.yaml)有很多有用的提示）。
 
 在我们的情况下，我们没有一个正确的答案用于客户评论，因此我们需要将结果与专家答案进行比较，或使用其他提示来评估结果的质量。
 
-我们已经快速了解了LLM的基本知识，现在准备继续进行初步的主题建模任务。
+我们已经快速了解了 LLM 的基本知识，现在准备继续进行初步的主题建模任务。
 
-# 使用ChatGPT增强BERTopic
+# 使用 ChatGPT 增强 BERTopic
 
-对之前方法的最合乎逻辑的改进是使用LLM来定义我们已经用BERTopic确定的主题。我们可以使用OpenAI的表示模型和总结提示来完成这项工作。
+对之前方法的最合乎逻辑的改进是使用 LLM 来定义我们已经用 BERTopic 确定的主题。我们可以使用 OpenAI 的表示模型和总结提示来完成这项工作。
 
 ```py
 from bertopic.representation import OpenAI
@@ -367,23 +367,23 @@ topic_model.get_topic_info()[['Count', 'Name']].head(7)
 |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 ```
 
-然后，BERTopic会向ChatGPT API发出请求，为每个主题提供关键词和一组代表性文档。ChatGPT API的响应被用作模型表示。
+然后，BERTopic 会向 ChatGPT API 发出请求，为每个主题提供关键词和一组代表性文档。ChatGPT API 的响应被用作模型表示。
 
-你可以在[BERTopic文档](https://maartengr.github.io/BERTopic/getting_started/representation/llm.html)中找到更多详细信息。
+你可以在[BERTopic 文档](https://maartengr.github.io/BERTopic/getting_started/representation/llm.html)中找到更多详细信息。
 
-这是一种合理的方法，但我们仍然完全依赖BERTopic通过嵌入来对文档进行聚类，我们可以看到主题有些纠缠。我们能否摆脱它，使用初始文本作为真实来源？
+这是一种合理的方法，但我们仍然完全依赖 BERTopic 通过嵌入来对文档进行聚类，我们可以看到主题有些纠缠。我们能否摆脱它，使用初始文本作为真实来源？
 
-# 使用ChatGPT进行主题建模
+# 使用 ChatGPT 进行主题建模
 
-实际上，我们可以使用ChatGPT来完成这个任务，并将其分为两个步骤：定义主题列表，然后为每个客户评论分配一个或多个主题。让我们尝试一下。
+实际上，我们可以使用 ChatGPT 来完成这个任务，并将其分为两个步骤：定义主题列表，然后为每个客户评论分配一个或多个主题。让我们尝试一下。
 
 ## 定义主题列表
 
 首先，我们需要定义主题列表。然后，我们可以使用它来分类评论。
 
-理想情况下，我们可以将所有文本发送到ChatGPT，并要求它定义主要主题。然而，这可能非常昂贵且不那么直接。整个酒店评论的数据集中有超过250万tokens。因此，我们无法将所有评论放入一个数据集中（因为ChatGPT-4目前只有32K的上下文）。
+理想情况下，我们可以将所有文本发送到 ChatGPT，并要求它定义主要主题。然而，这可能非常昂贵且不那么直接。整个酒店评论的数据集中有超过 250 万 tokens。因此，我们无法将所有评论放入一个数据集中（因为 ChatGPT-4 目前只有 32K 的上下文）。
 
-为了克服这个限制，我们可以定义一个适合上下文大小的代表性文档子集。BERTopic会返回每个主题的最具代表性的文档集合，因此我们可以拟合一个基本的BERTopic模型。
+为了克服这个限制，我们可以定义一个适合上下文大小的代表性文档子集。BERTopic 会返回每个主题的最具代表性的文档集合，因此我们可以拟合一个基本的 BERTopic 模型。
 
 ```py
 representation_model = KeyBERTInspired()
@@ -436,7 +436,7 @@ len(gpt35_enc.encode(user_message))
 9675
 ```
 
-它超过了4K，因此我们需要使用`gpt-3.5-turbo-16k`来完成这个任务。
+它超过了 4K，因此我们需要使用`gpt-3.5-turbo-16k`来完成这个任务。
 
 ```py
 topics_response = get_model_response(messages, 
@@ -450,7 +450,7 @@ pd.DataFrame(topics_list)
 
 因此，我们得到了一个相关话题的列表，这看起来非常合理。
 
-![](../Images/211eb530e63f2d15be600e108eff577a.png)
+![](img/211eb530e63f2d15be600e108eff577a.png)
 
 ## 按主题分类评论
 
@@ -497,7 +497,7 @@ topics_class_response = get_model_response(messages,
 
 这种方法能取得相当不错的结果。它甚至可以处理其他语言的评论（例如下面的德语评论）。
 
-![](../Images/a25d042dea8303f0ffaf0fbdf73eb812.png)
+![](img/a25d042dea8303f0ffaf0fbdf73eb812.png)
 
 这个小数据样本中的唯一错误是第一个评论的 `Restaurant` 主题。客户评论中没有提到酒店餐厅，只提到了附近的餐馆。但让我们看看我们的提示。我们并没有告诉模型我们只对特定的餐馆感兴趣，因此它将这样的主题分配给评论是合理的。
 

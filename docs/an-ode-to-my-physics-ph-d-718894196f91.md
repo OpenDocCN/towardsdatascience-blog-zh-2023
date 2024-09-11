@@ -1,22 +1,22 @@
 # 赠献给我的物理学博士学位。
 
-> 原文：[https://towardsdatascience.com/an-ode-to-my-physics-ph-d-718894196f91?source=collection_archive---------3-----------------------#2023-07-18](https://towardsdatascience.com/an-ode-to-my-physics-ph-d-718894196f91?source=collection_archive---------3-----------------------#2023-07-18)
+> 原文：[`towardsdatascience.com/an-ode-to-my-physics-ph-d-718894196f91?source=collection_archive---------3-----------------------#2023-07-18`](https://towardsdatascience.com/an-ode-to-my-physics-ph-d-718894196f91?source=collection_archive---------3-----------------------#2023-07-18)
 
 ## 关于五年物理学与向机器学习过渡的感想
 
-[](https://medium.com/@jacob_marks?source=post_page-----718894196f91--------------------------------)[![Jacob Marks, Ph.D.](../Images/94d9832b8706d1044e3195386613bfab.png)](https://medium.com/@jacob_marks?source=post_page-----718894196f91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----718894196f91--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----718894196f91--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----718894196f91--------------------------------)
+[](https://medium.com/@jacob_marks?source=post_page-----718894196f91--------------------------------)![Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----718894196f91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----718894196f91--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----718894196f91--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----718894196f91--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ode-to-my-physics-ph-d-718894196f91&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----718894196f91---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----718894196f91--------------------------------) · 10分钟阅读 · 2023年7月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F718894196f91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ode-to-my-physics-ph-d-718894196f91&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----718894196f91---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ode-to-my-physics-ph-d-718894196f91&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----718894196f91---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----718894196f91--------------------------------) · 10 分钟阅读 · 2023 年 7 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F718894196f91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ode-to-my-physics-ph-d-718894196f91&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----718894196f91---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F718894196f91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ode-to-my-physics-ph-d-718894196f91&source=-----718894196f91---------------------bookmark_footer-----------)![](../Images/a3c8c1147fdd45191a6e1fc6574c9a09.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F718894196f91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-ode-to-my-physics-ph-d-718894196f91&source=-----718894196f91---------------------bookmark_footer-----------)![](img/a3c8c1147fdd45191a6e1fc6574c9a09.png)
 
-图片来自Unsplash。
+图片来自 Unsplash。
 
-一年前，我进行了博士论文答辩。由于房间四周都是窗户，大家习惯称之为“鱼缸”，让路过的人可以窥视进来。那天是星期五下午4点，这是我所有委员会成员唯一能参加的时间。经历了不可避免的视听设备故障后，我向朋友、家人和物理学家们展示了大约一个小时的内容，主题是**“对称保护拓扑的惊人持久性”**。然后，我与答辩委员会进行了简短的私人会议，深入探讨了我研究项目的技术细节，以检验我对研究的理解深度。5:30时，我带着物理学博士学位走出了房间。
+一年前，我进行了博士论文答辩。由于房间四周都是窗户，大家习惯称之为“鱼缸”，让路过的人可以窥视进来。那天是星期五下午 4 点，这是我所有委员会成员唯一能参加的时间。经历了不可避免的视听设备故障后，我向朋友、家人和物理学家们展示了大约一个小时的内容，主题是**“对称保护拓扑的惊人持久性”**。然后，我与答辩委员会进行了简短的私人会议，深入探讨了我研究项目的技术细节，以检验我对研究的理解深度。5:30 时，我带着物理学博士学位走出了房间。
 
 我平静地走下两层楼，走到外面，迎接到一个晴朗明亮的周五下午的帕洛阿尔托，发现我的父母和最好的朋友在等待祝贺我，并送上香槟。我的平静外表崩溃了，我开始哭泣。
 
@@ -26,7 +26,7 @@
 
 同时，这一刻无疑是甜中带涩的：它标志着我在物理学上投入的时间的结束。我不知道博士后生活会给我带来什么，但我知道物理学将不再是一个指导力量。
 
-![](../Images/6453226d88a8f072dab1a931e3d9b822.png)
+![](img/6453226d88a8f072dab1a931e3d9b822.png)
 
 斯坦福校园，我在这里完成了我的物理学博士学位。图片由 Unsplash 提供。
 
@@ -48,7 +48,7 @@
 
 更大的惊讶来自于听他们的故事。我与之交谈的大多数在行业中的前物理学家在博士毕业五年后对自己职业的现状感到满意——有些人甚至更早。但是，在反思他们的经历时，每个人表达的主流情感是挫折、失望、谦逊和遗憾的结合。
 
-在物理学中，常常会被告知*从*物理学开始，你可以做*任何*事。人们看到一个前量子物理学家在金融行业；一个来自CERN的研究员现在是科技公司AI研究的负责人；一个曾经的弦理论学家现在伪装成海洋学家，他们认为物理学让你为一切做好了准备，一次性地。不过，“他们”并不是错的，但这个画面具有误导性。
+在物理学中，常常会被告知*从*物理学开始，你可以做*任何*事。人们看到一个前量子物理学家在金融行业；一个来自 CERN 的研究员现在是科技公司 AI 研究的负责人；一个曾经的弦理论学家现在伪装成海洋学家，他们认为物理学让你为一切做好了准备，一次性地。不过，“他们”并不是错的，但这个画面具有误导性。
 
 当然，到处都有前物理学家。的确，“物理思维”是许多职业的宝贵基础。然而，从我自己的经历以及与他人的对话来看，我认为这更多是关于*物理*给予个人的，而不是*吸引*到物理学的*人*。
 
@@ -56,7 +56,7 @@
 
 这里就是前面提到的谦逊之处。尽管在声誉卓著的期刊上发表了论文，沉浸于大量的数学方程式中，并学会了如何应对模糊的研究问题，但许多进入行业的物理学家在找工作时遇到了困难。
 
-![](../Images/e3d52370442ea16cbe46c615d5ed0104.png)
+![](img/e3d52370442ea16cbe46c615d5ed0104.png)
 
 图片由 Unsplash 提供。
 
@@ -70,7 +70,7 @@
 
 我对气候科技感兴趣，但所有看起来有趣的职位要么因为经济前景被裁撤，要么是我不具备资格的职位。
 
-我也对机器学习感兴趣，而这是一个似乎不受招聘冻结影响的领域，所以我决定将精力集中在这里。我对Leetcode问题、脑筋急转弯或白板问题没有问题，因此当我能获得面试时，我通常能进入最终轮。但我一直收到拒绝，因为我的软件工程技能不够强。回顾这一点，我完全理解他们的意思，以及为什么我没有收到这些录用通知。
+我也对机器学习感兴趣，而这是一个似乎不受招聘冻结影响的领域，所以我决定将精力集中在这里。我对 Leetcode 问题、脑筋急转弯或白板问题没有问题，因此当我能获得面试时，我通常能进入最终轮。但我一直收到拒绝，因为我的软件工程技能不够强。回顾这一点，我完全理解他们的意思，以及为什么我没有收到这些录用通知。
 
 我开始焦虑自己找不到工作。我对求职过程越来越感到沮丧。同时，我对自己感到不满，因为我把自己放在了这种位置上，花了五年时间攻读一个我并不打算继续从事的领域的博士学位。我本可以做*任何*事，但我选择了研究对称性、拓扑学和涌现。
 
@@ -78,21 +78,21 @@
 
 在十月，就在我的焦虑开始转变为绝望时，情况有所好转。我迅速收到了一些来自重视我非传统经验和技能的公司的录用通知。
 
-![](../Images/06eb790582aa8c69bb7a51a8c3d78244.png)
+![](img/06eb790582aa8c69bb7a51a8c3d78244.png)
 
-Leap of faith. 图片由Unsplash提供。
+Leap of faith. 图片由 Unsplash 提供。
 
-我很幸运在一家令人惊叹的A轮创业公司Voxel51找到了归宿，在那里我接受了机器学习工程师兼开发者关系传播者的职位。Voxel51团队给了我一个机会——尽管我的软件工程经验和机器学习接触有限，他们还是聘用了我作为机器学习工程师；尽管我对开发者关系的概念还很陌生，他们还是让我加入了他们的开发者关系工作！
+我很幸运在一家令人惊叹的 A 轮创业公司 Voxel51 找到了归宿，在那里我接受了机器学习工程师兼开发者关系传播者的职位。Voxel51 团队给了我一个机会——尽管我的软件工程经验和机器学习接触有限，他们还是聘用了我作为机器学习工程师；尽管我对开发者关系的概念还很陌生，他们还是让我加入了他们的开发者关系工作！
 
 回顾过去，我认为[Voxel51](https://voxel51.com/)为什么聘用我，以及为什么这个职位取得成功，归结起来有三个原因：
 
-1.  **使命对齐**：Voxel51的使命是为世界的数据带来清晰和透明。近十年来，我一直努力使物理学中的概念、思想和研究结果变得可及（个人博客、耶鲁科学杂志、物理世界等）。物理本身是不可转移的，但我努力的精神与公司的使命紧密对齐。
+1.  **使命对齐**：Voxel51 的使命是为世界的数据带来清晰和透明。近十年来，我一直努力使物理学中的概念、思想和研究结果变得可及（个人博客、耶鲁科学杂志、物理世界等）。物理本身是不可转移的，但我努力的精神与公司的使命紧密对齐。
 
-1.  **学习是核心**：作为开发者推广员的一部分，持续学习和探索新技术是非常重要的，而机器学习如今发展如此迅速，以至于*每个人*都需要不断学习以保持与时俱进。因此，学习曾经是（并且仍然是！）这份工作的核心组成部分。通过与Voxel51的合作，我和Voxel51成功地将一个潜在的弱点（知识的空白）转化为优势，通过创建源自我经历的教育内容！
+1.  **学习是核心**：作为开发者推广员的一部分，持续学习和探索新技术是非常重要的，而机器学习如今发展如此迅速，以至于*每个人*都需要不断学习以保持与时俱进。因此，学习曾经是（并且仍然是！）这份工作的核心组成部分。通过与 Voxel51 的合作，我和 Voxel51 成功地将一个潜在的弱点（知识的空白）转化为优势，通过创建源自我经历的教育内容！
 
 1.  **创业公司思维**：当大型公司招聘时，他们通常寻找能够完成非常具体任务的人。因此，他们会寻找具备非常特定技能和经验的人。在创业公司中，每个人都必须身兼多职，个人可以创造价值的方式有很多。这并不总是那么明确，但通常来说，我发现具有非传统技能集——包括博士学位的人——在灵活、常常模糊不清和不断变化的创业环境中能够蓬勃发展。
 
-我在Voxel51待了将近九个月，已经学到了很多东西。我学习了软件工程、计算机视觉和生成性AI；我还学习了市场营销、开发者关系和社区管理。我还学到了很多关于自己的事情：哪些类型的工作让我感到兴奋，我如何与他人合作，以及如何平衡工作与生活（仍在进行中）。在过去的一年里，我学到的知识与研究生阶段的任何一年一样多。我仍然在不断学习！
+我在 Voxel51 待了将近九个月，已经学到了很多东西。我学习了软件工程、计算机视觉和生成性 AI；我还学习了市场营销、开发者关系和社区管理。我还学到了很多关于自己的事情：哪些类型的工作让我感到兴奋，我如何与他人合作，以及如何平衡工作与生活（仍在进行中）。在过去的一年里，我学到的知识与研究生阶段的任何一年一样多。我仍然在不断学习！
 
 距离物理博士学位已经过去一年，心中的怨恨终于开始减退。我曾因为花费五年时间进行物理研究而对自己非常不满，以至于忽视了更大的图景。我并不是为了职业发展才攻读物理博士学位。我选择攻读博士学位是因为我热爱物理，并且我想有机会深入探索关于我们宇宙的基本问题。能够做到这一点是一种奢侈——对此我深感感激。
 

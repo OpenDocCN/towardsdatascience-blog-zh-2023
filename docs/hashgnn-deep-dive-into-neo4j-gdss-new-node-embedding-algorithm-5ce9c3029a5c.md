@@ -1,14 +1,14 @@
 # HashGNN: 深入探讨 Neo4j GDS 的新节点嵌入算法
 
-> 原文：[https://towardsdatascience.com/hashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c?source=collection_archive---------7-----------------------#2023-08-10](https://towardsdatascience.com/hashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c?source=collection_archive---------7-----------------------#2023-08-10)
+> 原文：[`towardsdatascience.com/hashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c?source=collection_archive---------7-----------------------#2023-08-10`](https://towardsdatascience.com/hashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c?source=collection_archive---------7-----------------------#2023-08-10)
 
 ## 在这篇文章中，我们将通过一个小示例来探讨 HashGNN 如何将图节点哈希到嵌入空间。
 
-[](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)[![Philipp Brunenberg](../Images/b2384bcc51966f669f84c949a33ebfcc.png)](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------) [Philipp Brunenberg](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)
+[](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)![Philipp Brunenberg](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------) [Philipp Brunenberg](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6edbaee01d5d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c&user=Philipp+Brunenberg&userId=6edbaee01d5d&source=post_page-6edbaee01d5d----5ce9c3029a5c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------) ·9分钟阅读·2023年8月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce9c3029a5c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c&user=Philipp+Brunenberg&userId=6edbaee01d5d&source=-----5ce9c3029a5c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6edbaee01d5d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c&user=Philipp+Brunenberg&userId=6edbaee01d5d&source=post_page-6edbaee01d5d----5ce9c3029a5c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------) ·9 分钟阅读·2023 年 8 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce9c3029a5c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c&user=Philipp+Brunenberg&userId=6edbaee01d5d&source=-----5ce9c3029a5c---------------------clap_footer-----------)
 
 --
 
@@ -16,31 +16,31 @@
 
 如果你更喜欢观看视频，你可以[点击这里](https://youtu.be/fccFuyjNEcM)。
 
-HashGG（#GNN）是一种节点嵌入技术，它采用了消息传递神经网络（MPNN）的概念来捕捉高阶邻近性和节点属性。通过利用一种称为MinHashing的近似技术，它显著加快了计算速度，相比于传统神经网络。因此，它是一种基于哈希的方法，在效率和准确性之间引入了权衡。本文将深入理解这些内容，并通过一个小示例探索算法的工作原理。
+HashGG（#GNN）是一种节点嵌入技术，它采用了消息传递神经网络（MPNN）的概念来捕捉高阶邻近性和节点属性。通过利用一种称为 MinHashing 的近似技术，它显著加快了计算速度，相比于传统神经网络。因此，它是一种基于哈希的方法，在效率和准确性之间引入了权衡。本文将深入理解这些内容，并通过一个小示例探索算法的工作原理。
 
 # 节点嵌入：具有相似上下文的节点在嵌入空间中应当接近
 
-许多图机器学习用例，如链接预测和节点分类，都需要计算节点的相似度。在图的背景下，当这些相似度捕捉到（i）邻域（即图结构）和（ii）待嵌入节点的属性时，才最具表现力。节点嵌入算法将节点投射到低维嵌入空间中——即它们为每个节点分配一个数值向量。这些向量——即嵌入——可以用于进一步的数值预测分析（例如，机器学习算法）。嵌入算法优化的指标是：具有相似图上下文（邻域）和/或属性的节点应当在嵌入空间中被映射得接近。图嵌入算法通常采用两个基本步骤：（i）定义一种机制来采样节点的上下文（node2vec中的随机游走，FastRP中的k-fold转移矩阵），和（ii）随后在保留成对距离的同时减少维度（node2vec中的SGD，FastRP中的随机投影）。
+许多图机器学习用例，如链接预测和节点分类，都需要计算节点的相似度。在图的背景下，当这些相似度捕捉到（i）邻域（即图结构）和（ii）待嵌入节点的属性时，才最具表现力。节点嵌入算法将节点投射到低维嵌入空间中——即它们为每个节点分配一个数值向量。这些向量——即嵌入——可以用于进一步的数值预测分析（例如，机器学习算法）。嵌入算法优化的指标是：具有相似图上下文（邻域）和/或属性的节点应当在嵌入空间中被映射得接近。图嵌入算法通常采用两个基本步骤：（i）定义一种机制来采样节点的上下文（node2vec 中的随机游走，FastRP 中的 k-fold 转移矩阵），和（ii）随后在保留成对距离的同时减少维度（node2vec 中的 SGD，FastRP 中的随机投影）。
 
 # HashGNN：绕过训练神经网络
 
-关于HashGNN的线索是，它不要求我们基于损失函数训练神经网络，就像我们在传统的消息传递神经网络中需要做的那样。由于节点嵌入算法优化的是“相似的节点应该在嵌入空间中接近”，损失的评估涉及计算节点对的真实相似度。这被用作训练的反馈，来评估预测的准确性，并相应地调整权重。通常，余弦相似度被用作相似度度量。
+关于 HashGNN 的线索是，它不要求我们基于损失函数训练神经网络，就像我们在传统的消息传递神经网络中需要做的那样。由于节点嵌入算法优化的是“相似的节点应该在嵌入空间中接近”，损失的评估涉及计算节点对的真实相似度。这被用作训练的反馈，来评估预测的准确性，并相应地调整权重。通常，余弦相似度被用作相似度度量。
 
-HashGNN规避了模型训练，实际上完全不使用神经网络。它不训练权重矩阵或定义损失函数，而是使用随机哈希方案，将节点向量哈希到具有相似度的相同签名，这意味着我们可以嵌入节点，而不需要直接比较节点（即无需计算余弦相似度）。这种哈希技术称为MinHashing，最初定义为在不比较集合的情况下近似两个集合的相似度。由于集合被编码为二进制向量，HashGNN需要二进制节点表示。为了理解如何将其用于嵌入一般图的节点，需要几种技术。让我们来看一看。
+HashGNN 规避了模型训练，实际上完全不使用神经网络。它不训练权重矩阵或定义损失函数，而是使用随机哈希方案，将节点向量哈希到具有相似度的相同签名，这意味着我们可以嵌入节点，而不需要直接比较节点（即无需计算余弦相似度）。这种哈希技术称为 MinHashing，最初定义为在不比较集合的情况下近似两个集合的相似度。由于集合被编码为二进制向量，HashGNN 需要二进制节点表示。为了理解如何将其用于嵌入一般图的节点，需要几种技术。让我们来看一看。
 
 # MinHashing
 
-首先，让我们讨论一下MinHashing。MinHashing是一种局部敏感哈希技术，用于近似两个集合的Jaccard相似度。Jaccard相似度通过将交集大小除以两个集合中存在的唯一元素数量（并集）来度量两个集合的重叠（交集）。它定义在编码为二进制向量的集合上：宇宙中的每个元素（所有元素的集合）都分配一个唯一的行索引。如果特定集合包含一个元素，则在集合向量的相应行中表示为值1。MinHashing算法独立地哈希每个集合的二进制向量，并使用`K`个哈希函数生成`K`维签名。MinHashing的直观解释是随机选择非零元素`K`次，选择哈希值最小的那个。这将产生输入集合的签名向量。有趣的是，如果我们对两个集合进行这种操作而不进行比较，它们将以其Jaccard相似度的概率哈希到相同的签名（如果`K`足够大）。换句话说：概率趋近于Jaccard相似度。
+首先，让我们讨论一下 MinHashing。MinHashing 是一种局部敏感哈希技术，用于近似两个集合的 Jaccard 相似度。Jaccard 相似度通过将交集大小除以两个集合中存在的唯一元素数量（并集）来度量两个集合的重叠（交集）。它定义在编码为二进制向量的集合上：宇宙中的每个元素（所有元素的集合）都分配一个唯一的行索引。如果特定集合包含一个元素，则在集合向量的相应行中表示为值 1。MinHashing 算法独立地哈希每个集合的二进制向量，并使用`K`个哈希函数生成`K`维签名。MinHashing 的直观解释是随机选择非零元素`K`次，选择哈希值最小的那个。这将产生输入集合的签名向量。有趣的是，如果我们对两个集合进行这种操作而不进行比较，它们将以其 Jaccard 相似度的概率哈希到相同的签名（如果`K`足够大）。换句话说：概率趋近于 Jaccard 相似度。
 
-![](../Images/92b7a735435b2b2a6c645fd5ac4fbc0a.png)
+![](img/92b7a735435b2b2a6c645fd5ac4fbc0a.png)
 
-Jaccard相似度度量两个集合的相似度。通常，集合也可以编码为二进制向量。图像来源：作者。
+Jaccard 相似度度量两个集合的相似度。通常，集合也可以编码为二进制向量。图像来源：作者。
 
-在插图中：示例集合`s1`和`s2`被表示为二进制向量。我们可以通过比较这两个向量并计算两个向量都为1的行数，轻松计算Jaccard相似度。这些操作相当简单，但复杂性在于当我们有多个向量时，向量之间的成对比较。
+在插图中：示例集合`s1`和`s2`被表示为二进制向量。我们可以通过比较这两个向量并计算两个向量都为 1 的行数，轻松计算 Jaccard 相似度。这些操作相当简单，但复杂性在于当我们有多个向量时，向量之间的成对比较。
 
-![](../Images/ca3602e2959515ed684910fab2596254.png)
+![](img/ca3602e2959515ed684910fab2596254.png)
 
-MinHashing算法生成集合特征的k个排列，并选择具有最小哈希值的特征以创建minHash签名向量。图像来源：作者。
+MinHashing 算法生成集合特征的 k 个排列，并选择具有最小哈希值的特征以创建 minHash 签名向量。图像来源：作者。
 
 我们的宇宙 `U` 大小为 6，我们选择 `K`（哈希函数的数量）为 3。我们可以通过使用简单的公式和 `a`、`b` 和 `c` 的边界来轻松生成新的哈希函数。现在，我们实际上做的是使用每个哈希函数对我们向量的索引（`1-6`）进行哈希，每个索引与我们宇宙中的一个单一元素相关联。这将为我们提供 3 个随机排列的索引，从而得到我们宇宙中的元素。随后，我们可以将我们的集合向量 `s1` 和 `s2` 用作我们排列特征的掩码。对于每个排列和集合向量，我们选择集合中最小哈希值的索引。这将生成两个 3 维向量，每个集合一个，这就是集合的 MinHash 签名。
 
@@ -50,13 +50,13 @@ MinHashing 仅仅从输入集选择随机特征，我们只需使用哈希函数
 
 HashGNN 使用如 Weisfeiler-Lehman 核心神经网络（WLKNN）中定义的消息传递方案来捕捉高阶图结构和节点属性。它定义了之前提到的 HashGNN 上下文采样策略。WLK 在 `T` 次迭代中运行。在每次迭代中，它通过将节点的当前向量与所有直接连接邻居的向量组合，为每个节点生成一个新的节点向量。因此，它被认为是沿边将消息（节点向量）传递给相邻节点。
 
-![](../Images/6d8c869a768d2965965db28608e63dcd.png)
+![](img/6d8c869a768d2965965db28608e63dcd.png)
 
 WLK 在 T 次迭代中运行。在每次迭代中，它将节点信息沿边传递给相邻节点。图片来源于作者。
 
 在 `T` 次迭代之后，每个节点包含 `T` 跳距离（高阶）的节点信息。迭代 `t` 中的新节点向量的计算本质上是将所有邻居消息（来自迭代 `t-1`）聚合为单一邻居消息，然后与前一迭代的节点向量组合。此外，WLKNN 采用三个神经网络（权重矩阵和激活函数）；（i）用于聚合邻居向量，（ii）用于节点向量，以及（iii）用于两者的组合。WLK 的一个显著特征是迭代 `t` 中的计算仅依赖于迭代 `t-1` 的结果。因此，它可以被视为一个马尔可夫链。
 
-![](../Images/fd153c49ff0f6c9c916dadd15064c065.png)
+![](img/fd153c49ff0f6c9c916dadd15064c065.png)
 
 WLK：在每次迭代中，每个节点向量都会更新来自相邻节点的信息。因此，在 t 次迭代之后，每个节点包含来自 t 跳距离节点的信息。图片来源于作者。
 
@@ -64,7 +64,7 @@ WLK：在每次迭代中，每个节点向量都会更新来自相邻节点的�
 
 让我们探讨一下 HashGNN 如何结合这两种方法高效地将图向量嵌入到嵌入向量中。与 WLKNN 类似，HashGNN 算法在 `T` 次迭代中运行，通过聚合邻居向量和前一迭代的自身节点向量，为每个节点计算一个新的节点向量。然而，它不是训练三个权重矩阵，而是使用三种哈希方案进行局部敏感哈希。每种哈希方案包含 `K` 个随机构造的哈希函数，从二进制向量中提取 `K` 个随机特征。
 
-![](../Images/2518fbe2829144f4daf4ba000e1e1fa8.png)
+![](img/2518fbe2829144f4daf4ba000e1e1fa8.png)
 
 HashGNN 算法：我们用其二进制特征向量初始化节点向量。图片由作者提供。
 
@@ -72,25 +72,25 @@ HashGNN 算法：我们用其二进制特征向量初始化节点向量。图片
 
 **第 1 步：计算节点的签名向量：** 使用哈希方案 3 对来自前一迭代的节点向量进行最小哈希（随机选择 `K` 个特征）。在第一次迭代中，节点用其二进制特征向量初始化（稍后我们将讨论如何对节点进行二值化）。得到的签名（或消息）向量是沿着边传递给所有邻居的。因此，我们必须在每次迭代中首先对所有节点执行此操作。
 
-![](../Images/d6cb39108a5ad1faa4c451660f264125.png)
+![](img/d6cb39108a5ad1faa4c451660f264125.png)
 
 HashGNN 第 1 步：在每次迭代中，通过使用哈希方案 3 计算每个节点的消息向量。图片由作者提供。
 
 **第 2 步：构建邻居向量：** 在每个节点中，我们将接收来自所有直接连接邻居的签名向量，并将它们聚合成一个二进制向量。随后，我们使用哈希方案 2 从聚合的邻居向量中选择 `K` 个随机特征，并将结果称为邻居向量。
 
-![](../Images/773b590d410d722cdbdb6f9c82944cf1.png)
+![](img/773b590d410d722cdbdb6f9c82944cf1.png)
 
 HashGNN 第 2 步：我们收集所有邻居的消息向量并将其聚合。图片由作者提供。
 
 **第 3 步：将节点向量和邻居向量合并成新的节点向量：** 最后，我们使用哈希方案 1 从前一迭代的节点向量中随机选择 `K` 个特征，并将结果与邻居向量结合。得到的向量是新的节点向量，它是下一次迭代的起点。注意，这与第 1 步不同：在第 1 步中，我们对节点向量应用哈希方案 3 来构建消息/签名向量。
 
-![](../Images/a3caa1e99ca7dc8ef64304c84234ba7d.png)
+![](img/a3caa1e99ca7dc8ef64304c84234ba7d.png)
 
 HashGNN 第 3 步：我们将最小哈希的节点向量与聚合的邻居向量结合，以得到该迭代的结果节点向量。图片由作者提供。
 
 从图中我们可以看到，得到的（新）节点向量受自身节点特征（3 和 5）以及其邻居特征（2 和 5）的影响。经过第一次迭代后，节点向量将捕捉到来自距离 1 跳的邻居的信息。然而，当我们将其用作第二次迭代的输入时，它已经受到距离 2 跳特征的影响。
 
-![](../Images/208f648a73632a7df517c06f669af84a.png)
+![](img/208f648a73632a7df517c06f669af84a.png)
 
 在第一次迭代后，新的节点向量受自身特征和邻近节点特征的影响。图片由作者提供。
 
@@ -104,25 +104,25 @@ GDS 中一个重要的辅助步骤是特征二值化。MinHashing 和因此 Hash
 
 **步骤 2：构建随机二进制分类器：** 为每个目标维度定义一个超平面。结果维度的数量由参数`dimensions`控制。超平面是一个高维平面，只要它位于原点，就可以仅通过其法向量`n`来描述。`n`向量垂直于平面的表面，因此描述了其方向。在我们的情况下，`n`向量需要与节点输入向量具有相同的维度（`dim(f) = dim(n)`）。为了构建一个超平面，我们简单地从高斯分布中抽取`dim(f)`次。
 
-![](../Images/d2f1bc2713cd84e395263a60dd11230e.png)
+![](img/d2f1bc2713cd84e395263a60dd11230e.png)
 
 特征二值化：我们使用超平面取整将实值输入向量构造为二进制特征。我们为每个目标维度使用一个随机高斯分类器。图片由作者提供。
 
 **步骤 3：分类节点向量：** 计算节点输入向量和每个超平面向量的点积，从而得到超平面和输入向量之间的角度。使用`threshold`参数，我们可以决定输入向量是高于（1）还是低于（0）超平面，并将相应的值分配给结果的二进制特征向量。这与二元分类中的过程完全一致——唯一的不同是我们不迭代优化超平面，而是使用随机高斯分类器。
 
-![](../Images/60c9c061a86addd96ac456bd37d3013f.png)
+![](img/60c9c061a86addd96ac456bd37d3013f.png)
 
 使用 n 个超平面会导致 n 维的二进制节点签名。图片由作者提供。
 
-本质上，我们为每个目标维度绘制一个随机高斯分类器，并设置一个阈值参数。然后，我们对每个目标维度的输入向量进行分类，并得到一个`d`维的二进制向量，该向量将作为HashGNN的输入。
+本质上，我们为每个目标维度绘制一个随机高斯分类器，并设置一个阈值参数。然后，我们对每个目标维度的输入向量进行分类，并得到一个`d`维的二进制向量，该向量将作为 HashGNN 的输入。
 
 # 结论
 
 HashGNN 使用局部敏感哈希将节点向量嵌入到嵌入空间中。通过使用这种技术，它绕过了计算密集型的神经网络（或其他优化）的迭代训练以及直接的节点比较。论文的作者报告称，与基于学习的算法如 SEAL 和 P-GNN 相比，其运行时间快 2 到 4 个数量级，同时仍能产生高度可比（在某些情况下甚至更好）的准确性。
 
-![](../Images/57a5e45e97bc200333c9ccaf5309e684.png)
+![](img/57a5e45e97bc200333c9ccaf5309e684.png)
 
-HashGNN 比基于学习的算法快 2 到 4 个数量级，同时提供了可比的结果。图像来源：[https://arxiv.org/abs/2105.14280.](https://arxiv.org/abs/2105.14280.)
+HashGNN 比基于学习的算法快 2 到 4 个数量级，同时提供了可比的结果。图像来源：[`arxiv.org/abs/2105.14280.`](https://arxiv.org/abs/2105.14280.)
 
 HashGNN 在 Neo4j GDS（图数据科学库）中实现，因此可以直接在你的 Neo4j 图上使用。在下一篇文章中，我将详细讲解如何使用它以及需要注意的事项。
 

@@ -1,18 +1,18 @@
 # 数据团队作为支持团队
 
-> 原文：[https://towardsdatascience.com/data-teams-as-support-teams-2bb1f1ed31b?source=collection_archive---------11-----------------------#2023-01-05](https://towardsdatascience.com/data-teams-as-support-teams-2bb1f1ed31b?source=collection_archive---------11-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/data-teams-as-support-teams-2bb1f1ed31b?source=collection_archive---------11-----------------------#2023-01-05`](https://towardsdatascience.com/data-teams-as-support-teams-2bb1f1ed31b?source=collection_archive---------11-----------------------#2023-01-05)
 
 ## 改善沟通、减少摩擦并帮助企业获胜
 
-[](https://medium.com/@cisenbe?source=post_page-----2bb1f1ed31b--------------------------------)[![Chad Isenberg](../Images/56e50c1ee292ac672df4b8062e460c8e.png)](https://medium.com/@cisenbe?source=post_page-----2bb1f1ed31b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2bb1f1ed31b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2bb1f1ed31b--------------------------------) [Chad Isenberg](https://medium.com/@cisenbe?source=post_page-----2bb1f1ed31b--------------------------------)
+[](https://medium.com/@cisenbe?source=post_page-----2bb1f1ed31b--------------------------------)![Chad Isenberg](https://medium.com/@cisenbe?source=post_page-----2bb1f1ed31b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2bb1f1ed31b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2bb1f1ed31b--------------------------------) [Chad Isenberg](https://medium.com/@cisenbe?source=post_page-----2bb1f1ed31b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9113837f160&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-teams-as-support-teams-2bb1f1ed31b&user=Chad+Isenberg&userId=b9113837f160&source=post_page-b9113837f160----2bb1f1ed31b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2bb1f1ed31b--------------------------------) ·7分钟阅读·2023年1月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2bb1f1ed31b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-teams-as-support-teams-2bb1f1ed31b&user=Chad+Isenberg&userId=b9113837f160&source=-----2bb1f1ed31b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9113837f160&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-teams-as-support-teams-2bb1f1ed31b&user=Chad+Isenberg&userId=b9113837f160&source=post_page-b9113837f160----2bb1f1ed31b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2bb1f1ed31b--------------------------------) ·7 分钟阅读·2023 年 1 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2bb1f1ed31b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-teams-as-support-teams-2bb1f1ed31b&user=Chad+Isenberg&userId=b9113837f160&source=-----2bb1f1ed31b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2bb1f1ed31b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-teams-as-support-teams-2bb1f1ed31b&source=-----2bb1f1ed31b---------------------bookmark_footer-----------)![](../Images/8dcff410fcd732c87aa7b51654b6a363.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2bb1f1ed31b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-teams-as-support-teams-2bb1f1ed31b&source=-----2bb1f1ed31b---------------------bookmark_footer-----------)![](img/8dcff410fcd732c87aa7b51654b6a363.png)
 
 图片由 [Annie Spratt](https://unsplash.com/@anniespratt?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 我的副总裁有不同的观点。他建议我们的业务伙伴应该专注于他们最擅长的领域，当他们需要数据来执行他们的愿景时，他们应该向我们提出请求。他们不应该决定他们需要的东西是否“过于昂贵”或“过于耗时”。
 
-我的副总裁说得也有道理。我怀疑任何使用过内部服务组织如人力资源、法律、IT或采购的我们，都没有考虑过我们请求的复杂性或成本。申请贷款的收入证明可能需要多长时间？替换我坏掉的笔记本电脑需要什么？这些问题完全由各自的组织吸收，企业整体运行也因此更高效。
+我的副总裁说得也有道理。我怀疑任何使用过内部服务组织如人力资源、法律、IT 或采购的我们，都没有考虑过我们请求的复杂性或成本。申请贷款的收入证明可能需要多长时间？替换我坏掉的笔记本电脑需要什么？这些问题完全由各自的组织吸收，企业整体运行也因此更高效。
 
 尽管考虑了这一切，我仍然无法摆脱*数据是不同的*这种感觉。我并不是说数据作为一个领域通常比其他支持功能更困难、更有价值或更复杂；恰恰相反，我认为由于这个领域相对不成熟，很多过程和概念仍然缺失或半成品。总体而言，我认为数据团队往往有弱的操作模型，支持可疑的价值主张。在核心上，存在两个缺陷：数据模型和分析价值主张。
 
@@ -34,11 +34,11 @@
 
 ## 分析的价值主张
 
-依我经验，许多客户不知道数据能回答什么问题，更重要的是，他们不知道如何将业务成果与数据资产联系起来。[XY问题](https://en.wikipedia.org/wiki/XY_problem)¹ 在与数据团队交流时成了商业团队的共通语言。
+依我经验，许多客户不知道数据能回答什么问题，更重要的是，他们不知道如何将业务成果与数据资产联系起来。[XY 问题](https://en.wikipedia.org/wiki/XY_problem)¹ 在与数据团队交流时成了商业团队的共通语言。
 
 在一定程度上，核心数据模型的缺失加剧了我们客户的困惑。他们对数据看起来“必须”是什么样子（通常但并不总是很合理的假设），因为他们不是生活在表格和管道中的人，所以他们经常是错的。即使我们的客户知道存在哪些数据资产，他们也不一定有专业知识去理解它们是否可以应用于他们的具体用例。
 
-作为一个行业，我们面临的更棘手的问题是，我们对于分析输出的价值有着非常脆弱的理解，而且我们对于任何特定输出所产生的价值又了解更少。我们“知道”将数据提供给企业是有价值的（看看FAANG+的成功），而且有研究表明利用数据的公司比其同行更有效²，但具体的机制却知之甚少。
+作为一个行业，我们面临的更棘手的问题是，我们对于分析输出的价值有着非常脆弱的理解，而且我们对于任何特定输出所产生的价值又了解更少。我们“知道”将数据提供给企业是有价值的（看看 FAANG+的成功），而且有研究表明利用数据的公司比其同行更有效²，但具体的机制却知之甚少。
 
 基本上，我们的客户从来没有真正有机会提出好的要求，至少没有持续地这样做。他们也不应该（也不需要）了解他们组织的数据资产的细节，和专家一样，他们对于他们想要的报告是否真正带来了实际的商业价值一无所知。他们可以整天要求报告，但不会有人知道数据团队的时间是否合理利用。这种缺乏反馈循环令数据团队感到沮丧，也会让客户觉得他们没有得到他们所要求的东西：不是因为交付物与规范不符合，**而是因为所要求的交付物本身其实从一开始就无法创造价值**。
 
@@ -48,7 +48,7 @@
 
 [Robert Yi](https://medium.com/u/8ac2da8b0742?source=post_page-----2bb1f1ed31b--------------------------------) [有一篇关于对齐的精彩文章](https://www.winwithdata.io/p/alignment-pedantry)³，比我能做的更好地覆盖了这个话题，但我还是想尝试添加一些想法。数据资产深深陷入了只有专家才能成功导航的背景中。数字从来不仅仅是数字，这就是为什么分析工作具有欺骗性难度。就像试图跟随一张地图，却发现有些地方的道路未被标出，而有些地方则有错误的道路。“哦，对了。旧主楼两年前已经退役了，但我们决定将其保留在地图上，以便你理解为什么主街会有这样的走向。”旅行者将会陷入困境。
 
-我们最终会得到这些模糊的地图，因为（混合比喻）制作过程特别混乱。分析是一个非常复杂的过程，其中1）业务获取信息（预订、账单、购买）2）这些信息通过产品和企业系统编码为数据（账户对象上的记录，库存表中的记录）3）这些数据最终提取到分析数据存储中，并重新组装为信息。最后一步总是更多的是艺术而非科学。
+我们最终会得到这些模糊的地图，因为（混合比喻）制作过程特别混乱。分析是一个非常复杂的过程，其中 1）业务获取信息（预订、账单、购买）2）这些信息通过产品和企业系统编码为数据（账户对象上的记录，库存表中的记录）3）这些数据最终提取到分析数据存储中，并重新组装为信息。最后一步总是更多的是艺术而非科学。
 
 这是一场我们做得相当糟糕的电话游戏。语义在过程中丢失了。当我们尝试将不同来源的对象模型结合起来时，我们未能理解它们之间的重要区别。人类会随着时间调整业务流程中的细微偏差，但我们的分析系统却不会。
 
@@ -68,8 +68,8 @@
 
 *参考文献*
 
-[1] 维基百科贡献者，[XY问题](https://en.wikipedia.org/w/index.php?title=XY_problem&oldid=1126742388)（2022年12月11日），维基百科，自由百科全书
+[1] 维基百科贡献者，[XY 问题](https://en.wikipedia.org/w/index.php?title=XY_problem&oldid=1126742388)（2022 年 12 月 11 日），维基百科，自由百科全书
 
-[2] Weill, Peter 和 Woerner, Stephanie L., [仪表板的回报](https://cisr.mit.edu/publication/2022_0101_Dashboarding_WeillWoerner)（2022年1月），MIT CISR 研究简报第XXII-1号
+[2] Weill, Peter 和 Woerner, Stephanie L., [仪表板的回报](https://cisr.mit.edu/publication/2022_0101_Dashboarding_WeillWoerner)（2022 年 1 月），MIT CISR 研究简报第 XXII-1 号
 
-[3] Yi, Robert，[沟通是关于对齐的](https://www.winwithdata.io/p/alignment-pedantry)（2022年12月），Win with Data
+[3] Yi, Robert，[沟通是关于对齐的](https://www.winwithdata.io/p/alignment-pedantry)（2022 年 12 月），Win with Data

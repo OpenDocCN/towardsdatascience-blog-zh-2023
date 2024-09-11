@@ -1,10 +1,10 @@
 # 数据建模与设计的成熟度模型
 
-> 原文：[https://towardsdatascience.com/a-maturity-model-for-data-modeling-and-design-b516d978655c?source=collection_archive---------9-----------------------#2023-04-25](https://towardsdatascience.com/a-maturity-model-for-data-modeling-and-design-b516d978655c?source=collection_archive---------9-----------------------#2023-04-25)
+> 原文：[`towardsdatascience.com/a-maturity-model-for-data-modeling-and-design-b516d978655c?source=collection_archive---------9-----------------------#2023-04-25`](https://towardsdatascience.com/a-maturity-model-for-data-modeling-and-design-b516d978655c?source=collection_archive---------9-----------------------#2023-04-25)
 
 ## 数据定义标准化掌握的最佳实践
 
-[](https://medium.com/@willemkoenders?source=post_page-----b516d978655c--------------------------------)[![Willem Koenders](../Images/340bb968e9eb62d3d84920a214bfa4dd.png)](https://medium.com/@willemkoenders?source=post_page-----b516d978655c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b516d978655c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b516d978655c--------------------------------) [Willem Koenders](https://medium.com/@willemkoenders?source=post_page-----b516d978655c--------------------------------)
+[](https://medium.com/@willemkoenders?source=post_page-----b516d978655c--------------------------------)![Willem Koenders](https://medium.com/@willemkoenders?source=post_page-----b516d978655c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b516d978655c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b516d978655c--------------------------------) [Willem Koenders](https://medium.com/@willemkoenders?source=post_page-----b516d978655c--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb516d978655c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-maturity-model-for-data-modeling-and-design-b516d978655c&source=-----b516d978655c---------------------bookmark_footer-----------)![](../Images/b5352c186574a441b3b7a7fc47f5ca7f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb516d978655c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-maturity-model-for-data-modeling-and-design-b516d978655c&source=-----b516d978655c---------------------bookmark_footer-----------)![](img/b5352c186574a441b3b7a7fc47f5ca7f.png)
 
 照片由 [Clint Adair](https://unsplash.com/de/@clintadair) 拍摄，来自 [Unsplash](https://unsplash.com/de/fotos/BW0vK-FA3eg)
 
@@ -24,23 +24,23 @@
 
 让我们从数据建模的基础组件开始：
 
-![](../Images/5be2d60f2ebaffd79a76e4e42ed9b371.png)
+![](img/5be2d60f2ebaffd79a76e4e42ed9b371.png)
 
 1.  *元建模——* 元建模是数据建模的一个子能力，它涉及创建一个定义其他模型的结构、概念和关系的模型。元模型提供了一种标准化的方式来定义和描述模型及其组件，这有助于确保在这些模型的开发和使用中保持一致性和清晰性。元模型跨越概念模型、逻辑模型和物理模型，并定义了这些组件如何一致地连接在一起。
 
-1.  *概念和逻辑数据建模——* 概念和逻辑数据建模是数据建模的子能力，涉及创建数据的业务导向视图，以捕捉特定领域中的主要实体、关系和属性，例如顾客、员工和产品。逻辑数据建模通过添加更多细节来完善概念模型，如指定数据类型、键和实体之间的关系，并将概念领域细分为逻辑属性，如顾客姓名、员工姓名和产品SKU。
+1.  *概念和逻辑数据建模——* 概念和逻辑数据建模是数据建模的子能力，涉及创建数据的业务导向视图，以捕捉特定领域中的主要实体、关系和属性，例如顾客、员工和产品。逻辑数据建模通过添加更多细节来完善概念模型，如指定数据类型、键和实体之间的关系，并将概念领域细分为逻辑属性，如顾客姓名、员工姓名和产品 SKU。
 
-![](../Images/5120e1cbe7d5d6aca45347548dd849b4.png)
+![](img/5120e1cbe7d5d6aca45347548dd849b4.png)
 
 **概念模型**在最高层次上解释了各个领域或概念是什么，以及它们之间的关系。在这个示例中，你可以看到事务形成了一个关键概念，其中每个事务可以与被售出的产品、购买它们的顾客、支付方式和购买地点的商店相关联——这些都构成了各自的概念。此外，连接器显示，每个单独的事务至多可以有一个顾客、商店或员工相关联，但这些反过来可以与多个事务相关联——这当然是有意义的。
 
-![](../Images/e188c4e284046d6ba3c4c65428cd813c.png)
+![](img/e188c4e284046d6ba3c4c65428cd813c.png)
 
 在**逻辑模型**中，概念（或领域）被细分为逻辑属性。这种逻辑模型与底层元模型一致，现在可以被转换为物理模型，在其中详细说明这些数据属性的确切位置（例如，在哪个表中）和格式。
 
 1.  *物理数据建模* — 物理数据建模涉及将逻辑数据模型转换为可以在特定技术平台上实现的数据库模式。这包括定义表、列、索引和其他数据库对象，以及指定数据类型、约束和实现模型所需的其他细节。
 
-![](../Images/27d0514eefc9355cb49dec791b887a68.png)
+![](img/27d0514eefc9355cb49dec791b887a68.png)
 
 在**物理模型**中，进一步的技术细节会被添加到逻辑模型中，例如澄清表名、列名和数据类型。
 
@@ -48,7 +48,7 @@
 
 数据建模的高成熟度要求你从多个维度进行思考：
 
-![](../Images/8fa4d71c4628d9cee58427a4f147ce8c.png)
+![](img/8fa4d71c4628d9cee58427a4f147ce8c.png)
 
 1.  *战略* — 组织的整体数据建模战略，包括数据建模工作与业务目标和目标的一致性。
 
@@ -60,7 +60,7 @@
 
 1.  *采纳* — 数据建模实践在组织内外的采纳和使用。这可能包括社交化程序、解决采纳障碍以及跟踪指标以衡量数据建模工作的有效性和影响。
 
-![](../Images/c751bb9a0b6125647e7dc3d77b411bbf.png)
+![](img/c751bb9a0b6125647e7dc3d77b411bbf.png)
 
 让我们将这些应用到我们定义的三个子能力上。
 
@@ -72,7 +72,7 @@
 
 +   应该有一个定义明确的过程来描述如何在建模活动中使用元模型。它的采纳应该在数据建模人员、数据架构师和数据工程师中广泛进行——实际上，它应该让他们的工作变得更容易，因为他们有了明确的起点。
 
-+   如数据目录或元数据管理系统等工具可以提供一个集中式存储和管理元模型的库，并支持协作和版本控制，但这并非绝对必要。一些专家可能不同意我的观点，但许多完全适用的元模型存在于如Microsoft Excel、PowerPoint或Visio这样的工具中，根据你组织的规模和复杂性，这也可以是适当的*只要*你的概念和逻辑数据建模人员严格遵守。
++   如数据目录或元数据管理系统等工具可以提供一个集中式存储和管理元模型的库，并支持协作和版本控制，但这并非绝对必要。一些专家可能不同意我的观点，但许多完全适用的元模型存在于如 Microsoft Excel、PowerPoint 或 Visio 这样的工具中，根据你组织的规模和复杂性，这也可以是适当的*只要*你的概念和逻辑数据建模人员严格遵守。
 
 **概念和逻辑数据建模**
 
@@ -84,7 +84,7 @@
 
 +   数据建模软件可用于创建和维护大规模的概念和逻辑数据模型。这些工具可以提供模型的可视化表示，并支持协作、版本控制以及与其他系统（如数据目录或元数据管理系统）的集成。业务术语表可用于定义和标准化模型中使用的业务概念和术语。
 
-![](../Images/b1a463dba704c7b7c2d0c5627de403c1.png)
+![](img/b1a463dba704c7b7c2d0c5627de403c1.png)
 
 **物理数据建模**
 
@@ -100,19 +100,19 @@
 
 1.  *考虑预先制作的行业或通用模型*。根据您在旅程中的位置，您可以考虑采用现有的数据模型。这可以推动与国际最佳实践和标准的对齐，节省您构建完全新模型的时间和精力，并实现与外部方的高效可靠数据交换。例如，[BIAN](https://www.bian.org/deliverables/bian-artefacts/)提供了一个标准化的银行服务参考模型，定义了银行业的通用语言、分类法和业务流程框架。
 
-1.  *在概念、逻辑和物理层面之间进行迭代*。数据建模需要时间 —— 这项工作永远不会完成。建议优先考虑领域 —— 像客户和产品这样的参考领域是很好的候选对象 —— 并从中选择1或2个，首先完成逻辑模型，然后是物理模型的指导，然后再转向下一个领域。
+1.  *在概念、逻辑和物理层面之间进行迭代*。数据建模需要时间 —— 这项工作永远不会完成。建议优先考虑领域 —— 像客户和产品这样的参考领域是很好的候选对象 —— 并从中选择 1 或 2 个，首先完成逻辑模型，然后是物理模型的指导，然后再转向下一个领域。
 
 1.  *不要过度强调物理层面*。数据建模可能复杂、耗时，因此昂贵。完成基本的概念和逻辑模型几乎肯定是值得的，但一旦涉足物理领域，您可能不需要集中管理和捕获所有物理模型。在这里也可能需要优先考虑 —— 例如，确定“关键任务”系统并为其文档化物理模型，但对于其他系统，只需确保本地应用所有者遵守特定的建模规范和标准可能就足够了。
 
 1.  *战略性地实施技术*。它们可能很昂贵，您可能在第一个领域不需要它们，但最终您的数据模型将在尺寸和复杂性方面成倍增长。考虑数据目录、业务词汇表和数据字典，或者能同时兼顾所有这些功能的工具。如果没有这些工具，消费（因此价值创造）将很差。
 
-![图片](../Images/8060baae55e6c38f2bbdfbb5cd80af9d.png)
+![图片](img/8060baae55e6c38f2bbdfbb5cd80af9d.png)
 
 最后一个建议是找到并赋予主模型师权力，这值得单独一节来详述。
 
 ## **主模型师的角色**
 
-![图片](../Images/c2174bd811e5a8763836b098b7ac1066.png)
+![图片](img/c2174bd811e5a8763836b098b7ac1066.png)
 
 照片由[Usman Yousaf](https://unsplash.com/@usmanyousaf)拍摄于[Unsplash](https://unsplash.com/photos/GFOlzpLuiCg)。
 
@@ -120,7 +120,7 @@
 
 此外，高级建模师可以为组织中的所有逻辑和物理数据建模师提供指导和支持。这可以通过创建可重用的文档，如上述的元模型，也可以包括基本的数据建模蓝图和说明手册来实现。高级建模师还可以通过定义标准和指南、促进培训来保护和传播最佳实践。通过保持对最新趋势和进展的了解，他们可以向组织引入新的技术和工具，推动持续改进。他们还可以建议是否利用现有的、预制的数据模型，而不是从头开始构建。
 
-![](../Images/6c7360ea6a457749ff14ad7336fa7d79.png)
+![](img/6c7360ea6a457749ff14ad7336fa7d79.png)
 
 数据建模是设计或优化解决方案、产品和服务过程中至关重要的输入。业务团队可以从高级建模师提供的支持中受益，因为这将加速他们的工作，并最终提高组织数据模型的整体质量和一致性。
 
@@ -132,15 +132,15 @@
 
 +   [*通用数据模型*](https://learn.microsoft.com/en-us/common-data-model/)，Microsoft。
 
-+   [*BIAN文档*](https://www.bian.org/deliverables/bian-artefacts/)，银行业架构网络。
++   [*BIAN 文档*](https://www.bian.org/deliverables/bian-artefacts/)，银行业架构网络。
 
 +   [*内容元模型*](https://pubs.opengroup.org/architecture/togaf9-doc/arch/chap30.html)，TOGAF。
 
 +   [*什么是数据建模？*](https://www.techtarget.com/searchdatamanagement/definition/data-modeling#:~:text=Data%20modeling%20is%20the%20process,or%20reengineering%20a%20legacy%20application.)*，* TechTarget。
 
-+   [*Oracle零售数据模型的逻辑数据模型*](https://docs.oracle.com/cd/E16338_01/doc.112/e20361/logical_rdm.htm#RBIRF118)，Oracle。
++   [*Oracle 零售数据模型的逻辑数据模型*](https://docs.oracle.com/cd/E16338_01/doc.112/e20361/logical_rdm.htm#RBIRF118)，Oracle。
 
-+   [*FIBO本体*](https://spec.edmcouncil.org/fibo/ontology)*，* EDM Council。
++   [*FIBO 本体*](https://spec.edmcouncil.org/fibo/ontology)*，* EDM Council。
 
 +   [*数据仓储 — 数据建模*](https://www.teradatapoint.com/data-warehousing-data-modelling)，TeradataPoint。
 

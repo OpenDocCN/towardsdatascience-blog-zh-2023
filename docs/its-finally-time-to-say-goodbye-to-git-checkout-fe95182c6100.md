@@ -1,10 +1,10 @@
 # 现在是时候告别“git checkout”了
 
-> 原文：[https://towardsdatascience.com/its-finally-time-to-say-goodbye-to-git-checkout-fe95182c6100?source=collection_archive---------4-----------------------#2023-05-01](https://towardsdatascience.com/its-finally-time-to-say-goodbye-to-git-checkout-fe95182c6100?source=collection_archive---------4-----------------------#2023-05-01)
+> 原文：[`towardsdatascience.com/its-finally-time-to-say-goodbye-to-git-checkout-fe95182c6100?source=collection_archive---------4-----------------------#2023-05-01`](https://towardsdatascience.com/its-finally-time-to-say-goodbye-to-git-checkout-fe95182c6100?source=collection_archive---------4-----------------------#2023-05-01)
 
 ## “Git switch” 和 “git restore” 将会留存下来
 
-[](https://medium.com/@tomergabay?source=post_page-----fe95182c6100--------------------------------)[![Tomer Gabay](../Images/1fb1d408bc89415918c1aa6733df44e1.png)](https://medium.com/@tomergabay?source=post_page-----fe95182c6100--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe95182c6100--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe95182c6100--------------------------------) [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----fe95182c6100--------------------------------)
+[](https://medium.com/@tomergabay?source=post_page-----fe95182c6100--------------------------------)![Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----fe95182c6100--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe95182c6100--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe95182c6100--------------------------------) [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----fe95182c6100--------------------------------)
 
 ·
 
@@ -12,11 +12,11 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffe95182c6100&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-finally-time-to-say-goodbye-to-git-checkout-fe95182c6100&source=-----fe95182c6100---------------------bookmark_footer-----------)![](../Images/fa4cef177784a13c0c524ea2c5fb5a36.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffe95182c6100&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fits-finally-time-to-say-goodbye-to-git-checkout-fe95182c6100&source=-----fe95182c6100---------------------bookmark_footer-----------)![](img/fa4cef177784a13c0c524ea2c5fb5a36.png)
 
 [Dim Hou](https://unsplash.com/@dimhou?utm_source=medium&utm_medium=referral)的照片，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-Git是开发者们最广泛使用的版本控制系统之一。其中与Git一起使用最频繁的命令之一是`git checkout`，它允许用户在不同分支之间切换并将文件恢复到之前的某个状态。
+Git 是开发者们最广泛使用的版本控制系统之一。其中与 Git 一起使用最频繁的命令之一是`git checkout`，它允许用户在不同分支之间切换并将文件恢复到之前的某个状态。
 
 然而，在 2019 年，随着 Git 2.23 的发布，两个新命令被引入以取代 `git checkout`，以实现更直观和流畅的工作流程：`git switch` 和 `git restore`。尽管它们发布已经快 4 年了，但开发者们仍然不愿意放弃使用 `git checkout`（旧习惯难以改变，我想）。
 

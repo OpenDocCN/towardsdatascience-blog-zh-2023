@@ -1,18 +1,18 @@
 # 如何编写更好的数据科学学习笔记
 
-> 原文：[https://towardsdatascience.com/how-to-write-better-study-notes-for-data-science-aeae79e96c00?source=collection_archive---------4-----------------------#2023-04-03](https://towardsdatascience.com/how-to-write-better-study-notes-for-data-science-aeae79e96c00?source=collection_archive---------4-----------------------#2023-04-03)
+> 原文：[`towardsdatascience.com/how-to-write-better-study-notes-for-data-science-aeae79e96c00?source=collection_archive---------4-----------------------#2023-04-03`](https://towardsdatascience.com/how-to-write-better-study-notes-for-data-science-aeae79e96c00?source=collection_archive---------4-----------------------#2023-04-03)
 
-## 一种经过验证的6步法，用于编写更好的数据科学学习笔记
+## 一种经过验证的 6 步法，用于编写更好的数据科学学习笔记
 
-[](https://madison13.medium.com/?source=post_page-----aeae79e96c00--------------------------------)[![Madison Hunter](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----aeae79e96c00--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aeae79e96c00--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aeae79e96c00--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----aeae79e96c00--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----aeae79e96c00--------------------------------)![Madison Hunter](https://madison13.medium.com/?source=post_page-----aeae79e96c00--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aeae79e96c00--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aeae79e96c00--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----aeae79e96c00--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-better-study-notes-for-data-science-aeae79e96c00&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----aeae79e96c00---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aeae79e96c00--------------------------------) ·8分钟阅读·2023年4月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faeae79e96c00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-better-study-notes-for-data-science-aeae79e96c00&user=Madison+Hunter&userId=6a8c6841e521&source=-----aeae79e96c00---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-better-study-notes-for-data-science-aeae79e96c00&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----aeae79e96c00---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aeae79e96c00--------------------------------) ·8 分钟阅读·2023 年 4 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faeae79e96c00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-better-study-notes-for-data-science-aeae79e96c00&user=Madison+Hunter&userId=6a8c6841e521&source=-----aeae79e96c00---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faeae79e96c00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-better-study-notes-for-data-science-aeae79e96c00&source=-----aeae79e96c00---------------------bookmark_footer-----------)![](../Images/0e4a7d9c506875201ac4ddce07af9b93.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faeae79e96c00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-write-better-study-notes-for-data-science-aeae79e96c00&source=-----aeae79e96c00---------------------bookmark_footer-----------)![](img/0e4a7d9c506875201ac4ddce07af9b93.png)
 
 图片由 [Raimond Klavins](https://unsplash.com/@raimondklavins?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,7 +24,7 @@
 
 我在法学院从朋友那里得到的最佳建议之一是为每个完成的单元创建单页总结表。这些表的目的是将一个单元的所有笔记浓缩成一个文档，仅突出绝对最重要的内容。我开始将这个概念应用于数据科学，它确实对我保持和回忆我学到的概念产生了实际的影响，尤其是那些涉及编码、数学和构建机器学习项目的复杂性。
 
-这是一个很好的练习，可以提取出最重要的信息片段，这些信息你知道在成为数据科学家过程中会继续使用。此外，它帮助你集中注意力于真正重要的内容，同时丢弃你可能记录的任何无关紧要的内容。不仅如此，这些表格非常适合在学习或进行项目时快速参考。我喜欢将这些表格放在桌面上或贴在附近的墙上。这样，当我在进行项目时，可以快速参考我的笔记，而无需在Google上费劲去寻找答案。
+这是一个很好的练习，可以提取出最重要的信息片段，这些信息你知道在成为数据科学家过程中会继续使用。此外，它帮助你集中注意力于真正重要的内容，同时丢弃你可能记录的任何无关紧要的内容。不仅如此，这些表格非常适合在学习或进行项目时快速参考。我喜欢将这些表格放在桌面上或贴在附近的墙上。这样，当我在进行项目时，可以快速参考我的笔记，而无需在 Google 上费劲去寻找答案。
 
 我创建这些表格的最爱技巧是建立一个思维导图，将单元名称放在中心。从中心分支出来的主题来自该单元的学习目标。例如，要为关于导数的微积分单元创建思维导图，我会为[将导数解释为变化率、将导数解释为切线斜率、区分代数函数和三角函数、使用微分估算数值和误差、应用导数解决问题以及使用隐式求导解决相关速率问题](https://math265r15.athabascau.ca/studyguide/course-information.htm)创建分支。然后，我填写每个分支的相关信息，如公式、重要提醒、关键信息表格以及其他持续使用或相关的内容。
 
@@ -60,11 +60,11 @@
 
 那很好，但它真的有意义吗？相反，让我们看看我如何用自己的话描述类：
 
-[**作者的定义：**](/object-oriented-programming-for-data-scientists-8d4d976b6af8) 类是一个蓝图，指定了对象可能具有的独特属性和特征。
+**作者的定义：** 类是一个蓝图，指定了对象可能具有的独特属性和特征。
 
 看到了吗？这样就更有意义了。然后，你需要创建你自己的对象定义，以便你对这些面向对象编程概念的理解更加具体。
 
-这里的关键是在编写学习笔记时使用你自己的话（在概念未被恰当地解释的特定情况下），以帮助你巩固理解。此外，创建自己定义所花费的额外脑力会使你在复习笔记时更容易记住这些概念。这个技巧也是[Feynman 技巧](/how-to-use-the-feynman-technique-to-become-an-expert-in-the-most-complicated-concepts-in-data-cecf33d7d518)的一部分，这在你的数据科学学习中可能会很有帮助。
+这里的关键是在编写学习笔记时使用你自己的话（在概念未被恰当地解释的特定情况下），以帮助你巩固理解。此外，创建自己定义所花费的额外脑力会使你在复习笔记时更容易记住这些概念。这个技巧也是 Feynman 技巧的一部分，这在你的数据科学学习中可能会很有帮助。
 
 # 5\. 添加你自己的问题或评论
 

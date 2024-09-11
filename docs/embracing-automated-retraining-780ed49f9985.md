@@ -1,18 +1,18 @@
 # 迎接自动化重新训练
 
-> 原文：[https://towardsdatascience.com/embracing-automated-retraining-780ed49f9985?source=collection_archive---------4-----------------------#2023-03-17](https://towardsdatascience.com/embracing-automated-retraining-780ed49f9985?source=collection_archive---------4-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/embracing-automated-retraining-780ed49f9985?source=collection_archive---------4-----------------------#2023-03-17`](https://towardsdatascience.com/embracing-automated-retraining-780ed49f9985?source=collection_archive---------4-----------------------#2023-03-17)
 
-![](../Images/3a1dab9fab5bcfe38d0a7a6f09c22394.png)
+![](img/3a1dab9fab5bcfe38d0a7a6f09c22394.png)
 
 作者提供的图片
 
 ## 如何从固定节奏（或完全不）重新训练转向动态方法
 
-[](https://statistician-in-stilettos.medium.com/?source=post_page-----780ed49f9985--------------------------------)[![Claire Longo](../Images/5a04940feeba1412688b4f38ec1fe974.png)](https://statistician-in-stilettos.medium.com/?source=post_page-----780ed49f9985--------------------------------)[](https://towardsdatascience.com/?source=post_page-----780ed49f9985--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----780ed49f9985--------------------------------) [Claire Longo](https://statistician-in-stilettos.medium.com/?source=post_page-----780ed49f9985--------------------------------)
+[](https://statistician-in-stilettos.medium.com/?source=post_page-----780ed49f9985--------------------------------)![Claire Longo](https://statistician-in-stilettos.medium.com/?source=post_page-----780ed49f9985--------------------------------)[](https://towardsdatascience.com/?source=post_page-----780ed49f9985--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----780ed49f9985--------------------------------) [Claire Longo](https://statistician-in-stilettos.medium.com/?source=post_page-----780ed49f9985--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1f6936fe85bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-automated-retraining-780ed49f9985&user=Claire+Longo&userId=1f6936fe85bb&source=post_page-1f6936fe85bb----780ed49f9985---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----780ed49f9985--------------------------------) ·7分钟阅读·2023年3月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F780ed49f9985&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-automated-retraining-780ed49f9985&user=Claire+Longo&userId=1f6936fe85bb&source=-----780ed49f9985---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1f6936fe85bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-automated-retraining-780ed49f9985&user=Claire+Longo&userId=1f6936fe85bb&source=post_page-1f6936fe85bb----780ed49f9985---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----780ed49f9985--------------------------------) ·7 分钟阅读·2023 年 3 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F780ed49f9985&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fembracing-automated-retraining-780ed49f9985&user=Claire+Longo&userId=1f6936fe85bb&source=-----780ed49f9985---------------------clap_footer-----------)
 
 --
 
@@ -38,7 +38,7 @@
 
 # 通用重新训练架构
 
-有一系列工具可以用来创建模型重新训练系统。此图示展示了一个ML可观测性平台如何集成到一个通用流程中。
+有一系列工具可以用来创建模型重新训练系统。此图示展示了一个 ML 可观测性平台如何集成到一个通用流程中。
 
 针对特定工具的教程非常丰富。以下是一些示例：
 
@@ -48,7 +48,7 @@
 
 +   [Pachyderm 在金融科技用例中的示例](https://www.pachyderm.com/blog/leaping-the-gap-fintech/)
 
-对于那些准备跳过的，可以进一步了解一下[Etsy的见解](/building-a-lil-stateful-ml-application-for-online-learning-66624d62afae)关于有状态模型重新训练的内容。
+对于那些准备跳过的，可以进一步了解一下 Etsy 的见解关于有状态模型重新训练的内容。
 
 # 重新训练策略
 
@@ -80,19 +80,19 @@
 
 +   人工审查
 
-+   CI/CD管道中的自动化指标检查
++   CI/CD 管道中的自动化指标检查
 
 ## 推广新模型的策略
 
-推广新模型的策略将取决于模型对业务的影响。在某些情况下，可能适合自动用新模型替换旧模型。但在其他情况下，新模型可能需要进行A/B测试后再替换旧模型。
+推广新模型的策略将取决于模型对业务的影响。在某些情况下，可能适合自动用新模型替换旧模型。但在其他情况下，新模型可能需要进行 A/B 测试后再替换旧模型。
 
 一些值得考虑的实时模型测试策略包括：
 
 +   ***冠军模型与挑战者模型*** — 向这两个模型提供生产流量，但在应用中仅使用现有模型（冠军）的预测/响应。挑战者模型的数据将被存储以供分析，但不会被使用。
 
-+   ***A/B测试*** — 将生产流量分配到两个模型中，进行固定时间段的实验。实验结束时比较关键指标，并决定推广哪个模型。
++   ***A/B 测试*** — 将生产流量分配到两个模型中，进行固定时间段的实验。实验结束时比较关键指标，并决定推广哪个模型。
 
-+   ***金丝雀发布*** — 先将小比例的生产流量重定向到新模型。由于它在生产路径中，这有助于发现新模型的实际问题，但将影响限制在小比例用户中。逐步增加流量直到新模型接收100%的流量。
++   ***金丝雀发布*** — 先将小比例的生产流量重定向到新模型。由于它在生产路径中，这有助于发现新模型的实际问题，但将影响限制在小比例用户中。逐步增加流量直到新模型接收 100%的流量。
 
 ## 重新训练反馈循环数据
 
@@ -104,27 +104,27 @@
 
 +   如果您的模型架构遵循迁移学习设计，则在重新训练期间可以简单地将新数据添加到模型中，而不会丢失模型从之前训练数据中已经学到的模式。
 
-来自模型监控平台的仪表板（例如Arize——完全披露：我在Arize工作）非常适合在这些测试期间跟踪和比较模型的实时性能。无论模型是作为影子部署、实时A/B测试还是仅仅是离线比较，这些仪表板都提供了一种简单的方式来查看并排模型比较。这些仪表板还可以轻松地与他人分享，以向利益相关者展示模型性能的改善。
+来自模型监控平台的仪表板（例如 Arize——完全披露：我在 Arize 工作）非常适合在这些测试期间跟踪和比较模型的实时性能。无论模型是作为影子部署、实时 A/B 测试还是仅仅是离线比较，这些仪表板都提供了一种简单的方式来查看并排模型比较。这些仪表板还可以轻松地与他人分享，以向利益相关者展示模型性能的改善。
 
-## 定量ROI
+## 定量 ROI
 
 总体而言，确定自动重新训练实时机器学习模型的最佳方法时，了解业务需求和解决的问题至关重要。同样，持续监控模型性能，并根据需要调整重新训练的频率和指标也很重要。
 
 **成本影响测量：**
 
-虽然在AI领域计算直接ROI是具有挑战性的，但优化模型重新训练的价值简单、直观且可以直接计算。模型训练作业的计算和存储成本通常已经作为云计算成本的一部分进行跟踪。通常，模型的商业影响也可以计算。
+虽然在 AI 领域计算直接 ROI 是具有挑战性的，但优化模型重新训练的价值简单、直观且可以直接计算。模型训练作业的计算和存储成本通常已经作为云计算成本的一部分进行跟踪。通常，模型的商业影响也可以计算。
 
 在优化重新训练时，我们考虑了重新训练成本和模型性能对业务的影响（“AI ROI”）。我们可以权衡这些成本以证明模型重新训练的成本。
 
 在这里，我们提出了每周成本计算，尽管该计算器可以根据模型的目的和维护需求调整为不同的频率，如每日或每月。
 
-![](../Images/0ef37ed0567c1e990f412a04d8cac744.png)
+![](img/0ef37ed0567c1e990f412a04d8cac744.png)
 
 图片由作者提供
 
-**考虑场景1，即模型过于频繁地重新训练的情况。**
+**考虑场景 1，即模型过于频繁地重新训练的情况。**
 
-*我的模型重新训练成本为$200。我每天训练一次模型。该模型保持了稳定的每周平均准确率为85%。我设置了一个管道，基于预测分数漂移大于0.25 PSI 和准确率自动重新训练。根据新规则，我的模型每周只重新训练两次，并保持85%的准确率。*
+*我的模型重新训练成本为$200。我每天训练一次模型。该模型保持了稳定的每周平均准确率为 85%。我设置了一个管道，基于预测分数漂移大于 0.25 PSI 和准确率自动重新训练。根据新规则，我的模型每周只重新训练两次，并保持 85%的准确率。*
 
 每周维护成本比较：
 
@@ -132,20 +132,20 @@
 
 新模型维护成本 2*$200= $400
 
-这相当于模型维护成本减少了x%。虽然这是一个简单的假设示例，但成本节约的幅度可能会达到这种规模。
+这相当于模型维护成本减少了 x%。虽然这是一个简单的假设示例，但成本节约的幅度可能会达到这种规模。
 
-**考虑场景2，即模型训练不足的情况。**
+**考虑场景 2，即模型训练不足的情况。**
 
-*我的模型训练成本为$200。我每周训练一次模型。该模型保持了稳定的每周平均准确率为65%。我设置了一个管道，基于预测分数漂移大于0.25 PSI 自动重新训练。根据新规则，我的模型每周重新训练两次，达到了更好的85%准确率。*
+*我的模型训练成本为$200。我每周训练一次模型。该模型保持了稳定的每周平均准确率为 65%。我设置了一个管道，基于预测分数漂移大于 0.25 PSI 自动重新训练。根据新规则，我的模型每周重新训练两次，达到了更好的 85%准确率。*
 
 每周维护成本比较：
 
-旧模型维护成本：1*$200 = $200，准确率65%
+旧模型维护成本：1*$200 = $200，准确率 65%
 
-新模型维护成本：2*$200= $400，准确率85%
+新模型维护成本：2*$200= $400，准确率 85%
 
-因此，通过更高的价格，取得了更好的模型性能。如果AI投资回报值高于重新训练成本，那么这可以被证明是合理且有利可图的。缺乏频繁的重新训练可能会导致错失收益。
+因此，通过更高的价格，取得了更好的模型性能。如果 AI 投资回报值高于重新训练成本，那么这可以被证明是合理且有利可图的。缺乏频繁的重新训练可能会导致错失收益。
 
 # 结论
 
-从固定间隔的模型重新训练过渡到由模型性能触发的自动化模型重新训练，为组织提供了众多好处，包括在[云成本不断增加](https://www.wsj.com/articles/technology-chiefs-seek-help-wrangling-cloud-costs-61ba0b50)的情况下降低计算成本，以及通过改善模型性能实现更好的AI投资回报。希望这篇博客为团队提供了一个行动模板。
+从固定间隔的模型重新训练过渡到由模型性能触发的自动化模型重新训练，为组织提供了众多好处，包括在[云成本不断增加](https://www.wsj.com/articles/technology-chiefs-seek-help-wrangling-cloud-costs-61ba0b50)的情况下降低计算成本，以及通过改善模型性能实现更好的 AI 投资回报。希望这篇博客为团队提供了一个行动模板。

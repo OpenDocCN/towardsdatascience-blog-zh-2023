@@ -1,14 +1,14 @@
-# 2023年的分析领域接下来会发生什么？
+# 2023 年的分析领域接下来会发生什么？
 
-> 原文：[https://towardsdatascience.com/whats-next-for-analytics-in-2023-875a5fe94171?source=collection_archive---------20-----------------------#2023-01-06](https://towardsdatascience.com/whats-next-for-analytics-in-2023-875a5fe94171?source=collection_archive---------20-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/whats-next-for-analytics-in-2023-875a5fe94171?source=collection_archive---------20-----------------------#2023-01-06`](https://towardsdatascience.com/whats-next-for-analytics-in-2023-875a5fe94171?source=collection_archive---------20-----------------------#2023-01-06)
 
-## 分析团队会在2023年征服分析的最后一公里吗？
+## 分析团队会在 2023 年征服分析的最后一公里吗？
 
-[](https://joao-antonio-sousa.medium.com/?source=post_page-----875a5fe94171--------------------------------)[![João António Sousa](../Images/15c5ae61289404eeec77e4d8dc043181.png)](https://joao-antonio-sousa.medium.com/?source=post_page-----875a5fe94171--------------------------------)[](https://towardsdatascience.com/?source=post_page-----875a5fe94171--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----875a5fe94171--------------------------------) [João António Sousa](https://joao-antonio-sousa.medium.com/?source=post_page-----875a5fe94171--------------------------------)
+[](https://joao-antonio-sousa.medium.com/?source=post_page-----875a5fe94171--------------------------------)![João António Sousa](https://joao-antonio-sousa.medium.com/?source=post_page-----875a5fe94171--------------------------------)[](https://towardsdatascience.com/?source=post_page-----875a5fe94171--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----875a5fe94171--------------------------------) [João António Sousa](https://joao-antonio-sousa.medium.com/?source=post_page-----875a5fe94171--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab97905ce8fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-next-for-analytics-in-2023-875a5fe94171&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=post_page-ab97905ce8fe----875a5fe94171---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----875a5fe94171--------------------------------) ·6 min read·2023年1月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F875a5fe94171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-next-for-analytics-in-2023-875a5fe94171&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=-----875a5fe94171---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab97905ce8fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-next-for-analytics-in-2023-875a5fe94171&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=post_page-ab97905ce8fe----875a5fe94171---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----875a5fe94171--------------------------------) ·6 min read·2023 年 1 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F875a5fe94171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-next-for-analytics-in-2023-875a5fe94171&user=Jo%C3%A3o+Ant%C3%B3nio+Sousa&userId=ab97905ce8fe&source=-----875a5fe94171---------------------clap_footer-----------)
 
 --
 
@@ -16,11 +16,11 @@
 
 我对年末总结和预测总是充满热情。这是一个从日常琐事中抽身，查看全局的绝佳时机。我喜欢阅读同行和行业领袖关于学习和趋势的文章，花时间回顾我的一年，并为下一年做计划。所以我想分享一下我对明年数据分析领域重点关注内容的看法。
 
-![](../Images/efb937b6e58344b8cb39434d2ac5c54d.png)
+![](img/efb937b6e58344b8cb39434d2ac5c54d.png)
 
 图片由 wirestock 提供，来源于 Freepik
 
-对大多数人来说，2022年并不轻松。由于经济衰退，我们目睹了大量裁员和预算削减。“以少量资源做更多事情”成为了我们大家越来越常用的短语。我预计这将成为2023年的座右铭。
+对大多数人来说，2022 年并不轻松。由于经济衰退，我们目睹了大量裁员和预算削减。“以少量资源做更多事情”成为了我们大家越来越常用的短语。我预计这将成为 2023 年的座右铭。
 
 因此，我预测将会更加关注效率、商业价值和分析团队的投资回报率最大化。因此，只有那些能够提供以下结果的项目和技术将会受到优先考虑：
 
@@ -46,13 +46,13 @@
 
 为了跟上数据和业务的步伐，“用更少做更多”的口号再次浮现。企业需要增强工作流程和自动化琐碎任务，加快洞察速度，打破速度与全面性的权衡，以创造真正的商业价值并最大化数据分析的投资回报率。
 
-使用数据做出的决策可以通过各种方式实现自动化，并且介于主要依赖人工和完全自动化之间。[Gartner](https://www.gartner.com/en/information-technology/insights/data-and-analytics-essential-guides#:~:text=Gartner%20predicts%20that%20by%202025,human%2Dbased%20and%20entirely%20automated.) 预测，到2025年，目前使用数据的95%的决策将至少部分实现自动化。在人工智能时代，拥抱一定程度的决策自动化的组织有可能通过更快速、复杂和细化的决策来获得竞争优势。
+使用数据做出的决策可以通过各种方式实现自动化，并且介于主要依赖人工和完全自动化之间。[Gartner](https://www.gartner.com/en/information-technology/insights/data-and-analytics-essential-guides#:~:text=Gartner%20predicts%20that%20by%202025,human%2Dbased%20and%20entirely%20automated.) 预测，到 2025 年，目前使用数据的 95%的决策将至少部分实现自动化。在人工智能时代，拥抱一定程度的决策自动化的组织有可能通过更快速、复杂和细化的决策来获得竞争优势。
 
 在商业智能（BI）中，大多数决策很快将得到增强。我在大多数数据驱动的公司中看到的两个主要使用场景是：
 
 +   人工参与的诊断分析：使用机器学习测试数据中的每个假设并评估关键业务指标变化的驱动因素。人类可以专注于筛选出最相关的因素并做出决策
 
-+   针对关键业务指标变化的自动警报，以自然语言通过Slack/Teams传递
++   针对关键业务指标变化的自动警报，以自然语言通过 Slack/Teams 传递
 
 # 预测 #3 — 数据与分析角色将进一步专业化
 
@@ -98,7 +98,7 @@
 
 # 预测 #6 — 数据法规将成为关注重点
 
-欧盟GDPR、加拿大PIPEDA和中国PIPL等法规促使公司重新思考他们收集和处理数据的方式。我——以及像Gartner这样的分析机构——期望在2023年看到更多国家出台新的规则和立法。
+欧盟 GDPR、加拿大 PIPEDA 和中国 PIPL 等法规促使公司重新思考他们收集和处理数据的方式。我——以及像 Gartner 这样的分析机构——期望在 2023 年看到更多国家出台新的规则和立法。
 
 这意味着需要更多的工作来赢得客户的信任，使他们更愿意分享他们的信息。为此，企业需要更好地结构化、记录和创造更多的透明度，来处理和处理数据。此外，有效的数据治理将变得更加相关。根据合规阶段，这可能意味着需要对现有数据进行一些回顾性工作，包括数据的收集和存储方式以及使用情况。
 
@@ -110,4 +110,4 @@
 
 **参考资料：**
 
-Gartner, [想要成为数据驱动型组织？从5项关键数据与分析计划开始](https://www.gartner.com/en/information-technology/insights/data-and-analytics-essential-guides#:~:text=Gartner%20predicts%20that%20by%202025,human%2Dbased%20and%20entirely%20automated.)
+Gartner, [想要成为数据驱动型组织？从 5 项关键数据与分析计划开始](https://www.gartner.com/en/information-technology/insights/data-and-analytics-essential-guides#:~:text=Gartner%20predicts%20that%20by%202025,human%2Dbased%20and%20entirely%20automated.)

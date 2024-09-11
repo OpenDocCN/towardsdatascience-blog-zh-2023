@@ -1,20 +1,20 @@
 # 利用 string2string 驯服文本：一个强大的 Python 字符串对字符串算法库
 
-> 原文：[https://towardsdatascience.com/tutorial-string2string-python-pkg-f9126b8474c5?source=collection_archive---------8-----------------------#2023-05-11](https://towardsdatascience.com/tutorial-string2string-python-pkg-f9126b8474c5?source=collection_archive---------8-----------------------#2023-05-11)
+> 原文：[`towardsdatascience.com/tutorial-string2string-python-pkg-f9126b8474c5?source=collection_archive---------8-----------------------#2023-05-11`](https://towardsdatascience.com/tutorial-string2string-python-pkg-f9126b8474c5?source=collection_archive---------8-----------------------#2023-05-11)
 
 ## 教程
 
 ## 利用 string2string 处理自然语言处理任务
 
-[](https://medium.ealizadeh.com/?source=post_page-----f9126b8474c5--------------------------------)[![Essi Alizadeh](../Images/be2244231732f93bcadf09682ef8ca37.png)](https://medium.ealizadeh.com/?source=post_page-----f9126b8474c5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9126b8474c5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f9126b8474c5--------------------------------) [Essi Alizadeh](https://medium.ealizadeh.com/?source=post_page-----f9126b8474c5--------------------------------)
+[](https://medium.ealizadeh.com/?source=post_page-----f9126b8474c5--------------------------------)![Essi Alizadeh](https://medium.ealizadeh.com/?source=post_page-----f9126b8474c5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f9126b8474c5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f9126b8474c5--------------------------------) [Essi Alizadeh](https://medium.ealizadeh.com/?source=post_page-----f9126b8474c5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F35a932e89ec1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftutorial-string2string-python-pkg-f9126b8474c5&user=Essi+Alizadeh&userId=35a932e89ec1&source=post_page-35a932e89ec1----f9126b8474c5---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f9126b8474c5--------------------------------) · 阅读时间 8 分钟 · 2023年5月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff9126b8474c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftutorial-string2string-python-pkg-f9126b8474c5&user=Essi+Alizadeh&userId=35a932e89ec1&source=-----f9126b8474c5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F35a932e89ec1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftutorial-string2string-python-pkg-f9126b8474c5&user=Essi+Alizadeh&userId=35a932e89ec1&source=post_page-35a932e89ec1----f9126b8474c5---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----f9126b8474c5--------------------------------) · 阅读时间 8 分钟 · 2023 年 5 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff9126b8474c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftutorial-string2string-python-pkg-f9126b8474c5&user=Essi+Alizadeh&userId=35a932e89ec1&source=-----f9126b8474c5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9126b8474c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftutorial-string2string-python-pkg-f9126b8474c5&source=-----f9126b8474c5---------------------bookmark_footer-----------)![](../Images/1cd63dbedcd4c1523f491ef2b3927751.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff9126b8474c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftutorial-string2string-python-pkg-f9126b8474c5&source=-----f9126b8474c5---------------------bookmark_footer-----------)![](img/1cd63dbedcd4c1523f491ef2b3927751.png)
 
 string2string 库中概念的词云以及示例（作者提供的图像）。
 

@@ -1,22 +1,22 @@
 # 步骤基础：文本分类器
 
-> 原文：[https://towardsdatascience.com/step-by-step-basics-text-classifier-e666c6bac52b?source=collection_archive---------2-----------------------#2023-02-17](https://towardsdatascience.com/step-by-step-basics-text-classifier-e666c6bac52b?source=collection_archive---------2-----------------------#2023-02-17)
+> 原文：[`towardsdatascience.com/step-by-step-basics-text-classifier-e666c6bac52b?source=collection_archive---------2-----------------------#2023-02-17`](https://towardsdatascience.com/step-by-step-basics-text-classifier-e666c6bac52b?source=collection_archive---------2-----------------------#2023-02-17)
 
 ## 构建一个监督学习文本分类器的指导手册和流程图（Python）
 
-[](https://medium.com/@lucydickinson?source=post_page-----e666c6bac52b--------------------------------)[![Lucy Dickinson](../Images/5a075bb38f9133678d55a26b2683729f.png)](https://medium.com/@lucydickinson?source=post_page-----e666c6bac52b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e666c6bac52b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e666c6bac52b--------------------------------) [Lucy Dickinson](https://medium.com/@lucydickinson?source=post_page-----e666c6bac52b--------------------------------)
+[](https://medium.com/@lucydickinson?source=post_page-----e666c6bac52b--------------------------------)![Lucy Dickinson](https://medium.com/@lucydickinson?source=post_page-----e666c6bac52b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e666c6bac52b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e666c6bac52b--------------------------------) [Lucy Dickinson](https://medium.com/@lucydickinson?source=post_page-----e666c6bac52b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243c7ff13cc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-basics-text-classifier-e666c6bac52b&user=Lucy+Dickinson&userId=243c7ff13cc2&source=post_page-243c7ff13cc2----e666c6bac52b---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e666c6bac52b--------------------------------) ·10 分钟阅读·2023年2月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe666c6bac52b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-basics-text-classifier-e666c6bac52b&user=Lucy+Dickinson&userId=243c7ff13cc2&source=-----e666c6bac52b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243c7ff13cc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-basics-text-classifier-e666c6bac52b&user=Lucy+Dickinson&userId=243c7ff13cc2&source=post_page-243c7ff13cc2----e666c6bac52b---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e666c6bac52b--------------------------------) ·10 分钟阅读·2023 年 2 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe666c6bac52b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-basics-text-classifier-e666c6bac52b&user=Lucy+Dickinson&userId=243c7ff13cc2&source=-----e666c6bac52b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe666c6bac52b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-basics-text-classifier-e666c6bac52b&source=-----e666c6bac52b---------------------bookmark_footer-----------)![](../Images/7616f5c71c4500433b491ed8fdd0db92.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe666c6bac52b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstep-by-step-basics-text-classifier-e666c6bac52b&source=-----e666c6bac52b---------------------bookmark_footer-----------)![](img/7616f5c71c4500433b491ed8fdd0db92.png)
 
 图片由 [Patrick Tomasso](https://unsplash.com/@impatrickt?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-说到重点，构建**文本分类器**和理解**自然语言处理 (NLP)** 的世界涉及很多步骤。这些步骤必须按特定顺序实施。如果数据中的目标类不平衡，还需要更多步骤。从头学习这一切可能有些困难。尽管网上有许多学习资源，但找到一个全面的高水平指南却不易。因此，我写这篇文章，希望能通过一个10步简单指南来提供一些过程透明度。
+说到重点，构建**文本分类器**和理解**自然语言处理 (NLP)** 的世界涉及很多步骤。这些步骤必须按特定顺序实施。如果数据中的目标类不平衡，还需要更多步骤。从头学习这一切可能有些困难。尽管网上有许多学习资源，但找到一个全面的高水平指南却不易。因此，我写这篇文章，希望能通过一个 10 步简单指南来提供一些过程透明度。
 
 我将从提供一个我整理的流程图开始，其中包含了从明确任务到部署训练好的文本分类器的所有必要步骤和关键点。
 
@@ -28,7 +28,7 @@
 
 让我们来看看那个流程图。
 
-![](../Images/cf105d0f0e197d6701c455062b55f7d4.png)
+![](img/cf105d0f0e197d6701c455062b55f7d4.png)
 
 作者提供的图表
 
@@ -46,15 +46,15 @@
 
 现在我们可以进入一些文本数据特定的分析。EDA（探索性数据分析）主要是理解数据，感受从中可以得出的信息。这个步骤的一个关键点是理解**目标类分布**。你可以使用 pandas 的 .value_counts() 方法或绘制条形图来可视化数据集中每个类的分布。你将能够看到哪些是**主要类**和**次要类**。
 
-![](../Images/1a7238087383fb8dd9dd6e49f45175eb.png)
+![](img/1a7238087383fb8dd9dd6e49f45175eb.png)
 
 二分类标记数据集的不平衡类分布
 
 模型在处理不平衡数据时表现不好。模型往往会忽略少数类别，因为数据量不足以训练模型检测这些类别。不过，如果你发现自己有一个高度倾斜的目标类别的不平衡数据集，这其实并不是世界末日。这在实际上是非常正常的。只要在模型构建过程开始之前知道这一点，以便在后续可以进行调整，就很重要。
 
-不平衡数据集的存在也应该让你思考应使用哪些指标来评估模型性能。在这种情况下，‘准确率’（正确预测的比例）真的**不是**你的朋友。假设你有一个二分类目标类的数据集，其中80%的数据标记为‘红色’，20%的数据标记为‘蓝色’。你的模型可以简单地对整个测试集预测‘红色’，并且仍然保持80%的准确率。因此，模型的准确率可能具有误导性，因为你的模型可能只会预测多数类。
+不平衡数据集的存在也应该让你思考应使用哪些指标来评估模型性能。在这种情况下，‘准确率’（正确预测的比例）真的**不是**你的朋友。假设你有一个二分类目标类的数据集，其中 80%的数据标记为‘红色’，20%的数据标记为‘蓝色’。你的模型可以简单地对整个测试集预测‘红色’，并且仍然保持 80%的准确率。因此，模型的准确率可能具有误导性，因为你的模型可能只会预测多数类。
 
-一些更好的指标包括**召回率**（正确预测的真正例比例）、**精准率**（正确预测的正例比例）或这两者的平均值，即**F1分数**。在模型构建阶段，要特别关注这些指标，尤其是少数类的指标。你会希望提升这些得分。
+一些更好的指标包括**召回率**（正确预测的真正例比例）、**精准率**（正确预测的正例比例）或这两者的平均值，即**F1 分数**。在模型构建阶段，要特别关注这些指标，尤其是少数类的指标。你会希望提升这些得分。
 
 ## 4\. 文本预处理
 
@@ -120,7 +120,7 @@ def text_cleanse(df, col):
 
 ## 5\. 训练-测试拆分
 
-这个步骤有自己的子标题，因为在开始调整特征之前执行这个步骤非常重要。使用sklearn的train_test_split()函数拆分数据，然后**保持测试数据不变**，以避免数据泄漏的风险。
+这个步骤有自己的子标题，因为在开始调整特征之前执行这个步骤非常重要。使用 sklearn 的 train_test_split()函数拆分数据，然后**保持测试数据不变**，以避免数据泄漏的风险。
 
 如果你的数据不平衡，有一些可选参数（‘shuffle’ 和 ‘stratify’），你可以在测试训练拆分时指定，以确保目标类别之间的均匀分配。这确保了你的少数类别不会全部集中在训练集或测试集中。
 
@@ -138,7 +138,7 @@ X_train, X_test, y_train, y_test = train_test_split(df['text'], # features
 
 模型无法解释词语。相反，词语必须通过一种称为向量化的过程转换为数字。向量化有两种方法：词袋模型和词嵌入。词袋模型寻找文本之间词语的精确匹配，而词嵌入方法考虑词语的上下文，因此可以在文本之间寻找相似的词。比较这两种方法的有趣文章可以在[这里](https://medium.com/swlh/word-embeddings-versus-bag-of-words-the-curious-case-of-recommender-systems-6ac1604d4424)找到。
 
-对于词袋模型，句子会被分词，每个唯一的词成为一个特征。数据集中每个唯一的词将对应一个特征，每个特征会有一个整数值，这个整数值取决于该词在文本中出现的次数（词频向量 — sklearn 的 CountVectorizer()）或者一个加权整数，表示该词在文本中的重要性（TF-IDF 向量 — sklearn 的 TfidVectorizer()）。有关 TF-IDF 向量化的有用文章可以在[这里](/tf-idf-simplified-aba19d5f5530#:~:text=Term%20frequency%2Dinverse%20document%20frequency,specific%20term%20in%20a%20document.)找到。
+对于词袋模型，句子会被分词，每个唯一的词成为一个特征。数据集中每个唯一的词将对应一个特征，每个特征会有一个整数值，这个整数值取决于该词在文本中出现的次数（词频向量 — sklearn 的 CountVectorizer()）或者一个加权整数，表示该词在文本中的重要性（TF-IDF 向量 — sklearn 的 TfidVectorizer()）。有关 TF-IDF 向量化的有用文章可以在这里找到。
 
 确保在训练数据上训练向量化对象，然后使用它来转换测试数据。
 
@@ -227,7 +227,7 @@ svc_oversample_cv.best_score_  # print f1 score
 
 现在是将经过训练的分类器推向生产环境的时候了，让它在未见过和未标记的数据上发挥魔力，前提是它已经经过测试。部署的方法取决于你的公司使用的平台，[这里](https://neptune.ai/blog/deploy-nlp-models-in-production)有一篇文章详细介绍了一些选项。
 
-就这样！10个简单步骤，使用监督式机器学习方法在python中构建文本分类器。总结一下，我们学习了：
+就这样！10 个简单步骤，使用监督式机器学习方法在 python 中构建文本分类器。总结一下，我们学习了：
 
 +   构建文本分类器所需的步骤顺序
 

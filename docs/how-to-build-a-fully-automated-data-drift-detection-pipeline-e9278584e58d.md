@@ -1,18 +1,18 @@
 # 如何构建一个完全自动化的数据漂移检测管道
 
-> 原文：[https://towardsdatascience.com/how-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d?source=collection_archive---------2-----------------------#2023-08-01](https://towardsdatascience.com/how-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d?source=collection_archive---------2-----------------------#2023-08-01)
+> 原文：[`towardsdatascience.com/how-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d?source=collection_archive---------2-----------------------#2023-08-01`](https://towardsdatascience.com/how-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d?source=collection_archive---------2-----------------------#2023-08-01)
 
 ## 自动化指南：检测和处理数据漂移
 
-[](https://khuyentran1476.medium.com/?source=post_page-----e9278584e58d--------------------------------)[![Khuyen Tran](../Images/98aa66025ad29b618e875c75f1c400a5.png)](https://khuyentran1476.medium.com/?source=post_page-----e9278584e58d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9278584e58d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e9278584e58d--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----e9278584e58d--------------------------------)
+[](https://khuyentran1476.medium.com/?source=post_page-----e9278584e58d--------------------------------)![Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----e9278584e58d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9278584e58d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9278584e58d--------------------------------) [Khuyen Tran](https://khuyentran1476.medium.com/?source=post_page-----e9278584e58d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----e9278584e58d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9278584e58d--------------------------------) · 10分钟阅读 · 2023年8月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe9278584e58d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d&user=Khuyen+Tran&userId=84a02493194a&source=-----e9278584e58d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F84a02493194a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d&user=Khuyen+Tran&userId=84a02493194a&source=post_page-84a02493194a----e9278584e58d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9278584e58d--------------------------------) · 10 分钟阅读 · 2023 年 8 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe9278584e58d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d&user=Khuyen+Tran&userId=84a02493194a&source=-----e9278584e58d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe9278584e58d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d&source=-----e9278584e58d---------------------bookmark_footer-----------)![](../Images/c433a55c93060b21965daf484c047144.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe9278584e58d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-fully-automated-data-drift-detection-pipeline-e9278584e58d&source=-----e9278584e58d---------------------bookmark_footer-----------)![](img/c433a55c93060b21965daf484c047144.png)
 
 作者提供的图片
 
@@ -20,13 +20,13 @@
 
 数据漂移发生在生产环境中的输入特征分布与训练数据不同，从而可能导致不准确性和模型性能下降。
 
-![](../Images/1a58af829c62bf069cfd2e99d4203f0d.png)
+![](img/1a58af829c62bf069cfd2e99d4203f0d.png)
 
 作者提供的图片
 
 为了减轻数据漂移对模型性能的影响，我们可以设计一个工作流，检测漂移，通知数据团队，并触发模型重训练。
 
-![](../Images/677b5b6931730a825eff3e9288beab99.png)
+![](img/677b5b6931730a825eff3e9288beab99.png)
 
 作者提供的图片
 
@@ -52,7 +52,7 @@
 
 这个工作流程被安排在特定时间运行，例如每周一上午 11:00。
 
-![](../Images/b5b8d48a2b308df0226e2b5963b320e1.png)
+![](img/b5b8d48a2b308df0226e2b5963b320e1.png)
 
 图片由作者提供
 
@@ -68,7 +68,7 @@
 
 为了检测数据漂移，我们将创建一个 Python 脚本，该脚本接受两个 CSV 文件“data/reference.csv”（参考数据）和“data/current.csv”（当前数据）。
 
-![](../Images/12ed1960bcc3d5295dacaa4c1ba12e6c.png)
+![](img/12ed1960bcc3d5295dacaa4c1ba12e6c.png)
 
 图片由作者提供
 
@@ -100,7 +100,7 @@ Kestra.outputs({"drift_detected": drift_detected})
 
 接下来，我们将创建一个负责模型训练的 Python 脚本。该脚本以过去和当前数据的结合作为输入，并将训练好的模型保存为“model.pkl”文件。
 
-![](../Images/d7a01c96325ffca329b924fe15b782c4.png)
+![](img/d7a01c96325ffca329b924fe15b782c4.png)
 
 图片由作者提供
 
@@ -137,47 +137,47 @@ github.com](https://github.com/khuyentran1401/detect-data-drift-pipeline?source=
 
 流行的协调库如 Airflow、Prefect 和 Dagster 需要修改 Python 代码以使用其功能。
 
-当Python脚本与数据工作流紧密集成时，整体代码库可能会变得更复杂，维护也更困难。如果没有独立的Python脚本开发，数据工程师可能需要修改数据科学代码以添加编排逻辑。
+当 Python 脚本与数据工作流紧密集成时，整体代码库可能会变得更复杂，维护也更困难。如果没有独立的 Python 脚本开发，数据工程师可能需要修改数据科学代码以添加编排逻辑。
 
-![](../Images/64c035d84a1ea8d5f62045eacc58bb41.png)
+![](img/64c035d84a1ea8d5f62045eacc58bb41.png)
 
 图片来源：作者
 
-另一方面，[Kestra](https://kestra.io/) 是一个开源库，它允许你独立开发Python脚本，然后通过YAML文件无缝地将它们融入数据工作流。
+另一方面，[Kestra](https://kestra.io/) 是一个开源库，它允许你独立开发 Python 脚本，然后通过 YAML 文件无缝地将它们融入数据工作流。
 
 这样，数据科学家可以专注于模型处理和训练，而数据工程师则可以专注于处理编排。
 
-因此，我们将使用Kestra设计一个更模块化和高效的工作流。
+因此，我们将使用 Kestra 设计一个更模块化和高效的工作流。
 
-![](../Images/7723cb5f1e607561113267c99407f63a.png)
+![](img/7723cb5f1e607561113267c99407f63a.png)
 
 图片来源：作者
 
-克隆 [detect-data-drift-pipeline 仓库](https://github.com/khuyentran1401/detect-data-drift-pipeline) 以获取Kestra的docker-compose文件，然后运行：
+克隆 [detect-data-drift-pipeline 仓库](https://github.com/khuyentran1401/detect-data-drift-pipeline) 以获取 Kestra 的 docker-compose 文件，然后运行：
 
 ```py
 docker compose up -d
 ```
 
-访问 [localhost:8080](http://localhost:8080/) 以访问和探索Kestra UI。
+访问 [localhost:8080](http://localhost:8080/) 以访问和探索 Kestra UI。
 
-![](../Images/1a838ca283c40d4d82b9376507f305fd.png)
+![](img/1a838ca283c40d4d82b9376507f305fd.png)
 
 图片来源：作者
 
 按照这些 [说明](https://github.com/khuyentran1401/detect-data-drift-pipeline) 配置本教程所需的环境。
 
-在开发目标流程之前，让我们通过创建一些简单的流程来熟悉Kestra。
+在开发目标流程之前，让我们通过创建一些简单的流程来熟悉 Kestra。
 
-## 从Python脚本访问Postgres表
+## 从 Python 脚本访问 Postgres 表
 
 我们将创建一个包含以下任务的流程：
 
-+   `getReferenceTable`：从Postgres表中导出CSV文件。
++   `getReferenceTable`：从 Postgres 表中导出 CSV 文件。
 
-+   `saveReferenceToCSV`：创建一个本地CSV文件，可以被Python任务访问。
++   `saveReferenceToCSV`：创建一个本地 CSV 文件，可以被 Python 任务访问。
 
-+   `runPythonScript`：使用Python读取本地CSV文件。
++   `runPythonScript`：使用 Python 读取本地 CSV 文件。
 
 为了在`saveReferenceToCSV`和`runPythonScript`任务之间传递数据，我们将通过将这两个任务放置在相同的工作目录中，并将它们封装在`wdir`任务内部来实现。
 
@@ -210,13 +210,13 @@ tasks:
         print(df.head(10))
 ```
 
-![](../Images/44e62914c8c5b0c999d474d9d9666370.png)
+![](img/44e62914c8c5b0c999d474d9d9666370.png)
 
 图片来源：作者
 
 执行流程将显示以下日志：
 
-![](../Images/0229ba03295229c369b01a8935459d49.png)
+![](img/0229ba03295229c369b01a8935459d49.png)
 
 图片来源：作者
 
@@ -252,25 +252,25 @@ tasks:
       df.to_csv("current.csv", index=False)
 ```
 
-![](../Images/87d1ffd8c99d5157d0a0150b8d72fe34.png)
+![](img/87d1ffd8c99d5157d0a0150b8d72fe34.png)
 
 图片来源：作者
 
 这些输入的值可以在每次执行流程时指定。
 
-![](../Images/d1b49a9a4e18af13b7733b23d54cbc33.png)
+![](img/d1b49a9a4e18af13b7733b23d54cbc33.png)
 
 图片来源：作者
 
-## 将CSV文件加载到Postgres表中
+## 将 CSV 文件加载到 Postgres 表中
 
 以下流程执行以下任务：
 
-+   `getCurrentCSV`：运行Python脚本以在工作目录中创建CSV文件。
++   `getCurrentCSV`：运行 Python 脚本以在工作目录中创建 CSV 文件。
 
-+   `saveFiles`：将工作目录中的CSV文件发送到Kestra的内部存储。
++   `saveFiles`：将工作目录中的 CSV 文件发送到 Kestra 的内部存储。
 
-+   `saveToCurrentTable`：将CSV文件加载到Postgres表中。
++   `saveToCurrentTable`：将 CSV 文件加载到 Postgres 表中。
 
 ```py
 iid: save-current-table
@@ -304,13 +304,13 @@ tasks:
     delimiter: ","
 ```
 
-![](../Images/1de966b034e4885dacb6ac0314a3e300.png)
+![](img/1de966b034e4885dacb6ac0314a3e300.png)
 
 图片来源：作者
 
 运行此流程后，你将在 Postgres 数据库中的“current”表中看到结果数据。
 
-![](../Images/fbc70170398295680a9ac5bbb5719cd4.png)
+![](img/fbc70170398295680a9ac5bbb5719cd4.png)
 
 图片由作者提供
 
@@ -341,13 +341,13 @@ tasks:
           - python src/example.py
 ```
 
-![](../Images/6b2586cf15d9c1f6c82c384c0c489220.png)
+![](img/6b2586cf15d9c1f6c82c384c0c489220.png)
 
 图片由作者提供
 
 运行流程后，你将看到以下日志：
 
-![](../Images/0c4413d165a8d794188b80e3da871b71.png)
+![](img/0c4413d165a8d794188b80e3da871b71.png)
 
 图片由作者提供
 
@@ -406,13 +406,13 @@ tasks:
     key: data.pkl
 ```
 
-![](../Images/fd9fb0b08e7002ba19882ac87c1d13f4.png)
+![](img/fd9fb0b08e7002ba19882ac87c1d13f4.png)
 
 图片由作者提供
 
 运行此流程后，`data.pkl` 文件将上传到“bike-sharing”桶中。
 
-![](../Images/fb126a6249d2ca4bcaa71dd87ca96432.png)
+![](img/fb126a6249d2ca4bcaa71dd87ca96432.png)
 
 图片由作者提供
 
@@ -432,7 +432,7 @@ tasks:
 
 +   将当前数据附加到现有的 Postgres 数据库中。
 
-![](../Images/47a206ff95c59d1fcf51066f79f58875.png)
+![](img/47a206ff95c59d1fcf51066f79f58875.png)
 
 图片由作者提供
 
@@ -509,7 +509,7 @@ triggers:
 
 接下来，我们将创建一个流程，通过一个 [Slack Webhook URL](https://api.slack.com/messaging/webhooks) 在 `detect-data-drift` 流程中的 `detectDataDrift` 任务返回 `drift_detected=true` 时发送 Slack 消息。
 
-![](../Images/def45e005820f105f401b936d94c72c7.png)
+![](img/def45e005820f105f401b936d94c72c7.png)
 
 图片由作者提供
 
@@ -535,7 +535,7 @@ triggers:
 
 运行 `detect-data-drift` 流程后，`send-slack-message` 流程将发送一条 Slack 消息。
 
-![](../Images/354ca0f5c2948f71f2d0d3d6e697e04d.png)
+![](img/354ca0f5c2948f71f2d0d3d6e697e04d.png)
 
 图片由作者提供
 
@@ -551,7 +551,7 @@ triggers:
 
 +   上传 pickle 文件到 S3
 
-![](../Images/253b848b5ef7fa84acbb3d646ff324ac.png)
+![](img/253b848b5ef7fa84acbb3d646ff324ac.png)
 
 图片由作者提供
 
@@ -609,15 +609,15 @@ triggers:
 
 运行此流程后，`model.pkl` 文件将上传到“bike-sharing”桶中。
 
-![](../Images/032f439354c4a375bd0af16db6b4a192.png)
+![](img/032f439354c4a375bd0af16db6b4a192.png)
 
 图片由作者提供
 
 # 扩展此工作流程的想法
 
-与其依赖计划的数据提取来识别数据漂移，我们可以利用[Grafana的外发Webhook](https://grafana.com/docs/oncall/latest/outgoing-webhooks/)和[Kestra的入站Webhook](https://kestra.io/plugins/core/triggers/io.kestra.core.models.triggers.types.webhook)来建立实时数据监控，并在数据漂移发生时立即触发流程。这种方法能够在数据漂移发生时立即检测，避免了等待计划脚本运行的需要。
+与其依赖计划的数据提取来识别数据漂移，我们可以利用[Grafana 的外发 Webhook](https://grafana.com/docs/oncall/latest/outgoing-webhooks/)和[Kestra 的入站 Webhook](https://kestra.io/plugins/core/triggers/io.kestra.core.models.triggers.types.webhook)来建立实时数据监控，并在数据漂移发生时立即触发流程。这种方法能够在数据漂移发生时立即检测，避免了等待计划脚本运行的需要。
 
-![](../Images/4f595292d9b246c072b5f1a5e60c0e39.png)
+![](img/4f595292d9b246c072b5f1a5e60c0e39.png)
 
 作者提供的图片
 

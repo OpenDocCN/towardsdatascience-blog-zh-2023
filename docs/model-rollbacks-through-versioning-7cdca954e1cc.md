@@ -1,26 +1,26 @@
 # 通过版本控制进行模型回滚
 
-> 原文：[https://towardsdatascience.com/model-rollbacks-through-versioning-7cdca954e1cc?source=collection_archive---------14-----------------------#2023-01-16](https://towardsdatascience.com/model-rollbacks-through-versioning-7cdca954e1cc?source=collection_archive---------14-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/model-rollbacks-through-versioning-7cdca954e1cc?source=collection_archive---------14-----------------------#2023-01-16`](https://towardsdatascience.com/model-rollbacks-through-versioning-7cdca954e1cc?source=collection_archive---------14-----------------------#2023-01-16)
 
 ## Walmart 回滚并不是唯一一种能为你节省开支的方法
 
-[](https://medium.com/@jazmia.henry?source=post_page-----7cdca954e1cc--------------------------------)[![Jazmia Henry](../Images/b7616bcd0a6f2e4242411074cde703ae.png)](https://medium.com/@jazmia.henry?source=post_page-----7cdca954e1cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cdca954e1cc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7cdca954e1cc--------------------------------) [Jazmia Henry](https://medium.com/@jazmia.henry?source=post_page-----7cdca954e1cc--------------------------------)
+[](https://medium.com/@jazmia.henry?source=post_page-----7cdca954e1cc--------------------------------)![Jazmia Henry](https://medium.com/@jazmia.henry?source=post_page-----7cdca954e1cc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cdca954e1cc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cdca954e1cc--------------------------------) [Jazmia Henry](https://medium.com/@jazmia.henry?source=post_page-----7cdca954e1cc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F23c2e80e732a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-rollbacks-through-versioning-7cdca954e1cc&user=Jazmia+Henry&userId=23c2e80e732a&source=post_page-23c2e80e732a----7cdca954e1cc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cdca954e1cc--------------------------------) ·7 min 阅读·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cdca954e1cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-rollbacks-through-versioning-7cdca954e1cc&user=Jazmia+Henry&userId=23c2e80e732a&source=-----7cdca954e1cc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F23c2e80e732a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-rollbacks-through-versioning-7cdca954e1cc&user=Jazmia+Henry&userId=23c2e80e732a&source=post_page-23c2e80e732a----7cdca954e1cc---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cdca954e1cc--------------------------------) ·7 min 阅读·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cdca954e1cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-rollbacks-through-versioning-7cdca954e1cc&user=Jazmia+Henry&userId=23c2e80e732a&source=-----7cdca954e1cc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7cdca954e1cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-rollbacks-through-versioning-7cdca954e1cc&source=-----7cdca954e1cc---------------------bookmark_footer-----------)![](../Images/6b245b31a1a701a1e102657a55cd638b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7cdca954e1cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-rollbacks-through-versioning-7cdca954e1cc&source=-----7cdca954e1cc---------------------bookmark_footer-----------)![](img/6b245b31a1a701a1e102657a55cd638b.png)
 
 使用模型回滚很有趣！
 
-机器学习社区普遍认同模型可能对传统上被边缘化的群体做出偏见决策。从[凯瑟·奥尼尔博士](https://www.ted.com/speakers/cathy_o_neil)到[乔伊·布乌拉姆威尼博士](https://www.ted.com/speakers/joy_buolamwini)的伦理AI研究人员已经付出了巨大的努力，建立了一个基于偏见和不具代表性数据的错误决策模式，这导致了严重的危害。不幸的是，我们的“智能”学习算法仅与我们使它们一样聪明、能干和道德，我们才刚刚开始理解偏见模型的长期影响。幸运的是，我们已有许多策略可以在危害出现时加以缓解。今天，我们将重点关注一种非常强大的策略：通过版本控制进行模型回滚。
+机器学习社区普遍认同模型可能对传统上被边缘化的群体做出偏见决策。从[凯瑟·奥尼尔博士](https://www.ted.com/speakers/cathy_o_neil)到[乔伊·布乌拉姆威尼博士](https://www.ted.com/speakers/joy_buolamwini)的伦理 AI 研究人员已经付出了巨大的努力，建立了一个基于偏见和不具代表性数据的错误决策模式，这导致了严重的危害。不幸的是，我们的“智能”学习算法仅与我们使它们一样聪明、能干和道德，我们才刚刚开始理解偏见模型的长期影响。幸运的是，我们已有许多策略可以在危害出现时加以缓解。今天，我们将重点关注一种非常强大的策略：通过版本控制进行模型回滚。
 
-当普通的机器学习或AI从业者过去构建模型时，模型构建者的优先级通常是这样的：
+当普通的机器学习或 AI 从业者过去构建模型时，模型构建者的优先级通常是这样的：
 
-![](../Images/d54c33a06eac044ecc3a93acd675649a.png)
+![](img/d54c33a06eac044ecc3a93acd675649a.png)
 
 传统数据工作流
 
@@ -28,19 +28,19 @@
 
 这个框架——虽然简化且整洁——在许多方面都失败了：
 
-1.  模型性能通过它们的评分或公司推动的KPIs来判断——而不是通过使用模型输出的人的长期影响来判断。
+1.  模型性能通过它们的评分或公司推动的 KPIs 来判断——而不是通过使用模型输出的人的长期影响来判断。
 
 1.  模型构建者与模型集成过程脱离，而部署模型的人员对模型如何做出决策知之甚少。这导致对模型构建过程缺乏透明度，工程师们无法检测部署的模型是否按预期工作，或可能持续带来危害。
 
 1.  即使模型构建者花时间找到代表性数据，并且有一个在训练过程中没有造成伤害的高效模型，脱离模型部署过程意味着他们对模型在面对新数据时做出的决策几乎没有可见性，而这些数据在“野外”中可能会有偏见。
 
-认识到这些问题及更多问题使得道德上需要一种新的模型构建者类型——一种既认识到构建高效模型的价值，同时理解学习模型集成所带来的独特机会，可以在部署后改善模型性能，同时减少偏见。这些无可挑剔的思维可以在全技术领域的MLOps、AI和分析工程团队中找到。与上述模型工作不同，他们的流程扩展为包括以下内容：
+认识到这些问题及更多问题使得道德上需要一种新的模型构建者类型——一种既认识到构建高效模型的价值，同时理解学习模型集成所带来的独特机会，可以在部署后改善模型性能，同时减少偏见。这些无可挑剔的思维可以在全技术领域的 MLOps、AI 和分析工程团队中找到。与上述模型工作不同，他们的流程扩展为包括以下内容：
 
-![](../Images/6307a72fc3547c835c58986b89e47cb7.png)
+![](img/6307a72fc3547c835c58986b89e47cb7.png)
 
-MLOps过程
+MLOps 过程
 
-从数据库中提取数据后，创建多个模型来解决公司的问题，这些模型通过诸如Docker之类的服务进行容器化。创建一个API指向模型所在的端口主机，它可以为用户交互提供Web应用程序的输出。所有输出都通过诸如MongoDB之类的服务摄入到云端进行进一步分析，并附加到模型输出的监控系统，例如Grafana，如果模型无法很好地推广到世界，就提供警报。这个过程可以更好地可视化模型在部署后的性能，并轻松实施模型版本控制技术。
+从数据库中提取数据后，创建多个模型来解决公司的问题，这些模型通过诸如 Docker 之类的服务进行容器化。创建一个 API 指向模型所在的端口主机，它可以为用户交互提供 Web 应用程序的输出。所有输出都通过诸如 MongoDB 之类的服务摄入到云端进行进一步分析，并附加到模型输出的监控系统，例如 Grafana，如果模型无法很好地推广到世界，就提供警报。这个过程可以更好地可视化模型在部署后的性能，并轻松实施模型版本控制技术。
 
 # 模型版本控制：它是什么？
 
@@ -54,7 +54,7 @@ MLOps过程
 
 +   在训练多个模型时，您选择在超参数调整过程中调整不同的参数。版本控制可以追踪您在模型构建过程中尝试的许多模型版本。
 
-+   在将模型集成到一个更大的系统中时，您选择部署给公众的是模型1，而不是模型2或3。虽然模型1在训练过程中性能最佳，但在集成到更大系统时却不能做出适当的决策。模型版本控制允许您在模型部署时继续对模型进行改进，并推动一个更好的模型版本或切换所选择的模型，甚至恢复到之前的模型版本，而不会对您的网络应用程序造成任何中断。
++   在将模型集成到一个更大的系统中时，您选择部署给公众的是模型 1，而不是模型 2 或 3。虽然模型 1 在训练过程中性能最佳，但在集成到更大系统时却不能做出适当的决策。模型版本控制允许您在模型部署时继续对模型进行改进，并推动一个更好的模型版本或切换所选择的模型，甚至恢复到之前的模型版本，而不会对您的网络应用程序造成任何中断。
 
 这就是模型版本控制允许模型回滚的地方。
 
@@ -72,7 +72,7 @@ MLOps过程
 
 1.  这些问题正在为你的公司造成大量的收入损失。
 
-你的团队开始着手创建一个可以解决这些问题的模型。你首先确保你的团队找到你认为具有代表性的数据。一旦完成，你让他们创建多个模型——一个启发式模型，一个逻辑回归模型，最后一个随机森林模型——以确定哪个模型性能最好。然后，你将模型交给另一个团队，将其集成到更大的代码库中。你所在的公司存在各自为政的情况，因此你无法看到模型的部署情况，也不愿了解。在6个月后，模型看起来运行良好——直到一篇社论发布了如下标题“信用公司算法歧视非二元性别者和非大学学历者”。你的老板打电话告诉你，模型将立即下线。由于推进模型的简单技术解决方案已经被弃用，因此重新上线需要一些时间。在此期间，所有申请将转到信用风险分析师处。
+你的团队开始着手创建一个可以解决这些问题的模型。你首先确保你的团队找到你认为具有代表性的数据。一旦完成，你让他们创建多个模型——一个启发式模型，一个逻辑回归模型，最后一个随机森林模型——以确定哪个模型性能最好。然后，你将模型交给另一个团队，将其集成到更大的代码库中。你所在的公司存在各自为政的情况，因此你无法看到模型的部署情况，也不愿了解。在 6 个月后，模型看起来运行良好——直到一篇社论发布了如下标题“信用公司算法歧视非二元性别者和非大学学历者”。你的老板打电话告诉你，模型将立即下线。由于推进模型的简单技术解决方案已经被弃用，因此重新上线需要一些时间。在此期间，所有申请将转到信用风险分析师处。
 
 这种情况在数据行业中发生得远比必要的要多。一个同时与模型构建者和工程师合作的集成团队，或者一个全新的团队，专门利用模型构建者将模型集成到代码库中，并利用模型版本控制的优势，将大大减少这种麻烦。
 
@@ -86,7 +86,7 @@ MLOps过程
 
 +   在修复模型问题时，模型构建者将对可能导致这种结果的过程步骤有更大的可见性。这可以减少改进问题所需的时间，从而在长期节省公司时间、资源和金钱。
 
-模型版本控制允许模型回滚，这可以长期节省公司开支，但更重要的是，帮助减少偏见（如果出现的话）。然而，这种技术在你拥有一个不仅了解如何构建模型，还知道如何在生产中优化模型的团队时效果最佳。为了实现这一点，你必须通过模型构建者和工程师之间的协作，或者通过创建一个包含MLOps、AI或分析工程师的混合团队，扩展模型构建团队的可见性。
+模型版本控制允许模型回滚，这可以长期节省公司开支，但更重要的是，帮助减少偏见（如果出现的话）。然而，这种技术在你拥有一个不仅了解如何构建模型，还知道如何在生产中优化模型的团队时效果最佳。为了实现这一点，你必须通过模型构建者和工程师之间的协作，或者通过创建一个包含 MLOps、AI 或分析工程师的混合团队，扩展模型构建团队的可见性。
 
 有什么想法？在下面的评论中分享吧！
 
@@ -94,6 +94,6 @@ MLOps过程
 
 推荐阅读
 
-O’Neil, Cathy. *数学毁灭武器：大数据如何加剧不平等并威胁民主*。纽约：企鹅图书，2018年。
+O’Neil, Cathy. *数学毁灭武器：大数据如何加剧不平等并威胁民主*。纽约：企鹅图书，2018 年。
 
-Gebru, Timnit, 和 Joy Buolamwini. *“*性别阴影：商业性别分类中的交叉准确性差异*。”*《机器学习研究会议论文集》81（2018年）：1-15。
+Gebru, Timnit, 和 Joy Buolamwini. *“*性别阴影：商业性别分类中的交叉准确性差异*。”*《机器学习研究会议论文集》81（2018 年）：1-15。

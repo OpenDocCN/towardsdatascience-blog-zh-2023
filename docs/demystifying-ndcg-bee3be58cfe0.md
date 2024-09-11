@@ -1,18 +1,18 @@
 # 揭开 NDCG 的面纱
 
-> 原文：[https://towardsdatascience.com/demystifying-ndcg-bee3be58cfe0?source=collection_archive---------0-----------------------#2023-01-25](https://towardsdatascience.com/demystifying-ndcg-bee3be58cfe0?source=collection_archive---------0-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/demystifying-ndcg-bee3be58cfe0?source=collection_archive---------0-----------------------#2023-01-25`](https://towardsdatascience.com/demystifying-ndcg-bee3be58cfe0?source=collection_archive---------0-----------------------#2023-01-25)
 
-![](../Images/f4b2c352ccaa5255dc3c1068bd144edf.png)
+![](img/f4b2c352ccaa5255dc3c1068bd144edf.png)
 
 作者插图
 
 ## 如何最佳地使用这一重要指标来监控排名模型
 
-[](https://aparnadhinak.medium.com/?source=post_page-----bee3be58cfe0--------------------------------)[![Aparna Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----bee3be58cfe0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bee3be58cfe0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bee3be58cfe0--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----bee3be58cfe0--------------------------------)
+[](https://aparnadhinak.medium.com/?source=post_page-----bee3be58cfe0--------------------------------)![Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----bee3be58cfe0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bee3be58cfe0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bee3be58cfe0--------------------------------) [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----bee3be58cfe0--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-ndcg-bee3be58cfe0&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----bee3be58cfe0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bee3be58cfe0--------------------------------) ·11 min read·2023年1月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbee3be58cfe0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-ndcg-bee3be58cfe0&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----bee3be58cfe0---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-ndcg-bee3be58cfe0&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----bee3be58cfe0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bee3be58cfe0--------------------------------) ·11 min read·2023 年 1 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbee3be58cfe0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-ndcg-bee3be58cfe0&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----bee3be58cfe0---------------------clap_footer-----------)
 
 --
 
@@ -26,27 +26,27 @@
 
 为了详细讲解如何在生产中监控**标准化折扣累积增益（NDCG）**，本文涵盖了：
 
-+   NDCG是什么，它的用途是什么？
++   NDCG 是什么，它的用途是什么？
 
-+   NDCG背后的直觉
++   NDCG 背后的直觉
 
-+   什么是NDCG@K？
++   什么是 NDCG@K？
 
-+   NDCG与其他指标相比如何？
++   NDCG 与其他指标相比如何？
 
-+   NDCG在模型监控中如何使用？
++   NDCG 在模型监控中如何使用？
 
-在解决了这些主要问题之后，你的团队将能够使用NDCG对生产中的排名模型进行实时监控和根本原因分析。
+在解决了这些主要问题之后，你的团队将能够使用 NDCG 对生产中的排名模型进行实时监控和根本原因分析。
 
-# NDCG是什么，它的用途是什么？
+# NDCG 是什么，它的用途是什么？
 
-**标准化折扣累积增益**是排名质量的衡量指标。机器学习团队经常使用[NDCG](https://arize.com/blog-course/ndcg/)来评估搜索引擎、推荐系统或其他信息检索系统的性能。搜索引擎在与客户直接互动的应用程序中非常流行，如Alphabet、Amazon、Etsy、Netflix和Spotify——这些仅仅是其中的一部分。
+**标准化折扣累积增益**是排名质量的衡量指标。机器学习团队经常使用[NDCG](https://arize.com/blog-course/ndcg/)来评估搜索引擎、推荐系统或其他信息检索系统的性能。搜索引擎在与客户直接互动的应用程序中非常流行，如 Alphabet、Amazon、Etsy、Netflix 和 Spotify——这些仅仅是其中的一部分。
 
-NDCG的值是通过将搜索引擎返回的项目的相关性与假设的“理想”搜索引擎返回的项目的相关性进行比较来确定的。例如，如果你在一个流行的音乐流媒体应用上搜索“Hero”，你可能会得到10多个结果，这些结果中包含了“Hero”这个词，无论是在歌曲、艺术家还是专辑中。
+NDCG 的值是通过将搜索引擎返回的项目的相关性与假设的“理想”搜索引擎返回的项目的相关性进行比较来确定的。例如，如果你在一个流行的音乐流媒体应用上搜索“Hero”，你可能会得到 10 多个结果，这些结果中包含了“Hero”这个词，无论是在歌曲、艺术家还是专辑中。
 
 每首歌曲或艺术家的相关性由一个分数（也称为“等级”）表示，该分数分配给搜索查询。这些推荐的分数会根据它们在搜索结果中的位置进行折扣——它们是首先被推荐还是最后被推荐？折扣后的分数会累积起来，并除以最大可能的折扣分数，这个折扣分数是如果搜索引擎按真实相关性顺序返回文档时获得的分数。
 
-例如，如果用户想要Foo Fighters的歌曲“My Hero”，那么这首歌在推荐中离顶部越近，对用户来说搜索效果就越好。最终，返回结果或推荐的相对顺序对于客户满意度非常重要。
+例如，如果用户想要 Foo Fighters 的歌曲“My Hero”，那么这首歌在推荐中离顶部越近，对用户来说搜索效果就越好。最终，返回结果或推荐的相对顺序对于客户满意度非常重要。
 
 # 理解排名模型背后的直觉
 
@@ -54,23 +54,23 @@ NDCG的值是通过将搜索引擎返回的项目的相关性与假设的“理�
 
 这里是一个用于排名模型的简单版本数据集。共有两种不同的搜索查询：**x**和**y**。在每组中，有五个不同的项目作为搜索结果显示，每个项目的排名基于它们在结果列表中的位置。最后，每个项目的*增益*代表了在搜索中的相关性。
 
-![](../Images/d5d3744215466eef0acd2dbea8b8e577.png)
+![](img/d5d3744215466eef0acd2dbea8b8e577.png)
 
 图片来源：作者
 
-要理解NDCG背后的直觉，必须深入了解名称中每个单词的含义。所以让我们来逐一解析…
+要理解 NDCG 背后的直觉，必须深入了解名称中每个单词的含义。所以让我们来逐一解析…
 
 # 1.) 累积增益（CG）
 
 累积增益是与搜索查询中项目相关的*增益*的总和。它的公式如下：
 
-![](../Images/505e9bd6139e6de196a75444aa9807dc.png)
+![](img/505e9bd6139e6de196a75444aa9807dc.png)
 
 作者提供的图片
 
 使用上面的数据集，我们可以计算每个组的 CG：
 
-![](../Images/778a2467b5c1b27f68e646aa9fc87dfa.png)
+![](img/778a2467b5c1b27f68e646aa9fc87dfa.png)
 
 作者提供的图片
 
@@ -80,29 +80,29 @@ NDCG的值是通过将搜索引擎返回的项目的相关性与假设的“理�
 
 DCG 与 CG 的概念相同，但额外考虑了按排名折扣收益。以下是 DCG 的公式：
 
-![](../Images/cd4563035a77c4398043c8903abca226.png)
+![](img/cd4563035a77c4398043c8903abca226.png)
 
 作者提供的图片
 
 使用上面的数据集，我们可以计算每个组的 DCG：
 
-![](../Images/8e1b0f7dfee1604b59d3194e58201eab.png)
+![](img/8e1b0f7dfee1604b59d3194e58201eab.png)
 
 作者提供的图片
 
-![](../Images/daa57de9d5275f2ad475d585dcec854b.png)
+![](img/daa57de9d5275f2ad475d585dcec854b.png)
 
 作者提供的图片
 
 好消息！现在我们可以看到 ***y*** 的 DCG 优于 ***x*** 的 DCG。这也很有道理，因为组 ***y*** 中较高排名的项目对搜索组 ***y*** 更相关（收益更高）。那么我们为什么还需要 NDCG 呢？为了回答这个问题，我们引入另一个搜索组 ***z*** 作为计数示例：
 
-![](../Images/30dd96996709ed8b957e871d3f51fbd1.png)
+![](img/30dd96996709ed8b957e871d3f51fbd1.png)
 
 作者提供的图片
 
 然后，我们再练习一次 DCG 计算：
 
-![](../Images/73d1ab4b3f8f645248327ea80f64e8d8.png)
+![](img/73d1ab4b3f8f645248327ea80f64e8d8.png)
 
 作者提供的图片
 
@@ -112,7 +112,7 @@ DCG 与 CG 的概念相同，但额外考虑了按排名折扣收益。以下是
 
 IDCG 代表 **理想折扣累计收益**，它计算了基于收益的理想顺序的 DCG。它回答了这样一个问题：一个组的最佳可能 DCG 是什么？回到实际示例，当用户在线搜索某样东西时，他们总是希望最相关的项目在顶部，并在任何无关的项目之上。也就是说，所有相关的信息应该总是位于顶部，并且应该具有最佳的 DCG。让我们做更多的计算，使用上面数据集中每个搜索组的 IDCG：
 
-![](../Images/8c89a4486d39a5b0fd96200495a03544.png)
+![](img/8c89a4486d39a5b0fd96200495a03544.png)
 
 作者提供的图片
 
@@ -120,17 +120,17 @@ IDCG 代表 **理想折扣累计收益**，它计算了基于收益的理想顺�
 
 最终，我们完成了繁重的数学运算，终于可以使用 NDCG 了！NDCG 通过组的 IDCG 归一化 DCG。它可以解释为实际相关顺序与理想相关顺序的比较。NDCG 是 DCG 和 IDCG 的商；请参见下面的公式。
 
-![](../Images/6362a34615f385263b3edaefc7565dbf.png)
+![](img/6362a34615f385263b3edaefc7565dbf.png)
 
 作者提供的图片
 
-![](../Images/f707f6c82ee686f7afcebccf1e024429.png)
+![](img/f707f6c82ee686f7afcebccf1e024429.png)
 
 作者提供的图片
 
 回到上面的数据集，我们来获取每组的最终 NDCG：
 
-![](../Images/3269024be502924bf231c91726076a20.png)
+![](img/3269024be502924bf231c91726076a20.png)
 
 作者提供的图像
 
@@ -142,13 +142,13 @@ IDCG 代表 **理想折扣累计收益**，它计算了基于收益的理想顺�
 
 这里是 **NDCG@K** 的公式：
 
-![](../Images/29b5947992f078af59388d7f4e4c4cb4.png)
+![](img/29b5947992f078af59388d7f4e4c4cb4.png)
 
 作者提供的图像
 
 现在，让我们计算组 **x** 的 NDCG@3：
 
-![](../Images/963819be33d72252b37dd683795c3cef.png)
+![](img/963819be33d72252b37dd683795c3cef.png)
 
 作者提供的图像
 
@@ -178,29 +178,29 @@ NDCG 提供了微调哪些排名比其他排名更有价值的能力，并考虑
 
 其他示例也很丰富，从社交媒体公司使用 NDCG 来评估推荐帖子和视频的相关性，到零售商使用它来优化产品列表。
 
-这些公司还可以使用NDCG@1、NDCG@5和NDCG@10来评估这些推荐的相关性以及搜索引擎的强度。使用ML可观察性平台的公司，甚至可以监控其排名模型和具有[多个相关性标签](https://docs.arize.com/arize/sending-data/examples)的搜索引擎（完全披露：我也是Arize AI的联合创始人）。这些可以用来生成增益（相关性评分），基于相关性目标（正类）是否匹配一个相关性标签。如果团队在每个搜索组中使用NDCG@K，那么你应该对所有这些结果进行平均，以获得最终的NDCG。对模型预测的所有相关搜索查询的NDCG进行平均，可以帮助团队很好地了解模型的表现。
+这些公司还可以使用 NDCG@1、NDCG@5 和 NDCG@10 来评估这些推荐的相关性以及搜索引擎的强度。使用 ML 可观察性平台的公司，甚至可以监控其排名模型和具有[多个相关性标签](https://docs.arize.com/arize/sending-data/examples)的搜索引擎（完全披露：我也是 Arize AI 的联合创始人）。这些可以用来生成增益（相关性评分），基于相关性目标（正类）是否匹配一个相关性标签。如果团队在每个搜索组中使用 NDCG@K，那么你应该对所有这些结果进行平均，以获得最终的 NDCG。对模型预测的所有相关搜索查询的 NDCG 进行平均，可以帮助团队很好地了解模型的表现。
 
-上述***x，y***和***z***组的综合NDCG值为：
+上述***x，y***和***z***组的综合 NDCG 值为：
 
-![](../Images/1b9e2e329ddadee7163c243d710980de.png)
+![](img/1b9e2e329ddadee7163c243d710980de.png)
 
 图片由作者提供
 
 # 如果你的模型没有相关性评分该怎么办？
 
-计算NDCG时需要相关性评分。如果相关性评分不可用，可以使用归因模型生成二元相关性评分。如果你的预测标签、相关性标签和正类匹配，这个模型可能会产生一个*score = 1*。
+计算 NDCG 时需要相关性评分。如果相关性评分不可用，可以使用归因模型生成二元相关性评分。如果你的预测标签、相关性标签和正类匹配，这个模型可能会产生一个*score = 1*。
 
-如果在多标签情况下（如[‘点击’，‘收藏’，‘购买’]）没有相关性评分，并且正类是‘点击’，相关性将归因于sum([1,0,0])。因此，尽可能地归因相关性评分很重要，以便计算更精确的NDCG以进行进一步的故障排除。
+如果在多标签情况下（如[‘点击’，‘收藏’，‘购买’]）没有相关性评分，并且正类是‘点击’，相关性将归因于 sum([1,0,0])。因此，尽可能地归因相关性评分很重要，以便计算更精确的 NDCG 以进行进一步的故障排除。
 
-# 低NDCG值在生产环境中意味着什么？
+# 低 NDCG 值在生产环境中意味着什么？
 
-以下示例展示了当推荐系统在生产中的性能开始下降时发生了什么。在图像插图中，你可能会注意到训练和生产数据集几乎相同，仅在生产数据集中交换了第一个和最后一个推荐。这导致了两个数据集之间性能的显著差异，将NDCG从0.993降低到0.646。NDCG是对整体评分顺序最敏感的排名指标，并且在你可以获得完全的相关性反馈时非常有利。
+以下示例展示了当推荐系统在生产中的性能开始下降时发生了什么。在图像插图中，你可能会注意到训练和生产数据集几乎相同，仅在生产数据集中交换了第一个和最后一个推荐。这导致了两个数据集之间性能的显著差异，将 NDCG 从 0.993 降低到 0.646。NDCG 是对整体评分顺序最敏感的排名指标，并且在你可以获得完全的相关性反馈时非常有利。
 
-![](../Images/f3e8b5b8a3e136988761bae18dac1405.png)
+![](img/f3e8b5b8a3e136988761bae18dac1405.png)
 
 图片由作者提供
 
-有了这些信息，我们可以说当需要向客户提供相关搜索结果时，我们的NDCG值在生产中表现不佳。现在我们知道模型开始退化，我们可以开始揭示性能问题的具体位置和原因。
+有了这些信息，我们可以说当需要向客户提供相关搜索结果时，我们的 NDCG 值在生产中表现不佳。现在我们知道模型开始退化，我们可以开始揭示性能问题的具体位置和原因。
 
 # 更多资源
 

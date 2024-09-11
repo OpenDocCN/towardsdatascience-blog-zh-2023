@@ -1,20 +1,20 @@
 # 为什么你需要在 Python 中使用装饰器编写 DRY 代码
 
-> 原文：[https://towardsdatascience.com/why-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569?source=collection_archive---------5-----------------------#2023-05-19](https://towardsdatascience.com/why-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569?source=collection_archive---------5-----------------------#2023-05-19)
+> 原文：[`towardsdatascience.com/why-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569?source=collection_archive---------5-----------------------#2023-05-19`](https://towardsdatascience.com/why-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569?source=collection_archive---------5-----------------------#2023-05-19)
 
 ## 数据
 
 ## 使用装饰器查看 Pandas 处理管道中数据发生了什么
 
-[](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)[![Byron Dolon](../Images/9ff32138c7b1913be24cc7ab971752b0.png)](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------) [Byron Dolon](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)
+[](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)![Byron Dolon](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------) [Byron Dolon](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b5d063df5dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569&user=Byron+Dolon&userId=6b5d063df5dd&source=post_page-6b5d063df5dd----3930ea23f569---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------) ·9 分钟阅读·2023年5月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3930ea23f569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569&user=Byron+Dolon&userId=6b5d063df5dd&source=-----3930ea23f569---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b5d063df5dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569&user=Byron+Dolon&userId=6b5d063df5dd&source=post_page-6b5d063df5dd----3930ea23f569---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------) ·9 分钟阅读·2023 年 5 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3930ea23f569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569&user=Byron+Dolon&userId=6b5d063df5dd&source=-----3930ea23f569---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3930ea23f569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569&source=-----3930ea23f569---------------------bookmark_footer-----------)![](../Images/c0ac300ed86456b49bd3ab5a61fdcd44.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3930ea23f569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569&source=-----3930ea23f569---------------------bookmark_footer-----------)![](img/c0ac300ed86456b49bd3ab5a61fdcd44.png)
 
 装饰器是关键 — 照片由[Adi Goldstein](https://unsplash.com/@adigold1?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

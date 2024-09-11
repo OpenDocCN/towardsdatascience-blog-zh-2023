@@ -1,8 +1,8 @@
 # 实用介绍 Transformer 模型：BERT
 
-> 原文：[https://towardsdatascience.com/practical-introduction-to-transformer-models-bert-4715ed0deede?source=collection_archive---------6-----------------------#2023-07-17](https://towardsdatascience.com/practical-introduction-to-transformer-models-bert-4715ed0deede?source=collection_archive---------6-----------------------#2023-07-17)
+> 原文：[`towardsdatascience.com/practical-introduction-to-transformer-models-bert-4715ed0deede?source=collection_archive---------6-----------------------#2023-07-17`](https://towardsdatascience.com/practical-introduction-to-transformer-models-bert-4715ed0deede?source=collection_archive---------6-----------------------#2023-07-17)
 
-![](../Images/15139494860ad96a134be1b20fb42fa3.png)
+![](img/15139494860ad96a134be1b20fb42fa3.png)
 
 图片来源于 [Alex Padurariu](https://unsplash.com/@alexpadurariu?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -10,11 +10,11 @@
 
 ## 动手教程：如何使用 BERT 构建你的第一个情感分析模型
 
-[](https://medium.com/@shashank.kapadia?source=post_page-----4715ed0deede--------------------------------)[![Shashank Kapadia](../Images/347e4cb92a7d27f032c5761e4526f2fa.png)](https://medium.com/@shashank.kapadia?source=post_page-----4715ed0deede--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4715ed0deede--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4715ed0deede--------------------------------) [Shashank Kapadia](https://medium.com/@shashank.kapadia?source=post_page-----4715ed0deede--------------------------------)
+[](https://medium.com/@shashank.kapadia?source=post_page-----4715ed0deede--------------------------------)![Shashank Kapadia](https://medium.com/@shashank.kapadia?source=post_page-----4715ed0deede--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4715ed0deede--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4715ed0deede--------------------------------) [Shashank Kapadia](https://medium.com/@shashank.kapadia?source=post_page-----4715ed0deede--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcc7314ace45c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-introduction-to-transformer-models-bert-4715ed0deede&user=Shashank+Kapadia&userId=cc7314ace45c&source=post_page-cc7314ace45c----4715ed0deede---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4715ed0deede--------------------------------) ·7分钟阅读·2023年7月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4715ed0deede&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-introduction-to-transformer-models-bert-4715ed0deede&user=Shashank+Kapadia&userId=cc7314ace45c&source=-----4715ed0deede---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcc7314ace45c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-introduction-to-transformer-models-bert-4715ed0deede&user=Shashank+Kapadia&userId=cc7314ace45c&source=post_page-cc7314ace45c----4715ed0deede---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4715ed0deede--------------------------------) ·7 分钟阅读·2023 年 7 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4715ed0deede&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpractical-introduction-to-transformer-models-bert-4715ed0deede&user=Shashank+Kapadia&userId=cc7314ace45c&source=-----4715ed0deede---------------------clap_footer-----------)
 
 --
 
@@ -97,7 +97,7 @@ plt.title('Class distribution')
 plt.show()
 ```
 
-![](../Images/a751c4f02714c162279b8e2dbac1071c.png)
+![](img/a751c4f02714c162279b8e2dbac1071c.png)
 
 图 1\. 训练数据集的类别分布
 
@@ -111,7 +111,7 @@ def tokenize_function(examples):
 tokenized_datasets = dataset.map(tokenize_function, batched=True)
 ```
 
-![](../Images/ae0915081c37ac5286fdd5ded5e033d4.png)
+![](img/ae0915081c37ac5286fdd5ded5e033d4.png)
 
 之后，我们准备训练和评估数据集。请记住，如果你想使用所有数据，可以将`num_samples`变量设置为`-1`。
 
@@ -124,9 +124,9 @@ else:
     small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(num_samples)) 
 ```
 
-接下来，我们加载预训练的BERT模型。我们将使用`AutoModelForSequenceClassification`类，这是一种针对分类任务设计的BERT模型。
+接下来，我们加载预训练的 BERT 模型。我们将使用`AutoModelForSequenceClassification`类，这是一种针对分类任务设计的 BERT 模型。
 
-> 在本教程中，我们使用‘[bert-base-uncased](https://huggingface.co/bert-base-uncased)’版本的BERT，它是基于小写英文文本进行训练的。
+> 在本教程中，我们使用‘[bert-base-uncased](https://huggingface.co/bert-base-uncased)’版本的 BERT，它是基于小写英文文本进行训练的。
 
 ```py
 # Step 3: Load pre-trained model
@@ -149,7 +149,7 @@ trainer.train()
 
 # 结果解释
 
-训练完模型后，让我们来评估一下。我们将计算混淆矩阵和ROC曲线，以了解我们的模型表现如何。
+训练完模型后，让我们来评估一下。我们将计算混淆矩阵和 ROC 曲线，以了解我们的模型表现如何。
 
 ```py
 # Step 6: Evaluation
@@ -177,15 +177,15 @@ plt.legend(loc="lower right")
 plt.show()
 ```
 
-![](../Images/cb104a044e899ad272b1ce2d8f888394.png)
+![](img/cb104a044e899ad272b1ce2d8f888394.png)
 
 图 2\. 混淆矩阵
 
-![](../Images/aa9c8ed466a7fc3bef2b259d818a359d.png)
+![](img/aa9c8ed466a7fc3bef2b259d818a359d.png)
 
-图 3\. ROC曲线
+图 3\. ROC 曲线
 
-混淆矩阵详细地分解了我们的预测与实际标签的匹配情况，而ROC曲线则展示了在不同阈值设置下，真正例率（敏感度）与假正例率（1 — 特异度）之间的权衡。
+混淆矩阵详细地分解了我们的预测与实际标签的匹配情况，而 ROC 曲线则展示了在不同阈值设置下，真正例率（敏感度）与假正例率（1 — 特异度）之间的权衡。
 
 最后，为了查看我们的模型的实际效果，让我们用它来推断样本文本的情感。
 
@@ -207,40 +207,40 @@ else:
     print("Negative sentiment")
 ```
 
-![](../Images/84a2556951138b36dc6bda8b93d1a4a9.png)
+![](img/84a2556951138b36dc6bda8b93d1a4a9.png)
 
 # 结语
 
-通过对IMDb电影评论的情感分析示例进行讲解，我希望你能清晰地理解如何将BERT应用于现实世界的自然语言处理问题。我在这里包含的Python代码可以进行调整和扩展，以应对不同的任务和数据集，为更复杂和准确的语言模型铺平道路。
+通过对 IMDb 电影评论的情感分析示例进行讲解，我希望你能清晰地理解如何将 BERT 应用于现实世界的自然语言处理问题。我在这里包含的 Python 代码可以进行调整和扩展，以应对不同的任务和数据集，为更复杂和准确的语言模型铺平道路。
 
 # 参考文献
 
-[1] Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2018). BERT：用于语言理解的深度双向变换器的预训练。arXiv预印本 arXiv:1810.04805
+[1] Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2018). BERT：用于语言理解的深度双向变换器的预训练。arXiv 预印本 arXiv:1810.04805
 
-[2] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., … & Polosukhin, I. (2017). 注意力机制即一切。在《神经信息处理系统进展》中（第5998–6008页）。
+[2] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., … & Polosukhin, I. (2017). 注意力机制即一切。在《神经信息处理系统进展》中（第 5998–6008 页）。
 
-[3] Wolf, T., Debut, L., Sanh, V., Chaumond, J., Delangue, C., Moi, A., … & Rush, A. M. (2019). Huggingface的变换器：最先进的自然语言处理。ArXiv, abs/1910.03771。
+[3] Wolf, T., Debut, L., Sanh, V., Chaumond, J., Delangue, C., Moi, A., … & Rush, A. M. (2019). Huggingface 的变换器：最先进的自然语言处理。ArXiv, abs/1910.03771。
 
-[4] Lhoest, Q., Villanova del Moral, A., Jernite, Y., Thakur, A., von Platen, P., Patil, S., Chaumond, J., Drame, M., Plu, J., Tunstall, L., Davison, J., Šaško, M., Chhablani, G., Malik, B., Brandeis, S., Le Scao, T., Sanh, V., Xu, C., Patry, N., McMillan-Major, A., Schmid, P., Gugger, S., Delangue, C., Matussière, T., Debut, L., Bekman, S., Cistac, P., Goehringer, T., Mustar, V., Lagunas, F., Rush, A., & Wolf, T. (2021). 数据集：自然语言处理的社区库。收录于 2021 年自然语言处理实证方法会议：系统演示 (第 175–184 页)。在线和多米尼加共和国蓬塔卡纳：计算语言学协会。取自 [https://aclanthology.org/2021.emnlp-demo.21](https://aclanthology.org/2021.emnlp-demo.21)
+[4] Lhoest, Q., Villanova del Moral, A., Jernite, Y., Thakur, A., von Platen, P., Patil, S., Chaumond, J., Drame, M., Plu, J., Tunstall, L., Davison, J., Šaško, M., Chhablani, G., Malik, B., Brandeis, S., Le Scao, T., Sanh, V., Xu, C., Patry, N., McMillan-Major, A., Schmid, P., Gugger, S., Delangue, C., Matussière, T., Debut, L., Bekman, S., Cistac, P., Goehringer, T., Mustar, V., Lagunas, F., Rush, A., & Wolf, T. (2021). 数据集：自然语言处理的社区库。收录于 2021 年自然语言处理实证方法会议：系统演示 (第 175–184 页)。在线和多米尼加共和国蓬塔卡纳：计算语言学协会。取自 [`aclanthology.org/2021.emnlp-demo.21`](https://aclanthology.org/2021.emnlp-demo.21)
 
 感谢阅读。*如果您有任何反馈，请随时通过评论此帖子、在* [*LinkedIn*](https://www.linkedin.com/in/shashankkapadia/)*上给我留言，或发送电子邮件 (smhkapadia[at]gmail.com)*
 
 *如果您喜欢这篇文章，请访问我的其他文章*
 
-[](/domain-adaption-fine-tune-pre-trained-nlp-models-a06659ca6668?source=post_page-----4715ed0deede--------------------------------) [## 领域适应：微调预训练的 NLP 模型
+[](/domain-adaption-fine-tune-pre-trained-nlp-models-a06659ca6668?source=post_page-----4715ed0deede--------------------------------) ## 领域适应：微调预训练的 NLP 模型
 
 ### 逐步指南：为任何领域微调预训练的 NLP 模型
 
-towardsdatascience.com](/domain-adaption-fine-tune-pre-trained-nlp-models-a06659ca6668?source=post_page-----4715ed0deede--------------------------------) [](https://medium.com/aimonks/the-evolution-of-natural-language-processing-56ce27916e10?source=post_page-----4715ed0deede--------------------------------) [## 自然语言处理的演变
+towardsdatascience.com [](https://medium.com/aimonks/the-evolution-of-natural-language-processing-56ce27916e10?source=post_page-----4715ed0deede--------------------------------) [## 自然语言处理的演变
 
 ### 语言模型发展的历史视角
 
-medium.com](https://medium.com/aimonks/the-evolution-of-natural-language-processing-56ce27916e10?source=post_page-----4715ed0deede--------------------------------) [](/recommendation-system-in-python-lightfm-61c85010ce17?source=post_page-----4715ed0deede--------------------------------) [## Python 中的推荐系统：LightFM
+medium.com](https://medium.com/aimonks/the-evolution-of-natural-language-processing-56ce27916e10?source=post_page-----4715ed0deede--------------------------------) [](/recommendation-system-in-python-lightfm-61c85010ce17?source=post_page-----4715ed0deede--------------------------------) ## Python 中的推荐系统：LightFM
 
 ### 使用 LightFM 在 Python 中构建推荐系统的逐步指南
 
-towardsdatascience.com](/recommendation-system-in-python-lightfm-61c85010ce17?source=post_page-----4715ed0deede--------------------------------) [](/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0?source=post_page-----4715ed0deede--------------------------------) [## 评估主题模型：潜在狄利克雷分配 (LDA)
+towardsdatascience.com [](/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0?source=post_page-----4715ed0deede--------------------------------) ## 评估主题模型：潜在狄利克雷分配 (LDA)
 
 ### 构建可解释的主题模型的逐步指南
 
-towardsdatascience.com](/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0?source=post_page-----4715ed0deede--------------------------------)
+towardsdatascience.com

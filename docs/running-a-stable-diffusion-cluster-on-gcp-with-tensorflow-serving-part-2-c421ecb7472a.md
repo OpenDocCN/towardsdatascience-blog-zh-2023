@@ -1,30 +1,30 @@
-# 在GCP上使用tensorflow-serving运行稳定扩散集群（第2部分）
+# 在 GCP 上使用 tensorflow-serving 运行稳定扩散集群（第二部分）
 
-> 原文：[https://towardsdatascience.com/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a?source=collection_archive---------9-----------------------#2023-03-14](https://towardsdatascience.com/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a?source=collection_archive---------9-----------------------#2023-03-14)
+> 原文：[`towardsdatascience.com/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a?source=collection_archive---------9-----------------------#2023-03-14`](https://towardsdatascience.com/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a?source=collection_archive---------9-----------------------#2023-03-14)
 
 ## 创建工件并在集群上部署模型
 
-[](https://thushv89.medium.com/?source=post_page-----c421ecb7472a--------------------------------)[![Thushan Ganegedara](../Images/3fabfa37132f7d3a9e7679c3b8d7e061.png)](https://thushv89.medium.com/?source=post_page-----c421ecb7472a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c421ecb7472a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c421ecb7472a--------------------------------) [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----c421ecb7472a--------------------------------)
+[](https://thushv89.medium.com/?source=post_page-----c421ecb7472a--------------------------------)![Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----c421ecb7472a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c421ecb7472a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c421ecb7472a--------------------------------) [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----c421ecb7472a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0b045d5681&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a&user=Thushan+Ganegedara&userId=6f0b045d5681&source=post_page-6f0b045d5681----c421ecb7472a---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c421ecb7472a--------------------------------) ·14分钟阅读·2023年3月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc421ecb7472a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a&user=Thushan+Ganegedara&userId=6f0b045d5681&source=-----c421ecb7472a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0b045d5681&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a&user=Thushan+Ganegedara&userId=6f0b045d5681&source=post_page-6f0b045d5681----c421ecb7472a---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c421ecb7472a--------------------------------) ·14 分钟阅读·2023 年 3 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc421ecb7472a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a&user=Thushan+Ganegedara&userId=6f0b045d5681&source=-----c421ecb7472a---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc421ecb7472a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a&source=-----c421ecb7472a---------------------bookmark_footer-----------)
 
-在 [第1部分](/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-1-4f7a8e2f66df) 中，我们学习了如何使用`terraform`方便地设置和管理基础设施。在这一部分中，我们将继续我们的旅程，将运行中的稳定扩散模型部署到提供的集群上。
+在 第一部分 中，我们学习了如何使用`terraform`方便地设置和管理基础设施。在这一部分中，我们将继续我们的旅程，将运行中的稳定扩散模型部署到提供的集群上。
 
 > **注意**：即使你是免费用户，也可以完整地跟随本教程（只要你还有一些免费层积分）。
 > 
 > 除非另有说明，所有图片均由作者提供
 
-Github: [https://github.com/thushv89/tf-serving-gke](https://github.com/thushv89/tf-serving-gke)
+Github: [`github.com/thushv89/tf-serving-gke`](https://github.com/thushv89/tf-serving-gke)
 
 让我们看看最终结果会是什么。
 
-![](../Images/4f57aa3e47f1793b54600176ea1a7c53.png)
+![](img/4f57aa3e47f1793b54600176ea1a7c53.png)
 
 部署的稳定扩散模型生成的一些图像。
 
@@ -34,7 +34,7 @@ Github: [https://github.com/thushv89/tf-serving-gke](https://github.com/thushv89
 
 构建[稳定扩散模型](https://jalammar.github.io/illustrated-stable-diffusion/)有五个主要组件：
 
-+   分词器——将给定字符串分词为令牌列表（数值ID）。
++   分词器——将给定字符串分词为令牌列表（数值 ID）。
 
 +   文本编码器——接受分词后的文本并生成文本嵌入。
 
@@ -52,15 +52,15 @@ Github: [https://github.com/thushv89/tf-serving-gke](https://github.com/thushv89
 
 ## 存储稳定扩散模型
 
-> 代码：[https://github.com/thushv89/tf-serving-gke/blob/master/notebooks/savedmodel_stable_diffusion.ipynb](https://github.com/thushv89/tf-serving-gke/blob/master/notebooks/savedmodel_stable_diffusion.ipynb)
+> 代码：[`github.com/thushv89/tf-serving-gke/blob/master/notebooks/savedmodel_stable_diffusion.ipynb`](https://github.com/thushv89/tf-serving-gke/blob/master/notebooks/savedmodel_stable_diffusion.ipynb)
 
-为了构建[稳定扩散模型](https://jalammar.github.io/illustrated-stable-diffusion/)，我们将使用`keras_cv`库，该库包括用于图像分类、分割、生成AI等的流行深度学习视觉模型集合。你可以在[这里](https://keras.io/guides/keras_cv/generate_images_with_stable_diffusion/)找到一个教程，讲解如何在`keras_cv`中使用`StableDiffusion`。你可以打开一个笔记本并与模型一起玩以熟悉它。
+为了构建[稳定扩散模型](https://jalammar.github.io/illustrated-stable-diffusion/)，我们将使用`keras_cv`库，该库包括用于图像分类、分割、生成 AI 等的流行深度学习视觉模型集合。你可以在[这里](https://keras.io/guides/keras_cv/generate_images_with_stable_diffusion/)找到一个教程，讲解如何在`keras_cv`中使用`StableDiffusion`。你可以打开一个笔记本并与模型一起玩以熟悉它。
 
-我们的目标是将`StableDiffusion`模型保存为`SavedModel`格式；这是序列化TensorFlow模型的标准方法。做到这一点的一个关键要求是确保所有使用的操作都是TensorFlow图兼容的。不幸的是，情况并非如此。
+我们的目标是将`StableDiffusion`模型保存为`SavedModel`格式；这是序列化 TensorFlow 模型的标准方法。做到这一点的一个关键要求是确保所有使用的操作都是 TensorFlow 图兼容的。不幸的是，情况并非如此。
 
-+   当前版本的模型使用与TensorFlow图不兼容的分词器，因此需要将其从打包模型中提取出来，并在单独的步骤中使用。
++   当前版本的模型使用与 TensorFlow 图不兼容的分词器，因此需要将其从打包模型中提取出来，并在单独的步骤中使用。
 
-+   当前版本使用`predict_on_batch`来生成图像，但TensorFlow图构建不支持此功能。
++   当前版本使用`predict_on_batch`来生成图像，但 TensorFlow 图构建不支持此功能。
 
 ## 修正模型
 
@@ -296,13 +296,13 @@ images = model({
 
 让我们再次欣赏一些模型生成的图像，然后继续下一个部分。
 
-![](../Images/f665634a061194fc8674cc778a31ab4e.png)![](../Images/ce241c77d0e034e567fa853ae515e930.png)
+![](img/f665634a061194fc8674cc778a31ab4e.png)![](img/ce241c77d0e034e567fa853ae515e930.png)
 
 部署模型生成的图像
 
 # 部署和提供模型
 
-> 代码: [https://github.com/thushv89/tf-serving-gke/tree/master/infrastrcture](https://github.com/thushv89/tf-serving-gke/tree/master/infrastrcture)
+> 代码: [`github.com/thushv89/tf-serving-gke/tree/master/infrastrcture`](https://github.com/thushv89/tf-serving-gke/tree/master/infrastrcture)
 
 要部署我们的模型并设置预测服务，我们需要 3 个配置：
 
@@ -373,11 +373,11 @@ spec:
 > 
 > 如果您的节点无法满足您指定的计算资源，Kubernetes 将无法运行 Pods 并抛出错误（例如 PodUnschedulable）。
 > 
-> **注意 2**：你需要特别注意的一个关键参数是`--rest_api_timeout_in_ms=720000`。处理一个请求大约需要250秒，所以我们这里将超时时间设置为大约**三倍**的时间，以应对并行请求时任何排队的请求。如果你将其设置为过小的值，你的请求将在完成之前超时。
+> **注意 2**：你需要特别注意的一个关键参数是`--rest_api_timeout_in_ms=720000`。处理一个请求大约需要 250 秒，所以我们这里将超时时间设置为大约**三倍**的时间，以应对并行请求时任何排队的请求。如果你将其设置为过小的值，你的请求将在完成之前超时。
 
 ## 定义服务
 
-在这里，我们定义了一个`LoadBalancer`类型的服务，我们将通过GCP负载均衡器暴露`stable-diffusion`应用。在这种方法中，你将获得负载均衡器的IP地址，负载均衡器将把流量路由到到达它的副本。用户将向负载均衡器的IP地址发起请求。
+在这里，我们定义了一个`LoadBalancer`类型的服务，我们将通过 GCP 负载均衡器暴露`stable-diffusion`应用。在这种方法中，你将获得负载均衡器的 IP 地址，负载均衡器将把流量路由到到达它的副本。用户将向负载均衡器的 IP 地址发起请求。
 
 ```py
 metadata:
@@ -400,15 +400,15 @@ spec:
 
 ## 自动扩展
 
-我们一直拖延的一个重要话题是：扩展我们的服务。在现实世界中，你可能需要服务数千、数百万甚至数十亿的客户。为了做到这一点，你的服务需要能够根据需求上下扩展集群中的节点/副本数量。幸运的是，GCP提供了多种选项，从完全托管的自动扩展到半托管/完全用户管理的自动扩展。你可以通过[这个视频](https://www.youtube.com/watch?v=cFhch7hozRg)了解更多信息。
+我们一直拖延的一个重要话题是：扩展我们的服务。在现实世界中，你可能需要服务数千、数百万甚至数十亿的客户。为了做到这一点，你的服务需要能够根据需求上下扩展集群中的节点/副本数量。幸运的是，GCP 提供了多种选项，从完全托管的自动扩展到半托管/完全用户管理的自动扩展。你可以通过[这个视频](https://www.youtube.com/watch?v=cFhch7hozRg)了解更多信息。
 
-在这里，我们将使用水平副本自动扩展器（HPA）。水平副本自动扩展器将根据你提供的一些阈值（例如CPU或内存使用情况）扩展副本的数量。这是一个示例。
+在这里，我们将使用水平副本自动扩展器（HPA）。水平副本自动扩展器将根据你提供的一些阈值（例如 CPU 或内存使用情况）扩展副本的数量。这是一个示例。
 
 ```py
 kubectl autoscale deployment stable-diffusion --cpu-percent=60 --min=1 --max=2
 ```
 
-在这里，我们将HPA的最小副本数设置为1，最大副本数设置为2，并要求它在当前副本集的平均CPU超过60%时添加更多副本。
+在这里，我们将 HPA 的最小副本数设置为 1，最大副本数设置为 2，并要求它在当前副本集的平均 CPU 超过 60%时添加更多副本。
 
 ## 应用更改
 
@@ -424,7 +424,7 @@ kubectl apply -f tf-serving/service.yaml
 
 # 从服务模型中预测
 
-为了进行预测，你只需向正确的URL发起一个POST请求，负载中包含模型的输入。
+为了进行预测，你只需向正确的 URL 发起一个 POST 请求，负载中包含模型的输入。
 
 ## 顺序预测
 
@@ -459,11 +459,11 @@ for tokens, negative_tokens in zip(tokens_list, [negative_tokens for _ in range(
 all_images = [predict_rest(data, url) for data in all_data]
 ```
 
-当我运行实验时，这花费了超过1600秒。正如你想象的，这种设置相当低效，无法利用集群的扩展能力。
+当我运行实验时，这花费了超过 1600 秒。正如你想象的，这种设置相当低效，无法利用集群的扩展能力。
 
 ## 并行预测
 
-你可以使用Python的多处理库来进行并行请求，这更贴近真实用户请求的情况。
+你可以使用 Python 的多处理库来进行并行请求，这更贴近真实用户请求的情况。
 
 ```py
 def predict_rest(input_data, url):
@@ -498,17 +498,17 @@ t2 = time.perf_counter()
 print(f"It took {t2-t1}s to complete {n_requests} requests")
 ```
 
-这运行了900秒。因此，通过将集群扩展到最多2个副本，我们实现了约180%的加速。
+这运行了 900 秒。因此，通过将集群扩展到最多 2 个副本，我们实现了约 180%的加速。
 
 > **关于设置超时的说明**
 > 
-> 在设置并行请求时要小心。如果你一次性发送所有并行请求（因为这只有6个请求），**它们可能会超时**。这是因为创建新节点和初始化新副本需要时间。所以如果所有请求瞬间发出，负载均衡器可能甚至没有时间看到第二个节点，最终会尝试将所有请求服务于单个节点。
+> 在设置并行请求时要小心。如果你一次性发送所有并行请求（因为这只有 6 个请求），**它们可能会超时**。这是因为创建新节点和初始化新副本需要时间。所以如果所有请求瞬间发出，负载均衡器可能甚至没有时间看到第二个节点，最终会尝试将所有请求服务于单个节点。
 > 
 > 上述定义的超时时间是从请求接收的时间（即进入`*tensorflow-serving*`队列）开始计算的，而不是从开始处理请求的时间开始计算。因此，如果请求在队列中等待时间过长，也会计入超时。
 
 你可以在 GCP 上监控计算指标，如 CPU 使用率和内存消耗（GCP → Kubernetes Engine → Services & Ingress → 选择你的服务）。
 
-![](../Images/a93688cd809d2f3f3fb3ee6a342fc3c2.png)
+![](img/a93688cd809d2f3f3fb3ee6a342fc3c2.png)
 
 顺序请求的使用图（上）并行请求的使用图（下）
 
@@ -516,11 +516,11 @@ print(f"It took {t2-t1}s to complete {n_requests} requests")
 
 在这个两部分的教程中，我们，
 
-+   使用terraform（一个IaaS工具）设置基础设施，主要包括一个集群和一个节点池（第1部分）
++   使用 terraform（一个 IaaS 工具）设置基础设施，主要包括一个集群和一个节点池（第一部分）
 
-+   部署了一个模型，并创建了一个预测服务来处理用户请求，使用了一个Stable Diffusion模型（第2部分）
++   部署了一个模型，并创建了一个预测服务来处理用户请求，使用了一个 Stable Diffusion 模型（第二部分）
 
-我们设置了这个教程，使得即使是免费用户也能运行。我们设置了一个包含2个节点的集群，并为每个节点创建了1个pod。然后我们进行了顺序和并行预测，发现并行预测带来了约180%的吞吐量提升。
+我们设置了这个教程，使得即使是免费用户也能运行。我们设置了一个包含 2 个节点的集群，并为每个节点创建了 1 个 pod。然后我们进行了顺序和并行预测，发现并行预测带来了约 180%的吞吐量提升。
 
 下一步：
 
@@ -530,33 +530,33 @@ print(f"It took {t2-t1}s to complete {n_requests} requests")
 
 # 附录
 
-## 在pods中进行调试
+## 在 pods 中进行调试
 
 当我尝试启动它时，遇到的一个痛苦问题是遇到了以下砖墙。
 
-![](../Images/4e40e615e61954e8f711aaa3d0525c6d.png)
+![](img/4e40e615e61954e8f711aaa3d0525c6d.png)
 
 在 Workloads → Deployment 部分显示的错误
 
-当我进入部署中的一个pod时，我得到了一个更合理的（仍然不显眼的）错误。但仍然不足以明确指出到底哪里出了问题。
+当我进入部署中的一个 pod 时，我得到了一个更合理的（仍然不显眼的）错误。但仍然不足以明确指出到底哪里出了问题。
 
-![](../Images/d6c31012d4b7079d9bf28cfcbf84b2c5.png)
+![](img/d6c31012d4b7079d9bf28cfcbf84b2c5.png)
 
-单个pod产生的事件
+单个 pod 产生的事件
 
-所以我必须找到一种方法来微观地调查根本原因。为此，我首先登录到相关pod的容器中，
+所以我必须找到一种方法来微观地调查根本原因。为此，我首先登录到相关 pod 的容器中，
 
 ```py
 kubectl exec --stdin --tty <container name> -- /bin/bash
 ```
 
-一旦我进入，就可以利用 Linux 所赖以生存的“[一切皆文件](https://en.wikipedia.org/wiki/Everything_is_a_file)”这一范式。换句话说，你可以简单地访问一个文件以查看进程的输出/错误流。例如，在我的情况下，`tensorflow-serving` 进程的PID是7，因此，`/proc/7/fd/2` 给出了该进程的错误流。
+一旦我进入，就可以利用 Linux 所赖以生存的“[一切皆文件](https://en.wikipedia.org/wiki/Everything_is_a_file)”这一范式。换句话说，你可以简单地访问一个文件以查看进程的输出/错误流。例如，在我的情况下，`tensorflow-serving` 进程的 PID 是 7，因此，`/proc/7/fd/2` 给出了该进程的错误流。
 
 ```py
 tail -n 10  /proc/7/fd/2
 ```
 
-在这里，我能够准确地看到为什么这没有启动。这是因为容器没有必要的权限来访问`MODEL_PATH`中指定的GCS桶。
+在这里，我能够准确地看到为什么这没有启动。这是因为容器没有必要的权限来访问`MODEL_PATH`中指定的 GCS 桶。
 
 ## 使用`tf.print`进行调试
 
@@ -572,4 +572,4 @@ tail -n 10  /proc/7/fd/2
 
 # 致谢
 
-我想感谢[ML Developer Programs](https://developers.google.com/community/experts)及其团队提供的GCP积分，使这次教程得以成功。
+我想感谢[ML Developer Programs](https://developers.google.com/community/experts)及其团队提供的 GCP 积分，使这次教程得以成功。

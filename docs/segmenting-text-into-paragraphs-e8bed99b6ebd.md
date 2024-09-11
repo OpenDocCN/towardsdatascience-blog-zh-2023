@@ -1,22 +1,22 @@
 # 将文本划分为段落
 
-> 原文：[https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd?source=collection_archive---------6-----------------------#2023-02-25](https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd?source=collection_archive---------6-----------------------#2023-02-25)
+> 原文：[`towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd?source=collection_archive---------6-----------------------#2023-02-25`](https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd?source=collection_archive---------6-----------------------#2023-02-25)
 
-## 基于监督学习的统计NLP方法
+## 基于监督学习的统计 NLP 方法
 
-[](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Arun Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)
+[](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)![Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-paragraphs-e8bed99b6ebd&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----e8bed99b6ebd---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------) ·11分钟阅读·2023年2月25日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-paragraphs-e8bed99b6ebd&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----e8bed99b6ebd---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------) ·11 分钟阅读·2023 年 2 月 25 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe8bed99b6ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-paragraphs-e8bed99b6ebd&source=-----e8bed99b6ebd---------------------bookmark_footer-----------)![](../Images/8e2618a1773575c3a2cb635554d5915f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe8bed99b6ebd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsegmenting-text-into-paragraphs-e8bed99b6ebd&source=-----e8bed99b6ebd---------------------bookmark_footer-----------)![](img/8e2618a1773575c3a2cb635554d5915f.png)
 
 图片由 [Gordon Johnson](https://pixabay.com/users/gdj-1086657/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=4385160) 提供，来源于 [Pixabay](https://pixabay.com/)
 
-在之前的一篇Medium文章中，我们讨论了将文本划分为句子的问题 [3]。现在我们来看一个相关的问题：将文本划分为段落。
+在之前的一篇 Medium 文章中，我们讨论了将文本划分为句子的问题 [3]。现在我们来看一个相关的问题：将文本划分为段落。
 
 乍一看，这两个问题似乎本质上是相同的，只是划分的层级不同。实际上，将文本划分为段落的问题要有趣得多。
 

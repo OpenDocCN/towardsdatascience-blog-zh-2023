@@ -1,20 +1,20 @@
 # 一个高效的推荐系统，无需冷启动问题
 
-> 原文：[https://towardsdatascience.com/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b?source=collection_archive---------11-----------------------#2023-01-31](https://towardsdatascience.com/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b?source=collection_archive---------11-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b?source=collection_archive---------11-----------------------#2023-01-31`](https://towardsdatascience.com/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b?source=collection_archive---------11-----------------------#2023-01-31)
 
 ## [推荐系统](https://medium.com/tag/recommendation-system)
 
 ## 当协作和基于内容的推荐系统融合时
 
-[](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)[![Dr. Robert Kübler](../Images/3b8d8b88f76c0c43d9c305e3885e7ab9.png)](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)
+[](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)![Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----69bf2f0f0b9b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------) ·11分钟阅读·2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69bf2f0f0b9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=-----69bf2f0f0b9b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----69bf2f0f0b9b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------) ·11 分钟阅读·2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69bf2f0f0b9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=-----69bf2f0f0b9b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F69bf2f0f0b9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b&source=-----69bf2f0f0b9b---------------------bookmark_footer-----------)![](../Images/c0e674a93dd06ef0ac51647be57bbd22.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F69bf2f0f0b9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b&source=-----69bf2f0f0b9b---------------------bookmark_footer-----------)![](img/c0e674a93dd06ef0ac51647be57bbd22.png)
 
 照片由 [Ivan Aleksic](https://unsplash.com/@ivalex?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

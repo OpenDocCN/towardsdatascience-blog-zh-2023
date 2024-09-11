@@ -1,18 +1,18 @@
 # 用户流失预测
 
-> 原文：[https://towardsdatascience.com/user-churn-prediction-d43c53e6f6df?source=collection_archive---------4-----------------------#2023-12-23](https://towardsdatascience.com/user-churn-prediction-d43c53e6f6df?source=collection_archive---------4-----------------------#2023-12-23)
+> 原文：[`towardsdatascience.com/user-churn-prediction-d43c53e6f6df?source=collection_archive---------4-----------------------#2023-12-23`](https://towardsdatascience.com/user-churn-prediction-d43c53e6f6df?source=collection_archive---------4-----------------------#2023-12-23)
 
 ## 现代数据仓库和机器学习
 
-[](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)[![💡Mike Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)
+[](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)![💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------) [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe06a48b3dd48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-churn-prediction-d43c53e6f6df&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=post_page-e06a48b3dd48----d43c53e6f6df---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------) ·12分钟阅读·2023年12月23日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe06a48b3dd48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-churn-prediction-d43c53e6f6df&user=%F0%9F%92%A1Mike+Shakhomirov&userId=e06a48b3dd48&source=post_page-e06a48b3dd48----d43c53e6f6df---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------) ·12 分钟阅读·2023 年 12 月 23 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd43c53e6f6df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-churn-prediction-d43c53e6f6df&source=-----d43c53e6f6df---------------------bookmark_footer-----------)![](../Images/0a9d2bfb8a03495210b04f4972d48852.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd43c53e6f6df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuser-churn-prediction-d43c53e6f6df&source=-----d43c53e6f6df---------------------bookmark_footer-----------)![](img/0a9d2bfb8a03495210b04f4972d48852.png)
 
 照片由[马丁·亚当斯](https://unsplash.com/@martinadams?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,11 +20,11 @@
 
 在我之前的一篇文章中，我写到了现代数据仓库[1]。
 
-[](/modern-data-warehousing-2b1b0486ce4a?source=post_page-----d43c53e6f6df--------------------------------) [## 现代数据仓库
+[](/modern-data-warehousing-2b1b0486ce4a?source=post_page-----d43c53e6f6df--------------------------------) ## 现代数据仓库
 
 ### 先进的数据平台设计
 
-towardsdatascience.com](/modern-data-warehousing-2b1b0486ce4a?source=post_page-----d43c53e6f6df--------------------------------)
+towardsdatascience.com
 
 现代数据仓库具有许多有用的功能和组件，使其与其他数据平台类型有所不同[2]。
 

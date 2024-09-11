@@ -1,18 +1,18 @@
 # 使用 NLP 进行线程摘要
 
-> 原文：[https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4?source=collection_archive---------4-----------------------#2023-01-07](https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4?source=collection_archive---------4-----------------------#2023-01-07)
+> 原文：[`towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4?source=collection_archive---------4-----------------------#2023-01-07`](https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4?source=collection_archive---------4-----------------------#2023-01-07)
 
 ## 使用 POS 标记、NER 和情感分析进行提取式摘要
 
-[](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Arun Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
+[](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)![Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------) [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthread-summarization-using-nlp-d5bed9bf0eb4&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----d5bed9bf0eb4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------) ·13 min read·2023年1月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd5bed9bf0eb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthread-summarization-using-nlp-d5bed9bf0eb4&user=Arun+Jagota&userId=ef9ed921edad&source=-----d5bed9bf0eb4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef9ed921edad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthread-summarization-using-nlp-d5bed9bf0eb4&user=Arun+Jagota&userId=ef9ed921edad&source=post_page-ef9ed921edad----d5bed9bf0eb4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------) ·13 min read·2023 年 1 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd5bed9bf0eb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthread-summarization-using-nlp-d5bed9bf0eb4&user=Arun+Jagota&userId=ef9ed921edad&source=-----d5bed9bf0eb4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd5bed9bf0eb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthread-summarization-using-nlp-d5bed9bf0eb4&source=-----d5bed9bf0eb4---------------------bookmark_footer-----------)![](../Images/2df0e0ffea8820634c8b6f6285b32460.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd5bed9bf0eb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthread-summarization-using-nlp-d5bed9bf0eb4&source=-----d5bed9bf0eb4---------------------bookmark_footer-----------)![](img/2df0e0ffea8820634c8b6f6285b32460.png)
 
 图片由 [Holger](https://pixabay.com/users/hodihu-84128/) 提供，来源于 [Pixabay](https://pixabay.com/)
 

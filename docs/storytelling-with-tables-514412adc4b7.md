@@ -1,18 +1,18 @@
 # 使用表格讲故事
 
-> 原文：[https://towardsdatascience.com/storytelling-with-tables-514412adc4b7?source=collection_archive---------25-----------------------#2023-01-10](https://towardsdatascience.com/storytelling-with-tables-514412adc4b7?source=collection_archive---------25-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/storytelling-with-tables-514412adc4b7?source=collection_archive---------25-----------------------#2023-01-10`](https://towardsdatascience.com/storytelling-with-tables-514412adc4b7?source=collection_archive---------25-----------------------#2023-01-10)
 
 ## **第二部分：美观表格的建议指南**
 
-[](https://medium.com/@dar.wtz?source=post_page-----514412adc4b7--------------------------------)[![Darío Weitz](../Images/28efa942b4c5bd2763d58c44584cf583.png)](https://medium.com/@dar.wtz?source=post_page-----514412adc4b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----514412adc4b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----514412adc4b7--------------------------------) [Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----514412adc4b7--------------------------------)
+[](https://medium.com/@dar.wtz?source=post_page-----514412adc4b7--------------------------------)![Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----514412adc4b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----514412adc4b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----514412adc4b7--------------------------------) [Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----514412adc4b7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fb26b001728&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-tables-514412adc4b7&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=post_page-7fb26b001728----514412adc4b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----514412adc4b7--------------------------------) ·8分钟阅读·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F514412adc4b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-tables-514412adc4b7&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=-----514412adc4b7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fb26b001728&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-tables-514412adc4b7&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=post_page-7fb26b001728----514412adc4b7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----514412adc4b7--------------------------------) ·8 分钟阅读·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F514412adc4b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-tables-514412adc4b7&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=-----514412adc4b7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F514412adc4b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-tables-514412adc4b7&source=-----514412adc4b7---------------------bookmark_footer-----------)![](../Images/7f4f56b40523f64e5b71774ac4d4118d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F514412adc4b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-tables-514412adc4b7&source=-----514412adc4b7---------------------bookmark_footer-----------)![](img/7f4f56b40523f64e5b71774ac4d4118d.png)
 
 图片由 [Joao Viegas](https://unsplash.com/@joaovgs?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

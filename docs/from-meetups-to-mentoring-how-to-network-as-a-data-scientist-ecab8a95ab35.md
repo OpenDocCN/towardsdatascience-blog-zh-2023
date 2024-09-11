@@ -1,32 +1,32 @@
 # 从聚会到辅导：如何作为数据科学家进行网络建设
 
-> 原文：[https://towardsdatascience.com/from-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35?source=collection_archive---------7-----------------------#2023-08-03](https://towardsdatascience.com/from-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35?source=collection_archive---------7-----------------------#2023-08-03)
+> 原文：[`towardsdatascience.com/from-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35?source=collection_archive---------7-----------------------#2023-08-03`](https://towardsdatascience.com/from-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35?source=collection_archive---------7-----------------------#2023-08-03)
 
 ## 针对有志于、初级及高级数据科学家的五个技巧
 
-[](https://medium.com/@ebbeberge?source=post_page-----ecab8a95ab35--------------------------------)[![Eirik Berge, PhD](../Images/7507374e75980fd0c1056af3cd299eaa.png)](https://medium.com/@ebbeberge?source=post_page-----ecab8a95ab35--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ecab8a95ab35--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ecab8a95ab35--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----ecab8a95ab35--------------------------------)
+[](https://medium.com/@ebbeberge?source=post_page-----ecab8a95ab35--------------------------------)![Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----ecab8a95ab35--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ecab8a95ab35--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecab8a95ab35--------------------------------) [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----ecab8a95ab35--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7722f981eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=post_page-7722f981eb----ecab8a95ab35---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecab8a95ab35--------------------------------) ·15分钟阅读·2023年8月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fecab8a95ab35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=-----ecab8a95ab35---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7722f981eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=post_page-7722f981eb----ecab8a95ab35---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecab8a95ab35--------------------------------) ·15 分钟阅读·2023 年 8 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fecab8a95ab35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35&user=Eirik+Berge%2C+PhD&userId=7722f981eb&source=-----ecab8a95ab35---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fecab8a95ab35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35&source=-----ecab8a95ab35---------------------bookmark_footer-----------)![](../Images/e8cb672d412a52f23086feba63c3ed93.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fecab8a95ab35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-meetups-to-mentoring-how-to-network-as-a-data-scientist-ecab8a95ab35&source=-----ecab8a95ab35---------------------bookmark_footer-----------)![](img/e8cb672d412a52f23086feba63c3ed93.png)
 
 图片由 [Nik](https://unsplash.com/@helloimnik?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 概述
 
-1.  [介绍](#a6cb)
+1.  介绍
 
-1.  [有志数据科学家的技巧](#f20a)
+1.  有志数据科学家的技巧
 
-1.  [初级数据科学家的技巧](#4f71)
+1.  初级数据科学家的技巧
 
-1.  [高级数据科学家的技巧](#0039)
+1.  高级数据科学家的技巧
 
-1.  [总结](#c801)
+1.  总结
 
 # 介绍
 

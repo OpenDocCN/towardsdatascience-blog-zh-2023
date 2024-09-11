@@ -1,24 +1,24 @@
 # 激励自注意力
 
-> 原文：[https://towardsdatascience.com/motivating-self-attention-aead09a02f70?source=collection_archive---------2-----------------------#2023-06-10](https://towardsdatascience.com/motivating-self-attention-aead09a02f70?source=collection_archive---------2-----------------------#2023-06-10)
+> 原文：[`towardsdatascience.com/motivating-self-attention-aead09a02f70?source=collection_archive---------2-----------------------#2023-06-10`](https://towardsdatascience.com/motivating-self-attention-aead09a02f70?source=collection_archive---------2-----------------------#2023-06-10)
 
 ## 为什么我们需要查询、键和值？
 
-[](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)[![Ryan Xu](../Images/246c35755c45386273206ff44b31c691.png)](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------) [Ryan Xu](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)
+[](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)![Ryan Xu](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------) [Ryan Xu](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff9d266441dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&user=Ryan+Xu&userId=ff9d266441dd&source=post_page-ff9d266441dd----aead09a02f70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------) ·9分钟阅读·2023年6月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faead09a02f70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&user=Ryan+Xu&userId=ff9d266441dd&source=-----aead09a02f70---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff9d266441dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&user=Ryan+Xu&userId=ff9d266441dd&source=post_page-ff9d266441dd----aead09a02f70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------) ·9 分钟阅读·2023 年 6 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faead09a02f70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&user=Ryan+Xu&userId=ff9d266441dd&source=-----aead09a02f70---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faead09a02f70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&source=-----aead09a02f70---------------------bookmark_footer-----------)![](../Images/190f2dea8254b6d693ca7a50fdecd509.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faead09a02f70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&source=-----aead09a02f70---------------------bookmark_footer-----------)![](img/190f2dea8254b6d693ca7a50fdecd509.png)
 
 …自注意力？
 
 本文的目标是提供一个解释，解释不是*自注意力机制如何*在变压器中工作，而是*为什么*它是这样设计的。
 
-我们将从讨论我们希望语言理解模型具备的能力开始，接着进行自注意力机制的互动构建。在这个过程中，我们将发现为什么我们需要查询、键和值来以自然的方式建模单词之间的关系，并且QKV注意力是实现这一点的最简单方法之一。
+我们将从讨论我们希望语言理解模型具备的能力开始，接着进行自注意力机制的互动构建。在这个过程中，我们将发现为什么我们需要查询、键和值来以自然的方式建模单词之间的关系，并且 QKV 注意力是实现这一点的最简单方法之一。
 
 本文对那些曾经接触过变压器和自注意力的读者将最有启发性，但应该对任何熟悉一些基础线性代数的人也能理解。对于那些希望更好地理解变压器的人，我会很高兴地推荐你们阅读[这篇博客文章](http://jalammar.github.io/illustrated-transformer/)。
 
@@ -28,21 +28,21 @@
 
 所以，这里有一个我们想要理解的句子：
 
-![](../Images/703ccfa08b74c3079cbcd25a9a1c939f.png)
+![](img/703ccfa08b74c3079cbcd25a9a1c939f.png)
 
 让我们稍微思考一下我们如何理解这个句子。
 
-+   *Evan的狗Riley…* 从中我们知道Riley是狗的名字，而Evan拥有Riley。
++   *Evan 的狗 Riley…* 从中我们知道 Riley 是狗的名字，而 Evan 拥有 Riley。
 
-+   *…如此超级…* 简单来说，“hyper”指的是狗Riley，影响了我们对Riley的印象。
++   *…如此超级…* 简单来说，“hyper”指的是狗 Riley，影响了我们对 Riley 的印象。
 
-+   *…她从不停下* 这很有趣。“她”指的是Riley，因为狗是第一句话的主语。这告诉我们，Evan的狗Riley实际上是母狗，这在之前由于狗名“Riley”常用性别中性而模糊不清。“从不停下”是一组稍复杂的词汇，进一步阐述了“hyper”。
++   *…她从不停下* 这很有趣。“她”指的是 Riley，因为狗是第一句话的主语。这告诉我们，Evan 的狗 Riley 实际上是母狗，这在之前由于狗名“Riley”常用性别中性而模糊不清。“从不停下”是一组稍复杂的词汇，进一步阐述了“hyper”。
 
 关键是要建立对句子的理解，我们不断考虑词与词之间的关系来增强它们的含义。
 
 在机器学习社区中，通过另一个词 **b** 的存在来增强词 **a** 的含义的过程被口语化地称为“**a** 关注 **b**”，即词 **a** 关注词 **b**。
 
-![](../Images/e71804c1195ba214ee007bf1b63fb1d4.png)
+![](img/e71804c1195ba214ee007bf1b63fb1d4.png)
 
 一个箭头 **a** => **b** 表示“**a** 关注 **b**”
 
@@ -52,11 +52,11 @@
 
 *接下来，我将提出一些斜体的问题。我强烈鼓励读者在继续之前停下来考虑这些问题一分钟。*
 
-## 第1部分
+## 第一部分
 
 现在，让我们关注词“dog”和“Riley”之间的关系。词“dog”强烈影响词“Riley”的含义，因此我们希望“Riley”能够关注“dog”，因此这里的目标是以某种方式更新词“Riley”的含义。
 
-![](../Images/ece19bb21c5d776d23dc696aa847314c.png)
+![](img/ece19bb21c5d776d23dc696aa847314c.png)
 
 为了使这个例子更具体，假设我们以每个词的向量表示开始，每个向量的长度为**n**，基于对词语的无上下文理解。我们将假设这个向量空间相当有序，即在空间中，意义更相似的词与更接近的向量相关联。
 
@@ -137,13 +137,13 @@ v_Riley = relevances · values
 
 *如果在本文中有任何一点我* ***非常非常*** *认为你应该停下来思考，那就是这里。即使是那些认为自己完全理解注意力机制的人。我们的方法有什么问题？*
 
-![](../Images/7b84bc5ca1fe623192e96921b64083c5.png)
+![](img/7b84bc5ca1fe623192e96921b64083c5.png)
 
 一个提示
 
 单词之间的关系本质上是非对称的！“Riley”关注“dog”的方式与“dog”关注“Riley”的方式不同。“Riley”指的是一只狗，而不是人类，这比狗的名字更重要。
 
-相比之下，点积是对称操作，这意味着在我们当前的设置中，如果a关注b，那么b也会同样强烈地关注a！实际上，这有些不准确，因为我们在规范化相关性分数，但重点是单词应该有机会以非对称的方式进行关注，即使其他标记保持不变。
+相比之下，点积是对称操作，这意味着在我们当前的设置中，如果 a 关注 b，那么 b 也会同样强烈地关注 a！实际上，这有些不准确，因为我们在规范化相关性分数，但重点是单词应该有机会以非对称的方式进行关注，即使其他标记保持不变。
 
 ## 第三部分
 
@@ -191,8 +191,8 @@ new_V = normalized_relevances @ V
 
 +   从技术上讲，在这个整体设置中，每个词都不知道其他词在句子中的位置。自注意力实际上是一种集合操作。因此，我们需要嵌入位置信息，通常是通过将位置向量添加到嵌入向量来完成的。这并不是完全简单的，因为 transformers 应该允许任意长度的序列。具体如何在实践中运作超出了本文的范围。
 
-+   单个自注意力层只能表示两个词之间的关系。但是通过组合自注意力层，我们可以建模更高级别的词之间关系。由于自注意力层的输出与原始序列的长度相同，这意味着我们可以对它们进行组合。实际上，transformer 模块就是由自注意力层和逐位置前馈模块组成。堆叠几百个这样的模块，花费几百万美元，你就拥有了一个LLM！:)
++   单个自注意力层只能表示两个词之间的关系。但是通过组合自注意力层，我们可以建模更高级别的词之间关系。由于自注意力层的输出与原始序列的长度相同，这意味着我们可以对它们进行组合。实际上，transformer 模块就是由自注意力层和逐位置前馈模块组成。堆叠几百个这样的模块，花费几百万美元，你就拥有了一个 LLM！:)
 
-![](../Images/fc2b1b4d79199119a9f07e5f7fc59fd8.png)
+![](img/fc2b1b4d79199119a9f07e5f7fc59fd8.png)
 
 OpenAI 显示出理解第二部分需要 512 个 transformer 模块。

@@ -1,18 +1,18 @@
 # 数据科学中的 Docker
 
-> 原文：[https://towardsdatascience.com/from-chaos-to-consistency-docker-for-data-scientists-240372adff18?source=collection_archive---------12-----------------------#2023-05-24](https://towardsdatascience.com/from-chaos-to-consistency-docker-for-data-scientists-240372adff18?source=collection_archive---------12-----------------------#2023-05-24)
+> 原文：[`towardsdatascience.com/from-chaos-to-consistency-docker-for-data-scientists-240372adff18?source=collection_archive---------12-----------------------#2023-05-24`](https://towardsdatascience.com/from-chaos-to-consistency-docker-for-data-scientists-240372adff18?source=collection_archive---------12-----------------------#2023-05-24)
 
 ## 对数据科学家的 Docker 介绍和应用
 
-[](https://medium.com/@egorhowell?source=post_page-----240372adff18--------------------------------)[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----240372adff18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----240372adff18--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----240372adff18--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----240372adff18--------------------------------)
+[](https://medium.com/@egorhowell?source=post_page-----240372adff18--------------------------------)![Egor Howell](https://medium.com/@egorhowell?source=post_page-----240372adff18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----240372adff18--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----240372adff18--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----240372adff18--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-consistency-docker-for-data-scientists-240372adff18&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----240372adff18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----240372adff18--------------------------------) ·7分钟阅读·2023年5月24日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-consistency-docker-for-data-scientists-240372adff18&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----240372adff18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----240372adff18--------------------------------) ·7 分钟阅读·2023 年 5 月 24 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F240372adff18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-consistency-docker-for-data-scientists-240372adff18&source=-----240372adff18---------------------bookmark_footer-----------)![](../Images/b9ddc7ca1478ae7fd299d341e9610337.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F240372adff18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-chaos-to-consistency-docker-for-data-scientists-240372adff18&source=-----240372adff18---------------------bookmark_footer-----------)![](img/b9ddc7ca1478ae7fd299d341e9610337.png)
 
 照片由 [Ian Taylor](https://unsplash.com/@carrier_lost?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上拍摄
 

@@ -1,18 +1,18 @@
 # *有抱负的统计学家的随机变量入门*
 
-> 原文：[https://towardsdatascience.com/the-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a?source=collection_archive---------7-----------------------#2023-05-12](https://towardsdatascience.com/the-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a?source=collection_archive---------7-----------------------#2023-05-12)
+> 原文：[`towardsdatascience.com/the-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a?source=collection_archive---------7-----------------------#2023-05-12`](https://towardsdatascience.com/the-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a?source=collection_archive---------7-----------------------#2023-05-12)
 
-![](../Images/dcb6c0069cd80d228923f82aebc9de2f.png)
+![](img/dcb6c0069cd80d228923f82aebc9de2f.png)
 
 [Pixabay](https://pixabay.com/photos/candy-sweets-sugar-confectionery-1924595/) ([许可证](https://pixabay.com/service/terms/))
 
 ## 当谈到大喊“惊喜！”时，宇宙从不感到厌倦。
 
-[](https://timeseriesreasoning.medium.com/?source=post_page-----7b26a057a89a--------------------------------)[![Sachin Date](../Images/bd023298b414caf88f79b00ef032d065.png)](https://timeseriesreasoning.medium.com/?source=post_page-----7b26a057a89a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b26a057a89a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b26a057a89a--------------------------------) [Sachin Date](https://timeseriesreasoning.medium.com/?source=post_page-----7b26a057a89a--------------------------------)
+[](https://timeseriesreasoning.medium.com/?source=post_page-----7b26a057a89a--------------------------------)![Sachin Date](https://timeseriesreasoning.medium.com/?source=post_page-----7b26a057a89a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b26a057a89a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b26a057a89a--------------------------------) [Sachin Date](https://timeseriesreasoning.medium.com/?source=post_page-----7b26a057a89a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb75b5b1730f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a&user=Sachin+Date&userId=b75b5b1730f3&source=post_page-b75b5b1730f3----7b26a057a89a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b26a057a89a--------------------------------) ·31分钟阅读·2023年5月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b26a057a89a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a&user=Sachin+Date&userId=b75b5b1730f3&source=-----7b26a057a89a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb75b5b1730f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a&user=Sachin+Date&userId=b75b5b1730f3&source=post_page-b75b5b1730f3----7b26a057a89a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b26a057a89a--------------------------------) ·31 分钟阅读·2023 年 5 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b26a057a89a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-aspiring-statisticans-introduction-to-random-variables-7b26a057a89a&user=Sachin+Date&userId=b75b5b1730f3&source=-----7b26a057a89a---------------------clap_footer-----------)
 
 --
 

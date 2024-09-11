@@ -1,40 +1,40 @@
 # 生成性 AI 对社会工作学生的介绍：第二部分
 
-> 原文：[https://towardsdatascience.com/generative-ai-for-social-work-students-part-ii-3175f6870f09?source=collection_archive---------8-----------------------#2023-04-27](https://towardsdatascience.com/generative-ai-for-social-work-students-part-ii-3175f6870f09?source=collection_archive---------8-----------------------#2023-04-27)
+> 原文：[`towardsdatascience.com/generative-ai-for-social-work-students-part-ii-3175f6870f09?source=collection_archive---------8-----------------------#2023-04-27`](https://towardsdatascience.com/generative-ai-for-social-work-students-part-ii-3175f6870f09?source=collection_archive---------8-----------------------#2023-04-27)
 
 ## 必备的知识、能力和 AI 实践
 
-[](https://b-r-i-a-n.medium.com/?source=post_page-----3175f6870f09--------------------------------)[![Brian Perron, PhD](../Images/8f9056642a4fd5e334a92dded0278961.png)](https://b-r-i-a-n.medium.com/?source=post_page-----3175f6870f09--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3175f6870f09--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3175f6870f09--------------------------------) [Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----3175f6870f09--------------------------------)
+[](https://b-r-i-a-n.medium.com/?source=post_page-----3175f6870f09--------------------------------)![Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----3175f6870f09--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3175f6870f09--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3175f6870f09--------------------------------) [Brian Perron, PhD](https://b-r-i-a-n.medium.com/?source=post_page-----3175f6870f09--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbee210a2a20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-ii-3175f6870f09&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=post_page-bee210a2a20----3175f6870f09---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3175f6870f09--------------------------------) · 6 min read · 2023年4月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3175f6870f09&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-ii-3175f6870f09&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=-----3175f6870f09---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbee210a2a20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-ii-3175f6870f09&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=post_page-bee210a2a20----3175f6870f09---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3175f6870f09--------------------------------) · 6 min read · 2023 年 4 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3175f6870f09&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-ii-3175f6870f09&user=Brian+Perron%2C+PhD&userId=bee210a2a20&source=-----3175f6870f09---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3175f6870f09&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-ii-3175f6870f09&source=-----3175f6870f09---------------------bookmark_footer-----------)![](../Images/b73f817a98a2e1162dd7663f843cc806.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3175f6870f09&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerative-ai-for-social-work-students-part-ii-3175f6870f09&source=-----3175f6870f09---------------------bookmark_footer-----------)![](img/b73f817a98a2e1162dd7663f843cc806.png)
 
 图片由作者使用 Midjourney 创作。
 
 本文是介绍生成性 AI 给社会工作学生的系列文章中的第二篇。我建议从第一篇文章开始阅读，你可以在这里找到：
 
-[](/generative-ai-for-social-work-students-part-i-1f19ee9cbbe1?source=post_page-----3175f6870f09--------------------------------) [## 生成性 AI 对社会工作学生的介绍：第一部分
+[](/generative-ai-for-social-work-students-part-i-1f19ee9cbbe1?source=post_page-----3175f6870f09--------------------------------) ## 生成性 AI 对社会工作学生的介绍：第一部分
 
 ### 一个范式转变
 
-towardsdatascience.com](/generative-ai-for-social-work-students-part-i-1f19ee9cbbe1?source=post_page-----3175f6870f09--------------------------------)
+towardsdatascience.com
 
-精通像ChatGPT这样的AI工具为MSW学生提供了一系列职业优势。对这些技术的熟练掌握简化了工作流程，提高了如案例管理、数据分析和资源分配等任务的效率和准确性。随着技术在社会工作实践中的日益融入，组织将更看重能够将传统技能与AI的创新能力无缝结合的专业人士。掌握AI工具体现了对跟进技术进步的承诺，使学生在潜在雇主面前更具市场竞争力。
+精通像 ChatGPT 这样的 AI 工具为 MSW 学生提供了一系列职业优势。对这些技术的熟练掌握简化了工作流程，提高了如案例管理、数据分析和资源分配等任务的效率和准确性。随着技术在社会工作实践中的日益融入，组织将更看重能够将传统技能与 AI 的创新能力无缝结合的专业人士。掌握 AI 工具体现了对跟进技术进步的承诺，使学生在潜在雇主面前更具市场竞争力。
 
-AI改变社会工作实践的能力取决于从业人员对技术的扎实掌握，包括理解AI模型的功能、其优缺点以及可能引入的潜在问题和偏见。尽管ChatGPT公开使用还不到六个月，我已经观察到学生中存在一些问题。这些问题有些源于对自身能力的过度自信，同时缺乏有效使用这些强大工具的必要技能，这是一种被称为达宁-克鲁格效应的现象。
+AI 改变社会工作实践的能力取决于从业人员对技术的扎实掌握，包括理解 AI 模型的功能、其优缺点以及可能引入的潜在问题和偏见。尽管 ChatGPT 公开使用还不到六个月，我已经观察到学生中存在一些问题。这些问题有些源于对自身能力的过度自信，同时缺乏有效使用这些强大工具的必要技能，这是一种被称为达宁-克鲁格效应的现象。
 
-由于社会工作课程尚未完全纳入这项技术，本文作为一个过渡措施，提供了有关生成性AI的基本知识、技能和实践的指导。虽然这不是一个全面的路线图，但本文提供了一个起点，随着技术的发展不断演变。通过在ChatGPT等AI应用中提高能力，社会工作学生可以为开发新颖、前沿的干预措施和实践做出贡献，定位自己为思想领袖。这种专业知识可以为职业发展、专业认可和与多学科团队的合作开辟新的机会，从而为个人和社区带来持久的积极变化。
+由于社会工作课程尚未完全纳入这项技术，本文作为一个过渡措施，提供了有关生成性 AI 的基本知识、技能和实践的指导。虽然这不是一个全面的路线图，但本文提供了一个起点，随着技术的发展不断演变。通过在 ChatGPT 等 AI 应用中提高能力，社会工作学生可以为开发新颖、前沿的干预措施和实践做出贡献，定位自己为思想领袖。这种专业知识可以为职业发展、专业认可和与多学科团队的合作开辟新的机会，从而为个人和社区带来持久的积极变化。
 
-鉴于AI技术的快速发展和丰富的可用资源，我避免提供具体的阅读列表，因为它会迅速过时。相反，我提供这些领域作为一般的能力范畴，您应持续关注这些领域，以获取最新的资源。
+鉴于 AI 技术的快速发展和丰富的可用资源，我避免提供具体的阅读列表，因为它会迅速过时。相反，我提供这些领域作为一般的能力范畴，您应持续关注这些领域，以获取最新的资源。
 
 ## ***了解人工智能的工作原理***
 
-在当今快速发展的技术环境中，社会工作学生必须对人工智能（AI），特别是像ChatGPT这样的大型语言模型，建立一定的理解。随着AI工具在社会工作实践中变得越来越普及，具备这一领域专业知识的从业者能够对其使用做出明智的决策。这些知识帮助社会工作者在将其内容专业知识和人际交往技巧融入的同时，负责任地和伦理地使用AI。
+在当今快速发展的技术环境中，社会工作学生必须对人工智能（AI），特别是像 ChatGPT 这样的大型语言模型，建立一定的理解。随着 AI 工具在社会工作实践中变得越来越普及，具备这一领域专业知识的从业者能够对其使用做出明智的决策。这些知识帮助社会工作者在将其内容专业知识和人际交往技巧融入的同时，负责任地和伦理地使用 AI。
 
 了解人工智能的一个关键组成部分是知晓其基本训练过程和数据，这有助于你在使用人工智能生成内容时做出明智的决策。这些知识还使你能够识别潜在的不准确性、偏见和过时的信息。评估人工智能模型在特定用例中的表现至关重要。对人工智能模型的失望往往源于将其用于未经过培训的任务，如研究高度专业化的话题。
 
@@ -72,18 +72,18 @@ AI改变社会工作实践的能力取决于从业人员对技术的扎实掌握
 
 ## ***设计思维***
 
-设计思维是一种方法，强调以人为中心的复杂问题解决方法。这种方法注重同理心、合作和实验，以理解相关社区的独特需求和背景。通过将设计思维原则融入生成式AI工具，我们可以创建更有效和量身定制的AI驱动解决方案，以应对复杂的社会问题。
+设计思维是一种方法，强调以人为中心的复杂问题解决方法。这种方法注重同理心、合作和实验，以理解相关社区的独特需求和背景。通过将设计思维原则融入生成式 AI 工具，我们可以创建更有效和量身定制的 AI 驱动解决方案，以应对复杂的社会问题。
 
-设计思维与生成式AI的融合促成了一个创意环境，鼓励产生想法和探索多样的解决方案。它还支持原型设计和测试的迭代过程，允许基于现实世界反馈对干预措施进行持续的优化和调整。在利用生成式AI工具时，采纳设计思维心态有助于跨学科合作，并促进持续改进的文化。这使得通过从不同领域汲取广泛的视角和专业知识，开发出全面解决复杂社会问题的解决方案成为可能。
+设计思维与生成式 AI 的融合促成了一个创意环境，鼓励产生想法和探索多样的解决方案。它还支持原型设计和测试的迭代过程，允许基于现实世界反馈对干预措施进行持续的优化和调整。在利用生成式 AI 工具时，采纳设计思维心态有助于跨学科合作，并促进持续改进的文化。这使得通过从不同领域汲取广泛的视角和专业知识，开发出全面解决复杂社会问题的解决方案成为可能。
 
-此外，通过从失败中学习并迭代解决方案，我们可以确保AI驱动的干预措施不断被完善和适应，以满足目标人群不断变化的需求。这种方法*最终*会导致更有效、更具响应性和可持续的解决方案，从根本上解决社会问题，并改善服务社区的福祉。
+此外，通过从失败中学习并迭代解决方案，我们可以确保 AI 驱动的干预措施不断被完善和适应，以满足目标人群不断变化的需求。这种方法*最终*会导致更有效、更具响应性和可持续的解决方案，从根本上解决社会问题，并改善服务社区的福祉。
 
 # 下一步
 
-本系列的以下两篇文章将重点关注提升教育体验的AI策略和关于提示工程艺术与科学的总结文章。在准备这些文章的同时，我也在利用大语言模型积极研究ASWB国家社会工作执照考试的问题。这项工作与本系列和社会工作领域高度相关。你可以在这里找到我最近的相关文章：
+本系列的以下两篇文章将重点关注提升教育体验的 AI 策略和关于提示工程艺术与科学的总结文章。在准备这些文章的同时，我也在利用大语言模型积极研究 ASWB 国家社会工作执照考试的问题。这项工作与本系列和社会工作领域高度相关。你可以在这里找到我最近的相关文章：
 
-[](/large-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec?source=post_page-----3175f6870f09--------------------------------) [## 大语言模型揭示了国家社会工作执照考试中的更多缺陷
+[](/large-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec?source=post_page-----3175f6870f09--------------------------------) ## 大语言模型揭示了国家社会工作执照考试中的更多缺陷
 
 ### 变革的需求
 
-[towardsdatascience.com](/large-language-models-expose-additional-flaws-in-the-national-social-work-licensing-exams-d5d2ca426fec?source=post_page-----3175f6870f09--------------------------------)
+[towardsdatascience.com

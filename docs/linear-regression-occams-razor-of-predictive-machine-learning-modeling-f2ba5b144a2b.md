@@ -1,18 +1,18 @@
 # 线性回归 — 预测机器学习建模的奥卡姆剃刀
 
-> 原文：[https://towardsdatascience.com/linear-regression-occams-razor-of-predictive-machine-learning-modeling-f2ba5b144a2b?source=collection_archive---------16-----------------------#2023-01-03](https://towardsdatascience.com/linear-regression-occams-razor-of-predictive-machine-learning-modeling-f2ba5b144a2b?source=collection_archive---------16-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/linear-regression-occams-razor-of-predictive-machine-learning-modeling-f2ba5b144a2b?source=collection_archive---------16-----------------------#2023-01-03`](https://towardsdatascience.com/linear-regression-occams-razor-of-predictive-machine-learning-modeling-f2ba5b144a2b?source=collection_archive---------16-----------------------#2023-01-03)
 
 ## 使用 Python 的线性回归进行机器学习建模
 
-[![Farzad Mahmoodinobar](../Images/2d75209693b712300e6f0796bd2487d0.png)](https://medium.com/@fmnobar?source=post_page-----f2ba5b144a2b--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2ba5b144a2b--------------------------------) [Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----f2ba5b144a2b--------------------------------)
+![Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----f2ba5b144a2b--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2ba5b144a2b--------------------------------) [Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----f2ba5b144a2b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c56b7d4893e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-occams-razor-of-predictive-machine-learning-modeling-f2ba5b144a2b&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=post_page-3c56b7d4893e----f2ba5b144a2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2ba5b144a2b--------------------------------) ·16 分钟阅读·2023年1月3日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c56b7d4893e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-occams-razor-of-predictive-machine-learning-modeling-f2ba5b144a2b&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=post_page-3c56b7d4893e----f2ba5b144a2b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2ba5b144a2b--------------------------------) ·16 分钟阅读·2023 年 1 月 3 日
 
 --
 
-![](../Images/2494e60058d5a0eb46decef5f125cf20.png)
+![](img/2494e60058d5a0eb46decef5f125cf20.png)
 
 水晶球，来自 [DALL.E 2](https://openai.com/dall-e-2/)
 

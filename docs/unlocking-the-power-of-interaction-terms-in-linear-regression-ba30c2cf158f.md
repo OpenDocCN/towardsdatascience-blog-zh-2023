@@ -1,18 +1,18 @@
 # 解锁线性回归中交互项的力量
 
-> 原文：[https://towardsdatascience.com/unlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f?source=collection_archive---------2-----------------------#2023-05-18](https://towardsdatascience.com/unlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f?source=collection_archive---------2-----------------------#2023-05-18)
+> 原文：[`towardsdatascience.com/unlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f?source=collection_archive---------2-----------------------#2023-05-18`](https://towardsdatascience.com/unlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f?source=collection_archive---------2-----------------------#2023-05-18)
 
-![](../Images/1c7aefbf227b4b508956c79868b67f00.png)
+![](img/1c7aefbf227b4b508956c79868b67f00.png)
 
 照片由[Denys Nevozhai](https://unsplash.com/@dnevozhai?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来源于[Unsplash](https://unsplash.com/photos/7nrsVjvALnA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 ## 了解如何通过包括交互项来使线性模型更具灵活性
 
-[](https://eryk-lewinson.medium.com/?source=post_page-----ba30c2cf158f--------------------------------)[![Eryk Lewinson](../Images/56e09e19c0bbfecc582da58761d15078.png)](https://eryk-lewinson.medium.com/?source=post_page-----ba30c2cf158f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba30c2cf158f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ba30c2cf158f--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----ba30c2cf158f--------------------------------)
+[](https://eryk-lewinson.medium.com/?source=post_page-----ba30c2cf158f--------------------------------)![Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----ba30c2cf158f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba30c2cf158f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba30c2cf158f--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----ba30c2cf158f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----ba30c2cf158f---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba30c2cf158f--------------------------------) · 10分钟阅读 · 2023年5月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba30c2cf158f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----ba30c2cf158f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----ba30c2cf158f---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba30c2cf158f--------------------------------) · 10 分钟阅读 · 2023 年 5 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba30c2cf158f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-the-power-of-interaction-terms-in-linear-regression-ba30c2cf158f&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----ba30c2cf158f---------------------clap_footer-----------)
 
 --
 

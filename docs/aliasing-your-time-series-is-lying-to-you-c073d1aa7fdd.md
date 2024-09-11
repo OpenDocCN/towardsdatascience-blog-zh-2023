@@ -1,18 +1,18 @@
 # 混叠：你的时间序列在欺骗你
 
-> 原文：[https://towardsdatascience.com/aliasing-your-time-series-is-lying-to-you-c073d1aa7fdd?source=collection_archive---------10-----------------------#2023-07-12](https://towardsdatascience.com/aliasing-your-time-series-is-lying-to-you-c073d1aa7fdd?source=collection_archive---------10-----------------------#2023-07-12)
+> 原文：[`towardsdatascience.com/aliasing-your-time-series-is-lying-to-you-c073d1aa7fdd?source=collection_archive---------10-----------------------#2023-07-12`](https://towardsdatascience.com/aliasing-your-time-series-is-lying-to-you-c073d1aa7fdd?source=collection_archive---------10-----------------------#2023-07-12)
 
-## 用Python直观介绍信号混叠
+## 用 Python 直观介绍信号混叠
 
-[](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)[![Harrison Hoffman](../Images/5eaa3e2bd0507297eb6c4a7efcf06324.png)](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------) [Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)
+[](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)![Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------) [Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faliasing-your-time-series-is-lying-to-you-c073d1aa7fdd&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----c073d1aa7fdd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------) ·12分钟阅读·2023年7月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc073d1aa7fdd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faliasing-your-time-series-is-lying-to-you-c073d1aa7fdd&user=Harrison+Hoffman&userId=38889d0801d0&source=-----c073d1aa7fdd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faliasing-your-time-series-is-lying-to-you-c073d1aa7fdd&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----c073d1aa7fdd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------) ·12 分钟阅读·2023 年 7 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc073d1aa7fdd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faliasing-your-time-series-is-lying-to-you-c073d1aa7fdd&user=Harrison+Hoffman&userId=38889d0801d0&source=-----c073d1aa7fdd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc073d1aa7fdd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faliasing-your-time-series-is-lying-to-you-c073d1aa7fdd&source=-----c073d1aa7fdd---------------------bookmark_footer-----------)![](../Images/63aeedd4da3a06e394880eb32ae045ff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc073d1aa7fdd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faliasing-your-time-series-is-lying-to-you-c073d1aa7fdd&source=-----c073d1aa7fdd---------------------bookmark_footer-----------)![](img/63aeedd4da3a06e394880eb32ae045ff.png)
 
 Aliased Fan. 作者提供的图片。
 

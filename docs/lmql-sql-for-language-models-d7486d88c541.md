@@ -1,18 +1,18 @@
 # LMQL — 语言模型的 SQL
 
-> 原文：[https://towardsdatascience.com/lmql-sql-for-language-models-d7486d88c541?source=collection_archive---------0-----------------------#2023-11-27](https://towardsdatascience.com/lmql-sql-for-language-models-d7486d88c541?source=collection_archive---------0-----------------------#2023-11-27)
+> 原文：[`towardsdatascience.com/lmql-sql-for-language-models-d7486d88c541?source=collection_archive---------0-----------------------#2023-11-27`](https://towardsdatascience.com/lmql-sql-for-language-models-d7486d88c541?source=collection_archive---------0-----------------------#2023-11-27)
 
 ## 另一个可能对你的 LLM 应用有帮助的工具
 
-[](https://miptgirl.medium.com/?source=post_page-----d7486d88c541--------------------------------)[![Mariya Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----d7486d88c541--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d7486d88c541--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d7486d88c541--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----d7486d88c541--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----d7486d88c541--------------------------------)![Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----d7486d88c541--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d7486d88c541--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d7486d88c541--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----d7486d88c541--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flmql-sql-for-language-models-d7486d88c541&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----d7486d88c541---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d7486d88c541--------------------------------) ·17分钟阅读·2023年11月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd7486d88c541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flmql-sql-for-language-models-d7486d88c541&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----d7486d88c541---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flmql-sql-for-language-models-d7486d88c541&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----d7486d88c541---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d7486d88c541--------------------------------) ·17 分钟阅读·2023 年 11 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd7486d88c541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flmql-sql-for-language-models-d7486d88c541&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----d7486d88c541---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd7486d88c541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flmql-sql-for-language-models-d7486d88c541&source=-----d7486d88c541---------------------bookmark_footer-----------)![](../Images/a3ba043a5a4b6836f2488f4c4b6759e7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd7486d88c541&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flmql-sql-for-language-models-d7486d88c541&source=-----d7486d88c541---------------------bookmark_footer-----------)![](img/a3ba043a5a4b6836f2488f4c4b6759e7.png)
 
 图片来自 DALL-E 3
 
@@ -20,7 +20,7 @@
 
 根据年度 [StackOverflow 调查](https://survey.stackoverflow.co/2023/#technology-most-popular-technologies)，SQL 仍然是全球最受欢迎的语言之一。对于专业开发人员来说，SQL 位列前三名（仅次于 Javascript 和 HTML/CSS）。超过一半的专业人员使用 SQL。令人惊讶的是，SQL 甚至比 Python 更受欢迎。
 
-![](../Images/72a34ba2e51238a06a33f6289c2d0bef.png)
+![](img/72a34ba2e51238a06a33f6289c2d0bef.png)
 
 图表由作者提供，数据来自 [StackOverflow 调查](https://survey.stackoverflow.co/2023/#technology-most-popular-technologies)
 
@@ -44,7 +44,7 @@ LMQL 是由 ETH 苏黎世的研究人员开发的。他们提出了一种新的 
 
 对成本和效率的影响可能相当大。搜索空间的限制可以显著降低 LLM 的成本。例如，在 [LMQL 论文](https://arxiv.org/abs/2212.06094) 中的案例中，LMQL 的可计费 tokens 比标准解码少了 75–85%，这意味着它将显著降低你的成本。
 
-![](../Images/4767e98e5ab6f4ff82b8566c9e8f8a4f.png)
+![](img/4767e98e5ab6f4ff82b8566c9e8f8a4f.png)
 
 图片来自 [Beurer-Kellner 等人 (2023) 的论文](https://arxiv.org/abs/2212.06094)
 
@@ -84,7 +84,7 @@ where len(TOKENS(RESPONSE)) < 20
 
 这是 LMQL 查询的示意图
 
-![](../Images/adc58c40f3c91b3e4b8fe02965607dfa.png)
+![](img/adc58c40f3c91b3e4b8fe02965607dfa.png)
 
 图片来自 [Beurer-Kellner 等人 (2023) 的论文](https://arxiv.org/abs/2212.06094)
 
@@ -153,13 +153,13 @@ Llama-2–7B 是 Meta 细调生成文本模型中最小的版本。它是一个�
 
 Zephyr 是一个经过微调的 [Mistral](https://huggingface.co/mistralai/Mistral-7B-v0.1) 模型，性能不错。在某些方面，它的表现优于 10 倍大的开源模型 Llama-2–70b。然而，Zephyr 和像 ChatGPT 或 Claude 这样的专有模型之间仍存在差距。
 
-![](../Images/ad8a00d37526988daaa9ea0e0f63cb1d.png)
+![](img/ad8a00d37526988daaa9ea0e0f63cb1d.png)
 
 图片来源于 [Tunstall 等人 (2023)](https://arxiv.org/abs/2310.16944) 的论文
 
-根据[LMSYS ChatBot Arena排行榜](https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard)，Zephyr是表现最好的模型，拥有7B参数。它的表现与更大模型相当。
+根据[LMSYS ChatBot Arena 排行榜](https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard)，Zephyr 是表现最好的模型，拥有 7B 参数。它的表现与更大模型相当。
 
-![](../Images/879e0f123b15262e8fdd22139726d698.png)
+![](img/879e0f123b15262e8fdd22139726d698.png)
 
 排行榜截图 | [来源](https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard)
 
@@ -187,7 +187,7 @@ download_gguf(
 )
 ```
 
-> 我们需要下载几个GB的数据，所以可能需要一些时间（每个模型10到15分钟）。幸运的是，你只需做一次。
+> 我们需要下载几个 GB 的数据，所以可能需要一些时间（每个模型 10 到 15 分钟）。幸运的是，你只需做一次。
 
 你可以通过两种不同方式与本地模型进行交互（[文档](https://lmql.ai/docs/models/hf.html)）：
 
@@ -195,23 +195,23 @@ download_gguf(
 
 +   对于临时任务，我们可以使用进程内模型加载，在模型名称前指定`local:`。我们将使用这种方法来处理本地模型。
 
-现在，我们已经设置好了环境，接下来讨论如何从Python中使用LMQL。
+现在，我们已经设置好了环境，接下来讨论如何从 Python 中使用 LMQL。
 
-## Python函数
+## Python 函数
 
-简要讨论如何在Python中使用LMQL。Playground对于调试很有帮助，但如果你想在生产环境中使用LM，您需要一个API。
+简要讨论如何在 Python 中使用 LMQL。Playground 对于调试很有帮助，但如果你想在生产环境中使用 LM，您需要一个 API。
 
-LMQL提供了四种主要的方法：`lmql.F`、`lmql.run`、`@lmql.query`装饰器和[Generations API](https://lmql.ai/docs/lib/generations.html)。
+LMQL 提供了四种主要的方法：`lmql.F`、`lmql.run`、`@lmql.query`装饰器和[Generations API](https://lmql.ai/docs/lib/generations.html)。
 
-[Generations API](https://lmql.ai/docs/lib/generations.html)最近被添加。它是一个简单的Python API，帮助进行推断而不需要自己编写LMQL。由于我更关注LMP概念，本文不涵盖此API。
+[Generations API](https://lmql.ai/docs/lib/generations.html)最近被添加。它是一个简单的 Python API，帮助进行推断而不需要自己编写 LMQL。由于我更关注 LMP 概念，本文不涵盖此 API。
 
 让我们详细讨论其他三种方法并尝试使用它们。
 
-首先，你可以使用`lmql.F`。它类似于Python中的lambda函数，允许你执行部分LMQL代码。`lmql.F`只能有一个占位符变量，该变量将从lambda函数返回。
+首先，你可以使用`lmql.F`。它类似于 Python 中的 lambda 函数，允许你执行部分 LMQL 代码。`lmql.F`只能有一个占位符变量，该变量将从 lambda 函数返回。
 
-我们可以为函数指定提示和约束。约束将等同于LMQL查询中的`where`子句。
+我们可以为函数指定提示和约束。约束将等同于 LMQL 查询中的`where`子句。
 
-由于我们没有指定任何模型，将使用OpenAI的`text-davinci`。
+由于我们没有指定任何模型，将使用 OpenAI 的`text-davinci`。
 
 ```py
 capital_func = lmql.F("What is the captital of {country}? [CAPITAL]", 
@@ -222,14 +222,14 @@ capital_func('the United Kingdom')
 # Output - '\n\nThe capital of the United Kingdom is London.'
 ```
 
-如果你使用的是Jupyter Notebook，你可能会遇到一些问题，因为Notebook环境是异步的。你可以在笔记本中启用嵌套事件循环以避免这些问题。
+如果你使用的是 Jupyter Notebook，你可能会遇到一些问题，因为 Notebook 环境是异步的。你可以在笔记本中启用嵌套事件循环以避免这些问题。
 
 ```py
 import nest_asyncio
 nest_asyncio.apply()
 ```
 
-第二种方法允许你定义更复杂的查询。你可以使用`lmql.run`来执行LMQL查询，而无需创建函数。让我们使查询更复杂，并在接下来的问题中使用模型的回答。
+第二种方法允许你定义更复杂的查询。你可以使用`lmql.run`来执行 LMQL 查询，而无需创建函数。让我们使查询更复杂，并在接下来的问题中使用模型的回答。
 
 在这种情况下，我们在查询字符串的`where`子句中定义了约束。
 
@@ -256,11 +256,11 @@ lmql.run_sync(query_string, country="the United Kingdom")
 
 +   `distribution_variable`和`distribution_values`都是`None`，因为我们还没有使用这个功能。
 
-![](../Images/071065b1358f774d779849cc09cbc095.png)
+![](img/071065b1358f774d779849cc09cbc095.png)
 
 作者提供的图片
 
-使用Python API的第三种方法是`[@lmql](http://twitter.com/lmql).query`装饰器，它允许您定义一个Python函数，以便将来使用非常方便。如果您计划多次调用此提示，则更加方便。
+使用 Python API 的第三种方法是`[@lmql](http://twitter.com/lmql).query`装饰器，它允许您定义一个 Python 函数，以便将来使用非常方便。如果您计划多次调用此提示，则更加方便。
 
 我们可以为我们之前的查询创建一个函数，并且只获取最终的答案，而不是返回整个`LMQLResult`对象。
 
@@ -286,19 +286,19 @@ print(capital_sights(country="the United Kingdom"))
 # and Tower Bridge.
 ```
 
-您还可以将LMQL与LangChain结合使用：
+您还可以将 LMQL 与 LangChain 结合使用：
 
-+   LMQL查询是增强版的提示模板，可以成为LangChain链的一部分。
++   LMQL 查询是增强版的提示模板，可以成为 LangChain 链的一部分。
 
-+   您可以利用LMQL中的LangChain组件（例如检索）。您可以在[文档](https://lmql.ai/docs/lib/integrations/langchain.html)中找到示例。
++   您可以利用 LMQL 中的 LangChain 组件（例如检索）。您可以在[文档](https://lmql.ai/docs/lib/integrations/langchain.html)中找到示例。
 
-现在，我们知道了LMQL语法的所有基础知识，准备好开始我们的任务——为客户评论定义情感。
+现在，我们知道了 LMQL 语法的所有基础知识，准备好开始我们的任务——为客户评论定义情感。
 
 # 情感分析
 
-为了查看LMQL的性能，我们将使用来自[UCI机器学习库](https://archive.ics.uci.edu/dataset/331/sentiment+labelled+sentences)的带标签的Yelp评论，并尝试预测情感。数据集中的所有评论都是积极的或消极的，但我们将保留中性作为分类的一种可能选项。
+为了查看 LMQL 的性能，我们将使用来自[UCI 机器学习库](https://archive.ics.uci.edu/dataset/331/sentiment+labelled+sentences)的带标签的 Yelp 评论，并尝试预测情感。数据集中的所有评论都是积极的或消极的，但我们将保留中性作为分类的一种可能选项。
 
-对于这个任务，让我们使用本地模型——`Zephyr`和`Llama-2`。在调用LMQL时，我们需要指定模型和标记器。对于Llama系列模型，我们可以使用默认的标记器。
+对于这个任务，让我们使用本地模型——`Zephyr`和`Llama-2`。在调用 LMQL 时，我们需要指定模型和标记器。对于 Llama 系列模型，我们可以使用默认的标记器。
 
 ## 第一次尝试
 
@@ -330,7 +330,7 @@ lmql.run_sync(
 model's context size. Please specify a higher n_ctx value.
 ```
 
-从消息中，我们可以猜测输出与上下文大小不符。我们的提示大约是20个标记，所以击中上下文大小阈值有些奇怪。让我们尝试限制`SENTIMENT`的标记数量，看看输出。
+从消息中，我们可以猜测输出与上下文大小不符。我们的提示大约是 20 个标记，所以击中上下文大小阈值有些奇怪。让我们尝试限制`SENTIMENT`的标记数量，看看输出。
 
 ```py
 query_string = """
@@ -353,7 +353,7 @@ print(lmql.run_sync(query_string,
 # Q: What is the sentiment of the following review: ```产品令人完全失望。```py?
 # A:  Negative sentiment.
 # 
-# Q: What is the sentiment of the following review: ```航班延误3小时，食物冷，娱乐系统不工作。```py?
+# Q: What is the sentiment of the following review: ```航班延误 3 小时，食物冷，娱乐系统不工作。```py?
 # A:  Negative sentiment.
 # 
 # Q: What is the sentiment of the following review: ```餐厅座无虚席，但服务员效率高，食物美味。```py?
@@ -411,7 +411,7 @@ print(lmql.run_sync(query_string,
 
 Zephyr 模型的输出相当不错。
 
-![](../Images/cebf97ad58f3d16d2b466e85c7e8171d.png)
+![](img/cebf97ad58f3d16d2b466e85c7e8171d.png)
 
 图片来源：作者
 
@@ -430,7 +430,7 @@ print(lmql.run_sync(query_string,
 
 推理没有多大意义。我们已经在排行榜上看到 Zephyr 模型比 Llama-2–7b 好得多。
 
-![](../Images/6bc197c1f46bfd75046211535bc79a28.png)
+![](img/6bc197c1f46bfd75046211535bc79a28.png)
 
 图片来源：作者
 
@@ -452,7 +452,7 @@ print(lmql.run_sync(query_string,
 
 如果你只想在模型自信时使用决策，概率可能在实践中很有帮助。
 
-![](../Images/7b8932e91d9ac23440ea5bd4066ac404.png)
+![](img/7b8932e91d9ac23440ea5bd4066ac404.png)
 
 图片来源：作者
 
@@ -487,7 +487,7 @@ sentiment_analysis('Room was dirty')
 
 模型认为这是中性的。
 
-![](../Images/60dead54440461f0e49fc8a134f63882.png)
+![](img/60dead54440461f0e49fc8a134f63882.png)
 
 图片来源：作者
 
@@ -504,7 +504,7 @@ sentiment_analysis('Room was dirty', decoder = 'beam',
 
 现在，模型能够识别到这条评论中的负面情感。
 
-![](../Images/bab33e0feb447f962c2c333260c8b447.png)
+![](img/bab33e0feb447f962c2c333260c8b447.png)
 
 图片由作者提供
 
@@ -524,7 +524,7 @@ sentiment_analysis('Room was dirty', decoder = 'beam',
 
 首先，让我们比较准确性——即评论中正确情感的比例。我们可以看到，Zephyr 的表现远好于 Llama 2 模型。另外，由于某些原因，我们在分布上的质量显著下降。
 
-![](../Images/20556862454d7b6648fa4bfcba8909ec.png)
+![](img/20556862454d7b6648fa4bfcba8909ec.png)
 
 作者绘图
 
@@ -538,25 +538,25 @@ sentiment_analysis('Room was dirty', decoder = 'beam',
 
 在许多情况下，我认为模型使用类似的推理，将负面评论评分为中性，就像我们在“肮脏的房间”例子中看到的那样。模型不确定“肮脏的房间”是负面还是中性情感，因为我们不知道客户是否期望一个干净的房间。
 
-![](../Images/61f60d4457987a2e4cc6f88f0d0bddbe.png)
+![](img/61f60d4457987a2e4cc6f88f0d0bddbe.png)
 
 作者绘图
 
-![](../Images/236e21eb76dca04e4f8ff40a58ef5972.png)
+![](img/236e21eb76dca04e4f8ff40a58ef5972.png)
 
 作者绘图
 
 观察实际概率也是很有趣的：
 
-+   对于正面评论，Zephyr 模型的正面标签的75%百分位数超过0.85，而 Llama 2 则远低于此值。
++   对于正面评论，Zephyr 模型的正面标签的 75%百分位数超过 0.85，而 Llama 2 则远低于此值。
 
-+   所有模型在负面评论上的表现都很差，其中负面评论的负面标签的75%百分位数远低于0.5。
++   所有模型在负面评论上的表现都很差，其中负面评论的负面标签的 75%百分位数远低于 0.5。
 
-![](../Images/9fda378f7b359e789f197d5b33309843.png)
+![](img/9fda378f7b359e789f197d5b33309843.png)
 
 作者绘图
 
-![](../Images/ae745cfa031e4a2d4f0d4fafa41694f7.png)
+![](img/ae745cfa031e4a2d4f0d4fafa41694f7.png)
 
 作者绘图
 
@@ -566,9 +566,9 @@ sentiment_analysis('Room was dirty', decoder = 'beam',
 
 # 总结
 
-今天，我们讨论了LMP（语言模型编程）的概念，它允许你将自然语言和脚本指令混合使用。我们尝试将其用于情感分析任务，并在使用本地开源模型时获得了不错的结果。
+今天，我们讨论了 LMP（语言模型编程）的概念，它允许你将自然语言和脚本指令混合使用。我们尝试将其用于情感分析任务，并在使用本地开源模型时获得了不错的结果。
 
-尽管LMQL尚未普及，但这种方法可能会在未来变得非常有用，并获得广泛的关注，因为它将自然语言和编程语言结合成一个强大的工具用于语言模型。
+尽管 LMQL 尚未普及，但这种方法可能会在未来变得非常有用，并获得广泛的关注，因为它将自然语言和编程语言结合成一个强大的工具用于语言模型。
 
 > 非常感谢你阅读这篇文章。希望它对你有所启发。如果你有任何后续问题或评论，请在评论区留言。
 

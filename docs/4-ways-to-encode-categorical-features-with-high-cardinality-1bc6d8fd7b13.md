@@ -1,48 +1,48 @@
-# 4种编码具有高基数的分类特征的方法——带Python实现
+# 4 种编码具有高基数的分类特征的方法——带 Python 实现
 
-> 原文：[https://towardsdatascience.com/4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13?source=collection_archive---------0-----------------------#2023-06-26](https://towardsdatascience.com/4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13?source=collection_archive---------0-----------------------#2023-06-26)
+> 原文：[`towardsdatascience.com/4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13?source=collection_archive---------0-----------------------#2023-06-26`](https://towardsdatascience.com/4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13?source=collection_archive---------0-----------------------#2023-06-26)
 
-## 学习如何使用scikit-learn和TensorFlow应用目标编码、计数编码、特征哈希和嵌入
+## 学习如何使用 scikit-learn 和 TensorFlow 应用目标编码、计数编码、特征哈希和嵌入
 
-[](https://medium.com/@aichabokbot?source=post_page-----1bc6d8fd7b13--------------------------------)[![Aicha Bokbot](../Images/1aa9ba6ae6296d8be3350b14dba97dd2.png)](https://medium.com/@aichabokbot?source=post_page-----1bc6d8fd7b13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1bc6d8fd7b13--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1bc6d8fd7b13--------------------------------) [Aicha Bokbot](https://medium.com/@aichabokbot?source=post_page-----1bc6d8fd7b13--------------------------------)
+[](https://medium.com/@aichabokbot?source=post_page-----1bc6d8fd7b13--------------------------------)![Aicha Bokbot](https://medium.com/@aichabokbot?source=post_page-----1bc6d8fd7b13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1bc6d8fd7b13--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1bc6d8fd7b13--------------------------------) [Aicha Bokbot](https://medium.com/@aichabokbot?source=post_page-----1bc6d8fd7b13--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F50566ce7e21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13&user=Aicha+Bokbot&userId=50566ce7e21&source=post_page-50566ce7e21----1bc6d8fd7b13---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----1bc6d8fd7b13--------------------------------) · 9分钟阅读·2023年6月26日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1bc6d8fd7b13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13&user=Aicha+Bokbot&userId=50566ce7e21&source=-----1bc6d8fd7b13---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F50566ce7e21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13&user=Aicha+Bokbot&userId=50566ce7e21&source=post_page-50566ce7e21----1bc6d8fd7b13---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----1bc6d8fd7b13--------------------------------) · 9 分钟阅读·2023 年 6 月 26 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1bc6d8fd7b13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13&user=Aicha+Bokbot&userId=50566ce7e21&source=-----1bc6d8fd7b13---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1bc6d8fd7b13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13&source=-----1bc6d8fd7b13---------------------bookmark_footer-----------)![](../Images/c1d754d660f384bf0e8be0017f196bbb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1bc6d8fd7b13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-ways-to-encode-categorical-features-with-high-cardinality-1bc6d8fd7b13&source=-----1bc6d8fd7b13---------------------bookmark_footer-----------)![](img/c1d754d660f384bf0e8be0017f196bbb.png)
 
 “点击” — 照片由[Cleo Vermij](https://unsplash.com/@cleovermij?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在本文中，我们将深入探讨4种流行的方法来编码具有高基数的分类变量：**（1）目标编码，（2）计数编码，（3）特征哈希** 和 **（4）嵌入**。
+在本文中，我们将深入探讨 4 种流行的方法来编码具有高基数的分类变量：**（1）目标编码，（2）计数编码，（3）特征哈希** 和 **（4）嵌入**。
 
 我们将解释每种方法的工作原理，讨论其优缺点，并观察其对分类任务性能的影响。
 
 ## **目录**
 
-— [引入类别特征](#8744)
+— 引入类别特征
 
-*(1)* [*为什么我们需要编码类别特征？*](#2429) *(2)* [*为什么一热编码不适用于高基数？*](#b13b)
+*(1)* *为什么我们需要编码类别特征？* *(2)* *为什么一热编码不适用于高基数？*
 
-— [在AdTech数据集上的应用](#706a)
+— 在 AdTech 数据集上的应用
 
-— [每种编码方法概述](#a959)
+— 每种编码方法概述
 
-*(1)* [*目标编码*](#ffbc) *(2)* [*计数编码*](#fbd1) *(3)* [*特征哈希*](#e278) *(4)* [*嵌入*](#99d8)
+*(1)* *目标编码* *(2)* *计数编码* *(3)* *特征哈希* *(4)* *嵌入*
 
-— [预测CTR的性能基准测试](#892c)
+— 预测 CTR 的性能基准测试
 
-— [结论](#033c)
+— 结论
 
-— [进一步阅读](#3bd1)
+— 进一步阅读
 
 # **引入类别特征**
 
 **类别特征**是一种描述类别或组的变量（如性别、颜色、国家），而**数值特征**则测量数量（如年龄、身高、温度）。
 
-类别数据有两种类型：**有序特征**，其类别可以排序（如T恤尺码或餐厅评分从1星到5星），和**名义特征**，其类别不具有任何有意义的顺序（如人的名字、城市名）。
+类别数据有两种类型：**有序特征**，其类别可以排序（如 T 恤尺码或餐厅评分从 1 星到 5 星），和**名义特征**，其类别不具有任何有意义的顺序（如人的名字、城市名）。
 
 ## 我们为什么需要编码类别特征？
 
@@ -62,21 +62,21 @@
 
 那么如何在不增加特征向量维度的情况下编码高基数的类别特征呢？
 
-# 在AdTech数据集上的应用
+# 在 AdTech 数据集上的应用
 
-我们将通过在[**Criteo展示广告挑战赛**](https://www.kaggle.com/competitions/criteo-display-ad-challenge/data)的数据集上应用四种编码技术来预测展示广告的点击率，来回答这个问题。
+我们将通过在[**Criteo 展示广告挑战赛**](https://www.kaggle.com/competitions/criteo-display-ad-challenge/data)的数据集上应用四种编码技术来预测展示广告的点击率，来回答这个问题。
 
-这是一个著名的Kaggle挑战赛，由**Criteo**（一家专注于程序化广告和实时竞价的法国在线广告公司）于2014年发起。广告的**点击率（CTR）**是广告被点击的次数与广告在页面上展示的次数之比。
+这是一个著名的 Kaggle 挑战赛，由**Criteo**（一家专注于程序化广告和实时竞价的法国在线广告公司）于 2014 年发起。广告的**点击率（CTR）**是广告被点击的次数与广告在页面上展示的次数之比。
 
-**广告技术中的数据集通常包含具有高基数的ID变量**，例如 *site_id*（广告展示的网站ID）、*advertiser_id*（广告背后的品牌ID）、*os_id*（广告展示给用户的操作系统ID）。
+**广告技术中的数据集通常包含具有高基数的 ID 变量**，例如 *site_id*（广告展示的网站 ID）、*advertiser_id*（广告背后的品牌 ID）、*os_id*（广告展示给用户的操作系统 ID）。
 
-**Criteo数据集包含100万行，39个匿名列**：13个数值变量和26个类别变量。它们的基数见下表。我们可以看到**许多特征具有非常高的基数（超过10k）**。
+**Criteo 数据集包含 100 万行，39 个匿名列**：13 个数值变量和 26 个类别变量。它们的基数见下表。我们可以看到**许多特征具有非常高的基数（超过 10k）**。
 
-![](../Images/d673f17f1b6da26bcc979fd333875bc1.png)
+![](img/d673f17f1b6da26bcc979fd333875bc1.png)
 
-Criteo数据集中类别特征的基数
+Criteo 数据集中类别特征的基数
 
-数据集总共包含241,338个类别。**应用独热编码意味着将特征空间从39维度转换为241,351维度。** 显然，对一个超过241k列的稀疏矩阵进行计算是非常昂贵且低效的。
+数据集总共包含 241,338 个类别。**应用独热编码意味着将特征空间从 39 维度转换为 241,351 维度。** 显然，对一个超过 241k 列的稀疏矩阵进行计算是非常昂贵且低效的。
 
 我们将数据集拆分为训练集和测试集，并探索编码方法。
 
@@ -104,9 +104,9 @@ X_train_encoded = enc.transform(x_train)
 X_test_encoded = enc.transform(x_test)
 ```
 
-请注意，我们只在训练数据集上拟合编码器，然后使用拟合后的编码器转换训练集和测试集。由于在实际生活中我们无法访问y_test，使用它来拟合编码器将是不诚实的。
+请注意，我们只在训练数据集上拟合编码器，然后使用拟合后的编码器转换训练集和测试集。由于在实际生活中我们无法访问 y_test，使用它来拟合编码器将是不诚实的。
 
-+   **编码特征空间的维度：** 39列，X_train_encoded和X_test_encoded的形状与x_train和y_train相同。
++   **编码特征空间的维度：** 39 列，X_train_encoded 和 X_test_encoded 的形状与 x_train 和 y_train 相同。
 
 +   **优点：**
 
@@ -124,7 +124,7 @@ X_test_encoded = enc.transform(x_test)
 
 ## (2) 计数编码
 
-使用计数编码，**也称为频率编码**，类别被替换为它们在数据集中的频率。如果ID *3f4ec687* 在列C7中出现了957次，则我们将 *3f4ec687* 替换为957。
+使用计数编码，**也称为频率编码**，类别被替换为它们在数据集中的频率。如果 ID *3f4ec687* 在列 C7 中出现了 957 次，则我们将 *3f4ec687* 替换为 957。
 
 如果两个类别在数据集中出现的次数相同，这种方法会用相同的值对它们进行编码，尽管它们不包含相同的信息。这**会造成所谓的冲突**：两个不同的类别被编码为相同的值。
 
@@ -318,9 +318,9 @@ X_test_encoded = embedding_encoder.predict(x_test, batch_size=1024)
 
     - 嵌入和逻辑回归模型不能在一个阶段中协同训练，因为逻辑回归不使用反向传播进行训练。相反，嵌入需要在初始阶段进行训练，然后作为静态输入用于决策森林模型。
 
-# 预测CTR的性能基准
+# 预测 CTR 的性能基准
 
-我们拟合了一个简单的逻辑回归模型来预测CTR，并使用每种编码方法生成预测。
+我们拟合了一个简单的逻辑回归模型来预测 CTR，并使用每种编码方法生成预测。
 
 ```py
 from sklearn.linear_model import LogisticRegression
@@ -329,13 +329,13 @@ model.fit(X_train_encoded, y_train)
 y_pred = model.predict(X_test_encoded)
 ```
 
-我们计算了对数损失、AUC、召回率和预测CTR的平均值。结果见下表。**数据集中的平均CTR为22.6%。**
+我们计算了对数损失、AUC、召回率和预测 CTR 的平均值。结果见下表。**数据集中的平均 CTR 为 22.6%。**
 
-![](../Images/b04ea3a2befc95538b580375fb0ffdc1.png)
+![](img/b04ea3a2befc95538b580375fb0ffdc1.png)
 
-我们首先注意到所有编码方法的AUC都相当低，这主要是因为我们使用了一个非常简单的模型，比逻辑回归更复杂的模型更适合这个任务。
+我们首先注意到所有编码方法的 AUC 都相当低，这主要是因为我们使用了一个非常简单的模型，比逻辑回归更复杂的模型更适合这个任务。
 
-前三种方法（目标编码、计数编码和哈希编码）**未能让模型捕捉到足够的信号以预测CTR**：与真实平均值相比，平均预测CTR非常低，召回率也接近于零，AUC接近0.5则表明模型几乎是随机的。**使用嵌入的模型显示出最高的AUC和召回率**，以及接近目标的平均预测CTR。
+前三种方法（目标编码、计数编码和哈希编码）**未能让模型捕捉到足够的信号以预测 CTR**：与真实平均值相比，平均预测 CTR 非常低，召回率也接近于零，AUC 接近 0.5 则表明模型几乎是随机的。**使用嵌入的模型显示出最高的 AUC 和召回率**，以及接近目标的平均预测 CTR。
 
 # 结论
 

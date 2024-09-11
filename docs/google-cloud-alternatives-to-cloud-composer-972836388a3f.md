@@ -1,12 +1,12 @@
 # Google Cloud 中替代 Cloud Composer 的选择
 
-> 原文：[https://towardsdatascience.com/google-cloud-alternatives-to-cloud-composer-972836388a3f?source=collection_archive---------7-----------------------#2023-04-13](https://towardsdatascience.com/google-cloud-alternatives-to-cloud-composer-972836388a3f?source=collection_archive---------7-----------------------#2023-04-13)
+> 原文：[`towardsdatascience.com/google-cloud-alternatives-to-cloud-composer-972836388a3f?source=collection_archive---------7-----------------------#2023-04-13`](https://towardsdatascience.com/google-cloud-alternatives-to-cloud-composer-972836388a3f?source=collection_archive---------7-----------------------#2023-04-13)
 
 ## 意见
 
 ## 不要用大炮打小蚊子
 
-[](https://marcgeremie.medium.com/?source=post_page-----972836388a3f--------------------------------)[![Marc Djohossou](../Images/096f7877d14b7671e48500175931dbea.png)](https://marcgeremie.medium.com/?source=post_page-----972836388a3f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----972836388a3f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----972836388a3f--------------------------------) [Marc Djohossou](https://marcgeremie.medium.com/?source=post_page-----972836388a3f--------------------------------)
+[](https://marcgeremie.medium.com/?source=post_page-----972836388a3f--------------------------------)![Marc Djohossou](https://marcgeremie.medium.com/?source=post_page-----972836388a3f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----972836388a3f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----972836388a3f--------------------------------) [Marc Djohossou](https://marcgeremie.medium.com/?source=post_page-----972836388a3f--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F972836388a3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-cloud-alternatives-to-cloud-composer-972836388a3f&source=-----972836388a3f---------------------bookmark_footer-----------)![](../Images/0cf29fbc7596f1d94922f924641c5cb4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F972836388a3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgoogle-cloud-alternatives-to-cloud-composer-972836388a3f&source=-----972836388a3f---------------------bookmark_footer-----------)![](img/0cf29fbc7596f1d94922f924641c5cb4.png)
 
 作者提供的图片，Fire Logo Designed By Freepik¹
 

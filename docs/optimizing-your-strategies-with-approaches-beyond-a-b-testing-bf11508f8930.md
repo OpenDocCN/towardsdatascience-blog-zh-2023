@@ -1,14 +1,14 @@
 # 优化您的策略：超越 A/B 测试的方法
 
-> 原文：[https://towardsdatascience.com/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=collection_archive---------18-----------------------#2023-07-24](https://towardsdatascience.com/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=collection_archive---------18-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=collection_archive---------18-----------------------#2023-07-24`](https://towardsdatascience.com/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=collection_archive---------18-----------------------#2023-07-24)
 
 ## 对经典 A/B 测试的深入解释：Epsilon-greedy、Thompson Sampling、Contextual Bandits 等
 
-[](https://medium.com/@johnleungTJ?source=post_page-----bf11508f8930--------------------------------)[![John Leung](../Images/ef45063e759e3450fa7f3c32b2f292c3.png)](https://medium.com/@johnleungTJ?source=post_page-----bf11508f8930--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bf11508f8930--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bf11508f8930--------------------------------) [John Leung](https://medium.com/@johnleungTJ?source=post_page-----bf11508f8930--------------------------------)
+[](https://medium.com/@johnleungTJ?source=post_page-----bf11508f8930--------------------------------)![John Leung](https://medium.com/@johnleungTJ?source=post_page-----bf11508f8930--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bf11508f8930--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf11508f8930--------------------------------) [John Leung](https://medium.com/@johnleungTJ?source=post_page-----bf11508f8930--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6125e8835d3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930&user=John+Leung&userId=6125e8835d3b&source=post_page-6125e8835d3b----bf11508f8930---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf11508f8930--------------------------------) · 7 分钟阅读 · 2023年7月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbf11508f8930&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930&user=John+Leung&userId=6125e8835d3b&source=-----bf11508f8930---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6125e8835d3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930&user=John+Leung&userId=6125e8835d3b&source=post_page-6125e8835d3b----bf11508f8930---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf11508f8930--------------------------------) · 7 分钟阅读 · 2023 年 7 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbf11508f8930&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930&user=John+Leung&userId=6125e8835d3b&source=-----bf11508f8930---------------------clap_footer-----------)
 
 --
 
@@ -30,7 +30,7 @@
 
 下图展示了示例情况。
 
-![](../Images/ab0614e7677dfa7603c0b359608ca234.png)
+![](img/ab0614e7677dfa7603c0b359608ca234.png)
 
 A/B 测试（图像由作者提供）
 
@@ -40,7 +40,7 @@ A/B 测试的结果确认，黄色着陆页（策略 B）上的网站访问者�
 
 > 选择较差策略 A 和最理想选项（在这种情况下为策略 B）之间的成本差异可以用**遗憾**来表示。
 
-![](../Images/b4cc4f5c5fec68d008feb33280d7bdc6.png)
+![](img/b4cc4f5c5fec68d008feb33280d7bdc6.png)
 
 A/B 测试中的遗憾成本（图像由作者提供）
 
@@ -52,11 +52,11 @@ A/B 测试中的遗憾成本（图像由作者提供）
 
 听到 A/B 测试的结果后，你的伙伴对他建议更好策略的成功感到兴奋。他想进一步了解其他背景颜色，包括绿色、红色和紫色，是否能提高转化率。你可以预见到使用当前测试方法的情况会变得更糟，因为当涉及到更多策略时，A/B 测试的遗憾可能会更高。
 
-![](../Images/b3458e9a9e9c63d1f0391001f407ba0e.png)
+![](img/b3458e9a9e9c63d1f0391001f407ba0e.png)
 
 多种策略在 A/B 测试中的情况（图像由作者提供）
 
-![](../Images/434ad57533d546fb5b3cb5f98ec49ab3.png)
+![](img/434ad57533d546fb5b3cb5f98ec49ab3.png)
 
 多种策略在 A/B 测试中的遗憾成本（图像由作者提供）
 
@@ -64,13 +64,13 @@ A/B 测试中的遗憾成本（图像由作者提供）
 
 我们欢迎新策略，因为它们可能使我们更接近商业目标。然而，我们通常会怀疑是否在测试过程中浪费了大量有限的时间和资源在糟糕的策略上。
 
-**在经典的A/B测试中，我们保持在探索模式，忽略了策略是否表现优异或较差。** 如果我们采取相反的方式，专注于利用会怎样呢？操作方式如下：当只有少数访客在电子商店进行购买时，我们会快速选择看似最优的策略，然后在测试剩余时间里将所有访客都引导到这个策略上。这种方法具有较高的风险，因为样本量可能不足以根据策略的表现得出正确的结论。
+**在经典的 A/B 测试中，我们保持在探索模式，忽略了策略是否表现优异或较差。** 如果我们采取相反的方式，专注于利用会怎样呢？操作方式如下：当只有少数访客在电子商店进行购买时，我们会快速选择看似最优的策略，然后在测试剩余时间里将所有访客都引导到这个策略上。这种方法具有较高的风险，因为样本量可能不足以根据策略的表现得出正确的结论。
 
-![](../Images/20bae714e8f5957dc5166d3605c2c4d5.png)
+![](img/20bae714e8f5957dc5166d3605c2c4d5.png)
 
 高度利用（图片由作者提供）
 
-![](../Images/d1291950a4b9268296c529dcb55cf38a.png)
+![](img/d1291950a4b9268296c529dcb55cf38a.png)
 
 高度利用的遗憾成本（图片由作者提供）
 
@@ -80,17 +80,17 @@ A/B 测试中的遗憾成本（图像由作者提供）
 
 ## Epsilon-Greedy
 
-Epsilon-Greedy算法基于类似的理念，通过在每位访客的流量中随机选择探索和利用。假设我们希望90%的流量集中于利用，10%的流量用于探索。算法遵循以下步骤：
+Epsilon-Greedy 算法基于类似的理念，通过在每位访客的流量中随机选择探索和利用。假设我们希望 90%的流量集中于利用，10%的流量用于探索。算法遵循以下步骤：
 
 当访客到达电子商店时，
 
 1.  确定当前的最优策略
 
-1.  90%的机会进行利用：将访客引导至当前最优策略。或者，有10%的机会进行探索：将访客引导至剩余策略中的一个。
+1.  90%的机会进行利用：将访客引导至当前最优策略。或者，有 10%的机会进行探索：将访客引导至剩余策略中的一个。
 
-随着时间的推移，我们贪婪地在不同的策略中进行选择以进行利用，并逐渐做出一个一致的当前最优策略的决策。**然而，我们并不会放弃尝试其他策略的机会，即使在测试接近最终阶段时也是如此。** 通过在每次行动中最大化估计的回报，这种方法的总体遗憾成本可能比经典的A/B测试要小。
+随着时间的推移，我们贪婪地在不同的策略中进行选择以进行利用，并逐渐做出一个一致的当前最优策略的决策。**然而，我们并不会放弃尝试其他策略的机会，即使在测试接近最终阶段时也是如此。** 通过在每次行动中最大化估计的回报，这种方法的总体遗憾成本可能比经典的 A/B 测试要小。
 
-![](../Images/90e824d9eb2e25eb1f3da3ea15fa982f.png)
+![](img/90e824d9eb2e25eb1f3da3ea15fa982f.png)
 
 Epsilon-Greedy（图片由作者提供）
 
@@ -118,21 +118,21 @@ Epsilon-Greedy 看起来很有前景，但它是否还能进一步改进？让�
 
 汤普森采样是一种有效的方法，因为它在整个测试过程中动态调整探索和利用之间的平衡。虽然它允许我们在客户到达时做出有关应用哪种策略的明智决策，但这些决策不会针对不同的客户群体进行个性化。
 
-![](../Images/8c28bdd7624318be9ae74379c6feacff.png)
+![](img/8c28bdd7624318be9ae74379c6feacff.png)
 
 照片由[Justin Lim](https://unsplash.com/@justinlim?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 
-让我们考虑两个访客：Peter和Mary。Peter喜欢每个周末与孩子一起观看《神偷奶爸》的视频，而Mary对这些没有兴趣。即使在测试的早期阶段，我们也可以预测Peter更倾向于访问黄色的玩具电子商店页面（《神偷奶爸》的主要颜色！），并且更有可能进行购买。
+让我们考虑两个访客：Peter 和 Mary。Peter 喜欢每个周末与孩子一起观看《神偷奶爸》的视频，而 Mary 对这些没有兴趣。即使在测试的早期阶段，我们也可以预测 Peter 更倾向于访问黄色的玩具电子商店页面（《神偷奶爸》的主要颜色！），并且更有可能进行购买。
 
 这个例子突出了考虑访客上下文数据的重要性。通过利用上下文赌博机，我们可以更系统地应用算法决策。在现实场景中，上下文可能包括关于每位客户的历史数据，如网站点击、过去的购买、打开个性化邮件的频率，甚至是他们当前会话的数据，例如最近的搜索查询。**然后，算法可以学习将不同的上下文与最有可能导致转化的策略关联起来。**
 
 ## 任何新的创意
 
-我们已经讨论了各种方法，包括经典A/B测试、Epsilon-Greedy算法、汤普森采样和上下文赌博机。
+我们已经讨论了各种方法，包括经典 A/B 测试、Epsilon-Greedy 算法、汤普森采样和上下文赌博机。
 
-+   经典的A/B测试：涉及保持在探索模式中。
++   经典的 A/B 测试：涉及保持在探索模式中。
 
-+   Epsilon-Greedy算法：随机平衡探索和利用。
++   Epsilon-Greedy 算法：随机平衡探索和利用。
 
 +   汤普森采样：随着每种策略的样本量增加，更多强调利用。
 

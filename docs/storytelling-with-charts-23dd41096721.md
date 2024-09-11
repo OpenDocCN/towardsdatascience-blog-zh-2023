@@ -1,18 +1,18 @@
 # 使用图表讲故事
 
-> 原文：[https://towardsdatascience.com/storytelling-with-charts-23dd41096721?source=collection_archive---------14-----------------------#2023-02-10](https://towardsdatascience.com/storytelling-with-charts-23dd41096721?source=collection_archive---------14-----------------------#2023-02-10)
+> 原文：[`towardsdatascience.com/storytelling-with-charts-23dd41096721?source=collection_archive---------14-----------------------#2023-02-10`](https://towardsdatascience.com/storytelling-with-charts-23dd41096721?source=collection_archive---------14-----------------------#2023-02-10)
 
-## 第1部分：展示单一的定量变量
+## 第一部分：展示单一的定量变量
 
-[](https://medium.com/@dar.wtz?source=post_page-----23dd41096721--------------------------------)[![Darío Weitz](../Images/28efa942b4c5bd2763d58c44584cf583.png)](https://medium.com/@dar.wtz?source=post_page-----23dd41096721--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23dd41096721--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----23dd41096721--------------------------------) [Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----23dd41096721--------------------------------)
+[](https://medium.com/@dar.wtz?source=post_page-----23dd41096721--------------------------------)![Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----23dd41096721--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23dd41096721--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----23dd41096721--------------------------------) [Darío Weitz](https://medium.com/@dar.wtz?source=post_page-----23dd41096721--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fb26b001728&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-23dd41096721&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=post_page-7fb26b001728----23dd41096721---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23dd41096721--------------------------------) ·8分钟阅读·2023年2月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23dd41096721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-23dd41096721&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=-----23dd41096721---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7fb26b001728&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-23dd41096721&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=post_page-7fb26b001728----23dd41096721---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23dd41096721--------------------------------) ·8 分钟阅读·2023 年 2 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F23dd41096721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-23dd41096721&user=Dar%C3%ADo+Weitz&userId=7fb26b001728&source=-----23dd41096721---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23dd41096721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-23dd41096721&source=-----23dd41096721---------------------bookmark_footer-----------)![](../Images/87afa223cff95ec78d84158a9c6912e6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F23dd41096721&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstorytelling-with-charts-23dd41096721&source=-----23dd41096721---------------------bookmark_footer-----------)![](img/87afa223cff95ec78d84158a9c6912e6.png)
 
 由 [Derek Story](https://unsplash.com/@derekstory?utm_source=medium&utm_medium=referral) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,11 +20,11 @@
 
 例如：
 
-· 过去20年中，阿根廷中央地区1月份的平均降雨量。
+· 过去 20 年中，阿根廷中央地区 1 月份的平均降雨量。
 
 · 信息系统工程学生的智商测试结果。
 
-· 根据2022年人口普查，阿根廷24个省份的人口数据。
+· 根据 2022 年人口普查，阿根廷 24 个省份的人口数据。
 
 · 根据星期几和一天中的小时数，阿根廷的车祸死亡人数。
 

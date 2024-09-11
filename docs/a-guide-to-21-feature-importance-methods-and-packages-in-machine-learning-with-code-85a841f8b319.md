@@ -1,18 +1,18 @@
 # 机器学习中 21 种特征重要性方法和软件包指南（附代码）
 
-> 原文：[https://towardsdatascience.com/a-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319?source=collection_archive---------1-----------------------#2023-12-19](https://towardsdatascience.com/a-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319?source=collection_archive---------1-----------------------#2023-12-19)
+> 原文：[`towardsdatascience.com/a-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319?source=collection_archive---------1-----------------------#2023-12-19`](https://towardsdatascience.com/a-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319?source=collection_archive---------1-----------------------#2023-12-19)
 
 ## 从 OmniXAI、Shapash 和 Dalex 解释性包到 Boruta、Relief 和随机森林特征选择算法
 
-[](https://theomitsa.medium.com/?source=post_page-----85a841f8b319--------------------------------)[![Dr. Theophano Mitsa](../Images/a39dfae5f4409120b840cd9182b148c6.png)](https://theomitsa.medium.com/?source=post_page-----85a841f8b319--------------------------------)[](https://towardsdatascience.com/?source=post_page-----85a841f8b319--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----85a841f8b319--------------------------------) [Dr. Theophano Mitsa](https://theomitsa.medium.com/?source=post_page-----85a841f8b319--------------------------------)
+[](https://theomitsa.medium.com/?source=post_page-----85a841f8b319--------------------------------)![Dr. Theophano Mitsa](https://theomitsa.medium.com/?source=post_page-----85a841f8b319--------------------------------)[](https://towardsdatascience.com/?source=post_page-----85a841f8b319--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----85a841f8b319--------------------------------) [Dr. Theophano Mitsa](https://theomitsa.medium.com/?source=post_page-----85a841f8b319--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7709c007f0ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319&user=Dr.+Theophano+Mitsa&userId=7709c007f0ca&source=post_page-7709c007f0ca----85a841f8b319---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----85a841f8b319--------------------------------) ·19 分钟阅读·2023年12月19日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7709c007f0ca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319&user=Dr.+Theophano+Mitsa&userId=7709c007f0ca&source=post_page-7709c007f0ca----85a841f8b319---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----85a841f8b319--------------------------------) ·19 分钟阅读·2023 年 12 月 19 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F85a841f8b319&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319&source=-----85a841f8b319---------------------bookmark_footer-----------)![](../Images/a932b508bfd0db9d0a7361334718dfc4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F85a841f8b319&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-guide-to-21-feature-importance-methods-and-packages-in-machine-learning-with-code-85a841f8b319&source=-----85a841f8b319---------------------bookmark_footer-----------)![](img/a932b508bfd0db9d0a7361334718dfc4.png)
 
 作者在 DALL-E 上创建的图像
 

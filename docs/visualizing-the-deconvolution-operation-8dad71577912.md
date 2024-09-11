@@ -1,18 +1,18 @@
 # 可视化反卷积操作
 
-> 原文：[https://towardsdatascience.com/visualizing-the-deconvolution-operation-8dad71577912?source=collection_archive---------12-----------------------#2023-02-17](https://towardsdatascience.com/visualizing-the-deconvolution-operation-8dad71577912?source=collection_archive---------12-----------------------#2023-02-17)
+> 原文：[`towardsdatascience.com/visualizing-the-deconvolution-operation-8dad71577912?source=collection_archive---------12-----------------------#2023-02-17`](https://towardsdatascience.com/visualizing-the-deconvolution-operation-8dad71577912?source=collection_archive---------12-----------------------#2023-02-17)
 
 ## 对转置卷积操作的详细拆解
 
-[](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)[![Vitalii Pogribnyi](../Images/1dbdade2fcbd991225cfb92a67c30de2.png)](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------) [Vitalii Pogribnyi](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)
+[](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)![Vitalii Pogribnyi](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------) [Vitalii Pogribnyi](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3f609904004d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&user=Vitalii+Pogribnyi&userId=3f609904004d&source=post_page-3f609904004d----8dad71577912---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------) ·11分钟阅读·2023年2月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dad71577912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&user=Vitalii+Pogribnyi&userId=3f609904004d&source=-----8dad71577912---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3f609904004d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&user=Vitalii+Pogribnyi&userId=3f609904004d&source=post_page-3f609904004d----8dad71577912---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------) ·11 分钟阅读·2023 年 2 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dad71577912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&user=Vitalii+Pogribnyi&userId=3f609904004d&source=-----8dad71577912---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8dad71577912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&source=-----8dad71577912---------------------bookmark_footer-----------)![](../Images/309262e54c0d9444c7d53b0fe05fc099.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8dad71577912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&source=-----8dad71577912---------------------bookmark_footer-----------)![](img/309262e54c0d9444c7d53b0fe05fc099.png)
 
 图片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/qppYBtgonqw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -34,37 +34,37 @@
 
 # **1\. 数据集**
 
-数据是看起来像以下内容的一维Bezier曲线集合：
+数据是看起来像以下内容的一维 Bezier 曲线集合：
 
-![](../Images/87797c629623563ad35b65a6cb6a5b29.png)
+![](img/87797c629623563ad35b65a6cb6a5b29.png)
 
 数据示例
 
 这是生成数据的代码：
 
-这些曲线包含15个点。每条曲线将作为一维数组（而不是为每个点传递[x, y]坐标，只传递[y]）输入网络。
+这些曲线包含 15 个点。每条曲线将作为一维数组（而不是为每个点传递[x, y]坐标，只传递[y]）输入网络。
 
-每条曲线可以用两个参数来表征，这意味着我们的网络应该能够将任何曲线编码/解码成一个大小为2的向量。
+每条曲线可以用两个参数来表征，这意味着我们的网络应该能够将任何曲线编码/解码成一个大小为 2 的向量。
 
 # **2\. 方法**
 
 这是一个可以用来编码曲线的示例网络：
 
-![](../Images/c6dd83d3425eb1f1b3bad12437ceb44e.png)
+![](img/c6dd83d3425eb1f1b3bad12437ceb44e.png)
 
 网络架构
 
-在上图中，输入信号（底部）被分成3个7像素大小的补丁（通过应用窗口大小为7且步幅为4的卷积层）。每个补丁被编码成一个大小为3的向量，生成一个3x3矩阵。然后，这个矩阵被编码成一个大小为2的向量；然后在解码器中反向重复这个操作。
+在上图中，输入信号（底部）被分成 3 个 7 像素大小的补丁（通过应用窗口大小为 7 且步幅为 4 的卷积层）。每个补丁被编码成一个大小为 3 的向量，生成一个 3x3 矩阵。然后，这个矩阵被编码成一个大小为 2 的向量；然后在解码器中反向重复这个操作。
 
-网络可以分为两部分。第一部分能够编码/解码曲线的一部分（7像素的补丁）；而第二部分仅处理3x3矩阵。这样，我可以分别训练每一部分。我可以做一个只处理7像素补丁的小型自动编码器：
+网络可以分为两部分。第一部分能够编码/解码曲线的一部分（7 像素的补丁）；而第二部分仅处理 3x3 矩阵。这样，我可以分别训练每一部分。我可以做一个只处理 7 像素补丁的小型自动编码器：
 
-![](../Images/454031c98d61cdbb258d78aee89efdde.png)
+![](img/454031c98d61cdbb258d78aee89efdde.png)
 
 简化的网络架构
 
 所以我打算将每个示例分成补丁，并训练网络以编码/解码这些补丁。然后，我将组装这个网络来生成整个曲线。
 
-我不会进一步对这个3x3矩阵进行编码，因为这个过程不会带来任何新信息。
+我不会进一步对这个 3x3 矩阵进行编码，因为这个过程不会带来任何新信息。
 
 # **3\. 网络**
 
@@ -72,7 +72,7 @@
 
 我将为编码器和解码器使用独立的模型。它们非常简单：
 
-步幅设置为4是因为在“方法”部分的图像中提到，滤波器每次移动4像素。由于我们这里只实现了一个阶段，这个步幅完全是可选的；它只会在我们组装一个更大的网络时产生影响。
+步幅设置为 4 是因为在“方法”部分的图像中提到，滤波器每次移动 4 像素。由于我们这里只实现了一个阶段，这个步幅完全是可选的；它只会在我们组装一个更大的网络时产生影响。
 
 **训练过程**
 
@@ -82,13 +82,13 @@
 
 这里是这些实验中损失的表现：
 
-![](../Images/758e0a6b3a6af14dbded78fc93fb7bdb.png)
+![](img/758e0a6b3a6af14dbded78fc93fb7bdb.png)
 
 图像显示了 10 次实验中不同种子下损失的均值和标准差。
 
 如果我现在将标签与网络输出进行视觉比较，它们看起来如下：
 
-![](../Images/e064b80ea7765d89aa68f39c714bac38.png)
+![](img/e064b80ea7765d89aa68f39c714bac38.png)
 
 网络评估 — 原始曲线与网络输出的比较
 
@@ -98,17 +98,17 @@
 
 **解码器**
 
-解码器旨在将代码（3维向量）转换为曲线补丁。作为反卷积操作，它有一组过滤器，每个过滤器按某些值缩放，然后进行求和；换句话说，过滤器的加权和应该匹配期望的输出。
+解码器旨在将代码（3 维向量）转换为曲线补丁。作为反卷积操作，它有一组过滤器，每个过滤器按某些值缩放，然后进行求和；换句话说，过滤器的加权和应该匹配期望的输出。
 
 下面的图像包含恢复曲线的两个示例。左侧的示例是从向量 [0.0, 0.1, 0.2] 解码的，右侧的是 [0.1, 0.1, 0.0]。每个示例都包含顶部的缩放过滤器和底部的未缩放过滤器。
 
-![](../Images/0a60a8a4c894190378e9a4e21512fa0b.png)
+![](img/0a60a8a4c894190378e9a4e21512fa0b.png)
 
 解码器过滤器组合
 
 当然，我们可以一次变化一个向量组件并实时渲染网络输出，形成一个很酷的动画。所以，这里就是：
 
-![](../Images/024d6890619c382d8fb711a1e1f8c3d0.png)
+![](img/024d6890619c382d8fb711a1e1f8c3d0.png)
 
 网络操作的可视化
 
@@ -118,7 +118,7 @@
 
 这是所有组件同时变化的情况：
 
-![](../Images/c563eff8bdbff55c7c3884bc98fda2e0.png)
+![](img/c563eff8bdbff55c7c3884bc98fda2e0.png)
 
 网络操作的可视化
 
@@ -126,15 +126,15 @@
 
 这个示例中的编码器看起来有点不直观，但无论如何它以某种方式完成了工作。（其质量将在后续章节中进行评估）
 
-![](../Images/d75602aa169a8e67678970946ec83739.png)
+![](img/d75602aa169a8e67678970946ec83739.png)
 
 编码器组件
 
-左侧展示了原始滤波器，以及一个示例输入。右侧的图显示了这些滤波器应用于示例输入的结果（即每个输入点乘以每个滤波器点）。标签还包含每个滤波器的输出（即滤波器1的每个点乘以输入的每个点的总和为0.02）。
+左侧展示了原始滤波器，以及一个示例输入。右侧的图显示了这些滤波器应用于示例输入的结果（即每个输入点乘以每个滤波器点）。标签还包含每个滤波器的输出（即滤波器 1 的每个点乘以输入的每个点的总和为 0.02）。
 
 上图中的示例将被编码为一个向量 (0.02, 0.08, -0.08)。解码器将以下面的方式恢复输入：
 
-![](../Images/6f2d3f0402abd21520b173407fea3bed.png)
+![](img/6f2d3f0402abd21520b173407fea3bed.png)
 
 编码器性能示例
 
@@ -142,7 +142,7 @@
 
 **那么问题是什么？**
 
-解决方案似乎有效——网络将其7值输入编码成3值代码；然后再用低误差解码回来。但我看到两个改进的可能性：
+解决方案似乎有效——网络将其 7 值输入编码成 3 值代码；然后再用低误差解码回来。但我看到两个改进的可能性：
 
 1. 当网络使用不同的种子进行训练时，滤波器差异很大。这意味着网络的灵活性过大，我们可以对其进行约束。
 
@@ -150,13 +150,13 @@
 
 为了说明第一种情况，我将简单地绘制通过不同种子训练获得的滤波器：
 
-![](../Images/13d6c72f2467b52821343c707ced78c5.png)
+![](img/13d6c72f2467b52821343c707ced78c5.png)
 
 解码器滤波器
 
-显然，我们需要考虑滤波器的符号和顺序：第一幅图中的滤波器3和第二幅图中的滤波器1是相同的。滤波器集合，考虑符号和顺序的补偿，如下所示：
+显然，我们需要考虑滤波器的符号和顺序：第一幅图中的滤波器 3 和第二幅图中的滤波器 1 是相同的。滤波器集合，考虑符号和顺序的补偿，如下所示：
 
-![](../Images/08f2b5b9947b4eff6076a56207682439.png)
+![](img/08f2b5b9947b4eff6076a56207682439.png)
 
 解码器滤波器，重新组织
 
@@ -166,23 +166,23 @@
 
 **代码噪声**
 
-不同的滤波器集给出相同结果的事实表明滤波器可能受到约束。约束滤波器的一种方法是对其进行优先级排序。类似于PCA技术，分离出编码最多信息的滤波器和编码少量细节的滤波器。这可以通过向编码图像添加噪声来实现：
+不同的滤波器集给出相同结果的事实表明滤波器可能受到约束。约束滤波器的一种方法是对其进行优先级排序。类似于 PCA 技术，分离出编码最多信息的滤波器和编码少量细节的滤波器。这可以通过向编码图像添加噪声来实现：
 
-![](../Images/c030378c12f09414de499d2c8982f51c.png)
+![](img/c030378c12f09414de499d2c8982f51c.png)
 
-上图中，左侧的图像展示了一个传统的自编码器：输入被编码到一个2D平面上；然后被解码回来。网络从中间图像的2D平面解码一个稍微偏移的点。这迫使网络将类似的图像编码为在平面上保持接近的点。右侧的图像展示了当解码点可能在Y轴上漂移超过X轴时的情况。这迫使网络将最重要的特征编码到X分量中，因为它的噪声较少。
+上图中，左侧的图像展示了一个传统的自编码器：输入被编码到一个 2D 平面上；然后被解码回来。网络从中间图像的 2D 平面解码一个稍微偏移的点。这迫使网络将类似的图像编码为在平面上保持接近的点。右侧的图像展示了当解码点可能在 Y 轴上漂移超过 X 轴时的情况。这迫使网络将最重要的特征编码到 X 分量中，因为它的噪声较少。
 
 这是在代码中实现的相同概念：
 
 重新运行实验后，我将获得一组更一致的滤波器：
 
-![](../Images/75f206639e4dc299ed8c061b52de875e.png)
+![](img/75f206639e4dc299ed8c061b52de875e.png)
 
 经过噪声训练后的编码器滤波器
 
 如果我像之前一样补偿符号和顺序，在“问题是什么”部分：
 
-![](../Images/bf0d38720591701166ac9e2d405f76f4.png)
+![](img/bf0d38720591701166ac9e2d405f76f4.png)
 
 编码器在经过噪声训练后的滤波器——重新组织
 
@@ -190,7 +190,7 @@
 
 噪声的影响可以通过比较模型在将编码向量的不同组件归零时的表现来检查：
 
-![](../Images/ef864eef758e22f8a447628c3068448f.png)
+![](img/ef864eef758e22f8a447628c3068448f.png)
 
 模型性能的比较，禁用其一个组件
 
@@ -200,13 +200,13 @@
 
 经过噪声训练的模型：
 
-![](../Images/b906abc759a4bc842f51c472a0c29b21.png)
+![](img/b906abc759a4bc842f51c472a0c29b21.png)
 
 网络评估，原始曲线与网络输出的比较——对于具有一个组件禁用的模型，从左到右：完整模型，没有禁用的组件；组件 1 禁用；组件 2 禁用；组件 3 禁用。
 
 对于原始模型：
 
-![](../Images/e9efe3c979d316dabdcb732c40a96b57.png)
+![](img/e9efe3c979d316dabdcb732c40a96b57.png)
 
 网络评估，原始曲线与网络输出的比较——对于具有一个组件禁用的模型，从左到右：完整模型，没有禁用的组件；组件 1 禁用；组件 2 禁用；组件 3 禁用。
 
@@ -216,7 +216,7 @@
 
 现在我们再来看一下编码器滤波器。它们一点也不平滑，而且有些看起来彼此相似。这很奇怪，因为编码器的目的是发现输入的差异，而你不能通过一组相似的滤波器发现差异。网络是如何做到的？答案是我们的合成数据集过于完美，无法训练出正确的滤波器。网络可以通过一个点轻松分类输入：
 
-![](../Images/046ed8ca0a38c45474f073a9b7bc56a3.png)
+![](img/046ed8ca0a38c45474f073a9b7bc56a3.png)
 
 相似点的示例
 
@@ -226,27 +226,27 @@
 
 重新训练模型后，我得到了平滑的滤波器：
 
-![](../Images/98d15010cf036d04e45ac96228a4ce46.png)
+![](img/98d15010cf036d04e45ac96228a4ce46.png)
 
 编码器组件——添加噪声后
 
-可以看到，滤波器1，即噪声最强的一个，比其他滤波器增长得更大。我的猜测是，它试图让其输出大于噪声，以减小噪声的影响。但由于我有一个tanh激活函数，它的输出不能大于1，所以噪声仍然存在。
+可以看到，滤波器 1，即噪声最强的一个，比其他滤波器增长得更大。我的猜测是，它试图让其输出大于噪声，以减小噪声的影响。但由于我有一个 tanh 激活函数，它的输出不能大于 1，所以噪声仍然存在。
 
 # **4. 完整模型**
 
 **组装**
 
-既然我们已经有了模型的一个工作组件，我们可以多次应用它，使其适用于对整个15点曲线的编码/解码。这个没有什么特别之处，我只需要避免将示例切成小块：
+既然我们已经有了模型的一个工作组件，我们可以多次应用它，使其适用于对整个 15 点曲线的编码/解码。这个没有什么特别之处，我只需要避免将示例切成小块：
 
 这将给我以下输出：
 
-![](../Images/ac837fd926e23f1b6339165725be5f45.png)
+![](img/ac837fd926e23f1b6339165725be5f45.png)
 
 重叠问题
 
 好吧，也许我需要更改一些东西。问题是，反卷积会将图像的重叠部分相加。所以下面图中的这些部分被重复计算：
 
-![](../Images/eeb0ee2bfac9f952d7a67b017a861f13.png)
+![](img/eeb0ee2bfac9f952d7a67b017a861f13.png)
 
 重叠的反卷积窗口
 
@@ -254,7 +254,7 @@
 
 经过这种操作后，我会得到以下输出：
 
-![](../Images/72d335a8f77bb7d68e7efcfa7edb22c0.png)
+![](img/72d335a8f77bb7d68e7efcfa7edb22c0.png)
 
 带有重叠的反卷积——更新版
 
@@ -262,7 +262,7 @@
 
 这会导致输出更加平滑：
 
-![](../Images/6def5a9d9de486ed94b02ade1421040e.png)
+![](img/6def5a9d9de486ed94b02ade1421040e.png)
 
 带有重叠的反卷积——最终版
 
@@ -272,4 +272,4 @@
 
 这个简单的示例说明了反卷积如何工作，以及如何利用噪声（有时是不同幅度的噪声）来训练神经网络。
 
-所描述的方法在较大的网络上表现良好，噪声幅度成为一个需要实验的超参数。该方法可能不适用于ReLu激活函数：它们的输出可能会比噪声幅度大得多，从而使噪声失效。
+所描述的方法在较大的网络上表现良好，噪声幅度成为一个需要实验的超参数。该方法可能不适用于 ReLu 激活函数：它们的输出可能会比噪声幅度大得多，从而使噪声失效。

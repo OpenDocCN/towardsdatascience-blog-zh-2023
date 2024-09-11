@@ -1,22 +1,22 @@
 # 现在你看到我 (CME): 基于概念的模型提取
 
-> 原文：[https://towardsdatascience.com/now-you-see-me-cme-concept-based-model-extraction-97231105f8fa?source=collection_archive---------5-----------------------#2023-09-22](https://towardsdatascience.com/now-you-see-me-cme-concept-based-model-extraction-97231105f8fa?source=collection_archive---------5-----------------------#2023-09-22)
+> 原文：[`towardsdatascience.com/now-you-see-me-cme-concept-based-model-extraction-97231105f8fa?source=collection_archive---------5-----------------------#2023-09-22`](https://towardsdatascience.com/now-you-see-me-cme-concept-based-model-extraction-97231105f8fa?source=collection_archive---------5-----------------------#2023-09-22)
 
 ## 一种标签高效的基于概念的模型方法
 
-[](https://medium.com/@kazhdan.dmitry?source=post_page-----97231105f8fa--------------------------------)[![Dmitry Kazhdan](../Images/6243af19a00a52c7732349442af36e3b.png)](https://medium.com/@kazhdan.dmitry?source=post_page-----97231105f8fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97231105f8fa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----97231105f8fa--------------------------------) [Dmitry Kazhdan](https://medium.com/@kazhdan.dmitry?source=post_page-----97231105f8fa--------------------------------)
+[](https://medium.com/@kazhdan.dmitry?source=post_page-----97231105f8fa--------------------------------)![Dmitry Kazhdan](https://medium.com/@kazhdan.dmitry?source=post_page-----97231105f8fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97231105f8fa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----97231105f8fa--------------------------------) [Dmitry Kazhdan](https://medium.com/@kazhdan.dmitry?source=post_page-----97231105f8fa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe322093479&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnow-you-see-me-cme-concept-based-model-extraction-97231105f8fa&user=Dmitry+Kazhdan&userId=e322093479&source=post_page-e322093479----97231105f8fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----97231105f8fa--------------------------------) ·6分钟阅读·2023年9月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F97231105f8fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnow-you-see-me-cme-concept-based-model-extraction-97231105f8fa&user=Dmitry+Kazhdan&userId=e322093479&source=-----97231105f8fa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe322093479&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnow-you-see-me-cme-concept-based-model-extraction-97231105f8fa&user=Dmitry+Kazhdan&userId=e322093479&source=post_page-e322093479----97231105f8fa---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----97231105f8fa--------------------------------) ·6 分钟阅读·2023 年 9 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F97231105f8fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnow-you-see-me-cme-concept-based-model-extraction-97231105f8fa&user=Dmitry+Kazhdan&userId=e322093479&source=-----97231105f8fa---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F97231105f8fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnow-you-see-me-cme-concept-based-model-extraction-97231105f8fa&source=-----97231105f8fa---------------------bookmark_footer-----------)
 
-来自CIKM会议上展示的AIMLAI研讨会论文：“[Now You See Me (CME): 基于概念的模型提取](https://arxiv.org/abs/2010.13233)” ([GitHub](https://github.com/dmitrykazhdan/concept-based-xai))
+来自 CIKM 会议上展示的 AIMLAI 研讨会论文：“[Now You See Me (CME): 基于概念的模型提取](https://arxiv.org/abs/2010.13233)” ([GitHub](https://github.com/dmitrykazhdan/concept-based-xai))
 
-![](../Images/e4cdb7ef047c2d8286f26dc76bd181b1.png)
+![](img/e4cdb7ef047c2d8286f26dc76bd181b1.png)
 
 视觉摘要。图片由作者提供。
 
@@ -28,11 +28,11 @@
 
 **解决方案 —** 我们的 [基于概念的模型提取（CME）框架](https://arxiv.org/abs/2010.13233)，能够以 *半监督* 方式从预训练的原始卷积神经网络（CNN）中提取基于概念的模型，同时保持最终任务性能。
 
-![](../Images/be26db1273cd5e11276d419dbecd5917.png)
+![](img/be26db1273cd5e11276d419dbecd5917.png)
 
 原始 CNN 的端到端输入处理。作者提供的图像。
 
-![](../Images/d1dee7d5aa792dfb8ba814fdae4760c4.png)
+![](img/d1dee7d5aa792dfb8ba814fdae4760c4.png)
 
 两阶段概念模型处理。作者提供的图像。
 
@@ -42,7 +42,7 @@
 
 在概念编码过程中，概念信息从高维输入数据中提取。随后，在概念处理阶段，提取的概念信息用于生成所需的输出任务标签。CBMs 的一个显著特点是它们依赖于具有语义意义的 *概念表示*，作为下游任务预测的中间、可解释的表示，如下所示：
 
-![](../Images/60c35c44941241ebca1adb934e5a9035.png)
+![](img/60c35c44941241ebca1adb934e5a9035.png)
 
 概念瓶颈模型处理。作者提供的图像。
 
@@ -62,13 +62,13 @@
 
 > 不幸的是，概念瓶颈模型需要大量的概念标注进行训练。
 
-## **利用CME的半监督概念模型**
+## **利用 CME 的半监督概念模型**
 
 CME 依赖于 [3] 中强调的类似观察，其中观察到原始 CNN 模型通常在其 *隐藏空间* 中保留大量有关概念的信息，这可以用于无额外标注成本的概念信息挖掘。重要的是，这项工作考虑了基础概念 *未知* 的场景，并且必须以无监督的方式从模型的隐藏空间中提取。
 
 使用 CME，我们利用上述观察，考虑一个场景，在该场景中，我们 *已经* 了解基础概念，但每个概念只有少量样本标注。类似于 [3]，CME 依赖于给定的预训练原始 CNN 和少量概念标注，以 *半监督的方式* 提取进一步的概念标注，如下所示：
 
-![](../Images/d4e9376dc4b8e9c8fbb35d2646206727.png)
+![](img/d4e9376dc4b8e9c8fbb35d2646206727.png)
 
 CME 模型处理。图片来源于作者。
 
@@ -86,7 +86,7 @@ CME 模型处理。图片来源于作者。
 
 总体来说，*概念编码器* 功能可以总结如下（假设总共有 *k* 个概念）：
 
-![](../Images/8d407a7a7dbd5271ff98dc23b120582d.png)
+![](img/8d407a7a7dbd5271ff98dc23b120582d.png)
 
 CME 概念编码器方程。图片来源于作者。
 
@@ -106,25 +106,25 @@ CME 概念编码器方程。图片来源于作者。
 
 +   **实现高概念预测准确度**，在许多情况下可与 CBM 相媲美，*即使在与最终任务无关的概念上：*
 
-![](../Images/fc498f365fd28af1a22c1673209dfeee.png)
+![](img/fc498f365fd28af1a22c1673209dfeee.png)
 
 CBM 和 CME 模型的概念准确度，绘制了三个不同预测任务中的所有概念。图像由作者提供。
 
 +   **允许对概念进行人为干预** — 即允许人们通过修正少量选定概念来快速改善模型性能：
 
-![](../Images/6729e306dcee0d9dab97d1f8567d40f1.png)
+![](img/6729e306dcee0d9dab97d1f8567d40f1.png)
 
 CME 和 CBM 模型性能在不同概念干预程度下的变化。图像由作者提供。
 
 +   **从概念的角度解释模型决策，** 允许实践者直接绘制概念处理器模型：
 
-![](../Images/4bad7e0572912c8a27684492f3574d23.png)
+![](img/4bad7e0572912c8a27684492f3574d23.png)
 
 一个概念处理器模型直接可视化的示例，针对一个选定任务。图像由作者提供。
 
 +   **通过分析模型层间的隐藏空间，帮助理解模型对概念的处理：**
 
-![](../Images/d3c4f3811571ce29c8d968ac0db1d97d.png)
+![](img/d3c4f3811571ce29c8d968ac0db1d97d.png)
 
 一个简单 CNN 的隐藏空间可视化示例。列代表不同的层，行代表不同的概念，每行的颜色对应于该概念的值。标有 * 的为“最佳” CME 层。图像由作者提供。
 
@@ -138,7 +138,7 @@ CME 和 CBM 模型性能在不同概念干预程度下的变化。图像由作�
 
 ## **参考文献**
 
-[1] Chris Molnar. 解释性机器学习。 [https://christophm.github.io/interpretable-ml-book/](https://christophm.github.io/interpretable-ml-book/)
+[1] Chris Molnar. 解释性机器学习。 [`christophm.github.io/interpretable-ml-book/`](https://christophm.github.io/interpretable-ml-book/)
 
 [2] Pang Wei Koh, Thao Nguyen, Yew Siang Tang, Stephen Mussmann, Emma Pierson, Been Kim, 和 Percy Liang. 概念瓶颈模型。*在国际机器学习会议*，第 5338–5348 页。PMLR*（2020）。
 

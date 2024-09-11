@@ -1,8 +1,8 @@
 # 将自定义 ML 模型部署为 SageMaker 端点
 
-> 原文：[https://towardsdatascience.com/deploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428?source=collection_archive---------0-----------------------#2023-12-08](https://towardsdatascience.com/deploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428?source=collection_archive---------0-----------------------#2023-12-08)
+> 原文：[`towardsdatascience.com/deploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428?source=collection_archive---------0-----------------------#2023-12-08`](https://towardsdatascience.com/deploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428?source=collection_archive---------0-----------------------#2023-12-08)
 
-![](../Images/4c0d654b542867fe832bc898ebb49a1d.png)
+![](img/4c0d654b542867fe832bc898ebb49a1d.png)
 
 照片由 [Ricardo Gomez Angel](https://unsplash.com/@rgaleriacom?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -10,11 +10,11 @@
 
 ## 快速简便的 AWS SageMaker 端点创建指南
 
-[](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)[![Hai Rozencwajg](../Images/8812d8935fe505ef26b58a8ec739a06f.png)](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------) [Hai Rozencwajg](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)
+[](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)![Hai Rozencwajg](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------) [Hai Rozencwajg](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5921283ee0f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428&user=Hai+Rozencwajg&userId=5921283ee0f1&source=post_page-5921283ee0f1----6d2540226428---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------) · 10 分钟阅读 · 2023年12月8日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6d2540226428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428&user=Hai+Rozencwajg&userId=5921283ee0f1&source=-----6d2540226428---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5921283ee0f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428&user=Hai+Rozencwajg&userId=5921283ee0f1&source=post_page-5921283ee0f1----6d2540226428---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------) · 10 分钟阅读 · 2023 年 12 月 8 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6d2540226428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428&user=Hai+Rozencwajg&userId=5921283ee0f1&source=-----6d2540226428---------------------clap_footer-----------)
 
 --
 
@@ -465,7 +465,7 @@ response = json.loads(response["Body"].read().decode())
 
 利用 [anomalib](https://github.com/openvinotoolkit/anomalib/tree/main/src/anomalib/models/ai_vad) 提供的出色可视化，我们可以绘制给定 UCSDped2 数据集中某帧的框和标签。
 
-![](../Images/d149445b2ddcf4c8112e7bede44c60a7.png)
+![](img/d149445b2ddcf4c8112e7bede44c60a7.png)
 
 作者提供的图像。该图像是使用 [anomalib](https://github.com/openvinotoolkit/anomalib/tree/main/src/anomalib/models/ai_vad) 包生成的，基于 [UCSD 异常检测数据集](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm)。绿色框表示那些行人的步态没有异常，而红色框表示的骑车者则可能由于 AI VAD 模型的速度和姿态特征而存在异常。
 

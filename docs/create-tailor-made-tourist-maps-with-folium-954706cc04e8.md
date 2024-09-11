@@ -1,18 +1,18 @@
 # 使用 Folium 创建量身定制的旅游地图
 
-> 原文：[https://towardsdatascience.com/create-tailor-made-tourist-maps-with-folium-954706cc04e8?source=collection_archive---------7-----------------------#2023-05-17](https://towardsdatascience.com/create-tailor-made-tourist-maps-with-folium-954706cc04e8?source=collection_archive---------7-----------------------#2023-05-17)
+> 原文：[`towardsdatascience.com/create-tailor-made-tourist-maps-with-folium-954706cc04e8?source=collection_archive---------7-----------------------#2023-05-17`](https://towardsdatascience.com/create-tailor-made-tourist-maps-with-folium-954706cc04e8?source=collection_archive---------7-----------------------#2023-05-17)
 
 ## 为你的下一次假期增添点儿趣味吧！
 
-[](https://medium.com/@lee_vaughan?source=post_page-----954706cc04e8--------------------------------)[![Lee Vaughan](../Images/9f6b90bb76102f438ab0b9a4a62ffa3f.png)](https://medium.com/@lee_vaughan?source=post_page-----954706cc04e8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----954706cc04e8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----954706cc04e8--------------------------------) [李·沃恩](https://medium.com/@lee_vaughan?source=post_page-----954706cc04e8--------------------------------)
+[](https://medium.com/@lee_vaughan?source=post_page-----954706cc04e8--------------------------------)![Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----954706cc04e8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----954706cc04e8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----954706cc04e8--------------------------------) [李·沃恩](https://medium.com/@lee_vaughan?source=post_page-----954706cc04e8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-tailor-made-tourist-maps-with-folium-954706cc04e8&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----954706cc04e8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----954706cc04e8--------------------------------) ·7 分钟阅读·2023年5月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F954706cc04e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-tailor-made-tourist-maps-with-folium-954706cc04e8&user=Lee+Vaughan&userId=5d604015c08b&source=-----954706cc04e8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-tailor-made-tourist-maps-with-folium-954706cc04e8&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----954706cc04e8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----954706cc04e8--------------------------------) ·7 分钟阅读·2023 年 5 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F954706cc04e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-tailor-made-tourist-maps-with-folium-954706cc04e8&user=Lee+Vaughan&userId=5d604015c08b&source=-----954706cc04e8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F954706cc04e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-tailor-made-tourist-maps-with-folium-954706cc04e8&source=-----954706cc04e8---------------------bookmark_footer-----------)![](../Images/1cfaa27bc421326f160d3d3bc945c27f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F954706cc04e8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-tailor-made-tourist-maps-with-folium-954706cc04e8&source=-----954706cc04e8---------------------bookmark_footer-----------)![](img/1cfaa27bc421326f160d3d3bc945c27f.png)
 
 图片由 [凯拉·杜洪](https://unsplash.com/@kayla_marie?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/zsqF_j9ZHXw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

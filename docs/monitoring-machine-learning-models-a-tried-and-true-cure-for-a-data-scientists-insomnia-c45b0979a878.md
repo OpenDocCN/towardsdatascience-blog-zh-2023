@@ -1,18 +1,18 @@
 # 监控机器学习模型：数据科学家和机器学习工程师的基础实践
 
-> 原文：[https://towardsdatascience.com/monitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878?source=collection_archive---------10-----------------------#2023-02-06](https://towardsdatascience.com/monitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878?source=collection_archive---------10-----------------------#2023-02-06)
+> 原文：[`towardsdatascience.com/monitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878?source=collection_archive---------10-----------------------#2023-02-06`](https://towardsdatascience.com/monitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878?source=collection_archive---------10-----------------------#2023-02-06)
 
 ## 初学者监控机器学习模型指南
 
-[](https://pawarsaurav842.medium.com/?source=post_page-----c45b0979a878--------------------------------)[![Saurav Pawar](../Images/7f1e9ff4cbc01ea22879e86b0444f1b8.png)](https://pawarsaurav842.medium.com/?source=post_page-----c45b0979a878--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c45b0979a878--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c45b0979a878--------------------------------) [Saurav Pawar](https://pawarsaurav842.medium.com/?source=post_page-----c45b0979a878--------------------------------)
+[](https://pawarsaurav842.medium.com/?source=post_page-----c45b0979a878--------------------------------)![Saurav Pawar](https://pawarsaurav842.medium.com/?source=post_page-----c45b0979a878--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c45b0979a878--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c45b0979a878--------------------------------) [Saurav Pawar](https://pawarsaurav842.medium.com/?source=post_page-----c45b0979a878--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F23bab6a33c37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878&user=Saurav+Pawar&userId=23bab6a33c37&source=post_page-23bab6a33c37----c45b0979a878---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c45b0979a878--------------------------------) ·15 分钟阅读·2023年2月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc45b0979a878&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878&user=Saurav+Pawar&userId=23bab6a33c37&source=-----c45b0979a878---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F23bab6a33c37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878&user=Saurav+Pawar&userId=23bab6a33c37&source=post_page-23bab6a33c37----c45b0979a878---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c45b0979a878--------------------------------) ·15 分钟阅读·2023 年 2 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc45b0979a878&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878&user=Saurav+Pawar&userId=23bab6a33c37&source=-----c45b0979a878---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc45b0979a878&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878&source=-----c45b0979a878---------------------bookmark_footer-----------)![](../Images/b724235039409778bca1ea4be9266e03.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc45b0979a878&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-a-tried-and-true-cure-for-a-data-scientists-insomnia-c45b0979a878&source=-----c45b0979a878---------------------bookmark_footer-----------)![](img/b724235039409778bca1ea4be9266e03.png)
 
 图片由 [Nathan Dumlao](https://unsplash.com/@nate_dumlao?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -38,7 +38,7 @@
 
 模型漂移是指由于数据和输入输出变量之间关系的变化，模型的准确性逐渐下降的现象。
 
-![](../Images/4338b7de44bf9f4871e8d6a3c3bd22eb.png)
+![](img/4338b7de44bf9f4871e8d6a3c3bd22eb.png)
 
 作者创作的图像
 
@@ -64,27 +64,27 @@
 
 如果我们考虑一下“漂移”这个词的定义，它本质上指的是随时间推移的渐进性变化。同样，机器学习中的漂移也会以不同的速度发生。以下是漂移的不同类型：
 
-+   **渐进性变化**——随着时间的推移，当新的想法被实施时，会发生渐进的变化。例如，考虑一个在2015年开发的汽车价格预测模型，当时的准确度很高。由于汽车价格随时间上升，几年后，预测的有效性和准确性开始下降。这是有道理的，因为正如我们所知道的，汽车价格一般是逐渐上升的。然而，如果没有考虑到这一点，它可能会对模型的准确性产生负面影响。
++   **渐进性变化**——随着时间的推移，当新的想法被实施时，会发生渐进的变化。例如，考虑一个在 2015 年开发的汽车价格预测模型，当时的准确度很高。由于汽车价格随时间上升，几年后，预测的有效性和准确性开始下降。这是有道理的，因为正如我们所知道的，汽车价格一般是逐渐上升的。然而，如果没有考虑到这一点，它可能会对模型的准确性产生负面影响。
 
-![](../Images/698775c89c05a6ab893b01404ab202ee.png)
+![](img/698775c89c05a6ab893b01404ab202ee.png)
 
 渐进性变化（作者创作的图像）
 
 +   **突发的变化**——变化可能会突然发生。例如：在疫情期间及之后，购买模式和消费者行为的突然调整。
 
-![](../Images/54dabd51b8a85443a86b35eb3ec6dd33.png)
+![](img/54dabd51b8a85443a86b35eb3ec6dd33.png)
 
 突发变化（作者创作的图像）
 
 +   **重复出现**——在这种情况下，变化在初始观察后会重新出现，或者我们可以说它会周期性地发生。以冬季服装购物为例。
 
-![](../Images/7947844ff585d74ad96ebd081c898a19.png)
+![](img/7947844ff585d74ad96ebd081c898a19.png)
 
 递归漂移（图像由作者创建）
 
 +   **峰值—** 这些是可能对模型产生影响的特殊情况。例如：战争、疫情、经济衰退等引起的变化
 
-![](../Images/2b0e234ba7142c589b852537c22dc31d.png)
+![](img/2b0e234ba7142c589b852537c22dc31d.png)
 
 峰值漂移（图像由作者创建）
 
@@ -102,7 +102,7 @@
 
 这种漂移发生在类变量（y）、模型输出或标签分布的分布发生变化时。例如，疫情导致汽车成本大幅上升，这使得汽车价格分布向更高的默认值偏移。疫情前开发的汽车价格预测模型在疫情后无法以足够的准确性预测输入值。
 
-![](../Images/6755b1c5acbed6a3ab3a8405fbe26014.png)
+![](img/6755b1c5acbed6a3ab3a8405fbe26014.png)
 
 标签漂移（图像由作者创建）
 
@@ -110,7 +110,7 @@
 
 当 p(y|X) 发生变化而 p(X) 保持不变时，就发生了概念漂移。在这里，p(X) 和 p(y) 分别表示观察到的汽车特征 X 和汽车价格 y 的概率，而 p(y|X) 表示给定汽车特征的价格的条件分布。在汽车价格预测的例子中，给定汽车属性的价格的条件概率 p(y|X) 可能会发生波动。考虑到汽车的座位容量分布没有变化。如今，客户想要更大的汽车，因此其价格上涨了。特别是对于较大的汽车，给定座位容量的汽车价格的条件概率可能会发生变化。
 
-![](../Images/508963a5fb53638dcb60550be185c0de.png)
+![](img/508963a5fb53638dcb60550be185c0de.png)
 
 概念漂移（图像由作者创建）
 
@@ -142,11 +142,11 @@
 
 在继续之前，让我们先看看这个用例！
 
-这个数据集集中于汽车贷款，我们的目标是确定借款人是否能够偿还他们的债务。数据集中的每一行代表一个客户，我们有关于每个客户贷款申请的详细信息，比如汽车的价值、预期月收入、是否还清了之前的贷款等。最重要的是，这个数据集的一部分（“repaid”列中有0和1的数据）包含了客户是否能够偿还汽车贷款的信息，因此这些数据被用来训练机器学习模型。我们还可以评估这个模型的性能，因为除了预测输出（“y_pred_proba”列），我们还有实际输出（“repaid”列）。我们还有一个名为“partition”的列，用于区分“reference”和“analysis”数据。机器学习模型部署后提取的数据被称为“analysis”数据。实际进行预测的日期和时间列在“timestamp”列中。
+这个数据集集中于汽车贷款，我们的目标是确定借款人是否能够偿还他们的债务。数据集中的每一行代表一个客户，我们有关于每个客户贷款申请的详细信息，比如汽车的价值、预期月收入、是否还清了之前的贷款等。最重要的是，这个数据集的一部分（“repaid”列中有 0 和 1 的数据）包含了客户是否能够偿还汽车贷款的信息，因此这些数据被用来训练机器学习模型。我们还可以评估这个模型的性能，因为除了预测输出（“y_pred_proba”列），我们还有实际输出（“repaid”列）。我们还有一个名为“partition”的列，用于区分“reference”和“analysis”数据。机器学习模型部署后提取的数据被称为“analysis”数据。实际进行预测的日期和时间列在“timestamp”列中。
 
-正如我们所见，在这种特定的使用案例中，我们只能在特定时间后获得目标/预测数据，因此我们只能在一年或几个月后确定客户是否能够偿还债务。这使得评估机器学习模型的有效性相当具有挑战性。而这正是我们将利用NannyML来做的，以查看我们的模型在部署后没有目标数据的情况下表现如何。
+正如我们所见，在这种特定的使用案例中，我们只能在特定时间后获得目标/预测数据，因此我们只能在一年或几个月后确定客户是否能够偿还债务。这使得评估机器学习模型的有效性相当具有挑战性。而这正是我们将利用 NannyML 来做的，以查看我们的模型在部署后没有目标数据的情况下表现如何。
 
-让我们将数据划分为“**reference**”和“**analysis**”，因为NannyML需要先从参考数据集中学习模型，然后才能监控实际分析的数据，这些数据被提供为分析（部署后）数据：
+让我们将数据划分为“**reference**”和“**analysis**”，因为 NannyML 需要先从参考数据集中学习模型，然后才能监控实际分析的数据，这些数据被提供为分析（部署后）数据：
 
 使用训练（“reference”）数据，我们将现在估计部署后数据（“analysis”）的性能。
 
@@ -154,27 +154,27 @@
 
 输出：
 
-![](../Images/be76a543c072c1c7d92c81c65932204c.png)
+![](img/be76a543c072c1c7d92c81c65932204c.png)
 
 性能估计（图片由作者创建）
 
-在没有目标数据的情况下，NannyML使用一种称为CBPE（基于置信度的性能估计）的方法来计算正在使用的机器学习模型的性能。如果您希望完全理解这种算法，这里有一个精彩的[解释](https://nannyml.readthedocs.io/en/stable/how_it_works/performance_estimation.html#performance-estimation-deep-dive)在他们的官方文档中。
+在没有目标数据的情况下，NannyML 使用一种称为 CBPE（基于置信度的性能估计）的方法来计算正在使用的机器学习模型的性能。如果您希望完全理解这种算法，这里有一个精彩的[解释](https://nannyml.readthedocs.io/en/stable/how_it_works/performance_estimation.html#performance-estimation-deep-dive)在他们的官方文档中。
 
-CBPE基本上利用测试数据（2018年1月至2018年7月用蓝色虚线表示的数据）作为模型输出或概率分数，以便得出分析数据（紫色阴影区域）的性能。我们可以看到，模型部署后性能显著下降，因此我们将其标记为稍微红色阴影区域。这是模型未按计划运行的主要指示，因此需要进一步调查以识别问题。
+CBPE 基本上利用测试数据（2018 年 1 月至 2018 年 7 月用蓝色虚线表示的数据）作为模型输出或概率分数，以便得出分析数据（紫色阴影区域）的性能。我们可以看到，模型部署后性能显著下降，因此我们将其标记为稍微红色阴影区域。这是模型未按计划运行的主要指示，因此需要进一步调查以识别问题。
 
 > **注意：**
 > 
-> 因为我们还不知道目标数据，这个性能是不准确的，实际的估计性能可能低于NannyML使用CBPE预测的性能。
+> 因为我们还不知道目标数据，这个性能是不准确的，实际的估计性能可能低于 NannyML 使用 CBPE 预测的性能。
 
-如前所述，模型漂移是ML模型失败的最常见原因，因此让我们估计**单变量**和**多变量**漂移。
+如前所述，模型漂移是 ML 模型失败的最常见原因，因此让我们估计**单变量**和**多变量**漂移。
 
-当变量检测到分布中的显著变化时，就会发生单变量漂移。NannyML用于检测数据漂移的单变量策略分别检查每个变量，并将分析数据期间产生的块与参考期间进行对比。为了识别漂移，NannyML除了距离测量之外，还提供了统计测试。这些方法被称为方法。一些方法只能用于分类数据，其他只能用于连续数据，而一些方法可以同时用于两者。我们可以使用NannyML选择应用哪些方法。以下是使用NannyML估计单变量漂移的代码：
+当变量检测到分布中的显著变化时，就会发生单变量漂移。NannyML 用于检测数据漂移的单变量策略分别检查每个变量，并将分析数据期间产生的块与参考期间进行对比。为了识别漂移，NannyML 除了距离测量之外，还提供了统计测试。这些方法被称为方法。一些方法只能用于分类数据，其他只能用于连续数据，而一些方法可以同时用于两者。我们可以使用 NannyML 选择应用哪些方法。以下是使用 NannyML 估计单变量漂移的代码：
 
 现在让我们拟合“参考”数据并估计“分析”数据的单变量漂移：
 
 > **注意：**
 > 
-> 通过使用`to_df()`方法，我们可以将结果转换为DataFrame。
+> 通过使用`to_df()`方法，我们可以将结果转换为 DataFrame。
 
 参考数据作为衡量分析数据的标准，必须提供给`fit()`方法。然后，使用提供的数据，`calculate()`方法将计算漂移的结果。
 
@@ -182,77 +182,77 @@ CBPE基本上利用测试数据（2018年1月至2018年7月用蓝色虚线表示
 > 
 > 由于空间限制，我无法在此显示输出，但你可以参考[这个](https://github.com/saurav935/NannyML)。
 
-下一步是可视化结果。对于给定的列，NannyML可能会同时绘制漂移和分布。`jensen-shannon`方法对每个连续列的结果将首先被绘制，然后是每个分类列的`chi2`：
+下一步是可视化结果。对于给定的列，NannyML 可能会同时绘制漂移和分布。`jensen-shannon`方法对每个连续列的结果将首先被绘制，然后是每个分类列的`chi2`：
 
 > **注意：**
 > 
 > 为了保持文章简短，我不会显示每个特征的可视化，但你可以通过[这个](https://github.com/saurav935/NannyML)访问它们。
 
-![](../Images/be76a543c072c1c7d92c81c65932204c.png)
+![](img/be76a543c072c1c7d92c81c65932204c.png)
 
-loan_length的Jensen-Shannon距离（图像由作者创建）
+loan_length 的 Jensen-Shannon 距离（图像由作者创建）
 
-![](../Images/bd784ac6bce659363ffbe53554f8e101.png)
+![](img/bd784ac6bce659363ffbe53554f8e101.png)
 
-car_value的Jensen-Shannon距离（图像由作者创建）
+car_value 的 Jensen-Shannon 距离（图像由作者创建）
 
-![](../Images/3ffb91c40327b56022a044f1e6add535.png)
+![](img/3ffb91c40327b56022a044f1e6add535.png)
 
-y_pred_proba的Jensen-Shannon距离（图像由作者创建）
+y_pred_proba 的 Jensen-Shannon 距离（图像由作者创建）
 
 `chi2`结果用于分类列：
 
-![](../Images/f77f7c785bb966015617cf18ac4ad36b.png)
+![](img/f77f7c785bb966015617cf18ac4ad36b.png)
 
-salary_range的Chi2统计量（图像由作者创建）
+salary_range 的 Chi2 统计量（图像由作者创建）
 
-![](../Images/db95f421aa5542e136b1ec625990da33.png)
+![](img/db95f421aa5542e136b1ec625990da33.png)
 
-repaid_loan_on_prev_car的Chi2统计量（图像由作者创建）
+repaid_loan_on_prev_car 的 Chi2 统计量（图像由作者创建）
 
-![](../Images/bc43532a1a9ce385cb5ac86f4e82bbcb.png)
+![](img/bc43532a1a9ce385cb5ac86f4e82bbcb.png)
 
-size_of_downpayment的Chi2统计量（图像由作者创建）
+size_of_downpayment 的 Chi2 统计量（图像由作者创建）
 
 # 连续变量的分布
 
-使用NannyML，我们还可以获得连续变量和类别变量的分布详情。在处理连续变量时，NannyML创建了一个名为joyplot的图形，显示了每个区块中变量的估计概率分布。发现漂移的部分被高亮显示：
+使用 NannyML，我们还可以获得连续变量和类别变量的分布详情。在处理连续变量时，NannyML 创建了一个名为 joyplot 的图形，显示了每个区块中变量的估计概率分布。发现漂移的部分被高亮显示：
 
-![](../Images/05be75102e56dce8d3467a155a5b23c0.png)
+![](img/05be75102e56dce8d3467a155a5b23c0.png)
 
-car_value随时间的分布（图像由作者创建）
+car_value 随时间的分布（图像由作者创建）
 
-当我们从2019年1月到2019年7月时，可以看到第一四分位数发生了变化。
+当我们从 2019 年 1 月到 2019 年 7 月时，可以看到第一四分位数发生了变化。
 
-![](../Images/4d5f6a58f466880692c8dbf87daf1351.png)
+![](img/4d5f6a58f466880692c8dbf87daf1351.png)
 
-loan_length随时间的分布（图像由作者创建）
+loan_length 随时间的分布（图像由作者创建）
 
-随着我们从2019年1月移动到2019年7月，我们可以从上图中看到，接到一些请求的汽车贷款也有所增加。
+随着我们从 2019 年 1 月移动到 2019 年 7 月，我们可以从上图中看到，接到一些请求的汽车贷款也有所增加。
 
-![](../Images/67dfccd93ae8e4c9a03bc65959fc11fc.png)
+![](img/67dfccd93ae8e4c9a03bc65959fc11fc.png)
 
-y_pred_proba随时间的分布（图像由作者创建）
+y_pred_proba 随时间的分布（图像由作者创建）
 
 在上图中，最大预期概率略微向下移动，最低水平略微向上移动。这是数据接近决策边界的明显迹象。这也被称为**模型输出漂移**。
 
 # 类别变量的分布
 
-NannyML创建堆叠条形图，以显示每个区块中类别变量的分布。为了使图表更易于检查，如果一个变量有超过五个类别，只显示前四个。使用下面的代码，我们可以为模型中的类别变量创建条形图：
+NannyML 创建堆叠条形图，以显示每个区块中类别变量的分布。为了使图表更易于检查，如果一个变量有超过五个类别，只显示前四个。使用下面的代码，我们可以为模型中的类别变量创建条形图：
 
-![](../Images/8b4b5f68a20fefff6d7eda3f8bef3618.png)
+![](img/8b4b5f68a20fefff6d7eda3f8bef3618.png)
 
-salary_range随时间的分布（图像由作者创建）
+salary_range 随时间的分布（图像由作者创建）
 
 最低收入范围在上图中略微上移（白色圆圈高亮区域）。此外，最高薪资范围有所降低（紫色圆圈高亮区域）。
 
-![](../Images/b63813b2628f2f1f9d5ba908b6c0abc8.png)
+![](img/b63813b2628f2f1f9d5ba908b6c0abc8.png)
 
-repaid_loan_on_prev_car随时间的分布（图像由作者创建）
+repaid_loan_on_prev_car 随时间的分布（图像由作者创建）
 
 上述所有图表有一个共同点：每个图表都包括一个**时间**参数。因此，值得考虑是否可以在没有数据集中的时间特征的情况下执行等效的分析？
 
-NannyML的机器学习模型监控服务关注实际随时间的演变，这使其成为其**独特**的功能之一。然而，通过简单地将数据划分为**参考**集和**分析**集，NannyML也可以用于非时间序列分析。
+NannyML 的机器学习模型监控服务关注实际随时间的演变，这使其成为其**独特**的功能之一。然而，通过简单地将数据划分为**参考**集和**分析**集，NannyML 也可以用于非时间序列分析。
 
 > **注意：** 建议在分析中包含时间因素，因为它可以产生比非时间分析更准确的结果。
 
@@ -272,7 +272,7 @@ NannyML的机器学习模型监控服务关注实际随时间的演变，这使�
 
 让我们使用以下代码可视化我们的多变量漂移结果：
 
-![](../Images/73011e0522760bc22658b911be25067e.png)
+![](img/73011e0522760bc22658b911be25067e.png)
 
 数据重建漂移（图片由作者创建）
 
@@ -292,7 +292,7 @@ NannyML的机器学习模型监控服务关注实际随时间的演变，这使�
 
 特征是由 NannyML 根据它们在所有方法中收到的警报总数进行排名的。预计的性能和单变量特征漂移与此相关。
 
-![](../Images/971b1578b83c08a6ff2db2f91ceb35b3.png)
+![](img/971b1578b83c08a6ff2db2f91ceb35b3.png)
 
 排名（图片由作者创建）
 

@@ -1,18 +1,18 @@
 # Vertex AI 流水线中的分布式超参数调优
 
-> 原文：[https://towardsdatascience.com/distributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64?source=collection_archive---------11-----------------------#2023-03-29](https://towardsdatascience.com/distributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64?source=collection_archive---------11-----------------------#2023-03-29)
+> 原文：[`towardsdatascience.com/distributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64?source=collection_archive---------11-----------------------#2023-03-29`](https://towardsdatascience.com/distributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64?source=collection_archive---------11-----------------------#2023-03-29)
 
 ## 启用 GCP Vertex AI 流水线中的分布式超参数调优路径
 
-[](https://medium.com/@hangyu_5199?source=post_page-----2f3278a1eb64--------------------------------)[![Hang Yu](../Images/feb12ff14af31f9875ea2ad121d5a41e.png)](https://medium.com/@hangyu_5199?source=post_page-----2f3278a1eb64--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2f3278a1eb64--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2f3278a1eb64--------------------------------) [Hang Yu](https://medium.com/@hangyu_5199?source=post_page-----2f3278a1eb64--------------------------------)
+[](https://medium.com/@hangyu_5199?source=post_page-----2f3278a1eb64--------------------------------)![Hang Yu](https://medium.com/@hangyu_5199?source=post_page-----2f3278a1eb64--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2f3278a1eb64--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2f3278a1eb64--------------------------------) [Hang Yu](https://medium.com/@hangyu_5199?source=post_page-----2f3278a1eb64--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2665192d75e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64&user=Hang+Yu&userId=2665192d75e3&source=post_page-2665192d75e3----2f3278a1eb64---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2f3278a1eb64--------------------------------) ·10 min read·2023年3月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2f3278a1eb64&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64&user=Hang+Yu&userId=2665192d75e3&source=-----2f3278a1eb64---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2665192d75e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64&user=Hang+Yu&userId=2665192d75e3&source=post_page-2665192d75e3----2f3278a1eb64---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2f3278a1eb64--------------------------------) ·10 min read·2023 年 3 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2f3278a1eb64&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64&user=Hang+Yu&userId=2665192d75e3&source=-----2f3278a1eb64---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2f3278a1eb64&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64&source=-----2f3278a1eb64---------------------bookmark_footer-----------)![](../Images/8b0fddf4a86690a33d7255047da3c52b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2f3278a1eb64&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-hyperparameter-tuning-in-vertex-ai-pipeline-2f3278a1eb64&source=-----2f3278a1eb64---------------------bookmark_footer-----------)![](img/8b0fddf4a86690a33d7255047da3c52b.png)
 
 照片由[Marsha Reid](https://unsplash.com/@marsha_reid?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -44,17 +44,17 @@ Vertex AI 流水线提供了一种便捷的方法来实现从数据收集到端�
 
 [github.com](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb?source=post_page-----2f3278a1eb64--------------------------------)
 
-然而，这些教程的局限性在于分布式HPT被呈现为一个独立的HPT任务/管道，而没有明确展示如何将其集成到现有的Vertex AI管道中，如[**V**ertex AI管道示例](https://github.com/GoogleCloudPlatform/professional-services/tree/main/examples/vertex_pipeline)所示，这促使我分享我成功弥合这一差距的尝试。我相信这将有利于许多已经建立或将要建立基于Vertex AI管道的ML工作流的企业。
+然而，这些教程的局限性在于分布式 HPT 被呈现为一个独立的 HPT 任务/管道，而没有明确展示如何将其集成到现有的 Vertex AI 管道中，如[**V**ertex AI 管道示例](https://github.com/GoogleCloudPlatform/professional-services/tree/main/examples/vertex_pipeline)所示，这促使我分享我成功弥合这一差距的尝试。我相信这将有利于许多已经建立或将要建立基于 Vertex AI 管道的 ML 工作流的企业。
 
-**这个博客的主要贡献是将分布式HPT集成到Vertex AI管道中。具体来说，它演示了如何：**
+**这个博客的主要贡献是将分布式 HPT 集成到 Vertex AI 管道中。具体来说，它演示了如何：**
 
-1.  将数据收集和预处理链入Vertex AI管道中的分布式HPT。相比之下，[GCP HPT任务教程](https://codelabs.developers.google.com/vertex-training-200#0)和[HPT管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)通过在训练步骤中加载静态的tensorflow数据集简化了数据收集和处理。
+1.  将数据收集和预处理链入 Vertex AI 管道中的分布式 HPT。相比之下，[GCP HPT 任务教程](https://codelabs.developers.google.com/vertex-training-200#0)和[HPT 管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)通过在训练步骤中加载静态的 tensorflow 数据集简化了数据收集和处理。
 
-1.  优化HPT结果收集以避免docker参数长度限制。在[HPT管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)中，所有试验的完整HPT结果被编码为一个字符串，该字符串作为输入参数传递给docker任务以进行进一步处理。然而，风险在于如果搜索空间较大，该字符串可能会违反docker输入参数的长度限制。因此，本文探讨了一种将这两个组件结合的简单解决方案。
+1.  优化 HPT 结果收集以避免 docker 参数长度限制。在[HPT 管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)中，所有试验的完整 HPT 结果被编码为一个字符串，该字符串作为输入参数传递给 docker 任务以进行进一步处理。然而，风险在于如果搜索空间较大，该字符串可能会违反 docker 输入参数的长度限制。因此，本文探讨了一种将这两个组件结合的简单解决方案。
 
-1.  将最佳参数保存在Firestore中。在[HPT管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)中，HPT运行试验、保存模型并部署最佳模型，但之后如何访问最佳参数尚不清楚。这不适合HPT和训练期望解耦的场景。因此，本文探讨了使用Firestore选项来保存最佳超参数以供后续训练作业使用。
+1.  将最佳参数保存在 Firestore 中。在[HPT 管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)中，HPT 运行试验、保存模型并部署最佳模型，但之后如何访问最佳参数尚不清楚。这不适合 HPT 和训练期望解耦的场景。因此，本文探讨了使用 Firestore 选项来保存最佳超参数以供后续训练作业使用。
 
-1.  将分布式HPT链到训练组件中，并使用最佳参数训练模型。与[HPT管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)中所示的每个HPT试验都保存模型不同，本文探讨了一种替代方案，即重新训练并仅保存最佳模型，尽管这种方法是否提供了更好的存储-计算权衡仍然存在争议，取决于具体场景。
+1.  将分布式 HPT 链到训练组件中，并使用最佳参数训练模型。与[HPT 管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb)中所示的每个 HPT 试验都保存模型不同，本文探讨了一种替代方案，即重新训练并仅保存最佳模型，尽管这种方法是否提供了更好的存储-计算权衡仍然存在争议，取决于具体场景。
 
 # 将分布式 HPT 集成到 Vertex AI 管道中
 
@@ -140,7 +140,7 @@ def worker_pool_specs(project_id: str,
     return worker_pool_specs
 ```
 
-![](../Images/98738cee422ae463f6258bdf299f0792.png)
+![](img/98738cee422ae463f6258bdf299f0792.png)
 
 通过 worker-pool-specs 组件将预处理链入 HPT
 
@@ -172,7 +172,7 @@ best_trial_op = hyperparameter_tuning_job.GetBestTrialOp(
 
 当前，GetTrialsOp 模块将所有 HPT 试验的结果编码为一个字符串，如下所示。
 
-![](../Images/ce5cb406081b5ed85f04d1b48f6af1db.png)
+![](img/ce5cb406081b5ed85f04d1b48f6af1db.png)
 
 GetTrialsOp 的示例输出
 
@@ -226,7 +226,7 @@ def GetBestTrialOp(gcp_resources: str, study_spec_metrics: list) -> str:
     return study.Trial.to_json(best_trial)
 ```
 
-![](../Images/256f15b58f9ea020e2e64d578f62aba7.png)
+![](img/256f15b58f9ea020e2e64d578f62aba7.png)
 
 GetTrialsOp 注入到 GetBestTrialOp 中成为一个组件
 
@@ -234,13 +234,13 @@ GetTrialsOp 注入到 GetBestTrialOp 中成为一个组件
 
 在 [HPT 管道示例](https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/cad623ef84882f410fcc0dc39527be25a5e5f584/notebooks/community/ml_ops/stage3/get_started_with_hpt_pipeline_components.ipynb) 中，每个 HPT 试验保存其训练模型，并且最佳模型会在后续部署。然而，这种将 HPT 和模型训练耦合在一起的方法暴露了一些限制：
 
-1.  部署的模型是在一次HPT试验期间训练的。然而，实际操作中并非所有训练都需要HPT。例如，使用矩阵分解构建的推荐系统。该模型需要频繁地使用最新的用户-项目交互数据进行训练，但HPT并不总是需要。因此，解耦训练和HPT的选项是必要的。
+1.  部署的模型是在一次 HPT 试验期间训练的。然而，实际操作中并非所有训练都需要 HPT。例如，使用矩阵分解构建的推荐系统。该模型需要频繁地使用最新的用户-项目交互数据进行训练，但 HPT 并不总是需要。因此，解耦训练和 HPT 的选项是必要的。
 
-1.  直接部署HPT模型可能会导致偏倚评估，因为HPT是基于验证数据的。
+1.  直接部署 HPT 模型可能会导致偏倚评估，因为 HPT 是基于验证数据的。
 
-为此，与其保存训练后的模型，更倾向于将最佳HPT结果保存到Firestore等数据库以备后用。存储最佳超参数后，模型训练和HPT被解耦。最佳参数可以在需要新的HPT轮次之前重复用于训练模型。此外，通过在训练模型时添加单独的测试集，可以改进模型评估。
+为此，与其保存训练后的模型，更倾向于将最佳 HPT 结果保存到 Firestore 等数据库以备后用。存储最佳超参数后，模型训练和 HPT 被解耦。最佳参数可以在需要新的 HPT 轮次之前重复用于训练模型。此外，通过在训练模型时添加单独的测试集，可以改进模型评估。
 
-以下代码演示了如何将最佳HPT结果保存到Firestore。具体来说，定义了一个名为best_hpt_to_args的管道组件，用于处理由之前讨论的GetBestTrialOp步骤找到的最佳超参数。Firestore的存储结构需要根据具体情况决定。在这里，时间戳用于标记HPT管道。最后，此函数返回字符串“true”，这是管道条件所偏好的，以启动稍后讨论的条件模型训练。为了可观察性，验证准确率也被记录，但这是完全可选的。
+以下代码演示了如何将最佳 HPT 结果保存到 Firestore。具体来说，定义了一个名为 best_hpt_to_args 的管道组件，用于处理由之前讨论的 GetBestTrialOp 步骤找到的最佳超参数。Firestore 的存储结构需要根据具体情况决定。在这里，时间戳用于标记 HPT 管道。最后，此函数返回字符串“true”，这是管道条件所偏好的，以启动稍后讨论的条件模型训练。为了可观察性，验证准确率也被记录，但这是完全可选的。
 
 ```py
 @component(packages_to_install=['google-cloud-firestore==2.3'])
@@ -272,17 +272,17 @@ def best_hpt_to_args(hpt_best: str,
     return "true"
 ```
 
-![](../Images/33f13156abf2552447f9663849fffefb.png)
+![](img/33f13156abf2552447f9663849fffefb.png)
 
-保存HPT结果的Firestore示例
+保存 HPT 结果的 Firestore 示例
 
-![](../Images/186df62776fe928e597cb8a84919dd0f.png)
+![](img/186df62776fe928e597cb8a84919dd0f.png)
 
-将最佳HPT结果保存到Firestore
+将最佳 HPT 结果保存到 Firestore
 
 ## 4\. 使用最佳超参数训练模型
 
-最后，HPT完成了。我做的最后一个改进是添加了一个条件训练任务，以便利用最新的HPT最佳超参数立即更新生产中的模型。这一步是完全可选的，取决于具体的使用案例。值得注意的是，这个条件接收的是hpt_op.output，这是一个函数，封装了从worker_pool_specs到best_hpt_to_args的所有HPT组件，因此它的输出等于best_hpt_to_args的输出。详情请参见笔记本。
+最后，HPT 完成了。我做的最后一个改进是添加了一个条件训练任务，以便利用最新的 HPT 最佳超参数立即更新生产中的模型。这一步是完全可选的，取决于具体的使用案例。值得注意的是，这个条件接收的是 hpt_op.output，这是一个函数，封装了从 worker_pool_specs 到 best_hpt_to_args 的所有 HPT 组件，因此它的输出等于 best_hpt_to_args 的输出。详情请参见笔记本。
 
 ```py
 with dsl.Condition(
@@ -309,11 +309,11 @@ with dsl.Condition(
       vpc_network=vpc_network)
 ```
 
-![](../Images/ba2fe1c2f095bb49182f915fe5ec6400.png)
+![](img/ba2fe1c2f095bb49182f915fe5ec6400.png)
 
 条件训练
 
-在训练脚本([images/training/app.py](https://github.com/simon19891101/professional-services/blob/distributed-hpt-demo/examples/vertex_pipeline/images/training/app.py))中，实现了一个名为get_best_param_values的函数，用于通过查询Firestore收集最新的HPT结果。根据标记HPT管道的不同方式，可能会有不同的方法来收集感兴趣的HPT结果。收集的超参数形式为字典，因此可以轻松用于训练模型。
+在训练脚本([images/training/app.py](https://github.com/simon19891101/professional-services/blob/distributed-hpt-demo/examples/vertex_pipeline/images/training/app.py))中，实现了一个名为 get_best_param_values 的函数，用于通过查询 Firestore 收集最新的 HPT 结果。根据标记 HPT 管道的不同方式，可能会有不同的方法来收集感兴趣的 HPT 结果。收集的超参数形式为字典，因此可以轻松用于训练模型。
 
 ```py
 def get_best_param_values(project_id, solution_name='hpt-pipeline-template'):
@@ -335,17 +335,17 @@ best_param_values = get_best_param_values(project_id=args.hp_config_gcp_project_
 
 # 总结
 
-Vertex AI管道在GCP上提供了一个出色的平台，用于以高性能和灵活性将ML解决方案生产化。然而，现有教程对于如何实现分布式HPT的覆盖面有限。为填补这一空白，本文展示了将分布式GCP HPT模块成功集成到现有Vertex AI管道中的尝试。具体而言，现有教程忽视的四个局限性已被解决：
+Vertex AI 管道在 GCP 上提供了一个出色的平台，用于以高性能和灵活性将 ML 解决方案生产化。然而，现有教程对于如何实现分布式 HPT 的覆盖面有限。为填补这一空白，本文展示了将分布式 GCP HPT 模块成功集成到现有 Vertex AI 管道中的尝试。具体而言，现有教程忽视的四个局限性已被解决：
 
-1.  数据输入。这将允许用户即时使用预处理的数据进行HPT。
+1.  数据输入。这将允许用户即时使用预处理的数据进行 HPT。
 
-1.  HPT结果收集。优化的结果收集能够探索更大的搜索空间。
+1.  HPT 结果收集。优化的结果收集能够探索更大的搜索空间。
 
-1.  HPT结果存储。将HPT结果保存在Firestore中意味着训练和HPT可以解耦。
+1.  HPT 结果存储。将 HPT 结果保存在 Firestore 中意味着训练和 HPT 可以解耦。
 
-1.  使用最佳HPT结果进行模型训练。现在我们可以使用保存的HPT结果来训练新模型。
+1.  使用最佳 HPT 结果进行模型训练。现在我们可以使用保存的 HPT 结果来训练新模型。
 
-以上讨论的改进预计将大大有利于Vertex AI管道在需要涉及完全自动化分布式HPT的工业应用案例中，以优化运行中的ML解决方案的预测能力。有关详细的端到端实现，请访问[笔记本](https://github.com/simon19891101/professional-services/blob/distributed-hpt-demo/examples/vertex_pipeline/notebook/hpt_pipeline_development.ipynb)，并随时通过[LinkedIn](https://www.linkedin.com/in/hang-yu-0242ac120002/)与我联系。
+以上讨论的改进预计将大大有利于 Vertex AI 管道在需要涉及完全自动化分布式 HPT 的工业应用案例中，以优化运行中的 ML 解决方案的预测能力。有关详细的端到端实现，请访问[笔记本](https://github.com/simon19891101/professional-services/blob/distributed-hpt-demo/examples/vertex_pipeline/notebook/hpt_pipeline_development.ipynb)，并随时通过[LinkedIn](https://www.linkedin.com/in/hang-yu-0242ac120002/)与我联系。
 
 感谢您的阅读！
 

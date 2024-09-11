@@ -1,18 +1,18 @@
 # 直方图均衡化：逐步指南 (CV- 06)
 
-> 原文：[https://towardsdatascience.com/histogram-equalization-a-step-by-step-guideline-06-527dcb1a7504?source=collection_archive---------2-----------------------#2023-07-27](https://towardsdatascience.com/histogram-equalization-a-step-by-step-guideline-06-527dcb1a7504?source=collection_archive---------2-----------------------#2023-07-27)
+> 原文：[`towardsdatascience.com/histogram-equalization-a-step-by-step-guideline-06-527dcb1a7504?source=collection_archive---------2-----------------------#2023-07-27`](https://towardsdatascience.com/histogram-equalization-a-step-by-step-guideline-06-527dcb1a7504?source=collection_archive---------2-----------------------#2023-07-27)
 
 ## 图像的直方图均衡化详解
 
-[![Md. Zubair](../Images/1b983a23226ce7561796fa5b28c00d65.png)](https://zubairhossain.medium.com/?source=post_page-----527dcb1a7504--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----527dcb1a7504--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----527dcb1a7504--------------------------------)
+![Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----527dcb1a7504--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----527dcb1a7504--------------------------------) [Md. Zubair](https://zubairhossain.medium.com/?source=post_page-----527dcb1a7504--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhistogram-equalization-a-step-by-step-guideline-06-527dcb1a7504&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----527dcb1a7504---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----527dcb1a7504--------------------------------) ·5分钟阅读·2023年7月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F527dcb1a7504&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhistogram-equalization-a-step-by-step-guideline-06-527dcb1a7504&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----527dcb1a7504---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fdaeaeeea52&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhistogram-equalization-a-step-by-step-guideline-06-527dcb1a7504&user=Md.+Zubair&userId=2fdaeaeeea52&source=post_page-2fdaeaeeea52----527dcb1a7504---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----527dcb1a7504--------------------------------) ·5 分钟阅读·2023 年 7 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F527dcb1a7504&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhistogram-equalization-a-step-by-step-guideline-06-527dcb1a7504&user=Md.+Zubair&userId=2fdaeaeeea52&source=-----527dcb1a7504---------------------clap_footer-----------)
 
 --
 
-![](../Images/36c2593b53eee8c7ba0611e2ee487993.png)
+![](img/36c2593b53eee8c7ba0611e2ee487993.png)
 
 原始图像由 [Dan Fador](https://pixabay.com/users/danfador-55851/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=190055) 提供，来源于 [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=190055)（左上图是原图，左下图是该图的灰度版本，右侧的图像是直方图均衡化的结果）
 
@@ -22,11 +22,11 @@
 
 ## 目录
 
-1.  `[**图像直方图**](#bc52)`
+1.  `**图像直方图**`
 
-1.  `[**直方图均衡化的完整过程**](#38d7)`
+1.  `**直方图均衡化的完整过程**`
 
-1.  `[**逐步、动手实现**](#04de)`
+1.  `**逐步、动手实现**`
 
 ## 图像直方图
 

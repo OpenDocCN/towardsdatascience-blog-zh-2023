@@ -1,18 +1,18 @@
 # 批量 K-Means 与 Python Numba 和 CUDA C
 
-> 原文：[https://towardsdatascience.com/batched-k-means-with-python-numba-and-cuda-c-3d4946c587b9?source=collection_archive---------2-----------------------#2023-11-27](https://towardsdatascience.com/batched-k-means-with-python-numba-and-cuda-c-3d4946c587b9?source=collection_archive---------2-----------------------#2023-11-27)
+> 原文：[`towardsdatascience.com/batched-k-means-with-python-numba-and-cuda-c-3d4946c587b9?source=collection_archive---------2-----------------------#2023-11-27`](https://towardsdatascience.com/batched-k-means-with-python-numba-and-cuda-c-3d4946c587b9?source=collection_archive---------2-----------------------#2023-11-27)
 
 ## 如何加速你的数据分析 1600x 与 Scikit-Learn（附代码！）
 
-[](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)[![Alex Shao](../Images/07a2cd8de23969f5732995b0fda2a25e.png)](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------) [Alex Shao](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)
+[](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)![Alex Shao](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------) [Alex Shao](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F723362c2a30f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&user=Alex+Shao&userId=723362c2a30f&source=post_page-723362c2a30f----3d4946c587b9---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------) ·15分钟阅读·2023年11月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d4946c587b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&user=Alex+Shao&userId=723362c2a30f&source=-----3d4946c587b9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F723362c2a30f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&user=Alex+Shao&userId=723362c2a30f&source=post_page-723362c2a30f----3d4946c587b9---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------) ·15 分钟阅读·2023 年 11 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d4946c587b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&user=Alex+Shao&userId=723362c2a30f&source=-----3d4946c587b9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d4946c587b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&source=-----3d4946c587b9---------------------bookmark_footer-----------)![](../Images/79476c6455fbebdbb31e6dad7cb9a6ee.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d4946c587b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&source=-----3d4946c587b9---------------------bookmark_footer-----------)![](img/79476c6455fbebdbb31e6dad7cb9a6ee.png)
 
 图像由[Midjourney](https://www.midjourney.com/)基于作者的绘图生成
 
@@ -50,9 +50,9 @@ Numba 对于那些更喜欢 Python 而不是 C 的人来说，是一个更为温
 
 这些内核被组织成 **网格**、**块** 和 **线程** 的层次结构。在 GPU 的上下文中，每个线程连接到一个核心，并执行内核的一个副本。
 
-![](../Images/7ca4bde115664dba1490f8d5a3508a04.png)
+![](img/7ca4bde115664dba1490f8d5a3508a04.png)
 
-GPUFunction[(x, y), z](数据结构)。图片来自作者。
+GPUFunction(x, y), z。图片来自作者。
 
 **块** 是在一个多处理器上运行的一组线程。
 
@@ -68,7 +68,7 @@ GPUFunction[(x, y), z](数据结构)。图片来自作者。
 
 现在让我们介绍 k-means 算法。K-means 是一种无监督的聚类算法，它将数据集划分为 k 个不同且不重叠的簇。给定一组数据点，我们首先初始化 k 个质心，即起始的簇中心：
 
-![](../Images/4a070de7a2e4b4e264a3e5d204301933.png)
+![](img/4a070de7a2e4b4e264a3e5d204301933.png)
 
 质心初始化（k=3）。图片来自作者。
 
@@ -80,15 +80,15 @@ GPUFunction[(x, y), z](数据结构)。图片来自作者。
 
 这些步骤会重复进行，直到收敛，或当质心位置不再显著变化时。输出的是一组 k 个簇质心坐标，以及一个标记簇索引（称为**标签**）的数组，用于每个原始数据点。
 
-![](../Images/afea9c8c722a794cc07e166dd1149978.png)
+![](img/afea9c8c722a794cc07e166dd1149978.png)
 
 K-means 算法（k = 3）。图片来自作者。
 
-对于大型数据集，质心初始化可能会显著影响算法的输出。因此，程序会尝试多个初始质心，称为初始种子，并返回最佳种子的结果。每个种子从初始数据集中选择，且不重复——这意味着没有初始质心会被重复。我们算法的最佳种子数量是数据点数量的三分之一。在我们的程序中，因为我们对每一行100个数据点运行 k-means，最佳的种子数量为33。
+对于大型数据集，质心初始化可能会显著影响算法的输出。因此，程序会尝试多个初始质心，称为初始种子，并返回最佳种子的结果。每个种子从初始数据集中选择，且不重复——这意味着没有初始质心会被重复。我们算法的最佳种子数量是数据点数量的三分之一。在我们的程序中，因为我们对每一行 100 个数据点运行 k-means，最佳的种子数量为 33。
 
 在我们的 k-means 函数中，一百万行由块表示，而线程代表种子。块中的线程被组织成 warps，这是硬件架构中最小的线程调度单元。每个 warp 包含 32 个线程，因此将块大小设置为 32 的倍数是最佳的。每个块然后输出具有最小惯性的种子数据，惯性由簇中心与其分配点之间的欧几里得距离之和来衡量。
 
-![](../Images/3adcb0e40e317278702305fbf5431809.png)
+![](img/3adcb0e40e317278702305fbf5431809.png)
 
 并行化 K-means — GPU 端。图像由作者提供。
 
@@ -102,7 +102,7 @@ def hostKMeans:
     outputLabels = createEmptyArray(numRows, lineSize)
 
     sendToDevice(inputData, outputCentroids, outputLabels)
-    cuda_kmeans[blockDimensions, threadDimensions](inputData, outputCentroids, outputLabels)
+    cuda_kmeansblockDimensions, threadDimensions
     waitForKernelCompletion()
     copyFromDevice(outputCentroids, outputLabels)
 ```
@@ -151,7 +151,7 @@ def KMeansKernel(data, outputCentroids, outputLabels)
 
 当算法中的后续步骤依赖于此聚合已完成时，线程必须使用内置的 CUDA syncthreads() 函数进行**同步**。**注意：** 必须对 syncthreads() 调用的位置**非常小心**，因为尝试在不是所有线程都已完成时同步线程可能会导致**死锁**和整个程序的挂起。
 
-我们的内核函数在下面的伪代码中描述，名为cuda_kmeans。这个函数负责安排上述过程，为所有32个种子结果留出空间，并选择最佳种子以生成质心和标签的最终输出。
+我们的内核函数在下面的伪代码中描述，名为 cuda_kmeans。这个函数负责安排上述过程，为所有 32 个种子结果留出空间，并选择最佳种子以生成质心和标签的最终输出。
 
 ```py
 def KMeansDevice(dataRow, centroids, labels)
@@ -172,40 +172,40 @@ def KMeansDevice(dataRow, centroids, labels)
         updateCentroids(dataRow, centroidsRow, labelsRow)
 ```
 
-从cuda_kmeans我们调用实际的k-means算法，传递新实例化的共享内存。在我们的k-means算法中，我们首先选择初始质心，然后将它们从小到大排序。我们迭代地将数据点分配给最近的质心，并更新质心位置，直到收敛。
+从 cuda_kmeans 我们调用实际的 k-means 算法，传递新实例化的共享内存。在我们的 k-means 算法中，我们首先选择初始质心，然后将它们从小到大排序。我们迭代地将数据点分配给最近的质心，并更新质心位置，直到收敛。
 
-为了确定是否已经达到了收敛，我们使用一个名为find_yard_stick的辅助函数。这个函数计算并返回两个初始质心之间的最小距离（yard_stick）。当质心在单次迭代中移动的距离都不超过yard_stick乘以epsilon时，我们的收敛条件就满足了。
+为了确定是否已经达到了收敛，我们使用一个名为 find_yard_stick 的辅助函数。这个函数计算并返回两个初始质心之间的最小距离（yard_stick）。当质心在单次迭代中移动的距离都不超过 yard_stick 乘以 epsilon 时，我们的收敛条件就满足了。
 
-在收敛后，我们返回到cuda_kmeans。在这里，我们通过计算每个质心与其数据点之间的平方欧几里得距离来确定最佳种子。具有最有效分组的种子——通过最小的**惯性**来表示——被认为是最佳的。然后，我们从这个种子中提取质心和标签，并将它们复制到输出数组中的一行。一旦所有块都完成，这些输出将被复制回主机（CPU）。
+在收敛后，我们返回到 cuda_kmeans。在这里，我们通过计算每个质心与其数据点之间的平方欧几里得距离来确定最佳种子。具有最有效分组的种子——通过最小的**惯性**来表示——被认为是最佳的。然后，我们从这个种子中提取质心和标签，并将它们复制到输出数组中的一行。一旦所有块都完成，这些输出将被复制回主机（CPU）。
 
-![](../Images/e023eb19ea4a1684ef6fee357567e11a.png)
+![](img/e023eb19ea4a1684ef6fee357567e11a.png)
 
-K-means算法中的数据传输。图片由作者提供。
+K-means 算法中的数据传输。图片由作者提供。
 
 ## Numba 简介
 
-设计自定义内核最简单的方法是使用Numba。**Numba**是一个Python库，可以用于将Python代码编译成CUDA内核。
+设计自定义内核最简单的方法是使用 Numba。**Numba**是一个 Python 库，可以用于将 Python 代码编译成 CUDA 内核。
 
-![](../Images/934081746e8272fba1084b302a68e739.png)
+![](img/934081746e8272fba1084b302a68e739.png)
 
 抽象层次。图片由作者提供。
 
-在底层，Numba与CUDA进行接口。为了并行化代码，Numba将你指定的GPU代码编译成内核并传递给GPU，将程序逻辑分为两个主要部分：
+在底层，Numba 与 CUDA 进行接口。为了并行化代码，Numba 将你指定的 GPU 代码编译成内核并传递给 GPU，将程序逻辑分为两个主要部分：
 
-1.  CPU级别代码
+1.  CPU 级别代码
 
-1.  GPU级别代码
+1.  GPU 级别代码
 
-使用Numba，你可以将代码中的顺序部分和可并行部分分开，分别交给CPU和GPU处理。为了将函数编译到GPU上，程序员在函数定义上方使用**@cuda.jit**装饰器，从而将该函数转换为一个**内核**，该内核从CPU（主机）调用，但在GPU（设备）上并行执行。
+使用 Numba，你可以将代码中的顺序部分和可并行部分分开，分别交给 CPU 和 GPU 处理。为了将函数编译到 GPU 上，程序员在函数定义上方使用**@cuda.jit**装饰器，从而将该函数转换为一个**内核**，该内核从 CPU（主机）调用，但在 GPU（设备）上并行执行。
 
 # Python Numba
 
 链接到[Colab](https://colab.research.google.com/drive/1Il_OyESH92iVapFas0oTarF74IQcM3sq?usp=sharing)。
 
-Numba作为Python代码与CUDA平台之间的桥梁。由于Python代码与上述算法伪代码几乎相同，因此我只提供几个关键相关语法的示例。
+Numba 作为 Python 代码与 CUDA 平台之间的桥梁。由于 Python 代码与上述算法伪代码几乎相同，因此我只提供几个关键相关语法的示例。
 
 ```py
-cuda_kmeans[(NUM_ROWS,), (NUM_SEEDS,)](input_rows, output_labels, output_centroids, random_states)
+cuda_kmeans(NUM_ROWS,), (NUM_SEEDS,)
 ```
 
 在实例化了必要的全局变量和数据结构后，我们可以从主机调用内核 cuda_kmeans。Numba 需要两个元组来表示块和线程的维度。由于我们将使用一维块和线程，因此每个元组中的第二个索引为空。我们还传入了我们的数据结构和一个随机状态数组用于随机种子的实例化。
@@ -404,30 +404,30 @@ __device__ void kmeans(core_params_t& core_params) {
 
 在 colab 的基准测试中，我们使用免费的 T4 GPU Colab 实例。
 
-![](../Images/43b25f0e293f72b6503a1ede9ed7c5c2.png)
+![](img/43b25f0e293f72b6503a1ede9ed7c5c2.png)
 
 图片由作者提供。
 
-结果很好——Python Numba代码比非并行化的CPU代码快两个数量级，而CUDA C代码快三个数量级。内核函数易于扩展，算法可以修改以支持更高维度的聚类。
+结果很好——Python Numba 代码比非并行化的 CPU 代码快两个数量级，而 CUDA C 代码快三个数量级。内核函数易于扩展，算法可以修改以支持更高维度的聚类。
 
-请注意，C和Python算法中的随机初始质心生成并没有完全优化以使用所有核心。当优化后，Python算法的运行时间可能会非常接近C代码的运行时间。
+请注意，C 和 Python 算法中的随机初始质心生成并没有完全优化以使用所有核心。当优化后，Python 算法的运行时间可能会非常接近 C 代码的运行时间。
 
-![](../Images/a29d96b77f789ca427e1d575f9d8871d.png)
+![](img/a29d96b77f789ca427e1d575f9d8871d.png)
 
-基于2023年11月23日的免费Colab T4 GPU的运行时间。图像由作者提供。
+基于 2023 年 11 月 23 日的免费 Colab T4 GPU 的运行时间。图像由作者提供。
 
-在不同数据集上运行k-means函数一百次并记录结果时间后，我们注意到第一次迭代显著较慢，因为编译C和Python代码在Colab中需要时间。
+在不同数据集上运行 k-means 函数一百次并记录结果时间后，我们注意到第一次迭代显著较慢，因为编译 C 和 Python 代码在 Colab 中需要时间。
 
 # 结论
 
-现在你应该准备好编写自己的自定义GPU内核了！一个剩下的问题可能是——你应该使用CUDA C还是Numba来处理并行的数据处理工作负载？这要看情况。两者都比现成的scikit-learn快得多。虽然在我的案例中，CUDA C的批处理k-means实现比使用Numba编写的等效实现快了大约3.5倍，但Python提供了一些重要的优势，比如可读性以及对专门C编程技能的依赖较少，特别是对于主要使用Python的团队。此外，你的具体实现的运行时间将取决于你是否优化了代码，例如，避免在GPU上触发序列化操作。总之，如果你对C和并行编程都不熟悉，我建议先使用Numba来原型化你的算法，然后如果需要额外的加速，再将其转化为CUDA C。
+现在你应该准备好编写自己的自定义 GPU 内核了！一个剩下的问题可能是——你应该使用 CUDA C 还是 Numba 来处理并行的数据处理工作负载？这要看情况。两者都比现成的 scikit-learn 快得多。虽然在我的案例中，CUDA C 的批处理 k-means 实现比使用 Numba 编写的等效实现快了大约 3.5 倍，但 Python 提供了一些重要的优势，比如可读性以及对专门 C 编程技能的依赖较少，特别是对于主要使用 Python 的团队。此外，你的具体实现的运行时间将取决于你是否优化了代码，例如，避免在 GPU 上触发序列化操作。总之，如果你对 C 和并行编程都不熟悉，我建议先使用 Numba 来原型化你的算法，然后如果需要额外的加速，再将其转化为 CUDA C。
 
 # 参考文献
 
-1.  [Scikit-learn: Python中的机器学习](https://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html)，Pedregosa *等人*，JMLR 12，第2825–2830页，2011年。
+1.  [Scikit-learn: Python 中的机器学习](https://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html)，Pedregosa *等人*，JMLR 12，第 2825–2830 页，2011 年。
 
-1.  NVIDIA, Vingelmann, P. & Fitzek, F.H.P., 2020\. CUDA，版本：10.2\. 89，获取地址：[https://developer.nvidia.com/cuda-toolkit.](https://developer.nvidia.com/cuda-toolkit.)
+1.  NVIDIA, Vingelmann, P. & Fitzek, F.H.P., 2020\. CUDA，版本：10.2\. 89，获取地址：[`developer.nvidia.com/cuda-toolkit.`](https://developer.nvidia.com/cuda-toolkit.)
 
-1.  Lam, Siu Kwan, Antoine Pitrou, 和 Stanley Seibert. [“Numba: 基于llvm的python JIT编译器。”](https://numba.pydata.org) *第二届LLVM编译器基础设施在HPC研讨会论文集*。2015年。
+1.  Lam, Siu Kwan, Antoine Pitrou, 和 Stanley Seibert. [“Numba: 基于 llvm 的 python JIT 编译器。”](https://numba.pydata.org) *第二届 LLVM 编译器基础设施在 HPC 研讨会论文集*。2015 年。
 
-1.  Harris, C.R., Millman, K.J., van der Walt, S.J. 等. “*使用NumPy的数组编程*。” Nature 585，357–362（2020年）。DOI: [10.1038/s41586–020–2649–2](https://doi.org/10.1038/s41586-020-2649-2)。 ([出版商链接](https://www.nature.com/articles/s41586-020-2649-2))
+1.  Harris, C.R., Millman, K.J., van der Walt, S.J. 等. “*使用 NumPy 的数组编程*。” Nature 585，357–362（2020 年）。DOI: [10.1038/s41586–020–2649–2](https://doi.org/10.1038/s41586-020-2649-2)。 ([出版商链接](https://www.nature.com/articles/s41586-020-2649-2))

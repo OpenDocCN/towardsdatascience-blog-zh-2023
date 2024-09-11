@@ -1,22 +1,22 @@
-# Pandas: apply、map还是transform？
+# Pandas: apply、map 还是 transform？
 
-> 原文：[https://towardsdatascience.com/pandas-apply-map-or-transform-dd931659e9cf?source=collection_archive---------3-----------------------#2023-01-31](https://towardsdatascience.com/pandas-apply-map-or-transform-dd931659e9cf?source=collection_archive---------3-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/pandas-apply-map-or-transform-dd931659e9cf?source=collection_archive---------3-----------------------#2023-01-31`](https://towardsdatascience.com/pandas-apply-map-or-transform-dd931659e9cf?source=collection_archive---------3-----------------------#2023-01-31)
 
-## Pandas最通用函数的指南
+## Pandas 最通用函数的指南
 
-[](https://polaris000.medium.com/?source=post_page-----dd931659e9cf--------------------------------)[![Aniruddha Karajgi](../Images/c18d7866d393d73faa110f256a31724c.png)](https://polaris000.medium.com/?source=post_page-----dd931659e9cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd931659e9cf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dd931659e9cf--------------------------------) [Aniruddha Karajgi](https://polaris000.medium.com/?source=post_page-----dd931659e9cf--------------------------------)
+[](https://polaris000.medium.com/?source=post_page-----dd931659e9cf--------------------------------)![Aniruddha Karajgi](https://polaris000.medium.com/?source=post_page-----dd931659e9cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd931659e9cf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd931659e9cf--------------------------------) [Aniruddha Karajgi](https://polaris000.medium.com/?source=post_page-----dd931659e9cf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdda13b3bf503&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-apply-map-or-transform-dd931659e9cf&user=Aniruddha+Karajgi&userId=dda13b3bf503&source=post_page-dda13b3bf503----dd931659e9cf---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd931659e9cf--------------------------------) ·9分钟阅读·2023年1月31日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdda13b3bf503&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-apply-map-or-transform-dd931659e9cf&user=Aniruddha+Karajgi&userId=dda13b3bf503&source=post_page-dda13b3bf503----dd931659e9cf---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd931659e9cf--------------------------------) ·9 分钟阅读·2023 年 1 月 31 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdd931659e9cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-apply-map-or-transform-dd931659e9cf&source=-----dd931659e9cf---------------------bookmark_footer-----------)![](../Images/df9f78e2b1a64fcd26be282f5c67f91a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdd931659e9cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-apply-map-or-transform-dd931659e9cf&source=-----dd931659e9cf---------------------bookmark_footer-----------)![](img/df9f78e2b1a64fcd26be282f5c67f91a.png)
 
 照片由[Sid Balachandran](https://unsplash.com/@itookthose?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-作为一个使用Pandas多年的用户，我注意到许多人（包括我自己）经常几乎总是使用`**apply**`函数。虽然在较小的数据集上这不是问题，但在处理大量数据时，这种做法引起的性能问题会变得更加明显。虽然`**apply**`的灵活性使其成为一个简单的选择，但这篇文章介绍了其他Pandas函数作为潜在的替代方案。
+作为一个使用 Pandas 多年的用户，我注意到许多人（包括我自己）经常几乎总是使用`**apply**`函数。虽然在较小的数据集上这不是问题，但在处理大量数据时，这种做法引起的性能问题会变得更加明显。虽然`**apply**`的灵活性使其成为一个简单的选择，但这篇文章介绍了其他 Pandas 函数作为潜在的替代方案。
 
 在这篇文章中，我们将探讨`**apply**`、`**agg**`、`**map**`和`**transform**`的使用方式，并提供一些示例。
 
@@ -65,7 +65,7 @@ df = pd.concat(
 
 我们最终的数据框看起来是这样的：
 
-![](../Images/b683eae8e31437fe7df7eaa86f47cbd6.png)
+![](img/b683eae8e31437fe7df7eaa86f47cbd6.png)
 
 示例数据框
 
@@ -96,9 +96,9 @@ df["gender"].map(GENDER_ENCODING)
 
 输出符合预期：它返回与我们原始系列中的每个元素对应的映射值。
 
-![](../Images/992bbf594153524a6605a5c8de908dae.png)
+![](img/992bbf594153524a6605a5c8de908dae.png)
 
-map的输出
+map 的输出
 
 尽管`**apply**`不接受字典，但仍然可以实现这种功能，但效率和优雅程度远不如前者。
 
@@ -108,13 +108,13 @@ df["gender"].apply(lambda x:
 )
 ```
 
-![](../Images/992bbf594153524a6605a5c8de908dae.png)
+![](img/992bbf594153524a6605a5c8de908dae.png)
 
 `apply`的输出与`map`的输出相同
 
 **性能**
 
-在对包含百万条记录的性别系列进行编码的简单测试中，`**map**`比`**apply**`**快了10倍**。
+在对包含百万条记录的性别系列进行编码的简单测试中，`**map**`比`**apply**`**快了 10 倍**。
 
 ```py
 random_gender_series = pd.Series([
@@ -163,9 +163,9 @@ random_gender_series.apply(lambda x:
 df["gender"] = df["gender"].map(GENDER_ENCODING)
 ```
 
-![](../Images/62dea9888b1557c683cad41b4d1d1e6a.png)
+![](img/62dea9888b1557c683cad41b4d1d1e6a.png)
 
-使用map编码性别
+使用 map 编码性别
 
 ## `applymap`
 
@@ -199,7 +199,7 @@ DataFrame.transform(func, axis=0, *args, **kwargs) -> DataFrame
 
 让我们继续使用之前的数据框。
 
-![](../Images/8199ccdd5f21b75b1efb60c2bfadc502.png)
+![](img/8199ccdd5f21b75b1efb60c2bfadc502.png)
 
 我们的示例，带有编码后的性别
 
@@ -318,7 +318,7 @@ random_score_df = pd.DataFrame({
 })
 ```
 
-![](../Images/4ed25e8f3954e05faa39336e0c3e2fe7.png)
+![](img/4ed25e8f3954e05faa39336e0c3e2fe7.png)
 
 用于测试 `**transform**` 性能的 1M 行数据框
 
@@ -367,7 +367,7 @@ DataFrame.agg(func=None, axis=0, *args, **kwargs)
 df.groupby("subject")["score"].agg(mean_score="mean").round(2)
 ```
 
-![](../Images/817a2bf9b509f58bba2cfad958108104.png)
+![](img/817a2bf9b509f58bba2cfad958108104.png)
 
 使用 agg 按学科计算的均值
 
@@ -379,7 +379,7 @@ df.groupby("subject")["score"].agg(
 ).round(2)
 ```
 
-![](../Images/c5bda0afb3b584ef861e856bf33185c3.png)
+![](img/c5bda0afb3b584ef861e856bf33185c3.png)
 
 使用 apply 按学科计算的均值——与我们之前的结果相同。
 
@@ -396,7 +396,7 @@ random_score_df = pd.DataFrame({
 })
 ```
 
-![](../Images/4ed25e8f3954e05faa39336e0c3e2fe7.png)
+![](img/4ed25e8f3954e05faa39336e0c3e2fe7.png)
 
 用于性能测试的相同数据框
 
@@ -463,7 +463,7 @@ random_score_df.groupby("subject")["score"].apply(
 
 当然，这种灵活性是有代价的：正如我们的性能测试所示，它明显较慢。
 
-![](../Images/a2ef3dd4188a0a81f29b4c08993cde3c.png)
+![](img/a2ef3dd4188a0a81f29b4c08993cde3c.png)
 
 性能测试：`apply`函数明显较慢，这是可以理解的。
 
@@ -479,7 +479,7 @@ random_score_df.groupby("subject")["score"].apply(
 
 **当只有一个组时**
 
-这个问题自2014年起就困扰着pandas。当整个列中只有一个组时，即使`**apply**`函数期望返回一个系列，它最终却会产生一个数据框。
+这个问题自 2014 年起就困扰着 pandas。当整个列中只有一个组时，即使`**apply**`函数期望返回一个系列，它最终却会产生一个数据框。
 
 结果类似于额外的堆叠操作。让我们尝试重现它。我们将使用原始数据框，并添加一个`city`列。假设我们所有的三位学生，John、James 和 Jennifer 都来自波士顿。
 
@@ -488,7 +488,7 @@ df_single_group = df.copy()
 df_single_group["city"] = "Boston"
 ```
 
-![](../Images/22ec8de50f88ccef6ec97f9854c90960.png)
+![](img/22ec8de50f88ccef6ec97f9854c90960.png)
 
 我们的数据框增加了“city”列
 
@@ -500,7 +500,7 @@ df_single_group["city"] = "Boston"
 df_single_group.groupby("subject").apply(lambda x: x["score"])
 ```
 
-![](../Images/06750b6e1663ead794976f588a9c2df7.png)
+![](img/06750b6e1663ead794976f588a9c2df7.png)
 
 apply 在有多个组时返回一个多索引系列
 
@@ -510,7 +510,7 @@ apply 在有多个组时返回一个多索引系列
 df_single_group.groupby("city").apply(lambda x: x["score"])
 ```
 
-![](../Images/f29dba40e086f13774cb83cc9e018d6b.png)
+![](img/f29dba40e086f13774cb83cc9e018d6b.png)
 
 apply 在只有一个组时返回一个未堆叠的数据框
 
@@ -520,7 +520,7 @@ apply 在只有一个组时返回一个未堆叠的数据框
 df_single_group.groupby("city").apply(lambda x: x["score"]).stack()
 ```
 
-![](../Images/467416b6a3ee7c32164ea5bdfc3df1de.png)
+![](img/467416b6a3ee7c32164ea5bdfc3df1de.png)
 
 堆叠我们之前的结果会得到预期的结果
 

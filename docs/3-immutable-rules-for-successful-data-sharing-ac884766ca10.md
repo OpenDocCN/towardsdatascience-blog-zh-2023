@@ -1,18 +1,18 @@
-# 成功数据共享的3条不可变规则
+# 成功数据共享的 3 条不可变规则
 
-> 原文：[https://towardsdatascience.com/3-immutable-rules-for-successful-data-sharing-ac884766ca10?source=collection_archive---------1-----------------------#2023-01-21](https://towardsdatascience.com/3-immutable-rules-for-successful-data-sharing-ac884766ca10?source=collection_archive---------1-----------------------#2023-01-21)
+> 原文：[`towardsdatascience.com/3-immutable-rules-for-successful-data-sharing-ac884766ca10?source=collection_archive---------1-----------------------#2023-01-21`](https://towardsdatascience.com/3-immutable-rules-for-successful-data-sharing-ac884766ca10?source=collection_archive---------1-----------------------#2023-01-21)
 
 ## 解锁数据协作的力量
 
-[](https://medium.com/@louise.de.leyritz?source=post_page-----ac884766ca10--------------------------------)[![Louise de Leyritz](../Images/7223761fa288aa730d1bb5751f29e8ce.png)](https://medium.com/@louise.de.leyritz?source=post_page-----ac884766ca10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac884766ca10--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac884766ca10--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----ac884766ca10--------------------------------)
+[](https://medium.com/@louise.de.leyritz?source=post_page-----ac884766ca10--------------------------------)![Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----ac884766ca10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac884766ca10--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac884766ca10--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----ac884766ca10--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-immutable-rules-for-successful-data-sharing-ac884766ca10&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----ac884766ca10---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac884766ca10--------------------------------) ·9分钟阅读·2023年1月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac884766ca10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-immutable-rules-for-successful-data-sharing-ac884766ca10&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----ac884766ca10---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-immutable-rules-for-successful-data-sharing-ac884766ca10&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----ac884766ca10---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac884766ca10--------------------------------) ·9 分钟阅读·2023 年 1 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac884766ca10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-immutable-rules-for-successful-data-sharing-ac884766ca10&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----ac884766ca10---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac884766ca10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-immutable-rules-for-successful-data-sharing-ac884766ca10&source=-----ac884766ca10---------------------bookmark_footer-----------)![](../Images/25df64d6afac416a0f3ddb4745f90966.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac884766ca10&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-immutable-rules-for-successful-data-sharing-ac884766ca10&source=-----ac884766ca10---------------------bookmark_footer-----------)![](img/25df64d6afac416a0f3ddb4745f90966.png)
 
 在我之前的文章中，我讨论了[数据共享](https://www.castordoc.com/blog/5-benefits-of-data-sharing)这一已经非常成熟的概念。数据共享指的是向所有部门开放数据访问，以赋予每个部门进行数据驱动决策的能力。
 
@@ -30,7 +30,7 @@
 
 本文中的第二条和第三条规则侧重于确保高质量数据有效地与业务团队共享。这不仅涉及提供准确和可靠的数据，还包括用相关背景丰富数据，并通过用户友好的界面使其易于访问。这样，即使是技术能力较弱的团队也能轻松使用数据。下面可以找到一个可视化表示。
 
-![](../Images/7d942c0d563699e3d93a5f08dfde665c.png)
+![](img/7d942c0d563699e3d93a5f08dfde665c.png)
 
 有效数据共享的三条规则 — 图片由[Castor](https://www.castordoc.com/)提供
 
@@ -58,7 +58,7 @@
 
 你可以在 Kevin Hu 的 [文章](https://www.metaplane.dev/blog/data-quality-metrics-for-data-warehouses)中找到更多数据质量指标。
 
-![](../Images/00c0c5148047c31d4e97b543bda024c0.png)
+![](img/00c0c5148047c31d4e97b543bda024c0.png)
 
 数据质量属性及其相关指标 — 图片来源于 [Castor](https://www.castordoc.com/)
 
@@ -100,7 +100,7 @@
 
 让我告诉你，这不是一个安全的选择。不同的解释意味着不同的结论，最终导致部门间报告不一致。如果你要引导业务团队进入未知领域，就给他们一张地图。背景就是这张地图。
 
-人们了解一个数据集时，他们需要知道这些数据将满足什么需求、其内容以及其位置。一旦人们找到相关的数据集，他们就完成了10%的工作。接下来，他们需要通过一个包含10多个问题的检查清单，确保他们理解自己使用的数据。只有当人们能够回答以下问题时，他们才真正理解数据：
+人们了解一个数据集时，他们需要知道这些数据将满足什么需求、其内容以及其位置。一旦人们找到相关的数据集，他们就完成了 10%的工作。接下来，他们需要通过一个包含 10 多个问题的检查清单，确保他们理解自己使用的数据。只有当人们能够回答以下问题时，他们才真正理解数据：
 
 +   数据来源于哪里？
 
@@ -122,7 +122,7 @@
 
 提供背景的第二个方面是拥有强大的**数据血统能力**。数据血统是一种极其强大的透明工具。它使人们能够理解数据资产之间的关系。如果上游出现问题，数据血统允许每个人了解下游的后果，从而避免不愉快的惊讶。血统还可以帮助利益相关者在数据问题出现时识别其来源。
 
-![](../Images/f7f386f98ff930051a8d24f59fc87c77.png)
+![](img/f7f386f98ff930051a8d24f59fc87c77.png)
 
 数据血统：追踪数据资产之间的关系——图片来自[Castor](https://www.castordoc.com/)
 
@@ -136,15 +136,15 @@
 
 如果你要与他人共享数据，必须通过正确的接口进行。并非所有团队成员的技术水平相同，也不是所有团队的数据需求相同。为正确的团队提供合适的接口对于让数据对所有人都可访问至关重要。
 
-如果你在dbt中记录数据，不能期望市场营销团队在那儿提取文档。上下文应该在对业务团队友好的工具中提供。有两种方法可以实现这一点：
+如果你在 dbt 中记录数据，不能期望市场营销团队在那儿提取文档。上下文应该在对业务团队友好的工具中提供。有两种方法可以实现这一点：
 
 实现这一点的一种方法是提供一个能够高效**搜索和导航**的工具。该工具应易于使用和理解，以确保非技术团队成员能够有效使用。数据目录是一个可以用来轻松发现、理解和访问数据的工具的例子。
 
 ‍
 
-另一种提供正确接口的方法是通过使数据在业务团队已经使用的工具**中易于访问**。这种方法涉及将数据交付给团队已经熟悉的工具。可以使用反向ETL工具来实现这一目的。
+另一种提供正确接口的方法是通过使数据在业务团队已经使用的工具**中易于访问**。这种方法涉及将数据交付给团队已经熟悉的工具。可以使用反向 ETL 工具来实现这一目的。
 
-通过在现有工具中使数据可查找，团队可以访问所需的数据，而无需导航新系统或学习新软件。例如，一旦在数据仓库中计算了线索评分，反向ETL允许将该指标同步到Salesforce。这使得销售人员可以直接在他们熟悉的工具中访问数据。
+通过在现有工具中使数据可查找，团队可以访问所需的数据，而无需导航新系统或学习新软件。例如，一旦在数据仓库中计算了线索评分，反向 ETL 允许将该指标同步到 Salesforce。这使得销售人员可以直接在他们熟悉的工具中访问数据。
 
 无论你采用什么方法，请记住，如果你想让数据对所有人可用，必须满足业务团队的需求。要求他们学习技术团队的工具和流程只会阻碍你的努力。
 

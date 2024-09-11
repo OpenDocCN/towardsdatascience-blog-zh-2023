@@ -1,18 +1,18 @@
 # *无限制：在 MoMA 机器幻觉的验证*
 
-> 原文：[https://towardsdatascience.com/free-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a?source=collection_archive---------3-----------------------#2023-08-31](https://towardsdatascience.com/free-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a?source=collection_archive---------3-----------------------#2023-08-31)
+> 原文：[`towardsdatascience.com/free-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a?source=collection_archive---------3-----------------------#2023-08-31`](https://towardsdatascience.com/free-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a?source=collection_archive---------3-----------------------#2023-08-31)
 
 ## 揭示了人类与 AI 艺术合作的幕后创作过程
 
-[](https://medium.com/@christian_burke?source=post_page-----7d56a38c335a--------------------------------)[![Christian Burke](../Images/50da1e824ed75082a70c3f381d685b5d.png)](https://medium.com/@christian_burke?source=post_page-----7d56a38c335a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7d56a38c335a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7d56a38c335a--------------------------------) [Christian Burke](https://medium.com/@christian_burke?source=post_page-----7d56a38c335a--------------------------------)
+[](https://medium.com/@christian_burke?source=post_page-----7d56a38c335a--------------------------------)![Christian Burke](https://medium.com/@christian_burke?source=post_page-----7d56a38c335a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7d56a38c335a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7d56a38c335a--------------------------------) [Christian Burke](https://medium.com/@christian_burke?source=post_page-----7d56a38c335a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F764fa444fa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffree-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a&user=Christian+Burke&userId=764fa444fa3&source=post_page-764fa444fa3----7d56a38c335a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7d56a38c335a--------------------------------) · 7 分钟阅读 · 2023年8月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7d56a38c335a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffree-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a&user=Christian+Burke&userId=764fa444fa3&source=-----7d56a38c335a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F764fa444fa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffree-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a&user=Christian+Burke&userId=764fa444fa3&source=post_page-764fa444fa3----7d56a38c335a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7d56a38c335a--------------------------------) · 7 分钟阅读 · 2023 年 8 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7d56a38c335a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffree-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a&user=Christian+Burke&userId=764fa444fa3&source=-----7d56a38c335a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7d56a38c335a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffree-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a&source=-----7d56a38c335a---------------------bookmark_footer-----------)![](../Images/c28b33d12eb137bc0091b84e6b551bc2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7d56a38c335a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffree-from-limitations-the-validation-of-machine-hallucinations-at-moma-7d56a38c335a&source=-----7d56a38c335a---------------------bookmark_footer-----------)![](img/c28b33d12eb137bc0091b84e6b551bc2.png)
 
 照片由 [Jamison McAndie](https://unsplash.com/@jamomca?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/QpymanRHYTs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 上拍摄
 
@@ -52,7 +52,7 @@ RAS 利用来自 MoMA 超过 180,000 件艺术作品的数据创建了“无监�
 
 人类与机器之间的合作关系需要在硬件和软件方面进行新的创新。我们的团队在创建所需的神经网络并使展览能够实时持续变换其图像，响应独特的环境因素时面临了许多挑战。
 
-![](../Images/cd028e92d424c177d8ced55a9f9c7710.png)
+![](img/cd028e92d424c177d8ced55a9f9c7710.png)
 
 Unsupervised 的静态图像，MoMA
 
@@ -72,9 +72,9 @@ Irma Zandl 在 YouTube 上捕捉的 MoMA 展览的 Unsupervised 画面
 
 类似地，AI 与人类之间的合作关系也存在双向街道的描述。有一种说法认为数字艺术涉及在传统艺术过程中加入一些额外的技术技能。然而，我更愿意把它看作是一个双向互动的过程。
 
-数字艺术确实涉及将技术工具融入艺术过程，例如扩散模型和提示工程。另一方面，AI本身消除了进入艺术世界的一些障碍。比如说，我喜欢绘画，但我画人的能力很差。AI允许我弥补这一技术局限。
+数字艺术确实涉及将技术工具融入艺术过程，例如扩散模型和提示工程。另一方面，AI 本身消除了进入艺术世界的一些障碍。比如说，我喜欢绘画，但我画人的能力很差。AI 允许我弥补这一技术局限。
 
-# **AI的未来**
+# **AI 的未来**
 
 **由于受欢迎的需求，“Unsupervised”在 MoMA 的展出已多次延长，机器的幻觉可能会无限期地继续下去。** 展望未来，我希望看到 AI 生成数字艺术的更大合法化。模型将继续改进，希望技术能够变得更加普及。
 

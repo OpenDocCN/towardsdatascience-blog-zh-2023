@@ -1,32 +1,32 @@
-# 2023年的随机森林：一种强大方法的现代扩展
+# 2023 年的随机森林：一种强大方法的现代扩展
 
-> 原文：[https://towardsdatascience.com/random-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62?source=collection_archive---------9-----------------------#2023-11-07](https://towardsdatascience.com/random-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62?source=collection_archive---------9-----------------------#2023-11-07)
+> 原文：[`towardsdatascience.com/random-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62?source=collection_archive---------9-----------------------#2023-11-07`](https://towardsdatascience.com/random-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62?source=collection_archive---------9-----------------------#2023-11-07)
 
 ## 随机森林取得了长足的发展
 
-[](https://medium.com/@jeffrey_85949?source=post_page-----b62debaf1d62--------------------------------)[![Jeffrey Näf](../Images/0ce6db85501192cdebeeb910eb81a688.png)](https://medium.com/@jeffrey_85949?source=post_page-----b62debaf1d62--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b62debaf1d62--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b62debaf1d62--------------------------------) [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----b62debaf1d62--------------------------------)
+[](https://medium.com/@jeffrey_85949?source=post_page-----b62debaf1d62--------------------------------)![Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----b62debaf1d62--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b62debaf1d62--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b62debaf1d62--------------------------------) [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----b62debaf1d62--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----b62debaf1d62---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b62debaf1d62--------------------------------) ·12 min read·2023年11月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb62debaf1d62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----b62debaf1d62---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----b62debaf1d62---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b62debaf1d62--------------------------------) ·12 min read·2023 年 11 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb62debaf1d62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----b62debaf1d62---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb62debaf1d62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62&source=-----b62debaf1d62---------------------bookmark_footer-----------)![](../Images/11d2719adb78db10fac42a7884ac2918.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb62debaf1d62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-in-2023-modern-extensions-of-a-powerful-method-b62debaf1d62&source=-----b62debaf1d62---------------------bookmark_footer-----------)![](img/11d2719adb78db10fac42a7884ac2918.png)
 
 现代随机森林方法的特点。来源：作者。
 
-在机器学习的时间线中，随机森林（RFs），在Breimann的开创性论文中提出（[1]），可以算得上古老了。尽管它们已经有些年头，但凭借其卓越的性能仍然令人印象深刻，并且仍是活跃研究的主题。本文旨在突出随机森林方法已成为多功能工具箱的特点，重点关注**广义随机森林（GRF）**和**分布随机森林（DRF）**。
+在机器学习的时间线中，随机森林（RFs），在 Breimann 的开创性论文中提出（[1]），可以算得上古老了。尽管它们已经有些年头，但凭借其卓越的性能仍然令人印象深刻，并且仍是活跃研究的主题。本文旨在突出随机森林方法已成为多功能工具箱的特点，重点关注**广义随机森林（GRF）**和**分布随机森林（DRF）**。
 
-简而言之，这两种方法的主要思想是，RF隐式产生的权重可以用于估计除条件期望之外的其他目标。GRF的理念是使用一个随机森林，分裂准则适应于所设想的目标（例如条件均值、条件分位数或条件处理效应）。DRF的理念是调整分裂准则，以便能够估计整个条件分布。从这个对象中，可以在第二步派生出许多不同的目标。事实上，本文主要讨论DRF，因为我对这种方法更为熟悉，而且它在处理广泛目标时更加简洁（只需为广泛的目标拟合一个森林）。然而，图中指出的所有优点也适用于GRF，实际上，R中的DRF包是建立在[GRF的专业实现](https://grf-labs.github.io/grf/)之上的。此外，GRF森林的分裂准则适应于目标，这意味着它可能比DRF表现更好。这对于二元*Y*尤其如此，此时应使用probability_forests()。因此，尽管我主要讨论DRF，但在整篇文章中应始终记住GRF。
+简而言之，这两种方法的主要思想是，RF 隐式产生的权重可以用于估计除条件期望之外的其他目标。GRF 的理念是使用一个随机森林，分裂准则适应于所设想的目标（例如条件均值、条件分位数或条件处理效应）。DRF 的理念是调整分裂准则，以便能够估计整个条件分布。从这个对象中，可以在第二步派生出许多不同的目标。事实上，本文主要讨论 DRF，因为我对这种方法更为熟悉，而且它在处理广泛目标时更加简洁（只需为广泛的目标拟合一个森林）。然而，图中指出的所有优点也适用于 GRF，实际上，R 中的 DRF 包是建立在[GRF 的专业实现](https://grf-labs.github.io/grf/)之上的。此外，GRF 森林的分裂准则适应于目标，这意味着它可能比 DRF 表现更好。这对于二元*Y*尤其如此，此时应使用 probability_forests()。因此，尽管我主要讨论 DRF，但在整篇文章中应始终记住 GRF。
 
 本文的目标是提供一个概述，并提供相应部分的深入阅读链接。我们将按图中的时钟方向逐一介绍每个要点，引用相关的文章，并通过一个小示例进行强调。我首先快速总结了下面的最重要的进一步阅读链接：
 
-多样性/性能： [Medium Article](/drf-a-random-forest-for-almost-everything-625fa5c3bcb8) 和原始论文（[DRF](https://jmlr.org/papers/v23/21-0585.html)/[GRF](https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-2/Generalized-random-forests/10.1214/18-AOS1709.full)）
+多样性/性能： Medium Article 和原始论文（[DRF](https://jmlr.org/papers/v23/21-0585.html)/[GRF](https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-2/Generalized-random-forests/10.1214/18-AOS1709.full)）
 
-缺失值纳入： [Medium Article](/random-forests-and-missing-values-3daaea103db0)
+缺失值纳入： Medium Article
 
-不确定性度量： [Medium Article](/inference-for-distributional-random-forests-64610bbb3927)
+不确定性度量： Medium Article
 
 变量重要性： [Medium Article](https://medium.com/towards-data-science/variable-importance-in-random-forests-20c6690e44e0)
 
@@ -34,7 +34,7 @@
 
 我们取 *X_1, X_2, X_4, …, X_10* 独立地均匀分布在（-1,1）之间，并通过 *X_3=X_1 + uniform error* 来创建 *X_1* 和 *X_3* 之间的依赖关系。然后我们模拟 *Y* 为
 
-![](../Images/db8b95d3d53203e739c5509eb1aa992e.png)
+![](img/db8b95d3d53203e739c5509eb1aa992e.png)
 
 ```py
  ## Load packages and functions needed
@@ -81,7 +81,7 @@ head(cbind(Y,X))
 6 -0.3577590 -0.7341207  0.85504668 -0.6933918  0.4656891
 ```
 
-请注意，通过[mice包](https://cran.r-project.org/web/packages/mice/index.html)中的ampute函数，我们将**缺失值非随机（MAR）**设置在***X***上，以突出GRF/DRF处理缺失值的能力。此外，在上述过程中，仅 *X_1* 和 *X_2* 对预测 *Y* 是相关的，所有其他变量都是“噪声”变量。这种“稀疏”设置在实际数据集中可能很常见。
+请注意，通过[mice 包](https://cran.r-project.org/web/packages/mice/index.html)中的 ampute 函数，我们将**缺失值非随机（MAR）**设置在***X***上，以突出 GRF/DRF 处理缺失值的能力。此外，在上述过程中，仅 *X_1* 和 *X_2* 对预测 *Y* 是相关的，所有其他变量都是“噪声”变量。这种“稀疏”设置在实际数据集中可能很常见。
 
 现在我们选择一个测试点作为这个示例，将在整个过程中使用：
 
@@ -99,9 +99,9 @@ print(x)
 
 DRF 估计条件分布 *P_{Y|****X****=****x****}* 以简单权重的形式：
 
-![](../Images/206d5127ad181f1e1458ee40d1784285.png)
+![](img/206d5127ad181f1e1458ee40d1784285.png)
 
-从这些权重中，可以计算出广泛的目标，或者可以用来从条件分布中进行模拟。它的多功能性一个很好的参考是原始的 [研究文章](https://jmlr.org/papers/v23/21-0585.html)，其中使用了很多例子，还有相应的 [medium 文章](/drf-a-random-forest-for-almost-everything-625fa5c3bcb8)。
+从这些权重中，可以计算出广泛的目标，或者可以用来从条件分布中进行模拟。它的多功能性一个很好的参考是原始的 [研究文章](https://jmlr.org/papers/v23/21-0585.html)，其中使用了很多例子，还有相应的 medium 文章。
 
 在这个例子中，我们首先从这个分布中进行模拟：
 
@@ -117,7 +117,7 @@ d<-dnorm(z, mean=0.8 * (x[1] > 0), sd=(1+(x[2] > 0)))
 lines(z,d, col="darkred"  )
 ```
 
-![](../Images/707d8f363302b0a531f4172989c20161.png)
+![](img/707d8f363302b0a531f4172989c20161.png)
 
 模拟条件分布的直方图与真实密度（红色）叠加。来源：作者。
 
@@ -147,7 +147,7 @@ abline(v=mu, col="darkred")
 abline(v=mux, col="darkblue")
 ```
 
-![](../Images/b011f4a2998015c8a6f07661ea241c2c.png)
+![](img/b011f4a2998015c8a6f07661ea241c2c.png)
 
 模拟条件分布的直方图与真实密度（红色）叠加。此外，估计的条件期望和条件 (0.05, 0.95) 分位数为蓝色，真实值为红色。来源：作者。
 
@@ -159,15 +159,15 @@ GRF 无法处理多变量目标，而 DRF 可以做到这一点。
 
 尽管有大量关于强大新（非参数）方法的工作，如神经网络，但基于树的方法在表格数据上始终能够击败竞争者。请参见，例如，这篇 [引人入胜的论文](https://arxiv.org/abs/2207.08815)，或这篇关于 [RF 在分类中的强度](https://dl.acm.org/doi/pdf/10.5555/2627435.2697065) 的旧论文。
 
-公平地说，通过参数调优，[提升树方法](/an-overview-of-boosting-methods-catboost-xgboost-adaboost-lightboost-histogram-based-gradient-407447633ac1)，如 XGboost，通常在经典预测（对应于条件期望估计）中占据主导地位。然而，RF 方法在没有任何调优下展现的强大性能是值得注意的。此外，还有关于改进随机森林性能的研究，例如，[对冲随机森林方法](https://arxiv.org/pdf/2308.15384.pdf)。
+公平地说，通过参数调优，提升树方法，如 XGboost，通常在经典预测（对应于条件期望估计）中占据主导地位。然而，RF 方法在没有任何调优下展现的强大性能是值得注意的。此外，还有关于改进随机森林性能的研究，例如，[对冲随机森林方法](https://arxiv.org/pdf/2308.15384.pdf)。
 
 ## 缺失值整合
 
-来自 [这篇论文](https://www.sciencedirect.com/science/article/abs/pii/S0167865508000305) 的“缺失数据合并属性标准”（MIA）是一个非常简单但非常强大的想法，它允许基于树的方法处理缺失数据。这已在 GRF R 包中实现，因此 DRF 中也可以使用。详细信息也在这篇 [medium 文章](/random-forests-and-missing-values-3daaea103db0) 中解释。尽管这一概念很简单，但在实践中效果非常好：在上述示例中，DRF 在处理训练数据中的大量 MAR 缺失值时毫不费力 ***X*** (!)
+来自 [这篇论文](https://www.sciencedirect.com/science/article/abs/pii/S0167865508000305) 的“缺失数据合并属性标准”（MIA）是一个非常简单但非常强大的想法，它允许基于树的方法处理缺失数据。这已在 GRF R 包中实现，因此 DRF 中也可以使用。详细信息也在这篇 medium 文章 中解释。尽管这一概念很简单，但在实践中效果非常好：在上述示例中，DRF 在处理训练数据中的大量 MAR 缺失值时毫不费力 ***X*** (!)
 
 ## **不确定性度量**
 
-作为统计学家，我不仅希望得到点估计（即使是分布的点估计），还希望得到我的参数（即使“参数”是我的整个分布）的 **估计不确定性**。事实证明，DRF/GRF 中内置的简单额外子抽样可以为大样本量提供原则性的不确定性量化。关于 DRF 的理论在这篇 [研究文章](https://arxiv.org/abs/2302.05761) 中得以推导，我在这篇 [medium 文章](/inference-for-distributional-random-forests-64610bbb3927) 中也进行了解释。GRF 的所有理论在 [原始论文](https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-2/Generalized-random-forests/10.1214/18-AOS1709.full) 中都有描述。
+作为统计学家，我不仅希望得到点估计（即使是分布的点估计），还希望得到我的参数（即使“参数”是我的整个分布）的 **估计不确定性**。事实证明，DRF/GRF 中内置的简单额外子抽样可以为大样本量提供原则性的不确定性量化。关于 DRF 的理论在这篇 [研究文章](https://arxiv.org/abs/2302.05761) 中得以推导，我在这篇 medium 文章 中也进行了解释。GRF 的所有理论在 [原始论文](https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-2/Generalized-random-forests/10.1214/18-AOS1709.full) 中都有描述。
 
 我们将其应用于上述示例：
 
@@ -209,7 +209,7 @@ abline(v=CI.lower.mu, col="darkblue", lty=2)
 abline(v=CI.upper.mu, col="darkblue", lty=2)
 ```
 
-![](../Images/bb22e3661f626b01f57210c507fef1c2.png)
+![](img/bb22e3661f626b01f57210c507fef1c2.png)
 
 模拟条件分布的直方图叠加了真实密度（红色）。此外，估计的条件期望和条件 (0.05, 0.95) 分位数为蓝色，真实值为红色。此外，虚线红色的线条是由 DRF 计算出的估计置信区间。来源：作者。
 

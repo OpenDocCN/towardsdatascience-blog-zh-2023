@@ -1,36 +1,36 @@
 # 使用 GGUF 和 llama.cpp 对 Llama 模型进行量化
 
-> 原文：[https://towardsdatascience.com/quantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172?source=collection_archive---------0-----------------------#2023-09-04](https://towardsdatascience.com/quantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172?source=collection_archive---------0-----------------------#2023-09-04)
+> 原文：[`towardsdatascience.com/quantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172?source=collection_archive---------0-----------------------#2023-09-04`](https://towardsdatascience.com/quantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172?source=collection_archive---------0-----------------------#2023-09-04)
 
 ## GGML 与 GPTQ 与 NF4
 
-[](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)[![Maxime Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)
+[](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)![Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----3612dfbcc172---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------) · 9 分钟阅读 · 2023年9月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3612dfbcc172&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&user=Maxime+Labonne&userId=dc89da634938&source=-----3612dfbcc172---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----3612dfbcc172---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------) · 9 分钟阅读 · 2023 年 9 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3612dfbcc172&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&user=Maxime+Labonne&userId=dc89da634938&source=-----3612dfbcc172---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3612dfbcc172&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&source=-----3612dfbcc172---------------------bookmark_footer-----------)![](../Images/ccb4e06ca80fad8db1f16998deaf34be.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3612dfbcc172&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&source=-----3612dfbcc172---------------------bookmark_footer-----------)![](img/ccb4e06ca80fad8db1f16998deaf34be.png)
 
 作者提供的图片
 
 由于大型语言模型（LLMs）的庞大规模，量化已成为高效运行这些模型的关键技术。通过降低权重的精度，可以节省内存并加速推理，同时保持模型的绝大部分性能。近期，8 位和 4 位量化技术使**在消费级硬件上运行 LLMs**成为可能。加上 Llama 模型的发布及其参数高效微调技术（如 LoRA、QLoRA），这形成了一个丰富的本地 LLM 生态系统，与 OpenAI 的 GPT-3.5 和 GPT-4 竞争。
 
-除了在[这篇文章](https://medium.com/towards-data-science/introduction-to-weight-quantization-2494701b9c0c)中讨论的天真方法外，还有三种主要的量化技术：NF4、GPTQ和GGML。[NF4](https://huggingface.co/blog/4bit-transformers-bitsandbytes)是一种静态方法，QLoRA使用它以4位精度加载模型进行微调。[在上一篇文章中](https://medium.com/towards-data-science/4-bit-quantization-with-gptq-36b0f4f02c34)，我们探讨了GPTQ方法，并将自己的模型量化以在消费级GPU上运行。在这篇文章中，我们将介绍GGML技术，看看如何量化Llama模型，并提供实现最佳结果的技巧和窍门。
+除了在[这篇文章](https://medium.com/towards-data-science/introduction-to-weight-quantization-2494701b9c0c)中讨论的天真方法外，还有三种主要的量化技术：NF4、GPTQ 和 GGML。[NF4](https://huggingface.co/blog/4bit-transformers-bitsandbytes)是一种静态方法，QLoRA 使用它以 4 位精度加载模型进行微调。[在上一篇文章中](https://medium.com/towards-data-science/4-bit-quantization-with-gptq-36b0f4f02c34)，我们探讨了 GPTQ 方法，并将自己的模型量化以在消费级 GPU 上运行。在这篇文章中，我们将介绍 GGML 技术，看看如何量化 Llama 模型，并提供实现最佳结果的技巧和窍门。
 
 你可以在[Google Colab](https://colab.research.google.com/drive/1pL8k7m04mgE5jo2NrjGi8atB0j_37aDD?usp=sharing)和[GitHub](https://github.com/mlabonne/llm-course)上找到代码。
 
-# 什么是GGML？
+# 什么是 GGML？
 
-GGML是一个专注于机器学习的C语言库。它由Georgi Gerganov创建，"GG"就是这个名字的缩写。这个库不仅提供了机器学习的基础元素，如张量，还提供了**独特的二进制格式**以分发LLM。
+GGML 是一个专注于机器学习的 C 语言库。它由 Georgi Gerganov 创建，"GG"就是这个名字的缩写。这个库不仅提供了机器学习的基础元素，如张量，还提供了**独特的二进制格式**以分发 LLM。
 
-这个格式最近更改为**GGUF**。这个新格式旨在可扩展，以便新功能不会破坏与现有模型的兼容性。它还将所有元数据集中在一个文件中，如特殊令牌、RoPE缩放参数等。简而言之，它解决了一些历史痛点，并且应该具有未来保障。有关更多信息，你可以阅读[这个地址](https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md)上的规范。在本文的其余部分，我们将称所有使用GGUF或以前格式的模型为“GGML模型”。
+这个格式最近更改为**GGUF**。这个新格式旨在可扩展，以便新功能不会破坏与现有模型的兼容性。它还将所有元数据集中在一个文件中，如特殊令牌、RoPE 缩放参数等。简而言之，它解决了一些历史痛点，并且应该具有未来保障。有关更多信息，你可以阅读[这个地址](https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md)上的规范。在本文的其余部分，我们将称所有使用 GGUF 或以前格式的模型为“GGML 模型”。
 
-GGML旨在与[llama.cpp](https://github.com/ggerganov/llama.cpp)库一起使用，该库也由Georgi Gerganov创建。这个库是用C/C++编写的，以便高效推断Llama模型。它可以加载GGML模型并**在CPU上运行**。最初，这与GPTQ模型的主要区别在于GPTQ模型是在GPU上加载和运行的。然而，现在你可以通过llama.cpp将一些LLM的层卸载到GPU上。举个例子，7b参数模型有35层。这大大加快了推断速度，并允许你运行那些无法完全装入VRAM的LLM。
+GGML 旨在与[llama.cpp](https://github.com/ggerganov/llama.cpp)库一起使用，该库也由 Georgi Gerganov 创建。这个库是用 C/C++编写的，以便高效推断 Llama 模型。它可以加载 GGML 模型并**在 CPU 上运行**。最初，这与 GPTQ 模型的主要区别在于 GPTQ 模型是在 GPU 上加载和运行的。然而，现在你可以通过 llama.cpp 将一些 LLM 的层卸载到 GPU 上。举个例子，7b 参数模型有 35 层。这大大加快了推断速度，并允许你运行那些无法完全装入 VRAM 的 LLM。
 
-![](../Images/1839d4c1f226033fd5cef2957dfb7170.png)
+![](img/1839d4c1f226033fd5cef2957dfb7170.png)
 
 图片由作者提供
 
@@ -156,7 +156,7 @@ from huggingface_hub import notebook_login, create_repo, HfApi
 notebook_login()
 ```
 
-最后，我们可以将量化后的模型推送到 Hugging Face Hub 上的新仓库，并使用 "-GGUF" 后缀。首先，让我们登录并修改以下代码块以匹配你的用户名。你可以在 Google Colab 的“Secrets”选项卡中输入你的 Hugging Face 令牌（[https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)）。我们使用 `allow_patterns` 参数仅上传 GGUF 模型，而不是整个目录。
+最后，我们可以将量化后的模型推送到 Hugging Face Hub 上的新仓库，并使用 "-GGUF" 后缀。首先，让我们登录并修改以下代码块以匹配你的用户名。你可以在 Google Colab 的“Secrets”选项卡中输入你的 Hugging Face 令牌（[`huggingface.co/settings/tokens`](https://huggingface.co/settings/tokens)）。我们使用 `allow_patterns` 参数仅上传 GGUF 模型，而不是整个目录。
 
 ```py
 !pip install -q huggingface_hub
@@ -212,7 +212,7 @@ typedef struct {
 
 Oobabooga 在一篇出色的[博客文章](https://oobabooga.github.io/blog/posts/perplexities/)中进行了多个实验，比较了不同模型在困惑度方面的表现（困惑度越低越好）：
 
-![](../Images/b5148511b4f0101b11c4ccb8546403ad.png)
+![](img/b5148511b4f0101b11c4ccb8546403ad.png)
 
 基于这些结果，我们可以说 GGML 模型在困惑度方面略有优势。差异并不特别显著，这也是为什么在生成速度（以 token/秒计）方面更值得关注。最佳技术取决于你的 GPU：如果你有足够的 VRAM 可以容纳整个量化模型，**GPTQ 和 ExLlama** 将是最快的。如果不是这样，你可以卸载一些层并使用**GGML 模型和 llama.cpp** 来运行你的 LLM。
 
@@ -226,15 +226,15 @@ Oobabooga 在一篇出色的[博客文章](https://oobabooga.github.io/blog/post
 
 # 关于量化的文章
 
-[](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----3612dfbcc172--------------------------------) [## 第 1 部分：权重量化简介
+[](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----3612dfbcc172--------------------------------) ## 第一部分：权重量化简介
 
 ### 使用 8 位量化减少大型语言模型的体积
 
-towardsdatascience.com](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----3612dfbcc172--------------------------------) [](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----3612dfbcc172--------------------------------) [## 第 2 部分：使用 GPTQ 的 4 位量化
+towardsdatascience.com [](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----3612dfbcc172--------------------------------) ## 第二部分：使用 GPTQ 的 4 位量化
 
 ### 使用 AutoGPTQ 量化你自己的 LLMs
 
-towardsdatascience.com](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----3612dfbcc172--------------------------------)
+towardsdatascience.com
 
 *通过一次点击了解更多关于机器学习的信息并支持我的工作 — 立即成为 Medium 会员：*
 

@@ -1,18 +1,18 @@
-# 清理Confluence混乱：一个Python和BERTopic的探索
+# 清理 Confluence 混乱：一个 Python 和 BERTopic 的探索
 
-> 原文：[https://towardsdatascience.com/cleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736?source=collection_archive---------1-----------------------#2023-04-29](https://towardsdatascience.com/cleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736?source=collection_archive---------1-----------------------#2023-04-29)
+> 原文：[`towardsdatascience.com/cleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736?source=collection_archive---------1-----------------------#2023-04-29`](https://towardsdatascience.com/cleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736?source=collection_archive---------1-----------------------#2023-04-29)
 
-## 一个驯服混乱文档的故事，旨在创建最终的GPT聊天机器人
+## 一个驯服混乱文档的故事，旨在创建最终的 GPT 聊天机器人
 
-[](https://medium.com/@massi.costacurta?source=post_page-----d3aafc2ed736--------------------------------)[![Massimiliano Costacurta](../Images/599c3469021c53f116cc67c390db6695.png)](https://medium.com/@massi.costacurta?source=post_page-----d3aafc2ed736--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d3aafc2ed736--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d3aafc2ed736--------------------------------) [Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----d3aafc2ed736--------------------------------)
+[](https://medium.com/@massi.costacurta?source=post_page-----d3aafc2ed736--------------------------------)![Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----d3aafc2ed736--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d3aafc2ed736--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d3aafc2ed736--------------------------------) [Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----d3aafc2ed736--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F233cb43234c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736&user=Massimiliano+Costacurta&userId=233cb43234c3&source=post_page-233cb43234c3----d3aafc2ed736---------------------post_header-----------) 发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d3aafc2ed736--------------------------------) ·8 min read·2023年4月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd3aafc2ed736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736&user=Massimiliano+Costacurta&userId=233cb43234c3&source=-----d3aafc2ed736---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F233cb43234c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736&user=Massimiliano+Costacurta&userId=233cb43234c3&source=post_page-233cb43234c3----d3aafc2ed736---------------------post_header-----------) 发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d3aafc2ed736--------------------------------) ·8 min read·2023 年 4 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd3aafc2ed736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736&user=Massimiliano+Costacurta&userId=233cb43234c3&source=-----d3aafc2ed736---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd3aafc2ed736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736&source=-----d3aafc2ed736---------------------bookmark_footer-----------)![](../Images/b1dec38e9c54230b6b25f899c6b43db0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd3aafc2ed736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcleaning-up-confluence-chaos-a-python-and-bertopic-quest-d3aafc2ed736&source=-----d3aafc2ed736---------------------bookmark_footer-----------)![](img/b1dec38e9c54230b6b25f899c6b43db0.png)
 
 [Rick Mason](https://unsplash.com/@egnaro?utm_source=medium&utm_medium=referral)的照片，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

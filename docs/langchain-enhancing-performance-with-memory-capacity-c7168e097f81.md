@@ -1,18 +1,18 @@
 # 🦜🔗LangChain：通过内存扩展提升性能
 
-> 原文：[https://towardsdatascience.com/langchain-enhancing-performance-with-memory-capacity-c7168e097f81?source=collection_archive---------5-----------------------#2023-06-21](https://towardsdatascience.com/langchain-enhancing-performance-with-memory-capacity-c7168e097f81?source=collection_archive---------5-----------------------#2023-06-21)
+> 原文：[`towardsdatascience.com/langchain-enhancing-performance-with-memory-capacity-c7168e097f81?source=collection_archive---------5-----------------------#2023-06-21`](https://towardsdatascience.com/langchain-enhancing-performance-with-memory-capacity-c7168e097f81?source=collection_archive---------5-----------------------#2023-06-21)
 
-![](../Images/7ad10b2af7c0deba0e3b68918593a2f0.png)
+![](img/7ad10b2af7c0deba0e3b68918593a2f0.png)
 
 照片由 [Milad Fakurian](https://unsplash.com/ko/@fakurian?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## LangChain 通过内存扩展技术的提升
 
-[](https://medium.com/@marcellopoliti?source=post_page-----c7168e097f81--------------------------------)[![Marcello Politi](../Images/484e44571bd2e75acfe5fef3146ab3c2.png)](https://medium.com/@marcellopoliti?source=post_page-----c7168e097f81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c7168e097f81--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c7168e097f81--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----c7168e097f81--------------------------------)
+[](https://medium.com/@marcellopoliti?source=post_page-----c7168e097f81--------------------------------)![Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----c7168e097f81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c7168e097f81--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7168e097f81--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----c7168e097f81--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flangchain-enhancing-performance-with-memory-capacity-c7168e097f81&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----c7168e097f81---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7168e097f81--------------------------------) ·4 min read·2023年6月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc7168e097f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flangchain-enhancing-performance-with-memory-capacity-c7168e097f81&user=Marcello+Politi&userId=7390355d40fe&source=-----c7168e097f81---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flangchain-enhancing-performance-with-memory-capacity-c7168e097f81&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----c7168e097f81---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7168e097f81--------------------------------) ·4 min read·2023 年 6 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc7168e097f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flangchain-enhancing-performance-with-memory-capacity-c7168e097f81&user=Marcello+Politi&userId=7390355d40fe&source=-----c7168e097f81---------------------clap_footer-----------)
 
 --
 

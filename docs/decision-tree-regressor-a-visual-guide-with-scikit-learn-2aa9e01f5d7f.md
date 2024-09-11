@@ -1,18 +1,18 @@
 # 决策树回归器——Scikit Learn 的视觉指南
 
-> 原文：[https://towardsdatascience.com/decision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f?source=collection_archive---------3-----------------------#2023-03-27](https://towardsdatascience.com/decision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f?source=collection_archive---------3-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/decision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f?source=collection_archive---------3-----------------------#2023-03-27`](https://towardsdatascience.com/decision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f?source=collection_archive---------3-----------------------#2023-03-27)
 
-![](../Images/1c7a634936cbcb80db53a4f5a26d81d1.png)
+![](img/1c7a634936cbcb80db53a4f5a26d81d1.png)
 
 图片由 [niko photos](https://unsplash.com/@niko_photos?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 无数学知识的决策树理解
 
-[](https://medium.com/@angela.shi?source=post_page-----2aa9e01f5d7f--------------------------------)[![Angela and Kezhan Shi](../Images/a89d678f2f3887c0c2ff3928f9d767b4.png)](https://medium.com/@angela.shi?source=post_page-----2aa9e01f5d7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2aa9e01f5d7f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2aa9e01f5d7f--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----2aa9e01f5d7f--------------------------------)
+[](https://medium.com/@angela.shi?source=post_page-----2aa9e01f5d7f--------------------------------)![Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----2aa9e01f5d7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2aa9e01f5d7f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2aa9e01f5d7f--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----2aa9e01f5d7f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----2aa9e01f5d7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2aa9e01f5d7f--------------------------------) ·5分钟阅读·2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2aa9e01f5d7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----2aa9e01f5d7f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----2aa9e01f5d7f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2aa9e01f5d7f--------------------------------) ·5 分钟阅读·2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2aa9e01f5d7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdecision-tree-regressor-a-visual-guide-with-scikit-learn-2aa9e01f5d7f&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----2aa9e01f5d7f---------------------clap_footer-----------)
 
 --
 

@@ -1,18 +1,18 @@
 # 超越数字：软技能在数据分析中的关键作用
 
-> 原文：[https://towardsdatascience.com/beyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834?source=collection_archive---------6-----------------------#2023-06-24](https://towardsdatascience.com/beyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834?source=collection_archive---------6-----------------------#2023-06-24)
+> 原文：[`towardsdatascience.com/beyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834?source=collection_archive---------6-----------------------#2023-06-24`](https://towardsdatascience.com/beyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834?source=collection_archive---------6-----------------------#2023-06-24)
 
 ## **发挥人类特质，在数据世界中脱颖而出**
 
-[](https://iffatm.medium.com/?source=post_page-----30eb26aa8834--------------------------------)[![Iffat Malik](../Images/7be3b651053507de2077b3c3c9d3a408.png)](https://iffatm.medium.com/?source=post_page-----30eb26aa8834--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30eb26aa8834--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30eb26aa8834--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----30eb26aa8834--------------------------------)
+[](https://iffatm.medium.com/?source=post_page-----30eb26aa8834--------------------------------)![Iffat Malik](https://iffatm.medium.com/?source=post_page-----30eb26aa8834--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30eb26aa8834--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----30eb26aa8834--------------------------------) [Iffat Malik](https://iffatm.medium.com/?source=post_page-----30eb26aa8834--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----30eb26aa8834---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30eb26aa8834--------------------------------) ·9 min read·2023年6月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F30eb26aa8834&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834&user=Iffat+Malik&userId=88491120e677&source=-----30eb26aa8834---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88491120e677&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834&user=Iffat+Malik&userId=88491120e677&source=post_page-88491120e677----30eb26aa8834---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30eb26aa8834--------------------------------) ·9 min read·2023 年 6 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F30eb26aa8834&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834&user=Iffat+Malik&userId=88491120e677&source=-----30eb26aa8834---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30eb26aa8834&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834&source=-----30eb26aa8834---------------------bookmark_footer-----------)![](../Images/4633bfbb51c26e183f26f080baf3696f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30eb26aa8834&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-numbers-the-crucial-role-of-soft-skills-in-data-analysis-30eb26aa8834&source=-----30eb26aa8834---------------------bookmark_footer-----------)![](img/4633bfbb51c26e183f26f080baf3696f.png)
 
 作者提供的图片
 

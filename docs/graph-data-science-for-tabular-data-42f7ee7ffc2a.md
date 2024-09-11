@@ -1,18 +1,18 @@
 # 表格数据的图数据科学
 
-> 原文：[https://towardsdatascience.com/graph-data-science-for-tabular-data-42f7ee7ffc2a?source=collection_archive---------3-----------------------#2023-11-15](https://towardsdatascience.com/graph-data-science-for-tabular-data-42f7ee7ffc2a?source=collection_archive---------3-----------------------#2023-11-15)
+> 原文：[`towardsdatascience.com/graph-data-science-for-tabular-data-42f7ee7ffc2a?source=collection_archive---------3-----------------------#2023-11-15`](https://towardsdatascience.com/graph-data-science-for-tabular-data-42f7ee7ffc2a?source=collection_archive---------3-----------------------#2023-11-15)
 
 ## 图方法比你想象的要更通用
 
-[](https://medium.com/@a.skabar_60534?source=post_page-----42f7ee7ffc2a--------------------------------)[![Andrew Skabar, PhD](../Images/75e090a35d3e5823d2148ddde6d36501.png)](https://medium.com/@a.skabar_60534?source=post_page-----42f7ee7ffc2a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----42f7ee7ffc2a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----42f7ee7ffc2a--------------------------------) [Andrew Skabar, PhD](https://medium.com/@a.skabar_60534?source=post_page-----42f7ee7ffc2a--------------------------------)
+[](https://medium.com/@a.skabar_60534?source=post_page-----42f7ee7ffc2a--------------------------------)![Andrew Skabar, PhD](https://medium.com/@a.skabar_60534?source=post_page-----42f7ee7ffc2a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----42f7ee7ffc2a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----42f7ee7ffc2a--------------------------------) [Andrew Skabar, PhD](https://medium.com/@a.skabar_60534?source=post_page-----42f7ee7ffc2a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F95140850a5ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-data-science-for-tabular-data-42f7ee7ffc2a&user=Andrew+Skabar%2C+PhD&userId=95140850a5ea&source=post_page-95140850a5ea----42f7ee7ffc2a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----42f7ee7ffc2a--------------------------------) · 7分钟阅读 · 2023年11月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F42f7ee7ffc2a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-data-science-for-tabular-data-42f7ee7ffc2a&user=Andrew+Skabar%2C+PhD&userId=95140850a5ea&source=-----42f7ee7ffc2a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F95140850a5ea&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-data-science-for-tabular-data-42f7ee7ffc2a&user=Andrew+Skabar%2C+PhD&userId=95140850a5ea&source=post_page-95140850a5ea----42f7ee7ffc2a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----42f7ee7ffc2a--------------------------------) · 7 分钟阅读 · 2023 年 11 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F42f7ee7ffc2a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-data-science-for-tabular-data-42f7ee7ffc2a&user=Andrew+Skabar%2C+PhD&userId=95140850a5ea&source=-----42f7ee7ffc2a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F42f7ee7ffc2a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-data-science-for-tabular-data-42f7ee7ffc2a&source=-----42f7ee7ffc2a---------------------bookmark_footer-----------)![](../Images/c1b00ed802dbce58ca13a455c1b4192b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F42f7ee7ffc2a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-data-science-for-tabular-data-42f7ee7ffc2a&source=-----42f7ee7ffc2a---------------------bookmark_footer-----------)![](img/c1b00ed802dbce58ca13a455c1b4192b.png)
 
 图片由 [Alina Grubnyak](https://unsplash.com/@alinnnaaaa?utm_source=medium&utm_medium=referral) 提供，[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 为了保持简单，我将以下面的信用批准数据集作为示例。目标是根据其他属性的值预测批准的值。有许多分类算法可以用来做这件事，但让我们探讨一下如何使用图来处理这个问题。
 
-![图片](../Images/5c9d8631acca8431186b48634a5a7daa.png)
+![图片](img/5c9d8631acca8431186b48634a5a7daa.png)
 
 作者创建的信用批准数据集
 
@@ -28,7 +28,7 @@
 
 首先要考虑的是如何将数据表示为图。我们希望捕捉这样一个直觉：两个实例之间共享的属性值越多，它们之间的相似度就越高。我们将使用一个节点来表示每个实例（我们称这些节点为*实例节点*），并为每个可能的属性值使用一个节点（这些是*属性值节点*）。实例节点和属性值节点之间的连接是双向的，并反映在表格中的信息。为了保持*真的*简单，我们将省略属性"Employment"和"History"。这是图形表现。
 
-![图片](../Images/b89b75af439d9e6f32a9b460606b73e2.png)
+![图片](img/b89b75af439d9e6f32a9b460606b73e2.png)
 
 信用批准数据集的图表示。作者提供的图片。
 
@@ -38,37 +38,37 @@
 
 **消息传递过程**
 
-在起始节点初始化值为1的消息，并让该节点将消息传递给其连接的每个节点。任何接收到消息的节点都会将消息（通过因子*k*膨胀，其中0 <*k*<1）传递给其它连接的节点。继续消息传递，直到达到目标节点（即要预测其值的属性对应的节点），或者没有更多节点可传递消息为止。由于消息不能被传回到接收它的节点，该过程保证终止。
+在起始节点初始化值为 1 的消息，并让该节点将消息传递给其连接的每个节点。任何接收到消息的节点都会将消息（通过因子*k*膨胀，其中 0 <*k*<1）传递给其它连接的节点。继续消息传递，直到达到目标节点（即要预测其值的属性对应的节点），或者没有更多节点可传递消息为止。由于消息不能被传回到接收它的节点，该过程保证终止。
 
-当消息传递完成时，图中的每个节点将收到零个或多个值不同的消息。对属于目标属性的每个节点的这些值进行求和，然后对这些（总和）值进行归一化，使它们本身的总和为1。将归一化值解释为概率。然后可以使用这些概率来预测未知的属性值，或者从分布中抽取一个随机值来估算。在每次传递中膨胀消息值反映了长路径应该比短路径贡献更少于概率估计的直觉。
+当消息传递完成时，图中的每个节点将收到零个或多个值不同的消息。对属于目标属性的每个节点的这些值进行求和，然后对这些（总和）值进行归一化，使它们本身的总和为 1。将归一化值解释为概率。然后可以使用这些概率来预测未知的属性值，或者从分布中抽取一个随机值来估算。在每次传递中膨胀消息值反映了长路径应该比短路径贡献更少于概率估计的直觉。
 
 ## 示例 1
 
-假设我们希望在收入低的情况下预测批准的值。下面图中的箭头说明了消息传递过程的操作，每个箭头的粗细表示消息值（在每一跳中以因子*k* = 0.5膨胀）。
+假设我们希望在收入低的情况下预测批准的值。下面图中的箭头说明了消息传递过程的操作，每个箭头的粗细表示消息值（在每一跳中以因子*k* = 0.5 膨胀）。
 
-![图片](../Images/44b7c9fbc19ebfa5cae0e51c77b1a99a.png)
+![图片](img/44b7c9fbc19ebfa5cae0e51c77b1a99a.png)
 
 估计在收入低的情况下批准的分布。图片由作者提供。
 
-消息从节点收入：低（绿色）启动。该节点将值为1的消息传递给实例1和实例2，然后每个实例将消息（扩展值为0.5）传递给节点教育：大学和批准：否。请注意，由于教育：大学从实例1和实例2接收消息，它必须将*每个*这些消息传递给实例3，扩展值为0.25。目标变量每个节点的数字显示了接收到的消息值的总和（括号中为百分比的归一化值）。在收入低的条件下，我们得到批准的以下概率：
+消息从节点收入：低（绿色）启动。该节点将值为 1 的消息传递给实例 1 和实例 2，然后每个实例将消息（扩展值为 0.5）传递给节点教育：大学和批准：否。请注意，由于教育：大学从实例 1 和实例 2 接收消息，它必须将*每个*这些消息传递给实例 3，扩展值为 0.25。目标变量每个节点的数字显示了接收到的消息值的总和（括号中为百分比的归一化值）。在收入低的条件下，我们得到批准的以下概率：
 
 +   Prob (批准为‘是’ | 收入低) = 20%
 
 +   Prob (批准为‘否’ | 收入低) = 80%
 
-这些概率与从表中基于计数的预测结果不同。由于五个实例中有两个实例的收入低，并且这两个实例的批准为否，因此基于计数的预测将导致批准为否的概率为100%。
+这些概率与从表中基于计数的预测结果不同。由于五个实例中有两个实例的收入低，并且这两个实例的批准为否，因此基于计数的预测将导致批准为否的概率为 100%。
 
-消息传递程序已考虑到属性值教育大学，由实例1和2拥有的，同时也由实例3拥有，实例3的批准为是，从而贡献了节点批准：是的总消息值。如果我们在图中加入了额外的属性就业和历史，这可能会进一步增加连接起始节点和目标节点的路径数量，从而利用额外的上下文信息，并改善概率分布的估计。
+消息传递程序已考虑到属性值教育大学，由实例 1 和 2 拥有的，同时也由实例 3 拥有，实例 3 的批准为是，从而贡献了节点批准：是的总消息值。如果我们在图中加入了额外的属性就业和历史，这可能会进一步增加连接起始节点和目标节点的路径数量，从而利用额外的上下文信息，并改善概率分布的估计。
 
 ## 示例 2
 
 当对多个属性进行条件判断时，也可以使用消息传递程序。在这种情况下，我们只需在与我们条件的属性值对应的每个节点上启动消息，并从每个节点遵循相同的程序。下图显示了在收入低且教育水平为研究生的情况下，预测批准值的结果。来自每个起始节点的消息序列以不同的颜色显示。
 
-![](../Images/40e2dab41ca2fec68a8b94ac90f5385f.png)
+![](img/40e2dab41ca2fec68a8b94ac90f5385f.png)
 
 估计在收入低且教育水平为研究生的情况下批准的分布。图片由作者提供。
 
-实例4的教育值为研究生，因此对节点批准：是的消息值的总和做出贡献。实例5也对批准：是的做出进一步贡献，因为它与实例4共享高收入。
+实例 4 的教育值为研究生，因此对节点批准：是的消息值的总和做出贡献。实例 5 也对批准：是的做出进一步贡献，因为它与实例 4 共享高收入。
 
 [注意：在这些示例中，我们将批准作为目标变量；然而，我们也可以用完全相同的方式估计收入或教育的概率分布]
 
@@ -80,7 +80,7 @@
 
 ## UNCRi 框架
 
-在Skanalytix，我们开发了一个基于图的计算框架，名为*统一数值/类别表示与推断*（UNCRi）***。*** 该框架结合了独特的图形数据表示和灵活的推断过程，可以用于估计和从任何类别或数值变量的条件分布中采样。它可以应用于分类和回归、缺失值填补、异常检测以及从完整联合分布或某些条件分布中生成合成数据等任务。该框架对数据的极端情况具有鲁棒性：类别变量可以从二元到高基数；数值变量可以是多峰的、高度偏斜的和任意规模的；缺失值比例可以很高。你可以在[http://skanalytix.com](http://skanalytix.com)了解更多关于UNCRi的信息。（UNCRi代码是闭源的）。
+在 Skanalytix，我们开发了一个基于图的计算框架，名为*统一数值/类别表示与推断*（UNCRi）***。*** 该框架结合了独特的图形数据表示和灵活的推断过程，可以用于估计和从任何类别或数值变量的条件分布中采样。它可以应用于分类和回归、缺失值填补、异常检测以及从完整联合分布或某些条件分布中生成合成数据等任务。该框架对数据的极端情况具有鲁棒性：类别变量可以从二元到高基数；数值变量可以是多峰的、高度偏斜的和任意规模的；缺失值比例可以很高。你可以在[`skanalytix.com`](http://skanalytix.com)了解更多关于 UNCRi 的信息。（UNCRi 代码是闭源的）。
 
 ## 结论
 

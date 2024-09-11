@@ -1,18 +1,18 @@
 # 10 个最常见但令人困惑的机器学习模型名称
 
-> 原文：[https://towardsdatascience.com/10-most-common-yet-confusing-machine-learning-model-names-e70595eef514?source=collection_archive---------7-----------------------#2023-03-24](https://towardsdatascience.com/10-most-common-yet-confusing-machine-learning-model-names-e70595eef514?source=collection_archive---------7-----------------------#2023-03-24)
+> 原文：[`towardsdatascience.com/10-most-common-yet-confusing-machine-learning-model-names-e70595eef514?source=collection_archive---------7-----------------------#2023-03-24`](https://towardsdatascience.com/10-most-common-yet-confusing-machine-learning-model-names-e70595eef514?source=collection_archive---------7-----------------------#2023-03-24)
 
-![](../Images/65d1d601adfb85cb2ab17b2ab690671f.png)
+![](img/65d1d601adfb85cb2ab17b2ab690671f.png)
 
 图片由 [Melyna Valle](https://unsplash.com/@melynavv?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 澄清混淆以便深入理解
 
-[](https://medium.com/@angela.shi?source=post_page-----e70595eef514--------------------------------)[![Angela and Kezhan Shi](../Images/a89d678f2f3887c0c2ff3928f9d767b4.png)](https://medium.com/@angela.shi?source=post_page-----e70595eef514--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e70595eef514--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e70595eef514--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----e70595eef514--------------------------------)
+[](https://medium.com/@angela.shi?source=post_page-----e70595eef514--------------------------------)![Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----e70595eef514--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e70595eef514--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e70595eef514--------------------------------) [Angela and Kezhan Shi](https://medium.com/@angela.shi?source=post_page-----e70595eef514--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F10-most-common-yet-confusing-machine-learning-model-names-e70595eef514&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----e70595eef514---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e70595eef514--------------------------------) ·17分钟阅读·2023年3月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe70595eef514&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F10-most-common-yet-confusing-machine-learning-model-names-e70595eef514&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----e70595eef514---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bf03e38122e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F10-most-common-yet-confusing-machine-learning-model-names-e70595eef514&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=post_page-2bf03e38122e----e70595eef514---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e70595eef514--------------------------------) ·17 分钟阅读·2023 年 3 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe70595eef514&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F10-most-common-yet-confusing-machine-learning-model-names-e70595eef514&user=Angela+and+Kezhan+Shi&userId=2bf03e38122e&source=-----e70595eef514---------------------clap_footer-----------)
 
 --
 
@@ -24,10 +24,10 @@
 
 1.  **线性回归**：线性回归不仅仅是任何“线性”的“回归器”。
 
-1.  **岭回归、LASSO回归和弹性网**：岭回归、LASSO回归和弹性网都是线性回归。
+1.  **岭回归、LASSO 回归和弹性网**：岭回归、LASSO 回归和弹性网都是线性回归。
 
 1.  **多项式回归**：多项式回归也是一种线性回归。
 
 1.  **逻辑回归**：逻辑回归对于统计学家来说是一种“回归”模型，作为广义线性模型（GLM）；对于机器学习从业者来说，它是一种分类器。
 
-1.  **SGD回归器和SGD分类器**：SGD回归器是一个很好的统一模型……
+1.  **SGD 回归器和 SGD 分类器**：SGD 回归器是一个很好的统一模型……

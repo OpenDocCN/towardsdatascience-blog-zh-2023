@@ -1,18 +1,18 @@
 # 如何在 Pandas 中使用正则表达式模式处理复杂字符串
 
-> 原文：[https://towardsdatascience.com/regex-patterns-in-pandas-api-afe70178f9e9?source=collection_archive---------6-----------------------#2023-02-27](https://towardsdatascience.com/regex-patterns-in-pandas-api-afe70178f9e9?source=collection_archive---------6-----------------------#2023-02-27)
+> 原文：[`towardsdatascience.com/regex-patterns-in-pandas-api-afe70178f9e9?source=collection_archive---------6-----------------------#2023-02-27`](https://towardsdatascience.com/regex-patterns-in-pandas-api-afe70178f9e9?source=collection_archive---------6-----------------------#2023-02-27)
 
 ## 正则表达式简化了对大量文本进行模式匹配的任务——Pandas 使其更加优雅
 
-[](https://thuwarakesh.medium.com/?source=post_page-----afe70178f9e9--------------------------------)[![Thuwarakesh Murallie](../Images/44f1a14a899426592bbd8c7f73ce169d.png)](https://thuwarakesh.medium.com/?source=post_page-----afe70178f9e9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----afe70178f9e9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----afe70178f9e9--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----afe70178f9e9--------------------------------)
+[](https://thuwarakesh.medium.com/?source=post_page-----afe70178f9e9--------------------------------)![Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----afe70178f9e9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----afe70178f9e9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----afe70178f9e9--------------------------------) [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----afe70178f9e9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregex-patterns-in-pandas-api-afe70178f9e9&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----afe70178f9e9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----afe70178f9e9--------------------------------) ·7 min read·2023年2月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fafe70178f9e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregex-patterns-in-pandas-api-afe70178f9e9&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----afe70178f9e9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce19993bef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregex-patterns-in-pandas-api-afe70178f9e9&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=post_page-93ce19993bef----afe70178f9e9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----afe70178f9e9--------------------------------) ·7 min read·2023 年 2 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fafe70178f9e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregex-patterns-in-pandas-api-afe70178f9e9&user=Thuwarakesh+Murallie&userId=93ce19993bef&source=-----afe70178f9e9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fafe70178f9e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregex-patterns-in-pandas-api-afe70178f9e9&source=-----afe70178f9e9---------------------bookmark_footer-----------)![](../Images/624b2b35b8a6ef2a7e48b83e5d3c1041.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fafe70178f9e9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fregex-patterns-in-pandas-api-afe70178f9e9&source=-----afe70178f9e9---------------------bookmark_footer-----------)![](img/624b2b35b8a6ef2a7e48b83e5d3c1041.png)
 
 照片由 [Chris Moore](https://unsplash.com/@chrismoore_?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

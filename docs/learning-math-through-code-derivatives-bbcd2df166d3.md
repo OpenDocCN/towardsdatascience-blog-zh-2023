@@ -1,14 +1,14 @@
 # 通过代码学习数学：导数
 
-> 原文：[https://towardsdatascience.com/learning-math-through-code-derivatives-bbcd2df166d3?source=collection_archive---------18-----------------------#2023-03-20](https://towardsdatascience.com/learning-math-through-code-derivatives-bbcd2df166d3?source=collection_archive---------18-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/learning-math-through-code-derivatives-bbcd2df166d3?source=collection_archive---------18-----------------------#2023-03-20`](https://towardsdatascience.com/learning-math-through-code-derivatives-bbcd2df166d3?source=collection_archive---------18-----------------------#2023-03-20)
 
 ## 使用 Python 深入理解导数
 
-[](https://harrisonfhoffman.medium.com/?source=post_page-----bbcd2df166d3--------------------------------)[![哈里森·霍夫曼](../Images/5eaa3e2bd0507297eb6c4a7efcf06324.png)](https://harrisonfhoffman.medium.com/?source=post_page-----bbcd2df166d3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bbcd2df166d3--------------------------------)[![数据科学的未来](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bbcd2df166d3--------------------------------) [哈里森·霍夫曼](https://harrisonfhoffman.medium.com/?source=post_page-----bbcd2df166d3--------------------------------)
+[](https://harrisonfhoffman.medium.com/?source=post_page-----bbcd2df166d3--------------------------------)![哈里森·霍夫曼](https://harrisonfhoffman.medium.com/?source=post_page-----bbcd2df166d3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bbcd2df166d3--------------------------------)![数据科学的未来](https://towardsdatascience.com/?source=post_page-----bbcd2df166d3--------------------------------) [哈里森·霍夫曼](https://harrisonfhoffman.medium.com/?source=post_page-----bbcd2df166d3--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-math-through-code-derivatives-bbcd2df166d3&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----bbcd2df166d3---------------------post_header-----------) 发布于 [数据科学的未来](https://towardsdatascience.com/?source=post_page-----bbcd2df166d3--------------------------------) ·5 分钟阅读·2023年3月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbbcd2df166d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-math-through-code-derivatives-bbcd2df166d3&user=Harrison+Hoffman&userId=38889d0801d0&source=-----bbcd2df166d3---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F38889d0801d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-math-through-code-derivatives-bbcd2df166d3&user=Harrison+Hoffman&userId=38889d0801d0&source=post_page-38889d0801d0----bbcd2df166d3---------------------post_header-----------) 发布于 [数据科学的未来](https://towardsdatascience.com/?source=post_page-----bbcd2df166d3--------------------------------) ·5 分钟阅读·2023 年 3 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbbcd2df166d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-math-through-code-derivatives-bbcd2df166d3&user=Harrison+Hoffman&userId=38889d0801d0&source=-----bbcd2df166d3---------------------clap_footer-----------)
 
 --
 

@@ -1,10 +1,10 @@
 # 使用 Streamlit 部署您的时间序列预测模型
 
-> 原文：[https://towardsdatascience.com/deploy-your-time-series-forecasting-model-with-streamlit-c3ce5a7edf19?source=collection_archive---------10-----------------------#2023-04-25](https://towardsdatascience.com/deploy-your-time-series-forecasting-model-with-streamlit-c3ce5a7edf19?source=collection_archive---------10-----------------------#2023-04-25)
+> 原文：[`towardsdatascience.com/deploy-your-time-series-forecasting-model-with-streamlit-c3ce5a7edf19?source=collection_archive---------10-----------------------#2023-04-25`](https://towardsdatascience.com/deploy-your-time-series-forecasting-model-with-streamlit-c3ce5a7edf19?source=collection_archive---------10-----------------------#2023-04-25)
 
 ## 一个关于使用 Python 构建网页应用程序以部署您的预测模型的实践指南
 
-[](https://medium.com/@marcopeixeiro?source=post_page-----c3ce5a7edf19--------------------------------)[![Marco Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----c3ce5a7edf19--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3ce5a7edf19--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c3ce5a7edf19--------------------------------) [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----c3ce5a7edf19--------------------------------)
+[](https://medium.com/@marcopeixeiro?source=post_page-----c3ce5a7edf19--------------------------------)![Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----c3ce5a7edf19--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3ce5a7edf19--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3ce5a7edf19--------------------------------) [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----c3ce5a7edf19--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc3ce5a7edf19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-your-time-series-forecasting-model-with-streamlit-c3ce5a7edf19&source=-----c3ce5a7edf19---------------------bookmark_footer-----------)![](../Images/597cc6da68b8a31e827f4f2607f94c3d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc3ce5a7edf19&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-your-time-series-forecasting-model-with-streamlit-c3ce5a7edf19&source=-----c3ce5a7edf19---------------------bookmark_footer-----------)![](img/597cc6da68b8a31e827f4f2607f94c3d.png)
 
 图片由 [SpaceX](https://unsplash.com/@spacex?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
 # 生存分析：利用机器学习预测事件发生时间（第一部分）
 
-> 原文：[https://towardsdatascience.com/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46?source=collection_archive---------1-----------------------#2023-02-09](https://towardsdatascience.com/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46?source=collection_archive---------1-----------------------#2023-02-09)
+> 原文：[`towardsdatascience.com/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46?source=collection_archive---------1-----------------------#2023-02-09`](https://towardsdatascience.com/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46?source=collection_archive---------1-----------------------#2023-02-09)
 
-![](../Images/4df3d3f659d7620733d12c7a48b6a04b.png)
+![](img/4df3d3f659d7620733d12c7a48b6a04b.png)
 
 插图由作者提供
 
 ## 客户流失预测的实际应用
 
-[](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)[![Lina Faik](../Images/24a3aa67a2d9dc3e074ceead04ab4cc8.png)](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------) [Lina Faik](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)
+[](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)![Lina Faik](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------) [Lina Faik](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb6c0e8e98c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsurvival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46&user=Lina+Faik&userId=b6c0e8e98c84&source=post_page-b6c0e8e98c84----ba52f9ab9a46---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------) · 11分钟阅读 · 2023年2月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba52f9ab9a46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsurvival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46&user=Lina+Faik&userId=b6c0e8e98c84&source=-----ba52f9ab9a46---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb6c0e8e98c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsurvival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46&user=Lina+Faik&userId=b6c0e8e98c84&source=post_page-b6c0e8e98c84----ba52f9ab9a46---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------) · 11 分钟阅读 · 2023 年 2 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fba52f9ab9a46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsurvival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46&user=Lina+Faik&userId=b6c0e8e98c84&source=-----ba52f9ab9a46---------------------clap_footer-----------)
 
 --
 

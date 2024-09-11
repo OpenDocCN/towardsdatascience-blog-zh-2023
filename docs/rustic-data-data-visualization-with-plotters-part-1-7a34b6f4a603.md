@@ -1,24 +1,24 @@
-# Rustic Data: 使用 Plotters 的数据可视化 — 第1部分
+# Rustic Data: 使用 Plotters 的数据可视化 — 第一部分
 
-> 原文：[https://towardsdatascience.com/rustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603?source=collection_archive---------8-----------------------#2023-07-25](https://towardsdatascience.com/rustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603?source=collection_archive---------8-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/rustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603?source=collection_archive---------8-----------------------#2023-07-25`](https://towardsdatascience.com/rustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603?source=collection_archive---------8-----------------------#2023-07-25)
 
 ## 详细指南：如何将原始数据转化为令人惊叹的 Rust 图形
 
-[](https://wiseai.medium.com/?source=post_page-----7a34b6f4a603--------------------------------)[![Mahmoud Harmouch](../Images/d61617549d25565399975debaad5908f.png)](https://wiseai.medium.com/?source=post_page-----7a34b6f4a603--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a34b6f4a603--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7a34b6f4a603--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----7a34b6f4a603--------------------------------)
+[](https://wiseai.medium.com/?source=post_page-----7a34b6f4a603--------------------------------)![Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----7a34b6f4a603--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a34b6f4a603--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a34b6f4a603--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----7a34b6f4a603--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----7a34b6f4a603---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a34b6f4a603--------------------------------) · 20分钟阅读 · 2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a34b6f4a603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----7a34b6f4a603---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----7a34b6f4a603---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a34b6f4a603--------------------------------) · 20 分钟阅读 · 2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a34b6f4a603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----7a34b6f4a603---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a34b6f4a603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603&source=-----7a34b6f4a603---------------------bookmark_footer-----------)![](../Images/6c279295bbbd6ed539f618c1b02257b4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a34b6f4a603&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frustic-data-data-visualization-with-plotters-part-1-7a34b6f4a603&source=-----7a34b6f4a603---------------------bookmark_footer-----------)![](img/6c279295bbbd6ed539f618c1b02257b4.png)
 
 各种 Plotters 特性（作者提供的图片）
 
 ## TL;DR
 
-**Plotters** 是一个流行的 Rust 库，用于创建 **数据可视化**。它提供了各种工具和函数，帮助你创建高质量的 **图形**、**图表** 和其他 **可视化**。本文是一个系列文章的 **第1部分**，专注于使用 **Plotters** 准备的可视化的美学方面。从改变 **颜色** **方案** 到添加 **注释**，你将学习如何定制 Plotters 可视化的外观。
+**Plotters** 是一个流行的 Rust 库，用于创建 **数据可视化**。它提供了各种工具和函数，帮助你创建高质量的 **图形**、**图表** 和其他 **可视化**。本文是一个系列文章的 **第一部分**，专注于使用 **Plotters** 准备的可视化的美学方面。从改变 **颜色** **方案** 到添加 **注释**，你将学习如何定制 Plotters 可视化的外观。
 
 到文章结尾，你将对如何使用 Plotters 库创建**专业**的可视化有一个**坚如磐石**的理解，这将**吸引**你的观众。我们在探索各种数据处理工具和方法时，[**Ndarray** **库**](https://wiseai.medium.com/the-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a)也将非常有用。因此，无论你是**业余**还是**资深** **Rust** **程序员**，如果你对用 Plotters 制作**信息丰富**且**美观**的可视化感兴趣，那么阅读这篇文章是必须的。
 
@@ -34,39 +34,39 @@
 
 ## 目录（TOC）
 
-∘ [这篇文章适合谁？](#a151)
+∘ 这篇文章适合谁？
 
-∘ [什么是 Plotters？](#cb15)
+∘ 什么是 Plotters？
 
-∘ [Plotters 的优势](#511c)
+∘ Plotters 的优势
 
-∘ [设置 Plotters](#2e03)
+∘ 设置 Plotters
 
-∘ [单行图](#b479)
+∘ 单行图
 
-∘ [多行图](#4913)
+∘ 多行图
 
-∘ [网格、坐标轴和标签](#3f49)
+∘ 网格、坐标轴和标签
 
-∘ [颜色和标记](#09f8)
+∘ 颜色和标记
 
-∘ [子图](#7c65)
+∘ 子图
 
-∘ [误差条](#0cfb)
+∘ 误差条
 
-∘ [散点图](#afac)
+∘ 散点图
 
-∘ [直方图](#081e)
+∘ 直方图
 
-∘ [结论](#2750)
+∘ 结论
 
-∘ [结束语](#6809)
+∘ 结束语
 
-∘ [资源](#a427)
+∘ 资源
 
 ## 这篇文章适合谁？
 
-![](../Images/1352b8468e4262db34c2b9c4705347da.png)
+![](img/1352b8468e4262db34c2b9c4705347da.png)
 
 [Myriam Jessier](https://unsplash.com/@mjessier?utm_source=medium&utm_medium=referral) 拍摄的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -78,7 +78,7 @@
 
 ## 什么是 Plotters？
 
-![](../Images/6bd8000763d8f503f731b649165ff1c0.png)
+![](img/6bd8000763d8f503f731b649165ff1c0.png)
 
 由 [Stephen Phillips - Hostreviews.co.uk](https://unsplash.com/es/@hostreviews?utm_source=medium&utm_medium=referral) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -92,7 +92,7 @@
 
 ## Plotters 优势
 
-![](../Images/868a2774a38dd62577280809a615e4f8.png)
+![](img/868a2774a38dd62577280809a615e4f8.png)
 
 由 [UX Indonesia](https://unsplash.com/es/@uxindo?utm_source=medium&utm_medium=referral) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -107,14 +107,14 @@
 要充分利用 **Plotters** 的功能，确保正确设置环境至关重要。该库提供了广泛的图表类型，如折线图、散点图、直方图和饼图；然而，未经正确设置，这些功能将无法使用。幸运的是，设置 **Plotters** 过程非常简单——只需在 Jupyter Notebook 中运行一个命令，你就可以开始使用了！
 
 ```py
-:dep plotters = { version = "^0.3.5", default_features = false, features = ["evcxr", "all_series", "all_elements"] }
+:dep plotters = { version = "⁰.3.5", default_features = false, features = ["evcxr", "all_series", "all_elements"] }
 ```
 
 一旦导入到你的项目工作区或笔记本会话中，**Plotters** 允许你探索其大量的定制选项，这些选项专门针对你的需求——无论是简单还是复杂的图表。
 
 ## 单线图
 
-![](../Images/8b470d9bd060172b0acedcfd5520547d.png)
+![](img/8b470d9bd060172b0acedcfd5520547d.png)
 
 线性单线图（作者提供的图像）
 
@@ -184,7 +184,7 @@ evcxr_figure((640, 240), |root| {
 }).style("width:100%")
 ```
 
-![](../Images/e012a31467481feb058ad9aac21299b2.png)
+![](img/e012a31467481feb058ad9aac21299b2.png)
 
 三次函数图（作者提供的图像）
 
@@ -192,7 +192,7 @@ evcxr_figure((640, 240), |root| {
 
 ## 多行图
 
-![](../Images/0257e49c83a8b1c0553ddb881e1ba692.png)
+![](img/0257e49c83a8b1c0553ddb881e1ba692.png)
 
 多行图（作者提供的图片）
 
@@ -222,7 +222,7 @@ evcxr_figure((640, 240), |root| {
 }).style("width:100%")
 ```
 
-利用提供的代码片段，我们可以轻松生成多个曲线。这是通过多次调用`**draw_series**`函数并定义来自数组的x-values和从不同数学表达式派生的y-values来实现的。执行此代码后，将显示一个展示所有这些绘制曲线的全面图表，以供观察。
+利用提供的代码片段，我们可以轻松生成多个曲线。这是通过多次调用`**draw_series**`函数并定义来自数组的 x-values 和从不同数学表达式派生的 y-values 来实现的。执行此代码后，将显示一个展示所有这些绘制曲线的全面图表，以供观察。
 
 让我们深入另一个示例，以展示多行图的适应性。请观察以下代码片段：
 
@@ -282,7 +282,7 @@ evcxr_figure((640, 240), |root| {
 
 ## 网格、坐标轴和标签
 
-![](../Images/6e14df1e3815ce24013c12f54cd4a727.png)
+![](img/6e14df1e3815ce24013c12f54cd4a727.png)
 
 Plotters 网格（图片由作者提供）
 
@@ -299,7 +299,7 @@ evcxr_figure((640, 240), |root| {
 }).style("width:100%")
 ```
 
-行`**ChartBuilder::on(&root).build_cartesian_2d(0f32..1f32, 0f32..1f32)?;**`允许我们手动设置x轴范围从0到1和y轴范围从0到1。通过指定这些范围，我们可以精确控制图表的显示区域，确保最相关的数据点得到突出显示。
+行`**ChartBuilder::on(&root).build_cartesian_2d(0f32..1f32, 0f32..1f32)?;**`允许我们手动设置 x 轴范围从 0 到 1 和 y 轴范围从 0 到 1。通过指定这些范围，我们可以精确控制图表的显示区域，确保最相关的数据点得到突出显示。
 
 为了提高图表的清晰度和理解度，提供适当的坐标轴标签和**描述性标题**至关重要。以下代码片段可以作为示例：
 
@@ -320,11 +320,11 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 60%")
 ```
 
-![](../Images/fa6261cf2f5bf1df9b918a92c091331d.png)
+![](img/fa6261cf2f5bf1df9b918a92c091331d.png)
 
 Plotters 标签（图片由作者提供）
 
-在此代码中，我们添加了`**chart.configure_mesh().x_desc(“x = Array::range(1., 7., 1.);”).y_desc(“y = f(x)”).draw()?;**`语句，为我们的图表添加了有意义的注释。通过包括`**x_desc(“x = Array::range(1., 7., 1.);”)**`，我们为x轴标注了数据的简要描述。类似地，`**y_desc(“y = f(x)”)**`为y轴分配了一个标签，指示函数关系。此外，`**Caption(“Plot Demo”, (“Arial”, 20).into_font())**`提供了一个信息性标题，为图表提供了背景。所有这些元素共同提高了可视化的解释性，确保观众可以轻松理解图表的目的和内容。
+在此代码中，我们添加了`**chart.configure_mesh().x_desc(“x = Array::range(1., 7., 1.);”).y_desc(“y = f(x)”).draw()?;**`语句，为我们的图表添加了有意义的注释。通过包括`**x_desc(“x = Array::range(1., 7., 1.);”)**`，我们为 x 轴标注了数据的简要描述。类似地，`**y_desc(“y = f(x)”)**`为 y 轴分配了一个标签，指示函数关系。此外，`**Caption(“Plot Demo”, (“Arial”, 20).into_font())**`提供了一个信息性标题，为图表提供了背景。所有这些元素共同提高了可视化的解释性，确保观众可以轻松理解图表的目的和内容。
 
 除了标签和标题，**Plotters**还允许我们创建一个**图例**，以区分图表中的多个曲线。通过在`**label**`函数中传递标签参数并随后调用`**legend**`函数，我们可以生成一个图例。请参考以下代码示例：
 
@@ -366,7 +366,7 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 60%")
 ```
 
-![](../Images/65686740564575447aea21db3a1231cf.png)
+![](img/65686740564575447aea21db3a1231cf.png)
 
 多行图带有标签、图例和网格（图片由作者提供）
 
@@ -413,7 +413,7 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 60%")
 ```
 
-![](../Images/ef3755caf9986f48ed232365550f0ab4.png)
+![](img/ef3755caf9986f48ed232365550f0ab4.png)
 
 带有图例的多线图，图例位于图形的上中部（作者提供的图像）
 
@@ -451,11 +451,11 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 60%")
 ```
 
-![](../Images/89c7912084ba59cb1b66c4eb740afd50.png)
+![](img/89c7912084ba59cb1b66c4eb740afd50.png)
 
 带有蓝色的单行折线图（图片由作者提供）
 
-在这个例子中，我们将线条的颜色更改为蓝色。你也可以使用其他颜色格式，例如[**HSLColor**](https://docs.rs/plotters/latest/plotters/prelude/struct.HSLColor.html)，通过[**HSL光谱值**](https://en.wikipedia.org/wiki/HSL_and_HSV)指定自定义颜色。
+在这个例子中，我们将线条的颜色更改为蓝色。你也可以使用其他颜色格式，例如[**HSLColor**](https://docs.rs/plotters/latest/plotters/prelude/struct.HSLColor.html)，通过[**HSL 光谱值**](https://en.wikipedia.org/wiki/HSL_and_HSV)指定自定义颜色。
 
 为了提升你在**Plotters**中折线图的视觉效果，考虑加入**标记**以表示每个图表的不同符号。如果你希望个性化，可以通过多种方式来定制这些标记。首先，我们可以利用`**draw_series**`方法，通过标记样式（如大小和颜色）绘制你的数据两次，依据个人偏好或特定的数据集特征。
 
@@ -488,7 +488,7 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 60%")
 ```
 
-![](../Images/750624e1ee63dc252a4e9164a7d22648.png)
+![](img/750624e1ee63dc252a4e9164a7d22648.png)
 
 带有标记的线性单行折线图（图片由作者提供）
 
@@ -518,7 +518,7 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 60%")
 ```
 
-![](../Images/b1254062497b0e9e0d75f7b0b37ab080.png)
+![](img/b1254062497b0e9e0d75f7b0b37ab080.png)
 
 带有标记的折线图（图片由作者提供）
 
@@ -574,7 +574,7 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 60%")
 ```
 
-![](../Images/98db912c47c46aef82a8a3d921f5c028.png)
+![](img/98db912c47c46aef82a8a3d921f5c028.png)
 
 带有不同线条颜色、标记、标签、标题和图例的多行图（图片由作者提供）
 
@@ -582,7 +582,7 @@ evcxr_figure((640, 480), |root| {
 
 ## 子图
 
-![](../Images/d66468518f3fa1322a615e4bd2aa7cfc.png)
+![](img/d66468518f3fa1322a615e4bd2aa7cfc.png)
 
 Plotters 子图（图片由作者提供）
 
@@ -590,7 +590,7 @@ Plotters 子图（图片由作者提供）
 
 此外，每个子图都有可定制的规格，如标题和标签，这使得用户可以根据特定需求调整输出。子图特别适用于处理科学和数据分析中的复杂信息，因为它有助于简洁而有效地传达重要发现。
 
-要在**Plotters**中生成子图，你可以使用`[**split_evenly**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_evenly)`方法，该方法需要一个参数：一个包含行数和列数的元组。例如，如果你想为你的子图创建一个**1x2布局**，并在第一个子图上绘制数据，则可以使用以下代码片段：
+要在**Plotters**中生成子图，你可以使用`[**split_evenly**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_evenly)`方法，该方法需要一个参数：一个包含行数和列数的元组。例如，如果你想为你的子图创建一个**1x2 布局**，并在第一个子图上绘制数据，则可以使用以下代码片段：
 
 ```py
 let linear_coordinates: Vec<(f32, f32)> = {
@@ -641,13 +641,13 @@ evcxr_figure((640, 480), |root| {
 }).style("width:100%")
 ```
 
-这将创建一个**1x2网格**的子图，并在两个子图中绘制数据，标题和轴标签已指定。传递给`**split_evenly**`的元组参数表示网格（1行2列）。在**Plotters**中有多种方式进行子图操作，使用 `[**split_vertically**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_vertically)`、`[**split_horizontally**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_horizontally)`、`[**split_evenly**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_evenly)` 和 `[**split_by_breakpoints**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_by_breakpoints)`。
+这将创建一个**1x2 网格**的子图，并在两个子图中绘制数据，标题和轴标签已指定。传递给`**split_evenly**`的元组参数表示网格（1 行 2 列）。在**Plotters**中有多种方式进行子图操作，使用 `[**split_vertically**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_vertically)`、`[**split_horizontally**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_horizontally)`、`[**split_evenly**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_evenly)` 和 `[**split_by_breakpoints**](https://docs.rs/plotters/0.3.5/plotters/drawing/struct.DrawingArea.html#method.split_by_breakpoints)`。
 
 利用**Plotters**的子图功能，可以实现令人惊叹的可视化效果，这有助于通过清晰准确地展示见解来促进沟通。
 
 ## 错误条
 
-![](../Images/c23da05dc971b684437f26d98a84ae3d.png)
+![](img/c23da05dc971b684437f26d98a84ae3d.png)
 
 带有垂直误差条的单一图表（图片由作者提供）
 
@@ -688,7 +688,7 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 100%")
 ```
 
-在这个例子中，我们选择在**y轴**上显示**误差**，因为它通常更为显著。前面的图片是我们数据的可视化表示，展示了每个数据点周围的明显误差条。这些条形表示在一定**置信水平**下可能的值范围；较长的条形表示测量的**不确定性**更大。
+在这个例子中，我们选择在**y 轴**上显示**误差**，因为它通常更为显著。前面的图片是我们数据的可视化表示，展示了每个数据点周围的明显误差条。这些条形表示在一定**置信水平**下可能的值范围；较长的条形表示测量的**不确定性**更大。
 
 然而，有时在两个轴上显示误差数据是有益的——特别是在处理**时间序列**或包含多个独立变量的实验数据时。在这种情况下，使用 `[**ErrorBar::new_horizontal**](https://docs.rs/plotters/latest/plotters/element/struct.ErrorBar.html#method.new_horizontal)` 方法并传递 x 轴误差的数组（对 y 轴误差做类似操作）就足够了。
 
@@ -727,7 +727,7 @@ evcxr_figure((640, 480), |root| {
 }).style("width: 100%")
 ```
 
-![](../Images/420483b00ec113ddc45b596128d955eb.png)
+![](img/420483b00ec113ddc45b596128d955eb.png)
 
 带有`horizontal`误差条的单一图表（图片由作者提供）
 
@@ -735,7 +735,7 @@ evcxr_figure((640, 480), |root| {
 
 ## **散点图**
 
-散点图是可视化数据和洞察**两个变量**之间**关系**的重要工具。**Plotters**通过将一个变量分配到**x轴**，另一个分配到**y轴**，并在相应坐标上绘制每个点，使在Rust中创建散点图变得轻而易举。通过调整点的颜色和大小，你可以在数据集中表示额外的维度。
+散点图是可视化数据和洞察**两个变量**之间**关系**的重要工具。**Plotters**通过将一个变量分配到**x 轴**，另一个分配到**y 轴**，并在相应坐标上绘制每个点，使在 Rust 中创建散点图变得轻而易举。通过调整点的颜色和大小，你可以在数据集中表示额外的维度。
 
 使用散点图的主要**优势**在于它们**揭示了数据中的模式**或**簇**，这些在仅通过表格或图表时可能不明显。离群点也可以通过这种方法轻松识别。
 
@@ -769,11 +769,11 @@ evcxr_figure((640, 480), |root| {
 
 生成的散点图如下：
 
-![](../Images/d9ec6f2a8642b56effb42befa7c926e0.png)
+![](img/d9ec6f2a8642b56effb42befa7c926e0.png)
 
 一张均匀分布数据样本的散点图（作者提供的图片）
 
-总之，散点图提供了强大的可视化功能，让我们更好地理解数据集，同时提供了直接的方式与他人分享信息，这主要得益于**Plotters**库函数在Rust编程语言环境中的易用性！
+总之，散点图提供了强大的可视化功能，让我们更好地理解数据集，同时提供了直接的方式与他人分享信息，这主要得益于**Plotters**库函数在 Rust 编程语言环境中的易用性！
 
 ## 直方图
 
@@ -812,7 +812,7 @@ evcxr_figure((640, 480), |root| {
 
 生成的直方图如下所示：
 
-![](../Images/e5b4560272b046f71425ef818e349140.png)
+![](img/e5b4560272b046f71425ef818e349140.png)
 
 均匀分布数据样本的直方图（作者提供的图像）
 
@@ -820,7 +820,7 @@ evcxr_figure((640, 480), |root| {
 
 ## 结论
 
-![](../Images/dc87b3ebdb61e103107c1dbeb1a47a03.png)
+![](img/dc87b3ebdb61e103107c1dbeb1a47a03.png)
 
 [Aaron Burden](https://unsplash.com/fr/@aaronburden?utm_source=medium&utm_medium=referral) 的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -828,15 +828,15 @@ evcxr_figure((640, 480), |root| {
 
 拥有新获得的知识，您可以自信地轻松导航**Plotters**的各种功能。有效利用这些方法将增强您对数据的理解，并使沟通结果更为准确。
 
-在接下来的系列文章中，特别是第二部分，我们将探索引人入胜的数据可视化，包括但不限于饼图和3D可视化。我们的目标是使您能够成为数据的熟练视觉讲述者，揭示前所未有的隐藏洞察！
+在接下来的系列文章中，特别是第二部分，我们将探索引人入胜的数据可视化，包括但不限于饼图和 3D 可视化。我们的目标是使您能够成为数据的熟练视觉讲述者，揭示前所未有的隐藏洞察！
 
 ## 结束语
 
-![](../Images/6a141938f63ccfae36a81b9fa4d23b19.png)
+![](img/6a141938f63ccfae36a81b9fa4d23b19.png)
 
 [Nick Morrison](https://unsplash.com/@nickmorrison?utm_source=medium&utm_medium=referral) 的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在我们结束本教程时，我想对所有投入时间和精力完成教程的人表达诚挚的感谢。与您一起展示Rust编程语言的卓越能力，真是非常愉快。
+在我们结束本教程时，我想对所有投入时间和精力完成教程的人表达诚挚的感谢。与您一起展示 Rust 编程语言的卓越能力，真是非常愉快。
 
 对数据科学充满热情，我承诺从现在开始每周或左右写至少一篇关于相关主题的综合文章。如果你对我的工作感兴趣，可以通过各种社交媒体平台与我联系，或者直接联系我以获得其他帮助。
 

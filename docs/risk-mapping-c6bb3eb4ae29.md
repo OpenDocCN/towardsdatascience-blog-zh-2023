@@ -1,16 +1,16 @@
 # 一张图表中的博弈论与风险管理
 
-> 原文：[https://towardsdatascience.com/risk-mapping-c6bb3eb4ae29?source=collection_archive---------13-----------------------#2023-03-27](https://towardsdatascience.com/risk-mapping-c6bb3eb4ae29?source=collection_archive---------13-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/risk-mapping-c6bb3eb4ae29?source=collection_archive---------13-----------------------#2023-03-27`](https://towardsdatascience.com/risk-mapping-c6bb3eb4ae29?source=collection_archive---------13-----------------------#2023-03-27)
 
 ## 数据可视化
 
 ## 风险管理原则介绍
 
-[](https://gdelongeaux.medium.com/?source=post_page-----c6bb3eb4ae29--------------------------------)[![Gabriel de Longeaux](../Images/8b5cc3be3035af2a852d75498212c776.png)](https://gdelongeaux.medium.com/?source=post_page-----c6bb3eb4ae29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6bb3eb4ae29--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6bb3eb4ae29--------------------------------) [Gabriel de Longeaux](https://gdelongeaux.medium.com/?source=post_page-----c6bb3eb4ae29--------------------------------)
+[](https://gdelongeaux.medium.com/?source=post_page-----c6bb3eb4ae29--------------------------------)![Gabriel de Longeaux](https://gdelongeaux.medium.com/?source=post_page-----c6bb3eb4ae29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6bb3eb4ae29--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6bb3eb4ae29--------------------------------) [Gabriel de Longeaux](https://gdelongeaux.medium.com/?source=post_page-----c6bb3eb4ae29--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F99542e924b20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frisk-mapping-c6bb3eb4ae29&user=Gabriel+de+Longeaux&userId=99542e924b20&source=post_page-99542e924b20----c6bb3eb4ae29---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6bb3eb4ae29--------------------------------) ·9分钟阅读·2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6bb3eb4ae29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frisk-mapping-c6bb3eb4ae29&user=Gabriel+de+Longeaux&userId=99542e924b20&source=-----c6bb3eb4ae29---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F99542e924b20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frisk-mapping-c6bb3eb4ae29&user=Gabriel+de+Longeaux&userId=99542e924b20&source=post_page-99542e924b20----c6bb3eb4ae29---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6bb3eb4ae29--------------------------------) ·9 分钟阅读·2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6bb3eb4ae29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frisk-mapping-c6bb3eb4ae29&user=Gabriel+de+Longeaux&userId=99542e924b20&source=-----c6bb3eb4ae29---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 *从数据科学家的角度出发，使用期望效用理论介绍基本的风险管理原则。风险管理策略在一张图表中进行总结（图表的详细解读在下文中），其中体现了等风险曲线。*
 
-![](../Images/662d0b13b733acd0551615f8ab5f0750.png)
+![](img/662d0b13b733acd0551615f8ab5f0750.png)
 
 风险地图与风险对象（G. de Longeaux）
 
@@ -38,37 +38,37 @@
 
 很明显，不同的损失金额 L 和损失概率 p 的组合可以关联到相同的风险成本 r。我们应在图表上绘制出所有这些表示相同风险成本 r 的点，其中损失金额 L 在 y 轴上表示，概率 p 在 x 轴上表示。为了找到所有点关联相同风险 r 的曲线方程（这就是这些曲线通常被称为“等风险曲线”的原因），我们只需将 r 设为常数，并推导出 L 关于 p 的表达式。对于风险中性实体，我们从 r=W₀-Wₑ = pL 开始，这意味着 L = r/p。对于风险厌恶的实体，我们从 r = W₀-Wₑ = W₀ - W₀^(1 - p) (W₀ - W)^p 开始，最终得到 L=W₀ [1 - (1-r/W₀)^(1/p)]（对于 p = 0 这没有定义，但这个情况不有趣，除了看到与 Allais 悖论相关的不连续性：即使 p 极小，我们应该根据所选择的效用函数考虑风险，但实际上我们永远不会考虑如此小的风险——我们将忽略这一点，因为这与我们主要关注的问题无关）。
 
-![](../Images/46454a27fb4b472971347d445d8f486d.png)
+![](img/46454a27fb4b472971347d445d8f486d.png)
 
 等风险曲线 (G. de Longeaux)
 
-为了绘制图表，我取了W₀ = 5。我们可以看到不同风险成本r值下的风险中立和厌恶风险个体的等风险曲线。
+为了绘制图表，我取了 W₀ = 5。我们可以看到不同风险成本 r 值下的风险中立和厌恶风险个体的等风险曲线。
 
 # 探索地图
 
 ## 表示风险对象
 
-这就是一切变得有趣的地方。企业拥有暴露于损失的工厂、仓库、商店、办公室……它们可以在我们创建的地图上标出这些地点：例如，一个暴露于40%概率损失2的仓库将在地图上显示为点（x = 0.4, y = 2）。
+这就是一切变得有趣的地方。企业拥有暴露于损失的工厂、仓库、商店、办公室……它们可以在我们创建的地图上标出这些地点：例如，一个暴露于 40%概率损失 2 的仓库将在地图上显示为点（x = 0.4, y = 2）。
 
-![](../Images/3613001afce9dc7def4be3bfd7674815.png)
+![](img/3613001afce9dc7def4be3bfd7674815.png)
 
 风险对象的等风险曲线（G. de Longeaux）
 
-根据图表上绘制的等风险曲线，我们可以看到风险成本略低于r = 1（假设r = 0.9），如果我们假设公司是厌恶风险的。然而，并不是所有公司都厌恶风险：保险公司接近于风险中立（忽略其费用），因为它们可以通过大数法则来分摊风险。对于保险公司来说，风险成本r会更低（假设r = 0.8），因此保险公司将能够提供一个交易：仓库的所有者将支付0.85的保险费，将风险转移给保险公司，从而节省0.9作为风险成本。最终，保险公司将获得0.85以承担0.8的成本，从而赚取0.05，而另一家公司将支付0.85以摆脱0.9的成本，也赚取0.05。
+根据图表上绘制的等风险曲线，我们可以看到风险成本略低于 r = 1（假设 r = 0.9），如果我们假设公司是厌恶风险的。然而，并不是所有公司都厌恶风险：保险公司接近于风险中立（忽略其费用），因为它们可以通过大数法则来分摊风险。对于保险公司来说，风险成本 r 会更低（假设 r = 0.8），因此保险公司将能够提供一个交易：仓库的所有者将支付 0.85 的保险费，将风险转移给保险公司，从而节省 0.9 作为风险成本。最终，保险公司将获得 0.85 以承担 0.8 的成本，从而赚取 0.05，而另一家公司将支付 0.85 以摆脱 0.9 的成本，也赚取 0.05。
 
 ## 确定战略区域
 
 进一步探索图表，我们可以识别出四个主要区域：
 
-+   位于风险地图左下角的风险对象（工厂、仓库、商店、办公室等）具有非常好的风险概况：保险费用便宜（保险费始终低于1）。
++   位于风险地图左下角的风险对象（工厂、仓库、商店、办公室等）具有非常好的风险概况：保险费用便宜（保险费始终低于 1）。
 
-+   位于左上角的风险对象具有“严重损失”特征，这意味着可能会发生大损失。然而，由于损失概率较小（低于40%），风险概况仍然良好，保险非常有用，因为相对于风险成本来说，它非常便宜：一个成本为3.5的风险可以以1.5的费用投保（-57%）。
++   位于左上角的风险对象具有“严重损失”特征，这意味着可能会发生大损失。然而，由于损失概率较小（低于 40%），风险概况仍然良好，保险非常有用，因为相对于风险成本来说，它非常便宜：一个成本为 3.5 的风险可以以 1.5 的费用投保（-57%）。
 
-+   位于右下角的风险对象具有“概率损失”或“频率损失”特征，因为损失发生的概率很高（超过40%）（注意在我们简单的表示中，彩票是一个简单的伯努利试验，损失概率和损失频率是相同的，但一般情况下并非如此）。在这种情况下，风险转移似乎并不十分有趣，因为企业和保险的风险成本基本相同。通常，对于很可能发生的小损失，几乎没有保险的兴趣。如果有的话，公司可以通过自保（通过自保公司）或使用免赔额来减少总体支付的保险费：保险公司不会支付发生在这些地点的低于1.5的损失。
++   位于右下角的风险对象具有“概率损失”或“频率损失”特征，因为损失发生的概率很高（超过 40%）（注意在我们简单的表示中，彩票是一个简单的伯努利试验，损失概率和损失频率是相同的，但一般情况下并非如此）。在这种情况下，风险转移似乎并不十分有趣，因为企业和保险的风险成本基本相同。通常，对于很可能发生的小损失，几乎没有保险的兴趣。如果有的话，公司可以通过自保（通过自保公司）或使用免赔额来减少总体支付的保险费：保险公司不会支付发生在这些地点的低于 1.5 的损失。
 
-+   地图右上角的风险对象具有较差的风险状况：损失既大又高度可能。即使考虑到风险成本，保险费用也很高。例如，一个风险成本为4.5的对象可以以4的价格投保（-11%）。
++   地图右上角的风险对象具有较差的风险状况：损失既大又高度可能。即使考虑到风险成本，保险费用也很高。例如，一个风险成本为 4.5 的对象可以以 4 的价格投保（-11%）。
 
-![](../Images/624d51220cbd6e9ca6301b496739638a.png)
+![](img/624d51220cbd6e9ca6301b496739638a.png)
 
 风险状况和保险策略（G. de Longeaux）
 
@@ -78,7 +78,7 @@
 
 在高风险情况下，应采取措施减少可能损失的严重性（保护措施）或降低损失发生的概率（预防措施）——或者两者兼顾。
 
-![](../Images/e4f8c7f56a9eb2db8679156b0e6ccff8.png)
+![](img/e4f8c7f56a9eb2db8679156b0e6ccff8.png)
 
 风险管理和保险策略原则（G. de Longeaux）
 
@@ -94,7 +94,7 @@
 
 # R 代码
 
-如果你想使用R重新制作或改进图表，代码如下：
+如果你想使用 R 重新制作或改进图表，代码如下：
 
 ```py
 #### Graphical options ####

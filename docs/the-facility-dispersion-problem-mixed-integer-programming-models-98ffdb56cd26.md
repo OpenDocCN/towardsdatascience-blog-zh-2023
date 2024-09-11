@@ -1,18 +1,18 @@
 # 设施分布问题：混合整数规划模型
 
-> 原文：[https://towardsdatascience.com/the-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26?source=collection_archive---------2-----------------------#2023-09-09](https://towardsdatascience.com/the-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26?source=collection_archive---------2-----------------------#2023-09-09)
+> 原文：[`towardsdatascience.com/the-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26?source=collection_archive---------2-----------------------#2023-09-09`](https://towardsdatascience.com/the-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26?source=collection_archive---------2-----------------------#2023-09-09)
 
 ## 关于 p-dispersion 和 maxisum 模型的全面 Python 教程
 
-[](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)[![布鲁诺·斯卡利亚 C. F. 莱特](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------)[![数据科学之道](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------) [布鲁诺·斯卡利亚 C. F. 莱特](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)
+[](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)![布鲁诺·斯卡利亚 C. F. 莱特](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------)![数据科学之道](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------) [布鲁诺·斯卡利亚 C. F. 莱特](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----98ffdb56cd26---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------) ·10分钟阅读·2023年9月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98ffdb56cd26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----98ffdb56cd26---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----98ffdb56cd26---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------) ·10 分钟阅读·2023 年 9 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98ffdb56cd26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----98ffdb56cd26---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98ffdb56cd26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&source=-----98ffdb56cd26---------------------bookmark_footer-----------)![](../Images/bdc6d779cd05ff45c825c69eb52247bd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98ffdb56cd26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&source=-----98ffdb56cd26---------------------bookmark_footer-----------)![](img/bdc6d779cd05ff45c825c69eb52247bd.png)
 
 [Z](https://unsplash.com/@dead____artist?utm_source=medium&utm_medium=referral) 提供的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,13 +22,13 @@ Kuby（1987）提出了两种不同的混合整数规划（MIP）公式：*p*-*�
 
 除了这两个模型之外，还将介绍一些有用的建模资源。首先，在线性规划（MIP）背景下线性化二进制变量乘积的策略，尽管考虑到最大化目标，这在本问题中不需要显式说明。其次，一种最大-最小 MIP 公式，旨在最大化比一组项目的任何参数都小的某些东西，如果该项目被选中。最后，一种解决多目标的策略，具有明确的优先级层次结构，结合了这两个模型的元素。
 
-对于尚未熟悉数值优化的人，可以参考我之前关于[*线性规划*](https://medium.com/towards-data-science/linear-programming-theory-and-applications-c67600591612)和 [*分支限界*](/a-gentle-introduction-to-branch-bound-d00a4ee1cad) 方法的故事，以帮助理解。
+对于尚未熟悉数值优化的人，可以参考我之前关于[*线性规划*](https://medium.com/towards-data-science/linear-programming-theory-and-applications-c67600591612)和 *分支限界* 方法的故事，以帮助理解。
 
 如常，你可以在这个 [git 仓库](https://github.com/bruscalia/optimization-demo-files/tree/28266b5e2cc90b9e39f6f72322d3008fd211f1d8/mip/dispersion) 找到完整的代码。
 
 你会选择哪些位置来放置 5 个设施？
 
-![](../Images/87fd3855217c72e990af4bcd0823c7b4.png)
+![](img/87fd3855217c72e990af4bcd0823c7b4.png)
 
 设施分散问题中的可能位置。（图片来自作者）。
 
@@ -40,17 +40,17 @@ Kuby（1987）提出了两种不同的混合整数规划（MIP）公式：*p*-*�
 
 考虑一个有向图 *G*(*V*, *A*) 和一个新的二进制变量 *zᵢⱼ*，它指示节点 *i* 和 *j* 都被选择。如果 *i* 或 *j* 其中之一未被选择，则 *zᵢⱼ* 必须为 0。这就产生了第一组约束：
 
-![](../Images/95020fb434def6a19defe6d774334276.png)
+![](img/95020fb434def6a19defe6d774334276.png)
 
 二进制变量乘积的线性化约束的第一组。（图片来自作者）。
 
 目前，即使选择了 *i* 和 *j*，*zᵢⱼ* 仍可以为 0。因此，我们必须包括一个额外的约束，使得当 *i* 和 *j* 被选择时，*zᵢⱼ* 变为 1。
 
-![](../Images/035c954cc0b3690494b37a9d141cfd4a.png)
+![](img/035c954cc0b3690494b37a9d141cfd4a.png)
 
 线性化形式的二进制变量乘积的第二组约束。（图片由作者提供）。
 
-当最大化与*zᵢⱼ*成比例的某物时，如*maxisum*问题，第二组约束是不必要的，因为如果可行的话，不计算与*zᵢⱼ*成比例的收益是没有意义的。然而，在制定其他MIP模型时，这可能是有用的。
+当最大化与*zᵢⱼ*成比例的某物时，如*maxisum*问题，第二组约束是不必要的，因为如果可行的话，不计算与*zᵢⱼ*成比例的收益是没有意义的。然而，在制定其他 MIP 模型时，这可能是有用的。
 
 在接下来的部分，让我们将这些概念应用于*maxisum*问题。
 
@@ -60,15 +60,15 @@ Kuby（1987）提出了两种不同的混合整数规划（MIP）公式：*p*-*�
 
 目标可以陈述如下：
 
-![](../Images/aea7aaef5823c8b3c1c208438670c977.png)
+![](img/aea7aaef5823c8b3c1c208438670c977.png)
 
 除了前一节中提出的将二进制变量的乘积线性化的约束外，还需要加入一个约束以保证选择了*p*个位置。
 
 因此，我们可以将问题的约束陈述为：
 
-![](../Images/5085eb75d16c6f01f378c013bc40cd4f.png)
+![](img/5085eb75d16c6f01f378c013bc40cd4f.png)
 
-让我们使用Python将其转化为代码。为此，我们必须首先导入将要使用的库。*numpy*库将用于线性代数计算和创建随机坐标点；scipy中的*squareform*和*pdist*函数将用于根据坐标矩阵计算距离；*matplotlib*将作为我们的可视化工具；*pyomo*则是代数建模语言（AML）（与求解器HiGHS）。
+让我们使用 Python 将其转化为代码。为此，我们必须首先导入将要使用的库。*numpy*库将用于线性代数计算和创建随机坐标点；scipy 中的*squareform*和*pdist*函数将用于根据坐标矩阵计算距离；*matplotlib*将作为我们的可视化工具；*pyomo*则是代数建模语言（AML）（与求解器 HiGHS）。
 
 ```py
 import numpy as np
@@ -95,7 +95,7 @@ distances = squareform(pdist(coordinates))
 
 我们现在具备了开始我们的*pyomo*模型所需的必要元素。
 
-在*pyomo*中建模问题有两种方法：*Abstract*模型和*Concrete*模型。在第一种方法中，问题的代数表达式在提供一些数据值之前定义，而在第二种方法中，模型实例在定义其元素时立即创建。你可以在[库文档](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)或Bynum等（2021年）的书中找到有关这些方法的更多信息。在本文中，我们将采用*Concrete*模型形式。
+在*pyomo*中建模问题有两种方法：*Abstract*模型和*Concrete*模型。在第一种方法中，问题的代数表达式在提供一些数据值之前定义，而在第二种方法中，模型实例在定义其元素时立即创建。你可以在[库文档](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)或 Bynum 等（2021 年）的书中找到有关这些方法的更多信息。在本文中，我们将采用*Concrete*模型形式。
 
 ```py
 model = pyo.ConcreteModel()
@@ -155,16 +155,16 @@ def disp_obj(model):
 model.obj = pyo.Objective(rule=disp_obj, sense=pyo.maximize)
 ```
 
-现在*maxisum*模型已经准备好解决了。我们需要实例化一个与*pyomo*兼容的求解器来处理它。*Highs*求解器在*Pyomo*中可用（请查看导入），自6.4.3版本起，如果安装了*highspy*包。所以请确保运行`pip install highspy`。
+现在*maxisum*模型已经准备好解决了。我们需要实例化一个与*pyomo*兼容的求解器来处理它。*Highs*求解器在*Pyomo*中可用（请查看导入），自 6.4.3 版本起，如果安装了*highspy*包。所以请确保运行`pip install highspy`。
 
 ```py
 solver = Highs()
 solver.solve(model)
 ```
 
-在大约120秒的计算时间后，我们得到了以下结果：
+在大约 120 秒的计算时间后，我们得到了以下结果：
 
-![](../Images/6098128728c99bfb5ea47c4f4464594a.png)
+![](img/6098128728c99bfb5ea47c4f4464594a.png)
 
 最大和模型结果。（作者提供的图像）。
 
@@ -172,9 +172,9 @@ solver.solve(model)
 
 # p-离散模型
 
-在*p*-*离散*模型中，我们需要一个额外的决策变量来计算所有选定节点对之间的最小距离，这也是我们的最大化目标。我们将这个变量称为*D*。我们必须创建一个大M约束，确保如果*i*和*j*都被选择，*D*小于或等于*dᵢⱼ*；否则，我们必须确保*D*是无限的。如果我们保持*zᵢⱼ*作为二进制变量的乘积的公式，我们可以将这个额外的约束公式化如下。
+在*p*-*离散*模型中，我们需要一个额外的决策变量来计算所有选定节点对之间的最小距离，这也是我们的最大化目标。我们将这个变量称为*D*。我们必须创建一个大 M 约束，确保如果*i*和*j*都被选择，*D*小于或等于*dᵢⱼ*；否则，我们必须确保*D*是无限的。如果我们保持*zᵢⱼ*作为二进制变量的乘积的公式，我们可以将这个额外的约束公式化如下。
 
-![](../Images/658a74a84500ca65fcf09d3239d6b32a.png)
+![](img/658a74a84500ca65fcf09d3239d6b32a.png)
 
 二进制变量乘积的最大-最小约束。（作者提供的图像）。
 
@@ -182,13 +182,13 @@ solver.solve(model)
 
 尽管这种公式对于这个模型效果很好，但可以使用更简洁的方法，其中变量*zᵢⱼ*甚至不包含在模型中。
 
-![](../Images/7adbefd60f390dd42a01011d095c54f3.png)
+![](img/7adbefd60f390dd42a01011d095c54f3.png)
 
 节点变量的最大-最小约束。（作者提供的图像）。
 
 在这种公式中，*xᵢ*或*xⱼ*等于零是保证不等式对任何*D*值有效的充分条件。目标变为简单地最大化*D*。
 
-在接下来的Python代码中，考虑到我们有一个新模型，其集合和参数与之前的相同，以及决策变量组*x*。
+在接下来的 Python 代码中，考虑到我们有一个新模型，其集合和参数与之前的相同，以及决策变量组*x*。
 
 ```py
 # Max-min constraint
@@ -208,9 +208,9 @@ model.maxmin_rule = pyo.Constraint(model.A, rule=maxmin_rule)
 model.obj = pyo.Objective(expr=model.D, sense=pyo.maximize)
 ```
 
-调用求解器后，花费了不到1.2秒获得以下结果。
+调用求解器后，花费了不到 1.2 秒获得以下结果。
 
-![](../Images/92419e3d732d5483c4196eb3a44ef178.png)
+![](img/92419e3d732d5483c4196eb3a44ef178.png)
 
 p-离散模型结果。（作者提供的图像）。
 
@@ -250,7 +250,7 @@ solver.solve(model)
 
 这出乎意料地很快，因为当求解器进入第二个目标时，可行替代方案的空间显著缩小。在不到一（额外）秒的时间内，得到了以下结果。
 
-![](../Images/f520995b99e6f26fba8e053f009c44c4.png)
+![](img/f520995b99e6f26fba8e053f009c44c4.png)
 
 多标准问题：p-离散模型后跟 *maxisum* 目标。（图像来源于作者）。
 
@@ -258,11 +258,11 @@ solver.solve(model)
 
 当客户不均匀分布、设施有有限容量，或者适当的设施数量事先未知时，你可能面临的是不同的 *设施位置问题*。你可以在 [Nicolo Cosimo Albanese](https://medium.com/u/7430df412ec?source=post_page-----98ffdb56cd26--------------------------------) 的精彩故事中找到使用 PuLP 在 Python 中实现的 Balinski（1965）公式。
 
-[](/optimization-capacitated-facility-location-problem-in-python-57c08f259fe0?source=post_page-----98ffdb56cd26--------------------------------) [## 优化：Python中的容量设施位置问题
+[](/optimization-capacitated-facility-location-problem-in-python-57c08f259fe0?source=post_page-----98ffdb56cd26--------------------------------) ## 优化：Python 中的容量设施位置问题
 
 ### 找出最佳的仓库数量和位置，以降低成本并满足需求。
 
-towardsdatascience.com](/optimization-capacitated-facility-location-problem-in-python-57c08f259fe0?source=post_page-----98ffdb56cd26--------------------------------)
+towardsdatascience.com
 
 # 结论
 
@@ -272,6 +272,6 @@ towardsdatascience.com](/optimization-capacitated-facility-location-problem-in-p
 
 Balinski, M. L. 1965\. 整数编程：方法、用途、计算。*管理科学*, *12*(3), 253–313。
 
-Bynum, M. L., Hackebeil, G. A., Hart, W. E., Laird, C. D., Nicholson, B. L., Siirola, J. D., … & Woodruff, D. L. 2021\. *Pyomo-optimization modeling in python* (第67卷)。德国柏林/海德堡：Springer。
+Bynum, M. L., Hackebeil, G. A., Hart, W. E., Laird, C. D., Nicholson, B. L., Siirola, J. D., … & Woodruff, D. L. 2021\. *Pyomo-optimization modeling in python* (第 67 卷)。德国柏林/海德堡：Springer。
 
 Kuby, M. J. 1987\. 设施分散的编程模型：p‐分散和最大和分散问题。*地理分析*, *19*(4), 315–329。

@@ -1,18 +1,18 @@
 # 穿越随机森林的道路
 
-> 原文：[https://towardsdatascience.com/finding-our-way-through-a-random-forest-5ff6c1382572?source=collection_archive---------11-----------------------#2023-04-19](https://towardsdatascience.com/finding-our-way-through-a-random-forest-5ff6c1382572?source=collection_archive---------11-----------------------#2023-04-19)
+> 原文：[`towardsdatascience.com/finding-our-way-through-a-random-forest-5ff6c1382572?source=collection_archive---------11-----------------------#2023-04-19`](https://towardsdatascience.com/finding-our-way-through-a-random-forest-5ff6c1382572?source=collection_archive---------11-----------------------#2023-04-19)
 
 ## 或者在一个被僵尸肆虐的假设世界中，决策树如何能够决定是否能够摆脱困境
 
-[](https://medium.com/@manfred.james?source=post_page-----5ff6c1382572--------------------------------)[![Diego Manfre](../Images/2189d8e63df449a869526bf8b6c50440.png)](https://medium.com/@manfred.james?source=post_page-----5ff6c1382572--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ff6c1382572--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ff6c1382572--------------------------------) [Diego Manfre](https://medium.com/@manfred.james?source=post_page-----5ff6c1382572--------------------------------)
+[](https://medium.com/@manfred.james?source=post_page-----5ff6c1382572--------------------------------)![Diego Manfre](https://medium.com/@manfred.james?source=post_page-----5ff6c1382572--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ff6c1382572--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----5ff6c1382572--------------------------------) [Diego Manfre](https://medium.com/@manfred.james?source=post_page-----5ff6c1382572--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e3d8f9df1a5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-our-way-through-a-random-forest-5ff6c1382572&user=Diego+Manfre&userId=6e3d8f9df1a5&source=post_page-6e3d8f9df1a5----5ff6c1382572---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----5ff6c1382572--------------------------------) ·17分钟阅读·2023年4月19日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e3d8f9df1a5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-our-way-through-a-random-forest-5ff6c1382572&user=Diego+Manfre&userId=6e3d8f9df1a5&source=post_page-6e3d8f9df1a5----5ff6c1382572---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----5ff6c1382572--------------------------------) ·17 分钟阅读·2023 年 4 月 19 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ff6c1382572&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-our-way-through-a-random-forest-5ff6c1382572&source=-----5ff6c1382572---------------------bookmark_footer-----------)![](../Images/42de49ee660a66ca0f4cef619e194d77.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ff6c1382572&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-our-way-through-a-random-forest-5ff6c1382572&source=-----5ff6c1382572---------------------bookmark_footer-----------)![](img/42de49ee660a66ca0f4cef619e194d77.png)
 
 图像由作者使用 Midjourney 制作
 

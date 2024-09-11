@@ -1,18 +1,18 @@
-# Python的奇特之处：理解一个变量如何被一个不返回任何东西的函数修改
+# Python 的奇特之处：理解一个变量如何被一个不返回任何东西的函数修改
 
-> 原文：[https://towardsdatascience.com/python-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923?source=collection_archive---------8-----------------------#2023-04-13](https://towardsdatascience.com/python-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923?source=collection_archive---------8-----------------------#2023-04-13)
+> 原文：[`towardsdatascience.com/python-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923?source=collection_archive---------8-----------------------#2023-04-13`](https://towardsdatascience.com/python-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923?source=collection_archive---------8-----------------------#2023-04-13)
 
-## 深入探讨Python如何传递参数和可变性，以防止意外的错误
+## 深入探讨 Python 如何传递参数和可变性，以防止意外的错误
 
-[](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)[![Mike Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)[](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------) [Mike Huls](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)
+[](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)![Mike Huls](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)[](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------) [Mike Huls](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ffb62c607ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923&user=Mike+Huls&userId=7ffb62c607ee&source=post_page-7ffb62c607ee----343a40cc6923---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------) · 8分钟阅读 · 2023年4月13日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ffb62c607ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923&user=Mike+Huls&userId=7ffb62c607ee&source=post_page-7ffb62c607ee----343a40cc6923---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------) · 8 分钟阅读 · 2023 年 4 月 13 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F343a40cc6923&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923&source=-----343a40cc6923---------------------bookmark_footer-----------)![](../Images/66a1b3b46f16c0c485439cbce8fc83b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F343a40cc6923&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923&source=-----343a40cc6923---------------------bookmark_footer-----------)![](img/66a1b3b46f16c0c485439cbce8fc83b8.png)
 
 追踪意外错误（图片由 [cottonbro studio](https://www.pexels.com/@cottonbro/) 提供，来源于 [Pexels](https://www.pexels.com/photo/photo-of-person-taking-down-notes-7319070/)）
 

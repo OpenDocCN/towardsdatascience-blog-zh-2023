@@ -1,18 +1,18 @@
 # 大型语言模型和向量数据库在新闻推荐中的应用
 
-> 原文：[https://towardsdatascience.com/large-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030?source=collection_archive---------1-----------------------#2023-12-14](https://towardsdatascience.com/large-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030?source=collection_archive---------1-----------------------#2023-12-14)
+> 原文：[`towardsdatascience.com/large-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030?source=collection_archive---------1-----------------------#2023-12-14`](https://towardsdatascience.com/large-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030?source=collection_archive---------1-----------------------#2023-12-14)
 
-![](../Images/86e2c1ed6d4dee9531096a56a7242931.png)
+![](img/86e2c1ed6d4dee9531096a56a7242931.png)
 
 图片由 [Roman Kraft](https://unsplash.com/@iamromankraft?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## *将 LLMs 应用到生产环境中，使用 Sentence Transformers 和 Qdrant*
 
-[](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)[![João Felipe Guedes](../Images/4be4c6631a15540541fb96ac1bed88ec.png)](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------) [João Felipe Guedes](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)
+[](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)![João Felipe Guedes](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------) [João Felipe Guedes](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F259f985d397f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030&user=Jo%C3%A3o+Felipe+Guedes&userId=259f985d397f&source=post_page-259f985d397f----6f9348fd4030---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------) ·8 分钟阅读·2023年12月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6f9348fd4030&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030&user=Jo%C3%A3o+Felipe+Guedes&userId=259f985d397f&source=-----6f9348fd4030---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F259f985d397f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030&user=Jo%C3%A3o+Felipe+Guedes&userId=259f985d397f&source=post_page-259f985d397f----6f9348fd4030---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------) ·8 分钟阅读·2023 年 12 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6f9348fd4030&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030&user=Jo%C3%A3o+Felipe+Guedes&userId=259f985d397f&source=-----6f9348fd4030---------------------clap_footer-----------)
 
 --
 
@@ -57,13 +57,13 @@ df = pd.read_parquet("articles.parquet")
 df.tail()
 ```
 
-![](../Images/cd97b85dc0c38903e97e0a8bdd45b542.png)
+![](img/cd97b85dc0c38903e97e0a8bdd45b542.png)
 
 来自 NPR 的示例数据（作者生成的图像）
 
 我们可以看到 NPR 拥有一些有趣的文本数据，如文章的 *标题* 和 *正文* 内容。我们可以在嵌入生成过程中使用它们，如下图所示：
 
-![](../Images/aee62f2688e895578154d8ba93f13661.png)
+![](img/aee62f2688e895578154d8ba93f13661.png)
 
 嵌入生成过程（作者提供的图像）
 
@@ -96,7 +96,7 @@ print (sentence_embedding)
 
 所以，给定一个示例输入数据，我们可以将*title*和*tags*内容连接成一个文本，并传递给编码器生成文本嵌入。
 
-我们可以对NPR数据集中所有其他文章应用相同的过程：
+我们可以对 NPR 数据集中所有其他文章应用相同的过程：
 
 ```py
 def generate_item_sentence(item: pd.Series, text_columns=["title"]) -> str:
@@ -114,11 +114,11 @@ df["sentence_embedding"] = df["sentence"].apply(encoder.encode)
 
 由于生成嵌入可能是一个耗费资源的过程，我们可以使用向量数据库来存储这些嵌入，并根据不同的策略执行查询。
 
-有几种向量数据库软件可以实现这个任务，但本文将使用**Qdrant**，这是一款开源解决方案，提供了适用于流行编程语言的API，如*Python*、*Go*和*Typescript*。要对这些向量数据库进行更好的比较，请查看这篇[文章](https://www.datacamp.com/blog/the-top-5-vector-databases)[4]。
+有几种向量数据库软件可以实现这个任务，但本文将使用**Qdrant**，这是一款开源解决方案，提供了适用于流行编程语言的 API，如*Python*、*Go*和*Typescript*。要对这些向量数据库进行更好的比较，请查看这篇[文章](https://www.datacamp.com/blog/the-top-5-vector-databases)[4]。
 
-## 设置Qdrant
+## 设置 Qdrant
 
-为了处理所有Qdrant操作，我们需要创建一个指向向量数据库的客户端对象。Qdrant允许你创建一个免费的服务层级来测试与数据库的远程连接，但为了简便起见，我将创建并本地保存数据库：
+为了处理所有 Qdrant 操作，我们需要创建一个指向向量数据库的客户端对象。Qdrant 允许你创建一个免费的服务层级来测试与数据库的远程连接，但为了简便起见，我将创建并本地保存数据库：
 
 ```py
 from qdrant_client import QdrantClient
@@ -143,17 +143,17 @@ print (client.get_collections())
 # output: CollectionsResponse(collections=[CollectionDescription(name='news-articles')])
 ```
 
-请注意，向量配置参数用于创建集合。这些参数告诉Qdrant向量的一些属性，如它们的*size*和比较向量时使用的*distance*度量（我将使用余弦相似度，但你也可以使用其他策略，如[内积或欧氏距离](https://qdrant.tech/documentation/concepts/search/#metrics)）。
+请注意，向量配置参数用于创建集合。这些参数告诉 Qdrant 向量的一些属性，如它们的*size*和比较向量时使用的*distance*度量（我将使用余弦相似度，但你也可以使用其他策略，如[内积或欧氏距离](https://qdrant.tech/documentation/concepts/search/#metrics)）。
 
 ## 生成向量点
 
-在最终填充数据库之前，我们需要创建适当的对象以进行上传。在Qdrant中，向量可以使用[*PointStruct*](https://qdrant.tech/documentation/concepts/points/)类进行存储，你可以使用这个类定义以下属性：
+在最终填充数据库之前，我们需要创建适当的对象以进行上传。在 Qdrant 中，向量可以使用[*PointStruct*](https://qdrant.tech/documentation/concepts/points/)类进行存储，你可以使用这个类定义以下属性：
 
-+   ***id***：向量的ID（在NPR的情况下，是*newsId*）
++   ***id***：向量的 ID（在 NPR 的情况下，是*newsId*）
 
-+   ***vector***：表示向量的1维数组（由嵌入模型生成）
++   ***vector***：表示向量的 1 维数组（由嵌入模型生成）
 
-+   ***payload***：包含任何其他相关元数据的字典，这些数据后来可以用于在集合中查询向量（在NPR的情况下，文章的*title*、*body*和*tags*）
++   ***payload***：包含任何其他相关元数据的字典，这些数据后来可以用于在集合中查询向量（在 NPR 的情况下，文章的*title*、*body*和*tags*）
 
 ```py
 from qdrant_client.http.models import PointStruct
@@ -193,11 +193,11 @@ for i, points_chunk in enumerate(np.array_split(points, n_chunks)):
 
 # 3. 查询向量
 
-现在，集合已经填充了向量，我们可以开始查询数据库。我们可以用多种方式输入信息来查询数据库，但我认为有2种非常有用的输入方式：
+现在，集合已经填充了向量，我们可以开始查询数据库。我们可以用多种方式输入信息来查询数据库，但我认为有 2 种非常有用的输入方式：
 
 +   输入文本
 
-+   输入向量ID
++   输入向量 ID
 
 ## 3.1 使用输入向量查询向量
 
@@ -234,17 +234,17 @@ client.search(
 
 +   **输入句子**：*唐纳德·特朗普*
 
-+   **输出 1**：*巴拉圭人在本周日（30日）去投票选举新总统*
++   **输出 1**：*巴拉圭人在本周日（30 日）去投票选举新总统*
 
-+   **输出 2**：*选民表示拜登和特朗普不应在2024年竞选，路透/益普索民调显示*
++   **输出 2**：*选民表示拜登和特朗普不应在 2024 年竞选，路透/益普索民调显示*
 
-+   **输出 3**：*记者指控特朗普在1990年代对她进行性虐待*
++   **输出 3**：*记者指控特朗普在 1990 年代对她进行性虐待*
 
 +   **输出 4**：*迈克·彭斯，特朗普的前副总统，法院作证可能使前总统陷入困境*
 
 看起来除了带来与特朗普本人相关的新闻外，嵌入模型还成功地表示了与总统选举相关的主题。注意在第一个输出中，除了总统选举，没有直接提到输入词“*唐纳德·特朗普*”。
 
-此外，我遗漏了一个*query_filter*参数。如果你想指定输出必须满足某些条件，这个工具非常有用。例如，在新闻门户中，通常重要的是仅筛选出最新的文章（例如过去7天内）。因此，你可以查询符合最低发布时间戳的新闻文章。
+此外，我遗漏了一个*query_filter*参数。如果你想指定输出必须满足某些条件，这个工具非常有用。例如，在新闻门户中，通常重要的是仅筛选出最新的文章（例如过去 7 天内）。因此，你可以查询符合最低发布时间戳的新闻文章。
 
 > **注意：** 在新闻推荐的背景下，有多个值得关注的方面，如公平性和多样性。这是一个开放的话题，但如果你对此领域感兴趣，可以查看[NORMalize Workshop](https://sites.google.com/view/normalizeworkshop/home)上的文章。
 
@@ -252,7 +252,7 @@ client.search(
 
 最后，我们可以让向量数据库“推荐”更接近某些期望的向量 ID，但远离不希望的向量 ID。期望的和不希望的 ID 分别称为*正例*和*负例*，它们被视为推荐的种子。
 
-例如，假设我们有以下正ID：
+例如，假设我们有以下正 ID：
 
 ```py
 seed_id = '8bc22460-532c-449b-ad71-28dd86790ca2'
@@ -278,13 +278,13 @@ client.recommend(
 
 +   **输出 2：** *美国：拜登竞选连任的 4 个原因*
 
-+   **输出 3：** *选民表示拜登和特朗普不应该在2024年参选，路透社/艾普索斯民调显示*
++   **输出 3：** *选民表示拜登和特朗普不应该在 2024 年参选，路透社/艾普索斯民调显示*
 
 +   **输出 4：** *拜登顾问的失言引发对选举后可能出现第二届政府的疑虑*
 
 # 结论
 
-本文展示了如何将LLM和向量数据库结合起来以提供推荐。特别是使用了句子变换器来生成来自NPR数据集的文本新闻文章的数值表示（嵌入）。一旦这些嵌入被计算出来，它们可以填充像Qdrant这样的向量数据库，从而根据多种策略方便地查询向量。
+本文展示了如何将 LLM 和向量数据库结合起来以提供推荐。特别是使用了句子变换器来生成来自 NPR 数据集的文本新闻文章的数值表示（嵌入）。一旦这些嵌入被计算出来，它们可以填充像 Qdrant 这样的向量数据库，从而根据多种策略方便地查询向量。
 
 在本文中的示例之后可以进行大量改进，例如：
 
@@ -294,11 +294,11 @@ client.recommend(
 
 +   测试其他向量数据库
 
-+   使用基于编译的编程语言如Go来提高性能
++   使用基于编译的编程语言如 Go 来提高性能
 
-+   创建一个API以提供推荐
++   创建一个 API 以提供推荐
 
-换句话说，可能会出现许多想法来改善LLM的推荐机器学习工程。因此，如果你想分享你对这些改进的想法，请随时通过[这里](https://www.linkedin.com/in/joao-felipe-guedes/)给我发消息 :)
+换句话说，可能会出现许多想法来改善 LLM 的推荐机器学习工程。因此，如果你想分享你对这些改进的想法，请随时通过[这里](https://www.linkedin.com/in/joao-felipe-guedes/)给我发消息 :)
 
 # 关于我
 

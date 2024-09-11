@@ -1,18 +1,18 @@
 # 如何在 AWS 云上使用 Kubernetes 和 oneAPI 构建 ML 应用
 
-> 原文：[https://towardsdatascience.com/how-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136?source=collection_archive---------9-----------------------#2023-03-17](https://towardsdatascience.com/how-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136?source=collection_archive---------9-----------------------#2023-03-17)
+> 原文：[`towardsdatascience.com/how-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136?source=collection_archive---------9-----------------------#2023-03-17`](https://towardsdatascience.com/how-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136?source=collection_archive---------9-----------------------#2023-03-17)
 
-![](../Images/57caeb13d291c9b760f62f46ef459972.png)
+![](img/57caeb13d291c9b760f62f46ef459972.png)
 
 [图片来源](https://www.freepik.com/free-photo/business-network-background-connecting-dots-technology-design_21629783.htm#query=distributed&position=1&from_view=search&track=sph)
 
 ## 学习 Kubernetes 和 Intel AI Analytics Toolkit 的基础知识，以构建分布式 ML 应用
 
-[](https://eduand-alvarez.medium.com/?source=post_page-----81535012d136--------------------------------)[![Eduardo Alvarez](../Images/afa0ad855c8ec2e977ebbe60dc3e77a4.png)](https://eduand-alvarez.medium.com/?source=post_page-----81535012d136--------------------------------)[](https://towardsdatascience.com/?source=post_page-----81535012d136--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----81535012d136--------------------------------) [Eduardo Alvarez](https://eduand-alvarez.medium.com/?source=post_page-----81535012d136--------------------------------)
+[](https://eduand-alvarez.medium.com/?source=post_page-----81535012d136--------------------------------)![Eduardo Alvarez](https://eduand-alvarez.medium.com/?source=post_page-----81535012d136--------------------------------)[](https://towardsdatascience.com/?source=post_page-----81535012d136--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----81535012d136--------------------------------) [Eduardo Alvarez](https://eduand-alvarez.medium.com/?source=post_page-----81535012d136--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe49cc416a8ef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136&user=Eduardo+Alvarez&userId=e49cc416a8ef&source=post_page-e49cc416a8ef----81535012d136---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----81535012d136--------------------------------) ·12 min 阅读·2023年3月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F81535012d136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136&user=Eduardo+Alvarez&userId=e49cc416a8ef&source=-----81535012d136---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe49cc416a8ef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136&user=Eduardo+Alvarez&userId=e49cc416a8ef&source=post_page-e49cc416a8ef----81535012d136---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----81535012d136--------------------------------) ·12 min 阅读·2023 年 3 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F81535012d136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-distributed-ml-applications-on-the-aws-cloud-with-kubernetes-and-oneapi-81535012d136&user=Eduardo+Alvarez&userId=e49cc416a8ef&source=-----81535012d136---------------------clap_footer-----------)
 
 --
 
@@ -22,13 +22,13 @@
 
 在本文中，我们将探讨如何使用 Kubernetes、Docker 和 Intel AI Analytics Toolkit 在 AWS 云上构建和部署 AI 应用程序。具体而言，我们将重点关注第一个 Intel 云优化模块，它作为一个模板，包含各种 AI 工作负载的 Intel 加速方案。我们还将介绍在过程中使用的 AWS 服务，包括 Amazon Elastic Kubernetes Service (EKS)、Amazon Elastic Container Registry (ECR)、Amazon Elastic Compute Cloud (EC2) 和 Elastic Load Balancer (ELB)。
 
-![](../Images/313ad6f84a198846fa6e738f16598c53.png)
+![](img/313ad6f84a198846fa6e738f16598c53.png)
 
 图 1\. 该架构设计用于 AI 生产场景，其中需要训练许多离散模型，并且计算需求较低至中等。 — 作者提供的图片
 
 我们将部署的示例应用程序聚焦于贷款违约预测，这是金融行业中的一个常见问题。我们将使用 daal4Py 库来加速 XGBoost 分类器的推理，使我们能够在减少训练和部署模型所需时间的同时实现高性能。
 
-![](../Images/3fe30f2483e071b9ca73b42b2cc0e884.png)
+![](img/3fe30f2483e071b9ca73b42b2cc0e884.png)
 
 图 2\. 一个简化的 Intel(R) oneAPI 数据分析库 API，允许数据科学家或机器学习用户快速使用该框架。旨在帮助提供对 Intel(R) oneAPI 数据分析库的抽象，以便直接使用或集成到自己的框架中。 — [图片来源](https://pypi.org/project/daal4py/)
 
@@ -47,9 +47,9 @@ unzip awscliv2.zip
 sudo ./aws/install
 ```
 
-使用`aws configure`配置AWS凭证 — 了解更多有关使用aws cli设置凭证的信息，请点击[这里](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)。
+使用`aws configure`配置 AWS 凭证 — 了解更多有关使用 aws cli 设置凭证的信息，请点击[这里](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)。
 
-**安装 eksctl** — eksctl是一个用于在EKS上创建、管理和操作Kubernetes集群的命令行工具。
+**安装 eksctl** — eksctl 是一个用于在 EKS 上创建、管理和操作 Kubernetes 集群的命令行工具。
 
 ```py
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
@@ -57,7 +57,7 @@ sudo mv /tmp/eksctl /usr/local/bin
 eksctl version
 ```
 
-**安装 aws-iam-configurator** — AWS IAM Authenticator是一个命令行工具，使用户能够使用其AWS IAM凭证与EKS上的Kubernetes集群进行身份验证。
+**安装 aws-iam-configurator** — AWS IAM Authenticator 是一个命令行工具，使用户能够使用其 AWS IAM 凭证与 EKS 上的 Kubernetes 集群进行身份验证。
 
 ```py
 curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.9/aws-iam-authenticator_0.5.9_linux_amd64
@@ -67,7 +67,7 @@ echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
 aws-iam-authenticator help
 ```
 
-**安装 kubectl** — Kubectl是一个命令行工具，用于与Kubernetes集群进行交互。它允许用户部署、检查和管理Kubernetes集群上运行的应用程序和服务，并执行各种管理任务，如扩展、更新和删除资源。
+**安装 kubectl** — Kubectl 是一个命令行工具，用于与 Kubernetes 集群进行交互。它允许用户部署、检查和管理 Kubernetes 集群上运行的应用程序和服务，并执行各种管理任务，如扩展、更新和删除资源。
 
 ```py
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -78,21 +78,21 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 ## **我们的贷款违约预测应用程序**
 
-我们将要部署的应用程序基于[贷款违约风险预测AI参考套件](https://www.intel.com/content/www/us/en/developer/articles/reference-kit/loan-default-risk-prediction.html)。
+我们将要部署的应用程序基于[贷款违约风险预测 AI 参考套件](https://www.intel.com/content/www/us/en/developer/articles/reference-kit/loan-default-risk-prediction.html)。
 
-![](../Images/26dd148be5e5ce8c62896e13d43767b4.png)
+![](img/26dd148be5e5ce8c62896e13d43767b4.png)
 
 [图片来源](https://www.freepik.com/free-photo/loan-buy-house-pressure-buy-house_28492444.htm#query=loan&position=32&from_view=search&track=sph)
 
-我们将参考解决方案中的代码进行了重构，使其更加模块化，以支持我们的三个主要API：
+我们将参考解决方案中的代码进行了重构，使其更加模块化，以支持我们的三个主要 API：
 
 +   **数据处理** — 该端点预处理数据并将其存储在数据湖或其他结构化格式中。此代码库还处理用于基准测试的数据集扩展。
 
-+   **模型训练** — 该端点训练一个XGBoost分类器，并将其转换为推理优化的daal4py格式。
++   **模型训练** — 该端点训练一个 XGBoost 分类器，并将其转换为推理优化的 daal4py 格式。
 
 +   **推理** — 该端点接收一个包含原始数据的负载，并返回每个样本的贷款违约分类。
 
-下面的目录树概述了代码库的各种脚本、资产和配置文件。大多数ML应用程序代码位于[app/文件夹](https://github.com/intel/kubernetes-intel-aws-high-availability-training/tree/main/app)。该文件夹包含[loan_default](https://github.com/intel/kubernetes-intel-aws-high-availability-training/tree/main/app/loan_default)和[utils](https://github.com/intel/kubernetes-intel-aws-high-availability-training/tree/main/app/utils)包 — loan_default包包含支持我们三个主要API的服务器端Python模块。[server.py](https://github.com/intel/kubernetes-intel-aws-high-availability-training/blob/main/app/server.py)脚本包含FastAPI端点配置、负载数据模型和启动uvicorn服务器的命令。
+下面的目录树概述了代码库的各种脚本、资产和配置文件。大多数 ML 应用程序代码位于[app/文件夹](https://github.com/intel/kubernetes-intel-aws-high-availability-training/tree/main/app)。该文件夹包含[loan_default](https://github.com/intel/kubernetes-intel-aws-high-availability-training/tree/main/app/loan_default)和[utils](https://github.com/intel/kubernetes-intel-aws-high-availability-training/tree/main/app/utils)包 — loan_default 包包含支持我们三个主要 API 的服务器端 Python 模块。[server.py](https://github.com/intel/kubernetes-intel-aws-high-availability-training/blob/main/app/server.py)脚本包含 FastAPI 端点配置、负载数据模型和启动 uvicorn 服务器的命令。
 
 ```py
 ├───app/
@@ -146,7 +146,7 @@ def train(self):
 
 在原始参考工具包的性能测试中，这一简单转换导致了大约 4.44 倍的性能提升（图 3）。
 
-![](../Images/23ea5fadc048d805783e044d341349a6.png)
+![](img/23ea5fadc048d805783e044d341349a6.png)
 
 图 3\. 对于大小为 1M 的批量推理，Intel® v1.4.2 提供了比标准 XGBoost v0.81 高达 1.34 倍的加速，使用 Intel® oneDAL 时，高达 4.44 倍的加速。— 图片由作者提供
 
@@ -179,7 +179,7 @@ managedNodeGroups:
 
 我们执行 `eksctl create cluster -f cluster.yaml` 以创建 Cloud Formation 堆栈并配置所有相关资源。根据当前配置，此过程应需要 10 到 15 分钟。你应该会看到类似图 4 的日志。
 
-![](../Images/ef8f259c476450da8e86b3cafdef8a77.png)
+![](img/ef8f259c476450da8e86b3cafdef8a77.png)
 
 图 4\. EKS 集群配置工作流的 Cloud Formation 日志 — 图片由作者提供
 
@@ -195,7 +195,7 @@ managedNodeGroups:
 
 +   [创建并配置您的 Kubernetes 服务账户，以授予应用程序对 S3 资源的适当访问权限。](https://eduand-alvarez.medium.com/how-to-assign-aws-service-permissions-to-kubernetes-resources-cb1e0257ca22?sk=6a2c485933741deacd4f39a46e90bf22)
 
-![](../Images/dfc1669dbd2ec96a24847ac7ca712465.png)
+![](img/dfc1669dbd2ec96a24847ac7ca712465.png)
 
 作者提供的图像
 
@@ -341,7 +341,7 @@ curl -X POST <loadbalancerdns>:8080/data -H 'Content-Type: application/json' -d 
 
 你可以在 AWS 控制台中导航到你的 S3 桶，以验证所有文件是否已正确生成（图 5）。
 
-![](../Images/647e97e4bee81c8ff3fa920c62c4d823.png)
+![](img/647e97e4bee81c8ff3fa920c62c4d823.png)
 
 图 5\. S3 桶包含由我们 /data 端点生成的输出 — 图片由作者提供
 
@@ -363,7 +363,7 @@ curl -X POST <loadbalancerdns>:8080/train -H 'Content-Type: application/json' -d
 
 你可以在 AWS 控制台中导航到你的 S3 桶，以验证你的模型文件是否已创建（图 6）。
 
-![](../Images/9b48629d4ddaa730c5736dfabcf9c4c8.png)
+![](img/9b48629d4ddaa730c5736dfabcf9c4c8.png)
 
 图 6\. S3 桶包含由我们 /train 端点生成的输出 — 图片由作者提供
 
@@ -387,7 +387,7 @@ curl -X POST <loadbalancerdns>:8080/predict -H 'Content-Type: application/json' 
 
 你可以很快收到服务器的响应（见图 7）。
 
-![](../Images/110911bd912e88f92de812e1a5e3c18f.png)
+![](img/110911bd912e88f92de812e1a5e3c18f.png)
 
 图 7\. /predict 端点的有效载荷和响应 — 作者提供的图像
 

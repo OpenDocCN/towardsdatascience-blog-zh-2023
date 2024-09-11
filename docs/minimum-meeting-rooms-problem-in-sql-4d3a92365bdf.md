@@ -1,24 +1,24 @@
 # SQL 中的最小会议室问题
 
-> 原文：[https://towardsdatascience.com/minimum-meeting-rooms-problem-in-sql-4d3a92365bdf?source=collection_archive---------18-----------------------#2023-01-05](https://towardsdatascience.com/minimum-meeting-rooms-problem-in-sql-4d3a92365bdf?source=collection_archive---------18-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/minimum-meeting-rooms-problem-in-sql-4d3a92365bdf?source=collection_archive---------18-----------------------#2023-01-05`](https://towardsdatascience.com/minimum-meeting-rooms-problem-in-sql-4d3a92365bdf?source=collection_archive---------18-----------------------#2023-01-05)
 
 ## 计算（在 SQL 中）安排一组会议所需的最小会议室数量
 
-[](https://medium.com/@dhruvbird?source=post_page-----4d3a92365bdf--------------------------------)[![Dhruv Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----4d3a92365bdf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d3a92365bdf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d3a92365bdf--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----4d3a92365bdf--------------------------------)
+[](https://medium.com/@dhruvbird?source=post_page-----4d3a92365bdf--------------------------------)![Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----4d3a92365bdf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d3a92365bdf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d3a92365bdf--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----4d3a92365bdf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fminimum-meeting-rooms-problem-in-sql-4d3a92365bdf&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----4d3a92365bdf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d3a92365bdf--------------------------------) ·5 分钟阅读·2023年1月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d3a92365bdf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fminimum-meeting-rooms-problem-in-sql-4d3a92365bdf&user=Dhruv+Matani&userId=63f5d5495279&source=-----4d3a92365bdf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fminimum-meeting-rooms-problem-in-sql-4d3a92365bdf&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----4d3a92365bdf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d3a92365bdf--------------------------------) ·5 分钟阅读·2023 年 1 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d3a92365bdf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fminimum-meeting-rooms-problem-in-sql-4d3a92365bdf&user=Dhruv+Matani&userId=63f5d5495279&source=-----4d3a92365bdf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d3a92365bdf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fminimum-meeting-rooms-problem-in-sql-4d3a92365bdf&source=-----4d3a92365bdf---------------------bookmark_footer-----------)![](../Images/ad9a445ea3172218a25498bf61789fa8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d3a92365bdf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fminimum-meeting-rooms-problem-in-sql-4d3a92365bdf&source=-----4d3a92365bdf---------------------bookmark_footer-----------)![](img/ad9a445ea3172218a25498bf61789fa8.png)
 
 图片由 [Dane Deaner](https://unsplash.com/@danedeaner?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 会议室问题要求你确定安排所有会议所需的最少会议室数量，以便能够避免冲突。我们将探讨如何仅使用声明性 SQL 来解决这个问题。
 
-**上一篇文章**: [使用 SQL 验证平衡括号](/validate-balanced-parenthesis-using-sql-5bb79732d772)
+**上一篇文章**: 使用 SQL 验证平衡括号
 
 # 问题陈述
 
@@ -73,7 +73,7 @@ INSERT INTO meetings(start_at, end_at) VALUES
 SELECT * FROM meetings;
 ```
 
-![](../Images/554a853f525a59f71856dfbad81fba5c.png)
+![](img/554a853f525a59f71856dfbad81fba5c.png)
 
 提供数据的输入表（作者提供的图片）
 
@@ -115,19 +115,19 @@ joined AS (
 SELECT * FROM joined;
 ```
 
-![](../Images/48ff0fa86f9797e784b0c652bc06c363.png)
+![](img/48ff0fa86f9797e784b0c652bc06c363.png)
 
 第一种解决方案的输出（作者提供的图片）
 
-在这里，我们可以看到安排所有会议所需的最少会议室数量是4。这发生在时间点2022-01-05和2022-01-11之间。
+在这里，我们可以看到安排所有会议所需的最少会议室数量是 4。这发生在时间点 2022-01-05 和 2022-01-11 之间。
 
 上述输出的图形表示。
 
-![](../Images/bd6c637fd63a4d5dbcbf05b438f99861.png)
+![](img/bd6c637fd63a4d5dbcbf05b438f99861.png)
 
 第一种解决方案的输出图形视图（作者提供的图片）
 
-**预计成本：** 对于一个有6行的表格，这个查询的预计成本是[104k](https://explain.depesz.com/s/veps)。
+**预计成本：** 对于一个有 6 行的表格，这个查询的预计成本是[104k](https://explain.depesz.com/s/veps)。
 
 # 第二种解决方案：O(n log n)
 
@@ -135,7 +135,7 @@ SELECT * FROM joined;
 
 **计数器：** 当遇到开始时间点时，我们需要递增一个计数器（running_sum），而当遇到会议结束时间点时，我们需要递减这个计数器。
 
-**计数重叠：** 对于在特定时间点开始和结束的会议，我们需要注意首先递增计数器，然后再递减，因为会议被认为完全占用其结束时间点。因此，我们有这样的代码：*ORDER BY ts ASC,* ***delta DESC*** — 即如果我们不按delta降序排序，那么可能会在开始时间点之前处理结束时间点，这会导致重叠会议数量的低估。
+**计数重叠：** 对于在特定时间点开始和结束的会议，我们需要注意首先递增计数器，然后再递减，因为会议被认为完全占用其结束时间点。因此，我们有这样的代码：*ORDER BY ts ASC,* ***delta DESC*** — 即如果我们不按 delta 降序排序，那么可能会在开始时间点之前处理结束时间点，这会导致重叠会议数量的低估。
 
 该解决方案的运行时复杂度是**O(n log n)**，因为它由对所有唯一时间点按时间戳的非递减顺序排序的成本主导。
 
@@ -167,26 +167,26 @@ with_running_sum AS (
 SELECT * FROM with_running_sum;
 ```
 
-![](../Images/3fb7fb79a427360d93bb18b1362b7903.png)
+![](img/3fb7fb79a427360d93bb18b1362b7903.png)
 
 第二种解决方案的输出（作者提供的图片）
 
-我们可以看到，安排所有会议而不发生冲突所需的最小会议室数量（4）在2022年1月5日至2022年1月11日之间（与上面的解决方案相同）。
+我们可以看到，安排所有会议而不发生冲突所需的最小会议室数量（4）在 2022 年 1 月 5 日至 2022 年 1 月 11 日之间（与上面的解决方案相同）。
 
 上述输出的图形表示。
 
-![](../Images/9d9b355f59a87227f86ad607c7e4493f.png)
+![](img/9d9b355f59a87227f86ad607c7e4493f.png)
 
 第二种解决方案的输出图形视图（作者提供的图片）
 
-**预计成本：** 对于一个有6行的表格，这个查询的预计成本是[474](https://explain.depesz.com/s/2OVR)。
+**预计成本：** 对于一个有 6 行的表格，这个查询的预计成本是[474](https://explain.depesz.com/s/2OVR)。
 
 # SQL Fiddle
 
-本文中所有解决方案的SQL Fiddle链接可以在[这里](http://sqlfiddle.com/#!17/75a65/7)找到。
+本文中所有解决方案的 SQL Fiddle 链接可以在[这里](http://sqlfiddle.com/#!17/75a65/7)找到。
 
 # 结论
 
-这个问题与我们之前看到的[使用SQL验证平衡括号](/validate-balanced-parenthesis-using-sql-5bb79732d772)有些相似，主要体现在使用SQL窗口函数的运行总和。
+这个问题与我们之前看到的使用 SQL 验证平衡括号有些相似，主要体现在使用 SQL 窗口函数的运行总和。
 
-我们看到如何使用SQL窗口函数（再次）来利用一个简单的概念如运行总和来解决看似复杂的问题。
+我们看到如何使用 SQL 窗口函数（再次）来利用一个简单的概念如运行总和来解决看似复杂的问题。

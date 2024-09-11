@@ -1,22 +1,22 @@
 # Jupyter 的完美文本编辑器：一个完整的 Python IDE
 
-> 原文：[https://towardsdatascience.com/the-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b?source=collection_archive---------4-----------------------#2023-03-09](https://towardsdatascience.com/the-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b?source=collection_archive---------4-----------------------#2023-03-09)
+> 原文：[`towardsdatascience.com/the-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b?source=collection_archive---------4-----------------------#2023-03-09`](https://towardsdatascience.com/the-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b?source=collection_archive---------4-----------------------#2023-03-09)
 
 ## 从语法高亮到代码补全，一个完整的 Python IDE 内置于 Jupyter
 
-[](https://dpoulopoulos.medium.com/?source=post_page-----608dd466560b--------------------------------)[![Dimitris Poulopoulos](../Images/ce535a1679779f5a2ec8b024e6691e50.png)](https://dpoulopoulos.medium.com/?source=post_page-----608dd466560b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----608dd466560b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----608dd466560b--------------------------------) [Dimitris Poulopoulos](https://dpoulopoulos.medium.com/?source=post_page-----608dd466560b--------------------------------)
+[](https://dpoulopoulos.medium.com/?source=post_page-----608dd466560b--------------------------------)![Dimitris Poulopoulos](https://dpoulopoulos.medium.com/?source=post_page-----608dd466560b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----608dd466560b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----608dd466560b--------------------------------) [Dimitris Poulopoulos](https://dpoulopoulos.medium.com/?source=post_page-----608dd466560b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cc87df5b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b&user=Dimitris+Poulopoulos&userId=7cc87df5b1&source=post_page-7cc87df5b1----608dd466560b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----608dd466560b--------------------------------) ·5 min 阅读·2023年3月9日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cc87df5b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b&user=Dimitris+Poulopoulos&userId=7cc87df5b1&source=post_page-7cc87df5b1----608dd466560b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----608dd466560b--------------------------------) ·5 min 阅读·2023 年 3 月 9 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F608dd466560b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b&source=-----608dd466560b---------------------bookmark_footer-----------)![](../Images/074816bb2f0c1badf878e10ebac705da.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F608dd466560b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-perfect-text-editor-for-jupyter-a-complete-python-ide-608dd466560b&source=-----608dd466560b---------------------bookmark_footer-----------)![](img/074816bb2f0c1badf878e10ebac705da.png)
 
 图片由 [Max Duzij](https://unsplash.com/@max_duz?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-> 本文是系列文章的第四部分。查看完整系列：[第一部分](/unlocking-the-potential-of-jupyterlab-discover-the-powerful-text-editor-you-never-knew-you-had-af18bf5bce3f)，[第二部分](/jupyter-already-has-a-perfect-text-editor-this-is-how-you-can-configure-it-4d3eb37878f1)，[第三部分](/jupyter-already-has-a-perfect-text-editor-building-a-python-ide-20063044749b)。
+> 本文是系列文章的第四部分。查看完整系列：第一部分，第二部分，第三部分。
 
 在过去的几天里，我们一直在 Jupyter 内部构建一个完整的 Python IDE。在本文中，我们将添加最后的润色，并将所有内容打包成一个 Docker 镜像，以创建一个便于数据科学家和机器学习工程师使用的可移植工作环境。
 

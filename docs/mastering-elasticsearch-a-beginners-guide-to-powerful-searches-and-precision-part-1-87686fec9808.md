@@ -1,56 +1,56 @@
-# 掌握 Elasticsearch：强大搜索与精确性的初学者指南 — 第1部分
+# 掌握 Elasticsearch：强大搜索与精确性的初学者指南 — 第一部分
 
-> 原文：[https://towardsdatascience.com/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=collection_archive---------2-----------------------#2023-11-21](https://towardsdatascience.com/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=collection_archive---------2-----------------------#2023-11-21)
+> 原文：[`towardsdatascience.com/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=collection_archive---------2-----------------------#2023-11-21`](https://towardsdatascience.com/mastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808?source=collection_archive---------2-----------------------#2023-11-21)
 
 ## 解锁 Elasticsearch 的力量：深入理解 Elasticsearch，掌握基本的搜索查询，并探索词汇搜索
 
-[](https://medium.com/@sanilkhurana7?source=post_page-----87686fec9808--------------------------------)[![Sanil Khurana](../Images/b6aea8dd0366a0659fcf3828fc745aea.png)](https://medium.com/@sanilkhurana7?source=post_page-----87686fec9808--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87686fec9808--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----87686fec9808--------------------------------) [Sanil Khurana](https://medium.com/@sanilkhurana7?source=post_page-----87686fec9808--------------------------------)
+[](https://medium.com/@sanilkhurana7?source=post_page-----87686fec9808--------------------------------)![Sanil Khurana](https://medium.com/@sanilkhurana7?source=post_page-----87686fec9808--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87686fec9808--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----87686fec9808--------------------------------) [Sanil Khurana](https://medium.com/@sanilkhurana7?source=post_page-----87686fec9808--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bda56b80bb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808&user=Sanil+Khurana&userId=2bda56b80bb9&source=post_page-2bda56b80bb9----87686fec9808---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87686fec9808--------------------------------) ·19 分钟阅读·2023年11月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87686fec9808&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808&user=Sanil+Khurana&userId=2bda56b80bb9&source=-----87686fec9808---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bda56b80bb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808&user=Sanil+Khurana&userId=2bda56b80bb9&source=post_page-2bda56b80bb9----87686fec9808---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87686fec9808--------------------------------) ·19 分钟阅读·2023 年 11 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87686fec9808&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808&user=Sanil+Khurana&userId=2bda56b80bb9&source=-----87686fec9808---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F87686fec9808&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808&source=-----87686fec9808---------------------bookmark_footer-----------)![](../Images/b489d34d4f65f6863cced325c6f575e0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F87686fec9808&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-elasticsearch-a-beginners-guide-to-powerful-searches-and-precision-part-1-87686fec9808&source=-----87686fec9808---------------------bookmark_footer-----------)![](img/b489d34d4f65f6863cced325c6f575e0.png)
 
 # 目录
 
-· [介绍](#90ef)
+· 介绍
 
-· [从我们离开的地方开始，Elasticsearch](#a78d)
+· 从我们离开的地方开始，Elasticsearch
 
-∘ [示例数据集](#67ab)
+∘ 示例数据集
 
-∘ [理解 ElasticSearch 查询](#95a7)
+∘ 理解 ElasticSearch 查询
 
-∘ [理解响应](#a1e5)
+∘ 理解响应
 
-∘ [一个基本搜索查询](#1b1f)
+∘ 一个基本搜索查询
 
-· [词汇搜索](#88c4)
+· 词汇搜索
 
-· [我们当前搜索查询中的问题](#64f7)
+· 我们当前搜索查询中的问题
 
-∘ [相似词返回不同结果](#11df)
+∘ 相似词返回不同结果
 
-∘ [对用户需求理解不足](#3dd1)
+∘ 对用户需求理解不足
 
-∘ [相似词未被返回](#bfca)
+∘ 相似词未被返回
 
-∘ [忽略打字错误](#aa13)
+∘ 忽略打字错误
 
-∘ [不同的词组合有不同的含义](#ad80)
+∘ 不同的词组合有不同的含义
 
-· [改进我们的搜索](#21f0)
+· 改进我们的搜索
 
-∘ [提升更相关的字段](#2bc3)
+∘ 提升更相关的字段
 
-∘ [基于函数的提升](#1e6e)
+∘ 基于函数的提升
 
-∘ [模糊查询](#ac5f)
+∘ 模糊查询
 
-· [结论](#da2c)
+· 结论
 
 # 介绍
 
@@ -497,7 +497,7 @@ GET news/_search
 
 另一个问题是，用户的任何错别字会导致返回空结果。我们知道用户可能会不小心输入错别字，我们不希望返回空结果。例如，在 Google 新闻上搜索“robbey”仍然会返回与“抢劫”相关的结果。
 
-![](../Images/2e1ded7685eacd2857f18ec016254422.png)
+![](img/2e1ded7685eacd2857f18ec016254422.png)
 
 ## 不同的词语组合有不同的含义
 
@@ -563,7 +563,7 @@ GET news/_search
       },
 ```
 
-如果你仔细看上面的结果，你会注意到第二个结果，“新变种引发对COVID-19病毒再感染的担忧”，与新泽西毫无关系。事实上，在阅读描述后，它似乎与南非的COVID-19感染更相关！
+如果你仔细看上面的结果，你会注意到第二个结果，“新变种引发对 COVID-19 病毒再感染的担忧”，与新泽西毫无关系。事实上，在阅读描述后，它似乎与南非的 COVID-19 感染更相关！
 
 这是因为“COVID”、“virus”和“New”这些词是文档的一部分，因此文档得分较高。然而，这与用户查询完全不相关。我们的搜索系统无法理解“New”和“Jersey”应被视为一个单独的词组。
 
@@ -637,7 +637,7 @@ GET news/_search
       },
 ```
 
-如果你看第二篇文章“本周20条最有趣的女性推文（10月31日至11月6日）”，你会发现它似乎与选举无关。然而，由于描述中出现了“election”一词，Elasticsearch认为这是一个相关的结果。也许我们还有改进的空间。直觉上来说，与用户查询匹配的标题相符的文章更相关。为了实现这一点，我们可以指示Elasticsearch提升`heading`字段，从而在评分计算中赋予它更大的重要性。
+如果你看第二篇文章“本周 20 条最有趣的女性推文（10 月 31 日至 11 月 6 日）”，你会发现它似乎与选举无关。然而，由于描述中出现了“election”一词，Elasticsearch 认为这是一个相关的结果。也许我们还有改进的空间。直觉上来说，与用户查询匹配的标题相符的文章更相关。为了实现这一点，我们可以指示 Elasticsearch 提升`heading`字段，从而在评分计算中赋予它更大的重要性。
 
 在我们的查询中，这很简单 -
 
@@ -648,13 +648,13 @@ GET news/_search
     "multi_match": {
       "query": "elections",
       "type": "most_fields", 
-      "fields": ["headline^4", "short_description"]
+      "fields": ["headline⁴", "short_description"]
     }
   }
 }
 ```
 
-注意我在`fields`中放置的`heading^4`。这意味着“heading”字段被提升了4倍。现在让我们看看结果，
+注意我在`fields`中放置的`heading⁴`。这意味着“heading”字段被提升了 4 倍。现在让我们看看结果，
 
 ```py
 {
@@ -727,9 +727,9 @@ GET news/_search
 
 让我们看看如何实现这一点。
 
-在Elasticsearch中，我们可以使用`function_score`查询来应用自定义评分函数，包括提升评分。`function_score`查询允许你根据各种函数修改文档的分数。简而言之，我们可以根据条件提升某些文档的评分。
+在 Elasticsearch 中，我们可以使用`function_score`查询来应用自定义评分函数，包括提升评分。`function_score`查询允许你根据各种函数修改文档的分数。简而言之，我们可以根据条件提升某些文档的评分。
 
-让我们从提升用户所在国家的权重开始。假设用户的国家是“US”，然后将其插入到发送给Elasticsearch的查询中。为此，我们需要添加一个`function_score`块，它允许将自定义评分函数应用于查询结果。我们可以为给定的查询定义多个`functions`，指定匹配文档的条件和提升值。
+让我们从提升用户所在国家的权重开始。假设用户的国家是“US”，然后将其插入到发送给 Elasticsearch 的查询中。为此，我们需要添加一个`function_score`块，它允许将自定义评分函数应用于查询结果。我们可以为给定的查询定义多个`functions`，指定匹配文档的条件和提升值。
 
 我们可以定义一个函数来提升用户所在国家的权重 —
 
@@ -744,7 +744,7 @@ GET news/_search
 }
 ```
 
-这将提升国家为“US”的文章的分数2倍。
+这将提升国家为“US”的文章的分数 2 倍。
 
 接下来，让我们尝试将最新的新闻置顶。我们可以通过使用`field_value_factor`来实现这一点。`field_value_factor`函数允许我们使用文档中的一个字段来影响其分数，这正是我们所需要的。让我们看看效果如何 —
 
@@ -770,7 +770,7 @@ GET news/_search
         {
           "multi_match": {
             "query": "covid",
-            "fields": ["headline^4", "short_description"]
+            "fields": ["headline⁴", "short_description"]
           }
         },
         {
@@ -778,7 +778,7 @@ GET news/_search
             "query": {
               "multi_match": {
                 "query": "covid",
-                "fields": ["headline^4", "short_description"]
+                "fields": ["headline⁴", "short_description"]
               }
             },
             "functions": [
@@ -810,7 +810,7 @@ GET news/_search
 
 接下来，让我们修正搜索查询中的拼写错误。
 
-在Elasticsearch中，我们可以执行模糊搜索，以检索即使存在拼写或字符的轻微变化也匹配指定术语的文档。为此，我们只需在查询中添加一个`fuzziness`字段。我们的最终查询变成 —
+在 Elasticsearch 中，我们可以执行模糊搜索，以检索即使存在拼写或字符的轻微变化也匹配指定术语的文档。为此，我们只需在查询中添加一个`fuzziness`字段。我们的最终查询变成 —
 
 ```py
 GET news/_search
@@ -821,7 +821,7 @@ GET news/_search
         {
           "multi_match": {
             "query": "covi",
-            "fields": ["headline^4", "short_description"],
+            "fields": ["headline⁴", "short_description"],
             "fuzziness": 1
           }
         },
@@ -830,7 +830,7 @@ GET news/_search
             "query": {
               "multi_match": {
                 "query": "covi",
-                "fields": ["headline^4", "short_description"],
+                "fields": ["headline⁴", "short_description"],
                 "fuzziness": 1
               }
             },
@@ -861,10 +861,10 @@ GET news/_search
 
 # 结论
 
-在这篇博客文章中，我们深入探讨了Elasticsearch的细节，从实际操作一个样本数据集和构建搜索查询的基础知识开始。我们揭开了Elasticsearch响应的神秘面纱，并通过一个基本的搜索查询，为有效探索奠定了基础。
+在这篇博客文章中，我们深入探讨了 Elasticsearch 的细节，从实际操作一个样本数据集和构建搜索查询的基础知识开始。我们揭开了 Elasticsearch 响应的神秘面纱，并通过一个基本的搜索查询，为有效探索奠定了基础。
 
 在我们探索词汇搜索的过程中，我们认识到当前搜索方法的一些怪癖。为了解决这些挑战，我们引入了提升和模糊度——这些都是微调搜索和处理现实世界数据复杂性的有用工具。
 
-在我们结束这里的讨论时，视此为我们追求搜索卓越之旅中的一次短暂停留。在下一部分，我们将**深入探讨**解决当前搜索方法中特定问题的高级策略。准备好迎接语义搜索的迷人世界吧，在这里，重点不再仅仅是匹配关键词，而是理解其背后的含义，从而为更直观、更具上下文意识的搜索体验铺平道路。准备好将你的Elasticsearch冒险提升到一个新的水平吧！
+在我们结束这里的讨论时，视此为我们追求搜索卓越之旅中的一次短暂停留。在下一部分，我们将**深入探讨**解决当前搜索方法中特定问题的高级策略。准备好迎接语义搜索的迷人世界吧，在这里，重点不再仅仅是匹配关键词，而是理解其背后的含义，从而为更直观、更具上下文意识的搜索体验铺平道路。准备好将你的 Elasticsearch 冒险提升到一个新的水平吧！
 
-喜欢这次Elasticsearch的旅程吗？在Medium上关注我，获取更多文章。想要更快的知识点（例如我正在阅读的内容、速查表等），[在LinkedIn上关注我](https://www.linkedin.com/in/sanil-khurana-a2503513b/)，获取定期的短内容（例如，在阅读Elasticsearch时，我简要讨论了一个特定的评分函数tf-idf的工作原理，在这篇[5分钟的帖子](https://www.linkedin.com/posts/sanil-khurana-a2503513b_searchengine-softwaredevelopment-data-activity-7127859782736089088-fi3H?utm_source=share&utm_medium=member_desktop)中）。让我们在技术和数据的探索中保持联系吧！
+喜欢这次 Elasticsearch 的旅程吗？在 Medium 上关注我，获取更多文章。想要更快的知识点（例如我正在阅读的内容、速查表等），[在 LinkedIn 上关注我](https://www.linkedin.com/in/sanil-khurana-a2503513b/)，获取定期的短内容（例如，在阅读 Elasticsearch 时，我简要讨论了一个特定的评分函数 tf-idf 的工作原理，在这篇[5 分钟的帖子](https://www.linkedin.com/posts/sanil-khurana-a2503513b_searchengine-softwaredevelopment-data-activity-7127859782736089088-fi3H?utm_source=share&utm_medium=member_desktop)中）。让我们在技术和数据的探索中保持联系吧！

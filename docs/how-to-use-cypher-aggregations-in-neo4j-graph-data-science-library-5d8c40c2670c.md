@@ -1,14 +1,14 @@
 # 如何在 Neo4j 图数据科学库中使用 Cypher 聚合
 
-> 原文：[https://towardsdatascience.com/how-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c?source=collection_archive---------11-----------------------#2023-03-27](https://towardsdatascience.com/how-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c?source=collection_archive---------11-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/how-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c?source=collection_archive---------11-----------------------#2023-03-27`](https://towardsdatascience.com/how-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c?source=collection_archive---------11-----------------------#2023-03-27)
 
 ## 利用 Cypher 聚合功能，在内存图中展示所有 Cypher 查询语言的灵活性和表现力
 
-[](https://bratanic-tomaz.medium.com/?source=post_page-----5d8c40c2670c--------------------------------)[![Tomaz Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----5d8c40c2670c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5d8c40c2670c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5d8c40c2670c--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----5d8c40c2670c--------------------------------)
+[](https://bratanic-tomaz.medium.com/?source=post_page-----5d8c40c2670c--------------------------------)![Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----5d8c40c2670c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5d8c40c2670c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d8c40c2670c--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----5d8c40c2670c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----5d8c40c2670c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d8c40c2670c--------------------------------) ·7 min 阅读·2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5d8c40c2670c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----5d8c40c2670c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----5d8c40c2670c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d8c40c2670c--------------------------------) ·7 min 阅读·2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5d8c40c2670c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-cypher-aggregations-in-neo4j-graph-data-science-library-5d8c40c2670c&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----5d8c40c2670c---------------------clap_footer-----------)
 
 --
 
@@ -26,7 +26,7 @@ Cypher 聚合是 Neo4j 图数据科学库的一个强大功能，允许用户使
 CALL db.schema.visualization()
 ```
 
-![](../Images/4acad275cd607ceb29bbfb61ae524cd1.png)
+![](img/4acad275cd607ceb29bbfb61ae524cd1.png)
 
 图模式。图片由作者提供。
 
@@ -34,7 +34,7 @@ CALL db.schema.visualization()
 
 首先，让我们快速回顾一下 Neo4j 图数据科学库的操作方式。
 
-![](../Images/c329d740ce532c99b5eb95d5c9075543.png)
+![](img/c329d740ce532c99b5eb95d5c9075543.png)
 
 图数据科学库工作流。图片由作者提供。
 
@@ -219,7 +219,7 @@ RETURN graph.nodeCount AS nodeCount, graph.relationshipCount AS relationshipCoun
 
 最后，我们还可以投影虚拟关系。虚拟关系是一种未存储在数据库中的关系。
 
-![](../Images/15a13565efa295f5ce25b7d9ed4b6020.png)
+![](img/15a13565efa295f5ce25b7d9ed4b6020.png)
 
 虚拟关系。作者提供的图像。
 

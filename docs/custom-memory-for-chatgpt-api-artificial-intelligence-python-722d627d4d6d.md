@@ -1,18 +1,18 @@
 # ChatGPT API 的自定义内存
 
-> 原文：[https://towardsdatascience.com/custom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d?source=collection_archive---------0-----------------------#2023-08-20](https://towardsdatascience.com/custom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d?source=collection_archive---------0-----------------------#2023-08-20)
+> 原文：[`towardsdatascience.com/custom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d?source=collection_archive---------0-----------------------#2023-08-20`](https://towardsdatascience.com/custom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d?source=collection_archive---------0-----------------------#2023-08-20)
 
 ## 对 LangChain 内存类型的温和介绍
 
-[](https://medium.com/@andvalenzuela?source=post_page-----722d627d4d6d--------------------------------)[![Andrea Valenzuela](../Images/ddfc1534af92413fd91076f826cc49b6.png)](https://medium.com/@andvalenzuela?source=post_page-----722d627d4d6d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----722d627d4d6d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----722d627d4d6d--------------------------------) [Andrea Valenzuela](https://medium.com/@andvalenzuela?source=post_page-----722d627d4d6d--------------------------------)
+[](https://medium.com/@andvalenzuela?source=post_page-----722d627d4d6d--------------------------------)![Andrea Valenzuela](https://medium.com/@andvalenzuela?source=post_page-----722d627d4d6d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----722d627d4d6d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----722d627d4d6d--------------------------------) [Andrea Valenzuela](https://medium.com/@andvalenzuela?source=post_page-----722d627d4d6d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f3f1654c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d&user=Andrea+Valenzuela&userId=a6f3f1654c3&source=post_page-a6f3f1654c3----722d627d4d6d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----722d627d4d6d--------------------------------) ·8分钟阅读·2023年8月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F722d627d4d6d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d&user=Andrea+Valenzuela&userId=a6f3f1654c3&source=-----722d627d4d6d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f3f1654c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d&user=Andrea+Valenzuela&userId=a6f3f1654c3&source=post_page-a6f3f1654c3----722d627d4d6d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----722d627d4d6d--------------------------------) ·8 分钟阅读·2023 年 8 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F722d627d4d6d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d&user=Andrea+Valenzuela&userId=a6f3f1654c3&source=-----722d627d4d6d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F722d627d4d6d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d&source=-----722d627d4d6d---------------------bookmark_footer-----------)![](../Images/a89558351cd6f8d41f0994f05d4caebe.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F722d627d4d6d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustom-memory-for-chatgpt-api-artificial-intelligence-python-722d627d4d6d&source=-----722d627d4d6d---------------------bookmark_footer-----------)![](img/a89558351cd6f8d41f0994f05d4caebe.png)
 
 自制的 gif。
 

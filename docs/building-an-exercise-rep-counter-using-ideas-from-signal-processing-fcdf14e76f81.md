@@ -1,18 +1,18 @@
 # 使用信号处理思想构建锻炼次数计数器
 
-> 原文：[https://towardsdatascience.com/building-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81?source=collection_archive---------16-----------------------#2023-01-17](https://towardsdatascience.com/building-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81?source=collection_archive---------16-----------------------#2023-01-17)
+> 原文：[`towardsdatascience.com/building-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81?source=collection_archive---------16-----------------------#2023-01-17`](https://towardsdatascience.com/building-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81?source=collection_archive---------16-----------------------#2023-01-17)
 
 ## 使用零交叉方法设计特定类别的计数器
 
-[](https://medium.com/@aakashagrawal?source=post_page-----fcdf14e76f81--------------------------------)[![Aakash Agrawal](../Images/29c88586046f4b51d40cc0336f696cef.png)](https://medium.com/@aakashagrawal?source=post_page-----fcdf14e76f81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcdf14e76f81--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fcdf14e76f81--------------------------------) [Aakash Agrawal](https://medium.com/@aakashagrawal?source=post_page-----fcdf14e76f81--------------------------------)
+[](https://medium.com/@aakashagrawal?source=post_page-----fcdf14e76f81--------------------------------)![Aakash Agrawal](https://medium.com/@aakashagrawal?source=post_page-----fcdf14e76f81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fcdf14e76f81--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcdf14e76f81--------------------------------) [Aakash Agrawal](https://medium.com/@aakashagrawal?source=post_page-----fcdf14e76f81--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce827b6548&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81&user=Aakash+Agrawal&userId=93ce827b6548&source=post_page-93ce827b6548----fcdf14e76f81---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcdf14e76f81--------------------------------) ·7 分钟阅读·2023年1月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcdf14e76f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81&user=Aakash+Agrawal&userId=93ce827b6548&source=-----fcdf14e76f81---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F93ce827b6548&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81&user=Aakash+Agrawal&userId=93ce827b6548&source=post_page-93ce827b6548----fcdf14e76f81---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fcdf14e76f81--------------------------------) ·7 分钟阅读·2023 年 1 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffcdf14e76f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81&user=Aakash+Agrawal&userId=93ce827b6548&source=-----fcdf14e76f81---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffcdf14e76f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81&source=-----fcdf14e76f81---------------------bookmark_footer-----------)![](../Images/17dff657731d9290868db138567c9e84.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffcdf14e76f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-an-exercise-rep-counter-using-ideas-from-signal-processing-fcdf14e76f81&source=-----fcdf14e76f81---------------------bookmark_footer-----------)![](img/17dff657731d9290868db138567c9e84.png)
 
 照片由 [Karsten Winegeart](https://unsplash.com/@karsten116) 在 Unsplash.com 提供
 
@@ -24,9 +24,9 @@
 
 ## **零交叉**
 
-数学函数或波形穿越轴的交点的参考点（交点不一定是0）。该术语通常用于电子学中，指的是周期性电压和电流中的没有信号的点。
+数学函数或波形穿越轴的交点的参考点（交点不一定是 0）。该术语通常用于电子学中，指的是周期性电压和电流中的没有信号的点。
 
-![](../Images/e4eebb9f7966da4e789da9c2b167e090.png)
+![](img/e4eebb9f7966da4e789da9c2b167e090.png)
 
 图：零交叉。图片由作者提供。
 
@@ -34,11 +34,11 @@
 
 在信号或波形中检测峰值（或位置），即观察到的突然偏离（你会看到尖峰）正常行为。检测这种偏差的技术是通过计算**z-score**，它捕捉信号的均值和标准差来计算偏差。
 
-![](../Images/8cf1a829ccb41956cd8ce4673b3ebbb1.png)
+![](img/8cf1a829ccb41956cd8ce4673b3ebbb1.png)
 
-图：z-score公式。图片由作者提供。
+图：z-score 公式。图片由作者提供。
 
-1.  在信号的任何位置，z-score算法本质上计算前一个数据点窗口的滞后平均值和滞后标准差。
+1.  在信号的任何位置，z-score 算法本质上计算前一个数据点窗口的滞后平均值和滞后标准差。
 
 1.  通过计算范围 ***滞后平均值 +/- (阈值 * 滞后标准差);*** 来识别信号中的峰值；如果当前点的值超出了范围，则认为它是异常的一部分。
 
@@ -52,7 +52,7 @@
 
 认为一个人/物体由一组关键点（关注点）组成。例如，这些关键点可以是肩膀、臀部等人体关节。
 
-为了简化，我将问题限制为运动重复计数，因为人体关键点的可获得性较高（这一思路可以很容易地扩展到其他关键点易于获得的对象）。我们可以使用开源姿态估计模型来计算身体关键点的空间位置。我在这篇博客中使用了Tensorflow的[**Movenet**](https://www.tensorflow.org/hub/tutorials/movenet)姿态估计模型进行说明。这个模型相当快速和准确。
+为了简化，我将问题限制为运动重复计数，因为人体关键点的可获得性较高（这一思路可以很容易地扩展到其他关键点易于获得的对象）。我们可以使用开源姿态估计模型来计算身体关键点的空间位置。我在这篇博客中使用了 Tensorflow 的[**Movenet**](https://www.tensorflow.org/hub/tutorials/movenet)姿态估计模型进行说明。这个模型相当快速和准确。
 
 我们**假设**任何重复的运动，例如锻炼，都可以看作是关键点或函数（度量）在关键点上的一组正弦波形。这些度量包括不同身体关键点组合之间的角度和距离。
 
@@ -66,33 +66,33 @@
 
 这个阶段是给定锻炼的**一次性**活动。我们首先使用参考视频找到一个零交叉线，也就是参考线（对于锻炼重复计数器，它可以是教练的视频）。大多数步骤将在重复计数阶段中使用。
 
-**a)** 我们使用Movenet姿势估计模型实时观察人体关键点。请考虑以下参考：
+**a)** 我们使用 Movenet 姿势估计模型实时观察人体关键点。请考虑以下参考：
 
-![](../Images/328b71d9a2c121d1e94f0ff32d5a3bd9.png)
+![](img/328b71d9a2c121d1e94f0ff32d5a3bd9.png)
 
-图：使用Movenet模型进行身体关键点估计。教练正在做跳跃杰克。GIF由作者提供。
+图：使用 Movenet 模型进行身体关键点估计。教练正在做跳跃杰克。GIF 由作者提供。
 
-**b)** 然后，我们使用不同身体关键点的组合计算**度量**。度量可以是关键点之间的距离或角度。一些度量示例：左肩到左掌的距离（欧几里得/y轴）、左肩处的夹角等。
+**b)** 然后，我们使用不同身体关键点的组合计算**度量**。度量可以是关键点之间的距离或角度。一些度量示例：左肩到左掌的距离（欧几里得/y 轴）、左肩处的夹角等。
 
-这个想法是使用能够覆盖广泛运动范围的度量。我通常更喜欢面对前置摄像头进行锻炼；因此，选择欧几里得距离和y轴距离度量即可。如果您希望为侧面锻炼建立重复计数器，您可能需要考虑x轴距离。我还通过肩膀到肩膀的距离来规范化度量，以便重复计数不会受到摄像头距离的影响。
+这个想法是使用能够覆盖广泛运动范围的度量。我通常更喜欢面对前置摄像头进行锻炼；因此，选择欧几里得距离和 y 轴距离度量即可。如果您希望为侧面锻炼建立重复计数器，您可能需要考虑 x 轴距离。我还通过肩膀到肩膀的距离来规范化度量，以便重复计数不会受到摄像头距离的影响。
 
 **c)** 帧级姿势估计会导致身体关键点的抖动，从而导致计算度量的抖动。我们使用低通滤波器使度量平滑，并去除度量距离和角度中的抖动，这使得参考计算和重复计数更加准确。有关该技术的更多详细信息，请参见[这里](https://medium.com/towards-data-science/towards-a-more-applicative-pose-estimation-bf18bc311228)。确保在计算度量之前身体关键点在框架内。
 
-**d)** 接下来，我们筛选出静止的度量信号。我们计算这些信号的标准差，并去除低于固定阈值的信号。如果没有度量被筛选出去，我们使用标准差最大的前3个度量。对于锻炼重复计数器，我们考虑总共**18**个度量。对于上述参考和标准差阈值为**0.4**的情况，我们最终得到**8**个对重复性贡献最大的度量。
+**d)** 接下来，我们筛选出静止的度量信号。我们计算这些信号的标准差，并去除低于固定阈值的信号。如果没有度量被筛选出去，我们使用标准差最大的前 3 个度量。对于锻炼重复计数器，我们考虑总共**18**个度量。对于上述参考和标准差阈值为**0.4**的情况，我们最终得到**8**个对重复性贡献最大的度量。
 
-![](../Images/ed602d66069f7def06cee821799ca88d.png)
+![](img/ed602d66069f7def06cee821799ca88d.png)
 
 图：度量波形。图片由作者提供。
 
-**e)** 最后，我们将所有剩余的非平稳度量在时间上相加，并计算使用总和信号的均值作为参考线。我们将这些度量和参考线（均值）的ID保存到一个***配置字典***中，以便在重复计数时使用。教练视频的参考线：
+**e)** 最后，我们将所有剩余的非平稳度量在时间上相加，并计算使用总和信号的均值作为参考线。我们将这些度量和参考线（均值）的 ID 保存到一个***配置字典***中，以便在重复计数时使用。教练视频的参考线：
 
-![](../Images/39587bc9fa645345b11ec6fdf9c2e55e.png)
+![](img/39587bc9fa645345b11ec6fdf9c2e55e.png)
 
 图：参考视频的整体信号波形。图片来源：作者。
 
-仔细查看参考视频可以看出，总共有6个重复。这些重复实际上对应于上面整体信号中观察到的峰值。
+仔细查看参考视频可以看出，总共有 6 个重复。这些重复实际上对应于上面整体信号中观察到的峰值。
 
-## 阶段2：重复计数
+## 阶段 2：重复计数
 
 这一阶段的大部分步骤与参考计算阶段是相同的。
 
@@ -110,13 +110,13 @@
 
 让我们查看这种方法在测试视频上的表现。
 
-![](../Images/17e5df810fad9cba9f5a07e5f88a4e01.png)
+![](img/17e5df810fad9cba9f5a07e5f88a4e01.png)
 
-图：使用零交叉技术进行的重复计数。GIF来源：作者。
+图：使用零交叉技术进行的重复计数。GIF 来源：作者。
 
 结果看起来不错，对吧？😎。这是上述测试视频的整体信号波形。直观地看，四个峰值对应于四个重复。
 
-![](../Images/b70dc4a2e04752d4a19fba1e06bbeb70.png)
+![](img/b70dc4a2e04752d4a19fba1e06bbeb70.png)
 
 图：测试视频的整体信号波形。图片来源：作者。
 

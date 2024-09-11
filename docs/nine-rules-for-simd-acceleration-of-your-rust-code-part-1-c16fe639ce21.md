@@ -1,10 +1,10 @@
-# Rust代码SIMD加速的九条规则（第一部分）
+# Rust 代码 SIMD 加速的九条规则（第一部分）
 
-> 原文：[https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21?source=collection_archive---------2-----------------------#2023-12-12](https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21?source=collection_archive---------2-----------------------#2023-12-12)
+> 原文：[`towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21?source=collection_archive---------2-----------------------#2023-12-12`](https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21?source=collection_archive---------2-----------------------#2023-12-12)
 
-## 通过将数据摄入在`range-set-blaze`库中提升7倍的一般经验教训。
+## 通过将数据摄入在`range-set-blaze`库中提升 7 倍的一般经验教训。
 
-[](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)[![Carl M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c16fe639ce21--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c16fe639ce21--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)
+[](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)![Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c16fe639ce21--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c16fe639ce21--------------------------------) [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)
 
 ·
 
@@ -12,11 +12,11 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc16fe639ce21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21&source=-----c16fe639ce21---------------------bookmark_footer-----------)![](../Images/03b7cab4f40a89f2f1582704fd509bdd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc16fe639ce21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21&source=-----c16fe639ce21---------------------bookmark_footer-----------)![](img/03b7cab4f40a89f2f1582704fd509bdd.png)
 
-蟹通过小蟹委派进行计算 — 来源：[https://openai.com/dall-e-2/](https://openai.com/dall-e-2/)。所有其他数据来自作者。
+蟹通过小蟹委派进行计算 — 来源：[`openai.com/dall-e-2/`](https://openai.com/dall-e-2/)。所有其他数据来自作者。
 
-> 感谢Ben Lichtman（B3NNY）在西雅图Rust Meetup中为我指明了SIMD的正确方向。
+> 感谢 Ben Lichtman（B3NNY）在西雅图 Rust Meetup 中为我指明了 SIMD 的正确方向。
 
 [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)（单指令、多数据）操作自 2000 年代初以来一直是 Intel/AMD 和 ARM CPU 的一个特性。这些操作使你可以，例如，只用一个 CPU 操作 **在单核** 上将八个 `i32` 的数组加到另一个八个 `i32` 的数组上。使用 SIMD 操作大大加快了某些任务的速度。如果你没有使用 SIMD，你可能没有充分利用你 CPU 的能力。
 
@@ -44,19 +44,19 @@
 
 1.  使用内联泛型（当这不起作用时）宏，（当宏不起作用时）特性，将其推广到所有类型和 LANES。
 
-查看 [第 2 部分](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3) 以获取这些规则：
+查看 第二部分 以获取这些规则：
 
 *7\. 使用 Criterion 基准测试来选择算法，并发现 LANES 应该（几乎）始终为 32 或 64。*
 
-*8\. 将您的最佳SIMD算法集成到您的项目中，并使用* `*as_simd*` *特别的代码处理* `*i128*` */* `*u128*` *，并额外进行上下文基准测试。*
+*8\. 将您的最佳 SIMD 算法集成到您的项目中，并使用* `*as_simd*` *特别的代码处理* `*i128*` */* `*u128*` *，并额外进行上下文基准测试。*
 
-*9\. 从项目中提取出您的最佳SIMD算法（目前）并选择一个可选的cargo特性。*
+*9\. 从项目中提取出您的最佳 SIMD 算法（目前）并选择一个可选的 cargo 特性。*
 
 *旁注：为了避免含糊其辞，我称这些为“规则”，但它们当然只是建议。*
 
-# 规则1：使用nightly Rust和 `core::simd`，Rust的实验性标准SIMD模块。
+# 规则 1：使用 nightly Rust 和 `core::simd`，Rust 的实验性标准 SIMD 模块。
 
-Rust可以通过稳定的 `[core::arch](https://doc.rust-lang.org/core/arch/index.html)` 模块或nightly的 `[core::simd](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html)` 模块访问SIMD操作。让我们比较一下它们：
+Rust 可以通过稳定的 `[core::arch](https://doc.rust-lang.org/core/arch/index.html)` 模块或 nightly 的 `[core::simd](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html)` 模块访问 SIMD 操作。让我们比较一下它们：
 
 `**core::arch**`
 
@@ -64,7 +64,7 @@ Rust可以通过稳定的 `[core::arch](https://doc.rust-lang.org/core/arch/inde
 
 +   [“[这并非世界上最容易的事情](https://doc.rust-lang.org/core/arch/index.html#ergonomics)”]
 
-+   为您的crate的下游用户提供高性能。例如，因为[regex](https://github.com/BurntSushi/regex)和[`memchr`](https://github.com/BurntSushi/memchr)采用了这种方法，超过100,000个其他crate免费获得了稳定的SIMD加速。[[Reddit讨论](https://www.reddit.com/r/rust/comments/18hj1m6/comment/kdbfktb/?utm_source=share&utm_medium=web2x&context=3)，[一些相关的](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs) [`memchr`](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs) [代码](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs)]
++   为您的 crate 的下游用户提供高性能。例如，因为[regex](https://github.com/BurntSushi/regex)和[`memchr`](https://github.com/BurntSushi/memchr)采用了这种方法，超过 100,000 个其他 crate 免费获得了稳定的 SIMD 加速。[[Reddit 讨论](https://www.reddit.com/r/rust/comments/18hj1m6/comment/kdbfktb/?utm_source=share&utm_medium=web2x&context=3)，[一些相关的](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs) [`memchr`](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs) [代码](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs)]
 
 `**core::simd**`
 
@@ -72,11 +72,11 @@ Rust可以通过稳定的 `[core::arch](https://doc.rust-lang.org/core/arch/inde
 
 +   令人愉快的简单和可移植。
 
-+   限制了向下游用户只能使用nightly版。
++   限制了向下游用户只能使用 nightly 版。
 
 我决定选择“简单”。如果您决定选择更难的路线，首先从更简单的路径开始可能仍然是值得的。
 
-无论哪种情况，在我们尝试在一个更大的项目中使用SIMD操作之前，让我们确保我们能够完全使用它们。以下是步骤：
+无论哪种情况，在我们尝试在一个更大的项目中使用 SIMD 操作之前，让我们确保我们能够完全使用它们。以下是步骤：
 
 首先，创建一个名为 `simd_hello` 的项目：
 
@@ -114,9 +114,9 @@ fn main() {
 }
 ```
 
-接下来 —— 全面的SIMD功能需要Rust的nightly版本。假设您已安装了Rust，请安装nightly版 (`rustup install nightly`)。确保您有最新的nightly版本 (`rustup update nightly`)。最后，设置此项目使用nightly版 (`rustup override set nightly`)。
+接下来 —— 全面的 SIMD 功能需要 Rust 的 nightly 版本。假设您已安装了 Rust，请安装 nightly 版 (`rustup install nightly`)。确保您有最新的 nightly 版本 (`rustup update nightly`)。最后，设置此项目使用 nightly 版 (`rustup override set nightly`)。
 
-您现在可以使用 `cargo run` 运行程序。该程序对32个大写字母的ROT13解密。通过SIMD，程序可以同时解密所有32个字节。
+您现在可以使用 `cargo run` 运行程序。该程序对 32 个大写字母的 ROT13 解密。通过 SIMD，程序可以同时解密所有 32 个字节。
 
 让我们看看程序的每个部分是如何工作的。它从以下开始：
 
@@ -125,7 +125,7 @@ fn main() {
 use core::simd::prelude::*;
 ```
 
-Rust nightly仅在请求时提供其额外的功能（或“特性”）。 `#![feature(portable_simd)]` 语句请求Rust nightly可用新的实验性 `core::simd` 模块。然后，`use` 语句导入了模块的最重要的类型和特征。
+Rust nightly 仅在请求时提供其额外的功能（或“特性”）。 `#![feature(portable_simd)]` 语句请求 Rust nightly 可用新的实验性 `core::simd` 模块。然后，`use` 语句导入了模块的最重要的类型和特征。
 
 在代码的下一部分中，我们定义了一些有用的常量：
 
@@ -136,9 +136,9 @@ const TWENTYSIXS: Simd<u8, LANES> = Simd::<u8, LANES>::from_array([26; LANES]);
 const ZEES: Simd<u8, LANES> = Simd::<u8, LANES>::from_array([b'Z'; LANES]);
 ```
 
-`Simd`结构体是一种特殊类型的Rust数组。（例如，它始终是内存对齐的。）常量`LANES`告诉了`Simd`数组的长度。`from_array`构造函数复制一个常规的Rust数组来创建一个`Simd`。在这种情况下，因为我们需要`const` `Simd`，所以我们构造的数组也必须是`const`。
+`Simd`结构体是一种特殊类型的 Rust 数组。（例如，它始终是内存对齐的。）常量`LANES`告诉了`Simd`数组的长度。`from_array`构造函数复制一个常规的 Rust 数组来创建一个`Simd`。在这种情况下，因为我们需要`const` `Simd`，所以我们构造的数组也必须是`const`。
 
-接下来的两行将我们加密的文本复制到`data`，然后对每个字母添加13。
+接下来的两行将我们加密的文本复制到`data`，然后对每个字母添加 13。
 
 ```py
 let mut data = Simd::<u8, LANES>::from_slice(b"URYYBJBEYQVQBUBCRVGFNYYTBVATJRYY");
@@ -147,16 +147,16 @@ data += THIRTEENS;
 
 如果您出错了，您的加密文本长度不正好为`LANES`（32）怎么办？遗憾的是，编译器不会告诉您。相反，在运行程序时，`from_slice`将会崩溃。如果加密文本包含非大写字母怎么办？在本示例程序中，我们将忽略这种可能性。
 
-`+=`操作符在`Simd` `data`和`Simd` `THIRTEENS`之间进行逐元素加法。它将结果放入`data`中。请记住，常规Rust加法的调试构建会检查溢出。但SIMD不会这样做。Rust定义了SIMD算术运算符总是进行包装。类型为`u8`的值在255之后会包装。
+`+=`操作符在`Simd` `data`和`Simd` `THIRTEENS`之间进行逐元素加法。它将结果放入`data`中。请记住，常规 Rust 加法的调试构建会检查溢出。但 SIMD 不会这样做。Rust 定义了 SIMD 算术运算符总是进行包装。类型为`u8`的值在 255 之后会包装。
 
-巧合的是，Rot13解密也需要包装，但是在‘Z’之后而不是在255之后。这里有一种编码所需Rot13包装的方法。它从任何值中减去26，超出了‘Z’。
+巧合的是，Rot13 解密也需要包装，但是在‘Z’之后而不是在 255 之后。这里有一种编码所需 Rot13 包装的方法。它从任何值中减去 26，超出了‘Z’。
 
 ```py
 let mask = data.simd_gt(ZEES);
 data = mask.select(data - TWENTYSIXS, data);
 ```
 
-这里要求找到逐个元素的超过‘Z’的位置。然后，从所有值中减去26。在感兴趣的位置，使用减去的值。在其他位置，使用原始值。从所有值中减去然后只使用一些看起来是不是浪费了？使用SIMD，这不需要额外的计算机时间并且避免了跳转。因此，这种策略是高效且常见的。
+这里要求找到逐个元素的超过‘Z’的位置。然后，从所有值中减去 26。在感兴趣的位置，使用减去的值。在其他位置，使用原始值。从所有值中减去然后只使用一些看起来是不是浪费了？使用 SIMD，这不需要额外的计算机时间并且避免了跳转。因此，这种策略是高效且常见的。
 
 程序以此方式结束：
 
@@ -166,13 +166,13 @@ assert_eq!(output, "HELLOWORLDIDOHOPEITSALLGOINGWELL");
 println!("{}", output);
 ```
 
-注意`.as_array()`方法。它安全地将`Simd`结构体转换为常规的Rust数组而不复制。
+注意`.as_array()`方法。它安全地将`Simd`结构体转换为常规的 Rust 数组而不复制。
 
-令我惊讶的是，这个程序在没有SIMD扩展的计算机上运行良好。Rust nightly将代码编译成常规（非SIMD）指令。但我们不仅仅想要运行“良好”，我们想要运行*更快*。这需要我们打开计算机的SIMD性能。
+令我惊讶的是，这个程序在没有 SIMD 扩展的计算机上运行良好。Rust nightly 将代码编译成常规（非 SIMD）指令。但我们不仅仅想要运行“良好”，我们想要运行*更快*。这需要我们打开计算机的 SIMD 性能。
 
-# 规则2：CCC：检查，控制和选择您计算机的SIMD能力。
+# 规则 2：CCC：检查，控制和选择您计算机的 SIMD 能力。
 
-要使SIMD程序在您的计算机上运行得更快，您必须首先发现您的计算机支持哪些SIMD扩展。如果您有Intel/AMD计算机，可以使用我的`[simd-detect](https://github.com/CarlKCarlK/cargo-simd-detect)` cargo命令。
+要使 SIMD 程序在您的计算机上运行得更快，您必须首先发现您的计算机支持哪些 SIMD 扩展。如果您有 Intel/AMD 计算机，可以使用我的`[simd-detect](https://github.com/CarlKCarlK/cargo-simd-detect)` cargo 命令。
 
 运行：
 
@@ -191,11 +191,11 @@ avx2            256-bit/32-bytes        true            false
 avx512f         512-bit/64-bytes        true            false
 ```
 
-这说明我的计算机支持`sse2`，`avx2`和`avx512f` SIMD扩展。在其中，默认情况下，Rust启用了普遍存在已有二十年历史的`sse2`扩展。
+这说明我的计算机支持`sse2`，`avx2`和`avx512f` SIMD 扩展。在其中，默认情况下，Rust 启用了普遍存在已有二十年历史的`sse2`扩展。
 
-SIMD扩展形成一个层次结构，`avx512f`在`avx2`之上，在`sse2`之上。启用更高级别的扩展也会启用较低级别的扩展。
+SIMD 扩展形成一个层次结构，`avx512f`在`avx2`之上，在`sse2`之上。启用更高级别的扩展也会启用较低级别的扩展。
 
-大多数Intel/AMD计算机也支持十年历史的`avx2`扩展。您可以通过设置环境变量来启用它：
+大多数 Intel/AMD 计算机也支持十年历史的`avx2`扩展。您可以通过设置环境变量来启用它：
 
 ```py
 # For Windows Command Prompt
@@ -389,7 +389,7 @@ pub fn is_consecutive_splat0(chunk: Simd<u32, LANES>) -> bool {
 
 这里是它的计算概要：
 
-![](../Images/420908b8497341c078410b9436eaa6d1.png)
+![](img/420908b8497341c078410b9436eaa6d1.png)
 
 来源：这张图及所有后续图片均由作者提供。
 
@@ -411,7 +411,7 @@ pub fn is_consecutive_splat1(chunk: Simd<u32, LANES>) -> bool {
 
 Splat1 从 `chunk` 中减去比较值，并检查结果是否与 `chunk` 的第一个元素相同，经过 splat。
 
-![](../Images/074c54b0d26c8842f648e64d7246ad79.png)
+![](img/074c54b0d26c8842f648e64d7246ad79.png)
 
 他还提出了一个变体，称为 Splat2，它 splat `subtracted` 的第一个元素，而不是 `chunk`。这似乎可以避免一次内存访问。
 
@@ -444,7 +444,7 @@ pub fn is_consecutive_rotate(chunk: Simd<u32, LANES>) -> bool {
 
 这个想法是将所有元素向右旋转一个位置。然后，我们从 `rotated` 中减去原始的 `chunk`。如果输入是连续的，结果应该是“−15”后跟所有 1。 （使用包装减法，-15 是 `4294967281u32`。）
 
-![](../Images/9d8b9ae021da7778af8e11f6ed860b16.png)
+![](img/9d8b9ae021da7778af8e11f6ed860b16.png)
 
 现在我们有了候选者，让我们开始评估它们。
 
@@ -456,7 +456,7 @@ pub fn is_consecutive_rotate(chunk: Simd<u32, LANES>) -> bool {
 
 查看生成的汇编语言的最简单方法是使用 [Compiler Explorer, AKA Godbolt](https://godbolt.org/z/j5GdGah89)。它在不使用外部 crate 的简短代码片段上效果最佳。它看起来像这样：
 
-![](../Images/1013810e2972f3eb9449156e4404a98f.png)
+![](img/1013810e2972f3eb9449156e4404a98f.png)
 
 参考上图中的数字，按照以下步骤使用 Godbolt：
 
@@ -470,7 +470,7 @@ pub fn is_consecutive_rotate(chunk: Simd<u32, LANES>) -> bool {
 
 1.  添加新的编译器。
 
-1.  将编译器版本设置为nightly。
+1.  将编译器版本设置为 nightly。
 
 1.  设置选项（暂时）为`-C opt-level=3 -C target-feature=+avx512f.`
 
@@ -478,23 +478,23 @@ pub fn is_consecutive_rotate(chunk: Simd<u32, LANES>) -> bool {
 
 1.  如果您想分享或保存工具的状态，请点击“分享”。
 
-从上面的图像可以看出，Splat2和Sizzle完全相同，因此我们可以将Sizzle从考虑中删除。如果您[打开我的Godbolt会话的副本](https://godbolt.org/z/j5GdGah89)，您还会看到大多数函数编译为大致相同数量的汇编操作。例外是Regular ——它更长——和Splat0——它包括早期检查。
+从上面的图像可以看出，Splat2 和 Sizzle 完全相同，因此我们可以将 Sizzle 从考虑中删除。如果您[打开我的 Godbolt 会话的副本](https://godbolt.org/z/j5GdGah89)，您还会看到大多数函数编译为大致相同数量的汇编操作。例外是 Regular ——它更长——和 Splat0——它包括早期检查。
 
-在汇编中，512位寄存器以ZMM开头。256位寄存器以YMM开头。128位寄存器以XMM开头。如果您想更好地理解生成的汇编，请使用AI工具生成注释。例如，我在这里向[Bing Chat](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx)询问关于Splat2的问题：
+在汇编中，512 位寄存器以 ZMM 开头。256 位寄存器以 YMM 开头。128 位寄存器以 XMM 开头。如果您想更好地理解生成的汇编，请使用 AI 工具生成注释。例如，我在这里向[Bing Chat](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx)询问关于 Splat2 的问题：
 
-![](../Images/813f956f0e22302edb254812fa60f303.png)
+![](img/813f956f0e22302edb254812fa60f303.png)
 
 尝试不同的编译器设置，包括`-C target-feature=+avx2`，然后完全不使用`target-feature`。
 
-较少的汇编操作不一定意味着更快的速度。然而，查看汇编代码确实让我们确认编译器至少尝试使用SIMD操作、内联常量引用等。同样，像Splat1和Swizzle一样，有时它可以让我们知道两个候选项何时相同。
+较少的汇编操作不一定意味着更快的速度。然而，查看汇编代码确实让我们确认编译器至少尝试使用 SIMD 操作、内联常量引用等。同样，像 Splat1 和 Swizzle 一样，有时它可以让我们知道两个候选项何时相同。
 
-> 您可能需要比Godbolt提供的反汇编功能更多的功能，例如处理使用外部包的代码能力。B3NNY推荐给我cargo工具 `[cargo-show-asm](https://github.com/pacak/cargo-show-asm)`。我试过了，发现使用起来相当容易。
+> 您可能需要比 Godbolt 提供的反汇编功能更多的功能，例如处理使用外部包的代码能力。B3NNY 推荐给我 cargo 工具 `[cargo-show-asm](https://github.com/pacak/cargo-show-asm)`。我试过了，发现使用起来相当容易。
 
-`range-set-blaze`包必须处理超出`u32`的整数类型。此外，我们必须选择一定数量的LANES，但我们没有理由认为16 LANES总是最好的。为了满足这些需求，在下一条规则中我们将概括代码。
+`range-set-blaze`包必须处理超出`u32`的整数类型。此外，我们必须选择一定数量的 LANES，但我们没有理由认为 16 LANES 总是最好的。为了满足这些需求，在下一条规则中我们将概括代码。
 
-# 规则 6：广义应用于所有类型和LANES，包括内联泛型（in-lined generics），（当它不起作用时）宏（macros），以及（当它不起作用时）特性（traits）。
+# 规则 6：广义应用于所有类型和 LANES，包括内联泛型（in-lined generics），（当它不起作用时）宏（macros），以及（当它不起作用时）特性（traits）。
 
-让我们首先用泛型概括Splat1。
+让我们首先用泛型概括 Splat1。
 
 ```py
 #[inline]
@@ -518,7 +518,7 @@ where
 
 > 如果您不需要通用常量`comparison_value`，我羡慕您。如果您愿意，您可以跳过下一条规则。同样地，如果您正在未来阅读此内容，并且创建通用常量`comparison_value`就像您个人机器人做家务一样轻松，那我就双倍羡慕您。
 
-我们可以尝试创建一个`comparison_value_splat_gen`，它是通用的和const的。不幸的是，`From<usize>`和替代的`T::One`都不是const，所以这个方法行不通：
+我们可以尝试创建一个`comparison_value_splat_gen`，它是通用的和 const 的。不幸的是，`From<usize>`和替代的`T::One`都不是 const，所以这个方法行不通：
 
 ```py
 // DOESN'T WORK BECAUSE From<usize> is not const
@@ -574,7 +574,7 @@ macro_rules! define_comparison_value_splat {
 }
 ```
 
-这使我们能够在任何特定元素类型和所有LANES上运行（[Rust Playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2021&gist=f5a6fbac31d64f3ae79440d5613e44ec)）：
+这使我们能够在任何特定元素类型和所有 LANES 上运行（[Rust Playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2021&gist=f5a6fbac31d64f3ae79440d5613e44ec)）：
 
 ```py
 define_is_consecutive_splat1!(is_consecutive_splat1_i32, i32);
@@ -585,13 +585,13 @@ assert!(is_consecutive_splat1_i32(a));
 assert!(!is_consecutive_splat1_i32(ninety_nines));
 ```
 
-遗憾的是，对于`range-set-blaze`来说还不够。它需要在*所有*元素类型（而不仅仅是一种）和（理想情况下）所有LANES（而不仅仅是一个LANE）上运行。
+遗憾的是，对于`range-set-blaze`来说还不够。它需要在*所有*元素类型（而不仅仅是一种）和（理想情况下）所有 LANES（而不仅仅是一个 LANE）上运行。
 
 幸运的是，有一个解决方法，再次依赖于宏。它还利用了我们只需要支持有限类型列表的事实，即：`i8`、`i16`、`i32`、`i64`、`isize`、`u8`、`u16`、`u32`、`u64`和`usize`。如果您需要同时（或者替代地）支持`f32`和`f64`，那也没问题。
 
-> 另一方面，如果您需要支持`i128`和`u128`，那可能就没有办法了。`core::simd`模块不支持它们。在第8条规则中，我们将看到`range-set-blaze`如何通过牺牲性能来解决这个问题。
+> 另一方面，如果您需要支持`i128`和`u128`，那可能就没有办法了。`core::simd`模块不支持它们。在第 8 条规则中，我们将看到`range-set-blaze`如何通过牺牲性能来解决这个问题。
 
-这个解决方法定义了一个新的trait，这里称为`IsConsecutive`。然后，我们使用一个宏（调用一个宏，再调用一个宏）来在这10种感兴趣的类型上实现这个trait。
+这个解决方法定义了一个新的 trait，这里称为`IsConsecutive`。然后，我们使用一个宏（调用一个宏，再调用一个宏）来在这 10 种感兴趣的类型上实现这个 trait。
 
 ```py
 pub trait IsConsecutive {
@@ -649,8 +649,8 @@ assert!(IsConsecutive::is_consecutive(a));
 assert!(!IsConsecutive::is_consecutive(ninety_nines));
 ```
 
-使用这种技术，我们可以创建多个完全通用于类型和LANES的候选算法。接下来，是时候进行基准测试，看看哪些算法最快。
+使用这种技术，我们可以创建多个完全通用于类型和 LANES 的候选算法。接下来，是时候进行基准测试，看看哪些算法最快。
 
-这些是向Rust添加SIMD代码的前六条规则。在[第2部分](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3)中，我们将看到第7到第9条规则。这些规则将涵盖如何选择算法和设置LANES，以及如何将SIMD操作集成到现有代码中（重要的是），如何使其可选。第2部分结束时将讨论何时/如果应该使用SIMD以及改进Rust的SIMD体验的想法。我希望能在[那里](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3)见到你。
+这些是向 Rust 添加 SIMD 代码的前六条规则。在第二部分中，我们将看到第 7 到第 9 条规则。这些规则将涵盖如何选择算法和设置 LANES，以及如何将 SIMD 操作集成到现有代码中（重要的是），如何使其可选。第二部分结束时将讨论何时/如果应该使用 SIMD 以及改进 Rust 的 SIMD 体验的想法。我希望能在那里见到你。
 
-*请* [*关注Carl在Medium上的文章*](https://medium.com/@carlmkadie)*。我写关于Rust和Python中的科学编程，机器学习和统计学的文章。我倾向于每个月写一篇文章。*
+*请* [*关注 Carl 在 Medium 上的文章*](https://medium.com/@carlmkadie)*。我写关于 Rust 和 Python 中的科学编程，机器学习和统计学的文章。我倾向于每个月写一篇文章。*

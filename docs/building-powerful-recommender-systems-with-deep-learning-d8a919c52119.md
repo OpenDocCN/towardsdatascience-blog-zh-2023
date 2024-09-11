@@ -1,18 +1,18 @@
 # 使用深度学习构建强大的推荐系统
 
-> 原文：[https://towardsdatascience.com/building-powerful-recommender-systems-with-deep-learning-d8a919c52119?source=collection_archive---------4-----------------------#2023-07-03](https://towardsdatascience.com/building-powerful-recommender-systems-with-deep-learning-d8a919c52119?source=collection_archive---------4-----------------------#2023-07-03)
+> 原文：[`towardsdatascience.com/building-powerful-recommender-systems-with-deep-learning-d8a919c52119?source=collection_archive---------4-----------------------#2023-07-03`](https://towardsdatascience.com/building-powerful-recommender-systems-with-deep-learning-d8a919c52119?source=collection_archive---------4-----------------------#2023-07-03)
 
-![](../Images/8f6471ecbf2d007861bcf4ab5b5aa65a.png)
+![](img/8f6471ecbf2d007861bcf4ab5b5aa65a.png)
 
 作者插图
 
 ## 使用 PyTorch 库 TorchRec 的逐步实现
 
-[](https://linafaik.medium.com/?source=post_page-----d8a919c52119--------------------------------)[![Lina Faik](../Images/24a3aa67a2d9dc3e074ceead04ab4cc8.png)](https://linafaik.medium.com/?source=post_page-----d8a919c52119--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d8a919c52119--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d8a919c52119--------------------------------) [Lina Faik](https://linafaik.medium.com/?source=post_page-----d8a919c52119--------------------------------)
+[](https://linafaik.medium.com/?source=post_page-----d8a919c52119--------------------------------)![Lina Faik](https://linafaik.medium.com/?source=post_page-----d8a919c52119--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d8a919c52119--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d8a919c52119--------------------------------) [Lina Faik](https://linafaik.medium.com/?source=post_page-----d8a919c52119--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb6c0e8e98c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-powerful-recommender-systems-with-deep-learning-d8a919c52119&user=Lina+Faik&userId=b6c0e8e98c84&source=post_page-b6c0e8e98c84----d8a919c52119---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d8a919c52119--------------------------------) ·7 分钟阅读·2023年7月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd8a919c52119&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-powerful-recommender-systems-with-deep-learning-d8a919c52119&user=Lina+Faik&userId=b6c0e8e98c84&source=-----d8a919c52119---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb6c0e8e98c84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-powerful-recommender-systems-with-deep-learning-d8a919c52119&user=Lina+Faik&userId=b6c0e8e98c84&source=post_page-b6c0e8e98c84----d8a919c52119---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d8a919c52119--------------------------------) ·7 分钟阅读·2023 年 7 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd8a919c52119&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-powerful-recommender-systems-with-deep-learning-d8a919c52119&user=Lina+Faik&userId=b6c0e8e98c84&source=-----d8a919c52119---------------------clap_footer-----------)
 
 --
 

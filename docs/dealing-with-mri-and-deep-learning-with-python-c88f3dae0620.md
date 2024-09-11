@@ -1,52 +1,52 @@
-# 使用Python处理MRI和深度学习
+# 使用 Python 处理 MRI 和深度学习
 
-> 原文：[https://towardsdatascience.com/dealing-with-mri-and-deep-learning-with-python-c88f3dae0620?source=collection_archive---------3-----------------------#2023-12-20](https://towardsdatascience.com/dealing-with-mri-and-deep-learning-with-python-c88f3dae0620?source=collection_archive---------3-----------------------#2023-12-20)
+> 原文：[`towardsdatascience.com/dealing-with-mri-and-deep-learning-with-python-c88f3dae0620?source=collection_archive---------3-----------------------#2023-12-20`](https://towardsdatascience.com/dealing-with-mri-and-deep-learning-with-python-c88f3dae0620?source=collection_archive---------3-----------------------#2023-12-20)
 
-## 使用PyTorch的深度学习模型进行MRI分析的综合指南
+## 使用 PyTorch 的深度学习模型进行 MRI 分析的综合指南
 
-[](https://medium.com/@carlapitarch?source=post_page-----c88f3dae0620--------------------------------)[![Carla Pitarch Abaigar](../Images/f0f7f963947f59399c8b3e6ac9d9aac9.png)](https://medium.com/@carlapitarch?source=post_page-----c88f3dae0620--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c88f3dae0620--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c88f3dae0620--------------------------------) [Carla Pitarch Abaigar](https://medium.com/@carlapitarch?source=post_page-----c88f3dae0620--------------------------------)
+[](https://medium.com/@carlapitarch?source=post_page-----c88f3dae0620--------------------------------)![Carla Pitarch Abaigar](https://medium.com/@carlapitarch?source=post_page-----c88f3dae0620--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c88f3dae0620--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c88f3dae0620--------------------------------) [Carla Pitarch Abaigar](https://medium.com/@carlapitarch?source=post_page-----c88f3dae0620--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff2cd70d9ae7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-mri-and-deep-learning-with-python-c88f3dae0620&user=Carla+Pitarch+Abaigar&userId=f2cd70d9ae7e&source=post_page-f2cd70d9ae7e----c88f3dae0620---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c88f3dae0620--------------------------------) ·13分钟阅读·2023年12月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc88f3dae0620&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-mri-and-deep-learning-with-python-c88f3dae0620&user=Carla+Pitarch+Abaigar&userId=f2cd70d9ae7e&source=-----c88f3dae0620---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff2cd70d9ae7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-mri-and-deep-learning-with-python-c88f3dae0620&user=Carla+Pitarch+Abaigar&userId=f2cd70d9ae7e&source=post_page-f2cd70d9ae7e----c88f3dae0620---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c88f3dae0620--------------------------------) ·13 分钟阅读·2023 年 12 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc88f3dae0620&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-mri-and-deep-learning-with-python-c88f3dae0620&user=Carla+Pitarch+Abaigar&userId=f2cd70d9ae7e&source=-----c88f3dae0620---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc88f3dae0620&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-mri-and-deep-learning-with-python-c88f3dae0620&source=-----c88f3dae0620---------------------bookmark_footer-----------)![](../Images/c7797e5acea961e4be445d2986a13b7b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc88f3dae0620&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdealing-with-mri-and-deep-learning-with-python-c88f3dae0620&source=-----c88f3dae0620---------------------bookmark_footer-----------)![](img/c7797e5acea961e4be445d2986a13b7b.png)
 
 图片来源：[Olga Rai](https://stock.adobe.com/es/contributor/209778624/olga-rai?load_type=author&prev_url=detail) 于 [Adobe Stock](https://stock.adobe.com/)。
 
 # 介绍
 
-首先，我想介绍一下自己。我叫Carla Pitarch，是一名人工智能（AI）博士候选人。我的研究重点是通过使用深度学习（DL）模型，特别是卷积神经网络（CNNs），从磁共振图像（MRI）中提取信息，以开发自动化的脑肿瘤分级分类系统。
+首先，我想介绍一下自己。我叫 Carla Pitarch，是一名人工智能（AI）博士候选人。我的研究重点是通过使用深度学习（DL）模型，特别是卷积神经网络（CNNs），从磁共振图像（MRI）中提取信息，以开发自动化的脑肿瘤分级分类系统。
 
-在我的博士研究之初，深入研究MRI数据和DL是一个全新的领域。在这个领域中运行模型的初步步骤并不像预期的那样简单。尽管花了一些时间在这个领域进行研究，我发现缺乏全面的资源来指导MRI和DL的入门。因此，我决定分享一些我在这一期间获得的知识，希望它能让你的旅程更加顺利。
+在我的博士研究之初，深入研究 MRI 数据和 DL 是一个全新的领域。在这个领域中运行模型的初步步骤并不像预期的那样简单。尽管花了一些时间在这个领域进行研究，我发现缺乏全面的资源来指导 MRI 和 DL 的入门。因此，我决定分享一些我在这一期间获得的知识，希望它能让你的旅程更加顺利。
 
-通过DL进行计算机视觉（CV）任务通常涉及使用标准公共图像数据集，如`[ImageNe](https://image-net.org/about.php)t`，这些数据集以3通道RGB自然图像为特征。PyTorch模型为这些规格做好了准备，期望输入图像为这种格式。然而，当我们的图像数据来自不同的领域，如医疗领域，与这些自然图像数据集在格式和特征上都有所不同时，就会带来挑战。本文深入探讨了这个问题，强调了在模型实施之前的两个关键准备步骤：使数据与模型的要求对齐，并准备模型以有效处理我们的数据。
+通过 DL 进行计算机视觉（CV）任务通常涉及使用标准公共图像数据集，如`[ImageNe](https://image-net.org/about.php)t`，这些数据集以 3 通道 RGB 自然图像为特征。PyTorch 模型为这些规格做好了准备，期望输入图像为这种格式。然而，当我们的图像数据来自不同的领域，如医疗领域，与这些自然图像数据集在格式和特征上都有所不同时，就会带来挑战。本文深入探讨了这个问题，强调了在模型实施之前的两个关键准备步骤：使数据与模型的要求对齐，并准备模型以有效处理我们的数据。
 
 # 背景
 
-让我们首先简要概述一下CNNs和MRI的基本方面。
+让我们首先简要概述一下 CNNs 和 MRI 的基本方面。
 
 ## 卷积神经网络
 
-在本节中，我们将深入探讨CNNs领域，假设读者对深度学习（DL）有基本的理解。CNNs作为计算机视觉（CV）中的黄金标准架构，专注于处理2D和3D输入图像数据。我们在这篇文章中的重点将集中在2D图像数据的处理上。
+在本节中，我们将深入探讨 CNNs 领域，假设读者对深度学习（DL）有基本的理解。CNNs 作为计算机视觉（CV）中的黄金标准架构，专注于处理 2D 和 3D 输入图像数据。我们在这篇文章中的重点将集中在 2D 图像数据的处理上。
 
-图像分类，将输出类别或标签与输入图像关联，是卷积神经网络（CNNs）的核心任务。由LeCun等人于1989年提出的开创性LeNet5架构为CNNs奠定了基础。该架构可以总结如下：
+图像分类，将输出类别或标签与输入图像关联，是卷积神经网络（CNNs）的核心任务。由 LeCun 等人于 1989 年提出的开创性 LeNet5 架构为 CNNs 奠定了基础。该架构可以总结如下：
 
-![](../Images/5559d225d2df07a468c8e1431111710a.png)
+![](img/5559d225d2df07a468c8e1431111710a.png)
 
-CNN架构包含两个卷积层、两个池化层，以及一个位于输出层之前的全连接层。
+CNN 架构包含两个卷积层、两个池化层，以及一个位于输出层之前的全连接层。
 
-2D CNN架构通过接收图像像素作为输入来操作，期望图像是一个形状为`Height x Width x Channels`的张量。彩色图像通常包含3个通道：红色、绿色和蓝色（RGB），而灰度图像则包含一个通道。
+2D CNN 架构通过接收图像像素作为输入来操作，期望图像是一个形状为`Height x Width x Channels`的张量。彩色图像通常包含 3 个通道：红色、绿色和蓝色（RGB），而灰度图像则包含一个通道。
 
-CNNs中的一个基本操作是*卷积*，通过在输入数据的所有区域应用一组*滤波器*或*内核*来执行。下图展示了卷积在2D上下文中的工作原理。
+CNNs 中的一个基本操作是*卷积*，通过在输入数据的所有区域应用一组*滤波器*或*内核*来执行。下图展示了卷积在 2D 上下文中的工作原理。
 
-![](../Images/b603b70f3daaf76704842d9beeb4c056.png)
+![](img/b603b70f3daaf76704842d9beeb4c056.png)
 
-一个对5x5图像进行3x3滤波器卷积的示例，生成一个3x3卷积特征。
+一个对 5x5 图像进行 3x3 滤波器卷积的示例，生成一个 3x3 卷积特征。
 
-这个过程涉及将滤波器滑过图像并计算加权和，以获得一个卷积特征图。输出将表示输入图像的该位置是否识别到特定的视觉模式，例如边缘。每个卷积层后，激活函数会引入非线性。常见的选择包括：ReLU（修正线性单元）、Leaky ReLU、Sigmoid、Tanh 和 Softmax。有关每个激活函数的更多详细信息，本文提供了清晰的解释 [Activation Functions in Neural Networks | by SAGAR SHARMA | Towards Data Science](/activation-functions-neural-networks-1cbd9f8d91d6)。
+这个过程涉及将滤波器滑过图像并计算加权和，以获得一个卷积特征图。输出将表示输入图像的该位置是否识别到特定的视觉模式，例如边缘。每个卷积层后，激活函数会引入非线性。常见的选择包括：ReLU（修正线性单元）、Leaky ReLU、Sigmoid、Tanh 和 Softmax。有关每个激活函数的更多详细信息，本文提供了清晰的解释 Activation Functions in Neural Networks | by SAGAR SHARMA | Towards Data Science。
 
 不同类型的层对 CNNs 的构建做出贡献，每一层在定义网络功能方面扮演着独特的角色。除了卷积层，CNNs 中还包括几种其他显著的层：
 
@@ -68,17 +68,17 @@ CNNs 通过层次化的方式学习识别模式。初始层关注低级特征，
 
 在我们的第一个示例中，我们将从广泛使用的`MNIST`数据集中选择一张图片。
 
-![](../Images/c7dea9d21bec3e04cacbd81542d31621.png)
+![](img/c7dea9d21bec3e04cacbd81542d31621.png)
 
 这个图像的形状是 `[28,28]`，表示一个具有单一通道的灰度图像。然后，神经网络的图像输入将是 `(28*28*1)`。
 
 现在，让我们探索来自`ImageNet`数据集的一张图片。你可以直接从 ImageNet 的网站 [ImageNet (image-net.org)](https://www.image-net.org/download.php) 访问该数据集，或者在 Kaggle 上探索一个可用的子集 [ImageNet Object Localization Challenge | Kaggle](https://www.kaggle.com/c/imagenet-object-localization-challenge/data)。
 
-![](../Images/df30982867a148631172830db8d3e469.png)
+![](img/df30982867a148631172830db8d3e469.png)
 
 我们可以将这张图片分解为其 RGB 通道：
 
-![](../Images/b1e48588369c8dab689156f44807f580.png)
+![](img/b1e48588369c8dab689156f44807f580.png)
 
 由于该图像的形状是 `[500, 402, 3]`，神经网络的图像输入将表示为 `(500*402*3)`。
 
@@ -90,7 +90,7 @@ MRI 是由 3D 体积组成的，能够在三个解剖平面：轴向、冠状面
 
 各种 MRI 模态或序列，如 T1、T1 磁性增强（T1ce）、T2 和 FLAIR（液体衰减反转恢复），通常用于诊断。这些序列通过提供对应于特定区域或组织的不同信号强度，使肿瘤区分成为可能。以下插图展示了来自一个被诊断为胶质母细胞瘤的病人的这四种序列，胶质母细胞瘤是胶质瘤中最具侵袭性的类型，也是最常见的原发性脑肿瘤。
 
-![](../Images/2c62aed363ebf89ac07d86dff9e62788.png)
+![](img/2c62aed363ebf89ac07d86dff9e62788.png)
 
 # 脑肿瘤分割数据
 
@@ -102,17 +102,17 @@ BraTS 数据集提供了关于肿瘤的临床信息，包括一个二进制标�
 
 以下图片展示了低级别和高级别胶质瘤的例子：
 
-![](../Images/fb787a68fa811c4b537df3a9baf3db00.png)
+![](img/fb787a68fa811c4b537df3a9baf3db00.png)
 
 MRI 模态和 BraTS 病人 287 的分割掩膜。
 
-![](../Images/51ada07cfa2f5f66a8fe47fd274f8eb6.png)
+![](img/51ada07cfa2f5f66a8fe47fd274f8eb6.png)
 
 MRI 模态和 BraTS 病人 006 的分割掩膜。
 
 Kaggle 存储库包含 369 个目录，每个目录代表一个患者并包含相应的图像数据。此外，它还包含两个 `.csv` 文件：*name_mapping.csv* 和 *survival_info.csv*。为了我们的目的，我们将使用 *name_mapping.csv*，它将 BraTS 患者姓名与 [TCGA-LGG](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=5309188) 和 [TCGA-GBM](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=1966258) 来自 [Cancer Imaging Archive](https://www.cancerimagingarchive.net/) 的公开数据集相关联。这个文件不仅便于姓名映射，还提供了肿瘤等级标签（LGG-HGG）。
 
-![](../Images/2fdfda70921bc12e6049c468e389269a.png)
+![](img/2fdfda70921bc12e6049c468e389269a.png)
 
 让我们探索每个患者文件夹的内容，以 *Patient 006* 为例。在 *BraTS20_Training_006* 文件夹中，我们可以找到 5 个文件，每个文件对应一种 MRI 模态和分割掩模：
 
@@ -134,7 +134,7 @@ Kaggle 存储库包含 369 个目录，每个目录代表一个患者并包含�
 
 数组形状 `[240, 240, 155]` 表示一个 3D 体积，由 240 个 x 和 y 维度的 2D 切片和 155 个 z 维度的切片组成。这些维度对应不同的解剖视角：轴向视图（x-y 平面）、冠状视图（x-z 平面）和矢状视图（y-z 平面）。
 
-![](../Images/c9fb55cd80b92c300735cec86ff32d34.png)
+![](img/c9fb55cd80b92c300735cec86ff32d34.png)
 
 为了简化，我们将仅使用轴向平面的 2D 切片，生成的图像将具有 `[240, 240]` 的形状。
 
@@ -344,7 +344,7 @@ tensor(0.5465, device='cuda:0', grad_fn=<NllLossBackward0>)
 
 这篇文章到此结束。希望这对那些进入 MRI 和深度学习交叉领域的人有所帮助。感谢你抽出时间阅读。欲了解我研究的深入见解，请随时查阅我的最新论文！ :)
 
-Pitarch, C.; Ribas, V.; Vellido, A. 基于 AI 的胶质瘤分级以获得可信诊断：提高可靠性的分析管道。*Cancers* **2023**，*15*，3369。 [https://doi.org/10.3390/cancers15133369](https://doi.org/10.3390/cancers15133369)。
+Pitarch, C.; Ribas, V.; Vellido, A. 基于 AI 的胶质瘤分级以获得可信诊断：提高可靠性的分析管道。*Cancers* **2023**，*15*，3369。 [`doi.org/10.3390/cancers15133369`](https://doi.org/10.3390/cancers15133369)。
 
 *除非另有说明，所有图片均由作者提供。*
 
@@ -358,13 +358,13 @@ ISSN: 0899–7667。DOI: [10.1162/NECO.1989.1.4.541](https://direct.mit.edu/neco
 
 深度卷积神经网络的分类”。出现在：进展。
 
-在神经信息处理系统第25卷（2012）。
+在神经信息处理系统第 25 卷（2012）。
 
 [3] Christian Szegedy 等. “通过卷积进一步深入”。出现在：论文集。
 
-IEEE计算机学会计算机视觉会议论文集。
+IEEE 计算机学会计算机视觉会议论文集。
 
-计算机视觉与模式识别 07–12-2015年6月（2014年9月），第1–9页。
+计算机视觉与模式识别 07–12-2015 年 6 月（2014 年 9 月），第 1–9 页。
 
 ISSN: 10636919。DOI: [10.1109/CVPR.2015.7298594](https://ieeexplore.ieee.org/document/7298594/)。
 
@@ -374,18 +374,18 @@ ISSN: 10636919。DOI: [10.1109/CVPR.2015.7298594](https://ieeexplore.ieee.org/do
 
 学习表示大会，ICLR 2015 — 大会追踪。
 
-论文集（2014年9月）。
+论文集（2014 年 9 月）。
 
 [5] Kaiming He 等. “用于图像识别的深度残差学习”。
 
-出现在：IEEE计算机学会计算机视觉会议论文集。
+出现在：IEEE 计算机学会计算机视觉会议论文集。
 
-计算机视觉与模式识别2016年12月（2015年12月），第770–778页。
+计算机视觉与模式识别 2016 年 12 月（2015 年 12 月），第 770–778 页。
 
 778。ISSN: 10636919。DOI: [10.1109/CVPR.2016.90](https://ieeexplore.ieee.org/document/7780459)。
 
 [6] Ashish Vaswani 等. “注意力机制”。出现在：进展。
 
-神经信息处理系统2017年12月（2017年6月），第5999–6009页。ISSN: 10495258。DOI: [10.48550/arxiv.1706.03762](https://arxiv.org/abs/1706.03762)。
+神经信息处理系统 2017 年 12 月（2017 年 6 月），第 5999–6009 页。ISSN: 10495258。DOI: [10.48550/arxiv.1706.03762](https://arxiv.org/abs/1706.03762)。
 
-[7] Lisa M. DeAngelis. “脑肿瘤”。出现在：新英格兰医学杂志344卷（2001年8月2日），第114–123页。ISSN: 0028–4793。DOI: [10.1056/NEJM200101113440207](https://www.nejm.org/doi/full/10.1056/NEJM200101113440207)
+[7] Lisa M. DeAngelis. “脑肿瘤”。出现在：新英格兰医学杂志 344 卷（2001 年 8 月 2 日），第 114–123 页。ISSN: 0028–4793。DOI: [10.1056/NEJM200101113440207](https://www.nejm.org/doi/full/10.1056/NEJM200101113440207)

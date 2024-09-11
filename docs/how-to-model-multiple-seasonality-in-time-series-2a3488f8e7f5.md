@@ -1,18 +1,18 @@
 # 如何对时间序列建模多重季节性
 
-> 原文：[https://towardsdatascience.com/how-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5?source=collection_archive---------14-----------------------#2023-07-25](https://towardsdatascience.com/how-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5?source=collection_archive---------14-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/how-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5?source=collection_archive---------14-----------------------#2023-07-25`](https://towardsdatascience.com/how-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5?source=collection_archive---------14-----------------------#2023-07-25)
 
 ## **处理多个周期的季节性效应**
 
-[](https://vcerq.medium.com/?source=post_page-----2a3488f8e7f5--------------------------------)[![Vitor Cerqueira](../Images/9e52f462c6bc20453d3ea273eb52114b.png)](https://vcerq.medium.com/?source=post_page-----2a3488f8e7f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a3488f8e7f5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2a3488f8e7f5--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----2a3488f8e7f5--------------------------------)
+[](https://vcerq.medium.com/?source=post_page-----2a3488f8e7f5--------------------------------)![Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----2a3488f8e7f5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a3488f8e7f5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a3488f8e7f5--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----2a3488f8e7f5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----2a3488f8e7f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a3488f8e7f5--------------------------------) · 5 分钟阅读 · 2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a3488f8e7f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----2a3488f8e7f5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----2a3488f8e7f5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a3488f8e7f5--------------------------------) · 5 分钟阅读 · 2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a3488f8e7f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----2a3488f8e7f5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a3488f8e7f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5&source=-----2a3488f8e7f5---------------------bookmark_footer-----------)![](../Images/b0ff9a93e1a11fae7f8848871a893fcf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a3488f8e7f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-model-multiple-seasonality-in-time-series-2a3488f8e7f5&source=-----2a3488f8e7f5---------------------bookmark_footer-----------)![](img/b0ff9a93e1a11fae7f8848871a893fcf.png)
 
 图片由 [Joshua Woroniecki](https://unsplash.com/@joshua_j_woroniecki?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

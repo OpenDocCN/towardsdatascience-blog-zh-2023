@@ -1,20 +1,20 @@
 # 构建分子属性预测的图卷积网络
 
-> 原文：[https://towardsdatascience.com/building-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4?source=collection_archive---------2-----------------------#2023-12-23](https://towardsdatascience.com/building-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4?source=collection_archive---------2-----------------------#2023-12-23)
+> 原文：[`towardsdatascience.com/building-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4?source=collection_archive---------2-----------------------#2023-12-23`](https://towardsdatascience.com/building-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4?source=collection_archive---------2-----------------------#2023-12-23)
 
 ## 人工智能
 
 ## 制作分子图和开发一个基于 PyTorch 的简单 GCN 的教程
 
-[](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)[![Gaurav Deshmukh](../Images/98433b1a256f160792a7b2b0874a2081.png)](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------) [Gaurav Deshmukh](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)
+[](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)![Gaurav Deshmukh](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------) [Gaurav Deshmukh](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5a75283b2c71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=post_page-5a75283b2c71----978b0ae10ec4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------) ·17分钟阅读·2023年12月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F978b0ae10ec4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=-----978b0ae10ec4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5a75283b2c71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=post_page-5a75283b2c71----978b0ae10ec4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------) ·17 分钟阅读·2023 年 12 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F978b0ae10ec4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=-----978b0ae10ec4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F978b0ae10ec4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&source=-----978b0ae10ec4---------------------bookmark_footer-----------)![](../Images/44e7eb3195c6626cd9fc39e340695ed7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F978b0ae10ec4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&source=-----978b0ae10ec4---------------------bookmark_footer-----------)![](img/44e7eb3195c6626cd9fc39e340695ed7.png)
 
 照片由 [BoliviaInteligente](https://unsplash.com/@boliviainteligente?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,9 +24,9 @@
 
 在化学或物理学中，模型通常是一个连续函数，比如 *y=f(x₁, x₂, x₃, …, xₙ)*，其中 *x₁, x₂, x₃, …, xₙ* 是输入，*y* 是输出。这样的模型的一个例子是决定两个点电荷 *q₁* 和 *q₂* 之间的静电相互作用（或力）的方程，这两个点电荷在相对介电常数为 *εᵣ* 的介质中，相隔距离为 *r*，通常称为库仑定律。
 
-![](../Images/5d08adea00f1d9c05c260a7dd4b77855.png)
+![](img/5d08adea00f1d9c05c260a7dd4b77855.png)
 
-图1：库仑方程作为点电荷之间静电相互作用的模型（图像来源：作者）
+图 1：库仑方程作为点电荷之间静电相互作用的模型（图像来源：作者）
 
 如果我们不知道这种关系，但假设有多个数据点，每个数据点包括点电荷之间的相互作用（输出）和相应的输入，我们可以拟合一个人工神经网络来预测任何给定点电荷在指定介质中的任何给定分离下的相互作用。在这个问题的情况下，虽然忽略了一些重要的警告，但创建一个数据驱动的物理问题模型是相对简单的。
 
@@ -34,25 +34,25 @@
 
 其次，与点电荷的例子不同，输入可能不一定存在于连续空间中。例如，我们可以将甲醇、乙醇和丙醇视为一组链长逐渐增加的分子；然而，它们之间并不存在任何概念——链长是一个离散参数，没有办法在甲醇和乙醇之间进行插值以得到其他分子。拥有一个连续的输入空间对于计算模型的导数是至关重要的，这些导数随后可以用于优化所选属性。
 
-为了克服这些问题，已经提出了各种编码分子的方法。其中一种方法是使用SMILES和SELFIES等方案进行文本表示。这种表示方法有大量文献资料，我推荐感兴趣的读者阅读这篇[有用的综述](https://www.cell.com/patterns/pdf/S2666-3899(22)00206-9.pdf)。第二种方法涉及将分子表示为图形。虽然每种方法都有其优点和缺点，但图形表示对化学更直观。
+为了克服这些问题，已经提出了各种编码分子的方法。其中一种方法是使用 SMILES 和 SELFIES 等方案进行文本表示。这种表示方法有大量文献资料，我推荐感兴趣的读者阅读这篇[有用的综述](https://www.cell.com/patterns/pdf/S2666-3899(22)00206-9.pdf)。第二种方法涉及将分子表示为图形。虽然每种方法都有其优点和缺点，但图形表示对化学更直观。
 
-图是由节点通过边连接组成的数学结构，边表示节点之间的关系。分子自然适应这种结构——原子成为节点，键成为边。图中的每个节点由一个向量表示，该向量编码了相应原子的属性。通常，一位编码方案就足够了（更多内容见下一节）。这些向量可以堆叠起来形成一个*节点矩阵*。节点之间的关系——由边表示——可以通过一个方形的*邻接矩阵*来划分，其中每个元素*aᵢⱼ* 取值为1或0，取决于两个节点*i* 和 *j* 是否由边连接。对角线上的元素设置为1，表示自连接，这使得矩阵适合卷积（如你将在下一节看到的）。可以开发更复杂的图形表示，其中边的属性也在一个单独的矩阵中进行一位编码，但我们将这些留待另一篇文章。这些节点和邻接矩阵将作为我们模型的输入。
+图是由节点通过边连接组成的数学结构，边表示节点之间的关系。分子自然适应这种结构——原子成为节点，键成为边。图中的每个节点由一个向量表示，该向量编码了相应原子的属性。通常，一位编码方案就足够了（更多内容见下一节）。这些向量可以堆叠起来形成一个*节点矩阵*。节点之间的关系——由边表示——可以通过一个方形的*邻接矩阵*来划分，其中每个元素*aᵢⱼ* 取值为 1 或 0，取决于两个节点*i* 和 *j* 是否由边连接。对角线上的元素设置为 1，表示自连接，这使得矩阵适合卷积（如你将在下一节看到的）。可以开发更复杂的图形表示，其中边的属性也在一个单独的矩阵中进行一位编码，但我们将这些留待另一篇文章。这些节点和邻接矩阵将作为我们模型的输入。
 
-![](../Images/1bb2c8b159493c6a4b83f4cae619305c.png)
+![](img/1bb2c8b159493c6a4b83f4cae619305c.png)
 
-图2：将乙酰胺分子表示为图形，节点的原子序号通过一位编码表示（图片来源：作者）
+图 2：将乙酰胺分子表示为图形，节点的原子序号通过一位编码表示（图片来源：作者）
 
 通常，人工神经网络模型接受的是一维输入向量。对于多维输入，比如图像，开发了一类叫做卷积神经网络的模型。在我们的情况下，我们有二维矩阵作为输入，因此需要一个修改过的网络来接受这些输入。图神经网络是为了处理这样的节点和邻接矩阵而开发的，它们将这些矩阵转换为适当的一维向量，这些向量可以通过普通的人工神经网络的隐藏层来生成输出。图神经网络有许多类型，比如图卷积网络、消息传递网络、图注意力网络等等，它们主要在于节点和边之间交换信息的函数上有所不同。由于图卷积网络相对简单，我们将更详细地了解它们。
 
 # 2\. 图卷积和池化层
 
-考虑你输入的初始状态。节点矩阵表示了每个原子的独热编码。为了简化起见，我们考虑原子序数的独热编码，其中原子序数为*n*的原子在*nᵗʰ*索引处有一个1，其余位置都是0。邻接矩阵表示节点之间的连接。在当前状态下，节点矩阵不能作为人工神经网络的输入，原因有以下几点：(1) 它是二维的，(2) 它不是排列不变的，(3) 它不是唯一的。这里的排列不变性意味着无论你如何排列节点，输入应该保持不变；目前，相同的分子可以由相同节点矩阵的多个排列表示（假设邻接矩阵也有适当的排列）。这是一个问题，因为网络会将不同的排列视为不同的输入，而它们应该被视为相同的。
+考虑你输入的初始状态。节点矩阵表示了每个原子的独热编码。为了简化起见，我们考虑原子序数的独热编码，其中原子序数为*n*的原子在*nᵗʰ*索引处有一个 1，其余位置都是 0。邻接矩阵表示节点之间的连接。在当前状态下，节点矩阵不能作为人工神经网络的输入，原因有以下几点：(1) 它是二维的，(2) 它不是排列不变的，(3) 它不是唯一的。这里的排列不变性意味着无论你如何排列节点，输入应该保持不变；目前，相同的分子可以由相同节点矩阵的多个排列表示（假设邻接矩阵也有适当的排列）。这是一个问题，因为网络会将不同的排列视为不同的输入，而它们应该被视为相同的。
 
 对于前两个问题，有一个简单的解决方案——池化。如果节点矩阵沿列维度进行池化，那么它将被减少到一个排列不变的一维向量。通常，这种池化是简单的均值池化，这意味着最终池化后的向量包含节点矩阵中每一列的均值。然而，这仍然无法解决第三个问题——池化两个异构体的节点矩阵，例如正戊烷和新戊烷，将产生相同的池化向量。
 
 为了使最终的池化向量具有唯一性，我们需要在节点矩阵中加入一些邻居信息。以同分异构体为例，虽然它们的化学式相同，但它们的结构却不同。加入邻居信息的一个简单方法是对每个节点及其邻居进行某种操作，例如求和。这可以表示为节点矩阵与邻接矩阵的乘法（试着在纸上计算：*邻接矩阵与节点矩阵的乘积生成一个更新后的节点矩阵，其中每个节点向量等于它自身与邻居节点向量的和*）。通常，通过用对角度矩阵的逆进行预乘，对每个节点的度（或邻居数量）进行归一化，从而使这一和值成为邻居的均值。最后，这个乘积会被一个权重矩阵后乘，以使这个操作具有参数化特性。这个完整的操作称为图卷积。**图 3** 显示了一种直观而简单的图卷积形式。一个数学上更严格且数值上更稳定的形式可以在[Thomas Kipf 和 Max Welling 的研究](https://arxiv.org/abs/1609.02907)中找到，该研究对邻接矩阵进行了修改的归一化。卷积和池化操作的组合也可以解释为一种*非线性的经验群体贡献方法*。
 
-![](../Images/a4f86992af1c3ad7b47d228fe44ebdb4.png)
+![](img/a4f86992af1c3ad7b47d228fe44ebdb4.png)
 
 图 3：用于乙酰胺分子的图卷积（作者提供的图片）
 
@@ -66,7 +66,7 @@
 
 ## 3.1\. 使用 RDKit 创建图形
 
-RDKit是一个化学信息学库，允许高通量访问小分子的性质。我们将需要它来完成两个任务——获取分子中每个原子的原子序数以进行节点矩阵的独热编码，并获取邻接矩阵。我们假设分子是通过其SMILES字符串提供的（这对于大多数化学信息学数据来说是正确的）。此外，为了确保所有分子的节点和邻接矩阵的大小一致——默认情况下它们的大小不一致，因为它们的大小依赖于分子中的原子数——我们用0填充这些矩阵。最后，我们将对上面提出的卷积进行小修改——我们将邻接矩阵中的“1”替换为相应的键长的倒数。这样，网络将获得更多关于分子几何的信息，并且还会根据邻居的键长来加权每个节点周围的卷积。
+RDKit 是一个化学信息学库，允许高通量访问小分子的性质。我们将需要它来完成两个任务——获取分子中每个原子的原子序数以进行节点矩阵的独热编码，并获取邻接矩阵。我们假设分子是通过其 SMILES 字符串提供的（这对于大多数化学信息学数据来说是正确的）。此外，为了确保所有分子的节点和邻接矩阵的大小一致——默认情况下它们的大小不一致，因为它们的大小依赖于分子中的原子数——我们用 0 填充这些矩阵。最后，我们将对上面提出的卷积进行小修改——我们将邻接矩阵中的“1”替换为相应的键长的倒数。这样，网络将获得更多关于分子几何的信息，并且还会根据邻居的键长来加权每个节点周围的卷积。
 
 ```py
 class Graph:
@@ -148,9 +148,9 @@ class Graph:
         self.adj_mat = adj_mat
 ```
 
-## 3.2\. 在Dataset中打包图
+## 3.2\. 在 Dataset 中打包图
 
-PyTorch提供了一个便捷的*Dataset*类来存储和访问各种数据。我们将使用它来存储每个分子的节点和邻接矩阵及输出。请注意，使用这个*Dataset*接口来处理数据不是强制性的；不过，使用这个抽象会使后续步骤更加简单。我们需要为继承自*Dataset*类的*GraphData*类定义两个主要方法：一个是**__len__**方法来获取数据集的大小，另一个是**__getitem__**方法来获取给定索引的输入和输出。
+PyTorch 提供了一个便捷的*Dataset*类来存储和访问各种数据。我们将使用它来存储每个分子的节点和邻接矩阵及输出。请注意，使用这个*Dataset*接口来处理数据不是强制性的；不过，使用这个抽象会使后续步骤更加简单。我们需要为继承自*Dataset*类的*GraphData*类定义两个主要方法：一个是**__len__**方法来获取数据集的大小，另一个是**__getitem__**方法来获取给定索引的输入和输出。
 
 ```py
 class GraphData(Dataset):
@@ -187,7 +187,7 @@ class GraphData(Dataset):
         return (node_mat, adj_mat), output, smile
 ```
 
-由于我们已经定义了自己定制的节点和邻接矩阵、输出以及SMILES字符串的返回方式，我们需要定义一个自定义函数来整理数据，即将数据打包成一个批次，然后传递给网络。通过传递数据批次而不是单个数据点，并使用小批量梯度下降来训练神经网络，可以在准确性和计算效率之间取得微妙的平衡。我们将在下面定义的整理函数本质上会收集所有数据对象，将它们按类别分层，堆叠在列表中，转换为PyTorch张量，并重新组合这些张量，以便以与我们的*GraphData*类相同的方式返回它们。
+由于我们已经定义了自己定制的节点和邻接矩阵、输出以及 SMILES 字符串的返回方式，我们需要定义一个自定义函数来整理数据，即将数据打包成一个批次，然后传递给网络。通过传递数据批次而不是单个数据点，并使用小批量梯度下降来训练神经网络，可以在准确性和计算效率之间取得微妙的平衡。我们将在下面定义的整理函数本质上会收集所有数据对象，将它们按类别分层，堆叠在列表中，转换为 PyTorch 张量，并重新组合这些张量，以便以与我们的*GraphData*类相同的方式返回它们。
 
 ```py
 def collate_graph_dataset(dataset: Dataset):
@@ -216,7 +216,7 @@ def collate_graph_dataset(dataset: Dataset):
 
 ## 3.3\. 构建图卷积网络架构
 
-完成数据处理部分的代码后，我们现在转向构建模型本身。为了清晰起见，我们将构建自己的卷积层和池化层，但你们中更高级的开发者可以轻松地用PyTorch Geometric模块中更复杂的预定义层替换这些层。*ConvolutionLayer*本质上做三件事——（1）从邻接矩阵计算逆对角度矩阵，（2）对四个矩阵（D⁻¹ANW）进行乘法运算，以及（3）对层输出应用非线性激活函数。与其他PyTorch类一样，我们将从已经定义了*forward*方法等方法的*Module*基类继承。
+完成数据处理部分的代码后，我们现在转向构建模型本身。为了清晰起见，我们将构建自己的卷积层和池化层，但你们中更高级的开发者可以轻松地用 PyTorch Geometric 模块中更复杂的预定义层替换这些层。*ConvolutionLayer*本质上做三件事——（1）从邻接矩阵计算逆对角度矩阵，（2）对四个矩阵（D⁻¹ANW）进行乘法运算，以及（3）对层输出应用非线性激活函数。与其他 PyTorch 类一样，我们将从已经定义了*forward*方法等方法的*Module*基类继承。
 
 ```py
 class ConvolutionLayer(nn.Module):
@@ -270,7 +270,7 @@ class PoolingLayer(nn.Module):
         return pooled_node_fea
 ```
 
-最后，我们将定义一个*ChemGCN*类，包含卷积层、池化层和隐藏层的定义。通常，这个类应该有一个构造函数来定义这些层的结构和顺序，以及一个*forward*方法，接受输入（在我们的情况下是节点和邻接矩阵）并生成输出。我们将对所有层的输出应用*LeakyReLU*激活函数。此外，我们还将使用dropout来减少过拟合。
+最后，我们将定义一个*ChemGCN*类，包含卷积层、池化层和隐藏层的定义。通常，这个类应该有一个构造函数来定义这些层的结构和顺序，以及一个*forward*方法，接受输入（在我们的情况下是节点和邻接矩阵）并生成输出。我们将对所有层的输出应用*LeakyReLU*激活函数。此外，我们还将使用 dropout 来减少过拟合。
 
 ```py
 class ChemGCN(nn.Module):
@@ -357,9 +357,9 @@ class ChemGCN(nn.Module):
         # Subsequent hidden layers
         if self.n_hidden > 1:
             for i in range(self.n_hidden - 1):
-                hidden_node_fea = self.hidden_layers[i](hidden_node_fea)
-                hidden_node_fea = self.hidden_activation_layers[i](hidden_node_fea)
-                hidden_node_fea = self.hidden_dropout_layers[i](hidden_node_fea)
+                hidden_node_fea = self.hidden_layersi
+                hidden_node_fea = self.hidden_activation_layersi
+                hidden_node_fea = self.hidden_dropout_layersi
 
         # Output
         out = self.hidden_to_output(hidden_node_fea)
@@ -395,9 +395,9 @@ class Standardizer:
         self.std = state["std"]
 ```
 
-其次，我们定义一个函数来执行每个epoch的以下步骤：
+其次，我们定义一个函数来执行每个 epoch 的以下步骤：
 
-+   从数据加载器中解包输入和输出，并将其传输到GPU（如果可用）。
++   从数据加载器中解包输入和输出，并将其传输到 GPU（如果可用）。
 
 +   通过网络传递输入并获得预测结果。
 
@@ -593,11 +593,11 @@ print(f"Test MAE: {test_mae:.2f}")
 
 # 4\. 结果
 
-具有给定架构和超参数的网络在开源的[DeepChem库](https://github.com/deepchem/deepchem)上训练，该库包含约1000种小分子的水溶性。下图显示了一个特定训练-测试划分的训练损失曲线和测试集的对比图。训练集和测试集上的平均绝对误差分别为0.59和0.58（以log mol/l为单位），低于线性模型的0.69 log mol/l（基于数据集中的预测）。神经网络表现优于线性回归模型并不令人意外；尽管如此，这种粗略的比较使我们确信模型的预测是合理的。此外，我们仅通过在图中包含基本的结构描述符——原子序数和键长——来实现这一点，让卷积和池化函数建立这些描述符之间更复杂的关系，从而得出最准确的分子性质预测。
+具有给定架构和超参数的网络在开源的[DeepChem 库](https://github.com/deepchem/deepchem)上训练，该库包含约 1000 种小分子的水溶性。下图显示了一个特定训练-测试划分的训练损失曲线和测试集的对比图。训练集和测试集上的平均绝对误差分别为 0.59 和 0.58（以 log mol/l 为单位），低于线性模型的 0.69 log mol/l（基于数据集中的预测）。神经网络表现优于线性回归模型并不令人意外；尽管如此，这种粗略的比较使我们确信模型的预测是合理的。此外，我们仅通过在图中包含基本的结构描述符——原子序数和键长——来实现这一点，让卷积和池化函数建立这些描述符之间更复杂的关系，从而得出最准确的分子性质预测。
 
-![](../Images/054b6b47d1d5ed507bd28da3eceef4e0.png)
+![](img/054b6b47d1d5ed507bd28da3eceef4e0.png)
 
-图4：测试集的训练损失曲线（左）和对比图（右）（图像由作者提供）
+图 4：测试集的训练损失曲线（左）和对比图（右）（图像由作者提供）
 
 # 5\. 最后的说明
 
@@ -611,11 +611,11 @@ print(f"Test MAE: {test_mae:.2f}")
 
 +   收集更多数据
 
-尽管如此，本教程的目标是通过一个简单的例子阐述化学领域图卷积网络的基础知识。在掌握了基础知识后，你在GCN模型构建之旅中的可能性是无限的。
+尽管如此，本教程的目标是通过一个简单的例子阐述化学领域图卷积网络的基础知识。在掌握了基础知识后，你在 GCN 模型构建之旅中的可能性是无限的。
 
 # 仓库和有用的参考资料
 
-+   完整的代码（包括创建图形的脚本）提供在[GitHub仓库](https://github.com/gauravsdeshmukh/ChemGCN)中。安装所需模块的说明也提供在那里。用于训练模型的数据集来自开源的[DeepChem库](https://github.com/deepchem/deepchem)，该库在MIT许可下（允许商业使用）。仓库中的原始数据集文件名为delaney_processed.csv。
++   完整的代码（包括创建图形的脚本）提供在[GitHub 仓库](https://github.com/gauravsdeshmukh/ChemGCN)中。安装所需模块的说明也提供在那里。用于训练模型的数据集来自开源的[DeepChem 库](https://github.com/deepchem/deepchem)，该库在 MIT 许可下（允许商业使用）。仓库中的原始数据集文件名为 delaney_processed.csv。
 
 +   [关于分子字符串表示的综述](https://www.cell.com/patterns/pdf/S2666-3899(22)00206-9.pdf)
 
@@ -625,4 +625,4 @@ print(f"Test MAE: {test_mae:.2f}")
 
 +   [关于分子深度学习的在线书籍](https://dmol.pub/)。这是一个极好的资源，可以帮助你学习化学深度学习的基础知识，并通过动手编码练习应用所学。
 
-如果你有任何问题、评论或建议，请随时通过[电子邮件联系我](mailto:gauravsdeshmukh@outlook.com)或通过[X联系我](https://twitter.com/ChemAndCode)。
+如果你有任何问题、评论或建议，请随时通过电子邮件联系我或通过[X 联系我](https://twitter.com/ChemAndCode)。

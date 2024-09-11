@@ -1,20 +1,20 @@
-# 使用Pandas可视化数据的3种快速简便方法
+# 使用 Pandas 可视化数据的 3 种快速简便方法
 
-> 原文：[https://towardsdatascience.com/3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82?source=collection_archive---------3-----------------------#2023-03-14](https://towardsdatascience.com/3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82?source=collection_archive---------3-----------------------#2023-03-14)
+> 原文：[`towardsdatascience.com/3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82?source=collection_archive---------3-----------------------#2023-03-14`](https://towardsdatascience.com/3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82?source=collection_archive---------3-----------------------#2023-03-14)
 
 ## 数据科学
 
-## 通过这些简单有效的Pandas可视化技巧，充分利用你的数据
+## 通过这些简单有效的 Pandas 可视化技巧，充分利用你的数据
 
-[](https://medium.com/@17.rsuraj?source=post_page-----4cac57fb4c82--------------------------------)[![Suraj Gurav](../Images/f5dca32861f8c1c428e66fbe2174c04b.png)](https://medium.com/@17.rsuraj?source=post_page-----4cac57fb4c82--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4cac57fb4c82--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4cac57fb4c82--------------------------------) [Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----4cac57fb4c82--------------------------------)
+[](https://medium.com/@17.rsuraj?source=post_page-----4cac57fb4c82--------------------------------)![Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----4cac57fb4c82--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4cac57fb4c82--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cac57fb4c82--------------------------------) [Suraj Gurav](https://medium.com/@17.rsuraj?source=post_page-----4cac57fb4c82--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fdda183cca2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82&user=Suraj+Gurav&userId=1fdda183cca2&source=post_page-1fdda183cca2----4cac57fb4c82---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cac57fb4c82--------------------------------) ·9分钟阅读·2023年3月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4cac57fb4c82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82&user=Suraj+Gurav&userId=1fdda183cca2&source=-----4cac57fb4c82---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fdda183cca2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82&user=Suraj+Gurav&userId=1fdda183cca2&source=post_page-1fdda183cca2----4cac57fb4c82---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4cac57fb4c82--------------------------------) ·9 分钟阅读·2023 年 3 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4cac57fb4c82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82&user=Suraj+Gurav&userId=1fdda183cca2&source=-----4cac57fb4c82---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4cac57fb4c82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82&source=-----4cac57fb4c82---------------------bookmark_footer-----------)![](../Images/204d202e04c5449832ff08d3f3fdaf59.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4cac57fb4c82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-quick-and-easy-ways-to-visualize-your-data-using-pandas-4cac57fb4c82&source=-----4cac57fb4c82---------------------bookmark_footer-----------)![](img/204d202e04c5449832ff08d3f3fdaf59.png)
 
 [照片由](https://dengxiang.pages.dev/) [Choong Deng Xiang](https://unsplash.com/@dengxiangs?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

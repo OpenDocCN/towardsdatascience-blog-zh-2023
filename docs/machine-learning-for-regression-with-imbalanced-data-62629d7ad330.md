@@ -1,14 +1,14 @@
 # 《处理不平衡数据的回归机器学习》
 
-> 原文：[https://towardsdatascience.com/machine-learning-for-regression-with-imbalanced-data-62629d7ad330?source=collection_archive---------5-----------------------#2023-08-10](https://towardsdatascience.com/machine-learning-for-regression-with-imbalanced-data-62629d7ad330?source=collection_archive---------5-----------------------#2023-08-10)
+> 原文：[`towardsdatascience.com/machine-learning-for-regression-with-imbalanced-data-62629d7ad330?source=collection_archive---------5-----------------------#2023-08-10`](https://towardsdatascience.com/machine-learning-for-regression-with-imbalanced-data-62629d7ad330?source=collection_archive---------5-----------------------#2023-08-10)
 
 ## 为什么很难预测数据集中的异常值，以及你可以做些什么来应对这些问题。
 
-[](https://medium.com/@caroline.arnold_63207?source=post_page-----62629d7ad330--------------------------------)[![Caroline Arnold](../Images/2560e106ba9deda7889c7d253792d814.png)](https://medium.com/@caroline.arnold_63207?source=post_page-----62629d7ad330--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62629d7ad330--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----62629d7ad330--------------------------------) [Caroline Arnold](https://medium.com/@caroline.arnold_63207?source=post_page-----62629d7ad330--------------------------------)
+[](https://medium.com/@caroline.arnold_63207?source=post_page-----62629d7ad330--------------------------------)![Caroline Arnold](https://medium.com/@caroline.arnold_63207?source=post_page-----62629d7ad330--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62629d7ad330--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----62629d7ad330--------------------------------) [Caroline Arnold](https://medium.com/@caroline.arnold_63207?source=post_page-----62629d7ad330--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9367198e7a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-for-regression-with-imbalanced-data-62629d7ad330&user=Caroline+Arnold&userId=9367198e7a3c&source=post_page-9367198e7a3c----62629d7ad330---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62629d7ad330--------------------------------) ·6 min read·2023年8月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62629d7ad330&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-for-regression-with-imbalanced-data-62629d7ad330&user=Caroline+Arnold&userId=9367198e7a3c&source=-----62629d7ad330---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9367198e7a3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-for-regression-with-imbalanced-data-62629d7ad330&user=Caroline+Arnold&userId=9367198e7a3c&source=post_page-9367198e7a3c----62629d7ad330---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62629d7ad330--------------------------------) ·6 min read·2023 年 8 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62629d7ad330&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmachine-learning-for-regression-with-imbalanced-data-62629d7ad330&user=Caroline+Arnold&userId=9367198e7a3c&source=-----62629d7ad330---------------------clap_footer-----------)
 
 --
 
@@ -26,7 +26,7 @@
 
 在这篇文章中，我们旨在对为何机器学习算法在处理不平衡数据时会遇到困难提供一个**直观的解释**，展示如何通过**分位数评估**来量化算法的性能，并介绍**三种不同的策略**来提升算法的性能。
 
-![](../Images/9d2254efcdffa0b4fe4ec4c5e2a0b963.png)
+![](img/9d2254efcdffa0b4fe4ec4c5e2a0b963.png)
 
 图片由[Elena Mozhvilo](https://unsplash.com/@miracleday?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 

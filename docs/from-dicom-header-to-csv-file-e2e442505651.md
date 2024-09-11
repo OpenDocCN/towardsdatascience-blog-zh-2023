@@ -1,18 +1,18 @@
 # 从 DICOM 头到 CSV 文件
 
-> 原文：[https://towardsdatascience.com/from-dicom-header-to-csv-file-e2e442505651?source=collection_archive---------11-----------------------#2023-01-17](https://towardsdatascience.com/from-dicom-header-to-csv-file-e2e442505651?source=collection_archive---------11-----------------------#2023-01-17)
+> 原文：[`towardsdatascience.com/from-dicom-header-to-csv-file-e2e442505651?source=collection_archive---------11-----------------------#2023-01-17`](https://towardsdatascience.com/from-dicom-header-to-csv-file-e2e442505651?source=collection_archive---------11-----------------------#2023-01-17)
 
 ## DICOM 元数据 → CSV 数据集
 
-[](https://medium.com/@omar.ok1998?source=post_page-----e2e442505651--------------------------------)[![Omar Alkousa](../Images/7598618abe8e8fa89f1d8a4bfc21f014.png)](https://medium.com/@omar.ok1998?source=post_page-----e2e442505651--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2e442505651--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e2e442505651--------------------------------) [Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----e2e442505651--------------------------------)
+[](https://medium.com/@omar.ok1998?source=post_page-----e2e442505651--------------------------------)![Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----e2e442505651--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e2e442505651--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2e442505651--------------------------------) [Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----e2e442505651--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8302b9534b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-dicom-header-to-csv-file-e2e442505651&user=Omar+Alkousa&userId=f8302b9534b5&source=post_page-f8302b9534b5----e2e442505651---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2e442505651--------------------------------) ·7 min read·2023年1月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2e442505651&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-dicom-header-to-csv-file-e2e442505651&user=Omar+Alkousa&userId=f8302b9534b5&source=-----e2e442505651---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8302b9534b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-dicom-header-to-csv-file-e2e442505651&user=Omar+Alkousa&userId=f8302b9534b5&source=post_page-f8302b9534b5----e2e442505651---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e2e442505651--------------------------------) ·7 min read·2023 年 1 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe2e442505651&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-dicom-header-to-csv-file-e2e442505651&user=Omar+Alkousa&userId=f8302b9534b5&source=-----e2e442505651---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2e442505651&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-dicom-header-to-csv-file-e2e442505651&source=-----e2e442505651---------------------bookmark_footer-----------)![](../Images/e44354405a55381d661a9faab86935fa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe2e442505651&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-dicom-header-to-csv-file-e2e442505651&source=-----e2e442505651---------------------bookmark_footer-----------)![](img/e44354405a55381d661a9faab86935fa.png)
 
 将 DICOM 元数据转换为 CSV 文件。[作者提供的图像]
 
@@ -72,17 +72,17 @@ Dataset.file_meta -------------------------------
 
 PyDicom 封装了一个 DataSet 类，对于每个 DICOM 属性，它以标签作为 DataSet 的键，以数据元素作为值。下面的图片描述了 DataSet 和 DataElement 类的内容。
 
-![](../Images/2016e7b381897a52834c7e5ae6223d2d.png)
+![](img/2016e7b381897a52834c7e5ae6223d2d.png)
 
 PyDicom DataSet 类的内容。[图片由作者提供]
 
 PyDicom 包提供了许多方法和属性，可以与 DataSet 和 DataElement 类一起使用。我们不会深入讨论这些细节。如果你想了解更多，请参考之前的文章。
 
-[](/introducing-pydicom-its-classes-methods-and-attributes-518c1d71162?source=post_page-----e2e442505651--------------------------------) [## 介绍 PyDicom、它的类、方法和属性。
+[](/introducing-pydicom-its-classes-methods-and-attributes-518c1d71162?source=post_page-----e2e442505651--------------------------------) ## 介绍 PyDicom、它的类、方法和属性。
 
 ### PyDicom… 超越像素数据！
 
-[towardsdatascience.com](/introducing-pydicom-its-classes-methods-and-attributes-518c1d71162?source=post_page-----e2e442505651--------------------------------)
+[towardsdatascience.com
 
 # 提取元数据
 
@@ -106,7 +106,7 @@ PyDicom 包提供了许多方法和属性，可以与 DataSet 和 DataElement �
 
 DLP 可以从 CTDIvol 计算出来，这是另一个 CT 指数，描述了所选 CT 运行条件下单张图像的平均剂量，单位为毫格（mGy）。剂量长度乘积（DLP）用于计算一系列扫描或完整检查的剂量，并由以下方程定义：
 
-![](../Images/dfb0ab1b1de6239670a3851e47726f2e.png)
+![](img/dfb0ab1b1de6239670a3851e47726f2e.png)
 
 其中 i 用于每张图像对应的第 i 个 CTDIvol。对于 Li，我们将使用每两个连续图像之间的重建间隔，因为这实际上决定了对给定扫描长度对应的图像数。**Slice Location** 将帮助我们计算以毫米为单位的重建间隔。
 
@@ -198,11 +198,11 @@ DLP 计算只是从 DICOM 头部提取数据的一个单一示例，其用途非
 
 [1] 99 个 CT 切片的数据集，[dlwpt-volumetric-dicom-lung](https://www.kaggle.com/datasets/dmisky/dlwptvolumetricdicomlung)，Kaggle，[Kosarevsky Dmitry](https://www.kaggle.com/dmisky)，许可证：“数据库：开放数据库，内容：数据库内容”，DbCL v1.0。
 
-[2] PyDicom 文档，[**用户指南**](https://pydicom.github.io/pydicom/stable/old/pydicom_user_guide.html)，[访问时间：2022年12月25日]
+[2] PyDicom 文档，[**用户指南**](https://pydicom.github.io/pydicom/stable/old/pydicom_user_guide.html)，[访问时间：2022 年 12 月 25 日]
 
-[3] PyDicom 文档，[**元素 VR 和 Python 类型**](https://pydicom.github.io/pydicom/stable/guides/element_value_types.html)，[访问时间：2022年12月25日]
+[3] PyDicom 文档，[**元素 VR 和 Python 类型**](https://pydicom.github.io/pydicom/stable/guides/element_value_types.html)，[访问时间：2022 年 12 月 25 日]
 
-[4] PyDicom 文档，[**API 参考**](https://pydicom.github.io/pydicom/stable/reference/index.html)，[访问时间：2022年12月25日]
+[4] PyDicom 文档，[**API 参考**](https://pydicom.github.io/pydicom/stable/reference/index.html)，[访问时间：2022 年 12 月 25 日]
 
 [5] Innolitics，DICOM 标准浏览器，（2022），[**CTDIvol 属性**](https://dicom.innolitics.com/ciods/ct-image/ct-image/00189345)，[访问日期 2023 年 10 月 1 日]
 

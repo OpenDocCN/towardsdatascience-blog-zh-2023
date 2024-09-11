@@ -1,20 +1,20 @@
 # 部署 Falcon-7B 进入生产环境
 
-> 原文：[https://towardsdatascience.com/deploying-falcon-7b-into-production-6dd28bb79373?source=collection_archive---------1-----------------------#2023-07-07](https://towardsdatascience.com/deploying-falcon-7b-into-production-6dd28bb79373?source=collection_archive---------1-----------------------#2023-07-07)
+> 原文：[`towardsdatascience.com/deploying-falcon-7b-into-production-6dd28bb79373?source=collection_archive---------1-----------------------#2023-07-07`](https://towardsdatascience.com/deploying-falcon-7b-into-production-6dd28bb79373?source=collection_archive---------1-----------------------#2023-07-07)
 
 ## 一步步教程
 
 ## 在云端以微服务形式运行 Falcon-7B
 
-[](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)[![Het Trivedi](../Images/f6f11a66f60cacc6b553c7d1682b2fc6.png)](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------) [Het Trivedi](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)
+[](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)![Het Trivedi](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------) [Het Trivedi](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce8ebd0c262c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&user=Het+Trivedi&userId=ce8ebd0c262c&source=post_page-ce8ebd0c262c----6dd28bb79373---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------) ·16 分钟阅读·2023年7月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6dd28bb79373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&user=Het+Trivedi&userId=ce8ebd0c262c&source=-----6dd28bb79373---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce8ebd0c262c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&user=Het+Trivedi&userId=ce8ebd0c262c&source=post_page-ce8ebd0c262c----6dd28bb79373---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------) ·16 分钟阅读·2023 年 7 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6dd28bb79373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&user=Het+Trivedi&userId=ce8ebd0c262c&source=-----6dd28bb79373---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6dd28bb79373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&source=-----6dd28bb79373---------------------bookmark_footer-----------)![](../Images/10a0800c6f473b08d7985ccc8c5969f9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6dd28bb79373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&source=-----6dd28bb79373---------------------bookmark_footer-----------)![](img/10a0800c6f473b08d7985ccc8c5969f9.png)
 
 图片由作者提供-使用 Midjourney 创建
 
@@ -22,47 +22,47 @@
 
 到目前为止，我们已经了解了 ChatGPT 的能力及其提供的功能。然而，对于企业使用，像 ChatGPT 这样的闭源模型可能存在风险，因为企业无法控制其数据。OpenAI 声称用户数据不会被存储或用于训练模型，但无法保证数据不会以某种方式泄露。
 
-为了应对与闭源模型相关的一些问题，研究人员正急于构建与ChatGPT等模型相媲美的开源LLM。使用开源模型，企业可以在安全的云环境中自行托管这些模型，从而降低数据泄露的风险。此外，你还可以完全透明地了解模型的内部工作，这有助于建立对AI的更多信任。
+为了应对与闭源模型相关的一些问题，研究人员正急于构建与 ChatGPT 等模型相媲美的开源 LLM。使用开源模型，企业可以在安全的云环境中自行托管这些模型，从而降低数据泄露的风险。此外，你还可以完全透明地了解模型的内部工作，这有助于建立对 AI 的更多信任。
 
-随着开源LLM的最新进展，试用新的模型并查看它们如何与像ChatGPT这样的闭源模型竞争变得很有诱惑力。
+随着开源 LLM 的最新进展，试用新的模型并查看它们如何与像 ChatGPT 这样的闭源模型竞争变得很有诱惑力。
 
-然而，今天运行开源模型存在显著的障碍。调用ChatGPT API要比弄清楚如何运行开源LLM容易得多。
+然而，今天运行开源模型存在显著的障碍。调用 ChatGPT API 要比弄清楚如何运行开源 LLM 容易得多。
 
-在这篇文章中，我的目标是通过展示如何在生产环境中运行像Falcon-7B这样的开源模型，来打破这些障碍。我们将能够通过类似于ChatGPT的API端点访问这些模型。
+在这篇文章中，我的目标是通过展示如何在生产环境中运行像 Falcon-7B 这样的开源模型，来打破这些障碍。我们将能够通过类似于 ChatGPT 的 API 端点访问这些模型。
 
 ## 挑战
 
-运行开源模型的一个重大挑战是缺乏计算资源。即使是像Falcon 7B这样的“小型”模型，也需要GPU才能运行。
+运行开源模型的一个重大挑战是缺乏计算资源。即使是像 Falcon 7B 这样的“小型”模型，也需要 GPU 才能运行。
 
-为了解决这个问题，我们可以利用云中的GPU。但这带来了另一个挑战。我们如何容器化我们的LLM？我们如何启用GPU支持？启用GPU支持可能很棘手，因为这需要了解CUDA。处理CUDA可能会令人头痛，因为你需要弄清楚如何安装正确的CUDA依赖以及哪些版本是兼容的。
+为了解决这个问题，我们可以利用云中的 GPU。但这带来了另一个挑战。我们如何容器化我们的 LLM？我们如何启用 GPU 支持？启用 GPU 支持可能很棘手，因为这需要了解 CUDA。处理 CUDA 可能会令人头痛，因为你需要弄清楚如何安装正确的 CUDA 依赖以及哪些版本是兼容的。
 
-因此，为了避免CUDA死循环，许多公司已经创建了解决方案来轻松容器化模型，同时支持GPU。对于这篇博客文章，我们将使用一个名为[Truss](https://github.com/basetenlabs/truss)的开源工具来帮助我们轻松容器化我们的LLM，而不费多少劲。
+因此，为了避免 CUDA 死循环，许多公司已经创建了解决方案来轻松容器化模型，同时支持 GPU。对于这篇博客文章，我们将使用一个名为[Truss](https://github.com/basetenlabs/truss)的开源工具来帮助我们轻松容器化我们的 LLM，而不费多少劲。
 
-Truss允许开发者轻松容器化使用任何框架构建的模型。
+Truss 允许开发者轻松容器化使用任何框架构建的模型。
 
-## 为什么使用Truss？
+## 为什么使用 Truss？
 
-![](../Images/994154aab9fb051480824ccacfa116e3.png)
+![](img/994154aab9fb051480824ccacfa116e3.png)
 
-Truss — [https://truss.baseten.co/e2e](https://truss.baseten.co/e2e)
+Truss — [`truss.baseten.co/e2e`](https://truss.baseten.co/e2e)
 
-Truss拥有许多开箱即用的有用功能，例如：
+Truss 拥有许多开箱即用的有用功能，例如：
 
-+   将你的Python模型转换为具有生产就绪API端点的微服务
++   将你的 Python 模型转换为具有生产就绪 API 端点的微服务
 
-+   通过Docker冻结依赖
++   通过 Docker 冻结依赖
 
-+   支持GPU上的推理
++   支持 GPU 上的推理
 
 +   模型的简单预处理和后处理
 
 +   简单且安全的秘密管理
 
-我之前使用过Truss来部署机器学习模型，过程非常顺利和简单。Truss自动创建你的dockerfile并管理Python依赖。我们要做的就是提供我们的模型代码。
+我之前使用过 Truss 来部署机器学习模型，过程非常顺利和简单。Truss 自动创建你的 dockerfile 并管理 Python 依赖。我们要做的就是提供我们的模型代码。
 
-![](../Images/53e388d9c34388bef656ff02ad0db9d9.png)
+![](img/53e388d9c34388bef656ff02ad0db9d9.png)
 
-我们希望使用像Truss这样的工具的主要原因是，它使得部署支持GPU的模型变得更加容易。
+我们希望使用像 Truss 这样的工具的主要原因是，它使得部署支持 GPU 的模型变得更加容易。
 
 > 注意：我没有收到 Baseten 的赞助来推广他们的内容，也没有与他们有任何关联。我没有受到 Baseten 或 Truss 任何形式的影响来撰写这篇文章。我只是发现他们的开源项目很酷且有用。
 
@@ -196,13 +196,13 @@ class Model:
 
 太棒了！这就是我们设置模型所需的一切。
 
-## 第2步：在本地运行模型（可选）
+## 第 2 步：在本地运行模型（可选）
 
-如果你有一块超过8GB VRAM的Nvidia GPU，你将能够在本地运行这个模型。
+如果你有一块超过 8GB VRAM 的 Nvidia GPU，你将能够在本地运行这个模型。
 
 如果没有，请随意继续下一步。
 
-我们需要下载一些更多的依赖项以在本地运行模型。在下载依赖项之前，你需要确保已安装CUDA和正确的CUDA驱动程序。
+我们需要下载一些更多的依赖项以在本地运行模型。在下载依赖项之前，你需要确保已安装 CUDA 和正确的 CUDA 驱动程序。
 
 由于我们尝试在本地运行模型，Truss 将无法帮助我们管理 CUDA 问题。
 
@@ -215,7 +215,7 @@ pip install einops
 pip install scipy 
 ```
 
-接下来，在`main.py`脚本中，我们需要加载我们的truss。
+接下来，在`main.py`脚本中，我们需要加载我们的 truss。
 
 这是`main.py`的代码：
 
@@ -231,23 +231,23 @@ print(output)
 
 这里发生了什么：
 
-+   如果你记得，`falcon_7b_truss`目录是由truss创建的。我们可以使用`truss.load`加载整个包，包括模型和依赖项。
++   如果你记得，`falcon_7b_truss`目录是由 truss 创建的。我们可以使用`truss.load`加载整个包，包括模型和依赖项。
 
 +   一旦加载了包，我们可以简单地调用`predict`方法来获取模型的输出。
 
 运行`main.py`以获取模型的输出。
 
-这些模型文件的大小约为15 GB，因此下载模型可能需要5到10分钟。运行脚本后，你应该会看到类似的输出：
+这些模型文件的大小约为 15 GB，因此下载模型可能需要 5 到 10 分钟。运行脚本后，你应该会看到类似的输出：
 
 ```py
 {'data': {'generated_text': "Hi there how are you?\nI'm doing well. I'm in the middle of a move, so I'm a bit tired. I'm also a bit overwhelmed. I'm not sure how to get started. I'm not sure what I'm doing. I'm not sure if I'm doing it right. I'm not sure if I'm doing it wrong. I'm not sure if I'm doing it at all.\nI'm not sure if I'm doing it right. I'm not sure if I'm doing it wrong. I"}}
 ```
 
-## 第3步：使用docker容器化模型
+## 第 3 步：使用 docker 容器化模型
 
-通常，当人们容器化模型时，他们会将模型二进制文件和Python依赖项打包起来，使用Flask或Fast API服务器进行封装。
+通常，当人们容器化模型时，他们会将模型二进制文件和 Python 依赖项打包起来，使用 Flask 或 Fast API 服务器进行封装。
 
-很多内容是样板代码，我们不想自己去做。Truss会处理这些。我们已经提供了模型，Truss会创建服务器，所以剩下的就是提供Python依赖项。
+很多内容是样板代码，我们不想自己去做。Truss 会处理这些。我们已经提供了模型，Truss 会创建服务器，所以剩下的就是提供 Python 依赖项。
 
 `config.yaml`保存了模型的配置。在这里，我们可以添加模型的依赖项。配置文件已经包含了大部分我们需要的内容，但我们还需要添加一些东西。
 
@@ -291,13 +291,13 @@ system_packages: []
 
 我们添加的主要内容是`requirements`。列出的所有依赖项都是下载和运行模型所必需的。
 
-我们添加的另一个重要内容是`resources`。`use_gpu: true`是必需的，因为这告诉Truss为我们创建一个启用GPU支持的Dockerfile。
+我们添加的另一个重要内容是`resources`。`use_gpu: true`是必需的，因为这告诉 Truss 为我们创建一个启用 GPU 支持的 Dockerfile。
 
 这就是配置的全部内容。
 
-接下来，我们将容器化我们的模型。如果你不知道如何使用Docker容器化模型，别担心，Truss已经为你准备好了。
+接下来，我们将容器化我们的模型。如果你不知道如何使用 Docker 容器化模型，别担心，Truss 已经为你准备好了。
 
-在`main.py`文件中，我们将告诉Truss将所有内容打包在一起。你需要的代码如下：
+在`main.py`文件中，我们将告诉 Truss 将所有内容打包在一起。你需要的代码如下：
 
 ```py
 import truss
@@ -313,13 +313,13 @@ print(command)
 
 +   首先，我们加载我们的`falcon_7b_truss`
 
-+   接下来，`docker_build_setup`函数处理所有复杂的内容，如创建Dockerfile和设置Fast API服务器。
++   接下来，`docker_build_setup`函数处理所有复杂的内容，如创建 Dockerfile 和设置 Fast API 服务器。
 
 +   如果你查看`falcon_7b_truss`目录，你会发现生成了更多文件。我们不需要担心这些文件如何工作，因为一切都会在幕后管理。
 
 +   在运行结束时，我们得到一个构建 Docker 镜像的命令：`docker build falcon_7b_truss -t falcon-7b-model:latest`
 
-![](../Images/beb90d0e1302c0c426824fa199948d4d.png)
+![](img/beb90d0e1302c0c426824fa199948d4d.png)
 
 如果你想构建 Docker 镜像，请运行构建命令。镜像大小约为 9 GB，所以可能需要一些时间来构建。如果你不想构建它但想跟随，可以使用我的镜像：`htrivedi05/truss-falcon-7b:latest`。
 
@@ -372,7 +372,7 @@ res = requests.post("http://127.0.0.1:8080/v1/models/model:predict", json=data)
 print(res.json())
 ```
 
-## 第4步：将模型部署到生产环境
+## 第 4 步：将模型部署到生产环境
 
 我在这里使用“生产”这个词比较宽泛。我们将把模型运行在 Kubernetes 中，那里可以轻松扩展并处理可变量的流量。
 
@@ -390,7 +390,7 @@ print(res.json())
 
 1.  确保你有足够的配额来运行一个启用 GPU 的机器。你可以在**IAM & Admin**下检查你的配额。
 
-![](../Images/0b5f428850fadcfa0cc0346b2f5ab4a0.png)
+![](img/0b5f428850fadcfa0cc0346b2f5ab4a0.png)
 
 ## 创建我们的 GKE 集群
 
@@ -414,47 +414,47 @@ Google 的 Kubernetes 引擎**不是**免费的。Google 不允许我们免费�
 
 1.  前往[Google Cloud Console](https://console.cloud.google.com/)并搜索名为*Kubernetes Engine*的服务
 
-![](../Images/09cff563a680d73a6527f4901dd44a00.png)
+![](img/09cff563a680d73a6527f4901dd44a00.png)
 
 2\. 点击*创建*按钮
 
-+   确保你创建的是标准集群，而不是自动驾驶集群。顶部应该显示*创建一个kubernetes集群*。
++   确保你创建的是标准集群，而不是自动驾驶集群。顶部应该显示*创建一个 kubernetes 集群*。
 
 3\. 集群基本信息
 
 +   在集群基本信息选项卡中，我们不需要做太多更改。只需给你的集群命名。你不需要更改区域或控制平面。
 
-![](../Images/a55be1fba664346c690ba7d0ec344ece.png)
+![](img/a55be1fba664346c690ba7d0ec344ece.png)
 
-4\. 点击**default-pool**选项卡，将节点数更改为1
+4\. 点击**default-pool**选项卡，将节点数更改为 1
 
-![](../Images/ca67dee00ace8d272e0b9815bec29c55.png)
+![](img/ca67dee00ace8d272e0b9815bec29c55.png)
 
-5\. 在default-pool下，点击左侧边栏中的**节点**选项卡
+5\. 在 default-pool 下，点击左侧边栏中的**节点**选项卡
 
 +   将**机器配置**从**通用型**更改为**GPU**
 
-+   选择**Nvidia T4**作为**GPU类型**，并将数量设置为**1**
++   选择**Nvidia T4**作为**GPU 类型**，并将数量设置为**1**
 
-+   启用GPU共享（尽管我们不会使用这个功能）
++   启用 GPU 共享（尽管我们不会使用这个功能）
 
-+   将**每GPU最大共享客户端**设置为8
++   将**每 GPU 最大共享客户端**设置为 8
 
 +   对于**机器类型**，选择**n1-standard-4（4 vCPU，15 GB 内存）**
 
-+   将**启动磁盘大小**更改为50
++   将**启动磁盘大小**更改为 50
 
 +   向下滚动到底部，勾选**启用临时虚拟机上的节点**
 
-![](../Images/e26291a6c9e431d53f272eed05ba76ae.png)![](../Images/a23583fdadf90654922793c10114f036.png)![](../Images/210268f2273132cf85b94e48e7d4bfb4.png)
+![](img/e26291a6c9e431d53f272eed05ba76ae.png)![](img/a23583fdadf90654922793c10114f036.png)![](img/210268f2273132cf85b94e48e7d4bfb4.png)
 
 这是我为这个集群获得的估算价格的屏幕截图：
 
-![](../Images/9d1d9c07e0380efa2b3be818df060653.png)
+![](img/9d1d9c07e0380efa2b3be818df060653.png)
 
 配置完集群后，继续创建它。
 
-Google设置一切需要几分钟时间。集群启动并运行后，我们需要连接到它。打开终端并运行以下命令：
+Google 设置一切需要几分钟时间。集群启动并运行后，我们需要连接到它。打开终端并运行以下命令：
 
 ```py
 gcloud config set compute/zone us-central1-c
@@ -470,7 +470,7 @@ gcloud container clusters get-credentials gpu-cluster-1
 kubectl get nodes
 ```
 
-你应该会在终端中看到1个节点。尽管我们的集群有GPU，但缺少一些Nvidia驱动程序，我们需要安装它们。幸运的是，安装过程很简单。运行以下命令来安装驱动程序：
+你应该会在终端中看到 1 个节点。尽管我们的集群有 GPU，但缺少一些 Nvidia 驱动程序，我们需要安装它们。幸运的是，安装过程很简单。运行以下命令来安装驱动程序：
 
 ```py
 kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
@@ -480,7 +480,7 @@ kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container
 
 ## 部署模型
 
-要将模型部署到集群中，我们需要创建一个**kubernetes部署**。一个kubernetes部署允许我们管理容器化模型的实例。我不会深入探讨kubernetes或如何编写yaml文件，因为这超出了范围。
+要将模型部署到集群中，我们需要创建一个**kubernetes 部署**。一个 kubernetes 部署允许我们管理容器化模型的实例。我不会深入探讨 kubernetes 或如何编写 yaml 文件，因为这超出了范围。
 
 你需要创建一个名为`truss-falcon-deployment.yaml`的文件。打开该文件并粘贴以下内容：
 
@@ -526,11 +526,11 @@ spec:
 
 发生了什么：
 
-+   我们告诉kubernetes我们想用`falcon-7b-model`镜像创建pods。确保将`<your_docker_id>`替换为你的实际id。如果你没有创建自己的docker镜像而想使用我的镜像，请将其替换为：`htrivedi05/truss-falcon-7b:latest`
++   我们告诉 kubernetes 我们想用`falcon-7b-model`镜像创建 pods。确保将`<your_docker_id>`替换为你的实际 id。如果你没有创建自己的 docker 镜像而想使用我的镜像，请将其替换为：`htrivedi05/truss-falcon-7b:latest`
 
-+   我们通过设置资源限制`nvidia.com/gpu: 1`来启用容器的GPU访问。这告诉kubernetes只请求一个GPU给我们的容器
++   我们通过设置资源限制`nvidia.com/gpu: 1`来启用容器的 GPU 访问。这告诉 kubernetes 只请求一个 GPU 给我们的容器
 
-+   要与我们的模型交互，我们需要创建一个将在端口8080上运行的kubernetes服务。
++   要与我们的模型交互，我们需要创建一个将在端口 8080 上运行的 kubernetes 服务。
 
 在终端中运行以下命令以创建部署：
 
@@ -551,7 +551,7 @@ NAME              READY   UP-TO-DATE   AVAILABLE   AGE
 truss-falcon-7b   0/1     1            0           8s
 ```
 
-部署变为准备状态需要几分钟时间。请记住，每次容器重启时，模型都需要从hugging face下载。你可以通过运行以下命令来检查容器的进度：
+部署变为准备状态需要几分钟时间。请记住，每次容器重启时，模型都需要从 hugging face 下载。你可以通过运行以下命令来检查容器的进度：
 
 ```py
 kubectl get pods
@@ -561,11 +561,11 @@ kubectl get pods
 kubectl logs truss-falcon-7b-8fbb476f4-bggts
 ```
 
-相应地更改pod名称。
+相应地更改 pod 名称。
 
 在日志中，你需要查看以下几个方面：
 
-+   查找打印语句**THE DEVICE INFERENCE IS RUNNING ON IS: cuda**。这确认了我们的容器已正确连接到GPU。
++   查找打印语句**THE DEVICE INFERENCE IS RUNNING ON IS: cuda**。这确认了我们的容器已正确连接到 GPU。
 
 +   接下来，你应该看到一些关于模型文件下载的打印语句。
 
@@ -576,7 +576,7 @@ Downloading (…)l-00002-of-00002.bin: 100%|██████████| 4.48
 Downloading shards: 100%|██████████| 2/2 [03:42<00:00, 111.31s/it][01:04<00:00, 71.3MB/s]
 ```
 
-+   一旦模型下载完成且Truss创建了微服务，你应该在日志末尾看到以下输出：
++   一旦模型下载完成且 Truss 创建了微服务，你应该在日志末尾看到以下输出：
 
 ```py
 {"asctime": "2023-06-29 21:40:40,646", "levelname": "INFO", "message": "Completed model.load() execution in 330588 ms"}
@@ -615,7 +615,7 @@ Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
 ```
 
-太棒了，我们的模型现在作为REST API端点可用，地址是`127.0.0.1:8080`。打开任何Python脚本，比如`main.py`，并运行以下代码：
+太棒了，我们的模型现在作为 REST API 端点可用，地址是`127.0.0.1:8080`。打开任何 Python 脚本，比如`main.py`，并运行以下代码：
 
 ```py
 import requests
@@ -631,27 +631,27 @@ print(res.json())
  {'data': {'generated_text': 'Whats the most interesting thing about a falcon?\nFalcons are known for their incredible speed and agility in the air, as well as their impressive hunting skills. They are also known for their distinctive feathering, which can vary greatly depending on the species.'}}
 ```
 
-哇！我们成功地将我们的Falcon 7B模型容器化，并将其作为微服务在生产环境中部署！
+哇！我们成功地将我们的 Falcon 7B 模型容器化，并将其作为微服务在生产环境中部署！
 
 随意尝试不同的提示，看看模型返回什么。
 
 ## 关闭集群
 
-当你玩够了Falcon 7B后，你可以通过运行以下命令来删除你的部署：
+当你玩够了 Falcon 7B 后，你可以通过运行以下命令来删除你的部署：
 
 ```py
 kubectl delete -f truss-falcon-deployment.yaml
 ```
 
-接下来，前往Google Cloud中的kubernetes引擎并删除kubernetes集群。
+接下来，前往 Google Cloud 中的 kubernetes 引擎并删除 kubernetes 集群。
 
 > 注意：除非另有说明，否则所有图像均为作者提供。
 
 ## 结论
 
-运行和管理像ChatGPT这样的生产级模型并不容易。然而，随着时间的推移，工具将变得更好，开发者将能更轻松地将自己的模型部署到云端。
+运行和管理像 ChatGPT 这样的生产级模型并不容易。然而，随着时间的推移，工具将变得更好，开发者将能更轻松地将自己的模型部署到云端。
 
-在这篇博客文章中，我们讨论了在基本层面上将LLM部署到生产环境所需的所有事项。我们使用Truss打包模型，通过Docker进行容器化，并使用kubernetes将其部署到云端。我知道这要处理的内容很多，而且这并不是世界上最容易的事情，但我们还是完成了。
+在这篇博客文章中，我们讨论了在基本层面上将 LLM 部署到生产环境所需的所有事项。我们使用 Truss 打包模型，通过 Docker 进行容器化，并使用 kubernetes 将其部署到云端。我知道这要处理的内容很多，而且这并不是世界上最容易的事情，但我们还是完成了。
 
 希望你从这篇博客文章中学到了一些有趣的东西。感谢阅读！
 

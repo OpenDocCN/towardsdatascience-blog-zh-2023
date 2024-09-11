@@ -1,18 +1,18 @@
 # 处理交叉验证中的提升样本数据
 
-> 原文：[https://towardsdatascience.com/boosted-sample-data-in-cross-validation-7ee589460238?source=collection_archive---------16-----------------------#2023-04-18](https://towardsdatascience.com/boosted-sample-data-in-cross-validation-7ee589460238?source=collection_archive---------16-----------------------#2023-04-18)
+> 原文：[`towardsdatascience.com/boosted-sample-data-in-cross-validation-7ee589460238?source=collection_archive---------16-----------------------#2023-04-18`](https://towardsdatascience.com/boosted-sample-data-in-cross-validation-7ee589460238?source=collection_archive---------16-----------------------#2023-04-18)
 
-![](../Images/a846b2d703659565e18e57e9ea391996.png)
+![](img/a846b2d703659565e18e57e9ea391996.png)
 
 排除提升样本数据的交叉验证。图像由 @leddebruijn 提供。
 
 ## 一个用于提升样本数据的交叉验证的 Python 实现，以防止数据泄漏和过高估计模型性能
 
-[](https://medium.louisdebruijn.com/?source=post_page-----7ee589460238--------------------------------)[![Louis de Bruijn](../Images/68627f062ae4527063c948fe2f8651ff.png)](https://medium.louisdebruijn.com/?source=post_page-----7ee589460238--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ee589460238--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ee589460238--------------------------------) [Louis de Bruijn](https://medium.louisdebruijn.com/?source=post_page-----7ee589460238--------------------------------)
+[](https://medium.louisdebruijn.com/?source=post_page-----7ee589460238--------------------------------)![Louis de Bruijn](https://medium.louisdebruijn.com/?source=post_page-----7ee589460238--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ee589460238--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ee589460238--------------------------------) [Louis de Bruijn](https://medium.louisdebruijn.com/?source=post_page-----7ee589460238--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feb6696b15003&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosted-sample-data-in-cross-validation-7ee589460238&user=Louis+de+Bruijn&userId=eb6696b15003&source=post_page-eb6696b15003----7ee589460238---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ee589460238--------------------------------) · 6 分钟阅读 · 2023年4月18日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ee589460238&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosted-sample-data-in-cross-validation-7ee589460238&user=Louis+de+Bruijn&userId=eb6696b15003&source=-----7ee589460238---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feb6696b15003&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosted-sample-data-in-cross-validation-7ee589460238&user=Louis+de+Bruijn&userId=eb6696b15003&source=post_page-eb6696b15003----7ee589460238---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ee589460238--------------------------------) · 6 分钟阅读 · 2023 年 4 月 18 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ee589460238&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosted-sample-data-in-cross-validation-7ee589460238&user=Louis+de+Bruijn&userId=eb6696b15003&source=-----7ee589460238---------------------clap_footer-----------)
 
 --
 

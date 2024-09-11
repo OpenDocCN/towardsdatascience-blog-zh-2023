@@ -1,30 +1,30 @@
-# **10分钟理解Lineage和Hamilton**
+# **10 分钟理解 Lineage 和 Hamilton**
 
-> 原文：[https://towardsdatascience.com/lineage-hamilton-in-10-minutes-c2b8a944e2e6?source=collection_archive---------8-----------------------#2023-05-26](https://towardsdatascience.com/lineage-hamilton-in-10-minutes-c2b8a944e2e6?source=collection_archive---------8-----------------------#2023-05-26)
+> 原文：[`towardsdatascience.com/lineage-hamilton-in-10-minutes-c2b8a944e2e6?source=collection_archive---------8-----------------------#2023-05-26`](https://towardsdatascience.com/lineage-hamilton-in-10-minutes-c2b8a944e2e6?source=collection_archive---------8-----------------------#2023-05-26)
 
-## 通过使用 [Hamilton](https://github.com/dagworks-inc/hamilton) 的开箱即用的Lineage功能，减少调试管道的时间。
+## 通过使用 [Hamilton](https://github.com/dagworks-inc/hamilton) 的开箱即用的 Lineage 功能，减少调试管道的时间。
 
-[](https://medium.com/@stefan.krawczyk?source=post_page-----c2b8a944e2e6--------------------------------)[![Stefan Krawczyk](../Images/150405abaad9590e1dc2589168ed2fa3.png)](https://medium.com/@stefan.krawczyk?source=post_page-----c2b8a944e2e6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c2b8a944e2e6--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c2b8a944e2e6--------------------------------) [Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----c2b8a944e2e6--------------------------------)
+[](https://medium.com/@stefan.krawczyk?source=post_page-----c2b8a944e2e6--------------------------------)![Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----c2b8a944e2e6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c2b8a944e2e6--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----c2b8a944e2e6--------------------------------) [Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----c2b8a944e2e6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F193628e26f00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineage-hamilton-in-10-minutes-c2b8a944e2e6&user=Stefan+Krawczyk&userId=193628e26f00&source=post_page-193628e26f00----c2b8a944e2e6---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----c2b8a944e2e6--------------------------------) · 11 分钟阅读 · 2023年5月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc2b8a944e2e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineage-hamilton-in-10-minutes-c2b8a944e2e6&user=Stefan+Krawczyk&userId=193628e26f00&source=-----c2b8a944e2e6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F193628e26f00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineage-hamilton-in-10-minutes-c2b8a944e2e6&user=Stefan+Krawczyk&userId=193628e26f00&source=post_page-193628e26f00----c2b8a944e2e6---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----c2b8a944e2e6--------------------------------) · 11 分钟阅读 · 2023 年 5 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc2b8a944e2e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineage-hamilton-in-10-minutes-c2b8a944e2e6&user=Stefan+Krawczyk&userId=193628e26f00&source=-----c2b8a944e2e6---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc2b8a944e2e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineage-hamilton-in-10-minutes-c2b8a944e2e6&source=-----c2b8a944e2e6---------------------bookmark_footer-----------)![](../Images/18b9188673f75ef0764b9b84979467c2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc2b8a944e2e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flineage-hamilton-in-10-minutes-c2b8a944e2e6&source=-----c2b8a944e2e6---------------------bookmark_footer-----------)![](img/18b9188673f75ef0764b9b84979467c2.png)
 
-Hamilton + Lineage：使您能够可视化和理解事物之间的联系。这是通过driver.visualize_path_between()创建的。图像由作者提供。
+Hamilton + Lineage：使您能够可视化和理解事物之间的联系。这是通过 driver.visualize_path_between()创建的。图像由作者提供。
 
 [Hamilton](https://github.com/dagworks-inc/hamilton) 是一个通用的开源微框架，用于描述数据流。它非常适用于数据和机器学习（ML）工作。在这篇文章中，我们将引导你了解 [Hamilton](https://github.com/dagworks-inc/hamilton) 的血缘关系功能，这些功能可以帮助你快速回答在数据和机器学习工作中常见的问题，从而提高工作效率，更有效地与同事合作。如果你不熟悉 Hamilton，我们邀请你浏览以下内容：
 
 +   [www.tryhamilton.dev](http://www.tryhamilton.dev) （浏览器中的互动概述）
 
-+   [Introducing Hamilton](/functions-dags-introducing-hamilton-a-microframework-for-dataframe-generation-more-8e34b84efc1d) （背景故事和介绍）
++   Introducing Hamilton （背景故事和介绍）
 
-+   [Hamilton + Pandas in 5 minutes](/how-to-use-hamilton-with-pandas-in-5-minutes-89f63e5af8f5)
++   Hamilton + Pandas in 5 minutes
 
-+   Github — [https://github.com/dagworks-inc/hamilton](https://github.com/dagworks-inc/hamilton)
++   Github — [`github.com/dagworks-inc/hamilton`](https://github.com/dagworks-inc/hamilton)
 
 # 血缘关系
 
@@ -32,7 +32,7 @@ Hamilton + Lineage：使您能够可视化和理解事物之间的联系。这�
 
 ## 你为什么应该关注血缘关系？
 
-如果你是你必须管理的内容的作者，你可能对你写的所有内容如何连接有一个大致的了解。**但**，对于继承你工作的其他人，或引入一个合作者，或者调试你六个月前写的东西，**迅速了解情况可能会是一个挑战**！我听说过有团队花费超过四分之一的时间来理解同事留下的工作（他们显然没有使用Hamilton）！在这种情况下，*血缘关系*可以提供很大的帮助。为了提供更多背景，以下是一些导致生产力损失、普遍不满甚至中断的常见情况：
+如果你是你必须管理的内容的作者，你可能对你写的所有内容如何连接有一个大致的了解。**但**，对于继承你工作的其他人，或引入一个合作者，或者调试你六个月前写的东西，**迅速了解情况可能会是一个挑战**！我听说过有团队花费超过四分之一的时间来理解同事留下的工作（他们显然没有使用 Hamilton）！在这种情况下，*血缘关系*可以提供很大的帮助。为了提供更多背景，以下是一些导致生产力损失、普遍不满甚至中断的常见情况：
 
 (a) 调试你的训练集/模型中的数据问题（结果发现是上游数据问题）。
 
@@ -48,13 +48,13 @@ Hamilton + Lineage：使您能够可视化和理解事物之间的联系。这�
 
 > *使用 Hamilton，你不需要添加任何其他内容，你就可以获得血统。*
 
-![](../Images/7f3aaa34a9ff82b39fc82fd81e3932a9.png)
+![](img/7f3aaa34a9ff82b39fc82fd81e3932a9.png)
 
 编写代码。获取类似这样的血统。这是使用 Hamilton Driver 的 visualize_execution() 函数创建的。图片由作者提供。
 
 通过以 Hamilton 方式编写代码，你在函数中定义了计算，然后通过函数输入参数指定事物如何连接，编码血统。将此代码与例如版本控制系统（如 [git](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control)）连接起来，也为你提供了在时间点快照血统的手段！因为你必须更新代码以更改计算操作方式，因此，按定义，你也更新了血统，而无需做任何额外的操作 😎。
 
-![](../Images/067e1140bf8a39c935158394428e1116.png)
+![](img/067e1140bf8a39c935158394428e1116.png)
 
 Hamilton 范式概述。你编写的函数定义了计算应如何进行，而不是编写过程性代码。以这种方式定义函数完全映射到血统！
 
@@ -153,7 +153,7 @@ def fit_random_forest(
 
 这是一个常见的问题，如何从**A->B**，其中**A**可以是某些数据，`**->**` 对我们来说是不透明的，**B** 可以是某个工件（可以是更多数据或模型/对象）。
 
-借助Hamilton，通过以Hamilton规定的风格编写代码，您可以清晰而轻松地定义操作的顺序以及它们之间的关系！所以如果您不能通过查看代码本身来回答这个问题，可以请Hamilton提供帮助。在我们的示例中，为了了解`feature_encoders`是如何创建的，即使对它们知之甚少，我们也可以请求Hamilton Driver为我们可视化它们的创建过程：
+借助 Hamilton，通过以 Hamilton 规定的风格编写代码，您可以清晰而轻松地定义操作的顺序以及它们之间的关系！所以如果您不能通过查看代码本身来回答这个问题，可以请 Hamilton 提供帮助。在我们的示例中，为了了解`feature_encoders`是如何创建的，即使对它们知之甚少，我们也可以请求 Hamilton Driver 为我们可视化它们的创建过程：
 
 ```py
 ...
@@ -167,7 +167,7 @@ dr.visualize_execution(
 
 输出结果：
 
-![](../Images/0e15e0f01d25dfbcbef5c52f3568aef0.png)
+![](img/0e15e0f01d25dfbcbef5c52f3568aef0.png)
 
 示例血缘可视化。图像由作者提供。
 
@@ -184,7 +184,7 @@ dr = driver.Driver(config, data_loading, features, sets, model_pipeline, adapter
 upstream_nodes = dr.what_is_upstream_of("fit_random_forest")
 ```
 
-上述两行创建了一个Driver，然后提取`fit_random_forest`的所有上游节点。然后我们可以遍历这些节点并提取我们想要的信息：
+上述两行创建了一个 Driver，然后提取`fit_random_forest`的所有上游节点。然后我们可以遍历这些节点并提取我们想要的信息：
 
 ```py
 teams = []
@@ -208,7 +208,7 @@ print(teams)
 
 回答这个问题实际上是(2)的补充。当有人想要更改特征或数据源时，您通常会遇到这个问题。以我们的泰坦尼克号示例为例，假设我们在数据工程部门，想要更改源数据。我们如何确定使用这些数据的工件是什么以及谁拥有它们？
 
-我们使用`what_is_downstream_of()` Driver函数来获取下游的节点：
+我们使用`what_is_downstream_of()` Driver 函数来获取下游的节点：
 
 ```py
 # create the driver
@@ -236,11 +236,11 @@ print(artifacts)
 #  {'team': 'data-science', 'function': 'encoders', 'artifact': 'encoders'}]
 ```
 
-## (4) 什么被定义为PII数据，它最终会出现在哪些内容中？
+## (4) 什么被定义为 PII 数据，它最终会出现在哪些内容中？
 
-随着目前的法规，这成为了一个越来越常见的问题。基于上述内容，我们可以结合几个Driver函数来回答这类问题。
+随着目前的法规，这成为了一个越来越常见的问题。基于上述内容，我们可以结合几个 Driver 函数来回答这类问题。
 
-在我们的泰坦尼克号示例中，假设我们的合规团队来找我们了解我们如何使用PII数据，即它最终会出现在哪些工件中？他们希望每个月都能收到这份报告。好吧，借助Hamilton，我们可以编写脚本以程序化地获取与PII数据相关的血缘信息。首先，我们需要获取所有标记为PII的内容：
+在我们的泰坦尼克号示例中，假设我们的合规团队来找我们了解我们如何使用 PII 数据，即它最终会出现在哪些工件中？他们希望每个月都能收到这份报告。好吧，借助 Hamilton，我们可以编写脚本以程序化地获取与 PII 数据相关的血缘信息。首先，我们需要获取所有标记为 PII 的内容：
 
 ```py
 # create the driver
@@ -284,11 +284,11 @@ print(pii_to_artifacts)
 #         'team': 'data-science'}]} 
 ```
 
-# 我可以在我的笔记本/IDE中获得这个吗？
+# 我可以在我的笔记本/IDE 中获得这个吗？
 
 你们中的一些人可能在想，为什么在开发时不使用这种 lineage 视图？好主意！由于我们是一个开源项目，我们很乐意在这方面获得一些帮助；如果你有兴趣进行测试/贡献，我们有一个由 Thierry Jean 发起的 *alpha* 版 [VSCode 扩展](https://marketplace.visualstudio.com/items?itemName=ThierryJean.hamilton&ssr=false#overview)，可以帮助你在输入时可视化 lineage。我们欢迎贡献。
 
-![](../Images/fbb5be1f6fb6e320fed0d33a917f4e74.png)
+![](img/fbb5be1f6fb6e320fed0d33a917f4e74.png)
 
 Alpha Hamilton VSCode 扩展由 Thierry Jean 发起。图片作者提供。
 
@@ -312,13 +312,13 @@ Hamilton 允许对你编码的 lineage 和 metadata 进行程序化访问，这�
 
 # 你可能感兴趣的其他 Hamilton 文章：
 
-+   [5 分钟内使用 Hamilton 与 Pandas](/how-to-use-hamilton-with-pandas-in-5-minutes-89f63e5af8f5)
++   5 分钟内使用 Hamilton 与 Pandas
 
-+   [5 分钟内使用 Hamilton 与 Ray](/scaling-hamilton-with-ray-in-5-minutes-3beb1755fc09)
++   5 分钟内使用 Hamilton 与 Ray
 
-+   [如何在 Notebook 环境中使用 Hamilton](/how-to-iterate-with-hamilton-in-a-notebook-8ec0f85851ed)
++   如何在 Notebook 环境中使用 Hamilton
 
-+   [Hamilton 的背景故事和介绍](/functions-dags-introducing-hamilton-a-microframework-for-dataframe-generation-more-8e34b84efc1d)
++   Hamilton 的背景故事和介绍
 
 +   [开发可扩展的特征工程 DAGs](https://outerbounds.com/blog/developing-scalable-feature-engineering-dags)（Hamilton 与 Metaflow）
 

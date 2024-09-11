@@ -1,20 +1,20 @@
 # 基于嵌入的推荐系统简介
 
-> 原文：[https://towardsdatascience.com/introduction-to-embedding-based-recommender-systems-956faceb1919?source=collection_archive---------1-----------------------#2023-01-25](https://towardsdatascience.com/introduction-to-embedding-based-recommender-systems-956faceb1919?source=collection_archive---------1-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/introduction-to-embedding-based-recommender-systems-956faceb1919?source=collection_archive---------1-----------------------#2023-01-25`](https://towardsdatascience.com/introduction-to-embedding-based-recommender-systems-956faceb1919?source=collection_archive---------1-----------------------#2023-01-25)
 
 ## [推荐系统](https://medium.com/tag/recommendation-system)
 
 ## 学习如何在 TensorFlow 中构建一个简单的矩阵分解推荐系统
 
-[](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)[![Dr. Robert Kübler](../Images/3b8d8b88f76c0c43d9c305e3885e7ab9.png)](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)[](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)
+[](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)![Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)[](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-embedding-based-recommender-systems-956faceb1919&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----956faceb1919---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------) ·13 分钟阅读·2023年1月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F956faceb1919&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-embedding-based-recommender-systems-956faceb1919&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=-----956faceb1919---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-embedding-based-recommender-systems-956faceb1919&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----956faceb1919---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------) ·13 分钟阅读·2023 年 1 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F956faceb1919&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-embedding-based-recommender-systems-956faceb1919&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=-----956faceb1919---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F956faceb1919&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-embedding-based-recommender-systems-956faceb1919&source=-----956faceb1919---------------------bookmark_footer-----------)![](../Images/ff12d44a9188531303b168fa10bb28cf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F956faceb1919&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-embedding-based-recommender-systems-956faceb1919&source=-----956faceb1919---------------------bookmark_footer-----------)![](img/ff12d44a9188531303b168fa10bb28cf.png)
 
 照片由 [Johannes Plenio](https://unsplash.com/es/@jplenio?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

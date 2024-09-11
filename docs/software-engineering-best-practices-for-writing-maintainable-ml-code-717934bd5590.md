@@ -1,18 +1,18 @@
 # 编写可维护 ML 代码的最佳软件工程实践
 
-> 原文：[https://towardsdatascience.com/software-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590?source=collection_archive---------2-----------------------#2023-08-06](https://towardsdatascience.com/software-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590?source=collection_archive---------2-----------------------#2023-08-06)
+> 原文：[`towardsdatascience.com/software-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590?source=collection_archive---------2-----------------------#2023-08-06`](https://towardsdatascience.com/software-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590?source=collection_archive---------2-----------------------#2023-08-06)
 
-![](../Images/1d59ed9c7fdba6ad95f054d4357d2f46.png)
+![](img/1d59ed9c7fdba6ad95f054d4357d2f46.png)
 
 一位迷失在满是代码的森林中的数据科学家。与第二个和最后一个提示相关。图像由 [Midjourney](https://www.midjourney.com) 创作。
 
 ## 数据科学家的高级编码技巧
 
-[](https://hennie-de-harder.medium.com/?source=post_page-----717934bd5590--------------------------------)[![Hennie de Harder](../Images/3e4f2cccd6cb976ca3f8bf15597daea8.png)](https://hennie-de-harder.medium.com/?source=post_page-----717934bd5590--------------------------------)[](https://towardsdatascience.com/?source=post_page-----717934bd5590--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----717934bd5590--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----717934bd5590--------------------------------)
+[](https://hennie-de-harder.medium.com/?source=post_page-----717934bd5590--------------------------------)![Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----717934bd5590--------------------------------)[](https://towardsdatascience.com/?source=post_page-----717934bd5590--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----717934bd5590--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----717934bd5590--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsoftware-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----717934bd5590---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----717934bd5590--------------------------------) · 11分钟阅读 · 2023年8月6日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F717934bd5590&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsoftware-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----717934bd5590---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsoftware-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----717934bd5590---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----717934bd5590--------------------------------) · 11 分钟阅读 · 2023 年 8 月 6 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F717934bd5590&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsoftware-engineering-best-practices-for-writing-maintainable-ml-code-717934bd5590&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----717934bd5590---------------------clap_footer-----------)
 
 --
 

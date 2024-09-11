@@ -1,18 +1,18 @@
 # 捕捉-重捕方法
 
-> 原文：[https://towardsdatascience.com/the-capture-recapture-method-dc9985b928da?source=collection_archive---------3-----------------------#2023-09-13](https://towardsdatascience.com/the-capture-recapture-method-dc9985b928da?source=collection_archive---------3-----------------------#2023-09-13)
+> 原文：[`towardsdatascience.com/the-capture-recapture-method-dc9985b928da?source=collection_archive---------3-----------------------#2023-09-13`](https://towardsdatascience.com/the-capture-recapture-method-dc9985b928da?source=collection_archive---------3-----------------------#2023-09-13)
 
 ## 在不进行完全统计的情况下估算人群大小
 
-[](https://medium.com/@doriandrost?source=post_page-----dc9985b928da--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----dc9985b928da--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc9985b928da--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dc9985b928da--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----dc9985b928da--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----dc9985b928da--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----dc9985b928da--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc9985b928da--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc9985b928da--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----dc9985b928da--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-capture-recapture-method-dc9985b928da&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----dc9985b928da---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc9985b928da--------------------------------) ·7 min read·2023年9月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdc9985b928da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-capture-recapture-method-dc9985b928da&user=Dorian+Drost&userId=1d49ea537d1c&source=-----dc9985b928da---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-capture-recapture-method-dc9985b928da&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----dc9985b928da---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc9985b928da--------------------------------) ·7 min read·2023 年 9 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdc9985b928da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-capture-recapture-method-dc9985b928da&user=Dorian+Drost&userId=1d49ea537d1c&source=-----dc9985b928da---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdc9985b928da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-capture-recapture-method-dc9985b928da&source=-----dc9985b928da---------------------bookmark_footer-----------)![](../Images/3358afa555794e71fe6c0bee09c61d9d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdc9985b928da&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-capture-recapture-method-dc9985b928da&source=-----dc9985b928da---------------------bookmark_footer-----------)![](img/3358afa555794e71fe6c0bee09c61d9d.png)
 
 当你捕捉我们的个体时，确保不要伤害它们，因为你还需要将它们放回去。照片由[Anne Nygård](https://unsplash.com/@polarmermaid?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 # 我花园里有多少只蜗牛？
 
-![](../Images/b40f2ac2bdb44edc3b3a4264314ed9a5.png)
+![](img/b40f2ac2bdb44edc3b3a4264314ed9a5.png)
 
 许多人不喜欢蜗牛，但我仍然认为它们很可爱。让我们在不伤害它们的情况下计算它们的数量。照片来自 [Krzysztof Niewolny](https://unsplash.com/@epan5?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -38,7 +38,7 @@
 
 # 捕捉重获的条件
 
-![](../Images/dcfb6de3a442043944eb99897a37ae3e.png)
+![](img/dcfb6de3a442043944eb99897a37ae3e.png)
 
 在使用捕捉-再捕捉方法之前，请确保满足所需的条件。照片由[崇镇·赵](https://unsplash.com/@mbuff?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,11 +48,11 @@
 
 +   在两个数据收集点上，都必须从分布中随机且独立地抽取。即每个个体被捕获的可能性必须相同。特别是，是否被标记不应影响在其他场合被抽取的可能性。
 
-+   每次抽取的个体数量必须足够大，以产生有意义的重叠。你可以很容易地想象，从你的本地图书馆中随机抽取100本书，而图书数量达到数百万，这样的抽取根本没有重叠，因此对你的估计没有帮助。
++   每次抽取的个体数量必须足够大，以产生有意义的重叠。你可以很容易地想象，从你的本地图书馆中随机抽取 100 本书，而图书数量达到数百万，这样的抽取根本没有重叠，因此对你的估计没有帮助。
 
 # 示例用例
 
-![](../Images/a061252073d9960cf1a2fc385c7b0292.png)
+![](img/a061252073d9960cf1a2fc385c7b0292.png)
 
 亮点：医学是一个经常使用捕捉-再捕捉方法变体的领域。照片由[克谢尼娅·雅科夫列娃](https://unsplash.com/@ksyfffka07?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -66,13 +66,13 @@
 
 捕捉-重捕法的一种变体不在不同时间点进行重捕，而是使用两个独立的数据源（这些数据源来自相同的分布）及其重叠部分。这样，该方法通常用于医学场景中，因此我们来看一个例子，估算一种疾病的流行程度。
 
-假设我有一份来自医院的患者名单，列出了142名患有某种疾病的人员，还有一份来自国家卫生服务的名单，列出了442名患有该疾病的人员。假设71个人出现在这两个名单上。那么我们可以使用上述公式得到我们的结果（142*442）/71 = 884。即估计有884人患有这种疾病。
+假设我有一份来自医院的患者名单，列出了 142 名患有某种疾病的人员，还有一份来自国家卫生服务的名单，列出了 442 名患有该疾病的人员。假设 71 个人出现在这两个名单上。那么我们可以使用上述公式得到我们的结果（142*442）/71 = 884。即估计有 884 人患有这种疾病。
 
 对于这种变体，最重要的是这两个列表确实是独立的。即，一个个体属于一个列表的可能性不应因该个体是否属于另一个列表而有所不同，反之亦然。
 
 ## 估算潜在客户的数量
 
-假设你有一个网站来销售你令人惊叹的新产品。某一天你捕捉了网站上所有访客的数据（例如，通过跟踪他们的IP），几天后你再次进行相同的捕捉。通过两天之间的重叠部分，你可以估算你的产品的潜在客户数量。然而，你应该意识到这种情况可能容易违反一个重要的假设，即两次捕捉的独立性。特别是，可以认为第一次访问网站可能会增加再次访问网站的可能性。
+假设你有一个网站来销售你令人惊叹的新产品。某一天你捕捉了网站上所有访客的数据（例如，通过跟踪他们的 IP），几天后你再次进行相同的捕捉。通过两天之间的重叠部分，你可以估算你的产品的潜在客户数量。然而，你应该意识到这种情况可能容易违反一个重要的假设，即两次捕捉的独立性。特别是，可以认为第一次访问网站可能会增加再次访问网站的可能性。
 
 # 总结
 

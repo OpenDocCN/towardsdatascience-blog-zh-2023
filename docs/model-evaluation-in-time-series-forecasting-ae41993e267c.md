@@ -1,18 +1,18 @@
 # 时间序列预测中的模型评估
 
-> 原文：[https://towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c?source=collection_archive---------2-----------------------#2023-03-05](https://towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c?source=collection_archive---------2-----------------------#2023-03-05)
+> 原文：[`towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c?source=collection_archive---------2-----------------------#2023-03-05`](https://towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c?source=collection_archive---------2-----------------------#2023-03-05)
 
 ## 介绍使用 Skforecast 库进行时间序列的回测
 
-[![Javier Fernandez](../Images/d881a426c3f28ad5f41355a7aa92ed86.png)](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------) [Javier Fernandez](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)
+![Javier Fernandez](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------) [Javier Fernandez](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a71a903e8c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-evaluation-in-time-series-forecasting-ae41993e267c&user=Javier+Fernandez&userId=8a71a903e8c3&source=post_page-8a71a903e8c3----ae41993e267c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------) ·6 min read·2023年3月5日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a71a903e8c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-evaluation-in-time-series-forecasting-ae41993e267c&user=Javier+Fernandez&userId=8a71a903e8c3&source=post_page-8a71a903e8c3----ae41993e267c---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------) ·6 min read·2023 年 3 月 5 日
 
 --
 
-![](../Images/0a6a23a2ca72f5acd77ac7e855528173.png)
+![](img/0a6a23a2ca72f5acd77ac7e855528173.png)
 
 照片由 [Lukas](https://www.pexels.com/@goumbik) 提供，来源于 [Pexels](https://www.pexels.com/photo/chart-close-up-data-desk-590022/)
 

@@ -1,10 +1,10 @@
 # 《使用 Devtools 创建和发布 R 数据包的深度指南》
 
-> 原文：[https://towardsdatascience.com/in-depth-guide-to-creating-and-publishing-an-r-data-package-using-devtools-245b0fd4c359?source=collection_archive---------8-----------------------#2023-10-19](https://towardsdatascience.com/in-depth-guide-to-creating-and-publishing-an-r-data-package-using-devtools-245b0fd4c359?source=collection_archive---------8-----------------------#2023-10-19)
+> 原文：[`towardsdatascience.com/in-depth-guide-to-creating-and-publishing-an-r-data-package-using-devtools-245b0fd4c359?source=collection_archive---------8-----------------------#2023-10-19`](https://towardsdatascience.com/in-depth-guide-to-creating-and-publishing-an-r-data-package-using-devtools-245b0fd4c359?source=collection_archive---------8-----------------------#2023-10-19)
 
 ## 详细讲述了我开发的“Richmondway” R 数据包的步骤，其中包含 Roy Kent 的咒骂词统计
 
-[](https://medium.com/@menghani.deepsha?source=post_page-----245b0fd4c359--------------------------------)[![Deepsha Menghani](../Images/56a6ed8597c36e8c76d8a29a449325a4.png)](https://medium.com/@menghani.deepsha?source=post_page-----245b0fd4c359--------------------------------)[](https://towardsdatascience.com/?source=post_page-----245b0fd4c359--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----245b0fd4c359--------------------------------) [Deepsha Menghani](https://medium.com/@menghani.deepsha?source=post_page-----245b0fd4c359--------------------------------)
+[](https://medium.com/@menghani.deepsha?source=post_page-----245b0fd4c359--------------------------------)![Deepsha Menghani](https://medium.com/@menghani.deepsha?source=post_page-----245b0fd4c359--------------------------------)[](https://towardsdatascience.com/?source=post_page-----245b0fd4c359--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----245b0fd4c359--------------------------------) [Deepsha Menghani](https://medium.com/@menghani.deepsha?source=post_page-----245b0fd4c359--------------------------------)
 
 ·
 
@@ -12,55 +12,55 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F245b0fd4c359&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fin-depth-guide-to-creating-and-publishing-an-r-data-package-using-devtools-245b0fd4c359&source=-----245b0fd4c359---------------------bookmark_footer-----------)![](../Images/95dac23a0f2031aee4d139234160bdb3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F245b0fd4c359&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fin-depth-guide-to-creating-and-publishing-an-r-data-package-using-devtools-245b0fd4c359&source=-----245b0fd4c359---------------------bookmark_footer-----------)![](img/95dac23a0f2031aee4d139234160bdb3.png)
 
 图片由 [Erda Estremera](https://unsplash.com/@erdaest?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 提供，来源于 [Unsplash](https://unsplash.com/photos/sxNt9g77PE0?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 
-当我被邀请在2023年Posit会议上就[动画和互动讲故事](https://deepshamenghani.github.io/posit_plotly_crosstalk/#/title-slide)进行演讲时，我花了几个月时间考虑完美的数据集。似乎每个有趣的数据集都已经用尽了，我没有灵感用一个平淡无奇的数据集来做演讲。然后有一天，在看“泰德·拉索”这部美国体育喜剧剧集时，罗伊·肯特巧妙地插入的脏话引发了我的灵感。我重新观看了这部剧（顺便说一下，是以2倍速观看的），并统计了罗伊使用或示意“F**k”这个词的次数。那就是我的数据集！在这篇文章中，我将带你逐步了解如何将这个数据集转变为一个R数据包，使你也能轻松创建一个。
+当我被邀请在 2023 年 Posit 会议上就[动画和互动讲故事](https://deepshamenghani.github.io/posit_plotly_crosstalk/#/title-slide)进行演讲时，我花了几个月时间考虑完美的数据集。似乎每个有趣的数据集都已经用尽了，我没有灵感用一个平淡无奇的数据集来做演讲。然后有一天，在看“泰德·拉索”这部美国体育喜剧剧集时，罗伊·肯特巧妙地插入的脏话引发了我的灵感。我重新观看了这部剧（顺便说一下，是以 2 倍速观看的），并统计了罗伊使用或示意“F**k”这个词的次数。那就是我的数据集！在这篇文章中，我将带你逐步了解如何将这个数据集转变为一个 R 数据包，使你也能轻松创建一个。
 
-欢迎来到`[Richmondway](https://github.com/deepshamenghani/richmondway)`的制作过程，这是我第一个R数据包，允许你下载数据，逐集、逐季深入探讨罗伊·肯特的词汇。最终，回答一个从未有人问过的问题——罗伊·肯特在哪一季说“F**k”最多？
+欢迎来到`[Richmondway](https://github.com/deepshamenghani/richmondway)`的制作过程，这是我第一个 R 数据包，允许你下载数据，逐集、逐季深入探讨罗伊·肯特的词汇。最终，回答一个从未有人问过的问题——罗伊·肯特在哪一季说“F**k”最多？
 
-![](../Images/6c98ac49eb033536c4c55052573f82c7.png)
+![](img/6c98ac49eb033536c4c55052573f82c7.png)
 
-来源：[Posit Conference 2023 presentation](https://deepshamenghani.github.io/posit_plotly_crosstalk/#/title-slide) 由Deepsha Menghani提供
+来源：[Posit Conference 2023 presentation](https://deepshamenghani.github.io/posit_plotly_crosstalk/#/title-slide) 由 Deepsha Menghani 提供
 
 ## 我为什么要创建一个包？
 
-+   我一直渴望学习如何创建R包。从一个简单的数据包开始似乎是一个很好的初步尝试。
++   我一直渴望学习如何创建 R 包。从一个简单的数据包开始似乎是一个很好的初步尝试。
 
 +   嵌入数据以进行函数测试是至关重要的。它使用户熟悉包的功能——这是我在未来处理任何复杂包时所需要的步骤。
 
 +   这个数据集太有趣了，不想自己独享。打包它确保了会后大家都能轻松访问。
 
-所以，无论你是对R数据包的创建感到好奇，还是你是“泰德·拉索”迷，泡杯茶，咱们开始吧！
+所以，无论你是对 R 数据包的创建感到好奇，还是你是“泰德·拉索”迷，泡杯茶，咱们开始吧！
 
-# 我用来创建R数据包的详细步骤
+# 我用来创建 R 数据包的详细步骤
 
-## 第0步：数据集和包名称
+## 第 0 步：数据集和包名称
 
-这是我的数据集“richmondway”的快照。它有34行，对应于每一集，还有16列，包含各种值，这些值在我们将要创建的包中进行了描述。
+这是我的数据集“richmondway”的快照。它有 34 行，对应于每一集，还有 16 列，包含各种值，这些值在我们将要创建的包中进行了描述。
 
-给你的包命名就像给宠物命名一样——非常特别。虽然你会希望选择一个易于记忆的名字，但也要确保它简单，特别是如果你打算公开发布的话。我给我的包命名为`Richmondway`——这是对“泰德·拉索”中罗伊·肯特曾经效力的足球俱乐部AFC Richmond的致敬。而且，因为它以“R”开头，这也是一种幸运的巧合。我还希望这个名字能够清晰地指示包的内容。
+给你的包命名就像给宠物命名一样——非常特别。虽然你会希望选择一个易于记忆的名字，但也要确保它简单，特别是如果你打算公开发布的话。我给我的包命名为`Richmondway`——这是对“泰德·拉索”中罗伊·肯特曾经效力的足球俱乐部 AFC Richmond 的致敬。而且，因为它以“R”开头，这也是一种幸运的巧合。我还希望这个名字能够清晰地指示包的内容。
 
-## 第1步：安装工具包
+## 第 1 步：安装工具包
 
-安装这些R包：`devtools`、`usethis`和`roxygen2`。它们使得构建和记录你的新包变得非常简单。
+安装这些 R 包：`devtools`、`usethis`和`roxygen2`。它们使得构建和记录你的新包变得非常简单。
 
 ```py
 install.packages(c("devtools", "usethis", "roxygen2"))
 ```
 
-## 第2步：将新包创建为项目
+## 第 2 步：将新包创建为项目
 
-你可以使用`devtools`创建包，有两种方法。Devtools处理了许多初始包结构设置所需的工作。
+你可以使用`devtools`创建包，有两种方法。Devtools 处理了许多初始包结构设置所需的工作。
 
-> 方法1：直接从RStudio控制台
+> 方法 1：直接从 RStudio 控制台
 
-![](../Images/d086a4a2c90b9c43d7ed8515762bb6c2.png)
+![](img/d086a4a2c90b9c43d7ed8515762bb6c2.png)
 
-使用devtools创建R包的项目录制
+使用 devtools 创建 R 包的项目录制
 
-> 方法2：使用`usethis`包
+> 方法 2：使用`usethis`包
 
 使用`usethis::create_package()`命令，你可以通过提供要创建包目录的路径来直接创建一个新包。在本文的其余部分，我将继续展示其他`usethis`命令，这些命令使得完成大量包创建和文档步骤变得更简单和更快。
 
@@ -68,13 +68,13 @@ install.packages(c("devtools", "usethis", "roxygen2"))
 usethis::create_package("path/richmondway")
 ```
 
-你刚刚创建了一个包含R包基本需求的文件夹。如果你窥视其中，会发现一些神秘的文件。不用担心，我们将逐一了解它们。以下是你在项目中会看到的一些文件。
+你刚刚创建了一个包含 R 包基本需求的文件夹。如果你窥视其中，会发现一些神秘的文件。不用担心，我们将逐一了解它们。以下是你在项目中会看到的一些文件。
 
-![](../Images/da5bc030f8c26ffce73194e71be98726.png)
+![](img/da5bc030f8c26ffce73194e71be98726.png)
 
 项目的初始主目录
 
-## 第3步：添加数据集
+## 第 3 步：添加数据集
 
 我将数据集保存在本地环境中，命名为“richmondway”。运行以下命令将在包的根目录下添加一个`‘/data’`目录，并将一个`“.rda”`文件放入其中。
 
@@ -82,11 +82,11 @@ usethis::create_package("path/richmondway")
 usethis::use_data(richmondway)
 ```
 
-![](../Images/6e52a46c9f91c506597137acb3f1cc65.png)
+![](img/6e52a46c9f91c506597137acb3f1cc65.png)
 
 “data”文件夹中的一个名为“richmondway.rda”的单一文件
 
-## 第4步：创建数据字典`data.R`：
+## 第 4 步：创建数据字典`data.R`：
 
 这是描述你的数据集的地方。相信我，描述越好，其他人越容易发掘其潜力。这也会在后续步骤中纳入你的文档。你可以使用以下命令创建此文件，然后稍后更新所有所需的详细信息。
 
@@ -124,7 +124,7 @@ usethis::use_r("data")
 #' A dataset containing the number of times the word f**k was used in Ted Lasso by Roy Kent.
 ```
 
-这是数据集的简短标题和描述。以`#'`开头的注释用于以特殊方式注解R对象，这些对象将被`roxygen2`包识别，该包在R中用于生成文档。
+这是数据集的简短标题和描述。以`#'`开头的注释用于以特殊方式注解 R 对象，这些对象将被`roxygen2`包识别，该包在 R 中用于生成文档。
 
 > 格式注释：
 
@@ -132,7 +132,7 @@ usethis::use_r("data")
 #' @format A data frame with 34 rows and 16 columns.
 ```
 
-这指定了数据的格式。在这种情况下，数据集是一个包含34行和16列的数据框。
+这指定了数据的格式。在这种情况下，数据集是一个包含 34 行和 16 列的数据框。
 
 > 变量描述：
 
@@ -198,7 +198,7 @@ For more information, please see
 writeLines(license_text, con = "packagepath/LICENSE")
 ```
 
-![](../Images/de998c41a835e3184a1e8762f11a0da9.png)
+![](img/de998c41a835e3184a1e8762f11a0da9.png)
 
 新创建的 LICENSE 文件在项目主目录中突出显示
 
@@ -210,7 +210,7 @@ writeLines(license_text, con = "packagepath/LICENSE")
 devtools::document()
 ```
 
-![](../Images/f70fc27979fbab8fbfc0c724c1e3c7e7.png)
+![](img/f70fc27979fbab8fbfc0c724c1e3c7e7.png)
 
 新创建的 “man” 文件夹在项目主目录中突出显示
 
@@ -232,7 +232,7 @@ devtools::check()
 
 注意事项：提供有用的建议和提示，有时需要在 CRAN 提交时处理。
 
-![](../Images/5c90468ad2f2abafdcf3d35d8cb5aef3.png)
+![](img/5c90468ad2f2abafdcf3d35d8cb5aef3.png)
 
 ## 步骤 9：在本地安装包并测试
 

@@ -1,18 +1,18 @@
 # 揭开数据回填的神秘面纱
 
-> 原文：[https://towardsdatascience.com/demystify-data-backfilling-cf1713d7f7a3?source=collection_archive---------3-----------------------#2023-11-20](https://towardsdatascience.com/demystify-data-backfilling-cf1713d7f7a3?source=collection_archive---------3-----------------------#2023-11-20)
+> 原文：[`towardsdatascience.com/demystify-data-backfilling-cf1713d7f7a3?source=collection_archive---------3-----------------------#2023-11-20`](https://towardsdatascience.com/demystify-data-backfilling-cf1713d7f7a3?source=collection_archive---------3-----------------------#2023-11-20)
 
 ## 让我们谈谈数据工程师的噩梦
 
-[](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)[![Xiaoxu Gao](../Images/8712a7e5f3bad0d2abd7e04792fad66f.png)](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------) [Xiaoxu Gao](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)
+[](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)![Xiaoxu Gao](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------) [Xiaoxu Gao](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2adc5a07e772&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystify-data-backfilling-cf1713d7f7a3&user=Xiaoxu+Gao&userId=2adc5a07e772&source=post_page-2adc5a07e772----cf1713d7f7a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------) · 10分钟阅读 · 2023年11月20日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcf1713d7f7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystify-data-backfilling-cf1713d7f7a3&user=Xiaoxu+Gao&userId=2adc5a07e772&source=-----cf1713d7f7a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2adc5a07e772&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystify-data-backfilling-cf1713d7f7a3&user=Xiaoxu+Gao&userId=2adc5a07e772&source=post_page-2adc5a07e772----cf1713d7f7a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------) · 10 分钟阅读 · 2023 年 11 月 20 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcf1713d7f7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystify-data-backfilling-cf1713d7f7a3&user=Xiaoxu+Gao&userId=2adc5a07e772&source=-----cf1713d7f7a3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcf1713d7f7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystify-data-backfilling-cf1713d7f7a3&source=-----cf1713d7f7a3---------------------bookmark_footer-----------)![](../Images/a374b8c9a41614e60b77cc9adf59a72a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcf1713d7f7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystify-data-backfilling-cf1713d7f7a3&source=-----cf1713d7f7a3---------------------bookmark_footer-----------)![](img/a374b8c9a41614e60b77cc9adf59a72a.png)
 
 由作者创建
 

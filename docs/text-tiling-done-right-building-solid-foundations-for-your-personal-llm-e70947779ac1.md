@@ -1,28 +1,28 @@
 # **文本切分正确实施**：为您的个人 LLM 打下坚实的基础
 
-> 原文：[https://towardsdatascience.com/text-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1?source=collection_archive---------3-----------------------#2023-06-04](https://towardsdatascience.com/text-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1?source=collection_archive---------3-----------------------#2023-06-04)
+> 原文：[`towardsdatascience.com/text-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1?source=collection_archive---------3-----------------------#2023-06-04`](https://towardsdatascience.com/text-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1?source=collection_archive---------3-----------------------#2023-06-04)
 
 ## 如何从头开始使用语义和词汇相似性构建文本切分模型
 
-[](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)[![Massimiliano Costacurta](../Images/599c3469021c53f116cc67c390db6695.png)](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------) [Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)
+[](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)![Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------) [Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F233cb43234c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1&user=Massimiliano+Costacurta&userId=233cb43234c3&source=post_page-233cb43234c3----e70947779ac1---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------) · 11分钟阅读 · 2023年6月4日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F233cb43234c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1&user=Massimiliano+Costacurta&userId=233cb43234c3&source=post_page-233cb43234c3----e70947779ac1---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------) · 11 分钟阅读 · 2023 年 6 月 4 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe70947779ac1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1&source=-----e70947779ac1---------------------bookmark_footer-----------)![](../Images/cd5c60bf6539c088ca725c3a559d0bdd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe70947779ac1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1&source=-----e70947779ac1---------------------bookmark_footer-----------)![](img/cd5c60bf6539c088ca725c3a559d0bdd.png)
 
 图片由 [Gary Butterfield](https://unsplash.com/@garybpt?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-现在似乎每个人都在尝试获得自己的大型语言模型（LLM），并调整其以适应他们的私人文档集。隐私因素在这里起着重要作用，进一步推动了对更多私人GPT模型的需求。然而，创建个人聊天机器人的过程并不简单，你基本上有两个主要选项来实现这一目标。
+现在似乎每个人都在尝试获得自己的大型语言模型（LLM），并调整其以适应他们的私人文档集。隐私因素在这里起着重要作用，进一步推动了对更多私人 GPT 模型的需求。然而，创建个人聊天机器人的过程并不简单，你基本上有两个主要选项来实现这一目标。
 
-首先，你可以从头开始构建一个定制的问题-答案数据集，并用它来微调你的LLM。但说实话，由于高成本和显著的时间投入，这对大多数人来说并不是一个可行的选项。另一种更具成本效益的方法是动态生成上下文。这是通过基于用户查询从文档中检索相关部分来完成的，借助嵌入技术。尽管有很多教程解释如何做这件事，但很少有人强调适当地切分或“切块”文档的重要性。
+首先，你可以从头开始构建一个定制的问题-答案数据集，并用它来微调你的 LLM。但说实话，由于高成本和显著的时间投入，这对大多数人来说并不是一个可行的选项。另一种更具成本效益的方法是动态生成上下文。这是通过基于用户查询从文档中检索相关部分来完成的，借助嵌入技术。尽管有很多教程解释如何做这件事，但很少有人强调适当地切分或“切块”文档的重要性。
 
-这之所以至关重要，是因为如果你的文档切分不准确，你的上下文可能会出现偏差，从而导致你的LLM给出的答案完全偏离主题，或者更糟的是，生成虚假的信息——在机器学习中，这种现象通常被称为“幻觉”。这就是文本切分艺术发挥作用的地方。这一过程的核心在于将文档拆分成连贯且有意义的块，以便于精确、相关的上下文检索。这样做，你很可能会提高LLM的整体表现，使其更擅长理解查询并提供准确的回应。
+这之所以至关重要，是因为如果你的文档切分不准确，你的上下文可能会出现偏差，从而导致你的 LLM 给出的答案完全偏离主题，或者更糟的是，生成虚假的信息——在机器学习中，这种现象通常被称为“幻觉”。这就是文本切分艺术发挥作用的地方。这一过程的核心在于将文档拆分成连贯且有意义的块，以便于精确、相关的上下文检索。这样做，你很可能会提高 LLM 的整体表现，使其更擅长理解查询并提供准确的回应。
 
-现在，可能会让你感到惊讶（就像我一样惊讶）的是，在Python编程的世界里，文本切分的选项并不多。我们主要的工具是[nltk.tokenize.texttiling](https://www.nltk.org/_modules/nltk/tokenize/texttiling.html)，但这个工具的文档并不完善。意识到这一点的缺乏和改进的潜力，我决定开始开发自己的文本切分模型，利用自然语言处理（NLP）和变换器提供的革命性技术。
+现在，可能会让你感到惊讶（就像我一样惊讶）的是，在 Python 编程的世界里，文本切分的选项并不多。我们主要的工具是[nltk.tokenize.texttiling](https://www.nltk.org/_modules/nltk/tokenize/texttiling.html)，但这个工具的文档并不完善。意识到这一点的缺乏和改进的潜力，我决定开始开发自己的文本切分模型，利用自然语言处理（NLP）和变换器提供的革命性技术。
 
 # 文本切分模型的评估机制
 
@@ -32,17 +32,17 @@
 
 1.  即使我们有这样的数据集，由于按主题划分文档高度主观，利用起来也会异常困难。
 
-为了应对这些问题，我们将采取一种简单的方法：创建一个合成文档。这个文档将是各种文档的拼接，确保我们知道原始文档之间的确切阈值。这些阈值应由我们的模型识别。在这篇文章中，我将用一个文档作为示例（可以在[这里](https://github.com/massi82/texttiling/blob/master/doc.txt)找到）。不过，这种方法也可以用于组装大量文档进行全面的模型测试。这个复合文档是由以下Medium文章拼接而成的（对于这些文章的作者，算是免费推广，稍后可以感谢我😀）：
+为了应对这些问题，我们将采取一种简单的方法：创建一个合成文档。这个文档将是各种文档的拼接，确保我们知道原始文档之间的确切阈值。这些阈值应由我们的模型识别。在这篇文章中，我将用一个文档作为示例（可以在[这里](https://github.com/massi82/texttiling/blob/master/doc.txt)找到）。不过，这种方法也可以用于组装大量文档进行全面的模型测试。这个复合文档是由以下 Medium 文章拼接而成的（对于这些文章的作者，算是免费推广，稍后可以感谢我😀）：
 
-[3个生成型AI的令人不快的后果](https://medium.com/@brandeismarshall/3-unsavory-consequences-of-generative-ai-2b9f5c29f52b?source=post_page-----e70947779ac1--------------------------------) [## 生成型AI的3个令人不快的后果
+[3 个生成型 AI 的令人不快的后果](https://medium.com/@brandeismarshall/3-unsavory-consequences-of-generative-ai-2b9f5c29f52b?source=post_page-----e70947779ac1--------------------------------) [## 生成型 AI 的 3 个令人不快的后果
 
 ### ‘快速行动，打破常规’的标准操作程序正处于极速运转中。各行各业都在…
 
-[平均合同价值在SaaS](https://medium.com/@brandeismarshall/3-unsavory-consequences-of-generative-ai-2b9f5c29f52b?source=post_page-----e70947779ac1--------------------------------) [## 平均合同价值在SaaS
+[平均合同价值在 SaaS](https://medium.com/@brandeismarshall/3-unsavory-consequences-of-generative-ai-2b9f5c29f52b?source=post_page-----e70947779ac1--------------------------------) [## 平均合同价值在 SaaS
 
-### 平均合同价值是SaaS中的一个重要指标。如果它在上升并趋向右侧，这表明客户…
+### 平均合同价值是 SaaS 中的一个重要指标。如果它在上升并趋向右侧，这表明客户…
 
-[平均合同价值在SaaS](https://blossomstreetventures.medium.com/average-contract-value-in-saas-a7f0d02ca350?source=post_page-----e70947779ac1--------------------------------) [## 我们治疗压力、焦虑和抑郁的方法完全错了
+[平均合同价值在 SaaS](https://blossomstreetventures.medium.com/average-contract-value-in-saas-a7f0d02ca350?source=post_page-----e70947779ac1--------------------------------) [## 我们治疗压力、焦虑和抑郁的方法完全错了
 
 ### 心理健康问题的最佳疗法显而易见，但很少被开处方
 
@@ -52,7 +52,7 @@
 
 [你在大公司工作的体验远不如你副业的效果](https://medium.com/illumination/your-side-hustle-sucks-compared-to-working-for-a-big-company-49664f1ef73?source=post_page-----e70947779ac1--------------------------------)
 
-现在我们已经建立了评估模型的方法，我们需要定义如何衡量其效能。首先考虑我们的合成文档，其中有预先知道的明确阈值。在我们的例子中，这些阈值为：（0, 56, 74, 118, 163）。这意味着第一篇文章在56句话后结束，第二篇在74句话后结束，以此类推。我们的模型将根据它在每篇文章中识别的子主题，输出一个类似但更详细的阈值列表。一个示例输出可能是：（0, 26, 54, 67, 74, 90, 112, 120, 130, 163）。
+现在我们已经建立了评估模型的方法，我们需要定义如何衡量其效能。首先考虑我们的合成文档，其中有预先知道的明确阈值。在我们的例子中，这些阈值为：（0, 56, 74, 118, 163）。这意味着第一篇文章在 56 句话后结束，第二篇在 74 句话后结束，以此类推。我们的模型将根据它在每篇文章中识别的子主题，输出一个类似但更详细的阈值列表。一个示例输出可能是：（0, 26, 54, 67, 74, 90, 112, 120, 130, 163）。
 
 那么，我们如何评估模型的有效性？我能设计出的最合乎逻辑的方法是计算原始向量与模型输出之间的“编辑距离”。这个过程如下：
 
@@ -62,13 +62,13 @@
 
 1.  计算每个相应阈值之间的距离，遇到‘None’时用原始向量的最大值代替。在我们的例子中，这将生成（2, 0, 2）。
 
-1.  将这些距离求和，并通过将其除以原始向量的最大阈值乘以向量的长度来标准化。这提供了一个从0到1的距离，可以通过计算：1-距离来轻松转换为分数。在我们的例子中：1-4/163 → 1-0.0245 → **0.975**
+1.  将这些距离求和，并通过将其除以原始向量的最大阈值乘以向量的长度来标准化。这提供了一个从 0 到 1 的距离，可以通过计算：1-距离来轻松转换为分数。在我们的例子中：1-4/163 → 1-0.0245 → **0.975**
 
 1.  （可选）根据阈值总数对分数施加惩罚。这是为了惩罚生成过多阈值的模型。尽管这些阈值在统计上可能接近真实值，但它们不一定有意义。
 
 这里是实现上述步骤中描述的评分计算的`code`。
 
-这个函数目前远未完美。具体来说，它倾向于产生偏向1的值。然而，它足以用于比较我们模型生成的结果。如果你有任何改进其实现的建议，我非常乐意在评论中听取。
+这个函数目前远未完美。具体来说，它倾向于产生偏向 1 的值。然而，它足以用于比较我们模型生成的结果。如果你有任何改进其实现的建议，我非常乐意在评论中听取。
 
 # 生成句子相似度分数
 
@@ -90,7 +90,7 @@
 
 因此，我们将采用一种混合方法，只计算每个句子与接下来的 K 个句子的相似度（是的，K 是一个超参数）。如下面的图示所示，一旦设置了 K 参数，每个句子将连接到 2*K 个句子——K 个前面的句子和 K 个后面的句子。
 
-![](../Images/35f8c03f8faacb2b6f7859325f29ace5.png)
+![](img/35f8c03f8faacb2b6f7859325f29ace5.png)
 
 作者提供的图片。
 
@@ -98,31 +98,31 @@
 
 正如函数名称所示，这个函数构建的是一个图，其中节点代表句子，相似性分数作为边的权重。输出格式如下：
 
-（句子1，句子2，相似度比1）
+（句子 1，句子 2，相似度比 1）
 
-（句子1，句子3，相似度比2）
-
-…
-
-（句子1，句子K，相似度比K-1）
-
-（句子2，句子3，相似度比K）
+（句子 1，句子 3，相似度比 2）
 
 …
 
-确实，这本质上是一个形式为（父节点，子节点，边权重）的图。还需要注意第27行的系数`math.exp(-l/2)`，它会乘以相似性分数。我们使用这个系数来适应“距离效应”——即两个句子之间的相似性应随着它们的距离增加而减少。
+（句子 1，句子 K，相似度比 K-1）
+
+（句子 2，句子 3，相似度比 K）
+
+…
+
+确实，这本质上是一个形式为（父节点，子节点，边权重）的图。还需要注意第 27 行的系数`math.exp(-l/2)`，它会乘以相似性分数。我们使用这个系数来适应“距离效应”——即两个句子之间的相似性应随着它们的距离增加而减少。
 
 # 基于图的文本分割
 
-有了我们的相似度分数，下一步是找到有效的方式对其进行聚类。当前数据的图结构暗示了选择合适算法的方向。虽然有许多图聚类的选项，但我特别偏爱[Louvain社区检测方法](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.community.louvain.louvain_communities.html)，主要是因为它在Python中的实现简单且能够高效处理大规模数据。
+有了我们的相似度分数，下一步是找到有效的方式对其进行聚类。当前数据的图结构暗示了选择合适算法的方向。虽然有许多图聚类的选项，但我特别偏爱[Louvain 社区检测方法](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.community.louvain.louvain_communities.html)，主要是因为它在 Python 中的实现简单且能够高效处理大规模数据。
 
 在算法的上下文中，“社区”指的是一个节点密集互连的簇，同时与其他社区的节点连接稀疏。将这个概念转化到我们的文档分块任务中，这些“社区”就是我们寻求的块。每个块或社区是一个高度相关的句子簇，形成文档中的一个连贯主题或子主题。
 
 鉴于上述图结构，提取社区仅需几行代码。
 
-虽然Louvain算法在寻找图中的社区方面表现出色，但重要的是要记住，这些社区在文档分块的上下文中可能并不总是对应于连贯的句子序列。这是因为该算法本身并不意识到它处理的是一个文本文档，其中句子的顺序和连续性很重要。
+虽然 Louvain 算法在寻找图中的社区方面表现出色，但重要的是要记住，这些社区在文档分块的上下文中可能并不总是对应于连贯的句子序列。这是因为该算法本身并不意识到它处理的是一个文本文档，其中句子的顺序和连续性很重要。
 
-在社区检测过程中，Louvain算法可能会生成包含非连续句子的聚类。例如，它可能会生成一个类似（1，2，3，4，6，7）的聚类，遗漏了句子5。虽然这个聚类可能在内部相似性上仍然很高，但它并未在文档中形成一个逻辑上的块，因为从句子4到句子6有一个“间隙”或“跳跃”。在将基于图的聚类应用于文档分块时，这是一个关键点。我们的期望是找到连贯、不间断的文本段落——即代表相关内容连续块的块。
+在社区检测过程中，Louvain 算法可能会生成包含非连续句子的聚类。例如，它可能会生成一个类似（1，2，3，4，6，7）的聚类，遗漏了句子 5。虽然这个聚类可能在内部相似性上仍然很高，但它并未在文档中形成一个逻辑上的块，因为从句子 4 到句子 6 有一个“间隙”或“跳跃”。在将基于图的聚类应用于文档分块时，这是一个关键点。我们的期望是找到连贯、不间断的文本段落——即代表相关内容连续块的块。
 
 为了解决这个问题，我在代码中加入了一个后处理步骤，特别是在第 46 行调用 `compact_clusters` 函数。由于我没有找到任何现成的算法来执行此任务（如果你知道一个，我很乐意了解），我设计了一个基于以下步骤的简单算法：
 
@@ -144,7 +144,7 @@
 
 以下是结果图：
 
-![](../Images/4db302b0747856074f0368ae9bc4eba0.png)
+![](img/4db302b0747856074f0368ae9bc4eba0.png)
 
 图片来源于作者。
 
@@ -164,7 +164,7 @@
 
 根据我们涉及目标文档的简短测试，很明显，提出的文档标题方法展示了显著的前景。正如我们预期的那样，由于语义方法能够捕捉文本中更深层次的上下文关系，因此在这个特定任务中相比词汇方法具有优势。本文中解释的工作代码的代码库可在[此处](https://github.com/massi82/texttiling)找到。可能的改进领域包括：
 
-1.  **评分函数的优化**：当前的标题评分函数表现出对值1的偏倚。解决这一偏倚，使评分函数更加平衡，将提高结果的可靠性，并提供对模型性能的更准确评估。
+1.  **评分函数的优化**：当前的标题评分函数表现出对值 1 的偏倚。解决这一偏倚，使评分函数更加平衡，将提高结果的可靠性，并提供对模型性能的更准确评估。
 
 1.  **探索额外的模型**：本研究中我们只测试了四种模型。测试更多的模型，特别是不同类型的语义模型，可能会揭示新的见解，并进一步提高性能。这也可以包括尝试结合多个模型优点的集成方法。
 
@@ -172,4 +172,4 @@
 
 1.  **子主题识别的提升**：尽管我们的模型能够识别文章中的子主题，但仍有改进的空间。可以使用集成方法或其他高级策略来提高子主题确定的准确性，确保衍生的标题反映出文档的细致结构。
 
-你喜欢这篇文章吗？如果你对人工智能、自然语言处理、机器学习和数据分析在解决实际问题中的应用感兴趣，你可能也会喜欢我的其他作品。我的目标是创作能够展示这些变革性技术在实际场景中的可操作性文章。如果这也是你的兴趣，关注我在Medium上的最新作品吧！
+你喜欢这篇文章吗？如果你对人工智能、自然语言处理、机器学习和数据分析在解决实际问题中的应用感兴趣，你可能也会喜欢我的其他作品。我的目标是创作能够展示这些变革性技术在实际场景中的可操作性文章。如果这也是你的兴趣，关注我在 Medium 上的最新作品吧！

@@ -1,18 +1,18 @@
 # 使用 MLflow 在 Databricks 中自动化 ML 模型的再训练和部署
 
-> 原文：[https://towardsdatascience.com/automate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80?source=collection_archive---------2-----------------------#2023-03-15](https://towardsdatascience.com/automate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80?source=collection_archive---------2-----------------------#2023-03-15)
+> 原文：[`towardsdatascience.com/automate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80?source=collection_archive---------2-----------------------#2023-03-15`](https://towardsdatascience.com/automate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80?source=collection_archive---------2-----------------------#2023-03-15)
 
 ## 高效管理和部署生产模型使用 MLflow
 
-[](https://medium.com/@mc12338?source=post_page-----ad29f6146f80--------------------------------)[![Matt Collins](../Images/b28ac8100d6fb287e3fa6926eec7939a.png)](https://medium.com/@mc12338?source=post_page-----ad29f6146f80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ad29f6146f80--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ad29f6146f80--------------------------------) [Matt Collins](https://medium.com/@mc12338?source=post_page-----ad29f6146f80--------------------------------)
+[](https://medium.com/@mc12338?source=post_page-----ad29f6146f80--------------------------------)![Matt Collins](https://medium.com/@mc12338?source=post_page-----ad29f6146f80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ad29f6146f80--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad29f6146f80--------------------------------) [Matt Collins](https://medium.com/@mc12338?source=post_page-----ad29f6146f80--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----ad29f6146f80---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad29f6146f80--------------------------------) ·8 分钟阅读·2023年3月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fad29f6146f80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80&user=Matt+Collins&userId=d1970f1605f1&source=-----ad29f6146f80---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----ad29f6146f80---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad29f6146f80--------------------------------) ·8 分钟阅读·2023 年 3 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fad29f6146f80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80&user=Matt+Collins&userId=d1970f1605f1&source=-----ad29f6146f80---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fad29f6146f80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80&source=-----ad29f6146f80---------------------bookmark_footer-----------)![](../Images/f266700c7e3af4a587419263bee77657.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fad29f6146f80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomate-ml-model-retraining-and-deployment-with-mlflow-in-databricks-ad29f6146f80&source=-----ad29f6146f80---------------------bookmark_footer-----------)![](img/f266700c7e3af4a587419263bee77657.png)
 
 图片来源：[Karsten Winegeart](https://unsplash.com/es/@karsten116?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 已经投入生产的模型仍然面临许多挑战，因为它们需要持续的关注，包括监控和重新训练，以确保它们所提供的见解随时间保持最新和准确。
 
-本博客旨在帮助简化使用MLflow的模型重新训练过程，同时提供推荐方法的背景。
+本博客旨在帮助简化使用 MLflow 的模型重新训练过程，同时提供推荐方法的背景。
 
 # 为什么要重新训练生产模型？
 
@@ -34,15 +34,15 @@
 
 # MLflow
 
-模型重新训练属于机器学习操作（MLOps）过程，MLflow是一个很好的工具，可以以迭代的方式简化这一过程，实现更顺畅的交付和可重复的执行。
+模型重新训练属于机器学习操作（MLOps）过程，MLflow 是一个很好的工具，可以以迭代的方式简化这一过程，实现更顺畅的交付和可重复的执行。
 
-如果你对MLflow不熟悉，网上有许多详细的资源可供参考，但我建议从他们的[网站](https://mlflow.org/)开始，以了解他们的产品——我在下面包含了作为介绍的组件。
+如果你对 MLflow 不熟悉，网上有许多详细的资源可供参考，但我建议从他们的[网站](https://mlflow.org/)开始，以了解他们的产品——我在下面包含了作为介绍的组件。
 
-我们将利用MLflow的[跟踪](https://mlflow.org/docs/latest/tracking.html)组件来记录我们的重新训练实验运行，以及[模型注册表](https://mlflow.org/docs/latest/model-registry.html)组件来确保部署顺利，并减少我们生产环境中停机的需求。
+我们将利用 MLflow 的[跟踪](https://mlflow.org/docs/latest/tracking.html)组件来记录我们的重新训练实验运行，以及[模型注册表](https://mlflow.org/docs/latest/model-registry.html)组件来确保部署顺利，并减少我们生产环境中停机的需求。
 
 # 前提条件
 
-由于我们讨论的是重新训练，我们假设你已经在生产中有一个模型（以及你希望预测的数据）。如果没有，并且你希望使用MLflow来实现这一目标，我提供了[这个笔记本](https://github.com/MattPCollins/MLflowRetrainModel/blob/main/MLflowDeployModel.ipynb)作为起点。我们将在“将初始模型部署到生产”部分详细回顾这个过程和代码。
+由于我们讨论的是重新训练，我们假设你已经在生产中有一个模型（以及你希望预测的数据）。如果没有，并且你希望使用 MLflow 来实现这一目标，我提供了[这个笔记本](https://github.com/MattPCollins/MLflowRetrainModel/blob/main/MLflowDeployModel.ipynb)作为起点。我们将在“将初始模型部署到生产”部分详细回顾这个过程和代码。
 
 为了方便，我们将使用带有 ML 计算集群的 Databricks 工作区，因为这为我们提供了一个托管环境，其中安装了所有所需的软件包、嵌入了 MLflow 界面，并且有一个 Spark 环境，以协助任何大数据查询（如有必要）。
 
@@ -148,7 +148,7 @@ client = MlflowClient()
 name = 'DiabetesRegressionLab'
 ```
 
-加载数据集。如前所述，我们通过使用scikit-learn包中的糖尿病数据集来简化这个要求。实际上，这可能是对表的选择语句。
+加载数据集。如前所述，我们通过使用 scikit-learn 包中的糖尿病数据集来简化这个要求。实际上，这可能是对表的选择语句。
 
 ```py
 # Load the diabetes dataset
@@ -169,7 +169,7 @@ diabetes_y = diabetes.target
 
 请注意，如果检测到数据漂移，可能会有用例需要从训练数据集中移除一些历史数据。
 
-加载完成后，启动MLflow运行并开始训练。这将遵循通常的数据拆分、训练、预测和与测试数据集比较的过程。
+加载完成后，启动 MLflow 运行并开始训练。这将遵循通常的数据拆分、训练、预测和与测试数据集比较的过程。
 
 ```py
 # Start MLflow run for this experiment: This is similar to your experimentation script
@@ -198,7 +198,7 @@ with mlflow.start_run() as run:
 
 # 验证标准
 
-在替换生产中的模型之前，使用验证标准来确定新模型的性能至少与现有模型一样好是一个好习惯。这一过程有助于确保新模型的可靠性，并最小化性能退化的风险。在这种情况下，我仅使用mse、rmse和r2值作为我的验证指标。
+在替换生产中的模型之前，使用验证标准来确定新模型的性能至少与现有模型一样好是一个好习惯。这一过程有助于确保新模型的可靠性，并最小化性能退化的风险。在这种情况下，我仅使用 mse、rmse 和 r2 值作为我的验证指标。
 
 既然我们已经记录了一个新的运行，我们可以将其与当前生产中的运行进行比较。
 
@@ -224,7 +224,7 @@ metrics_df = pd.DataFrame(data, columns=columns)
 metrics_df
 ```
 
-![](../Images/b63dc08d79e4bdf3e80de59ebdf1b61e.png)
+![](img/b63dc08d79e4bdf3e80de59ebdf1b61e.png)
 
 评估数据框：作者提供的图像
 
@@ -276,11 +276,11 @@ else:
 
 希望到此时你能开始注意到部署代码方法的好处，因为它使我们对用于重新训练模型的脚本拥有完全的控制权，并且可以容纳不断变化的验证标准以进行自动重新部署。
 
-**如果你希望查看完整的代码，可以访问我的** [**GitHub仓库**](https://github.com/MattPCollins/MLflowRetrainModel/blob/main/MLflowRetrainModel.ipynb) **。**
+**如果你希望查看完整的代码，可以访问我的** [**GitHub 仓库**](https://github.com/MattPCollins/MLflowRetrainModel/blob/main/MLflowRetrainModel.ipynb) **。**
 
 # 使用情况
 
-我们可以继续使用推断管道和REST API调用来访问模型，如之前一样，但要小心更新任何发生的模式变化。
+我们可以继续使用推断管道和 REST API 调用来访问模型，如之前一样，但要小心更新任何发生的模式变化。
 
 这是我们可以在部署代码中考虑的内容，添加到模型注册表作为提醒，以防止这成为破坏性更改并影响最终用户。
 

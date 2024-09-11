@@ -1,14 +1,14 @@
 # 特征过多？让我们来看看主成分分析
 
-> 原文：[https://towardsdatascience.com/too-many-features-lets-look-at-principal-component-analysis-62504b791ae9?source=collection_archive---------4-----------------------#2023-06-24](https://towardsdatascience.com/too-many-features-lets-look-at-principal-component-analysis-62504b791ae9?source=collection_archive---------4-----------------------#2023-06-24)
+> 原文：[`towardsdatascience.com/too-many-features-lets-look-at-principal-component-analysis-62504b791ae9?source=collection_archive---------4-----------------------#2023-06-24`](https://towardsdatascience.com/too-many-features-lets-look-at-principal-component-analysis-62504b791ae9?source=collection_archive---------4-----------------------#2023-06-24)
 
 ## 自制机器学习模型系列
 
-[](https://hectormrejia.medium.com/?source=post_page-----62504b791ae9--------------------------------)[![Hector Andres Mejia Vallejo](../Images/e794e545531eeea552986ce7ceb6162f.png)](https://hectormrejia.medium.com/?source=post_page-----62504b791ae9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62504b791ae9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----62504b791ae9--------------------------------) [Hector Andres Mejia Vallejo](https://hectormrejia.medium.com/?source=post_page-----62504b791ae9--------------------------------)
+[](https://hectormrejia.medium.com/?source=post_page-----62504b791ae9--------------------------------)![Hector Andres Mejia Vallejo](https://hectormrejia.medium.com/?source=post_page-----62504b791ae9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62504b791ae9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----62504b791ae9--------------------------------) [Hector Andres Mejia Vallejo](https://hectormrejia.medium.com/?source=post_page-----62504b791ae9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4f706205679a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoo-many-features-lets-look-at-principal-component-analysis-62504b791ae9&user=Hector+Andres+Mejia+Vallejo&userId=4f706205679a&source=post_page-4f706205679a----62504b791ae9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62504b791ae9--------------------------------) · 13分钟阅读 · 2023年6月24日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62504b791ae9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoo-many-features-lets-look-at-principal-component-analysis-62504b791ae9&user=Hector+Andres+Mejia+Vallejo&userId=4f706205679a&source=-----62504b791ae9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4f706205679a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoo-many-features-lets-look-at-principal-component-analysis-62504b791ae9&user=Hector+Andres+Mejia+Vallejo&userId=4f706205679a&source=post_page-4f706205679a----62504b791ae9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62504b791ae9--------------------------------) · 13 分钟阅读 · 2023 年 6 月 24 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62504b791ae9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftoo-many-features-lets-look-at-principal-component-analysis-62504b791ae9&user=Hector+Andres+Mejia+Vallejo&userId=4f706205679a&source=-----62504b791ae9---------------------clap_footer-----------)
 
 --
 
@@ -18,59 +18,59 @@
 
 维度诅咒是机器学习中的一个主要问题。随着特征数量的增加，模型的复杂性也随之增加。此外，如果训练数据不足，会导致过拟合。
 
-在这篇文章中，将介绍主成分分析（PCA）。首先，我将解释为什么特征过多是个问题。接着，讲解PCA背后的数学原理及其为何有效。此外，将对PCA进行逐步解析，并附上视觉示例和代码片段。最后，将总结PCA的优缺点，并将这些步骤封装在一个Python类中以备后用。
+在这篇文章中，将介绍主成分分析（PCA）。首先，我将解释为什么特征过多是个问题。接着，讲解 PCA 背后的数学原理及其为何有效。此外，将对 PCA 进行逐步解析，并附上视觉示例和代码片段。最后，将总结 PCA 的优缺点，并将这些步骤封装在一个 Python 类中以备后用。
 
-![](../Images/17329967b1165e6dec65d96b810bfc39.png)
+![](img/17329967b1165e6dec65d96b810bfc39.png)
 
 将一个向量投影到一个低维空间就像现实生活中的投影一样。PCA 找到这些投影的方向。照片由 [inbal marilli](https://unsplash.com/@inbalmarilli?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-**读者注意：** 如果你对数学解释不感兴趣，只想查看实际示例以及PCA的工作原理，请跳至 **“**[**PCA的实践**](#ea59)**”** 部分。如果你只对Python类感兴趣，请前往 **“**[**自制PCA实现**](#6814)**”** 部分。
+**读者注意：** 如果你对数学解释不感兴趣，只想查看实际示例以及 PCA 的工作原理，请跳至 **“****PCA 的实践****”** 部分。如果你只对 Python 类感兴趣，请前往 **“****自制 PCA 实现****”** 部分。
 
 # 特征过多的问题？
 
-查看图1中的特征空间。这里的示例较少，因此该数据的模型可能无法很好地推广到新的、未见过的示例。
+查看图 1 中的特征空间。这里的示例较少，因此该数据的模型可能无法很好地推广到新的、未见过的示例。
 
-![](../Images/9114d403b87c648ccd02026177041024.png)
+![](img/9114d403b87c648ccd02026177041024.png)
 
-图1\. 二维特征空间的示例。由我创作，灵感来源于 [1]。
+图 1\. 二维特征空间的示例。由我创作，灵感来源于 [1]。
 
-如果我们添加另一个特征会发生什么？让我们查看图2中的新特征空间。你会发现这里比之前的例子有更多的空白区域。随着特征数量的增加，模型将过拟合当前数据。这就是为什么需要减少数据维度以缓解此问题的技术。[1]
+如果我们添加另一个特征会发生什么？让我们查看图 2 中的新特征空间。你会发现这里比之前的例子有更多的空白区域。随着特征数量的增加，模型将过拟合当前数据。这就是为什么需要减少数据维度以缓解此问题的技术。[1]
 
-![](../Images/9b2aa64da64c3633a4934004857e504f.png)
+![](img/9b2aa64da64c3633a4934004857e504f.png)
 
 同样的例子，加上一个额外的特征。由我创作，灵感来源于 [1]。
 
-# PCA的目标是什么？
+# PCA 的目标是什么？
 
-简而言之，PCA的目的是提取新的、不相关的低维特征，这些特征最大化保留原始数据中的信息。在这种情况下，信息的衡量标准是方差。让我们看看为什么：
+简而言之，PCA 的目的是提取新的、不相关的低维特征，这些特征最大化保留原始数据中的信息。在这种情况下，信息的衡量标准是方差。让我们看看为什么：
 
-该技术基于这样的假设：我们的d维数据点***x***可以通过[正交基](https://en.wikipedia.org/wiki/Orthonormal_basis) [1]的向量的线性组合来表示。
+该技术基于这样的假设：我们的 d 维数据点***x***可以通过[正交基](https://en.wikipedia.org/wiki/Orthonormal_basis) [1]的向量的线性组合来表示。
 
-![](../Images/1764faa46344ff82aacf17d3dc89c687.png)
+![](img/1764faa46344ff82aacf17d3dc89c687.png)
 
 不用担心，我会稍后解释我们如何获得所述基的向量。此外，我们可以从这***d***个向量中提取一个表示***x̂***，使用***m***（***m < d***）：
 
-![](../Images/767fe68f8992f5ff3f08f63892ca4df7.png)
+![](img/767fe68f8992f5ff3f08f63892ca4df7.png)
 
 当然，由于特征较少，我们无法获得精确的表示，但至少我们尽量减少信息的丢失。我们定义原始示例***x***与近似值***x̂***之间的均方误差（MSE）：
 
-![](../Images/2504c6b592c4d34d8c61a5e60ff4cf0b.png)
+![](img/2504c6b592c4d34d8c61a5e60ff4cf0b.png)
 
 由于求和使用了具有不同截止点的相同变量，因此差异仅是偏移量：
 
-![](../Images/b82a5f4044c1574a6356e03e94ffd686.png)
+![](img/b82a5f4044c1574a6356e03e94ffd686.png)
 
 我们从最初的假设知道***x***是正交归一向量的和。因此，这些向量的点积为零，它们的欧几里得范数为一。因此：
 
-![](../Images/056c38c2beae05a575eff9a5c561e75d.png)
+![](img/056c38c2beae05a575eff9a5c561e75d.png)
 
 求解重要性值***yi:***
 
-![](../Images/63d9c9fa1b8d6ecd54ef51cef1277a11.png)
+![](img/63d9c9fa1b8d6ecd54ef51cef1277a11.png)
 
 将结果代入其期望值：
 
-![](../Images/2a097f62ec444e57e2e93c7e17a8f8d5.png)
+![](img/2a097f62ec444e57e2e93c7e17a8f8d5.png)
 
 我们可以看到，如果***xi***被中心化（均值为零），那么期望值将变成整个数据的协方差矩阵，**这个结果只是原始空间中的方差**。通过选择能够最大化方差的正确向量***vi***，我们将有效地最小化表示误差。
 
@@ -78,27 +78,27 @@
 
 如前所述，我们希望获得***m***个最大化方差的向量：
 
-![](../Images/3fae438f22129e25c968095b2aa84925.png)
+![](img/3fae438f22129e25c968095b2aa84925.png)
 
 如果我们考虑整个数据矩阵，可以看出***vi***是一个投影方向。数据将会被投影到一个低维空间中。
 
 如果我们使用谱分解对协方差矩阵Σ进行对角化，我们得到：
 
-![](../Images/7b348f4a8bea640534175f35b43ef2b5.png)
+![](img/7b348f4a8bea640534175f35b43ef2b5.png)
 
 其中***U***是一个包含Σ的归一化特征向量的矩阵，Λ是一个包含Σ特征值按降序排列的对角矩阵。这是可能的，因为Σ是一个实对称矩阵。
 
 此外，由于Λ仅在对角线上包含非零值，我们可以将上述方程重写为：
 
-![](../Images/d5880b3851a323759b69615073bf1fe1.png)
+![](img/d5880b3851a323759b69615073bf1fe1.png)
 
 使用：
 
-![](../Images/88c277359f9f809bdec013395bc58136.png)
+![](img/88c277359f9f809bdec013395bc58136.png)
 
-注意***U***中的向量和向量***v***都是归一化的***。*** 因此，当对每个v与a进行平方点积时，我们得到的值介于***[0,1]***之间，因此***w***也必须是一个归一化向量：
+注意***U***中的向量和向量***v***都是归一化的***。*** 因此，当对每个 v 与 a 进行平方点积时，我们得到的值介于***[0,1]***之间，因此***w***也必须是一个归一化向量：
 
-![](../Images/f1692e25298fd8ed0a62c32e1d730097.png)
+![](img/f1692e25298fd8ed0a62c32e1d730097.png)
 
 从这里，出现了一些有趣的性质。
 
@@ -106,7 +106,7 @@
 
 回顾优化问题。由于特征值是有序的且***w***必须是一个归一化向量，我们的最佳选择是得到第一个特征向量，其中***w = (1,0,0,…)***。因此，上界在以下情况下达成：
 
-![](../Images/964ece0473ac69de5d445f2a68380d4d.png)
+![](img/964ece0473ac69de5d445f2a68380d4d.png)
 
 最大化方差的投影方向恰好是与**最大特征值**相关联的**特征向量**！
 
@@ -114,15 +114,15 @@
 
 一旦设定了第一个主成分，就会增加一个新的优化问题限制：
 
-![](../Images/128e0ec1b2343655db9a6c2b5e267875.png)
+![](img/128e0ec1b2343655db9a6c2b5e267875.png)
 
-这意味着新的成分***v2***必须与先前的成分特征向量***u1***正交，以避免信息冗余。可以证明，所有的d个成分对应于Σ中与特征值相关的d个归一化特征向量，按降序排列。请查看[这些笔记](https://verso.mat.uam.es/~joser.berrendero/blog/Componentes_principales.pdf)以获取正式证明[2]。
+这意味着新的成分***v2***必须与先前的成分特征向量***u1***正交，以避免信息冗余。可以证明，所有的 d 个成分对应于Σ中与特征值相关的 d 个归一化特征向量，按降序排列。请查看[这些笔记](https://verso.mat.uam.es/~joser.berrendero/blog/Componentes_principales.pdf)以获取正式证明[2]。
 
-# 实践中的PCA
+# 实践中的 PCA
 
 从上述理论描述中，可以描述获取数据集主成分所需的步骤。假设初始数据集是以下二维正态分布的随机样本：
 
-![](../Images/c7e6e739f0b39073b5e8bc0f726f3955.png)
+![](img/c7e6e739f0b39073b5e8bc0f726f3955.png)
 
 ```py
 from scipy import stats
@@ -133,7 +133,7 @@ n = 100
 data_raw = np.random.multivariate_normal(mean, var, 100)
 ```
 
-![](../Images/ad8e48a4a3fd0926f679852a702f589d.png)
+![](img/ad8e48a4a3fd0926f679852a702f589d.png)
 
 图 3\. 原始点云。非居中。作者原创。
 
@@ -141,14 +141,14 @@ data_raw = np.random.multivariate_normal(mean, var, 100)
 
 第一步是将数据点移动到坐标系的原点，使数据具有零均值。此步骤通过从数据集中的每个点中减去样本均值来完成。
 
-![](../Images/924df51be6a24b5d02272354acc8d631.png)
+![](img/924df51be6a24b5d02272354acc8d631.png)
 
 ```py
 import numpy as np
 data_centered = data_raw - np.mean(data_raw, axis=0)
 ```
 
-![](../Images/9bf7e20ac75c23783b3938411fa9d203.png)
+![](img/9bf7e20ac75c23783b3938411fa9d203.png)
 
 图 4\. 居中点云。作者原创。
 
@@ -156,15 +156,15 @@ data_centered = data_raw - np.mean(data_raw, axis=0)
 
 上述定义的方差是总体协方差矩阵Σ。在实践中，我们没有这些信息，因为我们只有一个样本。因此，我们可以使用样本协方差***S***来近似该参数。
 
-![](../Images/7008c4cf457e46a38dc01e78392221ab.png)
+![](img/7008c4cf457e46a38dc01e78392221ab.png)
 
 请记住，数据已经被居中。因此：
 
-![](../Images/65479fcb3ada247c13134ed263cc147f.png)
+![](img/65479fcb3ada247c13134ed263cc147f.png)
 
 我们可以使用矩阵乘法将其简洁地表示。这也可以帮助我们向量化计算：
 
-![](../Images/b0b8be7f69f5d2228c2670327d8cb2c2.png)
+![](img/b0b8be7f69f5d2228c2670327d8cb2c2.png)
 
 ```py
 cov_mat = np.matmul(data_centered.T, data_centered)/(len(data_centered) - 1)
@@ -193,7 +193,7 @@ eigvecs
 
 正如前面所解释的，特征值表示主成分的方差，而特征向量是投影方向：
 
-![](../Images/4ab55a58280703a611fc2d5e071fb60c.png)
+![](img/4ab55a58280703a611fc2d5e071fb60c.png)
 
 图 5\. 投影方向和点云的图示。作者原创。
 
@@ -216,7 +216,7 @@ eigvecs
 
 每个新特征（主成分）是通过计算原始特征空间中每个点与特征向量之间的点积来提取的：
 
-![](../Images/cab4476710ddca3741d8316199bdf964.png)
+![](img/cab4476710ddca3741d8316199bdf964.png)
 
 ```py
 new_features = np.dot(data_centered, eigvecs)
@@ -224,7 +224,7 @@ new_features = np.dot(data_centered, eigvecs)
 
 对于这个特定示例，在计算主成分后，空间中的新点表示如下：
 
-![](../Images/3d3812f2c2b87edc472180aebe1c7852.png)
+![](img/3d3812f2c2b87edc472180aebe1c7852.png)
 
 图 6\. 使用主成分中的特征绘制的不相关点云图。注意这只是原始点云的旋转。出自我自己的创作。
 
@@ -236,11 +236,11 @@ new_features = np.dot(data_centered, eigvecs)
 
 成分***i***所持方差的比例为：
 
-![](../Images/fd0ce9ccf607931b83cfb40d532858ae.png)
+![](img/fd0ce9ccf607931b83cfb40d532858ae.png)
 
 选择 m 个主成分所保留的方差比例为：
 
-![](../Images/3049e97f942dcd6f40fc2bdd6c355584.png)
+![](img/3049e97f942dcd6f40fc2bdd6c355584.png)
 
 如果我们可视化我们示例中每个成分的方差，我们会得到以下结果：
 
@@ -264,13 +264,13 @@ plt.scatter(
 )
 ```
 
-![](../Images/6133d15c87d477e0029c58506409a7d9.png)
+![](img/6133d15c87d477e0029c58506409a7d9.png)
 
 图 7\. 每个主成分解释的方差。出自我自己的创作。
 
 在这种情况下，PC1 代表了原始数据方差的 80%，剩余的 20% 归属于 PC2。此外，我们可以选择仅使用第一个主成分，此时数据将如下所示：
 
-![](../Images/57708ce6e3b3b01b737f82496af65fa5.png)
+![](img/57708ce6e3b3b01b737f82496af65fa5.png)
 
 图 8\. 数据在第一个特征向量方向上的投影。出自我自己的创作。
 
@@ -289,19 +289,19 @@ plt.legend()
 plt.show()
 ```
 
-![](../Images/e0c35eadf0360239499ca2689ed87586.png)
+![](img/e0c35eadf0360239499ca2689ed87586.png)
 
 图 9\. 多类数据。出自我自己的创作。
 
 如果我们将 PCA 应用于上述数据，这将是主成分的图示：
 
-![](../Images/929c5cdaaa9692781531ccc3530afa25.png)
+![](img/929c5cdaaa9692781531ccc3530afa25.png)
 
 图 10\. 多类不相关数据。出自我自己的创作。
 
 这将是第一个主成分的图示（数据在对应于最大特征值的特征向量方向上的投影）：
 
-![](../Images/ebee20490b7269ee9f07ef2242881138.png)
+![](img/ebee20490b7269ee9f07ef2242881138.png)
 
 图 11\. 数据在第一个特征向量方向的投影。这就是维度减少。来自我个人的创作。
 
@@ -414,7 +414,7 @@ fit 方法将应用上一节中的步骤 1–4。
 
 ## 转换方法
 
-它将应用步骤1、5和6：
+它将应用步骤 1、5 和 6：
 
 +   使用存储的样本均值对新数据进行中心化
 
@@ -443,7 +443,7 @@ fit 方法将应用上一节中的步骤 1–4。
         return np.dot(X_centered, self.eigenvectors)
 ```
 
-## fit_transform方法
+## fit_transform 方法
 
 为了简化实现。该方法将首先应用`fit()`函数，然后应用`transform()`。我相信你可以找到更巧妙的定义。
 
@@ -491,13 +491,13 @@ plt.legend()
 plt.show()
 ```
 
-![](../Images/ebee20490b7269ee9f07ef2242881138.png)
+![](img/ebee20490b7269ee9f07ef2242881138.png)
 
-图12\. 使用PCA类的结果。由我本人编著。
+图 12\. 使用 PCA 类的结果。由我本人编著。
 
 # 结论
 
-特征过多而数据较少可能会有害，并且很可能导致过拟合。主成分分析（PCA）是一个可以帮助缓解这个问题的工具。它是一种降维技术，通过寻找数据的投影方向来尽可能多地保留原始变异性，同时使得结果特征无关。更重要的是，可以测量每个新特征或主成分解释的方差。然后，用户可以选择多少主成分和多少方差对任务足够。最后，确保首先了解你的数据，因为PCA适用于可以线性分离的样本，并且可能对异常值敏感。
+特征过多而数据较少可能会有害，并且很可能导致过拟合。主成分分析（PCA）是一个可以帮助缓解这个问题的工具。它是一种降维技术，通过寻找数据的投影方向来尽可能多地保留原始变异性，同时使得结果特征无关。更重要的是，可以测量每个新特征或主成分解释的方差。然后，用户可以选择多少主成分和多少方差对任务足够。最后，确保首先了解你的数据，因为 PCA 适用于可以线性分离的样本，并且可能对异常值敏感。
 
 # 参考文献
 

@@ -1,18 +1,18 @@
 # 立即测试并覆盖你的代码！
 
-> 原文：[https://towardsdatascience.com/test-and-cover-your-code-today-e80c27d08dab?source=collection_archive---------9-----------------------#2023-12-21](https://towardsdatascience.com/test-and-cover-your-code-today-e80c27d08dab?source=collection_archive---------9-----------------------#2023-12-21)
+> 原文：[`towardsdatascience.com/test-and-cover-your-code-today-e80c27d08dab?source=collection_archive---------9-----------------------#2023-12-21`](https://towardsdatascience.com/test-and-cover-your-code-today-e80c27d08dab?source=collection_archive---------9-----------------------#2023-12-21)
 
-![](../Images/af5766108dd178f5b281077655b09ca8.png)
+![](img/af5766108dd178f5b281077655b09ca8.png)
 
 照片由 [Yancy Min](https://unsplash.com/@yancymin?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 为你的代码库添加激励 GitHub Action 的实用指南
 
-[](https://itay-bittan.medium.com/?source=post_page-----e80c27d08dab--------------------------------)[![Itay Bittan](../Images/328e4d9b0b98b65e59e42983e9d1afaa.png)](https://itay-bittan.medium.com/?source=post_page-----e80c27d08dab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e80c27d08dab--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e80c27d08dab--------------------------------) [Itay Bittan](https://itay-bittan.medium.com/?source=post_page-----e80c27d08dab--------------------------------)
+[](https://itay-bittan.medium.com/?source=post_page-----e80c27d08dab--------------------------------)![Itay Bittan](https://itay-bittan.medium.com/?source=post_page-----e80c27d08dab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e80c27d08dab--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e80c27d08dab--------------------------------) [Itay Bittan](https://itay-bittan.medium.com/?source=post_page-----e80c27d08dab--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F43233e94ad28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftest-and-cover-your-code-today-e80c27d08dab&user=Itay+Bittan&userId=43233e94ad28&source=post_page-43233e94ad28----e80c27d08dab---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e80c27d08dab--------------------------------) · 5 分钟阅读 · 2023年12月21日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe80c27d08dab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftest-and-cover-your-code-today-e80c27d08dab&user=Itay+Bittan&userId=43233e94ad28&source=-----e80c27d08dab---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F43233e94ad28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftest-and-cover-your-code-today-e80c27d08dab&user=Itay+Bittan&userId=43233e94ad28&source=post_page-43233e94ad28----e80c27d08dab---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e80c27d08dab--------------------------------) · 5 分钟阅读 · 2023 年 12 月 21 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe80c27d08dab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftest-and-cover-your-code-today-e80c27d08dab&user=Itay+Bittan&userId=43233e94ad28&source=-----e80c27d08dab---------------------clap_footer-----------)
 
 --
 
@@ -71,7 +71,7 @@ Coverage: 100%
 
 几个月前，我才华横溢的同事 [Asaf Gallea](https://medium.com/@asafgallea) 决定将这成功转化为一种更简单但更强大的 [新 GitHub Action](https://github.com/aGallea/tests-coverage-report)。该 Action 应用了与 diff-cover 相同的理念，并生成了一个友好的报告作为 Pull Request 中的评论，提供未覆盖行的链接，以防你遗漏了什么。新的行动还允许你设置最小覆盖率阈值（默认为 80%），否则 [状态检查](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks) 将会失败，你将无法合并你的更改：
 
-![](../Images/b0c7cc29e6f003b70fffc03d54fed10f.png)
+![](img/b0c7cc29e6f003b70fffc03d54fed10f.png)
 
 测试覆盖率行动报告（作者提供的图片）
 
@@ -123,7 +123,7 @@ jobs:
 
 就这样！如果你打开一个新的 Pull Request 来添加这个文件，行动应该会自动触发，你将看到报告：
 
-![](../Images/46a951d7e303527895870e26d9c1364e.png)
+![](img/46a951d7e303527895870e26d9c1364e.png)
 
 空的测试覆盖率行动报告（作者提供的图片）
 

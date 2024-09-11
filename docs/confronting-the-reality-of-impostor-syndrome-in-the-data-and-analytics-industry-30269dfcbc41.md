@@ -1,20 +1,20 @@
 # 面对数据与分析行业中的冒名顶替综合症的现实
 
-> 原文：[https://towardsdatascience.com/confronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41?source=collection_archive---------6-----------------------#2023-01-16](https://towardsdatascience.com/confronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41?source=collection_archive---------6-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/confronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41?source=collection_archive---------6-----------------------#2023-01-16`](https://towardsdatascience.com/confronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41?source=collection_archive---------6-----------------------#2023-01-16)
 
 ## 研究、反思、建议
 
 ## 对学术研究、博客文章以及个人经历的反思
 
-[](https://medium.com/@martinleitner_33020?source=post_page-----30269dfcbc41--------------------------------)[![Martin Leitner](../Images/f069e0e14888c52f4689518a23cc20f3.png)](https://medium.com/@martinleitner_33020?source=post_page-----30269dfcbc41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30269dfcbc41--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30269dfcbc41--------------------------------) [Martin Leitner](https://medium.com/@martinleitner_33020?source=post_page-----30269dfcbc41--------------------------------)
+[](https://medium.com/@martinleitner_33020?source=post_page-----30269dfcbc41--------------------------------)![Martin Leitner](https://medium.com/@martinleitner_33020?source=post_page-----30269dfcbc41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30269dfcbc41--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----30269dfcbc41--------------------------------) [Martin Leitner](https://medium.com/@martinleitner_33020?source=post_page-----30269dfcbc41--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb910204cd9bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconfronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41&user=Martin+Leitner&userId=b910204cd9bf&source=post_page-b910204cd9bf----30269dfcbc41---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----30269dfcbc41--------------------------------) ·12 min 阅读·2023年1月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F30269dfcbc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconfronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41&user=Martin+Leitner&userId=b910204cd9bf&source=-----30269dfcbc41---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb910204cd9bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconfronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41&user=Martin+Leitner&userId=b910204cd9bf&source=post_page-b910204cd9bf----30269dfcbc41---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----30269dfcbc41--------------------------------) ·12 min 阅读·2023 年 1 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F30269dfcbc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconfronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41&user=Martin+Leitner&userId=b910204cd9bf&source=-----30269dfcbc41---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30269dfcbc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconfronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41&source=-----30269dfcbc41---------------------bookmark_footer-----------)![](../Images/8d26fdbfd4521d5f5b7440d574b00822.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30269dfcbc41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconfronting-the-reality-of-impostor-syndrome-in-the-data-and-analytics-industry-30269dfcbc41&source=-----30269dfcbc41---------------------bookmark_footer-----------)![](img/8d26fdbfd4521d5f5b7440d574b00822.png)
 
 图片由[Chris Yang](https://unsplash.com/@chrisyangchrisfilm?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上
 
@@ -40,9 +40,9 @@
 
 重要的是要记住，科学研究并不总是决定性的，结果应该在特定问题的整个研究背景中进行解读。在得出任何明确结论之前，通常最好是检查各种研究和替代观点，并分别考虑每种独特情况。
 
-## 扩展了我视野的3篇文章
+## 扩展了我视野的 3 篇文章
 
-我大约读了20篇研究论文。其中有三篇对我影响最大，并扩展了我的视野，所以我创建了这些文章的总结。它们让我更加了解了以下内容：
+我大约读了 20 篇研究论文。其中有三篇对我影响最大，并扩展了我的视野，所以我创建了这些文章的总结。它们让我更加了解了以下内容：
 
 +   以及冒名顶替综合症如何与组织中的权力不平衡相关。
 
@@ -52,21 +52,21 @@
 
 下面是这些文章的总结：
 
-1.  *Maddie Breeze，《冒名顶替综合症作为一种公共情感》，2018年，属于Palgrave性别与教育研究丛书（GED）*
+1.  *Maddie Breeze，《冒名顶替综合症作为一种公共情感》，2018 年，属于 Palgrave 性别与教育研究丛书（GED）*
 
     本章建议，感觉自己像个冒名顶替者或冒名顶替综合症不仅仅是个人问题，还与高等教育更大的社会和政治背景相关。它指出，这些感觉可能标志着教育系统中的权力不平衡，也可以用来促成改变。此外，它还认为，冒名顶替综合症可能会因人们的背景（如种族或性别）或是否是家庭中第一个上大学的人而有所不同。
 
-1.  *Samyukta Mullangi, MD, MBA；Reshma Jagsi, MD, DPhil，《冒名顶替综合症：治疗原因，而非症状》，2019年，美国医学协会杂志。*
+1.  *Samyukta Mullangi, MD, MBA；Reshma Jagsi, MD, DPhil，《冒名顶替综合症：治疗原因，而非症状》，2019 年，美国医学协会杂志。*
 
     基础是关于医学领域冒名顶替综合症的在线对话。这揭示了许多该领域的女性将她们的成就归因于运气而非能力，并且担心自己用能力的假象欺骗了他人。文章认为，与其治疗个人，不如在组织层面进行系统性变革，以减少压力和倦怠。这需要领导层的参与和对文化与政策变革的投资。文章还建议认识并解决女性在公共场所如何行为的微妙社会化方式。文章总结道，冒名顶替综合症归根结底是源于该领域内在不平等的症状。
 
-1.  *Dena M. Bravata, Divya K. Madhusudhan, Michael Boroff, Kevin O. Cokley, 冒名顶替综合症的流行、预测因素和治疗：系统性综述，2020年，《心理健康与临床心理学杂志》*
+1.  *Dena M. Bravata, Divya K. Madhusudhan, Michael Boroff, Kevin O. Cokley, 冒名顶替综合症的流行、预测因素和治疗：系统性综述，2020 年，《心理健康与临床心理学杂志》*
 
-    这篇文章讨论了冒名顶替综合症对职场员工的影响，强调它可能导致压力增加、倦怠感加重、工作表现和满意度下降。文章还指出，由于COVID-19大流行带来的变化，如在家办公和减少的劳动力，员工可能更容易受到冒名顶替综合症的影响。文章建议雇主可以缓解冒名顶替综合症的影响。雇主应创造一个允许犯错的文化，提供支持和资源，如治疗和韧性培训，并公开表彰和庆祝员工的成就。此外，文章强调冒名顶替综合症通常与其他状况如抑郁和焦虑同时存在，治疗应解决这些共病情况。文章还提到，冒名顶替综合症在少数族裔学生群体中很普遍，文化因素可能对此有一定贡献。
+    这篇文章讨论了冒名顶替综合症对职场员工的影响，强调它可能导致压力增加、倦怠感加重、工作表现和满意度下降。文章还指出，由于 COVID-19 大流行带来的变化，如在家办公和减少的劳动力，员工可能更容易受到冒名顶替综合症的影响。文章建议雇主可以缓解冒名顶替综合症的影响。雇主应创造一个允许犯错的文化，提供支持和资源，如治疗和韧性培训，并公开表彰和庆祝员工的成就。此外，文章强调冒名顶替综合症通常与其他状况如抑郁和焦虑同时存在，治疗应解决这些共病情况。文章还提到，冒名顶替综合症在少数族裔学生群体中很普遍，文化因素可能对此有一定贡献。
 
 ## **总体研究的关键结论**
 
-对于那些历史爱好者——冒名顶替综合症首次被识别是在1985年。根据[国际行为科学期刊](https://so06.tci-thaijo.org/index.php/IJBS/article/view/521/pdf)，它影响来自各种背景的人，估计有70%的人在职业生涯的某个阶段会受到影响。
+对于那些历史爱好者——冒名顶替综合症首次被识别是在 1985 年。根据[国际行为科学期刊](https://so06.tci-thaijo.org/index.php/IJBS/article/view/521/pdf)，它影响来自各种背景的人，估计有 70%的人在职业生涯的某个阶段会受到影响。
 
 首先，我们来讨论**什么会造成冒名顶替综合症**。这可能由几个因素引起，例如**对失败的恐惧、对自己才能的缺乏自信以及倾向于与他人比较**。让我们通过一些具体的例子来解析这些因素，借助我多年来的一些经历。
 
@@ -78,7 +78,7 @@
 
 > **对自己才华缺乏自信：** “我为什么会是这个项目的负责人？我怎么可能做到这一点？”*（尽管你基于以往的工作非常有能力做到这一点）*
 
-**从经理的角度举例：** 我是一名数据科学经理，负责领导一个项目，创建按SKU和周划分的1年销售预测。我有管理团队和成功领导多个项目的经验。然而，出于某种原因，我对自己是否适合这个项目并不自信。我无法停止思考这个问题。“我为什么负责这个项目？我怎么能完成这个任务？对于这个问题有这么多不同的观点，我肯定会忽略最重要的方面，”*尽管我基于以往的工作非常有能力。*
+**从经理的角度举例：** 我是一名数据科学经理，负责领导一个项目，创建按 SKU 和周划分的 1 年销售预测。我有管理团队和成功领导多个项目的经验。然而，出于某种原因，我对自己是否适合这个项目并不自信。我无法停止思考这个问题。“我为什么负责这个项目？我怎么能完成这个任务？对于这个问题有这么多不同的观点，我肯定会忽略最重要的方面，”*尽管我基于以往的工作非常有能力。*
 
 **从数据科学家的角度举例：** 作为一名数据科学家，我负责为一个新的电子商务网站开发推荐系统。我在数据科学领域工作了几年，拥有相关的专业知识和经验，比如我们在电子邮件营销中使用的产品亲和度模型。然而，我仍然觉得自己不适合这个职位。我无法停止思考这个问题。“我是否有合适的模型？我难道不应该使用每个人都在谈论的神经网络吗？我怎么能按时完成这个任务？”*尽管我知道基于以往的工作，我具备执行这个任务的能力和资质。*
 
@@ -88,7 +88,7 @@
 
 **数据科学家的视角示例：** 我是一名数据科学家，正在与一位只有一年经验的同事合作，构建一个市场营销归因模型。我在数据科学领域工作了几年。然而，我不断地将自己的才能和能力与我的项目同事进行比较。我被她与利益相关者沟通的轻松和迅速掌握公司语言的能力所震惊。她在这方面表现得非常出色，受到了很多关注，如果她在沟通方面已经这么得心应手，那她很快就会超过我。我为什么没有她那么有才能呢？
 
-![](../Images/05788d1fa7ed00af3851b192904c6c3b.png)
+![](img/05788d1fa7ed00af3851b192904c6c3b.png)
 
 照片由 [Sasha Freemind](https://unsplash.com/@sashafreemind?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -122,7 +122,7 @@
 
 需要注意的是，冒名者综合症在不同个体和他们的背景下可能表现不同。并非所有经历它的人都会有这些迹象。
 
-假设您觉得您或您认识的人遭受冒名者综合症。那么，解决这种情况并寻求帮助至关重要。与治疗师、教练或导师交谈可能会有所帮助；此外，还有一些其他工具可以提供帮助。我将它们保持在高层次，因为每种情况都是不同的。我解决冒名者综合症的方法之一是结合下面的一些工具。我记录日记，并后来分析文本，识别我的想法中的薄弱论点和逻辑。就像[Shane Parrish所说](https://twitter.com/shaneaparrish/status/1564590242962841603?lang=en)，
+假设您觉得您或您认识的人遭受冒名者综合症。那么，解决这种情况并寻求帮助至关重要。与治疗师、教练或导师交谈可能会有所帮助；此外，还有一些其他工具可以提供帮助。我将它们保持在高层次，因为每种情况都是不同的。我解决冒名者综合症的方法之一是结合下面的一些工具。我记录日记，并后来分析文本，识别我的想法中的薄弱论点和逻辑。就像[Shane Parrish 所说](https://twitter.com/shaneaparrish/status/1564590242962841603?lang=en)，
 
 > **“清晰的写作让糟糕的思维无处藏身。”**
 

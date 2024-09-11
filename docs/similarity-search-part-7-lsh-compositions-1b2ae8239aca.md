@@ -1,18 +1,18 @@
-# 相似性搜索，第7部分：LSH 组合
+# 相似性搜索，第七部分：LSH 组合
 
-> 原文：[https://towardsdatascience.com/similarity-search-part-7-lsh-compositions-1b2ae8239aca?source=collection_archive---------6-----------------------#2023-07-24](https://towardsdatascience.com/similarity-search-part-7-lsh-compositions-1b2ae8239aca?source=collection_archive---------6-----------------------#2023-07-24)
+> 原文：[`towardsdatascience.com/similarity-search-part-7-lsh-compositions-1b2ae8239aca?source=collection_archive---------6-----------------------#2023-07-24`](https://towardsdatascience.com/similarity-search-part-7-lsh-compositions-1b2ae8239aca?source=collection_archive---------6-----------------------#2023-07-24)
 
 ## 探索 LSH 函数组合以确保更可靠的搜索
 
-[](https://medium.com/@slavahead?source=post_page-----1b2ae8239aca--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----1b2ae8239aca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1b2ae8239aca--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1b2ae8239aca--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1b2ae8239aca--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----1b2ae8239aca--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1b2ae8239aca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1b2ae8239aca--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b2ae8239aca--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1b2ae8239aca--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-7-lsh-compositions-1b2ae8239aca&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----1b2ae8239aca---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b2ae8239aca--------------------------------) · 11 分钟阅读 · 2023年7月24日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-7-lsh-compositions-1b2ae8239aca&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----1b2ae8239aca---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b2ae8239aca--------------------------------) · 11 分钟阅读 · 2023 年 7 月 24 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1b2ae8239aca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-7-lsh-compositions-1b2ae8239aca&source=-----1b2ae8239aca---------------------bookmark_footer-----------)![](../Images/0f691f4da9f0e51df324f06b23ba96d4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1b2ae8239aca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-7-lsh-compositions-1b2ae8239aca&source=-----1b2ae8239aca---------------------bookmark_footer-----------)![](img/0f691f4da9f0e51df324f06b23ba96d4.png)
 
 **相似性搜索** 是一个问题，目标是在所有数据库文档中找到与给定查询最相似的文档。
 
@@ -20,17 +20,17 @@
 
 在数据科学中，**相似性搜索**通常出现在自然语言处理领域、搜索引擎或推荐系统中，在这些场景下需要检索与查询最相关的文档或项目。在海量数据中提升搜索性能有许多不同的方法。
 
-在本系列文章的最后两部分，我们深入探讨了LSH——一种*将输入向量转换为低维哈希值的算法，同时保持其相似性信息*。特别是，我们已经研究了两种适用于不同距离度量的算法：
+在本系列文章的最后两部分，我们深入探讨了 LSH——一种*将输入向量转换为低维哈希值的算法，同时保持其相似性信息*。特别是，我们已经研究了两种适用于不同距离度量的算法：
 
-[## 相似性搜索，第5部分：局部敏感哈希（LSH）](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----1b2ae8239aca--------------------------------)
+## 相似性搜索，第五部分：局部敏感哈希（LSH）
 
 ### 探索如何将相似性信息纳入哈希函数
 
 towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----1b2ae8239aca--------------------------------)
 
-经典的LSH算法构建的签名反映了**Jaccard指数**的信息。
+经典的 LSH 算法构建的签名反映了**Jaccard 指数**的信息。
 
-[## 相似性搜索，第6部分：使用LSH森林的随机投影](/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=post_page-----1b2ae8239aca--------------------------------)
+## 相似性搜索，第六部分：使用 LSH 森林的随机投影
 
 ### 理解如何通过构建随机超平面对数据进行哈希并反映其相似性
 
@@ -38,17 +38,17 @@ towardsdatascience.com](/similarity-search-part-6-random-projections-with-lsh-fo
 
 随机投影方法构建了一个保持**余弦相似性**的超平面森林。
 
-实际上，LSH算法也存在于其他距离度量中。虽然每种方法都有其独特之处，但它们之间有许多共同的概念和公式。为了方便将来学习新方法，我们将更多地关注理论，并提供一些在高级LSH文献中经常出现的基本定义和定理。到文章末尾，我们将能够通过简单地将基本方法结合起来，像搭积木一样构建更复杂的LSH方案。
+实际上，LSH 算法也存在于其他距离度量中。虽然每种方法都有其独特之处，但它们之间有许多共同的概念和公式。为了方便将来学习新方法，我们将更多地关注理论，并提供一些在高级 LSH 文献中经常出现的基本定义和定理。到文章末尾，我们将能够通过简单地将基本方法结合起来，像搭积木一样构建更复杂的 LSH 方案。
 
 另外，我们将在最后了解如何将**欧几里得距离**纳入局部敏感哈希（LSH）中。
 
-*注意*。作为主要前提，预计你已经熟悉本系列文章的第5和第6部分。如果没有，强烈建议你先阅读它们。
+*注意*。作为主要前提，预计你已经熟悉本系列文章的第 5 和第六部分。如果没有，强烈建议你先阅读它们。
 
 *注意*。[余弦距离](https://en.wikipedia.org/wiki/Cosine_similarity) 在 [0, 2] 范围内正式定义。为了简化起见，我们将其映射到 [0, 1] 区间，其中 0 和 1 分别表示最低和最高可能的相似性。
 
-# 正式LSH定义
+# 正式 LSH 定义
 
-> 给定距离度量 d，H 被称为 (d₁, d₂, p₁, p₂)-敏感的LSH函数，如果对于随机选择的对象 x 和 y，满足以下条件：
+> 给定距离度量 d，H 被称为 (d₁, d₂, p₁, p₂)-敏感的 LSH 函数，如果对于随机选择的对象 x 和 y，满足以下条件：
 
 +   *如果 d(x, y) ≤ d₁，则 p(H(x) = H(y)) ≥ p₁，即 H(x) = H(y) 的概率至少为 p₁。*
 
@@ -64,7 +64,7 @@ towardsdatascience.com](/similarity-search-part-6-random-projections-with-lsh-fo
 
 +   *d₁* 和 *d₂* 之间的间隙应尽可能小，以减少无法对数据进行概率估计的区间。
 
-![](../Images/ec88a6b38658c10a66d7281cb27f5dca.png)
+![](img/ec88a6b38658c10a66d7281cb27f5dca.png)
 
 左侧的图示展示了 LSH 参数（d₁, d₂, p₁, p₂）记号的典型曲线。右侧的曲线展示了一个理想的情况，其中阈值 *d₁* 和 *d₂* 之间没有间隙。
 
@@ -76,7 +76,7 @@ towardsdatascience.com](/similarity-search-part-6-random-projections-with-lsh-fo
 
 +   *如果 s(x, y) ≤ s₂，则 p(H(x) = H(y)) ≤ p₂，即 H(x) = H(y) 的概率至多为 p₂。*
 
-![](../Images/4a2926a1c78be5ec5d31262022adf59d.png)
+![](img/4a2926a1c78be5ec5d31262022adf59d.png)
 
 左侧的图示展示了 LSH 参数（*s₁, s₂, p₁, p₂*）的关系的典型曲线。右侧的曲线展示了一个理想的情况，其中阈值 *s₁* 和 *s₂* 之间没有间隙。
 
@@ -92,63 +92,63 @@ towardsdatascience.com](/similarity-search-part-6-random-projections-with-lsh-fo
 
 +   *如果 d(x, y) ≥ 0.6，则 p(H(x) = H(y)) ≤ 0.4*
 
-从这篇文章系列的第5部分我们知道，*两个二进制向量获得相等哈希值的概率等于Jaccard相似度*。因此，如果两个向量至少相似40%，那么获得相等哈希值的概率也至少为40%。与此同时，至少40%的Jaccard相似度等同于最多60%的Jaccard指数。因此，第一个陈述得到了证明。第二个陈述可以做类似的推理。
+从这篇文章系列的第五部分我们知道，*两个二进制向量获得相等哈希值的概率等于 Jaccard 相似度*。因此，如果两个向量至少相似 40%，那么获得相等哈希值的概率也至少为 40%。与此同时，至少 40%的 Jaccard 相似度等同于最多 60%的 Jaccard 指数。因此，第一个陈述得到了证明。第二个陈述可以做类似的推理。
 
 这个例子可以概括为定理：
 
-> **定理**。如果d是Jaccard指数，则H是一个(d₁, d₂, 1 — d₁, 1 — d₂)的LSH函数族。
+> **定理**。如果 d 是 Jaccard 指数，则 H 是一个(d₁, d₂, 1 — d₁, 1 — d₂)的 LSH 函数族。
 
-类似地，基于第6部分获得的结果，可以证明另一个定理：
+类似地，基于第六部分获得的结果，可以证明另一个定理：
 
-> **定理**。如果s是余弦相似度（介于-1和1之间），则H是一个(s₁, s₂, 1 — arccos(s₁) / 180, 1 — arccos(d₂) / 180)的LSH函数族。
+> **定理**。如果 s 是余弦相似度（介于-1 和 1 之间），则 H 是一个(s₁, s₂, 1 — arccos(s₁) / 180, 1 — arccos(d₂) / 180)的 LSH 函数族。
 
-# 结合LSH函数
+# 结合 LSH 函数
 
-让我们参考在之前的LSH部分中学到的有用概念：
+让我们参考在之前的 LSH 部分中学到的有用概念：
 
-+   回到第5部分的minhashing，每个向量被分成若干个带，每个带包含一组行。为了将一对向量视为候选对，必须存在**至少一个**带，其中**所有**的向量行都是相等的。
++   回到第五部分的 minhashing，每个向量被分成若干个带，每个带包含一组行。为了将一对向量视为候选对，必须存在**至少一个**带，其中**所有**的向量行都是相等的。
 
-+   关于第6部分的随机投影，只有在存在**至少一个**树，其中**所有**的随机投影未能分开初始向量时，两个向量才被视为候选。
++   关于第六部分的随机投影，只有在存在**至少一个**树，其中**所有**的随机投影未能分开初始向量时，两个向量才被视为候选。
 
 我们可以注意到，这两种方法在底层有相似的范式。只有当**至少有一次**在*n*配置中向量的哈希值**全部**相同*k*次时，它们才会被视为候选对。用布尔代数表示，可以写成这样：
 
-![](../Images/d40f11e2ede06bf7da03a7e5fee71439.png)
+![](img/d40f11e2ede06bf7da03a7e5fee71439.png)
 
 基于这个例子，我们引入逻辑运算符*OR*和*AND*，它们允许聚合一组哈希函数。然后我们将估计它们如何影响两个向量成为候选的输出概率以及*假阴性*和*假阳性*错误的率。
 
-## AND运算符
+## AND 运算符
 
-> 给定n个独立的LSH函数H₁, H₂, … Hₙ，**AND**运算符仅当两个向量的所有n个对应哈希值相等时，才会将它们视为候选对。否则，向量不会被视为候选。
+> 给定 n 个独立的 LSH 函数 H₁, H₂, … Hₙ，**AND**运算符仅当两个向量的所有 n 个对应哈希值相等时，才会将它们视为候选对。否则，向量不会被视为候选。
 
 如果两个高度不同的向量的哈希值通过*AND*运算符进行聚合，那么它们成为候选的概率会随着使用的哈希函数数量的增加而减少。因此，*假阳性*的数量也会减少。
 
 同时，两类似的向量可能由于偶然原因而产生一对不同的哈希值。因此，算法不会将这些向量视为相似。这个方面导致了较高的*假阴性*率。
 
-> **定理**。考虑r个独立的(s₁, s₂, p₁, p₂)-敏感LSH函数。将这些r个LSH函数与AND操作符结合会得到一个具有以下参数的新LSH函数
+> **定理**。考虑 r 个独立的(s₁, s₂, p₁, p₂)-敏感 LSH 函数。将这些 r 个 LSH 函数与 AND 操作符结合会得到一个具有以下参数的新 LSH 函数
 
-![](../Images/df8a221eb298604e45bafb780e33e5bc.png)
+![](img/df8a221eb298604e45bafb780e33e5bc.png)
 
 通过使用多个独立事件的概率公式来证明这一点是容易的，该公式将所有事件的概率相乘以估计所有事件发生的概率。
 
-## OR操作符
+## OR 操作符
 
-> 给定n个独立的LSH函数H₁、H₂、… Hₙ，**OR**操作符仅在**至少一个**对应哈希值相等时将两个向量视为候选对。否则，这些向量不被视为候选。
+> 给定 n 个独立的 LSH 函数 H₁、H₂、… Hₙ，**OR**操作符仅在**至少一个**对应哈希值相等时将两个向量视为候选对。否则，这些向量不被视为候选。
 
-与*AND*操作符相反，*OR*操作符增加了任何两个向量成为候选的概率。对于任何向量对，只需对应哈希值中的一个相等即可。因此，OR聚合减少了*假阴性*的数量，增加了*假阳性*。
+与*AND*操作符相反，*OR*操作符增加了任何两个向量成为候选的概率。对于任何向量对，只需对应哈希值中的一个相等即可。因此，OR 聚合减少了*假阴性*的数量，增加了*假阳性*。
 
-> **定理**。考虑*b*个独立的(d₁, d₂, p₁, p₂)-族LSH函数。将这些*b*个LSH函数与AND操作符结合会得到一个具有以下参数的新LSH函数
+> **定理**。考虑*b*个独立的(d₁, d₂, p₁, p₂)-族 LSH 函数。将这些*b*个 LSH 函数与 AND 操作符结合会得到一个具有以下参数的新 LSH 函数
 
-![](../Images/1ce7752b4e0f6fc439ab573ee37d82ee.png)
+![](img/1ce7752b4e0f6fc439ab573ee37d82ee.png)
 
-我们不会证明这个定理，因为类似的概率公式已经在本文系列的第5部分中获得和解释。
+我们不会证明这个定理，因为类似的概率公式已经在本文系列的第五部分中获得和解释。
 
 ## 组合
 
-通过*AND*和*OR*操作，可以以各种方式将它们结合在一起，以更好地控制*假阳性*和*假阴性*率。假设有*r*个LSH函数由*AND*组合器使用，*b*个LSH函数由*OR*组合器使用。可以使用这些基本组合器构建两种不同的组合：
+通过*AND*和*OR*操作，可以以各种方式将它们结合在一起，以更好地控制*假阳性*和*假阴性*率。假设有*r*个 LSH 函数由*AND*组合器使用，*b*个 LSH 函数由*OR*组合器使用。可以使用这些基本组合器构建两种不同的组合：
 
-![](../Images/566766fb92be31d3a6da63a1ca54065c.png)
+![](img/566766fb92be31d3a6da63a1ca54065c.png)
 
-AND-OR和OR-AND是可以通过使用AND和OR操作符构建的两种类型的组合。
+AND-OR 和 OR-AND 是可以通过使用 AND 和 OR 操作符构建的两种类型的组合。
 
 前两篇文章中描述的算法使用了*AND-OR*组合。实际上，构建基于*AND*和*OR*操作的更复杂的组合并没有什么阻碍。
 
@@ -156,29 +156,29 @@ AND-OR和OR-AND是可以通过使用AND和OR操作符构建的两种类型的组
 
 让我们研究一个示例，以了解*AND*和*OR*的组合如何显著提高性能。假设一个*OR-AND*组合，其参数为*b = 4*和*r = 8*。根据上述公式，我们可以估计两个向量成为候选的初始概率在组合后的变化：
 
-![](../Images/6ac71b2ad637b0298c2af56db0b16615.png)
+![](img/6ac71b2ad637b0298c2af56db0b16615.png)
 
-应用参数为b = 4和r = 8的OR-AND组合后的概率变化。第一行显示初始概率，第二行显示转换后的概率。
+应用参数为 b = 4 和 r = 8 的 OR-AND 组合后的概率变化。第一行显示初始概率，第二行显示转换后的概率。
 
-例如，如果对于两个向量之间的某个相似度值，单个LSH函数在40%的情况下将它们哈希到相同的桶中，那么在*OR-AND*组合后，它们将在32.9%的情况下被哈希。
+例如，如果对于两个向量之间的某个相似度值，单个 LSH 函数在 40%的情况下将它们哈希到相同的桶中，那么在*OR-AND*组合后，它们将在 32.9%的情况下被哈希。
 
-为了理解组合的特殊性，考虑一个*(0.4, 1.7, 0.8, 0.2)*敏感的LSH函数。经过*OR-AND*变换后，LSH函数转变为*(0.4, 1.7, 0.0148, 0.987)*敏感格式。
+为了理解组合的特殊性，考虑一个*(0.4, 1.7, 0.8, 0.2)*敏感的 LSH 函数。经过*OR-AND*变换后，LSH 函数转变为*(0.4, 1.7, 0.0148, 0.987)*敏感格式。
 
-从本质上讲，如果最初两个向量非常相似且距离小于0.4，那么它们将被认为是80%情况下的候选。然而，应用组合后，它们现在在98.7%的情况下被认为是候选，从而大大减少了*假阴性*错误！
+从本质上讲，如果最初两个向量非常相似且距离小于 0.4，那么它们将被认为是 80%情况下的候选。然而，应用组合后，它们现在在 98.7%的情况下被认为是候选，从而大大减少了*假阴性*错误！
 
-类似地，如果两个向量彼此差异很大且距离大于1.7，那么它们现在只会在1.48%的情况下被认为是候选（相较于之前的20%）。这样，*假阳性*错误的频率降低了13.5倍！这是一项巨大的改进！
+类似地，如果两个向量彼此差异很大且距离大于 1.7，那么它们现在只会在 1.48%的情况下被认为是候选（相较于之前的 20%）。这样，*假阳性*错误的频率降低了 13.5 倍！这是一项巨大的改进！
 
-![](../Images/f501c884ce08598c3bb4a6d0817888f2.png)
+![](img/f501c884ce08598c3bb4a6d0817888f2.png)
 
 曲线显示了在不同组合后初始概率的转变
 
-> 通常，通过具有*(d₁, d₂, p₁, p₂)*敏感性的LSH函数，可以将其转换为*(d₁, d₂, p’₁, p’₂)*格式，其中*p’₁*接近1，而*p’₂*接近0。要使*p’₁*和*p’₂*更接近1和0，通常需要使用更多的组合。
+> 通常，通过具有*(d₁, d₂, p₁, p₂)*敏感性的 LSH 函数，可以将其转换为*(d₁, d₂, p’₁, p’₂)*格式，其中*p’₁*接近 1，而*p’₂*接近 0。要使*p’₁*和*p’₂*更接近 1 和 0，通常需要使用更多的组合。
 
-# 用于其他距离度量的LSH
+# 用于其他距离度量的 LSH
 
-我们已经深入研究了用于保留Jaccard指数和余弦距离信息的LSH方案。自然会产生一个问题，那就是是否可以使用LSH来处理其他距离度量。不幸的是，对于大多数度量，没有相应的LSH算法。
+我们已经深入研究了用于保留 Jaccard 指数和余弦距离信息的 LSH 方案。自然会产生一个问题，那就是是否可以使用 LSH 来处理其他距离度量。不幸的是，对于大多数度量，没有相应的 LSH 算法。
 
-尽管如此，欧几里得距离的LSH方案确实存在——这是机器学习中最常用的度量之一。由于它被广泛使用，我们将研究如何获取欧几里得距离的哈希值。通过上述引入的理论符号，我们将证明这一度量的一个重要LSH属性。
+尽管如此，欧几里得距离的 LSH 方案确实存在——这是机器学习中最常用的度量之一。由于它被广泛使用，我们将研究如何获取欧几里得距离的哈希值。通过上述引入的理论符号，我们将证明这一度量的一个重要 LSH 属性。
 
 ## 用于欧几里得距离的局部敏感哈希（LSH）
 
@@ -190,13 +190,13 @@ AND-OR和OR-AND是可以通过使用AND和OR操作符构建的两种类型的组
 
 为了测量两个投影的接近程度，可以将一条线分成若干个大小为*a*的相等段（桶）。每个线段对应一个特定的哈希值。如果两个点投影到相同的线段上，那么它们具有相同的哈希值。否则，哈希值不同。
 
-![](../Images/1925eca7139b0afb0a6aa0b098f84d98.png)
+![](img/1925eca7139b0afb0a6aa0b098f84d98.png)
 
 在随机线上投影点
 
 尽管这种方法起初可能看起来很可靠，但它仍然可能将相隔较远的点投影到相同的段中。特别是在连接两个点的线几乎与初始投影线垂直时，这种情况尤其明显。
 
-![](../Images/46de10be3c85955f16d8f6593be25466.png)
+![](img/46de10be3c85955f16d8f6593be25466.png)
 
 尽管两个点相对较远，但它们仍有可能被哈希到同一个桶中。
 

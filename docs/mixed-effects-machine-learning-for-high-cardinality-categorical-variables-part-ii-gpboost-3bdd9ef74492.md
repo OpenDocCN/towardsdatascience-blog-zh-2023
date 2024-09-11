@@ -1,18 +1,18 @@
-# 高基数分类变量的混合效应机器学习 — 第二部分：GPBoost库
+# 高基数分类变量的混合效应机器学习 — 第二部分：GPBoost 库
 
-> 原文：[https://towardsdatascience.com/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492?source=collection_archive---------6-----------------------#2023-07-11](https://towardsdatascience.com/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492?source=collection_archive---------6-----------------------#2023-07-11)
+> 原文：[`towardsdatascience.com/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492?source=collection_archive---------6-----------------------#2023-07-11`](https://towardsdatascience.com/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492?source=collection_archive---------6-----------------------#2023-07-11)
 
-## 一个使用真实数据的GPBoost在Python和R中的演示
+## 一个使用真实数据的 GPBoost 在 Python 和 R 中的演示
 
-[](https://medium.com/@fabsig?source=post_page-----3bdd9ef74492--------------------------------)[![Fabio Sigrist](../Images/f7bc2adc17255ae1efd0886a19ec202c.png)](https://medium.com/@fabsig?source=post_page-----3bdd9ef74492--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bdd9ef74492--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3bdd9ef74492--------------------------------) [Fabio Sigrist](https://medium.com/@fabsig?source=post_page-----3bdd9ef74492--------------------------------)
+[](https://medium.com/@fabsig?source=post_page-----3bdd9ef74492--------------------------------)![Fabio Sigrist](https://medium.com/@fabsig?source=post_page-----3bdd9ef74492--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bdd9ef74492--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bdd9ef74492--------------------------------) [Fabio Sigrist](https://medium.com/@fabsig?source=post_page-----3bdd9ef74492--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5b503a0c329&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492&user=Fabio+Sigrist&userId=b5b503a0c329&source=post_page-b5b503a0c329----3bdd9ef74492---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bdd9ef74492--------------------------------) ·8分钟阅读·2023年7月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bdd9ef74492&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492&user=Fabio+Sigrist&userId=b5b503a0c329&source=-----3bdd9ef74492---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5b503a0c329&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492&user=Fabio+Sigrist&userId=b5b503a0c329&source=post_page-b5b503a0c329----3bdd9ef74492---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bdd9ef74492--------------------------------) ·8 分钟阅读·2023 年 7 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bdd9ef74492&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492&user=Fabio+Sigrist&userId=b5b503a0c329&source=-----3bdd9ef74492---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3bdd9ef74492&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492&source=-----3bdd9ef74492---------------------bookmark_footer-----------)![](../Images/e5dd3c4f7bc91e17c444088bc24348ba.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3bdd9ef74492&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492&source=-----3bdd9ef74492---------------------bookmark_footer-----------)![](img/e5dd3c4f7bc91e17c444088bc24348ba.png)
 
 **高基数分类数据的示意图**：不同分类变量水平的响应变量的箱线图和原始数据（红点）— 图片作者提供
 
@@ -20,25 +20,25 @@
 
 ## 目录
 
-∘ [1 介绍](#c2dc)
+∘ 1 介绍
 
-∘ [2 数据：描述、加载和样本分割](#c3cf)
+∘ 2 数据：描述、加载和样本分割
 
-∘ [3 训练 GPBoost 模型](#a119)
+∘ 3 训练 GPBoost 模型
 
-∘ [4 选择调优参数](#d562)
+∘ 4 选择调优参数
 
-∘ [5 预测](#9914)
+∘ 5 预测
 
-∘ [6 解释](#7784)
+∘ 6 解释
 
-∘ [7 进一步建模选项](#6d73)
+∘ 7 进一步建模选项
 
-· · [7.1 类别变量与其他预测变量的交互](#b005)
+· · 7.1 类别变量与其他预测变量的交互
 
-· · [7.2 （广义）线性混合效应模型](#49d6)
+· · 7.2 （广义）线性混合效应模型
 
-∘ [8 结论和参考文献](#4ebe)
+∘ 8 结论和参考文献
 
 # 1 介绍
 
@@ -108,7 +108,7 @@ pred_vars <- colnames(data)[-which(colnames(data) %in% c("ln_wage", "idcode", "t
 
 # 3 训练 GPBoost 模型
 
-下面的代码展示了如何训练一个GPBoost模型。我们首先定义一个随机效应模型（`gp_model`）、一个`Dataset`（`data_bst`）、调整参数（`params`和`nrounds` = 树的数量/提升迭代次数），然后通过调用`gpb.train`函数运行GPBoost算法。请注意，我们使用了事先选择的调整参数（见下文）。
+下面的代码展示了如何训练一个 GPBoost 模型。我们首先定义一个随机效应模型（`gp_model`）、一个`Dataset`（`data_bst`）、调整参数（`params`和`nrounds` = 树的数量/提升迭代次数），然后通过调用`gpb.train`函数运行 GPBoost 算法。请注意，我们使用了事先选择的调整参数（见下文）。
 
 ***Python***
 
@@ -127,7 +127,7 @@ gpbst = gpb.train(params=params, train_set=data_bst, gp_model=gp_model,
 ```py
 gp_model <- GPModel(group_data = data_train[,"idcode"], likelihood = "gaussian")
 data_bst <- gpb.Dataset(data = data_train[,pred_vars], label = data_train[,"ln_wage"])
-params <- list(learning_rate = 0.01, max_depth = 2, num_leaves = 2^10,
+params <- list(learning_rate = 0.01, max_depth = 2, num_leaves = 2¹⁰,
                min_data_in_leaf = 10, lambda_l2 = 10)
 nrounds <- 391
 gpbst <- gpb.train(data = data_bst, gp_model = gp_model, 
@@ -152,7 +152,7 @@ gp_model$set_optim_params(params = list(optimizer_cov = "nelder_mead"))
 
 # 4 选择调整参数
 
-调整参数的选择对于提升效果至关重要。没有通用的默认值，每个数据集可能需要不同的调整参数。以下展示了如何使用`gpb.grid.search.tune.parameters`函数来选择调整参数。我们使用了一个确定性的网格搜索，并在代码中展示了参数组合。请注意，我们调整了`max_depth`参数，因此将`num_leaves`设置为一个大值。我们随机将训练数据拆分为80%的内训练数据和20%的验证数据，并使用均方误差（`mse`）作为验证数据上的预测准确度衡量标准。或者，也可以使用，例如，测试负对数似然（`test_neg_log_likelihood` = 默认值），它还考虑了预测的不确定性。*注意：根据数据集和网格大小，这可能需要一些时间（在我的笔记本电脑上，对于这个数据集需要几分钟）。除了下面的确定性网格搜索外，也可以进行随机网格搜索（见* `*num_try_random*`*）或其他方法如贝叶斯优化来加快速度。*
+调整参数的选择对于提升效果至关重要。没有通用的默认值，每个数据集可能需要不同的调整参数。以下展示了如何使用`gpb.grid.search.tune.parameters`函数来选择调整参数。我们使用了一个确定性的网格搜索，并在代码中展示了参数组合。请注意，我们调整了`max_depth`参数，因此将`num_leaves`设置为一个大值。我们随机将训练数据拆分为 80%的内训练数据和 20%的验证数据，并使用均方误差（`mse`）作为验证数据上的预测准确度衡量标准。或者，也可以使用，例如，测试负对数似然（`test_neg_log_likelihood` = 默认值），它还考虑了预测的不确定性。*注意：根据数据集和网格大小，这可能需要一些时间（在我的笔记本电脑上，对于这个数据集需要几分钟）。除了下面的确定性网格搜索外，也可以进行随机网格搜索（见* `*num_try_random*`*）或其他方法如贝叶斯优化来加快速度。*
 
 ***Python***
 
@@ -191,7 +191,7 @@ folds <- list(valid_tune_idx)
 # Specify parameter grid, gp_model, and gpb.Dataset
 param_grid <- list("learning_rate" = c(1,0.1,0.01), "max_depth" = c(1,2,3,5,10),
                    "min_data_in_leaf" = c(10,100,1000), "lambda_l2" = c(0,1,10))
-other_params <- list(num_leaves = 2^10)
+other_params <- list(num_leaves = 2¹⁰)
 gp_model <- GPModel(group_data = data_train[,"idcode"], likelihood = "gaussian")
 data_bst <- gpb.Dataset(data = data_train[,pred_vars], label = data_train[,"ln_wage"])
 # Find optimal tuning parameters
@@ -226,7 +226,7 @@ np.mean((data_test['ln_wage'] - y_pred)**2)
 pred <- predict(gpbst, data = data_test[,pred_vars], group_data_pred = data_test[,"idcode"], 
                 predict_var = FALSE, pred_latent = FALSE)
 y_pred <- pred[["response_mean"]]
-mean((data_test[,"ln_wage"] - y_pred)^2)
+mean((data_test[,"ln_wage"] - y_pred)²)
 ```
 
 # 6 解释
@@ -256,17 +256,17 @@ summary(gp_model)
 
 有几个工具可以帮助理解`GPBoost`库支持的固定效应树集合函数的形式：
 
-+   SHAP值
++   SHAP 值
 
-+   SHAP和部分依赖图（二维和一维）
++   SHAP 和部分依赖图（二维和一维）
 
-+   SHAP力图
++   SHAP 力图
 
 +   交互统计
 
 +   基于拆分的变量重要性
 
-以下我们查看SHAP值和SHAP依赖图。
+以下我们查看 SHAP 值和 SHAP 依赖图。
 
 ***Python***
 
@@ -278,9 +278,9 @@ shap.summary_plot(shap_values, data_train[pred_vars], max_display=10, feature_na
 shap.dependence_plot("ttl_exp", shap_values, data_train[pred_vars], alpha=0.5)
 ```
 
-![](../Images/74fb408e7c6fe5a23df8be4bf03aafaa.png)![](../Images/8966198e2b3bcfc1ad60eb8283de210b.png)
+![](img/74fb408e7c6fe5a23df8be4bf03aafaa.png)![](img/8966198e2b3bcfc1ad60eb8283de210b.png)
 
-SHAP值和SHAP依赖图 — 作者图片
+SHAP 值和 SHAP 依赖图 — 作者图片
 
 ***R***
 
@@ -299,7 +299,7 @@ shap.plot.dependence(data_long = shap_long, x = "ttl_exp",
 
 ## 7.1 分类变量与其他预测变量之间的交互
 
-在上述模型中，随机效应与固定效应预测变量之间没有交互，即高维分类变量与其他预测变量之间没有交互。这种交互可以通过将分类变量额外包含在树集成中来建模。以下代码演示了如何实现这一点。下面，我们还计算了该模型的测试均方误差（MSE）。与没有这种交互的模型相比，测试MSE略小。*注意：下面使用的调优参数已提前选择，但为了简洁起见，我们省略了这段代码。*
+在上述模型中，随机效应与固定效应预测变量之间没有交互，即高维分类变量与其他预测变量之间没有交互。这种交互可以通过将分类变量额外包含在树集成中来建模。以下代码演示了如何实现这一点。下面，我们还计算了该模型的测试均方误差（MSE）。与没有这种交互的模型相比，测试 MSE 略小。*注意：下面使用的调优参数已提前选择，但为了简洁起见，我们省略了这段代码。*
 
 ***Python***
 
@@ -327,17 +327,17 @@ pred_vars_int = c("idcode", pred_vars)
 gp_model <- GPModel(group_data = data_train[,"idcode"], likelihood = "gaussian")
 data_bst <- gpb.Dataset(data = data_train[,pred_vars_int], categorical_feature = c(1), 
                         label = data_train[,"ln_wage"])
-params <- list(learning_rate = 0.01, max_depth = 2, num_leaves = 2^10,
+params <- list(learning_rate = 0.01, max_depth = 2, num_leaves = 2¹⁰,
                min_data_in_leaf = 10, lambda_l2 = 1)
 gpbst <- gpb.train(data = data_bst, gp_model = gp_model, 
                    nrounds = 482, params = params, verbose = 0)
 pred <- predict(gpbst, data = data_test[,pred_vars_int], group_data_pred = data_test[,"idcode"])
-mean((data_test[,"ln_wage"] - pred[["response_mean"]])^2)
+mean((data_test[,"ln_wage"] - pred[["response_mean"]])²)
 ```
 
 ## 7.2（广义）线性混合效应模型
 
-`GPBoost`库还支持（广义）线性混合效应模型（GLMMs）。在GLMM中，假设固定效应函数F()是线性函数而不是树集成。以下代码演示了如何实现这一点。注意需要手动添加一列1以包括截距。使用选项`params={"std_dev": True}` / `params = list(std_dev=TRUE)`，可以在`summary`函数中获得标准差和p值。
+`GPBoost`库还支持（广义）线性混合效应模型（GLMMs）。在 GLMM 中，假设固定效应函数 F()是线性函数而不是树集成。以下代码演示了如何实现这一点。注意需要手动添加一列 1 以包括截距。使用选项`params={"std_dev": True}` / `params = list(std_dev=TRUE)`，可以在`summary`函数中获得标准差和 p 值。
 
 ***Python***
 
@@ -385,10 +385,10 @@ summary(gp_model)
 
 # 8 结论与参考文献
 
-我们展示了如何使用`[GPBoost](https://github.com/fabsig/GPBoost)` [库](https://github.com/fabsig/GPBoost)的Python和R包将树提升与随机效应结合应用。`GPBoost`库还有许多我们未展示的功能。您可以查看[Python示例](https://github.com/fabsig/GPBoost/tree/master/examples/python-guide)和[R示例](https://github.com/fabsig/GPBoost/tree/master/R-package/demo)。在本系列的[第三部分](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc)中，我们将展示如何使用`GPBoost`库对纵向数据（即面板数据）进行建模。
+我们展示了如何使用`[GPBoost](https://github.com/fabsig/GPBoost)` [库](https://github.com/fabsig/GPBoost)的 Python 和 R 包将树提升与随机效应结合应用。`GPBoost`库还有许多我们未展示的功能。您可以查看[Python 示例](https://github.com/fabsig/GPBoost/tree/master/examples/python-guide)和[R 示例](https://github.com/fabsig/GPBoost/tree/master/R-package/demo)。在本系列的[第三部分](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc)中，我们将展示如何使用`GPBoost`库对纵向数据（即面板数据）进行建模。
 
 +   F. Sigrist. 高斯过程提升. 机器学习研究期刊, 23(1):10565–10610, 2022.
 
-+   F. Sigrist. 潜在高斯模型提升. IEEE模式分析与机器智能期刊, 45(2):1894–1905, 2023.
++   F. Sigrist. 潜在高斯模型提升. IEEE 模式分析与机器智能期刊, 45(2):1894–1905, 2023.
 
-+   [https://github.com/fabsig/GPBoost](https://github.com/fabsig/GPBoost)
++   [`github.com/fabsig/GPBoost`](https://github.com/fabsig/GPBoost)

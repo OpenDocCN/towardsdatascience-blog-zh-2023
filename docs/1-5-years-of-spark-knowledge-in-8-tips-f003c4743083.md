@@ -1,10 +1,10 @@
 # 1.5 年的 Spark 知识总结为 8 个技巧
 
-> 原文：[https://towardsdatascience.com/1-5-years-of-spark-knowledge-in-8-tips-f003c4743083?source=collection_archive---------0-----------------------#2023-12-24](https://towardsdatascience.com/1-5-years-of-spark-knowledge-in-8-tips-f003c4743083?source=collection_archive---------0-----------------------#2023-12-24)
+> 原文：[`towardsdatascience.com/1-5-years-of-spark-knowledge-in-8-tips-f003c4743083?source=collection_archive---------0-----------------------#2023-12-24`](https://towardsdatascience.com/1-5-years-of-spark-knowledge-in-8-tips-f003c4743083?source=collection_archive---------0-----------------------#2023-12-24)
 
 ## 我在 Databricks 客户合作中的学习经验
 
-[](https://michaelberk.medium.com/?source=post_page-----f003c4743083--------------------------------)[![Michael Berk](../Images/c79c07ed3973cad1305a1d970aaea0b5.png)](https://michaelberk.medium.com/?source=post_page-----f003c4743083--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f003c4743083--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f003c4743083--------------------------------) [Michael Berk](https://michaelberk.medium.com/?source=post_page-----f003c4743083--------------------------------)
+[](https://michaelberk.medium.com/?source=post_page-----f003c4743083--------------------------------)![Michael Berk](https://michaelberk.medium.com/?source=post_page-----f003c4743083--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f003c4743083--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f003c4743083--------------------------------) [Michael Berk](https://michaelberk.medium.com/?source=post_page-----f003c4743083--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff003c4743083&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F1-5-years-of-spark-knowledge-in-8-tips-f003c4743083&source=-----f003c4743083---------------------bookmark_footer-----------)![](../Images/a363f6cea7c86a50b902af7da7137544.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff003c4743083&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F1-5-years-of-spark-knowledge-in-8-tips-f003c4743083&source=-----f003c4743083---------------------bookmark_footer-----------)![](img/a363f6cea7c86a50b902af7da7137544.png)
 
 图 1：如何编写 Apache Spark 的技术图示。图片由作者提供。
 
@@ -28,7 +28,7 @@
 
 Spark 是一个大数据处理引擎。它接受 Python/Java/Scala/R/SQL 并将这些代码转换为一组高度优化的转换操作。
 
-![](../Images/06c30062d226c82299f50052ff6b6abf.png)
+![](img/06c30062d226c82299f50052ff6b6abf.png)
 
 图 2：Spark 驱动程序和工作节点配置。图像作者提供。
 
@@ -52,7 +52,7 @@ Spark 是复杂的。为了帮助你和其他人理解其结构，我们借用 [
 
 现在，让我们利用这些概念来讨论一些 Spark 的基础知识。
 
-![](../Images/7c684a57bb5357a02622754e4786b018.png)
+![](img/7c684a57bb5357a02622754e4786b018.png)
 
 图 3：收银员类比的插图，特别是针对数据倾斜。图像作者提供。
 
@@ -62,7 +62,7 @@ Spark 是复杂的。为了帮助你和其他人理解其结构，我们借用 [
 
 +   如果你没有足够的顾客（任务）来充分利用你的收银员（核心），你就会支付收银员的空闲时间。这与 [自动扩展](https://www.databricks.com/blog/2018/05/02/introducing-databricks-optimized-auto-scaling.html)、集群大小和分区大小有关。
 
-+   如果顾客（任务）的杂货（分区行数）差异很大，你会看到收银员的利用率不均。这是 [**数据倾斜**](/data-skew-in-pyspark-783d529a9dd7)。
++   如果顾客（任务）的杂货（分区行数）差异很大，你会看到收银员的利用率不均。这是 **数据倾斜**。
 
 +   你的收银员（核心）越好，他们处理单个顾客（任务）的速度就越快。这涉及到升级你的处理器。
 
@@ -96,7 +96,7 @@ Spark 初学者最常见的错误是误解了延迟计算。
 
 这是大多数用例中管道优化的方法……
 
-1.  **问问我们是否需要做这个项目。** 简而言之，考虑一下优化管道实际上能带来什么。如果你期望运行时间提高20%，而管道的运行成本是$100，那么你是否应该投入你极其昂贵的数据工程师的薪资以节省每次运行的$20？也许吧，也许不是。
+1.  **问问我们是否需要做这个项目。** 简而言之，考虑一下优化管道实际上能带来什么。如果你期望运行时间提高 20%，而管道的运行成本是$100，那么你是否应该投入你极其昂贵的数据工程师的薪资以节省每次运行的$20？也许吧，也许不是。
 
 1.  **寻找代码中的低悬果实。** 在同意做这个项目后，检查代码是否有明显的缺陷。示例包括懒惰求值的误用、不必要的转换和转换顺序不正确。
 
@@ -106,37 +106,37 @@ Spark 初学者最常见的错误是误解了延迟计算。
 
 1.  **深入挖掘。** 最后，如果你真的需要深入挖掘，因为成本不可接受，那么就卷起袖子，优化数据、代码和计算。
 
-这个框架的美妙之处在于，1–4只需要对Spark有基本了解，并且执行非常快速；有时你可以在30分钟的电话会议中收集1–4的相关信息。该框架还确保我们会在“足够好”时立即停止。最后，如果需要第5步，我们可以将其委托给团队中最强的Spark专家。
+这个框架的美妙之处在于，1–4 只需要对 Spark 有基本了解，并且执行非常快速；有时你可以在 30 分钟的电话会议中收集 1–4 的相关信息。该框架还确保我们会在“足够好”时立即停止。最后，如果需要第 5 步，我们可以将其委托给团队中最强的 Spark 专家。
 
 > 通过找出所有避免过度优化管道的方法，你可以节省宝贵的开发时间。
 
 # 4—磁盘溢出
 
-磁盘溢出是Spark作业运行缓慢的最常见原因。
+磁盘溢出是 Spark 作业运行缓慢的最常见原因。
 
-这是一个非常简单的概念。Spark设计用于利用内存处理。如果内存不足，Spark将尝试将额外的数据写入磁盘以防止进程崩溃。这称为磁盘溢出。
+这是一个非常简单的概念。Spark 设计用于利用内存处理。如果内存不足，Spark 将尝试将额外的数据写入磁盘以防止进程崩溃。这称为磁盘溢出。
 
-![](../Images/8965e74adda45122e1a8357d1745c172.png)
+![](img/8965e74adda45122e1a8357d1745c172.png)
 
-图4：突出显示磁盘溢出的Spark UI屏幕截图。图片由作者提供。
+图 4：突出显示磁盘溢出的 Spark UI 屏幕截图。图片由作者提供。
 
 写入和读取磁盘速度较慢，因此应尽量避免。如果你想了解如何识别和减轻溢出，请参考[这个教程](https://selectfrom.dev/spark-performance-tuning-spill-7318363e18cb)。然而，一些非常常见且简单的方法来减轻溢出是…
 
 1.  每个任务处理更少的数据，这可以通过更改分区数量来实现，方法是通过[spark.shuffle.partitions](https://spark.apache.org/docs/latest/sql-performance-tuning.html#other-configuration-options)或[repartition](https://spark.apache.org/docs/3.1.3/api/python/reference/api/pyspark.sql.DataFrame.repartition.html)。
 
-1.  增加计算中的RAM与核心的比率。
+1.  增加计算中的 RAM 与核心的比率。
 
 > 如果你希望你的作业运行得更佳，请防止溢出。
 
-# 5—使用SQL语法
+# 5—使用 SQL 语法
 
-无论你使用Scala、Java、Python、SQL还是R，Spark在底层总是利用相同的转换。因此，选择适合你任务的语言。
+无论你使用 Scala、Java、Python、SQL 还是 R，Spark 在底层总是利用相同的转换。因此，选择适合你任务的语言。
 
-对于许多操作，SQL是支持的Spark语言中最简洁的“语言”！更具体地说：
+对于许多操作，SQL 是支持的 Spark 语言中最简洁的“语言”！更具体地说：
 
-+   如果你在添加或修改列，请使用[selectExpr](https://spark.apache.org/docs/3.1.3/api/python/reference/api/pyspark.sql.DataFrame.selectExpr.html)或[expr](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.functions.expr.html)，尤其是与Python的[f-strings](https://realpython.com/python-f-strings/)配合使用。
++   如果你在添加或修改列，请使用[selectExpr](https://spark.apache.org/docs/3.1.3/api/python/reference/api/pyspark.sql.DataFrame.selectExpr.html)或[expr](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.functions.expr.html)，尤其是与 Python 的[f-strings](https://realpython.com/python-f-strings/)配合使用。
 
-+   如果你需要复杂的SQL，创建临时视图然后使用[spark.sql()](https://spark.apache.org/docs/latest/api/sql/index.html)。
++   如果你需要复杂的 SQL，创建临时视图然后使用[spark.sql()](https://spark.apache.org/docs/latest/api/sql/index.html)。
 
 这里有两个快速示例…
 
@@ -160,11 +160,11 @@ windowSpec = Window.orderBy("id").rowsBetween(Window.unboundedPreceding, Window.
 df_with_running_total_native = df.withColumn("running_total", F.sum("value").over(windowSpec))
 ```
 
-> 使用SQL。
+> 使用 SQL。
 
 # 6—全局过滤器
 
-你需要读取存储在复杂目录中的一堆数据文件吗？如果是这样，请使用Spark极其强大的[读取选项](https://spark.apache.org/docs/latest/sql-data-sources-generic-options.html#generic-file-source-options)。
+你需要读取存储在复杂目录中的一堆数据文件吗？如果是这样，请使用 Spark 极其强大的[读取选项](https://spark.apache.org/docs/latest/sql-data-sources-generic-options.html#generic-file-source-options)。
 
 我第一次遇到这个问题时，我重写了[os.walk](https://www.tutorialspoint.com/python/os_walk.htm)以与数据存储在的云提供商一起使用。我非常自豪地向我的项目伙伴展示了这个方法，他只是说，“让我分享我的屏幕，”然后向我介绍了全局过滤器。
 
@@ -177,19 +177,19 @@ df = spark.read.load(
 )
 ```
 
-当我应用上面显示的glob过滤器，而不是我自定义的os.walk时，数据摄取操作的速度提高了超过10倍。
+当我应用上面显示的 glob 过滤器，而不是我自定义的 os.walk 时，数据摄取操作的速度提高了超过 10 倍。
 
-> Spark有强大的参数。在构建定制实现之前，请检查是否存在所需的功能。
+> Spark 有强大的参数。在构建定制实现之前，请检查是否存在所需的功能。
 
-# 7 — 使用Reduce与DataFrame.Union
+# 7 — 使用 Reduce 与 DataFrame.Union
 
-循环几乎总是对spark性能有害。原因如下…
+循环几乎总是对 spark 性能有害。原因如下…
 
-Spark有两个核心阶段 — 规划和执行。在规划阶段，spark创建一个有向无环图（DAG），指示如何执行指定的转换。规划阶段相对昂贵，有时可能需要几秒钟，因此你希望尽可能少地调用它。
+Spark 有两个核心阶段 — 规划和执行。在规划阶段，spark 创建一个有向无环图（DAG），指示如何执行指定的转换。规划阶段相对昂贵，有时可能需要几秒钟，因此你希望尽可能少地调用它。
 
-让我们讨论一个必须遍历许多DataFrame、执行昂贵转换，然后将它们追加到表中的用例。
+让我们讨论一个必须遍历许多 DataFrame、执行昂贵转换，然后将它们追加到表中的用例。
 
-首先，几乎所有的迭代使用案例都得到了本地支持，特别是[ pandas UDFs](https://stackoverflow.com/questions/58170261/how-to-use-pandas-udf-in-class)、窗口函数和连接。但如果你确实需要一个循环，下面是如何调用一个单一的规划阶段，从而在一个DAG中完成所有变换。
+首先，几乎所有的迭代使用案例都得到了本地支持，特别是[ pandas UDFs](https://stackoverflow.com/questions/58170261/how-to-use-pandas-udf-in-class)、窗口函数和连接。但如果你确实需要一个循环，下面是如何调用一个单一的规划阶段，从而在一个 DAG 中完成所有变换。
 
 ```py
 import functools
@@ -210,30 +210,30 @@ unioned_df = functools.reduce(DataFrame.union, lazily_evaluted_transforms)
 unioned_df.write.mode("append").saveAsTable("xyz")
 ```
 
-第一个解决方案使用for循环遍历路径，进行复杂转换，然后追加到我们感兴趣的delta表中。在第二种方法中，我们存储一个惰性计算的DataFrame列表，对它们进行转换，然后通过合并进行简化，执行一个spark计划并写入。
+第一个解决方案使用 for 循环遍历路径，进行复杂转换，然后追加到我们感兴趣的 delta 表中。在第二种方法中，我们存储一个惰性计算的 DataFrame 列表，对它们进行转换，然后通过合并进行简化，执行一个 spark 计划并写入。
 
-我们实际上可以通过Spark UI看到后端架构的差异…
+我们实际上可以通过 Spark UI 看到后端架构的差异…
 
-![](../Images/d94967682a2201899b5b7897edb06847.png)
+![](img/d94967682a2201899b5b7897edb06847.png)
 
-图5：for循环与functools.reduce的spark DAG。图片由作者提供。
+图 5：for 循环与 functools.reduce 的 spark DAG。图片由作者提供。
 
-在图5中，左侧对应于for循环的DAG将有10个阶段。然而，右侧对应于`functools.reduce`的DAG将只有一个阶段，因此可以更容易地进行并行处理。
+在图 5 中，左侧对应于 for 循环的 DAG 将有 10 个阶段。然而，右侧对应于`functools.reduce`的 DAG 将只有一个阶段，因此可以更容易地进行并行处理。
 
-对于读取400个唯一delta表并追加到一个delta表的简单用例，这种方法比for循环快6倍。
+对于读取 400 个唯一 delta 表并追加到一个 delta 表的简单用例，这种方法比 for 循环快 6 倍。
 
-> 创造性地创建一个单一的spark DAG。
+> 创造性地创建一个单一的 spark DAG。
 
-# 8 — 使用ChatGPT
+# 8 — 使用 ChatGPT
 
 这不是关于炒作。
 
-Spark是一个成熟且有充分文档的软件。LLMs，特别是GPT-4，擅长将复杂信息提炼成易于理解和简明的解释。自从GPT-4发布以来，我没有做过一个复杂的spark项目而没有依赖GPT-4。
+Spark 是一个成熟且有充分文档的软件。LLMs，特别是 GPT-4，擅长将复杂信息提炼成易于理解和简明的解释。自从 GPT-4 发布以来，我没有做过一个复杂的 spark 项目而没有依赖 GPT-4。
 
-![](../Images/ac29f4bd334512d8294617a5a8e6fe9e.png)
+![](img/ac29f4bd334512d8294617a5a8e6fe9e.png)
 
-图6：GPT-4对影响spark中数据分区大小的示例输出。图片由作者提供。
+图 6：GPT-4 对影响 spark 中数据分区大小的示例输出。图片由作者提供。
 
-然而，显而易见的是，使用LLMs时要小心。你发送到封闭源模型的任何内容都可能成为母公司组织的训练数据 — 确保你不发送任何敏感信息。此外，请验证GPT的输出是否可靠。
+然而，显而易见的是，使用 LLMs 时要小心。你发送到封闭源模型的任何内容都可能成为母公司组织的训练数据 — 确保你不发送任何敏感信息。此外，请验证 GPT 的输出是否可靠。
 
-> 如果使用得当，LLMs在spark学习和开发中具有颠覆性作用。每月$20是值得的。
+> 如果使用得当，LLMs 在 spark 学习和开发中具有颠覆性作用。每月$20 是值得的。

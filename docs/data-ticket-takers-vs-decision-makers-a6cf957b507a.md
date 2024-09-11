@@ -1,18 +1,18 @@
 # 你是数据票务处理者还是决策制定者？
 
-> 原文：[https://towardsdatascience.com/data-ticket-takers-vs-decision-makers-a6cf957b507a?source=collection_archive---------1-----------------------#2023-06-02](https://towardsdatascience.com/data-ticket-takers-vs-decision-makers-a6cf957b507a?source=collection_archive---------1-----------------------#2023-06-02)
+> 原文：[`towardsdatascience.com/data-ticket-takers-vs-decision-makers-a6cf957b507a?source=collection_archive---------1-----------------------#2023-06-02`](https://towardsdatascience.com/data-ticket-takers-vs-decision-makers-a6cf957b507a?source=collection_archive---------1-----------------------#2023-06-02)
 
 ## *反应型与主动型数据团队的特点与价值*
 
-[](https://barrmoses.medium.com/?source=post_page-----a6cf957b507a--------------------------------)[![Barr Moses](../Images/4c74558ee692a85196d5a55ac1920718.png)](https://barrmoses.medium.com/?source=post_page-----a6cf957b507a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6cf957b507a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a6cf957b507a--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----a6cf957b507a--------------------------------)
+[](https://barrmoses.medium.com/?source=post_page-----a6cf957b507a--------------------------------)![Barr Moses](https://barrmoses.medium.com/?source=post_page-----a6cf957b507a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6cf957b507a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6cf957b507a--------------------------------) [Barr Moses](https://barrmoses.medium.com/?source=post_page-----a6cf957b507a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-ticket-takers-vs-decision-makers-a6cf957b507a&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----a6cf957b507a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6cf957b507a--------------------------------) ·9分钟阅读·2023年6月2日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2818bac48708&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-ticket-takers-vs-decision-makers-a6cf957b507a&user=Barr+Moses&userId=2818bac48708&source=post_page-2818bac48708----a6cf957b507a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6cf957b507a--------------------------------) ·9 分钟阅读·2023 年 6 月 2 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6cf957b507a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-ticket-takers-vs-decision-makers-a6cf957b507a&source=-----a6cf957b507a---------------------bookmark_footer-----------)![](../Images/6ecf105c461e67823568f10dae0a5435.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6cf957b507a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-ticket-takers-vs-decision-makers-a6cf957b507a&source=-----a6cf957b507a---------------------bookmark_footer-----------)![](img/6ecf105c461e67823568f10dae0a5435.png)
 
 图片由作者提供。
 
@@ -36,19 +36,19 @@
 
 不对。
 
-首先，这种方法将所有数据价值创造的责任交给那些非数据专家的人。其次，最重要的利益相关者，**你的组织的客户，无法直接通过Slack向你的分析师“快速提取一些数据。”**
+首先，这种方法将所有数据价值创造的责任交给那些非数据专家的人。其次，最重要的利益相关者，**你的组织的客户，无法直接通过 Slack 向你的分析师“快速提取一些数据。”**
 
 在理想情况下，数据团队会评估和衡量每个主要数据用例的价值。他们会根据任务的投资回报率做出纯粹理性的决策。
 
 在现实世界中，这种黑白分明的数学在试图计算仪表盘和数据素养倡议的价值时会很快崩溃。**我对数据领导者的建议是紧密关注收入、客户和组织目标。**
 
-这就是网络安全公司Drata的数据副总裁[Lior Solomon](https://www.linkedin.com/in/liorsolomon/)在他曾经的Vimeo数据领导角色以及目前角色中所做的。
+这就是网络安全公司 Drata 的数据副总裁[Lior Solomon](https://www.linkedin.com/in/liorsolomon/)在他曾经的 Vimeo 数据领导角色以及目前角色中所做的。
 
-在Vimeo，他通过密切跟踪和确保业务指标数据的质量，能够优先考虑数据资源并合理分配预算。由于Vimeo即将上市，准确监控业务指标对公司增长和成功至关重要。
+在 Vimeo，他通过密切跟踪和确保业务指标数据的质量，能够优先考虑数据资源并合理分配预算。由于 Vimeo 即将上市，准确监控业务指标对公司增长和成功至关重要。
 
-在Drata的要求不同。[他在构建数据堆栈](https://drata.com/blog/compliance-automation-and-beyond-with-data)时是从零开始，数据不像在Vimeo那样面向客户。在这种情况下，他将注意力集中在快速、切实的成果上，例如与市场部门合作提高广告活动绩效。
+在 Drata 的要求不同。[他在构建数据堆栈](https://drata.com/blog/compliance-automation-and-beyond-with-data)时是从零开始，数据不像在 Vimeo 那样面向客户。在这种情况下，他将注意力集中在快速、切实的成果上，例如与市场部门合作提高广告活动绩效。
 
-他还紧密围绕Drata的使命，帮助客户尽快达到完全合规，通过构建系统来分析和监控哪些控制措施阻碍了不同客户群体实现完全合规。
+他还紧密围绕 Drata 的使命，帮助客户尽快达到完全合规，通过构建系统来分析和监控哪些控制措施阻碍了不同客户群体实现完全合规。
 
 # 跟踪指标 vs. 设定指标
 
@@ -80,31 +80,31 @@
 
 随着工程资源越来越分散，团队在数据测试上花费的时间也越来越少，这个故事变得越来越常见。
 
-主动的数据领导者不仅会优先处理，而且还会衡量他们的团队在多大程度上是第一个知道任何数据质量问题的人。他们认识到两点：**1) 数据信任是他们最重要的货币，每一个未被标记的问题都是从他们的账户中提取的一笔钱**，以及2) 这可能是数据团队被视为问题还是解决方案之间的区别。
+主动的数据领导者不仅会优先处理，而且还会衡量他们的团队在多大程度上是第一个知道任何数据质量问题的人。他们认识到两点：**1) 数据信任是他们最重要的货币，每一个未被标记的问题都是从他们的账户中提取的一笔钱**，以及 2) 这可能是数据团队被视为问题还是解决方案之间的区别。
 
-一位财富500强公司的数据领导者这样向我描述了从反应性到主动的数据质量过渡：
+一位财富 500 强公司的数据领导者这样向我描述了从反应性到主动的数据质量过渡：
 
 “我们每天发送报告，以更新高管关于业务各个方面的情况。如果这些报告中的数据有误，我会在早上第一时间听到这件事，这是一种最糟糕的开局方式…[最近]，我收到了一条量警报，并迅速给[业务利益相关者]发送了电子邮件，仅仅说，‘我们现在有问题，但我们正在解决中。请暂时不要发送你的日报。’她对我们积极主动的举措非常感激。这是一个[业务利益相关者]知道我们支持她的时刻。感觉很好——我觉得自己是在提供服务，而不仅仅是解决她的问题。”
 
-这一过渡需要一些前提条件。数据团队需要有一个数据质量监控系统；一种理解事件将如何影响组织内的内容和人员的方法；以及通知这些利益相关者的过程。快速的Slack提醒可以完成这项工作，但我见过的最好的解决方案是通过[数据可观测性/数据目录集成](https://www.montecarlodata.com/blog-atlan-monte-carlo-integration)或定制构建的解决方案在BI仪表板上放置通知。
+这一过渡需要一些前提条件。数据团队需要有一个数据质量监控系统；一种理解事件将如何影响组织内的内容和人员的方法；以及通知这些利益相关者的过程。快速的 Slack 提醒可以完成这项工作，但我见过的最好的解决方案是通过[数据可观测性/数据目录集成](https://www.montecarlodata.com/blog-atlan-monte-carlo-integration)或定制构建的解决方案在 BI 仪表板上放置通知。
 
-顶尖的数据团队会在‘首个知情’的速率之上，与利益相关者合作提前定义所需的可靠性水平（什么实际构成事件）并在[数据SLA](https://www.montecarlodata.com/blog-one-sla-at-a-time-our-data-quality-journey-at-red-digital/)中明确这些期望。
+顶尖的数据团队会在‘首个知情’的速率之上，与利益相关者合作提前定义所需的可靠性水平（什么实际构成事件）并在[数据 SLA](https://www.montecarlodata.com/blog-one-sla-at-a-time-our-data-quality-journey-at-red-digital/)中明确这些期望。
 
 # 成本与投资
 
-被动的数据团队报告他们的输出，通常用技术术语框定。例如，“我们已经建立了X条数据管道，”或者“我们已将延迟减少了25%。”他们以相同的方式提出预算请求。“我们需要X以便做Y。”
+被动的数据团队报告他们的输出，通常用技术术语框定。例如，“我们已经建立了 X 条数据管道，”或者“我们已将延迟减少了 25%。”他们以相同的方式提出预算请求。“我们需要 X 以便做 Y。”
 
 结果，团队被视为成本中心，他们的预算请求（现在甚至包括人员需求）被视为需要最小化的非必要项。在首席财务官的压力下，“如果他们真的需要这个”，他们要么放弃这个计划，要么**转向拼凑各种零散的开源解决方案，如同弗兰肯斯坦的怪物。**
 
-这可能迅速变成一个恶性循环，因为被动的数据团队花费更多时间——实际上超过50%——来保持他们的弗兰肯斯坦基础设施的功能性，而不是增加价值。他们变成了数据水管工，而不是数据工程师。
+这可能迅速变成一个恶性循环，因为被动的数据团队花费更多时间——实际上超过 50%——来保持他们的弗兰肯斯坦基础设施的功能性，而不是增加价值。他们变成了数据水管工，而不是数据工程师。
 
-根据[Adam Woods](https://www.linkedin.com/in/adamjeremywoods?miniProfileUrn=urn%3Ali%3Afs_miniProfile%3AACoAAAEY68oBFF_fp256NBR74L5bfJCgie_gETs&lipi=urn%3Ali%3Apage%3Ad_flagship3_search_srp_all%3BIcVVaCQmTjOq6SM96CqMhg%3D%3D)，数字广告平台Choozle的首席执行官，数据团队在尝试采取更主动的方式时，应考虑他们的技术决策如何影响团队生产力——最重要的是，如何推动业务增长。
+根据[Adam Woods](https://www.linkedin.com/in/adamjeremywoods?miniProfileUrn=urn%3Ali%3Afs_miniProfile%3AACoAAAEY68oBFF_fp256NBR74L5bfJCgie_gETs&lipi=urn%3Ali%3Apage%3Ad_flagship3_search_srp_all%3BIcVVaCQmTjOq6SM96CqMhg%3D%3D)，数字广告平台 Choozle 的首席执行官，数据团队在尝试采取更主动的方式时，应考虑他们的技术决策如何影响团队生产力——最重要的是，如何推动业务增长。
 
-“我理解转向开源的本能，但实际上我在使用[某些现代数据堆栈工具]时拥有更低的拥有成本，因为管理负担非常小，而且生态系统配合得很好，”Adam说道。“我们能够将开发人员和数据库分析师原本花在担心更新和基础设施上的时间重新投入到构建卓越的客户体验中。”
+“我理解转向开源的本能，但实际上我在使用[某些现代数据堆栈工具]时拥有更低的拥有成本，因为管理负担非常小，而且生态系统配合得很好，”Adam 说道。“我们能够将开发人员和数据库分析师原本花在担心更新和基础设施上的时间重新投入到构建卓越的客户体验中。”
 
 **主动的数据领导者没有成本，他们只有投资。** 两者之间的区别在于，投资是有可追溯性的，并且有回报。虽然对于更广泛的平台或基础设施投资，两者都可能难以计算，但主动的数据领导者会在实施前后花时间建立商业案例。
 
-**对于许多公司而言，预算不是给予的，而是赢得的。** 因此，这些数据团队几乎总是有足够的资源，因为CFO理解这一项目项的背景，“通过使我们的面向客户的机器学习模型更准确来提高5%的收入。”
+**对于许多公司而言，预算不是给予的，而是赢得的。** 因此，这些数据团队几乎总是有足够的资源，因为 CFO 理解这一项目项的背景，“通过使我们的面向客户的机器学习模型更准确来提高 5%的收入。”
 
 积极的数据团队还通过关注业务价值来确保这些投资获得回报。更多时候，这意味着通过向客户展示数据来实现数据的货币化。
 
@@ -114,10 +114,10 @@
 
 如果你觉得这篇文章有帮助，并希望我进一步探讨**孤岛与平台、使能与强制、囤积与策划**以及其他那些刚刚错过的积极数据团队的例子，请告诉我。
 
-在此之前，我给你留一句话，这反映了我对数据领导者的最常见建议：对客户影响要有执着。前Gitlab数据与分析高级总监Rob Parker对此了解颇深。事实上，Gitlab将其[公司手册](https://about.gitlab.com/handbook/)开源，以确保客户对他们的愿景、业务优先级和KPI有全面的了解。
+在此之前，我给你留一句话，这反映了我对数据领导者的最常见建议：对客户影响要有执着。前 Gitlab 数据与分析高级总监 Rob Parker 对此了解颇深。事实上，Gitlab 将其[公司手册](https://about.gitlab.com/handbook/)开源，以确保客户对他们的愿景、业务优先级和 KPI 有全面的了解。
 
-Rob说：“作为一个嵌入在业务中、没有直接影响或与客户互动的团队，很容易忽视我们工作的意义。所以我们尽量考虑我们客户的客户。我们已经能够从典型的接单者转变为在为业务构建可扩展和可靠的解决方案的过程中成为值得信赖的业务合作伙伴。”
+Rob 说：“作为一个嵌入在业务中、没有直接影响或与客户互动的团队，很容易忽视我们工作的意义。所以我们尽量考虑我们客户的客户。我们已经能够从典型的接单者转变为在为业务构建可扩展和可靠的解决方案的过程中成为值得信赖的业务合作伙伴。”
 
 那么，你会选择哪条路？
 
-***联系Barr*** [***在LinkedIn上***](https://www.linkedin.com/in/barrmoses) ***以表达你的挫败感、发送数据搞笑图或分享你在应对这一危机过程中的经历。总是很高兴联系*。
+***联系 Barr*** [***在 LinkedIn 上***](https://www.linkedin.com/in/barrmoses) ***以表达你的挫败感、发送数据搞笑图或分享你在应对这一危机过程中的经历。总是很高兴联系*。

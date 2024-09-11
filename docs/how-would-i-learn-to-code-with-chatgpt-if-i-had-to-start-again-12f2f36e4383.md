@@ -1,22 +1,22 @@
 # 如果我从头开始，如何用 ChatGPT 学习编程？
 
-> 原文：[https://towardsdatascience.com/how-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383?source=collection_archive---------1-----------------------#2023-12-31](https://towardsdatascience.com/how-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383?source=collection_archive---------1-----------------------#2023-12-31)
+> 原文：[`towardsdatascience.com/how-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383?source=collection_archive---------1-----------------------#2023-12-31`](https://towardsdatascience.com/how-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383?source=collection_archive---------1-----------------------#2023-12-31)
 
-## 探索 ChatGPT 在我15年的编程学习旅程中的应用——超越复制粘贴
+## 探索 ChatGPT 在我 15 年的编程学习旅程中的应用——超越复制粘贴
 
-[](https://liviaellen.medium.com/?source=post_page-----12f2f36e4383--------------------------------)[![Livia Ellen](../Images/99f44fbb4e2f0f5454d7bd6a046aca00.png)](https://liviaellen.medium.com/?source=post_page-----12f2f36e4383--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12f2f36e4383--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12f2f36e4383--------------------------------) [Livia Ellen](https://liviaellen.medium.com/?source=post_page-----12f2f36e4383--------------------------------)
+[](https://liviaellen.medium.com/?source=post_page-----12f2f36e4383--------------------------------)![Livia Ellen](https://liviaellen.medium.com/?source=post_page-----12f2f36e4383--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12f2f36e4383--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----12f2f36e4383--------------------------------) [Livia Ellen](https://liviaellen.medium.com/?source=post_page-----12f2f36e4383--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F569a6634b753&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383&user=Livia+Ellen&userId=569a6634b753&source=post_page-569a6634b753----12f2f36e4383---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----12f2f36e4383--------------------------------) ·9分钟阅读·2023年12月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12f2f36e4383&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383&user=Livia+Ellen&userId=569a6634b753&source=-----12f2f36e4383---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F569a6634b753&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383&user=Livia+Ellen&userId=569a6634b753&source=post_page-569a6634b753----12f2f36e4383---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----12f2f36e4383--------------------------------) ·9 分钟阅读·2023 年 12 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12f2f36e4383&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383&user=Livia+Ellen&userId=569a6634b753&source=-----12f2f36e4383---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12f2f36e4383&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383&source=-----12f2f36e4383---------------------bookmark_footer-----------)![](../Images/3412ff67d9bb8c1d757f727d0162bb5e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12f2f36e4383&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-would-i-learn-to-code-with-chatgpt-if-i-had-to-start-again-12f2f36e4383&source=-----12f2f36e4383---------------------bookmark_footer-----------)![](img/3412ff67d9bb8c1d757f727d0162bb5e.png)
 
 图片由 [Arnold Francisca](https://unsplash.com/@clark_fransa?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-编程一直是我生活的一部分，从10岁时修改HTML和CSS以装饰我的Friendster个人主页，到探索SQL注入的刺激，制作一个三脚机器人以寻求乐趣，最近又投入Python编程，我的编程旅程丰富多彩且充满乐趣！
+编程一直是我生活的一部分，从 10 岁时修改 HTML 和 CSS 以装饰我的 Friendster 个人主页，到探索 SQL 注入的刺激，制作一个三脚机器人以寻求乐趣，最近又投入 Python 编程，我的编程旅程丰富多彩且充满乐趣！
 
 这是我从各种编程方法中学到的东西。
 
@@ -56,7 +56,7 @@
 
 ## **就这样，你解决了 bug！**
 
-![](../Images/4b38f85eb0d5950f845ad5d3aea4bb73.png)
+![](img/4b38f85eb0d5950f845ad5d3aea4bb73.png)
 
 照片由 [Stephen Hocking](https://unsplash.com/@shocking57?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -96,13 +96,13 @@
 
 > 比如：
 > 
-> - 访问 [https://scikit-learn.org/stable/modules/](https://scikit-learn.org/stable/modules/) 获取 Scikit Learn 文档
+> - 访问 [`scikit-learn.org/stable/modules/`](https://scikit-learn.org/stable/modules/) 获取 Scikit Learn 文档
 
 **2\. 在 Google 和 Stack Overflow 上搜索：**
 
 如果文档没有提供解决方案，你可以转向 Google 和 Stack Overflow。浏览各种论坛线程和讨论，找到类似的问题及其解决方案。
 
-![](../Images/f557ee7ccdd4186b6fdd757b390f3c48.png)
+![](img/f557ee7ccdd4186b6fdd757b390f3c48.png)
 
 StackOverflow 线程
 
@@ -110,7 +110,7 @@ StackOverflow 线程
 
 如果问题独特或文档不足，信任你的直觉！你可以查找你过去认为可信的 Google 文章和资源，并尝试将类似的解决方案应用到你的问题上。
 
-![](../Images/cc818bc9c1710778f668ce39929f52e2.png)
+![](img/cc818bc9c1710778f668ce39929f52e2.png)
 
 Google 搜索结果
 
@@ -126,7 +126,7 @@ Google 搜索结果
 
 > **“我在 [编程语言] 脚本中遇到了一个问题，描述 [错误]。你能帮我理解可能的原因并建议可能的解决方案吗？”**
 
-![](../Images/59c6c87a5e797f4610b3b2125e6219d5.png)
+![](img/59c6c87a5e797f4610b3b2125e6219d5.png)
 
 **与 ChatGPT 进行对话**
 
@@ -136,7 +136,7 @@ Google 搜索结果
 
 > **“解释一下 [特定概念] 在 [编程语言] 中是如何工作的？我认为这可能与我面临的错误有关。错误是：[错误]”**
 
-![](../Images/bc7193440c908271bce740a4aaff808b.png)
+![](img/bc7193440c908271bce740a4aaff808b.png)
 
 **用 ChatGPT 澄清概念**
 
@@ -146,7 +146,7 @@ Google 搜索结果
 
 > **“处理 [问题] 的一些常见策略是什么？对工具或技术有何建议？”**
 
-![](../Images/c9c83457c8c1677410ddcbfc5228a8e0.png)
+![](img/c9c83457c8c1677410ddcbfc5228a8e0.png)
 
 使用 ChatGPT 作为编码伙伴
 
@@ -184,7 +184,7 @@ ChatGPT 有一个限制，就是不能看到你代码的上下文。你可以始
 
 > 如果你真的想利用自动补全模型；除了单独使用 ChatGPT，还可以尝试使用 VScode 扩展进行自动代码补全任务，例如 [CodeGPT — GPT4 扩展在 VScode](https://codegpt.co)、[GitHub Copilot](https://github.com/features/copilot) 或 Google Colab 中的自动补全 AI 工具。
 
-![](../Images/4ad19b73b78e7095c614723188bcd2c2.png)
+![](img/4ad19b73b78e7095c614723188bcd2c2.png)
 
 Google Colab 中的自动代码补全
 
@@ -192,7 +192,7 @@ Google Colab 中的自动代码补全
 
 另一种选择是 GitHub Copilot。通过 GitHub Copilot，你可以实时获得基于 AI 的建议。GitHub Copilot 在开发者输入时建议代码补全，并根据项目的上下文和风格规范将提示转换为编码建议。根据这篇 [Github 发布说明](https://github.blog/changelog/2023-11-30-github-copilot-november-30th-update/)，Copilot Chat 现在由 OpenAI GPT-4 提供支持（与 ChatGPT 使用的模型类似）。
 
-![](../Images/9e78015befef62d5cba45d754f91b54c.png)
+![](img/9e78015befef62d5cba45d754f91b54c.png)
 
 GitHub Copilot 示例 — 图片由 GitHub 提供
 
@@ -206,11 +206,11 @@ GitHub Copilot 示例 — 图片由 GitHub 提供
 
 +   使用代码 😎
 
-![](../Images/5dc4457ce993909f239eb4f4ca82228a.png)
+![](img/5dc4457ce993909f239eb4f4ca82228a.png)
 
 **你还可以通过菜单中的扩展启动聊天**，深入讨论编码 💬
 
-![](../Images/b6d119b0f3240719d8b3dfe333fdd0ec.png)
+![](img/b6d119b0f3240719d8b3dfe333fdd0ec.png)
 
 当我回顾自己的编码历程时，学到的宝贵教训是没有一种放之四海而皆准的学习方法。拥抱多样的学习方式，将传统的浏览和社区互动与 ChatGPT 和自动代码补全工具等创新能力无缝结合是至关重要的。
 

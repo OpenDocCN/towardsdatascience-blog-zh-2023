@@ -1,20 +1,20 @@
 # 使用 Versatile Data Kit (VDK) 掌握批量数据处理
 
-> 原文：[https://towardsdatascience.com/mastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa?source=collection_archive---------14-----------------------#2023-11-17](https://towardsdatascience.com/mastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa?source=collection_archive---------14-----------------------#2023-11-17)
+> 原文：[`towardsdatascience.com/mastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa?source=collection_archive---------14-----------------------#2023-11-17`](https://towardsdatascience.com/mastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa?source=collection_archive---------14-----------------------#2023-11-17)
 
 ## 数据管理
 
 ## 使用 VDK 进行批量数据处理的教程
 
-[](https://alod83.medium.com/?source=post_page-----e631454819aa--------------------------------)[![Angelica Lo Duca](../Images/45aa2e2e504bb3af6d3b8009dc6f030e.png)](https://alod83.medium.com/?source=post_page-----e631454819aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e631454819aa--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e631454819aa--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----e631454819aa--------------------------------)
+[](https://alod83.medium.com/?source=post_page-----e631454819aa--------------------------------)![Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----e631454819aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e631454819aa--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e631454819aa--------------------------------) [Angelica Lo Duca](https://alod83.medium.com/?source=post_page-----e631454819aa--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----e631454819aa---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e631454819aa--------------------------------) ·5 分钟阅读·2023年11月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe631454819aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=-----e631454819aa---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8bc34d63aee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=post_page-f8bc34d63aee----e631454819aa---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e631454819aa--------------------------------) ·5 分钟阅读·2023 年 11 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe631454819aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa&user=Angelica+Lo+Duca&userId=f8bc34d63aee&source=-----e631454819aa---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe631454819aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa&source=-----e631454819aa---------------------bookmark_footer-----------)![](../Images/e423c3ada05189d8098c2d2cc2d01a63.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe631454819aa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-batch-data-processing-with-versatile-data-kit-vdk-e631454819aa&source=-----e631454819aa---------------------bookmark_footer-----------)![](img/e423c3ada05189d8098c2d2cc2d01a63.png)
 
 图片由 [Mika Baumeister](https://unsplash.com/@mbaumi?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -50,7 +50,7 @@ ELT（提取、加载、转换）是批量数据处理的典型用例。ELT 包�
 
 # 2 在 VDK 中创建和管理批量处理管道
 
-VDK 采用组件化的方法，允许你快速构建数据处理管道。有关 VDK 的介绍，请参见我之前的文章 [多功能数据工具概述](/an-overview-of-versatile-data-kit-a812cfb26de7)。本文假设你已经在计算机上安装了 VDK。
+VDK 采用组件化的方法，允许你快速构建数据处理管道。有关 VDK 的介绍，请参见我之前的文章 多功能数据工具概述。本文假设你已经在计算机上安装了 VDK。
 
 为了说明 VDK 中的批量处理管道是如何工作的，我们考虑一个需要执行 ELT 任务的场景。
 
@@ -58,7 +58,7 @@ VDK 采用组件化的方法，允许你快速构建数据处理管道。有关 
 
 下图展示了在此场景下批量数据处理的步骤。
 
-![](../Images/37c5458a0e1cecc95842ac62cc06de5c.png)
+![](img/37c5458a0e1cecc95842ac62cc06de5c.png)
 
 作者提供的图片
 
@@ -157,7 +157,7 @@ CREATE TABLE cleaned_assets AS (
 
 VDK 提供了 VDK UI，一个用于监控数据作业的图形用户界面。要安装 VDK UI，请按照 [此链接](https://www.youtube.com/watch?v=DLRGCCGUp0U) 中的官方 VDK 视频操作。下图显示了 VDK UI 的快照。
 
-![](../Images/ec6fe077b8c94f069f56198ef1db996b.png)
+![](img/ec6fe077b8c94f069f56198ef1db996b.png)
 
 作者提供的图片
 

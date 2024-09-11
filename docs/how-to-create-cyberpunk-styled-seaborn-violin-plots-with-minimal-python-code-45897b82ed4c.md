@@ -1,18 +1,18 @@
 # 如何使用最少的 Python 代码创建 Cyberpunk 风格的 Seaborn 小提琴图
 
-> 原文：[https://towardsdatascience.com/how-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c?source=collection_archive---------14-----------------------#2023-06-26](https://towardsdatascience.com/how-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c?source=collection_archive---------14-----------------------#2023-06-26)
+> 原文：[`towardsdatascience.com/how-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c?source=collection_archive---------14-----------------------#2023-06-26`](https://towardsdatascience.com/how-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c?source=collection_archive---------14-----------------------#2023-06-26)
 
 ## 一个简单的教程，教你如何轻松提升 Seaborn 小提琴图的效果
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----45897b82ed4c--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----45897b82ed4c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45897b82ed4c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----45897b82ed4c--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----45897b82ed4c--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----45897b82ed4c--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----45897b82ed4c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45897b82ed4c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----45897b82ed4c--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----45897b82ed4c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----45897b82ed4c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45897b82ed4c--------------------------------) · 6 分钟阅读 · 2023年6月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F45897b82ed4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c&user=Andy+McDonald&userId=9c280f85f15c&source=-----45897b82ed4c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----45897b82ed4c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45897b82ed4c--------------------------------) · 6 分钟阅读 · 2023 年 6 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F45897b82ed4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c&user=Andy+McDonald&userId=9c280f85f15c&source=-----45897b82ed4c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F45897b82ed4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c&source=-----45897b82ed4c---------------------bookmark_footer-----------)![](../Images/284478862de6863165b69a286d6f6a82.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F45897b82ed4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-cyberpunk-styled-seaborn-violin-plots-with-minimal-python-code-45897b82ed4c&source=-----45897b82ed4c---------------------bookmark_footer-----------)![](img/284478862de6863165b69a286d6f6a82.png)
 
 Cyberpunk 风格的小提琴图，展示了井内不同岩性遇到的密度变化。图片由作者提供。
 
@@ -22,8 +22,8 @@ Cyberpunk 风格的小提琴图，展示了井内不同岩性遇到的密度变�
 
 如果你想了解更多，你可以查看我在下面的文章中如何将其应用于 matplotlib 图形。
 
-[## 赛博朋克风格的 Matplotlib 图形
+## 赛博朋克风格的 Matplotlib 图形
 
 ### 用几行代码将你的 Matplotlib 图形从无聊变得有趣
 
-[towardsdatascience.com](/cyberpunking-your-matplotlib-figures-96f4d473185d?source=post_page-----45897b82ed4c--------------------------------)
+[towardsdatascience.com

@@ -1,18 +1,18 @@
 # 元启发式算法解释：蚁群优化
 
-> 原文：[https://towardsdatascience.com/meta-heuristics-explained-ant-colony-optimization-d016fe925108?source=collection_archive---------6-----------------------#2023-09-04](https://towardsdatascience.com/meta-heuristics-explained-ant-colony-optimization-d016fe925108?source=collection_archive---------6-----------------------#2023-09-04)
+> 原文：[`towardsdatascience.com/meta-heuristics-explained-ant-colony-optimization-d016fe925108?source=collection_archive---------6-----------------------#2023-09-04`](https://towardsdatascience.com/meta-heuristics-explained-ant-colony-optimization-d016fe925108?source=collection_archive---------6-----------------------#2023-09-04)
 
-![](../Images/ed465df790b8c3b0f8a86cb4e678961f.png)
+![](img/ed465df790b8c3b0f8a86cb4e678961f.png)
 
 跟随信息素踪迹的蚂蚁。图像由作者使用 Dall·E 创建。
 
 ## 基于蚂蚁行为的鲜为人知的启发式算法介绍
 
-[](https://hennie-de-harder.medium.com/?source=post_page-----d016fe925108--------------------------------)[![Hennie de Harder](../Images/3e4f2cccd6cb976ca3f8bf15597daea8.png)](https://hennie-de-harder.medium.com/?source=post_page-----d016fe925108--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d016fe925108--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d016fe925108--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----d016fe925108--------------------------------)
+[](https://hennie-de-harder.medium.com/?source=post_page-----d016fe925108--------------------------------)![Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----d016fe925108--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d016fe925108--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d016fe925108--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----d016fe925108--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeta-heuristics-explained-ant-colony-optimization-d016fe925108&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----d016fe925108---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d016fe925108--------------------------------) ·7分钟阅读·2023年9月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd016fe925108&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeta-heuristics-explained-ant-colony-optimization-d016fe925108&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----d016fe925108---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeta-heuristics-explained-ant-colony-optimization-d016fe925108&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----d016fe925108---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d016fe925108--------------------------------) ·7 分钟阅读·2023 年 9 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd016fe925108&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmeta-heuristics-explained-ant-colony-optimization-d016fe925108&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----d016fe925108---------------------clap_footer-----------)
 
 --
 

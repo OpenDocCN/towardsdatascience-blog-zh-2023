@@ -1,18 +1,18 @@
-# 5条建议，帮助数据专业人士展示自己的工作
+# 5 条建议，帮助数据专业人士展示自己的工作
 
-> 原文：[https://towardsdatascience.com/5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0?source=collection_archive---------16-----------------------#2023-01-09](https://towardsdatascience.com/5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0?source=collection_archive---------16-----------------------#2023-01-09)
+> 原文：[`towardsdatascience.com/5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0?source=collection_archive---------16-----------------------#2023-01-09`](https://towardsdatascience.com/5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0?source=collection_archive---------16-----------------------#2023-01-09)
 
 ## 提高你作为数据专业人士工作的曝光率
 
-[](https://chengzhizhao.medium.com/?source=post_page-----a1c8f71c9de0--------------------------------)[![Chengzhi Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----a1c8f71c9de0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a1c8f71c9de0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a1c8f71c9de0--------------------------------) [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----a1c8f71c9de0--------------------------------)
+[](https://chengzhizhao.medium.com/?source=post_page-----a1c8f71c9de0--------------------------------)![Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----a1c8f71c9de0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a1c8f71c9de0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a1c8f71c9de0--------------------------------) [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----a1c8f71c9de0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff956c63a9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0&user=Chengzhi+Zhao&userId=f956c63a9571&source=post_page-f956c63a9571----a1c8f71c9de0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a1c8f71c9de0--------------------------------) ·7分钟阅读·2023年1月9日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa1c8f71c9de0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0&user=Chengzhi+Zhao&userId=f956c63a9571&source=-----a1c8f71c9de0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff956c63a9571&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0&user=Chengzhi+Zhao&userId=f956c63a9571&source=post_page-f956c63a9571----a1c8f71c9de0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a1c8f71c9de0--------------------------------) ·7 分钟阅读·2023 年 1 月 9 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa1c8f71c9de0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0&user=Chengzhi+Zhao&userId=f956c63a9571&source=-----a1c8f71c9de0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa1c8f71c9de0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0&source=-----a1c8f71c9de0---------------------bookmark_footer-----------)![](../Images/eb08d67591e9149bf7bc87d5d8c0259b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa1c8f71c9de0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-recommendations-to-show-your-work-as-data-professionals-a1c8f71c9de0&source=-----a1c8f71c9de0---------------------bookmark_footer-----------)![](img/eb08d67591e9149bf7bc87d5d8c0259b.png)
 
 图片来源：[JIUNN-YIH LAU](https://unsplash.com/@yihology?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/s/photos/embrace?order_by=latest&orientation=landscape&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

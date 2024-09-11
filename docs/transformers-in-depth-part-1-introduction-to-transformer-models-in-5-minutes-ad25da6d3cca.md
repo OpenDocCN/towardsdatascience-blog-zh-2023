@@ -1,14 +1,14 @@
-# 深入了解Transformers – 第1部分。5分钟介绍Transformer模型
+# 深入了解 Transformers – 第一部分。5 分钟介绍 Transformer 模型
 
-> 原文：[https://towardsdatascience.com/transformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca?source=collection_archive---------0-----------------------#2023-03-27](https://towardsdatascience.com/transformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca?source=collection_archive---------0-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/transformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca?source=collection_archive---------0-----------------------#2023-03-27`](https://towardsdatascience.com/transformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca?source=collection_archive---------0-----------------------#2023-03-27)
 
-## 在5分钟内理解Transformer架构及其关键见解
+## 在 5 分钟内理解 Transformer 架构及其关键见解
 
-[](https://gabrielfurnieles.medium.com/?source=post_page-----ad25da6d3cca--------------------------------)[![Gabriel Furnieles](../Images/710c939d8114ea8a4db16fd9f2c71f8a.png)](https://gabrielfurnieles.medium.com/?source=post_page-----ad25da6d3cca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ad25da6d3cca--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ad25da6d3cca--------------------------------) [Gabriel Furnieles](https://gabrielfurnieles.medium.com/?source=post_page-----ad25da6d3cca--------------------------------)
+[](https://gabrielfurnieles.medium.com/?source=post_page-----ad25da6d3cca--------------------------------)![Gabriel Furnieles](https://gabrielfurnieles.medium.com/?source=post_page-----ad25da6d3cca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ad25da6d3cca--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad25da6d3cca--------------------------------) [Gabriel Furnieles](https://gabrielfurnieles.medium.com/?source=post_page-----ad25da6d3cca--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe77c10fd9715&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca&user=Gabriel+Furnieles&userId=e77c10fd9715&source=post_page-e77c10fd9715----ad25da6d3cca---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad25da6d3cca--------------------------------) ·9分钟阅读·2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fad25da6d3cca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca&user=Gabriel+Furnieles&userId=e77c10fd9715&source=-----ad25da6d3cca---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe77c10fd9715&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca&user=Gabriel+Furnieles&userId=e77c10fd9715&source=post_page-e77c10fd9715----ad25da6d3cca---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ad25da6d3cca--------------------------------) ·9 分钟阅读·2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fad25da6d3cca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-in-depth-part-1-introduction-to-transformer-models-in-5-minutes-ad25da6d3cca&user=Gabriel+Furnieles&userId=e77c10fd9715&source=-----ad25da6d3cca---------------------clap_footer-----------)
 
 --
 
@@ -42,7 +42,7 @@
 
 在数学中，嵌入空间构成了一个**标准化向量空间**，其中每个向量对应于一个特定的标记。向量空间的基由嵌入层能够找到的标记之间的关系决定。例如，一个维度可能对应于以*-ing* 结尾的动词，另一个可能是具有积极含义的形容词，等等。此外，向量之间的角度决定了标记之间的相似性，形成具有语义关系的标记簇。
 
-![](../Images/378e6c974c5288ccdef023e5404cce13.png)
+![](img/378e6c974c5288ccdef023e5404cce13.png)
 
 文本嵌入示意图。左侧，单词/标记被嵌入为向量，其中 d_model 代表最大嵌入维度。右侧，表示了前 3 个维度。尽管示例有所夸张，但请注意相似的单词如何形成组（簇），代表它们之间的相似性。图片由作者提供。
 
@@ -50,7 +50,7 @@
 
 # Transformer 的工作流程
 
-![](../Images/fd2c0d057ce9723313f403dbb091328a.png)
+![](img/fd2c0d057ce9723313f403dbb091328a.png)
 
 Transformer 图示。图片来源于论文 [Vaswani, Ashish, et al. 2017.](https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf)
 
@@ -66,7 +66,7 @@ Transformer 图示。图片来源于论文 [Vaswani, Ashish, et al. 2017.](https
 
 +   另一方面，解码器以翻译后的西班牙语句子（原始图中的*Outputs*）作为第一个输入，应用注意力机制，然后将结果与编码器的输出通过另一种注意力机制进行结合。直观地说，[解码器学会了将目标嵌入空间（西班牙语）与输入嵌入空间（英语）相关联，从而在这两个向量空间之间找到基础变换。](http://a)
 
-![](../Images/8ed0d9b4caf9c66100ef7ac4123b1737.png)
+![](img/8ed0d9b4caf9c66100ef7ac4123b1737.png)
 
 Transformer 的高层视角概述。编码器和解码器层已被简化为单个块，并且每个块的输出已被标注。图片由作者提供。
 
@@ -76,73 +76,73 @@ Transformer 的高层视角概述。编码器和解码器层已被简化为单�
 
 正如我们所见，Transformer 的输入文本被嵌入到一个高维向量空间中，因此输入的是一系列向量而不是一个句子。然而，还有一种更好的数学结构来表示向量序列，那就是矩阵！更进一步地，在训练神经网络时，我们不是逐样本训练，而是使用多个样本打包成的批次进行训练。**最终的输入是形状为 *[N, L, E]* 的张量，其中 *N* 是批次大小，*L* 是序列长度，*E* 是嵌入维度**。
 
-![](../Images/843e1b3194c7413d1bdf9442785e84b0.png)
+![](img/843e1b3194c7413d1bdf9442785e84b0.png)
 
 **源输入张量**的示意图。在左侧，二维张量表示批次的第一个 **嵌入序列**。在右侧，是包含单个批次所有序列的完整批次张量，输入到 Transformer 编码器中。同样，目标张量具有相同的形状，但包含真实的输出。图片由作者提供。
 
-关于Transformer的输出，应用了一个线性 + Softmax 层，产生一些输出概率（回忆一下，Softmax 层输出的是定义类别的概率分布）。Transformer的输出不是翻译后的句子，而是一个目标词汇的概率分布，决定了具有最高概率的单词。注意，对于序列长度中的每个位置，生成一个概率分布来选择下一个具有更高概率的令牌。**由于在训练过程中Transformer一次处理所有句子，我们得到一个3D张量，表示词汇令牌的概率分布，其形状为*[N, L, V]*，其中N是批量大小，L是序列长度，V是词汇长度**。
+关于 Transformer 的输出，应用了一个线性 + Softmax 层，产生一些输出概率（回忆一下，Softmax 层输出的是定义类别的概率分布）。Transformer 的输出不是翻译后的句子，而是一个目标词汇的概率分布，决定了具有最高概率的单词。注意，对于序列长度中的每个位置，生成一个概率分布来选择下一个具有更高概率的令牌。**由于在训练过程中 Transformer 一次处理所有句子，我们得到一个 3D 张量，表示词汇令牌的概率分布，其形状为*[N, L, V]*，其中 N 是批量大小，L 是序列长度，V 是词汇长度**。
 
-![](../Images/ed71c7ef0668468c4c66409316b6f6b4.png)
+![](img/ed71c7ef0668468c4c66409316b6f6b4.png)
 
 **输出概率张量**的示意图。左侧是单个序列的词汇预测概率分布。每列表示目标词汇空间中的一个单词，每行对应序列中的令牌。右侧是整个批次的完整预测张量。图片由作者提供。
 
 最终，**预测的令牌是概率最高的**。
 
-> **注意 4.** 如在NLP引言部分所述，嵌入后的所有序列都具有相同的长度，这对应于Transformer可以引入/生成的最长序列。
+> **注意 4.** 如在 NLP 引言部分所述，嵌入后的所有序列都具有相同的长度，这对应于 Transformer 可以引入/生成的最长序列。
 
 # 训练与预测
 
-在文章第一部分的最后一节中，我想谈谈Transformer的训练阶段与预测阶段的区别。
+在文章第一部分的最后一节中，我想谈谈 Transformer 的训练阶段与预测阶段的区别。
 
-如上一节所述，Transformer接受两个输入（源和目标）。在训练过程中，Transformer能够一次处理所有输入，这意味着输入张量仅通过模型传递一次。输出实际上是前面图中呈现的三维概率张量。
+如上一节所述，Transformer 接受两个输入（源和目标）。在训练过程中，Transformer 能够一次处理所有输入，这意味着输入张量仅通过模型传递一次。输出实际上是前面图中呈现的三维概率张量。
 
-![](../Images/43e0b7ffc23fc3941cfb4bd39846e0cf.png)
+![](img/43e0b7ffc23fc3941cfb4bd39846e0cf.png)
 
-Transformer训练阶段。首先，源输入（英文句子）被嵌入并在编码器中应用注意力。然后，目标输入（西班牙语）被输入到解码器中，在解码器的第二层中，源注意力和目标注意力被结合。最后，生成词汇令牌的概率分布，并选择概率最高的令牌以形成翻译后的输出句子。**注意，在层之间（L,E）的维度不变**。图片由作者提供。
+Transformer 训练阶段。首先，源输入（英文句子）被嵌入并在编码器中应用注意力。然后，目标输入（西班牙语）被输入到解码器中，在解码器的第二层中，源注意力和目标注意力被结合。最后，生成词汇令牌的概率分布，并选择概率最高的令牌以形成翻译后的输出句子。**注意，在层之间（L,E）的维度不变**。图片由作者提供。
 
 相反，在预测阶段，没有目标输入序列供 Transformer 输入（如果我们已经知道翻译后的句子，就不需要深度学习模型进行文本翻译了）。那么，我们输入什么作为目标输入呢？
 
-就在这一点上，**Transformer的自回归行为**显现出来。Transformer可以在编码器中一次处理源输入序列，但对于解码器模块，它进入一个循环，每次迭代只生成序列中的下一个标记（一个关于词汇标记的行概率向量）。具有较高概率的选择标记随后作为目标输入再次输入，因此Transformer总是根据其之前的预测来预测下一个标记（因此具有自回归含义）。但是，在第一次迭代时应该输入哪个标记呢？
+就在这一点上，**Transformer 的自回归行为**显现出来。Transformer 可以在编码器中一次处理源输入序列，但对于解码器模块，它进入一个循环，每次迭代只生成序列中的下一个标记（一个关于词汇标记的行概率向量）。具有较高概率的选择标记随后作为目标输入再次输入，因此 Transformer 总是根据其之前的预测来预测下一个标记（因此具有自回归含义）。但是，在第一次迭代时应该输入哪个标记呢？
 
-记得在NLP介绍部分提到的特殊标记吗？作为目标输入引入的第一个元素是起始标记<START>，它标志着句子的开始。
+记得在 NLP 介绍部分提到的特殊标记吗？作为目标输入引入的第一个元素是起始标记<START>，它标志着句子的开始。
 
-![](../Images/45ed7f6e7fa569b5cce698efbf7b81a7.png)
+![](img/45ed7f6e7fa569b5cce698efbf7b81a7.png)
 
-Transformer预测阶段。编码器部分保持不变，而解码器的张量是行向量。第一次（0次）迭代的输入文本为空，因为只有<START>标记。**注意连接预测标记回到目标输入的箭头，表示自回归行为**。在接下来的迭代中，目标输入会随着Transformer从序列中预测新的标记而增加。然而，只考虑输出概率张量中的最后一行，这意味着过去预测的标记不能改变。图片由作者提供。
+Transformer 预测阶段。编码器部分保持不变，而解码器的张量是行向量。第一次（0 次）迭代的输入文本为空，因为只有<START>标记。**注意连接预测标记回到目标输入的箭头，表示自回归行为**。在接下来的迭代中，目标输入会随着 Transformer 从序列中预测新的标记而增加。然而，只考虑输出概率张量中的最后一行，这意味着过去预测的标记不能改变。图片由作者提供。
 
-![](../Images/06790501544f720c7279d40653f906fd.png)
+![](img/06790501544f720c7279d40653f906fd.png)
 
-比较解码器在预测阶段的维度的表（上图展示了迭代0）。注意维度从1增加到L-1。一旦Transformer预测了序列中的倒数第二个标记，它会添加<END>特殊标记来完成预测。图片由作者提供。
+比较解码器在预测阶段的维度的表（上图展示了迭代 0）。注意维度从 1 增加到 L-1。一旦 Transformer 预测了序列中的倒数第二个标记，它会添加<END>特殊标记来完成预测。图片由作者提供。
 
 # 摘要
 
-本部分介绍了了解Transformer模型所需的初步概念和思想。在下一部分，我将深入探讨Transformer架构的每个模块，其中大部分数学内容都在其中。
+本部分介绍了了解 Transformer 模型所需的初步概念和思想。在下一部分，我将深入探讨 Transformer 架构的每个模块，其中大部分数学内容都在其中。
 
 这篇文章的主要思想和概念是：
 
-+   Transformers在**规范化向量空间**中工作，该空间由嵌入系统定义，每个维度代表标记之间的一个特征。
++   Transformers 在**规范化向量空间**中工作，该空间由嵌入系统定义，每个维度代表标记之间的一个特征。
 
-+   Transformers **输入是形状为[N, L, E]的张量**，其中N表示批量大小，L是序列长度（由于填充对每个序列都是恒定的），E代表嵌入维度。
++   Transformers **输入是形状为[N, L, E]的张量**，其中 N 表示批量大小，L 是序列长度（由于填充对每个序列都是恒定的），E 代表嵌入维度。
 
 +   当**编码器**在源嵌入空间中发现标记之间的关系时，**解码器**的任务是学习从源空间到目标空间的投影。
 
-+   Transformer的输出是一个行向量，其长度等于词汇表的大小，**每个系数代表相应索引标记在序列中下一个位置的概率**。
++   Transformer 的输出是一个行向量，其长度等于词汇表的大小，**每个系数代表相应索引标记在序列中下一个位置的概率**。
 
-+   在训练期间，Transformer会一次处理所有输入，输出一个[N, L, V]张量（V为词汇表长度）。但在预测过程中，**Transformers是自回归的**，总是基于之前的预测逐个预测标记。
++   在训练期间，Transformer 会一次处理所有输入，输出一个[N, L, V]张量（V 为词汇表长度）。但在预测过程中，**Transformers 是自回归的**，总是基于之前的预测逐个预测标记。
 
 下一篇文章的部分内容将很快在[**这里**](https://medium.com/@gabrielfurnieles)发布。
 
-感谢阅读！如果你发现这篇文章有帮助或启发，请考虑关注我，以获取更多关于AI和深度学习的内容。
+感谢阅读！如果你发现这篇文章有帮助或启发，请考虑关注我，以获取更多关于 AI 和深度学习的内容。
 
 [加布里埃尔·弗尼耶莱斯 - Medium](https://medium.com/@gabrielfurnieles?source=post_page-----ad25da6d3cca--------------------------------)
 
-### 在Medium上阅读加布里埃尔·弗尼耶莱斯的文章。他是数学工程专业的学生，专注于AI和ML。我写…
+### 在 Medium 上阅读加布里埃尔·弗尼耶莱斯的文章。他是数学工程专业的学生，专注于 AI 和 ML。我写…
 
 [加布里埃尔·弗尼耶莱斯 - Medium](https://medium.com/@gabrielfurnieles?source=post_page-----ad25da6d3cca--------------------------------)
 
 你可能还会对以下内容感兴趣：
 
-[5种最有前途的图像翻译AI模型](https://towardsdatascience.com/the-5-most-promising-ai-models-for-image-translation-de2677e526e6?source=post_page-----ad25da6d3cca--------------------------------)
+[5 种最有前途的图像翻译 AI 模型](https://towardsdatascience.com/the-5-most-promising-ai-models-for-image-translation-de2677e526e6?source=post_page-----ad25da6d3cca--------------------------------)
 
 ### 最新图像生成模型的最前沿技术
 

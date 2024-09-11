@@ -1,18 +1,18 @@
 # 使用 Python 进行深度感知的对象插入视频
 
-> 原文：[https://towardsdatascience.com/depth-aware-object-insertion-in-videos-using-python-60eeee7d17b5?source=collection_archive---------6-----------------------#2023-08-29](https://towardsdatascience.com/depth-aware-object-insertion-in-videos-using-python-60eeee7d17b5?source=collection_archive---------6-----------------------#2023-08-29)
+> 原文：[`towardsdatascience.com/depth-aware-object-insertion-in-videos-using-python-60eeee7d17b5?source=collection_archive---------6-----------------------#2023-08-29`](https://towardsdatascience.com/depth-aware-object-insertion-in-videos-using-python-60eeee7d17b5?source=collection_archive---------6-----------------------#2023-08-29)
 
 ## 使用 Python 进行深度感知的 3D 模型插入视频的指南
 
-[](https://medium.com/@berkanzorlubas?source=post_page-----60eeee7d17b5--------------------------------)[![Berkan Zorlubas](../Images/6d13c115064dfa1bf3918ef009a30797.png)](https://medium.com/@berkanzorlubas?source=post_page-----60eeee7d17b5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----60eeee7d17b5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----60eeee7d17b5--------------------------------) [Berkan Zorlubas](https://medium.com/@berkanzorlubas?source=post_page-----60eeee7d17b5--------------------------------)
+[](https://medium.com/@berkanzorlubas?source=post_page-----60eeee7d17b5--------------------------------)![Berkan Zorlubas](https://medium.com/@berkanzorlubas?source=post_page-----60eeee7d17b5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----60eeee7d17b5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----60eeee7d17b5--------------------------------) [Berkan Zorlubas](https://medium.com/@berkanzorlubas?source=post_page-----60eeee7d17b5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d74427941be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdepth-aware-object-insertion-in-videos-using-python-60eeee7d17b5&user=Berkan+Zorlubas&userId=7d74427941be&source=post_page-7d74427941be----60eeee7d17b5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----60eeee7d17b5--------------------------------) ·9分钟阅读·2023年8月29日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F60eeee7d17b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdepth-aware-object-insertion-in-videos-using-python-60eeee7d17b5&user=Berkan+Zorlubas&userId=7d74427941be&source=-----60eeee7d17b5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d74427941be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdepth-aware-object-insertion-in-videos-using-python-60eeee7d17b5&user=Berkan+Zorlubas&userId=7d74427941be&source=post_page-7d74427941be----60eeee7d17b5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----60eeee7d17b5--------------------------------) ·9 分钟阅读·2023 年 8 月 29 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F60eeee7d17b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdepth-aware-object-insertion-in-videos-using-python-60eeee7d17b5&user=Berkan+Zorlubas&userId=7d74427941be&source=-----60eeee7d17b5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F60eeee7d17b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdepth-aware-object-insertion-in-videos-using-python-60eeee7d17b5&source=-----60eeee7d17b5---------------------bookmark_footer-----------)![](../Images/da925dea9141c2ebf33ce1f3fdaaa451.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F60eeee7d17b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdepth-aware-object-insertion-in-videos-using-python-60eeee7d17b5&source=-----60eeee7d17b5---------------------bookmark_footer-----------)![](img/da925dea9141c2ebf33ce1f3fdaaa451.png)
 
 作者提供的图片
 
@@ -32,35 +32,35 @@
 
 原始视频及其估计深度视频如下所示。
 
-![](../Images/481112adecd7d179ca4fce4f311ca3cf.png)
+![](img/481112adecd7d179ca4fce4f311ca3cf.png)
 
 **（左）** 由[Videvo](https://www.videvo.net/video/tracking-shot-following-a-person-walking-down-a-street-in-jakarta/1008167/)提供的库存视频，从[www.videvo.net](http://www.videvo.net/)下载 | **（右）** 作者创建的估计深度视频
 
 对应于第一帧的点云可视化如下。白色间隙表示由于前景对象的存在而被相机视角遮挡的阴影区域。
 
-![](../Images/3169763ff52c88b76f708140e44fa57d.png)
+![](img/3169763ff52c88b76f708140e44fa57d.png)
 
 生成的视频第一帧的点云
 
 # 步骤 2：选择你想插入的网格文件
 
-现在，我们选择要插入到视频序列中的网格文件。各种平台，如[Sketchfab.com](https://sketchfab.com/)和[GrabCAD.com](http://grabcad.com)，提供了丰富的3D模型供选择。
+现在，我们选择要插入到视频序列中的网格文件。各种平台，如[Sketchfab.com](https://sketchfab.com/)和[GrabCAD.com](http://grabcad.com)，提供了丰富的 3D 模型供选择。
 
-对于我的演示视频，我选择了两个3D模型，相关链接在下图说明中提供：
+对于我的演示视频，我选择了两个 3D 模型，相关链接在下图说明中提供：
 
-![](../Images/876f043fe1f89f5a2c3955ef54d81e89.png)
+![](img/876f043fe1f89f5a2c3955ef54d81e89.png)
 
-**(左)** [3D模型](https://sketchfab.com/3d-models/elephant-in-the-rotunda-26ee59c981964681bf9f4e5eae2a3a26)由Abby Gancz提供（CC BY 4.0），下载自[www.sketchfab.com](http://sketchfab.com) | **(右)** [3D模型](https://sketchfab.com/3d-models/1952-chevrolet-free-raw-scan-de300880665f4e8b86cbd2a9a656265f)由Renafox提供（CC BY 4.0），下载自[www.sketchfab.com](http://sketchfab.com)
+**(左)** [3D 模型](https://sketchfab.com/3d-models/elephant-in-the-rotunda-26ee59c981964681bf9f4e5eae2a3a26)由 Abby Gancz 提供（CC BY 4.0），下载自[www.sketchfab.com](http://sketchfab.com) | **(右)** [3D 模型](https://sketchfab.com/3d-models/1952-chevrolet-free-raw-scan-de300880665f4e8b86cbd2a9a656265f)由 Renafox 提供（CC BY 4.0），下载自[www.sketchfab.com](http://sketchfab.com)
 
-我使用了[CloudCompare](https://www.danielgm.net/cc/)，这是一个用于3D点云处理的开源工具，对3D模型进行了预处理。具体而言，我去除了对象的地面部分，以增强其在视频中的整合效果。虽然这一步是可选的，但如果你希望修改你的3D模型的某些方面，强烈推荐使用CloudCompare。
+我使用了[CloudCompare](https://www.danielgm.net/cc/)，这是一个用于 3D 点云处理的开源工具，对 3D 模型进行了预处理。具体而言，我去除了对象的地面部分，以增强其在视频中的整合效果。虽然这一步是可选的，但如果你希望修改你的 3D 模型的某些方面，强烈推荐使用 CloudCompare。
 
-处理完网格文件后，将其保存为.ply或.obj文件。（请注意，并非所有的3D模型文件扩展名都支持彩色网格，例如.stl）。
+处理完网格文件后，将其保存为.ply 或.obj 文件。（请注意，并非所有的 3D 模型文件扩展名都支持彩色网格，例如.stl）。
 
-# 第3步：重新渲染带有深度感知物体插入的帧
+# 第 3 步：重新渲染带有深度感知物体插入的帧
 
 我们现在来到了项目的核心部分：视频处理。在我的仓库中，提供了两个关键脚本——`video_processing_utils.py`和`depth_aware_object_insertion.py`。顾名思义，`video_processing_utils.py`包含了所有用于物体插入的必要功能，而`depth_aware_object_insertion.py`作为主要脚本，在循环中对每一帧视频执行这些功能。
 
-下面是`depth_aware_object_insertion.py`主要部分的一个片段。在一个循环中，该循环运行的次数与输入视频中的帧数相同，我们从深度计算管道中加载批量信息，从中获取原始RGB帧及其深度估计。然后我们计算相机姿态矩阵的逆。接下来，我们将网格、深度和相机的内参输入名为`render_mesh_with_depth()`的函数中。
+下面是`depth_aware_object_insertion.py`主要部分的一个片段。在一个循环中，该循环运行的次数与输入视频中的帧数相同，我们从深度计算管道中加载批量信息，从中获取原始 RGB 帧及其深度估计。然后我们计算相机姿态矩阵的逆。接下来，我们将网格、深度和相机的内参输入名为`render_mesh_with_depth()`的函数中。
 
 ```py
 for i in tqdm(range(batch_count)):
@@ -191,25 +191,25 @@ def combine_frames(original_frame, rendered_mesh_img, original_depth_frame, mesh
 
 这是第一个对象——大象的`mesh_color_buffer`、`mesh_depth_buffer`和`combined_frame`的视觉效果。由于大象对象在帧内没有被任何其他元素遮挡，因此完全可见。在不同的放置方式下，会发生遮挡。
 
-![](../Images/94c208c87f7a0ec403c76776ad5e4bf3.png)
+![](img/94c208c87f7a0ec403c76776ad5e4bf3.png)
 
 **(左)** 大象网格的计算色缓冲区 | **(右)** 大象网格的计算深度缓冲区 | **(底部)** 组合帧
 
 相应地，我将第二个网格——汽车，放置在路边的路缘。我还调整了它的初始方向，使其看起来像是被停放在那里。以下是该网格的`mesh_color_buffer`、`mesh_depth_buffer`和`combined_frame`的视觉效果。
 
-![](../Images/288af5c4cadd4a503c17cffb28bce534.png)
+![](img/288af5c4cadd4a503c17cffb28bce534.png)
 
 **(左)** 小汽车网格的计算色缓冲区 | **(右)** 小汽车网格的计算深度缓冲区 | **(底部)** 组合帧
 
 下面是插入了两个对象的点云可视化。由于新对象引入了新的遮挡区域，出现了更多的白色间隙。
 
-![](../Images/d26a7fcee0a76ce72f8e4e067ad13740.png)
+![](img/d26a7fcee0a76ce72f8e4e067ad13740.png)
 
 插入对象后第一帧的生成点云
 
 在计算了每个视频帧的叠加图像后，我们现在准备渲染我们的视频。
 
-# **第4步：从处理过的帧渲染视频**
+# **第 4 步：从处理过的帧渲染视频**
 
 在`depth_aware_object_insertion.py`的最后一部分，我们仅需使用`render_video_from_frames`函数从插入了物体的帧渲染视频。你也可以在此步骤调整输出视频的帧率。代码如下：
 
@@ -226,7 +226,7 @@ render_video_from_frames(frame_directory, image_extension, save_directory, video
 
 这是我的演示视频：
 
-![](../Images/524e53fda6e91629d3590fdaa749eb62.png)
+![](img/524e53fda6e91629d3590fdaa749eb62.png)
 
 **（左）** 由 [Videvo](https://www.videvo.net/video/tracking-shot-following-a-person-walking-down-a-street-in-jakarta/1008167/) 提供的素材，从 [www.videvo.net](http://www.videvo.net/) 下载 | **（右）** 插入了两个物体的素材
 

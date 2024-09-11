@@ -1,18 +1,18 @@
 # 预测星巴克奖励计划的成功
 
-> 原文：[https://towardsdatascience.com/predicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8?source=collection_archive---------15-----------------------#2023-06-20](https://towardsdatascience.com/predicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8?source=collection_archive---------15-----------------------#2023-06-20)
+> 原文：[`towardsdatascience.com/predicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8?source=collection_archive---------15-----------------------#2023-06-20`](https://towardsdatascience.com/predicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8?source=collection_archive---------15-----------------------#2023-06-20)
 
 ## 初学者友好——对从头到尾的完整项目进行逐步解释
 
-[](https://erdemisbilen.medium.com/?source=post_page-----b32b77dcf9b8--------------------------------)[![Erdem Isbilen](../Images/6b6ca6806024725245132894b2958e49.png)](https://erdemisbilen.medium.com/?source=post_page-----b32b77dcf9b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b32b77dcf9b8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b32b77dcf9b8--------------------------------) [Erdem Isbilen](https://erdemisbilen.medium.com/?source=post_page-----b32b77dcf9b8--------------------------------)
+[](https://erdemisbilen.medium.com/?source=post_page-----b32b77dcf9b8--------------------------------)![Erdem Isbilen](https://erdemisbilen.medium.com/?source=post_page-----b32b77dcf9b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b32b77dcf9b8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b32b77dcf9b8--------------------------------) [Erdem Isbilen](https://erdemisbilen.medium.com/?source=post_page-----b32b77dcf9b8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd13ef140191e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8&user=Erdem+Isbilen&userId=d13ef140191e&source=post_page-d13ef140191e----b32b77dcf9b8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b32b77dcf9b8--------------------------------) · 9 分钟阅读 · 2023年6月20日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb32b77dcf9b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8&user=Erdem+Isbilen&userId=d13ef140191e&source=-----b32b77dcf9b8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd13ef140191e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8&user=Erdem+Isbilen&userId=d13ef140191e&source=post_page-d13ef140191e----b32b77dcf9b8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b32b77dcf9b8--------------------------------) · 9 分钟阅读 · 2023 年 6 月 20 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb32b77dcf9b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8&user=Erdem+Isbilen&userId=d13ef140191e&source=-----b32b77dcf9b8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb32b77dcf9b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8&source=-----b32b77dcf9b8---------------------bookmark_footer-----------)![](../Images/257d86a537c79400e22c628914ba71c3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb32b77dcf9b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-success-of-a-reward-program-at-starbucks-b32b77dcf9b8&source=-----b32b77dcf9b8---------------------bookmark_footer-----------)![](img/257d86a537c79400e22c628914ba71c3.png)
 
 图片由 [Robert Linder](https://unsplash.com/@rwlinder?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,7 +24,7 @@
 
 为了开发一个能够确定奖励计划成功与否的模型，我将项目分为**三个阶段**：
 
-1.  **检查和清理**由Udacity提供的数据。
+1.  **检查和清理**由 Udacity 提供的数据。
 
 1.  创建一个**结合所有相关信息**的数据集。
 

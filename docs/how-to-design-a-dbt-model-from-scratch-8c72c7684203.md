@@ -1,20 +1,20 @@
 # 如何从头设计一个 dbt 模型
 
-> 原文：[https://towardsdatascience.com/how-to-design-a-dbt-model-from-scratch-8c72c7684203?source=collection_archive---------5-----------------------#2023-07-10](https://towardsdatascience.com/how-to-design-a-dbt-model-from-scratch-8c72c7684203?source=collection_archive---------5-----------------------#2023-07-10)
+> 原文：[`towardsdatascience.com/how-to-design-a-dbt-model-from-scratch-8c72c7684203?source=collection_archive---------5-----------------------#2023-07-10`](https://towardsdatascience.com/how-to-design-a-dbt-model-from-scratch-8c72c7684203?source=collection_archive---------5-----------------------#2023-07-10)
 
 ## 一个实际可用的 dbt 模型构建简单框架。
 
-[](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)[![Taylor Brownlow](../Images/1b9df2c82aea2920ba4059dba8b7c93b.png)](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------) [Taylor Brownlow](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)
+[](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)![Taylor Brownlow](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------) [Taylor Brownlow](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcdc63fa2a06e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=post_page-cdc63fa2a06e----8c72c7684203---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------) ·6 min read·2023年7月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c72c7684203&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=-----8c72c7684203---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcdc63fa2a06e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=post_page-cdc63fa2a06e----8c72c7684203---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------) ·6 min read·2023 年 7 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c72c7684203&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=-----8c72c7684203---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8c72c7684203&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&source=-----8c72c7684203---------------------bookmark_footer-----------)
 
-当我研究[dbt终极指南](https://count.co/canvas/JpkaYdqr9oN)时，我对关于从头构建模型的材料的缺乏感到震惊。这不仅仅是工具中的具体操作步骤——这些在无数博客和教程中都有涵盖。我的意思是，如何确定正确的设计？如何确保你的利益相关者会使用这个模型？你如何确保它会被信任并理解？
+当我研究[dbt 终极指南](https://count.co/canvas/JpkaYdqr9oN)时，我对关于从头构建模型的材料的缺乏感到震惊。这不仅仅是工具中的具体操作步骤——这些在无数博客和教程中都有涵盖。我的意思是，如何确定正确的设计？如何确保你的利益相关者会使用这个模型？你如何确保它会被信任并理解？
 
 当我们部署新模型而没有采取这些步骤时，可能会导致严重后果：
 
@@ -30,7 +30,7 @@
 
 本文是关于如何最好地设计和实施 dbt 模型的研究和实验成果。它不会包含在 dbt 中执行的任何命令，但会讲解如何思考你的模型，以及如何构建你的工作流程，以确保你不会浪费时间。
 
-![](../Images/0f429f6d1332a7f408dc76c3a94aeaaa.png)
+![](img/0f429f6d1332a7f408dc76c3a94aeaaa.png)
 
 图片来源：[Med Badr Chemmaoui](https://unsplash.com/@medbadrc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/wallpapers/design?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -42,11 +42,11 @@
 
 [**设计原则**](https://www.designcouncil.org.uk/our-resources/framework-for-innovation/) 同样承认了在设计项目中与多个利益相关者合作时需要有意识的工作方法 [2]。该框架优先考虑人，并鼓励在每个开发阶段获取反馈，以便尽快找到最佳解决方案。
 
-![](../Images/99babf2f4cd4ad9ca3af977304fa14c1.png)
+![](img/99babf2f4cd4ad9ca3af977304fa14c1.png)
 
 图片来源：[设计委员会](https://www.designcouncil.org.uk/) 的这项工作采用了 [CC BY 4.0 许可证](https://creativecommons.org/licenses/by/4.0/)。
 
-即使是数据建模的教父 [Ralph Kimball](https://en.wikipedia.org/wiki/Ralph_Kimball) 也在他的 [**4步数据建模过程**](https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/) **[3]** 中强调了在建模过程初期从利益相关者那里获得高质量输入的重要性。第一步是尽可能多地了解业务流程，然后再考虑构建模型。
+即使是数据建模的教父 [Ralph Kimball](https://en.wikipedia.org/wiki/Ralph_Kimball) 也在他的 [**4 步数据建模过程**](https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/) **[3]** 中强调了在建模过程初期从利益相关者那里获得高质量输入的重要性。第一步是尽可能多地了解业务流程，然后再考虑构建模型。
 
 然而，在考虑这个问题时，我发现最有影响力的来源是 [**系统工程启发式**](https://sebokwiki.org/wiki/Systems_Engineering_Heuristics) —— 一组关于处理复杂问题与多个利益相关者的真理 [4]。
 
@@ -66,13 +66,13 @@
 
 这是我得出的结果：
 
-![](../Images/89141d26c96ae2d31042367cd67ed49e.png)
+![](img/89141d26c96ae2d31042367cd67ed49e.png)
 
 我们将在下面更详细地讲解每一步。
 
 > 以下示例将展示来自 [count.co](https://count.co) 的截图，这里是数据画布，我是产品负责人。不过，值得注意的是，这一过程与工具无关。你可以参考截图中的示例 [这里](https://count.co/canvas/m1UgaD6DbvG)。
 
-![](../Images/142e64c1cdef0313a4221c58da0c2c03.png)
+![](img/142e64c1cdef0313a4221c58da0c2c03.png)
 
 图片由作者提供。所有 5 个步骤的过程展示。查看完整画布 [这里](https://count.co/canvas/m1UgaD6DbvG)。
 
@@ -94,7 +94,7 @@
 
 +   还有其他相关的业务背景吗？例如，有人下周会有一个关于这个主题的大型演示
 
-![](../Images/549784a1f0e84b0e766f0e9eaa041145.png)
+![](img/549784a1f0e84b0e766f0e9eaa041145.png)
 
 图片由作者提供。点击 [这里](https://count.co/canvas/m1UgaD6DbvG?object=PZUMv4Y0CvO) 查看示例。
 
@@ -114,7 +114,7 @@
 
 +   如果最终表格设计有多个选项，请规划这些选项，并在继续之前从利益相关者那里获取反馈
 
-![](../Images/6e774dbde0e3fef7fc56ae2651ec2d7c.png)
+![](img/6e774dbde0e3fef7fc56ae2651ec2d7c.png)
 
 图片由作者提供。点击 [这里](https://count.co/canvas/m1UgaD6DbvG?object=iKESpCOMjyZ) 查看示例。
 
@@ -136,7 +136,7 @@
 
 +   迭代直到业务相关方和数据团队都理解并批准方法和结果
 
-![](../Images/76e0d9762f813f6d8c36eda6499ce348.png)
+![](img/76e0d9762f813f6d8c36eda6499ce348.png)
 
 作者提供的图片。点击 [这里](https://count.co/canvas/m1UgaD6DbvG?object=I7aMI3ANu87) 查看示例。
 
@@ -152,7 +152,7 @@
 
 +   确保它通过所有测试
 
-![](../Images/c6ffb607ab110f16fb77efe14ce50542.png)
+![](img/c6ffb607ab110f16fb77efe14ce50542.png)
 
 作者提供的图片。这是如何将原型 SQL 导出为 dbt 友好的语法。
 
@@ -172,7 +172,7 @@
 
 +   [可选] 为任何希望了解新表的人举行简短的介绍会
 
-![](../Images/9c868836aa942c9fc96fba975074f309.png)
+![](img/9c868836aa942c9fc96fba975074f309.png)
 
 作者提供的图片。点击 [这里](https://count.co/canvas/m1UgaD6DbvG?object=HNu4QT6yLSR) 查看完整示例。
 
@@ -186,10 +186,10 @@
 
 # 资源
 
-[1] Agile Manifesto. (2001). Agile Manifesto 背后的原则。于 2023 年 7 月 1 日获取自 [https://agilemanifesto.org/principles.html](https://agilemanifesto.org/principles.html)
+[1] Agile Manifesto. (2001). Agile Manifesto 背后的原则。于 2023 年 7 月 1 日获取自 [`agilemanifesto.org/principles.html`](https://agilemanifesto.org/principles.html)
 
-[2] Design Council. (2004). 创新框架。于 2023 年 7 月 1 日获取自 [https://www.designcouncil.org.uk/our-resources/framework-for-innovation/](https://www.designcouncil.org.uk/our-resources/framework-for-innovation/)
+[2] Design Council. (2004). 创新框架。于 2023 年 7 月 1 日获取自 [`www.designcouncil.org.uk/our-resources/framework-for-innovation/`](https://www.designcouncil.org.uk/our-resources/framework-for-innovation/)
 
-[3] Holistics. Kimball 的维度数据建模。于 2023 年 7 月 1 日获取自 [https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/](https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/)
+[3] Holistics. Kimball 的维度数据建模。于 2023 年 7 月 1 日获取自 [`www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/`](https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/)
 
 [4] 彼得·布鲁克。《系统工程启发式》见 SEBoK 编辑委员会。2023 年。*系统工程知识指南（SEBoK）*，第 2.8 版，R.J. 克劳提耶（主编）。霍博肯，新泽西州：史蒂文斯理工学院信托基金。访问日期：[DATE]。[www.sebokwiki.org](http://www.sebokwiki.org)。BKCASE 由史蒂文斯理工学院系统工程研究中心、国际系统工程理事会以及电气和电子工程师学会系统委员会管理和维护。

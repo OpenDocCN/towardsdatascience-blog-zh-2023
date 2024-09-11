@@ -1,18 +1,18 @@
 # 熵和基尼指数简介
 
-> 原文：[https://towardsdatascience.com/entropy-and-gini-index-c04b7452efbe?source=collection_archive---------2-----------------------#2023-11-05](https://towardsdatascience.com/entropy-and-gini-index-c04b7452efbe?source=collection_archive---------2-----------------------#2023-11-05)
+> 原文：[`towardsdatascience.com/entropy-and-gini-index-c04b7452efbe?source=collection_archive---------2-----------------------#2023-11-05`](https://towardsdatascience.com/entropy-and-gini-index-c04b7452efbe?source=collection_archive---------2-----------------------#2023-11-05)
 
 ## 理解这些措施如何帮助我们量化数据集中的不确定性
 
-[](https://medium.com/@gurjinderkaur95?source=post_page-----c04b7452efbe--------------------------------)[![Gurjinder Kaur](../Images/d5c6746466025dad06077b1a89a789d1.png)](https://medium.com/@gurjinderkaur95?source=post_page-----c04b7452efbe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c04b7452efbe--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c04b7452efbe--------------------------------) [Gurjinder Kaur](https://medium.com/@gurjinderkaur95?source=post_page-----c04b7452efbe--------------------------------)
+[](https://medium.com/@gurjinderkaur95?source=post_page-----c04b7452efbe--------------------------------)![Gurjinder Kaur](https://medium.com/@gurjinderkaur95?source=post_page-----c04b7452efbe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c04b7452efbe--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c04b7452efbe--------------------------------) [Gurjinder Kaur](https://medium.com/@gurjinderkaur95?source=post_page-----c04b7452efbe--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F79ee1ef48e0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentropy-and-gini-index-c04b7452efbe&user=Gurjinder+Kaur&userId=79ee1ef48e0c&source=post_page-79ee1ef48e0c----c04b7452efbe---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c04b7452efbe--------------------------------) ·7分钟阅读·2023年11月5日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc04b7452efbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentropy-and-gini-index-c04b7452efbe&user=Gurjinder+Kaur&userId=79ee1ef48e0c&source=-----c04b7452efbe---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F79ee1ef48e0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentropy-and-gini-index-c04b7452efbe&user=Gurjinder+Kaur&userId=79ee1ef48e0c&source=post_page-79ee1ef48e0c----c04b7452efbe---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c04b7452efbe--------------------------------) ·7 分钟阅读·2023 年 11 月 5 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc04b7452efbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentropy-and-gini-index-c04b7452efbe&user=Gurjinder+Kaur&userId=79ee1ef48e0c&source=-----c04b7452efbe---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc04b7452efbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentropy-and-gini-index-c04b7452efbe&source=-----c04b7452efbe---------------------bookmark_footer-----------)![](../Images/7471e1f27896be8a7c34dd14a251bf09.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc04b7452efbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fentropy-and-gini-index-c04b7452efbe&source=-----c04b7452efbe---------------------bookmark_footer-----------)![](img/7471e1f27896be8a7c34dd14a251bf09.png)
 
 你能告诉我哪些是最纯净和最不纯净的类别吗？（来源：作者提供的图片）
 

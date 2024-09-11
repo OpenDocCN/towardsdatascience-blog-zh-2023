@@ -1,18 +1,18 @@
 # 缓存 DataFrame 函数
 
-> 原文：[https://towardsdatascience.com/memoizing-dataframe-functions-7a27dff532f7?source=collection_archive---------5-----------------------#2023-03-03](https://towardsdatascience.com/memoizing-dataframe-functions-7a27dff532f7?source=collection_archive---------5-----------------------#2023-03-03)
+> 原文：[`towardsdatascience.com/memoizing-dataframe-functions-7a27dff532f7?source=collection_archive---------5-----------------------#2023-03-03`](https://towardsdatascience.com/memoizing-dataframe-functions-7a27dff532f7?source=collection_archive---------5-----------------------#2023-03-03)
 
 ## 使用可哈希 DataFrame 和消息摘要来优化重复计算
 
-[](https://medium.com/@flexatone?source=post_page-----7a27dff532f7--------------------------------)[![克里斯托弗·阿里萨](../Images/35208ace15080724e4cd6690e43d6502.png)](https://medium.com/@flexatone?source=post_page-----7a27dff532f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a27dff532f7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7a27dff532f7--------------------------------) [克里斯托弗·阿里萨](https://medium.com/@flexatone?source=post_page-----7a27dff532f7--------------------------------)
+[](https://medium.com/@flexatone?source=post_page-----7a27dff532f7--------------------------------)![克里斯托弗·阿里萨](https://medium.com/@flexatone?source=post_page-----7a27dff532f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a27dff532f7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a27dff532f7--------------------------------) [克里斯托弗·阿里萨](https://medium.com/@flexatone?source=post_page-----7a27dff532f7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a4f500b1e4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemoizing-dataframe-functions-7a27dff532f7&user=Christopher+Ariza&userId=6a4f500b1e4f&source=post_page-6a4f500b1e4f----7a27dff532f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a27dff532f7--------------------------------) ·7分钟阅读·2023年3月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a27dff532f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemoizing-dataframe-functions-7a27dff532f7&user=Christopher+Ariza&userId=6a4f500b1e4f&source=-----7a27dff532f7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a4f500b1e4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemoizing-dataframe-functions-7a27dff532f7&user=Christopher+Ariza&userId=6a4f500b1e4f&source=post_page-6a4f500b1e4f----7a27dff532f7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a27dff532f7--------------------------------) ·7 分钟阅读·2023 年 3 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a27dff532f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemoizing-dataframe-functions-7a27dff532f7&user=Christopher+Ariza&userId=6a4f500b1e4f&source=-----7a27dff532f7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a27dff532f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemoizing-dataframe-functions-7a27dff532f7&source=-----7a27dff532f7---------------------bookmark_footer-----------)![](../Images/9187973a594d0c3bf5dc93fa4b623095.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a27dff532f7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmemoizing-dataframe-functions-7a27dff532f7&source=-----7a27dff532f7---------------------bookmark_footer-----------)![](img/9187973a594d0c3bf5dc93fa4b623095.png)
 
 作者提供的照片
 
@@ -125,7 +125,7 @@ StaticFrame 提供了 `via_hashlib()` 来满足这一需求，提供了一种有
 
 StaticFrame 对创建消息摘要的内置支持显示出比 Pandas 的两种常见方法更高效。第一种方法使用 Pandas 工具函数 `pd.hash_pandas_object()` 来派生每列的整数哈希值。这个例程使用了一种定制的摘要算法，没有声称具有密码学碰撞抵抗性。为了比较，这里将这些每列的整数哈希值作为 `hashlib` 消息摘要函数的输入。第二种方法提供了整个 DataFrame 的 JSON 表示，作为 `hashlib` 消息摘要函数的输入。虽然这可能比 `pd.hash_pandas_object()` 更具碰撞抵抗性，但通常较慢。下图显示了这两种方法与 `via_hashlib()` 的性能特征比较。在各种 DataFrame 形状和类型组合中，`via_hashlib()` 表现优于所有方法，只有一个例外。
 
-![](../Images/e91a4ac7663ef6a30e0b4cf92a7340ed.png)
+![](img/e91a4ac7663ef6a30e0b4cf92a7340ed.png)
 
 作者图表
 
@@ -152,7 +152,7 @@ StaticFrame 对创建消息摘要的内置支持显示出比 Pandas 的两种常
 ...     return sf.Frame.from_concat(v.iter_window_items(size=10).apply_iter(lambda l, f: f.sum().rename(l)))
 ```
 
-在第一次使用后，性能降低到原始运行时间的不到20%。虽然加载基于磁盘的缓存比检索内存缓存要慢，但避免重复计算的好处可以在不消耗内存的情况下获得，并且可以利用持久缓存。
+在第一次使用后，性能降低到原始运行时间的不到 20%。虽然加载基于磁盘的缓存比检索内存缓存要慢，但避免重复计算的好处可以在不消耗内存的情况下获得，并且可以利用持久缓存。
 
 ```py
 >>> %time windowed_sum(f)
@@ -161,8 +161,8 @@ CPU times: user 596 ms, sys: 15.6 ms, total: 612 ms
 CPU times: user 77.3 ms, sys: 24.4 ms, total: 102 ms
 ```
 
-`via_hashlib()`接口可以在其他情况下作为DataFrame所有特征的数字签名或校验和。
+`via_hashlib()`接口可以在其他情况下作为 DataFrame 所有特征的数字签名或校验和。
 
 ## 结论
 
-如果纯函数在相同的参数下被调用多次，记忆化可以极大地提高性能。虽然处理输入和输出DataFrame的函数需要特别处理，但StaticFrame提供了便捷的工具来实现内存和基于磁盘的记忆化。虽然必须小心确保缓存被正确失效并避免冲突，但当消除重复工作时，可以实现显著的性能提升。
+如果纯函数在相同的参数下被调用多次，记忆化可以极大地提高性能。虽然处理输入和输出 DataFrame 的函数需要特别处理，但 StaticFrame 提供了便捷的工具来实现内存和基于磁盘的记忆化。虽然必须小心确保缓存被正确失效并避免冲突，但当消除重复工作时，可以实现显著的性能提升。

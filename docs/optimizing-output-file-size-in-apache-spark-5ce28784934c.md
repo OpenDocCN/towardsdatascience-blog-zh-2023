@@ -1,42 +1,42 @@
 # 在 Apache Spark 中优化输出文件大小
 
-> 原文：[https://towardsdatascience.com/optimizing-output-file-size-in-apache-spark-5ce28784934c?source=collection_archive---------0-----------------------#2023-08-11](https://towardsdatascience.com/optimizing-output-file-size-in-apache-spark-5ce28784934c?source=collection_archive---------0-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/optimizing-output-file-size-in-apache-spark-5ce28784934c?source=collection_archive---------0-----------------------#2023-08-11`](https://towardsdatascience.com/optimizing-output-file-size-in-apache-spark-5ce28784934c?source=collection_archive---------0-----------------------#2023-08-11)
 
 ## 关于管理分区、重新分区和合并操作的全面指南
 
-[](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)[![Gianpi Colonna](../Images/253921adb9c6f4a7e65cc5f954164b10.png)](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------) [Gianpi Colonna](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)
+[](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)![Gianpi Colonna](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------) [Gianpi Colonna](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5767480ab9f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&user=Gianpi+Colonna&userId=5767480ab9f9&source=post_page-5767480ab9f9----5ce28784934c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------) ·6 min read·2023年8月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce28784934c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&user=Gianpi+Colonna&userId=5767480ab9f9&source=-----5ce28784934c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5767480ab9f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&user=Gianpi+Colonna&userId=5767480ab9f9&source=post_page-5767480ab9f9----5ce28784934c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------) ·6 min read·2023 年 8 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce28784934c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&user=Gianpi+Colonna&userId=5767480ab9f9&source=-----5ce28784934c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ce28784934c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&source=-----5ce28784934c---------------------bookmark_footer-----------)![](../Images/802577c4c3cea67e8213d120ffea945d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ce28784934c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&source=-----5ce28784934c---------------------bookmark_footer-----------)![](img/802577c4c3cea67e8213d120ffea945d.png)
 
 照片由 [zhao chen](https://unsplash.com/@zhaochen1975?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 想象一下你在掌管一个大型 Spark 数据处理操作。在 Spark 优化讨论中，一个经常提到的经验法则是，为了获得最佳的 I/O 性能和增强的并行性，每个数据文件的大小应接近 128Mb，这也是读取文件时的默认分区大小 [[1]](https://aws.amazon.com/blogs/big-data/top-10-performance-tuning-tips-for-amazon-athena/)。
 
-想象你的文件像在数据处理海洋中航行的船只。如果船只太小，它们会浪费很多时间停靠和重新起航，这比喻为执行引擎花费额外时间打开文件、列出目录、获取对象元数据、设置数据传输和读取文件。相反，如果你的船只太大且未使用港口的许多码头，它们不得不等待单一的长时间装卸过程，这比喻为查询处理等待直到一个读者完成读取整个文件，这会减少并行性[图1]。
+想象你的文件像在数据处理海洋中航行的船只。如果船只太小，它们会浪费很多时间停靠和重新起航，这比喻为执行引擎花费额外时间打开文件、列出目录、获取对象元数据、设置数据传输和读取文件。相反，如果你的船只太大且未使用港口的许多码头，它们不得不等待单一的长时间装卸过程，这比喻为查询处理等待直到一个读者完成读取整个文件，这会减少并行性[图 1]。
 
-![](../Images/a1af1a6222430de899b305f06746b67b.png)
+![](img/a1af1a6222430de899b305f06746b67b.png)
 
-图1 — 作者提供的图片
+图 1 — 作者提供的图片
 
-为了生动地说明文件大小优化的重要性，请参阅下图。在这个特定的例子中，每个表包含8 GB的数据。
+为了生动地说明文件大小优化的重要性，请参阅下图。在这个特定的例子中，每个表包含 8 GB 的数据。
 
-![](../Images/44c0668315da3fa6112bf60702d1a6da.png)
+![](img/44c0668315da3fa6112bf60702d1a6da.png)
 
 然而，驾驭这种微妙的平衡并非易事，特别是在处理大型批处理作业时。你可能会觉得你失去了对输出文件数量的控制。本指南将帮助你重新获得控制权。
 
 # 理解的关键：分区
 
-**写操作执行时，保存到磁盘的输出文件数量等于Spark执行器中的分区数量。** 然而，在执行写操作之前评估分区数量可能很棘手。
+**写操作执行时，保存到磁盘的输出文件数量等于 Spark 执行器中的分区数量。** 然而，在执行写操作之前评估分区数量可能很棘手。
 
-在读取表时，Spark 默认读取最大大小为128Mb的块（尽管你可以使用`sql.files.maxPartitionBytes`来更改这一点）。因此，分区的数量依赖于输入的大小。然而，实际上，分区的数量很可能等于`sql.shuffle.partitions`参数。这个数字默认为200，但对于较大的工作负载，这通常是不够的。查看[这个](https://youtu.be/daXEp4HmS-E?t=1200)视频以了解如何设置理想的洗牌分区数量。
+在读取表时，Spark 默认读取最大大小为 128Mb 的块（尽管你可以使用`sql.files.maxPartitionBytes`来更改这一点）。因此，分区的数量依赖于输入的大小。然而，实际上，分区的数量很可能等于`sql.shuffle.partitions`参数。这个数字默认为 200，但对于较大的工作负载，这通常是不够的。查看[这个](https://youtu.be/daXEp4HmS-E?t=1200)视频以了解如何设置理想的洗牌分区数量。
 
-如果在ETL过程中至少有一个宽变换，Spark执行器中的分区数量等于`sql.shuffle.partitions`。如果仅应用窄变换，则分区数量将与读取文件时创建的分区数量相匹配。
+如果在 ETL 过程中至少有一个宽变换，Spark 执行器中的分区数量等于`sql.shuffle.partitions`。如果仅应用窄变换，则分区数量将与读取文件时创建的分区数量相匹配。
 
 设置洗牌分区的数量仅在处理未分区的表时可以高层次地控制总分区数量。一旦进入分区表的领域，改变`sql.shuffle.partitions`参数不会轻易地调整每个数据文件的大小。
 
@@ -58,7 +58,7 @@ df = df.coalesce(num_partitions)
 
 **主要的见解是，使用合并方法通常更有利。** 这并不是说重新分区没有用；它确实有用，特别是当我们需要在运行时调整数据框的分区数时。
 
-在我处理多个大小不一的表，并进行复杂转换和连接的 ETL 过程中，我发现 `sql.shuffle.partitions` 并不能提供我所需的精确控制。例如，在相同的 ETL 中，为两个小表和两个大表使用相同数量的洗牌分区会很低效——导致小表的分区过多或大表的分区不足。重新分区还有助于我避开倾斜连接和倾斜数据的问题 [[2](/the-art-of-joining-in-spark-dcbd33d693c)]。
+在我处理多个大小不一的表，并进行复杂转换和连接的 ETL 过程中，我发现 `sql.shuffle.partitions` 并不能提供我所需的精确控制。例如，在相同的 ETL 中，为两个小表和两个大表使用相同数量的洗牌分区会很低效——导致小表的分区过多或大表的分区不足。重新分区还有助于我避开倾斜连接和倾斜数据的问题 [2]。
 
 话虽如此，重新分区在将表写入磁盘之前较不适用，并且在大多数情况下，可以用合并替代。在写入磁盘之前，合并比重新分区更具优势，原因有几个：
 
@@ -91,7 +91,7 @@ df.coalesce(10).write.format("parquet").save("/path/to/output")
 
 然而，当处理分区表时，这种方法并不有效，除非在合并之前数据已经被排序。为了理解为什么会这样，我们需要深入探讨在 Spark 执行器中数据排序与未排序时发生的操作 [fig.2]。
 
-![](../Images/cbbfacc17e298d16bd96f20d3db05f1d.png)
+![](img/cbbfacc17e298d16bd96f20d3db05f1d.png)
 
 图 2 — 作者提供的图片
 

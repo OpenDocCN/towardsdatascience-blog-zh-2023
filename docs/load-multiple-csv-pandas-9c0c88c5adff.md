@@ -1,18 +1,18 @@
 # 如何将多个 CSV 文件加载到 Pandas DataFrame 中
 
-> 原文：[https://towardsdatascience.com/load-multiple-csv-pandas-9c0c88c5adff?source=collection_archive---------9-----------------------#2023-01-31](https://towardsdatascience.com/load-multiple-csv-pandas-9c0c88c5adff?source=collection_archive---------9-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/load-multiple-csv-pandas-9c0c88c5adff?source=collection_archive---------9-----------------------#2023-01-31`](https://towardsdatascience.com/load-multiple-csv-pandas-9c0c88c5adff?source=collection_archive---------9-----------------------#2023-01-31)
 
 ## 导入并合并多个 CSV 文件到一个 pandas DataFrame
 
-[](https://gmyrianthous.medium.com/?source=post_page-----9c0c88c5adff--------------------------------)[![Giorgos Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----9c0c88c5adff--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c0c88c5adff--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c0c88c5adff--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9c0c88c5adff--------------------------------)
+[](https://gmyrianthous.medium.com/?source=post_page-----9c0c88c5adff--------------------------------)![Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9c0c88c5adff--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c0c88c5adff--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c0c88c5adff--------------------------------) [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----9c0c88c5adff--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fload-multiple-csv-pandas-9c0c88c5adff&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----9c0c88c5adff---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c0c88c5adff--------------------------------) ·5 min 阅读·2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c0c88c5adff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fload-multiple-csv-pandas-9c0c88c5adff&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----9c0c88c5adff---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76c21e75463a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fload-multiple-csv-pandas-9c0c88c5adff&user=Giorgos+Myrianthous&userId=76c21e75463a&source=post_page-76c21e75463a----9c0c88c5adff---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c0c88c5adff--------------------------------) ·5 min 阅读·2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9c0c88c5adff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fload-multiple-csv-pandas-9c0c88c5adff&user=Giorgos+Myrianthous&userId=76c21e75463a&source=-----9c0c88c5adff---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c0c88c5adff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fload-multiple-csv-pandas-9c0c88c5adff&source=-----9c0c88c5adff---------------------bookmark_footer-----------)![](../Images/649a65c5a7ba242fecd95611a28a9576.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9c0c88c5adff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fload-multiple-csv-pandas-9c0c88c5adff&source=-----9c0c88c5adff---------------------bookmark_footer-----------)![](img/649a65c5a7ba242fecd95611a28a9576.png)
 
 图片由 [Daniel K Cheung](https://unsplash.com/@danielkcheung?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/photos/cPF2nlWcMY4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

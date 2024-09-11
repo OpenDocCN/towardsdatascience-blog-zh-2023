@@ -1,18 +1,18 @@
 # 当点预测完全无用时
 
-> 原文：[https://towardsdatascience.com/when-point-forecasts-are-completely-useless-79cd27d0b1e5?source=collection_archive---------5-----------------------#2023-01-01](https://towardsdatascience.com/when-point-forecasts-are-completely-useless-79cd27d0b1e5?source=collection_archive---------5-----------------------#2023-01-01)
+> 原文：[`towardsdatascience.com/when-point-forecasts-are-completely-useless-79cd27d0b1e5?source=collection_archive---------5-----------------------#2023-01-01`](https://towardsdatascience.com/when-point-forecasts-are-completely-useless-79cd27d0b1e5?source=collection_archive---------5-----------------------#2023-01-01)
 
 ## 尽管点预测非常流行，但要注意一些不幸的陷阱
 
-[](https://sarem-seitz.medium.com/?source=post_page-----79cd27d0b1e5--------------------------------)[![Sarem Seitz](../Images/f833f915a0eb061f47524a67685ba76c.png)](https://sarem-seitz.medium.com/?source=post_page-----79cd27d0b1e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----79cd27d0b1e5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----79cd27d0b1e5--------------------------------) [Sarem Seitz](https://sarem-seitz.medium.com/?source=post_page-----79cd27d0b1e5--------------------------------)
+[](https://sarem-seitz.medium.com/?source=post_page-----79cd27d0b1e5--------------------------------)![Sarem Seitz](https://sarem-seitz.medium.com/?source=post_page-----79cd27d0b1e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----79cd27d0b1e5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----79cd27d0b1e5--------------------------------) [Sarem Seitz](https://sarem-seitz.medium.com/?source=post_page-----79cd27d0b1e5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8f6d033b1a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-point-forecasts-are-completely-useless-79cd27d0b1e5&user=Sarem+Seitz&userId=8f6d033b1a40&source=post_page-8f6d033b1a40----79cd27d0b1e5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----79cd27d0b1e5--------------------------------) ·11 分钟阅读·2023年1月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F79cd27d0b1e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-point-forecasts-are-completely-useless-79cd27d0b1e5&user=Sarem+Seitz&userId=8f6d033b1a40&source=-----79cd27d0b1e5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8f6d033b1a40&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-point-forecasts-are-completely-useless-79cd27d0b1e5&user=Sarem+Seitz&userId=8f6d033b1a40&source=post_page-8f6d033b1a40----79cd27d0b1e5---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----79cd27d0b1e5--------------------------------) ·11 分钟阅读·2023 年 1 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F79cd27d0b1e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-point-forecasts-are-completely-useless-79cd27d0b1e5&user=Sarem+Seitz&userId=8f6d033b1a40&source=-----79cd27d0b1e5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F79cd27d0b1e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-point-forecasts-are-completely-useless-79cd27d0b1e5&source=-----79cd27d0b1e5---------------------bookmark_footer-----------)![](../Images/e63f16578e099928702a3ae2905cb800.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F79cd27d0b1e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-point-forecasts-are-completely-useless-79cd27d0b1e5&source=-----79cd27d0b1e5---------------------bookmark_footer-----------)![](img/e63f16578e099928702a3ae2905cb800.png)
 
 图片由 [Kai Pilger](https://unsplash.com/@kaip?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/1k3vsv7iIIc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

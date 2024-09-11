@@ -1,18 +1,18 @@
 # 我们应该了解的用于管理表的 MySQL 数据定义语言（DDL）重要命令
 
-> 原文：[https://towardsdatascience.com/learn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae?source=collection_archive---------11-----------------------#2023-02-28](https://towardsdatascience.com/learn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae?source=collection_archive---------11-----------------------#2023-02-28)
+> 原文：[`towardsdatascience.com/learn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae?source=collection_archive---------11-----------------------#2023-02-28`](https://towardsdatascience.com/learn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae?source=collection_archive---------11-----------------------#2023-02-28)
 
 ## 作为数据工程师，学习常见的数据库管理命令
 
-[](https://lynn-kwong.medium.com/?source=post_page-----4d199cfb15ae--------------------------------)[![Lynn G. Kwong](../Images/b9a05b6587db5ca41c1d8264adda5b06.png)](https://lynn-kwong.medium.com/?source=post_page-----4d199cfb15ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d199cfb15ae--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d199cfb15ae--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----4d199cfb15ae--------------------------------)
+[](https://lynn-kwong.medium.com/?source=post_page-----4d199cfb15ae--------------------------------)![Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----4d199cfb15ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d199cfb15ae--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d199cfb15ae--------------------------------) [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----4d199cfb15ae--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff649eccbbc3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=post_page-f649eccbbc3d----4d199cfb15ae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d199cfb15ae--------------------------------) · 8分钟阅读 · 2023年2月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d199cfb15ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=-----4d199cfb15ae---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff649eccbbc3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=post_page-f649eccbbc3d----4d199cfb15ae---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d199cfb15ae--------------------------------) · 8 分钟阅读 · 2023 年 2 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d199cfb15ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae&user=Lynn+G.+Kwong&userId=f649eccbbc3d&source=-----4d199cfb15ae---------------------clap_footer-----------)
 
 []
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d199cfb15ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae&source=-----4d199cfb15ae---------------------bookmark_footer-----------)![](../Images/9ab632bea48c228ba8500f79c5cc4dc1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d199cfb15ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearn-common-database-managing-commands-as-a-data-engineer-4d199cfb15ae&source=-----4d199cfb15ae---------------------bookmark_footer-----------)![](img/9ab632bea48c228ba8500f79c5cc4dc1.png)
 
 图片由 geralt 提供于 Pixabay
 

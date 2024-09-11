@@ -1,18 +1,18 @@
-# 在Databricks中运行自定义Docker容器中的Python Wheel任务
+# 在 Databricks 中运行自定义 Docker 容器中的 Python Wheel 任务
 
-> 原文：[https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79?source=collection_archive---------8-----------------------#2023-06-29](https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79?source=collection_archive---------8-----------------------#2023-06-29)
+> 原文：[`towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79?source=collection_archive---------8-----------------------#2023-06-29`](https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79?source=collection_archive---------8-----------------------#2023-06-29)
 
-## 一步步教程，教你如何在Databricks的自定义Docker镜像中构建和运行Python Wheel任务（包括Poetry和Typer CLI）
+## 一步步教程，教你如何在 Databricks 的自定义 Docker 镜像中构建和运行 Python Wheel 任务（包括 Poetry 和 Typer CLI）
 
-[](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Johannes Schmidt](../Images/e0cacf7ff37f339a9bf8bd33c7c83a4d.png)](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------) [Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)
+[](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)![Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------) [Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5022ff2e428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79&user=Johannes+Schmidt&userId=b5022ff2e428&source=post_page-b5022ff2e428----de3ff20f5c79---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------) ·13分钟阅读·2023年6月29日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5022ff2e428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79&user=Johannes+Schmidt&userId=b5022ff2e428&source=post_page-b5022ff2e428----de3ff20f5c79---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------) ·13 分钟阅读·2023 年 6 月 29 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fde3ff20f5c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79&source=-----de3ff20f5c79---------------------bookmark_footer-----------)![](../Images/fb9e8f76720dd5326d06b7b8b62a10ad.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fde3ff20f5c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79&source=-----de3ff20f5c79---------------------bookmark_footer-----------)![](img/fb9e8f76720dd5326d06b7b8b62a10ad.png)
 
 图片由 [Lluvia Morales](https://unsplash.com/@hi_lluvia?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

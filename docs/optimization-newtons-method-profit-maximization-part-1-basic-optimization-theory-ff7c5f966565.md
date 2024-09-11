@@ -1,54 +1,54 @@
-# 优化、牛顿法与利润最大化：第1部分 — 基本优化理论
+# 优化、牛顿法与利润最大化：第一部分 — 基本优化理论
 
-> 原文：[https://towardsdatascience.com/optimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565?source=collection_archive---------10-----------------------#2023-01-10](https://towardsdatascience.com/optimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565?source=collection_archive---------10-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/optimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565?source=collection_archive---------10-----------------------#2023-01-10`](https://towardsdatascience.com/optimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565?source=collection_archive---------10-----------------------#2023-01-10)
 
-![](../Images/e6f766d329c212d0721d49d9bd28830e.png)
+![](img/e6f766d329c212d0721d49d9bd28830e.png)
 
 所有图片由作者提供
 
 ## 学习如何解决和利用牛顿法解决多维优化问题
 
-[](https://medium.com/@jakepenzak?source=post_page-----ff7c5f966565--------------------------------)[![Jacob Pieniazek](../Images/2d9c6295d39fcaaec4e62f11c359cb29.png)](https://medium.com/@jakepenzak?source=post_page-----ff7c5f966565--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff7c5f966565--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ff7c5f966565--------------------------------) [Jacob Pieniazek](https://medium.com/@jakepenzak?source=post_page-----ff7c5f966565--------------------------------)
+[](https://medium.com/@jakepenzak?source=post_page-----ff7c5f966565--------------------------------)![Jacob Pieniazek](https://medium.com/@jakepenzak?source=post_page-----ff7c5f966565--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff7c5f966565--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff7c5f966565--------------------------------) [Jacob Pieniazek](https://medium.com/@jakepenzak?source=post_page-----ff7c5f966565--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0948d99b1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=post_page-6f0948d99b1c----ff7c5f966565---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff7c5f966565--------------------------------) ·14分钟阅读·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fff7c5f966565&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=-----ff7c5f966565---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0948d99b1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=post_page-6f0948d99b1c----ff7c5f966565---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff7c5f966565--------------------------------) ·14 分钟阅读·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fff7c5f966565&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565&user=Jacob+Pieniazek&userId=6f0948d99b1c&source=-----ff7c5f966565---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fff7c5f966565&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-newtons-method-profit-maximization-part-1-basic-optimization-theory-ff7c5f966565&source=-----ff7c5f966565---------------------bookmark_footer-----------)
 
-> 本文是3部分系列中的**第1部分**。在第1部分中，我们将学习基本的优化理论。然后，在[第2部分](/optimization-newtons-method-profit-maximization-part-2-constrained-optimization-theory-dc18613c5770)，我们将扩展这些理论到约束优化问题。最后，在第3部分中，我们将应用所涵盖的优化理论，以及计量经济学和经济理论，来解决一个利润最大化问题。
+> 本文是 3 部分系列中的**第一部分**。在第一部分中，我们将学习基本的优化理论。然后，在第二部分，我们将扩展这些理论到约束优化问题。最后，在第三部分中，我们将应用所涵盖的优化理论，以及计量经济学和经济理论，来解决一个利润最大化问题。
 
 数学优化是一个极其强大的数学领域，支撑了我们数据科学家在日常工作中隐性或显性使用的许多工具——实际上，几乎所有的机器学习算法都利用优化理论来实现模型收敛。例如，在分类问题中，我们试图通过选择模型的*最优*参数或权重来*最小化*对数损失。*一般来说，数学优化可以被视为机器学习的主要理论机制*。对数学优化的深刻理解是数据科学家工具箱中非常有用的技能——它使数据科学家能够更深入地理解许多当前使用的算法，并且进一步解决*各种独特的优化问题*。
 
-许多读者可能对梯度下降或相关的优化算法，如随机梯度下降，已经有所了解。然而，本文将更深入地讨论经典的牛顿优化方法，有时称为牛顿-拉夫森方法。我们将从基础数学知识开始，逐步讲解优化理论，到梯度下降，然后深入探讨牛顿方法及其在 Python 中的实现。这将为我们进入[**第2部分**](/optimization-newtons-method-profit-maximization-part-2-constrained-optimization-theory-dc18613c5770)的约束优化和本系列的**第3部分**中的计量经济学利润最大化问题提供必要的前期准备。
+许多读者可能对梯度下降或相关的优化算法，如随机梯度下降，已经有所了解。然而，本文将更深入地讨论经典的牛顿优化方法，有时称为牛顿-拉夫森方法。我们将从基础数学知识开始，逐步讲解优化理论，到梯度下降，然后深入探讨牛顿方法及其在 Python 中的实现。这将为我们进入**第二部分**的约束优化和本系列的**第三部分**中的计量经济学利润最大化问题提供必要的前期准备。
 
 ## 优化基础——一个简单的二次函数
 
 数学优化可以被定义为“确定数学定义问题的最佳解决方案的科学。”[1] 在一些实际例子中，这可以被概念化为：选择参数以最小化机器学习算法的损失函数，选择价格和广告以最大化利润，选择股票以最大化风险调整后的财务回报等等。形式上，任何数学优化问题都可以抽象地表述如下：
 
-![](../Images/91d0602859b3778af388eb855d77cd2a.png)
+![](img/91d0602859b3778af388eb855d77cd2a.png)
 
 (1)
 
-这可以理解为：选择向量**x**的实值，以最小化*目标函数* *f*(**x**)（或最大化-*f*(**x**))，并满足*不等式约束* *g*(**x**)和*等式约束* *h*(**x**)。我们将在本系列的[第二部分](/optimization-newtons-method-profit-maximization-part-2-constrained-optimization-theory-dc18613c5770)中讨论如何求解约束优化问题——因为它们使优化问题变得特别复杂。现在，让我们来看一个无约束的单变量示例——考虑以下优化问题：
+这可以理解为：选择向量**x**的实值，以最小化*目标函数* *f*(**x**)（或最大化-*f*(**x**))，并满足*不等式约束* *g*(**x**)和*等式约束* *h*(**x**)。我们将在本系列的第二部分中讨论如何求解约束优化问题——因为它们使优化问题变得特别复杂。现在，让我们来看一个无约束的单变量示例——考虑以下优化问题：
 
-![](../Images/776e66032cdf1167135d13f03ac59c6c.png)
+![](img/776e66032cdf1167135d13f03ac59c6c.png)
 
 （2）
 
-在这种情况下，我们想选择使上面的二次函数最小化的x值。我们可以采用多种方法——首先，一种简单的方法是对x值的大范围进行网格搜索，并选择使*f*(x)具有最低函数值的x。然而，随着搜索空间的增加、函数变得更加复杂或维度增加，这种方法可能很快失去计算上的可行性。
+在这种情况下，我们想选择使上面的二次函数最小化的 x 值。我们可以采用多种方法——首先，一种简单的方法是对 x 值的大范围进行网格搜索，并选择使*f*(x)具有最低函数值的 x。然而，随着搜索空间的增加、函数变得更加复杂或维度增加，这种方法可能很快失去计算上的可行性。
 
-如果存在封闭形式的解，我们可以直接使用微积分来求解。也就是说，我们可以通过微积分解析地求解x的值。通过取导数（或在高维中，如后面所述的梯度）并将其设置为0——*相对最小值的必要一阶条件*——我们可以求解函数的相对极值。然后我们可以取第二导数（或在高维中，如后面所述的Hessian矩阵）来确定这个极值是最大值还是最小值。第二导数大于0（或正定Hessian矩阵）——*相对最小值的必要二阶条件*——意味着是最小值，反之亦然。观察：
+如果存在封闭形式的解，我们可以直接使用微积分来求解。也就是说，我们可以通过微积分解析地求解 x 的值。通过取导数（或在高维中，如后面所述的梯度）并将其设置为 0——*相对最小值的必要一阶条件*——我们可以求解函数的相对极值。然后我们可以取第二导数（或在高维中，如后面所述的 Hessian 矩阵）来确定这个极值是最大值还是最小值。第二导数大于 0（或正定 Hessian 矩阵）——*相对最小值的必要二阶条件*——意味着是最小值，反之亦然。观察：
 
-![](../Images/b356d5910e63261dd7e34294b0bcc246.png)
+![](img/b356d5910e63261dd7e34294b0bcc246.png)
 
 （3）
 
 我们可以通过图形验证上述（2）：
 
-![](../Images/6b090480c2e5931b739e8fb4f3c0d907.png)
+![](img/6b090480c2e5931b739e8fb4f3c0d907.png)
 
 请注意，当一个函数存在多个极值点（即多个最小值或最大值）时，必须小心确定哪个是全局极值——我们将在本文中简要讨论这个问题。
 
@@ -66,31 +66,31 @@
 
 *一阶迭代方案* 是利用目标函数一阶导数的局部信息的迭代方案。最显著的例子是梯度下降方法。对于如上所述的单变量函数，梯度就是一阶导数。将此推广到 *n* 维度，对于一个函数 *f*(**x**)，梯度是一阶偏导数的向量：
 
-![](../Images/d43e3d17e6b500055468db4db576bd0b.png)
+![](img/d43e3d17e6b500055468db4db576bd0b.png)
 
 (4) 连续可微函数 *f*(**x**)
 
 梯度下降从选择一个随机的起点开始，并在 *f*(**x**) 的负梯度方向上迭代进行——*函数的最陡方向*。每次迭代步骤可以表示如下：
 
-![](../Images/d0c20a695835779d9d20b310cf778c7d.png)
+![](img/d0c20a695835779d9d20b310cf778c7d.png)
 
 (5) 梯度下降迭代方案
 
 其中 *γ* 是相应的学习率，控制梯度下降算法在每次迭代中“学习”的快慢。学习率过大会导致我们的迭代不受控制地发散。学习率过小则迭代可能需要很长时间才能收敛。此方案会迭代进行，直到达到一个或多个收敛准则，如：
 
-![](../Images/855991698a9b3c03d179ffcba7c2ef8c.png)
+![](img/855991698a9b3c03d179ffcba7c2ef8c.png)
 
 (6) 迭代优化方案的收敛准则
 
 对于某个小的 epsilon 阈值。回到我们的二次例子，将初始猜测设置为 x = 3 和学习率设置为 0.1，步骤如下：
 
-![](../Images/a1ec26982129d237011ea7c103ff6bb3.png)
+![](img/a1ec26982129d237011ea7c103ff6bb3.png)
 
 (7)
 
 视觉化如下：
 
-![](../Images/eb6bbeaa05e96ebae221a06c3e6933e0.png)
+![](img/eb6bbeaa05e96ebae221a06c3e6933e0.png)
 
 梯度下降和一阶迭代方案在性能上显著可靠。实际上，梯度下降算法主要用于神经网络和机器学习模型中的损失函数优化，许多发展已提高了这些算法的效能。然而，它们仍然仅使用关于函数的有限局部信息（仅一阶导数）。因此，在高维情况下，根据目标函数的性质和学习率，这些方案 1) 可能具有较慢的收敛速度，因为它们保持线性收敛率，并且 2) 可能完全无法收敛。由于这个原因，数据科学家扩大优化工具库是有益的！
 
@@ -98,47 +98,47 @@
 
 如你现在可能已经明白，*二阶迭代方案* 是利用目标函数的一阶导数和二阶导数的局部信息的迭代方案。最显著的是，我们有牛顿法 (NM)，它使用目标函数的海森矩阵。对于单变量函数，海森矩阵仅仅是二阶导数。类似于梯度，将其推广到 *n* 维度，海森矩阵是一个 *n* x *n 对称* 矩阵，包含一个两次连续可微函数 *f*(**x**）的二阶偏导数。
 
-![](../Images/02d6b85d3d647d76e0d3a4440e2afba7.png)
+![](img/02d6b85d3d647d76e0d3a4440e2afba7.png)
 
 (8) 二次连续可微函数 *f*(**x**）的海森矩阵
 
 现在转到导出 NM，首先回忆最小值的一阶必要条件：
 
-![](../Images/9716e1afa505ae541eed48d13afd769a.png)
+![](img/9716e1afa505ae541eed48d13afd769a.png)
 
 (9) x* 处相对最小值的一级必要条件
 
 我们可以使用泰勒级数展开来近似 ***x****：
 
-![](../Images/f671020420ba3b2e88ede14734e5cb88.png)
+![](img/f671020420ba3b2e88ede14734e5cb88.png)
 
 (10)
 
 每次迭代的增量 **Δ** 是对 **x*** 的一个更好的预期近似。因此，使用 NM 的每次迭代步骤可以表示如下：
 
-![](../Images/aeea601b1cde8c66b5fd09c5d76f1710.png)
+![](img/aeea601b1cde8c66b5fd09c5d76f1710.png)
 
 (11) 牛顿法迭代方案
 
 回到我们的二次函数示例，将初始猜测设置为 x = 3，步骤如下：
 
-![](../Images/a0c7a8dfd976ea5a79692fc8ba4b574c.png)
+![](img/a0c7a8dfd976ea5a79692fc8ba4b574c.png)
 
 (12)
 
 我们优雅地在第一次迭代时就收敛到最优解。注意，无论方案如何，收敛标准都是相同的。
 
-> 请注意，所有优化方案都可能陷入局部极值，而不是全局极值（即，考虑具有多个极值（最小值和/或最大值）的高阶多项式——我们可能会陷入一个局部极值，而实际上，另一个极值可能在全球范围内对我们的实际问题更为优化）。已有的方法，并且仍在不断开发，用于处理全局优化，我们将不会深入探讨。你可以利用函数形式的先验知识来设置对结果的预期（即，如果一个严格凸函数有一个临界点，则它必须是全局最小值）。**然而，作为一般经验法则，通常明智的做法是对不同的初始值x迭代优化方案，然后研究结果的稳定性，通常选择具有最优函数值的结果。**
+> 请注意，所有优化方案都可能陷入局部极值，而不是全局极值（即，考虑具有多个极值（最小值和/或最大值）的高阶多项式——我们可能会陷入一个局部极值，而实际上，另一个极值可能在全球范围内对我们的实际问题更为优化）。已有的方法，并且仍在不断开发，用于处理全局优化，我们将不会深入探讨。你可以利用函数形式的先验知识来设置对结果的预期（即，如果一个严格凸函数有一个临界点，则它必须是全局最小值）。**然而，作为一般经验法则，通常明智的做法是对不同的初始值 x 迭代优化方案，然后研究结果的稳定性，通常选择具有最优函数值的结果。**
 
 ## 多维示例——罗森布罗克的抛物线谷
 
 现在让我们考虑以下两个变量的优化问题：
 
-![](../Images/932d986307b137d667c91cffb7f002e0.png)
+![](img/932d986307b137d667c91cffb7f002e0.png)
 
 (13) 罗森布罗克的抛物线谷
 
-![](../Images/74f4e8929ed07a5c8fb08b9506e49b66.png)
+![](img/74f4e8929ed07a5c8fb08b9506e49b66.png)
 
 我们将首先通过手动求解上述优化问题，然后在 Python 中进行求解，均使用牛顿法。
 
@@ -146,19 +146,19 @@
 
 要手动求解，我们需要求解梯度，求解 Hessian，选择我们的初始猜测 **Γ** = [x,y]，然后迭代将这些信息输入到 NM 算法中，直到收敛为止。首先，求解梯度，我们得到：
 
-![](../Images/cedfd948a0bb2401ef6ccb4831579ccf.png)
+![](img/cedfd948a0bb2401ef6ccb4831579ccf.png)
 
 (14)
 
 求解 Hessian，我们得到：
 
-![](../Images/420358b7e714700813e65ad39ff22643.png)
+![](img/420358b7e714700813e65ad39ff22643.png)
 
 (15)
 
 将我们的初始猜测设置为 **Γ** = [-1.2,1]，我们得到：
 
-![](../Images/c34850f961e3220718d01cfeb43d05b9.png)
+![](img/c34850f961e3220718d01cfeb43d05b9.png)
 
 (16)
 
@@ -230,31 +230,31 @@ def get_hessian(
 
 SymPy 允许我们调查方程的符号表示。例如，如果我们调用 `objective` ，我们将看到相应的输出：
 
-![](../Images/9df35cc55695fea8ebbfb88b4c9ee3c8.png)
+![](img/9df35cc55695fea8ebbfb88b4c9ee3c8.png)
 
 SymPy 的函数符号表示
 
 此外，SymPy 允许我们利用 `sm.diff()` 命令对相关函数进行求导。如果我们运行定义的函数以获得梯度 `get_gradient(objective,Gamma)` ，我们得到一个表示梯度的 numpy 数组：
 
-![](../Images/21ab38bf204a0bc7b70ba2ed3655f69c.png)
+![](img/21ab38bf204a0bc7b70ba2ed3655f69c.png)
 
 SymPy 求解的梯度
 
 访问特定元素时，我们可以看到符号表示 `get_gradient(objective, Gamma)[0]`：
 
-![](../Images/6f149886b0c1fe9de8b3c3b61e564d05.png)
+![](img/6f149886b0c1fe9de8b3c3b61e564d05.png)
 
 SymPy 解出的 df(**Γ**)/dx
 
 类似地，对于 Hessian 矩阵，我们可以调用 `get_hessian(objective, Gamma)`：
 
-![](../Images/b8ce56d342c7cbe4e30c8e69748f863d.png)
+![](img/b8ce56d342c7cbe4e30c8e69748f863d.png)
 
 SymPy 解出的 Hessian 矩阵
 
 访问特定元素 `get_hessian(objective,Gamma)[0][1]`
 
-![](../Images/a4359f5c2a62c74d4e04d877482c8e8e.png)
+![](img/a4359f5c2a62c74d4e04d877482c8e8e.png)
 
 SymPy 解出的 df(**Γ**)/dxdy
 
@@ -320,13 +320,13 @@ def get_hessian(
 
 我们现在可以通过调用 `get_gradient(objective, Gamma, {x:-1.2,y:1.0})` 来计算给定起始点的梯度：
 
-![](../Images/b7bf3a05cba745cf7b866255c08fe451.png)
+![](img/b7bf3a05cba745cf7b866255c08fe451.png)
 
 初始点处的梯度
 
 类似地，对于 Hessian 矩阵 `get_hessian(objective, Gamma, {x:-1.2,y:1.0})`：
 
-![](../Images/f285e3836dc3ecf69ad2b37843093ca7.png)
+![](img/f285e3836dc3ecf69ad2b37843093ca7.png)
 
 初始点处的 Hessian 矩阵
 
@@ -381,13 +381,13 @@ def newton_method(
 
 我们现在可以通过 `newton_method(objective,Gamma,{x:-1.2,y:1})` 来运行代码：
 
-![](../Images/e02ab685850059438bb587571f23aa35.png)
+![](img/e02ab685850059438bb587571f23aa35.png)
 
 ## 结论
 
 就这样！如果你已经阅读到这一步，你现在对如何思考和抽象地制定无约束数学优化问题有了扎实的理解，包括基本的分析方法和更复杂的迭代方法。显然，我们在迭代方案中可以融入的信息越多（即更高阶的导数），收敛速度就越高效。***请注意，我们只是触及了数学优化复杂世界的表面。*** 尽管如此，我们今天讨论的工具在实践中绝对可以使用，并可以扩展到更高维的优化问题。
 
-请关注 [**第 2 部分**](/optimization-newtons-method-profit-maximization-part-2-constrained-optimization-theory-dc18613c5770) **的系列文章**，我们将在其中扩展我们在这里学到的内容，解决有约束的优化问题——这是无约束优化的一个极其实用的扩展。实际上，大多数实际优化问题都会对选择变量有某种形式的约束。然后我们将转向**本系列的第 3 部分**，在其中我们将应用学到的优化理论和额外的计量经济学与经济理论来解决一个简单的利润最大化问题。希望你和我一样喜欢阅读这篇文章！
+请关注 **第二部分** **的系列文章**，我们将在其中扩展我们在这里学到的内容，解决有约束的优化问题——这是无约束优化的一个极其实用的扩展。实际上，大多数实际优化问题都会对选择变量有某种形式的约束。然后我们将转向**本系列的第三部分**，在其中我们将应用学到的优化理论和额外的计量经济学与经济理论来解决一个简单的利润最大化问题。希望你和我一样喜欢阅读这篇文章！
 
 ## 奖励——牛顿法的陷阱
 
@@ -444,12 +444,12 @@ def gradient_descent(
 
 ## 资源
 
-[1] Snyman, J. A., & Wilke, D. N. (2019). *实用数学优化：基本优化理论与基于梯度的算法*（第2版）。Springer。
+[1] Snyman, J. A., & Wilke, D. N. (2019). *实用数学优化：基本优化理论与基于梯度的算法*（第 2 版）。Springer。
 
-[2] [https://en.wikipedia.org/wiki/Gradient_descent](https://en.wikipedia.org/wiki/Gradient_descent)
+[2] [`en.wikipedia.org/wiki/Gradient_descent`](https://en.wikipedia.org/wiki/Gradient_descent)
 
-[3] [https://en.wikipedia.org/wiki/Newton%27s_method#:~:text=In%20numerical%20analysis%2C%20Newton%27s%20method%2C%20also%20known%20as,roots%20%28or%20zeroes%29%20of%20a%20real%20-valued%20function](https://en.wikipedia.org/wiki/Newton%27s_method#:~:text=In%20numerical%20analysis%2C%20Newton%27s%20method%2C%20also%20known%20as,roots%20%28or%20zeroes%29%20of%20a%20real%20-valued%20function).
+[3] [`en.wikipedia.org/wiki/Newton%27s_method#:~:text=In%20numerical%20analysis%2C%20Newton%27s%20method%2C%20also%20known%20as,roots%20%28or%20zeroes%29%20of%20a%20real%20-valued%20function`](https://en.wikipedia.org/wiki/Newton%27s_method#:~:text=In%20numerical%20analysis%2C%20Newton%27s%20method%2C%20also%20known%20as,roots%20%28or%20zeroes%29%20of%20a%20real%20-valued%20function).
 
-*通过此 GitHub Repo 访问所有代码:* [https://github.com/jakepenzak/Blog-Posts](https://github.com/jakepenzak/Blog-Posts)
+*通过此 GitHub Repo 访问所有代码:* [`github.com/jakepenzak/Blog-Posts`](https://github.com/jakepenzak/Blog-Posts)
 
 *感谢你阅读我的帖子！我在 Medium 上的帖子旨在探讨利用* ***计量经济学*** *和* ***统计/机器学习*** *技术的现实世界和理论应用。此外，我还希望通过理论和模拟提供某些方法论的理论基础。最重要的是，我写作是为了学习！我希望让复杂的话题对所有人稍微更易于理解。如果你喜欢这篇文章，请考虑* [***在 Medium 上关注我***](https://medium.com/@jakepenzak)*！*

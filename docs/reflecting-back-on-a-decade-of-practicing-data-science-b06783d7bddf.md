@@ -1,44 +1,44 @@
 # 反思十年数据科学实践
 
-> 原文：[https://towardsdatascience.com/reflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf?source=collection_archive---------14-----------------------#2023-01-11](https://towardsdatascience.com/reflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf?source=collection_archive---------14-----------------------#2023-01-11)
+> 原文：[`towardsdatascience.com/reflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf?source=collection_archive---------14-----------------------#2023-01-11`](https://towardsdatascience.com/reflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf?source=collection_archive---------14-----------------------#2023-01-11)
 
 ## 旅程、思考与兴趣，以及可能的未来
 
-[](https://medium.com/@jacowp357?source=post_page-----b06783d7bddf--------------------------------)[![Jaco du Toit](../Images/0a2cca87d98a29303c7ee82290d2e712.png)](https://medium.com/@jacowp357?source=post_page-----b06783d7bddf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b06783d7bddf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b06783d7bddf--------------------------------) [Jaco du Toit](https://medium.com/@jacowp357?source=post_page-----b06783d7bddf--------------------------------)
+[](https://medium.com/@jacowp357?source=post_page-----b06783d7bddf--------------------------------)![Jaco du Toit](https://medium.com/@jacowp357?source=post_page-----b06783d7bddf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b06783d7bddf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b06783d7bddf--------------------------------) [Jaco du Toit](https://medium.com/@jacowp357?source=post_page-----b06783d7bddf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F815098f8de27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf&user=Jaco+du+Toit&userId=815098f8de27&source=post_page-815098f8de27----b06783d7bddf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b06783d7bddf--------------------------------) ·7 min read·2023年1月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb06783d7bddf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf&user=Jaco+du+Toit&userId=815098f8de27&source=-----b06783d7bddf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F815098f8de27&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf&user=Jaco+du+Toit&userId=815098f8de27&source=post_page-815098f8de27----b06783d7bddf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b06783d7bddf--------------------------------) ·7 min read·2023 年 1 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb06783d7bddf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf&user=Jaco+du+Toit&userId=815098f8de27&source=-----b06783d7bddf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb06783d7bddf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf&source=-----b06783d7bddf---------------------bookmark_footer-----------)![](../Images/ff37e6e7eb58c43290e28fd3eb013f7f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb06783d7bddf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freflecting-back-on-a-decade-of-practicing-data-science-b06783d7bddf&source=-----b06783d7bddf---------------------bookmark_footer-----------)![](img/ff37e6e7eb58c43290e28fd3eb013f7f.png)
 
 Betty’s Bay（图片由作者提供）
 
 # 它是如何开始的？
 
-我第一次在2012年通过与教授和同事在我们研究实验室的讨论发现了机器学习，当时我正在攻读电气和电子工程硕士学位。我对所学的内容感到非常着迷，因此决定参加一些在线课程，其中包括了在 coursera.org 上的热门 **Andrew Ng** 和 **Daphne Koller** 材料。Andrew 的机器学习课程脱颖而出，是最吸引人、最实用和最有趣的。这为 X 到 Y 映射打开了一个新的、令人兴奋的无限可能的世界。
+我第一次在 2012 年通过与教授和同事在我们研究实验室的讨论发现了机器学习，当时我正在攻读电气和电子工程硕士学位。我对所学的内容感到非常着迷，因此决定参加一些在线课程，其中包括了在 coursera.org 上的热门 **Andrew Ng** 和 **Daphne Koller** 材料。Andrew 的机器学习课程脱颖而出，是最吸引人、最实用和最有趣的。这为 X 到 Y 映射打开了一个新的、令人兴奋的无限可能的世界。
 
-在参加在线课程后，我还有更多的问题，比如这是否是大脑实际运作的方式，是否存在一种能实现类人智能的普遍学习算法，学习和推理到底是什么，它们如何用数学表达。我也对这些算法的创造灵感以及它们在心理学上的潜在应用感兴趣。为了获得更多的见解，我阅读了Jeff Hawkins、Geoffrey Hinton、Daniel Kahneman、Dan Ariely、V. S. Ramachandran、Claude Shannon、Pedro Domingos、Steven Pinker和Ian Goodfellow等作者的书籍和研究论文。
+在参加在线课程后，我还有更多的问题，比如这是否是大脑实际运作的方式，是否存在一种能实现类人智能的普遍学习算法，学习和推理到底是什么，它们如何用数学表达。我也对这些算法的创造灵感以及它们在心理学上的潜在应用感兴趣。为了获得更多的见解，我阅读了 Jeff Hawkins、Geoffrey Hinton、Daniel Kahneman、Dan Ariely、V. S. Ramachandran、Claude Shannon、Pedro Domingos、Steven Pinker 和 Ian Goodfellow 等作者的书籍和研究论文。
 
-到了2017/2018年，我对基本学习算法，尤其是神经网络有了很好的理解，但在与我的主管广泛讨论和深思熟虑之后，我决定在深度学习趋势的高峰期将重点转向贝叶斯方法。这一转变使我从权重、神经元和激活函数转向了**不确定性**，而且是大量的不确定性！我阅读了David Barber、Kevin Murphy、Christopher Bishop、Tom Minka、John Winn、Judea Pearl、Norman Fenton、David MacKay、Daphne Koller和Edwin Thompson Jaynes等作者的更多书籍和研究论文。我发现这个领域在智力上仍然非常有刺激性，因为它要求与其他机器学习方法不同的思维方式——常常引发自我反思。
+到了 2017/2018 年，我对基本学习算法，尤其是神经网络有了很好的理解，但在与我的主管广泛讨论和深思熟虑之后，我决定在深度学习趋势的高峰期将重点转向贝叶斯方法。这一转变使我从权重、神经元和激活函数转向了**不确定性**，而且是大量的不确定性！我阅读了 David Barber、Kevin Murphy、Christopher Bishop、Tom Minka、John Winn、Judea Pearl、Norman Fenton、David MacKay、Daphne Koller 和 Edwin Thompson Jaynes 等作者的更多书籍和研究论文。我发现这个领域在智力上仍然非常有刺激性，因为它要求与其他机器学习方法不同的思维方式——常常引发自我反思。
 
 # 过去十年有什么有趣的事情？
 
-作为一名行业专业人士，过去十年充满了实践数据科学和在各行各业实施机器学习算法的机会：电力公用事业、数字和社交媒体、金融科技和移动通信。我的目标一直是以更少的资源取得更多的成果，并分享所学到的经验。我应用过的一些最有影响力的算法（及其变种）包括PCA、逻辑回归、朴素贝叶斯、高斯混合模型、高斯过程、潜在狄利克雷分配和简单的神经网络（序列和前馈）。高斯分布在无监督、半监督和监督任务中的多功能性和广泛适用性依然让我印象深刻。
+作为一名行业专业人士，过去十年充满了实践数据科学和在各行各业实施机器学习算法的机会：电力公用事业、数字和社交媒体、金融科技和移动通信。我的目标一直是以更少的资源取得更多的成果，并分享所学到的经验。我应用过的一些最有影响力的算法（及其变种）包括 PCA、逻辑回归、朴素贝叶斯、高斯混合模型、高斯过程、潜在狄利克雷分配和简单的神经网络（序列和前馈）。高斯分布在无监督、半监督和监督任务中的多功能性和广泛适用性依然让我印象深刻。
 
-我特别喜欢解决工程类型的问题，而不是面向客户的问题，部分原因是数据生成过程中的物理原理。分析和解释人类行为的数据或元数据非常复杂，超出了我的专业范围，而Apophenia是我不愿意使用的“工具”。
+我特别喜欢解决工程类型的问题，而不是面向客户的问题，部分原因是数据生成过程中的物理原理。分析和解释人类行为的数据或元数据非常复杂，超出了我的专业范围，而 Apophenia 是我不愿意使用的“工具”。
 
-在我工作于数字和社交媒体公司期间，我发现深度学习非常适用，这在 Ian Goodfellow 的《深度学习》第11章中有详细阐述。根据我的经验，这是一种“安全有效”的数据科学形式，特别适用于文本和图像问题。现在有大量的工具、示例代码、在线课程和研究论文，除了繁琐的数据准备过程，它通常就像在电影院前挑选糖果一样。然而，我必须对使用的工具的基本理论有所了解，特别是当预构建的解决方案不够时。Nando de Freitas 曾将其比作玩乐高，这个比喻很准确，也是我对深度学习经验中最宝贵的收获。将复杂问题拆解成更小、更易管理的部分，这是一种古老的智慧。
+在我工作于数字和社交媒体公司期间，我发现深度学习非常适用，这在 Ian Goodfellow 的《深度学习》第十一章中有详细阐述。根据我的经验，这是一种“安全有效”的数据科学形式，特别适用于文本和图像问题。现在有大量的工具、示例代码、在线课程和研究论文，除了繁琐的数据准备过程，它通常就像在电影院前挑选糖果一样。然而，我必须对使用的工具的基本理论有所了解，特别是当预构建的解决方案不够时。Nando de Freitas 曾将其比作玩乐高，这个比喻很准确，也是我对深度学习经验中最宝贵的收获。将复杂问题拆解成更小、更易管理的部分，这是一种古老的智慧。
 
-在我工作过的所有行业中，我发现贝叶斯建模适用于比其他方法更广泛的问题。这些问题通常涉及有限的数据、缺失的数据、需要纳入领域知识、需要定制模型、需要处理不确定性以及需要概率和因果解释。然而，说服管理层投资这种方法并不总是容易的。采用的障碍包括缺乏专业技能、相关在线资源有限以及模型开发时间较长。开发贝叶斯模型意味着要熬夜。尽管面临这些挑战，我设法让贝叶斯建模在一些问题上发挥作用，但对于大多数问题，我不得不保持严肃的面孔，同时“捶打”数据。自从发现了 Infer.NET，一个用于开发定制贝叶斯模型的框架（在2018年开源）后，情况发生了变化。熟悉这个框架花了不少功夫，但这是非常值得的！
+在我工作过的所有行业中，我发现贝叶斯建模适用于比其他方法更广泛的问题。这些问题通常涉及有限的数据、缺失的数据、需要纳入领域知识、需要定制模型、需要处理不确定性以及需要概率和因果解释。然而，说服管理层投资这种方法并不总是容易的。采用的障碍包括缺乏专业技能、相关在线资源有限以及模型开发时间较长。开发贝叶斯模型意味着要熬夜。尽管面临这些挑战，我设法让贝叶斯建模在一些问题上发挥作用，但对于大多数问题，我不得不保持严肃的面孔，同时“捶打”数据。自从发现了 Infer.NET，一个用于开发定制贝叶斯模型的框架（在 2018 年开源）后，情况发生了变化。熟悉这个框架花了不少功夫，但这是非常值得的！
 
 贝叶斯建模领域在智力上是令人满足的，因为它经常揭示我们自身推理和感知中的隐秘缺陷，这很惊讶，考虑到其核心的基本原则（和哲学）。获得的结果通常是违反直觉的、意外的，并且具有显著的影响。值得注意的是，许多广泛使用的机器学习算法可以理解为从更一般的贝叶斯视角衍生出来的特例。为什么要局限于自己，当可以拥有一切（大致上）呢？
 
-在过去十年中，我观察到了许多由AI研究人员和开源社区的贡献驱动的技术进步，以及行业在基础设施方面提供的支持。这使得模型开发和数据管理变得更快、更便宜、更易于获得，这反过来使得标记更多数据和训练高计算成本的模型几乎可以“瞬时”完成。虽然我们中的许多人专注于连接Pandas数据框，但像OpenAI、DeepMind等组织则创造了突破性的文本到图像、文本到视频和语言模型，这些模型已被广泛使用。谁知道ChatGPT的极限在哪里？此外，值得一提的是AlphaFold取得的惊人准确性和历史性的（苦乐参半的）AlphaGo冠军。这让我想知道哪个研究领域将最终提供对人类智能和意识的最准确理解。
+在过去十年中，我观察到了许多由 AI 研究人员和开源社区的贡献驱动的技术进步，以及行业在基础设施方面提供的支持。这使得模型开发和数据管理变得更快、更便宜、更易于获得，这反过来使得标记更多数据和训练高计算成本的模型几乎可以“瞬时”完成。虽然我们中的许多人专注于连接 Pandas 数据框，但像 OpenAI、DeepMind 等组织则创造了突破性的文本到图像、文本到视频和语言模型，这些模型已被广泛使用。谁知道 ChatGPT 的极限在哪里？此外，值得一提的是 AlphaFold 取得的惊人准确性和历史性的（苦乐参半的）AlphaGo 冠军。这让我想知道哪个研究领域将最终提供对人类智能和意识的最准确理解。
 
-像许多人一样，我遇到过不寻常的职位名称，如“大数据工程师”。我曾听到一位招聘人员问“候选人应该有多大？”这句话虽然是比喻的，但突显了这些新兴角色定义不清、责任持续演变和重叠的情况。这使得招聘和申请这些职位变得具有挑战性。曾经广受欢迎的Drew Conway Venn图当前似乎是数据科学角色复杂性的一个恰当描述。然而，我仍然认为**乌洛波罗斯**会是更合适的象征，因为它象征着该领域的循环和自指性质。
+像许多人一样，我遇到过不寻常的职位名称，如“大数据工程师”。我曾听到一位招聘人员问“候选人应该有多大？”这句话虽然是比喻的，但突显了这些新兴角色定义不清、责任持续演变和重叠的情况。这使得招聘和申请这些职位变得具有挑战性。曾经广受欢迎的 Drew Conway Venn 图当前似乎是数据科学角色复杂性的一个恰当描述。然而，我仍然认为**乌洛波罗斯**会是更合适的象征，因为它象征着该领域的循环和自指性质。
 
 # 什么有效？
 
@@ -48,9 +48,9 @@ Betty’s Bay（图片由作者提供）
 
 # 下一步是什么？
 
-在未来几年，我相信人工智能的重点将从创建人工通用智能转向开发能够在特定任务上表现良好，并在处理边缘情况时保持高度准确性的系统，从而使它们对人类使用更具实用性和可靠性。我认为我们将看到对人工智能公司的更现实估值，对企业级数据作为产品的更多关注，使用贝叶斯方法进行A/B测试的更多关注，区块链技术的整合以允许客户货币化他们的数据，以及多模态模型的更多进展。
+在未来几年，我相信人工智能的重点将从创建人工通用智能转向开发能够在特定任务上表现良好，并在处理边缘情况时保持高度准确性的系统，从而使它们对人类使用更具实用性和可靠性。我认为我们将看到对人工智能公司的更现实估值，对企业级数据作为产品的更多关注，使用贝叶斯方法进行 A/B 测试的更多关注，区块链技术的整合以允许客户货币化他们的数据，以及多模态模型的更多进展。
 
-就我个人而言，我认为现在比以往任何时候都更需要让贝叶斯建模（特别是因果建模）领域对学生、研究人员、科学家和行业从业者更具实用性和吸引力。可以说是一个“安德鲁·吴风格的贝叶斯推断课程”。特别是在2020-2022年期间发生的事情之后，我特别强调这一点，这段时间似乎是人类历史上最大的生物学失误。似乎许多Covid研究受到统计学谬误的困扰，如辛普森悖论和伯克森悖论，以及其他统计操控影响了Covid叙事（见[这里](https://www.normanfenton.com/)）。看到这种情况发生确实令人沮丧，特别是当统计学和概率的正确使用对理解和应对大流行至关重要时。我是说“你怎么敢？”
+就我个人而言，我认为现在比以往任何时候都更需要让贝叶斯建模（特别是因果建模）领域对学生、研究人员、科学家和行业从业者更具实用性和吸引力。可以说是一个“安德鲁·吴风格的贝叶斯推断课程”。特别是在 2020-2022 年期间发生的事情之后，我特别强调这一点，这段时间似乎是人类历史上最大的生物学失误。似乎许多 Covid 研究受到统计学谬误的困扰，如辛普森悖论和伯克森悖论，以及其他统计操控影响了 Covid 叙事（见[这里](https://www.normanfenton.com/)）。看到这种情况发生确实令人沮丧，特别是当统计学和概率的正确使用对理解和应对大流行至关重要时。我是说“你怎么敢？”
 
 尽管数据科学技能和数据科学领袖非常抢手且稀缺，我希望看到更多组织对该领域专业发展的支持。我想解决这个问题的一种方式是鼓励行业与学术界之间更多的合作，以及更多的举措来培养和留住技术娴熟的专业人士。
 

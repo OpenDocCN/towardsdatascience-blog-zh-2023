@@ -1,14 +1,14 @@
 # 深入了解 Softmax 回归
 
-> 原文：[https://towardsdatascience.com/deep-dive-into-softmax-regression-62deea103cb8?source=collection_archive---------1-----------------------#2023-05-25](https://towardsdatascience.com/deep-dive-into-softmax-regression-62deea103cb8?source=collection_archive---------1-----------------------#2023-05-25)
+> 原文：[`towardsdatascience.com/deep-dive-into-softmax-regression-62deea103cb8?source=collection_archive---------1-----------------------#2023-05-25`](https://towardsdatascience.com/deep-dive-into-softmax-regression-62deea103cb8?source=collection_archive---------1-----------------------#2023-05-25)
 
 ## 理解 softmax 回归背后的数学原理，以及如何使用它来解决图像分类任务
 
-[](https://medium.com/@roiyeho?source=post_page-----62deea103cb8--------------------------------)[![Roi Yehoshua 博士](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----62deea103cb8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62deea103cb8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----62deea103cb8--------------------------------) [Roi Yehoshua 博士](https://medium.com/@roiyeho?source=post_page-----62deea103cb8--------------------------------)
+[](https://medium.com/@roiyeho?source=post_page-----62deea103cb8--------------------------------)![Roi Yehoshua 博士](https://medium.com/@roiyeho?source=post_page-----62deea103cb8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62deea103cb8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----62deea103cb8--------------------------------) [Roi Yehoshua 博士](https://medium.com/@roiyeho?source=post_page-----62deea103cb8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-softmax-regression-62deea103cb8&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----62deea103cb8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62deea103cb8--------------------------------) ·13 分钟阅读·2023年5月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62deea103cb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-softmax-regression-62deea103cb8&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----62deea103cb8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-softmax-regression-62deea103cb8&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----62deea103cb8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62deea103cb8--------------------------------) ·13 分钟阅读·2023 年 5 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62deea103cb8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-softmax-regression-62deea103cb8&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----62deea103cb8---------------------clap_footer-----------)
 
 --
 
@@ -22,11 +22,11 @@ Softmax 回归（或**多项式逻辑回归**）是逻辑回归在多类问题�
 
 在阅读本文之前，我强烈建议你阅读我之前关于逻辑回归的文章：
 
-[](/mastering-logistic-regression-3e502686f0ae?source=post_page-----62deea103cb8--------------------------------) [## 精通逻辑回归
+[](/mastering-logistic-regression-3e502686f0ae?source=post_page-----62deea103cb8--------------------------------) ## 精通逻辑回归
 
 ### 从理论到 Python 实现
 
-towardsdatascience.com](/mastering-logistic-regression-3e502686f0ae?source=post_page-----62deea103cb8--------------------------------)
+towardsdatascience.com
 
 # 背景：多类别分类问题
 

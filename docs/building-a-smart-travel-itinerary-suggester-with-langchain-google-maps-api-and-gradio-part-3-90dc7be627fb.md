@@ -1,30 +1,30 @@
-# 使用 LangChain、Google Maps API 和 Gradio 构建智能旅行行程建议器（第 3 部分）
+# 使用 LangChain、Google Maps API 和 Gradio 构建智能旅行行程建议器（第三部分）
 
-> 原文：[https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb?source=collection_archive---------5-----------------------#2023-09-26](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb?source=collection_archive---------5-----------------------#2023-09-26)
+> 原文：[`towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb?source=collection_archive---------5-----------------------#2023-09-26`](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb?source=collection_archive---------5-----------------------#2023-09-26)
 
 ## 了解如何构建一个可能激发你下一次公路旅行灵感的应用
 
-[](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)[![Robert Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)
+[](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)![Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----90dc7be627fb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------) ·6 分钟阅读·2023年9月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F90dc7be627fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&user=Robert+Martin-Short&userId=83d38eb39498&source=-----90dc7be627fb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----90dc7be627fb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------) ·6 分钟阅读·2023 年 9 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F90dc7be627fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&user=Robert+Martin-Short&userId=83d38eb39498&source=-----90dc7be627fb---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F90dc7be627fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&source=-----90dc7be627fb---------------------bookmark_footer-----------)
 
-> **本文是一个三部分系列中的最后一篇，我们使用OpenAI和Google API构建了一个旅行行程建议应用，并通过Gradio生成的简单UI展示它。在这一部分，我们讨论如何构建该UI，将我们在第1部分和第2部分中构建的Agent和RouteFinder模块组合在一起。只想查看代码？请在**[**这里**](https://github.com/rmartinshort/travel_mapper)**找到**。
+> **本文是一个三部分系列中的最后一篇，我们使用 OpenAI 和 Google API 构建了一个旅行行程建议应用，并通过 Gradio 生成的简单 UI 展示它。在这一部分，我们讨论如何构建该 UI，将我们在第一部分和第二部分中构建的 Agent 和 RouteFinder 模块组合在一起。只想查看代码？请在**[**这里**](https://github.com/rmartinshort/travel_mapper)**找到**。
 
 # 1\. 第二部分回顾
 
-在这个三部分系列的[第二部分](/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5)，我们构建了一个系统，该系统从一系列LLM调用中获取解析后的路标列表（第1部分），并使用Google Maps API和Folium生成它们之间的路线，并将其绘制在交互式地图上。回顾一下，我们在这个项目中的目标是构建一个应用程序，允许用户轻松输入旅行请求，例如*“从柏林到苏黎世的四天行程，我想尝试大量当地啤酒和食物”*，并返回详细的行程安排和地图供他们探索。感谢第1部分和第2部分，我们已经组装了所有组件，现在只需将它们组合在一个使使用变得简单的UI中即可。
+在这个三部分系列的第二部分，我们构建了一个系统，该系统从一系列 LLM 调用中获取解析后的路标列表（第一部分），并使用 Google Maps API 和 Folium 生成它们之间的路线，并将其绘制在交互式地图上。回顾一下，我们在这个项目中的目标是构建一个应用程序，允许用户轻松输入旅行请求，例如*“从柏林到苏黎世的四天行程，我想尝试大量当地啤酒和食物”*，并返回详细的行程安排和地图供他们探索。感谢第一部分和第二部分，我们已经组装了所有组件，现在只需将它们组合在一个使使用变得简单的 UI 中即可。
 
-# **2\. 将地图连接到Gradio**
+# **2\. 将地图连接到 Gradio**
 
-[gradio](https://www.gradio.app/)是一个出色的库，用于快速构建能够展示机器学习模型的交互式应用程序。它有一个`gradio.Plot`组件，旨在与Matplotlib、Bokeh和Plotly配合使用（详细信息[这里](https://www.gradio.app/guides/plot-component-for-maps)）。然而，我们在第二部分生成的地图是使用Folium制作的。虽然可以使用这些其他库重新制作这些地图，但幸运的是，我们不需要这么做。相反，我们可以使用[leafmap](https://leafmap.org/)包，它允许我们重用已有的Folium代码，并强制输出Gradio可以理解的HTML。详细信息可以在[这里](https://leafmap.org/notebooks/66_gradio/)找到。
+[gradio](https://www.gradio.app/)是一个出色的库，用于快速构建能够展示机器学习模型的交互式应用程序。它有一个`gradio.Plot`组件，旨在与 Matplotlib、Bokeh 和 Plotly 配合使用（详细信息[这里](https://www.gradio.app/guides/plot-component-for-maps)）。然而，我们在第二部分生成的地图是使用 Folium 制作的。虽然可以使用这些其他库重新制作这些地图，但幸运的是，我们不需要这么做。相反，我们可以使用[leafmap](https://leafmap.org/)包，它允许我们重用已有的 Folium 代码，并强制输出 Gradio 可以理解的 HTML。详细信息可以在[这里](https://leafmap.org/notebooks/66_gradio/)找到。
 
-让我们来看一个简单的例子，了解它是如何工作的。首先，我们将创建一个函数，从中输出所需格式的HTML。
+让我们来看一个简单的例子，了解它是如何工作的。首先，我们将创建一个函数，从中输出所需格式的 HTML。
 
 ```py
 import leafmap.foliumap as leafmap
@@ -40,9 +40,9 @@ def generate_map(center_coordinates, zoom_level):
     return map.to_gradio()
 ```
 
-在这里，函数`generate_map`接收一个格式为*“lat,lon”*的坐标字符串和一个Folium地图的缩放级别。它生成地图并将其转换为Gradio可以读取的格式。
+在这里，函数`generate_map`接收一个格式为*“lat,lon”*的坐标字符串和一个 Folium 地图的缩放级别。它生成地图并将其转换为 Gradio 可以读取的格式。
 
-接下来，让我们构建一个非常简单的Gradio界面来展示我们的地图。
+接下来，让我们构建一个非常简单的 Gradio 界面来展示我们的地图。
 
 ```py
 demo = gr.Blocks()
@@ -65,15 +65,15 @@ with demo:
 demo.queue().launch(debug=True)
 ```
 
-在这里，我们利用`Blocks` API，它为我们提供了设置应用程序UI的灵活性。我们创建了一行组件，分为两列。第一列包含三个元素：一个文本框供用户输入所需的中心坐标，一个下拉菜单选择缩放级别，以及一个名为*“生成地图”*的按钮，用户需要点击这个按钮。
+在这里，我们利用`Blocks` API，它为我们提供了设置应用程序 UI 的灵活性。我们创建了一行组件，分为两列。第一列包含三个元素：一个文本框供用户输入所需的中心坐标，一个下拉菜单选择缩放级别，以及一个名为*“生成地图”*的按钮，用户需要点击这个按钮。
 
-在第二列，我们有`map_output`，这是一个`gradio.HTML()`组件，用于显示地图的HTML。
+在第二列，我们有`map_output`，这是一个`gradio.HTML()`组件，用于显示地图的 HTML。
 
 然后，我们需要做的就是定义点击 `map_button` 时发生的事情。当发生这种情况时，我们将运行 `generate_map` 函数，传入从 `coordinates_input` 和 `zoom_input` 中选择的值。结果将被发送到 `map_output` 变量。
 
 运行此代码会产生以下用户界面
 
-![](../Images/20d1d726bf80511528ef8b0c48695346.png)
+![](img/20d1d726bf80511528ef8b0c48695346.png)
 
 使用 leafmap 和 gradio 生成的基本映射用户界面
 
@@ -83,7 +83,7 @@ demo.queue().launch(debug=True)
 
 让我们首先看看 gradio 应用程序在我们检查代码之前的一些功能。不过要注意，gradio 提供了大量组件来创建复杂且美观的用户界面，而这个旅行地图用户界面仍然处于 POC 阶段。
 
-![](../Images/7e9da427e20d22d644547d8d2282cff7.png)
+![](img/7e9da427e20d22d644547d8d2282cff7.png)
 
 旅行地图应用最终版本中所有组件的描述
 
@@ -226,4 +226,4 @@ $(pwd)/travel_mapper/user_interface/driver.py
 
 从项目的顶层运行时，这也会正确设置`PYTHONPATH`，确保项目特定的导入语句始终被识别。
 
-这就是本系列的全部内容，感谢你一直看到最后！请随时在这里探索完整的代码库 [https://github.com/rmartinshort/travel_mapper](https://github.com/rmartinshort/travel_mapper)。任何改进建议或功能扩展的意见都非常受欢迎！
+这就是本系列的全部内容，感谢你一直看到最后！请随时在这里探索完整的代码库 [`github.com/rmartinshort/travel_mapper`](https://github.com/rmartinshort/travel_mapper)。任何改进建议或功能扩展的意见都非常受欢迎！

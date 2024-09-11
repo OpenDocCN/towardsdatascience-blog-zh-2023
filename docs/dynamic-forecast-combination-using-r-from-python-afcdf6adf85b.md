@@ -1,18 +1,18 @@
 # 动态预测组合：使用 Python 调用 R
 
-> 原文：[https://towardsdatascience.com/dynamic-forecast-combination-using-r-from-python-afcdf6adf85b?source=collection_archive---------14-----------------------#2023-01-25](https://towardsdatascience.com/dynamic-forecast-combination-using-r-from-python-afcdf6adf85b?source=collection_archive---------14-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/dynamic-forecast-combination-using-r-from-python-afcdf6adf85b?source=collection_archive---------14-----------------------#2023-01-25`](https://towardsdatascience.com/dynamic-forecast-combination-using-r-from-python-afcdf6adf85b?source=collection_archive---------14-----------------------#2023-01-25)
 
 ## 探索 rpy2 从 Python 调用 R 方法
 
-[](https://vcerq.medium.com/?source=post_page-----afcdf6adf85b--------------------------------)[![Vitor Cerqueira](../Images/9e52f462c6bc20453d3ea273eb52114b.png)](https://vcerq.medium.com/?source=post_page-----afcdf6adf85b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----afcdf6adf85b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----afcdf6adf85b--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----afcdf6adf85b--------------------------------)
+[](https://vcerq.medium.com/?source=post_page-----afcdf6adf85b--------------------------------)![Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----afcdf6adf85b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----afcdf6adf85b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----afcdf6adf85b--------------------------------) [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----afcdf6adf85b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-forecast-combination-using-r-from-python-afcdf6adf85b&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----afcdf6adf85b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----afcdf6adf85b--------------------------------) ·6 min read·2023年1月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fafcdf6adf85b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-forecast-combination-using-r-from-python-afcdf6adf85b&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----afcdf6adf85b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb5f27c836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-forecast-combination-using-r-from-python-afcdf6adf85b&user=Vitor+Cerqueira&userId=efb5f27c836d&source=post_page-efb5f27c836d----afcdf6adf85b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----afcdf6adf85b--------------------------------) ·6 min read·2023 年 1 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fafcdf6adf85b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-forecast-combination-using-r-from-python-afcdf6adf85b&user=Vitor+Cerqueira&userId=efb5f27c836d&source=-----afcdf6adf85b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fafcdf6adf85b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-forecast-combination-using-r-from-python-afcdf6adf85b&source=-----afcdf6adf85b---------------------bookmark_footer-----------)![](../Images/bd1918e4b14c3cdaf4f5ae5c2e4a0479.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fafcdf6adf85b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-forecast-combination-using-r-from-python-afcdf6adf85b&source=-----afcdf6adf85b---------------------bookmark_footer-----------)![](img/bd1918e4b14c3cdaf4f5ae5c2e4a0479.png)
 
 图片来自 [Louis Hansel](https://unsplash.com/@louishansel?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

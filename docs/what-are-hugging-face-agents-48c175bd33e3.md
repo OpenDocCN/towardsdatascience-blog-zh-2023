@@ -1,18 +1,18 @@
 # 如何使用 Hugging Face Agents 进行 NLP 任务
 
-> 原文：[https://towardsdatascience.com/what-are-hugging-face-agents-48c175bd33e3?source=collection_archive---------3-----------------------#2023-05-17](https://towardsdatascience.com/what-are-hugging-face-agents-48c175bd33e3?source=collection_archive---------3-----------------------#2023-05-17)
+> 原文：[`towardsdatascience.com/what-are-hugging-face-agents-48c175bd33e3?source=collection_archive---------3-----------------------#2023-05-17`](https://towardsdatascience.com/what-are-hugging-face-agents-48c175bd33e3?source=collection_archive---------3-----------------------#2023-05-17)
 
 ## 一步一步的教程，教你如何使用 Transformers 工具和代理。
 
-[](https://medium.com/@fmnobar?source=post_page-----48c175bd33e3--------------------------------)[![Farzad Mahmoodinobar](../Images/2d75209693b712300e6f0796bd2487d0.png)](https://medium.com/@fmnobar?source=post_page-----48c175bd33e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48c175bd33e3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----48c175bd33e3--------------------------------) [Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----48c175bd33e3--------------------------------)
+[](https://medium.com/@fmnobar?source=post_page-----48c175bd33e3--------------------------------)![Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----48c175bd33e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48c175bd33e3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----48c175bd33e3--------------------------------) [Farzad Mahmoodinobar](https://medium.com/@fmnobar?source=post_page-----48c175bd33e3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c56b7d4893e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-hugging-face-agents-48c175bd33e3&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=post_page-3c56b7d4893e----48c175bd33e3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48c175bd33e3--------------------------------) ·11分钟阅读·2023年5月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F48c175bd33e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-hugging-face-agents-48c175bd33e3&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=-----48c175bd33e3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3c56b7d4893e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-hugging-face-agents-48c175bd33e3&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=post_page-3c56b7d4893e----48c175bd33e3---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48c175bd33e3--------------------------------) ·11 分钟阅读·2023 年 5 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F48c175bd33e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-hugging-face-agents-48c175bd33e3&user=Farzad+Mahmoodinobar&userId=3c56b7d4893e&source=-----48c175bd33e3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48c175bd33e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-hugging-face-agents-48c175bd33e3&source=-----48c175bd33e3---------------------bookmark_footer-----------)![](../Images/ba93162cbfcba76e15991d90518ec9c6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48c175bd33e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-hugging-face-agents-48c175bd33e3&source=-----48c175bd33e3---------------------bookmark_footer-----------)![](img/ba93162cbfcba76e15991d90518ec9c6.png)
 
 图片由 [Alev Takil](https://unsplash.com/@alevisionco?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，[Unsplash](https://unsplash.com/photos/3syTDiVAc7w?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

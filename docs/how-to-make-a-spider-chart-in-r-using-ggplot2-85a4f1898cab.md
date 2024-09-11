@@ -1,28 +1,28 @@
 # 如何在 R 中使用 ggplot2 制作蜘蛛图
 
-> 原文：[https://towardsdatascience.com/how-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab?source=collection_archive---------4-----------------------#2023-01-11](https://towardsdatascience.com/how-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab?source=collection_archive---------4-----------------------#2023-01-11)
+> 原文：[`towardsdatascience.com/how-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab?source=collection_archive---------4-----------------------#2023-01-11`](https://towardsdatascience.com/how-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab?source=collection_archive---------4-----------------------#2023-01-11)
 
 ## 一步一步构建蜘蛛图/雷达图
 
-[](https://medium.com/@zvonimir.boban.mef?source=post_page-----85a4f1898cab--------------------------------)[![Zvonimir Boban](../Images/cbad06b7e1f5d021ce9b2dc31b8a6a65.png)](https://medium.com/@zvonimir.boban.mef?source=post_page-----85a4f1898cab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----85a4f1898cab--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----85a4f1898cab--------------------------------) [Zvonimir Boban](https://medium.com/@zvonimir.boban.mef?source=post_page-----85a4f1898cab--------------------------------)
+[](https://medium.com/@zvonimir.boban.mef?source=post_page-----85a4f1898cab--------------------------------)![Zvonimir Boban](https://medium.com/@zvonimir.boban.mef?source=post_page-----85a4f1898cab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----85a4f1898cab--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----85a4f1898cab--------------------------------) [Zvonimir Boban](https://medium.com/@zvonimir.boban.mef?source=post_page-----85a4f1898cab--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe31978768a4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab&user=Zvonimir+Boban&userId=e31978768a4e&source=post_page-e31978768a4e----85a4f1898cab---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----85a4f1898cab--------------------------------) ·8分钟阅读·2023年1月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F85a4f1898cab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab&user=Zvonimir+Boban&userId=e31978768a4e&source=-----85a4f1898cab---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe31978768a4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab&user=Zvonimir+Boban&userId=e31978768a4e&source=post_page-e31978768a4e----85a4f1898cab---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----85a4f1898cab--------------------------------) ·8 分钟阅读·2023 年 1 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F85a4f1898cab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab&user=Zvonimir+Boban&userId=e31978768a4e&source=-----85a4f1898cab---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F85a4f1898cab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab&source=-----85a4f1898cab---------------------bookmark_footer-----------)![](../Images/2e02b586b9718222b48b5dc07953d702.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F85a4f1898cab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-make-a-spider-chart-in-r-using-ggplot2-85a4f1898cab&source=-----85a4f1898cab---------------------bookmark_footer-----------)![](img/2e02b586b9718222b48b5dc07953d702.png)
 
 图片由 [Divyadarshi Acharya](https://unsplash.com/@lincon_street?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/photos/Qbs6liSxjr8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-了解到雷达图可以制作引人注目的可视化，我尝试寻找合适的R库。当我的搜索几乎没有结果时，我感到惊讶**（编辑：在写这篇文章后不久，我创建了`**ggvanced**`包，其中的`**ggspider**`函数处理了这个问题。你可以在[**另一篇文章**](https://medium.com/towards-data-science/ggvanced-a-package-for-generating-advanced-data-visualizations-on-top-of-the-ggplot2-package-2a935763a4b)中了解更多信息。）**。我找到的唯一一个包是`ggradar`，它不在CRAN上，只能从GitHub安装。
+了解到雷达图可以制作引人注目的可视化，我尝试寻找合适的 R 库。当我的搜索几乎没有结果时，我感到惊讶**（编辑：在写这篇文章后不久，我创建了`**ggvanced**`包，其中的`**ggspider**`函数处理了这个问题。你可以在[**另一篇文章**](https://medium.com/towards-data-science/ggvanced-a-package-for-generating-advanced-data-visualizations-on-top-of-the-ggplot2-package-2a935763a4b)中了解更多信息。）**。我找到的唯一一个包是`ggradar`，它不在 CRAN 上，只能从 GitHub 安装。
 
-我决定尝试使用`titanic`包中的泰坦尼克号数据。为了计算所需的数据汇总并将数据转换为绘图所需的形状，我使用了`dplyr`、`tidyr`、`tibble`、`purr`和`scales`包。如果你不熟悉这些，请查看我之前关于R数据处理的文章。
+我决定尝试使用`titanic`包中的泰坦尼克号数据。为了计算所需的数据汇总并将数据转换为绘图所需的形状，我使用了`dplyr`、`tidyr`、`tibble`、`purr`和`scales`包。如果你不熟悉这些，请查看我之前关于 R 数据处理的文章。
 
-[](/diving-into-the-tidyverse-using-the-titanic-data-83f54295d5df?source=post_page-----85a4f1898cab--------------------------------) [## 深入探索tidyverse使用泰坦尼克号数据
+[](/diving-into-the-tidyverse-using-the-titanic-data-83f54295d5df?source=post_page-----85a4f1898cab--------------------------------) ## 深入探索 tidyverse 使用泰坦尼克号数据
 
-[towardsdatascience.com](/diving-into-the-tidyverse-using-the-titanic-data-83f54295d5df?source=post_page-----85a4f1898cab--------------------------------)
+[towardsdatascience.com
 
 ```py
 library(dplyr)
@@ -86,19 +86,19 @@ Titanic_gr %>%
   theme(legend.position = "bottom", legend.title = element_text(size = 17))
 ```
 
-![](../Images/bd97307c40ee231d0ddd41ab8393fbe4.png)
+![](img/bd97307c40ee231d0ddd41ab8393fbe4.png)
 
-使用ggradar包制作的雷达图。图片来源：作者
+使用 ggradar 包制作的雷达图。图片来源：作者
 
 尽管获得的图表整洁且视觉上令人愉悦，但我希望每个变量有独立的轴。虽然雷达图和蜘蛛图的名称通常可以互换使用，但我认为在每个变量都有自己的轴的情况下，蜘蛛图更为合适，而雷达图则适用于上述图片中的情况。不幸的是，因为我更感兴趣的是创建蜘蛛图，并且这个包中没有这种选项，所以我不得不自行解决这个问题。
 
-# 进入ggplot2
+# 进入 ggplot2
 
 `ggplot2`的美在于其底层的图形语法，允许通过将多个图层叠加在一起创建图表。这一强大的概念让我们能够创建几乎任何可视化，只要我们知道如何编码。我将使用它从零开始构建一个蜘蛛图。
 
-![](../Images/992eda624e642669ca3b9a544b039ad6.png)
+![](img/992eda624e642669ca3b9a544b039ad6.png)
 
-使用ggplot2包构建图表背后的哲学。图片来源：作者
+使用 ggplot2 包构建图表背后的哲学。图片来源：作者
 
 分层方法要求分别构建图表的不同方面。首先我们将创建图表轮廓。由于蜘蛛图涉及极坐标，我编写了一个函数，该函数根据数据集中变量的数量计算多边形顶点的坐标。
 
@@ -130,7 +130,7 @@ step_1 <- map_df(seq(0, 1, 0.25) + central_distance, circle_coords) %>%
     theme_void()
 ```
 
-![](../Images/a3d4e7b0dd37bac49009f832767d0b53.png)
+![](img/a3d4e7b0dd37bac49009f832767d0b53.png)
 
 第一步：创建图表的背景。图片来源：作者
 
@@ -151,7 +151,7 @@ step_2 <- step_1 + geom_line(data = axis_coords(ncol(p_data) - 1),
 aes(x, y, group = id), alpha = 0.3)
 ```
 
-![](../Images/c1ef71da69a702b39d209578affbc4a4.png)
+![](img/c1ef71da69a702b39d209578affbc4a4.png)
 
 为数据集中的每个变量添加坐标轴。图片由作者提供
 
@@ -181,7 +181,7 @@ step_3 <- step_2 +
               aes(x, y), label = labels_data$parameter[1:(ncol(p_data)-1)])
 ```
 
-![](../Images/05cc506da2d39f174bdea9b2c4ebb726.png)
+![](img/05cc506da2d39f174bdea9b2c4ebb726.png)
 
 添加坐标轴名称和标签。图片由作者提供
 
@@ -210,7 +210,7 @@ step_4 <- step_3 +
               size = 1)
 ```
 
-![](../Images/7428bdc8d6654d1e33fdb75877a62f63.png)
+![](img/7428bdc8d6654d1e33fdb75877a62f63.png)
 
 用数据点叠加图表。图片由作者提供
 
@@ -224,7 +224,7 @@ step_5 <- step_4 +
           legend.title = element_text(size = 12)) 
 ```
 
-![](../Images/f4a55edeb8d0ed2816b32e37d0ef5c39.png)
+![](img/f4a55edeb8d0ed2816b32e37d0ef5c39.png)
 
 最终的蛛网图。图片由作者提供
 
@@ -325,7 +325,7 @@ rescaled_data <- p_data %>%
 }
 ```
 
-现在，我们可以在一些不同的数据上轻松测试这个函数，比如内置于R中的`mtcars`数据集。
+现在，我们可以在一些不同的数据上轻松测试这个函数，比如内置于 R 中的`mtcars`数据集。
 
 ```py
 p_data <- mtcars %>%
@@ -337,14 +337,14 @@ p_data <- mtcars %>%
 ggspider(p_data)
 ```
 
-![](../Images/5a4ecf3ed11f8a25aa702c802dcc15f2.png)
+![](img/5a4ecf3ed11f8a25aa702c802dcc15f2.png)
 
-mtcars数据集的蛛网图。图片由作者提供
+mtcars 数据集的蛛网图。图片由作者提供
 
 # 结论
 
-本文展示了如何在R中从头构建蛛网图。虽然我知道的R包中没有支持这种图表的，但利用`ggplot2`包中的分层图形语法方法为我提供了自己创建这种图表的工具。当然，图表的美学方面仍有改进的空间，但那是另一个文章的话题。
+本文展示了如何在 R 中从头构建蛛网图。虽然我知道的 R 包中没有支持这种图表的，但利用`ggplot2`包中的分层图形语法方法为我提供了自己创建这种图表的工具。当然，图表的美学方面仍有改进的空间，但那是另一个文章的话题。
 
 就这些了。我希望你觉得这篇文章有用，并将其用于未来制作更多精美的蛛网图。享受吧！
 
-附言：如果你喜欢这篇文章，请点赞并关注，以便未来获得更多类似内容。此外，随时欢迎提出你认为值得在R中实现的其他有趣可视化建议。
+附言：如果你喜欢这篇文章，请点赞并关注，以便未来获得更多类似内容。此外，随时欢迎提出你认为值得在 R 中实现的其他有趣可视化建议。

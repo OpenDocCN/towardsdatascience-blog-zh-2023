@@ -1,18 +1,18 @@
-# 当你没有学习动力时，这5个技巧将帮助你学习数据科学
+# 当你没有学习动力时，这 5 个技巧将帮助你学习数据科学
 
-> 原文：[https://towardsdatascience.com/these-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788?source=collection_archive---------4-----------------------#2023-05-21](https://towardsdatascience.com/these-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788?source=collection_archive---------4-----------------------#2023-05-21)
+> 原文：[`towardsdatascience.com/these-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788?source=collection_archive---------4-----------------------#2023-05-21`](https://towardsdatascience.com/these-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788?source=collection_archive---------4-----------------------#2023-05-21)
 
-## 使用这5个技巧来教自己数据科学，当你没有动力时。
+## 使用这 5 个技巧来教自己数据科学，当你没有动力时。
 
-[](https://madison13.medium.com/?source=post_page-----8e25b4d55788--------------------------------)[![Madison Hunter](../Images/fa84176a13175e75944b49e110b92e14.png)](https://madison13.medium.com/?source=post_page-----8e25b4d55788--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e25b4d55788--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8e25b4d55788--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----8e25b4d55788--------------------------------)
+[](https://madison13.medium.com/?source=post_page-----8e25b4d55788--------------------------------)![Madison Hunter](https://madison13.medium.com/?source=post_page-----8e25b4d55788--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e25b4d55788--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e25b4d55788--------------------------------) [Madison Hunter](https://madison13.medium.com/?source=post_page-----8e25b4d55788--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthese-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----8e25b4d55788---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e25b4d55788--------------------------------) · 8分钟阅读 · 2023年5月21日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8e25b4d55788&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthese-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788&user=Madison+Hunter&userId=6a8c6841e521&source=-----8e25b4d55788---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a8c6841e521&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthese-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788&user=Madison+Hunter&userId=6a8c6841e521&source=post_page-6a8c6841e521----8e25b4d55788---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e25b4d55788--------------------------------) · 8 分钟阅读 · 2023 年 5 月 21 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8e25b4d55788&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthese-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788&user=Madison+Hunter&userId=6a8c6841e521&source=-----8e25b4d55788---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e25b4d55788&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthese-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788&source=-----8e25b4d55788---------------------bookmark_footer-----------)![](../Images/60efdf2821d0cd6f0ce0bffe748d3a4f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8e25b4d55788&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthese-5-tips-will-help-you-learn-data-science-when-you-have-no-motivation-to-study-8e25b4d55788&source=-----8e25b4d55788---------------------bookmark_footer-----------)![](img/60efdf2821d0cd6f0ce0bffe748d3a4f.png)
 
 照片由 [Priscilla Du Preez](https://unsplash.com/@priscilladupreez?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,7 +28,7 @@
 
 自从我开始学习数据科学以来，我学到的最重要的一点就是学习资源可以决定你的成败。
 
-例如，我知道要进行数据科学中的许多计算，我需要掌握微积分。凑巧的是，微积分课程是我大学学位要求的一部分。由于我需要为微积分课程付费，我决定利用这个机会自学数据科学所需的微积分。然而，我大学的学习材料糟糕透顶，我花了五个月才学会函数、极限和微分。这段时间真是折磨人。直到我找到了Youtube上最棒的数学老师。[Leonard教授](https://www.youtube.com/watch?v=54_XRjHhZzI&list=PLF797E961509B4EB5&index=7)的微积分讲座改变了我的人生，我发现通过这些视频自学微积分的速度远快于使用我大学提供的材料。
+例如，我知道要进行数据科学中的许多计算，我需要掌握微积分。凑巧的是，微积分课程是我大学学位要求的一部分。由于我需要为微积分课程付费，我决定利用这个机会自学数据科学所需的微积分。然而，我大学的学习材料糟糕透顶，我花了五个月才学会函数、极限和微分。这段时间真是折磨人。直到我找到了 Youtube 上最棒的数学老师。[Leonard 教授](https://www.youtube.com/watch?v=54_XRjHhZzI&list=PLF797E961509B4EB5&index=7)的微积分讲座改变了我的人生，我发现通过这些视频自学微积分的速度远快于使用我大学提供的材料。
 
 为了保持自学的动力，你需要使用那些能够帮助你按节奏学习的资源，而不是让你在理解一个概念上反复挣扎数周。没有什么比在一个概念上卡住超过一个月更能快速消耗你的动力了。
 
@@ -46,21 +46,21 @@
 
 我最喜欢的 YouTube 学习频道之一是由[Merve](https://www.youtube.com/@MerveStudyCorner)运营的，她也巧合地学习数据科学。该频道拥有 82.2 万订阅者，每周发布的“与我一起学习”视频被数百万观众观看。与某人“一起学习”总是让人感到如此鼓舞，并且帮助你保持动力。
 
-[Study Together](https://www.studytogether.com/)、[StudyStream](https://www.studystream.live/focus-room) 和 [Studyverse](https://studyverse.live/) 都是虚拟学习室，你可以与来自世界各地的人一起学习。这些学习室可以帮助打破拖延症，并让你集中精力学习几个小时。此外，许多Instagram上的学习账户利用直播功能为所有关注者举办学习会议。
+[Study Together](https://www.studytogether.com/)、[StudyStream](https://www.studystream.live/focus-room) 和 [Studyverse](https://studyverse.live/) 都是虚拟学习室，你可以与来自世界各地的人一起学习。这些学习室可以帮助打破拖延症，并让你集中精力学习几个小时。此外，许多 Instagram 上的学习账户利用直播功能为所有关注者举办学习会议。
 
-另一个保持动力的最佳工具是加入一个Discord服务器，特别是那些专注于不同学习领域的服务器 [数据科学](/top-20-data-science-discord-servers-to-join-in-2020-567b45738e9d)。这些社区是保持学习动力的绝佳机会，同时也可以在遇到问题时立即得到解答。与志同道合的人交流也是了解数据科学行业、建立人脉和未来成为更全面的数据科学家的好方法。
+另一个保持动力的最佳工具是加入一个 Discord 服务器，特别是那些专注于不同学习领域的服务器 数据科学。这些社区是保持学习动力的绝佳机会，同时也可以在遇到问题时立即得到解答。与志同道合的人交流也是了解数据科学行业、建立人脉和未来成为更全面的数据科学家的好方法。
 
-# 每天学习时间不超过6小时
+# 每天学习时间不超过 6 小时
 
 当你自学数据科学时，可能很难确定每天应该学习多少。这种情况在你没有其他承诺时尤为明显，这可能使你整天都可以用来学习。
 
-这也受到你周围其他人学习情况的进一步影响。社交媒体使得有毒的学习文化更加普遍，许多人会发布他们每天学习多少小时的信息。这会给你带来不必要的压力，促使你也每天学习12小时。
+这也受到你周围其他人学习情况的进一步影响。社交媒体使得有毒的学习文化更加普遍，许多人会发布他们每天学习多少小时的信息。这会给你带来不必要的压力，促使你也每天学习 12 小时。
 
-尽管每个人能够有效学习的时间不同，但我可以证明你不应每天学习超过6到7小时。学习是一种强度很大的脑力活动，与你在8小时工作制下的脑力使用完全不同。例如，工作8小时并不意味着你在这8小时内都在高强度使用大脑。其中一些小时会用于耗费精力的任务，但大部分时间会用于低强度的脑力活动，比如参加会议、回复邮件和休息。
+尽管每个人能够有效学习的时间不同，但我可以证明你不应每天学习超过 6 到 7 小时。学习是一种强度很大的脑力活动，与你在 8 小时工作制下的脑力使用完全不同。例如，工作 8 小时并不意味着你在这 8 小时内都在高强度使用大脑。其中一些小时会用于耗费精力的任务，但大部分时间会用于低强度的脑力活动，比如参加会议、回复邮件和休息。
 
-相对而言，你的大脑在学习时会持续被高强度地使用。学习需要100%的专注力来有效进行（特别是当你在探索如微积分和神经网络等话题时），这就是为什么每天6到7小时的学习应该是你的最大目标。这还考虑到你在学习期间需要以其他方式照顾自己，包括休息、社交、锻炼和营养。
+相对而言，你的大脑在学习时会持续被高强度地使用。学习需要 100%的专注力来有效进行（特别是当你在探索如微积分和神经网络等话题时），这就是为什么每天 6 到 7 小时的学习应该是你的最大目标。这还考虑到你在学习期间需要以其他方式照顾自己，包括休息、社交、锻炼和营养。
 
-当你的大脑学会了一天最多只需努力工作6小时时，你可能会发现，在这6小时内更容易集中注意力。你不会再感觉被手机分心，因为你知道你只有6小时来完成当天的学习任务。你还会发现，第二天开始学习时感觉更加清爽，因为你的大脑有足够的休息时间。你可能还会发现，你对学习的材料保持的记忆更多，因为你的大脑有更多时间在不受新信息不断轰炸的情况下与学习的材料建立强大的连接。
+当你的大脑学会了一天最多只需努力工作 6 小时时，你可能会发现，在这 6 小时内更容易集中注意力。你不会再感觉被手机分心，因为你知道你只有 6 小时来完成当天的学习任务。你还会发现，第二天开始学习时感觉更加清爽，因为你的大脑有足够的休息时间。你可能还会发现，你对学习的材料保持的记忆更多，因为你的大脑有更多时间在不受新信息不断轰炸的情况下与学习的材料建立强大的连接。
 
 # 找到激励你的实际应用
 

@@ -1,10 +1,10 @@
 # 如何将 Azure AD 管理身份连接到 AWS 资源
 
-> 原文：[https://towardsdatascience.com/how-to-connect-azure-ad-managed-identities-to-aws-resources-9353f3309efb?source=collection_archive---------7-----------------------#2023-02-21](https://towardsdatascience.com/how-to-connect-azure-ad-managed-identities-to-aws-resources-9353f3309efb?source=collection_archive---------7-----------------------#2023-02-21)
+> 原文：[`towardsdatascience.com/how-to-connect-azure-ad-managed-identities-to-aws-resources-9353f3309efb?source=collection_archive---------7-----------------------#2023-02-21`](https://towardsdatascience.com/how-to-connect-azure-ad-managed-identities-to-aws-resources-9353f3309efb?source=collection_archive---------7-----------------------#2023-02-21)
 
 ## 从 Azure Data Factory 设置无密钥访问 AWS S3
 
-[](https://rebremer.medium.com/?source=post_page-----9353f3309efb--------------------------------)[![René Bremer](../Images/e422c4b84e225d2a949251ebc24dbd2c.png)](https://rebremer.medium.com/?source=post_page-----9353f3309efb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9353f3309efb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9353f3309efb--------------------------------) [René Bremer](https://rebremer.medium.com/?source=post_page-----9353f3309efb--------------------------------)
+[](https://rebremer.medium.com/?source=post_page-----9353f3309efb--------------------------------)![René Bremer](https://rebremer.medium.com/?source=post_page-----9353f3309efb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9353f3309efb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9353f3309efb--------------------------------) [René Bremer](https://rebremer.medium.com/?source=post_page-----9353f3309efb--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9353f3309efb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-azure-ad-managed-identities-to-aws-resources-9353f3309efb&source=-----9353f3309efb---------------------bookmark_footer-----------)![](../Images/54488e77aaee51a17ae771dc72f62a91.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9353f3309efb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-connect-azure-ad-managed-identities-to-aws-resources-9353f3309efb&source=-----9353f3309efb---------------------bookmark_footer-----------)![](img/54488e77aaee51a17ae771dc72f62a91.png)
 
 图片由 [Susan Q Yin](https://unsplash.com/@syinq) 提供，来源于 [Unsplash](https://unsplash.com/)
 
@@ -20,7 +20,7 @@
 
 对开发人员来说，一个常见的挑战是管理凭据以确保服务之间的通信安全。[Azure 托管标识](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) 消除了开发人员管理这些凭据的需求。应用程序可以使用托管标识来获取 Azure AD 令牌，以访问 Azure 中的资源。在这篇博客中，解释了如何使用 Azure Data Factory 托管标识来访问 AWS S3，详见下文。
 
-![](../Images/6852075832a91f927a8c912ecd32a9c2.png)
+![](img/6852075832a91f927a8c912ecd32a9c2.png)
 
 1\. 概述 — Azure AD 托管标识连接 AWS
 
@@ -40,7 +40,7 @@
 
 在这一段中，创建了一个[应用注册](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)。登录 Azure 门户，选择 Azure Active Directory，然后选择“应用注册”，并创建一个应用注册。创建应用注册后，需要指定应用程序 ID URL。作为 URI，可以使用 `api://aws_azure_federate`，详见下图。
 
-![](../Images/18bb03083bf8a153b046c77008437033.png)
+![](img/18bb03083bf8a153b046c77008437033.png)
 
 2.1 使用 URI 方案 app:// 进行应用注册
 
@@ -48,7 +48,7 @@
 
 在这一段中，将你的 Azure AD 租户注册为 AWS 中的身份提供者（IdP）。登录 AWS 控制台，选择 IAM，然后选择添加身份提供者。使用 OpenID Connect 作为提供者类型，使用 `https://sts.windows.net/<<your Azure AD tenant id>>/`（不要忘记结尾的 /）作为 URL，并使用应用程序 ID URI 作为受众，详见下图。
 
-![](../Images/0d43cf4d91935ee39936a65240a4fc14.png)
+![](img/0d43cf4d91935ee39936a65240a4fc14.png)
 
 2.2 在 AWS 中创建 Azure AD 租户作为身份提供者
 
@@ -56,7 +56,7 @@
 
 在这一段中，在 IdP 中创建一个角色，并将该角色授予对 S3 桶的访问权限。前往你在 AWS 中新创建的 IdP，选择创建角色，选择 Web 身份验证，并选择你的应用注册作为受众。作为权限，选择 `AmazonS3FullAccess`（在生产环境中，创建更细化的策略）。最后，将你的角色命名为 `AzureADWebidentity3` 并创建它，详见下图。
 
-![](../Images/3b3cd6e3579afa6de0f2bd0accc4d97e.png)
+![](img/3b3cd6e3579afa6de0f2bd0accc4d97e.png)
 
 2.3 在 IdP 中使用应用注册作为受众的角色，具有对 S3 的完全访问权限
 
@@ -100,7 +100,7 @@ https://github.com/rebremer/data-factory-managed-identity-connection-aws-s3
 
 最后，转到前两个管道的参数并用您的变量填充它们（其他管道将不会被使用，仅供参考），参见下面的图片。
 
-![](../Images/3d3fe813842061bcced610ef18a02267.png)
+![](img/3d3fe813842061bcced610ef18a02267.png)
 
 3.2 成功创建管道，填写参数
 
@@ -123,7 +123,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 在管道成功运行后，使用复制活动将数据从 S3 复制到 Azure 存储，详见下图。
 
-![](../Images/881f173e1f8990cb2af449d128ff72f3.png)
+![](img/881f173e1f8990cb2af449d128ff72f3.png)
 
 3.3 成功的管道运行，未使用凭证将文件从 S3 复制到 Azure 存储
 
@@ -131,6 +131,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 对开发人员来说，一个常见的挑战是管理凭证以确保服务之间的安全通信。 [Azure 托管身份](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) 消除了开发人员管理这些凭证的需求。这也可以用于从 Azure AD 访问 AWS 资源。在本博客中，解释了如何使用 Azure Data Factory 托管身份访问 AWS S3，详见下方概述。
 
-![](../Images/6852075832a91f927a8c912ecd32a9c2.png)
+![](img/6852075832a91f927a8c912ecd32a9c2.png)
 
 4\. 概述 — Azure AD 托管身份与 AWS 的连接

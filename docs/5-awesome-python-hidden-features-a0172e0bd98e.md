@@ -1,12 +1,12 @@
-# 5 个令人惊叹的 Python 隐藏特性 — 第 1 部分
+# 5 个令人惊叹的 Python 隐藏特性 — 第一部分
 
-> 原文：[https://towardsdatascience.com/5-awesome-python-hidden-features-a0172e0bd98e?source=collection_archive---------3-----------------------#2023-03-16](https://towardsdatascience.com/5-awesome-python-hidden-features-a0172e0bd98e?source=collection_archive---------3-----------------------#2023-03-16)
+> 原文：[`towardsdatascience.com/5-awesome-python-hidden-features-a0172e0bd98e?source=collection_archive---------3-----------------------#2023-03-16`](https://towardsdatascience.com/5-awesome-python-hidden-features-a0172e0bd98e?source=collection_archive---------3-----------------------#2023-03-16)
 
 ## PYTHON | PROGRAMMING | FEATURES
 
 ## 利用这些酷炫的隐藏 Python 特性，将你的编码技能提升到新水平
 
-[](https://david-farrugia.medium.com/?source=post_page-----a0172e0bd98e--------------------------------)[![David Farrugia](../Images/082ed61e24c7c26a4ae1c77343a87824.png)](https://david-farrugia.medium.com/?source=post_page-----a0172e0bd98e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0172e0bd98e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0172e0bd98e--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----a0172e0bd98e--------------------------------)
+[](https://david-farrugia.medium.com/?source=post_page-----a0172e0bd98e--------------------------------)![David Farrugia](https://david-farrugia.medium.com/?source=post_page-----a0172e0bd98e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0172e0bd98e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0172e0bd98e--------------------------------) [David Farrugia](https://david-farrugia.medium.com/?source=post_page-----a0172e0bd98e--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0172e0bd98e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-awesome-python-hidden-features-a0172e0bd98e&source=-----a0172e0bd98e---------------------bookmark_footer-----------)![](../Images/6c1f21e18c4752f82bb8317b21a6b31d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0172e0bd98e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-awesome-python-hidden-features-a0172e0bd98e&source=-----a0172e0bd98e---------------------bookmark_footer-----------)![](img/6c1f21e18c4752f82bb8317b21a6b31d.png)
 
 图片由 [Emile Perron](https://unsplash.com/@emilep?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

@@ -1,18 +1,18 @@
 # 现代数据科学家的 Git：你不能忽视的 9 个 Git 概念
 
-> 原文：[https://towardsdatascience.com/git-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2?source=collection_archive---------0-----------------------#2023-05-06](https://towardsdatascience.com/git-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2?source=collection_archive---------0-----------------------#2023-05-06)
+> 原文：[`towardsdatascience.com/git-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2?source=collection_archive---------0-----------------------#2023-05-06`](https://towardsdatascience.com/git-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2?source=collection_archive---------0-----------------------#2023-05-06)
 
 ## 通过生动的视觉效果解释
 
-[](https://ibexorigin.medium.com/?source=post_page-----b4eaf7a154c2--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----b4eaf7a154c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4eaf7a154c2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b4eaf7a154c2--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----b4eaf7a154c2--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----b4eaf7a154c2--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----b4eaf7a154c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4eaf7a154c2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4eaf7a154c2--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----b4eaf7a154c2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgit-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----b4eaf7a154c2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4eaf7a154c2--------------------------------) · 12分钟阅读 · 2023年5月6日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb4eaf7a154c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgit-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2&user=Bex+T.&userId=39db050c2ac2&source=-----b4eaf7a154c2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgit-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----b4eaf7a154c2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4eaf7a154c2--------------------------------) · 12 分钟阅读 · 2023 年 5 月 6 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb4eaf7a154c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgit-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2&user=Bex+T.&userId=39db050c2ac2&source=-----b4eaf7a154c2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4eaf7a154c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgit-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2&source=-----b4eaf7a154c2---------------------bookmark_footer-----------)![](../Images/2df9ea9d0ee942c7ecabd1db26dc4e5b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4eaf7a154c2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgit-for-the-modern-data-scientist-9-git-concepts-you-cant-ignore-b4eaf7a154c2&source=-----b4eaf7a154c2---------------------bookmark_footer-----------)![](img/2df9ea9d0ee942c7ecabd1db26dc4e5b.png)
 
 图片由我用 Midjourney 制作
 
@@ -26,12 +26,12 @@
 
 开始吧！
 
-## 第1000次…
+## 第 1000 次…
 
 你可能已经听过几百次了，但我还是再重复一遍，以免遗漏：
 
 > *Git 是开发机器学习和人工智能系统中最重要的工具之一。*
 
-![](../Images/a10be2945aa15fe0a62bf6092f20d94c.png)
+![](img/a10be2945aa15fe0a62bf6092f20d94c.png)
 
 图片由我提供

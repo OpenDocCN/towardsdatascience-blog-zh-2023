@@ -1,18 +1,18 @@
-# 你应该了解的6种与索引相关的常见操作
+# 你应该了解的 6 种与索引相关的常见操作
 
-> 原文：[https://towardsdatascience.com/6-common-index-related-operations-you-should-know-about-pandas-783fdba59768?source=collection_archive---------6-----------------------#2023-10-17](https://towardsdatascience.com/6-common-index-related-operations-you-should-know-about-pandas-783fdba59768?source=collection_archive---------6-----------------------#2023-10-17)
+> 原文：[`towardsdatascience.com/6-common-index-related-operations-you-should-know-about-pandas-783fdba59768?source=collection_archive---------6-----------------------#2023-10-17`](https://towardsdatascience.com/6-common-index-related-operations-you-should-know-about-pandas-783fdba59768?source=collection_archive---------6-----------------------#2023-10-17)
 
 ## 在你的数据框中有效地处理索引
 
-[](https://yongcui01.medium.com/?source=post_page-----783fdba59768--------------------------------)[![Yong Cui](../Images/475918ba9ca0ecd923abe2e7843582a9.png)](https://yongcui01.medium.com/?source=post_page-----783fdba59768--------------------------------)[](https://towardsdatascience.com/?source=post_page-----783fdba59768--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----783fdba59768--------------------------------) [Yong Cui](https://yongcui01.medium.com/?source=post_page-----783fdba59768--------------------------------)
+[](https://yongcui01.medium.com/?source=post_page-----783fdba59768--------------------------------)![Yong Cui](https://yongcui01.medium.com/?source=post_page-----783fdba59768--------------------------------)[](https://towardsdatascience.com/?source=post_page-----783fdba59768--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----783fdba59768--------------------------------) [Yong Cui](https://yongcui01.medium.com/?source=post_page-----783fdba59768--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88ff1e2545d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-index-related-operations-you-should-know-about-pandas-783fdba59768&user=Yong+Cui&userId=88ff1e2545d0&source=post_page-88ff1e2545d0----783fdba59768---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----783fdba59768--------------------------------) · 9分钟阅读 · 2023年10月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F783fdba59768&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-index-related-operations-you-should-know-about-pandas-783fdba59768&user=Yong+Cui&userId=88ff1e2545d0&source=-----783fdba59768---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F88ff1e2545d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-index-related-operations-you-should-know-about-pandas-783fdba59768&user=Yong+Cui&userId=88ff1e2545d0&source=post_page-88ff1e2545d0----783fdba59768---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----783fdba59768--------------------------------) · 9 分钟阅读 · 2023 年 10 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F783fdba59768&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-index-related-operations-you-should-know-about-pandas-783fdba59768&user=Yong+Cui&userId=88ff1e2545d0&source=-----783fdba59768---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F783fdba59768&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-index-related-operations-you-should-know-about-pandas-783fdba59768&source=-----783fdba59768---------------------bookmark_footer-----------)![](../Images/6020659939470dfe03adf748de117f0e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F783fdba59768&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F6-common-index-related-operations-you-should-know-about-pandas-783fdba59768&source=-----783fdba59768---------------------bookmark_footer-----------)![](img/6020659939470dfe03adf748de117f0e.png)
 
 图片来源：[Alejandro Luengo](https://unsplash.com/@aluengo91?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

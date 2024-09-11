@@ -1,18 +1,18 @@
 # 堆叠时间序列模型以提高准确性
 
-> 原文：[https://towardsdatascience.com/stacking-time-series-models-to-improve-accuracy-7977c6667d29?source=collection_archive---------3-----------------------#2023-02-28](https://towardsdatascience.com/stacking-time-series-models-to-improve-accuracy-7977c6667d29?source=collection_archive---------3-----------------------#2023-02-28)
+> 原文：[`towardsdatascience.com/stacking-time-series-models-to-improve-accuracy-7977c6667d29?source=collection_archive---------3-----------------------#2023-02-28`](https://towardsdatascience.com/stacking-time-series-models-to-improve-accuracy-7977c6667d29?source=collection_archive---------3-----------------------#2023-02-28)
 
-## 从RNN、ARIMA和Prophet模型中提取信号以使用Catboost进行预测
+## 从 RNN、ARIMA 和 Prophet 模型中提取信号以使用 Catboost 进行预测
 
-[](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)[![Michael Keith](../Images/4ebd39b25a1faae3586eb25ec83d3e91.png)](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------) [Michael Keith](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)
+[](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)![Michael Keith](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------) [Michael Keith](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F85177a9cbd35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstacking-time-series-models-to-improve-accuracy-7977c6667d29&user=Michael+Keith&userId=85177a9cbd35&source=post_page-85177a9cbd35----7977c6667d29---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------) ·7 min read·2023年2月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7977c6667d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstacking-time-series-models-to-improve-accuracy-7977c6667d29&user=Michael+Keith&userId=85177a9cbd35&source=-----7977c6667d29---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F85177a9cbd35&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstacking-time-series-models-to-improve-accuracy-7977c6667d29&user=Michael+Keith&userId=85177a9cbd35&source=post_page-85177a9cbd35----7977c6667d29---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------) ·7 min read·2023 年 2 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7977c6667d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstacking-time-series-models-to-improve-accuracy-7977c6667d29&user=Michael+Keith&userId=85177a9cbd35&source=-----7977c6667d29---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7977c6667d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstacking-time-series-models-to-improve-accuracy-7977c6667d29&source=-----7977c6667d29---------------------bookmark_footer-----------)![](../Images/d4a54a6899fe0dff94fe8914297c3a54.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7977c6667d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstacking-time-series-models-to-improve-accuracy-7977c6667d29&source=-----7977c6667d29---------------------bookmark_footer-----------)![](img/d4a54a6899fe0dff94fe8914297c3a54.png)
 
 照片由 [Robert Sachowski](https://unsplash.com/@rsachowski?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

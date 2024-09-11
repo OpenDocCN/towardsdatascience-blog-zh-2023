@@ -1,32 +1,32 @@
-# 从RGB视频创建3D视频
+# 从 RGB 视频创建 3D 视频
 
-> 原文：[https://towardsdatascience.com/creating-3d-videos-from-rgb-videos-491a09fa1e79?source=collection_archive---------3-----------------------#2023-08-03](https://towardsdatascience.com/creating-3d-videos-from-rgb-videos-491a09fa1e79?source=collection_archive---------3-----------------------#2023-08-03)
+> 原文：[`towardsdatascience.com/creating-3d-videos-from-rgb-videos-491a09fa1e79?source=collection_archive---------3-----------------------#2023-08-03`](https://towardsdatascience.com/creating-3d-videos-from-rgb-videos-491a09fa1e79?source=collection_archive---------3-----------------------#2023-08-03)
 
 ## 生成一致的深度图和点云视频的指南
 
-[](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)[![Berkan Zorlubas](../Images/6d13c115064dfa1bf3918ef009a30797.png)](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------) [Berkan Zorlubas](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)
+[](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)![Berkan Zorlubas](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------) [Berkan Zorlubas](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d74427941be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&user=Berkan+Zorlubas&userId=7d74427941be&source=post_page-7d74427941be----491a09fa1e79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------) ·8 min read·2023年8月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F491a09fa1e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&user=Berkan+Zorlubas&userId=7d74427941be&source=-----491a09fa1e79---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d74427941be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&user=Berkan+Zorlubas&userId=7d74427941be&source=post_page-7d74427941be----491a09fa1e79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------) ·8 min read·2023 年 8 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F491a09fa1e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&user=Berkan+Zorlubas&userId=7d74427941be&source=-----491a09fa1e79---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F491a09fa1e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&source=-----491a09fa1e79---------------------bookmark_footer-----------)![](../Images/c89b7361a6263a9248708884ab00f1d8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F491a09fa1e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&source=-----491a09fa1e79---------------------bookmark_footer-----------)![](img/c89b7361a6263a9248708884ab00f1d8.png)
 
-作者提供的图片（视频帧的编辑版本，来自 [库存镜头](https://www.videvo.net/video/businessman-and-businesswoman-finishing-meeting-with-handshake/1112997/) 提供者Videvo，下载自 [www.videvo.net](http://www.videvo.net/)）
+作者提供的图片（视频帧的编辑版本，来自 [库存镜头](https://www.videvo.net/video/businessman-and-businesswoman-finishing-meeting-with-handshake/1112997/) 提供者 Videvo，下载自 [www.videvo.net](http://www.videvo.net/)）
 
-我一直对我们将数字记忆以2D格式存档这一事实感到不满——尽管照片和视频很清晰，却缺乏它们所捕捉的经历的深度和沉浸感。在机器学习模型足够强大到理解照片和视频的3D感的时代，这似乎是一个任意的限制。
+我一直对我们将数字记忆以 2D 格式存档这一事实感到不满——尽管照片和视频很清晰，却缺乏它们所捕捉的经历的深度和沉浸感。在机器学习模型足够强大到理解照片和视频的 3D 感的时代，这似乎是一个任意的限制。
 
-来自图像或视频的3D数据不仅使我们能够更生动、互动地体验记忆，还提供了编辑和后处理的新可能性。试想能够轻松地从场景中移除对象、更换背景，甚至改变视角以从新的视点查看一个瞬间。深度感知处理也为机器学习算法提供了更丰富的上下文来理解和处理视觉数据。
+来自图像或视频的 3D 数据不仅使我们能够更生动、互动地体验记忆，还提供了编辑和后处理的新可能性。试想能够轻松地从场景中移除对象、更换背景，甚至改变视角以从新的视点查看一个瞬间。深度感知处理也为机器学习算法提供了更丰富的上下文来理解和处理视觉数据。
 
-在寻找生成一致深度视频的方法时，我发现了一篇[研究论文](https://github.com/google/dynamic-video-depth)，它建议了一种很好的方法。这种方法涉及使用整个输入视频训练两个神经网络：一个卷积神经网络（CNN）来预测深度，一个MLP来预测场景中的运动或“场景流”。这个流预测网络以特殊的方式应用，在不同时间段内重复应用。这使它能够识别场景中的小变化和大变化。小变化有助于确保3D中的运动从一个时刻到下一个时刻是平滑的，而大变化有助于确保整个视频在不同视角下是一致的。这样，我们可以创建既局部又全球准确的3D视频。
+在寻找生成一致深度视频的方法时，我发现了一篇[研究论文](https://github.com/google/dynamic-video-depth)，它建议了一种很好的方法。这种方法涉及使用整个输入视频训练两个神经网络：一个卷积神经网络（CNN）来预测深度，一个 MLP 来预测场景中的运动或“场景流”。这个流预测网络以特殊的方式应用，在不同时间段内重复应用。这使它能够识别场景中的小变化和大变化。小变化有助于确保 3D 中的运动从一个时刻到下一个时刻是平滑的，而大变化有助于确保整个视频在不同视角下是一致的。这样，我们可以创建既局部又全球准确的 3D 视频。
 
 这篇论文的[代码库](https://github.com/google/dynamic-video-depth)是公开的，但处理任意视频的管道并没有完全解释，至少对我来说，如何使用所提议的管道处理任何视频仍然不清楚。在这篇博客文章中，我将尝试填补这个空白，并逐步介绍如何在你的视频上使用这个管道。
 
 你可以查看我在[GitHub](https://github.com/berkanz/dynamic-video-depth)页面上的代码版本，我将会参考这个版本。
 
-# 第1步：从视频中提取帧
+# 第 1 步：从视频中提取帧
 
 在管道中的第一步是从选择的视频中提取帧。我添加了一个脚本用于这个目的，你可以在`scripts/preprocess/custom/extract_frames_from_video.py`中找到。要运行代码，只需在终端中使用以下命令：
 
@@ -39,11 +39,11 @@ python extract_frames_from_video.py ^
 
 使用`resize_factor`参数，你可以对帧进行下采样或上采样。
 
-我选择了[这个](https://medium.com/r?url=https%3A%2F%2Fwww.videvo.net%2Fvideo%2Fbusinessman-and-businesswoman-finishing-meeting-with-handshake%2F1112997%2F)视频进行测试。最初，它的分辨率是1280x720，但为了加快后续步骤的处理速度，我将其缩小到640x360，使用了0.5的`resize_factor`。
+我选择了[这个](https://medium.com/r?url=https%3A%2F%2Fwww.videvo.net%2Fvideo%2Fbusinessman-and-businesswoman-finishing-meeting-with-handshake%2F1112997%2F)视频进行测试。最初，它的分辨率是 1280x720，但为了加快后续步骤的处理速度，我将其缩小到 640x360，使用了 0.5 的`resize_factor`。
 
-# 第2步：在视频中分割前景对象
+# 第 2 步：在视频中分割前景对象
 
-我们过程中的下一步需要对视频中的一个主要前景物体进行分割或隔离，这对估计相机在视频中的位置和角度至关重要。原因是？离相机较近的物体对姿态估计的影响比离相机较远的物体要大。举个例子，想象一个距离1米远的物体移动10厘米——这将导致图像发生较大的变化，可能是几十个像素。但如果同样的物体距离10米远且移动相同的距离，图像变化则不那么明显。因此，我们生成了一个‘遮罩’视频，以便关注对姿态估计相关的区域，简化我们的计算。
+我们过程中的下一步需要对视频中的一个主要前景物体进行分割或隔离，这对估计相机在视频中的位置和角度至关重要。原因是？离相机较近的物体对姿态估计的影响比离相机较远的物体要大。举个例子，想象一个距离 1 米远的物体移动 10 厘米——这将导致图像发生较大的变化，可能是几十个像素。但如果同样的物体距离 10 米远且移动相同的距离，图像变化则不那么明显。因此，我们生成了一个‘遮罩’视频，以便关注对姿态估计相关的区域，简化我们的计算。
 
 我偏好使用[Mask-RCNN](https://github.com/matterport/Mask_RCNN)来分割帧。你也可以使用其他你喜欢的分割模型。对于我的视频，我决定对右侧人物进行分割，因为他在整个视频中都出现在画面中，并且看起来离相机足够近。
 
@@ -79,9 +79,9 @@ python extract_frames_from_video.py ^
 
 原始视频和遮罩视频在以下动画中并排显示：
 
-![](../Images/5415b89d0edd7d56e8c8dfe2a6510436.png)
+![](img/5415b89d0edd7d56e8c8dfe2a6510436.png)
 
-**（左）** 由Videvo提供的库存视频，从[www.videvo.net](http://www.videvo.net/)下载 | **（右）** 作者创建的遮罩视频
+**（左）** 由 Videvo 提供的库存视频，从[www.videvo.net](http://www.videvo.net/)下载 | **（右）** 作者创建的遮罩视频
 
 # 步骤 3: 估计相机姿态和内部参数
 
@@ -103,11 +103,11 @@ python extract_frames_from_video.py ^
 
 计算可能需要一些时间，具体取决于你有多少图像以及图像的分辨率。计算完成后，点击“文件”下的“将模型导出为文本”并将输出文件保存在`./datafiles/custom/triangulation`中。这将创建两个文本文件和一个网格文件（.ply）。
 
-![](../Images/2e8c3c0eadcfec9d044a8fea1d67cb91.png)
+![](img/2e8c3c0eadcfec9d044a8fea1d67cb91.png)
 
 Colmap 的说明 — 图片由作者提供
 
-这一步还没有结束，我们需要处理Colmap的输出。我编写了一个脚本来自动化这一过程。只需在终端中运行以下命令：
+这一步还没有结束，我们需要处理 Colmap 的输出。我编写了一个脚本来自动化这一过程。只需在终端中运行以下命令：
 
 ```py
 python scripts/preprocess/custom/process_colmap_output.py
@@ -115,9 +115,9 @@ python scripts/preprocess/custom/process_colmap_output.py
 
 它将创建“custom.intrinsics.txt”、“custom.matrices.txt”和“custom.obj”。
 
-![](../Images/42b639e07be8b2bbd996a698e0c04fe0.png)
+![](img/42b639e07be8b2bbd996a698e0c04fe0.png)
 
-Colmap的输出文件 — 图片由作者提供
+Colmap 的输出文件 — 图片由作者提供
 
 现在我们准备好进行训练的数据集生成。
 
@@ -155,9 +155,9 @@ python train.py --net scene_flow_motion_field ^
  --force_overwrite
 ```
 
-经过10次迭代的神经网络训练后，我观察到损失开始饱和，因此决定不再继续训练更多的迭代。以下是我的训练损失曲线图：
+经过 10 次迭代的神经网络训练后，我观察到损失开始饱和，因此决定不再继续训练更多的迭代。以下是我的训练损失曲线图：
 
-![](../Images/3d9745795ce3b24a84d736bc6567cb44.png)
+![](img/3d9745795ce3b24a84d736bc6567cb44.png)
 
 损失 vs. 迭代曲线 — 图片由作者提供
 
@@ -176,7 +176,7 @@ python test.py --net scene_flow_motion_field ^
  --checkpoint_path .\logdir
 ```
 
-这将为每一帧生成一个 .npz 文件（一个包含RGB帧、深度、相机姿态、流向下一张图像等的字典文件），以及每一帧的三个深度渲染（真实值、MiDaS和训练网络的估计）。
+这将为每一帧生成一个 .npz 文件（一个包含 RGB 帧、深度、相机姿态、流向下一张图像等的字典文件），以及每一帧的三个深度渲染（真实值、MiDaS 和训练网络的估计）。
 
 # 步骤 7：创建点云视频
 
@@ -186,7 +186,7 @@ python test.py --net scene_flow_motion_field ^
 
 这是我处理的视频的点云和深度图像的视频效果。
 
-![](../Images/9fa90df27e34da041b4929750695d159.png)
+![](img/9fa90df27e34da041b4929750695d159.png)
 
 **（左）** 视频素材由 Videvo 提供，下载自 [www.videvo.net](http://www.videvo.net/) | **（右）** 作者制作的深度图视频 | **（下）** 作者制作的彩色点云视频
 

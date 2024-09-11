@@ -1,48 +1,48 @@
 # 一种优雅的方式来有效解决旅行推销员问题
 
-> 原文：[https://towardsdatascience.com/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9?source=collection_archive---------5-----------------------#2023-08-28](https://towardsdatascience.com/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9?source=collection_archive---------5-----------------------#2023-08-28)
+> 原文：[`towardsdatascience.com/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9?source=collection_archive---------5-----------------------#2023-08-28`](https://towardsdatascience.com/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9?source=collection_archive---------5-----------------------#2023-08-28)
 
 ## 以类似 scikit-learn 的方式实现 TSP 模型，简化路线优化模型的构建和求解
 
-[](https://medium.com/@carlosjuribe?source=post_page-----dbb44e7d30b9--------------------------------)[![Carlos J. Uribe](../Images/902c5f4ac5d404dd99916f145be6756c.png)](https://medium.com/@carlosjuribe?source=post_page-----dbb44e7d30b9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dbb44e7d30b9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dbb44e7d30b9--------------------------------) [Carlos J. Uribe](https://medium.com/@carlosjuribe?source=post_page-----dbb44e7d30b9--------------------------------)
+[](https://medium.com/@carlosjuribe?source=post_page-----dbb44e7d30b9--------------------------------)![Carlos J. Uribe](https://medium.com/@carlosjuribe?source=post_page-----dbb44e7d30b9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dbb44e7d30b9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dbb44e7d30b9--------------------------------) [Carlos J. Uribe](https://medium.com/@carlosjuribe?source=post_page-----dbb44e7d30b9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4337eddb94ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9&user=Carlos+J.+Uribe&userId=4337eddb94ed&source=post_page-4337eddb94ed----dbb44e7d30b9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dbb44e7d30b9--------------------------------) ·27分钟阅读·2023年8月28日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4337eddb94ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9&user=Carlos+J.+Uribe&userId=4337eddb94ed&source=post_page-4337eddb94ed----dbb44e7d30b9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dbb44e7d30b9--------------------------------) ·27 分钟阅读·2023 年 8 月 28 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdbb44e7d30b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9&source=-----dbb44e7d30b9---------------------bookmark_footer-----------)![](../Images/44dbc85e4fab1ee01aca3f8d40880deb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdbb44e7d30b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9&source=-----dbb44e7d30b9---------------------bookmark_footer-----------)![](img/44dbc85e4fab1ee01aca3f8d40880deb.png)
 
 图片由 DALL·E 3 根据作者的提示生成：“一系列优化路线穿越地球，背景中有 Python 代码”
 
-> 👁️ **这是系列文章的第 #5 篇** **涵盖了项目“**[**Python中的智能旅游决策支持系统**](https://medium.com/@carlosjuribe/list/an-intelligent-decision-support-system-for-tourism-in-python-b6ba165b4236)**”**。我鼓励你查看它，以获得整个项目的一般概述。如果你只是对解决TSP感兴趣，这篇文章也适合你，因为我展示了一种方法，使解决任何TSP变得非常简单。**这篇文章确实建立在之前的文章基础上，但阅读它们是可选的**；如果你想了解“如何”，可以阅读；如果你想尽快得到成果，则可以跳过。
+> 👁️ **这是系列文章的第 #5 篇** **涵盖了项目“**[**Python 中的智能旅游决策支持系统**](https://medium.com/@carlosjuribe/list/an-intelligent-decision-support-system-for-tourism-in-python-b6ba165b4236)**”**。我鼓励你查看它，以获得整个项目的一般概述。如果你只是对解决 TSP 感兴趣，这篇文章也适合你，因为我展示了一种方法，使解决任何 TSP 变得非常简单。**这篇文章确实建立在之前的文章基础上，但阅读它们是可选的**；如果你想了解“如何”，可以阅读；如果你想尽快得到成果，则可以跳过。
 
 # 目录
 
-## [1. 之前冲刺回顾](#9b5c)
+## 1. 之前冲刺回顾
 
-## [2. 读取待访问地点的数据](#fa87)
+## 2. 读取待访问地点的数据
 
-## [3. 基本架构](#336e)
+## 3. 基本架构
 
-+   [3.1. 优化器类图](#7b91)
++   3.1. 优化器类图
 
-+   [3.2.](#eefc) `[**地理分析器**](#eefc)`[, 回顾](#eefc)
++   3.2. `**地理分析器**`, 回顾
 
-+   [3.3. 打下*基础*：优化工具的基类](#43ef)
++   3.3. 打下*基础*：优化工具的基类
 
-## [4. 一个类来解决所有问题：](#c043) `[旅行推销员优化器](#c043)`
+## 4. 一个类来解决所有问题： `旅行推销员优化器`
 
-+   [4.1.](#127d) `[**旅行推销员优化器**](#127d)` [设计](#127d)
++   4.1. `**旅行推销员优化器**` 设计
 
-+   [4.2.](#419d) `[**旅行推销员优化器**](#419d)` [实现](#419d)
++   4.2. `**旅行推销员优化器**` 实现
 
-+   [4.3.](#9ab8) `[**旅行推销员优化器**](#9ab8)` [为初学者](#9ab8)
++   4.3. `**旅行推销员优化器**` 为初学者
 
-## [5. 超越最优解：使用优化器提取见解](#754e)
+## 5. 超越最优解：使用优化器提取见解
 
-## [6. 结论（或下一次冲刺的计划）](#c3ec)
+## 6. 结论（或下一次冲刺的计划）
 
 # 1. 之前冲刺回顾
 
@@ -93,23 +93,23 @@ df_sites = read_data_sites_to_visit()
 df_sites
 ```
 
-![](../Images/a8ac65de957710474d2d97505db2075b.png)
+![](img/a8ac65de957710474d2d97505db2075b.png)
 
 **图 1.** 优化器的输入坐标（作者提供的图片）
 
 # 3\. 基本架构
 
-在我们开始编码之前，重要的是对我们即将做的工作和原因有一个高层次的理解和设计。我们的目标是创建一个**接受某些站点的地理坐标，并为它们解决TSP问题，*即*，输出我们应该访问这些站点的顺序**以最小化总旅行距离。我们不会创建一个完成所有任务的类；我们将把不同的功能保存在不同的类中，然后将它们组合在一起[¹](#0558)。
+在我们开始编码之前，重要的是对我们即将做的工作和原因有一个高层次的理解和设计。我们的目标是创建一个**接受某些站点的地理坐标，并为它们解决 TSP 问题，*即*，输出我们应该访问这些站点的顺序**以最小化总旅行距离。我们不会创建一个完成所有任务的类；我们将把不同的功能保存在不同的类中，然后将它们组合在一起¹。
 
 ## 3.1\. 优化器类图
 
-我认为我们的类采用类似scikit-learn的API是便利的。然而，我不会将我们的新类称为“*估算器*”，而是称为“*优化器*”[²](#4124)。一个自解释的名称是 `TravelingSalesmanOptimizer`。它的一个辅助属性将是[第4阶段](https://medium.com/@carlosjuribe/compute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e)中构建的 `GeoAnalyzer` 类。此外，由于这将不是我们在这个项目中创建的唯一优化器类，我们将把所有与模型求解相关的功能存储在一个单独的类 `BaseOptimizer` 中。原因是所有优化器，无论它们实现什么内部模型，都需要优化它，因此最好将与优化本身相关的逻辑保存在一个单独的类中，作为所有优化器的基类。
+我认为我们的类采用类似 scikit-learn 的 API 是便利的。然而，我不会将我们的新类称为“*估算器*”，而是称为“*优化器*”²。一个自解释的名称是 `TravelingSalesmanOptimizer`。它的一个辅助属性将是[第 4 阶段](https://medium.com/@carlosjuribe/compute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e)中构建的 `GeoAnalyzer` 类。此外，由于这将不是我们在这个项目中创建的唯一优化器类，我们将把所有与模型求解相关的功能存储在一个单独的类 `BaseOptimizer` 中。原因是所有优化器，无论它们实现什么内部模型，都需要优化它，因此最好将与优化本身相关的逻辑保存在一个单独的类中，作为所有优化器的基类。
 
 在下面的类图中，我们可以看到这三个类如何组合在一起。在每个类内部，我包含了它们的**主要属性和方法**（但不是全部），以便我们能理解整体概念。
 
-![](../Images/e8c714186abc4b21a798483e156f5f3a.png)
+![](img/e8c714186abc4b21a798483e156f5f3a.png)
 
-**图2。** TSP优化器的类图（作者提供的图像）
+**图 2。** TSP 优化器的类图（作者提供的图像）
 
 每个类的主要目的，简而言之：
 
@@ -117,7 +117,7 @@ df_sites
 
 +   `GeoAnalyzer` 是一个自包含的地理工具类。它在计算用户提供的坐标的距离矩阵的关键步骤中提供帮助，如果用户没有自定义距离数据，这一步是构建模型所必需的。
 
-+   `TravelingSalesmanOptimizer` 是一个优化器，可以拟合具有站点坐标的数据框。一旦拟合，便可以检索这些站点的“访问顺序”。在内部，它实现了[旅行商问题的数学模型](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)作为一个[Pyomo模型](https://pyomo.readthedocs.io/en/stable/pyomo_overview/simple_examples.html)对象。
++   `TravelingSalesmanOptimizer` 是一个优化器，可以拟合具有站点坐标的数据框。一旦拟合，便可以检索这些站点的“访问顺序”。在内部，它实现了[旅行商问题的数学模型](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)作为一个[Pyomo 模型](https://pyomo.readthedocs.io/en/stable/pyomo_overview/simple_examples.html)对象。
 
 有了具体的设计，我们来组装它。
 
@@ -135,15 +135,15 @@ df_distances = geo_analyzer.get_distance_matrix(precision=0)
 display(df_distances)
 ```
 
-![](../Images/4f12661ff8fbe9db8e0db9e08440b218.png)
+![](img/4f12661ff8fbe9db8e0db9e08440b218.png)
 
-**图 3.** GeoAnalyzer生成的距离矩阵（图片由作者提供）
+**图 3.** GeoAnalyzer 生成的距离矩阵（图片由作者提供）
 
 这个距离数据框是我们将在`TravelingSalesmanOptimizer`内部用于创建内部模型的，因为建模旅行销售员问题所需的真实数据是距离，而不是坐标。
 
 ## 3.3\. 打下基础：优化工具的基类
 
-在[第三次冲刺的文章](http://localhost:8888/lab/workspaces/auto-c/tree/Projects/TWDS/traveling_tourist_problem/TTPOptimizer_part3.ipynb#https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)中，第一个代码片段是关于实例化Pyomo求解器并打印其版本。稍后在[2.1节](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=validating%20the%20model-,2.1.%20Solving%20the%20model,-The%20next%20step)中，我们使用了这个求解器来优化模型。考虑到这一点，创建`BaseOptimizer`只需将这些部分组合成一个类即可。我们将稍微修改原始代码，以便更易于阅读，但本质上它是相同的，方便地封装起来。
+在[第三次冲刺的文章](http://localhost:8888/lab/workspaces/auto-c/tree/Projects/TWDS/traveling_tourist_problem/TTPOptimizer_part3.ipynb#https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)中，第一个代码片段是关于实例化 Pyomo 求解器并打印其版本。稍后在[2.1 节](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=validating%20the%20model-,2.1.%20Solving%20the%20model,-The%20next%20step)中，我们使用了这个求解器来优化模型。考虑到这一点，创建`BaseOptimizer`只需将这些部分组合成一个类即可。我们将稍微修改原始代码，以便更易于阅读，但本质上它是相同的，方便地封装起来。
 
 ```py
 import sys
@@ -241,13 +241,13 @@ class BaseOptimizer:
 
 1.  在实例化时，求解器由`_setup_solver`在内部设置。由于没有求解器我们无法解决任何模型，如果设置失败，将会抛出异常。如果找到了求解器，它会被作为私有属性保存。
 
-1.  每当一个`BaseOptimizer`的子类调用类似`fit`的方法时，方法`_optimize`将会被调用。`_optimize`接受一个模型，并使用内部求解器**尝试**解决它。如果*存在*最优解，属性`_solution_exists`将不再是`None`，而是取值`True`。如果*没有最优解存在*[*³*](#f7e6)，它将取值`False`，并会打印一个警告。
+1.  每当一个`BaseOptimizer`的子类调用类似`fit`的方法时，方法`_optimize`将会被调用。`_optimize`接受一个模型，并使用内部求解器**尝试**解决它。如果*存在*最优解，属性`_solution_exists`将不再是`None`，而是取值`True`。如果*没有最优解存在**³*，它将取值`False`，并会打印一个警告。
 
 剩余的方法在它们的文档字符串中进行了说明。现在，开始构建我们的第一个优化器。
 
 # 4\. 一个类解决所有问题：`TravelingSalesmanOptimizer`
 
-我们不会从头开始。正如前面所述，我们已经开发了构建TSP的Pyomo模型并在[sprint 3](http://localhost:8888/lab/workspaces/auto-c/tree/Projects/TWDS/traveling_tourist_problem/TTPOptimizer_part3.ipynb#https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)中解决它的代码。相信我，那是最难的部分。现在，我们的任务是将我们所做的组织成一种通用的方式，隐藏细节同时保留*基本*元素。某种意义上，我们希望优化器看起来像一个“魔法盒子”，即使是对数学建模不熟悉的用户也能直观地解决他们的TSP问题。
+我们不会从头开始。正如前面所述，我们已经开发了构建 TSP 的 Pyomo 模型并在[sprint 3](http://localhost:8888/lab/workspaces/auto-c/tree/Projects/TWDS/traveling_tourist_problem/TTPOptimizer_part3.ipynb#https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)中解决它的代码。相信我，那是最难的部分。现在，我们的任务是将我们所做的组织成一种通用的方式，隐藏细节同时保留*基本*元素。某种意义上，我们希望优化器看起来像一个“魔法盒子”，即使是对数学建模不熟悉的用户也能直观地解决他们的 TSP 问题。
 
 ## 4.1. `TravelingSalesmanOptimizer`设计
 
@@ -255,7 +255,7 @@ class BaseOptimizer:
 
 这些步骤将成为优化器逻辑的核心：
 
-1.  **从距离矩阵创建一个Pyomo模型**。这由`_create_model`方法完成，该方法基本上封装了我们已经完成的[概念验证代码](/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=start%20coding%20along!-,1.2.%20Math%20becomes%20code,First%2C%20let%E2%80%99s%20make%20sure%20the%20GLPK%20solver%20is%20findable%20by%20Pyomo,-%23%23%23%20%3D%3D%3D%3D%3D%20%20Code%20block%203.1)。它接受一个距离矩阵的数据框，并基于此构建一个Pyomo模型。我们所做的与我们现在要做的唯一重要区别在于，初始站点不再硬编码为简单的`"hotel"`，而是*假定*为`df_distances`中第一行的站点。一般情况下，**初始站点被认为是坐标数据框**[⁴](#8dd4) `df_sites`中的第一个。这一推广使得优化器能够解决任何实例。
+1.  **从距离矩阵创建一个 Pyomo 模型**。这由`_create_model`方法完成，该方法基本上封装了我们已经完成的概念验证代码。它接受一个距离矩阵的数据框，并基于此构建一个 Pyomo 模型。我们所做的与我们现在要做的唯一重要区别在于，初始站点不再硬编码为简单的`"hotel"`，而是*假定*为`df_distances`中第一行的站点。一般情况下，**初始站点被认为是坐标数据框**⁴ `df_sites`中的第一个。这一推广使得优化器能够解决任何实例。
 
 1.  **（尝试）解决模型**。这是在继承自`BaseOptimizer`的`_optimize`方法中执行的，只有找到解决方案时才返回`True`。
 
@@ -487,17 +487,17 @@ tsp.model.rank_i.get_values()
  'Tour Eiffel': 3.0}
 ```
 
-这些排名变量表示最优旅行中的停靠点的时间顺序。如果你回忆一下 [它们的定义](/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=rank%20variables%2C%20r%E1%B5%A2%3A%20to%20keep%20track%20of%20the%20order%20in%20which%20sites%20are%20visited%3A)，它们在所有站点上定义，除了初始站点[⁵](#f9a3)，这就是为什么酒店没有出现在其中。很简单，我们可以将酒店添加为排名 0，那么我们就有了 **问题的答案**。我们不需要提取 𝛿ᵢⱼ，即旅行的 *个别* 弧的决策变量，来知道我们应该以什么顺序访问站点。虽然这是真的，我们仍然会使用弧变量 𝛿ᵢⱼ 来从解决的模型中提取确切的停靠顺序。
+这些排名变量表示最优旅行中的停靠点的时间顺序。如果你回忆一下 它们的定义，它们在所有站点上定义，除了初始站点⁵，这就是为什么酒店没有出现在其中。很简单，我们可以将酒店添加为排名 0，那么我们就有了 **问题的答案**。我们不需要提取 𝛿ᵢⱼ，即旅行的 *个别* 弧的决策变量，来知道我们应该以什么顺序访问站点。虽然这是真的，我们仍然会使用弧变量 𝛿ᵢⱼ 来从解决的模型中提取确切的停靠顺序。
 
 > *💡* **敏捷 *不必是* 脆弱的**
 > 
-> *如果我们的唯一目标是解决TSP问题，而不考虑* 扩展 *模型以涵盖我们实际问题的更多细节，使用排名变量来提取最优旅行路径就足够了。然而，由于TSP仅仅是* ***将成为更复杂模型的初始原型****，我们最好从弧决策变量𝛿ᵢⱼ中提取解决方案，因为任何涉及路由决策的模型中都会包含这些变量。其他决策变量是辅助的，当需要时，它们的作用是表示状态或指示依赖于* 真实 *决策变量𝛿ᵢⱼ的条件。正如你将在接下来的文章中看到的，选择排名变量来提取旅行路径适用于纯TSP模型，但对于那些使访问某些站点* 可选 *的扩展则不适用。因此，如果我们从𝛿ᵢⱼ中提取解决方案，* ***我们的方法将是通用和可重复使用的，无论我们使用多么复杂的模型****。*
+> *如果我们的唯一目标是解决 TSP 问题，而不考虑* 扩展 *模型以涵盖我们实际问题的更多细节，使用排名变量来提取最优旅行路径就足够了。然而，由于 TSP 仅仅是* ***将成为更复杂模型的初始原型****，我们最好从弧决策变量𝛿ᵢⱼ中提取解决方案，因为任何涉及路由决策的模型中都会包含这些变量。其他决策变量是辅助的，当需要时，它们的作用是表示状态或指示依赖于* 真实 *决策变量𝛿ᵢⱼ的条件。正如你将在接下来的文章中看到的，选择排名变量来提取旅行路径适用于纯 TSP 模型，但对于那些使访问某些站点* 可选 *的扩展则不适用。因此，如果我们从𝛿ᵢⱼ中提取解决方案，* ***我们的方法将是通用和可重复使用的，无论我们使用多么复杂的模型****。*
 
 这种方法的好处将在接下来的文章中显现出来，这些文章中增加了新的要求，因此模型中需要额外的变量。在*为什么*部分讲解完毕后，让我们进入*如何*部分。
 
 **4.2.1 从模型中提取最优旅行路径**
 
-+   **我们有**变量𝛿ᵢⱼ，按可能的弧（i, j）索引，其中𝛿ᵢⱼ=0表示弧未被选择，𝛿ᵢⱼ=1表示弧被选择。
++   **我们有**变量𝛿ᵢⱼ，按可能的弧（i, j）索引，其中𝛿ᵢⱼ=0 表示弧未被选择，𝛿ᵢⱼ=1 表示弧被选择。
 
 +   **我们想要**一个数据框，其中站点位于索引中（如我们的输入`df_sites`所示），并且停靠点编号在列 `"visit_order"`中指示。
 
@@ -576,11 +576,11 @@ tsp._fit_to_distances(df_distances)
 tsp.get_tour_stops_dataframe()
 ```
 
-![](../Images/dc75bd513f652b2d63c68f741e8680e4.png)
+![](img/dc75bd513f652b2d63c68f741e8680e4.png)
 
 **图 4**。解决方案（最优旅行路径）按排名站点（图由作者提供）
 
-`visit_order`列表明我们应该从酒店前往巴黎圣母院，然后到卢浮宫，依此类推，直到最后一个停靠点，蒙马特高地。之后，显然必须返回酒店。很好，现在我们有了一个易于解释和使用的解决方案格式。但停靠点的顺序并不是我们唯一关心的。**目标函数的值也是一个重要的指标**，因为它是指导我们决策的标准。对于我们特别的TSP问题，这意味着获取最优路线的总距离。
+`visit_order`列表明我们应该从酒店前往巴黎圣母院，然后到卢浮宫，依此类推，直到最后一个停靠点，蒙马特高地。之后，显然必须返回酒店。很好，现在我们有了一个易于解释和使用的解决方案格式。但停靠点的顺序并不是我们唯一关心的。**目标函数的值也是一个重要的指标**，因为它是指导我们决策的标准。对于我们特别的 TSP 问题，这意味着获取最优路线的总距离。
 
 **4.2.2 从模型中提取最优目标**
 
@@ -621,7 +621,7 @@ print(f"Total distance: {tsp._get_tour_total_distance()} m")
 # [Out]: Total distance: 14931.0 m
 ```
 
-总距离约为14.9公里。由于最优路线及其距离都很重要，让我们使优化器在每次调用`_fit_to_distances`方法时，将它们一起存储，**并且只有在找到最优解时**。
+总距离约为 14.9 公里。由于最优路线及其距离都很重要，让我们使优化器在每次调用`_fit_to_distances`方法时，将它们一起存储，**并且只有在找到最优解时**。
 
 **4.2.3 将解决方案存储在属性中**
 
@@ -689,7 +689,7 @@ print(f"Best tour:\n", tsp.tour_)
 # ['hotel', 'Notre Dame', 'Louvre', 'Tour Eiffel', 'Port de Suffren', 'Arc de Triomphe', 'Av. Champs Élysées', 'Montmartre', 'Sacre Coeur']
 ```
 
-很好。但我们可以做得更好。为了进一步**提高这个类的可用性**，让我们允许用户仅提供站点坐标的数据框来解决问题。由于不是每个人都能为他们感兴趣的站点收集距离矩阵，类可以处理这个问题并提供一个近似的距离矩阵。这在第3.2节中通过`GeoAnalyzer`实现了，这里我们只是将其放在新的`fit`方法下：
+很好。但我们可以做得更好。为了进一步**提高这个类的可用性**，让我们允许用户仅提供站点坐标的数据框来解决问题。由于不是每个人都能为他们感兴趣的站点收集距离矩阵，类可以处理这个问题并提供一个近似的距离矩阵。这在第 3.2 节中通过`GeoAnalyzer`实现了，这里我们只是将其放在新的`fit`方法下：
 
 ```py
 # class TravelingSalesmanOptimizer(BaseOptimizer):
@@ -835,7 +835,7 @@ tsp = TravelingSalesmanOptimizer("Paris")
 tsp.fit_prescribe(df_sites)
 ```
 
-![](../Images/5d2606e413b5c613d32d084a580c17d1.png)
+![](img/5d2606e413b5c613d32d084a580c17d1.png)
 
 **图 6**。解决方案（最佳旅行路线）附加到站点数据框中（图像来源于作者）
 
@@ -845,7 +845,7 @@ tsp.fit_prescribe(df_sites)
 tsp.fit_prescribe(df_sites, sort=False)
 ```
 
-![](../Images/fba80c8ddb8a99700fb200517675ec64.png)
+![](img/fba80c8ddb8a99700fb200517675ec64.png)
 
 **图 7**。解决方案附加到站点数据框中，站点顺序保持不变（图像来源于作者）
 
@@ -920,38 +920,38 @@ print(f"Difference: {tsp2.tour_distance_ - tsp1.tour_distance_} m")
 # Difference: 2841 m
 ```
 
-结论是，**如果我们选择“酒店2”，那么我们将比选择“酒店1”多*步行2.8公里*，在穿越相同景点的旅游中**。在其他条件相同的情况下，这告诉我们“酒店1”比“酒店2”更佳选择（*考虑到*我们想参观的景点）。
+结论是，**如果我们选择“酒店 2”，那么我们将比选择“酒店 1”多*步行 2.8 公里*，在穿越相同景点的旅游中**。在其他条件相同的情况下，这告诉我们“酒店 1”比“酒店 2”更佳选择（*考虑到*我们想参观的景点）。
 
 # 6\. 结论（或计划下一个迭代）
 
 在这篇文章中，我们创建了两个新类（`BaseOptimizer` 和 `TravelingSalesmanOptimizer`）。在未来的迭代中，我们将使用它们、扩展它们，并将更高级的优化器添加到工具包中，所以为了做到干净整洁，让我们将它们移动到一个新模块`routimizers.py`中。
 
-现在，最后一点需要记住的是这个MVP的范围。这个初始优化器给出了“**我应该以什么**顺序访问这些景点？”的问题的答案，但它没有告诉我们*如何从一个景点到下一个景点*。这没关系，因为这正是像Google Maps这样的GIS应用程序的工作，而不是我们谦逊的优化器。
+现在，最后一点需要记住的是这个 MVP 的范围。这个初始优化器给出了“**我应该以什么**顺序访问这些景点？”的问题的答案，但它没有告诉我们*如何从一个景点到下一个景点*。这没关系，因为这正是像 Google Maps 这样的 GIS 应用程序的工作，而不是我们谦逊的优化器。
 
-> ***👁*** *我们的优化器解决了* ***战术*** *问题，即告诉我们在旅游中最佳的* 停留顺序，*而不是* ***操作性*** *问题，即引导我们完成这次旅行。后者问题可以通过许多优秀的GIS应用程序轻松解决，例如Google Maps。*
+> ***👁*** *我们的优化器解决了* ***战术*** *问题，即告诉我们在旅游中最佳的* 停留顺序，*而不是* ***操作性*** *问题，即引导我们完成这次旅行。后者问题可以通过许多优秀的 GIS 应用程序轻松解决，例如 Google Maps。*
 
-如果你对结果（旅行）感到满意，并且想要在*现实生活中*实际实现它，那么很简单：直接去Google Maps，将这些景点按*优化器指定的顺序*输入为停留点。点击“开始”，你就能得到*操作性*答案。
+如果你对结果（旅行）感到满意，并且想要在*现实生活中*实际实现它，那么很简单：直接去 Google Maps，将这些景点按*优化器指定的顺序*输入为停留点。点击“开始”，你就能得到*操作性*答案。
 
-然而，仍然感觉应该能够*可视化*结果，而不仅仅满足于优化器在新列中放置的数字；即使不是为了实际应用，也应该是为了更好地理解解决方案。在第三次冲刺中，我们确实[稍微可视化了一下解决方案](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=valuable%20final%20check.-,4.2.%20Plotting%20the%20augmented%20model%E2%80%99s%20solution,-Let%E2%80%99s%20solve%20the)，即使没有坐标。现在我们*确实有*了站点的坐标，我们可以做得更好，以更现实的方式可视化最终的最佳路线。这正是[我们下一次冲刺](/visualizing-routes-on-interactive-maps-with-python-part-1-44f8d25d0761)的目标：**创建出色的视觉效果，以便更好地理解优化器提供的解决方案**（路线），并在此过程中提出和回答更多、更好的问题，从而帮助我们规划更好的行程。拿一杯咖啡，直接开始吧：
+然而，仍然感觉应该能够*可视化*结果，而不仅仅满足于优化器在新列中放置的数字；即使不是为了实际应用，也应该是为了更好地理解解决方案。在第三次冲刺中，我们确实[稍微可视化了一下解决方案](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=valuable%20final%20check.-,4.2.%20Plotting%20the%20augmented%20model%E2%80%99s%20solution,-Let%E2%80%99s%20solve%20the)，即使没有坐标。现在我们*确实有*了站点的坐标，我们可以做得更好，以更现实的方式可视化最终的最佳路线。这正是我们下一次冲刺的目标：**创建出色的视觉效果，以便更好地理解优化器提供的解决方案**（路线），并在此过程中提出和回答更多、更好的问题，从而帮助我们规划更好的行程。拿一杯咖啡，直接开始吧：
 
-[](/visualizing-routes-on-interactive-maps-with-python-part-1-44f8d25d0761?source=post_page-----dbb44e7d30b9--------------------------------) [## 使用Python在互动地图上可视化路线：第一部分
+[](/visualizing-routes-on-interactive-maps-with-python-part-1-44f8d25d0761?source=post_page-----dbb44e7d30b9--------------------------------) ## 使用 Python 在互动地图上可视化路线：第一部分
 
-### 一份有关运输问题的互动数据可视化的务实指南，使用Folium
+### 一份有关运输问题的互动数据可视化的务实指南，使用 Folium
 
-towardsdatascience.com](/visualizing-routes-on-interactive-maps-with-python-part-1-44f8d25d0761?source=post_page-----dbb44e7d30b9--------------------------------)
+towardsdatascience.com
 
 *脚注*
 
-1.  这种分离的好处将在未来的冲刺中变得明显，特别是针对扩展TSP的问题。[↩](#7894)
+1.  这种分离的好处将在未来的冲刺中变得明显，特别是针对扩展 TSP 的问题。↩
 
-1.  因为我们的课程将优化决策，而不是估计参数。两者有微妙的差别。确实，`scikit-learn` 估算器在模型训练期间确实会进行优化，但这种区别仍然很重要，因为 **优化在机器学习和运筹学中的意义不同**。一个 *估算器* 使用优化来 ***估计*** *模型参数* 的未知值，而一个 *优化器* 使用优化来 ***找到*** 代表我们需要做的 *决策* 的最佳值。在估算器中，目标函数始终是 *损失函数*，它衡量 **预测结果与真实结果之间的差异程度**。在优化器中（或更一般地，在运筹学模型中）**目标函数** 可以是任意的，因为它 **是衡量我们所期望的全球状态的标准**，取决于我们的决策。换句话说：*在机器学习中，我们寻找* ***最佳模型参数*** *以产生* ***最佳泛化*** *的数据*。然而，*在运筹学中*，我们的可能行动被表示在模型中，因此 *我们寻找* ***最佳行动*** *以产生* ***最佳结果*** *在我们拥有的资源下*。关键区别在于没有所谓的“真实决策”需要通过优化技术从数据中“估计”出来。**决策是根据数据给出的，而不是从数据中估计的**。[↩](#c61f)
+1.  因为我们的课程将优化决策，而不是估计参数。两者有微妙的差别。确实，`scikit-learn` 估算器在模型训练期间确实会进行优化，但这种区别仍然很重要，因为 **优化在机器学习和运筹学中的意义不同**。一个 *估算器* 使用优化来 ***估计*** *模型参数* 的未知值，而一个 *优化器* 使用优化来 ***找到*** 代表我们需要做的 *决策* 的最佳值。在估算器中，目标函数始终是 *损失函数*，它衡量 **预测结果与真实结果之间的差异程度**。在优化器中（或更一般地，在运筹学模型中）**目标函数** 可以是任意的，因为它 **是衡量我们所期望的全球状态的标准**，取决于我们的决策。换句话说：*在机器学习中，我们寻找* ***最佳模型参数*** *以产生* ***最佳泛化*** *的数据*。然而，*在运筹学中*，我们的可能行动被表示在模型中，因此 *我们寻找* ***最佳行动*** *以产生* ***最佳结果*** *在我们拥有的资源下*。关键区别在于没有所谓的“真实决策”需要通过优化技术从数据中“估计”出来。**决策是根据数据给出的，而不是从数据中估计的**。↩
 
-1.  这只能因为 [两个原因](https://en.wikipedia.org/wiki/Linear_programming#:~:text=An%20optimal%20solution%20need,of%20the%20objective%20function.): 模型是 *不可行*（最常见），或者模型是 *无界*（较少见，但可能）。[↩](#97f0)
+1.  这只能因为 [两个原因](https://en.wikipedia.org/wiki/Linear_programming#:~:text=An%20optimal%20solution%20need,of%20the%20objective%20function.): 模型是 *不可行*（最常见），或者模型是 *无界*（较少见，但可能）。↩
 
-1.  这就是为什么，在将输入坐标读入数据框时，我们首先读取酒店的坐标。[↩](#d459)
+1.  这就是为什么，在将输入坐标读入数据框时，我们首先读取酒店的坐标。↩
 
-1.  这是一个 [技术要求](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=It%E2%80%99s%20crucial%20that,variable%3A%20the%20hotel) *准确* 地说，其中一个站点没有相关的排名变量（哪一个无关紧要，但通常选择“初始站点”）。由于酒店在 `df_distances` 的第一行的索引中，因此被认为是初始站点并存储在 Pyomo 模型中（见属性 `tsp.model.initial_site`），没有相关的排名变量。请记住，排名 rᵢ 的工作是 *不是* 指示访问顺序（这在 𝛿ᵢⱼ 中固有），而仅仅是防止形成子巡回。[↩](#7f87)
+1.  这是一个 [技术要求](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c#:~:text=It%E2%80%99s%20crucial%20that,variable%3A%20the%20hotel) *准确* 地说，其中一个站点没有相关的排名变量（哪一个无关紧要，但通常选择“初始站点”）。由于酒店在 `df_distances` 的第一行的索引中，因此被认为是初始站点并存储在 Pyomo 模型中（见属性 `tsp.model.initial_site`），没有相关的排名变量。请记住，排名 rᵢ 的工作是 *不是* 指示访问顺序（这在 𝛿ᵢⱼ 中固有），而仅仅是防止形成子巡回。↩
 
-感谢阅读，下一篇文章见 [这里](/visualizing-routes-on-interactive-maps-with-python-part-1-44f8d25d0761)! 📈😊
+感谢阅读，下一篇文章见 这里! 📈😊
 
 随时可以关注我，向我提问，**给我反馈**，或通过 [LinkedIn](https://www.linkedin.com/in/carlosjuribe/) 联系我。

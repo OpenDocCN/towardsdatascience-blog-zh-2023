@@ -1,22 +1,22 @@
-# 将井下测录数据从DLIS文件格式转换为LAS文件格式
+# 将井下测录数据从 DLIS 文件格式转换为 LAS 文件格式
 
-> 原文：[https://towardsdatascience.com/converting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0?source=collection_archive---------19-----------------------#2023-07-25](https://towardsdatascience.com/converting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0?source=collection_archive---------19-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/converting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0?source=collection_archive---------19-----------------------#2023-07-25`](https://towardsdatascience.com/converting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0?source=collection_archive---------19-----------------------#2023-07-25)
 
 ## 与地球科学和岩石物理数据文件格式的工作
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----ccc1e7eee9b0--------------------------------)[![Andy McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----ccc1e7eee9b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ccc1e7eee9b0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ccc1e7eee9b0--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----ccc1e7eee9b0--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----ccc1e7eee9b0--------------------------------)![Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----ccc1e7eee9b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ccc1e7eee9b0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ccc1e7eee9b0--------------------------------) [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----ccc1e7eee9b0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconverting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----ccc1e7eee9b0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ccc1e7eee9b0--------------------------------) ·8分钟阅读·2023年7月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fccc1e7eee9b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconverting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0&user=Andy+McDonald&userId=9c280f85f15c&source=-----ccc1e7eee9b0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconverting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----ccc1e7eee9b0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ccc1e7eee9b0--------------------------------) ·8 分钟阅读·2023 年 7 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fccc1e7eee9b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconverting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0&user=Andy+McDonald&userId=9c280f85f15c&source=-----ccc1e7eee9b0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fccc1e7eee9b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconverting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0&source=-----ccc1e7eee9b0---------------------bookmark_footer-----------)![](../Images/69d4e3da04b4d0c32395107fa95d681e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fccc1e7eee9b0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconverting-well-logging-data-from-dlis-files-to-las-file-format-ccc1e7eee9b0&source=-----ccc1e7eee9b0---------------------bookmark_footer-----------)![](img/69d4e3da04b4d0c32395107fa95d681e.png)
 
 图片由 [Mika Baumeister](https://unsplash.com/pt-br/@mbaumi?utm_source=medium&utm_medium=referral) 提供，刊登于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在石油和天然气行业的地球科学领域，使用多种格式来存储[井下测录](https://en.wikipedia.org/wiki/Well_logging)和[岩石物理](https://en.wikipedia.org/wiki/Petrophysics)数据。最常见的两种格式是LAS文件和DLIS文件。
+在石油和天然气行业的地球科学领域，使用多种格式来存储[井下测录](https://en.wikipedia.org/wiki/Well_logging)和[岩石物理](https://en.wikipedia.org/wiki/Petrophysics)数据。最常见的两种格式是 LAS 文件和 DLIS 文件。
 
 [LAS](https://en.wikipedia.org/wiki/Log_ASCII_standard) 文件是平面 ASCII 文件，可以使用任何文本编辑器轻松读取，而 DLIS 文件是结构化的二进制文件，包含有关测井环境及测井数据的表格信息。DLIS 文件处理起来要困难得多，不能轻易在文本编辑器中打开，这可能会妨碍理解文件中的内容。
 

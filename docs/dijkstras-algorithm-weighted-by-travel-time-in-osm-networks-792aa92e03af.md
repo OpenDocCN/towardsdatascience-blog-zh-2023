@@ -1,18 +1,18 @@
 # Dijkstra 算法在 OSM 网络中按旅行时间加权
 
-> 原文：[https://towardsdatascience.com/dijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af?source=collection_archive---------8-----------------------#2023-10-10](https://towardsdatascience.com/dijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af?source=collection_archive---------8-----------------------#2023-10-10)
+> 原文：[`towardsdatascience.com/dijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af?source=collection_archive---------8-----------------------#2023-10-10`](https://towardsdatascience.com/dijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af?source=collection_archive---------8-----------------------#2023-10-10)
 
 ## 使用 OSMNX 1.6 查找最快和最短路径
 
-[](https://bryanvallejo16.medium.com/?source=post_page-----792aa92e03af--------------------------------)[![Bryan R. Vallejo](../Images/fd92974f57c72875cc133a2c959d64ca.png)](https://bryanvallejo16.medium.com/?source=post_page-----792aa92e03af--------------------------------)[](https://towardsdatascience.com/?source=post_page-----792aa92e03af--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----792aa92e03af--------------------------------) [Bryan R. Vallejo](https://bryanvallejo16.medium.com/?source=post_page-----792aa92e03af--------------------------------)
+[](https://bryanvallejo16.medium.com/?source=post_page-----792aa92e03af--------------------------------)![Bryan R. Vallejo](https://bryanvallejo16.medium.com/?source=post_page-----792aa92e03af--------------------------------)[](https://towardsdatascience.com/?source=post_page-----792aa92e03af--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----792aa92e03af--------------------------------) [Bryan R. Vallejo](https://bryanvallejo16.medium.com/?source=post_page-----792aa92e03af--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbd681aaa725&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af&user=Bryan+R.+Vallejo&userId=cbd681aaa725&source=post_page-cbd681aaa725----792aa92e03af---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----792aa92e03af--------------------------------) ·7 分钟阅读·2023年10月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F792aa92e03af&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af&user=Bryan+R.+Vallejo&userId=cbd681aaa725&source=-----792aa92e03af---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcbd681aaa725&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af&user=Bryan+R.+Vallejo&userId=cbd681aaa725&source=post_page-cbd681aaa725----792aa92e03af---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----792aa92e03af--------------------------------) ·7 分钟阅读·2023 年 10 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F792aa92e03af&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af&user=Bryan+R.+Vallejo&userId=cbd681aaa725&source=-----792aa92e03af---------------------clap_footer-----------)
 
 -- 
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F792aa92e03af&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af&source=-----792aa92e03af---------------------bookmark_footer-----------)![](../Images/692de08c2ac0d0d9fef8304a5bad06dc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F792aa92e03af&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdijkstras-algorithm-weighted-by-travel-time-in-osm-networks-792aa92e03af&source=-----792aa92e03af---------------------bookmark_footer-----------)![](img/692de08c2ac0d0d9fef8304a5bad06dc.png)
 
 作者提供的图片。摩洛哥示例中的最快路线（红色）和最短路线（橙色）
 

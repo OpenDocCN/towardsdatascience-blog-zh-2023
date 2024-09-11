@@ -1,20 +1,20 @@
 # 揭示超越标准差的真实数据离散度的两个指标
 
-> 原文：[https://towardsdatascience.com/dispersion-cv-qcd-32849f828434?source=collection_archive---------1-----------------------#2023-07-30](https://towardsdatascience.com/dispersion-cv-qcd-32849f828434?source=collection_archive---------1-----------------------#2023-07-30)
+> 原文：[`towardsdatascience.com/dispersion-cv-qcd-32849f828434?source=collection_archive---------1-----------------------#2023-07-30`](https://towardsdatascience.com/dispersion-cv-qcd-32849f828434?source=collection_archive---------1-----------------------#2023-07-30)
 
 ## 数据科学
 
 ## 计算和解释变异系数和分位数离散系数的指南
 
-[](https://medium.ealizadeh.com/?source=post_page-----32849f828434--------------------------------)[![Essi Alizadeh](../Images/be2244231732f93bcadf09682ef8ca37.png)](https://medium.ealizadeh.com/?source=post_page-----32849f828434--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32849f828434--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32849f828434--------------------------------) [Essi Alizadeh](https://medium.ealizadeh.com/?source=post_page-----32849f828434--------------------------------)
+[](https://medium.ealizadeh.com/?source=post_page-----32849f828434--------------------------------)![Essi Alizadeh](https://medium.ealizadeh.com/?source=post_page-----32849f828434--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32849f828434--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----32849f828434--------------------------------) [Essi Alizadeh](https://medium.ealizadeh.com/?source=post_page-----32849f828434--------------------------------)
 
 ·
 
-在[数据科学之路](https://towardsdatascience.com/?source=post_page-----32849f828434--------------------------------)上发布的[文章](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F35a932e89ec1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdispersion-cv-qcd-32849f828434&user=Essi+Alizadeh&userId=35a932e89ec1&source=post_page-35a932e89ec1----32849f828434---------------------post_header-----------) · 阅读时间8分钟·2023年7月30日
+在[数据科学之路](https://towardsdatascience.com/?source=post_page-----32849f828434--------------------------------)上发布的[文章](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F35a932e89ec1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdispersion-cv-qcd-32849f828434&user=Essi+Alizadeh&userId=35a932e89ec1&source=post_page-35a932e89ec1----32849f828434---------------------post_header-----------) · 阅读时间 8 分钟·2023 年 7 月 30 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32849f828434&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdispersion-cv-qcd-32849f828434&source=-----32849f828434---------------------bookmark_footer-----------)![](../Images/01bc45bb1b6fc65f93b1357ec3318b97.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32849f828434&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdispersion-cv-qcd-32849f828434&source=-----32849f828434---------------------bookmark_footer-----------)![](img/01bc45bb1b6fc65f93b1357ec3318b97.png)
 
 图像由作者使用 StockImg.AI 生成
 

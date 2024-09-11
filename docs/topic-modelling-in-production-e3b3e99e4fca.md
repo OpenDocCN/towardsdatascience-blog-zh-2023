@@ -1,22 +1,22 @@
 # 生产中的主题建模
 
-> 原文：[https://towardsdatascience.com/topic-modelling-in-production-e3b3e99e4fca?source=collection_archive---------0-----------------------#2023-10-30](https://towardsdatascience.com/topic-modelling-in-production-e3b3e99e4fca?source=collection_archive---------0-----------------------#2023-10-30)
+> 原文：[`towardsdatascience.com/topic-modelling-in-production-e3b3e99e4fca?source=collection_archive---------0-----------------------#2023-10-30`](https://towardsdatascience.com/topic-modelling-in-production-e3b3e99e4fca?source=collection_archive---------0-----------------------#2023-10-30)
 
 ## 利用 LangChain 从临时的 Jupyter Notebook 迁移到生产模块化服务
 
-[](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)[![Mariya Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)
+[](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)![Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------) [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----e3b3e99e4fca---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------) ·22分钟阅读·2023年10月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3b3e99e4fca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----e3b3e99e4fca---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----e3b3e99e4fca---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------) ·22 分钟阅读·2023 年 10 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3b3e99e4fca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----e3b3e99e4fca---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3b3e99e4fca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&source=-----e3b3e99e4fca---------------------bookmark_footer-----------)![](../Images/afdbbe895f01c14cdde29dadbd785120.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3b3e99e4fca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&source=-----e3b3e99e4fca---------------------bookmark_footer-----------)![](img/afdbbe895f01c14cdde29dadbd785120.png)
 
 图片由 DALL-E 3 制作
 
-在 [上一篇文章](/topic-modelling-using-chatgpt-api-8775b0891d16) 中，我们讨论了如何使用 ChatGPT 进行主题建模，并取得了出色的结果。任务是查看酒店连锁的客户评价，并定义评论中提到的主要主题。
+在 上一篇文章 中，我们讨论了如何使用 ChatGPT 进行主题建模，并取得了出色的结果。任务是查看酒店连锁的客户评价，并定义评论中提到的主要主题。
 
 在之前的迭代中，我们使用了标准的 [ChatGPT 完成 API](https://platform.openai.com/docs/guides/gpt/chat-completions-api) 并且自己发送了原始提示。这种方法在我们进行一些临时分析研究时效果很好。
 
@@ -36,7 +36,7 @@
 
 我们想确定将用于标记的话题列表。最直接的方法是发送所有评论，并要求 LLM 定义我们评论中提到的 20–30 个话题列表。不幸的是，我们不能做到这一点，因为这不符合上下文大小。我们可以使用 map-reduce 方法，但这可能会很昂贵。因此，我们希望定义一个代表性样本。
 
-为此，我们[构建了](/topic-modelling-using-chatgpt-api-8775b0891d16)一个[BERTopic](https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html) 话题模型，并获得了每个话题中最具代表性的评论。
+为此，我们构建了一个[BERTopic](https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html) 话题模型，并获得了每个话题中最具代表性的评论。
 
 **步骤 2：确定我们将用于标记的话题列表。**
 
@@ -58,55 +58,55 @@
 
 +   如果我们进行一次性研究，我们可以手动验证主题分配的结果。但对于在生产环境中运行的过程，我们需要考虑持续评估。
 
-+   如果我们正在构建一个客户评论分析的管道，我们应该考虑更多潜在的用例，并存储我们可能需要的其他相关信息。例如，存储客户评论的翻译版本是有帮助的，这样我们的同事就不必一直使用Google翻译。此外，情感和其他特征（例如客户评论中提到的产品）可能对分析和过滤很有价值。
++   如果我们正在构建一个客户评论分析的管道，我们应该考虑更多潜在的用例，并存储我们可能需要的其他相关信息。例如，存储客户评论的翻译版本是有帮助的，这样我们的同事就不必一直使用 Google 翻译。此外，情感和其他特征（例如客户评论中提到的产品）可能对分析和过滤很有价值。
 
-+   目前LLM行业进展迅速，一切都在不断变化。值得考虑一种模块化的方法，我们可以在不从头开始重写整个服务的情况下，快速迭代并尝试新的方法。
++   目前 LLM 行业进展迅速，一切都在不断变化。值得考虑一种模块化的方法，我们可以在不从头开始重写整个服务的情况下，快速迭代并尝试新的方法。
 
-![](../Images/3a85e2f56aeca48465378a421f27fb2f.png)
+![](img/3a85e2f56aeca48465378a421f27fb2f.png)
 
 作者提供的服务方案
 
-我们有很多关于如何使用主题建模服务的想法。但让我们专注于主要部分：模块化方法而非API调用和评估。LangChain框架将帮助我们解决这两个问题，所以让我们深入了解一下它。
+我们有很多关于如何使用主题建模服务的想法。但让我们专注于主要部分：模块化方法而非 API 调用和评估。LangChain 框架将帮助我们解决这两个问题，所以让我们深入了解一下它。
 
-# LangChain基础知识
+# LangChain 基础知识
 
-[LangChain](https://python.langchain.com/docs/get_started/introduction)是一个用于构建由语言模型驱动的应用程序的框架。以下是LangChain的主要[组件](https://docs.langchain.com/docs/category/components)：
+[LangChain](https://python.langchain.com/docs/get_started/introduction)是一个用于构建由语言模型驱动的应用程序的框架。以下是 LangChain 的主要[组件](https://docs.langchain.com/docs/category/components)：
 
 +   **Schema**是最基本的类，如文档、聊天消息和文本。
 
-+   **Models**。LangChain提供对LLMs、聊天模型和文本嵌入模型的访问，您可以轻松地在应用程序中使用这些模型，并根据需要在它们之间切换。不用说，它支持像ChatGPT、Anthropic和Llama这样的流行模型。
++   **Models**。LangChain 提供对 LLMs、聊天模型和文本嵌入模型的访问，您可以轻松地在应用程序中使用这些模型，并根据需要在它们之间切换。不用说，它支持像 ChatGPT、Anthropic 和 Llama 这样的流行模型。
 
 +   **Prompts**是一种帮助处理提示的功能，包括提示模板、输出解析器和少样本提示的示例选择器。
 
-+   **Chains**是LangChain的核心（正如你从名字中可以猜到的）。Chains帮助您构建一系列将被执行的块。如果您正在构建复杂的应用程序，您会真正欣赏到这个功能。
++   **Chains**是 LangChain 的核心（正如你从名字中可以猜到的）。Chains 帮助您构建一系列将被执行的块。如果您正在构建复杂的应用程序，您会真正欣赏到这个功能。
 
-+   **Indexes**：文档加载器、文本分割器、向量存储和检索器。此模块提供了帮助LLMs与您的文档交互的工具。如果您正在构建问答用例，这些功能会很有价值。我们今天的示例中不会使用这些功能。
++   **Indexes**：文档加载器、文本分割器、向量存储和检索器。此模块提供了帮助 LLMs 与您的文档交互的工具。如果您正在构建问答用例，这些功能会很有价值。我们今天的示例中不会使用这些功能。
 
-+   LangChain提供了一整套管理和限制**内存**的方法。这些功能主要用于聊天机器人场景。
++   LangChain 提供了一整套管理和限制**内存**的方法。这些功能主要用于聊天机器人场景。
 
-+   最新和最强大的功能之一是**代理**。如果您是ChatGPT的重度用户，您一定听说过插件。这与您可以为LLM配置一组自定义或预定义工具（如Google搜索或维基百科）的想法相同，然后代理可以在回答您的问题时使用它们。在这种设置下，LLM就像一个推理代理，决定为实现结果需要做什么以及何时获得最终答案以分享。这是一个令人兴奋的功能，因此绝对值得单独讨论。
++   最新和最强大的功能之一是**代理**。如果您是 ChatGPT 的重度用户，您一定听说过插件。这与您可以为 LLM 配置一组自定义或预定义工具（如 Google 搜索或维基百科）的想法相同，然后代理可以在回答您的问题时使用它们。在这种设置下，LLM 就像一个推理代理，决定为实现结果需要做什么以及何时获得最终答案以分享。这是一个令人兴奋的功能，因此绝对值得单独讨论。
 
-因此，LangChain 可以帮助我们构建模块化应用程序，并能够在不同组件之间切换（例如，从ChatGPT到Anthropic，或者从CSV作为数据输入到Snowflake DB）。LangChain 拥有超过[190个集成](https://python.langchain.com/docs/integrations/providers)，因此可以帮助您节省大量时间。
+因此，LangChain 可以帮助我们构建模块化应用程序，并能够在不同组件之间切换（例如，从 ChatGPT 到 Anthropic，或者从 CSV 作为数据输入到 Snowflake DB）。LangChain 拥有超过[190 个集成](https://python.langchain.com/docs/integrations/providers)，因此可以帮助您节省大量时间。
 
 此外，我们可以重用现成的链式结构来处理[某些用例](https://python.langchain.com/docs/use_cases)，而不是从头开始。
 
-在手动调用ChatGPT API时，我们必须管理大量的Python胶水代码来使其正常工作。当您处理一个小型、简单的任务时，这并不是问题，但是当您需要构建更复杂和复杂的东西时，可能会变得难以管理。在这种情况下，LangChain 可能会帮助您消除这些胶水代码，并创建更易于维护的模块化代码。
+在手动调用 ChatGPT API 时，我们必须管理大量的 Python 胶水代码来使其正常工作。当您处理一个小型、简单的任务时，这并不是问题，但是当您需要构建更复杂和复杂的东西时，可能会变得难以管理。在这种情况下，LangChain 可能会帮助您消除这些胶水代码，并创建更易于维护的模块化代码。
 
 然而，LangChain 也有其局限性：
 
-+   它主要集中在OpenAI模型上，因此可能与本地开源模型不太兼容。
++   它主要集中在 OpenAI 模型上，因此可能与本地开源模型不太兼容。
 
-+   便利的反面是，不容易理解底层发生了什么，以及何时以及如何执行您支付的ChatGPT API。您可以使用调试模式，但需要指定并查看完整日志，以获得更清晰的视角。
++   便利的反面是，不容易理解底层发生了什么，以及何时以及如何执行您支付的 ChatGPT API。您可以使用调试模式，但需要指定并查看完整日志，以获得更清晰的视角。
 
-+   尽管有相当好的文档，我偶尔还是会在寻找答案时遇到困难。除了官方文档外，互联网上几乎没有其他教程和资源，通常只能看到Google的官方页面。
++   尽管有相当好的文档，我偶尔还是会在寻找答案时遇到困难。除了官方文档外，互联网上几乎没有其他教程和资源，通常只能看到 Google 的官方页面。
 
 +   Langchain 库正在取得很大进展，团队不断发布新功能。因此，这个库还不够成熟，您可能需要从您正在使用的功能切换。例如，`SequentialChain`类现在被认为是遗留的，并且可能会在未来被弃用，因为他们已经引入了[LCEL](https://python.langchain.com/docs/expression_language/) — 我们稍后将更详细地讨论它。
 
-我们已经对LangChain功能有了总体的了解，但实践出真知。让我们开始使用LangChain。
+我们已经对 LangChain 功能有了总体的了解，但实践出真知。让我们开始使用 LangChain。
 
 # 增强主题分配
 
-让我们重构主题分配，因为它将是我们日常流程中最常见的操作，并且将帮助我们了解如何在实践中使用LangChain。
+让我们重构主题分配，因为它将是我们日常流程中最常见的操作，并且将帮助我们了解如何在实践中使用 LangChain。
 
 首先，我们需要安装这个包。
 
@@ -190,7 +190,7 @@ chat = ChatOpenAI(temperature=0.0, model="gpt-3.5-turbo",
 
 ## 提示
 
-让我们进入最重要的部分——我们的提示。在LangChain中，有一个提示模板的概念。它们帮助重复使用由变量参数化的提示。这很有帮助，因为在实际应用中，提示可能非常详细和复杂。因此，提示模板可以成为一种有用的高级抽象，帮助你有效地管理代码。
+让我们进入最重要的部分——我们的提示。在 LangChain 中，有一个提示模板的概念。它们帮助重复使用由变量参数化的提示。这很有帮助，因为在实际应用中，提示可能非常详细和复杂。因此，提示模板可以成为一种有用的高级抽象，帮助你有效地管理代码。
 
 由于我们将使用聊天模型，我们需要[ChatPromptTemplate.](https://python.langchain.com/docs/modules/model_io/prompts/prompt_templates/#chatprompttemplate)
 
@@ -198,15 +198,15 @@ chat = ChatOpenAI(temperature=0.0, model="gpt-3.5-turbo",
 
 让我们定义一下我们希望在输出中看到的内容。首先，我们希望能够将客户评论的列表传递给提示，以批量处理它们，因此在结果中，我们希望得到一个具有以下参数的列表：
 
-+   用于识别文档的ID，
++   用于识别文档的 ID，
 
 +   从预定义列表中获取主题列表（我们将使用我们上一个迭代中的列表），
 
 +   情感（负面、中性或正面）。
 
-让我们指定我们的输出解析器。由于我们需要一个相当复杂的JSON结构，我们将使用[Pydantic Output Parser](https://python.langchain.com/docs/modules/model_io/output_parsers/pydantic)而不是最常用的[Structured Output Parser](https://python.langchain.com/docs/modules/model_io/output_parsers/structured)。
+让我们指定我们的输出解析器。由于我们需要一个相当复杂的 JSON 结构，我们将使用[Pydantic Output Parser](https://python.langchain.com/docs/modules/model_io/output_parsers/pydantic)而不是最常用的[Structured Output Parser](https://python.langchain.com/docs/modules/model_io/output_parsers/structured)。
 
-为此，我们需要创建一个继承自`BaseModel`的类，并指定我们所需的所有字段及其名称和描述（以便LLM可以理解我们对响应的期望）。
+为此，我们需要创建一个继承自`BaseModel`的类，并指定我们所需的所有字段及其名称和描述（以便 LLM 可以理解我们对响应的期望）。
 
 ```py
 from langchain.output_parsers import PydanticOutputParser
@@ -230,7 +230,7 @@ format_instructions = output_parser.get_format_instructions()
 print(format_instructions)
 ```
 
-![](../Images/223f83dd83f0e516f1a09c0acbc47478.png)
+![](img/223f83dd83f0e516f1a09c0acbc47478.png)
 
 然后，进入我们的提示部分。我们取了一批评论并将其格式化为预期格式。接着，我们创建了一个包含多个变量的提示消息：`topics_descr_list`、`format_instructions`和`input_data`。之后，我们创建了由一个常量系统消息和一个提示消息组成的聊天提示消息。最后一步是用实际值格式化聊天提示消息。
 
@@ -282,7 +282,7 @@ messages = topic_assignment_template.format_messages(
 )
 ```
 
-现在，我们可以将这些格式化的消息传递给LLM，并查看响应。
+现在，我们可以将这些格式化的消息传递给 LLM，并查看响应。
 
 ```py
 response = chat(messages)
@@ -292,7 +292,7 @@ str
 print(response.content)
 ```
 
-![](../Images/19c75f5b1930416d6db2123198a6c974.png)
+![](img/19c75f5b1930416d6db2123198a6c974.png)
 
 我们得到了一个字符串对象的响应，但我们可以利用我们的解析器，将其结果转换为一组`CustomerCommentData`类对象。
 
@@ -302,17 +302,17 @@ response_dict = list(map(lambda x: output_parser.parse(x),
 response_dict
 ```
 
-![](../Images/39bbe90b0978935dfefd2f9ffe552981.png)
+![](img/39bbe90b0978935dfefd2f9ffe552981.png)
 
-因此，我们利用了LangChain及其一些功能，已经构建了一个更智能的解决方案，可以将主题分配给批量评论（这将节省我们的成本），并开始定义不仅仅是主题，还有情感。
+因此，我们利用了 LangChain 及其一些功能，已经构建了一个更智能的解决方案，可以将主题分配给批量评论（这将节省我们的成本），并开始定义不仅仅是主题，还有情感。
 
 # 添加更多逻辑
 
-到目前为止，我们只构建了没有任何关系和顺序的单一LLM调用。然而，在现实生活中，我们通常希望将任务拆分成多个步骤。为此，我们可以使用链。链是LangChain的基本构建块。
+到目前为止，我们只构建了没有任何关系和顺序的单一 LLM 调用。然而，在现实生活中，我们通常希望将任务拆分成多个步骤。为此，我们可以使用链。链是 LangChain 的基本构建块。
 
 ## LLMChain
 
-最基本的链类型是LLMChain。它是LLM和提示的组合。
+最基本的链类型是 LLMChain。它是 LLM 和提示的组合。
 
 所以我们可以将我们的逻辑重写成一个链。这段代码将给我们与之前完全相同的结果，但拥有一个定义所有内容的方法是非常方便的。
 
@@ -329,13 +329,13 @@ response = topic_assignment_chain.run(
 
 ## 顺序链
 
-LLM链非常基础。链的力量在于构建更复杂的逻辑。让我们尝试创建一些更高级的东西。
+LLM 链非常基础。链的力量在于构建更复杂的逻辑。让我们尝试创建一些更高级的东西。
 
 [顺序链](https://python.langchain.com/docs/modules/chains/foundational/sequential_chains)的理念是将一个链的输出用作另一个链的输入。
 
-在定义链时，我们将使用[LCEL](https://python.langchain.com/docs/expression_language)（LangChain表达语言）。这种新语言刚刚推出几个月，现在所有旧的`SimpleSequentialChain`或`SequentialChain`方法都被视为遗留方法。因此，花时间了解LCEL的概念是值得的。
+在定义链时，我们将使用[LCEL](https://python.langchain.com/docs/expression_language)（LangChain 表达语言）。这种新语言刚刚推出几个月，现在所有旧的`SimpleSequentialChain`或`SequentialChain`方法都被视为遗留方法。因此，花时间了解 LCEL 的概念是值得的。
 
-让我们用LCEL重写之前的链。
+让我们用 LCEL 重写之前的链。
 
 ```py
 chain = topic_assignment_template | chat
@@ -348,7 +348,7 @@ response = chain.invoke(
 )
 ```
 
-如果你想亲身体验，建议你观看[这个视频](https://www.youtube.com/watch?v=9M8x485j_lU)，了解LangChain团队讲解的LCEL。
+如果你想亲身体验，建议你观看[这个视频](https://www.youtube.com/watch?v=9M8x485j_lU)，了解 LangChain 团队讲解的 LCEL。
 
 ## 使用顺序链
 
@@ -356,7 +356,7 @@ response = chain.invoke(
 
 在我们的案例中，我们可以先将评论翻译成英语，然后进行主题建模和情感分析。
 
-![](../Images/685f59a665a81ef918b94ae53fa56394.png)
+![](img/685f59a665a81ef918b94ae53fa56394.png)
 
 ```py
 from langchain.schema import StrOutputParser
@@ -432,7 +432,7 @@ response = topic_assignment_chain.invoke(
 
 我们类似地为翻译和主题分配定义了提示模板。然后，我们确定了翻译链。这里唯一的新事物是`StrOutputParser()`的使用，它将响应对象转换为字符串（没什么高深的技术）。
 
-然后，我们定义了完整的链，指定了输入参数、提示模板和LLM。对于输入参数，我们从`translate_chain`的输出中获取`translated_data`，而其他参数则使用`itemgetter`函数从调用输入中提取。
+然后，我们定义了完整的链，指定了输入参数、提示模板和 LLM。对于输入参数，我们从`translate_chain`的输出中获取`translated_data`，而其他参数则使用`itemgetter`函数从调用输入中提取。
 
 然而，在我们的情况下，使用组合链可能不是那么方便，因为我们还希望保存第一个链的输出以获得翻译值。
 
@@ -445,7 +445,7 @@ import langchain
 langchain.debug = True
 ```
 
-另一个选择是使用LangChain平台 — [LangSmith](https://blog.langchain.dev/announcing-langsmith/)。不过，它仍处于测试阶段，所以你可能需要等待才能获得访问权限。
+另一个选择是使用 LangChain 平台 — [LangSmith](https://blog.langchain.dev/announcing-langsmith/)。不过，它仍处于测试阶段，所以你可能需要等待才能获得访问权限。
 
 ## 路由
 
@@ -459,9 +459,9 @@ langchain.debug = True
 
 所以我们高层的链将会是这样的。
 
-![](../Images/99a869839ba12e1e401eca16ab094b04.png)
+![](img/99a869839ba12e1e401eca16ab094b04.png)
 
-首先，我们需要定义主要的链来确定情感。这条链由提示、LLM和已经熟悉的`StrOutputParser()`组成。
+首先，我们需要定义主要的链来确定情感。这条链由提示、LLM 和已经熟悉的`StrOutputParser()`组成。
 
 ```py
 sentiment_msg = '''
@@ -486,7 +486,7 @@ sentiment_chain = sentiment_template | chat | StrOutputParser()
 
 对于正面评论，我们将要求模型提取好点，而对于负面评论 — 问题。所以，我们将需要两个不同的链。
 
-我们将使用与以前相同的Pydantic输出解析器来指定预期的输出格式并生成指令。
+我们将使用与以前相同的 Pydantic 输出解析器来指定预期的输出格式并生成指令。
 
 我们在通用主题分配提示消息上使用了`partial_variables`来为正面和负面案例指定不同的格式说明。
 
@@ -598,7 +598,7 @@ full_route_chain.invoke({'input_data': review,
 
 Here are a couple of examples. It works pretty well and returns different objects depending on the sentiment.
 
-![](../Images/47cd0e4548c96667425a56e62d254b10.png)
+![](img/47cd0e4548c96667425a56e62d254b10.png)
 
 We’ve looked in detail at the modular approach to do Topic Modelling using LangChain and introduce more complex logic. Now, it’s time to move on to the second part and discuss how we could assess the model’s performance.
 
@@ -746,11 +746,11 @@ eval_result = evaluator.evaluate_strings(
 
 As a result, we got the answer (whether the results fit the specified criterion) and chain-of-thought reasoning so that we could understand the logic behind the result and potentially tweak the prompt.
 
-![](../Images/8714d05f4b2e5cfac200311caf698c5c.png)
+![](img/8714d05f4b2e5cfac200311caf698c5c.png)
 
 If you’re interested in how it works, you could switch on `langchain.debug = True` and see the prompt sent to LLM.
 
-![](../Images/0da298b09e09569e208799682be0e438.png)
+![](img/0da298b09e09569e208799682be0e438.png)
 
 Let’s look at the correctness criterion. To assess it, we need to provide a reference (the correct answer).
 
@@ -770,7 +770,7 @@ eval_result = evaluator.evaluate_strings(
 
 ```py
 
-![](../Images/53ca5ff20f20000706d084f3caee8754.png)
+![](img/53ca5ff20f20000706d084f3caee8754.png)
 
 You can even create your own custom criteria, for example, whether multiple points are mentioned in the answer.
 
@@ -790,7 +790,7 @@ eval_result = evaluator.evaluate_strings(
 
 ```py
 
-![](../Images/267f33d58f6493ce44003b49671882f0.png)
+![](img/267f33d58f6493ce44003b49671882f0.png)
 
 ## Scoring evaluation
 
@@ -844,11 +844,11 @@ eval_result = evaluator.evaluate_strings(
 )
 ```
 
-![](../Images/9a85f3ea6a6ec65b20ef73b036dec829.png)
+![](img/9a85f3ea6a6ec65b20ef73b036dec829.png)
 
 我们得到了七分，这看起来很有效。让我们看看实际使用的提示。
 
-![](../Images/95be175868f753919929dd772eed5abe.png)
+![](img/95be175868f753919929dd772eed5abe.png)
 
 不过，我会对 LLM 的分数持保留态度。记住，这不是一个回归函数，分数可能相当主观。
 
@@ -879,7 +879,7 @@ eval_result = evaluator.evaluate_strings(
 
 ```
 
-![](../Images/1afcfe80ddb39f4c0a6255e0ef3a574a.png)
+![](img/1afcfe80ddb39f4c0a6255e0ef3a574a.png)
 
 我们得到了与之前相当接近的分数。
 
@@ -899,7 +899,7 @@ eval_result = evaluator.evaluate_strings(
 
 *Ganesan, Kavita 和 Zhai, ChengXiang. (2011). OpinRank 评价数据集。
 
-UCI 机器学习库。*[https://doi.org/10.24432/C5QW4W](https://doi.org/10.24432/C5QW4W)*
+UCI 机器学习库。*[`doi.org/10.24432/C5QW4W`](https://doi.org/10.24432/C5QW4W)*
 
 # 参考
 

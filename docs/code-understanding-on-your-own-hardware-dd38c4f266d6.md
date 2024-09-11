@@ -1,18 +1,18 @@
 # 在你的本地硬件上理解代码
 
-> 原文：[https://towardsdatascience.com/code-understanding-on-your-own-hardware-dd38c4f266d6?source=collection_archive---------8-----------------------#2023-07-05](https://towardsdatascience.com/code-understanding-on-your-own-hardware-dd38c4f266d6?source=collection_archive---------8-----------------------#2023-07-05)
+> 原文：[`towardsdatascience.com/code-understanding-on-your-own-hardware-dd38c4f266d6?source=collection_archive---------8-----------------------#2023-07-05`](https://towardsdatascience.com/code-understanding-on-your-own-hardware-dd38c4f266d6?source=collection_archive---------8-----------------------#2023-07-05)
 
-## 设置一个LLM来讨论你的代码——使用LangChain和本地硬件
+## 设置一个 LLM 来讨论你的代码——使用 LangChain 和本地硬件
 
-[](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------) [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcode-understanding-on-your-own-hardware-dd38c4f266d6&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----dd38c4f266d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------) ·7分钟阅读·2023年7月5日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcode-understanding-on-your-own-hardware-dd38c4f266d6&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----dd38c4f266d6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------) ·7 分钟阅读·2023 年 7 月 5 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdd38c4f266d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcode-understanding-on-your-own-hardware-dd38c4f266d6&source=-----dd38c4f266d6---------------------bookmark_footer-----------)![](../Images/14ea7eeae6ca02ac579d218a93a066c4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdd38c4f266d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcode-understanding-on-your-own-hardware-dd38c4f266d6&source=-----dd38c4f266d6---------------------bookmark_footer-----------)![](img/14ea7eeae6ca02ac579d218a93a066c4.png)
 
 我保证你的代码不会离开你的本地硬件。照片由[Clément Hélardot](https://unsplash.com/@clemhlrdt?utm_source=medium&utm_medium=referral)提供，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -24,7 +24,7 @@
 
 ## 语义搜索简介
 
-![](../Images/d2a2495d247f2a0c813df9e0d7df3d07.png)
+![](img/d2a2495d247f2a0c813df9e0d7df3d07.png)
 
 在语义搜索中，关键是找到相关的文档。照片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -86,7 +86,7 @@ for root, dirs, files in os.walk(folder_name):
 
 ## 检索
 
-![](../Images/b141a8ee6f486c209b660f19068f37ec.png)
+![](img/b141a8ee6f486c209b660f19068f37ec.png)
 
 哪些与回答我们的提问相关？这是检索的任务来决定的。照片由 [Ed Robertson](https://unsplash.com/@eddrobertson?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -120,11 +120,11 @@ retriever = db.as_retriever()
 
 ## LLM
 
-![](../Images/05fb0674b4aaeda3e15588bc43d0967e.png)
+![](img/05fb0674b4aaeda3e15588bc43d0967e.png)
 
 LLM 必须对文档进行推理，并给出用户问题的答案。照片由 [Tingey Injury Law Firm](https://unsplash.com/@tingeyinjurylawfirm?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-我们需要的最后一个组件是一个LLM。最简单的解决方案是使用托管的LLM，例如通过使用OpenAI接口。然而，我们不想将我们的代码发送到这样的托管服务。相反，我们将在自己的硬件上运行LLM。为此，我们使用[HuggingFacePipeline](https://python.langchain.com/docs/modules/model_io/models/llms/integrations/huggingface_pipelines)，它允许我们在LangChain框架中使用来自HuggingFace的模型。
+我们需要的最后一个组件是一个 LLM。最简单的解决方案是使用托管的 LLM，例如通过使用 OpenAI 接口。然而，我们不想将我们的代码发送到这样的托管服务。相反，我们将在自己的硬件上运行 LLM。为此，我们使用[HuggingFacePipeline](https://python.langchain.com/docs/modules/model_io/models/llms/integrations/huggingface_pipelines)，它允许我们在 LangChain 框架中使用来自 HuggingFace 的模型。
 
 ```py
 from langchain import HuggingFacePipeline
@@ -138,9 +138,9 @@ pipe = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer
 llm = HuggingFacePipeline(pipeline=pipe)
 ```
 
-正如你所见，我使用了[*mosaic mpt-7b*](https://huggingface.co/mosaicml/mpt-7b)模型，它只需要~16GB的GPU内存。我创建了一个*AutoModelForCausalLM*，它被传递到*transformers.pipeline*中，最终被转换成一个*HuggingFacePipeline*。*HuggingFacePipeline*实现了与LangChain中典型LLM对象相同的接口。也就是说，你可以像使用OpenAI LLM接口一样使用它。
+正如你所见，我使用了[*mosaic mpt-7b*](https://huggingface.co/mosaicml/mpt-7b)模型，它只需要~16GB 的 GPU 内存。我创建了一个*AutoModelForCausalLM*，它被传递到*transformers.pipeline*中，最终被转换成一个*HuggingFacePipeline*。*HuggingFacePipeline*实现了与 LangChain 中典型 LLM 对象相同的接口。也就是说，你可以像使用 OpenAI LLM 接口一样使用它。
 
-如果你的机器上有多个GPU，你需要指定使用哪个。在这种情况下，我想使用索引为0的GPU：
+如果你的机器上有多个 GPU，你需要指定使用哪个。在这种情况下，我想使用索引为 0 的 GPU：
 
 ```py
 config.init_device="cuda:0"
@@ -150,13 +150,13 @@ pipe = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer
 
 我设置的一些额外参数可以解释如下：
 
-+   *trust_remote_code*：这必须设置为true，以允许运行来自LangChain之外的模型。
++   *trust_remote_code*：这必须设置为 true，以允许运行来自 LangChain 之外的模型。
 
-+   *max_new_tokens*：这定义了模型在回答中可能生成的最大token数量。如果这个值太低，模型的回答可能会在完全回答问题之前被截断。
++   *max_new_tokens*：这定义了模型在回答中可能生成的最大 token 数量。如果这个值太低，模型的回答可能会在完全回答问题之前被截断。
 
 ## 将所有内容连接起来
 
-![](../Images/a1a78263500282ac4514caf874b3f3c6.png)
+![](img/a1a78263500282ac4514caf874b3f3c6.png)
 
 我们拥有所需的所有组件。我们只需将它们连接起来。照片由[John Barkiple](https://unsplash.com/@barkiple?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -187,7 +187,7 @@ Sources: ['sample_code/langchain/retrievers/knn.py', 'sample_code/langchain/vect
 
 完成了！嗯，差不多。通过上述代码，我们现在可以提出关于源代码的问题。然而，根据你的需求，可能需要更改一些步骤。
 
-+   使用你自己的源代码作为*Documents*，而不是LangChain的代码。
++   使用你自己的源代码作为*Documents*，而不是 LangChain 的代码。
 
 +   尝试不同的嵌入。如果嵌入不合适，检索器可能无法找到正确的文档，最终问题可能无法准确回答。
 
@@ -201,10 +201,10 @@ Sources: ['sample_code/langchain/retrievers/knn.py', 'sample_code/langchain/vect
 
 有关使用 LangChain 进行代码理解的更多示例，请查看他们的文档：
 
-+   [https://python.langchain.com/docs/use_cases/code/](https://python.langchain.com/docs/use_cases/code/#)
++   [`python.langchain.com/docs/use_cases/code/`](https://python.langchain.com/docs/use_cases/code/#)
 
 在 HuggingFace 上，你可以找到可以在 LangChain 中轻松使用的模型和嵌入：
 
-+   [https://huggingface.co/models](https://huggingface.co/models)
++   [`huggingface.co/models`](https://huggingface.co/models)
 
-*喜欢这篇文章吗？* [*关注我*](/@doriandrost) *以便获取我未来的文章更新。*
+*喜欢这篇文章吗？* *关注我* *以便获取我未来的文章更新。*

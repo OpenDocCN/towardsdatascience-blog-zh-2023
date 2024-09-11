@@ -1,18 +1,18 @@
 # geotiff.js: 如何获取纬度-经度坐标的投影 GeoTIFF 数据
 
-> 原文：[https://towardsdatascience.com/geotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0?source=collection_archive---------0-----------------------#2023-03-12](https://towardsdatascience.com/geotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0?source=collection_archive---------0-----------------------#2023-03-12)
+> 原文：[`towardsdatascience.com/geotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0?source=collection_archive---------0-----------------------#2023-03-12`](https://towardsdatascience.com/geotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0?source=collection_archive---------0-----------------------#2023-03-12)
 
-![](../Images/5196241c4e66b4b7d69b25384b8338d6.png)
+![](img/5196241c4e66b4b7d69b25384b8338d6.png)
 
 作者提供的图片
 
 ## 使用 Javascript 将纬度和经度坐标重新投影到 GeoTIFF 的坐标系统中，并使用 geotiff.js 查询数据
 
-[](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)[![托马斯·霍纳](../Images/9a50d463fb872d97f10f3ed454c08ac0.png)](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------) [托马斯·霍纳](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)
+[](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)![托马斯·霍纳](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------) [托马斯·霍纳](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9e4260fa5487&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0&user=Thomas+Horner&userId=9e4260fa5487&source=post_page-9e4260fa5487----87ca437b5aa0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------) · 10 min 阅读 · 2023年3月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87ca437b5aa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0&user=Thomas+Horner&userId=9e4260fa5487&source=-----87ca437b5aa0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9e4260fa5487&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0&user=Thomas+Horner&userId=9e4260fa5487&source=post_page-9e4260fa5487----87ca437b5aa0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------) · 10 min 阅读 · 2023 年 3 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87ca437b5aa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0&user=Thomas+Horner&userId=9e4260fa5487&source=-----87ca437b5aa0---------------------clap_footer-----------)
 
 --
 
@@ -20,41 +20,41 @@
 
 Javascript 已被使用多年来提供交互式网页地图，这些地图通常由矢量数据和 RGB 图像切片组成。这些简单的前端 historically 需要更强大的语言和服务器技术来实际提供和渲染正在可视化的地理空间数据，以及查询或分析它们的机制。
 
-随着Javascript语言和生态系统的成熟，曾经几乎不可能的事情现在变得简单而且性能不错。多亏了专注的开源开发者，现在在前端（浏览器）或后端（*NodeJS*）直接处理地理空间光栅数据变得相当容易。甚至还有多线程支持！
+随着 Javascript 语言和生态系统的成熟，曾经几乎不可能的事情现在变得简单而且性能不错。多亏了专注的开源开发者，现在在前端（浏览器）或后端（*NodeJS*）直接处理地理空间光栅数据变得相当容易。甚至还有多线程支持！
 
-让我们看看在纯Javascript中曾经非常困难的一个功能：查询特定坐标的地理空间光栅数据。这些数据集通常以GeoTIFF格式提供，为了处理这些数据集，我们将使用一个更流行的处理文件格式的库：*geotiff.js*。
+让我们看看在纯 Javascript 中曾经非常困难的一个功能：查询特定坐标的地理空间光栅数据。这些数据集通常以 GeoTIFF 格式提供，为了处理这些数据集，我们将使用一个更流行的处理文件格式的库：*geotiff.js*。
 
-使用这个库从GeoTIFF中提取像素数据很简单。但是，给定一个纬度-经度坐标，你怎么知道读取哪个像素？如果GeoTIFF在一个投影坐标系统中怎么办？
+使用这个库从 GeoTIFF 中提取像素数据很简单。但是，给定一个纬度-经度坐标，你怎么知道读取哪个像素？如果 GeoTIFF 在一个投影坐标系统中怎么办？
 
-与*GDAL*（一个流行的开源地理空间库，具有NodeJS绑定）不同，*geotiff.js*没有重投影功能：它仅仅是解析GeoTIFF文件。这意味着我们的解决方案将比*GDAL*中的等效方法稍微复杂一些，后者在最简单的情况下只需一个命令：
+与*GDAL*（一个流行的开源地理空间库，具有 NodeJS 绑定）不同，*geotiff.js*没有重投影功能：它仅仅是解析 GeoTIFF 文件。这意味着我们的解决方案将比*GDAL*中的等效方法稍微复杂一些，后者在最简单的情况下只需一个命令：
 
 ```py
 gdallocationinfo -valonly -wgs84 <geotiff filename> <longitude> <latitude>
 ```
 
-我们只需编写一些代码来镜像GDAL在后台进行的额外工作：从光栅中提取投影信息，将纬度-经度坐标重新投影到光栅的坐标系统中，并确定该点适用于光栅的哪个像素。
+我们只需编写一些代码来镜像 GDAL 在后台进行的额外工作：从光栅中提取投影信息，将纬度-经度坐标重新投影到光栅的坐标系统中，并确定该点适用于光栅的哪个像素。
 
-## 为什么不首先重新投影整个GeoTIFF？
+## 为什么不首先重新投影整个 GeoTIFF？
 
-通过将我们的GeoTIFF重新投影到像EPSG:4326这样的纬度-经度坐标系统，整个过程大部分可以被规避。但对于许多投影坐标系统，这会引入严重的不准确性。
+通过将我们的 GeoTIFF 重新投影到像 EPSG:4326 这样的纬度-经度坐标系统，整个过程大部分可以被规避。但对于许多投影坐标系统，这会引入严重的不准确性。
 
-例如，考虑查询NBM天气模型以获取科罗拉多州小熊峰顶的预测温度：
+例如，考虑查询 NBM 天气模型以获取科罗拉多州小熊峰顶的预测温度：
 
-![](../Images/0a24cfc9e19b012557b65ffcd2903554.png)
+![](img/0a24cfc9e19b012557b65ffcd2903554.png)
 
 图片来源：作者
 
 选择这个例子是因为它靠近数据集中一个像素的边缘。
 
-现在让我们使用最近邻重采样将数据集重新投影到EPSG:4326。相同的坐标现在返回了不同的值：
+现在让我们使用最近邻重采样将数据集重新投影到 EPSG:4326。相同的坐标现在返回了不同的值：
 
-![](../Images/0844fda3e81165158fe1d5a000d53369.png)
+![](img/0844fda3e81165158fe1d5a000d53369.png)
 
 图片来源：作者
 
 我们可以通过使用不同的重采样方法来稍微改进重投影，比如双线性插值：
 
-![](../Images/3f51da4954cd2d1b19b3cb25bdf3b944.png)
+![](img/3f51da4954cd2d1b19b3cb25bdf3b944.png)
 
 图片来源：作者
 
@@ -66,9 +66,9 @@ gdallocationinfo -valonly -wgs84 <geotiff filename> <longitude> <latitude>
 
 ## 将纬度和经度重投影到光栅坐标系统
 
-第一步是获取GeoTIFF的投影信息，并使用该信息将我们期望的坐标重新投影到光栅的坐标系统中。
+第一步是获取 GeoTIFF 的投影信息，并使用该信息将我们期望的坐标重新投影到光栅的坐标系统中。
 
-使GeoTIFF成为地理空间光栅而非普通TIFF图像的一个重要因素是使用GeoKeys（参见[OGC GeoTIFF规范](https://docs.opengeospatial.org/is/19-008r4/19-008r4.html#_underlying_tiff_requirements)）。我们可以使用geotiff.js读取给定光栅的GeoKeys：
+使 GeoTIFF 成为地理空间光栅而非普通 TIFF 图像的一个重要因素是使用 GeoKeys（参见[OGC GeoTIFF 规范](https://docs.opengeospatial.org/is/19-008r4/19-008r4.html#_underlying_tiff_requirements)）。我们可以使用 geotiff.js 读取给定光栅的 GeoKeys：
 
 ```py
 // assume the variable gtiff is the geotiff object
@@ -77,19 +77,19 @@ const image = await gtiff.getImage();
 const geoKeys = image.getGeoKeys();
 ```
 
-我们将把这些GeoKeys传递给一个投影库，它将处理繁重的计算，因为投影往往是相当复杂的！
+我们将把这些 GeoKeys 传递给一个投影库，它将处理繁重的计算，因为投影往往是相当复杂的！
 
-例如，北美的气象模型数据往往使用Lambert等角圆锥投影。如果我们从一个源自椭球基准（通常是WGS84）的纬度经度坐标开始，那么我们会面临一个相当复杂的公式：
+例如，北美的气象模型数据往往使用 Lambert 等角圆锥投影。如果我们从一个源自椭球基准（通常是 WGS84）的纬度经度坐标开始，那么我们会面临一个相当复杂的公式：
 
-![](../Images/4619872ac569874dee5d248f682cbb47.png)
+![](img/4619872ac569874dee5d248f682cbb47.png)
 
-Snyder, John (1987). [“地图投影：工作手册（USGS专业论文：1395）”](https://pubs.er.usgs.gov/publication/pp1395) — 公有领域
+Snyder, John (1987). [“地图投影：工作手册（USGS 专业论文：1395）”](https://pubs.er.usgs.gov/publication/pp1395) — 公有领域
 
 不需要重新发明轮子，因为开源社区已经投入了多年的工作，创建了全面的重投影库，这些库可以轻松处理各种复杂的地图投影之间的转换。
 
-对于JavaScript，最强大、最流行且功能齐全的库之一是[*Proj4js*](https://github.com/proj4js/proj4js)，它是常见的[*proj*](https://proj.org/)库的分支，支持*GDAL*。我们只需使用光栅的GeoKeys生成一个*proj*字符串，并将最终字符串传递给库即可。
+对于 JavaScript，最强大、最流行且功能齐全的库之一是[*Proj4js*](https://github.com/proj4js/proj4js)，它是常见的[*proj*](https://proj.org/)库的分支，支持*GDAL*。我们只需使用光栅的 GeoKeys 生成一个*proj*字符串，并将最终字符串传递给库即可。
 
-然而，有很多有效的GeoKeys：
+然而，有很多有效的 GeoKeys：
 
 ```py
 /**
@@ -134,7 +134,7 @@ Snyder, John (1987). [“地图投影：工作手册（USGS专业论文：1395�
  */
 ```
 
-使用类似[*geotiff-geokeys-to-proj4*](https://github.com/matafokka/geotiff-geokeys-to-proj4)的辅助库来处理*geotiff.js*的geokeys对象到*proj*字符串的正确转换可能是值得的。实际上，上面的注释块来自于那个库。
+使用类似[*geotiff-geokeys-to-proj4*](https://github.com/matafokka/geotiff-geokeys-to-proj4)的辅助库来处理*geotiff.js*的 geokeys 对象到*proj*字符串的正确转换可能是值得的。实际上，上面的注释块来自于那个库。
 
 安装了这两个库后，我们无需编写太多代码就能设置我们的重投影功能：
 
@@ -151,7 +151,7 @@ const projObj = geokeysToProj4.toProj4( geoKeys );
 const projection = proj4( `WGS84`, projObj.proj4 );
 ```
 
-我们现在创建了一个名为“projection”的proj投影对象。使用起来非常简单：
+我们现在创建了一个名为“projection”的 proj 投影对象。使用起来非常简单：
 
 ```py
 const { x, y } = projection.forward( {

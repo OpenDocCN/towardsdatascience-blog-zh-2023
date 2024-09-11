@@ -1,26 +1,26 @@
 # 使用 Rclone 管理你的云数据存储
 
-> 原文：[https://towardsdatascience.com/managing-your-cloud-based-data-storage-with-rclone-32fff991e0b3?source=collection_archive---------10-----------------------#2023-11-22](https://towardsdatascience.com/managing-your-cloud-based-data-storage-with-rclone-32fff991e0b3?source=collection_archive---------10-----------------------#2023-11-22)
+> 原文：[`towardsdatascience.com/managing-your-cloud-based-data-storage-with-rclone-32fff991e0b3?source=collection_archive---------10-----------------------#2023-11-22`](https://towardsdatascience.com/managing-your-cloud-based-data-storage-with-rclone-32fff991e0b3?source=collection_archive---------10-----------------------#2023-11-22)
 
 ## 如何优化多个对象存储系统之间的数据传输
 
-[](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----32fff991e0b3---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------) ·7分钟阅读·2023年11月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32fff991e0b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&user=Chaim+Rand&userId=9440b37e27fe&source=-----32fff991e0b3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----32fff991e0b3---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------) ·7 分钟阅读·2023 年 11 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32fff991e0b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&user=Chaim+Rand&userId=9440b37e27fe&source=-----32fff991e0b3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32fff991e0b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&source=-----32fff991e0b3---------------------bookmark_footer-----------)![](../Images/31058489fd9aa402449e5f9e7e07f343.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32fff991e0b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&source=-----32fff991e0b3---------------------bookmark_footer-----------)![](img/31058489fd9aa402449e5f9e7e07f343.png)
 
 图片由 [Tom Podmore](https://unsplash.com/@tompodmore86?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-随着公司越来越依赖基于云的存储解决方案，拥有合适的工具和技术以有效管理其[大数据](https://en.wikipedia.org/wiki/Big_data)变得至关重要。在之前的文章中（例如，[这里](https://medium.com/towards-data-science/streaming-big-data-files-from-cloud-storage-634e54818e75)和[这里](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056)），我们探讨了几种从云存储中检索数据的方法，并展示了它们在不同任务中的有效性。我们发现，最优的工具可能会根据具体任务（例如文件格式、数据文件的大小、数据访问模式）以及我们希望优化的指标（例如延迟、速度或成本）而有所不同。在这篇文章中，我们探讨了另一个流行的云存储管理工具——有时被[称为](https://rclone.org/)“*云存储的瑞士军刀*”——[rclone](https://rclone.org/)命令行工具。rclone支持超过[70种存储服务提供商](https://rclone.org/#providers)，具备类似于供应商特定存储管理应用程序（如AWS CLI（用于Amazon S3）和[gsutil](https://cloud.google.com/storage/docs/gsutil)（用于Google Storage））的功能。但它是否足够出色以构成一个可行的替代方案？在什么情况下rclone会是首选工具？在接下来的章节中，我们将展示rclone的使用，评估其性能，并**突出其在特定用例中的价值——在不同对象存储系统之间转移数据**。
+随着公司越来越依赖基于云的存储解决方案，拥有合适的工具和技术以有效管理其[大数据](https://en.wikipedia.org/wiki/Big_data)变得至关重要。在之前的文章中（例如，[这里](https://medium.com/towards-data-science/streaming-big-data-files-from-cloud-storage-634e54818e75)和这里），我们探讨了几种从云存储中检索数据的方法，并展示了它们在不同任务中的有效性。我们发现，最优的工具可能会根据具体任务（例如文件格式、数据文件的大小、数据访问模式）以及我们希望优化的指标（例如延迟、速度或成本）而有所不同。在这篇文章中，我们探讨了另一个流行的云存储管理工具——有时被[称为](https://rclone.org/)“*云存储的瑞士军刀*”——[rclone](https://rclone.org/)命令行工具。rclone 支持超过[70 种存储服务提供商](https://rclone.org/#providers)，具备类似于供应商特定存储管理应用程序（如 AWS CLI（用于 Amazon S3）和[gsutil](https://cloud.google.com/storage/docs/gsutil)（用于 Google Storage））的功能。但它是否足够出色以构成一个可行的替代方案？在什么情况下 rclone 会是首选工具？在接下来的章节中，我们将展示 rclone 的使用，评估其性能，并**突出其在特定用例中的价值——在不同对象存储系统之间转移数据**。
 
 ## 免责声明
 
-本文绝不是为了取代官方的[rclone文档](https://rclone.org/)。也不意图为使用rclone或我们提到的其他工具提供认可。您在进行云数据管理时的最佳选择将大大依赖于项目的详细信息，并应根据详细的、特定用例的测试来做出。请确保在阅读时重新评估我们所做的陈述，并对照您手头的最新工具。
+本文绝不是为了取代官方的[rclone 文档](https://rclone.org/)。也不意图为使用 rclone 或我们提到的其他工具提供认可。您在进行云数据管理时的最佳选择将大大依赖于项目的详细信息，并应根据详细的、特定用例的测试来做出。请确保在阅读时重新评估我们所做的陈述，并对照您手头的最新工具。
 
 # 从云存储中检索数据与 Rclone
 
@@ -50,7 +50,7 @@ rclone 的功能依赖于对 [rclone 配置文件](https://rclone.org/commands/r
 
 ## 用例 1：下载大文件
 
-以下命令行使用 [AWS CLI](https://docs.aws.amazon.com/cli/latest/) 从 Amazon S3 下载一个 2 GB 文件。这只是我们在 [之前的帖子](/streaming-big-data-files-from-cloud-storage-634e54818e75) 中评估的众多方法之一。我们使用 linux 的 *time* 命令来测量性能。
+以下命令行使用 [AWS CLI](https://docs.aws.amazon.com/cli/latest/) 从 Amazon S3 下载一个 2 GB 文件。这只是我们在 之前的帖子 中评估的众多方法之一。我们使用 linux 的 *time* 命令来测量性能。
 
 ```py
 time aws s3 cp s3://my-bucket/2GB.bin .
@@ -66,7 +66,7 @@ rclone sync -P S3store:my-bucket/2GB.bin .
 
 ## 用例 2：下载大量小文件
 
-在这个用例中，我们评估了下载 *800* 个相对较小的 1 MB 文件的运行时性能。在 [之前的博客文章](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056) 中，我们讨论了在将数据样本流式传输到深度学习训练工作负载的背景下的这个用例，并展示了 [s5cmd](https://github.com/peak/s5cmd) [*beast*](https://github.com/peak/s5cmd#beast-mode-s5cmd) 模式的优越性能。在 *beast* 模式下，我们创建一个包含对象文件操作列表的文件，s5cmd 使用 [多个并行工作线程](https://github.com/peak/s5cmd#numworkers)（默认值为 256）来执行这些操作。下面展示了 s5cmd beast 模式选项：
+在这个用例中，我们评估了下载 *800* 个相对较小的 1 MB 文件的运行时性能。在 之前的博客文章 中，我们讨论了在将数据样本流式传输到深度学习训练工作负载的背景下的这个用例，并展示了 [s5cmd](https://github.com/peak/s5cmd) [*beast*](https://github.com/peak/s5cmd#beast-mode-s5cmd) 模式的优越性能。在 *beast* 模式下，我们创建一个包含对象文件操作列表的文件，s5cmd 使用 [多个并行工作线程](https://github.com/peak/s5cmd#numworkers)（默认值为 256）来执行这些操作。下面展示了 s5cmd beast 模式选项：
 
 ```py
 time s5cmd --run cmds.txt
@@ -148,6 +148,6 @@ rclone copy -P --transfers 256 --files-from files.txt \
 
 # 总结
 
-在这篇文章中，我们探讨了使用 rclone 进行基于云的存储管理，并展示了它在维护和同步多个存储系统数据方面的应用。数据传输确实有许多替代解决方案，但rclone 基于的方法的便利性和优雅性无可置疑。
+在这篇文章中，我们探讨了使用 rclone 进行基于云的存储管理，并展示了它在维护和同步多个存储系统数据方面的应用。数据传输确实有许多替代解决方案，但 rclone 基于的方法的便利性和优雅性无可置疑。
 
 这只是我们在最大化基于云的存储解决方案效率方面撰写的众多文章之一。请务必查看一些[我们的其他文章](https://chaimrand.medium.com/)以了解这一重要话题。

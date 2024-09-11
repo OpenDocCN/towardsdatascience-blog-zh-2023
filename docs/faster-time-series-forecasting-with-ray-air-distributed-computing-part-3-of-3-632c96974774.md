@@ -1,20 +1,20 @@
-# 使用Ray加速时间序列预测的训练，第3部分，共3部分
+# 使用 Ray 加速时间序列预测的训练，第三部分，共 3 部分
 
-> 原文：[https://towardsdatascience.com/faster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774?source=collection_archive---------10-----------------------#2023-01-24](https://towardsdatascience.com/faster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774?source=collection_archive---------10-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/faster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774?source=collection_archive---------10-----------------------#2023-01-24`](https://towardsdatascience.com/faster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774?source=collection_archive---------10-----------------------#2023-01-24)
 
-## 使用Ray和Ray AIR通过分布式计算更快地训练多个模型
+## 使用 Ray 和 Ray AIR 通过分布式计算更快地训练多个模型
 
-[](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)[![Christy Bergman](../Images/b8431b925cfe7bd0d3a035761fd1e7f8.png)](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)[](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------) [Christy Bergman](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)
+[](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)![Christy Bergman](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)[](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------) [Christy Bergman](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff18ab4254b46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&user=Christy+Bergman&userId=f18ab4254b46&source=post_page-f18ab4254b46----632c96974774---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------) ·11分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F632c96974774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&user=Christy+Bergman&userId=f18ab4254b46&source=-----632c96974774---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff18ab4254b46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&user=Christy+Bergman&userId=f18ab4254b46&source=post_page-f18ab4254b46----632c96974774---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------) ·11 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F632c96974774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&user=Christy+Bergman&userId=f18ab4254b46&source=-----632c96974774---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F632c96974774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&source=-----632c96974774---------------------bookmark_footer-----------)![](../Images/0b4cdf6bfa4d1843765d0442ef94d0b7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F632c96974774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&source=-----632c96974774---------------------bookmark_footer-----------)![](img/0b4cdf6bfa4d1843765d0442ef94d0b7.png)
 
-图片由 [StableDiffusion](https://stablediffusionweb.com/#demo) 绘制，日期为2022年1月5日，查询内容为“绘制一幅图像，展示多种不同的深度神经网络时间序列模型同时训练的样子，风格类似Cy Twombly”。
+图片由 [StableDiffusion](https://stablediffusionweb.com/#demo) 绘制，日期为 2022 年 1 月 5 日，查询内容为“绘制一幅图像，展示多种不同的深度神经网络时间序列模型同时训练的样子，风格类似 Cy Twombly”。
 
 ## 介绍 / 动机
 
@@ -30,9 +30,9 @@
 
 **本博客将展示我开始将预测工作负载转换为分布式计算的技巧。** 我将使用最新的 [Ray v2 API](https://docs.ray.io/en/latest/)，结合 ARIMA 使用 [statsforecast](https://github.com/Nixtla/statsforecast)、[Prophet](https://facebook.github.io/prophet/) 和 [PyTorch Forecasting](https://pytorch-forecasting.readthedocs.io/en/stable/index.html) 库。数据方面，我将使用流行的 [NYC Taxi 数据集](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page)，该数据集包含按时间戳和地点记录的历史出租车接送信息。
 
-Ray 是一个开源框架，用于通过分布式计算扩展 AI 工作负载。有关 Ray 的概述，请查看 [Ray 文档](https://docs.ray.io/en/latest/) 或这篇 [介绍博客文章](/modern-parallel-and-distributed-python-a-quick-tutorial-on-ray-99f8d70369b8)。
+Ray 是一个开源框架，用于通过分布式计算扩展 AI 工作负载。有关 Ray 的概述，请查看 [Ray 文档](https://docs.ray.io/en/latest/) 或这篇 介绍博客文章。
 
-![](../Images/936ddd06d94b1c8950dcf87f360c7154.png)
+![](img/936ddd06d94b1c8950dcf87f360c7154.png)
 
 [Ray “AIR](https://docs.ray.io/en/latest/ray-air/getting-started.html)”（AI Runtime），自 Ray 2.0 起提供，包括 [Ray Data](https://docs.ray.io/en/latest/data/dataset.html)、[Ray Train](https://docs.ray.io/en/latest/train/train.html)、[Ray Tune](https://docs.ray.io/en/latest/tune/index.html)、[RLlib](https://docs.ray.io/en/latest/rllib/index.html) 和 [Ray Serve](https://docs.ray.io/en/latest/serve/index.html)。图片来源于作者。
 
@@ -48,7 +48,7 @@ Ray 是一个开源框架，用于通过分布式计算扩展 AI 工作负载。
 
 ## 第一部分：使用 Ray Core 多进程进行多模型分布式训练
 
-回到2021年11月，我写了一篇 [博客文章](https://medium.com/towards-data-science/scaling-time-series-forecasting-with-ray-arima-and-prophet-e6c856e605ee) 演示如何在 AWS 云上使用 Ray Core 并行训练多个预测模型（无论是 ARIMA 还是 Prophet）。**从那时起，** [**Ray 多进程**](https://docs.ray.io/en/latest/ray-more-libs/multiprocessing.html) **是一个巨大的改进，使事情比 Ray Core API 更加简单。**
+回到 2021 年 11 月，我写了一篇 [博客文章](https://medium.com/towards-data-science/scaling-time-series-forecasting-with-ray-arima-and-prophet-e6c856e605ee) 演示如何在 AWS 云上使用 Ray Core 并行训练多个预测模型（无论是 ARIMA 还是 Prophet）。**从那时起，** [**Ray 多进程**](https://docs.ray.io/en/latest/ray-more-libs/multiprocessing.html) **是一个巨大的改进，使事情比 Ray Core API 更加简单。**
 
 下面是代码大纲。完整的更新代码在 [我的 GitHub](https://github.com/christy/AnyscaleDemos/blob/main/forecasting_demos/Ray_v2/train_prophet_blog.ipynb) 上。首先，让我们从几个导入开始：
 
@@ -172,13 +172,13 @@ print(type(results[0][0]), type(results[0][1]), type(results[0][2]),
       type(results[0][3]), type(results[0][4]))
 ```
 
-![](../Images/fdca6909d17c7ae9f3020f481ada53d7.png)
+![](img/fdca6909d17c7ae9f3020f481ada53d7.png)
 
 在我的 MacBook Pro 笔记本电脑（配备 8 个 CPU）上运行上述示例时的截图。Ray 多进程的运行时间大约为半分钟，比串行 Python 快 *3.5 倍，即 300.0% 的加速。使用更大的集群和/或更大的数据可以获得更多加速。图片由作者提供。*
 
 上面，我们可以看到 Ray 作业在不到 1 分钟的时间内训练了 12 个模型。
 
-## 第 2 部分：使用 Ray AIR 进行多模型分布式调优
+## 第二部分：使用 Ray AIR 进行多模型分布式调优
 
 精明的读者可能已经注意到，在上述部分中，Ray 多进程要求数据已经按模型组织成一个文件。**但如果你的数据尚未按模型组织怎么办？** 使用 Ray AIR，你可以在训练不同模型的同时在同一管道中预处理数据。
 
@@ -190,7 +190,7 @@ print(type(results[0][0]), type(results[0][1]), type(results[0][2]),
 
 1.  定义 Python 函数来 `**train**` 和 `**evaluate**` 一个数据段上的模型。
 
-1.  定义一个调用函数`**train_models**`，该函数调用所有上述函数，并将为Tune搜索空间中的每个排列并行调用！
+1.  定义一个调用函数`**train_models**`，该函数调用所有上述函数，并将为 Tune 搜索空间中的每个排列并行调用！
 
     在这个[**train_models**](https://docs.ray.io/en/latest/tune/api_docs/trainable.html#trainable-docs)函数中：
 
@@ -202,13 +202,13 @@ print(type(results[0][0]), type(results[0][1]), type(results[0][2]),
 
 1.  **配置分布式计算缩放**。
 
-1.  **定义Tune搜索空间**的所有训练参数。
+1.  **定义 Tune 搜索空间**的所有训练参数。
 
 1.  （可选）指定超参数搜索策略。
 
 1.  **运行实验**。
 
-下面是我们将添加的附加代码；完整代码在[我的GitHub](https://github.com/christy/AnyscaleDemos/blob/6b1cea50a8c3b75bf9b680e77216f6927bdd2f85/forecasting_demos/Ray_v2/train_prophet_blog.ipynb)上。
+下面是我们将添加的附加代码；完整代码在[我的 GitHub](https://github.com/christy/AnyscaleDemos/blob/6b1cea50a8c3b75bf9b680e77216f6927bdd2f85/forecasting_demos/Ray_v2/train_prophet_blog.ipynb)上。
 
 +   下面的`preprocess_data`和`train_model`函数与之前完全相同，只是它们接受一个文件列表而不是单个文件。
 
@@ -359,19 +359,19 @@ tuner = tune.Tuner(
 results = tuner.fit()
 ```
 
-![](../Images/0256c490f5411ce2ac7c0261144e0f9f.png)
+![](img/0256c490f5411ce2ac7c0261144e0f9f.png)
 
-**顶部**：Ray Tune试验状态的截图，显示了768个候选模型的错误（每256个NYC出租车接送位置有3种算法选择）。在不到45分钟内完成训练。**左下**：Prophet模型推断+预测图（实际值为黑点，带置信区间的预测为蓝色）用于NYC出租车接送位置=165。**右下**：ARIMA模型推断+预测图（实际值为蓝色，预测为橙色）用于NYC出租车接送位置=237。所有模型使用Anyscale在10节点的AWS集群上训练，集群包括[ m5.4xlarges](https://aws.amazon.com/ec2/instance-types/m5/)工作节点和一个m5.2xlarge头节点。图像由作者提供。
+**顶部**：Ray Tune 试验状态的截图，显示了 768 个候选模型的错误（每 256 个 NYC 出租车接送位置有 3 种算法选择）。在不到 45 分钟内完成训练。**左下**：Prophet 模型推断+预测图（实际值为黑点，带置信区间的预测为蓝色）用于 NYC 出租车接送位置=165。**右下**：ARIMA 模型推断+预测图（实际值为蓝色，预测为橙色）用于 NYC 出租车接送位置=237。所有模型使用 Anyscale 在 10 节点的 AWS 集群上训练，集群包括[ m5.4xlarges](https://aws.amazon.com/ec2/instance-types/m5/)工作节点和一个 m5.2xlarge 头节点。图像由作者提供。
 
-在上述截图中，自2018年1月以来的数据被分组并汇总到日级别。我曾尝试在SageMaker上完成这项工作，仅数据处理就花费了太长时间，更不用说同时调优如此多的模型了。
+在上述截图中，自 2018 年 1 月以来的数据被分组并汇总到日级别。我曾尝试在 SageMaker 上完成这项工作，仅数据处理就花费了太长时间，更不用说同时调优如此多的模型了。
 
-## 第三节：多模型分布式调优（更大的PyTorch模型）
+## 第三节：多模型分布式调优（更大的 PyTorch 模型）
 
-目标通常是创建一些更大的模型，例如按地理区域划分的模型，其中只有少数几个这样的区域。一年前，即2021年12月，我写了一篇[博客文章](https://medium.com/towards-data-science/how-to-train-time-series-forecasting-faster-using-ray-part-2-of-2-aacba89ca49a)，展示了如何使用Ray Lightning训练更大的PyTorch预测模型。**自那时以来，一个重大改进是，感谢** [**Anyscale Workspaces**](https://docs.anyscale.com/user-guide/develop-and-debug/workspaces)**，笔记本电脑和云之间的代码开发切换更加无缝。**
+目标通常是创建一些更大的模型，例如按地理区域划分的模型，其中只有少数几个这样的区域。一年前，即 2021 年 12 月，我写了一篇[博客文章](https://medium.com/towards-data-science/how-to-train-time-series-forecasting-faster-using-ray-part-2-of-2-aacba89ca49a)，展示了如何使用 Ray Lightning 训练更大的 PyTorch 预测模型。**自那时以来，一个重大改进是，感谢** [**Anyscale Workspaces**](https://docs.anyscale.com/user-guide/develop-and-debug/workspaces)**，笔记本电脑和云之间的代码开发切换更加无缝。**
 
 这些较大的模型有时被称为“全球模型”，因为只有一个深度神经网络模型在多个不同时间序列上进行训练，而不是每个时间序列一个模型（Prophet 或 ARIMA）。
 
-请查看 [我的 GitHub](https://github.com/christy/AnyscaleDemos/blob/main/forecasting_demos/Ray_v2/ray_air/pytorch_forecasting.ipynb) 以获取完整的 [PyTorch Forecasting](https://pytorch-forecasting.readthedocs.io/en/stable/index.html) 代码，其中展示了最新的 Ray AIR API 与 [Ray Lightning](https://docs.ray.io/en/latest/tune/examples/tune-pytorch-lightning.html)。你需要将集群 ID 添加到数据中，然后调优步骤与第 2 节中看到的相同：
+请查看 [我的 GitHub](https://github.com/christy/AnyscaleDemos/blob/main/forecasting_demos/Ray_v2/ray_air/pytorch_forecasting.ipynb) 以获取完整的 [PyTorch Forecasting](https://pytorch-forecasting.readthedocs.io/en/stable/index.html) 代码，其中展示了最新的 Ray AIR API 与 [Ray Lightning](https://docs.ray.io/en/latest/tune/examples/tune-pytorch-lightning.html)。你需要将集群 ID 添加到数据中，然后调优步骤与第二部分中看到的相同：
 
 ```py
 # Import forecasting libraries.
@@ -417,13 +417,13 @@ for idx in some_unique_ids:
     best_model.plot_prediction(x, raw_predictions, idx=idx)
 ```
 
-![](../Images/dc844e0d7e1c866b57556638403bbad8.png)
+![](img/dc844e0d7e1c866b57556638403bbad8.png)
 
 **顶部**。在调优六个 PyTorch Forecasting TemporalFusionTransformer 模型时截图 Ray Tune Trial 状态。（3 个学习率，2 个纽约市出租车位置簇）。总运行时间少于 2 分钟。在 2 节点的 AWS 集群（m5.4xlarge 工作节点和一个 m5.2xlarge 主节点）上运行，时间不超过 2 分钟。**底部**：使用单个模型对多个出租车接客地点进行的推断预测图。
 
 请注意，与 ARIMA 和 Prophet 模型（每个 unique_id 一个模型）不同，这些较大的模型每次包含对多个 unique_ids 的推断。
 
-## 第 4 节：使用 Ray AIR 和 Ray Serve 进行多模型分布式部署
+## 第四部分：使用 Ray AIR 和 Ray Serve 进行多模型分布式部署
 
 在部署之前，你必须决定你的部署是需要一个在线、始终运行的 http 服务，还是离线的（按需调用的 Python 服务）。下面，我演示了如何使用新的 [Ray AIR Predictors](https://docs.ray.io/en/latest/ray-air/predictors.html) 和 [Ray Serve](https://docs.ray.io/en/latest/serve/index.html) 进行离线部署。
 
@@ -517,7 +517,7 @@ new_x = ray_return[0]
 new_pred = ray_return[1]
 ```
 
-![](../Images/352284bfab1b2d33c66eb92fe5f433e5.png)
+![](img/352284bfab1b2d33c66eb92fe5f433e5.png)
 
 **左侧**：Ray 仪表板的截图（默认在`localhost:8265`的主节点上访问）在服务期间的情况。**右侧**：Ray 仪表板在运行上述示例时的截图。你可以看到在自动缩放中有 5 个峰值，因为在部署最终训练模型之前，我对训练代码进行了 5 次不同的迭代。Anyscale 运行在 3 节点 AWS 集群上，其中包括[ m5.4xlarges](https://aws.amazon.com/ec2/instance-types/m5/) 工作节点和 1 个 m5.2xlarge 主节点。图片由作者提供。
 

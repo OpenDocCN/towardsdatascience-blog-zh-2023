@@ -1,10 +1,10 @@
 # 如何避免被模型准确性愚弄
 
-> 原文：[https://towardsdatascience.com/how-to-avoid-being-fooled-by-model-accuracy-e26307385fe1?source=collection_archive---------5-----------------------#2023-07-07](https://towardsdatascience.com/how-to-avoid-being-fooled-by-model-accuracy-e26307385fe1?source=collection_archive---------5-----------------------#2023-07-07)
+> 原文：[`towardsdatascience.com/how-to-avoid-being-fooled-by-model-accuracy-e26307385fe1?source=collection_archive---------5-----------------------#2023-07-07`](https://towardsdatascience.com/how-to-avoid-being-fooled-by-model-accuracy-e26307385fe1?source=collection_archive---------5-----------------------#2023-07-07)
 
 ## 二分类模型指标及其正确使用的视觉指南
 
-[](https://johnadeojo.medium.com/?source=post_page-----e26307385fe1--------------------------------)[![John Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----e26307385fe1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e26307385fe1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e26307385fe1--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----e26307385fe1--------------------------------)
+[](https://johnadeojo.medium.com/?source=post_page-----e26307385fe1--------------------------------)![John Adeojo](https://johnadeojo.medium.com/?source=post_page-----e26307385fe1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e26307385fe1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e26307385fe1--------------------------------) [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----e26307385fe1--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe26307385fe1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-being-fooled-by-model-accuracy-e26307385fe1&source=-----e26307385fe1---------------------bookmark_footer-----------)![](../Images/752a27d99b7d07b9b21cd0e1e97debde.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe26307385fe1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-avoid-being-fooled-by-model-accuracy-e26307385fe1&source=-----e26307385fe1---------------------bookmark_footer-----------)![](img/752a27d99b7d07b9b21cd0e1e97debde.png)
 
 图片由作者生成：Midjourney
 

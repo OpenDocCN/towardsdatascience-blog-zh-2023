@@ -1,24 +1,24 @@
-# 数据科学家的Docker容器简介
+# 数据科学家的 Docker 容器简介
 
-> 原文：[https://towardsdatascience.com/intro-to-docker-containers-for-data-scientists-dda9f2cfe66e?source=collection_archive---------4-----------------------#2023-12-20](https://towardsdatascience.com/intro-to-docker-containers-for-data-scientists-dda9f2cfe66e?source=collection_archive---------4-----------------------#2023-12-20)
+> 原文：[`towardsdatascience.com/intro-to-docker-containers-for-data-scientists-dda9f2cfe66e?source=collection_archive---------4-----------------------#2023-12-20`](https://towardsdatascience.com/intro-to-docker-containers-for-data-scientists-dda9f2cfe66e?source=collection_archive---------4-----------------------#2023-12-20)
 
-## 一个实用的教程，教你如何使用Docker容器设置本地开发环境
+## 一个实用的教程，教你如何使用 Docker 容器设置本地开发环境
 
-[](https://leshem-ido.medium.com/?source=post_page-----dda9f2cfe66e--------------------------------)[![Ido Leshem](../Images/914fd1635e4c34876816956422c357e8.png)](https://leshem-ido.medium.com/?source=post_page-----dda9f2cfe66e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dda9f2cfe66e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dda9f2cfe66e--------------------------------) [Ido Leshem](https://leshem-ido.medium.com/?source=post_page-----dda9f2cfe66e--------------------------------)
+[](https://leshem-ido.medium.com/?source=post_page-----dda9f2cfe66e--------------------------------)![Ido Leshem](https://leshem-ido.medium.com/?source=post_page-----dda9f2cfe66e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dda9f2cfe66e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dda9f2cfe66e--------------------------------) [Ido Leshem](https://leshem-ido.medium.com/?source=post_page-----dda9f2cfe66e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64b979a03bf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-docker-containers-for-data-scientists-dda9f2cfe66e&user=Ido+Leshem&userId=64b979a03bf7&source=post_page-64b979a03bf7----dda9f2cfe66e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dda9f2cfe66e--------------------------------) ·7分钟阅读·2023年12月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdda9f2cfe66e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-docker-containers-for-data-scientists-dda9f2cfe66e&user=Ido+Leshem&userId=64b979a03bf7&source=-----dda9f2cfe66e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64b979a03bf7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-docker-containers-for-data-scientists-dda9f2cfe66e&user=Ido+Leshem&userId=64b979a03bf7&source=post_page-64b979a03bf7----dda9f2cfe66e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dda9f2cfe66e--------------------------------) ·7 分钟阅读·2023 年 12 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdda9f2cfe66e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-docker-containers-for-data-scientists-dda9f2cfe66e&user=Ido+Leshem&userId=64b979a03bf7&source=-----dda9f2cfe66e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdda9f2cfe66e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-docker-containers-for-data-scientists-dda9f2cfe66e&source=-----dda9f2cfe66e---------------------bookmark_footer-----------)![](../Images/3fbf0a765877408a6ff283956455bbdd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdda9f2cfe66e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintro-to-docker-containers-for-data-scientists-dda9f2cfe66e&source=-----dda9f2cfe66e---------------------bookmark_footer-----------)![](img/3fbf0a765877408a6ff283956455bbdd.png)
 
-图片来源：Tom Fask，来自Pexels
+图片来源：Tom Fask，来自 Pexels
 
 # **动机**
 
-数据科学家日常工作的重要组成部分是管理和维护开发环境。当开发环境保持更新并且紧密反映生产环境时，我们的工作会顺利很多；否则，事情就会变得混乱。在较大的环境中，对CI/CD管道和DevOps的熟练掌握非常有利。提供易于集成和投入生产的开发成果是数据科学家的首要任务。
+数据科学家日常工作的重要组成部分是管理和维护开发环境。当开发环境保持更新并且紧密反映生产环境时，我们的工作会顺利很多；否则，事情就会变得混乱。在较大的环境中，对 CI/CD 管道和 DevOps 的熟练掌握非常有利。提供易于集成和投入生产的开发成果是数据科学家的首要任务。
 
 这就是容器发挥作用的地方；通过封装我们的开发环境，它们可以帮助我们节省时间和精力。
 
@@ -91,7 +91,7 @@ Dockerfile 为我们提供了很多灵活性。例如，我的仓库依赖于 tr
 
 **注意 —** 使用容器在速度和灵活性方面提供了许多好处，但也有缺点。其中之一就是安全性。由不可信资源上传的容器镜像可能包含恶意内容。确保你使用的是可信来源，并且容器配置正确。另一种选择是使用安全工具如 snyk，它可以扫描你的 Docker 镜像以查找潜在的漏洞。
 
-![](../Images/08efeb6c5032f306d8e21c61f17f2368.png)
+![](img/08efeb6c5032f306d8e21c61f17f2368.png)
 
 图片来源于 Tom Fask，来自 Pexels
 
@@ -99,19 +99,19 @@ Dockerfile 为我们提供了很多灵活性。例如，我的仓库依赖于 tr
 
 **初步前提** 在我们创建 Docker 容器之前，首先需要确保我们的本地工作环境已准备好。让我们确保我们拥有以下检查清单：
 
-1\. 使用 VS Code 作为我们的代码编辑器: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+1\. 使用 VS Code 作为我们的代码编辑器: [`code.visualstudio.com/`](https://code.visualstudio.com/)
 
-2\. 版本控制管理的 Git: [https://git-scm.com/downloads](https://git-scm.com/downloads)
+2\. 版本控制管理的 Git: [`git-scm.com/downloads`](https://git-scm.com/downloads)
 
-3\. Github 用户: [https://github.com/](https://github.com/)
+3\. Github 用户: [`github.com/`](https://github.com/)
 
-4\. [https://www.docker.com/](https://www.docker.com/)
+4\. [`www.docker.com/`](https://www.docker.com/)
 
 完成所有这些前提条件后，请确保登录你安装的 Docker 应用程序。这将使我们能够创建 Docker 容器并跟踪其状态。
 
 **步骤 1 — 克隆仓库**
 
-首先，让我们选择一个仓库进行操作。这里我提供了一个包含算法的仓库，该算法通过结合模型在给定文本下的困惑度值和拼写错误数量来估计文本是否由AI生成。较高的困惑度意味着LLM更难预测下一个词，因此不是由人类生成的。
+首先，让我们选择一个仓库进行操作。这里我提供了一个包含算法的仓库，该算法通过结合模型在给定文本下的困惑度值和拼写错误数量来估计文本是否由 AI 生成。较高的困惑度意味着 LLM 更难预测下一个词，因此不是由人类生成的。
 
 仓库链接：
 
@@ -123,13 +123,13 @@ Dockerfile 为我们提供了很多灵活性。例如，我的仓库依赖于 tr
 
 在 GitHub 上，点击 **code** 并复制 HTTPS 地址，如下所示：
 
-![](../Images/84a2b8dac6fab0d65425d44a6b542773.png)
+![](img/84a2b8dac6fab0d65425d44a6b542773.png)
 
 图片作者
 
 然后，打开 VS Code，克隆一个你希望包含在容器中的仓库。确保 VS Code 已连接到你的 GitHub 账户。或者，你也可以初始化一个新的 Git 仓库。
 
-![](../Images/f7dea06269b48ae10074c3042cdf05ab.png)
+![](img/f7dea06269b48ae10074c3042cdf05ab.png)
 
 图片作者
 
@@ -145,7 +145,7 @@ docker build -t local_container_intro .
 
 local_container_intro 是 Docker 镜像的名称，你可以将其更改为你想要的任何名称。
 
-![](../Images/94bafe936090f0cdf43a60b144572b89.png)
+![](img/94bafe936090f0cdf43a60b144572b89.png)
 
 作者提供的图片
 
@@ -159,13 +159,13 @@ local_container_intro 是 Docker 镜像的名称，你可以将其更改为你�
  docker run -it --name local_container_instance -v /pate/to/your/project/folder :/project local_container_intro
 ```
 
-![](../Images/b4e1edd0deb8c4c43eaf2d9e2975c799.png)
+![](img/b4e1edd0deb8c4c43eaf2d9e2975c799.png)
 
 作者提供的图片
 
 创建容器后，你可以在 CONTAINERS 窗口中查看它。为了实际使用它，点击“attach visual studio code”。这将打开一个新窗口，反映你的容器化环境。这个环境包括你的代码，你可以在左下角看到你的容器名称。打开终端并运行“pip list”，检查所有依赖项是否已安装。确保安装任何可能需要的 Python 扩展。
 
-![](../Images/476e4bf7c70c32225e0204ef2d6bd2c5.png)
+![](img/476e4bf7c70c32225e0204ef2d6bd2c5.png)
 
 作者提供的图片
 

@@ -1,18 +1,18 @@
 # 生成式 AI 如何支持食品工业企业
 
-> 原文：[https://towardsdatascience.com/how-generative-ai-can-support-food-industry-businesses-993872b4a6ce?source=collection_archive---------10-----------------------#2023-07-19](https://towardsdatascience.com/how-generative-ai-can-support-food-industry-businesses-993872b4a6ce?source=collection_archive---------10-----------------------#2023-07-19)
+> 原文：[`towardsdatascience.com/how-generative-ai-can-support-food-industry-businesses-993872b4a6ce?source=collection_archive---------10-----------------------#2023-07-19`](https://towardsdatascience.com/how-generative-ai-can-support-food-industry-businesses-993872b4a6ce?source=collection_archive---------10-----------------------#2023-07-19)
 
 ## 从过去的错误中学习，利用 ChatGPT 为食品工业公司构建更好的机器学习模型
 
-[](https://ben-mccloskey20.medium.com/?source=post_page-----993872b4a6ce--------------------------------)[![Benjamin McCloskey](../Images/7118f5933f2affe2a7a4d3375452fa4c.png)](https://ben-mccloskey20.medium.com/?source=post_page-----993872b4a6ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----993872b4a6ce--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----993872b4a6ce--------------------------------) [Benjamin McCloskey](https://ben-mccloskey20.medium.com/?source=post_page-----993872b4a6ce--------------------------------)
+[](https://ben-mccloskey20.medium.com/?source=post_page-----993872b4a6ce--------------------------------)![Benjamin McCloskey](https://ben-mccloskey20.medium.com/?source=post_page-----993872b4a6ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----993872b4a6ce--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----993872b4a6ce--------------------------------) [Benjamin McCloskey](https://ben-mccloskey20.medium.com/?source=post_page-----993872b4a6ce--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F503796fc1483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-generative-ai-can-support-food-industry-businesses-993872b4a6ce&user=Benjamin+McCloskey&userId=503796fc1483&source=post_page-503796fc1483----993872b4a6ce---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----993872b4a6ce--------------------------------) ·12分钟阅读·2023年7月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F993872b4a6ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-generative-ai-can-support-food-industry-businesses-993872b4a6ce&user=Benjamin+McCloskey&userId=503796fc1483&source=-----993872b4a6ce---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F503796fc1483&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-generative-ai-can-support-food-industry-businesses-993872b4a6ce&user=Benjamin+McCloskey&userId=503796fc1483&source=post_page-503796fc1483----993872b4a6ce---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----993872b4a6ce--------------------------------) ·12 分钟阅读·2023 年 7 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F993872b4a6ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-generative-ai-can-support-food-industry-businesses-993872b4a6ce&user=Benjamin+McCloskey&userId=503796fc1483&source=-----993872b4a6ce---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F993872b4a6ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-generative-ai-can-support-food-industry-businesses-993872b4a6ce&source=-----993872b4a6ce---------------------bookmark_footer-----------)![](../Images/526e267b04847504f33254d628ce1049.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F993872b4a6ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-generative-ai-can-support-food-industry-businesses-993872b4a6ce&source=-----993872b4a6ce---------------------bookmark_footer-----------)![](img/526e267b04847504f33254d628ce1049.png)
 
 图片由 [Mae Mu](https://unsplash.com/@picoftasty?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,4 +28,4 @@
 
 # 原始发布
 
-我在2021年7月首次发布了《机器学习不仅仅是为了大科技公司》。
+我在 2021 年 7 月首次发布了《机器学习不仅仅是为了大科技公司》。

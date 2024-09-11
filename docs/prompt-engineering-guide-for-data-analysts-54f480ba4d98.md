@@ -1,18 +1,18 @@
 # 提示工程指南
 
-> 原文：[https://towardsdatascience.com/prompt-engineering-guide-for-data-analysts-54f480ba4d98?source=collection_archive---------0-----------------------#2023-05-07](https://towardsdatascience.com/prompt-engineering-guide-for-data-analysts-54f480ba4d98?source=collection_archive---------0-----------------------#2023-05-07)
+> 原文：[`towardsdatascience.com/prompt-engineering-guide-for-data-analysts-54f480ba4d98?source=collection_archive---------0-----------------------#2023-05-07`](https://towardsdatascience.com/prompt-engineering-guide-for-data-analysts-54f480ba4d98?source=collection_archive---------0-----------------------#2023-05-07)
 
-![](../Images/7eb4d92c8f54e60146f7dd4ba68cb20b.png)
+![](img/7eb4d92c8f54e60146f7dd4ba68cb20b.png)
 
 图片由 [Emiliano Vittoriosi](https://unsplash.com/@emilianovittoriosi?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 原则、技巧和应用，以利用 LLM 中提示的力量作为数据分析师
 
-[](https://tanuwidjajaolivia.medium.com/?source=post_page-----54f480ba4d98--------------------------------)[![Olivia Tanuwidjaja](../Images/52a56de28da9b782b57f1c3928655cfb.png)](https://tanuwidjajaolivia.medium.com/?source=post_page-----54f480ba4d98--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54f480ba4d98--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54f480ba4d98--------------------------------) [Olivia Tanuwidjaja](https://tanuwidjajaolivia.medium.com/?source=post_page-----54f480ba4d98--------------------------------)
+[](https://tanuwidjajaolivia.medium.com/?source=post_page-----54f480ba4d98--------------------------------)![Olivia Tanuwidjaja](https://tanuwidjajaolivia.medium.com/?source=post_page-----54f480ba4d98--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54f480ba4d98--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----54f480ba4d98--------------------------------) [Olivia Tanuwidjaja](https://tanuwidjajaolivia.medium.com/?source=post_page-----54f480ba4d98--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff43d6dd597&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-guide-for-data-analysts-54f480ba4d98&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=post_page-f43d6dd597----54f480ba4d98---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54f480ba4d98--------------------------------) ·7 分钟阅读·2023年5月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F54f480ba4d98&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-guide-for-data-analysts-54f480ba4d98&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=-----54f480ba4d98---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff43d6dd597&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-guide-for-data-analysts-54f480ba4d98&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=post_page-f43d6dd597----54f480ba4d98---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54f480ba4d98--------------------------------) ·7 分钟阅读·2023 年 5 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F54f480ba4d98&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-guide-for-data-analysts-54f480ba4d98&user=Olivia+Tanuwidjaja&userId=f43d6dd597&source=-----54f480ba4d98---------------------clap_footer-----------)
 
 --
 
@@ -26,4 +26,4 @@ LLMs 可以通过“提示”技术解决任务，这些技术中**问题以文�
 
 # 什么是提示工程？
 
-引用[Ben Lorica来自Gradient Flow](https://gradientflow.com/the-future-of-prompt-engineering-getting-the-most-out-of-llms/)，**“提示工程是设计有效输入提示以从基础模型中引出所需输出的艺术”**。这是一个迭代的过程，旨在开发可以有效利用现有生成式AI模型能力以实现特定目标的提示。
+引用[Ben Lorica 来自 Gradient Flow](https://gradientflow.com/the-future-of-prompt-engineering-getting-the-most-out-of-llms/)，**“提示工程是设计有效输入提示以从基础模型中引出所需输出的艺术”**。这是一个迭代的过程，旨在开发可以有效利用现有生成式 AI 模型能力以实现特定目标的提示。

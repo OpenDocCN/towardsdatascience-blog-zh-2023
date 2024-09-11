@@ -1,18 +1,18 @@
 # 达到下一轮所需的顶级 3 个 SQL 技能
 
-> 原文：[https://towardsdatascience.com/the-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213?source=collection_archive---------4-----------------------#2023-08-28](https://towardsdatascience.com/the-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213?source=collection_archive---------4-----------------------#2023-08-28)
+> 原文：[`towardsdatascience.com/the-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213?source=collection_archive---------4-----------------------#2023-08-28`](https://towardsdatascience.com/the-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213?source=collection_archive---------4-----------------------#2023-08-28)
 
 ## 数据专业人士的技术面试帮助
 
-[](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)[![Andre Violante](../Images/0382695157126b7ed742649d348cae61.png)](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------) [Andre Violante](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)
+[](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)![Andre Violante](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------) [Andre Violante](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F54f2f2975136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&user=Andre+Violante&userId=54f2f2975136&source=post_page-54f2f2975136----51ad1699a213---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------) ·6 分钟阅读·2023年8月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51ad1699a213&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&user=Andre+Violante&userId=54f2f2975136&source=-----51ad1699a213---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F54f2f2975136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&user=Andre+Violante&userId=54f2f2975136&source=post_page-54f2f2975136----51ad1699a213---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------) ·6 分钟阅读·2023 年 8 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51ad1699a213&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&user=Andre+Violante&userId=54f2f2975136&source=-----51ad1699a213---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51ad1699a213&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&source=-----51ad1699a213---------------------bookmark_footer-----------)![](../Images/584c4b12a0d4da972d8f858eddd3f5f9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51ad1699a213&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&source=-----51ad1699a213---------------------bookmark_footer-----------)![](img/584c4b12a0d4da972d8f858eddd3f5f9.png)
 
 图片来源: [Arnold Francisa at Unsplash](https://unsplash.com/@clark_fransa)
 

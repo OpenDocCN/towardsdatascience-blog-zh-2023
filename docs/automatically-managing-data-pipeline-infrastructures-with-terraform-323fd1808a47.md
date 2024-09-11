@@ -1,24 +1,24 @@
 # 使用 Terraform 自动管理数据管道基础设施
 
-> 原文：[https://towardsdatascience.com/automatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47?source=collection_archive---------9-----------------------#2023-05-02](https://towardsdatascience.com/automatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47?source=collection_archive---------9-----------------------#2023-05-02)
+> 原文：[`towardsdatascience.com/automatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47?source=collection_archive---------9-----------------------#2023-05-02`](https://towardsdatascience.com/automatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47?source=collection_archive---------9-----------------------#2023-05-02)
 
 ## *我知道你去年夏天做的手动工作*
 
-[](https://joaopedro214.medium.com/?source=post_page-----323fd1808a47--------------------------------)[![João Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----323fd1808a47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----323fd1808a47--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----323fd1808a47--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----323fd1808a47--------------------------------)
+[](https://joaopedro214.medium.com/?source=post_page-----323fd1808a47--------------------------------)![João Pedro](https://joaopedro214.medium.com/?source=post_page-----323fd1808a47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----323fd1808a47--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----323fd1808a47--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----323fd1808a47--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----323fd1808a47---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----323fd1808a47--------------------------------) ·15 分钟阅读·2023年5月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F323fd1808a47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----323fd1808a47---------------------clap_footer-----------)
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----323fd1808a47---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----323fd1808a47--------------------------------) ·15 分钟阅读·2023 年 5 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F323fd1808a47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----323fd1808a47---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F323fd1808a47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47&source=-----323fd1808a47---------------------bookmark_footer-----------)![](../Images/62fc203322b755adb5210f9bf185c849.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F323fd1808a47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-managing-data-pipeline-infrastructures-with-terraform-323fd1808a47&source=-----323fd1808a47---------------------bookmark_footer-----------)![](img/62fc203322b755adb5210f9bf185c849.png)
 
 照片由 [EJ Yao](https://unsplash.com/fr/@hojipago?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 介绍
 
-几周前，我写了一篇关于 [使用本地和AWS工具开发数据管道](https://medium.com/towards-data-science/data-pipeline-with-airflow-and-aws-tools-s3-lambda-glue-18585d269761) 的文章。这篇文章是我最近努力推出更多云导向数据工程文章的一部分。
+几周前，我写了一篇关于 [使用本地和 AWS 工具开发数据管道](https://medium.com/towards-data-science/data-pipeline-with-airflow-and-aws-tools-s3-lambda-glue-18585d269761) 的文章。这篇文章是我最近努力推出更多云导向数据工程文章的一部分。
 
 然而，当我在脑海中回顾这篇文章时，我注意到一个大问题：**手动工作**。
 
@@ -28,7 +28,7 @@
 
 例如，您可以在浏览器上访问 AWS UI，搜索 S3 并手动创建一个新的存储桶，或者编写 Python 代码通过 AWS API 创建相同的实例。
 
-![image](../Images/556cd3cc054a57f1b8dce90fba077454.png)
+![image](img/556cd3cc054a57f1b8dce90fba077454.png)
 
 在前面提到的帖子中，我详细描述了如何通过 AWS Web 界面**手动**创建所需的组件的步骤。结果如何？即使尽可能简化（甚至省略部分内容！），帖子也耗时 17 分钟，比我通常所需的多了 7 分钟，充满了说明应访问哪个屏幕，点击哪里以及选择哪些设置的截图。
 
@@ -48,33 +48,33 @@ Terraform 通过调用云提供商的服务 API 将描述的资源实现。除�
 
 因此，可以更加敏捷和安全地管理项目的基础设施，因为它消除了配置每个单独资源所需的手动工作。
 
-Terraform的目标是成为一个与云平台无关的基础设施即代码（IaC）工具，因此它使用标准化的语言来调解与云提供商API的交互，从而不需要学习如何直接与它们交互。在这一点上，HCL语言还支持变量操作和一定程度的‘流控制’（条件语句和循环），允许在资源创建中使用条件和循环，例如，创建100个EC2实例。
+Terraform 的目标是成为一个与云平台无关的基础设施即代码（IaC）工具，因此它使用标准化的语言来调解与云提供商 API 的交互，从而不需要学习如何直接与它们交互。在这一点上，HCL 语言还支持变量操作和一定程度的‘流控制’（条件语句和循环），允许在资源创建中使用条件和循环，例如，创建 100 个 EC2 实例。
 
-最后但同样重要的是，Terraform还允许基础设施版本控制，因为它的纯文本文件可以被git轻松操作。
+最后但同样重要的是，Terraform 还允许基础设施版本控制，因为它的纯文本文件可以被 git 轻松操作。
 
 # 实施
 
 如前所述，本文旨在自动化我之前文章中的基础设施创建过程。
 
-![](../Images/9e4978df123ccfc0325b619453122674.png)
+![](img/9e4978df123ccfc0325b619453122674.png)
 
-总结一下，开发的项目旨在创建一个数据管道，从巴西的ENEM（国家高中考试，直译）测试中提取问题，使用MEC（教育部）[网站](https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos)上提供的PDF。
+总结一下，开发的项目旨在创建一个数据管道，从巴西的 ENEM（国家高中考试，直译）测试中提取问题，使用 MEC（教育部）[网站](https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos)上提供的 PDF。
 
-这个过程涉及三个步骤，由本地Airflow实例控制。这些步骤包括将PDF文件下载和上传到S3存储，通过Lambda函数从PDF中提取文本，以及使用Glue Job将提取的文本分割成问题。
+这个过程涉及三个步骤，由本地 Airflow 实例控制。这些步骤包括将 PDF 文件下载和上传到 S3 存储，通过 Lambda 函数从 PDF 中提取文本，以及使用 Glue Job 将提取的文本分割成问题。
 
-请注意，为了使这个管道正常工作，需要创建并正确配置许多AWS组件。
+请注意，为了使这个管道正常工作，需要创建并正确配置许多 AWS 组件。
 
 ## 0\. 设置环境
 
-本项目中使用的所有代码都可以在这个[GitHub仓库](https://github.com/jaumpedro214/posts)中找到。
+本项目中使用的所有代码都可以在这个[GitHub 仓库](https://github.com/jaumpedro214/posts)中找到。
 
-你需要一台安装了Docker的机器和一个AWS账户。
+你需要一台安装了 Docker 的机器和一个 AWS 账户。
 
-第一步是为Terraform配置一个新的AWS IAM用户，这将是唯一在AWS网页控制台中执行的步骤。
+第一步是为 Terraform 配置一个新的 AWS IAM 用户，这将是唯一在 AWS 网页控制台中执行的步骤。
 
-**创建一个对S3、Glue、Lambda和IAM具有完全访问权限的新IAM用户，并为其生成代码凭证。**
+**创建一个对 S3、Glue、Lambda 和 IAM 具有完全访问权限的新 IAM 用户，并为其生成代码凭证。**
 
-![](../Images/32738de4887661967fc6bd33ddd06e0e.png)
+![](img/32738de4887661967fc6bd33ddd06e0e.png)
 
 这是对一个用户来说大量的权限，所以请妥善保管凭证。
 
@@ -89,7 +89,7 @@ AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY_ID>
 AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_ACCESS_KEY>
 ```
 
-这些变量将传递给docker-compose文件供Terraform使用。
+这些变量将传递给 docker-compose 文件供 Terraform 使用。
 
 ```py
 version: '3'
@@ -106,13 +106,13 @@ services:
       - TF_VAR_AWS_DEFAULT_REGION=us-east-1
 ```
 
-## 1\. 创建Terraform文件
+## 1\. 创建 Terraform 文件
 
-在同一个文件夹中，创建一个名为**terraform**的新目录。在其中，创建一个新的文件**main.tf**，这将是我们的主要Terraform文件。
+在同一个文件夹中，创建一个名为**terraform**的新目录。在其中，创建一个新的文件**main.tf**，这将是我们的主要 Terraform 文件。
 
-当容器运行时，这个文件夹将被映射到容器内部，这样内部的Terraform就能看到这个文件。
+当容器运行时，这个文件夹将被映射到容器内部，这样内部的 Terraform 就能看到这个文件。
 
-## 2\. 配置AWS提供商
+## 2\. 配置 AWS 提供商
 
 我们需要做的第一件事是配置所使用的云提供商。
 
@@ -144,7 +144,7 @@ provider "aws" {
 }
 ```
 
-这就是一个Terraform配置文件的样子——一组具有不同类型的块，每个块都有特定的功能。
+这就是一个 Terraform 配置文件的样子——一组具有不同类型的块，每个块都有特定的功能。
 
 **terraform** 块固定了 Terraform 本身和 AWS 提供程序的版本。
 
@@ -196,7 +196,7 @@ docker compose run terraform plan
 
 Terraform 将比较当前的基础设施状态，并推断出需要做什么以实现 *main.tf* 文件中描述的期望状态。
 
-![](../Images/ae83b2fbae13c9abd3147dc8b37bfa58.png)
+![](img/ae83b2fbae13c9abd3147dc8b37bfa58.png)
 
 因为这个存储桶还不存在，所以 Terraform 会计划创建它。
 
@@ -206,11 +206,11 @@ Terraform 将比较当前的基础设施状态，并推断出需要做什么以�
 docker compose run terraform apply
 ```
 
-![](../Images/1d873cde7308f28ae0a43ff09f80950e.png)
+![](img/1d873cde7308f28ae0a43ff09f80950e.png)
 
 仅凭这几条命令，我们的存储桶已经创建好了。
 
-![](../Images/87b7aa95c4c7680037fd00ca21c7931e.png)
+![](img/87b7aa95c4c7680037fd00ca21c7931e.png)
 
 很简单，对吧？
 
@@ -220,7 +220,7 @@ docker compose run terraform apply
 docker compose run terraform destroy
 ```
 
-![](../Images/26f46fc9e91c4fd0764cf47b9e65bbe2.png)
+![](img/26f46fc9e91c4fd0764cf47b9e65bbe2.png)
 
 然后 Terraform 会处理其余的部分。
 
@@ -258,9 +258,9 @@ resource "aws_iam_role" "lambda_execution_role" {
 }
 ```
 
-在开发这些东西时，我强烈建议你首先在ChatGPT、GitHub Copilot或其他LLM朋友中询问你需要什么，然后查看提供商的文档，了解这种类型的资源如何工作。
+在开发这些东西时，我强烈建议你首先在 ChatGPT、GitHub Copilot 或其他 LLM 朋友中询问你需要什么，然后查看提供商的文档，了解这种类型的资源如何工作。
 
-上面的代码创建了一个新的IAM角色，并允许AWS Lambda函数假设它。下一步是将Lambda Basic Execution策略附加到该角色，以允许Lambda函数无错误地执行。
+上面的代码创建了一个新的 IAM 角色，并允许 AWS Lambda 函数假设它。下一步是将 Lambda Basic Execution 策略附加到该角色，以允许 Lambda 函数无错误地执行。
 
 ```py
 # ATTACH THE BASIC LAMBDA EXECUTION POLICY TO THE ROLE lambda_execution_role
@@ -274,11 +274,11 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 <*resource_type*>.<*resource_name*>.<*attribute>*
 
-如果你花时间查看资源的Terraform文档，你会注意到它有*arguments*和*attributes*。**Arguments**是你用来创建/配置新资源的参数，**attributes**是关于资源的只读属性，在资源创建后可用。
+如果你花时间查看资源的 Terraform 文档，你会注意到它有*arguments*和*attributes*。**Arguments**是你用来创建/配置新资源的参数，**attributes**是关于资源的只读属性，在资源创建后可用。
 
-因此，attributes被Terraform用来隐式管理资源之间的依赖关系，建立它们创建的适当顺序。
+因此，attributes 被 Terraform 用来隐式管理资源之间的依赖关系，建立它们创建的适当顺序。
 
-下面的代码为我们的S3桶创建一个新的访问策略，允许对其进行基本的CRUD操作。
+下面的代码为我们的 S3 桶创建一个新的访问策略，允许对其进行基本的 CRUD 操作。
 
 ```py
 # CREATE A NEW POLICY FOR THE LAMBDA FUNCTION TO ACCESS S3
@@ -307,9 +307,9 @@ resource "aws_iam_policy_attachment" "s3_access_attachment" {
 }
 ```
 
-同样，我们可以使用*aws_s3_bucket.enem-data-bucket.arn*引用这个属性，而不是硬编码桶的ARN。
+同样，我们可以使用*aws_s3_bucket.enem-data-bucket.arn*引用这个属性，而不是硬编码桶的 ARN。
 
-在正确配置Lambda角色之后，我们终于可以创建函数本身。
+在正确配置 Lambda 角色之后，我们终于可以创建函数本身。
 
 ```py
 # CREATE A NEW LAMBDA FUNCTION
@@ -322,9 +322,9 @@ resource "aws_lambda_function" "lambda_function" {
 }
 ```
 
-*lambda_function.zip*文件是一个压缩文件夹，其中必须包含一个*lambda_function.py*文件，文件内有一个*lambda_handler(event, context)*函数。它必须与main.tf文件在同一路径上。
+*lambda_function.zip*文件是一个压缩文件夹，其中必须包含一个*lambda_function.py*文件，文件内有一个*lambda_handler(event, context)*函数。它必须与 main.tf 文件在同一路径上。
 
-![](../Images/55218ad3da8f5fd729ad85c35abc6893.png)
+![](img/55218ad3da8f5fd729ad85c35abc6893.png)
 
 ```py
 # lambda_function.py
@@ -332,9 +332,9 @@ def lambda_handler(event, context):
     return "Hello from Lambda!"
 ```
 
-## 5\. 配置Lambda函数第II部分：附加触发器
+## 5\. 配置 Lambda 函数第 II 部分：附加触发器
 
-现在，我们需要为Lambda函数配置触发器：它必须在每次新PDF上传到桶时执行。
+现在，我们需要为 Lambda 函数配置触发器：它必须在每次新 PDF 上传到桶时执行。
 
 ```py
 # ADD A TRIGGER TO THE LAMBDA FUNCTION BASED ON S3 BUCKET CREATION EVENTS
@@ -365,17 +365,17 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 
 这可以通过使用*depends_on*参数轻松实现。
 
-我们已经完成了lambda函数的设置，只需运行：
+我们已经完成了 lambda 函数的设置，只需运行：
 
 ```py
 docker compose run terraform apply
 ```
 
-Lambda函数将被创建。
+Lambda 函数将被创建。
 
-![](../Images/e8fce41371bbdd862c956c35f59f362e.png)![](../Images/1f2ebfd3ddd742f95516c69670a8bcbb.png)
+![](img/e8fce41371bbdd862c956c35f59f362e.png)![](img/1f2ebfd3ddd742f95516c69670a8bcbb.png)
 
-## 6\. 向Glue作业添加模块
+## 6\. 向 Glue 作业添加模块
 
 我们的*main.tf*文件变得相当庞大，而且记住这只是一个简单的数据管道。为了增强组织性并减少其大小，我们可以使用**模块**的概念。
 
@@ -385,7 +385,7 @@ Lambda函数将被创建。
 
 在 ./*terraform* 文件夹中，创建一个名为 ‘*glue*’ 的新文件夹，其中包含一个 *glue.tf* 文件。
 
-![](../Images/3375413fdca889e5377830c6a4b95a74.png)
+![](img/3375413fdca889e5377830c6a4b95a74.png)
 
 然后在文件中添加一个新的 S3 存储桶资源：
 
@@ -413,17 +413,17 @@ docker compose run terraform init
 
 Terraform 将重新启动其后端并用它初始化模块。
 
-![](../Images/ee2d3d65250fa77aff8cd9899da16247.png)
+![](img/ee2d3d65250fa77aff8cd9899da16247.png)
 
 现在，如果我们运行 terraform plan，它应该将这个新的存储桶包含在创建列表中：
 
-![](../Images/92f1e71972ce18c1a8dfea2c35acfb96.png)
+![](img/92f1e71972ce18c1a8dfea2c35acfb96.png)
 
 使用这个 **模块**，我们可以将创建作业的所有逻辑封装在一个单独的外部文件中。
 
 AWS Glue 作业的一个要求是它们的作业文件存储在 S3 存储桶中，这就是为什么我们创建了“*enem-bucket-terraform-jobs*”。现在，我们必须上传作业文件本身。
 
-![](../Images/cb3a6357ab4ecd7c13ac4410833e8fa5.png)
+![](img/cb3a6357ab4ecd7c13ac4410833e8fa5.png)
 
 在 *terraform* 路径*，*我包含了一个 *myjob.py* 文件，这只是一个用于模拟此行为的空文件。要向存储桶上传新对象，只需使用“aws_s3_object”资源：
 
@@ -541,7 +541,7 @@ resource "aws_glue_job" "myjob" {
 docker compose run terraform apply
 ```
 
-![](../Images/8758e74ee515b58b4122caba119e4357.png)
+![](img/8758e74ee515b58b4122caba119e4357.png)
 
 并且 **terraform destroy** 来清除所有内容。
 
@@ -549,7 +549,7 @@ docker compose run terraform apply
 docker compose run terraform destroy
 ```
 
-![](../Images/14cc69bea1ee680d9227381852cf0921.png)
+![](img/14cc69bea1ee680d9227381852cf0921.png)
 
 # 结论
 
@@ -581,8 +581,8 @@ Terraform 解决了人们通常不太*激动*去思考的那种问题。在开�
 
 [2] *AWSLambdaBasicExecutionRole — AWS 管理策略*。[链接](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWSLambdaBasicExecutionRole.html)。
 
-[3] Brikman, Y. (2022年10月11日)。Terraform 技巧与窍门：循环、条件语句和陷阱。[*Medium*](https://blog.gruntwork.io/terraform-tips-tricks-loops-if-statements-and-gotchas-f739bbae55f9)*。*[4] *创建资源依赖关系 | Terraform | HashiCorp Developer*。[链接](https://developer.hashicorp.com/terraform/tutorials/configuration-language/dependencies)。
+[3] Brikman, Y. (2022 年 10 月 11 日)。Terraform 技巧与窍门：循环、条件语句和陷阱。[*Medium*](https://blog.gruntwork.io/terraform-tips-tricks-loops-if-statements-and-gotchas-f739bbae55f9)*。*[4] *创建资源依赖关系 | Terraform | HashiCorp Developer*。[链接](https://developer.hashicorp.com/terraform/tutorials/configuration-language/dependencies)。
 
-[5] TechWorld with Nana. (2020年7月4日)。*在15分钟内解释 Terraform | Terraform初学者教程* [视频]。[YouTube](https://www.youtube.com/watch?v=l5k1ai_GBDE)。
+[5] TechWorld with Nana. (2020 年 7 月 4 日)。*在 15 分钟内解释 Terraform | Terraform 初学者教程* [视频]。[YouTube](https://www.youtube.com/watch?v=l5k1ai_GBDE)。
 
 [6] *Terraform Registry*。AWS 提供者。 [Link](https://registry.terraform.io/providers/hashicorp/aws/latest)。

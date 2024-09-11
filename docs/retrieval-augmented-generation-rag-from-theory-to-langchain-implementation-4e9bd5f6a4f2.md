@@ -1,90 +1,90 @@
-# 检索增强生成（RAG）：从理论到LangChain实现
+# 检索增强生成（RAG）：从理论到 LangChain 实现
 
-> 原文：[https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2?source=collection_archive---------0-----------------------#2023-11-14](https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2?source=collection_archive---------0-----------------------#2023-11-14)
+> 原文：[`towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2?source=collection_archive---------0-----------------------#2023-11-14`](https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2?source=collection_archive---------0-----------------------#2023-11-14)
 
-## 从原始学术论文的理论到其在OpenAI、Weaviate和LangChain中的Python实现
+## 从原始学术论文的理论到其在 OpenAI、Weaviate 和 LangChain 中的 Python 实现
 
-[](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)[![Leonie Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)
+[](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)![Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----4e9bd5f6a4f2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------) ·7分钟阅读·Nov 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e9bd5f6a4f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----4e9bd5f6a4f2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----4e9bd5f6a4f2---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------) ·7 分钟阅读·Nov 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e9bd5f6a4f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----4e9bd5f6a4f2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e9bd5f6a4f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&source=-----4e9bd5f6a4f2---------------------bookmark_footer-----------)![](../Images/ac6c086f3ecee48e8c43eaf4439e8442.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e9bd5f6a4f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&source=-----4e9bd5f6a4f2---------------------bookmark_footer-----------)![](img/ac6c086f3ecee48e8c43eaf4439e8442.png)
 
 检索增强生成工作流程
 
-自意识到可以通过专有数据来强化大型语言模型（LLM）以来，关于如何最有效地弥合LLM的一般知识和您的专有数据之间差距的讨论已经进行了一些讨论。关于[微调与检索增强生成（RAG）哪个更适合此目的的讨论](/rag-vs-finetuning-which-is-the-best-tool-to-boost-your-llm-application-94654b1eaba7)已有很多辩论（剧透：两者都是）。
+自意识到可以通过专有数据来强化大型语言模型（LLM）以来，关于如何最有效地弥合 LLM 的一般知识和您的专有数据之间差距的讨论已经进行了一些讨论。关于微调与检索增强生成（RAG）哪个更适合此目的的讨论已有很多辩论（剧透：两者都是）。
 
-本文首先关注RAG的概念，并首先涵盖其理论。接着，展示如何使用[LangChain](https://www.langchain.com/)进行简单的RAG流水线编排，使用[OpenAI](https://openai.com/)语言模型和[Weaviate](https://weaviate.io/)向量数据库。
+本文首先关注 RAG 的概念，并首先涵盖其理论。接着，展示如何使用[LangChain](https://www.langchain.com/)进行简单的 RAG 流水线编排，使用[OpenAI](https://openai.com/)语言模型和[Weaviate](https://weaviate.io/)向量数据库。
 
 # 什么是检索增强生成
 
-检索增强生成（RAG）是向LLM提供来自外部知识源的额外信息的概念。这使它们能够生成更准确和上下文相关的答案，同时减少幻觉。
+检索增强生成（RAG）是向 LLM 提供来自外部知识源的额外信息的概念。这使它们能够生成更准确和上下文相关的答案，同时减少幻觉。
 
 ## 问题
 
-最先进的LLM是通过大量数据训练的，以实现存储在神经网络权重（参数化记忆）中的广泛的一般知识。然而，促使LLM生成需要其训练数据中未包含的知识的完成，例如更新的、专有的或特定领域的信息，可能导致事实错误（幻觉），如下截图所示：
+最先进的 LLM 是通过大量数据训练的，以实现存储在神经网络权重（参数化记忆）中的广泛的一般知识。然而，促使 LLM 生成需要其训练数据中未包含的知识的完成，例如更新的、专有的或特定领域的信息，可能导致事实错误（幻觉），如下截图所示：
 
-![](../Images/e4a0faeee6e536b3729d70d00f41a34c.png)
+![](img/e4a0faeee6e536b3729d70d00f41a34c.png)
 
-ChatGPT对问题“总统对贝里尔法官说了什么？”的回答
+ChatGPT 对问题“总统对贝里尔法官说了什么？”的回答
 
-因此，重要的是弥合LLM的一般知识与任何附加背景之间的差距，以帮助LLM生成更准确和上下文相关的完成，同时减少幻觉。
+因此，重要的是弥合 LLM 的一般知识与任何附加背景之间的差距，以帮助 LLM 生成更准确和上下文相关的完成，同时减少幻觉。
 
 ## 解决方案
 
 传统上，神经网络通过微调模型来适应特定领域或专有信息。虽然这种技术有效，但也计算密集、昂贵，并且需要技术专业知识，使其适应不断变化的信息变得不那么灵活。
 
-2020年，Lewis等人在论文[知识密集型自然语言处理任务的检索增强生成](https://arxiv.org/abs/2005.11401) [1]中提出了一种更灵活的技术，称为检索增强生成（RAG）。在这篇论文中，研究人员将生成模型与检索模块结合起来，以提供来自外部知识源的额外信息，这些信息可以更容易地更新。
+2020 年，Lewis 等人在论文[知识密集型自然语言处理任务的检索增强生成](https://arxiv.org/abs/2005.11401) [1]中提出了一种更灵活的技术，称为检索增强生成（RAG）。在这篇论文中，研究人员将生成模型与检索模块结合起来，以提供来自外部知识源的额外信息，这些信息可以更容易地更新。
 
-**简而言之，** RAG对LLM来说就像对人类开放书籍考试一样。在开放书籍考试中，学生被允许携带参考材料，例如教科书或笔记，他们可以用来查找相关信息来回答问题。开放书籍考试背后的思想是，考试侧重于学生的推理能力，而不是他们记忆特定信息的能力。
+**简而言之，** RAG 对 LLM 来说就像对人类开放书籍考试一样。在开放书籍考试中，学生被允许携带参考材料，例如教科书或笔记，他们可以用来查找相关信息来回答问题。开放书籍考试背后的思想是，考试侧重于学生的推理能力，而不是他们记忆特定信息的能力。
 
-类似地，事实知识与LLM的推理能力分离，并存储在可以轻松访问和更新的外部知识源中：
+类似地，事实知识与 LLM 的推理能力分离，并存储在可以轻松访问和更新的外部知识源中：
 
 +   **参数化知识：** 在训练期间学习，隐含存储在神经网络的权重中。
 
 +   **非参数化知识：** 存储在外部知识源中，例如向量数据库。
 
-（顺便说一句，这个天才比较不是我想出来的。据我所知，这个比较是[JJ在Kaggle - LLM科学考试竞赛期间首次提到的](https://www.kaggle.com/code/jjinho/open-book-llm-science-exam)。）
+（顺便说一句，这个天才比较不是我想出来的。据我所知，这个比较是[JJ 在 Kaggle - LLM 科学考试竞赛期间首次提到的](https://www.kaggle.com/code/jjinho/open-book-llm-science-exam)。）
 
 Vanilla RAG 工作流程如下所示：
 
-![](../Images/ac6c086f3ecee48e8c43eaf4439e8442.png)
+![](img/ac6c086f3ecee48e8c43eaf4439e8442.png)
 
 检索增强生成工作流程
 
-1.  **检索：** 使用用户查询从外部知识源中检索相关内容。为此，用户查询嵌入到与向量数据库中的额外上下文相同的向量空间中。这允许执行相似性搜索，并从向量数据库返回前k个最接近的数据对象。
+1.  **检索：** 使用用户查询从外部知识源中检索相关内容。为此，用户查询嵌入到与向量数据库中的额外上下文相同的向量空间中。这允许执行相似性搜索，并从向量数据库返回前 k 个最接近的数据对象。
 
 1.  **增强：** 用户查询和检索的额外内容被填充到提示模板中。
 
-1.  **生成：** 最后，将检索增强提示输入LLM。
+1.  **生成：** 最后，将检索增强提示输入 LLM。
 
-# 使用LangChain进行检索增强生成实现
+# 使用 LangChain 进行检索增强生成实现
 
-本节使用OpenAI LLM结合Weaviate向量数据库和OpenAI嵌入模型实现Python中的RAG管道。[LangChain](https://www.langchain.com/) 用于编排。
+本节使用 OpenAI LLM 结合 Weaviate 向量数据库和 OpenAI 嵌入模型实现 Python 中的 RAG 管道。[LangChain](https://www.langchain.com/) 用于编排。
 
-如果您对LangChain或Weaviate不熟悉，您可能希望查看以下两篇文章：
+如果您对 LangChain 或 Weaviate 不熟悉，您可能希望查看以下两篇文章：
 
-[](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c?source=post_page-----4e9bd5f6a4f2--------------------------------) [## 开始使用LangChain：构建LLM驱动应用程序的初学者指南
+[](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c?source=post_page-----4e9bd5f6a4f2--------------------------------) ## 开始使用 LangChain：构建 LLM 驱动应用程序的初学者指南
 
-### 用Python构建大型语言模型的LangChain教程
+### 用 Python 构建大型语言模型的 LangChain 教程
 
-towardsdatascience.com](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c?source=post_page-----4e9bd5f6a4f2--------------------------------) [](/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=post_page-----4e9bd5f6a4f2--------------------------------) [## 开始使用Weaviate：使用向量数据库进行搜索的初学者指南
+towardsdatascience.com [](/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=post_page-----4e9bd5f6a4f2--------------------------------) ## 开始使用 Weaviate：使用向量数据库进行搜索的初学者指南
 
-### 如何使用OpenAI和Python中的向量数据库进行语义搜索、问答和生成搜索
+### 如何使用 OpenAI 和 Python 中的向量数据库进行语义搜索、问答和生成搜索
 
-towardsdatascience.com](/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=post_page-----4e9bd5f6a4f2--------------------------------)
+towardsdatascience.com
 
 ## 先决条件
 
-确保您已安装所需的Python包：
+确保您已安装所需的 Python 包：
 
 +   `langchain` 用于编排
 
-+   `openai` 用于嵌入模型和LLM
++   `openai` 用于嵌入模型和 LLM
 
 +   `weaviate-client` 用于向量数据库
 
@@ -215,21 +215,21 @@ The president also mentioned that he nominated Judge Ketanji Brown Jackson as a 
 
 你可以在下面看到这个特定示例的 RAG 流程管道示意图：
 
-![](../Images/b939dd150f26bf0a9d0200a3748a64cb.png)
+![](img/b939dd150f26bf0a9d0200a3748a64cb.png)
 
 检索增强生成工作流
 
 # 总结
 
-本文介绍了RAG的概念，该概念在2020年的论文 [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) [1] 中提出。在介绍概念的理论背景、动机和问题解决方案后，本文使用Python实现了其内容。本文使用了一个 [OpenAI](https://openai.com/) LLM 结合一个 [Weaviate](https://weaviate.io/) 向量数据库和一个 [OpenAI](https://openai.com/) 嵌入模型实现了一个RAG流水线。使用 [LangChain](https://www.langchain.com/) 进行了编排。
+本文介绍了 RAG 的概念，该概念在 2020 年的论文 [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) [1] 中提出。在介绍概念的理论背景、动机和问题解决方案后，本文使用 Python 实现了其内容。本文使用了一个 [OpenAI](https://openai.com/) LLM 结合一个 [Weaviate](https://weaviate.io/) 向量数据库和一个 [OpenAI](https://openai.com/) 嵌入模型实现了一个 RAG 流水线。使用 [LangChain](https://www.langchain.com/) 进行了编排。
 
 # 喜欢这个故事吗？
 
 [*免费订阅*](https://medium.com/subscribe/@iamleonie) *以便在我发布新故事时收到通知。*
 
-[](https://medium.com/@iamleonie/subscribe?source=post_page-----4e9bd5f6a4f2--------------------------------) [## 每当Leonie Monigatti发布新文章时，收到邮件通知。
+[](https://medium.com/@iamleonie/subscribe?source=post_page-----4e9bd5f6a4f2--------------------------------) [## 每当 Leonie Monigatti 发布新文章时，收到邮件通知。
 
-### 每当Leonie Monigatti发布新文章时，收到邮件通知。通过注册，如果你还没有Medium账号…
+### 每当 Leonie Monigatti 发布新文章时，收到邮件通知。通过注册，如果你还没有 Medium 账号…
 
 [medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----4e9bd5f6a4f2--------------------------------)
 
@@ -237,7 +237,7 @@ The president also mentioned that he nominated Judge Ketanji Brown Jackson as a 
 
 # 免责声明
 
-在写这篇文章时，我是Weaviate的开发者倡导者。除了本文外，我还在 [LangChain文档中的Weaviate笔记本](https://python.langchain.com/docs/integrations/vectorstores/weaviate) 中添加了相同的示例。或者，你可以从 [LangChain的rag-weaviate模板](https://github.com/langchain-ai/langchain/tree/master/templates/rag-weaviate) 开始。
+在写这篇文章时，我是 Weaviate 的开发者倡导者。除了本文外，我还在 [LangChain 文档中的 Weaviate 笔记本](https://python.langchain.com/docs/integrations/vectorstores/weaviate) 中添加了相同的示例。或者，你可以从 [LangChain 的 rag-weaviate 模板](https://github.com/langchain-ai/langchain/tree/master/templates/rag-weaviate) 开始。
 
 # 参考文献
 

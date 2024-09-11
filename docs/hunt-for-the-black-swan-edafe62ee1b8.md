@@ -1,18 +1,18 @@
 # 寻找黑天鹅
 
-> 原文：[https://towardsdatascience.com/hunt-for-the-black-swan-edafe62ee1b8?source=collection_archive---------16-----------------------#2023-03-13](https://towardsdatascience.com/hunt-for-the-black-swan-edafe62ee1b8?source=collection_archive---------16-----------------------#2023-03-13)
+> 原文：[`towardsdatascience.com/hunt-for-the-black-swan-edafe62ee1b8?source=collection_archive---------16-----------------------#2023-03-13`](https://towardsdatascience.com/hunt-for-the-black-swan-edafe62ee1b8?source=collection_archive---------16-----------------------#2023-03-13)
 
 ## 为什么让你的模型失败是你能做的最好的事
 
-[](https://medium.com/@doriandrost?source=post_page-----edafe62ee1b8--------------------------------)[![Dorian Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----edafe62ee1b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----edafe62ee1b8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----edafe62ee1b8--------------------------------) [**Dorian Drost**](https://medium.com/@doriandrost?source=post_page-----edafe62ee1b8--------------------------------)
+[](https://medium.com/@doriandrost?source=post_page-----edafe62ee1b8--------------------------------)![Dorian Drost](https://medium.com/@doriandrost?source=post_page-----edafe62ee1b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----edafe62ee1b8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----edafe62ee1b8--------------------------------) [**Dorian Drost**](https://medium.com/@doriandrost?source=post_page-----edafe62ee1b8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhunt-for-the-black-swan-edafe62ee1b8&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----edafe62ee1b8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----edafe62ee1b8--------------------------------) ·6分钟阅读·2023年3月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fedafe62ee1b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhunt-for-the-black-swan-edafe62ee1b8&user=Dorian+Drost&userId=1d49ea537d1c&source=-----edafe62ee1b8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhunt-for-the-black-swan-edafe62ee1b8&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----edafe62ee1b8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----edafe62ee1b8--------------------------------) ·6 分钟阅读·2023 年 3 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fedafe62ee1b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhunt-for-the-black-swan-edafe62ee1b8&user=Dorian+Drost&userId=1d49ea537d1c&source=-----edafe62ee1b8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fedafe62ee1b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhunt-for-the-black-swan-edafe62ee1b8&source=-----edafe62ee1b8---------------------bookmark_footer-----------)![](../Images/4ca049f2899cb8e9b144a60ed8d9b5d4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fedafe62ee1b8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhunt-for-the-black-swan-edafe62ee1b8&source=-----edafe62ee1b8---------------------bookmark_footer-----------)![](img/4ca049f2899cb8e9b144a60ed8d9b5d4.png)
 
 [照片由**Michael Dziedzic**](https://unsplash.com/@lazycreekimages?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -42,7 +42,7 @@
 
 从正式的角度来看，如果我看到 N 只白天鹅，并推导出所有天鹅都是白色的，我进行的是逻辑*归纳*。然而，逻辑归纳有一个缺点：它是错误的。
 
-![](../Images/7e5a784823fff0f2548e7c2f6b8f6dfc.png)
+![](img/7e5a784823fff0f2548e7c2f6b8f6dfc.png)
 
 “→” 可以读作“意味着”，而“∧” 意味着“和”。
 
@@ -62,7 +62,7 @@
 
 然而，仍然有希望。虽然上述陈述是错误的，但以下内容是正确的：
 
-![](../Images/ac3ccf1dfa9bff90a38b9896770f0134.png)
+![](img/ac3ccf1dfa9bff90a38b9896770f0134.png)
 
 → 可以读作“暗示”，∧ 表示“和”，¬ 表示“非”。
 
@@ -92,11 +92,11 @@
 
 +   它还能检测你前年在印度拍摄的照片的地点吗？能。你从中学到了什么吗？没有。
 
-+   它也适用于你爷爷在50年代第一次去意大利旅行时拍的照片吗？不能。→ 也许数据缺少旧的黑白照片。
++   它也适用于你爷爷在 50 年代第一次去意大利旅行时拍的照片吗？不能。→ 也许数据缺少旧的黑白照片。
 
-一个新的酷炫机器人手臂非常灵活，可以以非常详细的方式控制，甚至可以在钢琴上演奏C大调音阶。
+一个新的酷炫机器人手臂非常灵活，可以以非常详细的方式控制，甚至可以在钢琴上演奏 C 大调音阶。
 
-+   它还能演奏F大调音阶吗？能。你从中学到了什么吗？没有。
++   它还能演奏 F 大调音阶吗？能。你从中学到了什么吗？没有。
 
 +   它还能演奏莫扎特的奏鸣曲吗？不能。→ 也许它的灵活性仍然有限，莫扎特的奏鸣曲对它来说太难了。
 
@@ -120,9 +120,9 @@
 
 对假设的否证和归纳问题的主要观点被浓缩在卡尔·波普尔的*批判性理性主义*科学理论中，这在大多数科学研究和统计的学术教材中都有介绍，例如：
 
-+   Dienes, Z. [Understanding psychology as a science: An introduction to scientific and statistical inference](https://link.springer.com/book/9780230542303)（第44页）。 （2008），纽约：Palgrave Macmillan。
++   Dienes, Z. [Understanding psychology as a science: An introduction to scientific and statistical inference](https://link.springer.com/book/9780230542303)（第 44 页）。 （2008），纽约：Palgrave Macmillan。
 
-对黑天鹅及许多相关概念进行真正深入的探讨（约2000页）：
+对黑天鹅及许多相关概念进行真正深入的探讨（约 2000 页）：
 
 +   Taleb, N. N. [Incerto (Deluxe Edition): Fooled by Randomness, the Black Swan, the Bed of Procrustes, Antifragile, Skin in the Game](https://www.google.de/books/edition/Incerto_Deluxe_Edition_Fooled_by_Randomn/yDiREAAAQBAJ?hl=de)。 （2019）美国：RANDOM HOUSE。
 

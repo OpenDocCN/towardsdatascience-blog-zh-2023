@@ -1,18 +1,18 @@
 # 如何在 Python PyOD 中执行多变量异常值检测以进行机器学习
 
-> 原文：[https://towardsdatascience.com/how-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c?source=collection_archive---------5-----------------------#2023-02-07](https://towardsdatascience.com/how-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c?source=collection_archive---------5-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/how-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c?source=collection_archive---------5-----------------------#2023-02-07`](https://towardsdatascience.com/how-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c?source=collection_archive---------5-----------------------#2023-02-07)
 
-## 异常值检测系列，第 3 部分
+## 异常值检测系列，第三部分
 
-[](https://ibexorigin.medium.com/?source=post_page-----b0a9c557a21c--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----b0a9c557a21c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0a9c557a21c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b0a9c557a21c--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----b0a9c557a21c--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----b0a9c557a21c--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----b0a9c557a21c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0a9c557a21c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0a9c557a21c--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----b0a9c557a21c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----b0a9c557a21c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0a9c557a21c--------------------------------) ·9 分钟阅读·2023年2月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0a9c557a21c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c&user=Bex+T.&userId=39db050c2ac2&source=-----b0a9c557a21c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39db050c2ac2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c&user=Bex+T.&userId=39db050c2ac2&source=post_page-39db050c2ac2----b0a9c557a21c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0a9c557a21c--------------------------------) ·9 分钟阅读·2023 年 2 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb0a9c557a21c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c&user=Bex+T.&userId=39db050c2ac2&source=-----b0a9c557a21c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0a9c557a21c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c&source=-----b0a9c557a21c---------------------bookmark_footer-----------)![](../Images/f1e3a4d96c11ab2134a5310a7737a0d8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0a9c557a21c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-perform-multivariate-outlier-detection-in-python-pyod-for-machine-learning-b0a9c557a21c&source=-----b0a9c557a21c---------------------bookmark_footer-----------)![](img/f1e3a4d96c11ab2134a5310a7737a0d8.png)
 
 图片由 [Takashi Miyazaki](https://unsplash.com/@miyatankun?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/backgrounds/art/abstract?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -20,7 +20,7 @@
 
 以下是一个*非常*可疑的箱线图：
 
-![](../Images/567acd70936349dc6af5c43bb04d9a66.png)
+![](img/567acd70936349dc6af5c43bb04d9a66.png)
 
 图片由作者提供。
 

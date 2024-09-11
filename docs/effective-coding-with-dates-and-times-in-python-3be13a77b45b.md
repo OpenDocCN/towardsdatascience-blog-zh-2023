@@ -1,24 +1,24 @@
 # 使用 Python 进行有效的日期和时间编码
 
-> 原文：[https://towardsdatascience.com/effective-coding-with-dates-and-times-in-python-3be13a77b45b?source=collection_archive---------5-----------------------#2023-08-26](https://towardsdatascience.com/effective-coding-with-dates-and-times-in-python-3be13a77b45b?source=collection_archive---------5-----------------------#2023-08-26)
+> 原文：[`towardsdatascience.com/effective-coding-with-dates-and-times-in-python-3be13a77b45b?source=collection_archive---------5-----------------------#2023-08-26`](https://towardsdatascience.com/effective-coding-with-dates-and-times-in-python-3be13a77b45b?source=collection_archive---------5-----------------------#2023-08-26)
 
-## 使用datetime、zoneinfo、dateutil 和 pandas
+## 使用 datetime、zoneinfo、dateutil 和 pandas
 
-[](https://aliciahorsch.medium.com/?source=post_page-----3be13a77b45b--------------------------------)[![Alicia Horsch](../Images/1e3c5dcafb062d0aa710934c6382cb32.png)](https://aliciahorsch.medium.com/?source=post_page-----3be13a77b45b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3be13a77b45b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3be13a77b45b--------------------------------) [Alicia Horsch](https://aliciahorsch.medium.com/?source=post_page-----3be13a77b45b--------------------------------)
+[](https://aliciahorsch.medium.com/?source=post_page-----3be13a77b45b--------------------------------)![Alicia Horsch](https://aliciahorsch.medium.com/?source=post_page-----3be13a77b45b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3be13a77b45b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3be13a77b45b--------------------------------) [Alicia Horsch](https://aliciahorsch.medium.com/?source=post_page-----3be13a77b45b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba4ebbd0afd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-coding-with-dates-and-times-in-python-3be13a77b45b&user=Alicia+Horsch&userId=ba4ebbd0afd2&source=post_page-ba4ebbd0afd2----3be13a77b45b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3be13a77b45b--------------------------------) ·5分钟阅读·2023年8月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3be13a77b45b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-coding-with-dates-and-times-in-python-3be13a77b45b&user=Alicia+Horsch&userId=ba4ebbd0afd2&source=-----3be13a77b45b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fba4ebbd0afd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-coding-with-dates-and-times-in-python-3be13a77b45b&user=Alicia+Horsch&userId=ba4ebbd0afd2&source=post_page-ba4ebbd0afd2----3be13a77b45b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3be13a77b45b--------------------------------) ·5 分钟阅读·2023 年 8 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3be13a77b45b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-coding-with-dates-and-times-in-python-3be13a77b45b&user=Alicia+Horsch&userId=ba4ebbd0afd2&source=-----3be13a77b45b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3be13a77b45b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-coding-with-dates-and-times-in-python-3be13a77b45b&source=-----3be13a77b45b---------------------bookmark_footer-----------)![](../Images/43a2f0db3816eb12fffff9e553ce47db.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3be13a77b45b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-coding-with-dates-and-times-in-python-3be13a77b45b&source=-----3be13a77b45b---------------------bookmark_footer-----------)![](img/43a2f0db3816eb12fffff9e553ce47db.png)
 
 图片由 [Jordan Benton](https://www.pexels.com/@bentonphotocinema/) 提供，来源于 [Pexels](https://www.pexels.com/photo/shallow-focus-of-clear-hourglass-1095601/)
 
-最近我一直在广泛处理时间序列数据，并且处理了Python中的日期和时间对象。为此，我学到了一些关于在Python中处理*datetime*对象的有用技巧，这些技巧简化了我的代码。在本文中，我将分享并总结我学到的最有价值的提示和技巧。
+最近我一直在广泛处理时间序列数据，并且处理了 Python 中的日期和时间对象。为此，我学到了一些关于在 Python 中处理*datetime*对象的有用技巧，这些技巧简化了我的代码。在本文中，我将分享并总结我学到的最有价值的提示和技巧。
 
-为了演示，我将使用两个Kaggle数据集，当我使用它们时会提供链接。如果你想跟着操作，可以导入以下库。
+为了演示，我将使用两个 Kaggle 数据集，当我使用它们时会提供链接。如果你想跟着操作，可以导入以下库。
 
 # 日期时间、zoneinfo、dateutil 和 pytz
 
@@ -108,7 +108,7 @@
 
 对于单一的 *datetime* 和 *pandas* Series，它们的工作方式稍有不同。虽然可以通过添加属性（例如，*.month*）或方法（例如，*weekday()*）直接访问单一 *datetime* 对象的星期几或月份，但 *pandas* Series 总是需要 *.dt* 访问器。
 
-> *dt. 访问器* *允许你从一个* datetime *Series中访问特定于日期时间的属性和方法。*
+> *dt. 访问器* *允许你从一个* datetime *Series 中访问特定于日期时间的属性和方法。*
 
 ## 创建日期/时间滞后
 
@@ -126,12 +126,12 @@
 
 +   Datacamp 课程：Python 中的日期和时间处理（2022）
 
-+   [https://dateutil.readthedocs.io/en/stable/](https://dateutil.readthedocs.io/en/stable/)
++   [`dateutil.readthedocs.io/en/stable/`](https://dateutil.readthedocs.io/en/stable/)
 
-+   [https://docs.python.org/3/library/datetime.html](https://docs.python.org/3/library/datetime.html)
++   [`docs.python.org/3/library/datetime.html`](https://docs.python.org/3/library/datetime.html)
 
-+   [https://docs.python.org/3/library/zoneinfo.html](https://docs.python.org/3/library/zoneinfo.html)
++   [`docs.python.org/3/library/zoneinfo.html`](https://docs.python.org/3/library/zoneinfo.html)
 
-+   [https://peps.python.org/pep-0615/](https://peps.python.org/pep-0615/)
++   [`peps.python.org/pep-0615/`](https://peps.python.org/pep-0615/)
 
-+   [https://github.com/stub42/pytz/blob/master/src/README.rst#issues--limitations](https://github.com/stub42/pytz/blob/master/src/README.rst#issues--limitations)
++   [`github.com/stub42/pytz/blob/master/src/README.rst#issues--limitations`](https://github.com/stub42/pytz/blob/master/src/README.rst#issues--limitations)

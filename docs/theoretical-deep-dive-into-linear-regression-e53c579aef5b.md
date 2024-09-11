@@ -1,20 +1,20 @@
 # 线性回归的理论深度探讨
 
-> 原文：[https://towardsdatascience.com/theoretical-deep-dive-into-linear-regression-e53c579aef5b?source=collection_archive---------1-----------------------#2023-06-23](https://towardsdatascience.com/theoretical-deep-dive-into-linear-regression-e53c579aef5b?source=collection_archive---------1-----------------------#2023-06-23)
+> 原文：[`towardsdatascience.com/theoretical-deep-dive-into-linear-regression-e53c579aef5b?source=collection_archive---------1-----------------------#2023-06-23`](https://towardsdatascience.com/theoretical-deep-dive-into-linear-regression-e53c579aef5b?source=collection_archive---------1-----------------------#2023-06-23)
 
 ## [可解释的人工智能](https://medium.com/tag/explainable-ai)
 
 ## 了解线性回归的本质以及如何以各种自然的方式扩展它
 
-[](https://dr-robert-kuebler.medium.com/?source=post_page-----e53c579aef5b--------------------------------)[![Dr. Robert Kübler](../Images/3b8d8b88f76c0c43d9c305e3885e7ab9.png)](https://dr-robert-kuebler.medium.com/?source=post_page-----e53c579aef5b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e53c579aef5b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e53c579aef5b--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----e53c579aef5b--------------------------------)
+[](https://dr-robert-kuebler.medium.com/?source=post_page-----e53c579aef5b--------------------------------)![Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----e53c579aef5b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e53c579aef5b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e53c579aef5b--------------------------------) [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----e53c579aef5b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftheoretical-deep-dive-into-linear-regression-e53c579aef5b&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----e53c579aef5b---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----e53c579aef5b--------------------------------) ·10分钟阅读·2023年6月23日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d6b5fb431bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftheoretical-deep-dive-into-linear-regression-e53c579aef5b&user=Dr.+Robert+K%C3%BCbler&userId=6d6b5fb431bf&source=post_page-6d6b5fb431bf----e53c579aef5b---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----e53c579aef5b--------------------------------) ·10 分钟阅读·2023 年 6 月 23 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe53c579aef5b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftheoretical-deep-dive-into-linear-regression-e53c579aef5b&source=-----e53c579aef5b---------------------bookmark_footer-----------)![](../Images/8b8ab36b31e37bf56824bc5f7b55d548.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe53c579aef5b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftheoretical-deep-dive-into-linear-regression-e53c579aef5b&source=-----e53c579aef5b---------------------bookmark_footer-----------)![](img/8b8ab36b31e37bf56824bc5f7b55d548.png)
 
 图片由[Erik van Dijk](https://unsplash.com/@erikvandijk?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

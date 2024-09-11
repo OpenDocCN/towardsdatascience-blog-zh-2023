@@ -1,10 +1,10 @@
 # 4 个解决特定任务高效的 Pandas 单行代码
 
-> 原文：[https://towardsdatascience.com/4-pandas-one-liners-that-surprised-me-in-a-good-way-b67955211f81?source=collection_archive---------1-----------------------#2023-11-23](https://towardsdatascience.com/4-pandas-one-liners-that-surprised-me-in-a-good-way-b67955211f81?source=collection_archive---------1-----------------------#2023-11-23)
+> 原文：[`towardsdatascience.com/4-pandas-one-liners-that-surprised-me-in-a-good-way-b67955211f81?source=collection_archive---------1-----------------------#2023-11-23`](https://towardsdatascience.com/4-pandas-one-liners-that-surprised-me-in-a-good-way-b67955211f81?source=collection_archive---------1-----------------------#2023-11-23)
 
 ## 以快速简便的方式完成复杂任务
 
-[](https://sonery.medium.com/?source=post_page-----b67955211f81--------------------------------)[![Soner Yıldırım](../Images/c589572e9d1ee176cd4f5a0008173f1b.png)](https://sonery.medium.com/?source=post_page-----b67955211f81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b67955211f81--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b67955211f81--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----b67955211f81--------------------------------)
+[](https://sonery.medium.com/?source=post_page-----b67955211f81--------------------------------)![Soner Yıldırım](https://sonery.medium.com/?source=post_page-----b67955211f81--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b67955211f81--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b67955211f81--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----b67955211f81--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb67955211f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-pandas-one-liners-that-surprised-me-in-a-good-way-b67955211f81&source=-----b67955211f81---------------------bookmark_footer-----------)![](../Images/5569fc0f11be8364c66846bfb0609968.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb67955211f81&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-pandas-one-liners-that-surprised-me-in-a-good-way-b67955211f81&source=-----b67955211f81---------------------bookmark_footer-----------)![](img/5569fc0f11be8364c66846bfb0609968.png)
 
 照片由[Tom Bradley](https://unsplash.com/@tomrootstudio?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)拍摄，来源于[Unsplash](https://unsplash.com/photos/brown-squirrel-on-green-grass-during-daytime-Z-ns9qAcvl4?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 

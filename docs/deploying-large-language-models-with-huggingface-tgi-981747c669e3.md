@@ -1,18 +1,18 @@
 # 使用 HuggingFace TGI 部署大型语言模型
 
-> 原文：[https://towardsdatascience.com/deploying-large-language-models-with-huggingface-tgi-981747c669e3?source=collection_archive---------3-----------------------#2023-07-14](https://towardsdatascience.com/deploying-large-language-models-with-huggingface-tgi-981747c669e3?source=collection_archive---------3-----------------------#2023-07-14)
+> 原文：[`towardsdatascience.com/deploying-large-language-models-with-huggingface-tgi-981747c669e3?source=collection_archive---------3-----------------------#2023-07-14`](https://towardsdatascience.com/deploying-large-language-models-with-huggingface-tgi-981747c669e3?source=collection_archive---------3-----------------------#2023-07-14)
 
 ## 使用 Amazon SageMaker 高效托管和扩展您的 LLMs
 
-[](https://ram-vegiraju.medium.com/?source=post_page-----981747c669e3--------------------------------)[![Ram Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----981747c669e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----981747c669e3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----981747c669e3--------------------------------) [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----981747c669e3--------------------------------)
+[](https://ram-vegiraju.medium.com/?source=post_page-----981747c669e3--------------------------------)![Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----981747c669e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----981747c669e3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----981747c669e3--------------------------------) [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----981747c669e3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e49569edd2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-large-language-models-with-huggingface-tgi-981747c669e3&user=Ram+Vegiraju&userId=6e49569edd2b&source=post_page-6e49569edd2b----981747c669e3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----981747c669e3--------------------------------) · 5分钟阅读 · 2023年7月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F981747c669e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-large-language-models-with-huggingface-tgi-981747c669e3&user=Ram+Vegiraju&userId=6e49569edd2b&source=-----981747c669e3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e49569edd2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-large-language-models-with-huggingface-tgi-981747c669e3&user=Ram+Vegiraju&userId=6e49569edd2b&source=post_page-6e49569edd2b----981747c669e3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----981747c669e3--------------------------------) · 5 分钟阅读 · 2023 年 7 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F981747c669e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-large-language-models-with-huggingface-tgi-981747c669e3&user=Ram+Vegiraju&userId=6e49569edd2b&source=-----981747c669e3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F981747c669e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-large-language-models-with-huggingface-tgi-981747c669e3&source=-----981747c669e3---------------------bookmark_footer-----------)![](../Images/87080a29c8a17cddf9ed8b4ece860f12.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F981747c669e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-large-language-models-with-huggingface-tgi-981747c669e3&source=-----981747c669e3---------------------bookmark_footer-----------)![](img/87080a29c8a17cddf9ed8b4ece860f12.png)
 
 图片来自 [Unsplash](https://unsplash.com/photos/4NYtYSiZVlA)
 

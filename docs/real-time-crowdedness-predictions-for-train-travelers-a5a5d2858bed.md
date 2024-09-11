@@ -1,14 +1,14 @@
 # 实时火车乘客拥挤度预测
 
-> 原文：[https://towardsdatascience.com/real-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed?source=collection_archive---------6-----------------------#2023-07-07](https://towardsdatascience.com/real-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed?source=collection_archive---------6-----------------------#2023-07-07)
+> 原文：[`towardsdatascience.com/real-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed?source=collection_archive---------6-----------------------#2023-07-07`](https://towardsdatascience.com/real-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed?source=collection_archive---------6-----------------------#2023-07-07)
 
 ## 使用无服务器的 Azure 技术为我们的旅行规划应用提供流式预测
 
-[](https://rikjongerius.medium.com/?source=post_page-----a5a5d2858bed--------------------------------)[![Rik Jongerius](../Images/8a5d60736fe5693d633bcfff78ebca71.png)](https://rikjongerius.medium.com/?source=post_page-----a5a5d2858bed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5a5d2858bed--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5a5d2858bed--------------------------------) [Rik Jongerius](https://rikjongerius.medium.com/?source=post_page-----a5a5d2858bed--------------------------------)
+[](https://rikjongerius.medium.com/?source=post_page-----a5a5d2858bed--------------------------------)![Rik Jongerius](https://rikjongerius.medium.com/?source=post_page-----a5a5d2858bed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5a5d2858bed--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5a5d2858bed--------------------------------) [Rik Jongerius](https://rikjongerius.medium.com/?source=post_page-----a5a5d2858bed--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d3b69256f17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed&user=Rik+Jongerius&userId=8d3b69256f17&source=post_page-8d3b69256f17----a5a5d2858bed---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5a5d2858bed--------------------------------) ·11 分钟阅读·2023年7月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa5a5d2858bed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed&user=Rik+Jongerius&userId=8d3b69256f17&source=-----a5a5d2858bed---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d3b69256f17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed&user=Rik+Jongerius&userId=8d3b69256f17&source=post_page-8d3b69256f17----a5a5d2858bed---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5a5d2858bed--------------------------------) ·11 分钟阅读·2023 年 7 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa5a5d2858bed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-crowdedness-predictions-for-train-travelers-a5a5d2858bed&user=Rik+Jongerius&userId=8d3b69256f17&source=-----a5a5d2858bed---------------------clap_footer-----------)
 
 --
 
@@ -16,13 +16,13 @@
 
 与 [Wessel Radstok](https://medium.com/@wradstok)
 
-![](../Images/467683cd95344dc3cf7146719c2aeb44.png)
+![](img/467683cd95344dc3cf7146719c2aeb44.png)
 
 [图像来源：vecstock](https://www.freepik.com/free-photo/transportation-speed-blurred-railroad-track-generative-ai_40965146.htm#query=train&position=4&from_view=search&track=sph) 于 Freepik
 
 荷兰铁路公司（Dutch Railways）的旅行者可以使用荷兰铁路公司提供的应用程序来规划他们的行程。在规划行程时，应用程序会显示相关火车的拥挤程度预测。这被分为三个类别：低占用、中等或高。旅行者可以使用这些信息来决定是否要乘坐其他可能稍微不那么拥挤的火车。
 
-![](../Images/508c238b1404e1ff56b17a500e9ca36b.png)
+![](img/508c238b1404e1ff56b17a500e9ca36b.png)
 
 *图 1：带有预测乘客拥挤程度的旅行应用（使用 1、2 或 3 人表示）。图像由作者提供。*
 
@@ -32,7 +32,7 @@
 
 在这篇博客中，我们解释了如何构建一个流式处理管道，该管道接收有关计划线路的火车长度和类型的实时信息，并更新应用程序中的预期拥挤程度。我们遵循 Lambda 架构，其中我们的夜间预测实现了批处理层，而更新过程实现了流处理层。该管道目前在生产环境中运行，为使用我们应用程序的荷兰所有火车旅行者提供更实时的预期拥挤程度视图。
 
-![](../Images/7544de84e23e133d03816dc61c778d9f.png)
+![](img/7544de84e23e133d03816dc61c778d9f.png)
 
 *图 2：使用 Lambda 架构的应用程序架构简化视图。图像由 draw.io 创建。*
 
@@ -50,9 +50,9 @@
 
 此外，我们不得不将算法拆分成多个步骤，因为模型的不同部分有不同的时间限制，而这些限制无法在一个单一的结构化流作业中实现。我们选择将模型拆分成几个部分，使用 Azure Event Hubs 作为持久存储层将它们连接起来。这种方法的好处是处理的每一部分都有明确的目标，并且可以单独测试。
 
-![](../Images/77164311ef064682032c62d8031a61d4.png)
+![](img/77164311ef064682032c62d8031a61d4.png)
 
-*图3：使用 Spark Structured Streaming 处理列车容量更新的流处理概述。图像使用 draw.io 创建。*
+*图 3：使用 Spark Structured Streaming 处理列车容量更新的流处理概述。图像使用 draw.io 创建。*
 
 我们用两种方式测试了我们的流程。对于单元测试，我们会简单地使用手工制作的批量 Spark SQL DataFrames 来测试流逻辑。这意味着我们可以测试流动流程的部分而无需实际启动流作业。这种方法捕获了许多功能需求，但无法捕获任何时间问题。第二步测试使用了 Spark Structured Streaming 内存接收器，以流模式运行查询来捕获一些时间效应。
 
@@ -64,7 +64,7 @@
 
 注意到流程中的许多部分不需要状态，我们选择了一个使用 Azure Functions 作为计算平台的系统，以便每条消息可以单独处理。需要状态的地方我们使用 Stream Analytics。这使我们能够比较消息、重放消息或将其与另一个流连接。为了快速访问辅助数据，我们使用 Cosmos 数据库。我们仍然使用 Azure Event Hubs 将所有部分连接在一起。
 
-![](../Images/3410471c9905e65088de9140f4005f2a.png)
+![](img/3410471c9905e65088de9140f4005f2a.png)
 
 *图 4：使用无服务器技术的最终架构。图像使用 draw.io 创建。*
 
@@ -148,7 +148,7 @@ FROM
 
 从项目的初始提交开始，我们决定对流处理流执行自动化端到端集成测试。这种测试的形式是用我们生成的示例消息对入口 Event Hubs 进行种子填充，然后验证在输出 Event Hubs 上创建的消息。我们还将 Cosmos 数据库摄取包含在这个集成测试流程中。将这些测试作为我们持续部署的一部分，让我们在更改时充满信心，因为流中的组件数量增加，并且复杂性也随之增加。
 
-![](../Images/862c9e638336e2c6445752a5a0b1d962.png)
+![](img/862c9e638336e2c6445752a5a0b1d962.png)
 
 *图 5：用于集成测试流的 CI/CD 流程步骤概述。如果需要，我们会删除早期测试中的任何遗留数据，上传新数据并启动三个数据源的数据摄取功能。然后，我们向 Event Hub 提供事件消息，并检查它们是否正确地从另一端输出。最后，我们对 Cosmos 数据库摄取进行额外检查。图片由作者提供。*
 

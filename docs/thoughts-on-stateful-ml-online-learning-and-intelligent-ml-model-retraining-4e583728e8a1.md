@@ -1,22 +1,22 @@
 # 关于状态保持机器学习、在线学习和智能机器学习模型再训练的思考
 
-> 原文：[https://towardsdatascience.com/thoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1?source=collection_archive---------14-----------------------#2023-04-05](https://towardsdatascience.com/thoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1?source=collection_archive---------14-----------------------#2023-04-05)
+> 原文：[`towardsdatascience.com/thoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1?source=collection_archive---------14-----------------------#2023-04-05`](https://towardsdatascience.com/thoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1?source=collection_archive---------14-----------------------#2023-04-05)
 
 ## 设计可扩展的在线和离线持续学习系统架构
 
-[](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)[![Kyle Gallatin](../Images/ee2796ba575412e9caf6034a65d741e5.png)](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------) [Kyle Gallatin](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)
+[](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)![Kyle Gallatin](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------) [Kyle Gallatin](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F51ff4b76ebf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=post_page-51ff4b76ebf4----4e583728e8a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------) ·6 min read·2023年4月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e583728e8a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=-----4e583728e8a1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F51ff4b76ebf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=post_page-51ff4b76ebf4----4e583728e8a1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------) ·6 min read·2023 年 4 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e583728e8a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=-----4e583728e8a1---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e583728e8a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&source=-----4e583728e8a1---------------------bookmark_footer-----------)
 
-自从我读了Chip Huyen的[*实时机器学习：挑战与解决方案*](https://huyenchip.com/2022/01/02/real-time-machine-learning-challenges-and-solutions.html)后，我一直在思考生产环境中机器学习的未来。短反馈循环、实时特性以及能够在线学习的状态保持机器学习模型部署需要一种与我今天所用的无状态机器学习模型部署截然不同的系统架构。
+自从我读了 Chip Huyen 的[*实时机器学习：挑战与解决方案*](https://huyenchip.com/2022/01/02/real-time-machine-learning-challenges-and-solutions.html)后，我一直在思考生产环境中机器学习的未来。短反馈循环、实时特性以及能够在线学习的状态保持机器学习模型部署需要一种与我今天所用的无状态机器学习模型部署截然不同的系统架构。
 
-![](../Images/cb765555b528f3298223d7073c4cf1b4.png)
+![](img/cb765555b528f3298223d7073c4cf1b4.png)
 
 我在墨西哥科苏梅尔思考有状态的机器学习——图片来自作者
 
@@ -32,7 +32,7 @@
 
 +   更频繁地更新模型
 
-![](../Images/32dadd54d68b8ab84e7e751df71e43a8.png)
+![](img/32dadd54d68b8ab84e7e751df71e43a8.png)
 
 无状态与有状态的再训练——来自[Chip Huyen](https://huyenchip.com/2022/01/02/real-time-machine-learning-challenges-and-solutions.html)的许可
 
@@ -48,29 +48,29 @@
 
 +   降低成本而不牺牲性能
 
-目前，大多数行业中的模型都是使用DAG按照时间表再训练的。
+目前，大多数行业中的模型都是使用 DAG 按照时间表再训练的。
 
-![](../Images/5da4771588b8116ac934298acf5fe48e.png)
+![](img/5da4771588b8116ac934298acf5fe48e.png)
 
-来自[自动模型再训练指南](https://arize.com/resource/a-guide-to-optimizing-automated-model-retraining/?utm_campaign=Newsletter+-+DRIFT&utm_medium=email&_hsmi=252645972&_hsenc=p2ANqtz-_--qVbD_z1d-GRI1rSslPJDb1J6jevmfkOcQTOkQ3IwCJME58-WrfDPvra_rpfXHrDv_BIXyJmcTrtSiIRQvVn4DKr7Q&utm_content=252645972&utm_source=hs_email)的智能再训练架构——由Arize AI授权
+来自[自动模型再训练指南](https://arize.com/resource/a-guide-to-optimizing-automated-model-retraining/?utm_campaign=Newsletter+-+DRIFT&utm_medium=email&_hsmi=252645972&_hsenc=p2ANqtz-_--qVbD_z1d-GRI1rSslPJDb1J6jevmfkOcQTOkQ3IwCJME58-WrfDPvra_rpfXHrDv_BIXyJmcTrtSiIRQvVn4DKr7Q&utm_content=252645972&utm_source=hs_email)的智能再训练架构——由 Arize AI 授权
 
-# 为在线学习设计MVP
+# 为在线学习设计 MVP
 
-在[上一篇文章](/building-a-lil-stateful-ml-application-for-online-learning-66624d62afae?sk=cd01b0115ea189cf7abdc295c35f4d43)中，我尝试运用基础工程原理来创建一个极其简单的在线学习架构。我的第一个想法是——将有状态的在线学习架构建模为有状态的网页应用程序。通过将“模型”视作数据库（其中预测为读取，增量训练会话为写入），我认为可以简化设计过程。
+在上一篇文章中，我尝试运用基础工程原理来创建一个极其简单的在线学习架构。我的第一个想法是——将有状态的在线学习架构建模为有状态的网页应用程序。通过将“模型”视作数据库（其中预测为读取，增量训练会话为写入），我认为可以简化设计过程。
 
-![](../Images/8b4f9d6bf80e4313dad2071275aa7c3b.png)
+![](img/8b4f9d6bf80e4313dad2071275aa7c3b.png)
 
 图片来自作者
 
 在某种程度上，我确实做到了！通过使用在线学习库[River](https://riverml.xyz/0.15.0/)，我[构建了一个小型有状态的在线学习应用](https://github.com/kylegallatin/stateful-ml-app)，这让我能够*实时*更新模型并提供预测。
 
-![](../Images/8aa2c88281674d66b569ccfba1569df2.png)
+![](img/8aa2c88281674d66b569ccfba1569df2.png)
 
-Flask应用程序在多个工作进程之间共享内存中的模型——图片来自作者
+Flask 应用程序在多个工作进程之间共享内存中的模型——图片来自作者
 
 这种方法在编码时很酷很有趣——但在规模上存在一些根本性的问题：
 
-1.  **无法横向扩展：** 我们可以轻松地在单个应用程序的内存中共享一个模型——但这种方法在像Kubernetes这样的编排引擎中无法扩展到多个pod。
+1.  **无法横向扩展：** 我们可以轻松地在单个应用程序的内存中共享一个模型——但这种方法在像 Kubernetes 这样的编排引擎中无法扩展到多个 pod。
 
 1.  **混合应用职责：** 我不知道（也不想成为第一个知道）关于尝试支持一个混合训练和服务的部署的注意事项。
 
@@ -82,13 +82,13 @@ Flask应用程序在多个工作进程之间共享内存中的模型——图片
 
 所以——我想尝试在实时模型服务部署的背景下思考这个问题，结果想出了最傻的架构。
 
-![](../Images/d812ed7402ef09badbf527beb4e9bba6.png)
+![](img/d812ed7402ef09badbf527beb4e9bba6.png)
 
 一种没有意义的架构——作者提供的图片
 
 分布式模型训练旨在加快训练过程。然而，在这种情况下，没有必要以分布式方式进行训练*和*服务——保持训练去中心化会引入复杂性，并且在在线训练系统中没有实际用途。完全分开训练更有意义。
 
-![](../Images/5970ff10b7470e23e06e1428d352d154.png)
+![](img/5970ff10b7470e23e06e1428d352d154.png)
 
 一种稍微有意义的架构——作者提供的图片
 
@@ -104,7 +104,7 @@ Flask应用程序在多个工作进程之间共享内存中的模型——图片
 
 让我们从一个更简单的离线场景开始——我想使用某种机器学习可观察性系统，根据性能指标的退化自动再训练模型。在进行持续训练（且模型权重更新不会花费太长时间）的场景下，这在不显著影响业务的情况下是可行的。
 
-![](../Images/69c2c535406ca8e5372514fe2decfad2.png)
+![](img/69c2c535406ca8e5372514fe2decfad2.png)
 
 智能再训练和持续*在线*学习——作者提供的图片
 
@@ -112,7 +112,7 @@ Flask应用程序在多个工作进程之间共享内存中的模型——图片
 
 然而，这种架构有一个大问题……它远没有那么有趣！什么样的系统能兼具在线学习的所有反应性、连续学习的成本节约和在线学习的弹性呢？希望，像这样……
 
-![](../Images/559693798798de7e56dc5406c2beef80.png)
+![](img/559693798798de7e56dc5406c2beef80.png)
 
 连续的在线学习 — 作者提供的图像
 

@@ -1,14 +1,14 @@
 # Polars: Pandas DataFrame 但更快
 
-> 原文：[https://towardsdatascience.com/pandas-dataframe-but-much-faster-f475d6be4cd4?source=collection_archive---------1-----------------------#2023-01-03](https://towardsdatascience.com/pandas-dataframe-but-much-faster-f475d6be4cd4?source=collection_archive---------1-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/pandas-dataframe-but-much-faster-f475d6be4cd4?source=collection_archive---------1-----------------------#2023-01-03`](https://towardsdatascience.com/pandas-dataframe-but-much-faster-f475d6be4cd4?source=collection_archive---------1-----------------------#2023-01-03)
 
 ## 执行多线程优化的 pandas 操作
 
-[](https://travis-tang.medium.com/?source=post_page-----f475d6be4cd4--------------------------------)[![Travis Tang](../Images/8372ea73b8cf8fe344de6274b5d9ad17.png)](https://travis-tang.medium.com/?source=post_page-----f475d6be4cd4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f475d6be4cd4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f475d6be4cd4--------------------------------) [Travis Tang](https://travis-tang.medium.com/?source=post_page-----f475d6be4cd4--------------------------------)
+[](https://travis-tang.medium.com/?source=post_page-----f475d6be4cd4--------------------------------)![Travis Tang](https://travis-tang.medium.com/?source=post_page-----f475d6be4cd4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f475d6be4cd4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f475d6be4cd4--------------------------------) [Travis Tang](https://travis-tang.medium.com/?source=post_page-----f475d6be4cd4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F169b6a57c01e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-dataframe-but-much-faster-f475d6be4cd4&user=Travis+Tang&userId=169b6a57c01e&source=post_page-169b6a57c01e----f475d6be4cd4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f475d6be4cd4--------------------------------) ·11 min 阅读·2023年1月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff475d6be4cd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-dataframe-but-much-faster-f475d6be4cd4&user=Travis+Tang&userId=169b6a57c01e&source=-----f475d6be4cd4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F169b6a57c01e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-dataframe-but-much-faster-f475d6be4cd4&user=Travis+Tang&userId=169b6a57c01e&source=post_page-169b6a57c01e----f475d6be4cd4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f475d6be4cd4--------------------------------) ·11 min 阅读·2023 年 1 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff475d6be4cd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpandas-dataframe-but-much-faster-f475d6be4cd4&user=Travis+Tang&userId=169b6a57c01e&source=-----f475d6be4cd4---------------------clap_footer-----------)
 
 --
 
@@ -20,7 +20,7 @@
 
 今天，我们来看看 **Polars**。
 
-![](../Images/de7dd964e7660bc5a6a894d8a12a9287.png)
+![](img/de7dd964e7660bc5a6a894d8a12a9287.png)
 
 Polars 非常快。图片由 Midjourney 提供。
 
@@ -32,7 +32,7 @@ Polars 非常快。图片由 Midjourney 提供。
 
 [一个基准测试](https://www.pola.rs/benchmarks.html)将 Polars 与其替代品进行对比，任务是读取数据并执行各种分析任务。Polars 的表现始终优于其他库。
 
-![](../Images/9b4ff6583ed81a21191c77079902fc21.png)
+![](img/9b4ff6583ed81a21191c77079902fc21.png)
 
 数值越低，速度越快。*请注意，基准测试是由 Polars 发布的，因此可能存在一些偏见。* ([Source](https://github.com/pola-rs/tpch))
 
@@ -40,7 +40,7 @@ Polars 非常快。图片由 Midjourney 提供。
 
 Polars 再次证明了其优势。
 
-![](../Images/db0b84918d6179cda3b8e18850b422ab.png)
+![](img/db0b84918d6179cda3b8e18850b422ab.png)
 
 根据 H2O 的基准测试，Polars 非常快速。 [Source](https://h2oai.github.io/db-benchmark/)
 
@@ -60,7 +60,7 @@ Polars 比那些尝试使用 Python 实现并发的库（如 Pandas）要快得�
 
 Python 在实现并发方面表现不佳的原因是它使用了 [*全局解释器锁 (GIL)*](https://realpython.com/python-gil/)，而 Rust 中没有这一特性。GIL 是一个锁，只允许一个线程控制 *Python 解释器*。
 
-![](../Images/d3cc9e33c004f8919a910889be3068c9.png)
+![](img/d3cc9e33c004f8919a910889be3068c9.png)
 
 Python 比 Rust 慢的原因。照片由 [FLY:D](https://unsplash.com/es/@flyd2069?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -94,7 +94,7 @@ pip install polars[all]
 
 > 纽约市财政部收集有关每张纽约市停车票的数据（每年约 1000 万张！）。
 
-![](../Images/b31411c12e785a746ff8ba1245cb78f8.png)
+![](img/b31411c12e785a746ff8ba1245cb78f8.png)
 
 纽约市停车。照片由 [Scott Gummerson](https://unsplash.com/@scottgummerson26?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -185,11 +185,11 @@ result_df.collect()
 
 ## 过滤精确值（非常慢的方法）
 
-你也可以**使用索引选择行**，这对pandas用户来说是熟悉的选择数据方式。
+你也可以**使用索引选择行**，这对 pandas 用户来说是熟悉的选择数据方式。
 
-为此，你不能使用惰性读取CSV的`scan_csv`函数。相反，你应该选择急切读取CSV的`open_csv`函数。
+为此，你不能使用惰性读取 CSV 的`scan_csv`函数。相反，你应该选择急切读取 CSV 的`open_csv`函数。
 
-请注意，这**是一种反模式**，因为它不允许Polars进行并行化。
+请注意，这**是一种反模式**，因为它不允许 Polars 进行并行化。
 
 ```py
 # Eagerly read in 9 million rows and 51 columns.
@@ -206,7 +206,7 @@ result_df = temp_df[['Registration State']=="NY"]
 
 ## 惰性选择列
 
-你可以使用`select`关键字选择列。请注意，这里的语法已经不同于常规的pandas语法。
+你可以使用`select`关键字选择列。请注意，这里的语法已经不同于常规的 pandas 语法。
 
 ```py
 # Lazily read (scan) in 9 million rows and 51 columns.
@@ -236,11 +236,11 @@ result_df = temp_df['Plate ID']
 # Time taken: 12.8 s ± 304 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
 
-让我们比较惰性执行和急切执行的速度。惰性执行需要1.59秒，而急切执行需要12.8秒。7倍的速度提升是因为Polars在惰性执行中*仅*读取“Plate ID”列，而在急切执行中需要读取**所有**列（不仅仅是“Plate ID”）。
+让我们比较惰性执行和急切执行的速度。惰性执行需要 1.59 秒，而急切执行需要 12.8 秒。7 倍的速度提升是因为 Polars 在惰性执行中*仅*读取“Plate ID”列，而在急切执行中需要读取**所有**列（不仅仅是“Plate ID”）。
 
 # 创建新列
 
-要创建一个新列，Polars使用`with_columns`语法。
+要创建一个新列，Polars 使用`with_columns`语法。
 
 ## 使用字符串函数创建列
 
@@ -260,7 +260,7 @@ result_df.collect()
 # Time taken: 14.8 s ± 5.79 s per loop
 ```
 
-## 使用lambda函数创建列
+## 使用 lambda 函数创建列
 
 可以在`map`函数中指定`lambda`函数，以指定应用于特定列的函数。然后，我们可以使用函数的结果创建一个新列。
 
@@ -309,7 +309,7 @@ result_df
 
 # 组合多个函数
 
-数据科学家经常需要同时执行多个步骤。我们可以使用Polars中的`.`表示法来实现。
+数据科学家经常需要同时执行多个步骤。我们可以使用 Polars 中的`.`表示法来实现。
 
 在以下示例中，我们首先使用`with_column`将`Issue Date`列从`string`列替换为`datetime`列。
 
@@ -397,17 +397,17 @@ shape: (2, 3)
 └─────┴──────┴──────┘
 ```
 
-# 它与Vaex有何不同？
+# 它与 Vaex 有何不同？
 
-我早期写了一篇关于Vaex的帖子，并收到许多关于Vaex和Polars是否不同的评论。以下是我的一些观察。
+我早期写了一篇关于 Vaex 的帖子，并收到许多关于 Vaex 和 Polars 是否不同的评论。以下是我的一些观察。
 
-1.  Vaex的语法更类似于Pandas；Polar的语法更类似于R或PySpark。
+1.  Vaex 的语法更类似于 Pandas；Polar 的语法更类似于 R 或 PySpark。
 
-1.  Vaex具有更多的机器学习和数据可视化API。Polar的重点是基础的数据处理（过滤、选择、聚合）。
+1.  Vaex 具有更多的机器学习和数据可视化 API。Polar 的重点是基础的数据处理（过滤、选择、聚合）。
 
-1.  Vaex是用CPP编写的，而Polars是用Rust编写的。
+1.  Vaex 是用 CPP 编写的，而 Polars 是用 Rust 编写的。
 
-根据你的使用案例，你可能会发现Vaex或Polars更好。例如，在纽约数据集中，我无法使用Polars连接所有四个CSV文件（它会导致内存不足问题），而我可以用Vaex做到这一点。
+根据你的使用案例，你可能会发现 Vaex 或 Polars 更好。例如，在纽约数据集中，我无法使用 Polars 连接所有四个 CSV 文件（它会导致内存不足问题），而我可以用 Vaex 做到这一点。
 
 ```py
 import polars as pl
@@ -458,20 +458,20 @@ result_df
 # Could be run without out-of-memory problem.
 ```
 
-# 判决：在这种条件下使用Polars。
+# 判决：在这种条件下使用 Polars。
 
-你应该使用Polars？Vaex？PySpark？Dask？以下是我的思考方式：
+你应该使用 Polars？Vaex？PySpark？Dask？以下是我的思考方式：
 
-+   如果你的数据很庞大，进入了10GB以上的“大数据”领域，你可能要考虑使用PySpark。否则，Polars、Vaex和Dask是可能的选择。
++   如果你的数据很庞大，进入了 10GB 以上的“大数据”领域，你可能要考虑使用 PySpark。否则，Polars、Vaex 和 Dask 是可能的选择。
 
-+   如果你有多台计算机在一个集群中，并且你想在这些计算机之间分配工作负载，使用Dask。
++   如果你有多台计算机在一个集群中，并且你想在这些计算机之间分配工作负载，使用 Dask。
 
-+   如果你需要可视化、机器学习和深度学习，使用Vaex。如果不需要，使用Polars。
++   如果你需要可视化、机器学习和深度学习，使用 Vaex。如果不需要，使用 Polars。
 
-这是一个粗略的指南，因为最终的答案取决于你的使用案例。因此，我鼓励你尝试每一个。在某些情况下，Polars和Vaex可能比PySpark更快（[当数据集有数百万行时](https://www.confessionsofadataguy.com/dataframe-showdown-polars-vs-spark-vs-pandas-vs-datafusion-guess-who-wins/)）。在某些情况下，Vaex可以运行，但Polars可能会崩溃（如上面的`concat`示例）。
+这是一个粗略的指南，因为最终的答案取决于你的使用案例。因此，我鼓励你尝试每一个。在某些情况下，Polars 和 Vaex 可能比 PySpark 更快（[当数据集有数百万行时](https://www.confessionsofadataguy.com/dataframe-showdown-polars-vs-spark-vs-pandas-vs-datafusion-guess-who-wins/)）。在某些情况下，Vaex 可以运行，但 Polars 可能会崩溃（如上面的`concat`示例）。
 
-![](../Images/756f34674fb42ae969c6ac195eacc858.png)
+![](img/756f34674fb42ae969c6ac195eacc858.png)
 
-超级速度的pandas。图片由Midjourney提供。
+超级速度的 pandas。图片由 Midjourney 提供。
 
-我是一名数据科学家，我在[LinkedIn](https://www.linkedin.com/in/travistang/)和Medium分享数据科学技巧。关注我以获取更多类似的技巧。
+我是一名数据科学家，我在[LinkedIn](https://www.linkedin.com/in/travistang/)和 Medium 分享数据科学技巧。关注我以获取更多类似的技巧。

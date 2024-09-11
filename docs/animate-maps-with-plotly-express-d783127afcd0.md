@@ -1,18 +1,18 @@
 # 使用 Plotly Express 动画地图
 
-> 原文：[https://towardsdatascience.com/animate-maps-with-plotly-express-d783127afcd0?source=collection_archive---------9-----------------------#2023-07-11](https://towardsdatascience.com/animate-maps-with-plotly-express-d783127afcd0?source=collection_archive---------9-----------------------#2023-07-11)
+> 原文：[`towardsdatascience.com/animate-maps-with-plotly-express-d783127afcd0?source=collection_archive---------9-----------------------#2023-07-11`](https://towardsdatascience.com/animate-maps-with-plotly-express-d783127afcd0?source=collection_archive---------9-----------------------#2023-07-11)
 
 ## 让你的信息图焕发活力！
 
-[](https://medium.com/@lee_vaughan?source=post_page-----d783127afcd0--------------------------------)[![Lee Vaughan](../Images/9f6b90bb76102f438ab0b9a4a62ffa3f.png)](https://medium.com/@lee_vaughan?source=post_page-----d783127afcd0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d783127afcd0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d783127afcd0--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----d783127afcd0--------------------------------)
+[](https://medium.com/@lee_vaughan?source=post_page-----d783127afcd0--------------------------------)![Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----d783127afcd0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d783127afcd0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d783127afcd0--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----d783127afcd0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanimate-maps-with-plotly-express-d783127afcd0&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----d783127afcd0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d783127afcd0--------------------------------) ·9 min 阅读·2023年7月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd783127afcd0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanimate-maps-with-plotly-express-d783127afcd0&user=Lee+Vaughan&userId=5d604015c08b&source=-----d783127afcd0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d604015c08b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanimate-maps-with-plotly-express-d783127afcd0&user=Lee+Vaughan&userId=5d604015c08b&source=post_page-5d604015c08b----d783127afcd0---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d783127afcd0--------------------------------) ·9 min 阅读·2023 年 7 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd783127afcd0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanimate-maps-with-plotly-express-d783127afcd0&user=Lee+Vaughan&userId=5d604015c08b&source=-----d783127afcd0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd783127afcd0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanimate-maps-with-plotly-express-d783127afcd0&source=-----d783127afcd0---------------------bookmark_footer-----------)![](../Images/c173db5b859806e3f3e30abb0f52171a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd783127afcd0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanimate-maps-with-plotly-express-d783127afcd0&source=-----d783127afcd0---------------------bookmark_footer-----------)![](img/c173db5b859806e3f3e30abb0f52171a.png)
 
 按照它们加入联邦的年份着色的选定州（所有图片均为作者提供，除非另有说明）
 

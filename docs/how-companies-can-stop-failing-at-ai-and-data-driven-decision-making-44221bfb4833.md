@@ -1,32 +1,32 @@
 # 企业如何停止在人工智能和数据驱动决策中失败
 
-> 原文：[https://towardsdatascience.com/how-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833?source=collection_archive---------8-----------------------#2023-02-08](https://towardsdatascience.com/how-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833?source=collection_archive---------8-----------------------#2023-02-08)
+> 原文：[`towardsdatascience.com/how-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833?source=collection_archive---------8-----------------------#2023-02-08`](https://towardsdatascience.com/how-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833?source=collection_archive---------8-----------------------#2023-02-08)
 
 ## 四个杠杆可以帮助商业领袖成功利用数据
 
-[](https://biztechdata.medium.com/?source=post_page-----44221bfb4833--------------------------------)[![Shreshth Sharma](../Images/1dfe3453b9fb524d94c6c23953345737.png)](https://biztechdata.medium.com/?source=post_page-----44221bfb4833--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44221bfb4833--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----44221bfb4833--------------------------------) [Shreshth Sharma](https://biztechdata.medium.com/?source=post_page-----44221bfb4833--------------------------------)
+[](https://biztechdata.medium.com/?source=post_page-----44221bfb4833--------------------------------)![Shreshth Sharma](https://biztechdata.medium.com/?source=post_page-----44221bfb4833--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44221bfb4833--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----44221bfb4833--------------------------------) [Shreshth Sharma](https://biztechdata.medium.com/?source=post_page-----44221bfb4833--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fabadbe4a08db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833&user=Shreshth+Sharma&userId=abadbe4a08db&source=post_page-abadbe4a08db----44221bfb4833---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----44221bfb4833--------------------------------) ·7 min read·2023年2月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F44221bfb4833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833&user=Shreshth+Sharma&userId=abadbe4a08db&source=-----44221bfb4833---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fabadbe4a08db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833&user=Shreshth+Sharma&userId=abadbe4a08db&source=post_page-abadbe4a08db----44221bfb4833---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----44221bfb4833--------------------------------) ·7 min read·2023 年 2 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F44221bfb4833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833&user=Shreshth+Sharma&userId=abadbe4a08db&source=-----44221bfb4833---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F44221bfb4833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833&source=-----44221bfb4833---------------------bookmark_footer-----------)![](../Images/018005a6f20f338ca4dd07565f9a4ab0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F44221bfb4833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-companies-can-stop-failing-at-ai-and-data-driven-decision-making-44221bfb4833&source=-----44221bfb4833---------------------bookmark_footer-----------)![](img/018005a6f20f338ca4dd07565f9a4ab0.png)
 
 图片由 [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-数据已经成为一个热门话题十多年了。它随着大数据的兴起而发展，近年来，AI和机器学习也成为了前沿。过去十年也是一个极度增长的十年。资本充裕，公司有足够的时间来学习和完善他们的技术。然而，[研究](https://hbr.org/2022/07/how-well-does-your-company-use-analytics)指出组织在有效利用数据方面的失败。经济环境现在发生了变化，公司现在更加关注[盈利能力](https://techcrunch.com/2022/06/02/investors-have-flipped-their-weighting-of-growth-versus-profitability/)。失败的成本现在太高了，那些能够有效利用数据的公司将拥有竞争优势。AI和数据驱动的决策可以在这里提供帮助，通过清晰化讨论、将事实与意见分开，并加速市场推出的时间。
+数据已经成为一个热门话题十多年了。它随着大数据的兴起而发展，近年来，AI 和机器学习也成为了前沿。过去十年也是一个极度增长的十年。资本充裕，公司有足够的时间来学习和完善他们的技术。然而，[研究](https://hbr.org/2022/07/how-well-does-your-company-use-analytics)指出组织在有效利用数据方面的失败。经济环境现在发生了变化，公司现在更加关注[盈利能力](https://techcrunch.com/2022/06/02/investors-have-flipped-their-weighting-of-growth-versus-profitability/)。失败的成本现在太高了，那些能够有效利用数据的公司将拥有竞争优势。AI 和数据驱动的决策可以在这里提供帮助，通过清晰化讨论、将事实与意见分开，并加速市场推出的时间。
 
-然而，大多数公司尚未建立一个适合AI和数据驱动决策的组织模型。随着公司调整战略以应对新的经济现实，以下四个关键要素可以帮助建立基于数据的决策文化：
+然而，大多数公司尚未建立一个适合 AI 和数据驱动决策的组织模型。随着公司调整战略以应对新的经济现实，以下四个关键要素可以帮助建立基于数据的决策文化：
 
 **明确数据需要如何使用的原因和方式**
 
-+   *目标、目标和指标的一致性。* 现代劳动力高度[以目的为驱动](https://www.ey.com/en_us/purpose/why-business-must-harness-the-power-of-purpose)。对他们来说，效率、盈利能力、增长等是实现目标的手段，而不是目标本身。因此，领导层需要对公司所追求的目的非常清楚。这个目的需要被转化为具体的目标，然后进一步细化为需要衡量的准确指标。我的一个咨询客户，一家道路救援公司，特别有效地做到了这一点。他们的目的在于确保没有客户在道路上被困超过特定时间，这取决于服务区域。然后，这被转化为每个组织的目标，例如，财务预算分配被优化以实现这一目标，客户服务部门将致力于第一次呼叫解决问题，销售部门不仅依据目标完成情况获得奖励，还依据NPS进行激励，以确保他们将正确的产品卖给正确的客户。最后，执行仪表板中包含了所有这些指标，并且在年度规划过程中为这些P0指标设定了目标。
++   *目标、目标和指标的一致性。* 现代劳动力高度[以目的为驱动](https://www.ey.com/en_us/purpose/why-business-must-harness-the-power-of-purpose)。对他们来说，效率、盈利能力、增长等是实现目标的手段，而不是目标本身。因此，领导层需要对公司所追求的目的非常清楚。这个目的需要被转化为具体的目标，然后进一步细化为需要衡量的准确指标。我的一个咨询客户，一家道路救援公司，特别有效地做到了这一点。他们的目的在于确保没有客户在道路上被困超过特定时间，这取决于服务区域。然后，这被转化为每个组织的目标，例如，财务预算分配被优化以实现这一目标，客户服务部门将致力于第一次呼叫解决问题，销售部门不仅依据目标完成情况获得奖励，还依据 NPS 进行激励，以确保他们将正确的产品卖给正确的客户。最后，执行仪表板中包含了所有这些指标，并且在年度规划过程中为这些 P0 指标设定了目标。
 
-+   *明确的数据导向问题陈述在整个组织中层层传递。* 拥有一套清晰的问题陈述可以带来整个组织的一致性。这些陈述在公司层面需要简单明了，例如：“将运营利润率提高50个基点”。这有助于每个人对需要解决的问题达成一致，并且为其提供一个数据点。总体目标可以进一步细分到各个职能部门，他们可以决定想要采取的措施。例如，市场营销可能会制定一个问题陈述：“改变媒体投放模型，以在减少营销支出$xx的同时保持MQLs。”
++   *明确的数据导向问题陈述在整个组织中层层传递。* 拥有一套清晰的问题陈述可以带来整个组织的一致性。这些陈述在公司层面需要简单明了，例如：“将运营利润率提高 50 个基点”。这有助于每个人对需要解决的问题达成一致，并且为其提供一个数据点。总体目标可以进一步细分到各个职能部门，他们可以决定想要采取的措施。例如，市场营销可能会制定一个问题陈述：“改变媒体投放模型，以在减少营销支出$xx 的同时保持 MQLs。”
 
-+   *高层的“使用”数据，而不仅仅是“认可”。* 即使高层同意基于数据的决策是必要的，他们仍然会依赖直觉。高层应当做出基于数据的决策，即使这有时与他们的直觉相悖。他们也应当传达这一点，以便整个组织感受到自己是一个数据驱动的组织。我曾与一位非常有效的销售高管合作，他理解数据的力量，并确保他的团队充分利用公司的数据能力。他的两个主要方法是：在做出决定之前，确保至少有一些支持数据，并且向数据团队提供非常明确的陈述，例如——“我想了解5%和10%的价格上涨对我们销售量和利润的影响。”
++   *高层的“使用”数据，而不仅仅是“认可”。* 即使高层同意基于数据的决策是必要的，他们仍然会依赖直觉。高层应当做出基于数据的决策，即使这有时与他们的直觉相悖。他们也应当传达这一点，以便整个组织感受到自己是一个数据驱动的组织。我曾与一位非常有效的销售高管合作，他理解数据的力量，并确保他的团队充分利用公司的数据能力。他的两个主要方法是：在做出决定之前，确保至少有一些支持数据，并且向数据团队提供非常明确的陈述，例如——“我想了解 5%和 10%的价格上涨对我们销售量和利润的影响。”
 
 **拥有对数据的共同理解**
 
@@ -38,9 +38,9 @@
 
 **建立基础要素**
 
-+   *简化技术栈。* 技术越简单，维护越容易，解释和使用也越容易。工程团队倾向于追逐炫目的技术，但业务目标和用例应该定义需要实施的技术，而不是相反。如今技术发展迅速，创新层出不穷。这导致了我们有时会看到[寻找钉子的锤子](https://www.eff.org/deeplinks/2022/05/podcast-episode-ai-hammer-search-nail)的情况。我见过许多组织拥有多个复杂的数据栈，且几乎没有互操作性。最好保持技术栈的简单，有时Power Pivot运行在数据库之上就足够了。
++   *简化技术栈。* 技术越简单，维护越容易，解释和使用也越容易。工程团队倾向于追逐炫目的技术，但业务目标和用例应该定义需要实施的技术，而不是相反。如今技术发展迅速，创新层出不穷。这导致了我们有时会看到[寻找钉子的锤子](https://www.eff.org/deeplinks/2022/05/podcast-episode-ai-hammer-search-nail)的情况。我见过许多组织拥有多个复杂的数据栈，且几乎没有互操作性。最好保持技术栈的简单，有时 Power Pivot 运行在数据库之上就足够了。
 
-+   *自助分析。* 如今数据如此庞大，除非加以情境化，否则很难有效利用。这种情境通常存在于业务和具体职能中。数据基础设施需要使分析师甚至业务人员能够利用数据。像Alteryx这样的工具可以方便非技术团队构建ETL，而像Tableau这样的工具可以帮助他们使报告变得可重复。这不仅仅是技术问题，还涉及文化和组织如何使用数据的哲学。
++   *自助分析。* 如今数据如此庞大，除非加以情境化，否则很难有效利用。这种情境通常存在于业务和具体职能中。数据基础设施需要使分析师甚至业务人员能够利用数据。像 Alteryx 这样的工具可以方便非技术团队构建 ETL，而像 Tableau 这样的工具可以帮助他们使报告变得可重复。这不仅仅是技术问题，还涉及文化和组织如何使用数据的哲学。
 
 +   *治理和流程。* 这些通常是组织中最后投资的领域。这是一个既不受高管也不受数据团队热爱的主题。然而，随着时间的推移，它成为了速度的限制因素。例如，新聘请的分析师常常需要几个月时间来适应，因为他们要在混乱的数据中摸索；仍然需要花费数周时间查找和清理数据，而这些分析应该只需要几个小时。
 

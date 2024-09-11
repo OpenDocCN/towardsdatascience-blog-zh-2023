@@ -1,18 +1,18 @@
 # 如何选择最佳的分类问题评估指标
 
-> 原文：[https://towardsdatascience.com/how-to-choose-the-best-evaluation-metric-for-classification-problems-638e845da334?source=collection_archive---------5-----------------------#2023-04-17](https://towardsdatascience.com/how-to-choose-the-best-evaluation-metric-for-classification-problems-638e845da334?source=collection_archive---------5-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/how-to-choose-the-best-evaluation-metric-for-classification-problems-638e845da334?source=collection_archive---------5-----------------------#2023-04-17`](https://towardsdatascience.com/how-to-choose-the-best-evaluation-metric-for-classification-problems-638e845da334?source=collection_archive---------5-----------------------#2023-04-17)
 
 ## 一份涵盖最常用的监督分类评估指标及其在不同场景下的实用性的综合指南
 
-[![Thomas A Dorfer](../Images/9258a1735cee805f1d9b02e2adf01096.png)](https://thomasdorfer.medium.com/?source=post_page-----638e845da334--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----638e845da334--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----638e845da334--------------------------------)
+![Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----638e845da334--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----638e845da334--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----638e845da334--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-choose-the-best-evaluation-metric-for-classification-problems-638e845da334&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----638e845da334---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----638e845da334--------------------------------) ·9分钟阅读·2023年4月17日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7c54f9b62b90&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-choose-the-best-evaluation-metric-for-classification-problems-638e845da334&user=Thomas+A+Dorfer&userId=7c54f9b62b90&source=post_page-7c54f9b62b90----638e845da334---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----638e845da334--------------------------------) ·9 分钟阅读·2023 年 4 月 17 日
 
 --
 
-![](../Images/c6a92a3e2d07ecf632a0435a02146a6d.png)
+![](img/c6a92a3e2d07ecf632a0435a02146a6d.png)
 
 作者提供的图片。
 

@@ -1,14 +1,14 @@
 # 监控机器学习模型的生产：为什么和如何？
 
-> 原文：[https://towardsdatascience.com/monitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6?source=collection_archive---------7-----------------------#2023-09-05](https://towardsdatascience.com/monitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6?source=collection_archive---------7-----------------------#2023-09-05)
+> 原文：[`towardsdatascience.com/monitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6?source=collection_archive---------7-----------------------#2023-09-05`](https://towardsdatascience.com/monitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6?source=collection_archive---------7-----------------------#2023-09-05)
 
-## 我们的模型在不断发展的世界中受到什么影响？分析重点是漂移示例，以及实施基于Python的监控策略
+## 我们的模型在不断发展的世界中受到什么影响？分析重点是漂移示例，以及实施基于 Python 的监控策略
 
-[](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)[![John Leung](../Images/ef45063e759e3450fa7f3c32b2f292c3.png)](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------) [John Leung](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)
+[](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)![John Leung](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------) [John Leung](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6125e8835d3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6&user=John+Leung&userId=6125e8835d3b&source=post_page-6125e8835d3b----13d07a5ff0c6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------) · 12分钟阅读 · 2023年9月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F13d07a5ff0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6&user=John+Leung&userId=6125e8835d3b&source=-----13d07a5ff0c6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6125e8835d3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6&user=John+Leung&userId=6125e8835d3b&source=post_page-6125e8835d3b----13d07a5ff0c6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------) · 12 分钟阅读 · 2023 年 9 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F13d07a5ff0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6&user=John+Leung&userId=6125e8835d3b&source=-----13d07a5ff0c6---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 然而，将模型部署到生产环境后，有许多原因可能导致模型性能下降或退化。
 
-![](../Images/295fd5ece6d0106a67d735d40b80bb4a.png)
+![](img/295fd5ece6d0106a67d735d40b80bb4a.png)
 
 照片由[Adrien Delforge](https://unsplash.com/@adriendlf?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -34,7 +34,7 @@
 
 > **例如：** 模型最初使用亚洲地区的客户数据进行了良好的训练。最近，由于业务扩展到美国，相同的模型直接根据具有变化的输入特征进行预测。
 
-![](../Images/2143289b7b56e32bb729f36ba6d960ca.png)
+![](img/2143289b7b56e32bb729f36ba6d960ca.png)
 
 数据漂移（图片由作者提供）
 
@@ -60,7 +60,7 @@
 
 > **示例：** 在诸如黑色星期五和圣诞节前的星期六等特殊日子，电子商务销售的快速增长。
 
-![](../Images/c4b2cc04ce61055adc9758b8f7dd5a57.png)
+![](img/c4b2cc04ce61055adc9758b8f7dd5a57.png)
 
 概念漂移（图片由作者提供）
 
@@ -70,7 +70,7 @@
 
 在接下来的部分中，我们将深入探讨各种监控层级，并提供示例 Python 代码来演示其实现。
 
-![](../Images/f2c3baf922fa9c1ad596a1db57177a2f.png)
+![](img/f2c3baf922fa9c1ad596a1db57177a2f.png)
 
 图片来源于 [Nathy dog](https://unsplash.com/@nathdah?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -78,11 +78,11 @@
 
 为了检测模型退化的任何迹象，直接且有效的方法之一是跟踪性能指标的变化。
 
-+   [回归模型的性能指标](/what-are-the-best-metrics-to-evaluate-your-regression-model-418ca481755b)：决定系数（R-squared）、均方根误差（RMSE）和平均绝对误差（MAE）
++   回归模型的性能指标：决定系数（R-squared）、均方根误差（RMSE）和平均绝对误差（MAE）
 
-+   [分类模型的性能指标](/the-5-classification-evaluation-metrics-you-must-know-aa97784ff226)：精确度、召回率和 F1 值
++   分类模型的性能指标：精确度、召回率和 F1 值
 
-从初始部署中收集的这些性能指标作为持续监控和评估的基准。在收集新的地面真实数据时，例如在营销活动结束后，定期重新评估这些指标至关重要。如果误差指标超过预定义的阈值，或者诸如R-squared这样的指标低于阈值，则需要考虑重新执行数据工程过程和重新训练模型。
+从初始部署中收集的这些性能指标作为持续监控和评估的基准。在收集新的地面真实数据时，例如在营销活动结束后，定期重新评估这些指标至关重要。如果误差指标超过预定义的阈值，或者诸如 R-squared 这样的指标低于阈值，则需要考虑重新执行数据工程过程和重新训练模型。
 
 尽管这种监控方法提供了关于漂移的有价值的见解，但它往往滞后。我们可以采取更积极的方法来监控最新的输入数据。
 
@@ -90,21 +90,21 @@
 
 我们可以应用统计方法来比较两个数据集的数据分布，而不是等待足够的输入数据来可靠地评估模型性能。在我们的情况下，我们可以确定训练数据集的分布是否与最新的生产数据集相同。如果不能统计上自信这两个分布相同，则表明模型出现了漂移。这作为性能变化的代理。
 
-+   Kolmogorov-Smirnov检验（[K-S Test](/kolmogorov-smirnov-test-84c92fb4158d)）：非参数检验（即对基础数据分布没有假设）**用于数值特征**，其在分布中心比在尾部更敏感。
++   Kolmogorov-Smirnov 检验（K-S Test）：非参数检验（即对基础数据分布没有假设）**用于数值特征**，其在分布中心比在尾部更敏感。
 
-> **解释：** 当p值< 0.05时，触发表示存在漂移的警报。
+> **解释：** 当 p 值< 0.05 时，触发表示存在漂移的警报。
 
-+   人口稳定指数（[PSI](/psi-and-csi-top-2-model-monitoring-metrics-924a2540bed8d)）：一种可以应用于**数值变量和分类变量**的统计检验。它是一个指标，显示每个变量如何与基准值独立地偏离。当评估特征分布而不是目标变量时，有时被称为特征稳定指数（CSI）。
++   人口稳定指数（PSI）：一种可以应用于**数值变量和分类变量**的统计检验。它是一个指标，显示每个变量如何与基准值独立地偏离。当评估特征分布而不是目标变量时，有时被称为特征稳定指数（CSI）。
 
-> **解释：** 值为0~0.1表示没有显著的分布变化；值为0.1~0.2表示中等分布变化；值大于0.2则解释为显著的分布变化。
+> **解释：** 值为 0~0.1 表示没有显著的分布变化；值为 0.1~0.2 表示中等分布变化；值大于 0.2 则解释为显著的分布变化。
 
-其他著名的统计检验包括 [Kullback-Leibler散度](/understanding-kl-divergence-f3ddc8dff254)、[Jensen-Shannon散度](/how-to-understand-and-use-jensen-shannon-divergence-b10e11b03fd6) 和 [Wasserstein距离](/the-gromov-wasserstein-distance-835c39d4751d)。
+其他著名的统计检验包括 Kullback-Leibler 散度、Jensen-Shannon 散度 和 Wasserstein 距离。
 
 ## #3 使用滑动窗口方法监控漂移
 
 检测数据或模式漂移的任何延迟都会导致时间差，这可能导致地面真实数据与模型预测之间的差异。为了弥补这一差距，是否有进一步的进展？一种有前景的想法是利用流数据而不是批数据。
 
-自适应窗口（[ADWIN](https://scikit-multiflow.readthedocs.io/en/stable/api/generated/skmultiflow.drift_detection.ADWIN.html)）算法利用滑动窗口方法有效检测概念漂移。与传统的固定大小窗口不同，ADWIN通过在不同点截断统计窗口来决定窗口的大小。每当新数据到来时，ADWIN分析统计数据并识别出两个子窗口在均值上显著不同的点。
+自适应窗口（[ADWIN](https://scikit-multiflow.readthedocs.io/en/stable/api/generated/skmultiflow.drift_detection.ADWIN.html)）算法利用滑动窗口方法有效检测概念漂移。与传统的固定大小窗口不同，ADWIN 通过在不同点截断统计窗口来决定窗口的大小。每当新数据到来时，ADWIN 分析统计数据并识别出两个子窗口在均值上显著不同的点。
 
 > **解释：** 当两个均值之间的绝对差异超过预定义的阈值时，会触发一个警报，表示存在漂移。
 
@@ -112,7 +112,7 @@
 
 让我们探讨一个示例，展示上述监控策略的实现。
 
-我们将利用从Kaggle获得的 [数据集](https://www.kaggle.com/datasets/parisrohan/credit-score-classification?datasetId=2289007&sortBy=voteCount&select=train.csv)。该数据集包含10万条记录，涵盖28个描述客户人口统计和信用相关历史的特征。
+我们将利用从 Kaggle 获得的 [数据集](https://www.kaggle.com/datasets/parisrohan/credit-score-classification?datasetId=2289007&sortBy=voteCount&select=train.csv)。该数据集包含 10 万条记录，涵盖 28 个描述客户人口统计和信用相关历史的特征。
 
 我们的目标是将全球金融公司中的客户按信用评分区间进行分类。目标变量是**Credit_Score**，这是一个分类测量，分为“差”、“标准”和“好”。
 
@@ -124,9 +124,9 @@
 
 +   *Credit_History_Age*: 客户信用历史的年龄
 
-+   *Payment_Behaviour*: 基于支出频率（低/高）和支付金额（小/中/大）的6组支付行为
++   *Payment_Behaviour*: 基于支出频率（低/高）和支付金额（小/中/大）的 6 组支付行为
 
-![](../Images/89da1d42d08937e934255688405067cd.png)
+![](img/89da1d42d08937e934255688405067cd.png)
 
 图片由 [CardMapr.nl](https://unsplash.com/@cardmapr?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -177,25 +177,25 @@ print('Precision: %.3f' % precision_score(y_test, y_pred, average='weighted'))
 print('Recall: %.3f' % recall_score(y_test, y_pred, average='weighted'))
 ```
 
-在我们的模型开发过程中，我们收集了多个性能指标，包括0.810的F1分数、0.818的精确度和0.807的召回率。后续监控可以类似地进行评估。例如，如果F1分数低于0.75，则会触发警报，提示我们立即采取措施来缓解问题。
+在我们的模型开发过程中，我们收集了多个性能指标，包括 0.810 的 F1 分数、0.818 的精确度和 0.807 的召回率。后续监控可以类似地进行评估。例如，如果 F1 分数低于 0.75，则会触发警报，提示我们立即采取措施来缓解问题。
 
-**K-S检验**
+**K-S 检验**
 
-为了展示K-S检验的工作原理，我选择了数值特征*Credit_History_Age*。我们将通过创建三个不同的数据集来检查这个统计检验的敏感性：一个包含1000个样本，另一个包含5000个样本，还有一个包含大约64000个样本，这对应于清理后的训练样本的总量。*Credit_History_Age*特征中的每个数据点都是从训练数据中随机挑选，并通过随机浮点数进行了改变。
+为了展示 K-S 检验的工作原理，我选择了数值特征*Credit_History_Age*。我们将通过创建三个不同的数据集来检查这个统计检验的敏感性：一个包含 1000 个样本，另一个包含 5000 个样本，还有一个包含大约 64000 个样本，这对应于清理后的训练样本的总量。*Credit_History_Age*特征中的每个数据点都是从训练数据中随机挑选，并通过随机浮点数进行了改变。
 
-![](../Images/04df626e2dd072d349f5c829070d2589.png)
+![](img/04df626e2dd072d349f5c829070d2589.png)
 
 ‘Credit_History_Age’在原始数据和漂移数据中的数据分布（图像来源：作者）
 
 我们获得了以下结果：
 
-+   对于1000个样本的数据集，K-S检验的p值为0.093。
++   对于 1000 个样本的数据集，K-S 检验的 p 值为 0.093。
 
-+   对于5000个样本的数据集，K-S检验的p值为0.002。
++   对于 5000 个样本的数据集，K-S 检验的 p 值为 0.002。
 
-+   对于大约64000个样本的数据集，K-S检验的p值为0.000。
++   对于大约 64000 个样本的数据集，K-S 检验的 p 值为 0.000。
 
-当使用1000个样本检查数据漂移场景时，p值超过了0.05。因此，我们可以得出结论，两种分布仍然相似。然而，随着样本量增加到5000及以上，K-S检验表现出卓越的性能，p值明显低于0.05。这清楚地表明了数据分布的漂移，作为明确的警报。
+当使用 1000 个样本检查数据漂移场景时，p 值超过了 0.05。因此，我们可以得出结论，两种分布仍然相似。然而，随着样本量增加到 5000 及以上，K-S 检验表现出卓越的性能，p 值明显低于 0.05。这清楚地表明了数据分布的漂移，作为明确的警报。
 
 ```py
 from scipy import stats
@@ -228,7 +228,7 @@ ks_test(original_df, new_df3, 'Credit_History_Age')
 
 **PSI**
 
-除了使用K-S检验外，我们还将利用PSI（人口稳定性指数）来评估数值特征*Credit_History_Age*以及类别特征*Payment_Behaviour*。为了表示漂移效果，我们随机将*Payment_Behaviour*特征的80%数据替换为特定标签值。
+除了使用 K-S 检验外，我们还将利用 PSI（人口稳定性指数）来评估数值特征*Credit_History_Age*以及类别特征*Payment_Behaviour*。为了表示漂移效果，我们随机将*Payment_Behaviour*特征的 80%数据替换为特定标签值。
 
 ```py
 # Prepare drifted data for categorical column
@@ -243,31 +243,31 @@ drift_cat_col(new_df2, 'Payment_Behaviour', 0.8)
 drift_cat_col(new_df3, 'Payment_Behaviour', 0.8)
 ```
 
-![](../Images/8b316011e2d1c1c0f9c4f96cac6b8772.png)
+![](img/8b316011e2d1c1c0f9c4f96cac6b8772.png)
 
 ‘Payment_Behaviour’在原始数据和漂移数据中的数据分布（图像来源：作者）
 
 +   数值特征*Credit_History_Age*
 
-在1000个样本的情况下，PSI值为0.023。
+在 1000 个样本的情况下，PSI 值为 0.023。
 
-在5000个样本的情况下，PSI值为0.015。
+在 5000 个样本的情况下，PSI 值为 0.015。
 
-在大约64000个样本的情况下，PSI值为0.021。
+在大约 64000 个样本的情况下，PSI 值为 0.021。
 
 +   类别特征*Payment_Behaviour*
 
-在1000个样本的情况下，PSI值为0.108。
+在 1000 个样本的情况下，PSI 值为 0.108。
 
-在5000个样本的情况下，PSI值为0.111。
+在 5000 个样本的情况下，PSI 值为 0.111。
 
-在大约64000个样本的情况下，PSI值为0.112。
+在大约 64000 个样本的情况下，PSI 值为 0.112。
 
-所有*Credit_History_Age*特征的PSI值明显低于0.1，这表明没有显著的分布变化。通过将这些结果与K-S检验的结果进行比较，我们观察到K-S检验在检测分布变化方面比PSI具有更高的敏感性。
+所有*Credit_History_Age*特征的 PSI 值明显低于 0.1，这表明没有显著的分布变化。通过将这些结果与 K-S 检验的结果进行比较，我们观察到 K-S 检验在检测分布变化方面比 PSI 具有更高的敏感性。
 
-另一方面，*Payment_Behaviour*特征的PSI值大约为0.11，表示中等程度的分布变化。有趣的是，三个PSI值保持相对一致，暗示着PSI的有效性不太依赖于样本量。此外，PSI具有监测各种特征类型的灵活性，因此在漂移检测中仍然是一种有价值的方法。
+另一方面，*Payment_Behaviour*特征的 PSI 值大约为 0.11，表示中等程度的分布变化。有趣的是，三个 PSI 值保持相对一致，暗示着 PSI 的有效性不太依赖于样本量。此外，PSI 具有监测各种特征类型的灵活性，因此在漂移检测中仍然是一种有价值的方法。
 
-以下是PSI的实现代码：
+以下是 PSI 的实现代码：
 
 ```py
 def psi(data_base, data_new, num_bins = 10):
@@ -322,7 +322,7 @@ psi(original_df['Payment_Behaviour'], new_df3['Payment_Behaviour'])
 
 为了直观地展示情况，创建了一个散点图来展示原始数据的最后 500 个点（以蓝色表示），以及漂移数据的前 500 个点（以绿色表示）。漂移数据显示出略高的平均值。
 
-![](../Images/42d6513244576dea35f68f17a17b8272.png)
+![](img/42d6513244576dea35f68f17a17b8272.png)
 
 散点图（作者提供的图像）
 
@@ -353,11 +353,11 @@ for i in range(len(data_stream)):
 
 如果你喜欢这篇文章，我邀请你关注 [我的 Medium 页面](https://medium.com/@johnleungTJ)。通过这样做，你可以保持更新，了解与数据科学副项目、机器学习操作（MLOps）演示和项目管理方法相关的精彩内容。
 
-[](/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=post_page-----13d07a5ff0c6--------------------------------) [## 超越 A/B 测试的策略优化
+[](/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=post_page-----13d07a5ff0c6--------------------------------) ## 超越 A/B 测试的策略优化
 
 ### 用通俗易懂的方式深入解释经典 A/B 测试的优化：Epsilon-贪婪、汤普森采样、上下文……
 
-towardsdatascience.com](/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=post_page-----13d07a5ff0c6--------------------------------) [](https://medium.com/mlearning-ai/how-to-apply-data-centric-ai-mindset-to-text-classification-problems-b41656c70c16?source=post_page-----13d07a5ff0c6--------------------------------) [## 如何将数据中心化的 AI 思维方式应用于文本分类问题？
+towardsdatascience.com [](https://medium.com/mlearning-ai/how-to-apply-data-centric-ai-mindset-to-text-classification-problems-b41656c70c16?source=post_page-----13d07a5ff0c6--------------------------------) [## 如何将数据中心化的 AI 思维方式应用于文本分类问题？
 
 ### 使用各种以数据为中心的 Python 包和 AI 技巧掌握客户投诉分类
 

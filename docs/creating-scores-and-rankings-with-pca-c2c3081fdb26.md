@@ -1,18 +1,18 @@
 # 使用 PCA 创建评分和排名
 
-> 原文：[https://towardsdatascience.com/creating-scores-and-rankings-with-pca-c2c3081fdb26?source=collection_archive---------6-----------------------#2023-04-10](https://towardsdatascience.com/creating-scores-and-rankings-with-pca-c2c3081fdb26?source=collection_archive---------6-----------------------#2023-04-10)
+> 原文：[`towardsdatascience.com/creating-scores-and-rankings-with-pca-c2c3081fdb26?source=collection_archive---------6-----------------------#2023-04-10`](https://towardsdatascience.com/creating-scores-and-rankings-with-pca-c2c3081fdb26?source=collection_archive---------6-----------------------#2023-04-10)
 
 ## 使用 R 语言为观察数据基于多个变量创建评分
 
-[](https://gustavorsantos.medium.com/?source=post_page-----c2c3081fdb26--------------------------------)[![Gustavo Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----c2c3081fdb26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c2c3081fdb26--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c2c3081fdb26--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----c2c3081fdb26--------------------------------)
+[](https://gustavorsantos.medium.com/?source=post_page-----c2c3081fdb26--------------------------------)![Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----c2c3081fdb26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c2c3081fdb26--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c2c3081fdb26--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----c2c3081fdb26--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-scores-and-rankings-with-pca-c2c3081fdb26&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----c2c3081fdb26---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c2c3081fdb26--------------------------------) ·9分钟阅读·2023年4月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc2c3081fdb26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-scores-and-rankings-with-pca-c2c3081fdb26&user=Gustavo+Santos&userId=4429d99b1245&source=-----c2c3081fdb26---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-scores-and-rankings-with-pca-c2c3081fdb26&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----c2c3081fdb26---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c2c3081fdb26--------------------------------) ·9 分钟阅读·2023 年 4 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc2c3081fdb26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-scores-and-rankings-with-pca-c2c3081fdb26&user=Gustavo+Santos&userId=4429d99b1245&source=-----c2c3081fdb26---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc2c3081fdb26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-scores-and-rankings-with-pca-c2c3081fdb26&source=-----c2c3081fdb26---------------------bookmark_footer-----------)![](../Images/ad848fe08cc9a8bc744f2e58a7a97f9b.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc2c3081fdb26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-scores-and-rankings-with-pca-c2c3081fdb26&source=-----c2c3081fdb26---------------------bookmark_footer-----------)![](img/ad848fe08cc9a8bc744f2e58a7a97f9b.png)
 
 由 [Joshua Golde](https://unsplash.com/@joshgmit?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 摄影，照片来自 [Unsplash](https://unsplash.com/photos/qIu77BsFdds?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

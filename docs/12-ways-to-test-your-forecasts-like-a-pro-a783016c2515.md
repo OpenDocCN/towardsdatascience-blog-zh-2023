@@ -1,18 +1,18 @@
 # 12 种像专家一样测试你的预测的方法
 
-> 原文：[https://towardsdatascience.com/12-ways-to-test-your-forecasts-like-a-pro-a783016c2515?source=collection_archive---------2-----------------------#2023-03-07](https://towardsdatascience.com/12-ways-to-test-your-forecasts-like-a-pro-a783016c2515?source=collection_archive---------2-----------------------#2023-03-07)
+> 原文：[`towardsdatascience.com/12-ways-to-test-your-forecasts-like-a-pro-a783016c2515?source=collection_archive---------2-----------------------#2023-03-07`](https://towardsdatascience.com/12-ways-to-test-your-forecasts-like-a-pro-a783016c2515?source=collection_archive---------2-----------------------#2023-03-07)
 
 ## 如何在文献中提出的 12 种策略中找到最佳的时间序列预测性能估计方法。附带 Python 代码。
 
-[](https://medium.com/@mazzanti.sam?source=post_page-----a783016c2515--------------------------------)[![Samuele Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----a783016c2515--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a783016c2515--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a783016c2515--------------------------------) [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----a783016c2515--------------------------------)
+[](https://medium.com/@mazzanti.sam?source=post_page-----a783016c2515--------------------------------)![Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----a783016c2515--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a783016c2515--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a783016c2515--------------------------------) [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----a783016c2515--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe16f3bb86e03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-ways-to-test-your-forecasts-like-a-pro-a783016c2515&user=Samuele+Mazzanti&userId=e16f3bb86e03&source=post_page-e16f3bb86e03----a783016c2515---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a783016c2515--------------------------------) ·11 分钟阅读·2023年3月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa783016c2515&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-ways-to-test-your-forecasts-like-a-pro-a783016c2515&user=Samuele+Mazzanti&userId=e16f3bb86e03&source=-----a783016c2515---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe16f3bb86e03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-ways-to-test-your-forecasts-like-a-pro-a783016c2515&user=Samuele+Mazzanti&userId=e16f3bb86e03&source=post_page-e16f3bb86e03----a783016c2515---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a783016c2515--------------------------------) ·11 分钟阅读·2023 年 3 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa783016c2515&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-ways-to-test-your-forecasts-like-a-pro-a783016c2515&user=Samuele+Mazzanti&userId=e16f3bb86e03&source=-----a783016c2515---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa783016c2515&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-ways-to-test-your-forecasts-like-a-pro-a783016c2515&source=-----a783016c2515---------------------bookmark_footer-----------)![](../Images/d0f73fea676925a708e3dde3d9d48059.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa783016c2515&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F12-ways-to-test-your-forecasts-like-a-pro-a783016c2515&source=-----a783016c2515---------------------bookmark_footer-----------)![](img/d0f73fea676925a708e3dde3d9d48059.png)
 
 [作者提供的图片]
 
@@ -22,7 +22,7 @@
 
 性能估计的话题在处理预测时尤为关键。与其他应用不同，**在时间序列中观察的顺序很重要，因此我们不能仅仅使用交叉验证**并假设它会有效。
 
-这就是为什么文献中提出了许多性能估计方法。在本文中，我们将比较这12种方法在58个真实时间序列数据集上的表现。结果令人惊讶。
+这就是为什么文献中提出了许多性能估计方法。在本文中，我们将比较这 12 种方法在 58 个真实时间序列数据集上的表现。结果令人惊讶。
 
 # 处理时间序列
 

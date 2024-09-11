@@ -1,28 +1,28 @@
-# 图卷积网络：GNNs简介
+# 图卷积网络：GNNs 简介
 
-> 原文：[https://towardsdatascience.com/graph-convolutional-networks-introduction-to-gnns-24b3f60d6c95?source=collection_archive---------0-----------------------#2023-08-14](https://towardsdatascience.com/graph-convolutional-networks-introduction-to-gnns-24b3f60d6c95?source=collection_archive---------0-----------------------#2023-08-14)
+> 原文：[`towardsdatascience.com/graph-convolutional-networks-introduction-to-gnns-24b3f60d6c95?source=collection_archive---------0-----------------------#2023-08-14`](https://towardsdatascience.com/graph-convolutional-networks-introduction-to-gnns-24b3f60d6c95?source=collection_archive---------0-----------------------#2023-08-14)
 
-## 使用PyTorch Geometric的逐步指南
+## 使用 PyTorch Geometric 的逐步指南
 
-[](https://medium.com/@mlabonne?source=post_page-----24b3f60d6c95--------------------------------)[![Maxime Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----24b3f60d6c95--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24b3f60d6c95--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----24b3f60d6c95--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----24b3f60d6c95--------------------------------)
+[](https://medium.com/@mlabonne?source=post_page-----24b3f60d6c95--------------------------------)![Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----24b3f60d6c95--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24b3f60d6c95--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----24b3f60d6c95--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----24b3f60d6c95--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-convolutional-networks-introduction-to-gnns-24b3f60d6c95&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----24b3f60d6c95---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----24b3f60d6c95--------------------------------) ·16分钟阅读·2023年8月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24b3f60d6c95&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-convolutional-networks-introduction-to-gnns-24b3f60d6c95&user=Maxime+Labonne&userId=dc89da634938&source=-----24b3f60d6c95---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-convolutional-networks-introduction-to-gnns-24b3f60d6c95&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----24b3f60d6c95---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----24b3f60d6c95--------------------------------) ·16 分钟阅读·2023 年 8 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F24b3f60d6c95&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-convolutional-networks-introduction-to-gnns-24b3f60d6c95&user=Maxime+Labonne&userId=dc89da634938&source=-----24b3f60d6c95---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F24b3f60d6c95&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-convolutional-networks-introduction-to-gnns-24b3f60d6c95&source=-----24b3f60d6c95---------------------bookmark_footer-----------)![](../Images/53a44290154e9eb7c20b5a32cd4d5642.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F24b3f60d6c95&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgraph-convolutional-networks-introduction-to-gnns-24b3f60d6c95&source=-----24b3f60d6c95---------------------bookmark_footer-----------)![](img/53a44290154e9eb7c20b5a32cd4d5642.png)
 
 作者提供的图像
 
-**图神经网络**（GNNs）是深度学习领域中最吸引人和迅速发展的架构之一。作为处理图结构数据的深度学习模型，GNNs带来了显著的多样性和强大的学习能力。
+**图神经网络**（GNNs）是深度学习领域中最吸引人和迅速发展的架构之一。作为处理图结构数据的深度学习模型，GNNs 带来了显著的多样性和强大的学习能力。
 
-在各种类型的GNN中，**图卷积网络**（GCNs）已经成为最[普遍且广泛应用的模型](https://paperswithcode.com/methods/category/graph-models)。GCNs因其能够利用节点的特征及其局部信息进行预测而具有创新性，提供了一种有效处理图结构数据的方法。
+在各种类型的 GNN 中，**图卷积网络**（GCNs）已经成为最[普遍且广泛应用的模型](https://paperswithcode.com/methods/category/graph-models)。GCNs 因其能够利用节点的特征及其局部信息进行预测而具有创新性，提供了一种有效处理图结构数据的方法。
 
-在本文中，我们将深入探讨GCN层的机制，并解释其内部工作原理。此外，我们还将探索其在节点分类任务中的实际应用，使用[PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/index.html)作为我们的工具。
+在本文中，我们将深入探讨 GCN 层的机制，并解释其内部工作原理。此外，我们还将探索其在节点分类任务中的实际应用，使用[PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/index.html)作为我们的工具。
 
-PyTorch Geometric是PyTorch的一个专门扩展，专为GNNs的开发和实现而创建。它是一个高级但用户友好的库，提供了一整套工具来促进基于图的机器学习。为了开始我们的旅程，我们需要安装PyTorch Geometric。如果你使用Google Colab，[PyTorch](https://pytorch.org/get-started/locally/)应该已经安装好了，因此我们只需要执行几个额外的命令。
+PyTorch Geometric 是 PyTorch 的一个专门扩展，专为 GNNs 的开发和实现而创建。它是一个高级但用户友好的库，提供了一整套工具来促进基于图的机器学习。为了开始我们的旅程，我们需要安装 PyTorch Geometric。如果你使用 Google Colab，[PyTorch](https://pytorch.org/get-started/locally/)应该已经安装好了，因此我们只需要执行几个额外的命令。
 
 所有代码都可以在[Google Colab](https://colab.research.google.com/drive/1ZugveUjRrbSNwUbryeKJN2wyhGFRCw0q?usp=sharing)和[GitHub](https://github.com/mlabonne/graph-neural-network-course)上找到。
 
@@ -37,7 +37,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 ```
 
-现在PyTorch Geometric已经安装好了，让我们探索一下本教程中将使用的数据集。
+现在 PyTorch Geometric 已经安装好了，让我们探索一下本教程中将使用的数据集。
 
 # 🌐 I. 图数据
 
@@ -45,15 +45,15 @@ import matplotlib.pyplot as plt
 
 在这篇文章中，我们将研究臭名昭著且广泛使用的[扎卡里的空手道俱乐部](https://en.wikipedia.org/wiki/Zachary%27s_karate_club)数据集。
 
-![](../Images/00365b1de2d9e1641523993393467f7c.png)
+![](img/00365b1de2d9e1641523993393467f7c.png)
 
 图片作者提供
 
-扎卡里的空手道俱乐部数据集体现了1970年代Wayne W. Zachary观察到的空手道俱乐部内部形成的关系。这是一种社交网络，其中每个节点代表一个俱乐部成员，节点之间的边代表发生在俱乐部环境之外的互动。
+扎卡里的空手道俱乐部数据集体现了 1970 年代 Wayne W. Zachary 观察到的空手道俱乐部内部形成的关系。这是一种社交网络，其中每个节点代表一个俱乐部成员，节点之间的边代表发生在俱乐部环境之外的互动。
 
 在这个特定的场景中，俱乐部成员被分为四个不同的组。我们的任务是**根据他们的互动模式给每个成员分配正确的组**（节点分类）。
 
-让我们使用PyG的内置函数导入数据集，并尝试了解它使用的`Datasets`对象。
+让我们使用 PyG 的内置函数导入数据集，并尝试了解它使用的`Datasets`对象。
 
 ```py
 from torch_geometric.datasets import KarateClub
@@ -77,7 +77,7 @@ Number of features: 34
 Number of classes: 4
 ```
 
-该数据集仅包含1个图，其中每个节点具有34维的特征向量，并且属于四个类别中的一个（我们的四个组）。实际上，`Datasets`对象可以看作是`Data`（图）对象的集合。
+该数据集仅包含 1 个图，其中每个节点具有 34 维的特征向量，并且属于四个类别中的一个（我们的四个组）。实际上，`Datasets`对象可以看作是`Data`（图）对象的集合。
 
 我们可以进一步检查我们独特的图，以了解更多信息。
 
@@ -92,7 +92,7 @@ Graph: Data(x=[34, 34], edge_index=[2, 156], y=[34], train_mask=[34])
 
 `[Data](https://pytorch-geometric.readthedocs.io/en/latest/modules/data.html)`对象特别有趣。打印它可以很好地总结我们正在研究的图：
 
-+   `x=[34, 34]`是**节点特征矩阵**，其形状为（节点数，特征数）。在我们的例子中，这意味着我们有34个节点（我们的34个成员），每个节点都与一个34维特征向量相关联。
++   `x=[34, 34]`是**节点特征矩阵**，其形状为（节点数，特征数）。在我们的例子中，这意味着我们有 34 个节点（我们的 34 个成员），每个节点都与一个 34 维特征向量相关联。
 
 +   `edge_index=[2, 156]`表示**图的连通性**（节点如何连接），其形状为（2，定向边的数量）。
 
@@ -153,17 +153,17 @@ tensor([[ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,
          18, 19, 20, 22, 23, 26, 27, 28, 29, 30, 31, 32]])
 ```
 
-在图论和网络分析中，节点之间的连通性通过多种数据结构进行存储。`edge_index`就是这种数据结构之一，其中图的连接存储在**两个列表**中（156条定向边，相当于78条双向边）。这两个列表的原因在于一个列表存储源节点，而第二个列表标识目标节点。
+在图论和网络分析中，节点之间的连通性通过多种数据结构进行存储。`edge_index`就是这种数据结构之一，其中图的连接存储在**两个列表**中（156 条定向边，相当于 78 条双向边）。这两个列表的原因在于一个列表存储源节点，而第二个列表标识目标节点。
 
-这种方法称为**坐标列表**（COO）格式，本质上是一种高效存储[稀疏矩阵](https://en.wikipedia.org/wiki/Sparse_matrix#Storing_a_sparse_matrix)的方式。稀疏矩阵是高效存储大部分为零元素的矩阵的数据结构。在COO格式中，仅存储非零元素，从而节省内存和计算资源。
+这种方法称为**坐标列表**（COO）格式，本质上是一种高效存储[稀疏矩阵](https://en.wikipedia.org/wiki/Sparse_matrix#Storing_a_sparse_matrix)的方式。稀疏矩阵是高效存储大部分为零元素的矩阵的数据结构。在 COO 格式中，仅存储非零元素，从而节省内存和计算资源。
 
 相反，更直观和简洁的表示图连通性的方法是通过**邻接矩阵** *A*。这是一个方阵，其中每个元素*A*ᵢⱼ *s*指定图中从节点*i*到节点*j*的边的存在与否。换句话说，非零元素*A*ᵢⱼ 表示从节点*i*到节点*j*的连接，而零表示没有直接连接。
 
-![](../Images/7a85c8e90254bb8ed5f76a90cbc92443.png)
+![](img/7a85c8e90254bb8ed5f76a90cbc92443.png)
 
 作者提供的图片
 
-然而，邻接矩阵在稀疏矩阵或边较少的图中并不像COO格式那样节省空间。然而，为了清晰和易于解释，邻接矩阵仍然是表示图连通性的热门选择。
+然而，邻接矩阵在稀疏矩阵或边较少的图中并不像 COO 格式那样节省空间。然而，为了清晰和易于解释，邻接矩阵仍然是表示图连通性的热门选择。
 
 邻接矩阵可以通过`edge_index`和一个工具函数`to_dense_adj()`来推断。
 
@@ -205,7 +205,7 @@ tensor([1, 1, 1, 1, 3, 3, 3, 1, 0, 1, 3, 1, 1, 1, 0, 0, 3, 1, 0, 1, 0, 1, 0, 0,
         2, 2, 0, 0, 2, 0, 0, 2, 0, 0])
 ```
 
-我们存储在 `y` 中的节点真实标签仅仅编码了每个节点的组号（0, 1, 2, 3），这就是为什么我们有34个值。
+我们存储在 `y` 中的节点真实标签仅仅编码了每个节点的组号（0, 1, 2, 3），这就是为什么我们有 34 个值。
 
 最后，让我们打印训练掩码。
 
@@ -273,9 +273,9 @@ nx.draw_networkx(G,
 plt.show()
 ```
 
-![](../Images/571cb9949785200ba0307b6172e0f3fb.png)
+![](img/571cb9949785200ba0307b6172e0f3fb.png)
 
-这个扎卡里武术俱乐部的图显示了我们的34个节点、78条（双向）边和4个标签及4种不同颜色。现在我们已经了解了使用 PyTorch Geometric 加载和处理数据集的基本内容，我们可以介绍**图卷积网络**架构。
+这个扎卡里武术俱乐部的图显示了我们的 34 个节点、78 条（双向）边和 4 个标签及 4 种不同颜色。现在我们已经了解了使用 PyTorch Geometric 加载和处理数据集的基本内容，我们可以介绍**图卷积网络**架构。
 
 # ✉️ II. 图卷积网络
 
@@ -283,35 +283,35 @@ plt.show()
 
 在传统的神经网络中，线性层对传入的数据应用**线性变换**。这种变换通过使用权重矩阵 𝐖 将输入特征 *x* 转换为隐藏向量 *h*。暂时忽略偏差，这可以表示为：
 
-![](../Images/d99b824e5c2dca4657e4b2eb18b4d9e7.png)
+![](img/d99b824e5c2dca4657e4b2eb18b4d9e7.png)
 
 在图数据中，通过**节点之间的连接**增加了额外的复杂性。这些连接很重要，因为在网络中，通常假设相似的节点比不相似的节点更可能互相链接，这种现象被称为[网络同质性](https://en.wikipedia.org/wiki/Network_homophily)。
 
 我们可以通过将节点的特征与邻居的特征合并来丰富我们的**节点表示**。这个操作称为卷积或邻域聚合。让我们将节点 *i* 及其邻域表示为 *Ñ*。
 
-![](../Images/c368d96059e7977d7ff141a4b92b8bd6.png)
+![](img/c368d96059e7977d7ff141a4b92b8bd6.png)
 
 与卷积神经网络（CNNs）中的滤波器不同，我们的权重矩阵 𝐖 是唯一的，并且在每个节点之间共享。但还有另一个问题：节点没有像像素那样的**固定邻居数量**。
 
-我们如何处理一个节点只有一个邻居，而另一个节点有500个邻居的情况？如果我们简单地将特征向量相加，那么对于拥有500个邻居的节点，得到的嵌入 *h* 将会大得多。为了确保所有节点的值具有**相似的范围**并便于比较，我们可以根据节点的**度**来归一化结果，其中度是指一个节点的连接数量。
+我们如何处理一个节点只有一个邻居，而另一个节点有 500 个邻居的情况？如果我们简单地将特征向量相加，那么对于拥有 500 个邻居的节点，得到的嵌入 *h* 将会大得多。为了确保所有节点的值具有**相似的范围**并便于比较，我们可以根据节点的**度**来归一化结果，其中度是指一个节点的连接数量。
 
-![](../Images/99665492296bf842d6b89bd2c19fb899.png)
+![](img/99665492296bf842d6b89bd2c19fb899.png)
 
-我们快到了！由Kipf等人（2016）介绍的[图卷积层](https://arxiv.org/abs/1609.02907)还有一个最终的改进。
+我们快到了！由 Kipf 等人（2016）介绍的[图卷积层](https://arxiv.org/abs/1609.02907)还有一个最终的改进。
 
 作者观察到，具有大量邻居的节点的特征比那些较孤立节点的特征传播得更容易。为了抵消这种效应，他们建议为邻居较少的节点的特征分配**更大的权重**，从而平衡所有节点的影响。这个操作可以表示为：
 
-![](../Images/04becb820335cbd89cebb547724d12ea.png)
+![](img/04becb820335cbd89cebb547724d12ea.png)
 
-注意，当 *i* 和 *j* 拥有相同数量的邻居时，这等同于我们自己定义的层。现在，让我们看看如何在Python中使用PyTorch Geometric实现它。
+注意，当 *i* 和 *j* 拥有相同数量的邻居时，这等同于我们自己定义的层。现在，让我们看看如何在 Python 中使用 PyTorch Geometric 实现它。
 
-# 🧠 III. 实现一个GCN
+# 🧠 III. 实现一个 GCN
 
-PyTorch Geometric提供了`GCNConv`函数，该函数直接实现了图卷积层。
+PyTorch Geometric 提供了`GCNConv`函数，该函数直接实现了图卷积层。
 
-在这个示例中，我们将创建一个基本的图卷积网络，包括一个GCN层、一个ReLU激活函数和一个线性输出层。这个输出层将产生**四个值**，对应我们的四个类别，最高值将决定每个节点的类别。
+在这个示例中，我们将创建一个基本的图卷积网络，包括一个 GCN 层、一个 ReLU 激活函数和一个线性输出层。这个输出层将产生**四个值**，对应我们的四个类别，最高值将决定每个节点的类别。
 
-在以下代码块中，我们定义了一个具有3维隐藏层的GCN层。
+在以下代码块中，我们定义了一个具有 3 维隐藏层的 GCN 层。
 
 ```py
 from torch.nn import Linear
@@ -337,7 +337,7 @@ GCN(
 )
 ```
 
-如果我们添加了第二个GCN层，我们的模型将不仅仅从每个节点的邻居处聚合特征向量，还会从这些邻居的邻居处聚合特征向量。
+如果我们添加了第二个 GCN 层，我们的模型将不仅仅从每个节点的邻居处聚合特征向量，还会从这些邻居的邻居处聚合特征向量。
 
 我们可以**堆叠多个图层**以聚合更多的远离值，但有一个问题：如果我们添加太多图层，聚合变得如此强烈，以至于所有嵌入最终看起来都一样。这种现象被称为**过度平滑**，当图层过多时，可能会成为一个实际问题。
 
@@ -432,7 +432,7 @@ html = HTML(anim.to_html5_video())
 display(html)
 ```
 
-![](../Images/04e6b675ab152228d57739474387a402.png)
+![](img/04e6b675ab152228d57739474387a402.png)
 
 最初的预测是随机的，但经过一段时间，GCN 能够完美地标记每个节点。实际上，最终的图形与我们在第一部分末尾绘制的图形相同。但 GCN 到底学到了什么？
 
@@ -500,7 +500,7 @@ ax.scatter(embed[:, 0], embed[:, 1], embed[:, 2],
            s=200, c=data.y, cmap="hsv", vmin=-2, vmax=3)plt.show()
 ```
 
-![](../Images/a961a759d54dbe8911d59fb3ab66f824.png)
+![](img/a961a759d54dbe8911d59fb3ab66f824.png)
 
 我们看到 Zachary 空手道俱乐部中的每个节点及其真实标签（而不是模型的预测）。目前，它们还很分散，因为 GNN 尚未训练完成。但如果我们在训练循环的每一步绘制这些嵌入，我们将能够可视化 GNN 实际上学到了什么。
 
@@ -529,37 +529,37 @@ html = HTML(anim.to_html5_video())
 display(html)
 ```
 
-![](../Images/b4af8ca00284bd6d1418674e7584cebe.png)
+![](img/b4af8ca00284bd6d1418674e7584cebe.png)
 
 我们的图卷积网络（GCN）有效地学习了将相似节点分组到**不同的簇**中的嵌入。这使得最终的线性层能够轻松地区分它们为不同的类别。
 
-嵌入并非GNN特有：它们在深度学习中无处不在。它们也不一定是三维的：实际上，它们很少是三维的。例如，像[BERT](https://arxiv.org/abs/1810.04805)这样的语言模型生成的嵌入维度通常是768甚至1024。
+嵌入并非 GNN 特有：它们在深度学习中无处不在。它们也不一定是三维的：实际上，它们很少是三维的。例如，像[BERT](https://arxiv.org/abs/1810.04805)这样的语言模型生成的嵌入维度通常是 768 甚至 1024。
 
 额外的维度存储了关于节点、文本、图像等更多的信息，但它们也会创建更大的模型，这些模型更难以训练。这就是为什么尽可能保持低维嵌入是有利的原因。
 
 # 结论
 
-图卷积网络是一种非常多功能的架构，可以应用于**许多背景**。在这篇文章中，我们熟悉了PyTorch Geometric库以及像`Datasets`和`Data`这样的对象。然后，我们成功地从头开始重建了一个图卷积层。接下来，我们通过实现一个GCN将理论付诸实践，这使我们理解了实际的方面以及各个组件如何相互作用。最后，我们可视化了训练过程，并清楚地了解了这种网络所涉及的内容。
+图卷积网络是一种非常多功能的架构，可以应用于**许多背景**。在这篇文章中，我们熟悉了 PyTorch Geometric 库以及像`Datasets`和`Data`这样的对象。然后，我们成功地从头开始重建了一个图卷积层。接下来，我们通过实现一个 GCN 将理论付诸实践，这使我们理解了实际的方面以及各个组件如何相互作用。最后，我们可视化了训练过程，并清楚地了解了这种网络所涉及的内容。
 
-Zachary的空手道俱乐部是一个简单的数据集，但足够用来理解图数据和GNN中的最重要概念。尽管我们在这篇文章中仅讨论了节点分类，但GNN还可以完成其他任务：**链接预测**（例如，推荐朋友）、**图分类**（例如，标记分子）、**图生成**（例如，创建新分子）等。
+Zachary 的空手道俱乐部是一个简单的数据集，但足够用来理解图数据和 GNN 中的最重要概念。尽管我们在这篇文章中仅讨论了节点分类，但 GNN 还可以完成其他任务：**链接预测**（例如，推荐朋友）、**图分类**（例如，标记分子）、**图生成**（例如，创建新分子）等。
 
-除了GCN之外，研究人员还提出了许多GNN层和架构。在下一篇文章中，我们将介绍[图注意力网络](https://mlabonne.github.io/blog/gat/)（GAT）架构，它通过注意机制动态计算GCN的归一化因子和每个连接的重要性。
+除了 GCN 之外，研究人员还提出了许多 GNN 层和架构。在下一篇文章中，我们将介绍[图注意力网络](https://mlabonne.github.io/blog/gat/)（GAT）架构，它通过注意机制动态计算 GCN 的归一化因子和每个连接的重要性。
 
-如果你想了解更多关于图神经网络的信息，可以通过我的书籍[《动手实践图神经网络》](https://mlabonne.github.io/blog/book.html)深入探索GNN的世界。
+如果你想了解更多关于图神经网络的信息，可以通过我的书籍[《动手实践图神经网络》](https://mlabonne.github.io/blog/book.html)深入探索 GNN 的世界。
 
 # 下一篇文章
 
-[](/graph-attention-networks-in-python-975736ac5c0c?source=post_page-----24b3f60d6c95--------------------------------) [## 第2章：图注意力网络：自注意力解析
+[](/graph-attention-networks-in-python-975736ac5c0c?source=post_page-----24b3f60d6c95--------------------------------) ## 第二章：图注意力网络：自注意力解析
 
-### 使用PyTorch Geometric的自注意力GNN指南
+### 使用 PyTorch Geometric 的自注意力 GNN 指南
 
-[towardsdatascience.com](/graph-attention-networks-in-python-975736ac5c0c?source=post_page-----24b3f60d6c95--------------------------------)
+[towardsdatascience.com
 
-*通过点击一下了解更多机器学习知识并支持我的工作 — 成为Medium会员，请点击这里：*
+*通过点击一下了解更多机器学习知识并支持我的工作 — 成为 Medium 会员，请点击这里：*
 
-[](https://medium.com/@mlabonne/membership?source=post_page-----24b3f60d6c95--------------------------------) [## 通过我的推荐链接加入Medium — Maxime Labonne
+[](https://medium.com/@mlabonne/membership?source=post_page-----24b3f60d6c95--------------------------------) [## 通过我的推荐链接加入 Medium — Maxime Labonne
 
-### 作为Medium会员，你的会员费的一部分将用于支持你阅读的作者，你将获得对每个故事的完全访问权限……
+### 作为 Medium 会员，你的会员费的一部分将用于支持你阅读的作者，你将获得对每个故事的完全访问权限……
 
 [medium.com](https://medium.com/@mlabonne/membership?source=post_page-----24b3f60d6c95--------------------------------)
 

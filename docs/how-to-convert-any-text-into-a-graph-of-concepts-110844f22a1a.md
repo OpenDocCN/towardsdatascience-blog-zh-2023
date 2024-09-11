@@ -1,18 +1,18 @@
 # 如何将任何文本转换为概念图谱
 
-> 原文：[https://towardsdatascience.com/how-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a?source=collection_archive---------0-----------------------#2023-11-10](https://towardsdatascience.com/how-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a?source=collection_archive---------0-----------------------#2023-11-10)
+> 原文：[`towardsdatascience.com/how-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a?source=collection_archive---------0-----------------------#2023-11-10`](https://towardsdatascience.com/how-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a?source=collection_archive---------0-----------------------#2023-11-10)
 
 ## 使用 Mistral 7B 将任何文本语料库转换为知识图谱的方法
 
-[](https://medium.com/@rahul.nyk?source=post_page-----110844f22a1a--------------------------------)[![Rahul Nayak](../Images/9f8aa2f9af4e02b31c114222756489e5.png)](https://medium.com/@rahul.nyk?source=post_page-----110844f22a1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----110844f22a1a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----110844f22a1a--------------------------------) [Rahul Nayak](https://medium.com/@rahul.nyk?source=post_page-----110844f22a1a--------------------------------)
+[](https://medium.com/@rahul.nyk?source=post_page-----110844f22a1a--------------------------------)![Rahul Nayak](https://medium.com/@rahul.nyk?source=post_page-----110844f22a1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----110844f22a1a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----110844f22a1a--------------------------------) [Rahul Nayak](https://medium.com/@rahul.nyk?source=post_page-----110844f22a1a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F473e87f4b733&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a&user=Rahul+Nayak&userId=473e87f4b733&source=post_page-473e87f4b733----110844f22a1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----110844f22a1a--------------------------------) ·12 分钟阅读·2023年11月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F110844f22a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a&user=Rahul+Nayak&userId=473e87f4b733&source=-----110844f22a1a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F473e87f4b733&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a&user=Rahul+Nayak&userId=473e87f4b733&source=post_page-473e87f4b733----110844f22a1a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----110844f22a1a--------------------------------) ·12 分钟阅读·2023 年 11 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F110844f22a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a&user=Rahul+Nayak&userId=473e87f4b733&source=-----110844f22a1a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F110844f22a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a&source=-----110844f22a1a---------------------bookmark_footer-----------)![](../Images/fb08cad7edf14d0bbf132f706493fdbf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F110844f22a1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-convert-any-text-into-a-graph-of-concepts-110844f22a1a&source=-----110844f22a1a---------------------bookmark_footer-----------)![](img/fb08cad7edf14d0bbf132f706493fdbf.png)
 
 作者使用本文中分享的项目生成的图像。
 
@@ -20,27 +20,27 @@
 
 在我的上一篇文章中，我分享了一种递归 RAG 方法，用于实现带有多跳推理的问答，以基于大量文本语料库回答复杂查询。
 
-[](/the-research-agent-4ef8e6f1b741?source=post_page-----110844f22a1a--------------------------------) [## 研究代理：应对基于大文本语料库回答问题的挑战
+[](/the-research-agent-4ef8e6f1b741?source=post_page-----110844f22a1a--------------------------------) ## 研究代理：应对基于大文本语料库回答问题的挑战
 
-### 我制作了一个自主AI研究代理，它可以通过深度多跳推理能力回答困难的问题。
+### 我制作了一个自主 AI 研究代理，它可以通过深度多跳推理能力回答困难的问题。
 
-[towardsdatascience.com](/the-research-agent-4ef8e6f1b741?source=post_page-----110844f22a1a--------------------------------)
+[towardsdatascience.com
 
 许多人尝试了它并提供了反馈。感谢大家的反馈。我已将这些贡献汇总，并对代码做了一些改进，以解决原始实现中的一些问题。我计划撰写一篇单独的文章。
 
-在这篇文章中，我想分享另一个可能有助于创建超级研究代理的想法，当它与递归RAG结合时。这个想法源于我对递归RAG和较小LLM的实验，以及我在Medium上阅读的一些其他想法——特别是**知识图谱增强生成**。
+在这篇文章中，我想分享另一个可能有助于创建超级研究代理的想法，当它与递归 RAG 结合时。这个想法源于我对递归 RAG 和较小 LLM 的实验，以及我在 Medium 上阅读的一些其他想法——特别是**知识图谱增强生成**。
 
 ## **摘要**
 
-知识图谱（KG）或任何图形，由节点和边组成。KG的每个节点代表一个概念，每个边表示一对概念之间的关系。在这篇文章中，我将分享一种将任何文本语料库转换为概念图的方法。我将“概念图”（GC）与KG术语交替使用，以更好地描述我在这里展示的内容。
+知识图谱（KG）或任何图形，由节点和边组成。KG 的每个节点代表一个概念，每个边表示一对概念之间的关系。在这篇文章中，我将分享一种将任何文本语料库转换为概念图的方法。我将“概念图”（GC）与 KG 术语交替使用，以更好地描述我在这里展示的内容。
 
-我在这个实现中使用的所有组件都可以在本地设置，因此这个项目可以很容易地在个人计算机上运行。我在这里采用了非GPT的方法，因为我相信较小的开源模型。我正在使用出色的Mistral 7B Openorca instruct和Zephyr模型。这些模型可以通过Ollama在本地设置。
+我在这个实现中使用的所有组件都可以在本地设置，因此这个项目可以很容易地在个人计算机上运行。我在这里采用了非 GPT 的方法，因为我相信较小的开源模型。我正在使用出色的 Mistral 7B Openorca instruct 和 Zephyr 模型。这些模型可以通过 Ollama 在本地设置。
 
-像Neo4j这样的数据库使得存储和检索图数据变得容易。在这里，我使用内存中的Pandas数据框和NetworkX Python库，以保持简单。
+像 Neo4j 这样的数据库使得存储和检索图数据变得容易。在这里，我使用内存中的 Pandas 数据框和 NetworkX Python 库，以保持简单。
 
-我们的目标是将任何文本语料库转换为概念图（GC），并像这篇文章的美丽横幅图像一样进行可视化。我们甚至可以通过移动节点和边缘、缩放以及根据我们的心愿改变图形的物理属性来与网络图进行交互。这里是展示我们正在构建的结果的Github页面链接。
+我们的目标是将任何文本语料库转换为概念图（GC），并像这篇文章的美丽横幅图像一样进行可视化。我们甚至可以通过移动节点和边缘、缩放以及根据我们的心愿改变图形的物理属性来与网络图进行交互。这里是展示我们正在构建的结果的 Github 页面链接。
 
-[https://rahulnyk.github.io/knowledge_graph/](https://rahulnyk.github.io/knowledge_graph/)
+[`rahulnyk.github.io/knowledge_graph/`](https://rahulnyk.github.io/knowledge_graph/)
 
 但首先，让我们*深入探讨*知识图谱的基本概念以及我们为什么需要它们。如果你已经熟悉这个概念，可以跳过下一部分。
 
@@ -58,11 +58,11 @@
 
 （我希望孩子们没有在读这个 😝）
 
-这是文本作为KG的一种可能表示方式。
+这是文本作为 KG 的一种可能表示方式。
 
-![](../Images/4fd39148664c94a81f884489e8151fa3.png)
+![](img/4fd39148664c94a81f884489e8151fa3.png)
 
-图表由作者使用draw.io创建
+图表由作者使用 draw.io 创建
 
 IBM 的以下文章恰当地解释了知识图谱的基本概念。
 
@@ -110,7 +110,7 @@ RAG 的另一个缺陷是它不能告诉你该问什么。通常，提出正确�
 
 这是我设计的从任何给定文本语料库中提取概念图的方法的流程图。它类似于上述方法，但有一些细微的差别。
 
-![](../Images/df5cd67aa84360e05c33020c840d23dc.png)
+![](img/df5cd67aa84360e05c33020c840d23dc.png)
 
 图表由作者使用 draw.io 创建
 
@@ -144,7 +144,7 @@ www.cureus.com](https://www.cureus.com/articles/158868-indias-opportunity-to-add
 
 [Zephyr（Hugging Face 版本，源自 Mistral）](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
 
-我使用了这些模型的4位量化版本——以防我的Mac开始讨厌我——在本地由Ollama托管。
+我使用了这些模型的 4 位量化版本——以防我的 Mac 开始讨厌我——在本地由 Ollama 托管。
 
 [](https://ollama.ai/?source=post_page-----110844f22a1a--------------------------------) [## Ollama
 
@@ -152,9 +152,9 @@ www.cureus.com](https://www.cureus.com/articles/158868-indias-opportunity-to-add
 
 ollama.ai](https://ollama.ai/?source=post_page-----110844f22a1a--------------------------------)
 
-这些模型都是经过指令调整的模型，带有系统提示和用户提示。只要我们告诉它们，它们都会相当好地遵循指令，并将答案整齐地格式化为JSON。
+这些模型都是经过指令调整的模型，带有系统提示和用户提示。只要我们告诉它们，它们都会相当好地遵循指令，并将答案整齐地格式化为 JSON。
 
-经过几轮的试验和错误，我终于确定了**Zephyr模型**，并使用了以下提示。
+经过几轮的试验和错误，我终于确定了**Zephyr 模型**，并使用了以下提示。
 
 ```py
 SYS_PROMPT = (
@@ -165,21 +165,21 @@ SYS_PROMPT = (
 
     “想法 1：在遍历每个句子时，考虑其中提到的关键术语。\n”
 
-        “\t术语可能包括对象、实体、位置、组织、人物、\n”
+        “\t 术语可能包括对象、实体、位置、组织、人物、\n”
 
-        “\t条件、缩写、文档、服务、概念等。\n”
+        “\t 条件、缩写、文档、服务、概念等。\n”
 
-        “\t术语应尽可能原子化\n\n”
+        “\t 术语应尽可能原子化\n\n”
 
     “想法 2：考虑这些术语如何与其他术语一对一关联。\n”
 
-        “\t在同一句话或同一段落中提到的术语通常是相互关联的。\n”
+        “\t 在同一句话或同一段落中提到的术语通常是相互关联的。\n”
 
-        “\t术语可以与许多其他术语相关联\n\n”
+        “\t 术语可以与许多其他术语相关联\n\n”
 
     “想法 3：找出每对相关术语之间的关系。\n\n”
 
-    “将输出格式化为JSON列表。列表的每个元素包含一对术语”
+    “将输出格式化为 JSON 列表。列表的每个元素包含一对术语”
 
     “以及它们之间的关系，如下所示：\n”
 
@@ -191,7 +191,7 @@ SYS_PROMPT = (
 
     '       "node_2": "从提取的本体中相关的概念",\n'
 
-    '       "edge": "节点_1 和节点_2 之间的关系，用一两句话描述"\n'
+    '       "edge": "节点 _1 和节点 _2 之间的关系，用一两句话描述"\n'
 
     “   }, {...}\n”
 
@@ -237,7 +237,7 @@ Notice, that it even guessed ‘food’ as a concept, which was not explicitly m
 
 If we run this through every text chunk of our example article and convert the json into a Pandas data frame, here is what it looks like.
 
-![](../Images/b90d053228d8ea0b384e52a8e2ff819a.png)
+![](img/b90d053228d8ea0b384e52a8e2ff819a.png)
 
 Every row here represents a relation between a pair of concepts. Each row is an edge between two nodes in our graph, and there can be multiple edges or relationships between the same pair of concepts. The count in the above data frame is the weight that I arbitrarily set to 4.
 
@@ -251,7 +251,7 @@ But this also means that each concept will also be paired with itself. This is c
 
 In the end, we get a dataframe very similar to our original dataframe.
 
-![](../Images/8898559a2fcb5732570bd12f60e205e2.png)
+![](img/8898559a2fcb5732570bd12f60e205e2.png)
 
 The count column here is the number of chunks where node_1 and node_2 occur together. The column chunk_id is a list of all these chunks.
 
@@ -329,7 +329,7 @@ The Girvan Newman algorithm detected 17 communities of concept in the Review Art
 
 ```
 
-这立刻让我们对审查论文中讨论的健康技术的广泛主题有了一个大致的了解，并使我们能够提出问题，然后用我们的RAG管道回答。这不是很棒吗？
+这立刻让我们对审查论文中讨论的健康技术的广泛主题有了一个大致的了解，并使我们能够提出问题，然后用我们的 RAG 管道回答。这不是很棒吗？
 
 让我们还计算一下图中每个概念的度。一个节点的度是它连接的边的总数。所以在我们的案例中，概念的度越高，它在文本主题中就越中心。我们将使用度作为我们可视化中节点的大小。
 
@@ -339,11 +339,11 @@ The Girvan Newman algorithm detected 17 communities of concept in the Review Art
 
 我使用 PiVis 库创建交互图表。[Pyvis 是一个用于可视化网络的 Python 库](https://github.com/WestHealth/pyvis/tree/master#pyvis---a-python-library-for-visualizing-networks)。这里有一篇中等文章展示了该库的易用性和强大功能。
 
-[](/pyvis-visualize-interactive-network-graphs-in-python-77e059791f01?source=post_page-----110844f22a1a--------------------------------) [## Pyvis: 用 Python 可视化交互网络图
+[](/pyvis-visualize-interactive-network-graphs-in-python-77e059791f01?source=post_page-----110844f22a1a--------------------------------) ## Pyvis: 用 Python 可视化交互网络图
 
 ### 只需几行代码
 
-[towardsdatascience.com](/pyvis-visualize-interactive-network-graphs-in-python-77e059791f01?source=post_page-----110844f22a1a--------------------------------)
+[towardsdatascience.com
 
 Pyvis 内置了 NetworkX Helper，可以将我们的 NetworkX 图转换为 PyVis 对象。因此，我们不再需要额外编码……耶！！
 
@@ -351,7 +351,7 @@ Pyvis 内置了 NetworkX Helper，可以将我们的 NetworkX 图转换为 PyVis
 
 所以，带着这些花里胡哨的东西，这是我们的图表。
 
-![](../Images/fe3e0691e930bea4d3bfe6249c4f9582.png)
+![](img/fe3e0691e930bea4d3bfe6249c4f9582.png)
 
 动图由作者使用本文讨论的项目生成。
 
@@ -373,7 +373,7 @@ Pyvis 内置了 NetworkX Helper，可以将我们的 NetworkX 图转换为 PyVis
 
 我使用了以下文章来演示我的代码。
 
-**Saxena S G, Godfrey T (2023年6月11日) 印度应对医疗资源挑战的机会。Cureus 15(6): e40274\. DOI 10.7759/cureus.40274**
+**Saxena S G, Godfrey T (2023 年 6 月 11 日) 印度应对医疗资源挑战的机会。Cureus 15(6): e40274\. DOI 10.7759/cureus.40274**
 
 我对作者们的精彩作品表示感激，并感谢他们在知识共享署名许可下发布这部作品。
 

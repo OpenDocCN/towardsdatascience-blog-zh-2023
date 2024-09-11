@@ -1,20 +1,20 @@
 # 什么是梯度，为什么梯度会爆炸？
 
-> 原文：[https://towardsdatascience.com/what-are-gradients-and-why-do-they-explode-add23264d24b?source=collection_archive---------8-----------------------#2023-06-12](https://towardsdatascience.com/what-are-gradients-and-why-do-they-explode-add23264d24b?source=collection_archive---------8-----------------------#2023-06-12)
+> 原文：[`towardsdatascience.com/what-are-gradients-and-why-do-they-explode-add23264d24b?source=collection_archive---------8-----------------------#2023-06-12`](https://towardsdatascience.com/what-are-gradients-and-why-do-they-explode-add23264d24b?source=collection_archive---------8-----------------------#2023-06-12)
 
 ## 阅读这篇文章后，你将对深度学习中最重要的概念有一个扎实的理解。
 
-[](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)[![Daniel Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)
+[](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)![Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbdc4072cbfdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-gradients-and-why-do-they-explode-add23264d24b&user=Daniel+Warfield&userId=bdc4072cbfdc&source=post_page-bdc4072cbfdc----add23264d24b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------) ·10分钟阅读·2023年6月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fadd23264d24b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-gradients-and-why-do-they-explode-add23264d24b&user=Daniel+Warfield&userId=bdc4072cbfdc&source=-----add23264d24b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbdc4072cbfdc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-gradients-and-why-do-they-explode-add23264d24b&user=Daniel+Warfield&userId=bdc4072cbfdc&source=post_page-bdc4072cbfdc----add23264d24b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------) ·10 分钟阅读·2023 年 6 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fadd23264d24b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-gradients-and-why-do-they-explode-add23264d24b&user=Daniel+Warfield&userId=bdc4072cbfdc&source=-----add23264d24b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fadd23264d24b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-gradients-and-why-do-they-explode-add23264d24b&source=-----add23264d24b---------------------bookmark_footer-----------)![](../Images/bad1bd95b279ce0cae1fa6328cb658d5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fadd23264d24b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-are-gradients-and-why-do-they-explode-add23264d24b&source=-----add23264d24b---------------------bookmark_footer-----------)![](img/bad1bd95b279ce0cae1fa6328cb658d5.png)
 
-“梯度爆炸”，由MidJourney制作。所有图片均为作者所用，除非另有说明。
+“梯度爆炸”，由 MidJourney 制作。所有图片均为作者所用，除非另有说明。
 
 梯度可以说是机器学习中最重要的基本概念。在这篇文章中，我们将探讨梯度的概念，什么因素导致梯度消失和爆炸，以及如何控制它们。
 
@@ -26,6 +26,6 @@
 
 点击链接以导航到具体章节
 
-**1)** [**什么是梯度？**](#c1ad) **2)** [**实际梯度（数学上）**](#8666) **3)** [**简单模型中的梯度（示例）**](#e9e0) **4)** [**什么是梯度爆炸和梯度消失？**](#f436) **5)** [**为什么梯度爆炸和梯度消失很糟糕？**](#1c5d) **6)** [**我们如何解决梯度爆炸和梯度消失？**](#f0ed)
+**1)** **什么是梯度？** **2)** **实际梯度（数学上）** **3)** **简单模型中的梯度（示例）** **4)** **什么是梯度爆炸和梯度消失？** **5)** **为什么梯度爆炸和梯度消失很糟糕？** **6)** **我们如何解决梯度爆炸和梯度消失？**
 
 # 什么是梯度？

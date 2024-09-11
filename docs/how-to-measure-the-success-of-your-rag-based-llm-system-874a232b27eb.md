@@ -1,30 +1,30 @@
 # 如何衡量您的基于 RAG 的 LLM 系统的成功
 
-> 原文：[https://towardsdatascience.com/how-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb?source=collection_archive---------0-----------------------#2023-10-23](https://towardsdatascience.com/how-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb?source=collection_archive---------0-----------------------#2023-10-23)
+> 原文：[`towardsdatascience.com/how-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb?source=collection_archive---------0-----------------------#2023-10-23`](https://towardsdatascience.com/how-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb?source=collection_archive---------0-----------------------#2023-10-23)
 
 ## 使用机器来评估机器
 
 ## 包括一种新的定性评分方法和详细解释。
 
-[](https://medium.com/@ccrngd1?source=post_page-----874a232b27eb--------------------------------)[![Nicholaus Lawson](../Images/5c19c9bea340514d6839fdd9f5a485aa.png)](https://medium.com/@ccrngd1?source=post_page-----874a232b27eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----874a232b27eb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----874a232b27eb--------------------------------) [Nicholaus Lawson](https://medium.com/@ccrngd1?source=post_page-----874a232b27eb--------------------------------)
+[](https://medium.com/@ccrngd1?source=post_page-----874a232b27eb--------------------------------)![Nicholaus Lawson](https://medium.com/@ccrngd1?source=post_page-----874a232b27eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----874a232b27eb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----874a232b27eb--------------------------------) [Nicholaus Lawson](https://medium.com/@ccrngd1?source=post_page-----874a232b27eb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87247d6fe280&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb&user=Nicholaus+Lawson&userId=87247d6fe280&source=post_page-87247d6fe280----874a232b27eb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----874a232b27eb--------------------------------) ·11分钟阅读·2023年10月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F874a232b27eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb&user=Nicholaus+Lawson&userId=87247d6fe280&source=-----874a232b27eb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87247d6fe280&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb&user=Nicholaus+Lawson&userId=87247d6fe280&source=post_page-87247d6fe280----874a232b27eb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----874a232b27eb--------------------------------) ·11 分钟阅读·2023 年 10 月 23 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F874a232b27eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb&user=Nicholaus+Lawson&userId=87247d6fe280&source=-----874a232b27eb---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F874a232b27eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb&source=-----874a232b27eb---------------------bookmark_footer-----------)![](../Images/3bb2a6412f41e639ce0cc4167f345371.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F874a232b27eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-the-success-of-your-rag-based-llm-system-874a232b27eb&source=-----874a232b27eb---------------------bookmark_footer-----------)![](img/3bb2a6412f41e639ce0cc4167f345371.png)
 
 由 Stable Diffusion XL 生成的图像
 
-增强生成研究，或RAG，是今年出现的大型语言模型（LLMs）最常见的使用案例。尽管文本摘要和生成通常是个别用户的重点，但企业已经意识到他们需要利用自己的数据来利用这项技术。回顾我仍然使用LLM的情况，文本生成位居高位。我想问Bard问题并让它搜索网络；我希望Claude重写电子邮件或博客文章，以增强我的内容。但我遇到的最令人兴奋的使用是将我自己的数据输入LLM。我想搜索我的笔记、电子邮件、日历和Slack消息，并让Llama充当另一个我（但这个我能记住今天之前发生的细节）。
+增强生成研究，或 RAG，是今年出现的大型语言模型（LLMs）最常见的使用案例。尽管文本摘要和生成通常是个别用户的重点，但企业已经意识到他们需要利用自己的数据来利用这项技术。回顾我仍然使用 LLM 的情况，文本生成位居高位。我想问 Bard 问题并让它搜索网络；我希望 Claude 重写电子邮件或博客文章，以增强我的内容。但我遇到的最令人兴奋的使用是将我自己的数据输入 LLM。我想搜索我的笔记、电子邮件、日历和 Slack 消息，并让 Llama 充当另一个我（但这个我能记住今天之前发生的细节）。
 
-这不是关于如何构建RAG的帖子（已经有很多这样的帖子了……我还在为其他时间写这篇帖子）。今天我们将探讨的是如何评估RAG系统。
+这不是关于如何构建 RAG 的帖子（已经有很多这样的帖子了……我还在为其他时间写这篇帖子）。今天我们将探讨的是如何评估 RAG 系统。
 
-# 我们如何从RAG中获取数据？
+# 我们如何从 RAG 中获取数据？
 
-在深入细节之前，我们先设定一个基础。当我们谈论RAG时，我们指的是系统的两个部分。
+在深入细节之前，我们先设定一个基础。当我们谈论 RAG 时，我们指的是系统的两个部分。
 
 ## 知识源
 
@@ -32,13 +32,13 @@
 
 ## LLM
 
-一旦我们有了数据，我们将其输入到LLM中。这是通过上下文窗口完成的。因此，*最终*，我们进行搜索，得到一些文本，将找到的文本放入提示中，然后将问题传递给LLM。模型随后从该上下文窗口中获取所有内容并提供答案。
+一旦我们有了数据，我们将其输入到 LLM 中。这是通过上下文窗口完成的。因此，*最终*，我们进行搜索，得到一些文本，将找到的文本放入提示中，然后将问题传递给 LLM。模型随后从该上下文窗口中获取所有内容并提供答案。
 
 ## 为什么这很重要？
 
-当我们谈论评估RAG系统时，我们必须知道在定义如何评估之前我们要评估什么。我们现在可以看到需要检查两个部分。初始数据检索是最关键的部分。LLM通常在总结/回答问题方面表现出色，前提是提供了上下文数据。可能缺乏的部分是搜索功能本身。
+当我们谈论评估 RAG 系统时，我们必须知道在定义如何评估之前我们要评估什么。我们现在可以看到需要检查两个部分。初始数据检索是最关键的部分。LLM 通常在总结/回答问题方面表现出色，前提是提供了上下文数据。可能缺乏的部分是搜索功能本身。
 
-这些知识源有一些内建的限制。例如，当使用向量数据库存储大型文本文件时，你必须对数据进行‘切块’处理。这是什么意思？假设你有一个100页的文档，但数据库一次只能处理1页。加载文档并进行搜索时，数据库只能逐页检查（好吧，这有点简化，但请耐心一点；这对于实际应用已经足够接近了）。当我们找到匹配的搜索结果时，确实有可能整个问题的答案不在这一页上。真遗憾！我们只能得到一页！这很好地说明了在担心LLM的输出之前需要检查系统这一部分的原因。
+这些知识源有一些内建的限制。例如，当使用向量数据库存储大型文本文件时，你必须对数据进行‘切块’处理。这是什么意思？假设你有一个 100 页的文档，但数据库一次只能处理 1 页。加载文档并进行搜索时，数据库只能逐页检查（好吧，这有点简化，但请耐心一点；这对于实际应用已经足够接近了）。当我们找到匹配的搜索结果时，确实有可能整个问题的答案不在这一页上。真遗憾！我们只能得到一页！这很好地说明了在担心 LLM 的输出之前需要检查系统这一部分的原因。
 
 # 我们需要评估什么？
 
@@ -50,27 +50,27 @@
 
 我看到有两种实现方式用于初步验证和评估。
 
-第一个选项是为数据集设置一组常见的预期问题，并让人工QA团队验证搜索结果。例如，如果你的团队负责为银行构建一个客服问答机器人，一些常见问题可能是：“我必须在账户中保持的最低金额是多少？”，“我怎么还款？”，“我的分行几点开门？”。如果你的QA能够提供问题和预期答案，并以类似CSV文件的形式提供，这样可以程序化读取，那就最好不过了；然后，我们可以使用一些自动化测试，稍后会在本文中进一步介绍。
+第一个选项是为数据集设置一组常见的预期问题，并让人工 QA 团队验证搜索结果。例如，如果你的团队负责为银行构建一个客服问答机器人，一些常见问题可能是：“我必须在账户中保持的最低金额是多少？”，“我怎么还款？”，“我的分行几点开门？”。如果你的 QA 能够提供问题和预期答案，并以类似 CSV 文件的形式提供，这样可以程序化读取，那就最好不过了；然后，我们可以使用一些自动化测试，稍后会在本文中进一步介绍。
 
-如果没有时间或资源，第二种方法是QA团队实时搜索和审查。这是早期POC和原型的一个选项，但请注意，这不能扩展到实际生产工作负载中。
+如果没有时间或资源，第二种方法是 QA 团队实时搜索和审查。这是早期 POC 和原型的一个选项，但请注意，这不能扩展到实际生产工作负载中。
 
-## 评估LLM响应
+## 评估 LLM 响应
 
-一旦我们对知识来源的数据的可靠性感到放心，我们必须确保最终答案的准确性。RAG系统在减少幻觉的可能性方面表现出色，这可以通过调整底层提示来进一步延伸。然而，它可能会遗漏信息、误解输入的数据，或试图引入训练中的先验知识。
+一旦我们对知识来源的数据的可靠性感到放心，我们必须确保最终答案的准确性。RAG 系统在减少幻觉的可能性方面表现出色，这可以通过调整底层提示来进一步延伸。然而，它可能会遗漏信息、误解输入的数据，或试图引入训练中的先验知识。
 
-评估这一步骤类似于评估之前的搜索。如果QA团队可以提供问题和预期答案，我们可以尝试程序化地评估答案。
+评估这一步骤类似于评估之前的搜索。如果 QA 团队可以提供问题和预期答案，我们可以尝试程序化地评估答案。
 
 现在让我们看看其中的一些选项。
 
 # 评估框架
 
-需要记住的是，LLM和RAG在其成熟周期中还处于早期阶段。自ChatGPT首次亮相以来仅过去了一年，每天都有更多的进展、模型、框架和研究。尽管如此，一些指标正成为衡量这些系统性能的标准方式。
+需要记住的是，LLM 和 RAG 在其成熟周期中还处于早期阶段。自 ChatGPT 首次亮相以来仅过去了一年，每天都有更多的进展、模型、框架和研究。尽管如此，一些指标正成为衡量这些系统性能的标准方式。
 
-我们不会涵盖评估基础LLM的方法。像ARC、MMLU、HellaSwag等都针对底层语言模型。你不需要自己运行这些指标；可以查看像这样的站点
+我们不会涵盖评估基础 LLM 的方法。像 ARC、MMLU、HellaSwag 等都针对底层语言模型。你不需要自己运行这些指标；可以查看像这样的站点
 
-[https://llm-leaderboard.streamlit.app/](https://llm-leaderboard.streamlit.app/) 和 [https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)
+[`llm-leaderboard.streamlit.app/`](https://llm-leaderboard.streamlit.app/) 和 [`huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard`](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)
 
-查看不同模型的表现。我们只对从RAG系统中得到的结果感兴趣。
+查看不同模型的表现。我们只对从 RAG 系统中得到的结果感兴趣。
 
 这引导我们关注像 ROUGE、BLEU、BLEURT 和 METEOR 这样的算法。让我们逐一详细了解每个指标。我还会附上一小段代码，展示如何调用每个指标以及输出分数的样子。我引入评估框架以便开始，并包括了我想要评分的参考和答案。
 
@@ -213,13 +213,13 @@ print(results)
 
 其次，它无法告诉你分数为何受损。是因为重复词汇会受到惩罚吗？还是因为缺少了一些词汇？摘要是否完全遗漏了答案中的重要部分？没有办法得知。
 
-最后，仅仅因为一个回答获得低分并不一定意味着人类会认为这个回答不足或错误。基准在这里可能有帮助，用于确定什么是可接受的评分，但在使用这些评分来判断RAG答案时，保持一些怀疑态度是重要的。
+最后，仅仅因为一个回答获得低分并不一定意味着人类会认为这个回答不足或错误。基准在这里可能有帮助，用于确定什么是可接受的评分，但在使用这些评分来判断 RAG 答案时，保持一些怀疑态度是重要的。
 
-## LLMs评分LLMs
+## LLMs 评分 LLMs
 
-BLEURT向我们介绍了我们可以以某种方式使用LLMs来评估RAG系统的答案。如果我们直接利用这一点呢？我们指示LLM给我们的答案一个定性评分，并提供列点的理由和评分的叙述解释。这让我们兼得两全其美的效果。我们可以提取一个数值评分来报告给用户和QA；我们也可以提供更多细节来解释为什么答案得分低。
+BLEURT 向我们介绍了我们可以以某种方式使用 LLMs 来评估 RAG 系统的答案。如果我们直接利用这一点呢？我们指示 LLM 给我们的答案一个定性评分，并提供列点的理由和评分的叙述解释。这让我们兼得两全其美的效果。我们可以提取一个数值评分来报告给用户和 QA；我们也可以提供更多细节来解释为什么答案得分低。
 
-这里是一个可以用于ClaudeV2的示例提示模板。我们传递关于如何希望模型评分我们答案的指令，传递参考数据，并传递我们从RAG系统收到的答案。
+这里是一个可以用于 ClaudeV2 的示例提示模板。我们传递关于如何希望模型评分我们答案的指令，传递参考数据，并传递我们从 RAG 系统收到的答案。
 
 ```py
 prompt_data = """
@@ -264,14 +264,14 @@ Major differences:
 - Does not convey the introduction timeline of dragons across 5th edition books
 ```
 
-就这样。如果团队能提供预期的答案，我们可以将RAG答案反馈到LLM中进行评分。好处是我们不必依赖LLM的先验知识，因为我们仍在传输相关数据。我们可以使用与RAG系统不同的LLM，这意味着我们甚至可以让多个模型来评分我们的输出，以确保评估的平衡性。
+就这样。如果团队能提供预期的答案，我们可以将 RAG 答案反馈到 LLM 中进行评分。好处是我们不必依赖 LLM 的先验知识，因为我们仍在传输相关数据。我们可以使用与 RAG 系统不同的 LLM，这意味着我们甚至可以让多个模型来评分我们的输出，以确保评估的平衡性。
 
-这种方法还给我们提供了出错的优秀解释。在这个例子中，我问了关于DND宇宙中存在哪些龙的问题。评判LLM正确识别出它没有提到色彩龙。然而，它还因为没有包括龙的年代、DND怪物手册或扩展冒险而扣分。这些遗漏对我提出的问题并不重要，但这允许QA团队自行决定一次。
+这种方法还给我们提供了出错的优秀解释。在这个例子中，我问了关于 DND 宇宙中存在哪些龙的问题。评判 LLM 正确识别出它没有提到色彩龙。然而，它还因为没有包括龙的年代、DND 怪物手册或扩展冒险而扣分。这些遗漏对我提出的问题并不重要，但这允许 QA 团队自行决定一次。
 
 # 接下来我们怎么做？
 
-基于RAG的系统及其创建框架每天都在进步。评分它们的新方法和机制也会不断进步。甚至有来自像LangChain这样的巨头的工具可以帮助完成这个任务，例如[LangSmith](https://www.langchain.com/langsmith)。
+基于 RAG 的系统及其创建框架每天都在进步。评分它们的新方法和机制也会不断进步。甚至有来自像 LangChain 这样的巨头的工具可以帮助完成这个任务，例如[LangSmith](https://www.langchain.com/langsmith)。
 
-在我们等待更多进展的同时，结合一些手动验证数据和HuggingFace度量库或LLMs本身，给我们提供了一个很好的开始信任这些系统的方法。
+在我们等待更多进展的同时，结合一些手动验证数据和 HuggingFace 度量库或 LLMs 本身，给我们提供了一个很好的开始信任这些系统的方法。
 
-记住，一旦你对你的新RAG充满信心并准备投入生产，答案的评估不会停止！作为常规监控和审计工作的一部分，你必须继续存储问题和答案，并计划进行人工评估工作，以评分和标记提供给最终用户的答案。然而，这个话题另说。
+记住，一旦你对你的新 RAG 充满信心并准备投入生产，答案的评估不会停止！作为常规监控和审计工作的一部分，你必须继续存储问题和答案，并计划进行人工评估工作，以评分和标记提供给最终用户的答案。然而，这个话题另说。

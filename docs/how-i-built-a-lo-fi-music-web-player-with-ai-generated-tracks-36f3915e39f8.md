@@ -1,18 +1,18 @@
 # 如何构建带有 AI 生成曲目的 Lo-fi 音乐网页播放器
 
-> 原文：[https://towardsdatascience.com/how-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8?source=collection_archive---------4-----------------------#2023-01-12](https://towardsdatascience.com/how-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8?source=collection_archive---------4-----------------------#2023-01-12)
+> 原文：[`towardsdatascience.com/how-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8?source=collection_archive---------4-----------------------#2023-01-12`](https://towardsdatascience.com/how-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8?source=collection_archive---------4-----------------------#2023-01-12)
 
 ## 使用 Tone.js 和 LSTM 模型制作
 
-[](https://medium.com/@leksa_86?source=post_page-----36f3915e39f8--------------------------------)[![Aleksandra Ma](../Images/71fc31d60c5b73391d8ed1178639e541.png)](https://medium.com/@leksa_86?source=post_page-----36f3915e39f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----36f3915e39f8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----36f3915e39f8--------------------------------) [Aleksandra Ma](https://medium.com/@leksa_86?source=post_page-----36f3915e39f8--------------------------------)
+[](https://medium.com/@leksa_86?source=post_page-----36f3915e39f8--------------------------------)![Aleksandra Ma](https://medium.com/@leksa_86?source=post_page-----36f3915e39f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----36f3915e39f8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----36f3915e39f8--------------------------------) [Aleksandra Ma](https://medium.com/@leksa_86?source=post_page-----36f3915e39f8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feffc1ebd4aac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8&user=Aleksandra+Ma&userId=effc1ebd4aac&source=post_page-effc1ebd4aac----36f3915e39f8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----36f3915e39f8--------------------------------) · 11分钟阅读 · 2023年1月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F36f3915e39f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8&user=Aleksandra+Ma&userId=effc1ebd4aac&source=-----36f3915e39f8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feffc1ebd4aac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8&user=Aleksandra+Ma&userId=effc1ebd4aac&source=post_page-effc1ebd4aac----36f3915e39f8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----36f3915e39f8--------------------------------) · 11 分钟阅读 · 2023 年 1 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F36f3915e39f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8&user=Aleksandra+Ma&userId=effc1ebd4aac&source=-----36f3915e39f8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F36f3915e39f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8&source=-----36f3915e39f8---------------------bookmark_footer-----------)![](../Images/060caa701829c3521df172e7dce64605.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F36f3915e39f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-built-a-lo-fi-music-web-player-with-ai-generated-tracks-36f3915e39f8&source=-----36f3915e39f8---------------------bookmark_footer-----------)![](img/060caa701829c3521df172e7dce64605.png)
 
 图片来源于 [rupixen.com](https://unsplash.com/@rupixen?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,17 +20,17 @@
 
 自大学以来，低保真嘻哈音乐一直是我学习时的首选伴侣。它以相对简单的音乐结构营造出舒适和宁静的氛围。一些爵士和弦进行、律动的鼓点、环境声音和怀旧的电影台词可以让我们制作出相当不错的低保真嘻哈曲目。除了音乐方面，动画视觉效果也是低保真美学的关键部分，与水、风和火的自然声音一起营造氛围。
 
-创建我自己的低保真网页播放器的想法是在一个星期天下午，当时我正在学习深度生成模型。我做了一些研究，并在假期期间完成了这个项目。该网页播放器提供两个选项：用户可以选择基于Tone.js编码的真实歌曲的低保真曲目，或者选择AI生成的独奏曲目。两个选项都会与用户在前一步中选择的鼓循环、环境声音和台词叠加在一起。本文主要讨论如何使用LSTM模型生成midi曲目，并在最后简要讨论如何使用Tone.js制作一首歌曲。
+创建我自己的低保真网页播放器的想法是在一个星期天下午，当时我正在学习深度生成模型。我做了一些研究，并在假期期间完成了这个项目。该网页播放器提供两个选项：用户可以选择基于 Tone.js 编码的真实歌曲的低保真曲目，或者选择 AI 生成的独奏曲目。两个选项都会与用户在前一步中选择的鼓循环、环境声音和台词叠加在一起。本文主要讨论如何使用 LSTM 模型生成 midi 曲目，并在最后简要讨论如何使用 Tone.js 制作一首歌曲。
 
-你可以在[这里](https://mtsandra.github.io/lofi-station)尝试网页版播放器，我建议使用桌面版Chrome浏览器以获得最佳体验。
+你可以在[这里](https://mtsandra.github.io/lofi-station)尝试网页版播放器，我建议使用桌面版 Chrome 浏览器以获得最佳体验。
 
-# LSTM模型架构与Midi生成
+# LSTM 模型架构与 Midi 生成
 
-在之前的[帖子](https://mtsandra.github.io/blog/2022/dl4mir-4)中，我解释了什么是LSTM网络。简要回顾一下，它是一种特殊类型的RNN，能够更好地处理长期依赖。它还具有递归结构，将来自前一个时间步的输出传递到当前时间步。为了更好地理解它，我们可以展开网络，将LSTM单元看作是多个相同网络的副本，每个副本将信息传递给下一个时间步，如下所示。
+在之前的[帖子](https://mtsandra.github.io/blog/2022/dl4mir-4)中，我解释了什么是 LSTM 网络。简要回顾一下，它是一种特殊类型的 RNN，能够更好地处理长期依赖。它还具有递归结构，将来自前一个时间步的输出传递到当前时间步。为了更好地理解它，我们可以展开网络，将 LSTM 单元看作是多个相同网络的副本，每个副本将信息传递给下一个时间步，如下所示。
 
-![](../Images/f4ad4704c26f827c5ffa69ba666e42c0.png)
+![](img/f4ad4704c26f827c5ffa69ba666e42c0.png)
 
-展开LSTM；作者创建
+展开 LSTM；作者创建
 
 每个单元格包含四个主要组件，使其能够更好地处理长期依赖：
 
@@ -42,9 +42,9 @@
 
 +   输出门：决定输出哪些信息
 
-![](../Images/075fbe6de0ca864e8082db76df1e6c8f.png)
+![](img/075fbe6de0ca864e8082db76df1e6c8f.png)
 
-在LSTM单元内部；作者创建
+在 LSTM 单元内部；作者创建
 
 ## 训练数据准备
 
@@ -64,7 +64,7 @@
 
 +   休止符：编码为字符串“r”
 
-![](../Images/b8911fb7ad38af2c6f52a0f8517f02f1.png)
+![](img/b8911fb7ad38af2c6f52a0f8517f02f1.png)
 
 *Midi 编码与映射*
 
@@ -105,15 +105,15 @@ model.fit(network_input, network_output, epochs=200, batch_size=128)
 
 ## 输出生成与解码回 Midi 音符
 
-输出生成过程类似于训练过程——我们给模型一个长度为m的序列（我们也称之为序列m以简化符号表示），并要求它预测下一个数据点。这个序列m的起始索引是从输入序列中随机选择的，但如果我们愿意，也可以指定一个特定的起始索引。模型输出是一个来自softmax的概率列表，告诉我们每个类别作为下一个数据点的适合程度。我们将选择概率最高的类别。为了生成长度为j的序列，我们会通过删除序列m的第一个元素并将最近生成的数据点添加到这个序列m中来重复这个过程，直到模型生成j个新的数据点。
+输出生成过程类似于训练过程——我们给模型一个长度为 m 的序列（我们也称之为序列 m 以简化符号表示），并要求它预测下一个数据点。这个序列 m 的起始索引是从输入序列中随机选择的，但如果我们愿意，也可以指定一个特定的起始索引。模型输出是一个来自 softmax 的概率列表，告诉我们每个类别作为下一个数据点的适合程度。我们将选择概率最高的类别。为了生成长度为 j 的序列，我们会通过删除序列 m 的第一个元素并将最近生成的数据点添加到这个序列 m 中来重复这个过程，直到模型生成 j 个新的数据点。
 
-从上一段生成的数据仍然是整数，因此我们使用编码过程中相同的映射将其解码回音符/和弦/休止符。如果它是和弦字符串格式，我们将从字符串“#.#.#.#”中读取整数符号，并创建一个music21.chord对象。如果它是音符或休止符，我们将相应地创建一个对应的音符和休止符对象。同时，我们在每个时间步将生成的新数据点追加到预测输出序列中。有关此过程的示例，请参见下面的示例流程，我们使用3个数据点的输入序列生成4个数据点的序列。
+从上一段生成的数据仍然是整数，因此我们使用编码过程中相同的映射将其解码回音符/和弦/休止符。如果它是和弦字符串格式，我们将从字符串“#.#.#.#”中读取整数符号，并创建一个 music21.chord 对象。如果它是音符或休止符，我们将相应地创建一个对应的音符和休止符对象。同时，我们在每个时间步将生成的新数据点追加到预测输出序列中。有关此过程的示例，请参见下面的示例流程，我们使用 3 个数据点的输入序列生成 4 个数据点的序列。
 
-![](../Images/fc605f964ddbc95d6782a39ea9b72590.png)
+![](img/fc605f964ddbc95d6782a39ea9b72590.png)
 
-*输出生成和MIDI解码*
+*输出生成和 MIDI 解码*
 
-现在我们有了一系列的音符、和弦和休止符。我们可以将它们放入一个music21流中并写出MIDI文件，在这种情况下，所有的音符都会是四分音符。为了保持输出的趣味性，我添加了一个代码片段，随机抽取一个时长来指定每个音符或和弦的时长（默认的概率分布是0.65用于八分音符，0.25用于十六分音符，0.05用于四分音符和二分音符）。休止符默认为十六分休止符，以避免音符之间的沉默过长。
+现在我们有了一系列的音符、和弦和休止符。我们可以将它们放入一个 music21 流中并写出 MIDI 文件，在这种情况下，所有的音符都会是四分音符。为了保持输出的趣味性，我添加了一个代码片段，随机抽取一个时长来指定每个音符或和弦的时长（默认的概率分布是 0.65 用于八分音符，0.25 用于十六分音符，0.05 用于四分音符和二分音符）。休止符默认为十六分休止符，以避免音符之间的沉默过长。
 
 ```py
 NOTE_TYPE = {
@@ -155,31 +155,31 @@ midi_stream = stream.Stream(output_notes)
 midi_stream.write('midi', fp='test_output.mid')
 ```
 
-一旦我们用不同的参数运行几次模型，并挑选出我们喜欢的曲目，我们会在任何数字音频工作站（DAW）中选择一种lofi风格的乐器效果，以便我们生成的曲目听起来更像真正的音乐。然后，我们转到JavaScript来构建我们的网页播放器。
+一旦我们用不同的参数运行几次模型，并挑选出我们喜欢的曲目，我们会在任何数字音频工作站（DAW）中选择一种 lofi 风格的乐器效果，以便我们生成的曲目听起来更像真正的音乐。然后，我们转到 JavaScript 来构建我们的网页播放器。
 
 # 使用[Tone.js](https://tonejs.github.io/)构建网页播放器
 
-Tone.js是一个用于在浏览器中创建互动音乐的网络音频框架。你可以使用它来构建很多有趣的互动网站（见[演示](https://tonejs.github.io/demos)）。但在我们的案例中，它提供了一个全局传输功能，以确保我们的鼓点、环境声音、引号和旋律同时播放。它还允许我们编写音乐乐谱、采样乐器、添加音效（混响、增益等）以及在JavaScript中创建循环。代码框架的感谢归功于[Kathryn](https://github.com/lawreka/loaf-ai)。如果你想要一个快速有效的Tone.js速成课程，我强烈推荐他们[网站](https://tonejs.github.io/)上的用例示例。最重要的收获是，对于我们创建的每个声音事件，我们需要通过`toDestination()`将它们连接到AudioDestinationNode（即我们的扬声器），或者通过`samplePlayer.chain(effect1, Tone.Destination)`来添加音效。然后，通过`Tone.Transport`，我们将能够在主输出上启动、暂停和调度事件。
+Tone.js 是一个用于在浏览器中创建互动音乐的网络音频框架。你可以使用它来构建很多有趣的互动网站（见[演示](https://tonejs.github.io/demos)）。但在我们的案例中，它提供了一个全局传输功能，以确保我们的鼓点、环境声音、引号和旋律同时播放。它还允许我们编写音乐乐谱、采样乐器、添加音效（混响、增益等）以及在 JavaScript 中创建循环。代码框架的感谢归功于[Kathryn](https://github.com/lawreka/loaf-ai)。如果你想要一个快速有效的 Tone.js 速成课程，我强烈推荐他们[网站](https://tonejs.github.io/)上的用例示例。最重要的收获是，对于我们创建的每个声音事件，我们需要通过`toDestination()`将它们连接到 AudioDestinationNode（即我们的扬声器），或者通过`samplePlayer.chain(effect1, Tone.Destination)`来添加音效。然后，通过`Tone.Transport`，我们将能够在主输出上启动、暂停和调度事件。
 
 ## 循环音频片段
 
-鼓点、环境声音、引号和预生成的AI轨道都是通过Player类加载到网页播放器中的音频文件（.mp3或.wav）。在加载来自网站的用户输入事件后，这些事件会被输入到Tone.js的Part类中以创建循环。
+鼓点、环境声音、引号和预生成的 AI 轨道都是通过 Player 类加载到网页播放器中的音频文件（.mp3 或.wav）。在加载来自网站的用户输入事件后，这些事件会被输入到 Tone.js 的 Part 类中以创建循环。
 
-鼓点每8小节循环一次，环境音效每12小节循环一次，AI独奏轨道每30小节循环一次。引号部分不循环，从第5小节开始。
+鼓点每 8 小节循环一次，环境音效每 12 小节循环一次，AI 独奏轨道每 30 小节循环一次。引号部分不循环，从第 5 小节开始。
 
 ## 使用乐器样本创建旋律和和弦进程
 
-Tone.js不提供我们在DAW中看到的软件乐器选项，只有采样器，允许我们通过加载几个音符来采样自己的乐器。然后，采样器会自动重新调整样本的音高，以创建未明确包含的音高。
+Tone.js 不提供我们在 DAW 中看到的软件乐器选项，只有采样器，允许我们通过加载几个音符来采样自己的乐器。然后，采样器会自动重新调整样本的音高，以创建未明确包含的音高。
 
-然后，我们可以通过指定音符和音符出现的时间来写入旋律和和弦进程。我建议使用TransportTime来精确编码节拍。TransportTime的格式为"BARS:QUARTERS:SIXTEENTHS"，并使用零基数编号。例如，"0:0:2"表示音符将在第一小节的两个十六分音符后出现。"2:1:0"表示音符将在第三小节，经过一个四分音符后出现。我这样为3首现有歌曲编写了旋律和和弦进程：FKJ的《Ylang Ylang》、Camille的《La Festin》和Tyler, the Creator的《See You Again》。
+然后，我们可以通过指定音符和音符出现的时间来写入旋律和和弦进程。我建议使用 TransportTime 来精确编码节拍。TransportTime 的格式为"BARS:QUARTERS:SIXTEENTHS"，并使用零基数编号。例如，"0:0:2"表示音符将在第一小节的两个十六分音符后出现。"2:1:0"表示音符将在第三小节，经过一个四分音符后出现。我这样为 3 首现有歌曲编写了旋律和和弦进程：FKJ 的《Ylang Ylang》、Camille 的《La Festin》和 Tyler, the Creator 的《See You Again》。
 
 ## 网页播放器设计
 
-我添加了函数，通过不同的环境声音输入来改变网页播放器的背景，以便每种环境下显示更合适的gif。同时还有一个与歌曲音符连接的可视化工具，由p5.js制作，以增加视觉吸引力。
+我添加了函数，通过不同的环境声音输入来改变网页播放器的背景，以便每种环境下显示更合适的 gif。同时还有一个与歌曲音符连接的可视化工具，由 p5.js 制作，以增加视觉吸引力。
 
 # 未来工作
 
-LSTM模型
+LSTM 模型
 
 +   添加序列开始和序列结束标记，以便模型可以学习音乐模式，当歌曲结束时。
 

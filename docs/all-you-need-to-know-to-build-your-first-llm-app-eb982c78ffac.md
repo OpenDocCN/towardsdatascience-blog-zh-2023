@@ -1,18 +1,18 @@
 # 构建你的第一个 LLM 应用程序所需了解的一切
 
-> 原文：[https://towardsdatascience.com/all-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac?source=collection_archive---------0-----------------------#2023-06-22](https://towardsdatascience.com/all-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac?source=collection_archive---------0-----------------------#2023-06-22)
+> 原文：[`towardsdatascience.com/all-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac?source=collection_archive---------0-----------------------#2023-06-22`](https://towardsdatascience.com/all-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac?source=collection_archive---------0-----------------------#2023-06-22)
 
 ## 关于文档加载器、嵌入、向量存储和提示模板的逐步教程
 
-[](https://dmnkplzr.medium.com/?source=post_page-----eb982c78ffac--------------------------------)[![Dominik Polzer](../Images/7e48cd15df31a0ab961391c0d57521de.png)](https://dmnkplzr.medium.com/?source=post_page-----eb982c78ffac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eb982c78ffac--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eb982c78ffac--------------------------------) [Dominik Polzer](https://dmnkplzr.medium.com/?source=post_page-----eb982c78ffac--------------------------------)
+[](https://dmnkplzr.medium.com/?source=post_page-----eb982c78ffac--------------------------------)![Dominik Polzer](https://dmnkplzr.medium.com/?source=post_page-----eb982c78ffac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eb982c78ffac--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb982c78ffac--------------------------------) [Dominik Polzer](https://dmnkplzr.medium.com/?source=post_page-----eb982c78ffac--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ab8d3143e32&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac&user=Dominik+Polzer&userId=3ab8d3143e32&source=post_page-3ab8d3143e32----eb982c78ffac---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb982c78ffac--------------------------------) ·26分钟阅读·2023年6月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feb982c78ffac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac&user=Dominik+Polzer&userId=3ab8d3143e32&source=-----eb982c78ffac---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ab8d3143e32&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac&user=Dominik+Polzer&userId=3ab8d3143e32&source=post_page-3ab8d3143e32----eb982c78ffac---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb982c78ffac--------------------------------) ·26 分钟阅读·2023 年 6 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feb982c78ffac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac&user=Dominik+Polzer&userId=3ab8d3143e32&source=-----eb982c78ffac---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feb982c78ffac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac&source=-----eb982c78ffac---------------------bookmark_footer-----------)![](../Images/215dfd8fde2517ee28b96285604db80a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feb982c78ffac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fall-you-need-to-know-to-build-your-first-llm-app-eb982c78ffac&source=-----eb982c78ffac---------------------bookmark_footer-----------)![](img/215dfd8fde2517ee28b96285604db80a.png)
 
 构建自己的聊天机器人与上下文注入 — 作者提供的图片
 
@@ -22,28 +22,28 @@
 
 **简介**
 
-[我们为何需要 LLM](#d5e4)
+我们为何需要 LLM
 
-[微调与上下文注入](#f0e7)
+微调与上下文注入
 
-[什么是 LangChain？](#b9f0)
+什么是 LangChain？
 
 **逐步教程**
 
-[1. 使用 LangChain 加载文档](#dcec)
+1. 使用 LangChain 加载文档
 
-[2. 将文档拆分成文本块](#2e88)
+2. 将文档拆分成文本块
 
-[3. 从文本块到嵌入](#335e)
+3. 从文本块到嵌入
 
-[4. 定义你想使用的LLM](#b5ab)
+4. 定义你想使用的 LLM
 
-[5. 定义我们的提示模板](#5e34)
+5. 定义我们的提示模板
 
-[6. 创建一个向量存储](#4cff)
+6. 创建一个向量存储
 
-![](../Images/abb5a66e45437849d1939f663604994d.png)
+![](img/abb5a66e45437849d1939f663604994d.png)
 
 目录
 
-# 我们为什么需要LLMs
+# 我们为什么需要 LLMs

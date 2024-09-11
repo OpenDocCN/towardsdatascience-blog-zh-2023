@@ -1,18 +1,18 @@
 # 无监督学习中的关联规则挖掘
 
-> 原文：[https://towardsdatascience.com/association-rule-mining-in-unsupervised-learning-df86170160de?source=collection_archive---------11-----------------------#2023-01-25](https://towardsdatascience.com/association-rule-mining-in-unsupervised-learning-df86170160de?source=collection_archive---------11-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/association-rule-mining-in-unsupervised-learning-df86170160de?source=collection_archive---------11-----------------------#2023-01-25`](https://towardsdatascience.com/association-rule-mining-in-unsupervised-learning-df86170160de?source=collection_archive---------11-----------------------#2023-01-25)
 
 ## 数据挖掘中的模式发现术语和概念
 
-[](https://kayjanwong.medium.com/?source=post_page-----df86170160de--------------------------------)[![Kay Jan Wong](../Images/28e803eca6327d97b6aa97ee4095d7bd.png)](https://kayjanwong.medium.com/?source=post_page-----df86170160de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----df86170160de--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----df86170160de--------------------------------) [Kay Jan Wong](https://kayjanwong.medium.com/?source=post_page-----df86170160de--------------------------------)
+[](https://kayjanwong.medium.com/?source=post_page-----df86170160de--------------------------------)![Kay Jan Wong](https://kayjanwong.medium.com/?source=post_page-----df86170160de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----df86170160de--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----df86170160de--------------------------------) [Kay Jan Wong](https://kayjanwong.medium.com/?source=post_page-----df86170160de--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffee8693930fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fassociation-rule-mining-in-unsupervised-learning-df86170160de&user=Kay+Jan+Wong&userId=fee8693930fb&source=post_page-fee8693930fb----df86170160de---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----df86170160de--------------------------------) ·5分钟阅读·2023年1月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdf86170160de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fassociation-rule-mining-in-unsupervised-learning-df86170160de&user=Kay+Jan+Wong&userId=fee8693930fb&source=-----df86170160de---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffee8693930fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fassociation-rule-mining-in-unsupervised-learning-df86170160de&user=Kay+Jan+Wong&userId=fee8693930fb&source=post_page-fee8693930fb----df86170160de---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----df86170160de--------------------------------) ·5 分钟阅读·2023 年 1 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdf86170160de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fassociation-rule-mining-in-unsupervised-learning-df86170160de&user=Kay+Jan+Wong&userId=fee8693930fb&source=-----df86170160de---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdf86170160de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fassociation-rule-mining-in-unsupervised-learning-df86170160de&source=-----df86170160de---------------------bookmark_footer-----------)![](../Images/a6785c84b324d9b94cdc3e0fc0f84db0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdf86170160de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fassociation-rule-mining-in-unsupervised-learning-df86170160de&source=-----df86170160de---------------------bookmark_footer-----------)![](img/a6785c84b324d9b94cdc3e0fc0f84db0.png)
 
 由 [Kier... in Sight](https://unsplash.com/@kierinsight?utm_source=medium&utm_medium=referral) 摄影，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

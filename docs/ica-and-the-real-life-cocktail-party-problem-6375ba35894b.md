@@ -1,22 +1,22 @@
 # ICA 和现实中的鸡尾酒会问题
 
-> 原文：[https://towardsdatascience.com/ica-and-the-real-life-cocktail-party-problem-6375ba35894b?source=collection_archive---------4-----------------------#2023-10-24](https://towardsdatascience.com/ica-and-the-real-life-cocktail-party-problem-6375ba35894b?source=collection_archive---------4-----------------------#2023-10-24)
+> 原文：[`towardsdatascience.com/ica-and-the-real-life-cocktail-party-problem-6375ba35894b?source=collection_archive---------4-----------------------#2023-10-24`](https://towardsdatascience.com/ica-and-the-real-life-cocktail-party-problem-6375ba35894b?source=collection_archive---------4-----------------------#2023-10-24)
 
 ## 为什么独立成分分析在其经典实验中失败了，以及我们可以从这种失败中学到什么。
 
-[](https://medium.com/@ballkenneth?source=post_page-----6375ba35894b--------------------------------)[![Kenneth Ball](../Images/9ce4fb9e79dfa9aef0ecaccd8538693b.png)](https://medium.com/@ballkenneth?source=post_page-----6375ba35894b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6375ba35894b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6375ba35894b--------------------------------) [Kenneth Ball](https://medium.com/@ballkenneth?source=post_page-----6375ba35894b--------------------------------)
+[](https://medium.com/@ballkenneth?source=post_page-----6375ba35894b--------------------------------)![Kenneth Ball](https://medium.com/@ballkenneth?source=post_page-----6375ba35894b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6375ba35894b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6375ba35894b--------------------------------) [Kenneth Ball](https://medium.com/@ballkenneth?source=post_page-----6375ba35894b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c5f8506be44&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fica-and-the-real-life-cocktail-party-problem-6375ba35894b&user=Kenneth+Ball&userId=9c5f8506be44&source=post_page-9c5f8506be44----6375ba35894b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6375ba35894b--------------------------------) · 13分钟阅读 · 2023年10月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6375ba35894b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fica-and-the-real-life-cocktail-party-problem-6375ba35894b&user=Kenneth+Ball&userId=9c5f8506be44&source=-----6375ba35894b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c5f8506be44&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fica-and-the-real-life-cocktail-party-problem-6375ba35894b&user=Kenneth+Ball&userId=9c5f8506be44&source=post_page-9c5f8506be44----6375ba35894b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6375ba35894b--------------------------------) · 13 分钟阅读 · 2023 年 10 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6375ba35894b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fica-and-the-real-life-cocktail-party-problem-6375ba35894b&user=Kenneth+Ball&userId=9c5f8506be44&source=-----6375ba35894b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6375ba35894b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fica-and-the-real-life-cocktail-party-problem-6375ba35894b&source=-----6375ba35894b---------------------bookmark_footer-----------)![](../Images/84a4b6ec8b37738a767b94d45139a697.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6375ba35894b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fica-and-the-real-life-cocktail-party-problem-6375ba35894b&source=-----6375ba35894b---------------------bookmark_footer-----------)![](img/84a4b6ec8b37738a767b94d45139a697.png)
 
 鸡尾酒会隐喻（作者图片）
 
-自1990年代显著发展以来，独立成分分析（ICA）已成为一种常用的数据分解和预处理技术。ICA 是一种盲源分离（BSS）方法：一些独立的源被盲目混合，结果混合信号由若干观察者接收。ICA 方法通过寻找一个最小化解混成分之间互信息或最大化数据在这些成分上投影的“非高斯性”的基变换，来*解混*观察到的信号并寻找独立源。
+自 1990 年代显著发展以来，独立成分分析（ICA）已成为一种常用的数据分解和预处理技术。ICA 是一种盲源分离（BSS）方法：一些独立的源被盲目混合，结果混合信号由若干观察者接收。ICA 方法通过寻找一个最小化解混成分之间互信息或最大化数据在这些成分上投影的“非高斯性”的基变换，来*解混*观察到的信号并寻找独立源。
 
 已经有很多教程介绍了 ICA 及其应用：本文*并不是*另一个 ICA 的介绍。相反，这是一篇关于几乎总是伴随 ICA 解释的动机问题的评论。
 
@@ -65,7 +65,7 @@ ax[2].set_title("ICA Components (Match up to Sign and Linear Scaling)")
 plt.tight_layout()
 ```
 
-![](../Images/3604b7275c7a770169f471fe10b3b168.png)
+![](img/3604b7275c7a770169f471fe10b3b168.png)
 
 FastICA 对瞬时混合信号
 
@@ -79,7 +79,7 @@ FastICA 对瞬时混合信号
 
 BSS 问题是“盲”的，所以我们注意到源 *y* 和混合 *A* 是未知的，我们寻求 *A* 的广义逆矩阵，称为分解矩阵 *W*。ICA 算法是推导 *W* 的策略。
 
-![](../Images/2045b55f5764a7ab77e4999df2d3c135.png)
+![](img/2045b55f5764a7ab77e4999df2d3c135.png)
 
 准备混合（图片由作者提供）
 
@@ -132,7 +132,7 @@ ax[2].set_title("ICA Components (Match up to Sign and Linear Scaling)")
 plt.tight_layout()
 ```
 
-![](../Images/b85732da9a683ea892fbbb06daebe038.png)
+![](img/b85732da9a683ea892fbbb06daebe038.png)
 
 针对延迟混合信号的 FastICA：注意到去混合的成分与源信号的形状发生了偏离。
 
@@ -198,7 +198,7 @@ ax[2].set_title("ICA Components (Match up to Sign and Linear Scaling)")
 plt.tight_layout()
 ```
 
-![](../Images/659b7a0e5de3230ebec68a074bee47cf.png)
+![](img/659b7a0e5de3230ebec68a074bee47cf.png)
 
 对于卷积信号的 FastICA：注意到解混后的组件与源信号形状显著不同。
 
@@ -220,42 +220,42 @@ plt.tight_layout()
 
 ICA 是否仍然可以用来解决现实世界鸡尾酒会问题所示的解卷积问题？让我们回到 BSS 解卷积问题的频率空间表示。记住，这非常接近 ICA 能处理的情况……混合矩阵是线性变换，主要问题在于它不是频率的函数上的平稳的。如果我们对（盲）卷积做一些假设，我们可能能够将 ICA 适应到解卷积问题上。
 
-假设频率空间混合在频率上连续且有些“缓慢”地变化。这里的“缓慢”指的是频率参数的微小变化会引起混合的较小变化。我们在术语上有些模糊，但总体思路是，给定足够的样本，我们可以将BSS问题划分到频率空间的子集上，并在每个子集内运行ICA，假设在频率子集内混合是静态的。例如，我们知道*全球范围*内混合随频率变化，但也许它变化得足够缓慢，以至于我们可以假设在频谱窗口中它是静态的。因此，在10到15 kHz之间，我们将使用一堆傅里叶变换样本来估计该频率窗口中的单一静态混合。
+假设频率空间混合在频率上连续且有些“缓慢”地变化。这里的“缓慢”指的是频率参数的微小变化会引起混合的较小变化。我们在术语上有些模糊，但总体思路是，给定足够的样本，我们可以将 BSS 问题划分到频率空间的子集上，并在每个子集内运行 ICA，假设在频率子集内混合是静态的。例如，我们知道*全球范围*内混合随频率变化，但也许它变化得足够缓慢，以至于我们可以假设在频谱窗口中它是静态的。因此，在 10 到 15 kHz 之间，我们将使用一堆傅里叶变换样本来估计该频率窗口中的单一静态混合。
 
-理论上，我们可以尝试在整个频率范围内对静态ICA解决方案进行插值。因此，如果我们有10–15 kHz的ICA解混方案和15–20 kHz的另一种解决方案，我们可以提出一些插值方案，将我们的两个解决方案中心放在12.5 kHz和17.5 kHz，然后推断这两个点之间的频率混合函数。
+理论上，我们可以尝试在整个频率范围内对静态 ICA 解决方案进行插值。因此，如果我们有 10–15 kHz 的 ICA 解混方案和 15–20 kHz 的另一种解决方案，我们可以提出一些插值方案，将我们的两个解决方案中心放在 12.5 kHz 和 17.5 kHz，然后推断这两个点之间的频率混合函数。
 
-然而，有一些模糊之处需要解决。首先，解混矩阵不仅仅是向量，还有一些附加的群体结构我们可能需要关注。其次，ICA解的组件在排列和缩放方面是不变的……换句话说，再次把ICA视为基变换，任何基方向的重新排序或符号/大小的变化都是同样好的解决方案。因此，进行这种频率空间分布ICA的策略可以归结为如何解决相邻频率集之间ICA解决方案的匹配和一致性问题。
+然而，有一些模糊之处需要解决。首先，解混矩阵不仅仅是向量，还有一些附加的群体结构我们可能需要关注。其次，ICA 解的组件在排列和缩放方面是不变的……换句话说，再次把 ICA 视为基变换，任何基方向的重新排序或符号/大小的变化都是同样好的解决方案。因此，进行这种频率空间分布 ICA 的策略可以归结为如何解决相邻频率集之间 ICA 解决方案的匹配和一致性问题。
 
-![](../Images/a1f1a286007537c31c967902b1a63810.png)
+![](img/a1f1a286007537c31c967902b1a63810.png)
 
 混合鸡尾酒（作者提供的图像）
 
 # 无忧与细致的特征化
 
-希望在所有这些中有一个更广泛适用的教训。即使在其模型假设是否得到满足存在一些模糊性的情况下，ICA也可以是一种非常强大的分解技术。事实上，作为研究人员，我几乎总是会选择FastICA进行降维，而不是——或者至少与——PCA进行比较。我特别喜欢用FastICA来处理更抽象的数据，而没有正式的BSS解释。
+希望在所有这些中有一个更广泛适用的教训。即使在其模型假设是否得到满足存在一些模糊性的情况下，ICA 也可以是一种非常强大的分解技术。事实上，作为研究人员，我几乎总是会选择 FastICA 进行降维，而不是——或者至少与——PCA 进行比较。我特别喜欢用 FastICA 来处理更抽象的数据，而没有正式的 BSS 解释。
 
-为什么ICA可以更普遍地使用？因为算法本身只是BSS解决方案的抽象近似。FastICA做的正是它所说的：它找到一种基变换，使数据组件在统计学上最大程度地非高斯——通过峰度（或多或少）来推断。如果这种变换恰好与物理上有意义的独立源重合，那就太好了！如果没有，它仍然可以作为一种有用的变换，类似于PCA的抽象用途。如果我们把PCA和FastICA看作是分别优化第二和第四阶统计量的基变换，它们甚至有非常松散的关系。
+为什么 ICA 可以更普遍地使用？因为算法本身只是 BSS 解决方案的抽象近似。FastICA 做的正是它所说的：它找到一种基变换，使数据组件在统计学上最大程度地非高斯——通过峰度（或多或少）来推断。如果这种变换恰好与物理上有意义的独立源重合，那就太好了！如果没有，它仍然可以作为一种有用的变换，类似于 PCA 的抽象用途。如果我们把 PCA 和 FastICA 看作是分别优化第二和第四阶统计量的基变换，它们甚至有非常松散的关系。
 
-但必须小心不要对ICA结果进行过多的解读。我们可以说ICA成分是最大程度上独立的或非高斯的：当然没问题！但我们能否说ICA成分是物理上有意义的独立来源？只有在存在满足我们所提出的假设的基础BSS模型问题时才可以。抽象中的ICA成分可能确实指示了被非线性和卷积层掩盖的有用关系。我们只需小心不要在没有验证模型假设的情况下过度解读ICA。
+但必须小心不要对 ICA 结果进行过多的解读。我们可以说 ICA 成分是最大程度上独立的或非高斯的：当然没问题！但我们能否说 ICA 成分是物理上有意义的独立来源？只有在存在满足我们所提出的假设的基础 BSS 模型问题时才可以。抽象中的 ICA 成分可能确实指示了被非线性和卷积层掩盖的有用关系。我们只需小心不要在没有验证模型假设的情况下过度解读 ICA。
 
 ## 参考文献和脚注
 
-[1] ICA的两个历史上最著名的变种——FastICA和Infomax ICA——可追溯至：
+[1] ICA 的两个历史上最著名的变种——FastICA 和 Infomax ICA——可追溯至：
 
 A. [Hyv](https://direct.mit.edu/neco/article-abstract/9/7/1483/6120/A-Fast-Fixed-Point-Algorithm-for-Independent)ä[rinen](https://direct.mit.edu/neco/article-abstract/9/7/1483/6120/A-Fast-Fixed-Point-Algorithm-for-Independent) 和 E. Oja，[一种用于独立成分分析的快速固定点算法](https://direct.mit.edu/neco/article-abstract/9/7/1483/6120/A-Fast-Fixed-Point-Algorithm-for-Independent)（1997），《神经计算》
 
 A. Bell 和 T. Sejnowski，[一种信息最大化方法用于盲分离和盲去卷积](https://ieeexplore.ieee.org/abstract/document/6796129)（1995），《神经计算》
 
-[2] C. Maklin，[Python中的独立成分分析（ICA）](/independent-component-analysis-ica-in-python-a0ef0db0955e)（2019），《数据科学进展》
+[2] C. Maklin，Python 中的独立成分分析（ICA）（2019），《数据科学进展》
 
-[3] J. Dieckmann，[ICA介绍：独立成分分析](/introduction-to-ica-independent-component-analysis-b2c3c4720cd9)（2023），《数据科学进展》
+[3] J. Dieckmann，ICA 介绍：独立成分分析（2023），《数据科学进展》
 
 [4] 我们在这里稍微滥用了一些符号表示，比如忽略了音频录制的边界，例如当*t=0*时。别担心！毕竟，一切都是对数学符号的滥用。
 
 [5] 在“现实世界”中，任何模型是否完全真实？答案是否定的，[Dr. Box](https://en.wikipedia.org/wiki/All_models_are_wrong)回答道。[Rob Thomas](https://en.wikipedia.org/wiki/Real_World_(Matchbox_Twenty_song))，厌倦了被打扰，也表示赞同。
 
-[6] S. Makeig 和 J. Onton，[ERP特征和EEG动态：ICA视角](https://www.researchgate.net/publication/228639595_ERP_features_and_EEG_dynamics_An_ICA_perspective)（2012），《牛津事件相关电位成分手册》
+[6] S. Makeig 和 J. Onton，[ERP 特征和 EEG 动态：ICA 视角](https://www.researchgate.net/publication/228639595_ERP_features_and_EEG_dynamics_An_ICA_perspective)（2012），《牛津事件相关电位成分手册》
 
 [7] J. Anemüller, T. J. Sejnowski, 和 S. Makeig，[频域脑电图数据的复杂独立成分分析](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2925861/)（2003），《神经网络》
 
-[8] A. Hyvärinen, P. Ramkumar, L. Parkkonen, 和 R. Hari，[短时傅里叶变换的独立成分分析用于自发EEG/MEG分析](https://www.cs.helsinki.fi/u/ahyvarin/papers/NIMG10reprint.pdf)（2009），《NeuroImage》
+[8] A. Hyvärinen, P. Ramkumar, L. Parkkonen, 和 R. Hari，[短时傅里叶变换的独立成分分析用于自发 EEG/MEG 分析](https://www.cs.helsinki.fi/u/ahyvarin/papers/NIMG10reprint.pdf)（2009），《NeuroImage》

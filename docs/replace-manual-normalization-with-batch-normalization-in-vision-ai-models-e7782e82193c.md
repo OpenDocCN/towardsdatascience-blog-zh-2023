@@ -1,14 +1,14 @@
 # 替换视觉 AI 模型中的手动归一化为批量归一化
 
-> 原文：[https://towardsdatascience.com/replace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c?source=collection_archive---------9-----------------------#2023-05-18](https://towardsdatascience.com/replace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c?source=collection_archive---------9-----------------------#2023-05-18)
+> 原文：[`towardsdatascience.com/replace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c?source=collection_archive---------9-----------------------#2023-05-18`](https://towardsdatascience.com/replace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c?source=collection_archive---------9-----------------------#2023-05-18)
 
 ## 一个巧妙的技巧是，将批量归一化层作为模型的第一层，以避免在视觉（图像/视频）AI 模型中进行昂贵的手动像素归一化
 
-[](https://medium.com/@dhruvbird?source=post_page-----e7782e82193c--------------------------------)[![Dhruv Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----e7782e82193c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e7782e82193c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e7782e82193c--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----e7782e82193c--------------------------------)
+[](https://medium.com/@dhruvbird?source=post_page-----e7782e82193c--------------------------------)![Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----e7782e82193c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e7782e82193c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e7782e82193c--------------------------------) [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----e7782e82193c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freplace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----e7782e82193c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e7782e82193c--------------------------------) ·8 分钟阅读·2023年5月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe7782e82193c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freplace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c&user=Dhruv+Matani&userId=63f5d5495279&source=-----e7782e82193c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freplace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----e7782e82193c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e7782e82193c--------------------------------) ·8 分钟阅读·2023 年 5 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe7782e82193c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freplace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c&user=Dhruv+Matani&userId=63f5d5495279&source=-----e7782e82193c---------------------clap_footer-----------)
 
 --
 
@@ -16,13 +16,13 @@
 
 与 [Naresh](https://medium.com/u/1e659a80cffd?source=post_page-----e7782e82193c--------------------------------) 共同撰写
 
-![](../Images/4c45a0398260aad3d9333c698c15e9e9.png)
+![](img/4c45a0398260aad3d9333c698c15e9e9.png)
 
 照片由 [Kevin Ku](https://unsplash.com/ko/@ikukevk?utm_source=medium&utm_medium=referral) 拍摄，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上
 
 # 图像预处理中的通道归一化
 
-彩色图像通常有3个通道（RGB）。视觉 AI 模型通常会对图像像素进行预处理和归一化，以便将给定通道中的像素归一化到均值为0.0和方差为1.0。由于每个通道可以有自己独特的统计数据，所以归一化是按通道进行的。批量归一化是视觉模型中用于避免被称为协变量转移现象的一种通用最佳实践。
+彩色图像通常有 3 个通道（RGB）。视觉 AI 模型通常会对图像像素进行预处理和归一化，以便将给定通道中的像素归一化到均值为 0.0 和方差为 1.0。由于每个通道可以有自己独特的统计数据，所以归一化是按通道进行的。批量归一化是视觉模型中用于避免被称为协变量转移现象的一种通用最佳实践。
 
 ## 什么是协变量转移？
 
@@ -56,9 +56,9 @@
 
 关于批量归一化是什么及其如何帮助模型的主题已经在众多文章中进行了广泛的讨论，因此我们将链接到提供最详细见解的文章，并让读者对其操作形成直观理解。我们还提供了一些将批量归一化与其他归一化技术进行比较的链接。
 
-+   [三层理解的批量归一化](/batch-normalization-in-3-levels-of-understanding-14c2da90a338)
++   三层理解的批量归一化
 
-+   [批量归一化解释](/batch-normalisation-explained-5f4bd9de5feb)
++   批量归一化解释
 
 +   [深入了解深度学习：批量归一化](https://d2l.ai/chapter_convolutional-modern/batch-norm.html)
 
@@ -66,7 +66,7 @@
 
 # 输入归一化通常是如何完成的？
 
-通常，训练模型的人员负责计算整个训练数据集的每个通道的统计数据（均值和方差），并在训练视觉AI模型之前进行归一化。这种归一化也应该在推理过程中进行。
+通常，训练模型的人员负责计算整个训练数据集的每个通道的统计数据（均值和方差），并在训练视觉 AI 模型之前进行归一化。这种归一化也应该在推理过程中进行。
 
 使用[torchvision transforms](https://pytorch.org/vision/main/transforms.html)时，这种预处理的代码可能如下所示。
 

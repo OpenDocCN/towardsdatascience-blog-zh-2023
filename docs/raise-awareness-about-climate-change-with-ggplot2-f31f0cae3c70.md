@@ -1,18 +1,18 @@
 # 使用 ggplot2 提高对气候变化的认识
 
-> 原文：[https://towardsdatascience.com/raise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70?source=collection_archive---------18-----------------------#2023-04-17](https://towardsdatascience.com/raise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70?source=collection_archive---------18-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/raise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70?source=collection_archive---------18-----------------------#2023-04-17`](https://towardsdatascience.com/raise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70?source=collection_archive---------18-----------------------#2023-04-17)
 
 ## 学会有效绘制历史天气数据
 
-[](https://medium.com/@bruno.ponne?source=post_page-----f31f0cae3c70--------------------------------)[![Bruno Ponne](../Images/991b4b721c13ed0b6ceaaa1fac81a007.png)](https://medium.com/@bruno.ponne?source=post_page-----f31f0cae3c70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f31f0cae3c70--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f31f0cae3c70--------------------------------) [Bruno Ponne](https://medium.com/@bruno.ponne?source=post_page-----f31f0cae3c70--------------------------------)
+[](https://medium.com/@bruno.ponne?source=post_page-----f31f0cae3c70--------------------------------)![Bruno Ponne](https://medium.com/@bruno.ponne?source=post_page-----f31f0cae3c70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f31f0cae3c70--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f31f0cae3c70--------------------------------) [Bruno Ponne](https://medium.com/@bruno.ponne?source=post_page-----f31f0cae3c70--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2819bc6617ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fraise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70&user=Bruno+Ponne&userId=2819bc6617ce&source=post_page-2819bc6617ce----f31f0cae3c70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f31f0cae3c70--------------------------------) · 8分钟阅读 · 2023年4月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff31f0cae3c70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fraise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70&user=Bruno+Ponne&userId=2819bc6617ce&source=-----f31f0cae3c70---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2819bc6617ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fraise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70&user=Bruno+Ponne&userId=2819bc6617ce&source=post_page-2819bc6617ce----f31f0cae3c70---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f31f0cae3c70--------------------------------) · 8 分钟阅读 · 2023 年 4 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff31f0cae3c70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fraise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70&user=Bruno+Ponne&userId=2819bc6617ce&source=-----f31f0cae3c70---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff31f0cae3c70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fraise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70&source=-----f31f0cae3c70---------------------bookmark_footer-----------)![](../Images/d86afa77c46a5339549a91a1b29e3063.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff31f0cae3c70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fraise-awareness-about-climate-change-with-ggplot2-f31f0cae3c70&source=-----f31f0cae3c70---------------------bookmark_footer-----------)![](img/d86afa77c46a5339549a91a1b29e3063.png)
 
 图片由 [Ganapathy Kumar](https://unsplash.com/@gkumar2175?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

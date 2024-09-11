@@ -1,16 +1,16 @@
 # GPT 的工作原理：使用一个药水的故事对注意力中的键、值、查询进行隐喻性的解释
 
-> 原文：[https://towardsdatascience.com/how-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470?source=collection_archive---------0-----------------------#2023-06-17](https://towardsdatascience.com/how-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470?source=collection_archive---------0-----------------------#2023-06-17)
+> 原文：[`towardsdatascience.com/how-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470?source=collection_archive---------0-----------------------#2023-06-17`](https://towardsdatascience.com/how-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470?source=collection_archive---------0-----------------------#2023-06-17)
 
-![](../Images/110a36140729edc095c7c2d5b8ae1bcb.png)
+![](img/110a36140729edc095c7c2d5b8ae1bcb.png)
 
 来源：由 Midjourney 生成。
 
-[](https://medium.com/@lilipads93?source=post_page-----8c66ace1f470--------------------------------)[![Lili Jiang](../Images/ca3c10589bf964a7c29e70f6cdd12244.png)](https://medium.com/@lilipads93?source=post_page-----8c66ace1f470--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c66ace1f470--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8c66ace1f470--------------------------------) [Lili Jiang](https://medium.com/@lilipads93?source=post_page-----8c66ace1f470--------------------------------)
+[](https://medium.com/@lilipads93?source=post_page-----8c66ace1f470--------------------------------)![Lili Jiang](https://medium.com/@lilipads93?source=post_page-----8c66ace1f470--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c66ace1f470--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c66ace1f470--------------------------------) [Lili Jiang](https://medium.com/@lilipads93?source=post_page-----8c66ace1f470--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3cc31a4b9430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470&user=Lili+Jiang&userId=3cc31a4b9430&source=post_page-3cc31a4b9430----8c66ace1f470---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c66ace1f470--------------------------------) ·10 分钟阅读·2023年6月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c66ace1f470&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470&user=Lili+Jiang&userId=3cc31a4b9430&source=-----8c66ace1f470---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3cc31a4b9430&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470&user=Lili+Jiang&userId=3cc31a4b9430&source=post_page-3cc31a4b9430----8c66ace1f470---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c66ace1f470--------------------------------) ·10 分钟阅读·2023 年 6 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c66ace1f470&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-gpt-works-a-metaphoric-explanation-of-key-value-query-in-attention-using-a-tale-of-potion-8c66ace1f470&user=Lili+Jiang&userId=3cc31a4b9430&source=-----8c66ace1f470---------------------clap_footer-----------)
 
 --
 
@@ -18,23 +18,23 @@
 
 **！更新：该帖子现在有一个 10 分钟的视频版本** [**可用**](https://www.youtube.com/watch?v=Mhy7I4E6eXs&ab_channel=ArchermanCapital)**！**
 
-ChatGPT的核心是GPT模型，它是使用**变换器**架构构建的。变换器的核心是**注意力**机制。对许多人来说，理解注意力中最难的概念是**键、值和查询**。在这篇文章中，我将用药水的类比来帮助理解这些概念。即使你已经机械地理解了变换器的数学部分，我希望通过这篇文章，你能从头到尾更直观地理解GPT的内部工作原理。
+ChatGPT 的核心是 GPT 模型，它是使用**变换器**架构构建的。变换器的核心是**注意力**机制。对许多人来说，理解注意力中最难的概念是**键、值和查询**。在这篇文章中，我将用药水的类比来帮助理解这些概念。即使你已经机械地理解了变换器的数学部分，我希望通过这篇文章，你能从头到尾更直观地理解 GPT 的内部工作原理。
 
-> 这个解释不需要数学背景。对于技术性强的读者，我在[…]中添加了更多的技术解释。你也可以安全地跳过[方括号]中的注释和像这样在引号块中的附注。在我的写作过程中，我编造了一些可读的人类解释，用于说明变换器模型的中间状态，以帮助解释，但GPT并不完全是这样思考的。
+> 这个解释不需要数学背景。对于技术性强的读者，我在[…]中添加了更多的技术解释。你也可以安全地跳过[方括号]中的注释和像这样在引号块中的附注。在我的写作过程中，我编造了一些可读的人类解释，用于说明变换器模型的中间状态，以帮助解释，但 GPT 并不完全是这样思考的。
 > 
-> [当我谈论“注意力”时，我专指“自注意力”，因为这正是GPT背后的机制。但同样的类比也可以很好地解释“注意力”的一般概念。]
+> [当我谈论“注意力”时，我专指“自注意力”，因为这正是 GPT 背后的机制。但同样的类比也可以很好地解释“注意力”的一般概念。]
 
 ## 设置
 
-GPT可以输出连贯的段落内容，因为它非常擅长执行一个任务：“给定一个文本，下一个词是什么？”让我们角色扮演GPT：*“Sarah躺在床上，感觉____”*。你能填上这个空白吗？
+GPT 可以输出连贯的段落内容，因为它非常擅长执行一个任务：“给定一个文本，下一个词是什么？”让我们角色扮演 GPT：*“Sarah 躺在床上，感觉 ____”*。你能填上这个空白吗？
 
-其中一个合理的答案是*“疲倦”*。在接下来的内容中，我将详细说明GPT是如何得出这个答案的。（为了好玩，我将这个提示放入ChatGPT中，它从中写了一个简短的[故事](https://chat.openai.com/share/169f2702-3811-4388-b3d4-67064903f4b2)）。
+其中一个合理的答案是*“疲倦”*。在接下来的内容中，我将详细说明 GPT 是如何得出这个答案的。（为了好玩，我将这个提示放入 ChatGPT 中，它从中写了一个简短的[故事](https://chat.openai.com/share/169f2702-3811-4388-b3d4-67064903f4b2)）。
 
 ## 类比：（键、值、查询），或（标签、药水、配方）
 
-你将上述提示输入GPT。在GPT中，每个词都配备了三样东西：键（Key）、值（Value）、查询（Query），这些值是在GPT模型训练期间从整个互联网的文本中学习到的。正是这三种成分的相互作用使得GPT能够在文本的上下文中理解一个词。那么它们究竟是做什么的呢？
+你将上述提示输入 GPT。在 GPT 中，每个词都配备了三样东西：键（Key）、值（Value）、查询（Query），这些值是在 GPT 模型训练期间从整个互联网的文本中学习到的。正是这三种成分的相互作用使得 GPT 能够在文本的上下文中理解一个词。那么它们究竟是做什么的呢？
 
-![](../Images/facf02f8c1e0c648188d2ae03f38ed57.png)
+![](img/facf02f8c1e0c648188d2ae03f38ed57.png)
 
 来源：由作者创建。
 
@@ -48,7 +48,7 @@ GPT可以输出连贯的段落内容，因为它非常擅长执行一个任务�
 
 ## 注意：炼金术师的药水调配
 
-![](../Images/9f7049af7c85eaa5446c9fd306fc66f9.png)
+![](img/9f7049af7c85eaa5446c9fd306fc66f9.png)
 
 带标签的药水。来源：作者创作。
 
@@ -66,15 +66,15 @@ GPT可以输出连贯的段落内容，因为它非常擅长执行一个任务�
 
 在他完成检查文本中的单词任务时，他的药瓶已经满了。
 
-![](../Images/dfc11bbf52b9f698260d0b6eaff15f95.png)
+![](img/dfc11bbf52b9f698260d0b6eaff15f95.png)
 
 来源：作者创作。
 
 与原始的*“谎言”*药水不同，这种混合药水现在考虑了这个特定句子的上下文。也就是说，它包含了很多*“疲惫，精疲力竭”*的元素，只有一点点“*不诚实*”。
 
-在这个任务中，**炼金术师知道如何关注正确的词，并结合那些相关词的值**。**这是“注意力”的隐喻步骤。**我们刚刚解释了Transformer的最重要方程，这是GPT的底层架构：
+在这个任务中，**炼金术师知道如何关注正确的词，并结合那些相关词的值**。**这是“注意力”的隐喻步骤。**我们刚刚解释了 Transformer 的最重要方程，这是 GPT 的底层架构：
 
-![](../Images/c71cb3f0e0cc58d3bc9b346807c787ba.png)
+![](img/c71cb3f0e0cc58d3bc9b346807c787ba.png)
 
 Q 是查询；K 是键；V 是值。来源：[Attention is All You Need](https://arxiv.org/pdf/1706.03762.pdf)
 
@@ -82,13 +82,13 @@ Q 是查询；K 是键；V 是值。来源：[Attention is All You Need](https:/
 > 
 > 1\. 每位炼金术师查看每个瓶子，包括他们自己的 [Q·K.transpose()]。
 > 
-> 2\. 炼金术师可以快速将他的配方（查询）与标签（键）匹配，并做出快速决定。[查询和键之间的相似性通过点积确定，这是一项快速操作。] 此外，所有炼金术师的任务都是并行进行的，这也有助于加快速度。[Q·K.transpose() 是矩阵乘法，可以并行处理。与按顺序计算的前身递归神经网络相比，速度是Transformer的优势特性。]
+> 2\. 炼金术师可以快速将他的配方（查询）与标签（键）匹配，并做出快速决定。[查询和键之间的相似性通过点积确定，这是一项快速操作。] 此外，所有炼金术师的任务都是并行进行的，这也有助于加快速度。[Q·K.transpose() 是矩阵乘法，可以并行处理。与按顺序计算的前身递归神经网络相比，速度是 Transformer 的优势特性。]
 > 
-> 3\. 炼金术师很挑剔。他只选择最好的几种药水，而不是混合所有药水。[我们使用softmax来压缩Q·K.transpose()。softmax将输入值拉向更极端的值，并将许多输入压缩到接近零。]
+> 3\. 炼金术师很挑剔。他只选择最好的几种药水，而不是混合所有药水。[我们使用 softmax 来压缩 Q·K.transpose()。softmax 将输入值拉向更极端的值，并将许多输入压缩到接近零。]
 > 
 > 4\. 在这个阶段，炼金术师不考虑单词的顺序。无论是“Sarah lies still on the bed, feeling”还是“still bed the Sarah feeling on lies”，填满的烧瓶（注意力的输出）将是相同的。[在没有“位置编码”的情况下，Attention(Q, K, V) 与单词位置无关。]
 > 
-> 5\. 烧瓶总是返回100%满，没有多也没有少。[softmax被归一化为1。]
+> 5\. 烧瓶总是返回 100%满，没有多也没有少。[softmax 被归一化为 1。]
 > 
 > 6\. 炼金术师的配方和药水的标签必须使用相同的语言。[查询和键必须具有相同的维度才能进行点积运算以进行通信。值可以采用不同的维度，如果你愿意的话。]
 > 
@@ -96,37 +96,37 @@ Q 是查询；K 是键；V 是值。来源：[Attention is All You Need](https:/
 
 ## Feed Forward: 混合药水中的化学反应
 
-直到此时，炼金术师只是将其他瓶子的药水倒入烧瓶中。换句话说，他将*“谎言”*——“*疲倦；不诚实；…”*——作为均匀混合物倒入烧瓶中；他还不能将*“疲倦”*部分提取出来并丢弃*“不诚实”*部分。[注意力只是将不同的V加在一起，经过softmax加权。]
+直到此时，炼金术师只是将其他瓶子的药水倒入烧瓶中。换句话说，他将*“谎言”*——“*疲倦；不诚实；…”*——作为均匀混合物倒入烧瓶中；他还不能将*“疲倦”*部分提取出来并丢弃*“不诚实”*部分。[注意力只是将不同的 V 加在一起，经过 softmax 加权。]
 
-![](../Images/57dea32ee1485643d85681ea3508552a.png)
+![](img/57dea32ee1485643d85681ea3508552a.png)
 
 来源：作者创建。
 
-现在进入真正的化学过程（前馈）。炼金术师将一切混合在一起并进行合成。他注意到词语之间的互动，例如*“sleepy”*和*“restful”*等。他还发现*“dishonesty”*只在一个药水中提到。他根据以往的经验知道如何让一些成分相互作用，以及如何丢弃那些一次性的成分。[前馈层是值的线性（然后是非线性）变换。前馈层是神经网络的构建块。你可以将其视为Transformer中的“思考”步骤，而早期的混合步骤只是“收集”。]
+现在进入真正的化学过程（前馈）。炼金术师将一切混合在一起并进行合成。他注意到词语之间的互动，例如*“sleepy”*和*“restful”*等。他还发现*“dishonesty”*只在一个药水中提到。他根据以往的经验知道如何让一些成分相互作用，以及如何丢弃那些一次性的成分。[前馈层是值的线性（然后是非线性）变换。前馈层是神经网络的构建块。你可以将其视为 Transformer 中的“思考”步骤，而早期的混合步骤只是“收集”。]
 
 经过处理后的药水变得更适合预测下一个词。直观上，它在句子上下文中表现出该词的一些更丰富的特性，而与起始药水（值）相比，后者是脱离上下文的。
 
-## 最终线性和softmax层：炼金术师的集会
+## 最终线性和 softmax 层：炼金术师的集会
 
 我们如何从这里得到最终输出，即预测*“Sarah lies still on the bed, feeling ___”*之后的下一个词是*“tired”*？
 
-到目前为止，每个炼金术师一直独立工作，只关注自己的词汇。现在，所有不同词汇的炼金术师汇集在一起，将他们的药水瓶按照原始词序排列，并呈现给Transformer的最终线性和softmax层。这是什么意思呢？这里，我们必须离开比喻。
+到目前为止，每个炼金术师一直独立工作，只关注自己的词汇。现在，所有不同词汇的炼金术师汇集在一起，将他们的药水瓶按照原始词序排列，并呈现给 Transformer 的最终线性和 softmax 层。这是什么意思呢？这里，我们必须离开比喻。
 
 这个最终线性层综合了不同词汇的信息。基于预训练数据，一个可能的学习是，紧接前一个词对预测下一个词是重要的。例如，线性层可能会重点关注最后一个药水瓶（“feeling”药水瓶）。
 
-然后结合softmax层，这一步为词汇表中的每个词分配一个概率，表示在*“Sarah lies on the bed, feeling…”*之后这个词的可能性。例如，非英语词汇的概率接近0。像*“tired”、 “sleepy”、 “exhausted”*这样的词将获得高概率。然后我们选择概率最高的词作为最终答案。
+然后结合 softmax 层，这一步为词汇表中的每个词分配一个概率，表示在*“Sarah lies on the bed, feeling…”*之后这个词的可能性。例如，非英语词汇的概率接近 0。像*“tired”、 “sleepy”、 “exhausted”*这样的词将获得高概率。然后我们选择概率最高的词作为最终答案。
 
-![](../Images/cdd3c4c2a3d6118a0562c52d4b07a032.png)
+![](img/cdd3c4c2a3d6118a0562c52d4b07a032.png)
 
 来源：作者创建。
 
 ## 总结
 
-现在你已经构建了一个极简主义的GPT！
+现在你已经构建了一个极简主义的 GPT！
 
 总结一下，在注意力步骤中，你确定每个词应该关注哪些词（包括自身），基于该词的查询（配方）与其他词的键（标签）的匹配程度。你将这些词的值（药水）按该词对它们的注意力进行混合。你处理这种混合物以进行一些“思考”（前馈）。每个词处理后，你将所有其他词的混合物组合在一起，以进行更多的“思考”（线性层）并做出最终预测，确定下一个词应该是什么。
 
-![](../Images/269793bc336270de37f8b5bc333a5b7c.png)
+![](img/269793bc336270de37f8b5bc333a5b7c.png)
 
 来源：作者创建。
 
@@ -142,7 +142,7 @@ Q 是查询；K 是键；V 是值。来源：[Attention is All You Need](https:/
 
 > 高级说明：情感炼金术士组只研究情感药水；他们不会知道如何处理其他集合的药水，也不会触及那些药水。[来自同一注意力头的 V、K、Q 是联合训练的。来自不同注意力头的 V、K、Q 在多头注意力步骤中不进行交互。]
 
-![](../Images/e4be1b05ac623d54f374fe9d73c4dceb.png)
+![](img/e4be1b05ac623d54f374fe9d73c4dceb.png)
 
 来源：由作者创建。
 
@@ -152,13 +152,13 @@ Q 是查询；K 是键；V 是值。来源：[Attention is All You Need](https:/
 
 这个比喻解释了原论文中的以下方程式和图表。
 
-![](../Images/07ae2467242bd67f099056786d4ec0ef.png)![](../Images/3df6411e659d67b76ded2bbb2e636db1.png)
+![](img/07ae2467242bd67f099056786d4ec0ef.png)![](img/3df6411e659d67b76ded2bbb2e636db1.png)
 
 来源：[Attention is All You Need](https://arxiv.org/pdf/1706.03762.pdf)。
 
 ## 堆叠块：并且……重复！
 
-![](../Images/f2cc8bbf14bf81e0342760fcf18f476f.png)
+![](img/f2cc8bbf14bf81e0342760fcf18f476f.png)
 
 来源：由作者创建。
 

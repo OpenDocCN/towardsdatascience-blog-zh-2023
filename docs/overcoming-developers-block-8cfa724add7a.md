@@ -1,18 +1,18 @@
 # 克服开发者阻塞
 
-> 原文：[https://towardsdatascience.com/overcoming-developers-block-8cfa724add7a?source=collection_archive---------9-----------------------#2023-10-05](https://towardsdatascience.com/overcoming-developers-block-8cfa724add7a?source=collection_archive---------9-----------------------#2023-10-05)
+> 原文：[`towardsdatascience.com/overcoming-developers-block-8cfa724add7a?source=collection_archive---------9-----------------------#2023-10-05`](https://towardsdatascience.com/overcoming-developers-block-8cfa724add7a?source=collection_archive---------9-----------------------#2023-10-05)
 
 ## 有处理开发者阻塞的方法。继续阅读，了解我如何处理。
 
-[](https://medium.com/@nyggus?source=post_page-----8cfa724add7a--------------------------------)[![Marcin Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----8cfa724add7a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8cfa724add7a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8cfa724add7a--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----8cfa724add7a--------------------------------)
+[](https://medium.com/@nyggus?source=post_page-----8cfa724add7a--------------------------------)![Marcin Kozak](https://medium.com/@nyggus?source=post_page-----8cfa724add7a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8cfa724add7a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8cfa724add7a--------------------------------) [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----8cfa724add7a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-developers-block-8cfa724add7a&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----8cfa724add7a---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----8cfa724add7a--------------------------------) ·9分钟阅读·2023年10月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8cfa724add7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-developers-block-8cfa724add7a&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----8cfa724add7a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4762f0cff9b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-developers-block-8cfa724add7a&user=Marcin+Kozak&userId=4762f0cff9b2&source=post_page-4762f0cff9b2----8cfa724add7a---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----8cfa724add7a--------------------------------) ·9 分钟阅读·2023 年 10 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8cfa724add7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-developers-block-8cfa724add7a&user=Marcin+Kozak&userId=4762f0cff9b2&source=-----8cfa724add7a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8cfa724add7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-developers-block-8cfa724add7a&source=-----8cfa724add7a---------------------bookmark_footer-----------)![](../Images/67fcf49604a110795efccd11ca219a26.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8cfa724add7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fovercoming-developers-block-8cfa724add7a&source=-----8cfa724add7a---------------------bookmark_footer-----------)![](img/67fcf49604a110795efccd11ca219a26.png)
 
 开发者阻塞可能是倦怠综合症中最严重的一种。照片由[Nubelson Fernandes](https://unsplash.com/@nublson?utm_source=medium&utm_medium=referral)拍摄，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 

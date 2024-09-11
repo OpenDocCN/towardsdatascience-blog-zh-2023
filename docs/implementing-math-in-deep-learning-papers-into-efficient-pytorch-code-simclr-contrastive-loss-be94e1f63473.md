@@ -1,18 +1,18 @@
 # 将深度学习论文中的数学公式转化为高效的 PyTorch 代码：SimCLR 对比损失
 
-> 原文：[https://towardsdatascience.com/implementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473?source=collection_archive---------5-----------------------#2023-07-05](https://towardsdatascience.com/implementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473?source=collection_archive---------5-----------------------#2023-07-05)
+> 原文：[`towardsdatascience.com/implementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473?source=collection_archive---------5-----------------------#2023-07-05`](https://towardsdatascience.com/implementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473?source=collection_archive---------5-----------------------#2023-07-05)
 
 ## 学习如何将深度学习论文中的高级数学公式转化为高效的 PyTorch 代码，共分为三步。
 
-[](https://medium.com/@moein.shariatnia?source=post_page-----be94e1f63473--------------------------------)[![Moein Shariatnia](../Images/fe92e30312ac3e0536c52ca7c0dfe30c.png)](https://medium.com/@moein.shariatnia?source=post_page-----be94e1f63473--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be94e1f63473--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be94e1f63473--------------------------------) [Moein Shariatnia](https://medium.com/@moein.shariatnia?source=post_page-----be94e1f63473--------------------------------)
+[](https://medium.com/@moein.shariatnia?source=post_page-----be94e1f63473--------------------------------)![Moein Shariatnia](https://medium.com/@moein.shariatnia?source=post_page-----be94e1f63473--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be94e1f63473--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----be94e1f63473--------------------------------) [Moein Shariatnia](https://medium.com/@moein.shariatnia?source=post_page-----be94e1f63473--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F72d1b463ba60&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473&user=Moein+Shariatnia&userId=72d1b463ba60&source=post_page-72d1b463ba60----be94e1f63473---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be94e1f63473--------------------------------) ·7分钟阅读·2023年7月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbe94e1f63473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473&user=Moein+Shariatnia&userId=72d1b463ba60&source=-----be94e1f63473---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F72d1b463ba60&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473&user=Moein+Shariatnia&userId=72d1b463ba60&source=post_page-72d1b463ba60----be94e1f63473---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be94e1f63473--------------------------------) ·7 分钟阅读·2023 年 7 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbe94e1f63473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473&user=Moein+Shariatnia&userId=72d1b463ba60&source=-----be94e1f63473---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe94e1f63473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473&source=-----be94e1f63473---------------------bookmark_footer-----------)![](../Images/06f593f36f53b88fe931cba617c07f43.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe94e1f63473&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-math-in-deep-learning-papers-into-efficient-pytorch-code-simclr-contrastive-loss-be94e1f63473&source=-----be94e1f63473---------------------bookmark_footer-----------)![](img/06f593f36f53b88fe931cba617c07f43.png)
 
 摄影：[Jeswin Thomas](https://unsplash.com/@jeswinthomas?utm_source=medium&utm_medium=referral) 由 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -28,9 +28,9 @@
 
 这是损失的数学公式：
 
-![](../Images/9d0967b5aeec60112b7981fabd5f7074.png)
+![](img/9d0967b5aeec60112b7981fabd5f7074.png)
 
-SimCLR 论文中的对比（NT-Xent）损失 | 来源于 [https://arxiv.org/pdf/2002.05709.pdf](https://arxiv.org/pdf/2002.05709.pdf)
+SimCLR 论文中的对比（NT-Xent）损失 | 来源于 [`arxiv.org/pdf/2002.05709.pdf`](https://arxiv.org/pdf/2002.05709.pdf)
 
 我同意公式的外观可能会让人感到畏惧！你可能会想，GitHub 上一定有很多现成的 PyTorch 实现，所以我们就使用它们吧 :) 是的，你说得对。网上确实有很多实现。然而，我认为这是一个练习这种技能的好例子，也可以作为一个很好的起点。
 
@@ -50,15 +50,15 @@ SimCLR 论文中的对比（NT-Xent）损失 | 来源于 [https://arxiv.org/pdf/
 
 我假设你具备基本的线性代数知识并熟悉数学符号。如果没有，你可以使用[这个工具](https://detexify.kirelabs.org/classify.html)来了解这些符号的含义和功能，只需绘制符号即可。你还可以查看这个很棒的[维基百科页面](https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols)，其中描述了大多数符号。这些都是你在需要时学习新知识的机会。我认为这是一种更高效的学习方式，而不是从头开始阅读数学教科书，几天后就放在一边 :)
 
-回到我们的主题。正如公式上方的段落增加了更多的背景，在SimCLR学习策略中，你从N张图像开始，将每张图像转换2次以获得这些图像的增强视图（现在有2*N张图像）。然后，你将这些2 * N张图像通过一个模型，得到每张图像的嵌入向量。现在，你希望使同一图像的2个增强视图（一个正样本对）的嵌入向量在嵌入空间中更接近（对所有其他正样本对也做同样的处理）。一种测量两个向量相似度（接近，相同方向）的方法是使用**余弦相似度**，它被定义为sim(u, v)（请参见上图的定义）。
+回到我们的主题。正如公式上方的段落增加了更多的背景，在 SimCLR 学习策略中，你从 N 张图像开始，将每张图像转换 2 次以获得这些图像的增强视图（现在有 2*N 张图像）。然后，你将这些 2 * N 张图像通过一个模型，得到每张图像的嵌入向量。现在，你希望使同一图像的 2 个增强视图（一个正样本对）的嵌入向量在嵌入空间中更接近（对所有其他正样本对也做同样的处理）。一种测量两个向量相似度（接近，相同方向）的方法是使用**余弦相似度**，它被定义为 sim(u, v)（请参见上图的定义）。
 
-简而言之，公式描述的是，对于我们批次中的每个项目，即图像的一个增强视图的嵌入，（记住：批次包含不同图像的所有增强视图的嵌入→如果从N张图像开始，批次大小为2*N），我们首先找到该图像的另一个增强视图的嵌入以形成一个正样本对。然后，我们计算这两个嵌入的余弦相似度并对其进行指数运算（公式的**分子**）。接着，我们计算与我们开始时的第一个嵌入向量构建的所有其他对的余弦相似度的指数运算（除了与自身的对，这就是公式中的1[k!=i]的含义），并将它们相加以构建**分母**。现在，我们可以将分子除以分母，取自然对数并翻转符号！现在，我们得到了批次中第一个项目的损失。我们只需对批次中的所有其他项目重复相同的过程，然后取平均值，以便调用PyTorch的*.backward()*方法来计算梯度。
+简而言之，公式描述的是，对于我们批次中的每个项目，即图像的一个增强视图的嵌入，（记住：批次包含不同图像的所有增强视图的嵌入→如果从 N 张图像开始，批次大小为 2*N），我们首先找到该图像的另一个增强视图的嵌入以形成一个正样本对。然后，我们计算这两个嵌入的余弦相似度并对其进行指数运算（公式的**分子**）。接着，我们计算与我们开始时的第一个嵌入向量构建的所有其他对的余弦相似度的指数运算（除了与自身的对，这就是公式中的 1[k!=i]的含义），并将它们相加以构建**分母**。现在，我们可以将分子除以分母，取自然对数并翻转符号！现在，我们得到了批次中第一个项目的损失。我们只需对批次中的所有其他项目重复相同的过程，然后取平均值，以便调用 PyTorch 的*.backward()*方法来计算梯度。
 
-## 第2步：使用简单的Python代码实现，采用幼稚的“for”循环！
+## 第 2 步：使用简单的 Python 代码实现，采用幼稚的“for”循环！
 
-使用慢速“for”循环的简单Python实现
+使用慢速“for”循环的简单 Python 实现
 
-让我们看一下代码。假设我们有两张图像：A和B。变量aug_views_1保存了这两张图像的一个增强视图（A1和B1）的嵌入（每个大小为3），与aug_views_2（A2和B2）相同；因此，两个矩阵中的第一个项目与图像A相关，第二个项目与图像B相关。我们将这两个矩阵拼接成*projections*矩阵（其中包含4个向量：A1，B1，A2，B2）。
+让我们看一下代码。假设我们有两张图像：A 和 B。变量 aug_views_1 保存了这两张图像的一个增强视图（A1 和 B1）的嵌入（每个大小为 3），与 aug_views_2（A2 和 B2）相同；因此，两个矩阵中的第一个项目与图像 A 相关，第二个项目与图像 B 相关。我们将这两个矩阵拼接成*projections*矩阵（其中包含 4 个向量：A1，B1，A2，B2）。
 
 为了保持投影矩阵中向量的关系，我们定义了*pos_pairs*字典来存储在拼接矩阵中哪些两个项目是相关的。（稍后我会解释*F.normalize()*的事！）
 
@@ -76,7 +76,7 @@ PyTorch 实现
 
 在连接了所有的嵌入和标签后，我们首先创建一个包含**所有可能配对**的余弦相似度的 *sim_matrix*。
 
-![](../Images/471741345f7ffa01e5487623bfae95f4.png)
+![](img/471741345f7ffa01e5487623bfae95f4.png)
 
 sim_matrix 的样子：绿色单元格包含我们的正样本对，橙色单元格是需要在分母中忽略的配对 | 作者提供的可视化
 

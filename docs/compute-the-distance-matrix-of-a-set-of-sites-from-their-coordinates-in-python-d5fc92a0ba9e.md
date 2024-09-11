@@ -1,86 +1,86 @@
-# 计算一组地点坐标的距离矩阵（Python实现）
+# 计算一组地点坐标的距离矩阵（Python 实现）
 
-> 原文：[https://towardsdatascience.com/compute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e?source=collection_archive---------0-----------------------#2023-07-16](https://towardsdatascience.com/compute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e?source=collection_archive---------0-----------------------#2023-07-16)
+> 原文：[`towardsdatascience.com/compute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e?source=collection_archive---------0-----------------------#2023-07-16`](https://towardsdatascience.com/compute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e?source=collection_archive---------0-----------------------#2023-07-16)
 
 ## 轻松估算任意一对地点之间的距离，作为解决一般路由问题的起点
 
-[](https://medium.com/@carlosjuribe?source=post_page-----d5fc92a0ba9e--------------------------------)[![Carlos J. Uribe](../Images/902c5f4ac5d404dd99916f145be6756c.png)](https://medium.com/@carlosjuribe?source=post_page-----d5fc92a0ba9e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5fc92a0ba9e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d5fc92a0ba9e--------------------------------) [Carlos J. Uribe](https://medium.com/@carlosjuribe?source=post_page-----d5fc92a0ba9e--------------------------------)
+[](https://medium.com/@carlosjuribe?source=post_page-----d5fc92a0ba9e--------------------------------)![Carlos J. Uribe](https://medium.com/@carlosjuribe?source=post_page-----d5fc92a0ba9e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5fc92a0ba9e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5fc92a0ba9e--------------------------------) [Carlos J. Uribe](https://medium.com/@carlosjuribe?source=post_page-----d5fc92a0ba9e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4337eddb94ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e&user=Carlos+J.+Uribe&userId=4337eddb94ed&source=post_page-4337eddb94ed----d5fc92a0ba9e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5fc92a0ba9e--------------------------------) ·13分钟阅读·2023年7月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd5fc92a0ba9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e&user=Carlos+J.+Uribe&userId=4337eddb94ed&source=-----d5fc92a0ba9e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4337eddb94ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e&user=Carlos+J.+Uribe&userId=4337eddb94ed&source=post_page-4337eddb94ed----d5fc92a0ba9e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5fc92a0ba9e--------------------------------) ·13 分钟阅读·2023 年 7 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd5fc92a0ba9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e&user=Carlos+J.+Uribe&userId=4337eddb94ed&source=-----d5fc92a0ba9e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd5fc92a0ba9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e&source=-----d5fc92a0ba9e---------------------bookmark_footer-----------)![](../Images/871f751c51440a309a64ceac1dc53e26.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd5fc92a0ba9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcompute-the-distance-matrix-of-a-set-of-sites-from-their-coordinates-in-python-d5fc92a0ba9e&source=-----d5fc92a0ba9e---------------------bookmark_footer-----------)![](img/871f751c51440a309a64ceac1dc53e26.png)
 
-由DALL·E 3生成的图像，作者的提示：“一张城市网络的地图，每个城市都连接到其他所有城市”
+由 DALL·E 3 生成的图像，作者的提示：“一张城市网络的地图，每个城市都连接到其他所有城市”
 
-> *👁️* **这是关于“**[**Python中的智能决策支持系统**](https://medium.com/@carlosjuribe/list/an-intelligent-decision-support-system-for-tourism-in-python-b6ba165b4236)**”项目的第4篇文章，** 我鼓励你查看一下，以获取整个项目的一般概述。如果你只对创建距离矩阵感兴趣，这篇文章已经足够，它是自包含的。如果你还想将距离矩阵应用于实际问题，这个系列将对你有兴趣。
+> *👁️* **这是关于“**[**Python 中的智能决策支持系统**](https://medium.com/@carlosjuribe/list/an-intelligent-decision-support-system-for-tourism-in-python-b6ba165b4236)**”项目的第 4 篇文章，** 我鼓励你查看一下，以获取整个项目的一般概述。如果你只对创建距离矩阵感兴趣，这篇文章已经足够，它是自包含的。如果你还想将距离矩阵应用于实际问题，这个系列将对你有兴趣。
 
-本文将继续从[sprint 3](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)的最后一个地方开始：为旅行商问题构建优化模型，*在给定固定访问地点*及其对之间的距离的情况下。在第4轮中，我们将暂时从建模中绕开，**开发一个具有地理空间功能的类**，这将在我们尝试解决**一般性**旅行商问题时非常有用，即对于任意位置我们可能没有现成的距离数据的问题。我们在上一轮中提出了这个“需求”，将在这一轮中构建一个子系统来满足它。
+本文将继续从[sprint 3](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)的最后一个地方开始：为旅行商问题构建优化模型，*在给定固定访问地点*及其对之间的距离的情况下。在第 4 轮中，我们将暂时从建模中绕开，**开发一个具有地理空间功能的类**，这将在我们尝试解决**一般性**旅行商问题时非常有用，即对于任意位置我们可能没有现成的距离数据的问题。我们在上一轮中提出了这个“需求”，将在这一轮中构建一个子系统来满足它。
 
 # 目录
 
-## [1. 上一轮迭代回顾](#3457)
+## 1. 上一轮迭代回顾
 
-## [2. 读取输入数据](#d4c6)
+## 2. 读取输入数据
 
-## [3. 从位置数据创建距离矩阵](#4a0e)
+## 3. 从位置数据创建距离矩阵
 
-+   [3.1. 我是否需要付出额外的努力来获得额外的进展？](#4a07)
++   3.1. 我是否需要付出额外的努力来获得额外的进展？
 
-+   [3.2. 带有的地理定位工具](#8bc3) `[geopy](#8bc3)`
++   3.2. 带有的地理定位工具 `geopy`
 
-+   [3.3. 到达要点](#f713)
++   3.3. 到达要点
 
-+   [3.4. 从坐标到距离矩阵](#6590)
++   3.4. 从坐标到距离矩阵
 
-## [4. 完成！（类内部）](#8f29)
+## 4. 完成！（类内部）
 
-+   [4.1.](#a881) `[GeoAnalyzer](#a881)` [类设计](#a881)
++   4.1. `GeoAnalyzer` 类设计
 
-+   [4.2. 类使用演示](#8c36)
++   4.2. 类使用演示
 
-## [5. 结论（或规划下一轮迭代）](#ef0c)
+## 5. 结论（或规划下一轮迭代）
 
 # 1. 上一轮迭代回顾
 
 在上一篇文章中，即[sprint 3](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)，我们进行了概念验证，展示了我们可以解决[旅行商问题](https://en.wikipedia.org/wiki/Travelling_salesman_problem)（TSP）对于一组站点，*前提是我们拥有每一对站点之间的距离*，作为距离矩阵：
 
-[](/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c?source=post_page-----d5fc92a0ba9e--------------------------------) [## 用Python实现、解决和可视化旅行商问题
+[](/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c?source=post_page-----d5fc92a0ba9e--------------------------------) ## 用 Python 实现、解决和可视化旅行商问题
 
-### 学习如何将优化模型从数学翻译到Python，优化它，并可视化解决方案以快速获得结果…
+### 学习如何将优化模型从数学翻译到 Python，优化它，并可视化解决方案以快速获得结果…
 
-towardsdatascience.com](/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c?source=post_page-----d5fc92a0ba9e--------------------------------)
+towardsdatascience.com
 
-我们将距离矩阵视为已给定，因为在那个开发阶段，重点是*模型构建*，而不是*数据获取*。但是一旦模型准备好并且在我们的固定地点集上运行良好，我们很快意识到**我们需要一种方法来** **解决一般的TSP问题**（任意地点集的问题）。这种泛化是创建真正有用的MVP所必需的。因此，我们得出的自然下一步是找到一种**自动从我们兴趣点的坐标中获取距离矩阵**的方法，这一步我们将在本文中讨论。
+我们将距离矩阵视为已给定，因为在那个开发阶段，重点是*模型构建*，而不是*数据获取*。但是一旦模型准备好并且在我们的固定地点集上运行良好，我们很快意识到**我们需要一种方法来** **解决一般的 TSP 问题**（任意地点集的问题）。这种泛化是创建真正有用的 MVP 所必需的。因此，我们得出的自然下一步是找到一种**自动从我们兴趣点的坐标中获取距离矩阵**的方法，这一步我们将在本文中讨论。
 
 这样做，我们的**新基本输入**将会简单自然得多，只需提供我们想要访问地点的地理坐标：
 
-![](../Images/59ec3de04074a9813170b50ccf7fed83.png)
+![](img/59ec3de04074a9813170b50ccf7fed83.png)
 
 **图 1.** 兴趣点的坐标。 （图像由作者提供）
 
-输出将是我们用作TSP模型输入的数据框，即输入地点的距离矩阵：
+输出将是我们用作 TSP 模型输入的数据框，即输入地点的距离矩阵：
 
-![](../Images/18f610b518e1fed4161c761c29896bb7.png)
+![](img/18f610b518e1fed4161c761c29896bb7.png)
 
 **图 2.** 给定一组地点的期望距离矩阵。 （图像由作者提供）
 
-为了保持一致性，我们将使用到目前为止考虑的相同巴黎地点。在[下一篇文章](/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9)中，我们将把这个功能与旅行销售员问题的优化模型集成，得到一个更具多功能性的MVP。
+为了保持一致性，我们将使用到目前为止考虑的相同巴黎地点。在下一篇文章中，我们将把这个功能与旅行销售员问题的优化模型集成，得到一个更具多功能性的 MVP。
 
 > ***🎯******牢记最终目标***
 > 
 > *让我们稍微回顾一下为什么要做这个。我们期望解决的原始实际问题是我们可以称之为的* ***旅行游客问题*** *(TTP)，即为一般游客制定* ***最佳旅行计划*** *的问题，* ***给定她的“个人”数据*** *(如偏好、预算等)* ***以及旅行“环境”数据*** *(如距离、价格、交通方式等)。*
 > 
-> *由于这个实际问题被认为过于复杂，我们在* [*第一个冲刺*](https://medium.com/@carlosjuribe/plan-an-optimal-trip-for-your-next-holidays-with-the-help-of-operations-research-and-python-481b1ea38fef)*中将其简化为其本质版，以启动解决方案的设计。这个“本质问题”被证明是* [*旅行销售员问题*](/modeling-the-traveling-salesman-problem-from-first-principles-bd6530c9c07) *(TSP)，在这个问题中，我们将要访问的点视为城市中游客的“兴趣点”。通过本文开发的功能，我们更接近于TTP的通用解决方案，以TSP作为解决方案的核心。*
+> *由于这个实际问题被认为过于复杂，我们在* [*第一个冲刺*](https://medium.com/@carlosjuribe/plan-an-optimal-trip-for-your-next-holidays-with-the-help-of-operations-research-and-python-481b1ea38fef)*中将其简化为其本质版，以启动解决方案的设计。这个“本质问题”被证明是* *旅行销售员问题* *(TSP)，在这个问题中，我们将要访问的点视为城市中游客的“兴趣点”。通过本文开发的功能，我们更接近于 TTP 的通用解决方案，以 TSP 作为解决方案的核心。*
 
 # 2\. 读取输入数据
 
 我们的基本输入现在是我们旅行中想要访问的地点的地理坐标。我们将“酒店”视为一种不同的地点，因为酒店本身并不是一个“感兴趣的地点”，而是我们必须在多日旅行中停留的地方。我们的酒店选择可能会因不同的旅行或不同的情况而有所不同，而一个城市中的感兴趣的地点则是相对“固定”的地方，许多旅行指南对此意见一致。当我们准备探索更高级的应用时，这种区分的有用性将变得更加明显。
 
-因此，我将我们酒店的坐标存储在一个CSV文件 `location_hotel.csv` 中，将“感兴趣地点”的坐标存储在另一个CSV文件 `sites_coordinates.csv` 中。这两个CSV文件具有相同的结构，因此我们将它们读取并合并成一个包含所有地点的数据框：
+因此，我将我们酒店的坐标存储在一个 CSV 文件 `location_hotel.csv` 中，将“感兴趣地点”的坐标存储在另一个 CSV 文件 `sites_coordinates.csv` 中。这两个 CSV 文件具有相同的结构，因此我们将它们读取并合并成一个包含所有地点的数据框：
 
 ```py
 import pandas as pd
@@ -100,7 +100,7 @@ df_sites = pd.concat([
 display(df_sites)
 ```
 
-![](../Images/b01c96cdeebff5b18e72e0b390391c18.png)
+![](img/b01c96cdeebff5b18e72e0b390391c18.png)
 
 > ***ℹ️ 如何快速准备自己的位置数据***
 > 
@@ -112,7 +112,7 @@ display(df_sites)
 > 
 > 3\. 点击这些数字，它们将被保存到你的剪贴板中，准备粘贴到一个文件中，连同你为该点选择的名称一起。
 > 
-> 4\. 对所有地点重复步骤1到3，你将得到一个等效于 `sites_coordinates.csv` 的文件。
+> 4\. 对所有地点重复步骤 1 到 3，你将得到一个等效于 `sites_coordinates.csv` 的文件。
 > 
 > 这个过程对于小规模的网站集非常有效，但如果你有数百个，甚至几十个地点，它会变得非常繁琐。在 [未来的一篇文章](https://example.org) 中，我们将创建一种自动化这个手动工作的方式，这叫做*地理定位*。
 
@@ -189,9 +189,9 @@ ellipsoidal_distance(
 )  # output: 328.3147101635456
 ```
 
-328米，这次比Google Maps提供的350米低6%（仅22米短）。对于应用一个公式来说，这还不错。正如我们所预期的，点越近，街道出现之类的曲折转弯的机会越小，因此椭球模型产生的误差也越小。对于我们目前的目的来看，显得**足够好**。
+328 米，这次比 Google Maps 提供的 350 米低 6%（仅 22 米短）。对于应用一个公式来说，这还不错。正如我们所预期的，点越近，街道出现之类的曲折转弯的机会越小，因此椭球模型产生的误差也越小。对于我们目前的目的来看，显得**足够好**。
 
-现在我们必须将这个函数应用于所有位置对，从而得到TSP模型所需的距离矩阵。
+现在我们必须将这个函数应用于所有位置对，从而得到 TSP 模型所需的距离矩阵。
 
 ## 3.4\. 从坐标到距离矩阵
 
@@ -214,13 +214,13 @@ df_distances = compute_distance_matrix(df_sites)
 display(df_distances)
 ```
 
-![](../Images/dc8c5a88bbc2fe418177b846e152407c.png)
+![](img/dc8c5a88bbc2fe418177b846e152407c.png)
 
 **图 3.** 使用地球椭球模型得到的距离矩阵。（图像来源：作者）
 
 就这样！正如预期的那样，矩阵的对角线为零，矩阵是对称的。输出数据框的索引和列包含输入站点的名称。
 
-功能演示完毕。现在我们可以更好地方便使用这个函数。让我们以一种便捷的方式将这个功能封装在一个类中，**以便于重复使用**，更重要的是，**为了更容易与我们在上一个冲刺中构建的TSP优化模型集成**。
+功能演示完毕。现在我们可以更好地方便使用这个函数。让我们以一种便捷的方式将这个功能封装在一个类中，**以便于重复使用**，更重要的是，**为了更容易与我们在上一个冲刺中构建的 TSP 优化模型集成**。
 
 # 4\. 总结！(在类内部)
 
@@ -317,14 +317,14 @@ geo_analyzer = GeoAnalyzer()
 geo_analyzer.add_locations(df_sites)
 ```
 
-我们检查此时实例的表示，告知我们已经提供了9个位置，我们可以通过属性`locations`查看详细信息：
+我们检查此时实例的表示，告知我们已经提供了 9 个位置，我们可以通过属性`locations`查看详细信息：
 
 ```py
 display(geo_analyzer)
 display(geo_analyzer.locations)
 ```
 
-![](../Images/eeb4a74be1a03f64e941620e2256c7c0.png)
+![](img/eeb4a74be1a03f64e941620e2256c7c0.png)
 
 当然，我们可以从对象中提取距离矩阵，到目前为止这已经相当熟悉了：
 
@@ -334,7 +334,7 @@ df_distances = geo_analyzer.get_distance_matrix()
 display(df_distances)
 ```
 
-![](../Images/dc8c5a88bbc2fe418177b846e152407c.png)
+![](img/dc8c5a88bbc2fe418177b846e152407c.png)
 
 最后，如果我们对这些值的来源感到好奇，我们可以从数据框本身进行检查：
 
@@ -349,10 +349,10 @@ print(f"Distance metric used: {df_distances.distance_metric}")
 
 我们工作的最终结果是一个名为 `GeoAnalyzer` 的类，具有便捷的方法，帮助我们将旅行推销员问题推广到任意的站点集合。这个推广将是我们[下一个冲刺](https://medium.com/@carlosjuribe/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9)的具体目标，**我们将为 TSP 创建一个类似估算器的类**，它隐藏了在[sprint 2](https://medium.com/@carlosjuribe/plan-optimal-trips-automatically-with-python-and-operations-research-models-part-2-fc7ee8198b6c)中涉及的模型构建步骤，并以待访问站点的地理坐标作为输入。`GeoAnalyzer` 类将是这个新估算器类的关键组成部分，**实现我们所构建的 TSP 优化模型的真正通用应用**。这个新的类似估算器的类，将结合 `GeoAnalyzer` 和 TSP 模型的通用性，将成为我们解决更一般的**旅行游客问题**的核心。继续阅读[下一个冲刺](https://medium.com/@carlosjuribe/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9)，了解真正的内容：
 
-[](/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9?source=post_page-----d5fc92a0ba9e--------------------------------) [## 一种优雅的方法来有效解决旅行推销员问题，使用 Python
+[](/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9?source=post_page-----d5fc92a0ba9e--------------------------------) ## 一种优雅的方法来有效解决旅行推销员问题，使用 Python
 
 ### 以类似 scikit-learn 的方式实现 TSP 模型，以简化路由优化的构建和解决过程…
 
-towardsdatascience.com](/a-classy-approach-to-solving-traveling-salesman-problems-effectively-dbb44e7d30b9?source=post_page-----d5fc92a0ba9e--------------------------------)
+towardsdatascience.com
 
 随时关注我，向我提问，**给我反馈**，或通过[LinkedIn](https://www.linkedin.com/in/carlosjuribe/)与我联系。感谢阅读！📈😊

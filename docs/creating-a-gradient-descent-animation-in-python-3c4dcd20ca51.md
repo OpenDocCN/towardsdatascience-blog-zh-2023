@@ -1,24 +1,24 @@
 # 在 Python 中创建梯度下降动画
 
-> 原文：[https://towardsdatascience.com/creating-a-gradient-descent-animation-in-python-3c4dcd20ca51?source=collection_archive---------8-----------------------#2023-11-11](https://towardsdatascience.com/creating-a-gradient-descent-animation-in-python-3c4dcd20ca51?source=collection_archive---------8-----------------------#2023-11-11)
+> 原文：[`towardsdatascience.com/creating-a-gradient-descent-animation-in-python-3c4dcd20ca51?source=collection_archive---------8-----------------------#2023-11-11`](https://towardsdatascience.com/creating-a-gradient-descent-animation-in-python-3c4dcd20ca51?source=collection_archive---------8-----------------------#2023-11-11)
 
 ## 如何在复杂表面上绘制点的轨迹
 
-[](https://medium.com/@luisdamed?source=post_page-----3c4dcd20ca51--------------------------------)[![Luis Medina](../Images/d83d326290ae3272f0618d0bd28bd875.png)](https://medium.com/@luisdamed?source=post_page-----3c4dcd20ca51--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c4dcd20ca51--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c4dcd20ca51--------------------------------) [Luis Medina](https://medium.com/@luisdamed?source=post_page-----3c4dcd20ca51--------------------------------)
+[](https://medium.com/@luisdamed?source=post_page-----3c4dcd20ca51--------------------------------)![Luis Medina](https://medium.com/@luisdamed?source=post_page-----3c4dcd20ca51--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c4dcd20ca51--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c4dcd20ca51--------------------------------) [Luis Medina](https://medium.com/@luisdamed?source=post_page-----3c4dcd20ca51--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F562a027a34f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-gradient-descent-animation-in-python-3c4dcd20ca51&user=Luis+Medina&userId=562a027a34f0&source=post_page-562a027a34f0----3c4dcd20ca51---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c4dcd20ca51--------------------------------) ·10 min 阅读·2023年11月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c4dcd20ca51&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-gradient-descent-animation-in-python-3c4dcd20ca51&user=Luis+Medina&userId=562a027a34f0&source=-----3c4dcd20ca51---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F562a027a34f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-gradient-descent-animation-in-python-3c4dcd20ca51&user=Luis+Medina&userId=562a027a34f0&source=post_page-562a027a34f0----3c4dcd20ca51---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c4dcd20ca51--------------------------------) ·10 min 阅读·2023 年 11 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c4dcd20ca51&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-gradient-descent-animation-in-python-3c4dcd20ca51&user=Luis+Medina&userId=562a027a34f0&source=-----3c4dcd20ca51---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3c4dcd20ca51&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-gradient-descent-animation-in-python-3c4dcd20ca51&source=-----3c4dcd20ca51---------------------bookmark_footer-----------)![](../Images/7d7b4b9e511a33f93c362a2a92aaedc2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3c4dcd20ca51&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-gradient-descent-animation-in-python-3c4dcd20ca51&source=-----3c4dcd20ca51---------------------bookmark_footer-----------)![](img/7d7b4b9e511a33f93c362a2a92aaedc2.png)
 
 图片由 [Todd Diemer](https://unsplash.com/@todd_diemer?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 让我告诉你我是如何创建一个梯度下降的动画来说明博客文章中的一个点的。这样做是值得的，因为我通过这个过程学到了更多 Python 知识，并掌握了一项新技能：制作动画图表。
 
-![](../Images/99b27b5838acc1c636dfd987cb31ace8.png)
+![](img/99b27b5838acc1c636dfd987cb31ace8.png)
 
 在 Python 中创建的梯度下降动画。图片由作者提供。
 

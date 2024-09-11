@@ -1,20 +1,20 @@
 # 如何使用 Python 和 Matplotlib 创建美国数据地图
 
-> 原文：[https://towardsdatascience.com/how-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d?source=collection_archive---------7-----------------------#2023-09-07](https://towardsdatascience.com/how-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d?source=collection_archive---------7-----------------------#2023-09-07)
+> 原文：[`towardsdatascience.com/how-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d?source=collection_archive---------7-----------------------#2023-09-07`](https://towardsdatascience.com/how-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d?source=collection_archive---------7-----------------------#2023-09-07)
 
 ## Matplotlib 教程
 
 ## 创建引人注目的地图
 
-[](https://medium.com/@oscarleo?source=post_page-----5dfb425bd87d--------------------------------)[![Oscar Leo](../Images/7733c9147bad2875a35155fca3903aa8.png)](https://medium.com/@oscarleo?source=post_page-----5dfb425bd87d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dfb425bd87d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5dfb425bd87d--------------------------------) [Oscar Leo](https://medium.com/@oscarleo?source=post_page-----5dfb425bd87d--------------------------------)
+[](https://medium.com/@oscarleo?source=post_page-----5dfb425bd87d--------------------------------)![Oscar Leo](https://medium.com/@oscarleo?source=post_page-----5dfb425bd87d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dfb425bd87d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dfb425bd87d--------------------------------) [Oscar Leo](https://medium.com/@oscarleo?source=post_page-----5dfb425bd87d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7e5c1ca65b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d&user=Oscar+Leo&userId=d7e5c1ca65b7&source=post_page-d7e5c1ca65b7----5dfb425bd87d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dfb425bd87d--------------------------------) ·7 分钟阅读·2023年9月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5dfb425bd87d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d&user=Oscar+Leo&userId=d7e5c1ca65b7&source=-----5dfb425bd87d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd7e5c1ca65b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d&user=Oscar+Leo&userId=d7e5c1ca65b7&source=post_page-d7e5c1ca65b7----5dfb425bd87d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dfb425bd87d--------------------------------) ·7 分钟阅读·2023 年 9 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5dfb425bd87d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d&user=Oscar+Leo&userId=d7e5c1ca65b7&source=-----5dfb425bd87d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5dfb425bd87d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d&source=-----5dfb425bd87d---------------------bookmark_footer-----------)![](../Images/1c56f212ab80ea66082213e3c6beb392.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5dfb425bd87d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-create-data-maps-of-the-united-states-with-python-and-matplotlib-5dfb425bd87d&source=-----5dfb425bd87d---------------------bookmark_footer-----------)![](img/1c56f212ab80ea66082213e3c6beb392.png)
 
 由作者创建的地图
 

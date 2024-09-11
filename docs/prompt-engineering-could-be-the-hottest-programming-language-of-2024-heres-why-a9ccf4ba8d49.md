@@ -1,22 +1,22 @@
-# 提示工程可能是2024年最热门的编程语言——原因如下
+# 提示工程可能是 2024 年最热门的编程语言——原因如下
 
-> 原文：[https://towardsdatascience.com/prompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49?source=collection_archive---------0-----------------------#2023-12-21](https://towardsdatascience.com/prompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49?source=collection_archive---------0-----------------------#2023-12-21)
+> 原文：[`towardsdatascience.com/prompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49?source=collection_archive---------0-----------------------#2023-12-21`](https://towardsdatascience.com/prompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49?source=collection_archive---------0-----------------------#2023-12-21)
 
 ## 大型语言模型是下一代操作系统
 
-[](https://nabil-alouani.medium.com/?source=post_page-----a9ccf4ba8d49--------------------------------)[![Nabil Alouani](../Images/8ceea018e9b15413d318bfb710bb0011.png)](https://nabil-alouani.medium.com/?source=post_page-----a9ccf4ba8d49--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a9ccf4ba8d49--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a9ccf4ba8d49--------------------------------) [Nabil Alouani](https://nabil-alouani.medium.com/?source=post_page-----a9ccf4ba8d49--------------------------------)
+[](https://nabil-alouani.medium.com/?source=post_page-----a9ccf4ba8d49--------------------------------)![Nabil Alouani](https://nabil-alouani.medium.com/?source=post_page-----a9ccf4ba8d49--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a9ccf4ba8d49--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a9ccf4ba8d49--------------------------------) [Nabil Alouani](https://nabil-alouani.medium.com/?source=post_page-----a9ccf4ba8d49--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7e6956110712&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49&user=Nabil+Alouani&userId=7e6956110712&source=post_page-7e6956110712----a9ccf4ba8d49---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a9ccf4ba8d49--------------------------------) ·16 min read·2023年12月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa9ccf4ba8d49&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49&user=Nabil+Alouani&userId=7e6956110712&source=-----a9ccf4ba8d49---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7e6956110712&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49&user=Nabil+Alouani&userId=7e6956110712&source=post_page-7e6956110712----a9ccf4ba8d49---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a9ccf4ba8d49--------------------------------) ·16 min read·2023 年 12 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa9ccf4ba8d49&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49&user=Nabil+Alouani&userId=7e6956110712&source=-----a9ccf4ba8d49---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa9ccf4ba8d49&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49&source=-----a9ccf4ba8d49---------------------bookmark_footer-----------)![](../Images/8914fb851cbf6bd3ef466345eacf0eb1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa9ccf4ba8d49&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprompt-engineering-could-be-the-hottest-programming-language-of-2024-heres-why-a9ccf4ba8d49&source=-----a9ccf4ba8d49---------------------bookmark_footer-----------)![](img/8914fb851cbf6bd3ef466345eacf0eb1.png)
 
-除非另有说明，所有图片均由作者使用Midjourney、DALL-E和Canva生成。
+除非另有说明，所有图片均由作者使用 Midjourney、DALL-E 和 Canva 生成。
 
-“我不认为将大型语言模型视为聊天机器人或某种单词生成器是准确的，”OpenAI的创始成员之一[安德烈·卡帕西](https://karpathy.ai/)说。“更准确的说法是，将它们看作是**一个新兴操作系统的核心进程**。”
+“我不认为将大型语言模型视为聊天机器人或某种单词生成器是准确的，”OpenAI 的创始成员之一[安德烈·卡帕西](https://karpathy.ai/)说。“更准确的说法是，将它们看作是**一个新兴操作系统的核心进程**。”
 
 等等，那这究竟意味着什么？
 

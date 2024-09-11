@@ -1,12 +1,12 @@
 # 在 Rust 中构建跨平台 TFIDF 文本摘要器
 
-> 原文：[https://towardsdatascience.com/building-a-cross-platform-tfidf-text-summarizer-in-rust-7b05938f4507?source=collection_archive---------4-----------------------#2023-12-14](https://towardsdatascience.com/building-a-cross-platform-tfidf-text-summarizer-in-rust-7b05938f4507?source=collection_archive---------4-----------------------#2023-12-14)
+> 原文：[`towardsdatascience.com/building-a-cross-platform-tfidf-text-summarizer-in-rust-7b05938f4507?source=collection_archive---------4-----------------------#2023-12-14`](https://towardsdatascience.com/building-a-cross-platform-tfidf-text-summarizer-in-rust-7b05938f4507?source=collection_archive---------4-----------------------#2023-12-14)
 
 ## 跨平台的 Rust NLP
 
 ## 使用 Rayon 进行优化，并支持 C/C++、Android、Python
 
-[](https://equipintelligence.medium.com/?source=post_page-----7b05938f4507--------------------------------)[![Shubham Panchal](../Images/d48aecd8b1ed27ab68fc2e7ff6716606.png)](https://equipintelligence.medium.com/?source=post_page-----7b05938f4507--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b05938f4507--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b05938f4507--------------------------------) [Shubham Panchal](https://equipintelligence.medium.com/?source=post_page-----7b05938f4507--------------------------------)
+[](https://equipintelligence.medium.com/?source=post_page-----7b05938f4507--------------------------------)![Shubham Panchal](https://equipintelligence.medium.com/?source=post_page-----7b05938f4507--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b05938f4507--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b05938f4507--------------------------------) [Shubham Panchal](https://equipintelligence.medium.com/?source=post_page-----7b05938f4507--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b05938f4507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-cross-platform-tfidf-text-summarizer-in-rust-7b05938f4507&source=-----7b05938f4507---------------------bookmark_footer-----------)![](../Images/365e0c70171e5e7e57f27dd3eba968f8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b05938f4507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-cross-platform-tfidf-text-summarizer-in-rust-7b05938f4507&source=-----7b05938f4507---------------------bookmark_footer-----------)![](img/365e0c70171e5e7e57f27dd3eba968f8.png)
 
 照片由 [Patrick Tomasso](https://unsplash.com/@impatrickt?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -64,11 +64,11 @@ github.com](https://github.com/shubham0204/tfidf-summarizer.rs?source=post_page-
 
 文本总结一直是自然语言处理（NLP）中长期研究的问题。从文本中提取重要信息并生成文本摘要是文本总结器需要解决的核心问题。解决方案分为两类，即提取式总结和抽象式总结。
 
-[](/understanding-automatic-text-summarization-1-extractive-methods-8eb512b21ecc?source=post_page-----7b05938f4507--------------------------------) [## 理解自动文本摘要-1: 抽取方法
+[](/understanding-automatic-text-summarization-1-extractive-methods-8eb512b21ecc?source=post_page-----7b05938f4507--------------------------------) ## 理解自动文本摘要-1: 抽取方法
 
 ### 我们如何自动总结文档？
 
-[towardsdatascience.com](/understanding-automatic-text-summarization-1-extractive-methods-8eb512b21ecc?source=post_page-----7b05938f4507--------------------------------)
+[towardsdatascience.com
 
 在抽取式文本总结中，短语或句子直接从句子中提取。我们可以使用评分函数对句子进行排名，并根据它们的分数从文本中选择最合适的句子。与抽象总结中生成新文本不同，摘要是从文本中选择的句子的集合，从而避免了生成模型所展示的问题。
 
@@ -84,33 +84,33 @@ github.com](https://github.com/shubham0204/tfidf-summarizer.rs?source=post_page-
 
 为了对每个句子进行排序，我们需要计算一个分数来量化句子中信息的量。TF-IDF 包含两个术语——TF，表示*词频*，以及 IDF，表示*逆文档频率*。
 
-[](/tf-term-frequency-idf-inverse-document-frequency-from-scratch-in-python-6c2b61b78558?source=post_page-----7b05938f4507--------------------------------) [## 从头开始使用 python 创建 TF（词频）-IDF（逆文档频率）。
+[](/tf-term-frequency-idf-inverse-document-frequency-from-scratch-in-python-6c2b61b78558?source=post_page-----7b05938f4507--------------------------------) ## 从头开始使用 python 创建 TF（词频）-IDF（逆文档频率）。
 
 ### 从头开始创建 TF-IDF 模型
 
-[towardsdatascience.com](/tf-term-frequency-idf-inverse-document-frequency-from-scratch-in-python-6c2b61b78558?source=post_page-----7b05938f4507--------------------------------)
+[towardsdatascience.com
 
 我们认为每个句子由词汇（单词）组成，
 
-![](../Images/77cc36115e5ea49e623258f47ef15379.png)
+![](img/77cc36115e5ea49e623258f47ef15379.png)
 
 表达式 1：句子 S 表示为单词元组
 
 每个单词在句子 ***S*** 中的词频定义为，
 
-![](../Images/deb6a9d8f062561288e5162ea31ed4a8.png)
+![](img/deb6a9d8f062561288e5162ea31ed4a8.png)
 
 表达式 2：**k** 代表句子中的总词数。
 
 每个单词在句子 S 中的逆文档频率定义为，
 
-![](../Images/7832e14d2e755df5096faa8f03b12204.png)
+![](img/7832e14d2e755df5096faa8f03b12204.png)
 
 表达式 3：逆文档频率量化了该词在其他句子中的出现情况。
 
 每个句子的分数是该句子中所有单词的 TFIDF 分数之和，
 
-![](../Images/5b1505063fcac53c1960f43e34c209b2.png)
+![](img/5b1505063fcac53c1960f43e34c209b2.png)
 
 表达式 4：每个句子的分数 **S** 决定了它是否包含在最终总结中。
 
@@ -163,11 +163,11 @@ pub fn sentence_to_tokens( sentence: &str ) -> Vec<&str> {
 
 在上述代码片段中，我们删除停用词，即在语言中常见且对文本信息内容没有重要贡献的词汇。
 
-[](/text-pre-processing-stop-words-removal-using-different-libraries-f20bac19929a?source=post_page-----7b05938f4507--------------------------------) [## 文本预处理：使用不同库删除停用词
+[](/text-pre-processing-stop-words-removal-using-different-libraries-f20bac19929a?source=post_page-----7b05938f4507--------------------------------) ## 文本预处理：使用不同库删除停用词
 
 ### 关于在 Python 中删除英文停用词的实用指南！
 
-towardsdatascience.com](/text-pre-processing-stop-words-removal-using-different-libraries-f20bac19929a?source=post_page-----7b05938f4507--------------------------------)
+towardsdatascience.com
 
 接下来，我们创建一个计算语料库中每个单词频率的函数。此方法将用于计算句子中每个单词的词频。`(word, freq)` 对存储在 `[Hashmap](https://doc.rust-lang.org/std/collections/struct.HashMap.html)` 中，以便在后续阶段快速检索。
 

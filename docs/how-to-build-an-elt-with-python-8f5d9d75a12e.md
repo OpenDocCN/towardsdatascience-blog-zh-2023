@@ -1,18 +1,18 @@
 # 如何用 Python 构建 ELT
 
-> 原文：[https://towardsdatascience.com/how-to-build-an-elt-with-python-8f5d9d75a12e?source=collection_archive---------1-----------------------#2023-02-07](https://towardsdatascience.com/how-to-build-an-elt-with-python-8f5d9d75a12e?source=collection_archive---------1-----------------------#2023-02-07)
+> 原文：[`towardsdatascience.com/how-to-build-an-elt-with-python-8f5d9d75a12e?source=collection_archive---------1-----------------------#2023-02-07`](https://towardsdatascience.com/how-to-build-an-elt-with-python-8f5d9d75a12e?source=collection_archive---------1-----------------------#2023-02-07)
 
 ## 提取、加载和转换数据
 
-[](https://medium.com/@marietruong?source=post_page-----8f5d9d75a12e--------------------------------)[![Marie Truong](../Images/2816e49beef958724dc0f38cfa49c4be.png)](https://medium.com/@marietruong?source=post_page-----8f5d9d75a12e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8f5d9d75a12e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8f5d9d75a12e--------------------------------) [Marie Truong](https://medium.com/@marietruong?source=post_page-----8f5d9d75a12e--------------------------------)
+[](https://medium.com/@marietruong?source=post_page-----8f5d9d75a12e--------------------------------)![Marie Truong](https://medium.com/@marietruong?source=post_page-----8f5d9d75a12e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8f5d9d75a12e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8f5d9d75a12e--------------------------------) [Marie Truong](https://medium.com/@marietruong?source=post_page-----8f5d9d75a12e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4cfa1d0b321f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-elt-with-python-8f5d9d75a12e&user=Marie+Truong&userId=4cfa1d0b321f&source=post_page-4cfa1d0b321f----8f5d9d75a12e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8f5d9d75a12e--------------------------------) · 7 分钟阅读 · 2023年2月7日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8f5d9d75a12e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-elt-with-python-8f5d9d75a12e&user=Marie+Truong&userId=4cfa1d0b321f&source=-----8f5d9d75a12e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4cfa1d0b321f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-elt-with-python-8f5d9d75a12e&user=Marie+Truong&userId=4cfa1d0b321f&source=post_page-4cfa1d0b321f----8f5d9d75a12e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8f5d9d75a12e--------------------------------) · 7 分钟阅读 · 2023 年 2 月 7 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8f5d9d75a12e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-elt-with-python-8f5d9d75a12e&user=Marie+Truong&userId=4cfa1d0b321f&source=-----8f5d9d75a12e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8f5d9d75a12e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-elt-with-python-8f5d9d75a12e&source=-----8f5d9d75a12e---------------------bookmark_footer-----------)![](../Images/3bb2cf8a93d38e55adefa041419b80d8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8f5d9d75a12e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-an-elt-with-python-8f5d9d75a12e&source=-----8f5d9d75a12e---------------------bookmark_footer-----------)![](img/3bb2cf8a93d38e55adefa041419b80d8.png)
 
 照片由 [JJ Ying](https://unsplash.com/@jjying?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@ ELT（提取、加载、转换）是一种现代数据集成方法，与 ETL（�
 
 在这篇文章中，我们将使用来自 [dummyJSON](https://dummyjson.com/) 的数据在 Python 中构建一个简短的 ELT 管道。dummyJSON 是一个虚假的 REST API。它提供 9 种类型的资源：
 
-![](../Images/63f9d7d997ffb2a73d9b21d5c41a3987.png)
+![](img/63f9d7d997ffb2a73d9b21d5c41a3987.png)
 
 dummyjson.com 的截图
 

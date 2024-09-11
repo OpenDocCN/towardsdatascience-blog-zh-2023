@@ -1,18 +1,18 @@
 # 如何有效比较机器学习解决方案
 
-> 原文：[https://towardsdatascience.com/how-to-compare-ml-solutions-effectively-28384e2cbca1?source=collection_archive---------15-----------------------#2023-07-06](https://towardsdatascience.com/how-to-compare-ml-solutions-effectively-28384e2cbca1?source=collection_archive---------15-----------------------#2023-07-06)
+> 原文：[`towardsdatascience.com/how-to-compare-ml-solutions-effectively-28384e2cbca1?source=collection_archive---------15-----------------------#2023-07-06`](https://towardsdatascience.com/how-to-compare-ml-solutions-effectively-28384e2cbca1?source=collection_archive---------15-----------------------#2023-07-06)
 
-![](../Images/f230bb52240a5717e53947dd913ed392.png)
+![](img/f230bb52240a5717e53947dd913ed392.png)
 
 图片由作者使用 [Midjourney](https://www.midjourney.com/app/) 创建。
 
 ## 提高将模型投入生产的机会
 
-[](https://hennie-de-harder.medium.com/?source=post_page-----28384e2cbca1--------------------------------)[![Hennie de Harder](../Images/3e4f2cccd6cb976ca3f8bf15597daea8.png)](https://hennie-de-harder.medium.com/?source=post_page-----28384e2cbca1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----28384e2cbca1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----28384e2cbca1--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----28384e2cbca1--------------------------------)
+[](https://hennie-de-harder.medium.com/?source=post_page-----28384e2cbca1--------------------------------)![Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----28384e2cbca1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----28384e2cbca1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----28384e2cbca1--------------------------------) [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----28384e2cbca1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-compare-ml-solutions-effectively-28384e2cbca1&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----28384e2cbca1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----28384e2cbca1--------------------------------) ·6 min read·2023年7月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F28384e2cbca1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-compare-ml-solutions-effectively-28384e2cbca1&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----28384e2cbca1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffb96be98b7b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-compare-ml-solutions-effectively-28384e2cbca1&user=Hennie+de+Harder&userId=fb96be98b7b9&source=post_page-fb96be98b7b9----28384e2cbca1---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----28384e2cbca1--------------------------------) ·6 min read·2023 年 7 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F28384e2cbca1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-compare-ml-solutions-effectively-28384e2cbca1&user=Hennie+de+Harder&userId=fb96be98b7b9&source=-----28384e2cbca1---------------------clap_footer-----------)
 
 --
 

@@ -1,18 +1,18 @@
 # Rust: 数据科学中的下一个大事
 
-> 原文：[https://towardsdatascience.com/rust-the-next-big-thing-in-data-science-319a03305883?source=collection_archive---------0-----------------------#2023-04-24](https://towardsdatascience.com/rust-the-next-big-thing-in-data-science-319a03305883?source=collection_archive---------0-----------------------#2023-04-24)
+> 原文：[`towardsdatascience.com/rust-the-next-big-thing-in-data-science-319a03305883?source=collection_archive---------0-----------------------#2023-04-24`](https://towardsdatascience.com/rust-the-next-big-thing-in-data-science-319a03305883?source=collection_archive---------0-----------------------#2023-04-24)
 
 ## 数据科学家和分析师的上下文指南
 
-[](https://wiseai.medium.com/?source=post_page-----319a03305883--------------------------------)[![Mahmoud Harmouch](../Images/d61617549d25565399975debaad5908f.png)](https://wiseai.medium.com/?source=post_page-----319a03305883--------------------------------)[](https://towardsdatascience.com/?source=post_page-----319a03305883--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----319a03305883--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----319a03305883--------------------------------)
+[](https://wiseai.medium.com/?source=post_page-----319a03305883--------------------------------)![Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----319a03305883--------------------------------)[](https://towardsdatascience.com/?source=post_page-----319a03305883--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----319a03305883--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----319a03305883--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-the-next-big-thing-in-data-science-319a03305883&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----319a03305883---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----319a03305883--------------------------------) · 25 分钟阅读 · 2023年4月24日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F319a03305883&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-the-next-big-thing-in-data-science-319a03305883&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----319a03305883---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-the-next-big-thing-in-data-science-319a03305883&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----319a03305883---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----319a03305883--------------------------------) · 25 分钟阅读 · 2023 年 4 月 24 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F319a03305883&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-the-next-big-thing-in-data-science-319a03305883&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----319a03305883---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F319a03305883&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-the-next-big-thing-in-data-science-319a03305883&source=-----319a03305883---------------------bookmark_footer-----------)![](../Images/f70c77e0e50bd4fba3d37f016cf86374.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F319a03305883&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-the-next-big-thing-in-data-science-319a03305883&source=-----319a03305883---------------------bookmark_footer-----------)![](img/f70c77e0e50bd4fba3d37f016cf86374.png)
 
 图片来源 [Yvette W](https://pixabay.com/users/wallusy-7300500/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=6246450) 来自 [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=6246450)
 
@@ -34,43 +34,43 @@ github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page----
 
 ## 目录(TOC)
 
-∘ [这篇文章适合谁?](#d61d)
+∘ 这篇文章适合谁?
 
-∘ [为什么选择 Rust?](#82d6)
+∘ 为什么选择 Rust?
 
-∘ [Rust 的优势](#1886)
+∘ Rust 的优势
 
-∘ [生锈的笔记本](#784b)
+∘ 生锈的笔记本
 
-∘ [关于数据集](#43a5)
+∘ 关于数据集
 
-∘ [读取 CSV 文件](#8699)
+∘ 读取 CSV 文件
 
-∘ [将 CSV 文件加载到数据框](#50ae)
+∘ 将 CSV 文件加载到数据框
 
-∘ [转换为 ndarray](#1e06)
+∘ 转换为 ndarray
 
-∘ [Numpy 等效](#e6b1)
+∘ Numpy 等效
 
-∘ [共享相似性](#b5b5)
+∘ 共享相似性
 
-∘ [关键差异](#8fa8)
+∘ 关键差异
 
-∘ [为什么选择 ndarray?](#4cab)
+∘ 为什么选择 ndarray?
 
-∘ [绘图工具](#4b63)
+∘ 绘图工具
 
-∘ [散点图](#b86d)
+∘ 散点图
 
-∘ [结论](#5524)
+∘ 结论
 
-∘ [结束语](#157d)
+∘ 结束语
 
-∘ [参考文献](#0aad)
+∘ 参考文献
 
 ## 这篇文章适合谁?
 
-![](../Images/bd20329b4e0e174eb670fe5a024a33d6.png)
+![](img/bd20329b4e0e174eb670fe5a024a33d6.png)
 
 照片由 [Sigmund](https://unsplash.com/fr/@sigmund?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -78,23 +78,23 @@ github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page----
 
 ## 为什么选择 Rust?
 
-![](../Images/02a47eda7418650cc4b785b58a3548ff.png)
+![](img/02a47eda7418650cc4b785b58a3548ff.png)
 
 [Brett Jordan](https://unsplash.com/@brett_jordan?utm_source=medium&utm_medium=referral) 拍摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-数十年来，计算机科学家们致力于解决源自C和C++等编程语言的安全问题。他们的努力催生了一类新的系统编程语言，称为“内存安全”语言。这些前沿的编码实践明确旨在防止可能导致恶意网络攻击的内存相关错误。Rust无疑是这些选项中的先进工具；在当代享有广泛使用和认可。
+数十年来，计算机科学家们致力于解决源自 C 和 C++等编程语言的安全问题。他们的努力催生了一类新的系统编程语言，称为“内存安全”语言。这些前沿的编码实践明确旨在防止可能导致恶意网络攻击的内存相关错误。Rust 无疑是这些选项中的先进工具；在当代享有广泛使用和认可。
 
 对于那些不了解的人来说，内存安全问题指的是源自编程错误的漏洞，这些错误与内存的不当使用有关。这些问题可能导致安全漏洞、数据退化和系统故障。因此，越来越强调使用专门设计以确保最佳内存安全水平的编程语言。
 
 像谷歌这样的科技巨头已经认识到与内存相关的问题对软件安全的巨大影响，强调了使用这些语言以防范此类漏洞的绝对必要性¹。这样的认可强有力地证明了采取主动措施保护软件免受潜在威胁的重要性。它突显了这些语言在确保软件开发未来更安全方面的作用。
 
-Meta正在采用Rust，因为它在性能和安全性方面的好处，标志着软件工程的新纪元。通过利用Rust的现代特性和功能，Meta确保了强大的产品安全性，同时实现了更高的效率和可扩展性²。
+Meta 正在采用 Rust，因为它在性能和安全性方面的好处，标志着软件工程的新纪元。通过利用 Rust 的现代特性和功能，Meta 确保了强大的产品安全性，同时实现了更高的效率和可扩展性²。
 
-开源社区热烈欢迎Rust，正如Linux内核的采用所证明的那样³。这一发展使得开发者可以利用Rust在基于Linux的系统上打造可靠和安全的软件。
+开源社区热烈欢迎 Rust，正如 Linux 内核的采用所证明的那样³。这一发展使得开发者可以利用 Rust 在基于 Linux 的系统上打造可靠和安全的软件。
 
-Rust是一种极具适应性的编程语言，提供广泛的应用。不论是编写低级系统代码还是构建操作系统内核，Rust都能创建高性能、安全的软件解决方案。毫不奇怪，IEEE Spectrum最近将Rust排在2022年顶级编程语言的第20位⁴！最近在Stackoverflow中排名第14的最受欢迎语言也不足为奇⁵！
+Rust 是一种极具适应性的编程语言，提供广泛的应用。不论是编写低级系统代码还是构建操作系统内核，Rust 都能创建高性能、安全的软件解决方案。毫不奇怪，IEEE Spectrum 最近将 Rust 排在 2022 年顶级编程语言的第 20 位⁴！最近在 Stackoverflow 中排名第 14 的最受欢迎语言也不足为奇⁵！
 
-作为一家杰出的计算机技术公司，微软已表达了对一种超越当前安全标准的编程语言的需求⁶。作为一种开源编程语言，它似乎是解决这个问题的最可行解决方案之一。在这些选项中，Rust脱颖而出，因为它在安全性和速度方面表现卓越，是开发中的值得选择。
+作为一家杰出的计算机技术公司，微软已表达了对一种超越当前安全标准的编程语言的需求⁶。作为一种开源编程语言，它似乎是解决这个问题的最可行解决方案之一。在这些选项中，Rust 脱颖而出，因为它在安全性和速度方面表现卓越，是开发中的值得选择。
 
 Mozilla 与三星合作创建了名为 Servo 的网页浏览器，因为 Rust 在构建安全网页浏览器方面表现出色。Servo 的目标是开发一个开创性的 Rust 浏览器引擎，将 Mozilla 在网页浏览器方面的专业技能与三星在硬件方面的专长相结合。该倡议旨在制造一个可以用于桌面电脑和移动设备的创新网页引擎。通过利用两家公司的强项，Servo 有潜力在性能上超越其他现有的网页浏览器。
 
@@ -112,7 +112,7 @@ Pydantic，一个著名的开源项目，已经将其核心实现重写为 Rust�
 
 ## Rust 的优势。
 
-![](../Images/dece0fdd1ee1d3b9bd150136d1545d64.png)
+![](img/dece0fdd1ee1d3b9bd150136d1545d64.png)
 
 由[Den Harrson](https://unsplash.com/@harrson?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -145,7 +145,7 @@ fn main() {
 // Average time taken: 0.3688494305 s
 ```
 
-上面的代码片段使用递归计算了斐波那契数列中的 **第40个数字**。它的执行时间为 **不到一秒**，比许多其他语言中的等效代码要快得多。例如，Python 中计算相同斐波那契数列需要大约 **22.2秒**，这比 Rust 版本慢得多。
+上面的代码片段使用递归计算了斐波那契数列中的 **第 40 个数字**。它的执行时间为 **不到一秒**，比许多其他语言中的等效代码要快得多。例如，Python 中计算相同斐波那契数列需要大约 **22.2 秒**，这比 Rust 版本慢得多。
 
 ```py
 >>> import timeit
@@ -239,7 +239,7 @@ Rust 提供了一个蓬勃发展的动态生态系统，拥有各种适用于广
 
 ## Rusty Notebooks
 
-![](../Images/911d5df96cd7e2fa6e15d36a691890b5.png)
+![](img/911d5df96cd7e2fa6e15d36a691890b5.png)
 
 图片由 [Christopher Gower](https://unsplash.com/@cgower?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -288,7 +288,7 @@ jupyter notebook
 
 ## 关于数据集
 
-![](../Images/1b7b67321b66ee3a7561743d810a3d72.png)
+![](img/1b7b67321b66ee3a7561743d810a3d72.png)
 
 照片由 [Pawel Czerwinski](https://unsplash.com/@pawel_czerwinski?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -304,7 +304,7 @@ Iris 数据集在数据科学中至关重要，因为它在各种应用中被广
 
 ## 读取 CSV 文件
 
-![](../Images/ffc89244f6017c9c29159c1d199a7113.png)
+![](img/ffc89244f6017c9c29159c1d199a7113.png)
 
 照片由 [Mika Baumeister](https://unsplash.com/@mbaumi?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -320,7 +320,7 @@ use std::path::Path;
 
 ## 将 CSV 文件加载到数据框中
 
-![](../Images/fa8f1969ea89dc654520e7fb1810fd61.png)
+![](img/fa8f1969ea89dc654520e7fb1810fd61.png)
 
 照片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -347,7 +347,7 @@ let iris_df: DataFrame = read_data_frame_from_csv(iris_file_path);
 
 ## 数据集维度
 
-![](../Images/1105b0e3d44cf32700bcdaf624b33420.png)
+![](img/1105b0e3d44cf32700bcdaf624b33420.png)
 
 [Lewis Guapo](https://unsplash.com/@lewisguapo?utm_source=medium&utm_medium=referral) 通过 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供的照片
 
@@ -533,7 +533,7 @@ numeric_iris_ndarray
 
 ## Numpy 等效
 
-![](../Images/ee98cf79a28850ddfe0146668498d39a.png)
+![](img/ee98cf79a28850ddfe0146668498d39a.png)
 
 [Nick Hillier](https://unsplash.com/@nhillier?utm_source=medium&utm_medium=referral) 通过 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供的照片
 
@@ -545,11 +545,11 @@ numeric_iris_ndarray
 
 ## 共享相似性
 
-![](../Images/50dc303d754d9eb34361df8abb5d2cfd.png)
+![](img/50dc303d754d9eb34361df8abb5d2cfd.png)
 
 [Jonny Clow](https://unsplash.com/ja/@jonnyclow?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上的照片
 
-来自`**ndarray**` crate的`[**ArrayBase**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html)`类型是Rust中数据操作的一个重要工具，配备了许多强大的功能。它在特定元素类型、无限维度和任意步幅方面与`**NumPy**`的数组类型`**numpy.ndarray**`类似。如果你希望以无与伦比的效率处理大量数据，`**ndarray**`是最佳选择。
+来自`**ndarray**` crate 的`[**ArrayBase**](https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html)`类型是 Rust 中数据操作的一个重要工具，配备了许多强大的功能。它在特定元素类型、无限维度和任意步幅方面与`**NumPy**`的数组类型`**numpy.ndarray**`类似。如果你希望以无与伦比的效率处理大量数据，`**ndarray**`是最佳选择。
 
 不能过分强调`**ndarray**`和`**NumPy**`数组类型之间的根本相似性；即从零开始的索引，而非从一开始。不要低估这个看似微不足道的特性，因为它在处理大型数据集时可能会产生显著影响。
 
@@ -567,23 +567,23 @@ numeric_iris_ndarray
 
 ## 主要区别
 
-![](../Images/6072cc3586e2d46dc3f9ea34377afca3.png)
+![](img/6072cc3586e2d46dc3f9ea34377afca3.png)
 
 图片由[Eric Prouzet](https://unsplash.com/@eprouzet?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-`**Numpy**`和`**ndarray**`之间有许多关键差异。例如，在`**NumPy**`中，没有对拥有的数组、视图和可变视图的区分。多个数组（`**numpy. ndarray**`的实例）可以可变地引用相同的数据。另一方面，在ndarray中，所有数组都是`**ArrayBase**`的实例，但`**ArrayBase**`是对数据所有权的泛型。Array拥有其数据；`**ArrayView**`是一个视图；`**ArrayViewMut**`是一个可变视图；`**CowArray**`要么拥有其数据，要么是视图（带有视图变体的写时复制变更）；`**ArcArray**`有一个对其数据的引用计数指针（带有写时复制变更）。数组和视图遵循Rust的别名规则。
+`**Numpy**`和`**ndarray**`之间有许多关键差异。例如，在`**NumPy**`中，没有对拥有的数组、视图和可变视图的区分。多个数组（`**numpy. ndarray**`的实例）可以可变地引用相同的数据。另一方面，在 ndarray 中，所有数组都是`**ArrayBase**`的实例，但`**ArrayBase**`是对数据所有权的泛型。Array 拥有其数据；`**ArrayView**`是一个视图；`**ArrayViewMut**`是一个可变视图；`**CowArray**`要么拥有其数据，要么是视图（带有视图变体的写时复制变更）；`**ArcArray**`有一个对其数据的引用计数指针（带有写时复制变更）。数组和视图遵循 Rust 的别名规则。
 
-`**NumPy**`的另一个重要特性是所有数组的维度是灵活的。然而，使用`**ndarray**`，你可以创建像Array2这样的固定维度数组，这可以提供更准确的结果，并消除与形状和步幅相关的多余堆分配。
+`**NumPy**`的另一个重要特性是所有数组的维度是灵活的。然而，使用`**ndarray**`，你可以创建像 Array2 这样的固定维度数组，这可以提供更准确的结果，并消除与形状和步幅相关的多余堆分配。
 
 最后，当在`**NumPy**`中进行切片时，索引从`**start + step, start + 2 * step, …**`开始，一直到结束（不包括结束）。在`**ndarray**`中，首先对轴进行`start..end`切片。如果步长为正，则第一个索引是切片的前端；如果步长为负，则第一个索引是切片的后端。这意味着，行为与`**NumPy**`相同，除非`**step < -1**`。有关更多详细信息，请参阅[**s!宏**](https://docs.rs/ndarray/latest/ndarray/macro.s.html)的文档。
 
-## 为什么选择ndarray？
+## 为什么选择 ndarray？
 
-对于经验丰富的Rust开发者，可以提出这样一个观点，即语言已经拥有了许多数据结构，例如向量，因此不需要第三方库来处理数据。然而，这一论断未能认识到`**ndarray**`的专门性质，它旨在处理具有数学重点的n维数组。
+对于经验丰富的 Rust 开发者，可以提出这样一个观点，即语言已经拥有了许多数据结构，例如向量，因此不需要第三方库来处理数据。然而，这一论断未能认识到`**ndarray**`的专门性质，它旨在处理具有数学重点的 n 维数组。
 
-Rust无疑是一种强大的编程语言，可以轻松应对各种编程挑战。然而，对于多维数组的复杂操作，`**ndarray**`是终极解决方案。它的专门设计使得在科学计算和分析环境中能够无缝执行高级数据操作任务，使其成为任何寻求最佳结果的程序员的必备工具。
+Rust 无疑是一种强大的编程语言，可以轻松应对各种编程挑战。然而，对于多维数组的复杂操作，`**ndarray**`是终极解决方案。它的专门设计使得在科学计算和分析环境中能够无缝执行高级数据操作任务，使其成为任何寻求最佳结果的程序员的必备工具。
 
-为了说明这一点，考虑一个例子，其中研究人员需要操作来自科学实验的大量多维数据。Rust的内置数据结构，如[**向量**](https://doc.rust-lang.org/rust-by-example/std/vec.html)，可能不适合这一任务，因为它们缺乏复杂数组操作所需的高级特性。相比之下，`**ndarray**`提供了广泛的功能，包括切片、广播和逐元素操作，可以在分析数据时简化和加速数据操作任务，正如我们将在以下部分中探索的那样。
+为了说明这一点，考虑一个例子，其中研究人员需要操作来自科学实验的大量多维数据。Rust 的内置数据结构，如[**向量**](https://doc.rust-lang.org/rust-by-example/std/vec.html)，可能不适合这一任务，因为它们缺乏复杂数组操作所需的高级特性。相比之下，`**ndarray**`提供了广泛的功能，包括切片、广播和逐元素操作，可以在分析数据时简化和加速数据操作任务，正如我们将在以下部分中探索的那样。
 
 ## **数组创建**
 
@@ -591,7 +591,7 @@ Rust无疑是一种强大的编程语言，可以轻松应对各种编程挑战�
 
 现在，让我们探索`**ndarray**`提供的不同功能：
 
-+   **2行 × 3列** 浮点数组字面量：
++   **2 行 × 3 列** 浮点数组字面量：
 
 ```py
 array![[1.,2.,3.], [4.,5.,6.]]
@@ -599,13 +599,13 @@ array![[1.,2.,3.], [4.,5.,6.]]
 arr2(&[[1.,2.,3.], [4.,5.,6.]])
 ```
 
-+   **1-D范围** 的值：
++   **1-D 范围** 的值：
 
 ```py
 Array::range(0., 10., 0.5) //  0.0, 0.5, 1.5 ... 9.5
 ```
 
-+   `**1-D数组**`，范围内的n个元素：
++   `**1-D 数组**`，范围内的 n 个元素：
 
 ```py
 Array::linspace(0., 10., 11)
@@ -637,13 +637,13 @@ Array::eye(3)
 arr[arr.len() - 1]
 ```
 
-+   第1行，第4列：
++   第 1 行，第 4 列：
 
 ```py
 arr[[1, 4]]
 ```
 
-+   前5行：
++   前 5 行：
 
 ```py
 arr.slice(s![0..5, ..])
@@ -653,7 +653,7 @@ arr.slice(s![..5, ..])
 arr.slice_axis(Axis(0), Slice::from(0..5))
 ```
 
-+   最后5行：
++   最后 5 行：
 
 ```py
 arr.slice(s![-5.., ..])
@@ -692,7 +692,7 @@ arr.t()
 arr.reversed_axes()
 ```
 
-+   **2-D矩阵** 乘法：
++   **2-D 矩阵** 乘法：
 
 ```py
 mat1.dot(&mat2)
@@ -718,19 +718,19 @@ data_2D.mapv(f32::sqrt)
 
 ## Plotters
 
-![](../Images/184bc187368b06488376fef7750a8546.png)
+![](img/184bc187368b06488376fef7750a8546.png)
 
 由[Lukas Blazek](https://unsplash.com/@goumbik?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 在使用`**ndarray**`处理和操作数据之后，下一步逻辑是通过使用`[**Plotters**](https://docs.rs/plotters/latest/plotters/)`库来获得有价值的见解。这个强大的库使我们能够轻松而精准地创建令人惊叹且信息丰富的数据可视化。
 
-为了充分利用`**jupyter-evcxr**`和Plotters库，需要在执行以下命令之前先导入它：
+为了充分利用`**jupyter-evcxr**`和 Plotters 库，需要在执行以下命令之前先导入它：
 
 ```py
-:dep plotters = { version = "^0.3.0", default_features = false, features = ["evcxr", "all_series"] }
+:dep plotters = { version = "⁰.3.0", default_features = false, features = ["evcxr", "all_series"] }
 ```
 
-由于`**evcxr**`仅依赖于SVG图像并支持所有系列类型，因此不需要额外的后端。因此，将其用法融入我们的系统中是非常好的，使用如下：
+由于`**evcxr**`仅依赖于 SVG 图像并支持所有系列类型，因此不需要额外的后端。因此，将其用法融入我们的系统中是非常好的，使用如下：
 
 ```py
 default_features = false, features = ["evcxr", "all_series"]
@@ -756,13 +756,13 @@ let sepal_samples:Vec<(f64,f64)> = {
 
 这段代码创建了一个名为`**sepal_samples**`的元组向量，其中每个元组表示来自鸢尾花数据集的花萼长度和花萼宽度的样本。现在，让我们逐行分析代码的功能：
 
-+   `**let sepal_samples: Vec<(f64,f64)> = {…}**`：定义了一个名为`**sepal_samples**`的变量，并将一个用大括号`**{…}**`括起来的代码块赋值给它。`**Vec<(f64,f64)>**`数据类型注释表明该向量包含由两个**64位**浮点数组成的元组。这一声明使Rust能够有效地识别和处理数据集中每个元组。
++   `**let sepal_samples: Vec<(f64,f64)> = {…}**`：定义了一个名为`**sepal_samples**`的变量，并将一个用大括号`**{…}**`括起来的代码块赋值给它。`**Vec<(f64,f64)>**`数据类型注释表明该向量包含由两个**64 位**浮点数组成的元组。这一声明使 Rust 能够有效地识别和处理数据集中每个元组。
 
-+   `**let sepal_length_cm: DataFrame = iris_df.select(vec![“SepalLengthCm”]).unwrap();**`：为了从`**iris_df**` DataFrame中提取`**SepalLengthCm**`列，我们使用`**select**`函数，并将其存储在一个名为`**sepal_length_cm**`的新`**DataFrame**`对象中。
++   `**let sepal_length_cm: DataFrame = iris_df.select(vec![“SepalLengthCm”]).unwrap();**`：为了从`**iris_df**` DataFrame 中提取`**SepalLengthCm**`列，我们使用`**select**`函数，并将其存储在一个名为`**sepal_length_cm**`的新`**DataFrame**`对象中。
 
 +   `**let mut sepal_length = sepal_length_cm.to_ndarray::<Float64Type>().unwrap().into_raw_vec().into_iter();**`：通过`**to_ndarray**`方法，我们可以将`**sepal_length_cm**`的`**DataFrame**`对象转换为`**Float64Type**`类型的`**ndarray**`。接着，使用`**into_raw_vec**`方法可以将这个新数组转换为原始向量格式。通过调用`**into_iter**`生成的迭代器，我们可以逐个消费和利用每个元素；这非常有趣！
 
-+   `**let sepal_width_cm: DataFrame = iris_df.select(vec![“SepalWidthCm”]).unwrap();**`：从`**iris_df**` DataFrame中选择`**SepalWidthCm**`列，并将结果存储在一个名为`**sepal_width_cm**`的新`**DataFrame**`对象中。
++   `**let sepal_width_cm: DataFrame = iris_df.select(vec![“SepalWidthCm”]).unwrap();**`：从`**iris_df**` DataFrame 中选择`**SepalWidthCm**`列，并将结果存储在一个名为`**sepal_width_cm**`的新`**DataFrame**`对象中。
 
 +   `**let mut sepal_width = sepal_width_cm.to_ndarray::<Float64Type>().unwrap().into_raw_vec().into_iter();**`：通过`**to_ndarray**`方法，将名为`**sepal_width_cm**`的`**DataFrame**`对象转换为数据类型为`**Float64Type**`的`**ndarray**`对象。然后，通过应用`**into_raw_vec**`将结果`**ndarray**`转换为原始向量，最终通过调用`**.into_iter()**`生成一个迭代器，以便逐个消费其元素。
 
@@ -789,41 +789,41 @@ evcxr_figure((640, 480), |root| {
 }).style("width:60%")
 ```
 
-+   `**evcxr_figure((640, 480), |root| {**`：使用640像素宽和480像素高的尺寸初始化了一个新的Evcxr图形。此外，还传递了一个接受根参数的闭包，该参数表示声明图形的基本绘图区域。
++   `**evcxr_figure((640, 480), |root| {**`：使用 640 像素宽和 480 像素高的尺寸初始化了一个新的 Evcxr 图形。此外，还传递了一个接受根参数的闭包，该参数表示声明图形的基本绘图区域。
 
 +   `**let mut chart = ChartBuilder::on(&root)**`：这使用根绘图区域作为基础创建了一个新的图表构建对象。
 
 +   `**.caption(“Iris Dataset”, (“Arial”, 30).into_font())**`：这为图表添加了标题，文本为`**Iris Dataset**`，字体为`**Arial**`，大小为`**30**`。
 
-+   `**.x_label_area_size(40)**`：这将`**X轴**`标签区域的大小设置为`**40**`像素。
++   `**.x_label_area_size(40)**`：这将`**X 轴**`标签区域的大小设置为`**40**`像素。
 
-+   `**.y_label_area_size(40)**`：这将`**Y轴**`标签区域的大小设置为`**40**`像素。
++   `**.y_label_area_size(40)**`：这将`**Y 轴**`标签区域的大小设置为`**40**`像素。
 
-+   `**.build_cartesian_2d(1f64..5f64, 3f64..9f64)?;**`：这一行代码构建了一个2D笛卡尔图表，`**X轴**`的范围从`**1到5**`，`**Y轴**`的范围从`**3到9**`，并返回一个`Result`类型，该类型用`**?**`运算符进行解包。
++   `**.build_cartesian_2d(1f64..5f64, 3f64..9f64)?;**`：这一行代码构建了一个 2D 笛卡尔图表，`**X 轴**`的范围从`**1 到 5**`，`**Y 轴**`的范围从`**3 到 9**`，并返回一个`Result`类型，该类型用`**?**`运算符进行解包。
 
 +   `**chart.configure_mesh()**`：这配置了图表的网格，即图表的网格线和刻度线。
 
-+   `**.x_desc(“Sepal Length (cm)”)**`：这将`**X轴**`的描述设置为`**Sepal Length (cm)**`。
++   `**.x_desc(“Sepal Length (cm)”)**`：这将`**X 轴**`的描述设置为`**Sepal Length (cm)**`。
 
-+   `**.y_desc(“Sepal Width (cm)”)**`：这将`**Y轴**`的描述设置为`**Sepal Width (cm)**`。
++   `**.y_desc(“Sepal Width (cm)”)**`：这将`**Y 轴**`的描述设置为`**Sepal Width (cm)**`。
 
 +   `**.draw()?;**`：这绘制了网格并返回一个`Result`类型，该类型用`**?**`运算符进行解包。
 
-+   `**chart.draw_series(sepal_samples.iter().map(|(x, y)| Circle::new((*x,*y), 3, BLUE.filled())));**`：使用`**sepal_samples**`向量作为输入，在图表上绘制了一系列数据点。调用`**iter()**`函数以遍历`**sepal_samples**`中的每个元素，并使用`**map()**`方法创建一个迭代器，将每个点转换为一个填充蓝色且半径为3的`**Circle**`对象。最后，将这些`Circle`对象的系列传递给`**chart.draw_series()**`，将它们美丽地呈现在图表画布上。
++   `**chart.draw_series(sepal_samples.iter().map(|(x, y)| Circle::new((*x,*y), 3, BLUE.filled())));**`：使用`**sepal_samples**`向量作为输入，在图表上绘制了一系列数据点。调用`**iter()**`函数以遍历`**sepal_samples**`中的每个元素，并使用`**map()**`方法创建一个迭代器，将每个点转换为一个填充蓝色且半径为 3 的`**Circle**`对象。最后，将这些`Circle`对象的系列传递给`**chart.draw_series()**`，将它们美丽地呈现在图表画布上。
 
 运行上述代码块将在你的笔记本中绘制以下内容：
 
-![](../Images/e1281a8fc0052b6b1f757cbd2c3b952e.png)
+![](img/e1281a8fc0052b6b1f757cbd2c3b952e.png)
 
 Iris 数据集萼片散点图（图片来源：作者）
 
 ## 结论
 
-![](../Images/52ec672772fd60552bccf21434500155.png)
+![](img/52ec672772fd60552bccf21434500155.png)
 
 图片由[Aaron Burden](https://unsplash.com/it/@aaronburden?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在本文中，我们深入探讨了Rust中的三个工具，并应用它们来分析鸢尾花数据集的数据。我们的发现表明，Rust 是一种强大的语言，具有巨大的潜力，可以轻松执行数据科学项目。尽管它的普及程度不及 Python 或 R，但其能力使其成为那些希望显著提升数据科学工作的人的绝佳选择。
+在本文中，我们深入探讨了 Rust 中的三个工具，并应用它们来分析鸢尾花数据集的数据。我们的发现表明，Rust 是一种强大的语言，具有巨大的潜力，可以轻松执行数据科学项目。尽管它的普及程度不及 Python 或 R，但其能力使其成为那些希望显著提升数据科学工作的人的绝佳选择。
 
 已确认 Rust 是一种快速高效的语言，其类型系统使调试相对容易。此外，Rust 中有许多专门针对数据科学任务的库和框架，例如 `[**Polars**](https://docs.rs/polars/latest/polars/)` 和 `[**ndarray**](https://docs.rs/ndarray/latest/ndarray/)`，它们能够无缝处理大量数据集。
 
@@ -831,7 +831,7 @@ Iris 数据集萼片散点图（图片来源：作者）
 
 ## 结束语
 
-在我们结束本教程时，我想对所有那些投入时间和精力完成本教程的人表示诚挚的感谢。能够与你们一起展示Rust编程语言的卓越能力，我感到非常高兴。
+在我们结束本教程时，我想对所有那些投入时间和精力完成本教程的人表示诚挚的感谢。能够与你们一起展示 Rust 编程语言的卓越能力，我感到非常高兴。
 
 对数据科学充满热情的我承诺，从现在开始，我每周至少会写一篇关于相关主题的综合性文章。如果你对我的工作感兴趣，考虑通过各种社交媒体平台与我联系，或者直接联系我寻求其他帮助。
 
@@ -839,24 +839,24 @@ Iris 数据集萼片散点图（图片来源：作者）
 
 ## 参考文献
 
-[1] 队列的硬化增强。 (2019年5月9日)。发表于 Google 安全博客。[https://security.googleblog.com/2019/05/queue-hardening-enhancements.html](https://security.googleblog.com/2019/05/queue-hardening-enhancements.html)
+[1] 队列的硬化增强。 (2019 年 5 月 9 日)。发表于 Google 安全博客。[`security.googleblog.com/2019/05/queue-hardening-enhancements.html`](https://security.googleblog.com/2019/05/queue-hardening-enhancements.html)
 
-[2] Rust 在 Facebook 的简要历史。 (2021年4月29日)。发表于 Engineering.fb 博客。[https://engineering.fb.com/2021/04/29/developer-tools/rust](https://engineering.fb.com/2021/04/29/developer-tools/rust)
+[2] Rust 在 Facebook 的简要历史。 (2021 年 4 月 29 日)。发表于 Engineering.fb 博客。[`engineering.fb.com/2021/04/29/developer-tools/rust`](https://engineering.fb.com/2021/04/29/developer-tools/rust)
 
-[3] Linux 6.1 正式在内核中添加对 Rust 的支持。 (2022年12月20日)。发表于 infoq.com。[https://www.infoq.com/news/2022/12/linux-6-1-rust](https://www.infoq.com/news/2022/12/linux-6-1-rust)
+[3] Linux 6.1 正式在内核中添加对 Rust 的支持。 (2022 年 12 月 20 日)。发表于 infoq.com。[`www.infoq.com/news/2022/12/linux-6-1-rust`](https://www.infoq.com/news/2022/12/linux-6-1-rust)
 
-[4] 2022年顶级编程语言。 (2022年8月23日)。发表于 spectrum.ieee.com。[https://spectrum.ieee.org/top-programming-languages-2022](https://spectrum.ieee.org/top-programming-languages-2022)
+[4] 2022 年顶级编程语言。 (2022 年 8 月 23 日)。发表于 spectrum.ieee.com。[`spectrum.ieee.org/top-programming-languages-2022`](https://spectrum.ieee.org/top-programming-languages-2022)
 
-[5] 编程、脚本和标记语言。 (2022年5月)。发表于 StackOverflow 开发者调查 2022。[https://survey.stackoverflow.co/2022/#programming-scripting-and-markup-languages](https://survey.stackoverflow.co/2022/#programming-scripting-and-markup-languages)
+[5] 编程、脚本和标记语言。 (2022 年 5 月)。发表于 StackOverflow 开发者调查 2022。[`survey.stackoverflow.co/2022/#programming-scripting-and-markup-languages`](https://survey.stackoverflow.co/2022/#programming-scripting-and-markup-languages)
 
-[6] 我们需要一种更安全的系统编程语言。（2019年7月18日）。在Microsoft安全响应中心博客上。 [https://msrc.microsoft.com/blog/2019/07/we-need-a-safer-systems-programming-language/](https://msrc.microsoft.com/blog/2019/07/we-need-a-safer-systems-programming-language/)
+[6] 我们需要一种更安全的系统编程语言。（2019 年 7 月 18 日）。在 Microsoft 安全响应中心博客上。 [`msrc.microsoft.com/blog/2019/07/we-need-a-safer-systems-programming-language/`](https://msrc.microsoft.com/blog/2019/07/we-need-a-safer-systems-programming-language/)
 
-[7] Mozilla和三星合作开发下一代网页浏览器引擎。（2013年4月3日）。在Mozilla博客上。 [https://blog.mozillarr.org/en/mozilla/mozilla-and-samsung-collaborate-on-next-generation-web-browser-engine/](https://blog.mozillarr.org/en/mozilla/mozilla-and-samsung-collaborate-on-next-generation-web-browser-engine/)
+[7] Mozilla 和三星合作开发下一代网页浏览器引擎。（2013 年 4 月 3 日）。在 Mozilla 博客上。 [`blog.mozillarr.org/en/mozilla/mozilla-and-samsung-collaborate-on-next-generation-web-browser-engine/`](https://blog.mozillarr.org/en/mozilla/mozilla-and-samsung-collaborate-on-next-generation-web-browser-engine/)
 
-[8] 由于疫情，Mozilla裁员250人。（2020年8月11日）。在Engadget上。 [https://www.engadget.com/mozilla-firefox-250-employees-layoffs-151324924.html](https://www.engadget.com/mozilla-firefox-250-employees-layoffs-151324924.html)
+[8] 由于疫情，Mozilla 裁员 250 人。（2020 年 8 月 11 日）。在 Engadget 上。 [`www.engadget.com/mozilla-firefox-250-employees-layoffs-151324924.html`](https://www.engadget.com/mozilla-firefox-250-employees-layoffs-151324924.html)
 
-[9] Pydantic V2如何利用Rust的超级力量。（2023年2月4日和5日）。在fosdem.org上。 [https://fosdem.org/2023/schedule/event/rust_how_pydantic_v2_leverages_rusts_superpowers/](https://fosdem.org/2023/schedule/event/rust_how_pydantic_v2_leverages_rusts_superpowers/)
+[9] Pydantic V2 如何利用 Rust 的超级力量。（2023 年 2 月 4 日和 5 日）。在 fosdem.org 上。 [`fosdem.org/2023/schedule/event/rust_how_pydantic_v2_leverages_rusts_superpowers/`](https://fosdem.org/2023/schedule/event/rust_how_pydantic_v2_leverages_rusts_superpowers/)
 
-[10] pydantic-v2 性能。（2022年12月23日）。在docs.pydantic.dev上。 [https://docs.pydantic.dev/blog/pydantic-v2/#performance](https://docs.pydantic.dev/blog/pydantic-v2/#performance)
+[10] pydantic-v2 性能。（2022 年 12 月 23 日）。在 docs.pydantic.dev 上。 [`docs.pydantic.dev/blog/pydantic-v2/#performance`](https://docs.pydantic.dev/blog/pydantic-v2/#performance)
 
-[11] BlueHat IL 2023 - David Weston-默认安全。（2023年4月19日）。在youtube.com上。 [https://www.youtube.com/watch?v=8T6ClX-y2AE&t=2703s](https://www.youtube.com/watch?v=8T6ClX-y2AE&t=2703s)
+[11] BlueHat IL 2023 - David Weston-默认安全。（2023 年 4 月 19 日）。在 youtube.com 上。 [`www.youtube.com/watch?v=8T6ClX-y2AE&t=2703s`](https://www.youtube.com/watch?v=8T6ClX-y2AE&t=2703s)

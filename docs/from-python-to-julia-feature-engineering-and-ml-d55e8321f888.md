@@ -1,18 +1,18 @@
 # 从 Python 到 Julia：特征工程与机器学习
 
-> 原文：[https://towardsdatascience.com/from-python-to-julia-feature-engineering-and-ml-d55e8321f888?source=collection_archive---------11-----------------------#2023-06-26](https://towardsdatascience.com/from-python-to-julia-feature-engineering-and-ml-d55e8321f888?source=collection_archive---------11-----------------------#2023-06-26)
+> 原文：[`towardsdatascience.com/from-python-to-julia-feature-engineering-and-ml-d55e8321f888?source=collection_archive---------11-----------------------#2023-06-26`](https://towardsdatascience.com/from-python-to-julia-feature-engineering-and-ml-d55e8321f888?source=collection_archive---------11-----------------------#2023-06-26)
 
-![](../Images/f7da00682658a8bdd533781a67403eaf.png)
+![](img/f7da00682658a8bdd533781a67403eaf.png)
 
 图片由 [CardMapr.nl](https://unsplash.com/ja/@cardmapr?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，[Unsplash](https://unsplash.com/s/photos/credit-cards?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 上的
 
 ## 基于 Julia 的欺诈检测模型构建方法
 
-[](https://medium.com/@wangshenghao1993?source=post_page-----d55e8321f888--------------------------------)[![王胜浩](../Images/c59ca7f4fc77ca81f6b670ea5435ac19.png)](https://medium.com/@wangshenghao1993?source=post_page-----d55e8321f888--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d55e8321f888--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d55e8321f888--------------------------------) [王胜浩](https://medium.com/@wangshenghao1993?source=post_page-----d55e8321f888--------------------------------)
+[](https://medium.com/@wangshenghao1993?source=post_page-----d55e8321f888--------------------------------)![王胜浩](https://medium.com/@wangshenghao1993?source=post_page-----d55e8321f888--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d55e8321f888--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d55e8321f888--------------------------------) [王胜浩](https://medium.com/@wangshenghao1993?source=post_page-----d55e8321f888--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F75535ec0f14c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-python-to-julia-feature-engineering-and-ml-d55e8321f888&user=Wang+Shenghao&userId=75535ec0f14c&source=post_page-75535ec0f14c----d55e8321f888---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d55e8321f888--------------------------------) ·6分钟阅读·2023年6月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd55e8321f888&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-python-to-julia-feature-engineering-and-ml-d55e8321f888&user=Wang+Shenghao&userId=75535ec0f14c&source=-----d55e8321f888---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F75535ec0f14c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-python-to-julia-feature-engineering-and-ml-d55e8321f888&user=Wang+Shenghao&userId=75535ec0f14c&source=post_page-75535ec0f14c----d55e8321f888---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d55e8321f888--------------------------------) ·6 分钟阅读·2023 年 6 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd55e8321f888&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrom-python-to-julia-feature-engineering-and-ml-d55e8321f888&user=Wang+Shenghao&userId=75535ec0f14c&source=-----d55e8321f888---------------------clap_footer-----------)
 
 --
 
@@ -36,7 +36,7 @@
 
 等效的 Python sklearn 实现如下。
 
-![](../Images/3e9ea400baf6f37072dd3dbc1e28af74.png)
+![](img/3e9ea400baf6f37072dd3dbc1e28af74.png)
 
 数据划分用于训练和测试 — Python 实现（图片来源于作者）
 
@@ -52,13 +52,13 @@
 
 变换后的特征和原始特征如下所示。
 
-![](../Images/9608d482d04912956f856e6f1dc422d7.png)
+![](img/9608d482d04912956f856e6f1dc422d7.png)
 
 缩放后的特征与原始特征 — Julia 实现（图像作者提供）
 
 在 Python 中，sklearn 提供了多种特征缩放选项，包括归一化和标准化。通过声明一个特征缩放器，可以用两行代码完成缩放。以下代码展示了如何使用一个[RobustScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html)的示例。
 
-![](../Images/845227f504791224f4e127212246e518.png)
+![](img/845227f504791224f4e127212246e518.png)
 
 对特征进行鲁棒缩放 — Python 实现（图像作者提供）
 
@@ -74,7 +74,7 @@
 
 相应的 Python 实现如下。我们可以看到，`fit_resample` 函数在 Julia 中的用法是相同的。
 
-![](../Images/9332c8f1e4c1ca50714575926017ca9d.png)
+![](img/9332c8f1e4c1ca50714575926017ca9d.png)
 
 使用 SMOTE 进行上采样训练数据 — Python 实现（图片由作者提供）
 
@@ -96,7 +96,7 @@
 
 相应的 Python 实现如下。
 
-![](../Images/f71e95666783f20e286643e7ac84b985.png)
+![](img/f71e95666783f20e286643e7ac84b985.png)
 
 使用 XGBoost 训练欺诈检测模型 — Python 实现（图片由作者提供）
 
@@ -108,7 +108,7 @@
 
 在 Python 中，我们可以使用 sklearn 来计算指标。
 
-![](../Images/82b89478a38a1dc21b83edcb0225f687.png)
+![](img/82b89478a38a1dc21b83edcb0225f687.png)
 
 进行预测和计算指标 — Python 实现（图片由作者提供）
 
@@ -116,7 +116,7 @@
 
 可以观察到，Julia 模型在训练时间稍长的情况下，达到了更好的精确度和召回率。由于用于训练 Python 模型的 [XGBoost](https://github.com/dmlc/xgboost) 库底层是用 C++ 编写的，而 [Julia XGBoost](https://github.com/dmlc/XGBoost.jl) 库完全用 Julia 编写，Julia 的运行速度确实与 C++ 一样快，就像它所声称的那样！
 
-用于上述测试的硬件：第11代 Intel® Core™ i7–1165G7 @ 2.80GHz — 4 核心。
+用于上述测试的硬件：第 11 代 Intel® Core™ i7–1165G7 @ 2.80GHz — 4 核心。
 
 Jupyter notebook 可以在 [Github](https://github.com/shenghaowang/shenghao-blogs-work/tree/main/julia-traditional-ml) 找到。
 
@@ -130,4 +130,4 @@ Jupyter notebook 可以在 [Github](https://github.com/shenghaowang/shenghao-blo
 
 +   [布鲁塞尔自由大学机器学习小组 (Université Libre de Bruxelles)](http://mlg.ulb.ac.be/)。 (无日期)。*信用卡欺诈检测* [数据集]。[H](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)i i (数据库内容许可证 (DbCL))
 
-+   Akshay Gupta. 2021年5月13日。*使用 Julia 开始机器学习：顶级 Julia 机器学习库*。[https://www.analyticsvidhya.com/blog/2021/05/top-julia-machine-learning-libraries/](https://www.analyticsvidhya.com/blog/2021/05/top-julia-machine-learning-libraries/)
++   Akshay Gupta. 2021 年 5 月 13 日。*使用 Julia 开始机器学习：顶级 Julia 机器学习库*。[`www.analyticsvidhya.com/blog/2021/05/top-julia-machine-learning-libraries/`](https://www.analyticsvidhya.com/blog/2021/05/top-julia-machine-learning-libraries/)

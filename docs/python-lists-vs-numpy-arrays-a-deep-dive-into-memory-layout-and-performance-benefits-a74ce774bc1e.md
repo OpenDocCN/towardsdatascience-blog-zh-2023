@@ -1,20 +1,20 @@
 # Python 列表与 NumPy 数组：深入探讨内存布局与性能优势
 
-> 原文：[https://towardsdatascience.com/python-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e?source=collection_archive---------11-----------------------#2023-07-14](https://towardsdatascience.com/python-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e?source=collection_archive---------11-----------------------#2023-07-14)
+> 原文：[`towardsdatascience.com/python-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e?source=collection_archive---------11-----------------------#2023-07-14`](https://towardsdatascience.com/python-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e?source=collection_archive---------11-----------------------#2023-07-14)
 
 ## [快速计算](https://medium.com/@qtalen/list/fast-computing-2a37a7e82be5)
 
 ## 探索分配差异和效率提升
 
-[](https://qtalen.medium.com/?source=post_page-----a74ce774bc1e--------------------------------)[![Peng Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----a74ce774bc1e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a74ce774bc1e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a74ce774bc1e--------------------------------) [Peng Qian](https://qtalen.medium.com/?source=post_page-----a74ce774bc1e--------------------------------)
+[](https://qtalen.medium.com/?source=post_page-----a74ce774bc1e--------------------------------)![Peng Qian](https://qtalen.medium.com/?source=post_page-----a74ce774bc1e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a74ce774bc1e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a74ce774bc1e--------------------------------) [Peng Qian](https://qtalen.medium.com/?source=post_page-----a74ce774bc1e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e2fe735546d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e&user=Peng+Qian&userId=8e2fe735546d&source=post_page-8e2fe735546d----a74ce774bc1e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a74ce774bc1e--------------------------------) ·9分钟阅读·2023年7月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa74ce774bc1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e&user=Peng+Qian&userId=8e2fe735546d&source=-----a74ce774bc1e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e2fe735546d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e&user=Peng+Qian&userId=8e2fe735546d&source=post_page-8e2fe735546d----a74ce774bc1e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a74ce774bc1e--------------------------------) ·9 分钟阅读·2023 年 7 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa74ce774bc1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e&user=Peng+Qian&userId=8e2fe735546d&source=-----a74ce774bc1e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa74ce774bc1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e&source=-----a74ce774bc1e---------------------bookmark_footer-----------)![](../Images/9c59152b04be4c0785841172da617a50.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa74ce774bc1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e&source=-----a74ce774bc1e---------------------bookmark_footer-----------)![](img/9c59152b04be4c0785841172da617a50.png)
 
 NumPy 数组中的数据被紧凑地排列，就像书架上的书一样。照片由[Eliabe Costa](https://unsplash.com/@eliabevces?utm_source=medium&utm_medium=referral)拍摄，[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)提供。
 

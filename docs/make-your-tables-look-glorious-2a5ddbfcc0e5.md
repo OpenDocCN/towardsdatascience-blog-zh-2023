@@ -1,22 +1,22 @@
 # 让你的表格看起来更华丽
 
-> 原文：[https://towardsdatascience.com/make-your-tables-look-glorious-2a5ddbfcc0e5?source=collection_archive---------2-----------------------#2023-01-10](https://towardsdatascience.com/make-your-tables-look-glorious-2a5ddbfcc0e5?source=collection_archive---------2-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/make-your-tables-look-glorious-2a5ddbfcc0e5?source=collection_archive---------2-----------------------#2023-01-10`](https://towardsdatascience.com/make-your-tables-look-glorious-2a5ddbfcc0e5?source=collection_archive---------2-----------------------#2023-01-10)
 
 ## 简单的格式化技巧，让你的 pandas DataFrames 准备好展示
 
-[](https://bradley-stephen-shaw.medium.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)[![Bradley Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2a5ddbfcc0e5--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)
+[](https://bradley-stephen-shaw.medium.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)![Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a5ddbfcc0e5--------------------------------) [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----2a5ddbfcc0e5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc5cd0a58b5ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-tables-look-glorious-2a5ddbfcc0e5&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=post_page-c5cd0a58b5ae----2a5ddbfcc0e5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a5ddbfcc0e5--------------------------------) ·13分钟阅读·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a5ddbfcc0e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-tables-look-glorious-2a5ddbfcc0e5&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=-----2a5ddbfcc0e5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc5cd0a58b5ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-tables-look-glorious-2a5ddbfcc0e5&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=post_page-c5cd0a58b5ae----2a5ddbfcc0e5---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2a5ddbfcc0e5--------------------------------) ·13 分钟阅读·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2a5ddbfcc0e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-tables-look-glorious-2a5ddbfcc0e5&user=Bradley+Stephen+Shaw&userId=c5cd0a58b5ae&source=-----2a5ddbfcc0e5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a5ddbfcc0e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-tables-look-glorious-2a5ddbfcc0e5&source=-----2a5ddbfcc0e5---------------------bookmark_footer-----------)![](../Images/fffd57f16a2bf52a634c619612002471.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2a5ddbfcc0e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmake-your-tables-look-glorious-2a5ddbfcc0e5&source=-----2a5ddbfcc0e5---------------------bookmark_footer-----------)![](img/fffd57f16a2bf52a634c619612002471.png)
 
 图片由 [Pierre Bamin](https://unsplash.com/@bamin?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
-2023年带来了我们所有人希望和梦想的一切，新的一年也带来了其他东西：年终报告和演示文稿。
+2023 年带来了我们所有人希望和梦想的一切，新的一年也带来了其他东西：年终报告和演示文稿。
 
 不管我们喜欢与否，视觉印象都很重要。虽然图形通常比一系列数字更易于理解，更能传达信息，但有时我们仍不得不使用数据表。但这并不意味着表格不能漂亮！
 
@@ -120,7 +120,7 @@ df['Product conversion'] = df['Numbers'] / df['Quotes']
 
 ……这给我们带来了以下（缩写的）DataFrame：
 
-![](../Images/bb7de3e05810c241a6f60e8117ec675f.png)
+![](img/bb7de3e05810c241a6f60e8117ec675f.png)
 
 作者提供的图片
 
@@ -145,7 +145,7 @@ df['Product conversion'] = df['Numbers'] / df['Quotes']
 df.style.format({'Month':'{:%Y-%m}'})
 ```
 
-![](../Images/a6e3caaee30d285fb793d34eead1ba41.png)
+![](img/a6e3caaee30d285fb793d34eead1ba41.png)
 
 作者提供的图片
 
@@ -158,7 +158,7 @@ df.style.format({'Month':'{:%Y-%m}'})
 df.style.format({'Month':'{:%B %Y}'})
 ```
 
-![](../Images/21da1db6970836e502c7418a5134ca16.png)
+![](img/21da1db6970836e502c7418a5134ca16.png)
 
 作者提供的图片
 
@@ -169,7 +169,7 @@ df.style.format({'Month':'{:%B %Y}'})
 df.style.format({'Month':'{:%b %Y}'})
 ```
 
-![](../Images/77a99c9453d3912e5d2ffbc453d3c3d1.png)
+![](img/77a99c9453d3912e5d2ffbc453d3c3d1.png)
 
 作者提供的图片
 
@@ -180,7 +180,7 @@ df.style.format({'Month':'{:%b %Y}'})
 df.style.format({'Month':'{:%Y M%m}'})
 ```
 
-![](../Images/254218bf047ef2e56e47637994a452d1.png)
+![](img/254218bf047ef2e56e47637994a452d1.png)
 
 作者提供的图片
 
@@ -205,7 +205,7 @@ df.style.format(
 )
 ```
 
-![](../Images/6ed8e7ccd13817bd77b6c6ec8985d183.png)
+![](img/6ed8e7ccd13817bd77b6c6ec8985d183.png)
 
 图片来源：作者
 
@@ -238,7 +238,7 @@ df.style.format(
 )
 ```
 
-![](../Images/ca09e0eb65fc3e56498eec0563057b47.png)
+![](img/ca09e0eb65fc3e56498eec0563057b47.png)
 
 图片来源：作者
 
@@ -257,7 +257,7 @@ df.style.format(
 )
 ```
 
-![](../Images/18a23df44a8029bfb2fa26e86880f36f.png)
+![](img/18a23df44a8029bfb2fa26e86880f36f.png)
 
 图片来源：作者
 
@@ -285,7 +285,7 @@ df.style.format(
 )
 ```
 
-![](../Images/7280f6360e636b720b0b7087a927e0e1.png)
+![](img/7280f6360e636b720b0b7087a927e0e1.png)
 
 图片来源：作者
 
@@ -315,7 +315,7 @@ df.style.format(
 ).hide_index()
 ```
 
-![](../Images/a965f5b96effa913cc17e19274d4ae68.png)
+![](img/a965f5b96effa913cc17e19274d4ae68.png)
 
 图片作者提供
 
@@ -356,7 +356,7 @@ df.style\
 ).hide_index()
 ```
 
-![](../Images/dfddd722c16eb56b212cffb24590d8e9.png)
+![](img/dfddd722c16eb56b212cffb24590d8e9.png)
 
 图片作者提供
 
@@ -391,7 +391,7 @@ df.iloc[:6,:].style\
 ).hide_index()
 ```
 
-![](../Images/da04300e8decb6e6bdf20441130be68f.png)
+![](img/da04300e8decb6e6bdf20441130be68f.png)
 
 图片作者提供
 
@@ -448,7 +448,7 @@ df.style\
 .hide_index()
 ```
 
-![](../Images/06e66a0dbce1a1a72f6ccce17e043aef.png)
+![](img/06e66a0dbce1a1a72f6ccce17e043aef.png)
 
 图片作者提供
 
@@ -491,7 +491,7 @@ df.style\
 
 ……这产生了：
 
-![](../Images/1aad2bb9ccb5b32e0c835c13ff815aae.png)
+![](img/1aad2bb9ccb5b32e0c835c13ff815aae.png)
 
 作者提供的图像
 
@@ -521,7 +521,7 @@ total['Product conversion'] = total['Numbers'] / total['Quotes']
 total = total.to_frame().transpose()
 ```
 
-![](../Images/2c60e2ab2608281c3388ada0f49d48f9.png)
+![](img/2c60e2ab2608281c3388ada0f49d48f9.png)
 
 作者提供的图像
 
@@ -565,7 +565,7 @@ d.style\
 
 … 完成！
 
-![](../Images/f527951d0ab48d44ab7b94477453c54d.png)
+![](img/f527951d0ab48d44ab7b94477453c54d.png)
 
 作者提供的图像
 
@@ -612,7 +612,7 @@ dfi.export(
 )
 ```
 
-![](../Images/16237d1abf0ff91c972c6afc5b77e22e.png)
+![](img/16237d1abf0ff91c972c6afc5b77e22e.png)
 
 作者提供的图像
 

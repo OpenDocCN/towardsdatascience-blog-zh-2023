@@ -1,18 +1,18 @@
-# 线性回归深入探讨（第2部分）
+# 线性回归深入探讨（第二部分）
 
-> 原文：[https://towardsdatascience.com/linear-regression-in-depth-part-2-5d40fd19efd4?source=collection_archive---------14-----------------------#2023-04-25](https://towardsdatascience.com/linear-regression-in-depth-part-2-5d40fd19efd4?source=collection_archive---------14-----------------------#2023-04-25)
+> 原文：[`towardsdatascience.com/linear-regression-in-depth-part-2-5d40fd19efd4?source=collection_archive---------14-----------------------#2023-04-25`](https://towardsdatascience.com/linear-regression-in-depth-part-2-5d40fd19efd4?source=collection_archive---------14-----------------------#2023-04-25)
 
 ## 深入探讨多重线性回归及其在 Python 中的示例
 
-[](https://medium.com/@roiyeho?source=post_page-----5d40fd19efd4--------------------------------)[![Dr. Roi Yehoshua](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----5d40fd19efd4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5d40fd19efd4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5d40fd19efd4--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----5d40fd19efd4--------------------------------)
+[](https://medium.com/@roiyeho?source=post_page-----5d40fd19efd4--------------------------------)![Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----5d40fd19efd4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5d40fd19efd4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d40fd19efd4--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----5d40fd19efd4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-in-depth-part-2-5d40fd19efd4&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----5d40fd19efd4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d40fd19efd4--------------------------------) ·14 min read·2023年4月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5d40fd19efd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-in-depth-part-2-5d40fd19efd4&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----5d40fd19efd4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3886620c5cf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-in-depth-part-2-5d40fd19efd4&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=post_page-3886620c5cf9----5d40fd19efd4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d40fd19efd4--------------------------------) ·14 min read·2023 年 4 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5d40fd19efd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-in-depth-part-2-5d40fd19efd4&user=Dr.+Roi+Yehoshua&userId=3886620c5cf9&source=-----5d40fd19efd4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5d40fd19efd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-in-depth-part-2-5d40fd19efd4&source=-----5d40fd19efd4---------------------bookmark_footer-----------)![](../Images/89c03a1c4491d8f8e9ce98926d1fbb9e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5d40fd19efd4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-regression-in-depth-part-2-5d40fd19efd4&source=-----5d40fd19efd4---------------------bookmark_footer-----------)![](img/89c03a1c4491d8f8e9ce98926d1fbb9e.png)
 
 图片由[ThisisEngineering RAEng](https://unsplash.com/@thisisengineering?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，发布在[Unsplash](https://unsplash.com/photos/GzDrm7SYQ0g?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

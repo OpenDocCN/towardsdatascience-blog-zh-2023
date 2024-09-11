@@ -1,14 +1,14 @@
 # 五个协作数据科学的软件工程原则
 
-> 原文：[https://towardsdatascience.com/five-software-engineering-principles-for-collaborative-data-science-ab26667a311?source=collection_archive---------9-----------------------#2023-01-13](https://towardsdatascience.com/five-software-engineering-principles-for-collaborative-data-science-ab26667a311?source=collection_archive---------9-----------------------#2023-01-13)
+> 原文：[`towardsdatascience.com/five-software-engineering-principles-for-collaborative-data-science-ab26667a311?source=collection_archive---------9-----------------------#2023-01-13`](https://towardsdatascience.com/five-software-engineering-principles-for-collaborative-data-science-ab26667a311?source=collection_archive---------9-----------------------#2023-01-13)
 
 ## 可重复的数据科学项目需要项目组织和干净的代码
 
-[](https://stichbury.medium.com/?source=post_page-----ab26667a311--------------------------------)[![Jo Stichbury](../Images/c72e6f969467e9dfcaa156924ebf061e.png)](https://stichbury.medium.com/?source=post_page-----ab26667a311--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab26667a311--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ab26667a311--------------------------------) [Jo Stichbury](https://stichbury.medium.com/?source=post_page-----ab26667a311--------------------------------)
+[](https://stichbury.medium.com/?source=post_page-----ab26667a311--------------------------------)![Jo Stichbury](https://stichbury.medium.com/?source=post_page-----ab26667a311--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab26667a311--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab26667a311--------------------------------) [Jo Stichbury](https://stichbury.medium.com/?source=post_page-----ab26667a311--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F49dd0198b639&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-software-engineering-principles-for-collaborative-data-science-ab26667a311&user=Jo+Stichbury&userId=49dd0198b639&source=post_page-49dd0198b639----ab26667a311---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab26667a311--------------------------------) ·10分钟阅读·2023年1月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fab26667a311&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-software-engineering-principles-for-collaborative-data-science-ab26667a311&user=Jo+Stichbury&userId=49dd0198b639&source=-----ab26667a311---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F49dd0198b639&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-software-engineering-principles-for-collaborative-data-science-ab26667a311&user=Jo+Stichbury&userId=49dd0198b639&source=post_page-49dd0198b639----ab26667a311---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab26667a311--------------------------------) ·10 分钟阅读·2023 年 1 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fab26667a311&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffive-software-engineering-principles-for-collaborative-data-science-ab26667a311&user=Jo+Stichbury&userId=49dd0198b639&source=-----ab26667a311---------------------clap_footer-----------)
 
 --
 
@@ -18,7 +18,7 @@
 
 用一个比喻来说，假设你是一位厨师，正在准备一顿丰盛的晚餐。在厨房里，你有不同的食材和工具，你的工作是使用这些工具，并将食材以正确的方式组合在一起，做出美味的菜肴。你和你的顾客都希望你的菜肴既美味又不被烤焦或生煮。一间杂乱无章的厨房让其他人很难做出你的菜肴，因此一位优秀的厨师会花时间保持厨房整洁，标记食材，并在一套食谱中记录下菜肴的制作过程。
 
-![](../Images/f46ce4be01b819aae939580730d8b332.png)
+![](img/f46ce4be01b819aae939580730d8b332.png)
 
 [Louis Hansel](https://unsplash.com/@louishansel?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 的照片，来自 [Unsplash](https://unsplash.com/photos/0sYLBZjgTTw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -42,7 +42,7 @@
 
 如果你在寻找灵感，可以查看 [DrivenData](https://www.drivendata.org/) 关于 [CookieCutter Data Science](http://drivendata.github.io/cookiecutter-data-science) 的页面，他们描述其为“一个逻辑性强、相对标准化但灵活的数据科学工作和分享的项目结构”。并且看看开源项目 [Kedro](https://www.kedro.org/)，它基于 CookieCutter Data Science 的学习，提供可修改的项目启动模板以自定义你的模板。
 
-![](../Images/f2689d8f0e5773fef1fac40b3e77b4f6.png)
+![](img/f2689d8f0e5773fef1fac40b3e77b4f6.png)
 
 图片来源：[Max Komthongvijit](https://unsplash.com/@mcks?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 于 [Unsplash](https://unsplash.com/photos/_RwtD1MrUrw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -56,7 +56,7 @@
 
 对于你的项目直接依赖的每个包，列出它及其需要的版本以进行“固定”。包可能会频繁更新；固定可以保护你免受更改引入的错误或不兼容变化的影响。
 
-![](../Images/bf129e281cdb922f0bc06f85293dbd10.png)
+![](img/bf129e281cdb922f0bc06f85293dbd10.png)
 
 图片来源：[Duane Mendes](https://unsplash.com/@duanemendes?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 于 [Unsplash](https://unsplash.com/photos/JrRoJlGyZwk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -68,23 +68,23 @@
 
 [了解更多关于为什么你需要虚拟环境](https://realpython.com/python-virtual-environments-a-primer/#why-do-you-need-virtual-environments)
 
-在 YouTube 上了解 Python 虚拟环境工具和工作流：[https://youtu.be/YKfAwIItO7M](https://youtu.be/YKfAwIItO7M)
+在 YouTube 上了解 Python 虚拟环境工具和工作流：[`youtu.be/YKfAwIItO7M`](https://youtu.be/YKfAwIItO7M)
 
 # 3\. 通过使代码可读来提高其可重用性
 
-[**《代码整洁之道：敏捷软件工艺手册》**](https://learning.oreilly.com/library/view/clean-code-a/9780136083238/)是一本2008年的软件工程书籍，提出了无论使用什么编程语言或其目的，都应遵循的最佳实践。它提出了从头开始编写良好代码和改进糟糕代码的几个原则，并描述了“代码异味”，这些异味表明你的代码“出了问题”。
+[**《代码整洁之道：敏捷软件工艺手册》**](https://learning.oreilly.com/library/view/clean-code-a/9780136083238/)是一本 2008 年的软件工程书籍，提出了无论使用什么编程语言或其目的，都应遵循的最佳实践。它提出了从头开始编写良好代码和改进糟糕代码的几个原则，并描述了“代码异味”，这些异味表明你的代码“出了问题”。
 
-除了阅读书籍，你还可以找到许多[视频](https://youtu.be/7EmboKQH8lM)、[培训课程](https://www.udemy.com/course/writing-clean-code/)和[书籍总结](/clean-code-for-data-scientists-6fc90872398f)，根据你需要的详细程度。我的意图不是在这里复述所有内容，而是考虑书中描述的一个方面：代码可读性。
+除了阅读书籍，你还可以找到许多[视频](https://youtu.be/7EmboKQH8lM)、[培训课程](https://www.udemy.com/course/writing-clean-code/)和书籍总结，根据你需要的详细程度。我的意图不是在这里复述所有内容，而是考虑书中描述的一个方面：代码可读性。
 
 > “代码被阅读的频率远高于编写的频率。”
 
-虽然似乎没有单一来源的引述，但它常被归于Python编程语言的创建者Guido van Rossum和里程碑[PEP8文档](https://www.python.org/dev/peps/pep-0008/)的贡献者，该文档提供了[编写可读代码的指导](https://realpython.com/python-pep8/#why-we-need-pep-8)。
+虽然似乎没有单一来源的引述，但它常被归于 Python 编程语言的创建者 Guido van Rossum 和里程碑[PEP8 文档](https://www.python.org/dev/peps/pep-0008/)的贡献者，该文档提供了[编写可读代码的指导](https://realpython.com/python-pep8/#why-we-need-pep-8)。
 
 你可以通过遵循常见标准和惯例，并要求你的团队进行代码审查来提高代码的可读性。你可能会在开始时集中精力于代码的功能，但如果你在编写代码时使其可读，你会发现后续工作更简单。清晰有助于调试，如果其他人检查过并确认理解你的方法以及遵循一些基本规则，你会发现维护起来更容易。
 
 在查看你的代码（或别人的代码）时，有几个提示：
 
-![](../Images/ce0215a5fd01b1b9df42fa2eb22fd3ab.png)
+![](img/ce0215a5fd01b1b9df42fa2eb22fd3ab.png)
 
 可读代码的要素：Jo Stichbury（2023）公有领域
 
@@ -92,7 +92,7 @@
 
 +   最好的代码是自我文档化的，意味着理解它所需的注释很少，但**注释有助于在函数级别记录非平凡的代码**。只要不要写出重复代码的大块文字即可。
 
-+   **通过使用空白来使代码可读**。如果你使用Python，你会发现这很简单，因为Python给空白赋予了语法意义。
++   **通过使用空白来使代码可读**。如果你使用 Python，你会发现这很简单，因为 Python 给空白赋予了语法意义。
 
 +   [**编写只做一件事的小函数**](https://medium.com/swlh/clean-code-writing-functions-or-methods-4e6e53ff4ac2)，具有单一返回路径和有限数量的参数。
 
@@ -126,7 +126,7 @@
 
 **扩展性**：你可以将一个小的管道扩展为处理多个数据源、使用不同的模型和生成报告。
 
-**可维护性**：你可以编辑和重新测试。正如[我们之前描述的那样，Jupyter 笔记本非常适合快速原型](/power-is-nothing-without-control-aa43523745b6)，但它们就像你家门口的桌子或装满杂物的抽屉。无论你的意图多么良好，这里总会堆积杂乱的东西，如硬编码常量、打印语句调试和未使用的代码。笔记本中的代码越多，你就越难确定你编写的代码是否按预期工作。
+**可维护性**：你可以编辑和重新测试。正如我们之前描述的那样，Jupyter 笔记本非常适合快速原型，但它们就像你家门口的桌子或装满杂物的抽屉。无论你的意图多么良好，这里总会堆积杂乱的东西，如硬编码常量、打印语句调试和未使用的代码。笔记本中的代码越多，你就越难确定你编写的代码是否按预期工作。
 
 ## 测试，测试
 
@@ -138,7 +138,7 @@
 
 > “尽早将代码从笔记本中移到 Python 模块和包中，以形成管道，以管理复杂性。”
 
-![](../Images/b3ecfcceef52ed18991e80d9311c5e5d.png)
+![](img/b3ecfcceef52ed18991e80d9311c5e5d.png)
 
 图片由 [Josué AS](https://unsplash.com/@yehoshuaas?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/giAWrAVF37A?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -148,7 +148,7 @@
 
 投资一些时间学习版本控制的原则，以最大化其带来的价值，这样你可以处理更复杂的场景，例如棘手的合并。还有一些优秀的实践材料可供学习，例如 [Git 快速入门指南](https://docs.github.com/en/get-started/quickstart/set-up-git) 和 [学习 Git 分支教程](https://learngitbranching.js.org/)。
 
-*在 YouTube 上 15 分钟学会 Git:* [https://youtu.be/USjZcfj8yxE](https://youtu.be/USjZcfj8yxE)
+*在 YouTube 上 15 分钟学会 Git:* [`youtu.be/USjZcfj8yxE`](https://youtu.be/USjZcfj8yxE)
 
 一些数据科学家学习了 `commit` 的基础知识，但这里有一些最佳实践需要考虑：
 
@@ -156,7 +156,7 @@
 
 +   只提交你需要的：如果文件是为了你的个人本地配置、秘密，例如数据库登录凭证或构建结果生成的中间文件，则不应存储所有文件。学习如何使用`.gitignore`。
 
-+   不要在版本控制中存储原始数据。原始数据不会改变，所以你不需要对其进行版本控制。对于可以从原始数据和你的代码生成的中间数据文件也是如此。如果需要跟踪转化后的数据，可以使用不同的数据/工件/工作流版本控制工具，如DVC（数据版本控制）或Pachyderm，这些工具可以扩展你的Git代码版本控制。
++   不要在版本控制中存储原始数据。原始数据不会改变，所以你不需要对其进行版本控制。对于可以从原始数据和你的代码生成的中间数据文件也是如此。如果需要跟踪转化后的数据，可以使用不同的数据/工件/工作流版本控制工具，如 DVC（数据版本控制）或 Pachyderm，这些工具可以扩展你的 Git 代码版本控制。
 
 使用版本控制在自己的项目和团队中有诸多好处，你可以大胆尝试任何代码中的风险，因为你可以迅速恢复到一个已知的、可用的状态。将稳固的版本控制系统流程与测试结合起来，提供了一种强大的工作方式。当你的代码产生正确结果时，保存它；然后在下一次更改代码时，重新运行测试。如果测试通过，说明你可能没有破坏任何东西。如果测试不通过，你可以重新工作或恢复。
 

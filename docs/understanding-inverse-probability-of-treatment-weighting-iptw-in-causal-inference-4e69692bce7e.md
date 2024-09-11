@@ -1,44 +1,44 @@
 # 在因果推断中理解治疗加权的逆概率 (IPTW)
 
-> 原文：[https://towardsdatascience.com/understanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e?source=collection_archive---------1-----------------------#2023-01-11](https://towardsdatascience.com/understanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e?source=collection_archive---------1-----------------------#2023-01-11)
+> 原文：[`towardsdatascience.com/understanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e?source=collection_archive---------1-----------------------#2023-01-11`](https://towardsdatascience.com/understanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e?source=collection_archive---------1-----------------------#2023-01-11)
 
-## 对IPTW的直观解释及其与多元回归的比较
+## 对 IPTW 的直观解释及其与多元回归的比较
 
-[](https://medium.com/@jonahbreslow?source=post_page-----4e69692bce7e--------------------------------)[![Jonah Breslow](../Images/c93e3a291f45fb134e084875bb2b4eb2.png)](https://medium.com/@jonahbreslow?source=post_page-----4e69692bce7e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e69692bce7e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e69692bce7e--------------------------------) [Jonah Breslow](https://medium.com/@jonahbreslow?source=post_page-----4e69692bce7e--------------------------------)
+[](https://medium.com/@jonahbreslow?source=post_page-----4e69692bce7e--------------------------------)![Jonah Breslow](https://medium.com/@jonahbreslow?source=post_page-----4e69692bce7e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e69692bce7e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e69692bce7e--------------------------------) [Jonah Breslow](https://medium.com/@jonahbreslow?source=post_page-----4e69692bce7e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef52614d34d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e&user=Jonah+Breslow&userId=ef52614d34d8&source=post_page-ef52614d34d8----4e69692bce7e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e69692bce7e--------------------------------) ·14分钟阅读·2023年1月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e69692bce7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e&user=Jonah+Breslow&userId=ef52614d34d8&source=-----4e69692bce7e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fef52614d34d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e&user=Jonah+Breslow&userId=ef52614d34d8&source=post_page-ef52614d34d8----4e69692bce7e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e69692bce7e--------------------------------) ·14 分钟阅读·2023 年 1 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e69692bce7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e&user=Jonah+Breslow&userId=ef52614d34d8&source=-----4e69692bce7e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e69692bce7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e&source=-----4e69692bce7e---------------------bookmark_footer-----------)![](../Images/cd4cb39a8d0767fb1f100c8c05b193a8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e69692bce7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-inverse-probability-of-treatment-weighting-iptw-in-causal-inference-4e69692bce7e&source=-----4e69692bce7e---------------------bookmark_footer-----------)![](img/cd4cb39a8d0767fb1f100c8c05b193a8.png)
 
 照片由 [Nadir sYzYgY](https://unsplash.com/@nadir_syzygy?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 介绍
 
-在本帖中，我将提供逆概率治疗加权（IPTW）的直观和插图解释，IPTW是各种倾向评分（PS）方法之一。IPTW是[多元线性回归](https://simple.wikipedia.org/wiki/Linear_regression)在因果推断背景下的替代方法，因为两者都试图在混杂因素存在的情况下确定治疗对结果的影响。需要注意的是，目前的证据并不支持IPTW优于多元线性模型的说法（Glynn *et al.*, 2006）。然而，IPTW确实具有某些理论和实践上的好处，我们将在本帖中回顾这些内容。
+在本帖中，我将提供逆概率治疗加权（IPTW）的直观和插图解释，IPTW 是各种倾向评分（PS）方法之一。IPTW 是[多元线性回归](https://simple.wikipedia.org/wiki/Linear_regression)在因果推断背景下的替代方法，因为两者都试图在混杂因素存在的情况下确定治疗对结果的影响。需要注意的是，目前的证据并不支持 IPTW 优于多元线性模型的说法（Glynn *et al.*, 2006）。然而，IPTW 确实具有某些理论和实践上的好处，我们将在本帖中回顾这些内容。
 
-在撰写时，查询“propensity scor*”在PubMed中已经识别出近45,000条引用（[PubMed查询](https://pubmed.ncbi.nlm.nih.gov/?term=propensity+scor*&filter=years.2000-2022)）。根据这个标准，2000年有45条引用，而2022年有8,929条引用，并且在此期间每年的引用数量都在增加（[PubMed查询](https://pubmed.ncbi.nlm.nih.gov/?term=propensity+scor*&filter=years.2000-2022)）。这种受欢迎程度的增加需要对方法论进行直接的解释。
+在撰写时，查询“propensity scor*”在 PubMed 中已经识别出近 45,000 条引用（[PubMed 查询](https://pubmed.ncbi.nlm.nih.gov/?term=propensity+scor*&filter=years.2000-2022)）。根据这个标准，2000 年有 45 条引用，而 2022 年有 8,929 条引用，并且在此期间每年的引用数量都在增加（[PubMed 查询](https://pubmed.ncbi.nlm.nih.gov/?term=propensity+scor*&filter=years.2000-2022)）。这种受欢迎程度的增加需要对方法论进行直接的解释。
 
 # 治疗加权的逆概率：解释
 
 ## 随机对照试验
 
-如果我们想确定治疗对某些可测量结果的影响，金标准方法是[**随机对照试验 (RCT)**](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6235704/)。在RCT中，治疗是随机分配给个体的。在样本量足够大的试验中，治疗在可能影响试验结果的所有测量和未测量变量中随机分配（Hariton *et al.*, 2018）。这些变量在本帖的其余部分将被称为*协变量*。这种设置使研究人员能够最接近地估计治疗对结果的因果影响。值得注意的是，即使RCT本身也不太可能证明因果关系，但它们确实提供了最强的证据。
+如果我们想确定治疗对某些可测量结果的影响，金标准方法是[**随机对照试验 (RCT)**](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6235704/)。在 RCT 中，治疗是随机分配给个体的。在样本量足够大的试验中，治疗在可能影响试验结果的所有测量和未测量变量中随机分配（Hariton *et al.*, 2018）。这些变量在本帖的其余部分将被称为*协变量*。这种设置使研究人员能够最接近地估计治疗对结果的因果影响。值得注意的是，即使 RCT 本身也不太可能证明因果关系，但它们确实提供了最强的证据。
 
 ## 简单的观察性示例
 
-让我们首先设置一个简单的示例，其中包含接受过治疗的受试者、他们的性别和他们的结果。我们的目标是确定治疗对结果的影响。在这个玩具示例中，我们假设数据包含8名参与者，4名男性和4名女性。此外，治疗给予了4名男性中的2人以及4名女性中的2人，如图1所示。
+让我们首先设置一个简单的示例，其中包含接受过治疗的受试者、他们的性别和他们的结果。我们的目标是确定治疗对结果的影响。在这个玩具示例中，我们假设数据包含 8 名参与者，4 名男性和 4 名女性。此外，治疗给予了 4 名男性中的 2 人以及 4 名女性中的 2 人，如图 1 所示。
 
-![](../Images/492d3113ff28f0199703006c9b59eea6.png)
+![](img/492d3113ff28f0199703006c9b59eea6.png)
 
-图1：简单示例
+图 1：简单示例
 
 在这种情况下，知道受试者的性别对受试者是否接受治疗没有任何信息提供。接受治疗的整体概率是 50%。如果受试者是男性，接受治疗的概率是 50%。如果受试者是女性，接受治疗的概率也是 50%。换句话说，性别与治疗之间没有相关性。图 2 显示了[有向无环图 (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph)，该图显示了所谓的因果方向。
 
-![](../Images/f6466912ec55231f67295f7c91384a03.png)
+![](img/f6466912ec55231f67295f7c91384a03.png)
 
 图 2：因果 DAG
 
@@ -48,13 +48,13 @@
 
 现在我们将修改示例，展示如果性别突然与治疗的施用相关会发生什么。图 3 显示女性接受治疗的概率为 75%，而男性只有 25% 的概率接受治疗。
 
-![](../Images/ca9d52640c6a908b04d5fbf1b30a0457.png)
+![](img/ca9d52640c6a908b04d5fbf1b30a0457.png)
 
 图 3：一个现实的示例
 
 接受治疗的整体概率仍然是 50%。但是，现在知道受试者的性别会提供关于受试者是否接受治疗的额外信息。性别和治疗不再是独立的，因为接受治疗的概率（50%）不等于受试者是女性（75%）或男性（25%）时接受治疗的概率。这被称为[选择偏差](https://en.wikipedia.org/wiki/Selection_bias)，因为未能实现性别上的随机化。现在，性别成为一个[混杂因素](https://en.wikipedia.org/wiki/Confounding)，这意味着它影响独立变量（治疗）和依赖变量（结果），这会妨碍我们直接测量治疗对结果的影响。图 4 显示了更新后的 DAG，其中有一条从性别到治疗的箭头。这条箭头表示了本节中描述的选择偏差。换句话说，受试者的性别影响受试者是否接受治疗，从而创建了统计混杂。
 
-![](../Images/d53b89766d6cfbea2c56b1211dd77fa4.png)
+![](img/d53b89766d6cfbea2c56b1211dd77fa4.png)
 
 图 4：带有混杂因素的 DAG
 
@@ -64,7 +64,7 @@
 
 简而言之，如果我们创建一个线性回归模型，形式为，
 
-![](../Images/480772e662d901d68b60e070993117af.png)
+![](img/480772e662d901d68b60e070993117af.png)
 
 我们将闭合性别 → 治疗 → 结果的路径。这就是我们所说的“控制”性别。这将使我们得到一个无偏的治疗效果估计，因为我们有效地去除了性别混杂因素带来的选择偏差。
 
@@ -72,7 +72,7 @@
 
 IPTW 是一种去除混杂因素影响的替代统计方法。IPTW 的高级思路是创建个体观察的副本，以便在副本创建之后，混杂因素与感兴趣的治疗之间不再存在关系。其效果是将数据转化为*大致*随机。我们计算每个观察的副本数量的方法将是本节的其余部分讨论的主题。
 
-我将开始用文字解释如何计算副本数量，这些将从现在开始被称为权重。如果对程序的解释不清楚，图5 将提供权重方案的直观视觉解释。
+我将开始用文字解释如何计算副本数量，这些将从现在开始被称为权重。如果对程序的解释不清楚，图 5 将提供权重方案的直观视觉解释。
 
 计算这种加权的机制如下：
 
@@ -82,49 +82,49 @@ IPTW 是一种去除混杂因素影响的替代统计方法。IPTW 的高级思�
 
 1.  使用这些权重创建“副本”。
 
-我们将计算在我们例子中接受治疗的女性的权重。首先，我们需要找到治疗组中每个女性接受治疗的概率。由于4名女性中有3名接受了治疗，因此我们知道这个概率是75%。然后，我们通过倒数这个概率来计算这三名女性的权重。因此，1/0.75 等于 1.333。最后，我们使用这个权重创建“副本”。因为我们有3名女性，所以3 x 1.333 = 4。换句话说，我们将最终得到4名女性。有关此过程的清晰视觉解释，请参见图5。
+我们将计算在我们例子中接受治疗的女性的权重。首先，我们需要找到治疗组中每个女性接受治疗的概率。由于 4 名女性中有 3 名接受了治疗，因此我们知道这个概率是 75%。然后，我们通过倒数这个概率来计算这三名女性的权重。因此，1/0.75 等于 1.333。最后，我们使用这个权重创建“副本”。因为我们有 3 名女性，所以 3 x 1.333 = 4。换句话说，我们将最终得到 4 名女性。有关此过程的清晰视觉解释，请参见图 5。
 
-![](../Images/0ce4f25a6fa8c9793f83ad94da2ec032.png)
+![](img/0ce4f25a6fa8c9793f83ad94da2ec032.png)
 
-图5：计算 IPTW 权重
+图 5：计算 IPTW 权重
 
-这个过程使得某些观察的相对重要性增加。其效果是既增加了样本量，又平衡了协变量。我们称之为**伪人口**，因为我们实际上通过使用这种加权方案来向样本中添加个体。图6展示了使用这些权重对伪人口的影响。
+这个过程使得某些观察的相对重要性增加。其效果是既增加了样本量，又平衡了协变量。我们称之为**伪人口**，因为我们实际上通过使用这种加权方案来向样本中添加个体。图 6 展示了使用这些权重对伪人口的影响。
 
-![](../Images/c0b4a72ea240125b30d5e73c13797324.png)
+![](img/c0b4a72ea240125b30d5e73c13797324.png)
 
-图6：协变量平衡的伪人口
+图 6：协变量平衡的伪人口
 
 使用这些权重的效果是通过以一种使处理不再依赖于混杂因素的方式结构化伪人口，从而**控制**混杂变量。在这个伪人口中，知道一个受试者的性别不再提供关于受试者是否接受了处理的任何信息。这就是我们所说的平衡协变量。
 
-现在，如果我们重新绘制如图7所示的因果DAG，我们将移除性别 → 处理的箭头。性别影响结果，但不再影响处理。因此，我们已经去除了混杂因素。
+现在，如果我们重新绘制如图 7 所示的因果 DAG，我们将移除性别 → 处理的箭头。性别影响结果，但不再影响处理。因此，我们已经去除了混杂因素。
 
-![](../Images/f6466912ec55231f67295f7c91384a03.png)
+![](img/f6466912ec55231f67295f7c91384a03.png)
 
-图7：无混杂因素的DAG
+图 7：无混杂因素的 DAG
 
 ## 休息和退出通道
 
-如果你已经看到了这里，做得很好。这是一个很好的停止点。你现在已经有了理解IPTW的坚实概念基础。接下来的两个部分将基于这个基础，介绍IPTW中的两个稍微复杂一些的主题。它们将包括：
+如果你已经看到了这里，做得很好。这是一个很好的停止点。你现在已经有了理解 IPTW 的坚实概念基础。接下来的两个部分将基于这个基础，介绍 IPTW 中的两个稍微复杂一些的主题。它们将包括：
 
-1.  稳定化的IPTW，以及
+1.  稳定化的 IPTW，以及
 
 1.  计算倾向评分
 
-如果你想跳过这些部分，可以随意。不过，阅读*将IPTW与传统多变量模型进行比较*和*结论*部分可能是值得的。
+如果你想跳过这些部分，可以随意。不过，阅读*将 IPTW 与传统多变量模型进行比较*和*结论*部分可能是值得的。
 
-## 稳定化的IPTW
+## 稳定化的 IPTW
 
-在IPTW示例中，回顾一下我们如何将有效样本量从N=8增加到N=16。这个内容将在图8中总结。
+在 IPTW 示例中，回顾一下我们如何将有效样本量从 N=8 增加到 N=16。这个内容将在图 8 中总结。
 
-![](../Images/1b5d7c552e6fa84e621e9c6de76826b0.png)
+![](img/1b5d7c552e6fa84e621e9c6de76826b0.png)
 
-图8：增加样本量
+图 8：增加样本量
 
 尽管我们不再有不平衡的协变量，但我们引入了新的困境。随着样本量的增加，统计测试更可能发现效果。这是由于[中心极限定理](https://en.wikipedia.org/wiki/Central_limit_theorem)的性质。较大的样本意味着我们对样本应用的统计测试具有更大的[统计功效](https://en.wikipedia.org/wiki/Power_of_a_test)。通过人为地将样本量加倍，我们实际上增加了发现我们的处理对结果有影响的概率（Xu *et al.*, 2010）。这是一种称为重复抽样的现象。
 
-为了说明重复抽样为何成问题，考虑两个理论上公平的硬币分别被掷4次和8次。在这个例子中，每个硬币在每次掷出时都产生了正面。第一个硬币产生4个正面的概率是6.25%，而第二个硬币产生8个正面的概率是0.39%。
+为了说明重复抽样为何成问题，考虑两个理论上公平的硬币分别被掷 4 次和 8 次。在这个例子中，每个硬币在每次掷出时都产生了正面。第一个硬币产生 4 个正面的概率是 6.25%，而第二个硬币产生 8 个正面的概率是 0.39%。
 
-![](../Images/b1237299602befbcbd2d2b7a15323d6d.png)
+![](img/b1237299602befbcbd2d2b7a15323d6d.png)
 
 我们为两个不同硬币计算的概率类似于 [p 值](https://en.wikipedia.org/wiki/P-value)。它们表示在硬币公平的情况下事件发生的概率。现在我们想测试在观察到的数据存在的情况下公平硬币的断言是否成立。我们将使用 [假设检验](https://en.wikipedia.org/wiki/Statistical_hypothesis_testing)，其中 [零假设](https://en.wikipedia.org/wiki/Null_hypothesis) 是硬币是公平的，而 [备择假设](https://en.wikipedia.org/wiki/Alternative_hypothesis) 是硬币是有偏的。
 
@@ -132,27 +132,27 @@ IPTW 是一种去除混杂因素影响的替代统计方法。IPTW 的高级思�
 
 为了修正这种人工增加的样本量，我们将引入**稳定化 IPTW**。简单来说，计算权重时
 
-![](../Images/ee32ce95c9692f12fe42b69e0aaf1933.png)
+![](img/ee32ce95c9692f12fe42b69e0aaf1933.png)
 
 我们将计算权重如下
 
-![](../Images/02c8ba8f9b73829d04e02263741b8ead.png)
+![](img/02c8ba8f9b73829d04e02263741b8ead.png)
 
 图 9 将展示我们如何计算稳定化加权方案中的分子。
 
-![](../Images/3ab4e98a75de2e271564edc3d31d605c.png)
+![](img/3ab4e98a75de2e271564edc3d31d605c.png)
 
 图 9：稳定化 IPTW 分子
 
 图 10 将展示我们如何更新加权方案，以便不将伪人群的大小增加到比原始数据中的实际人群大得多。
 
-![](../Images/60feb519704be0e15d71634f9cdd1682.png)
+![](img/60feb519704be0e15d71634f9cdd1682.png)
 
 图 10：计算稳定化 IPTW 权重
 
 使用这种稳定化加权方案的效果是，伪人群不再比原始人群大那么多，如图 11 所示。
 
-![](../Images/ecae40c5ecd7fec8dd634a469fcba64c.png)
+![](img/ecae40c5ecd7fec8dd634a469fcba64c.png)
 
 图 11：稳定化协变量平衡伪人群
 
@@ -162,43 +162,43 @@ IPTW 是一种去除混杂因素影响的替代统计方法。IPTW 的高级思�
 
 计算受试者接受治疗的概率，也称为**倾向性**，往往不像前面的例子中那样简单。为了说明这一点，让我们在例子中添加一个额外的协变量——年龄，看看结果如何。
 
-![](../Images/536e718f80a9ca336c9de2b91bd471e8.png)
+![](img/536e718f80a9ca336c9de2b91bd471e8.png)
 
-图12：包含两个混淆因素的DAG
+图 12：包含两个混淆因素的 DAG
 
-快速检查这个因果DAG，我们注意到性别仍然混淆了治疗对结果的影响，就像我们在前面的例子中看到的那样。此外，年龄作为混淆因素被添加进来。不幸的是，由于年龄是一个连续变量，我们不能像之前那样绘制治疗概率图。实际上，我们需要一种全新的方法来计算倾向性。
+快速检查这个因果 DAG，我们注意到性别仍然混淆了治疗对结果的影响，就像我们在前面的例子中看到的那样。此外，年龄作为混淆因素被添加进来。不幸的是，由于年龄是一个连续变量，我们不能像之前那样绘制治疗概率图。实际上，我们需要一种全新的方法来计算倾向性。
 
-这就是我们将利用[**逻辑回归**](https://en.wikipedia.org/wiki/Logistic_regression)的地方。在这篇文章中，我不会深入探讨逻辑回归的工作原理。如果你对逻辑回归不熟悉，我建议观看[关于逻辑回归的StatQuest视频](https://www.youtube.com/watch?v=yIYKR4sgzI8)以获得一个非常易于理解的概述。关键点是，我们可以使用逻辑回归来计算在给定协变量（性别和年龄）的情况下接受治疗的倾向分数。
+这就是我们将利用[**逻辑回归**](https://en.wikipedia.org/wiki/Logistic_regression)的地方。在这篇文章中，我不会深入探讨逻辑回归的工作原理。如果你对逻辑回归不熟悉，我建议观看[关于逻辑回归的 StatQuest 视频](https://www.youtube.com/watch?v=yIYKR4sgzI8)以获得一个非常易于理解的概述。关键点是，我们可以使用逻辑回归来计算在给定协变量（性别和年龄）的情况下接受治疗的倾向分数。
 
 一旦我们使用逻辑回归计算倾向分数并重新加权数据，检查加权协变量的分布以确保它们平衡是至关重要的。由于使用逻辑回归估计倾向分数引入了额外的复杂性，我们需要检查拟合优度（Borah *et al.,* 2013）。这将简单地涉及检查接受治疗和未接受治疗者的年龄和性别分布是否大致相似。
 
-## 比较IPTW与传统的多元模型
+## 比较 IPTW 与传统的多元模型
 
-正如介绍中提到的，因果推断的金标准是RCT。然而，在现实世界中，构建一个完整的RCT并不总是可行。因此，我们只能使用接近RCT的统计技术，包括多元线性回归或倾向性评分模型，如IPTW。IPTW的优点在于它试图在观察到的协变量之间创建平衡，而这正是RCT所保证的。相反，多元线性回归并不试图平衡协变量。然而，“没有证据表明，相较于多元模型中的常规估计，利用倾向评分的分析将显著减少混杂带来的偏差”（Glynn *et al.,* 2006 para 31）。
+正如介绍中提到的，因果推断的金标准是 RCT。然而，在现实世界中，构建一个完整的 RCT 并不总是可行。因此，我们只能使用接近 RCT 的统计技术，包括多元线性回归或倾向性评分模型，如 IPTW。IPTW 的优点在于它试图在观察到的协变量之间创建平衡，而这正是 RCT 所保证的。相反，多元线性回归并不试图平衡协变量。然而，“没有证据表明，相较于多元模型中的常规估计，利用倾向评分的分析将显著减少混杂带来的偏差”（Glynn *et al.,* 2006 para 31）。
 
-尽管IPTW在理论上相对于线性回归具有一些优势，但“在实际使用中，倾向评分和回归模型估计之间的答案几乎没有显著差异”（Glynn *et al.,* 2006 para 8）。
+尽管 IPTW 在理论上相对于线性回归具有一些优势，但“在实际使用中，倾向评分和回归模型估计之间的答案几乎没有显著差异”（Glynn *et al.,* 2006 para 8）。
 
-自然地，为什么研究人员会选择使用IPTW而不是线性回归的问题就出现了。我将在下面简要回顾一些这些原因。
+自然地，为什么研究人员会选择使用 IPTW 而不是线性回归的问题就出现了。我将在下面简要回顾一些这些原因。
 
-> 1\. PS方法允许研究人员使用有原则的方法来修剪研究人群。
+> 1\. PS 方法允许研究人员使用有原则的方法来修剪研究人群。
 
-![](../Images/362f69845fb594264ff6301d1a44b533.png)
+![](img/362f69845fb594264ff6301d1a44b533.png)
 
 图 13：暴露倾向评分 — **来源**: Glynn *等人, 2006*。
 
-在图 13 中，虚线曲线表示未接受治疗的个体的倾向评分分布。实线曲线表示接受治疗的个体的倾向评分分布。在未治疗分布的左尾和已治疗分布的右尾，注意是否有个体从未接受治疗或总是接受治疗。将这些个体从研究人群中剔除带来了理论上的好处，因为这些观察结果“可能在多变量分析中产生不当影响和问题，因为[治疗组]与[未治疗组]之间的协变量重叠极少”（Glynn *等人,* 2006 第16段）。
+在图 13 中，虚线曲线表示未接受治疗的个体的倾向评分分布。实线曲线表示接受治疗的个体的倾向评分分布。在未治疗分布的左尾和已治疗分布的右尾，注意是否有个体从未接受治疗或总是接受治疗。将这些个体从研究人群中剔除带来了理论上的好处，因为这些观察结果“可能在多变量分析中产生不当影响和问题，因为[治疗组]与[未治疗组]之间的协变量重叠极少”（Glynn *等人,* 2006 第 16 段）。
 
-> 2\. PS方法可以阐明治疗如何与接受治疗的倾向相互作用。
+> 2\. PS 方法可以阐明治疗如何与接受治疗的倾向相互作用。
 
 通过按倾向评分分层学科，可以识别治疗的有效性是否因每个受试者所在的倾向评分层次而有所不同。
 
-> 3\. PS校准可以提高主研究的稳健性。
+> 3\. PS 校准可以提高主研究的稳健性。
 
-考虑一个例子，我们有两个研究：一个主研究和一个验证研究。两个研究都旨在评估相同治疗对结果的影响。主研究的样本量非常大，而验证研究较小。在主研究中，有一些预测变量由于未被测量而被遗漏。因此，主研究的倾向评分将受到[遗漏变量偏差](https://en.wikipedia.org/wiki/Omitted-variable_bias)的影响。然而，如果验证研究包含了更多详细的预测变量来修正主研究的遗漏变量偏差，那么验证研究“可能会提供更可靠的倾向评分估计”（Glynn *等人,* 2006 第20段）。然后可以使用验证研究来校准主研究中的倾向评分，从而减少偏差（Stürmer *等人,* 2005*）。
+考虑一个例子，我们有两个研究：一个主研究和一个验证研究。两个研究都旨在评估相同治疗对结果的影响。主研究的样本量非常大，而验证研究较小。在主研究中，有一些预测变量由于未被测量而被遗漏。因此，主研究的倾向评分将受到[遗漏变量偏差](https://en.wikipedia.org/wiki/Omitted-variable_bias)的影响。然而，如果验证研究包含了更多详细的预测变量来修正主研究的遗漏变量偏差，那么验证研究“可能会提供更可靠的倾向评分估计”（Glynn *等人,* 2006 第 20 段）。然后可以使用验证研究来校准主研究中的倾向评分，从而减少偏差（Stürmer *等人,* 2005*）。
 
 ## **结论**
 
-总结一下，我们回顾了IPTW的机制。IPTW的主要目标是确保协变量在治疗组之间平衡，从而尽可能减少由测量的协变量引起的混杂。此外，我们回顾了PS方法中的两个更复杂的话题，包括稳定权重和计算倾向评分。最后，我们简要讨论了使用IPTW而不是多变量线性回归的一些理论好处。本文的主要目的是让读者了解IPTW的工作原理，因为在过去20年里，作为一种统计方法，它的使用显著增加。我希望这个概述对你有所帮助！
+总结一下，我们回顾了 IPTW 的机制。IPTW 的主要目标是确保协变量在治疗组之间平衡，从而尽可能减少由测量的协变量引起的混杂。此外，我们回顾了 PS 方法中的两个更复杂的话题，包括稳定权重和计算倾向评分。最后，我们简要讨论了使用 IPTW 而不是多变量线性回归的一些理论好处。本文的主要目的是让读者了解 IPTW 的工作原理，因为在过去 20 年里，作为一种统计方法，它的使用显著增加。我希望这个概述对你有所帮助！
 
 *除非另有说明，所有图片均由作者提供。*
 

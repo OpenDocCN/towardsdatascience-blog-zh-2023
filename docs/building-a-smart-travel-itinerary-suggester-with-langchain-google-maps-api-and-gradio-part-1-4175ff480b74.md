@@ -1,14 +1,14 @@
-# 使用 LangChain、Google Maps API 和 Gradio 构建智能旅行行程建议器（第 1 部分）
+# 使用 LangChain、Google Maps API 和 Gradio 构建智能旅行行程建议器（第一部分）
 
-> 原文：[https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26)
+> 原文：[`towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26`](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26)
 
 ## 了解如何构建一个可能激发你下一次公路旅行灵感的应用程序
 
-[](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)[![Robert Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)
+[](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)![Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------) [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----4175ff480b74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------) ·13 分钟阅读·2023年9月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4175ff480b74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=-----4175ff480b74---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----4175ff480b74---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------) ·13 分钟阅读·2023 年 9 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4175ff480b74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=-----4175ff480b74---------------------clap_footer-----------)
 
 --
 
@@ -18,13 +18,13 @@
 
 # **1\. 动机**
 
-自2022年底 ChatGPT 发布以来，对大型语言模型（LLMs）及其在面向消费者的产品（如聊天机器人和搜索引擎）中的应用兴趣激增。不足一年，我们已经可以访问大量来自[Hugging Face](https://huggingface.co/models)的开源 LLM、[Lamini](https://www.lamini.ai/)等模型托管服务以及 OpenAI 和 PaLM 等付费 API。看到这一领域的发展如此迅速，新的工具和开发范式似乎每几周就会出现，既令人兴奋又有些不知所措。
+自 2022 年底 ChatGPT 发布以来，对大型语言模型（LLMs）及其在面向消费者的产品（如聊天机器人和搜索引擎）中的应用兴趣激增。不足一年，我们已经可以访问大量来自[Hugging Face](https://huggingface.co/models)的开源 LLM、[Lamini](https://www.lamini.ai/)等模型托管服务以及 OpenAI 和 PaLM 等付费 API。看到这一领域的发展如此迅速，新的工具和开发范式似乎每几周就会出现，既令人兴奋又有些不知所措。
 
 在这里，我们将仅仅采样这些工具中的一小部分，构建一个有用的应用程序，帮助我们进行旅行规划。在计划度假时，得到曾经去过那里的人建议往往很不错，看到这些建议在地图上展示更好。在没有这种建议的情况下，我有时会浏览 Google 地图，在我想要访问的一般区域内随意选择一些看起来有趣的地方。也许这个过程很有趣，但它效率低且可能会遗漏一些东西。拥有一个能够根据几个高层次偏好提供大量建议的工具岂不是很好吗？
 
-这正是我们尝试构建的系统：一个能够根据一些高层次的偏好提供旅行行程建议的系统，例如*“我有3天时间探索旧金山，并且喜欢艺术博物馆”*。Google 搜索的生成 AI 功能和 ChatGPT 已经可以为类似的查询提供创造性的结果，但我们希望更进一步，生成一个包含旅行时间和美观地图的实际行程，帮助用户定位。
+这正是我们尝试构建的系统：一个能够根据一些高层次的偏好提供旅行行程建议的系统，例如*“我有 3 天时间探索旧金山，并且喜欢艺术博物馆”*。Google 搜索的生成 AI 功能和 ChatGPT 已经可以为类似的查询提供创造性的结果，但我们希望更进一步，生成一个包含旅行时间和美观地图的实际行程，帮助用户定位。
 
-![](../Images/0aab314c7aca0e6ff37fec3053974304.png)
+![](img/0aab314c7aca0e6ff37fec3053974304.png)
 
 这就是我们将构建的系统：一个生成旅行建议的系统，配有基本地图，显示由 LLM 提供的路线和中途点。
 
@@ -367,9 +367,9 @@ class ItineraryTemplate(object):
   - End the trip in Seattle, WA
 ```
 
-现在我们需要提取航点的地址，以便可以进行下一步操作，即将它们绘制在地图上，并调用Google Maps方向API以获取它们之间的路线。
+现在我们需要提取航点的地址，以便可以进行下一步操作，即将它们绘制在地图上，并调用 Google Maps 方向 API 以获取它们之间的路线。
 
-为此，我们将进行另一次LLM调用，并再次使用`PydanticOutputParser`以确保我们的输出格式正确。为了理解这里的格式，简要考虑一下我们在项目的下一阶段（第二部分中介绍）要做的事情是有用的。我们将调用[Google Maps Python API](https://github.com/googlemaps/google-maps-services-python)，其形式如下。
+为此，我们将进行另一次 LLM 调用，并再次使用`PydanticOutputParser`以确保我们的输出格式正确。为了理解这里的格式，简要考虑一下我们在项目的下一阶段（第二部分中介绍）要做的事情是有用的。我们将调用[Google Maps Python API](https://github.com/googlemaps/google-maps-services-python)，其形式如下。
 
 ```py
 import googlemaps
@@ -388,7 +388,7 @@ directions_result = gmaps.directions(
 )
 ```
 
-其中，start和end是地址字符串，waypoints是要访问的中间地址列表。
+其中，start 和 end 是地址字符串，waypoints 是要访问的中间地址列表。
 
 我们请求的航点提取提示的模式因此如下所示。
 
@@ -400,9 +400,9 @@ class Trip(BaseModel):
     transit: str = Field(description="mode of transportation")
 ```
 
-这将使我们能够将LLM调用的输出插入到方向调用中。
+这将使我们能够将 LLM 调用的输出插入到方向调用中。
 
-对于这个提示，我发现添加一个一次性示例真的有助于模型符合期望的输出。对较小的开源LLM进行微调以使用这些ChatGPT/PaLM的结果提取航点列表可能是一个有趣的衍生项目。
+对于这个提示，我发现添加一个一次性示例真的有助于模型符合期望的输出。对较小的开源 LLM 进行微调以使用这些 ChatGPT/PaLM 的结果提取航点列表可能是一个有趣的衍生项目。
 
 ```py
 class MappingTemplate(object):
@@ -466,7 +466,7 @@ class MappingTemplate(object):
         )
 ```
 
-现在，让我们向`Agent`类添加一个新方法，该方法可以使用SequentialChain顺序调用`ItineraryTemplate`和`MappingTemplate`来调用LLM。
+现在，让我们向`Agent`类添加一个新方法，该方法可以使用 SequentialChain 顺序调用`ItineraryTemplate`和`MappingTemplate`来调用 LLM。
 
 ```py
 def _set_up_agent_chain(self, debug=True):
@@ -517,7 +517,7 @@ trip_suggestion = agent_result["agent_suggestion"]
 waypoints_dict = agent_result["mapping_list"].dict()
 ```
 
-`waypoints_dict`中的地址应该已经足够格式化以便与Google Maps一起使用，但它们也可以进行地理编码，以减少调用方向API时出现错误的可能性。航点字典应该类似于这样。
+`waypoints_dict`中的地址应该已经足够格式化以便与 Google Maps 一起使用，但它们也可以进行地理编码，以减少调用方向 API 时出现错误的可能性。航点字典应该类似于这样。
 
 ```py
 {
@@ -535,7 +535,7 @@ waypoints_dict = agent_result["mapping_list"].dict()
 
 # **6\. 将所有内容整合在一起**
 
-我们现在能够使用LLM验证旅行查询，生成详细的行程并提取航点作为可以传递下游的JSON对象。你会看到在代码中，几乎所有这些功能都由`Agent`类处理，该类在`TravelMapperBase`中实例化并如下使用。
+我们现在能够使用 LLM 验证旅行查询，生成详细的行程并提取航点作为可以传递下游的 JSON 对象。你会看到在代码中，几乎所有这些功能都由`Agent`类处理，该类在`TravelMapperBase`中实例化并如下使用。
 
 ```py
 travel_agent = Agent(
@@ -547,7 +547,7 @@ travel_agent = Agent(
 itinerary, list_of_places, validation = travel_agent.suggest_travel(query)
 ```
 
-使用LangChain使得替换使用的LLM变得非常简单。对于PALM，我们只需声明。
+使用 LangChain 使得替换使用的 LLM 变得非常简单。对于 PALM，我们只需声明。
 
 ```py
 from langchain.llms import GooglePalm
@@ -559,8 +559,8 @@ Agent.chat_model = GooglePalm(
 )
 ```
 
-对于OpenAI，我们可以使用上述部分中描述的`ChatOpenAI`或`OpenAI`。
+对于 OpenAI，我们可以使用上述部分中描述的`ChatOpenAI`或`OpenAI`。
 
 现在，我们准备进入下一阶段：我们如何将地点列表转换为一组方向，并在地图上绘制它们以供用户查看？这将在本三部分系列的[第二部分](https://medium.com/towards-data-science/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5)中介绍。
 
-感谢阅读！请随时在这里探索完整的代码库 [https://github.com/rmartinshort/travel_mapper](https://github.com/rmartinshort/travel_mapper)。任何改进建议或功能扩展将不胜感激！
+感谢阅读！请随时在这里探索完整的代码库 [`github.com/rmartinshort/travel_mapper`](https://github.com/rmartinshort/travel_mapper)。任何改进建议或功能扩展将不胜感激！

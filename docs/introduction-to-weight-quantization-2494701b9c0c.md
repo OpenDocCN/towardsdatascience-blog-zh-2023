@@ -1,28 +1,28 @@
 # 权重量化简介
 
-> 原文：[https://towardsdatascience.com/introduction-to-weight-quantization-2494701b9c0c?source=collection_archive---------0-----------------------#2023-07-07](https://towardsdatascience.com/introduction-to-weight-quantization-2494701b9c0c?source=collection_archive---------0-----------------------#2023-07-07)
+> 原文：[`towardsdatascience.com/introduction-to-weight-quantization-2494701b9c0c?source=collection_archive---------0-----------------------#2023-07-07`](https://towardsdatascience.com/introduction-to-weight-quantization-2494701b9c0c?source=collection_archive---------0-----------------------#2023-07-07)
 
-## 使用8位量化来减少大型语言模型的大小
+## 使用 8 位量化来减少大型语言模型的大小
 
-[](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)[![Maxime Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)
+[](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)![Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----2494701b9c0c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------) ·14分钟阅读·2023年7月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2494701b9c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&user=Maxime+Labonne&userId=dc89da634938&source=-----2494701b9c0c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----2494701b9c0c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------) ·14 分钟阅读·2023 年 7 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2494701b9c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&user=Maxime+Labonne&userId=dc89da634938&source=-----2494701b9c0c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2494701b9c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&source=-----2494701b9c0c---------------------bookmark_footer-----------)![](../Images/cb9fa85d2c510e5126e6d30fce29eff4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2494701b9c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&source=-----2494701b9c0c---------------------bookmark_footer-----------)![](img/cb9fa85d2c510e5126e6d30fce29eff4.png)
 
 大型语言模型（LLMs）以其广泛的计算需求而闻名。通常，通过将参数数量（**大小**）乘以这些值的精度（**数据类型**），可以计算模型的大小。然而，为了节省内存，可以通过一种称为量化的过程使用较低精度的数据类型来存储权重。
 
 我们在文献中区分了两大类权重量化技术：
 
-+   **训练后量化**（PTQ）是一种直接的技术，其中已训练好的模型的权重被转换为较低的精度，而不需要进行任何重新训练。尽管实施起来简单，但PTQ可能会导致性能下降。
++   **训练后量化**（PTQ）是一种直接的技术，其中已训练好的模型的权重被转换为较低的精度，而不需要进行任何重新训练。尽管实施起来简单，但 PTQ 可能会导致性能下降。
 
-+   **量化感知训练**（QAT）在预训练或微调阶段纳入权重转换过程，从而提升模型性能。然而，QAT计算成本高且需要代表性的训练数据。
++   **量化感知训练**（QAT）在预训练或微调阶段纳入权重转换过程，从而提升模型性能。然而，QAT 计算成本高且需要代表性的训练数据。
 
-本文聚焦于PTQ以减少参数的精度。为了获得良好的直觉，我们将应用简单和更复杂的技术于一个使用GPT-2模型的示例。
+本文聚焦于 PTQ 以减少参数的精度。为了获得良好的直觉，我们将应用简单和更复杂的技术于一个使用 GPT-2 模型的示例。
 
 完整代码可以在[Google Colab](https://colab.research.google.com/drive/1DPr4mUQ92Cc-xf4GgAaB6dFcFnWIvqYi?usp=sharing)和[GitHub](https://github.com/mlabonne/llm-course/blob/main/Introduction_to_Weight_Quantization.ipynb)上自由获取。
 
@@ -32,39 +32,39 @@
 
 在各种数据类型中，浮点数由于能够以高精度表示广泛的值范围，因此在深度学习中被广泛使用。通常，浮点数使用*n*位来存储数值。这些*n*位进一步被划分为三个不同的部分：
 
-1.  **符号**：符号位指示数字的正负性质。它使用一个位，其中0表示正数，1表示负数。
+1.  **符号**：符号位指示数字的正负性质。它使用一个位，其中 0 表示正数，1 表示负数。
 
-1.  **指数**：指数是一段位表示基数（在二进制表示中通常为2）的幂。指数可以是正数或负数，从而使数字能够表示非常大或非常小的值。
+1.  **指数**：指数是一段位表示基数（在二进制表示中通常为 2）的幂。指数可以是正数或负数，从而使数字能够表示非常大或非常小的值。
 
 1.  **尾数/有效数字**：剩余的位用于存储尾数，也称为有效数字。它表示数字的有效数字。数字的精度严重依赖于尾数的长度。
 
 这种设计允许浮点数以不同精度覆盖广泛的值范围。用于这种表示的公式是：
 
-![](../Images/2e8ab62ec7cb0706b3d6b99f32abc5fa.png)
+![](img/2e8ab62ec7cb0706b3d6b99f32abc5fa.png)
 
-为了更好地理解这一点，让我们深入探讨在深度学习中最常用的数据类型：float32（FP32）、float16（FP16）和bfloat16（BF16）：
+为了更好地理解这一点，让我们深入探讨在深度学习中最常用的数据类型：float32（FP32）、float16（FP16）和 bfloat16（BF16）：
 
-+   **FP32** 使用32位表示一个数字：一个位用于符号，八个位用于指数，其余23个位用于尾数。虽然它提供了较高的精度，但FP32的缺点是其计算和内存开销较大。
++   **FP32** 使用 32 位表示一个数字：一个位用于符号，八个位用于指数，其余 23 个位用于尾数。虽然它提供了较高的精度，但 FP32 的缺点是其计算和内存开销较大。
 
-+   **FP16** 使用16位存储一个数字：一个用于符号，五个位用于指数，十个位用于尾数。虽然这使其在内存上更高效并加速计算，但减少的范围和精度可能会引入数值不稳定性，可能影响模型的准确性。
++   **FP16** 使用 16 位存储一个数字：一个用于符号，五个位用于指数，十个位用于尾数。虽然这使其在内存上更高效并加速计算，但减少的范围和精度可能会引入数值不稳定性，可能影响模型的准确性。
 
-+   **BF16**也是一种16位格式，但有一个符号位，*八*个位用于指数，*七*个位用于尾数。BF16扩展了表示范围，相较于FP16，减少了下溢和溢出的风险。尽管由于尾数位数减少而精度降低，但BF16通常不会显著影响模型性能，是深度学习任务的一个有用折中方案。
++   **BF16**也是一种 16 位格式，但有一个符号位，*八*个位用于指数，*七*个位用于尾数。BF16 扩展了表示范围，相较于 FP16，减少了下溢和溢出的风险。尽管由于尾数位数减少而精度降低，但 BF16 通常不会显著影响模型性能，是深度学习任务的一个有用折中方案。
 
-![](../Images/7f97ce565ee75a23253ee19eeff714bd.png)
+![](img/7f97ce565ee75a23253ee19eeff714bd.png)
 
 作者提供的图片
 
-在机器学习术语中，FP32通常被称为“全精度”（4字节），而BF16和FP16则被称为“半精度”（2字节）。但我们是否可以更进一步，用一个字节来存储权重？答案是INT8数据类型，它由一个8位表示组成，能够存储2⁸ = 256种不同的值。在下一节中，我们将看到如何将FP32权重转换为INT8格式。
+在机器学习术语中，FP32 通常被称为“全精度”（4 字节），而 BF16 和 FP16 则被称为“半精度”（2 字节）。但我们是否可以更进一步，用一个字节来存储权重？答案是 INT8 数据类型，它由一个 8 位表示组成，能够存储 2⁸ = 256 种不同的值。在下一节中，我们将看到如何将 FP32 权重转换为 INT8 格式。
 
-# 🔰 初步的8位量化
+# 🔰 初步的 8 位量化
 
-在这一部分，我们将实现两种量化技术：一种是具有**绝对最大值（absmax）量化**的对称量化，另一种是具有**零点量化**的非对称量化。在这两种情况下，目标是将FP32张量**X**（原始权重）映射到INT8张量**X_quant**（量化权重）。
+在这一部分，我们将实现两种量化技术：一种是具有**绝对最大值（absmax）量化**的对称量化，另一种是具有**零点量化**的非对称量化。在这两种情况下，目标是将 FP32 张量**X**（原始权重）映射到 INT8 张量**X_quant**（量化权重）。
 
-使用**absmax量化**，原始数值除以张量的绝对最大值，并乘以缩放因子（127），将输入映射到范围[-127, 127]。要检索原始FP16值，INT8数值除以量化因子，承认由于四舍五入导致的一些精度损失。
+使用**absmax 量化**，原始数值除以张量的绝对最大值，并乘以缩放因子（127），将输入映射到范围[-127, 127]。要检索原始 FP16 值，INT8 数值除以量化因子，承认由于四舍五入导致的一些精度损失。
 
-![](../Images/7dfd58e4be8f1412c262188ca9eecb4f.png)
+![](img/7dfd58e4be8f1412c262188ca9eecb4f.png)
 
-例如，假设我们有一个绝对最大值为3.2的值。一个0.1的权重将被量化为*round(0.1 × 127/3.2) = 4*。如果我们想将其反量化，将得到*4 × 3.2/127 = 0.1008*，这意味着一个0.008的误差。以下是对应的Python实现：
+例如，假设我们有一个绝对最大值为 3.2 的值。一个 0.1 的权重将被量化为*round(0.1 × 127/3.2) = 4*。如果我们想将其反量化，将得到*4 × 3.2/127 = 0.1008*，这意味着一个 0.008 的误差。以下是对应的 Python 实现：
 
 ```py
 import torch
@@ -82,17 +82,17 @@ def absmax_quantize(X):
     return X_quant.to(torch.int8), X_dequant
 ```
 
-使用**零点量化**，我们可以考虑非对称输入分布，这在考虑ReLU函数的输出（仅正值）时特别有用。输入值首先按值的总范围（255）除以最大值和最小值之间的差异进行缩放。然后通过零点偏移将这个分布映射到范围[-128, 127]（注意与absmax相比的额外值）。首先，我们计算缩放因子和零点值：
+使用**零点量化**，我们可以考虑非对称输入分布，这在考虑 ReLU 函数的输出（仅正值）时特别有用。输入值首先按值的总范围（255）除以最大值和最小值之间的差异进行缩放。然后通过零点偏移将这个分布映射到范围[-128, 127]（注意与 absmax 相比的额外值）。首先，我们计算缩放因子和零点值：
 
-![](../Images/8553578f6e6bc10ce524fcf7ec3c4088.png)
+![](img/8553578f6e6bc10ce524fcf7ec3c4088.png)
 
 然后，我们可以使用这些变量来量化或反量化我们的权重：
 
-![](../Images/bd1fff48751ed91f96d614a7b1fdced9.png)
+![](img/bd1fff48751ed91f96d614a7b1fdced9.png)
 
-例如：我们有一个最大值为3.2和一个最小值为-3.0。我们可以计算出缩放因子为*255/(3.2 + 3.0) = 41.13*，零点为*-round(41.13 × -3.0) - 128 = 123 -128 = -5*，因此我们之前的权重0.1将被量化为*round(41.13 × 0.1 -5) = -1*。这与之前使用absmax获得的值（4与-1）差异很大。
+例如：我们有一个最大值为 3.2 和一个最小值为-3.0。我们可以计算出缩放因子为*255/(3.2 + 3.0) = 41.13*，零点为*-round(41.13 × -3.0) - 128 = 123 -128 = -5*，因此我们之前的权重 0.1 将被量化为*round(41.13 × 0.1 -5) = -1*。这与之前使用 absmax 获得的值（4 与-1）差异很大。
 
-![](../Images/773e8d8dbc9ac7c43c8d7f0fbfbe5fda.png)
+![](img/773e8d8dbc9ac7c43c8d7f0fbfbe5fda.png)
 
 作者提供的图片
 
@@ -236,7 +236,7 @@ for param in model_zp.parameters():
 
 下图展示了这种比较，其中蓝色直方图表示原始（FP32）权重，红色直方图表示去量化后的（来自 INT8）权重。注意，我们仅在 -2 和 2 之间显示此图，因为有一些绝对值非常高的离群值（稍后会详细讨论）。
 
-![](../Images/9e93b5636f8e65de4bb386d68ad67b61.png)
+![](img/9e93b5636f8e65de4bb386d68ad67b61.png)
 
 两个图表非常相似，都在 0 附近有一个惊人的峰值。这个峰值表明我们的量化相当有损，因为反转过程并没有输出原始值。这在 absmax 模型中尤为明显，该模型在 0 附近显示了一个更低的谷值和一个更高的峰值。
 
@@ -325,9 +325,9 @@ Zeropoint perplexity: 17.97
 
 # 🔢 8 位量化与 LLM.int8()
 
-由[Dettmers et al. (2022)](https://arxiv.org/abs/2208.07339)引入的LLM.int8() 是解决离群值问题的一个方案。它依赖于逐向量（absmax）量化方案，并引入了混合精度量化。这意味着离群特征以 FP16 格式处理以保持其精度，而其他值则以 INT8 格式处理。由于离群值约占 0.1% 的值，这有效地将 LLM 的内存占用减少了近 2 倍。
+由[Dettmers et al. (2022)](https://arxiv.org/abs/2208.07339)引入的 LLM.int8() 是解决离群值问题的一个方案。它依赖于逐向量（absmax）量化方案，并引入了混合精度量化。这意味着离群特征以 FP16 格式处理以保持其精度，而其他值则以 INT8 格式处理。由于离群值约占 0.1% 的值，这有效地将 LLM 的内存占用减少了近 2 倍。
 
-![](../Images/f7ce7de0c94eb22aaf2c926341e6f2ff.png)
+![](img/f7ce7de0c94eb22aaf2c926341e6f2ff.png)
 
 作者提供的图片
 
@@ -339,7 +339,7 @@ LLM.int8() 通过三个关键步骤进行矩阵乘法计算：
 
 1.  对非离群结果进行反量化（从 INT8 到 FP16），并将其与离群结果相加，以获得完整的 FP16 结果。
 
-![](../Images/3b4bb0a164b5ebebc1dcaca4b96f34d7.png)
+![](img/3b4bb0a164b5ebebc1dcaca4b96f34d7.png)
 
 作者提供的图片
 
@@ -363,7 +363,7 @@ Model size: 176,527,896 bytes
 
 通过这额外的一行代码，模型现在几乎缩小了三倍（168MB vs. 487MB）。我们甚至可以像之前那样比较原始权重和量化权重的分布：
 
-![](../Images/b46d4868b6ce8ce99e4746e100fc1525.png)
+![](img/b46d4868b6ce8ce99e4746e100fc1525.png)
 
 在这种情况下，我们看到在 -2，-1，0，1，2 等值周围有尖峰。这些值对应于以 INT8 格式存储的参数（非异常值）。你可以通过使用 `model_int8.parameters()` 打印模型的权重来验证这一点。
 
@@ -408,17 +408,17 @@ Perplexity (LLM.int8()): 7.93
 
 展望未来，我们的下一篇文章将深入探讨 GPTQ 权重量化技术。这项技术由 [Frantar 等人](https://arxiv.org/abs/2210.17323) 提出，只使用了 4 位，并且代表了权重量化领域的重大进展。我们将提供如何使用 AutoGPTQ 库实现 GPTQ 的全面指南。
 
-如果你对更多关于LLM的技术内容感兴趣，可以在Twitter上关注我 [@maximelabonne](https://twitter.com/maximelabonne)。
+如果你对更多关于 LLM 的技术内容感兴趣，可以在 Twitter 上关注我 [@maximelabonne](https://twitter.com/maximelabonne)。
 
 # 参考文献
 
-+   T. Dettmers, M. Lewis, Y. Belkada, 和 L. Zettlemoyer，[LLM.int8(): 大规模变压器的 8 位矩阵乘法](https://arxiv.org/abs/2208.07339)。2022年。
++   T. Dettmers, M. Lewis, Y. Belkada, 和 L. Zettlemoyer，[LLM.int8(): 大规模变压器的 8 位矩阵乘法](https://arxiv.org/abs/2208.07339)。2022 年。
 
-+   Y. Beldaka 和 T. Dettmers, [8位矩阵乘法的简明介绍](https://huggingface.co/blog/hf-bitsandbytes-integration), Hugging Face Blog (2022)。
++   Y. Beldaka 和 T. Dettmers, [8 位矩阵乘法的简明介绍](https://huggingface.co/blog/hf-bitsandbytes-integration), Hugging Face Blog (2022)。
 
-+   A. Gholami, S. Kim, Z. Dong, Z. Yao, M. W. Mahoney 和 K. Keutzer, [高效神经网络推理的量化方法综述](https://arxiv.org/abs/2103.13630)。2021年。
++   A. Gholami, S. Kim, Z. Dong, Z. Yao, M. W. Mahoney 和 K. Keutzer, [高效神经网络推理的量化方法综述](https://arxiv.org/abs/2103.13630)。2021 年。
 
-+   H. Wu, P. Judd, X. Zhang, M. Isaev 和 P. Micikevicius, [深度学习推理的整数量化：原理与实证评估](https://arxiv.org/abs/2004.09602)。2020年。
++   H. Wu, P. Judd, X. Zhang, M. Isaev 和 P. Micikevicius, [深度学习推理的整数量化：原理与实证评估](https://arxiv.org/abs/2004.09602)。2020 年。
 
 +   Lilian Weng, [大型变压器模型推理优化](https://lilianweng.github.io/posts/2023-01-10-inference-optimization/), Lil’Log (2023)。
 

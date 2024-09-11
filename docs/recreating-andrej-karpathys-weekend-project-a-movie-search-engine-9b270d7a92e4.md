@@ -1,32 +1,32 @@
 # 重新创建 Andrej Karpathy 的周末项目 — 电影搜索引擎
 
-> 原文：[https://towardsdatascience.com/recreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4?source=collection_archive---------3-----------------------#2023-11-07](https://towardsdatascience.com/recreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4?source=collection_archive---------3-----------------------#2023-11-07)
+> 原文：[`towardsdatascience.com/recreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4?source=collection_archive---------3-----------------------#2023-11-07`](https://towardsdatascience.com/recreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4?source=collection_archive---------3-----------------------#2023-11-07)
 
 ## 使用 OpenAI 嵌入和向量数据库构建电影推荐系统
 
-[](https://medium.com/@iamleonie?source=post_page-----9b270d7a92e4--------------------------------)[![Leonie Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----9b270d7a92e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9b270d7a92e4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9b270d7a92e4--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----9b270d7a92e4--------------------------------)
+[](https://medium.com/@iamleonie?source=post_page-----9b270d7a92e4--------------------------------)![Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----9b270d7a92e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9b270d7a92e4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b270d7a92e4--------------------------------) [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----9b270d7a92e4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----9b270d7a92e4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b270d7a92e4--------------------------------) ·9分钟阅读·2023年11月7日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----9b270d7a92e4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b270d7a92e4--------------------------------) ·9 分钟阅读·2023 年 11 月 7 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9b270d7a92e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4&source=-----9b270d7a92e4---------------------bookmark_footer-----------)![](../Images/e9469f6553eb0ffb4b927e45e7e6705c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9b270d7a92e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecreating-andrej-karpathys-weekend-project-a-movie-search-engine-9b270d7a92e4&source=-----9b270d7a92e4---------------------bookmark_footer-----------)![](img/e9469f6553eb0ffb4b927e45e7e6705c.png)
 
 [最终电影推荐演示](https://awesome-moviate.weaviate.io/) 的风格化截图（图片由作者提供）
 
-在2023年4月，[Andrej Karpathy](https://karpathy.ai/)，OpenAI 的创始成员之一及前特斯拉人工智能总监，分享了这个有趣的周末项目，一个 [电影搜索和推荐引擎](https://awesome-movies.life/)：
+在 2023 年 4 月，[Andrej Karpathy](https://karpathy.ai/)，OpenAI 的创始成员之一及前特斯拉人工智能总监，分享了这个有趣的周末项目，一个 [电影搜索和推荐引擎](https://awesome-movies.life/)：
 
 用户界面非常简单，主要有两个关键功能。首先，你有一个搜索框，可以通过电影标题进行搜索。然后点击任何电影，你会得到一份该电影的 40 部最相似电影的推荐列表。
 
-![](../Images/6cfd01c37e7c5bf45d28f50e5949f88d.png)
+![](img/6cfd01c37e7c5bf45d28f50e5949f88d.png)
 
-演示网站：[https://awesome-movies.life/](https://awesome-movies.life/)
+演示网站：[`awesome-movies.life/`](https://awesome-movies.life/)
 
 尽管很受欢迎，Karpathy 不幸地没有公开分享该项目的源代码。
 
-![](../Images/211d985776d7aa12c6d29ae98eb6334c.png)
+![](img/211d985776d7aa12c6d29ae98eb6334c.png)
 
 原推文下的 [评论截图](https://twitter.com/karpathy/status/1647644308647071745)（截图由作者提供）
 
@@ -58,15 +58,15 @@
 
 本节分析 Karpathy 的周末黑客活动，并旨在以一些小变化重建它。要构建一个简单的电影搜索引擎，请按照以下步骤操作：
 
-+   [准备工作：电影数据集](#f305)
++   准备工作：电影数据集
 
-+   [步骤 1：生成和存储嵌入](#553d)
++   步骤 1：生成和存储嵌入
 
-+   [步骤 2：搜索电影](#d1dc)
++   步骤 2：搜索电影
 
-+   [步骤 3：获取类似的电影推荐](#5fc7)
++   步骤 3：获取类似的电影推荐
 
-+   [步骤 4：运行演示](#86ba)
++   步骤 4：运行演示
 
 完整代码是开源的，你可以在 [GitHub](https://github.com/weaviate-tutorials/awesome-moviate) 上找到它。
 
@@ -80,19 +80,19 @@ Karpathy 的项目索引了自 1970 年以来的 11,762 部电影，包括来自
 
 +   [Wikipedia 电影情节](https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots)（许可：[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)），用于 `'plot'` 列。
 
-两个数据集在电影标题和发行年份上合并，然后筛选出1970年后发行的电影。你可以在`[add_data.py](https://github.com/weaviate-tutorials/awesome-moviate/blob/main/add_data.py)`文件中找到详细的预处理步骤。结果数据框包含大约35,000部电影，其中约8,500部电影有情节描述，数据框如下所示：
+两个数据集在电影标题和发行年份上合并，然后筛选出 1970 年后发行的电影。你可以在`[add_data.py](https://github.com/weaviate-tutorials/awesome-moviate/blob/main/add_data.py)`文件中找到详细的预处理步骤。结果数据框包含大约 35,000 部电影，其中约 8,500 部电影有情节描述，数据框如下所示：
 
-![](../Images/a1bcfc5105b915beac48139e6b91844a.png)
+![](img/a1bcfc5105b915beac48139e6b91844a.png)
 
 预处理后的电影数据框（截图由作者提供）
 
-## 步骤1：生成并存储嵌入
+## 步骤 1：生成并存储嵌入
 
-这个演示项目的核心是电影数据对象的嵌入，这些嵌入主要用于通过情节相似度推荐电影。在Karpathy的项目中，为电影摘要和情节生成了向量嵌入。生成向量嵌入有两个选项：
+这个演示项目的核心是电影数据对象的嵌入，这些嵌入主要用于通过情节相似度推荐电影。在 Karpathy 的项目中，为电影摘要和情节生成了向量嵌入。生成向量嵌入有两个选项：
 
 +   术语频率-逆文档频率（TF-IDF），这是一种简单的二元组，应该用于单个词的使用。
 
-+   `[text-embedding-ada-002](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)` [OpenAI的嵌入模型](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)，应该用于语义相似度。
++   `[text-embedding-ada-002](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)` [OpenAI 的嵌入模型](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)，应该用于语义相似度。
 
 此外，相似度是基于每部电影的维基百科摘要和情节计算的，具有两种相似度排序选择：
 
@@ -100,19 +100,19 @@ Karpathy 的项目索引了自 1970 年以来的 11,762 部电影，包括来自
 
 +   支持向量机
 
-Karpathy建议将`[text-embedding-ada-002](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)`和kNN结合使用，以获得一个好的快速默认设置。
+Karpathy 建议将`[text-embedding-ada-002](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)`和 kNN 结合使用，以获得一个好的快速默认设置。
 
 最后但同样重要的是，如这条臭名昭著的回应所述，向量嵌入存储在`np.array`中：
 
-![](../Images/2bd195ca70bea5862e395d4a06782b09.png)
+![](img/2bd195ca70bea5862e395d4a06782b09.png)
 
 原推文下的[评论](https://twitter.com/karpathy/status/1647374645316968449)的截图（截图由作者提供）
 
-在这个项目中，我们还将使用来自OpenAI的`[text-embedding-ada-002](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)`嵌入模型，但将向量嵌入存储在向量数据库中。
+在这个项目中，我们还将使用来自 OpenAI 的`[text-embedding-ada-002](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)`嵌入模型，但将向量嵌入存储在向量数据库中。
 
-也就是说，我们将使用[Weaviate](https://weaviate.io/)*，一个开源的向量数据库。虽然我可以争论说，向量数据库比将嵌入存储在`np.array`中要快得多，因为它们使用向量索引，但坦率地说：在这个规模（数千个）下，你不会注意到速度上的任何差异。我使用向量数据库的主要原因是Weaviate有许多方便的内置功能可以立即使用，比如使用嵌入模型的自动向量化。
+也就是说，我们将使用[Weaviate](https://weaviate.io/)*，一个开源的向量数据库。虽然我可以争论说，向量数据库比将嵌入存储在`np.array`中要快得多，因为它们使用向量索引，但坦率地说：在这个规模（数千个）下，你不会注意到速度上的任何差异。我使用向量数据库的主要原因是 Weaviate 有许多方便的内置功能可以立即使用，比如使用嵌入模型的自动向量化。
 
-首先，如`[add_data.py](https://github.com/weaviate-tutorials/awesome-moviate/blob/main/add_data.py)`文件所示，你需要设置你的Weaviate客户端，它连接到本地的Weaviate数据库实例，如下所示。此外，你将定义你的OpenAI API密钥，以启用集成OpenAI模块的使用。
+首先，如`[add_data.py](https://github.com/weaviate-tutorials/awesome-moviate/blob/main/add_data.py)`文件所示，你需要设置你的 Weaviate 客户端，它连接到本地的 Weaviate 数据库实例，如下所示。此外，你将定义你的 OpenAI API 密钥，以启用集成 OpenAI 模块的使用。
 
 ```py
 # pip weaviate-client
@@ -216,7 +216,7 @@ for i in range(len(df)):
 
 在 Karpathy 的项目中，搜索栏是一个简单的基于关键字的搜索，尝试逐字匹配你的确切查询与电影标题。当一些人表示他们希望搜索能够进行语义搜索时，Karpathy 同意这可能是项目的一个很好的扩展：
 
-![](../Images/5c0db08fd09133d39658b214d1ae353d.png)
+![](img/5c0db08fd09133d39658b214d1ae353d.png)
 
 原始推文下的[评论](https://twitter.com/karpathy/status/1647376961902366720)截图（作者截图）
 
@@ -230,7 +230,7 @@ for i in range(len(df)):
 
 每个搜索都会返回`num_movies = 20`部电影，属性为`['title', 'poster_link', 'genres', 'year', 'director', 'movie_id']`。
 
-要启用**基于关键字的搜索**，你可以使用`.withBm25()`搜索查询，涉及的属性为`['title', 'director', 'genres', 'actors', 'keywords', 'description', 'plot']`。你可以通过指定`'title^3'`来给属性`'title'`更大的权重。
+要启用**基于关键字的搜索**，你可以使用`.withBm25()`搜索查询，涉及的属性为`['title', 'director', 'genres', 'actors', 'keywords', 'description', 'plot']`。你可以通过指定`'title³'`来给属性`'title'`更大的权重。
 
 ```py
 async function get_keyword_results(text) {
@@ -238,7 +238,7 @@ async function get_keyword_results(text) {
         .get()
         .withClassName('Movies')
         .withBm25({query: text,
-            properties: ['title^3', 'director', 'genres', 'actors', 'keywords', 'description', 'plot'],
+            properties: ['title³', 'director', 'genres', 'actors', 'keywords', 'description', 'plot'],
         })
         .withFields(['title', 'poster_link', 'genres', 'year', 'director', 'movie_id'])
         .withLimit(num_movies)
@@ -318,9 +318,9 @@ async function get_recommended_movies(mov_id) {
 }
 ```
 
-## 第4步：运行演示
+## 第 4 步：运行演示
 
-最后，将一切包装成一个具有2000年代标志性 [GeoCities](https://en.wikipedia.org/wiki/GeoCities) 美学的网页应用（我不打算让你厌倦前端的内容），然后就完成了！你已准备好！
+最后，将一切包装成一个具有 2000 年代标志性 [GeoCities](https://en.wikipedia.org/wiki/GeoCities) 美学的网页应用（我不打算让你厌倦前端的内容），然后就完成了！你已准备好！
 
 要在本地运行演示，克隆 [GitHub 仓库](https://github.com/weaviate-tutorials/awesome-moviate)。
 
@@ -365,15 +365,15 @@ npm install
 npm run start
 ```
 
-现在，导航到 [http://localhost:3000/](http://localhost:3000/) 并开始尝试你的应用程序。
+现在，导航到 [`localhost:3000/`](http://localhost:3000/) 并开始尝试你的应用程序。
 
 # 摘要
 
 本文重新创建了 Andrej Karpathy 的有趣周末项目，即电影搜索引擎/推荐系统。下面，你可以看到完成的 [实时演示](https://awesome-moviate.weaviate.io/) 的简短视频：
 
-![](../Images/2b3edc4058d918016f21473cf8ff12bf.png)
+![](img/2b3edc4058d918016f21473cf8ff12bf.png)
 
-演示网址 [https://awesome-moviate.weaviate.io/](https://awesome-moviate.weaviate.io/)
+演示网址 [`awesome-moviate.weaviate.io/`](https://awesome-moviate.weaviate.io/)
 
 与原始项目相比，该项目使用向量数据库来存储嵌入。此外，搜索功能扩展到了语义和混合搜索。
 
@@ -389,7 +389,7 @@ npm run start
 
 [](https://medium.com/@iamleonie/subscribe?source=post_page-----9b270d7a92e4--------------------------------) [## 每当 Leonie Monigatti 发布时获取电子邮件。
 
-### 每当Leonie Monigatti发布新内容时，会收到一封电子邮件。通过注册，如果你还没有Medium账户，你将创建一个…
+### 每当 Leonie Monigatti 发布新内容时，会收到一封电子邮件。通过注册，如果你还没有 Medium 账户，你将创建一个…
 
 [medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----9b270d7a92e4--------------------------------)
 
@@ -399,4 +399,4 @@ npm run start
 
 +   在撰写本文时，我是一名[Weaviate](https://weaviate.io/)的开发者倡导者，这是一个开源的[向量数据库](https://weaviate.io/blog/what-is-a-vector-database)。
 
-+   这个项目并非原创想法：该项目的灵感来源于[Andrej Karpathy的周末项目](https://twitter.com/karpathy/status/1647372603907280896)，实现基于一个[旧的电影搜索引擎演示项目](https://github.com/weaviate/weaviate-examples/tree/main/movies-search-engine)。
++   这个项目并非原创想法：该项目的灵感来源于[Andrej Karpathy 的周末项目](https://twitter.com/karpathy/status/1647372603907280896)，实现基于一个[旧的电影搜索引擎演示项目](https://github.com/weaviate/weaviate-examples/tree/main/movies-search-engine)。

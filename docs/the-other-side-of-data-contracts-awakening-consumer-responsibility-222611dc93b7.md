@@ -1,10 +1,10 @@
 # 数据合同的另一面：唤醒消费者责任
 
-> 原文：[https://towardsdatascience.com/the-other-side-of-data-contracts-awakening-consumer-responsibility-222611dc93b7?source=collection_archive---------13-----------------------#2023-11-16](https://towardsdatascience.com/the-other-side-of-data-contracts-awakening-consumer-responsibility-222611dc93b7?source=collection_archive---------13-----------------------#2023-11-16)
+> 原文：[`towardsdatascience.com/the-other-side-of-data-contracts-awakening-consumer-responsibility-222611dc93b7?source=collection_archive---------13-----------------------#2023-11-16`](https://towardsdatascience.com/the-other-side-of-data-contracts-awakening-consumer-responsibility-222611dc93b7?source=collection_archive---------13-----------------------#2023-11-16)
 
 ## 通过明确数据消费者的承诺来驱动价值创造的路径
 
-[](https://medium.com/@marcdelbaere?source=post_page-----222611dc93b7--------------------------------)[![Marc Delbaere](../Images/6986bf11d190fffaa73e862a942e38fc.png)](https://medium.com/@marcdelbaere?source=post_page-----222611dc93b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----222611dc93b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----222611dc93b7--------------------------------) [Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----222611dc93b7--------------------------------)
+[](https://medium.com/@marcdelbaere?source=post_page-----222611dc93b7--------------------------------)![Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----222611dc93b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----222611dc93b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----222611dc93b7--------------------------------) [Marc Delbaere](https://medium.com/@marcdelbaere?source=post_page-----222611dc93b7--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F222611dc93b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-other-side-of-data-contracts-awakening-consumer-responsibility-222611dc93b7&source=-----222611dc93b7---------------------bookmark_footer-----------)![](../Images/65fbbbe8a81f71d308ef87c6ad9c13ab.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F222611dc93b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-other-side-of-data-contracts-awakening-consumer-responsibility-222611dc93b7&source=-----222611dc93b7---------------------bookmark_footer-----------)![](img/65fbbbe8a81f71d308ef87c6ad9c13ab.png)
 
 由 Midjourney 生成
 
@@ -42,7 +42,7 @@
 
 +   **事件管理**：建立违规通知和应对程序，强调反应性立场。
 
-虽然这些义务对于保护和合规至关重要，但它们常常使数据消费者处于被动角色。最近，我与一家公用事业公司的首席数据官进行了交谈，他分享了一个启发性的例子。他们刚刚为用户在其数据平台Databricks上直接访问数据集实施了自助服务功能。这一举措在技术上取得了成功，访问量很高。然而，首席数据官表达了一个普遍的担忧：尽管数据访问增加了，但下游产生的价值却没有清晰的可见性。这种情况是一个典型的例子，表明当关注点仅在于提供访问权限而不是如何将这种访问转化为业务影响时，可能会出现断层。
+虽然这些义务对于保护和合规至关重要，但它们常常使数据消费者处于被动角色。最近，我与一家公用事业公司的首席数据官进行了交谈，他分享了一个启发性的例子。他们刚刚为用户在其数据平台 Databricks 上直接访问数据集实施了自助服务功能。这一举措在技术上取得了成功，访问量很高。然而，首席数据官表达了一个普遍的担忧：尽管数据访问增加了，但下游产生的价值却没有清晰的可见性。这种情况是一个典型的例子，表明当关注点仅在于提供访问权限而不是如何将这种访问转化为业务影响时，可能会出现断层。
 
 要真正将数据作为战略资产加以利用，我们需要将视野扩展到这些限制性框架之外。下一部分将*深入探讨*如何将消费者承诺的叙事和结构转变为鼓励更动态和以价值为导向的数据使用。
 
@@ -62,11 +62,11 @@
 
 # 目标评分 — 从数据产品到业务价值
 
-核心原则很简单：企业内的每一个数据参与都应该带来超过其相关成本的价值。在这个背景下，一个具备良好SLA、可靠性和一致性可访问性的数据产品就像是足球中的一次优秀传球——它创造了机会，而将其转化为进球则依赖于数据消费者。
+核心原则很简单：企业内的每一个数据参与都应该带来超过其相关成本的价值。在这个背景下，一个具备良好 SLA、可靠性和一致性可访问性的数据产品就像是足球中的一次优秀传球——它创造了机会，而将其转化为进球则依赖于数据消费者。
 
-在进行业务价值创造评估的过程中，一种由Kindata首创的方法使我认识到，将价值生成视为两个不同阶段的优势：
+在进行业务价值创造评估的过程中，一种由 Kindata 首创的方法使我认识到，将价值生成视为两个不同阶段的优势：
 
-· **业务用例的交付**：这涉及到数据消费者制定战略报告、AI/ML模型或其他分析工具，以提供信息和支持业务决策。
+· **业务用例的交付**：这涉及到数据消费者制定战略报告、AI/ML 模型或其他分析工具，以提供信息和支持业务决策。
 
 · **有效的业务使用**：最终的成功指标在于这些工具如何被业务用来实现财务和非财务目标。这个阶段通常会揭示业务部门在数据计划中的参与程度，这是获得真实业务价值的关键因素。
 

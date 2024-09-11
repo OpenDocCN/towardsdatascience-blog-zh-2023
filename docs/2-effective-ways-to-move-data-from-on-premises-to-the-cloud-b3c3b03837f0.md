@@ -1,18 +1,18 @@
 # 从本地部署到云端的 2 种有效方法
 
-> 原文：[https://towardsdatascience.com/2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0?source=collection_archive---------15-----------------------#2023-07-13](https://towardsdatascience.com/2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0?source=collection_archive---------15-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0?source=collection_archive---------15-----------------------#2023-07-13`](https://towardsdatascience.com/2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0?source=collection_archive---------15-----------------------#2023-07-13)
 
 ## 从本地部署到云端的轻松迁移技巧
 
-[](https://hanzalaqureshi.medium.com/?source=post_page-----b3c3b03837f0--------------------------------)[![Hanzala Qureshi](../Images/6241f863e3e0159e39fdec753095f792.png)](https://hanzalaqureshi.medium.com/?source=post_page-----b3c3b03837f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3c3b03837f0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b3c3b03837f0--------------------------------) [Hanzala Qureshi](https://hanzalaqureshi.medium.com/?source=post_page-----b3c3b03837f0--------------------------------)
+[](https://hanzalaqureshi.medium.com/?source=post_page-----b3c3b03837f0--------------------------------)![Hanzala Qureshi](https://hanzalaqureshi.medium.com/?source=post_page-----b3c3b03837f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3c3b03837f0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3c3b03837f0--------------------------------) [Hanzala Qureshi](https://hanzalaqureshi.medium.com/?source=post_page-----b3c3b03837f0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F467270b83111&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0&user=Hanzala+Qureshi&userId=467270b83111&source=post_page-467270b83111----b3c3b03837f0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3c3b03837f0--------------------------------) ·5分钟阅读·2023年7月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb3c3b03837f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0&user=Hanzala+Qureshi&userId=467270b83111&source=-----b3c3b03837f0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F467270b83111&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0&user=Hanzala+Qureshi&userId=467270b83111&source=post_page-467270b83111----b3c3b03837f0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3c3b03837f0--------------------------------) ·5 分钟阅读·2023 年 7 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb3c3b03837f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0&user=Hanzala+Qureshi&userId=467270b83111&source=-----b3c3b03837f0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb3c3b03837f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0&source=-----b3c3b03837f0---------------------bookmark_footer-----------)![](../Images/13bc932b91c3216bff41b854c17aea3f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb3c3b03837f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F2-effective-ways-to-move-data-from-on-premises-to-the-cloud-b3c3b03837f0&source=-----b3c3b03837f0---------------------bookmark_footer-----------)![](img/13bc932b91c3216bff41b854c17aea3f.png)
 
 照片由 [Ritish Jarodia](https://unsplash.com/@lensomaniac?utm_source=medium&utm_medium=referral) 提供，刊登在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,8 +28,8 @@ AWS（Amazon Web Services）对于亚马逊的意义就如同复利对于金融�
 
 这是开始使用云服务的最便宜的选项。
 
-![](../Images/6bd2d23b2914f7202dc21d5047363c55.png)
+![](img/6bd2d23b2914f7202dc21d5047363c55.png)
 
 图片来源：作者
 
-在上面的例子中，我们正在将PostgreSQL迁移到Google Cloud Platform (GCP)。为此，你可以使用GCP的Cloud SQL服务；目标是将现有的PostgreSQL Server数据库转移到托管的Cloud SQL服务中，而不做实质性的修改…
+在上面的例子中，我们正在将 PostgreSQL 迁移到 Google Cloud Platform (GCP)。为此，你可以使用 GCP 的 Cloud SQL 服务；目标是将现有的 PostgreSQL Server 数据库转移到托管的 Cloud SQL 服务中，而不做实质性的修改…

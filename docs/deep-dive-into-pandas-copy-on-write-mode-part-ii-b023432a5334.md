@@ -1,10 +1,10 @@
 # 深入探讨 pandas Copy-on-Write 模式—第 II 部分
 
-> 原文：[https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334?source=collection_archive---------6-----------------------#2023-08-17](https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334?source=collection_archive---------6-----------------------#2023-08-17)
+> 原文：[`towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334?source=collection_archive---------6-----------------------#2023-08-17`](https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334?source=collection_archive---------6-----------------------#2023-08-17)
 
 ## *解释 Copy-on-Write 如何优化性能*
 
-[](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)[![Patrick Hoefler](../Images/35ca9ef1100d8c93dbadd374f0569fe1.png)](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b023432a5334--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b023432a5334--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)
+[](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)![Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b023432a5334--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b023432a5334--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb023432a5334&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334&source=-----b023432a5334---------------------bookmark_footer-----------)![](../Images/8a8f28224bd638244c9aa1f1dc06d8fa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb023432a5334&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334&source=-----b023432a5334---------------------bookmark_footer-----------)![](img/8a8f28224bd638244c9aa1f1dc06d8fa.png)
 
 照片由 [Joshua Brown](https://unsplash.com/@joshbrown?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 拍摄于 [Unsplash](https://unsplash.com/photos/73YJpOGgi4E?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -106,19 +106,19 @@ df.iloc[0, 0] = 100
 
 如果 `df` 的数据被另一个 DataFrame 参考，则会触发复制。我们假设我们的 DataFrame 有 `n` 个整数列，例如由一个 Block 支持。
 
-![](../Images/e2de64195cd07a4883634f1138e1222a.png)
+![](img/e2de64195cd07a4883634f1138e1222a.png)
 
 作者提供的图片
 
 我们的参考跟踪对象也引用了另一个 Block，因此我们不能在不修改其他对象的情况下就地修改 DataFrame。一个简单的方法是复制整个块然后完成。
 
-![](../Images/69fb3fd0bb66248feeba2d1b65cc1e49.png)
+![](img/69fb3fd0bb66248feeba2d1b65cc1e49.png)
 
 作者提供的图片
 
-这将设置一个新的引用跟踪对象，并创建一个由新的NumPy数组支持的新块。这个块没有任何其他引用，因此另一个操作将能够再次原地修改它。这种方法复制了`n-1`列，而我们不一定需要复制这些列。我们利用一种称为块拆分的技术来避免这种情况。
+这将设置一个新的引用跟踪对象，并创建一个由新的 NumPy 数组支持的新块。这个块没有任何其他引用，因此另一个操作将能够再次原地修改它。这种方法复制了`n-1`列，而我们不一定需要复制这些列。我们利用一种称为块拆分的技术来避免这种情况。
 
-![](../Images/fea5468f7a06f4cd2ded2b07c4123a8d.png)
+![](img/fea5468f7a06f4cd2ded2b07c4123a8d.png)
 
 图片由作者提供
 
@@ -126,9 +126,9 @@ df.iloc[0, 0] = 100
 
 这种技术有一个缺点。初始数组有`n`列。我们创建了从列`2`到`n`的视图，但这会保持整个数组的存在。我们还添加了一个只有一列的新数组用于第一列。这将比必要时多占用一点内存。
 
-这个系统直接转换为具有不同数据类型的DataFrames。所有未被修改的块会原样返回，只有被原地修改的块才会被拆分。
+这个系统直接转换为具有不同数据类型的 DataFrames。所有未被修改的块会原样返回，只有被原地修改的块才会被拆分。
 
-![](../Images/6dd047068c1106ef8515075eac181bcf.png)
+![](img/6dd047068c1106ef8515075eac181bcf.png)
 
 图片由作者提供
 
@@ -138,13 +138,13 @@ df.iloc[0, 0] = 100
 df.iloc[0, n+1] = 100.5
 ```
 
-![](../Images/c1d38d72ade02a84f7c3f81aed84bc2b.png)
+![](img/c1d38d72ade02a84f7c3f81aed84bc2b.png)
 
 图片由作者提供
 
 ## 可以原地操作的方法
 
-我们查看的索引操作通常不会创建新对象；它们会原地修改现有对象，包括该对象的数据。另一组pandas方法则完全不涉及DataFrame的数据。一个显著的例子是`rename`。Rename只会更改标签。这些方法可以利用上述提到的惰性复制机制。
+我们查看的索引操作通常不会创建新对象；它们会原地修改现有对象，包括该对象的数据。另一组 pandas 方法则完全不涉及 DataFrame 的数据。一个显著的例子是`rename`。Rename 只会更改标签。这些方法可以利用上述提到的惰性复制机制。
 
 还有第三组方法实际上可以原地操作，如`replace`或`fillna`。这些方法将始终触发复制。
 
@@ -152,7 +152,7 @@ df.iloc[0, n+1] = 100.5
 df2 = df.replace(...)
 ```
 
-修改数据时如果不触发复制，则会修改`df`和`df2`，这违反了CoW规则。这是我们考虑保留这些方法的`inplace`关键字的原因之一。
+修改数据时如果不触发复制，则会修改`df`和`df2`，这违反了 CoW 规则。这是我们考虑保留这些方法的`inplace`关键字的原因之一。
 
 ```py
 df.replace(..., inplace=True)
@@ -162,8 +162,8 @@ df.replace(..., inplace=True)
 
 ## 结论
 
-我们研究了CoW如何改变pandas的内部行为，以及这将如何转化为代码的改进。许多方法在使用CoW时会变得更快，而我们会看到一些与索引相关的操作变慢。以前，这些操作总是原地进行的，这可能产生副作用。这些副作用在CoW中消失了，对一个DataFrame对象的修改将永远不会影响另一个对象。
+我们研究了 CoW 如何改变 pandas 的内部行为，以及这将如何转化为代码的改进。许多方法在使用 CoW 时会变得更快，而我们会看到一些与索引相关的操作变慢。以前，这些操作总是原地进行的，这可能产生副作用。这些副作用在 CoW 中消失了，对一个 DataFrame 对象的修改将永远不会影响另一个对象。
 
-本系列的下一篇文章将解释如何更新你的代码以符合CoW标准。此外，我们还将说明未来应该避免哪些模式。
+本系列的下一篇文章将解释如何更新你的代码以符合 CoW 标准。此外，我们还将说明未来应该避免哪些模式。
 
 感谢阅读。如有任何关于写时复制（Copy-on-Write）的想法和反馈，请随时联系我们。

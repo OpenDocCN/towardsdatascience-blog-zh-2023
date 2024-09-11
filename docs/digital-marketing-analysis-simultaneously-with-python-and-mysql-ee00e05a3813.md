@@ -1,18 +1,18 @@
-# 使用Python和MySQL进行数字营销分析
+# 使用 Python 和 MySQL 进行数字营销分析
 
-> 原文：[https://towardsdatascience.com/digital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813?source=collection_archive---------0-----------------------#2023-03-19](https://towardsdatascience.com/digital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813?source=collection_archive---------0-----------------------#2023-03-19)
+> 原文：[`towardsdatascience.com/digital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813?source=collection_archive---------0-----------------------#2023-03-19`](https://towardsdatascience.com/digital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813?source=collection_archive---------0-----------------------#2023-03-19)
 
-## 一项数字营销分析练习，包含在SQL和Python环境中的逐步代码解释
+## 一项数字营销分析练习，包含在 SQL 和 Python 环境中的逐步代码解释
 
-[](https://goncaloggomes.medium.com/?source=post_page-----ee00e05a3813--------------------------------)[![Gonçalo Guimarães Gomes](../Images/3a789a30b0611cef47b6fa7707104b61.png)](https://goncaloggomes.medium.com/?source=post_page-----ee00e05a3813--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee00e05a3813--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ee00e05a3813--------------------------------) [Gonçalo Guimarães Gomes](https://goncaloggomes.medium.com/?source=post_page-----ee00e05a3813--------------------------------)
+[](https://goncaloggomes.medium.com/?source=post_page-----ee00e05a3813--------------------------------)![Gonçalo Guimarães Gomes](https://goncaloggomes.medium.com/?source=post_page-----ee00e05a3813--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee00e05a3813--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee00e05a3813--------------------------------) [Gonçalo Guimarães Gomes](https://goncaloggomes.medium.com/?source=post_page-----ee00e05a3813--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faa25b2c403cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdigital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813&user=Gon%C3%A7alo+Guimar%C3%A3es+Gomes&userId=aa25b2c403cc&source=post_page-aa25b2c403cc----ee00e05a3813---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee00e05a3813--------------------------------) ·15分钟阅读·2023年3月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee00e05a3813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdigital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813&user=Gon%C3%A7alo+Guimar%C3%A3es+Gomes&userId=aa25b2c403cc&source=-----ee00e05a3813---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faa25b2c403cc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdigital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813&user=Gon%C3%A7alo+Guimar%C3%A3es+Gomes&userId=aa25b2c403cc&source=post_page-aa25b2c403cc----ee00e05a3813---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee00e05a3813--------------------------------) ·15 分钟阅读·2023 年 3 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee00e05a3813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdigital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813&user=Gon%C3%A7alo+Guimar%C3%A3es+Gomes&userId=aa25b2c403cc&source=-----ee00e05a3813---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee00e05a3813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdigital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813&source=-----ee00e05a3813---------------------bookmark_footer-----------)![](../Images/612f64f25069d37873df15d948cd7435.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee00e05a3813&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdigital-marketing-analysis-simultaneously-with-python-and-mysql-ee00e05a3813&source=-----ee00e05a3813---------------------bookmark_footer-----------)![](img/612f64f25069d37873df15d948cd7435.png)
 
 [Zdeněk Macháček](https://unsplash.com/es/@zmachacek?utm_source=medium&utm_medium=referral)在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上的照片
 

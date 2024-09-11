@@ -1,22 +1,22 @@
-# 5个阻碍机器学习应用的挑战
+# 5 个阻碍机器学习应用的挑战
 
-> 原文：[https://towardsdatascience.com/5-challenges-hampering-machine-learning-adoption-1aa512b1808c?source=collection_archive---------19-----------------------#2023-03-27](https://towardsdatascience.com/5-challenges-hampering-machine-learning-adoption-1aa512b1808c?source=collection_archive---------19-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/5-challenges-hampering-machine-learning-adoption-1aa512b1808c?source=collection_archive---------19-----------------------#2023-03-27`](https://towardsdatascience.com/5-challenges-hampering-machine-learning-adoption-1aa512b1808c?source=collection_archive---------19-----------------------#2023-03-27)
 
 ## 克服障碍，释放机器学习在商业中的全部潜力
 
-[](https://irrfan.medium.com/?source=post_page-----1aa512b1808c--------------------------------)[![Irfan Ak](../Images/f3550f5dac333b007f86887859a4c22b.png)](https://irrfan.medium.com/?source=post_page-----1aa512b1808c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1aa512b1808c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1aa512b1808c--------------------------------) [Irfan Ak](https://irrfan.medium.com/?source=post_page-----1aa512b1808c--------------------------------)
+[](https://irrfan.medium.com/?source=post_page-----1aa512b1808c--------------------------------)![Irfan Ak](https://irrfan.medium.com/?source=post_page-----1aa512b1808c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1aa512b1808c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1aa512b1808c--------------------------------) [Irfan Ak](https://irrfan.medium.com/?source=post_page-----1aa512b1808c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5a1732c55c41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-challenges-hampering-machine-learning-adoption-1aa512b1808c&user=Irfan+Ak&userId=5a1732c55c41&source=post_page-5a1732c55c41----1aa512b1808c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1aa512b1808c--------------------------------) ·6分钟阅读·2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1aa512b1808c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-challenges-hampering-machine-learning-adoption-1aa512b1808c&user=Irfan+Ak&userId=5a1732c55c41&source=-----1aa512b1808c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5a1732c55c41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-challenges-hampering-machine-learning-adoption-1aa512b1808c&user=Irfan+Ak&userId=5a1732c55c41&source=post_page-5a1732c55c41----1aa512b1808c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1aa512b1808c--------------------------------) ·6 分钟阅读·2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1aa512b1808c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-challenges-hampering-machine-learning-adoption-1aa512b1808c&user=Irfan+Ak&userId=5a1732c55c41&source=-----1aa512b1808c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1aa512b1808c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-challenges-hampering-machine-learning-adoption-1aa512b1808c&source=-----1aa512b1808c---------------------bookmark_footer-----------)![](../Images/422897c589a47b45202e59da57cd5df9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1aa512b1808c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-challenges-hampering-machine-learning-adoption-1aa512b1808c&source=-----1aa512b1808c---------------------bookmark_footer-----------)![](img/422897c589a47b45202e59da57cd5df9.png)
 
 图片由 [Lukas Tennie](https://unsplash.com/@luk10?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-根据CB Insight发布的人工智能[报告](https://www.cbinsights.com/research/report/ai-trends-q2-2022/)，基于人工智能的初创企业在2022年第一季度获得了**151亿美元**的融资。尽管这个数字对许多人来说可能看起来很有希望，但融资额已经回落到疫情前的水平。尽管投入了数十亿美元在人工智能领域，许多企业仍然在机器学习的采用上挣扎。原因有很多，这正是我们在本文中要探讨的内容。
+根据 CB Insight 发布的人工智能[报告](https://www.cbinsights.com/research/report/ai-trends-q2-2022/)，基于人工智能的初创企业在 2022 年第一季度获得了**151 亿美元**的融资。尽管这个数字对许多人来说可能看起来很有希望，但融资额已经回落到疫情前的水平。尽管投入了数十亿美元在人工智能领域，许多企业仍然在机器学习的采用上挣扎。原因有很多，这正是我们在本文中要探讨的内容。
 
 如果你对了解一些阻碍企业实施机器学习系统的常见挑战感兴趣，那么这篇文章就是为你准备的。在这篇文章中，你将了解到五个阻碍企业采用机器学习的挑战。
 
@@ -58,7 +58,7 @@
 
 ## 4\. 将机器学习与人力资源融合
 
-即使你已经正确训练了你的[机器学习算法](/all-machine-learning-algorithms-you-should-know-in-2022-db5b4ccdf32f)，仍然存在产生奇怪结果的风险。机器学习模型复杂，有时可能产生意外或甚至违背直觉的结果。例如，一个预测模型可能表明某个候选人最适合某个职位，但人力资源招聘人员可能会基于数据中未捕捉的其他因素不同意这一点。
+即使你已经正确训练了你的机器学习算法，仍然存在产生奇怪结果的风险。机器学习模型复杂，有时可能产生意外或甚至违背直觉的结果。例如，一个预测模型可能表明某个候选人最适合某个职位，但人力资源招聘人员可能会基于数据中未捕捉的其他因素不同意这一点。
 
 当你完全依赖机器学习模型做出决策时，决策可能会存在某种偏见。由于机器学习利用历史数据来做决策，而这些数据可能包含偏见，因此也可能使你的决策产生偏见。最糟糕的是，这些机器学习模型可能会放大这些偏见，并将其融入最终输出中。
 

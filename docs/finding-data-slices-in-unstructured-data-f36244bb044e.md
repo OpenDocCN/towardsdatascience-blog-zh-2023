@@ -1,32 +1,32 @@
 # 在非结构化数据中找到数据切片
 
-> 原文：[https://towardsdatascience.com/finding-data-slices-in-unstructured-data-f36244bb044e?source=collection_archive---------7-----------------------#2023-08-18](https://towardsdatascience.com/finding-data-slices-in-unstructured-data-f36244bb044e?source=collection_archive---------7-----------------------#2023-08-18)
+> 原文：[`towardsdatascience.com/finding-data-slices-in-unstructured-data-f36244bb044e?source=collection_archive---------7-----------------------#2023-08-18`](https://towardsdatascience.com/finding-data-slices-in-unstructured-data-f36244bb044e?source=collection_archive---------7-----------------------#2023-08-18)
 
-## 简要介绍了数据切片方法，包括对CIFAR-100数据集的实际操作示例。
+## 简要介绍了数据切片方法，包括对 CIFAR-100 数据集的实际操作示例。
 
-[](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)[![Stefan Suwelack](../Images/33b66c9119d47fd668bad7b739586200.png)](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------) [Stefan Suwelack](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)
+[](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)![Stefan Suwelack](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------) [Stefan Suwelack](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faa4f0c2a0e38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&user=Stefan+Suwelack&userId=aa4f0c2a0e38&source=post_page-aa4f0c2a0e38----f36244bb044e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------) ·9 min read·2023年8月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff36244bb044e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&user=Stefan+Suwelack&userId=aa4f0c2a0e38&source=-----f36244bb044e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faa4f0c2a0e38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&user=Stefan+Suwelack&userId=aa4f0c2a0e38&source=post_page-aa4f0c2a0e38----f36244bb044e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------) ·9 min read·2023 年 8 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff36244bb044e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&user=Stefan+Suwelack&userId=aa4f0c2a0e38&source=-----f36244bb044e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff36244bb044e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&source=-----f36244bb044e---------------------bookmark_footer-----------)![](../Images/6be6049b15d746a07cf5bf5d512a8baa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff36244bb044e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&source=-----f36244bb044e---------------------bookmark_footer-----------)![](img/6be6049b15d746a07cf5bf5d512a8baa.png)
 
-CIFAR100中的数据切片。来源：作者创作。
+CIFAR100 中的数据切片。来源：作者创作。
 
 # tl;dr:
 
 数据切片是数据中具有语义意义的子集，在这些子集中，模型的表现异常。当处理非结构化数据问题（例如图像、文本）时，找到这些切片是每个数据科学家的重要工作。在实践中，这项任务涉及大量的个人经验和手工工作。在本文中，我们介绍了一些使数据切片发现更加系统化和高效的方法和工具。我们讨论了当前的挑战，并展示了一些基于开源工具的实际操作示例工作流。
 
-> 有一个基于CIFAR100数据集的[互动演示](https://huggingface.co/spaces/renumics/cifar100-sliceguard-demo)可用。
+> 有一个基于 CIFAR100 数据集的[互动演示](https://huggingface.co/spaces/renumics/cifar100-sliceguard-demo)可用。
 
 # 介绍
 
-调试、测试和监控人工智能（AI）系统很困难。大多数[软件2.0](https://karpathy.medium.com/software-2-0-a64152b37c35)开发过程中的工作都花在了策划高质量数据集上。
+调试、测试和监控人工智能（AI）系统很困难。大多数[软件 2.0](https://karpathy.medium.com/software-2-0-a64152b37c35)开发过程中的工作都花在了策划高质量数据集上。
 
-开发强大机器学习（ML）算法的一个重要策略是识别所谓的数据切片。数据切片是语义上有意义的子集，其中模型表现异常。识别和跟踪这些数据片段是每个以数据为中心的AI开发过程的核心。它也是在医疗保健和自动驾驶辅助系统等领域部署安全AI解决方案的核心方面。
+开发强大机器学习（ML）算法的一个重要策略是识别所谓的数据切片。数据切片是语义上有意义的子集，其中模型表现异常。识别和跟踪这些数据片段是每个以数据为中心的 AI 开发过程的核心。它也是在医疗保健和自动驾驶辅助系统等领域部署安全 AI 解决方案的核心方面。
 
 传统上，寻找数据切片一直是数据科学家工作的重要组成部分。在实践中，寻找数据切片很大程度上依赖于数据科学家的个人经验和领域知识。随着以数据为中心的人工智能（AI）运动的发展，许多当前的工作和工具旨在使这一过程更加系统化。
 
@@ -36,7 +36,7 @@ CIFAR100中的数据切片。来源：作者创作。
 
 数据科学家一直在使用简单的手动切片查找技术。最著名的例子可能是混淆矩阵，这是一种用于分类问题的调试方法。在实践中，切片查找过程依赖于预计算的启发式方法、数据科学家的个人经验以及大量的互动数据探索。
 
-一个经典的数据切片可以通过对表格特征或元数据的谓词连接来描述。在一个人员数据集中，这可能是某个年龄范围内的男性，身高超过1.85米。在一个发动机状态监测数据集中，一个数据切片可能由某个转速、操作时间和扭矩范围的数据点组成。
+一个经典的数据切片可以通过对表格特征或元数据的谓词连接来描述。在一个人员数据集中，这可能是某个年龄范围内的男性，身高超过 1.85 米。在一个发动机状态监测数据集中，一个数据切片可能由某个转速、操作时间和扭矩范围的数据点组成。
 
 在非结构化数据的情况下，语义数据切片定义可能更加隐含：它可以是人类可理解的描述，如“*在山区的弯曲道路上，轻微降雨情况下的驾驶场景*”。
 
@@ -46,7 +46,7 @@ CIFAR100中的数据切片。来源：作者创作。
 
 1.  嵌入空间中的潜在表示可以用于对数据集群进行分组。这些集群可以被检查以直接识别相关的数据切片。
 
-![](../Images/4b8165e71e6a983fdff9db17166d17b2.png)
+![](img/4b8165e71e6a983fdff9db17166d17b2.png)
 
 识别非结构化数据上的数据切片的工作流程。来源：作者创建。
 
@@ -56,19 +56,19 @@ CIFAR100中的数据切片。来源：作者创作。
 
 # 为什么数据切片发现很重要？
 
-尤其是在过去十年中，机器学习社区从基准数据集中受益匪浅：从ImageNet开始，这些数据集和竞赛成为深度学习算法在非结构化数据问题上的成功因素。在这种背景下，新算法的质量通常基于极少的定量指标，如F1分数或平均精度。
+尤其是在过去十年中，机器学习社区从基准数据集中受益匪浅：从 ImageNet 开始，这些数据集和竞赛成为深度学习算法在非结构化数据问题上的成功因素。在这种背景下，新算法的质量通常基于极少的定量指标，如 F1 分数或平均精度。
 
 随着越来越多的机器学习模型投入生产，现实世界的数据集与其基准数据集的差异变得显而易见：真实数据通常非常嘈杂和不平衡，但也富含元数据。对于某些用例，清理和标注这些数据集可能代价高昂。
 
-许多团队发现，迭代训练数据集并监控生产中的漂移对于构建和维护安全的AI系统是必要的。
+许多团队发现，迭代训练数据集并监控生产中的漂移对于构建和维护安全的 AI 系统是必要的。
 
 发现数据切片是这一迭代过程的核心部分。只有了解模型的失败点，才能提升系统性能：通过收集更多数据、纠正错误标签、选择最佳特征或简单地限制系统的操作领域。
 
 # 为什么数据切片发现如此困难？
 
-切片发现的一个关键方面是其计算复杂性。我们可以通过一个小例子来说明这一点：考虑n个二进制特征，采用独热编码（例如，通过分箱或重新编码获得）。那么所有可能特征组合的搜索空间是O(2^n)。这种指数性质意味着通常使用启发式方法来进行修剪。因此，自动化切片发现不仅需要很长时间（取决于特征数量），而且输出不会是一个最优稳定的解决方案，而是一些启发式方法。
+切片发现的一个关键方面是其计算复杂性。我们可以通过一个小例子来说明这一点：考虑 n 个二进制特征，采用独热编码（例如，通过分箱或重新编码获得）。那么所有可能特征组合的搜索空间是 O(2^n)。这种指数性质意味着通常使用启发式方法来进行修剪。因此，自动化切片发现不仅需要很长时间（取决于特征数量），而且输出不会是一个最优稳定的解决方案，而是一些启发式方法。
 
-在AI开发过程中，模型性能差常常源于不同的根本原因。鉴于机器学习模型的固有随机性，这很容易导致需要手动检查和验证的虚假发现。因此，即使一个切片发现技术可以产生理论上最优的结果，其结果仍必须经过人工检查和验证。为跨职能团队提供高效工具是许多机器学习团队的瓶颈。
+在 AI 开发过程中，模型性能差常常源于不同的根本原因。鉴于机器学习模型的固有随机性，这很容易导致需要手动检查和验证的虚假发现。因此，即使一个切片发现技术可以产生理论上最优的结果，其结果仍必须经过人工检查和验证。为跨职能团队提供高效工具是许多机器学习团队的瓶颈。
 
 我们已经指出，通常希望找到具有大支持的切片，但也希望从数据集基线中获得显著的模型性能差距。不同数据切片之间的关系通常是层次性的。在自动切片查找过程中和互动审查阶段处理这些层次结构是相当具有挑战性的。
 
@@ -102,7 +102,7 @@ SliceLine 算法的大多数参数非常简单：切片的最小支持度 (*min_
 
 我们启动 Spotlight 以交互式探索数据切片。你可以直接在 [Huggingface 空间](https://huggingface.co/spaces/renumics/cifar100-sliceline-demo) 体验结果。
 
-![](../Images/b19e40e350f9a75c6e45b5ed4884a198.png)
+![](img/b19e40e350f9a75c6e45b5ed4884a198.png)
 
 图 3：通过 SliceLine 生成的数据切片进行交互式探索。一个 [互动演示](https://huggingface.co/spaces/renumics/cifar100-sliceline-demo) 在 Huggingface 上可以使用。来源：作者创建。
 
@@ -110,13 +110,13 @@ SliceLine 算法的大多数参数非常简单：切片的最小支持度 (*min_
 
 # Wise Pizza
 
-[WisePizza](https://github.com/transferwise/wise-pizza) 是 Wise 团队最近开发的工具。它旨在发现和可视化表格数据中的有趣数据切片。核心思想是使用 Lasso 回归为每个切片找到重要性系数。有关 Wise Pizza 工作原理的更多信息，请参阅 [博客文章](/figuring-out-the-most-unusual-segments-in-data-af5fbeacb2b2)。
+[WisePizza](https://github.com/transferwise/wise-pizza) 是 Wise 团队最近开发的工具。它旨在发现和可视化表格数据中的有趣数据切片。核心思想是使用 Lasso 回归为每个切片找到重要性系数。有关 Wise Pizza 工作原理的更多信息，请参阅 博客文章。
 
 重要的是要注意，WisePizza 并不是作为机器学习调试工具开发的。相反，它主要旨在支持 EDA 过程中的分段分析。这就是为什么可以手动定义段候选项并为其分配权重。在我们的实验中，我们直接在数据集上运行 WisePizza，并将每个数据点的权重设置为 1：
 
 为了探索我们非结构化数据集中的问题，我们以与 Sliceline 示例相同的方式提取问题。
 
-![](../Images/f21a4cb9282ba3e0536421a599bd9d54.png)
+![](img/f21a4cb9282ba3e0536421a599bd9d54.png)
 
 图 4：WisePizza 还识别出柳树类别具有较大暗色评分的问题。然而，这些切片的细粒度不如 SliceLine 结果。来源：作者创建。
 
@@ -138,7 +138,7 @@ issue_df, issues = sg.report(spotlight_dtype={"image": Image})
 
 Sliceguard 可以在 CIFAR-100 数据集上揭示细粒度的数据切片（图 5）。除了之前发现的树类数据切片外，我们还识别了其他问题（如 *mouse* 类）。
 
-![](../Images/f2513d68f56ea9fffb1cbb85b7c2f7b5.png)
+![](img/f2513d68f56ea9fffb1cbb85b7c2f7b5.png)
 
 图 5：Sliceguard 揭示了细粒度的数据切片。在 Huggingface 上提供了一个 [互动演示](https://huggingface.co/spaces/renumics/cifar100-sliceline-demo)。来源：作者创建。
 

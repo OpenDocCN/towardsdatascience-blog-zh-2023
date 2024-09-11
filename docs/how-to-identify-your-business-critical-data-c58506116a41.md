@@ -1,18 +1,18 @@
 # 如何识别业务关键数据
 
-> 原文：[https://towardsdatascience.com/how-to-identify-your-business-critical-data-c58506116a41?source=collection_archive---------4-----------------------#2023-06-14](https://towardsdatascience.com/how-to-identify-your-business-critical-data-c58506116a41?source=collection_archive---------4-----------------------#2023-06-14)
+> 原文：[`towardsdatascience.com/how-to-identify-your-business-critical-data-c58506116a41?source=collection_archive---------4-----------------------#2023-06-14`](https://towardsdatascience.com/how-to-identify-your-business-critical-data-c58506116a41?source=collection_archive---------4-----------------------#2023-06-14)
 
 ## 实用步骤以识别业务关键数据模型和仪表盘，并提升对数据的信心
 
-[](https://medium.com/@mikldd?source=post_page-----c58506116a41--------------------------------)[![Mikkel Dengsøe](../Images/13f45ffb0ff67e004353ab8825107d74.png)](https://medium.com/@mikldd?source=post_page-----c58506116a41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c58506116a41--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c58506116a41--------------------------------) [Mikkel Dengsøe](https://medium.com/@mikldd?source=post_page-----c58506116a41--------------------------------)
+[](https://medium.com/@mikldd?source=post_page-----c58506116a41--------------------------------)![Mikkel Dengsøe](https://medium.com/@mikldd?source=post_page-----c58506116a41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c58506116a41--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c58506116a41--------------------------------) [Mikkel Dengsøe](https://medium.com/@mikldd?source=post_page-----c58506116a41--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc05fafadc01d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-your-business-critical-data-c58506116a41&user=Mikkel+Dengs%C3%B8e&userId=c05fafadc01d&source=post_page-c05fafadc01d----c58506116a41---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c58506116a41--------------------------------) ·9分钟阅读·2023年6月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc58506116a41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-your-business-critical-data-c58506116a41&user=Mikkel+Dengs%C3%B8e&userId=c05fafadc01d&source=-----c58506116a41---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc05fafadc01d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-your-business-critical-data-c58506116a41&user=Mikkel+Dengs%C3%B8e&userId=c05fafadc01d&source=post_page-c05fafadc01d----c58506116a41---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c58506116a41--------------------------------) ·9 分钟阅读·2023 年 6 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc58506116a41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-your-business-critical-data-c58506116a41&user=Mikkel+Dengs%C3%B8e&userId=c05fafadc01d&source=-----c58506116a41---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc58506116a41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-your-business-critical-data-c58506116a41&source=-----c58506116a41---------------------bookmark_footer-----------)![](../Images/23941cd1c7be842c68fe9e49c4a48902.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc58506116a41&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-identify-your-business-critical-data-c58506116a41&source=-----c58506116a41---------------------bookmark_footer-----------)![](img/23941cd1c7be842c68fe9e49c4a48902.png)
 
 来源：synq.io
 
@@ -50,7 +50,7 @@
 
 +   它允许你的团队将更多的精力集中在关键资产上，并让一些不那么重要的事情随之而去
 
-![](../Images/d61228a8ef63303dda27374b9ece4568.png)
+![](img/d61228a8ef63303dda27374b9ece4568.png)
 
 *查看重要受影响的数据模型和仪表板的示例。来源：synq.io*
 
@@ -66,7 +66,7 @@
 
 +   你的预测模型没有运行，数百名客服人员在假期前无法获取他们的下一班次排班
 
-![](../Images/610f3f75118ebfe49c920f10cc18f734.png)
+![](img/610f3f75118ebfe49c920f10cc18f734.png)
 
 来源：synq.io
 
@@ -86,27 +86,27 @@ Looker 在预构建的探索中暴露了有关内容使用的元数据，你可�
 
 +   你过去一年中遇到的最关键问题是什么？
 
-你的业务领导可能不知道，平均客户支持响应时间从两小时跳升到圣诞节的24小时，是由于过时的上游数据预测错误，但他们会向你描述这段痛苦的经历。如果你能够绘制出最关键的操作和工作流程，并理解数据的使用方式，你将开始揭示真正的业务关键数据。
+你的业务领导可能不知道，平均客户支持响应时间从两小时跳升到圣诞节的 24 小时，是由于过时的上游数据预测错误，但他们会向你描述这段痛苦的经历。如果你能够绘制出最关键的操作和工作流程，并理解数据的使用方式，你将开始揭示真正的业务关键数据。
 
 # 基于仪表盘使用的重要性
 
-最明显的重要仪表盘是公司所有人都在使用的仪表盘。你可能已经知道其中的一些，例如“公司范围KPIs”、“产品使用仪表盘”或“客户服务指标”。但有时你会惊讶地发现，许多人依赖于你之前不知道存在的仪表盘。
+最明显的重要仪表盘是公司所有人都在使用的仪表盘。你可能已经知道其中的一些，例如“公司范围 KPIs”、“产品使用仪表盘”或“客户服务指标”。但有时你会惊讶地发现，许多人依赖于你之前不知道存在的仪表盘。
 
-![](../Images/eadaf8dde493d38ed009b4440d49a109.png)
+![](img/eadaf8dde493d38ed009b4440d49a109.png)
 
 来源：synq.io
 
-在大多数情况下，你应该过滤掉最近的使用情况，避免包括那些六个月前有很多用户但最近一个月没有使用的仪表盘。也有例外情况，比如一个每三个月才使用一次的季度OKR仪表盘。
+在大多数情况下，你应该过滤掉最近的使用情况，避免包括那些六个月前有很多用户但最近一个月没有使用的仪表盘。也有例外情况，比如一个每三个月才使用一次的季度 OKR 仪表盘。
 
-# 基于仪表盘C-suite使用的重要性
+# 基于仪表盘 C-suite 使用的重要性
 
-不管你愿意与否，如果你的首席执行官经常使用某个仪表盘，那么它就很重要，即使只有少数其他用户。在最糟糕的情况下，你可能会发现C-suite的某个成员已经使用了几个月的仪表盘，而你对这个仪表盘的存在一无所知。
+不管你愿意与否，如果你的首席执行官经常使用某个仪表盘，那么它就很重要，即使只有少数其他用户。在最糟糕的情况下，你可能会发现 C-suite 的某个成员已经使用了几个月的仪表盘，而你对这个仪表盘的存在一无所知。
 
-> *“我们发现我们的首席执行官每天都会查看一份包含收入报告的电子邮件，但它被错误地过滤以包含特定的细分，因此与中央公司KPI仪表盘不匹配。” — 加拿大医疗保健初创公司*
+> *“我们发现我们的首席执行官每天都会查看一份包含收入报告的电子邮件，但它被错误地过滤以包含特定的细分，因此与中央公司 KPI 仪表盘不匹配。” — 加拿大医疗保健初创公司*
 
 如果你有员工记录系统，你可能能够轻松获得人员职位的标识符，并用这些标识符来丰富你的使用数据。如果没有，你可以维护一个手动的映射，并在执行团队更换时进行更新。
 
-![](../Images/d67983ae8b9668b06803ad964003e27c.png)
+![](img/d67983ae8b9668b06803ad964003e27c.png)
 
 来源：synq.io
 
@@ -128,7 +128,7 @@ Looker 在预构建的探索中暴露了有关内容使用的元数据，你可�
 
 数据模型本身很少是关键的，通常是由于其下游依赖的关键性，比如一个重要的仪表板或用于向网站用户提供推荐的机器学习模型。
 
-![](../Images/66ba9d91b7a2407da8d4d43d561fe118.png)
+![](img/66ba9d91b7a2407da8d4d43d561fe118.png)
 
 *所有位于业务关键仪表板上游的数据模型都在关键路径上。来源：synq.io*
 
@@ -154,7 +154,7 @@ Looker 在预构建的探索中暴露了有关内容使用的元数据，你可�
 
 大多数公司采用分层方法（例如青铜、银、金）或二进制方法（例如关键、非关键）。这两种选择都可以运作，最佳解决方案取决于您的情况。
 
-![](../Images/4ebf965ef90efeacb6ce8948f60d2123.png)
+![](img/4ebf965ef90efeacb6ce8948f60d2123.png)
 
 来源：synq.io
 
@@ -162,7 +162,7 @@ Looker 在预构建的探索中暴露了有关内容使用的元数据，你可�
 
 +   *一级*：用于机器学习系统的数据模型，用于确定允许哪些用户注册您的产品
 
-+   *二级*：CMO用于每周营销审查的仪表板
++   *二级*：CMO 用于每周营销审查的仪表板
 
 +   *三级*：产品经理用来跟踪每月产品参与度的仪表板
 
@@ -170,11 +170,11 @@ Looker 在预构建的探索中暴露了有关内容使用的元数据，你可�
 
 # 关键性定义的位置
 
-没有一个确定的地方来定义关键性，但通常在创建数据资产的工具中，或者在数据目录（例如Secoda）中进行。
+没有一个确定的地方来定义关键性，但通常在创建数据资产的工具中，或者在数据目录（例如 Secoda）中进行。
 
 # 在创建数据资产的工具中定义关键性
 
-在dbt中，您可以将关键性定义与数据模型定义一起保存在您的.yml文件中。这有几个优点，例如在合并PR时能够强制执行关键性，或者轻松地在数据目录或可观察性工具等工具之间传递此信息。
+在 dbt 中，您可以将关键性定义与数据模型定义一起保存在您的.yml 文件中。这有几个优点，例如在合并 PR 时能够强制执行关键性，或者轻松地在数据目录或可观察性工具等工具之间传递此信息。
 
 ```py
 models:
@@ -184,11 +184,11 @@ models:
      criticality: high
 ```
 
-*在.yml文件中定义关键性的示例*
+*在.yml 文件中定义关键性的示例*
 
-在BI工具中，使每个人都能够透明地使用的一个选项是使用例如“*一级*”标签来标识仪表板的标题，以表明其关键性。此数据通常可以提取并在其他工具中使用。
+在 BI 工具中，使每个人都能够透明地使用的一个选项是使用例如“*一级*”标签来标识仪表板的标题，以表明其关键性。此数据通常可以提取并在其他工具中使用。
 
-![](../Images/12600c5363ea0b52d9fda9f62a52b603.png)
+![](img/12600c5363ea0b52d9fda9f62a52b603.png)
 
 来源：synq.io
 
@@ -196,7 +196,7 @@ models:
 
 在数据目录中，您可以轻松访问所有公司数据，并通过搜索整个堆栈找到常见问题的答案，这使得对齐指标和模型变得更加容易
 
-![](../Images/f92a45f2660f8597b0472e3dc77b02c5.png)
+![](img/f92a45f2660f8597b0472e3dc77b02c5.png)
 
 *标记关键数据。来源：secoda.co*
 
@@ -216,7 +216,7 @@ models:
 
 +   对关键数据模型的测试或运行失败应在同一天内采取行动
 
-+   关键数据模型的问题应发送给PagerDuty（一名值班团队成员），以便他们能够快速采取行动
++   关键数据模型的问题应发送给 PagerDuty（一名值班团队成员），以便他们能够快速采取行动
 
 +   关键数据模型应至少具备唯一性和非空测试以及已定义的所有者
 

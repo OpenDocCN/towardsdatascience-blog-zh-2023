@@ -1,10 +1,10 @@
-# 将多个LoRA适配器结合为Llama 2
+# 将多个 LoRA 适配器结合为 Llama 2
 
-> 原文：[https://towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf?source=collection_archive---------4-----------------------#2023-11-30](https://towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf?source=collection_archive---------4-----------------------#2023-11-30)
+> 原文：[`towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf?source=collection_archive---------4-----------------------#2023-11-30`](https://towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf?source=collection_archive---------4-----------------------#2023-11-30)
 
 ## 向您的 LLM 添加技能，无需调整新的适配器
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)
 
 ·
 
@@ -12,13 +12,13 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fea0bef9025cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombine-multiple-lora-adapters-for-llama-2-ea0bef9025cf&source=-----ea0bef9025cf---------------------bookmark_footer-----------)![](../Images/6c4a40091827bce0f2a546522f563d4a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fea0bef9025cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombine-multiple-lora-adapters-for-llama-2-ea0bef9025cf&source=-----ea0bef9025cf---------------------bookmark_footer-----------)![](img/6c4a40091827bce0f2a546522f563d4a.png)
 
 作者提供的图片 — 利用 [Pixabay](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/) 的图片制作
 
-完全调整预训练的大型语言模型（LLM）以适应不同任务非常昂贵。相反，我们可以冻结LLM的参数，只需微调通过LoRA适配器添加的几百万可训练参数。
+完全调整预训练的大型语言模型（LLM）以适应不同任务非常昂贵。相反，我们可以冻结 LLM 的参数，只需微调通过 LoRA 适配器添加的几百万可训练参数。
 
-换句话说，我们只需微调一个适配器即可使模型执行目标任务。例如，如果我们想将预训练的LLM转化为翻译模型，我们会为翻译微调一个适配器。我们可以为希望LLM执行的每个任务微调一个适配器。
+换句话说，我们只需微调一个适配器即可使模型执行目标任务。例如，如果我们想将预训练的 LLM 转化为翻译模型，我们会为翻译微调一个适配器。我们可以为希望 LLM 执行的每个任务微调一个适配器。
 
 *但是我们能否将几个适配器组合成一个单一的多任务适配器？*
 

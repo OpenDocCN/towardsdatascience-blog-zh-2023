@@ -1,18 +1,18 @@
 # Rust Polars：解锁高性能数据分析 — 第二部分
 
-> 原文：[https://towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f?source=collection_archive---------3-----------------------#2023-05-18](https://towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f?source=collection_archive---------3-----------------------#2023-05-18)
+> 原文：[`towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f?source=collection_archive---------3-----------------------#2023-05-18`](https://towardsdatascience.com/rust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f?source=collection_archive---------3-----------------------#2023-05-18)
 
 ## 探索 Rust 的 Polars 数据框架、聚合函数及更多
 
-[](https://wiseai.medium.com/?source=post_page-----7c58a3cb7a1f--------------------------------)[![Mahmoud Harmouch](../Images/d61617549d25565399975debaad5908f.png)](https://wiseai.medium.com/?source=post_page-----7c58a3cb7a1f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7c58a3cb7a1f--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7c58a3cb7a1f--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----7c58a3cb7a1f--------------------------------)
+[](https://wiseai.medium.com/?source=post_page-----7c58a3cb7a1f--------------------------------)![Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----7c58a3cb7a1f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7c58a3cb7a1f--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----7c58a3cb7a1f--------------------------------) [Mahmoud Harmouch](https://wiseai.medium.com/?source=post_page-----7c58a3cb7a1f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----7c58a3cb7a1f---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----7c58a3cb7a1f--------------------------------) ·24分钟阅读·2023年5月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7c58a3cb7a1f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----7c58a3cb7a1f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb15db3da5667&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f&user=Mahmoud+Harmouch&userId=b15db3da5667&source=post_page-b15db3da5667----7c58a3cb7a1f---------------------post_header-----------) 发表在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----7c58a3cb7a1f--------------------------------) ·24 分钟阅读·2023 年 5 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7c58a3cb7a1f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f&user=Mahmoud+Harmouch&userId=b15db3da5667&source=-----7c58a3cb7a1f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7c58a3cb7a1f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f&source=-----7c58a3cb7a1f---------------------bookmark_footer-----------)![](../Images/700d954aea76580261342f38363b4daf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7c58a3cb7a1f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frust-polars-unlocking-high-performance-data-analysis-part-2-7c58a3cb7a1f&source=-----7c58a3cb7a1f---------------------bookmark_footer-----------)![](img/700d954aea76580261342f38363b4daf.png)
 
 图片来源：[艾伦](https://pixabay.com/users/ad_images-6663717/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3348777) 来自 [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3348777)
 
@@ -20,7 +20,7 @@
 
 Rust 编程语言在业界掀起了波澜，并且在数据科学领域逐渐获得关注。它卓越的速度和强大的安全特性受到需要有效管理大型数据集的开发者的高度追捧。Polars 库充分利用了 Rust 的能力，提供了快速高效的复杂数据集处理方法。凭借其卓越的性能，对于那些从事需要快速处理能力的复杂项目的工作者来说，它是一个极具吸引力的选择。
 
-本文作为该系列的延续，旨在揭开 Polars 世界的神秘面纱。[**在系列的第一部分**](/rust-polars-unlocking-high-performance-data-analysis-part-1-ce42af370ece)中，我们学习了 Rust 的 Polars 系列对象及其应用等内容。在这一部分中，我们将探索另一个 Polars 的基本数据结构，即 **DataFrame** 对象。通过实际操作和代码片段，你将获得执行各种 DataFrame 操作等重要技能。
+本文作为该系列的延续，旨在揭开 Polars 世界的神秘面纱。**在系列的第一部分**中，我们学习了 Rust 的 Polars 系列对象及其应用等内容。在这一部分中，我们将探索另一个 Polars 的基本数据结构，即 **DataFrame** 对象。通过实际操作和代码片段，你将获得执行各种 DataFrame 操作等重要技能。
 
 > **注意：** 本文假设你对 Rust 编程语言有相当基础的了解。
 > 
@@ -34,29 +34,29 @@ github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page----
 
 ## 目录（TOC）
 
-∘ [DataFrame 对象](#6752)
+∘ DataFrame 对象
 
-∘ [索引与切片](#5a00)
+∘ 索引与切片
 
-∘ [数据清理](#bf0b)
+∘ 数据清理
 
-∘ [集中趋势测量](#406b)
+∘ 集中趋势测量
 
-∘ [Ndarray](#b0f8)
+∘ Ndarray
 
-∘ [聚合函数](#6902)
+∘ 聚合函数
 
-∘ [合并 DataFrame](#b011)
+∘ 合并 DataFrame
 
-∘ [结论](#4c07)
+∘ 结论
 
-∘ [结束语](#7e8f)
+∘ 结束语
 
-∘ [资源](#7546)
+∘ 资源
 
 ## DataFrame 对象
 
-![](../Images/042a84b685ff0191afef47ee5ecb0fb1.png)
+![](img/042a84b685ff0191afef47ee5ecb0fb1.png)
 
 Polars 数据框表示（作者提供的图片）
 
@@ -196,11 +196,11 @@ println!("{}", df.tail(None));
 
 默认情况下，`**tail**` 方法显示数据集的最后十行，但可以通过指定参数来自定义显示行数。为了进一步说明：`**df.tail(Some(3))**` 将仅显示示例员工数据框的最后三行。
 
-实质上，使用`**tail**`对DataFrames进行操作有助于在验证内容或获取其整体布局时节省时间。它提供了一目了然的信息，而无需手动逐行查看！
+实质上，使用`**tail**`对 DataFrames 进行操作有助于在验证内容或获取其整体布局时节省时间。它提供了一目了然的信息，而无需手动逐行查看！
 
 ## 索引与切片
 
-与系列不同，DataFrame对象可以使用方括号`**[]**`进行索引：
+与系列不同，DataFrame 对象可以使用方括号`**[]**`进行索引：
 
 ```py
 // Create a sample DataFrame
@@ -252,9 +252,9 @@ println!("{:?}", subset);
 // ]]
 ```
 
-在此示例中，我们构建了一个包含四列的DataFrame——“Name”、“Age”、“Gender”和“Salary”。然后，我们展示了使用方括号对数据框进行索引的各种技术。为了根据名称提取单列，我们使用了`**df[‘Name’]**`。该方法返回一个包含指定列所有值的Polars Series——在我们的例子中是‘Name’列。采用这种方法在需要从数据框中提取特定信息时非常有用。
+在此示例中，我们构建了一个包含四列的 DataFrame——“Name”、“Age”、“Gender”和“Salary”。然后，我们展示了使用方括号对数据框进行索引的各种技术。为了根据名称提取单列，我们使用了`**df[‘Name’]**`。该方法返回一个包含指定列所有值的 Polars Series——在我们的例子中是‘Name’列。采用这种方法在需要从数据框中提取特定信息时非常有用。
 
-随后，通过使用**df[..2]**进行切片，我们仅选择了某些列的子集，从而创建了**另一个** **新的** **DataFrame**，只包含**前两列**：即`**Name**`和`**Age**`。这种快速而高效的方法非常适合轻松选择数据框中的多个所需属性。同样，我们可以使用select方法选择列的子集，例如，调用`[**df.select([“Name”, “Age”])**](https://docs.rs/polars/latest/polars/prelude/struct.DataFrame.html#method.select)`将仅返回`**Name**`和‘**Gender**’列。
+随后，通过使用**df[..2]**进行切片，我们仅选择了某些列的子集，从而创建了**另一个** **新的** **DataFrame**，只包含**前两列**：即`**Name**`和`**Age**`。这种快速而高效的方法非常适合轻松选择数据框中的多个所需属性。同样，我们可以使用 select 方法选择列的子集，例如，调用`[**df.select([“Name”, “Age”])**](https://docs.rs/polars/latest/polars/prelude/struct.DataFrame.html#method.select)`将仅返回`**Name**`和‘**Gender**’列。
 
 ```py
 let name_age_cols = df.select(["Name", "Age"]).unwrap();
@@ -317,7 +317,7 @@ println!("{:?}", filtered_data);
 // └──────────────┴─────┴────────┴────────┘
 ```
 
-此外，`[**slice**](https://docs.rs/polars/latest/polars/frame/struct.DataFrame.html#method.slice)`方法允许我们从数据框对象中选择特定的行和列子集。例如，如果我们使用**df.slice(2,3)**，将从索引2开始返回三行（使用零基索引）。此外，此选择将包括所有列，从而产生一个完全由三行（如果存在）和四列组成的新数据框。
+此外，`[**slice**](https://docs.rs/polars/latest/polars/frame/struct.DataFrame.html#method.slice)`方法允许我们从数据框对象中选择特定的行和列子集。例如，如果我们使用**df.slice(2,3)**，将从索引 2 开始返回三行（使用零基索引）。此外，此选择将包括所有列，从而产生一个完全由三行（如果存在）和四列组成的新数据框。
 
 ```py
 println!("{:?}", df.slice(2, 3));
@@ -361,7 +361,7 @@ println!("{:?}", df.transpose().unwrap()[0]);
 
 ## 数据清理
 
-![](../Images/406554a8f993a79109604500e3583878.png)
+![](img/406554a8f993a79109604500e3583878.png)
 
 照片由 [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -748,11 +748,11 @@ println!("{:?}", df.to_ndarray::<Float64Type>().unwrap());
 //  [NaN, 36.0, NaN, NaN]], shape=[3, 4], strides=[1, 3], layout=Ff (0xa), const ndim=2
 ```
 
-现在，你可以对这个数组应用在上一篇文章中讨论的不同操作，标题为：[**终极 Ndarray 手册：掌握 Rust 科学计算的艺术**](/the-ultimate-ndarray-handbook-mastering-the-art-of-scientific-computing-with-rust-ef5ab767212a)。
+现在，你可以对这个数组应用在上一篇文章中讨论的不同操作，标题为：**终极 Ndarray 手册：掌握 Rust 科学计算的艺术**。
 
 ## 聚合函数
 
-![](../Images/2b919c5d4ef5da4f0a51f0cc20e9c348.png)
+![](img/2b919c5d4ef5da4f0a51f0cc20e9c348.png)
 
 [Nicolas COMTE](https://unsplash.com/@rotor_?utm_source=medium&utm_medium=referral) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -788,7 +788,7 @@ let claims_amount_df: DataFrame = claims_data.groupby(["Policy_Type", "Customer_
 
 ## 聚合示例
 
-![](../Images/645783e9fe9a381fdaf1ab40cb839e39.png)
+![](img/645783e9fe9a381fdaf1ab40cb839e39.png)
 
 照片由 [Alexander Schimmeck](https://unsplash.com/@alschim?utm_source=medium&utm_medium=referral) 提供，拍摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -875,7 +875,7 @@ println!("{:?}", dep_delay_mean_def.head(Some(5)));
 
 ## 合并 DataFrames
 
-![](../Images/9bb2f0879cd6130877721f8c0c3ccc0e.png)
+![](img/9bb2f0879cd6130877721f8c0c3ccc0e.png)
 
 不同的 Polars 连接方法（图像作者提供）
 
@@ -985,7 +985,7 @@ println!("{:?}", df5.head(Some(5)));
 
 ## 结论
 
-![](../Images/baa60e628868134899f091005f89931b.png)
+![](img/baa60e628868134899f091005f89931b.png)
 
 图片由 [Adeolu Eletu](https://unsplash.com/@adeolueletu?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -1003,7 +1003,7 @@ println!("{:?}", df5.head(Some(5)));
 
 ## 结束语
 
-![](../Images/c732ae653e11e63222cc5fd9bc49b0e4.png)
+![](img/c732ae653e11e63222cc5fd9bc49b0e4.png)
 
 图片由 [Aaron Burden](https://unsplash.com/@aaronburden?utm_source=medium&utm_medium=referral) 提供，发布于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -1019,16 +1019,16 @@ println!("{:?}", df5.head(Some(5)));
 
 ### 这个代码库包含了一系列 Jupyter 笔记本，所有笔记本都由 Rust 内核驱动。通过这些笔记本，你将会...
 
-[github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page-----7c58a3cb7a1f--------------------------------) [## polars::prelude 中的DataFrame - Rust
+[github.com](https://github.com/wiseaidev/rust-data-analysis?source=post_page-----7c58a3cb7a1f--------------------------------) [## polars::prelude 中的 DataFrame - Rust
 
 ### 一组长度相同的`Series`的连续可增长集合。
 
 [docs.rs](https://docs.rs/polars/latest/polars/prelude/struct.DataFrame.html?source=post_page-----7c58a3cb7a1f--------------------------------) [## Rust By Example
 
-### Rust是一种现代系统编程语言，专注于安全性、速度和并发性。它实现这些目标的方式…
+### Rust 是一种现代系统编程语言，专注于安全性、速度和并发性。它实现这些目标的方式…
 
-[文档](https://doc.rust-lang.org/rust-by-example/?source=post_page-----7c58a3cb7a1f--------------------------------) [## Rust编程语言
+[文档](https://doc.rust-lang.org/rust-by-example/?source=post_page-----7c58a3cb7a1f--------------------------------) [## Rust 编程语言
 
-### 由Steve Klabnik和Carol Nichols编写，Rust社区贡献者参与。本版本的文本假设您…
+### 由 Steve Klabnik 和 Carol Nichols 编写，Rust 社区贡献者参与。本版本的文本假设您…
 
 [文档](https://doc.rust-lang.org/book/?source=post_page-----7c58a3cb7a1f--------------------------------)

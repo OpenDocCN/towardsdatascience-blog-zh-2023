@@ -1,18 +1,18 @@
 # 核密度估计逐步讲解
 
-> 原文：[https://towardsdatascience.com/kernel-density-estimation-explained-step-by-step-7cc5b5bc4517?source=collection_archive---------0-----------------------#2023-08-15](https://towardsdatascience.com/kernel-density-estimation-explained-step-by-step-7cc5b5bc4517?source=collection_archive---------0-----------------------#2023-08-15)
+> 原文：[`towardsdatascience.com/kernel-density-estimation-explained-step-by-step-7cc5b5bc4517?source=collection_archive---------0-----------------------#2023-08-15`](https://towardsdatascience.com/kernel-density-estimation-explained-step-by-step-7cc5b5bc4517?source=collection_archive---------0-----------------------#2023-08-15)
 
 ## KDE 公式的直观推导
 
-[](https://medium.com/@jaroslaw.drapala?source=post_page-----7cc5b5bc4517--------------------------------)[![Jaroslaw Drapala](../Images/34de3c52fc32005e36930135254ae45e.png)](https://medium.com/@jaroslaw.drapala?source=post_page-----7cc5b5bc4517--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cc5b5bc4517--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7cc5b5bc4517--------------------------------) [Jaroslaw Drapala](https://medium.com/@jaroslaw.drapala?source=post_page-----7cc5b5bc4517--------------------------------)
+[](https://medium.com/@jaroslaw.drapala?source=post_page-----7cc5b5bc4517--------------------------------)![Jaroslaw Drapala](https://medium.com/@jaroslaw.drapala?source=post_page-----7cc5b5bc4517--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cc5b5bc4517--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cc5b5bc4517--------------------------------) [Jaroslaw Drapala](https://medium.com/@jaroslaw.drapala?source=post_page-----7cc5b5bc4517--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce6da4a69810&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimation-explained-step-by-step-7cc5b5bc4517&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=post_page-ce6da4a69810----7cc5b5bc4517---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cc5b5bc4517--------------------------------) ·7 min read·2023年8月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cc5b5bc4517&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimation-explained-step-by-step-7cc5b5bc4517&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=-----7cc5b5bc4517---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce6da4a69810&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimation-explained-step-by-step-7cc5b5bc4517&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=post_page-ce6da4a69810----7cc5b5bc4517---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cc5b5bc4517--------------------------------) ·7 min read·2023 年 8 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cc5b5bc4517&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimation-explained-step-by-step-7cc5b5bc4517&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=-----7cc5b5bc4517---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7cc5b5bc4517&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimation-explained-step-by-step-7cc5b5bc4517&source=-----7cc5b5bc4517---------------------bookmark_footer-----------)![](../Images/9ce555ee5b172c4a6056c86b1a8bf238.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7cc5b5bc4517&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimation-explained-step-by-step-7cc5b5bc4517&source=-----7cc5b5bc4517---------------------bookmark_footer-----------)![](img/9ce555ee5b172c4a6056c86b1a8bf238.png)
 
 图片由 [Marcus Urbenz](https://unsplash.com/@marcusurbenz?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,37 +20,37 @@
 
 为了感知数据分布，我们绘制概率密度函数（PDF）。当数据很好地符合常见的密度函数（例如正态分布、泊松分布、几何分布等）时，我们会感到满意。然后，可以使用 [最大似然方法](https://medium.com/@roiyeho/maximum-likelihood-855b6df92c43) 将密度函数拟合到数据上。
 
-![](../Images/9727efdceadb3d0de6c12f85536d769b.png)
+![](img/9727efdceadb3d0de6c12f85536d769b.png)
 
-不幸的是，数据分布有时过于不规则，并不像任何常见的PDF。在这种情况下，核密度估计器（KDE）提供了一种合理且视觉上愉悦的数据分布表示。
+不幸的是，数据分布有时过于不规则，并不像任何常见的 PDF。在这种情况下，核密度估计器（KDE）提供了一种合理且视觉上愉悦的数据分布表示。
 
-![](../Images/55ed5a8ef76964057befeb52ed54b4f9.png)
+![](img/55ed5a8ef76964057befeb52ed54b4f9.png)
 
-我将带你了解构建KDE的步骤，依靠你的直觉，而不是严格的数学推导。
+我将带你了解构建 KDE 的步骤，依靠你的直觉，而不是严格的数学推导。
 
 # 核函数
 
-理解KDE的关键是把它当作**由构建块组成的函数**，类似于不同的物体由乐高砖块构成。KDE的独特之处在于它仅使用**一种砖块，称为核函数**（‘*一个砖块统治所有*’）。这种砖块的关键特性是能够移动和伸缩/收缩。**每个数据点都有一个砖块，KDE是所有砖块的总和**。
+理解 KDE 的关键是把它当作**由构建块组成的函数**，类似于不同的物体由乐高砖块构成。KDE 的独特之处在于它仅使用**一种砖块，称为核函数**（‘*一个砖块统治所有*’）。这种砖块的关键特性是能够移动和伸缩/收缩。**每个数据点都有一个砖块，KDE 是所有砖块的总和**。
 
-> KDE是由一种构建块组成的复合函数，称为核函数。
+> KDE 是由一种构建块组成的复合函数，称为核函数。
 > 
-> 核函数是对每个数据点单独评估的，这些部分结果被求和形成KDE。
+> 核函数是对每个数据点单独评估的，这些部分结果被求和形成 KDE。
 
-对KDE的第一步是仅关注一个数据点。如果让你为一个单一的数据点创建PDF，你会怎么做？首先，取*x =* 0。最合逻辑的方法是使用一个在该点上正好峰值并随着距离衰减的PDF。函数
+对 KDE 的第一步是仅关注一个数据点。如果让你为一个单一的数据点创建 PDF，你会怎么做？首先，取*x =* 0。最合逻辑的方法是使用一个在该点上正好峰值并随着距离衰减的 PDF。函数
 
-![](../Images/b95a4d8925dcd7f3001de8c9df49d10d.png)
+![](img/b95a4d8925dcd7f3001de8c9df49d10d.png)
 
 这样就可以解决问题。
 
-![](../Images/0e4297c5a5082fbdcf511acc4f602c40.png)
+![](img/0e4297c5a5082fbdcf511acc4f602c40.png)
 
-然而，由于PDF应该在曲线下具有单位面积，我们必须对结果进行重新缩放。因此，该函数必须除以2*π*的平方根，并通过√2进行伸缩（[3Blue1Brown](https://www.youtube.com/watch?v=cy8r7WSuT1I)提供了这些因素的优秀推导）：
+然而，由于 PDF 应该在曲线下具有单位面积，我们必须对结果进行重新缩放。因此，该函数必须除以 2*π*的平方根，并通过√2 进行伸缩（[3Blue1Brown](https://www.youtube.com/watch?v=cy8r7WSuT1I)提供了这些因素的优秀推导）：
 
-![](../Images/a0f3910b897a87fdeacee38ab71e7c0f.png)![](../Images/94b03a28acaf0fae5514df9fad8818ef.png)
+![](img/a0f3910b897a87fdeacee38ab71e7c0f.png)![](img/94b03a28acaf0fae5514df9fad8818ef.png)
 
-最终，我们得到我们的乐高砖块，称为*核函数*，它是一个有效的PDF：
+最终，我们得到我们的乐高砖块，称为*核函数*，它是一个有效的 PDF：
 
-![](../Images/fcb62813a68d1265cb616518c6b566a1.png)
+![](img/fcb62813a68d1265cb616518c6b566a1.png)
 
 这个核函数相当于均值为零、方差为单位的高斯分布。
 
@@ -58,19 +58,19 @@
 
 取一个数据点*xᵢ -* 我们数据集*X*中的第*i*个点。通过减去参数可以实现平移：
 
-![](../Images/4a9cf982c49985749ea96856cbc1c72d.png)
+![](img/4a9cf982c49985749ea96856cbc1c72d.png)
 
 为了使曲线更宽或更窄，我们只需在参数中加入一个常数*h*（即所谓的核带宽）。它通常作为分母引入：
 
-![](../Images/16837ece9123c927a9595b6952a4864a.png)
+![](img/16837ece9123c927a9595b6952a4864a.png)
 
 然而，核函数下的面积因此乘以*h*。因此，我们必须通过除以*h*将其恢复到单位面积：
 
-![](../Images/5976c28b7ccd354332bd8c2b3d77f101.png)
+![](img/5976c28b7ccd354332bd8c2b3d77f101.png)
 
 你可以选择任何*h*值。以下是它如何工作的一个示例。
 
-![](../Images/2db21e60e2c4ef18a41ee329b56d1810.png)
+![](img/2db21e60e2c4ef18a41ee329b56d1810.png)
 
 *h* 越大，PDF 越宽。*h* 越小，PDF 越窄。
 
@@ -88,37 +88,37 @@ h = 0.3
 
 对于第一个数据点，我们简单使用：
 
-![](../Images/76ade26c8f4451c5675e9a8ab1e9d04c.png)![](../Images/c529122fb2bdaf106efe93f4749748df.png)
+![](img/76ade26c8f4451c5675e9a8ab1e9d04c.png)![](img/c529122fb2bdaf106efe93f4749748df.png)
 
 我们可以对第二个数据点做同样的操作：
 
-![](../Images/5418cbd3a68ec9ff3b506041af67df1e.png)
+![](img/5418cbd3a68ec9ff3b506041af67df1e.png)
 
 为了得到前两个点的单一 PDF，我们必须将这两个单独的 PDF 结合起来：
 
-![](../Images/8c38e6eb0d1eedbd4f3575f4db11b3fa.png)
+![](img/8c38e6eb0d1eedbd4f3575f4db11b3fa.png)
 
 因为我们添加了两个单位面积的 PDF，所以曲线下的面积变为 2。为了恢复到 1，我们将其除以 2：
 
-![](../Images/222b4b85cbd46389deb671f696c56a5b.png)
+![](img/222b4b85cbd46389deb671f696c56a5b.png)
 
 尽管可以使用函数 *f* 的完整签名以提高精度：
 
-![](../Images/411e11fdcd8dfbad6b7496173c48f737.png)
+![](img/411e11fdcd8dfbad6b7496173c48f737.png)
 
 我们将只使用 *f*(*x*) 以使符号更加简洁。
 
 这就是它对两个数据点的工作方式：
 
-![](../Images/fdc6e06fe8d2ca7d60ad82e6b7fc96c8.png)![](../Images/99ac4a4c5b28f2804f35712a5637c1bc.png)
+![](img/fdc6e06fe8d2ca7d60ad82e6b7fc96c8.png)![](img/99ac4a4c5b28f2804f35712a5637c1bc.png)
 
 KDE 的最终步骤是考虑 *n* 个数据点
 
-![](../Images/253f1f689d5b715cba63a422678651e1.png)
+![](img/253f1f689d5b715cba63a422678651e1.png)
 
 核密度估计器是：
 
-![](../Images/906d76e6d734246ec1dd0af1be58f730.png)
+![](img/906d76e6d734246ec1dd0af1be58f730.png)
 
 让我们来享受一下重新发现的 KDE。
 
@@ -171,7 +171,7 @@ plt.legend(fontsize=14, shadow=True, title='$h$', title_fontsize=16)
 plt.show()
 ```
 
-![](../Images/4b18ce69d8f4b3dfd36358ff651caf2d.png)
+![](img/4b18ce69d8f4b3dfd36358ff651caf2d.png)
 
 这里我们使用高斯核，但我鼓励你尝试其他核。有关常见核函数家庭的回顾，请参见 [这篇论文](https://www.scirp.org/pdf/ojapps_2013012216494836.pdf)。然而，当数据集足够大时，核的类型对最终输出没有显著影响。
 
@@ -201,7 +201,7 @@ for i, xi in enumerate(dataset):
 plt.show()
 ```
 
-![](../Images/2faef6edc5dc3c7e206e31a0429e0b3e.png)
+![](img/2faef6edc5dc3c7e206e31a0429e0b3e.png)
 
 Scikit learn 提供了 [KernelDensity](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KernelDensity.html) 函数来完成类似的工作。
 
@@ -243,7 +243,7 @@ plt.ylabel('$f(x)$', fontsize=22, rotation='horizontal', labelpad=24)
 plt.show()
 ```
 
-![](../Images/1ec9dc4ab13b081286e2d6cffcb707ac.png)
+![](img/1ec9dc4ab13b081286e2d6cffcb707ac.png)
 
 Scikit learn 解决方案的优点在于它可以用作生成模型来生成合成数据样本。
 
@@ -266,7 +266,7 @@ plt.ylabel('$f(x)$', fontsize=22, rotation='horizontal', labelpad=24)
 plt.show()
 ```
 
-![](../Images/698cfcd9af429e797c8446bb76e7f33d.png)
+![](img/698cfcd9af429e797c8446bb76e7f33d.png)
 
 # 结论
 

@@ -1,14 +1,14 @@
 # 频率派与贝叶斯统计在 Tensorflow 中的应用
 
-> 原文：[https://towardsdatascience.com/frequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5?source=collection_archive---------14-----------------------#2023-01-05](https://towardsdatascience.com/frequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5?source=collection_archive---------14-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/frequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5?source=collection_archive---------14-----------------------#2023-01-05`](https://towardsdatascience.com/frequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5?source=collection_archive---------14-----------------------#2023-01-05)
 
 ## 概率深度学习
 
-[](https://medium.com/@luisroque?source=post_page-----fbba2c6c9ae5--------------------------------)[![路易斯·罗克](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----fbba2c6c9ae5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fbba2c6c9ae5--------------------------------)[![数据科学之路](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fbba2c6c9ae5--------------------------------) [路易斯·罗克](https://medium.com/@luisroque?source=post_page-----fbba2c6c9ae5--------------------------------)
+[](https://medium.com/@luisroque?source=post_page-----fbba2c6c9ae5--------------------------------)![路易斯·罗克](https://medium.com/@luisroque?source=post_page-----fbba2c6c9ae5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fbba2c6c9ae5--------------------------------)![数据科学之路](https://towardsdatascience.com/?source=post_page-----fbba2c6c9ae5--------------------------------) [路易斯·罗克](https://medium.com/@luisroque?source=post_page-----fbba2c6c9ae5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----fbba2c6c9ae5---------------------post_header-----------) 发表在 [数据科学之路](https://towardsdatascience.com/?source=post_page-----fbba2c6c9ae5--------------------------------) ·10分钟阅读·2023年1月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffbba2c6c9ae5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----fbba2c6c9ae5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----fbba2c6c9ae5---------------------post_header-----------) 发表在 [数据科学之路](https://towardsdatascience.com/?source=post_page-----fbba2c6c9ae5--------------------------------) ·10 分钟阅读·2023 年 1 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffbba2c6c9ae5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffrequentist-vs-bayesian-statistics-with-tensorflow-fbba2c6c9ae5&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----fbba2c6c9ae5---------------------clap_footer-----------)
 
 --
 
@@ -26,8 +26,8 @@
 
 1.  [TensorFlow Probability 的温和介绍：可训练参数](https://medium.com/towards-data-science/gentle-introduction-to-tensorflow-probability-trainable-parameters-5098ea4fed15)
 
-1.  [从头开始在 TensorFlow Probability 中实现最大似然估计](/maximum-likelihood-estimation-from-scratch-in-tensorflow-probability-2fc0eefdbfc2)
+1.  从头开始在 TensorFlow Probability 中实现最大似然估计
 
-1.  [从头开始在 TensorFlow 中实现概率线性回归](/probabilistic-linear-regression-from-scratch-in-tensorflow-2eb633fffc00)
+1.  从头开始在 TensorFlow 中实现概率线性回归
 
 1.  [使用 TensorFlow 的概率回归与确定性回归](https://medium.com/towards-data-science/probabilistic-vs-deterministic-regression-with-tensorflow-85ef791beeef)

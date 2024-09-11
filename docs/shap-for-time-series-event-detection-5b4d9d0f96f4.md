@@ -1,18 +1,18 @@
 # SHAP 用于时间序列事件检测
 
-> 原文：[https://towardsdatascience.com/shap-for-time-series-event-detection-5b4d9d0f96f4?source=collection_archive---------2-----------------------#2023-02-01](https://towardsdatascience.com/shap-for-time-series-event-detection-5b4d9d0f96f4?source=collection_archive---------2-----------------------#2023-02-01)
+> 原文：[`towardsdatascience.com/shap-for-time-series-event-detection-5b4d9d0f96f4?source=collection_archive---------2-----------------------#2023-02-01`](https://towardsdatascience.com/shap-for-time-series-event-detection-5b4d9d0f96f4?source=collection_archive---------2-----------------------#2023-02-01)
 
-![](../Images/b724a3e58b563f104352ce857ee365b2.png)
+![](img/b724a3e58b563f104352ce857ee365b2.png)
 
 图片由 [Luke Chesser](https://unsplash.com/@lukechesser?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 使用修改版的 KernelSHAP 进行时间序列事件检测
 
-[](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)[![Nakul Upadhya](../Images/336cb21272e9b1f098177adbde50e92e.png)](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)
+[](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)![Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------) [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-for-time-series-event-detection-5b4d9d0f96f4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----5b4d9d0f96f4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------) ·8 min 阅读 ·2023年2月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5b4d9d0f96f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-for-time-series-event-detection-5b4d9d0f96f4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----5b4d9d0f96f4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-for-time-series-event-detection-5b4d9d0f96f4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----5b4d9d0f96f4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------) ·8 min 阅读 ·2023 年 2 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5b4d9d0f96f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-for-time-series-event-detection-5b4d9d0f96f4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----5b4d9d0f96f4---------------------clap_footer-----------)
 
 --
 
@@ -42,7 +42,7 @@ KernelSHAP 通常用于解释时间序列预测，但在这个领域确实存在
 
 SHAP 值的公式如[2]所提供的：
 
-![](../Images/f9ecd2f80d685b3f98f13e44edd99ff4.png)
+![](img/f9ecd2f80d685b3f98f13e44edd99ff4.png)
 
 方程 1：SHAP 方程
 
@@ -52,13 +52,13 @@ SHAP 值的公式如[2]所提供的：
 
 KernelSHAP 处理的问题是，随着特征数量的增加，幂集大小呈指数级增长，这使得计算变得极其庞大。KernelSHAP 是通过解决以下问题来计算的：
 
-![](../Images/17eb1f2a73502b7de52804ec1bb1f7db.png)
+![](img/17eb1f2a73502b7de52804ec1bb1f7db.png)
 
 方程 2：KernelSHAP 方程 [3]
 
 其中 *h_x* 是应用于 *z* 的掩码函数，*z* 是从集合 *Z* 中采样的二进制向量，代表所有可能的特征联盟的集合。这个函数将由 *z* 表示的联盟映射到掩码数据点，然后将其输入到我们的模型中（*f_theta*）。目标是找到最佳的线性模型 (*g*)，该模型在所有掩码下估计模型性能。线性模型中的权重是 KernelSHAP 值。这一切都可以通过以下定义的组合核实现：
 
-![](../Images/3c7457679f8cf49d01d1ebe3a1a20825.png)
+![](img/3c7457679f8cf49d01d1ebe3a1a20825.png)
 
 方程 3：组合核 [3]
 
@@ -72,7 +72,7 @@ KernelSHAP 处理的问题是，随着特征数量的增加，幂集大小呈指
 
 SHAP 值的时间一致性可以表示如下：
 
-![](../Images/17aa3efbd08190231e322409304921c6.png)
+![](img/17aa3efbd08190231e322409304921c6.png)
 
 方程 4：Shapley 值的时间一致性 [3]
 
@@ -88,7 +88,7 @@ SHAP 值的时间一致性可以表示如下：
 
 1.  然后我们简单地使用方程 4 和 5 计算填充值表。
 
-![](../Images/78d5b69ac8c0bc2065ad6a962d6cb522.png)
+![](img/78d5b69ac8c0bc2065ad6a962d6cb522.png)
 
 方程 5: 填充值表 [3]
 
@@ -106,7 +106,7 @@ SHAP 值的时间一致性可以表示如下：
 
 作者通过 [Individual Household Electricity dataset](https://archive.ics.uci.edu/ml/datasets/individual+household+electric+power+consumption) 演示了这种方法的有效性。作者训练了一个 LSTM 网络，后接一个密集层来预测功耗。然后，他们计算了 TC-SHAP 值并将其汇总以获得事件检测卷积。接着，他们将卷积叠加到目标时间序列上。
 
-![](../Images/44b6f699d06a608a4d99267fc68f4a3e.png)
+![](img/44b6f699d06a608a4d99267fc68f4a3e.png)
 
 图 1：事件检测卷积（蓝色）用于子计量 2 和 3 与目标的比较（图源自 [3]）
 
@@ -116,19 +116,19 @@ SHAP 值的时间一致性可以表示如下：
 
 对 KernelSHAP 的修改填补了当前工作中的一个巨大空白。除此之外，针对时间序列特征重要性进行开发的事后可解释性方法并不多。TC-SHAP 有助于解决这个问题，确实是迫切需要的。
 
-然而，这种新方法仍然存在一些关注点和进一步的工作需要解决。其中一个关注点（作者也提到）是VARSHAP和TC-SHAP解释之间的显著差异，这表明需要更多的工作来检验这些值的确切解释。此外，尽管理论上TC-SHAP克服了独立性问题，但仍需更多实验来完全确认这一说法。
+然而，这种新方法仍然存在一些关注点和进一步的工作需要解决。其中一个关注点（作者也提到）是 VARSHAP 和 TC-SHAP 解释之间的显著差异，这表明需要更多的工作来检验这些值的确切解释。此外，尽管理论上 TC-SHAP 克服了独立性问题，但仍需更多实验来完全确认这一说法。
 
 此外，一般来说，模型无关的方法可能具有误导性，因为它们只能提供重要性的估计，而非真实的重要性。然而，对于大多数使用情况，这种粗略的评估已经足够，并且拥有一个处理时间依赖性的方法非常有用。
 
 # 资源和参考文献
 
-1.  Python 的 SHAP 包：[https://shap.readthedocs.io/en/latest/index.html](https://shap.readthedocs.io/en/latest/index.html)
+1.  Python 的 SHAP 包：[`shap.readthedocs.io/en/latest/index.html`](https://shap.readthedocs.io/en/latest/index.html)
 
-1.  对 Kernel SHAP 的更深入解释：[https://christophm.github.io/interpretable-ml-book/shap.html#kernelshap](https://christophm.github.io/interpretable-ml-book/shap.html#kernelshap)
+1.  对 Kernel SHAP 的更深入解释：[`christophm.github.io/interpretable-ml-book/shap.html#kernelshap`](https://christophm.github.io/interpretable-ml-book/shap.html#kernelshap)
 
 **参考文献**
 
-[1] L. Shapley. [n人博弈的价值。](https://books.google.ca/books?hl=en&lr=&id=Pd3TCwAAQBAJ&oi=fnd&pg=PA307&dq=A+value+for+n-person+games.&ots=gtuWLb6iq-&sig=dm0WHMP9kzTY8kx6J75CLsf82wk#v=onepage&q=A%20value%20for%20n-person%20games.&f=false)（1953）。博弈理论贡献 2.28。
+[1] L. Shapley. [n 人博弈的价值。](https://books.google.ca/books?hl=en&lr=&id=Pd3TCwAAQBAJ&oi=fnd&pg=PA307&dq=A+value+for+n-person+games.&ots=gtuWLb6iq-&sig=dm0WHMP9kzTY8kx6J75CLsf82wk#v=onepage&q=A%20value%20for%20n-person%20games.&f=false)（1953）。博弈理论贡献 2.28。
 
 [2] S.M. Lundberg, S-I. Lee. [一种统一的模型预测解释方法。](https://arxiv.org/abs/1705.07874)（2017）。神经信息处理系统进展，30。
 

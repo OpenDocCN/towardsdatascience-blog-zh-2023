@@ -1,18 +1,18 @@
 # 如何有效地构建数据科学项目
 
-> 原文：[https://towardsdatascience.com/how-to-effectively-structure-data-science-projects-85f717e65c75?source=collection_archive---------5-----------------------#2023-08-21](https://towardsdatascience.com/how-to-effectively-structure-data-science-projects-85f717e65c75?source=collection_archive---------5-----------------------#2023-08-21)
+> 原文：[`towardsdatascience.com/how-to-effectively-structure-data-science-projects-85f717e65c75?source=collection_archive---------5-----------------------#2023-08-21`](https://towardsdatascience.com/how-to-effectively-structure-data-science-projects-85f717e65c75?source=collection_archive---------5-----------------------#2023-08-21)
 
 ## 使用 PSW 工具的简要说明
 
-[](https://radmilamandzhi.medium.com/?source=post_page-----85f717e65c75--------------------------------)[![Radmila M.](../Images/f3722a0ca0c96b5f6abb8f23a1162488.png)](https://radmilamandzhi.medium.com/?source=post_page-----85f717e65c75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----85f717e65c75--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----85f717e65c75--------------------------------) [Radmila M.](https://radmilamandzhi.medium.com/?source=post_page-----85f717e65c75--------------------------------)
+[](https://radmilamandzhi.medium.com/?source=post_page-----85f717e65c75--------------------------------)![Radmila M.](https://radmilamandzhi.medium.com/?source=post_page-----85f717e65c75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----85f717e65c75--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----85f717e65c75--------------------------------) [Radmila M.](https://radmilamandzhi.medium.com/?source=post_page-----85f717e65c75--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1b144e8ba52a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-effectively-structure-data-science-projects-85f717e65c75&user=Radmila+M.&userId=1b144e8ba52a&source=post_page-1b144e8ba52a----85f717e65c75---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----85f717e65c75--------------------------------) ·8分钟阅读·2023年8月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F85f717e65c75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-effectively-structure-data-science-projects-85f717e65c75&user=Radmila+M.&userId=1b144e8ba52a&source=-----85f717e65c75---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1b144e8ba52a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-effectively-structure-data-science-projects-85f717e65c75&user=Radmila+M.&userId=1b144e8ba52a&source=post_page-1b144e8ba52a----85f717e65c75---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----85f717e65c75--------------------------------) ·8 分钟阅读·2023 年 8 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F85f717e65c75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-effectively-structure-data-science-projects-85f717e65c75&user=Radmila+M.&userId=1b144e8ba52a&source=-----85f717e65c75---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F85f717e65c75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-effectively-structure-data-science-projects-85f717e65c75&source=-----85f717e65c75---------------------bookmark_footer-----------)![](../Images/ac62b73df82d4963b2f4a9e2c9352602.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F85f717e65c75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-effectively-structure-data-science-projects-85f717e65c75&source=-----85f717e65c75---------------------bookmark_footer-----------)![](img/ac62b73df82d4963b2f4a9e2c9352602.png)
 
 图片来源：[Ross Sneddon](https://unsplash.com/es/@rosssneddon?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,11 +24,11 @@
 
 在与专家的电话会议中，我经常使用**PSW（问题陈述工作表）方法**来充分理解客户的需求。
 
-> **PSW是一个业务任务描述模板，主要用于咨询，但也非常适合几乎任何IT项目。**
+> **PSW 是一个业务任务描述模板，主要用于咨询，但也非常适合几乎任何 IT 项目。**
 
-在这篇文章中，我将展示如何使用PSW工具来更好地理解数据科学项目的关键点，并通过使客户会议更具一致性和简洁性，从中获得最大收益。
+在这篇文章中，我将展示如何使用 PSW 工具来更好地理解数据科学项目的关键点，并通过使客户会议更具一致性和简洁性，从中获得最大收益。
 
-PSW通常包含六个主要部分：
+PSW 通常包含六个主要部分：
 
 +   **背景**。这个部分填充了关于项目当前状态和导致其启动的挑战的简要信息。
 
@@ -54,7 +54,7 @@ PSW通常包含六个主要部分：
 
 # 1\. 背景
 
-![](../Images/ecb9e9f1851b8bae8a7634d6dd8e616e.png)
+![](img/ecb9e9f1851b8bae8a7634d6dd8e616e.png)
 
 由[Keith Misner](https://unsplash.com/@keithmisner?utm_source=medium&utm_medium=referral)拍摄，照片来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -66,13 +66,13 @@ PSW通常包含六个主要部分：
 
 > 任何移动应用程序都必须考虑用户需求，以便为他们提供最便捷的解决方案。用户进入应用程序的目的是明确的，他们会执行某些操作。但通过在屏幕上添加推荐，可能会缩短这个过程，例如，使向其他用户进行交易的速度更快。这就是基于**机器学习（ML）**的推荐系统可以提供帮助的地方。
 > 
-> 作为项目的一部分，有必要根据每个用户的转账数量对联系人进行排名。已经有尝试训练模型，所以基线已经存在，但现在的任务是提高其准确性5%或更多，同时应用**机器学习**推荐算法。
+> 作为项目的一部分，有必要根据每个用户的转账数量对联系人进行排名。已经有尝试训练模型，所以基线已经存在，但现在的任务是提高其准确性 5%或更多，同时应用**机器学习**推荐算法。
 
-如你所见，背景部分有助于将项目任务融入业务的整体背景中（**使应用程序更加用户友好**），并且在必要时，可以根据全球目标（**应用基于ML的推荐系统**）调整这些任务。
+如你所见，背景部分有助于将项目任务融入业务的整体背景中（**使应用程序更加用户友好**），并且在必要时，可以根据全球目标（**应用基于 ML 的推荐系统**）调整这些任务。
 
 # 2\. 成功标准
 
-![](../Images/e0092828aff7a1bea13ef663eccbade9.png)
+![](img/e0092828aff7a1bea13ef663eccbade9.png)
 
 图片由[Guille Álvarez](https://unsplash.com/@guillealvarez?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -82,19 +82,19 @@ PSW通常包含六个主要部分：
 
 > 1) 选择适当的**机器学习（ML）**模型用于系统的解释。
 > 
-> 2) 基线模型已经改进了5%或更多。
+> 2) 基线模型已经改进了 5%或更多。
 > 
-> 3) 模型的运行速度从启动到结果接收不超过6小时。
+> 3) 模型的运行速度从启动到结果接收不超过 6 小时。
 > 
-> 4) 模型性能在可用数据上进行检查——测试集上的准确性应超过85%。
+> 4) 模型性能在可用数据上进行检查——测试集上的准确性应超过 85%。
 
 # 3\. 解决方案空间范围
 
-![](../Images/7a9f9b5619a13c38f19f2e0cb6d5ce85.png)
+![](img/7a9f9b5619a13c38f19f2e0cb6d5ce85.png)
 
 图片由[Nicolas Lobos](https://unsplash.com/@lobosnico?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-在这里，重要的是要了解项目的边界。通常，这一部分PSW包含项目的简要背景——项目主题为何现在重要且相关，市场上已经存在什么解决方案和基准，并且这些解决方案和基准可以如何进一步修改以满足客户的要求。
+在这里，重要的是要了解项目的边界。通常，这一部分 PSW 包含项目的简要背景——项目主题为何现在重要且相关，市场上已经存在什么解决方案和基准，并且这些解决方案和基准可以如何进一步修改以满足客户的要求。
 
 > 如果谈论推荐系统，需要注意的是创建推荐系统有几种方法。
 > 
@@ -102,7 +102,7 @@ PSW通常包含六个主要部分：
 
 # 4\. 解决空间中的约束
 
-![](../Images/1df549e2246e237c7276c50b7f559d03.png)
+![](img/1df549e2246e237c7276c50b7f559d03.png)
 
 [Joshua Hoehne](https://unsplash.com/@mrthetrain?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
@@ -110,25 +110,25 @@ PSW通常包含六个主要部分：
 
 > 1\. 第三方资源使用的限制：在开发推荐系统时，切勿使用开放数据进行模型预训练。
 > 
-> 2\. 实现方法的可复现性：在另一台PC上重新启动模型时，应该得到类似的结果。
+> 2\. 实现方法的可复现性：在另一台 PC 上重新启动模型时，应该得到类似的结果。
 
 ## 注意
 
-PSW中的第3和第4块可能会让人困惑。究竟如何理解解决空间和约束之间的区别呢？让我们来看一个例子。
+PSW 中的第 3 和第 4 块可能会让人困惑。究竟如何理解解决空间和约束之间的区别呢？让我们来看一个例子。
 
 想象一下你发现了一封旧信，信中提到你祖父多年前在家里的后院藏了一箱黄金。他没有具体说明藏在哪里，所以整个后院就是解决空间。一旦你读了这封信，你希望尽快找到宝藏，并考虑使用电梯来寻找。不幸的是，后院被围栏围住，无法通过电梯到达。在这种情况下，不能使用电梯就是解决空间内的一个明确约束。
 
-![](../Images/0640958bb3fa49b33374add6668fa23d.png)
+![](img/0640958bb3fa49b33374add6668fa23d.png)
 
 [Jean-Frederic Fortier](https://unsplash.com/@jffortier?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
 # 5\. 利益相关者
 
-![](../Images/add0b1c20f30b06cfe0c7fca0a1edc3b.png)
+![](img/add0b1c20f30b06cfe0c7fca0a1edc3b.png)
 
 [airfocus](https://unsplash.com/@airfocus?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
-PSW的这一块提供了在实施项目时应考虑的人的意见。通常，利益相关者是对项目结果感兴趣的人。他们可能是项目团队成员、项目经理、执行官、项目投资者、客户和最终用户。
+PSW 的这一块提供了在实施项目时应考虑的人的意见。通常，利益相关者是对项目结果感兴趣的人。他们可能是项目团队成员、项目经理、执行官、项目投资者、客户和最终用户。
 
 > 利益相关者是会在项目生命周期的任何阶段受到影响的人，他们的意见可以直接影响结果。在开发推荐系统的情况下，其集成到应用程序中将对以下两大群体有利：
 > 
@@ -138,7 +138,7 @@ PSW的这一块提供了在实施项目时应考虑的人的意见。通常，�
 
 # 6. 主要见解来源
 
-![](../Images/3f99a3d6df557d828acd5a0e0ed99fd5.png)
+![](img/3f99a3d6df557d828acd5a0e0ed99fd5.png)
 
 由[Susan Q Yin](https://unsplash.com/@syinq?utm_source=medium&utm_medium=referral)拍摄的照片，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -168,8 +168,8 @@ PSW的这一块提供了在实施项目时应考虑的人的意见。通常，�
 
 # 参考文献列表
 
-1.  提供推荐的推荐系统 REST API: [https://github.com/recommender-system/reco-api?ysclid=lll99344l9788228410](https://github.com/recommender-system/reco-api?ysclid=lll99344l9788228410)
+1.  提供推荐的推荐系统 REST API: [`github.com/recommender-system/reco-api?ysclid=lll99344l9788228410`](https://github.com/recommender-system/reco-api?ysclid=lll99344l9788228410)
 
-1.  初学者教程：Python 中的推荐系统: [https://www.datacamp.com/tutorial/recommender-systems-python](https://www.datacamp.com/tutorial/recommender-systems-python)
+1.  初学者教程：Python 中的推荐系统: [`www.datacamp.com/tutorial/recommender-systems-python`](https://www.datacamp.com/tutorial/recommender-systems-python)
 
-1.  关于多模态推荐系统的综合调查：分类、评估及未来方向: [https://arxiv.org/pdf/2302.04473.pdf](https://arxiv.org/pdf/2302.04473.pdf)
+1.  关于多模态推荐系统的综合调查：分类、评估及未来方向: [`arxiv.org/pdf/2302.04473.pdf`](https://arxiv.org/pdf/2302.04473.pdf)

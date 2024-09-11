@@ -1,14 +1,14 @@
 # 揭开旋转矩阵的神秘面纱
 
-> 原文：[https://towardsdatascience.com/demystifying-rotation-matrix-6c8885c691d6?source=collection_archive---------7-----------------------#2023-11-01](https://towardsdatascience.com/demystifying-rotation-matrix-6c8885c691d6?source=collection_archive---------7-----------------------#2023-11-01)
+> 原文：[`towardsdatascience.com/demystifying-rotation-matrix-6c8885c691d6?source=collection_archive---------7-----------------------#2023-11-01`](https://towardsdatascience.com/demystifying-rotation-matrix-6c8885c691d6?source=collection_archive---------7-----------------------#2023-11-01)
 
 ## 如何在 R² 中旋转向量
 
-[](https://medium.com/@smertatli?source=post_page-----6c8885c691d6--------------------------------)[![Mert Atli](../Images/2ce3ad8e4e3533aa889e1972ca52b02b.png)](https://medium.com/@smertatli?source=post_page-----6c8885c691d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c8885c691d6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6c8885c691d6--------------------------------) [Mert Atli](https://medium.com/@smertatli?source=post_page-----6c8885c691d6--------------------------------)
+[](https://medium.com/@smertatli?source=post_page-----6c8885c691d6--------------------------------)![Mert Atli](https://medium.com/@smertatli?source=post_page-----6c8885c691d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c8885c691d6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c8885c691d6--------------------------------) [Mert Atli](https://medium.com/@smertatli?source=post_page-----6c8885c691d6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff38e5ad771a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-rotation-matrix-6c8885c691d6&user=Mert+Atli&userId=f38e5ad771a7&source=post_page-f38e5ad771a7----6c8885c691d6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c8885c691d6--------------------------------) ·6分钟阅读·2023年11月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6c8885c691d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-rotation-matrix-6c8885c691d6&user=Mert+Atli&userId=f38e5ad771a7&source=-----6c8885c691d6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff38e5ad771a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-rotation-matrix-6c8885c691d6&user=Mert+Atli&userId=f38e5ad771a7&source=post_page-f38e5ad771a7----6c8885c691d6---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c8885c691d6--------------------------------) ·6 分钟阅读·2023 年 11 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6c8885c691d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-rotation-matrix-6c8885c691d6&user=Mert+Atli&userId=f38e5ad771a7&source=-----6c8885c691d6---------------------clap_footer-----------)
 
 --
 
@@ -22,7 +22,7 @@
 
 下图展示了一个在 R² 中的向量 **v**，它与水平轴形成了角度 **a**。假设我们想要沿水平轴逆时针旋转‘b 度’，这就是 **v’**。
 
-![](../Images/19c48b2f1c07578044de81caa85bd4ae.png)
+![](img/19c48b2f1c07578044de81caa85bd4ae.png)
 
 从 v 通过旋转到 v’
 

@@ -1,14 +1,14 @@
-# 战略数据分析（第1部分）
+# 战略数据分析（第一部分）
 
-> 原文：[https://towardsdatascience.com/strategic-data-analysis-part-1-fb2df3a43831?source=collection_archive---------3-----------------------#2023-10-07](https://towardsdatascience.com/strategic-data-analysis-part-1-fb2df3a43831?source=collection_archive---------3-----------------------#2023-10-07)
+> 原文：[`towardsdatascience.com/strategic-data-analysis-part-1-fb2df3a43831?source=collection_archive---------3-----------------------#2023-10-07`](https://towardsdatascience.com/strategic-data-analysis-part-1-fb2df3a43831?source=collection_archive---------3-----------------------#2023-10-07)
 
 ## 数据分析及其试图回答的四种问题
 
-[](https://viyaleta.medium.com/?source=post_page-----fb2df3a43831--------------------------------)[![Viyaleta Apgar](../Images/8d8fd8e4817bc4d1dbeb16a2ec1ae1f1.png)](https://viyaleta.medium.com/?source=post_page-----fb2df3a43831--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb2df3a43831--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fb2df3a43831--------------------------------) [Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----fb2df3a43831--------------------------------)
+[](https://viyaleta.medium.com/?source=post_page-----fb2df3a43831--------------------------------)![Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----fb2df3a43831--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb2df3a43831--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb2df3a43831--------------------------------) [Viyaleta Apgar](https://viyaleta.medium.com/?source=post_page-----fb2df3a43831--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccae8864d5a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-1-fb2df3a43831&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=post_page-ccae8864d5a4----fb2df3a43831---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb2df3a43831--------------------------------) ·8分钟阅读·2023年10月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffb2df3a43831&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-1-fb2df3a43831&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=-----fb2df3a43831---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccae8864d5a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-1-fb2df3a43831&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=post_page-ccae8864d5a4----fb2df3a43831---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb2df3a43831--------------------------------) ·8 分钟阅读·2023 年 10 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffb2df3a43831&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstrategic-data-analysis-part-1-fb2df3a43831&user=Viyaleta+Apgar&userId=ccae8864d5a4&source=-----fb2df3a43831---------------------clap_footer-----------)
 
 --
 
@@ -16,11 +16,11 @@
 
 *这是《战略数据分析》系列的一部分。*
 
-***→ 战略数据分析（第1部分）***[*战略数据分析（第2部分）：描述性问题*](/strategic-data-analysis-for-descriptive-questions-b6c9e469b32f)[*战略数据分析（第3部分）：诊断性问题（第3部分）*](https://medium.com/towards-data-science/strategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b)
+***→ 战略数据分析（第一部分）****战略数据分析（第二部分）：描述性问题*[*战略数据分析（第三部分）：诊断性问题（第三部分）*](https://medium.com/towards-data-science/strategic-data-analysis-part-3-diagnostic-questions-c0fcb840294b)
 
-战略数据分析（第4部分）：预测性问题 ← 敬请期待！
+战略数据分析（第四部分）：预测性问题 ← 敬请期待！
 
-战略数据分析（第5部分）：预测性问题 ← 敬请期待！
+战略数据分析（第五部分）：预测性问题 ← 敬请期待！
 
 在我十年的数据工作经验中，我注意到学习定量技术以进行数据分析的重点非常突出。我花费了数千小时来完善我对从统计学到机器学习再到经济学等各方面的知识。然而，我发现关于通过数据分析回答商业问题的战略方法指导非常有限。我还遇到过许多初级分析师，他们常常将数据分析误认为是定量技术，而忽视了分析是一种强大的思维方式和极好的问题解决工具——即数据分析不仅仅是其方法的产物。
 
@@ -92,7 +92,7 @@
 
 +   **下个季度我们的销售额会是多少**？
 
-+   **我们的酒店在接下来的90天里预计会有多少名客人**？
++   **我们的酒店在接下来的 90 天里预计会有多少名客人**？
 
 +   **我们的 Instagram 帖子会得到多少个赞**？
 
@@ -106,7 +106,7 @@
 
 +   **火车**会继续晚点吗？
 
-如前所述，预测性问题不仅仅是尝试预测未来。它们处理的是部分或完全未知的事物。问题“我们如何根据植物的物理特征分组家居植物？”与未来时态无关，而是希望解决家居植物的未知参数。问题“我们的Instagram帖子会获得多少个赞？”很可能涉及一个部分未知的变量：我们可能知道其他Instagram帖子获得的赞的数量，但*这个特定*帖子会收到多少赞是未知的。
+如前所述，预测性问题不仅仅是尝试预测未来。它们处理的是部分或完全未知的事物。问题“我们如何根据植物的物理特征分组家居植物？”与未来时态无关，而是希望解决家居植物的未知参数。问题“我们的 Instagram 帖子会获得多少个赞？”很可能涉及一个部分未知的变量：我们可能知道其他 Instagram 帖子获得的赞的数量，但*这个特定*帖子会收到多少赞是未知的。
 
 # 规定性问题
 
@@ -136,12 +136,12 @@
 
 **来源：**
 
-[1] [https://online.hbs.edu/blog/post/diagnostic-analytics](https://online.hbs.edu/blog/post/diagnostic-analytics)
+[1] [`online.hbs.edu/blog/post/diagnostic-analytics`](https://online.hbs.edu/blog/post/diagnostic-analytics)
 
-[2] [https://www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/](https://www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/)
+[2] [`www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/`](https://www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/)
 
-[3] [https://www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/](https://www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/)
+[3] [`www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/`](https://www.pragmaticinstitute.com/resources/articles/data/32-business-questions-for-data-analysis/)
 
-![](../Images/cc68cfea250d24eaecb5045265b78be5.png)
+![](img/cc68cfea250d24eaecb5045265b78be5.png)
 
 照片来自[Gia Oris](https://unsplash.com/@giabyte?utm_source=medium&utm_medium=referral)于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)

@@ -1,58 +1,58 @@
 # Reluplex 的实现细节：一种高效的 SMT 求解器用于验证深度神经网络
 
-> 原文：[https://towardsdatascience.com/implementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a?source=collection_archive---------5-----------------------#2023-12-27](https://towardsdatascience.com/implementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a?source=collection_archive---------5-----------------------#2023-12-27)
+> 原文：[`towardsdatascience.com/implementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a?source=collection_archive---------5-----------------------#2023-12-27`](https://towardsdatascience.com/implementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a?source=collection_archive---------5-----------------------#2023-12-27)
 
 ## 如何正式验证你的神经网络的边界
 
-[](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)[![Matthew Daw](../Images/a515428ae9b984c45111d6e868efd55b.png)](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------) [Matthew Daw](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)
+[](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)![Matthew Daw](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------) [Matthew Daw](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a94e02b6ee1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a&user=Matthew+Daw&userId=3a94e02b6ee1&source=post_page-3a94e02b6ee1----379ea359c41a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------) ·17分钟阅读·2023年12月27日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a94e02b6ee1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a&user=Matthew+Daw&userId=3a94e02b6ee1&source=post_page-3a94e02b6ee1----379ea359c41a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------) ·17 分钟阅读·2023 年 12 月 27 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F379ea359c41a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a&source=-----379ea359c41a---------------------bookmark_footer-----------)![](../Images/55ccc3b29cd5e6f88d0263addd4b6c1f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F379ea359c41a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a&source=-----379ea359c41a---------------------bookmark_footer-----------)![](img/55ccc3b29cd5e6f88d0263addd4b6c1f.png)
 
 图片由 [NEOM](https://unsplash.com/@neom?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-Reluplex是斯坦福大学于2017年提交到CAV的一个算法 [1]。Reluplex旨在正式验证神经网络是否能够在给定某些输入的情况下生成特定的输出。它接受一个神经网络及对网络输入和输出的约束作为输入。这些约束可以将任意数量的输入或输出节点限制为一个值或一个值的范围。然后，算法在给定的输入约束范围内找到一个输入，该输入可以产生给定的输出约束范围内的输出。如果不存在这样的例子，它将判断该问题在合理的时间内不可行。
+Reluplex 是斯坦福大学于 2017 年提交到 CAV 的一个算法 [1]。Reluplex 旨在正式验证神经网络是否能够在给定某些输入的情况下生成特定的输出。它接受一个神经网络及对网络输入和输出的约束作为输入。这些约束可以将任意数量的输入或输出节点限制为一个值或一个值的范围。然后，算法在给定的输入约束范围内找到一个输入，该输入可以产生给定的输出约束范围内的输出。如果不存在这样的例子，它将判断该问题在合理的时间内不可行。
 
 # 算法用途
 
-原始算法是为构建“无人机空中碰撞避免系统”而编写的。该系统使用45个深度学习网络来飞行一系列无人机。研究人员需要一种方法来正式保证，无论网络接收到什么其他输入，如果两架无人机太接近，它们将总是远离对方飞行而不会发生碰撞。在最极端的情况下，该算法能够在109.6小时内完成这些验证，虽然时间较长，但仍比之前的最先进算法快一个数量级。
+原始算法是为构建“无人机空中碰撞避免系统”而编写的。该系统使用 45 个深度学习网络来飞行一系列无人机。研究人员需要一种方法来正式保证，无论网络接收到什么其他输入，如果两架无人机太接近，它们将总是远离对方飞行而不会发生碰撞。在最极端的情况下，该算法能够在 109.6 小时内完成这些验证，虽然时间较长，但仍比之前的最先进算法快一个数量级。
 
-![](../Images/5829c227dd8ce557078f885d0549a649.png)
+![](img/5829c227dd8ce557078f885d0549a649.png)
 
 碰撞航线规避，图像来自原始论文 [1]
 
-在最近的出版物中，ReluPlex被一个名为Marabou的工具所取代 [4]，Marabou能够比ReluPlex做得更好。这一工具用于神经网络的可解释性。该算法通过寻找输入的上界和下界来确定生成网络输出所必需的输入部分。[6]
+在最近的出版物中，ReluPlex 被一个名为 Marabou 的工具所取代 [4]，Marabou 能够比 ReluPlex 做得更好。这一工具用于神经网络的可解释性。该算法通过寻找输入的上界和下界来确定生成网络输出所必需的输入部分。[6]
 
-![](../Images/f21e4bbd4dc66cbd9d57aa8dfa81142f.png)
+![](img/f21e4bbd4dc66cbd9d57aa8dfa81142f.png)
 
 神经网络解释的例子，来源于《Towards Formal XAI》 [6]
 
 该算法还被用于设定精确的界限，以确定什么样的对抗性扰动足够大，能够改变网络的输出。
 
-在本文中，我们希望讨论Reluplex的详细信息，因为它们构成了理解Maribou的重要基础。
+在本文中，我们希望讨论 Reluplex 的详细信息，因为它们构成了理解 Maribou 的重要基础。
 
 # **基本神经网络**
 
 在解释该算法的详细信息之前，我们首先需要了解一些神经网络的基础知识。以下是一个简单的网络图：
 
-![](../Images/b99cd5ef4fde6fc6388ea27048de7578.png)
+![](img/b99cd5ef4fde6fc6388ea27048de7578.png)
 
 基本感知机神经网络的图示 [8]
 
-在上图中，隐藏层的计算方式是将前一层的所有节点乘以特定的值，然后将它们相加，再加上一个对每个节点特定的偏置项。然后，求和值通过一个激活函数 f，再用于下一层。我们将在本文中使用的激活函数是ReLU函数，其定义为 f(x) = x 如果 x > 0 否则为 0：
+在上图中，隐藏层的计算方式是将前一层的所有节点乘以特定的值，然后将它们相加，再加上一个对每个节点特定的偏置项。然后，求和值通过一个激活函数 f，再用于下一层。我们将在本文中使用的激活函数是 ReLU 函数，其定义为 f(x) = x 如果 x > 0 否则为 0：
 
-![](../Images/52ce28ff62bbab7842fd509e9a7e0af6.png)
+![](img/52ce28ff62bbab7842fd509e9a7e0af6.png)
 
-ReLU函数的例子。图像来源于《Deep Learning using Rectified Linear Units》 [2]
+ReLU 函数的例子。图像来源于《Deep Learning using Rectified Linear Units》 [2]
 
 # **Reluplex 的高级视角**
 
-reluplex 的作用是尝试将神经网络转化为一个简单形问题。一旦在简单形问题中设置了约束，它就能快速找到解决方案或确定在给定约束下是否没有有效解。它还是一个经过证明的非常高效的算法，并且有权威的形式证明保证它每次都能有效。这正是我们对 reluplex 问题的期望。唯一的问题是 reluplex 只能处理线性约束，而我们神经网络中的 relu 函数是非线性的，不能直接用于简单形方法。为了使其线性化，我们必须选择施加额外的约束，要么使 relu 的输入必须是非正的，使 relu 失效，或者将 relu 的输入约束为非负的，使 relu 函数有效。默认情况下，大多数 SMT 求解器会通过手动检查每种可能的约束组合来绕过这个问题。然而，在一个包含300多个 relu 函数的网络中，这可能会转化为 2³⁰⁰ 种情况拆分，这在解决时速度过于缓慢。那么，reluplex 的做法是，首先对一个没有 relu 约束的网络进行编码，并找到一个可行的点。如果存在可行点，它将逐一修复违反 relu 约束的网络部分。如果一个特定节点更新过多次，会将问题拆分为一个该节点始终有效的情况和一个该节点始终无效的情况，然后继续搜索。原始论文的作者能够形式上证明这个算法是健全且完整的，并且会在有限的步骤内终止。他们还通过实证方法显示它比逐一检查每个可能情况的简单暴力方法终止得更快。
+reluplex 的作用是尝试将神经网络转化为一个简单形问题。一旦在简单形问题中设置了约束，它就能快速找到解决方案或确定在给定约束下是否没有有效解。它还是一个经过证明的非常高效的算法，并且有权威的形式证明保证它每次都能有效。这正是我们对 reluplex 问题的期望。唯一的问题是 reluplex 只能处理线性约束，而我们神经网络中的 relu 函数是非线性的，不能直接用于简单形方法。为了使其线性化，我们必须选择施加额外的约束，要么使 relu 的输入必须是非正的，使 relu 失效，或者将 relu 的输入约束为非负的，使 relu 函数有效。默认情况下，大多数 SMT 求解器会通过手动检查每种可能的约束组合来绕过这个问题。然而，在一个包含 300 多个 relu 函数的网络中，这可能会转化为 2³⁰⁰ 种情况拆分，这在解决时速度过于缓慢。那么，reluplex 的做法是，首先对一个没有 relu 约束的网络进行编码，并找到一个可行的点。如果存在可行点，它将逐一修复违反 relu 约束的网络部分。如果一个特定节点更新过多次，会将问题拆分为一个该节点始终有效的情况和一个该节点始终无效的情况，然后继续搜索。原始论文的作者能够形式上证明这个算法是健全且完整的，并且会在有限的步骤内终止。他们还通过实证方法显示它比逐一检查每个可能情况的简单暴力方法终止得更快。
 
 # **本文的目的**
 
@@ -62,7 +62,7 @@ reluplex 的作用是尝试将神经网络转化为一个简单形问题。一�
 
 单纯形法旨在解决定义线性空间内的优化问题。这些问题涉及一组非负变量，对这些变量施加约束，并声明一个目标函数。
 
-![](../Images/2323eaadd734fb926fdadcc75d191469.png)
+![](img/2323eaadd734fb926fdadcc75d191469.png)
 
 作者提供的图片
 
@@ -72,31 +72,31 @@ reluplex 的作用是尝试将神经网络转化为一个简单形问题。一�
 
 以下是我们将用于演示完整算法的基本神经网络。
 
-![](../Images/16425f50034719c9427e9ed2713622dc.png)
+![](img/16425f50034719c9427e9ed2713622dc.png)
 
 作者提供的图片
 
 我们需要做的第一件事是分解隐藏层节点，一个节点将是前一节点的线性函数，另一个节点将是该线性函数输出的 ReLU。
 
-![](../Images/92beee8d84accced9c61a9c0d0b6cdb6.png)
+![](img/92beee8d84accced9c61a9c0d0b6cdb6.png)
 
 作者提供的图片
 
 现在我们声明对函数输入和输出的以下边界：
 
-![](../Images/5776c7cf747c44731fcd350ffbd03e02.png)
+![](img/5776c7cf747c44731fcd350ffbd03e02.png)
 
 作者提供的图片
 
 根据模型设置和声明的约束，我们的目标是将此问题转化为单纯形问题。由于单纯形法仅限于线性操作，直接将 ReLU 约束纳入设置是不切实际的。然而，我们可以为网络的所有其他组件引入约束。如果在没有 ReLU 约束的情况下得到的解是可行的，我们可以逐步添加这些约束，直到发现一个可行解或确定 ReLU 约束使问题变得不可解。因此，通过编码适用的约束，我们现在有如下内容：
 
-![](../Images/6580800c9016fbe1be00c5b57d0a25bd.png)
+![](img/6580800c9016fbe1be00c5b57d0a25bd.png)
 
 作者提供的图片
 
 为了将这些约束纳入单纯形法，我们需要将它们转换为标准形式。在标准形式中，所有非恒定变量都位于左侧，而所有常量都位于右侧，并且常量为正数。重写后，我们得到如下内容：
 
-![](../Images/eca382aef9a42d5d55012aca36d98c33.png)
+![](img/eca382aef9a42d5d55012aca36d98c33.png)
 
 作者提供的图片
 
@@ -104,37 +104,37 @@ reluplex 的作用是尝试将神经网络转化为一个简单形问题。一�
 
 随后的步骤涉及将所有不等式转换为等式约束。为此，我们将引入松弛变量。这些变量本质上是非负的，并且可以取任意大的值。此外，它们确保我们的新等式约束在数学上等价于原始的不等式约束。
 
-![](../Images/97efa385f656b40b52b20a2e4db3fe91.png)
+![](img/97efa385f656b40b52b20a2e4db3fe91.png)
 
 作者提供的图片
 
 目前，单纯形方法固有地只适用于非负变量。然而，我们网络中的节点可能不符合这个非负性约束。为了适应负值，我们必须用分别表示正值和负值的变量替换可以是正值或负值的变量，如下所示：
 
-![](../Images/5e863c8f51ba3cf4c7c5b1b417c3292e.png)
+![](img/5e863c8f51ba3cf4c7c5b1b417c3292e.png)
 
 图片由作者提供
 
 通过这个替换，x_{+i} 和 x_{-i} 可以始终是正值，但仍然组合起来使 x_i 为负值。x_4 和 x_5 出现在 ReLU 之后，因此总是非负的，不需要这个替换。然而，所有其他神经网络节点变量都需要这个替换。进行这些替换后，我们现在有以下约束集。
 
-![](../Images/c2bc3929cab3e2ea546ec130fbd2044d.png)
+![](img/c2bc3929cab3e2ea546ec130fbd2044d.png)
 
 图片由作者提供
 
 分配负值并去掉括号后，我们得到如下：
 
-![](../Images/7259ec8c76733871374652ab46613283.png)
+![](img/7259ec8c76733871374652ab46613283.png)
 
 图片由作者提供
 
 现在我们已经将变量分为正值和负值部分，我们需要稍微退一步并记住，在我们解决这个方程组之后，我们需要进行调整以修正 ReLU 违规。为了帮助修复 ReLU 违规，我们准备引入一个新的线性约束。我们希望添加的约束是设置 x_{+2} = x_4 和 x_{+3} = x_5。这将使得对所有 i 属于 {2,3}，x_{+i} 和 x_{-i} 都可以是非负的，但当发生这种情况时，ReLU 约束将不再成立。然而，修正 ReLU 约束将变得像添加一个约束使 x_{+i} 或 x_{-i} 等于零一样简单。这个问题可以在没有这个约束的情况下继续进行，它实际上并不是必须的。事实上，原始论文实际上并没有使用这个约束，但我包括它是因为我发现它确实使速度更快，因为它限制了搜索空间。这将导致以下新的约束集。
 
-![](../Images/e40f75d13fdb028c9ba55be202df52ed.png)
+![](img/e40f75d13fdb028c9ba55be202df52ed.png)
 
 图片由作者提供
 
 变量太多可能会导致混乱，使得很难看清楚发生了什么。因此，我们将所有内容重新写入一个表格矩阵中。
 
-![](../Images/363cc13b4412db78c95731924a45b37a.png)
+![](img/363cc13b4412db78c95731924a45b37a.png)
 
 图片由作者提供
 
@@ -144,13 +144,13 @@ reluplex 的作用是尝试将神经网络转化为一个简单形问题。一�
 
 为了识别一个可行点，单纯形法最初检查将所有松弛变量设置为右侧，将所有其他变量设置为零是否可行。在我们的情况下，这种方法不可行，因为没有松弛变量的非零等式约束。此外，在第 5 行和第 7 行，松弛变量乘以负数，使得表达式不可能评估为正的右侧，因为松弛变量始终为正。因此，为了获得初始可行点，我们将引入新的辅助变量，并将其设置为等于右侧，将所有其他变量设为零。对于具有正符号松弛变量的约束，将不会这样做，因为这些松弛变量可能已经等于右侧。为了提高清晰度，我们将左侧的列标明哪些变量被分配了非零值；这些被称为我们的基本变量。
 
-![](../Images/e3664bada2597bac1e24c6f4b4a20fde.png)
+![](img/e3664bada2597bac1e24c6f4b4a20fde.png)
 
 图片由作者提供
 
 我们的可行点是
 
-![](../Images/9d5117c9e6bbc52bf04bbd376a93152d.png)
+![](img/9d5117c9e6bbc52bf04bbd376a93152d.png)
 
 图片由作者提供
 
@@ -168,19 +168,19 @@ reluplex 的作用是尝试将神经网络转化为一个简单形问题。一�
 
 一旦完成，我们将得到以下新的表格。
 
-![](../Images/7c00900c9fd660638e5bc2f391f80985.png)
+![](img/7c00900c9fd660638e5bc2f391f80985.png)
 
 图片由作者提供
 
 从中，我们得出点
 
-![](../Images/d083350a5a3acb3ad5c12480121f6885.png)
+![](img/d083350a5a3acb3ad5c12480121f6885.png)
 
 图片由作者提供
 
 我们已成功将所有辅助变量调整为零。我们还将它们移到非基本变量中。此外，我们会注意到这些值确实满足了我们最初的线性约束。因此，我们不再需要辅助变量，可以将它们从线性方程组中移除。如果我们合并正负变量并移除辅助变量，我们会得到这个新点：
 
-![](../Images/ef388334b834f9fed732d30993acab8b.png)
+![](img/ef388334b834f9fed732d30993acab8b.png)
 
 图片来自作者
 
@@ -198,13 +198,13 @@ Reluplex 的作者建议通过尝试逐一解决每个 ReLU 问题来应对违�
 
 引入一个新约束涉及添加一个新的辅助变量。如果我们添加这个变量并施加约束使得 x_{+2}=0，表格将被转化如下：
 
-![](../Images/5d24177e449c1eae83366b2b5c3bfd49.png)
+![](img/5d24177e449c1eae83366b2b5c3bfd49.png)
 
 作者提供的图片
 
 x_{+2} 作为基本变量，出现在两个不同的行中。这与单纯形方法正常运行所需的假设之一相矛盾。因此，有必要快速执行 (x_{+2}, x_{+2}) 的枢轴操作以解决此问题。执行此枢轴操作会产生如下结果：
 
-![](../Images/f413b001620597e321747d60712f7ea9.png)
+![](img/f413b001620597e321747d60712f7ea9.png)
 
 作者提供的图片
 
@@ -214,13 +214,13 @@ x_{+2} 作为基本变量，出现在两个不同的行中。这与单纯形方�
 
 双重单纯形法的起始步骤是识别一个超越给定约束的最优位置点，通常称为超级最优点。然后，它从一个超级最优点移动到另一个，直到达到一个可行点。一旦达到可行点，即可确保它是全局最优点。这种方法适合我们当前的情境，因为它允许我们在已经解决的表格中添加一个约束，而无需解决一个原始问题。鉴于我们缺乏固有的目标函数，我们将任意指定一个目标函数如下：
 
-![](../Images/df784b9a7d64bd38a91013e9132b1ee0.png)
+![](img/df784b9a7d64bd38a91013e9132b1ee0.png)
 
 作者提供的图像
 
 解决原始问题通常涉及转置矩阵并用右侧值替换目标函数值。然而，在这种情况下，我们可以直接使用已经设置好的表格进行解决。过程如下：
 
-![](../Images/e4f2710dac90af5d65a23c1b77d11d84.png)
+![](img/e4f2710dac90af5d65a23c1b77d11d84.png)
 
 作者提供的图像
 
@@ -230,19 +230,19 @@ x_{+2} 作为基本变量，出现在两个不同的行中。这与单纯形方�
 
 由于设置 x_{+1}=0 失败，我们继续尝试设置 x_{-1}=0。实际上，这将成功并得到以下完成的表格：
 
-![](../Images/46e5c92b8f78826bf10272ee56706024.png)
+![](img/46e5c92b8f78826bf10272ee56706024.png)
 
 作者提供的图像
 
 从中，我们得到新的解点：
 
-![](../Images/fe903d2bdb884a952f766107230c6d36.png)
+![](img/fe903d2bdb884a952f766107230c6d36.png)
 
 作者提供的图像
 
 如果我们将其合并，变成：
 
-![](../Images/4acdfaeb57f40726f3a6d1922d81a045.png)
+![](img/4acdfaeb57f40726f3a6d1922d81a045.png)
 
 作者提供的图像
 
@@ -252,62 +252,62 @@ x_{+2} 作为基本变量，出现在两个不同的行中。这与单纯形方�
 
 为了提高约束，需要一个主元操作来明确在单行中陈述约束。这可以通过以新的 a_1 列作为主元来实现。按照布兰德规则选择主元行，我们识别出我们列中的所有正值，将目标函数值除以这些值，并选择最小值的行。在这种情况下，x_{-2} 行成为最佳选择，因为 0/1=0 小于所有其他候选值。执行主元操作后的结果表格如下：
 
-![](../Images/f44c851472476ffa15cf81dba409f949.png)
+![](img/f44c851472476ffa15cf81dba409f949.png)
 
 作者提供的图像
 
 需要注意的是，没有任何变量值被改变。我们现在可以自信地从表格中删除 a_1 行和 a_1 列。这一操作有效地移除了约束 x_{-2}=0， resulting in the following updated tableau:
 
-![](../Images/0bea79ee5d711b3538c624ea1f5cde84.png)
+![](img/0bea79ee5d711b3538c624ea1f5cde84.png)
 
 作者提供的图像
 
 # 继续进行 Relu 分裂
 
-显而易见，我们成功解决了ReLU违例，实现了x_4 = ReLU(x_2)的预期结果。然而，新的违例出现了，因为x_5不等于ReLU(x_3)。为了解决这个新违例，我们遵循与修复x_4不等于ReLU(x_2)违例时完全相同的程序。不过，一旦完成，我们发现表格恢复到修复x_4 = ReLU(x_2)之前的状态。如果继续下去，我们将不断循环修复x_4 = ReLU(x_2)和x_5 = ReLU(x_3)，直到其中一个被更新足够以触发ReLU拆分。这个拆分创建了两个表格：一个是x_{+2}=0（已显示为不可行），另一个是x_{-2}=0，结果是我们之前遇到过的表格。
+显而易见，我们成功解决了 ReLU 违例，实现了 x_4 = ReLU(x_2)的预期结果。然而，新的违例出现了，因为 x_5 不等于 ReLU(x_3)。为了解决这个新违例，我们遵循与修复 x_4 不等于 ReLU(x_2)违例时完全相同的程序。不过，一旦完成，我们发现表格恢复到修复 x_4 = ReLU(x_2)之前的状态。如果继续下去，我们将不断循环修复 x_4 = ReLU(x_2)和 x_5 = ReLU(x_3)，直到其中一个被更新足够以触发 ReLU 拆分。这个拆分创建了两个表格：一个是 x_{+2}=0（已显示为不可行），另一个是 x_{-2}=0，结果是我们之前遇到过的表格。
 
-![](../Images/e6c29f05e05ffc320b78ed3753b36dac.png)
+![](img/e6c29f05e05ffc320b78ed3753b36dac.png)
 
 作者提供的图像
 
-不过这次，我们通常会将问题分为两种情况，一种是x_{-2}=0，另一种是x_{+2}=0。然而，我们已经确定x_{+2}=0是不可能的，因此我们终止了那个问题。现在我们只需要确定x_{-2}=0是否不可行，如果是，我们就完成了。我们现在继续处理x_{-2}=0，永久编码到表格中。接下来我们尝试修复x_{+3}=0的约束。一旦我们用完全相同的方法进行处理，我们将成功并得到以下值：
+不过这次，我们通常会将问题分为两种情况，一种是 x_{-2}=0，另一种是 x_{+2}=0。然而，我们已经确定 x_{+2}=0 是不可能的，因此我们终止了那个问题。现在我们只需要确定 x_{-2}=0 是否不可行，如果是，我们就完成了。我们现在继续处理 x_{-2}=0，永久编码到表格中。接下来我们尝试修复 x_{+3}=0 的约束。一旦我们用完全相同的方法进行处理，我们将成功并得到以下值：
 
-![](../Images/f0a2a1ee8f74e9513521e49289a92710.png)
+![](img/f0a2a1ee8f74e9513521e49289a92710.png)
 
 作者提供的图像
 
 将这些合并后变成：
 
-![](../Images/d8eee94e9020f33efa5a2e8ae7227e8c.png)
+![](img/d8eee94e9020f33efa5a2e8ae7227e8c.png)
 
 作者提供的图像
 
-这个结果没有ReLU违例，并且代表了神经网络在最初声明的范围内可以生成的有效点。至此，我们的搜索结束，我们可以正式声明神经网络在输入范围0.5到1之间生成输出范围0.5到2是可能的。
+这个结果没有 ReLU 违例，并且代表了神经网络在最初声明的范围内可以生成的有效点。至此，我们的搜索结束，我们可以正式声明神经网络在输入范围 0.5 到 1 之间生成输出范围 0.5 到 2 是可能的。
 
 # 可能的优化
 
-原始论文建议了其他优化方法，如约束收紧、推导约束、冲突分析和浮点运算。其中最有前景的是约束收紧，其中进行一些简单的检查以确定一个约束是否必然意味着另一个约束必须在用户设置的范围内更小。在我们的例子中，一些简单的代数计算可以迅速表明，为了使输出至少为0.5，输入必须至少为0.9，因此我们可以在开始任何搜索之前改变这个约束。然而，这些优化没有在我们的解决方案中实现，因此我们将其留给读者阅读原始论文以了解这些及其他优化的详细信息。
+原始论文建议了其他优化方法，如约束收紧、推导约束、冲突分析和浮点运算。其中最有前景的是约束收紧，其中进行一些简单的检查以确定一个约束是否必然意味着另一个约束必须在用户设置的范围内更小。在我们的例子中，一些简单的代数计算可以迅速表明，为了使输出至少为 0.5，输入必须至少为 0.9，因此我们可以在开始任何搜索之前改变这个约束。然而，这些优化没有在我们的解决方案中实现，因此我们将其留给读者阅读原始论文以了解这些及其他优化的详细信息。
 
 # 代码实现
 
-对于表现最佳且适用于生产的算法版本，我们建议探索官方的Marabou GitHub页面[5]，因为这是该问题领域的当前最前沿。此外，你可以深入了解官方Reluplex代码库以获得对算法的更深入理解[2]。我还用Python编写了一个简化版的ReLuPlex实现[3]。这个实现对于理解算法并让用户逐行执行它非常有价值。它可以作为开发定制的更高级Python版本算法的基础。
+对于表现最佳且适用于生产的算法版本，我们建议探索官方的 Marabou GitHub 页面[5]，因为这是该问题领域的当前最前沿。此外，你可以深入了解官方 Reluplex 代码库以获得对算法的更深入理解[2]。我还用 Python 编写了一个简化版的 ReLuPlex 实现[3]。这个实现对于理解算法并让用户逐行执行它非常有价值。它可以作为开发定制的更高级 Python 版本算法的基础。
 
 # 参考文献
 
-[[1][1702.01135] Reluplex：用于验证深度神经网络的高效SMT求解器 (arxiv.org)](https://arxiv.org/abs/1702.01135)
+[[1][1702.01135] Reluplex：用于验证深度神经网络的高效 SMT 求解器 (arxiv.org)](https://arxiv.org/abs/1702.01135)
 
 [[2][1803.08375] 使用修正线性单元（ReLU）的深度学习](https://arxiv.org/abs/1803.08375)
 
-[[2] ReluPlex的官方实现 (github.com)](https://github.com/guykatzz/ReluplexCav2017)
+[[2] ReluPlex 的官方实现 (github.com)](https://github.com/guykatzz/ReluplexCav2017)
 
-[[3] 作者的ReluPlex Python实现 (github.com)](https://github.com/MatthewDaw/reluplex)
+[[3] 作者的 ReluPlex Python 实现 (github.com)](https://github.com/MatthewDaw/reluplex)
 
 [[4][1910.14574] 基于抽象的神经网络验证框架 (arxiv.org)](https://arxiv.org/abs/1910.14574)
 
-[[5] Marabou的官方实现 (github.com)](https://github.com/NeuralNetworkVerification/Marabou)
+[[5] Marabou 的官方实现 (github.com)](https://github.com/NeuralNetworkVerification/Marabou)
 
-[[6][2210.13915]迈向正式XAI：神经网络的形式近似最小解释](https://arxiv.org/abs/2210.13915)
+[[6][2210.13915]迈向正式 XAI：神经网络的形式近似最小解释](https://arxiv.org/abs/2210.13915)
 
-[[7] Science Direct上的神经网络](https://www.sciencedirect.com/topics/neuroscience/neural-network)
+[[7] Science Direct 上的神经网络](https://www.sciencedirect.com/topics/neuroscience/neural-network)
 
 [[8]数字图像去噪的反向传播算法综合概述](https://www.mdpi.com/2079-9292/11/10/1590)

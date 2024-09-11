@@ -1,14 +1,14 @@
 # 在您的数据上训练 YOLOv8 实例分割
 
-> 原文：[https://towardsdatascience.com/trian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd?source=collection_archive---------0-----------------------#2023-02-15](https://towardsdatascience.com/trian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd?source=collection_archive---------0-----------------------#2023-02-15)
+> 原文：[`towardsdatascience.com/trian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd?source=collection_archive---------0-----------------------#2023-02-15`](https://towardsdatascience.com/trian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd?source=collection_archive---------0-----------------------#2023-02-15)
 
 ## 如何基于最新的 YOLOv8 模型在您的数据上训练一个实例分割模型
 
-[](https://alon-lek.medium.com/?source=post_page-----6ffa04b2debd--------------------------------)[![Alon Lekhtman](../Images/1451bacf9a127f7fe596cf32249035be.png)](https://alon-lek.medium.com/?source=post_page-----6ffa04b2debd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6ffa04b2debd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6ffa04b2debd--------------------------------) [Alon Lekhtman](https://alon-lek.medium.com/?source=post_page-----6ffa04b2debd--------------------------------)
+[](https://alon-lek.medium.com/?source=post_page-----6ffa04b2debd--------------------------------)![Alon Lekhtman](https://alon-lek.medium.com/?source=post_page-----6ffa04b2debd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6ffa04b2debd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ffa04b2debd--------------------------------) [Alon Lekhtman](https://alon-lek.medium.com/?source=post_page-----6ffa04b2debd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F931822b64e54&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd&user=Alon+Lekhtman&userId=931822b64e54&source=post_page-931822b64e54----6ffa04b2debd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ffa04b2debd--------------------------------) ·10 分钟阅读·2023年2月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6ffa04b2debd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd&user=Alon+Lekhtman&userId=931822b64e54&source=-----6ffa04b2debd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F931822b64e54&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd&user=Alon+Lekhtman&userId=931822b64e54&source=post_page-931822b64e54----6ffa04b2debd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6ffa04b2debd--------------------------------) ·10 分钟阅读·2023 年 2 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6ffa04b2debd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrian-yolov8-instance-segmentation-on-your-data-6ffa04b2debd&user=Alon+Lekhtman&userId=931822b64e54&source=-----6ffa04b2debd---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 YOLOv8 于 2023 年 1 月 10 日发布。到目前为止，这是计算机视觉领域用于分类、检测和分割任务的最先进模型。该模型在准确性和执行时间方面均优于所有已知模型。
 
-![](../Images/846d796782d2742599ba66f04d7a424c.png)
+![](img/846d796782d2742599ba66f04d7a424c.png)
 
 YOLOv8 与其他 YOLO 模型的比较（来自 [ultralytics](https://github.com/ultralytics/ultralytics)）
 
@@ -30,7 +30,7 @@ ultralytics 团队在使这个模型比所有之前的 YOLO 模型更易于使�
 
 这就是数据集的样子：
 
-![](../Images/7a79eee703fe9676934e9eef85f99867.png)
+![](img/7a79eee703fe9676934e9eef85f99867.png)
 
 数据集是使用以下代码生成的：
 
@@ -104,7 +104,7 @@ for images_dir_path in [Path(f'datasets/{x}/images') for x in ['train', 'val', '
 
 标签对应于这张图像：
 
-![](../Images/41ddab79fd8e2339d49bf12eec44bba4.png)
+![](img/41ddab79fd8e2339d49bf12eec44bba4.png)
 
 对应于标签示例的图像
 
@@ -228,7 +228,7 @@ from IPython.display import Image as show_image
 show_image(filename="runs/segment/train60/val_batch0_labels.jpg")
 ```
 
-![](../Images/567dec0b45f36610ab6970aaa544e672.png)
+![](img/567dec0b45f36610ab6970aaa544e672.png)
 
 部分验证集标签
 
@@ -240,7 +240,7 @@ show_image(filename="runs/segment/train60/val_batch0_labels.jpg")
 show_image(filename="runs/segment/train60/val_batch0_pred.jpg")
 ```
 
-![](../Images/2192471bc68c59dcf54fcdecafb638d0.png)
+![](img/2192471bc68c59dcf54fcdecafb638d0.png)
 
 验证集预测
 
@@ -254,7 +254,7 @@ show_image(filename="runs/segment/train60/val_batch0_pred.jpg")
 show_image(filename="runs/segment/train60/MaskP_curve.png")
 ```
 
-![](../Images/6d5e98b3d6235facea1866bfba43ad9b.png)
+![](img/6d5e98b3d6235facea1866bfba43ad9b.png)
 
 精度/置信度阈值曲线
 
@@ -262,7 +262,7 @@ show_image(filename="runs/segment/train60/MaskP_curve.png")
 
 上面的图表（以及下面的图表）帮助你决定使用哪个置信度阈值。在我们的例子中，我们可以看到对于高于**0.128**的阈值，我们获得了**100%**的精度，这意味着所有对象都被正确预测。
 
-请注意，由于我们实际上是在进行分割任务，还有一个重要的阈值需要关注——IoU（交并比），如果你不熟悉它，可以在[这里](https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/)阅读相关信息。对于这张图表，使用了**0.5**的IoU。
+请注意，由于我们实际上是在进行分割任务，还有一个重要的阈值需要关注——IoU（交并比），如果你不熟悉它，可以在[这里](https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/)阅读相关信息。对于这张图表，使用了**0.5**的 IoU。
 
 **召回率曲线**
 
@@ -270,7 +270,7 @@ show_image(filename="runs/segment/train60/MaskP_curve.png")
 show_image(filename="runs/segment/train60/MaskR_curve.png")
 ```
 
-![](../Images/e9898f596c3f8de76b7f97ec15de9546.png)
+![](img/e9898f596c3f8de76b7f97ec15de9546.png)
 
 召回率/置信度阈值曲线
 
@@ -286,7 +286,7 @@ show_image(filename="runs/segment/train60/MaskR_curve.png")
 show_image(filename="runs/segment/train60/MaskPR_curve.png")
 ```
 
-![](../Images/ae03968630d242ece8e4631990d2805a.png)
+![](img/ae03968630d242ece8e4631990d2805a.png)
 
 精度-召回曲线
 
@@ -300,7 +300,7 @@ show_image(filename="runs/segment/train60/MaskPR_curve.png")
 show_image(filename="runs/segment/train60/results.png")
 ```
 
-![](../Images/94602d3dd0c79a4c321ba0f545bbd9d7.png)
+![](img/94602d3dd0c79a4c321ba0f545bbd9d7.png)
 
 随时间变化的损失
 
@@ -371,7 +371,7 @@ tensor([[[0., 0., 0.,  ..., 0., 0., 0.],
          [0., 0., 0.,  ..., 0., 0., 0.]]])
 ```
 
-这会返回一个形状为（1, 128, 128）的张量，表示图像中的所有像素。属于对象的像素接收1，背景像素接收0。
+这会返回一个形状为（1, 128, 128）的张量，表示图像中的所有像素。属于对象的像素接收 1，背景像素接收 0。
 
 让我们看看掩模的样子：
 
@@ -380,13 +380,13 @@ import torchvision.transforms as T
 T.ToPILImage()(result.masks.masks).show()
 ```
 
-![](../Images/188f74a8e99b400d049abcf6fa0ffb6a.png)
+![](img/188f74a8e99b400d049abcf6fa0ffb6a.png)
 
 预测图像的分割
 
 这就是原始图像：
 
-![](../Images/787981982a3eb511bfc09f1f297c9c6e.png)
+![](img/787981982a3eb511bfc09f1f297c9c6e.png)
 
 原始图像
 
@@ -394,7 +394,7 @@ T.ToPILImage()(result.masks.masks).show()
 
 总之，与之前的 Yolo 版本相比，新版的 ultralytics 库更容易使用，特别是在分割任务上，现在它已经成为一个一流的功能。你可以在 ultralytics 新包中找到 Yolov5，因此如果你不想使用仍然有些新的和实验性的 Yolo 版本，你可以选择使用广为人知的 yolov5：
 
-![](../Images/2d6bb0b746deda291cf6d79aa89155af.png)
+![](img/2d6bb0b746deda291cf6d79aa89155af.png)
 
 [yolov8 和 yolov5 的 Google 趋势比较](https://trends.google.com/trends/explore?date=today+5-y&q=yolov5%2Cyolov8)
 

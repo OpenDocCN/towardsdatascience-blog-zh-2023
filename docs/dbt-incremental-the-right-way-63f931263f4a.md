@@ -1,50 +1,50 @@
-# dbt增量模型——正确的方式
+# dbt 增量模型——正确的方式
 
-> 原文：[https://towardsdatascience.com/dbt-incremental-the-right-way-63f931263f4a?source=collection_archive---------1-----------------------#2023-07-21](https://towardsdatascience.com/dbt-incremental-the-right-way-63f931263f4a?source=collection_archive---------1-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/dbt-incremental-the-right-way-63f931263f4a?source=collection_archive---------1-----------------------#2023-07-21`](https://towardsdatascience.com/dbt-incremental-the-right-way-63f931263f4a?source=collection_archive---------1-----------------------#2023-07-21)
 
 ## 从全面加载的痛苦到增量收益（以及途中一些错误）
 
-[](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)[![Leah Nguyen](../Images/7c3a6bc7de9b2446453dc5133a3bf9ae.png)](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------) [Leah Nguyen](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)
+[](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)![Leah Nguyen](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------) [Leah Nguyen](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ee083e5e515&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&user=Leah+Nguyen&userId=7ee083e5e515&source=post_page-7ee083e5e515----63f931263f4a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------) ·9分钟阅读·2023年7月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63f931263f4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&user=Leah+Nguyen&userId=7ee083e5e515&source=-----63f931263f4a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ee083e5e515&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&user=Leah+Nguyen&userId=7ee083e5e515&source=post_page-7ee083e5e515----63f931263f4a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------) ·9 分钟阅读·2023 年 7 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63f931263f4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&user=Leah+Nguyen&userId=7ee083e5e515&source=-----63f931263f4a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63f931263f4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&source=-----63f931263f4a---------------------bookmark_footer-----------)![](../Images/9e13b288f5887d77255a505868893874.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63f931263f4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&source=-----63f931263f4a---------------------bookmark_footer-----------)![](img/9e13b288f5887d77255a505868893874.png)
 
 图片来源：[Lukas Tennie](https://unsplash.com/es/@luk10?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-当我在GlamCorner的团队开始从传统的MySQL数据库过渡到使用dbt作为转换和建模层的Postgres数据库的ELT时，我们感到非常高兴。我们设置了dbt项目和配置文件，为我们的模型专门编写了宏，并构建了更多的数据集市以满足下游需求。我们以为一切都完成了——我以为一切都完成了，直到我们遇到第一个障碍：模型运行时间。在这篇文章中，我解释了如何通过采用dbt增量模型来克服当时最艰难的性能挑战，犯错（谁没有呢？）并在过程中学到宝贵的经验教训。
+当我在 GlamCorner 的团队开始从传统的 MySQL 数据库过渡到使用 dbt 作为转换和建模层的 Postgres 数据库的 ELT 时，我们感到非常高兴。我们设置了 dbt 项目和配置文件，为我们的模型专门编写了宏，并构建了更多的数据集市以满足下游需求。我们以为一切都完成了——我以为一切都完成了，直到我们遇到第一个障碍：模型运行时间。在这篇文章中，我解释了如何通过采用 dbt 增量模型来克服当时最艰难的性能挑战，犯错（谁没有呢？）并在过程中学到宝贵的经验教训。
 
 # 进化中的怪物
 
-在GlamCorner，我们玩的是循环时尚游戏。我们的“后端”团队在仓库里使用RFID扫描器，像专业人士一样扫描进出商品。我们还使用像Zendesk和Google Analytics这样的高级平台，让我们的客户感觉特别棒。更棒的是，我们有自己内部的库存系统——多亏了我们出色的软件工程师——将所有前端和后端系统连接在一起。这就像是天作之合。但随着我们的成长和运营年限的增加，我们的数据库越来越大。可以说，传统的全表加载开始感觉有点像是个麻烦。
+在 GlamCorner，我们玩的是循环时尚游戏。我们的“后端”团队在仓库里使用 RFID 扫描器，像专业人士一样扫描进出商品。我们还使用像 Zendesk 和 Google Analytics 这样的高级平台，让我们的客户感觉特别棒。更棒的是，我们有自己内部的库存系统——多亏了我们出色的软件工程师——将所有前端和后端系统连接在一起。这就像是天作之合。但随着我们的成长和运营年限的增加，我们的数据库越来越大。可以说，传统的全表加载开始感觉有点像是个麻烦。
 
 # 痛苦
 
-你要么理解“我希望数据在早上9点前准备好”的痛苦，要么不理解。
+你要么理解“我希望数据在早上 9 点前准备好”的痛苦，要么不理解。
 
-![](../Images/4fe69be394d107502ea89bc3e2902fb6.png)
-
-图片来自作者
-
-团队付出了努力来创建无瑕的**(E)**xtract和**(L)**oad，我们一起庆祝。然后有一天，**(T)**ransformation就像“哎，这里不是这样运作的”一样，把总运行时间从10分钟提高到90分钟。我可能夸张了10分钟到90分钟的部分，因为是的，一切都有其原因，但当你还没喝第一杯咖啡，早上8:55商务团队就敲门问：“最新数据在哪里？”这种感觉真的是每天上班的地狱。这就像把所有的辛勤工作扔进垃圾桶，我自己无法接受这个现实。
-
-回到我说的事情：每件事都有它的理由，而曾经只需要10分钟的童话故事现在却变成了90分钟的红角魔鬼。为了说明这一点，我们以**fct_booking**数据表为例。这个表包含了每天从网站上获取的所有预订信息。每个`**booking_id**`代表一个在网站上预订的订单。
-
-![](../Images/0cf43fdf7cf89c0d4444d886adfa65c3.png)
+![](img/4fe69be394d107502ea89bc3e2902fb6.png)
 
 图片来自作者
 
-每天，大约有4个订单被添加到预订表中，而该表已经包含80个订单。当使用dbt运行这个模型时，它会删除前一天的整个表，用84条记录（包括旧订单和新订单）替换所有记录（80个历史累计订单+最新一天增加的4个新订单）。另外，每新增4条记录，查询时间会增加约0.5秒。
+团队付出了努力来创建无瑕的**(E)**xtract 和**(L)**oad，我们一起庆祝。然后有一天，**(T)**ransformation 就像“哎，这里不是这样运作的”一样，把总运行时间从 10 分钟提高到 90 分钟。我可能夸张了 10 分钟到 90 分钟的部分，因为是的，一切都有其原因，但当你还没喝第一杯咖啡，早上 8:55 商务团队就敲门问：“最新数据在哪里？”这种感觉真的是每天上班的地狱。这就像把所有的辛勤工作扔进垃圾桶，我自己无法接受这个现实。
 
-![](../Images/f28ffc8a83cbafacf6d78a9672c2bcf4.png)
+回到我说的事情：每件事都有它的理由，而曾经只需要 10 分钟的童话故事现在却变成了 90 分钟的红角魔鬼。为了说明这一点，我们以**fct_booking**数据表为例。这个表包含了每天从网站上获取的所有预订信息。每个`**booking_id**`代表一个在网站上预订的订单。
+
+![](img/0cf43fdf7cf89c0d4444d886adfa65c3.png)
 
 图片来自作者
 
-> 现在，想象一下4个订单等于每天4000条记录，而80个订单实际上代表80万条记录。你能猜到转换fct_bookings表需要多长时间吗？例如，三个月后我们会在哪里？
+每天，大约有 4 个订单被添加到预订表中，而该表已经包含 80 个订单。当使用 dbt 运行这个模型时，它会删除前一天的整个表，用 84 条记录（包括旧订单和新订单）替换所有记录（80 个历史累计订单+最新一天增加的 4 个新订单）。另外，每新增 4 条记录，查询时间会增加约 0.5 秒。
+
+![](img/f28ffc8a83cbafacf6d78a9672c2bcf4.png)
+
+图片来自作者
+
+> 现在，想象一下 4 个订单等于每天 4000 条记录，而 80 个订单实际上代表 80 万条记录。你能猜到转换 fct_bookings 表需要多长时间吗？例如，三个月后我们会在哪里？
 > 
 > **好吧，** **我会把数学留给你。**
 
@@ -54,17 +54,17 @@
 
 用通俗的话说，dbt 增量意味着你不必从头开始处理所有数据。你只需处理新数据和修改过的数据，从而节省时间和资源。这就像一个实际有效的快捷方式，不会让你在老板面前出丑。
 
-![](../Images/1b22fb01112e95066f78201f330bb383.png)
+![](img/1b22fb01112e95066f78201f330bb383.png)
 
 作者提供的图片
 
 *如果你想了解更多关于 dbt 增量的细节，可以查看这个博客和文档：*
 
-[](/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=post_page-----63f931263f4a--------------------------------) [## dbt 增量模型在大数据中的强大作用
+[](/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=post_page-----63f931263f4a--------------------------------) ## dbt 增量模型在大数据中的强大作用
 
 ### 在 BigQuery 上的实验
 
-towardsdatascience.com](/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=post_page-----63f931263f4a--------------------------------) [](https://docs.getdbt.com/docs/build/incremental-models?source=post_page-----63f931263f4a--------------------------------) [## 增量模型 | dbt 开发者中心
+towardsdatascience.com [](https://docs.getdbt.com/docs/build/incremental-models?source=post_page-----63f931263f4a--------------------------------) [## 增量模型 | dbt 开发者中心
 
 ### 阅读此教程，了解如何在构建 dbt 时使用增量模型。
 

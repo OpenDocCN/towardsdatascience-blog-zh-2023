@@ -1,10 +1,10 @@
 # 四种构建在生成式人工智能基础模型之上的方法
 
-> 原文：[https://towardsdatascience.com/four-approaches-to-build-on-top-of-generative-ai-foundational-models-43c1a64cffd5?source=collection_archive---------1-----------------------#2023-03-21](https://towardsdatascience.com/four-approaches-to-build-on-top-of-generative-ai-foundational-models-43c1a64cffd5?source=collection_archive---------1-----------------------#2023-03-21)
+> 原文：[`towardsdatascience.com/four-approaches-to-build-on-top-of-generative-ai-foundational-models-43c1a64cffd5?source=collection_archive---------1-----------------------#2023-03-21`](https://towardsdatascience.com/four-approaches-to-build-on-top-of-generative-ai-foundational-models-43c1a64cffd5?source=collection_archive---------1-----------------------#2023-03-21)
 
 ## 每种方法的优缺点、有效性以及示例代码
 
-[](https://lakshmanok.medium.com/?source=post_page-----43c1a64cffd5--------------------------------)[![Lak Lakshmanan](../Images/9faaaf72d600f592cbaf3e9089cbb913.png)](https://lakshmanok.medium.com/?source=post_page-----43c1a64cffd5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----43c1a64cffd5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----43c1a64cffd5--------------------------------) [Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----43c1a64cffd5--------------------------------)
+[](https://lakshmanok.medium.com/?source=post_page-----43c1a64cffd5--------------------------------)![Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----43c1a64cffd5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----43c1a64cffd5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----43c1a64cffd5--------------------------------) [Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----43c1a64cffd5--------------------------------)
 
 ·
 
@@ -18,7 +18,7 @@
 
 确实*有*团队在实际应用中使用 ChatGPT 或其竞争者（如 Anthropic、Google 的 Flan T5 或 PaLM、Meta 的 LLaMA、Cohere、AI21Labs 等），而不是仅仅用于炫酷的演示。不幸的是，关于他们如何做到这一点的信息在市场营销噱头和技术术语中被掩盖。因此，我看到刚开始接触生成式 AI 的人们采取了一些领域专家会告诉你不会奏效的方法。本文尝试组织这个领域并展示哪些方法有效。
 
-![](../Images/ab78a68eafba35e68323a1f2c22b6a4f.png)
+![](img/ab78a68eafba35e68323a1f2c22b6a4f.png)
 
 图片由 [Sen](https://unsplash.com/es/@sen7?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/s/photos/lego?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -130,7 +130,7 @@ Langchain 目前 [支持来自](https://langchain.readthedocs.io/en/latest/refer
 
 此外，还有保护机制（对输入和输出的过滤器）。模型会拒绝回答某些类型的问题，并撤回某些答案。在实际应用中，这些都是不断更新的机器学习模型。
 
-![](../Images/4f76492aeae2cdeeaa19e4d0fc8f9796.png)
+![](img/4f76492aeae2cdeeaa19e4d0fc8f9796.png)
 
 步骤 2：RL-HF 如何工作。图片来自 [Stiennon et al, 2020](https://proceedings.neurips.cc/paper/2020/file/1f89885d556929e98d3ef9b86448f951-Paper.pdf)
 
@@ -142,27 +142,27 @@ Langchain 目前 [支持来自](https://langchain.readthedocs.io/en/latest/refer
 
 +   ChatGPT 被训练来响应成千上万的不同提示。另一方面，您的应用程序可能只需要一两个特定的提示。将 Google Flan-T5 训练到您的特定指令和输入上可能会很方便。这样的模型可以更小（因此部署成本更低）。这种服务成本上的优势解释了为什么第 3 步是最常见的分支点。您可以使用 [HuggingFace](https://www.philschmid.de/fine-tune-flan-t5) 和/或 [Keras](https://keras.io/examples/nlp/t5_hf_summarization/) 对 Google Flan-T5 进行针对您特定任务的微调。您可以在常用的 ML 框架如 Databricks、Sagemaker 或 Vertex AI 上进行，并使用相同的服务来部署训练后的模型。由于 Flan-T5 是 Google 的模型，GCP 通过在 Vertex AI 中提供 [预构建容器](https://medium.com/google-cloud/finetuning-flan-t5-base-and-online-deployment-in-vertex-ai-bf099c3a4a86) 使训练和部署变得非常简单。费用可能在 50 美元左右。
 
-+   理论上，有可能通过不同的方法来保持对话上下文。然而，我在实际应用中没有看到这种做法。大多数人做的是使用像Dialogflow这样的对话代理框架，它已经内置了LLM，并为他们的应用设计一个定制的聊天机器人。基础设施成本微不足道，你只需要领域知识，无需任何AI专业知识。
++   理论上，有可能通过不同的方法来保持对话上下文。然而，我在实际应用中没有看到这种做法。大多数人做的是使用像 Dialogflow 这样的对话代理框架，它已经内置了 LLM，并为他们的应用设计一个定制的聊天机器人。基础设施成本微不足道，你只需要领域知识，无需任何 AI 专业知识。
 
 可以在这些阶段中的任何一个进行中断。以下例子仅限于公开发布的医学研究：
 
-1.  这篇[Nature文章](https://www.nature.com/articles/s41746-022-00742-2)从从医学记录中提取的90亿字中构建了一个自定义的89亿参数LLM（即，它们从第1步开始）。作为比较，下文第3种方法中使用的Flan-PaLM具有[5400亿参数](https://huggingface.co/google/flan-t5-base)，而“小型/高效”PaLM为620亿参数。显然，成本是定制语言模型变得更大的一个限制因素。
+1.  这篇[Nature 文章](https://www.nature.com/articles/s41746-022-00742-2)从从医学记录中提取的 90 亿字中构建了一个自定义的 89 亿参数 LLM（即，它们从第 1 步开始）。作为比较，下文第 3 种方法中使用的 Flan-PaLM 具有[5400 亿参数](https://huggingface.co/google/flan-t5-base)，而“小型/高效”PaLM 为 620 亿参数。显然，成本是定制语言模型变得更大的一个限制因素。
 
-1.  这项[MIT CSAIL研究](https://news.mit.edu/2022/large-language-models-help-decipher-clinical-notes-1201)要求模型严格遵循现有文本，并进行指令微调（即，它们从第2步开始）。
+1.  这项[MIT CSAIL 研究](https://news.mit.edu/2022/large-language-models-help-decipher-clinical-notes-1201)要求模型严格遵循现有文本，并进行指令微调（即，它们从第 2 步开始）。
 
-1.  [Deep Mind的MedPaLM](https://arxiv.org/abs/2212.13138)从一种指令调优的PaLM变体Flan-PaLM开始（即，它从第3步开始）。他们报告称，93%的医疗专业人员认为该AI的回答与人类回答相当。
+1.  [Deep Mind 的 MedPaLM](https://arxiv.org/abs/2212.13138)从一种指令调优的 PaLM 变体 Flan-PaLM 开始（即，它从第 3 步开始）。他们报告称，93%的医疗专业人员认为该 AI 的回答与人类回答相当。
 
-我的建议是，根据你的应用领域与基础模型训练所用的通用互联网文本的差异，选择中断的位置。你应该微调哪个模型？目前，Google Flan T5是最先进的可微调模型，且开放用于商业用途。对于非商业用途，Meta的LLaMA是最先进的模型。
+我的建议是，根据你的应用领域与基础模型训练所用的通用互联网文本的差异，选择中断的位置。你应该微调哪个模型？目前，Google Flan T5 是最先进的可微调模型，且开放用于商业用途。对于非商业用途，Meta 的 LLaMA 是最先进的模型。
 
-但需要注意的是：当你使用开源模型进行链式操作时，保护过滤器不会存在，因此**你需要设置毒性安全措施**。一个选项是使用[detoxify](https://github.com/unitaryai/detoxify)库。确保在生产环境中的任何API端点周围都实施毒性过滤，否则你会发现自己不得不[撤下它](https://www.theregister.com/2023/03/21/stanford_ai_alpaca_taken_offline/)。API网关可以是确保你对所有ML模型端点进行此操作的便捷方式。
+但需要注意的是：当你使用开源模型进行链式操作时，保护过滤器不会存在，因此**你需要设置毒性安全措施**。一个选项是使用[detoxify](https://github.com/unitaryai/detoxify)库。确保在生产环境中的任何 API 端点周围都实施毒性过滤，否则你会发现自己不得不[撤下它](https://www.theregister.com/2023/03/21/stanford_ai_alpaca_taken_offline/)。API 网关可以是确保你对所有 ML 模型端点进行此操作的便捷方式。
 
-## 方法4：简化问题
+## 方法 4：简化问题
 
-有一些聪明的方法可以重新定义你所解决的问题，以便可以使用生成式AI模型（如第3种方法），但避免出现幻觉等问题。
+有一些聪明的方法可以重新定义你所解决的问题，以便可以使用生成式 AI 模型（如第 3 种方法），但避免出现幻觉等问题。
 
 例如，假设你想做问答系统。你可以从一个强大的 LLM 开始，然后努力“驯服”这个“野兽”，使其不出现幻觉。一个更简单的方法是重新定义问题。将模型从一个预测输出文本的模型改为一个有三个输出的模型：文档的 URL、文档中的起始位置和文本长度。这就是谷歌搜索在这里做的：
 
-![](../Images/e0ebbc9c4057ace3341e972199a34c60.png)
+![](img/e0ebbc9c4057ace3341e972199a34c60.png)
 
 谷歌的问答模型预测一个 URL、起始位置和文本长度。这避免了幻觉问题。
 

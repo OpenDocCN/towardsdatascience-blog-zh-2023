@@ -1,10 +1,10 @@
-# 使用Python检测真实世界数据中的幂律
+# 使用 Python 检测真实世界数据中的幂律
 
-> 原文：[https://towardsdatascience.com/detecting-power-laws-in-real-world-data-with-python-b464190fade6?source=collection_archive---------3-----------------------#2023-11-24](https://towardsdatascience.com/detecting-power-laws-in-real-world-data-with-python-b464190fade6?source=collection_archive---------3-----------------------#2023-11-24)
+> 原文：[`towardsdatascience.com/detecting-power-laws-in-real-world-data-with-python-b464190fade6?source=collection_archive---------3-----------------------#2023-11-24`](https://towardsdatascience.com/detecting-power-laws-in-real-world-data-with-python-b464190fade6?source=collection_archive---------3-----------------------#2023-11-24)
 
 ## 用示例代码分解基于最大似然方法的方法
 
-[](https://shawhin.medium.com/?source=post_page-----b464190fade6--------------------------------)[![Shaw Talebi](../Images/1449cc7c08890e2078f9e5d07897e3df.png)](https://shawhin.medium.com/?source=post_page-----b464190fade6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b464190fade6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b464190fade6--------------------------------) [Shaw Talebi](https://shawhin.medium.com/?source=post_page-----b464190fade6--------------------------------)
+[](https://shawhin.medium.com/?source=post_page-----b464190fade6--------------------------------)![Shaw Talebi](https://shawhin.medium.com/?source=post_page-----b464190fade6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b464190fade6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b464190fade6--------------------------------) [Shaw Talebi](https://shawhin.medium.com/?source=post_page-----b464190fade6--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb464190fade6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdetecting-power-laws-in-real-world-data-with-python-b464190fade6&source=-----b464190fade6---------------------bookmark_footer-----------)![](../Images/ba666f53ff8d436d975c6890cecc0147.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb464190fade6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdetecting-power-laws-in-real-world-data-with-python-b464190fade6&source=-----b464190fade6---------------------bookmark_footer-----------)![](img/ba666f53ff8d436d975c6890cecc0147.png)
 
 [Luke Chesser](https://unsplash.com/@lukechesser?utm_source=medium&utm_medium=referral) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,6 +20,6 @@
 
 *注意：如果你不熟悉像幂律分布或胖尾分布这样的术语，请参考本系列的* [*第一篇文章*](https://medium.com/towards-data-science/pareto-power-laws-and-fat-tails-0355a187ee6a) *作为入门。*
 
-# 幂律打破统计学101
+# 幂律打破统计学 101
 
 在[上一篇文章](https://medium.com/towards-data-science/pareto-power-laws-and-fat-tails-0355a187ee6a)中，我们重点讨论了两种分布：高斯分布和幂律分布。我们看到这些分布具有完全相反的统计特性。也就是说，**幂律是由稀有事件驱动的**…

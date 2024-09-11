@@ -1,18 +1,18 @@
 # 线性规划：理论与应用
 
-> 原文：[https://towardsdatascience.com/linear-programming-theory-and-applications-c67600591612?source=collection_archive---------3-----------------------#2023-04-05](https://towardsdatascience.com/linear-programming-theory-and-applications-c67600591612?source=collection_archive---------3-----------------------#2023-04-05)
+> 原文：[`towardsdatascience.com/linear-programming-theory-and-applications-c67600591612?source=collection_archive---------3-----------------------#2023-04-05`](https://towardsdatascience.com/linear-programming-theory-and-applications-c67600591612?source=collection_archive---------3-----------------------#2023-04-05)
 
 ## 线性优化的主要概念及其在 Python 中的实现
 
-[](https://medium.com/@bruscalia12?source=post_page-----c67600591612--------------------------------)[![布鲁诺·斯卡利亚 C. F. 莱特](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----c67600591612--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c67600591612--------------------------------)[![数据科学之道](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c67600591612--------------------------------) [布鲁诺·斯卡利亚 C. F. 莱特](https://medium.com/@bruscalia12?source=post_page-----c67600591612--------------------------------)
+[](https://medium.com/@bruscalia12?source=post_page-----c67600591612--------------------------------)![布鲁诺·斯卡利亚 C. F. 莱特](https://medium.com/@bruscalia12?source=post_page-----c67600591612--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c67600591612--------------------------------)![数据科学之道](https://towardsdatascience.com/?source=post_page-----c67600591612--------------------------------) [布鲁诺·斯卡利亚 C. F. 莱特](https://medium.com/@bruscalia12?source=post_page-----c67600591612--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-programming-theory-and-applications-c67600591612&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----c67600591612---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----c67600591612--------------------------------) ·13 分钟阅读·2023年4月5日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc67600591612&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-programming-theory-and-applications-c67600591612&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----c67600591612---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-programming-theory-and-applications-c67600591612&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----c67600591612---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----c67600591612--------------------------------) ·13 分钟阅读·2023 年 4 月 5 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc67600591612&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-programming-theory-and-applications-c67600591612&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----c67600591612---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc67600591612&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-programming-theory-and-applications-c67600591612&source=-----c67600591612---------------------bookmark_footer-----------)![](../Images/fffd9350e61f068983fceb5a4c5e2a3d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc67600591612&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-programming-theory-and-applications-c67600591612&source=-----c67600591612---------------------bookmark_footer-----------)![](img/fffd9350e61f068983fceb5a4c5e2a3d.png)
 
 图片由 [Patrick Fore](https://unsplash.com/@patrickian4?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,19 +24,19 @@
 
 你可以在这里找到本文本其余部分的简要总结：
 
-+   [问题陈述](#d73a)
++   问题陈述
 
-+   [可行空间和解决技术](#d77c)
++   可行空间和解决技术
 
-+   [产品组合问题](#71af)
++   产品组合问题
 
-+   [运输问题](#0f73)
++   运输问题
 
-+   [进一步阅读](#0b54)
++   进一步阅读
 
-+   [结论](#cd50)
++   结论
 
-+   [参考文献](#30f1)
++   参考文献
 
 你可以在这个 [GIT 仓库](https://github.com/bruscalia/optimization-demo-files/tree/main/convex/linear) 找到完整的代码。现在，尽情享受吧！
 
@@ -48,19 +48,19 @@
 
 每个组件 ***x*** 的下界和上界可能在公式中明确规定，这减少了搜索空间。作为惯例，由于解决技术，通常决策变量的下界默认等于零。这导致了如下的一般问题公式。
 
-![](../Images/780119ebdaf4f617198f9c3b300f7ccb.png)
+![](img/780119ebdaf4f617198f9c3b300f7ccb.png)
 
 通用形式的线性问题。（作者提供的图片）。
 
 不等式约束可以通过添加非负松弛变量重新公式化为等式约束。如果发生这种情况，并且所有决策变量都声明为非负，我们称线性规划为 *标准形式*。
 
-![](../Images/b628705c02b1b81c3f0b719f6c064edf.png)
+![](img/b628705c02b1b81c3f0b719f6c064edf.png)
 
 通过包含一个非负松弛变量将不等式约束重新公式化为等式。（作者提供的图片）。
 
 然后可以陈述如下。
 
-![](../Images/a6ea008be2f3e2dbeea03875d61bc0fd.png)
+![](img/a6ea008be2f3e2dbeea03875d61bc0fd.png)
 
 标准形式的线性规划问题。（作者提供的图片）。
 
@@ -70,13 +70,13 @@
 
 让我们引入一个简单的例子来探讨本节的概念。
 
-![](../Images/f647840cb04341e3bb3f37cf65744ff3.png)
+![](img/f647840cb04341e3bb3f37cf65744ff3.png)
 
 示例问题。（图片来源于作者）。
 
 可以在二维空间中表示为如下图示。
 
-![](../Images/4589a4e4dc4d3088bd99ea5debd6fdbc.png)
+![](img/4589a4e4dc4d3088bd99ea5debd6fdbc.png)
 
 注意在可行区域的每个顶点（有色的），都有一个约束子集是活跃的。此外，观察到在这个示例中，最优解位于一个顶点。请记住，当不等式活跃时，它们在*标准形式*下的对应松弛变量为零。在线性问题中，我们将关注找到包含最优解的顶点中哪些约束是活跃的。
 
@@ -92,29 +92,29 @@
 
 1.  如果存在*最优可行解*，则存在*最优基本可行解*。
 
-因此，如果存在最优解，则存在一个顶点包含最优解。为了找到这样的顶点，单纯形法的步骤会探索相邻的顶点，其中基本索引的集合在一个分量上有所不同，直到没有进一步改进为止。对获取起始可行点、证明解的最优性以及在两个连续顶点之间迭代感兴趣的读者，可以参考Nocedal & Wright（2006）或Winston & Goldberg（2004）。
+因此，如果存在最优解，则存在一个顶点包含最优解。为了找到这样的顶点，单纯形法的步骤会探索相邻的顶点，其中基本索引的集合在一个分量上有所不同，直到没有进一步改进为止。对获取起始可行点、证明解的最优性以及在两个连续顶点之间迭代感兴趣的读者，可以参考 Nocedal & Wright（2006）或 Winston & Goldberg（2004）。
 
 内点方法也被广泛使用，特别是对于大型线性规划问题。内点方法具有一些与单纯形法不同的共同特征。每次内点迭代的计算成本较高，但能显著推进解决方案，而单纯形法通常需要更多的低成本迭代（Nocedal & Wright，2006）。一些优化求解器可能还会使用单纯形法的变体来完善由内点方法获得的解决方案。
 
 *单纯形*方法和*内点*方法都在下图中表示。
 
-![](../Images/e6d4a18764a72ed98721583ecae7ea57.png)
+![](img/e6d4a18764a72ed98721583ecae7ea57.png)
 
 单纯形法（左）和内点法（右）的图示表示。（作者提供的图片）。
 
-现在完成了一些重要的理论方面的内容，在下一部分，我们将使用Python实现我们的第一个问题。为了解决这个问题，我们将首先使用Python包*scipy*，它有对开源求解器HiGHS的封装。此外，我们还将使用*pyomo*（Bynum等，2021）实现相同的问题，并用CBC求解器解决它。两个求解器都将利用单纯形法的变体来获得解决方案。
+现在完成了一些重要的理论方面的内容，在下一部分，我们将使用 Python 实现我们的第一个问题。为了解决这个问题，我们将首先使用 Python 包*scipy*，它有对开源求解器 HiGHS 的封装。此外，我们还将使用*pyomo*（Bynum 等，2021）实现相同的问题，并用 CBC 求解器解决它。两个求解器都将利用单纯形法的变体来获得解决方案。
 
 # 产品组合问题
 
 在产品组合问题中，我们必须将有限的*I*资源分配给生产*J*种产品，以最大化预期回报。每种产品*j*具有已知的单位利润率*cⱼ*，并需要已知量的每种资源*fᵢⱼ*。考虑每种资源的可用量*bᵢ*。我们的决策变量表示每种产品应生产的数量*xⱼ*。我们可以将问题表述为如下。
 
-![](../Images/fc6f2d68458a5e3fddd97a099dd637f0.png)
+![](img/fc6f2d68458a5e3fddd97a099dd637f0.png)
 
 产品组合问题。（作者提供的图片）。
 
 从这个结构出发，我们可以轻松地将问题转换为矩阵形式，其中矩阵*A_ub*在第*i*行和第*j*列的元素是*fᵢⱼ*。
 
-考虑一个例子，其中我们有三种反应物{A, B, C}用于生产三种产品{D, E, F}。每种反应物的可用量分别为8000、3000和2000。每种产品的利润率分别为2.15、1.34、1.72。比例见下表。
+考虑一个例子，其中我们有三种反应物{A, B, C}用于生产三种产品{D, E, F}。每种反应物的可用量分别为 8000、3000 和 2000。每种产品的利润率分别为 2.15、1.34、1.72。比例见下表。
 
 ```py
 +---------------------+--------+-------+------+
@@ -160,13 +160,13 @@ print(sol)
 
 它应该返回具有属性*fun*（目标函数）和*x*（决策变量向量）的解决方案。
 
-使用矩阵符号来描述这个问题比使用其他方法更加直观。对于更复杂的问题，代数建模语言（AML）可以非常有帮助。在Python中，一个出色的开源替代方案是*pyomo*（Bynum等，2021）。那么让我们将其应用于产品组合问题。
+使用矩阵符号来描述这个问题比使用其他方法更加直观。对于更复杂的问题，代数建模语言（AML）可以非常有帮助。在 Python 中，一个出色的开源替代方案是*pyomo*（Bynum 等，2021）。那么让我们将其应用于产品组合问题。
 
 ```py
 import pyomo.environ as pyo
 ```
 
-在*pyomo*中，有两种建模问题的方法：*Abstract*和*Concrete*模型。在第一种方法中，问题的代数表达式是在提供数据值之前定义的，而在第二种方法中，模型实例在定义其元素时立即创建。您可以在[库文档](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)中或在Bynum等（2021）的书中找到更多关于这些方法的信息。在本文中，我们将采用*Concrete*模型形式。
+在*pyomo*中，有两种建模问题的方法：*Abstract*和*Concrete*模型。在第一种方法中，问题的代数表达式是在提供数据值之前定义的，而在第二种方法中，模型实例在定义其元素时立即创建。您可以在[库文档](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)中或在 Bynum 等（2021）的书中找到更多关于这些方法的信息。在本文中，我们将采用*Concrete*模型形式。
 
 ```py
 model = pyo.ConcreteModel()
@@ -187,7 +187,7 @@ model.J = pyo.Set(initialize=["D", "E", "F"])
 
 由于我们使用*ConcreteModel*方法，因此在实例化时我们必须立即为每个组件提供值。对于集合，这是通过*initialize*关键字参数完成的。
 
-现在让我们创建模型的固定参数。在*pyomo*中，我们可以使用*Param*类来存储参数。参数可以在集合上定义。在这种情况下，我们必须在定义中将给定的集合作为第一个参数传递。至于其他*pyomo*组件，如果定义的元素（变量、参数、表达式或约束）由多个集合索引，可以在此语句中传递多个集合。此定义采用了Python的**args**风格。
+现在让我们创建模型的固定参数。在*pyomo*中，我们可以使用*Param*类来存储参数。参数可以在集合上定义。在这种情况下，我们必须在定义中将给定的集合作为第一个参数传递。至于其他*pyomo*组件，如果定义的元素（变量、参数、表达式或约束）由多个集合索引，可以在此语句中传递多个集合。此定义采用了 Python 的**args**风格。
 
 ```py
 # Availability
@@ -230,7 +230,7 @@ def obj_func(model):
 model.obj = pyo.Objective(rule=obj_func, sense=pyo.maximize)
 ```
 
-最后，让我们实例化一个求解器，并使用它来解决我们的模型。在这个例子中，我使用了开源求解器CBC。您可以从[这个链接](https://www.coin-or.org/download/binary/Cbc/)下载CBC二进制文件。您还可以[在这里](https://github.com/coin-or/Cbc)找到安装教程。因为CBC可执行文件已包含在我的系统的PATH变量中，所以我可以在不指定可执行文件路径的情况下实例化求解器。如果您的系统没有设置，请通过关键字参数“executable”传递可执行文件的路径。
+最后，让我们实例化一个求解器，并使用它来解决我们的模型。在这个例子中，我使用了开源求解器 CBC。您可以从[这个链接](https://www.coin-or.org/download/binary/Cbc/)下载 CBC 二进制文件。您还可以[在这里](https://github.com/coin-or/Cbc)找到安装教程。因为 CBC 可执行文件已包含在我的系统的 PATH 变量中，所以我可以在不指定可执行文件路径的情况下实例化求解器。如果您的系统没有设置，请通过关键字参数“executable”传递可执行文件的路径。
 
 ```py
 cbc = pyo.SolverFactory("cbc")
@@ -245,7 +245,7 @@ sol = cbc.solve(model, tee=False)
 
 在运输问题中，我们必须将供应商 *I* 的有限容量 *bᵢ* 与客户 *J* 的已知需求 *dⱼ* 匹配。每对 (*i*, *j*) 具有已知的供应成本 *cᵢⱼ*。我们的目标是通过定义每个需求由每个供应商提供的数量来最小化总成本。因此，我们考虑决策变量 *xᵢⱼ* 来表示这些数量。如果我们考虑总供应能力满足总需求的条件，我们可以将问题表述为以下内容。
 
-![](../Images/bf95121652cdd7505efabfa5f004e954.png)
+![](img/bf95121652cdd7505efabfa5f004e954.png)
 
 运输问题。（作者提供的图片）。
 
@@ -360,7 +360,7 @@ for i, j in model.x:
 
 运筹学广泛使用数值优化。Winston & Goldberg (2004) 的书对于那些对优化的更多应用感兴趣的人可以非常有帮助，除了与相关科学的联系。
 
-一些实际问题包括离散变量，以形成析取问题方面和整体性。我写了几篇关于这个主题的中等文章，可能会有所帮助。请参阅这里的 [分支与界限介绍](/a-gentle-introduction-to-branch-bound-d00a4ee1cad)，经典的 [背包问题](https://medium.com/towards-data-science/an-introduction-to-mixed-integer-linear-programming-the-knapsack-problem-1445452a9fe9)，以及 [车间调度问题](https://medium.com/towards-data-science/the-job-shop-scheduling-problem-mixed-integer-programming-models-4bbee83d16ab)。
+一些实际问题包括离散变量，以形成析取问题方面和整体性。我写了几篇关于这个主题的中等文章，可能会有所帮助。请参阅这里的 分支与界限介绍，经典的 [背包问题](https://medium.com/towards-data-science/an-introduction-to-mixed-integer-linear-programming-the-knapsack-problem-1445452a9fe9)，以及 [车间调度问题](https://medium.com/towards-data-science/the-job-shop-scheduling-problem-mixed-integer-programming-models-4bbee83d16ab)。
 
 一些问题还包括*非线性*函数，无论是在目标函数还是约束条件中。如果是这种情况，你可能会想查看这篇其他文章：
 
@@ -376,7 +376,7 @@ towardsdatascience.com](/nonlinear-programming-theory-and-applications-cfe127b60
 
 # 参考文献
 
-Bynum, M. L. 等, 2021\. *Pyomo：Python中的优化建模.* 施普林格。
+Bynum, M. L. 等, 2021\. *Pyomo：Python 中的优化建模.* 施普林格。
 
 Luenberger, D. G. & Ye, Y., 2008\. *线性与非线性编程.* 第三版. 斯坦福: 施普林格。
 

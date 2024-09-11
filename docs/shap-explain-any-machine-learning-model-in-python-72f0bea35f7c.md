@@ -1,18 +1,18 @@
 # SHAP：用 Python 解释任何机器学习模型
 
-> 原文：[https://towardsdatascience.com/shap-explain-any-machine-learning-model-in-python-72f0bea35f7c?source=collection_archive---------2-----------------------#2023-01-11](https://towardsdatascience.com/shap-explain-any-machine-learning-model-in-python-72f0bea35f7c?source=collection_archive---------2-----------------------#2023-01-11)
+> 原文：[`towardsdatascience.com/shap-explain-any-machine-learning-model-in-python-72f0bea35f7c?source=collection_archive---------2-----------------------#2023-01-11`](https://towardsdatascience.com/shap-explain-any-machine-learning-model-in-python-72f0bea35f7c?source=collection_archive---------2-----------------------#2023-01-11)
 
-![](../Images/4b8cc3946e79898437b4c129844a6099.png)
+![](img/4b8cc3946e79898437b4c129844a6099.png)
 
 图片由 [Priscilla Du Preez](https://unsplash.com/@priscilladupreez?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 你的 SHAP、TreeSHAP 和 DeepSHAP 综合指南
 
-[](https://louis-chan.medium.com/?source=post_page-----72f0bea35f7c--------------------------------)[![Louis Chan](../Images/6d8df9a478e929dd521059631f26e081.png)](https://louis-chan.medium.com/?source=post_page-----72f0bea35f7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72f0bea35f7c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72f0bea35f7c--------------------------------) [Louis Chan](https://louis-chan.medium.com/?source=post_page-----72f0bea35f7c--------------------------------)
+[](https://louis-chan.medium.com/?source=post_page-----72f0bea35f7c--------------------------------)![Louis Chan](https://louis-chan.medium.com/?source=post_page-----72f0bea35f7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72f0bea35f7c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----72f0bea35f7c--------------------------------) [Louis Chan](https://louis-chan.medium.com/?source=post_page-----72f0bea35f7c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d585e26760a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-explain-any-machine-learning-model-in-python-72f0bea35f7c&user=Louis+Chan&userId=6d585e26760a&source=post_page-6d585e26760a----72f0bea35f7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72f0bea35f7c--------------------------------) ·13 分钟阅读·2023年1月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72f0bea35f7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-explain-any-machine-learning-model-in-python-72f0bea35f7c&user=Louis+Chan&userId=6d585e26760a&source=-----72f0bea35f7c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6d585e26760a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-explain-any-machine-learning-model-in-python-72f0bea35f7c&user=Louis+Chan&userId=6d585e26760a&source=post_page-6d585e26760a----72f0bea35f7c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72f0bea35f7c--------------------------------) ·13 分钟阅读·2023 年 1 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F72f0bea35f7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-explain-any-machine-learning-model-in-python-72f0bea35f7c&user=Louis+Chan&userId=6d585e26760a&source=-----72f0bea35f7c---------------------clap_footer-----------)
 
 --
 

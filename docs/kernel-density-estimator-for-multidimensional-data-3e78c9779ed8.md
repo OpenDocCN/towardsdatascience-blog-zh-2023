@@ -1,18 +1,18 @@
 # 多维数据的核密度估计器
 
-> 原文：[https://towardsdatascience.com/kernel-density-estimator-for-multidimensional-data-3e78c9779ed8?source=collection_archive---------1-----------------------#2023-10-04](https://towardsdatascience.com/kernel-density-estimator-for-multidimensional-data-3e78c9779ed8?source=collection_archive---------1-----------------------#2023-10-04)
+> 原文：[`towardsdatascience.com/kernel-density-estimator-for-multidimensional-data-3e78c9779ed8?source=collection_archive---------1-----------------------#2023-10-04`](https://towardsdatascience.com/kernel-density-estimator-for-multidimensional-data-3e78c9779ed8?source=collection_archive---------1-----------------------#2023-10-04)
 
-## 使用实际数据集演示KDE
+## 使用实际数据集演示 KDE
 
-[](https://medium.com/@jaroslaw.drapala?source=post_page-----3e78c9779ed8--------------------------------)[![Jaroslaw Drapala](../Images/34de3c52fc32005e36930135254ae45e.png)](https://medium.com/@jaroslaw.drapala?source=post_page-----3e78c9779ed8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e78c9779ed8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e78c9779ed8--------------------------------) [Jaroslaw Drapala](https://medium.com/@jaroslaw.drapala?source=post_page-----3e78c9779ed8--------------------------------)
+[](https://medium.com/@jaroslaw.drapala?source=post_page-----3e78c9779ed8--------------------------------)![Jaroslaw Drapala](https://medium.com/@jaroslaw.drapala?source=post_page-----3e78c9779ed8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e78c9779ed8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e78c9779ed8--------------------------------) [Jaroslaw Drapala](https://medium.com/@jaroslaw.drapala?source=post_page-----3e78c9779ed8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce6da4a69810&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimator-for-multidimensional-data-3e78c9779ed8&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=post_page-ce6da4a69810----3e78c9779ed8---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e78c9779ed8--------------------------------) ·11分钟阅读·2023年10月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e78c9779ed8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimator-for-multidimensional-data-3e78c9779ed8&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=-----3e78c9779ed8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce6da4a69810&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimator-for-multidimensional-data-3e78c9779ed8&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=post_page-ce6da4a69810----3e78c9779ed8---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e78c9779ed8--------------------------------) ·11 分钟阅读·2023 年 10 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e78c9779ed8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimator-for-multidimensional-data-3e78c9779ed8&user=Jaroslaw+Drapala&userId=ce6da4a69810&source=-----3e78c9779ed8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3e78c9779ed8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimator-for-multidimensional-data-3e78c9779ed8&source=-----3e78c9779ed8---------------------bookmark_footer-----------)![](../Images/d0bff3735f3ef37d3f870c1c5ffd8fab.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3e78c9779ed8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkernel-density-estimator-for-multidimensional-data-3e78c9779ed8&source=-----3e78c9779ed8---------------------bookmark_footer-----------)![](img/d0bff3735f3ef37d3f870c1c5ffd8fab.png)
 
 照片由[Marco Bianchetti](https://unsplash.com/@marcobian?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,25 +24,25 @@
 
 KDE 是一个由几个类似的核函数组成的复合函数。我选择了高斯核，因为它易于分析。这个函数是多维高斯的原型
 
-![](../Images/2e20771a70291a41c80118b70d397b2e.png)
+![](img/2e20771a70291a41c80118b70d397b2e.png)
 
 这本身是一个扩展
 
-![](../Images/1f5814cfde0b6b60d5ae7436eb0a7408.png)
+![](img/1f5814cfde0b6b60d5ae7436eb0a7408.png)
 
 到许多维度。
 
 向量 **x** 总共有 *d* 维（特征），上标表示特征的索引：
 
-![](../Images/bb3c9787ea5bb097bf6706256173d9cd.png)
+![](img/bb3c9787ea5bb097bf6706256173d9cd.png)
 
 **H** 是一个 *d* 乘 *d* 的系数矩阵，决定了函数的形式。以下是一个二维 (*d =* 2) 的例子：
 
-![](../Images/cbce5370a462ce0479e6c992abff661c.png)
+![](img/cbce5370a462ce0479e6c992abff661c.png)
 
 也许你还记得，只有曲线下的面积为单位的函数才能加入 PDF 俱乐部。因此，为了获得多变量高斯核函数，我们必须添加一些归一化项：
 
-![](../Images/f609b9ba6669c68a81089822a94972e5.png)
+![](img/f609b9ba6669c68a81089822a94972e5.png)
 
 你可以自行验证，插入 *d =* 1 会得到一个标准的单维高斯函数。
 
@@ -50,11 +50,11 @@ KDE 是一个由几个类似的核函数组成的复合函数。我选择了高�
 
 核函数是一个自定义的模板函数，用于对每个数据点应用，以便使用简单的求和构建整个数据集的 PDF：
 
-![](../Images/f6282de19b1b713749cc8b3b97acaec9.png)
+![](img/f6282de19b1b713749cc8b3b97acaec9.png)
 
 其中 **x***ᵢ* 是第 *i* 个数据点：
 
-![](../Images/81050e75748e124d4c7b938038913b49.png)
+![](img/81050e75748e124d4c7b938038913b49.png)
 
 如果所有这些数学内容让你感到不安，不用担心。我将提供 Python 代码来创建可视化，展示其工作原理。要记住的主要点是：
 
@@ -124,7 +124,7 @@ def KDE(x, H, data):
 
 注意，对于单个数据点，*f*(**x**)等于*K*(**x**）。
 
-最后的函数`show_pdf`显示二维函数`func`并将数据点`data`添加到其中，但`data`不必与函数`func`相关。PDF有两种视角：轮廓图和表面图。
+最后的函数`show_pdf`显示二维函数`func`并将数据点`data`添加到其中，但`data`不必与函数`func`相关。PDF 有两种视角：轮廓图和表面图。
 
 ```py
 def show_pdf(func, data, 
@@ -187,7 +187,7 @@ def show_pdf(func, data,
 
 让我们从最简单的情况开始，用单位矩阵**H**表示：
 
-![](../Images/88337531474446b59f65f118c985f6c1.png)
+![](img/88337531474446b59f65f118c985f6c1.png)
 
 坐标轴的原点作为一个数据点。
 
@@ -210,21 +210,21 @@ show_pdf(func=KDE_partial, data=data)
 
 高斯核围绕数据点居中。
 
-![](../Images/0bbb91bfdbf5e2609fc73a3e4a2e7db4.png)
+![](img/0bbb91bfdbf5e2609fc73a3e4a2e7db4.png)
 
-具有0协方差的高斯核。
+具有 0 协方差的高斯核。
 
-让我们通过将非对角元素固定为0.5来引入一些相关性：
+让我们通过将非对角元素固定为 0.5 来引入一些相关性：
 
-![](../Images/d816f50bc890e382b464db1ab1ecb0f3.png)
+![](img/d816f50bc890e382b464db1ab1ecb0f3.png)
 
-KDE的形状变得倾斜和更薄。半主轴平行于*x*⁽¹⁾ = *x*⁽²⁾线。
+KDE 的形状变得倾斜和更薄。半主轴平行于*x*⁽¹⁾ = *x*⁽²⁾线。
 
-![](../Images/64966317c7fbbf2dda3e4283a240925a.png)
+![](img/64966317c7fbbf2dda3e4283a240925a.png)
 
-具有0.5协方差的高斯核。
+具有 0.5 协方差的高斯核。
 
-随着协方差系数的增加，KDE变得更加狭窄。由于函数值变化更快，我提高了图形的分辨率。
+随着协方差系数的增加，KDE 变得更加狭窄。由于函数值变化更快，我提高了图形的分辨率。
 
 ```py
 H = [[1, 0.9],
@@ -237,21 +237,21 @@ show_pdf(func=KDE_partial, data=data,
          resolution=300, surf_density=50)
 ```
 
-![](../Images/863acbf8dfe28de0447d40598522095c.png)
+![](img/863acbf8dfe28de0447d40598522095c.png)
 
-具有0.9协方差的高斯核。
+具有 0.9 协方差的高斯核。
 
 你可以很容易地预测当协方差变为负数时会发生什么。
 
-![](../Images/6bd75856a6906b7bc097c5a59d184d34.png)![](../Images/d9cb85c2a2ba083d96878163e492a73e.png)
+![](img/6bd75856a6906b7bc097c5a59d184d34.png)![](img/d9cb85c2a2ba083d96878163e492a73e.png)
 
-具有-0.5协方差的高斯核。
+具有-0.5 协方差的高斯核。
 
-这些示例清楚地展示了高斯PDF如何跟随数据的相关结构。
+这些示例清楚地展示了高斯 PDF 如何跟随数据的相关结构。
 
-你可能会想知道如何旋转高斯PDF。为此，请取一个[旋转矩阵](https://en.wikipedia.org/wiki/Rotation_matrix) **R**（我更喜欢顺时针版本）：
+你可能会想知道如何旋转高斯 PDF。为此，请取一个[旋转矩阵](https://en.wikipedia.org/wiki/Rotation_matrix) **R**（我更喜欢顺时针版本）：
 
-![](../Images/3802a41300a12c961403a1e532af83e1.png)
+![](img/3802a41300a12c961403a1e532af83e1.png)
 
 并将**H**替换为**RHR**ᵀ。以下是一个方便的函数，它返回表示按α度（以弧度为单位）旋转的矩阵的数组。
 
@@ -281,7 +281,7 @@ show_pdf(func=KDE_partial, data=data)
 
 注意，第一个轴的尺度扩展了两倍，而第二个尺度缩小了五倍，这是因为对矩阵**H**的对角元素应用了不同的值。
 
-![](../Images/e113438e7222e716c1f9e3ab7b46b126.png)
+![](img/e113438e7222e716c1f9e3ab7b46b126.png)
 
 拉伸和旋转的高斯核。
 
@@ -310,7 +310,7 @@ dfi.export(df_styled, 'filename.png', dpi=300)
 data = df[['Height','Weight']].to_numpy()
 ```
 
-![](../Images/7ff9db24d12858a41c7a6fdbe8b562e4.png)
+![](img/7ff9db24d12858a41c7a6fdbe8b562e4.png)
 
 从我的学生那里收集的身高和体重数据样本。
 
@@ -327,7 +327,7 @@ KDE_partial = partial(KDE, H=np.array(H), data=data)
 show_pdf(func=KDE_partial, data=data, aspect='auto', margins=0.15)
 ```
 
-![](../Images/752275bfb233e340711646a47176ac38.png)
+![](img/752275bfb233e340711646a47176ac38.png)
 
 使用的核函数过小。
 
@@ -345,13 +345,13 @@ KDE_partial = partial(KDE, H=s*np.array(H), data=data)
 show_pdf(func=KDE_partial, data=data, aspect='auto', margins=0.15)
 ```
 
-![](../Images/745f23b3646767636ddfd979f6ea455c.png)
+![](img/745f23b3646767636ddfd979f6ea455c.png)
 
 核大小应进一步增加。
 
 单个峰值结合成一个漂亮的 PDF，但它仍然显得过于详细。因此，将*s*增加到 64，以获得以下结果。
 
-![](../Images/c8f2bb3d94109172ef9f6a50746d8243.png)
+![](img/c8f2bb3d94109172ef9f6a50746d8243.png)
 
 核函数似乎大小合适。
 
@@ -370,11 +370,11 @@ ax.plot(df['Height'], df['Weight'], 's', color='white',
 plt.show()
 ```
 
-![](../Images/3d43103059eb959061d632c6c2ba086d.png)
+![](img/3d43103059eb959061d632c6c2ba086d.png)
 
 矩阵**H**中的非零协方差元素对 PDF 会产生什么影响？对于协方差条目值为 0.8，返回以下 PDF。
 
-![](../Images/153164c3772bb1beb7bee3ae9b3dae78.png)
+![](img/153164c3772bb1beb7bee3ae9b3dae78.png)
 
 这似乎是前一图形的一个风天变体。
 
@@ -384,17 +384,17 @@ PDF 质量明显下降。
 
 作为一个练习，考虑为我在众多医学数据分析研究项目中收集的大型[身高和体重数据](https://raw.githubusercontent.com/jdrapala/datasets/main/cardiac_patients.xlsx)创建一个 PDF 表示。然而，请记住，这些数据来自于心脏病、糖尿病和其他疾病的患者，因此在为一般人群得出结论时要谨慎。我对这些数据的质量也有一些担忧，因为它是从许多医院收集的。
 
-![](../Images/790f91ac223496f9a8b25a3d31ef8764.png)
+![](img/790f91ac223496f9a8b25a3d31ef8764.png)
 
 从各种医院收集的身高和体重数据。
 
 # 5\. 外行星数据集
 
-KDE在多模态分散数据中尤其有用。因此，我给你介绍另一个数据集。我相信我们都对鸢尾花数据集感到厌倦了。
+KDE 在多模态分散数据中尤其有用。因此，我给你介绍另一个数据集。我相信我们都对鸢尾花数据集感到厌倦了。
 
-这个数据集是直接从[Exoplanet Orbit Database网页](http://exoplanets.org/)下载的。由于[文件](http://exoplanets.org/csv-files/exoplanets.csv)很大且包含混合数据类型，我不得不在`read_csv`方法中设置`low_memory=False`。
+这个数据集是直接从[Exoplanet Orbit Database 网页](http://exoplanets.org/)下载的。由于[文件](http://exoplanets.org/csv-files/exoplanets.csv)很大且包含混合数据类型，我不得不在`read_csv`方法中设置`low_memory=False`。
 
-我选择了两列：系外行星的质量（以Jupyter质量为单位）和它与母星的距离（以天文单位为半长轴）。
+我选择了两列：系外行星的质量（以 Jupyter 质量为单位）和它与母星的距离（以天文单位为半长轴）。
 
 ```py
 URL = "http://exoplanets.org/csv-files/exoplanets.csv"
@@ -419,7 +419,7 @@ df_styled = df.sample(7).style.background_gradient(axis=0,
 dfi.export(df_styled, 'filename.png', dpi=300)
 ```
 
-![](../Images/24703ed607177b6b8940eafa5d7771f1.png)
+![](img/24703ed607177b6b8940eafa5d7771f1.png)
 
 一份系外行星数据集的示例。
 
@@ -434,11 +434,11 @@ plt.yscale('log')
 plt.show()
 ```
 
-![](../Images/54cbc0c0a97e65d8fe4de21cadc8ed79.png)
+![](img/54cbc0c0a97e65d8fe4de21cadc8ed79.png)
 
 对数尺度上的系外行星数据。
 
-KDE为*s* = 0.7生成了视觉上令人满意的PDF，使用了这些数据。
+KDE 为*s* = 0.7 生成了视觉上令人满意的 PDF，使用了这些数据。
 
 ```py
 # logarithmic scale is more appropriate for this data
@@ -456,11 +456,11 @@ show_pdf(func=KDE_partial, data=data, aspect='auto',
          markeralpha=1, s=1.5, margins=0.15)
 ```
 
-![](../Images/8af68eaa3539d512596a6e60e84ba521.png)
+![](img/8af68eaa3539d512596a6e60e84ba521.png)
 
 系外行星数据被分为三个簇，尽管左侧的簇明显更稀疏。
 
-我建议你尝试Scikit-learn库中的`[KernelDensity](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KernelDensity.html)`方法，它允许你在KDE拟合数据后轻松生成合成数据。
+我建议你尝试 Scikit-learn 库中的`[KernelDensity](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KernelDensity.html)`方法，它允许你在 KDE 拟合数据后轻松生成合成数据。
 
 ```py
 from sklearn.neighbors import KernelDensity
@@ -482,15 +482,15 @@ plt.ylabel('Distance', fontsize=16)
 plt.show()
 ```
 
-![](../Images/7ab44485c6550063eeac3a1e414b342f.png)
+![](img/7ab44485c6550063eeac3a1e414b342f.png)
 
-使用Scikit-learn合成生成的系外行星数据。
+使用 Scikit-learn 合成生成的系外行星数据。
 
 # 最后的话
 
-精美的可视化有助于从数据中学习并得出适当的结论。KDE使数据分布以视觉上令人愉悦的方式呈现。因此，其大多数数据探索应用归结为二变量情况。
+精美的可视化有助于从数据中学习并得出适当的结论。KDE 使数据分布以视觉上令人愉悦的方式呈现。因此，其大多数数据探索应用归结为二变量情况。
 
-请记住，在单点计算KDE值时，需要处理所有数据点，这在大规模计算中可能会耗时。在这种情况下，你应该考虑使用高斯混合模型。不过那是另一回事……
+请记住，在单点计算 KDE 值时，需要处理所有数据点，这在大规模计算中可能会耗时。在这种情况下，你应该考虑使用高斯混合模型。不过那是另一回事……
 
 # 致谢
 
@@ -500,7 +500,7 @@ plt.show()
 
 # 参考文献
 
-[1] Kristan, M., Leonardis, A., Skočaj, D. [带高斯核的多变量在线核密度估计](https://pdf.sciencedirectassets.com/272206/1-s2.0-S0031320311X00067/1-s2.0-S0031320311001233/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIESmajJC%2FTm04hxqPfbYr6kAhdZvgQiBEGFYdOdtqHEQAiBC8RMFSczi8WU3KfQojbtqCm6nvFR%2BqZ%2BQRgt4W3IQGiqzBQh8EAUaDDA1OTAwMzU0Njg2NSIMN7fEICU7zOOWmDNzKpAFyvinHQU2qBx0wD7jtsxjm2ztwinuBy0qGzKyJagx2anwYwb3iKdgYT6m8g3f9slQ87NNdId1xPrNml89D68ejO1oA2dwP5p7c07A9ZwnM3Tcn9uHwOJNcXe0QqQlc6qDhYZH0cgUd3j%2F2jsK1MJCqNyjOIvJA1%2FWSA5bE9nrPOhdysbc%2FU7OULr5ppX1Z14LuuSUCPY2zFJwXAQc7q%2FuE1KJ7uEQg%2BkA6i65Xt5PUrjqxyodqqiYx16lkUEM9hhLvkoInD9n6hVXfk6xBillcv%2FlT9QqSNmNIteuxoUONPZkR29CRXL74%2F4gysMWXjvsOgIR3qaKOWtG5Xh34gNW6VxKfoSfSiz8FLxSBFqJoSvED9LiVL4Bwsk9rsUJTesz8rrGPYco%2F%2Bjy%2FXgYNDFRtLbHrjo%2F%2B6Jy5KTPU7MY7AmiikVG1kXm09Mu6nCzJNOzumo%2Ffo802dWf8e0xXhNpJt%2Bkr9GG2uQvvBBU9GG%2BmMywhb8w2ykMzYShJ%2FLpzTiHawBKgtqtx0BHdiankCPae%2F5mvYv%2BDUBea%2F2piAWSfQXqARy1fQP4jafReC6iL5e4UaWeJO6H%2BdsJjZefyLzteBkpumQ%2Blp%2FjnbzmqhqP8n3oCLsJwtLXMV%2BSwdjlchcLeAeq34kU6NrqWtIHbgnfIkrXeGo3p7UdQZL9Ongwv%2FWPjFXaFWZTlthtbf9HL6epGxuDrj0uL75TtDdsPsWBBZMiBwZTI0BqAoCbN3VS0O9h1jQ4AqTl4z73xAhqAjP%2FGNQSBcyqtLVklT0amW08bmOH5Ut1PdwgbLPBpyZsUPOucRO3IjIVNOxWjQMuKWc4HNLmL9UCIUZd2ksfis3hWSzw8Hf2NtpWIfc7qaFwNTgw5tTMqAY6sgFepI5a7IP8yRlOwSQS4LNRJJ87QB%2B%2BFxD1eTkpNi4%2BQRHNVeJkk5XgdXNbQxXr4GFEOtw14qwYaku453DXyttvQ8weJag0tFd5UUEkx0xrpcfBmwTT2BF3mlu8DlGZhT0DeYz4hhK292mz4qefanyJMhsrOQS0p0P9td0Y9KCKZnLnP4kbi77js8VYa%2Bl3zgkd8tmQPB%2BnCCwl4rmPQy%2BuVf%2F6To0AIgf0H5ebX0%2Bt1DhK&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230926T192304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ3PHCVTYYCHLCD4W%2F20230926%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=f86b983326f340f62ce4a5455f34ccc230581a7a8f44d266a74152bf8854d4f5&hash=1a47a3164b9811107af215d158b808ea0561ba9a833e4658ad1ee510610ccf9e&host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&pii=S0031320311001233&tid=spdf-73b3669b-7711-4ae2-8024-1a98651656df&sid=30bec3965af1f544e80850e6c3dac8580543gxrqb&type=client&tsoh=d3d3LnNjaWVuY2VkaXJlY3QuY29t&ua=160f5750000300525556&rr=80cde11778e3bfd0&cc=pl) (2011). *模式识别*, 44(10–11), 第2630–2642页.
+[1] Kristan, M., Leonardis, A., Skočaj, D. [带高斯核的多变量在线核密度估计](https://pdf.sciencedirectassets.com/272206/1-s2.0-S0031320311X00067/1-s2.0-S0031320311001233/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIESmajJC%2FTm04hxqPfbYr6kAhdZvgQiBEGFYdOdtqHEQAiBC8RMFSczi8WU3KfQojbtqCm6nvFR%2BqZ%2BQRgt4W3IQGiqzBQh8EAUaDDA1OTAwMzU0Njg2NSIMN7fEICU7zOOWmDNzKpAFyvinHQU2qBx0wD7jtsxjm2ztwinuBy0qGzKyJagx2anwYwb3iKdgYT6m8g3f9slQ87NNdId1xPrNml89D68ejO1oA2dwP5p7c07A9ZwnM3Tcn9uHwOJNcXe0QqQlc6qDhYZH0cgUd3j%2F2jsK1MJCqNyjOIvJA1%2FWSA5bE9nrPOhdysbc%2FU7OULr5ppX1Z14LuuSUCPY2zFJwXAQc7q%2FuE1KJ7uEQg%2BkA6i65Xt5PUrjqxyodqqiYx16lkUEM9hhLvkoInD9n6hVXfk6xBillcv%2FlT9QqSNmNIteuxoUONPZkR29CRXL74%2F4gysMWXjvsOgIR3qaKOWtG5Xh34gNW6VxKfoSfSiz8FLxSBFqJoSvED9LiVL4Bwsk9rsUJTesz8rrGPYco%2F%2Bjy%2FXgYNDFRtLbHrjo%2F%2B6Jy5KTPU7MY7AmiikVG1kXm09Mu6nCzJNOzumo%2Ffo802dWf8e0xXhNpJt%2Bkr9GG2uQvvBBU9GG%2BmMywhb8w2ykMzYShJ%2FLpzTiHawBKgtqtx0BHdiankCPae%2F5mvYv%2BDUBea%2F2piAWSfQXqARy1fQP4jafReC6iL5e4UaWeJO6H%2BdsJjZefyLzteBkpumQ%2Blp%2FjnbzmqhqP8n3oCLsJwtLXMV%2BSwdjlchcLeAeq34kU6NrqWtIHbgnfIkrXeGo3p7UdQZL9Ongwv%2FWPjFXaFWZTlthtbf9HL6epGxuDrj0uL75TtDdsPsWBBZMiBwZTI0BqAoCbN3VS0O9h1jQ4AqTl4z73xAhqAjP%2FGNQSBcyqtLVklT0amW08bmOH5Ut1PdwgbLPBpyZsUPOucRO3IjIVNOxWjQMuKWc4HNLmL9UCIUZd2ksfis3hWSzw8Hf2NtpWIfc7qaFwNTgw5tTMqAY6sgFepI5a7IP8yRlOwSQS4LNRJJ87QB%2B%2BFxD1eTkpNi4%2BQRHNVeJkk5XgdXNbQxXr4GFEOtw14qwYaku453DXyttvQ8weJag0tFd5UUEkx0xrpcfBmwTT2BF3mlu8DlGZhT0DeYz4hhK292mz4qefanyJMhsrOQS0p0P9td0Y9KCKZnLnP4kbi77js8VYa%2Bl3zgkd8tmQPB%2BnCCwl4rmPQy%2BuVf%2F6To0AIgf0H5ebX0%2Bt1DhK&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230926T192304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ3PHCVTYYCHLCD4W%2F20230926%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=f86b983326f340f62ce4a5455f34ccc230581a7a8f44d266a74152bf8854d4f5&hash=1a47a3164b9811107af215d158b808ea0561ba9a833e4658ad1ee510610ccf9e&host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&pii=S0031320311001233&tid=spdf-73b3669b-7711-4ae2-8024-1a98651656df&sid=30bec3965af1f544e80850e6c3dac8580543gxrqb&type=client&tsoh=d3d3LnNjaWVuY2VkaXJlY3QuY29t&ua=160f5750000300525556&rr=80cde11778e3bfd0&cc=pl) (2011). *模式识别*, 44(10–11), 第 2630–2642 页.
 
 [2] S. Węglarczyk*,* [核密度估计及其应用](https://www.itm-conferences.org/articles/itmconf/pdf/2018/08/itmconf_sam2018_00037.pdf) (2018), ITM web of conferences, vol. 23, EDP Sciences.
 

@@ -1,34 +1,34 @@
-# Kubernetes中的动态MIG分区
+# Kubernetes 中的动态 MIG 分区
 
-> 原文：[https://towardsdatascience.com/dynamic-mig-partitioning-in-kubernetes-89db6cdde7a3?source=collection_archive---------4-----------------------#2023-01-26](https://towardsdatascience.com/dynamic-mig-partitioning-in-kubernetes-89db6cdde7a3?source=collection_archive---------4-----------------------#2023-01-26)
+> 原文：[`towardsdatascience.com/dynamic-mig-partitioning-in-kubernetes-89db6cdde7a3?source=collection_archive---------4-----------------------#2023-01-26`](https://towardsdatascience.com/dynamic-mig-partitioning-in-kubernetes-89db6cdde7a3?source=collection_archive---------4-----------------------#2023-01-26)
 
-## 最大化GPU利用率并降低基础设施成本。
+## 最大化 GPU 利用率并降低基础设施成本。
 
-[](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)[![Michele Zanotti](../Images/6350ad98e5f057991b2e6f1a86a5c350.png)](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------) [Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)
+[](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)![Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------) [Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b7af839d7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&user=Michele+Zanotti&userId=9b7af839d7e&source=post_page-9b7af839d7e----89db6cdde7a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------) ·9分钟阅读·2023年1月26日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89db6cdde7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&user=Michele+Zanotti&userId=9b7af839d7e&source=-----89db6cdde7a3---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b7af839d7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&user=Michele+Zanotti&userId=9b7af839d7e&source=post_page-9b7af839d7e----89db6cdde7a3---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------) ·9 分钟阅读·2023 年 1 月 26 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89db6cdde7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&user=Michele+Zanotti&userId=9b7af839d7e&source=-----89db6cdde7a3---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89db6cdde7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&source=-----89db6cdde7a3---------------------bookmark_footer-----------)![](../Images/faced2bd5b9da0f06d26dcaf220db464.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89db6cdde7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&source=-----89db6cdde7a3---------------------bookmark_footer-----------)![](img/faced2bd5b9da0f06d26dcaf220db464.png)
 
 图片来源：[Growtika](https://unsplash.com/@growtika?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-为了减少基础设施开支，使用GPU加速器的高效方式至关重要。一种实现方法是将GPU划分为更小的分区，即切片，以便容器仅请求必要的资源。一些工作负载可能只需要GPU计算和内存的一小部分，因此在Kubernetes中能够将单个GPU分成多个切片，并允许个别容器请求这些切片是非常重要的。
+为了减少基础设施开支，使用 GPU 加速器的高效方式至关重要。一种实现方法是将 GPU 划分为更小的分区，即切片，以便容器仅请求必要的资源。一些工作负载可能只需要 GPU 计算和内存的一小部分，因此在 Kubernetes 中能够将单个 GPU 分成多个切片，并允许个别容器请求这些切片是非常重要的。
 
-这对用于运行人工智能 (AI) 和高性能计算 (HPC) 工作负载的大型Kubernetes集群特别相关，因为GPU利用效率低下可能对基础设施费用产生重大影响。这些低效通常是由于没有充分利用GPU的轻量级任务，如推理服务器和用于初步数据和模型探索的[Jupyter Notebooks](https://jupyter.org/)。
+这对用于运行人工智能 (AI) 和高性能计算 (HPC) 工作负载的大型 Kubernetes 集群特别相关，因为 GPU 利用效率低下可能对基础设施费用产生重大影响。这些低效通常是由于没有充分利用 GPU 的轻量级任务，如推理服务器和用于初步数据和模型探索的[Jupyter Notebooks](https://jupyter.org/)。
 
-例如，[欧洲核子研究组织 (CERN)](https://home.cern/)的研究人员发布了一篇[博客文章](https://kubernetes.web.cern.ch/blog/2023/01/09/efficient-access-to-shared-gpu-resources-part-1/?utm_id=FAUN_Kaptain356_Link_title)，介绍了他们如何使用MIG GPU分区来解决由波动性工作负载运行高能物理 (HEP) 模拟和代码效率低下导致的低GPU利用率问题。
+例如，[欧洲核子研究组织 (CERN)](https://home.cern/)的研究人员发布了一篇[博客文章](https://kubernetes.web.cern.ch/blog/2023/01/09/efficient-access-to-shared-gpu-resources-part-1/?utm_id=FAUN_Kaptain356_Link_title)，介绍了他们如何使用 MIG GPU 分区来解决由波动性工作负载运行高能物理 (HEP) 模拟和代码效率低下导致的低 GPU 利用率问题。
 
-NVIDIA GPU Operator支持在Kubernetes中使用MIG，但仅凭它不足以确保高效的GPU分区。在本文中，我们将探讨原因，并提供在Kubernetes中使用MIG的更有效解决方案：**动态MIG分区**。
+NVIDIA GPU Operator 支持在 Kubernetes 中使用 MIG，但仅凭它不足以确保高效的 GPU 分区。在本文中，我们将探讨原因，并提供在 Kubernetes 中使用 MIG 的更有效解决方案：**动态 MIG 分区**。
 
-# Kubernetes中的MIG支持
+# Kubernetes 中的 MIG 支持
 
-Kubernetes中的MIG支持由[NVIDIA设备插件](https://github.com/NVIDIA/k8s-device-plugin)提供，该插件允许将MIG设备（即隔离的GPU分区）暴露为通用的`nvidia.com/gpu`资源或特定资源类型，例如`nvidia.com/mig-1g.10gb`。
+Kubernetes 中的 MIG 支持由[NVIDIA 设备插件](https://github.com/NVIDIA/k8s-device-plugin)提供，该插件允许将 MIG 设备（即隔离的 GPU 分区）暴露为通用的`nvidia.com/gpu`资源或特定资源类型，例如`nvidia.com/mig-1g.10gb`。
 
-通过`nvidia-smi`手动管理MIG设备是不切实际的，因此NVIDIA提供了一种名为[nvidia-mig-parted](https://github.com/NVIDIA/mig-parted)的工具。该工具允许集群管理员声明性地定义节点上所有GPU所需的MIG设备集。该工具自动管理GPU分区状态，以匹配所需的配置。例如，以下是从nvidia-mig-parted GitHub存储库中提取的配置示例：
+通过`nvidia-smi`手动管理 MIG 设备是不切实际的，因此 NVIDIA 提供了一种名为[nvidia-mig-parted](https://github.com/NVIDIA/mig-parted)的工具。该工具允许集群管理员声明性地定义节点上所有 GPU 所需的 MIG 设备集。该工具自动管理 GPU 分区状态，以匹配所需的配置。例如，以下是从 nvidia-mig-parted GitHub 存储库中提取的配置示例：
 
 ```py
 version: v1
@@ -61,9 +61,9 @@ mig-configs:
         "3g.20gb": 2
 ```
 
-在Kubernetes中，集群管理员通常不会直接使用nvidia-mig-parted，而是通过[NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/gpu-operator-mig.html)来使用它。
+在 Kubernetes 中，集群管理员通常不会直接使用 nvidia-mig-parted，而是通过[NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/gpu-operator-mig.html)来使用它。
 
-这个操作程序进一步简化了MIG配置的应用。创建定义了一组允许的MIG配置的ConfigMap之后，NVIDIA GPU Operator只需要你用`nvidia.com/mig.config`标记节点，并指定作为值你想在该节点上应用的具体配置的名称。
+这个操作程序进一步简化了 MIG 配置的应用。创建定义了一组允许的 MIG 配置的 ConfigMap 之后，NVIDIA GPU Operator 只需要你用`nvidia.com/mig.config`标记节点，并指定作为值你想在该节点上应用的具体配置的名称。
 
 例如，参考上述定义的配置，我们可以将配置`all-3g.20gb`应用于节点`node-1`，如下所示：
 
@@ -71,9 +71,9 @@ mig-configs:
 kubectl label nodes node1 "nvidia.com/mig.config=all-2g.20gb"
 ```
 
-## 静态MIG配置会导致较差的可用性
+## 静态 MIG 配置会导致较差的可用性
 
-NVIDIA GPU Operator有一个显著的限制：MIG设备是通过静态配置创建的。
+NVIDIA GPU Operator 有一个显著的限制：MIG 设备是通过静态配置创建的。
 
 这意味着集群管理员必须首先定义他们认为可能需要的所有 MIG 配置，然后根据需要手动将其应用于每个节点。
 

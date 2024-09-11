@@ -1,18 +1,18 @@
 # 神经网络 — 初学者指南 (1.1)
 
-> 原文：[https://towardsdatascience.com/neural-networks-a-beginners-guide-7b374b66441a?source=collection_archive---------11-----------------------#2023-03-20](https://towardsdatascience.com/neural-networks-a-beginners-guide-7b374b66441a?source=collection_archive---------11-----------------------#2023-03-20)
+> 原文：[`towardsdatascience.com/neural-networks-a-beginners-guide-7b374b66441a?source=collection_archive---------11-----------------------#2023-03-20`](https://towardsdatascience.com/neural-networks-a-beginners-guide-7b374b66441a?source=collection_archive---------11-----------------------#2023-03-20)
 
 ## 建立关于神经网络的直觉
 
-[](https://shwetat20.medium.com/?source=post_page-----7b374b66441a--------------------------------)[![Shweta](../Images/18ffd9eedda819fc4459875cd52c7f3a.png)](https://shwetat20.medium.com/?source=post_page-----7b374b66441a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b374b66441a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b374b66441a--------------------------------) [Shweta](https://shwetat20.medium.com/?source=post_page-----7b374b66441a--------------------------------)
+[](https://shwetat20.medium.com/?source=post_page-----7b374b66441a--------------------------------)![Shweta](https://shwetat20.medium.com/?source=post_page-----7b374b66441a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b374b66441a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b374b66441a--------------------------------) [Shweta](https://shwetat20.medium.com/?source=post_page-----7b374b66441a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6cac7e4f2c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-a-beginners-guide-7b374b66441a&user=Shweta&userId=6cac7e4f2c0&source=post_page-6cac7e4f2c0----7b374b66441a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b374b66441a--------------------------------) ·10 min read·2023年3月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b374b66441a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-a-beginners-guide-7b374b66441a&user=Shweta&userId=6cac7e4f2c0&source=-----7b374b66441a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6cac7e4f2c0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-a-beginners-guide-7b374b66441a&user=Shweta&userId=6cac7e4f2c0&source=post_page-6cac7e4f2c0----7b374b66441a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b374b66441a--------------------------------) ·10 min read·2023 年 3 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b374b66441a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-a-beginners-guide-7b374b66441a&user=Shweta&userId=6cac7e4f2c0&source=-----7b374b66441a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b374b66441a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-a-beginners-guide-7b374b66441a&source=-----7b374b66441a---------------------bookmark_footer-----------)![](../Images/10df32f5ff8bc6b41142c5ad091c15c2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b374b66441a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-a-beginners-guide-7b374b66441a&source=-----7b374b66441a---------------------bookmark_footer-----------)![](img/10df32f5ff8bc6b41142c5ad091c15c2.png)
 
 照片由 [La-Rel Easter](https://unsplash.com/@lastnameeaster?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,27 +48,27 @@
 
 在复杂问题中，层的数量和每层中的节点数量将更多，每个隐藏层将学习在上一层未学到的表示。这些神经网络被称为‘**深度神经网络**’。
 
-对于回归问题，输出层中的节点数量为1；对于多分类问题，输出层中的节点数量等于标签/类别数量；对于二分类问题，输出层中的节点数量为1。
+对于回归问题，输出层中的节点数量为 1；对于多分类问题，输出层中的节点数量等于标签/类别数量；对于二分类问题，输出层中的节点数量为 1。
 
 神经网络的工作原理可以归结为给定层中的单个节点。
 
-![](../Images/ad36a4369eaa567c63fc353eb6c7ceaf.png)
+![](img/ad36a4369eaa567c63fc353eb6c7ceaf.png)
 
 ***神经网络中单个节点的工作原理（图片由作者提供）***
 
-如上所示，单个节点接受以下输入 — 偏置b和输入变量x1及x2。它还接受另一个参数作为输入 — 每个独立变量的权重。权重表示输入变量的重要性。
+如上所示，单个节点接受以下输入 — 偏置 b 和输入变量 x1 及 x2。它还接受另一个参数作为输入 — 每个独立变量的权重。权重表示输入变量的重要性。
 
 节点将处理加权输入总和，如下所示：
 
-z = w1x1 + w2x2 + bias（公式1）
+z = w1x1 + w2x2 + bias（公式 1）
 
-然后在给定层中的每个节点上应用激活函数以生成输出。应用激活函数后由节点生成的输出是a。
+然后在给定层中的每个节点上应用激活函数以生成输出。应用激活函数后由节点生成的输出是 a。
 
-f(z) = a（公式2）
+f(z) = a（公式 2）
 
 这是神经网络中单层单节点的工作原理。具有多个层和节点的网络也按照相同的原则运行。
 
-![](../Images/54dca79fc1fe42ba422fabe5935d89de.png)
+![](img/54dca79fc1fe42ba422fabe5935d89de.png)
 
 **2 层神经网络（作者提供的图片）**
 
@@ -96,7 +96,7 @@ f(z) = a（公式2）
 
 公式为 f(x) = b + Sigma( wi * xi)，对所有输入变量 (i) 进行索引。
 
-![](../Images/a9c6dbc138a047bbf5a880b94845eb69.png)
+![](img/a9c6dbc138a047bbf5a880b94845eb69.png)
 
 该函数的范围是：— 无穷大到 + 无穷大。
 
@@ -104,25 +104,25 @@ f(z) = a（公式2）
 
 **2\. 非线性激活函数：**
 
-非线性激活函数默认是深度学习中最常用的激活函数。这些包括Sigmoid或Logistic函数、修正线性激活函数（ReLU）和双曲正切函数（Tanh）。
+非线性激活函数默认是深度学习中最常用的激活函数。这些包括 Sigmoid 或 Logistic 函数、修正线性激活函数（ReLU）和双曲正切函数（Tanh）。
 
 让我们更详细地了解每个。
 
 1.  **Sigmoid 激活函数**：
 
-也称为Logistic函数，它接受任何实值作为输入，并在 0 和 1 之间给出输出。
+也称为 Logistic 函数，它接受任何实值作为输入，并在 0 和 1 之间给出输出。
 
-公式为 y = 1/(1+ e^-z)，具有S形曲线。这里的 z = b + sigma(xi * wi)，对 i 输入变量进行索引。
+公式为 y = 1/(1+ e^-z)，具有 S 形曲线。这里的 z = b + sigma(xi * wi)，对 i 输入变量进行索引。
 
 对于非常大的正数 z，e^-z 将为 0，函数的输出将为 1。对于非常大的负数 z，e^-z 将是一个大数，因此函数的输出将为 0。
 
-![](../Images/f8bd0cde0599311d3275a2333f642995.png)
+![](img/f8bd0cde0599311d3275a2333f642995.png)
 
 2\. **修正线性激活函数 (ReLU):**
 
 它是今天使用最广泛的激活函数。ReLU 具有对所有大于 0 的输入值是线性的，而对其他值则是非线性的属性。
 
-![](../Images/a389e5cfc51007af2605852b7221b136.png)
+![](img/a389e5cfc51007af2605852b7221b136.png)
 
 它表示为 **f(x) = max(0,x)**
 
@@ -134,7 +134,7 @@ f(z) = a（公式2）
 
 Tanh 函数的形状也是 S 形的，但范围不同。
 
-![](../Images/f7711ead74c6971a81edbe50d8cbdad5.png)
+![](img/f7711ead74c6971a81edbe50d8cbdad5.png)
 
 通常在所有层中使用一个激活函数，唯一的例外是输出层。输出层使用的激活函数取决于问题陈述是否要求我们预测一个连续值，即回归，或一个分类值，即二分类或多标签分类。
 
@@ -166,31 +166,31 @@ Tanh 函数的形状也是 S 形的，但范围不同。
 
 对于二分类问题，使用的损失函数是二分类交叉熵；对于多分类问题，使用的损失函数是类别交叉熵。
 
-例如，考虑一个与客户贷款违约相关的二分类问题。假设训练数据包含5个客户。
+例如，考虑一个与客户贷款违约相关的二分类问题。假设训练数据包含 5 个客户。
 
-神经网络在第一次前向传播中将计算客户违约的概率。网络为所有5个客户生成的输出分别是[0.65, 0.25, 0.9, 0.33, 0.45]。
+神经网络在第一次前向传播中将计算客户违约的概率。网络为所有 5 个客户生成的输出分别是[0.65, 0.25, 0.9, 0.33, 0.45]。
 
 训练数据中观测值的实际值为[1, 1, 1, 1, 1]。
 
 交叉熵损失定义如下：
 
-![](../Images/5f43646e2a22481314b8c42e9e68272a.png)
+![](img/5f43646e2a22481314b8c42e9e68272a.png)
 
 图片由作者提供
 
 使用这个方程，上述问题的交叉熵损失（CEL）计算如下：
 
-![](../Images/813f824f81ee7983213596357e04872f.png)
+![](img/813f824f81ee7983213596357e04872f.png)
 
 图片由作者提供
 
-在这里，二分类交叉熵计算了一个分数，这个分数总结了实际概率分布和预测概率分布之间的平均差异，以预测类别1。给定目标变量的实际值和预测值的损失为**0.404**。我们如何解释这个值？它有一个相对的解释。最终模型的损失值将远低于0.404。第五个也是最后一个构建块将帮助我们达到那个最优值。它通过寻找最优的权重和偏置值来最小化损失函数，从而实现这一点。
+在这里，二分类交叉熵计算了一个分数，这个分数总结了实际概率分布和预测概率分布之间的平均差异，以预测类别 1。给定目标变量的实际值和预测值的损失为**0.404**。我们如何解释这个值？它有一个相对的解释。最终模型的损失值将远低于 0.404。第五个也是最后一个构建块将帮助我们达到那个最优值。它通过寻找最优的权重和偏置值来最小化损失函数，从而实现这一点。
 
-在多分类问题中，其中目标变量编码为1到n-1类，类别交叉熵将计算一个分数，这个分数总结了所有类别的实际概率分布和预测概率分布之间的平均差异。
+在多分类问题中，其中目标变量编码为 1 到 n-1 类，类别交叉熵将计算一个分数，这个分数总结了所有类别的实际概率分布和预测概率分布之间的平均差异。
 
-类似地，对于回归问题，*均方误差*（MSE）是最常用的回归损失函数。MSE计算为目标变量的预测值与实际值之间的平方差的平均值。由于它是误差的平方，输出总是为正。
+类似地，对于回归问题，*均方误差*（MSE）是最常用的回归损失函数。MSE 计算为目标变量的预测值与实际值之间的平方差的平均值。由于它是误差的平方，输出总是为正。
 
-MSE有一些变体，如均方对数误差损失（MSLE）和均值绝对误差（MAE）。选择取决于多个因素，如异常值的存在、目标变量的分布等。
+MSE 有一些变体，如均方对数误差损失（MSLE）和均值绝对误差（MAE）。选择取决于多个因素，如异常值的存在、目标变量的分布等。
 
 ***网络在第一次前向传播中生成的输出是由初始化为某些随机值的权重决定的。损失函数比较实际值和预测值并计算误差。下一步是通过改变权重来最小化误差。网络如何实现这一点？***
 
@@ -206,10 +206,10 @@ MSE有一些变体，如均方对数误差损失（MSLE）和均值绝对误差�
 
 这里是我找到的一些在理解这个概念方面非常有帮助的链接。
 
-1.  [https://youtu.be/PySo_6S4ZAg](https://youtu.be/PySo_6S4ZAg) — 这是斯坦福大学CS230神经网络课程，由Andrew Ng主讲。
+1.  [`youtu.be/PySo_6S4ZAg`](https://youtu.be/PySo_6S4ZAg) — 这是斯坦福大学 CS230 神经网络课程，由 Andrew Ng 主讲。
 
-1.  [https://amzn.eu/d/6U4c3GR](https://amzn.eu/d/6U4c3GR) — 《用Python进行深度学习（第2版）》。一本很棒的书。概念用非常简单的语言解释。
+1.  [`amzn.eu/d/6U4c3GR`](https://amzn.eu/d/6U4c3GR) — 《用 Python 进行深度学习（第 2 版）》。一本很棒的书。概念用非常简单的语言解释。
 
-1.  [https://machinelearningmastery.com/](https://machinelearningmastery.com/) — 这是一个涵盖深度学习和机器学习所有基础和中级问题的资源。
+1.  [`machinelearningmastery.com/`](https://machinelearningmastery.com/) — 这是一个涵盖深度学习和机器学习所有基础和中级问题的资源。
 
 希望到现在你对神经网络有了一些理解，并且了解了各种构建块如何结合在一起解决深度学习问题。请告诉我你的想法。

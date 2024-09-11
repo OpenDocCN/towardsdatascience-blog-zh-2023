@@ -1,10 +1,10 @@
 # 使用 H3 和 Plotly 构建六边形地图：全面教程
 
-> 原文：[https://towardsdatascience.com/constructing-hexagon-maps-with-h3-and-plotly-a-comprehensive-tutorial-8f37a91573bb?source=collection_archive---------0-----------------------#2023-10-31](https://towardsdatascience.com/constructing-hexagon-maps-with-h3-and-plotly-a-comprehensive-tutorial-8f37a91573bb?source=collection_archive---------0-----------------------#2023-10-31)
+> 原文：[`towardsdatascience.com/constructing-hexagon-maps-with-h3-and-plotly-a-comprehensive-tutorial-8f37a91573bb?source=collection_archive---------0-----------------------#2023-10-31`](https://towardsdatascience.com/constructing-hexagon-maps-with-h3-and-plotly-a-comprehensive-tutorial-8f37a91573bb?source=collection_archive---------0-----------------------#2023-10-31)
 
 ## 解锁六边形地图在数据分析中的潜力
 
-[](https://amandaiglesiasmoreno.medium.com/?source=post_page-----8f37a91573bb--------------------------------)[![Amanda Iglesias Moreno](../Images/7a2662fb88127b1a7203c27916e15a71.png)](https://amandaiglesiasmoreno.medium.com/?source=post_page-----8f37a91573bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8f37a91573bb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8f37a91573bb--------------------------------) [Amanda Iglesias Moreno](https://amandaiglesiasmoreno.medium.com/?source=post_page-----8f37a91573bb--------------------------------)
+[](https://amandaiglesiasmoreno.medium.com/?source=post_page-----8f37a91573bb--------------------------------)![Amanda Iglesias Moreno](https://amandaiglesiasmoreno.medium.com/?source=post_page-----8f37a91573bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8f37a91573bb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8f37a91573bb--------------------------------) [Amanda Iglesias Moreno](https://amandaiglesiasmoreno.medium.com/?source=post_page-----8f37a91573bb--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8f37a91573bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-hexagon-maps-with-h3-and-plotly-a-comprehensive-tutorial-8f37a91573bb&source=-----8f37a91573bb---------------------bookmark_footer-----------)![](../Images/58bb2917e3305811b11d631a267130ed.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8f37a91573bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fconstructing-hexagon-maps-with-h3-and-plotly-a-comprehensive-tutorial-8f37a91573bb&source=-----8f37a91573bb---------------------bookmark_footer-----------)![](img/58bb2917e3305811b11d631a267130ed.png)
 
 [Sam Balye](https://unsplash.com/es/@sambalye) 在 Unsplash
 

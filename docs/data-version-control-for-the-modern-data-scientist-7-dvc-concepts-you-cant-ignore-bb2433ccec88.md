@@ -1,10 +1,10 @@
 # 现代数据科学家的数据版本控制：7 个你不能忽视的 DVC 概念
 
-> 原文：[https://towardsdatascience.com/data-version-control-for-the-modern-data-scientist-7-dvc-concepts-you-cant-ignore-bb2433ccec88?source=collection_archive---------2-----------------------#2023-05-25](https://towardsdatascience.com/data-version-control-for-the-modern-data-scientist-7-dvc-concepts-you-cant-ignore-bb2433ccec88?source=collection_archive---------2-----------------------#2023-05-25)
+> 原文：[`towardsdatascience.com/data-version-control-for-the-modern-data-scientist-7-dvc-concepts-you-cant-ignore-bb2433ccec88?source=collection_archive---------2-----------------------#2023-05-25`](https://towardsdatascience.com/data-version-control-for-the-modern-data-scientist-7-dvc-concepts-you-cant-ignore-bb2433ccec88?source=collection_archive---------2-----------------------#2023-05-25)
 
 ## 一份深入插图的指南，讲解数据科学中的关键实践
 
-[](https://ibexorigin.medium.com/?source=post_page-----bb2433ccec88--------------------------------)[![Bex T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----bb2433ccec88--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb2433ccec88--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb2433ccec88--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----bb2433ccec88--------------------------------)
+[](https://ibexorigin.medium.com/?source=post_page-----bb2433ccec88--------------------------------)![Bex T.](https://ibexorigin.medium.com/?source=post_page-----bb2433ccec88--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb2433ccec88--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb2433ccec88--------------------------------) [Bex T.](https://ibexorigin.medium.com/?source=post_page-----bb2433ccec88--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbb2433ccec88&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-version-control-for-the-modern-data-scientist-7-dvc-concepts-you-cant-ignore-bb2433ccec88&source=-----bb2433ccec88---------------------bookmark_footer-----------)![](../Images/d9bfb2bb06fd41ecd7191c98085578d9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbb2433ccec88&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-version-control-for-the-modern-data-scientist-7-dvc-concepts-you-cant-ignore-bb2433ccec88&source=-----bb2433ccec88---------------------bookmark_footer-----------)![](img/d9bfb2bb06fd41ecd7191c98085578d9.png)
 
 图片由我用 Midjourney 制作。
 

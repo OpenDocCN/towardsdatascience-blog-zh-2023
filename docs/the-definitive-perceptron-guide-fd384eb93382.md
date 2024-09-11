@@ -1,16 +1,16 @@
 # 从基本门到深度神经网络：权威感知机教程
 
-> 原文：[https://towardsdatascience.com/the-definitive-perceptron-guide-fd384eb93382?source=collection_archive---------2-----------------------#2023-04-28](https://towardsdatascience.com/the-definitive-perceptron-guide-fd384eb93382?source=collection_archive---------2-----------------------#2023-04-28)
+> 原文：[`towardsdatascience.com/the-definitive-perceptron-guide-fd384eb93382?source=collection_archive---------2-----------------------#2023-04-28`](https://towardsdatascience.com/the-definitive-perceptron-guide-fd384eb93382?source=collection_archive---------2-----------------------#2023-04-28)
 
 ## 达到人工智能精通
 
 ## 数学、二分类、逻辑门等
 
-[](https://jvision.medium.com/?source=post_page-----fd384eb93382--------------------------------)[![Joseph Robinson, Ph.D.](../Images/3117b65a4e10752724585d3457343695.png)](https://jvision.medium.com/?source=post_page-----fd384eb93382--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fd384eb93382--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fd384eb93382--------------------------------) [Joseph Robinson, Ph.D.](https://jvision.medium.com/?source=post_page-----fd384eb93382--------------------------------)
+[](https://jvision.medium.com/?source=post_page-----fd384eb93382--------------------------------)![Joseph Robinson, Ph.D.](https://jvision.medium.com/?source=post_page-----fd384eb93382--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fd384eb93382--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd384eb93382--------------------------------) [Joseph Robinson, Ph.D.](https://jvision.medium.com/?source=post_page-----fd384eb93382--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8049fa781539&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-definitive-perceptron-guide-fd384eb93382&user=Joseph+Robinson%2C+Ph.D.&userId=8049fa781539&source=post_page-8049fa781539----fd384eb93382---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd384eb93382--------------------------------) · 21分钟阅读 · 2023年4月28日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffd384eb93382&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-definitive-perceptron-guide-fd384eb93382&user=Joseph+Robinson%2C+Ph.D.&userId=8049fa781539&source=-----fd384eb93382---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8049fa781539&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-definitive-perceptron-guide-fd384eb93382&user=Joseph+Robinson%2C+Ph.D.&userId=8049fa781539&source=post_page-8049fa781539----fd384eb93382---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd384eb93382--------------------------------) · 21 分钟阅读 · 2023 年 4 月 28 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffd384eb93382&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-definitive-perceptron-guide-fd384eb93382&user=Joseph+Robinson%2C+Ph.D.&userId=8049fa781539&source=-----fd384eb93382---------------------clap_footer-----------)
 
 --
 

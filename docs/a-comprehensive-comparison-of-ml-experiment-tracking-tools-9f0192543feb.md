@@ -1,18 +1,18 @@
 # 一份全面的 ML 实验跟踪工具对比
 
-> 原文：[https://towardsdatascience.com/a-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb?source=collection_archive---------7-----------------------#2023-04-26](https://towardsdatascience.com/a-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb?source=collection_archive---------7-----------------------#2023-04-26)
+> 原文：[`towardsdatascience.com/a-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb?source=collection_archive---------7-----------------------#2023-04-26`](https://towardsdatascience.com/a-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb?source=collection_archive---------7-----------------------#2023-04-26)
 
-![](../Images/2899664dc480f7c5aeb24145ebb7f7e0.png)
+![](img/2899664dc480f7c5aeb24145ebb7f7e0.png)
 
 照片由 [BoliviaInteligente](https://unsplash.com/@boliviainteligente?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来自 [Unsplash](https://unsplash.com/photos/pwfFRdS-A-I?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 ## 7 种领先工具的优缺点
 
-[](https://eryk-lewinson.medium.com/?source=post_page-----9f0192543feb--------------------------------)[![Eryk Lewinson](../Images/56e09e19c0bbfecc582da58761d15078.png)](https://eryk-lewinson.medium.com/?source=post_page-----9f0192543feb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9f0192543feb--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9f0192543feb--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----9f0192543feb--------------------------------)
+[](https://eryk-lewinson.medium.com/?source=post_page-----9f0192543feb--------------------------------)![Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----9f0192543feb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9f0192543feb--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f0192543feb--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----9f0192543feb--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----9f0192543feb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f0192543feb--------------------------------) · 12 分钟阅读 · 2023年4月26日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9f0192543feb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----9f0192543feb---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----9f0192543feb---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f0192543feb--------------------------------) · 12 分钟阅读 · 2023 年 4 月 26 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9f0192543feb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-comparison-of-ml-experiment-tracking-tools-9f0192543feb&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----9f0192543feb---------------------clap_footer-----------)
 
 --
 

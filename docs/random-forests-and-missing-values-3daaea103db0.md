@@ -1,18 +1,18 @@
 # 随机森林与缺失值
 
-> 原文：[https://towardsdatascience.com/random-forests-and-missing-values-3daaea103db0?source=collection_archive---------7-----------------------#2023-06-21](https://towardsdatascience.com/random-forests-and-missing-values-3daaea103db0?source=collection_archive---------7-----------------------#2023-06-21)
+> 原文：[`towardsdatascience.com/random-forests-and-missing-values-3daaea103db0?source=collection_archive---------7-----------------------#2023-06-21`](https://towardsdatascience.com/random-forests-and-missing-values-3daaea103db0?source=collection_archive---------7-----------------------#2023-06-21)
 
 ## 这是一个非常引人入胜的实际解决方案
 
-[](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)[![Jeffrey Näf](../Images/0ce6db85501192cdebeeb910eb81a688.png)](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------) [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)
+[](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)![Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------) [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----3daaea103db0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------) ·9分钟阅读·2023年6月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3daaea103db0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----3daaea103db0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----3daaea103db0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------) ·9 分钟阅读·2023 年 6 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3daaea103db0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----3daaea103db0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3daaea103db0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&source=-----3daaea103db0---------------------bookmark_footer-----------)![](../Images/2e019db6f9d938ddee0933bf834feb92.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3daaea103db0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&source=-----3daaea103db0---------------------bookmark_footer-----------)![](img/2e019db6f9d938ddee0933bf834feb92.png)
 
 (分布式)随机森林的特点。在这篇文章中：处理缺失值的能力。来源：作者。
 
@@ -28,7 +28,7 @@
 
 请记住，在 RF 中，拆分的形式为 *X_j < S* 或 *X_j ≥ S*，对于维度 *j=1，…，p*。为了找到这个拆分值 *S*，它优化某种关于 *Y* 的标准，例如 CART 标准。因此，观察值通过依赖于 ***X*** 的决策规则逐步划分。
 
-![](../Images/08097166f4a96b74715d61318e9e392e.png)
+![](img/08097166f4a96b74715d61318e9e392e.png)
 
 RF 中拆分的示意图。图片作者提供。
 
@@ -38,21 +38,21 @@ RF 中拆分的示意图。图片作者提供。
 
 没有缺失值的拆分只是寻找如上所述的值 *S*，然后将所有 *Y_i*，其中 *X_ij < S*，丢入节点 1，将所有 *Y_i*，其中 *X_ij ≥ S*，丢入节点 2。计算每个值 *S* 的目标标准，例如 CART，我们可以选择最佳的一个。有缺失值时，对于每个候选拆分值 *S*，需要考虑 3 种选项：
 
-+   对于所有观察值*i*，如果*X_ij*被观察到，则使用通常的规则，如果*X_ij*缺失，则将*i*发送到节点1。
++   对于所有观察值*i*，如果*X_ij*被观察到，则使用通常的规则，如果*X_ij*缺失，则将*i*发送到节点 1。
 
-+   对于所有观察值i，如果*X_ij*被观察到，则使用通常的规则，如果*X_ij*缺失，则将*i*发送到节点2。
++   对于所有观察值 i，如果*X_ij*被观察到，则使用通常的规则，如果*X_ij*缺失，则将*i*发送到节点 2。
 
-+   忽略通常的规则，只要*X_ij*缺失就将i发送到节点1，若被观察到则发送到节点2。
++   忽略通常的规则，只要*X_ij*缺失就将 i 发送到节点 1，若被观察到则发送到节点 2。
 
 遵循这些规则的选择再次根据我们对*Y_i*的标准来决定。
 
-![](../Images/d95dcadbfd118c2e6d7d8b92323f3beb.png)
+![](img/d95dcadbfd118c2e6d7d8b92323f3beb.png)
 
-说明我如何理解MIA过程。给定父节点中的观察值，我们寻找最佳分裂值S。对于每个分裂值，我们考虑3个选项并进行尝试，直到找到最小值。左侧的{}表示被发送到左侧或右侧的观察值i。图片由作者提供。
+说明我如何理解 MIA 过程。给定父节点中的观察值，我们寻找最佳分裂值 S。对于每个分裂值，我们考虑 3 个选项并进行尝试，直到找到最小值。左侧的{}表示被发送到左侧或右侧的观察值 i。图片由作者提供。
 
 # 一个小例子
 
-需要提到的是，[CRAN](https://cran.r-project.org/web/packages/drf/index.html)上的 drf 包尚未更新到最新的方法。未来会有一个时间点，所有这些将会在CRAN上的一个包中实现！然而，目前有两个版本：
+需要提到的是，[CRAN](https://cran.r-project.org/web/packages/drf/index.html)上的 drf 包尚未更新到最新的方法。未来会有一个时间点，所有这些将会在 CRAN 上的一个包中实现！然而，目前有两个版本：
 
 如果你想使用带有缺失值的**快速 drf 实现**（**不带**置信区间），可以使用附在这篇文章末尾的“drfown”函数。这段代码改编自
 
@@ -86,7 +86,7 @@ prob_na <- 0.3
 X[, 1] <- ifelse(X[, 2] <= -0.2 & runif(n) < prob_na, NA, X[, 1]) 
 ```
 
-这意味着*X_1*在*X_2*的值小于-0.2时，以0.3的概率缺失。因此，*X_1*缺失的概率取决于*X_2*，这被称为“随机缺失”（Missing at Random）。这已经是一个复杂的情况，通过查看缺失值的模式可以获得信息。也就是说，缺失情况不是“完全随机缺失（MCAR）”，因为*X_1*的缺失取决于*X_2*的值。这反过来意味着我们从中抽取的*X_2*的分布在*X_1*缺失与否的条件下是不同的。这尤其意味着删除缺失值的行可能会严重偏倚分析结果。
+这意味着*X_1*在*X_2*的值小于-0.2 时，以 0.3 的概率缺失。因此，*X_1*缺失的概率取决于*X_2*，这被称为“随机缺失”（Missing at Random）。这已经是一个复杂的情况，通过查看缺失值的模式可以获得信息。也就是说，缺失情况不是“完全随机缺失（MCAR）”，因为*X_1*的缺失取决于*X_2*的值。这反过来意味着我们从中抽取的*X_2*的分布在*X_1*缺失与否的条件下是不同的。这尤其意味着删除缺失值的行可能会严重偏倚分析结果。
 
 现在我们固定 ***x*** 并估计给定 ***X****=****x,*** 的条件期望值和方差，就像在[上一篇文章](https://medium.com/towards-data-science/inference-for-distributional-random-forests-64610bbb3927)中一样。
 
@@ -98,7 +98,7 @@ x<-matrix(c(1,1),ncol=2)
 alpha<-0.05
 ```
 
-我们还拟合了DRF，并预测测试点 ***x*** 的权重（这相当于预测 *Y|****X****=****x*** 的条件分布）：
+我们还拟合了 DRF，并预测测试点 ***x*** 的权重（这相当于预测 *Y|****X****=****x*** 的条件分布）：
 
 ```py
 ## Fit the new DRF framework
@@ -133,11 +133,11 @@ round(c(lower, condexpest, upper),2)
 # with NAs: (-1.15, -0.67, -0.19)
 ```
 
-值得注意的是，通过缺失数据（NAs）获得的结果与[上一篇文章](https://medium.com/towards-data-science/inference-for-distributional-random-forests-64610bbb3927)中首次分析得到的结果非常接近！这让我感到相当惊讶，因为处理缺失机制并不容易。有趣的是，估计量的估计方差也翻倍了，从没有缺失值时的大约0.025增加到有缺失值时的大约0.06。
+值得注意的是，通过缺失数据（NAs）获得的结果与[上一篇文章](https://medium.com/towards-data-science/inference-for-distributional-random-forests-64610bbb3927)中首次分析得到的结果非常接近！这让我感到相当惊讶，因为处理缺失机制并不容易。有趣的是，估计量的估计方差也翻倍了，从没有缺失值时的大约 0.025 增加到有缺失值时的大约 0.06。
 
 真相为：
 
-![](../Images/cd5e502fc70db9f959510cdc678eb651.png)
+![](img/cd5e502fc70db9f959510cdc678eb651.png)
 
 所以我们有一个轻微的误差，但置信区间包含了真相，正如应该的那样。
 
@@ -145,10 +145,10 @@ round(c(lower, condexpest, upper),2)
 
 ```py
 # Estimate the conditional expectation at x:
-condvarest<- sum(weights*Y^2) - condexpest^2
+condvarest<- sum(weights*Y²) - condexpest²
 
 distofcondvarest<-unlist(lapply(DRF$weightsb, function(wb)  {
-  sum(wb[1,]*Y^2) - sum(wb[1,]*Y)^2
+  sum(wb[1,]*Y²) - sum(wb[1,]*Y)²
 } ))
 
 # Can either use the above directly to build confidence interval, or can use the normal approximation.
@@ -167,15 +167,15 @@ c(lower, condvarest, upper)
 
 在这里，估计值的差异略大一些。真相为
 
-![](../Images/a8d473ae073c8529a43b43b80c61f949.png)
+![](img/a8d473ae073c8529a43b43b80c61f949.png)
 
-估计值在有缺失值时甚至略微更准确（虽然这当然可能只是随机性）。再次强调，估计方差（方差）在有缺失值时增加，从0.15（无缺失值）增加到0.23。
+估计值在有缺失值时甚至略微更准确（虽然这当然可能只是随机性）。再次强调，估计方差（方差）在有缺失值时增加，从 0.15（无缺失值）增加到 0.23。
 
 # 结论
 
-在本文中，我们讨论了MIA，它是对随机森林中分割方法的适应，以处理缺失值。由于它在GRF和DRF中实现，因此可以广泛使用，我们观察到的小示例表明它表现得非常好。
+在本文中，我们讨论了 MIA，它是对随机森林中分割方法的适应，以处理缺失值。由于它在 GRF 和 DRF 中实现，因此可以广泛使用，我们观察到的小示例表明它表现得非常好。
 
-然而，我想再次指出，即使对于大量数据点，也没有理论保证一致性或置信区间的合理性。缺失值的原因很多，必须非常小心，以免由于粗心处理此问题而使分析产生偏差。MIA方法绝不是解决此问题的一个充分理解的修复方法。然而，它似乎是一个合理的快速修复方法，能够在某种程度上利用数据中的缺失模式。如果有人做了/有更广泛的模拟分析，我会对结果感到好奇。
+然而，我想再次指出，即使对于大量数据点，也没有理论保证一致性或置信区间的合理性。缺失值的原因很多，必须非常小心，以免由于粗心处理此问题而使分析产生偏差。MIA 方法绝不是解决此问题的一个充分理解的修复方法。然而，它似乎是一个合理的快速修复方法，能够在某种程度上利用数据中的缺失模式。如果有人做了/有更广泛的模拟分析，我会对结果感到好奇。
 
 # 代码
 

@@ -1,18 +1,18 @@
 # 在 PySpark 中使用 PCA 排名钻石
 
-> 原文：[https://towardsdatascience.com/ranking-diamonds-with-pca-in-pyspark-a59cab7f4f1a?source=collection_archive---------11-----------------------#2023-12-22](https://towardsdatascience.com/ranking-diamonds-with-pca-in-pyspark-a59cab7f4f1a?source=collection_archive---------11-----------------------#2023-12-22)
+> 原文：[`towardsdatascience.com/ranking-diamonds-with-pca-in-pyspark-a59cab7f4f1a?source=collection_archive---------11-----------------------#2023-12-22`](https://towardsdatascience.com/ranking-diamonds-with-pca-in-pyspark-a59cab7f4f1a?source=collection_archive---------11-----------------------#2023-12-22)
 
 ## 在 PySpark 中运行主成分分析的挑战
 
-[](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)[![Gustavo Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)
+[](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)![Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------) [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Franking-diamonds-with-pca-in-pyspark-a59cab7f4f1a&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----a59cab7f4f1a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------) ·8 min read·2023年12月22日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4429d99b1245&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Franking-diamonds-with-pca-in-pyspark-a59cab7f4f1a&user=Gustavo+Santos&userId=4429d99b1245&source=post_page-4429d99b1245----a59cab7f4f1a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------) ·8 min read·2023 年 12 月 22 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa59cab7f4f1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Franking-diamonds-with-pca-in-pyspark-a59cab7f4f1a&source=-----a59cab7f4f1a---------------------bookmark_footer-----------)![](../Images/829083190a338cf53e34959cadcae252.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa59cab7f4f1a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Franking-diamonds-with-pca-in-pyspark-a59cab7f4f1a&source=-----a59cab7f4f1a---------------------bookmark_footer-----------)![](img/829083190a338cf53e34959cadcae252.png)
 
 图片由 [Edgar Soto](https://unsplash.com/@edgardo1987?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 提供，来源于 [Unsplash](https://unsplash.com/photos/two-diamond-studded-silver-rings-gb0BZGae1Nk?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 

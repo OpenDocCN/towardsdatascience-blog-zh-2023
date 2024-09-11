@@ -1,10 +1,10 @@
 # Sklearn 教程：模块 2
 
-> 原文：[https://towardsdatascience.com/sklearn-tutorial-module-2-0739c44f595a?source=collection_archive---------5-----------------------#2023-11-25](https://towardsdatascience.com/sklearn-tutorial-module-2-0739c44f595a?source=collection_archive---------5-----------------------#2023-11-25)
+> 原文：[`towardsdatascience.com/sklearn-tutorial-module-2-0739c44f595a?source=collection_archive---------5-----------------------#2023-11-25`](https://towardsdatascience.com/sklearn-tutorial-module-2-0739c44f595a?source=collection_archive---------5-----------------------#2023-11-25)
 
 ## 我参加了官方的 sklearn MOOC 教程。以下是我的一些收获。
 
-[](https://mocquin.medium.com/?source=post_page-----0739c44f595a--------------------------------)[![Yoann Mocquin](../Images/b30a0f70c56972aabd2bc0a74baa90bb.png)](https://mocquin.medium.com/?source=post_page-----0739c44f595a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0739c44f595a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0739c44f595a--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----0739c44f595a--------------------------------)
+[](https://mocquin.medium.com/?source=post_page-----0739c44f595a--------------------------------)![Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----0739c44f595a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0739c44f595a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----0739c44f595a--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----0739c44f595a--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@
 
 在多年使用 Python 科学栈（NumPy、Matplotlib、SciPy、Pandas 和 Seaborn）之后，我逐渐意识到下一步应该是 scikit-learn，或称“sklearn”。
 
-![](../Images/12ce198b8d409170b76046f45bd4f12c.png)
+![](img/12ce198b8d409170b76046f45bd4f12c.png)
 
 图片来源：[Nick Morrison](https://unsplash.com/@nickmorrison?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,11 +28,11 @@
 
 如果你错过了，我强烈推荐你先看看本系列的第一篇文章——这样会更容易跟上：
 
-[](/sklearn-tutorial-module-1-f31b3964a3b4?source=post_page-----0739c44f595a--------------------------------) [## Sklearn教程：模块1
+[](/sklearn-tutorial-module-1-f31b3964a3b4?source=post_page-----0739c44f595a--------------------------------) ## Sklearn 教程：模块 1
 
-### 我参加了官方的sklearn MOOC教程。以下是我的收获。
+### 我参加了官方的 sklearn MOOC 教程。以下是我的收获。
 
-[towardsdatascience.com](/sklearn-tutorial-module-1-f31b3964a3b4?source=post_page-----0739c44f595a--------------------------------)
+[towardsdatascience.com
 
 # **分数：训练分数和测试分数**
 

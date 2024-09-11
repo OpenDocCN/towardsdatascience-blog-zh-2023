@@ -1,14 +1,14 @@
 # Python：正确计算积分的方法
 
-> 原文：[https://towardsdatascience.com/python-computing-integrals-the-right-way-22e9257a5836?source=collection_archive---------5-----------------------#2023-09-03](https://towardsdatascience.com/python-computing-integrals-the-right-way-22e9257a5836?source=collection_archive---------5-----------------------#2023-09-03)
+> 原文：[`towardsdatascience.com/python-computing-integrals-the-right-way-22e9257a5836?source=collection_archive---------5-----------------------#2023-09-03`](https://towardsdatascience.com/python-computing-integrals-the-right-way-22e9257a5836?source=collection_archive---------5-----------------------#2023-09-03)
 
 ## 使用 Python 提升你的积分计算能力
 
-[](https://mocquin.medium.com/?source=post_page-----22e9257a5836--------------------------------)[![Yoann Mocquin](../Images/b30a0f70c56972aabd2bc0a74baa90bb.png)](https://mocquin.medium.com/?source=post_page-----22e9257a5836--------------------------------)[](https://towardsdatascience.com/?source=post_page-----22e9257a5836--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----22e9257a5836--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----22e9257a5836--------------------------------)
+[](https://mocquin.medium.com/?source=post_page-----22e9257a5836--------------------------------)![Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----22e9257a5836--------------------------------)[](https://towardsdatascience.com/?source=post_page-----22e9257a5836--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----22e9257a5836--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----22e9257a5836--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F173731d06320&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-computing-integrals-the-right-way-22e9257a5836&user=Yoann+Mocquin&userId=173731d06320&source=post_page-173731d06320----22e9257a5836---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----22e9257a5836--------------------------------) · 7 分钟阅读 · 2023年9月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F22e9257a5836&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-computing-integrals-the-right-way-22e9257a5836&user=Yoann+Mocquin&userId=173731d06320&source=-----22e9257a5836---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F173731d06320&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-computing-integrals-the-right-way-22e9257a5836&user=Yoann+Mocquin&userId=173731d06320&source=post_page-173731d06320----22e9257a5836---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----22e9257a5836--------------------------------) · 7 分钟阅读 · 2023 年 9 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F22e9257a5836&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpython-computing-integrals-the-right-way-22e9257a5836&user=Yoann+Mocquin&userId=173731d06320&source=-----22e9257a5836---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 在处理科学计算或物理问题时，计算某些函数的积分是非常常见的。
 
-![](../Images/da236dd8662c72933ed6e008ba4016e6.png)
+![](img/da236dd8662c72933ed6e008ba4016e6.png)
 
 图片来源：[Jeswin Thomas](https://unsplash.com/@jeswinthomas?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

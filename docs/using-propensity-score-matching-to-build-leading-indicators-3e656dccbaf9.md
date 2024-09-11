@@ -1,14 +1,14 @@
 # 使用倾向评分匹配来构建领先指标
 
-> 原文：[https://towardsdatascience.com/using-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9?source=collection_archive---------1-----------------------#2023-03-04](https://towardsdatascience.com/using-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9?source=collection_archive---------1-----------------------#2023-03-04)
+> 原文：[`towardsdatascience.com/using-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9?source=collection_archive---------1-----------------------#2023-03-04`](https://towardsdatascience.com/using-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9?source=collection_archive---------1-----------------------#2023-03-04)
 
 ## **关于构建产品激活指标的简短指南**
 
-[](https://medium.com/@jordangom?source=post_page-----3e656dccbaf9--------------------------------)[![Jordan Gomes](../Images/d08bb9fd8b084687599a67a2221ec68c.png)](https://medium.com/@jordangom?source=post_page-----3e656dccbaf9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e656dccbaf9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e656dccbaf9--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----3e656dccbaf9--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----3e656dccbaf9--------------------------------)![Jordan Gomes](https://medium.com/@jordangom?source=post_page-----3e656dccbaf9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e656dccbaf9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e656dccbaf9--------------------------------) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----3e656dccbaf9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----3e656dccbaf9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e656dccbaf9--------------------------------) · 6 分钟阅读 · 2023年3月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e656dccbaf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----3e656dccbaf9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbd72dcfe2a5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=post_page-bd72dcfe2a5a----3e656dccbaf9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e656dccbaf9--------------------------------) · 6 分钟阅读 · 2023 年 3 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e656dccbaf9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-propensity-score-matching-to-build-leading-indicators-3e656dccbaf9&user=Jordan+Gomes&userId=bd72dcfe2a5a&source=-----3e656dccbaf9---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 [在上一篇文章中](https://medium.com/towards-data-science/driving-operational-successes-through-careful-metric-design-ca55e3f84dad)，我讨论了“输入 > 输出 > 结果”框架，以及“输出”是核心部分，但并不一定容易定义——仅仅因为你希望它受到输入的影响，但同时，你需要与结果有因果联系。
 
-用户激活指标属于这种类型的指标。“激活”是由Dave McClure（著名的AAARRR框架——意识、获取、激活、保留、推荐、收入）设计的海盗指标框架的第三个阶段，它通常定义为用户克服了第一组障碍，开始使用你的产品，从中获得了一些价值，并且现在更有可能在长期内被保留。
+用户激活指标属于这种类型的指标。“激活”是由 Dave McClure（著名的 AAARRR 框架——意识、获取、激活、保留、推荐、收入）设计的海盗指标框架的第三个阶段，它通常定义为用户克服了第一组障碍，开始使用你的产品，从中获得了一些价值，并且现在更有可能在长期内被保留。
 
 ```py
 Some examples of product activation metric:
@@ -36,7 +36,7 @@ https://www.stage2.capital/science-of-scaling
 
 测量激活是重要的，因为它帮助你了解你的产品对新用户的吸引力如何，以及你是否有效地让他们成为“活跃”用户。这是通向用户忠诚的第一步——在这个阶段你可以知道用户是否可能长期留在你的产品中。如果激活率较低，可能表示产品或入驻流程存在问题，可能需要做出调整以改善用户体验并提高激活率。
 
-![](../Images/058b83b830bbe7e29f5fe7100985be2c.png)
+![](img/058b83b830bbe7e29f5fe7100985be2c.png)
 
 图片来自[邓肯·迈耶](https://unsplash.com/@dunc_in?utm_source=medium&utm_medium=referral)于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -60,7 +60,7 @@ https://www.stage2.capital/science-of-scaling
 
 +   寻找那些在达成保留阶段的用户中做得非常多的动作，而在未达成的用户中做得较少的动作。
 
-假设你运营一个健身应用。你开始创建每月的队列，并且注意到，70%在注册后的第一周内上传至少一次锻炼的用户在一年后仍然活跃于应用中，而如果他们没有上传，则只有40%。这可以成为激活指标的初步想法。
+假设你运营一个健身应用。你开始创建每月的队列，并且注意到，70%在注册后的第一周内上传至少一次锻炼的用户在一年后仍然活跃于应用中，而如果他们没有上传，则只有 40%。这可以成为激活指标的初步想法。
 
 这里的前提条件是你要弄清楚要研究哪个行动。在上述示例中，你必须想到查看谁跟踪了他们的锻炼。这是定量与定性相结合的地方，也是你的‘用户洞察’/常识发挥作用的地方。或者，如果你想寻求其他领域专家的帮助，那就需要你的网络技能。
 
@@ -72,7 +72,7 @@ https://www.stage2.capital/science-of-scaling
 
 ## 倾向得分匹配可以验证或否定你之前的直觉
 
-一旦你确定了潜在的激活信号，下一步是确保它们的准确性。这时倾向得分匹配就能派上用场——以了解你之前找到的相关性是否实际上是因果关系。虽然这不是唯一的解决方案，并且确实需要对你的用户有一些了解（这可能并非总是可能的），但它相对容易实施，并且能让你对结果更有信心（直到进一步通过更稳健的方法如A/B测试进行三角验证）。
+一旦你确定了潜在的激活信号，下一步是确保它们的准确性。这时倾向得分匹配就能派上用场——以了解你之前找到的相关性是否实际上是因果关系。虽然这不是唯一的解决方案，并且确实需要对你的用户有一些了解（这可能并非总是可能的），但它相对容易实施，并且能让你对结果更有信心（直到进一步通过更稳健的方法如 A/B 测试进行三角验证）。
 
 倾向得分匹配的理念如下：
 
@@ -90,11 +90,11 @@ https://www.stage2.capital/science-of-scaling
 
 再次以我们的健身应用程序为例：
 
-+   你已经发现，在注册后的第一周上传至少一个锻炼计划的用户，仍然在一年后继续使用应用的比例为70%，而如果他们没有上传，则为40%。
++   你已经发现，在注册后的第一周上传至少一个锻炼计划的用户，仍然在一年后继续使用应用的比例为 70%，而如果他们没有上传，则为 40%。
 
 +   你训练一个模型来预测用户在注册后一周内上传锻炼计划的可能性——你发现，通过大型健身网站的推荐链接下载应用的用户，其可能性非常高。
 
-+   你根据可能性对用户进行排序，然后开始进行简单的1:1匹配（按可能性排序的第一个采取行动的用户与按可能性排序的第一个未采取行动的用户匹配，依此类推）。
++   你根据可能性对用户进行排序，然后开始进行简单的 1:1 匹配（按可能性排序的第一个采取行动的用户与按可能性排序的第一个未采取行动的用户匹配，依此类推）。
 
 +   匹配后，你会发现差异大大缩小，但这仍然对你考虑它作为潜在的激活指标很重要！
 
@@ -104,15 +104,15 @@ https://www.stage2.capital/science-of-scaling
 
 但这种方法并不是万灵药——这套方法论有一堆假设，你需要对其进行微调/验证，以确保它适用于你的使用场景。
 
-特别是，PSM的有效性将高度依赖于你能预测自我选择的准确程度。如果你缺少关键特征，而未观察到的特征带来的偏差很大——那么PSM的估计可能会非常偏颇，并且不够有用。
+特别是，PSM 的有效性将高度依赖于你能预测自我选择的准确程度。如果你缺少关键特征，而未观察到的特征带来的偏差很大——那么 PSM 的估计可能会非常偏颇，并且不够有用。
 
-综上所述——即使以不完美的方式使用这种方法，也能帮助你采用更加数据驱动的方法来选择指标，让你开始‘关注的内容’，直到你进入A/B测试阶段，并更好地理解推动长期成功的因素。
+综上所述——即使以不完美的方式使用这种方法，也能帮助你采用更加数据驱动的方法来选择指标，让你开始‘关注的内容’，直到你进入 A/B 测试阶段，并更好地理解推动长期成功的因素。
 
 ## 希望你喜欢阅读这篇文章！你有任何想分享的技巧吗？请在评论区告诉大家！
 
 **如果你想了解更多关于我的内容，以下是你可能喜欢的几篇文章**：
 
-[](/7-tips-to-avoid-public-embarrassment-as-a-data-analyst-caec8f701e42?source=post_page-----3e656dccbaf9--------------------------------) [## 7个使你的数据分析更稳健的技巧]
+[](/7-tips-to-avoid-public-embarrassment-as-a-data-analyst-caec8f701e42?source=post_page-----3e656dccbaf9--------------------------------) [## 7 个使你的数据分析更稳健的技巧]
 
 ### 增加你结果的信心，建立更强的个人品牌
 

@@ -1,18 +1,18 @@
 # 使用 CleanLab 自动检测数据集中的标签错误
 
-> 原文：[https://towardsdatascience.com/automatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345?source=collection_archive---------3-----------------------#2023-07-22](https://towardsdatascience.com/automatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345?source=collection_archive---------3-----------------------#2023-07-22)
+> 原文：[`towardsdatascience.com/automatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345?source=collection_archive---------3-----------------------#2023-07-22`](https://towardsdatascience.com/automatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345?source=collection_archive---------3-----------------------#2023-07-22)
 
 ## 一则关于人工智能和错误分类的巴西联邦法律的故事
 
-[](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)[![João Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)
+[](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)![João Pedro](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------) [João Pedro](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----e0a3ea5fb345---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------) ·10 分钟阅读·2023年7月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe0a3ea5fb345&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----e0a3ea5fb345---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----e0a3ea5fb345---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------) ·10 分钟阅读·2023 年 7 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe0a3ea5fb345&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----e0a3ea5fb345---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe0a3ea5fb345&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&source=-----e0a3ea5fb345---------------------bookmark_footer-----------)![](../Images/36477c5670bfa2ec58e04ee972390139.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe0a3ea5fb345&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&source=-----e0a3ea5fb345---------------------bookmark_footer-----------)![](img/36477c5670bfa2ec58e04ee972390139.png)
 
 照片由 [Gustavo Leighton](https://unsplash.com/@g_leighton?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,33 +22,33 @@
 
 几小时的搜索和检查后，有一些非常有趣的事情引起了我的注意：所有由议员提出的法律的汇编，包括它们的‘*ementas*’（简要摘要）、作者、年份，更重要的是，它们的**主题**（健康、安全、金融等）——由议会文献和信息中心（Centro de Documentação e Informação da Câmara）分类。
 
-我的脑海中闪现出一个灵光——“*我将创建一个监督分类管道来* ***预测法律的主题******使用其摘要****，探索机器学习的一些基础设施方面，如使用DVC的数据版本控制或类似的东西*。”我迅速编写了一个脚本，收集了一个包含超过60,000条法律的大型数据集，时间跨度从1990年到2022年。
+我的脑海中闪现出一个灵光——“*我将创建一个监督分类管道来* ***预测法律的主题******使用其摘要****，探索机器学习的一些基础设施方面，如使用 DVC 的数据版本控制或类似的东西*。”我迅速编写了一个脚本，收集了一个包含超过 60,000 条法律的大型数据集，时间跨度从 1990 年到 2022 年。
 
 我已经稍微涉猎过司法和立法数据，所以我有一种感觉这个任务不会很难。但是，为了更轻松些，我选择仅分类法律提案（LP）是否涉及“*纪念和纪念日期*”（二分类）。理论上，这应该很简单，因为文本非常简单：
 
-![](../Images/a26315bf71eaec67b082f036007bfbbb.png)
+![](img/a26315bf71eaec67b082f036007bfbbb.png)
 
-原始摘要和ChatGPT的字面翻译 - I。图片由作者提供。
+原始摘要和 ChatGPT 的字面翻译 - I。图片由作者提供。
 
-但是，无论我尝试了什么，我的性能在f1分数上始终未能超过~0.80，且（正类的）召回率相对较低，为0.5–0.7。
+但是，无论我尝试了什么，我的性能在 f1 分数上始终未能超过~0.80，且（正类的）召回率相对较低，为 0.5–0.7。
 
-当然，我的数据集高度不平衡，这一类别占数据集总量的不到5%，但还有更多因素。
+当然，我的数据集高度不平衡，这一类别占数据集总量的不到 5%，但还有更多因素。
 
-经过一些调查，使用基于正则表达式的查询检查数据，查看错误分类记录后，我发现了几个错误标记的例子。通过我粗略的方法，我发现了~200个假阴性，占“真实”正例的~7.5%和我数据集的0.33%，还没有提到假阳性。见下图：
+经过一些调查，使用基于正则表达式的查询检查数据，查看错误分类记录后，我发现了几个错误标记的例子。通过我粗略的方法，我发现了~200 个假阴性，占“真实”正例的~7.5%和我数据集的 0.33%，还没有提到假阳性。见下图：
 
-![](../Images/86340626c166a22cac095a5946da6dbd.png)
+![](img/86340626c166a22cac095a5946da6dbd.png)
 
 错误分类的例子。图片由作者提供。
 
 这些例子影响了我的验证指标——“*它们可能有多少个？我需要手动搜索错误吗？*”
 
-然而，**Confident Learning** 作为**Clean Lab** Python包的形式出现，来拯救我了。
+然而，**Confident Learning** 作为**Clean Lab** Python 包的形式出现，来拯救我了。
 
-![](../Images/1e88f7af7141237d5d19f6b5f3c4f018.png)
+![](img/1e88f7af7141237d5d19f6b5f3c4f018.png)
 
-Clean Lab标志。图片来自[GitHub](https://github.com/cleanlab/cleanlab)。
+Clean Lab 标志。图片来自[GitHub](https://github.com/cleanlab/cleanlab)。
 
-# 什么是Confident Learning？
+# 什么是 Confident Learning？
 
 正确标记数据是任何监督机器学习项目中最耗时且最昂贵的步骤之一。像众包、半监督学习、微调等技术尝试减少收集标签的成本或减少模型训练中对这些标签的需求。
 
@@ -60,7 +60,7 @@ Clean Lab标志。图片来自[GitHub](https://github.com/cleanlab/cleanlab)。
 
 总结一下，它使用从模型概率预测中收集的统计数据来估计数据集中的错误。它可以检测噪声、离群值，以及——本篇文章的主要内容——**标签错误**。
 
-我不会详细介绍 CL，但有一篇[很好的文章](/confident-learning-err-did-you-say-your-data-is-clean-ef2597903328)涵盖了它的主要要点，还有一个来自 **CleanLab** 创始人的[YT 视频](https://youtu.be/BnOTv0f9Msk)谈论它在该领域的研究。
+我不会详细介绍 CL，但有一篇很好的文章涵盖了它的主要要点，还有一个来自 **CleanLab** 创始人的[YT 视频](https://youtu.be/BnOTv0f9Msk)谈论它在该领域的研究。
 
 让我们看看它在实践中是如何工作的。
 
@@ -180,7 +180,7 @@ lab.find_issues(pred_probs=y_proba)
 lab.get_issue_summary("label")
 ```
 
-![](../Images/18b86c0c2d30b30543c431a2c24802a7.png)
+![](img/18b86c0c2d30b30543c431a2c24802a7.png)
 
 就这么简单。
 
@@ -204,7 +204,7 @@ df_ples_theme_clean['is_label_issue'] = y_clean_labels['is_label_issue']
 
 我们来看几个例子：
 
-![](../Images/3860e3258b8a00fd1fdbe455d23c18ab.png)![](../Images/78d445cc8ecdad5f1e1925259f2b4547.png)
+![](img/3860e3258b8a00fd1fdbe455d23c18ab.png)![](img/78d445cc8ecdad5f1e1925259f2b4547.png)
 
 对我来说，这些法律显然与*致敬和纪念日期*相关；然而，它们并没有被适当地分类为这些。
 
@@ -224,7 +224,7 @@ df_ples_theme_clean['is_label_issue'] = y_clean_labels['is_label_issue']
 
 我们可以重复这个逻辑任意次数：找出错误，修正错误，用新假定的更高质量标签重新训练模型，再次找出错误……
 
-![](../Images/10bf4f2f521ce9afa9cba9dd8aabecb2.png)
+![](img/10bf4f2f521ce9afa9cba9dd8aabecb2.png)
 
 迭代修正错误。图片由作者提供。
 
@@ -236,53 +236,53 @@ df_ples_theme_clean['is_label_issue'] = y_clean_labels['is_label_issue']
 
 让我们来回顾一下。
 
-在每次迭代中，OOS 概率是按照之前展示的方式生成的：使用*cross_val_predict*方法和StratifiedKFold。当前的概率集（每次迭代中）用于构建一个新的Datalab对象并发现新的标签问题。
+在每次迭代中，OOS 概率是按照之前展示的方式生成的：使用*cross_val_predict*方法和 StratifiedKFold。当前的概率集（每次迭代中）用于构建一个新的 Datalab 对象并发现新的标签问题。
 
 发现的问题与当前数据集合并并修复。
 
 我选择了将修复后的标签作为新列附加的策略，而不是替换原始列。
 
-![](../Images/8de06e839952d37d0a01ab1a3d2f79db.png)
+![](img/8de06e839952d37d0a01ab1a3d2f79db.png)
 
 附加修复后的标签。图片由作者提供。
 
-> LABEL_COLUMN_0 是原始标签，LABEL_COLUMN_1 是修复1次的标签列，LABEL_COLUMN_2 是修复2次的标签列，以此类推……
+> LABEL_COLUMN_0 是原始标签，LABEL_COLUMN_1 是修复 1 次的标签列，LABEL_COLUMN_2 是修复 2 次的标签列，以此类推……
 
 除了这个过程之外，还计算并存储了常规分类指标，以备后续检查。
 
-经过8次互动（约16分钟），过程完成了。
+经过 8 次互动（约 16 分钟），过程完成了。
 
 # 结果
 
 下表显示了在过程中的性能指标。
 
-![](../Images/4703adfb83c3b6e815df7719203e2aef.png)
+![](img/4703adfb83c3b6e815df7719203e2aef.png)
 
-在8次迭代中，数据集中发现了总计**393个标签错误**。正如预期的那样，发现的错误数量随着每次迭代的增加而减少。
+在 8 次迭代中，数据集中发现了总计**393 个标签错误**。正如预期的那样，发现的错误数量随着每次迭代的增加而减少。
 
-有趣的是，这个过程在仅仅6次迭代中就能够“收敛”到一个“解决方案”——在最后2次迭代中错误数保持为0。这是一个很好的迹象，说明在这种情况下，CleanLab的实现是稳健的，并且没有发现任何可能导致振荡的‘偶然’错误。
+有趣的是，这个过程在仅仅 6 次迭代中就能够“收敛”到一个“解决方案”——在最后 2 次迭代中错误数保持为 0。这是一个很好的迹象，说明在这种情况下，CleanLab 的实现是稳健的，并且没有发现任何可能导致振荡的‘偶然’错误。
 
-尽管错误的数量仅占数据集的0.6%，f1分数从0.81提高到了0.90，约11%。这可能是由于类别高度不平衡，因为新的322个正标签总共占原始正样本的约12%。
+尽管错误的数量仅占数据集的 0.6%，f1 分数从 0.81 提高到了 0.90，约 11%。这可能是由于类别高度不平衡，因为新的 322 个正标签总共占原始正样本的约 12%。
 
-但CleanLab真的能够发现有意义的错误吗？让我们检查几个例子看看它们是否有意义。
+但 CleanLab 真的能够发现有意义的错误吗？让我们检查几个例子看看它们是否有意义。
 
 **假阴性已修复**
 
-![](../Images/3cd56b85d5a050f44f03bbfaa5af56e4.png)
+![](img/3cd56b85d5a050f44f03bbfaa5af56e4.png)
 
-原始总结和ChatGPT的逐字翻译 — II. 图片由作者提供。
+原始总结和 ChatGPT 的逐字翻译 — II. 图片由作者提供。
 
-上述文本确实类似于“致敬和纪念日期”，这表明它们应该被适当地分类为此类 — 指向CleanLab
+上述文本确实类似于“致敬和纪念日期”，这表明它们应该被适当地分类为此类 — 指向 CleanLab
 
 **假阳性已修复**
 
-![](../Images/b6e491d0925dc75bee1219f14afc62bb.png)
+![](img/b6e491d0925dc75bee1219f14afc62bb.png)
 
-原始总结和ChatGPT的逐字翻译 — III. 图片由作者提供。
+原始总结和 ChatGPT 的逐字翻译 — III. 图片由作者提供。
 
-在这种情况下我们有一些错误，第2和第4条规则不是假阳性。虽然不是很好，但还算可以。
+在这种情况下我们有一些错误，第 2 和第 4 条规则不是假阳性。虽然不是很好，但还算可以。
 
-我重复进行了这个检查采样新‘固定’规则的操作几次，总的来说，CleanLab在检测假阴性方面表现几乎完美，但对假阳性有点困惑。
+我重复进行了这个检查采样新‘固定’规则的操作几次，总的来说，CleanLab 在检测假阴性方面表现几乎完美，但对假阳性有点困惑。
 
 现在，即使我们可能没有一个*完美*标记的数据集，我也更**自信**现在用它来训练机器**学习**模型了。
 
@@ -314,10 +314,10 @@ df_ples_theme_clean['is_label_issue'] = y_clean_labels['is_label_issue']
 
 [2][*计算样本外预测概率的交叉验证*](https://docs.cleanlab.ai/stable/tutorials/pred_probs_cross_val.html#pred-probs-cross-val) *— cleanlab*. (无日期).
 
-[3] Databricks. (2022年7月19日). *CleanLab: 用于发现和修复 ML 数据集中的错误的 AI* [视频]. [YouTube](https://www.youtube.com/watch?v=BnOTv0f9Msk).
+[3] Databricks. (2022 年 7 月 19 日). *CleanLab: 用于发现和修复 ML 数据集中的错误的 AI* [视频]. [YouTube](https://www.youtube.com/watch?v=BnOTv0f9Msk).
 
 [4][*常见问题*](https://docs.cleanlab.ai/stable/tutorials/faq.html) *— cleanlab*. (无日期).
 
-[5] Mall, S. (2023年5月25日). 标签错误是否不可避免？自信学习是否有用？[*Medium*](/confident-learning-err-did-you-say-your-data-is-clean-ef2597903328).
+[5] Mall, S. (2023 年 5 月 25 日). 标签错误是否不可避免？自信学习是否有用？*Medium*.
 
 [6] Northcutt, C. G. (2021). *自信学习：估计数据集标签的不确定性*. [arXiv.org](https://arxiv.org/abs/1911.00068).

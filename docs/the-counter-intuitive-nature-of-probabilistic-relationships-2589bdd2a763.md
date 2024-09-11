@@ -1,20 +1,20 @@
 # 概率关系的反直观性质
 
-> 原文：[https://towardsdatascience.com/the-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763?source=collection_archive---------13-----------------------#2023-07-21](https://towardsdatascience.com/the-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763?source=collection_archive---------13-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/the-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763?source=collection_archive---------13-----------------------#2023-07-21`](https://towardsdatascience.com/the-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763?source=collection_archive---------13-----------------------#2023-07-21)
 
 ## 如果 *y* 可以被估计为 x 的线性函数，并不意味着 x 也可以被估计为 y 的线性函数
 
-[](https://a-modirshanechi.medium.com/?source=post_page-----2589bdd2a763--------------------------------)[![Alireza Modirshanechi](../Images/400b5ff0fb743e32b7b057863352bb5a.png)](https://a-modirshanechi.medium.com/?source=post_page-----2589bdd2a763--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2589bdd2a763--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2589bdd2a763--------------------------------) [Alireza Modirshanechi](https://a-modirshanechi.medium.com/?source=post_page-----2589bdd2a763--------------------------------)
+[](https://a-modirshanechi.medium.com/?source=post_page-----2589bdd2a763--------------------------------)![Alireza Modirshanechi](https://a-modirshanechi.medium.com/?source=post_page-----2589bdd2a763--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2589bdd2a763--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2589bdd2a763--------------------------------) [Alireza Modirshanechi](https://a-modirshanechi.medium.com/?source=post_page-----2589bdd2a763--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a535debb95&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763&user=Alireza+Modirshanechi&userId=6a535debb95&source=post_page-6a535debb95----2589bdd2a763---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2589bdd2a763--------------------------------) · 10分钟阅读 · 2023年7月21日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2589bdd2a763&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763&user=Alireza+Modirshanechi&userId=6a535debb95&source=-----2589bdd2a763---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a535debb95&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763&user=Alireza+Modirshanechi&userId=6a535debb95&source=post_page-6a535debb95----2589bdd2a763---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2589bdd2a763--------------------------------) · 10 分钟阅读 · 2023 年 7 月 21 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2589bdd2a763&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763&user=Alireza+Modirshanechi&userId=6a535debb95&source=-----2589bdd2a763---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2589bdd2a763&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763&source=-----2589bdd2a763---------------------bookmark_footer-----------)![](../Images/037f83a963c741696c28433897b4b3ae.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2589bdd2a763&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-counter-intuitive-nature-of-probabilistic-relationships-2589bdd2a763&source=-----2589bdd2a763---------------------bookmark_footer-----------)![](img/037f83a963c741696c28433897b4b3ae.png)
 
-一个概率关系的示例（与图1A-B中的可视化风格相同）—— 作者提供的图像
+一个概率关系的示例（与图 1A-B 中的可视化风格相同）—— 作者提供的图像
 
 考虑两个实值变量 *x* 和 *y*，例如，父亲的身高和儿子的身高。统计学中[回归分析](https://en.wikipedia.org/wiki/Regression_analysis)的核心问题是通过已知 *x* 来预测 *y*，例如，根据父亲的身高预测儿子的身高¹。
 
@@ -26,9 +26,9 @@
 
 ## 确定性环境
 
-所谓确定性环境，我指的是（i）没有随机性和（ii）每个*x*的值总是对应于相同的*y*的值。正式地，在这些环境中，我写作*y = f(x)*，其中*f: R → R*是某个函数。在这种情况下，*x*以完全确定的方式决定*y*（即，没有随机性或噪声），*ŷ(x)*的最佳选择是*f(x)*本身。例如，如果一个儿子的身高总是其父亲身高的1.05倍（暂时忽略这个例子的不可行性！），那么我们对儿子身高的最佳猜测就是将父亲的身高乘以1.05。
+所谓确定性环境，我指的是（i）没有随机性和（ii）每个*x*的值总是对应于相同的*y*的值。正式地，在这些环境中，我写作*y = f(x)*，其中*f: R → R*是某个函数。在这种情况下，*x*以完全确定的方式决定*y*（即，没有随机性或噪声），*ŷ(x)*的最佳选择是*f(x)*本身。例如，如果一个儿子的身高总是其父亲身高的 1.05 倍（暂时忽略这个例子的不可行性！），那么我们对儿子身高的最佳猜测就是将父亲的身高乘以 1.05。
 
-如果*f*是一个可逆函数，那么*x̂(y)*的最佳选择等于*f*的逆。在上面的例子中，这意味着对父亲身高的最佳猜测总是儿子身高除以1.05。因此，确定性情况下*ŷ(x)*和*x̂(y)*之间的联系是直接的，可以简化为找到函数*f*及其逆。
+如果*f*是一个可逆函数，那么*x̂(y)*的最佳选择等于*f*的逆。在上面的例子中，这意味着对父亲身高的最佳猜测总是儿子身高除以 1.05。因此，确定性情况下*ŷ(x)*和*x̂(y)*之间的联系是直接的，可以简化为找到函数*f*及其逆。
 
 ## 概率性环境
 
@@ -40,13 +40,13 @@
 
 为了简化问题，我专注于**线性**关系，即 *ŷ(x)* 在 *x* 上是线性的。线性确定性关系具有线性逆，即 *y = αx*（对于某个 *α≠0*）意味着 *x = βy* 且 *β = 1/α* — 见脚注³。与确定性关系 *y = αx* 类似的概率线性关系为
 
-![](../Images/bddbef966917254d036924f531619976.png)
+![](img/bddbef966917254d036924f531619976.png)
 
 **公式 1**
 
 其中 *Z* 是一个附加的随机变量，通常称为“噪声”或“误差项”，其条件平均值假定为零，即 *E[Z|X=x] = 0* 对所有 *x* 都成立；注意，我们并不总是假设 *Z* 与 *X* 是独立的。利用**公式 1**，给定 *X=x* 的 *Y* 的条件期望为（见脚注⁴）
 
-![](../Images/2eca59a4449f784e1f91b0c6ad2b1230.png)
+![](img/2eca59a4449f784e1f91b0c6ad2b1230.png)
 
 **公式 2**
 
@@ -70,45 +70,45 @@
 
 1.  *Z* 服从均值为零、方差为 *σ²* 的高斯分布。
 
-![](../Images/404b45a95710e593b002a446aafad1b0.png)
+![](img/404b45a95710e593b002a446aafad1b0.png)
 
 **图 1\. 可视化示例 1 和示例 2。** 面板 **A** 和 **B** 可视化了示例 1 (A；α = 0.5，固定 σ² = 3/4) 和示例 2 (B；α = 0.5，σ² 依赖于 x) 的 *Y* 在给定 X 条件下的分布。给定随机变量 X 的一个值，随机变量 Y 在这两个示例中都服从高斯分布：黑色线条显示条件期望 E[Y|X=x]，阴影区域显示高斯分布的标准差。点显示了 (X, Y) 的 500 个联合分布样本。面板 **C** 显示了 Y 的边际分布（X 服从标准正态分布），示例 1 (蓝色) 和示例 2 (红色)：示例 1 中 Y 的边际分布是均值为零、方差为 *α² + σ²* 的高斯分布，但我们只能数值评估示例 2 中 Y 的边际分布。
 
 经过几行代数计算，很容易证明，这些假设意味着 *Y* 服从均值为零、方差为 *α² + σ²* 的高斯分布。此外，这些假设还意味着 *X* 和 *Y* 是联合高斯分布，均值为零，协方差矩阵等于
 
-![](../Images/2d43e43c2bc38844f2111e7fd575eb82.png)
+![](img/2d43e43c2bc38844f2111e7fd575eb82.png)
 
 由于我们拥有 *X* 和 *Y* 的完整联合分布，我们可以推导它们的条件期望（见脚注⁵）：
 
-![](../Images/28807289a5a41e70fa2391d0e6d2a4c2.png)
+![](img/28807289a5a41e70fa2391d0e6d2a4c2.png)
 
 因此，给定我们第一个示例的假设，**方程 2** 具有形式为 *x̂(y) = βy* 的线性逆，但 *β* 不等于其确定性对应的 *1/α* ——除非我们有 *σ = 0*，这 ***等同于*** 确定性情况！
 
 这一结果表明，我们对确定性线性关系的直觉不能推广到概率线性关系。为了更清楚地看到这一结果所暗示的真正疯狂程度，让我们首先考虑 *α = 0.5* 的确定性情况 (*σ = 0*；**图 2A 和 2B** 中的蓝色曲线)：
 
-![](../Images/09a89ffb33570d1db5921cd0ccd18814.png)
+![](img/09a89ffb33570d1db5921cd0ccd18814.png)
 
 这意味着，给定一个 *x* 值，*y* 的值是 *x* 的一半；给定一个 *y* 值，*x* 的值是 *y* 的两倍，这看起来是直观的。重要的是，我们总是有 *x < y*。现在，让我们再次考虑 *α = 0.5*，但这次 *σ² = 3/4*（**图 2A 和 2B** 中的红色曲线）。这种噪声方差的选择意味着 *β = α = 0.5*，结果是
 
-![](../Images/ee452bb34c001d37b883799145b03290.png)
+![](img/ee452bb34c001d37b883799145b03290.png)
 
 这意味着，给定一个 *x* 值，我们对 *y* 的估计是 *x* 的一半；然而，给定一个 *y* 值，我们对 *x* 的估计也是 *y* 的一半！奇怪的是，我们总是有 *x̂(y) < y* **和** *ŷ(x) < x* ——如果变量是确定性的，这将是不可能的。看似反直觉的是，**方程 1** 可以重写为
 
-![](../Images/a7d1bad07330772fece111870f475b47.png)
+![](img/a7d1bad07330772fece111870f475b47.png)
 
 **方程 3**
 
 然而，这只能意味着（与 **方程 2** 相对）
 
-![](../Images/8a809fbe6320d65f4b69c38e1d7a4feb.png)
+![](img/8a809fbe6320d65f4b69c38e1d7a4feb.png)
 
 **方程 4**
 
 问题在于，虽然我们设计时有*E[Z|X=x]=0*，但我们不能对*E[Z|Y=y]*及其对*y*的依赖性做出任何说明！换句话说，使得*x̂(y)*与*y/α*不同的是观察值*y*还包含关于误差*Z*的信息，例如，如果我们观察到一个非常大的*y*值，则意味着很可能误差*Z*也具有一个较大的值，这应在估计*X*时考虑进去。
 
-![](../Images/34c547a6bf1cd34829bd1f912a04df60.png)
+![](img/34c547a6bf1cd34829bd1f912a04df60.png)
 
-**图 2\. 示例 1 和示例 2 中的线性关系及其逆关系。** 面板**A**展示了在示例 1 和示例 2 的概率设置下*ŷ(x)*与x之间的线性关系（红色；α = 0.5）和y与x之间的等效确定性关系（蓝色）；注意*ŷ(x)*作为函数x在两个示例中是相同的。面板**B**和**C**展示了在示例 1（面板**B**中的红色；固定σ² = 3/4）和示例 2（面板**C**中的红色；σ² 依赖于x）的概率设置下*x̂(y)*与y之间的逆关系。蓝线显示了参考的等效确定性关系的逆关系。在所有面板中，虚线黑色显示了y=x线。
+**图 2\. 示例 1 和示例 2 中的线性关系及其逆关系。** 面板**A**展示了在示例 1 和示例 2 的概率设置下*ŷ(x)*与 x 之间的线性关系（红色；α = 0.5）和 y 与 x 之间的等效确定性关系（蓝色）；注意*ŷ(x)*作为函数 x 在两个示例中是相同的。面板**B**和**C**展示了在示例 1（面板**B**中的红色；固定σ² = 3/4）和示例 2（面板**C**中的红色；σ² 依赖于 x）的概率设置下*x̂(y)*与 y 之间的逆关系。蓝线显示了参考的等效确定性关系的逆关系。在所有面板中，虚线黑色显示了 y=x 线。
 
 这是对看似矛盾的陈述的简单解释，例如“高个子父亲的儿子（平均而言）也很高，但没有父亲那么高，同时，高个子的儿子有（平均而言）高个子父亲，但没有儿子那么高”！
 
@@ -126,19 +126,19 @@
 
 这些假设实际上意味着，给定*X=x*，随机变量*Y*服从均值为*αx*、方差为*0.01 + 1/(1 + 2x²)* 的高斯分布（见**图 1B**）。与示例 1 中*X*和*Y*的联合分布是高斯分布不同，示例 2 中*X*和*Y*的联合分布没有优雅的形式（见**图 1C**）。然而，我们仍然可以使用贝叶斯规则，找到给定*Y=y*的*X=x*的相对复杂的条件密度（见**图 3**获取一些数值评估的示例）：
 
-![](../Images/a53a46a03c5a40729cbcdded53d0dcf9.png)
+![](img/a53a46a03c5a40729cbcdded53d0dcf9.png)
 
 **方程 5**
 
 其中曲线 *N* 表示高斯分布的概率密度。
 
-![](../Images/e4dd217c37dbbab5a31d5518d0a43c33.png)
+![](img/e4dd217c37dbbab5a31d5518d0a43c33.png)
 
 **图 3** **. 示例 2 中给定 Y=y 的 X 的条件分布**。先验分布 p(x)（蓝色曲线）、似然 p(y|x)（橙色曲线）和后验分布 p(x|y)（黑色曲线；使用 **方程 5** 进行数值评估），从左到右，y = 0.5、1.5 和 2（假设所有情况下 α = 0.5）。
 
 我们可以使用数值方法来评估条件期望
 
-![](../Images/97a673f9587469d6d6dae6a462e17738.png)
+![](img/97a673f9587469d6d6dae6a462e17738.png)
 
 **方程 6**
 
@@ -160,7 +160,7 @@
 
 # 脚注：
 
-¹ 有兴趣的读者可以在[“父亲的身高如何影响儿子的身高”](/how-the-fathers-height-influences-the-son-s-height-62ea0339638d)中查看这个问题的易懂处理。
+¹ 有兴趣的读者可以在“父亲的身高如何影响儿子的身高”中查看这个问题的易懂处理。
 
 ² 详见维基百科上的 “[最小均方误差](https://en.wikipedia.org/wiki/Minimum_mean_square_error)” 页面。
 

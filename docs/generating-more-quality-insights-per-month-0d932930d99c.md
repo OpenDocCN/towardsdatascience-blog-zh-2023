@@ -1,10 +1,10 @@
 # 每月生成更多优质见解
 
-> 原文：[https://towardsdatascience.com/generating-more-quality-insights-per-month-0d932930d99c?source=collection_archive---------9-----------------------#2023-11-11](https://towardsdatascience.com/generating-more-quality-insights-per-month-0d932930d99c?source=collection_archive---------9-----------------------#2023-11-11)
+> 原文：[`towardsdatascience.com/generating-more-quality-insights-per-month-0d932930d99c?source=collection_archive---------9-----------------------#2023-11-11`](https://towardsdatascience.com/generating-more-quality-insights-per-month-0d932930d99c?source=collection_archive---------9-----------------------#2023-11-11)
 
 ## 如何构建系统以更少的时间生成更多高质量的见解
 
-[](https://medium.com/@jordangom?source=post_page-----0d932930d99c--------------------------------)![Jordan Gomes](../Images/d08bb9fd8b084687599a67a2221ec68c.png)[](https://towardsdatascience.com/?source=post_page-----0d932930d99c--------------------------------)![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----0d932930d99c--------------------------------)
+[](https://medium.com/@jordangom?source=post_page-----0d932930d99c--------------------------------)![Jordan Gomes](img/d08bb9fd8b084687599a67a2221ec68c.png)[](https://towardsdatascience.com/?source=post_page-----0d932930d99c--------------------------------)![Towards Data Science](img/a6ff2676ffcc0c7aad8aaf1d79379785.png) [Jordan Gomes](https://medium.com/@jordangom?source=post_page-----0d932930d99c--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F0d932930d99c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-more-quality-insights-per-month-0d932930d99c&source=-----0d932930d99c---------------------bookmark_footer-----------)
 
-在《[**重新思考的E-神话：为什么大多数小企业不起作用及其应对策略**](https://www.amazon.com/Myth-Revisited-Small-Businesses-About/dp/0887307280)》中，迈克尔·E·格伯邀请小企业主停止“在他们的业务中”工作，开始“在他们的业务上”工作。书中的一个中心论点是，SMB业主应该像他们想要特许经营他们的业务一样行事。这迫使他们（1）仔细审视他们所有的活动和流程，并且（2）优化和标准化这些活动和流程。通过这样做，他们将最大化其业务的收益，并使其可复制。这个想法类似于雷·达里奥在《[**原则**](https://www.amazon.com/Principles-Ray-Dalio-audiobook/dp/B074B2CZJG/ref=sr_1_1?crid=B5W2ZRYM6O1Z&keywords=principles+by+ray+dalio&qid=1698990013&s=books&sprefix=Principles%2Cstripbooks%2C162&sr=1-1)》中表达的观点 — 为了一个团队能够成功，他们的经理需要在团队上工作（而不是在团队里工作），并建立一个能够最大化任何给定输入收益的系统。
+在《[**重新思考的 E-神话：为什么大多数小企业不起作用及其应对策略**](https://www.amazon.com/Myth-Revisited-Small-Businesses-About/dp/0887307280)》中，迈克尔·E·格伯邀请小企业主停止“在他们的业务中”工作，开始“在他们的业务上”工作。书中的一个中心论点是，SMB 业主应该像他们想要特许经营他们的业务一样行事。这迫使他们（1）仔细审视他们所有的活动和流程，并且（2）优化和标准化这些活动和流程。通过这样做，他们将最大化其业务的收益，并使其可复制。这个想法类似于雷·达里奥在《[**原则**](https://www.amazon.com/Principles-Ray-Dalio-audiobook/dp/B074B2CZJG/ref=sr_1_1?crid=B5W2ZRYM6O1Z&keywords=principles+by+ray+dalio&qid=1698990013&s=books&sprefix=Principles%2Cstripbooks%2C162&sr=1-1)》中表达的观点 — 为了一个团队能够成功，他们的经理需要在团队上工作（而不是在团队里工作），并建立一个能够最大化任何给定输入收益的系统。
 
 在某种程度上 — 这些建议也适用于分析团队。对于一个分析团队 — 纲要地说 — 输入是把数据转化为见解的时间，输出是“高质量的见解”，两者之间的关系可以如下所示：
 
@@ -22,7 +22,7 @@
 
 要增加团队生成的高质量见解数量，你需要努力增加把数据转化为见解的时间，或者减少转化为高质量见解所需的平均时间。你可以通过建立“系统”来实现这一点。
 
-![](../Images/88e9408d58306130b2e64e97371fb6c8.png)
+![](img/88e9408d58306130b2e64e97371fb6c8.png)
 
 # 每月分解的见解（作者提供的图像）
 
@@ -44,9 +44,9 @@
 
 通过（1）定义清晰的处理这些任务的流程，以及（2）通过时间的推移标准化和优化这些流程，你可以节省大量时间（即减少非数据工作所花费的时间），同时提高输出质量。
 
-一个关于跨职能对齐的具体例子可能是从每个月开始时进行优先级排序会议。在进行的第一个月里，你会意识到为了进行一个好的优先级排序会议，你需要一个标准框架来做出优先级决策。你在第2个月引入了这个框架，并且它有效，但随后你会发现为了让它更好，你需要一个更好的流程来映射团队的潜在项目，所以你在第3个月引入了这个流程，依此类推。随着时间的推移，通过这种迭代的方法，你可以获得一个非常有效的流程，使你的团队花费更少的时间在“政治工作”上，更多地专注于洞察创造。
+一个关于跨职能对齐的具体例子可能是从每个月开始时进行优先级排序会议。在进行的第一个月里，你会意识到为了进行一个好的优先级排序会议，你需要一个标准框架来做出优先级决策。你在第 2 个月引入了这个框架，并且它有效，但随后你会发现为了让它更好，你需要一个更好的流程来映射团队的潜在项目，所以你在第 3 个月引入了这个流程，依此类推。随着时间的推移，通过这种迭代的方法，你可以获得一个非常有效的流程，使你的团队花费更少的时间在“政治工作”上，更多地专注于洞察创造。
 
-另一个关于公司范围内沟通的例子：你从第1个月开始时没有明确的流程，并意识到你的研究没有被充分利用。因此，在第2个月，你启动了一个月度论坛。在这些月度论坛中，你会发现你的利益相关者需要以某种方式展示数据，以便对他们更易于理解，所以你采用了一种特定的格式/模板等。
+另一个关于公司范围内沟通的例子：你从第 1 个月开始时没有明确的流程，并意识到你的研究没有被充分利用。因此，在第 2 个月，你启动了一个月度论坛。在这些月度论坛中，你会发现你的利益相关者需要以某种方式展示数据，以便对他们更易于理解，所以你采用了一种特定的格式/模板等。
 
 再次通过优化这些流程，不仅可以节省时间，以便重新投资于洞察创造，而且还可以为成功打下基础，因为这些耗时的非数据相关流程支持团队生成高质量洞察的能力。
 

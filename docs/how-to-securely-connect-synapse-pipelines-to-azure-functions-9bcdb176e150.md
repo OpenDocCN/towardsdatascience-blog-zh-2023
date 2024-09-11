@@ -1,18 +1,18 @@
 # 如何安全地将 Synapse 管道连接到 Azure Functions
 
-> 原文：[https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150?source=collection_archive---------14-----------------------#2023-01-04](https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150?source=collection_archive---------14-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150?source=collection_archive---------14-----------------------#2023-01-04`](https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150?source=collection_archive---------14-----------------------#2023-01-04)
 
 ## 学习如何使用 Synapse 外泄保护、私有端点和 Azure AD 认证来创建安全连接
 
-[](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[![René Bremer](../Images/e422c4b84e225d2a949251ebc24dbd2c.png)](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------) [René Bremer](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)
+[](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)![René Bremer](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------) [René Bremer](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F11e5e7fb3771&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150&user=Ren%C3%A9+Bremer&userId=11e5e7fb3771&source=post_page-11e5e7fb3771----9bcdb176e150---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------) ·4 min read·2023年1月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9bcdb176e150&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150&user=Ren%C3%A9+Bremer&userId=11e5e7fb3771&source=-----9bcdb176e150---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F11e5e7fb3771&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150&user=Ren%C3%A9+Bremer&userId=11e5e7fb3771&source=post_page-11e5e7fb3771----9bcdb176e150---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------) ·4 min read·2023 年 1 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9bcdb176e150&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150&user=Ren%C3%A9+Bremer&userId=11e5e7fb3771&source=-----9bcdb176e150---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9bcdb176e150&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150&source=-----9bcdb176e150---------------------bookmark_footer-----------)![](../Images/0d78113d8329f6775a3e9d8a438128b5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9bcdb176e150&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150&source=-----9bcdb176e150---------------------bookmark_footer-----------)![](img/0d78113d8329f6775a3e9d8a438128b5.png)
 
 图片由 [Alina Grubnyak](https://unsplash.com/@alinnnaaaa) 提供，来源于 [Unsplash](https://unsplash.com/)
 
@@ -22,10 +22,10 @@ Azure Functions 是一个流行的工具，用于创建 REST API。团队可以�
 
 +   **数据外泄保护**以防止内部攻击
 
-+   使用**私有端点**将Azure Function的暴露限制为仅内部
++   使用**私有端点**将 Azure Function 的暴露限制为仅内部
 
-+   使用**Azure AD身份验证**来访问Azure Function
++   使用**Azure AD 身份验证**来访问 Azure Function
 
-+   将**Synapse托管身份**列为唯一允许访问Azure Function的身份
++   将**Synapse 托管身份**列为唯一允许访问 Azure Function 的身份
 
-在这篇博客文章和git仓库`[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`中，讨论了如何安全地将Synapse连接到Azure Functions，请参阅下面的概述。
+在这篇博客文章和 git 仓库`[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`中，讨论了如何安全地将 Synapse 连接到 Azure Functions，请参阅下面的概述。

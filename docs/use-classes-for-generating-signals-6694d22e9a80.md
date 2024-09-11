@@ -1,14 +1,14 @@
 # 使用类来生成信号
 
-> 原文：[https://towardsdatascience.com/use-classes-for-generating-signals-6694d22e9a80?source=collection_archive---------14-----------------------#2023-02-01](https://towardsdatascience.com/use-classes-for-generating-signals-6694d22e9a80?source=collection_archive---------14-----------------------#2023-02-01)
+> 原文：[`towardsdatascience.com/use-classes-for-generating-signals-6694d22e9a80?source=collection_archive---------14-----------------------#2023-02-01`](https://towardsdatascience.com/use-classes-for-generating-signals-6694d22e9a80?source=collection_archive---------14-----------------------#2023-02-01)
 
 ## 类 == 更好的代码可读性
 
-[](https://medium.com/@omar.ok1998?source=post_page-----6694d22e9a80--------------------------------)[![Omar Alkousa](../Images/7598618abe8e8fa89f1d8a4bfc21f014.png)](https://medium.com/@omar.ok1998?source=post_page-----6694d22e9a80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6694d22e9a80--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6694d22e9a80--------------------------------) [Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----6694d22e9a80--------------------------------)
+[](https://medium.com/@omar.ok1998?source=post_page-----6694d22e9a80--------------------------------)![Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----6694d22e9a80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6694d22e9a80--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6694d22e9a80--------------------------------) [Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----6694d22e9a80--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8302b9534b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-classes-for-generating-signals-6694d22e9a80&user=Omar+Alkousa&userId=f8302b9534b5&source=post_page-f8302b9534b5----6694d22e9a80---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6694d22e9a80--------------------------------) ·7分钟阅读·2023年2月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6694d22e9a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-classes-for-generating-signals-6694d22e9a80&user=Omar+Alkousa&userId=f8302b9534b5&source=-----6694d22e9a80---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8302b9534b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-classes-for-generating-signals-6694d22e9a80&user=Omar+Alkousa&userId=f8302b9534b5&source=post_page-f8302b9534b5----6694d22e9a80---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6694d22e9a80--------------------------------) ·7 分钟阅读·2023 年 2 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6694d22e9a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-classes-for-generating-signals-6694d22e9a80&user=Omar+Alkousa&userId=f8302b9534b5&source=-----6694d22e9a80---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 在处理信号数据时，你可能需要编写多个函数和方法来实现你想要应用于信号数据的处理过程。然而，有时在没有先前了解这些数据的情况下，跟踪你对信号应用的方法的质量可能会很困难。因此，生成具有已知参数的信号数据可以帮助你更好地理解你的程序和方法。生成信号，特别是正弦信号，在信号处理研究中非常常见。通常，它用于测试或展示不同的信号处理技术，如离散傅里叶变换、小波分析等。
 
-![](../Images/d173ffc350260a75e671a5154b44a7d4.png)
+![](img/d173ffc350260a75e671a5154b44a7d4.png)
 
 照片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -42,7 +42,7 @@ plt.title('Sinusoidal Signal')
 plt.show()
 ```
 
-![](../Images/40d60949f424653fc269ad3cc6031114.png)
+![](img/40d60949f424653fc269ad3cc6031114.png)
 
 使用 Numpy 包生成信号。[作者提供的图片]
 
@@ -258,7 +258,7 @@ plt.title('This signal is generated using Signal class')
 plt.show()
 ```
 
-![](../Images/23df058e93925562b52b36ec09c9fc44.png)
+![](img/23df058e93925562b52b36ec09c9fc44.png)
 
 使用我们的 Signal 类生成信号的示例。[作者提供的图片]
 
@@ -268,14 +268,14 @@ plt.show()
 
 +   我们已经逐步学习了如何在 Python 中构建一个类。我们从定义类及如何将变量或函数定义为对象开始，然后将其作为方法或属性与类一起传递。
 
-+   我们学习了特殊方法__init__()及其如何用于实例化类，并将参数定制为特定的初始状态，这使得用户能够更好地控制数据。
++   我们学习了特殊方法 __init__()及其如何用于实例化类，并将参数定制为特定的初始状态，这使得用户能够更好地控制数据。
 
 +   我们构建了最终的类作为一个信号生成器，您可以用它来获取具有特定频率、采样率、振幅和持续时间的正弦信号。
 
 # 参考文献
 
-[[1]](https://docs.python.org/3/tutorial/classes.html) Python 文档，类，类的初步介绍。 [访问时间：2023年1月28日]
+[[1]](https://docs.python.org/3/tutorial/classes.html) Python 文档，类，类的初步介绍。 [访问时间：2023 年 1 月 28 日]
 
-[[2]](https://www.geeksforgeeks.org/self-in-python-class/) GeeksforGeeks，类，类中的 self。 [访问时间：2023年1月28日]
+[[2]](https://www.geeksforgeeks.org/self-in-python-class/) GeeksforGeeks，类，类中的 self。 [访问时间：2023 年 1 月 28 日]
 
 [[3]](https://pythonnumericalmethods.berkeley.edu/notebooks/chapter24.01-The-Basics-of-waves.html) Kong, Q., Siauw, T., & Bayen, A. (2020). 《Python 编程与数值方法：工程师和科学家的指南》，傅里叶变换，波的基础。学术出版社。

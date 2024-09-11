@@ -1,18 +1,18 @@
 # 介绍一个用于检测 GPT 生成文本的数据集
 
-> 原文：[https://towardsdatascience.com/introducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2?source=collection_archive---------7-----------------------#2023-02-08](https://towardsdatascience.com/introducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2?source=collection_archive---------7-----------------------#2023-02-08)
+> 原文：[`towardsdatascience.com/introducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2?source=collection_archive---------7-----------------------#2023-02-08`](https://towardsdatascience.com/introducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2?source=collection_archive---------7-----------------------#2023-02-08)
 
 ## 如何为 ChatGPT 检测模型创建数据集
 
-[](https://medium.com/@aadityaubhat?source=post_page-----96bb76dd2ed2--------------------------------)[![Aaditya Bhat](../Images/4ae4a03d798d4a3fbec02d81c9c87146.png)](https://medium.com/@aadityaubhat?source=post_page-----96bb76dd2ed2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96bb76dd2ed2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----96bb76dd2ed2--------------------------------) [Aaditya Bhat](https://medium.com/@aadityaubhat?source=post_page-----96bb76dd2ed2--------------------------------)
+[](https://medium.com/@aadityaubhat?source=post_page-----96bb76dd2ed2--------------------------------)![Aaditya Bhat](https://medium.com/@aadityaubhat?source=post_page-----96bb76dd2ed2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96bb76dd2ed2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----96bb76dd2ed2--------------------------------) [Aaditya Bhat](https://medium.com/@aadityaubhat?source=post_page-----96bb76dd2ed2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feff870d7210e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2&user=Aaditya+Bhat&userId=eff870d7210e&source=post_page-eff870d7210e----96bb76dd2ed2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96bb76dd2ed2--------------------------------) ·4 min read·2023年2月8日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96bb76dd2ed2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2&user=Aaditya+Bhat&userId=eff870d7210e&source=-----96bb76dd2ed2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Feff870d7210e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2&user=Aaditya+Bhat&userId=eff870d7210e&source=post_page-eff870d7210e----96bb76dd2ed2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96bb76dd2ed2--------------------------------) ·4 min read·2023 年 2 月 8 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96bb76dd2ed2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2&user=Aaditya+Bhat&userId=eff870d7210e&source=-----96bb76dd2ed2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F96bb76dd2ed2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2&source=-----96bb76dd2ed2---------------------bookmark_footer-----------)![](../Images/f19e3823d8d934d82e0773690e2b7474.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F96bb76dd2ed2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-a-dataset-to-detect-gpt-generated-text-96bb76dd2ed2&source=-----96bb76dd2ed2---------------------bookmark_footer-----------)![](img/f19e3823d8d934d82e0773690e2b7474.png)
 
 照片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/iar-afB0QQw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -62,19 +62,19 @@ f"200 word wikipedia style introduction on '{title}'
 
 ## **获取锚数据集**
 
-在这一步中，我们获取锚数据集。这将是为特定用例现成的现有数据。对于[GPT-wiki-intro数据集](https://huggingface.co/datasets/aadityaubhat/GPT-wiki-intro)，锚数据集是[wikipedia数据集](https://huggingface.co/datasets/wikipedia#licensing-information)，该数据集包含各种语言的清理文章。对于检测考试和作业作弊，锚数据集可以是之前学生提交的问答对。如果你没有明确定义的锚数据集，可以探索Hugging Face和Kaggle上与用例匹配的各种开源数据集。锚数据集不必是人工编写的，我们也可以使用GPT生成的数据作为锚数据。例如，我们可以使用[ChatGPT提示响应库](https://www.emergentmind.com/)的数据。
+在这一步中，我们获取锚数据集。这将是为特定用例现成的现有数据。对于[GPT-wiki-intro 数据集](https://huggingface.co/datasets/aadityaubhat/GPT-wiki-intro)，锚数据集是[wikipedia 数据集](https://huggingface.co/datasets/wikipedia#licensing-information)，该数据集包含各种语言的清理文章。对于检测考试和作业作弊，锚数据集可以是之前学生提交的问答对。如果你没有明确定义的锚数据集，可以探索 Hugging Face 和 Kaggle 上与用例匹配的各种开源数据集。锚数据集不必是人工编写的，我们也可以使用 GPT 生成的数据作为锚数据。例如，我们可以使用[ChatGPT 提示响应库](https://www.emergentmind.com/)的数据。
 
 ## 清理锚数据集
 
-一旦我们拥有锚数据集，我们需要清理数据以保留最相关的信息。ChatGPT检测模型对文本长度非常敏感。这些模型在较小的文本上表现不佳。我们可以设定一个阈值，并过滤掉任何短于该阈值的响应。例如，在GPT-wiki-intro数据集中，我们过滤掉所有引言长度少于150字或超过350字的行。我们还过滤掉标题超过三个词的所有行。在这一步中，我们还需要决定数据集的总大小。由于使用人工编写或GPT生成的响应来增强数据将会很昂贵，我们需要确定我们用例所需的最小数据集大小。
+一旦我们拥有锚数据集，我们需要清理数据以保留最相关的信息。ChatGPT 检测模型对文本长度非常敏感。这些模型在较小的文本上表现不佳。我们可以设定一个阈值，并过滤掉任何短于该阈值的响应。例如，在 GPT-wiki-intro 数据集中，我们过滤掉所有引言长度少于 150 字或超过 350 字的行。我们还过滤掉标题超过三个词的所有行。在这一步中，我们还需要决定数据集的总大小。由于使用人工编写或 GPT 生成的响应来增强数据将会很昂贵，我们需要确定我们用例所需的最小数据集大小。
 
-## 增强数据集，加入人工编写或GPT生成的数据
+## 增强数据集，加入人工编写或 GPT 生成的数据
 
-这是数据集生成的最终步骤。在此步骤中，我们通过人工编写或GPT生成的数据来增强锚数据集。这一步中最重要的是确定用于生成GPT响应的**提示**或由人类回答的**问题**。为了最终确定提示，我们可以利用[OpenAI Playground](https://platform.openai.com/playground)测试不同的提示、模型、温度、频率惩罚和存在惩罚。为了增加数据集的多样性，我们可以最终确定n个提示，并统一使用这些提示以获取响应。在人类回应的情况下，我们需要通过向小型调查人群提供不同的问题变体来最终确定问题，然后检查结果以最终确定n个问题。一旦提示或问题确定，我们可以使用OpenAI API生成GPT生成的响应，或使用像Mechanical Turk这样的服务获取人工编写的响应。
+这是数据集生成的最终步骤。在此步骤中，我们通过人工编写或 GPT 生成的数据来增强锚数据集。这一步中最重要的是确定用于生成 GPT 响应的**提示**或由人类回答的**问题**。为了最终确定提示，我们可以利用[OpenAI Playground](https://platform.openai.com/playground)测试不同的提示、模型、温度、频率惩罚和存在惩罚。为了增加数据集的多样性，我们可以最终确定 n 个提示，并统一使用这些提示以获取响应。在人类回应的情况下，我们需要通过向小型调查人群提供不同的问题变体来最终确定问题，然后检查结果以最终确定 n 个问题。一旦提示或问题确定，我们可以使用 OpenAI API 生成 GPT 生成的响应，或使用像 Mechanical Turk 这样的服务获取人工编写的响应。
 
 # 结论
 
-总之，随着像ChatGPT这样的巨大语言模型的广泛使用，对能够检测这些模型生成的文本的模型的需求也在不断增加。本文介绍了[GPT-wiki-intro 数据集](https://huggingface.co/datasets/aadityaubhat/GPT-wiki-intro)并概述了生成类似数据集的框架。这些数据集的可用性将在开发用于检测GPT生成文本的强大模型以及应对这些模型使用的不良后果方面发挥关键作用。
+总之，随着像 ChatGPT 这样的巨大语言模型的广泛使用，对能够检测这些模型生成的文本的模型的需求也在不断增加。本文介绍了[GPT-wiki-intro 数据集](https://huggingface.co/datasets/aadityaubhat/GPT-wiki-intro)并概述了生成类似数据集的框架。这些数据集的可用性将在开发用于检测 GPT 生成文本的强大模型以及应对这些模型使用的不良后果方面发挥关键作用。
 
 # 引用
 

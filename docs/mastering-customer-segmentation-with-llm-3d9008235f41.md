@@ -1,14 +1,14 @@
 # 掌握客户细分的终极技巧
 
-> 原文：[https://towardsdatascience.com/mastering-customer-segmentation-with-llm-3d9008235f41?source=collection_archive---------0-----------------------#2023-09-26](https://towardsdatascience.com/mastering-customer-segmentation-with-llm-3d9008235f41?source=collection_archive---------0-----------------------#2023-09-26)
+> 原文：[`towardsdatascience.com/mastering-customer-segmentation-with-llm-3d9008235f41?source=collection_archive---------0-----------------------#2023-09-26`](https://towardsdatascience.com/mastering-customer-segmentation-with-llm-3d9008235f41?source=collection_archive---------0-----------------------#2023-09-26)
 
 ## 利用 LLM 解锁高级客户细分技术，并通过先进技术改进你的聚类模型
 
-[](https://medium.com/@damiangilgonzalez?source=post_page-----3d9008235f41--------------------------------)[![Damian Gil](../Images/8b378c321ee21b0bd40faa14db7e9487.png)](https://medium.com/@damiangilgonzalez?source=post_page-----3d9008235f41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d9008235f41--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d9008235f41--------------------------------) [Damian Gil](https://medium.com/@damiangilgonzalez?source=post_page-----3d9008235f41--------------------------------)
+[](https://medium.com/@damiangilgonzalez?source=post_page-----3d9008235f41--------------------------------)![Damian Gil](https://medium.com/@damiangilgonzalez?source=post_page-----3d9008235f41--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d9008235f41--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d9008235f41--------------------------------) [Damian Gil](https://medium.com/@damiangilgonzalez?source=post_page-----3d9008235f41--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87864cbc1dda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-customer-segmentation-with-llm-3d9008235f41&user=Damian+Gil&userId=87864cbc1dda&source=post_page-87864cbc1dda----3d9008235f41---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d9008235f41--------------------------------) ·24 分钟阅读·2023年9月26日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87864cbc1dda&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-customer-segmentation-with-llm-3d9008235f41&user=Damian+Gil&userId=87864cbc1dda&source=post_page-87864cbc1dda----3d9008235f41---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d9008235f41--------------------------------) ·24 分钟阅读·2023 年 9 月 26 日
 
 --
 
@@ -16,7 +16,7 @@
 
 # 内容目录
 
-**·** [**简介**](#fbea) **·** [**数据**](#7ac3) **·** [**方法 1: Kmeans**](#c662) **·** [**方法 2: K-Prototype**](#1422) **·** [**方法 3: LLM + Kmeans**](#3a33) **·** [**结论**](#e320)
+**·** **简介** **·** **数据** **·** **方法 1: Kmeans** **·** **方法 2: K-Prototype** **·** **方法 3: LLM + Kmeans** **·** **结论**
 
 # 简介
 
@@ -34,7 +34,7 @@
 
 作为一个小预览，我将展示以下不同模型创建的二维表示（PCA）的比较：
 
-![](../Images/c1271719684d43f409e5765fd0eb7aa7.png)
+![](img/c1271719684d43f409e5765fd0eb7aa7.png)
 
 **三种方法的图形比较**（图片由作者提供）。
 
@@ -48,15 +48,15 @@
 
 结果如下：
 
-![](../Images/f9eb2a950a822ada5b1ad3afadc701fe.png)
+![](img/f9eb2a950a822ada5b1ad3afadc701fe.png)
 
 **三种降维方法的图形比较**（图片由作者提供）。
 
-你可以在[**这里**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM)找到带有笔记本的项目。你也可以查看我的github：
+你可以在[**这里**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM)找到带有笔记本的项目。你也可以查看我的 github：
 
 [](https://github.com/damiangilgonzalez1995?source=post_page-----3d9008235f41--------------------------------) [## damiangilgonzalez1995 - 概述
 
-### 对数据充满热情，我从物理学转行到了数据科学。曾在Telefonica、HP工作，现在担任CTO…
+### 对数据充满热情，我从物理学转行到了数据科学。曾在 Telefonica、HP 工作，现在担任 CTO…
 
 github.com](https://github.com/damiangilgonzalez1995?source=post_page-----3d9008235f41--------------------------------)
 
@@ -64,11 +64,11 @@ github.com](https://github.com/damiangilgonzalez1995?source=post_page-----3d9008
 
 # 数据
 
-本项目使用的原始数据来自公开的Kaggle：[银行数据集 — 市场营销目标](https://www.kaggle.com/datasets/prakharrathi25/banking-dataset-marketing-targets)。此数据集中的每一行包含有关公司客户的信息。一些字段是数值型的，其他的是分类的，我们将看到这扩展了处理问题的可能方法。
+本项目使用的原始数据来自公开的 Kaggle：[银行数据集 — 市场营销目标](https://www.kaggle.com/datasets/prakharrathi25/banking-dataset-marketing-targets)。此数据集中的每一行包含有关公司客户的信息。一些字段是数值型的，其他的是分类的，我们将看到这扩展了处理问题的可能方法。
 
-我们只会保留前8列。我们的数据集如下所示：
+我们只会保留前 8 列。我们的数据集如下所示：
 
-![](../Images/a7f07db265fac93d2a304ea879240b76.png)
+![](img/a7f07db265fac93d2a304ea879240b76.png)
 
 让我们简要了解一下数据集中的列：
 
@@ -88,7 +88,7 @@ github.com](https://github.com/damiangilgonzalez1995?source=post_page-----3d9008
 
 +   **贷款**：是否有个人贷款？（二元： “是”，“否”）
 
-对于这个项目，我利用了Kaggle提供的训练数据集。[**在项目仓库**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM)中，你可以找到***“data”***文件夹，其中存储了用于项目的压缩数据集文件。此外，你还会在压缩文件内找到两个CSV文件，一个是Kaggle提供的训练数据集**（train.csv）**，另一个是经过嵌入处理后的数据集（**embedding_train.csv**），我们将在稍后进一步解释。
+对于这个项目，我利用了 Kaggle 提供的训练数据集。[**在项目仓库**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM)中，你可以找到***“data”***文件夹，其中存储了用于项目的压缩数据集文件。此外，你还会在压缩文件内找到两个 CSV 文件，一个是 Kaggle 提供的训练数据集**（train.csv）**，另一个是经过嵌入处理后的数据集（**embedding_train.csv**），我们将在稍后进一步解释。
 
 为了进一步澄清项目的结构，展示了项目树：
 
@@ -105,9 +105,9 @@ clustering_llm
 └─ requirements.txt
 ```
 
-# 方法1：Kmeans
+# 方法 1：Kmeans
 
-这是最常见的方法，也是你一定熟悉的方法。无论如何，我们将研究它，因为我将在这些情况下展示高级分析技巧。你可以在名为[**kmeans.ipynb**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM/blob/main/kmeans.ipynb)的Jupyter笔记本中找到完整的过程。
+这是最常见的方法，也是你一定熟悉的方法。无论如何，我们将研究它，因为我将在这些情况下展示高级分析技巧。你可以在名为[**kmeans.ipynb**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM/blob/main/kmeans.ipynb)的 Jupyter 笔记本中找到完整的过程。
 
 ## 预处理
 
@@ -115,9 +115,9 @@ clustering_llm
 
 1.  这包括将分类变量转换为数值变量。
 
-    我们将对名义变量应用Onehot编码器，对序数特征（*教育*）应用OrdinalEncoder。
+    我们将对名义变量应用 Onehot 编码器，对序数特征（*教育*）应用 OrdinalEncoder。
 
-1.  我们尝试确保数值变量具有高斯分布。为此，我们将应用PowerTransformer。
+1.  我们尝试确保数值变量具有高斯分布。为此，我们将应用 PowerTransformer。
 
 让我们看看它在代码中是如何表现的。
 
@@ -205,13 +205,13 @@ print(data.columns.tolist())
 
 输出：
 
-![](../Images/6e0a4a2e7e601e8d71cc086968d5c904.png)
+![](img/6e0a4a2e7e601e8d71cc086968d5c904.png)
 
 ## 异常值
 
-关键在于我们的数据中异常值要尽可能少，因为Kmeans对异常值非常敏感。我们可以使用z分数的典型方法来选择异常值，但在这篇文章中我将展示一种更高级且酷的方法。
+关键在于我们的数据中异常值要尽可能少，因为 Kmeans 对异常值非常敏感。我们可以使用 z 分数的典型方法来选择异常值，但在这篇文章中我将展示一种更高级且酷的方法。
 
-那么，这种方法是什么呢？我们将使用[Python异常检测（PyOD）库](https://pyod.readthedocs.io/en/latest/)。这个库专注于检测不同情况下的异常值。更具体来说，我们将使用**ECOD**方法（“**用于异常检测的经验累积分布函数**”）。
+那么，这种方法是什么呢？我们将使用[Python 异常检测（PyOD）库](https://pyod.readthedocs.io/en/latest/)。这个库专注于检测不同情况下的异常值。更具体来说，我们将使用**ECOD**方法（“**用于异常检测的经验累积分布函数**”）。
 
 该方法旨在获取数据的分布，从而了解哪些值的概率密度较低（异常值）。如果你想的话，可以看看[Github](https://medium.com/r?url=https%3A%2F%2Fgithub.com%2Fyzhao062%2Fpyod)。
 
@@ -238,7 +238,7 @@ print(data_with_outliers.shape) -> (45211, 19)
 
 ## 建模
 
-使用Kmeans算法的一个缺点是你必须选择要使用的簇数。在这种情况下，为了获取这些数据，我们将使用[肘部法则](https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/)。它的原理是计算簇内点与其质心之间的失真。目标很明确，尽量减少失真。在这种情况下，我们使用以下代码：
+使用 Kmeans 算法的一个缺点是你必须选择要使用的簇数。在这种情况下，为了获取这些数据，我们将使用[肘部法则](https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/)。它的原理是计算簇内点与其质心之间的失真。目标很明确，尽量减少失真。在这种情况下，我们使用以下代码：
 
 ```py
 from yellowbrick.cluster import KElbowVisualizer
@@ -253,11 +253,11 @@ visualizer.show()
 
 输出：
 
-![](../Images/c1f9dbd17d6bf7a464b92bc1bf1eacad.png)
+![](img/c1f9dbd17d6bf7a464b92bc1bf1eacad.png)
 
 **不同簇数的肘部评分**（作者提供的图片）。
 
-我们看到从**k=5**开始，失真没有明显变化。理想的情况是，从k=5开始，行为几乎保持平坦。这种情况很少发生，可以应用其他方法来确定最优的集群数量。为了确保，我们可以进行[**Silhouette**](https://www.scikit-yb.org/en/latest/api/cluster/silhouette.html) **可视化**。代码如下：
+我们看到从**k=5**开始，失真没有明显变化。理想的情况是，从 k=5 开始，行为几乎保持平坦。这种情况很少发生，可以应用其他方法来确定最优的集群数量。为了确保，我们可以进行[**Silhouette**](https://www.scikit-yb.org/en/latest/api/cluster/silhouette.html) **可视化**。代码如下：
 
 ```py
 from sklearn.metrics import davies_bouldin_score, silhouette_score, silhouette_samples
@@ -329,15 +329,15 @@ For n_clusters = 9 The average silhouette_score is : 0.14842917303536465
 """
 ```
 
-可以看出，最高的轮廓得分是在n_cluster=9时获得的，但如果与其他得分比较，得分的变化确实很小。目前，之前的结果并没有提供太多信息。另一方面，之前的代码创建了轮廓可视化，这为我们提供了更多信息：
+可以看出，最高的轮廓得分是在 n_cluster=9 时获得的，但如果与其他得分比较，得分的变化确实很小。目前，之前的结果并没有提供太多信息。另一方面，之前的代码创建了轮廓可视化，这为我们提供了更多信息：
 
-![](../Images/8cbb7e81daf794103550e8d419037673.png)
+![](img/8cbb7e81daf794103550e8d419037673.png)
 
 **不同集群数量的轮廓方法的图形表示**（作者提供的图片）。
 
-由于深入理解这些表示并不是本文的目标，我将总结为似乎没有非常明确的决定哪个数字最好。在查看了之前的表示后，我们可以选择**K=5或K=6**。这是因为对于不同的集群，它们的轮廓得分都高于平均值，并且集群大小没有不平衡。此外，在某些情况下，市场部门可能会希望拥有最少的集群/客户类型（这可能会或不会发生）。
+由于深入理解这些表示并不是本文的目标，我将总结为似乎没有非常明确的决定哪个数字最好。在查看了之前的表示后，我们可以选择**K=5 或 K=6**。这是因为对于不同的集群，它们的轮廓得分都高于平均值，并且集群大小没有不平衡。此外，在某些情况下，市场部门可能会希望拥有最少的集群/客户类型（这可能会或不会发生）。
 
-最后，我们可以创建Kmeans模型，K=5。
+最后，我们可以创建 Kmeans 模型，K=5。
 
 ```py
 km = KMeans(n_clusters=5,
@@ -356,7 +356,7 @@ np.unique(clusters_predict) -> array([0, 1, 2, 3, 4])
 
 ## 评估
 
-评估kmeans模型的方法比其他模型稍微开放一些。我们可以使用
+评估 kmeans 模型的方法比其他模型稍微开放一些。我们可以使用
 
 +   指标
 
@@ -413,13 +413,13 @@ Silhouette Score: 0.16729335453305272
 """
 ```
 
-据显示，我们没有一个特别好的模型。**Davies得分**告诉我们集群之间的距离相当小。
+据显示，我们没有一个特别好的模型。**Davies 得分**告诉我们集群之间的距离相当小。
 
 这可能由几个因素造成，但请记住，模型的能量就是数据；如果数据没有足够的预测能力，你不能期望得到卓越的结果。
 
-对于**可视化**，我们可以使用**降维方法，PCA**。我们将使用[**Prince**](https://github.com/MaxHalford/prince)库，专注于探索性分析和降维。如果你愿意，也可以使用Sklearn的PCA，它们是相同的。
+对于**可视化**，我们可以使用**降维方法，PCA**。我们将使用[**Prince**](https://github.com/MaxHalford/prince)库，专注于探索性分析和降维。如果你愿意，也可以使用 Sklearn 的 PCA，它们是相同的。
 
-首先，我们将计算3D中的主成分，然后进行表示。这是前面步骤执行的两个功能：
+首先，我们将计算 3D 中的主成分，然后进行表示。这是前面步骤执行的两个功能：
 
 ```py
 import prince
@@ -519,9 +519,9 @@ print("The variability is :", pca_3d_object.eigenvalues_summary)
 
 输出：
 
-![](../Images/b991037bdf1dd3d0c83db66f2a6ddd13.png)
+![](img/b991037bdf1dd3d0c83db66f2a6ddd13.png)
 
-**PCA空间及模型创建的集群**（作者提供的图片）。
+**PCA 空间及模型创建的集群**（作者提供的图片）。
 
 可以看出，集群之间几乎没有分隔，也没有明确的划分。这与指标提供的信息一致。
 
@@ -533,7 +533,7 @@ print("The variability is :", pca_3d_object.eigenvalues_summary)
 
 答案如下：
 
-![](../Images/26a4fbdc878720fdb241a57f77e1d75d.png)
+![](img/26a4fbdc878720fdb241a57f77e1d75d.png)
 
 如图所示，我们用前三个组件的变异性为 27.98%，这不足以得出有根据的结论。
 
@@ -561,13 +561,13 @@ plot_pca_3d(df_tsne_3d, title = "PCA Space", opacity=1, width_line = 0.1)
 
 结果，我得到了以下图像。它显示了聚类之间更清晰的分离，但不幸的是，我们仍然没有得到很好的结果。
 
-![](../Images/fa9abe56ddb5c100324777929b894326.png)
+![](img/fa9abe56ddb5c100324777929b894326.png)
 
 **t-SNE 空间和模型创建的聚类**（作者提供的图像）。
 
 实际上，我们可以比较 **PCA 和 t-SNE 在 2 维中的降维效果**。使用第二种方法的改进是显而易见的。
 
-![](../Images/e53af2aade94ed7dc1d6b79ab146e31c.png)
+![](img/e53af2aade94ed7dc1d6b79ab146e31c.png)
 
 **不同降维方法和模型定义的聚类的不同结果**（作者提供的图像）。
 
@@ -593,11 +593,11 @@ shap.summary_plot(shap_values_km, data_no_outliers, plot_type="bar", plot_size=(
 
 输出：
 
-![](../Images/0e4c8e00f1bf8d52176769cc8a90303c.png)
+![](img/0e4c8e00f1bf8d52176769cc8a90303c.png)
 
 **模型中变量的重要性**（作者提供的图像）。
 
-可以看出特征***age***具有最大的预测能力。还可以看出，簇编号3（绿色）主要通过***balance***变量区分。
+可以看出特征***age***具有最大的预测能力。还可以看出，簇编号 3（绿色）主要通过***balance***变量区分。
 
 最终，我们必须分析簇的特征。这部分研究对业务至关重要。我们将为每个簇获取数据集中每个特征的均值（对于数值变量）和最频繁的值（对于分类变量）：
 
@@ -623,15 +623,15 @@ df_no_outliers.groupby('cluster').agg(
 
 输出：
 
-![](../Images/95880af6faec1e9d360bc420abaf2c5d.png)
+![](img/95880af6faec1e9d360bc420abaf2c5d.png)
 
 我们看到**job=blue-collar**的簇在特征之间没有很大的差异，除了年龄特征。这是不理想的，因为很难区分每个簇的客户。在**job=management**的情况下，我们得到更好的差异化。
 
 经过不同方式的分析，它们得出了相同的结论：**“我们需要改进结果”**。
 
-# 方法2：K-Prototype
+# 方法 2：K-Prototype
 
-如果我们记住原始数据集，我们会看到我们有分类和数值变量。不幸的是，Skelearn提供的Kmeans算法不接受分类变量，迫使原始数据集被修改并严重改变。
+如果我们记住原始数据集，我们会看到我们有分类和数值变量。不幸的是，Skelearn 提供的 Kmeans 算法不接受分类变量，迫使原始数据集被修改并严重改变。
 
 幸运的是，你与我和我的帖子一起前进。但最重要的是，感谢**ZHEXUE HUANG**及其文章[**Extensions to the k-Means Algorithm for Clustering Large Data Sets with Categorical Values**](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.4028&rep=rep1&type=pdf)，存在一种接受分类变量的聚类算法。这个算法叫做**K-Prototype**。提供它的书店是[**Prince**](https://github.com/MaxHalford/prince/blob/master/README.md)。
 
@@ -653,17 +653,17 @@ df_no_outliers_norm["balance"] = df_aux["balance"].values
 df_no_outliers_norm
 ```
 
-![](../Images/11cc86976685f0fd416311a6ab0fbc45.png)
+![](img/11cc86976685f0fd416311a6ab0fbc45.png)
 
 ## 异常值
 
-由于我提出的异常值检测方法**(ECOD)**仅接受数值变量，因此必须进行与kmeans方法相同的转换。我们应用异常值检测模型，这将告诉我们要删除哪些行，最后留下我们将作为K-Prototype模型输入的数据集：
+由于我提出的异常值检测方法**(ECOD)**仅接受数值变量，因此必须进行与 kmeans 方法相同的转换。我们应用异常值检测模型，这将告诉我们要删除哪些行，最后留下我们将作为 K-Prototype 模型输入的数据集：
 
-![](../Images/a98ec365178e9a9c8db1123e62d92d38.png)
+![](img/a98ec365178e9a9c8db1123e62d92d38.png)
 
 ## 建模
 
-我们创建模型，为此我们首先需要获得最佳的k。为此，我们使用**Elbow Method**和这段代码：
+我们创建模型，为此我们首先需要获得最佳的 k。为此，我们使用**Elbow Method**和这段代码：
 
 ```py
 # Choose optimal K using Elbow method
@@ -703,15 +703,15 @@ plotnine.options.figure_size = (8, 4.8)
 
 输出：
 
-![](../Images/7edaed91d38897cafd9b86388121b704.png)
+![](img/7edaed91d38897cafd9b86388121b704.png)
 
 **不同聚类数量的肘部评分**（图像由作者提供）。
 
 我们可以看到，最佳选项是**K=5**。
 
-小心，因为这个算法比通常使用的算法要慢一点。对于之前的图表，需要86分钟，这一点需要注意。
+小心，因为这个算法比通常使用的算法要慢一点。对于之前的图表，需要 86 分钟，这一点需要注意。
 
-![](../Images/4449fc4681f03208a1bbea5558a8c25c.png)
+![](img/4449fc4681f03208a1bbea5558a8c25c.png)
 
 好的，我们现在已经明确了聚类数量，只需要创建模型：
 
@@ -735,13 +735,13 @@ print(clusters) " -> array([3, 1, 1, ..., 1, 1, 2], dtype=uint16)"
 
 ## 评估
 
-正如我们之前所见，我们可以应用多种可视化方法来直观地了解模型的好坏。不幸的是，PCA方法和t-SNE不接受分类变量。但不用担心，因为[**Prince**](https://github.com/MaxHalford/prince/blob/master/README.md)库包含了[**MCA（多重对应分析）**](https://maxhalford.github.io/prince/mca/)方法，并且可以接受混合数据集。事实上，我鼓励你访问这个库的[**Github**](https://github.com/MaxHalford/prince)，它有许多非常有用的方法适用于不同情况，见下图：
+正如我们之前所见，我们可以应用多种可视化方法来直观地了解模型的好坏。不幸的是，PCA 方法和 t-SNE 不接受分类变量。但不用担心，因为[**Prince**](https://github.com/MaxHalford/prince/blob/master/README.md)库包含了[**MCA（多重对应分析）**](https://maxhalford.github.io/prince/mca/)方法，并且可以接受混合数据集。事实上，我鼓励你访问这个库的[**Github**](https://github.com/MaxHalford/prince)，它有许多非常有用的方法适用于不同情况，见下图：
 
-![](../Images/a2500d92228134365fd7622e8bc462d4.png)
+![](img/a2500d92228134365fd7622e8bc462d4.png)
 
-**不同类型案例的降维方法**（图像由作者和Prince文档提供）。
+**不同类型案例的降维方法**（图像由作者和 Prince 文档提供）。
 
-好吧，计划是应用MCA来减少维度并进行图形表示。为此我们使用以下代码：
+好吧，计划是应用 MCA 来减少维度并进行图形表示。为此我们使用以下代码：
 
 ```py
 from prince import MCA
@@ -767,75 +767,75 @@ mca_3d, mca_3d_df = get_MCA_3d(df_no_outliers_norm, clusters)
 
 名为***mca_3d_df***的数据集包含了这些信息：
 
-![](../Images/ee1d6c7977ffd3adb5dffd1be597b218.png)
+![](img/ee1d6c7977ffd3adb5dffd1be597b218.png)
 
-我们来绘制一个使用MCA方法提供的降维结果的图：
+我们来绘制一个使用 MCA 方法提供的降维结果的图：
 
-![](../Images/8ee972b3bc56c7b24139a73a20832f7a.png)
+![](img/8ee972b3bc56c7b24139a73a20832f7a.png)
 
-**MCA空间和模型创建的聚类**（图像由作者提供）
+**MCA 空间和模型创建的聚类**（图像由作者提供）
 
 哇，这看起来不太好……无法区分各个聚类。那么我们可以说模型不够好，对吗？
 
 我希望你说了类似的话：
 
-> **“嘿，Damian，别这么快！！你看过MCA提供的3个组件的变异性吗？”**
+> **“嘿，Damian，别这么快！！你看过 MCA 提供的 3 个组件的变异性吗？”**
 
-实际上，我们必须查看前三个组件的变异性是否足够以得出结论。MCA方法允许我们以非常简单的方式获得这些值：
+实际上，我们必须查看前三个组件的变异性是否足够以得出结论。MCA 方法允许我们以非常简单的方式获得这些值：
 
 ```py
 mca_3d.eigenvalues_summary
 ```
 
-![](../Images/bf26aeea4e957ace0aa9a5106cc11687.png)
+![](img/bf26aeea4e957ace0aa9a5106cc11687.png)
 
 啊哈，这里有一些有趣的东西。由于我们的数据，基本上获得了零变异性。
 
-> **换句话说，我们不能仅凭MCA提供的降维信息得出明确的结论。**
+> **换句话说，我们不能仅凭 MCA 提供的降维信息得出明确的结论。**
 
 通过展示这些结果，我尝试举例说明实际数据项目中会发生什么。好结果并不总是能获得，但一个好的数据科学家知道如何识别原因。
 
-我们还有一个最后的选项来直观地确定K-Prototype方法创建的模型是否合适。这个路径很简单：
+我们还有一个最后的选项来直观地确定 K-Prototype 方法创建的模型是否合适。这个路径很简单：
 
-1.  这就是对经过预处理的数据集应用PCA，将分类变量转换为数值变量。
+1.  这就是对经过预处理的数据集应用 PCA，将分类变量转换为数值变量。
 
-1.  获取PCA的组件
+1.  获取 PCA 的组件
 
-1.  使用PCA组件制作表示图，例如轴线和点的颜色，以预测K-Prototype模型。
+1.  使用 PCA 组件制作表示图，例如轴线和点的颜色，以预测 K-Prototype 模型。
 
-请注意，PCA提供的组件将与方法1中的Kmeans相同，因为它使用的是相同的数据框。
+请注意，PCA 提供的组件将与方法 1 中的 Kmeans 相同，因为它使用的是相同的数据框。
 
 让我们看看我们得到什么…
 
-![](../Images/76483d5d757f720120829057b3750c34.png)
+![](img/76483d5d757f720120829057b3750c34.png)
 
-**PCA空间和模型创建的簇**（图片由作者提供）。
+**PCA 空间和模型创建的簇**（图片由作者提供）。
 
-看起来不错，实际上与Kmeans得到的结果有一定的相似性。
+看起来不错，实际上与 Kmeans 得到的结果有一定的相似性。
 
 最后，我们获得簇的平均值以及每个变量的重要性：
 
-![](../Images/e89e459dbfc54cb895d47ce3c551cb51.png)
+![](img/e89e459dbfc54cb895d47ce3c551cb51.png)
 
 **模型中变量的重要性。表格表示每个簇中最常见的值**（图片由作者提供）。
 
 权重大的是数值变量，特别是看到这两个特征的限制几乎足以区分每个簇。
 
-简而言之，可以说得到的结果与Kmeans类似。
+简而言之，可以说得到的结果与 Kmeans 类似。
 
-# 方法3：LLM + Kmeans
+# 方法 3：LLM + Kmeans
 
 这种组合可能非常强大，并且能提高获得的结果。直接进入正题！
 
 **LLMs**无法直接理解书面文本，我们需要对这种类型模型的输入进行转换。为此，**句子** **嵌入**被执行。它包括将文本转换为数值向量。以下图像可以阐明这个概念：
 
-![](../Images/3d290fea0c92e1135c7398c91a83cebb.png)
+![](img/3d290fea0c92e1135c7398c91a83cebb.png)
 
 **嵌入和相似性的概念**（图片由作者提供）。
 
 这种编码是智能完成的，即具有相似含义的短语将具有更相似的向量。请参见下图：
 
-![](../Images/0842dedc820bb2634fb26a9e3c1621af.png)
+![](img/0842dedc820bb2634fb26a9e3c1621af.png)
 
 **嵌入和相似性的概念**（图片由作者提供）。
 
@@ -843,11 +843,11 @@ mca_3d.eigenvalues_summary
 
 > 由于嵌入创建的向量维度较大，可以更精确地观察数据中的小变化。
 
-**因此，如果我们向信息丰富的Kmeans模型提供输入，它将返回更好的预测。** 这是我们追求的目标，以下是步骤：
+**因此，如果我们向信息丰富的 Kmeans 模型提供输入，它将返回更好的预测。** 这是我们追求的目标，以下是步骤：
 
 1.  通过句子嵌入转换我们的原始数据集
 
-1.  创建一个Kmeans模型
+1.  创建一个 Kmeans 模型
 
 1.  评估一下
 
@@ -893,23 +893,23 @@ df_embedding
 
 +   **第 1 步**：为每一行创建文本，其中包含完整的客户/行信息。我们还将其存储在一个 Python 列表中以备后用。请参见下面的图片进行示例。
 
-![](../Images/6efefc20ec2db48dfc909a07ea91ed06.png)
+![](img/6efefc20ec2db48dfc909a07ea91ed06.png)
 
 **第一步的图示**（图片作者提供）。
 
 +   **第 2 步**：这是调用转换器的阶段。为此，我们将使用存储在[**HuggingFace**](https://huggingface.co)上的模型。这个模型专门用于句子级别的嵌入，而不是**Bert 模型**，后者专注于令牌和单词级别的编码。要调用模型，你只需提供存储库地址，这里的地址是 ***“sentence-transformers/paraphrase-MiniLM-L6-v2”***。返回给我们的每个文本的数值向量将被归一化，因为 Kmeans 模型对输入的尺度敏感。创建的向量长度为**384**。我们用这些向量创建一个具有相同列数的数据框。请参见下面的图片：
 
-![](../Images/b658af3dd5b4fd45b9bc9acec31cb458.png)
+![](img/b658af3dd5b4fd45b9bc9acec31cb458.png)
 
 **第二步的图示**（图片作者提供），
 
 最终我们从嵌入中获得数据框，这将作为我们 Kmeans 模型的输入。
 
-![](../Images/af3900f4d0c391bb833854baf8a987a0.png)
+![](img/af3900f4d0c391bb833854baf8a987a0.png)
 
 这一步是最有趣和重要的步骤之一，因为我们已经为即将创建的 Kmeans 模型创建了输入。
 
-创建和评估过程类似于上面所示。为了不使帖子过于冗长，只展示每个点的结果。别担心，所有代码都包含在[**名为 *embedding* 的jupyter notebook**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM/blob/main/embedding.ipynb)**中**，所以你可以自己复现结果。
+创建和评估过程类似于上面所示。为了不使帖子过于冗长，只展示每个点的结果。别担心，所有代码都包含在[**名为 *embedding* 的 jupyter notebook**](https://github.com/damiangilgonzalez1995/Clustering-with-LLM/blob/main/embedding.ipynb)**中**，所以你可以自己复现结果。
 
 此外，应用句子嵌入后得到的数据集已保存为 csv 文件。该 csv 文件名为 ***embedding_train.csv***。在 Jupyter notebook 中，你将看到我们如何访问该数据集并基于此创建我们的模型。
 
@@ -939,7 +939,7 @@ df_embedding_with_out.shape -> (45211, 384)
 
 首先我们必须找出最佳的簇数。为此我们使用**肘部法则**。
 
-![](../Images/b8bf00f56eb101982c8bb2709a943f8d.png)
+![](img/b8bf00f56eb101982c8bb2709a943f8d.png)
 
 **不同簇数量的肘部得分**（图片来源：作者）。
 
@@ -954,7 +954,7 @@ clusters_predict = clusters.predict(df_embedding_no_out)
 
 ## 评估
 
-下一步是创建我们的Kmeans模型，k=5。接下来我们可以获得一些类似于这些的指标：
+下一步是创建我们的 Kmeans 模型，k=5。接下来我们可以获得一些类似于这些的指标：
 
 ```py
 Davies bouldin score: 1.8095386826791042
@@ -962,49 +962,49 @@ Calinski Score: 6419.447089002081
 Silhouette Score: 0.20360442824114108
 ```
 
-从而看到这些值与之前获得的值非常相似。我们来看一下通过PCA分析获得的表示：
+从而看到这些值与之前获得的值非常相似。我们来看一下通过 PCA 分析获得的表示：
 
-![](../Images/2fb3b3166194753e03ac576a46b9539f.png)
+![](img/2fb3b3166194753e03ac576a46b9539f.png)
 
-**PCA空间和模型创建的簇**（图片来源：作者）。
+**PCA 空间和模型创建的簇**（图片来源：作者）。
 
-可以看出，簇的区分比传统方法好得多。这是好消息。我们要记住，考虑到PCA分析中前三个组件的变异性是很重要的。根据经验，当变异性在50%左右（3D PCA）时，可以得出比较明确的结论。
+可以看出，簇的区分比传统方法好得多。这是好消息。我们要记住，考虑到 PCA 分析中前三个组件的变异性是很重要的。根据经验，当变异性在 50%左右（3D PCA）时，可以得出比较明确的结论。
 
-![](../Images/425669b9db5825251def7820d142dd08.png)
+![](img/425669b9db5825251def7820d142dd08.png)
 
-**PCA空间和模型创建的簇。还显示了PCA前三个组件的变异性**（图片来源：作者）。
+**PCA 空间和模型创建的簇。还显示了 PCA 前三个组件的变异性**（图片来源：作者）。
 
-我们看到3个组件的累积变异性为40.44%，这虽然可以接受，但不理想。
+我们看到 3 个组件的累积变异性为 40.44%，这虽然可以接受，但不理想。
 
-我可以通过修改3D表示中点的透明度来直观地查看簇的紧凑程度。这意味着当点在某个空间中聚集时，可以观察到黑点。为了理解我的意思，我展示以下gif：
+我可以通过修改 3D 表示中点的透明度来直观地查看簇的紧凑程度。这意味着当点在某个空间中聚集时，可以观察到黑点。为了理解我的意思，我展示以下 gif：
 
 ```py
 plot_pca_3d(df_pca_3d, title = "PCA Space", opacity=0.2, width_line = 0.1)
 ```
 
-![](../Images/1624503423cef2263b7c21f07799acfa.png)
+![](img/1624503423cef2263b7c21f07799acfa.png)
 
-**PCA空间和模型创建的簇**（图片来源：作者）。
+**PCA 空间和模型创建的簇**（图片来源：作者）。
 
 从图中可以看出，空间中存在几个点，其中同一簇的点聚集在一起。这表明它们与其他点区分良好，且模型能相当准确地识别它们。
 
-即便如此，可以看出有些簇无法很好地区分（例如：簇1和簇3）。因此，我们进行**t-SNE**分析，记住这是一种能够考虑复杂多项式关系的降维方法。
+即便如此，可以看出有些簇无法很好地区分（例如：簇 1 和簇 3）。因此，我们进行**t-SNE**分析，记住这是一种能够考虑复杂多项式关系的降维方法。
 
-![](../Images/1720bda644e33898311476d74e34ac27.png)
+![](img/1720bda644e33898311476d74e34ac27.png)
 
-**t-SNE空间和模型创建的簇**（图片来源：作者）。
+**t-SNE 空间和模型创建的簇**（图片来源：作者）。
 
-显著的改进可以观察到。簇之间没有重叠，点之间的区分很清晰。使用第二种降维方法获得的改进是显著的。我们来看一下2D对比：
+显著的改进可以观察到。簇之间没有重叠，点之间的区分很清晰。使用第二种降维方法获得的改进是显著的。我们来看一下 2D 对比：
 
-![](../Images/c5058a99e44ac62a383ad3c7b7c7965c.png)
+![](img/c5058a99e44ac62a383ad3c7b7c7965c.png)
 
 **不同降维方法和模型定义的簇的不同结果**（图片来源：作者）。
 
-再次可以看出，t-SNE中的集群比PCA中的集群更为分离和区分。此外，两个方法在质量上的差异比传统Kmeans方法时要小。
+再次可以看出，t-SNE 中的集群比 PCA 中的集群更为分离和区分。此外，两个方法在质量上的差异比传统 Kmeans 方法时要小。
 
-为了理解我们的Kmeans模型依赖于哪些变量，我们进行与之前相同的操作：我们创建一个*分类模型（LGBMClassifier）并分析特征的重要性。*
+为了理解我们的 Kmeans 模型依赖于哪些变量，我们进行与之前相同的操作：我们创建一个*分类模型（LGBMClassifier）并分析特征的重要性。*
 
-![](../Images/606c851fed35b10f19d97c135ebff89d.png)
+![](img/606c851fed35b10f19d97c135ebff89d.png)
 
 **模型中变量的重要性**（图像来源：作者）。
 
@@ -1014,15 +1014,15 @@ plot_pca_3d(df_pca_3d, title = "PCA Space", opacity=0.2, width_line = 0.1)
 
 我们结束于最具揭示性和重要的部分。
 
-> 管理者和业务方对PCA、t-SNE或嵌入并不感兴趣。他们想要的是能够了解主要特征，这里指的是他们客户的主要特征。
+> 管理者和业务方对 PCA、t-SNE 或嵌入并不感兴趣。他们想要的是能够了解主要特征，这里指的是他们客户的主要特征。
 
 为此，我们创建了一张表格，列出我们在每个集群中可以找到的主要特征信息：
 
-![](../Images/e65d0d21fb227b2310e3ecfe29c98eb6.png)
+![](img/e65d0d21fb227b2310e3ecfe29c98eb6.png)
 
-发生了一个非常有趣的现象：集群中最频繁的职位是“***管理***”的有3个。在这些集群中，我们发现一个非常特殊的行为，单身的管理者较年轻，已婚者较年长，而离婚者则较老。另一方面，余额的行为则不同，单身人士的平均余额高于离婚人士，已婚人士的平均余额更高。上述情况可以在以下图像中总结：
+发生了一个非常有趣的现象：集群中最频繁的职位是“***管理***”的有 3 个。在这些集群中，我们发现一个非常特殊的行为，单身的管理者较年轻，已婚者较年长，而离婚者则较老。另一方面，余额的行为则不同，单身人士的平均余额高于离婚人士，已婚人士的平均余额更高。上述情况可以在以下图像中总结：
 
-![](../Images/f4b304ccef2795bed37f9d5dce880a27.png)
+![](img/f4b304ccef2795bed37f9d5dce880a27.png)
 
 **模型定义的不同客户档案**（图像来源：作者）。
 
@@ -1032,14 +1032,14 @@ plot_pca_3d(df_pca_3d, title = "PCA Space", opacity=0.2, width_line = 0.1)
 
 结论很明确：
 
-![](../Images/63460fbab29ae05068d9b91c87bc35b9.png)
+![](img/63460fbab29ae05068d9b91c87bc35b9.png)
 
 （图像来源：作者）
 
-你必须拥有不同的工具，因为在实际项目中，并非所有策略都有效，你必须有资源来增值。显然，利用LLMs创建的模型表现突出。
+你必须拥有不同的工具，因为在实际项目中，并非所有策略都有效，你必须有资源来增值。显然，利用 LLMs 创建的模型表现突出。
 
 *感谢您的阅读！*
 
 *如果你觉得我的工作有用，可以订阅* [***每次发布新文章时接收邮件***](https://medium.com/@damiangilgonzalez/subscribe)***。***
 
-*如果你愿意，* [***在Linkedin上关注我***](https://www.linkedin.com/in/damiangilgonzalez/) ***！***
+*如果你愿意，* [***在 Linkedin 上关注我***](https://www.linkedin.com/in/damiangilgonzalez/) ***！***

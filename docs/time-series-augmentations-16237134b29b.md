@@ -1,36 +1,36 @@
 # 时间序列增强
 
-> 原文：[https://towardsdatascience.com/time-series-augmentations-16237134b29b?source=collection_archive---------0-----------------------#2023-10-19](https://towardsdatascience.com/time-series-augmentations-16237134b29b?source=collection_archive---------0-----------------------#2023-10-19)
+> 原文：[`towardsdatascience.com/time-series-augmentations-16237134b29b?source=collection_archive---------0-----------------------#2023-10-19`](https://towardsdatascience.com/time-series-augmentations-16237134b29b?source=collection_archive---------0-----------------------#2023-10-19)
 
 ## 一种简单但有效的增加时间序列数据量的方法
 
-[](https://medium.com/@an231?source=post_page-----16237134b29b--------------------------------)[![亚历山大·尼基廷](../Images/decc36cddc4c7a23952569e293e7d209.png)](https://medium.com/@an231?source=post_page-----16237134b29b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16237134b29b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----16237134b29b--------------------------------) [亚历山大·尼基廷](https://medium.com/@an231?source=post_page-----16237134b29b--------------------------------)
+[](https://medium.com/@an231?source=post_page-----16237134b29b--------------------------------)![亚历山大·尼基廷](https://medium.com/@an231?source=post_page-----16237134b29b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----16237134b29b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----16237134b29b--------------------------------) [亚历山大·尼基廷](https://medium.com/@an231?source=post_page-----16237134b29b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5afaa29ee25a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-augmentations-16237134b29b&user=Alexander+Nikitin&userId=5afaa29ee25a&source=post_page-5afaa29ee25a----16237134b29b---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16237134b29b--------------------------------) ·8 min read·2023年10月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F16237134b29b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-augmentations-16237134b29b&user=Alexander+Nikitin&userId=5afaa29ee25a&source=-----16237134b29b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5afaa29ee25a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-augmentations-16237134b29b&user=Alexander+Nikitin&userId=5afaa29ee25a&source=post_page-5afaa29ee25a----16237134b29b---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----16237134b29b--------------------------------) ·8 min read·2023 年 10 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F16237134b29b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-augmentations-16237134b29b&user=Alexander+Nikitin&userId=5afaa29ee25a&source=-----16237134b29b---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F16237134b29b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-augmentations-16237134b29b&source=-----16237134b29b---------------------bookmark_footer-----------)
 
-*这篇博客文章可以在* [*GitHub上的jupyter notebook*](https://github.com/AlexanderVNikitin/tsgm/blob/main/tutorials/augmentations.ipynb)*找到。*
+*这篇博客文章可以在* [*GitHub 上的 jupyter notebook*](https://github.com/AlexanderVNikitin/tsgm/blob/main/tutorials/augmentations.ipynb)*找到。*
 
-增强已成为计算机视觉管道中不可或缺的组成部分。然而，它们在其他领域如时间序列中的受欢迎程度却没有达到相同的高度。在本教程中，我将**深入探讨**时间序列增强的世界，阐明其重要性，并提供使用强大的生成时间序列建模库TSGM [5]的实际应用示例。
+增强已成为计算机视觉管道中不可或缺的组成部分。然而，它们在其他领域如时间序列中的受欢迎程度却没有达到相同的高度。在本教程中，我将**深入探讨**时间序列增强的世界，阐明其重要性，并提供使用强大的生成时间序列建模库 TSGM [5]的实际应用示例。
 
-我们的起点是一个标记为（𝐗，𝐲）的数据集。在这里，𝐱ᵢ ∈ 𝐗 是多变量的（意味着每个时间点是一个多维特征向量）时间序列，而y是标签。预测标签y被称为下游任务。我们的目标是使用（𝐗，𝐲）生成额外的样本（𝐗*，𝐲*），这可以帮助我们更有效地解决下游任务（在预测性能或鲁棒性方面）。为了简化起见，我们在本教程中不会处理标签，但我们在这里描述的方法可以很容易地推广到有标签的情况，并且我们使用的软件实现可以通过向`.generate`方法添加额外参数来轻松扩展到监督情况（见下例）。
+我们的起点是一个标记为（𝐗，𝐲）的数据集。在这里，𝐱ᵢ ∈ 𝐗 是多变量的（意味着每个时间点是一个多维特征向量）时间序列，而 y 是标签。预测标签 y 被称为下游任务。我们的目标是使用（𝐗，𝐲）生成额外的样本（𝐗*，𝐲*），这可以帮助我们更有效地解决下游任务（在预测性能或鲁棒性方面）。为了简化起见，我们在本教程中不会处理标签，但我们在这里描述的方法可以很容易地推广到有标签的情况，并且我们使用的软件实现可以通过向`.generate`方法添加额外参数来轻松扩展到监督情况（见下例）。
 
 事不宜迟，让我们逐一考虑时间序列增强。
 
-在TSGM中，所有的增强方法都整齐地组织在`tsgm.models.augmentations`中，你可以查看 [TSGM documentation](https://tsgm.readthedocs.io/en/latest/guides/introduction.html#augmentations) 提供的全面文档。
+在 TSGM 中，所有的增强方法都整齐地组织在`tsgm.models.augmentations`中，你可以查看 [TSGM documentation](https://tsgm.readthedocs.io/en/latest/guides/introduction.html#augmentations) 提供的全面文档。
 
-现在，让我们通过安装tsgm来启动编码示例：
+现在，让我们通过安装 tsgm 来启动编码示例：
 
 ```py
 pip install tsgm
 ```
 
-接下来，我们导入tsgm，并加载一个示例数据集。一个张量`X`现在包含100个长度为64的正弦时间序列，每个序列有2个特征。具有随机的偏移、频率和振幅（最大振幅为20）。
+接下来，我们导入 tsgm，并加载一个示例数据集。一个张量`X`现在包含 100 个长度为 64 的正弦时间序列，每个序列有 2 个特征。具有随机的偏移、频率和振幅（最大振幅为 20）。
 
 ```py
 # import the libraries
@@ -47,28 +47,28 @@ import tsgm
 X = tsgm.utils.gen_sine_dataset(100, 64, 2, max_value=20)
 ```
 
-# 抖动 / Gaussian噪声
+# 抖动 / Gaussian 噪声
 
 作为第一个增强方法，我们考虑抖动。
 
-时间序列数据通过随机Gaussian噪声进行增强 ([Wikipedia](https://en.wikipedia.org/wiki/Gaussian_noise)))
+时间序列数据通过随机 Gaussian 噪声进行增强 ([Wikipedia](https://en.wikipedia.org/wiki/Gaussian_noise)))
 
-![](../Images/44c18aa6fd22c7037051e5a7cefa7519.png)
+![](img/44c18aa6fd22c7037051e5a7cefa7519.png)
 
-在tsgm中，Gaussian噪声增强可以如下应用：
+在 tsgm 中，Gaussian 噪声增强可以如下应用：
 
 ```py
 aug_model = tsgm.models.augmentations.GaussianNoise()
 samples = aug_model.generate(X=X, n_samples=10, variance=0.2)
 ```
 
-Gaussian噪声增强的理念是，向时间序列中添加少量的抖动可能不会显著改变它，但会增加数据集中这种噪声样本的数量。这通常使下游模型对噪声样本更具鲁棒性或提高预测性能。
+Gaussian 噪声增强的理念是，向时间序列中添加少量的抖动可能不会显著改变它，但会增加数据集中这种噪声样本的数量。这通常使下游模型对噪声样本更具鲁棒性或提高预测性能。
 
-Gaussian噪声的超参数及其添加方式（例如，Gaussian噪声可能会在时间序列的末尾增加）是一个困难的问题，并且取决于特定的数据集和下游问题。通常值得进行实验，看看这些参数如何影响目标模型的性能。
+Gaussian 噪声的超参数及其添加方式（例如，Gaussian 噪声可能会在时间序列的末尾增加）是一个困难的问题，并且取决于特定的数据集和下游问题。通常值得进行实验，看看这些参数如何影响目标模型的性能。
 
 在这里，我们提供了原始正弦数据集样本和增强样本的可视化。
 
-![](../Images/bc5f06309b37e786f90ecfeff2727c18.png)
+![](img/bc5f06309b37e786f90ecfeff2727c18.png)
 
 原始时间序列和通过抖动生成的合成数据。
 
@@ -78,7 +78,7 @@ Gaussian噪声的超参数及其添加方式（例如，Gaussian噪声可能会�
 
 为了解释这种方法，假设有五个相同的传感器，标记为 S_1, S_2, S_3, S_4 和 S_5。为了说明，假设传感器 1 到 4 在旋转方面是可以互换的。那么，尝试在 S_1，…，S_5 传感器的旋转角度上进行特征旋转的数据增强是有意义的。
 
-![](../Images/33ef023a670f580bf559f0e92d317013.png)
+![](img/33ef023a670f580bf559f0e92d317013.png)
 
 在这个例子中，有五个传感器，来自这些传感器的测量生成了五维时间序列数据。传感器 1 到 4 可以被任意旋转以生成新的合成样本（例如，1->2，2->3，3->4，4->1）。因此，通过对原始数据应用这些变换，可以生成新的合成样本。
 
@@ -91,7 +91,7 @@ samples = aug_model.generate(X=X, n_samples=3)
 
 这里，我们展示了一个具有 5 个特征的时间序列样本，以及一个增强样本，类似于上面的图像。
 
-![](../Images/5c82f025b90a71ba39c5d85fa4431094.png)
+![](img/5c82f025b90a71ba39c5d85fa4431094.png)
 
 原始时间序列和通过特征洗牌生成的合成数据。
 
@@ -99,7 +99,7 @@ samples = aug_model.generate(X=X, n_samples=3)
 
 切片和洗牌增强 [3] 将时间序列切成片段并洗牌这些片段。对于在时间上表现出某种形式的不变性的时间序列，可以执行这种增强。例如，假设从可穿戴设备上测量的时间序列持续了几天。在这种情况下，一个好的策略是按天切割时间序列，并通过洗牌这些天来获得额外的样本。切片和洗牌增强在以下图像中可视化：
 
-![](../Images/fb2647d33c5989842439315ba9b28271.png)
+![](img/fb2647d33c5989842439315ba9b28271.png)
 
 切片和洗牌示意图。
 
@@ -110,7 +110,7 @@ samples = aug_model.generate(X=X, n_samples=10, n_segments=3)
 
 让我们查看增强样本和原始样本：
 
-![](../Images/49b868a4660f4f006921f821a774773b.png)
+![](img/49b868a4660f4f006921f821a774773b.png)
 
 原始时间序列和通过切片和洗牌生成的合成数据。
 
@@ -125,7 +125,7 @@ samples = aug_model.generate(X=X, n_samples=10, sigma=1)
 
 这里是一个原始数据和通过 `MagnitudeWarping` 生成的增强样本的例子。
 
-![](../Images/0e3f871956ba908f9ed5e0b9726b5e43.png)
+![](img/0e3f871956ba908f9ed5e0b9726b5e43.png)
 
 原始时间序列和通过幅度扭曲生成的合成数据。
 
@@ -133,11 +133,11 @@ samples = aug_model.generate(X=X, n_samples=10, sigma=1)
 
 在这种技术 [4] 中，时间序列数据中的选定窗口要么加速，要么减速。然后，将整个结果时间序列缩放回原始大小，以保持时间步长在原始长度。请参见下面的这种增强的例子：
 
-![](../Images/bb3e8162230f88cfb55b95b90b7bb6e7.png)
+![](img/bb3e8162230f88cfb55b95b90b7bb6e7.png)
 
 这种增强可能是有益的，例如，在设备建模中。在这种应用中，传感器测量可以根据设备的使用方式改变变化速度。
 
-在tsgm中，与往常一样，可以通过以下方式进行生成：
+在 tsgm 中，与往常一样，可以通过以下方式进行生成：
 
 ```py
 aug_model = tsgm.models.augmentations.WindowWarping()
@@ -146,33 +146,33 @@ samples = aug_model.generate(X=X, n_samples=10, scales=(0.5,), window_ratio=0.5)
 
 下面可以找到一个生成的时间序列示例。
 
-![](../Images/f125afd7137a500f20d74a2099619531.png)
+![](img/f125afd7137a500f20d74a2099619531.png)
 
 原始时间序列和通过窗口规整生成的合成数据。
 
 # 动态时间规整重心平均（DTWBA）
 
-动态时间规整重心平均（DTWBA）[2]是一种基于动态时间规整（DTW）的扩增方法。DTW是一种测量时间序列相似性的方法。其思想是“同步”这些时间序列，如下图所示。
+动态时间规整重心平均（DTWBA）[2]是一种基于动态时间规整（DTW）的扩增方法。DTW 是一种测量时间序列相似性的方法。其思想是“同步”这些时间序列，如下图所示。
 
-![](../Images/6a525a2c686cff6601fbd76b6414d4b0.png)
+![](img/6a525a2c686cff6601fbd76b6414d4b0.png)
 
-DTW用于测量两个时间序列信号sin(x)和sin(2x)的相似性。DTW测量通过白色线条显示。此外，还可视化了交叉相似性矩阵。
+DTW 用于测量两个时间序列信号 sin(x)和 sin(2x)的相似性。DTW 测量通过白色线条显示。此外，还可视化了交叉相似性矩阵。
 
-关于DTW计算的更多细节可以在[https://rtavenar.github.io/blog/dtw.html](https://rtavenar.github.io/blog/dtw.html)中找到。
+关于 DTW 计算的更多细节可以在[`rtavenar.github.io/blog/dtw.html`](https://rtavenar.github.io/blog/dtw.html)中找到。
 
-DTWBA的过程如下：
+DTWBA 的过程如下：
 
-1\. 算法选择一个时间序列来初始化DTWBA结果。这个时间序列可以明确给出，也可以从数据集中随机选择。
+1\. 算法选择一个时间序列来初始化 DTWBA 结果。这个时间序列可以明确给出，也可以从数据集中随机选择。
 
-2\. 对于每一个`N`个时间序列，算法计算DTW距离和路径（路径是最小化距离的映射）。
+2\. 对于每一个`N`个时间序列，算法计算 DTW 距离和路径（路径是最小化距离的映射）。
 
-3\. 在计算所有`N`个DTW距离后，算法通过对所有找到的路径进行平均来更新DTWBA结果。
+3\. 在计算所有`N`个 DTW 距离后，算法通过对所有找到的路径进行平均来更新 DTWBA 结果。
 
-4\. 算法重复步骤（2）和（3），直到DTWBA结果收敛。
+4\. 算法重复步骤（2）和（3），直到 DTWBA 结果收敛。
 
 参考实现可以在[tslearn](https://github.com/tslearn-team/tslearn/blob/main/tslearn/barycenters/dba.py#L60)中找到，描述可以在[2]中找到。
 
-在tsgm中，可以通过以下方式生成样本：
+在 tsgm 中，可以通过以下方式生成样本：
 
 ```py
 aug_model = tsgm.models.augmentations.DTWBarycentricAveraging()
@@ -181,13 +181,13 @@ initial_timeseries = X[initial_timeseries]
 samples = aug_model.generate(X=X, n_samples=10, initial_timeseries=initial_timeseries )
 ```
 
-![](../Images/5f90e46a8f02f3b1b3b87f23a54fec58.png)
+![](img/5f90e46a8f02f3b1b3b87f23a54fec58.png)
 
-原始时间序列和通过DTWBA生成的合成数据。
+原始时间序列和通过 DTWBA 生成的合成数据。
 
 # 使用生成机器学习模型进行扩增
 
-另一种扩增方法是训练一个机器学习模型在历史数据上，并训练它生成新颖的合成样本。这是一种黑箱方法，因为很难解释新样本是如何生成的。在时间序列的情况下，可以应用几种方法；特别是，tsgm拥有VAE、GANs和高斯过程。以下是使用VAE生成合成时间序列的示例：
+另一种扩增方法是训练一个机器学习模型在历史数据上，并训练它生成新颖的合成样本。这是一种黑箱方法，因为很难解释新样本是如何生成的。在时间序列的情况下，可以应用几种方法；特别是，tsgm 拥有 VAE、GANs 和高斯过程。以下是使用 VAE 生成合成时间序列的示例：
 
 ```py
 n, n_ts, n_features = 1000, 24, 5
@@ -197,7 +197,7 @@ scaled_data = scaler.fit_transform(data)
 ```
 
 ```py
-architecture = tsgm.models.zoo[“vae_conv5”](n_ts, n_features, 10)
+architecture = tsgm.models.zoo“vae_conv5”
 encoder, decoder = architecture.encoder, architecture.decodervae = tsgm.models.cvae.BetaVAE(encoder, decoder)
 vae.compile(optimizer=keras.optimizers.Adam())
 vae.fit(scaled_data, epochs=1, batch_size=64)
@@ -210,7 +210,7 @@ samples = vae.generate(10)
 
 如何选择？首先，分析你的问题是否包含不变性。它对随机噪声不变吗？对特征洗牌不变吗？
 
-接下来，选择一组广泛的方法，并验证这些方法中的任何一种是否提高了下游问题的性能（tsgm有[下游性能指标](https://tsgm.readthedocs.io/en/latest/autoapi/tsgm/metrics/index.html#tsgm.metrics.DownstreamPerformanceMetric)）。然后，选择那些提供最大性能提升的扩增方法。
+接下来，选择一组广泛的方法，并验证这些方法中的任何一种是否提高了下游问题的性能（tsgm 有[下游性能指标](https://tsgm.readthedocs.io/en/latest/autoapi/tsgm/metrics/index.html#tsgm.metrics.DownstreamPerformanceMetric)）。然后，选择那些提供最大性能提升的扩增方法。
 
 *最后但同样重要的是，我感谢 Letizia Iannucci 和 Georgy Gritsenko 对于这篇文章写作的帮助和有益讨论。除非另有说明，所有图片均由作者提供。*
 

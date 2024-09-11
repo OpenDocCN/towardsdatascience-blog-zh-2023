@@ -1,28 +1,28 @@
-# 破解代码LLMs
+# 破解代码 LLMs
 
-> 原文：[https://towardsdatascience.com/cracking-the-code-llms-354505c53295?source=collection_archive---------4-----------------------#2023-11-03](https://towardsdatascience.com/cracking-the-code-llms-354505c53295?source=collection_archive---------4-----------------------#2023-11-03)
+> 原文：[`towardsdatascience.com/cracking-the-code-llms-354505c53295?source=collection_archive---------4-----------------------#2023-11-03`](https://towardsdatascience.com/cracking-the-code-llms-354505c53295?source=collection_archive---------4-----------------------#2023-11-03)
 
-## 代码LLM如何从RNN发展到Transformer
+## 代码 LLM 如何从 RNN 发展到 Transformer
 
-[](https://medium.com/@agarwal.shubham166?source=post_page-----354505c53295--------------------------------)[![Shubham Agarwal](../Images/4a41b8e70829943cd91d1104424f9ce5.png)](https://medium.com/@agarwal.shubham166?source=post_page-----354505c53295--------------------------------)[](https://towardsdatascience.com/?source=post_page-----354505c53295--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----354505c53295--------------------------------) [Shubham Agarwal](https://medium.com/@agarwal.shubham166?source=post_page-----354505c53295--------------------------------)
+[](https://medium.com/@agarwal.shubham166?source=post_page-----354505c53295--------------------------------)![Shubham Agarwal](https://medium.com/@agarwal.shubham166?source=post_page-----354505c53295--------------------------------)[](https://towardsdatascience.com/?source=post_page-----354505c53295--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----354505c53295--------------------------------) [Shubham Agarwal](https://medium.com/@agarwal.shubham166?source=post_page-----354505c53295--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdd67f0fc7318&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-code-llms-354505c53295&user=Shubham+Agarwal&userId=dd67f0fc7318&source=post_page-dd67f0fc7318----354505c53295---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----354505c53295--------------------------------) ·7分钟阅读·2023年11月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F354505c53295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-code-llms-354505c53295&user=Shubham+Agarwal&userId=dd67f0fc7318&source=-----354505c53295---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdd67f0fc7318&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-code-llms-354505c53295&user=Shubham+Agarwal&userId=dd67f0fc7318&source=post_page-dd67f0fc7318----354505c53295---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----354505c53295--------------------------------) ·7 分钟阅读·2023 年 11 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F354505c53295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-code-llms-354505c53295&user=Shubham+Agarwal&userId=dd67f0fc7318&source=-----354505c53295---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F354505c53295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-code-llms-354505c53295&source=-----354505c53295---------------------bookmark_footer-----------)![](../Images/95d03e0d607d3c3e4f897b86c3482843.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F354505c53295&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcracking-the-code-llms-354505c53295&source=-----354505c53295---------------------bookmark_footer-----------)![](img/95d03e0d607d3c3e4f897b86c3482843.png)
 
 照片由 [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 介绍
 
-近年来，语言模型经历了显著的演变，尤其是Transformer的引入，这一变革彻底改变了我们处理日常任务的方式，如写电子邮件、创建文档、搜索网络，甚至编程。随着研究人员将大型语言模型应用于代码智能任务，一个新的领域——**神经代码智能**应运而生。这个领域旨在通过解决代码总结、生成和翻译等任务，提高编程效率，减少软件行业中的人为错误。
+近年来，语言模型经历了显著的演变，尤其是 Transformer 的引入，这一变革彻底改变了我们处理日常任务的方式，如写电子邮件、创建文档、搜索网络，甚至编程。随着研究人员将大型语言模型应用于代码智能任务，一个新的领域——**神经代码智能**应运而生。这个领域旨在通过解决代码总结、生成和翻译等任务，提高编程效率，减少软件行业中的人为错误。
 
 Code Llama 的最新发布，Meta AI 开发的用于代码生成和理解的先进模型，本文回顾了从 RNN 到 Transformers 的大型语言模型（LLMs）在代码领域的演变历程。
 
-![](../Images/7cf34459d21a523b15464a4fd87d17ea.png)
+![](img/7cf34459d21a523b15464a4fd87d17ea.png)
 
 Fig-1：大型语言模型（LLMs）在代码领域的时间线。图片由作者提供。
 
@@ -32,11 +32,11 @@ Fig-1：大型语言模型（LLMs）在代码领域的时间线。图片由作�
 
 模型尝试从代码片段中预测方法名称，通过编码良好命名的标记和抽象语法树（AST）路径，并应用神经注意力将它们聚合成固定长度的向量表示。
 
-![](../Images/1df35ea57f0c7130e459d84b7c3dd9d5.png)
+![](img/1df35ea57f0c7130e459d84b7c3dd9d5.png)
 
-Fig-2：Code2Vec 模型架构：程序首先被分解为上下文袋，其中包括标记和AST路径，然后通过完全连接层和注意力层生成代码向量。图片灵感来自Uri Alon等人的原始论文[Code2Vec](https://arxiv.org/pdf/1803.09473.pdf)
+Fig-2：Code2Vec 模型架构：程序首先被分解为上下文袋，其中包括标记和 AST 路径，然后通过完全连接层和注意力层生成代码向量。图片灵感来自 Uri Alon 等人的原始论文[Code2Vec](https://arxiv.org/pdf/1803.09473.pdf)
 
-**训练集**：1400万个 Java 程序示例
+**训练集**：1400 万个 Java 程序示例
 
 **模型架构**：RNN + 前馈网络
 
@@ -48,13 +48,13 @@ Fig-2：Code2Vec 模型架构：程序首先被分解为上下文袋，其中包
 
 # CodeBERT，2020
 
-[CodeBERT](https://arxiv.org/pdf/2002.08155.pdf)，由微软研究团队开发，代表了大型语言模型（LLMs）在代码领域的重大进展，引入了多模态数据预训练，结合了基于Transformer的BERT模型中的自然语言和编程语言（NL + PL）。该模型在包括双模数据点对和单模数据点的多样数据集上进行训练，用于掩码语言建模（MLM）和替换令牌检测（RTD）任务。CodeBERT 在多个领域展现出了卓越的性能，特别在自然语言代码搜索和代码到文档生成方面表现突出。
+[CodeBERT](https://arxiv.org/pdf/2002.08155.pdf)，由微软研究团队开发，代表了大型语言模型（LLMs）在代码领域的重大进展，引入了多模态数据预训练，结合了基于 Transformer 的 BERT 模型中的自然语言和编程语言（NL + PL）。该模型在包括双模数据点对和单模数据点的多样数据集上进行训练，用于掩码语言建模（MLM）和替换令牌检测（RTD）任务。CodeBERT 在多个领域展现出了卓越的性能，特别在自然语言代码搜索和代码到文档生成方面表现突出。
 
-![](../Images/f83b83f3dbdba19b780af10b88fa345a.png)
+![](img/f83b83f3dbdba19b780af10b88fa345a.png)
 
-图-3：CodeBERT模型预训练使用替换标记检测（RTD）任务。自然语言生成和代码生成器将标记替换为不同的标记，CodeBERT模型被训练以分类每个标记是被替换的还是原始的。图片来自Feng等人，[CodeBERT](https://arxiv.org/pdf/2002.08155.pdf)
+图-3：CodeBERT 模型预训练使用替换标记检测（RTD）任务。自然语言生成和代码生成器将标记替换为不同的标记，CodeBERT 模型被训练以分类每个标记是被替换的还是原始的。图片来自 Feng 等人，[CodeBERT](https://arxiv.org/pdf/2002.08155.pdf)
 
-**训练数据集：** [Codesearch Net 数据集](https://paperswithcode.com/dataset/codesearchnet) - 210万双模态数据点（自然语言 + 编程语言），640万单模态数据点（6种语言 — Python、Java、Javascript、PHP、Ruby、Go）
+**训练数据集：** [Codesearch Net 数据集](https://paperswithcode.com/dataset/codesearchnet) - 210 万双模态数据点（自然语言 + 编程语言），640 万单模态数据点（6 种语言 — Python、Java、Javascript、PHP、Ruby、Go）
 
 **参数规模：** 125M
 
@@ -62,21 +62,21 @@ Fig-2：Code2Vec 模型架构：程序首先被分解为上下文袋，其中包
 
 **新颖性：**
 
-+   **双模态训练：** CodeBERT引入了一种创新的训练方法，涵盖了自然语言和编程语言标记。这种双模态训练技术通过考虑人类可读描述与编程语言元素之间的复杂互动，增强了模型理解和生成代码的能力。
++   **双模态训练：** CodeBERT 引入了一种创新的训练方法，涵盖了自然语言和编程语言标记。这种双模态训练技术通过考虑人类可读描述与编程语言元素之间的复杂互动，增强了模型理解和生成代码的能力。
 
-+   **代码的替换标记检测（RTD）任务：** CodeBERT预训练使用了替换标记检测（RTD），而不是下一句预测（NSP），这显示了更好的性能。
++   **代码的替换标记检测（RTD）任务：** CodeBERT 预训练使用了替换标记检测（RTD），而不是下一句预测（NSP），这显示了更好的性能。
 
 # Codex，2021
 
-[Codex](https://arxiv.org/abs/2107.03374)是首批成功的代码LLM之一，能够从文档字符串或自然语言提示中生成高准确度的代码，是广泛使用的[Github Copilot](https://github.com/features/copilot)的前身。由OpenAI团队开发，Codex使用了[GPT3](/understanding-gpt-3-in-5-minutes-7fe35c3a1e52)架构和分词器，并在大量的GitHub代码库上进行预训练。这个大型语言模型有12B参数，在2021年是最先进的模型，首次通过率在[human-eval数据集](https://github.com/openai/human-eval)上解决了28.8%的问题。
+[Codex](https://arxiv.org/abs/2107.03374)是首批成功的代码 LLM 之一，能够从文档字符串或自然语言提示中生成高准确度的代码，是广泛使用的[Github Copilot](https://github.com/features/copilot)的前身。由 OpenAI 团队开发，Codex 使用了 GPT3 架构和分词器，并在大量的 GitHub 代码库上进行预训练。这个大型语言模型有 12B 参数，在 2021 年是最先进的模型，首次通过率在[human-eval 数据集](https://github.com/openai/human-eval)上解决了 28.8%的问题。
 
-在独立Python函数上的进一步微调（而不是包括配置、类实现等的完整代码），显示了显著的改进，并能够解决**37.7%的human-eval数据集**问题。
+在独立 Python 函数上的进一步微调（而不是包括配置、类实现等的完整代码），显示了显著的改进，并能够解决**37.7%的 human-eval 数据集**问题。
 
-![](../Images/57281f6d8acb2cde891466393c1f6354.png)
+![](img/57281f6d8acb2cde891466393c1f6354.png)
 
-图-4：用于Codex GPT模型的仅解码器Transformer架构。图像灵感来自Vaswani等人原始的[Transformer论文](https://arxiv.org/abs/1706.03762)。
+图-4：用于 Codex GPT 模型的仅解码器 Transformer 架构。图像灵感来自 Vaswani 等人原始的[Transformer 论文](https://arxiv.org/abs/1706.03762)。
 
-**训练数据集：** 159GB来自54M GitHub代码库的Python文件。
+**训练数据集：** 159GB 来自 54M GitHub 代码库的 Python 文件。
 
 **参数规模：** 12B（Codex-12B）
 
@@ -84,11 +84,11 @@ Fig-2：Code2Vec 模型架构：程序首先被分解为上下文袋，其中包
 
 **新颖性：**
 
-+   这是首批成功的模型之一，擅长从自然语言提示中生成代码。该模型在大量的GitHub代码库上进行训练。
++   这是首批成功的模型之一，擅长从自然语言提示中生成代码。该模型在大量的 GitHub 代码库上进行训练。
 
-+   该模型的作者还创建了一个新的数据集，**“**[**HumanEval**](https://github.com/openai/human-eval)**”**，用于对代码生成任务进行基准测试。该数据集包含164个手写编程问题及单元测试。
++   该模型的作者还创建了一个新的数据集，**“**[**HumanEval**](https://github.com/openai/human-eval)**”**，用于对代码生成任务进行基准测试。该数据集包含 164 个手写编程问题及单元测试。
 
-> 在OpenAI Playground [这里](https://platform.openai.com/playground)尝试Codex模型
+> 在 OpenAI Playground [这里](https://platform.openai.com/playground)尝试 Codex 模型
 
 # CodeT5，2021
 
@@ -96,7 +96,7 @@ Fig-2：Code2Vec 模型架构：程序首先被分解为上下文袋，其中包
 
 Code-T5 通过多任务学习，在代码缺陷检测、克隆检测、代码翻译和优化等任务中表现出色，所需数据较少，可以更快进行微调。然而，它使用 CodeBleu 分数进行评估，而不是与 HumanEval 数据集进行基准测试。
 
-![](../Images/25c86d7d4052e417c982092de6b81ab7.png)
+![](img/25c86d7d4052e417c982092de6b81ab7.png)
 
 图-5：展示 CodeT5 在各种代码理解和生成任务中的卓越表现。图像来源于 Wang 等人的论文，[CodeT5](https://arxiv.org/pdf/2109.00859.pdf)
 
@@ -120,29 +120,29 @@ Code-T5 通过多任务学习，在代码缺陷检测、克隆检测、代码翻
 
 它引入了一种去噪序列到序列建模方法，以增强程序和语言理解，战略性地结合了 BERT 和 GPT 模型的优势。这通过将双向编码器与自回归解码器相结合，实现了对上下文的更全面理解和多功能生成过程。该模型采用了三种去噪策略，包括**标记掩盖、标记删除和标记填充**，有效地训练和微调其能力。
 
-![](../Images/7cf67533f432400c1dc4966c5d73d9a4.png)
+![](img/7cf67533f432400c1dc4966c5d73d9a4.png)
 
 图-6：可视化 BART 模型（PLBART 也使用）架构的插图，具有双向编码器和自回归解码器。图像来自 Lewis 等人的原始 [BART 论文](https://arxiv.org/pdf/1910.13461.pdf)。
 
-**训练数据集**：从Github、Stackoverflow收集的2M Java和Python函数及其自然语言描述（[代码](https://huggingface.co/docs/transformers/model_doc/plbart)）。
+**训练数据集**：从 Github、Stackoverflow 收集的 2M Java 和 Python 函数及其自然语言描述（[代码](https://huggingface.co/docs/transformers/model_doc/plbart)）。
 
-**参数规模**：140M（6个编码器层 + 6个解码器层 + 编码器和解码器上的附加归一化层）
+**参数规模**：140M（6 个编码器层 + 6 个解码器层 + 编码器和解码器上的附加归一化层）
 
 **模型架构**： [BART](https://arxiv.org/abs/1910.13461)
 
 **新颖性**：
 
-+   **去噪自编码器方法**：采用去噪自编码器方法，通过有效利用编码器和解码器的双向和自回归特性，结合BERT和GPT模型的优势，增强了代码理解和生成能力。
++   **去噪自编码器方法**：采用去噪自编码器方法，通过有效利用编码器和解码器的双向和自回归特性，结合 BERT 和 GPT 模型的优势，增强了代码理解和生成能力。
 
 +   **多样的去噪策略**：提出多种去噪策略，如标记掩蔽、标记删除和标记填充。这些去噪技术的多样性提高了模型在噪声数据中学习的鲁棒性和效果，促进了代码理解和生成的改进。
 
-> 不是所有模型都使用相同的基准来评估性能。PLBART的作者没有在HumanEval上评估模型性能，而其他大多数模型则使用该数据集进行基准测试。
+> 不是所有模型都使用相同的基准来评估性能。PLBART 的作者没有在 HumanEval 上评估模型性能，而其他大多数模型则使用该数据集进行基准测试。
 
 # Code Llama，2023
 
-[Code Llama](https://arxiv.org/abs/2308.12950)是Meta发布的最新Code LLM，在多个基准数据集上超过了所有现有的开源模型。它在[HumanEval数据集](https://github.com/openai/human-eval)上的得分为53%，在MBPP数据集上的得分为55%（只有GPT-4表现更好）。这些进步归因于16K的较长上下文长度（是Llama2的4倍）和在程序和自然语言上额外训练的500B标记的预训练Llama 2。
+[Code Llama](https://arxiv.org/abs/2308.12950)是 Meta 发布的最新 Code LLM，在多个基准数据集上超过了所有现有的开源模型。它在[HumanEval 数据集](https://github.com/openai/human-eval)上的得分为 53%，在 MBPP 数据集上的得分为 55%（只有 GPT-4 表现更好）。这些进步归因于 16K 的较长上下文长度（是 Llama2 的 4 倍）和在程序和自然语言上额外训练的 500B 标记的预训练 Llama 2。
 
-该模型最适合代码生成和填充任务，并且在基于IDE的软件开发过程中可以作为最佳的副驾驶。Code Llama模型家族有3种类型的模型—
+该模型最适合代码生成和填充任务，并且在基于 IDE 的软件开发过程中可以作为最佳的副驾驶。Code Llama 模型家族有 3 种类型的模型—
 
 1.  Code Llama
 
@@ -150,21 +150,21 @@ Code-T5 通过多任务学习，在代码缺陷检测、克隆检测、代码翻
 
 1.  Code Llama-Instruct
 
-每种都有3种尺寸——**7B、13B和34B**
+每种都有 3 种尺寸——**7B、13B 和 34B**
 
-![](../Images/939f1d241185f9018c4f390209bdd46a.png)
+![](img/939f1d241185f9018c4f390209bdd46a.png)
 
-图-7：Code Llama训练和微调流程，以预训练的Llama-2模型为输入。图像来源于原始[Code Llama论文](https://arxiv.org/abs/2308.12950)。
+图-7：Code Llama 训练和微调流程，以预训练的 Llama-2 模型为输入。图像来源于原始[Code Llama 论文](https://arxiv.org/abs/2308.12950)。
 
-**训练数据集**：500B标记 + 额外100B标记用于Code Llama Python，基于公开代码
+**训练数据集**：500B 标记 + 额外 100B 标记用于 Code Llama Python，基于公开代码
 
 **模型架构**：Llama 2
 
-**参数规模**：有3种尺寸——7B、13B和34B。
+**参数规模**：有 3 种尺寸——7B、13B 和 34B。
 
 **新颖性**：
 
-+   提出了一个处理长序列的微调步骤，称为**长上下文微调**，将上下文长度增加到16,384（是Llama 2上下文长度4096的4倍）
++   提出了一个处理长序列的微调步骤，称为**长上下文微调**，将上下文长度增加到 16,384（是 Llama 2 上下文长度 4096 的 4 倍）
 
 +   **指令微调和自我指令**：少数几个执行指令微调的模型之一，使用明确的指令或提示进行微调。作者提出了一种新颖的执行反馈方法来构建自我指令数据集，而不是创建昂贵的人类反馈数据。
 

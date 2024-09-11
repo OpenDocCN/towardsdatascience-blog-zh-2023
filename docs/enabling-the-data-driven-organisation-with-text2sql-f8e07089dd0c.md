@@ -1,36 +1,36 @@
 # 通过对话式数据访问创造信息优势
 
-> 原文：[https://towardsdatascience.com/enabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c?source=collection_archive---------1-----------------------#2023-06-11](https://towardsdatascience.com/enabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c?source=collection_archive---------1-----------------------#2023-06-11)
+> 原文：[`towardsdatascience.com/enabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c?source=collection_archive---------1-----------------------#2023-06-11`](https://towardsdatascience.com/enabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c?source=collection_archive---------1-----------------------#2023-06-11)
 
 ## 实现 Text2SQL 以推动数据驱动型组织的指南
 
-[](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)[![Dr. Janna Lipenkova](../Images/112fe9a8c5936869243f2a43fde6dfee.png)](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------) [Dr. Janna Lipenkova](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)
+[](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)![Dr. Janna Lipenkova](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------) [Dr. Janna Lipenkova](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff215f8e427a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=post_page-f215f8e427a2----f8e07089dd0c---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------) ·19分钟阅读·2023年6月11日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff215f8e427a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=post_page-f215f8e427a2----f8e07089dd0c---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------) ·19 分钟阅读·2023 年 6 月 11 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff8e07089dd0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c&source=-----f8e07089dd0c---------------------bookmark_footer-----------)![](../Images/42f16105568d40cff91bfa5e2f217ff4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff8e07089dd0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c&source=-----f8e07089dd0c---------------------bookmark_footer-----------)![](img/42f16105568d40cff91bfa5e2f217ff4.png)
 
-图1：Text2SQL 流程的表示
+图 1：Text2SQL 流程的表示
 
-随着我们的世界变得越来越全球化和动态化，企业对数据的依赖越来越大，以便做出明智、客观和及时的决策。在本文中，我们将探讨如何利用人工智能进行直观的对话数据访问。我们将使用图2中显示的心理模型来说明Text2SQL系统的实现（有关心理模型的介绍，请参考[**利用整体心理模型构建人工智能产品**](https://medium.com/towards-data-science/building-ai-products-with-a-holistic-mental-model-33f8729e3ad9)）。在考虑市场机会和商业价值之后，我们将解释需要建立的数据、LLM微调和UX设计等额外的“机制”，以便使数据在整个组织中广泛可访问。
+随着我们的世界变得越来越全球化和动态化，企业对数据的依赖越来越大，以便做出明智、客观和及时的决策。在本文中，我们将探讨如何利用人工智能进行直观的对话数据访问。我们将使用图 2 中显示的心理模型来说明 Text2SQL 系统的实现（有关心理模型的介绍，请参考[**利用整体心理模型构建人工智能产品**](https://medium.com/towards-data-science/building-ai-products-with-a-holistic-mental-model-33f8729e3ad9)）。在考虑市场机会和商业价值之后，我们将解释需要建立的数据、LLM 微调和 UX 设计等额外的“机制”，以便使数据在整个组织中广泛可访问。
 
-![](../Images/7b86867e84a6eb440d24cc1e28c5a903.png)
+![](img/7b86867e84a6eb440d24cc1e28c5a903.png)
 
-图2：人工智能系统的心理模型
+图 2：人工智能系统的心理模型
 
 # 1\. 机会
 
-目前，释放组织数据的全部潜力通常是少数数据科学家和分析师的特权。大多数员工不精通传统的数据科学工具（如SQL、Python、R等）。为了访问所需的数据，他们通过额外的层次，由分析师或BI团队将业务问题的语言“翻译”为数据语言。在这一过程中潜在的摩擦和低效率非常高——例如，数据可能会延迟交付，甚至在问题已经变得过时时才被提供。当需求未被准确翻译成分析查询时，信息可能在传递过程中丢失。此外，生成高质量见解需要一种迭代的方法，而每增加一步都会使这种方法变得更加困难。另一方面，这些临时互动会对昂贵的数据人才造成干扰，使他们无法专注于更具战略性的工作，正如这些数据科学家的“自白”中所描述的那样：
+目前，释放组织数据的全部潜力通常是少数数据科学家和分析师的特权。大多数员工不精通传统的数据科学工具（如 SQL、Python、R 等）。为了访问所需的数据，他们通过额外的层次，由分析师或 BI 团队将业务问题的语言“翻译”为数据语言。在这一过程中潜在的摩擦和低效率非常高——例如，数据可能会延迟交付，甚至在问题已经变得过时时才被提供。当需求未被准确翻译成分析查询时，信息可能在传递过程中丢失。此外，生成高质量见解需要一种迭代的方法，而每增加一步都会使这种方法变得更加困难。另一方面，这些临时互动会对昂贵的数据人才造成干扰，使他们无法专注于更具战略性的工作，正如这些数据科学家的“自白”中所描述的那样：
 
-> 当我在Square工作时，团队较小，我们有一个让人畏惧的“分析值班”轮班制度。这是严格按周轮换的，如果轮到你，你就知道那一周你几乎不会有“真正”的工作，而是花大部分时间处理来自公司各个产品和运营团队的临时问题（我们称之为SQL猴子工作）。在分析团队中，管理角色的竞争非常激烈，我认为这完全是因为管理人员被免于这种轮班——没有什么荣誉可以与不做值班工作的诱饵相比。[1]
+> 当我在 Square 工作时，团队较小，我们有一个让人畏惧的“分析值班”轮班制度。这是严格按周轮换的，如果轮到你，你就知道那一周你几乎不会有“真正”的工作，而是花大部分时间处理来自公司各个产品和运营团队的临时问题（我们称之为 SQL 猴子工作）。在分析团队中，管理角色的竞争非常激烈，我认为这完全是因为管理人员被免于这种轮班——没有什么荣誉可以与不做值班工作的诱饵相比。[1]
 
 # 2\. 价值
 
-直接与数据对话而不必经历多轮与数据团队互动的过程岂不是很酷吗？这一愿景被对话式界面所接受，这种界面允许人类使用语言与数据互动，这是我们最直观和普遍的沟通渠道。解析问题后，算法将其编码成查询语言（如SQL）的结构化逻辑形式。因此，非技术用户可以与他们的数据聊天，快速获取具体、相关和及时的信息，而无需通过BI团队绕道获取。主要有以下三大好处：
+直接与数据对话而不必经历多轮与数据团队互动的过程岂不是很酷吗？这一愿景被对话式界面所接受，这种界面允许人类使用语言与数据互动，这是我们最直观和普遍的沟通渠道。解析问题后，算法将其编码成查询语言（如 SQL）的结构化逻辑形式。因此，非技术用户可以与他们的数据聊天，快速获取具体、相关和及时的信息，而无需通过 BI 团队绕道获取。主要有以下三大好处：
 
 +   **业务用户**可以以直接和及时的方式访问组织数据。
 
@@ -38,17 +38,17 @@
 
 +   **业务**可以以更流畅和战略性的方式利用其数据，最终将其转化为决策的坚实基础。
 
-那么，在什么样的产品场景下你可能会考虑使用Text2SQL呢？主要有以下三种设置：
+那么，在什么样的产品场景下你可能会考虑使用 Text2SQL 呢？主要有以下三种设置：
 
-+   你提供一个**可扩展的数据/BI产品**，并希望以一种非技术性的方式让更多用户访问他们的数据，从而增加使用率和用户基础。例如，ServiceNow已经[将数据查询集成到更大的对话式产品中](https://www.servicenow.com/products/conversational-ai.html)，而[Atlan](https://atlan.com/)最近[宣布了自然语言数据探索](https://atlan.com/ai/)。
++   你提供一个**可扩展的数据/BI 产品**，并希望以一种非技术性的方式让更多用户访问他们的数据，从而增加使用率和用户基础。例如，ServiceNow 已经[将数据查询集成到更大的对话式产品中](https://www.servicenow.com/products/conversational-ai.html)，而[Atlan](https://atlan.com/)最近[宣布了自然语言数据探索](https://atlan.com/ai/)。
 
-+   你希望在数据/AI领域构建某些东西，以便在公司中普及数据访问，这种情况下你可能会考虑以**Text2SQL为核心的MVP**。像[AI2SQL](https://www.ai2sql.io/)和[Text2sql.ai](https://www.text2sql.ai/)这样的提供商已经开始进入这一领域。
++   你希望在数据/AI 领域构建某些东西，以便在公司中普及数据访问，这种情况下你可能会考虑以**Text2SQL 为核心的 MVP**。像[AI2SQL](https://www.ai2sql.io/)和[Text2sql.ai](https://www.text2sql.ai/)这样的提供商已经开始进入这一领域。
 
-+   你正在开发一个**定制BI系统**，并希望最大化和普及其在个别公司中的使用。
++   你正在开发一个**定制 BI 系统**，并希望最大化和普及其在个别公司中的使用。
 
-正如我们在接下来的章节中将看到的，Text2SQL需要一个非凡的前期设置。为了估算投资回报率，考虑一下要支持的决策性质以及可用的数据。Text2SQL在数据变化迅速并被积极和频繁用于决策的动态环境中，可以带来绝对的收益，如投资、营销、制造和能源行业。在这些环境中，传统的知识管理工具过于静态，更流畅的数据和信息访问方式有助于公司生成竞争优势。在数据方面，Text2SQL在以下数据库中提供最大的价值：
+正如我们在接下来的章节中将看到的，Text2SQL 需要一个非凡的前期设置。为了估算投资回报率，考虑一下要支持的决策性质以及可用的数据。Text2SQL 在数据变化迅速并被积极和频繁用于决策的动态环境中，可以带来绝对的收益，如投资、营销、制造和能源行业。在这些环境中，传统的知识管理工具过于静态，更流畅的数据和信息访问方式有助于公司生成竞争优势。在数据方面，Text2SQL 在以下数据库中提供最大的价值：
 
-+   **大且不断增长**，使得Text2SQL可以随着越来越多的数据被利用而逐渐展现其价值。
++   **大且不断增长**，使得 Text2SQL 可以随着越来越多的数据被利用而逐渐展现其价值。
 
 +   **高质量**，以便 Text2SQL 算法不必处理数据中的过多噪音（不一致性、空值等）。通常，由应用程序自动生成的数据比由人类创建和维护的数据具有更高的质量和一致性。
 
@@ -58,7 +58,7 @@
 
 任何机器学习工作都从数据开始，因此我们将从澄清在训练和预测过程中使用的输入和目标数据的结构开始。本文中，我们将使用图 1 中的 Text2SQL 流程作为我们的运行表示，并以黄色突出显示当前考虑的组件和关系。
 
-![](../Images/1d4bd7ba190333441278d248f480f256.png)
+![](img/1d4bd7ba190333441278d248f480f256.png)
 
 图 3：在此 Text2SQL 表示中，与数据相关的元素和关系用黄色标记。
 
@@ -98,9 +98,9 @@ Text2SQL 是一种位于非结构化数据和结构化数据之间的算法。�
 
 # **2\. 智能**
 
-![](../Images/64cd42647130f82bb6039733da49c1d6.png)
+![](img/64cd42647130f82bb6039733da49c1d6.png)
 
-图4：在这个 Text2SQL 表示中，与算法相关的元素和关系标记为黄色。
+图 4：在这个 Text2SQL 表示中，与算法相关的元素和关系标记为黄色。
 
 Text2SQL 是一种 **语义解析** —— 文本到逻辑表示的映射。因此，系统不仅要“学习”自然语言，还要学习目标表示——在我们的案例中是 SQL。具体来说，它需要掌握以下知识：
 
@@ -116,7 +116,7 @@ Text2SQL 是一种 **语义解析** —— 文本到逻辑表示的映射。因�
 
 在输入阶段，Text2SQL 的主要挑战在于语言的灵活性：正如在“数据的格式和结构”部分所描述的，相同的问题可以用许多不同的方式进行表述。此外，在实际的对话上下文中，我们还需要处理拼写和语法错误、不完整和模糊的输入、多语言输入等问题。
 
-![](../Images/2afbd70985674d6f0b3a22562961e97d.png)
+![](img/2afbd70985674d6f0b3a22562961e97d.png)
 
 图 5: Text2SQL 算法必须处理多种不同形式的问题。
 
@@ -152,7 +152,7 @@ Text2SQL 是一种 **语义解析** —— 文本到逻辑表示的映射。因�
 
 **3\. 用户体验**
 
-![](../Images/027e84c09a68f36f9636e67d7ca59cdc.png)
+![](img/027e84c09a68f36f9636e67d7ca59cdc.png)
 
 图 6：在这个 Text2SQL 表示中，UX 相关的元素和关系用黄色标记。
 
@@ -184,13 +184,13 @@ Text2SQL 可能会以两种模式失败，需要以不同的方式捕捉：
 
 助手：*好的，以下是任务 ID：*
 
-![](../Images/47e1f5220deba265ee2811b790700550.png)
+![](img/47e1f5220deba265ee2811b790700550.png)
 
 用户：*谢谢，我还想查看更多关于任务的信息。请按紧急程度排序。*
 
 助手：*当然，以下是任务及其简短描述、负责人和截止日期，按截止日期排序。*
 
-![](../Images/7557c8d8f923a271bf886f34a1f170e3.png)
+![](img/7557c8d8f923a271bf886f34a1f170e3.png)
 
 最后，为了便于用户理解查询，你的系统还可以提供查询的明确文本重新表述，并要求用户确认或更正。[15]
 

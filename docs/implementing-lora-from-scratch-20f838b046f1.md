@@ -1,18 +1,18 @@
 # 从零实现 LoRA
 
-> 原文：[https://towardsdatascience.com/implementing-lora-from-scratch-20f838b046f1?source=collection_archive---------0-----------------------#2023-12-12](https://towardsdatascience.com/implementing-lora-from-scratch-20f838b046f1?source=collection_archive---------0-----------------------#2023-12-12)
+> 原文：[`towardsdatascience.com/implementing-lora-from-scratch-20f838b046f1?source=collection_archive---------0-----------------------#2023-12-12`](https://towardsdatascience.com/implementing-lora-from-scratch-20f838b046f1?source=collection_archive---------0-----------------------#2023-12-12)
 
 ## 如何从零实现 LoRA 以及一些实用技巧
 
-[](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)[![马丁·迪特根](../Images/b469995c47e0cc4859225d225ab373db.png)](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------) [马丁·迪特根](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)
+[](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)![马丁·迪特根](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------) [马丁·迪特根](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F733d27d88c18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&user=Martin+Dittgen&userId=733d27d88c18&source=post_page-733d27d88c18----20f838b046f1---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------) ·17分钟阅读·2023年12月12日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20f838b046f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&user=Martin+Dittgen&userId=733d27d88c18&source=-----20f838b046f1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F733d27d88c18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&user=Martin+Dittgen&userId=733d27d88c18&source=post_page-733d27d88c18----20f838b046f1---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------) ·17 分钟阅读·2023 年 12 月 12 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20f838b046f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&user=Martin+Dittgen&userId=733d27d88c18&source=-----20f838b046f1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20f838b046f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&source=-----20f838b046f1---------------------bookmark_footer-----------)![](../Images/503b0cc8bc85127a81c5479c847024b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20f838b046f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&source=-----20f838b046f1---------------------bookmark_footer-----------)![](img/503b0cc8bc85127a81c5479c847024b8.png)
 
 *由 DALLE 创建的 LoRA 抽象艺术表现*
 
@@ -34,13 +34,13 @@ LoRA 的基本理念是保持预训练的矩阵（即原始模型的参数）冻
 
 例如考虑矩阵 *W*，它可以是完全连接层的参数，或者是 transformer 的自注意机制中的一个矩阵之一：
 
-![](../Images/1acfe2d8a621aeb34bb51fe08b784d9c.png)
+![](img/1acfe2d8a621aeb34bb51fe08b784d9c.png)
 
 显然，如果***W****-orig* 的尺寸为 *n×m*，我们只需初始化一个具有相同尺寸的新的 delta 矩阵进行微调，我们将毫无收获；相反，我们将会增加参数的数量。
 
 这个技巧在于通过从较低维度矩阵 *B* 和 *A* 的矩阵乘法构建 **ΔW** 比原始矩阵更少*“维度化”*。
 
-![](../Images/9ad4155288d76a9fbc316fef34fc12bf.png)
+![](img/9ad4155288d76a9fbc316fef34fc12bf.png)
 
 我们首先定义一个秩 *r*，要显著小于基本矩阵的维度 *r≪n* 和 *r≪m*。然后矩阵 ***B*** 是 *n×r*，矩阵 ***A*** 是 *r×m*。将它们相乘得到一个具有相同尺寸的 ***W*** 矩阵，但是是由较低参数数量构建而成的。
 
@@ -48,7 +48,7 @@ LoRA 的基本理念是保持预训练的矩阵（即原始模型的参数）冻
 
 例如，这可能看起来像这样：
 
-![](../Images/ea8acfaa08916bdc36979d8989788b40.png)
+![](img/ea8acfaa08916bdc36979d8989788b40.png)
 
 *一个 LoRA 可能在实际矩阵中如何看的示例*
 
@@ -62,23 +62,23 @@ LoRA 的基本理念是保持预训练的矩阵（即原始模型的参数）冻
 
 顺便说一句，在 LoRA 论文中，他们使用 alpha 参数对 delta 矩阵进行加权：
 
-![](../Images/2c10bf0da1628cfad229a9daefd7501a.png)
+![](img/2c10bf0da1628cfad229a9daefd7501a.png)
 
-如果你只是将*α*设置为你实验的第一个*r*并微调学习率，通常可以在以后改变*r*参数，而无需再次微调学习率（至少大致如此）。虽然在我们的实现中可以忽略这一细节，但这是许多其他LoRA库（如Hugging Face的PEFT）的常见特性。
+如果你只是将*α*设置为你实验的第一个*r*并微调学习率，通常可以在以后改变*r*参数，而无需再次微调学习率（至少大致如此）。虽然在我们的实现中可以忽略这一细节，但这是许多其他 LoRA 库（如 Hugging Face 的 PEFT）的常见特性。
 
-# 实现LoRA
+# 实现 LoRA
 
-对于我们的实现，我们希望紧密跟随原始的LoRA论文。在那里，他们测试了变换器中实际需要替换哪些矩阵。他们发现，在对GPT-3微调任务进行不同策略比较时，仅适配自注意力机制的查询和数值向量就足够了。
+对于我们的实现，我们希望紧密跟随原始的 LoRA 论文。在那里，他们测试了变换器中实际需要替换哪些矩阵。他们发现，在对 GPT-3 微调任务进行不同策略比较时，仅适配自注意力机制的查询和数值向量就足够了。
 
-注意到现在很多人忽视了这种评估，并允许每个矩阵进行微调，无论任务或模型如何（参见QLoRA论文）。
+注意到现在很多人忽视了这种评估，并允许每个矩阵进行微调，无论任务或模型如何（参见 QLoRA 论文）。
 
-我们的实现将在PyTorch中完成，但应该很容易适配到不同的框架中。
+我们的实现将在 PyTorch 中完成，但应该很容易适配到不同的框架中。
 
-对于这篇博客文章，我简化了一些代码，以便更容易阅读，同时仍展示了核心要素。完整代码和一些训练好的LoRA权重可以在这里找到：[https://github.com/Montinger/Transformer-Workbench](https://github.com/Montinger/Transformer-Workbench)。
+对于这篇博客文章，我简化了一些代码，以便更容易阅读，同时仍展示了核心要素。完整代码和一些训练好的 LoRA 权重可以在这里找到：[`github.com/Montinger/Transformer-Workbench`](https://github.com/Montinger/Transformer-Workbench)。
 
 # 重新实现自注意力模型
 
-我们希望适配的模型是来自Huggingface的RoBERTa模型。最直接的方法是重新包装原始的自注意力机制`RobertaSelfAttention`。新类`LoraRobertaSelfAttention`将初始化LoRA矩阵。所有的B矩阵将初始化为零，所有的A矩阵将用正态分布的随机数初始化。
+我们希望适配的模型是来自 Huggingface 的 RoBERTa 模型。最直接的方法是重新包装原始的自注意力机制`RobertaSelfAttention`。新类`LoraRobertaSelfAttention`将初始化 LoRA 矩阵。所有的 B 矩阵将初始化为零，所有的 A 矩阵将用正态分布的随机数初始化。
 
 ```py
 class LoraRobertaSelfAttention(RobertaSelfAttention):
@@ -127,7 +127,7 @@ class LoraRobertaSelfAttention(RobertaSelfAttention):
         return self.value(x) + F.linear(x, lora_value_weights)
 ```
 
-现在是难看的部分：为了使用这些方法，我们必须重写`RobertaSelfAttention`的原始前向函数。虽然这有点硬编码（参见后续改进讨论），但其实很简单。首先，我们从[https://github.com/huggingface/transformers/blob/main/src/transformers/models/roberta/modeling_roberta.py](https://github.com/huggingface/transformers/blob/main/src/transformers/models/roberta/modeling_roberta.py)复制原始前向代码。然后我们将每个`query`调用替换为`lora_query`，每个`value`调用替换为`lora_value`。函数看起来如下：
+现在是难看的部分：为了使用这些方法，我们必须重写`RobertaSelfAttention`的原始前向函数。虽然这有点硬编码（参见后续改进讨论），但其实很简单。首先，我们从[`github.com/huggingface/transformers/blob/main/src/transformers/models/roberta/modeling_roberta.py`](https://github.com/huggingface/transformers/blob/main/src/transformers/models/roberta/modeling_roberta.py)复制原始前向代码。然后我们将每个`query`调用替换为`lora_query`，每个`value`调用替换为`lora_value`。函数看起来如下：
 
 ```py
 class LoraRobertaSelfAttention(RobertaSelfAttention):
@@ -156,13 +156,13 @@ https://github.com/huggingface/transformers/blob/main/src/transformers/models/ro
         # ... (rest of the forward code, unchanged)
 ```
 
-轰隆隆，我们完成了：我们的LoRA自注意力实现。现在唯一剩下的任务是将原始RoBERTa模型中的注意力模块替换出来。
+轰隆隆，我们完成了：我们的 LoRA 自注意力实现。现在唯一剩下的任务是将原始 RoBERTa 模型中的注意力模块替换出来。
 
 # 替换模块
 
-很好，我们已经用我们自己的实现替换了自注意力；但是我们如何将这个新类加入旧的RoBERTa模型中呢？实质上，我们必须遍历RoBERTa模型的每个命名组件，检查它是否是`RobertaSelfAttention`类，如果是，则替换为`LoraRobertaSelfAttention`，同时确保保留原始的权重矩阵。
+很好，我们已经用我们自己的实现替换了自注意力；但是我们如何将这个新类加入旧的 RoBERTa 模型中呢？实质上，我们必须遍历 RoBERTa 模型的每个命名组件，检查它是否是`RobertaSelfAttention`类，如果是，则替换为`LoraRobertaSelfAttention`，同时确保保留原始的权重矩阵。
 
-为了实现这一点，我们将编写一个新的包装函数来进行此替换。此外，我们还希望稍后在一些实际任务上对RoBERTa模型进行微调。
+为了实现这一点，我们将编写一个新的包装函数来进行此替换。此外，我们还希望稍后在一些实际任务上对 RoBERTa 模型进行微调。
 
 ```py
 class LoraWrapperRoberta(nn.Module):
@@ -204,7 +204,7 @@ class LoraWrapperRoberta(nn.Module):
 
 1.  `self.replace_multihead_attention`：这将使用我们之前编写的`LoraRobertaSelfAttention`替换所有神经网络部分的注意力。
 
-1.  `self.freeze_parameters_except_lora_and_bias`：这将冻结所有主要参数，以便在训练中仅应用于LoRA参数以及我们希望保持可训练的其他偏置和层归一化参数。
+1.  `self.freeze_parameters_except_lora_and_bias`：这将冻结所有主要参数，以便在训练中仅应用于 LoRA 参数以及我们希望保持可训练的其他偏置和层归一化参数。
 
 ```py
 class LoraWrapperRoberta(nn.Module):
@@ -231,7 +231,7 @@ class LoraWrapperRoberta(nn.Module):
                 self.replace_multihead_attention_recursion(module)
 ```
 
-我们必须递归循环遍历所有模型部分，在PyTorch中，这些部分（实际上是RoBERTa的一部分）可以打包到一个单独的PyTorch模块中。
+我们必须递归循环遍历所有模型部分，在 PyTorch 中，这些部分（实际上是 RoBERTa 的一部分）可以打包到一个单独的 PyTorch 模块中。
 
 现在我们必须冻结所有不想再训练的参数：
 
@@ -256,53 +256,53 @@ class LoraWrapperRoberta(nn.Module):
             param.requires_grad = is_trainable
 ```
 
-此外，我们还必须实现前向方法，以考虑我们将在其上进行微调的任务，以及两种保存和加载LoRA权重的方法，以便我们可以加载先前训练模型的适配器。
+此外，我们还必须实现前向方法，以考虑我们将在其上进行微调的任务，以及两种保存和加载 LoRA 权重的方法，以便我们可以加载先前训练模型的适配器。
 
-悬念：有一种方法，可以让代码变得更加简洁，并且更容易推广到其他网络架构（因为我们的代码相对于RoBERTa模型而言相当硬编码）。你能想到这可能是什么吗？在下面的*可能的改进*部分讨论之前，你有时间思考这个问题。但在此之前：让我们测试一些基准，看看我们的实现是否真的有效。
+悬念：有一种方法，可以让代码变得更加简洁，并且更容易推广到其他网络架构（因为我们的代码相对于 RoBERTa 模型而言相当硬编码）。你能想到这可能是什么吗？在下面的*可能的改进*部分讨论之前，你有时间思考这个问题。但在此之前：让我们测试一些基准，看看我们的实现是否真的有效。
 
-# 使用GLUE和SQuAD进行基准测试结果
+# 使用 GLUE 和 SQuAD 进行基准测试结果
 
-我们的实现现在已准备好使用GLUE（通用语言理解评估）和SQuAD（斯坦福问答数据集）基准进行评估。
+我们的实现现在已准备好使用 GLUE（通用语言理解评估）和 SQuAD（斯坦福问答数据集）基准进行评估。
 
-GLUE基准测试是一套八项多样化的NLP任务，评估语言模型的全面理解能力。它包括情感分析、文本蕴涵和句子相似性等挑战，提供了模型语言适应能力和熟练度的强有力衡量。
+GLUE 基准测试是一套八项多样化的 NLP 任务，评估语言模型的全面理解能力。它包括情感分析、文本蕴涵和句子相似性等挑战，提供了模型语言适应能力和熟练度的强有力衡量。
 
-另一方面，SQuAD侧重于评估问答模型。它涉及从维基百科段落中提取答案，模型识别相关的文本片段。更高级的版本SQuAD v2引入了无法回答的问题，增加了复杂性，模拟了现实中模型必须识别文本缺失答案的情况。
+另一方面，SQuAD 侧重于评估问答模型。它涉及从维基百科段落中提取答案，模型识别相关的文本片段。更高级的版本 SQuAD v2 引入了无法回答的问题，增加了复杂性，模拟了现实中模型必须识别文本缺失答案的情况。
 
-请注意，对于以下基准测试，我没有调整任何超参数，没有进行多次运行（特别是较小的GLUE数据集容易受到随机噪声的影响），没有进行任何早停策略，并且没有从前一个GLUE任务的精细调整开始（通常用于减少小数据集噪声的可变性和防止过拟合）。
+请注意，对于以下基准测试，我没有调整任何超参数，没有进行多次运行（特别是较小的 GLUE 数据集容易受到随机噪声的影响），没有进行任何早停策略，并且没有从前一个 GLUE 任务的精细调整开始（通常用于减少小数据集噪声的可变性和防止过拟合）。
 
 所有运行：
 
-+   从RoBERTa-base模型中刚初始化的LoRA注入开始，其秩为8
++   从 RoBERTa-base 模型中刚初始化的 LoRA 注入开始，其秩为 8
 
-+   每个任务确切地进行了6个epoch的训练，没有任何早停策略。
++   每个任务确切地进行了 6 个 epoch 的训练，没有任何早停策略。
 
-+   在前2个epoch期间，学习率线性增加到最大值，然后在剩余的4个epoch期间线性衰减至零。
++   在前 2 个 epoch 期间，学习率线性增加到最大值，然后在剩余的 4 个 epoch 期间线性衰减至零。
 
-+   所有任务的最大学习率为5e-4。
++   所有任务的最大学习率为 5e-4。
 
-+   所有任务的批处理大小为16
++   所有任务的批处理大小为 16
 
-RoBERTa-base模型有1.246亿个参数。包括LoRA参数、偏差和层规范化，我们只有42万个未冻结参数需要训练。这意味着我们实际上只对原始参数的0.34%进行了训练。
+RoBERTa-base 模型有 1.246 亿个参数。包括 LoRA 参数、偏差和层规范化，我们只有 42 万个未冻结参数需要训练。这意味着我们实际上只对原始参数的 0.34%进行了训练。
 
-LoRA为这些特定任务引入的参数数量非常少，实际磁盘大小仅为1.7 MB。您可以在Git仓库的*Output*文件夹中找到训练过的LoRA。
+LoRA 为这些特定任务引入的参数数量非常少，实际磁盘大小仅为 1.7 MB。您可以在 Git 仓库的*Output*文件夹中找到训练过的 LoRA。
 
-训练后，我们重新加载了LoRA参数，重新应用它们，并在每个任务的验证集上测试性能。以下是结果：
+训练后，我们重新加载了 LoRA 参数，重新应用它们，并在每个任务的验证集上测试性能。以下是结果：
 
-![](../Images/e92c5face32556fe13d7a5f16513bf11.png)
+![](img/e92c5face32556fe13d7a5f16513bf11.png)
 
-使用LoRA在GLUE基准测试中的性能
+使用 LoRA 在 GLUE 基准测试中的性能
 
-![](../Images/a5ccaa0cbca95310a416bd7cb67f45e4.png)
+![](img/a5ccaa0cbca95310a416bd7cb67f45e4.png)
 
-使用LoRA在SQuAD数据集上的性能
+使用 LoRA 在 SQuAD 数据集上的性能
 
-很可能这些结果可以通过一些超参数的微调大大改善。尽管如此，这清楚地证明了我们的LoRA实现是有效的，我们注入的低秩矩阵正在学习中。
+很可能这些结果可以通过一些超参数的微调大大改善。尽管如此，这清楚地证明了我们的 LoRA 实现是有效的，我们注入的低秩矩阵正在学习中。
 
 # 可能的改进
 
 回顾我们的实现，人们可能会想：“是否存在比重新编码自注意力类和执行复杂替换更有效、更可推广（即适用于其他网络架构）的方法？”
 
-实际上，我们可以简单地在pytorch的`nn.Linear`函数周围实现一个包装器，并具体说明我们想要替换的层的名称。同样地，您可以编写包装器来适应大多数基本的pytorch层，并能够快速调整LoRA以适应新的网络架构。以下是如何快速实现这一点的简要草图：
+实际上，我们可以简单地在 pytorch 的`nn.Linear`函数周围实现一个包装器，并具体说明我们想要替换的层的名称。同样地，您可以编写包装器来适应大多数基本的 pytorch 层，并能够快速调整 LoRA 以适应新的网络架构。以下是如何快速实现这一点的简要草图：
 
 ```py
 class LoraLinear(nn.Linear):
@@ -327,7 +327,7 @@ class LoraLinear(nn.Linear):
         return super().forward(x) + F.linear(x, lora_weights)
 ```
 
-实际上，这接近了huggingface PEFT（参数高效微调）库实现LoRA的方式。对于任何实际应用场景，如果您不打算学习，我强烈建议使用它，而不是编写自己的代码。
+实际上，这接近了 huggingface PEFT（参数高效微调）库实现 LoRA 的方式。对于任何实际应用场景，如果您不打算学习，我强烈建议使用它，而不是编写自己的代码。
 
 同样，将 LoRA 注入所有线性层（即自注意力的所有矩阵以及全连接前向网络的两个线性层）也已成为一种相当常见的做法。通常，除了 LoRA 参数外，保持偏置和层归一化可训练也是个好主意。由于它们已经很小，你不需要对它们进行低秩注入。
 
@@ -335,7 +335,7 @@ class LoraLinear(nn.Linear):
 
 总结一下，这里是在严肃环境中低秩适配的五大法则：
 
-![](../Images/6222aa9676676f2a24a822f2250a2bd2.png)
+![](img/6222aa9676676f2a24a822f2250a2bd2.png)
 
 *低秩适配的五大法则*
 
@@ -380,7 +380,7 @@ model = AutoModelForSequenceClassification.from_pretrained('roberta-base',
           torch_dtype="auto", quantization_config=bnb_config)
 ```
 
-你可以通过检查模型的模块和参数数据类型来验证4位加载：
+你可以通过检查模型的模块和参数数据类型来验证 4 位加载：
 
 ```py
 # Verify 4-bit loading
@@ -391,9 +391,9 @@ print("Checking for uint8 data type:")
 print(model.roberta.encoder.layer[4].attention.self.query.weight.dtype)
 ```
 
-现在开始使用PEFT注入LoRA参数。请注意，PEFT库在处理自定义模型或其他复杂结构时更加灵活，因此只要您只进行LoRA而不是QLoRA（量化通常是棘手的部分）。
+现在开始使用 PEFT 注入 LoRA 参数。请注意，PEFT 库在处理自定义模型或其他复杂结构时更加灵活，因此只要您只进行 LoRA 而不是 QLoRA（量化通常是棘手的部分）。
 
-PEFT库通过它们的名称来定位要替换的模块；因此，我们必须查看模型的`model.named_parameters()`。这是在非量化roberta-base模型中的样子。
+PEFT 库通过它们的名称来定位要替换的模块；因此，我们必须查看模型的`model.named_parameters()`。这是在非量化 roberta-base 模型中的样子。
 
 ```py
 Module                                                        Parameters
@@ -430,13 +430,13 @@ classifier.out_proj.bias                                               2
 TOTAL                                                        124_647_170
 ```
 
-然后，我们可以指定LoRA目标以选择这些字符串。检查的方法是，如果其完整名称中包含指定的子字符串，则为真。因此，写`query`和`value`等效于我们的从头开始实现上述内容。对于密集层，我们必须更加小心，因为分类器还具有密集输出。如果我们希望微调其他密集层，我们必须通过`intermediate.dense`和`output.dense`更为具体。
+然后，我们可以指定 LoRA 目标以选择这些字符串。检查的方法是，如果其完整名称中包含指定的子字符串，则为真。因此，写`query`和`value`等效于我们的从头开始实现上述内容。对于密集层，我们必须更加小心，因为分类器还具有密集输出。如果我们希望微调其他密集层，我们必须通过`intermediate.dense`和`output.dense`更为具体。
 
-所有未注入LoRA参数的参数都会自动冻结，即不会接收任何梯度更新。如果有任何我们希望以其原始形式训练的层，我们可以通过将列表传递给Lora-Config的`modules_to_save`参数来指定它们。在我们的情况下，我们想在这里添加`LayerNorm`和GLUE以及SQuAD的微调头。请注意，列表的每个元素不必匹配某个内容。我们可以简单地将`classifier`和`qa_outputs`添加到此列表中，然后拥有一个可以正确工作于两个任务的单个配置文件。
+所有未注入 LoRA 参数的参数都会自动冻结，即不会接收任何梯度更新。如果有任何我们希望以其原始形式训练的层，我们可以通过将列表传递给 Lora-Config 的`modules_to_save`参数来指定它们。在我们的情况下，我们想在这里添加`LayerNorm`和 GLUE 以及 SQuAD 的微调头。请注意，列表的每个元素不必匹配某个内容。我们可以简单地将`classifier`和`qa_outputs`添加到此列表中，然后拥有一个可以正确工作于两个任务的单个配置文件。
 
 对于偏置参数，你可以使用方便的配置参数`bias`。你可以指定*all*以重新训练所有模块的所有偏置，*lora_only*以仅训练注入的偏置，或者*none*在训练期间保持所有偏置不变。
 
-以下示例注入了一个秩为2的LoRA。我们用上面的8指定alpha参数，因为这是我们首先尝试的秩，并且应该允许我们保持从头开始示例的原始学习率。
+以下示例注入了一个秩为 2 的 LoRA。我们用上面的 8 指定 alpha 参数，因为这是我们首先尝试的秩，并且应该允许我们保持从头开始示例的原始学习率。
 
 ```py
 import peft
@@ -454,9 +454,9 @@ peft_config = peft.LoraConfig(
 model = peft.get_peft_model(model, peft_config)
 ```
 
-请记住，为LoRA注入指定更多模块可能会增加VRAM要求。如果遇到VRAM限制，请考虑减少目标模块的数量或LoRA秩。
+请记住，为 LoRA 注入指定更多模块可能会增加 VRAM 要求。如果遇到 VRAM 限制，请考虑减少目标模块的数量或 LoRA 秩。
 
-对于训练，特别是使用QLoRA时，选择与量化矩阵兼容的优化器。用bitsandbytes变体替换你的标准torch优化器，如下所示：
+对于训练，特别是使用 QLoRA 时，选择与量化矩阵兼容的优化器。用 bitsandbytes 变体替换你的标准 torch 优化器，如下所示：
 
 ```py
 import torch
@@ -468,9 +468,9 @@ optimizer = torch.optim.AdamW(args here)
 optimizer = bnb.optim.AdamW8bit(same args here)
 ```
 
-然后，您可以像以前一样训练此模型，而无需在训练过程中明确担心QLoRA。
+然后，您可以像以前一样训练此模型，而无需在训练过程中明确担心 QLoRA。
 
-训练完成后，保存和重新加载模型的过程非常简单。使用`model.save_pretrained`保存您的模型，并指定所需的文件名。PEFT库将在此位置自动创建一个目录，其中存储模型权重和配置文件。此文件包括基础模型和LoRA配置参数等重要细节。
+训练完成后，保存和重新加载模型的过程非常简单。使用`model.save_pretrained`保存您的模型，并指定所需的文件名。PEFT 库将在此位置自动创建一个目录，其中存储模型权重和配置文件。此文件包括基础模型和 LoRA 配置参数等重要细节。
 
 要重新加载模型，请使用 `peft.AutoPeftModel.from_pretrained`，并将目录路径作为参数传递。一个关键点是，LoRA 配置当前不保留 `AutoModelForSequenceClassification` 初始化时的类别数量。在使用 `from_pretrained` 时，你需要手动输入这个类别数量作为附加参数。如果不这样做，将会导致错误。
 
@@ -494,18 +494,18 @@ optimizer = bnb.optim.AdamW8bit(same args here)
 
 *所有图片，除非另有说明，均由作者提供。*
 
-+   原始 LoRA 论文: [https://arxiv.org/pdf/2106.09685.pdf](https://arxiv.org/pdf/2106.09685.pdf)
++   原始 LoRA 论文: [`arxiv.org/pdf/2106.09685.pdf`](https://arxiv.org/pdf/2106.09685.pdf)
 
-+   QLoRA 论文: [https://arxiv.org/abs/2305.14314](https://arxiv.org/abs/2305.14314)
++   QLoRA 论文: [`arxiv.org/abs/2305.14314`](https://arxiv.org/abs/2305.14314)
 
-+   Sentdex 关于 QLoRA 微调的指南: [https://www.youtube.com/watch?v=J_3hDqSvpmg](https://www.youtube.com/watch?v=J_3hDqSvpmg)
++   Sentdex 关于 QLoRA 微调的指南: [`www.youtube.com/watch?v=J_3hDqSvpmg`](https://www.youtube.com/watch?v=J_3hDqSvpmg)
 
-+   关于 Llama 上 LoRA 微调的博客文章: [https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2](https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2)
++   关于 Llama 上 LoRA 微调的博客文章: [`www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2`](https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2)
 
-+   bitsandbytes Hugging Face 集成: [https://huggingface.co/blog/4bit-transformers-bitsandbytes](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
++   bitsandbytes Hugging Face 集成: [`huggingface.co/blog/4bit-transformers-bitsandbytes`](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
 
-+   LoRA 训练见解: [https://lightning.ai/pages/community/lora-insights/](https://lightning.ai/pages/community/lora-insights/)
++   LoRA 训练见解: [`lightning.ai/pages/community/lora-insights/`](https://lightning.ai/pages/community/lora-insights/)
 
-+   细化 Llama 模型时 LoRA 与 QLoRA 的预期 VRAM 节省: [https://cloud.google.com/vertex-ai/docs/model-garden/lora-qlora](https://cloud.google.com/vertex-ai/docs/model-garden/lora-qlora)
++   细化 Llama 模型时 LoRA 与 QLoRA 的预期 VRAM 节省: [`cloud.google.com/vertex-ai/docs/model-garden/lora-qlora`](https://cloud.google.com/vertex-ai/docs/model-garden/lora-qlora)
 
-+   我用于石板文本的字体，以防你想自己制作：[https://www.fontspace.com/sharp-objects-nbp-font-f14469](https://www.fontspace.com/sharp-objects-nbp-font-f14469)
++   我用于石板文本的字体，以防你想自己制作：[`www.fontspace.com/sharp-objects-nbp-font-f14469`](https://www.fontspace.com/sharp-objects-nbp-font-f14469)

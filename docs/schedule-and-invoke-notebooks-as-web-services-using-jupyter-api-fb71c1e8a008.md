@@ -1,12 +1,12 @@
 # 使用 Jupyter API 调度和调用笔记本作为网络服务
 
-> 原文：[https://towardsdatascience.com/schedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008?source=collection_archive---------3-----------------------#2023-08-10](https://towardsdatascience.com/schedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008?source=collection_archive---------3-----------------------#2023-08-10)
+> 原文：[`towardsdatascience.com/schedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008?source=collection_archive---------3-----------------------#2023-08-10`](https://towardsdatascience.com/schedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008?source=collection_archive---------3-----------------------#2023-08-10)
 
-[](https://medium.com/@tfoldi?source=post_page-----fb71c1e8a008--------------------------------)[![Tamas Foldi](../Images/0453bdb63701bda8c68490b08e8d4a24.png)](https://medium.com/@tfoldi?source=post_page-----fb71c1e8a008--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb71c1e8a008--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fb71c1e8a008--------------------------------) [Tamas Foldi](https://medium.com/@tfoldi?source=post_page-----fb71c1e8a008--------------------------------)
+[](https://medium.com/@tfoldi?source=post_page-----fb71c1e8a008--------------------------------)![Tamas Foldi](https://medium.com/@tfoldi?source=post_page-----fb71c1e8a008--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb71c1e8a008--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb71c1e8a008--------------------------------) [Tamas Foldi](https://medium.com/@tfoldi?source=post_page-----fb71c1e8a008--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa586bc473bbf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fschedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008&user=Tamas+Foldi&userId=a586bc473bbf&source=post_page-a586bc473bbf----fb71c1e8a008---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb71c1e8a008--------------------------------) ·6 min read·2023年8月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffb71c1e8a008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fschedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008&user=Tamas+Foldi&userId=a586bc473bbf&source=-----fb71c1e8a008---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa586bc473bbf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fschedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008&user=Tamas+Foldi&userId=a586bc473bbf&source=post_page-a586bc473bbf----fb71c1e8a008---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb71c1e8a008--------------------------------) ·6 min read·2023 年 8 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffb71c1e8a008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fschedule-and-invoke-notebooks-as-web-services-using-jupyter-api-fb71c1e8a008&user=Tamas+Foldi&userId=a586bc473bbf&source=-----fb71c1e8a008---------------------clap_footer-----------)
 
 --
 
@@ -14,13 +14,13 @@
 
 感谢像 GCP CloudRunner 和 Cloud Functions 这样的无服务器云服务，我们不再需要管理昂贵的虚拟机或服务器来部署我们的笔记本并定期执行它们。通过 Jupyter API，你可以将笔记本迁移到云端，将其转换为网络服务，并与调度系统集成。
 
-![](../Images/35bed8a4f657cf3d4fb00571a23e9562.png)
+![](img/35bed8a4f657cf3d4fb00571a23e9562.png)
 
 在云端调度的 Python 笔记本，由 MidJourney 生成，由作者指导
 
 然而，最常用的方法（除非你使用像 Vertex AI 或 SageMaker 这样的云原生服务）是使用`nbconvert`将笔记本转换为 Python 代码，并将代码添加到新启动的 Tornado 或 Flask 自定义 web 应用程序中。
 
-![](../Images/7ad9ec48534503b421be4057882796a1.png)
+![](img/7ad9ec48534503b421be4057882796a1.png)
 
 传统的 Python 笔记本容器化，无图，图片由作者提供
 
@@ -30,7 +30,7 @@
 
 在我们深入了解如何使用 Jupyter API 之前，我会展示架构如何工作。首先，让我们使用一个简单的笔记本进行测试。
 
-![](../Images/dcf053ff6404f88f5756605f5377177e.png)
+![](img/dcf053ff6404f88f5756605f5377177e.png)
 
 [简单测试笔记本](https://github.com/tfoldi/jupyterapi_nbrunner/blob/main/tests/test_notebook/JupyterAPI_Test.ipynb) 如果一切正常，将返回“15”。
 
@@ -47,7 +47,7 @@ docker run -it --rm -p 8888:8888 \
   jupyter lab --ServerApp.disable_check_xsrf=true
 ```
 
-一旦服务启动，你将能够使用 JUPYTER_TOKEN 环境变量中传递的令牌访问笔记本，地址是 [http://127.0.0.1:8888/lab/tree/work](http://127.0.0.1:8888/lab/tree/work)。
+一旦服务启动，你将能够使用 JUPYTER_TOKEN 环境变量中传递的令牌访问笔记本，地址是 [`127.0.0.1:8888/lab/tree/work`](http://127.0.0.1:8888/lab/tree/work)。
 
 ## 从命令行调用笔记本
 
@@ -82,7 +82,7 @@ Deleting kernel
 
 下图展示了完整的流程：
 
-![](../Images/11c524c1045884750fb7a48d56e4dacf.png)
+![](img/11c524c1045884750fb7a48d56e4dacf.png)
 
 通过 Rest API 执行 Jupyter Notebook 的步骤。笔记本级别的操作使用 Rest API，而单元级别的调用则在 WebSocket 上。图片由作者提供。
 
@@ -98,7 +98,7 @@ Deleting kernel
 
 架构和调用流程将如下所示：
 
-![](../Images/431947b505e850f4b423574ed62ab90b.png)
+![](img/431947b505e850f4b423574ed62ab90b.png)
 
 我们将仅使用无服务器服务来保持成本低。作者提供的图片。
 
@@ -153,7 +153,7 @@ gcloud pubsub topics publish t_nbtrigger \
 
 如果你查看 `nbtrigger` Cloud Function 的日志，你可能会注意到，向主题发送记录成功触发了我们指定的 notebook 执行：
 
-![](../Images/471606b8c7c1dfcc3bca2028c26c355b.png)
+![](img/471606b8c7c1dfcc3bca2028c26c355b.png)
 
 日志显示我们的 notebook 成功执行。作者提供的图片。
 
@@ -167,13 +167,13 @@ gcloud scheduler jobs create pubsub j_hourly_nbtrigger \
 
 一切就绪——你刚刚以无服务器的方式安排了你的第一个 Jupyter Notebook。
 
-![](../Images/579099583726993d1558e9d706617887.png)
+![](img/579099583726993d1558e9d706617887.png)
 
 CloudRun 在作业执行后会自动关闭我们的容器。如果我们没有指定最小实例，"闲置"状态也不会产生费用。
 
 我们的 Notebook 每天只会消耗几美分，这使得这种部署方式成为 Google Cloud 中最具成本效益的方式之一。
 
-![](../Images/69712ebc972347c1dc3f9f582dc4b078.png)
+![](img/69712ebc972347c1dc3f9f582dc4b078.png)
 
 执行几天后的成本大约为三分钱。
 

@@ -1,18 +1,18 @@
-# 使用GPT-4和翻转交互模式掌握未知领域
+# 使用 GPT-4 和翻转交互模式掌握未知领域
 
-> 原文：[https://towardsdatascience.com/mastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91?source=collection_archive---------6-----------------------#2023-07-13](https://towardsdatascience.com/mastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91?source=collection_archive---------6-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/mastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91?source=collection_archive---------6-----------------------#2023-07-13`](https://towardsdatascience.com/mastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91?source=collection_archive---------6-----------------------#2023-07-13)
 
-## 利用GPT-4生成高质量的问题，重新定义问题解决和决策制定
+## 利用 GPT-4 生成高质量的问题，重新定义问题解决和决策制定
 
-[](https://medium.com/@andrea.ialenti?source=post_page-----1f23acbc4c91--------------------------------)[![Andrea Ialenti](../Images/1ff6e8084c4ae1e2ae7d7f69be972fcd.png)](https://medium.com/@andrea.ialenti?source=post_page-----1f23acbc4c91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f23acbc4c91--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1f23acbc4c91--------------------------------) [Andrea Ialenti](https://medium.com/@andrea.ialenti?source=post_page-----1f23acbc4c91--------------------------------)
+[](https://medium.com/@andrea.ialenti?source=post_page-----1f23acbc4c91--------------------------------)![Andrea Ialenti](https://medium.com/@andrea.ialenti?source=post_page-----1f23acbc4c91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f23acbc4c91--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f23acbc4c91--------------------------------) [Andrea Ialenti](https://medium.com/@andrea.ialenti?source=post_page-----1f23acbc4c91--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc4f0dc70838c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91&user=Andrea+Ialenti&userId=c4f0dc70838c&source=post_page-c4f0dc70838c----1f23acbc4c91---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f23acbc4c91--------------------------------) ·19 min read·2023年7月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f23acbc4c91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91&user=Andrea+Ialenti&userId=c4f0dc70838c&source=-----1f23acbc4c91---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc4f0dc70838c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91&user=Andrea+Ialenti&userId=c4f0dc70838c&source=post_page-c4f0dc70838c----1f23acbc4c91---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f23acbc4c91--------------------------------) ·19 min read·2023 年 7 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f23acbc4c91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91&user=Andrea+Ialenti&userId=c4f0dc70838c&source=-----1f23acbc4c91---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1f23acbc4c91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91&source=-----1f23acbc4c91---------------------bookmark_footer-----------)![](../Images/307379d188a04bc88e4564a658528548.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1f23acbc4c91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-the-unknown-with-gpt-4-and-the-flipped-interaction-pattern-1f23acbc4c91&source=-----1f23acbc4c91---------------------bookmark_footer-----------)![](img/307379d188a04bc88e4564a658528548.png)
 
 图片来源：[Ali Kazal](https://unsplash.com/@lureofadventure?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/UU69D-_nwPI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

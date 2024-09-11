@@ -1,10 +1,10 @@
 # 4 个快速简单的步骤来美化 R Markdown
 
-> 原文：[https://towardsdatascience.com/4-quick-and-easy-steps-to-beautify-r-markdown-f2bdccb358b2?source=collection_archive---------17-----------------------#2023-01-05](https://towardsdatascience.com/4-quick-and-easy-steps-to-beautify-r-markdown-f2bdccb358b2?source=collection_archive---------17-----------------------#2023-01-05)
+> 原文：[`towardsdatascience.com/4-quick-and-easy-steps-to-beautify-r-markdown-f2bdccb358b2?source=collection_archive---------17-----------------------#2023-01-05`](https://towardsdatascience.com/4-quick-and-easy-steps-to-beautify-r-markdown-f2bdccb358b2?source=collection_archive---------17-----------------------#2023-01-05)
 
 ## 只需不到两分钟，即可通过几个简单的调整让您的报告看起来更精致
 
-[](https://jeagleson.medium.com/?source=post_page-----f2bdccb358b2--------------------------------)[![Jenna Eagleson](../Images/1f13d1104d9cb3d2c1d4376a6e124c55.png)](https://jeagleson.medium.com/?source=post_page-----f2bdccb358b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2bdccb358b2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2bdccb358b2--------------------------------) [Jenna Eagleson](https://jeagleson.medium.com/?source=post_page-----f2bdccb358b2--------------------------------)
+[](https://jeagleson.medium.com/?source=post_page-----f2bdccb358b2--------------------------------)![Jenna Eagleson](https://jeagleson.medium.com/?source=post_page-----f2bdccb358b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2bdccb358b2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2bdccb358b2--------------------------------) [Jenna Eagleson](https://jeagleson.medium.com/?source=post_page-----f2bdccb358b2--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2bdccb358b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-quick-and-easy-steps-to-beautify-r-markdown-f2bdccb358b2&source=-----f2bdccb358b2---------------------bookmark_footer-----------)![](../Images/659f6044fb6c68ae690a25dc4815591a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2bdccb358b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-quick-and-easy-steps-to-beautify-r-markdown-f2bdccb358b2&source=-----f2bdccb358b2---------------------bookmark_footer-----------)![](img/659f6044fb6c68ae690a25dc4815591a.png)
 
 照片由 [Greyson Joralemon](https://unsplash.com/@greysonjoralemon?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 这里是我们要去的地方的预览，你可以在本文底部找到完整的代码：
 
-![](../Images/1ec86a276eb7e3e5683cddbd14e8f457.png)
+![](img/1ec86a276eb7e3e5683cddbd14e8f457.png)
 
 图片由作者提供
 

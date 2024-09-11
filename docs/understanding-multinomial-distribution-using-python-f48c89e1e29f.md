@@ -1,20 +1,20 @@
 # 使用 Python 理解多项分布
 
-> 原文：[https://towardsdatascience.com/understanding-multinomial-distribution-using-python-f48c89e1e29f?source=collection_archive---------9-----------------------#2023-01-06](https://towardsdatascience.com/understanding-multinomial-distribution-using-python-f48c89e1e29f?source=collection_archive---------9-----------------------#2023-01-06)
+> 原文：[`towardsdatascience.com/understanding-multinomial-distribution-using-python-f48c89e1e29f?source=collection_archive---------9-----------------------#2023-01-06`](https://towardsdatascience.com/understanding-multinomial-distribution-using-python-f48c89e1e29f?source=collection_archive---------9-----------------------#2023-01-06)
 
 ## 多项分布背后的数学和直觉
 
-[](https://reza-bagheri79.medium.com/?source=post_page-----f48c89e1e29f--------------------------------)[![Reza Bagheri](../Images/7c5a7dc9e6e31048ce31c8d49055987c.png)](https://reza-bagheri79.medium.com/?source=post_page-----f48c89e1e29f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f48c89e1e29f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f48c89e1e29f--------------------------------) [Reza Bagheri](https://reza-bagheri79.medium.com/?source=post_page-----f48c89e1e29f--------------------------------)
+[](https://reza-bagheri79.medium.com/?source=post_page-----f48c89e1e29f--------------------------------)![Reza Bagheri](https://reza-bagheri79.medium.com/?source=post_page-----f48c89e1e29f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f48c89e1e29f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f48c89e1e29f--------------------------------) [Reza Bagheri](https://reza-bagheri79.medium.com/?source=post_page-----f48c89e1e29f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fda2d000eaa4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-multinomial-distribution-using-python-f48c89e1e29f&user=Reza+Bagheri&userId=da2d000eaa4d&source=post_page-da2d000eaa4d----f48c89e1e29f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f48c89e1e29f--------------------------------) ·20 min 阅读·2023年1月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff48c89e1e29f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-multinomial-distribution-using-python-f48c89e1e29f&user=Reza+Bagheri&userId=da2d000eaa4d&source=-----f48c89e1e29f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fda2d000eaa4d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-multinomial-distribution-using-python-f48c89e1e29f&user=Reza+Bagheri&userId=da2d000eaa4d&source=post_page-da2d000eaa4d----f48c89e1e29f---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f48c89e1e29f--------------------------------) ·20 min 阅读·2023 年 1 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff48c89e1e29f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-multinomial-distribution-using-python-f48c89e1e29f&user=Reza+Bagheri&userId=da2d000eaa4d&source=-----f48c89e1e29f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff48c89e1e29f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-multinomial-distribution-using-python-f48c89e1e29f&source=-----f48c89e1e29f---------------------bookmark_footer-----------)![](../Images/be421088ce08f6be5825b9f3e0a934fa.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff48c89e1e29f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-multinomial-distribution-using-python-f48c89e1e29f&source=-----f48c89e1e29f---------------------bookmark_footer-----------)![](img/be421088ce08f6be5825b9f3e0a934fa.png)
 
-来源: [https://pixabay.com/vectors/dice-game-die-luck-random-numbers-151867/](https://pixabay.com/vectors/dice-game-die-luck-random-numbers-151867/)
+来源: [`pixabay.com/vectors/dice-game-die-luck-random-numbers-151867/`](https://pixabay.com/vectors/dice-game-die-luck-random-numbers-151867/)
 
 多项分布是二项分布的推广，用于计算具有多个结果的实验的概率。本文提供了对多项分布的直观介绍，并讨论了其数学性质。此外，文章将教你如何使用 Python 中的 SciPy 库来建模和可视化多项分布。
 

@@ -1,22 +1,22 @@
-# 为什么你应该使用Devcontainers进行你的地理空间开发
+# 为什么你应该使用 Devcontainers 进行你的地理空间开发
 
-> 原文：[https://towardsdatascience.com/why-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1?source=collection_archive---------7-----------------------#2023-03-31](https://towardsdatascience.com/why-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1?source=collection_archive---------7-----------------------#2023-03-31)
+> 原文：[`towardsdatascience.com/why-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1?source=collection_archive---------7-----------------------#2023-03-31`](https://towardsdatascience.com/why-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1?source=collection_archive---------7-----------------------#2023-03-31)
 
-## 探索使用DevContainers和Codespaces进行无缝地理空间开发的优势
+## 探索使用 DevContainers 和 Codespaces 进行无缝地理空间开发的优势
 
-[](https://cordmaur.medium.com/?source=post_page-----600f42c7b7e1--------------------------------)[![Maurício Cordeiro](../Images/1ec750bf68bbaa0331fabdebebf28eb5.png)](https://cordmaur.medium.com/?source=post_page-----600f42c7b7e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----600f42c7b7e1--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----600f42c7b7e1--------------------------------) [Maurício Cordeiro](https://cordmaur.medium.com/?source=post_page-----600f42c7b7e1--------------------------------)
+[](https://cordmaur.medium.com/?source=post_page-----600f42c7b7e1--------------------------------)![Maurício Cordeiro](https://cordmaur.medium.com/?source=post_page-----600f42c7b7e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----600f42c7b7e1--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----600f42c7b7e1--------------------------------) [Maurício Cordeiro](https://cordmaur.medium.com/?source=post_page-----600f42c7b7e1--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8878c77fe1a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1&user=Maur%C3%ADcio+Cordeiro&userId=8878c77fe1a3&source=post_page-8878c77fe1a3----600f42c7b7e1---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----600f42c7b7e1--------------------------------) ·5 min阅读·2023年3月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F600f42c7b7e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1&user=Maur%C3%ADcio+Cordeiro&userId=8878c77fe1a3&source=-----600f42c7b7e1---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8878c77fe1a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1&user=Maur%C3%ADcio+Cordeiro&userId=8878c77fe1a3&source=post_page-8878c77fe1a3----600f42c7b7e1---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----600f42c7b7e1--------------------------------) ·5 min 阅读·2023 年 3 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F600f42c7b7e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1&user=Maur%C3%ADcio+Cordeiro&userId=8878c77fe1a3&source=-----600f42c7b7e1---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F600f42c7b7e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1&source=-----600f42c7b7e1---------------------bookmark_footer-----------)![](../Images/11a36ccf930dd6cff3a8e6e8247fd8ab.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F600f42c7b7e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-you-should-use-devcontainers-for-your-geospatial-development-600f42c7b7e1&source=-----600f42c7b7e1---------------------bookmark_footer-----------)![](img/11a36ccf930dd6cff3a8e6e8247fd8ab.png)
 
-图像由Midjourney创建。说明：“世界被电缆包围，在一个凌乱的环境中，赛博朋克，现实主义3D”
+图像由 Midjourney 创建。说明：“世界被电缆包围，在一个凌乱的环境中，赛博朋克，现实主义 3D”
 
-> 由于Medium.com政策变更，非会员阅读的新规定已于2023年9月实施，该帖子现在可以在**geocorner.net**上免费阅读：[https://www.geocorner.net/post/why-you-should-use-devcontainers-for-your-geospatial-development](https://www.geocorner.net/post/why-you-should-use-devcontainers-for-your-geospatial-development)
+> 由于 Medium.com 政策变更，非会员阅读的新规定已于 2023 年 9 月实施，该帖子现在可以在**geocorner.net**上免费阅读：[`www.geocorner.net/post/why-you-should-use-devcontainers-for-your-geospatial-development`](https://www.geocorner.net/post/why-you-should-use-devcontainers-for-your-geospatial-development)
 
 # 介绍
 

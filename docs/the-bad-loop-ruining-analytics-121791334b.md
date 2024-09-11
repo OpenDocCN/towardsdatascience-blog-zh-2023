@@ -1,20 +1,20 @@
 # 破坏分析的坏循环
 
-> 原文：[https://towardsdatascience.com/the-bad-loop-ruining-analytics-121791334b?source=collection_archive---------17-----------------------#2023-01-16](https://towardsdatascience.com/the-bad-loop-ruining-analytics-121791334b?source=collection_archive---------17-----------------------#2023-01-16)
+> 原文：[`towardsdatascience.com/the-bad-loop-ruining-analytics-121791334b?source=collection_archive---------17-----------------------#2023-01-16`](https://towardsdatascience.com/the-bad-loop-ruining-analytics-121791334b?source=collection_archive---------17-----------------------#2023-01-16)
 
 ## 意见
 
 ## 对技术工作的过度重视如何对分析造成灾难性影响
 
-[](https://ryi.medium.com/?source=post_page-----121791334b--------------------------------)[![罗伯特·易](../Images/69f5d0c5860a73ec291f42d34a74d147.png)](https://ryi.medium.com/?source=post_page-----121791334b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----121791334b--------------------------------)[![数据科学进展](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----121791334b--------------------------------) [罗伯特·易](https://ryi.medium.com/?source=post_page-----121791334b--------------------------------)
+[](https://ryi.medium.com/?source=post_page-----121791334b--------------------------------)![罗伯特·易](https://ryi.medium.com/?source=post_page-----121791334b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----121791334b--------------------------------)![数据科学进展](https://towardsdatascience.com/?source=post_page-----121791334b--------------------------------) [罗伯特·易](https://ryi.medium.com/?source=post_page-----121791334b--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ac2da8b0742&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bad-loop-ruining-analytics-121791334b&user=Robert+Yi&userId=8ac2da8b0742&source=post_page-8ac2da8b0742----121791334b---------------------post_header-----------) 发表在 [数据科学进展](https://towardsdatascience.com/?source=post_page-----121791334b--------------------------------) · 6 分钟阅读 · 2023年1月16日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F121791334b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bad-loop-ruining-analytics-121791334b&user=Robert+Yi&userId=8ac2da8b0742&source=-----121791334b---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ac2da8b0742&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bad-loop-ruining-analytics-121791334b&user=Robert+Yi&userId=8ac2da8b0742&source=post_page-8ac2da8b0742----121791334b---------------------post_header-----------) 发表在 [数据科学进展](https://towardsdatascience.com/?source=post_page-----121791334b--------------------------------) · 6 分钟阅读 · 2023 年 1 月 16 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F121791334b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bad-loop-ruining-analytics-121791334b&user=Robert+Yi&userId=8ac2da8b0742&source=-----121791334b---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F121791334b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bad-loop-ruining-analytics-121791334b&source=-----121791334b---------------------bookmark_footer-----------)![](../Images/626a4152e329e8944afda0772e6ed155.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F121791334b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bad-loop-ruining-analytics-121791334b&source=-----121791334b---------------------bookmark_footer-----------)![](img/626a4152e329e8944afda0772e6ed155.png)
 
 图片由作者提供。
 
@@ -22,7 +22,7 @@
 
 为什么总是谈论反馈循环？嗯，我怀疑有一个**负反馈循环负责分析中的所有问题**。就像其他反馈循环一样，这个循环很难打破。
 
-我想你们都*感受*到了这种影响——我们的影响力从未像它应该的那样高。我们很少被视为思想伙伴。我们做了出色的技术工作，但几乎没有引起重要人士的关注。当然，我们在制定战略决策时有一席之地，但仅仅是作为SQL技术员。而且这不是因为没有尝试。我们构建了自助服务系统，我们举行了办公时间，我们创建了复杂的课程以提升我们的同行，但这些举措从未带来持久的变化。
+我想你们都*感受*到了这种影响——我们的影响力从未像它应该的那样高。我们很少被视为思想伙伴。我们做了出色的技术工作，但几乎没有引起重要人士的关注。当然，我们在制定战略决策时有一席之地，但仅仅是作为 SQL 技术员。而且这不是因为没有尝试。我们构建了自助服务系统，我们举行了办公时间，我们创建了复杂的课程以提升我们的同行，但这些举措从未带来持久的变化。
 
 那么这个循环是什么？其实很简单：**我们所做的一切都过度强调技术工作，设定了我们只做技术工作的期望**。我们对扩大影响力的最佳努力因此被削弱。接下来，我将讨论这个循环，证明它的普遍性，并最终分享我为什么认为工具在解决这个问题上至关重要。
 
@@ -42,7 +42,7 @@
 
 常见的线索开始浮现。行业叙事、数十年的商业智能文化、我们的工具，甚至是我们自身的傲慢，都将我们推向一个我们的价值被降级为拉取数据的世界。而谴责我们的基本反馈循环是：**我们通过技术技能来展示和评价自己，因此他人也通过技术技能来评价我们**。
 
-![](../Images/1fda6182fdc05141fbf3abe0ac409eee.png)
+![](img/1fda6182fdc05141fbf3abe0ac409eee.png)
 
 图片来自作者。
 

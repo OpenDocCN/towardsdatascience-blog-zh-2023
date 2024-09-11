@@ -1,34 +1,34 @@
 # Apache Spark MLlib 与 Scikit-learn：构建机器学习流水线
 
-> 原文：[https://towardsdatascience.com/apache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82?source=collection_archive---------2-----------------------#2023-03-09](https://towardsdatascience.com/apache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82?source=collection_archive---------2-----------------------#2023-03-09)
+> 原文：[`towardsdatascience.com/apache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82?source=collection_archive---------2-----------------------#2023-03-09`](https://towardsdatascience.com/apache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82?source=collection_archive---------2-----------------------#2023-03-09)
 
-## ML流水线的代码实现：从原始数据到预测
+## ML 流水线的代码实现：从原始数据到预测
 
-[](https://brunocaraffa.medium.com/?source=post_page-----be49ecc69a82--------------------------------)[![Bruno Caraffa](../Images/414f88c6974dba79ec9851c051eff49f.png)](https://brunocaraffa.medium.com/?source=post_page-----be49ecc69a82--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be49ecc69a82--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be49ecc69a82--------------------------------) [Bruno Caraffa](https://brunocaraffa.medium.com/?source=post_page-----be49ecc69a82--------------------------------)
+[](https://brunocaraffa.medium.com/?source=post_page-----be49ecc69a82--------------------------------)![Bruno Caraffa](https://brunocaraffa.medium.com/?source=post_page-----be49ecc69a82--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be49ecc69a82--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----be49ecc69a82--------------------------------) [Bruno Caraffa](https://brunocaraffa.medium.com/?source=post_page-----be49ecc69a82--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F657289ec5532&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82&user=Bruno+Caraffa&userId=657289ec5532&source=post_page-657289ec5532----be49ecc69a82---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be49ecc69a82--------------------------------) · 8分钟阅读 · 2023年3月9日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F657289ec5532&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82&user=Bruno+Caraffa&userId=657289ec5532&source=post_page-657289ec5532----be49ecc69a82---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be49ecc69a82--------------------------------) · 8 分钟阅读 · 2023 年 3 月 9 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe49ecc69a82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82&source=-----be49ecc69a82---------------------bookmark_footer-----------)![](../Images/f0e56fa05aee5a0b3ede725550076f2f.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe49ecc69a82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fapache-spark-mllib-vs-scikit-learn-building-machine-learning-pipelines-be49ecc69a82&source=-----be49ecc69a82---------------------bookmark_footer-----------)![](img/f0e56fa05aee5a0b3ede725550076f2f.png)
 
 图片由 [Rodion Kutsaiev](https://unsplash.com/@frostroomhead?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-真实的机器学习涉及一系列准备数据的任务，然后才是神奇的预测。填充缺失值、对分类特征进行独热编码、对数值特征进行标准化和缩放、特征提取和模型拟合只是机器学习项目中进行预测之前的一些阶段。在处理NLP应用时，过程更加深入，包括词干提取、词形还原、停用词移除、分词、向量化和词性标注（POS标注）等阶段。
+真实的机器学习涉及一系列准备数据的任务，然后才是神奇的预测。填充缺失值、对分类特征进行独热编码、对数值特征进行标准化和缩放、特征提取和模型拟合只是机器学习项目中进行预测之前的一些阶段。在处理 NLP 应用时，过程更加深入，包括词干提取、词形还原、停用词移除、分词、向量化和词性标注（POS 标注）等阶段。
 
-完全可以使用像Pandas和NumPy或NLTK和SpaCy这样的库来执行这些步骤。问题在于，当模型投入生产时，团队成员之间的代码一致性可能会丧失，并且在没有操作特别设计的框架时，代码中的人为错误几率更高。这就是为什么ML团队倾向于使用称为**Pipelines**的高级API，这些API特别设计用于将所有阶段链接为一个对象。
+完全可以使用像 Pandas 和 NumPy 或 NLTK 和 SpaCy 这样的库来执行这些步骤。问题在于，当模型投入生产时，团队成员之间的代码一致性可能会丧失，并且在没有操作特别设计的框架时，代码中的人为错误几率更高。这就是为什么 ML 团队倾向于使用称为**Pipelines**的高级 API，这些 API 特别设计用于将所有阶段链接为一个对象。
 
-本文将介绍如何使用两大主要库：Apache Spark的MLLib和Scikit-learn，实现ML Pipelines。由于智能的NumPy矢量化执行，Scikit-learn在仅使用CPU时表现出色，这些执行方式对CPU缓存行友好，并且高效利用了CPU的可用核心。尽管在大数据背景下，Apache Spark的MLLib由于其适合分布式计算，通常会优于scikit-learn，因为它设计用于在Spark上运行。
+本文将介绍如何使用两大主要库：Apache Spark 的 MLLib 和 Scikit-learn，实现 ML Pipelines。由于智能的 NumPy 矢量化执行，Scikit-learn 在仅使用 CPU 时表现出色，这些执行方式对 CPU 缓存行友好，并且高效利用了 CPU 的可用核心。尽管在大数据背景下，Apache Spark 的 MLLib 由于其适合分布式计算，通常会优于 scikit-learn，因为它设计用于在 Spark 上运行。
 
-包含[10个欧洲城市的Airbnb房源数据集](https://zenodo.org/record/4446043#.ZAfeMh_MK3D)¹将被用于在scikit-learn和MLLib中创建相同的Pipeline。该Pipeline将在应用随机森林回归器生成房源价格预测之前，在预处理阶段操作数值和分类特征。这些特征及其各自的数据类型如下：
+包含[10 个欧洲城市的 Airbnb 房源数据集](https://zenodo.org/record/4446043#.ZAfeMh_MK3D)¹将被用于在 scikit-learn 和 MLLib 中创建相同的 Pipeline。该 Pipeline 将在应用随机森林回归器生成房源价格预测之前，在预处理阶段操作数值和分类特征。这些特征及其各自的数据类型如下：
 
-![](../Images/1f889bb45ceb3eee9de7136454ddfc6b.png)
+![](img/1f889bb45ceb3eee9de7136454ddfc6b.png)
 
-图1 — 特征和数据类型。来源：作者。
+图 1 — 特征和数据类型。来源：作者。
 
-首先，让我们加载数据集。由于价格在周末和工作日之间变化很大，因此有一个包含各城市工作日和周末房源数据的csv文件。因此，为了简化我们的工作，可以将所有数据集整合到一个数据框中，并创建“***city***”和“***weekday_or_weekend***”特征，这些特征对于模型来说肯定是必不可少的。
+首先，让我们加载数据集。由于价格在周末和工作日之间变化很大，因此有一个包含各城市工作日和周末房源数据的 csv 文件。因此，为了简化我们的工作，可以将所有数据集整合到一个数据框中，并创建“***city***”和“***weekday_or_weekend***”特征，这些特征对于模型来说肯定是必不可少的。
 
 必须通过选择浮点数列并使用 pop 方法将第一个特征 realSum（即房源价格和我们的目标特征）排除，来将数值特征分组到一个列表中。multi 和 biz 特征采用 1/0 编码，scikit-learn 允许我们将它们作为布尔类型输入到模型中，因此我们将对它们进行转换。最后，我们通过选择布尔型和对象型数据列来创建分类特征列表。
 
@@ -40,13 +40,13 @@
 
 在 Databricks 上做的第一件事是创建一个集群，这是一组计算资源和配置，我们将在其上运行我们的管道。可以通过点击左上角菜单中的 create -> cluster 来完成。集群已经启动了 Spark，并安装了所有必需的机器学习库，甚至可以导入其他必要的库。唯一的限制是有限的内存、2 个 CPU 核心以及集群在两小时空闲后自动终止。
 
-![](../Images/2c5756a5ad148f1708ee70ff930df3d6.png)
+![](img/2c5756a5ad148f1708ee70ff930df3d6.png)
 
 图 2— 启动 Databricks 集群。来源：作者。
 
 Databricks 还具有一个表上传的用户界面（UI），可以通过在左上菜单中选择 create -> table 来访问。在数据加载 UI 中，可以轻松将 csv 文件加载到 Delta Lake 表中，并操作一些表的属性，如推断模式、选择数据类型以及将第一行提升为表头。因此，让我们加载我们在 scikit-learn 管道中创建的数据框的 csv 文件。
 
-![](../Images/c22eadf3c79c46f86d0ca94edb0a9792.png)
+![](img/c22eadf3c79c46f86d0ca94edb0a9792.png)
 
 图 3 — 使用 Databricks 数据加载 UI 加载 csv 文件。来源：作者。
 
@@ -70,4 +70,4 @@ Databricks 还具有一个表上传的用户界面（UI），可以通过在左�
 
 希望你了解（或复习）机器学习项目中管道的重要性，以及 scikit-learn 和 MLlib 管道之间的差异。虽然构建它们可能需要一些时间，但从长远来看，良好的组织会带来多方面的回报。
 
-[1] Gyódi, Kristóf, & Nawaro, Łukasz. (2021). 《欧洲城市 Airbnb 价格的决定因素：一种空间计量经济学方法》（补充材料）[数据集]。Zenodo. [https://doi.org/10.5281/zenodo.4446043](https://doi.org/10.5281/zenodo.4446043)。CC BY 4.0 许可证。
+[1] Gyódi, Kristóf, & Nawaro, Łukasz. (2021). 《欧洲城市 Airbnb 价格的决定因素：一种空间计量经济学方法》（补充材料）[数据集]。Zenodo. [`doi.org/10.5281/zenodo.4446043`](https://doi.org/10.5281/zenodo.4446043)。CC BY 4.0 许可证。

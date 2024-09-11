@@ -1,10 +1,10 @@
 # 从零开始的实验协调
 
-> 原文：[https://towardsdatascience.com/experiment-orchestration-from-scratch-4a9e460944d8?source=collection_archive---------8-----------------------#2023-07-31](https://towardsdatascience.com/experiment-orchestration-from-scratch-4a9e460944d8?source=collection_archive---------8-----------------------#2023-07-31)
+> 原文：[`towardsdatascience.com/experiment-orchestration-from-scratch-4a9e460944d8?source=collection_archive---------8-----------------------#2023-07-31`](https://towardsdatascience.com/experiment-orchestration-from-scratch-4a9e460944d8?source=collection_archive---------8-----------------------#2023-07-31)
 
 ## 开发一个自定义实验协调器来解决复杂的建模问题。
 
-[](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)[![Daniel Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a9e460944d8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4a9e460944d8--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)
+[](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)![Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a9e460944d8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a9e460944d8--------------------------------) [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4a9e460944d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexperiment-orchestration-from-scratch-4a9e460944d8&source=-----4a9e460944d8---------------------bookmark_footer-----------)![](../Images/2306ab1174fda8c768e328e89117e1b9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4a9e460944d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexperiment-orchestration-from-scratch-4a9e460944d8&source=-----4a9e460944d8---------------------bookmark_footer-----------)![](img/2306ab1174fda8c768e328e89117e1b9.png)
 
 由 Daniel Warfield 使用 p5.js 进行的协调。所有图像均由作者创建，除非另有说明。
 

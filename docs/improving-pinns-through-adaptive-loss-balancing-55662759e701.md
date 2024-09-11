@@ -1,18 +1,18 @@
 # 通过自适应损失平衡提升物理信息神经网络
 
-> 原文：[https://towardsdatascience.com/improving-pinns-through-adaptive-loss-balancing-55662759e701?source=collection_archive---------6-----------------------#2023-01-31](https://towardsdatascience.com/improving-pinns-through-adaptive-loss-balancing-55662759e701?source=collection_archive---------6-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/improving-pinns-through-adaptive-loss-balancing-55662759e701?source=collection_archive---------6-----------------------#2023-01-31`](https://towardsdatascience.com/improving-pinns-through-adaptive-loss-balancing-55662759e701?source=collection_archive---------6-----------------------#2023-01-31)
 
 ## 如何通过 ReLoBRaLo、学习率退火等方法提升 PINN 的性能
 
-[](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)[![Rafael Bischof](../Images/a1d468ea5b61c26a18541f0c0f42c5c6.png)](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)[](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------) [Rafael Bischof](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)
+[](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)![Rafael Bischof](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)[](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------) [Rafael Bischof](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)
 
 ·
 
-[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F913c6c1e6a94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&user=Rafael+Bischof&userId=913c6c1e6a94&source=post_page-913c6c1e6a94----55662759e701---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------) ·14 分钟阅读·2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F55662759e701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&user=Rafael+Bischof&userId=913c6c1e6a94&source=-----55662759e701---------------------clap_footer-----------)
+[阅读](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F913c6c1e6a94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&user=Rafael+Bischof&userId=913c6c1e6a94&source=post_page-913c6c1e6a94----55662759e701---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------) ·14 分钟阅读·2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F55662759e701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&user=Rafael+Bischof&userId=913c6c1e6a94&source=-----55662759e701---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F55662759e701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&source=-----55662759e701---------------------bookmark_footer-----------)![](../Images/78a596b4145a3b2807cb6d025b3d9cf1.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F55662759e701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&source=-----55662759e701---------------------bookmark_footer-----------)![](img/78a596b4145a3b2807cb6d025b3d9cf1.png)
 
 图片由 [David Clode](https://unsplash.com/@davidclode?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -48,7 +48,7 @@
 
 其中 W 和 H 分别定义了板的宽度和高度。第一行的边界条件显示了零阶（Dirichlet），并指出板的边缘不允许弯曲。第二行显示了二阶导数，这要求边缘的弯矩为零。这可以通过一个被下面的梁支撑（因此零阶导数为零）并被上面的另一根梁挤压（导致弯矩为零）的板边缘来说明。
 
-![](../Images/099f79c55b98b5e1bf1a6c4e071fe2a8.png)
+![](img/099f79c55b98b5e1bf1a6c4e071fe2a8.png)
 
 一个**Kirchhoff** 板及其在正弦载荷下的变形（以米为单位），W = H = 10 和 D = 20.83。图由作者提供。
 
@@ -60,17 +60,17 @@
 
 其中 k 是波数，u(x, y) 是待求的未知函数。对于这个问题，我们将使用域四个边缘上的零阶 Dirichlet 边界条件：
 
-赫尔姆霍兹偏微分方程的**Dirichlet边界条件**
+赫尔姆霍兹偏微分方程的**Dirichlet 边界条件**
 
-![](../Images/2886293b8233c59f6685f4398d25dc8f.png)
+![](img/2886293b8233c59f6685f4398d25dc8f.png)
 
 一个赫尔姆霍兹波传播的例子，边界条件为零 Dirichlet。图由作者提供。
 
 ## **PINN** 损失函数
 
-如果在定义Kirchhoff或Helmholtz函数的过程中我让你迷失了，不必担心。我花了半年多时间，以及无数耐心的土木工程师的解释，才得以向你讲解这些公式。
+如果在定义 Kirchhoff 或 Helmholtz 函数的过程中我让你迷失了，不必担心。我花了半年多时间，以及无数耐心的土木工程师的解释，才得以向你讲解这些公式。
 
-关键在于理解如何将这些方程转化为可用于训练我们PINN的损失函数，这里针对Helmholtz方程：
+关键在于理解如何将这些方程转化为可用于训练我们 PINN 的损失函数，这里针对 Helmholtz 方程：
 
 ```py
 import tensorflow as tf
@@ -117,37 +117,37 @@ def compute_loss(self, x, y, u, dudxx, dudyy, eval=False):
     return L_f, L_b
 ```
 
-你可以在实现ReLoBRaLo的笔记本中找到完整的代码，链接为[Helmholtz](https://colab.research.google.com/drive/1R6aPThhp1wrQVaydl8pj1G0s4gLiH8Wc?usp=sharing)和[Kirchhoff PDEs](https://colab.research.google.com/drive/1_PmLv8OWh9GZTzqPgFpCXYYBlxGqszOn?usp=sharing)。
+你可以在实现 ReLoBRaLo 的笔记本中找到完整的代码，链接为[Helmholtz](https://colab.research.google.com/drive/1R6aPThhp1wrQVaydl8pj1G0s4gLiH8Wc?usp=sharing)和[Kirchhoff PDEs](https://colab.research.google.com/drive/1_PmLv8OWh9GZTzqPgFpCXYYBlxGqszOn?usp=sharing)。
 
 # 多目标优化
 
-正如我们已经确定的，我们的Helmholtz PDE的最终损失函数将包含两个，而Kirchhoff PDE则包含三个目标：
+正如我们已经确定的，我们的 Helmholtz PDE 的最终损失函数将包含两个，而 Kirchhoff PDE 则包含三个目标：
 
-+   Helmholtz：控制方程的损失L_f和0阶边界条件的损失L_b0。
++   Helmholtz：控制方程的损失 L_f 和 0 阶边界条件的损失 L_b0。
 
-+   Kirchhoff：除了L_f和L_b0之外，Kirchhoff还包括一个用于二阶边界条件L_b2的项。
++   Kirchhoff：除了 L_f 和 L_b0 之外，Kirchhoff 还包括一个用于二阶边界条件 L_b2 的项。
 
-因此，这些损失属于多目标优化（MOO）范畴，就像大多数涉及PINNs的应用一样。
+因此，这些损失属于多目标优化（MOO）范畴，就像大多数涉及 PINNs 的应用一样。
 
 将多个目标聚合为单一损失的方式通常是通过线性标量化：
 
-其中lambda是用于控制每个项对总损失贡献的缩放因子。但为什么它们是必要的？
+其中 lambda 是用于控制每个项对总损失贡献的缩放因子。但为什么它们是必要的？
 
 # 不平衡梯度问题
 
-在收集必要背景信息后，我们可以最终关闭括号）并继续探索为何PDE中的测量单位会影响PINNs的收敛性。你看，我们的损失函数中的几个目标——L_f、L_b0和L_b2——每个都有不同的测量单位。L_b0对于Kirchhoff可能以米为单位测量，而L_b2以Nm为单位测量，板上的负载以MN每平方米为单位测量。这在每个项的大小上产生了显著的差异，导致梯度计算严重偏向具有最高幅度的项。Helmholtz方程及任何其他PDE也是如此。
+在收集必要背景信息后，我们可以最终关闭括号）并继续探索为何 PDE 中的测量单位会影响 PINNs 的收敛性。你看，我们的损失函数中的几个目标——L_f、L_b0 和 L_b2——每个都有不同的测量单位。L_b0 对于 Kirchhoff 可能以米为单位测量，而 L_b2 以 Nm 为单位测量，板上的负载以 MN 每平方米为单位测量。这在每个项的大小上产生了显著的差异，导致梯度计算严重偏向具有最高幅度的项。Helmholtz 方程及任何其他 PDE 也是如此。
 
-让我们来看看这在Helmholtz方程中的含义。
+让我们来看看这在 Helmholtz 方程中的含义。
 
-![](../Images/6367883a371059a849c42e9f27ef8483.png)
+![](img/6367883a371059a849c42e9f27ef8483.png)
 
-训练PINN模型时对Helmholtz方程损失的演变。L_f是对控制方程的平方损失，L_b是对边界条件的平方损失，L_u是预测值与解析解之间的平方损失。图示由作者提供。
+训练 PINN 模型时对 Helmholtz 方程损失的演变。L_f 是对控制方程的平方损失，L_b 是对边界条件的平方损失，L_u 是预测值与解析解之间的平方损失。图示由作者提供。
 
 注意到在训练开始时，控制方程损失 L_f 比边界条件的损失大几个数量级，因此，L_b 的值实际上会**增加**。这种量级上的差异可能导致 PINN 优先考虑 L_f 而忽视 L_b，最终收敛到一个满足控制方程但忽略关键边界条件的解。这种效果可以通过验证损失 L_u 的图表观察到，验证损失 L_u 与边界损失 L_b 遵循相同的模式，表明验证性能与边界上的表现密切相关。
 
 那么 Kirchhoff PDE 呢？
 
-![](../Images/22e01b59520f242a04d2e9942fcd2ca8.png)
+![](img/22e01b59520f242a04d2e9942fcd2ca8.png)
 
 在训练 PINN 以解决 Kirchhoff 方程时损失的演变。L_f 是控制方程的平方损失，L_b0 是 Dirichlet 边界条件的平方损失，L_b2 是矩的边界条件的平方损失，而 L_u 是预测与解析解之间的平方损失。图由作者提供。
 
@@ -177,23 +177,23 @@ ReLoBRaLo 通过将每个损失项 L_i(t) 的当前值除以第一个迭代的�
 
 那么它有效吗？让我们来看看使用 ReLoBRaLo 平衡各项对总损失的贡献时 Helmholtz PDE 的损失演变情况：
 
-![](../Images/6f120a085525018f63a88739c940f103.png)
+![](img/6f120a085525018f63a88739c940f103.png)
 
 在 Helmholtz 方程上训练 PINN 并使用 ReLoBRaLo 时损失的演变。L_f 是对主方程的平方损失，L_b 是对边界条件的平方损失，L_u 是预测值与解析解之间的平方损失。图由作者提供。
 
 虽然主要方程 L_f 的损失不再有太大进展（在前一个图中收敛于大约 -3.8），但边界条件 L_b 以及由此产生的验证损失 L_u 收到了更多的权重。最终的验证损失相对于解析解有了 **65% 的改善**。让我们看看 ReLoBRaLo 计算的缩放值：
 
-![](../Images/f8a93c6fd313f29335315568ae2f069f.png)
+![](img/f8a93c6fd313f29335315568ae2f069f.png)
 
 通过 ReLoBRaLo 获得的 Helmholtz PDE 主要方程项 L_f（蓝色）和边界条件 L_b（橙色）的缩放因子 lambda_i。图由作者提供。
 
 Kirchhoff 也是如此：
 
-![](../Images/984c55984aeba4b757521f9ff03d4ef5.png)
+![](img/984c55984aeba4b757521f9ff03d4ef5.png)
 
 在 Kirchhoff 方程上训练 PINN 并使用 ReLoBRaLo 时，损失的演变。L_f 是主要方程的平方损失，L_b0 是 Dirichlet 边界条件的平方损失，L_b2 是矩边界条件的平方损失，L_u 是预测值与解析解的平方损失。图由作者提供。
 
-![](../Images/927cdde2e032e638cd94dc9cf03dd3ef.png)
+![](img/927cdde2e032e638cd94dc9cf03dd3ef.png)
 
 通过 ReLoBRaLo 获得的 Kirchhoff PDE 主要方程项 L_f（蓝色）、Dirichlet 边界条件 L_b0（橙色）和矩边界条件 L_b2（绿色）的缩放因子。图由作者提供。
 
@@ -301,8 +301,8 @@ class ReLoBRaLoLoss(tf.keras.losses.Loss):
 
 [3] H. Lee 和 I. S. Kang，《求解微分方程的神经算法》，《计算物理学杂志》91 (1990)，第 1 期，110–131
 
-[4] Wang, S., Teng, Y., 和 Perdikaris, P. 理解和缓解物理信息神经网络中的梯度病态。arXiv 预印本 (2020年1月)，arXiv:2001.04536。
+[4] Wang, S., Teng, Y., 和 Perdikaris, P. 理解和缓解物理信息神经网络中的梯度病态。arXiv 预印本 (2020 年 1 月)，arXiv:2001.04536。
 
-[5] Chen, Z., Badrinarayanan, V., Lee, C.-Y., 和 Rabinovich, A. GradNorm: 用于深度多任务网络的自适应损失平衡的梯度归一化。arXiv 预印本 (2017年11月)，arXiv:1711.02257。
+[5] Chen, Z., Badrinarayanan, V., Lee, C.-Y., 和 Rabinovich, A. GradNorm: 用于深度多任务网络的自适应损失平衡的梯度归一化。arXiv 预印本 (2017 年 11 月)，arXiv:1711.02257。
 
-[6] Heydari, A. A., Thompson, C. A., 和 Mehmood, A. SoftAdapt: 用于多部分损失函数的神经网络的自适应损失加权技术。arXiv 预印本 (2019年12月)，arXiv:1912.12355。
+[6] Heydari, A. A., Thompson, C. A., 和 Mehmood, A. SoftAdapt: 用于多部分损失函数的神经网络的自适应损失加权技术。arXiv 预印本 (2019 年 12 月)，arXiv:1912.12355。

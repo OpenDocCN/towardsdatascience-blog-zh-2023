@@ -1,18 +1,18 @@
 # 用 Hamilton 在 13 分钟内构建一个可维护且模块化的 LLM 应用堆栈
 
-> 原文：[https://towardsdatascience.com/building-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd?source=collection_archive---------10-----------------------#2023-07-13](https://towardsdatascience.com/building-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd?source=collection_archive---------10-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/building-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd?source=collection_archive---------10-----------------------#2023-07-13`](https://towardsdatascience.com/building-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd?source=collection_archive---------10-----------------------#2023-07-13)
 
 ## LLM 应用是数据流，使用专门设计的工具来表达它们
 
-[](https://medium.com/@stefan.krawczyk?source=post_page-----baa68e55e8cd--------------------------------)[![Stefan Krawczyk](../Images/150405abaad9590e1dc2589168ed2fa3.png)](https://medium.com/@stefan.krawczyk?source=post_page-----baa68e55e8cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----baa68e55e8cd--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----baa68e55e8cd--------------------------------) [Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----baa68e55e8cd--------------------------------)
+[](https://medium.com/@stefan.krawczyk?source=post_page-----baa68e55e8cd--------------------------------)![Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----baa68e55e8cd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----baa68e55e8cd--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----baa68e55e8cd--------------------------------) [Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----baa68e55e8cd--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F193628e26f00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd&user=Stefan+Krawczyk&userId=193628e26f00&source=post_page-193628e26f00----baa68e55e8cd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----baa68e55e8cd--------------------------------) ·13 分钟阅读·2023年7月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbaa68e55e8cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd&user=Stefan+Krawczyk&userId=193628e26f00&source=-----baa68e55e8cd---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F193628e26f00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd&user=Stefan+Krawczyk&userId=193628e26f00&source=post_page-193628e26f00----baa68e55e8cd---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----baa68e55e8cd--------------------------------) ·13 分钟阅读·2023 年 7 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbaa68e55e8cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd&user=Stefan+Krawczyk&userId=193628e26f00&source=-----baa68e55e8cd---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbaa68e55e8cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd&source=-----baa68e55e8cd---------------------bookmark_footer-----------)![](../Images/84bcb5f1c47c2c34ce7c753f621da5a8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbaa68e55e8cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-maintainable-and-modular-llm-application-stack-with-hamilton-baa68e55e8cd&source=-----baa68e55e8cd---------------------bookmark_footer-----------)![](img/84bcb5f1c47c2c34ce7c753f621da5a8.png)
 
 LLM 堆栈。使用合适的工具，如 Hamilton，可以确保你的堆栈不会变得难以维护和管理。图片来源于 [pixabay](https://pixabay.com/photos/books-stack-book-store-1163695/)。
 
@@ -22,7 +22,7 @@ LLM 堆栈。使用合适的工具，如 Hamilton，可以确保你的堆栈不�
 
 我们将演示的示例将镜像你用于填充向量数据库的典型 LLM 应用程序工作流程。具体来说，我们将涵盖从网络中提取数据、创建文本嵌入（向量）并将其推送到向量存储中。
 
-![](../Images/3af6ce8a4bc5b6f967b1e28e6085bcc0.png)
+![](img/3af6ce8a4bc5b6f967b1e28e6085bcc0.png)
 
 堆栈概述。作者提供的图像。
 
@@ -52,7 +52,7 @@ LLM 堆栈。使用合适的工具，如 Hamilton，可以确保你的堆栈不�
 
 现在，让我们在生产环境中深入探讨上述内容，假设用户对你的应用程序的输出不满意，并且你想找到问题的根源。你的应用程序记录了提示和结果。你的代码允许你找出操作的顺序。然而，你不知道问题出在哪里，系统产生了不理想的输出……为了解决这个问题，我们认为跟踪数据工件及生成它们的代码是关键，这样你才能快速调试类似的情况。
 
-由于许多操作是非确定性的，这增加了你的LLM应用程序数据流的复杂性，这意味着你不能重新运行或逆向工程操作以重现中间结果。例如，即使你拥有相同的输入和配置，生成文本或图像响应的API调用可能也是不可重复的（你*可以*通过如[temperature](https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature)这样的选项*缓解部分问题*）。这也扩展到某些向量数据库操作，如“查找最近”——其结果取决于数据库中当前存储的对象。在生产环境中，快照数据库状态以使调用可重复几乎是不现实的。
+由于许多操作是非确定性的，这增加了你的 LLM 应用程序数据流的复杂性，这意味着你不能重新运行或逆向工程操作以重现中间结果。例如，即使你拥有相同的输入和配置，生成文本或图像响应的 API 调用可能也是不可重复的（你*可以*通过如[temperature](https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature)这样的选项*缓解部分问题*）。这也扩展到某些向量数据库操作，如“查找最近”——其结果取决于数据库中当前存储的对象。在生产环境中，快照数据库状态以使调用可重复几乎是不现实的。
 
 基于这些原因，采用灵活的工具以创建稳健的数据流很重要，这样可以让你：
 
@@ -66,45 +66,45 @@ LLM 堆栈。使用合适的工具，如 Hamilton，可以确保你的堆栈不�
 
 1.  插件集成到传统的数据处理和机器学习生态系统中。
 
-在这篇文章中，我们将概述Hamilton如何满足第1、2和4点。有关第3和5点的信息，请参阅我们的[文档](https://hamilton.dagworks.io/en/latest/)。
+在这篇文章中，我们将概述 Hamilton 如何满足第 1、2 和 4 点。有关第 3 和 5 点的信息，请参阅我们的[文档](https://hamilton.dagworks.io/en/latest/)。
 
-# 当前的LLM应用程序开发工具
+# 当前的 LLM 应用程序开发工具
 
-LLM领域仍处于起步阶段，使用模式和工具正在快速演变。虽然LLM框架可以让你入门，但当前的选项并未经过生产环境测试；据我们了解，目前没有成熟的科技公司在生产中使用当前流行的LLM框架。
+LLM 领域仍处于起步阶段，使用模式和工具正在快速演变。虽然 LLM 框架可以让你入门，但当前的选项并未经过生产环境测试；据我们了解，目前没有成熟的科技公司在生产中使用当前流行的 LLM 框架。
 
 别误解我们的意思，有些工具确实非常适合快速建立概念验证！然而，我们认为它们在两个特定领域存在不足：
 
-**1\. 如何建模LLM应用程序的数据流。** 我们强烈认为“动作”的数据流建模更适合用函数来表示，而不是通过面向对象的类和生命周期。函数更容易推理、测试和更改。面向对象的类可能变得相当晦涩，并带来更多的思维负担。
+**1\. 如何建模 LLM 应用程序的数据流。** 我们强烈认为“动作”的数据流建模更适合用函数来表示，而不是通过面向对象的类和生命周期。函数更容易推理、测试和更改。面向对象的类可能变得相当晦涩，并带来更多的思维负担。
 
-> 当出现错误时，面向对象的框架需要你深入到对象的源代码中以理解它。而使用Hamilton函数时，清晰的依赖关系谱能告诉你在哪里查找，并帮助你推理发生了什么（更多信息请见下文）！
+> 当出现错误时，面向对象的框架需要你深入到对象的源代码中以理解它。而使用 Hamilton 函数时，清晰的依赖关系谱能告诉你在哪里查找，并帮助你推理发生了什么（更多信息请见下文）！
 
 **2\. 定制/扩展。** 不幸的是，一旦你超出框架提供的“简单”功能，你需要强大的软件工程技能来修改当前框架。如果这不是一个选项，这意味着你可能会在特定的自定义业务逻辑上脱离框架，这可能会导致你维护更多的代码面积，而不是如果你一开始就不使用框架的话。
 
 关于这两点的更多信息，我们推荐你查看这些讨论线程（[hacker news](https://news.ycombinator.com/item?id=36645575#36647985), [reddit](https://old.reddit.com/r/LangChain/comments/13fcw36/langchain_is_pointless/)），其中有用户详细讨论。
 
-虽然Hamilton并不是当前LLM框架的完整替代品（例如，没有“代理”组件），但它*确实*拥有满足LLM应用程序需求的所有构建模块，并且两者可以协同工作。如果你想要一种干净、清晰且可定制的方式来编写生产代码、集成多个LLM技术栈组件，并对你的应用程序进行观察，那么让我们继续进入接下来的几个部分吧！
+虽然 Hamilton 并不是当前 LLM 框架的完整替代品（例如，没有“代理”组件），但它*确实*拥有满足 LLM 应用程序需求的所有构建模块，并且两者可以协同工作。如果你想要一种干净、清晰且可定制的方式来编写生产代码、集成多个 LLM 技术栈组件，并对你的应用程序进行观察，那么让我们继续进入接下来的几个部分吧！
 
-# 使用Hamilton构建
+# 使用 Hamilton 构建
 
-Hamilton是一个声明式微框架，用于在Python中描述[数据流](https://en.wikipedia.org/wiki/Dataflow)。它不是一个新框架（已有3.5年以上历史），并且在生产建模数据和机器学习数据流中使用多年。它的优势在于以一种直观易创建和维护的方式表达数据和计算流（类似于DBT对SQL的作用），这非常适合支持建模LLM应用程序的数据和计算需求。
+Hamilton 是一个声明式微框架，用于在 Python 中描述[数据流](https://en.wikipedia.org/wiki/Dataflow)。它不是一个新框架（已有 3.5 年以上历史），并且在生产建模数据和机器学习数据流中使用多年。它的优势在于以一种直观易创建和维护的方式表达数据和计算流（类似于 DBT 对 SQL 的作用），这非常适合支持建模 LLM 应用程序的数据和计算需求。
 
-![](../Images/ac83c0914a4533f8f7429b752d511120.png)
+![](img/ac83c0914a4533f8f7429b752d511120.png)
 
-Hamilton范式的示意图。与其使用过程性赋值，不如将其建模为一个函数。函数名称是你可以获得的“输出”，而函数输入参数声明了计算所需的依赖关系。图片由作者提供。
+Hamilton 范式的示意图。与其使用过程性赋值，不如将其建模为一个函数。函数名称是你可以获得的“输出”，而函数输入参数声明了计算所需的依赖关系。图片由作者提供。
 
-Hamilton的基础知识很简单，而且可以通过多种方式扩展；你不必了解Hamilton就能从这篇文章中获得价值，但如果你感兴趣，可以查看：
+Hamilton 的基础知识很简单，而且可以通过多种方式扩展；你不必了解 Hamilton 就能从这篇文章中获得价值，但如果你感兴趣，可以查看：
 
 +   [tryhamilton.dev](https://www.tryhamilton.dev/) – 在浏览器中的互动教程！
 
-+   [在5分钟内使用Hamilton进行Pandas数据转换](/how-to-use-hamilton-with-pandas-in-5-minutes-89f63e5af8f5)
++   在 5 分钟内使用 Hamilton 进行 Pandas 数据转换
 
-+   [10分钟内了解Lineage + Hamilton](https://blog.dagworks.io/p/lineage-hamilton-in-10-minutes-c2b8a944e2e6)
++   [10 分钟内了解 Lineage + Hamilton](https://blog.dagworks.io/p/lineage-hamilton-in-10-minutes-c2b8a944e2e6)
 
-+   [Hamilton + Airflow用于生产](https://blog.dagworks.io/publish/post/130538397)
++   [Hamilton + Airflow 用于生产](https://blog.dagworks.io/publish/post/130538397)
 
 # 进入我们的示例
 
-为了帮助建立一些心理背景，想象一下。你是一个小型数据团队，负责创建一个LLM应用程序，与组织的文档进行“聊天”。你认为评估候选架构在功能、性能配置、许可证、基础设施要求和成本方面是很重要的。最终，你知道你组织的主要关注点是提供最相关的结果和良好的用户体验。评估这些的最佳方法是构建一个原型，测试不同的技术栈，并比较它们的特性和输出。然后，当你过渡到生产环境时，你会希望确保系统能够轻松维护和检查，以始终提供优质的用户体验。
+为了帮助建立一些心理背景，想象一下。你是一个小型数据团队，负责创建一个 LLM 应用程序，与组织的文档进行“聊天”。你认为评估候选架构在功能、性能配置、许可证、基础设施要求和成本方面是很重要的。最终，你知道你组织的主要关注点是提供最相关的结果和良好的用户体验。评估这些的最佳方法是构建一个原型，测试不同的技术栈，并比较它们的特性和输出。然后，当你过渡到生产环境时，你会希望确保系统能够轻松维护和检查，以始终提供优质的用户体验。
 
 有鉴于此，在这个示例中，我们将实现 LLM 应用程序的一部分，特别是数据摄取步骤，用于索引知识库，其中我们将文本转换为嵌入并存储在向量数据库中。我们使用几种不同的服务/技术以模块化的方式实现这一点。广泛的步骤包括：
 
@@ -130,7 +130,7 @@ Hamilton的基础知识很简单，而且可以通过多种方式扩展；你不
 
 让我们从一个可视化开始，以便你能对我们谈论的内容有一个概览：
 
-![](../Images/149c01e23dbcb8ef11df1a74517ca8f3.png)
+![](img/149c01e23dbcb8ef11df1a74517ca8f3.png)
 
 Hamilton DAG 可视化 Pinecone + 句子变换器堆栈。图片由作者提供。
 
@@ -196,13 +196,13 @@ Hamilton 驱动程序负责协调执行，并且是你通过它操控数据流�
 
 1.  Hamilton 实现的模块化可以轻松跨团队边界镜像。函数名称及其输出类型成为合同，确保可以进行有针对性的更改并对更改充满信心，还可以通过 Hamilton 的 [可视化和血统功能](https://blog.dagworks.io/p/lineage-hamilton-in-10-minutes-c2b8a944e2e6) 了解下游依赖关系（就像我们看到的初始可视化一样）。例如，如何与向量数据库交互并进行消费就非常清晰。
 
-1.  代码更改更易于审查，因为流程由声明式函数定义。更改是自包含的；由于没有面向对象的层次结构需要学习，只需修改一个函数。任何“自定义”的内容都被Hamilton默认支持。
+1.  代码更改更易于审查，因为流程由声明式函数定义。更改是自包含的；由于没有面向对象的层次结构需要学习，只需修改一个函数。任何“自定义”的内容都被 Hamilton 默认支持。
 
 # 调试
 
-当Hamilton出现错误时，很清楚它映射到的代码是什么，并且由于函数的定义，你知道它在数据流中的位置。
+当 Hamilton 出现错误时，很清楚它映射到的代码是什么，并且由于函数的定义，你知道它在数据流中的位置。
 
-以使用cohere的embeddings函数为简单示例。如果发生超时或解析响应时出错，将清楚地映射到这段代码，并且通过函数定义你会知道它在流程中的位置。
+以使用 cohere 的 embeddings 函数为简单示例。如果发生超时或解析响应时出错，将清楚地映射到这段代码，并且通过函数定义你会知道它在流程中的位置。
 
 ```py
 @config.when(embedding_service="cohere")
@@ -222,29 +222,29 @@ def embeddings__cohere(
     return [np.asarray(embedding) for embedding in response.embeddings]
 ```
 
-![](../Images/ed4bd30c315330f5fcec9bd4984202c4.png)
+![](img/ed4bd30c315330f5fcec9bd4984202c4.png)
 
 可视化显示`embeddings`在数据流中的位置。图像由作者提供。
 
-# 创建模块化LLM堆栈的技巧
+# 创建模块化 LLM 堆栈的技巧
 
 在结束之前，这里有一些想法来指导你构建应用程序。某些决策可能没有明显的最佳选择，但正确的模块化方法将使你能够随着需求的变化高效迭代。
 
-1.  在编写任何代码之前，绘制你的工作流的DAG。这为定义通用步骤和接口奠定了基础，这些步骤和接口不是特定于服务的。
+1.  在编写任何代码之前，绘制你的工作流的 DAG。这为定义通用步骤和接口奠定了基础，这些步骤和接口不是特定于服务的。
 
 1.  确定可以交换的步骤。通过有目的地设置配置点，你将减少[投机泛化](https://refactoring.guru/smells/speculative-generality)的风险。具体来说，这将导致具有较少参数、默认值且按主题模块分组的函数。
 
-1.  将数据流的部分切分成依赖较少的模块（如有相关）。这将导致更短的Python文件，减少包依赖，提高可读性和可维护性。Hamilton对此不在意，可以从多个模块构建其DAG。
+1.  将数据流的部分切分成依赖较少的模块（如有相关）。这将导致更短的 Python 文件，减少包依赖，提高可读性和可维护性。Hamilton 对此不在意，可以从多个模块构建其 DAG。
 
 # 结论与未来方向
 
-感谢你阅读到这里。我们相信Hamilton在帮助每个人表达他们的数据流方面有一定作用，而LLM应用程序只是其中一个用例！总结我们在这篇文章中的信息，可以归纳为：
+感谢你阅读到这里。我们相信 Hamilton 在帮助每个人表达他们的数据流方面有一定作用，而 LLM 应用程序只是其中一个用例！总结我们在这篇文章中的信息，可以归纳为：
 
-1.  将LLM应用程序视为数据流是有用的，因此非常适合使用Hamilton。
+1.  将 LLM 应用程序视为数据流是有用的，因此非常适合使用 Hamilton。
 
-1.  面向对象的LLM框架可能不透明且难以扩展和维护以满足生产需求。相反，应该使用Hamilton简单的声明式风格编写自己的集成。这样可以提高代码的透明度和可维护性，具有清晰的可测试函数、明确的运行时错误映射到函数的方式，以及内置的数据流可视化。
+1.  面向对象的 LLM 框架可能不透明且难以扩展和维护以满足生产需求。相反，应该使用 Hamilton 简单的声明式风格编写自己的集成。这样可以提高代码的透明度和可维护性，具有清晰的可测试函数、明确的运行时错误映射到函数的方式，以及内置的数据流可视化。
 
-1.  使用Hamilton所规定的模块化将使协作更高效，并为你提供必要的灵活性，以便按照该领域的进展速度修改和更改LLM工作流。
+1.  使用 Hamilton 所规定的模块化将使协作更高效，并为你提供必要的灵活性，以便按照该领域的进展速度修改和更改 LLM 工作流。
 
 现在邀请你在[这里](https://github.com/DAGWorks-Inc/hamilton/tree/main/examples/LLM_Workflows/modular_llm_stack)玩转、尝试和修改完整的示例。这里有一个`README`文件会解释如何运行命令和开始使用。否则，我们正在思考以下内容来提升 Hamilton + LLM 应用体验：
 
@@ -270,8 +270,8 @@ def embeddings__cohere(
 
 +   [tryhamilton.dev](https://www.tryhamilton.dev/) – 一个在浏览器中进行交互式教程的平台！
 
-+   [5分钟内在 Hamilton 中进行 Pandas 数据转换](https://blog.dagworks.io/p/how-to-use-hamilton-with-pandas-in-5-minutes-89f63e5af8f5)
++   [5 分钟内在 Hamilton 中进行 Pandas 数据转换](https://blog.dagworks.io/p/how-to-use-hamilton-with-pandas-in-5-minutes-89f63e5af8f5)
 
-+   [10分钟内了解 Lineage + Hamilton](https://blog.dagworks.io/p/lineage-hamilton-in-10-minutes-c2b8a944e2e6)
++   [10 分钟内了解 Lineage + Hamilton](https://blog.dagworks.io/p/lineage-hamilton-in-10-minutes-c2b8a944e2e6)
 
 +   [Hamilton + Airflow 生产环境](https://blog.dagworks.io/publish/post/130538397)

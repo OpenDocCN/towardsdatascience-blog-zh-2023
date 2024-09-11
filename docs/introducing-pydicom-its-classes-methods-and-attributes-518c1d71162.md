@@ -1,14 +1,14 @@
 # 介绍 PyDicom 及其类、方法和属性
 
-> 原文：[https://towardsdatascience.com/introducing-pydicom-its-classes-methods-and-attributes-518c1d71162?source=collection_archive---------4-----------------------#2023-01-04](https://towardsdatascience.com/introducing-pydicom-its-classes-methods-and-attributes-518c1d71162?source=collection_archive---------4-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/introducing-pydicom-its-classes-methods-and-attributes-518c1d71162?source=collection_archive---------4-----------------------#2023-01-04`](https://towardsdatascience.com/introducing-pydicom-its-classes-methods-and-attributes-518c1d71162?source=collection_archive---------4-----------------------#2023-01-04)
 
 ## PyDicom……超越像素数据
 
-[](https://medium.com/@omar.ok1998?source=post_page-----518c1d71162--------------------------------)[![Omar Alkousa](../Images/7598618abe8e8fa89f1d8a4bfc21f014.png)](https://medium.com/@omar.ok1998?source=post_page-----518c1d71162--------------------------------)[](https://towardsdatascience.com/?source=post_page-----518c1d71162--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----518c1d71162--------------------------------) [Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----518c1d71162--------------------------------)
+[](https://medium.com/@omar.ok1998?source=post_page-----518c1d71162--------------------------------)![Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----518c1d71162--------------------------------)[](https://towardsdatascience.com/?source=post_page-----518c1d71162--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----518c1d71162--------------------------------) [Omar Alkousa](https://medium.com/@omar.ok1998?source=post_page-----518c1d71162--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8302b9534b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pydicom-its-classes-methods-and-attributes-518c1d71162&user=Omar+Alkousa&userId=f8302b9534b5&source=post_page-f8302b9534b5----518c1d71162---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----518c1d71162--------------------------------) ·12 分钟阅读·2023年1月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F518c1d71162&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pydicom-its-classes-methods-and-attributes-518c1d71162&user=Omar+Alkousa&userId=f8302b9534b5&source=-----518c1d71162---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8302b9534b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pydicom-its-classes-methods-and-attributes-518c1d71162&user=Omar+Alkousa&userId=f8302b9534b5&source=post_page-f8302b9534b5----518c1d71162---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----518c1d71162--------------------------------) ·12 分钟阅读·2023 年 1 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F518c1d71162&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-pydicom-its-classes-methods-and-attributes-518c1d71162&user=Omar+Alkousa&userId=f8302b9534b5&source=-----518c1d71162---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 如果你是 Python 爱好者，并且正在处理医疗数据，特别是 DICOM 数据，你可能已经听说过很棒的 Python 包 PyDicom。在这篇文章中，你将学习这个包的基础知识。我们将讨论 PyDicom 的类（DataSet、DataElement、Sequence）以及一些你可以应用于 PyDicom 类的有用方法和属性。
 
-![](../Images/39096cddc78e4a0000426966966e024c.png)
+![](img/39096cddc78e4a0000426966966e024c.png)
 
 照片由 [Owen Beard](https://unsplash.com/@owenbeard?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -99,13 +99,13 @@ dcm_data = pydicom.dcmread('/content/drive/MyDrive/Datasets/Kaggle/DICOM/dicom_l
 dcm_data
 ```
 
-![](../Images/5fca1aaf7829e8715b8e483b1fc05ac2.png)
+![](img/5fca1aaf7829e8715b8e483b1fc05ac2.png)
 
 完整输出已作为 GitHub gist 添加，详细内容请参阅这个[链接](https://gist.github.com/OmarAlkousa/53b35934cd3fac3d381f0448b8e27073)。 [作者提供的图片]
 
 很明显，除了像素数据之外，还有很多 DICOM 元数据。但我们可以看到输出的模式，即 DICOM 属性是逐行写入的。每一行都有一个唯一的标签和其他核心的 DICOM 属性元素。让我们更详细地讨论它们。
 
-# PyDicom中的核心元素
+# PyDicom 中的核心元素
 
 使用 **.dcmread()** 会封装一个 DataSet，即一个字典数据结构 {}。这个 DataSet 包含如下表示的键和值：
 
@@ -129,7 +129,7 @@ dcm_data
 
     **Value:** 元素的实际值。它可以是整数、字符串、列表，甚至是**Sequence**，即一个属性的数据集。标签 (0028, 0030) 的值是一个包含两个浮点数的列表，分别表示沿行和列的物理距离（单位为毫米）。这个列表的一个示例是 [0.564453125, 0.564453125]。
 
-![](../Images/41f59fac44ad6f2697b5e2d3f1cc08c0.png)
+![](img/41f59fac44ad6f2697b5e2d3f1cc08c0.png)
 
 dcmread() 函数的输出。[作者提供的图片]
 
@@ -139,7 +139,7 @@ dcmread() 函数的输出。[作者提供的图片]
 
 DICOM DataSet 是 DICOM DataElements 的可变映射。DICOM DataSet 中的每个 DataElement，即字典中的值，都有一个唯一的标签，即字典的键，用于标识它。例如，“PatientName” 属性对应于 DICOM 标准中的标签 (0x0010, 0x0010)，它标识了病人的名字数据元素。
 
-![](../Images/1c21fe16c903cf2c27bcb7290e756f9d.png)
+![](img/1c21fe16c903cf2c27bcb7290e756f9d.png)
 
 PyDicom DataSet 类的内容。[作者提供的图片]
 
@@ -190,7 +190,7 @@ dcm_data[0x0010, 0x0010].value
 dcm_data.keys()
 ```
 
-![](../Images/197965ae4908172a1f1753d8c336fe58.png)
+![](img/197965ae4908172a1f1753d8c336fe58.png)
 
 .keys() 方法的输出。 [图片由作者提供]
 
@@ -203,7 +203,7 @@ dcm_data.keys()
 dcm_data.values()
 ```
 
-![](../Images/61db2db06e426699fb231266ab458956.png)
+![](img/61db2db06e426699fb231266ab458956.png)
 
 .values() 方法的部分输出。 [图片由作者提供]
 
@@ -216,7 +216,7 @@ dcm_data.values()
 [*dcm_data.elements()]
 ```
 
-![](../Images/c2462f1ef7a0b36c722a3b8ea72bcc43.png)
+![](img/c2462f1ef7a0b36c722a3b8ea72bcc43.png)
 
 .elements() 方法的完整输出已作为 GitHub gist 添加，查看 [链接](https://gist.github.com/OmarAlkousa/03ce85834bdfbb0e65bda9a7989f5e3d)。 [图片由作者提供]
 
@@ -332,7 +332,7 @@ plt.title('Axial Slice of a Chest-CT')
 plt.show()
 ```
 
-![](../Images/1886795a09e9629668c4dd2a8619d51f.png)
+![](img/1886795a09e9629668c4dd2a8619d51f.png)
 
 [作者提供的图片]
 
@@ -340,7 +340,7 @@ plt.show()
 
 正如我们上面提到的，DataSet 是一个 PyDicom 类，包含一组 DICOM 标签作为键，值作为 DICOM DataElements。DataElements 是在读取 DICOM 文件时可能会发现的属性值或元数据。能够访问特定信息对于你的工作或研究非常有用，而无需在如此庞大的文本数据中搜索。你可以使用属性在特定 DataElement 中访问特定信息。
 
-![](../Images/1dd34ec7ed665a00eec7beec6805585b.png)
+![](img/1dd34ec7ed665a00eec7beec6805585b.png)
 
 PyDicom DataElement 类的内容及访问特定信息的方法。[作者提供的图片]
 
@@ -446,11 +446,11 @@ dcm_data.DeidentificationMethodCodeSequence[0].CodeMeaning
 
 个人观点，我发现 PyDicom 是处理 DICOM 文件的最佳包。因为它专为 DICOM 设计，这一点很明显。它为程序员提供了更灵活的选项，特别是当用户想处理 DICOM 元数据而不仅仅是像素数据时。然而，另一方面，如果我只需要像素数据，我会更倾向于使用 ImageIO，因为它只提供处理像素数据所需的基本元数据。要了解更多关于如何使用 ImageIO 处理 DICOM 文件的信息，请查看这篇文章。
 
-[](/dealing-with-dicom-using-imageio-python-package-117f1212ab82?source=post_page-----518c1d71162--------------------------------) [## 使用 ImageIO Python 包处理 DICOM
+[](/dealing-with-dicom-using-imageio-python-package-117f1212ab82?source=post_page-----518c1d71162--------------------------------) ## 使用 ImageIO Python 包处理 DICOM
 
 ### 医学图像 == DICOM
 
-towardsdatascience.com](/dealing-with-dicom-using-imageio-python-package-117f1212ab82?source=post_page-----518c1d71162--------------------------------)
+towardsdatascience.com
 
 # 结论：
 
@@ -482,8 +482,8 @@ towardsdatascience.com](/dealing-with-dicom-using-imageio-python-package-117f121
 
 # 参考文献
 
-[1] PyDicom 文档， [**用户指南**](https://pydicom.github.io/pydicom/stable/old/pydicom_user_guide.html)， [访问日期：2022年12月25日]
+[1] PyDicom 文档， [**用户指南**](https://pydicom.github.io/pydicom/stable/old/pydicom_user_guide.html)， [访问日期：2022 年 12 月 25 日]
 
-[2] PyDicom 文档， [**元素 VR 和 Python 类型**](https://pydicom.github.io/pydicom/stable/guides/element_value_types.html)， [访问日期：2022年12月25日]
+[2] PyDicom 文档， [**元素 VR 和 Python 类型**](https://pydicom.github.io/pydicom/stable/guides/element_value_types.html)， [访问日期：2022 年 12 月 25 日]
 
-[3] PyDicom 文档，[**API 参考**](https://pydicom.github.io/pydicom/stable/reference/index.html)， [访问日期：2022年12月25日]
+[3] PyDicom 文档，[**API 参考**](https://pydicom.github.io/pydicom/stable/reference/index.html)， [访问日期：2022 年 12 月 25 日]

@@ -1,18 +1,18 @@
 # 介绍 PeekingDuck 计算机视觉
 
-> 原文：[https://towardsdatascience.com/introducing-peekingduck-for-computer-vision-8b0105591559?source=collection_archive---------17-----------------------#2023-01-03](https://towardsdatascience.com/introducing-peekingduck-for-computer-vision-8b0105591559?source=collection_archive---------17-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/introducing-peekingduck-for-computer-vision-8b0105591559?source=collection_archive---------17-----------------------#2023-01-03`](https://towardsdatascience.com/introducing-peekingduck-for-computer-vision-8b0105591559?source=collection_archive---------17-----------------------#2023-01-03)
 
 ## 开源的最先进计算机视觉模型，代码行数极少
 
-[](https://medium.com/@natsunoyuki?source=post_page-----8b0105591559--------------------------------)[![Y. Natsume](../Images/a39993351a920c3a9f5bd27b6b3306aa.png)](https://medium.com/@natsunoyuki?source=post_page-----8b0105591559--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8b0105591559--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8b0105591559--------------------------------) [Y. Natsume](https://medium.com/@natsunoyuki?source=post_page-----8b0105591559--------------------------------)
+[](https://medium.com/@natsunoyuki?source=post_page-----8b0105591559--------------------------------)![Y. Natsume](https://medium.com/@natsunoyuki?source=post_page-----8b0105591559--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8b0105591559--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8b0105591559--------------------------------) [Y. Natsume](https://medium.com/@natsunoyuki?source=post_page-----8b0105591559--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdab037034ffe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-peekingduck-for-computer-vision-8b0105591559&user=Y.+Natsume&userId=dab037034ffe&source=post_page-dab037034ffe----8b0105591559---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8b0105591559--------------------------------) ·4 min read·2023年1月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8b0105591559&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-peekingduck-for-computer-vision-8b0105591559&user=Y.+Natsume&userId=dab037034ffe&source=-----8b0105591559---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdab037034ffe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-peekingduck-for-computer-vision-8b0105591559&user=Y.+Natsume&userId=dab037034ffe&source=post_page-dab037034ffe----8b0105591559---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8b0105591559--------------------------------) ·4 min read·2023 年 1 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8b0105591559&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-peekingduck-for-computer-vision-8b0105591559&user=Y.+Natsume&userId=dab037034ffe&source=-----8b0105591559---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8b0105591559&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-peekingduck-for-computer-vision-8b0105591559&source=-----8b0105591559---------------------bookmark_footer-----------)![](../Images/a5aec3707685a05c0409e2d70cd8f6a9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8b0105591559&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-peekingduck-for-computer-vision-8b0105591559&source=-----8b0105591559---------------------bookmark_footer-----------)![](img/a5aec3707685a05c0409e2d70cd8f6a9.png)
 
 图片由 [Vlad Tchompalov](https://unsplash.com/@tchompalov?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/wt5Y8VY_0bA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)。
 
@@ -20,7 +20,7 @@
 
 计算机视觉项目可能非常令人畏惧，涉及各种工具和软件包，如 [OpenCV](https://opencv.org)、[TensorFlow](https://www.tensorflow.org) 和 [PyTorch](https://pytorch.org/vision/stable/index.html) 等。除了需要熟悉所涉及的工具和 API，还需要正确组合各种软件包，以便整个计算机视觉管道能够正常工作。
 
-例如，OpenCV 处理`[H, W, C]`格式的BGR通道图像，而TensorFlow 处理相同格式但使用RGB通道的图像，PyTorch 处理`[C, H, W]`格式的RGB通道图像。由于这种不一致性，图像格式必须在不同库之间传递时不断修改。像这样的许多问题（以及其他问题！）会导致大量冗余代码，我们希望避免这种情况。
+例如，OpenCV 处理`[H, W, C]`格式的 BGR 通道图像，而 TensorFlow 处理相同格式但使用 RGB 通道的图像，PyTorch 处理`[C, H, W]`格式的 RGB 通道图像。由于这种不一致性，图像格式必须在不同库之间传递时不断修改。像这样的许多问题（以及其他问题！）会导致大量冗余代码，我们希望避免这种情况。
 
 如果我们可以通过一个统一的管道来简化计算机视觉管道，那将会怎样呢？
 
@@ -155,7 +155,7 @@ peekingduck run
 
 管道的输出将保存在 `output/` 下，如 `pipeline_config.yml` 中所指定，可以以视频或 `.gif` 图像的形式进行可视化。检测到的边界框已覆盖到每个跟踪人员上，并标注了每个相应的跟踪 ID。累计的最大跟踪 ID 数量也显示在每帧的左下角。
 
-![](../Images/fe5f0fe49c6bcc446bfb2fe238236788.png)
+![](img/fe5f0fe49c6bcc446bfb2fe238236788.png)
 
 PeekingDuck 人物跟踪输出。图形由作者创建。原始图像是来自 [MOT15 数据集的 Venice-2 图像](https://motchallenge.net/data/MOT15/)。
 
@@ -167,8 +167,8 @@ PeekingDuck 人物跟踪输出。图形由作者创建。原始图像是来自 [
 
 # 参考文献
 
-1.  [https://peekingduck.readthedocs.io/en/stable/master.html](https://peekingduck.readthedocs.io/en/stable/master.html)
+1.  [`peekingduck.readthedocs.io/en/stable/master.html`](https://peekingduck.readthedocs.io/en/stable/master.html)
 
-1.  [https://motchallenge.net/data/MOT15/](https://motchallenge.net/data/MOT15/)
+1.  [`motchallenge.net/data/MOT15/`](https://motchallenge.net/data/MOT15/)
 
-1.  [https://github.com/Zhongdao/Towards-Realtime-MOT](https://github.com/Zhongdao/Towards-Realtime-MOT)
+1.  [`github.com/Zhongdao/Towards-Realtime-MOT`](https://github.com/Zhongdao/Towards-Realtime-MOT)

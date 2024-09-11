@@ -1,22 +1,22 @@
 # 如何在数据科学训练营中表现出色：完整指南
 
-> 原文：[https://towardsdatascience.com/how-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18?source=collection_archive---------1-----------------------#2023-09-02](https://towardsdatascience.com/how-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18?source=collection_archive---------1-----------------------#2023-09-02)
+> 原文：[`towardsdatascience.com/how-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18?source=collection_archive---------1-----------------------#2023-09-02`](https://towardsdatascience.com/how-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18?source=collection_archive---------1-----------------------#2023-09-02)
 
 ## 关于如何准备训练营、成功完成课程以及之后的行动的完整指南
 
-[](https://medium.com/@oberemokalexandra1?source=post_page-----aad1eb10da18--------------------------------)[![亚历山德拉·奥贝雷莫克](../Images/8a56d34fe1d2263f3945fa91ccf4eac6.png)](https://medium.com/@oberemokalexandra1?source=post_page-----aad1eb10da18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aad1eb10da18--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aad1eb10da18--------------------------------) [亚历山德拉·奥贝雷莫克](https://medium.com/@oberemokalexandra1?source=post_page-----aad1eb10da18--------------------------------)
+[](https://medium.com/@oberemokalexandra1?source=post_page-----aad1eb10da18--------------------------------)![亚历山德拉·奥贝雷莫克](https://medium.com/@oberemokalexandra1?source=post_page-----aad1eb10da18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aad1eb10da18--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----aad1eb10da18--------------------------------) [亚历山德拉·奥贝雷莫克](https://medium.com/@oberemokalexandra1?source=post_page-----aad1eb10da18--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F346def7ad86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18&user=Alexandra+Oberemok&userId=346def7ad86&source=post_page-346def7ad86----aad1eb10da18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aad1eb10da18--------------------------------) ·13分钟阅读·2023年9月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faad1eb10da18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18&user=Alexandra+Oberemok&userId=346def7ad86&source=-----aad1eb10da18---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F346def7ad86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18&user=Alexandra+Oberemok&userId=346def7ad86&source=post_page-346def7ad86----aad1eb10da18---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aad1eb10da18--------------------------------) ·13 分钟阅读·2023 年 9 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faad1eb10da18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18&user=Alexandra+Oberemok&userId=346def7ad86&source=-----aad1eb10da18---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faad1eb10da18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18&source=-----aad1eb10da18---------------------bookmark_footer-----------)![](../Images/7d8a0b7faa48920829570c3347e059cb.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faad1eb10da18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-ace-the-data-science-bootcamp-a-complete-guide-aad1eb10da18&source=-----aad1eb10da18---------------------bookmark_footer-----------)![](img/7d8a0b7faa48920829570c3347e059cb.png)
 
-一张神经网络如何看待数据科学训练营中的女孩的图像（由作者使用Kandinsky 2.2生成）
+一张神经网络如何看待数据科学训练营中的女孩的图像（由作者使用 Kandinsky 2.2 生成）
 
-*我在2021年5月从线下训练营毕业。现在我在IT领域工作了将近2年。此外，我仍然被邀请作为客座毕业生参与训练营的各种活动。我将指导你如何在每个阶段表现出色——从选择一个优秀的项目到毕业后的沟通。*
+*我在 2021 年 5 月从线下训练营毕业。现在我在 IT 领域工作了将近 2 年。此外，我仍然被邀请作为客座毕业生参与训练营的各种活动。我将指导你如何在每个阶段表现出色——从选择一个优秀的项目到毕业后的沟通。*
 
 *这些信息适用于有现场讲座/网络研讨会的全日制训练营项目，不适用于大规模开放在线课程（MOOCS）。*
 
@@ -46,11 +46,11 @@
 
 当我加入训练营时，我也参加了一次考试。介绍部分是关于我的动机和我的背景，第二部分是关于 Python 基础知识，最后我需要解决 2 道练习题（这是我第一次进行现场编码体验 🤣）。第一个编码任务很简单（“在字符串中找到最长的单词”或类似的任务），而第二个则很难。
 
-这是故意为之的。考官们测试了我们应对困难情况的能力，我们的思维能力，以及分解问题的能力。我花了45分钟完成这个任务。
+这是故意为之的。考官们测试了我们应对困难情况的能力，我们的思维能力，以及分解问题的能力。我花了 45 分钟完成这个任务。
 
 **养成学习和获取信息的习惯**
 
-在训练营中，你每天都会接收到大量信息。开始阅读新的文章，每天写一些简单的代码片段。每天从15到30分钟开始。这样你会更容易跳入全职学习。你将习惯于学习和自我提升。
+在训练营中，你每天都会接收到大量信息。开始阅读新的文章，每天写一些简单的代码片段。每天从 15 到 30 分钟开始。这样你会更容易跳入全职学习。你将习惯于学习和自我提升。
 
 这也将帮助你更好地为考试做准备。比起一个月内吸收大量信息，这要好得多。
 
@@ -62,13 +62,13 @@
 
 我坚信，获得一些基础知识是个好主意，因为训练营会让你的知识更好、更深入。你将有一些已经掌握的知识，而训练营会进一步深化和拓宽它。
 
-你不需要掌握一切——一些基础事实和理解就足够让你以x5的强度开始训练营。
+你不需要掌握一切——一些基础事实和理解就足够让你以 x5 的强度开始训练营。
 
 根据我的观察，那些带着一些知识来参加训练营的学生进步比那些考试后刚来的人要多。而且，他们通过技术面试也更容易。
 
 另一个令我惊讶的效果（😅）：有些事情我第一次不理解，第二次却理解了。更重要的是，它帮助我解开了那些完全困惑并困在我脑中的问题。
 
-突然间，我比预期的要更准备好。我从2020年初封锁期间开始对数据科学感兴趣，并在Coursera上参加了一个课程。之后，我阅读了很多关于数据的书籍，观看了许多YouTube视频。结果，我学到了关于经典机器学习的一些知识。
+突然间，我比预期的要更准备好。我从 2020 年初封锁期间开始对数据科学感兴趣，并在 Coursera 上参加了一个课程。之后，我阅读了很多关于数据的书籍，观看了许多 YouTube 视频。结果，我学到了关于经典机器学习的一些知识。
 
 尽管如此，我还是感到困惑，将正则化和回归搞混在一起。我以为自己太笨，无法理解神经网络是如何工作的。我决定参加训练营，“为了在可衡量的时间内做好面试准备”。
 
@@ -78,11 +78,11 @@
 
 1.  Bash（基本命令）。提高工作效率
 
-1.  Git（你必须练习它，从理论上讲，它可能会让人困惑）。我第一次在训练营中使用git，并被所有的push/pull/merge等操作惊呆了。
+1.  Git（你必须练习它，从理论上讲，它可能会让人困惑）。我第一次在训练营中使用 git，并被所有的 push/pull/merge 等操作惊呆了。
 
-1.  超越基础数据结构的Python练习。我建议你深入了解OS模块、文件操作、JSON、日期时间模块和itertools。面向对象编程基础也是有用的。
+1.  超越基础数据结构的 Python 练习。我建议你深入了解 OS 模块、文件操作、JSON、日期时间模块和 itertools。面向对象编程基础也是有用的。
 
-1.  数据科学的流行Python库：pandas、NumPy、sklearn。它们的基础知识以及如何使用它们。
+1.  数据科学的流行 Python 库：pandas、NumPy、sklearn。它们的基础知识以及如何使用它们。
 
 1.  适合初学者的机器学习和神经网络材料。
 
@@ -90,11 +90,11 @@
 
 **规划你的财务和日常生活**
 
-这是枯燥的一部分，但非常重要。当你在bootcamp学习时，你的所有思绪都会集中在学习上。我曾经做过一个关于代码的梦。你不会有太多时间去思考日常生活。在你开始全职项目之前，这里有一系列问题需要你回答
+这是枯燥的一部分，但非常重要。当你在 bootcamp 学习时，你的所有思绪都会集中在学习上。我曾经做过一个关于代码的梦。你不会有太多时间去思考日常生活。在你开始全职项目之前，这里有一系列问题需要你回答
 
 1.  在项目期间以及找工作时我将住在哪里？
 
-1.  我将如何支付Bootcamp课程费用？哪种选项最适合我？
+1.  我将如何支付 Bootcamp 课程费用？哪种选项最适合我？
 
 1.  我将如何支付住宿费用？
 
@@ -108,11 +108,11 @@
 
 就我而言，我意识到良好的饮食和睡眠时间表可以帮助你获得知识。这并不意味着你必须遵循严格的饮食，只是意味着你摄入足够的脂肪、蛋白质和健康的碳水化合物，不滥用酒精和能量饮料。
 
-我也确保每晚至少睡8小时。如果我睡得少，我早上无法集中注意力，白天感到愚蠢。关于良好睡眠的重要性已经有很多讨论。
+我也确保每晚至少睡 8 小时。如果我睡得少，我早上无法集中注意力，白天感到愚蠢。关于良好睡眠的重要性已经有很多讨论。
 
-# 在bootcamp期间
+# 在 bootcamp 期间
 
-*你已经做好了准备，开始了你的Bootcamp之旅。以下是一些帮助你顺利学习的提示*
+*你已经做好了准备，开始了你的 Bootcamp 之旅。以下是一些帮助你顺利学习的提示*
 
 **合理地做笔记**
 
@@ -122,7 +122,7 @@
 
 第一种类型：我记录了对关键思想的个人理解。这不是对幻灯片的简单重写，而是用我自己的话描述我对特定思想的理解。我还记录了重要的参考资料以及我可以在哪里阅读/观看更多关于这个话题的信息。我总是留出一点空间用于提问。
 
-在我的电脑上，我将实际笔记分成了几组（例如：bash命令、git、sklearn技巧等），每当发现有趣或重要的内容时，我都会立即填写。我还设置了一个“杂项”部分，用来写下随机的笔记。
+在我的电脑上，我将实际笔记分成了几组（例如：bash 命令、git、sklearn 技巧等），每当发现有趣或重要的内容时，我都会立即填写。我还设置了一个“杂项”部分，用来写下随机的笔记。
 
 这种记录方式在准备面试时拯救了我的生命。
 
@@ -160,15 +160,15 @@
 
 参加训练营是一个勇敢的决定。学习者经历了一个快速而复杂的课程，每天写很多行代码，消耗大量的信息。
 
-所以不要责怪自己整个周末都没有学习，也不要坐到一天24小时。这里的关键是平衡和倾听自己身体的能力。保持努力工作和良好休息之间的平衡非常重要。没有适当的放松，很难取得太多成就。我们的目标是支持你度过这段复杂的旅程。
+所以不要责怪自己整个周末都没有学习，也不要坐到一天 24 小时。这里的关键是平衡和倾听自己身体的能力。保持努力工作和良好休息之间的平衡非常重要。没有适当的放松，很难取得太多成就。我们的目标是支持你度过这段复杂的旅程。
 
 **与组员沟通**
 
-![](../Images/a7955c4bf0a715ce233691d611aa17fe.png)
+![](img/a7955c4bf0a715ce233691d611aa17fe.png)
 
 比萨派对（作者提供的图片）
 
-不要害怕在组员面前显得奇怪。你正在经历训练营——这将把你们聚在一起。讨论当天的话题、数据科学新闻或只是聊聊天是个好主意。这在训练营的日子里对我帮助很大。你需要知道你的组员是你在行业中的网络基础。现在他们是训练营的学生，但1年、2年、3年后他们会成为什么样的人呢？
+不要害怕在组员面前显得奇怪。你正在经历训练营——这将把你们聚在一起。讨论当天的话题、数据科学新闻或只是聊聊天是个好主意。这在训练营的日子里对我帮助很大。你需要知道你的组员是你在行业中的网络基础。现在他们是训练营的学生，但 1 年、2 年、3 年后他们会成为什么样的人呢？
 
 我的训练营同事是我生活中最大的福分之一。这真是不可思议的好运。从第一周开始，我们就开始了大量的沟通。我们在咖啡休息时聊天，一起吃午饭，玩桌游。他们是最棒的同事榜样。两年后，我仍然与他们保持联系，并在不同的活动中见面。
 
@@ -180,15 +180,15 @@
 
 **不要害怕参加黑客马拉松和其他活动**
 
-![](../Images/f165168d5566457c2bbdbfe9b7994f12.png)
+![](img/f165168d5566457c2bbdbfe9b7994f12.png)
 
-我在2021年第一次线下黑客马拉松中的手臂（图片来源：作者）
+我在 2021 年第一次线下黑客马拉松中的手臂（图片来源：作者）
 
-我相信，行业中的每一个活动都是学习新知识、认识行业内的人或向IT界展示自己的机会。
+我相信，行业中的每一个活动都是学习新知识、认识行业内的人或向 IT 界展示自己的机会。
 
 我知道在训练营学习期间参加活动可能会让人感到害怕。我为自己设定了活动的目的，这使得事情变得更容易。例如，“我想做一个关于零售行业数据的项目”。在黑客马拉松中，我设定了提高技能的目标，一切都很顺利。
 
-我很早就开始参加黑客马拉松——在训练营的第5周。当然，我们的团队由训练营的成员组成。我们有一个优势——我们作为一个团队团结一致。我去那里是为了测试我的技能和学习一些新东西。那是一个线下活动，我感受到了整个氛围——几排桌子上坐着很多团队，通宵编程，免费能量饮料。我在那次活动中表现出色，并且（意外地）在Pandas上取得了很大的进步。
+我很早就开始参加黑客马拉松——在训练营的第 5 周。当然，我们的团队由训练营的成员组成。我们有一个优势——我们作为一个团队团结一致。我去那里是为了测试我的技能和学习一些新东西。那是一个线下活动，我感受到了整个氛围——几排桌子上坐着很多团队，通宵编程，免费能量饮料。我在那次活动中表现出色，并且（意外地）在 Pandas 上取得了很大的进步。
 
 聚会和会议比黑客马拉松需要的勇气少——你只需要报名。组织委员会希望看到相关的观众——而你正是那样。还有一个生活小窍门：你可以请训练营的管理部门邀请某人来为你的观众做演讲。当我还是学生的时候，我在反馈表中写道，能有一个演讲嘉宾会很不错。五周后，那个人被邀请来专门为我们做了一次演讲。
 
@@ -212,7 +212,7 @@
 
 **不要错过毕业生活动**
 
-![](../Images/0302057bf1b03e055709b504ee26e324.png)
+![](img/0302057bf1b03e055709b504ee26e324.png)
 
 幕后花絮：我在为未来申请者举办的活动中（图片来自作者）
 

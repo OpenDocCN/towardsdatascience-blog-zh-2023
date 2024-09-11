@@ -1,18 +1,18 @@
 # 论文综述：深度解析 Imagen
 
-> 原文：[https://towardsdatascience.com/paper-review-a-deep-dive-into-imagen-4e5b4092af13?source=collection_archive---------13-----------------------#2023-02-01](https://towardsdatascience.com/paper-review-a-deep-dive-into-imagen-4e5b4092af13?source=collection_archive---------13-----------------------#2023-02-01)
+> 原文：[`towardsdatascience.com/paper-review-a-deep-dive-into-imagen-4e5b4092af13?source=collection_archive---------13-----------------------#2023-02-01`](https://towardsdatascience.com/paper-review-a-deep-dive-into-imagen-4e5b4092af13?source=collection_archive---------13-----------------------#2023-02-01)
 
 ## 对谷歌令人印象深刻的新型文本到图像生成工具的批判性分析
 
-[](https://j-w-mcgowan18.medium.com/?source=post_page-----4e5b4092af13--------------------------------)[![Jamie McGowan](../Images/1150476f58297eb7e45cd3942a7a072b.png)](https://j-w-mcgowan18.medium.com/?source=post_page-----4e5b4092af13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e5b4092af13--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e5b4092af13--------------------------------) [Jamie McGowan](https://j-w-mcgowan18.medium.com/?source=post_page-----4e5b4092af13--------------------------------)
+[](https://j-w-mcgowan18.medium.com/?source=post_page-----4e5b4092af13--------------------------------)![Jamie McGowan](https://j-w-mcgowan18.medium.com/?source=post_page-----4e5b4092af13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e5b4092af13--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5b4092af13--------------------------------) [Jamie McGowan](https://j-w-mcgowan18.medium.com/?source=post_page-----4e5b4092af13--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685229ed4b15&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpaper-review-a-deep-dive-into-imagen-4e5b4092af13&user=Jamie+McGowan&userId=685229ed4b15&source=post_page-685229ed4b15----4e5b4092af13---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5b4092af13--------------------------------) · 13 分钟阅读 · 2023年2月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e5b4092af13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpaper-review-a-deep-dive-into-imagen-4e5b4092af13&user=Jamie+McGowan&userId=685229ed4b15&source=-----4e5b4092af13---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F685229ed4b15&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpaper-review-a-deep-dive-into-imagen-4e5b4092af13&user=Jamie+McGowan&userId=685229ed4b15&source=post_page-685229ed4b15----4e5b4092af13---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5b4092af13--------------------------------) · 13 分钟阅读 · 2023 年 2 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e5b4092af13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpaper-review-a-deep-dive-into-imagen-4e5b4092af13&user=Jamie+McGowan&userId=685229ed4b15&source=-----4e5b4092af13---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e5b4092af13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpaper-review-a-deep-dive-into-imagen-4e5b4092af13&source=-----4e5b4092af13---------------------bookmark_footer-----------)![](../Images/a4efdeb4a3d2eadd14364033d7f601fc.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e5b4092af13&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpaper-review-a-deep-dive-into-imagen-4e5b4092af13&source=-----4e5b4092af13---------------------bookmark_footer-----------)![](img/a4efdeb4a3d2eadd14364033d7f601fc.png)
 
 图片由 [Amanda Dalbjörn](https://unsplash.com/@amandadalbjorn?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,17 +20,17 @@
 
 在这里，作者试图实现最先进的**逼真度**，并提供对文本到图像合成中更深层次的语言理解的见解。本文的主要输出是一个名为‘Imagen’的模型，它改进了文献中以前的文本到图像合成模型[2–4]。
 
-你可以在[**这里**](https://imagen.research.google/)查看更多关于Imagen的信息！
+你可以在[**这里**](https://imagen.research.google/)查看更多关于 Imagen 的信息！
 
 # 什么是扩散模型？
 
-正如论文标题所示，Imagen是一个扩散模型。
+正如论文标题所示，Imagen 是一个扩散模型。
 
 简而言之，扩散模型是基于**生成式 AI**的一个例子，其过程是从输入***x***⁰开始，在每一层*t*逐渐加入高斯噪声，直到达到纯噪声表示***x****ᵀ*，其中*T*是最终层。
 
 这受非平衡**热力学**的启发，其中状态通过扩散演变为**均匀**，只要时间足够长。
 
-![](../Images/c28bebf58ef6caebc4fae871ba146931.png)
+![](img/c28bebf58ef6caebc4fae871ba146931.png)
 
 显示前向和背景扩散过程的图示。图片来自[16]。
 
@@ -38,7 +38,7 @@
 
 该模型的目标是对描述每一步*t*反向扩散过程的**条件概率**进行参数化：
 
-![](../Images/b996361cae90ae61f75d41f00f5dc8e3.png)
+![](img/b996361cae90ae61f75d41f00f5dc8e3.png)
 
 描述反向扩散过程的方程。图片由作者创建。
 
@@ -46,13 +46,13 @@
 
 由于扩散过程在每一步的去噪过程中保持了图像，这导致数据与预测之间的**亲密**连接，相比其他非扩散基于文本到图像生成器[4–7]。结果通常是，扩散模型[1–3]的输出更**逼真**。
 
-一旦使用基础扩散模型构建一个64 × 64像素的图像，Imagen会利用另外两个**超分辨率**扩散模型进行上采样64 × 64 → 256 × 256 → 1024 × 1024。最终结果因此是一个高分辨率的1024 × 1024像素图像，如下图所示！
+一旦使用基础扩散模型构建一个 64 × 64 像素的图像，Imagen 会利用另外两个**超分辨率**扩散模型进行上采样 64 × 64 → 256 × 256 → 1024 × 1024。最终结果因此是一个高分辨率的 1024 × 1024 像素图像，如下图所示！
 
-请注意，这张图片实际上来自DALL-E 2 [2]，因为谷歌对Imagen有一些限制！概念是一样的，但请确保查看Imagen论文以获取实际的图片。
+请注意，这张图片实际上来自 DALL-E 2 [2]，因为谷歌对 Imagen 有一些限制！概念是一样的，但请确保查看 Imagen 论文以获取实际的图片。
 
-![](../Images/7ccda7e4fea77359cfad8f989ea29437.png)
+![](img/7ccda7e4fea77359cfad8f989ea29437.png)
 
-DALL-E 2的一个示例输出，文本提示为“时代广场上的滑板上的泰迪熊”。图片来自[2]。
+DALL-E 2 的一个示例输出，文本提示为“时代广场上的滑板上的泰迪熊”。图片来自[2]。
 
 本综述将简要概述以前的工作，然后汇总作者提出的主要贡献和结果，并讨论这些贡献，提供我个人对该工作的**意见**。
 
@@ -62,7 +62,7 @@ DALL-E 2的一个示例输出，文本提示为“时代广场上的滑板上的
 
 基于这些不足，OpenAI 在 [4] 中发布了 DALL-E，它能够将多个看似**不相关的概念**逐行组合成一幅图像——给定文本提示和图像的起始（第一行像素）。
 
-不到12个月后，OpenAI 通过 GLIDE [3] 重新制定了他们的文本到图像合成方法。作者展示了 GLIDE 在各种设置中因**照片真实感**和**标题相似性**而被人类评估者偏好，从而确立了扩散模型在文本到图像生成中的主导地位。
+不到 12 个月后，OpenAI 通过 GLIDE [3] 重新制定了他们的文本到图像合成方法。作者展示了 GLIDE 在各种设置中因**照片真实感**和**标题相似性**而被人类评估者偏好，从而确立了扩散模型在文本到图像生成中的主导地位。
 
 最后，在 [2] 中，DALL-E 2 通过基于从文本提示中找到的**图像嵌入**生成图像，从而进一步改进了 GLIDE。
 
@@ -76,7 +76,7 @@ DALL-E 2的一个示例输出，文本提示为“时代广场上的滑板上的
 
 [1]的主要发现之一是，结合在仅文本数据上训练的**大型冻结语言模型**，在获取文本到图像合成的文本表示时非常有用。
 
-此外，作者探讨了文本编码器的扩展，发现扩展语言模型的规模**显著提高**了结果，远超扩展扩散模型的规模。[1]中图4a的最左侧图表总结了这一结果，显示T5-XXL LM [8]生成了**更高质量**的图像（↓ FID分数）和更好的标题兼容性（↑ CLIP分数）。
+此外，作者探讨了文本编码器的扩展，发现扩展语言模型的规模**显著提高**了结果，远超扩展扩散模型的规模。[1]中图 4a 的最左侧图表总结了这一结果，显示 T5-XXL LM [8]生成了**更高质量**的图像（↓ FID 分数）和更好的标题兼容性（↑ CLIP 分数）。
 
 作者还引入了一种新技术，以避免在无分类器引导的图像生成中出现饱和像素。
 
@@ -88,47 +88,47 @@ DALL-E 2的一个示例输出，文本提示为“时代广场上的滑板上的
 
 到目前为止，这些都不算新鲜，然而这种指导的一个问题是，当*w*很大时，像素可能会饱和，**图像保真度**会因为更好的图像-文本对齐而受到损害。因此，作者引入了*动态阈值*，通过在每次采样步骤***x***ᵗ时确定的不同量将饱和像素从[-1, 1]推向内部（因此是动态的）。作者声称，在图像生成中，高度指导下**逼真度**和**图像-文本对齐**有显著提升。
 
-最后，在模型架构方面，作者提出了一种新的U-Net [11]变体，该变体比以前的版本**更简单**且**更高效**。根据我的了解，关键修改是去除了超分辨率模型中的自注意力层，这些模型来自于[11–12]的U-Net模型。
+最后，在模型架构方面，作者提出了一种新的 U-Net [11]变体，该变体比以前的版本**更简单**且**更高效**。根据我的了解，关键修改是去除了超分辨率模型中的自注意力层，这些模型来自于[11–12]的 U-Net 模型。
 
 ## **DrawBench**
 
 对未来文本到图像合成研究的另一个重要贡献是**DrawBench**的发布。
 
-DrawBench是一个‘挑战性’评估基准文本提示的集合，探测模型处理复杂概念如组合性、基数和空间关系的能力。
+DrawBench 是一个‘挑战性’评估基准文本提示的集合，探测模型处理复杂概念如组合性、基数和空间关系的能力。
 
 本次发布的理念是提供一个包含一些非常**奇怪的文本提示**的评估基准，以确保图像之前从未存在过。因此，理论上，这应该将模型推向其想象力和**能力**的极限，以生成复杂图像。
 
 ## 定量结果
 
-![](../Images/abf644d2a1fc4b2221648f4ee9900282.png)
+![](img/abf644d2a1fc4b2221648f4ee9900282.png)
 
 图片由[Maxim Hopman](https://unsplash.com/@nampoh?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
-作者在[1]中展示的定量结果对比了不同模型在COCO [15]和DrawBench文本提示上的表现。
+作者在[1]中展示的定量结果对比了不同模型在 COCO [15]和 DrawBench 文本提示上的表现。
 
-作者发现，与DALL-E 2 [2]、GLIDE [3]、Latent Diffusion [14]和CLIP-guided VQ-GAN [13]模型进行成对比较时，DrawBench上的人工评估结果对Imagen表现出强烈的偏好（见[1]中的图3）。这些结果作为**标题对齐**和**保真度**的衡量标准。
+作者发现，与 DALL-E 2 [2]、GLIDE [3]、Latent Diffusion [14]和 CLIP-guided VQ-GAN [13]模型进行成对比较时，DrawBench 上的人工评估结果对 Imagen 表现出强烈的偏好（见[1]中的图 3）。这些结果作为**标题对齐**和**保真度**的衡量标准。
 
-同时，COCO验证集上的结果似乎在不同模型之间没有表现出太大差异——这可能是作者没有对此过多停留的原因。
+同时，COCO 验证集上的结果似乎在不同模型之间没有表现出太大差异——这可能是作者没有对此过多停留的原因。
 
-然而，对COCO数据集的一个有趣观察是，Imagen在生成逼真的人物方面有**有限的能力**——尽管作者没有提供任何关于Imagen生成人物效果差的定性例子。
+然而，对 COCO 数据集的一个有趣观察是，Imagen 在生成逼真的人物方面有**有限的能力**——尽管作者没有提供任何关于 Imagen 生成人物效果差的定性例子。
 
 # 讨论
 
 在引言中，[1]的作者提到以下声明：
 
-> [Imagen交付]了前所未有的逼真度和深层次的语言理解能力，在文本到图像合成中。
+> [Imagen 交付]了前所未有的逼真度和深层次的语言理解能力，在文本到图像合成中。
 
-在调查这一声明的前半部分时，作者展示了Imagen与DALL-E 2生成图像之间的几种**定性比较**。他们还提供了人类评估实验的结果，询问人们从单个文本提示或标题中选择最**写实**的图像。
+在调查这一声明的前半部分时，作者展示了 Imagen 与 DALL-E 2 生成图像之间的几种**定性比较**。他们还提供了人类评估实验的结果，询问人们从单个文本提示或标题中选择最**写实**的图像。
 
 即使在考虑任何结果之前，作者立即在他们的分析中引入了人类评估实验中固有的**主观性**。因此，文献[1]中显示的结果必须谨慎考虑，并持有健康的**怀疑态度**。
 
-![](../Images/3c5369c360b2143fd602d4c91b3c33d3.png)
+![](img/3c5369c360b2143fd602d4c91b3c33d3.png)
 
-一个来自DALL-E 2的示例输出，文本提示为“狗在湖边的绿色田野里玩耍的高质量照片”。图像来自[2]。
+一个来自 DALL-E 2 的示例输出，文本提示为“狗在湖边的绿色田野里玩耍的高质量照片”。图像来自[2]。
 
-为了提供这些结果的背景，作者选择了一些示例比较展示给人类评分者，并将其包含在附录中（一定要查看这些示例——作为动机，我在上面添加了一个来自DALL-E 2的示例）。
+为了提供这些结果的背景，作者选择了一些示例比较展示给人类评分者，并将其包含在附录中（一定要查看这些示例——作为动机，我在上面添加了一个来自 DALL-E 2 的示例）。
 
-然而，即使有这些例子，我发现很难对哪张图像更具优先性做出明确判断。考虑到上图中显示的复制例子，我个人认为一些DALL-E 2生成的图像比Imagen的图像**更具照片写实性**，这展示了在收集这类结果时主观性的问题。
+然而，即使有这些例子，我发现很难对哪张图像更具优先性做出明确判断。考虑到上图中显示的复制例子，我个人认为一些 DALL-E 2 生成的图像比 Imagen 的图像**更具照片写实性**，这展示了在收集这类结果时主观性的问题。
 
 作者选择询问人类评分者*“哪张图像更具照片写实性？”*以及每个*“标题是否准确描述了图像？”*在评估过程中。然而，评估这些指标的**不连续**性质让我感到相当担忧。
 
@@ -140,9 +140,9 @@ DrawBench是一个‘挑战性’评估基准文本提示的集合，探测模�
 
 确实，对于标题对齐，可以说在文本提示中的关系和概念是否在图像生成中被**捕捉**，有一个更**明确**的答案（即比起照片写实性主观性更低）。
 
-然而，我再次认为应该使用更**连续**的度量标准，例如1-10的对齐评分。根据上述讨论，所有字幕的不同难度等级也会表现为**较低的字幕对齐度**。有趣的是，探讨让评估者在评价过程中评估字幕或文本提示的难度，并帮助**标准化**数据集和度量标准。
+然而，我再次认为应该使用更**连续**的度量标准，例如 1-10 的对齐评分。根据上述讨论，所有字幕的不同难度等级也会表现为**较低的字幕对齐度**。有趣的是，探讨让评估者在评价过程中评估字幕或文本提示的难度，并帮助**标准化**数据集和度量标准。
 
-![](../Images/baf9f50b7a2532112fa7580bcf8f56d9.png)
+![](img/baf9f50b7a2532112fa7580bcf8f56d9.png)
 
 图片来源：[Mitchell Luo](https://unsplash.com/@mitchel3uo?utm_source=medium&utm_medium=referral)于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -152,19 +152,19 @@ DrawBench是一个‘挑战性’评估基准文本提示的集合，探测模�
 
 作为一个例子，文本到图像生成的一个应用是帮助**生成****插图**。因此，评估解释文本提示时的创造力和变化性是有充分理由的。
 
-在之前展示的例子中，DALL-E 2 [2] 在解释*‘眼镜’*时比Imagen有更多的方式，因此可以认为DALL-E 2是**更具创意**的模型？
+在之前展示的例子中，DALL-E 2 [2] 在解释*‘眼镜’*时比 Imagen 有更多的方式，因此可以认为 DALL-E 2 是**更具创意**的模型？
 
-从这个角度来看，论文的一个**主要批评**是所选择的度量标准过于侧重于Imagen的优势。不同应用中表现良好的模型的最佳指示（度量）将**依赖于**具体应用（即*没有免费的午餐!*）。
+从这个角度来看，论文的一个**主要批评**是所选择的度量标准过于侧重于 Imagen 的优势。不同应用中表现良好的模型的最佳指示（度量）将**依赖于**具体应用（即*没有免费的午餐!*）。
 
 因此，我很想听听作者对如何**严格评估**这些模型的不仅仅是忠实度和字幕对齐度的看法。
 
-![](../Images/25df3c4e938441b1d059c157a55c9f01.png)
+![](img/25df3c4e938441b1d059c157a55c9f01.png)
 
 图片来源：[Dragos Gontariu](https://unsplash.com/@dragos126?utm_source=medium&utm_medium=referral)于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-根据[1]，DrawBench的发布被认为是对文本到图像研究领域的必要贡献，因为它提供了一套*全面*的挑战性文本提示场景。
+根据[1]，DrawBench 的发布被认为是对文本到图像研究领域的必要贡献，因为它提供了一套*全面*的挑战性文本提示场景。
 
-虽然我同意大部分观点，但根据围绕这一论点的讨论，我尚未被说服这是一项*全面*的基准。如果深入探索DrawBench，会发现仅包括约200个文本提示/字幕，分布在11个类别中，这在初看时显得相当少。
+虽然我同意大部分观点，但根据围绕这一论点的讨论，我尚未被说服这是一项*全面*的基准。如果深入探索 DrawBench，会发现仅包括约 200 个文本提示/字幕，分布在 11 个类别中，这在初看时显得相当少。
 
 这种担忧在与 COCO 数据集 [15] 比较时愈发加深，该数据集包括 330K 张图像，每张图像有 5 个标题，涵盖了更广泛的类别。个人认为，作者应该讨论他们声称这是一个*全面*集的**推理**。
 
@@ -180,7 +180,7 @@ DrawBench是一个‘挑战性’评估基准文本提示的集合，探测模�
 
 然而，我认为其中的社会和伦理推理是该论文的**最佳** **贡献**之一，并且突显了在发布强大的开源 AI 软件时需要某种形式的**治理**。
 
-![](../Images/ec3b55cce216cf52c3f1c0b907b58450.png)
+![](img/ec3b55cce216cf52c3f1c0b907b58450.png)
 
 [Михаил Секацкий](https://unsplash.com/@sekatsky?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上的照片
 
@@ -194,7 +194,7 @@ DrawBench是一个‘挑战性’评估基准文本提示的集合，探测模�
 
 我个人很享受阅读这篇论文，我认为所做的贡献是令人兴奋和有趣的领域发展。
 
-![](../Images/b93de39c2db6c1efe68cb71c58de104d.png)
+![](img/b93de39c2db6c1efe68cb71c58de104d.png)
 
 图片由 [Arnold Francisca](https://unsplash.com/@clark_fransa?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

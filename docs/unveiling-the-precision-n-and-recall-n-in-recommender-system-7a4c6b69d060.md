@@ -1,10 +1,10 @@
 # 揭示推荐系统中的 Precision@N 和 Recall@N
 
-> 原文：[https://towardsdatascience.com/unveiling-the-precision-n-and-recall-n-in-recommender-system-7a4c6b69d060?source=collection_archive---------14-----------------------#2023-06-29](https://towardsdatascience.com/unveiling-the-precision-n-and-recall-n-in-recommender-system-7a4c6b69d060?source=collection_archive---------14-----------------------#2023-06-29)
+> 原文：[`towardsdatascience.com/unveiling-the-precision-n-and-recall-n-in-recommender-system-7a4c6b69d060?source=collection_archive---------14-----------------------#2023-06-29`](https://towardsdatascience.com/unveiling-the-precision-n-and-recall-n-in-recommender-system-7a4c6b69d060?source=collection_archive---------14-----------------------#2023-06-29)
 
 ## 优化推荐系统：对精确度和召回率用例的深入解读
 
-[](https://medium.com/@christienatashia?source=post_page-----7a4c6b69d060--------------------------------)[![Christie Natashia](../Images/168aa61f8495c7f3a3eccb880c8a023c.png)](https://medium.com/@christienatashia?source=post_page-----7a4c6b69d060--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a4c6b69d060--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7a4c6b69d060--------------------------------) [Christie Natashia](https://medium.com/@christienatashia?source=post_page-----7a4c6b69d060--------------------------------)
+[](https://medium.com/@christienatashia?source=post_page-----7a4c6b69d060--------------------------------)![Christie Natashia](https://medium.com/@christienatashia?source=post_page-----7a4c6b69d060--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a4c6b69d060--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a4c6b69d060--------------------------------) [Christie Natashia](https://medium.com/@christienatashia?source=post_page-----7a4c6b69d060--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a4c6b69d060&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funveiling-the-precision-n-and-recall-n-in-recommender-system-7a4c6b69d060&source=-----7a4c6b69d060---------------------bookmark_footer-----------)![](../Images/82d0300f568aaadbebfc1c9e9808d001.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a4c6b69d060&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funveiling-the-precision-n-and-recall-n-in-recommender-system-7a4c6b69d060&source=-----7a4c6b69d060---------------------bookmark_footer-----------)![](img/82d0300f568aaadbebfc1c9e9808d001.png)
 
 照片来源：[Norbert Braun](https://unsplash.com/@medion4you?utm_source=medium&utm_medium=referral) 通过 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

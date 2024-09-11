@@ -1,26 +1,26 @@
-# 2023年值得掌握的精彩数据科学工具：数据分析版
+# 2023 年值得掌握的精彩数据科学工具：数据分析版
 
-> 原文：[https://towardsdatascience.com/awesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779?source=collection_archive---------0-----------------------#2023-02-22](https://towardsdatascience.com/awesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779?source=collection_archive---------0-----------------------#2023-02-22)
+> 原文：[`towardsdatascience.com/awesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779?source=collection_archive---------0-----------------------#2023-02-22`](https://towardsdatascience.com/awesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779?source=collection_archive---------0-----------------------#2023-02-22)
 
 ## *数据工具回顾*
 
-## 5个开源Python包用于EDA和可视化
+## 5 个开源 Python 包用于 EDA 和可视化
 
-[](https://medium.com/@miriam.santos?source=post_page-----29d29310f779--------------------------------)[![Miriam Santos](../Images/decbc6528a641e7b02934a03e136284a.png)](https://medium.com/@miriam.santos?source=post_page-----29d29310f779--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29d29310f779--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----29d29310f779--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----29d29310f779--------------------------------)
+[](https://medium.com/@miriam.santos?source=post_page-----29d29310f779--------------------------------)![Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----29d29310f779--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29d29310f779--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----29d29310f779--------------------------------) [Miriam Santos](https://medium.com/@miriam.santos?source=post_page-----29d29310f779--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fawesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----29d29310f779---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29d29310f779--------------------------------) ·15分钟阅读·2023年2月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F29d29310f779&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fawesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779&user=Miriam+Santos&userId=243289394aaa&source=-----29d29310f779---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F243289394aaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fawesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779&user=Miriam+Santos&userId=243289394aaa&source=post_page-243289394aaa----29d29310f779---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29d29310f779--------------------------------) ·15 分钟阅读·2023 年 2 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F29d29310f779&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fawesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779&user=Miriam+Santos&userId=243289394aaa&source=-----29d29310f779---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F29d29310f779&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fawesome-data-science-tools-to-master-in-2023-data-profiling-edition-29d29310f779&source=-----29d29310f779---------------------bookmark_footer-----------)
 
-*这是一个专注于数据科学开源工具的系列专栏：每篇文章都关注一个特定主题，并向读者介绍一系列不同的工具，展示它们在真实世界数据集上的特性。* ***这一部分专注于数据分析******并回顾了***`*ydata-profiling*`*、* `*dataprep*`*、* `*sweetviz*`*、* `*autoviz*`* 和* `*lux*`*。***鼓励读者跟随教程：*** *我会参考所有项目的单独GitHub仓库，但工具的整理列表以及本文章中使用的Google Colab笔记本* ***可以在*** [***awesome-data-centric-ai***](https://github.com/Data-Centric-AI-Community/awesome-data-centric-ai) ***仓库中找到。***
+*这是一个专注于数据科学开源工具的系列专栏：每篇文章都关注一个特定主题，并向读者介绍一系列不同的工具，展示它们在真实世界数据集上的特性。* ***这一部分专注于数据分析******并回顾了***`*ydata-profiling*`*、* `*dataprep*`*、* `*sweetviz*`*、* `*autoviz*`* 和* `*lux*`*。***鼓励读者跟随教程：*** *我会参考所有项目的单独 GitHub 仓库，但工具的整理列表以及本文章中使用的 Google Colab 笔记本* ***可以在*** [***awesome-data-centric-ai***](https://github.com/Data-Centric-AI-Community/awesome-data-centric-ai) ***仓库中找到。***
 
 在***数据不完善的世界中，精心设计的数据理解工具就是哲学家的石头。***
 
-![](../Images/4b29e5607c38a5b9f16bd511633cb65c.png)
+![](img/4b29e5607c38a5b9f16bd511633cb65c.png)
 
 “多维”的哲学家石头：数据立方体。分析数据通常涉及旋转和扭曲数据集，以找到最有洞察力的视角。照片来自 [aaron boris](https://unsplash.com/@aaron_boris?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
@@ -44,11 +44,11 @@
 
 **幸运的是，可以借助数据分析工具将这些问题最小化。**
 
-*让我们通过探索一个真实世界的用例来看看？准备好打开你的Google Colabs吧！*
+*让我们通过探索一个真实世界的用例来看看？准备好打开你的 Google Colabs 吧！*
 
-# HCC数据集……稍作修改！
+# HCC 数据集……稍作修改！
 
-在本文中，我将使用HCC数据集，该数据集是我在硕士论文期间亲自整理的。你可以在[Kaggle](https://www.kaggle.com/datasets/mrsantos/hcc-dataset)和[UCI Repository](https://archive.ics.uci.edu/ml/datasets/HCC+Survival)上找到它。随意使用它，该数据集已授权，我们只希望适当引用。
+在本文中，我将使用 HCC 数据集，该数据集是我在硕士论文期间亲自整理的。你可以在[Kaggle](https://www.kaggle.com/datasets/mrsantos/hcc-dataset)和[UCI Repository](https://archive.ics.uci.edu/ml/datasets/HCC+Survival)上找到它。随意使用它，该数据集已授权，我们只希望适当引用。
 
 **为了此次评审的目的，我从原始数据集中选择了一个特征子集，并通过人工引入一些问题进一步修改了数据。目的是查看不同的数据分析工具如何识别和表征这些问题。**
 
@@ -60,17 +60,17 @@
 
 +   `O2`特征是人工引入的：它仅包含“999”值，代表数据采集或收集中的错误。想象一下，一个传感器发生故障，开始输出荒谬的值，或者数据采集人员决定用“999”编码他们的缺席；
 
-+   `Hallmark`被修改了：我将其值与“A、B、C、D、（…）”编码连接，这可能代表了患者ID与实际标志结果的连接。这代表了数据处理或存储中的错误（如果你愿意，可以称之为“ETL故障”）；
++   `Hallmark`被修改了：我将其值与“A、B、C、D、（…）”编码连接，这可能代表了患者 ID 与实际标志结果的连接。这代表了数据处理或存储中的错误（如果你愿意，可以称之为“ETL 故障”）；
 
 +   `HBeAg`也被修改了。在这种情况下，我只是删除了所有“是”值。这可能模拟了[缺失非随机机制](https://ieeexplore.ieee.org/document/8605316)，如果观察到，所有缺失值都会是“是”。
 
-由于数据包含一些修改，我也[已将其添加到存储库](https://github.com/Data-Centric-AI-Community/awesome-data-centric-ai/tree/master/medium/data-profiling-tools/data)中。请记住，这纯粹是为了学术讨论：您可以在Kaggle或UCI存储库中访问完整且未修改的数据，如前所述。
+由于数据包含一些修改，我也[已将其添加到存储库](https://github.com/Data-Centric-AI-Community/awesome-data-centric-ai/tree/master/medium/data-profiling-tools/data)中。请记住，这纯粹是为了学术讨论：您可以在 Kaggle 或 UCI 存储库中访问完整且未修改的数据，如前所述。
 
 *现在，事不宜迟，让我们开始实际的代码吧！*
 
 # 1\. ydata-profiling
 
-你可能知道它为`pandas-profiling`，因为新名称仍然很新：简而言之，版本4.0.0现在还支持Spark DataFrames，除了Pandas DataFrames，因此它更名为[YData Profiling](https://github.com/ydataai/ydata-profiling)。
+你可能知道它为`pandas-profiling`，因为新名称仍然很新：简而言之，版本 4.0.0 现在还支持 Spark DataFrames，除了 Pandas DataFrames，因此它更名为[YData Profiling](https://github.com/ydataai/ydata-profiling)。
 
 该包目前是探索性数据分析的热门选择。它的高效性和简单性似乎赢得了技术和非技术观众的喜爱，因为它能快速而直接地对数据进行可视化理解。
 
@@ -97,9 +97,9 @@ profile.to_file("report.html")
 
 报告迅速生成，内容包括数据集属性的一般概述、每个特征的汇总统计、交互和相关性图，以及缺失值和重复记录的有见地可视化：
 
-![](../Images/6483c24ed9cd908b648aa3e5cdfbae54.png)
+![](img/6483c24ed9cd908b648aa3e5cdfbae54.png)
 
-YData Profiling报告。作者录屏。
+YData Profiling 报告。作者录屏。
 
 然而，`ydata-profiling`最受赞誉的功能可能是**自动检测潜在的数据质量问题**。
 
@@ -107,37 +107,37 @@ YData Profiling报告。作者录屏。
 
 关于我们的用例，请注意以下警报的生成方式：
 
-+   `常量`：HBeAg和02；
++   `常量`：HBeAg 和 02；
 
 +   `高相关性`：总胆红素和直接胆红素，以及脑病和总胆红素之间的相关性；
 
 +   `不平衡`：脑病；
 
-+   `缺失`：血红蛋白、HBeAg、总胆红素、直接胆红素和铁蛋白的缺失数据百分比最高（接近50%）；
++   `缺失`：血红蛋白、HBeAg、总胆红素、直接胆红素和铁蛋白的缺失数据百分比最高（接近 50%）；
 
-+   `均匀`、`唯一`和`高基数`关于Hallmark。
++   `均匀`、`唯一`和`高基数`关于 Hallmark。
 
 由于对数据质量问题的全面支持，`ydata-profiling`能够检测所有引入的不一致性，特别是它为同一特征生成多个不同的警报。
 
-例如，*Hallmark如何同时引发高基数、唯一和均匀的警报？*
+例如，*Hallmark 如何同时引发高基数、唯一和均匀的警报？*
 
-这立即引发了红色警报，使数据科学家怀疑可能与某种ID有关。进一步检查该特征时，这种“数据气味”会变得相当明显：
+这立即引发了红色警报，使数据科学家怀疑可能与某种 ID 有关。进一步检查该特征时，这种“数据气味”会变得相当明显：
 
-![](../Images/63c37486a9e0167c7b053fd1163479ef.png)
+![](img/63c37486a9e0167c7b053fd1163479ef.png)
 
-YData Profiling报告：检查Hallmark。作者图片。
+YData Profiling 报告：检查 Hallmark。作者图片。
 
-HBeAg也是如此：它引发了`CONSTANT`和`MISSING`警报，这可能会在经验丰富的数据科学家脑海中响起警钟：更复杂的缺失机制可能在发挥作用。
+HBeAg 也是如此：它引发了`CONSTANT`和`MISSING`警报，这可能会在经验丰富的数据科学家脑海中响起警钟：更复杂的缺失机制可能在发挥作用。
 
 `ydata-profiling`还具有其他几个有用的功能，如**支持时间序列数据和数据集并排比较**，我们可以利用这些功能来增强数据集上的一些数据质量转换，例如缺失数据插补。
 
 为了进一步调查这个可能性，我对`Ferritin`进行了简单的插补（例如，均值插补），并生成了原始数据和插补数据之间的对比报告。结果如下：
 
-![](../Images/2d0a2deb73ae6cf9d7e6c3ddab1bf752.png)
+![](img/2d0a2deb73ae6cf9d7e6c3ddab1bf752.png)
 
 YData Profiling: 对比报告。作者录制的视频。
 
-`ydata-profiling`的源代码、文档和几个示例可以在这个[GitHub仓库](https://github.com/ydataai/ydata-profiling)中找到。你可以使用这个[Google Colab笔记本](https://colab.research.google.com/github/Data-Centric-AI-Community/awesome-data-centric-ai/blob/master/medium/data-profiling-tools/notebooks/ydata_profiling_demo.ipynb)复制上面的示例，并进一步探索[包的附加功能](https://medium.com/ydata-ai/auditing-data-quality-with-pandas-profiling-b1bf1919f856)。
+`ydata-profiling`的源代码、文档和几个示例可以在这个[GitHub 仓库](https://github.com/ydataai/ydata-profiling)中找到。你可以使用这个[Google Colab 笔记本](https://colab.research.google.com/github/Data-Centric-AI-Community/awesome-data-centric-ai/blob/master/medium/data-profiling-tools/notebooks/ydata_profiling_demo.ipynb)复制上面的示例，并进一步探索[包的附加功能](https://medium.com/ydata-ai/auditing-data-quality-with-pandas-profiling-b1bf1919f856)。
 
 # 2\. DataPrep
 
@@ -155,7 +155,7 @@ create_report(df)
 
 就整体外观和感觉而言，`dataprep`似乎在之前的包基础上进行了广泛构建，包括类似的汇总统计和可视化（报告的相似性令人惊讶！）：
 
-![](../Images/fa08f854e278c25982a33e8b2d687d4b.png)
+![](img/fa08f854e278c25982a33e8b2d687d4b.png)
 
 DataPrep Profiling Report。作者录制的视频。
 
@@ -173,7 +173,7 @@ plot(df, "Age", "MCV") # Numeric - Numeric
 plot(df, "Gender", "Outcome") # Categorical - Categorical
 ```
 
-![](../Images/c43180db193cf11307c0bf13a4812907.png)
+![](img/c43180db193cf11307c0bf13a4812907.png)
 
 DataPrep Profiling Report: 探索特征互动。作者录制的视频。
 
@@ -181,7 +181,7 @@ DataPrep Profiling Report: 探索特征互动。作者录制的视频。
 
 这是`Ferritin`缺失值处理影响的可视化：
 
-![](../Images/fc9ce10f7595d1908b684e53b1748545.png)
+![](img/fc9ce10f7595d1908b684e53b1748545.png)
 
 DataPrep Profiling Report: 缺失的铁蛋白影响。作者录制的视频。
 
@@ -214,7 +214,7 @@ report.show_html('report.html')
 
 这是报告的外观和感觉：
 
-![](../Images/f9619c1e996ec2a4759624b7bd05e6e2.png)
+![](img/f9619c1e996ec2a4759624b7bd05e6e2.png)
 
 Sweetviz 分析报告。作者提供的屏幕录像。
 
@@ -234,11 +234,11 @@ comparison_report = sv.compare_intra(df, df["Gender"] == 'Male', ["Male", "Femal
 comparison_report.show_notebook()
 ```
 
-![](../Images/83e9b481e663c3dd7111755e779db73b.png)
+![](img/83e9b481e663c3dd7111755e779db73b.png)
 
 Sweetviz 分析报告：比较“男性”和“女性”子组。作者提供的屏幕录像。
 
-`sweetviz` 的所有文档都可以在这个 [GitHub 仓库](https://github.com/fbdesignpro/sweetviz) 中找到。请随时使用 [这个笔记本](https://colab.research.google.com/github/Data-Centric-AI-Community/awesome-data-centric-ai/blob/master/medium/data-profiling-tools/notebooks/sweetviz_demo.ipynb) 对数据进行进一步转换，并借助 [这篇专门的帖子](/powerful-eda-exploratory-data-analysis-in-just-two-lines-of-code-using-sweetviz-6c943d32f34) 探索其他用例。
+`sweetviz` 的所有文档都可以在这个 [GitHub 仓库](https://github.com/fbdesignpro/sweetviz) 中找到。请随时使用 [这个笔记本](https://colab.research.google.com/github/Data-Centric-AI-Community/awesome-data-centric-ai/blob/master/medium/data-profiling-tools/notebooks/sweetviz_demo.ipynb) 对数据进行进一步转换，并借助 这篇专门的帖子 探索其他用例。
 
 # 4\. AutoViz
 
@@ -263,21 +263,21 @@ from autoviz.AutoViz_Class import AutoViz_Class
 AutoViz_Class().AutoViz('hcc.csv')
 ```
 
-![](../Images/79c36a51ad02ef2db5b1b248c7a0830c.png)
+![](img/79c36a51ad02ef2db5b1b248c7a0830c.png)
 
-AutoViz分析报告。作者录屏。
+AutoViz 分析报告。作者录屏。
 
 `autoviz`的有趣特点包括**自动数据清理建议**和**执行“监督”可视化**的能力——即通过给定的目标特征对结果进行分类，这与我们在`sweetviz`中所做的类似。
 
 数据清理建议在报告生成期间提供，如下所示：
 
-![](../Images/6f4886c97ac4b13ac1190d9e6c66057e.png)
+![](img/6f4886c97ac4b13ac1190d9e6c66057e.png)
 
-AutoViz分析报告：清理建议。作者提供的图像。
+AutoViz 分析报告：清理建议。作者提供的图像。
 
 至于清理建议，`autoviz`做得非常好：
 
-+   它将`Hallmark`与“可能的ID列”关联，建议将其删除；
++   它将`Hallmark`与“可能的 ID 列”关联，建议将其删除；
 
 +   它识别出多个缺失或偏斜的特征，如`Ferritin`、`Hemoglobin`、`Total_Bil`、`Dir_Bil`、`Encephalopathy`和`HBeAg`；
 
@@ -310,11 +310,11 @@ dft = AV.AutoViz(
 
 这是考虑到“结果”生成的报告：
 
-![](../Images/199444916c6af662e096964f5e922125.png)
+![](img/199444916c6af662e096964f5e922125.png)
 
-AutoViz分析报告：比较“结果”类别。作者录屏。
+AutoViz 分析报告：比较“结果”类别。作者录屏。
 
-你可以玩一下[这个 Google Colab 笔记本](https://colab.research.google.com/github/Data-Centric-AI-Community/awesome-data-centric-ai/blob/master/medium/data-profiling-tools/notebooks/autoviz_demo.ipynb)，探索`autoviz`的其他功能。你还可以查看[这篇帖子](/autoviz-a-new-tool-for-automated-visualization-ec9c1744a6ad)，其中详细介绍了这些功能，或者参考[GitHub上的文档](https://github.com/AutoViML/AutoViz)。
+你可以玩一下[这个 Google Colab 笔记本](https://colab.research.google.com/github/Data-Centric-AI-Community/awesome-data-centric-ai/blob/master/medium/data-profiling-tools/notebooks/autoviz_demo.ipynb)，探索`autoviz`的其他功能。你还可以查看这篇帖子，其中详细介绍了这些功能，或者参考[GitHub 上的文档](https://github.com/AutoViML/AutoViz)。
 
 # 5\. Lux
 
@@ -333,7 +333,7 @@ df
 
 然后，你可以浏览一个互动小部件，选择最适合你需求的。它的外观如下：
 
-![](../Images/4b0f88df345d4846493e422668e6c094.png)
+![](img/4b0f88df345d4846493e422668e6c094.png)
 
 Lux Profiling Report。作者录制的演示。
 
@@ -357,7 +357,7 @@ df.intent = ["PS", "Encephalopathy"]
 
 最终，**Generalize tab** 显示意图特征，以确定是否可以得出更一般的趋势：
 
-![](../Images/314f0fc7660c7e95a53348f5ebaa6bf0.png)
+![](img/314f0fc7660c7e95a53348f5ebaa6bf0.png)
 
 Lux Profiling Report：探索“意图”功能。作者录制的演示。
 

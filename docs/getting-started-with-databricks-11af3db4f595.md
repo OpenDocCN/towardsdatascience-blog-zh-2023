@@ -1,10 +1,10 @@
 # 开始使用 Databricks
 
-> 原文：[https://towardsdatascience.com/getting-started-with-databricks-11af3db4f595?source=collection_archive---------14-----------------------#2023-05-08](https://towardsdatascience.com/getting-started-with-databricks-11af3db4f595?source=collection_archive---------14-----------------------#2023-05-08)
+> 原文：[`towardsdatascience.com/getting-started-with-databricks-11af3db4f595?source=collection_archive---------14-----------------------#2023-05-08`](https://towardsdatascience.com/getting-started-with-databricks-11af3db4f595?source=collection_archive---------14-----------------------#2023-05-08)
 
 ## 初学者指南：Databricks
 
-[](https://spierre91.medium.com/?source=post_page-----11af3db4f595--------------------------------)[![Sadrach Pierre, Ph.D.](../Images/0e4aab43c2b981546d552beccf2259ab.png)](https://spierre91.medium.com/?source=post_page-----11af3db4f595--------------------------------)[](https://towardsdatascience.com/?source=post_page-----11af3db4f595--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----11af3db4f595--------------------------------) [Sadrach Pierre, Ph.D.](https://spierre91.medium.com/?source=post_page-----11af3db4f595--------------------------------)
+[](https://spierre91.medium.com/?source=post_page-----11af3db4f595--------------------------------)![Sadrach Pierre, Ph.D.](https://spierre91.medium.com/?source=post_page-----11af3db4f595--------------------------------)[](https://towardsdatascience.com/?source=post_page-----11af3db4f595--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----11af3db4f595--------------------------------) [Sadrach Pierre, Ph.D.](https://spierre91.medium.com/?source=post_page-----11af3db4f595--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F11af3db4f595&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-databricks-11af3db4f595&source=-----11af3db4f595---------------------bookmark_footer-----------)![](../Images/c2c2e8095e951f4e978e8ed16e16747c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F11af3db4f595&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgetting-started-with-databricks-11af3db4f595&source=-----11af3db4f595---------------------bookmark_footer-----------)![](img/c2c2e8095e951f4e978e8ed16e16747c.png)
 
 [Alexander Grey](https://www.pexels.com/@mccutcheon/) 在 [Pexels](https://www.pexels.com/photo/assorted-color-bricks-1148496/) 上的图片
 

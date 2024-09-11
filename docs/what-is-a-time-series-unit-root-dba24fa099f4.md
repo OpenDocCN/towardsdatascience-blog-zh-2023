@@ -1,18 +1,18 @@
 # 什么是时间序列单位根？
 
-> 原文：[https://towardsdatascience.com/what-is-a-time-series-unit-root-dba24fa099f4?source=collection_archive---------2-----------------------#2023-10-11](https://towardsdatascience.com/what-is-a-time-series-unit-root-dba24fa099f4?source=collection_archive---------2-----------------------#2023-10-11)
+> 原文：[`towardsdatascience.com/what-is-a-time-series-unit-root-dba24fa099f4?source=collection_archive---------2-----------------------#2023-10-11`](https://towardsdatascience.com/what-is-a-time-series-unit-root-dba24fa099f4?source=collection_archive---------2-----------------------#2023-10-11)
 
 ## 回答时间序列分析中一个非常重要的问题
 
-[](https://medium.com/@egorhowell?source=post_page-----dba24fa099f4--------------------------------)[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----dba24fa099f4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dba24fa099f4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dba24fa099f4--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----dba24fa099f4--------------------------------)
+[](https://medium.com/@egorhowell?source=post_page-----dba24fa099f4--------------------------------)![Egor Howell](https://medium.com/@egorhowell?source=post_page-----dba24fa099f4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dba24fa099f4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dba24fa099f4--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----dba24fa099f4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-a-time-series-unit-root-dba24fa099f4&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----dba24fa099f4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dba24fa099f4--------------------------------) · 7分钟阅读 · 2023年10月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdba24fa099f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-a-time-series-unit-root-dba24fa099f4&user=Egor+Howell&userId=1cac491223b2&source=-----dba24fa099f4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-a-time-series-unit-root-dba24fa099f4&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----dba24fa099f4---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dba24fa099f4--------------------------------) · 7 分钟阅读 · 2023 年 10 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdba24fa099f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-a-time-series-unit-root-dba24fa099f4&user=Egor+Howell&userId=1cac491223b2&source=-----dba24fa099f4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdba24fa099f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-a-time-series-unit-root-dba24fa099f4&source=-----dba24fa099f4---------------------bookmark_footer-----------)![](../Images/c59558f7b3568c61d07e2091c6e32d09.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdba24fa099f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-is-a-time-series-unit-root-dba24fa099f4&source=-----dba24fa099f4---------------------bookmark_footer-----------)![](img/c59558f7b3568c61d07e2091c6e32d09.png)
 
 图片由 [Icons8 Team](https://unsplash.com/@icons8?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -32,4 +32,4 @@
 
 ## 概述
 
-要理解单位根，我们首先必须清楚地了解[**平稳性**](https://www.youtube.com/watch?v=621MSxpYv60&t=4s)。我在之前的博客和YouTube视频中已经覆盖了这个话题，但我们将快速回顾一下关键点。
+要理解单位根，我们首先必须清楚地了解[**平稳性**](https://www.youtube.com/watch?v=621MSxpYv60&t=4s)。我在之前的博客和 YouTube 视频中已经覆盖了这个话题，但我们将快速回顾一下关键点。

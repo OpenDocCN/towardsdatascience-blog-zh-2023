@@ -1,14 +1,14 @@
 # Cypher 在 Neo4j v5 中的变化
 
-> 原文：[https://towardsdatascience.com/how-cypher-changed-in-neo4j-v5-d0f10cbb60bf?source=collection_archive---------10-----------------------#2023-01-17](https://towardsdatascience.com/how-cypher-changed-in-neo4j-v5-d0f10cbb60bf?source=collection_archive---------10-----------------------#2023-01-17)
+> 原文：[`towardsdatascience.com/how-cypher-changed-in-neo4j-v5-d0f10cbb60bf?source=collection_archive---------10-----------------------#2023-01-17`](https://towardsdatascience.com/how-cypher-changed-in-neo4j-v5-d0f10cbb60bf?source=collection_archive---------10-----------------------#2023-01-17)
 
 ## 在 Neo4j 最新发布版本中，Cypher 有哪些新功能和被弃用的特性
 
-[](https://bratanic-tomaz.medium.com/?source=post_page-----d0f10cbb60bf--------------------------------)[![Tomaz Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----d0f10cbb60bf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0f10cbb60bf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d0f10cbb60bf--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----d0f10cbb60bf--------------------------------)
+[](https://bratanic-tomaz.medium.com/?source=post_page-----d0f10cbb60bf--------------------------------)![Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----d0f10cbb60bf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d0f10cbb60bf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0f10cbb60bf--------------------------------) [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----d0f10cbb60bf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-cypher-changed-in-neo4j-v5-d0f10cbb60bf&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----d0f10cbb60bf---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0f10cbb60bf--------------------------------) ·9 分钟阅读·2023年1月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0f10cbb60bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-cypher-changed-in-neo4j-v5-d0f10cbb60bf&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----d0f10cbb60bf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-cypher-changed-in-neo4j-v5-d0f10cbb60bf&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----d0f10cbb60bf---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d0f10cbb60bf--------------------------------) ·9 分钟阅读·2023 年 1 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd0f10cbb60bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-cypher-changed-in-neo4j-v5-d0f10cbb60bf&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----d0f10cbb60bf---------------------clap_footer-----------)
 
 --
 
@@ -20,9 +20,9 @@
 
 ## Neo4j 环境设置
 
-你需要设置一个Neo4j环境来跟随这篇文章中的代码示例。像往常一样，你可以使用[Neo4j Desktop](https://neo4j.com/download/)应用程序来设置本地环境。另一方面，你可以使用作为[Neo4j Aura](https://neo4j.com/cloud/platform/aura-graph-database/)提供的免费云实例。如果你选择Neo4j Aura的路径，使用免费的永久实例并启动一个没有预填充图形的空项目。
+你需要设置一个 Neo4j 环境来跟随这篇文章中的代码示例。像往常一样，你可以使用[Neo4j Desktop](https://neo4j.com/download/)应用程序来设置本地环境。另一方面，你可以使用作为[Neo4j Aura](https://neo4j.com/cloud/platform/aura-graph-database/)提供的免费云实例。如果你选择 Neo4j Aura 的路径，使用免费的永久实例并启动一个没有预填充图形的空项目。
 
-*附注：免费的Neo4j Aura实例不提供GDS支持。由于这是一个以Cypher为重点的博客文章，你不会使用GDS库中的任何算法。*
+*附注：免费的 Neo4j Aura 实例不提供 GDS 支持。由于这是一个以 Cypher 为重点的博客文章，你不会使用 GDS 库中的任何算法。*
 
 ## 数据集
 
@@ -34,15 +34,15 @@
 
 [www.kaggle.com](https://www.kaggle.com/datasets/bac3917/frank-herberts-dune-characters?source=post_page-----d0f10cbb60bf--------------------------------)
 
-沙丘数据集在Kaggle上以CC0许可证提供。为了方便你，我已经将数据集复制到GitHub仓库中，这样你就不必下载数据集，可以轻松地在你的本地或云实例的Neo4j中导入它。此外，我将关系类型Parent-Child和Other Family重命名为Family，并删除了Unknown关系。
+沙丘数据集在 Kaggle 上以 CC0 许可证提供。为了方便你，我已经将数据集复制到 GitHub 仓库中，这样你就不必下载数据集，可以轻松地在你的本地或云实例的 Neo4j 中导入它。此外，我将关系类型 Parent-Child 和 Other Family 重命名为 Family，并删除了 Unknown 关系。
 
 ## 图形模型
 
-![](../Images/69e0591fd901d85c38e73fcbfe314b2e.png)
+![](img/69e0591fd901d85c38e73fcbfe314b2e.png)
 
 沙丘图形模型。作者提供的图片。
 
-图形模型围绕角色展开。角色节点具有多个属性，如名字、文化、以及他们的出生或去世时间。此外，他们的家族忠诚度被表示为次要节点标签。使用次要节点标签而不是单独的节点的主要目的是展示Cypher中新节点标签过滤选项。角色之间有四种关系类型：
+图形模型围绕角色展开。角色节点具有多个属性，如名字、文化、以及他们的出生或去世时间。此外，他们的家族忠诚度被表示为次要节点标签。使用次要节点标签而不是单独的节点的主要目的是展示 Cypher 中新节点标签过滤选项。角色之间有四种关系类型：
 
 +   同盟
 
@@ -54,17 +54,17 @@
 
 ## 数据集导入
 
-与大多数导入情况一样，你首先需要在Neo4j中定义唯一约束。唯一约束确保每个具有特定标签的节点的给定属性是唯一的。
+与大多数导入情况一样，你首先需要在 Neo4j 中定义唯一约束。唯一约束确保每个具有特定标签的节点的给定属性是唯一的。
 
-在Neo4j v5中，定义唯一约束的语法略有变化。
+在 Neo4j v5 中，定义唯一约束的语法略有变化。
 
-![](../Images/257dd08e5bcb1aa5a02b759bf6977287.png)
+![](img/257dd08e5bcb1aa5a02b759bf6977287.png)
 
-UNIQUE CONSTRAINTS的语法更改。作者提供的图片。
+UNIQUE CONSTRAINTS 的语法更改。作者提供的图片。
 
 新的唯一约束语法中有两个关键词被替换。**ON** 关键词被替换为**FOR**，而**ASSERT** 被更改为**REQUIRE**。
 
-以下Cypher语句定义了**Character**节点的**name**属性的唯一约束。
+以下 Cypher 语句定义了**Character**节点的**name**属性的唯一约束。
 
 ```py
 CREATE CONSTRAINT IF NOT EXISTS FOR (c:Character) REQUIRE c.name IS UNIQUE;
@@ -72,13 +72,13 @@ CREATE CONSTRAINT IF NOT EXISTS FOR (c:Character) REQUIRE c.name IS UNIQUE;
 
 接下来，你需要导入 CSV 文件。尽管 Dune CSV 文件只有 1000 行，但你将假设你正在处理一个具有数千行的大型 CSV 文件。因此，你希望将批量导入分成多个事务。由于 Neo4j v5 中**USING PERIODIC COMMIT**子句已被弃用，你需要使用新的批处理事务语法。
 
-![](../Images/7b8afdda43d5009b5e07a8bf3cd7691f.png)
+![](img/7b8afdda43d5009b5e07a8bf3cd7691f.png)
 
 导入大型 CSV 文件的语法更改。图片由作者提供。
 
 子查询已经在 Neo4j v4 中引入，但在 v5 中发挥了更重要的作用。子查询通过**CALL**子句实例化，并用花括号**{}**包裹。它们非常适合各种功能，如[后联合处理](https://neo4j.com/developer/kb/post-union-processing/)、[限制每行结果](https://neo4j.com/developer/kb/limiting-match-results-per-row/)、以及[条件执行](https://neo4j.com/developer/kb/conditional-cypher-execution/)。此外，Cypher 子查询现在是唯一的原生 Cypher 语法（不包括 APOC），可以将单个 Cypher 语句批处理成多个事务。为了指定 Cypher 子查询应拆分成多个事务，你需要添加**IN TRANSACTIONS OF x ROWS**，其中 x 代表每个批次的行数。
 
-以下 Cypher 语句包含两个嵌套的子查询。顶层子查询用于将每10行的导入批处理到一个新事务中。另一方面，你可以将嵌套的 Cypher 子查询用作条件执行功能。
+以下 Cypher 语句包含两个嵌套的子查询。顶层子查询用于将每 10 行的导入批处理到一个新事务中。另一方面，你可以将嵌套的 Cypher 子查询用作条件执行功能。
 
 ```py
 LOAD CSV WITH HEADERS FROM "https://bit.ly/3kbU21V" AS row
@@ -186,7 +186,7 @@ RETURN [n in nodes(p) | n.name] AS pairs, type(r) AS results
 
 接下来，你将了解存在性子查询的语法如何更改。存在性子查询可以用来查找属于指定模式的图模式。
 
-![](../Images/cdda2ff1dd224d5ac59bca2ccae4347d.png)
+![](img/cdda2ff1dd224d5ac59bca2ccae4347d.png)
 
 存在性过滤器的语法更改。图片由作者提供。
 
@@ -222,7 +222,7 @@ RETURN count(*) AS count
 
 本文最后一类子查询是所谓的计数子查询。它们用于计数定义的图模式数量。例如，我在以前的博客文章中经常使用它们来计数一个节点拥有的关系数量。
 
-![](../Images/def6f328a4442fb65901196efcc6b64e.png)
+![](img/def6f328a4442fb65901196efcc6b64e.png)
 
 计数子查询的语法更改。图片由作者提供。
 
@@ -238,7 +238,7 @@ ORDER BY degree DESC
 LIMIT 5
 ```
 
-如之前一样，您可以使用**WHERE**子句中的计数子查询来过滤节点。在这个例子中，Cypher语句过滤了具有多个关系的节点。
+如之前一样，您可以使用**WHERE**子句中的计数子查询来过滤节点。在这个例子中，Cypher 语句过滤了具有多个关系的节点。
 
 ```py
 MATCH (c:Character)
@@ -248,6 +248,6 @@ RETURN count(*) AS count
 
 ## 摘要
 
-Neo4j的新版本提供了更快的性能和更多的Cypher灵活性。然而，您可能需要重构一些现有的Cypher语句，以便与Neo4j v5兼容。希望这篇博客文章能帮助您完成升级过程。
+Neo4j 的新版本提供了更快的性能和更多的 Cypher 灵活性。然而，您可能需要重构一些现有的 Cypher 语句，以便与 Neo4j v5 兼容。希望这篇博客文章能帮助您完成升级过程。
 
 一如既往，代码可以在[GitHub](https://github.com/tomasonjo/blogs/blob/master/dune/Cypher_v5.ipynb)上找到。

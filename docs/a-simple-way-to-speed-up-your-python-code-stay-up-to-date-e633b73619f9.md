@@ -1,20 +1,20 @@
 # 提升你的 Python 代码速度的简单方法 — 保持最新
 
-> 原文：[https://towardsdatascience.com/a-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9?source=collection_archive---------30-----------------------#2023-01-10](https://towardsdatascience.com/a-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9?source=collection_archive---------30-----------------------#2023-01-10)
+> 原文：[`towardsdatascience.com/a-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9?source=collection_archive---------30-----------------------#2023-01-10`](https://towardsdatascience.com/a-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9?source=collection_archive---------30-----------------------#2023-01-10)
 
 ## 优化
 
-## 通过更新库，速度提升高达15倍
+## 通过更新库，速度提升高达 15 倍
 
-[](https://medium.com/@maclayton?source=post_page-----e633b73619f9--------------------------------)[![Mike Clayton](../Images/2d37746b13b7d2ff1c6515893914da97.png)](https://medium.com/@maclayton?source=post_page-----e633b73619f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e633b73619f9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e633b73619f9--------------------------------) [Mike Clayton](https://medium.com/@maclayton?source=post_page-----e633b73619f9--------------------------------)
+[](https://medium.com/@maclayton?source=post_page-----e633b73619f9--------------------------------)![Mike Clayton](https://medium.com/@maclayton?source=post_page-----e633b73619f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e633b73619f9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e633b73619f9--------------------------------) [Mike Clayton](https://medium.com/@maclayton?source=post_page-----e633b73619f9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F51dce1c5bc03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9&user=Mike+Clayton&userId=51dce1c5bc03&source=post_page-51dce1c5bc03----e633b73619f9---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----e633b73619f9--------------------------------) ·13分钟阅读·2023年1月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe633b73619f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9&user=Mike+Clayton&userId=51dce1c5bc03&source=-----e633b73619f9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F51dce1c5bc03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9&user=Mike+Clayton&userId=51dce1c5bc03&source=post_page-51dce1c5bc03----e633b73619f9---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----e633b73619f9--------------------------------) ·13 分钟阅读·2023 年 1 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe633b73619f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9&user=Mike+Clayton&userId=51dce1c5bc03&source=-----e633b73619f9---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe633b73619f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9&source=-----e633b73619f9---------------------bookmark_footer-----------)![](../Images/00e95122bcff0ce1559075682885c4cd.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe633b73619f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-way-to-speed-up-your-python-code-stay-up-to-date-e633b73619f9&source=-----e633b73619f9---------------------bookmark_footer-----------)![](img/00e95122bcff0ce1559075682885c4cd.png)
 
 图片来自 [Gerd Altmann](https://pixabay.com/users/geralt-9301/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1672346) 自 [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1672346)
 

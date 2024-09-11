@@ -1,20 +1,20 @@
-# 用Python构建交互式数据可视化——讲故事的艺术
+# 用 Python 构建交互式数据可视化——讲故事的艺术
 
-> 原文：[https://towardsdatascience.com/building-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488?source=collection_archive---------1-----------------------#2023-06-04](https://towardsdatascience.com/building-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488?source=collection_archive---------1-----------------------#2023-06-04)
+> 原文：[`towardsdatascience.com/building-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488?source=collection_archive---------1-----------------------#2023-06-04`](https://towardsdatascience.com/building-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488?source=collection_archive---------1-----------------------#2023-06-04)
 
 ## 入门指南
 
-## Seaborn、Bokeh、Plotly和Dash用于有效传达数据见解
+## Seaborn、Bokeh、Plotly 和 Dash 用于有效传达数据见解
 
-[](https://polmarin.medium.com/?source=post_page-----ceb43db67488--------------------------------)[![Pol Marin](../Images/a4f69a96717d453db9791f27b8f85e86.png)](https://polmarin.medium.com/?source=post_page-----ceb43db67488--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ceb43db67488--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ceb43db67488--------------------------------) [Pol Marin](https://polmarin.medium.com/?source=post_page-----ceb43db67488--------------------------------)
+[](https://polmarin.medium.com/?source=post_page-----ceb43db67488--------------------------------)![Pol Marin](https://polmarin.medium.com/?source=post_page-----ceb43db67488--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ceb43db67488--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ceb43db67488--------------------------------) [Pol Marin](https://polmarin.medium.com/?source=post_page-----ceb43db67488--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fa43cc443e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488&user=Pol+Marin&userId=1fa43cc443e7&source=post_page-1fa43cc443e7----ceb43db67488---------------------post_header-----------) 发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ceb43db67488--------------------------------) ·16 min read·2023年6月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fceb43db67488&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488&user=Pol+Marin&userId=1fa43cc443e7&source=-----ceb43db67488---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1fa43cc443e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488&user=Pol+Marin&userId=1fa43cc443e7&source=post_page-1fa43cc443e7----ceb43db67488---------------------post_header-----------) 发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----ceb43db67488--------------------------------) ·16 min read·2023 年 6 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fceb43db67488&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488&user=Pol+Marin&userId=1fa43cc443e7&source=-----ceb43db67488---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fceb43db67488&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488&source=-----ceb43db67488---------------------bookmark_footer-----------)![](../Images/944921b12b326517582e6fc337dd6090.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fceb43db67488&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-interactive-data-visualizations-with-python-the-art-of-storytelling-ceb43db67488&source=-----ceb43db67488---------------------bookmark_footer-----------)![](img/944921b12b326517582e6fc337dd6090.png)
 
 图片由[Nong](https://unsplash.com/de/@californong?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -26,6 +26,6 @@
 
 可视化因此是最终讲述故事的一部分，它无疑是展示任何事实的最佳方式——这就是为什么大家都在使用它们。
 
-此外，像Tableau或Power BI这样的工具由于能够轻松创建交互式仪表板而越来越受到青睐。商业人士通常对带有图表和颜色的炫酷仪表板感到惊讶，因此他们已经开始将其作为招聘要求。
+此外，像 Tableau 或 Power BI 这样的工具由于能够轻松创建交互式仪表板而越来越受到青睐。商业人士通常对带有图表和颜色的炫酷仪表板感到惊讶，因此他们已经开始将其作为招聘要求。
 
-今天，我将与大家分享一些Python选项，用于创建交互式可视化，特别是对于那些无法或不喜欢/不想使用这些特定数据可视化工具的人。
+今天，我将与大家分享一些 Python 选项，用于创建交互式可视化，特别是对于那些无法或不喜欢/不想使用这些特定数据可视化工具的人。

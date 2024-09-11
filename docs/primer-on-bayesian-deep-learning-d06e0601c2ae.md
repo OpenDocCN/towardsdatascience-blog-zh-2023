@@ -1,14 +1,14 @@
 # 贝叶斯深度学习概论
 
-> 原文：[https://towardsdatascience.com/primer-on-bayesian-deep-learning-d06e0601c2ae?source=collection_archive---------4-----------------------#2023-02-01](https://towardsdatascience.com/primer-on-bayesian-deep-learning-d06e0601c2ae?source=collection_archive---------4-----------------------#2023-02-01)
+> 原文：[`towardsdatascience.com/primer-on-bayesian-deep-learning-d06e0601c2ae?source=collection_archive---------4-----------------------#2023-02-01`](https://towardsdatascience.com/primer-on-bayesian-deep-learning-d06e0601c2ae?source=collection_archive---------4-----------------------#2023-02-01)
 
 ## 概率深度学习
 
-[](https://medium.com/@luisroque?source=post_page-----d06e0601c2ae--------------------------------)[![Luís Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----d06e0601c2ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d06e0601c2ae--------------------------------)[![数据科学的前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d06e0601c2ae--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----d06e0601c2ae--------------------------------)
+[](https://medium.com/@luisroque?source=post_page-----d06e0601c2ae--------------------------------)![Luís Roque](https://medium.com/@luisroque?source=post_page-----d06e0601c2ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d06e0601c2ae--------------------------------)![数据科学的前沿](https://towardsdatascience.com/?source=post_page-----d06e0601c2ae--------------------------------) [Luís Roque](https://medium.com/@luisroque?source=post_page-----d06e0601c2ae--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprimer-on-bayesian-deep-learning-d06e0601c2ae&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----d06e0601c2ae---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----d06e0601c2ae--------------------------------) ·8 分钟阅读·2023年2月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd06e0601c2ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprimer-on-bayesian-deep-learning-d06e0601c2ae&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----d06e0601c2ae---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2195f049db86&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprimer-on-bayesian-deep-learning-d06e0601c2ae&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=post_page-2195f049db86----d06e0601c2ae---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----d06e0601c2ae--------------------------------) ·8 分钟阅读·2023 年 2 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd06e0601c2ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprimer-on-bayesian-deep-learning-d06e0601c2ae&user=Lu%C3%ADs+Roque&userId=2195f049db86&source=-----d06e0601c2ae---------------------clap_footer-----------)
 
 --
 
@@ -28,8 +28,8 @@
 
 1.  [TensorFlow Probability 的温和介绍：可训练参数](https://medium.com/towards-data-science/gentle-introduction-to-tensorflow-probability-trainable-parameters-5098ea4fed15)
 
-1.  [从头开始在 TensorFlow Probability 中进行最大似然估计](/maximum-likelihood-estimation-from-scratch-in-tensorflow-probability-2fc0eefdbfc2)
+1.  从头开始在 TensorFlow Probability 中进行最大似然估计
 
-1.  [从头开始在 TensorFlow 中进行概率线性回归](/probabilistic-linear-regression-from-scratch-in-tensorflow-2eb633fffc00)
+1.  从头开始在 TensorFlow 中进行概率线性回归
 
 1.  [概率回归与确定性回归](https://medium.com/towards-data-science/probabilistic-vs-deterministic-regression-with-tensorflow-85ef791beeef)…

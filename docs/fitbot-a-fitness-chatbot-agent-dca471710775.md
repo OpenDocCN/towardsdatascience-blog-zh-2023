@@ -1,18 +1,18 @@
 # FitBot — 一款健身聊天机器人代理
 
-> 原文：[https://towardsdatascience.com/fitbot-a-fitness-chatbot-agent-dca471710775?source=collection_archive---------3-----------------------#2023-07-28](https://towardsdatascience.com/fitbot-a-fitness-chatbot-agent-dca471710775?source=collection_archive---------3-----------------------#2023-07-28)
+> 原文：[`towardsdatascience.com/fitbot-a-fitness-chatbot-agent-dca471710775?source=collection_archive---------3-----------------------#2023-07-28`](https://towardsdatascience.com/fitbot-a-fitness-chatbot-agent-dca471710775?source=collection_archive---------3-----------------------#2023-07-28)
 
-## 如何创建一个利用OpenAI函数调用的聊天机器人代理
+## 如何创建一个利用 OpenAI 函数调用的聊天机器人代理
 
-[](https://solano-todeschini.medium.com/?source=post_page-----dca471710775--------------------------------)[![Solano Todeschini](../Images/75e871340659c8df37f558b74c9d73c5.png)](https://solano-todeschini.medium.com/?source=post_page-----dca471710775--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dca471710775--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dca471710775--------------------------------) [Solano Todeschini](https://solano-todeschini.medium.com/?source=post_page-----dca471710775--------------------------------)
+[](https://solano-todeschini.medium.com/?source=post_page-----dca471710775--------------------------------)![Solano Todeschini](https://solano-todeschini.medium.com/?source=post_page-----dca471710775--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dca471710775--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----dca471710775--------------------------------) [Solano Todeschini](https://solano-todeschini.medium.com/?source=post_page-----dca471710775--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F618a52c38c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffitbot-a-fitness-chatbot-agent-dca471710775&user=Solano+Todeschini&userId=618a52c38c0c&source=post_page-618a52c38c0c----dca471710775---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----dca471710775--------------------------------) ·13分钟阅读·2023年7月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdca471710775&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffitbot-a-fitness-chatbot-agent-dca471710775&user=Solano+Todeschini&userId=618a52c38c0c&source=-----dca471710775---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F618a52c38c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffitbot-a-fitness-chatbot-agent-dca471710775&user=Solano+Todeschini&userId=618a52c38c0c&source=post_page-618a52c38c0c----dca471710775---------------------post_header-----------) 发布于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----dca471710775--------------------------------) ·13 分钟阅读·2023 年 7 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdca471710775&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffitbot-a-fitness-chatbot-agent-dca471710775&user=Solano+Todeschini&userId=618a52c38c0c&source=-----dca471710775---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdca471710775&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffitbot-a-fitness-chatbot-agent-dca471710775&source=-----dca471710775---------------------bookmark_footer-----------)![](../Images/13dcc8b397df4ee5a33d4e658c7210ab.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdca471710775&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffitbot-a-fitness-chatbot-agent-dca471710775&source=-----dca471710775---------------------bookmark_footer-----------)![](img/13dcc8b397df4ee5a33d4e658c7210ab.png)
 
 照片由 [Gary Butterfield](https://unsplash.com/@garybpt?utm_source=medium&utm_medium=referral) 提供，刊登于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -36,7 +36,7 @@
 
 通过利用 ReAct 框架，FitBot 保持了对话的互动性质，并能对每条建议提供详细的解释。它还连接到外部营养数据库，确保提供准确且最新的饮食建议。
 
-![](../Images/fb41e77201a3657f4dc62c043cc52c2b.png)
+![](img/fb41e77201a3657f4dc62c043cc52c2b.png)
 
 图 1：ReAct 结合了推理（例如，链式思维提示）和行动。图片来源：[链接](https://react-lm.github.io/)
 
@@ -56,9 +56,9 @@ FitBot 的独特之处在于其能够与外部营养数据库接口。这使得 
 
 1.  **chatbot.py**：此文件包含 FitBot 用户界面的代码，使用 Gradio 库实现。
 
-1.  **agents.py**：这个文件包含`Agent`类，用于处理与OpenAI API的对话。这段代码基于由[James Briggs](https://github.com/jamescalam)在funkagent库中开发的[this script](https://github.com/aurelio-labs/funkagent/blob/main/funkagent/agents.py)。
+1.  **agents.py**：这个文件包含`Agent`类，用于处理与 OpenAI API 的对话。这段代码基于由[James Briggs](https://github.com/jamescalam)在 funkagent 库中开发的[this script](https://github.com/aurelio-labs/funkagent/blob/main/funkagent/agents.py)。
 
-1.  **parser.py**：这个文件包含将函数文档字符串解析为OpenAI函数描述的代码。
+1.  **parser.py**：这个文件包含将函数文档字符串解析为 OpenAI 函数描述的代码。
 
 ## 定义我们的功能
 
@@ -82,7 +82,7 @@ def get_nutritional_info(self, query: str) -> dict:
         return {"Error": response.status_code, "Message": response.text}
 ```
 
-2.`**calculate_bmr**`：基础代谢率（BMR）是理解个体新陈代谢的关键指标。它是在休息时消耗的能量量，与一个人的年龄、体重、身高和性别密切相关。计算BMR的能力为聊天机器人提供了一个基准，帮助用户理解他们的身体即使没有任何身体活动也需要多少卡路里。
+2.`**calculate_bmr**`：基础代谢率（BMR）是理解个体新陈代谢的关键指标。它是在休息时消耗的能量量，与一个人的年龄、体重、身高和性别密切相关。计算 BMR 的能力为聊天机器人提供了一个基准，帮助用户理解他们的身体即使没有任何身体活动也需要多少卡路里。
 
 ```py
 def calculate_bmr(weight: float, height: float, age: int, gender: str, equation: str = 'mifflin_st_jeor') -> float:
@@ -107,7 +107,7 @@ def calculate_bmr(weight: float, height: float, age: int, gender: str, equation:
             return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
 ```
 
-3.`**calculate_tdee**`：了解一个人的总日能量消耗（TDEE）对于制定个性化的饮食或锻炼计划至关重要。TDEE不仅考虑了BMR，还考虑了日常活动和锻炼中消耗的卡路里。了解他们的TDEE可以帮助用户更有效地计划他们的饮食和锻炼计划，以维持、减少或增加体重。
+3.`**calculate_tdee**`：了解一个人的总日能量消耗（TDEE）对于制定个性化的饮食或锻炼计划至关重要。TDEE 不仅考虑了 BMR，还考虑了日常活动和锻炼中消耗的卡路里。了解他们的 TDEE 可以帮助用户更有效地计划他们的饮食和锻炼计划，以维持、减少或增加体重。
 
 ```py
 def calculate_tdee(bmr: float, activity_level: str) -> float:
@@ -128,7 +128,7 @@ def calculate_tdee(bmr: float, activity_level: str) -> float:
     return bmr * activity_factors.get(activity_level, 1)
 ```
 
-4.`**calculate_ibw**`：了解理想体重（IBW）可以为用户提供一个被认为对他们的身高和性别健康的体重目标。虽然IBW不是一个完美的衡量标准（它没有考虑肌肉质量等因素），但它确实为用户提供了一个关于他们的体重应该达到的大致想法，以达到最佳健康。
+4.`**calculate_ibw**`：了解理想体重（IBW）可以为用户提供一个被认为对他们的身高和性别健康的体重目标。虽然 IBW 不是一个完美的衡量标准（它没有考虑肌肉质量等因素），但它确实为用户提供了一个关于他们的体重应该达到的大致想法，以达到最佳健康。
 
 ```py
 def calculate_ibw(height: float, gender: str) -> float:
@@ -152,7 +152,7 @@ def calculate_ibw(height: float, gender: str) -> float:
         raise ValueError("Invalid gender. Expected 'male' or 'female'.")
 ```
 
-4\. `**calculate_bmi**`：身体质量指数（BMI）是使用一个人的身高和体重进行简单计算的。公式是BMI = kg/m^2，其中kg是一个人的体重（单位：千克），m^2是他们的身高的平方（单位：米）。BMI并不直接测量体脂肪，但研究表明BMI与更直接的体脂肪测量指标有中等相关性。它提供了一个有用的标准来理解一个人是偏瘦、健康、超重还是肥胖。
+4\. `**calculate_bmi**`：身体质量指数（BMI）是使用一个人的身高和体重进行简单计算的。公式是 BMI = kg/m²，其中 kg 是一个人的体重（单位：千克），m² 是他们的身高的平方（单位：米）。BMI 并不直接测量体脂肪，但研究表明 BMI 与更直接的体脂肪测量指标有中等相关性。它提供了一个有用的标准来理解一个人是偏瘦、健康、超重还是肥胖。
 
 ```py
 def calculate_bmi(weight: float, height: float) -> float:
@@ -462,7 +462,7 @@ def get_response(openai_api_key, nut_api_key, user_input, action=None):
 
 最终界面如下所示：
 
-![](../Images/f666ec6f71c1c6b0b4568e8ac7d5446f.png)
+![](img/f666ec6f71c1c6b0b4568e8ac7d5446f.png)
 
 图 2：聊天机器人的 Gradio 用户界面。图片由作者提供。
 

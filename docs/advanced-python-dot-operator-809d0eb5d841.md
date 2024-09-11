@@ -1,22 +1,22 @@
 # 高级 Python：点运算符
 
-> 原文：[https://towardsdatascience.com/advanced-python-dot-operator-809d0eb5d841?source=collection_archive---------0-----------------------#2023-10-20](https://towardsdatascience.com/advanced-python-dot-operator-809d0eb5d841?source=collection_archive---------0-----------------------#2023-10-20)
+> 原文：[`towardsdatascience.com/advanced-python-dot-operator-809d0eb5d841?source=collection_archive---------0-----------------------#2023-10-20`](https://towardsdatascience.com/advanced-python-dot-operator-809d0eb5d841?source=collection_archive---------0-----------------------#2023-10-20)
 
 ## 这个运算符使 Python 中的面向对象范式成为可能
 
-[](https://medium.com/@ilija.lazarevic?source=post_page-----809d0eb5d841--------------------------------)[![Ilija Lazarevic](../Images/4a0d84af6d8fa97705ee35444d319b07.png)](https://medium.com/@ilija.lazarevic?source=post_page-----809d0eb5d841--------------------------------)[](https://towardsdatascience.com/?source=post_page-----809d0eb5d841--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----809d0eb5d841--------------------------------) [Ilija Lazarevic](https://medium.com/@ilija.lazarevic?source=post_page-----809d0eb5d841--------------------------------)
+[](https://medium.com/@ilija.lazarevic?source=post_page-----809d0eb5d841--------------------------------)![Ilija Lazarevic](https://medium.com/@ilija.lazarevic?source=post_page-----809d0eb5d841--------------------------------)[](https://towardsdatascience.com/?source=post_page-----809d0eb5d841--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----809d0eb5d841--------------------------------) [Ilija Lazarevic](https://medium.com/@ilija.lazarevic?source=post_page-----809d0eb5d841--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe73ea2eae8e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-dot-operator-809d0eb5d841&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=post_page-e73ea2eae8e6----809d0eb5d841---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----809d0eb5d841--------------------------------) ·13 分钟阅读·2023年10月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F809d0eb5d841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-dot-operator-809d0eb5d841&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=-----809d0eb5d841---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe73ea2eae8e6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-dot-operator-809d0eb5d841&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=post_page-e73ea2eae8e6----809d0eb5d841---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----809d0eb5d841--------------------------------) ·13 分钟阅读·2023 年 10 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F809d0eb5d841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-dot-operator-809d0eb5d841&user=Ilija+Lazarevic&userId=e73ea2eae8e6&source=-----809d0eb5d841---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F809d0eb5d841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-dot-operator-809d0eb5d841&source=-----809d0eb5d841---------------------bookmark_footer-----------)![](../Images/841c96a738ad1ab6ce24a4c82866859e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F809d0eb5d841&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-python-dot-operator-809d0eb5d841&source=-----809d0eb5d841---------------------bookmark_footer-----------)![](img/841c96a738ad1ab6ce24a4c82866859e.png)
 
 点运算符是 Python 中面向对象范式的支柱之一。照片来源：[Madeline Pere](https://unsplash.com/@mpere?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) 在 [Unsplash](https://unsplash.com/photos/r37QcATSbD4?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 
-这次，我将讨论一个看似微不足道的东西，那就是“点操作符”。你们中的大多数人已经多次使用了这个操作符，却不知道或未曾质疑其背后的工作原理。与我上次讨论的[元类](https://medium.com/towards-data-science/advanced-python-metaclasses-e32d46e0ebe3)概念相比，这个操作符在日常任务中稍显实用。开个玩笑，你在使用Python做更多事情时几乎每次都会用到它。这正是我认为你们可能想深入了解的原因，我愿意做你的向导。让我们开始这段旅程吧！
+这次，我将讨论一个看似微不足道的东西，那就是“点操作符”。你们中的大多数人已经多次使用了这个操作符，却不知道或未曾质疑其背后的工作原理。与我上次讨论的[元类](https://medium.com/towards-data-science/advanced-python-metaclasses-e32d46e0ebe3)概念相比，这个操作符在日常任务中稍显实用。开个玩笑，你在使用 Python 做更多事情时几乎每次都会用到它。这正是我认为你们可能想深入了解的原因，我愿意做你的向导。让我们开始这段旅程吧！
 
 我将从一个简单的问题开始：“什么是‘点操作符’？”
 
@@ -29,7 +29,7 @@ print(hello.upper())
 # HELLO WORLD!
 ```
 
-好吧，这确实是一个“Hello World”示例，但我很难想象有人会像这样开始教你Python。无论如何，“点操作符”就是`hello.upper()`中的“.”部分。让我们试着给出一个更详细的例子：
+好吧，这确实是一个“Hello World”示例，但我很难想象有人会像这样开始教你 Python。无论如何，“点操作符”就是`hello.upper()`中的“.”部分。让我们试着给出一个更详细的例子：
 
 ```py
 class Person:

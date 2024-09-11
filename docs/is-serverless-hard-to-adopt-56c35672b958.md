@@ -1,10 +1,10 @@
 # 无服务器难以采纳吗？
 
-> 原文：[https://towardsdatascience.com/is-serverless-hard-to-adopt-56c35672b958?source=collection_archive---------2-----------------------#2023-11-20](https://towardsdatascience.com/is-serverless-hard-to-adopt-56c35672b958?source=collection_archive---------2-----------------------#2023-11-20)
+> 原文：[`towardsdatascience.com/is-serverless-hard-to-adopt-56c35672b958?source=collection_archive---------2-----------------------#2023-11-20`](https://towardsdatascience.com/is-serverless-hard-to-adopt-56c35672b958?source=collection_archive---------2-----------------------#2023-11-20)
 
 ## 理解使您的无服务器采用成功的简单措施
 
-[](https://sbrisals.medium.com/?source=post_page-----56c35672b958--------------------------------)[![Sheen Brisals](../Images/541db9c271828213fb9706d4dc344f30.png)](https://sbrisals.medium.com/?source=post_page-----56c35672b958--------------------------------)[](https://towardsdatascience.com/?source=post_page-----56c35672b958--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----56c35672b958--------------------------------) [Sheen Brisals](https://sbrisals.medium.com/?source=post_page-----56c35672b958--------------------------------)
+[](https://sbrisals.medium.com/?source=post_page-----56c35672b958--------------------------------)![Sheen Brisals](https://sbrisals.medium.com/?source=post_page-----56c35672b958--------------------------------)[](https://towardsdatascience.com/?source=post_page-----56c35672b958--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----56c35672b958--------------------------------) [Sheen Brisals](https://sbrisals.medium.com/?source=post_page-----56c35672b958--------------------------------)
 
 ·
 
@@ -12,21 +12,21 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F56c35672b958&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-serverless-hard-to-adopt-56c35672b958&source=-----56c35672b958---------------------bookmark_footer-----------)![](../Images/7766fc865155f0c3390fa6d74abce0ff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F56c35672b958&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-serverless-hard-to-adopt-56c35672b958&source=-----56c35672b958---------------------bookmark_footer-----------)![](img/7766fc865155f0c3390fa6d74abce0ff.png)
 
-Mikhail Nilov拍摄的照片，来自[Pexels](https://www.pexels.com/photo/a-boy-wearing-long-sleeves-sweater-pulling-his-hair-7929277/)
+Mikhail Nilov 拍摄的照片，来自[Pexels](https://www.pexels.com/photo/a-boy-wearing-long-sleeves-sweater-pulling-his-hair-7929277/)
 
-一年多前，我们在奥地利塞默林的9月环境中某个高处徒步时，在我们的小径上的一个路口迷失了方向。由于路标不明确，我用手机寻找线索。在众多Twitter（X）通知中，刚刚闪过保罗·约翰斯顿的文章[*学习无服务器（以及为什么难）*](https://pauldjohnston.medium.com/learning-serverless-and-why-it-is-hard-4a53b390c63d)。
+一年多前，我们在奥地利塞默林的 9 月环境中某个高处徒步时，在我们的小径上的一个路口迷失了方向。由于路标不明确，我用手机寻找线索。在众多 Twitter（X）通知中，刚刚闪过保罗·约翰斯顿的文章[*学习无服务器（以及为什么难）*](https://pauldjohnston.medium.com/learning-serverless-and-why-it-is-hard-4a53b390c63d)。
 
 在平常的日子里，我会立刻阅读它。但考虑到当前的位置以及引导家人走出树林的责任，我并不愿意为了无服务器牺牲赏心悦目的塞默林早晨。
 
-我重读了这一点，在他的文章中，保罗勇敢地击中了许多钉子！我本想更早地加入，但是为了完成《*AWS上的无服务器开发。构建企业级无服务器解决方案*》（O’Reilly, 2024）这本书，我在一年后来借了这把锤子，来打自己的一些钉子，从整体角度来看问题，而不仅仅是学习本身。
+我重读了这一点，在他的文章中，保罗勇敢地击中了许多钉子！我本想更早地加入，但是为了完成《*AWS 上的无服务器开发。构建企业级无服务器解决方案*》（O’Reilly, 2024）这本书，我在一年后来借了这把锤子，来打自己的一些钉子，从整体角度来看问题，而不仅仅是学习本身。
 
-在这篇文章中，我将带你了解使用无服务器技术开发应用程序时成功的一些关键因素 — 无论是在商业产品开发、构建数据驱动的应用程序、AI还是机器学习方面。
+在这篇文章中，我将带你了解使用无服务器技术开发应用程序时成功的一些关键因素 — 无论是在商业产品开发、构建数据驱动的应用程序、AI 还是机器学习方面。
 
 [](https://sbrisals.medium.com/the-serverless-book-2209ee13e619?source=post_page-----56c35672b958--------------------------------) [## 无服务器开发
 
-### AWS上的无服务器开发：构建企业级无服务器解决方案
+### AWS 上的无服务器开发：构建企业级无服务器解决方案
 
 [sbrisals.medium.com](https://sbrisals.medium.com/the-serverless-book-2209ee13e619?source=post_page-----56c35672b958--------------------------------)
 
@@ -46,7 +46,7 @@ Mikhail Nilov拍摄的照片，来自[Pexels](https://www.pexels.com/photo/a-boy
 
 我们日常生活中有很多挑战，但我们学习技能并跟随已验证的路径来提升自己。无服务器开发也不例外。它可能听起来有点简单（就像自动变速汽车），但它不会让你即刻启动引擎并飞驰而去。
 
-![](../Images/c356ac3c5f296c9e3223a22f4c686445.png)
+![](img/c356ac3c5f296c9e3223a22f4c686445.png)
 
 一个混乱的无服务器实现。来源作者。
 
@@ -60,7 +60,7 @@ Mikhail Nilov拍摄的照片，来自[Pexels](https://www.pexels.com/photo/a-boy
 
 很多时候，许多人将无服务器描绘成一种架构蓝图、函数即服务（FaaS）或框架。对我而言，它超越了这些概念，远超我们通常想象的。无服务器，某种程度上，是一个技术生态系统。当你和我使用无服务器时，我们也成为其中的一部分——类似于司机和乘客成为汽车生态系统的一部分。
 
-![](../Images/6784f1c3fce5749693fa501b656cee16.png)
+![](img/6784f1c3fce5749693fa501b656cee16.png)
 
 无服务器生态系统包含许多因素。来源作者。
 
@@ -70,9 +70,9 @@ Mikhail Nilov拍摄的照片，来自[Pexels](https://www.pexels.com/photo/a-boy
 
 # 如果你以错误的心态开始，无服务器将会很难。
 
-*几年前，一位工程师联系我寻求有关他无服务器旅程的指导。聊天几分钟后，很明显他希望以云无关的方式实现他的Lambda函数逻辑，以便他的无服务器应用程序可以在组织决策者希望切换时随时部署到不同的云提供商* ***如果及何时*** *决策者想要切换。*
+*几年前，一位工程师联系我寻求有关他无服务器旅程的指导。聊天几分钟后，很明显他希望以云无关的方式实现他的 Lambda 函数逻辑，以便他的无服务器应用程序可以在组织决策者希望切换时随时部署到不同的云提供商* ***如果及何时*** *决策者想要切换。*
 
-*了解他的意图后，我询问了他对非FaaS服务的处理方法，以及他如何使其具有云无关性。他的解释是某种宏伟的六边形架构实现！*
+*了解他的意图后，我询问了他对非 FaaS 服务的处理方法，以及他如何使其具有云无关性。他的解释是某种宏伟的六边形架构实现！*
 
 *在通话快结束时，我意识到他还没有在生产环境中部署任何无服务器工作负载！*
 
@@ -114,15 +114,15 @@ Mikhail Nilov拍摄的照片，来自[Pexels](https://www.pexels.com/photo/a-boy
 
 *曾经在一个组织中，进行了跨团队合作，以推出一个新功能。之前有几次构思会议，与一群人讨论后达成了一个高层提案，足够详细以在解决方案设计中详细描述。后来，几名工程师被指派一个票据来实现他们团队解决方案的一部分。然而，这些工程师从未参与过先前的会议，没有简要介绍，也没有看到捕捉到所有涂鸦、绘图和思绪的虚拟板。*
 
-可以想象，上述工程师陷入了困境。无论工程师的能力如何以及问题的微不足道程度如何，请确保你的无服务器开发不是从Visual Studio (VS) Code开始的。如果你这样做，不能保证你的无服务器体验会更顺利。
+可以想象，上述工程师陷入了困境。无论工程师的能力如何以及问题的微不足道程度如何，请确保你的无服务器开发不是从 Visual Studio (VS) Code 开始的。如果你这样做，不能保证你的无服务器体验会更顺利。
 
-> 无论工程师的能力如何以及问题的微不足道程度如何，你的无服务器开发不应该从VS Code开始。
+> 无论工程师的能力如何以及问题的微不足道程度如何，你的无服务器开发不应该从 VS Code 开始。
 
 # 如果你追求完美主义而不是实用主义，无服务器开发就会很困难。
 
 在我的演讲中，我分享了一张幻灯片，展示了一个实际思维的团队如何借助无服务器加速，而试图通过悲观的观点使一切完美的纯主义团队则落后。
 
-![](../Images/4b0aa9d52e7f9afaca1e30590c7110b0.png)
+![](img/4b0aa9d52e7f9afaca1e30590c7110b0.png)
 
 两种类型的无服务器采用派系。来源作者。
 
@@ -198,19 +198,19 @@ AWS 云账户边界标志着您部署和操作云及无服务器资产的运营�
 
 我经常强调无服务器如何为团队带来工程多样性。如果您想让无服务器变得简单，这种认识至关重要。
 
-工程师应该得到引导、培养、指导或培训（或者你的组织中使用的术语），让他们理解利益相关者的需求，允许他们提出架构方案，灌输单一功能和微服务的好处，展示如何融入安全性，教授可观察性原则，让他们部署到生产环境，并标记他们为服务的所有者。这不会一夜之间实现，也不会仅通过看几段YouTube视频就能达成。这正是质量培训和长期人才成长战略发挥作用的地方。
+工程师应该得到引导、培养、指导或培训（或者你的组织中使用的术语），让他们理解利益相关者的需求，允许他们提出架构方案，灌输单一功能和微服务的好处，展示如何融入安全性，教授可观察性原则，让他们部署到生产环境，并标记他们为服务的所有者。这不会一夜之间实现，也不会仅通过看几段 YouTube 视频就能达成。这正是质量培训和长期人才成长战略发挥作用的地方。
 
-![](../Images/fdf71107e936f1aef98b56a066dc9b05.png)
+![](img/fdf71107e936f1aef98b56a066dc9b05.png)
 
 传统的专业化专家与多样化的无服务器工程师。信息来源作者。
 
 不要用企业官僚主义限制工程师。让他们自由学习新知识，参加会议，并参与技术研讨会和协作活动。
 
-*我在一次会议上与一位工程经理交谈。她认为像EventStorming和架构Katas这样跨越几个小时或更长时间的研讨会是浪费时间，并影响团队的生产力。于是我问她，如果有几位机会被拒绝和不满的工程师请了一两天病假，她怎么处理生产力问题。她没有答案！*
+*我在一次会议上与一位工程经理交谈。她认为像 EventStorming 和架构 Katas 这样跨越几个小时或更长时间的研讨会是浪费时间，并影响团队的生产力。于是我问她，如果有几位机会被拒绝和不满的工程师请了一两天病假，她怎么处理生产力问题。她没有答案！*
 
-无服务器训练营是装备工程师掌握无服务器技术生态基础的简单方法。一些组织已成功实施了这类项目。[Matt Coulter](https://www.linkedin.com/in/nideveloper/)，一个AWS英雄，曾提到Liberty Mutual公司成功为新员工实施的一个项目。组织经常因预算约束而将此类倡议降级，甚至未评估其带来的好处。
+无服务器训练营是装备工程师掌握无服务器技术生态基础的简单方法。一些组织已成功实施了这类项目。[Matt Coulter](https://www.linkedin.com/in/nideveloper/)，一个 AWS 英雄，曾提到 Liberty Mutual 公司成功为新员工实施的一个项目。组织经常因预算约束而将此类倡议降级，甚至未评估其带来的好处。
 
-在无服务器培训中的一个挑战是课程大纲中技术、开发、架构和运营元素的质量和覆盖范围。在多个课程中，我听到了[Yan Cui](https://www.linkedin.com/in/theburningmonk/)的[《生产就绪的无服务器》](https://productionreadyserverless.com/)培训研讨会获得了很好的反馈。Yan是AWS无服务器英雄，也是无服务器知识的强大力量。
+在无服务器培训中的一个挑战是课程大纲中技术、开发、架构和运营元素的质量和覆盖范围。在多个课程中，我听到了[Yan Cui](https://www.linkedin.com/in/theburningmonk/)的[《生产就绪的无服务器》](https://productionreadyserverless.com/)培训研讨会获得了很好的反馈。Yan 是 AWS 无服务器英雄，也是无服务器知识的强大力量。
 
 [](https://productionreadyserverless.com/?source=post_page-----56c35672b958--------------------------------) [## 生产就绪的无服务器
 
@@ -226,11 +226,11 @@ productionreadyserverless.com](https://productionreadyserverless.com/?source=pos
 
 *过山车并非每个人的最爱。寻求刺激的人们常给他人的最常见建议是 —* ***你必须学会放手！***
 
-你必须学会相信无服务器技术，以利用它提供的无差别重型工作。如果AWS提供托管解决方案，请利用它们来增加业务价值。为什么要反其道而行之，构建你永远不需要的复杂解决方案？
+你必须学会相信无服务器技术，以利用它提供的无差别重型工作。如果 AWS 提供托管解决方案，请利用它们来增加业务价值。为什么要反其道而行之，构建你永远不需要的复杂解决方案？
 
 从那些成功采用无服务器的人那里获取灵感。
 
-要结束的时候，我找不到比[Momento的](https://www.gomomento.com/) AWS re: Invent 2023 [社区派对](https://events.gomomento.com/en-us/mo-23reinvent)主题更好的短语 -
+要结束的时候，我找不到比[Momento 的](https://www.gomomento.com/) AWS re: Invent 2023 [社区派对](https://events.gomomento.com/en-us/mo-23reinvent)主题更好的短语 -
 
 **相信无服务器！**
 

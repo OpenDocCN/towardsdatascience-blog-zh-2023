@@ -1,22 +1,22 @@
 # 关于道路网络匹配的更多内容
 
-> 原文：[https://towardsdatascience.com/more-on-road-network-matching-c2ea0728c415?source=collection_archive---------16-----------------------#2023-02-10](https://towardsdatascience.com/more-on-road-network-matching-c2ea0728c415?source=collection_archive---------16-----------------------#2023-02-10)
+> 原文：[`towardsdatascience.com/more-on-road-network-matching-c2ea0728c415?source=collection_archive---------16-----------------------#2023-02-10`](https://towardsdatascience.com/more-on-road-network-matching-c2ea0728c415?source=collection_archive---------16-----------------------#2023-02-10)
 
 ## 道路网络匹配的恶作剧
 
-[](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)[![João Paulo Figueira](../Images/54e4176f66e4ab0324d86ec71d8b033d.png)](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------) [João Paulo Figueira](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)
+[](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)![João Paulo Figueira](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------) [João Paulo Figueira](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64bc009cedeb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=post_page-64bc009cedeb----c2ea0728c415---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------) ·9 分钟阅读·2023年2月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc2ea0728c415&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=-----c2ea0728c415---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64bc009cedeb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=post_page-64bc009cedeb----c2ea0728c415---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------) ·9 分钟阅读·2023 年 2 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc2ea0728c415&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=-----c2ea0728c415---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc2ea0728c415&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&source=-----c2ea0728c415---------------------bookmark_footer-----------)![](../Images/c573f363fdc89bade23f26c4bc50e04e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc2ea0728c415&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&source=-----c2ea0728c415---------------------bookmark_footer-----------)![](img/c573f363fdc89bade23f26c4bc50e04e.png)
 
 图片由 [Denys Nevozhai](https://unsplash.com/de/@dnevozhai?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-本文的目的是对[之前关于同一主题的文章](/road-network-edge-matching-with-triangles-5dc989a77edf)进行补充和修正。在那篇文章中，我介绍了一种从[扩展车辆能量数据集](https://arxiv.org/abs/2203.08630)¹（EVED）重建丢失地图匹配数据的方法。我的技术探索了三角形的数学特性，以便快速找到道路网络数据库中的丢失数据。不幸的是，代码中的一个细微错误使得在某些情况下失败。
+本文的目的是对之前关于同一主题的文章进行补充和修正。在那篇文章中，我介绍了一种从[扩展车辆能量数据集](https://arxiv.org/abs/2203.08630)¹（EVED）重建丢失地图匹配数据的方法。我的技术探索了三角形的数学特性，以便快速找到道路网络数据库中的丢失数据。不幸的是，代码中的一个细微错误使得在某些情况下失败。
 
 在这里，我展示了对代码的修正，并讨论了应用这些技术重建三万两千多个轨迹的结果。
 
@@ -125,7 +125,7 @@ def match_edges(road_network, trajectory):
 
 该函数为每个独特的轨迹位置分配一个道路网络边缘。**图 1** 显示了一个匹配样本。
 
-![](../Images/d764592ef9b23ed84cd8f059317b0a86.png)
+![](img/d764592ef9b23ed84cd8f059317b0a86.png)
 
 **图 1** — 上面的地图显示了红色的输入轨迹位置和蓝色的匹配道路网络边。（图片来源：作者使用 Folium 和 OpenStreetMap 图像）
 
@@ -150,7 +150,7 @@ def build_path(rn, edges):
 
 在对先前的匹配调用此函数后，我们应该将轨迹完全重建为一系列道路网络边。通过将轨迹位置叠加到修补后的道路网络边上，我们可以看到一个连续的结果，如下方的**图 2**所示。
 
-![](../Images/56b1a9dfacfdf059db7364b05c4ec5ea.png)
+![](img/56b1a9dfacfdf059db7364b05c4ec5ea.png)
 
 **图 2** — 上面的地图显示了重建的链接序列与原始轨迹位置叠加在一起。（图片来源：作者使用 Folium 和 OpenStreetMap 图像）
 
@@ -158,7 +158,7 @@ def build_path(rn, edges):
 
 在审查这个解决方案时，我发现了一个在迭代各个轨迹时的问题。下方的**图 3**详细描述了这个问题。
 
-![](../Images/e03eb82f3222d1dc3d7142ff6ad95ca3.png)
+![](img/e03eb82f3222d1dc3d7142ff6ad95ca3.png)
 
 **图 3** — 上面的图像显示了一个角落案例，在这个道路网络边匹配系统崩溃时发生。轨迹的一个位置正好落在某个节点上，从而欺骗了匹配过程。（图片来源：作者使用 Folium 和 OpenStreetMap 图像）
 
@@ -166,7 +166,7 @@ def build_path(rn, edges):
 
 下方的**图 4**说明了在叉路口的情况，其中匹配的 GPS 位置与道路网络节点重合（或非常接近）。这可能会导致一些数值不稳定性，产生错误结果。一个稳健的算法应该避免这些情况，但如何做到呢？
 
-![](../Images/d8e93483a483ccf1bd37d0294400eefb.png)
+![](img/d8e93483a483ccf1bd37d0294400eefb.png)
 
 **图 4** — 一旦看到位置分配，匹配问题变得明显。显然，在上述情况下，GPS 位置非常接近某个道路网络节点，这导致了边选择过程中的不稳定性。（图片来源：作者使用 Folium 和 OpenStreetMap 图像）
 
@@ -176,7 +176,7 @@ def build_path(rn, edges):
 
 # 性能评估
 
-为了评估算法在整个EVED上的表现，我创建了一个新的独立[脚本](https://github.com/joaofig/eved-explore/blob/main/calculate-matches.py)，它遍历所有轨迹，匹配边缘，生成路径，并比较原始轨迹长度与重建路径的长度。Python脚本记录了所有的差异，以便我们可以使用标准统计工具集进行后续分析。
+为了评估算法在整个 EVED 上的表现，我创建了一个新的独立[脚本](https://github.com/joaofig/eved-explore/blob/main/calculate-matches.py)，它遍历所有轨迹，匹配边缘，生成路径，并比较原始轨迹长度与重建路径的长度。Python 脚本记录了所有的差异，以便我们可以使用标准统计工具集进行后续分析。
 
 脚本的核心在于其主循环，详见下面的代码。
 
@@ -217,7 +217,7 @@ def process_trajectories():
     save_state(state)
 ```
 
-该函数首先从OpenStreetMap下载并预处理道路网络数据。由于这是一个长时间运行的脚本，我添加了一个持久化状态，序列化为JSON格式的文本文件，并保存了每100条轨迹。这一功能允许用户中断Python脚本而不会丢失已处理轨迹的所有数据。计算原始输入轨迹与重建路径之间长度差异的函数如下所示。
+该函数首先从 OpenStreetMap 下载并预处理道路网络数据。由于这是一个长时间运行的脚本，我添加了一个持久化状态，序列化为 JSON 格式的文本文件，并保存了每 100 条轨迹。这一功能允许用户中断 Python 脚本而不会丢失已处理轨迹的所有数据。计算原始输入轨迹与重建路径之间长度差异的函数如下所示。
 
 ```py
 def calculate_difference(rn, path, trajectory):
@@ -231,35 +231,35 @@ def calculate_difference(rn, path, trajectory):
     return p_length - t_length
 ```
 
-该代码将两个输入转换为地理位置序列，计算它们的累积长度，并最终计算它们的差异。当脚本完成时，我们可以加载状态数据并使用Pandas进行分析。
+该代码将两个输入转换为地理位置序列，计算它们的累积长度，并最终计算它们的差异。当脚本完成时，我们可以加载状态数据并使用 Pandas 进行分析。
 
-我们可以在下面的**图5**中看到两个距离之间的差异分布（标记为"*error*"）。
+我们可以在下面的**图 5**中看到两个距离之间的差异分布（标记为"*error*"）。
 
-![](../Images/930d63837c65b13b0933007d02a7c6c3.png)
+![](img/930d63837c65b13b0933007d02a7c6c3.png)
 
-**图5** — 上面的直方图展示了原始输入轨迹与重建路径之间的距离差异的分布。横轴显示距离（以米为单位）。（图像来源：作者）
+**图 5** — 上面的直方图展示了原始输入轨迹与重建路径之间的距离差异的分布。横轴显示距离（以米为单位）。（图像来源：作者）
 
-为了更详细地查看零附近的情况，我裁剪了直方图，并创建了**图6**。
+为了更详细地查看零附近的情况，我裁剪了直方图，并创建了**图 6**。
 
-![](../Images/0283303813be15f3d81659363e2037da.png)
+![](img/0283303813be15f3d81659363e2037da.png)
 
-**图6** — 上面的直方图详细说明了差异分布，突出了负差异和大多数正差异。大多数差异很小，暗示匹配算法表现良好。（图像来源：作者）
+**图 6** — 上面的直方图详细说明了差异分布，突出了负差异和大多数正差异。大多数差异很小，暗示匹配算法表现良好。（图像来源：作者）
 
 如您所见，光谱的负部分存在一些差异。不过，它主要是正的，这意味着重建路径的长度通常比轨迹更长，这是可以预期的。请记住，轨迹点很少与道路网络节点匹配，这意味着最常见的情况应该是在一个段的中间匹配。
 
-我们还可以通过绘制箱线图来检查差异的中间五十个百分点，如下图**图7**所示。
+我们还可以通过绘制箱线图来检查差异的中间五十个百分点，如下图**图 7**所示。
 
-![](../Images/c4bb17c27c5477ac28a5f10c27367ab2.png)
+![](img/c4bb17c27c5477ac28a5f10c27367ab2.png)
 
-**图7** — 上面的箱线图展示了分布中间50%的位置。25%、50%和75%的百分位数分别为13.0、50.2和156.5米。我们还可以看到，内点带相对较窄，范围从-202.3到371.8米。（图像来源：作者）
+**图 7** — 上面的箱线图展示了分布中间 50%的位置。25%、50%和 75%的百分位数分别为 13.0、50.2 和 156.5 米。我们还可以看到，内点带相对较窄，范围从-202.3 到 371.8 米。（图像来源：作者）
 
-上图包含了有关差异分布和异常值数量的关键信息。使用[Tukey’s fences](https://en.wikipedia.org/wiki/Outlier#Tukey's_fences)方法，我们可以将32,528条轨迹中的5,332²条标记为异常值。这一比例代表了相对较高的16.4%值，这意味着可能有更好的重建方法，或者存在大量处理不当的轨迹。我们可以查看一些最剧烈的距离差异异常值，试图理解这些结果。
+上图包含了有关差异分布和异常值数量的关键信息。使用[Tukey’s fences](https://en.wikipedia.org/wiki/Outlier#Tukey's_fences)方法，我们可以将 32,528 条轨迹中的 5,332²条标记为异常值。这一比例代表了相对较高的 16.4%值，这意味着可能有更好的重建方法，或者存在大量处理不当的轨迹。我们可以查看一些最剧烈的距离差异异常值，试图理解这些结果。
 
 ## 异常值分析
 
 如前所述，有超过五千条轨迹匹配效果较差。我们可以快速检查其中的一些，来确定采样轨迹与重建之间的差异为何如此显著。我们从一个揭示性的案例开始，即**图 8**中的轨迹编号 59。
 
-![](../Images/bf48d4ed1c398976fcdff8eb5f292408.png)
+![](img/bf48d4ed1c398976fcdff8eb5f292408.png)
 
 **图 8** — 上图所示的轨迹展示了一个地图匹配错误，导致重建过程生成了一条比必要的路径更长的路径。（图片来源：作者使用 Folium 和 OpenStreetMap 图像）
 
@@ -267,7 +267,7 @@ def calculate_difference(rn, path, trajectory):
 
 最后，我们可以看到下方的**图 9**中的一个非常极端的案例。采样的 GPS 位置距离道路如此之远，以至于地图匹配过程放弃了。正如你所见，重建过程分配了与预期轨迹无关的道路网络链接。
 
-![](../Images/d4a3f7d4817474b1d51dec756747a11f.png)
+![](img/d4a3f7d4817474b1d51dec756747a11f.png)
 
 **图 9** — 上图中的轨迹包含许多错误，初始的地图匹配过程无法消除这些错误。（图片来源：作者使用 Folium 和 OpenStreetMap 图像）
 
@@ -283,7 +283,7 @@ def calculate_difference(rn, path, trajectory):
 
 # 参考文献
 
-[1] Zhang, S., Fatih, D., Abdulqadir, F., Schwarz, T., & Ma, X. (2022). 扩展车辆能源数据集（eVED）：用于深度学习的车辆旅行能耗的大规模增强数据集。*ArXiv*. [https://doi.org/10.48550/arXiv.2203.08630](https://doi.org/10.48550/arXiv.2203.08630)
+[1] Zhang, S., Fatih, D., Abdulqadir, F., Schwarz, T., & Ma, X. (2022). 扩展车辆能源数据集（eVED）：用于深度学习的车辆旅行能耗的大规模增强数据集。*ArXiv*. [`doi.org/10.48550/arXiv.2203.08630`](https://doi.org/10.48550/arXiv.2203.08630)
 
 [2] Boeing, G. 2017\. [OSMnx：获取、构建、分析和可视化复杂街道网络的新方法](https://geoffboeing.com/publications/osmnx-complex-street-networks/)。*Computers, Environment and Urban Systems* 65, 126–139\. doi:10.1016/j.compenvurbsys.2017.05.004
 

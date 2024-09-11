@@ -1,18 +1,18 @@
 # 自然语言处理入门
 
-> 原文：[https://towardsdatascience.com/natural-language-processing-for-absolute-beginners-a195549a3164?source=collection_archive---------3-----------------------#2023-09-02](https://towardsdatascience.com/natural-language-processing-for-absolute-beginners-a195549a3164?source=collection_archive---------3-----------------------#2023-09-02)
+> 原文：[`towardsdatascience.com/natural-language-processing-for-absolute-beginners-a195549a3164?source=collection_archive---------3-----------------------#2023-09-02`](https://towardsdatascience.com/natural-language-processing-for-absolute-beginners-a195549a3164?source=collection_archive---------3-----------------------#2023-09-02)
 
 ## 在 10 行 Python 代码中解决复杂的 NLP 任务
 
-[](https://dmitryelj.medium.com/?source=post_page-----a195549a3164--------------------------------)[![Dmitrii Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----a195549a3164--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a195549a3164--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a195549a3164--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----a195549a3164--------------------------------)
+[](https://dmitryelj.medium.com/?source=post_page-----a195549a3164--------------------------------)![Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----a195549a3164--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a195549a3164--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a195549a3164--------------------------------) [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----a195549a3164--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-language-processing-for-absolute-beginners-a195549a3164&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----a195549a3164---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a195549a3164--------------------------------) ·9 分钟阅读·2023年9月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa195549a3164&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-language-processing-for-absolute-beginners-a195549a3164&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=-----a195549a3164---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F65c1f6ba75db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-language-processing-for-absolute-beginners-a195549a3164&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=post_page-65c1f6ba75db----a195549a3164---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a195549a3164--------------------------------) ·9 分钟阅读·2023 年 9 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa195549a3164&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-language-processing-for-absolute-beginners-a195549a3164&user=Dmitrii+Eliuseev&userId=65c1f6ba75db&source=-----a195549a3164---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa195549a3164&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-language-processing-for-absolute-beginners-a195549a3164&source=-----a195549a3164---------------------bookmark_footer-----------)![](../Images/bc90b1586db7d9db3689cfb34615b58a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa195549a3164&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnatural-language-processing-for-absolute-beginners-a195549a3164&source=-----a195549a3164---------------------bookmark_footer-----------)![](img/bc90b1586db7d9db3689cfb34615b58a.png)
 
 作者提供的图片（使用 Craiyon 生成）
 

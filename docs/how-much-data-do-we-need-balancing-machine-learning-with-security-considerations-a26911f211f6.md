@@ -1,12 +1,12 @@
 # 我们需要多少数据？在机器学习与安全考虑之间的平衡
 
-> 原文：[https://towardsdatascience.com/how-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6?source=collection_archive---------13-----------------------#2023-12-15](https://towardsdatascience.com/how-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6?source=collection_archive---------13-----------------------#2023-12-15)
+> 原文：[`towardsdatascience.com/how-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6?source=collection_archive---------13-----------------------#2023-12-15`](https://towardsdatascience.com/how-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6?source=collection_archive---------13-----------------------#2023-12-15)
 
-[](https://medium.com/@s.kirmer?source=post_page-----a26911f211f6--------------------------------)[![Stephanie Kirmer](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----a26911f211f6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a26911f211f6--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a26911f211f6--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a26911f211f6--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----a26911f211f6--------------------------------)![Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a26911f211f6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a26911f211f6--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a26911f211f6--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----a26911f211f6--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----a26911f211f6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a26911f211f6--------------------------------) ·7分钟阅读·2023年12月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa26911f211f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----a26911f211f6---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----a26911f211f6---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a26911f211f6--------------------------------) ·7 分钟阅读·2023 年 12 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa26911f211f6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-much-data-do-we-need-balancing-machine-learning-with-security-considerations-a26911f211f6&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----a26911f211f6---------------------clap_footer-----------)
 
 --
 
@@ -14,7 +14,7 @@
 
 对于数据科学家来说，数据多了也不会嫌多。但当我们从更广泛的组织背景来看时，必须平衡我们的目标与其他考虑因素。
 
-![](../Images/ccb2f9c84b2ea2ce3ea71f26f3cf42db.png)
+![](img/ccb2f9c84b2ea2ce3ea71f26f3cf42db.png)
 
 图片来源：[特尔纳瓦大学](https://unsplash.com/@trnavskauni?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -24,7 +24,7 @@
 
 然而，深入审视数据隐私会将我们的习惯和选择置于不同的背景中。数据科学家的直觉和欲望往往与数据隐私和安全的需求相冲突。任何曾为获得数据库或数据仓库的访问权以构建模型而努力的人都能感同身受。感觉像是有过于谨慎的障碍阻碍我们完成工作。毕竟，我们拥有数据的理由不是为了从中学习和建模吗？即使是最优秀的我们，有时也会妖魔化那些以隐私和安全为主要目标的组织部分，这些目标与我们希望在数据湖中畅游的愿望相冲突。
 
-实际上，数据科学家并不总是英雄，IT和安全团队也并非反派。我们都在为重要目标而努力，并且在追求过程中可能都会有一点隧道视野。了解这两个角色的视角有助于理解存在的紧张关系和竞争利益。
+实际上，数据科学家并不总是英雄，IT 和安全团队也并非反派。我们都在为重要目标而努力，并且在追求过程中可能都会有一点隧道视野。了解这两个角色的视角有助于理解存在的紧张关系和竞争利益。
 
 **数据科学角度**
 
@@ -40,11 +40,11 @@
 
 # 制度性考虑
 
-说到数据管理，我应该提到——我最近开始了一个新角色！我是DataGrail的首席高级机器学习工程师，这是一家提供一整套B2B服务的公司，帮助公司保护和管理客户数据。这自然将数据存储和隐私的问题摆在了我面前，并让我思考了自己在不同成熟度公司的职业经历以及他们如何处理数据。
+说到数据管理，我应该提到——我最近开始了一个新角色！我是 DataGrail 的首席高级机器学习工程师，这是一家提供一整套 B2B 服务的公司，帮助公司保护和管理客户数据。这自然将数据存储和隐私的问题摆在了我面前，并让我思考了自己在不同成熟度公司的职业经历以及他们如何处理数据。
 
 对于一家公司来说，成为数据囤积者是非常容易的。你开始时数据不足，完全无法掌控局面，只能在收集关于交易、业务活动等数据的过程中来帮助决策和制定策略。虽然你可能还没有做机器学习，但你能看到未来的潜力，并希望做好准备。收集和存储数据似乎不仅合理而且至关重要！于是，你建立了数据系统，并开始填充这些表格或主题。
 
-然而，这种做法是不可持续的——至少不是永久的。几年之后，你可能会拥有大量的数据。也许你需要扩展到像Snowflake或AWS这样的云存储提供商，以跟上并以你需要的速度访问所有这些数据。你当然在使用这些数据！也许你已经开始了一个机器学习项目，或者仅仅是高级分析和商业智能，但如果做得好，这对你业务的有效性有着巨大的影响。即便如此，你还需要开始考虑基础设施的成本，更不用说可能还需要招聘数据工程人员来帮助管理这些数据。
+然而，这种做法是不可持续的——至少不是永久的。几年之后，你可能会拥有大量的数据。也许你需要扩展到像 Snowflake 或 AWS 这样的云存储提供商，以跟上并以你需要的速度访问所有这些数据。你当然在使用这些数据！也许你已经开始了一个机器学习项目，或者仅仅是高级分析和商业智能，但如果做得好，这对你业务的有效性有着巨大的影响。即便如此，你还需要开始考虑基础设施的成本，更不用说可能还需要招聘数据工程人员来帮助管理这些数据。
 
 不幸的是，你也开始获得你无法很好掌控的数据。文档可能已经过时了，如果曾经存在过的话，而那些帮助构建原始系统的员工可能已经离职。这张表格是什么意思？那一列的来源是什么？不可解释的数据几乎没有任何价值，因为你无法从不理解的数据中有效地学习。
 
@@ -60,6 +60,6 @@
 
 我的建议是，我们要时刻保持对消费者/安全的关注，同时也要保持对数据科学家的关注。我们必须在为机器学习积累数据和为了客户隐私及数据安全而限制数据保留之间保持平衡。对于“我们应该保留多少数据？”这个问题没有银弹式的答案，因此唯一的选择是在我们做出有关数据存储的每个决定时都要兼顾这两方面的利益。
 
-我将在假期期间暂时中断专栏，并将于1月中旬带来下一篇文章。
+我将在假期期间暂时中断专栏，并将于 1 月中旬带来下一篇文章。
 
 查看我更多的作品请访问 [www.stephaniekirmer.com](http://www.stephaniekirmer.com/)。

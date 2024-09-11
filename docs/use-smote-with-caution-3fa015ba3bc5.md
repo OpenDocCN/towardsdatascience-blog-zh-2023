@@ -1,18 +1,18 @@
-# SMOTE和其他选择：处理类别不平衡数据的全面指南
+# SMOTE 和其他选择：处理类别不平衡数据的全面指南
 
-> 原文：[https://towardsdatascience.com/use-smote-with-caution-3fa015ba3bc5?source=collection_archive---------12-----------------------#2023-01-03](https://towardsdatascience.com/use-smote-with-caution-3fa015ba3bc5?source=collection_archive---------12-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/use-smote-with-caution-3fa015ba3bc5?source=collection_archive---------12-----------------------#2023-01-03`](https://towardsdatascience.com/use-smote-with-caution-3fa015ba3bc5?source=collection_archive---------12-----------------------#2023-01-03)
 
 ## 何时使用或不使用合成数据来解决类别不平衡的指南
 
-[](https://ransakaravihara.medium.com/?source=post_page-----3fa015ba3bc5--------------------------------)[![Ransaka Ravihara](../Images/ac09746938c10ad8f157d46ea0de27ca.png)](https://ransakaravihara.medium.com/?source=post_page-----3fa015ba3bc5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3fa015ba3bc5--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3fa015ba3bc5--------------------------------) [Ransaka Ravihara](https://ransakaravihara.medium.com/?source=post_page-----3fa015ba3bc5--------------------------------)
+[](https://ransakaravihara.medium.com/?source=post_page-----3fa015ba3bc5--------------------------------)![Ransaka Ravihara](https://ransakaravihara.medium.com/?source=post_page-----3fa015ba3bc5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3fa015ba3bc5--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3fa015ba3bc5--------------------------------) [Ransaka Ravihara](https://ransakaravihara.medium.com/?source=post_page-----3fa015ba3bc5--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F61b4d96de932&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-smote-with-caution-3fa015ba3bc5&user=Ransaka+Ravihara&userId=61b4d96de932&source=post_page-61b4d96de932----3fa015ba3bc5---------------------post_header-----------) 发表在[《走进数据科学》](https://towardsdatascience.com/?source=post_page-----3fa015ba3bc5--------------------------------) ·10 min读·2023年1月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3fa015ba3bc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-smote-with-caution-3fa015ba3bc5&user=Ransaka+Ravihara&userId=61b4d96de932&source=-----3fa015ba3bc5---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F61b4d96de932&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-smote-with-caution-3fa015ba3bc5&user=Ransaka+Ravihara&userId=61b4d96de932&source=post_page-61b4d96de932----3fa015ba3bc5---------------------post_header-----------) 发表在[《走进数据科学》](https://towardsdatascience.com/?source=post_page-----3fa015ba3bc5--------------------------------) ·10 min 读·2023 年 1 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3fa015ba3bc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-smote-with-caution-3fa015ba3bc5&user=Ransaka+Ravihara&userId=61b4d96de932&source=-----3fa015ba3bc5---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3fa015ba3bc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-smote-with-caution-3fa015ba3bc5&source=-----3fa015ba3bc5---------------------bookmark_footer-----------)![](../Images/7bbfd0409f31269de20f9ae943cb9fd2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3fa015ba3bc5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-smote-with-caution-3fa015ba3bc5&source=-----3fa015ba3bc5---------------------bookmark_footer-----------)![](img/7bbfd0409f31269de20f9ae943cb9fd2.png)
 
 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上[은하](https://unsplash.com/@b0nn13_4nd_clyd3?utm_source=medium&utm_medium=referral)的照片
 

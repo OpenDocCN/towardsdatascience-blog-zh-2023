@@ -1,18 +1,18 @@
 # 如何检测大型语言模型的幻觉
 
-> 原文：[https://towardsdatascience.com/real-time-llm-hallucination-detection-9a68bb292698?source=collection_archive---------0-----------------------#2023-12-31](https://towardsdatascience.com/real-time-llm-hallucination-detection-9a68bb292698?source=collection_archive---------0-----------------------#2023-12-31)
+> 原文：[`towardsdatascience.com/real-time-llm-hallucination-detection-9a68bb292698?source=collection_archive---------0-----------------------#2023-12-31`](https://towardsdatascience.com/real-time-llm-hallucination-detection-9a68bb292698?source=collection_archive---------0-----------------------#2023-12-31)
 
 ## 教授聊天机器人说“我不知道”
 
-[](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)[![Iulia Brezeanu](../Images/f108eeec620ec9be40778dfaceca4e6c.png)](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------) [Iulia Brezeanu](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)
+[](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)![Iulia Brezeanu](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------) [Iulia Brezeanu](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5548b8f29f30&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-llm-hallucination-detection-9a68bb292698&user=Iulia+Brezeanu&userId=5548b8f29f30&source=post_page-5548b8f29f30----9a68bb292698---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------) ·10分钟阅读·2023年12月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9a68bb292698&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-llm-hallucination-detection-9a68bb292698&user=Iulia+Brezeanu&userId=5548b8f29f30&source=-----9a68bb292698---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5548b8f29f30&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-llm-hallucination-detection-9a68bb292698&user=Iulia+Brezeanu&userId=5548b8f29f30&source=post_page-5548b8f29f30----9a68bb292698---------------------post_header-----------) 发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------) ·10 分钟阅读·2023 年 12 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9a68bb292698&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-llm-hallucination-detection-9a68bb292698&user=Iulia+Brezeanu&userId=5548b8f29f30&source=-----9a68bb292698---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9a68bb292698&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-llm-hallucination-detection-9a68bb292698&source=-----9a68bb292698---------------------bookmark_footer-----------)![](../Images/a1e0d8fcdb97251e27161a08f711a2c3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9a68bb292698&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freal-time-llm-hallucination-detection-9a68bb292698&source=-----9a68bb292698---------------------bookmark_footer-----------)![](img/a1e0d8fcdb97251e27161a08f711a2c3.png)
 
 图片由[visuals](https://unsplash.com/@visuals?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,7 +28,7 @@
 
 长篇详细的输出看起来可能非常有说服力，即使是虚构的。这是否意味着我们不能信任聊天机器人，每次都需要手动验证输出的真实性？幸运的是，通过适当的保护措施，可能有方法使聊天机器人不容易说出虚假的内容。
 
-![](../Images/b8715346e238a15d9203a36d4b79d5ab.png)
+![](img/b8715346e238a15d9203a36d4b79d5ab.png)
 
 text-davinci-003 提示完成了一个虚构人物的描述。图片由作者提供。
 

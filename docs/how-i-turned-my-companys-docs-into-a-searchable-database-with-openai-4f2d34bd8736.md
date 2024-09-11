@@ -1,22 +1,22 @@
-# 如何将公司的文档转变为可搜索的数据库，利用OpenAI
+# 如何将公司的文档转变为可搜索的数据库，利用 OpenAI
 
-> 原文：[https://towardsdatascience.com/how-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736?source=collection_archive---------0-----------------------#2023-04-25](https://towardsdatascience.com/how-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736?source=collection_archive---------0-----------------------#2023-04-25)
+> 原文：[`towardsdatascience.com/how-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736?source=collection_archive---------0-----------------------#2023-04-25`](https://towardsdatascience.com/how-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736?source=collection_archive---------0-----------------------#2023-04-25)
 
 ## 以及你如何用同样的方法处理你的文档
 
-[](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)[![Jacob Marks, Ph.D.](../Images/94d9832b8706d1044e3195386613bfab.png)](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)
+[](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)![Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------) [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----4f2d34bd8736---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------) ·15分钟阅读·2023年4月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4f2d34bd8736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----4f2d34bd8736---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----4f2d34bd8736---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------) ·15 分钟阅读·2023 年 4 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4f2d34bd8736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----4f2d34bd8736---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4f2d34bd8736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&source=-----4f2d34bd8736---------------------bookmark_footer-----------)![](../Images/a7959bea4e365ac7dd00c74aaa9d1aff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4f2d34bd8736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&source=-----4f2d34bd8736---------------------bookmark_footer-----------)![](img/a7959bea4e365ac7dd00c74aaa9d1aff.png)
 
-图片来自Unsplash。
+图片来自 Unsplash。
 
-在过去的六个月里，我一直在系列A初创公司Voxel51工作，并且是[开源计算机视觉工具包FiftyOne](https://github.com/voxel51/fiftyone)的创建者。作为一名机器学习工程师和开发者推广员，我的工作是倾听我们的开源社区，满足他们的需求——新的功能、集成、教程、研讨会，等等。
+在过去的六个月里，我一直在系列 A 初创公司 Voxel51 工作，并且是[开源计算机视觉工具包 FiftyOne](https://github.com/voxel51/fiftyone)的创建者。作为一名机器学习工程师和开发者推广员，我的工作是倾听我们的开源社区，满足他们的需求——新的功能、集成、教程、研讨会，等等。
 
 几周前，我们为 FiftyOne 添加了对向量搜索引擎和文本相似性查询的原生支持，以便用户可以通过简单的自然语言查询在他们（通常是庞大的——包含数百万或数千万样本的）数据集中找到最相关的图像。
 
@@ -26,23 +26,23 @@
 
 我不打算就此罢休……所以我在业余时间构建了这个：
 
-![](../Images/a88b4645cde0b9861a7a24dcf2bf89e3.png)
+![](img/a88b4645cde0b9861a7a24dcf2bf89e3.png)
 
 从命令行语义化搜索公司文档。图片由作者提供。
 
 所以，这是我如何将我们的文档转换为语义搜索的向量数据库：
 
-+   [将所有文档转换为统一格式](#eb87)
++   将所有文档转换为统一格式
 
-+   [将文档拆分为块并添加了一些自动清理](#8ed1)
++   将文档拆分为块并添加了一些自动清理
 
-+   [为每个块计算了嵌入](#1a17)
++   为每个块计算了嵌入
 
-+   [从这些嵌入生成了一个向量索引](#34d3)
++   从这些嵌入生成了一个向量索引
 
-+   [定义了索引查询](#87c5)
++   定义了索引查询
 
-+   [将所有内容封装在用户友好的命令行界面和 Python API 中](#9d79)
++   将所有内容封装在用户友好的命令行界面和 Python API 中
 
 你可以在 [voxel51/fiftyone-docs-search](https://github.com/voxel51/fiftyone-docs-search) 仓库中找到本帖的所有代码，并且可以通过 `pip install -e .` 在本地编辑模式中轻松安装包。
 
@@ -54,7 +54,7 @@
 
 # 将文档转换为统一格式
 
-我公司的文档都托管为 HTML 文档，地址是 [https://docs.voxel51.com](https://docs.voxel51.com)。一个自然的起点是使用 Python 的 [requests](https://pypi.org/project/requests/) 库下载这些文档，并用 [Beautiful Soup](https://beautiful-soup-4.readthedocs.io/en/latest/) 解析文档。
+我公司的文档都托管为 HTML 文档，地址是 [`docs.voxel51.com`](https://docs.voxel51.com)。一个自然的起点是使用 Python 的 [requests](https://pypi.org/project/requests/) 库下载这些文档，并用 [Beautiful Soup](https://beautiful-soup-4.readthedocs.io/en/latest/) 解析文档。
 
 作为开发者（以及我们许多文档的作者），我认为自己可以做得更好。我已经在本地计算机上有一个 GitHub 仓库的工作副本，其中包含生成 HTML 文档所用的所有原始文件。我们的某些文档是用 [Sphinx ReStructured Text (RST)](https://www.sphinx-doc.org/en/master/) 编写的，而其他文档，如教程，则从 Jupyter notebooks 转换为 HTML。
 
@@ -64,7 +64,7 @@
 
 在 RST 文档中，部分由仅包含 `=`、`-` 或 `_` 字符的行来划分。例如，这是 FiftyOne 用户指南中的一个文档，其中包含所有三种划分符：
 
-![](../Images/3188d8c4ac25ff6414eabdf8675fbdd9.png)
+![](img/3188d8c4ac25ff6414eabdf8675fbdd9.png)
 
 开源 FiftyOne 文档中的 RST 文档。图片由作者提供。
 
@@ -179,13 +179,13 @@ contents = [(" ".join(c["source"]), c['cell_type'] for c in contents]
 
 当在浏览器中渲染时，我们过滤器备忘单中*日期和时间*部分之前的代码块如下所示：
 
-![](../Images/79ae2b0dd021cda1c5fd07f853789c0a.png)
+![](img/79ae2b0dd021cda1c5fd07f853789c0a.png)
 
 开源 FiftyOne 文档中的备忘单截图。图片由作者提供。
 
 然而，原始 HTML 看起来是这样的：
 
-![](../Images/be7d519067dbbfc0ee85a947f7011790.png)
+![](img/be7d519067dbbfc0ee85a947f7011790.png)
 
 RST 备忘单转换为 HTML。图片由作者提供。
 
@@ -266,7 +266,7 @@ def extract_title_and_anchor(header):
 
 使用这个嵌入模型，你可以生成一个 1536 维的向量，表示任何输入提示，最多 8,191 个标记（大约 30,000 个字符）。
 
-要开始使用，你需要创建一个 OpenAI 账户，在 [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys) 生成 API 密钥，使用以下命令将该 API 密钥导出为环境变量：
+要开始使用，你需要创建一个 OpenAI 账户，在 [`platform.openai.com/account/api-keys`](https://platform.openai.com/account/api-keys) 生成 API 密钥，使用以下命令将该 API 密钥导出为环境变量：
 
 ```py
 export OPENAI_API_KEY="<MY_API_KEY>"
@@ -437,7 +437,7 @@ def _generate_query_filter(query, doc_types, block_types):
     return _filter
 ```
 
-内部的`_parse_doc_types()`和`_parse_block_types()`函数处理参数为字符串、列表或None的情况。
+内部的`_parse_doc_types()`和`_parse_block_types()`函数处理参数为字符串、列表或 None 的情况。
 
 然后我写了一个`query_index()`函数，它接受用户的文本查询，进行预筛选，搜索索引，并从负载中提取相关信息。该函数返回一个元组列表，形式为`(url, contents, score)`，其中得分表示结果与查询文本的匹配程度。
 
@@ -471,30 +471,30 @@ def query_index(query, top_k=10, doc_types=None, block_types=None):
 
 最后一步是为用户提供一个干净的界面，以便在这些“向量化”文档中进行语义搜索。
 
-我编写了一个`print_results()`函数，它接受查询、`query_index()`的结果和一个`score`参数（是否打印相似度分数），并以易于理解的方式打印结果。我使用了[rich](https://rich.readthedocs.io/en/stable/introduction.html) Python包来格式化终端中的超链接，以便在支持超链接的终端中，点击超链接将打开默认浏览器中的页面。如果需要，我还使用了[webbrowser](https://docs.python.org/3/library/webbrowser.html)来自动打开最顶端结果的链接。
+我编写了一个`print_results()`函数，它接受查询、`query_index()`的结果和一个`score`参数（是否打印相似度分数），并以易于理解的方式打印结果。我使用了[rich](https://rich.readthedocs.io/en/stable/introduction.html) Python 包来格式化终端中的超链接，以便在支持超链接的终端中，点击超链接将打开默认浏览器中的页面。如果需要，我还使用了[webbrowser](https://docs.python.org/3/library/webbrowser.html)来自动打开最顶端结果的链接。
 
-![](../Images/8e615542c724d5d85be45aba81a7b73a.png)
+![](img/8e615542c724d5d85be45aba81a7b73a.png)
 
 显示带有丰富超链接的搜索结果。图片由作者提供。
 
-对于基于Python的搜索，我创建了一个`FiftyOneDocsSearch`类来封装文档搜索行为，因此一旦实例化了`FiftyOneDocsSearch`对象（可能使用默认的搜索参数设置）：
+对于基于 Python 的搜索，我创建了一个`FiftyOneDocsSearch`类来封装文档搜索行为，因此一旦实例化了`FiftyOneDocsSearch`对象（可能使用默认的搜索参数设置）：
 
 ```py
 from fiftyone.docs_search import FiftyOneDocsSearch
 fosearch = FiftyOneDocsSearch(open_url=False, top_k=3, score=True)
 ```
 
-你可以通过调用这个对象在Python中进行搜索。例如，要查询“如何加载数据集”，只需运行：
+你可以通过调用这个对象在 Python 中进行搜索。例如，要查询“如何加载数据集”，只需运行：
 
 ```py
 fosearch(“How to load a dataset”)
 ```
 
-![](../Images/3c701dc79f3dbded374c760c96741967.png)
+![](img/3c701dc79f3dbded374c760c96741967.png)
 
-在Python进程中对公司的文档进行语义搜索。图片由作者提供。
+在 Python 进程中对公司的文档进行语义搜索。图片由作者提供。
 
-我还使用了[argparse](https://docs.python.org/3/library/argparse.html)来通过命令行提供此文档搜索功能。当包被安装后，可以通过CLI搜索文档：
+我还使用了[argparse](https://docs.python.org/3/library/argparse.html)来通过命令行提供此文档搜索功能。当包被安装后，可以通过 CLI 搜索文档：
 
 ```py
 fiftyone-docs-search query "<my-query>" <args 
@@ -514,13 +514,13 @@ fosearch "<my-query>" args
 
 # 结论
 
-在开始之前，我已经把自己看作是公司开源Python库FiftyOne的重度用户。我编写了许多文档，并且每天都在使用（并继续使用）这个库。但将我们的文档转变为可搜索的数据库的过程迫使我以更深刻的方式理解我们的文档。当你为他人构建某些东西时，它也能帮助到你，这总是很棒的！
+在开始之前，我已经把自己看作是公司开源 Python 库 FiftyOne 的重度用户。我编写了许多文档，并且每天都在使用（并继续使用）这个库。但将我们的文档转变为可搜索的数据库的过程迫使我以更深刻的方式理解我们的文档。当你为他人构建某些东西时，它也能帮助到你，这总是很棒的！
 
 这是我学到的：
 
-+   **Sphinx RST使用繁琐**：它能生成美观的文档，但解析起来有点麻烦
++   **Sphinx RST 使用繁琐**：它能生成美观的文档，但解析起来有点麻烦
 
-+   **不要在预处理上过度**：OpenAI的text-embeddings-ada-002模型非常擅长理解文本字符串背后的意义，即使它有稍微不典型的格式。再也不用进行词干提取和费力地去除停用词及各种字符了。
++   **不要在预处理上过度**：OpenAI 的 text-embeddings-ada-002 模型非常擅长理解文本字符串背后的意义，即使它有稍微不典型的格式。再也不用进行词干提取和费力地去除停用词及各种字符了。
 
 +   **小的语义有意义的片段最好**：将文档分解成尽可能小的有意义的部分，并保留上下文。对于较长的文本，搜索查询与索引中文本部分的重叠更可能被段落中的不相关文本遮掩。如果你将文档拆分得过小，许多索引条目可能包含很少的语义信息。
 
@@ -534,10 +534,10 @@ fosearch "<my-query>" args
 
 +   全球化：使用[Qdrant Cloud](https://cloud.qdrant.io/)在云中存储和查询集合
 
-+   引入网络数据：使用[requests](https://pypi.org/project/requests/)直接从网络下载HTML
++   引入网络数据：使用[requests](https://pypi.org/project/requests/)直接从网络下载 HTML
 
 +   自动更新：使用[Github Actions](https://docs.github.com/en/actions)在底层文档更改时触发嵌入的重新计算
 
-+   嵌入：将其包装在一个Javascript元素中，替代传统的搜索框
++   嵌入：将其包装在一个 Javascript 元素中，替代传统的搜索框
 
 构建包所用的所有代码都是开源的，可以在[voxel51/fiftyone-docs-search](https://github.com/voxel51/fiftyone-docs-search)仓库中找到。

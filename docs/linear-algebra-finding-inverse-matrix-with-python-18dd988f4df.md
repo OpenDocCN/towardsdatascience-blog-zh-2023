@@ -1,18 +1,18 @@
 # 线性代数：使用 Python 查找逆矩阵
 
-> 原文：[https://towardsdatascience.com/linear-algebra-finding-inverse-matrix-with-python-18dd988f4df?source=collection_archive---------13-----------------------#2023-01-19](https://towardsdatascience.com/linear-algebra-finding-inverse-matrix-with-python-18dd988f4df?source=collection_archive---------13-----------------------#2023-01-19)
+> 原文：[`towardsdatascience.com/linear-algebra-finding-inverse-matrix-with-python-18dd988f4df?source=collection_archive---------13-----------------------#2023-01-19`](https://towardsdatascience.com/linear-algebra-finding-inverse-matrix-with-python-18dd988f4df?source=collection_archive---------13-----------------------#2023-01-19)
 
-## 第3部分：使用初等行变换和矩阵行列式计算逆矩阵的全面分步指南
+## 第三部分：使用初等行变换和矩阵行列式计算逆矩阵的全面分步指南
 
-[](https://chaodeyu.medium.com/?source=post_page-----18dd988f4df--------------------------------)[![Chao De-Yu](../Images/8d6805b4797dcc71fa722bbb3d06a91b.png)](https://chaodeyu.medium.com/?source=post_page-----18dd988f4df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18dd988f4df--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----18dd988f4df--------------------------------) [Chao De-Yu](https://chaodeyu.medium.com/?source=post_page-----18dd988f4df--------------------------------)
+[](https://chaodeyu.medium.com/?source=post_page-----18dd988f4df--------------------------------)![Chao De-Yu](https://chaodeyu.medium.com/?source=post_page-----18dd988f4df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18dd988f4df--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----18dd988f4df--------------------------------) [Chao De-Yu](https://chaodeyu.medium.com/?source=post_page-----18dd988f4df--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5b7be08f8f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-finding-inverse-matrix-with-python-18dd988f4df&user=Chao+De-Yu&userId=5b7be08f8f4c&source=post_page-5b7be08f8f4c----18dd988f4df---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18dd988f4df--------------------------------) ·5分钟阅读·2023年1月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18dd988f4df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-finding-inverse-matrix-with-python-18dd988f4df&user=Chao+De-Yu&userId=5b7be08f8f4c&source=-----18dd988f4df---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5b7be08f8f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-finding-inverse-matrix-with-python-18dd988f4df&user=Chao+De-Yu&userId=5b7be08f8f4c&source=post_page-5b7be08f8f4c----18dd988f4df---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18dd988f4df--------------------------------) ·5 分钟阅读·2023 年 1 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18dd988f4df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-finding-inverse-matrix-with-python-18dd988f4df&user=Chao+De-Yu&userId=5b7be08f8f4c&source=-----18dd988f4df---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F18dd988f4df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-finding-inverse-matrix-with-python-18dd988f4df&source=-----18dd988f4df---------------------bookmark_footer-----------)![](../Images/bdc89b0ab6a2f627646ef764c26d4202.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F18dd988f4df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-finding-inverse-matrix-with-python-18dd988f4df&source=-----18dd988f4df---------------------bookmark_footer-----------)![](img/bdc89b0ab6a2f627646ef764c26d4202.png)
 
 [摄影师 Raimond Klavins](https://unsplash.com/@raimondklavins) 拍摄于 [Unsplash](https://unsplash.com)
 
@@ -24,4 +24,4 @@
 
 # 方法 1：使用初等行变换
 
-回忆一下用于解线性系统的[3种行变换](https://medium.com/towards-data-science/linear-algebra-systems-of-linear-equations-and-matrices-with-python-d3e0fcb29e85)：交换、缩放和主元化。这些操作可以写成**初等矩阵**。而左乘增广线性系统矩阵表示**初等行变换**。
+回忆一下用于解线性系统的[3 种行变换](https://medium.com/towards-data-science/linear-algebra-systems-of-linear-equations-and-matrices-with-python-d3e0fcb29e85)：交换、缩放和主元化。这些操作可以写成**初等矩阵**。而左乘增广线性系统矩阵表示**初等行变换**。

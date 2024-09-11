@@ -1,12 +1,12 @@
 # 使用 Jupyter 和 Mercury 构建 Web 应用
 
-> 原文：[https://towardsdatascience.com/build-a-web-app-with-jupyter-and-mercury-9d59661441b7?source=collection_archive---------7-----------------------#2023-05-09](https://towardsdatascience.com/build-a-web-app-with-jupyter-and-mercury-9d59661441b7?source=collection_archive---------7-----------------------#2023-05-09)
+> 原文：[`towardsdatascience.com/build-a-web-app-with-jupyter-and-mercury-9d59661441b7?source=collection_archive---------7-----------------------#2023-05-09`](https://towardsdatascience.com/build-a-web-app-with-jupyter-and-mercury-9d59661441b7?source=collection_archive---------7-----------------------#2023-05-09)
 
 ## 教程
 
 ## Mercury 提供了一种简单的方法，将 Jupyter Notebooks 转换为交互式 Web 应用。
 
-[](https://medium.com/@alan-jones?source=post_page-----9d59661441b7--------------------------------)[![Alan Jones](../Images/359379fab1d6685ff08080b98173e67c.png)](https://medium.com/@alan-jones?source=post_page-----9d59661441b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9d59661441b7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9d59661441b7--------------------------------) [Alan Jones](https://medium.com/@alan-jones?source=post_page-----9d59661441b7--------------------------------)
+[](https://medium.com/@alan-jones?source=post_page-----9d59661441b7--------------------------------)![Alan Jones](https://medium.com/@alan-jones?source=post_page-----9d59661441b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9d59661441b7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9d59661441b7--------------------------------) [Alan Jones](https://medium.com/@alan-jones?source=post_page-----9d59661441b7--------------------------------)
 
 ·
 
@@ -14,7 +14,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9d59661441b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-web-app-with-jupyter-and-mercury-9d59661441b7&source=-----9d59661441b7---------------------bookmark_footer-----------)![](../Images/50813b13ceab9c877f4a450854919ac3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9d59661441b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-a-web-app-with-jupyter-and-mercury-9d59661441b7&source=-----9d59661441b7---------------------bookmark_footer-----------)![](img/50813b13ceab9c877f4a450854919ac3.png)
 
 我在提到代码开发还是 CO2 排放？照片由 [Etienne Girardet](https://unsplash.com/@etiennegirardet?utm_source=medium&utm_medium=referral) 贡献于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

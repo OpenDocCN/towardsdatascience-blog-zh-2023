@@ -1,20 +1,20 @@
-# 数据共享的5个好处
+# 数据共享的 5 个好处
 
-> 原文：[https://towardsdatascience.com/5-benefits-of-data-sharing-5ad8efde3385?source=collection_archive---------16-----------------------#2023-01-13](https://towardsdatascience.com/5-benefits-of-data-sharing-5ad8efde3385?source=collection_archive---------16-----------------------#2023-01-13)
+> 原文：[`towardsdatascience.com/5-benefits-of-data-sharing-5ad8efde3385?source=collection_archive---------16-----------------------#2023-01-13`](https://towardsdatascience.com/5-benefits-of-data-sharing-5ad8efde3385?source=collection_archive---------16-----------------------#2023-01-13)
 
 ## 使数据民主化以释放其全部潜力
 
-[](https://medium.com/@louise.de.leyritz?source=post_page-----5ad8efde3385--------------------------------)[![Louise de Leyritz](../Images/7223761fa288aa730d1bb5751f29e8ce.png)](https://medium.com/@louise.de.leyritz?source=post_page-----5ad8efde3385--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ad8efde3385--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ad8efde3385--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----5ad8efde3385--------------------------------)
+[](https://medium.com/@louise.de.leyritz?source=post_page-----5ad8efde3385--------------------------------)![Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----5ad8efde3385--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ad8efde3385--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ad8efde3385--------------------------------) [Louise de Leyritz](https://medium.com/@louise.de.leyritz?source=post_page-----5ad8efde3385--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-benefits-of-data-sharing-5ad8efde3385&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----5ad8efde3385---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ad8efde3385--------------------------------) · 6分钟阅读 · 2023年1月13日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ad8efde3385&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-benefits-of-data-sharing-5ad8efde3385&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----5ad8efde3385---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa926de8a6b3f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-benefits-of-data-sharing-5ad8efde3385&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=post_page-a926de8a6b3f----5ad8efde3385---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ad8efde3385--------------------------------) · 6 分钟阅读 · 2023 年 1 月 13 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ad8efde3385&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-benefits-of-data-sharing-5ad8efde3385&user=Louise+de+Leyritz&userId=a926de8a6b3f&source=-----5ad8efde3385---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ad8efde3385&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-benefits-of-data-sharing-5ad8efde3385&source=-----5ad8efde3385---------------------bookmark_footer-----------)![](../Images/683392fb769dacc13a28c6457f0a3386.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ad8efde3385&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-benefits-of-data-sharing-5ad8efde3385&source=-----5ad8efde3385---------------------bookmark_footer-----------)![](img/683392fb769dacc13a28c6457f0a3386.png)
 
-数据共享在许多组织中正成为常态，因为对从数据中提供价值的压力越来越大。事实上，[2023年是工作场所投资回报率之年，](https://www.forbes.com/sites/ericmosley/2023/01/04/2023-is-the-year-of-roi-in-the-workplace/?sh=5b13d3bb6c98) 这也包括数据。
+数据共享在许多组织中正成为常态，因为对从数据中提供价值的压力越来越大。事实上，[2023 年是工作场所投资回报率之年，](https://www.forbes.com/sites/ericmosley/2023/01/04/2023-is-the-year-of-roi-in-the-workplace/?sh=5b13d3bb6c98) 这也包括数据。
 
 无论你称之为数据网格、数据操作化、数据激活还是数据民主化，其核心理念是相同的：即向**业务团队**提供数据，帮助他们自主做出基于数据的决策。
 
@@ -30,13 +30,13 @@
 
 有些人认为数据共享令人望而生畏。如果这导致混乱和混沌怎么办？好消息是，适当实施数据共享的好处通常会超过任何潜在的负面结果。
 
-在这篇文章中，我将分享5个理由，说明为什么你应该开始与业务团队共享数据，以及你可以预期的积极影响。在即将到来的文章中，我将进一步探讨数据共享的正确实施方法。
+在这篇文章中，我将分享 5 个理由，说明为什么你应该开始与业务团队共享数据，以及你可以预期的积极影响。在即将到来的文章中，我将进一步探讨数据共享的正确实施方法。
 
 数据共享可以为您的组织带来许多显著的好处，包括统一公司愿景、改善决策制定和提高生产力。此外，数据共享还可以帮助促进创新，并推动公司内部数据质量的提升。让我们深入了解一下！
 
 ‍
 
-![](../Images/36e396483f1d9198c6233ae9eefcc3ec.png)
+![](img/36e396483f1d9198c6233ae9eefcc3ec.png)
 
 数据共享的好处 — 图片由[Castor](https://www.castordoc.com/)提供
 

@@ -1,18 +1,18 @@
 # 最完整的 PyPI 包创建指南
 
-> 原文：[https://towardsdatascience.com/the-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8?source=collection_archive---------15-----------------------#2023-03-27](https://towardsdatascience.com/the-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8?source=collection_archive---------15-----------------------#2023-03-27)
+> 原文：[`towardsdatascience.com/the-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8?source=collection_archive---------15-----------------------#2023-03-27`](https://towardsdatascience.com/the-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8?source=collection_archive---------15-----------------------#2023-03-27)
 
 ## 您需要了解的一切——无论是新手还是有经验的用户
 
-[](https://eliselandman.medium.com/?source=post_page-----acb5420a03f8--------------------------------)[![Elise Landman](../Images/1cd86aa9df340e430820a48f4d26de5a.png)](https://eliselandman.medium.com/?source=post_page-----acb5420a03f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----acb5420a03f8--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----acb5420a03f8--------------------------------) [Elise Landman](https://eliselandman.medium.com/?source=post_page-----acb5420a03f8--------------------------------)
+[](https://eliselandman.medium.com/?source=post_page-----acb5420a03f8--------------------------------)![Elise Landman](https://eliselandman.medium.com/?source=post_page-----acb5420a03f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----acb5420a03f8--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----acb5420a03f8--------------------------------) [Elise Landman](https://eliselandman.medium.com/?source=post_page-----acb5420a03f8--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdbd14e538474&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8&user=Elise+Landman&userId=dbd14e538474&source=post_page-dbd14e538474----acb5420a03f8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----acb5420a03f8--------------------------------) · 11 分钟阅读 · 2023年3月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Facb5420a03f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8&user=Elise+Landman&userId=dbd14e538474&source=-----acb5420a03f8---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdbd14e538474&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8&user=Elise+Landman&userId=dbd14e538474&source=post_page-dbd14e538474----acb5420a03f8---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----acb5420a03f8--------------------------------) · 11 分钟阅读 · 2023 年 3 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Facb5420a03f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8&user=Elise+Landman&userId=dbd14e538474&source=-----acb5420a03f8---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Facb5420a03f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8&source=-----acb5420a03f8---------------------bookmark_footer-----------)![](../Images/726e161623b0a5e82e1c2c669eee378e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Facb5420a03f8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8&source=-----acb5420a03f8---------------------bookmark_footer-----------)![](img/726e161623b0a5e82e1c2c669eee378e.png)
 
 图片来自 [Unsplash](https://unsplash.com/photos/DYHx6h3lMdY)。
 
@@ -22,9 +22,9 @@
 
 本指南分为 2 部分：
 
-👉 如果你是*首次接触 PyPI*，这是你第一个包，从这里开始：[**1 | 为 PyPI 准备你的包**](/the-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8#:~:text=your%20PyPI%20Package-,1%20%7C%20Preparing%20your%20Package%20for%20PyPI,-When%20uploading%20your)
+👉 如果你是*首次接触 PyPI*，这是你第一个包，从这里开始：**1 | 为 PyPI 准备你的包**
 
-👉 如果你*已经是 PyPI 用户*并且已经上传了你的包，从这里开始：[**2 | 上传和维护你的 PyPI 包**](/the-complete-guide-for-creating-a-good-pypi-package-acb5420a03f8#:~:text=to%20PyPI!%20%F0%9F%9A%80-,2%20%7C%20Uploading%20and%20Maintaining%20your%20PyPI%20Package,-If%20your%20package)
+👉 如果你*已经是 PyPI 用户*并且已经上传了你的包，从这里开始：**2 | 上传和维护你的 PyPI 包**
 
 # 1 | 为 PyPI 准备你的包
 

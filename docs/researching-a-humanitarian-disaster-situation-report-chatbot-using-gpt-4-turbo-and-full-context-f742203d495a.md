@@ -1,8 +1,8 @@
-# 研究人道主义灾难情况报告聊天机器人 — 使用GPT-4-Turbo和完整上下文提示
+# 研究人道主义灾难情况报告聊天机器人 — 使用 GPT-4-Turbo 和完整上下文提示
 
-> 原文：[https://towardsdatascience.com/researching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a?source=collection_archive---------7-----------------------#2023-11-15](https://towardsdatascience.com/researching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a?source=collection_archive---------7-----------------------#2023-11-15)
+> 原文：[`towardsdatascience.com/researching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a?source=collection_archive---------7-----------------------#2023-11-15`](https://towardsdatascience.com/researching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a?source=collection_archive---------7-----------------------#2023-11-15)
 
-[](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)[![Matthew Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f742203d495a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f742203d495a--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)
+[](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)![Matthew Harris](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f742203d495a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f742203d495a--------------------------------) [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@ TL;DR
 
 *在本文中，我们探索了 OpenAI 全新的 GPT-4-Turbo 模型，利用其增加的 128k 令牌上下文窗口来传递完整文档语料库以进行信息检索。这种粗略的蛮力方法——仅在更大的上下文窗口下才可能——实现简单，不需要文档嵌入和语义搜索，如检索增强生成（RAG）中使用的那样。应用于发布在令人惊叹的 ReliefWeb 平台上的人道主义灾难情况报告——使用稀疏引导表示（SPR）进行压缩——我们展示了 GPT-4-Turbo 能够回答有关近期灾难的基本问题。然而，即使在 OpenAI 最近降低了令牌成本的情况下，这种方法仍然代价高昂，提示预览版 GPT-4-Turbo 模型响应非常缓慢，有时需要一分钟才能回复。与所有 LLM 信息检索模式一样，实施验证框架以确保控制虚假信息和信息遗漏当然至关重要。也就是说，GPT-4-Turbo 在能力上迈出了重要一步，尤其是随着性能的提升和成本的下降，它将加入快速扩展的 LLM 工具包。*
 
-![](../Images/b9ce334d1988ebcccc7aa01a3ad3d2d1.png)
+![](img/b9ce334d1988ebcccc7aa01a3ad3d2d1.png)
 
 新的 GPT-4-Turbo 具有 128k 令牌的更大上下文窗口。图像由 GPT-4 + Dall-E-3 生成。
 
@@ -130,7 +130,7 @@ def get_safe_name(name):
         name (str): The safe filename.
     """
     name = str(name)
-    name = re.sub("[^0-9a-zA-Z]+", "_", name)
+    name = re.sub("[⁰-9a-zA-Z]+", "_", name)
     name = re.sub(r"_$","", name)
     if len(name) == 0:
         name = 'Unknown' 
@@ -484,11 +484,11 @@ for index, row in articles.iterrows():
     save_text(summarized_text_prefixed, docs_folder2 + '/' + filename)
 ```
 
-您会注意到在上述内容中，我们添加了关于报告的一些元数据，以及由GPT-4-Turbo返回的SPR摘要。然后将压缩的报告保存为文本文件。
+您会注意到在上述内容中，我们添加了关于报告的一些元数据，以及由 GPT-4-Turbo 返回的 SPR 摘要。然后将压缩的报告保存为文本文件。
 
 # 提取一个灾害的高级列表
 
-我们还将从ReliefWeb中提取一份灾害的高级列表，用作我们系统提示的信息请求辅助……
+我们还将从 ReliefWeb 中提取一份灾害的高级列表，用作我们系统提示的信息请求辅助……
 
 ```py
 filter = {
@@ -520,15 +520,15 @@ disasters.to_csv('disasters.csv')
 
 这给我们提供了一个简明的列表……
 
-![](../Images/008e025214645e66b0e5c853c919fa92.png)
+![](img/008e025214645e66b0e5c853c919fa92.png)
 
-使用ReleiefWeb API灾难终端提取的灾难列表
+使用 ReleiefWeb API 灾难终端提取的灾难列表
 
-# 为GPT-4-Turbo创建一个提示
+# 为 GPT-4-Turbo 创建一个提示
 
-现在我们有一份灾难和压缩情况报告的列表 — 从11月1日到11月10日 — 列出了这些灾难的关键事实。
+现在我们有一份灾难和压缩情况报告的列表 — 从 11 月 1 日到 11 月 10 日 — 列出了这些灾难的关键事实。
 
-让我们将它们合并成一个文本文件，作为GPT-4-Turbo系统提示的一部分使用……
+让我们将它们合并成一个文本文件，作为 GPT-4-Turbo 系统提示的一部分使用……
 
 ```py
 disasters = pd.read_csv('disasters.csv')
@@ -556,7 +556,7 @@ tokens, cost = num_tokens_from_string(concatenated_content,"cl100k_base")
 OpenAI Tokens: 82001 ($0.82001)
 ```
 
-因此，鉴于每1,000个令牌输入的成本为[$0.01](https://openai.com/pricing)，上面创建的文本每次提示的成本为$0.82。还有一些完成令牌成本，每1,000个令牌为$0.03，但由于令牌较少，这应该远低于输入成本。
+因此，鉴于每 1,000 个令牌输入的成本为[$0.01](https://openai.com/pricing)，上面创建的文本每次提示的成本为$0.82。还有一些完成令牌成本，每 1,000 个令牌为$0.03，但由于令牌较少，这应该远低于输入成本。
 
 哎呀！
 
@@ -649,9 +649,9 @@ Please note that this is a condensed summary of the available data up until
 and more assessments are made.
 ```
 
-总的来说，这是对灾难的一个相当不错的摘要。事实与[ReliefWeb灾难页面](https://reliefweb.int/disaster/eq-2023-000214-npl)（请注意，自这篇文章以来，此页面可能会更改，因为灾难正在发展）和用于本研究的[最新情况报告](https://reliefweb.int/report/nepal/nepal-western-nepal-earthquake-2023-situation-report-no-02-10-november-2023)很好地一致。
+总的来说，这是对灾难的一个相当不错的摘要。事实与[ReliefWeb 灾难页面](https://reliefweb.int/disaster/eq-2023-000214-npl)（请注意，自这篇文章以来，此页面可能会更改，因为灾难正在发展）和用于本研究的[最新情况报告](https://reliefweb.int/report/nepal/nepal-western-nepal-earthquake-2023-situation-report-no-02-10-november-2023)很好地一致。
 
-不过，有一个事实略微不一致，数据显示，不幸的是有153人死亡，而模型返回了154人。
+不过，有一个事实略微不一致，数据显示，不幸的是有 153 人死亡，而模型返回了 154 人。
 
 ```py
 answer = run_llm("How many people died in the Nepal earthquake in 2023 occur?", 
@@ -661,9 +661,9 @@ print(answer)
 In the Nepal Earthquake of November 2023, there were 153 fatalities.
 ```
 
-因此，在第一个提示中，“已知”但在第一个提示中产生了幻觉。与LLM的所有应用一样，验证和检查对于捕捉此类问题至关重要。
+因此，在第一个提示中，“已知”但在第一个提示中产生了幻觉。与 LLM 的所有应用一样，验证和检查对于捕捉此类问题至关重要。
 
-让我们获取一些关于创建情况报告的组织的信息（用于11月1日至10日的期间）……
+让我们获取一些关于创建情况报告的组织的信息（用于 11 月 1 日至 10 日的期间）……
 
 ```py
 answer = run_llm("List the organizations providing sitreps for the Nepal 
@@ -681,7 +681,7 @@ The organizations providing situation reports (sitreps) for the Nepal Earthquake
 - UN Country Team in Nepal
 ```
 
-相比于[同一查询在ReliefWeb中的结果](https://reliefweb.int/updates?advanced-search=%28D51797%29_%28F10%29_%28DA20231101-20231110%29)，这个看起来是正确的。
+相比于[同一查询在 ReliefWeb 中的结果](https://reliefweb.int/updates?advanced-search=%28D51797%29_%28F10%29_%28DA20231101-20231110%29)，这个看起来是正确的。
 
 让我们问一些更细致的问题……
 

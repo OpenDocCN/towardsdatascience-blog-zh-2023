@@ -1,18 +1,18 @@
 # 使用 Hydra 跟踪你的实验
 
-> 原文：[https://towardsdatascience.com/keep-track-of-your-experiments-with-hydra-b29937a99fc9?source=collection_archive---------14-----------------------#2023-08-01](https://towardsdatascience.com/keep-track-of-your-experiments-with-hydra-b29937a99fc9?source=collection_archive---------14-----------------------#2023-08-01)
+> 原文：[`towardsdatascience.com/keep-track-of-your-experiments-with-hydra-b29937a99fc9?source=collection_archive---------14-----------------------#2023-08-01`](https://towardsdatascience.com/keep-track-of-your-experiments-with-hydra-b29937a99fc9?source=collection_archive---------14-----------------------#2023-08-01)
 
-![](../Images/01cd12756484fac696d8c911c15cd612.png)
+![](img/01cd12756484fac696d8c911c15cd612.png)
 
 (作者提供的图片)
 
 ## 使用 YAML 文件配置超参数，提升你的研究效率！
 
-[](https://medium.com/@marcellopoliti?source=post_page-----b29937a99fc9--------------------------------)[![Marcello Politi](../Images/484e44571bd2e75acfe5fef3146ab3c2.png)](https://medium.com/@marcellopoliti?source=post_page-----b29937a99fc9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b29937a99fc9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b29937a99fc9--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----b29937a99fc9--------------------------------)
+[](https://medium.com/@marcellopoliti?source=post_page-----b29937a99fc9--------------------------------)![Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----b29937a99fc9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b29937a99fc9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b29937a99fc9--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----b29937a99fc9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkeep-track-of-your-experiments-with-hydra-b29937a99fc9&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----b29937a99fc9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b29937a99fc9--------------------------------) · 5 min read · 2023年8月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb29937a99fc9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkeep-track-of-your-experiments-with-hydra-b29937a99fc9&user=Marcello+Politi&userId=7390355d40fe&source=-----b29937a99fc9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkeep-track-of-your-experiments-with-hydra-b29937a99fc9&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----b29937a99fc9---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b29937a99fc9--------------------------------) · 5 min read · 2023 年 8 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb29937a99fc9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fkeep-track-of-your-experiments-with-hydra-b29937a99fc9&user=Marcello+Politi&userId=7390355d40fe&source=-----b29937a99fc9---------------------clap_footer-----------)
 
 --
 

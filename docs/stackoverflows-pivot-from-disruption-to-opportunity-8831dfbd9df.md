@@ -1,18 +1,18 @@
 # StackOverflow 的转型：从颠覆到机遇
 
-> 原文：[https://towardsdatascience.com/stackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df?source=collection_archive---------10-----------------------#2023-08-14](https://towardsdatascience.com/stackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df?source=collection_archive---------10-----------------------#2023-08-14)
+> 原文：[`towardsdatascience.com/stackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df?source=collection_archive---------10-----------------------#2023-08-14`](https://towardsdatascience.com/stackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df?source=collection_archive---------10-----------------------#2023-08-14)
 
 ## *OverFlowAI 利用公司的核心资产，将答案呈现在一个可用的界面中，并创建一个生成 AI 循环来创造新内容*
 
-[](https://medium.com/@viggybala?source=post_page-----8831dfbd9df--------------------------------)[![Viggy Balagopalakrishnan](../Images/a3d6b5d26327892108816c0ef125b90d.png)](https://medium.com/@viggybala?source=post_page-----8831dfbd9df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8831dfbd9df--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8831dfbd9df--------------------------------) [Viggy Balagopalakrishnan](https://medium.com/@viggybala?source=post_page-----8831dfbd9df--------------------------------)
+[](https://medium.com/@viggybala?source=post_page-----8831dfbd9df--------------------------------)![Viggy Balagopalakrishnan](https://medium.com/@viggybala?source=post_page-----8831dfbd9df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8831dfbd9df--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8831dfbd9df--------------------------------) [Viggy Balagopalakrishnan](https://medium.com/@viggybala?source=post_page-----8831dfbd9df--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb3366eb9a0cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=post_page-b3366eb9a0cf----8831dfbd9df---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8831dfbd9df--------------------------------) ·9 min read·2023年8月14日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8831dfbd9df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=-----8831dfbd9df---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb3366eb9a0cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=post_page-b3366eb9a0cf----8831dfbd9df---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8831dfbd9df--------------------------------) ·9 min read·2023 年 8 月 14 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8831dfbd9df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df&user=Viggy+Balagopalakrishnan&userId=b3366eb9a0cf&source=-----8831dfbd9df---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8831dfbd9df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df&source=-----8831dfbd9df---------------------bookmark_footer-----------)![](../Images/cd2e345f78b38efbbf33b872f83a73fe.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8831dfbd9df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstackoverflows-pivot-from-disruption-to-opportunity-8831dfbd9df&source=-----8831dfbd9df---------------------bookmark_footer-----------)![](img/cd2e345f78b38efbbf33b872f83a73fe.png)
 
 图片来源：[Pakata Goh](https://unsplash.com/@pakata?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,7 +20,7 @@
 
 [StackOverflow](https://stackoverflow.com/) 是软件开发人员获取编程支持的最常用平台，最近经历了一些波折。如果你以前没有使用过 StackOverflow，它是一个类似于 Quora 或 Reddit 的问答论坛，你可以在这里提出与编程相关的问题。虽然我已经好几年没有写过生产级代码，但在我写代码的时候，StackOverflow 确实非常棒。例如，如果你在编译代码时遇到了最晦涩的错误，并且收到了一条你无法理解的错误消息，你会将其放入 Google 搜索中。通常，你会找到一个 StackOverflow 页面，上面有人问了同样的问题并得到了回答。更少见的是，你会发现另一个人遇到了完全相同的晦涩问题但没有得到答案——在这种情况下，祝好运。更准确地说，[69% 的问题](https://devclass.com/2023/05/15/stack-overflow-traffic-drops-as-developers-turn-to-ai-coding-assistants/) 在 StackOverflow 上得到了回答，这确实很令人印象深刻。
 
-![](../Images/e0e0b3453ce31bcbf6a0f917893afda0.png)
+![](img/e0e0b3453ce31bcbf6a0f917893afda0.png)
 
 [StackOverflow 首页](https://stackoverflow.com/questions)
 
@@ -54,37 +54,37 @@
 
 现有的 AI 代码编写工具在某些任务上表现良好。例如，这个[Reddit 线程](https://www.reddit.com/r/webdev/comments/11hmsqp/github_copilot_whats_your_experience_been_like/)记录了几位网页开发人员关于 GitHub Copilot 的反馈——总体主题是，该产品在开发人员需要编写全新代码并且不想从头开始编写的特定情况下非常有用。即便在这些情况下，它也经常会有成功和失败。
 
-原因并不令人惊讶。从概念上讲，**大型语言模型（LLMs）接收大量数据，并基于这个结构生成输出：在特定上下文中，对于你问的问题，最可能的单词/文本是什么**。它本质上是在计算一个单词跟随另一个单词的概率，并基于此生成输出。尽管有这一结构，鉴于用于训练这些模型的数据量，ChatGPT在更一般的用例（如起草电子邮件或总结页面）中的结果仍然令人印象深刻。但重要的是要记住，语言模型在设计上具有有限的分析/数学能力。换句话说，当你问模型“2+2是多少”时，它可能会给出正确答案——不是因为它知道数学，而是因为它在训练数据中见过这个文本模式。
+原因并不令人惊讶。从概念上讲，**大型语言模型（LLMs）接收大量数据，并基于这个结构生成输出：在特定上下文中，对于你问的问题，最可能的单词/文本是什么**。它本质上是在计算一个单词跟随另一个单词的概率，并基于此生成输出。尽管有这一结构，鉴于用于训练这些模型的数据量，ChatGPT 在更一般的用例（如起草电子邮件或总结页面）中的结果仍然令人印象深刻。但重要的是要记住，语言模型在设计上具有有限的分析/数学能力。换句话说，当你问模型“2+2 是多少”时，它可能会给出正确答案——不是因为它知道数学，而是因为它在训练数据中见过这个文本模式。
 
-同样，在代码生成方面，**模型并不真正“了解”编程背后的基本概念**，而是基于大量文本数据的训练来预测结果。这导致了上面提到的GitHub Copilot反馈——它有时能生成你需要的基础代码，但**其实际理解代码、调试和提供解释的能力有限**。这随着时间的推移会有所改善，但很难说它是否会达到高准确性/高可靠性的程度。
+同样，在代码生成方面，**模型并不真正“了解”编程背后的基本概念**，而是基于大量文本数据的训练来预测结果。这导致了上面提到的 GitHub Copilot 反馈——它有时能生成你需要的基础代码，但**其实际理解代码、调试和提供解释的能力有限**。这随着时间的推移会有所改善，但很难说它是否会达到高准确性/高可靠性的程度。
 
 StackOverflow CEO Prashanth Chandrasekar [简洁地描述了](https://devclass.com/2023/05/15/stack-overflow-traffic-drops-as-developers-turn-to-ai-coding-assistants/)：
 
-> 现代LLM系统的一个问题是，它们会以与正确答案相同的信心提供错误答案，并且如果感觉符合用户寻求的答案模式，它们会“虚构”事实和数据。
+> 现代 LLM 系统的一个问题是，它们会以与正确答案相同的信心提供错误答案，并且如果感觉符合用户寻求的答案模式，它们会“虚构”事实和数据。
 > 
 > 在某些时候，你需要了解自己在构建什么。你可能需要调试它，但对刚刚构建的内容毫无头绪，并且很难通过捷径跳过学习过程。
 
-这就是StackOverflow的机会——他们的流量下降可能是永久性的，程序员可能更少地访问StackOverflow以解决简单问题（例如，他们可能不再访问StackOverflow以获取现成的排序算法）。但**产品能够闪光的地方**是：1）对语言模型可能无法回答的复杂问题提供**高准确性/高可靠性答案**，以及2）对语言模型没有先前数据进行训练的新技术/问题领域提供**答案**。OverflowAI的设计就是为了直接抓住这个机会。
+这就是 StackOverflow 的机会——他们的流量下降可能是永久性的，程序员可能更少地访问 StackOverflow 以解决简单问题（例如，他们可能不再访问 StackOverflow 以获取现成的排序算法）。但**产品能够闪光的地方**是：1）对语言模型可能无法回答的复杂问题提供**高准确性/高可靠性答案**，以及 2）对语言模型没有先前数据进行训练的新技术/问题领域提供**答案**。OverflowAI 的设计就是为了直接抓住这个机会。
 
-# OverflowAI的作用
+# OverflowAI 的作用
 
 他们押注的三个关键方面是——直接回答问题、在开发环境中的可用性，以及提升企业内的知识。
 
 **OverflowAI 搜索**提供了**以问答格式直接回答用户**（类似于 ChatGPT），但提供了多个**实际 StackOverflow 帖子的链接**。除了帮助建立信任外，这还为用户提供了深入了解的机会，当 AI 提供的答案无法完全解决用户的问题时。这在简单问题时提供直接答案，而在复杂问题时引导用户沿着更探索性的路径前进，达到了微妙的平衡。
 
-![](../Images/d5aa3bee8acc64da03bcef075b00216e.png)
+![](img/d5aa3bee8acc64da03bcef075b00216e.png)
 
 OverflowAI 搜索（来源：[OverflowAI 演示视频](https://stackoverflow.blog/2023/07/27/announcing-overflowai/)）
 
 如果用户对回应不满意，他们可以进入一个**聊天式界面以询问后续问题**。如果答案都不令人满意，他们可以请求 StackOverflow**代他们起草问题**，准备好发布到问答论坛。这种体验还能避免用户提问时，问题已经被回答过的半常见情况。
 
-![](../Images/3caedd6419564dbc38f9860ec8201c35.png)
+![](img/3caedd6419564dbc38f9860ec8201c35.png)
 
 自动问题草稿（来源：[OverflowAI 演示视频](https://stackoverflow.blog/2023/07/27/announcing-overflowai/)）
 
 该产品还通过扩展**在 Visual Studio Code 中提供所有这些功能**，进一步提升了可用性。这帮助 StackOverflow 更有效地与原生集成的编码助手竞争，使开发人员能够在编码环境中获取答案（而不是需要切换上下文并从浏览器中搜索）。
 
-![](../Images/5eade4f779557459fdc21634291d8245.png)
+![](img/5eade4f779557459fdc21634291d8245.png)
 
 Visual Studio Code 内的扩展（来源：[OverflowAI 演示视频](https://stackoverflow.blog/2023/07/27/announcing-overflowai/)）
 
@@ -94,15 +94,15 @@ OverFlowAI 的产品方法令人印象深刻，它利用公司核心资产（对
 
 # StackOverflow 策略中的潜在趋势
 
-StackOverflow 并不是一个公开上市的公司——它由 Prosus 所拥有，Prosus 又是更大控股公司 Naspers 的一部分，而 Naspers 是上市公司。因此，很难获得准确的收入数据，但 Prosus 在[2022年5月](https://www.naspers.com/~/media/Files/N/Naspers-Corp-V2/investor/results-reports-events/results-reports-and-events-archive/deepdive-call-series/edtech/edtech-deep-dive-presentation.pdf)发布的报告提供了一些线索：
+StackOverflow 并不是一个公开上市的公司——它由 Prosus 所拥有，Prosus 又是更大控股公司 Naspers 的一部分，而 Naspers 是上市公司。因此，很难获得准确的收入数据，但 Prosus 在[2022 年 5 月](https://www.naspers.com/~/media/Files/N/Naspers-Corp-V2/investor/results-reports-events/results-reports-and-events-archive/deepdive-call-series/edtech/edtech-deep-dive-presentation.pdf)发布的报告提供了一些线索：
 
-+   公司在2022年的收入约为8900万美元，其中50%来自企业产品 StackOverflow for Teams，50% 来自 Reach 产品（广告和雇主品牌）。
++   公司在 2022 年的收入约为 8900 万美元，其中 50%来自企业产品 StackOverflow for Teams，50% 来自 Reach 产品（广告和雇主品牌）。
 
-+   从2021年到2022年，StackOverflow for Teams 的收入增长了69%，而 Reach 产品的收入下降了12%（2022年的收入可能受到其他因素的影响，如招聘放缓）。
++   从 2021 年到 2022 年，StackOverflow for Teams 的收入增长了 69%，而 Reach 产品的收入下降了 12%（2022 年的收入可能受到其他因素的影响，如招聘放缓）。
 
-![](../Images/29e5b5d66d55b313a5e028c879584010.png)
+![](img/29e5b5d66d55b313a5e028c879584010.png)
 
-来自 StackOverflow 所有者 Prosus 的收入数据（[报告于2022年5月](https://www.naspers.com/~/media/Files/N/Naspers-Corp-V2/investor/results-reports-events/results-reports-and-events-archive/deepdive-call-series/edtech/edtech-deep-dive-presentation.pdf)）
+来自 StackOverflow 所有者 Prosus 的收入数据（[报告于 2022 年 5 月](https://www.naspers.com/~/media/Files/N/Naspers-Corp-V2/investor/results-reports-events/results-reports-and-events-archive/deepdive-call-series/edtech/edtech-deep-dive-presentation.pdf)）
 
 这些收入数据结合 OverflowAI 产品的功能指向了 StackOverflow 在生成式 AI 领域的发展趋势（这些趋势也可以扩展到其他问答平台）：
 
@@ -116,7 +116,7 @@ StackOverflow 并不是一个公开上市的公司——它由 Prosus 所拥有�
 
 所有趋势都指向一个方向，即 StackOverflow 正在成功转型进入公司下一个阶段，公司已经做出了正确的产品/业务投资，以应对可能的干扰。此外，他们还提供了宝贵的社区服务，并为其他问答平台制定了可供借鉴的操作手册。总体来说，我对他们的发展方向感到乐观，并相信这将激发未来蓬勃发展的内容生态系统。
 
-🚀 如果你喜欢这篇文章，可以考虑订阅[**我的每周通讯**](https://thisisunpacked.substack.com/)**。** 每周，我会发布一篇**深度分析**关于**当前技术话题/产品策略**的文章，阅读时间约为10分钟。最好的祝愿，Viggy。
+🚀 如果你喜欢这篇文章，可以考虑订阅[**我的每周通讯**](https://thisisunpacked.substack.com/)**。** 每周，我会发布一篇**深度分析**关于**当前技术话题/产品策略**的文章，阅读时间约为 10 分钟。最好的祝愿，Viggy。
 
 [Unpacked | Viggy Balagopalakrishnan | Substack](https://thisisunpacked.substack.com/?source=post_page-----8831dfbd9df--------------------------------)
 

@@ -1,12 +1,12 @@
 # 揭示偏差调整的力量：在类别不平衡数据集中提升预测精度
 
-> 原文：[https://towardsdatascience.com/unveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58?source=collection_archive---------2-----------------------#2023-08-13](https://towardsdatascience.com/unveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58?source=collection_archive---------2-----------------------#2023-08-13)
+> 原文：[`towardsdatascience.com/unveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58?source=collection_archive---------2-----------------------#2023-08-13`](https://towardsdatascience.com/unveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58?source=collection_archive---------2-----------------------#2023-08-13)
 
-[](https://sirano1004.medium.com/?source=post_page-----ecad1836fc58--------------------------------)[![Hyung Gyu Rho](../Images/ce0248c75a21e0871d8e0b9fdf3c55b6.png)](https://sirano1004.medium.com/?source=post_page-----ecad1836fc58--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ecad1836fc58--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ecad1836fc58--------------------------------) [Hyung Gyu Rho](https://sirano1004.medium.com/?source=post_page-----ecad1836fc58--------------------------------)
+[](https://sirano1004.medium.com/?source=post_page-----ecad1836fc58--------------------------------)![Hyung Gyu Rho](https://sirano1004.medium.com/?source=post_page-----ecad1836fc58--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ecad1836fc58--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecad1836fc58--------------------------------) [Hyung Gyu Rho](https://sirano1004.medium.com/?source=post_page-----ecad1836fc58--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F89f7d2237f82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58&user=Hyung+Gyu+Rho&userId=89f7d2237f82&source=post_page-89f7d2237f82----ecad1836fc58---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecad1836fc58--------------------------------) ·11 分钟阅读·2023年8月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fecad1836fc58&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58&user=Hyung+Gyu+Rho&userId=89f7d2237f82&source=-----ecad1836fc58---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F89f7d2237f82&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58&user=Hyung+Gyu+Rho&userId=89f7d2237f82&source=post_page-89f7d2237f82----ecad1836fc58---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecad1836fc58--------------------------------) ·11 分钟阅读·2023 年 8 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fecad1836fc58&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funveiling-the-power-of-bias-adjustment-enhancing-predictive-precision-in-imbalanced-datasets-ecad1836fc58&user=Hyung+Gyu+Rho&userId=89f7d2237f82&source=-----ecad1836fc58---------------------clap_footer-----------)
 
 --
 
@@ -34,27 +34,27 @@
 
 ## 算法概述
 
-算法的概念很简单：计算每个类别 *k* 的 *f_k*​(*x*) 的平均值，并将该平均值表示为 *δk*​。通过从 *f_k*​(*x*) 中减去 *δk*​，我们确保 *f_k*​(*x*) − *δk*​ 的期望值对于每个类别 *k* 都变为0。因此，模型预测每个类别发生的概率是相同的。虽然这提供了对算法原理的简要了解，但重要的是要注意，这种方法有理论和数学基础支撑，后续章节将进一步探讨。
+算法的概念很简单：计算每个类别 *k* 的 *f_k*​(*x*) 的平均值，并将该平均值表示为 *δk*​。通过从 *f_k*​(*x*) 中减去 *δk*​，我们确保 *f_k*​(*x*) − *δk*​ 的期望值对于每个类别 *k* 都变为 0。因此，模型预测每个类别发生的概率是相同的。虽然这提供了对算法原理的简要了解，但重要的是要注意，这种方法有理论和数学基础支撑，后续章节将进一步探讨。
 
 ## 二分类算法
 
-![](../Images/e6293ba872ad3b540f9cd23197189f24.png)
+![](img/e6293ba872ad3b540f9cd23197189f24.png)
 
 作者创作
 
 **预测的利用**：在进行预测时，应用算法中最后计算的 **δ** 值。该 **δ** 值反映了在训练过程中所做的累计调整，并作为预测时 sigmoid 激活函数中最终偏差项的基础。
 
-![](../Images/a4a52dfc7014e6b66e345a243c864b93.png)
+![](img/a4a52dfc7014e6b66e345a243c864b93.png)
 
 ## 多类别算法
 
-![](../Images/1799b9446e951ce30b308f0a72cd0f2b.png)
+![](img/1799b9446e951ce30b308f0a72cd0f2b.png)
 
 作者创作
 
 **预测的利用**：我们算法训练过程的最终结果是一个关键元素——最后计算的 δk 值。该 δk 值封装了在训练过程中精心调整的累计偏差项。它的重要性在于，它作为预测时 softmax 激活函数中最终偏差项的基础参数。
 
-![](../Images/4d4e7537ab3c519e04fbfa2dfd3eb397.png)
+![](img/4d4e7537ab3c519e04fbfa2dfd3eb397.png)
 
 作者创作
 
@@ -66,27 +66,27 @@
 
 ## 损失函数与不平衡
 
-我们从深入探讨算法的核心——损失函数开始。对于初步阐述，我们将研究未直接解决类别不平衡问题的损失函数。假设一个二分类问题，其中类别1占90%的观察值，类别0占剩余的10%。我们将类别1的观察值集合表示为 C1，将类别0的观察值集合表示为 C0，以此作为起点。
+我们从深入探讨算法的核心——损失函数开始。对于初步阐述，我们将研究未直接解决类别不平衡问题的损失函数。假设一个二分类问题，其中类别 1 占 90%的观察值，类别 0 占剩余的 10%。我们将类别 1 的观察值集合表示为 C1，将类别 0 的观察值集合表示为 C0，以此作为起点。
 
 在未解决类别不平衡问题的情况下，损失函数的形式为：
 
-![](../Images/b02fec09ab7ad330f7e894557d973f43.png)
+![](img/b02fec09ab7ad330f7e894557d973f43.png)
 
 作者创作
 
 在模型估计过程中，我们努力最小化这个损失函数：
 
-![](../Images/62429da598d38fdc82aa3a41f804fed5.png)
+![](img/62429da598d38fdc82aa3a41f804fed5.png)
 
 作者创作
 
 ## 缓解不平衡：过采样和调整类别权重
 
-然而，我们工作的核心在于解决类别不平衡问题。为了克服这一挑战，我们探讨了过采样技术。虽然存在各种过采样方法——包括简单过采样、随机过采样、SMOTE等——为了展示的清晰性，我们目前关注简单过采样，并稍微涉及随机过采样。
+然而，我们工作的核心在于解决类别不平衡问题。为了克服这一挑战，我们探讨了过采样技术。虽然存在各种过采样方法——包括简单过采样、随机过采样、SMOTE 等——为了展示的清晰性，我们目前关注简单过采样，并稍微涉及随机过采样。
 
-**简单过采样：** 我们工具箱中的一种基本方法是简单过采样，这是一种将少数类别的实例按八倍因子复制以匹配多数类别大小的技术。在我们的示例中，少数类别占10%，多数类别占90%，我们将少数类别的观察值复制八倍，从而有效地平衡类别分布。将复制的观察值集合记为D0，这一步骤将我们的损失函数转化如下：
+**简单过采样：** 我们工具箱中的一种基本方法是简单过采样，这是一种将少数类别的实例按八倍因子复制以匹配多数类别大小的技术。在我们的示例中，少数类别占 10%，多数类别占 90%，我们将少数类别的观察值复制八倍，从而有效地平衡类别分布。将复制的观察值集合记为 D0，这一步骤将我们的损失函数转化如下：
 
-![](../Images/4993b018b94f60b98c45f133295481f6.png)
+![](img/4993b018b94f60b98c45f133295481f6.png)
 
 作者创建
 
@@ -98,7 +98,7 @@
 
 一个关键的启示强调了我们方法的核心：偏差调整、过采样和权重调整之间的本质等价性。这一洞察来源于
 
-> “Prentice和Pyke（1979）……已经表明，当模型包含每个类别的常数（截距）项时，这些常数项是唯一受Y的不平等选择概率影响的系数” Scott & Wild (1986) [2]。此外，Manski和Lerman（1977）在softmax设置中也显示了相同的结果 [1]。
+> “Prentice 和 Pyke（1979）……已经表明，当模型包含每个类别的常数（截距）项时，这些常数项是唯一受 Y 的不平等选择概率影响的系数” Scott & Wild (1986) [2]。此外，Manski 和 Lerman（1977）在 softmax 设置中也显示了相同的结果 [1]。
 
 **揭示重要性：** 将这一洞察转化为机器学习领域，常数（截距）项就是偏差项。这一基本观察揭示了，当我们重新校准类别权重或观察权重时，结果变化主要表现为对偏差项的调整。简而言之，偏差项是将我们的策略与解决类别不平衡问题的关键连接起来的枢纽。
 
@@ -114,7 +114,7 @@
 
 为了说明这一目的，我们关注一个简化的场景：具有单一特征的逻辑回归。我们的模型定义为：
 
-![](../Images/90ab09648be9ab0c4594e647a59c1e96.png)
+![](img/90ab09648be9ab0c4594e647a59c1e96.png)
 
 作者创建
 
@@ -172,7 +172,7 @@ print(method3.summary()) # 0.35 bias term and 0.99 x3 coefficient
 
 ## 结果：
 
-![](../Images/cf669eaba6a84a8ca92c2ddd8dcffbff.png)
+![](img/cf669eaba6a84a8ca92c2ddd8dcffbff.png)
 
 模拟结果；作者创建
 
@@ -208,7 +208,7 @@ train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(b
 valid_dataset = tf.data.Dataset.from_tensor_slices((x_valid, y_valid)).batch(batch_size)
 ```
 
-然后，我们定义了一个简单的深度学习模型用于二分类，并设置了优化器、损失函数和评估指标。我遵循了竞赛评估并选择了AUC作为评估指标。此外，模型故意被简化，因为本文的重点是展示如何实现偏差调整算法，而不是在预测中取得最佳成绩。
+然后，我们定义了一个简单的深度学习模型用于二分类，并设置了优化器、损失函数和评估指标。我遵循了竞赛评估并选择了 AUC 作为评估指标。此外，模型故意被简化，因为本文的重点是展示如何实现偏差调整算法，而不是在预测中取得最佳成绩。
 
 ```py
 model = tf.keras.Sequential([
@@ -224,9 +224,9 @@ val_metric = tf.keras.metrics.AUC()
 
 在我们的偏差调整算法的核心中，训练和验证步骤中，我们细致地解决了类别不平衡问题。为了阐明这个过程，我们深入探讨了平衡模型预测的复杂机制。
 
-## 使用累积Delta值的训练步骤
+## 使用累积 Delta 值的训练步骤
 
-在训练步骤中，我们开始了提升模型对类别不平衡敏感性的旅程。在这里，我们计算并累积了两个不同集群的模型输出之和：`delta0`和`delta1`。这两个集群具有重要意义，分别代表了与类别0和类别1相关的预测值。
+在训练步骤中，我们开始了提升模型对类别不平衡敏感性的旅程。在这里，我们计算并累积了两个不同集群的模型输出之和：`delta0`和`delta1`。这两个集群具有重要意义，分别代表了与类别 0 和类别 1 相关的预测值。
 
 ```py
 # Define Training Step function
@@ -250,9 +250,9 @@ def train_step(x, y):
     return loss_value, delta0, delta1
 ```
 
-## 验证步骤：使用Delta解决不平衡问题
+## 验证步骤：使用 Delta 解决不平衡问题
 
-从训练过程中得出的归一化Delta值在验证步骤中发挥了核心作用。凭借这些精细化的类别不平衡指标，我们将模型的预测与真实的类别分布更准确地对齐。`test_step`函数将这些Delta值集成到自适应调整预测中，最终导致更精细的评估。
+从训练过程中得出的归一化 Delta 值在验证步骤中发挥了核心作用。凭借这些精细化的类别不平衡指标，我们将模型的预测与真实的类别分布更准确地对齐。`test_step`函数将这些 Delta 值集成到自适应调整预测中，最终导致更精细的评估。
 
 ```py
 @tf.function
@@ -262,9 +262,9 @@ def test_step(x, y, delta):
     val_metric.update_state(y, y_pred)
 ```
 
-## 利用Delta值进行不平衡修正
+## 利用 Delta 值进行不平衡修正
 
-随着训练的进行，我们收集了 encapsulated 在`delta0`和`delta1`集群总和中的宝贵见解。这些累积值成为我们模型预测中固有偏差的指示器。在每个训练周期结束时，我们执行了一个重要的转换。通过将累积的集群总和除以每个类别的相应观察数，我们得到归一化的Delta值。这种归一化作为关键的平衡器，概括了我们偏差调整方法的本质。
+随着训练的进行，我们收集了 encapsulated 在`delta0`和`delta1`集群总和中的宝贵见解。这些累积值成为我们模型预测中固有偏差的指示器。在每个训练周期结束时，我们执行了一个重要的转换。通过将累积的集群总和除以每个类别的相应观察数，我们得到归一化的 Delta 值。这种归一化作为关键的平衡器，概括了我们偏差调整方法的本质。
 
 ```py
 E = 1000
@@ -308,10 +308,10 @@ for epoch in range(E):
 
 ## 结果
 
-在我们应用于信用卡欺诈检测的过程中，我们算法的增强效果得到了体现。通过将偏差调整无缝集成到训练过程中，我们获得了令人印象深刻的AUC得分0.77。这与未进行偏差调整时获得的0.71的AUC得分形成了鲜明对比。预测性能的显著改善证明了该算法在处理类别不平衡的复杂性方面的能力，为更准确和可靠的预测铺平了道路。
+在我们应用于信用卡欺诈检测的过程中，我们算法的增强效果得到了体现。通过将偏差调整无缝集成到训练过程中，我们获得了令人印象深刻的 AUC 得分 0.77。这与未进行偏差调整时获得的 0.71 的 AUC 得分形成了鲜明对比。预测性能的显著改善证明了该算法在处理类别不平衡的复杂性方面的能力，为更准确和可靠的预测铺平了道路。
 
 # 参考文献
 
 [1] Manski, C. F., & Lerman, S. R. (1977). [从基于选择的样本中估计选择概率](https://www.jstor.org/stable/1914121). *Econometrica: Journal of the Econometric Society*, 1977–1988.
 
-[2] Scott, A. J., & Wild, C. J. (1986). [在病例对照或选择性抽样下拟合逻辑模型](https://www.jstor.org/stable/2345712)。*《皇家统计学会B系列：统计方法》*，*48*(2)，170–182。
+[2] Scott, A. J., & Wild, C. J. (1986). [在病例对照或选择性抽样下拟合逻辑模型](https://www.jstor.org/stable/2345712)。*《皇家统计学会 B 系列：统计方法》*，*48*(2)，170–182。

@@ -1,18 +1,18 @@
 # 对分析流处理的简要介绍
 
-> 原文：[https://towardsdatascience.com/a-modest-introduction-to-analytical-stream-processing-db58b3694263?source=collection_archive---------9-----------------------#2023-08-15](https://towardsdatascience.com/a-modest-introduction-to-analytical-stream-processing-db58b3694263?source=collection_archive---------9-----------------------#2023-08-15)
+> 原文：[`towardsdatascience.com/a-modest-introduction-to-analytical-stream-processing-db58b3694263?source=collection_archive---------9-----------------------#2023-08-15`](https://towardsdatascience.com/a-modest-introduction-to-analytical-stream-processing-db58b3694263?source=collection_archive---------9-----------------------#2023-08-15)
 
 ## 构建可靠分布式系统的架构基础。
 
-[](https://newfrontcreative.medium.com/?source=post_page-----db58b3694263--------------------------------)[![Scott Haines](../Images/b53c166b64314b4a5fe41abbe1839716.png)](https://newfrontcreative.medium.com/?source=post_page-----db58b3694263--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db58b3694263--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db58b3694263--------------------------------) [Scott Haines](https://newfrontcreative.medium.com/?source=post_page-----db58b3694263--------------------------------)
+[](https://newfrontcreative.medium.com/?source=post_page-----db58b3694263--------------------------------)![Scott Haines](https://newfrontcreative.medium.com/?source=post_page-----db58b3694263--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db58b3694263--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----db58b3694263--------------------------------) [Scott Haines](https://newfrontcreative.medium.com/?source=post_page-----db58b3694263--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3b4cab6af83e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-modest-introduction-to-analytical-stream-processing-db58b3694263&user=Scott+Haines&userId=3b4cab6af83e&source=post_page-3b4cab6af83e----db58b3694263---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db58b3694263--------------------------------) ·23分钟阅读·2023年8月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb58b3694263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-modest-introduction-to-analytical-stream-processing-db58b3694263&user=Scott+Haines&userId=3b4cab6af83e&source=-----db58b3694263---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3b4cab6af83e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-modest-introduction-to-analytical-stream-processing-db58b3694263&user=Scott+Haines&userId=3b4cab6af83e&source=post_page-3b4cab6af83e----db58b3694263---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db58b3694263--------------------------------) ·23 分钟阅读·2023 年 8 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb58b3694263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-modest-introduction-to-analytical-stream-processing-db58b3694263&user=Scott+Haines&userId=3b4cab6af83e&source=-----db58b3694263---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb58b3694263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-modest-introduction-to-analytical-stream-processing-db58b3694263&source=-----db58b3694263---------------------bookmark_footer-----------)![](../Images/1fba9140fab3628fef09399e2a81e5a8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb58b3694263&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-modest-introduction-to-analytical-stream-processing-db58b3694263&source=-----db58b3694263---------------------bookmark_footer-----------)![](img/1fba9140fab3628fef09399e2a81e5a8.png)
 
 分布式流数据网络是无限的，并且以惊人的速度增长。图片由 [作者的 MidJourney](https://www.midjourney.com/app/jobs/3cf0ebab-3ec4-487d-a0ea-24ef01387eae/) 创建
 
@@ -24,7 +24,7 @@
 
 因此，确保我们（作为软件工程师）提供清洁的能力和无摩擦的保护措施，以减少数据进入这些快速流动的数据网络后的数据质量问题，是至关重要的。
 
-这意味着建立围绕我们数据的*架构（类型和结构）*、字段级*可用性（可为空等）*和字段类型*有效性（预期范围等）*的API级合同，成为我们数据基础的重要支撑，尤其是在当今现代数据系统的去中心化、分布式流性质下。
+这意味着建立围绕我们数据的*架构（类型和结构）*、字段级*可用性（可为空等）*和字段类型*有效性（预期范围等）*的 API 级合同，成为我们数据基础的重要支撑，尤其是在当今现代数据系统的去中心化、分布式流性质下。
 
 然而，为了达到建立盲目信任——或高信任数据网络的程度，我们必须首先建立智能系统级设计模式。
 
@@ -38,13 +38,13 @@
 
 ## 采用拥有者心态
 
-例如，你的团队或组织与客户（包括内部和外部客户）之间的*服务水平协议*（SLAs）用于创建一个关于你所提供服务的有约束力的合同。对于数据团队来说，这意味着根据你的*服务水平目标*（SLOs）识别和捕捉指标（KPMs — 关键绩效指标）。SLOs是你基于SLAs打算遵守的承诺，这可以是从接近完美（99.999%）的服务正常运行时间（API或JDBC）的承诺，到简单的承诺，例如某特定数据集的90天数据保留。最后，你的*服务水平指标*（SLIs）是你按照服务水平合同运营的证明，通常以操作分析（仪表板）或报告的形式呈现。
+例如，你的团队或组织与客户（包括内部和外部客户）之间的*服务水平协议*（SLAs）用于创建一个关于你所提供服务的有约束力的合同。对于数据团队来说，这意味着根据你的*服务水平目标*（SLOs）识别和捕捉指标（KPMs — 关键绩效指标）。SLOs 是你基于 SLAs 打算遵守的承诺，这可以是从接近完美（99.999%）的服务正常运行时间（API 或 JDBC）的承诺，到简单的承诺，例如某特定数据集的 90 天数据保留。最后，你的*服务水平指标*（SLIs）是你按照服务水平合同运营的证明，通常以操作分析（仪表板）或报告的形式呈现。
 
-知道我们想要去哪里可以帮助制定到达那里的计划。这段旅程从数据的插入（或摄取点）开始，特别是每个数据点的正式结构和身份。考虑到“越来越多的数据通过像Apache Kafka这样的流处理平台进入数据平台”的观察，*编译时保证*、*向后兼容性*和*快速的二进制序列化*都对这些数据流中的数据至关重要。数据责任本身就是一个挑战。让我们看看原因。
+知道我们想要去哪里可以帮助制定到达那里的计划。这段旅程从数据的插入（或摄取点）开始，特别是每个数据点的正式结构和身份。考虑到“越来越多的数据通过像 Apache Kafka 这样的流处理平台进入数据平台”的观察，*编译时保证*、*向后兼容性*和*快速的二进制序列化*都对这些数据流中的数据至关重要。数据责任本身就是一个挑战。让我们看看原因。
 
 ## 管理流数据责任
 
-流处理系统全天候运行，每周7天，每年365天。如果没有在前期投入适当的工作，这可能会使问题复杂化，其中一个时常出现的问题是数据损坏，即*飞行中的数据问题*。
+流处理系统全天候运行，每周 7 天，每年 365 天。如果没有在前期投入适当的工作，这可能会使问题复杂化，其中一个时常出现的问题是数据损坏，即*飞行中的数据问题*。
 
 # 处理飞行中的数据问题
 
@@ -52,13 +52,13 @@
 
 ## 数据门卫
 
-在数据网络的边缘（前端）添加网关API的好处在于，你可以在数据生产点执行*认证*（这个系统能访问这个API吗？），*授权*（这个系统能否将数据发布到特定的数据流中？），以及*验证*（这些数据是否可接受或有效？）。下图1–1展示了数据网关的流动情况。
+在数据网络的边缘（前端）添加网关 API 的好处在于，你可以在数据生产点执行*认证*（这个系统能访问这个 API 吗？），*授权*（这个系统能否将数据发布到特定的数据流中？），以及*验证*（这些数据是否可接受或有效？）。下图 1–1 展示了数据网关的流动情况。
 
-![](../Images/76491b63816c94a91e888be33d526e48.png)
+![](img/76491b63816c94a91e888be33d526e48.png)
 
-**图1–1**：一个分布式系统架构图，显示了数据摄取网关的认证和授权层。从左到右，批准的数据被发布到Apache Kafka中进行下游处理。图像来源 [Scott Haines](https://medium.com/u/3b4cab6af83e?source=post_page-----db58b3694263--------------------------------)
+**图 1–1**：一个分布式系统架构图，显示了数据摄取网关的认证和授权层。从左到右，批准的数据被发布到 Apache Kafka 中进行下游处理。图像来源 [Scott Haines](https://medium.com/u/3b4cab6af83e?source=post_page-----db58b3694263--------------------------------)
 
-**数据网关服务**充当你受保护（内部）数据网络的数字门卫（保镖）。其主要角色是控制、限制甚至阻止未经认证的访问（见上图1–1中的API/服务），通过授权哪些上游服务（或用户）可以发布数据（通常通过使用服务[ACLs](https://docs.confluent.io/platform/current/kafka/authorization.html)来处理），以及提供的身份（比如服务身份和访问[IAM](https://spiffe.io/)，网络身份和访问[JWT](https://jwt.io/)，以及我们老朋友OAUTH）。
+**数据网关服务**充当你受保护（内部）数据网络的数字门卫（保镖）。其主要角色是控制、限制甚至阻止未经认证的访问（见上图 1–1 中的 API/服务），通过授权哪些上游服务（或用户）可以发布数据（通常通过使用服务[ACLs](https://docs.confluent.io/platform/current/kafka/authorization.html)来处理），以及提供的身份（比如服务身份和访问[IAM](https://spiffe.io/)，网络身份和访问[JWT](https://jwt.io/)，以及我们老朋友 OAUTH）。
 
 网关服务的核心责任是验证传入的数据，在发布潜在的损坏或一般性差的数据之前。如果网关正确地执行其职责，只有“良好”的数据才会通过并进入数据网络，这个网络是事件和操作数据的传输通道，通过流处理进行消化，换句话说：
 
@@ -66,9 +66,9 @@
 
 ## 使用错误消息提供自助解决方案
 
-好与坏体验的差异在于从坏到好的转变所需的努力程度。我们都可能曾经与或工作过，或听说过，服务出现无缘无故的故障（空指针异常抛出随机500）。
+好与坏体验的差异在于从坏到好的转变所需的努力程度。我们都可能曾经与或工作过，或听说过，服务出现无缘无故的故障（空指针异常抛出随机 500）。
 
-为了建立基本的信任，一点点就足够了。例如，从API端点获取HTTP 400，并附带以下消息体（见下文）
+为了建立基本的信任，一点点就足够了。例如，从 API 端点获取 HTTP 400，并附带以下消息体（见下文）
 
 ```py
 {
@@ -79,17 +79,17 @@
 }
 ```
 
-提供了400的原因，并赋予向我们（作为服务拥有者）发送数据的工程师修复问题的能力，无需安排会议、响起警报或在Slack上联系每个人。当你可以时，请记住，每个人都是人，我们喜欢闭环系统！
+提供了 400 的原因，并赋予向我们（作为服务拥有者）发送数据的工程师修复问题的能力，无需安排会议、响起警报或在 Slack 上联系每个人。当你可以时，请记住，每个人都是人，我们喜欢闭环系统！
 
-## 数据API的利弊
+## 数据 API 的利弊
 
-这种API方法有其优缺点。
+这种 API 方法有其优缺点。
 
-优点是大多数编程语言与HTTP（或HTTP/2）传输协议即开即用——或者通过添加一个小库——并且JSON数据现如今几乎是最通用的数据交换格式。
+优点是大多数编程语言与 HTTP（或 HTTP/2）传输协议即开即用——或者通过添加一个小库——并且 JSON 数据现如今几乎是最通用的数据交换格式。
 
-从另一方面（缺点）看，可以说对于任何新的数据领域，还有另一个服务需要编写和管理，如果没有某种形式的API自动化，或遵循像[OpenAPI](https://spec.openapis.org/oas/latest.html#format)这样的开放规范，每个新的API路由（端点）最终都会花费更多的时间。
+从另一方面（缺点）看，可以说对于任何新的数据领域，还有另一个服务需要编写和管理，如果没有某种形式的 API 自动化，或遵循像[OpenAPI](https://spec.openapis.org/oas/latest.html#format)这样的开放规范，每个新的 API 路由（端点）最终都会花费更多的时间。
 
-> 在许多情况下，未能以“及时”的方式更新数据摄取API，或者扩展和/或API停机、随机故障，或只是人员沟通不畅，为人们绕过“愚蠢”API提供了必要的理由，进而尝试直接将事件数据发布到Kafka。虽然API可能会觉得阻碍，但在数据质量问题如事件损坏或意外混合事件开始破坏流处理梦想后，保持一个公共的门卫有强烈的论据。
+> 在许多情况下，未能以“及时”的方式更新数据摄取 API，或者扩展和/或 API 停机、随机故障，或只是人员沟通不畅，为人们绕过“愚蠢”API 提供了必要的理由，进而尝试直接将事件数据发布到 Kafka。虽然 API 可能会觉得阻碍，但在数据质量问题如事件损坏或意外混合事件开始破坏流处理梦想后，保持一个公共的门卫有强烈的论据。
 
 要彻底解决这个问题（并几乎完全消除它），良好的文档、变更管理（CI/CD）以及包括实际单元测试和集成测试在内的一般软件开发卫生——能够实现快速的功能和迭代周期，而不会降低信任度。
 
@@ -127,7 +127,7 @@ Customer.fromToken(token)
 
 比如说，我们有一个单一的网关 API 服务器。你编写了一个很棒的 API，公司的许多团队都在向这个 API 发送事件数据。事情进展顺利，直到有一天，一个新的内部团队开始向服务器发送无效数据（他们没有尊重你的 http 状态码，而是将所有非 200 的 http 代码视为重试的理由。不过，他们忘记添加任何重试启发式算法，如指数回退，因此所有请求都会无限重试——在一个不断增加的重试队列中）。请注意，在这个新团队加入之前，根本没有理由运行多个 API 服务器实例，也没有必要使用任何服务级别的速率限制器，因为一切都在商定的 SLA 内顺利运行。
 
-![](../Images/fe55a743c4f71ff3c3ccfce69fa0ad7f.png)
+![](img/fe55a743c4f71ff3c3ccfce69fa0ad7f.png)
 
 **非失败鲸**。当你解决问题并重新摆脱困境时可能发生的情况。图片来源 [Midjourney 通过作者](https://www.midjourney.com/app/jobs/fd36ca2e-848f-4916-8125-2d0105da8fb4/)
 
@@ -153,11 +153,11 @@ Customer.fromToken(token)
 
 # 可序列化的结构化数据
 
-在高效编码和传输二进制数据时，两种序列化框架常常被提及：[Apache Avro](https://avro.apache.org/)和Google [Protocol Buffers](https://developers.google.com/protocol-buffers)（protobuf）。这两个库提供了CPU高效的行数据结构序列化技术，并且这两种技术还提供了各自的*远程过程调用*（RPC）框架和功能。让我们先来看*avro*，然后是*protobuf*，最后再看看*远程过程调用*。
+在高效编码和传输二进制数据时，两种序列化框架常常被提及：[Apache Avro](https://avro.apache.org/)和 Google [Protocol Buffers](https://developers.google.com/protocol-buffers)（protobuf）。这两个库提供了 CPU 高效的行数据结构序列化技术，并且这两种技术还提供了各自的*远程过程调用*（RPC）框架和功能。让我们先来看*avro*，然后是*protobuf*，最后再看看*远程过程调用*。
 
-## Avro消息格式
+## Avro 消息格式
 
-使用[*avro*](https://avro.apache.org/)时，你可以通过记录的概念定义结构化数据的声明式模式。这些记录只是JSON格式的数据定义文件（模式），存储为文件类型*avsc*。以下示例展示了avro描述符格式中的Coffee模式。
+使用[*avro*](https://avro.apache.org/)时，你可以通过记录的概念定义结构化数据的声明式模式。这些记录只是 JSON 格式的数据定义文件（模式），存储为文件类型*avsc*。以下示例展示了 avro 描述符格式中的 Coffee 模式。
 
 ```py
 {
@@ -173,15 +173,15 @@ Customer.fromToken(token)
 }
 ```
 
-处理avro数据可以有两种路径，取决于你在运行时如何工作。你可以采取编译时的方法，或者在运行时按需解决问题。这种灵活性可以增强交互式数据发现会话。例如，avro最初被创建为一种高效的数据序列化协议，用于在Hadoop文件系统中长期存储大型数据集合，以分区文件的形式存储。由于数据通常是从一个位置读取，写入到HDFS中的另一个位置，avro可以每个文件存储一次模式（用于写入时）。
+处理 avro 数据可以有两种路径，取决于你在运行时如何工作。你可以采取编译时的方法，或者在运行时按需解决问题。这种灵活性可以增强交互式数据发现会话。例如，avro 最初被创建为一种高效的数据序列化协议，用于在 Hadoop 文件系统中长期存储大型数据集合，以分区文件的形式存储。由于数据通常是从一个位置读取，写入到 HDFS 中的另一个位置，avro 可以每个文件存储一次模式（用于写入时）。
 
-## Avro二进制格式
+## Avro 二进制格式
 
-当你将一组avro记录写入磁盘时，该过程会将avro数据的模式直接编码到文件中（仅一次）。在Parquet文件编码中也有类似的过程，模式会被压缩并作为二进制文件尾部写入。我们在第4章结束时，经历了将StructField级文档添加到我们的*StructType*的过程。这个模式用于编码我们的DataFrame，并且在写入磁盘时，它在下一次读取时保留了我们的内联文档。
+当你将一组 avro 记录写入磁盘时，该过程会将 avro 数据的模式直接编码到文件中（仅一次）。在 Parquet 文件编码中也有类似的过程，模式会被压缩并作为二进制文件尾部写入。我们在第四章结束时，经历了将 StructField 级文档添加到我们的*StructType*的过程。这个模式用于编码我们的 DataFrame，并且在写入磁盘时，它在下一次读取时保留了我们的内联文档。
 
 ## 启用向后兼容性并防止数据损坏
 
-在读取多个文件作为单一集合的情况下，当记录之间的模式发生变化时，可能会出现问题。Avro将二进制记录编码为字节数组，并在反序列化时（将字节数组转换回对象）应用模式。
+在读取多个文件作为单一集合的情况下，当记录之间的模式发生变化时，可能会出现问题。Avro 将二进制记录编码为字节数组，并在反序列化时（将字节数组转换回对象）应用模式。
 
 这意味着你需要额外注意以保持向后兼容，否则你可能会遇到*ArrayIndexOutOfBounds*异常。
 
@@ -216,7 +216,7 @@ message Coffee {
 
 ## 代码生成
 
-编译protobuf可以实现简单的代码生成。以下示例取自/ch-09/data/protobuf目录。章节READMEj中的说明涵盖了如何安装ScalaPB，并包括了设置正确环境变量以执行命令的步骤。
+编译 protobuf 可以实现简单的代码生成。以下示例取自/ch-09/data/protobuf 目录。章节 READMEj 中的说明涵盖了如何安装 ScalaPB，并包括了设置正确环境变量以执行命令的步骤。
 
 ```py
 mkdir /Users/`whoami`/Desktop/coffee_protos
@@ -228,15 +228,15 @@ $SCALAPBC/bin/scalapbc -v3.11.1 \
 
 这个过程从长远来看节省了时间，因为它免去了你需要编写额外的代码来序列化和反序列化你的数据对象（无论是跨语言边界还是在不同代码库内）。
 
-## Protobuf二进制格式
+## Protobuf 二进制格式
 
-序列化（即二进制传输格式）使用了[编码](https://developers.google.com/protocol-buffers/docs/encoding)的概念，即二进制字段级分隔符。这些分隔符用作标记，以识别序列化protobuf消息中封装的数据类型。在示例文件coffee.proto中，你可能注意到每个字段类型旁边都有一个索引标记（例如string id = 1;），这用于协助消息的编码/解码。与avro二进制格式相比，这意味着有一点额外的开销，但如果你阅读[编码规范](https://developers.google.com/protocol-buffers/docs/encoding)，你会看到其他效率上的优势足以弥补这些额外的字节（例如位打包、数值数据类型的高效处理，以及对每条消息前15个索引的特殊编码）。在选择protobuf作为流数据的二进制协议时，总体来看，优点远大于缺点。其中一个显著的优点是支持向后和向前的兼容性。
+序列化（即二进制传输格式）使用了[编码](https://developers.google.com/protocol-buffers/docs/encoding)的概念，即二进制字段级分隔符。这些分隔符用作标记，以识别序列化 protobuf 消息中封装的数据类型。在示例文件 coffee.proto 中，你可能注意到每个字段类型旁边都有一个索引标记（例如 string id = 1;），这用于协助消息的编码/解码。与 avro 二进制格式相比，这意味着有一点额外的开销，但如果你阅读[编码规范](https://developers.google.com/protocol-buffers/docs/encoding)，你会看到其他效率上的优势足以弥补这些额外的字节（例如位打包、数值数据类型的高效处理，以及对每条消息前 15 个索引的特殊编码）。在选择 protobuf 作为流数据的二进制协议时，总体来看，优点远大于缺点。其中一个显著的优点是支持向后和向前的兼容性。
 
 ## 启用向后兼容性和防止数据损坏
 
-在修改protobuf模式时需要记住类似于avro的规则。作为一个经验法则，你可以更改字段的名称，但你绝不能更改字段的类型或位置（索引），除非你愿意破坏向后兼容性。随着团队对protobuf使用的熟练程度提高，这些规则在长期支持任何数据时可能会被忽视，特别是当需要重新排列和优化时。如果不小心，这可能会带来麻烦。（有关更多背景，请参见下面名为*保持数据质量随时间*的提示。）
+在修改 protobuf 模式时需要记住类似于 avro 的规则。作为一个经验法则，你可以更改字段的名称，但你绝不能更改字段的类型或位置（索引），除非你愿意破坏向后兼容性。随着团队对 protobuf 使用的熟练程度提高，这些规则在长期支持任何数据时可能会被忽视，特别是当需要重新排列和优化时。如果不小心，这可能会带来麻烦。（有关更多背景，请参见下面名为*保持数据质量随时间*的提示。）
 
-## 流式protobuf数据的最佳实践
+## 流式 protobuf 数据的最佳实践
 
 鉴于 protobuf 支持 **向后** 和 **向前** 兼容，这意味着你可以在不担心首先更新读者的情况下部署新的写入器，读者也是如此，你可以用更新版本的 protobuf 定义来更新它们，而不必担心所有写入器的复杂部署。Protobuf 通过未知字段的概念支持向前兼容。这是 avro 规范中不存在的附加概念，用于跟踪由于 protobuf 本地版本与当前读取版本之间的差异而无法解析的索引和相关字节。这里的好处是你可以在任何时候 *选择* 更新 protobuf 定义中的新更改。
 
@@ -254,11 +254,11 @@ $SCALAPBC/bin/scalapbc -v3.11.1 \
 
 ## 使用 Buf 工具和 Protobuf 在 Spark 中
 
-自从 2021 年撰写本章以来，**Buf Build** ([https://buf.build/](https://buf.build/)) 已经发展成了*一切 protobuf* 公司。他们的工具简单易用，免费且开源，并在合适的时机出现，为 Spark 社区的一些倡议提供了支持。[Apache Spark](https://spark.apache.org/) 项目引入了对 [Protocol Buffers in Spark 3.4](https://github.com/apache/spark/tree/v3.4.1/connector/protobuf/src/main/scala/org/apache/spark/sql/protobuf) 的全面原生支持，以支持 [spark-connect](https://spark.apache.org/docs/latest/spark-connect-overview.html)，并使用 Buf 编译 GRPC 服务和消息。毕竟，Spark Connect 是一个 GRPC 原生连接器，用于嵌入 JVM 外的 Spark 应用程序。
+自从 2021 年撰写本章以来，**Buf Build** ([`buf.build/`](https://buf.build/)) 已经发展成了*一切 protobuf* 公司。他们的工具简单易用，免费且开源，并在合适的时机出现，为 Spark 社区的一些倡议提供了支持。[Apache Spark](https://spark.apache.org/) 项目引入了对 [Protocol Buffers in Spark 3.4](https://github.com/apache/spark/tree/v3.4.1/connector/protobuf/src/main/scala/org/apache/spark/sql/protobuf) 的全面原生支持，以支持 [spark-connect](https://spark.apache.org/docs/latest/spark-connect-overview.html)，并使用 Buf 编译 GRPC 服务和消息。毕竟，Spark Connect 是一个 GRPC 原生连接器，用于嵌入 JVM 外的 Spark 应用程序。
 
 传统的 Apache Spark 应用必须在某处作为驱动程序应用运行，过去这意味着使用**pyspark** 或原生 spark，这两者仍然运行在 JVM 进程之上。
 
-![](../Images/cec7730d94bae772f26b9508103edc50.png)
+![](img/cec7730d94bae772f26b9508103edc50.png)
 
 [目录结构](https://github.com/apache/spark/tree/v3.4.1/connector/connect/common/src/main) 通过 Spark Connect 显示了 protobuf 定义，以及 buf.gen.yaml 和 buf.work.yaml，这些文件有助于代码生成。
 
@@ -276,9 +276,9 @@ $SCALAPBC/bin/scalapbc -v3.11.1 \
 
 首先由 Google 设想并创建的，[gRPC](https://grpc.io/) 即“通用”远程过程调用，是一个强大的开源框架，用于高性能服务，从分布式数据库协调（如 [CockroachDB](https://www.cockroachlabs.com/docs/stable/architecture/distribution-layer.html)）到实时分析（如 [微软 Azure 视频分析](https://docs.microsoft.com/en-us/azure/media-services/live-video-analytics-edge/grpc-extension-protocol)）。
 
-![](../Images/bb0e956f0dcd4a9d8154939f7d47bad4.png)
+![](img/bb0e956f0dcd4a9d8154939f7d47bad4.png)
 
-**图 1–2**。RPC（在此示例中是 gRPC）通过在客户端和服务器之间传递序列化消息来工作。客户端实现相同的接口定义语言（IDL）接口，这作为客户端和服务器之间的 API 合同。（图片来源: [https://grpc.io/docs/what-is-grpc/introduction/)](https://grpc.io/docs/what-is-grpc/introduction/))
+**图 1–2**。RPC（在此示例中是 gRPC）通过在客户端和服务器之间传递序列化消息来工作。客户端实现相同的接口定义语言（IDL）接口，这作为客户端和服务器之间的 API 合同。（图片来源: [`grpc.io/docs/what-is-grpc/introduction/)`](https://grpc.io/docs/what-is-grpc/introduction/))
 
 图 9–3 显示了 gRPC 工作的示例。服务器端代码使用 C++ 编写以提高速度，而用 ruby 和 java 编写的客户端可以使用 protobuf 消息作为通信手段与服务进行互操作。
 
@@ -342,13 +342,13 @@ message Response {
 
 然而，分布式数据管理如果未考虑正确的步骤，也可能成为数据危机。请记住，如果没有建立在有效（值得信赖）数据之上的强大、坚实的数据基础，实时数据的道路将不是一条简单的道路，而是充满了颠簸和绕行。
 
-我希望你喜欢第 9 章的下半部分。要阅读本系列的第一部分，请前往 [对分析流处理的温和介绍](https://medium.com/towards-data-science/a-gentle-introduction-to-stream-processing-f47912a2a2ea)。
+我希望你喜欢第九章的下半部分。要阅读本系列的第一部分，请前往 [对分析流处理的温和介绍](https://medium.com/towards-data-science/a-gentle-introduction-to-stream-processing-f47912a2a2ea)。
 
-[](/a-gentle-introduction-to-stream-processing-f47912a2a2ea?source=post_page-----db58b3694263--------------------------------) [## 对分析流处理的温和介绍
+[](/a-gentle-introduction-to-stream-processing-f47912a2a2ea?source=post_page-----db58b3694263--------------------------------) ## 对分析流处理的温和介绍
 
 ### 为工程师及其他人构建心理模型
 
-towardsdatascience.com](/a-gentle-introduction-to-stream-processing-f47912a2a2ea?source=post_page-----db58b3694263--------------------------------)
+towardsdatascience.com
 
 — — — — — — — — — — — — — — — — — — — — — — — — 
 
@@ -360,7 +360,7 @@ towardsdatascience.com](/a-gentle-introduction-to-stream-processing-f47912a2a2ea
 
 www.amazon.com](https://www.amazon.com/Modern-Engineering-Apache-Spark-Hands/dp/1484274512?source=post_page-----db58b3694263--------------------------------)
 
-如果你有访问权限 [O’Reilly Media](https://medium.com/u/fbfa235a954c?source=post_page-----db58b3694263--------------------------------)，你也可以完全免费阅读这本书（对你有好处，对我则不然），但如果有机会，请在其他地方找到这本书的免费版本，或者获取电子书以节省运费（或避免寻找一本超过600页的实体书的地方）。
+如果你有访问权限 [O’Reilly Media](https://medium.com/u/fbfa235a954c?source=post_page-----db58b3694263--------------------------------)，你也可以完全免费阅读这本书（对你有好处，对我则不然），但如果有机会，请在其他地方找到这本书的免费版本，或者获取电子书以节省运费（或避免寻找一本超过 600 页的实体书的地方）。
 
 [](https://learning.oreilly.com/library/view/modern-data-engineering/9781484274521/?source=post_page-----db58b3694263--------------------------------) [## 使用 Apache Spark 进行现代数据工程：构建关键流处理的实用指南…
 

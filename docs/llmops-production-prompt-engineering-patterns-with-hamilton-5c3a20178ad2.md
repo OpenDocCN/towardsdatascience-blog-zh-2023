@@ -1,10 +1,10 @@
 # LLMOps：与 Hamilton 一起进行生产级提示工程模式
 
-> 原文：[https://towardsdatascience.com/llmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2?source=collection_archive---------1-----------------------#2023-09-13](https://towardsdatascience.com/llmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2?source=collection_archive---------1-----------------------#2023-09-13)
+> 原文：[`towardsdatascience.com/llmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2?source=collection_archive---------1-----------------------#2023-09-13`](https://towardsdatascience.com/llmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2?source=collection_archive---------1-----------------------#2023-09-13)
 
 ## 生产级别的提示迭代概述，与 Hamilton 一起进行
 
-[](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)[![Stefan Krawczyk](../Images/150405abaad9590e1dc2589168ed2fa3.png)](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5c3a20178ad2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5c3a20178ad2--------------------------------) [Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)
+[](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)![Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5c3a20178ad2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----5c3a20178ad2--------------------------------) [Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)
 
 ·
 
@@ -12,11 +12,11 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5c3a20178ad2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2&source=-----5c3a20178ad2---------------------bookmark_footer-----------)![](../Images/e12ddab031956fa56ab4177df69ca46a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5c3a20178ad2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2&source=-----5c3a20178ad2---------------------bookmark_footer-----------)![](img/e12ddab031956fa56ab4177df69ca46a.png)
 
 提示。在生产环境中，如何演变这些提示？*这篇文章基于最初发表的内容* [*这里*](https://blog.dagworks.io/p/llmops-production-prompt-engineering)*.* 图片来自 [pixabay](https://pixabay.com/illustrations/picture-frame-banner-status-badge-3042585/).
 
-你发送给大型语言模型（LLM）的内容非常重要。小的变化和调整可能对输出产生重大影响，因此随着你的产品发展，你的提示也需要进化。LLMs也在不断开发和发布，因此随着LLMs的变化，你的提示也需要变化。因此，建立一个迭代模式来操作化你的“部署”提示是重要的，以便你和你的团队可以高效地移动，同时确保生产问题最小化，甚至避免。在这篇文章中，我们将通过[Hamilton](http://github.com/dagworks-inc/hamilton)这一个开源微调度框架来指导你管理提示的最佳实践，并类比[MLOps](https://en.wikipedia.org/wiki/MLOps)模式，并讨论其中的权衡。这篇文章的高级要点即使你不使用Hamilton也同样适用。
+你发送给大型语言模型（LLM）的内容非常重要。小的变化和调整可能对输出产生重大影响，因此随着你的产品发展，你的提示也需要进化。LLMs 也在不断开发和发布，因此随着 LLMs 的变化，你的提示也需要变化。因此，建立一个迭代模式来操作化你的“部署”提示是重要的，以便你和你的团队可以高效地移动，同时确保生产问题最小化，甚至避免。在这篇文章中，我们将通过[Hamilton](http://github.com/dagworks-inc/hamilton)这一个开源微调度框架来指导你管理提示的最佳实践，并类比[MLOps](https://en.wikipedia.org/wiki/MLOps)模式，并讨论其中的权衡。这篇文章的高级要点即使你不使用 Hamilton 也同样适用。
 
 **在我们开始之前几点注意事项：**
 
@@ -30,27 +30,27 @@
 
 1.  我们假设这些提示是在“在线”网页服务设置中使用的。
 
-1.  我们将使用我们的[Hamilton的PDF摘要示例](https://github.com/DAGWorks-Inc/hamilton/tree/main/examples/LLM_Workflows/pdf_summarizer)来映射我们的模式。
+1.  我们将使用我们的[Hamilton 的 PDF 摘要示例](https://github.com/DAGWorks-Inc/hamilton/tree/main/examples/LLM_Workflows/pdf_summarizer)来映射我们的模式。
 
-1.  我们的信誉是什么？我们在为Stitch Fix的100多位数据科学家构建自服务数据/MLOps工具方面度过了职业生涯。因此，我们见证了很多故障和方法的演变。
+1.  我们的信誉是什么？我们在为 Stitch Fix 的 100 多位数据科学家构建自服务数据/MLOps 工具方面度过了职业生涯。因此，我们见证了很多故障和方法的演变。
 
-# 提示对LLMs的作用类似于超参数对ML模型的作用。
+# 提示对 LLMs 的作用类似于超参数对 ML 模型的作用。
 
-> **要点：** 提示+LLM APIs类似于超参数+机器学习模型。
+> **要点：** 提示+LLM APIs 类似于超参数+机器学习模型。
 
-就“Ops”实践而言，LLMOps仍处于起步阶段。MLOps稍微成熟一点，但如果与DevOps实践的广泛知识相比，仍然没有被广泛采用。
+就“Ops”实践而言，LLMOps 仍处于起步阶段。MLOps 稍微成熟一点，但如果与 DevOps 实践的广泛知识相比，仍然没有被广泛采用。
 
-DevOps实践主要关注如何将代码交付到生产环境，而MLOps实践关注如何将代码***& 数据工件***（例如，统计模型）交付到生产环境。那么LLMOps呢？个人认为，它更接近MLOps，因为你有：
+DevOps 实践主要关注如何将代码交付到生产环境，而 MLOps 实践关注如何将代码***& 数据工件***（例如，统计模型）交付到生产环境。那么 LLMOps 呢？个人认为，它更接近 MLOps，因为你有：
 
-1.  你的LLM工作流仅仅是代码。
+1.  你的 LLM 工作流仅仅是代码。
 
-1.  LLM API是一个数据工件，可以使用提示“调整”，类似于机器学习（ML）模型及其超参数。
+1.  LLM API 是一个数据工件，可以使用提示“调整”，类似于机器学习（ML）模型及其超参数。
 
-因此，你很可能需要紧密版本控制LLM API和提示，以确保良好的生产实践。例如，在MLOps实践中，你需要一个过程来验证ML模型在其超参数更改时仍然表现正确。
+因此，你很可能需要紧密版本控制 LLM API 和提示，以确保良好的生产实践。例如，在 MLOps 实践中，你需要一个过程来验证 ML 模型在其超参数更改时仍然表现正确。
 
 # 你应该如何考虑提示的操作化？
 
-需要明确的是，控制的两个部分是*LLM*和*提示*。类似于MLOps，当代码或模型工件发生变化时，你需要能够确定是哪一部分发生了变化。对于LLMOps，我们也需要相同的辨别能力，将LLM工作流与LLM API + 提示分开。重要的是，我们应该认为LLM（自托管或API）大多是静态的，因为我们不经常更新（甚至控制）它们的内部。因此，改变LLM API + 提示的*提示*部分实际上就像是创建一个新的模型工件。
+需要明确的是，控制的两个部分是*LLM*和*提示*。类似于 MLOps，当代码或模型工件发生变化时，你需要能够确定是哪一部分发生了变化。对于 LLMOps，我们也需要相同的辨别能力，将 LLM 工作流与 LLM API + 提示分开。重要的是，我们应该认为 LLM（自托管或 API）大多是静态的，因为我们不经常更新（甚至控制）它们的内部。因此，改变 LLM API + 提示的*提示*部分实际上就像是创建一个新的模型工件。
 
 处理提示的主要方式有两种：
 
@@ -58,7 +58,7 @@ DevOps实践主要关注如何将代码交付到生产环境，而MLOps实践关
 
 1.  **提示作为代码**。提示模板在给定的部署下是静态的/预定的。
 
-主要区别在于你需要管理的移动部分的数量，以确保一个良好的生产故事。下面，我们将探讨如何在这两种方法的背景下使用Hamilton。
+主要区别在于你需要管理的移动部分的数量，以确保一个良好的生产故事。下面，我们将探讨如何在这两种方法的背景下使用 Hamilton。
 
 # 提示作为动态运行时变量
 
@@ -66,13 +66,13 @@ DevOps实践主要关注如何将代码交付到生产环境，而MLOps实践关
 
 提示只是字符串。由于字符串在大多数语言中是原始类型，这意味着它们非常容易传递。这个想法是抽象你的代码，使你在运行时传递所需的提示。更具体地说，你会在有“更新”的提示模板时“加载/重新加载”提示模板。
 
-这里的MLOps类比是，当有新的模型可用时，自动重新加载ML模型工件（例如，pkl文件）。
+这里的 MLOps 类比是，当有新的模型可用时，自动重新加载 ML 模型工件（例如，pkl 文件）。
 
-![](../Images/9be4a5424bd19e9f1f9b4908676d99d2.png)
+![](img/9be4a5424bd19e9f1f9b4908676d99d2.png)
 
-MLOps类比：图示ML模型自动重新加载的效果。图片作者。
+MLOps 类比：图示 ML 模型自动重新加载的效果。图片作者。
 
-![](../Images/5eba88a24da31dd531ba38a42de38f3e.png)
+![](img/5eba88a24da31dd531ba38a42de38f3e.png)
 
 图示动态重新加载/查询提示的效果。图片作者。
 
@@ -80,7 +80,7 @@ MLOps类比：图示ML模型自动重新加载的效果。图片作者。
 
 这种迭代速度的缺点是增加了操作负担：
 
-1.  对于监控你的应用程序的人来说，什么时候发生了变化以及是否已经在你的系统中传播开来将是不清楚的。例如，你刚刚推送了一个新的提示，而LLM现在每个请求返回更多的token，导致延迟激增；监控的人可能会感到困惑，除非你有一个优秀的变更日志文化。
+1.  对于监控你的应用程序的人来说，什么时候发生了变化以及是否已经在你的系统中传播开来将是不清楚的。例如，你刚刚推送了一个新的提示，而 LLM 现在每个请求返回更多的 token，导致延迟激增；监控的人可能会感到困惑，除非你有一个优秀的变更日志文化。
 
 1.  回滚语义涉及到需要了解*另一个*系统。你不能仅仅回滚之前的部署来修复问题。
 
@@ -94,7 +94,7 @@ MLOps类比：图示ML模型自动重新加载的效果。图片作者。
 
 如果你删除`sumarize_text_from_summaries_prompt`和`sumarize_chunk_of_text_prompt`函数定义，我们的 PDF 总结器流程大致如下：
 
-![](../Images/6c2edc36ce6f03b6ef456e4e855bc4bc.png)
+![](img/6c2edc36ce6f03b6ef456e4e855bc4bc.png)
 
 summarization_shortened.py。注意两个输入`*_prompt`，它们表示现在作为数据流输入所需的提示。通过 Hamilton，你可以通过查看像这样的图表来确定你的提示模板所需的输入。图表由 Hamilton 创建。图像由作者提供。
 
@@ -222,11 +222,11 @@ def summarize_text_from_summaries_prompt(
 
 这里的 MLOps 类比是，与其动态重新加载模型，不如将 ML 模型嵌入到容器中/硬编码引用。一旦部署，你的应用程序拥有它所需的一切。部署是不可变的；一旦启动便不会更改。这使得调试和确定问题变得更加简单。
 
-![](../Images/a6b4892b68bdd963d6a95375f8129072.png)
+![](img/a6b4892b68bdd963d6a95375f8129072.png)
 
 MLOps 类比：通过将模型固定以进行应用程序的部署，从而创建一个不可变的部署。图片由作者提供。
 
-![](../Images/f1a0b5cfaa56786c4fa4908b3a0c9b93.png)
+![](img/f1a0b5cfaa56786c4fa4908b3a0c9b93.png)
 
 图示展示了如何将提示视为代码，使你能够利用 CI/CD 构建一个不可变的部署来与 LLM API 进行交互。图片由作者提供。
 
@@ -248,7 +248,7 @@ MLOps 类比：通过将模型固定以进行应用程序的部署，从而创�
 
 提示将被编码为数据流/有向无环图（DAG）中的函数：
 
-![](../Images/1e6312bfd0b4ee92760f5999a4e30b8a.png)
+![](img/1e6312bfd0b4ee92760f5999a4e30b8a.png)
 
 PDF 摘要示例中的 summarization.py 文件的样子。提示模板是代码的一部分。图示由 Hamilton 创建。图片由作者提供。
 
@@ -272,7 +272,7 @@ def summarize_chunk_of_text_prompt__v2(content_type: str = "an academic paper") 
     return f"Summarize this text from {content_type}. Extract the key points with reasoning. \n\nContent:"
 ```
 
-你可以继续添加带有`@config.when`注解的函数，这样可以通过传递给Hamilton `Driver`的配置在它们之间切换。在实例化`Driver`时，它将使用与配置值关联的提示实现来构建数据流。
+你可以继续添加带有`@config.when`注解的函数，这样可以通过传递给 Hamilton `Driver`的配置在它们之间切换。在实例化`Driver`时，它将使用与配置值关联的提示实现来构建数据流。
 
 ```py
 from hamilton import base, driver
@@ -288,9 +288,9 @@ dr = (
 
 # 模块切换
 
-除了使用`@config.when`之外，你还可以将不同的提示实现放入不同的Python模块中。然后，在`Driver`构造时，传递适合你想使用的上下文的正确模块。
+除了使用`@config.when`之外，你还可以将不同的提示实现放入不同的 Python 模块中。然后，在`Driver`构造时，传递适合你想使用的上下文的正确模块。
 
-所以在这里我们有一个包含V1的模块：
+所以在这里我们有一个包含 V1 的模块：
 
 ```py
 # prompts_v1.py
@@ -299,7 +299,7 @@ def summarize_chunk_of_text_prompt() -> str:
     return f"Summarize this text. Extract any key points with reasoning.\n\nContent:"
 ```
 
-在这里，我们有一个包含V2的模块（看看它们之间的细微差别）：
+在这里，我们有一个包含 V2 的模块（看看它们之间的细微差别）：
 
 ```py
 # prompts_v2.py
@@ -328,25 +328,25 @@ dr = (
 )
 ```
 
-使用模块方法允许我们将整个提示集封装和版本化。如果你想回到过去（通过git），或者查看一个被批准的提示版本，你只需要导航到正确的提交，然后查看正确的模块。
+使用模块方法允许我们将整个提示集封装和版本化。如果你想回到过去（通过 git），或者查看一个被批准的提示版本，你只需要导航到正确的提交，然后查看正确的模块。
 
 ## 我该如何记录使用的提示并监控流程？
 
-假设你使用git来跟踪你的代码，你就不需要记录使用了哪些提示。相反，你只需知道部署的git提交SHA，你就能同时跟踪你的代码和提示的版本。
+假设你使用 git 来跟踪你的代码，你就不需要记录使用了哪些提示。相反，你只需知道部署的 git 提交 SHA，你就能同时跟踪你的代码和提示的版本。
 
 要监控流程，就像上述方法一样，你可以使用相同的监控钩子，我不会在这里重复，但它们是：
 
-+   请求任何中间输出并在Hamilton之外记录它们。
++   请求任何中间输出并在 Hamilton 之外记录它们。
 
-+   从函数内部记录它们，或构建一个[Python装饰器](https://realpython.com/primer-on-python-decorators/#simple-decorators) / [GraphAdapter](https://hamilton.dagworks.io/en/latest/reference/graph-adapters/)在框架级别进行记录。
++   从函数内部记录它们，或构建一个[Python 装饰器](https://realpython.com/primer-on-python-decorators/#simple-decorators) / [GraphAdapter](https://hamilton.dagworks.io/en/latest/reference/graph-adapters/)在框架级别进行记录。
 
-+   集成第三方工具来监控你的代码和LLM API调用。
++   集成第三方工具来监控你的代码和 LLM API 调用。
 
 +   或者以上所有！
 
-# 那如何进行A/B测试我的提示？
+# 那如何进行 A/B 测试我的提示？
 
-对于任何机器学习项目，测量变更的业务影响非常重要。同样，对于LLMs + 提示，测试和衡量变更对重要业务指标的影响也很重要。在MLOps世界中，你会对ML模型进行A/B测试，以通过在它们之间分配流量来评估它们的业务价值。为了确保A/B测试所需的随机性，你不会在运行时知道使用哪个模型，直到掷硬币。然而，要让这些模型上线，它们都需要遵循一个过程以进行资格认证。因此，对于提示，我们也应该考虑类似的方式。
+对于任何机器学习项目，测量变更的业务影响非常重要。同样，对于 LLMs + 提示，测试和衡量变更对重要业务指标的影响也很重要。在 MLOps 世界中，你会对 ML 模型进行 A/B 测试，以通过在它们之间分配流量来评估它们的业务价值。为了确保 A/B 测试所需的随机性，你不会在运行时知道使用哪个模型，直到掷硬币。然而，要让这些模型上线，它们都需要遵循一个过程以进行资格认证。因此，对于提示，我们也应该考虑类似的方式。
 
 上述两种提示工程模式并不会妨碍你进行 A/B 测试提示，但这意味着你需要管理一个过程，以启用你正在并行测试的任何数量的提示模板。如果你还在调整代码路径，将它们放在代码中将更容易辨别和调试发生了什么，并且你可以利用 ``@config.when`` 装饰器/ Python 模块交换来实现这一目的。与其依赖你的日志/监控/可观察性栈来告诉你使用了哪个提示，特别是当你动态加载/传递它们时，并且还需进行心理映射哪个提示对应哪个代码路径，前者将更为简便。
 
@@ -380,14 +380,14 @@ dr = (
 
 +   [tryhamilton.dev](https://www.tryhamilton.dev/) — 在浏览器中的互动教程！
 
-+   [Hamilton + Lineage 在 10 分钟内](/lineage-hamilton-in-10-minutes-c2b8a944e2e6)
++   Hamilton + Lineage 在 10 分钟内
 
-+   [如何在 5 分钟内与 Pandas 一起使用 Hamilton](/how-to-use-hamilton-with-pandas-in-5-minutes-89f63e5af8f5)
++   如何在 5 分钟内与 Pandas 一起使用 Hamilton
 
-+   [如何在 5 分钟内与 Ray 一起使用 Hamilton](/scaling-hamilton-with-ray-in-5-minutes-3beb1755fc09)
++   如何在 5 分钟内与 Ray 一起使用 Hamilton
 
-+   [如何在笔记本环境中使用 Hamilton](/how-to-iterate-with-hamilton-in-a-notebook-8ec0f85851ed)
++   如何在笔记本环境中使用 Hamilton
 
-+   [Hamilton 的背景故事与介绍](/functions-dags-introducing-hamilton-a-microframework-for-dataframe-generation-more-8e34b84efc1d)
++   Hamilton 的背景故事与介绍
 
 +   [使用 Hamilton 创建数据流的好处](https://medium.com/@thijean/the-perks-of-creating-dataflows-with-hamilton-36e8c56dd2a)（来自 Hamilton 的有机用户帖子！）

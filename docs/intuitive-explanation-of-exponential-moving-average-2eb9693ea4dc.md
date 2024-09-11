@@ -1,18 +1,18 @@
 # 指数移动平均的直观解释
 
-> 原文：[https://towardsdatascience.com/intuitive-explanation-of-exponential-moving-average-2eb9693ea4dc?source=collection_archive---------2-----------------------#2023-12-16](https://towardsdatascience.com/intuitive-explanation-of-exponential-moving-average-2eb9693ea4dc?source=collection_archive---------2-----------------------#2023-12-16)
+> 原文：[`towardsdatascience.com/intuitive-explanation-of-exponential-moving-average-2eb9693ea4dc?source=collection_archive---------2-----------------------#2023-12-16`](https://towardsdatascience.com/intuitive-explanation-of-exponential-moving-average-2eb9693ea4dc?source=collection_archive---------2-----------------------#2023-12-16)
 
 ## 理解在梯度下降算法中使用的基本算法背后的逻辑
 
-[](https://medium.com/@slavahead?source=post_page-----2eb9693ea4dc--------------------------------)[![Vyacheslav Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----2eb9693ea4dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2eb9693ea4dc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2eb9693ea4dc--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----2eb9693ea4dc--------------------------------)
+[](https://medium.com/@slavahead?source=post_page-----2eb9693ea4dc--------------------------------)![Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----2eb9693ea4dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2eb9693ea4dc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----2eb9693ea4dc--------------------------------) [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----2eb9693ea4dc--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintuitive-explanation-of-exponential-moving-average-2eb9693ea4dc&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----2eb9693ea4dc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2eb9693ea4dc--------------------------------) ·6分钟阅读·2023年12月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2eb9693ea4dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintuitive-explanation-of-exponential-moving-average-2eb9693ea4dc&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----2eb9693ea4dc---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintuitive-explanation-of-exponential-moving-average-2eb9693ea4dc&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----2eb9693ea4dc---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2eb9693ea4dc--------------------------------) ·6 分钟阅读·2023 年 12 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2eb9693ea4dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintuitive-explanation-of-exponential-moving-average-2eb9693ea4dc&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----2eb9693ea4dc---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2eb9693ea4dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintuitive-explanation-of-exponential-moving-average-2eb9693ea4dc&source=-----2eb9693ea4dc---------------------bookmark_footer-----------)![](../Images/f65b757753e90cbe70d7ae2c04608e84.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2eb9693ea4dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintuitive-explanation-of-exponential-moving-average-2eb9693ea4dc&source=-----2eb9693ea4dc---------------------bookmark_footer-----------)![](img/f65b757753e90cbe70d7ae2c04608e84.png)
 
 # 介绍
 
@@ -34,7 +34,7 @@
 
 为了理解指数加权移动平均的工作原理，让我们看一下它的递归方程：
 
-![](../Images/1ee395f76a578feac3fbfb7250c75d0f.png)
+![](img/1ee395f76a578feac3fbfb7250c75d0f.png)
 
 指数加权移动平均公式
 
@@ -46,13 +46,13 @@
 
 让我们写出这个公式来计算前几个参数值：
 
-![](../Images/1ded5cd1e0b8e9dfc5d8637a452907e7.png)
+![](img/1ded5cd1e0b8e9dfc5d8637a452907e7.png)
 
 计算 t 时刻的公式
 
 结果是，最终公式如下：
 
-![](../Images/2520ba4bbbbd0aa1c25fe694d2ce7d6e.png)
+![](img/2520ba4bbbbd0aa1c25fe694d2ce7d6e.png)
 
 t 时刻的指数移动平均
 
@@ -60,7 +60,7 @@ t 时刻的指数移动平均
 
 > 在实践中，β 的值通常选择接近 0.9。
 
-![](../Images/946afdcedcea1cae3b14897b927bb2e1.png)
+![](img/946afdcedcea1cae3b14897b927bb2e1.png)
 
 不同时间戳的权重分布（β = 0.9）
 
@@ -68,19 +68,19 @@ t 时刻的指数移动平均
 
 利用数学分析中的著名第二个奇妙极限，可以证明以下极限：
 
-![](../Images/088ede23a815fe975357a0f9c57e7506.png)
+![](img/088ede23a815fe975357a0f9c57e7506.png)
 
 第二个奇妙极限
 
 通过将 β = 1 - *x* 代入，我们可以将其改写成如下形式：
 
-![](../Images/e648d093856d49a1a829473a3bc8008f.png)
+![](img/e648d093856d49a1a829473a3bc8008f.png)
 
 另一种形式的奇妙极限
 
 我们还知道，在指数加权平均的公式中，每个观察值都乘以一个 βᵗ 的项，其中 t 表示观察值被计算的时间戳数。由于基数 β 在两种情况中是相等的，我们可以使两个公式的指数相等：
 
-![](../Images/7bedd715d3f938568c452996e6e00451.png)
+![](img/7bedd715d3f938568c452996e6e00451.png)
 
 通过使用这个公式，对于选择的 β 值，我们可以计算出权重项达到 1 / e ≈ 0.368 的大致时间戳数量 t。这意味着在最近的 t 次迭代中计算的观察值的权重项大于 1 / e，而在最后 t 个时间戳范围之外计算的观察值的权重低于 1 / e，其重要性则大大减少。
 
@@ -88,7 +88,7 @@ t 时刻的指数移动平均
 
 为了更好地理解公式，让我们插入不同的 β 值**：**
 
-![](../Images/de06a335b31a2fbeb4c261e9c312f732.png)
+![](img/de06a335b31a2fbeb4c261e9c312f732.png)
 
 > 例如，选择 β = 0.9 表示大约在 t = 10 次迭代后，权重衰减到 1 / e，相较于当前观察值的权重。换句话说，指数加权平均主要依赖于最后的 t = 10 个观察值。
 
@@ -96,7 +96,7 @@ t 时刻的指数移动平均
 
 使用指数加权平均的一个常见问题是，在大多数问题中，它不能很好地近似前几项值。这是由于在前几次迭代中缺少足够的数据。例如，假设我们给定了以下时间序列：
 
-![](../Images/9d079e18b99a43f4c6e4aada6d25daa4.png)
+![](img/9d079e18b99a43f4c6e4aada6d25daa4.png)
 
 目标是用指数加权平均来近似它。然而，如果我们使用常规公式，那么前几个值将对 v₀ 赋予较大权重，而 v₀ 为 0，尽管散点图上的大多数点都在 20 以上。因此，初始的加权平均序列将会过低，无法准确近似原始序列。
 
@@ -104,13 +104,13 @@ t 时刻的指数移动平均
 
 更加灵活的解决方案是使用一种称为“**偏差修正**”的技术。它不是简单地使用计算得到的值 vₖ，而是将其除以 (1 —βᵏ)。假设 β 选择接近 0.9–1，这个表达式在初始迭代中，当 k 较小的时候，趋近于 0。因此，与其慢慢累积前几个值，其中 v₀ = 0，不如将它们除以一个相对较小的数，使它们变成更大的值。
 
-![](../Images/ed809abff8a65e5f605c4394dfdbec49.png)
+![](img/ed809abff8a65e5f605c4394dfdbec49.png)
 
 带有和不带有偏差修正的指数移动平均计算示例
 
 一般来说，这种缩放方法效果很好，并能精确地调整前几个项。当 k 增大时，分母逐渐接近 1，从而逐渐忽略这种缩放的效果，因为从某一迭代开始，算法可以高可信度地依赖于其最近的值，而无需任何额外的缩放。
 
-![](../Images/a505a4b5dbc0326cb86660f06e5f0fb9.png)
+![](img/a505a4b5dbc0326cb86660f06e5f0fb9.png)
 
 # 结论
 

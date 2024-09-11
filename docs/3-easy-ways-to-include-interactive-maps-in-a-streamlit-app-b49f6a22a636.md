@@ -1,18 +1,18 @@
-# 在Streamlit应用中包含交互式地图的三种简单方法
+# 在 Streamlit 应用中包含交互式地图的三种简单方法
 
-> 原文：[https://towardsdatascience.com/3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636?source=collection_archive---------0-----------------------#2023-02-19](https://towardsdatascience.com/3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636?source=collection_archive---------0-----------------------#2023-02-19)
+> 原文：[`towardsdatascience.com/3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636?source=collection_archive---------0-----------------------#2023-02-19`](https://towardsdatascience.com/3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636?source=collection_archive---------0-----------------------#2023-02-19)
 
-## 在Streamlit中可视化地理空间数据
+## 在 Streamlit 中可视化地理空间数据
 
-[](https://andymcdonaldgeo.medium.com/?source=post_page-----b49f6a22a636--------------------------------)[![安迪·麦克唐纳](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----b49f6a22a636--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b49f6a22a636--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b49f6a22a636--------------------------------) [安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----b49f6a22a636--------------------------------)
+[](https://andymcdonaldgeo.medium.com/?source=post_page-----b49f6a22a636--------------------------------)![安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----b49f6a22a636--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b49f6a22a636--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----b49f6a22a636--------------------------------) [安迪·麦克唐纳](https://andymcdonaldgeo.medium.com/?source=post_page-----b49f6a22a636--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----b49f6a22a636---------------------post_header-----------) 发布于[数据科学前沿](https://towardsdatascience.com/?source=post_page-----b49f6a22a636--------------------------------) ·6分钟阅读·2023年2月19日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb49f6a22a636&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636&user=Andy+McDonald&userId=9c280f85f15c&source=-----b49f6a22a636---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9c280f85f15c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636&user=Andy+McDonald&userId=9c280f85f15c&source=post_page-9c280f85f15c----b49f6a22a636---------------------post_header-----------) 发布于[数据科学前沿](https://towardsdatascience.com/?source=post_page-----b49f6a22a636--------------------------------) ·6 分钟阅读·2023 年 2 月 19 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb49f6a22a636&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636&user=Andy+McDonald&userId=9c280f85f15c&source=-----b49f6a22a636---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb49f6a22a636&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636&source=-----b49f6a22a636---------------------bookmark_footer-----------)![](../Images/a62f9300ddf3cf6409ccd321445b76f8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb49f6a22a636&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-easy-ways-to-include-interactive-maps-in-a-streamlit-app-b49f6a22a636&source=-----b49f6a22a636---------------------bookmark_footer-----------)![](img/a62f9300ddf3cf6409ccd321445b76f8.png)
 
 图片由[安德鲁·斯图茨曼](https://unsplash.com/@drwmrk?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

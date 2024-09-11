@@ -1,18 +1,18 @@
 # 使用 ChatGPT 进行翻译
 
-> 原文：[https://towardsdatascience.com/translate-with-chatgpt-f85609996a7f?source=collection_archive---------1-----------------------#2023-02-16](https://towardsdatascience.com/translate-with-chatgpt-f85609996a7f?source=collection_archive---------1-----------------------#2023-02-16)
+> 原文：[`towardsdatascience.com/translate-with-chatgpt-f85609996a7f?source=collection_archive---------1-----------------------#2023-02-16`](https://towardsdatascience.com/translate-with-chatgpt-f85609996a7f?source=collection_archive---------1-----------------------#2023-02-16)
 
 ## 一个非常强大的机器翻译系统
 
-[](https://medium.com/@bnjmn_marie?source=post_page-----f85609996a7f--------------------------------)[![Benjamin Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----f85609996a7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f85609996a7f--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f85609996a7f--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----f85609996a7f--------------------------------)
+[](https://medium.com/@bnjmn_marie?source=post_page-----f85609996a7f--------------------------------)![Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----f85609996a7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f85609996a7f--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f85609996a7f--------------------------------) [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----f85609996a7f--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslate-with-chatgpt-f85609996a7f&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----f85609996a7f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f85609996a7f--------------------------------) ·6 min read·2023年2月16日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff85609996a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslate-with-chatgpt-f85609996a7f&user=Benjamin+Marie&userId=ad2a414578b3&source=-----f85609996a7f---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslate-with-chatgpt-f85609996a7f&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----f85609996a7f---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f85609996a7f--------------------------------) ·6 min read·2023 年 2 月 16 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff85609996a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslate-with-chatgpt-f85609996a7f&user=Benjamin+Marie&userId=ad2a414578b3&source=-----f85609996a7f---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff85609996a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslate-with-chatgpt-f85609996a7f&source=-----f85609996a7f---------------------bookmark_footer-----------)![](../Images/01c3b294801c4aee8a12a2e404687fb9.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff85609996a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftranslate-with-chatgpt-f85609996a7f&source=-----f85609996a7f---------------------bookmark_footer-----------)![](img/01c3b294801c4aee8a12a2e404687fb9.png)
 
 图片来自 [Pixabay](https://pixabay.com/photos/chat-ai-chatbot-chatgpt-mobile-7767693/)。
 
@@ -52,7 +52,7 @@ ChatGPT 按预期返回了 10 个提示，但它们之间仅有**少量差异**�
 
 他们在中文到英文的翻译任务中（[SRC]=中文， [TGT]=英文）评估了每一个提示，并得出了以下结果：
 
-![](../Images/cfa05a7deaab6c05b286b89e5a995776.png)
+![](img/cfa05a7deaab6c05b286b89e5a995776.png)
 
 结果由 [*Wenxiang Jiao, Wenxuan Wang, Jen-tse Huang, Xing Wang, and Zhaopeng Tu (腾讯 AI)*](https://arxiv.org/pdf/2301.08745v2.pdf) 提供
 
@@ -62,23 +62,23 @@ BLEU、chrF++ 和 TER 是 3 种自动评估机器翻译质量的指标。对于 
 
 这很有趣，因为 Prompt 1 提到源语言，但其他两个提示没有提及。然而，Prompt 1 的表现较差。**ChatGPT 不需要知道我们想要翻译的文本的语言**。
 
-这令人印象深刻，但也有些违背直觉。我们本可以预期由于提示中源语言的准确性，ChatGPT会更准确。对于人类翻译者来说，了解源语言至关重要。
+这令人印象深刻，但也有些违背直觉。我们本可以预期由于提示中源语言的准确性，ChatGPT 会更准确。对于人类翻译者来说，了解源语言至关重要。
 
-目前尚无良好解释为何ChatGPT在指示源语言时会得出较低的分数。我们可以假设ChatGPT能够自动从用户输入中推断出源语言。如果是这样的话，提供源语言不应该有任何影响，而不是腾讯AI结果中观察到的负面影响。
+目前尚无良好解释为何 ChatGPT 在指示源语言时会得出较低的分数。我们可以假设 ChatGPT 能够自动从用户输入中推断出源语言。如果是这样的话，提供源语言不应该有任何影响，而不是腾讯 AI 结果中观察到的负面影响。
 
 # 一般翻译
 
-既然我们找到了一个好的提示，我们可以将ChatGPT与最先进的机器翻译系统进行比较。
+既然我们找到了一个好的提示，我们可以将 ChatGPT 与最先进的机器翻译系统进行比较。
 
-腾讯AI选择了在线系统进行比较：[Google Translate](https://translate.google.com/)、[DeepL](https://www.deepl.com/translator)以及他们自己的在线系统，[腾讯TranSmart](https://transmart.qq.com/zh-CN/index)。
+腾讯 AI 选择了在线系统进行比较：[Google Translate](https://translate.google.com/)、[DeepL](https://www.deepl.com/translator)以及他们自己的在线系统，[腾讯 TranSmart](https://transmart.qq.com/zh-CN/index)。
 
 结果如下：
 
-![](../Images/28f5652a304b553818d8472a825e98f4.png)
+![](img/28f5652a304b553818d8472a825e98f4.png)
 
-结果由 [*Wenxiang Jiao, Wenxuan Wang, Jen-tse Huang, Xing Wang, and Zhaopeng Tu (腾讯AI)*](https://arxiv.org/pdf/2301.08745v2.pdf) 提供
+结果由 [*Wenxiang Jiao, Wenxuan Wang, Jen-tse Huang, Xing Wang, and Zhaopeng Tu (腾讯 AI)*](https://arxiv.org/pdf/2301.08745v2.pdf) 提供
 
-三个在线系统的表现相似，似乎比ChatGPT表现更好，尽管作者并未报告统计显著性检验以确保这些差异确实具有统计学意义。
+三个在线系统的表现相似，似乎比 ChatGPT 表现更好，尽管作者并未报告统计显著性检验以确保这些差异确实具有统计学意义。
 
 [](https://pub.towardsai.net/yes-we-need-statistical-significance-testing-927a8d21f9f0?source=post_page-----f85609996a7f--------------------------------) [## 是的，我们需要统计显著性检验]
 
@@ -86,55 +86,55 @@ BLEU、chrF++ 和 TER 是 3 种自动评估机器翻译质量的指标。对于 
 
 pub.towardsai.net](https://pub.towardsai.net/yes-we-need-statistical-significance-testing-927a8d21f9f0?source=post_page-----f85609996a7f--------------------------------)
 
-尽管如此，我发现这些结果令人印象深刻。由于基于instructGPT，我们可以假设ChatGPT主要**在英文数据上进行训练**，但似乎能够**很好地捕捉中文句子的含义**以生成英文翻译。
+尽管如此，我发现这些结果令人印象深刻。由于基于 instructGPT，我们可以假设 ChatGPT 主要**在英文数据上进行训练**，但似乎能够**很好地捕捉中文句子的含义**以生成英文翻译。
 
-如果我们能对ChatGPT进行中文到英文的微调，我们肯定会获得更高质量的翻译。
+如果我们能对 ChatGPT 进行中文到英文的微调，我们肯定会获得更高质量的翻译。
 
-在论文中，腾讯AI还报告了英、汉、德和罗马尼亚语之间所有翻译方向的类似差异。
+在论文中，腾讯 AI 还报告了英、汉、德和罗马尼亚语之间所有翻译方向的类似差异。
 
-![](../Images/a4ceb8d416c5b537c6fba40ad51dc1e1.png)
+![](img/a4ceb8d416c5b537c6fba40ad51dc1e1.png)
 
-表格由 [*Wenxiang Jiao, Wenxuan Wang, Jen-tse Huang, Xing Wang, and Zhaopeng Tu (腾讯AI)*](https://arxiv.org/pdf/2301.08745v2.pdf) 提供
+表格由 [*Wenxiang Jiao, Wenxuan Wang, Jen-tse Huang, Xing Wang, and Zhaopeng Tu (腾讯 AI)*](https://arxiv.org/pdf/2301.08745v2.pdf) 提供
 
-再次强调，这些表现（以BLEU评分为准）令人印象深刻。即使是那些不涉及英语的翻译方向，如德语到中文，ChatGPT也能生成翻译。根据BLEU，在线系统的表现仍然更好，这也是预期中的，因为它们是针对这个任务进行训练的，而ChatGPT则不是！
+再次强调，这些表现（以 BLEU 评分为准）令人印象深刻。即使是那些不涉及英语的翻译方向，如德语到中文，ChatGPT 也能生成翻译。根据 BLEU，在线系统的表现仍然更好，这也是预期中的，因为它们是针对这个任务进行训练的，而 ChatGPT 则不是！
 
-涉及罗马尼亚语的结果相差甚远。例如，ChatGPT的BLEU评分比在线系统低了将近50%。这种差异可能具有统计学意义。
+涉及罗马尼亚语的结果相差甚远。例如，ChatGPT 的 BLEU 评分比在线系统低了将近 50%。这种差异可能具有统计学意义。
 
-作者提出了一个解释。与德语和中文相比，罗马尼亚语的资源，如互联网上的罗马尼亚语文本，少得多。ChatGPT在训练过程中可能**见过的罗马尼亚语句子示例太少**，以至于难以准确建模。
+作者提出了一个解释。与德语和中文相比，罗马尼亚语的资源，如互联网上的罗马尼亚语文本，少得多。ChatGPT 在训练过程中可能**见过的罗马尼亚语句子示例太少**，以至于难以准确建模。
 
 我同意这一假设，但应通过更多涉及其他语言（如克罗地亚语或波兰语）的实验来确认。
 
 # 领域与鲁棒性
 
-他们进行了进一步的实验，以评估ChatGPT在**特定领域（生物医学）**和**用户生成**（发布在**社交媒体**上，通常带有大量语法错误）的文本翻译中的表现。
+他们进行了进一步的实验，以评估 ChatGPT 在**特定领域（生物医学）**和**用户生成**（发布在**社交媒体**上，通常带有大量语法错误）的文本翻译中的表现。
 
-![](../Images/6501af81d20e66595de6c39f901c51c0.png)
+![](img/6501af81d20e66595de6c39f901c51c0.png)
 
 表格由 [*Wenxiang Jiao, Wenxuan Wang, Jen-tse Huang, Xing Wang, 和 Zhaopeng Tu (腾讯 AI)*](https://arxiv.org/pdf/2301.08745v2.pdf) 制作。
 
-出乎意料的是，根据BLEU，ChatGPT在将生物医学文本从德语翻译成英语时的表现仍然接近在线系统。
+出乎意料的是，根据 BLEU，ChatGPT 在将生物医学文本从德语翻译成英语时的表现仍然接近在线系统。
 
 ChatGPT 似乎没有受到生物医学文本中非常特定术语的负面影响。
 
-ChatGPT **在将用户生成的德语文本翻译成英语方面超过了在线系统**。这令人印象深刻，但并不令人意外。我们可以假设，ChatGPT的训练数据中**包含了大量来自社交媒体的帖子（从网络上抓取）**，而用于比较的在线系统训练数据通常经过严格筛选，因此对错误（如语法、语义等）的鲁棒性较差。
+ChatGPT **在将用户生成的德语文本翻译成英语方面超过了在线系统**。这令人印象深刻，但并不令人意外。我们可以假设，ChatGPT 的训练数据中**包含了大量来自社交媒体的帖子（从网络上抓取）**，而用于比较的在线系统训练数据通常经过严格筛选，因此对错误（如语法、语义等）的鲁棒性较差。
 
-当翻译成远离英语的语言时，如日语，如WMT20 Rob2的结果所示，ChatGPT面临的困难要大得多，这是预期中的情况。
+当翻译成远离英语的语言时，如日语，如 WMT20 Rob2 的结果所示，ChatGPT 面临的困难要大得多，这是预期中的情况。
 
 # 本研究的局限性
 
-作者在研究中承认，需要更多语言对的实验来更好地评估ChatGPT的翻译质量。
+作者在研究中承认，需要更多语言对的实验来更好地评估 ChatGPT 的翻译质量。
 
 这种评估应通过人工评估而非自动度量来进行，因为自动度量通常不准确，特别是当比较系统的得分非常接近时。
 
 **缺乏人工评估是本研究的主要局限性**。
 
-我认为，还可以进一步研究提示的影响。作者通过让ChatGPT自己建议提示选择了一种非常原创的方式。但**提示ChatGPT建议提示**是一个鸡和蛋的问题。用于获得机器翻译提示的提示本身可能对本研究中所有后续实验产生强烈影响。以前关于机器翻译提示设计的工作尝试了各种各样的手工设计提示。
+我认为，还可以进一步研究提示的影响。作者通过让 ChatGPT 自己建议提示选择了一种非常原创的方式。但**提示 ChatGPT 建议提示**是一个鸡和蛋的问题。用于获得机器翻译提示的提示本身可能对本研究中所有后续实验产生强烈影响。以前关于机器翻译提示设计的工作尝试了各种各样的手工设计提示。
 
-[](/how-good-is-google-palm-at-translation-f4a40c2ce562?source=post_page-----f85609996a7f--------------------------------) [## Google PaLM 翻译效果如何？
+[](/how-good-is-google-palm-at-translation-f4a40c2ce562?source=post_page-----f85609996a7f--------------------------------) ## Google PaLM 翻译效果如何？
 
 ### 虽然还不是很好，但我们正在接近目标。
 
-[towardsdatascience.com](/how-good-is-google-palm-at-translation-f4a40c2ce562?source=post_page-----f85609996a7f--------------------------------)
+[towardsdatascience.com
 
 # 结论
 

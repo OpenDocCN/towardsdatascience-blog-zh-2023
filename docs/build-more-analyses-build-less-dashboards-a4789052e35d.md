@@ -1,22 +1,22 @@
 # 多做分析，少做仪表盘
 
-> 原文：[https://towardsdatascience.com/build-more-analyses-build-less-dashboards-a4789052e35d?source=collection_archive---------0-----------------------#2023-05-13](https://towardsdatascience.com/build-more-analyses-build-less-dashboards-a4789052e35d?source=collection_archive---------0-----------------------#2023-05-13)
+> 原文：[`towardsdatascience.com/build-more-analyses-build-less-dashboards-a4789052e35d?source=collection_archive---------0-----------------------#2023-05-13`](https://towardsdatascience.com/build-more-analyses-build-less-dashboards-a4789052e35d?source=collection_archive---------0-----------------------#2023-05-13)
 
 ## 为什么我们应该转向一个以分析为默认第一步的世界
 
-[](https://ryi.medium.com/?source=post_page-----a4789052e35d--------------------------------)[![Robert Yi](../Images/69f5d0c5860a73ec291f42d34a74d147.png)](https://ryi.medium.com/?source=post_page-----a4789052e35d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a4789052e35d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a4789052e35d--------------------------------) [Robert Yi](https://ryi.medium.com/?source=post_page-----a4789052e35d--------------------------------)
+[](https://ryi.medium.com/?source=post_page-----a4789052e35d--------------------------------)![Robert Yi](https://ryi.medium.com/?source=post_page-----a4789052e35d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a4789052e35d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4789052e35d--------------------------------) [Robert Yi](https://ryi.medium.com/?source=post_page-----a4789052e35d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ac2da8b0742&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-more-analyses-build-less-dashboards-a4789052e35d&user=Robert+Yi&userId=8ac2da8b0742&source=post_page-8ac2da8b0742----a4789052e35d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4789052e35d--------------------------------) ·7分钟阅读·2023年5月13日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa4789052e35d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-more-analyses-build-less-dashboards-a4789052e35d&user=Robert+Yi&userId=8ac2da8b0742&source=-----a4789052e35d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ac2da8b0742&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-more-analyses-build-less-dashboards-a4789052e35d&user=Robert+Yi&userId=8ac2da8b0742&source=post_page-8ac2da8b0742----a4789052e35d---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----a4789052e35d--------------------------------) ·7 分钟阅读·2023 年 5 月 13 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa4789052e35d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-more-analyses-build-less-dashboards-a4789052e35d&user=Robert+Yi&userId=8ac2da8b0742&source=-----a4789052e35d---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa4789052e35d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-more-analyses-build-less-dashboards-a4789052e35d&source=-----a4789052e35d---------------------bookmark_footer-----------)
 
-自从Seth Rosen的[trashboard](https://twitter.com/sethrosen/status/1407019976469397514?lang=en)推文已经快2年了，但trashboard疫情依然真实存在。我们仍然遇到许多公司，他们对拥有成千上万个仪表盘感到奇怪的满意，而他们的分析师则被迫在[ad hoc](https://win.hyperquery.ai/p/what-is-ad-hoc-analytics-and-why-should-you-care-d59a45d466fe)请求的深渊中摸索，只剩下一个IDE。
+自从 Seth Rosen 的[trashboard](https://twitter.com/sethrosen/status/1407019976469397514?lang=en)推文已经快 2 年了，但 trashboard 疫情依然真实存在。我们仍然遇到许多公司，他们对拥有成千上万个仪表盘感到奇怪的满意，而他们的分析师则被迫在[ad hoc](https://win.hyperquery.ai/p/what-is-ad-hoc-analytics-and-why-should-you-care-d59a45d466fe)请求的深渊中摸索，只剩下一个 IDE。
 
-当然，所有这些都是出于良好的意图——ad hoc工作可能很[痛苦](https://www.hyperquery.ai/blog/why-analytics-sucks)，而自动化解决方案听起来很有吸引力。更重要的是，仪表盘是一种安全的选择——毕竟我们仍然生活在一个仪表盘被视为分析的默认工具的世界中。
+当然，所有这些都是出于良好的意图——ad hoc 工作可能很[痛苦](https://www.hyperquery.ai/blog/why-analytics-sucks)，而自动化解决方案听起来很有吸引力。更重要的是，仪表盘是一种安全的选择——毕竟我们仍然生活在一个仪表盘被视为分析的默认工具的世界中。
 
 让我们谈谈我们是如何走到这一步的，为什么需要改变，以及我们应该如何前进。简而言之，接下来我将论证：
 
@@ -26,7 +26,7 @@
 
 +   如果你相信上述两个观点，你的信念、你的流程、你的工具需要根本性的改变。
 
-![](../Images/e19b3ebd13c3264112b479aa920db09a.png)
+![](img/e19b3ebd13c3264112b479aa920db09a.png)
 
 图片来源于 Midjourney，已获许可使用。
 
@@ -38,7 +38,7 @@
 
 相对而言，分析则更为尖锐。它们揭示了*解读*，使得与业务问题的相关性更加精准。如果仪表板像沙拉吧，那么分析就是按需定制的餐点。正如特定的餐点更能满足口味，**分析*总是*更好地满足特定业务需求**。另一方面，增量的沙拉吧项目（更多仪表板）则收益递减——它们永远不能完全满足某种特定的需求，但可以粗略地解决大部分饥饿相关的问题。拥有几个这样的仪表板可以带来很大好处，但你不需要无休止地继续构建它们。
 
-![](../Images/70e34af1463d5007f5f760c0b0b433a9.png)
+![](img/70e34af1463d5007f5f760c0b0b433a9.png)
 
 一个沙拉吧。图片来源于 Midjourney，已获许可使用。
 
@@ -48,15 +48,15 @@
 
 我们不知不觉中被某种沉没成本谬误的扭曲困住了：我们将所有增量资源都分配给了仪表板，因此我们开始相信仪表板是至关重要的。
 
-![](../Images/ca8684b0ec9221be595f4433dbb8269a.png)
+![](img/ca8684b0ec9221be595f4433dbb8269a.png)
 
 图片来源：作者。
 
 我必须承认，仪表盘本身确实具有吸引力：仪表盘让我们能够考虑到高覆盖率进行构建。它们售卖了这样一个梦想：有一天，我们的临时请求量会降为零。有了足够的仪表盘，总有一天我们会解决所有问题及其后续问题。
 
-但不幸的是，经营业务很少是如此的公式化。[幂律分布](https://zh.wikipedia.org/wiki/%E5%B9%82%E5%BE%8B%E5%88%86%E5%B8%83)泛滥。[优先连接](https://zh.wikipedia.org/wiki/%E9%A2%84%E5%85%88%E9%99%84%E5%8A%A0)产生了价值和无价值的地方，变化和停滞，积累和空虚。并非所有事物都是平等的。这是帕累托法则的世界，其中雪崩推动变革。在这个世界里，20% 的努力驱动了80% 的结果。
+但不幸的是，经营业务很少是如此的公式化。[幂律分布](https://zh.wikipedia.org/wiki/%E5%B9%82%E5%BE%8B%E5%88%86%E5%B8%83)泛滥。[优先连接](https://zh.wikipedia.org/wiki/%E9%A2%84%E5%85%88%E9%99%84%E5%8A%A0)产生了价值和无价值的地方，变化和停滞，积累和空虚。并非所有事物都是平等的。这是帕累托法则的世界，其中雪崩推动变革。在这个世界里，20% 的努力驱动了 80% 的结果。
 
-![图片](../Images/cffcc89afb1bc3a398ae29a1ac693ce7.png)
+![图片](img/cffcc89afb1bc3a398ae29a1ac693ce7.png)
 
 作者提供的图片。
 
@@ -70,7 +70,7 @@
 > 
 > - 查克·帕拉尼克
 
-![图片](../Images/f246e45e7913fa37aee31e86578d490b.png)
+![图片](img/f246e45e7913fa37aee31e86578d490b.png)
 
 Midjourney 提供的图片，已获得许可使用。
 
@@ -92,7 +92,7 @@ Midjourney 提供的图片，已获得许可使用。
 
 此外，建立模板和标准，规范工作应该如何进行。为您的团队编写坚实的操作原则。您甚至可以制定严格的政策来强化更好的行为：例如，分析不放在我们的集中、共识的地方就不算数。采用强化良好行为的仪式：每天举行站立会议，展示这项工作；将仪式遵从性融入您的绩效评估中。尽一切可能确保人们做您知道会让他们变得更好的事情。
 
-![](../Images/51d95c7eda6ba9ee70f0e37adc9d8882.png)
+![](img/51d95c7eda6ba9ee70f0e37adc9d8882.png)
 
 图片由作者提供。
 

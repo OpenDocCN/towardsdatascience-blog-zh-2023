@@ -1,20 +1,20 @@
 # 减少分析浪费的四个步骤
 
-> [原文：](https://towardsdatascience.com/four-steps-to-remove-analytics-waste-550f65f9a9e0?source=collection_archive---------13-----------------------#2023-02-03)[https://towardsdatascience.com/four-steps-to-remove-analytics-waste-550f65f9a9e0?source=collection_archive---------13-----------------------#2023-02-03](https://towardsdatascience.com/four-steps-to-remove-analytics-waste-550f65f9a9e0?source=collection_archive---------13-----------------------#2023-02-03)
+> [原文：](https://towardsdatascience.com/four-steps-to-remove-analytics-waste-550f65f9a9e0?source=collection_archive---------13-----------------------#2023-02-03)[`towardsdatascience.com/four-steps-to-remove-analytics-waste-550f65f9a9e0?source=collection_archive---------13-----------------------#2023-02-03`](https://towardsdatascience.com/four-steps-to-remove-analytics-waste-550f65f9a9e0?source=collection_archive---------13-----------------------#2023-02-03)
 
 ## 通过减少分析浪费来加快决策
 
-[](https://medium.com/@davidsweenor?source=post_page-----550f65f9a9e0--------------------------------)[![David Sweenor](../Images/7dbb5c549ab67bc78f906fb707969ff6.png)](https://medium.com/@davidsweenor?source=post_page-----550f65f9a9e0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----550f65f9a9e0--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----550f65f9a9e0--------------------------------) [David Sweenor](https://medium.com/@davidsweenor?source=post_page-----550f65f9a9e0--------------------------------)
+[](https://medium.com/@davidsweenor?source=post_page-----550f65f9a9e0--------------------------------)![David Sweenor](https://medium.com/@davidsweenor?source=post_page-----550f65f9a9e0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----550f65f9a9e0--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----550f65f9a9e0--------------------------------) [David Sweenor](https://medium.com/@davidsweenor?source=post_page-----550f65f9a9e0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fec7aed1f3ef1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffour-steps-to-remove-analytics-waste-550f65f9a9e0&user=David+Sweenor&userId=ec7aed1f3ef1&source=post_page-ec7aed1f3ef1----550f65f9a9e0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----550f65f9a9e0--------------------------------) ·7 min read·2023年2月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F550f65f9a9e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffour-steps-to-remove-analytics-waste-550f65f9a9e0&user=David+Sweenor&userId=ec7aed1f3ef1&source=-----550f65f9a9e0---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fec7aed1f3ef1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffour-steps-to-remove-analytics-waste-550f65f9a9e0&user=David+Sweenor&userId=ec7aed1f3ef1&source=post_page-ec7aed1f3ef1----550f65f9a9e0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----550f65f9a9e0--------------------------------) ·7 min read·2023 年 2 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F550f65f9a9e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffour-steps-to-remove-analytics-waste-550f65f9a9e0&user=David+Sweenor&userId=ec7aed1f3ef1&source=-----550f65f9a9e0---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F550f65f9a9e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffour-steps-to-remove-analytics-waste-550f65f9a9e0&source=-----550f65f9a9e0---------------------bookmark_footer-----------)![](../Images/c98018e6a588cb58912f51b2bcb5fa85.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F550f65f9a9e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffour-steps-to-remove-analytics-waste-550f65f9a9e0&source=-----550f65f9a9e0---------------------bookmark_footer-----------)![](img/c98018e6a588cb58912f51b2bcb5fa85.png)
 
-洗车 — 照片由作者David E Sweenor提供
+洗车 — 照片由作者 David E Sweenor 提供
 
 思考分析在您的组织决策过程中的作用。您是否认为分析被有效地或高效地使用？或者您是否能够看到宝贵的时间和资源被浪费的方式？在一个经济体中，[**经理人每年在无效的决策上浪费了超过一百万天的时间**](https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/three-keys-to-faster-better-decisions)，在各个层面上减少浪费的机会是巨大的。
 
@@ -46,13 +46,13 @@
 
 这看起来是这样的：
 
-![](../Images/571f81685099b72d45c682d60c1019ed.png)
+![](img/571f81685099b72d45c682d60c1019ed.png)
 
 分析过程中的浪费
 
 鉴于数据的信息价值是易逝的，每一个延迟的红色三角形——无论是在数据、分析、决策还是行动周围——都是你竞争力的障碍。这些延迟点加起来就是你在从业务事件到业务行动过程中所面临的延迟。它们代表了你组织中的分析浪费。那么，你能对此做些什么呢？
 
-# 消除分析浪费的4个步骤
+# 消除分析浪费的 4 个步骤
 
 当你将决策障碍视为延迟的函数时，你的下一个目标是检查每种延迟类型，并找出导致分析浪费的原因。
 
@@ -92,7 +92,7 @@
 
 当你消除延迟并去除分析浪费时，你将捕捉到上述数据中更多的短暂信息价值。随着时间的推移，你的曲线开始呈现以下形式：
 
-![](../Images/41e3c2f4805e53367048ef46778e5ad2.png)
+![](img/41e3c2f4805e53367048ef46778e5ad2.png)
 
 将业务事件压缩到业务行动中创造价值
 
@@ -102,7 +102,7 @@
 
 无效的决策会导致业务结果不佳。
 
-决策无处不在；你的公司每天做出成千上万甚至百万的决策。每年浪费超过50万天的时间，可能会使公司每年损失高达2.5亿美元的工资[[i]](#_edn1)。除了工资损失外，糟糕和无效的决策还可能使公司损失3%的利润，2020年在美国的金额达到2700亿美元[[ii]](#_edn2)。
+决策无处不在；你的公司每天做出成千上万甚至百万的决策。每年浪费超过 50 万天的时间，可能会使公司每年损失高达 2.5 亿美元的工资[[i]](#_edn1)。除了工资损失外，糟糕和无效的决策还可能使公司损失 3%的利润，2020 年在美国的金额达到 2700 亿美元[[ii]](#_edn2)。
 
 这些决策可以是战略性的、运营性的或战术性的。通过将业务事件压缩到业务行动中，你的组织可以创造和捕捉价值——这种价值会被永久性地捕获。
 
@@ -114,6 +114,6 @@
 
 [*https://www.alteryx.com/input/blog/four-steps-to-remove-analytics-waste*](https://www.alteryx.com/input/blog/four-steps-to-remove-analytics-waste)
 
-[[i]](#_ednref1) De Smet, Aaron, Gregor Jost, and Leigh Weiss. 2019\. “Three Keys to Better Decision Making | McKinsey.” [Www.mckinsey.com.](http://Www.mckinsey.com.) May 1, 2019\. [https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/three-keys-to-faster-better-decisions.](https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/three-keys-to-faster-better-decisions.)
+[[i]](#_ednref1) De Smet, Aaron, Gregor Jost, and Leigh Weiss. 2019\. “Three Keys to Better Decision Making | McKinsey.” [Www.mckinsey.com.](http://Www.mckinsey.com.) May 1, 2019\. [`www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/three-keys-to-faster-better-decisions.`](https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/three-keys-to-faster-better-decisions.)
 
-[[ii]](#_ednref2) Southekal, Prashanth. 2022\. “Council Post: The DEAR Model: A Method to Make Good Business Decisions.” Forbes. March 14, 2022\. [https://www.forbes.com/sites/forbestechcouncil/2022/03/14/the-dear-model-a-method-to-make-good-business-decisions/?sh=ae0983d5b3fd.](https://www.forbes.com/sites/forbestechcouncil/2022/03/14/the-dear-model-a-method-to-make-good-business-decisions/?sh=ae0983d5b3fd.)
+[[ii]](#_ednref2) Southekal, Prashanth. 2022\. “Council Post: The DEAR Model: A Method to Make Good Business Decisions.” Forbes. March 14, 2022\. [`www.forbes.com/sites/forbestechcouncil/2022/03/14/the-dear-model-a-method-to-make-good-business-decisions/?sh=ae0983d5b3fd.`](https://www.forbes.com/sites/forbestechcouncil/2022/03/14/the-dear-model-a-method-to-make-good-business-decisions/?sh=ae0983d5b3fd.)

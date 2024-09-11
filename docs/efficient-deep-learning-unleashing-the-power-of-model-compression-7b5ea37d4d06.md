@@ -1,18 +1,18 @@
 # 高效深度学习：释放模型压缩的力量
 
-> 原文：[https://towardsdatascience.com/efficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06?source=collection_archive---------3-----------------------#2023-09-03](https://towardsdatascience.com/efficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06?source=collection_archive---------3-----------------------#2023-09-03)
+> 原文：[`towardsdatascience.com/efficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06?source=collection_archive---------3-----------------------#2023-09-03`](https://towardsdatascience.com/efficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06?source=collection_archive---------3-----------------------#2023-09-03)
 
-![](../Images/e3f104a88962263b5a88baa0f644362f.png)
+![](img/e3f104a88962263b5a88baa0f644362f.png)
 
 图片由作者提供
 
 ## 加速生产环境中的模型推理速度
 
-[](https://medium.com/@marcellopoliti?source=post_page-----7b5ea37d4d06--------------------------------)[![Marcello Politi](../Images/484e44571bd2e75acfe5fef3146ab3c2.png)](https://medium.com/@marcellopoliti?source=post_page-----7b5ea37d4d06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b5ea37d4d06--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b5ea37d4d06--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----7b5ea37d4d06--------------------------------)
+[](https://medium.com/@marcellopoliti?source=post_page-----7b5ea37d4d06--------------------------------)![Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----7b5ea37d4d06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b5ea37d4d06--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b5ea37d4d06--------------------------------) [Marcello Politi](https://medium.com/@marcellopoliti?source=post_page-----7b5ea37d4d06--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----7b5ea37d4d06---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b5ea37d4d06--------------------------------) ·9分钟阅读·2023年9月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b5ea37d4d06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06&user=Marcello+Politi&userId=7390355d40fe&source=-----7b5ea37d4d06---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7390355d40fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06&user=Marcello+Politi&userId=7390355d40fe&source=post_page-7390355d40fe----7b5ea37d4d06---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b5ea37d4d06--------------------------------) ·9 分钟阅读·2023 年 9 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b5ea37d4d06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-deep-learning-unleashing-the-power-of-model-compression-7b5ea37d4d06&user=Marcello+Politi&userId=7390355d40fe&source=-----7b5ea37d4d06---------------------clap_footer-----------)
 
 --
 

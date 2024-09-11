@@ -1,10 +1,10 @@
 # 提取图像文本的前 5 个 Python 库
 
-> 原文：[https://towardsdatascience.com/top-5-python-libraries-for-extracting-text-from-images-c29863b2f3d?source=collection_archive---------1-----------------------#2023-07-25](https://towardsdatascience.com/top-5-python-libraries-for-extracting-text-from-images-c29863b2f3d?source=collection_archive---------1-----------------------#2023-07-25)
+> 原文：[`towardsdatascience.com/top-5-python-libraries-for-extracting-text-from-images-c29863b2f3d?source=collection_archive---------1-----------------------#2023-07-25`](https://towardsdatascience.com/top-5-python-libraries-for-extracting-text-from-images-c29863b2f3d?source=collection_archive---------1-----------------------#2023-07-25)
 
 ## 理解和掌握用于文本定位和识别的 OCR 工具
 
-[](https://eugenia-anello.medium.com/?source=post_page-----c29863b2f3d--------------------------------)[![尤金尼亚·安内洛](../Images/537f444252cdc60709e7a19e37734c7b.png)](https://eugenia-anello.medium.com/?source=post_page-----c29863b2f3d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c29863b2f3d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c29863b2f3d--------------------------------) [尤金尼亚·安内洛](https://eugenia-anello.medium.com/?source=post_page-----c29863b2f3d--------------------------------)
+[](https://eugenia-anello.medium.com/?source=post_page-----c29863b2f3d--------------------------------)![尤金尼亚·安内洛](https://eugenia-anello.medium.com/?source=post_page-----c29863b2f3d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c29863b2f3d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c29863b2f3d--------------------------------) [尤金尼亚·安内洛](https://eugenia-anello.medium.com/?source=post_page-----c29863b2f3d--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc29863b2f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-python-libraries-for-extracting-text-from-images-c29863b2f3d&source=-----c29863b2f3d---------------------bookmark_footer-----------)![](../Images/27d080f5ac1e997ff423101454b24b11.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc29863b2f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-python-libraries-for-extracting-text-from-images-c29863b2f3d&source=-----c29863b2f3d---------------------bookmark_footer-----------)![](img/27d080f5ac1e997ff423101454b24b11.png)
 
 照片由 [安娜·沙利文](https://unsplash.com/@aesullivan2010) 拍摄，发布于 [Unsplash](https://unsplash.com/photos/NFS3ekDQnlg)
 
@@ -24,7 +24,7 @@
 
 让我们开始吧！
 
-![](../Images/b9cc6d407101e37a297043f4ad5d2c71.png)
+![](img/b9cc6d407101e37a297043f4ad5d2c71.png)
 
 来自 textOCR 数据集的图像。[来源](https://textvqa.org/textocr/download/)。
 

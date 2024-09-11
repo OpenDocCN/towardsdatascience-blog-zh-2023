@@ -1,10 +1,10 @@
 # 关于 Python 数据结构的 3 个必知概念
 
-> 原文：[https://towardsdatascience.com/3-must-know-concepts-about-python-data-structures-641e6f6207fc?source=collection_archive---------9-----------------------#2023-07-13](https://towardsdatascience.com/3-must-know-concepts-about-python-data-structures-641e6f6207fc?source=collection_archive---------9-----------------------#2023-07-13)
+> 原文：[`towardsdatascience.com/3-must-know-concepts-about-python-data-structures-641e6f6207fc?source=collection_archive---------9-----------------------#2023-07-13`](https://towardsdatascience.com/3-must-know-concepts-about-python-data-structures-641e6f6207fc?source=collection_archive---------9-----------------------#2023-07-13)
 
 ## 学习这些概念以编写高效且稳健的程序
 
-[](https://sonery.medium.com/?source=post_page-----641e6f6207fc--------------------------------)[![Soner Yıldırım](../Images/c589572e9d1ee176cd4f5a0008173f1b.png)](https://sonery.medium.com/?source=post_page-----641e6f6207fc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----641e6f6207fc--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----641e6f6207fc--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----641e6f6207fc--------------------------------)
+[](https://sonery.medium.com/?source=post_page-----641e6f6207fc--------------------------------)![Soner Yıldırım](https://sonery.medium.com/?source=post_page-----641e6f6207fc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----641e6f6207fc--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----641e6f6207fc--------------------------------) [Soner Yıldırım](https://sonery.medium.com/?source=post_page-----641e6f6207fc--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F641e6f6207fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-must-know-concepts-about-python-data-structures-641e6f6207fc&source=-----641e6f6207fc---------------------bookmark_footer-----------)![](../Images/9f815b14a6c3013897e9d87d037c87d3.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F641e6f6207fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F3-must-know-concepts-about-python-data-structures-641e6f6207fc&source=-----641e6f6207fc---------------------bookmark_footer-----------)![](img/9f815b14a6c3013897e9d87d037c87d3.png)
 
 图片来源于 [Ricardo Gomez Angel](https://unsplash.com/@rgaleriacom?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/ZUwXnS7K7Ok?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -41,7 +41,7 @@ print(difference)
 ['Max']
 ```
 
-我们将学习关于 Python 四种内置数据结构的三个必知概念：[字典](/12-examples-to-master-python-dictionaries-5a8bcd688c6d)，[集合](/12-examples-to-master-python-sets-71802ea56de3)，[列表](/11-must-know-operations-to-master-python-lists-f03c71b6bbb6)，[元组](/10-examples-to-master-python-tuples-6c606ed42b96)。
+我们将学习关于 Python 四种内置数据结构的三个必知概念：字典，集合，列表，元组。
 
 # 1\. 可变
 

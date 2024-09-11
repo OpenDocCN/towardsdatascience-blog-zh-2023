@@ -1,38 +1,38 @@
 # 我在担任数据科学总监的第一年学到的东西
 
-> 原文：[https://towardsdatascience.com/what-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c?source=collection_archive---------1-----------------------#2023-05-01](https://towardsdatascience.com/what-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c?source=collection_archive---------1-----------------------#2023-05-01)
+> 原文：[`towardsdatascience.com/what-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c?source=collection_archive---------1-----------------------#2023-05-01`](https://towardsdatascience.com/what-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c?source=collection_archive---------1-----------------------#2023-05-01)
 
 ## 关于管理数据科学团队的持续学习和不断进步
 
-[](https://medium.com/@cj2001?source=post_page-----76b79f26b09c--------------------------------)[![CJ Sullivan](../Images/65c9d4cdd2987416d223039e4abcc22b.png)](https://medium.com/@cj2001?source=post_page-----76b79f26b09c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76b79f26b09c--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76b79f26b09c--------------------------------) [CJ Sullivan](https://medium.com/@cj2001?source=post_page-----76b79f26b09c--------------------------------)
+[](https://medium.com/@cj2001?source=post_page-----76b79f26b09c--------------------------------)![CJ Sullivan](https://medium.com/@cj2001?source=post_page-----76b79f26b09c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76b79f26b09c--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----76b79f26b09c--------------------------------) [CJ Sullivan](https://medium.com/@cj2001?source=post_page-----76b79f26b09c--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa9bc11f7a61b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c&user=CJ+Sullivan&userId=a9bc11f7a61b&source=post_page-a9bc11f7a61b----76b79f26b09c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76b79f26b09c--------------------------------) · 14 分钟阅读 · 2023年5月1日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76b79f26b09c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c&user=CJ+Sullivan&userId=a9bc11f7a61b&source=-----76b79f26b09c---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa9bc11f7a61b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c&user=CJ+Sullivan&userId=a9bc11f7a61b&source=post_page-a9bc11f7a61b----76b79f26b09c---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76b79f26b09c--------------------------------) · 14 分钟阅读 · 2023 年 5 月 1 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76b79f26b09c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c&user=CJ+Sullivan&userId=a9bc11f7a61b&source=-----76b79f26b09c---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F76b79f26b09c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c&source=-----76b79f26b09c---------------------bookmark_footer-----------)![](../Images/6063d62b27de24b556a37d68c3e9e799.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F76b79f26b09c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-i-learned-in-my-first-year-as-a-director-of-data-science-76b79f26b09c&source=-----76b79f26b09c---------------------bookmark_footer-----------)![](img/6063d62b27de24b556a37d68c3e9e799.png)
 
 图片由 [Brett Jordan](https://unsplash.com/@brett_jordan?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-六个月前，我注意到关于如何管理数据科学*团队*（与数据科学*项目*相比，后者有更多的内容）的帖子并不多。为了填补这一空白，我写了我的原创文章：[“我作为数据科学总监的前六个月所学到的东西。”](https://medium.com/towards-data-science/what-i-learned-in-my-first-6-months-as-a-director-of-data-science-d9b7b98a48f7) 这篇文章的反馈总体上是积极的，因此我决定，在我担任数据科学总监满1年后，根据接下来的6个月的经验更新原文。一些经验教训没有改变，尽管我观察到了一些新的情况或学习到了更多细节。其他的则随着科技界裁员情况的变化而有所改变。有关我自己以及我为什么开始写这些内容的更多背景信息，请参见我的原创文章。
+六个月前，我注意到关于如何管理数据科学*团队*（与数据科学*项目*相比，后者有更多的内容）的帖子并不多。为了填补这一空白，我写了我的原创文章：[“我作为数据科学总监的前六个月所学到的东西。”](https://medium.com/towards-data-science/what-i-learned-in-my-first-6-months-as-a-director-of-data-science-d9b7b98a48f7) 这篇文章的反馈总体上是积极的，因此我决定，在我担任数据科学总监满 1 年后，根据接下来的 6 个月的经验更新原文。一些经验教训没有改变，尽管我观察到了一些新的情况或学习到了更多细节。其他的则随着科技界裁员情况的变化而有所改变。有关我自己以及我为什么开始写这些内容的更多背景信息，请参见我的原创文章。
 
-![](../Images/d5eda180540c9dadecae5b1a174584ca.png)
+![](img/d5eda180540c9dadecae5b1a174584ca.png)
 
 照片由[若昂·费拉奥](https://unsplash.com/@joaoscferrao?utm_source=medium&utm_medium=referral)拍摄，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 # 招聘仍然是我最大的挑战
 
-当我在2022年11月写下原文时，科技裁员刚刚开始加速。我开始对招聘市场的变化感到非常乐观。我的管理层也开始对数据科学家的薪资预期和报价的变化感到乐观。
+当我在 2022 年 11 月写下原文时，科技裁员刚刚开始加速。我开始对招聘市场的变化感到非常乐观。我的管理层也开始对数据科学家的薪资预期和报价的变化感到乐观。
 
 简而言之，这种做法并没有取得预期效果。
 
-我加入了几个旨在帮助被裁员的科技人员寻找新工作的在线论坛。然而，我很快注意到数据科学家和机器学习工程师并没有很多。我还发现我在这些公司的朋友们并没有被裁员。我的（轶事性的）结论是，数据科学家在科技界，包括FAANG公司中，仍然有相当程度的工作保障。我发现的那些被裁员的人员很快被其他科技公司录用。因此，在这方面，尽管科技界发生了变化，我的招聘情况在过去6个月里并没有改变。
+我加入了几个旨在帮助被裁员的科技人员寻找新工作的在线论坛。然而，我很快注意到数据科学家和机器学习工程师并没有很多。我还发现我在这些公司的朋友们并没有被裁员。我的（轶事性的）结论是，数据科学家在科技界，包括 FAANG 公司中，仍然有相当程度的工作保障。我发现的那些被裁员的人员很快被其他科技公司录用。因此，在这方面，尽管科技界发生了变化，我的招聘情况在过去 6 个月里并没有改变。
 
-话虽如此，我在招聘数据科学家方面又获得了6个月的经验和观察。我认为其中一些经验是值得分享的。
+话虽如此，我在招聘数据科学家方面又获得了 6 个月的经验和观察。我认为其中一些经验是值得分享的。
 
-![](../Images/9af6e445f1701f7e4125688b5d490e42.png)
+![](img/9af6e445f1701f7e4125688b5d490e42.png)
 
 照片由[阿诺德·弗朗西斯卡](https://unsplash.com/@clark_fransa?utm_source=medium&utm_medium=referral)拍摄，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -40,17 +40,17 @@
 
 这是软件行业内一个长期争论的问题。我们招聘的人是为了编写代码，那么我们难道不想看看他们的代码吗？我们是否希望给他们布置类似于我们公司日常工作中的任务？我们是否希望看到他们实时编程？
 
-这是我在当前角色中处理过的事情。我确实重视观察人们编码的方式。我会查看代码及其整体组织结构。候选人是否使用了精心设计的类？函数是否清晰，并包括文档字符串、类型提示和其他有用的调试工具？是否实施了某种测试？整体文档是什么样的？他们是否只是从scikit-learn文档中复制粘贴，还是考虑了超参数并超越了文档的示例问题？
+这是我在当前角色中处理过的事情。我确实重视观察人们编码的方式。我会查看代码及其整体组织结构。候选人是否使用了精心设计的类？函数是否清晰，并包括文档字符串、类型提示和其他有用的调试工具？是否实施了某种测试？整体文档是什么样的？他们是否只是从 scikit-learn 文档中复制粘贴，还是考虑了超参数并超越了文档的示例问题？
 
-是的，这绝对是我可以在家庭编码挑战或实时编码练习中查看的内容。然而，这些是否公平地评估了一个人的能力？作为IC，我经历过这两者，各有利弊。这些在各种场合中都被讨论过，但我将简要总结一下。
+是的，这绝对是我可以在家庭编码挑战或实时编码练习中查看的内容。然而，这些是否公平地评估了一个人的能力？作为 IC，我经历过这两者，各有利弊。这些在各种场合中都被讨论过，但我将简要总结一下。
 
-家庭编码挑战或作业假设候选人有时间去完成它们。它没有考虑到他们可能还在9到5的“日常工作”中，可能还有家庭或其他义务，这些义务不允许他们花费足够的时间来解决挑战。所以你可能会对那些在闲暇时间有育儿职责的在职父母产生偏见。
+家庭编码挑战或作业假设候选人有时间去完成它们。它没有考虑到他们可能还在 9 到 5 的“日常工作”中，可能还有家庭或其他义务，这些义务不允许他们花费足够的时间来解决挑战。所以你可能会对那些在闲暇时间有育儿职责的在职父母产生偏见。
 
 当然，你可以进行实时编码会话，例如配对编程或令人畏惧的“我们将观看你编码”或白板练习。毕竟，大多数人，包括那些在另一份工作中接受面试的人，通常会抽出一小时进行面试。但是，那些在公司提供的电脑上被监控且没有其他电脑的人怎么办？他们可能不希望老板看到他们在公司资源上做编码挑战。此外，许多人在这样的高压环境下不会发挥最佳水平。而且，实际上，他们是否会在日常工作中处于这样的环境？（旁注：如果你的团队通常在这种高压情况下运作，你也许应该检查一下你为团队创造的文化。）
 
 到头来，我们团队里不会做这些。我们仍然进行技术面试，但这些更多是讨论，而不是编码。
 
-![](../Images/08f7776a468fd1ee852ca39425ed68e9.png)
+![](img/08f7776a468fd1ee852ca39425ed68e9.png)
 
 图片由[Markus Winkler](https://unsplash.com/@markuswinkler?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -60,7 +60,7 @@
 
 再次强调，当你是一个工作中的父母，拥有有限的空闲时间，或者在工作以外没有计算机时，这种系统很难组建。这个系统并不完美。然而，以这种方式查看候选人的代码有一个（尽管是微小的）好处，就是候选人没有时间压力去整理代码。（尽管保持最新的包是个好主意，因为你永远不知道我什么时候会尝试运行你的代码！）
 
-![](../Images/b096548ce478de2f8bb102938fd3fd9e.png)
+![](img/b096548ce478de2f8bb102938fd3fd9e.png)
 
 [Tim Mossholder](https://unsplash.com/@timmossholder?utm_source=medium&utm_medium=referral) 拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -80,7 +80,7 @@
 
 作为招聘经理，鉴于以上情况，我只能得出结论，候选人没有阅读职位广告。这对候选人和招聘经理来说都很不幸。
 
-![](../Images/df6bf18f546c3fdb043b8a69a0d6a718.png)
+![](img/df6bf18f546c3fdb043b8a69a0d6a718.png)
 
 图片由 [Farzad](https://unsplash.com/@euwars?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -96,7 +96,7 @@
 
 从许多方面来看，这实际上非常有趣！如果你在一个通才角色中工作，你必须不断学习新事物。例如，我不期望我团队中的每个人都完全理解如何为我们的模型创建生产流水线。但每个人都在学习。我喜欢学习新事物。我认为这是数据科学家的一个要求。
 
-![](../Images/0ee1d24498bbcc8e36a0921054f4499a.png)
+![](img/0ee1d24498bbcc8e36a0921054f4499a.png)
 
 图片由 Maklay62 提供，CC0，来自 Wikimedia Commons
 
@@ -108,7 +108,7 @@
 
 虽然这适用于我们的计算，但也适用于薪资。我之前提到过，科技行业的薪资通常高于非科技行业。看起来我应该能直接向管理层申请更多的薪资。不幸的是，企业的运作并非如此。我其中一个工作就是为我的团队争取尽可能好的薪资。团队中的另一个工作是保持公司内部薪资的公平一致，以及在更大的预算框架内。有时（总是？）这两者会发生冲突。考虑到数据科学家通常是公司中薪资最高的个体贡献者，去高级管理层争取更多薪资对我来说是个困难的挑战。这就是现实情况。
 
-![](../Images/47c46b227eb3a972c0a2a863a1fb7125.png)
+![](img/47c46b227eb3a972c0a2a863a1fb7125.png)
 
 照片由[Jason Goodman](https://unsplash.com/ko/@jasongoodman_youxventures?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，来自[Unsplash](https://unsplash.com/photos/vbxyFxlgpjM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -116,11 +116,11 @@
 
 这是非技术公司面临的最大挑战之一。我的团队必须为业务生成解决方案。这些解决方案的质量如何衡量？一种方式是投资回报率（ROI）。企业的存在是为了赚钱。这是显而易见的。每个人都必须为这个使命做出贡献。那些不贡献的模型是不应该被开发的模型。
 
-但是谁是这些模型的最终使用者？在我这种情况下，通常是营销团队。我愿意承认我不是营销人员。（尽管在我上面关于持续学习的声明之后，我正在回学校读MBA，以了解营销的工作原理。）营销人员在一个不是数据科学的领域中非常擅长技术。因此，在我当前的角色中，学习如何与他们沟通非常重要。
+但是谁是这些模型的最终使用者？在我这种情况下，通常是营销团队。我愿意承认我不是营销人员。（尽管在我上面关于持续学习的声明之后，我正在回学校读 MBA，以了解营销的工作原理。）营销人员在一个不是数据科学的领域中非常擅长技术。因此，在我当前的角色中，学习如何与他们沟通非常重要。
 
 那可能显而易见，但它真正意味着什么呢？首先，这意味着我不能简单地扔一堆数学和图表过去，尤其是没有解释它们的含义。在我的职业生涯中，我参加过许多数据科学会议，有些事情我在那里说的话不需要思考就能解释清楚。其中一个很好的例子是用于评估模型的各种性能指标。在营销角色中的人通常能理解"准确率"这样的术语。但一提到"精确率/召回率"、"F1 分数"或其他我们认为标准的指标，他们就会一脸茫然地看着我。老实说，这很正常，我们不应该期待他们去拿个统计学学位来理解。我们可能认为他们应该关心，但归根结底，他们希望我们能提供一个好模型。
 
-![](../Images/29e87d09f68f9dffcd0c081b799d8922.png)
+![](img/29e87d09f68f9dffcd0c081b799d8922.png)
 
 照片由[Cytonn Photography](https://unsplash.com/@cytonn_photography?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，来自[Unsplash](https://unsplash.com/photos/n95VMLxqM2I?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

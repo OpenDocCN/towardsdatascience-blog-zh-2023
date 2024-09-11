@@ -1,22 +1,22 @@
 # 在 Python 中预测间歇性时间序列
 
-> 原文：[https://towardsdatascience.com/forecasting-intermittent-time-series-in-python-9fd028a0c9ee?source=collection_archive---------2-----------------------#2023-08-07](https://towardsdatascience.com/forecasting-intermittent-time-series-in-python-9fd028a0c9ee?source=collection_archive---------2-----------------------#2023-08-07)
+> 原文：[`towardsdatascience.com/forecasting-intermittent-time-series-in-python-9fd028a0c9ee?source=collection_archive---------2-----------------------#2023-08-07`](https://towardsdatascience.com/forecasting-intermittent-time-series-in-python-9fd028a0c9ee?source=collection_archive---------2-----------------------#2023-08-07)
 
 ## 完整的 Python 中间歇性时间序列预测指南，包括一个综合项目
 
-[](https://medium.com/@marcopeixeiro?source=post_page-----9fd028a0c9ee--------------------------------)[![Marco Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----9fd028a0c9ee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9fd028a0c9ee--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9fd028a0c9ee--------------------------------) [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----9fd028a0c9ee--------------------------------)
+[](https://medium.com/@marcopeixeiro?source=post_page-----9fd028a0c9ee--------------------------------)![Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----9fd028a0c9ee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9fd028a0c9ee--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9fd028a0c9ee--------------------------------) [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----9fd028a0c9ee--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F741c1c8fcfbd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecasting-intermittent-time-series-in-python-9fd028a0c9ee&user=Marco+Peixeiro&userId=741c1c8fcfbd&source=post_page-741c1c8fcfbd----9fd028a0c9ee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9fd028a0c9ee--------------------------------) · 15分钟阅读 · 2023年8月7日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F741c1c8fcfbd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecasting-intermittent-time-series-in-python-9fd028a0c9ee&user=Marco+Peixeiro&userId=741c1c8fcfbd&source=post_page-741c1c8fcfbd----9fd028a0c9ee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9fd028a0c9ee--------------------------------) · 15 分钟阅读 · 2023 年 8 月 7 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9fd028a0c9ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecasting-intermittent-time-series-in-python-9fd028a0c9ee&source=-----9fd028a0c9ee---------------------bookmark_footer-----------)![](../Images/b059b7a1862602f8507d5feeee2ed7b8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9fd028a0c9ee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fforecasting-intermittent-time-series-in-python-9fd028a0c9ee&source=-----9fd028a0c9ee---------------------bookmark_footer-----------)![](img/b059b7a1862602f8507d5feeee2ed7b8.png)
 
 照片由 [Wexor Tmg](https://unsplash.com/@wexor?utm_source=medium&utm_medium=referral) 拍摄，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-间歇性时间序列，或稀疏时间序列，是一种特殊情况，其中非零值在时间上偶尔出现，而其余的值为0。
+间歇性时间序列，或稀疏时间序列，是一种特殊情况，其中非零值在时间上偶尔出现，而其余的值为 0。
 
 一个常见的稀疏时间序列示例是降雨量。可能会有连续很多天没有降雨，而下雨时，降水量会有所不同。
 

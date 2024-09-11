@@ -1,10 +1,10 @@
 # 破解锯齿形 COVID 图表的谜团
 
-> 原文：[https://towardsdatascience.com/solve-the-mystery-of-the-serrated-covid-chart-b0b517b224ef?source=collection_archive---------7-----------------------#2023-09-12](https://towardsdatascience.com/solve-the-mystery-of-the-serrated-covid-chart-b0b517b224ef?source=collection_archive---------7-----------------------#2023-09-12)
+> 原文：[`towardsdatascience.com/solve-the-mystery-of-the-serrated-covid-chart-b0b517b224ef?source=collection_archive---------7-----------------------#2023-09-12`](https://towardsdatascience.com/solve-the-mystery-of-the-serrated-covid-chart-b0b517b224ef?source=collection_archive---------7-----------------------#2023-09-12)
 
 ## 使用 pandas 将数据下采样到适当的分辨率
 
-[](https://medium.com/@lee_vaughan?source=post_page-----b0b517b224ef--------------------------------)[![Lee Vaughan](../Images/9f6b90bb76102f438ab0b9a4a62ffa3f.png)](https://medium.com/@lee_vaughan?source=post_page-----b0b517b224ef--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0b517b224ef--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b0b517b224ef--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----b0b517b224ef--------------------------------)
+[](https://medium.com/@lee_vaughan?source=post_page-----b0b517b224ef--------------------------------)![Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----b0b517b224ef--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0b517b224ef--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0b517b224ef--------------------------------) [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----b0b517b224ef--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0b517b224ef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolve-the-mystery-of-the-serrated-covid-chart-b0b517b224ef&source=-----b0b517b224ef---------------------bookmark_footer-----------)![](../Images/1640a51c93747c35858a5ab009a0dbde.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb0b517b224ef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolve-the-mystery-of-the-serrated-covid-chart-b0b517b224ef&source=-----b0b517b224ef---------------------bookmark_footer-----------)![](img/1640a51c93747c35858a5ab009a0dbde.png)
 
 DreamShaper_v7_A_computer_monitor_displaying_a_chart_with_a_jagged_blue_line (by author & Leonardo AI)
 
@@ -22,7 +22,7 @@ DreamShaper_v7_A_computer_monitor_displaying_a_chart_with_a_jagged_blue_line (by
 
 在这个*快速成功的数据科学*项目中，我们将查看一个当时出现在我 Facebook 动态墙上的特定图表。该图表记录了美国 COVID-19 疫情第一年的死亡率，并显示出明显的锯齿状或“锯齿状”的特征。
 
-![](../Images/6f7d201b6f793aed44e26c2b38b1f820.png)
+![](img/6f7d201b6f793aed44e26c2b38b1f820.png)
 
 美国 COVID-19 疫情第一年的死亡率（作者来自《大西洋》的“COVID Tracking Project” [3]）
 

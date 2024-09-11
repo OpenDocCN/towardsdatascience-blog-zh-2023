@@ -1,22 +1,22 @@
 # 平衡行动：解决推荐系统中的受欢迎度偏见
 
-> 原文：[https://towardsdatascience.com/balancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4?source=collection_archive---------3-----------------------#2023-08-18](https://towardsdatascience.com/balancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4?source=collection_archive---------3-----------------------#2023-08-18)
+> 原文：[`towardsdatascience.com/balancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4?source=collection_archive---------3-----------------------#2023-08-18`](https://towardsdatascience.com/balancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4?source=collection_archive---------3-----------------------#2023-08-18)
 
-[](https://medium.com/@pratikaher?source=post_page-----db5448c6a2a4--------------------------------)[![Pratik Aher](../Images/5648c040ff967717c94657ebfff11e2b.png)](https://medium.com/@pratikaher?source=post_page-----db5448c6a2a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db5448c6a2a4--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db5448c6a2a4--------------------------------) [Pratik Aher](https://medium.com/@pratikaher?source=post_page-----db5448c6a2a4--------------------------------)
+[](https://medium.com/@pratikaher?source=post_page-----db5448c6a2a4--------------------------------)![Pratik Aher](https://medium.com/@pratikaher?source=post_page-----db5448c6a2a4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db5448c6a2a4--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5448c6a2a4--------------------------------) [Pratik Aher](https://medium.com/@pratikaher?source=post_page-----db5448c6a2a4--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc2e5b1d7be67&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbalancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4&user=Pratik+Aher&userId=c2e5b1d7be67&source=post_page-c2e5b1d7be67----db5448c6a2a4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5448c6a2a4--------------------------------) · 7 分钟阅读 · 2023年8月18日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb5448c6a2a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbalancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4&user=Pratik+Aher&userId=c2e5b1d7be67&source=-----db5448c6a2a4---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc2e5b1d7be67&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbalancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4&user=Pratik+Aher&userId=c2e5b1d7be67&source=post_page-c2e5b1d7be67----db5448c6a2a4---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db5448c6a2a4--------------------------------) · 7 分钟阅读 · 2023 年 8 月 18 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb5448c6a2a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbalancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4&user=Pratik+Aher&userId=c2e5b1d7be67&source=-----db5448c6a2a4---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb5448c6a2a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbalancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4&source=-----db5448c6a2a4---------------------bookmark_footer-----------)![](../Images/e24e03cb4bd4c3ed79aa9a0afd068cd0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb5448c6a2a4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbalancing-act-addressing-popularity-bias-in-recommendation-systems-db5448c6a2a4&source=-----db5448c6a2a4---------------------bookmark_footer-----------)![](img/e24e03cb4bd4c3ed79aa9a0afd068cd0.png)
 
 图片由 [Melanie Pongratz](https://unsplash.com/@melanie_sophie?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 一天早上，你决定犒劳自己，买一双新鞋。你打开了最喜欢的运动鞋网站，浏览了系统推荐的商品。特别有一双鞋引起了你的注意——你喜欢它的风格和设计。你毫不犹豫地购买了它们，迫不及待地想穿上你的新鞋。
 
-当鞋子到达时，你迫不及待地想展示它们。你决定在即将到来的音乐会上穿着它们。不过，当你到达场地时，你注意到至少有10个人穿着完全一样的鞋子！这概率有多大？
+当鞋子到达时，你迫不及待地想展示它们。你决定在即将到来的音乐会上穿着它们。不过，当你到达场地时，你注意到至少有 10 个人穿着完全一样的鞋子！这概率有多大？
 
 突然间你感到失望。尽管你最初很喜欢这些鞋子，但看到这么多人穿着同样的鞋子让你觉得你的购买并不那么特别了。你本以为会让你与众不同的鞋子，最终却让你融入了人群。
 
@@ -40,7 +40,7 @@
 
 平均推荐受欢迎度（ARP）是一个用来评估推荐列表中物品受欢迎程度的指标。它根据物品在训练集中收到的评分数量来计算物品的平均受欢迎度。从数学上讲，ARP 的计算方法如下：
 
-![](../Images/5b9e9cc7ff8d8e84706afa6016492f4e.png)
+![](img/5b9e9cc7ff8d8e84706afa6016492f4e.png)
 
 其中：
 
@@ -52,7 +52,7 @@
 
 简单来说，ARP 通过将推荐列表中所有项目的受欢迎程度（评分数量）加总，然后在测试集中的所有用户之间取平均值来衡量项目的平均受欢迎程度。
 
-![](../Images/afe59f7e167d45d3ba7fedb7d6ae6051.png)
+![](img/afe59f7e167d45d3ba7fedb7d6ae6051.png)
 
 示例：假设我们有一个包含 100 个用户的测试集 |U_t| = 100。对于每个用户，我们提供一个 10 个项目的推荐列表 |L_u| = 10。如果项目 A 在训练集中被评分 500 次（ϕ(A) = 500），而项目 B 被评分 300 次（ϕ(B) = 300），这些推荐的 ARP 可以计算为：
 
@@ -62,7 +62,7 @@
 
 长尾项目的平均百分比（APLT）指标，计算推荐列表中长尾项目的平均比例。它的表达式为：
 
-![](../Images/a6ecb9e2ba22abfd3920829db88fa842.png)
+![](img/a6ecb9e2ba22abfd3920829db88fa842.png)
 
 这里：
 
@@ -102,11 +102,11 @@ ACLT = Σ Σ 1(i ∈ Γ) / |Ut| / |Lu|
 
 简单来说，ACLT 计算了每个用户推荐中长尾项目的平均比例。
 
-示例：假设有100个用户（|Ut| = 100）和500个长尾项目（|Γ| = 500）。在所有用户的推荐列表中，有150个长尾项目被推荐（Σ Σ 1(i ∈ Γ) = 150）。所有推荐列表中的项目总数为3000（Σ |Lu| = 3000）。使用公式，ACLT为：
+示例：假设有 100 个用户（|Ut| = 100）和 500 个长尾项目（|Γ| = 500）。在所有用户的推荐列表中，有 150 个长尾项目被推荐（Σ Σ 1(i ∈ Γ) = 150）。所有推荐列表中的项目总数为 3000（Σ |Lu| = 3000）。使用公式，ACLT 为：
 
 ACLT = 150 / 100 / 3000 = 0.0005
 
-因此，在这种情况下，ACLT为0.0005或0.05%，这表明平均而言，0.05%的长尾项目被包含在总体推荐中。这个指标有助于评估推荐系统中小众项目的覆盖率。
+因此，在这种情况下，ACLT 为 0.0005 或 0.05%，这表明平均而言，0.05%的长尾项目被包含在总体推荐中。这个指标有助于评估推荐系统中小众项目的覆盖率。
 
 ## 如何减少推荐系统中的流行度偏差
 
@@ -118,39 +118,39 @@ ACLT = 150 / 100 / 3000 = 0.0005
 
 +   在预测阶段，你将其替换为一个常量值。
 
-![](../Images/0f733eace60b4349fe82def52c50931b.png)
+![](img/0f733eace60b4349fe82def52c50931b.png)
 
 作者提供的图片
 
-## xQUAD框架
+## xQUAD 框架
 
-解决流行度偏差的一个有趣方法是使用称为xQUAD框架的东西。它结合当前模型的推荐列表（R）和概率/可能性得分，构建一个新列表（S），这个新列表要多样化得多，其中|S| < |R|。这个新列表的多样性由超参数λ控制。
+解决流行度偏差的一个有趣方法是使用称为 xQUAD 框架的东西。它结合当前模型的推荐列表（R）和概率/可能性得分，构建一个新列表（S），这个新列表要多样化得多，其中|S| < |R|。这个新列表的多样性由超参数λ控制。
 
 我尝试总结框架的逻辑：
 
-![](../Images/f558fbdac473f2e7e97fc8b3be1bde60.png)
+![](img/f558fbdac473f2e7e97fc8b3be1bde60.png)
 
 作者提供的图片
 
-我们计算集合R中所有文档的得分。我们取得分最高的文档，将其添加到集合S中，同时将其从集合R中移除。
+我们计算集合 R 中所有文档的得分。我们取得分最高的文档，将其添加到集合 S 中，同时将其从集合 R 中移除。
 
-![](../Images/0d176c4039609b8a638cf987cd188765.png)
-
-作者提供的图片
-
-![](../Images/fd8c15c849f96f23af3e0c9b0573acc9.png)
+![](img/0d176c4039609b8a638cf987cd188765.png)
 
 作者提供的图片
 
-要选择下一个添加到‘S’的项目，我们计算R\S（R去掉S）中每个项目的得分。对于每个选择添加到“S”的项目，P(v/u)会上升，因此一个不受欢迎项目再次被选中的机会也会增加。
+![](img/fd8c15c849f96f23af3e0c9b0573acc9.png)
+
+作者提供的图片
+
+要选择下一个添加到‘S’的项目，我们计算 R\S（R 去掉 S）中每个项目的得分。对于每个选择添加到“S”的项目，P(v/u)会上升，因此一个不受欢迎项目再次被选中的机会也会增加。
 
 如果你喜欢这个内容，可以在[linkedin](https://www.linkedin.com/in/pratikdaher/)找到我 :).
 
 ## 参考文献
 
-[https://arxiv.org/pdf/1901.07555.pdf](https://arxiv.org/pdf/1901.07555.pdf)
+[`arxiv.org/pdf/1901.07555.pdf`](https://arxiv.org/pdf/1901.07555.pdf)
 
-[https://www.ra.ethz.ch/cdstore/www2010/www/p881.pdf](https://www.ra.ethz.ch/cdstore/www2010/www/p881.pdf)
+[`www.ra.ethz.ch/cdstore/www2010/www/p881.pdf`](https://www.ra.ethz.ch/cdstore/www2010/www/p881.pdf)
 
 [](https://www.analyticsvidhya.com/blog/2023/03/how-to-overcome-position-bias-in-recommendation-and-search/?source=post_page-----db5448c6a2a4--------------------------------) [## 如何克服推荐和搜索中的位置偏差？
 

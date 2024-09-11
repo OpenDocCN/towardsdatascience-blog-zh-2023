@@ -1,18 +1,18 @@
 # Delta Lake: 删除向量
 
-> 原文：[https://towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63?source=collection_archive---------3-----------------------#2023-05-25](https://towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63?source=collection_archive---------3-----------------------#2023-05-25)
+> 原文：[`towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63?source=collection_archive---------3-----------------------#2023-05-25`](https://towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63?source=collection_archive---------3-----------------------#2023-05-25)
 
-## 删除向量如何与DML命令相关联，并且它们如何提高写入性能？
+## 删除向量如何与 DML 命令相关联，并且它们如何提高写入性能？
 
-[](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)[![Vitor Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------) [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)
+[](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)![Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------) [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b05068b69d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-deletion-vectors-65bc9dc90b63&user=Vitor+Teixeira&userId=6b05068b69d8&source=post_page-6b05068b69d8----65bc9dc90b63---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------) ·9分钟阅读·2023年5月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65bc9dc90b63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-deletion-vectors-65bc9dc90b63&user=Vitor+Teixeira&userId=6b05068b69d8&source=-----65bc9dc90b63---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b05068b69d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-deletion-vectors-65bc9dc90b63&user=Vitor+Teixeira&userId=6b05068b69d8&source=post_page-6b05068b69d8----65bc9dc90b63---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------) ·9 分钟阅读·2023 年 5 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65bc9dc90b63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-deletion-vectors-65bc9dc90b63&user=Vitor+Teixeira&userId=6b05068b69d8&source=-----65bc9dc90b63---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65bc9dc90b63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-deletion-vectors-65bc9dc90b63&source=-----65bc9dc90b63---------------------bookmark_footer-----------)![](../Images/a0f093c1a52476e936a00d6ef3306189.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65bc9dc90b63&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdelta-lake-deletion-vectors-65bc9dc90b63&source=-----65bc9dc90b63---------------------bookmark_footer-----------)![](img/a0f093c1a52476e936a00d6ef3306189.png)
 
 由[Sam Pak](https://unsplash.com/@melocokr?utm_source=medium&utm_medium=referral)拍摄，照片来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

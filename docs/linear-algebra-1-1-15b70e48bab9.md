@@ -1,18 +1,18 @@
 # 线性代数 1：线性方程和系统
 
-> 原文：[https://towardsdatascience.com/linear-algebra-1-1-15b70e48bab9?source=collection_archive---------2-----------------------#2023-09-16](https://towardsdatascience.com/linear-algebra-1-1-15b70e48bab9?source=collection_archive---------2-----------------------#2023-09-16)
+> 原文：[`towardsdatascience.com/linear-algebra-1-1-15b70e48bab9?source=collection_archive---------2-----------------------#2023-09-16`](https://towardsdatascience.com/linear-algebra-1-1-15b70e48bab9?source=collection_archive---------2-----------------------#2023-09-16)
 
-![](../Images/7b2885d801924db43709dccf520f1862.png)
+![](img/7b2885d801924db43709dccf520f1862.png)
 
 图片来自 [Städel Museum](https://sammlung.staedelmuseum.de/en/work/a-scholar-at-his-desk)
 
 ## 线性方程组
 
-[](https://medium.com/@t9nz?source=post_page-----15b70e48bab9--------------------------------)[![tenzin migmar (t9nz)](../Images/d9a3e1fe10afba1f1dc0fc7e4d241d73.png)](https://medium.com/@t9nz?source=post_page-----15b70e48bab9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15b70e48bab9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15b70e48bab9--------------------------------) [tenzin migmar (t9nz)](https://medium.com/@t9nz?source=post_page-----15b70e48bab9--------------------------------)
+[](https://medium.com/@t9nz?source=post_page-----15b70e48bab9--------------------------------)![tenzin migmar (t9nz)](https://medium.com/@t9nz?source=post_page-----15b70e48bab9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15b70e48bab9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----15b70e48bab9--------------------------------) [tenzin migmar (t9nz)](https://medium.com/@t9nz?source=post_page-----15b70e48bab9--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd6ff685c466&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-1-1-15b70e48bab9&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=post_page-d6ff685c466----15b70e48bab9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15b70e48bab9--------------------------------) ·9分钟阅读·2023年9月16日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15b70e48bab9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-1-1-15b70e48bab9&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=-----15b70e48bab9---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd6ff685c466&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-1-1-15b70e48bab9&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=post_page-d6ff685c466----15b70e48bab9---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15b70e48bab9--------------------------------) ·9 分钟阅读·2023 年 9 月 16 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F15b70e48bab9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flinear-algebra-1-1-15b70e48bab9&user=tenzin+migmar+%28t9nz%29&userId=d6ff685c466&source=-----15b70e48bab9---------------------clap_footer-----------)
 
 --
 
@@ -38,7 +38,7 @@
 
 考虑线性方程 2*x* + 5*y* = 10。下图展示了线性方程的图形表示，你会注意到它是一条直线。当回忆直线方程 *y* = *mx* + *b* 时，这一点会更加明显，其中 *m* = 斜率，*b* = *y* 截距。该线性方程可以如下所示重新排列成这种形式。
 
-![](../Images/8cb7a3eec69367d830d13216e30b2c8a.png)
+![](img/8cb7a3eec69367d830d13216e30b2c8a.png)
 
 可以得出以下结论：所有落在直线上的 (*x, y*) 点都是方程 2*x* + 5*y* = 10 的解。例如，假设我们选择 *x* 轴截距点 (5, 0)，并将 *x* 和 *y* 值代入方程中的相应位置。2(5) + 5(0) = 10。任何在直线上的 (*x, y*) 点都可以代入方程中，等式将成立。我们可以将这一发现概括为一个规则：
 
@@ -82,7 +82,7 @@
 
 线性系统的解的可视化会随着变量数量的增加而变化。下图展示了三变量线性系统所有三种解的可能图示。超过三维的情况对人脑的可视化会变得困难，但规则仍然适用！无论变量有多少，所有线性系统都只有无解、唯一解或无限解。
 
-![](../Images/93347b90fc48e2676b8c012925c6870b.png)
+![](img/93347b90fc48e2676b8c012925c6870b.png)
 
 此图表改编自 [src](https://web.viu.ca/pughg/Fall2018/math111F18N01/math111F18N01systemsIntroLecture.pdf)。
 
@@ -90,7 +90,7 @@
 
 随着线性方程变得更加复杂，记号可能变得笨重。将线性系统的信息压缩成易于操作和处理的形式是很重要的，因此通常使用矩阵记号来代替一组方程。**系数矩阵**是一种排除了每个方程中的*b*系数的矩阵。**增广矩阵**包括*b*系数，因此比系数矩阵多一列。
 
-![](../Images/f58111f2b20aed5ad59ba66d338a6a7b.png)
+![](img/f58111f2b20aed5ad59ba66d338a6a7b.png)
 
 矩阵的大小，也称为**阶数**，告诉我们一个矩阵有多少行和列。一个 *m x n* 矩阵是一个有 *m* 行和 *n* 列的矩阵。行数对应于系统中有多少个线性方程，而列数则告诉我们有多少个变量。请确保行数在列数之前，因为阶数不可互换。
 
@@ -100,7 +100,7 @@
 
 以下是逐步处理方程组的过程，没有使用矩阵。基本思想是通过乘以现有方程创建新的方程，从而获得相同的方程，然后可以将其加或减去另一个方程以消除一个变量。然后重复这一过程，直到我们消除足够的未知数以便能够解出一个变量，然后再向上追溯解决其余的变量。最后，需要检查以确保解实际上满足方程组。
 
-![](../Images/399dc0274c81cdd0c010238f69103f7a.png)
+![](img/399dc0274c81cdd0c010238f69103f7a.png)
 
 ## 行操作
 
@@ -114,15 +114,15 @@
 
 让我们重新处理相同的线性系统，这次使用矩阵并应用行操作。
 
-![](../Images/01c2adeff3fbb29bcec52c1dfd215b30.png)
+![](img/01c2adeff3fbb29bcec52c1dfd215b30.png)
 
-注意，我使用了与线性方程法相同的操作和比例因子。毫不奇怪，我们最终得到了之前的相同方程式。另一个需要注意的是最终矩阵左下角的三角形形成。这种模式出现是有道理的，因为0是已消除变量的标记，每个消除的变量都使我们更接近识别可以轻松解决的方程式；这反过来又推动了整个系统的解决进展。我们将在下一章重新讨论这种现象，并提供更正式的定义。
+注意，我使用了与线性方程法相同的操作和比例因子。毫不奇怪，我们最终得到了之前的相同方程式。另一个需要注意的是最终矩阵左下角的三角形形成。这种模式出现是有道理的，因为 0 是已消除变量的标记，每个消除的变量都使我们更接近识别可以轻松解决的方程式；这反过来又推动了整个系统的解决进展。我们将在下一章重新讨论这种现象，并提供更正式的定义。
 
 ## 总结
 
 在本章中，我们学到了：
 
-+   线性方程：一个或多个变量的方程，其中方程的次数必须等于1。
++   线性方程：一个或多个变量的方程，其中方程的次数必须等于 1。
 
 +   线性方程组：一组线性方程。
 
@@ -132,16 +132,16 @@
 
 +   行操作：替换、交换和缩放操作允许我们将一个矩阵转换为一个已消除足够未知变量以解决系统的矩阵。
 
-+   解线性系统：找出a）给定线性系统是否存在解以及b）如果存在解，它们的确切值是什么的系统化方法。
++   解线性系统：找出 a）给定线性系统是否存在解以及 b）如果存在解，它们的确切值是什么的系统化方法。
 
 ## 注释
 
 *除非另有说明，所有图片由文章作者提供。
 
-*作为一个小插曲：二次方程的词源自拉丁文quadratus，是quadrare的过去分词，意为“使方形”；这也体现了它的次数！[[s](https://www.livescience.com/50411-quadratic-equations.html#:~:text=In%20mathematics%2C%20a%20quadratic%20is,the%20Latin%20word%20for%20square.)rc]
+*作为一个小插曲：二次方程的词源自拉丁文 quadratus，是 quadrare 的过去分词，意为“使方形”；这也体现了它的次数！[[s](https://www.livescience.com/50411-quadratic-equations.html#:~:text=In%20mathematics%2C%20a%20quadratic%20is,the%20Latin%20word%20for%20square.)rc]
 
 *ℝ²是所有可能有序对(x, y)在实数线上的空间，它由一个二维平面表示。ℝ²包含了整个实数集合，而实数集合是不可数无穷的，这意味着ℝ²空间也是无穷的。
 
 *行操作引用[[src]](https://math.berkeley.edu/~arash/54/notes/01_01.pdf)
 
-![](../Images/dc2500e142f20e7bec8835be696eca68.png)
+![](img/dc2500e142f20e7bec8835be696eca68.png)

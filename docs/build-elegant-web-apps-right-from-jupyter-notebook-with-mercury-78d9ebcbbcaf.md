@@ -1,28 +1,28 @@
-# 使用Mercury从Jupyter Notebook直接构建优雅的Web应用程序。
+# 使用 Mercury 从 Jupyter Notebook 直接构建优雅的 Web 应用程序。
 
-> 原文：[https://towardsdatascience.com/build-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf?source=collection_archive---------4-----------------------#2023-04-17](https://towardsdatascience.com/build-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf?source=collection_archive---------4-----------------------#2023-04-17)
+> 原文：[`towardsdatascience.com/build-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf?source=collection_archive---------4-----------------------#2023-04-17`](https://towardsdatascience.com/build-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf?source=collection_archive---------4-----------------------#2023-04-17)
 
-## 瞬间将Notebook转换为美丽的Web应用程序
+## 瞬间将 Notebook 转换为美丽的 Web 应用程序
 
-[](https://medium.com/@avi_chawla?source=post_page-----78d9ebcbbcaf--------------------------------)[![Avi Chawla](../Images/c9c3e4fc7549c3e388f8b4a5560c7cc6.png)](https://medium.com/@avi_chawla?source=post_page-----78d9ebcbbcaf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----78d9ebcbbcaf--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----78d9ebcbbcaf--------------------------------) [Avi Chawla](https://medium.com/@avi_chawla?source=post_page-----78d9ebcbbcaf--------------------------------)
+[](https://medium.com/@avi_chawla?source=post_page-----78d9ebcbbcaf--------------------------------)![Avi Chawla](https://medium.com/@avi_chawla?source=post_page-----78d9ebcbbcaf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----78d9ebcbbcaf--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----78d9ebcbbcaf--------------------------------) [Avi Chawla](https://medium.com/@avi_chawla?source=post_page-----78d9ebcbbcaf--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d33decdf4c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf&user=Avi+Chawla&userId=5d33decdf4c4&source=post_page-5d33decdf4c4----78d9ebcbbcaf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----78d9ebcbbcaf--------------------------------) · 7分钟阅读 · 2023年4月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F78d9ebcbbcaf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf&user=Avi+Chawla&userId=5d33decdf4c4&source=-----78d9ebcbbcaf---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5d33decdf4c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf&user=Avi+Chawla&userId=5d33decdf4c4&source=post_page-5d33decdf4c4----78d9ebcbbcaf---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----78d9ebcbbcaf--------------------------------) · 7 分钟阅读 · 2023 年 4 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F78d9ebcbbcaf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf&user=Avi+Chawla&userId=5d33decdf4c4&source=-----78d9ebcbbcaf---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F78d9ebcbbcaf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf&source=-----78d9ebcbbcaf---------------------bookmark_footer-----------)![](../Images/10f31c89f2d63cf8db67f6539a57cf4d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F78d9ebcbbcaf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuild-elegant-web-apps-right-from-jupyter-notebook-with-mercury-78d9ebcbbcaf&source=-----78d9ebcbbcaf---------------------bookmark_footer-----------)![](img/10f31c89f2d63cf8db67f6539a57cf4d.png)
 
 [NASA](https://unsplash.com/@nasa?utm_source=medium&utm_medium=referral)的照片，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 
 有效的沟通在所有数据驱动的项目中都至关重要。数据专业人员常常需要向包括业务领导、技术团队和其他数据科学家在内的利益相关者传达他们的发现和见解。
 
-尽管传统的数据见解沟通方法，如PowerPoint演示和静态报告被广泛偏爱，但它们通常耗时较长。
+尽管传统的数据见解沟通方法，如 PowerPoint 演示和静态报告被广泛偏爱，但它们通常耗时较长。
 
 更重要的是，这些服务要求用户离开 Jupyter Notebook 的舒适环境——这是数据科学家们大多数时间的工作场所。
 
-![](../Images/7fe1049b3a6ac3489243b9ec6c1c784b.png)
+![](img/7fe1049b3a6ac3489243b9ec6c1c784b.png)
 
 分离展示工具和 Jupyter（作者提供的图像）
 
@@ -46,7 +46,7 @@ Mercury 创建的网页应用主要由两个因素驱动：
 
 输入小部件允许用户提供输入并与应用互动。Mercury 支持的一些输入小部件如下所示：
 
-![](../Images/ca5e4d01f6024d39ba2821fd81727e95.png)
+![](img/ca5e4d01f6024d39ba2821fd81727e95.png)
 
 Mercury 的小部件（作者提供的图像）
 
@@ -58,7 +58,7 @@ Mercury 的小部件（作者提供的图像）
 
 服务器将 Jupyter Notebook 渲染为网页应用。
 
-![](../Images/54c26d90304b2d5c170905ce81507fe2.png)
+![](img/54c26d90304b2d5c170905ce81507fe2.png)
 
 使用 Mercury 部署应用（作者提供的图像）
 
@@ -119,7 +119,7 @@ app = mr.App(title="Employee Data Analysis",
 
 接下来，让我们添加一些小部件，以允许用户与以下虚拟数据进行互动：
 
-![](../Images/0ee2ba5a1110ce00671b192512668ba2.png)
+![](img/0ee2ba5a1110ce00671b192512668ba2.png)
 
 虚拟数据集（作者提供的图像）
 
@@ -149,7 +149,7 @@ app = mr.App(title="Employee Data Analysis",
 data_file = mr.File(label="Upload CSV")
 ```
 
-文件的名称可以通过`data_file`对象的`filepath`属性访问。因此，一旦文件上传成功，我们将使用Pandas读取它，如下所示：
+文件的名称可以通过`data_file`对象的`filepath`属性访问。因此，一旦文件上传成功，我们将使用 Pandas 读取它，如下所示：
 
 ```py
 ## mercury_app.ipynb
@@ -197,7 +197,7 @@ new_df = emp_df[(emp_df.Company_Name.isin(company.value)) &
                 (emp_df.Credits>=int(credits_filter.value))]
 ```
 
-接下来，使用Markdown输出小部件，我们打印过滤后的数据框的维度。
+接下来，使用 Markdown 输出小部件，我们打印过滤后的数据框的维度。
 
 ```py
 ## mercury_app.ipynb
@@ -206,7 +206,7 @@ mr.Md(f"""The DataFrame has {new_df.shape[0]} rows
           and {new_df.shape[1]} columns.""")
 ```
 
-Mercury的Markdown有一个很酷的功能，那就是您还可以使用f-strings，如上所示。
+Mercury 的 Markdown 有一个很酷的功能，那就是您还可以使用 f-strings，如上所示。
 
 最后，我们创建图表：
 
@@ -222,7 +222,7 @@ sns.countplot(x = new_df.Employment_Status, ax = ax[1]) ## count plot
 plt.show();
 ```
 
-就这样。现在我们的Mercury应用已经准备好了。
+就这样。现在我们的 Mercury 应用已经准备好了。
 
 ## #5) 运行网络应用
 
@@ -234,31 +234,31 @@ mercury run
 
 因此，我们看到了以下内容：
 
-![](../Images/869037d73b9dca979d93e787f8ac38d6.png)
+![](img/869037d73b9dca979d93e787f8ac38d6.png)
 
 首次查看网络应用（作者图片）
 
 正如预期的那样，我们有一个上传文件的小部件。让我们在这里上传虚拟数据集。
 
-![](../Images/9ac16dcec32e61143f50aa7090923bd0.png)
+![](img/9ac16dcec32e61143f50aa7090923bd0.png)
 
 上传数据集（作者图片）
 
-一旦我们上传了CSV，图表立即显示出来。
+一旦我们上传了 CSV，图表立即显示出来。
 
 现在，我们可以操控输入小部件来分析数据。
 
-![](../Images/b64a479f9a343d39f75096161870f458.png)
+![](img/b64a479f9a343d39f75096161870f458.png)
 
 数据集分析（作者图片）
 
-随着我们更新过滤器，图表和行数也会更新。这是通过Mercury服务器实现的，它在笔记本和应用之间保持持续的交互。
+随着我们更新过滤器，图表和行数也会更新。这是通过 Mercury 服务器实现的，它在笔记本和应用之间保持持续的交互。
 
 实际上，如果我们更新笔记本，变化会立即反映出来。
 
-# Mercury与Streamlit
+# Mercury 与 Streamlit
 
-此时一个相关的问题是水银相对于 Streamlit 的表现如何，Streamlit 是我在许多之前的博客中使用过的，如[这里](/building-an-all-in-one-audio-analysis-toolkit-in-python-e849a0e2129e)和[这里](/i-used-my-voice-to-interact-with-openai-gpt-3-884b69dd3b0f)。
+此时一个相关的问题是水银相对于 Streamlit 的表现如何，Streamlit 是我在许多之前的博客中使用过的，如这里和这里。
 
 Streamlit 确实已成为创建网页应用的最常见选择之一。尽管整体体验非常棒，但 Streamlit 也确实有很多限制：
 
@@ -266,7 +266,7 @@ Streamlit 确实已成为创建网页应用的最常见选择之一。尽管整�
 
 由 Streamlit 驱动的应用程序主要由 Python 脚本提供支持，而不是互动的 Python 内核。因此，在使用 Streamlit 开发应用程序时，必须重复运行脚本以查看进展。
 
-![](../Images/a04b878d3f46a2f7658d49ec34f4248b.png)
+![](img/a04b878d3f46a2f7658d49ec34f4248b.png)
 
 水银与 Streamlit — Jupyter 支持（图片来源：作者）
 
@@ -276,7 +276,7 @@ Streamlit 确实已成为创建网页应用的最常见选择之一。尽管整�
 
 使用水银创建的网页应用可以通过点击按钮轻松导出。
 
-![](../Images/ed39ff48eac564c7404d5f3919149e5c.png)
+![](img/ed39ff48eac564c7404d5f3919149e5c.png)
 
 水银与 Streamlit — 导出应用程序（图片来源：作者）
 
@@ -288,7 +288,7 @@ Streamlit 确实已成为创建网页应用的最常见选择之一。尽管整�
 
 最后，使用水银创建的网页应用可以轻松地作为[互动演示](https://runmercury.com/tutorials/presentation-python-jupyter-notebook/)运行。
 
-![](../Images/c28cdb700b60b9c92ed4031d01f16a81.png)
+![](img/c28cdb700b60b9c92ed4031d01f16a81.png)
 
 水银与 Streamlit — 演示（图片来源：作者）
 
@@ -298,7 +298,7 @@ Streamlit 确实已成为创建网页应用的最常见选择之一。尽管整�
 
 有时候，确保只有授权用户才能访问您的应用程序可能非常重要。这可能是由于存在敏感信息。
 
-![](../Images/9f4d239b72ced9e1420fa20e6ee859fb.png)
+![](img/9f4d239b72ced9e1420fa20e6ee859fb.png)
 
 水银与 Streamlit — 安全性（图片来源：作者）
 
@@ -306,7 +306,7 @@ Streamlit 确实已成为创建网页应用的最常见选择之一。尽管整�
 
 因此，当有人运行您的网页应用时，他们将被提示验证其详细信息，如下所示：
 
-![](../Images/69557cb19e337293b4e71b55cb533c1f.png)
+![](img/69557cb19e337293b4e71b55cb533c1f.png)
 
 水银认证窗口（图片来源：作者）
 

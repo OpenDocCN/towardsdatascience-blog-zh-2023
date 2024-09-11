@@ -1,16 +1,16 @@
 # 国际象棋识别问题：深入解决方案
 
-> 原文：[https://towardsdatascience.com/chess-recognition-problem-a-deep-dive-solution-e4d8a439dc37?source=collection_archive---------10-----------------------#2023-02-27](https://towardsdatascience.com/chess-recognition-problem-a-deep-dive-solution-e4d8a439dc37?source=collection_archive---------10-----------------------#2023-02-27)
+> 原文：[`towardsdatascience.com/chess-recognition-problem-a-deep-dive-solution-e4d8a439dc37?source=collection_archive---------10-----------------------#2023-02-27`](https://towardsdatascience.com/chess-recognition-problem-a-deep-dive-solution-e4d8a439dc37?source=collection_archive---------10-----------------------#2023-02-27)
 
-[](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)[![Mohammed Saifuddin](../Images/b12b54250328aefe69f8043d580d2178.png)](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------) [Mohammed Saifuddin](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)
+[](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)![Mohammed Saifuddin](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------) [Mohammed Saifuddin](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd08aa760ba07&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&user=Mohammed+Saifuddin&userId=d08aa760ba07&source=post_page-d08aa760ba07----e4d8a439dc37---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------) ·18 min read·2023年2月27日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe4d8a439dc37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&user=Mohammed+Saifuddin&userId=d08aa760ba07&source=-----e4d8a439dc37---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd08aa760ba07&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&user=Mohammed+Saifuddin&userId=d08aa760ba07&source=post_page-d08aa760ba07----e4d8a439dc37---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------) ·18 min read·2023 年 2 月 27 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe4d8a439dc37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&user=Mohammed+Saifuddin&userId=d08aa760ba07&source=-----e4d8a439dc37---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe4d8a439dc37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&source=-----e4d8a439dc37---------------------bookmark_footer-----------)![](../Images/029918096614d634d2f1a44643a51863.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe4d8a439dc37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&source=-----e4d8a439dc37---------------------bookmark_footer-----------)![](img/029918096614d634d2f1a44643a51863.png)
 
 图片由 [Randy Fath](https://unsplash.com/de/@randyfath?utm_source=medium&utm_medium=referral) 提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -18,7 +18,7 @@
 
 从物理棋盘图像中识别棋子配置的问题通常被称为 **国际象棋识别**。计算机识别棋盘上的棋子是开发能够下棋的智能系统的第一步，这样的系统可以解决国际象棋问题/难题，并进行国际象棋分析。
 
-我的项目目标是识别棋子及其在棋盘上的位置，这可以用像**Forsyth–Edwards记谱法 (FEN)**这样的结构化格式描述，兼容各种国际象棋引擎。我还添加了一层额外的解释，输入生成的FEN后，输出是否存在潜在攻击（将军），并检测非法的棋盘位置。
+我的项目目标是识别棋子及其在棋盘上的位置，这可以用像**Forsyth–Edwards 记谱法 (FEN)**这样的结构化格式描述，兼容各种国际象棋引擎。我还添加了一层额外的解释，输入生成的 FEN 后，输出是否存在潜在攻击（将军），并检测非法的棋盘位置。
 
 # 2\. 数据集概述
 
@@ -38,17 +38,17 @@
 
 1.  *2* 个国王保证在棋盘上。
 
-标签以FEN格式的文件名存在，但用连字符代替了斜杠。
+标签以 FEN 格式的文件名存在，但用连字符代替了斜杠。
 
 数据集属于公共领域。请检查数据集来源的引用[1]。
 
-## 2.1\. **Forsyth–Edwards记谱法 (FEN)**
+## 2.1\. **Forsyth–Edwards 记谱法 (FEN)**
 
-Forsyth–Edwards记谱法 (FEN) 是描述国际象棋游戏中某一特定棋盘位置的标准记谱法。FEN的目的是提供所有必要的信息，以便从特定位置重新开始游戏。
+Forsyth–Edwards 记谱法 (FEN) 是描述国际象棋游戏中某一特定棋盘位置的标准记谱法。FEN 的目的是提供所有必要的信息，以便从特定位置重新开始游戏。
 
-FEN记录定义了一个特定的游戏位置，所有信息在一行文本中，并使用ASCII字符集[2]。
+FEN 记录定义了一个特定的游戏位置，所有信息在一行文本中，并使用 ASCII 字符集[2]。
 
-FEN表示*6*个字段：
+FEN 表示*6*个字段：
 
 +   棋子摆放数据
 
@@ -62,7 +62,7 @@ FEN表示*6*个字段：
 
 +   全步钟
 
-> **注意**：由于数据集包含静态图像，我可以生成仅包含棋子摆放数据的FEN。
+> **注意**：由于数据集包含静态图像，我可以生成仅包含棋子摆放数据的 FEN。
 
 # 3\. 探索性数据分析
 
@@ -74,7 +74,7 @@ FEN表示*6*个字段：
 
 1.  EDA
 
-1.  FEN的解释。
+1.  FEN 的解释。
 
 作者提供的代码 — 训练和测试数据集
 
@@ -92,7 +92,7 @@ FEN表示*6*个字段：
 
 ## 3.3\. 棋子分布
 
-在国际象棋中，有6种不同的棋子（按颜色计算，共有*12*种不同的棋子）。
+在国际象棋中，有 6 种不同的棋子（按颜色计算，共有*12*种不同的棋子）。
 
 1.  **K** — 白色国王，**k** — 黑色国王。
 
@@ -108,13 +108,13 @@ FEN表示*6*个字段：
 
 **3.3.1\. 训练数据集中棋子分布**
 
-![](../Images/16c21fcdddab44153892b9b364df2d29.png)
+![](img/16c21fcdddab44153892b9b364df2d29.png)
 
 作者提供的图像 — 训练数据集中各类棋子总数
 
 **3.3.2\. 测试数据集中棋子分布**
 
-![](../Images/a064f8883a6e33ca8ad95184901b0e63.png)
+![](img/a064f8883a6e33ca8ad95184901b0e63.png)
 
 作者提供的图像 — 测试数据集中各类棋子总数
 
@@ -132,13 +132,13 @@ FEN表示*6*个字段：
 
 **3.4.1\. 训练数据集的 PDF**
 
-![](../Images/995d8eb00feb0355596aba5e92a964c1.png)
+![](img/995d8eb00feb0355596aba5e92a964c1.png)
 
 作者提供的图像 — 训练数据集中的棋子 PDF 图
 
 **3.4.2\. 测试数据集的 PDF**
 
-![](../Images/80cd1331bba82065f8b2561656187dfd.png)
+![](img/80cd1331bba82065f8b2561656187dfd.png)
 
 作者提供的图像 — 测试数据集中的棋子 PDF 图
 
@@ -152,7 +152,7 @@ FEN表示*6*个字段：
 
 如前所述，训练数据集包含*80000*个棋盘，而测试数据集包含*20000*个棋盘。
 
-![](../Images/2562947662a3a8f76f2dfb822ab9f827.png)
+![](img/2562947662a3a8f76f2dfb822ab9f827.png)
 
 作者提供的图像 — 总棋子数与棋盘数量的直方图
 
@@ -408,13 +408,13 @@ class Check(Board):
 
 下面是训练数据集的检查分布。
 
-![](../Images/1b0ada5c236810ec9b7b1fbbcdb004d4.png)
+![](img/1b0ada5c236810ec9b7b1fbbcdb004d4.png)
 
 作者提供的图像 — 检查训练数据集的分布
 
 下面是测试数据集的检查分布。
 
-![](../Images/dfc545d25e14d934bbc1f613dd9b5e80.png)
+![](img/dfc545d25e14d934bbc1f613dd9b5e80.png)
 
 作者提供的图像 — 测试数据集的检查分布
 
@@ -591,19 +591,19 @@ class IllegalPosition(Check):
 
 **3.6.3.2\. 合法棋盘图像的样本图**
 
-![](../Images/a29395b3109b5ea8ccf637efaa4a1029.png)
+![](img/a29395b3109b5ea8ccf637efaa4a1029.png)
 
 作者提供的图片 — 合法棋类图像样本
 
 **3.6.3.3\. 非法棋类图像的样本图**
 
-![](../Images/3a864dea8d16e9639eda90fe40e28927.png)
+![](img/3a864dea8d16e9639eda90fe40e28927.png)
 
 作者提供的图片 — 非法棋类图像样本
 
 ## 3.7\. 所有图像的比例、高度和宽度
 
-![](../Images/e0898fac29ef1c3e8f09e4b5b3d28a23.png)
+![](img/e0898fac29ef1c3e8f09e4b5b3d28a23.png)
 
 作者提供的图片 — 比例、高度和宽度
 
@@ -619,21 +619,21 @@ class IllegalPosition(Check):
 
 我创建了一个数据管道类，用于将数据输入到模型（学习器）中。
 
-在此之前，我想展示预处理步骤。在预处理过程中，我将棋类图像调整为*50%*，并将其划分为*64*个块（正方形）。调整数据集的主要优点是减少空间复杂性。RAM不会超负荷。
+在此之前，我想展示预处理步骤。在预处理过程中，我将棋类图像调整为*50%*，并将其划分为*64*个块（正方形）。调整数据集的主要优点是减少空间复杂性。RAM 不会超负荷。
 
 预处理前的棋类图像：
 
-![](../Images/23520ce1b398976eabd127466de14884.png)
+![](img/23520ce1b398976eabd127466de14884.png)
 
 作者提供的图片 — 调整大小和预处理前
 
 预处理后的棋类图像：
 
-![](../Images/555122ddcce0a32ce475604e8a1ff64c.png)
+![](img/555122ddcce0a32ce475604e8a1ff64c.png)
 
 作者提供的图片 — 调整大小和预处理后
 
-我使用了Pavel Koryakin（数据集作者）的独热编码逻辑来对标签进行编码。
+我使用了 Pavel Koryakin（数据集作者）的独热编码逻辑来对标签进行编码。
 
 以下是数据管道类。
 
@@ -769,7 +769,7 @@ class DataPipeline(object):
 
 # 5\. 建模
 
-我创建了一个建模类，该类首先对模型进行调优，然后用数据集拟合模型。调优是使用KerasTuner进行的。调优模型所需时间为20小时，以获得最佳超参数。
+我创建了一个建模类，该类首先对模型进行调优，然后用数据集拟合模型。调优是使用 KerasTuner 进行的。调优模型所需时间为 20 小时，以获得最佳超参数。
 
 ## 5.1\. 基础模型
 
@@ -938,19 +938,19 @@ _________________________________________________________________
 
 在*10*个周期后拟合模型后，我获得了模型的性能 — 损失和准确度。
 
-![](../Images/1872c98f20ad28860325de9559e39b80.png)
+![](img/1872c98f20ad28860325de9559e39b80.png)
 
 作者提供的图片 — 准确度和损失
 
 以下是*25*张测试图像的混淆矩阵。
 
-![](../Images/a10ad079966963d16cec5b1dd1c6a458.png)
+![](img/a10ad079966963d16cec5b1dd1c6a458.png)
 
-作者提供的图片 — 25张测试图像的混淆矩阵
+作者提供的图片 — 25 张测试图像的混淆矩阵
 
 # 6\. 数据产品的生产化
 
-生产化是将本地模型从Jupyter Notebook环境暴露给外部世界的过程。在这里，我将建模阶段训练过的模型导出为文件。这个模型文件包含了已学习的参数，可以直接用于测试数据。
+生产化是将本地模型从 Jupyter Notebook 环境暴露给外部世界的过程。在这里，我将建模阶段训练过的模型导出为文件。这个模型文件包含了已学习的参数，可以直接用于测试数据。
 
 ## 6.1\. 数据产品管道
 
@@ -1136,7 +1136,7 @@ class Pipeline(object):
 
 ## 6.2\. 数据产品演示
 
-数据产品链接：[https://huggingface.co/spaces/mohd-saifuddin/Chess-Recognition-2D](https://huggingface.co/spaces/mohd-saifuddin/Chess-Recognition-2D)
+数据产品链接：[`huggingface.co/spaces/mohd-saifuddin/Chess-Recognition-2D`](https://huggingface.co/spaces/mohd-saifuddin/Chess-Recognition-2D)
 
 请注意，您需要测试图像来使用此数据产品。因此，我建议您从数据集源下载测试图像。
 
@@ -1144,19 +1144,19 @@ class Pipeline(object):
 
 我在这个项目中获得的学习成果。
 
-1.  我学会了对棋类图像和FEN标签进行详细的EDA。
+1.  我学会了对棋类图像和 FEN 标签进行详细的 EDA。
 
-1.  我学会了数据预处理和使用TensorFlow Data模块。
+1.  我学会了数据预处理和使用 TensorFlow Data 模块。
 
-1.  我学会了使用KerasTuner进行超参数调整（仍然有许多概念需要学习）。
+1.  我学会了使用 KerasTuner 进行超参数调整（仍然有许多概念需要学习）。
 
-1.  最终，我学会了开发数据产品并将其发布在Streamlit平台上。
+1.  最终，我学会了开发数据产品并将其发布在 Streamlit 平台上。
 
 # 8. 参考文献
 
 [1] Pavel Koryakin, 国际象棋位置。在*Kaggle*。[这里](https://www.kaggle.com/datasets/koryakinp/chess-positions)。
 
-[2] Forsyth–Edwards符号。在*维基百科*。[这里](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)。
+[2] Forsyth–Edwards 符号。在*维基百科*。[这里](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)。
 
 # 9. 结束
 
@@ -1164,6 +1164,6 @@ class Pipeline(object):
 
 1.  深度学习代码：[这里](https://github.com/mohd-saifuddin/Chess-Recognition-Problem)。
 
-1.  Streamlit应用代码：[这里](https://github.com/mohd-saifuddin/Chess-Recognition-Application)。
+1.  Streamlit 应用代码：[这里](https://github.com/mohd-saifuddin/Chess-Recognition-Application)。
 
-你可以在LinkedIn上与我联系：[这里](https://www.linkedin.com/in/mohammed-saifuddin-850a6b133/)。
+你可以在 LinkedIn 上与我联系：[这里](https://www.linkedin.com/in/mohammed-saifuddin-850a6b133/)。

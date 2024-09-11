@@ -1,18 +1,18 @@
-# 什么是ARIMA？
+# 什么是 ARIMA？
 
-> 原文：[https://towardsdatascience.com/how-to-forecast-with-arima-96b3d4db111a?source=collection_archive---------15-----------------------#2023-01-31](https://towardsdatascience.com/how-to-forecast-with-arima-96b3d4db111a?source=collection_archive---------15-----------------------#2023-01-31)
+> 原文：[`towardsdatascience.com/how-to-forecast-with-arima-96b3d4db111a?source=collection_archive---------15-----------------------#2023-01-31`](https://towardsdatascience.com/how-to-forecast-with-arima-96b3d4db111a?source=collection_archive---------15-----------------------#2023-01-31)
 
-## ARIMA预测模型简介及其在时间序列中的应用
+## ARIMA 预测模型简介及其在时间序列中的应用
 
-[](https://medium.com/@egorhowell?source=post_page-----96b3d4db111a--------------------------------)[![Egor Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----96b3d4db111a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96b3d4db111a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----96b3d4db111a--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----96b3d4db111a--------------------------------)
+[](https://medium.com/@egorhowell?source=post_page-----96b3d4db111a--------------------------------)![Egor Howell](https://medium.com/@egorhowell?source=post_page-----96b3d4db111a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----96b3d4db111a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----96b3d4db111a--------------------------------) [Egor Howell](https://medium.com/@egorhowell?source=post_page-----96b3d4db111a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-forecast-with-arima-96b3d4db111a&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----96b3d4db111a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96b3d4db111a--------------------------------) ·7分钟阅读·2023年1月31日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96b3d4db111a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-forecast-with-arima-96b3d4db111a&user=Egor+Howell&userId=1cac491223b2&source=-----96b3d4db111a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1cac491223b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-forecast-with-arima-96b3d4db111a&user=Egor+Howell&userId=1cac491223b2&source=post_page-1cac491223b2----96b3d4db111a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----96b3d4db111a--------------------------------) ·7 分钟阅读·2023 年 1 月 31 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F96b3d4db111a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-forecast-with-arima-96b3d4db111a&user=Egor+Howell&userId=1cac491223b2&source=-----96b3d4db111a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F96b3d4db111a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-forecast-with-arima-96b3d4db111a&source=-----96b3d4db111a---------------------bookmark_footer-----------)![](../Images/ed7671dae965b26c6dcdd9c5e5d2973a.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F96b3d4db111a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-forecast-with-arima-96b3d4db111a&source=-----96b3d4db111a---------------------bookmark_footer-----------)![](img/ed7671dae965b26c6dcdd9c5e5d2973a.png)
 
 图片由[Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

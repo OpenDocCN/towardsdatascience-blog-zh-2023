@@ -1,22 +1,22 @@
 # Pandas 2.1 中的新功能
 
-> 原文：[https://towardsdatascience.com/whats-new-in-pandas-2-1-d26c0b8314a?source=collection_archive---------2-----------------------#2023-09-07](https://towardsdatascience.com/whats-new-in-pandas-2-1-d26c0b8314a?source=collection_archive---------2-----------------------#2023-09-07)
+> 原文：[`towardsdatascience.com/whats-new-in-pandas-2-1-d26c0b8314a?source=collection_archive---------2-----------------------#2023-09-07`](https://towardsdatascience.com/whats-new-in-pandas-2-1-d26c0b8314a?source=collection_archive---------2-----------------------#2023-09-07)
 
 ## *关于新版本最有趣的功能*
 
-[](https://medium.com/@patrick_hoefler?source=post_page-----d26c0b8314a--------------------------------)[![Patrick Hoefler](../Images/35ca9ef1100d8c93dbadd374f0569fe1.png)](https://medium.com/@patrick_hoefler?source=post_page-----d26c0b8314a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d26c0b8314a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d26c0b8314a--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----d26c0b8314a--------------------------------)
+[](https://medium.com/@patrick_hoefler?source=post_page-----d26c0b8314a--------------------------------)![Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----d26c0b8314a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d26c0b8314a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d26c0b8314a--------------------------------) [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----d26c0b8314a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-new-in-pandas-2-1-d26c0b8314a&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----d26c0b8314a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d26c0b8314a--------------------------------) ·5分钟阅读·2023年9月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd26c0b8314a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-new-in-pandas-2-1-d26c0b8314a&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----d26c0b8314a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-new-in-pandas-2-1-d26c0b8314a&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----d26c0b8314a---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d26c0b8314a--------------------------------) ·5 分钟阅读·2023 年 9 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd26c0b8314a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-new-in-pandas-2-1-d26c0b8314a&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----d26c0b8314a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd26c0b8314a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-new-in-pandas-2-1-d26c0b8314a&source=-----d26c0b8314a---------------------bookmark_footer-----------)![](../Images/8e89647d8a4a3d7cd6168954effc8280.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd26c0b8314a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhats-new-in-pandas-2-1-d26c0b8314a&source=-----d26c0b8314a---------------------bookmark_footer-----------)![](img/8e89647d8a4a3d7cd6168954effc8280.png)
 
 图片由 [Lukas W.](https://unsplash.com/@theluki?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/e3mu-MTj7Xk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-pandas 2.1 于2023年8月30日发布。让我们来看看这次发布带来了哪些新功能，以及它如何帮助我们改善 pandas 的工作负载。它包含了一系列改进，同时也引入了一些新的弃用功能。
+pandas 2.1 于 2023 年 8 月 30 日发布。让我们来看看这次发布带来了哪些新功能，以及它如何帮助我们改善 pandas 的工作负载。它包含了一系列改进，同时也引入了一些新的弃用功能。
 
 pandas 2.1 在 pandas 2.0 提供的 PyArrow 集成基础上进行了大量构建。我们专注于扩展对预计将成为 pandas 3.0 默认功能的新特性的支持。让我们深入了解这对你意味着什么。我们将详细查看最重要的改进。
 
@@ -24,7 +24,7 @@ pandas 2.1 在 pandas 2.0 提供的 PyArrow 集成基础上进行了大量构建
 
 ## 避免为字符串列使用 NumPy 对象 dtype
 
-pandas 中一个主要的痛点是低效的字符串表示。这是我们工作了很长时间的一个话题。第一个 PyArrow 支持的字符串 dtype 在 pandas 1.3 中可用。它有潜力将内存使用减少约 70% 并提高性能。我在 [我之前的一篇文章](/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b) 中更深入地探讨了这个话题，其中包括内存比较和性能测量（总结：非常令人印象深刻）。
+pandas 中一个主要的痛点是低效的字符串表示。这是我们工作了很长时间的一个话题。第一个 PyArrow 支持的字符串 dtype 在 pandas 1.3 中可用。它有潜力将内存使用减少约 70% 并提高性能。我在 我之前的一篇文章 中更深入地探讨了这个话题，其中包括内存比较和性能测量（总结：非常令人印象深刻）。
 
 我们决定引入一个新的配置选项，将所有字符串列存储在 PyArrow 数组中。你不再需要担心转换字符串列，这将直接生效。
 
@@ -71,7 +71,7 @@ grouped = df.groupby("foo")
 
 ## Copy-on-Write
 
-Copy-on-Write 最初在 pandas 1.5.0 中引入，并预计将在 pandas 3.0 中成为默认行为。Copy-on-Write 在 pandas 2.0.x 上已经提供了良好的体验。我们主要集中在修复已知的错误并提高运行速度。我建议现在在生产中使用此模式。我写了一系列博客文章来解释 [什么是 Copy-on-Write](/a-solution-for-inconsistencies-in-indexing-operations-in-pandas-b76e10719744) 和 [它是如何工作的](/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6)。这些博客文章详细讲解了 Copy-on-Write 的内部工作原理以及你可以期待什么，包括性能和行为。
+Copy-on-Write 最初在 pandas 1.5.0 中引入，并预计将在 pandas 3.0 中成为默认行为。Copy-on-Write 在 pandas 2.0.x 上已经提供了良好的体验。我们主要集中在修复已知的错误并提高运行速度。我建议现在在生产中使用此模式。我写了一系列博客文章来解释 什么是 Copy-on-Write 和 它是如何工作的。这些博客文章详细讲解了 Copy-on-Write 的内部工作原理以及你可以期待什么，包括性能和行为。
 
 我们已经看到 Copy-on-Write 可以将实际工作流的性能提高超过 50%。
 

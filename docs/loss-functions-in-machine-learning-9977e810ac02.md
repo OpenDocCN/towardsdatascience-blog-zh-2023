@@ -1,10 +1,10 @@
 # 机器学习中的损失函数
 
-> 原文：[https://towardsdatascience.com/loss-functions-in-machine-learning-9977e810ac02?source=collection_archive---------5-----------------------#2023-05-12](https://towardsdatascience.com/loss-functions-in-machine-learning-9977e810ac02?source=collection_archive---------5-----------------------#2023-05-12)
+> 原文：[`towardsdatascience.com/loss-functions-in-machine-learning-9977e810ac02?source=collection_archive---------5-----------------------#2023-05-12`](https://towardsdatascience.com/loss-functions-in-machine-learning-9977e810ac02?source=collection_archive---------5-----------------------#2023-05-12)
 
 ## 理解最常见的损失函数以及何时使用每种
 
-[](https://medium.com/@roiyeho?source=post_page-----9977e810ac02--------------------------------)[![Dr. Roi Yehoshua](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----9977e810ac02--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9977e810ac02--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9977e810ac02--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----9977e810ac02--------------------------------)
+[](https://medium.com/@roiyeho?source=post_page-----9977e810ac02--------------------------------)![Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----9977e810ac02--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9977e810ac02--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----9977e810ac02--------------------------------) [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----9977e810ac02--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9977e810ac02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floss-functions-in-machine-learning-9977e810ac02&source=-----9977e810ac02---------------------bookmark_footer-----------)![](../Images/075f0e8f6ffba336b07154d146ab466c.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9977e810ac02&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Floss-functions-in-machine-learning-9977e810ac02&source=-----9977e810ac02---------------------bookmark_footer-----------)![](img/075f0e8f6ffba336b07154d146ab466c.png)
 
 [Brett Jordan](https://unsplash.com/@brett_jordan?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/photos/XWar9MbNGUY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 上的照片
 

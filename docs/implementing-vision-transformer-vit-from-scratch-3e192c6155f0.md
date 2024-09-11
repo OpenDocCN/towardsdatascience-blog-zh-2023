@@ -1,14 +1,14 @@
 # 从零实现 Vision Transformer (ViT)
 
-> 原文：[https://towardsdatascience.com/implementing-vision-transformer-vit-from-scratch-3e192c6155f0?source=collection_archive---------9-----------------------#2023-03-07](https://towardsdatascience.com/implementing-vision-transformer-vit-from-scratch-3e192c6155f0?source=collection_archive---------9-----------------------#2023-03-07)
+> 原文：[`towardsdatascience.com/implementing-vision-transformer-vit-from-scratch-3e192c6155f0?source=collection_archive---------9-----------------------#2023-03-07`](https://towardsdatascience.com/implementing-vision-transformer-vit-from-scratch-3e192c6155f0?source=collection_archive---------9-----------------------#2023-03-07)
 
 ## 通过从零实现 Vision Transformer (ViT) 了解其工作原理
 
-[Tin Nguyen](https://medium.com/@tintn03?source=post_page-----3e192c6155f0--------------------------------) [![Tin Nguyen](../Images/f5a69125e3d42be7906c8cd51f827854.png)](https://medium.com/@tintn03?source=post_page-----3e192c6155f0--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e192c6155f0--------------------------------) [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e192c6155f0--------------------------------)
+[Tin Nguyen](https://medium.com/@tintn03?source=post_page-----3e192c6155f0--------------------------------) ![Tin Nguyen](https://medium.com/@tintn03?source=post_page-----3e192c6155f0--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e192c6155f0--------------------------------) [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e192c6155f0--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F78d51d946a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-vision-transformer-vit-from-scratch-3e192c6155f0&user=Tin+Nguyen&userId=78d51d946a3&source=post_page-78d51d946a3----3e192c6155f0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e192c6155f0--------------------------------) ·10 分钟阅读·2023年3月7日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F78d51d946a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-vision-transformer-vit-from-scratch-3e192c6155f0&user=Tin+Nguyen&userId=78d51d946a3&source=post_page-78d51d946a3----3e192c6155f0---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e192c6155f0--------------------------------) ·10 分钟阅读·2023 年 3 月 7 日
 
 --
 
@@ -16,27 +16,27 @@
 
 Vision Transformer (ViT) 是将 Transformer 模型适配于计算机视觉任务的一种方法。它由 Google 研究人员在 2020 年提出，并因其在各种图像分类基准测试中的卓越表现而获得广泛关注。ViT 已显示出在多个计算机视觉任务中实现了最先进的性能，并引起了计算机视觉社区的极大兴趣。
 
-在这篇文章中，我们将从头开始实现ViT用于图像分类，使用PyTorch。我们还将用CIFAR-10数据集训练我们的模型，这是一个流行的图像分类基准。通过这篇文章，你应该能很好地理解ViT的工作原理以及如何将其应用于自己的计算机视觉项目。
+在这篇文章中，我们将从头开始实现 ViT 用于图像分类，使用 PyTorch。我们还将用 CIFAR-10 数据集训练我们的模型，这是一个流行的图像分类基准。通过这篇文章，你应该能很好地理解 ViT 的工作原理以及如何将其应用于自己的计算机视觉项目。
 
 实现的代码可以在[这个仓库](https://github.com/tintn/vision-transformer-from-scratch)中找到。
 
-# ViT架构概述
+# ViT 架构概述
 
-![](../Images/0d112d70a71929fa8a2a543c38d2e8fc.png)
+![](img/0d112d70a71929fa8a2a543c38d2e8fc.png)
 
-改编自 [https://arxiv.org/abs/2010.11929](https://arxiv.org/abs/2010.11929)
+改编自 [`arxiv.org/abs/2010.11929`](https://arxiv.org/abs/2010.11929)
 
-ViT的架构灵感来源于BERT，一个仅包含编码器的transformer模型，通常用于NLP监督学习任务，如文本分类或命名实体识别。ViT的主要思想是图像可以被视为一系列小块，这些小块可以在NLP任务中作为token处理。
+ViT 的架构灵感来源于 BERT，一个仅包含编码器的 transformer 模型，通常用于 NLP 监督学习任务，如文本分类或命名实体识别。ViT 的主要思想是图像可以被视为一系列小块，这些小块可以在 NLP 任务中作为 token 处理。
 
-输入图像被分割成小块，然后将这些小块展平为向量序列。这些向量随后由一个transformer编码器处理，使得模型能够通过自注意力机制学习小块之间的交互。transformer编码器的输出被送入分类层，输出输入图像的预测类别。
+输入图像被分割成小块，然后将这些小块展平为向量序列。这些向量随后由一个 transformer 编码器处理，使得模型能够通过自注意力机制学习小块之间的交互。transformer 编码器的输出被送入分类层，输出输入图像的预测类别。
 
-在接下来的部分，我们将逐一实现模型的每个组件，并使用PyTorch进行实现。这将帮助我们理解ViT模型的工作原理及其在计算机视觉任务中的应用。
+在接下来的部分，我们将逐一实现模型的每个组件，并使用 PyTorch 进行实现。这将帮助我们理解 ViT 模型的工作原理及其在计算机视觉任务中的应用。
 
 # 将图像转换为嵌入
 
-![](../Images/175b1e3332f4ceb1ba3e7eaf3051caf2.png)
+![](img/175b1e3332f4ceb1ba3e7eaf3051caf2.png)
 
-为了将输入图像馈送到Transformer模型中，我们需要将图像转换为向量序列。这通过将图像拆分成不重叠的小块，然后将这些小块线性投影以获得每个小块的固定大小嵌入向量来完成。我们可以使用PyTorch的`nn.Conv2d`层来实现这一点：
+为了将输入图像馈送到 Transformer 模型中，我们需要将图像转换为向量序列。这通过将图像拆分成不重叠的小块，然后将这些小块线性投影以获得每个小块的固定大小嵌入向量来完成。我们可以使用 PyTorch 的`nn.Conv2d`层来实现这一点：
 
 ```py
 class PatchEmbeddings(nn.Module):
@@ -65,9 +65,9 @@ class PatchEmbeddings(nn.Module):
 
 `kernel_size=self.patch_size` 和 `stride=self.patch_size` 是为了确保层的过滤器应用于不重叠的小块。
 
-在小块被转换为嵌入序列后，[CLS] token被添加到序列的开头，它将在分类层中用于对图像进行分类。[CLS] token的嵌入在训练过程中学习。
+在小块被转换为嵌入序列后，[CLS] token 被添加到序列的开头，它将在分类层中用于对图像进行分类。[CLS] token 的嵌入在训练过程中学习。
 
-由于来自不同位置的小块可能对最终预测的贡献不同，我们还需要一种方法将小块的位置编码到序列中。我们将使用可学习的位置嵌入将位置信息添加到嵌入中。这类似于在NLP任务的Transformer模型中使用位置嵌入的方式。
+由于来自不同位置的小块可能对最终预测的贡献不同，我们还需要一种方法将小块的位置编码到序列中。我们将使用可学习的位置嵌入将位置信息添加到嵌入中。这类似于在 NLP 任务的 Transformer 模型中使用位置嵌入的方式。
 
 ```py
 class Embeddings(nn.Module):
@@ -103,11 +103,11 @@ class Embeddings(nn.Module):
         return x
 ```
 
-在这一步，输入图像被转换为带有位置信息的嵌入序列，并准备好输入transformer层。
+在这一步，输入图像被转换为带有位置信息的嵌入序列，并准备好输入 transformer 层。
 
 # 多头注意力
 
-![](../Images/d58fa5483fd06acc1e2a3ed1b025a6b1.png)
+![](img/d58fa5483fd06acc1e2a3ed1b025a6b1.png)
 
 在深入 transformer 编码器之前，我们首先探索多头注意力模块，这是其核心组件。多头注意力用于计算输入图像中不同块之间的交互。多头注意力由多个注意力头组成，每个头部是一个单一的注意力层。
 
@@ -200,7 +200,7 @@ class MultiHeadAttention(nn.Module):
 
 # Transformer 编码器
 
-![](../Images/efd1e5da157ff66d35e382535c4e39fc.png)
+![](img/efd1e5da157ff66d35e382535c4e39fc.png)
 
 transformer 编码器由一系列 transformer 层组成。每个 transformer 层主要由我们刚刚实现的多头注意力模块和一个前馈网络组成。为了更好地扩展模型和稳定训练，transformer 层中添加了两个层归一化层和跳过连接。
 
@@ -355,11 +355,11 @@ class ViTForClassfication(nn.Module):
 
 该模型在 CIFAR-10 数据集上训练了 100 轮，批量大小为 256。学习率设置为 0.01，并且没有使用学习率调整。经过 100 轮训练后，模型达到了 75.5% 的准确率。下图展示了训练期间的训练损失、测试损失和测试集上的准确率。
 
-![](../Images/2c4978640e8c8022af2514760286c84f.png)
+![](img/2c4978640e8c8022af2514760286c84f.png)
 
 下图展示了模型对一些测试图像的注意力图。你可以看到模型能够识别不同类别的对象。它学会了关注对象并忽略背景。
 
-![](../Images/453dfa740f9d00871fd682243e39ef2f.png)
+![](img/453dfa740f9d00871fd682243e39ef2f.png)
 
 # 结论
 
@@ -367,4 +367,4 @@ class ViTForClassfication(nn.Module):
 
 由于该实现不用于生产环境，如果你打算训练全尺寸模型或在大型数据集上训练，建议使用更成熟的变换器库，如 [HuggingFace](https://github.com/huggingface/transformers)。
 
-*最初发布于* [*https://tintn.github.io*](https://tintn.github.io/Implementing-Vision-Transformer-from-Scratch/) *2023年3月7日。*
+*最初发布于* [*https://tintn.github.io*](https://tintn.github.io/Implementing-Vision-Transformer-from-Scratch/) *2023 年 3 月 7 日。*

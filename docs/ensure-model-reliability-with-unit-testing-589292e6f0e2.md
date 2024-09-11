@@ -1,18 +1,18 @@
 # 使用单元测试确保模型可靠性
 
-> 原文：[https://towardsdatascience.com/ensure-model-reliability-with-unit-testing-589292e6f0e2?source=collection_archive---------15-----------------------#2023-01-25](https://towardsdatascience.com/ensure-model-reliability-with-unit-testing-589292e6f0e2?source=collection_archive---------15-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/ensure-model-reliability-with-unit-testing-589292e6f0e2?source=collection_archive---------15-----------------------#2023-01-25`](https://towardsdatascience.com/ensure-model-reliability-with-unit-testing-589292e6f0e2?source=collection_archive---------15-----------------------#2023-01-25)
 
 ## 在开发过程中及早捕捉错误
 
-[](https://boemer.medium.com/?source=post_page-----589292e6f0e2--------------------------------)[![Renato Boemer](../Images/80ea6b773c9d17a8637de647225ff14a.png)](https://boemer.medium.com/?source=post_page-----589292e6f0e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----589292e6f0e2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----589292e6f0e2--------------------------------) [Renato Boemer](https://boemer.medium.com/?source=post_page-----589292e6f0e2--------------------------------)
+[](https://boemer.medium.com/?source=post_page-----589292e6f0e2--------------------------------)![Renato Boemer](https://boemer.medium.com/?source=post_page-----589292e6f0e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----589292e6f0e2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----589292e6f0e2--------------------------------) [Renato Boemer](https://boemer.medium.com/?source=post_page-----589292e6f0e2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf71b2afdd4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fensure-model-reliability-with-unit-testing-589292e6f0e2&user=Renato+Boemer&userId=bf71b2afdd4c&source=post_page-bf71b2afdd4c----589292e6f0e2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----589292e6f0e2--------------------------------) ·4分钟阅读·2023年1月25日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F589292e6f0e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fensure-model-reliability-with-unit-testing-589292e6f0e2&user=Renato+Boemer&userId=bf71b2afdd4c&source=-----589292e6f0e2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf71b2afdd4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fensure-model-reliability-with-unit-testing-589292e6f0e2&user=Renato+Boemer&userId=bf71b2afdd4c&source=post_page-bf71b2afdd4c----589292e6f0e2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----589292e6f0e2--------------------------------) ·4 分钟阅读·2023 年 1 月 25 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F589292e6f0e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fensure-model-reliability-with-unit-testing-589292e6f0e2&user=Renato+Boemer&userId=bf71b2afdd4c&source=-----589292e6f0e2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F589292e6f0e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fensure-model-reliability-with-unit-testing-589292e6f0e2&source=-----589292e6f0e2---------------------bookmark_footer-----------)![](../Images/1c1a52b35751752fb86fbf4851e8b3a8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F589292e6f0e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fensure-model-reliability-with-unit-testing-589292e6f0e2&source=-----589292e6f0e2---------------------bookmark_footer-----------)![](img/1c1a52b35751752fb86fbf4851e8b3a8.png)
 
 由[Diana Polekhina](https://unsplash.com/@diana_pole?utm_source=medium&utm_medium=referral)提供的照片，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

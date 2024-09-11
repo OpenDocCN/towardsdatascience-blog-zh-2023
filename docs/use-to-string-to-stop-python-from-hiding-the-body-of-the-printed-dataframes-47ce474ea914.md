@@ -1,20 +1,20 @@
-# 使用to_string()来防止Python隐藏打印的DataFrame的内容。
+# 使用 to_string()来防止 Python 隐藏打印的 DataFrame 的内容。
 
-> 原文：[https://towardsdatascience.com/use-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914?source=collection_archive---------15-----------------------#2023-04-10](https://towardsdatascience.com/use-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914?source=collection_archive---------15-----------------------#2023-04-10)
+> 原文：[`towardsdatascience.com/use-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914?source=collection_archive---------15-----------------------#2023-04-10`](https://towardsdatascience.com/use-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914?source=collection_archive---------15-----------------------#2023-04-10)
 
-## 3分钟Pandas
+## 3 分钟 Pandas
 
-## 我们应该怎么做才能在Python脚本执行后看到整个打印的DataFrame？
+## 我们应该怎么做才能在 Python 脚本执行后看到整个打印的 DataFrame？
 
-[](https://jianan-lin.medium.com/?source=post_page-----47ce474ea914--------------------------------)[![Yufeng](../Images/8b1a4c165aaac045ea819f850017b7cd.png)](https://jianan-lin.medium.com/?source=post_page-----47ce474ea914--------------------------------)[](https://towardsdatascience.com/?source=post_page-----47ce474ea914--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----47ce474ea914--------------------------------) [Yufeng](https://jianan-lin.medium.com/?source=post_page-----47ce474ea914--------------------------------)
+[](https://jianan-lin.medium.com/?source=post_page-----47ce474ea914--------------------------------)![Yufeng](https://jianan-lin.medium.com/?source=post_page-----47ce474ea914--------------------------------)[](https://towardsdatascience.com/?source=post_page-----47ce474ea914--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----47ce474ea914--------------------------------) [Yufeng](https://jianan-lin.medium.com/?source=post_page-----47ce474ea914--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9cda0369fb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914&user=Yufeng&userId=9cda0369fb2&source=post_page-9cda0369fb2----47ce474ea914---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----47ce474ea914--------------------------------) ·4分钟阅读·2023年4月10日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F47ce474ea914&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914&user=Yufeng&userId=9cda0369fb2&source=-----47ce474ea914---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9cda0369fb2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914&user=Yufeng&userId=9cda0369fb2&source=post_page-9cda0369fb2----47ce474ea914---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----47ce474ea914--------------------------------) ·4 分钟阅读·2023 年 4 月 10 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F47ce474ea914&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914&user=Yufeng&userId=9cda0369fb2&source=-----47ce474ea914---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F47ce474ea914&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914&source=-----47ce474ea914---------------------bookmark_footer-----------)![](../Images/82ece6c195a037aa5d625ace0831eddf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F47ce474ea914&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuse-to-string-to-stop-python-from-hiding-the-body-of-the-printed-dataframes-47ce474ea914&source=-----47ce474ea914---------------------bookmark_footer-----------)![](img/82ece6c195a037aa5d625ace0831eddf.png)
 
 照片由[Pascal Müller](https://unsplash.com/@millerthachiller?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 

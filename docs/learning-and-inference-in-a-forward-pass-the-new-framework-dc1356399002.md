@@ -1,30 +1,30 @@
 # 前向传递中的学习与推理：新框架
 
-> 原文：[https://towardsdatascience.com/learning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002?source=collection_archive---------1-----------------------#2023-01-20](https://towardsdatascience.com/learning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002?source=collection_archive---------1-----------------------#2023-01-20)
+> 原文：[`towardsdatascience.com/learning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002?source=collection_archive---------1-----------------------#2023-01-20`](https://towardsdatascience.com/learning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002?source=collection_archive---------1-----------------------#2023-01-20)
 
 ## 学习与推理统一为一个连续、异步和并行的过程
 
-[](https://amassivek.medium.com/?source=post_page-----dc1356399002--------------------------------)[![Adam Kohan](../Images/3a8ed2e6fd192a14b76ff5ca2616fcf1.png)](https://amassivek.medium.com/?source=post_page-----dc1356399002--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc1356399002--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dc1356399002--------------------------------) [Adam Kohan](https://amassivek.medium.com/?source=post_page-----dc1356399002--------------------------------)
+[](https://amassivek.medium.com/?source=post_page-----dc1356399002--------------------------------)![Adam Kohan](https://amassivek.medium.com/?source=post_page-----dc1356399002--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc1356399002--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc1356399002--------------------------------) [Adam Kohan](https://amassivek.medium.com/?source=post_page-----dc1356399002--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8275b40d8f6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002&user=Adam+Kohan&userId=8275b40d8f6b&source=post_page-8275b40d8f6b----dc1356399002---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc1356399002--------------------------------) ·18分钟阅读·2023年1月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdc1356399002&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002&user=Adam+Kohan&userId=8275b40d8f6b&source=-----dc1356399002---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8275b40d8f6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002&user=Adam+Kohan&userId=8275b40d8f6b&source=post_page-8275b40d8f6b----dc1356399002---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc1356399002--------------------------------) ·18 分钟阅读·2023 年 1 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdc1356399002&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002&user=Adam+Kohan&userId=8275b40d8f6b&source=-----dc1356399002---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdc1356399002&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002&source=-----dc1356399002---------------------bookmark_footer-----------)![](../Images/e992fb971fe17fd5af8af3572ad5acff.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdc1356399002&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flearning-and-inference-in-a-forward-pass-the-new-framework-dc1356399002&source=-----dc1356399002---------------------bookmark_footer-----------)![](img/e992fb971fe17fd5af8af3572ad5acff.png)
 
 **在三层网络上进行前向传递中的学习和推理。** 推理和学习同时进行。学习重用与推理相同的前向路径。综合来看，这些信号传播特性将学习和推理统一为一个连续、异步和并行的过程——从而解除学习的限制。这与之前关于学习的观点大相径庭，尤其是在监督设置和反向传播下。
 
 在这篇文章中，我介绍了一个前向传播的推理和学习框架，称为信号传播框架。这是一个只使用前向传播来学习任何类型数据和任何类型网络的框架。我展示了它在离散网络、连续网络和尖峰网络中都能良好地工作，而无需修改网络架构。换句话说，用于推理的网络版本与用于学习的网络版本相同。相比之下，反向传播和以前的工作对于训练版本的网络有额外的结构和算法元素，这些被称为学习约束。
 
-信号传播是一种约束最少的学习方法，且具有比反向传播以前的替代方法更好的性能、效率和兼容性。它也比反向传播具有更好的效率和兼容性。这个框架在[https://arxiv.org/abs/2204.01723](https://arxiv.org/abs/2204.01723)（2022年）和[https://ieeexplore.ieee.org/document/10027559](https://ieeexplore.ieee.org/document/10027559)中介绍。前向学习的起源在我的工作[https://arxiv.org/abs/1808.03357](https://arxiv.org/abs/1808.03357)（2018年）。
+信号传播是一种约束最少的学习方法，且具有比反向传播以前的替代方法更好的性能、效率和兼容性。它也比反向传播具有更好的效率和兼容性。这个框架在[`arxiv.org/abs/2204.01723`](https://arxiv.org/abs/2204.01723)（2022 年）和[`ieeexplore.ieee.org/document/10027559`](https://ieeexplore.ieee.org/document/10027559)中介绍。前向学习的起源在我的工作[`arxiv.org/abs/1808.03357`](https://arxiv.org/abs/1808.03357)（2018 年）。
 
 我开发了一个库来实现对任何模型的前向传播学习。该库的[快速开始](https://github.com/amassivek/signalpropagation#2-quick-start)指南可以帮助你在现有模型上实现这个库。还有[cifar-10](https://github.com/amassivek/signalpropagation/tree/main/examples)的[示例](https://github.com/amassivek/signalpropagation/tree/main/examples)实验，也作为教程使用。
 
 [](https://github.com/amassivek/signalpropagation?source=post_page-----dc1356399002--------------------------------) [## GitHub - amassivek/signalpropagation: 前向传播学习与推理库，适用于神经网络...
 
-### 信号传播：一个统一学习和推理的前向传播框架，一个用于训练的Python包...
+### 信号传播：一个统一学习和推理的前向传播框架，一个用于训练的 Python 包...
 
 [github.com](https://github.com/amassivek/signalpropagation?source=post_page-----dc1356399002--------------------------------)
 
@@ -136,21 +136,21 @@ BPT 提供的学习包括：
 
 +   多个连接的输入（时间信用分配）
 
-为每个神经元提供学习被称为空间信用分配问题。空间信用分配指的是网络中神经元的布置，例如组织成神经元层。例如，在一个五层网络中，反向传播学习信号从第五层依次传递到第一层神经元。在第3节中，我将展示信号传播学习信号是如何从第一层传递到第五层的，与推断过程相同。
+为每个神经元提供学习被称为空间信用分配问题。空间信用分配指的是网络中神经元的布置，例如组织成神经元层。例如，在一个五层网络中，反向传播学习信号从第五层依次传递到第一层神经元。在第三部分中，我将展示信号传播学习信号是如何从第一层传递到第五层的，与推断过程相同。
 
-为多个连接的输入提供学习被称为时间信用分配问题。时间信用分配指的是在多个连接输入中移动。例如，视频中的每一帧图像都被输入到网络中，产生来自相同神经元的新响应。每个神经元的响应是特定于每张图像/输入的。因此，反向传播学习信号在这些神经元响应中传递，从视频中最后一张图像的神经元响应开始到第一张图像的神经元响应。在第3节中，会清楚地看到信号传播学习信号从第一张图像的神经元响应传递到最后一张图像的神经元响应，与推断过程相同。
+为多个连接的输入提供学习被称为时间信用分配问题。时间信用分配指的是在多个连接输入中移动。例如，视频中的每一帧图像都被输入到网络中，产生来自相同神经元的新响应。每个神经元的响应是特定于每张图像/输入的。因此，反向传播学习信号在这些神经元响应中传递，从视频中最后一张图像的神经元响应开始到第一张图像的神经元响应。在第三部分中，会清楚地看到信号传播学习信号从第一张图像的神经元响应传递到最后一张图像的神经元响应，与推断过程相同。
 
 请注意，时间信用分配的内在问题是空间信用分配。时间信用分配将学习信号通过视频中每张图像。对于每张图像，空间信用分配将学习信号传递到每个神经元。信号传播优雅地通过解决内在问题来解决外在问题——前向传播，通过构建推断网络，遍历两个问题。
 
-BP 进行空间信用分配。BPT 将 BP 扩展到同时进行空间和时间信用分配。（有关空间和时间信用分配的完整阅读，请参见第6节。）
+BP 进行空间信用分配。BPT 将 BP 扩展到同时进行空间和时间信用分配。（有关空间和时间信用分配的完整阅读，请参见第六部分。）
 
 # 3. 前向传播中的学习
 
 ## 信号传播框架 (SP)
 
-我在这里介绍的是一种前向传递学习和推理的框架，称为信号传播（SP）。这是一个令人满意的解决方案，用于时间和空间的信用分配。SP是一种约束最少的学习方法，其性能、效率和兼容性优于以前的反向传播替代方案。它还具有比反向传播更好的效率和兼容性。SP提供了一个合理的效率和兼容性性能折中。这特别吸引人，因为它兼容基于目标的深度学习（例如监督学习和强化学习），适用于新硬件和长期存在的生物模型，而以前的工作则不然。（一般来说，反向传播是表现最好的算法。）
+我在这里介绍的是一种前向传递学习和推理的框架，称为信号传播（SP）。这是一个令人满意的解决方案，用于时间和空间的信用分配。SP 是一种约束最少的学习方法，其性能、效率和兼容性优于以前的反向传播替代方案。它还具有比反向传播更好的效率和兼容性。SP 提供了一个合理的效率和兼容性性能折中。这特别吸引人，因为它兼容基于目标的深度学习（例如监督学习和强化学习），适用于新硬件和长期存在的生物模型，而以前的工作则不然。（一般来说，反向传播是表现最好的算法。）
 
-SP在学习发生时没有约束，包括：
+SP 在学习发生时没有约束，包括：
 
 +   仅前向传递，没有反向传递
 
@@ -162,7 +162,7 @@ SP在学习发生时没有约束，包括：
 
 +   在神经元/层被前向传递到达后，更新参数
 
-一个有趣的见解是，SP为大脑中没有错误反馈连接的神经元如何接收全局学习信号提供了解释。
+一个有趣的见解是，SP 为大脑中没有错误反馈连接的神经元如何接收全局学习信号提供了解释。
 
 因此，信号传播是：
 
@@ -174,27 +174,27 @@ SP在学习发生时没有约束，包括：
 
 ## 3.1\. 如何在前向传递中学习？
 
-信号传播将目标视为额外的输入（见下图）。通过这种方法，SP将目标前向传递通过网络，就像它是一个输入一样。
+信号传播将目标视为额外的输入（见下图）。通过这种方法，SP 将目标前向传递通过网络，就像它是一个输入一样。
 
-![](../Images/2fc9566edfdeaaced4dec79e4c0081b5.png)
+![](img/2fc9566edfdeaaced4dec79e4c0081b5.png)
 
-将目标视为输入。来自Upsplash的动物图像。
+将目标视为输入。来自 Upsplash 的动物图像。
 
-SP在网络中向前移动（见下图），将目标和输入越来越靠近，从第一层（左上）一直到最后一层（右下）。注意到在最后一步/层时，狗的图像接近其目标[1,0,0]，而青蛙的图像接近其目标[0,1,0]。然而，狗的图像和目标与青蛙的图像和目标之间仍有较大距离。这一操作发生在每层神经元的表示空间中。例如，第1层的神经元接收狗的图像（输入x）和狗的标签（目标c），分别输出激活h_1_dog和t_1_dog。青蛙的情况也一样，产生h_1_frog和t_1_frog。在这些神经元的激活空间中，SP训练网络使输入及其目标更加接近，同时与其他输入及其相应目标保持距离。
+SP 在网络中向前移动（见下图），将目标和输入越来越靠近，从第一层（左上）一直到最后一层（右下）。注意到在最后一步/层时，狗的图像接近其目标[1,0,0]，而青蛙的图像接近其目标[0,1,0]。然而，狗的图像和目标与青蛙的图像和目标之间仍有较大距离。这一操作发生在每层神经元的表示空间中。例如，第 1 层的神经元接收狗的图像（输入 x）和狗的标签（目标 c），分别输出激活 h_1_dog 和 t_1_dog。青蛙的情况也一样，产生 h_1_frog 和 t_1_frog。在这些神经元的激活空间中，SP 训练网络使输入及其目标更加接近，同时与其他输入及其相应目标保持距离。
 
-![](../Images/765308f6a617b0aa1e14d91ef71e4ce6.png)
+![](img/765308f6a617b0aa1e14d91ef71e4ce6.png)
 
-层层推进，将目标及其相应输入逐渐靠近，但与其他输入和目标保持距离。来自Upsplash的动物图像。
+层层推进，将目标及其相应输入逐渐靠近，但与其他输入和目标保持距离。来自 Upsplash 的动物图像。
 
 ## 3.2\. 前向学习的步骤
 
 以下是一个示例三层网络的整体图。每层都有自己的损失函数，用于更新网络中的权重。因此，SP 执行损失函数并在目标和标签到达某层时立即更新权重。由于 SP 将目标和输入一起（交替）输入，层/神经元权重会立即更新。对于空间信用分配，SP 在输入从第一层到达最后一层之前更新权重。对于时间信用分配，SP 为每个时间步长的多个连接输入（例如视频中的图像）提供学习信号，而无需等待最后一个输入被送入网络。
 
-![](../Images/408fa98d5fb0686bbb6ebefd8c7b1d04.png)
+![](img/408fa98d5fb0686bbb6ebefd8c7b1d04.png)
 
 这是一个三层网络。学习和推理的前向传播将分三步进行。每层有自己的损失，共有三种损失。输入是 x，目标是 c，二者通过网络的前端输入。
 
-![](../Images/8abf9748100a86c52fd3dbb8833882ff.png)
+![](img/8abf9748100a86c52fd3dbb8833882ff.png)
 
 在前向传播中，学习和推理的整体算法。推理和学习阶段并行运行，每层的权重会立即更新。注：对于图示网络（左），N = 3，即层数。为了清晰起见，省略了偏置（b 和 d）。损失 L（例如梯度、赫布式）和优化器（例如 SGD、Momentum、ADAM）有很多选择。输出函数 `output()`，y，在下面的步骤 4 中详细说明。
 
@@ -202,29 +202,29 @@ SP在网络中向前移动（见下图），将目标和输入越来越靠近，
 
 ## 步骤 1) 层 1
 
-![](../Images/7d10bca4be17a50bf2b58d5a2e817a74.png)![](../Images/c5178544f49038d50668cc0f2e3c017e.png)![](../Images/cd996664a9780955ea512fae60991367.png)
+![](img/7d10bca4be17a50bf2b58d5a2e817a74.png)![](img/c5178544f49038d50668cc0f2e3c017e.png)![](img/cd996664a9780955ea512fae60991367.png)
 
 ## 步骤 2) 层 2
 
-![](../Images/fdd99710ddb891abd5c6129c6bac2056.png)![](../Images/6b1d70d93fec9d8b8b3654bdfa77ac49.png)![](../Images/de57bb3c94560e8f574f96d461fbad42.png)
+![](img/fdd99710ddb891abd5c6129c6bac2056.png)![](img/6b1d70d93fec9d8b8b3654bdfa77ac49.png)![](img/de57bb3c94560e8f574f96d461fbad42.png)
 
 ## 步骤 3) 层 3
 
-![](../Images/f3e714c4560db6e591ea05daaa8a88a8.png)
+![](img/f3e714c4560db6e591ea05daaa8a88a8.png)
 
 ## 步骤 4) 预测
 
 在输出层，有三种选择来输出预测结果。第一种和第二种选项提供了更多的灵活性，并自然地从使用前向传播的训练过程中跟随。第一种选项是取一个 h_3 作为一个类别，并与每个 t_3 进行比较。例如，SP 输入一张狗的图像并得到 h_3_dog，然后输入所有类别的标签并得到 t_3_i = { t_3_dog, t_3_frog 和 t_3_horse}，最后它将 h_3_dog 与每个 t_3_i 进行比较；最接近的 t_3_i 即为正确的类别。
 
-第二个选项是第一个选项的自适应版本。它是自适应的，因为SP不再将h_3_dog与每个t_3_i进行比较，而是寻找最近的t_3_i子集。例如，我们维护一个树结构，其中t_3_frog在树中比t_3_horse更接近t_3_dog。因此，我们首先将h_3_dog与t_3_frog进行比较，然后与t_3_dog进行比较，并停止。我们不会与t_3_horse进行比较，因为它距离太远，不在我们最近的t_3_i子集中。
+第二个选项是第一个选项的自适应版本。它是自适应的，因为 SP 不再将 h_3_dog 与每个 t_3_i 进行比较，而是寻找最近的 t_3_i 子集。例如，我们维护一个树结构，其中 t_3_frog 在树中比 t_3_horse 更接近 t_3_dog。因此，我们首先将 h_3_dog 与 t_3_frog 进行比较，然后与 t_3_dog 进行比较，并停止。我们不会与 t_3_horse 进行比较，因为它距离太远，不在我们最近的 t_3_i 子集中。
 
-第三个选项：经典且直观的选择是训练一个预测输出层。这个选项在回归和生成任务中也更直接。例如，一个分类层，每个类别有一个输出。因此，第3层将是一个分类层。注意，在推断过程中t_3不再使用。此外，注意到t_3_i等同于一个分类层。要看到这一点，只需将t_3_i连接在一起，形成一个分类（预测）层的权重矩阵，与h_3（例如h_3_dog，h_3_horse，…）一起使用。这意味着第三个选项是第一个选项的特例，并且可以是第二个选项的特例。
+第三个选项：经典且直观的选择是训练一个预测输出层。这个选项在回归和生成任务中也更直接。例如，一个分类层，每个类别有一个输出。因此，第 3 层将是一个分类层。注意，在推断过程中 t_3 不再使用。此外，注意到 t_3_i 等同于一个分类层。要看到这一点，只需将 t_3_i 连接在一起，形成一个分类（预测）层的权重矩阵，与 h_3（例如 h_3_dog，h_3_horse，…）一起使用。这意味着第三个选项是第一个选项的特例，并且可以是第二个选项的特例。
 
-![](../Images/e817c4b00d5cb79479ae00064f78ec2d.png)![](../Images/6147fb06425c5c7e2ad95452f08e3b8b.png)![](../Images/73ca5ea2bb547d45298033cc3ee6b0fb.png)
+![](img/e817c4b00d5cb79479ae00064f78ec2d.png)![](img/6147fb06425c5c7e2ad95452f08e3b8b.png)![](img/73ca5ea2bb547d45298033cc3ee6b0fb.png)
 
 ## 3.3\. **完整过程概述**
 
-![](../Images/e992fb971fe17fd5af8af3572ad5acff.png)![](../Images/408fa98d5fb0686bbb6ebefd8c7b1d04.png)
+![](img/e992fb971fe17fd5af8af3572ad5acff.png)![](img/408fa98d5fb0686bbb6ebefd8c7b1d04.png)
 
 ## 3.4\. **尖峰网络**
 
@@ -236,33 +236,33 @@ SP在网络中向前移动（见下图），将目标和输入越来越靠近，
 
 信号传播提供了两种与大脑和硬件学习模型兼容的解决方案。
 
-![](../Images/6063981352c8703c09e2a56117084270.png)
+![](img/6063981352c8703c09e2a56117084270.png)
 
-以下是学习信号（标记为红色）通过一个脉冲神经元（标记为S）、穿过电压或膜电位（U），以更新权重（W）的可视化。左侧是带有“死神经元”问题的反向传播。左二是带有替代函数（f）的反向传播。反向传播的学习信号是全局的（L_G），来自网络的最后一层；虚线框表示上层神经元/层。
+以下是学习信号（标记为红色）通过一个脉冲神经元（标记为 S）、穿过电压或膜电位（U），以更新权重（W）的可视化。左侧是带有“死神经元”问题的反向传播。左二是带有替代函数（f）的反向传播。反向传播的学习信号是全局的（L_G），来自网络的最后一层；虚线框表示上层神经元/层。
 
-右侧的其他图像展示了信号传播（SP）提供的两种解决方案。首先，SP也可以使用替代品，但学习信号不经过脉冲方程（S）。相反，学习信号在脉冲方程（S）之前，直接附加到替代函数（f）上。因此，SP与大脑中的学习更兼容，例如在生物神经元的多室模型中。其次，SP可以仅使用电压或膜电位（U）进行学习。在这种情况下，学习信号直接附加到U上。这不需要替代品或对神经元的更改。因此，SP与硬件中的学习兼容。
+右侧的其他图像展示了信号传播（SP）提供的两种解决方案。首先，SP 也可以使用替代品，但学习信号不经过脉冲方程（S）。相反，学习信号在脉冲方程（S）之前，直接附加到替代函数（f）上。因此，SP 与大脑中的学习更兼容，例如在生物神经元的多室模型中。其次，SP 可以仅使用电压或膜电位（U）进行学习。在这种情况下，学习信号直接附加到 U 上。这不需要替代品或对神经元的更改。因此，SP 与硬件中的学习兼容。
 
-![](../Images/2d78d2946f5f5fef77b8eb64e13e90ed.png)
+![](img/2d78d2946f5f5fef77b8eb64e13e90ed.png)
 
 # 4\. 前向学习的研究工作
 
 关于前向学习的工作列表 - 使用前向传播进行学习。工作按日期排序。
 
-一个社区维护的仓库网页用于记录前向学习方法，位于 [https://amassivek.github.io/sigprop](https://amassivek.github.io/sigprop) 。代码库可在 [https://github.com/amassivek/signalpropagation](https://github.com/amassivek/signalpropagation) 获取。
+一个社区维护的仓库网页用于记录前向学习方法，位于 [`amassivek.github.io/sigprop`](https://amassivek.github.io/sigprop) 。代码库可在 [`github.com/amassivek/signalpropagation`](https://github.com/amassivek/signalpropagation) 获取。
 
 ## 4.1\. 误差前向传播算法（2018）
 
-误差前向传播算法是信号传播框架在前向传播中的实现（如下图）。在信号传播下，S是上下文c的变换，对于监督学习来说，c是目标。
+误差前向传播算法是信号传播框架在前向传播中的实现（如下图）。在信号传播下，S 是上下文 c 的变换，对于监督学习来说，c 是目标。
 
-在误差前向传播中，S是从输出到网络前端的误差投影，如下图所示。
+在误差前向传播中，S 是从输出到网络前端的误差投影，如下图所示。
 
-![](../Images/5e88aec10f836b620d931ced3c41ca94.png)
+![](img/5e88aec10f836b620d931ced3c41ca94.png)
 
 错误前向传播算法。来自 [MNIST 数据集](http://yann.lecun.com/exdb/mnist/) 的图像 7。
 
 错误前向传播：重用前馈连接在深度学习中传播错误
 
-[https://arxiv.org/abs/1808.03357](https://arxiv.org/abs/1808.03357)
+[`arxiv.org/abs/1808.03357`](https://arxiv.org/abs/1808.03357)
 
 ## 4.2\. 前向前向算法 (2022)
 
@@ -270,27 +270,27 @@ SP在网络中向前移动（见下图），将目标和输入越来越靠近，
 
 在前向前向中，S 是目标 c 和输入 x 的连接，如下图所示。
 
-![](../Images/dde3a141fe9cfec6e48aa88d8123d3a9.png)
+![](img/dde3a141fe9cfec6e48aa88d8123d3a9.png)
 
 前向前向算法。来自 [MNIST 数据集](http://yann.lecun.com/exdb/mnist/) 的图像 7。
 
 前向前向算法
 
-[https://www.cs.toronto.edu/~hinton/FFA13.pdf](https://www.cs.toronto.edu/~hinton/FFA13.pdf)
+[`www.cs.toronto.edu/~hinton/FFA13.pdf`](https://www.cs.toronto.edu/~hinton/FFA13.pdf)
 
 # 5\. 阅读材料
 
 信号传播：前向传递中的学习与推理框架
 
-[https://arxiv.org/abs/2204.01723](https://arxiv.org/abs/2204.01723) (2022)
+[`arxiv.org/abs/2204.01723`](https://arxiv.org/abs/2204.01723) (2022)
 
 前向前向算法
 
-[https://www.cs.toronto.edu/~hinton/FFA13.pdf](https://www.cs.toronto.edu/~hinton/FFA13.pdf) (2022)
+[`www.cs.toronto.edu/~hinton/FFA13.pdf`](https://www.cs.toronto.edu/~hinton/FFA13.pdf) (2022)
 
 错误前向传播：重用前馈连接在深度学习中传播错误
 
-[https://arxiv.org/abs/1808.03357](https://arxiv.org/abs/1808.03357) (2018)
+[`arxiv.org/abs/1808.03357`](https://arxiv.org/abs/1808.03357) (2018)
 
 ## 5.1 其他材料
 
@@ -298,11 +298,11 @@ SP在网络中向前移动（见下图），将目标和输入越来越靠近，
 
 使用深度学习的经验训练尖峰神经网络
 
-[https://arxiv.org/abs/2109.12894](https://arxiv.org/abs/2109.12894) (2021)
+[`arxiv.org/abs/2109.12894`](https://arxiv.org/abs/2109.12894) (2021)
 
-社区维护了一个代码库网页来记录前向学习方法，位于 [https://amassivek.github.io/sigprop](https://amassivek.github.io/sigprop)。
+社区维护了一个代码库网页来记录前向学习方法，位于 [`amassivek.github.io/sigprop`](https://amassivek.github.io/sigprop)。
 
-代码库可以在 [https://github.com/amassivek/signalpropagation](https://github.com/amassivek/signalpropagation) 上获取。
+代码库可以在 [`github.com/amassivek/signalpropagation`](https://github.com/amassivek/signalpropagation) 上获取。
 
 感谢：Alexandra Marmarinos 的编辑工作和指导。
 
@@ -318,7 +318,7 @@ SP在网络中向前移动（见下图），将目标和输入越来越靠近，
 
 广泛来说，学习阶段有两种方法。第一种方法计算全局学习信号（左中图），然后将此学习信号发送到每个神经元。第二种方法在每个神经元（或层）计算局部学习信号（右图）。第一种方法的问题在于需要以精确的方式协调将此信号发送到每个神经元。这在时间、内存和兼容性上都很昂贵。第二种方法没有遇到这个问题，但性能较差。
 
-![](../Images/a386c471774bfbe111f7dbc3daa182a2.png)
+![](img/a386c471774bfbe111f7dbc3daa182a2.png)
 
 ## 6.2\. 时间信用分配
 
@@ -332,22 +332,22 @@ SP在网络中向前移动（见下图），将目标和输入越来越靠近，
 
 ## 第一步：推断
 
-在下图中，BPT将构成视频的每一张图像X[i]（例如乌龟走路的图像）输入网络。BPT从第1张图像X[0]（第一张图像的左下角）开始，这是时间步长1（时间显示在图的顶部）。接着，BPT输入图像X[1]，这是时间步长2。最后，我们以时间步长3的最后一张图像X[2]结束——这个演示用于非常短的视频或GIF。每次BPT将图像输入网络时，请注意网络中的中间层将每张图像通过时间连接到下一张图像。
+在下图中，BPT 将构成视频的每一张图像 X[i]（例如乌龟走路的图像）输入网络。BPT 从第 1 张图像 X[0]（第一张图像的左下角）开始，这是时间步长 1（时间显示在图的顶部）。接着，BPT 输入图像 X[1]，这是时间步长 2。最后，我们以时间步长 3 的最后一张图像 X[2]结束——这个演示用于非常短的视频或 GIF。每次 BPT 将图像输入网络时，请注意网络中的中间层将每张图像通过时间连接到下一张图像。
 
-![](../Images/2a6b9a826f6d1959705d165fccd79c2f.png)
+![](img/2a6b9a826f6d1959705d165fccd79c2f.png)
 
 ## 第二步：通过时间进行学习
 
-BPT将学习信号（用红色标记）从图像（时间）中向后传播，形成了乌龟行走的视频。学习信号是从损失函数（图中的右上方）形成的。它的传播方向与我们输入图像X[i]的方向相反。首先计算时间3的图像X[2]的梯度/更新，然后是时间2的图像X[1]，最后是时间1的图像X[0]。这就是为什么它被称为时间上的反向传播。再次注意，网络中的中间层将来自最后一张图像X[2]的学习信号连接到第一张图像X[0]。
+BPT 将学习信号（用红色标记）从图像（时间）中向后传播，形成了乌龟行走的视频。学习信号是从损失函数（图中的右上方）形成的。它的传播方向与我们输入图像 X[i]的方向相反。首先计算时间 3 的图像 X[2]的梯度/更新，然后是时间 2 的图像 X[1]，最后是时间 1 的图像 X[0]。这就是为什么它被称为时间上的反向传播。再次注意，网络中的中间层将来自最后一张图像 X[2]的学习信号连接到第一张图像 X[0]。
 
-![](../Images/aff1d694a7b664ae2b3b6b304d537f76.png)
+![](img/aff1d694a7b664ae2b3b6b304d537f76.png)
 
 ## 6.2.2\. 正向模式微分（FMD）
 
-在FMD下，推断（第1步）和学习（第2步）阶段的行为是类似的。因此，FMD将第1步（推断）和第2步（学习）一起进行（交替）。怎么做？在第2步中，FMD将学习信号向前传播通过图像（时间），这与第1步中的推断过程非常相似。因此，学习信号不再需要从视频中的最后一张图像X[3]返回到第一张图像X[0]。结果是：FMD的学习信号从X[0]开始，而不需要等待X[3]。
+在 FMD 下，推断（第 1 步）和学习（第 2 步）阶段的行为是类似的。因此，FMD 将第 1 步（推断）和第 2 步（学习）一起进行（交替）。怎么做？在第 2 步中，FMD 将学习信号向前传播通过图像（时间），这与第 1 步中的推断过程非常相似。因此，学习信号不再需要从视频中的最后一张图像 X[3]返回到第一张图像 X[0]。结果是：FMD 的学习信号从 X[0]开始，而不需要等待 X[3]。
 
-为什么选择FMD而不是BPT？上面我讨论了在反向传播（backpropagation）下学习的限制以及它在效率和兼容性方面存在的问题。FMD尝试提高效率。特别是，BPT会在学习之前将所有构成视频的图像输入到网络中。而FMD则不会，因此在时间上比BPT更高效。然而，FMD在成本上明显高于BPT，特别是在内存和计算方面。注意，FMD解决了时间上的问题。然而，它并没有解决反向传播下空间信用分配的学习限制，这在FMD中也存在。
+为什么选择 FMD 而不是 BPT？上面我讨论了在反向传播（backpropagation）下学习的限制以及它在效率和兼容性方面存在的问题。FMD 尝试提高效率。特别是，BPT 会在学习之前将所有构成视频的图像输入到网络中。而 FMD 则不会，因此在时间上比 BPT 更高效。然而，FMD 在成本上明显高于 BPT，特别是在内存和计算方面。注意，FMD 解决了时间上的问题。然而，它并没有解决反向传播下空间信用分配的学习限制，这在 FMD 中也存在。
 
-![](../Images/003081cfcb5e5ffd6935788b92da960c.png)![](../Images/bfbbf05ce62d1c63fdd6f92040c8683b.png)![](../Images/06c556b25d352b89599c82116278443b.png)
+![](img/003081cfcb5e5ffd6935788b92da960c.png)![](img/bfbbf05ce62d1c63fdd6f92040c8683b.png)![](img/06c556b25d352b89599c82116278443b.png)
 
 除非另有说明，否则所有图片均由作者提供。

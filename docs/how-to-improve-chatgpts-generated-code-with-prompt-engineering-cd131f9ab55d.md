@@ -1,20 +1,20 @@
 # 如何通过提示工程改进 ChatGPT 生成的代码
 
-> 原文：[https://towardsdatascience.com/how-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d?source=collection_archive---------16-----------------------#2023-07-21](https://towardsdatascience.com/how-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d?source=collection_archive---------16-----------------------#2023-07-21)
+> 原文：[`towardsdatascience.com/how-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d?source=collection_archive---------16-----------------------#2023-07-21`](https://towardsdatascience.com/how-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d?source=collection_archive---------16-----------------------#2023-07-21)
 
 ## 提升 ChatGPT 作为编码助手的性能的简单策略
 
-[](https://medium.com/@aashishnair?source=post_page-----cd131f9ab55d--------------------------------)[![Aashish Nair](../Images/23f4b3839e464419332b690a4098d824.png)](https://medium.com/@aashishnair?source=post_page-----cd131f9ab55d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd131f9ab55d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cd131f9ab55d--------------------------------) [Aashish Nair](https://medium.com/@aashishnair?source=post_page-----cd131f9ab55d--------------------------------)
+[](https://medium.com/@aashishnair?source=post_page-----cd131f9ab55d--------------------------------)![Aashish Nair](https://medium.com/@aashishnair?source=post_page-----cd131f9ab55d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd131f9ab55d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd131f9ab55d--------------------------------) [Aashish Nair](https://medium.com/@aashishnair?source=post_page-----cd131f9ab55d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3087ba81e065&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d&user=Aashish+Nair&userId=3087ba81e065&source=post_page-3087ba81e065----cd131f9ab55d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd131f9ab55d--------------------------------) ·7 min read·2023年7月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcd131f9ab55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d&user=Aashish+Nair&userId=3087ba81e065&source=-----cd131f9ab55d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3087ba81e065&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d&user=Aashish+Nair&userId=3087ba81e065&source=post_page-3087ba81e065----cd131f9ab55d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd131f9ab55d--------------------------------) ·7 min read·2023 年 7 月 21 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcd131f9ab55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d&user=Aashish+Nair&userId=3087ba81e065&source=-----cd131f9ab55d---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd131f9ab55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d&source=-----cd131f9ab55d---------------------bookmark_footer-----------)![](../Images/bb5ca25ff10ecd443c314b92f6047627.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd131f9ab55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-improve-chatgpts-generated-code-with-prompt-engineering-cd131f9ab55d&source=-----cd131f9ab55d---------------------bookmark_footer-----------)![](img/bb5ca25ff10ecd443c314b92f6047627.png)
 
-图片来源：cottonbro studio: [https://www.pexels.com/photo/hands-typing-on-a-laptop-keyboard-5483077/](https://www.pexels.com/photo/hands-typing-on-a-laptop-keyboard-5483077/)
+图片来源：cottonbro studio: [`www.pexels.com/photo/hands-typing-on-a-laptop-keyboard-5483077/`](https://www.pexels.com/photo/hands-typing-on-a-laptop-keyboard-5483077/)
 
 ## 介绍
 

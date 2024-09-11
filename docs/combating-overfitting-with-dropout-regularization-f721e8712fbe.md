@@ -1,18 +1,18 @@
-# 与**Dropout正则化**对抗过拟合
+# 与**Dropout 正则化**对抗过拟合
 
-> 原文：[https://towardsdatascience.com/combating-overfitting-with-dropout-regularization-f721e8712fbe?source=collection_archive---------2-----------------------#2023-03-03](https://towardsdatascience.com/combating-overfitting-with-dropout-regularization-f721e8712fbe?source=collection_archive---------2-----------------------#2023-03-03)
+> 原文：[`towardsdatascience.com/combating-overfitting-with-dropout-regularization-f721e8712fbe?source=collection_archive---------2-----------------------#2023-03-03`](https://towardsdatascience.com/combating-overfitting-with-dropout-regularization-f721e8712fbe?source=collection_archive---------2-----------------------#2023-03-03)
 
-## 探索在自己的机器学习模型中实现Dropout的过程
+## 探索在自己的机器学习模型中实现 Dropout 的过程
 
-[](https://medium.com/@rohankvij?source=post_page-----f721e8712fbe--------------------------------)[![罗汉·维吉](../Images/6ef53fffb4749e1665360555bf18275f.png)](https://medium.com/@rohankvij?source=post_page-----f721e8712fbe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f721e8712fbe--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f721e8712fbe--------------------------------) [罗汉·维吉](https://medium.com/@rohankvij?source=post_page-----f721e8712fbe--------------------------------)
+[](https://medium.com/@rohankvij?source=post_page-----f721e8712fbe--------------------------------)![罗汉·维吉](https://medium.com/@rohankvij?source=post_page-----f721e8712fbe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f721e8712fbe--------------------------------)![数据科学前沿](https://towardsdatascience.com/?source=post_page-----f721e8712fbe--------------------------------) [罗汉·维吉](https://medium.com/@rohankvij?source=post_page-----f721e8712fbe--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe44b36765084&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombating-overfitting-with-dropout-regularization-f721e8712fbe&user=Rohan+Vij&userId=e44b36765084&source=post_page-e44b36765084----f721e8712fbe---------------------post_header-----------) 发表在[数据科学前沿](https://towardsdatascience.com/?source=post_page-----f721e8712fbe--------------------------------) · 7分钟阅读 · 2023年3月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff721e8712fbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombating-overfitting-with-dropout-regularization-f721e8712fbe&user=Rohan+Vij&userId=e44b36765084&source=-----f721e8712fbe---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe44b36765084&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombating-overfitting-with-dropout-regularization-f721e8712fbe&user=Rohan+Vij&userId=e44b36765084&source=post_page-e44b36765084----f721e8712fbe---------------------post_header-----------) 发表在[数据科学前沿](https://towardsdatascience.com/?source=post_page-----f721e8712fbe--------------------------------) · 7 分钟阅读 · 2023 年 3 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff721e8712fbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombating-overfitting-with-dropout-regularization-f721e8712fbe&user=Rohan+Vij&userId=e44b36765084&source=-----f721e8712fbe---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff721e8712fbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombating-overfitting-with-dropout-regularization-f721e8712fbe&source=-----f721e8712fbe---------------------bookmark_footer-----------)![](../Images/2cb3dea34c130db7298a48db8ba2f7d2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff721e8712fbe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcombating-overfitting-with-dropout-regularization-f721e8712fbe&source=-----f721e8712fbe---------------------bookmark_footer-----------)![](img/2cb3dea34c130db7298a48db8ba2f7d2.png)
 
 照片由[皮埃尔·巴敏](https://unsplash.com/@bamin?utm_source=medium&utm_medium=referral)拍摄，发布于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

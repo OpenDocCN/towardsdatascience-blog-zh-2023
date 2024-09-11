@@ -1,14 +1,14 @@
 # 人员分析是新的大趋势，了解原因你应该知道
 
-> 原文：[https://towardsdatascience.com/people-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7?source=collection_archive---------13-----------------------#2023-07-07](https://towardsdatascience.com/people-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7?source=collection_archive---------13-----------------------#2023-07-07)
+> 原文：[`towardsdatascience.com/people-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7?source=collection_archive---------13-----------------------#2023-07-07`](https://towardsdatascience.com/people-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7?source=collection_archive---------13-----------------------#2023-07-07)
 
 ## 关于职场数据与分析的所有内容
 
-[](https://rashidesai2424.medium.com/?source=post_page-----61cda54da5e7--------------------------------)[![Rashi Desai](../Images/0a706eb6bb2407c83c67a874e3747e36.png)](https://rashidesai2424.medium.com/?source=post_page-----61cda54da5e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----61cda54da5e7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----61cda54da5e7--------------------------------) [Rashi Desai](https://rashidesai2424.medium.com/?source=post_page-----61cda54da5e7--------------------------------)
+[](https://rashidesai2424.medium.com/?source=post_page-----61cda54da5e7--------------------------------)![Rashi Desai](https://rashidesai2424.medium.com/?source=post_page-----61cda54da5e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----61cda54da5e7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----61cda54da5e7--------------------------------) [Rashi Desai](https://rashidesai2424.medium.com/?source=post_page-----61cda54da5e7--------------------------------)
 
 ·
 
-[阅读原文](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F856a7c948cc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpeople-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7&user=Rashi+Desai&userId=856a7c948cc2&source=post_page-856a7c948cc2----61cda54da5e7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----61cda54da5e7--------------------------------) ·5分钟阅读·2023年7月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F61cda54da5e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpeople-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7&user=Rashi+Desai&userId=856a7c948cc2&source=-----61cda54da5e7---------------------clap_footer-----------)
+[阅读原文](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F856a7c948cc2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpeople-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7&user=Rashi+Desai&userId=856a7c948cc2&source=post_page-856a7c948cc2----61cda54da5e7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----61cda54da5e7--------------------------------) ·5 分钟阅读·2023 年 7 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F61cda54da5e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpeople-analytics-is-the-new-big-thing-heres-why-you-should-know-about-it-61cda54da5e7&user=Rashi+Desai&userId=856a7c948cc2&source=-----61cda54da5e7---------------------clap_footer-----------)
 
 --
 
@@ -16,7 +16,7 @@
 
 人员分析可以定义为处理人力资源数据的过程，并将其转化为数据驱动的可操作洞察，从而改善业务运作方式。
 
-![](../Images/627249ef1f66dcc96d36f555073baf6d.png)
+![](img/627249ef1f66dcc96d36f555073baf6d.png)
 
 图片来源：[José Martín Ramírez Carrasco](https://unsplash.com/@martinirc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 在 [Unsplash](https://unsplash.com/s/photos/crowd?orientation=landscape&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 

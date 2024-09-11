@@ -1,18 +1,18 @@
 # 使用广义加性模型（GAMs）生成见解
 
-> 原文：[https://towardsdatascience.com/producing-insights-with-generalized-additive-models-gams-cf2b68b1b847?source=collection_archive---------4-----------------------#2023-01-30](https://towardsdatascience.com/producing-insights-with-generalized-additive-models-gams-cf2b68b1b847?source=collection_archive---------4-----------------------#2023-01-30)
+> 原文：[`towardsdatascience.com/producing-insights-with-generalized-additive-models-gams-cf2b68b1b847?source=collection_archive---------4-----------------------#2023-01-30`](https://towardsdatascience.com/producing-insights-with-generalized-additive-models-gams-cf2b68b1b847?source=collection_archive---------4-----------------------#2023-01-30)
 
 ## 学习如何解释广义加性模型（GAMs）并从数据中提取有用的见解
 
-[](https://medium.com/@alvarofps?source=post_page-----cf2b68b1b847--------------------------------)[![Alvaro Peña](../Images/49859139c2cf5e43239a25f1d82ef3fd.png)](https://medium.com/@alvarofps?source=post_page-----cf2b68b1b847--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cf2b68b1b847--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cf2b68b1b847--------------------------------) [Alvaro Peña](https://medium.com/@alvarofps?source=post_page-----cf2b68b1b847--------------------------------)
+[](https://medium.com/@alvarofps?source=post_page-----cf2b68b1b847--------------------------------)![Alvaro Peña](https://medium.com/@alvarofps?source=post_page-----cf2b68b1b847--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cf2b68b1b847--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf2b68b1b847--------------------------------) [Alvaro Peña](https://medium.com/@alvarofps?source=post_page-----cf2b68b1b847--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3884c9f0acaf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproducing-insights-with-generalized-additive-models-gams-cf2b68b1b847&user=Alvaro+Pe%C3%B1a&userId=3884c9f0acaf&source=post_page-3884c9f0acaf----cf2b68b1b847---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf2b68b1b847--------------------------------) ·10分钟阅读·2023年1月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcf2b68b1b847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproducing-insights-with-generalized-additive-models-gams-cf2b68b1b847&user=Alvaro+Pe%C3%B1a&userId=3884c9f0acaf&source=-----cf2b68b1b847---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3884c9f0acaf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproducing-insights-with-generalized-additive-models-gams-cf2b68b1b847&user=Alvaro+Pe%C3%B1a&userId=3884c9f0acaf&source=post_page-3884c9f0acaf----cf2b68b1b847---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf2b68b1b847--------------------------------) ·10 分钟阅读·2023 年 1 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcf2b68b1b847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproducing-insights-with-generalized-additive-models-gams-cf2b68b1b847&user=Alvaro+Pe%C3%B1a&userId=3884c9f0acaf&source=-----cf2b68b1b847---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcf2b68b1b847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproducing-insights-with-generalized-additive-models-gams-cf2b68b1b847&source=-----cf2b68b1b847---------------------bookmark_footer-----------)![](../Images/44fc4956fbbacf15481d778898b30210.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcf2b68b1b847&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproducing-insights-with-generalized-additive-models-gams-cf2b68b1b847&source=-----cf2b68b1b847---------------------bookmark_footer-----------)![](img/44fc4956fbbacf15481d778898b30210.png)
 
 照片由 [A. L.](https://unsplash.com/@overdriv3?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供
 
@@ -30,7 +30,7 @@ GAMs（广义加性模型）通过添加协变量的估计权重来与线性回�
 
 我们可以正式写出我们的模型：
 
-![](../Images/c255ce44bf64607eabc6278a63eba60b.png)
+![](img/c255ce44bf64607eabc6278a63eba60b.png)
 
 示例 GAM 的数学表达式
 
@@ -97,11 +97,11 @@ bikes = get.bike.data() %>% dplyr::select(variables.of.interest)
 summary(bikes)
 ```
 
-![](../Images/bb7828953fc0916b582b4fa624bfc1f2.png)
+![](img/bb7828953fc0916b582b4fa624bfc1f2.png)
 
 summary 函数的输出
 
-我们巧妙地用一个函数总结了我们的数据，我们拥有每天的分类和数值数据。我们的数据集包含730条记录，大约是两年的数据。
+我们巧妙地用一个函数总结了我们的数据，我们拥有每天的分类和数值数据。我们的数据集包含 730 条记录，大约是两年的数据。
 
 ## 数据探索
 
@@ -114,27 +114,27 @@ ggpairs(bikes %>% select(c(temp, hum, windspeed, cnt))) +
   my_theme()
 ```
 
-![](../Images/2e12ac0d9af89ff4e760e6c45472eb44.png)
+![](img/2e12ac0d9af89ff4e760e6c45472eb44.png)
 
-图1\. 检查变量相关性
+图 1\. 检查变量相关性
 
 我们使用了*ggpairs*函数来创建这个图形，在这里我们可以可视化变量之间的相互影响并发现模式。总体而言，我们可以看到温度对自行车租赁数量有正面影响（见左下角的图）。让我们进一步探讨温度对其他解释天气情况和日期的分类变量的影响。
 
-![](../Images/8d6d7bef246d3eb1c070a227b4023046.png)
+![](img/8d6d7bef246d3eb1c070a227b4023046.png)
 
-图2\. 按季节划分的天气情况及其对租赁自行车数量的影响
+图 2\. 按季节划分的天气情况及其对租赁自行车数量的影响
 
 无论季节如何，只要天气好，租赁自行车的数量就会比天气差时高。例如，在冬季有三种天气情况，但总体而言，当天气不好时，租赁自行车的数量较低。此外，与冬季相比，夏季的租赁自行车数量显著较高。也许我们应该考虑天气情况对模型的影响。
 
-![](../Images/a543d4beae7eb9e3eda3eaa106bb80bf.png)
+![](img/a543d4beae7eb9e3eda3eaa106bb80bf.png)
 
-图3\. 温度在不同季节和天气情况中的影响
+图 3\. 温度在不同季节和天气情况中的影响
 
-左图确认了我们的发现，表明良好的天气显著有助于增加租赁自行车的数量。另一方面，右图显示温度对较冷的季节如秋冬有正面影响。有趣的是，当温度接近30摄氏度时，夏季出现了轻微的负面趋势，表明一些骑行者不愿意在高温下骑行。
+左图确认了我们的发现，表明良好的天气显著有助于增加租赁自行车的数量。另一方面，右图显示温度对较冷的季节如秋冬有正面影响。有趣的是，当温度接近 30 摄氏度时，夏季出现了轻微的负面趋势，表明一些骑行者不愿意在高温下骑行。
 
 ## 训练广义加法模型（GAM）？
 
-在R中训练/拟合广义加法模型（GAM），我们将使用*mgcv*库。它是一个功能强大且维护良好的库。
+在 R 中训练/拟合广义加法模型（GAM），我们将使用*mgcv*库。它是一个功能强大且维护良好的库。
 
 ```py
 M = gam(cnt ~ season + weathersit  + s(days_since_2011, bs ="cr", k = 70) +
@@ -147,7 +147,7 @@ M = gam(cnt ~ season + weathersit  + s(days_since_2011, bs ="cr", k = 70) +
 
 +   ***s(days_since_2011, bs = “cr”, k = 70)****:* 这个术语表示我们将使用三次回归样条（平滑函数）来估算租赁自行车数量随时间变化的情况。***k***值是函数的阶数，决定了它的灵活性。稍后会变得清晰。
 
-+   ***s(temp, by = season, k = 15)****:* 这个术语估算了在不同季节中温度对租赁自行车数量的影响。由于k值较小，它不如上述术语灵活。
++   ***s(temp, by = season, k = 15)****:* 这个术语估算了在不同季节中温度对租赁自行车数量的影响。由于 k 值较小，它不如上述术语灵活。
 
 +   ***season:*** 每个季节都有不同的截距，因为我们使用了一个估算季节温度的术语。
 
@@ -160,22 +160,22 @@ M = gam(cnt ~ season + weathersit  + s(days_since_2011, bs ="cr", k = 70) +
 summary(M)
 ```
 
-![](../Images/edd6cf931438ea54fec565e4e246d6de.png)
+![](img/edd6cf931438ea54fec565e4e246d6de.png)
 
 图 4\. 模型摘要
 
-首先，图 4\. 的模型摘要告诉我们目标变量的分布和链接函数。在我们的案例中：高斯（正态）和恒等函数（变量未改变）。我们有参数系数或截距，为每个季节和每种天气情况计算了一个截距（也称为参数效应）。在下一部分中，展示了我们平滑函数的有效自由度。这些值告诉我们关系的灵活性（本质上是它们与线性关系的差异，线性关系的edf=1）。最后，我们有解释的偏差，在我们的案例中是88%。我们的模型解释了88%的数据。
+首先，图 4\. 的模型摘要告诉我们目标变量的分布和链接函数。在我们的案例中：高斯（正态）和恒等函数（变量未改变）。我们有参数系数或截距，为每个季节和每种天气情况计算了一个截距（也称为参数效应）。在下一部分中，展示了我们平滑函数的有效自由度。这些值告诉我们关系的灵活性（本质上是它们与线性关系的差异，线性关系的 edf=1）。最后，我们有解释的偏差，在我们的案例中是 88%。我们的模型解释了 88%的数据。
 
 ```py
 # Checking k-value and edf
 k.check(M)
 ```
 
-![](../Images/54217118adf09c0b53aef2bfef90593e.png)
+![](img/54217118adf09c0b53aef2bfef90593e.png)
 
 图 5\. 检查模型的灵活性
 
-图 5\. 中的下一个模型检查与平滑函数的秩有关。例如，第一个解释自行车数量与时间关系的平滑函数被赋予了70的秩。其中一个秩用于计算截距，其余的用于建模关系。edf告诉我们所使用函数使用了多少可用的灵活性（69个秩）。作为一个好的经验法则，我们希望k大于edf，k-index大于1。我们还希望p值较大，而不是较小，这通常是情况。在我们的案例中，我们未能获得后两者，但我们已给函数足够的灵活性，如edf所示。
+图 5\. 中的下一个模型检查与平滑函数的秩有关。例如，第一个解释自行车数量与时间关系的平滑函数被赋予了 70 的秩。其中一个秩用于计算截距，其余的用于建模关系。edf 告诉我们所使用函数使用了多少可用的灵活性（69 个秩）。作为一个好的经验法则，我们希望 k 大于 edf，k-index 大于 1。我们还希望 p 值较大，而不是较小，这通常是情况。在我们的案例中，我们未能获得后两者，但我们已给函数足够的灵活性，如 edf 所示。
 
 ## 解释平滑效应
 
@@ -186,47 +186,47 @@ k.check(M)
 draw(M, parametric = TRUE)
 ```
 
-![](../Images/f59620e434e7382abaa9e704b17fd7ee.png)
+![](img/f59620e434e7382abaa9e704b17fd7ee.png)
 
 图 6\. 时间与租赁自行车之间的非线性关系
 
-需要注意的一点是，所有的部分效应图都以均值为中心，阴影区域表示95%的置信区间。这意味着y轴上显示的增减反映了租赁自行车的平均预测值。例如，可以通过陈述在前半段时间内自行车数量低于平均值来解释图 6\.。我们还可以看到，由于所使用函数的30个有效自由度，关系是相当灵活的。
+需要注意的一点是，所有的部分效应图都以均值为中心，阴影区域表示 95%的置信区间。这意味着 y 轴上显示的增减反映了租赁自行车的平均预测值。例如，可以通过陈述在前半段时间内自行车数量低于平均值来解释图 6\.。我们还可以看到，由于所使用函数的 30 个有效自由度，关系是相当灵活的。
 
-![](../Images/8eb8e2b1eee8fca04c139a1d21dcc60e.png)
+![](img/8eb8e2b1eee8fca04c139a1d21dcc60e.png)
 
 图 7\. 温度对秋季租赁自行车的影响
 
-图7中温度的影响没有很大的灵活性，但我们可以清晰地看到一些*“波动”。* 一个重要方面是x轴上的rug图，它显示了数据点的数量。当没有数据点时，置信区间会显著增大，因为我们不确定关系。我们可以通过说在秋季，温度的升高会增加租赁自行车的数量来解释此图。更准确地说，当温度约为5摄氏度时，预测的自行车数量比平均值低——1200（低1200）。
+图 7 中温度的影响没有很大的灵活性，但我们可以清晰地看到一些*“波动”。* 一个重要方面是 x 轴上的 rug 图，它显示了数据点的数量。当没有数据点时，置信区间会显著增大，因为我们不确定关系。我们可以通过说在秋季，温度的升高会增加租赁自行车的数量来解释此图。更准确地说，当温度约为 5 摄氏度时，预测的自行车数量比平均值低——1200（低 1200）。
 
-![](../Images/aa603ed8550b81593d82889e1411a3f2.png)
+![](img/aa603ed8550b81593d82889e1411a3f2.png)
 
-图8. 春季温度对租赁自行车的影响
+图 8. 春季温度对租赁自行车的影响
 
-在春季，温度的变化方式不同，预测的自行车数量在温度从4摄氏度升高到20摄氏度时急剧上升，但之后预测的自行车数量开始下降。我们需要仔细考虑较高温度值的的不确定性，rug图表明数据点不多。如果有更多数据，这部分图表可能会显示平滑曲线？
+在春季，温度的变化方式不同，预测的自行车数量在温度从 4 摄氏度升高到 20 摄氏度时急剧上升，但之后预测的自行车数量开始下降。我们需要仔细考虑较高温度值的的不确定性，rug 图表明数据点不多。如果有更多数据，这部分图表可能会显示平滑曲线？
 
-![](../Images/393064990c9a7bc2eff52e20deef0f2e.png)
+![](img/393064990c9a7bc2eff52e20deef0f2e.png)
 
-图9. 夏季温度对租赁自行车的影响
+图 9. 夏季温度对租赁自行车的影响
 
-夏季非常有趣，因为我们看到在温暖的日子里数量下降。在图9中，我们可以看到温度超过30摄氏度对预测的租赁自行车数量有负面影响，低于预测平均值约——2500。这可能是因为骑行者不愿意在非常热的日子里骑车。
+夏季非常有趣，因为我们看到在温暖的日子里数量下降。在图 9 中，我们可以看到温度超过 30 摄氏度对预测的租赁自行车数量有负面影响，低于预测平均值约——2500。这可能是因为骑行者不愿意在非常热的日子里骑车。
 
-![](../Images/cd96c5ce22490714e229f48b05bc26f7.png)
+![](img/cd96c5ce22490714e229f48b05bc26f7.png)
 
-图10. 冬季温度对租赁自行车的影响
+图 10. 冬季温度对租赁自行车的影响
 
-最后，在冬季，随着温度的升高，预测的租赁自行车数量增加。注意图10显示了一个几乎线性的关系，与模型总结中的1.24 edf相符。虽然它的灵活性不如其他平滑函数，但按季节建模温度似乎是合适的。我们可以通过说在冬季15摄氏度时，预测的自行车数量大致与平均值相同来解释此图。
+最后，在冬季，随着温度的升高，预测的租赁自行车数量增加。注意图 10 显示了一个几乎线性的关系，与模型总结中的 1.24 edf 相符。虽然它的灵活性不如其他平滑函数，但按季节建模温度似乎是合适的。我们可以通过说在冬季 15 摄氏度时，预测的自行车数量大致与平均值相同来解释此图。
 
 接下来我们将解释估计的截距或参数效应。
 
 ## 解释参数效应
 
-![](../Images/8f8d63a77bb1714669a5a7fab51be29f.png)
+![](img/8f8d63a77bb1714669a5a7fab51be29f.png)
 
-图11. 一年四季对租赁自行车的影响
+图 11. 一年四季对租赁自行车的影响
 
 图 11\. 显示了带有 95% 置信区间的估计参数效应。我们可以通过陈述春季预测的自行车数量比秋季低 1489 辆来解读此图。我们对这一陈述充满信心，因为置信区间不包括零（我们的比较点）。如果预测也包括秋季的预测数据，春季的效应将不会显著，对吗？我们可以对冬季对预测自行车数量的影响做出相同的陈述。另一方面，夏季的效应不显著，因为其置信区间相当大并且包括零。这表明，在夏季，我们的模型预测的租用自行车数量也可以在秋季预测。我们可以从中提取一个见解：租用自行车数量的增加不是因为夏季，而是因为温度逐渐变暖。
 
-![](../Images/99e34ab49a6496c28ea71cdfa7cec556.png)
+![](img/99e34ab49a6496c28ea71cdfa7cec556.png)
 
 图 12\. 天气情况对租用自行车的影响
 
@@ -254,4 +254,4 @@ Wood, S.N., 2017\. *广义加性模型：R 语言入门*. 第二版。Chapman an
 
 可以在我的 GitHub 仓库中找到：
 
-[https://github.com/alvarofps/Producing-Insights-with-GAMs](https://github.com/alvarofps/Producing-Insights-with-GAMs)
+[`github.com/alvarofps/Producing-Insights-with-GAMs`](https://github.com/alvarofps/Producing-Insights-with-GAMs)

@@ -1,10 +1,10 @@
 # 不要在没有这个 3 步战略的情况下申请数据科学家的工作
 
-> 原文：[https://towardsdatascience.com/how-successful-data-scientists-land-tech-jobs-in-todays-crisis-a-3-step-winning-strategy-to-27a73153c88b?source=collection_archive---------0-----------------------#2023-12-10](https://towardsdatascience.com/how-successful-data-scientists-land-tech-jobs-in-todays-crisis-a-3-step-winning-strategy-to-27a73153c88b?source=collection_archive---------0-----------------------#2023-12-10)
+> 原文：[`towardsdatascience.com/how-successful-data-scientists-land-tech-jobs-in-todays-crisis-a-3-step-winning-strategy-to-27a73153c88b?source=collection_archive---------0-----------------------#2023-12-10`](https://towardsdatascience.com/how-successful-data-scientists-land-tech-jobs-in-todays-crisis-a-3-step-winning-strategy-to-27a73153c88b?source=collection_archive---------0-----------------------#2023-12-10)
 
 ## 如何在今天的劳动危机中成功获得数据科学家的工作机会
 
-[](https://medium.com/@elalamik?source=post_page-----27a73153c88b--------------------------------)[![Khouloud El Alami](../Images/58840bfe28a60892b51d40ad6ba7f5e8.png)](https://medium.com/@elalamik?source=post_page-----27a73153c88b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27a73153c88b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----27a73153c88b--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----27a73153c88b--------------------------------)
+[](https://medium.com/@elalamik?source=post_page-----27a73153c88b--------------------------------)![Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----27a73153c88b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27a73153c88b--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----27a73153c88b--------------------------------) [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----27a73153c88b--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-![](../Images/9f99b35a5236a2abc8e4eb50ee8f0c4a.png)
+![](img/9f99b35a5236a2abc8e4eb50ee8f0c4a.png)
 
 我在 Blind 上进行的调查快照 — 作者提供的图片
 
@@ -28,4 +28,4 @@
 
 +   你想学习成功的数据科学家如何在经济危机中找到工作。
 
-我收集了*成功*的数据科学家的推荐信，并联系了其他几位，以了解他们成功的求职策略。在本文中，我将他们的智慧和经验结合起来，制定了一个3步策略，来引导你度过这些…
+我收集了*成功*的数据科学家的推荐信，并联系了其他几位，以了解他们成功的求职策略。在本文中，我将他们的智慧和经验结合起来，制定了一个 3 步策略，来引导你度过这些…

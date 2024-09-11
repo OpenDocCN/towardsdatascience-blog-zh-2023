@@ -1,10 +1,10 @@
-# 我如何构建基于 AWS 的级联数据管道（第 1 部分）
+# 我如何构建基于 AWS 的级联数据管道（第一部分）
 
-> 原文：[https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-997b212a84d2?source=collection_archive---------7-----------------------#2023-07-31](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-997b212a84d2?source=collection_archive---------7-----------------------#2023-07-31)
+> 原文：[`towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-997b212a84d2?source=collection_archive---------7-----------------------#2023-07-31`](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-997b212a84d2?source=collection_archive---------7-----------------------#2023-07-31)
 
 ## 自动化、可扩展且强大
 
-[](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)[![Memphis Meng](../Images/5a2b214eb5d5ab884b18224c471662c0.png)](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----997b212a84d2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----997b212a84d2--------------------------------) [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)
+[](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)![Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----997b212a84d2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----997b212a84d2--------------------------------) [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)
 
 ·
 
@@ -16,7 +16,7 @@
 
 今天我将分享一些关于构建我一直引以为傲的数据工程项目的经验。你将了解我使用这些工具和 AWS 组件的原因，以及我如何设计架构。
 
-![](../Images/4f95b8b2918bb62a2337706df55ff6e3.png)
+![](img/4f95b8b2918bb62a2337706df55ff6e3.png)
 
 作者提供的图片
 
@@ -26,10 +26,10 @@
 
 1.  Python 知识
 
-1.  理解AWS组件，例如DynamoDB、Lambda无服务器、SQS和CloudWatch
+1.  理解 AWS 组件，例如 DynamoDB、Lambda 无服务器、SQS 和 CloudWatch
 
 1.  舒适的编码体验，使用[YAML](https://en.wikipedia.org/wiki/YAML)和[SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
 
 # 背景
 
-假设你是数据工程师，需要不断更新数据仓库。例如，你负责定期与[Dunder Mifflin Paper Co.](https://dundermifflinpaper.com)的销售记录同步。（我明白这不是一个现实的场景，但还是要玩得开心 :)！）数据通过供应商的API发送给你，…
+假设你是数据工程师，需要不断更新数据仓库。例如，你负责定期与[Dunder Mifflin Paper Co.](https://dundermifflinpaper.com)的销售记录同步。（我明白这不是一个现实的场景，但还是要玩得开心 :)！）数据通过供应商的 API 发送给你，…

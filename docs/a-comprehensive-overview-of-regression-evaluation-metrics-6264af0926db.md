@@ -1,18 +1,18 @@
 # 回归评估指标的全面概述
 
-> 原文：[https://towardsdatascience.com/a-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db?source=collection_archive---------8-----------------------#2023-05-01](https://towardsdatascience.com/a-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db?source=collection_archive---------8-----------------------#2023-05-01)
+> 原文：[`towardsdatascience.com/a-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db?source=collection_archive---------8-----------------------#2023-05-01`](https://towardsdatascience.com/a-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db?source=collection_archive---------8-----------------------#2023-05-01)
 
-![](../Images/77a024aef30e9daead7e900ad76280bf.png)
+![](img/77a024aef30e9daead7e900ad76280bf.png)
 
 作者使用[icons8](https://icons8.com/)的图标创建的图片
 
 ## 这是一个详尽的参考，涵盖了常用的回归评估指标及其在各种场景中的实际应用。
 
-[](https://eryk-lewinson.medium.com/?source=post_page-----6264af0926db--------------------------------)[![Eryk Lewinson](../Images/56e09e19c0bbfecc582da58761d15078.png)](https://eryk-lewinson.medium.com/?source=post_page-----6264af0926db--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6264af0926db--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6264af0926db--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----6264af0926db--------------------------------)
+[](https://eryk-lewinson.medium.com/?source=post_page-----6264af0926db--------------------------------)![Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----6264af0926db--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6264af0926db--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6264af0926db--------------------------------) [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----6264af0926db--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----6264af0926db---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----6264af0926db--------------------------------) ·15 min 阅读·2023年5月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6264af0926db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----6264af0926db---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44bc27317e6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db&user=Eryk+Lewinson&userId=44bc27317e6b&source=post_page-44bc27317e6b----6264af0926db---------------------post_header-----------) 发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----6264af0926db--------------------------------) ·15 min 阅读·2023 年 5 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6264af0926db&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-comprehensive-overview-of-regression-evaluation-metrics-6264af0926db&user=Eryk+Lewinson&userId=44bc27317e6b&source=-----6264af0926db---------------------clap_footer-----------)
 
 --
 

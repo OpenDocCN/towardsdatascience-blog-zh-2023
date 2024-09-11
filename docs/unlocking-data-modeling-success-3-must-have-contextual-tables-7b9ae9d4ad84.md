@@ -1,18 +1,18 @@
-# 解锁数据建模成功：3个必须拥有的上下文表
+# 解锁数据建模成功：3 个必须拥有的上下文表
 
-> 原文：[https://towardsdatascience.com/unlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84?source=collection_archive---------17-----------------------#2023-07-06](https://towardsdatascience.com/unlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84?source=collection_archive---------17-----------------------#2023-07-06)
+> 原文：[`towardsdatascience.com/unlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84?source=collection_archive---------17-----------------------#2023-07-06`](https://towardsdatascience.com/unlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84?source=collection_archive---------17-----------------------#2023-07-06)
 
 ## 以及如何免费获取有价值的数据
 
-[](https://medium.com/@mattgazzano?source=post_page-----7b9ae9d4ad84--------------------------------)[![Matthew Gazzano](../Images/23f154b154d05847c2c13ea17ceb7a57.png)](https://medium.com/@mattgazzano?source=post_page-----7b9ae9d4ad84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b9ae9d4ad84--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b9ae9d4ad84--------------------------------) [Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----7b9ae9d4ad84--------------------------------)
+[](https://medium.com/@mattgazzano?source=post_page-----7b9ae9d4ad84--------------------------------)![Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----7b9ae9d4ad84--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b9ae9d4ad84--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b9ae9d4ad84--------------------------------) [Matthew Gazzano](https://medium.com/@mattgazzano?source=post_page-----7b9ae9d4ad84--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F626000912ce9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84&user=Matthew+Gazzano&userId=626000912ce9&source=post_page-626000912ce9----7b9ae9d4ad84---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b9ae9d4ad84--------------------------------) ·6分钟阅读·2023年7月6日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b9ae9d4ad84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84&user=Matthew+Gazzano&userId=626000912ce9&source=-----7b9ae9d4ad84---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F626000912ce9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84&user=Matthew+Gazzano&userId=626000912ce9&source=post_page-626000912ce9----7b9ae9d4ad84---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b9ae9d4ad84--------------------------------) ·6 分钟阅读·2023 年 7 月 6 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b9ae9d4ad84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84&user=Matthew+Gazzano&userId=626000912ce9&source=-----7b9ae9d4ad84---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b9ae9d4ad84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84&source=-----7b9ae9d4ad84---------------------bookmark_footer-----------)![](../Images/7728d2da0190159ba9678148bdb1db24.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b9ae9d4ad84&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funlocking-data-modeling-success-3-must-have-contextual-tables-7b9ae9d4ad84&source=-----7b9ae9d4ad84---------------------bookmark_footer-----------)![](img/7728d2da0190159ba9678148bdb1db24.png)
 
 [照片](https://unsplash.com/photos/PkbZahEG2Ng) 由 [Tobias Fischer](https://unsplash.com/@tofi) 提供，来自 [Unsplash](https://unsplash.com/)
 
@@ -26,7 +26,7 @@
 
 +   你可能花费更少的时间去寻找正确的数据所在位置。
 
-下面是可以简化你团队分析的3个通用表，你可以将它们以维度模型的形式导入到你的数据仓库中。
+下面是可以简化你团队分析的 3 个通用表，你可以将它们以维度模型的形式导入到你的数据仓库中。
 
 # 🗓️日期维度
 
@@ -34,15 +34,15 @@
 
 如果你曾经需要展示某个商业指标在特定时间点的情况，这几乎是一个必备的表。例如，你可能会被问到：
 
-+   ***“FY23的销售情况如何？”***
++   ***“FY23 的销售情况如何？”***
 
 +   ***你能每天展示客户流失情况吗？***
 
-管理层常常从时间序列的角度寻求洞察，提出类似“x的增长或缩小情况如何？”的问题。日期维度可以根据不同的日期属性灵活分析各种指标。
+管理层常常从时间序列的角度寻求洞察，提出类似“x 的增长或缩小情况如何？”的问题。日期维度可以根据不同的日期属性灵活分析各种指标。
 
 大多数日期维度表可以通过在数据仓库中直接使用[DDL](https://www.javatpoint.com/ddl-commands-in-sql)语句和日期函数来创建。
 
-在下面的示例中，我使用BigQuery SQL来完成这项任务：
+在下面的示例中，我使用 BigQuery SQL 来完成这项任务：
 
 ```py
 CREATE OR REPLACE TABLE `your_project.your_dataset.date_dimension` AS
@@ -71,15 +71,15 @@ full_date
 FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', '2050-12-31', INTERVAL 1 DAY)) AS full_date
 ```
 
-![](../Images/9e5ca6ae342b0c68353e44384494737b.png)
+![](img/9e5ca6ae342b0c68353e44384494737b.png)
 
 **拆解一下：**
 
-+   我们从[GENERATE_DATE_ARRAY](https://cloud.google.com/bigquery/docs/reference/standard-sql/array_functions#generate_date_array)函数开始，它返回一个你指定范围内的日期数组。然后我们使用UNNEST函数将数组的每个元素拆分成单独的行，就像在标准数据库表中一样。BigQuery中的数组使用一行来显示多个值。
++   我们从[GENERATE_DATE_ARRAY](https://cloud.google.com/bigquery/docs/reference/standard-sql/array_functions#generate_date_array)函数开始，它返回一个你指定范围内的日期数组。然后我们使用 UNNEST 函数将数组的每个元素拆分成单独的行，就像在标准数据库表中一样。BigQuery 中的数组使用一行来显示多个值。
 
-+   然后利用我们从展开数组生成的***full_date***列（表示日期格式为*XXXX-MM-DD*），我们可以使用许多BigQuery的[EXTRACT](https://cloud.google.com/bigquery/docs/reference/standard-sql/date_functions#extract)函数将***full_date***的各个部分（如月份、日期、年份等）提取到不同的字段中。
++   然后利用我们从展开数组生成的***full_date***列（表示日期格式为*XXXX-MM-DD*），我们可以使用许多 BigQuery 的[EXTRACT](https://cloud.google.com/bigquery/docs/reference/standard-sql/date_functions#extract)函数将***full_date***的各个部分（如月份、日期、年份等）提取到不同的字段中。
 
-+   [FORMAT_DATE](https://cloud.google.com/bigquery/docs/reference/standard-sql/date_functions#format_date)函数的作用类似于EXTRACT，但提供了更多自定义日期值显示的选项。你可以使用[Google文档中描述的特殊格式元素](https://cloud.google.com/bigquery/docs/reference/standard-sql/format-elements#format_elements_date_time)来了解每个‘%’字符的意义。
++   [FORMAT_DATE](https://cloud.google.com/bigquery/docs/reference/standard-sql/date_functions#format_date)函数的作用类似于 EXTRACT，但提供了更多自定义日期值显示的选项。你可以使用[Google 文档中描述的特殊格式元素](https://cloud.google.com/bigquery/docs/reference/standard-sql/format-elements#format_elements_date_time)来了解每个‘%’字符的意义。
 
 +   我们还使用[DATE_SUB](https://cloud.google.com/bigquery/docs/reference/standard-sql/date_functions#date_sub)函数，它只是从一个日期中减去一个值。这用于获取相关的财政年度，在这个示例中，财政年度将从每个日历年的七月开始。在这个函数中，我们指定一个数量（1 - 无限）和间隔（日、月、年等）。
 
@@ -106,13 +106,13 @@ zips = response.json()
 pd.json_normalize(zips,record_path='records')
 ```
 
-![](../Images/d55748137629a3223ccbaf5e1c728762.png)
+![](img/d55748137629a3223ccbaf5e1c728762.png)
 
 **分解如下：**
 
 +   在这里，我使用 [requests](https://requests.readthedocs.io/en/latest/) 库从‘url’变量中显示的 URL 检索数据，该 URL 在 opendatasoft 网站的 API 标签上生成。
 
-+   使用 Pandas，我使用 [***json_normalize***](/all-pandas-json-normalize-you-should-know-for-flattening-json-13eae1dfb7dd) 函数将 JSON 数据转换为 Pandas DataFrame。
++   使用 Pandas，我使用 ***json_normalize*** 函数将 JSON 数据转换为 Pandas DataFrame。
 
 # 📈FX Rates 事实表
 
@@ -141,7 +141,7 @@ df_rates['cycle_date'] = date.today()
 df_rates.head(10)
 ```
 
-![](../Images/ac6bf1ef48a5b206e05fa3c8befbcc7d.png)
+![](img/ac6bf1ef48a5b206e05fa3c8befbcc7d.png)
 
 **分解如下：**
 

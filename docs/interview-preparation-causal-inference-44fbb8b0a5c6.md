@@ -1,16 +1,16 @@
 # 面试准备：因果推断
 
-> 原文：[https://towardsdatascience.com/interview-preparation-causal-inference-44fbb8b0a5c6?source=collection_archive---------8-----------------------#2023-08-11](https://towardsdatascience.com/interview-preparation-causal-inference-44fbb8b0a5c6?source=collection_archive---------8-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/interview-preparation-causal-inference-44fbb8b0a5c6?source=collection_archive---------8-----------------------#2023-08-11`](https://towardsdatascience.com/interview-preparation-causal-inference-44fbb8b0a5c6?source=collection_archive---------8-----------------------#2023-08-11)
 
-[](https://juliezhang0826.medium.com/?source=post_page-----44fbb8b0a5c6--------------------------------)[![Julie Zhang](../Images/467796767f32f9a109fc1e0afb4fee49.png)](https://juliezhang0826.medium.com/?source=post_page-----44fbb8b0a5c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44fbb8b0a5c6--------------------------------)[![数据科学之道](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----44fbb8b0a5c6--------------------------------) [Julie Zhang](https://juliezhang0826.medium.com/?source=post_page-----44fbb8b0a5c6--------------------------------)
+[](https://juliezhang0826.medium.com/?source=post_page-----44fbb8b0a5c6--------------------------------)![Julie Zhang](https://juliezhang0826.medium.com/?source=post_page-----44fbb8b0a5c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----44fbb8b0a5c6--------------------------------)![数据科学之道](https://towardsdatascience.com/?source=post_page-----44fbb8b0a5c6--------------------------------) [Julie Zhang](https://juliezhang0826.medium.com/?source=post_page-----44fbb8b0a5c6--------------------------------)
 
 ·
 
-[点击查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F556c71436dd8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterview-preparation-causal-inference-44fbb8b0a5c6&user=Julie+Zhang&userId=556c71436dd8&source=post_page-556c71436dd8----44fbb8b0a5c6---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----44fbb8b0a5c6--------------------------------) ·5分钟阅读·2023年8月11日
+[点击查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F556c71436dd8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterview-preparation-causal-inference-44fbb8b0a5c6&user=Julie+Zhang&userId=556c71436dd8&source=post_page-556c71436dd8----44fbb8b0a5c6---------------------post_header-----------) 发表在 [数据科学之道](https://towardsdatascience.com/?source=post_page-----44fbb8b0a5c6--------------------------------) ·5 分钟阅读·2023 年 8 月 11 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F44fbb8b0a5c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterview-preparation-causal-inference-44fbb8b0a5c6&source=-----44fbb8b0a5c6---------------------bookmark_footer-----------)![](../Images/09410ccb66b8d7ea2d1d599fac145a52.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F44fbb8b0a5c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finterview-preparation-causal-inference-44fbb8b0a5c6&source=-----44fbb8b0a5c6---------------------bookmark_footer-----------)![](img/09410ccb66b8d7ea2d1d599fac145a52.png)
 
 图片由 [Isaac Smith](https://unsplash.com/@isaacmsmith?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 

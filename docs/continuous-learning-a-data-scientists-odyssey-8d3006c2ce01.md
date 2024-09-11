@@ -1,18 +1,18 @@
 # 持续学习：数据科学家的历程
 
-> 原文：[https://towardsdatascience.com/continuous-learning-a-data-scientists-odyssey-8d3006c2ce01?source=collection_archive---------6-----------------------#2023-09-15](https://towardsdatascience.com/continuous-learning-a-data-scientists-odyssey-8d3006c2ce01?source=collection_archive---------6-----------------------#2023-09-15)
+> 原文：[`towardsdatascience.com/continuous-learning-a-data-scientists-odyssey-8d3006c2ce01?source=collection_archive---------6-----------------------#2023-09-15`](https://towardsdatascience.com/continuous-learning-a-data-scientists-odyssey-8d3006c2ce01?source=collection_archive---------6-----------------------#2023-09-15)
 
-![](../Images/1b17b6bd1e0ec5ae4e901183b27d9cce.png)
+![](img/1b17b6bd1e0ec5ae4e901183b27d9cce.png)
 
 摄影： [Tbel Abuseridze](https://unsplash.com/@tbelabuseridze?utm_source=medium&utm_medium=referral) 于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
 ## 在不断变化的领域中导航
 
-[](https://zzhu17.medium.com/?source=post_page-----8d3006c2ce01--------------------------------)[![Zijing Zhu, PhD](../Images/436b22e28798b87261c4814a7e2b20e3.png)](https://zzhu17.medium.com/?source=post_page-----8d3006c2ce01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d3006c2ce01--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d3006c2ce01--------------------------------) [Zijing Zhu, PhD](https://zzhu17.medium.com/?source=post_page-----8d3006c2ce01--------------------------------)
+[](https://zzhu17.medium.com/?source=post_page-----8d3006c2ce01--------------------------------)![Zijing Zhu, PhD](https://zzhu17.medium.com/?source=post_page-----8d3006c2ce01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d3006c2ce01--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d3006c2ce01--------------------------------) [Zijing Zhu, PhD](https://zzhu17.medium.com/?source=post_page-----8d3006c2ce01--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d83c09fb5d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcontinuous-learning-a-data-scientists-odyssey-8d3006c2ce01&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=post_page-7d83c09fb5d4----8d3006c2ce01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d3006c2ce01--------------------------------) ·15分钟阅读·2023年9月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8d3006c2ce01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcontinuous-learning-a-data-scientists-odyssey-8d3006c2ce01&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=-----8d3006c2ce01---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d83c09fb5d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcontinuous-learning-a-data-scientists-odyssey-8d3006c2ce01&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=post_page-7d83c09fb5d4----8d3006c2ce01---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d3006c2ce01--------------------------------) ·15 分钟阅读·2023 年 9 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8d3006c2ce01&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcontinuous-learning-a-data-scientists-odyssey-8d3006c2ce01&user=Zijing+Zhu%2C+PhD&userId=7d83c09fb5d4&source=-----8d3006c2ce01---------------------clap_footer-----------)
 
 --
 

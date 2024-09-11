@@ -1,18 +1,18 @@
 # 音乐发现的未来：搜索与生成
 
-> 原文：[https://towardsdatascience.com/the-future-of-music-discovery-search-vs-generation-4d565a08515e?source=collection_archive---------6-----------------------#2023-08-22](https://towardsdatascience.com/the-future-of-music-discovery-search-vs-generation-4d565a08515e?source=collection_archive---------6-----------------------#2023-08-22)
+> 原文：[`towardsdatascience.com/the-future-of-music-discovery-search-vs-generation-4d565a08515e?source=collection_archive---------6-----------------------#2023-08-22`](https://towardsdatascience.com/the-future-of-music-discovery-search-vs-generation-4d565a08515e?source=collection_archive---------6-----------------------#2023-08-22)
 
-## AI时代的功能性音乐
+## AI 时代的功能性音乐
 
-[](https://medium.com/@maxhilsdorf?source=post_page-----4d565a08515e--------------------------------)[![Max Hilsdorf](../Images/01da76c553e43d5ed6b6849bdbfd00da.png)](https://medium.com/@maxhilsdorf?source=post_page-----4d565a08515e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d565a08515e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d565a08515e--------------------------------) [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----4d565a08515e--------------------------------)
+[](https://medium.com/@maxhilsdorf?source=post_page-----4d565a08515e--------------------------------)![Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----4d565a08515e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d565a08515e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d565a08515e--------------------------------) [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----4d565a08515e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd0c085a74ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-future-of-music-discovery-search-vs-generation-4d565a08515e&user=Max+Hilsdorf&userId=d0c085a74ae8&source=post_page-d0c085a74ae8----4d565a08515e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d565a08515e--------------------------------) ·11分钟阅读·2023年8月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d565a08515e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-future-of-music-discovery-search-vs-generation-4d565a08515e&user=Max+Hilsdorf&userId=d0c085a74ae8&source=-----4d565a08515e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd0c085a74ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-future-of-music-discovery-search-vs-generation-4d565a08515e&user=Max+Hilsdorf&userId=d0c085a74ae8&source=post_page-d0c085a74ae8----4d565a08515e---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d565a08515e--------------------------------) ·11 分钟阅读·2023 年 8 月 22 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4d565a08515e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-future-of-music-discovery-search-vs-generation-4d565a08515e&user=Max+Hilsdorf&userId=d0c085a74ae8&source=-----4d565a08515e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d565a08515e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-future-of-music-discovery-search-vs-generation-4d565a08515e&source=-----4d565a08515e---------------------bookmark_footer-----------)![](../Images/a191d73272b4e33bb2b1fdedf24393a7.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4d565a08515e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-future-of-music-discovery-search-vs-generation-4d565a08515e&source=-----4d565a08515e---------------------bookmark_footer-----------)![](img/a191d73272b4e33bb2b1fdedf24393a7.png)
 
 使用 DALL-E 2 创建。提示：“大脑和放大镜，背景为乐谱，数字艺术”
 

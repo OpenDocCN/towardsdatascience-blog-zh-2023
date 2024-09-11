@@ -1,22 +1,22 @@
 # 关于压缩大数据的重要性
 
-> 原文：[https://towardsdatascience.com/on-the-importance-of-compressing-big-data-edd4cc7441d2?source=collection_archive---------18-----------------------#2023-01-24](https://towardsdatascience.com/on-the-importance-of-compressing-big-data-edd4cc7441d2?source=collection_archive---------18-----------------------#2023-01-24)
+> 原文：[`towardsdatascience.com/on-the-importance-of-compressing-big-data-edd4cc7441d2?source=collection_archive---------18-----------------------#2023-01-24`](https://towardsdatascience.com/on-the-importance-of-compressing-big-data-edd4cc7441d2?source=collection_archive---------18-----------------------#2023-01-24)
 
 ## 为什么以及如何最小化你的数据存储占用
 
-[](https://chaimrand.medium.com/?source=post_page-----edd4cc7441d2--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----edd4cc7441d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----edd4cc7441d2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----edd4cc7441d2--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----edd4cc7441d2--------------------------------)
+[](https://chaimrand.medium.com/?source=post_page-----edd4cc7441d2--------------------------------)![Chaim Rand](https://chaimrand.medium.com/?source=post_page-----edd4cc7441d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----edd4cc7441d2--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----edd4cc7441d2--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----edd4cc7441d2--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-the-importance-of-compressing-big-data-edd4cc7441d2&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----edd4cc7441d2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----edd4cc7441d2--------------------------------) ·15分钟阅读·2023年1月24日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fedd4cc7441d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-the-importance-of-compressing-big-data-edd4cc7441d2&user=Chaim+Rand&userId=9440b37e27fe&source=-----edd4cc7441d2---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-the-importance-of-compressing-big-data-edd4cc7441d2&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----edd4cc7441d2---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----edd4cc7441d2--------------------------------) ·15 分钟阅读·2023 年 1 月 24 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fedd4cc7441d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-the-importance-of-compressing-big-data-edd4cc7441d2&user=Chaim+Rand&userId=9440b37e27fe&source=-----edd4cc7441d2---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fedd4cc7441d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-the-importance-of-compressing-big-data-edd4cc7441d2&source=-----edd4cc7441d2---------------------bookmark_footer-----------)![](../Images/3ef46726724121d8bb2393d48a773ef6.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fedd4cc7441d2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fon-the-importance-of-compressing-big-data-edd4cc7441d2&source=-----edd4cc7441d2---------------------bookmark_footer-----------)![](img/3ef46726724121d8bb2393d48a773ef6.png)
 
 图片来源：[Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
-“数据是新的石油”，这是[Clive Humby](https://en.wikipedia.org/wiki/Clive_Humby)提出的一句话，用来描述现代许多公司在其发展和成功中对数据日益增长的依赖。公司们正收集大量数据，以至于像拍字节（petabyte）、艾字节（exabyte）和泽字节（zettabyte）这样的计量单位，已经在日常对话中取代了兆字节（megabyte）、千兆字节（gigabyte）和太字节（terabyte）。然而，无目的的数据收集是无用且浪费的。这个事实可以通过对Humby名言的以下扩展来最准确地总结：
+“数据是新的石油”，这是[Clive Humby](https://en.wikipedia.org/wiki/Clive_Humby)提出的一句话，用来描述现代许多公司在其发展和成功中对数据日益增长的依赖。公司们正收集大量数据，以至于像拍字节（petabyte）、艾字节（exabyte）和泽字节（zettabyte）这样的计量单位，已经在日常对话中取代了兆字节（megabyte）、千兆字节（gigabyte）和太字节（terabyte）。然而，无目的的数据收集是无用且浪费的。这个事实可以通过对 Humby 名言的以下扩展来最准确地总结：
 
 > 数据就像原油。它有价值，但如果未经精炼，它实际上不能被有效使用。
 > 
@@ -34,7 +34,7 @@
 
 **环境成本**：
 
-在过去的几年里，我们见证了对数据中心碳足迹意识的提高，以及对计算科学中增加可持续性的呼吁（例如，见[这里](https://www.green-algorithms.org/)）。虽然数据中心服务器的计算密集型工作负荷占据了碳足迹的最大部分，但**存储也需要在电力、冷却和生命周期更换上进行大量投资**。预计大约10%的数据中心碳足迹——相当于一个中型西方国家的碳足迹——来自数据存储（例如，见[这里](https://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1009324)和[这里](https://www.osti.gov/servlets/purl/1372902)）。
+在过去的几年里，我们见证了对数据中心碳足迹意识的提高，以及对计算科学中增加可持续性的呼吁（例如，见[这里](https://www.green-algorithms.org/)）。虽然数据中心服务器的计算密集型工作负荷占据了碳足迹的最大部分，但**存储也需要在电力、冷却和生命周期更换上进行大量投资**。预计大约 10%的数据中心碳足迹——相当于一个中型西方国家的碳足迹——来自数据存储（例如，见[这里](https://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1009324)和[这里](https://www.osti.gov/servlets/purl/1372902)）。
 
 **数据流成本**：
 
@@ -72,7 +72,7 @@
 
 ## 有损与无损压缩
 
-在无损压缩方案中不会丢失数据。解压缩数据时，所有信息都会被恢复：***X=uncompress(compress(X))***。在有损压缩方案中，由于压缩的原因会丢失一些信息：***X≠uncompress(compress(X))***。虽然这种数据丢失一开始可能让人担忧，但在许多情况下，这种影响会很小。一个经典的例子就是图像压缩。许多图像压缩方法，如流行的JPEG压缩，涉及到一定程度的数据丢失，但（前提是使用合理的压缩配置）得到的图像与原始图像几乎无法区分。毫无疑问，尽管视觉上相似，但某些算法可能对这种数据丢失特别敏感。然而，更多情况下，这种影响不会显著。而且潜在的存储空间节省可以非常可观。我们将在下面进一步扩展图像压缩的话题。
+在无损压缩方案中不会丢失数据。解压缩数据时，所有信息都会被恢复：***X=uncompress(compress(X))***。在有损压缩方案中，由于压缩的原因会丢失一些信息：***X≠uncompress(compress(X))***。虽然这种数据丢失一开始可能让人担忧，但在许多情况下，这种影响会很小。一个经典的例子就是图像压缩。许多图像压缩方法，如流行的 JPEG 压缩，涉及到一定程度的数据丢失，但（前提是使用合理的压缩配置）得到的图像与原始图像几乎无法区分。毫无疑问，尽管视觉上相似，但某些算法可能对这种数据丢失特别敏感。然而，更多情况下，这种影响不会显著。而且潜在的存储空间节省可以非常可观。我们将在下面进一步扩展图像压缩的话题。
 
 ## 如何衡量压缩质量
 
@@ -90,7 +90,7 @@
 
 ## 示例
 
-为了方便讨论，我们将考虑一个玩具示例，其中每个数据样本包括：一个800x534 RGB图像、两个具有16个类别的像素级分类图，以及一个像素级深度图，包含从图像平面到场景中每个像素捕获的3D位置的距离（以米为单位）。如果您想跟随示例，可以将下面的代码片段应用于[Unsplash](https://unsplash.com/)上这篇博客文章顶部的图像。
+为了方便讨论，我们将考虑一个玩具示例，其中每个数据样本包括：一个 800x534 RGB 图像、两个具有 16 个类别的像素级分类图，以及一个像素级深度图，包含从图像平面到场景中每个像素捕获的 3D 位置的距离（以米为单位）。如果您想跟随示例，可以将下面的代码片段应用于[Unsplash](https://unsplash.com/)上这篇博客文章顶部的图像。
 
 ```py
 from PIL import Image
@@ -117,11 +117,11 @@ with open('depth.bin','wb') as f:
     f.write(depth.tobytes())
 ```
 
-测量原始数据文件的存储足迹（例如，通过在Linux中运行*ls -l*），我们发现图像需要1.3 MB的存储空间，而3个标签图需要每个1.7 MB。
+测量原始数据文件的存储足迹（例如，通过在 Linux 中运行*ls -l*），我们发现图像需要 1.3 MB 的存储空间，而 3 个标签图需要每个 1.7 MB。
 
 ## 选择文件格式
 
-设计数据存储策略的一个重要步骤是选择存储数据的格式。这个决定可能会对数据应用程序的访问简便性和速度产生重大影响。特别是，您的设计应考虑不同应用程序的不同访问模式。在[上一篇文章](/data-formats-for-training-in-tensorflow-parquet-petastorm-feather-and-more-e55179eeeb72)中，我们讨论了选择文件格式对机器学习训练的一些潜在影响。为了简化起见，我们将数据样本存储在标准tarball中。
+设计数据存储策略的一个重要步骤是选择存储数据的格式。这个决定可能会对数据应用程序的访问简便性和速度产生重大影响。特别是，您的设计应考虑不同应用程序的不同访问模式。在上一篇文章中，我们讨论了选择文件格式对机器学习训练的一些潜在影响。为了简化起见，我们将数据样本存储在标准 tarball 中。
 
 ```py
 import tarfile
@@ -130,11 +130,11 @@ with tarfile.open("base.tar", "w") as tar:
         tar.add(name)
 ```
 
-结果文件为6.2 MB。
+结果文件为 6.2 MB。
 
-## 使用ZIP变体进行压缩
+## 使用 ZIP 变体进行压缩
 
-所谓“ZIP变体”，是指各种流行的通用文件格式及其相关压缩方案，包括[ZIP](https://en.wikipedia.org/wiki/ZIP_(file_format))、[gzip](https://en.wikipedia.org/wiki/Gzip)、[7-zip](https://en.wikipedia.org/wiki/7-Zip)、[bzip2](https://en.wikipedia.org/wiki/Bzip2)、[Brotli](https://en.wikipedia.org/wiki/Brotli)等。请注意，虽然我们将这些格式归为一类，但底层算法可能存在显著差异。许多文件格式包含用于自动压缩数据样本的ZIP变体标志。例如，使用[bzip2](https://en.wikipedia.org/wiki/Bzip2)压缩，我们可以将tarball的大小减少到2.7 MB，减少了2.3倍。
+所谓“ZIP 变体”，是指各种流行的通用文件格式及其相关压缩方案，包括[ZIP](https://en.wikipedia.org/wiki/ZIP_(file_format))、[gzip](https://en.wikipedia.org/wiki/Gzip)、[7-zip](https://en.wikipedia.org/wiki/7-Zip)、[bzip2](https://en.wikipedia.org/wiki/Bzip2)、[Brotli](https://en.wikipedia.org/wiki/Brotli)等。请注意，虽然我们将这些格式归为一类，但底层算法可能存在显著差异。许多文件格式包含用于自动压缩数据样本的 ZIP 变体标志。例如，使用[bzip2](https://en.wikipedia.org/wiki/Bzip2)压缩，我们可以将 tarball 的大小减少到 2.7 MB，减少了 2.3 倍。
 
 ```py
 import tarfile
@@ -143,13 +143,13 @@ with tarfile.open("base.bz2", "w:bz2") as tar:
         tar.add(name)
 ```
 
-使用ZIP变体进行压缩特别吸引人，因为它的通用性。它可以普遍应用，而无需了解底层数据的具体类型或领域。在接下来的章节中，我们将查看是否可以使用考虑到原始数据类型详细信息的压缩方案来改进这一结果。
+使用 ZIP 变体进行压缩特别吸引人，因为它的通用性。它可以普遍应用，而无需了解底层数据的具体类型或领域。在接下来的章节中，我们将查看是否可以使用考虑到原始数据类型详细信息的压缩方案来改进这一结果。
 
 ## 使用低精度数据类型
 
 通过将数据转换为使用低位精度数据类型，可以节省大量存储空间。在我们的例子中有两个优化机会。
 
-1.  **将int32替换为uint8**：通过使用最小的整数类型来满足需求，可以节省大量的存储空间。在我们的例子中，32位整数表示显然对于表示我们的16类标签图来说是过多的。这些可以很容易地适应uint8矩阵而不会丢失任何信息。
+1.  **将 int32 替换为 uint8**：通过使用最小的整数类型来满足需求，可以节省大量的存储空间。在我们的例子中，32 位整数表示显然对于表示我们的 16 类标签图来说是过多的。这些可以很容易地适应 uint8 矩阵而不会丢失任何信息。
 
 1.  **将 float32 替换为 float16**：与整数精度减少相反，此操作*会*导致信息丢失（即，它是*有损的*）。此更改应仅在评估其对数据算法的潜在影响后进行。在下面的代码块中，我们演示了两种衡量数据质量变化的指标。这些可以用来预测对数据算法的影响。理想情况下，我们会发现这些指标与算法性能之间的某种关联，但这并不总是那么简单。
 
@@ -175,7 +175,7 @@ with open('depth.bin','wb') as f:
 
 ## 使用按位操作合并元素
 
-目前，每个分类图都存储在8位`uint8`缓冲区中。然而，由于这些图像只包含16个类别，它们实际上每个只使用了四位。我们可以通过将两个图像合并成一个数据图来进一步压缩数据。
+目前，每个分类图都存储在 8 位`uint8`缓冲区中。然而，由于这些图像只包含 16 个类别，它们实际上每个只使用了四位。我们可以通过将两个图像合并成一个数据图来进一步压缩数据。
 
 ```py
 # compress
@@ -204,7 +204,7 @@ label2 = combined_label // 16
 
 1.  **底层压缩算法**：编解码器底层的算法行为各异，优化的功能不同，表现出的伪影也不同。例如，一些算法可能比其他算法更容易去除你所依赖的特定图像频率。
 
-[**结构相似性**指数测量（**SSIM**）](https://en.wikipedia.org/wiki/Structural_similarity) 是一种常用的度量标准，用于评估图像压缩方案带来的图像质量退化。SSIM值范围从0到1，其中1表示与原始图像完全匹配。其他测量图像退化的指标包括 [MSE](https://en.wikipedia.org/wiki/Mean_squared_error) 和 [PSNR](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio)。如前所述，你的目标应是选择能够预测信息丧失对数据算法性能影响的指标。
+[**结构相似性**指数测量（**SSIM**）](https://en.wikipedia.org/wiki/Structural_similarity) 是一种常用的度量标准，用于评估图像压缩方案带来的图像质量退化。SSIM 值范围从 0 到 1，其中 1 表示与原始图像完全匹配。其他测量图像退化的指标包括 [MSE](https://en.wikipedia.org/wiki/Mean_squared_error) 和 [PSNR](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio)。如前所述，你的目标应是选择能够预测信息丧失对数据算法性能影响的指标。
 
 关于使用有损图像压缩方案，有几点需要注意：
 
@@ -212,9 +212,9 @@ label2 = combined_label // 16
 
 +   当心那些给人以某个编解码器总是优于其他编解码器印象的网站。实际上，不同编解码器的相对性能在图像领域（例如，深空图像与医学图像）之间差异很大，甚至同一领域内的图像样本之间也会有所不同。强烈建议你对自己的图像数据集进行分析。
 
-+   对于视频序列数据，你可能会觉得有必要采用视频压缩格式。视频压缩利用相邻帧之间的相似性来进一步提高压缩率。然而，这通常会导致与图像压缩相比显著降低的质量（例如，通过SSIM测量）。在某些情况下，你可能会发现独立压缩每一帧效果更好。
++   对于视频序列数据，你可能会觉得有必要采用视频压缩格式。视频压缩利用相邻帧之间的相似性来进一步提高压缩率。然而，这通常会导致与图像压缩相比显著降低的质量（例如，通过 SSIM 测量）。在某些情况下，你可能会发现独立压缩每一帧效果更好。
 
-我们的示例包括两个应用图像压缩的机会。首先，我们使用经典的有损JPEG编解码器压缩图像图，并将压缩*质量*设置为95（有关设置*质量*值的详细信息，请参见 [这里](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#jpeg)）。接下来，我们压缩标签图。由于我们期望机器学习算法高度依赖数据标签的准确性，因此我们选择无损PNG压缩格式，以避免丢失任何标签信息。请注意，尽管JPEG和PNG都是极受欢迎的格式，但它们并不以提供最佳压缩率而闻名。虽然足够用于我们的演示目的，但你可能会发现使用更现代的图像压缩算法能获得更好的结果。
+我们的示例包括两个应用图像压缩的机会。首先，我们使用经典的有损 JPEG 编解码器压缩图像图，并将压缩*质量*设置为 95（有关设置*质量*值的详细信息，请参见 [这里](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#jpeg)）。接下来，我们压缩标签图。由于我们期望机器学习算法高度依赖数据标签的准确性，因此我们选择无损 PNG 压缩格式，以避免丢失任何标签信息。请注意，尽管 JPEG 和 PNG 都是极受欢迎的格式，但它们并不以提供最佳压缩率而闻名。虽然足够用于我们的演示目的，但你可能会发现使用更现代的图像压缩算法能获得更好的结果。
 
 下面的代码块演示了使用[Pillow](https://pypi.org/project/Pillow/) 包（版本 9.2.0）进行图像压缩。我们使用[scikit-image](https://pypi.org/project/scikit-image/) 包（版本 0.19.3）应用 SSIM 评分。
 
@@ -234,7 +234,7 @@ ssim = SSIM(image, decoded, channel_axis=2)} # 0.996
 
 下图展示了原始输入、解码输出以及它们之间的绝对差异（为了增强效果，差异被缩放了 20 倍）。
 
-![](../Images/ce4b9a2ffdadd6d8d95aacc4b9fc14ae.png)
+![](img/ce4b9a2ffdadd6d8d95aacc4b9fc14ae.png)
 
 JPEG 对[Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral)在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上的照片的影响
 
@@ -267,13 +267,13 @@ with tarfile.open("final.tar.bz2", "w:bz2") as tar:
 
 在这篇文章中，我们讨论了数据压缩对数据科学尤其是机器学习的重要性。我们演示了几个简单的压缩技术，并测量了它们对数据存储大小的影响。如上所述，我们选择的方法不一定适合你。找到一个好的解决方案的关键包括：对原始数据类型的深入了解、对数据消耗方式的深刻理解，以及对相关压缩方案的良好掌握。
 
-随着2023年的开始，我们发现自己深陷于通常被称为大数据革命的过程中。正确的数据管理，包括使用数据压缩方案，仅仅是这一革命中许多重要组成部分之一。新年快乐。
+随着 2023 年的开始，我们发现自己深陷于通常被称为大数据革命的过程中。正确的数据管理，包括使用数据压缩方案，仅仅是这一革命中许多重要组成部分之一。新年快乐。
 
 # 附录：压缩对数据应用的影响
 
-许多数据应用可以描述为在不同设备和设备组件之间连续流动的大量数据。例如，在深度学习训练负载中，原始训练数据从存储中流向CPU工作节点进行预处理和批处理，训练批次从CPU送入训练加速器，然后在前向计算图的不同阶段流动，梯度通过反向传播计算，而在分布式训练的情况下，数据在参与的加速器之间进行通信。
+许多数据应用可以描述为在不同设备和设备组件之间连续流动的大量数据。例如，在深度学习训练负载中，原始训练数据从存储中流向 CPU 工作节点进行预处理和批处理，训练批次从 CPU 送入训练加速器，然后在前向计算图的不同阶段流动，梯度通过反向传播计算，而在分布式训练的情况下，数据在参与的加速器之间进行通信。
 
-![](../Images/ea40e2462fdf4ff84624888c19ee2440.png)
+![](img/ea40e2462fdf4ff84624888c19ee2440.png)
 
 数据在典型深度学习训练步骤中的流动（作者提供）
 

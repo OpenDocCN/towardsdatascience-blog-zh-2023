@@ -1,14 +1,14 @@
 # 正确调用 ChatGPT API 的方法
 
-> 原文：[https://towardsdatascience.com/the-proper-way-to-make-calls-to-chatgpt-api-52e635bea8ff?source=collection_archive---------0-----------------------#2023-07-15](https://towardsdatascience.com/the-proper-way-to-make-calls-to-chatgpt-api-52e635bea8ff?source=collection_archive---------0-----------------------#2023-07-15)
+> 原文：[`towardsdatascience.com/the-proper-way-to-make-calls-to-chatgpt-api-52e635bea8ff?source=collection_archive---------0-----------------------#2023-07-15`](https://towardsdatascience.com/the-proper-way-to-make-calls-to-chatgpt-api-52e635bea8ff?source=collection_archive---------0-----------------------#2023-07-15)
 
 ## 如何可靠地调用 ChatGPT API 以构建稳健的应用程序
 
-[![Lucas Oliveira](../Images/e303751fcafde01db6d1182320a50797.png)](https://lucolivi.medium.com/?source=post_page-----52e635bea8ff--------------------------------) [![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----52e635bea8ff--------------------------------) [Lucas Oliveira](https://lucolivi.medium.com/?source=post_page-----52e635bea8ff--------------------------------)
+![Lucas Oliveira](https://lucolivi.medium.com/?source=post_page-----52e635bea8ff--------------------------------) ![Towards Data Science](https://towardsdatascience.com/?source=post_page-----52e635bea8ff--------------------------------) [Lucas Oliveira](https://lucolivi.medium.com/?source=post_page-----52e635bea8ff--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9eafd3d6f21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-proper-way-to-make-calls-to-chatgpt-api-52e635bea8ff&user=Lucas+Oliveira&userId=b9eafd3d6f21&source=post_page-b9eafd3d6f21----52e635bea8ff---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52e635bea8ff--------------------------------) · 11 分钟阅读 · 2023年7月15日
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb9eafd3d6f21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-proper-way-to-make-calls-to-chatgpt-api-52e635bea8ff&user=Lucas+Oliveira&userId=b9eafd3d6f21&source=post_page-b9eafd3d6f21----52e635bea8ff---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52e635bea8ff--------------------------------) · 11 分钟阅读 · 2023 年 7 月 15 日
 
 --
 
@@ -16,7 +16,7 @@
 
 现在 LLM 随处可见，尤其是 ChatGPT。正在基于它构建大量应用程序，如果你还没尝试过，应该试试看。
 
-![](../Images/054928a295cef1538fd969eea16d31b4.png)
+![](img/054928a295cef1538fd969eea16d31b4.png)
 
 由 Midjourney 创建。
 
@@ -53,7 +53,7 @@ print(response_json["choices"][0]["message"]["content"])
 Pong!
 ```
 
-如果我们在一个简单的系统中工作，这样做就可以了，但是，如果我们希望并行地对API或其他资源（如数据库）执行多个调用，我们可以使用异步方式获得更快的响应。
+如果我们在一个简单的系统中工作，这样做就可以了，但是，如果我们希望并行地对 API 或其他资源（如数据库）执行多个调用，我们可以使用异步方式获得更快的响应。
 
 异步执行任务将触发每个操作并等待它们并行完成，从而减少等待时间。
 

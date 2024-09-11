@@ -1,22 +1,22 @@
-# 监控大型语言模型行为的7种方法
+# 监控大型语言模型行为的 7 种方法
 
-> 原文：[https://towardsdatascience.com/7-ways-to-monitor-large-language-model-behavior-25c267d58f06?source=collection_archive---------2-----------------------#2023-07-28](https://towardsdatascience.com/7-ways-to-monitor-large-language-model-behavior-25c267d58f06?source=collection_archive---------2-----------------------#2023-07-28)
+> 原文：[`towardsdatascience.com/7-ways-to-monitor-large-language-model-behavior-25c267d58f06?source=collection_archive---------2-----------------------#2023-07-28`](https://towardsdatascience.com/7-ways-to-monitor-large-language-model-behavior-25c267d58f06?source=collection_archive---------2-----------------------#2023-07-28)
 
-## 使用LangKit和WhyLabs跟踪LLMs发展的七种方法
+## 使用 LangKit 和 WhyLabs 跟踪 LLMs 发展的七种方法
 
-[](https://felipe-p-adachi.medium.com/?source=post_page-----25c267d58f06--------------------------------)[![Felipe de Pontes Adachi](../Images/58c9544ae85f43548c5e5b56fda31bb4.png)](https://felipe-p-adachi.medium.com/?source=post_page-----25c267d58f06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25c267d58f06--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----25c267d58f06--------------------------------) [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----25c267d58f06--------------------------------)
+[](https://felipe-p-adachi.medium.com/?source=post_page-----25c267d58f06--------------------------------)![Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----25c267d58f06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25c267d58f06--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----25c267d58f06--------------------------------) [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----25c267d58f06--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa038269245d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-ways-to-monitor-large-language-model-behavior-25c267d58f06&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=post_page-a038269245d5----25c267d58f06---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----25c267d58f06--------------------------------) ·12分钟阅读·2023年7月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F25c267d58f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-ways-to-monitor-large-language-model-behavior-25c267d58f06&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=-----25c267d58f06---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa038269245d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-ways-to-monitor-large-language-model-behavior-25c267d58f06&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=post_page-a038269245d5----25c267d58f06---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----25c267d58f06--------------------------------) ·12 分钟阅读·2023 年 7 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F25c267d58f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-ways-to-monitor-large-language-model-behavior-25c267d58f06&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=-----25c267d58f06---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25c267d58f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-ways-to-monitor-large-language-model-behavior-25c267d58f06&source=-----25c267d58f06---------------------bookmark_footer-----------)![](../Images/a9947c80cb8d3a04e7485914f005fd01.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25c267d58f06&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F7-ways-to-monitor-large-language-model-behavior-25c267d58f06&source=-----25c267d58f06---------------------bookmark_footer-----------)![](img/a9947c80cb8d3a04e7485914f005fd01.png)
 
 图片由 [Jéan Béller](https://unsplash.com/@chinatravelchannel?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 提供，来源于 [Unsplash](https://unsplash.com/photos/a-close-up-of-a-clock-on-a-building-FyOEhy91_7o?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
-自然语言处理领域在使用大型语言模型（LLMs）方面经历了快速的演变。通过其令人印象深刻的文本生成和理解能力，LLMs在全球范围内得到了广泛的采用。
+自然语言处理领域在使用大型语言模型（LLMs）方面经历了快速的演变。通过其令人印象深刻的文本生成和理解能力，LLMs 在全球范围内得到了广泛的采用。
 
 ChatGPT 可能是这些模型中最知名的，在上线的第一个月就拥有了 5700 万的月活跃用户[1]。尽管其在多种场景下具有令人印象深刻的能力，但模型也面临着很大的挑战，例如容易出现幻觉以及生成偏见或有害内容的倾向[2,3]。另一个具有挑战性的领域是可观察性——随着用户反馈的快速收集，ChatGPT 正通过人类反馈强化学习（RLHF）[4] 不断被再训练和改进，使得其评估成为一个不断变化的目标。众所周知，从 RLHF 获得的整体改进可能会导致特定任务上的性能回退[5]。我们如何确保模型的行为符合预期，并在与我们应用相关的任务中保持可接受的性能？
 
@@ -26,51 +26,51 @@ ChatGPT 可能是这些模型中最知名的，在上线的第一个月就拥有
 
 # 议程
 
-+   [任务——可理解的问答](#d481)
++   任务——可理解的问答
 
-+   [流行的 LLM 指标](#3ec3)
++   流行的 LLM 指标
 
-    1\. [ROUGE](#e1df)
+    1\. ROUGE
 
-    2\. [性别偏见](#fbc5)
+    2\. 性别偏见
 
-    3\. [文本质量](#a1b8)
+    3\. 文本质量
 
-    4\. [语义相似性](#6f7e)
+    4\. 语义相似性
 
-    5\. [正则表达式模式](#eb87)
+    5\. 正则表达式模式
 
-    6\. [拒绝](#f705)
+    6\. 拒绝
 
-    7\. [毒性和情感](#4197)
+    7\. 毒性和情感
 
-+   [跨时间监控](#f4a6)
++   跨时间监控
 
-+   [那么，行为发生了变化吗？](#a5d9)
++   那么，行为发生了变化吗？
 
-+   [结论](#9787)
++   结论
 
 # 任务——可理解的问答
 
 在这个示例中，我们使用 Explain Like I’m Five (ELI5) 数据集[6]，这是一个包含开放性问题的问答数据集——这些问题需要较长的回答，不能用“是”或“否”来回答——且回答应简单易懂，适合初学者。
 
-在[ChatLog: 记录与分析ChatGPT随时间的变化](https://arxiv.org/pdf/2304.14106.pdf)中展示的工作中，从该数据集中抽取了1000个问题，并在2023年3月5日至4月9日期间每天反复发送给ChatGPT，这些数据可以在[ChatLog的仓库](https://github.com/THU-KEG/ChatLog)中找到。我们将使用这个数据集，通过从原始1000个问题中抽取200个问题，连同ChatGPT的回答和人工参考答案，来覆盖给定期间的每一天。这样，我们将得到35个每日数据框，每个数据框有200行，包含以下列：
+在[ChatLog: 记录与分析 ChatGPT 随时间的变化](https://arxiv.org/pdf/2304.14106.pdf)中展示的工作中，从该数据集中抽取了 1000 个问题，并在 2023 年 3 月 5 日至 4 月 9 日期间每天反复发送给 ChatGPT，这些数据可以在[ChatLog 的仓库](https://github.com/THU-KEG/ChatLog)中找到。我们将使用这个数据集，通过从原始 1000 个问题中抽取 200 个问题，连同 ChatGPT 的回答和人工参考答案，来覆盖给定期间的每一天。这样，我们将得到 35 个每日数据框，每个数据框有 200 行，包含以下列：
 
-![](../Images/2299ae9670cd9cb23d9a3ee4acf62953.png)
+![](img/2299ae9670cd9cb23d9a3ee4acf62953.png)
 
 作者提供的表格
 
-# 流行的LLM指标
+# 流行的 LLM 指标
 
-为了准确评估像ChatGPT这样具有广泛功能的模型，定义一组合适的指标可能是一项艰巨的任务。在这个示例中，我们将涵盖一些相对通用的指标示例，这些指标对各种应用可能有用，例如文本质量、情感分析、毒性和文本语义相似性，还有一些特定于某些任务的指标，如问答和总结，例如ROUGE指标组。
+为了准确评估像 ChatGPT 这样具有广泛功能的模型，定义一组合适的指标可能是一项艰巨的任务。在这个示例中，我们将涵盖一些相对通用的指标示例，这些指标对各种应用可能有用，例如文本质量、情感分析、毒性和文本语义相似性，还有一些特定于某些任务的指标，如问答和总结，例如 ROUGE 指标组。
 
-还有许多其他可能更相关的指标和方法，具体取决于你感兴趣的应用。如果你在寻找更多的监控示例，这里有三篇论文作为撰写本博客的灵感来源：[语言模型的整体评估](https://arxiv.org/pdf/2211.09110.pdf)、[ChatLog: 记录与分析ChatGPT随时间的变化](https://arxiv.org/pdf/2304.14106.pdf)和[超越准确性：使用CheckList对NLP模型进行行为测试](https://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)。
+还有许多其他可能更相关的指标和方法，具体取决于你感兴趣的应用。如果你在寻找更多的监控示例，这里有三篇论文作为撰写本博客的灵感来源：[语言模型的整体评估](https://arxiv.org/pdf/2211.09110.pdf)、[ChatLog: 记录与分析 ChatGPT 随时间的变化](https://arxiv.org/pdf/2304.14106.pdf)和[超越准确性：使用 CheckList 对 NLP 模型进行行为测试](https://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)。
 
-现在，让我们探讨一下在这个示例中我们正在监控的指标。大多数指标将通过外部库计算，例如[rouge](https://pypi.org/project/rouge/)、[textstat](https://github.com/textstat/textstat)和[huggingface models](https://huggingface.co/models)，其中大部分封装在[LangKit](https://github.com/whylabs/langkit)库中，这是一个用于监控语言模型的开源文本指标工具包。最终，我们希望将所有计算出的指标汇总到一个**whylogs**配置文件中，这是一种原始数据的统计摘要。然后，我们将把每日配置文件发送到WhyLabs的可观察性平台，在那里我们可以对其进行长期监控。
+现在，让我们探讨一下在这个示例中我们正在监控的指标。大多数指标将通过外部库计算，例如[rouge](https://pypi.org/project/rouge/)、[textstat](https://github.com/textstat/textstat)和[huggingface models](https://huggingface.co/models)，其中大部分封装在[LangKit](https://github.com/whylabs/langkit)库中，这是一个用于监控语言模型的开源文本指标工具包。最终，我们希望将所有计算出的指标汇总到一个**whylogs**配置文件中，这是一种原始数据的统计摘要。然后，我们将把每日配置文件发送到 WhyLabs 的可观察性平台，在那里我们可以对其进行长期监控。
 
 在以下表格中，我们总结了我们将在接下来的部分中涵盖的指标组：
 
-![](../Images/a0e3c3ff27ca84760009f7ce2f3eae6a.png)
+![](img/a0e3c3ff27ca84760009f7ce2f3eae6a.png)
 
 作者提供的表格
 
@@ -78,7 +78,7 @@ ChatGPT 可能是这些模型中最知名的，在上线的第一个月就拥有
 
 召回导向的摘要评价（ROUGE）是一组常用于自然语言处理中的指标，用于通过将生成的文本与一个或多个参考摘要进行比较来评估自动摘要任务。
 
-当前任务是一个问答问题而非总结任务，但我们有人工回答作为参考，因此我们将使用ROUGE指标来衡量ChatGPT回应与三个参考答案之间的相似度。我们将使用[rouge](https://pypi.org/project/rouge/) Python库来扩展我们的数据框，计算两种不同的指标：ROUGE-L，它考虑答案之间的最长序列重叠，和ROUGE-2，它考虑答案之间的二元组重叠。对于每个生成的答案，最终分数将根据ROUGE-L的f-score在3个参考答案中的最高分确定。对于ROUGE-L和ROUGE-2，我们将计算f-score、精确度和召回率，最终生成6个额外的列。
+当前任务是一个问答问题而非总结任务，但我们有人工回答作为参考，因此我们将使用 ROUGE 指标来衡量 ChatGPT 回应与三个参考答案之间的相似度。我们将使用[rouge](https://pypi.org/project/rouge/) Python 库来扩展我们的数据框，计算两种不同的指标：ROUGE-L，它考虑答案之间的最长序列重叠，和 ROUGE-2，它考虑答案之间的二元组重叠。对于每个生成的答案，最终分数将根据 ROUGE-L 的 f-score 在 3 个参考答案中的最高分确定。对于 ROUGE-L 和 ROUGE-2，我们将计算 f-score、精确度和召回率，最终生成 6 个额外的列。
 
 该方法基于以下论文：[ChatLog: Recording and Analyzing ChatGPT Across Time](https://arxiv.org/pdf/2304.14106.pdf)
 
@@ -86,7 +86,7 @@ ChatGPT 可能是这些模型中最知名的，在上线的第一个月就拥有
 
 社会偏见是讨论公平和负责任的人工智能时的一个核心话题[2],[7]，可以定义为“语言选择中的系统性不对称”[8]。在这个例子中，我们专注于性别偏见，通过衡量男性和女性人群之间提及的不均衡程度来识别过度或不足的代表性。
 
-我们将通过统计同时包含在归属于女性和男性人群的两个词汇集合中的单词数量来进行此操作。对于某一天，我们将汇总200个生成答案中的出现次数，并通过计算它们之间的距离来将结果分布与参考的无偏分布进行比较，使用[总变差距离](https://en.wikipedia.org/wiki/Total_variation_distance_of_probability_measures)。在以下代码片段中，我们可以看到用于代表这两个人群的单词组：
+我们将通过统计同时包含在归属于女性和男性人群的两个词汇集合中的单词数量来进行此操作。对于某一天，我们将汇总 200 个生成答案中的出现次数，并通过计算它们之间的距离来将结果分布与参考的无偏分布进行比较，使用[总变差距离](https://en.wikipedia.org/wiki/Total_variation_distance_of_probability_measures)。在以下代码片段中，我们可以看到用于代表这两个人群的单词组：
 
 ```py
  Afemale = { "she", "daughter", "hers", "her", "mother", "woman", "girl", "herself", "female", "sister",
@@ -102,7 +102,7 @@ Amale = { "he", "son", "his", "him", "father", "man", "boy", "himself", "male", 
 
 文本质量指标，如可读性、复杂性和年级水平，可以提供对生成回应的质量和适用性的关键见解。
 
-在LangKit中，我们可以通过textstat模块计算文本质量指标，该模块使用[textstat](https://github.com/textstat/textstat)库来计算几种不同的文本质量指标。
+在 LangKit 中，我们可以通过 textstat 模块计算文本质量指标，该模块使用[textstat](https://github.com/textstat/textstat)库来计算几种不同的文本质量指标。
 
 # 语义相似性
 
@@ -180,7 +180,7 @@ print(toxicity(text2))
 
 # 随着时间的推移进行监控
 
-现在我们已经定义了要跟踪的指标，我们需要将它们全部封装到一个单一的配置文件中，然后将其上传到我们的监控仪表板。如前所述，我们将为每天的数据生成一个whylogs配置文件，并且我们将使用WhyLabs作为监控仪表板，它与whylogs配置文件格式兼容。我们不会在这篇文章中展示完整的代码，但一个简单的如何使用langkit启用LLM指标上传配置文件的示例如下：
+现在我们已经定义了要跟踪的指标，我们需要将它们全部封装到一个单一的配置文件中，然后将其上传到我们的监控仪表板。如前所述，我们将为每天的数据生成一个 whylogs 配置文件，并且我们将使用 WhyLabs 作为监控仪表板，它与 whylogs 配置文件格式兼容。我们不会在这篇文章中展示完整的代码，但一个简单的如何使用 langkit 启用 LLM 指标上传配置文件的示例如下：
 
 ```py
 from langkit import llm_metrics
@@ -194,43 +194,43 @@ profile = why.log(df,schema=text_schema).profile()
 status = writer.write(profile)
 ```
 
-通过初始化**llm_metrics**，whylogs分析过程将自动计算包括文本质量、语义相似性、正则表达式模式、毒性和情感等指标。
+通过初始化**llm_metrics**，whylogs 分析过程将自动计算包括文本质量、语义相似性、正则表达式模式、毒性和情感等指标。
 
 如果你对如何实现这一点的详细信息感兴趣，可以查看这份[Colab Notebook](https://colab.research.google.com/github/whylabs/langkit/blob/main/langkit/examples/ChatGPT_Behavioral_Monitoring.ipynb)中的完整代码！
 
 # 那么，行为发生了变化吗？
 
-TLDR; 总的来说，它似乎有所改善，2023年3月23日出现了明显的过渡。
+TLDR; 总的来说，它似乎有所改善，2023 年 3 月 23 日出现了明显的过渡。
 
-我们无法在这篇博客中展示每一个图表——我们的仪表板总共有25个监控特性——但让我们看看其中的一些。为了获得完整的体验，欢迎你探索[项目的仪表板](https://hub.whylabsapp.com/resources/demo-chatgpt-behavior-ELI5/columns/response.difficult_words?dateRange=2023-03-05-to-2023-04-09&targetOrgId=demo&sessionToken=session-8gcsnbVy)！
+我们无法在这篇博客中展示每一个图表——我们的仪表板总共有 25 个监控特性——但让我们看看其中的一些。为了获得完整的体验，欢迎你探索[项目的仪表板](https://hub.whylabsapp.com/resources/demo-chatgpt-behavior-ELI5/columns/response.difficult_words?dateRange=2023-03-05-to-2023-04-09&targetOrgId=demo&sessionToken=session-8gcsnbVy)！
 
-关于ROUGE指标，随着时间的推移，召回率略有下降，而精确度则按相同比例上升，使得F-score大致保持不变。这表明，回答变得更加专注和简洁，虽然牺牲了一些覆盖范围，但在两者之间保持了平衡，这似乎与[9]中提供的原始结果一致。
+关于 ROUGE 指标，随着时间的推移，召回率略有下降，而精确度则按相同比例上升，使得 F-score 大致保持不变。这表明，回答变得更加专注和简洁，虽然牺牲了一些覆盖范围，但在两者之间保持了平衡，这似乎与[9]中提供的原始结果一致。
 
-![](../Images/d17da7cc60d2e1ea49c4de32efd6d339.png)
+![](img/d17da7cc60d2e1ea49c4de32efd6d339.png)
 
 ROUGE-L-R。截图由作者提供。
 
 现在，让我们来看看其中一个文本质量指标——**困难词汇**：
 
-![](../Images/e1999df549eb5e1986217ed8e904c6e6.png)
+![](img/e1999df549eb5e1986217ed8e904c6e6.png)
 
 难度词汇。截图由作者提供。
 
-在3月23日之后，困难词汇的平均数量急剧下降，这是一个好迹象，因为我们的目标是使答案易于理解。这种可读性趋势也可以在其他文本质量指标中看到，例如**自动可读性指数、Flesch阅读易度**和**字符计数**。
+在 3 月 23 日之后，困难词汇的平均数量急剧下降，这是一个好迹象，因为我们的目标是使答案易于理解。这种可读性趋势也可以在其他文本质量指标中看到，例如**自动可读性指数、Flesch 阅读易度**和**字符计数**。
 
 语义相似性似乎也随着时间的推移而略有增加，如下所示：
 
-![](../Images/8832cad8b5f369e163cc2b308ea8e5be.png)
+![](img/8832cad8b5f369e163cc2b308ea8e5be.png)
 
 *response.relevance_to_prompt*。截图由作者提供。
 
-这表明模型的回答越来越符合问题的上下文。不过，这种情况也可能不存在——在Tu, Shangqing等人的研究[4]中指出，ChatGPT可能会通过使用隐喻开始回答问题，这可能导致相似度分数的下降，而并不意味着回答质量的下降。可能还有其他因素导致整体相似度的提高。例如，模型拒绝回答问题的次数减少可能会导致语义相似度的增加。实际上情况确实如此，这可以通过下面显示的**refusal_similarity**指标看到：
+这表明模型的回答越来越符合问题的上下文。不过，这种情况也可能不存在——在 Tu, Shangqing 等人的研究[4]中指出，ChatGPT 可能会通过使用隐喻开始回答问题，这可能导致相似度分数的下降，而并不意味着回答质量的下降。可能还有其他因素导致整体相似度的提高。例如，模型拒绝回答问题的次数减少可能会导致语义相似度的增加。实际上情况确实如此，这可以通过下面显示的**refusal_similarity**指标看到：
 
-![](../Images/7c434f19e387d0d7eac26349c52992fc.png)
+![](img/7c434f19e387d0d7eac26349c52992fc.png)
 
 拒绝相似度。截图由作者提供。
 
-在上述所有图形中，我们可以看到3月23日和3月24日之间行为的明显过渡。这表明ChatGPT在这个特定日期进行了重要升级。
+在上述所有图形中，我们可以看到 3 月 23 日和 3 月 24 日之间行为的明显过渡。这表明 ChatGPT 在这个特定日期进行了重要升级。
 
 为了简洁起见，我们不会展示剩余的图表，但我们可以再讨论几个指标。**gender_tvd**分数在整个期间内大致保持不变，显示出性别之间的群体代表性没有重大差异。情感分数平均大致保持不变，具有正的均值，而毒性均值在整个期间内非常低，表明模型没有表现出特别有害或有毒的行为。此外，在记录**has_patterns**指标时没有发现敏感信息。
 
@@ -242,18 +242,18 @@ ROUGE-L-R。截图由作者提供。
 
 # 参考文献
 
-1 — [https://www.engadget.com/chatgpt-100-million-users-january-130619073.html](https://www.engadget.com/chatgpt-100-million-users-january-130619073.html)
+1 — [`www.engadget.com/chatgpt-100-million-users-january-130619073.html`](https://www.engadget.com/chatgpt-100-million-users-january-130619073.html)
 
-2- Emily M Bender 等人。“随机鹦鹉的危险：语言模型能否过大？”刊登于：2021年ACM公平性、问责制和透明度会议论文集。2021年，第610–623页（引自第2页）。
+2- Emily M Bender 等人。“随机鹦鹉的危险：语言模型能否过大？”刊登于：2021 年 ACM 公平性、问责制和透明度会议论文集。2021 年，第 610–623 页（引自第 2 页）。
 
-3 — Hussam Alkaissi 和 Samy I McFarlane. “ChatGPT中的人工幻觉：对科学写作的影响”。刊登于：Cureus 15.2 (2023)（引自第2页）。
+3 — Hussam Alkaissi 和 Samy I McFarlane. “ChatGPT 中的人工幻觉：对科学写作的影响”。刊登于：Cureus 15.2 (2023)（引自第 2 页）。
 
-4 — Tu, Shangqing 等人。“ChatLog：记录和分析ChatGPT随时间的变化。”*arXiv预印本arXiv:2304.14106* (2023)。[https://arxiv.org/pdf/2304.14106.pdf](https://arxiv.org/pdf/2304.14106.pdf)
+4 — Tu, Shangqing 等人。“ChatLog：记录和分析 ChatGPT 随时间的变化。”*arXiv 预印本 arXiv:2304.14106* (2023)。[`arxiv.org/pdf/2304.14106.pdf`](https://arxiv.org/pdf/2304.14106.pdf)
 
-5 — [https://cdn.openai.com/papers/Training_language_models_to_follow_instructions_with_human_feedback.pdf](https://cdn.openai.com/papers/Training_language_models_to_follow_instructions_with_human_feedback.pdf)
+5 — [`cdn.openai.com/papers/Training_language_models_to_follow_instructions_with_human_feedback.pdf`](https://cdn.openai.com/papers/Training_language_models_to_follow_instructions_with_human_feedback.pdf)
 
-6- Angela Fan, Yacine Jernite, Ethan Perez, David Grangier, Jason Weston 和 Michael Auli. 2019\. [ELI5: 长篇问答](https://aclanthology.org/P19-1346). 收录于*第57届计算语言学协会年会论文集*，第3558–3567页，意大利佛罗伦萨。计算语言学协会。
+6- Angela Fan, Yacine Jernite, Ethan Perez, David Grangier, Jason Weston 和 Michael Auli. 2019\. [ELI5: 长篇问答](https://aclanthology.org/P19-1346). 收录于*第 57 届计算语言学协会年会论文集*，第 3558–3567 页，意大利佛罗伦萨。计算语言学协会。
 
-7 — 人对计算机程序员如同女人对家庭主妇？去偏见词嵌入 — [https://doi.org/10.48550/arXiv.1607.06520](https://doi.org/10.48550/arXiv.1607.06520)
+7 — 人对计算机程序员如同女人对家庭主妇？去偏见词嵌入 — [`doi.org/10.48550/arXiv.1607.06520`](https://doi.org/10.48550/arXiv.1607.06520)
 
-8 — Beukeboom, C. J., & Burgers, C. (2019). 刻板印象如何通过语言传播：社会类别与刻板印象交流（SCSC）框架的综述与介绍。传播研究评论，7，1–37\. [https://doi.org/10.12840/issn.2255-4165.017](https://doi.org/10.12840/issn.2255-4165.017)
+8 — Beukeboom, C. J., & Burgers, C. (2019). 刻板印象如何通过语言传播：社会类别与刻板印象交流（SCSC）框架的综述与介绍。传播研究评论，7，1–37\. [`doi.org/10.12840/issn.2255-4165.017`](https://doi.org/10.12840/issn.2255-4165.017)

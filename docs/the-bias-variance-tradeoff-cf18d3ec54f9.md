@@ -1,18 +1,18 @@
 # 偏差-方差权衡
 
-> 原文：[https://towardsdatascience.com/the-bias-variance-tradeoff-cf18d3ec54f9?source=collection_archive---------6-----------------------#2023-02-23](https://towardsdatascience.com/the-bias-variance-tradeoff-cf18d3ec54f9?source=collection_archive---------6-----------------------#2023-02-23)
+> 原文：[`towardsdatascience.com/the-bias-variance-tradeoff-cf18d3ec54f9?source=collection_archive---------6-----------------------#2023-02-23`](https://towardsdatascience.com/the-bias-variance-tradeoff-cf18d3ec54f9?source=collection_archive---------6-----------------------#2023-02-23)
 
 ## *理解这一著名概念及其对机器学习模型的影响*
 
-[](https://alexandrerossetolemos.medium.com/?source=post_page-----cf18d3ec54f9--------------------------------)[![Alexandre Rosseto Lemos](../Images/875245dfdc6d10a20a94791a5d88c5ae.png)](https://alexandrerossetolemos.medium.com/?source=post_page-----cf18d3ec54f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cf18d3ec54f9--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cf18d3ec54f9--------------------------------) [Alexandre Rosseto Lemos](https://alexandrerossetolemos.medium.com/?source=post_page-----cf18d3ec54f9--------------------------------)
+[](https://alexandrerossetolemos.medium.com/?source=post_page-----cf18d3ec54f9--------------------------------)![Alexandre Rosseto Lemos](https://alexandrerossetolemos.medium.com/?source=post_page-----cf18d3ec54f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cf18d3ec54f9--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf18d3ec54f9--------------------------------) [Alexandre Rosseto Lemos](https://alexandrerossetolemos.medium.com/?source=post_page-----cf18d3ec54f9--------------------------------)
 
 ·
 
-[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fde43cc058e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bias-variance-tradeoff-cf18d3ec54f9&user=Alexandre+Rosseto+Lemos&userId=de43cc058e79&source=post_page-de43cc058e79----cf18d3ec54f9---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----cf18d3ec54f9--------------------------------) ·5分钟阅读·2023年2月23日
+[查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fde43cc058e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bias-variance-tradeoff-cf18d3ec54f9&user=Alexandre+Rosseto+Lemos&userId=de43cc058e79&source=post_page-de43cc058e79----cf18d3ec54f9---------------------post_header-----------) 发表在 [数据科学的前沿](https://towardsdatascience.com/?source=post_page-----cf18d3ec54f9--------------------------------) ·5 分钟阅读·2023 年 2 月 23 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcf18d3ec54f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bias-variance-tradeoff-cf18d3ec54f9&source=-----cf18d3ec54f9---------------------bookmark_footer-----------)![](../Images/fd8652be4059aab424bdc145093e5dd8.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcf18d3ec54f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-bias-variance-tradeoff-cf18d3ec54f9&source=-----cf18d3ec54f9---------------------bookmark_footer-----------)![](img/fd8652be4059aab424bdc145093e5dd8.png)
 
 图片由 [Piret Ilver](https://unsplash.com/@saltsup?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -22,7 +22,7 @@
 
 # 偏差与方差
 
-![](../Images/5c047d342e6526139a4159105bf5c2e5.png)
+![](img/5c047d342e6526139a4159105bf5c2e5.png)
 
 图片来源：[PEIWEN HE](https://unsplash.com/@peiwenhe?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -36,7 +36,7 @@
 
 理解偏差-方差权衡对于开发准确可靠的机器学习模型至关重要。它有助于优化模型性能并避免诸如欠拟合和过拟合等常见陷阱。通过像下图这样的靶心图来可视化偏差和方差的概念是一种有效的方法。
 
-![](../Images/5b9e6254f0e442aecea78bd469cd4846.png)
+![](img/5b9e6254f0e442aecea78bd469cd4846.png)
 
 来源：[V. Gudivada, A. Apon & J. Ding, 2017](https://www.researchgate.net/publication/318432363_Data_Quality_Considerations_for_Big_Data_and_Machine_Learning_Going_Beyond_Data_Cleaning_and_Transformations)
 
@@ -54,7 +54,7 @@
 
 ## 权衡
 
-![](../Images/ba02eb36962b32424cfa04d52257ec97.png)
+![](img/ba02eb36962b32424cfa04d52257ec97.png)
 
 图片来源：[Possessed Photography](https://unsplash.com/@possessedphotography?utm_source=medium&utm_medium=referral) 在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -62,7 +62,7 @@
 
 这直接与所使用模型的复杂性有关，如下图所示。
 
-![](../Images/3cba0dadaf2d2e62be859bb093e2a90b.png)
+![](img/3cba0dadaf2d2e62be859bb093e2a90b.png)
 
 偏差-方差权衡和误差关系（图像由作者提供）
 
@@ -76,7 +76,7 @@
 
 ## 例子
 
-![](../Images/3ee904742bb7f356b0a0fece88b9a7c2.png)
+![](img/3ee904742bb7f356b0a0fece88b9a7c2.png)
 
 [Steve Johnson](https://unsplash.com/@steve_j?utm_source=medium&utm_medium=referral) 的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -86,7 +86,7 @@
 
 结果图显示了不同多项式回归模型的偏差-方差权衡：
 
-![](../Images/2e7ece233b1e3a727a88044cffab99d9.png)
+![](img/2e7ece233b1e3a727a88044cffab99d9.png)
 
 不同度数模型得到的结果（图像由作者提供）。
 

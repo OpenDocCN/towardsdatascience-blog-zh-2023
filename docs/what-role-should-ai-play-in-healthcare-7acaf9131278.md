@@ -1,18 +1,18 @@
 # 人工智能在医疗保健中应扮演什么角色？
 
-> 原文：[https://towardsdatascience.com/what-role-should-ai-play-in-healthcare-7acaf9131278?source=collection_archive---------2-----------------------#2023-11-30](https://towardsdatascience.com/what-role-should-ai-play-in-healthcare-7acaf9131278?source=collection_archive---------2-----------------------#2023-11-30)
+> 原文：[`towardsdatascience.com/what-role-should-ai-play-in-healthcare-7acaf9131278?source=collection_archive---------2-----------------------#2023-11-30`](https://towardsdatascience.com/what-role-should-ai-play-in-healthcare-7acaf9131278?source=collection_archive---------2-----------------------#2023-11-30)
 
-## **关于机器学习在医疗保健中的应用及美国医疗保健AI丑闻**
+## **关于机器学习在医疗保健中的应用及美国医疗保健 AI 丑闻**
 
-[](https://medium.com/@s.kirmer?source=post_page-----7acaf9131278--------------------------------)[![Stephanie Kirmer](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----7acaf9131278--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7acaf9131278--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7acaf9131278--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----7acaf9131278--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----7acaf9131278--------------------------------)![Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----7acaf9131278--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7acaf9131278--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----7acaf9131278--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----7acaf9131278--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-role-should-ai-play-in-healthcare-7acaf9131278&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----7acaf9131278---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7acaf9131278--------------------------------) ·11 分钟阅读·2023年11月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7acaf9131278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-role-should-ai-play-in-healthcare-7acaf9131278&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----7acaf9131278---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa8dc77209ef3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-role-should-ai-play-in-healthcare-7acaf9131278&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=post_page-a8dc77209ef3----7acaf9131278---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7acaf9131278--------------------------------) ·11 分钟阅读·2023 年 11 月 30 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7acaf9131278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-role-should-ai-play-in-healthcare-7acaf9131278&user=Stephanie+Kirmer&userId=a8dc77209ef3&source=-----7acaf9131278---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7acaf9131278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-role-should-ai-play-in-healthcare-7acaf9131278&source=-----7acaf9131278---------------------bookmark_footer-----------)![](../Images/35a45b006a418cf960be7d468acae718.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7acaf9131278&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhat-role-should-ai-play-in-healthcare-7acaf9131278&source=-----7acaf9131278---------------------bookmark_footer-----------)![](img/35a45b006a418cf960be7d468acae718.png)
 
 图片来源：国家癌症研究所，来源于 Unsplash
 
@@ -54,23 +54,23 @@
 
 # 应用机器学习
 
-那么，为什么UHC的行为现在成为新闻？这与机器学习到底有什么关系？UHC用于确定这些老年患者的急性后护理应该持续多久的模型来自一家名为naviHealth的公司，该公司专门处理这些案例。[从他们的网站阅读](https://navihealth.com/)，我了解到，naviHealth寻找减少老年患者在护理设施中停留时间的方法。他们可能还提供一些关于案例管理的服务，在患者被送回家之前与他们进行咨询。他们在网站上明确表示，他们可以为保险公司提供“显著的成本节约”。
+那么，为什么 UHC 的行为现在成为新闻？这与机器学习到底有什么关系？UHC 用于确定这些老年患者的急性后护理应该持续多久的模型来自一家名为 naviHealth 的公司，该公司专门处理这些案例。[从他们的网站阅读](https://navihealth.com/)，我了解到，naviHealth 寻找减少老年患者在护理设施中停留时间的方法。他们可能还提供一些关于案例管理的服务，在患者被送回家之前与他们进行咨询。他们在网站上明确表示，他们可以为保险公司提供“显著的成本节约”。
 
 但关键在于，这个模型“nH Predict”声称能够确定患者在护理环境中停留的最佳时间长度， ostensibly 为了最佳的护理效果，而实际上模型的阈值设置使得这些预测与护理效果并不一致，而仅仅是为了成本节约。
 
-换句话说：如果你允许病人留在医院或康复设施，但他们准备提前回家并且真的这样做了，那是很好的。没有人愿意在医院待得过久（你尝过医院的食物吗？）。这是一种你可能通过提供高质量的护理、他们所描述的案例管理以及其他有用服务来实现的成本节约，同时病人也能得到他们所需的护理。但UHC所做的却是，通过拒绝支付病人在医院的费用来获得成本节约，因此不论病人是否准备好，他们都会被赶出医院送回家。
+换句话说：如果你允许病人留在医院或康复设施，但他们准备提前回家并且真的这样做了，那是很好的。没有人愿意在医院待得过久（你尝过医院的食物吗？）。这是一种你可能通过提供高质量的护理、他们所描述的案例管理以及其他有用服务来实现的成本节约，同时病人也能得到他们所需的护理。但 UHC 所做的却是，通过拒绝支付病人在医院的费用来获得成本节约，因此不论病人是否准备好，他们都会被赶出医院送回家。
 
-> UHC所做的却是，通过拒绝支付病人在医院的费用来获得成本节约，而不是提供这些服务并让病人准备好提前离开医院，因此无论病人是否准备好，他们都会被赶出医院送回家。
+> UHC 所做的却是，通过拒绝支付病人在医院的费用来获得成本节约，而不是提供这些服务并让病人准备好提前离开医院，因此无论病人是否准备好，他们都会被赶出医院送回家。
 
 # 模型如何了解健康
 
-我想澄清的是，这不是“人工智能失控”——这是人类做出了不道德的决定，并利用机器学习来推卸责任。如果你想将老年人赶出医院，不考虑他们的生活或健康后果，那么如果你今天是美国的保险公司，你可以这样做。你不需要一个模型来给你许可。但我认为UHC意识到，如果他们有一个模型给出这些建议，而人工审核者可以只是走个过场，那么他们就有了掩护，因为人们认为模型具有一定的独立准确性。毕竟，模型肯定不会查看这项护理的价格标签！
+我想澄清的是，这不是“人工智能失控”——这是人类做出了不道德的决定，并利用机器学习来推卸责任。如果你想将老年人赶出医院，不考虑他们的生活或健康后果，那么如果你今天是美国的保险公司，你可以这样做。你不需要一个模型来给你许可。但我认为 UHC 意识到，如果他们有一个模型给出这些建议，而人工审核者可以只是走个过场，那么他们就有了掩护，因为人们认为模型具有一定的独立准确性。毕竟，模型肯定不会查看这项护理的价格标签！
 
 但请记住，模型只是一个试图将模式融合成可以复制的数学语言的尝试，它不控制你提供给它的信息，也不控制你教它回答的问题。在创建一个预测住院天数的模型时，你可以这样进行。
 
 +   收集大量的过去患者档案数据，其中有人受伤或生病，进入医院，接受康复住院护理，并有结果（不论是康复、需要回医院还是去世）。
 
-+   将这些文件转化为数字数据。把每个患者看作是电子表格中的一行，开始收集诸如患者年龄、初始伤害的严重程度、患者的过去病史数据、是否有其他疾病（糖尿病、心脏病、痴呆等）。这些成为训练数据。最重要的是，你需要包括A. 康复住院护理的天数和B. 结果是什么。
++   将这些文件转化为数字数据。把每个患者看作是电子表格中的一行，开始收集诸如患者年龄、初始伤害的严重程度、患者的过去病史数据、是否有其他疾病（糖尿病、心脏病、痴呆等）。这些成为训练数据。最重要的是，你需要包括 A. 康复住院护理的天数和 B. 结果是什么。
 
 +   现在你需要框定问题。在这种情况下，塑造模型训练的一种方式可能是：“在考虑到所有病例特征的情况下，治疗效果良好的患者有多少天的康复？” 然后你可能会将其与“在考虑到所有病例特征的情况下，治疗效果差的患者有多少天的康复？”进行比较。这只是一个假设性的框定方式，还有许多其他方法可以构建问题并整合训练数据。
 
@@ -108,16 +108,16 @@
 
 # 参考文献
 
-[国会委员会和监管机构质疑Cigna系统，允许其医生拒绝索赔而无需…](https://www.propublica.org/article/cigna-health-insurance-denials-pxdx-congress-investigation?source=post_page-----7acaf9131278--------------------------------#:~:text=The%20letter%20follows%20an%20investigation,PXDX%20system%2C%20spending%20an%20average)
+[国会委员会和监管机构质疑 Cigna 系统，允许其医生拒绝索赔而无需…](https://www.propublica.org/article/cigna-health-insurance-denials-pxdx-congress-investigation?source=post_page-----7acaf9131278--------------------------------#:~:text=The%20letter%20follows%20an%20investigation,PXDX%20system%2C%20spending%20an%20average)
 
-### 这些探查跟随ProPublica和Capitol Forum的调查，揭示了Cigna允许其医生拒绝数百个…
+### 这些探查跟随 ProPublica 和 Capitol Forum 的调查，揭示了 Cigna 允许其医生拒绝数百个…
 
-[UnitedHealth被指控使用有缺陷的AI拒绝老年患者必要的医疗覆盖](https://www.cbsnews.com/news/unitedhealth-lawsuit-ai-deny-claims-medicare-advantage-health-insurance-denials/?source=post_page-----7acaf9131278--------------------------------) [## 由诉讼声称]
+[UnitedHealth 被指控使用有缺陷的 AI 拒绝老年患者必要的医疗覆盖](https://www.cbsnews.com/news/unitedhealth-lawsuit-ai-deny-claims-medicare-advantage-health-insurance-denials/?source=post_page-----7acaf9131278--------------------------------) [## 由诉讼声称]
 
-### 过去受益者的家庭声称，UnitedHealth的AI系统“积极”拒绝了必要的医疗索赔…
+### 过去受益者的家庭声称，UnitedHealth 的 AI 系统“积极”拒绝了必要的医疗索赔…
 
-[naviHealth官网](https://navihealth.com/?source=post_page-----7acaf9131278--------------------------------) [## 首页]
+[naviHealth 官网](https://navihealth.com/?source=post_page-----7acaf9131278--------------------------------) [## 首页]
 
 ### 老年中心护理的未来已来
 
-[navihealth官网](https://navihealth.com/?source=post_page-----7acaf9131278--------------------------------)
+[navihealth 官网](https://navihealth.com/?source=post_page-----7acaf9131278--------------------------------)

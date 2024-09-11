@@ -1,20 +1,20 @@
 # 如何将 SQL 查询重写和优化为 Pandas：5 个简单示例
 
-> 原文：[https://towardsdatascience.com/how-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e?source=collection_archive---------2-----------------------#2023-06-01](https://towardsdatascience.com/how-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e?source=collection_archive---------2-----------------------#2023-06-01)
+> 原文：[`towardsdatascience.com/how-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e?source=collection_archive---------2-----------------------#2023-06-01`](https://towardsdatascience.com/how-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e?source=collection_archive---------2-----------------------#2023-06-01)
 
 ## 编程
 
 ## 从 SQL 迁移到 Pandas，以改善数据分析工作流程
 
-[](https://byrondolon.medium.com/?source=post_page-----6983cae8426e--------------------------------)[![Byron Dolon](../Images/9ff32138c7b1913be24cc7ab971752b0.png)](https://byrondolon.medium.com/?source=post_page-----6983cae8426e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6983cae8426e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6983cae8426e--------------------------------) [Byron Dolon](https://byrondolon.medium.com/?source=post_page-----6983cae8426e--------------------------------)
+[](https://byrondolon.medium.com/?source=post_page-----6983cae8426e--------------------------------)![Byron Dolon](https://byrondolon.medium.com/?source=post_page-----6983cae8426e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6983cae8426e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----6983cae8426e--------------------------------) [Byron Dolon](https://byrondolon.medium.com/?source=post_page-----6983cae8426e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b5d063df5dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e&user=Byron+Dolon&userId=6b5d063df5dd&source=post_page-6b5d063df5dd----6983cae8426e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6983cae8426e--------------------------------) ·9 分钟阅读·2023年6月1日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6983cae8426e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e&user=Byron+Dolon&userId=6b5d063df5dd&source=-----6983cae8426e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6b5d063df5dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e&user=Byron+Dolon&userId=6b5d063df5dd&source=post_page-6b5d063df5dd----6983cae8426e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6983cae8426e--------------------------------) ·9 分钟阅读·2023 年 6 月 1 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6983cae8426e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e&user=Byron+Dolon&userId=6b5d063df5dd&source=-----6983cae8426e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6983cae8426e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e&source=-----6983cae8426e---------------------bookmark_footer-----------)![](../Images/802af72a42f8761f0a4ee55bcb3d5954.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6983cae8426e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-rewrite-and-optimize-your-sql-queries-to-pandas-in-5-simple-examples-6983cae8426e&source=-----6983cae8426e---------------------bookmark_footer-----------)![](img/802af72a42f8761f0a4ee55bcb3d5954.png)
 
 图片由作者提供
 

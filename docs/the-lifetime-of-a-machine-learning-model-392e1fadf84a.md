@@ -1,18 +1,18 @@
 # 机器学习模型的生命周期
 
-> 原文：[https://towardsdatascience.com/the-lifetime-of-a-machine-learning-model-392e1fadf84a?source=collection_archive---------1-----------------------#2023-05-11](https://towardsdatascience.com/the-lifetime-of-a-machine-learning-model-392e1fadf84a?source=collection_archive---------1-----------------------#2023-05-11)
+> 原文：[`towardsdatascience.com/the-lifetime-of-a-machine-learning-model-392e1fadf84a?source=collection_archive---------1-----------------------#2023-05-11`](https://towardsdatascience.com/the-lifetime-of-a-machine-learning-model-392e1fadf84a?source=collection_archive---------1-----------------------#2023-05-11)
 
 ## 它们何时出生，如何转变？
 
-[](https://medium.com/@valefonsecadiaz?source=post_page-----392e1fadf84a--------------------------------)[![Valeria Fonseca Diaz](../Images/880222be555e8fa7df660f9dd1233818.png)](https://medium.com/@valefonsecadiaz?source=post_page-----392e1fadf84a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----392e1fadf84a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----392e1fadf84a--------------------------------) [瓦莱里亚·冯塞卡·迪亚兹](https://medium.com/@valefonsecadiaz?source=post_page-----392e1fadf84a--------------------------------)
+[](https://medium.com/@valefonsecadiaz?source=post_page-----392e1fadf84a--------------------------------)![Valeria Fonseca Diaz](https://medium.com/@valefonsecadiaz?source=post_page-----392e1fadf84a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----392e1fadf84a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----392e1fadf84a--------------------------------) [瓦莱里亚·冯塞卡·迪亚兹](https://medium.com/@valefonsecadiaz?source=post_page-----392e1fadf84a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e363caf1c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-lifetime-of-a-machine-learning-model-392e1fadf84a&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=post_page-6e363caf1c79----392e1fadf84a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----392e1fadf84a--------------------------------) ·7 min read·2023年5月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F392e1fadf84a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-lifetime-of-a-machine-learning-model-392e1fadf84a&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=-----392e1fadf84a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6e363caf1c79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-lifetime-of-a-machine-learning-model-392e1fadf84a&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=post_page-6e363caf1c79----392e1fadf84a---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----392e1fadf84a--------------------------------) ·7 min read·2023 年 5 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F392e1fadf84a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-lifetime-of-a-machine-learning-model-392e1fadf84a&user=Valeria+Fonseca+Diaz&userId=6e363caf1c79&source=-----392e1fadf84a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F392e1fadf84a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-lifetime-of-a-machine-learning-model-392e1fadf84a&source=-----392e1fadf84a---------------------bookmark_footer-----------)![](../Images/1b2d405d6df597874188f4b038592a42.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F392e1fadf84a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-lifetime-of-a-machine-learning-model-392e1fadf84a&source=-----392e1fadf84a---------------------bookmark_footer-----------)![](img/1b2d405d6df597874188f4b038592a42.png)
 
 机器学习模型的生命周期（作者提供的图片）
 
@@ -26,7 +26,7 @@
 
 这些数字工具是在我们*构建、训练、拟合或估算*模型时诞生的。这个阶段几乎始于有了分析目标、数据、计算机、算法和数据科学家现在熟知的其他一切工具。不论你收集了哪些其他工具，永远不要忘记分析或科学目标，这样你的最终模型才有意义并服务于特定需求。你的模型何时诞生？当你完成训练并保存以备使用/部署时，这个工具的生命周期就开始了。
 
-![](../Images/3897f0a63969cd73acdff522ffac1884.png)
+![](img/3897f0a63969cd73acdff522ffac1884.png)
 
 模型诞生（图片作者提供）
 
@@ -38,7 +38,7 @@
 
 在维护阶段，我们可能需要新的数据。通过新的数据，我们可以更新模型的规格。这与取另一台机器，比如一辆车，并在机械出现故障时调整零件没有区别。我们不会深入探讨执行模型维护的策略或解决方案，但一般来说，我们的模型需要经历一个调整过程，以使其恢复到令人满意的性能。
 
-![](../Images/789ecb6d600c820992c1452bf31d5377.png)
+![](img/789ecb6d600c820992c1452bf31d5377.png)
 
 模型需要维护（图像由作者提供）
 
@@ -50,15 +50,15 @@
 
 在机器学习的道路上，有一个我们可能需要走的出口：转移。我曾经在美丽的冰岛旅行，当我第一次看到有人换车轮以便在冰冷的道路上行驶时，印象深刻。然后当他们回到城市时，又换回了普通的轮胎。当我开始研究转移学习时，那个在冰岛换轮胎的概念变得非常清晰。当新的环境/领域出现时，我们的模型进入了一个被称为*转移*的新阶段。
 
-![](../Images/9f5d02690d5289a389df50a11ad147a2.png)
+![](img/9f5d02690d5289a389df50a11ad147a2.png)
 
 模型可以被转移（图像由作者提供）
 
-就像相同的汽车可以通过更换轮胎适应不同的地面，而无需购买另一辆车，我们可以添加或调整模型的一些部分，以便在新领域中服务新目的，而不必构建新模型。迁移学习是机器学习文献中的另一个子领域，旨在优化模型的调整，以简化在新环境中训练模型的工作。常见的例子是图像识别模型。我们用某些类别的图像训练它们，然后其他人将这些模型迁移到识别新的图像类别。许多企业如今使用如[RegNet, VGG, Inception, 或 AlexNet](/the-w3h-of-alexnet-vggnet-resnet-and-inception-7baaaecccc96)的模型，以适应他们的需求。
+就像相同的汽车可以通过更换轮胎适应不同的地面，而无需购买另一辆车，我们可以添加或调整模型的一些部分，以便在新领域中服务新目的，而不必构建新模型。迁移学习是机器学习文献中的另一个子领域，旨在优化模型的调整，以简化在新环境中训练模型的工作。常见的例子是图像识别模型。我们用某些类别的图像训练它们，然后其他人将这些模型迁移到识别新的图像类别。许多企业如今使用如 RegNet, VGG, Inception, 或 AlexNet 的模型，以适应他们的需求。
 
 当我们转移一个模型时，从某种意义上说，一个新的模型诞生了，它有自己的生命周期，与原始模型分开。它将需要维护，就像原始模型一样。这样，我们从一个初始实体变成了可能创建出一个完整的模型种群。毫无疑问，这些数字工具背后确实有一个生命周期。
 
-![](../Images/58d19fc21075c772cefa42a8550d960d.png)
+![](img/58d19fc21075c772cefa42a8550d960d.png)
 
 模型的种群。我们的模型会随着时间变化（图片来源于作者）
 

@@ -1,18 +1,18 @@
 # 91% 的机器学习模型随着时间的推移会退化
 
-> 原文：[https://towardsdatascience.com/91-of-ml-models-degrade-in-time-cfd467905615?source=collection_archive---------10-----------------------#2023-04-11](https://towardsdatascience.com/91-of-ml-models-degrade-in-time-cfd467905615?source=collection_archive---------10-----------------------#2023-04-11)
+> 原文：[`towardsdatascience.com/91-of-ml-models-degrade-in-time-cfd467905615?source=collection_archive---------10-----------------------#2023-04-11`](https://towardsdatascience.com/91-of-ml-models-degrade-in-time-cfd467905615?source=collection_archive---------10-----------------------#2023-04-11)
 
 ## 随着时间的推移和数据分布的变化，机器学习模型的性能会退化。
 
-[](https://santiviquez.medium.com/?source=post_page-----cfd467905615--------------------------------)[![Santiago Víquez](../Images/5526cf0e92f31d2438bf6522afa5b212.png)](https://santiviquez.medium.com/?source=post_page-----cfd467905615--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cfd467905615--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cfd467905615--------------------------------) [Santiago Víquez](https://santiviquez.medium.com/?source=post_page-----cfd467905615--------------------------------)
+[](https://santiviquez.medium.com/?source=post_page-----cfd467905615--------------------------------)![Santiago Víquez](https://santiviquez.medium.com/?source=post_page-----cfd467905615--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cfd467905615--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfd467905615--------------------------------) [Santiago Víquez](https://santiviquez.medium.com/?source=post_page-----cfd467905615--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F85c82fdad717&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F91-of-ml-models-degrade-in-time-cfd467905615&user=Santiago+V%C3%ADquez&userId=85c82fdad717&source=post_page-85c82fdad717----cfd467905615---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfd467905615--------------------------------) ·9 min read·2023年4月11日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcfd467905615&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F91-of-ml-models-degrade-in-time-cfd467905615&user=Santiago+V%C3%ADquez&userId=85c82fdad717&source=-----cfd467905615---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F85c82fdad717&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F91-of-ml-models-degrade-in-time-cfd467905615&user=Santiago+V%C3%ADquez&userId=85c82fdad717&source=post_page-85c82fdad717----cfd467905615---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cfd467905615--------------------------------) ·9 min read·2023 年 4 月 11 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcfd467905615&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F91-of-ml-models-degrade-in-time-cfd467905615&user=Santiago+V%C3%ADquez&userId=85c82fdad717&source=-----cfd467905615---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcfd467905615&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F91-of-ml-models-degrade-in-time-cfd467905615&source=-----cfd467905615---------------------bookmark_footer-----------)![](../Images/a31369d8347657f5810e3b7f2b2559e5.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcfd467905615&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F91-of-ml-models-degrade-in-time-cfd467905615&source=-----cfd467905615---------------------bookmark_footer-----------)![](img/a31369d8347657f5810e3b7f2b2559e5.png)
 
 模型老化图表展示了机器学习模型随着时间推移的性能退化情况。图片摘自原始论文，由作者注释。
 
@@ -26,19 +26,19 @@
 
 如果你以前接触过像协变量偏移或概念漂移这样的概念，你可能知道生产数据分布的变化可能会影响模型的性能。这种现象是维护生产环境下机器学习模型的一大挑战。
 
-根据定义，机器学习模型依赖于其训练的数据，这意味着如果生产数据的分布开始变化，模型可能不再像以前那样表现良好。随着时间的推移，模型的性能可能会越来越差。作者称这种现象为*“AI老化。”* 我喜欢称之为模型性能退化，具体的性能下降幅度可能让我们将其视为模型失败。
+根据定义，机器学习模型依赖于其训练的数据，这意味着如果生产数据的分布开始变化，模型可能不再像以前那样表现良好。随着时间的推移，模型的性能可能会越来越差。作者称这种现象为*“AI 老化。”* 我喜欢称之为模型性能退化，具体的性能下降幅度可能让我们将其视为模型失败。
 
-为了更好地理解这种现象，作者开发了一个识别时间性模型退化的框架。他们将该框架应用于来自四个行业的32个数据集，使用四种标准机器学习模型，并调查了在数据的最小漂移下，时间性模型退化如何发展。
+为了更好地理解这种现象，作者开发了一个识别时间性模型退化的框架。他们将该框架应用于来自四个行业的 32 个数据集，使用四种标准机器学习模型，并调查了在数据的最小漂移下，时间性模型退化如何发展。
 
 # 模型和数据
 
-为了避免任何模型偏差，作者选择了四种不同的标准机器学习方法（线性回归、随机森林回归、XGBoost和多层感知器神经网络）。这些方法代表了从数据中学习的不同数学方法。通过选择不同的模型类型，他们能够调查不同模型在**相同数据**上的老化方式的相似性和差异。
+为了避免任何模型偏差，作者选择了四种不同的标准机器学习方法（线性回归、随机森林回归、XGBoost 和多层感知器神经网络）。这些方法代表了从数据中学习的不同数学方法。通过选择不同的模型类型，他们能够调查不同模型在**相同数据**上的老化方式的相似性和差异。
 
-同样，为了避免领域偏差，他们选择了来自四个行业（医疗保健、天气、机场交通和金融）的32个数据集。
+同样，为了避免领域偏差，他们选择了来自四个行业（医疗保健、天气、机场交通和金融）的 32 个数据集。
 
 另一个关键决定是，他们只调查了初始性能良好的模型-数据集对。这一决定至关重要，因为研究一个初始适配差的模型的退化是不值得的。
 
-![](../Images/07c8874d017956cf56a2d2832630e1d7.png)
+![](img/07c8874d017956cf56a2d2832630e1d7.png)
 
 时间退化实验中使用的原始数据示例。时间轴在横轴上，每个数据集的目标变量在纵轴上。当每天收集了多个数据点时，它们会用背景颜色和移动的日均曲线来显示。突出标题的颜色将在博客文章中用于轻松识别每个数据集的行业。图片来自原始论文，由作者标注。
 
@@ -58,19 +58,19 @@
 
 为了更好地理解框架，我们需要几个定义。训练数据中最新的点定义为*t_0*。在*t_0*和测试模型的未来时间点之间的天数定义为*dT*，它象征着模型的年龄。
 
-例如，一个天气预报模型使用2022年1月1日至12月31日的数据进行训练。然后在2023年2月1日，我们要求它进行天气预报。
+例如，一个天气预报模型使用 2022 年 1 月 1 日至 12 月 31 日的数据进行训练。然后在 2023 年 2 月 1 日，我们要求它进行天气预报。
 
 在这种情况下
 
-+   *t_0* = 2022年12月31日，因为这是训练数据中最新的点。
++   *t_0* = 2022 年 12 月 31 日，因为这是训练数据中最新的点。
 
-+   *dT* = 32天（从12月31日到2月1日的天数）。这是模型的年龄。
++   *dT* = 32 天（从 12 月 31 日到 2 月 1 日的天数）。这是模型的年龄。
 
 下图总结了他们如何执行每次“历史-未来”模拟。我们添加了注释以便于理解。
 
-![](../Images/70128da5eab652b9c09dc391f311a9d0.png)
+![](img/70128da5eab652b9c09dc391f311a9d0.png)
 
-AI时间降解实验的图示。图片取自原始论文，由作者标注。
+AI 时间降解实验的图示。图片取自原始论文，由作者标注。
 
 为了量化模型性能的变化，他们测量了在时间*t_0*时的均方误差（MSE）为*MSE(t_0)*，以及在模型评估时的*MSE(t_1)*。
 
@@ -78,11 +78,11 @@ AI时间降解实验的图示。图片取自原始论文，由作者标注。
 
 *E_rel* = *MSE(t_1)/MSE(t_0)*
 
-研究人员为每个数据集-模型对进行了20,000次这种类型的实验！其中*t_0*和*dT*是从均匀分布中随机抽取的。
+研究人员为每个数据集-模型对进行了 20,000 次这种类型的实验！其中*t_0*和*dT*是从均匀分布中随机抽取的。
 
-在进行所有这些实验之后，他们为每个数据集-模型对报告了一个*老化模型图表*。该图表包含20,000个紫色点，每个点代表训练后*dT*天获得的相对性能误差*E_rel*。
+在进行所有这些实验之后，他们为每个数据集-模型对报告了一个*老化模型图表*。该图表包含 20,000 个紫色点，每个点代表训练后*dT*天获得的相对性能误差*E_rel*。
 
-![](../Images/a31369d8347657f5810e3b7f2b2559e5.png)
+![](img/a31369d8347657f5810e3b7f2b2559e5.png)
 
 财务数据集和神经网络模型的模型老化图表。每个小点代表一次单独的时间降解实验结果。图片取自原始论文，由作者标注。
 
@@ -96,15 +96,15 @@ AI时间降解实验的图示。图片取自原始论文，由作者标注。
 
 # 主要降解模式
 
-在对所有4（模型）x 32（数据集）= 128（模型、数据集）对进行实验后，**91%的情况下**观察到了时间上的模型性能下降。接下来，我们将探讨四种最常见的性能下降模式及其对ML模型实现的影响。
+在对所有 4（模型）x 32（数据集）= 128（模型、数据集）对进行实验后，**91%的情况下**观察到了时间上的模型性能下降。接下来，我们将探讨四种最常见的性能下降模式及其对 ML 模型实现的影响。
 
 # 渐进或无降级
 
 尽管在下面的两个示例中没有观察到强烈的性能下降，但这些结果仍然提出了挑战。查看原始的患者和天气数据集，我们可以看到患者数据中的延迟变量有很多异常值。相比之下，天气数据中的温度变量则有季节性变化。但即便在这些目标变量的行为下，两种模型似乎随着时间的推移表现准确。
 
-![](../Images/a462360b1374531bd605395323ea4bab.png)
+![](img/a462360b1374531bd605395323ea4bab.png)
 
-渐进的ML模型降级模式，相对模型错误随时间的增加不超过线性。图片来源于原始论文，由作者注释。
+渐进的 ML 模型降级模式，相对模型错误随时间的增加不超过线性。图片来源于原始论文，由作者注释。
 
 作者声称，这些及类似结果表明，单凭数据漂移无法解释模型失败或触发模型质量检查和再训练。
 
@@ -114,25 +114,25 @@ AI时间降解实验的图示。图片取自原始论文，由作者标注。
 
 模型性能下降也可能非常突然。查看下图，我们可以看到两种模型在第一年表现良好。但在某个时刻，它们开始以爆炸性的速度下降。作者声称，这些性能下降不能仅通过数据中的特定漂移来解释。
 
-![](../Images/cac6af66fbb95e4673baa338b236def1.png)
+![](img/cac6af66fbb95e4673baa338b236def1.png)
 
-爆炸性ML模型老化模式。图片来源于原始论文，由作者注释。
+爆炸性 ML 模型老化模式。图片来源于原始论文，由作者注释。
 
-比较两个使用相同数据集但不同ML模型的模型老化图。左侧是爆炸性降级模式，而右侧几乎没有降级。两种模型最初表现良好，但神经网络似乎比线性回归（标记为RV模型）更快地降级。
+比较两个使用相同数据集但不同 ML 模型的模型老化图。左侧是爆炸性降级模式，而右侧几乎没有降级。两种模型最初表现良好，但神经网络似乎比线性回归（标记为 RV 模型）更快地降级。
 
-![](../Images/ff176754b0996ebf7c463567dac6579e.png)
+![](img/ff176754b0996ebf7c463567dac6579e.png)
 
 爆炸性与无降级对比。图片来源于原始论文，由作者注释。
 
-鉴于此及类似结果，作者总结认为*时间性模型质量取决于ML模型的选择及其在特定数据集上的稳定性*。
+鉴于此及类似结果，作者总结认为*时间性模型质量取决于 ML 模型的选择及其在特定数据集上的稳定性*。
 
 在实践中，我们可以通过持续监控估计的模型性能来应对这种现象。这使我们能够在发现爆炸性降级之前解决性能问题。
 
 # 错误变异性增加
 
-尽管黄色（第25百分位数）和黑色（中位数）线保持在相对较低的误差水平，但它们与红色线（第75百分位数）之间的差距随着时间显著增加。如前所述，这可能会造成准确模型性能的错觉，而实际模型结果却变得越来越不确定。
+尽管黄色（第 25 百分位数）和黑色（中位数）线保持在相对较低的误差水平，但它们与红色线（第 75 百分位数）之间的差距随着时间显著增加。如前所述，这可能会造成准确模型性能的错觉，而实际模型结果却变得越来越不确定。
 
-![](../Images/35ceea74e6221416629ef5054ab955dc.png)
+![](img/35ceea74e6221416629ef5054ab955dc.png)
 
 增加不可预测的人工智能模型老化模式。图像取自原始论文，由作者标注。
 
@@ -150,7 +150,7 @@ AI时间降解实验的图示。图片取自原始论文，由作者标注。
 
 当模型的性能出现退化时发出警报并非易事。需要访问最新的真实数据或能够估计模型的性能。像 [DLE 和 CBPE](https://nannyml.readthedocs.io/en/stable/how_it_works/performance_estimation.html#confidence-based-performance-estimation-cbpe) 这样的解决方案来自 [NannyML](https://go.nannyml.com/nanny-github) 可以提供帮助。例如，DLE（直接预测估计）和 CBPE（基于置信度的性能估计）使用概率方法来估计模型的性能，即使目标缺失时也能进行估计。他们监控估计的性能，并在模型退化时发出警报。
 
-![](../Images/0b79b7d98fe34ad960204bdc781ff820.png)
+![](img/0b79b7d98fe34ad960204bdc781ff820.png)
 
 图表取自 [NannyML](https://nannyml.com/)
 
@@ -168,12 +168,12 @@ AI时间降解实验的图示。图片取自原始论文，由作者标注。
 
 # 结论
 
-Vela等人的研究显示，尽管机器学习模型在部署时可能达到高准确率，但其性能不会保持静态。即使在相同数据集上训练，不同的机器学习模型也会以不同的速度老化。另一个相关的观察是，并非所有的时间漂移都会导致性能下降。因此，模型的选择及其稳定性也成为处理性能时间退化的最关键因素之一。
+Vela 等人的研究显示，尽管机器学习模型在部署时可能达到高准确率，但其性能不会保持静态。即使在相同数据集上训练，不同的机器学习模型也会以不同的速度老化。另一个相关的观察是，并非所有的时间漂移都会导致性能下降。因此，模型的选择及其稳定性也成为处理性能时间退化的最关键因素之一。
 
 这些结果为为什么监控解决方案对机器学习行业至关重要提供了理论支持。此外，它显示了机器学习模型性能容易退化。这就是为什么每个生产中的机器学习模型都必须进行监控，否则模型可能在没有警示的情况下失败。
 
 # 参考文献
 
-Vela, D., Sharp, A., Zhang, R., *et al.* 时间质量退化在AI模型中。*Sci Rep* 12, 11654 (2022). [https://doi.org/10.1038/s41598-022-15245-z](https://doi.org/10.1038/s41598-022-15245-z)
+Vela, D., Sharp, A., Zhang, R., *et al.* 时间质量退化在 AI 模型中。*Sci Rep* 12, 11654 (2022). [`doi.org/10.1038/s41598-022-15245-z`](https://doi.org/10.1038/s41598-022-15245-z)
 
 我在[Twitter](https://twitter.com/santiviquez)和[LinkedIn](https://www.linkedin.com/in/santiagoviquez/)上不断撰写关于数据科学和机器学习的内容。如果你想和我一起在公开场合继续学习，请关注我 :)

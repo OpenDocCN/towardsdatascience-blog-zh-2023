@@ -1,18 +1,18 @@
 # 解决任何数据科学问题的艺术——提高结果的简单技巧
 
-> 原文：[https://towardsdatascience.com/the-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e?source=collection_archive---------8-----------------------#2023-01-25](https://towardsdatascience.com/the-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e?source=collection_archive---------8-----------------------#2023-01-25)
+> 原文：[`towardsdatascience.com/the-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e?source=collection_archive---------8-----------------------#2023-01-25`](https://towardsdatascience.com/the-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e?source=collection_archive---------8-----------------------#2023-01-25)
 
 ## 避免麻烦和提高成功几率的未言明建议
 
-[](https://rsharankumar.medium.com/?source=post_page-----b9d4a484166e--------------------------------)[![Sharan Kumar Ravindran](../Images/627345fcf32b52f46ff5e0c959234de4.png)](https://rsharankumar.medium.com/?source=post_page-----b9d4a484166e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b9d4a484166e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b9d4a484166e--------------------------------) [Sharan Kumar Ravindran](https://rsharankumar.medium.com/?source=post_page-----b9d4a484166e--------------------------------)
+[](https://rsharankumar.medium.com/?source=post_page-----b9d4a484166e--------------------------------)![Sharan Kumar Ravindran](https://rsharankumar.medium.com/?source=post_page-----b9d4a484166e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b9d4a484166e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9d4a484166e--------------------------------) [Sharan Kumar Ravindran](https://rsharankumar.medium.com/?source=post_page-----b9d4a484166e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9fc8dfce153b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e&user=Sharan+Kumar+Ravindran&userId=9fc8dfce153b&source=post_page-9fc8dfce153b----b9d4a484166e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9d4a484166e--------------------------------) · 9分钟阅读 · 2023年1月25日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb9d4a484166e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e&user=Sharan+Kumar+Ravindran&userId=9fc8dfce153b&source=-----b9d4a484166e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9fc8dfce153b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e&user=Sharan+Kumar+Ravindran&userId=9fc8dfce153b&source=post_page-9fc8dfce153b----b9d4a484166e---------------------post_header-----------) 发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9d4a484166e--------------------------------) · 9 分钟阅读 · 2023 年 1 月 25 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb9d4a484166e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e&user=Sharan+Kumar+Ravindran&userId=9fc8dfce153b&source=-----b9d4a484166e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb9d4a484166e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e&source=-----b9d4a484166e---------------------bookmark_footer-----------)![](../Images/52068f4f12960fe929aec7126be4e600.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb9d4a484166e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-art-of-solving-any-data-science-problem-simple-tips-for-a-better-outcome-b9d4a484166e&source=-----b9d4a484166e---------------------bookmark_footer-----------)![](img/52068f4f12960fe929aec7126be4e600.png)
 
 图片由[Olav Ahrens Røtne](https://unsplash.com/@olav_ahrens?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)提供，来源于[Unsplash](https://unsplash.com/photos/4Ennrbj1svk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
@@ -24,6 +24,6 @@
 
 # 问题概念化
 
-![](../Images/db456f6851ca33a01597b987bbab77a5.png)
+![](img/db456f6851ca33a01597b987bbab77a5.png)
 
 [Austin Distel](https://unsplash.com/@austindistel?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) 的照片，来源于 [Unsplash](https://unsplash.com/photos/wD1LRb9OeEo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)

@@ -1,18 +1,18 @@
 # NumPy 广播
 
-> 原文：[https://towardsdatascience.com/numpy-broadcasting-4c4cb9dff1e7?source=collection_archive---------20-----------------------#2023-01-04](https://towardsdatascience.com/numpy-broadcasting-4c4cb9dff1e7?source=collection_archive---------20-----------------------#2023-01-04)
+> 原文：[`towardsdatascience.com/numpy-broadcasting-4c4cb9dff1e7?source=collection_archive---------20-----------------------#2023-01-04`](https://towardsdatascience.com/numpy-broadcasting-4c4cb9dff1e7?source=collection_archive---------20-----------------------#2023-01-04)
 
 ## 定义、规则和示例
 
-[](https://medium.com/@cretanpan?source=post_page-----4c4cb9dff1e7--------------------------------)[![Pan Cretan](../Images/8b3fbab70c0e61f7ca516d2f54b646e5.png)](https://medium.com/@cretanpan?source=post_page-----4c4cb9dff1e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c4cb9dff1e7--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4c4cb9dff1e7--------------------------------) [Pan Cretan](https://medium.com/@cretanpan?source=post_page-----4c4cb9dff1e7--------------------------------)
+[](https://medium.com/@cretanpan?source=post_page-----4c4cb9dff1e7--------------------------------)![Pan Cretan](https://medium.com/@cretanpan?source=post_page-----4c4cb9dff1e7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c4cb9dff1e7--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c4cb9dff1e7--------------------------------) [Pan Cretan](https://medium.com/@cretanpan?source=post_page-----4c4cb9dff1e7--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff990ba57425&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-broadcasting-4c4cb9dff1e7&user=Pan+Cretan&userId=ff990ba57425&source=post_page-ff990ba57425----4c4cb9dff1e7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c4cb9dff1e7--------------------------------) ·9分钟阅读·2023年1月4日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4c4cb9dff1e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-broadcasting-4c4cb9dff1e7&user=Pan+Cretan&userId=ff990ba57425&source=-----4c4cb9dff1e7---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff990ba57425&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-broadcasting-4c4cb9dff1e7&user=Pan+Cretan&userId=ff990ba57425&source=post_page-ff990ba57425----4c4cb9dff1e7---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c4cb9dff1e7--------------------------------) ·9 分钟阅读·2023 年 1 月 4 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4c4cb9dff1e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-broadcasting-4c4cb9dff1e7&user=Pan+Cretan&userId=ff990ba57425&source=-----4c4cb9dff1e7---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4c4cb9dff1e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-broadcasting-4c4cb9dff1e7&source=-----4c4cb9dff1e7---------------------bookmark_footer-----------)![](../Images/c72e9c7fc065552e52bfb5c5c995bb30.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4c4cb9dff1e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-broadcasting-4c4cb9dff1e7&source=-----4c4cb9dff1e7---------------------bookmark_footer-----------)![](img/c72e9c7fc065552e52bfb5c5c995bb30.png)
 
 摄影：[Jean-Guy Nakars](https://unsplash.com/@jgnak?utm_source=medium&utm_medium=referral) 摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,15 +28,15 @@
 
 [数据分析的 Python](https://wesmckinney.com/book/advanced-numpy.html#numpy_broadcasting) 由 Wes McKinney 编写，包含以下广播规则：
 
-> 如果对于每个*尾部维度*（即从末尾开始）轴长度匹配，或者任一长度为1，则两个数组可以进行广播。广播将对缺失或长度为1 的维度进行。
+> 如果对于每个*尾部维度*（即从末尾开始）轴长度匹配，或者任一长度为 1，则两个数组可以进行广播。广播将对缺失或长度为 1 的维度进行。
 
 [Python 数据科学手册](https://jakevdp.github.io/PythonDataScienceHandbook/02.05-computation-on-arrays-broadcasting.html) 由 Jake VanderPlas 编写，包含更详细的广播规则：
 
-> 规则1：如果两个数组在维度数量上不同，维度较少的那个数组的形状会在其前面（左侧）用1进行*填充*。
+> 规则 1：如果两个数组在维度数量上不同，维度较少的那个数组的形状会在其前面（左侧）用 1 进行*填充*。
 > 
-> 规则2：如果两个数组的形状在任何维度上不匹配，则形状为1的数组会被扩展以匹配另一个形状。
+> 规则 2：如果两个数组的形状在任何维度上不匹配，则形状为 1 的数组会被扩展以匹配另一个形状。
 > 
-> 规则3：如果在任何维度上大小不一致且都不等于1，将会引发错误。
+> 规则 3：如果在任何维度上大小不一致且都不等于 1，将会引发错误。
 
 我发现第二组规则更容易遵循。下面的示例将使用这些规则。
 
@@ -73,7 +73,7 @@ demeaned array
 [0\. 0\. 0.]
 ```
 
-让我们看看这里发生了什么。计算 `a.mean(axis=0)` 的列均值会生成一个形状为 (3,) 的一维数组。涉及减法的两个数组在形状上有所不同，因此 `means_columns` 会根据规则1在左侧填充1以匹配形状。因此，在幕后，`means_columns` 会被重塑为 (1, 3)。然后根据规则2，`means_columns` 会沿着轴0扩展，使其形状变为 (3, 3) 以匹配 `a` 的形状。
+让我们看看这里发生了什么。计算 `a.mean(axis=0)` 的列均值会生成一个形状为 (3,) 的一维数组。涉及减法的两个数组在形状上有所不同，因此 `means_columns` 会根据规则 1 在左侧填充 1 以匹配形状。因此，在幕后，`means_columns` 会被重塑为 (1, 3)。然后根据规则 2，`means_columns` 会沿着轴 0 扩展，使其形状变为 (3, 3) 以匹配 `a` 的形状。
 
 除了使用规则预测维度较少的数组如何被扩展外，我们还可以使用 `[np.broadcast_to](https://numpy.org/doc/stable/reference/generated/numpy.broadcast_to.html)`，它返回一个只读视图，该视图具有给定的形状。该视图可能是不连续的，且不同元素可能指向相同的内存地址。
 
@@ -97,9 +97,9 @@ strides
 (0, 8)
 ```
 
-我们可以看到基础是原始的均值数组（因此它是一个视图），而沿第一个轴的步幅是0，这意味着同一列的不同元素指向相同的内存位置（有关NumPy内部的介绍，请参见[这里](https://medium.com/towards-data-science/numpy-internals-an-introduction-bcaafa1a68a2)）。NumPy确实在尽可能优化内存使用！
+我们可以看到基础是原始的均值数组（因此它是一个视图），而沿第一个轴的步幅是 0，这意味着同一列的不同元素指向相同的内存位置（有关 NumPy 内部的介绍，请参见[这里](https://medium.com/towards-data-science/numpy-internals-an-introduction-bcaafa1a68a2)）。NumPy 确实在尽可能优化内存使用！
 
-如果我们想对行进行去均值操作怎么办？可以通过`a.mean(axis=1)`快速计算行的均值，该操作将返回一个形状为（4，）的数组。将其形状左侧填充1，意味着数组将变成（1，4）。根据规则3，这两个数组的最后维度不一致且都不是1。这意味着广播不会发生。我们也可以预见到这一点，因为`np.broadcast_to(a.mean(axis=1), a.shape)`引发异常，告知我们广播无法生成请求的形状（4, 3）。形状的不兼容性还可以通过执行`np.broadcast_shapes(a.shape, a.mean(axis=1).shape)`来观察，这也引发异常，解释了形状不匹配。通过将行均值重塑为（4，1）数组来进行行去均值操作，可以使用`a.mean(axis=1).reshape(-1, 1)`或`a.mean(axis=1)[:, np.newaxis]`
+如果我们想对行进行去均值操作怎么办？可以通过`a.mean(axis=1)`快速计算行的均值，该操作将返回一个形状为（4，）的数组。将其形状左侧填充 1，意味着数组将变成（1，4）。根据规则 3，这两个数组的最后维度不一致且都不是 1。这意味着广播不会发生。我们也可以预见到这一点，因为`np.broadcast_to(a.mean(axis=1), a.shape)`引发异常，告知我们广播无法生成请求的形状（4, 3）。形状的不兼容性还可以通过执行`np.broadcast_shapes(a.shape, a.mean(axis=1).shape)`来观察，这也引发异常，解释了形状不匹配。通过将行均值重塑为（4，1）数组来进行行去均值操作，可以使用`a.mean(axis=1).reshape(-1, 1)`或`a.mean(axis=1)[:, np.newaxis]`
 
 ```py
 means_rows = a.mean(axis=1)
@@ -129,9 +129,9 @@ demeaned array
 [0\. 0\. 0\. 0.]
 ```
 
-规则2清楚地解释了为什么这有效，因为形状为（4，1）的数组可以在列中扩展，使其形状变成（4，3）。
+规则 2 清楚地解释了为什么这有效，因为形状为（4，1）的数组可以在列中扩展，使其形状变成（4，3）。
 
-在第三个示例中，我们将演示广播如何在ufunc二元函数中扩展两个数组
+在第三个示例中，我们将演示广播如何在 ufunc 二元函数中扩展两个数组
 
 ```py
 a = np.arange(4)
@@ -150,13 +150,13 @@ result array
  [3 4 5]]
 ```
 
-严格来说，重塑`b`并不是必要的，但它使事情更清晰。我们还可以使用`[np.broadcast_arrays](https://numpy.org/doc/stable/reference/generated/numpy.broadcast_arrays.html)`或相关且更灵活的`[np.broadcast](https://numpy.org/doc/stable/reference/generated/numpy.broadcast.html#numpy.broadcast)`来广播两个数组，而不应用ufunc。为了完整起见，还有其他方法可以实现与广播相同的结果，一个例子是`np.add.outer(a, b)`，它产生与
+严格来说，重塑`b`并不是必要的，但它使事情更清晰。我们还可以使用`[np.broadcast_arrays](https://numpy.org/doc/stable/reference/generated/numpy.broadcast_arrays.html)`或相关且更灵活的`[np.broadcast](https://numpy.org/doc/stable/reference/generated/numpy.broadcast.html#numpy.broadcast)`来广播两个数组，而不应用 ufunc。为了完整起见，还有其他方法可以实现与广播相同的结果，一个例子是`np.add.outer(a, b)`，它产生与
 
 ```py
 np.array_equal(np.add.outer(a, b), a[:, np.newaxis] + b)
 ```
 
-返回True。
+返回 True。
 
 对任何轴上的高维数组进行去均值操作可以被推广为
 
@@ -171,7 +171,7 @@ arr = np.linspace(1, 12, 24*3).reshape(6,4,3)
 res = demean_axis(arr, axis=1)
 ```
 
-我们可以确认`np.abs(res.mean(axis=1)).max()`在数值上等于零。上述函数取自Wes McKinney的书籍，但需要稍微修改以适配本文使用的NumPy版本（1.23.4）。
+我们可以确认`np.abs(res.mean(axis=1)).max()`在数值上等于零。上述函数取自 Wes McKinney 的书籍，但需要稍微修改以适配本文使用的 NumPy 版本（1.23.4）。
 
 作为一个更实际的例子，我们可以使用广播将彩色图像转换为灰度图像。广播部分已用注释标出：
 
@@ -226,15 +226,15 @@ fig.savefig('RGBA_to_greyscale.png')
 
 上述代码生成
 
-![](../Images/3aee3670314a7f03619d446c12e9fc02.png)
+![](img/3aee3670314a7f03619d446c12e9fc02.png)
 
-将透明PNG图像转换为灰度图像（照片由[nextvoyage](https://pixabay.com/users/nextvoyage-5275305/)在[pixabay](https://pixabay.com/)提供）
+将透明 PNG 图像转换为灰度图像（照片由[nextvoyage](https://pixabay.com/users/nextvoyage-5275305/)在[pixabay](https://pixabay.com/)提供）
 
 也许值得关注的是，原图是一个 RGBA 图像（红色、绿色、蓝色、透明度），即它还包含第四个 alpha 通道来指示每个像素的透明度。我们通过使用白色背景将 RGBA 图像转换为 RGB。这以及示例中的几乎所有内容，都可以使用[Pillow](https://pillow.readthedocs.io/en/stable/)来完成，但我们故意尽可能使用 NumPy（例如，Pillow 可以[转换为灰度图像](https://stackoverflow.com/questions/12201577/how-can-i-convert-an-rgb-image-into-grayscale-in-python)以保持透明度）。代码的最后部分是一些[Matplotlib](https://matplotlib.org/)的花招，用于比较彩色图像和灰度图像。
 
 转换为灰度图像是通过以下公式完成的。
 
-![](../Images/55253152222c572e69b7f1c72fe5af93.png)
+![](img/55253152222c572e69b7f1c72fe5af93.png)
 
 来自维基百科的[this page](https://en.wikipedia.org/wiki/Grayscale)。执行乘法和求和的代码部分，将图像数组的形状从（1080，1920，3）更改为（1080，1920）的部分已被注释掉。你可能会想，为了一行广播代码展示如此长的示例是否值得。这正是要点！广播是简洁的，如果没有它，代码会更长且更慢。通常，算法背后的魔法是几行 NumPy 操作，通常包括广播。
 

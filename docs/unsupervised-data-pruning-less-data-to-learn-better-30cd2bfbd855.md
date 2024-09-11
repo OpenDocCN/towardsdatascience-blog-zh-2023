@@ -1,20 +1,20 @@
 # 无监督数据剪枝：用更少的数据学习得更好
 
-> 原文：[https://towardsdatascience.com/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855?source=collection_archive---------7-----------------------#2023-02-27](https://towardsdatascience.com/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855?source=collection_archive---------7-----------------------#2023-02-27)
+> 原文：[`towardsdatascience.com/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855?source=collection_archive---------7-----------------------#2023-02-27`](https://towardsdatascience.com/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855?source=collection_archive---------7-----------------------#2023-02-27)
 
 ## 基础模型 | 规模法则 | 大模型 | 数据剪枝
 
 ## 数据的增加并不总是意味着模型更加准确，但如何选择你的数据呢？
 
-[](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)[![Salvatore Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)
+[](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)![Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------) [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----30cd2bfbd855---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------) ·11 min 阅读·2023年2月27日
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1a08d9452cd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855&user=Salvatore+Raieli&userId=f1a08d9452cd&source=post_page-f1a08d9452cd----30cd2bfbd855---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------) ·11 min 阅读·2023 年 2 月 27 日
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30cd2bfbd855&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855&source=-----30cd2bfbd855---------------------bookmark_footer-----------)![](../Images/1c41d0d7b79c96998daaf3dda4a30237.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F30cd2bfbd855&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855&source=-----30cd2bfbd855---------------------bookmark_footer-----------)![](img/1c41d0d7b79c96998daaf3dda4a30237.png)
 
 图片由作者使用 [DALL-E](https://openai.com/dall-e-2/) 制作
 

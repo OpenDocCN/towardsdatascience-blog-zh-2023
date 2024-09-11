@@ -1,10 +1,10 @@
 # 快速且简便的 PowerBI 时间序列预测：实用指南
 
-> 原文：[https://towardsdatascience.com/quick-and-easy-time-series-forecasting-in-powerbi-a-practical-guide-c31a858ee220?source=collection_archive---------3-----------------------#2023-05-01](https://towardsdatascience.com/quick-and-easy-time-series-forecasting-in-powerbi-a-practical-guide-c31a858ee220?source=collection_archive---------3-----------------------#2023-05-01)
+> 原文：[`towardsdatascience.com/quick-and-easy-time-series-forecasting-in-powerbi-a-practical-guide-c31a858ee220?source=collection_archive---------3-----------------------#2023-05-01`](https://towardsdatascience.com/quick-and-easy-time-series-forecasting-in-powerbi-a-practical-guide-c31a858ee220?source=collection_archive---------3-----------------------#2023-05-01)
 
 ## 如何在几次点击中设置和配置预测系统
 
-[](https://thomasdorfer.medium.com/?source=post_page-----c31a858ee220--------------------------------)[![Thomas A Dorfer](../Images/9258a1735cee805f1d9b02e2adf01096.png)](https://thomasdorfer.medium.com/?source=post_page-----c31a858ee220--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c31a858ee220--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c31a858ee220--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----c31a858ee220--------------------------------)
+[](https://thomasdorfer.medium.com/?source=post_page-----c31a858ee220--------------------------------)![Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----c31a858ee220--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c31a858ee220--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----c31a858ee220--------------------------------) [Thomas A Dorfer](https://thomasdorfer.medium.com/?source=post_page-----c31a858ee220--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc31a858ee220&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquick-and-easy-time-series-forecasting-in-powerbi-a-practical-guide-c31a858ee220&source=-----c31a858ee220---------------------bookmark_footer-----------)![](../Images/0cfe8cbe7157a42e007712a666df026e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc31a858ee220&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquick-and-easy-time-series-forecasting-in-powerbi-a-practical-guide-c31a858ee220&source=-----c31a858ee220---------------------bookmark_footer-----------)![](img/0cfe8cbe7157a42e007712a666df026e.png)
 
 Image by the Author.
 

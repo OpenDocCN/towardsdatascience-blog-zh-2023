@@ -1,10 +1,10 @@
 # p-值神话：为什么它们并非数据科学的圣杯
 
-> 原文：[https://towardsdatascience.com/the-myth-of-p-values-why-theyre-not-the-holy-grail-in-data-science-a6636e27e489?source=collection_archive---------4-----------------------#2023-04-27](https://towardsdatascience.com/the-myth-of-p-values-why-theyre-not-the-holy-grail-in-data-science-a6636e27e489?source=collection_archive---------4-----------------------#2023-04-27)
+> 原文：[`towardsdatascience.com/the-myth-of-p-values-why-theyre-not-the-holy-grail-in-data-science-a6636e27e489?source=collection_archive---------4-----------------------#2023-04-27`](https://towardsdatascience.com/the-myth-of-p-values-why-theyre-not-the-holy-grail-in-data-science-a6636e27e489?source=collection_archive---------4-----------------------#2023-04-27)
 
 ## p-值谬误：为何我们需要停止将其视为真理
 
-[](https://federicotrotta.medium.com/?source=post_page-----a6636e27e489--------------------------------)[![费德里科·特罗塔](../Images/e997e3a96940c16ab5071629016d82fd.png)](https://federicotrotta.medium.com/?source=post_page-----a6636e27e489--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6636e27e489--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a6636e27e489--------------------------------) [费德里科·特罗塔](https://federicotrotta.medium.com/?source=post_page-----a6636e27e489--------------------------------)
+[](https://federicotrotta.medium.com/?source=post_page-----a6636e27e489--------------------------------)![费德里科·特罗塔](https://federicotrotta.medium.com/?source=post_page-----a6636e27e489--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6636e27e489--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6636e27e489--------------------------------) [费德里科·特罗塔](https://federicotrotta.medium.com/?source=post_page-----a6636e27e489--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6636e27e489&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-myth-of-p-values-why-theyre-not-the-holy-grail-in-data-science-a6636e27e489&source=-----a6636e27e489---------------------bookmark_footer-----------)![](../Images/2a838e36bf1a6ea412b22d9f2d369324.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa6636e27e489&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-myth-of-p-values-why-theyre-not-the-holy-grail-in-data-science-a6636e27e489&source=-----a6636e27e489---------------------bookmark_footer-----------)![](img/2a838e36bf1a6ea412b22d9f2d369324.png)
 
 Image by [Gerd Altmann](https://pixabay.com/it/users/geralt-9301/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2620923) on [Pixabay](https://pixabay.com/it//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2620923)
 

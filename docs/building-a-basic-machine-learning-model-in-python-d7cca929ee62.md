@@ -1,18 +1,18 @@
-# 在Python中构建基础机器学习模型
+# 在 Python 中构建基础机器学习模型
 
-> 原文：[https://towardsdatascience.com/building-a-basic-machine-learning-model-in-python-d7cca929ee62?source=collection_archive---------2-----------------------#2023-01-02](https://towardsdatascience.com/building-a-basic-machine-learning-model-in-python-d7cca929ee62?source=collection_archive---------2-----------------------#2023-01-02)
+> 原文：[`towardsdatascience.com/building-a-basic-machine-learning-model-in-python-d7cca929ee62?source=collection_archive---------2-----------------------#2023-01-02`](https://towardsdatascience.com/building-a-basic-machine-learning-model-in-python-d7cca929ee62?source=collection_archive---------2-----------------------#2023-01-02)
 
 ## *关于如何选择合适问题和如何开发基础分类器的详细论文*
 
-[](https://medium.com/@juras.jursenas?source=post_page-----d7cca929ee62--------------------------------)[![Juras Juršėnas](../Images/eb2ca720f2c8688dbf8079879c028d12.png)](https://medium.com/@juras.jursenas?source=post_page-----d7cca929ee62--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d7cca929ee62--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d7cca929ee62--------------------------------) [Juras Juršėnas](https://medium.com/@juras.jursenas?source=post_page-----d7cca929ee62--------------------------------)
+[](https://medium.com/@juras.jursenas?source=post_page-----d7cca929ee62--------------------------------)![Juras Juršėnas](https://medium.com/@juras.jursenas?source=post_page-----d7cca929ee62--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d7cca929ee62--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----d7cca929ee62--------------------------------) [Juras Juršėnas](https://medium.com/@juras.jursenas?source=post_page-----d7cca929ee62--------------------------------)
 
 ·
 
-[点击查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3041473d9e3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-basic-machine-learning-model-in-python-d7cca929ee62&user=Juras+Jur%C5%A1%C4%97nas&userId=3041473d9e3c&source=post_page-3041473d9e3c----d7cca929ee62---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d7cca929ee62--------------------------------) ·20 min 阅读·2023年1月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd7cca929ee62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-basic-machine-learning-model-in-python-d7cca929ee62&user=Juras+Jur%C5%A1%C4%97nas&userId=3041473d9e3c&source=-----d7cca929ee62---------------------clap_footer-----------)
+[点击查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3041473d9e3c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-basic-machine-learning-model-in-python-d7cca929ee62&user=Juras+Jur%C5%A1%C4%97nas&userId=3041473d9e3c&source=post_page-3041473d9e3c----d7cca929ee62---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d7cca929ee62--------------------------------) ·20 min 阅读·2023 年 1 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd7cca929ee62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-basic-machine-learning-model-in-python-d7cca929ee62&user=Juras+Jur%C5%A1%C4%97nas&userId=3041473d9e3c&source=-----d7cca929ee62---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd7cca929ee62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-basic-machine-learning-model-in-python-d7cca929ee62&source=-----d7cca929ee62---------------------bookmark_footer-----------)![](../Images/01ff8323628648cdfec674b9023fa9f2.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd7cca929ee62&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-basic-machine-learning-model-in-python-d7cca929ee62&source=-----d7cca929ee62---------------------bookmark_footer-----------)![](img/01ff8323628648cdfec674b9023fa9f2.png)
 
 照片由 [charlesdeluvio](https://unsplash.com/@charlesdeluvio?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -40,7 +40,7 @@
 
 制作区分狗和猫的模型确实有趣且有趣，但即使我们将操作规模扩大到巨大的程度，也不太可能获得任何好处。此外，已经有数以百万计的此类模型教程在网上创建。
 
-我决定选择词汇分类，因为它相对较少被写到，并且具有一定的实际应用。我们的SEO团队提出了一个有趣的提议——他们需要根据三种类型来分类关键词：
+我决定选择词汇分类，因为它相对较少被写到，并且具有一定的实际应用。我们的 SEO 团队提出了一个有趣的提议——他们需要根据三种类型来分类关键词：
 
 1.  **信息型** — 寻找关于某个主题的知识的用户（例如，“什么是代理”）
 
@@ -56,7 +56,7 @@
 
 在建立模型之前决定需要多少数据点几乎是不可能的。虽然有一些依赖于既定目标（即，更多或更少的类别），但精确计算这些数据几乎是不可能的。选择一个足够大的数字（例如，1000 条记录）是一个好的起点。
 
-我建议不要一开始就处理整个数据集。由于这是你第一次开发模型，很多事情可能会出错。一般来说，最好先编写代码并在小样本（例如总数据的10%）上运行，以确保没有语义错误或其他问题。
+我建议不要一开始就处理整个数据集。由于这是你第一次开发模型，很多事情可能会出错。一般来说，最好先编写代码并在小样本（例如总数据的 10%）上运行，以确保没有语义错误或其他问题。
 
 一旦你得到所需的结果，就开始处理整个数据集。虽然你可能不会完全放弃项目，但你不希望花费几个小时（枯燥）的工作却没有任何成果。
 
@@ -81,11 +81,11 @@ from sklearn.feature_selection import SelectKBest, chi2
 from nltk.corpus import stopwords
 ```
 
-## 第1行
+## 第 1 行
 
 相当自解释。*Pandas* 允许我们通过创建数据框来读取和写入 CSV 以及其他电子表格文件。由于我们将处理关键词，大多数 SEO 工具会将它们导出为 CSV，这将减少我们需要手动处理的数据。
 
-## 第2行
+## 第 2 行
 
 从 SciKit-Learn 库中，我们将挑选几个东西，*TfidfVectorizer* 是我们的首选。
 
@@ -116,9 +116,9 @@ E(w) =
 
 还有其他选项，例如 *LinearSVC*，它涉及到更复杂的数学运算。极其简单地说，SVC 会对多个数据点簇进行处理，找到每个簇中最接近对方簇的值。这些值称为支持向量。
 
-一个超平面（即在 *n+1维* 空间中的 *n维* 几何对象）被绘制成使其与每个支持向量的距离最大化。
+一个超平面（即在 *n+1 维* 空间中的 *n 维* 几何对象）被绘制成使其与每个支持向量的距离最大化。
 
-![](../Images/eb722b44930e8f5e8c3e04443201fa5c.png)
+![](img/eb722b44930e8f5e8c3e04443201fa5c.png)
 
 作者提供的图片
 
@@ -134,7 +134,7 @@ E(w) =
 
 *Chi2*（或*卡方检验*）是一种用于变量独立性的统计测试，有助于我们选择最佳特征（因此，*SelectKBest*）进行训练：
 
-![](../Images/706e58897a99f3e0263bb1a57a7447b6.png)
+![](img/706e58897a99f3e0263bb1a57a7447b6.png)
 
 作者提供的图片。
 
@@ -189,7 +189,7 @@ words = stopwords.words('english_adjusted')
 
 我创建了一个名为‘english_adjusted’的副本，以便于操作。此外，以防万一我需要原始版本，它将始终可用，无需重新下载。
 
-最后，你可能需要运行一次NLTK，使用常规参数‘english’来下载文件，这可以在任何阶段完成。否则，你会收到错误。
+最后，你可能需要运行一次 NLTK，使用常规参数‘english’来下载文件，这可以在任何阶段完成。否则，你会收到错误。
 
 # 设置管道
 
@@ -203,11 +203,11 @@ pipeline = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 3), stop_words=wor
                     ('clf', LogisticRegression(C=1.0, penalty='l2', max_iter=1000, dual=False))])
 ```
 
-有些人可能会注意到我没有通过*scikit-learn*将数据集拆分为训练集和测试集。这是问题的性质所赋予的奢侈。SEO工具可以在不到一分钟的时间内导出数千个（未标记的）关键字，这意味着你可以单独采购测试集而不费吹灰之力。
+有些人可能会注意到我没有通过*scikit-learn*将数据集拆分为训练集和测试集。这是问题的性质所赋予的奢侈。SEO 工具可以在不到一分钟的时间内导出数千个（未标记的）关键字，这意味着你可以单独采购测试集而不费吹灰之力。
 
 因此，出于优化原因，我将使用没有标签的第二个数据集作为我们的测试基础。然而，由于*train_test_split* 非常普遍，我将在文章末尾的附录中展示一个使用它的相同模型版本。
 
-## 第1行
+## 第 1 行
 
 管道允许我们将长时间的过程简化为一个对象，使处理模型设置变得更加容易。它还将减少出错的可能性。
 
@@ -215,7 +215,7 @@ pipeline = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 3), stop_words=wor
 
 *Ngram_range* 是一个有趣的推理挑战。为了获得最佳结果，你必须决定要计算多少个词元（在我们的情况下是单词）。*Ngram_range* 为 (1, 1) 会计算单个词（单词），(1, 2) 会计算单个词和两个相邻的词（双词组）的组合，(1, 3) 会计算单个词、两个词和三个词（三词组）的组合。
 
-我选择了*ngram_range(1, 3)*，有几个原因。首先，由于模型相对简单，性能不是问题，我可以运行更大范围的n-gram，因此下限可以设置为最小。
+我选择了*ngram_range(1, 3)*，有几个原因。首先，由于模型相对简单，性能不是问题，我可以运行更大范围的 n-gram，因此下限可以设置为最小。
 
 另一方面，一旦我们去除停用词，我们应该考虑什么样的 ngram 上限足以从关键词中提取意义。如果可能，我发现从数据集中选择最难和最简单的例子更容易。在我们的情况下，最简单的例子是任何问题（“如何获取代理”），最难的是名词（“网络爬虫”）或名称（“Oxylabs”）。
 
@@ -284,27 +284,27 @@ doutput.to_csv('[RESULT_LIST].csv')
 
 ## 第 1-3 行
 
-在第1行中，我们使用我们建立的管道将模型拟合到训练数据中。如果需要进行调试或额外的分析，管道允许我们创建命名的步骤，这些步骤可以在后续调用。
+在第 1 行中，我们使用我们建立的管道将模型拟合到训练数据中。如果需要进行调试或额外的分析，管道允许我们创建命名的步骤，这些步骤可以在后续调用。
 
-## 第4–8行
+## 第 4–8 行
 
-我们从一个只包含关键词的CSV文件中创建另一个数据框。我们将使用新创建的模型来预测每个关键词及其类别。
+我们从一个只包含关键词的 CSV 文件中创建另一个数据框。我们将使用新创建的模型来预测每个关键词及其类别。
 
 由于我们的数据框仅包含关键词，我们添加了一个新的列“类型”，并运行*model.predict*以提供输出结果。
 
-最终，所有结果被移动到一个输出的CSV文件中，该文件将在本地目录中创建。通常，你会想设置一些目标，但为了测试目的，通常没有必要这样做。
+最终，所有结果被移动到一个输出的 CSV 文件中，该文件将在本地目录中创建。通常，你会想设置一些目标，但为了测试目的，通常没有必要这样做。
 
 有一行被注释掉的代码我想提一下，它调用了*score*函数。*SciKit*为我们提供了多种方法来估计模型的预测能力。这些方法不应被视为绝对真理，因为预测准确度与实际准确度通常可能有所偏差。
 
-然而，得分作为经验法则和快速评估参数对模型的影响是有用的。虽然有很多评分方法，但基本的*model.score*使用*R平方*，在调整参数时通常很有帮助。
+然而，得分作为经验法则和快速评估参数对模型的影响是有用的。虽然有很多评分方法，但基本的*model.score*使用*R 平方*，在调整参数时通常很有帮助。
 
 # 结果分析
 
-我的训练数据仅有1300条条目，包含三种不同的类别，如上所述。即使在这样的小数据集中，模型仍然达到了约80%的不错准确度。
+我的训练数据仅有 1300 条条目，包含三种不同的类别，如上所述。即使在这样的小数据集中，模型仍然达到了约 80%的不错准确度。
 
-其中一些，如预期的那样，是有争议的，甚至Google也这么认为。例如，“网页抓取”是一个经常被搜索的关键词。是否查询是交易性的还是信息性的没有明确的指示。Google的搜索结果页面显示，前5条结果中有产品和信息文章。
+其中一些，如预期的那样，是有争议的，甚至 Google 也这么认为。例如，“网页抓取”是一个经常被搜索的关键词。是否查询是交易性的还是信息性的没有明确的指示。Google 的搜索结果页面显示，前 5 条结果中有产品和信息文章。
 
-模型在一个领域遇到了困难——导航关键词。如果我要猜测，模型大约5-10%的时间能正确预测类别。出现这种情况有几个原因。
+模型在一个领域遇到了困难——导航关键词。如果我要猜测，模型大约 5-10%的时间能正确预测类别。出现这种情况有几个原因。
 
 数据集的分布可能是一个问题，因为它严重不平衡：
 
@@ -324,9 +324,9 @@ doutput.to_csv('[RESULT_LIST].csv')
 
 特征工程可能是解决问题的潜在方案。我们需要发现导航类别和其他类别之间的新联系，并通过其他方法实施分配。
 
-由于特征工程是一个完全不同的主题，并且值得单独写一篇文章，所以我将提供一个示例。导航关键词很少会以问题的形式被查询（除了“什么是”），否则它们没有意义（例如，“如何使用Oxylabs”，“如何获取Oxylabs”）。
+由于特征工程是一个完全不同的主题，并且值得单独写一篇文章，所以我将提供一个示例。导航关键词很少会以问题的形式被查询（除了“什么是”），否则它们没有意义（例如，“如何使用 Oxylabs”，“如何获取 Oxylabs”）。
 
-是否将“如何获取Oxylabs代理”视为交易型还是导航型存在争议。然而，它确实符合交易型类别，因此可以被认为是交易型。
+是否将“如何获取 Oxylabs 代理”视为交易型还是导航型存在争议。然而，它确实符合交易型类别，因此可以被认为是交易型。
 
 通过知道相对较少的导航关键词会以问题的形式出现，我们可以构建一个模型来过滤掉大多数问题，留下较小的潜在目标子集。
 
@@ -395,7 +395,7 @@ from sklearn.feature_selection import SelectKBest, chi2
 from nltk.corpus import stopwords
 ```
 
-按照惯例，我们需要导入*train_test_split*本身（第5行）。
+按照惯例，我们需要导入*train_test_split*本身（第 5 行）。
 
 ## 设置拆分
 
@@ -407,17 +407,17 @@ pipeline = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 3), stop_words=wor
                     ('clf', LogisticRegression(C=1.0, penalty='l2', max_iter=1000, dual=False))])
 ```
 
-## 第1行
+## 第 1 行
 
 由于我们的数据集只有两个特征（*keyword*和*category*），我们需要为每个特征准备两个变量。其中一个用于存储训练数据，另一个用于测试目的。
 
 我们将使用之前步骤中创建的数据框，并指定列名（在我的数据集中，它们被称为“Keyword”和“Type”，如参数所示）。
 
-最后，*SciKit-Learn*通过允许对两个数据集进行自动分割来解决数据拆分问题。*train_test_split*接受表示测试集大小或训练集大小百分比的浮点和整数值。如果两个值都设置为*None*，默认值将为0.25。
+最后，*SciKit-Learn*通过允许对两个数据集进行自动分割来解决数据拆分问题。*train_test_split*接受表示测试集大小或训练集大小百分比的浮点和整数值。如果两个值都设置为*None*，默认值将为 0.25。
 
-需要进行一些调整才能获得最佳结果。我尝试了许多不同的拆分，其中0.3产生了最佳结果。一般来说，你会发现许多模型在0.2到0.3范围内的拆分效果最佳。
+需要进行一些调整才能获得最佳结果。我尝试了许多不同的拆分，其中 0.3 产生了最佳结果。一般来说，你会发现许多模型在 0.2 到 0.3 范围内的拆分效果最佳。
 
-特定的拆分对准确性的影响较小，当数据点数量增加时更是如此。实际上，在极大的数据集上，拆分为0.1可能会提高计算性能。
+特定的拆分对准确性的影响较小，当数据点数量增加时更是如此。实际上，在极大的数据集上，拆分为 0.1 可能会提高计算性能。
 
 统计单位之间的关系很复杂，但是可以建立的连接的抽象领域是有限的，因此准确性可以理解为对一定数量的数据点的要求，而不是特定的比例。换句话说，有一个*N*，在这个点上结果不会再变得更好，因此如果数据集很大，较小的比例可能更为优化。
 
@@ -438,11 +438,11 @@ doutput.to_csv('[RESULT_LIST].csv')
 ##print('Accuracy score ' + str(model.score(x_test, y_test)))
 ```
 
-## 第1行
+## 第 1 行
 
-我们不会直接在标记数据集上训练模型，而是在之前拆分的那个数据集上进行训练，命名为*x_train*和*y_train*。第2行和第3行保持不变。
+我们不会直接在标记数据集上训练模型，而是在之前拆分的那个数据集上进行训练，命名为*x_train*和*y_train*。第 2 行和第 3 行保持不变。
 
-## 第4行
+## 第 4 行
 
 由于没有单独的数据集，我们将使用初始数据集中的测试部分进行预测。因此，我们创建一个数据框，其中包含*关键词*这一列，我们将在该列中输出测试数据集中的所有关键词。在第二列*类型*中，我们将使用模型来预测关键词的类别，依然使用相同的数据集。
 

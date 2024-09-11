@@ -1,18 +1,18 @@
 # 功能性 PyTorch 入门
 
-> 原文：[https://towardsdatascience.com/introduction-to-functional-pytorch-b5bf739e1e6e?source=collection_archive---------1-----------------------#2023-05-07](https://towardsdatascience.com/introduction-to-functional-pytorch-b5bf739e1e6e?source=collection_archive---------1-----------------------#2023-05-07)
+> 原文：[`towardsdatascience.com/introduction-to-functional-pytorch-b5bf739e1e6e?source=collection_archive---------1-----------------------#2023-05-07`](https://towardsdatascience.com/introduction-to-functional-pytorch-b5bf739e1e6e?source=collection_archive---------1-----------------------#2023-05-07)
 
 ## 如何使用 `write Jax-style PyTorch models`
 
-[](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)[![Mario Dagrada](../Images/32dff27962b941b1efd7a7bdf680fca9.png)](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------) [Mario Dagrada](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)
+[](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)![Mario Dagrada](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------) [Mario Dagrada](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F99ed96040994&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&user=Mario+Dagrada&userId=99ed96040994&source=post_page-99ed96040994----b5bf739e1e6e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------) · 6分钟阅读 · 2023年5月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5bf739e1e6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&user=Mario+Dagrada&userId=99ed96040994&source=-----b5bf739e1e6e---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F99ed96040994&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&user=Mario+Dagrada&userId=99ed96040994&source=post_page-99ed96040994----b5bf739e1e6e---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------) · 6 分钟阅读 · 2023 年 5 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5bf739e1e6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&user=Mario+Dagrada&userId=99ed96040994&source=-----b5bf739e1e6e---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5bf739e1e6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&source=-----b5bf739e1e6e---------------------bookmark_footer-----------)![](../Images/363519458d8628ce115a6d939b8f089d.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5bf739e1e6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&source=-----b5bf739e1e6e---------------------bookmark_footer-----------)![](img/363519458d8628ce115a6d939b8f089d.png)
 
 照片由 [Ricardo Gomez Angel](https://unsplash.com/@rgaleriacom?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -224,14 +224,14 @@ y_pred = model_func(x_test, params)
 print(f"Loss on the test set: {loss_fn(y_pred, y_test)}")
 ```
 
-正如你所看到的，优化循环与标准的PyTorch非常相似，关键区别在于优化器步骤现在需要当前损失和当前参数值，并以完全无状态的方式评估更新后的参数。在我看来，这种方法看起来比PyTorch典型的有状态API要干净得多！
+正如你所看到的，优化循环与标准的 PyTorch 非常相似，关键区别在于优化器步骤现在需要当前损失和当前参数值，并以完全无状态的方式评估更新后的参数。在我看来，这种方法看起来比 PyTorch 典型的有状态 API 要干净得多！
 
 如果你想获取本博客文章的完整代码，可以查看[此代码片段](https://gist.github.com/madagra/64afe1b56ff5656b2b1acb19cc68f477)。正如你所注意到的那样，一些实现细节（特别是`torch.func.functional_call`与`torchopt`优化器之间的交互）在本博客中没有涉及。如果你有任何问题，请随时在[Linkedn](https://www.linkedin.com/in/mariodagrada/)上给我发消息。
 
 # 结论
 
-感谢阅读本博客文章。PyTorch的函数式API是一个强大的工具，可以帮助你编写高性能的神经网络模型，并利用可组合函数、自动并行化和矢量化，类似于Jax。然而，它仍然是一个实验性的功能，应谨慎使用。祝你编程愉快！
+感谢阅读本博客文章。PyTorch 的函数式 API 是一个强大的工具，可以帮助你编写高性能的神经网络模型，并利用可组合函数、自动并行化和矢量化，类似于 Jax。然而，它仍然是一个实验性的功能，应谨慎使用。祝你编程愉快！
 
-[1] 与Jax的简洁比较：[使用PyTorch和functorch编写类似JAX的代码教程 — Simone Scardapane (sscardapane.it)](https://www.sscardapane.it/tutorials/functorch/)
+[1] 与 Jax 的简洁比较：[使用 PyTorch 和 functorch 编写类似 JAX 的代码教程 — Simone Scardapane (sscardapane.it)](https://www.sscardapane.it/tutorials/functorch/)
 
-[2] 虽然有点老但解释得非常好的教程：[使用FuncTorch工作：介绍 | functorch-examples — Weights & Biases (wandb.ai)](https://wandb.ai/functorch-examples/functorch-examples/reports/Working-with-FuncTorch-An-Introduction--VmlldzoxNzMxNDI1)
+[2] 虽然有点老但解释得非常好的教程：[使用 FuncTorch 工作：介绍 | functorch-examples — Weights & Biases (wandb.ai)](https://wandb.ai/functorch-examples/functorch-examples/reports/Working-with-FuncTorch-An-Introduction--VmlldzoxNzMxNDI1)

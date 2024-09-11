@@ -1,20 +1,20 @@
 # 使用 NumPy 实现高效的 k-最近邻 (k-NN) 解决方案
 
-> 原文：[https://towardsdatascience.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971?source=collection_archive---------10-----------------------#2023-07-20](https://towardsdatascience.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971?source=collection_archive---------10-----------------------#2023-07-20)
+> 原文：[`towardsdatascience.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971?source=collection_archive---------10-----------------------#2023-07-20`](https://towardsdatascience.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971?source=collection_archive---------10-----------------------#2023-07-20)
 
 ## [快速计算](https://medium.com/@qtalen/list/fast-computing-2a37a7e82be5)
 
 ## 利用 NumPy 的广播、花式索引和排序进行高效计算
 
-[](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)[![Peng Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------) [Peng Qian](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)
+[](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)![Peng Qian](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------) [Peng Qian](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e2fe735546d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971&user=Peng+Qian&userId=8e2fe735546d&source=post_page-8e2fe735546d----58cbac2a0971---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------) · 9分钟阅读 · 2023年7月20日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F58cbac2a0971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971&user=Peng+Qian&userId=8e2fe735546d&source=-----58cbac2a0971---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8e2fe735546d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971&user=Peng+Qian&userId=8e2fe735546d&source=post_page-8e2fe735546d----58cbac2a0971---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------) · 9 分钟阅读 · 2023 年 7 月 20 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F58cbac2a0971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971&user=Peng+Qian&userId=8e2fe735546d&source=-----58cbac2a0971---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58cbac2a0971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971&source=-----58cbac2a0971---------------------bookmark_footer-----------)![](../Images/bf4eee960dbacc8212da2d156f4d85d0.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F58cbac2a0971&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971&source=-----58cbac2a0971---------------------bookmark_footer-----------)![](img/bf4eee960dbacc8212da2d156f4d85d0.png)
 
 图片来源：作者创建，[Canva](https://www.canva.com/)
 

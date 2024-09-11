@@ -1,18 +1,18 @@
 # 如何在 R 中使用 Map 函数进行数据科学
 
-> 原文：[https://towardsdatascience.com/how-to-use-map-functions-for-data-science-in-r-8180c2ed6d79?source=collection_archive---------10-----------------------#2023-02-02](https://towardsdatascience.com/how-to-use-map-functions-for-data-science-in-r-8180c2ed6d79?source=collection_archive---------10-----------------------#2023-02-02)
+> 原文：[`towardsdatascience.com/how-to-use-map-functions-for-data-science-in-r-8180c2ed6d79?source=collection_archive---------10-----------------------#2023-02-02`](https://towardsdatascience.com/how-to-use-map-functions-for-data-science-in-r-8180c2ed6d79?source=collection_archive---------10-----------------------#2023-02-02)
 
 ## 从 tidyverse 学习强大的函数式编程工具
 
-[](https://roryspanton.medium.com/?source=post_page-----8180c2ed6d79--------------------------------)[![Rory Spanton](../Images/6c35a3de7cb516aac09bc5cf417a6c70.png)](https://roryspanton.medium.com/?source=post_page-----8180c2ed6d79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8180c2ed6d79--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8180c2ed6d79--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----8180c2ed6d79--------------------------------)
+[](https://roryspanton.medium.com/?source=post_page-----8180c2ed6d79--------------------------------)![Rory Spanton](https://roryspanton.medium.com/?source=post_page-----8180c2ed6d79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8180c2ed6d79--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----8180c2ed6d79--------------------------------) [Rory Spanton](https://roryspanton.medium.com/?source=post_page-----8180c2ed6d79--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-map-functions-for-data-science-in-r-8180c2ed6d79&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----8180c2ed6d79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8180c2ed6d79--------------------------------) ·7 min read·2023年2月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8180c2ed6d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-map-functions-for-data-science-in-r-8180c2ed6d79&user=Rory+Spanton&userId=39501aa8ce39&source=-----8180c2ed6d79---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39501aa8ce39&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-map-functions-for-data-science-in-r-8180c2ed6d79&user=Rory+Spanton&userId=39501aa8ce39&source=post_page-39501aa8ce39----8180c2ed6d79---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8180c2ed6d79--------------------------------) ·7 min read·2023 年 2 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8180c2ed6d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-map-functions-for-data-science-in-r-8180c2ed6d79&user=Rory+Spanton&userId=39501aa8ce39&source=-----8180c2ed6d79---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8180c2ed6d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-map-functions-for-data-science-in-r-8180c2ed6d79&source=-----8180c2ed6d79---------------------bookmark_footer-----------)![](../Images/7814864921e31d3a070fa03387a45857.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8180c2ed6d79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-use-map-functions-for-data-science-in-r-8180c2ed6d79&source=-----8180c2ed6d79---------------------bookmark_footer-----------)![](img/7814864921e31d3a070fa03387a45857.png)
 
 图片由 [Z](https://unsplash.com/@dead____artist?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -28,4 +28,4 @@ purrr 包所做的映射并不是大多数人熟悉的地理类型。R 有很棒
 
 “[映射](https://en.wikipedia.org/wiki/Map_(higher-order_function))”是编程中的一个专业术语，指的是在一组参数上重复应用一个函数。
 
-我们可以用一个简单的例子来理解这一点。假设我们有一个列表，每个元素包含100个数字。如果我们想计算每组数字的均值，我们可以用`map`来直接实现。
+我们可以用一个简单的例子来理解这一点。假设我们有一个列表，每个元素包含 100 个数字。如果我们想计算每组数字的均值，我们可以用`map`来直接实现。

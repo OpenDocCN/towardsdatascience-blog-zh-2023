@@ -1,26 +1,26 @@
 # 如果人工智能编码工具减少了我们所需的工程师数量，我们该如何分配预算？
 
-> 原文：[https://towardsdatascience.com/if-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833?source=collection_archive---------9-----------------------#2023-07-28](https://towardsdatascience.com/if-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833?source=collection_archive---------9-----------------------#2023-07-28)
+> 原文：[`towardsdatascience.com/if-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833?source=collection_archive---------9-----------------------#2023-07-28`](https://towardsdatascience.com/if-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833?source=collection_archive---------9-----------------------#2023-07-28)
 
-![](../Images/6ecafc627a4798a457cc1a1902bab139.png)
+![](img/6ecafc627a4798a457cc1a1902bab139.png)
 
 图片由作者使用 Midjourney 制作
 
-## 人工智能对产品工程团队的影响——第4部分
+## 人工智能对产品工程团队的影响——第四部分
 
-[](https://mark-ridley.medium.com/?source=post_page-----abd6248ad833--------------------------------)[![Mark Ridley](../Images/b7331b7e94c2500040bb55b462d0f6b6.png)](https://mark-ridley.medium.com/?source=post_page-----abd6248ad833--------------------------------)[](https://towardsdatascience.com/?source=post_page-----abd6248ad833--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----abd6248ad833--------------------------------) [Mark Ridley](https://mark-ridley.medium.com/?source=post_page-----abd6248ad833--------------------------------)
+[](https://mark-ridley.medium.com/?source=post_page-----abd6248ad833--------------------------------)![Mark Ridley](https://mark-ridley.medium.com/?source=post_page-----abd6248ad833--------------------------------)[](https://towardsdatascience.com/?source=post_page-----abd6248ad833--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----abd6248ad833--------------------------------) [Mark Ridley](https://mark-ridley.medium.com/?source=post_page-----abd6248ad833--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a96ef478792&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fif-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833&user=Mark+Ridley&userId=8a96ef478792&source=post_page-8a96ef478792----abd6248ad833---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----abd6248ad833--------------------------------) ·9分钟阅读·2023年7月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fabd6248ad833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fif-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833&user=Mark+Ridley&userId=8a96ef478792&source=-----abd6248ad833---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8a96ef478792&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fif-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833&user=Mark+Ridley&userId=8a96ef478792&source=post_page-8a96ef478792----abd6248ad833---------------------post_header-----------) 发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----abd6248ad833--------------------------------) ·9 分钟阅读·2023 年 7 月 28 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fabd6248ad833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fif-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833&user=Mark+Ridley&userId=8a96ef478792&source=-----abd6248ad833---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fabd6248ad833&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fif-ai-coding-tools-reduce-the-number-of-engineers-we-need-where-do-we-spend-our-budgets-abd6248ad833&source=-----abd6248ad833---------------------bookmark_footer-----------)
 
-*这是一个六部分系列的第四部分，探讨了面向开发者的生成式人工智能生产力工具，如Github Copilot、ChatGPT和Amazon CodeWhisperer，可能如何影响整个产品工程团队的结构。*
+*这是一个六部分系列的第四部分，探讨了面向开发者的生成式人工智能生产力工具，如 Github Copilot、ChatGPT 和 Amazon CodeWhisperer，可能如何影响整个产品工程团队的结构。*
 
-在 [第3部分](https://mark-ridley.medium.com/if-engineers-start-to-use-ai-coding-tools-what-happens-to-our-product-teams-acd55fb273dd) 中，我们探讨了：
+在 [第三部分](https://mark-ridley.medium.com/if-engineers-start-to-use-ai-coding-tools-what-happens-to-our-product-teams-acd55fb273dd) 中，我们探讨了：
 
 1.  **生成式 AI** 工具可能颠覆长期以来的 5 名工程师对 1 名产品经理的比例。
 

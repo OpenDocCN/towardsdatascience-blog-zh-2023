@@ -1,52 +1,52 @@
-# 《Pythonista的语义内核入门》
+# 《Pythonista 的语义内核入门》
 
-> 原文：[https://towardsdatascience.com/a-pythonistas-intro-to-semantic-kernel-af5a1a39564d?source=collection_archive---------0-----------------------#2023-09-02](https://towardsdatascience.com/a-pythonistas-intro-to-semantic-kernel-af5a1a39564d?source=collection_archive---------0-----------------------#2023-09-02)
+> 原文：[`towardsdatascience.com/a-pythonistas-intro-to-semantic-kernel-af5a1a39564d?source=collection_archive---------0-----------------------#2023-09-02`](https://towardsdatascience.com/a-pythonistas-intro-to-semantic-kernel-af5a1a39564d?source=collection_archive---------0-----------------------#2023-09-02)
 
-[](https://medium.com/@chris.p.hughes10?source=post_page-----af5a1a39564d--------------------------------)[![Chris Hughes](../Images/87b16cd8677739b12294380fb00fde85.png)](https://medium.com/@chris.p.hughes10?source=post_page-----af5a1a39564d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af5a1a39564d--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----af5a1a39564d--------------------------------) [Chris Hughes](https://medium.com/@chris.p.hughes10?source=post_page-----af5a1a39564d--------------------------------)
+[](https://medium.com/@chris.p.hughes10?source=post_page-----af5a1a39564d--------------------------------)![Chris Hughes](https://medium.com/@chris.p.hughes10?source=post_page-----af5a1a39564d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af5a1a39564d--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----af5a1a39564d--------------------------------) [Chris Hughes](https://medium.com/@chris.p.hughes10?source=post_page-----af5a1a39564d--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff13df9df155e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-pythonistas-intro-to-semantic-kernel-af5a1a39564d&user=Chris+Hughes&userId=f13df9df155e&source=post_page-f13df9df155e----af5a1a39564d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----af5a1a39564d--------------------------------) ·30分钟阅读·2023年9月2日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf5a1a39564d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-pythonistas-intro-to-semantic-kernel-af5a1a39564d&user=Chris+Hughes&userId=f13df9df155e&source=-----af5a1a39564d---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff13df9df155e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-pythonistas-intro-to-semantic-kernel-af5a1a39564d&user=Chris+Hughes&userId=f13df9df155e&source=post_page-f13df9df155e----af5a1a39564d---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----af5a1a39564d--------------------------------) ·30 分钟阅读·2023 年 9 月 2 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf5a1a39564d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-pythonistas-intro-to-semantic-kernel-af5a1a39564d&user=Chris+Hughes&userId=f13df9df155e&source=-----af5a1a39564d---------------------clap_footer-----------)
 
 --
 
 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf5a1a39564d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-pythonistas-intro-to-semantic-kernel-af5a1a39564d&source=-----af5a1a39564d---------------------bookmark_footer-----------)
 
-自从发布了[ChatGPT](https://openai.com/blog/chatgpt)以来，大型语言模型（LLMs）在行业和媒体中受到了极大的关注；导致了几乎在所有可以想到的背景下利用LLMs的前所未有的需求。
+自从发布了[ChatGPT](https://openai.com/blog/chatgpt)以来，大型语言模型（LLMs）在行业和媒体中受到了极大的关注；导致了几乎在所有可以想到的背景下利用 LLMs 的前所未有的需求。
 
-[语义内核](https://github.com/microsoft/semantic-kernel)是一个开源SDK，最初由微软开发，用于支持Microsoft 365 Copilot和Bing等产品，旨在简化将LLM集成到应用程序中的过程。它使用户能够利用LLM根据自然语言查询和命令来编排工作流程，通过将这些模型与提供附加功能的外部服务连接，使模型能够利用这些服务完成任务。
+[语义内核](https://github.com/microsoft/semantic-kernel)是一个开源 SDK，最初由微软开发，用于支持 Microsoft 365 Copilot 和 Bing 等产品，旨在简化将 LLM 集成到应用程序中的过程。它使用户能够利用 LLM 根据自然语言查询和命令来编排工作流程，通过将这些模型与提供附加功能的外部服务连接，使模型能够利用这些服务完成任务。
 
 由于它是针对 Microsoft 生态系统创建的，因此目前可用的许多复杂示例都是用 C# 编写的，关注 Python SDK 的资源较少。在这篇博客文章中，我将展示如何使用 Python 入门 Semantic Kernel，介绍关键组件，并探索如何利用这些组件执行各种任务。
 
 在这篇文章中，我们将涵盖以下内容：
 
-+   [内核](#05b4)
++   内核
 
-+   [连接器](#e4fc)
++   连接器
 
-+   [提示函数](#8f79)
++   提示函数
 
-    - [创建自定义连接器](#e102)
+    - 创建自定义连接器
 
-+   [使用聊天服务](#224f)
++   使用聊天服务
 
-    - [制作一个简单的聊天机器人](#2fc5)
+    - 制作一个简单的聊天机器人
 
-+   [内存](#e201)
++   内存
 
-    - [使用文本嵌入服务](#0c36)
+    - 使用文本嵌入服务
 
-    - [将内存集成到上下文中](#0a3b)
+    - 将内存集成到上下文中
 
-+   [插件](#360e)
++   插件
 
-    - [使用现成插件](#920c)
+    - 使用现成插件
 
-    - [创建自定义插件](#28e8)
+    - 创建自定义插件
 
-    - [链式调用多个插件](#6f42)
+    - 链式调用多个插件
 
-+   [使用规划器编排工作流](#d6ab)
++   使用规划器编排工作流
 
 **免责声明：** 由于 Semantic Kernel 和所有与 LLM 相关的内容一样，发展非常迅速。因此，接口可能会随着时间的推移稍有变化；我会尽量保持这篇文章的更新。
 
@@ -73,9 +73,9 @@ dependencies:
 
 我想感谢我的同事 [Karol Zak](https://medium.com/u/c92a3c46e12c?source=post_page-----af5a1a39564d--------------------------------)，感谢他与我合作探索如何在我们的用例中充分利用 Semantic Kernel，并提供了一些启发本文中示例的代码！
 
-![](../Images/e28a03d56de945f92b52f6c062791732.png)
+![](img/e28a03d56de945f92b52f6c062791732.png)
 
-Semantic Kernel 组件概述。图片来源：[https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-flow.png](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-flow.png)
+Semantic Kernel 组件概述。图片来源：[`learn.microsoft.com/en-us/semantic-kernel/media/kernel-flow.png`](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-flow.png)
 
 现在，让我们从库的核心组件开始。
 
@@ -83,7 +83,7 @@ Semantic Kernel 组件概述。图片来源：[https://learn.microsoft.com/en-us
 
 *核心： “对象或系统的核心、中心或本质。” —* [*维基词典*](https://en.wiktionary.org/wiki/kernel)
 
-语义内核中的一个关键概念就是内核本身，它是我们用来协调基于LLM的工作流的主要对象。最初，内核的功能非常有限；它的所有功能主要由我们将要连接的外部组件提供。然后，内核作为一个处理引擎，通过调用适当的组件来完成给定的任务。
+语义内核中的一个关键概念就是内核本身，它是我们用来协调基于 LLM 的工作流的主要对象。最初，内核的功能非常有限；它的所有功能主要由我们将要连接的外部组件提供。然后，内核作为一个处理引擎，通过调用适当的组件来完成给定的任务。
 
 我们可以按照下面的示例创建一个内核：
 
@@ -95,7 +95,7 @@ kernel = sk.Kernel()
 
 # 连接器
 
-为了使我们的内核有用，我们需要连接一个或多个AI模型，这使我们能够利用内核来理解和生成自然语言；这通过*连接器*来完成。语义内核提供了开箱即用的连接器，使得从不同来源添加AI模型变得简单，例如 [OpenAI](https://platform.openai.com/overview)、[Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service) 和 [Hugging Face](https://huggingface.co/docs/hub/index)。这些模型随后用于向内核提供*服务*。
+为了使我们的内核有用，我们需要连接一个或多个 AI 模型，这使我们能够利用内核来理解和生成自然语言；这通过*连接器*来完成。语义内核提供了开箱即用的连接器，使得从不同来源添加 AI 模型变得简单，例如 [OpenAI](https://platform.openai.com/overview)、[Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service) 和 [Hugging Face](https://huggingface.co/docs/hub/index)。这些模型随后用于向内核提供*服务*。
 
 在撰写本文时，支持以下服务：
 
@@ -109,11 +109,11 @@ kernel = sk.Kernel()
 
 我们可以使用以下属性查看所有当前注册的服务：
 
-![](../Images/aab6d6be7e5607c8e2dd48122a6d7279.png)
+![](img/aab6d6be7e5607c8e2dd48122a6d7279.png)
 
 正如预期的那样，我们当前没有任何连接的服务！让我们来改变这一点。
 
-在这里，我将开始访问一个 [GPT3.5-turbo模型](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#gpt-35)，这是我通过 [Azure OpenAI服务](http://127.0.0.1:8800/files/notebooks/(https%3A/azure.microsoft.com/en-us/products/ai-services/openai-service)?_xsrf=2%7Cdf00fee6%7Cc6c752f68f76d91ba394976c9852cc67%7C1693063310) 在我的 [Azure订阅](https://azure.microsoft.com/en-gb/free/search/?ef_id=_k_2411806e795914439019e49fb1bde4ba_k_&OCID=AIDcmm3bvqzxp1_SEM__k_2411806e795914439019e49fb1bde4ba_k_&msclkid=2411806e795914439019e49fb1bde4ba) 中部署的。
+在这里，我将开始访问一个 [GPT3.5-turbo 模型](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#gpt-35)，这是我通过 [Azure OpenAI 服务](http://127.0.0.1:8800/files/notebooks/(https%3A/azure.microsoft.com/en-us/products/ai-services/openai-service)?_xsrf=2%7Cdf00fee6%7Cc6c752f68f76d91ba394976c9852cc67%7C1693063310) 在我的 [Azure 订阅](https://azure.microsoft.com/en-gb/free/search/?ef_id=_k_2411806e795914439019e49fb1bde4ba_k_&OCID=AIDcmm3bvqzxp1_SEM__k_2411806e795914439019e49fb1bde4ba_k_&msclkid=2411806e795914439019e49fb1bde4ba) 中部署的。
 
 由于这个模型可以用于文本生成和聊天，我将同时注册这两项服务。
 
@@ -144,23 +144,23 @@ kernel.add_service(gpt35_chat_service)
 
 我们现在可以看到，聊天服务已注册为文本生成和聊天生成服务。
 
-![](../Images/b5994699626278686d707033f96a639e.png)
+![](img/b5994699626278686d707033f96a639e.png)
 
-要使用非Azure OpenAI API，我们唯一需要更改的是使用`OpenAITextCompletion`和`OpenAIChatCompletion`连接器，而不是我们的Azure类。如果你没有访问OpenAI模型的权限，也不用担心，我们稍后会看看如何连接到开源模型；模型的选择不会影响后续步骤。
+要使用非 Azure OpenAI API，我们唯一需要更改的是使用`OpenAITextCompletion`和`OpenAIChatCompletion`连接器，而不是我们的 Azure 类。如果你没有访问 OpenAI 模型的权限，也不用担心，我们稍后会看看如何连接到开源模型；模型的选择不会影响后续步骤。
 
 要在注册服务后检索服务，我们可以使用内核上的以下方法。
 
-![](../Images/de5652a97fad9c676dc68815e59c43de.png)
+![](img/de5652a97fad9c676dc68815e59c43de.png)
 
 现在我们已经注册了一些服务，让我们探索一下如何与它们交互！
 
 # 提示函数
 
-通过语义内核与LLM交互的方式是创建一个*提示函数*。提示函数期望自然语言输入，并使用LLM来解释所要求的内容，然后采取相应的行动以返回合适的响应。例如，提示函数可用于文本生成、摘要、情感分析和问答等任务。
+通过语义内核与 LLM 交互的方式是创建一个*提示函数*。提示函数期望自然语言输入，并使用 LLM 来解释所要求的内容，然后采取相应的行动以返回合适的响应。例如，提示函数可用于文本生成、摘要、情感分析和问答等任务。
 
 在语义内核中，语义功能由两个组件组成：
 
-+   **提示模板**：将发送给LLM的自然语言查询或命令
++   **提示模板**：将发送给 LLM 的自然语言查询或命令
 
 +   **执行配置**：包含提示功能的设置和选项，例如应该使用的服务、期望的参数以及功能描述。
 
@@ -189,7 +189,7 @@ execution_config = OpenAITextPromptExecutionSettings(service_id = "azure_gpt35_t
 
 虽然这样做有效，但它将我们的函数与某种类型的服务耦合，限制了我们的灵活性。另一种方法是直接从我们打算使用的服务中检索相应的配置类，如下所示。
 
-![](../Images/94340339cbd93685463d88e00fc7e2b5.png)
+![](img/94340339cbd93685463d88e00fc7e2b5.png)
 
 这样，我们可以在运行时选择我们希望使用的服务，并自动加载合适的配置对象。让我们使用这种方法来创建我们的执行配置。
 
@@ -215,7 +215,7 @@ generate_capital_city_text = kernel.create_function_from_prompt(
 )
 ```
 
-现在，我们可以使用内核的`invoke`方法来调用我们的函数。由于我们连接的许多服务可能会调用外部API，`invoke`是一个异步方法，基于[Asyncio](https://docs.python.org/3/library/asyncio.html)。这使我们能够同时执行多个外部服务调用，而无需为每个调用等待响应。
+现在，我们可以使用内核的`invoke`方法来调用我们的函数。由于我们连接的许多服务可能会调用外部 API，`invoke`是一个异步方法，基于[Asyncio](https://docs.python.org/3/library/asyncio.html)。这使我们能够同时执行多个外部服务调用，而无需为每个调用等待响应。
 
 ```py
 response = await kernel.invoke(generate_capital_city_text, input="Paris")
@@ -223,15 +223,15 @@ response = await kernel.invoke(generate_capital_city_text, input="Paris")
 
 响应对象包含有关我们的函数调用的有价值信息，例如所使用的参数；如果一切按预期工作，我们可以使用对象上的`str`构造函数来访问结果。
 
-![](../Images/a53588cf283ee939231eaf251f4f921e.png)![](../Images/24397236996fd8bd8efe17ad066bed69.png)
+![](img/a53588cf283ee939231eaf251f4f921e.png)![](img/24397236996fd8bd8efe17ad066bed69.png)
 
 在这里，我们可以看到我们的函数已经成功工作！
 
 # 使用本地模型
 
-除了使用API背后的模型外，我们还可以使用内核来协调对本地模型的调用。为了说明这一点，让我们注册另一个文本完成服务，并创建一个配置，使我们能够指定我们希望使用新的服务。对于我们的第二个完成服务，我们使用来自[Hugging Face transformers library](https://huggingface.co/docs/transformers/index)的模型。为此，我们使用`HuggingFaceTextCompletion`连接器。
+除了使用 API 背后的模型外，我们还可以使用内核来协调对本地模型的调用。为了说明这一点，让我们注册另一个文本完成服务，并创建一个配置，使我们能够指定我们希望使用新的服务。对于我们的第二个完成服务，我们使用来自[Hugging Face transformers library](https://huggingface.co/docs/transformers/index)的模型。为此，我们使用`HuggingFaceTextCompletion`连接器。
 
-在这里，由于我们将本地运行模型，我选择了[OPT-350m](https://huggingface.co/facebook/opt-350m)，这是一个较旧的模型，旨在大致匹配GPT-3的性能，应该能够在大多数硬件上快速轻松地运行。
+在这里，由于我们将本地运行模型，我选择了[OPT-350m](https://huggingface.co/facebook/opt-350m)，这是一个较旧的模型，旨在大致匹配 GPT-3 的性能，应该能够在大多数硬件上快速轻松地运行。
 
 ```py
 from semantic_kernel.connectors.ai.hugging_face import HuggingFaceTextCompletion
@@ -240,7 +240,7 @@ hf_model = HuggingFaceTextCompletion(service_id="hf_text_completion", ai_model_i
 kernel.add_service(hf_model)
 ```
 
-现在，让我们创建我们的配置对象。我们可以以类似的方式进行，但这次需要传递与我们Hugging Face服务相关的`service_id`。
+现在，让我们创建我们的配置对象。我们可以以类似的方式进行，但这次需要传递与我们 Hugging Face 服务相关的`service_id`。
 
 ```py
 target_service_id = "hf_text_completion"
@@ -266,9 +266,9 @@ hf_complete = kernel.create_function_from_prompt(
 response = await kernel.invoke(hf_complete, input='Paris')
 ```
 
-![](../Images/123471b0361323dd4b855faa403f1c0b.png)
+![](img/123471b0361323dd4b855faa403f1c0b.png)
 
-好的，生成似乎已经成功，但可以说效果不如GPT-3.5所提供的响应。这并不意外，因为这是一个较旧的模型！有趣的是，我们可以看到，在达到最大令牌限制之前，它开始以类似的模式回答关于柏林的问题；这种行为在处理文本完成模型时并不意外。
+好的，生成似乎已经成功，但可以说效果不如 GPT-3.5 所提供的响应。这并不意外，因为这是一个较旧的模型！有趣的是，我们可以看到，在达到最大令牌限制之前，它开始以类似的模式回答关于柏林的问题；这种行为在处理文本完成模型时并不意外。
 
 # 创建自定义连接器
 
@@ -382,7 +382,7 @@ complete = kernel.create_function_from_prompt(
 print(await kernel.invoke(complete, input="Paris"))
 ```
 
-![](../Images/1ab8f519e295a3ddd66f265930d493ea.png)
+![](img/1ab8f519e295a3ddd66f265930d493ea.png)
 
 再次，我们可以看到生成的内容有效，但在回答了我们的问题后很快陷入了重复。
 
@@ -396,7 +396,7 @@ print(await kernel.invoke(complete, input="Paris"))
 
 由于我们已经观察到基础 LLM 可以生成比我们需要的更多的文本，因此让我们调查聊天模型是否表现不同。要使用我们的聊天模型，我们需要更新配置以指定适当的服务并创建一个新函数；在我们的情况下，我们将使用`azure_gpt35_chat_completion`。
 
-![](../Images/eb8e7f97e4af91fddf18fc2c4412a3d2.png)
+![](img/eb8e7f97e4af91fddf18fc2c4412a3d2.png)
 
 ```py
 generate_capital_city_chat = kernel.create_function_from_prompt(
@@ -411,7 +411,7 @@ generate_capital_city_chat = kernel.create_function_from_prompt(
 print(await kernel.invoke(generate_capital_city_chat, input="Paris"))
 ```
 
-![](../Images/c35c56b3d16c3a36404774a81543bf26.png)
+![](img/c35c56b3d16c3a36404774a81543bf26.png)
 
 很好，我们可以看到聊天模型给出了一个更简洁的回答！
 
@@ -437,11 +437,11 @@ async def chat(user_input):
     print(await kernel.invoke(generate_capital_city_chat, input=user_input))
 ```
 
-![](../Images/a398bf72d90a1e98ee11afc2e6f4968f.png)
+![](img/a398bf72d90a1e98ee11afc2e6f4968f.png)
 
 很好，这似乎有效。让我们尝试提出一个后续问题。
 
-![](../Images/ace2e9eef5a2f4b8636a1f5efde9aa59.png)
+![](img/ace2e9eef5a2f4b8636a1f5efde9aa59.png)
 
 我们可以看到模型提供了一个非常通用的回答，这完全没有考虑到我们之前的问题。这是可以预期的，因为模型收到的提示是`"What are some interesting things to do there?"`，我们没有提供“那里”指的是哪里！ 
 
@@ -548,7 +548,7 @@ async def chat(input_text, verbose=True):
 
 让我们试试看！
 
-![](../Images/792c0f9fcef0e077c9628a9b23b6f4c7.png)![](../Images/34145621cec35d2f67386bfb0313eafc.png)![](../Images/61f2e36ac018128cd7a049b1555c57ce.png)
+![](img/792c0f9fcef0e077c9628a9b23b6f4c7.png)![](img/34145621cec35d2f67386bfb0313eafc.png)![](img/61f2e36ac018128cd7a049b1555c57ce.png)
 
 在这里，我们可以看到这满足了我们的要求！
 
@@ -556,9 +556,9 @@ async def chat(input_text, verbose=True):
 
 当使用如语义内核这样的库时，能够准确验证传递给模型的内容非常重要，因为提示的书写和格式化方式对结果有很大影响。
 
-大多数语言模型，例如OpenAI API，不接受单个提示作为输入，而是更喜欢格式化为消息列表的输入；在用户和模型之间交替。我们可以检查我们的提示将如何被拆分成消息。
+大多数语言模型，例如 OpenAI API，不接受单个提示作为输入，而是更喜欢格式化为消息列表的输入；在用户和模型之间交替。我们可以检查我们的提示将如何被拆分成消息。
 
-![](../Images/1dedd9d10b61fa6508b4dd463bc76e50.png)
+![](img/1dedd9d10b61fa6508b4dd463bc76e50.png)
 
 在这里，我们可以看到与聊天历史相关的所有格式都已被移除，消息看起来符合我们的预期。
 
@@ -566,7 +566,7 @@ async def chat(input_text, verbose=True):
 
 在与我们的聊天机器人互动时，使体验感觉像有用互动的关键因素之一是聊天机器人能够保留我们之前问题的上下文。我们通过让聊天机器人访问*记忆*，利用`ChatHistory`来处理这一点。
 
-尽管这对于我们简单的用例效果很好，但我们所有的对话历史都存储在系统的RAM中，并未持久化；一旦我们关闭系统，这些数据将永远消失。对于更智能的应用程序，能够构建和持久化短期和长期记忆以供模型访问是很有用的。
+尽管这对于我们简单的用例效果很好，但我们所有的对话历史都存储在系统的 RAM 中，并未持久化；一旦我们关闭系统，这些数据将永远消失。对于更智能的应用程序，能够构建和持久化短期和长期记忆以供模型访问是很有用的。
 
 此外，在我们的示例中，我们将*所有*之前的互动内容都输入到我们的提示中。由于模型通常具有固定大小的上下文窗口——这决定了我们的提示可以有多长——如果我们开始进行长时间的对话，这将很快崩溃。避免这种情况的一种方法是将记忆存储为独立的“块”，并仅将我们认为可能相关的信息加载到提示中。
 
@@ -593,7 +593,7 @@ Do not provide a closing comment.
 )
 ```
 
-![](../Images/fca819fa55e89cf5a9027549c79aebba.png)
+![](img/fca819fa55e89cf5a9027549c79aebba.png)
 
 现在我们有了一些文本，为了让模型只访问它需要的部分，让我们将其划分成几个块。语义内核提供了一些功能来实现这一点，在它的`text_chunker`模块中。我们可以按如下方式使用它：
 
@@ -603,9 +603,9 @@ from semantic_kernel.text import text_chunker as tc
 chunks = tc.split_plaintext_paragraph([london_info], max_tokens=100)
 ```
 
-![](../Images/13e57bb83384a7163ce0341532935a1e.png)
+![](img/13e57bb83384a7163ce0341532935a1e.png)
 
-我们可以看到文本被分割成了8个块。根据文本内容，我们需要调整每个块的最大标记数。
+我们可以看到文本被分割成了 8 个块。根据文本内容，我们需要调整每个块的最大标记数。
 
 # 使用文本嵌入服务
 
@@ -613,7 +613,7 @@ chunks = tc.split_plaintext_paragraph([london_info], max_tokens=100)
 
 为了生成嵌入，我们需要将文本嵌入服务添加到我们的内核中。类似于之前的情况，根据基础模型的来源，有各种连接器可以使用。
 
-首先，让我们使用一个`[text-embedding-ada-002](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#embeddings-models)` [模型](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#embeddings-models)，该模型在Azure OpenAI服务中部署。这个模型由OpenAI训练，更多关于这个模型的信息可以在他们的[发布博客文章](https://openai.com/blog/new-and-improved-embedding-model)中找到。
+首先，让我们使用一个`[text-embedding-ada-002](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#embeddings-models)` [模型](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#embeddings-models)，该模型在 Azure OpenAI 服务中部署。这个模型由 OpenAI 训练，更多关于这个模型的信息可以在他们的[发布博客文章](https://openai.com/blog/new-and-improved-embedding-model)中找到。
 
 ```py
 from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding
@@ -665,7 +665,7 @@ results = await memory.search(
 )
 ```
 
-![](../Images/9b0a34d7f1e6ebcbaa52a0417d0a44b0.png)
+![](img/9b0a34d7f1e6ebcbaa52a0417d0a44b0.png)
 
 查看结果，我们可以看到返回了相关信息；这反映在高相关性评分上。
 
@@ -677,7 +677,7 @@ results = await memory.search(
 )
 ```
 
-![](../Images/4e4b62175a68c308f862a2f2d830f10c.png)
+![](img/4e4b62175a68c308f862a2f2d830f10c.png)
 
 在这里，我们可以看到我们得到了完全相同的结果。然而，由于我们的第二个结果明确提到了‘来自世界各地的食物’，我认为这是更好的匹配。这突显了语义搜索方法的一些潜在局限性。
 
@@ -709,7 +709,7 @@ hf_results = await hf_memory.search(
 )
 ```
 
-![](../Images/cf172189efbb0a30b9b1ebc4c55663a5.png)
+![](img/cf172189efbb0a30b9b1ebc4c55663a5.png)
 
 ```py
 hf_results = await hf_memory.search(
@@ -720,11 +720,11 @@ hf_results = await hf_memory.search(
 )
 ```
 
-![](../Images/74d509ae00eb7311f6b7bfaa22c84a27.png)
+![](img/74d509ae00eb7311f6b7bfaa22c84a27.png)
 
 我们可以看到，我们返回了相同的片段，但相关性评分不同。我们还可以观察到不同模型生成的嵌入的维度差异。
 
-![](../Images/6fe7aeae1fb97200b29bb8eefd1044e3.png)
+![](img/6fe7aeae1fb97200b29bb8eefd1044e3.png)
 
 # 将记忆集成到上下文中
 
@@ -794,7 +794,7 @@ context = KernelArguments(question=question, context="\n".join([result.text for 
 answer = await kernel.invoke(chatbot_with_context, context)
 ```
 
-![](../Images/9e1624ff5d7fe229469aaa2990655f2b.png)
+![](img/9e1624ff5d7fe229469aaa2990655f2b.png)
 
 这一次，我们看到我们的答案引用了我们寻找的信息，并提供了更好的答案！
 
@@ -822,7 +822,7 @@ answer = await kernel.invoke(chatbot_with_context, context)
 
 首先，我们必须导入我们的插件，如下所示。
 
-![](../Images/f968c5e002ddf81ab69811fb823cd5a1.png)
+![](img/f968c5e002ddf81ab69811fb823cd5a1.png)
 
 在这里，我们可以看到这个插件包含两个语义功能，`recall` 和 `save`。
 
@@ -878,7 +878,7 @@ context = KernelArguments(question="Where can I eat non-british food in London?"
 answer = await kernel.invoke(chatbot_with_context_plugin, context)
 ```
 
-![](../Images/36ff67413f9cf314b5c000dca6c273b8.png)
+![](img/36ff67413f9cf314b5c000dca6c273b8.png)
 
 我们可以看到这与我们的手动方法是等效的。
 
@@ -925,7 +925,7 @@ poem_sc_path.mkdir(exist_ok=True)
 
 接下来，我们创建我们的提示，保存为`skprompt.txt`。
 
-![](../Images/8f42f25e22886c6b01197b54db47e664.png)
+![](img/8f42f25e22886c6b01197b54db47e664.png)
 
 现在，让我们创建我们的配置并将其存储在 json 文件中。
 
@@ -973,7 +973,7 @@ poem_gen_plugin = kernel.import_plugin_from_prompt_directory(
 
 检查我们的插件，我们可以看到它暴露了我们的`write_poem`语义函数。
 
-![](../Images/afe6ac1b359eaf572171a98b54ad10a5.png)
+![](img/afe6ac1b359eaf572171a98b54ad10a5.png)
 
 我们可以像以前一样使用内核调用我们的函数。
 
@@ -981,7 +981,7 @@ poem_gen_plugin = kernel.import_plugin_from_prompt_directory(
 result = await kernel.invoke(poem_gen_plugin["write_poem"], KernelArguments(input="Munich"))
 ```
 
-![](../Images/9352eab944764efc3a05a9f3dc5ad8ab.png)
+![](img/9352eab944764efc3a05a9f3dc5ad8ab.png)
 
 或者，我们可以在另一个语义函数中使用它：
 
@@ -1018,7 +1018,7 @@ write_poem_wrapper = kernel.create_function_from_prompt(
 result = await kernel.invoke(write_poem_wrapper, KernelArguments(input="Munich"))
 ```
 
-![](../Images/ce64b97153dd1ba8bf2b4f833b801fe8.png)
+![](img/ce64b97153dd1ba8bf2b4f833b801fe8.png)
 
 **创建一个图像分类器插件**
 
@@ -1034,7 +1034,7 @@ download_image_sc_path = image_classifier_plugin_path / "download_image.py"
 download_image_sc_path.mkdir(exist_ok=True)
 ```
 
-现在，我们可以创建我们的Python模块。在模块内部，我们可以非常灵活。在这里，我们创建了一个具有两个方法的类，关键步骤是使用`kernel_function`装饰器来指定哪些方法应该作为插件的一部分被暴露。
+现在，我们可以创建我们的 Python 模块。在模块内部，我们可以非常灵活。在这里，我们创建了一个具有两个方法的类，关键步骤是使用`kernel_function`装饰器来指定哪些方法应该作为插件的一部分被暴露。
 
 对于我们的输入，我们使用了`Annotated`类型提示来提供我们参数的描述。更多信息可以在[文档中](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions?tabs=python)找到。
 
@@ -1068,7 +1068,7 @@ class ImageClassifierPlugin:
         return Image.open(requests.get(url, stream=True).raw).convert("RGB")
 ```
 
-在这个例子中，我使用了出色的[Pytorch Image Models](https://github.com/huggingface/pytorch-image-models)库来提供我们的分类器。有关该库如何工作的更多信息，请查看这篇[博客文章](/getting-started-with-pytorch-image-models-timm-a-practitioners-guide-4e77b4bf9055)。
+在这个例子中，我使用了出色的[Pytorch Image Models](https://github.com/huggingface/pytorch-image-models)库来提供我们的分类器。有关该库如何工作的更多信息，请查看这篇博客文章。
 
 现在，我们可以如下面所示简单地导入我们的插件。
 
@@ -1080,18 +1080,18 @@ classify_plugin = kernel.import_plugin_from_object(image_classifier, plugin_name
 
 检查我们的插件，我们可以看到只有我们装饰过的函数被暴露出来。
 
-![](../Images/da9f13185d2693a44d1a13045d64dde8.png)
+![](img/da9f13185d2693a44d1a13045d64dde8.png)
 
-我们可以使用[来自Pixabay的猫的图片](https://pixabay.com/photos/cat-kitten-pet-striped-young-1192026/)来验证我们的插件是否有效。
+我们可以使用[来自 Pixabay 的猫的图片](https://pixabay.com/photos/cat-kitten-pet-striped-young-1192026/)来验证我们的插件是否有效。
 
-![](../Images/e665bbc0cb413f97f5ca010e6dbf0983.png)
+![](img/e665bbc0cb413f97f5ca010e6dbf0983.png)
 
 ```py
 url = "https://cdn.pixabay.com/photo/2016/02/10/16/37/cat-1192026_1280.jpg"
 response = await kernel.invoke(classify_plugin["classify_image"], KernelArguments(input=url))
 ```
 
-![](../Images/b594aff9671760a0edeebd60819063c5.png)
+![](img/b594aff9671760a0edeebd60819063c5.png)
 
 通过手动调用我们的函数，我们可以看到我们的图片已被正确分类！和之前一样，我们也可以直接从提示中引用这个函数。然而，既然我们已经演示过了，让我们在下一部分尝试一些稍微不同的东西。
 
@@ -1105,7 +1105,7 @@ response = await kernel.invoke(classify_plugin["classify_image"], KernelArgument
 answers = await kernel.invoke([classify_plugin["classify_image"], poem_gen_plugin["write_poem"]], arguments=KernelArguments(input=url))
 ```
 
-![](../Images/3cb07fd67a06aef978b9e4bf0ed538ac.png)
+![](img/3cb07fd67a06aef978b9e4bf0ed538ac.png)
 
 在这里，我们可以看到相同的输入被用于每个函数。我们本可以在`KernelArguments`中定义不同命名的参数，但如果多个函数的参数具有相同的名称，这会变得困难。顺便提一下，我们的诗歌生成器似乎做得很棒，考虑到它只提供了一个网址！
 
@@ -1142,25 +1142,25 @@ kernel.add_function_invoked_handler(store_results)
 answers = await kernel.invoke([classify_plugin["classify_image"], poem_gen_plugin["write_poem"]], arguments=KernelArguments(input=url))
 ```
 
-![](../Images/2b19673d4d16226d06cdcac56c51f830.png)
+![](img/2b19673d4d16226d06cdcac56c51f830.png)
 
 我们可以看到，通过顺序使用两个插件，我们已经对图像进行了分类并为其写了一首诗！
 
 # 使用规划器协调工作流
 
-到此为止，我们已经深入探讨了语义函数，理解了函数如何被分组并用作插件的一部分，并且已经看到如何手动将插件链在一起。现在，让我们探索如何使用LLMs创建和协调工作流。为此，Semantic Kernel提供了*Planner*对象，它可以动态创建函数链以尝试实现目标。
+到此为止，我们已经深入探讨了语义函数，理解了函数如何被分组并用作插件的一部分，并且已经看到如何手动将插件链在一起。现在，让我们探索如何使用 LLMs 创建和协调工作流。为此，Semantic Kernel 提供了*Planner*对象，它可以动态创建函数链以尝试实现目标。
 
 规划器是一个类，它接受用户提示和内核，并利用内核的服务创建执行任务的计划，使用内核中可用的函数和插件。由于插件是这些计划的主要构建块，因此规划器在很大程度上依赖于提供的描述；如果插件和函数没有明确的描述，规划器将无法正确使用它们。此外，由于规划器可以以各种不同的方式组合函数，因此确保仅暴露我们希望规划器使用的函数是很重要的。
 
 由于规划器依赖于模型来生成计划，因此可能会引入错误；这些错误通常发生在规划器未能正确理解如何使用函数时。在这些情况下，我发现提供明确的指令——如描述输入和输出，并说明输入是否为必需——可以取得更好的结果。此外，使用指令调优模型比使用基础模型效果更佳；基础文本补全模型往往会虚构不存在的函数或生成多个计划。尽管存在这些限制，当一切正常工作时，规划器可以非常强大！
 
-让我们通过探讨是否可以创建一个基于图像url的诗歌计划，使用我们之前创建的插件，来探索如何做到这一点。由于我们定义了许多不再需要的函数，让我们创建一个新的内核，以便控制暴露的函数。
+让我们通过探讨是否可以创建一个基于图像 url 的诗歌计划，使用我们之前创建的插件，来探索如何做到这一点。由于我们定义了许多不再需要的函数，让我们创建一个新的内核，以便控制暴露的函数。
 
 ```py
 kernel = sk.Kernel()
 ```
 
-为了创建我们的计划，让我们使用我们的OpenAI聊天服务。
+为了创建我们的计划，让我们使用我们的 OpenAI 聊天服务。
 
 ```py
 service_id = "azure_gpt35_chat_completion"
@@ -1188,7 +1188,7 @@ poem_gen_plugin = kernel.import_plugin_from_prompt_directory(
 
 我们可以看到我们的内核可以访问哪些函数，如下所示。
 
-![](../Images/c38c0113d01700a4cbb9684a12fd50e6.png)
+![](img/c38c0113d01700a4cbb9684a12fd50e6.png)
 
 现在，让我们导入我们的规划器对象。
 
@@ -1213,7 +1213,7 @@ I would like you to write poem about what is contained in this image with this u
 plan = await planner.create_plan(ask, kernel)
 ```
 
-![](../Images/5d418bcf66576207199f693bfc3ea199.png)
+![](img/5d418bcf66576207199f693bfc3ea199.png)
 
 检查我们的计划，我们可以看到模型已经正确识别了输入，以及正确的函数使用方法！
 
@@ -1223,11 +1223,11 @@ plan = await planner.create_plan(ask, kernel)
 poem = await planner.execute_plan(plan, kernel)
 ```
 
-![](../Images/c0959b816490d6da186bda29626396a9.png)
+![](img/c0959b816490d6da186bda29626396a9.png)
 
 哇，成功了！对于一个被训练来预测下一个词的模型来说，这真是相当强大的！
 
-作为一个警告，在制作这个示例时，我很幸运地第一次生成的计划就有效。然而，我们依赖于模型正确解读我们的指令，并理解可用的工具；更不用说LLM可能会出现虚假信息，甚至可能会梦到不存在的新功能！对我个人来说，在生产系统中，我会觉得手动创建工作流程执行会更舒服，而不是依赖LLM！随着技术的不断进步，尤其是当前的速度，希望这个建议会变得过时！
+作为一个警告，在制作这个示例时，我很幸运地第一次生成的计划就有效。然而，我们依赖于模型正确解读我们的指令，并理解可用的工具；更不用说 LLM 可能会出现虚假信息，甚至可能会梦到不存在的新功能！对我个人来说，在生产系统中，我会觉得手动创建工作流程执行会更舒服，而不是依赖 LLM！随着技术的不断进步，尤其是当前的速度，希望这个建议会变得过时！
 
 # 结论
 
@@ -1235,13 +1235,13 @@ poem = await planner.execute_plan(plan, kernel)
 
 *重复此帖子所需的所有代码可以在[这里](https://gist.github.com/Chris-hughes10/6dacd205f1da3cc3aec4fc45e57fb0b6)*找到。*
 
-[*Chris Hughes*](https://www.linkedin.com/in/chris-hughes1/) *在LinkedIn上*
+[*Chris Hughes*](https://www.linkedin.com/in/chris-hughes1/) *在 LinkedIn 上*
 
 # 参考资料
 
 +   [介绍 ChatGPT (openai.com)](https://openai.com/blog/chatgpt)
 
-+   [microsoft/semantic-kernel: 将最前沿的LLM技术快速、轻松地集成到您的应用程序中 (github.com)](https://github.com/microsoft/semantic-kernel)
++   [microsoft/semantic-kernel: 将最前沿的 LLM 技术快速、轻松地集成到您的应用程序中 (github.com)](https://github.com/microsoft/semantic-kernel)
 
 +   [我们是谁 — Microsoft 解决方案手册](https://playbook.microsoft.com/code-with-engineering/ISE/)
 
@@ -1291,4 +1291,4 @@ poem = await planner.execute_plan(plan, kernel)
 
 +   [huggingface/pytorch-image-models: PyTorch 图像模型、脚本、预训练权重 — ResNet, ResNeXT, EfficientNet, NFNet, Vision Transformer (ViT), MobileNet-V3/V2, RegNet, DPN, CSPNet, Swin Transformer, MaxViT, CoAtNet, ConvNeXt 等 (github.com)](https://github.com/huggingface/pytorch-image-models)
 
-+   [使用 PyTorch 图像模型 (timm) 入门：实用指南 | by Chris Hughes | Towards Data Science](/getting-started-with-pytorch-image-models-timm-a-practitioners-guide-4e77b4bf9055)
++   使用 PyTorch 图像模型 (timm) 入门：实用指南 | by Chris Hughes | Towards Data Science

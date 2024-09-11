@@ -1,18 +1,18 @@
 # 时间序列的傅里叶变换：去趋势
 
-> 原文：[https://towardsdatascience.com/fourier-transform-for-time-series-detrending-f0f470f4bf14?source=collection_archive---------5-----------------------#2023-08-11](https://towardsdatascience.com/fourier-transform-for-time-series-detrending-f0f470f4bf14?source=collection_archive---------5-----------------------#2023-08-11)
+> 原文：[`towardsdatascience.com/fourier-transform-for-time-series-detrending-f0f470f4bf14?source=collection_archive---------5-----------------------#2023-08-11`](https://towardsdatascience.com/fourier-transform-for-time-series-detrending-f0f470f4bf14?source=collection_archive---------5-----------------------#2023-08-11)
 
 ## 对时间序列进行去趋势处理可能会改变游戏规则
 
-[](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)[![Yoann Mocquin](../Images/b30a0f70c56972aabd2bc0a74baa90bb.png)](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)
+[](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)![Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------) [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F173731d06320&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-detrending-f0f470f4bf14&user=Yoann+Mocquin&userId=173731d06320&source=post_page-173731d06320----f0f470f4bf14---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------) · 8分钟阅读 · 2023年8月11日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0f470f4bf14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-detrending-f0f470f4bf14&user=Yoann+Mocquin&userId=173731d06320&source=-----f0f470f4bf14---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F173731d06320&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-detrending-f0f470f4bf14&user=Yoann+Mocquin&userId=173731d06320&source=post_page-173731d06320----f0f470f4bf14---------------------post_header-----------) 发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------) · 8 分钟阅读 · 2023 年 8 月 11 日 [](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0f470f4bf14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-detrending-f0f470f4bf14&user=Yoann+Mocquin&userId=173731d06320&source=-----f0f470f4bf14---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0f470f4bf14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-detrending-f0f470f4bf14&source=-----f0f470f4bf14---------------------bookmark_footer-----------)![](../Images/b2c3572ce97230dc0947212f27958abf.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0f470f4bf14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffourier-transform-for-time-series-detrending-f0f470f4bf14&source=-----f0f470f4bf14---------------------bookmark_footer-----------)![](img/b2c3572ce97230dc0947212f27958abf.png)
 
 **在计算傅里叶变换之前对信号进行去趋势处理是一种常见的做法，尤其是在处理时间序列时。**
 
@@ -26,10 +26,10 @@
 
 +   **回顾卷积如何与傅里叶变换相关以及它有多快**：
 
-[](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----f0f470f4bf14--------------------------------) [## 时间序列的傅里叶变换：使用 numpy 解释快速卷积
+[](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----f0f470f4bf14--------------------------------) ## 时间序列的傅里叶变换：使用 numpy 解释快速卷积
 
 ### 使用傅里叶变换进行的卷积比传统方法快 10000 倍
 
-[towardsdatascience.com](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----f0f470f4bf14--------------------------------)
+[towardsdatascience.com
 
 +   **通过图像示例加深对卷积的理解：**

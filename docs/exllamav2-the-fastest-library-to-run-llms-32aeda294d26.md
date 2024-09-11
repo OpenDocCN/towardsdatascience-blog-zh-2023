@@ -1,22 +1,22 @@
-# ExLlamaV2: 运行LLMs的最快库
+# ExLlamaV2: 运行 LLMs 的最快库
 
-> 原文：[https://towardsdatascience.com/exllamav2-the-fastest-library-to-run-llms-32aeda294d26?source=collection_archive---------0-----------------------#2023-11-20](https://towardsdatascience.com/exllamav2-the-fastest-library-to-run-llms-32aeda294d26?source=collection_archive---------0-----------------------#2023-11-20)
+> 原文：[`towardsdatascience.com/exllamav2-the-fastest-library-to-run-llms-32aeda294d26?source=collection_archive---------0-----------------------#2023-11-20`](https://towardsdatascience.com/exllamav2-the-fastest-library-to-run-llms-32aeda294d26?source=collection_archive---------0-----------------------#2023-11-20)
 
-## 量化并运行EXL2模型
+## 量化并运行 EXL2 模型
 
-[](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)[![Maxime Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)
+[](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)![Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------) [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----32aeda294d26---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------) · 6分钟阅读 · 2023年11月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32aeda294d26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&user=Maxime+Labonne&userId=dc89da634938&source=-----32aeda294d26---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----32aeda294d26---------------------post_header-----------) 发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------) · 6 分钟阅读 · 2023 年 11 月 20 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32aeda294d26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&user=Maxime+Labonne&userId=dc89da634938&source=-----32aeda294d26---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32aeda294d26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&source=-----32aeda294d26---------------------bookmark_footer-----------)![](../Images/032261661e8c8f24175b7d7766cd2fae.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32aeda294d26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&source=-----32aeda294d26---------------------bookmark_footer-----------)![](img/032261661e8c8f24175b7d7766cd2fae.png)
 
 图片由作者提供
 
-对大语言模型（LLMs）进行量化是减少这些模型大小和加速推理的最受欢迎的方法。在这些技术中，GPTQ在GPU上的表现非常出色。与未量化模型相比，这种方法使用的显存几乎少了3倍，同时提供了类似的准确度和更快的生成速度。它变得如此受欢迎，以至于最近已经直接集成到[transformers库](https://huggingface.co/blog/gptq-integration)中。
+对大语言模型（LLMs）进行量化是减少这些模型大小和加速推理的最受欢迎的方法。在这些技术中，GPTQ 在 GPU 上的表现非常出色。与未量化模型相比，这种方法使用的显存几乎少了 3 倍，同时提供了类似的准确度和更快的生成速度。它变得如此受欢迎，以至于最近已经直接集成到[transformers 库](https://huggingface.co/blog/gptq-integration)中。
 
 [**ExLlamaV2**](https://github.com/turboderp/exllamav2)是一个旨在进一步提升 GPTQ 性能的库。得益于新的内核，它经过优化，可以实现（极快的）推理速度。它还引入了一种新的量化格式 EXL2，为权重存储方式提供了极大的灵活性。
 
@@ -184,15 +184,15 @@ api.upload_folder(
 
 # 关于量化的文章
 
-[](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----32aeda294d26--------------------------------) [## 权重量化介绍
+[](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----32aeda294d26--------------------------------) ## 权重量化介绍
 
 ### 使用 8 位量化减少大语言模型的大小
 
-towardsdatascience.com](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----32aeda294d26--------------------------------) [](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----32aeda294d26--------------------------------) [## 使用 GPTQ 的 4 位量化
+towardsdatascience.com [](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----32aeda294d26--------------------------------) ## 使用 GPTQ 的 4 位量化
 
 ### 使用 AutoGPTQ 量化你自己的 LLMs
 
-towardsdatascience.com](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----32aeda294d26--------------------------------)
+towardsdatascience.com
 
 *了解更多关于机器学习的内容，并通过一次点击支持我的工作——在这里成为 Medium 会员：*
 

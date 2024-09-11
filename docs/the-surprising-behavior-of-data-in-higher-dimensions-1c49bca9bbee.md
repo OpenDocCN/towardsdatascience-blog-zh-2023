@@ -1,18 +1,18 @@
 # 高维数据的惊人行为
 
-> 原文：[https://towardsdatascience.com/the-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee?source=collection_archive---------1-----------------------#2023-12-15](https://towardsdatascience.com/the-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee?source=collection_archive---------1-----------------------#2023-12-15)
+> 原文：[`towardsdatascience.com/the-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee?source=collection_archive---------1-----------------------#2023-12-15`](https://towardsdatascience.com/the-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee?source=collection_archive---------1-----------------------#2023-12-15)
 
 ## 探索高维数据的惊人世界：机遇与挑战
 
-[](https://medium.com/@salih.salih?source=post_page-----1c49bca9bbee--------------------------------)[![Salih Salih](../Images/220f3c5363989d94c5593eca7ff72c67.png)](https://medium.com/@salih.salih?source=post_page-----1c49bca9bbee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c49bca9bbee--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c49bca9bbee--------------------------------) [Salih Salih](https://medium.com/@salih.salih?source=post_page-----1c49bca9bbee--------------------------------)
+[](https://medium.com/@salih.salih?source=post_page-----1c49bca9bbee--------------------------------)![Salih Salih](https://medium.com/@salih.salih?source=post_page-----1c49bca9bbee--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c49bca9bbee--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c49bca9bbee--------------------------------) [Salih Salih](https://medium.com/@salih.salih?source=post_page-----1c49bca9bbee--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2037cbb08e24&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee&user=Salih+Salih&userId=2037cbb08e24&source=post_page-2037cbb08e24----1c49bca9bbee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c49bca9bbee--------------------------------) ·9 分钟阅读·2023年12月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c49bca9bbee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee&user=Salih+Salih&userId=2037cbb08e24&source=-----1c49bca9bbee---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2037cbb08e24&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee&user=Salih+Salih&userId=2037cbb08e24&source=post_page-2037cbb08e24----1c49bca9bbee---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c49bca9bbee--------------------------------) ·9 分钟阅读·2023 年 12 月 15 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c49bca9bbee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee&user=Salih+Salih&userId=2037cbb08e24&source=-----1c49bca9bbee---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c49bca9bbee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee&source=-----1c49bca9bbee---------------------bookmark_footer-----------)![](../Images/840a964ed305fca552069803b26a6992.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c49bca9bbee&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-surprising-behavior-of-data-in-higher-dimensions-1c49bca9bbee&source=-----1c49bca9bbee---------------------bookmark_footer-----------)![](img/840a964ed305fca552069803b26a6992.png)
 
 摄影：Guillermo Ferla，来源于 Unsplash
 
@@ -26,53 +26,53 @@
 
 ## **高维空间中的体积集中**
 
-首先，让我们探索高维空间中的体积集中概念。考虑在一个边长范围从0到1的超立方体内生成随机点。当维度增加时，这些点落在这个超立方体中间区域的可能性有多大？
+首先，让我们探索高维空间中的体积集中概念。考虑在一个边长范围从 0 到 1 的超立方体内生成随机点。当维度增加时，这些点落在这个超立方体中间区域的可能性有多大？
 
-![](../Images/ac35323659769ce4dfd110eb6a1ead96.png)
+![](img/ac35323659769ce4dfd110eb6a1ead96.png)
 
 图片由作者提供
 
-在上面的图像中，假设x是一个小值，比如0.1。我们旨在确定点随机落在这个中间区域（而不是边缘）时，随着维度的增加，概率是如何变化的。
+在上面的图像中，假设 x 是一个小值，比如 0.1。我们旨在确定点随机落在这个中间区域（而不是边缘）时，随着维度的增加，概率是如何变化的。
 
 1.  一维空间（直线）
 
-想象一个从0到1的线段。中间部分在0.1和0.9之间，随机点落在这里的机会就是这个中间段的长度除以总长度，即0.8。
+想象一个从 0 到 1 的线段。中间部分在 0.1 和 0.9 之间，随机点落在这里的机会就是这个中间段的长度除以总长度，即 0.8。
 
 2\. 二维空间（方形）
 
-现在，设想一个边长范围从0到1的正方形。中间区域是一个边长从0.1到0.9的小正方形。概率计算涉及比较这个小正方形的面积与总面积，从而得到0.64的概率。
+现在，设想一个边长范围从 0 到 1 的正方形。中间区域是一个边长从 0.1 到 0.9 的小正方形。概率计算涉及比较这个小正方形的面积与总面积，从而得到 0.64 的概率。
 
 3\. 三维空间（立方体）
 
-对于一个每条边长为1的立方体，中间区域是一个边长从0.1到0.9的较小立方体。这里，概率是这个小立方体的体积除以总的体积，结果为0.512。
+对于一个每条边长为 1 的立方体，中间区域是一个边长从 0.1 到 0.9 的较小立方体。这里，概率是这个小立方体的体积除以总的体积，结果为 0.512。
 
 4\. 高维（超立方体）
 
-在一个n维的超立方体中，随着维度的增加，中间区域的‘体积’会急剧缩小。例如，在4维中，概率是0.4096；在5维中，它变为0.32768；而在10维中，它降至大约0.10737。
+在一个 n 维的超立方体中，随着维度的增加，中间区域的‘体积’会急剧缩小。例如，在 4 维中，概率是 0.4096；在 5 维中，它变为 0.32768；而在 10 维中，它降至大约 0.10737。
 
-这个想法的概括从考虑边长为小距离x开始，如上图所示。对于一条线，点落在中间区域的概率是1–2x。对于一个正方形，它是(1–2x)*(1–2x)，因为一个点必须落在两个维度的中间。
+这个想法的概括从考虑边长为小距离 x 开始，如上图所示。对于一条线，点落在中间区域的概率是 1–2x。对于一个正方形，它是(1–2x)*(1–2x)，因为一个点必须落在两个维度的中间。
 
-这种模式在n维中继续，其中落在中间区域的概率为(1–2x)^n，在高维中变得非常小。
+这种模式在 n 维中继续，其中落在中间区域的概率为(1–2x)^n，在高维中变得非常小。
 
-注意这里我们通过将每边长度简化为1来进行简化。
+注意这里我们通过将每边长度简化为 1 来进行简化。
 
 ## 在超立方体内刻画一个超球体
 
-为了进一步说明体积集中概念，我用python进行了一次简单的模拟，在模拟中我们在超立方体内刻画一个超球体，然后比较超球体与超立方体的体积比，随着维度的增加。
+为了进一步说明体积集中概念，我用 python 进行了一次简单的模拟，在模拟中我们在超立方体内刻画一个超球体，然后比较超球体与超立方体的体积比，随着维度的增加。
 
 什么是超立方体？
 
-想象一个正方形。现在，把它膨胀成一个立方体。这是从2D到3D的跳跃。现在，发挥想象力跳到第四维及更高维度——这就是超立方体的出现。超立方体本质上是扩展到更高维度的立方体。它是一个各边相等的形状，在我们的模拟中，我们考虑边长为2的超立方体。它的体积公式是什么？就是2^*n（2的n次方）*对于n维超立方体。
+想象一个正方形。现在，把它膨胀成一个立方体。这是从 2D 到 3D 的跳跃。现在，发挥想象力跳到第四维及更高维度——这就是超立方体的出现。超立方体本质上是扩展到更高维度的立方体。它是一个各边相等的形状，在我们的模拟中，我们考虑边长为 2 的超立方体。它的体积公式是什么？就是 2^*n（2 的 n 次方）*对于 n 维超立方体。
 
 那么超球体呢？
 
-超球体是球体的高维等效体，当你将2D圆扩展到3D（形成一个球体），然后继续扩展到更高维度时，就会出现超球体。重点？它的体积计算并不那么简单。它涉及到π（是的，就是那个著名的3.14159…）和Gamma函数，这类似于阶乘的“增强版”。简而言之，半径为1的超球体在`n`维空间中的体积是：
+超球体是球体的高维等效体，当你将 2D 圆扩展到 3D（形成一个球体），然后继续扩展到更高维度时，就会出现超球体。重点？它的体积计算并不那么简单。它涉及到π（是的，就是那个著名的 3.14159…）和 Gamma 函数，这类似于阶乘的“增强版”。简而言之，半径为 1 的超球体在`n`维空间中的体积是：
 
-![](../Images/89f7d0941b221726d702e3860120668a.png)
+![](img/89f7d0941b221726d702e3860120668a.png)
 
-Gamma函数Γ(*n*)将阶乘函数扩展到实数和复数。对于正整数*n*，Γ(n)=(n−1)!，对于非整数值，它是数值计算的。
+Gamma 函数Γ(*n*)将阶乘函数扩展到实数和复数。对于正整数*n*，Γ(n)=(n−1)!，对于非整数值，它是数值计算的。
 
-要使用python计算这个比例，我们可以使用以下代码：
+要使用 python 计算这个比例，我们可以使用以下代码：
 
 ```py
 import math
@@ -107,7 +107,7 @@ plt.show()
 
 上述代码的输出是以下图表：
 
-![](../Images/9f47efd1d6a45ed1a5ddf11a16155e22.png)
+![](img/9f47efd1d6a45ed1a5ddf11a16155e22.png)
 
 作者提供的图片
 
@@ -117,9 +117,9 @@ plt.show()
 
 > 问：这种体积集中现象对机器学习算法的性能有哪些影响？
 
-**论文和DVD实验**
+**论文和 DVD 实验**
 
-考虑这样一个实验：你试图通过一个有正方形孔的纸张塞入DVD。起初，看似不可能，因为正方形的对角线比DVD的直径小。然而，折叠纸张可以让DVD通过。
+考虑这样一个实验：你试图通过一个有正方形孔的纸张塞入 DVD。起初，看似不可能，因为正方形的对角线比 DVD 的直径小。然而，折叠纸张可以让 DVD 通过。
 
 纸张的折叠，一个小但有效的空间维度调整，是谜题的关键。在这个实验中可以找到一个有趣的类比，用于理解高维景观的复杂性。
 
@@ -185,7 +185,7 @@ axes[0].set_yticks([])
 axes[1].scatter(X_transformed[:, 0], X_transformed[:, 1], c=y, cmap='bwr', edgecolors='k')
 axes[1].set_title('Transformed 2D Data')
 axes[1].set_xlabel('Original Feature')
-axes[1].set_ylabel('Transformed Feature (X^2)')
+axes[1].set_ylabel('Transformed Feature (X²)')
 
 # Plotting the decision boundary in 2D
 ax = axes[1]
@@ -210,15 +210,15 @@ plt.show()
 
 上述代码的结果是以下图表：
 
-![](../Images/02f118496f56adc20796162d6dad12b6.png)
+![](img/02f118496f56adc20796162d6dad12b6.png)
 
 作者提供的图片
 
-很明显，最初在左侧数据是非线性可分的，但在2D中变得可分。正如右侧图表所示，这种转换有效地解决了我们的问题。这不是很神奇吗？
+很明显，最初在左侧数据是非线性可分的，但在 2D 中变得可分。正如右侧图表所示，这种转换有效地解决了我们的问题。这不是很神奇吗？
 
 **总结**
 
-在这篇文章中，我们探讨了有关高维数据世界的一些想法。我们展示了进入高维度如何极大地改变我们的视角和处理问题的方法，从体积集中开始，接着是纸张和DVD实验的实际例子，最后是SVM中的核心技巧。
+在这篇文章中，我们探讨了有关高维数据世界的一些想法。我们展示了进入高维度如何极大地改变我们的视角和处理问题的方法，从体积集中开始，接着是纸张和 DVD 实验的实际例子，最后是 SVM 中的核心技巧。
 
 在接下来的文章中，我们将讨论“维度诅咒”，即在高维空间中导航所面临的困难和复杂性。我们将探讨这如何影响机器学习和数据分析，以及缓解其影响的策略。
 

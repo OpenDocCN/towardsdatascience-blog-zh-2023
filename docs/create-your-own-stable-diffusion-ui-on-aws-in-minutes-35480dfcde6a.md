@@ -1,18 +1,18 @@
 # 在 AWS 上快速创建你自己的稳定扩散 UI
 
-> 原文：[https://towardsdatascience.com/create-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a?source=collection_archive---------0-----------------------#2023-01-03](https://towardsdatascience.com/create-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a?source=collection_archive---------0-----------------------#2023-01-03)
+> 原文：[`towardsdatascience.com/create-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a?source=collection_archive---------0-----------------------#2023-01-03`](https://towardsdatascience.com/create-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a?source=collection_archive---------0-----------------------#2023-01-03)
 
 ## 使用一个命令部署文本到图像的 web 应用
 
-[](https://heiko-hotz.medium.com/?source=post_page-----35480dfcde6a--------------------------------)[![Heiko Hotz](../Images/d08394d46d41d5cd9e76557a463be95e.png)](https://heiko-hotz.medium.com/?source=post_page-----35480dfcde6a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----35480dfcde6a--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----35480dfcde6a--------------------------------) [Heiko Hotz](https://heiko-hotz.medium.com/?source=post_page-----35480dfcde6a--------------------------------)
+[](https://heiko-hotz.medium.com/?source=post_page-----35480dfcde6a--------------------------------)![Heiko Hotz](https://heiko-hotz.medium.com/?source=post_page-----35480dfcde6a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----35480dfcde6a--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----35480dfcde6a--------------------------------) [Heiko Hotz](https://heiko-hotz.medium.com/?source=post_page-----35480dfcde6a--------------------------------)
 
 ·
 
-[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F993c21f1b30f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a&user=Heiko+Hotz&userId=993c21f1b30f&source=post_page-993c21f1b30f----35480dfcde6a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----35480dfcde6a--------------------------------) ·8 分钟阅读·2023年1月3日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F35480dfcde6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a&user=Heiko+Hotz&userId=993c21f1b30f&source=-----35480dfcde6a---------------------clap_footer-----------)
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F993c21f1b30f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a&user=Heiko+Hotz&userId=993c21f1b30f&source=post_page-993c21f1b30f----35480dfcde6a---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----35480dfcde6a--------------------------------) ·8 分钟阅读·2023 年 1 月 3 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F35480dfcde6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a&user=Heiko+Hotz&userId=993c21f1b30f&source=-----35480dfcde6a---------------------clap_footer-----------)
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F35480dfcde6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a&source=-----35480dfcde6a---------------------bookmark_footer-----------)![](../Images/b851f45536bb5603bc1e28d8969d743e.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F35480dfcde6a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-your-own-stable-diffusion-ui-on-aws-in-minutes-35480dfcde6a&source=-----35480dfcde6a---------------------bookmark_footer-----------)![](img/b851f45536bb5603bc1e28d8969d743e.png)
 
 图片由作者提供 — 使用稳定扩散创建
 
@@ -50,13 +50,13 @@
 
 在 AWS 控制台中，导航到 CloudFormation 部分，选择“创建堆栈 -> 使用新资源”：
 
-![](../Images/33425db65d459db3c5e47739c6078876.png)
+![](img/33425db65d459db3c5e47739c6078876.png)
 
 作者提供的图片
 
 在接下来的对话框中，选择“模板已准备好”和“上传模板文件”：
 
-![](../Images/1733866e3a8f514d0c34444e97c5ad55.png)
+![](img/1733866e3a8f514d0c34444e97c5ad55.png)
 
 作者提供的图片
 
@@ -100,13 +100,13 @@
 
 我们也可以通过访问 AWS 控制台中的 EC2 面板来检索它：
 
-![](../Images/d105eeb215d5d99b126640657cff5f0f.png)
+![](img/d105eeb215d5d99b126640657cff5f0f.png)
 
 图片由作者提供
 
 一旦我们获取了 IP 地址，就可以通过在浏览器中导航到 <IP address>:7860 打开应用程序（如果请求超时则说明安装尚未完成）。安装完成后，我们可以看到应用程序已经启动运行 🎉
 
-![](../Images/e4b94ae55fe28d8f22ef24473673b8d0.png)
+![](img/e4b94ae55fe28d8f22ef24473673b8d0.png)
 
 # 关闭 EC2 实例并重新启动应用程序
 
@@ -118,20 +118,20 @@
 
 # 限制
 
-我想强调的是，这个教程只是一个起点，适合任何想尝试通过Web UI使用Stable Diffusion的人。这个方法有几个限制，如果想在生产环境中使用这个应用程序，可能需要解决这些限制。特别是，我没有涉及任何安全问题（请注意该应用程序运行在http上）、扩展问题（如果该应用程序需要同时服务多个用户）以及其他许多方面。
+我想强调的是，这个教程只是一个起点，适合任何想尝试通过 Web UI 使用 Stable Diffusion 的人。这个方法有几个限制，如果想在生产环境中使用这个应用程序，可能需要解决这些限制。特别是，我没有涉及任何安全问题（请注意该应用程序运行在 http 上）、扩展问题（如果该应用程序需要同时服务多个用户）以及其他许多方面。
 
 如果我们想在生产环境中使用这个应用程序，可以使用[AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)作为起点。
 
 # 结论
 
-在本教程中，我们利用CF模板通过一个命令设置了一个用于Stable Diffusion的Web UI。这使我们能够访问最先进的AI模型，而无需自己购买昂贵的硬件。
+在本教程中，我们利用 CF 模板通过一个命令设置了一个用于 Stable Diffusion 的 Web UI。这使我们能够访问最先进的 AI 模型，而无需自己购买昂贵的硬件。
 
 这个应用程序的待办事项列表中有很多项目，我将它们列在了[这里](https://github.com/marshmellow77/stable-diffusion-webui#todo-backlog)。对这个仓库的任何贡献都非常欢迎☺️
 
 # Heiko Hotz
 
-👋 关注我在[Medium](https://heiko-hotz.medium.com/)和[LinkedIn](https://www.linkedin.com/in/heikohotz/)上的文章，了解更多关于生成AI、机器学习和自然语言处理的内容。
+👋 关注我在[Medium](https://heiko-hotz.medium.com/)和[LinkedIn](https://www.linkedin.com/in/heikohotz/)上的文章，了解更多关于生成 AI、机器学习和自然语言处理的内容。
 
 👥 如果你在伦敦，可以加入我们的[NLP London Meetups](https://www.meetup.com/nlp_london/)。
 
-🤓 如果你对我如何可能帮助你在组织中采用AI和机器学习感兴趣，可以通过[aiml.consulting](https://www.aiml.consulting/)与我联系。
+🤓 如果你对我如何可能帮助你在组织中采用 AI 和机器学习感兴趣，可以通过[aiml.consulting](https://www.aiml.consulting/)与我联系。

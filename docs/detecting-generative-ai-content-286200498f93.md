@@ -1,10 +1,10 @@
 # 检测生成式人工智能内容
 
-> 原文：[https://towardsdatascience.com/detecting-generative-ai-content-286200498f93?source=collection_archive---------5-----------------------#2023-11-15](https://towardsdatascience.com/detecting-generative-ai-content-286200498f93?source=collection_archive---------5-----------------------#2023-11-15)
+> 原文：[`towardsdatascience.com/detecting-generative-ai-content-286200498f93?source=collection_archive---------5-----------------------#2023-11-15`](https://towardsdatascience.com/detecting-generative-ai-content-286200498f93?source=collection_archive---------5-----------------------#2023-11-15)
 
 ## 关于 deepfakes、真实性以及总统关于人工智能的行政命令
 
-[](https://medium.com/@s.kirmer?source=post_page-----286200498f93--------------------------------)[![Stephanie Kirmer](../Images/f9d9ef9167febde974c223dd4d8d6293.png)](https://medium.com/@s.kirmer?source=post_page-----286200498f93--------------------------------)[](https://towardsdatascience.com/?source=post_page-----286200498f93--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----286200498f93--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----286200498f93--------------------------------)
+[](https://medium.com/@s.kirmer?source=post_page-----286200498f93--------------------------------)![Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----286200498f93--------------------------------)[](https://towardsdatascience.com/?source=post_page-----286200498f93--------------------------------)![Towards Data Science](https://towardsdatascience.com/?source=post_page-----286200498f93--------------------------------) [Stephanie Kirmer](https://medium.com/@s.kirmer?source=post_page-----286200498f93--------------------------------)
 
 ·
 
@@ -12,7 +12,7 @@
 
 --
 
-[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F286200498f93&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdetecting-generative-ai-content-286200498f93&source=-----286200498f93---------------------bookmark_footer-----------)![](../Images/685390d42ddd17dd4950fdcfcd925ec4.png)
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F286200498f93&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdetecting-generative-ai-content-286200498f93&source=-----286200498f93---------------------bookmark_footer-----------)![](img/685390d42ddd17dd4950fdcfcd925ec4.png)
 
 你能识别出假的吗？由 [Liberty Ann](https://unsplash.com/@libertyanns?utm_source=medium&utm_medium=referral) 拍摄的照片在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 
@@ -20,13 +20,13 @@
 
 # 不可区分内容的含义
 
-当我们谈论内容难以或不可能检测为AI生成时，我们实际上是在进入类似于图灵测试的领域。假设我给你一段文本或一张图像文件。如果我问你，“这是人类还是机器学习模型生成的？”而你无法准确判断，那么我们就到了需要考虑这些问题的地步。
+当我们谈论内容难以或不可能检测为 AI 生成时，我们实际上是在进入类似于图灵测试的领域。假设我给你一段文本或一张图像文件。如果我问你，“这是人类还是机器学习模型生成的？”而你无法准确判断，那么我们就到了需要考虑这些问题的地步。
 
-在许多领域，我们接近这一点，特别是对于GPT-4，但即使是较不复杂的模型，也取决于我们使用什么样的提示和上下文的量。如果我们有一份来自GPT模型的长文档，那么检测它不是人类生成的可能会更容易，因为每个新词都是模型做一些普通人不会做的事情的机会。视频或高分辨率图像也是如此——像素化或“恐怖谷”出现的机会越多，我们就越容易发现伪造内容。
+在许多领域，我们接近这一点，特别是对于 GPT-4，但即使是较不复杂的模型，也取决于我们使用什么样的提示和上下文的量。如果我们有一份来自 GPT 模型的长文档，那么检测它不是人类生成的可能会更容易，因为每个新词都是模型做一些普通人不会做的事情的机会。视频或高分辨率图像也是如此——像素化或“恐怖谷”出现的机会越多，我们就越容易发现伪造内容。
 
-我也很清楚，随着我们对模型生成内容的熟悉程度提高，我们将会更擅长识别内容中AI参与的明显迹象。正如我几周前在解释生成对抗网络（GAN）如何工作的文章中所描述的那样，我们和生成AI之间存在某种GAN关系。模型致力于创造尽可能类似人类的内容，而我们则提高识别这些内容非人类的能力。这就像一场比赛，双方都在努力超越对方。
+我也很清楚，随着我们对模型生成内容的熟悉程度提高，我们将会更擅长识别内容中 AI 参与的明显迹象。正如我几周前在解释生成对抗网络（GAN）如何工作的文章中所描述的那样，我们和生成 AI 之间存在某种 GAN 关系。模型致力于创造尽可能类似人类的内容，而我们则提高识别这些内容非人类的能力。这就像一场比赛，双方都在努力超越对方。
 
-> 随着我们对模型生成内容的熟悉程度提高，我们将会更擅长识别内容中AI参与的明显迹象。
+> 随着我们对模型生成内容的熟悉程度提高，我们将会更擅长识别内容中 AI 参与的明显迹象。
 
 # 检测方法
 
@@ -36,9 +36,9 @@
 
 > 然而，在某些情况下，某些内容可能真的没有任何可靠的迹象表明其来源于机器学习。
 
-你可能会问，那么，有些故意恶意行为者试图使用深度伪造或使用AI生成的内容制造伤害的人怎么办呢？他们不会自愿识别他们的内容，对吧？这是一个公平的问题。然而，至少目前，那些足够复杂以至于能够大规模欺骗人们的模型大多受到大公司（如OpenAI等）的控制。这种情况不会持续太久，但就目前而言，如果向公众提供最先进的LLM的人们采取一些行动，至少会在内容来源的问题上起到一定作用。
+你可能会问，那么，有些故意恶意行为者试图使用深度伪造或使用 AI 生成的内容制造伤害的人怎么办呢？他们不会自愿识别他们的内容，对吧？这是一个公平的问题。然而，至少目前，那些足够复杂以至于能够大规模欺骗人们的模型大多受到大公司（如 OpenAI 等）的控制。这种情况不会持续太久，但就目前而言，如果向公众提供最先进的 LLM 的人们采取一些行动，至少会在内容来源的问题上起到一定作用。
 
-到目前为止，这不是一个非常乐观的故事。生成式AI正迅速向一个使得那些非常强大的模型足够小，以至于恶意行为者可以运行自己的模型，并且这些模型很容易创建出与有机人类内容在字面上无法区分的内容的地方发展。即使是其他模型也无法分辨。
+到目前为止，这不是一个非常乐观的故事。生成式 AI 正迅速向一个使得那些非常强大的模型足够小，以至于恶意行为者可以运行自己的模型，并且这些模型很容易创建出与有机人类内容在字面上无法区分的内容的地方发展。即使是其他模型也无法分辨。
 
 # 检测的原因
 
@@ -50,7 +50,7 @@
 
 另一个相关问题是，当模型用于模仿特定人类的作品时，不一定是出于恶意原因，而仅仅是因为那份工作令人愉悦和受欢迎，可能也是有利可图的。这是明显不道德的，但在大多数情况下可能并不是要积极伤害观众或被模仿的人。当深度伪造用于虚构某人的行为时，这也会造成声誉损害。（只需问问[乔·罗根，他一直在打击](https://mashable.com/article/joe-rogan-tiktok-deepfake-ad)使用他的肖像进行深度伪造的广告。）
 
-我在Casey Newton在他[10月5日的Platformer期刊](https://open.substack.com/pub/platformer/p/how-authoritarian-governments-are?r=7xzvu&utm_medium=ios&utm_campaign=post)讨论后开始思考的第三个角度是，公众人物可能会将问题颠倒过来，声称他们不良行为的真实、真实证据是人为生成的。当我们无法通过证据可靠地揭露不当行为时，该怎么办，因为“这是深度伪造”是一个无法反驳的回应？我们还未完全到达这一点，但我可以预见这在不久的将来可能成为一个真正的问题。
+我在 Casey Newton 在他[10 月 5 日的 Platformer 期刊](https://open.substack.com/pub/platformer/p/how-authoritarian-governments-are?r=7xzvu&utm_medium=ios&utm_campaign=post)讨论后开始思考的第三个角度是，公众人物可能会将问题颠倒过来，声称他们不良行为的真实、真实证据是人为生成的。当我们无法通过证据可靠地揭露不当行为时，该怎么办，因为“这是深度伪造”是一个无法反驳的回应？我们还未完全到达这一点，但我可以预见这在不久的将来可能成为一个真正的问题。
 
 > 当我们无法通过证据可靠地揭露不当行为时，该怎么办，因为“这是深度伪造”是一个无法反驳的回应？
 
@@ -84,7 +84,7 @@
 
 # 参考文献 
 
-Casey Newton - [10月5日的Platformer期刊](https://open.substack.com/pub/platformer/p/how-authoritarian-governments-are?r=7xzvu&utm_medium=ios&utm_campaign=post)
+Casey Newton - [10 月 5 日的 Platformer 期刊](https://open.substack.com/pub/platformer/p/how-authoritarian-governments-are?r=7xzvu&utm_medium=ios&utm_campaign=post)
 
 [关于人工智能行政命令的事实清单](https://www.whitehouse.gov/briefing-room/statements-releases/2023/10/30/fact-sheet-president-biden-issues-executive-order-on-safe-secure-and-trustworthy-artificial-intelligence/) 
 
