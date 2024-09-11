@@ -75,6 +75,7 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管文本引导的图像生成提供了控制水平，但即使有大量提示，获得具有预定组成的图像仍然很棘手。实际上，标准的文本到图像扩散模型对生成图像中将描绘的各种元素几乎没有控制。
 - en: 'In this post, I will explain a recent technique based on the paper [MultiDiffusion:
     Fusing Diffusion Paths for Controlled Image Generation](https://arxiv.org/abs/2302.08113).
     This technique makes it possible to obtain greater control in placing elements
@@ -87,6 +88,8 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '在这篇文章中，我将解释一种基于论文[MultiDiffusion: Fusing Diffusion Paths for Controlled Image
+    Generation](https://arxiv.org/abs/2302.08113)的最新技术。这种技术使得在由文本引导的扩散模型生成的图像中放置元素的控制更为精确。论文中提出的方法更为通用，还可以用于其他应用，如生成全景图像，但我将在这里限制讨论图像组成性，使用基于区域的文本提示。该方法的主要优点是可以与开箱即用的预训练扩散模型一起使用，无需昂贵的重新训练或微调。'
 - en: To complement this post with code, I have prepared a simple [Colab notebook](https://colab.research.google.com/drive/1MzzGN5FJNqlJESuO5FigYC8eoOfwzplO?usp=sharing)
     and a [GitHub repository](https://github.com/GabrieleSgroi/image_composition_diffusion)
     with the code implementation I used to generate the images in this post. The code
@@ -96,11 +99,15 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了补充这篇文章的代码，我准备了一个简单的[Colab notebook](https://colab.research.google.com/drive/1MzzGN5FJNqlJESuO5FigYC8eoOfwzplO?usp=sharing)和一个[GitHub
+    仓库](https://github.com/GabrieleSgroi/image_composition_diffusion)，其中包含了我用于生成本文中图像的代码实现。该代码基于Hugging
+    Face的[diffusers library](https://github.com/huggingface/diffusers)中的稳定扩散管道，但只实现了其功能所需的部分，使其更简单易读。
 - en: Diffusion models
   id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 扩散模型
 - en: In this section, I will recall some basic facts about diffusion models. Diffusion
     models are generative models that generate new data by inverting a *diffusion
     process* that maps the data distribution to an isotropic Gaussian distribution.
@@ -111,6 +118,7 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分中，我将回顾一些关于扩散模型的基本事实。扩散模型是生成模型，通过逆转*扩散过程*来生成新数据，该过程将数据分布映射到各向同性的高斯分布。更具体地说，给定一个图像，扩散过程包括一系列步骤，每一步都向图像中添加少量高斯噪声。在无限多步的极限下，噪声图像将与从各向同性高斯分布中采样的纯噪声无法区分。
 - en: The goal of the diffusion model is to invert this process by trying to guess
     the noised image at step t-1 in the diffusion process given the noised image at
     step t. This can be done, for instance, by training a neural network to predict
@@ -118,22 +126,27 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 扩散模型的目标是通过尝试猜测扩散过程中的步骤t-1处的噪声图像来逆转这一过程，给定步骤t处的噪声图像。例如，可以通过训练一个神经网络来预测该步骤添加的噪声，并将其从噪声图像中减去来实现这一目标。
 - en: Once we have trained such a model, we can generate new images by sampling noise
     from an isotropic Gaussian distribution and use the model to invert the diffusion
     process by gradually removing noise.
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们训练好这样一个模型，就可以通过从各向同性的高斯分布中采样噪声来生成新图像，并使用模型通过逐渐去除噪声来逆转扩散过程。
 - en: '![](../Images/81377b92a5540eae4d6882362fb7b5b8.png)'
   id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/81377b92a5540eae4d6882362fb7b5b8.png)'
 - en: 'The goal of the diffusion model is to learn the probability q(x(t-1)|x(t))
     for all time steps t. Image from the paper: [Denoising Diffusion Probabilistic
     Models](https://arxiv.org/abs/2006.11239).'
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 扩散模型的目标是学习所有时间步t的概率q(x(t-1)|x(t))。图像来自论文：[Denoising Diffusion Probabilistic
+    Models](https://arxiv.org/abs/2006.11239)。
 - en: Text-to-image diffusion models invert the diffusion process trying to reach
     an image that corresponds to the description of a text prompt. This is usually
     done by a neural network that, at each step t, predicts the noised image at step
