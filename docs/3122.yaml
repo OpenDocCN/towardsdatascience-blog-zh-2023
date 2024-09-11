@@ -4,17 +4,20 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用JAX向量化和并行化RL环境：以光速进行Q学习⚡
 - en: 原文：[https://towardsdatascience.com/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=collection_archive---------1-----------------------#2023-10-15](https://towardsdatascience.com/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=collection_archive---------1-----------------------#2023-10-15)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=collection_archive---------1-----------------------#2023-10-15](https://towardsdatascience.com/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=collection_archive---------1-----------------------#2023-10-15)
 - en: In this article, we learn to vectorize an RL environment and train 30 Q-learning
     agents in parallel on a CPU, at 1.8 million iterations per second.
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们学习如何向量化一个RL环境，并在CPU上并行训练30个Q学习代理，每秒进行180万次迭代。
 - en: '[](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)[![Ryan
     Pégoud](../Images/9314b76c2be56bda8b73b4badf9e3e4d.png)](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)
@@ -22,121 +25,152 @@
   id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)[![Ryan
+    Pégoud](../Images/9314b76c2be56bda8b73b4badf9e3e4d.png)](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)
+    [Ryan Pégoud](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)'
 - en: ·
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F27fba63b402e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=post_page-27fba63b402e----49d07373adf5---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)
     ·11 min read·Oct 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F49d07373adf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=-----49d07373adf5---------------------clap_footer-----------)'
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F27fba63b402e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=post_page-27fba63b402e----49d07373adf5---------------------post_header-----------)
+    发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)
+    · 11分钟阅读 · 2023年10月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F49d07373adf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=-----49d07373adf5---------------------clap_footer-----------)'
 - en: --
   id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F49d07373adf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&source=-----49d07373adf5---------------------bookmark_footer-----------)![](../Images/e3dd3c8e0de078193309dd3d907fe589.png)'
   id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F49d07373adf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&source=-----49d07373adf5---------------------bookmark_footer-----------)![](../Images/e3dd3c8e0de078193309dd3d907fe589.png)'
 - en: Image by [Google DeepMind](https://unsplash.com/fr/@googledeepmind) on [Unsplash](https://unsplash.com/fr)
   id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源于 [Google DeepMind](https://unsplash.com/fr/@googledeepmind) 的 [Unsplash](https://unsplash.com/fr)
 - en: In the previous story, we introduced **Temporal-Difference Learning,** particularly
     **Q-learning**, in the context of a GridWorld.
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面的故事中，我们介绍了**时序差分学习**，特别是**Q学习**，并将其应用于GridWorld的背景中。
 - en: '[](/temporal-difference-learning-and-the-importance-of-exploration-an-illustrated-guide-5f9c3371413a?source=post_page-----49d07373adf5--------------------------------)
     [## Temporal-Difference Learning and the importance of exploration: An illustrated
     guide'
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/temporal-difference-learning-and-the-importance-of-exploration-an-illustrated-guide-5f9c3371413a?source=post_page-----49d07373adf5--------------------------------)
+    [## 时间差分学习和探索的重要性：图解指南'
 - en: A comparison of model-free (Q-learning) and model-based (Dyna-Q and Dyna-Q+)
     TD methods on a dynamic grid world.
   id: totrans-11
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在动态网格世界中比较无模型（Q-learning）和有模型（Dyna-Q和Dyna-Q+）的TD方法。
 - en: towardsdatascience.com](/temporal-difference-learning-and-the-importance-of-exploration-an-illustrated-guide-5f9c3371413a?source=post_page-----49d07373adf5--------------------------------)
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/temporal-difference-learning-and-the-importance-of-exploration-an-illustrated-guide-5f9c3371413a?source=post_page-----49d07373adf5--------------------------------)'
 - en: While this implementation served the purpose of demonstrating the differences
     in performances and exploration mechanisms of these algorithms, ***it was painfully
     slow***.
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然这个实现用于展示这些算法在性能和探索机制上的差异，***但速度非常慢***。
 - en: Indeed, the environment and agents were mainly coded in **Numpy**, which is
     by no means a standard in RL, even though it makes the code easy to understand
     and debug.
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，环境和代理主要使用**Numpy**编写，这在强化学习中并非标准，尽管它使代码易于理解和调试。
 - en: 'In this article, we’ll see how to scale up RL experiments by **vectorizing
     environments** and seamlessly **parallelizing** the training of dozens of agents
     using **JAX**. In particular, this article covers:'
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将看到如何通过**向量化环境**和无缝**并行化**数十个代理的训练来扩展强化学习实验。特别地，本文涵盖了：
 - en: JAX basics and useful features for RL
   id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: JAX基础和强化学习的有用功能
 - en: Vectorized environment and why they are so fast
   id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 向量化环境及其高速原因
 - en: Implementation of an environment, policy, and Q-learning agent in JAX
   id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在JAX中实现环境、策略和Q-learning代理
 - en: Single-agent training
   id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 单代理训练
 - en: How to parallelize agent training, and how easy it is!
   id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如何并行化代理训练，以及这有多简单！
 - en: '*All the code featured in this article is available on* [***GitHub***](https://github.com/RPegoud)*:*'
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*本文中展示的所有代码均可在* [***GitHub***](https://github.com/RPegoud)*上找到：*'
 - en: '[](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
     [## GitHub - RPegoud/jym: JAX implementation of RL algorithms and vectorized environments'
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
+    [## GitHub - RPegoud/jym: JAX实现的RL算法和向量化环境'
 - en: 'JAX implementation of RL algorithms and vectorized environments - GitHub -
     RPegoud/jym: JAX implementation of RL…'
   id: totrans-23
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 'JAX实现的RL算法和向量化环境 - GitHub - RPegoud/jym: JAX实现的RL…'
 - en: github.com](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
 - en: JAX Basics
   id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: JAX基础
 - en: JAX is *yet another* Python Deep Learning framework developed by Google and
     widely used by companies such as DeepMind.
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: JAX是Google开发的*另一种*Python深度学习框架，被DeepMind等公司广泛使用。
 - en: “JAX is [Autograd](https://github.com/hips/autograd) (automatic differenciation)
     and [XLA](https://www.tensorflow.org/xla) (Accelerated Linear Algebra, a TensorFlow
     compiler), brought together for high-performance numerical computing.” — [Official
@@ -145,12 +179,15 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “JAX是[Autograd](https://github.com/hips/autograd)（自动微分）和[XLA](https://www.tensorflow.org/xla)（加速线性代数，TensorFlow编译器）的结合，旨在实现高性能数值计算。”
+    — [官方文档](https://jax.readthedocs.io/en/latest/index.html)
 - en: As opposed to what most Python developers are used to, JAX doesn’t embrace the
     **object-oriented programming** (OOP) paradigm, but rather **functional programming
     (FP)[1]**.
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 与大多数Python开发人员习惯的不同，JAX不采用**面向对象编程**（OOP）范式，而是采用**函数式编程（FP）[1]**。
 - en: Put simply, it relies on ***pure functions*** (**deterministic** and **without
     side effects**) and ***immutable data structures* (**instead of changing the data
     in place, **new data structures** are **created with the desired modifications)**
@@ -160,6 +197,7 @@
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，它依赖于***纯函数***（**确定性**和**无副作用**）以及***不可变的数据结构*（**不是在原地修改数据，而是**创建具有所需修改的新数据结构**）作为主要构建块。因此，FP鼓励一种更具函数性和数学性的编程方法，使其非常适合于数值计算和机器学习任务。
 - en: 'Let’s illustrate the differences between those two paradigms by looking at
     pseudocode for a Q-update function:'
   id: totrans-30
@@ -439,17 +477,20 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**reset**：此方法在实验开始时被调用，以获取每个代理的初始状态以及相关的随机密钥。'
 - en: '**step**: Given a state and an action, the environment returns an observation
     (new state), a reward, and the updated “done” flag.'
   id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**步骤**：给定一个状态和一个动作，环境返回一个观察（新状态）、一个奖励和更新后的“done”标志。'
 - en: 'In practice, a generic implementation of a GridWorld environment would look
     like this:'
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，GridWorld环境的通用实现如下：
 - en: Notice that, as mentioned earlier, all class methods follow the **functional
     programming** paradigm. Indeed, we never update the internal state of the class
     instance. Furthermore, the **class attributes** are all **constants** that won’t
@@ -457,10 +498,12 @@
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，如前所述，所有类方法都遵循**函数式编程**范式。实际上，我们从未更新类实例的内部状态。此外，**类属性**都是**常量**，在实例化后不会被修改。
 - en: 'Let’s take a closer look:'
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们更仔细地看一下：
 - en: '**__init__:** In the context of our GridWorld, the available actions are **[**0,
     1, 2, 3**]**. These actions are translated into a 2-dimensional array using *self.movements*
     and added to the state in the step function.'
@@ -468,12 +511,14 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**__init__:** 在我们的GridWorld中，可用的动作是**[**0, 1, 2, 3**]**。这些动作通过*自我移动*转化为二维数组，并在步骤函数中添加到状态中。'
 - en: '**_get_obs:** Our environment is **deterministic** and **fully observable**,
     therefore the agent receives the state directly instead of a processed observation.'
   id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**_get_obs:** 我们的环境是**确定性**和**完全可观察的**，因此代理直接接收到状态，而不是处理后的观察。'
 - en: '**_reset_if_done:** The argument *env_state* corresponds to the (state, key)
     tuple where key is a [*jax.random.PRNGKey*](https://jax.readthedocs.io/en/latest/jax.random.html)*.*
     This function simply returns the initial state if the *done* flag is set to True,
@@ -484,6 +529,8 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**_reset_if_done:** 参数*env_state*对应于(state, key)元组，其中key是一个[*jax.random.PRNGKey*](https://jax.readthedocs.io/en/latest/jax.random.html)*.*
+    如果*done*标志被设置为True，该函数会返回初始状态，然而，我们不能在JAX jitted函数中使用传统的Python控制流。使用[*jax.lax.cond*](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#cond)，我们实际上得到一个等效的表达式：'
 - en: '[PRE0]'
   id: totrans-79
   prefs: []
@@ -501,27 +548,33 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**step:** 我们将动作转换为移动，并将其添加到当前状态中（*jax.numpy.clip*确保代理保持在网格内）。然后我们更新*env_state*元组，然后检查环境是否需要重置。由于步骤函数在训练中频繁使用，对其进行jitting可以显著提高性能。*@partial(jit,
+    static_argnums=(0, )*装饰器表示该类方法的“*self*”参数应被视为**静态**。换句话说，**类属性是常量**，在对步骤函数的连续调用中不会改变。'
 - en: Q-Learning Agent
   id: totrans-81
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Q-Learning 代理
 - en: The Q-learning agent is defined by the **update** function, as well as a static
     **learning rate** and **discount factor**.
   id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: Q-learning代理由**update**函数定义，以及一个静态的**学习率**和**折扣因子**。
 - en: Once again, when jitting the update function, we pass the “self” argument as
     static. Also, notice that the *q_values* matrix is modified in place using *set()*
     and its value is not stored as a class attribute.
   id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次强调，当对更新函数进行jitting时，我们将“self”参数传递为静态。同时，请注意，*q_values*矩阵是就地修改的，使用*set()*，其值未作为类属性存储。
 - en: Epsilon-Greedy Policy
   id: totrans-84
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Epsilon-Greedy 策略
 - en: Finally, the policy used in this experiment is the standard **epsilon-greedy
     policy**. One important detail is that it uses **random tie-breaks**, which means
     that if the maximal Q-value is not unique, the action will be **sampled uniformly**
@@ -531,6 +584,7 @@
   id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，本实验中使用的策略是标准的**epsilon-greedy策略**。一个重要细节是它使用**随机平局**，这意味着如果最大Q值不是唯一的，动作将从**最大Q值中**进行**均匀采样**（*使用argmax会始终返回具有最大Q值的第一个动作*）。如果Q值被初始化为零矩阵，这一点尤其重要，因为动作0（向右移动）将始终被选择。
 - en: 'Otherwise, the policy can be summarized by this snippet:'
   id: totrans-86
   prefs: []
