@@ -1,0 +1,135 @@
+# 如何在新纪元中共同设计 AI/ML 的软件/硬件架构？
+
+> 原文：[https://towardsdatascience.com/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=collection_archive---------1-----------------------#2023-11-22](https://towardsdatascience.com/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=collection_archive---------1-----------------------#2023-11-22)
+
+## 设计高效 AI/ML 架构的整体视角
+
+[](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)[![Liz Li](../Images/78846add1618c8c095dd97adeca87f81.png)](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------) [Liz Li](https://medium.com/@LizLiAI?source=post_page-----b296f2842fe2--------------------------------)
+
+·
+
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc3f793d765a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&user=Liz+Li&userId=dc3f793d765a&source=post_page-dc3f793d765a----b296f2842fe2---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b296f2842fe2--------------------------------) ·8 min read·2023年11月22日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb296f2842fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&user=Liz+Li&userId=dc3f793d765a&source=-----b296f2842fe2---------------------clap_footer-----------)
+
+--
+
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb296f2842fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2&source=-----b296f2842fe2---------------------bookmark_footer-----------)
+
+最新的生成型人工智能技术在计算机视觉、自然语言处理等领域最近取得了爆炸性的进展，涉及到稳定扩散、神经渲染（NeRF）、文本到3D、大型语言模型（LLM）等创新模型架构的研究突破。这些先进技术需要更复杂的人工智能网络，并且需要数量级更多的计算资源和高效能的架构。
+
+为了满足上述架构要求，弥合硬件（HW）和软件（SW）/算法设计之间的差距是必不可少的。共同设计涉及一个迭代的过程，即设计、测试和优化硬件和软件组件，直到系统达到所需的性能要求。然而，软件和硬件通常是独立设计的，因为软件程序员很少需要考虑运行的硬件，而硬件通常设计为支持广泛的软件。关于软件/硬件共同设计的研究非常有限，但这是有效支持 AI 工作负载所强烈需要的。
+
+![](../Images/81d64f98c997268b102e79d7fa02960f.png)
+
+来源：作者提供的图像。
+
+我们必须设计高效的“SW/算法感知”硬件和“硬件感知”软件/算法，以便它们能够紧密结合，最大限度地利用我们有限的计算资源。我们应该如何做呢？以下是一种不断发展的方法论，可作为您在设计新的 AI 硬件/软件功能时的参考。
+
+## **1\. 确定代理 AI 工作负载。**
+
+要启动分析，我们需要代理 AI 模型并定义一个优先级列表以进一步调查。您可以参考多个资源，包括最新的研究论文（CVPR、Siggraph、大型科技公司的研究实验室）及其开源代码、客户反馈或请求、行业趋势等。根据您的专家判断筛选出几个代表性的模型。这一步骤至关重要，因为您将使用这些模型来设计您的“未来架构”。
+
+## 2\. 彻底分析模型架构。
+
+一定要全面调查模型架构，以了解其功能、创新，并尽可能将其分解为详细的组件。是否有当前技术栈中不支持的新操作符？计算密集的层在哪里？这是一种数据传输（内存）密集的模型吗？需要什么数据类型，哪些量化技术可以在不牺牲准确性的情况下应用？模型的哪部分可以进行硬件加速，潜在的性能优化在哪里？
+
+例如，在神经渲染中，模型需要同时进行渲染和计算（矩阵乘法），您需要检查当前的软件栈是否支持同时进行渲染和计算。在大型语言模型（LLMs）中，随着输入序列长度的增加，键值（KV）缓存的大小也在增加，了解内存需求和潜在的数据传输/内存层次优化以处理大型 KV 缓存至关重要。
+
+![](../Images/fd60ff26a3c617803d90e973317fab91.png)
+
+左图：服务于 13B 参数的 LLM 时 NVIDIA A100 上的内存布局；右图：内存使用和吞吐量与批量大小的关系。图源：[大规模语言模型服务中的高效内存管理与分页注意力](https://arxiv.org/abs/2309.06180) [1]
+
+## **3\. 软件启用和原型设计**
+
+下载第2步中识别的开源代码，并在“目标”SW框架/HW上运行。这一步并不简单，尤其是对于新的/颠覆性模型。由于目标是实现可行的性能分析解决方案，因此此阶段不必交付产品级别的代码。对SW进行临时修复而不进行性能调优是可以接受的，以便继续进行第4步。一个主要步骤是将开发框架（Pytorch）中的预训练模型转换为目标新框架所需的新格式。
+
+```py
+torch.onnx.export(model, 
+dummy_input, 
+"resnet50.onnx", 
+verbose=False, 
+input_names=input_names,
+outputnames=output_names, 
+export_params=True)
+```
+
+然而，通常会有大量的支持工作。例如，要运行可微分渲染模型，需要支持 autograd。很可能在新框架中尚未准备好此功能，并且需要开发团队几个月的努力。另一个例子是 LLMs 的 GPTQ 量化，这在推理框架中可能最初不受支持。架构师可以在 Nvidia 系统上运行工作负载进行性能分析，而不是等待工程团队，因为 Nvidia 是学术开发的硬件选择。这使得可以根据在 SW 启用过程中观察到的差距制定 SW 需求列表。
+
+## **4. 性能分析和架构创新。**
+
+有许多指标可以判断 AI 模型的性能。以下是我们应考虑的主要指标。
+
+**4.1 FLOPs**（浮点运算次数）和**MACs**（乘加运算次数）。
+
+这些指标通常用于计算深度学习模型的计算复杂性。它们提供了一种快速简便的方法来了解所需的算术操作次数。FLOPs 可以通过论文分析、Vtune 报告或像 flops-counter.pytorch 和 pytorch-OpCounter 这样的工具来计算。
+
+**4.2 内存占用和带宽（BW）**
+
+内存占用主要包括权重（网络参数）和输入数据。例如，一个具有 13B 参数的 Llama 模型在 FP16 中消耗约 13*2（FP16=2 字节）= 26GB 内存（输入数据可以忽略，因为权重占用更多空间）。另一个关键因素是 KV 缓存大小。KV 缓存占用最多 30% 的总内存，并且是动态的（请参见第2步中的图片）。大型模型通常受到内存限制，因为速度取决于从系统内存移动数据到本地内存的速度，或者从本地内存到本地缓存/寄存器的速度。可用内存带宽在预测推理延迟（LLMs 的 token 生成时间）方面远比峰值计算 TOPS 更有效。一个性能指标是内存带宽利用率（MBU），定义为实际带宽/峰值带宽。理想情况下，MBU 接近 100% 表示内存带宽被完全利用。
+
+> **足够的内存是不够的！**
+
+![](../Images/44c8e73f4c4049e29c07f22e3c0bf6ea.png)
+
+Nvidia 正在以数量级的增加 FLOPs，但内存带宽没有增加。来源：Substack/SemiAnalysis
+
+由于内存是瓶颈，需要探索先进的模型压缩和内存/缓存技术。以下是一些先驱工作：
+
++   MemGPT：它利用不同级别的内存层次资源，如快速和小型 RAM 的组合，以及大容量和慢速存储存储器。信息必须明确地在它们之间传输。[2]
+
++   低精度量化（GPTQ、AWQ、GGML）以减少模型的内存占用
+
++   内存计算（PIM）：通过消除数据移动的需要，可以减少功耗并提高性能。
+
+**4.3 延迟/吞吐量。**
+
+在计算机视觉中，延迟是生成一个帧所需的时间。在 LLMs 的背景下，它是从第一个标记到下一个标记生成之间的时间。吞吐量是每秒生成的标记数/帧数。延迟是衡量 AI 系统性能的关键指标，是软件/硬件性能的复合因素。有各种优化策略需要考虑，以下是其中几个：
+
++   优化带宽受限操作，如归一化、点对点操作、SoftMax 和 ReLU。据估计，归一化和点对点操作的运行时消耗几乎比矩阵乘法多 40%，但仅达到矩阵乘法的 250 倍和 700 倍 FLOPS。为解决此问题，可以利用内核融合来融合多个运算符以节省数据传输成本，或者用轻量级运算符（ReLU）替换昂贵运算符（SoftMax）。
+
+![](../Images/5f043133b92755ff68a5df5aedd4f94b.png)
+
+运算符类别的比例。来源：[Data movement is all you need](https://arxiv.org/pdf/2007.00072.pdf)
+
++   专用硬件架构。集成专用硬件（AVX、GPU、TPU、NPU）可以显著提高速度并节省能源，对于需要在资源受限设备上进行实时处理的应用尤为重要。例如，Intel AVX 指令可以使速度提高多达原生 Python 代码的 60,000 倍。
+
+![](../Images/d98b5be95079870a147edb0259bd824c.png)
+
+通过对程序进行性能工程优化，可以使两个 4096x4096 矩阵相乘的速度显著提升。来源：[There’s plenty of room at the Top: What will drive computer performance after Moore’s law?](https://www.science.org/doi/10.1126/science.aam9744)[3]
+
+Nvidia 图形卡上的张量核（V100、A100、H100 等）可以在一个时钟周期内乘和加两个 FP16 和/或 FP32 矩阵，而 Cuda 核每周期只能执行一次操作。然而，张量核的利用率非常低（端到端训练仅为 3% — 9%），导致能耗高、性能低下。目前有关提高 systolic 阵列利用率的研究活跃进行中（FlexSA、多方向 SA 等），我将在接下来的系列文章中详细介绍。
+
+![](../Images/19ef15d03c9beb4c8297c88e9671ef35.png)
+
+systolic 阵列。来源：[Telesens](https://www.telesens.co/2018/07/30/systolic-architectures/)
+
+此外，由于内存和数据流量始终是大型 AI 模型的瓶颈，因此探索更先进的架构以考虑更大、更高效的芯片内存至关重要。一个例子是 Cerebras 核心内存设计，其中内存按核心独立寻址。
+
+![](../Images/57cdd1c3a2b49ffb249e1e09bbcda521.png)
+
+Cerebras 内存架构
+
++   还有许多其他优化：并行性、LLMs 的 KV 缓存量化、稀疏激活和端到端优化——我将在即将发布的帖子中详细解释
+
+**4.4 功率和能效**
+
+电力是我们需要关注的另一个问题，尤其是在低功耗用户场景下。性能和功耗之间总是存在权衡。如下面所示，内存访问操作所消耗的能量比计算操作高几个数量级。为了节省电力，强烈需要减少内存传输。
+
+![](../Images/609e1272fef035cfc6def19460cbd88d.png)
+
+计算和内存的能量成本。来源: [Stanford 的 Song H](https://arxiv.org/pdf/1506.02626v3.pdf) [4]
+
+**结论**
+
+上述是我们需要测量的 AI 模型性能的主要指标，通过使用性能分析工具如 Vtune、Nsight 或其他建模工具，架构师可以深入到性能细节的下一层（层级计算/内存流量、计算效率、带宽利用率等），并利用跟踪数据识别热点。性能往往因为软件低效而意外地低。基于代理模型进行 AI 软件/硬件的协同设计是一个迭代过程。
+
+对新兴 AI 模型进行彻底的架构分析是一个协作努力。调查周期可能相当长，并且在产品计划和分析深度之间总是存在权衡。同时需要在硬件、软件和 AI 技术方面具备强大的专业知识，以设计高效的 AI 解决方案。
+
+## 参考文献
+
+[1] Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph E. Gonzalez, Hao Zhang, Ion Stoica, [Efficient Memory Management for Large Language Model Serving with Paged Attention](https://arxiv.org/abs/2309.06180), 2023, arxiv
+
+[2] Charles Packer, Vivian Fang, Shishir G. Patil, Kevin Lin, Sarah Wooders, Joseph E. Gonzalez, [MemGPT: Towards LLMs as Operating Systems](https://arxiv.org/abs/2310.08560), 2023, arxiv
+
+[3] Charles Leiserson, Neil Thompson, Joel Emer, Bradley Kuszmaul, Butler Lampson, Daniel Sanchez, 和 Tao Schardl, [There’s plenty of room at the Top: What will drive computer performance after Moore’s law?](https://www.science.org/doi/10.1126/science.aam9744) 2020, Science
+
+[4] Song Han, Jeff Pool, John Tran, William J. Dally, [Learning both Weights and Connections for Efficient Neural Networks](https://arxiv.org/pdf/1506.02626v3.pdf), 2015, arxiv

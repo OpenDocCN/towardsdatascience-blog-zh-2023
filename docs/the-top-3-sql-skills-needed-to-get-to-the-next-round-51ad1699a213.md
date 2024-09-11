@@ -1,0 +1,23 @@
+# 达到下一轮所需的顶级 3 个 SQL 技能
+
+> 原文：[https://towardsdatascience.com/the-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213?source=collection_archive---------4-----------------------#2023-08-28](https://towardsdatascience.com/the-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213?source=collection_archive---------4-----------------------#2023-08-28)
+
+## 数据专业人士的技术面试帮助
+
+[](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)[![Andre Violante](../Images/0382695157126b7ed742649d348cae61.png)](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------) [Andre Violante](https://medium.com/@violante.andre?source=post_page-----51ad1699a213--------------------------------)
+
+·
+
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F54f2f2975136&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&user=Andre+Violante&userId=54f2f2975136&source=post_page-54f2f2975136----51ad1699a213---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51ad1699a213--------------------------------) ·6 分钟阅读·2023年8月28日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51ad1699a213&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&user=Andre+Violante&userId=54f2f2975136&source=-----51ad1699a213---------------------clap_footer-----------)
+
+--
+
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51ad1699a213&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-top-3-sql-skills-needed-to-get-to-the-next-round-51ad1699a213&source=-----51ad1699a213---------------------bookmark_footer-----------)![](../Images/584c4b12a0d4da972d8f858eddd3f5f9.png)
+
+图片来源: [Arnold Francisa at Unsplash](https://unsplash.com/@clark_fransa)
+
+如果你正在应聘数据科学家、数据分析师和数据工程师等职位，那么你很可能会遇到一个或多个需要现场编码的技术面试，通常涉及 SQL。虽然后续的面试可能需要不同的编程语言，如在数据领域常见的 Python，但我们还是集中讨论我在这些面试中遇到的典型 SQL 问题。为了本讨论的目的，我假设你已经熟悉基础 SQL 概念，如`SELECT`、`FROM`、`WHERE`，以及聚合函数如`SUM`和`COUNT`。让我们深入具体细节吧！
+
+## 1\. 掌握连接和表类型
+
+毋庸置疑，最常见的 SQL 问题涉及表连接。虽然这可能看起来过于明显，但我参与的每次面试都围绕这个话题展开。你应该对内连接和左连接感到熟悉。此外，处理自连接和并集的能力也是有价值的。同样重要的是能够在不同的表类型之间执行这些连接，特别是***事实***表和***维度***表。以下是我对这两个术语的粗略定义：

@@ -1,0 +1,29 @@
+# CSV 的 5 个极佳替代方案
+
+> 原文：[https://towardsdatascience.com/top-5-ridiculously-better-csv-alternatives-595f70a9c936?source=collection_archive---------12-----------------------#2023-01-05](https://towardsdatascience.com/top-5-ridiculously-better-csv-alternatives-595f70a9c936?source=collection_archive---------12-----------------------#2023-01-05)
+
+## 大数据存储的 CSV 文件？再考虑一下——有些更好的选择。这 5 个将节省 I/O 时间和磁盘空间。
+
+[](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)[![Dario Radečić](../Images/41882a3b30bab9da43d66a59f1df366b.png)](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)[](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------) [Dario Radečić](https://medium.com/@radecicdario?source=post_page-----595f70a9c936--------------------------------)
+
+·
+
+[点击查看](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F689ba04bb8be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-ridiculously-better-csv-alternatives-595f70a9c936&user=Dario+Rade%C4%8Di%C4%87&userId=689ba04bb8be&source=post_page-689ba04bb8be----595f70a9c936---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----595f70a9c936--------------------------------) · 6 分钟阅读 · 2023年1月5日
+
+--
+
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F595f70a9c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftop-5-ridiculously-better-csv-alternatives-595f70a9c936&source=-----595f70a9c936---------------------bookmark_footer-----------)![](../Images/582774573716f7e5671bcd9100e45e77.png)
+
+图片由 [Maximalfocus](https://unsplash.com/@maximalfocus?utm_source=medium&utm_medium=referral) 提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+
+每个人都知道 CSV，但它真的适合你在 100% 时间里使用吗？其实不是。虽然它有一些明显的好处，例如直接文件编辑和易于理解，但它的缺点可能会让你在磁盘空间和 I/O 时间上损失数千美元。
+
+今天我将向你展示顶级的 CSV 替代方案，提供详细的解释、代码，以及最重要的——数字。你将准确了解替代文件格式的速度如何，以及何时应该使用它们。
+
+# CSV 格式有什么问题？
+
+绝对没有。它允许你直接编辑文件，而不需要使用像 Python 这样的编程语言。此外，你可以直接将其发送给不懂技术的客户，他们也能轻松打开并理解内容。
+
+一切看起来都很美好，直到文件变得太大而无法共享，太大而无法在 Excel 中打开，或者大到需要升级你的云存储计划。
+
+当数据集有数百万行时，你甚至不应该考虑将其保存为 CSV 文件格式。你永远不会发送这样一个数据集……

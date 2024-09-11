@@ -1,0 +1,33 @@
+# 介绍多弦图表：可视化复杂集合关系
+
+> 原文：[https://towardsdatascience.com/introducing-the-multi-chord-diagram-visualizing-complex-set-relationships-c6fe6cc1cb8b?source=collection_archive---------7-----------------------#2023-11-17](https://towardsdatascience.com/introducing-the-multi-chord-diagram-visualizing-complex-set-relationships-c6fe6cc1cb8b?source=collection_archive---------7-----------------------#2023-11-17)
+
+## 了解多弦图表并使用 Python 创作您自己的图表
+
+[](https://medium.com/@nickgerend?source=post_page-----c6fe6cc1cb8b--------------------------------)[![Nick Gerend](../Images/716eb183008674ac46c6aee96093c4b3.png)](https://medium.com/@nickgerend?source=post_page-----c6fe6cc1cb8b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6fe6cc1cb8b--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6fe6cc1cb8b--------------------------------) [Nick Gerend](https://medium.com/@nickgerend?source=post_page-----c6fe6cc1cb8b--------------------------------)
+
+·
+
+[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffa23f7cc3eed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-the-multi-chord-diagram-visualizing-complex-set-relationships-c6fe6cc1cb8b&user=Nick+Gerend&userId=fa23f7cc3eed&source=post_page-fa23f7cc3eed----c6fe6cc1cb8b---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6fe6cc1cb8b--------------------------------) ·13 分钟阅读·2023 年 11 月 17 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6fe6cc1cb8b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-the-multi-chord-diagram-visualizing-complex-set-relationships-c6fe6cc1cb8b&user=Nick+Gerend&userId=fa23f7cc3eed&source=-----c6fe6cc1cb8b---------------------clap_footer-----------)
+
+--
+
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6fe6cc1cb8b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroducing-the-multi-chord-diagram-visualizing-complex-set-relationships-c6fe6cc1cb8b&source=-----c6fe6cc1cb8b---------------------bookmark_footer-----------)![](../Images/fc09e19aab12e51923c72ad2ed8f4f82.png)
+
+Nick Gerend 的 Multi-Chord Diagram
+
+# **背景**
+
+## **前身**
+
+在数据可视化的领域中，表示复杂集合关系的演变已经有了显著的里程碑，特别是通过简单而有效的 Venn 图，现代的 Chord 图以及 UpSet 图的创建。
+
+## Venn 图
+
+维恩图，由约翰·文（John Venn）于19世纪80年代¹提出，是集合论和逻辑学中的基本工具，以其简洁和有效地可视化不同集合之间的关系而闻名。维恩图由重叠的圆圈组成，每个圆圈通常代表一个集合，圆圈之间的重叠表示这些集合之间共享的公共元素。
+
+![](../Images/334e7bc84b8feb72698b491807e5ebd4.png)
+
+维恩图
+
+在教育、商业分析和逻辑推理等领域，它们尤其有用，因为它们提供了一种清晰直观的方式来显示集合的交集、差异和并集。它们能够简化复杂…

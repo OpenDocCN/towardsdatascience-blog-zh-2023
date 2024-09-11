@@ -1,0 +1,160 @@
+# 定制你的云端机器学习训练环境 — 第2部分
+
+> 原文：[https://towardsdatascience.com/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812?source=collection_archive---------8-----------------------#2023-05-21](https://towardsdatascience.com/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812?source=collection_archive---------8-----------------------#2023-05-21)
+
+## 增加开发灵活性的额外解决方案
+
+[](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)[![Chaim Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------) [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----b65a6cf91812--------------------------------)
+
+·
+
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----b65a6cf91812---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b65a6cf91812--------------------------------) ·7 分钟阅读·2023年5月21日
+
+--
+
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb65a6cf91812&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcustomizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812&user=Chaim+Rand&userId=9440b37e27fe&source=-----b65a6cf91812---------------------clap_footer-----------)！[](../Images/0137657cb93e86e967efbb3c4911403f.png)
+
+照片由 [Murilo Gomes](https://unsplash.com/pt-br/@murilog8?utm_source=medium&utm_medium=referral) 提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上。
+
+这是关于定制你的云端 AI 模型训练环境的两篇文章的第二部分。在[第一部分](https://chaimrand.medium.com/customizing-your-cloud-based-machine-learning-training-environment-part-1-2622e10ed65a)中，我们介绍了使用预构建的专门设计的训练环境的**愿望**与我们能够根据项目需求定制环境的**要求**之间可能出现的冲突。发现潜在定制机会的关键在于对云端训练作业的端到端流程有深入了解。我们描述了托管的 Amazon SageMaker 训练服务的这一流程，同时强调了分析公开的底层源代码的价值。接着，我们展示了定制的第一种方法——在训练会话开始时安装 pip 包依赖，并展示了它的局限性。
+
+在这篇文章中，我们将介绍另外两种方法。这两种方法都涉及创建我们自己的自定义 Docker 镜像，但它们在方法上存在根本差异。第一种方法使用官方云服务提供的镜像，并根据项目需求进行扩展。第二种方法则采用用户定义的（与云无关的）Docker 镜像，并扩展以支持云端训练。正如我们所见，每种方法都有其优缺点，最佳选择将高度依赖于项目的具体细节。
+
+# 扩展官方云服务 Docker 镜像
+
+创建一个功能齐全、性能优化的 Docker 镜像以在基于云的 GPU 上进行训练可能会非常费劲，这需要处理大量复杂的硬件和软件依赖关系。对于各种训练用例和硬件平台，这种工作更加困难。与其尝试自己完成，不如优先利用云服务提供商为我们创建的预定义镜像。如果我们需要定制这个镜像，我们可以简单地创建一个新的 Dockerfile，扩展官方镜像并添加所需的依赖项。
+
+[AWS 深度学习容器 (DLC) github 仓库](https://github.com/aws/deep-learning-containers)包含了[扩展官方 AWS DLC 的说明](https://github.com/aws/deep-learning-containers/blob/master/custom_images.md)。这需要登录以访问深度学习容器镜像库，从而拉取镜像、构建扩展镜像，并将其上传到你账户中的[Amazon Elastic Container Registry (ECR)](https://aws.amazon.com/ecr/)。
+
+以下代码块展示了如何从我们的 SageMaker 示例（第 1 部分）扩展官方 AWS DLC。我们展示了三种类型的扩展：
+
+1.  **Linux 包**：我们安装了[Nvidia Nsight Systems](https://developer.nvidia.com/nsight-systems)，用于对我们的训练作业进行高级 GPU 性能分析。
+
+1.  **Conda 包**：我们安装了[S5cmd](https://github.com/peak/s5cmd) conda 包，用于[从云存储中拉取数据文件](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056)。
+
+1.  **Pip 包**：我们安装了特定版本的[opencv-python](https://pypi.org/project/opencv-python/) pip 包。
+
+```py
+From 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:1.13.1-gpu-py39-cu117-ubuntu20.04-sagemaker
+
+# install nsys
+ADD  https://developer.download.nvidia.com/devtools/repos/ubuntu2004/amd64/NsightSystems-linux-cli-public-2023.1.1.127-3236574.deb ./
+RUN apt install -y ./NsightSystems-linux-cli-public-2023.1.1.127-3236574.deb
+
+# install s5cm
+RUN conda install -y s5cmd
+
+# install opencv
+RUN pip install opencv-python==4.7.0.72
+```
+
+要了解如何扩展官方 AWS DLC 的更多细节，包括如何将生成的镜像上传到 ECR，请参阅[这里](https://sagemaker-examples.readthedocs.io/en/latest/advanced_functionality/pytorch_extending_our_containers/pytorch_extending_our_containers.html)。下面的代码块显示了如何修改训练作业部署脚本以使用扩展的镜像：
+
+```py
+from sagemaker.pytorch import PyTorch
+
+# define the training job
+estimator = PyTorch(
+    entry_point='train.py',
+    source_dir='./source_dir',
+    role='<arn role>',
+    image_uri = '<account-number>.dkr.ecr.us-east-1.amazonaws.com/<tag>'
+    job_name='demo',
+    instance_type='ml.g5.xlarge',
+    instance_count=1
+)
+```
+
+你还可以选择自定义官方镜像，前提是你有相应 Dockerfile 的访问权限，即直接对 Dockerfile 进行所需编辑并从头构建。对于 AWS DLC，这个选项的文档记录在[这里](https://github.com/aws/deep-learning-containers#building-your-image)。不过，请注意，尽管基于相同的 Dockerfile，结果镜像可能由于构建环境和更新的包版本的差异而有所不同。
+
+通过扩展官方 Docker 镜像进行环境自定义是最大限度地利用云服务预定义的功能齐全、经过验证的云优化训练环境的好方法，同时仍然允许你自由灵活地进行所需的添加和调整。然而，正如我们通过示例展示的，这种选项也有其局限性。
+
+## 在用户定义的 Python 环境中进行训练
+
+由于各种原因，你可能需要在用户定义的 Python 环境中进行训练。这可能是出于可重复性、平台独立性、安全/合规性考虑或其他目的。你可以考虑的一个选项是用自定义的 Python 环境扩展官方 Docker 镜像。这样，你至少可以受益于镜像中的平台相关安装和优化。然而，如果你的用途依赖于某种形式的 Python 自动化，这可能会变得有些棘手。例如，在一个管理的训练环境中，Dockerfile 的 *ENTRYPOINT* 运行一个 Python 脚本，该脚本执行各种操作，包括从云存储中下载代码源目录、安装 Python 依赖项、运行用户定义的训练脚本等。这个 Python 脚本位于官方 Docker 镜像的预定义 Python 环境中。编程自动化脚本以在单独的 Python 环境中启动训练脚本是可行的，但可能需要在预定义环境中进行一些手动代码更改，并且可能会变得非常混乱。在下一节中，我们将展示一种更简洁的方法来做到这一点。
+
+# 自带镜像（BYO）
+
+我们考虑的最终场景是你需要在由你自己定义的 Docker 镜像创建的特定环境中进行训练。和之前一样，驱动这一需求的可能是法规要求，或者是在云中运行与你本地（“本地部署”）相同镜像的愿望。一些云服务提供了将用户定义的镜像带入并适配到云中的能力。在这一部分，我们演示了 Amazon SageMaker 支持这一功能的两种方式。
+
+## 自带选项 1：SageMaker 训练工具包
+
+第一种选项，在[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/docker-containers-adapt-your-own.html)有文档记录，允许你将我们在[第 1 部分](https://chaimrand.medium.com/2622e10ed65a)中描述的专用（托管）训练启动流程添加到你自定义的 Python 环境中。这本质上使你可以在 SageMaker 中使用自定义镜像进行训练，就像使用官方镜像一样。特别是，你可以将相同的镜像重用于多个项目/实验，并依赖 SageMaker API 在启动时将特定于实验的代码下载到训练环境中（如[第 1 部分](https://chaimrand.medium.com/2622e10ed65a)中所述）。每次更改训练代码时，你不需要创建和上传新的镜像。
+
+下面的代码块演示了如何获取自定义镜像，并按照[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/adapt-training-container.html)中详细的说明，使用[SageMaker 训练工具包](https://github.com/aws/sagemaker-training-toolkit)对其进行增强。
+
+```py
+FROM user_defined_docker_image
+
+RUN echo "conda activate user_defined_conda_env" >> ~/.bashrc
+SHELL ["/bin/bash", "--login", "-c"]
+
+ENV SAGEMAKER_TRAINING_MODULE=sagemaker_pytorch_container.training:main
+RUN conda activate user_defined_conda_env \
+  && pip install --no-cache-dir -U sagemaker-pytorch-training sagemaker-training
+
+# sagemaker uses jq to compile executable
+RUN apt-get update \
+ && apt-get -y upgrade --only-upgrade systemd \
+ && apt-get install -y --allow-change-held-packages --no-install-recommends \
+ jq
+
+# SageMaker assumes conda environment is in Path
+ENV PATH /opt/conda/envs/user_defined_conda_env/bin:$PATH
+
+# delete entry point and args if provided by parent Dockerfile
+ENTRYPOINT []
+CMD []
+```
+
+## 自带选项 2：配置入口点
+
+第二种选项，在[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo-dockerfile.html)有文档记录，允许你在 SageMaker 中以用户定义的 Docker 环境进行训练，且对 Docker 镜像没有**任何**更改。唯一需要做的就是明确设置 Docker 容器的*ENTRYPOINT* 指令。实现这一点的方式之一（如[这里](https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo-dockerfile.html#your-algorithms-training-algo-dockerfile-api-pass-ep)所述）是将*ContainerEntrypoint* 和/或 *ContainerArguments* 参数传递给 API 请求的 [*AlgorithmSpecification*](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_AlgorithmSpecification.html)。不幸的是，截至撰写本文时，[SageMaker Python API](https://pypi.org/project/sagemaker/)（版本 2.146.1）不支持这一选项。然而，我们可以通过扩展[SageMaker Session 类](https://sagemaker.readthedocs.io/en/stable/api/utility/session.html#sagemaker.session.Session)来轻松实现，如下面的代码块所示：
+
+```py
+from sagemaker.session import Session
+
+# customized session class that supports adding container entrypoint settings
+class SessionEx(Session):
+  def __init__(self, **kwargs):
+    self.user_entrypoint = kwargs.pop('entrypoint', None)
+    self.user_arguments = kwargs.pop('arguments', None)
+    super(SessionEx, self).__init__(**kwargs)
+
+  def _get_train_request(self, **kwargs):
+    train_request = super(SessionEx, self)._get_train_request(**kwargs)
+    if self.user_entrypoint:
+      train_request["AlgorithmSpecification"]["ContainerEntrypoint"] =\
+           [self.user_entrypoint]
+    if self.user_arguments:
+      train_request["AlgorithmSpecification"]["ContainerArguments"] =\
+           self.user_arguments
+    return train_request
+
+from sagemaker.pytorch import PyTorch
+
+# create session with user defined entrypoint and arguments
+# SageMaker will run 'docker run --entrypoint python <user image> path2file.py
+sm_session = SessionEx(user_entrypoint='python', 
+                       user_arguments=['path2file.py'])
+
+# define the training job
+estimator = PyTorch(
+    entry_point='train.py',
+    source_dir='./source_dir',
+    role='<arn role>',
+    image_uri='<account-number>.dkr.ecr.us-east-1.amazonaws.com/<tag>'
+    job_name='demo',
+    instance_type='ml.g5.xlarge',
+    instance_count=1,
+    sagemaker_session=sm_session
+) 
+```
+
+## 优化你的 Docker 镜像
+
+BYO 选项的一个缺点是你失去了利用官方预定义镜像专业化的机会。你可以手动和有选择性地将其中一些重新引入到你的自定义镜像中。例如，SageMaker 文档包括了[详细说明](https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-efa.html)如何集成对 [Amazon EFA](https://aws.amazon.com/hpc/efa/) 的支持。此外，你总是可以查看公开可用的 [Dockerfile](https://github.com/aws/deep-learning-containers/blob/master/pytorch/training/docker/1.13/py3/cu117/Dockerfile.gpu) 来挑选你需要的内容。
+
+# 摘要
+
+在这篇两部分的文章中，我们讨论了不同的方法来定制你的云端培训环境。我们选择的方法旨在展示应对不同用例的方式。在实际操作中，最佳解决方案将直接依赖于你的项目需求。你可能会决定为所有培训实验创建一个单一的自定义 Docker 镜像，并结合一个选项来安装实验特定的依赖项（使用第一种方法）。你也可能会发现，另一种方法可能更适合你的需求，比如调整某部分的 [sagemaker-training](https://pypi.org/project/sagemaker-training/) Python 包。总的来说，当你面临需要定制培训环境时，你有多种选择；如果我们所涵盖的标准选项不够充分，不要气馁，要发挥创造力！

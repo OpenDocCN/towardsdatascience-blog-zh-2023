@@ -1,0 +1,25 @@
+# 避免神经网络过拟合：深入探讨
+
+> 原文：[https://towardsdatascience.com/avoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507?source=collection_archive---------3-----------------------#2023-11-30](https://towardsdatascience.com/avoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507?source=collection_archive---------3-----------------------#2023-11-30)
+
+## 学习如何实施正则化技术以提升性能并防止神经网络过拟合
+
+[](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)[![Riccardo Andreoni](../Images/5e22581e419639b373019a809d6e65c1.png)](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------)[![Towards Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------) [Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----b4615a2d9507--------------------------------)
+
+·
+
+[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F76784541161c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&user=Riccardo+Andreoni&userId=76784541161c&source=post_page-76784541161c----b4615a2d9507---------------------post_header-----------) 发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4615a2d9507--------------------------------) ·10分钟阅读·2023年11月30日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb4615a2d9507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&user=Riccardo+Andreoni&userId=76784541161c&source=-----b4615a2d9507---------------------clap_footer-----------)
+
+--
+
+[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb4615a2d9507&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Favoid-overfitting-in-neural-networks-a-deep-dive-b4615a2d9507&source=-----b4615a2d9507---------------------bookmark_footer-----------)![](../Images/9b99bb683b9b10973ea4a001da99621b.png)
+
+图片来源：[unsplash.com](https://unsplash.com/photos/multicolored-illustration-gpiKdZmDQig)。
+
+在训练深度神经网络时，往往难以在**训练集和验证集上**达到相同的性能。验证集上错误率显著更高是**过拟合的明显信号**：网络在训练数据上过于专门化。本文提供了如何绕过这一问题的全面指南。
+
+# 神经网络过拟合
+
+在处理任何机器学习应用时，清楚了解**模型的偏差和方差**非常重要。在传统机器学习算法中，我们讨论的是[**偏差与方差权衡**](https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff#:~:text=In%20statistics%20and%20machine%20learning,bias%20in%20the%20estimated%20parameters.)，它包含了最小化模型的**方差**和**偏差**的斗争。
+
+为了减少模型的偏差（即其由于错误假设产生的误差），我们需要一个**更复杂的模型**。相反，减少模型的方差（模型在捕捉训练数据变化时的敏感性），则意味着需要一个**更简单的模型**。在传统机器学习中，偏差与方差的权衡显然源于…
