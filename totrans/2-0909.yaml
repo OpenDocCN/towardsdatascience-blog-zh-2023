@@ -1,156 +1,221 @@
 - en: Five Ways To Handle Large Action Spaces in Reinforcement Learning
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 处理大型动作空间的五种方法
 - en: 原文：[https://towardsdatascience.com/five-ways-to-handle-large-action-spaces-in-reinforcement-learning-8ba6b6ca7472](https://towardsdatascience.com/five-ways-to-handle-large-action-spaces-in-reinforcement-learning-8ba6b6ca7472)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/five-ways-to-handle-large-action-spaces-in-reinforcement-learning-8ba6b6ca7472](https://towardsdatascience.com/five-ways-to-handle-large-action-spaces-in-reinforcement-learning-8ba6b6ca7472)
 - en: Action spaces, particularly in combinatorial optimization problems, may grow
     unwieldy in size. This article discusses five strategies to handle them.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 动作空间，尤其是在组合优化问题中，可能会变得庞大无比。本文讨论了处理这些问题的五种策略。
 - en: '[](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)[![Wouter
     van Heeswijk, PhD](../Images/9c996bccd6fdfb6d9aa8b50b93338eb9.png)](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)
     [Wouter van Heeswijk, PhD](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)[![Wouter
+    van Heeswijk, PhD](../Images/9c996bccd6fdfb6d9aa8b50b93338eb9.png)](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)
+    [Wouter van Heeswijk, PhD](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)
     ·14 min read·Aug 18, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)
+    ·14 分钟阅读·2023年8月18日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/faed2a6acffe7d9d787734e7815479db.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/faed2a6acffe7d9d787734e7815479db.png)'
 - en: And…action! [Photo by [Jakob Owens](https://unsplash.com/@jakobowens1?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)]
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有……行动！[照片由 [Jakob Owens](https://unsplash.com/@jakobowens1?utm_source=medium&utm_medium=referral)
+    提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)]
 - en: 'Handling large action spaces remains a fairly open problem in Reinforcement
     Learning. Researchers have made great strides in terms of handling large *state*
     spaces, with convolutional networks and transformers being some recent high-profile
     examples. However, there are three so-called **curses of dimensionality**: state,
     outcome, and action [1]. As of yet, the latter is still rather understudied.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 处理大型动作空间仍然是强化学习中的一个相当开放的问题。研究人员在处理大型*状态*空间方面取得了重大进展，卷积网络和变压器是一些近期的高调例子。然而，存在三种所谓的**维度诅咒**：状态、结果和动作[1]。到目前为止，后者仍然是相对未被充分研究的。
 - en: Still, there is a growing body of methods that attempt to handle large action
     spaces. This article presents five ways that handle the latter at scale, focusing
     in particular on the **high-dimensional discrete action spaces** that are often
     encountered in combinatorial optimization problems.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管如此，处理大型动作空间的方法正在不断增长。本文介绍了处理后者的大规模的五种方法，特别关注在组合优化问题中经常遇到的**高维离散动作空间**。
 - en: 'Refresher: three curses of dimensionality'
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 回顾一下：维度灾难的三种诅咒
 - en: 'A quick refresher on the three curses of dimensionality is in order. Assuming
     we express the problem at hand as a system of [Bellman equations](https://medium.com/towards-data-science/why-reinforcement-learning-doesnt-need-bellman-s-equation-c9c2e51a0b7),
     note there are **three sets to evaluate** — in practice in the form of nested
     loops — each of which may be prohibitively large:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要快速回顾维度灾难的三种诅咒。假设我们将手头的问题表达为一个 [Bellman 方程](https://medium.com/towards-data-science/why-reinforcement-learning-doesnt-need-bellman-s-equation-c9c2e51a0b7)
+    系统，请注意有 **三组需要评估**——实际操作中以嵌套循环的形式——每组可能都大得难以承受：
 - en: '![](../Images/778c5ac24425298d745e4c29063a838e.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/778c5ac24425298d745e4c29063a838e.png)'
 - en: Bellman equations require that, for each state-action pair (s,a)∈S×A, all potential
     outcomes s’∈S’ must be evaluated, quickly rendering enumeration of this stochastic
     optimization problem computationally infeasible.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Bellman 方程要求对于每个状态-动作对 (s,a)∈S×A，必须评估所有潜在的结果 s’∈S’，这迅速使得对这个随机优化问题的枚举在计算上变得不可行。
 - en: 'At its core, Reinforcement Learning is a Monte Carlo simulation, sampling random
     transitions instead of enumerating all possible outcomes. By the Law of Large
     Numbers, the sample outcomes should ultimately facilitate convergence to the true
     value. This way, we transform the stochastic problem into a deterministic one:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 从根本上讲，强化学习是一种蒙特卡罗模拟，通过采样随机过渡而不是枚举所有可能的结果。根据大数法则，样本结果最终应该促进收敛到真实值。通过这种方式，我们将随机问题转化为确定性问题：
 - en: '![](../Images/69cd38fec79ac633db712b98ac8e1ba4.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/69cd38fec79ac633db712b98ac8e1ba4.png)'
 - en: A value function approximation yields a deterministic optimization problem,
     in which we do not need to evaluate the entire outcome space when evaluating a
     state-action pair, but just a single downstream value.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 值函数近似提供了一个确定性优化问题，在评估状态-动作对时，我们不需要评估整个结果空间，而只是一个单一的下游值。
 - en: The transformation allows us to handle large *outcome* spaces. To deal with
     large *state* spaces, we must be able to generalize to previously unseen states.
     Common approaches are feature extraction or aggregation, and this is where the
     bulk of research attention is focused.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种转化使我们能够处理大的*结果*空间。要处理大的*状态*空间，我们必须能够对以前未见过的状态进行概括。常见的方法有特征提取或聚合，这也是研究的主要关注点。
 - en: As we can evaluate a single value corresponding to the state-action pair — rather
     than evaluating all outcomes corresponding to it — it is often not problematic
     to evaluate hundreds or thousands of actions. For many problems (e.g., chess,
     video games), this is sufficient, and there is no need to make further approximations
     w.r.t. the action space.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们可以评估一个对应于状态-动作对的单一值——而不是评估所有对应的结果——因此评估数百或数千个动作通常不是问题。对于许多问题（例如象棋、视频游戏），这就足够了，不需要进一步对动作空间进行近似。
 - en: Nonetheless, *if* the action space remains prohibitively large, we can’t apply
     the same solution directions as we do for outcome and state spaces. Simply sampling
     an action — as we do with outcomes — gives no guarantee it is any good and bypasses
     the notion of learning and using an intelligent decision-making policy. Generalizations
     such as applied on states don’t work either, as ultimately we do need a specific
     action that can be applied into the environment. Hence, we need some other solutions.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管如此，*如果*动作空间仍然过大，我们不能使用与结果和状态空间相同的解决方案方法。仅仅对一个动作进行采样——就像我们对结果做的那样——并不能保证它是有效的，而且绕过了学习和使用智能决策策略的概念。像在状态上应用的概括方法也不起作用，因为我们最终需要一个可以应用到环境中的具体动作。因此，我们需要其他的解决方案。
 - en: What is a ‘large’ action space?
+  id: totrans-20
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是“大的”动作空间？
 - en: Before diving into solutions, let’s first establish what we mean by a ‘large’
     action space. For generalization, we denote the action by some vector `a=[a_n]_n∈N`,
     where `N` denotes the dimension of the action.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入解决方案之前，我们首先需要明确什么是“大的”动作空间。为了概括，我们用一些向量`a=[a_n]_n∈N`表示动作，其中`N`表示动作的维度。
 - en: 'The term ‘large’ may be defined in multiple ways:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: “大的”这个术语可以用多种方式定义：
 - en: '**Number of actions:** The number of values an action can assume. Note that
     the number is potentially unbounded, e.g., the full integer domain. Obviously,
     for vector-based actions the number of actions increases much quicker than for
     scalar-based ones. Consider a 9-dimensional vector, for which each element can
     assume 10 values. The total action space then already amounts to 10⁹ =1 billion
     actions!'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**动作数量：** 一个动作可以假设的值的数量。请注意，这个数量可能是无限的，例如整个整数域。显然，对于基于向量的动作，动作数量增加得比基于标量的动作快得多。考虑一个9维向量，其中每个元素可以取10个值。那么，总的动作空间已经达到10⁹
+    = 10亿个动作！'
 - en: '**Continuous decision variables**: If the action vector contains one or more
     continuous variables, the number of actions is by definition infinite. Continuous
     variables are common in, e.g., robotics, with joint movements being represented
     by real-valued numbers.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**连续决策变量：** 如果动作向量包含一个或多个连续变量，则动作的数量在定义上是无限的。连续变量在例如机器人学中很常见，其中关节运动由实值数表示。'
 - en: '**Dimension**: For [vector-based decisions](https://medium.com/codex/quickly-generate-combinatorial-action-spaces-15962118e508),
     the dimension (number of elements) has a massive impact — each additional element
     exponentially increases complexity. Especially when actions are permutations,
     vector-based decision spaces get very large, very quickly.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**维度**：对于[基于向量的决策](https://medium.com/codex/quickly-generate-combinatorial-action-spaces-15962118e508)，维度（元素数量）有巨大的影响——每增加一个元素，复杂性就呈指数级增加。特别是当动作是排列时，基于向量的决策空间会迅速变得非常大。'
 - en: '**Enumerable**: An action space of a billion may be ‘large’ by conventional
     standards; you definitely don’t want to evaluate a billion actions for every iteration.
     Such an action space can still be enumerated in stored in a computer’s memory
     though. In contrast, other problems exhibit action spaces so gigantic we have
     no hope of ever enumerating them. If action spaces grow exponentially with the
     problem size, they quickly become intractably large.'
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**可枚举的**：按照传统标准，一个有十亿个动作的动作空间可能被认为是‘大’的；你肯定不想在每次迭代时评估十亿个动作。不过，这样的动作空间仍然可以在计算机内存中被枚举和存储。相比之下，其他问题的动作空间巨大到我们根本无从枚举。如果动作空间随着问题规模的增长呈指数级增长，它们会迅速变得不可处理。'
 - en: 'The focus in this article will be on **multi-dimensional discrete action spaces**.
     These are commonly encountered in real-life problems, giving rise to combinatorial
     optimization problems that explode in size very quickly. Consider operations research
     problems for instance: managing a fleet of taxis, inventory reorder policies for
     large numbers of items, stacking containers on a ship, etc.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文的重点将放在**多维离散动作空间**上。这些在现实问题中常常出现，导致组合优化问题的规模迅速膨胀。例如，考虑运筹学问题：管理出租车队、大量物品的库存补货政策、在船上堆放集装箱等。
 - en: Let’s make the magnitude of the problems we are dealing with a bit more tangible.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们把我们面对的问题的规模变得更加具体。
 - en: Consider managing container shipments in a port, with each container characterized
     by (i) destination, (ii) due date and (iii) arrival date. Say we have 10 potential
     destinations, 20 due dates and 5 arrival dates. There are then 10*20*5 unique
@@ -158,52 +223,70 @@
     in some different shipment options and a modestly large container yard, and it
     is not hard to create action spaces larger than the number of grains of sand on
     earth, or any arbitrary analogy you would like to make.
+  id: totrans-29
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 考虑在一个港口管理集装箱运输，每个集装箱的特点包括（i）目的地，（ii）到期日期和（iii）到达日期。假设我们有10个潜在的目的地、20个到期日期和5个到达日期。那么就有10*20*5种独特的集装箱类型，这转化为一个1000维的动作向量。考虑到一些不同的运输选项和一个适度大的集装箱堆场，创建一个比地球上沙粒还多的动作空间并不难，或者任何你想做的类比。
 - en: Another example?
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个例子？
 - en: Consider a recommender system for 1000 items, in which we recommend two items
     to the user. Thus, there are 1000*999 (i.e., about 1 million) combinations of
     items to recommend. Clearly, recommending 3, 4 or 5 items will exponentially grow
     the action space.
+  id: totrans-31
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 考虑一个包含1000个项目的推荐系统，我们向用户推荐两个项目。因此，有1000*999（即约100万）种项目组合可以推荐。显然，推荐3个、4个或5个项目会使动作空间呈指数级增长。
 - en: '![](../Images/d612e9d1917411b829304d080bad807a.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d612e9d1917411b829304d080bad807a.png)'
 - en: Vector-based action spaces often increase exponentially w.r.t. the dimensionality
     of the action vector. Combinatorial optimization problems are notorious for generating
     extremely large action spaces even for seemingly simple instances [image by author]
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于向量的动作空间通常会随着动作向量维度的增加而呈指数级增长。组合优化问题以生成非常大的动作空间而臭名昭著，即使对于看似简单的实例也是如此。[作者提供的图片]
 - en: I. Actor-based methods (only for continuous action spaces!)
+  id: totrans-34
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: I. 基于演员的方法（仅适用于连续动作空间！）
 - en: Value-based methods such as Q-learning fall apart for continuous action, requiring
     an **infinite number of Q-values** to be computed. One could discretize the action
     space, with the granularity dictating the tradeoff between action space size and
     accuracy. For instance, a turning a steering wheel (continuous space) could be
     expressed into 360 discrete degrees, or 36, 3600, etc. For vector-based decisions,
     such discretizations quickly fall apart though.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于价值的方法，如Q学习，在连续动作情况下会崩溃，需要计算**无限数量的Q值**。可以对动作空间进行离散化，离散化的粒度决定了动作空间大小和准确性之间的权衡。例如，将方向盘的转动（连续空间）表示为360个离散度数，或者36、3600等。然而，对于基于向量的决策，这种离散化很快就会失效。
 - en: Enter actor-based methods [2]. These methods typically employ a neural network,
     taking the state as input and outputting parameters that enable to **sample from
     probability distributions**. For instance, the output nodes could be the mean
     and standard deviation of a Gaussian distribution, from which we can subsequently
     sample the continuous action.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 进入基于演员的方法[2]。这些方法通常使用神经网络，将状态作为输入，输出使**从概率分布中采样**的参数。例如，输出节点可以是高斯分布的均值和标准差，我们可以从中采样连续动作。
 - en: Generalization to vector-based decisions is fairly straightforward, with each
     vector element being represented by a separate distribution (i.e., linear scaling
     w.r.t. vector dimension). As such, also **high-dimensional continuous action spaces**
     can be efficiently handled.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 向量化决策的泛化相当简单，每个向量元素由一个单独的分布表示（即，相对于向量维度的线性缩放）。因此，也**高维连续动作空间**可以被高效处理。
 - en: The crux is that the actor network **directly maps the state to an action**,
     without the need to check values for each state-action pair. If desired — as it
     often is for the purpose of variance reduction — these actor methods can be extended
@@ -211,152 +294,213 @@
     values for the generated state-action pair. For continuous action spaces, actor-critic
     methods such as [PPO](/proximal-policy-optimization-ppo-explained-abed1952457b)
     remain state-of-the-art.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键在于演员网络**直接将状态映射到动作**，无需检查每个状态-动作对的值。如果需要——如为了减少方差——这些演员方法可以扩展为演员-评论员网络，其中评论员网络是一个扩展，输出生成的状态-动作对的值。对于连续动作空间，演员-评论员方法如[PPO](/proximal-policy-optimization-ppo-explained-abed1952457b)仍然是最先进的。
 - en: '![](../Images/dc634cecd7178e7c5b282c639a32c1f4.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dc634cecd7178e7c5b282c639a32c1f4.png)'
 - en: For continuous action spaces, actor network efficiently generate and evaluate
     actions, e.g., by outputting mean and sigma of a Gaussian distribution to sample
     from. When extending to multi-dimensional action vectors, statistical parameters
     correspond to individual vector elements, such that the output layer scales linearly
     with action dimensionality. [image by author]
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于连续动作空间，演员网络高效地生成和评估动作，例如，通过输出高斯分布的均值和标准差来进行采样。扩展到多维动作向量时，统计参数对应于各个向量元素，从而使输出层的规模与动作维度线性相关。[image
+    by author]
 - en: Unfortunately, **actor-based models do not scale well for discrete action spaces**.
     In that case, each output node represents the selection probability of a single
     action. For obvious reasons, that will not scale well if we have billions of discrete
     actions. Thus, for discrete action spaces, we need to figure out something else.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，**基于演员的模型在离散动作空间中扩展效果不佳**。在这种情况下，每个输出节点代表单个动作的选择概率。显而易见，如果我们有数十亿个离散动作，这种方法不会很好地扩展。因此，对于离散动作空间，我们需要想出其他解决方案。
 - en: II. Mathematical programming
+  id: totrans-42
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: II. 数学编程
 - en: Many real-world decision-making problems can be expressed through a **convex
     action space.** Convexityis an incredibly powerful property to have. You have
     to see it to believe it, really. Solvers such as CPLEX and Gurobi can handle large
     decision problems extremely efficiently, even if they pertain to **thousands of
     decision variables,** amounting to millions or even billions of actions[1].
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 许多现实世界的决策问题可以通过**凸动作空间**来表达。凸性是一个非常强大的属性。你真的得亲眼见到才能相信。像CPLEX和Gurobi这样的解算器能够极其高效地处理大型决策问题，即使它们涉及到**数千个决策变量**，涉及到数百万甚至数十亿的动作[1]。
 - en: In particular for **linear problems** — which many real-world problems (approximately)
     are — solvers have been highly optimized over the past decades. Note that piecewise
     linear functions may be used to approximate nonlinear functions, e.g., ReLUs in
     neural networks [3]. Continuous decision variables are no problem either. In fact,
     they are typically easier to handle.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 尤其是对于**线性问题**——许多实际问题（大致上）都是如此——解算器在过去几十年中已被高度优化。注意，分段线性函数可以用来近似非线性函数，例如，神经网络中的ReLUs
+    [3]。连续决策变量也没有问题。事实上，它们通常更容易处理。
 - en: Mathematical programs are also highly suitable for **handling constraints**.
     Performing explicit feasibility checks to construct an action mask may be tedious.
     The constraint equations weed out all missing/infeasible actions in an efficient
     manner.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 数学程序也非常适合**处理约束**。执行显式可行性检查以构建动作掩码可能很繁琐。约束方程有效地筛选出所有缺失/不可行的动作。
 - en: Although scale-ups through mathematical programming maybe highly significant,
     there are **no theoretical guarantees** w.r.t. growing action spaces. Computational
     effort may still increase exponentially with the action space. Still, in practice,
     the scalability compared to optimization is often very substantial.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管通过数学规划的规模提升可能非常显著，但对于不断增长的动作空间**没有理论保证**。计算工作仍可能随着动作空间的增大而呈指数增长。不过，在实践中，相较于优化，扩展性通常非常可观。
 - en: Depending on problem structure, the efficacy of mathematical programming may
     be enhanced with methods such as **column generation or Bender’s decomposition**.
     Strong implementations can improve performance by orders of magnitude. The downside
     is that such algorithms require deep insight into the problem structure as well
     as substantial design effort.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据问题结构，数学规划的效果可能通过**列生成或贝尔曼分解**等方法得到增强。强大的实现可以将性能提升几个数量级。缺点是这些算法需要对问题结构有深入的了解，并且需要大量的设计工作。
 - en: '[](/using-linear-programming-to-boost-your-reinforcement-learning-algorithms-994977665902?source=post_page-----8ba6b6ca7472--------------------------------)
     [## Using Linear Programming to Boost Your Reinforcement Learning Algorithms'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/using-linear-programming-to-boost-your-reinforcement-learning-algorithms-994977665902?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## 使用线性规划提升强化学习算法'
 - en: Large and high-dimensional action spaces are often computational bottlenecks
     in Reinforcement Learning. Formulating…
+  id: totrans-49
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 大型和高维的动作空间通常是强化学习中的计算瓶颈。制定…
 - en: towardsdatascience.com](/using-linear-programming-to-boost-your-reinforcement-learning-algorithms-994977665902?source=post_page-----8ba6b6ca7472--------------------------------)
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/using-linear-programming-to-boost-your-reinforcement-learning-algorithms-994977665902?source=post_page-----8ba6b6ca7472--------------------------------)
 - en: III. Heuristics
+  id: totrans-51
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: III. 启发式方法
 - en: Heuristics impose search- or decision rules on the action space, bypassing evaluation
     of the full action space to boost speed and efficiency.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 启发式方法对动作空间施加搜索或决策规则，绕过对完整动作空间的评估，以提高速度和效率。
 - en: Action space reduction
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 动作空间缩减
 - en: 'One of the simplest ways to search an action space more efficiently is to cut
     parts of it. Obviously this risks cutting high-quality parts of the region. However,
     domain knowledge may be leveraged to **define reasonable decision rules**, for
     instance:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 更高效地搜索动作空间的最简单方法之一是切割其部分区域。显然，这存在切割高质量区域的风险。然而，可以利用领域知识**定义合理的决策规则**，例如：
 - en: Never dispatch a truck that is filled less than 70%
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 永远不要派遣填充率低于70%的卡车
 - en: Mario should always move to the right
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 马里奥应该始终向右移动
 - en: Always recommend coffee filters when someone buys a coffee machine
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 始终建议在有人购买咖啡机时使用咖啡过滤器
 - en: One can see this is tricky. Sometimes Mario may need to move to the left to
     make a jump. Perhaps we have to wait a long time for that 70% fill rate in a quiet
     week. Maybe the customer is more interested in a coffee bean grinder than filters.
     Human expertise, logic and intuition are powerful, but have glaring shortcomings
     as well.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以看出，这很棘手。有时，马里奥可能需要向左移动以进行跳跃。也许我们需要等很久才能在安静的周内达到70%的填充率。也许客户对咖啡豆研磨机而非过滤器更感兴趣。人类的专业知识、逻辑和直觉非常强大，但也有明显的缺点。
 - en: Although heuristic reductions might substantially reduce the computational burden,
     their design is highly **problem-specific** and not necessarily scalable when
     changing the problem instance.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管启发式缩减可能显著降低计算负担，但其设计**高度特定于问题**，当问题实例发生变化时不一定具有可扩展性。
 - en: '![](../Images/afacf6df24c34934c73db7692ca5f051.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/afacf6df24c34934c73db7692ca5f051.png)'
 - en: By cutting regions of the action space (e.g., by adding constraints), the search
     may become less prohibitive. Poorly chosen cuts may delete high-quality actions
     though [image by [Sdo](https://commons.wikimedia.org/wiki/User:Sdo) via [Wikipedia](https://en.wikipedia.org/wiki/Cutting-plane_method#/media/File:TSP_cutting_plane.png)]
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过切割动作空间的区域（例如，添加约束），搜索可能变得不那么繁琐。然而，不恰当的切割可能会删除高质量的动作。[图片由[Sdo](https://commons.wikimedia.org/wiki/User:Sdo)提供，来源于[维基百科](https://en.wikipedia.org/wiki/Cutting-plane_method#/media/File:TSP_cutting_plane.png)]
 - en: Metaheuristics
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 元启发式方法
 - en: Base heuristics often rely on human-defined decision rules, which may be suboptimal.
     In fact, many problem structures are beyond human cognitive limits. To automate
     the search for good solutions, metaheuristics (e.g., simulated annealing, genetic
     algorithms) **guide the search over the action space**, for instance by occasionally
     accepting non-improving actions or by re-combining them [4].
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 基础启发式方法通常依赖于人为定义的决策规则，这些规则可能是次优的。实际上，许多问题结构超出了人类的认知极限。为了自动化地寻找好的解决方案，元启发式（例如，模拟退火、遗传算法）**指导动作空间的搜索**，例如通过偶尔接受非改善的动作或重新组合它们[4]。
 - en: The **search process of metaheuristics is often problem-agnostic**, although
     inevitably there will be problem-specific elements that need to be designed by
     the user. Tuning of parameters is necessary as well — and we already have plenty
     of those in RL — while theoretical guarantees are foregone (for practical purposes,
     at least).
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: '**元启发式的搜索过程通常是与问题无关的**，尽管不可避免地会有需要用户设计的特定于问题的元素。参数调整也是必要的——而我们在强化学习中已经有了大量这样的参数——同时，理论保证被放弃了（至少在实际应用中）。'
 - en: The drawbacks aside, metaheuristics have proven there mettle for many highly
     challenging optimization problems, and the powerful combination of tunable search
     and heuristic designs ensures it can be tailored to about any action space out
     there. Especially for **messy real-world problems**, metaheuristics may be your
     best bet to tackle large action spaces [1].
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管有缺点，元启发式方法在许多极具挑战性的优化问题中已证明了它们的实力，而可调搜索和启发式设计的强大组合确保它可以适应几乎任何动作空间。特别是对于**混乱的现实世界问题**，元启发式方法可能是处理大规模动作空间的最佳选择[1]。
 - en: Matheuristics
+  id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数学启发式方法
 - en: A particular branch of heuristics **merges** **metaheuristics with mathematical
     programming** [5], aiming to leverage the best of both worlds. Recall that mathematical
     programs are particularly suitable to exploit convex structures and large numbers
@@ -364,8 +508,10 @@
     and procedure. If the action space is so large that even mathematical programming
     cannot return a solution in acceptable time, combining it with heuristics may
     be a way out.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种特殊的启发式方法**融合了** **元启发式和数学编程** [5]，旨在利用两者的优势。回顾一下，数学程序特别适合利用凸结构和大量决策变量，而启发式方法可以用来控制搜索空间和过程。如果动作空间如此之大，以至于即使是数学编程也不能在可接受的时间内返回解，将其与启发式方法结合可能是一个解决办法。
 - en: 'Generic heuristic implementations include techniques such as local **branching,
     proximity search and variable fixing**. To give some examples: we may heuristically
     reduce an action space, then search that action space using mathematical programming.
@@ -373,94 +519,128 @@
     (e.g., allocate customers to vehicles) and fill in the details heuristically (e.g.,
     heuristically generate routes). There are many angles with different distributions
     of subroutines.'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 通用启发式算法实现包括如局部**分支、邻近搜索和变量固定**等技术。例如：我们可以启发式地减少一个动作空间，然后用数学编程搜索该动作空间。或者，我们可能用数学编程解决一个高层次的程序（例如，将客户分配给车辆），并通过启发式方法填充细节（例如，启发式生成路线）。有很多角度和不同的子程序分布。
 - en: Matheuristics can be very powerful and scale far beyond pure mathematical programming
     — at a **loss of performance guarantee** — but can also be rather design-intensive.
     However, when done correctly, the marriage between mathematical programming and
     heuristics may be a very fruitful one.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 数学启发式方法可能非常强大，规模远超纯数学编程——但**牺牲了性能保证**——但也可能设计上相当复杂。然而，当做到正确时，数学编程与启发式方法的结合可能是非常富有成效的。
 - en: IV. Continuous-to-discrete mappings
+  id: totrans-70
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: IV. 连续到离散的映射
 - en: As mentioned earlier, actor-based methods can effectively handle multi-dimensional
     continuous action spaces by providing **element-wise outputs**. If only we could
     do the same for discrete spaces…
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，基于演员的方法可以通过提供**逐元素输出**有效地处理多维连续动作空间。如果我们能对离散空间做到这一点就好了……
 - en: 'Fortunately, many discrete problems have some **underlying continuous representation**.
     For instance: we may not be able to ship `5.742…` containers, but if such a real-valued
     solution gives good solutions, chances are shipping 5 or 6 containers works pretty
     well.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，许多离散问题都有一些**潜在的连续表示**。例如：我们可能无法运输`5.742…`个集装箱，但如果这样的实数解能给出好的解决方案，那么运输5或6个集装箱可能效果很好。
 - en: If the required continuous representation exist, we can deploy an actor network
     to obtain a so-called proto-action (a continuous approximation of the discrete
     action), which we subsequently transform to a ‘similar’ discrete action. This
     **transformation from continuous proto-action to discrete action** is not necessarily
     trivial. Time to dive into some mappings that achieve this feat.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果所需的连续表示存在，我们可以部署一个演员网络来获得所谓的原型动作（离散动作的连续近似），然后将其转换为“类似”的离散动作。这种**从连续原型动作到离散动作的转换**并不一定简单。是时候深入研究一些实现这一目标的映射了。
 - en: MinMax
+  id: totrans-74
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MinMax
 - en: The most straightforward way to transform a continuous action to a discrete
     one is to **simply round the elements**. A continuous proto-action `[3.67…,1.22…,2.49…]`
     would for instance translate to `[4,1,2]`. Such mappings can be tailored a bit,
     but that’s the general idea [6]. As we only need to sample one continuous action
     and apply one transformation, this approach can scale to extremely large action
     spaces, beyond the realm of enumeration.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 将连续动作转换为离散动作的最直接方法是**简单地四舍五入元素**。例如，连续的原型动作 `[3.67…,1.22…,2.49…]` 可以转换为 `[4,1,2]`。这样的映射可以稍微调整，但这就是一般的想法[6]。由于我们只需要采样一个连续动作并应用一个转换，这种方法可以扩展到极大的动作空间，超出枚举的范围。
 - en: If continuous quantities have meaningful structural relations with their discrete
     counterparts, straightforward mappings may work very well. For instance, in inventory
     management, rounding the number of items to order to the nearest integer is perfectly
     reasonable.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果连续量与其离散对应量之间有意义的结构关系，那么直接映射可能效果很好。例如，在库存管理中，将订购数量四舍五入到最近的整数是完全合理的。
 - en: Not all discrete action spaces exhibit such clean continuous representations,
     unfortunately. Suppose we train a recommender system and the integer indicates
     the item to recommend. If `a=3` represents a fridge and `a=4` represents a mixer,
     the most suitable neighbor to proto-action `3.48…` is far from obvious. Let’s
     check some more advanced mappings.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，并非所有离散动作空间都展示出如此干净的连续表示。假设我们训练一个推荐系统，整数表示要推荐的项目。如果 `a=3` 代表冰箱，而 `a=4` 代表搅拌机，最合适的邻居与原型动作
+    `3.48…` 相距远远不明显。让我们检查一些更先进的映射。
 - en: '*k*-nearest neighbor'
+  id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*k*-最近邻'
 - en: The *k*-nearest neighbor (*k*nn) method also sets out with a proto-action, but
     subsequently **searches through a neighborhood of discrete actions** [7]. To efficiently
     do this, the full action space is encoded *a priori*, such that we can quickly
     find the `k` nearest neighbors for each continuous action we may define.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '*k*-最近邻（*k*nn）方法也从一个原型动作开始，但随后**在离散动作的邻域中搜索**[7]。为了有效地做到这一点，整个动作空间被*先验*编码，这样我们可以快速找到我们可能定义的每个连续动作的
+    `k` 个最近邻。'
 - en: After identifying neighbors, *k*nn subsequently **evaluate their Q-values**
     to select the best one. The value of `k` may be tuned, with larger numbers of
     neighbors potentially identifying better actions, at the cost of more computational
     effort and increasingly off-policy actions.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在识别邻居后，*k*nn 随后**评估它们的 Q 值**以选择最佳邻居。`k` 的值可以调整，更多的邻居可能识别更好的动作，但代价是更多的计算工作和越来越多的离策略动作。
 - en: Both the strength and weakness of *k*nn lie in its *a priori* enumeration of
     the action space. The pre-processing phase enables a **highly efficient lookup
     of neighbors**, but also requires the space to be enumerable.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '*k*nn 的优点和缺点都在于其对动作空间的*先验*枚举。预处理阶段使得**邻居的高效查找**成为可能，但也要求空间是可枚举的。'
 - en: Learned action representations
+  id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 学习的动作表示
 - en: The ‘closest’ discrete neighbor to a continuous proto-action may not be an obvious
     one, and the relations between them may vary across the action space. Instead
     of having a fixed, user-defined neighbors, we can also learn action representations
     that map the continuous action to a discrete one. In a separate supervised learning
     phase, neural networks are applied to **learn tailored representations for each
     discrete action** [8].
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于连续原型动作，“最接近”的离散邻居可能不是一个明显的选择，它们之间的关系在动作空间中可能有所不同。与其拥有固定的用户定义邻居，我们还可以学习将连续动作映射到离散动作的动作表示。在一个单独的监督学习阶段，神经网络被应用于**学习每个离散动作的量身定制表示**[8]。
 - en: Learned action representations offers a **powerful generalization** that eliminates
     the need for human reasoning on suitable neighbors, allowing applications for
     complex action space structures. The drawback is that action representations must
@@ -469,21 +649,31 @@
     the method to **enumerable action spaces**. Additionally, learned action representations
     might struggle with higher-dimensional action vectors, as the target vector becomes
     increasingly difficult to learn.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习的动作表示提供了**强大的泛化能力**，消除了对合适邻居的人工推理的需求，允许应用于复杂的动作空间结构。缺点是必须为每个离散动作学习动作表示，给 RL
+    算法增加了额外的复杂性。每个表示必须存储在内存中，因此该方法也限制在**可枚举的动作空间**中。此外，学习的动作表示可能在处理高维动作向量时遇到困难，因为目标向量变得越来越难以学习。
 - en: '![](../Images/ca5ebb13be09543b7cb139dcccbcf22e.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ca5ebb13be09543b7cb139dcccbcf22e.png)'
 - en: Learned action representations try to learn embeddings that map continuous proto-actions
     to the most suitable discrete neighbor, depending on the structure of the action
     space [Photo by [Michael Busch](https://unsplash.com/@migelon?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)]
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习的动作表示尝试学习嵌入，将连续的原型动作映射到最合适的离散邻居，具体取决于动作空间的结构 [照片由 [Michael Busch](https://unsplash.com/@migelon?utm_source=medium&utm_medium=referral)
+    提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)]
 - en: Dynamic neighborhood search
+  id: totrans-87
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 动态邻域搜索
 - en: 'The MinMax method is simple and intuitive in its mappings, but the closest
     neighbor may not always be the most appropriate one. Methods such as *k*nn and
     learned action representations handle complex action spaces, but require explicit
@@ -491,178 +681,268 @@
     dynamic neighborhood construction [9], **discrete neighbors to the proto-action
     are generated and evaluated on-the-fly,** thereby scaling to action spaces beyond
     enumeration. The following two steps are followed:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: MinMax 方法在其映射中简单直观，但最接近的邻居可能不总是最合适的。像 *k*nn 和学习的动作表示这样的算法处理复杂的动作空间，但需要为每个动作提供显式的嵌入，因此只处理可枚举的动作空间。通过动态邻域构建
+    [9]，**离散邻域到原型动作被即时生成和评估**，从而扩展到超出枚举的动作空间。遵循以下两个步骤：
 - en: '**Perturbation**: Efficiently generate a neighborhood through a perturbation
     scheme that alters one element at a time, such that computational effort is linear
     w.r.t. the action vector’s dimension.'
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**扰动**：通过扰动方案有效地生成邻域，每次改变一个元素，使得计算工作量与动作向量的维度成线性关系。'
 - en: '**Simulated annealing**: the perturbation scheme efficiently generates a neighborhood
     of discrete actions, but it omits actions that require multi-element perturbations.
     To recover such actions (if needed), simulated annealing explores new neighbors
     to actions with the highest Q-values.'
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**模拟退火**：该扰动方案有效地生成离散动作的邻域，但省略了需要多元素扰动的动作。为了恢复这些动作（如果需要），模拟退火会探索新邻域，针对具有最高
+    Q 值的动作。'
 - en: Similar to MinMax, dynamic neighborhood search requires a **specific action
     space structur**e in which small perturbations generate neighbors with comparable
     rewards. Such structures may be found in many real-world problems (e.g., spatiotemporal
     representations), but the method does not generalize to all discrete action spaces.
     Finally, runtime per iteration is longer due to the need to generate and evaluate
     actions each time, although it may find superior actions.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似于 MinMax，动态邻域搜索需要一个**特定的动作空间结构**，其中小的扰动生成具有相似奖励的邻域。这种结构在许多实际问题中（例如，时空表示）可能存在，但该方法不能推广到所有离散动作空间。最后，每次迭代的运行时间较长，因为需要每次生成和评估动作，尽管它可能找到更优的动作。
 - en: V. Factorization
+  id: totrans-92
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: V. 因式分解
 - en: Factorization (also decomposition) is a method that **groups actions and finds
     action representations** for each grouping that are easier to learn.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 因式分解（或称为分解）是一种方法，**将动作分组并为每个分组找到动作表示**，使得这些表示更易于学习。
 - en: An example of a factorization approach is **binarization**, in which all actions
     are expressed in binary code [10,11]. For each bit, an associated value function/subpolicy
     is learned, exponentially reducing the number of evaluations. As for many methods,
     full enumeration of the action space is a prerequisite.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 因式分解方法的一个例子是**二值化**，其中所有行动都以二进制代码表示 [10,11]。对于每一位，学习一个相关的价值函数/子策略，指数性地减少评估次数。对于许多方法来说，完全枚举行动空间是先决条件。
 - en: '![](../Images/5e2af7bc74c3517f2d126a6fbec13fe1.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5e2af7bc74c3517f2d126a6fbec13fe1.png)'
 - en: Binarizations may be represented on a hypercube, over which we can perform a
     structured search per bit [image by [Vlad2i](https://commons.wikimedia.org/wiki/User:Vlad2i~commonswiki)
     via [Wikimedia](https://commons.wikimedia.org/wiki/File:Hypercube.png)]
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 二值化可以在超立方体上表示，我们可以对每一位进行结构化搜索 [图像来源：[Vlad2i](https://commons.wikimedia.org/wiki/User:Vlad2i~commonswiki)
+    通过 [Wikimedia](https://commons.wikimedia.org/wiki/File:Hypercube.png)]
 - en: A special variant of factorization deploys a **hierarchical or multi-agent rationale**
     to factorize the action space [12]. Consider managing a fleet of taxis, in which
     the allocation of individual taxis is represented by individual vector elements.
     Centrally controlling this fleet opens up a ton of combinations, which all would
     need to be evaluated.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种特殊的因式分解变体使用**层次化或多智能体推理**来因式分解行动空间 [12]。考虑管理一队出租车，其中每辆出租车的分配由单独的向量元素表示。对这支车队进行集中控制会产生大量的组合，这些组合都需要进行评估。
 - en: Instead, we could **reason at the level of individual agent**, solving a much
     simpler allocation problem in their local environment. Such a multi-agent perspective
     may be reasonable given the context, as the decisions of taxis on the other side
     of the city will have no or negligible impact on the local decision.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反，我们可以**在个体智能体的层面进行推理**，在其局部环境中解决一个更简单的分配问题。鉴于上下文，这种多智能体视角可能是合理的，因为在城市另一边的出租车决策对当地决策的影响可能微乎其微。
 - en: Although computationally much easier than central control, the resulting solution
     may be suboptimal, e.g., two taxis may accept the same customer. To ensure that
     the action is feasible and possibly improve it using global system knowledge,
     an **ex-post synchronisation step is required**.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管计算上比集中控制要容易得多，但得到的解决方案可能是次优的，例如，两辆出租车可能会接受同一个客户。为了确保行动的可行性并可能使用全局系统知识来改进它，**需要一个事后同步步骤**。
 - en: The design of multi-agent or hierarchical RL methods might be challenging and
     its applicability strongly depends on the problem at hand. If done properly though,
     decomposition may yield high-quality global solutions while performing much quicker
     reasoning at the local level.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 多智能体或层次化RL方法的设计可能具有挑战性，其适用性很大程度上取决于具体问题。然而，如果操作得当，分解可能会产生高质量的全局解决方案，同时在局部层面进行更快速的推理。
 - en: TL;DR
+  id: totrans-101
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: TL;DR
 - en: That was quite a long read, so I won’t blame you if you scrolled straight to
     the end. This table summarizes the most salient points.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章相当长，因此如果你直接滑到最后，我不会怪你。这张表总结了最突出的要点。
 - en: '![](../Images/53d9c542020eeb16c8a226a8fb98e8b9.png)'
+  id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53d9c542020eeb16c8a226a8fb98e8b9.png)'
 - en: Brief description of five strategies that handle large action spaces in reinforcement
     learning, including their pros and cons [image by author]
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 对处理大行动空间的五种策略的简要描述，包括它们的优缺点 [图像来源：作者]
 - en: '*Other Reinforcement Learning articles by the author:*'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '*作者的其他强化学习文章：*'
 - en: '[](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----8ba6b6ca7472--------------------------------)
     [## Proximal Policy Optimization (PPO) Explained'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## 近端策略优化（PPO）解释'
 - en: The journey from REINFORCE to the go-to algorithm in continuous control
+  id: totrans-107
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 从REINFORCE到连续控制中的首选算法的旅程
 - en: towardsdatascience.com](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----8ba6b6ca7472--------------------------------)
     [](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----8ba6b6ca7472--------------------------------)
     [## Policy Gradients In Reinforcement Learning Explained
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '[往数据科学的方向看](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----8ba6b6ca7472--------------------------------)
+    [](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## 强化学习中的策略梯度解释'
 - en: 'Learn all about policy gradient algorithms based on likelihood ratios (REINFORCE):
     the intuition, the derivation, the…'
+  id: totrans-109
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 了解基于似然比的策略梯度算法（REINFORCE）：直觉、推导、……
 - en: towardsdatascience.com](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----8ba6b6ca7472--------------------------------)
     [](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----8ba6b6ca7472--------------------------------)
     [## The Four Policy Classes of Reinforcement Learning
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----8ba6b6ca7472--------------------------------)
+    [](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## 强化学习的四种策略类别'
 - en: towardsdatascience.com](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----8ba6b6ca7472--------------------------------)
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----8ba6b6ca7472--------------------------------)'
 - en: References
+  id: totrans-112
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Powell, W. B. (2022). *Reinforcement Learning and Stochastic Optimization:
     A unified framework for sequential decisions*. John Wiley & Sons.'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Powell, W. B. (2022). *强化学习与随机优化：序列决策的统一框架*。John Wiley & Sons。'
 - en: '[2] Sutton, R. S., & Barto, A. G. (2018). *Reinforcement learning: An introduction*.
     MIT Press.'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Sutton, R. S., & Barto, A. G. (2018). *强化学习：导论*。MIT Press。'
 - en: '[3] Van Heeswijk, W. & La Poutré, H. (2020, December). Deep reinforcement learning
     in linear discrete action spaces. In *2020 IEEE* *Winter Simulation Conference
     (WSC)* (pp. 1063–1074).'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Van Heeswijk, W. & La Poutré, H. (2020 年 12 月). 线性离散动作空间中的深度强化学习。在 *2020
+    IEEE* *冬季模拟会议 (WSC)* (第 1063–1074 页)。'
 - en: '[4] Wikipedia contributors (2023). Metaheuristics. [https://en.wikipedia.org/wiki/Metaheuristic](https://en.wikipedia.org/wiki/Metaheuristic)'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] 维基百科贡献者 (2023). 元启发式算法。 [https://en.wikipedia.org/wiki/Metaheuristic](https://en.wikipedia.org/wiki/Metaheuristic)'
 - en: '[5] Fischetti, M., Fischetti, M. (2018). Matheuristics. In: Martí, R., Pardalos,
     P., Resende, M. (eds) Handbook of Heuristics. Springer, Cham.'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Fischetti, M., Fischetti, M. (2018). 数学启发式。在: Martí, R., Pardalos, P.,
+    Resende, M. (编) 启发式手册。Springer, Cham。'
 - en: '[6] Vanvuchelen, N., Moor, B. de & Boute R. (2022). The use of continuous action
     representations to scale deep reinforcement learning for inventory control. SSRN,
     10 2022\. [https://dx.doi.org/10.2139/ssrn.4253600.](https://dx.doi.org/10.2139/ssrn.4253600.)'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Vanvuchelen, N., Moor, B. de & Boute R. (2022). 使用连续动作表示来扩展用于库存控制的深度强化学习。SSRN,
+    2022 年 10 月。[https://dx.doi.org/10.2139/ssrn.4253600](https://dx.doi.org/10.2139/ssrn.4253600)。'
 - en: '[7] Dulac-Arnold et al. (2015). Deep reinforcement learning in large discrete
     action spaces. arXiv preprint arXiv:1512.07679.'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Dulac-Arnold 等 (2015). 大规模离散动作空间中的深度强化学习。arXiv 预印本 arXiv:1512.07679。'
 - en: '[8] Chandak, Y. et al. (2019). Learning action representations for reinforcement
     learning. In International conference on machine learning, pages 941–950\. PMLR,
     2019.'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Chandak, Y. 等 (2019). 强化学习的动作表示学习。在国际机器学习会议上，页码 941–950。PMLR, 2019。'
 - en: '[9] Akkerman, F., Luy, J., Van Heeswijk, W., & Schiffer, M. (2023). Handling
     Large Discrete Action Spaces via Dynamic Neighborhood Construction. *arXiv preprint
     arXiv:2305.19891*.'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Akkerman, F., Luy, J., Van Heeswijk, W., & Schiffer, M. (2023). 通过动态邻域构建处理大规模离散动作空间。*arXiv
+    预印本 arXiv:2305.19891*。'
 - en: '[10] Dulac-Arnold et al. (2012). Fast reinforcement learning with'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Dulac-Arnold 等 (2012). 快速强化学习与'
 - en: large action sets using error-correcting output codes for MDP factorization.
     In Joint European Conference on Machine Learning and Knowledge Discovery in Databases,
     180–194.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用误差校正输出代码的大动作集的 MDP 分解。在联合欧洲机器学习与数据库知识发现会议上, 180–194。
 - en: '[11] Pazis J. & Parr, R. (2011). Generalized value functions for large action
     sets. In Proceedings of the 28th International Conference on Machine Learning
     (ICML-11), 1185–1192.'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Pazis J. & Parr, R. (2011). 大动作集的广义价值函数。在第 28 届国际机器学习大会 (ICML-11) 论文集中,
+    1185–1192。'
 - en: '[12] Enders, T., Harrison, J., Pavone, M., & Schiffer, M. (2023). Hybrid multi-agent
     deep reinforcement learning for autonomous mobility on demand systems. In *Learning
     for Dynamics and Control Conference* (pp. 1284–1296). PMLR.'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Enders, T., Harrison, J., Pavone, M., & Schiffer, M. (2023). 用于按需自主移动系统的混合多智能体深度强化学习。在
+    *动态与控制学习会议* (第 1284–1296 页)。PMLR。'
