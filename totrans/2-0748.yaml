@@ -691,50 +691,63 @@
   id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: AllReduce 操作符将对它们求和，得到模型预测 *ŷ₁* 的值，并使 *ŷ₁* 对两个 GPU 可用。得到 *ŷ₁* 后，两个 GPU 现在可以计算损失
+    *L*。请注意，在前向传递中，训练数据 (*X₁, Y₁*) 始终在所有 GPU 中加载。或者，AllReduce 操作符可以计算模型预测和损失，然后通过一种叫做操作融合的技术将预测和损失一次性复制到所有
+    GPU。
 - en: Backward pass in distributed model parallel
   id: totrans-101
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式模型并行中的反向传递
 - en: Now let’s check the backward pass. It computes the gradients using the chain
     rule. You are already familiarized yourself with the chain rule before getting
     your current data science job, right?
   id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们检查反向传递。它使用链式法则计算梯度。在你现在的数据科学工作之前，你已经熟悉链式法则了，对吗？
 - en: '![](../Images/97b5c916e14a1f6562d8768c2e0cd5bb.png)'
   id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/97b5c916e14a1f6562d8768c2e0cd5bb.png)'
 - en: Gradient computation in distributed model parallel
   id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布式模型并行中的梯度计算
 - en: Equation (1) and (2) are executed in GPU1, equation (3) and (4) in GPU2.
   id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 方程 (1) 和 (2) 在 GPU1 上执行，方程 (3) 和 (4) 在 GPU2 上执行。
 - en: We need to check if in GPU1 there is sufficient information to compute the gradient
     for the model parameter *w₁* and *w₂*, and the same for GPU2 for the model parameter
     *w₃* and *w₄.*
   id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要检查 GPU1 中是否有足够的信息来计算模型参数 *w₁* 和 *w₂* 的梯度，以及 GPU2 中是否有足够的信息来计算模型参数 *w₃* 和
+    *w₄*。
 - en: 'Let’s focus on *w₁* by looking at equation (1). It reveals that computing the
     gradient *∇w₁* requires:'
   id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过查看方程 (1) 专注于 *w₁*。它揭示了计算梯度 *∇w₁* 需要：
 - en: Training data x*₁, Y₁*, which is always available to all GPUs.
   id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 训练数据 x*₁, Y₁*，始终对所有 GPU 可用。
 - en: Model prediction *ŷ₁*, which is made available to all GPUs by AllReduce.
   id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型预测 *ŷ₁*，通过 AllReduce 将其提供给所有 GPU。
 - en: So GPU1 is able to compute the gradient for *w₁.* And since GPU1 has the model
     weight *w₁* and its gradient *∇w₁*, it will be able to compute the exponential
     moving average of the gradient and the exponential moving average of the squared
@@ -742,59 +755,71 @@
   id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以 GPU1 能够计算 *w₁* 的梯度。由于 GPU1 拥有模型权重 *w₁* 及其梯度 *∇w₁*，它将能够计算梯度的指数移动平均和平方梯度的指数移动平均，这些都是优化器的内部状态。
 - en: This is how distributed model parallel works at a very high level. Note there
     are many ways to split a model into pieces in distributed model parallel. The
     above shows one above way to illustrate how the technique works.
   id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是分布式模型并行在高层次上的工作原理。请注意，有许多方法可以将模型分割成多个部分。上面展示了一种方式来说明该技术的工作原理。
 - en: The ReduceScatter operator
   id: totrans-112
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: ReduceScatter 操作符
 - en: 'There is one more thing I want to mention in distributed model parallel. In
     a more realistic neural network, there are multiple routes from the model’s prediction
     to its inputs. See the original neural network I introduced, shown below again:'
   id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还想在分布式模型并行中提到一件事。在一个更实际的神经网络中，从模型预测到其输入有多个路径。请参见我之前介绍的原始神经网络，再次如下所示：
 - en: '![](../Images/2e8a1f80200bd7bbab586fc373a23ce9.png)'
   id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2e8a1f80200bd7bbab586fc373a23ce9.png)'
 - en: Neural network architecture illustration by author
   id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者的神经网络架构插图
 - en: 'To compute the gradient of *L* with respect to the model parameter *w₁*, there
     are two routes:'
   id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算模型参数 *w₁* 对 *L* 的梯度，有两个路径：
 - en: 'route1: *L → ŷ₁ → h₃ → h₁ → x₁*'
   id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'route1: *L → ŷ₁ → h₃ → h₁ → x₁*'
 - en: 'route2: *L → ŷ₁ → h*₄ *→ h₁ → x₁*'
   id: totrans-118
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'route2: *L → ŷ₁ → h*₄ *→ h₁ → x₁*'
 - en: 'The full gradient is thus the sum of the gradient computed in these two routes,
     in formula:'
   id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，完整的梯度是这两个路径中计算的梯度之和，公式为：
 - en: '![](../Images/956b077678fe831491b83d42caf2fe39.png)'
   id: totrans-120
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/956b077678fe831491b83d42caf2fe39.png)'
 - en: Gradients with two routes
   id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 两条路径的梯度
 - en: It is quite likely that the gradient from route1 and the gradient from route2
     are computed in two different GPUs. To compute the full gradient *∇w₁*, information
     from these GPUs needs to be synchronized, and summed, similar to AllReduce. The
@@ -804,11 +829,14 @@
   id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 梯度从 route1 和 route2 很可能在两个不同的 GPU 上计算。为了计算完整的梯度 *∇w₁*，需要将这些 GPU 的信息同步，并进行求和，类似于
+    AllReduce。不同之处在于，此时求和结果不需要传播到所有 GPU，只需放入负责更新模型参数 *w₁* 的单个 GPU。ReduceScatter 操作符就是为了这个目的。
 - en: ReduceScatter
   id: totrans-123
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: ReduceScatter
 - en: The [ReduceScatter](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#reducescatter)
     operator performs the same operation as the AllReduce operator, except the result
     is scattered in equal blocks among GPUs, each GPU getting a chunk of the data
@@ -816,14 +844,18 @@
   id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '[ReduceScatter](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#reducescatter)
+    操作符执行与 AllReduce 操作符相同的操作，只不过结果在 GPU 之间以相等的块进行分散，每个 GPU 根据其排名索引获取一部分数据。'
 - en: '![](../Images/c5fb0f809adf0ca83d3f1e93ef290fcd.png)'
   id: totrans-125
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c5fb0f809adf0ca83d3f1e93ef290fcd.png)'
 - en: Illustration of the ReduceScatter operator, by author
   id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的 ReduceScatter 操作符示意图
 - en: Use our example, the ReduceScatter operator sums up the partial gradients for
     the *w₁* parameter, namely *∂route₁* from route1 and *∂route₂* from route2, which
     are computed in different GPUs, and puts the sum into exactly the single GPU that
@@ -833,11 +865,15 @@
   id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 以我们的例子为例，ReduceScatter 操作符对 *w₁* 参数的部分梯度进行求和，即来自 route1 的 *∂route₁* 和来自 route2
+    的 *∂route₂*，这些梯度在不同的 GPU 上计算，然后将总和放入唯一负责 *w₁* 参数权重更新的 GPU 中，这里是 GPU1*。请注意，GPU2
+    并未收到完整的梯度 *∇w₁*，因为它不负责对 *w₁* 参数进行权重更新。
 - en: Distributed model parallel is not designed to address training speed
   id: totrans-128
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式模型并行并不是为了提高训练速度而设计的
 - en: Note that the goal of distributed model parallel is to let you load a larger
     model into multiple GPUs, and not to train a model faster. In fact, from the above
     example where we cut the model horizontally, in each GPUs, the computation passes,
@@ -849,17 +885,21 @@
   id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，分布式模型并行的目标是让你将更大的模型加载到多个 GPU 中，而不是加速模型训练。事实上，从上面的例子来看，我们将模型横向切分后，在每个 GPU
+    上，前向和后向计算的传递并没有缩短，只是变得更薄。这意味着每次传递的步骤数相同，因此它们不一定更快（但由于每次传递的计算量较少，它们可以更快，当然，你还需要考虑数据同步所花费的时间）。要更快地训练大型模型，我们需要结合分布式数据和模型并行。
 - en: Combining distributed data and model parallel
   id: totrans-130
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结合分布式数据和模型并行
 - en: 'It is a common practice to enable both distributed data parallel and distributed
     model parallel in training. And the above mentioned APIs such as PyTorch’s FSDP,
     supports this combination. Conceptually:'
   id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练过程中同时启用分布式数据并行和分布式模型并行是一种常见做法。上面提到的 API，如 PyTorch 的 FSDP，支持这种组合。从概念上讲：
 - en: Distributed model parallel works in an inner layer, where it distributed a large
     model to a group of GPUs. This group of GPUs can at least handle a single data
     point from a mini-batch. They behaves as a single monster GPU that has unlimited
@@ -868,6 +908,8 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分布式模型并行在内层工作，它将一个大型模型分配给一组 GPU。这组 GPU 至少可以处理来自一个小批数据的单个数据点。它们表现得像一个具有无限内存的超级
+    GPU。这样，你可以加载更大的模型。
 - en: Distributed model parallel works in an outer layer, where it distributes different
     data points from the same mini-batch to different monster GPUs simulated by distribute
     model parallel. This way, you train the large model faster.
@@ -875,11 +917,13 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分布式模型并行在外层工作，它将来自同一小批数据的不同数据点分配到由分布式模型并行模拟的不同超级 GPU 上。这样，你可以更快地训练大型模型。
 - en: Conclusions
   id: totrans-134
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: This article explains how distributed data parallel and distributed model parallel
     in the context of the stochastic gradient descent algorithm at a theoretical level.
     For API usages, please refer to other documentations mentioned above, such as
@@ -888,16 +932,20 @@
   id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文从理论层面解释了在随机梯度下降算法的背景下，分布式数据并行和分布式模型并行的工作原理。有关 API 使用的详细信息，请参考上述其他文档，如 [DDP](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)、[FSDP](https://pytorch.org/docs/stable/fsdp.html)
+    和 [DeepSpeed](https://github.com/microsoft/DeepSpeed)。
 - en: Support me
   id: totrans-136
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 支持我
 - en: If you like my story, please condiser becoming my referred member. I receive
     a small fraction of your subscription fee, that supports me greatly.
   id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢我的故事，请考虑成为我的推荐会员。我将从你的订阅费用中获得一小部分，这对我有很大支持。
 - en: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----6dbb8d9c3540--------------------------------)
     [## Join Medium with my referral link - Wei Yi'
   id: totrans-138
