@@ -98,45 +98,57 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是，链式思维（CoT）提示 [1] 是一种新提出的技术，通过少样本学习提升 LLM 在基于推理的任务上的表现。类似于标准的提示技术，CoT 提示将多个推理问题的示例解决方案插入到
+    LLM 的提示中。然后，每个示例都配有一系列思维链，即解决问题的中间推理步骤。LLM 然后以少样本的方式学习在解决推理问题时生成类似的思维链。这种方法使用最少的数据（即仅几个示例进行提示），无需特定任务的微调，并显著提高了
+    LLM 在基于推理的基准测试上的表现，尤其是对于较大的模型。
 - en: '![](../Images/009564d1f7a50d2b1003254acec03b64.png)'
   id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/009564d1f7a50d2b1003254acec03b64.png)'
 - en: (from [1, 11])
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: （来自 [1, 11]）
 - en: Core Concepts
   id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 核心概念
 - en: 'To understand CoT prompting, we need a baseline understanding of [LLMs](https://twitter.com/cwolferesearch/status/1639378997627826176?s=20)
     and [how they work](https://twitter.com/cwolferesearch/status/1635693551584522256?s=20).
     Luckily, we have covered this topic extensively in prior overviews:'
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 要理解 CoT 提示，我们需要对 [LLMs](https://twitter.com/cwolferesearch/status/1639378997627826176?s=20)
+    和 [它们的工作原理](https://twitter.com/cwolferesearch/status/1635693551584522256?s=20)有一个基本了解。幸运的是，我们在之前的综述中已经广泛覆盖了这个话题：
 - en: Introduction to Language Models [[link](https://cameronrwolfe.substack.com/p/language-models-gpt-and-gpt-2)]
   id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 语言模型简介 [[link](https://cameronrwolfe.substack.com/p/language-models-gpt-and-gpt-2)]
 - en: GPT-3 and Language Model Scaling Laws [[link](https://cameronrwolfe.substack.com/p/language-model-scaling-laws-and-gpt)]
   id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GPT-3 和语言模型的扩展定律 [[link](https://cameronrwolfe.substack.com/p/language-model-scaling-laws-and-gpt)]
 - en: Modern LLMs [[link](https://cameronrwolfe.substack.com/p/modern-llms-mt-nlg-chinchilla-gopher)]
   id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 现代 LLMs [[link](https://cameronrwolfe.substack.com/p/modern-llms-mt-nlg-chinchilla-gopher)]
 - en: Specialized LLMs [[link](https://cameronrwolfe.substack.com/p/specialized-llms-chatgpt-lamda-galactica)]
   id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 专门化的 LLMs [[link](https://cameronrwolfe.substack.com/p/specialized-llms-chatgpt-lamda-galactica)]
 - en: 'We will not cover the fundamentals of LLMs within this section. Rather, we
     will focus upon developing a better understanding of prompting and few-shot learning
     for LLMs, as well as explore how such techniques may be leveraged to solve a core
@@ -144,11 +156,13 @@
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节将不会涵盖大语言模型（LLMs）的基础知识。相反，我们将专注于提高对提示和少样本学习的理解，并探讨这些技术如何被用来解决这些模型的核心限制：*它们无法解决推理任务*。
 - en: Prompting and Few-Shot Learning
   id: totrans-21
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 提示和少样本学习
 - en: After the proposal of language models like [GPT](https://cameronrwolfe.substack.com/i/85568430/improving-language-understanding-by-generative-pre-training-gpt)
     and [GPT-2](https://cameronrwolfe.substack.com/i/85568430/language-models-are-unsupervised-multitask-learners-gpt),
     we knew that pre-training via a [self-supervised](https://cameronrwolfe.substack.com/i/74325854/self-supervised-pre-training)
@@ -161,14 +175,22 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [GPT](https://cameronrwolfe.substack.com/i/85568430/improving-language-understanding-by-generative-pre-training-gpt)
+    和 [GPT-2](https://cameronrwolfe.substack.com/i/85568430/language-models-are-unsupervised-multitask-learners-gpt)
+    等语言模型提出后，我们知道通过 [自监督](https://cameronrwolfe.substack.com/i/74325854/self-supervised-pre-training)
+    的下一词预测（或 [语言建模](https://cameronrwolfe.substack.com/i/85568430/language-modeling)）目标是非常强大的。然而，如何将这些通用的
+    [基础模型](https://cameronrwolfe.substack.com/i/85568430/creating-foundation-models)
+    适配到特定的下游任务上并不十分明确。例如，GPT 在下游任务上微调模型，而 GPT-2 以零样本的方式解决问题；见下文。
 - en: '![](../Images/ec97fc06f43ce8440f250d1a61df6c84.png)'
   id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ec97fc06f43ce8440f250d1a61df6c84.png)'
 - en: (from [2])
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: （来自 [2]）
 - en: After the proposal of [GPT-3](https://cameronrwolfe.substack.com/i/88082618/language-models-are-few-shot-learners)
     [2], we saw that LLMs of sufficient scale can perform few-shot learning quite
     well. After pre-training via a language modeling objective, GPT-3 (a 175 billion
@@ -365,6 +387,9 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[PaLM](https://cameronrwolfe.substack.com/p/palm-efficiently-training-massive)
+    [6]：一个使用标准语言建模目标、Google的 [Pathways](https://blog.google/technology/ai/introducing-pathways-next-generation-ai-architecture/)
+    框架和大规模文本语料库进行预训练的LLM（存在8B、62B和540B尺寸的模型）。'
 - en: '[Codex](https://cameronrwolfe.substack.com/i/93578656/evaluating-large-language-models-trained-on-code)
     [7]: a 12 billion parameter LLM that is pre-trained using a standard language
     modeling objective, then fine-tuned on publicly-available Python code from GitHub.'
@@ -372,12 +397,16 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Codex](https://cameronrwolfe.substack.com/i/93578656/evaluating-large-language-models-trained-on-code)
+    [7]：一个具有120亿参数的LLM，它在使用标准语言建模目标进行预训练后，针对GitHub上的公开Python代码进行了微调。'
 - en: 'UL2–20B [8]: an LLM that is pre-trained using the [Mixture-of-Denoisers (MoD)](https://syncedreview.com/2022/05/13/googles-universal-pretraining-framework-unifies-language-learning-paradigms/)
     objective, a unified objective that performs well across many datasets and setups.'
   id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: UL2–20B [8]：一个使用 [Mixture-of-Denoisers (MoD)](https://syncedreview.com/2022/05/13/googles-universal-pretraining-framework-unifies-language-learning-paradigms/)
+    目标进行预训练的LLM，这是一个在许多数据集和设置中表现良好的统一目标。
 - en: Beyond these LLMs, we have learned about other models (e.g., [LLaMA](https://cameronrwolfe.substack.com/p/llama-llms-for-everyone),
     [LLaMA extensions](https://cameronrwolfe.substack.com/p/llama-llms-for-everyone),
     and [T5](https://cameronrwolfe.substack.com/p/t5-text-to-text-transformers-part-354))
@@ -385,19 +414,24 @@
   id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了这些LLM，我们还在近期的综述中了解到其他模型（例如，[LLaMA](https://cameronrwolfe.substack.com/p/llama-llms-for-everyone)、[LLaMA扩展](https://cameronrwolfe.substack.com/p/llama-llms-for-everyone)
+    和 [T5](https://cameronrwolfe.substack.com/p/t5-text-to-text-transformers-part-354)）。
 - en: Chain of Thought Prompting
   id: totrans-53
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 思维链提示
 - en: '![](../Images/5dd3cd159808e0d9e338447fb55aa399.png)'
   id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5dd3cd159808e0d9e338447fb55aa399.png)'
 - en: (from [1])
   id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: （来源于 [1]）
 - en: Although we might understand the idea of prompting in general, *what is CoT
     prompting?* CoT simply refers to a specific prompting technique that inserts a
     chain of thought (i.e., a series of intermediate reasoning steps) into an LLM’s
@@ -407,6 +441,7 @@
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管我们可能对提示的概念有一定了解，但*CoT提示是什么？* CoT 仅指一种特定的提示技术，它将思维链（即一系列中间推理步骤）插入到LLM的提示中；见上文。对于足够大的模型（>1000亿参数），这种方法显著提升了LLM在算术、常识和符号推理任务中的复杂推理能力。
 - en: '**where does CoT prompting come from?** Prior to the proposal of CoT prompting,
     we were already aware that few-shot learning was incredibly powerful for LLMs;
     see below. Instead of [fine-tuning](https://cameronrwolfe.substack.com/i/85568430/improving-language-understanding-by-generative-pre-training-gpt)
@@ -417,14 +452,18 @@
   id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '**CoT提示的来源是什么？** 在CoT提示提出之前，我们已经知道少样本学习对LLM极其强大；见下文。我们不是 [fine-tuning](https://cameronrwolfe.substack.com/i/85568430/improving-language-understanding-by-generative-pre-training-gpt)
+    LLM以执行任务，而是“提示”一个通用模型，给出几个正确输出的例子，然后生成最终答案。这种方法在许多任务中 [非常成功](https://cameronrwolfe.substack.com/i/88082618/language-models-are-few-shot-learners)。'
 - en: '![](../Images/3d131a84fac4687188c586210a6455ac.png)'
   id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3d131a84fac4687188c586210a6455ac.png)'
 - en: In-context learning with few-shot prompting (from [2])
   id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用少样本提示进行上下文学习（来源于 [2]）
 - en: Plus, we knew from related work that generating natural language rationales
     that explain how to arrive at a final answer is beneficial for arithmetic reasoning
     tasks. We can train or fine-tune models to generate these rationales [3, 4], but
@@ -433,6 +472,7 @@
   id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们从相关研究中了解到，生成自然语言的推理来解释如何得出最终答案对算术推理任务有益。我们可以训练或微调模型来生成这些推理 [3, 4]，但这需要创建一个用于不同推理任务的高质量推理数据集，这既昂贵又耗时！
 - en: “A prompting only approach is important because it does not require a large
     training dataset and a single model can perform many tasks without loss of generality.”
     *— from [1]*
@@ -440,6 +480,7 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “仅依靠提示的方法很重要，因为它不需要大量的训练数据集，而且单个模型可以在不丧失通用性的情况下执行许多任务。” *— 来自 [1]*
 - en: '*CoT prompting combines the strengths of few-shot prompting with the benefit
     of generating natural language rationales*. Instead of performing extra training
     or fine-tuning, we can just insert a few examples of rationales (i.e., chains
@@ -448,32 +489,38 @@
   id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '*CoT 提示法结合了少量示例提示的优势和生成自然语言推理的好处*。我们不需要额外的训练或微调，只需将一些推理示例（即思维链）插入到提示中，就可以让LLM通过少量示例学习生成类似的推理。'
 - en: How does CoT prompting work?
   id: totrans-63
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: CoT 提示法是如何工作的？
 - en: 'When we solve reasoning tasks as humans, it is common to break the problem
     down into smaller tasks. For example, I typically do the following when calculating
     how much I want to tip at a restaurant:'
   id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们作为人类解决推理任务时，通常会将问题拆分为更小的任务。例如，我在计算在餐厅想要给多少小费时通常会这样做：
 - en: 'Take the total amount of the bill: $56.00'
   id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 取账单总额：$56.00
 - en: 'Compute 10% of the total: $5.60'
   id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算总额的10%：$5.60
 - en: 'Multiply this value by 2 (yielding a 20% tip): $11.20'
   id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将这个值乘以2（产生20%的小费）：$11.20
 - en: Although this example is simple, the idea extends to a variety of mental reasoning
     tasks that we solve as humans. We generate a chain of thought (defined as “a coherent
     series of intermediate reasoning steps that lead to the final answer for a problem”
@@ -482,6 +529,8 @@
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管这个例子很简单，但这一理念可以扩展到我们作为人类解决的各种心理推理任务中。我们生成一个思维链（在[1]中定义为“引导问题最终答案的连贯中间推理步骤序列”）来解决这些任务。简单来说，*CoT
+    提示法增强了LLM生成类似思维链的能力*。
 - en: '“We explore the ability of language models to perform few-shot prompting for
     reasoning tasks, given a prompt that consists of triples: [input, chain of thought,
     output].” *— from [1]*'
@@ -489,19 +538,23 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “我们探索语言模型在推理任务中进行少量示例提示的能力，前提是提示由三元组组成：[输入，思维链，输出]。” *— 来自 [1]*
 - en: Examples of solutions to reasoning tasks combined with a chain of thought on
     several different problems are shown below.
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 下方展示了结合思维链解决的各种推理任务的示例。
 - en: '![](../Images/82dea93cb3203eb7234f03e06bd43a47.png)'
   id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/82dea93cb3203eb7234f03e06bd43a47.png)'
 - en: (from [1])
   id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: （来自 [1]）
 - en: '**learning chains of thought.** To teach LLMs to generate problem-solving rationales,
     we can just insert examples of such rationales into their prompt. Then, the LLMs
     can leverage their few-shot learning capabilities to generate similar chains of
@@ -510,49 +563,58 @@
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '**学习思维链。** 为了教导LLM生成问题解决的推理，我们可以将这些推理示例直接插入到提示中。然后，LLM可以利用其少量示例学习能力在解决任何推理问题时生成类似的思维链。如下所示，提示通常包含几个思维链示例。'
 - en: '![](../Images/82704108a882e37234b1e68428850b7c.png)'
   id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/82704108a882e37234b1e68428850b7c.png)'
 - en: (from [1])
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: （来自 [1]）
 - en: 'Authors in [1] find that such a prompting approach leads LLMs to generate similar
     chains of thought when solving problems, which aids reasoning capabilities and
     has several notable benefits:'
   id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1]中的作者发现，这种提示方法使LLM在解决问题时生成类似的思维链，这有助于推理能力，并具有几个显著的好处：'
 - en: '*Interpretability*: the LLM’s generated chain of thought can be used to better
     understand the model’s final answer.'
   id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*可解释性*：LLM生成的思维链可以用来更好地理解模型的最终答案。'
 - en: '*Applicability*: CoT prompting can be used for any task that can be solved
     by humans via language.'
   id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*适用性*：CoT 提示法可以用于任何可以通过语言由人类解决的任务。'
 - en: '*Prompting*: no training or fine-tuning is required of any LLMs. We can just
     insert a few CoT examples into the prompt!'
   id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*提示*：不需要对任何LLM进行训练或微调。我们只需将一些 CoT 示例插入提示中即可！'
 - en: Plus, LLMs can even allocate more computational resources to complex reasoning
     problems by just generating a chain of thought with more steps. This mimics what
     we would typically do as humans!
   id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，LLM 甚至可以通过生成更多步骤的思维链来分配更多计算资源给复杂的推理问题。这模仿了我们作为人类通常会做的事情！
 - en: CoT Prompting is Massively Beneficial
   id: totrans-81
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: CoT 提示法极其有益
 - en: To evaluate its impact on the ability of LLMs to solve reasoning problems, CoT
     prompting is tested on arithmetic, commonsense and symbolic reasoning benchmarks.
     Evaluation is performed using several different pre-trained LLMs, including [GPT-3](https://cameronrwolfe.substack.com/i/88082618/language-models-are-few-shot-learners)
@@ -656,6 +718,8 @@
   id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 中的作者还分析了 CoT 提示对不同结构（例如，置换少量示例）的鲁棒性，并剖析了 CoT 提示的各个方面，发现 CoT 对模型性能提供了一致且独特的好处。有趣的是，CoT
+    提示对小的提示扰动并不太敏感。'
 - en: '**commonsense reasoning.** [Commonsense reasoning](https://huggingface.co/datasets/commonsense_qa)
     problems assume a grasp of general background knowledge and require reasoning
     over physical and human interactions. Adopting a similar setup to arithmetic reasoning
@@ -665,14 +729,18 @@
   id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: '**常识推理。** [常识推理](https://huggingface.co/datasets/commonsense_qa) 问题假设对一般背景知识有掌握，并需要对物理和人类互动进行推理。作者采用类似于算术推理实验的设置（除了少数需要手动策划少量示例的数据集），评估了各种预训练的
+    LLM 在常识推理任务中的表现，结果如下面的图所示。'
 - en: '![](../Images/7789739d62baa4e37dd6dc2eb889ce2f.png)'
   id: totrans-96
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7789739d62baa4e37dd6dc2eb889ce2f.png)'
 - en: (from [1])
   id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: (来自 [1])
 - en: Put simply, CoT prompting is found to provide a massive benefit on commonsense
     reasoning problems as well. Again, we see that larger models benefit more from
     CoT prompting. However, both standard prompting and CoT prompting performance
@@ -681,23 +749,28 @@
   id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，CoT 提示在常识推理问题上也被发现提供了巨大的好处。我们再次看到，较大的模型从 CoT 提示中获益更多。然而，无论是标准提示还是 CoT 提示的表现都随着模型规模的增加而提高，其中
+    CoT 提示倾向于实现稍微提高的性能。
 - en: '**symbolic reasoning.** Authors in [1] also evaluate CoT prompting on symbolic
     reasoning tasks, such as:'
   id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '**符号推理。** [1] 中的作者还在符号推理任务上评估了 CoT 提示，例如：'
 - en: '*Last Letter Concatenation*: asks the model to concatenate and output the last
     letters for each word in a sequence.'
   id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*最后一个字母连接*: 要求模型连接并输出序列中每个单词的最后一个字母。'
 - en: '*Coin Flip*: asks the model to determine if a coin is still heads up after
     a sequence of coin flips.'
   id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*硬币翻转*: 要求模型确定经过一系列硬币翻转后，硬币是否仍然是正面朝上。'
 - en: Going further, both in-domain and out-of-domain symbolic reasoning tests are
     considered, where out-of-domain examples are defined as those that require more
     reasoning steps (e.g., more words in last letter concatenation or a longer sequence
@@ -706,14 +779,17 @@
   id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 更进一步，考虑了领域内和领域外的符号推理测试，其中领域外示例被定义为那些需要比训练或少量示例中看到的更多推理步骤（例如，最后一个字母连接中更多的单词或更长的硬币翻转序列）的示例。领域内和领域外评估的结果如下所示。
 - en: '![](../Images/8b1dc34e576a2366054ec20bebd6d97a.png)'
   id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8b1dc34e576a2366054ec20bebd6d97a.png)'
 - en: (from [1])
   id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: (来自 [1])
 - en: Although these tasks are simplistic, we see above that CoT thought prompting
     *i)* improves performance on both symbolic reasoning tasks and *ii)* enables better
     generalization to out-of-domain problems that require more reasoning steps. Plus,
@@ -723,11 +799,14 @@
   id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管这些任务比较简单，但我们看到 CoT 思维提示在 *i)* 提升了符号推理任务的表现，并且 *ii)* 使模型在需要更多推理步骤的领域外问题中能够更好地泛化。此外，我们再次观察到，无论是否使用
+    CoT 提示，较小的模型都无法解决符号推理任务。因此，CoT 提示似乎是符号推理的一个极有益的方法。
 - en: Variants of CoT Prompting
   id: totrans-106
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: CoT 提示的变体
 - en: After the proposal of CoT prompting in [1], several variants were proposed that
     can improve the reasoning capabilities of LLMs. These different variants provide
     a variety of interesting and practical approaches for eliciting “reasoning” behavior
@@ -735,14 +814,18 @@
   id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [1] 中提出 CoT 提示后，提出了几种变体，可以提高 LLM 的推理能力。这些不同的变体为引发 LLM 中的“推理”行为提供了各种有趣和实用的方法。下方提供了一些值得注意的
+    CoT 提示变体列表。
 - en: '![](../Images/9b12a33c31ba141041c4706197c8b549.png)'
   id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9b12a33c31ba141041c4706197c8b549.png)'
 - en: (from [10])
   id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: (来自 [10])
 - en: '**zero-shot CoT.** Zero-shot CoT prompting [10] is a simple followup to CoT
     prompting [1]. To encourage an LLM to generate a chain of thought, zero-shot CoT
     simply appends the words “*Let’s think step by step.*” to the end of the question
