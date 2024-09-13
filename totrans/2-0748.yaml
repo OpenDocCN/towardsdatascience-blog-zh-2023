@@ -1,57 +1,85 @@
 - en: Distributed data parallel and distributed model parallel in PyTorch
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: PyTorch中的分布式数据并行和分布式模型并行
 - en: 原文：[https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540](https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540](https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540)
 - en: Learn how distributed data parallel and distributed model parallel works inside
     stochastic gradient descent to let you train gigantic models over huge datasets
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 了解分布式数据并行和分布式模型并行如何在随机梯度下降中工作，以便让你可以在庞大的数据集上训练巨型模型
 - en: '[](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![Wei
     Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)
     [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![魏轶](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)
+    [魏轶](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)
     ·14 min read·May 8, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)
+    ·阅读时长14分钟·2023年5月8日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/ecced4c819e71328af444db89219dc4f.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ecced4c819e71328af444db89219dc4f.png)'
 - en: Photo by [Olga Zhushman](https://unsplash.com/ja/@ori_photostory?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 [Olga Zhushman](https://unsplash.com/ja/@ori_photostory?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 拍摄的照片
 - en: You must have heard that recent successful models, such as ChatGPT, have trillions
     of parameters and trained with terabytes of data. In the meanwhile, you may have
     experienced that your deep learning model with tens of millions of parameters
     didn’t even fit in a GPU and it trained for days with only gigabytes of data.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 你一定听说过，最近成功的模型，如ChatGPT，拥有数万亿个参数，并且使用了数TB的数据进行训练。同时，你也可能经历过你的深度学习模型，即使只有几千万个参数，也无法在一个GPU上完成训练，并且用几GB的数据训练了好几天。
 - en: 'If you wonder why other people could achieve so much in the same life time,
     and want to be them, please understand the two techniques that enable the training
     of large deep learning models with huge datasets:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想知道为什么其他人在同样的时间内能取得如此多的成就，并且希望成为他们，请理解这两种技术，它们使得在庞大的数据集上训练大型深度学习模型成为可能：
 - en: '**Distributed data parallel** splits a mini-batch across GPUs. It lets you
     train faster.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**分布式数据并行** 将一个小批量数据分割到多个GPU上。这使得训练速度更快。'
 - en: '**Distributed model parallel** splits a model’s parameters, gradients and optimizer’s
     internal states across GPUs. It lets you load larger models in GPUs.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**分布式模型并行** 将模型的参数、梯度和优化器的内部状态分割到多个GPU上。这使得你可以在GPU上加载更大的模型。'
 - en: There are many API implementations of distributed data parallel and distributed
     model parallel, such as [DDP](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html),
     [FSDP](https://pytorch.org/docs/stable/fsdp.html) and [DeepSpeed](https://github.com/microsoft/DeepSpeed).
@@ -62,322 +90,469 @@
     in no way this article completes these two huge topics — it stops as soon as you
     get enough background and courage to dive into them yourself, or to face technical
     interviews.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 有许多分布式数据并行和分布式模型并行的API实现，如[DDP](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)、[FSDP](https://pytorch.org/docs/stable/fsdp.html)和[DeepSpeed](https://github.com/microsoft/DeepSpeed)。它们都有一个共同的主题，即将训练数据或模型拆分成多个部分，并将这些部分分配到不同的GPU上。本文不是关于如何使用这些API，因为教程已经很丰富。本文是对这些API如何在幕后工作的直观理论探讨。之所以称之为“探讨”，是因为本文并没有完成这两个庞大的主题——它在你获得足够的背景知识和勇气去深入了解它们或面对技术面试时就会停止。
 - en: Parallelism in stochastic gradient descent
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 随机梯度下降中的并行性
 - en: 'To understand how distributed data and model parallel works really means to
     understand how they work in the stochastic gradient descent algorithm that performs
     parameter learning (or equivalently, model training) of a deep neural network.
     Specifically, we need to understand how these two techniques work in:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 了解分布式数据和模型并行的工作原理实际上意味着了解它们在执行深度神经网络的参数学习（或等同于模型训练）的随机梯度下降算法中的工作方式。具体来说，我们需要了解这两种技术如何在以下方面工作：
 - en: The forward pass which computes model prediction and the loss function for a
     data point, or sample.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 前向传播计算模型预测和数据点或样本的损失函数。
 - en: The back-propagation pass, or backward pass, which computes the gradient of
     the loss function with respect to each model parameter.
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 反向传播阶段，或称为反向传递，计算损失函数相对于每个模型参数的梯度。
 - en: Let’s start with the easier of the two, distributed data parallel.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从较简单的分布式数据并行开始。
 - en: Distributed Data Parallel
+  id: totrans-18
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分布式数据并行
 - en: It addresses the problem of huge training dataset by parallelizing how stochastic
     gradient descent goes over the training data. Let’s refresh our memory about the
     stochastic gradient descent procedure in a single GPU.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 它通过并行化随机梯度下降遍历训练数据的方式来解决巨大的训练数据集问题。让我们回顾一下单个GPU中随机梯度下降的过程。
 - en: Steps in stochastic gradient descent
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 随机梯度下降的步骤
 - en: The training procedure loads the full model into that GPU.
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 训练过程将整个模型加载到该GPU中。
 - en: Then the procedure goes over the full training dataset many times; each time
     is called an epoch.
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后该过程会多次遍历整个训练数据集，每次遍历称为一个时期（epoch）。
 - en: In each epoch the procedure goes over all the samples in the training dataset
     exactly once via randomly sampled mini-batches. A mini-batch consists of several
     data points. This random sampling is without replacement, making sure that a single
     data point exists in a mini-batch exactly once during an epoch. The random sampling
     of mini-batch is explains the word “stochastic” in the the algorithm’s name. Each
     data point is used in the forward pass and the backward pass.
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在每个时期，该过程会通过随机采样的小批量遍历训练数据集中的所有样本。一个小批量由若干数据点组成。这种随机采样是不放回的，确保每个数据点在一个时期内仅存在于一个小批量中一次。小批量的随机采样解释了算法名称中的“随机”一词。每个数据点在前向传播和反向传播中都会被使用。
 - en: In the forward pass, the procedure pushes each data point in a mini-batch through
     the neural network to compute the model’s output, i.e., its prediction, then uses
     the model’s prediction to compute the loss function by calculating the difference
     between the prediction and the actual.
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在前向传播中，该过程将每个数据点通过神经网络推送以计算模型的输出，即预测，然后使用模型的预测来通过计算预测与实际之间的差异来计算损失函数。
 - en: In the backward pass, the procedure computes the gradient of the loss with respect
     to each model parameter, that is, the weights and bias in the neural network.
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在反向传播中，该过程计算损失相对于每个模型参数的梯度，即神经网络中的权重和偏置。
 - en: The procedure then uses the current values for the model parameters and their
     gradients to assign a new set of values for the model parameters via the weight
     update rule. If a parameter’s current value is *w*, its gradient is *∇w* and the
     learning rate is *α*, then the weight update rule computes the new parameter value
     *w′* as *w′ ← w - α·∇w.*
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后，该过程使用当前模型参数及其梯度的值，通过权重更新规则分配模型参数的新值。如果一个参数的当前值是*w*，其梯度是*∇w*，学习率是*α*，那么权重更新规则将计算新的参数值*w′*，即*w′
+    ← w - α·∇w*。
 - en: Repeat step 3 to 6 until model is sufficiently trained, for example, until the
     loss is not decreasing for a while, or simply until you run out of money or patience.
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复步骤3到6，直到模型训练得足够好，例如，直到损失不再减少一段时间，或者直到你耗尽资金或耐心为止。
 - en: Distributed data parallel distributes a mini-batch to multiple GPUs
+  id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式数据并行将一个小批量分配到多个GPU上
 - en: Distributed data parallel makes one improvement over the above training procedure
     at step 4 and 5\. It splits a mini-batch into different parts and sends them off
     to different GPUs to perform the forward and backward pass. This way, the same
     mini-batch can be processed faster.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布式数据并行在上述训练过程的第4步和第5步中做出了改进。它将一个小批量分成不同的部分，并将这些部分发送到不同的GPU上进行前向和反向传播。这样，相同的小批量可以更快地处理。
 - en: To understand what this exactly means, let’s imagine our mini-batch consists
     of only two data points. That is, our batch size is 2\. The two data points in
     this mini-batch is *(X₁, Y₁)* and *(X₂, Y₂)*. For the first data point, the forward
     pass uses *X₁* to compute model’s prediction *ŷ₁*, and same for the second data
     point to compute *ŷ₂*.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 要理解这究竟意味着什么，我们假设我们的一个小批量仅包含两个数据点。也就是说，我们的批量大小是2。这个小批量中的两个数据点是*(X₁, Y₁)*和*(X₂,
+    Y₂)*。对于第一个数据点，前向传播使用*X₁*来计算模型的预测值*ŷ₁*，第二个数据点也是如此，计算*ŷ₂*。
 - en: And we have two GPUs, named GPU1 and GPU2.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有两个GPU，分别命名为GPU1和GPU2。
 - en: '**Forward pass in distributed model parallel**'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**分布式模型并行中的前向传播**'
 - en: 'If we take the usual quadratic loss function, then the forward pass finally
     computes the value of the loss *L*:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们采用通常的二次损失函数，那么前向传播最终计算损失*L*的值：
 - en: '![](../Images/a481000e4da710b76bbab26926ea1dec.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a481000e4da710b76bbab26926ea1dec.png)'
 - en: Loss computation in distributed data parallel
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布式数据并行中的损失计算
 - en: Note that at line (3), the two terms *L₁* and *L₂* only depends on a single,
     but different data point. So the computation of the loss term *L₁* is independent
     from the computation of *L₂*. This allows distributed data parallel to send the
     first data point *(X₁, Y₁)* to GPU1 and the second data point *(X₂, Y₂)* to GPU2
     to perform the loss computation.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意在第(3)行中，两个术语*L₁*和*L₂*只依赖于单个但不同的数据点。因此，损失项*L₁*的计算与*L₂*的计算是独立的。这允许分布式数据并行将第一个数据点*(X₁,
+    Y₁)*发送到GPU1，将第二个数据点*(X₂, Y₂)*发送到GPU2，以进行损失计算。
 - en: Of course, to make the above work, each GPU must have loaded with the full model,
     so it can push a single data point through the whole network to compute model’s
     prediction and then the loss for that data point.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，为了使上述工作，每个GPU必须加载完整模型，以便它可以通过整个网络推送单个数据点来计算模型的预测，然后计算该数据点的损失。
 - en: Backward pass in distributed model parallel
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式模型并行中的反向传播
 - en: Now let’s look at the backward pass, which computes the gradient of the loss
     function with respect to every model parameters. We will focus on a single model
     parameter, say *w₁.* The gradient of the loss *L* with respect to *w₁*, denoted
     as *∇w₁*, is computed via*:*
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们看看反向传播，它计算损失函数对每个模型参数的梯度。我们将关注一个单一的模型参数，比如*w₁*。损失*L*对*w₁*的梯度，记作*∇w₁*，通过*：*
 - en: '![](../Images/325f99ed10523f2e4d41b09fbc212514.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/325f99ed10523f2e4d41b09fbc212514.png)'
 - en: Gradient computation in distributed data parallel
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布式数据并行中的梯度计算
 - en: Using the [linearity of differentiation](https://en.wikipedia.org/wiki/Linearity_of_differentiation),
     line (3) splits the full gradient into two terms, each for a single data point.
     Since we have two GPUs and each GPU is loaded with the full model and receives
     a single data point, that GPU can compute the gradient for that data point. In
     other words, the two gradient terms at line (3) can be computed in parallel using
     two GPUs. That is, GPU1 computes and holds the *∂L₁* quantity, and GPU2 *∂L₂*.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用[微分的线性性](https://en.wikipedia.org/wiki/Linearity_of_differentiation)，第(3)行将完整梯度分成两个术语，每个术语对应一个单独的数据点。由于我们有两个GPU，每个GPU加载了完整模型并接收了一个数据点，该GPU可以计算该数据点的梯度。换句话说，第(3)行的两个梯度项可以使用两个GPU并行计算。也就是说，GPU1计算并保存*∂L₁*，GPU2计算*∂L₂*。
 - en: Synchronized parameter weight update
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 同步的参数权重更新
 - en: 'Finally, stochastic gradient descent performs parameter value update by using
     the weight update rule:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，随机梯度下降通过使用权重更新规则来执行参数值更新：
 - en: '![](../Images/aea528e06bb5c675ff136c580610f0c5.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/aea528e06bb5c675ff136c580610f0c5.png)'
 - en: Gradient descent weight update rule
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 梯度下降权重更新规则
 - en: The rule gives a new value *w₁′* from the current the parameter value *w₁* by
     subtracting *α·∇w₁* from it, hence the phrase *gradient descent. α* is the learning
     rate; it controls the step size of the descent. Note here I use the symbol “*w₁”*
     to denote both the parameter name and its current value to avoid introducing too
     many symbols.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 该规则通过从当前参数值 *w₁* 中减去 *α·∇w₁* 来给出新值 *w₁′*，因此有了“梯度下降”这个术语。*α* 是学习率；它控制下降的步长。这里我使用符号
+    *w₁* 来表示参数名称及其当前值，以避免引入过多的符号。
 - en: All GPUs need to perform the weight update for *w₁* using the same*∇w₁* to make
     sure that every GPU has the same model after the weight update step.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有 GPU 都需要使用相同的 *∇w₁* 来执行 *w₁* 的权重更新，以确保每个 GPU 在权重更新步骤后具有相同的模型。
 - en: 'Here we should have spotted a problem: the weight update rule needs the full
     gradient *∇w₁* for the model parameter *w₁*, but neither GPU has this quantity.
     GPU1 holds the quantity *∂L₁* because it computes *∂L₁* in it; and GPU2 holds
     *∂L₂.* To solve this problem, some inter-GPU computation happens to sum *∂L₁*
     and *∂L₂,* then transfers the sum to both GPUs*.* The [AllReduce](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#allreduce)
     GPU operator does the job.'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里我们应该发现一个问题：权重更新规则需要模型参数*w₁*的完整梯度 *∇w₁*，但没有 GPU 拥有这个量。GPU1 持有量 *∂L₁*，因为它在其中计算
+    *∂L₁*；而 GPU2 持有 *∂L₂*。为了解决这个问题，一些 GPU 之间的计算会将 *∂L₁* 和 *∂L₂* 相加，然后将和转移到两个 GPU 上。[AllReduce](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#allreduce)
+    GPU 操作符完成了这个工作。
 - en: The AllReduce operator
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: AllReduce 操作符
 - en: The [AllReduce operator](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#allreduce)
     performs reductions on data, such as sum, max, across all GPUs and writes the
     result to all GPUs.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '[AllReduce 操作符](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#allreduce)
+    对数据执行降维操作，例如求和、最大值，跨所有 GPU 并将结果写入所有 GPU。'
 - en: The following figure illustrates AllReduce summing up partial gradients *∂L₁*
     and *∂L₂* for the model parameter *w₁* from the two GPUs and writing the result
     — the full gradient *∇w₁* to all GPUs.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 下图说明了 AllReduce 如何将两个 GPU 上模型参数 *w₁* 的部分梯度 *∂L₁* 和 *∂L₂* 相加，并将结果 —— 完整梯度 *∇w₁*
+    写入所有 GPU。
 - en: '![](../Images/cab8ce7ce94fb4c5686c2e1a588daa12.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cab8ce7ce94fb4c5686c2e1a588daa12.png)'
 - en: Illustration of the AllReduce operator, by author
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 由作者绘制的 AllReduce 操作符插图
 - en: Why distributed parallel reduces training time?
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么分布式并行可以减少训练时间？
 - en: Data transfer among GPUs takes time, but as long as data transfer takes less
     time than computing the loss and gradient for all the data points in a mini-batch,
     there is a time gain at the expense of more money spent to hire more GPUs.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据在 GPU 之间的传输需要时间，但只要数据传输的时间少于计算所有数据点的损失和梯度的时间，就能在花费更多钱雇用更多 GPU 的代价下获得时间上的收益。
 - en: If you are rich, you can hire 10,000 GPUs, and set your mini-batch size to 10,000\.
     So in a single optimization step, you can process a significant amount of your
     training data. I will let your imagination go wild right here to think about what
     this means for your terabyte-sized dataset.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你很富有，你可以雇用 10,000 个 GPU，并将你的 mini-batch 大小设置为 10,000。这样在一个优化步骤中，你可以处理大量的训练数据。我将让你的想象力在这里放飞，思考一下这对你那几
+    TB 大小的数据集意味着什么。
 - en: Caveat in distributed data parallel
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式数据并行中的警告
 - en: There is one catch in distributed data parallel — it requires each GPU to hold
     the full model. You won’t be able to load large models in a single GPU, which
     usually has 16GB to 24GB or memory, so they roughly support a hundred million
     parameters. To train models larger than that, we need distributed model parallel.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布式数据并行有一个问题——它要求每个 GPU 持有完整的模型。你不能在单个 GPU 中加载大型模型，通常 GPU 的内存为 16GB 到 24GB，因此它们大致支持一亿个参数。要训练比这更大的模型，我们需要分布式模型并行。
 - en: Distributed model parallel
+  id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分布式模型并行
 - en: Distributed model parallel splits a model’s parameters, their gradients and
     the optimizer’s internal states into different parts, and distributes those parts
     across GPUs.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布式模型并行将模型的参数、它们的梯度和优化器的内部状态分割成不同的部分，并将这些部分分布到 GPU 上。
 - en: It is easy to understand why distributed model parallel needs to split model’s
     parameters and their gradients — the weight update rule in stochastic gradient
     descent needs both. But what are optimizer’s internal states?
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 很容易理解为什么分布式模型并行需要拆分模型的参数及其梯度——随机梯度下降中的权重更新规则需要这两者。但是，优化器的内部状态是什么呢？
 - en: '**Optimizer’s internal states**'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '**优化器的内部状态**'
 - en: 'You see, to mitigate problems introduced in the stochastic part of the stochastic
     gradient descent algorithm, optimisers such as Adam keeps track two additional
     pieces of information for each model parameter: the moving average of its gradient
     to achieve less zigzagging in weight update, and the moving average of the squared
     gradient to achieve adaptive learning rate per parameter. For more details, please
     take a look at:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 你看，为了减轻随机梯度下降算法中引入的问题，像 Adam 这样的优化器会跟踪每个模型参数的两个额外信息：其梯度的移动平均，以减少权重更新中的波动，以及平方梯度的移动平均，以实现每个参数的自适应学习率。有关更多详细信息，请查看：
 - en: '[](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33?source=post_page-----6dbb8d9c3540--------------------------------)
     [## Can We Use Stochastic Gradient Descent (SGD) on a Linear Regression Model?'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 我们可以在线性回归模型上使用随机梯度下降（SGD）吗？](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33?source=post_page-----6dbb8d9c3540--------------------------------)'
 - en: Learn why it is valid to use SGD on a linear regression model for parameter
     learning, see however, SGD can be…
+  id: totrans-66
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 了解为什么在参数学习中使用 SGD 在线性回归模型上是有效的，但请注意，SGD 可能会...
 - en: towardsdatascience.com](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33?source=post_page-----6dbb8d9c3540--------------------------------)
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '[我们可以在线性回归模型上使用随机梯度下降（SGD）吗？](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33?source=post_page-----6dbb8d9c3540--------------------------------)'
 - en: 'Mathematically, Adam’s weight update rules for the parameter *w₁* are:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 从数学上讲，Adam 对参数 *w₁* 的权重更新规则是：
 - en: '![](../Images/04c43201d536bc54233d5accc2259df1.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/04c43201d536bc54233d5accc2259df1.png)'
 - en: The Adam optimizer’s weight update rule
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: Adam 优化器的权重更新规则
 - en: Line (1) computes the moving average of the gradient for the *w₁* parameter.
     The *multiplier × old_value + (1-multiplier) × new_value* formula structure tells
     us this is an exponential moving average. *m₁* is the current value of the exponential
     moving average, and *β₁* controls the amount of contribution that the new value,
     here the new gradient *∇w₁*, brings to the new moving average value. *m₁′* is
     the new value for the gradient moving average.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（1）计算了 *w₁* 参数的梯度移动平均。*multiplier × old_value + (1-multiplier) × new_value*
+    公式结构告诉我们这是一个指数移动平均。*m₁* 是当前的指数移动平均值，*β₁* 控制了新值（这里是新的梯度 *∇w₁*）对新移动平均值的贡献量。*m₁′*
+    是梯度移动平均的新值。
 - en: Similarly, line (2) computes the exponential moving average of the squared gradient,
     where *v₁* is the current moving average value of squared gradient, and *β₂* controls
     the amount of contribution from the squared gradient *(∇w₁)²* during the averaging.
     *v₁′* is the new value for the squared gradient moving average.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，行（2）计算了平方梯度的指数移动平均，其中 *v₁* 是平方梯度的当前移动平均值，*β₂* 控制了在平均过程中平方梯度 *(∇w₁)²* 的贡献量。*v₁′*
+    是平方梯度移动平均的新值。
 - en: Line (3) is the parameter weight update rule. Notice that it mentions the current
     value of the parameter *w₁*, the gradient moving average *m₁′*, and the squared
     gradient moving average *v₁′*. Again, see [*Can We Use Stochastic Gradient Descent
     (SGD) on a Linear Regression Model?*](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33)
     for the intuition.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（3）是参数权重更新规则。注意它提到了参数 *w₁* 的当前值，梯度移动平均 *m₁′* 和平方梯度移动平均 *v₁′*。再次查看 [*我们可以在线性回归模型上使用随机梯度下降（SGD）吗？*](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33)
+    以获取直观理解。
 - en: The gradient moving average and the squared gradient moving average are the
     Adam optimizer’s internal state, in fact, Adam also keeps a full copy of the weights,
     but that’s technical detail that you don’t need to worry about in this article.
     Different optimizers may hold different internal states.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 梯度移动平均和平方梯度移动平均是 Adam 优化器的内部状态，实际上，Adam 还保留了权重的完整副本，但这是技术细节，在本文中你不需要担心。不同的优化器可能会保持不同的内部状态。
 - en: How to split a model into parts?
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何将模型拆分为多个部分？
 - en: 'To understand how distributed model parallel splits a model into parts, imagine,
     even with mini-batch size set to 1, our neural network is too large to fit in
     the memory of a GPU, like this neural network bellow:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了理解分布式模型并行如何将模型分成多个部分，假设即使小批量大小设置为 1，我们的神经网络也太大，无法适配到 GPU 的内存中，如下图所示的神经网络：
 - en: '![](../Images/07673a9988cbdb34be6d2fc988541cd6.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/07673a9988cbdb34be6d2fc988541cd6.png)'
 - en: Neural network architecture illustration by author
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的神经网络架构示意图
 - en: This neural network accepts two input units. So for a single training data point
     *(X₁, Y₁)*, where *X₁* consists of two input units *X₁ = [x₁, x₂]*, the network
     accepts *x₁, x₂* as its inputs and uses two hidden layers with four neurons *h₁*
@@ -385,121 +560,178 @@
     model prediction *ŷ₁* to compute the loss *L.* For simplicity, there is no activation
     in the neural network, every node receiving multiple in-arrows sums the received
     quantities together.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个神经网络接受两个输入单元。因此，对于单个训练数据点 *(X₁, Y₁)*，其中 *X₁* 由两个输入单元 *X₁ = [x₁, x₂]* 组成，网络接受
+    *x₁* 和 *x₂* 作为输入，并使用两个隐藏层，四个神经元 *h₁* 到 *h*₄ 来计算模型的预测 *ŷ₁*，并使用实际的 *Y₁* 和模型预测 *ŷ₁*
+    来计算损失 *L*。为了简化起见，神经网络中没有激活函数，每个接收多个输入箭头的节点将接收到的数量相加。
 - en: 'How can we split this model into parts so each part can fit into a single GPU?
     They are many many ways. One way is to split the model vertically:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何将模型分成多个部分，以便每个部分都可以适配到一个 GPU 上？有许多方法。一种方法是垂直切分模型：
 - en: '![](../Images/7e1d9448bdd464e9ecb398d4c177a644.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7e1d9448bdd464e9ecb398d4c177a644.png)'
 - en: Not-so-smart splitting of model, by author
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提出的模型不够智能的切分方法
 - en: with *w₁~w₄* in GPU1 and *w₅~w₁₀* in GPU2\. Note that input *(X₁, Y₁)* is always
     in all GPUs.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *w₁~w₄* 在 GPU1 中，*w₅~w₁₀* 在 GPU2 中。注意输入 *(X₁, Y₁)* 始终在所有 GPU 中。
 - en: This cutting will work but it is not a smart one because it forces the computation
     to be sequential. GPU2 needs to wait for result from GPU1\. Specifically, GPU2
     needs to wait for values of the neurons *h₁* and *h*₂ before it can start to compute
     the values for *h₃* and *h₄*.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种切分方法虽然有效，但并不智能，因为它迫使计算必须顺序进行。GPU2 需要等待 GPU1 的结果。具体来说，GPU2 需要等待神经元 *h₁* 和 *h*₂
+    的值，然后才能开始计算 *h₃* 和 *h₄* 的值。
 - en: We realize that to parallel computation requires splitting the model horizontally.
     I will use a even simpler to illustrate this horizontal cutting to make the formulas
     shorter.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们认识到，为了实现并行计算，需要水平切分模型。我将使用一个更简单的例子来说明这种水平切分，以简化公式。
 - en: '![](../Images/a567ed9ae96946eaa4d9db68fc8f442f.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a567ed9ae96946eaa4d9db68fc8f442f.png)'
 - en: Neural network architecture illustration by author
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的神经网络架构示意图
 - en: Forward pass in distributed model parallel
+  id: totrans-88
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式模型并行中的前向传播
 - en: 'The following equations describe the forward pass of this neural network:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下方程描述了该神经网络的前向传播：
 - en: '![](../Images/78201aa16aa0d8cbd984199c5ef28aec.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/78201aa16aa0d8cbd984199c5ef28aec.png)'
 - en: Neural network forward pass equations
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 神经网络前向传播方程
 - en: We can see that equation (1) and (2) are independent of each other, so they
     can be computed in parallel. Equation (3) and (4) requires both *h₁* and *h*₂,
     so they need wait for the computation of *h₁* and *h*₂.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到方程 (1) 和 (2) 彼此独立，因此可以并行计算。方程 (3) 和 (4) 需要 *h₁* 和 *h*₂ 的值，因此需要等待 *h₁*
+    和 *h*₂ 的计算结果。
 - en: 'Equivalently, I can re-write the above equations (1) to (3) into the following
     block matrix form:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 等效地，我可以将上述方程 (1) 到 (3) 重新写成以下块矩阵形式：
 - en: '![](../Images/c8f2097487b864bd1e058df80bf70145.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c8f2097487b864bd1e058df80bf70145.png)'
 - en: Neural network forward pass equations in block matrix form
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 块矩阵形式的神经网络前向传播方程
 - en: with block *A₁* and *A*₂ being
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 块 *A₁* 和 *A*₂ 为
 - en: '![](../Images/81c6789bde60c86b02c2b1d08897fd0d.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/81c6789bde60c86b02c2b1d08897fd0d.png)'
 - en: Block matrices for the weight matrix
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 权重矩阵的块矩阵
 - en: We now realize that we can put *X₁A₁* in GPU1 and *X₁A₂* in GPU2 to compute
     them in parallel. In other words, distribute model parallel can put parameters
     *w₁* and *w₂* in GPU1, and *w₃* and *w₄* into GPU2.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在意识到可以将 *X₁A₁* 放在 GPU1 中，而 *X₁A₂* 放在 GPU2 中以并行计算。换句话说，分布式模型并行可以将参数 *w₁* 和
+    *w₂* 放在 GPU1 中，将 *w₃* 和 *w₄* 放在 GPU2 中。
 - en: The AllReduce operator will sum them up, which gives the value of the model
     prediction *ŷ₁* and make *ŷ₁* available to both GPUs. With *ŷ₁* available, both
     GPUs now can compute the loss *L*. Note in the forward pass, the training data
     (*X₁, Y₁)* is always loaded in all GPUs*.* Or the AllReduce operator can compute
     both the model prediction and the loss then copies the prediction and loss to
     all GPUs in one go, via a technique called operation fusion.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: Backward pass in distributed model parallel
+  id: totrans-101
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Now let’s check the backward pass. It computes the gradients using the chain
     rule. You are already familiarized yourself with the chain rule before getting
     your current data science job, right?
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/97b5c916e14a1f6562d8768c2e0cd5bb.png)'
+  id: totrans-103
   prefs: []
   type: TYPE_IMG
 - en: Gradient computation in distributed model parallel
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
 - en: Equation (1) and (2) are executed in GPU1, equation (3) and (4) in GPU2.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
 - en: We need to check if in GPU1 there is sufficient information to compute the gradient
     for the model parameter *w₁* and *w₂*, and the same for GPU2 for the model parameter
     *w₃* and *w₄.*
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
 - en: 'Let’s focus on *w₁* by looking at equation (1). It reveals that computing the
     gradient *∇w₁* requires:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
 - en: Training data x*₁, Y₁*, which is always available to all GPUs.
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Model prediction *ŷ₁*, which is made available to all GPUs by AllReduce.
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -507,48 +739,60 @@
     weight *w₁* and its gradient *∇w₁*, it will be able to compute the exponential
     moving average of the gradient and the exponential moving average of the squared
     gradient, which are the optimizer’s internal states.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
 - en: This is how distributed model parallel works at a very high level. Note there
     are many ways to split a model into pieces in distributed model parallel. The
     above shows one above way to illustrate how the technique works.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
 - en: The ReduceScatter operator
+  id: totrans-112
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'There is one more thing I want to mention in distributed model parallel. In
     a more realistic neural network, there are multiple routes from the model’s prediction
     to its inputs. See the original neural network I introduced, shown below again:'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/2e8a1f80200bd7bbab586fc373a23ce9.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
 - en: Neural network architecture illustration by author
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
 - en: 'To compute the gradient of *L* with respect to the model parameter *w₁*, there
     are two routes:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
 - en: 'route1: *L → ŷ₁ → h₃ → h₁ → x₁*'
+  id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: 'route2: *L → ŷ₁ → h*₄ *→ h₁ → x₁*'
+  id: totrans-118
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: 'The full gradient is thus the sum of the gradient computed in these two routes,
     in formula:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/956b077678fe831491b83d42caf2fe39.png)'
+  id: totrans-120
   prefs: []
   type: TYPE_IMG
 - en: Gradients with two routes
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
 - en: It is quite likely that the gradient from route1 and the gradient from route2
@@ -557,9 +801,11 @@
     difference now is that the sum doesn’t need to be propagated to all GPUs, it only
     needs to be put into the single GPU that is responsible for the weight update
     for the model parameter *w₁.* The ReduceScatter operator is for this purpose.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
 - en: ReduceScatter
+  id: totrans-123
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -567,12 +813,15 @@
     operator performs the same operation as the AllReduce operator, except the result
     is scattered in equal blocks among GPUs, each GPU getting a chunk of the data
     based on its rank index.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/c5fb0f809adf0ca83d3f1e93ef290fcd.png)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
 - en: Illustration of the ReduceScatter operator, by author
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
 - en: Use our example, the ReduceScatter operator sums up the partial gradients for
@@ -581,9 +830,11 @@
     is responsible for weight update for *w₁*, here is GPU1*.* Note that GPU2 does
     not receive the full gradient *∇w₁*, because it is not responsible for performing
     the weight update for the *w₁* parameter.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
 - en: Distributed model parallel is not designed to address training speed
+  id: totrans-128
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -595,31 +846,37 @@
     faster (but it can be faster since there is less computation in a pass, of course,
     you need to fact in time spent in data synchronization). To train a large model
     faster, we need to combine distributed data and model parallel.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
 - en: Combining distributed data and model parallel
+  id: totrans-130
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'It is a common practice to enable both distributed data parallel and distributed
     model parallel in training. And the above mentioned APIs such as PyTorch’s FSDP,
     supports this combination. Conceptually:'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
 - en: Distributed model parallel works in an inner layer, where it distributed a large
     model to a group of GPUs. This group of GPUs can at least handle a single data
     point from a mini-batch. They behaves as a single monster GPU that has unlimited
     amount of memory. This way, you can load larger models.
+  id: totrans-132
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Distributed model parallel works in an outer layer, where it distributes different
     data points from the same mini-batch to different monster GPUs simulated by distribute
     model parallel. This way, you train the large model faster.
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Conclusions
+  id: totrans-134
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -628,25 +885,35 @@
     For API usages, please refer to other documentations mentioned above, such as
     [DDP](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html), [FSDP](https://pytorch.org/docs/stable/fsdp.html)
     and [DeepSpeed](https://github.com/microsoft/DeepSpeed).
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
 - en: Support me
+  id: totrans-136
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: If you like my story, please condiser becoming my referred member. I receive
     a small fraction of your subscription fee, that supports me greatly.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----6dbb8d9c3540--------------------------------)
     [## Join Medium with my referral link - Wei Yi'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----6dbb8d9c3540--------------------------------)
+    [## 使用我的推荐链接加入 Medium - 韦毅'
 - en: Read every story from Wei Yi (and thousands of other writers on Medium). I have
     fun spending thousands of hours writing…
+  id: totrans-139
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读韦毅（以及在 Medium 上的其他成千上万位作者）的每一个故事。我很享受花费数千小时写作的过程……
 - en: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----6dbb8d9c3540--------------------------------)
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----6dbb8d9c3540--------------------------------)
