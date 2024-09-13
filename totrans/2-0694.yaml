@@ -1,73 +1,110 @@
 - en: Deep Dive into Handling Apache Spark Data Skew
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深入探讨 Apache Spark 数据倾斜的处理方法
 - en: 原文：[https://towardsdatascience.com/deep-dive-into-handling-apache-spark-data-skew-57ce0d94ee38](https://towardsdatascience.com/deep-dive-into-handling-apache-spark-data-skew-57ce0d94ee38)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/deep-dive-into-handling-apache-spark-data-skew-57ce0d94ee38](https://towardsdatascience.com/deep-dive-into-handling-apache-spark-data-skew-57ce0d94ee38)
 - en: The Ultimate Guide To Handle Data Skew In Distributed Compute
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式计算中处理数据倾斜的终极指南
 - en: '[](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)[![Chengzhi
     Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57ce0d94ee38--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----57ce0d94ee38--------------------------------)
     [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)[![Chengzhi
+    Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57ce0d94ee38--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----57ce0d94ee38--------------------------------)
+    [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----57ce0d94ee38--------------------------------)
     ·10 min read·Jan 3, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----57ce0d94ee38--------------------------------)
+    ·阅读时间 10 分钟·2023 年 1 月 3 日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/2c9d079782f553e5b7931674b18b46c0.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2c9d079782f553e5b7931674b18b46c0.png)'
 - en: Photo by [Lizzi Sassman](https://unsplash.com/@okaylizzi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/s/photos/data?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Lizzi Sassman](https://unsplash.com/@okaylizzi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    提供，来源于 [Unsplash](https://unsplash.com/s/photos/data?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - en: '**“*Why my Spark job is running slow?*”** is an inevitable question while working
     with Apache Spark. One of the most common scenarios regarding Apache Spark performance
     tuning is **data skew**. In this article, we will cover how to identify whether
     your Spark job slowness is caused by data skew and deep dive into handling Apache
     Spark data skew with code to explain three ways to handle data skew, including
     the “salting” technique.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '**“*为什么我的 Spark 作业运行很慢？*”** 是使用 Apache Spark 时一个不可避免的问题。关于 Apache Spark 性能调优的常见场景之一是
+    **数据倾斜**。在本文中，我们将讨论如何识别 Spark 作业的慢速是否由数据倾斜引起，并深入探讨如何通过代码处理 Apache Spark 数据倾斜，解释包括“加盐”技术在内的三种处理数据倾斜的方法。'
 - en: How to Identify Data Skew In Spark
+  id: totrans-9
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何识别 Spark 中的数据倾斜
 - en: There are many factors when it comes to Spark performance tuning. Given the
     complexity of distributed computing, you are halfway to success if you can narrow
     it down to the bottleneck.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Spark 性能调优方面，有许多因素需要考虑。鉴于分布式计算的复杂性，如果你能将问题缩小到瓶颈位置，那么你已经成功了一半。
 - en: Data skew usually happens when partitions have uneven data to process. Let’s
     assume we have three partitions in Spark to process data for 1.5M records. Ideally,
     each partition gets 0.5M to process evenly (Picture 1 left). However, we could
     have a time when a single partition takes much more data than the other partitions
     (Picture 1, right).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据倾斜通常发生在分区需要处理的数据不均匀时。假设我们在 Spark 中有三个分区来处理 150 万条记录。理想情况下，每个分区均匀地处理 50 万条记录（图片
+    1 左侧）。然而，也可能出现某个分区处理的数据远多于其他分区的情况（图片 1 右侧）。
 - en: '![](../Images/8ef676417b929cb0e4813d33f7c8824a.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8ef676417b929cb0e4813d33f7c8824a.png)'
 - en: Picture 1 | image By Author
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片 1 | 作者提供的图片
 - en: '**Why does one partition take more data than the others?** This is related
     to how the distribution system works. In many data processing frameworks, data
     skew is caused by data shuffling, which is moving data from one partition to another.
     Data shuffle needs to be taken care of when it comes to performance tuning, as
     it involves transferring data around the nodes in your cluster. It can cause an
     undesired delay in your data pipeline and is difficult to discover.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '**为什么一个分区会处理比其他分区更多的数据？** 这与分布系统的工作方式有关。在许多数据处理框架中，数据倾斜是由于数据洗牌引起的，即将数据从一个分区移动到另一个分区。数据洗牌需要在性能调优时加以关注，因为它涉及在集群中的节点之间转移数据。这可能会导致数据管道中出现不必要的延迟，并且难以发现。'
 - en: A data shuffle is expensive, but sometimes it is inevitable to perform a [wide
     operation](https://www.databricks.com/glossary/what-are-transformations) such
     as groupBy and joins. Those operations usually are key-based, meaning keys are
@@ -77,8 +114,12 @@
     99% of the data. That’s why this entire job is running behind — The data isn’t
     not distributed well, as partition B and C stays idle most of the time, and partition
     A is the guinea pig that handles the heavy load.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据洗牌很昂贵，但有时执行 [宽操作](https://www.databricks.com/glossary/what-are-transformations)（如
+    groupBy 和 joins）是不可避免的。这些操作通常是基于键的，即键被哈希后映射到分区。相同的哈希值会被保证洗牌到相同的分区。在上述示例中，许多键被哈希到体量巨大的分区
+    A 中，分区 A 成为处理近 99% 数据的“热点”。这就是为什么整个作业运行缓慢的原因——数据分布不均，分区 B 和 C 大部分时间闲置，而分区 A 成为处理重负荷的“试验品”。
 - en: '**What are the signs of data skew in Spark?** We cannot blame every slowness
     that comes from data skew. The [Spark Web UI](https://spark.apache.org/docs/latest/web-ui.html)
     is the best native solution to identify the skewness in your Spark job. When you
@@ -86,35 +127,52 @@
     don’t seem to progress for a while on a few partitions. If we look at the summary
     metrics, the max column usually has a much larger value than the medium and more
     records count. Then we know we have encountered a data skew issue.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '**如何识别 Spark 中的数据倾斜？** 我们不能将所有的慢速归咎于数据倾斜。[Spark Web UI](https://spark.apache.org/docs/latest/web-ui.html)
+    是识别 Spark 作业中数据倾斜的最佳本地解决方案。当你在 Spark UI 的 Stages 标签页时，倾斜的分区会在一个阶段内停滞，几乎没有进展。如果我们查看摘要指标，最大列的值通常远大于中位数，并且记录数更多。那么我们就知道我们遇到了数据倾斜问题。'
 - en: '**How to know which part of the code causes data skew?** The stage detail page
     in Spark UI only gives us a visual representation of the DAG.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '**如何知道代码中的哪个部分导致了数据倾斜？** Spark UI 中的阶段详情页面只给我们 DAG 的可视化表示。'
 - en: 'How do you know which part of the code in Spark is running slow? It is mentioned
     in the Spark official documentation: “[*Whole Stage Code Generation operations
     are also annotated with the* ***code generation id****. For stages of Spark DataFrame
     or SQL execution, this allows for cross-referencing Stage execution details to
     the relevant details in the Web-UI SQL Tab page where SQL plan graphs and execution
     plans are reported.*](https://spark.apache.org/docs/latest/web-ui.html#stage-detail)”'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 你怎么知道 Spark 中的哪个部分代码运行缓慢？这在 Spark 官方文档中提到：“[*整个阶段代码生成操作也会标注* ***代码生成 ID****。对于
+    Spark DataFrame 或 SQL 执行的阶段，这允许将阶段执行详情与 Web-UI SQL 标签页中报告的 SQL 计划图和执行计划相关联。*](https://spark.apache.org/docs/latest/web-ui.html#stage-detail)”
 - en: 'In the following case, we can use the WholeStageCodegen ids: 2,4, or 5\. We
     can go to the Spark Data Frame tab to find the code and hover on the SQL plan
     graphs to know the detail of what’s running in your code.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在以下情况下，我们可以使用 WholeStageCodegen IDs：2、4 或 5。我们可以前往 Spark Data Frame 标签页找到代码，并在
+    SQL 计划图上悬停以了解代码中正在运行的详细信息。
 - en: '![](../Images/546dfe2dc17a198239148b12f61b65f9.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/546dfe2dc17a198239148b12f61b65f9.png)'
 - en: Example of Codegen Id | Image By Author
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码生成 ID 示例 | 图片由作者提供
 - en: Data Skew Example Set up
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据倾斜示例设置
 - en: Let’s start by setting up a spark environment with data skew to demonstrate
     the issue. We will set up only 1G for`spark.executor.memory` and one executor
     with three cores, and `spark.sql.shuffle.partitions`to three as well, so we will
@@ -124,123 +182,185 @@
     the number of partitions or converting the physical plan to broadcast join, we
     will turn off Adaptive Query Execution ([AQE](https://spark.apache.org/docs/3.0.2/sql-performance-tuning.html#adaptive-query-execution))
     by setting`spark.sql.adaptive.enabled` to false.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先通过设置具有数据倾斜的 Spark 环境来演示问题。我们将只为`spark.executor.memory`设置 1G，并设置一个具有三个核心的执行器，`spark.sql.shuffle.partitions`也设置为三，因此最终我们将得到三个分区。我们可以使用[spark_partition_id](https://spark.apache.org/docs/3.1.1/api/python/reference/api/pyspark.sql.functions.spark_partition_id.html)来确定记录属于哪个分区，以验证数据分布。为了确保
+    Spark 不会自作聪明地进行更多优化，比如增加分区数量或将物理计划转换为广播连接，我们将通过将`spark.sql.adaptive.enabled`设置为
+    false 来关闭自适应查询执行（[AQE](https://spark.apache.org/docs/3.0.2/sql-performance-tuning.html#adaptive-query-execution)）。
 - en: We don’t need to import additional data sources to set up the example. We can
     create random data and play with it as our example throughout this article.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不需要导入额外的数据源来设置示例。我们可以创建随机数据并在本文中作为示例进行操作。
 - en: '**Case 1: evenly distributed case**'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**案例 1：均匀分布情况**'
 - en: We will create a dataframe with 1,000,000 rows in Spark. In this case, those
     values from 0 to 999,999 are the key that is hashed and shuffled. Notice the key
     here is unique, which means there aren’t any duplications. **Those ensure the
     keys are non-deterministically. There is no guarantee that two different keys
     always being in the same partition.**
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在 Spark 中创建一个包含 1,000,000 行的数据框。在这种情况下，从 0 到 999,999 的值是被哈希和洗牌的键。请注意，这里的键是唯一的，这意味着没有任何重复。**这些确保了键是非确定性的。不能保证两个不同的键总是位于同一个分区。**
 - en: '[PRE0]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: You can verify the number of partitions by using [getNumPartitions](https://www.google.com/search?client=safari&rls=en&q=getNumPartitions&ie=UTF-8&oe=UTF-8&safari_group=9),
     and in this case, it should be three since we only have one executor and three
     cores.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以通过使用[getNumPartitions](https://www.google.com/search?client=safari&rls=en&q=getNumPartitions&ie=UTF-8&oe=UTF-8&safari_group=9)来验证分区数量，在这种情况下，它应该是三，因为我们只有一个执行器和三个核心。
 - en: '[PRE1]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: If everything is distributed evenly, we will get a well-distributed count if
     we group by the partitionId. This is the perfect case we have mentioned above
     *Picture 1 left.*
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一切均匀分布，我们将得到一个良好分布的计数，如果按 partitionId 分组。这是我们上面提到的完美情况*图片 1 左*。
 - en: '[PRE2]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '![](../Images/03e9f32795818c2b359f127cb940b7b8.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/03e9f32795818c2b359f127cb940b7b8.png)'
 - en: Data Partitioned Evenly By PartitionId | Image By Author
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 按 PartitionId 平均分区的数据 | 图像由作者提供
 - en: We can then perform a self-join to check what the plan looks like, and we’d
     expected [SortMergJoin](https://jaceklaskowski.gitbooks.io/mastering-spark-sql/content/spark-sql-SparkPlan-SortMergeJoinExec.html),
     which is usually the best we can do if two datasets are equally significant.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们可以执行自连接来查看计划是什么样的，我们期望会看到[SortMergJoin](https://jaceklaskowski.gitbooks.io/mastering-spark-sql/content/spark-sql-SparkPlan-SortMergeJoinExec.html)，这是当两个数据集同等重要时通常能做到的最优计划。
 - en: '[PRE3]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: In the following result, we can see data size total is distributed well among
     three partitions, and if we look at the time it takes for each partition, they
     don’t seem to have substantial gaps.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在以下结果中，我们可以看到数据总大小在三个分区之间分布良好，如果查看每个分区所需的时间，它们似乎没有显著的差距。
 - en: '![](../Images/f1f387858349775eb4956c47e7a0bf44.png)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f1f387858349775eb4956c47e7a0bf44.png)'
 - en: Data Partitioned Evenly As Spark Physical Plan| Image By Author
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 按照 Spark 物理计划平均分区的数据 | 图像由作者提供
 - en: '**Case 2: Skew case**'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '**案例 2：倾斜情况**'
 - en: Now, let’s go extreme to have what *Picture 1 right*showed, where we have an
     extremely skewed dataset.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们走极端来展示*图片 1 右*所示的情况，其中我们有一个极度倾斜的数据集。
 - en: We will still create a dataframe with 1000000 rows in Spark. However, instead
     of having all keys with different values, we will make most of them the same.
     This ensures that we create a **“hot” key that becomes problematic no matter how
     many hash functions we try. It guarantees to be in the same partition.**
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们仍将在 Spark 中创建一个包含 1000000 行的数据框。然而，我们不会让所有键都有不同的值，而是将大多数键设为相同。这确保了我们创建一个**“热”键，无论我们尝试多少个哈希函数，都可能成为问题。它保证会在同一个分区中。**
 - en: '[PRE4]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../Images/05da84454566436f05d9b0c9073431a8.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/05da84454566436f05d9b0c9073431a8.png)'
 - en: Data Skew By PartitionId | Image By Author
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据倾斜按PartitionId| 作者提供的图像
 - en: In this case, 99.99% of the data is in a single partition. Let’s perform a join
     with our distributed evenly dataset to check what the plan looks like. Before
     we run the join, let’s repartition our skew dataset into three partitions in a
     round-robin way to simulate how we will read data in actual use cases.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，99.99%的数据在一个分区中。让我们用均匀分布的数据集进行连接，以检查计划是什么样的。在运行连接之前，让我们将倾斜数据集以轮询方式重新分区为三个分区，以模拟实际使用情况中的数据读取方式。
 - en: '[PRE5]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Checking on the Spark physical plan, we can see how unevenly distributed it
     is with a large amount of data in one partition (max time), and the time to join
     is exponential.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 检查Spark物理计划，我们可以看到在一个分区中分布不均的大量数据（最大时间），而连接时间是指数级的。
 - en: '![](../Images/95c093fbde8a9f85724ac5bc8475e683.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/95c093fbde8a9f85724ac5bc8475e683.png)'
 - en: Data Partitioned Skew As Spark Physical Plan| Image By Author
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据分区倾斜| 作者提供的图像
 - en: How to resolve the data skew problem
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何解决数据倾斜问题
 - en: Data Skew causes slow performance in Spark, and a job is stuck in a few partitions
     that hang forever. There are multiple strategies to resolve a skew. Today, with
     Adaptive Query Execution (AQE) on Spark, it’s easier for Spark to be clever to
     figure out the optimized way. In edge cases, AQE isn’t 100% giving the best optimization.
     At those times, we still need to intervene and be familiar with which to use.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据倾斜会导致Spark性能缓慢，作业会被卡在几个分区中而永远挂起。有多种策略可以解决倾斜问题。如今，借助Spark的自适应查询执行（AQE），Spark更容易找到优化的方式。在极端情况下，AQE并不能100%提供最佳优化。此时，我们仍需介入，并熟悉需要使用的方法。
 - en: 1\. Leveraging the Number of Partitions
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1\. 利用分区数量
 - en: '`spark.sql.shuffle.partitions` might be one of the most critical configurations
     in Spark. [*It configures the number of partitions to use when shuffling data
     for joins or aggregations.*](https://spark.apache.org/docs/3.0.2/sql-performance-tuning.html#adaptive-query-execution)
@@ -248,176 +368,262 @@
     could be general optimization on the Spark job. The default value is 200, which
     is suitable for many big data projects back in the day and still relevant for
     small/medium size data projects.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '`spark.sql.shuffle.partitions`可能是Spark中最关键的配置之一。[*它配置了在洗牌数据用于连接或聚合时使用的分区数量。*](https://spark.apache.org/docs/3.0.2/sql-performance-tuning.html#adaptive-query-execution)
+    *配置这个* 值并不总是意味着可以解决倾斜问题，但它可能是对Spark作业的一般优化。默认值为200，这对于许多大数据项目在过去是合适的，现在仍然适用于小型/中型数据项目。'
 - en: Think of this as the number of bins when data has to be tossed around during
     the shuffling stage. Are there too much data for a single bin to handle, or are
     they almost full?
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 将其视为在数据在洗牌阶段被处理时的箱子数量。是否有过多的数据需要单个箱子处理，或者它们是否几乎已满？
 - en: 2\. Broadcast join
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 广播连接
 - en: Broadcast join might be the fastest join type that you can use to avoid skewness.
     By giving when the `BROADCAST` hint, we explicitly provide information to Spark
     on which dataframe we’d need to send to each executor.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 广播连接可能是避免倾斜的最快连接类型。通过提供`BROADCAST`提示，我们明确向Spark提供了需要将哪个数据框发送到每个执行器的信息。
 - en: The broadcast join usually works with smaller size dataframe like dimension
     tables or the data has metadata. It is not appropriate for transaction tables
     with millions of rows.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 广播连接通常适用于较小的数据框，例如维度表或具有元数据的数据。它不适合具有百万行的事务表。
 - en: '[PRE6]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 3\. Salting
+  id: totrans-59
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3\. Salting
 - en: The SALT idea from cryptography introduced randomness to the key without knowing
     any context about the dataset. The idea is for a given hot key; if it combines
     with different random numbers, we’ll not have all the data for the given key processed
     in a single partition. A significant benefit of SALT is it is unrelated to any
     of the keys, and you don’t have to worry about some keys with similar contexts
     with the same value again.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自密码学的SALT理念引入了随机性到密钥中，而无需了解数据集的上下文。这个理念是，对于给定的热点键，如果它与不同的随机数结合，我们将不会在单个分区中处理所有的该键的数据。SALT的一个重要好处是它与任何键无关，你不必担心某些具有相似上下文的键再次出现相同的值。
 - en: I have published another article on [Skewed Data in Spark? Add SALT to Compensate](https://medium.com/towards-data-science/skewed-data-in-spark-add-salt-to-compensate-16d44404088b).
     You can read more to learn about it.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已经在[Skewed Data in Spark? Add SALT to Compensate](https://medium.com/towards-data-science/skewed-data-in-spark-add-salt-to-compensate-16d44404088b)上发布了另一篇文章。你可以阅读更多内容了解详细信息。
 - en: '[](/skewed-data-in-spark-add-salt-to-compensate-16d44404088b?source=post_page-----57ce0d94ee38--------------------------------)
     [## Skewed Data in Spark? Add SALT to Compensate'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/skewed-data-in-spark-add-salt-to-compensate-16d44404088b?source=post_page-----57ce0d94ee38--------------------------------)
+    [## Spark 中的数据倾斜？添加 SALT 进行补偿'
 - en: A step-by-step guide to handle skewed data with SALT technique
+  id: totrans-63
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 逐步指南：使用 SALT 技术处理数据倾斜
 - en: towardsdatascience.com](/skewed-data-in-spark-add-salt-to-compensate-16d44404088b?source=post_page-----57ce0d94ee38--------------------------------)
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/skewed-data-in-spark-add-salt-to-compensate-16d44404088b?source=post_page-----57ce0d94ee38--------------------------------)'
 - en: 'However, in the above article, I have only provided code for salting on aggregation.
     Still, I haven’t mentioned how to perform slating on join, which leaves some questions:
     "*I understood we could salt on the key to distributing data evenly, but that
     changed my join key. How do you join back to the original key after salting?*”
     I will provide some code examples in this post.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在上述文章中，我仅提供了聚合操作中的加盐代码。仍然没有提及如何在连接操作中执行加盐，这留下了一些问题：“*我明白我们可以对键进行加盐以均匀分布数据，但这改变了我的连接键。加盐后如何将数据连接回原始键？*”
+    我将在这篇文章中提供一些代码示例。
 - en: The core idea of leveraging key salting is to think space-time tradeoff.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 利用键加盐的核心思想是考虑空间与时间的权衡。
 - en: '**Add the salt key as part of the key as a new column**. We also call the original
     key and the salt key a composite key. The newly added key forces Spark to hash
     the new key to a different hash value, so it shuffles to a different partition.
     Note we can also be dynamic to get the number of randomness on the salt key by
     retrieving the value from `spark.sql.shuffle.partitions`'
+  id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**将盐键作为新列的一部分添加到键中**。我们还称原始键和盐键为复合键。新增的键迫使 Spark 对新键进行哈希处理，从而生成不同的哈希值，使数据被打乱到不同的分区。请注意，我们也可以通过从
+    `spark.sql.shuffle.partitions` 中获取值来动态获取盐键的随机性数量。'
 - en: '[PRE7]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: As you can see below, though value and partitionId are the same, we create an
     additional “salt” column to provide more guidance for Spark to join.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 如下所示，尽管值和 partitionId 相同，我们还是创建了一个额外的“salt”列，以提供更多指导给 Spark 进行连接。
 - en: '![](../Images/e9a480072a35ea6988632f9c9eced6b9.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e9a480072a35ea6988632f9c9eced6b9.png)'
 - en: Add the salt key as part of the key as a new column | Image By Author
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 将盐键作为新列的一部分添加到键中 | 图片来源：作者
 - en: '**Add an array of all the potential salt keys as a new column**. You can choose
     a dataframe with a smaller number of rows (if they are the same, pick a random
     one), and'
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**将所有潜在盐键的数组作为新列添加**。你可以选择一个行数较少的数据框（如果行数相同，随机选择一个），并且'
 - en: '[PRE8]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![](../Images/f8a6e251f8e421da714f255b4f58906e.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f8a6e251f8e421da714f255b4f58906e.png)'
 - en: Add an array of all the potential salt keys as a new column | Image By Author
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 将所有潜在盐键的数组作为新列添加 | 图片来源：作者
 - en: '**Explore the dataframe with that array**. This will replicate the existing
     rows n times (n=number of salt you chose). When the two dataframes joined, since
     we already have the replicated dataframe on one side (usually the right side),
     it is still validated joining. It produces the same result as we are using the
     original key.'
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**使用该数组探索数据框**。这将现有行复制 n 次（n=你选择的盐的数量）。当两个数据框连接时，由于我们已经在一侧（通常是右侧）有了复制的数据框，连接依然会被验证。这会产生与使用原始键相同的结果。'
 - en: We can also validate the final distribution after joining. The joined dataframe
     for the same key “0” is distributed evenly across three partitions. This even
     distribution shows the technique of key salting.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以在连接后验证最终分布。相同键“0”的连接数据框在三个分区中均匀分布。这种均匀分布展示了键加盐的技术。
 - en: '![](../Images/770e5a7abac718cae449cae638ce8671.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/770e5a7abac718cae449cae638ce8671.png)'
 - en: Final PartitionId after Join | Image By Author
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 连接后的最终 PartitionId | 图片来源：作者
 - en: Looking at the physical plan, the data is distributed evenly and takes similar
     times to process on percentile metrics. We can tell the significant difference
     if we choose a much larger dataset.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 从物理计划来看，数据分布均匀，并且在百分位指标上的处理时间类似。如果选择一个更大的数据集，我们可以明显看出差异。
 - en: '![](../Images/9cc46cf2e26e58b60e994fe2453a56b1.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9cc46cf2e26e58b60e994fe2453a56b1.png)'
 - en: Key Salting to improve Spark Performance Physical Plan | Image By Author
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 键加盐以提高 Spark 性能物理计划 | 图片来源：作者
 - en: '**Final Thought**'
+  id: totrans-83
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**最终思考**'
 - en: Data Skew in Apache Spark can be handled in various ways. It can be resolved
     from Spark configuration, from Spark plan optimization, or from hacking a “salt”
     key to guide Spark to distribute data evenly. Identifying the reason for a Spark
     job slowness is the foundation for any Spark tunning. Among those reasons, Data
     skew is one of those frequent blamers.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Apache Spark 中，数据倾斜可以通过多种方式处理。它可以通过 Spark 配置、Spark 计划优化，或者通过“盐”键引导 Spark 平均分配数据来解决。识别
+    Spark 作业变慢的原因是任何 Spark 调优的基础。在这些原因中，数据倾斜是常见的罪魁祸首之一。
 - en: I wrote this article to help everyone better understand what data skew is in
     Spark and potential solutions to solve them. However, when it comes to Spark performance
     optimization, there isn’t a silver bullet. You’d need to spend more energy looking
     at the query plan and figuring out what’s happening in the code. More knowledge
     is gained by trial and error.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我写这篇文章是为了帮助大家更好地理解 Spark 中的数据倾斜及其潜在解决方案。然而，当涉及到 Spark 性能优化时，并没有万灵药。你需要投入更多精力查看查询计划，并弄清楚代码中发生了什么。更多知识是通过反复试验获得的。
 - en: 'I hope this story is helpful to you. This article is **part of a series** of
     my engineering & data science stories that currently consist of the following:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这篇文章对你有所帮助。这篇文章是**我工程与数据科学故事系列的一部分**，目前包括以下内容：
 - en: '![Chengzhi Zhao](../Images/51b8d26809e870b4733e4e5b6d982a9f.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![程志赵](../Images/51b8d26809e870b4733e4e5b6d982a9f.png)'
 - en: '[Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '[程志赵](https://chengzhizhao.medium.com/?source=post_page-----57ce0d94ee38--------------------------------)'
 - en: Data Engineering & Data Science Stories
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据工程与数据科学故事
 - en: '[View list](https://chengzhizhao.medium.com/list/data-engineering-data-science-stories-ddab37f718e7?source=post_page-----57ce0d94ee38--------------------------------)53
     stories![](../Images/8b5085966553259eef85cc643e6907fa.png)![](../Images/9dcdca1fc00a5694849b2c6f36f038d4.png)![](../Images/2a6b2af56aa4d87fa1c30407e49c78f7.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '[查看列表](https://chengzhizhao.medium.com/list/data-engineering-data-science-stories-ddab37f718e7?source=post_page-----57ce0d94ee38--------------------------------)53篇故事！[](../Images/8b5085966553259eef85cc643e6907fa.png)![](../Images/9dcdca1fc00a5694849b2c6f36f038d4.png)![](../Images/2a6b2af56aa4d87fa1c30407e49c78f7.png)'
 - en: You can also [**subscribe to my new articles**](https://chengzhizhao.medium.com/subscribe)
     or become a [**referred Medium member**](https://chengzhizhao.medium.com/membership)who
     gets unlimited access to all the stories on Medium.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 你也可以[**订阅我的新文章**](https://chengzhizhao.medium.com/subscribe)或成为[**推荐的 Medium
+    会员**](https://chengzhizhao.medium.com/membership)，享受 Medium 上所有故事的无限访问权限。
 - en: In case of questions/comments, **do not hesitate to write in the comments**
     of this story or **reach me directly** through [Linkedin](https://www.linkedin.com/in/chengzhizhao/)
     or [Twitter](https://twitter.com/ChengzhiZhao).
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 如有疑问/评论，请**随时在本文评论区留言**或**直接通过[Linkedin](https://www.linkedin.com/in/chengzhizhao/)**或[Twitter](https://twitter.com/ChengzhiZhao)联系我。
