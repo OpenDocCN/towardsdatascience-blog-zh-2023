@@ -1,139 +1,198 @@
 - en: 'False Prophet: a Homemade Time Series Regression Model'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 假先知：一个自制的时间序列回归模型
 - en: 原文：[https://towardsdatascience.com/false-prophet-a-homemade-time-series-regression-model-54e296b99438](https://towardsdatascience.com/false-prophet-a-homemade-time-series-regression-model-54e296b99438)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/false-prophet-a-homemade-time-series-regression-model-54e296b99438](https://towardsdatascience.com/false-prophet-a-homemade-time-series-regression-model-54e296b99438)
 - en: Borrowing ideas from Meta’s Prophet to build a powerful time series regression
     model
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 借用 Meta 的 Prophet 的思想来构建一个强大的时间序列回归模型。
 - en: '[](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)[![Bradley
     Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)
     [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)[![Bradley
+    Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)
+    [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)
     ·16 min read·Oct 31, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)
+    ·阅读时间 16 分钟·2023 年 10 月 31 日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/a3ee91d49478804f92ad7d17cb7c3c44.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a3ee91d49478804f92ad7d17cb7c3c44.png)'
 - en: Photo by [Niklas Rhöse](https://unsplash.com/@blitzer?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Niklas Rhöse](https://unsplash.com/@blitzer?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: In this follow up article, I continue my mission to build Frankenstein’s time
     series monster by combining ideas from the popular Prophet package¹ and the talk
     “Winning with Simple, even Linear, Models”².
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇后续文章中，我继续我的使命，通过结合流行的 Prophet 包¹ 和演讲“用简单甚至线性模型取胜”² 的思想来构建弗兰肯斯坦的时间序列怪物。
 - en: After we’ve reminded ourselves of what we’re up to we’ll touch on the regression
     model — what it is, and why it’s special.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在回顾我们正在做的事情之后，我们将讨论回归模型——它是什么，以及它的特别之处。
 - en: We’ll then move on to hyper-parameter tuning using time series cross-validation
     to get an “optimal” model parameterisation.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们将使用时间序列交叉验证进行超参数调整，以获得“最佳”的模型参数化。
 - en: Finally, we’ll validate the model using SHAP before taking advantage of the
     model form to allow bespoke investigations and manual adjustments.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们将使用 SHAP 验证模型，然后利用模型形式进行定制调查和手动调整。
 - en: That’s a lot of ground to cover — let’s get cracking.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个广泛的范围——让我们开始吧。
 - en: '*Aside: we covered the underlying data preparation and feature engineering
     in a previous article, and so are jumping straight to modelling. Catch up on what
     went on there:*'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附注：我们在上一篇文章中已经涵盖了基础数据准备和特征工程，因此直接进入建模部分。赶紧了解一下之前的内容：*'
 - en: '[](/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=post_page-----54e296b99438--------------------------------)
     [## False Prophet: Feature Engineering for a Homemade Time Series Regression (Part
     1 of 2)'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=post_page-----54e296b99438--------------------------------)
+    [## 假先知：自制时间序列回归的特征工程（第 1 部分，共 2 部分）'
 - en: Building on ideas from Meta’s Prophet package to create powerful features for
     time series machine learning models
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 基于 Meta 的 Prophet 包中的思想，创建强大的时间序列机器学习模型功能。
 - en: towardsdatascience.com](/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=post_page-----54e296b99438--------------------------------)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=post_page-----54e296b99438--------------------------------)
 - en: The big picture
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 全局视角
 - en: Let’s remind ourselves of what we’re doing.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们回顾一下我们在做什么。
 - en: 'The end goal is simple: to generate the most accurate forecast of future events
     across a specified time horizon.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 终极目标很简单：在指定的时间范围内生成最准确的未来事件预测。
 - en: We started from scratch with a time series containing only a date variable and
     the quantity of interest. From this, we derived additional features to help us
     model future outcomes accurately; these were heavily “inspired” by Prophet’s approach.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: 'That brings us to where we are now: about ready to feed our engineered data
     into a lightweight model, training it to forecast into the future. Later on we’ll
     dive into the model’s internal workings.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
 - en: Let’s remind ourselves of what the data looks like before we carry on.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: Data
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: We’re using real-world data from the UK — in this case, the STATS19 road traffic
     accidents data set which contains information about certain car crashes³.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
 - en: 'We’ve summarised this large data set to an aggregated monthly count of accidents.
     This means our target looks something like this:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/341e08ba1d4b4fa2d786736ed7fea684.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
 - en: Image by author
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: We previously pointed out the downward trend, strong seasonal effect and apparent
     change in trend. Let’s see how well our feature engineering and modelling work
     together to capture this.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: The model
+  id: totrans-29
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: While it’s not quite Christmas, I do have a few characteristics on my model
     wish list. I’ll lay these out and briefly cover why I’ve chosen to use a LASSO
     model (spoiler!).
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: 'Firstly, the model should be as robust as possible.“Robust” can mean many things
     so we’ll be a bit more specific: I’d like a model which can be trained and left
     for a while. In other words, the model should be able to extrapolate to handle
     previously unseen — but “normal” — input values.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: The model needs to be interpretable and explainable. It should be easy to interrogate
     and understand, and simple to explain. Ideally, I should be able to quantify —
     accurately — the impact of various effects.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: Finally, the model should have some sort of built-in feature selection. In theory
@@ -141,24 +200,29 @@
     I could do a rigorous exercise to find the most effective set of features. In
     reality, it’s Saturday afternoon and life’s too short. So the model will have
     to sort itself out.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: While tree-based models tick one-and-a-bit of those boxes, they aren’t so hot
     at extrapolation. They also can’t really be used to say certain things like “in
     June, seasonality causes a movement of X%”.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: What I want is something generally linear (hint hint), with a bit extra on the
     side.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: Enter the LASSO
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: The Least Absolute Shrinkage and Selection Operator (LASSO) is a statistical
     model. It performs both feature selection and regularisation in order to boost
     the model’s predictive power and interpretability⁷.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: We won’t focus too much on the nuts and bolts, and instead recognise that the
@@ -170,23 +234,28 @@
     coefficient is shrunk to zero exactly, that feature will have absolutely no impact
     on either model fit or prediction and the feature is effectively removed from
     the model.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: This feature coefficient shrinkage effectively reduces the likelihood of over-fitting
     and so should improve the model’s ability to generalise to new and unseen data.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: '*Aside: the LASSO regularisation is sometimes referred to as L1 regularisation
     or the L1 penalty. This comes from the mathematical form of the regularisation
     term which uses the L1 norm.*'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: Generalising things
+  id: totrans-41
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Scikit-learn implements the LASSO linearly — i.e. the `Lasso` class assumes
     that the target can be represented as a linear combination of input features.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: Let’s cast our minds back to the data we’re modelling. We can see that the magnitude
@@ -195,415 +264,601 @@
     In other words, our time series is the *product* of the time series elements rather
     than the *sum* of them. This means we need a little imagination when it comes
     to model form.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: 'Luckily we don’t have to get too inventive — by modelling the natural logarithm
     of monthly road traffic accidents we can turn our additive LASSO into a multiplicative
     model. We can loosely think of the model form as follows:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/2cf3ff93e361764f7ff69262d0babd13.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
 - en: Image by author
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: '… which means our predictions look something like:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/a4401c23dab6e814b69da7a8ab70c68e.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
 - en: Image by author
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: '*Aside: the maths above uses the “hat” notation, which is convention when we’re
     talking about estimated values. Since the predictions are derived from estimated
     values of beta — which themselves are derived, given the data — we move to the
     hat notation for both target and regression coefficient.*'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: More on this later, but it’s worth bearing in mind as we start to probe the
     model.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: Alpha, the regularisation parameter
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: We’ve landed on our model, now we need to land on its parameterisation.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: In `sklearn` the regularisation strength of the LASSO is controlled through
     the `alpha` argument. I don’t have much of a feeling for the optimal value of
     this hyperparameter so will need to do some searching, bearing in mind that the
     “optimal” model is the one which *forecasts* the best.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: 'We need some sort of train-test split which allows us to test how well a given
     parameterisation of the model forecasts into the future: the normal randomly split
     cross-validation approach won’t cut the mustard, as the temporal element of the
     target gets confused, or even worse — leaked.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要某种训练-测试分割方法来测试给定模型参数化在未来的预测效果：通常随机分割交叉验证方法效果不佳，因为目标的时间元素会混淆，甚至更糟——泄漏。
 - en: Fortunately time series cross-validation is a thing and there’s a great implementation
     of it available in scikit-learn. We’ll use this to search through various values
     of `alpha` which are drawn (randomly) from a distribution of potential values
     and assess the forecast accuracy using a variety of metrics.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，时间序列交叉验证是一个实际存在的技术，并且在scikit-learn中有很好的实现。我们将使用它来搜索从潜在值分布中随机抽取的各种`alpha`值，并使用多种指标评估预测准确性。
 - en: '*Aside: if you’re not familiar with time series cross-validation, a quick introduction
     is available here:*'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '*顺便说一下，如果你不熟悉时间序列交叉验证，可以在这里快速了解：*'
 - en: '[](https://python.plainenglish.io/on-times-series-cross-validation-6d685eaf335b?source=post_page-----54e296b99438--------------------------------)
     [## On Times Series Cross-Validation'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://python.plainenglish.io/on-times-series-cross-validation-6d685eaf335b?source=post_page-----54e296b99438--------------------------------)
+    [## 时间序列交叉验证'
 - en: Maximising the utility of your time series data with smart subdivision.
+  id: totrans-59
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过聪明的子划分最大化你的时间序列数据的效用。
 - en: python.plainenglish.io](https://python.plainenglish.io/on-times-series-cross-validation-6d685eaf335b?source=post_page-----54e296b99438--------------------------------)
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '[python.plainenglish.io](https://python.plainenglish.io/on-times-series-cross-validation-6d685eaf335b?source=post_page-----54e296b99438--------------------------------)'
 - en: 'After some searching, we can visualise the forecasting error and choose the
     value of `alpha` which minimises this:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 经过一些搜索，我们可以可视化预测误差，并选择使其最小化的`alpha`值：
 - en: '![](../Images/e79091969f51d7423f2c65d4399fa5e6.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e79091969f51d7423f2c65d4399fa5e6.png)'
 - en: Image by author
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: We can see that the Mean Absolute Error (MAE), Root Mean Square Error (RMSE),
     and Mean Absolute Percentage Error (MAPE) all reach a minimum when `alpha` is
     close to 0.0017.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到，当`alpha`接近0.0017时，均方误差（MAE）、均方根误差（RMSE）和平均绝对百分比误差（MAPE）都达到了最低值。
 - en: Since we’re not comparing models (yet), the actual value of the metrics doesn’t
     matter too much. It’s also worth pointing out that MAPE isn’t actually a percentage;
     I’ve formatted it as such in the chart above to help me get a feel for what turned
     out to be quite small numbers.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们暂时没有比较模型，因此指标的实际值并不太重要。值得指出的是，MAPE 实际上不是一个百分比；我在上面的图表中将其格式化为百分比，以帮助我感受这些实际上相当小的数字。
 - en: 'So far so good. But how well does a model with this `alpha` actually forecast?
     Not too badly, actually:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止一切顺利。但一个具有这种`alpha`的模型实际预测效果如何？实际上还不错：
 - en: '![](../Images/7d2de450098c26b2464fef34f50ba813.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7d2de450098c26b2464fef34f50ba813.png)'
 - en: Image by author
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: The chart above is a visual representation of the time series cross-validation
     results for the LASSO model using the `alpha` parameter above.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的图表是使用上述`alpha`参数的LASSO模型时间序列交叉验证结果的可视化表示。
 - en: Each coloured line represents an out-of-fold forecast from a model trained on
     all the data (grey) prior to the forecast period.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 每条彩色线代表了一个在预测期之前基于所有数据（灰色）训练的模型的折外预测。
 - en: As an example, the orange line represents the 12 month forecast for 2011 from
     a model trained on data up to and including 2010.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，橙色线代表了基于截至2010年数据训练的模型对2011年的12个月预测。
 - en: 'The forecasts are a little difficult to see so let’s zoom in:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测结果有点难以看清，我们来放大一下：
 - en: '![](../Images/9ebce7ebce31eeaf5c463164d3baf922.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ebce7ebce31eeaf5c463164d3baf922.png)'
 - en: Image by author
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: 'For such a noisy actual these predictions don’t seem to be doing too badly:
     they appear to capture the in-year trend as well as predicting the stronger seasonality
     movements.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于如此嘈杂的实际数据，这些预测效果还不错：它们似乎捕捉到了年度趋势，并预测了更强的季节性变化。
 - en: However, the model predictions do tend to miss the first few samples in each
     of the out-of-time periods before generally coming back in line.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，模型预测往往会错过每个时间段开始的前几个样本，然后通常会回到正常范围。
 - en: Considering that we noted a change in trend and seasonality in the underlying
     data around 2012–2014, I’d say that this model is actually doing quite well!
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑到我们注意到在2012–2014年左右，底层数据中趋势和季节性发生了变化，我认为这个模型实际上表现得相当不错！
 - en: Let’s use this value of `alpha` to refit the model to the entire span of data
     before moving on to some model investigation.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 在继续进行模型调查之前，让我们使用这个`alpha`值来重新拟合整个数据范围的模型。
 - en: '![](../Images/9fa7d819e55412b7f0afe8494d13d892.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9fa7d819e55412b7f0afe8494d13d892.png)'
 - en: Image by author
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: Results, validation, and interrogation
+  id: totrans-81
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结果、验证与调查
 - en: We wanted a model that was easy to understand and explain. Let’s see how we
     did.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们想要一个易于理解和解释的模型。让我们看看我们做得如何。
 - en: SHAP validation
+  id: totrans-83
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: SHAP验证
 - en: The SHAP package is fairly ubiquitous when it comes to model assessment. We’re
     going to skip the whole “What is SHAP? How does SHAP work?” spiel and go straight
     to the results, pausing only briefly to remember that SHAP focusses on the drivers
     of model predictions rather than the drivers of model fit.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 在模型评估方面，SHAP包相当普及。我们将跳过整个“什么是SHAP？SHAP如何工作？”的介绍，直接进入结果，仅简要回顾一下SHAP关注的是模型预测的驱动因素，而不是模型拟合的驱动因素。
 - en: Pause over.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 暂停完毕。
 - en: As a starter, the overall summary highlights the biggest drivers of prediction.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为开端，总体总结突出显示了预测的最大驱动因素。
 - en: '![](../Images/04ae249d2270366885f626059775c5a9.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/04ae249d2270366885f626059775c5a9.png)'
 - en: Image by author
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: Top of the charts appears to be the `year` feature, where we see higher values
     of `year` driving predictions down. This aligns with the clear downward trend
     that we’ve seen in our data.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 图表的顶部似乎是`year`特征，我们看到`year`的值较高时，预测值会降低。这与我们在数据中看到的明显下降趋势一致。
 - en: We see quite a few of the Prophet-inspired features playing a key role in the
     predictions. It’s interesting to see `prophet_sin_12` make an appearance (and
     be so high up the list!) — our hunch to extend the range of Prophet features created
     seems to have paid off.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到许多受Prophet启发的特征在预测中发挥了关键作用。有趣的是，`prophet_sin_12`出现在列表中（并且排得如此靠前！）——我们扩展Prophet特征创建范围的直觉似乎得到了验证。
 - en: There are a few other features that pop up — like one of the cyclically encoded
     month features (`mth_sin` ), and the number of holidays in a month (`hols` ) —
     but this list is dominated by the change point features. So much so that it probably
     needs investigating.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一些其他特征出现了，比如其中一个周期性编码的月份特征（`mth_sin`）和一个月中的假期数量（`hols`），但这个列表主要被变化点特征所主导。以至于它可能需要进一步调查。
 - en: SHAP also allows us to visualise the drivers of individual predictions. For
     a tale of two halves, let’s take a look at the very first and very last observations.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: SHAP还允许我们可视化单个预测的驱动因素。作为一个开端，让我们看看第一个和最后一个观察结果。
 - en: '![](../Images/ed444977873066045c2c83876c5663db.png)'
+  id: totrans-93
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ed444977873066045c2c83876c5663db.png)'
 - en: Image by author
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: 'Remembering that these two observations are some 20 years and 8,000 accidents
     apart, it’s interesting that there is some common ground in the drivers of each
     prediction: both predictions are highly influenced (although not necessarily in
     the same direction) by `year` and `hols` .'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住这两个观察结果相隔大约20年和8,000起事故，值得注意的是每个预测的驱动因素中都有一些共同点：这两个预测都受到了`year`和`hols`的高度影响（尽管方向不一定相同）。
 - en: Let’s move onto something more imaginative.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们转向一些更富有想象力的内容。
 - en: Bespoke investigation
+  id: totrans-97
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 定制调查
 - en: We can now start to get inventive with how we interrogate our model.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以开始有创意地调查我们的模型。
 - en: Remember that we’ve effectively built a generalised linear model with a bit
     of regularisation bolted on, and the transformation of the target means that we’ve
     effectively used a log link function in doing so.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住，我们实际上建立了一个通用的线性模型，并添加了一些正则化，目标的转换意味着我们实际上使用了对数链接函数。
 - en: 'Recall that in model training, the feature coefficients (beta) are constrained
     such that they end up shrinking towards zero. This gives us our first avenue of
     investigation: checking the size of the fitted model parameters.'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住，在模型训练中，特征系数（beta）受到约束，最终会收缩到接近零。这给了我们第一个调查途径：检查拟合模型参数的大小。
 - en: Any feature with a non-zero coefficient is used in the model, and the size of
     a feature’s coefficient is an indicator of just how “important” it is in the overall
     mix of predictions.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 任何具有非零系数的特征都会被用于模型中，特征系数的大小是其在整体预测中的“重要性”的一个指标。
 - en: This is fairly easily done, using the `coef_` attribute of the fitted model
     to get coefficients, and then remembering to take the absolute value of extracted
     coefficients before sorting and / or ranking. It’s probably a good idea to check
     for features that could reasonably be expected to be included in the model but
     aren’t.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以相对容易地完成，使用`coef_`属性从拟合模型中获取系数，然后记得在排序和/或排名之前取提取系数的绝对值。检查那些可以合理预期包含在模型中的但实际上没有的特征也是个好主意。
 - en: What else can we do? Well, here is where it gets quite fun.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还能做些什么？好吧，这里就变得非常有趣了。
 - en: Since we’ve used a GLM, we can group features together to calculate the group
     impact on the prediction. And since we’ve used a log link function, our impacts
     are multiplicative and easier to understand — e.g. a group impact of 1.05 = increase
     of 5%.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们使用了GLM，我们可以将特征分组在一起计算对预测的组影响。由于我们使用了对数链接函数，我们的影响是乘法的，理解起来更简单——例如，组影响为1.05
+    = 增加5%。
 - en: As an example, we have a load of Prophet features. It’s quite easy for us to
     calculate the overall impact that all of the Prophet features have on the overall
     prediction *directly*.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，我们有大量的Prophet特征。我们可以很容易地直接计算所有Prophet特征对总体预测的影响。
 - en: 'This grouping isn’t necessarily limited either — we can group as we see fit.
     In our case, I’m going to group features together into themes:'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种分组也不是绝对的——我们可以根据需要进行分组。在我们的案例中，我将把特征分组到主题中：
 - en: '[PRE0]'
+  id: totrans-107
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Quantifying the impact of a feature group is then calculated as the dot product
     between the coefficients and feature values of each feature in the group. This
     leads us to neat explorations of the impact of each group over time.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征组的影响量化是通过系数和该组中每个特征的特征值的点积来计算的。这使我们能够清晰地探索每个组随时间的影响。
 - en: 'We were a bit suspicious about the dominance of the change point features —
     let’s visualise their impact to see how they affect predictions over time:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们对变化点特征的主导地位有些怀疑——让我们可视化它们的影响，看看它们如何随时间影响预测：
 - en: '![](../Images/9ed707e8c47ffa63f9e6ba01dc29aa76.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ed707e8c47ffa63f9e6ba01dc29aa76.png)'
 - en: Image by author
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: The majority of change points drive downward movements in prediction with the
     exception of an upward change around 2013 or so. There are a lot of change points
     being used, perhaps picking up a deficiency in the “pure” trend features.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数变化点推动了预测的下降，除了2013年左右的一个上升变化。有很多变化点被使用，可能弥补了“纯”趋势特征中的不足。
 - en: 'What about the combined effect of trend and change point features? These are
     effectively the “trend” component in a Prophet model. Well, as it turns out, not
     so difficult to get at either:'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么趋势和变化点特征的综合效果如何？这些实际上是Prophet模型中的“趋势”组件。结果证明，这也不是很难获取：
 - en: '![](../Images/fb40ecabf879f57ac344cb8468b2f681.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fb40ecabf879f57ac344cb8468b2f681.png)'
 - en: Image by author
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: What about the seasonal effect? I’m curious to see how the various seasonal
     features fit together to form a single effect.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 季节性效果怎么样？我很想看看各种季节性特征如何组合在一起形成一个整体效果。
 - en: '![](../Images/10884806e8283ebd2e1dfbbb8313aabb.png)'
+  id: totrans-117
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/10884806e8283ebd2e1dfbbb8313aabb.png)'
 - en: Image by author
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Interesting! We see here a dip in the early part of the year followed by a double
     spike mid-way through the year — quite a complex effect to capture.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣！我们在这里看到了一年初的下降，然后是一年中期的双重峰值——这是一个相当复杂的效果。
 - en: 'Finally, let’s take a look at the holiday effect where we’ve bundled together
     business days and actual bank holidays. As the UK has so few bank holidays scattered
     throughout the year, it’s likely that this group of features will be quite noisy:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，让我们看看假日效应，我们将工作日和实际的银行假日捆绑在一起。由于英国一年中的银行假日非常少，这一特征组可能会比较嘈杂：
 - en: '![](../Images/e680c0527202e507857572b23771db48.png)'
+  id: totrans-121
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e680c0527202e507857572b23771db48.png)'
 - en: Image by author
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: … and that’s exactly what we see. Notice how the majority of impact oscillates
     between a reduction of 1% (0.99) and an increase of 2% (1.02), with some sharp
     drops likely coinciding with months with more holidays.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: ……这正是我们看到的。注意到大多数影响在减少1%（0.99）和增加2%（1.02）之间波动，某些急剧下降可能与节假日较多的月份有关。
 - en: I think it’s fairly safe to say that we can isolate the impact of each effect
     on any given observation — exactly what we wanted when we set out on this little
     adventure!
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为可以相当安全地说，我们可以隔离每个效果对任何给定观察的影响——这正是我们开始这次小冒险时所期望的！
 - en: Wrap up and ramble
+  id: totrans-125
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结与漫谈
 - en: We’ve covered a lot of ground in this article. As is tradition, a quick recap
     before a bit of a ramble.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在这篇文章中涉及了很多内容。按照惯例，在稍作闲聊之前，先进行简要回顾。
 - en: Summary
+  id: totrans-127
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 总结
 - en: After touching on our aspirations to build an awesome forecasting model we looked
     at UK road traffic accident data. We saw strong trend and seasonality in our aggregated
     monthly counts and knew that our feature engineering and modelling would need
     to work overtime to capture these effects.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 在谈到我们希望建立一个出色的预测模型后，我们查看了英国的道路交通事故数据。我们看到在汇总的月度数据中存在明显的趋势和季节性，并知道我们的特征工程和建模需要加倍努力以捕捉这些效果。
 - en: We discussed how the model that we build should be able to forecast well, should
     be explainable and interpretable, and should have some form of inherent feature
     selection. We also discussed why the LASSO model ticked those boxes.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们讨论了构建的模型应能良好预测，应具备可解释性和可理解性，并应具有某种形式的固有特征选择。我们还讨论了为何 LASSO 模型符合这些要求。
 - en: We moved on to the model form, and how we transformed the target in order to
     better suit the multiplicative form of the time series. The regularisation parameter
     `alpha` was explored, as was an appropriate (time series) cross-validation approach
     to arrive at the optimal `alpha` for forecasting. We sense-checked by plotting
     out-of-time forecasts before rebuilding the model using `alpha` and the entire
     span of historical data.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们继续探讨模型形式，以及如何变换目标以更好地适应时间序列的乘法形式。我们探索了正则化参数`alpha`，以及适当的（时间序列）交叉验证方法以找到用于预测的最佳`alpha`。我们通过绘制时间之外的预测结果来进行感知检查，然后使用`alpha`和整个历史数据重新构建模型。
 - en: Following that, we saw how SHAP can be used to effectively investigate the inner
     workings of the LASSO model. We then took advantage of the separable nature of
     the model to investigate and quantify the impact of the trend, seasonal, and holiday
     effects.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 随后，我们了解了如何利用 SHAP 有效地研究 LASSO 模型的内部运作。然后，我们利用模型的可分性来研究和量化趋势、季节性和假期效应的影响。
 - en: Let’s ramble.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们聊聊吧。
 - en: Trees can’t extrapolate
+  id: totrans-133
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 决策树无法外推
 - en: … and other reasons for using a generalised linear model.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: ……以及使用广义线性模型的其他原因。
 - en: One of the most well-known challenges with tree-based models is their inability
     to extrapolate beyond the values of the data that they were trained on. Using
     tree-based models indirectly puts an upper and lower bound on prediction values;
     given how our series was trending over time, this probably isn’t an appropriate
     concession to make.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 决策树模型最著名的挑战之一是它们无法超越训练数据的值进行外推。使用决策树模型间接地对预测值设置了上下限；鉴于我们的序列随时间的趋势，这可能不是一个合适的让步。
 - en: 'Neural networks can extrapolate but given their complexity I decided to fall
     back to my bread-and-butter: the humble GLM.'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 神经网络可以外推，但考虑到它们的复杂性，我决定退回到我的拿手好戏：谦逊的 GLM。
 - en: 'Although simple, GLM have a lot going for them. Even more so given our specific
     requirements:'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管简单，GLM 具有很多优点。尤其是考虑到我们的具体要求：
 - en: GLM are widely used and understood. Their familiarity means that they are easy
     to explain and communicate.
+  id: totrans-138
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GLM 被广泛使用和理解。它们的熟悉度使得解释和沟通变得简单。
 - en: The model structure means that effective selection of a link function can make
     the model tractable. Particularly useful is the comparison we can do relative
     to the “base” observation as this allows us to quantify the impact of a given
     level of a given feature, all else being equal.
+  id: totrans-139
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型结构意味着有效选择链接函数可以使模型变得可处理。特别有用的是我们可以相对于“基准”观察值进行比较，因为这允许我们量化给定特征的某一水平的影响，其他条件相同。
 - en: Along a similar line, we can calculate the *exact* effect of a given level of
     a given feature. This makes it much more straightforward to ensure that certain
     conditions — like a customer’s expectation — are enforced.
+  id: totrans-140
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 类似地，我们可以计算给定特征的*确切*效果。这使得确保某些条件——如客户的期望——变得更加简单明了。
 - en: 'On a more practical note, our model form allows us to do some manual “adjustments”
     straightforwardly. As an example: what if we believe that our time series trend
     is heading in a different direction to what the data suggests? Well, we can apply
@@ -611,157 +866,228 @@
     and arrive at a bespoke forecast. We can generalise this approach and apply various
     adjustments — great for scenario testing and communicating the outcome of “what
     if?” questions.'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 从实际的角度来看，我们的模型形式允许我们轻松进行一些手动“调整”。例如：如果我们认为我们的时间序列趋势与数据所示的方向不同怎么办？我们可以在假定的未来趋势上应用建模的季节性和假期效应，从而得到定制的预测。我们可以将这种方法概括并应用各种调整——非常适合情景测试和沟通“如果会怎么样？”的问题结果。
 - en: Of course, it’s not all sunshine and rainbows with GLM. They can be quite tricky
     to build, oftentimes requiring expert judgement. They can also become annoyingly
     fiddly when we start to introduce feature interactions (which we have to create
     ourselves!).
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，GLM并非全是阳光和彩虹。它们的构建可能相当棘手，通常需要专家判断。当我们开始引入特征交互（我们必须自己创建！）时，它们也可能变得非常麻烦。
 - en: As with most things, you have to pick the right tool for the job.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 就像大多数事情一样，你必须选择合适的工具来完成工作。
 - en: 'Leftovers: the model residuals'
+  id: totrans-144
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 剩余的：模型残差
 - en: We fitted a model to a time series known to have a strong trend and seasonal
     effect present. How do we know that we’ve captured that trend and seasonality
     adequately?
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们对一个已知具有强烈趋势和季节效应的时间序列进行了建模。我们怎么知道我们是否充分捕捉到了这种趋势和季节性呢？
 - en: 'One avenue to investigate is the model residuals: the difference between the
     actual and predicted values. Any trend or seasonality in the residuals would indicate
     that the model hasn’t adequately accounted for these effects; we’d need to take
     steps to address this.'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种需要调查的途径是模型残差：实际值与预测值之间的差异。残差中的任何趋势或季节性都会表明模型没有充分考虑这些效应；我们需要采取措施解决这个问题。
 - en: Naturally I’ve not done this. Do as I say, not as I do and all that.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然地，我并没有做到这一点。听我的，不要看我做的。
 - en: Interestingly, the approach of investigating model residuals does actually segue
     neatly to different modelling approaches.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是，调查模型残差的方法实际上很自然地过渡到不同的建模方法。
 - en: Some practitioners — including those I work with — are advocates for mixed models
     where we fit a simple model to the original series and then model the residuals
     with a different kind of time series model.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些从业者——包括我工作中的那些——支持混合模型，其中我们对原始系列进行简单建模，然后用不同的时间序列模型建模残差。
 - en: 'The underlying logic here is that the simple model adequately captures the
     trend, and so the residuals contain no long-term non-periodic effect: that is,
     the residuals are stationary. This opens the door to other techniques which either
     rely on the assumption of stationarity — like some time series approaches — or
     can benefit from stationarity as they don’t handle extrapolation particularly
     well — like tree-based approaches.'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的基本逻辑是，简单模型充分捕捉了趋势，因此残差不包含长期非周期性效应：也就是说，残差是平稳的。这为依赖于平稳性假设的其他技术打开了大门——如一些时间序列方法——或可以从平稳性中受益，因为它们处理外推不特别好——如基于树的方法。
 - en: Group SHAP
+  id: totrans-151
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 组SHAP
 - en: Most practitioners love a bit of SHAP. And for good reason — look how informative
     and easy to understand those visualisations are!
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数从业者喜欢使用SHAP。理由很充分——看看这些可视化效果是多么的信息丰富和易于理解！
 - en: However, it would be even better if we were able to combine various features
     into sets of features, and feed those *sets* of features into the SHAP visualisations.
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，如果我们能够将各种特征组合成特征集，并将这些*特征集*输入到SHAP可视化中，那就更好了。
 - en: Although we did something similar manually, SHAP waterfall plots for grouped
     features would really bring to life the drivers of prediction… and it looks like
     we might be able to do just that¹⁰.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管我们手动做过类似的工作，但分组特征的SHAP瀑布图确实能够生动展示预测的驱动因素……看起来我们可能可以做到这一点¹⁰。
 - en: Making life easier
+  id: totrans-155
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 让生活更轻松
 - en: My workflow does everything the hard way, including manual cross-validation
     loops. This is not a brag, believe me — I’d much rather take the path of least
     resistance.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的工作流程用的都是比较繁琐的方法，包括手动交叉验证循环。这不是炫耀，相信我——我更愿意走最小阻力的路径。
 - en: I ended up doing things manually because I couldn’t get scikit-learn’s randomised
     cross-validation¹² search to work. I think it’s due to using a `Pipeline` estimator
     rather than just the `Lasso` class (remember that we need to normalise input features
     before fitting a LASSO model) but I’m not sure. If you know the solution — or
     can point me in the right direction — please do let me know.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 我最后还是手动完成了这些操作，因为我无法让 scikit-learn 的随机交叉验证¹² 搜索正常工作。我认为这是因为使用了`Pipeline`估计器而不是仅使用`Lasso`类（记住我们需要在拟合
+    LASSO 模型之前对输入特征进行标准化），但我不确定。如果你知道解决方案——或者能指引我正确的方向——请告诉我。
 - en: Lastly `LassoCV` turns out to be a thing in scikit-learn. This is a self-tuning
     LASSO model — that’s right, point it at your data and it determines the optimal
     value of `alpha` autonomously. It looks like it can even take bespoke instances
     of cross-validation generators¹¹ although I’m not sure if that includes time series
     cross-validation. One to check out for next time.
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，`LassoCV` 在 scikit-learn 中确实存在。这是一个自我调节的 LASSO 模型——没错，将其指向你的数据，它会自主确定`alpha`的最佳值。看起来它甚至可以接受定制的交叉验证生成器¹¹，尽管我不确定这是否包括时间序列交叉验证。下次可以看看。
 - en: That’s it from me. I hope you enjoyed reading this as much as I enjoyed writing
     it.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这些了。我希望你和我一样享受阅读这篇文章的过程。
 - en: As always, please let me know what you think — I’m really interested to hear
     about your experiences with Prophet or with modelling time series in different
     ways.
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 和往常一样，请告诉我你的想法——我很想了解你在 Prophet 或用不同方式建模时间序列的经历。
 - en: Until next time.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次再见。
 - en: References and and useful resources
+  id: totrans-162
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献和有用资源
 - en: '[GitHub — facebook/prophet: Tool for producing high quality forecasts for time
     series data that has multiple seasonality with linear or non-linear growth.](https://github.com/facebook/prophet)'
+  id: totrans-163
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[GitHub — facebook/prophet: 用于生成具有线性或非线性增长的多季节时间序列数据的高质量预测的工具。](https://github.com/facebook/prophet)'
 - en: '[Vincent Warmerdam: Winning with Simple, even Linear, Models | PyData London
     2018 — YouTube](https://www.youtube.com/watch?v=68ABAU_V8qI&list=WL&index=32&t=2183s)'
+  id: totrans-164
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Vincent Warmerdam: 通过简单的，甚至线性的模型获胜 | PyData London 2018 — YouTube](https://www.youtube.com/watch?v=68ABAU_V8qI&list=WL&index=32&t=2183s)'
 - en: '[https://roadtraffic.dft.gov.uk/downloads](https://roadtraffic.dft.gov.uk/downloads)
     used under the [Open Government Licence (nationalarchives.gov.uk)](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)'
+  id: totrans-165
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://roadtraffic.dft.gov.uk/downloads](https://roadtraffic.dft.gov.uk/downloads)
+    按照 [开放政府许可证 (nationalarchives.gov.uk)](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
+    使用'
 - en: '[Forecasting at scale (peerj.com)](https://peerj.com/preprints/3190.pdf)'
+  id: totrans-166
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[大规模预测 (peerj.com)](https://peerj.com/preprints/3190.pdf)'
 - en: '[A comprehensive guide to time series decomposition | Towards AI](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6)'
+  id: totrans-167
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[全面的时间序列分解指南 | Towards AI](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6)'
 - en: '[Trend Changepoints | Prophet (facebook.github.io)](https://facebook.github.io/prophet/docs/trend_changepoints.html)'
+  id: totrans-168
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[趋势变点 | Prophet (facebook.github.io)](https://facebook.github.io/prophet/docs/trend_changepoints.html)'
 - en: '[Lasso (statistics) — Wikipedia](https://en.wikipedia.org/wiki/Lasso_(statistics))'
+  id: totrans-169
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Lasso (统计学) — 维基百科](https://en.wikipedia.org/wiki/Lasso_(statistics))'
 - en: '[Civil-liability-act-2018-Q-and-A.docx (live.com)](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fmedia%2F5c62d226ed915d04538f124f%2FCivil-liability-act-2018-Q-and-A.docx%23%3A%7E%3Atext%3DThe%2520Civil%2520Liability%2520Act%25202018%2520makes%2520important%2520changes%2520to%2520the%2Cinjury%2520discount%2520rate%2520is%2520set.&wdOrigin=BROWSELINK)'
+  id: totrans-170
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Civil-liability-act-2018-Q-and-A.docx (live.com)](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fmedia%2F5c62d226ed915d04538f124f%2FCivil-liability-act-2018-Q-and-A.docx%23%3A%7E%3Atext%3DThe%2520Civil%2520Liability%2520Act%25202018%2520makes%2520important%2520changes%2520to%2520the%2Cinjury%2520discount%2520rate%2520is%2520set.&wdOrigin=BROWSELINK)'
 - en: '[interaction.pdf (mcgill.ca)](https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf)'
+  id: totrans-171
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[interaction.pdf (mcgill.ca)](https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf)'
 - en: '[Is it Valid to Aggregate SHAP values to Sets of of Features? · Issue #933
     · shap/shap · GitHub](https://github.com/shap/shap/issues/933)'
+  id: totrans-172
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[将 SHAP 值聚合到特征集合中是否有效？ · Issue #933 · shap/shap · GitHub](https://github.com/shap/shap/issues/933)'
 - en: '[3.2.3.1.5\. sklearn.linear_model.LassoCV — scikit-learn 0.15-git documentation](https://scikit-learn.org/0.15/modules/generated/sklearn.linear_model.LassoCV.html)'
+  id: totrans-173
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[3.2.3.1.5\. sklearn.linear_model.LassoCV — scikit-learn 0.15-git 文档](https://scikit-learn.org/0.15/modules/generated/sklearn.linear_model.LassoCV.html)'
 - en: '[sklearn.model_selection.RandomizedSearchCV — scikit-learn 1.3.1 documentation](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html)'
+  id: totrans-174
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[sklearn.model_selection.RandomizedSearchCV — scikit-learn 1.3.1 文档](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html)'
