@@ -1,45 +1,65 @@
 - en: Build low-latency and scalable ML model prediction pipelines using Spark Structured
     Streaming and MLflow
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 构建低延迟和可扩展的 ML 模型预测管道，使用 Spark Structured Streaming 和 MLflow
 - en: 原文：[https://towardsdatascience.com/build-low-latency-and-scalable-ml-model-prediction-pipelines-using-spark-structured-streaming-and-535ae5244877](https://towardsdatascience.com/build-low-latency-and-scalable-ml-model-prediction-pipelines-using-spark-structured-streaming-and-535ae5244877)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/build-low-latency-and-scalable-ml-model-prediction-pipelines-using-spark-structured-streaming-and-535ae5244877](https://towardsdatascience.com/build-low-latency-and-scalable-ml-model-prediction-pipelines-using-spark-structured-streaming-and-535ae5244877)
 - en: MLOps in practice series — sharing design and implementation patterns of critical
     MLOps component. The focus of today’s article is on building model prediction
     pipelines.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MLOps 实践系列——分享关键 MLOps 组件的设计和实施模式。今天的文章重点是构建模型预测管道。
 - en: '[](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)[![YUNNA
     WEI](../Images/ffd0dd5c697dd2b4640ade49274d2bf9.png)](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)[](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)
     [YUNNA WEI](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)[![YUNNA
+    WEI](../Images/ffd0dd5c697dd2b4640ade49274d2bf9.png)](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)[](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)
+    [YUNNA WEI](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)
     ·8 min read·Jan 10, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)
+    ·阅读时间 8 分钟·2023年1月10日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: 'To make ML models work in a real production environment, one of the most critical
     steps is to deploy the trained models for predictions. Model deployment (release)
     is a process that enables you to integrate trained ML models into production to
     make decisions on real-world data. When it comes to model deployment, there are
     generally two types:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使 ML 模型在实际生产环境中工作，最关键的步骤之一是将训练好的模型部署以进行预测。模型部署（发布）是一个过程，使你能够将训练好的 ML 模型集成到生产环境中，以对实际数据做出决策。谈到模型部署，通常有两种类型：
 - en: One is batch prediction where the trained models are called and fed with a batch
     of data at a certain interval (such as once per day or once per week depending
     on how the models are used in certain business contexts), to periodically generate
     predictions for use.
+  id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一种是批量预测，即在某个时间间隔（如每天一次或每周一次，具体取决于模型在特定业务背景下的使用方式）调用训练好的模型，并将一批数据输入模型，以定期生成预测结果。
 - en: The other is online prediction where a trained model is packaged as a REST API
     or a containerized microservice, and the model returns prediction results (generally
     in JSON format) by responding to an API request. With online prediction, the model
@@ -47,65 +67,96 @@
     prediction result will be returned. Additionally the model REST API is generally
     integrated as part of a web application for end users or downstream applications
     to interact with.
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 另一种是在线预测，即将训练好的模型打包成 REST API 或容器化微服务，模型通过响应 API 请求返回预测结果（通常为 JSON 格式）。使用在线预测，模型实时生成预测结果，即一旦
+    API 被调用，模型预测结果将立即返回。此外，模型 REST API 通常作为 web 应用的一部分集成，以供最终用户或下游应用进行交互。
 - en: However, between batch prediction and online prediction, we have seen an increasing
     number of scenarios where the model is not required to be packaged as a REST API,
     but the required latency for model prediction is quite low. Therefore, in order
     to solve the needs of these scenarios, I would like to share a solution — building
     low-latency and scalable ML model prediction pipeline using Spark Structured Streaming
     and MLflow.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在批量预测和在线预测之间，我们已经看到越来越多的场景，其中模型不需要打包成 REST API，但模型预测所需的延迟非常低。因此，为了满足这些场景的需求，我想分享一个解决方案——使用
+    Spark Structured Streaming 和 MLflow 构建低延迟和可扩展的 ML 模型预测管道。
 - en: 'The content of today’s article is:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天文章的内容是：
 - en: A quick introduction to Spark Structured Streaming and mlflow;
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 快速介绍 Spark Structured Streaming 和 mlflow；
 - en: Key architecture components of a low-latency and scalable ML prediction pipelines;
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 低延迟和可扩展的机器学习预测管道的关键架构组件；
 - en: Implementation details of using Spark Structured Streaming and mlflow to build
     a low-latency and scalable ML prediction pipelines;
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用 Spark Structured Streaming 和 mlflow 构建低延迟和可扩展的机器学习预测管道的实现细节；
 - en: Let’s get started!
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始吧！
 - en: '![](../Images/627bbfa124c649b39f435fbbc541f1ef.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/627bbfa124c649b39f435fbbc541f1ef.png)'
 - en: Photo by [Jen Theodore](https://unsplash.com/@jentheodore?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Jen Theodore](https://unsplash.com/@jentheodore?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Introduction to Spark Structured Streaming and mlflow
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Spark Structured Streaming 和 mlflow 简介
 - en: Spark Structured Streaming — [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide)
     is a scalable and fault-tolerant stream processing engine built on the Spark SQL
     engine. Internally, by default, Structured Streaming queries are processed using
     a micro-batch processing engine, which processes data streams as a series of small
     batch jobs thereby achieving end-to-end latencies as low as 100 milliseconds and
     exactly-once fault-tolerance guarantees.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark Structured Streaming — [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide)
+    是一个基于 Spark SQL 引擎构建的可扩展且容错的流处理引擎。内部默认情况下，Structured Streaming 查询通过微批处理引擎进行处理，该引擎将数据流处理为一系列小批量作业，从而实现低至
+    100 毫秒的端到端延迟和精确一次的容错保证。
 - en: MLflow — [MLflow](https://mlflow.org/) is an open source platform for managing
     the end-to-end machine learning lifecycle.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: MLflow — [MLflow](https://mlflow.org/) 是一个用于管理整个机器学习生命周期的开源平台。
 - en: '**Tracking** — The MLflow tracking component is an API and UI for logging parameters,
     code versions, metrics, and output files, when running your machine learning code
     and for later visualizing the results.'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**跟踪** — MLflow 的跟踪组件是一个用于记录参数、代码版本、指标和输出文件的 API 和 UI，当运行机器学习代码时以及后续可视化结果时使用。'
 - en: '**Models** — An MLflow model is a standard format for packaging machine learning
     models that can be used in a variety of downstream tools. The format defines a
     convention that lets you save a model in different “flavors” that can be understood
@@ -116,106 +167,152 @@
     today’s demonstrated solution, we loaded the trained model as a python function.
     Additionally we also leveraged the model API calls of [*log_model()*](https://mlflow.org/docs/latest/python_api/mlflow.models.html#mlflow.models.Model.log)
     and [*load_model()*](https://mlflow.org/docs/latest/python_api/mlflow.models.html#mlflow.models.Model.load)*.*'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**模型** — MLflow 模型是一种标准格式，用于打包机器学习模型，可以在各种下游工具中使用。该格式定义了一种约定，使你可以以不同的“风味”保存模型，以便不同的下游工具理解。内置模型风味可以在[这里](https://mlflow.org/docs/latest/models.html#built-in-model-flavors.)找到。值得一提的是，[python_function](https://mlflow.org/docs/latest/models.html#python-function-python-function)模型风味作为
+    MLflow Python 模型的默认模型接口。任何 MLflow Python 模型都应该能够被加载为 python_function 模型。在今天演示的解决方案中，我们将训练好的模型加载为
+    python 函数。此外，我们还利用了[*log_model()*](https://mlflow.org/docs/latest/python_api/mlflow.models.html#mlflow.models.Model.log)
+    和 [*load_model()*](https://mlflow.org/docs/latest/python_api/mlflow.models.html#mlflow.models.Model.load)*.*
+    的模型 API 调用。'
 - en: '**Model Registry** — The MLflow model registry component is a centralized model
     store, set of APIs, and UI, to collaboratively manage the full lifecycle of an
     MLflow model. It provides model lineage (providing visibility and traceability
     of the trained ML model coming from the combination of the specific MLflow experiment,
     and run), model versioning, stage transitions (for example from staging to production),
     and annotations.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**模型注册表** — MLflow 的模型注册表组件是一个集中的模型存储库，包含一组 API 和 UI，用于协作管理 MLflow 模型的完整生命周期。它提供模型血统（提供对训练好的
+    ML 模型的可见性和可追溯性，这些模型来源于特定 MLflow 实验和运行的组合）、模型版本控制、阶段转换（例如从测试阶段到生产阶段）以及注释。'
 - en: '**Projects** — An MLflow project is a format for packaging data science code
     in a reusable and reproducible way, based primarily on conventions. Each project
     is simply a directory of files, or a Git repository, containing your code.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**项目** — MLflow 项目是一种以可重用和可再现的方式打包数据科学代码的格式，主要基于约定。每个项目实际上是一个包含代码的文件目录或 Git
+    仓库。'
 - en: If you are interested in understanding more about Spark Structured Streaming,
     you can check out my other [article](https://medium.com/@weiyunna91/continuously-ingest-and-load-csv-files-into-delta-using-spark-structure-streaming-ce5faaadd1e7?sk=6cc4f4d31488f2d2420ec40592ea8bd0)
     specifically talking about how to build streaming data pipelines.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对了解更多关于 Spark Structured Streaming 感兴趣，你可以查看我另一篇[文章](https://medium.com/@weiyunna91/continuously-ingest-and-load-csv-files-into-delta-using-spark-structure-streaming-ce5faaadd1e7?sk=6cc4f4d31488f2d2420ec40592ea8bd0)，专门讨论如何构建流数据管道。
 - en: Now let’s deep dive into the key architecture components of building such a
     a low-latency and scalable ML prediction pipeline.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们深入探讨构建低延迟和可扩展 ML 预测管道的关键架构组件。
 - en: Key architecture components of a low-latency and scalable ML prediction pipeline
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 低延迟和可扩展 ML 预测管道的关键架构组件
 - en: '![](../Images/5526915298854113a00cae9c672dd58b.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5526915298854113a00cae9c672dd58b.png)'
 - en: Low-latency and scalable ML prediction pipeline | Image by Author
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 低延迟和可扩展 ML 预测管道 | 作者提供的图片
 - en: 'As shown in the above chart, there are 3 key architecture components in order
     to build a low-latency and scalable ML prediction pipeline:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 如上图所示，构建低延迟和可扩展 ML 预测管道需要 3 个关键架构组件：
 - en: The first step is to build a streaming data pipeline to ingest the raw data,
     convert the raw data into ML features and feed the ML features to the ML models
     in low latency;
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第一步是构建一个流数据管道，以摄取原始数据，将原始数据转换为 ML 特征，并以低延迟将 ML 特征输入到 ML 模型中；
 - en: The second step is to load the trained and registered ML model as a Spark User
     Defined Function (UDF) so that the model can make predictions in parallel, to
     leverage Spark’s distributed computing power. This is particularly useful when
     the data that is needed to make predictions is large in volume.
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第二步是将训练和注册的 ML 模型加载为 Spark 用户定义函数（UDF），以便模型可以并行进行预测，利用 Spark 的分布式计算能力。当需要进行预测的数据量很大时，这一点尤其有用。
 - en: The third step is to save the model predictions results into a Delta table stored
     in a AWS S3 bucket. Then, the model prediction results can be used for downstream
     data consumers and applications. For example, you can build a Business Intelligence
     (BI) dashboard on top of the model prediction results to support business decision
     making. You can also build real-time monitoring mechanism to generate notifications
     and alerts based on model predictions to improve operation efficiencies.
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第三步是将模型预测结果保存到存储在 AWS S3 桶中的 Delta 表中。然后，这些模型预测结果可以用于下游数据消费者和应用程序。例如，你可以在模型预测结果基础上构建一个商业智能（BI）仪表板，以支持业务决策。你还可以构建实时监控机制，根据模型预测生成通知和警报，以提高操作效率。
 - en: Before we demonstrate the implementation of how to build a low-latency and scalable
     ML prediction pipeline, we need first to set some pre-requisites.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在展示如何构建低延迟和可扩展 ML 预测管道的实现之前，我们首先需要设置一些前提条件。
 - en: 'First and foremost is the schema of the trained model, as shown in the file
     below:'
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先是训练模型的模式，如下文件所示：
 - en: '[PRE0]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Second is the schema of the training and test data. Making sure the schema
     of data fed to the model matches with the model input schema is critical to avoid
     any errors caused by a schema mismatch during model prediction. The data schema
     is shown as below:'
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第二个是训练数据和测试数据的模式。确保输入模型的数据模式与模型输入模式匹配对于避免因模式不匹配而导致的预测错误至关重要。数据模式如下所示：
 - en: '[PRE1]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The data used in this article is from [here](http://archive.ics.uci.edu/ml/datasets/Wine+Quality).
     Feel free to find out more details about the data.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文中使用的数据来自[这里](http://archive.ics.uci.edu/ml/datasets/Wine+Quality)。请随意了解有关数据的更多细节。
 - en: Now we have a good understanding of what the model schema and data schema looks
     like, we can start implementing the ML prediction pipeline using Spark Structured
     Streaming and MLflow. The complete solution is explained in detail in the next
     section.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们对模型模式和数据模式有了清晰的理解，我们可以开始使用 Spark Structured Streaming 和 MLflow 实现 ML 预测管道。完整的解决方案将在下一节中详细解释。
 - en: The complete solution — building a low-latency and scalable ML prediction pipeline
     using Spark Structured Streaming and MLflow
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 完整解决方案 — 使用Spark结构化流处理和MLflow构建低延迟且可扩展的机器学习预测管道
 - en: Step 1 — Build a streaming data ingestion pipeline to load the data for prediction
     in low-latency. Structured streaming allows you to define how fast the data needs
     to be processed by setting a micro-batch interval. In today’s demo, we will set
@@ -223,96 +320,145 @@
     pipeline will pull raw data and call the deployed ML model for predictions. Below
     is a sample streaming data ingestion pipeline to load the raw data (in CSV format)
     into a Spark streaming data frame.
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第1步 — 构建一个流数据摄取管道，以低延迟加载用于预测的数据。结构化流处理允许你通过设置微批间隔来定义数据处理的速度。在今天的演示中，我们将微批间隔设置为5分钟，这意味着每5分钟，流处理管道将拉取原始数据并调用已部署的机器学习模型进行预测。以下是一个样本流数据摄取管道，将原始数据（CSV格式）加载到Spark流数据框中。
 - en: '[PRE2]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Step 2 — Load the registered model as a Spark User Defined Function (UDF) function.
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第2步 — 将注册的模型加载为Spark用户定义函数（UDF）函数。
 - en: '[PRE3]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Step 3 — Make predictions on the streaming data frame and save the ML model
     predictions results into a Delta table for downstream consumers.
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第3步 — 对流数据框进行预测，并将机器学习模型预测结果保存到Delta表中供下游消费者使用。
 - en: '[PRE4]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The Complete Solution
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 完整解决方案
 - en: '[PRE5]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '[PRE6]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '[PRE7]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '[PRE8]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Summary
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 总结
 - en: Thanks for reading today’s article. Hopefully you can leverage this model deployment
     pattern in your ML-driven applications.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读今天的文章。希望你可以在你的机器学习驱动的应用程序中利用这一模型部署模式。
 - en: In my previous article, [MLOps in Practice — De-constructing an ML Solution
     Architecture into 10 components](/mlops-in-practice-de-constructing-an-ml-solution-architecture-into-10-components-c55c88d8fc7a?sk=a14ce7ead68a2f90868d7a063eea84e3),
     I break down an end to end ML solution architecture into 10 components. Today’s
     article focuses on explaining one of the popular patterns for the component of
     building ML serving pipelines.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我之前的文章中，[MLOps实践 — 将机器学习解决方案架构拆解为10个组件](/mlops-in-practice-de-constructing-an-ml-solution-architecture-into-10-components-c55c88d8fc7a?sk=a14ce7ead68a2f90868d7a063eea84e3)，我将端到端的机器学习解决方案架构拆解为10个组件。今天的文章着重解释构建机器学习服务管道的热门模式之一。
 - en: I will continue to share articles on MLOps in practice series to explain the
     design and implementation patterns of critical MLOps components.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将继续分享MLOps实践系列文章，解释关键MLOps组件的设计和实现模式。
 - en: Please feel free to follow me on Medium if you want to be notified when these
     articles are published. I generally publish 1 or 2 articles on data and AI every
     week.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想在这些文章发布时获得通知，请随时在Medium上关注我。我一般每周发布1到2篇关于数据和AI的文章。
 - en: If you want to see more guides, deep dives, and insights around modern and efficient
     data+AI stack, please subscribe to my free newsletter — [***Efficient Data+AI
     Stack***](https://yunnawei.substack.com/), thanks!
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想查看更多指南、深入探讨和关于现代高效数据+AI堆栈的见解，请订阅我的免费通讯 — [***高效的数据+AI堆栈***](https://yunnawei.substack.com/)，谢谢！
 - en: References
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[https://mlflow.org/](https://mlflow.org/)'
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[https://mlflow.org/](https://mlflow.org/)'
 - en: '[https://mlflow.org/docs/latest/index.html#mlflow-documentation](https://mlflow.org/docs/latest/index.html#mlflow-documentation)'
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[https://mlflow.org/docs/latest/index.html#mlflow-documentation](https://mlflow.org/docs/latest/index.html#mlflow-documentation)'
 - en: '[https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide)'
+  id: totrans-61
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide)'
 - en: '[http://archive.ics.uci.edu/ml/datasets/Wine+Quality](http://archive.ics.uci.edu/ml/datasets/Wine+Quality)'
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[http://archive.ics.uci.edu/ml/datasets/Wine+Quality](http://archive.ics.uci.edu/ml/datasets/Wine+Quality)'
 - en: 'Note: Just in case you haven’t become a Medium member yet, and you really should,
     as you’ll get unlimited access to Medium, you can sign up using my [referral link](https://medium.com/@weiyunna91/membership)!'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意：如果你还没有成为Medium会员，而且你真的应该成为会员，因为这样你可以无限制访问Medium，你可以使用我的 [推荐链接](https://medium.com/@weiyunna91/membership)
+    注册！
 - en: Thanks so much for your support!
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 非常感谢你的支持！
