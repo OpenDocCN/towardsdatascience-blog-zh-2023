@@ -1,437 +1,676 @@
 - en: Building a Batch Data Pipeline with Athena and MySQL
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 Athena 和 MySQL 构建批量数据管道
 - en: 原文：[https://towardsdatascience.com/building-a-batch-data-pipeline-with-athena-and-mysql-7e60575ff39c](https://towardsdatascience.com/building-a-batch-data-pipeline-with-athena-and-mysql-7e60575ff39c)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/building-a-batch-data-pipeline-with-athena-and-mysql-7e60575ff39c](https://towardsdatascience.com/building-a-batch-data-pipeline-with-athena-and-mysql-7e60575ff39c)
 - en: An End-To-End Tutorial for Beginners
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 初学者的端到端教程
 - en: '[](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)[![💡Mike
     Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)
     [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)[![💡Mike
+    Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)
+    [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)
     ·16 min read·Oct 20, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)
+    ·16 min 阅读·2023 年 10 月 20 日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/368293b91e4bc0283007a555789b6479.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/368293b91e4bc0283007a555789b6479.png)'
 - en: Photo by [Redd F](https://unsplash.com/@raddfilms?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Redd F](https://unsplash.com/@raddfilms?utm_source=medium&utm_medium=referral)
+    提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: In this story I will speak about one of the most popular ways to run data transformation
     tasks — batch data processing. This data pipeline design pattern becomes incredibly
     useful when we need to process data in chunks making it very efficient for ETL
     jobs that require scheduling. I will demonstrate how it can be achieved by building
     a data transformation pipeline using MySQL and Athena. We will use infrastructure
     as code to deploy it in the cloud.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个故事中，我将讲述一种非常流行的数据转换任务执行方式——批量数据处理。当我们需要以块状方式处理数据时，这种数据管道设计模式变得极其有用，非常适合需要调度的
+    ETL 作业。我将通过使用 MySQL 和 Athena 构建数据转换管道来展示如何实现这一目标。我们将使用基础设施即代码在云中部署它。
 - en: Imagine that you have just joined a company as a Data Engineer. Their data stack
     is modern, event-driven, cost-effective, flexible, and can scale easily to meet
     the growing data resources you have. External data sources and data pipelines
     in your data platform are managed by the data engineering team using a flexible
     environment setup with CI/CD GitHub integration.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下，你刚刚作为数据工程师加入了一家公司。他们的数据堆栈现代、事件驱动、成本效益高、灵活，并且可以轻松扩展以满足不断增长的数据资源。你数据平台中的外部数据源和数据管道由数据工程团队管理，使用具有
+    CI/CD GitHub 集成的灵活环境设置。
 - en: As a data engineer you need to create a business intelligence dashboard that
     displays the geography of company revenue streams as shown below. Raw payment
     data is stored in the server database (MySQL). You want to build a batch pipeline
     that extracts data from that database daily, then use AWS S3 to store data files
     and Athena to process it.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为数据工程师，你需要创建一个业务智能仪表板，展示公司收入来源的地理分布，如下所示。原始支付数据存储在服务器数据库（MySQL）中。你想构建一个批量管道，从该数据库中每日提取数据，然后使用
+    AWS S3 存储数据文件，并使用 Athena 进行处理。
 - en: '![](../Images/7dc86278ad5d6755486da64418c7b7bf.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7dc86278ad5d6755486da64418c7b7bf.png)'
 - en: Revenue dashboard. Image by author.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 收入仪表板。图像由作者提供。
 - en: Batch data pipeline
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 批量数据管道
 - en: A data pipeline can be considered as a sequence of data processing steps. Due
     to ***logical data flow connections*** between these stages, each stage generates
     an **output** that serves as an **input** for the following stage.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据管道可以被视为一系列数据处理步骤。由于这些阶段之间的***逻辑数据流连接***，每个阶段生成的**输出**作为下一个阶段的**输入**。
 - en: There is a data pipeline whenever there is data processing between points A
     and B.
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 只要在点 A 和点 B 之间进行数据处理，就存在数据管道。
 - en: 'Data pipelines might be different due it their conceptual and logical nature.
     I previously wrote about it here [1]:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据管道可能因其概念和逻辑性质而有所不同。我之前在这里写过 [1]：
 - en: '[](/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----7e60575ff39c--------------------------------)
     [## Data pipeline design patterns'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '[数据管道设计模式](https://towardsdatascience.com/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----7e60575ff39c--------------------------------)'
 - en: Choosing the right architecture with examples
+  id: totrans-18
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 选择合适的架构及其示例
 - en: towardsdatascience.com](/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----7e60575ff39c--------------------------------)
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '[数据管道设计模式](https://towardsdatascience.com/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----7e60575ff39c--------------------------------)'
 - en: 'We would want to create a data pipeline where data is being transformed in
     the following **steps**:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望创建一个数据管道，在以下 **步骤** 中转换数据：
 - en: 1\. Use a Lambda function that extracts data from MySQL database tables `myschema.users`
     and `myschema.transactions` into S3 datalake bucket.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 1\. 使用 Lambda 函数将数据从 MySQL 数据库表 `myschema.users` 和 `myschema.transactions` 提取到
+    S3 数据湖桶中。
 - en: 2\. Add a State Machine node with Athena resource to start execution (`arn:aws:states:::athena:startQueryExecution.sync`)
     and create a database called `mydatabase`
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. 添加一个具有 Athena 资源的状态机节点以启动执行 (`arn:aws:states:::athena:startQueryExecution.sync`)
+    并创建一个名为 `mydatabase` 的数据库
 - en: 3\. Create another data pipeline node to show existing tables in Athena database.
     Use the output of this node to perform required data transformations.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 3\. 创建另一个数据管道节点以显示 Athena 数据库中的现有表。使用该节点的输出执行所需的数据转换。
 - en: 'If tables don’t exist then we would want our pieline to create them in Athena
     based on the data from the datalake S3 bucket. We would want to create two **external
     tables** with data from MySQL:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果表不存在，我们希望我们的管道在 Athena 中根据来自数据湖 S3 桶的数据创建它们。我们希望创建两个 **外部表**，数据来自 MySQL：
 - en: mydatabase.users (LOCATION ‘s3://<YOUR_DATALAKE_BUCKET>/data/myschema/users/’)
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: mydatabase.users (LOCATION ‘s3://<YOUR_DATALAKE_BUCKET>/data/myschema/users/’)
 - en: mydatabase.transactions (LOCATION ‘s3://<YOUR_DATALAKE_BUCKET>/data/myschema/transactions/’)
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: mydatabase.transactions (LOCATION ‘s3://<YOUR_DATALAKE_BUCKET>/data/myschema/transactions/’)
 - en: 'Then we would want to create an **optimized ICEBERG** table:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们希望创建一个 **优化的 ICEBERG** 表：
 - en: 'mydatabase.user_transactions (‘table_type’=’ICEBERG’, ‘format’=’parquet’) using
     the SQL below:'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: mydatabase.user_transactions (‘table_type’=’ICEBERG’, ‘format’=’parquet’) 使用以下
+    SQL：
 - en: '[PRE0]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We will also use MERGE to update this table.
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们还将使用 MERGE 来更新此表。
 - en: 'MERGE is an extremely useful SQL techniques for incremental updates in tables.
     Check my previous story [3] for more advanced examples:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: MERGE 是一种非常有用的 SQL 技巧，用于表中的增量更新。查看我之前的故事 [3] 以获取更高级的示例：
 - en: '[](/advanced-sql-techniques-for-beginners-211851a28488?source=post_page-----7e60575ff39c--------------------------------)
     [## Advanced SQL techniques for beginners'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '[高级 SQL 技巧](https://towardsdatascience.com/advanced-sql-techniques-for-beginners-211851a28488?source=post_page-----7e60575ff39c--------------------------------)'
 - en: On a scale from 1 to 10 how good are your data warehousing skills?
+  id: totrans-33
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 从 1 到 10，你的数据仓库技能有多好？
 - en: towardsdatascience.com](/advanced-sql-techniques-for-beginners-211851a28488?source=post_page-----7e60575ff39c--------------------------------)
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '[高级 SQL 技巧](https://towardsdatascience.com/advanced-sql-techniques-for-beginners-211851a28488?source=post_page-----7e60575ff39c--------------------------------)'
 - en: Athena can analyse structured, unstructured and semi-structured data stored
     in Amazon S3 by running attractive ad-hoc SQL queries with no need to manage the
     infrastructure.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: Athena 可以通过运行有吸引力的即席 SQL 查询来分析存储在 Amazon S3 中的结构化、非结构化和半结构化数据，无需管理基础设施。
 - en: We don’t need to load data and it makes it a perfect choice for our task.
+  id: totrans-36
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们不需要加载数据，这使得它成为我们任务的完美选择。
 - en: It can be easily integrated with Busines Intelligence (BI) solutions such as
     Quichksight to generate reports.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 它可以轻松地与 Business Intelligence (BI) 解决方案如 QuickSight 集成以生成报告。
 - en: 'ICEBERG is an extremely useful and efficient table format where several separate
     programs can handle the same dataset concurrently and consistently [2]. I previously
     wrote about it here:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: ICEBERG 是一种非常有用且高效的表格格式，多个独立程序可以同时且一致地处理相同的数据集 [2]。我之前在这里写过：
 - en: '[](/introduction-to-apache-iceberg-tables-a791f1758009?source=post_page-----7e60575ff39c--------------------------------)
     [## Introduction to Apache Iceberg Tables'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '[介绍 Apache Iceberg 表](https://towardsdatascience.com/introduction-to-apache-iceberg-tables-a791f1758009?source=post_page-----7e60575ff39c--------------------------------)'
 - en: A few Compelling Reasons to Choose Apache Iceberg for Data Lakes
+  id: totrans-40
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 选择 Apache Iceberg 作为数据湖的几个有力理由
 - en: towardsdatascience.com](/introduction-to-apache-iceberg-tables-a791f1758009?source=post_page-----7e60575ff39c--------------------------------)
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '[介绍 Apache Iceberg 表](https://towardsdatascience.com/introduction-to-apache-iceberg-tables-a791f1758009?source=post_page-----7e60575ff39c--------------------------------)'
 - en: MySQL data connector
+  id: totrans-42
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MySQL 数据连接器
 - en: Let’s create an AWS Lambda Function that will be able to execute SQL queries
     in MySQL database.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们创建一个 AWS Lambda 函数，它能够在 MySQL 数据库中执行 SQL 查询。
 - en: The code is pretty simple and generic. It can be used in any serverless application
     with any cloud service provider.
+  id: totrans-44
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 代码非常简单且通用。它可以在任何无服务器应用程序中与任何云服务提供商一起使用。
 - en: 'We will use it to extract revenue data into the datalake. Suggested Lambda
     folder structure can look as follows:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用它将收入数据提取到数据湖中。建议的 Lambda 文件夹结构如下所示：
 - en: '[PRE1]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We will integrate this tiny service into the pipeline using AWS Step functions
     for easy **orchestration and visualisation.**
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将通过 AWS Step Functions 将这个小服务集成到管道中，以便于 **编排和可视化**。
 - en: 'To create a Lambda function that can extract data from MySQL database we need
     to create a folder for our Lambda first. Create a new folder called stack` and
     then folder called `mysql_connector` in it:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了创建一个能够从 MySQL 数据库中提取数据的 Lambda 函数，我们需要先为我们的 Lambda 创建一个文件夹。首先创建一个名为 stack`
+    的新文件夹，然后在其中创建一个名为 `mysql_connector` 的文件夹：
 - en: '[PRE2]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Then we can use this code below (replace database connection settings with
     yours) to create `app.py`:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们可以使用下面的代码（将数据库连接设置替换为你的设置）来创建 `app.py`：
 - en: '[PRE3]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'To deploy our microservice using AWS CLI run this in your command line (assuming
     you are in the ./stack folder):'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 要使用 AWS CLI 部署我们的微服务，请在命令行中运行以下命令（假设你在 ./stack 文件夹中）：
 - en: '[PRE4]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Make sure that AWS Lambda role exists before running the next part ` — role
     arn:aws:iam::<your-aws-account-id>:role/my-lambda-role`.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 确保在运行下一部分之前 AWS Lambda 角色已经存在 ` — role arn:aws:iam::<your-aws-account-id>:role/my-lambda-role`。
 - en: '[PRE5]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Our MySQL instance must have **S3 integration** which enables **data export
     to S3** bucket. It can be achieved by running this SQL query:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的 MySQL 实例必须具备 **S3 集成**，以便 **将数据导出到 S3** 桶。这可以通过运行以下 SQL 查询实现：
 - en: '[PRE6]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: How to create MySQL instance
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何创建 MySQL 实例
 - en: 'We can use CloudFormation template and infrastructure as code to create MySQL
     database. Consider this AWS command:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用 CloudFormation 模板和基础设施即代码来创建 MySQL 数据库。考虑这个 AWS 命令：
 - en: '[PRE7]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'It will use `cfn_mysql.yaml` tempalte file to create CloudFormation stack called
     MySQLDB. I previously wrote about it here [4]:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 它将使用 `cfn_mysql.yaml` 模板文件来创建名为 MySQLDB 的 CloudFormation 堆栈。我之前在这里写过有关它的内容 [4]：
 - en: '[](/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a?source=post_page-----7e60575ff39c--------------------------------)
     [## Create MySQL and Postgres instances using AWS Cloudformation'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a?source=post_page-----7e60575ff39c--------------------------------)
+    [## 使用 AWS CloudFormation 创建 MySQL 和 Postgres 实例'
 - en: Infrastructure as Code for database practitioners
+  id: totrans-63
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 数据库从业人员的基础设施即代码
 - en: towardsdatascience.com](/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a?source=post_page-----7e60575ff39c--------------------------------)
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a?source=post_page-----7e60575ff39c--------------------------------)
 - en: 'Our `cfn_mysql.yaml` should look like this:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的 `cfn_mysql.yaml` 应该如下所示：
 - en: '[PRE8]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'If everything goes well we will see a new stack in our Amazon account:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一切顺利，我们将看到 Amazon 账户中出现一个新的堆栈：
 - en: '![](../Images/d6ff5754b68a1d8279412c0bb82d917b.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d6ff5754b68a1d8279412c0bb82d917b.png)'
 - en: CloudFormation stack with MySQL instance. Image by author.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 带有 MySQL 实例的 CloudFormation 堆栈。图片由作者提供。
 - en: 'Now we can use this MySQL instance in our pipeline. We can try our SQL queries
     in any SQL tool such as SQL Workbench to populate table data. These tables will
     be used later to create external tables using Athena and can be created using
     SQL:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以在我们的数据管道中使用这个 MySQL 实例。我们可以在任何 SQL 工具中尝试我们的 SQL 查询，例如 SQL Workbench，以填充表数据。这些表将用于稍后使用
+    Athena 创建外部表，可以通过 SQL 创建：
 - en: '[PRE9]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Process data using Athena
+  id: totrans-72
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 Athena 处理数据
 - en: Now we would want to add a data pipeline workflow that triggers our Lambda function
     to extract data from MySQL, save it in the datalake and then start data transformation
     in Athena.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们希望添加一个数据管道工作流，该工作流触发我们的 Lambda 函数以从 MySQL 提取数据，将其保存到数据湖中，然后在 Athena 中开始数据转换。
 - en: 'We would want to create two external Athena tables with data from MySQL:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望使用 MySQL 中的数据创建两个外部 Athena 表：
 - en: myschema.users
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: myschema.users
 - en: myschema.transactions
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: myschema.transactions
 - en: Then we would want to create an optimized ICEBERG table **myschema.user_transactions**
     to connect it to our BI solution.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们希望创建一个优化的 ICEBERG 表 **myschema.user_transactions**，将其连接到我们的 BI 解决方案。
 - en: We would want to INSERT new data into that table using MERGE statement.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望使用 MERGE 语句将新数据插入到该表中。
 - en: '[PRE10]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'When new table is ready we can check it by running `SELECT *`:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 当新表准备好后，我们可以通过运行 `SELECT *` 来检查它：
 - en: '![](../Images/0067053393a777846c94f0d3acd48e90.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0067053393a777846c94f0d3acd48e90.png)'
 - en: mydatabase.user_transactions. Image by author.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: mydatabase.user_transactions。图片由作者提供。
 - en: Orchestrate data pipeline using Step Functions (State Machine)
+  id: totrans-83
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用Step Functions（状态机）编排数据管道
 - en: 'In the previous steps, we learned how to deploy each step of the data pipeline
     separately and then test it. In this paragraph, we will see how to create a complete
     data pipeline with required resources using infrastructure such as code and pipeline
     orchestration tool such as AWS Step Functions (State Machine). When we finish
     the pipeline graph will look like this:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 在之前的步骤中，我们学习了如何分别部署数据管道的每一步并进行测试。在这一段中，我们将了解如何使用基础设施代码和管道编排工具如AWS Step Functions（状态机）创建一个完整的数据管道。当我们完成时，管道图将如下所示：
 - en: '![](../Images/3d6fa66e126398bfe0bd267f57bf7059.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3d6fa66e126398bfe0bd267f57bf7059.png)'
 - en: Data pipeline orchestration using Step Functions. Image by author.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用Step Functions进行数据管道编排。图像由作者提供。
 - en: 'Data pipeline orchestration is a great data engineering technique that adds
     interactivity to our data pipelines. The idea was previously explained in one
     of my stories [5]:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据管道编排是一种很好的数据工程技术，它为我们的数据管道增加了互动性。这个想法在我之前的一篇故事中已经解释过[5]：
 - en: '[](/data-pipeline-orchestration-9887e1b5eb7a?source=post_page-----7e60575ff39c--------------------------------)
     [## Data Pipeline Orchestration'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/data-pipeline-orchestration-9887e1b5eb7a?source=post_page-----7e60575ff39c--------------------------------)
+    [## 数据管道编排'
 - en: Data pipeline management done right simplifies deployment and increases the
     availability and accessibility of data for…
+  id: totrans-89
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 数据管道管理得当可以简化部署并提高数据的可用性和可访问性……
 - en: towardsdatascience.com](/data-pipeline-orchestration-9887e1b5eb7a?source=post_page-----7e60575ff39c--------------------------------)
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/data-pipeline-orchestration-9887e1b5eb7a?source=post_page-----7e60575ff39c--------------------------------)'
 - en: 'To deploy the complete **orchestrator solution** including all required resources
     we can use CloudFormation (infrastructure as code). Consider this shell script
     below that can be run from the command line when we are in the `/stack` folder.
     Make sure <YOUR_S3_BUCKET> exists and replace it with your actual S3 bucket::'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 要部署完整的**编排器解决方案**，包括所有必要的资源，我们可以使用CloudFormation（基础设施即代码）。考虑下面这个可以在`/stack`文件夹中从命令行运行的脚本。确保<YOUR_S3_BUCKET>存在，并将其替换为您的实际S3桶：
 - en: '[PRE11]'
+  id: totrans-92
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: It will use stack.yaml to create a CloudFormation stack called BatchETLpipeline.
     It will package our Lambda function, create a package and upload it into S3 bucket.
     If this bucket doesn’t exist it will create it. It will then deploy the pipeline.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 它将使用stack.yaml创建一个名为BatchETLpipeline的CloudFormation堆栈。它将打包我们的Lambda函数，创建一个包并将其上传到S3桶中。如果该桶不存在，它将创建它。然后将部署管道。
 - en: '[PRE12]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'If everything goes well the stack for our new data pipeline will be deployed:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一切顺利，我们的新数据管道的堆栈将被部署：
 - en: '![](../Images/2b97e39b295eadfc8d179a499197fad0.png)'
+  id: totrans-96
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2b97e39b295eadfc8d179a499197fad0.png)'
 - en: BatchETLpipeline stack and resources. Image by author.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: BatchETLpipeline堆栈和资源。图像由作者提供。
 - en: 'If we click the State Machine resource, then click ‘Edit’ we will see our ETL
     pipeline as a graph:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们点击状态机资源，然后点击‘编辑’，我们将看到我们的ETL管道作为图形展示：
 - en: '![](../Images/cb9292383481ab8b5951980275a644a9.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cb9292383481ab8b5951980275a644a9.png)'
 - en: Workflow studio for Batch data pipeline. Image by author.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 批量数据管道的工作流工作室。图像由作者提供。
 - en: Now we can execute the pipeline to run all required data transformation steps.
     Click ‘Start execution’.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以执行管道以运行所有必要的数据转换步骤。点击‘开始执行’。
 - en: '![](../Images/3d6fa66e126398bfe0bd267f57bf7059.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3d6fa66e126398bfe0bd267f57bf7059.png)'
 - en: Successful execution. Image by author.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 成功执行。图像由作者提供。
 - en: Now we can connect our Athena tables to our **BI solution**. Connect our final
     Athena dataset `mydataset.user_transactions` to create a dashboard.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以将我们的Athena表连接到我们的**BI解决方案**。连接我们最终的Athena数据集`mydataset.user_transactions`以创建仪表盘。
 - en: '![](../Images/3427a98727ee0bbf52ef9d94f868f567.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3427a98727ee0bbf52ef9d94f868f567.png)'
 - en: Connecting a dataset in Quicksight. Image by author.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 连接Quicksight中的数据集。图像由作者提供。
 - en: 'We just need to adjust a couple of settings to make our dashboard look like
     this:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们只需调整几个设置，使我们的仪表盘看起来像这样：
 - en: '![](../Images/2fc0d03bb10de92d3b88a7f4a7a3b3ed.png)'
+  id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2fc0d03bb10de92d3b88a7f4a7a3b3ed.png)'
 - en: Quicksight dashboard. Image by author.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: Quicksight仪表盘。图像由作者提供。
 - en: We would want to use `dt` as dimension and `total_cost_usd` as metric. We also
     can set a breakdown dimension for each `user_id`.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望使用`dt`作为维度，`total_cost_usd`作为指标。我们还可以为每个`user_id`设置一个拆分维度。
 - en: Conclusion
+  id: totrans-111
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'Batch data pipelines are popular because historically workloads were primarily
     batch-oriented in data environments. We have just built an ETL data pipeline to
     extract data from MySQL and transform it in datalake. This pattern works best
@@ -440,50 +679,81 @@
     when converting data into columnar formats like Parquet or ORC, combining several
     tiny files into bigger ones, or bucketing and adding partitions. I previously
     wrote about these big data file formats in one of my stories [6]:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 批处理数据管道很受欢迎，因为历史上工作负载主要是批处理型的数据环境。我们刚刚建立了一个 ETL 数据管道，从 MySQL 中提取数据并在数据湖中转换。该模式最适用于数据集不大且需要持续处理的情况，因为
+    Athena 根据扫描的数据量收费。这种方法在将数据转换为列式格式如 Parquet 或 ORC 时表现良好，结合几个小文件成较大的文件，或进行分桶和添加分区。我以前在我的一个故事中写过这些大数据文件格式[6]。
 - en: '[](/big-data-file-formats-explained-275876dc1fc9?source=post_page-----7e60575ff39c--------------------------------)
     [## Big Data File Formats, Explained'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/big-data-file-formats-explained-275876dc1fc9?source=post_page-----7e60575ff39c--------------------------------)
+    [## 大数据文件格式解析'
 - en: Parquet vs ORC vs AVRO vs JSON. Which one to choose and how to use them?
+  id: totrans-114
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Parquet 与 ORC 与 AVRO 与 JSON。该选择哪一个，如何使用它们？
 - en: towardsdatascience.com](/big-data-file-formats-explained-275876dc1fc9?source=post_page-----7e60575ff39c--------------------------------)
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/big-data-file-formats-explained-275876dc1fc9?source=post_page-----7e60575ff39c--------------------------------)
 - en: We learned how to use Step Functions to orchestrate the data pipeline and visualise
     the data flow from source to final consumer and deploy it using infrastructure
     as code. This setup makes it possible to use CI/CD techniques for our data pipelines
     [7].
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们学习了如何使用 Step Functions 来编排数据管道，视觉化数据流从源头到最终用户，并使用基础设施即代码进行部署。这个设置使得我们可以对数据管道应用
+    CI/CD 技术[7]。
 - en: I hope this tutorial was useful for you. Let me know if you have any questions.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望这个教程对你有帮助。如果你有任何问题，请告诉我。
 - en: Recommended read
+  id: totrans-118
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 推荐阅读
 - en: '[1] [https://towardsdatascience.com/data-pipeline-design-patterns-100afa4b93e3](/data-pipeline-design-patterns-100afa4b93e3)'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] [https://towardsdatascience.com/data-pipeline-design-patterns-100afa4b93e3](/data-pipeline-design-patterns-100afa4b93e3)'
 - en: '[2] [https://medium.com/towards-data-science/introduction-to-apache-iceberg-tables-a791f1758009](https://medium.com/towards-data-science/introduction-to-apache-iceberg-tables-a791f1758009)'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [https://medium.com/towards-data-science/introduction-to-apache-iceberg-tables-a791f1758009](https://medium.com/towards-data-science/introduction-to-apache-iceberg-tables-a791f1758009)'
 - en: '[3] [https://medium.com/towards-data-science/advanced-sql-techniques-for-beginners-211851a28488](https://medium.com/towards-data-science/advanced-sql-techniques-for-beginners-211851a28488)'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] [https://medium.com/towards-data-science/advanced-sql-techniques-for-beginners-211851a28488](https://medium.com/towards-data-science/advanced-sql-techniques-for-beginners-211851a28488)'
 - en: '[4] [https://medium.com/towards-data-science/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a](https://medium.com/towards-data-science/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a)'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] [https://medium.com/towards-data-science/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a](https://medium.com/towards-data-science/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a)'
 - en: '[5] [https://medium.com/towards-data-science/data-pipeline-orchestration-9887e1b5eb7a](https://medium.com/towards-data-science/data-pipeline-orchestration-9887e1b5eb7a)'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] [https://medium.com/towards-data-science/data-pipeline-orchestration-9887e1b5eb7a](https://medium.com/towards-data-science/data-pipeline-orchestration-9887e1b5eb7a)'
 - en: '[6] [https://medium.com/towards-data-science/big-data-file-formats-explained-275876dc1fc9](https://medium.com/towards-data-science/big-data-file-formats-explained-275876dc1fc9)'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] [https://medium.com/towards-data-science/big-data-file-formats-explained-275876dc1fc9](https://medium.com/towards-data-science/big-data-file-formats-explained-275876dc1fc9)'
 - en: '[7] [https://medium.com/towards-data-science/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1](https://medium.com/towards-data-science/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1)'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] [https://medium.com/towards-data-science/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1](https://medium.com/towards-data-science/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1)'
