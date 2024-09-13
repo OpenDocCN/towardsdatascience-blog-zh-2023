@@ -1,303 +1,481 @@
 - en: Combine Multiple LoRA Adapters for Llama 2
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 为 Llama 2 组合多个 LoRA 适配器
 - en: 原文：[https://towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf](https://towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf](https://towardsdatascience.com/combine-multiple-lora-adapters-for-llama-2-ea0bef9025cf)
 - en: Add skills to your LLM without fine-tuning new adapters
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在不对新适配器进行微调的情况下，为你的 LLM 添加技能
 - en: '[](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)[![Benjamin
     Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)
     [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----ea0bef9025cf--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)
     ·12 min read·Nov 30, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea0bef9025cf--------------------------------)
+    ·12 分钟阅读·2023年11月30日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/6c4a40091827bce0f2a546522f563d4a.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6c4a40091827bce0f2a546522f563d4a.png)'
 - en: Image by the author — Made with an image from [Pixabay](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供 — 使用了来自 [Pixabay](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/)
+    的图片制作
 - en: Fully fine-tuning a pre-trained large language model (LLM) for different tasks
     is very costly. Instead, we can freeze the parameters of the LLM while only fine-tuning
     a few million trainable parameters added through a LoRA adapter.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 对预训练的大型语言模型（LLM）进行完全微调以适应不同任务是非常昂贵的。相反，我们可以冻结 LLM 的参数，同时只微调通过 LoRA 适配器添加的几百万个可训练参数。
 - en: In other words, we only need to fine-tune an adapter to get the model to perform
     a target task. For instance, if we want to turn a pre-trained LLM into a translation
     model, we would fine-tune an adapter for translation. We can fine-tune one adapter
     for each ask that we want the LLM to perform.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，我们只需对一个适配器进行微调，就能让模型执行目标任务。例如，如果我们想将一个预训练的 LLM 转变为翻译模型，我们将对翻译适配器进行微调。我们可以对我们希望
+    LLM 执行的每个任务微调一个适配器。
 - en: '*But can we combine several adapters to get one single multi-task adapter?*'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '*但是，我们能否将多个适配器结合成一个单一的多任务适配器？*'
 - en: For instance, if we have one adapter for translation and one adapter for summarization,
     can we combine both of them so that the LLM can do translation and summarization?
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，如果我们有一个用于翻译的适配器和一个用于总结的适配器，我们是否可以将它们结合起来，以便 LLM 能够进行翻译和总结？
 - en: In this article, I show how to combine multiple LoRA adapters into a single
     multi-task adapter. We will see that it is very simple and that the resulting
     adapter can be as good as the adapters used for the combination.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我展示了如何将多个 LoRA 适配器组合成一个单一的多任务适配器。我们将看到这非常简单，而且生成的适配器可以和用于组合的适配器一样好。
 - en: Using Llama 2 7B, we will see how to combine an adapter fine-tuned for translation
     with another adapter fine-tuned for chat. With the resulting adapter, we will
     be able to make a Llama 2 that can translate and chat.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Llama 2 7B，我们将看到如何将一个针对翻译微调的适配器与另一个针对聊天微调的适配器结合。通过这种组合的适配器，我们将能够使 Llama 2
+    既能翻译又能聊天。
 - en: 'I have also implemented a notebook that can run all the code explained in this
     article. You can find it here:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还实现了一个可以运行本文中解释的所有代码的笔记本。你可以在这里找到它：
 - en: '[Get the notebook (#30)](https://kaitchup.substack.com/p/notebooks)'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '[获取笔记本 (#30)](https://kaitchup.substack.com/p/notebooks)'
 - en: Add Multiple Adapters to Llama 2
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 向 Llama 2 添加多个适配器
 - en: Before combining adapters, we need to add them to the base LLM.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在组合适配器之前，我们需要将它们添加到基础 LLM 中。
 - en: 'We have to make sure that the adapter that we want to add has been fine-tuned
     for our base LLM, i.e., Llama 2 7B. You can find this information in the file
     “adapter_config.json” which is in the adapter directory. For instance, for [kaitchup/Llama-2–7B-oasstguanaco-adapter](https://huggingface.co/kaitchup/Llama-2-7B-oasstguanaco-adapter)
     (MIT license), the [adapter_config.json](https://huggingface.co/kaitchup/Llama-2-7B-oasstguanaco-adapter/blob/main/adapter_config.json)
     contains the following data:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们必须确保要添加的适配器已经针对我们的基础LLM进行了微调，即Llama 2 7B。您可以在适配器目录中的“adapter_config.json”文件中找到此信息。例如，对于
+    [kaitchup/Llama-2–7B-oasstguanaco-adapter](https://huggingface.co/kaitchup/Llama-2-7B-oasstguanaco-adapter)（MIT许可证），
+    [adapter_config.json](https://huggingface.co/kaitchup/Llama-2-7B-oasstguanaco-adapter/blob/main/adapter_config.json)
+    包含以下数据：
 - en: '[PRE0]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The field “base_model_name_or_path” indicates that the base model for this adapter
     is meta-llama/Llama-2–7b-hf. We can add this adapter to Llama 2 7B.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 字段“base_model_name_or_path”指示此适配器的基础模型是meta-llama/Llama-2–7b-hf。我们可以将此适配器添加到Llama
+    2 7B中。
 - en: 'I fine-tuned this adapter myself on [timdettmers/open assistant-guanaco](https://huggingface.co/datasets/timdettmers/openassistant-guanaco)
     following the steps explained in this article:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我根据本文所述步骤在 [timdettmers/open assistant-guanaco](https://huggingface.co/datasets/timdettmers/openassistant-guanaco)
+    上自行微调了此适配器：
 - en: '[](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----ea0bef9025cf--------------------------------)
     [## Fine-tune Llama 2 on Your Computer with QLoRa and TRL'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----ea0bef9025cf--------------------------------)
+    [## 使用QLoRa和TRL在你的计算机上微调Llama 2'
 - en: On Guanaco and with the correct padding
+  id: totrans-23
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在Guanaco上，并且使用正确的填充
 - en: kaitchup.substack.com](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----ea0bef9025cf--------------------------------)
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: kaitchup.substack.com](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----ea0bef9025cf--------------------------------)
 - en: 'When loaded on top of Llama 2, it transforms it into a chat model answering
     prompts structured as follows:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 当在Llama 2上加载时，它将其转换为回答以下结构提示的聊天模型：
 - en: '[PRE1]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The base model should be loaded with the same configuration used for fine-tuning
     the adapter. For instance, if the adapter was fine-tuned with QLoRA, then we should
     load Llama 2 with the same QLoRA configuration.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 基础模型应加载用于微调适配器的相同配置。例如，如果适配器是用QLoRA微调的，则应以相同的QLoRA配置加载Llama 2。
 - en: 'For this adapter, you can find this information in the [model card](https://huggingface.co/kaitchup/Llama-2-7B-oasstguanaco-adapter):'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于此适配器，您可以在 [model card](https://huggingface.co/kaitchup/Llama-2-7B-oasstguanaco-adapter)
+    中找到这些信息：
 - en: '[PRE2]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'This is the standard QLoRA quantization configuration. We should load Llama
     2 like this:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是标准的QLoRA量化配置。我们应这样加载Llama 2：
 - en: '[PRE3]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Then, with Hugging Face PEFT, we can easily load an adapter on top of this
     model:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，使用Hugging Face PEFT，我们可以轻松地在此模型上加载一个适配器：
 - en: '[PRE4]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Set a meaningful “adapter_name”. We will see why this is necessary in the next
     section.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 设置一个有意义的“adapter_name”。我们将在下一部分看到为何这很必要。
 - en: 'At that point, Llama 2 is now a chat model. If we prompt it with:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时，Llama 2 现在是一个聊天模型。如果我们向其提示：
 - en: '[PRE5]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The model generates something like:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型生成的内容如下：
 - en: '[PRE6]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '*Note: I provide the inference code in the notebook and the next section.*'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：我在笔记本和下一部分中提供了推理代码。*'
 - en: 'Now, imagine that we also want the model to perform translation tasks from
     French to English. We can use this adapter:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，假设我们还希望模型执行法语到英语的翻译任务。我们可以使用此适配器：
 - en: '[kaitchup/Llama-2–7b-mt-French-to-English](https://huggingface.co/kaitchup/Llama-2-7b-mt-French-to-English)
     (MIT license)'
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[kaitchup/Llama-2–7b-mt-French-to-English](https://huggingface.co/kaitchup/Llama-2-7b-mt-French-to-English)（MIT许可证）'
 - en: 'I fine-tuned following these instructions:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我按照以下说明进行了微调：
 - en: '[](https://kaitchup.substack.com/p/llama-2-mt-turn-llama-2-into-a-translation?source=post_page-----ea0bef9025cf--------------------------------)
     [## Llama 2 MT: Turn Llama 2 into a Translation System with QLoRA'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://kaitchup.substack.com/p/llama-2-mt-turn-llama-2-into-a-translation?source=post_page-----ea0bef9025cf--------------------------------)
+    [## Llama 2 MT: 使用QLoRA将Llama 2转变为翻译系统'
 - en: How to Fine-tune a Cheap Translation Model
+  id: totrans-44
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 如何微调一个廉价的翻译模型
 - en: kaitchup.substack.com](https://kaitchup.substack.com/p/llama-2-mt-turn-llama-2-into-a-translation?source=post_page-----ea0bef9025cf--------------------------------)
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: kaitchup.substack.com](https://kaitchup.substack.com/p/llama-2-mt-turn-llama-2-into-a-translation?source=post_page-----ea0bef9025cf--------------------------------)
 - en: 'We can load this adapter as follows:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以如下加载此适配器：
 - en: '[PRE7]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'We have now two adapters loaded. We can verify it by printing the model:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在加载了两个适配器。我们可以通过打印模型来验证：
 - en: '[PRE8]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '[PRE9]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'The “fren” adapter is fine-tuned for Llama 2 with the same quantization configuration,
     but with prompts using a different format:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: “fren”适配器经过了针对 Llama 2 的微调，使用了相同的量化配置，但提示使用了不同的格式：
 - en: '[PRE10]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Following “>”, the model should generate the translation. Let’s try it with
     this prompt:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 跟随“>”，模型应该生成翻译。让我们用这个提示尝试一下：
 - en: '[PRE11]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'It prints:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 它会打印：
 - en: '[PRE12]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: It doesn’t look like a translation…
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来不像是翻译……
 - en: 'What the model structure (printed above) doesn’t tell us is that only one adapter
     is active: The first one we have loaded (“oasst”). Since the prompt doesn’t have
     the right format (with human and assistant tags), the model randomly guesses what
     it should do (here, it generates a monologue in which the “Assistant” talks to
     itself, in French…).'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型结构（如上所示）没有告诉我们的是只有一个适配器是激活的：我们加载的第一个适配器（“oasst”）。由于提示的格式不正确（没有人类和助手标签），模型会随机猜测应该做什么（在这里，它生成一个“助手”自言自语的独白，使用法语……）。
 - en: The model can’t exploit both adapters. We have to combine them into one single
     adapter that can chat and translate.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型不能同时利用两个适配器。我们必须将它们合并为一个可以聊天和翻译的适配器。
 - en: Combine Multiple LoRA Adapters
+  id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 组合多个 LoRA 适配器
 - en: 'With the [PEFT library](https://huggingface.co/docs/peft/v0.6.2/en/index),
     we can easily merge adapters. Three methods are currently implemented in “[add_weigthed_adapter](https://huggingface.co/docs/peft/v0.6.2/en/package_reference/tuners#peft.LoraModel.add_weighted_adapter)”:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 [PEFT 库](https://huggingface.co/docs/peft/v0.6.2/en/index)，我们可以轻松地合并适配器。目前在
+    “[add_weighted_adapter](https://huggingface.co/docs/peft/v0.6.2/en/package_reference/tuners#peft.LoraModel.add_weighted_adapter)”
+    中实现了三种方法：
 - en: 'concatenation: This is the most simple one. It simply concatenates the adapters’
     parameters. It means that if you concatenate two adapters with a rank of 16, the
     resulting adapter will have a rank of 32\. This method is very fast.'
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 串联：这是最简单的方法。它仅仅将适配器的参数进行串联。这意味着如果你将两个秩为 16 的适配器进行串联，结果适配器的秩将为 32。这个方法非常快。
 - en: 'linear combination: This one is under-documented but it seems that it simply
     does a weighted sum of the adapters’ parameters. ([see the source code](https://github.com/huggingface/peft/blob/v0.6.2/src/peft/tuners/lora/model.py#L442))'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 线性组合：这个方法文档较少，但似乎它仅仅对适配器的参数进行加权求和。 ([查看源代码](https://github.com/huggingface/peft/blob/v0.6.2/src/peft/tuners/lora/model.py#L442))
 - en: 'SVD: It applies [singular value decomposition](https://en.wikipedia.org/wiki/Singular_value_decomposition)
     using [torch.linalg.svd](https://pytorch.org/docs/stable/generated/torch.linalg.svd.html).
     This is the default method. It has several arguments but we will not explore them
     in this article (I will leave them to default values). This method is much slower
     than the other two. If your adapters have unusually high ranks (>100), it may
     take several hours.'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SVD：它使用[奇异值分解](https://en.wikipedia.org/wiki/Singular_value_decomposition) 和
+    [torch.linalg.svd](https://pytorch.org/docs/stable/generated/torch.linalg.svd.html)
+    。这是默认方法。它有几个参数，但我们不会在本文中探讨它们（我会将它们保留为默认值）。此方法比其他两个方法要慢得多。如果你的适配器有异常高的秩（>100），可能需要几个小时。
 - en: All these methods weigh the combination. For instance, if we combine two adapters
     X and Y, we can put more weight on one adapter, e.g., X, to make sure the resulting
     adapter will behave more closely to X than Y.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有这些方法都考虑了组合的权重。例如，如果我们将两个适配器 X 和 Y 组合，我们可以给一个适配器，例如 X，施加更多的权重，以确保结果适配器的行为更接近
+    X 而不是 Y。
 - en: 'We will try all concatenation and SVD to combine the two adapters presented
     in the previous section: “fren” and “oasst”.'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将尝试所有的串联和 SVD 来组合前一节中介绍的两个适配器：“fren”和“oasst”。
 - en: 'First, install the following dependencies:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，安装以下依赖项：
 - en: '[PRE13]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '*Note: I install bitsandbytes because I use quantization. If you don’t quantize
     your model, you won’t need it.*'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：我安装了bitsandbytes，因为我使用量化。如果你不量化模型，你不需要它。*'
 - en: 'Then, we need to import the following:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们需要导入以下内容：
 - en: '[PRE14]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'Now, we can load the model (Llama 2 7B), quantize it, and load the tokenizer:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以加载模型（Llama 2 7B），量化它，并加载分词器：
 - en: '[PRE15]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '*Note: Remember that you need an access token to get Llama 2 from the Hugging
     Face hub.*'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：请记住，你需要一个访问令牌才能从 Hugging Face hub 获取 Llama 2。*'
 - en: 'We also need a function to generate text for testing the adapters:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一个函数来生成用于测试适配器的文本：
 - en: '[PRE16]'
+  id: totrans-76
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'Then, we load our two adapters:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们加载我们的两个适配器：
 - en: '[PRE17]'
+  id: totrans-78
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: '***Important note****: I move the model to the CPU device (with “.to(‘cpu‘)”)
     otherwise the combination of the adapters won’t work. All the adapters must be
     on the same device to be combined but the active adapter is on the GPU while the
@@ -307,206 +485,316 @@
     multiplications). Once the combination is done and if you used quantization, I
     recommend saving the new adapter and then reloading and quantizing the model to
     be able to use it for inference.*'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '***重要说明***: 我将模型移到CPU设备上（使用“.to(‘cpu‘)”），否则适配器的组合将无法工作。所有适配器必须在同一设备上才能进行组合，但活动适配器在GPU上，而非活动适配器在CPU上。我找到的唯一方法是将模型移到CPU上。然而，如果模型已经量化并在CPU上，它无法进行推理（推理期间的前向传递会尝试执行不可能的乘法）。一旦组合完成，如果你使用了量化，我建议保存新的适配器，然后重新加载并量化模型，以便能够用于推理。'
 - en: 'To combine the adapter, we only need to run:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 要组合适配器，我们只需运行：
 - en: '[PRE18]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: It will create and load one new adapter named “fren_oasst”. Again, you can print
     the model to verify it.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 它将创建并加载一个名为“fren_oasst”的新适配器。你可以打印模型来验证它。
 - en: 'Here are some explanations about the arguments:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一些关于参数的解释：
 - en: '[“fren”, “oasst”]: This is a list of the names of all the adapters that we
     want to combine. These adapters must be loaded.'
+  id: totrans-84
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[“fren”, “oasst”]: 这是我们想要组合的所有适配器的名称列表。这些适配器必须已加载。'
 - en: '[1.0,1.0]: The list of the weights to make the weighted combination. “fren”
     has a weight of 1.0 and “oasst” has a weight of 1.0.'
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[1.0,1.0]: 进行加权组合的权重列表。“fren”的权重为1.0，“oasst”的权重为1.0。'
 - en: 'combination_type: The method used for the combination: concatenation (cat),
     linear (linear), or SVD (svd).'
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'combination_type: 组合时使用的方法：连接（cat）、线性（linear）或SVD（svd）。'
 - en: 'adapter_name: The resulting adapter will be loaded and have this name.'
+  id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'adapter_name: 生成的适配器将被加载并具有这个名称。'
 - en: 'Then, I recommend saving the adapter. To avoid saving “fren” and “oasst”, delete
     them first, then “save_pretrained” will only save our new adapter:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我建议保存适配器。为了避免保存“fren”和“oasst”，首先删除它们，然后“save_pretrained”将只保存我们新的适配器：
 - en: '[PRE19]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'And, as discussed above (see “important note”), reload and quantize again the
     base model before loading this new adapter (don’t move it to the CPU):'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 并且，如上所述（见“重要说明”），在加载这个新的适配器之前，请重新加载并量化基础模型（不要将其移到CPU上）：
 - en: '[PRE20]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: For this combination, I used “cat” to concatenate the adapters. It’s a very
     simple operation. I also gave the adapters the same weights during the combination.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这次组合，我使用了“cat”来连接适配器。这是一个非常简单的操作。我在组合期间也给适配器赋予了相同的权重。
 - en: 'Now, let’s see what the model generates given chat and translation prompts:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们看看模型在给定聊天和翻译提示时生成了什么：
 - en: '[PRE21]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: 'It generates:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 它生成：
 - en: '[PRE22]'
+  id: totrans-96
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: 'and:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 和：
 - en: '[PRE23]'
+  id: totrans-98
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: It seems to have worked very well. The new adapter can chat and translate.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 这似乎效果很好。新的适配器可以进行聊天和翻译。
 - en: '*How is it possible?*'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这怎么可能呢？*'
 - en: The new adapter recognizes the task to perform thanks to the format of the prompt.
     When it encodes “###>”, it identifies that it should translate the previous tokens.
     When it encodes “### Human:” and “### Assistant:”, it knows that it should chat.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 新适配器通过提示的格式识别要执行的任务。当它编码“###>”时，它会识别出应该翻译前面的令牌。当它编码“### Human:” 和 “### Assistant:”
+    时，它知道应该进行聊天。
 - en: It works very well when the adapters combined are fine-tuned with very different
     prompt formats. However, if I had fine-tuned the “oasst” adapter with a prompt
     format using “###> Assistant:” instead of “### Assistant:”, the new adapter would
     have been confused since “###>” may also indicate that a translation is expected.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 当组合的适配器经过非常不同的提示格式微调时，它效果很好。然而，如果我用“###> Assistant:”而不是“### Assistant:”的提示格式微调了“oasst”适配器，新适配器可能会混淆，因为“###>”也可能表示期望翻译。
 - en: To sum up, to work well, we should **only combine adapters that were fine-tuned
     with significantly different prompt formats**. Ideally, they should be fine-tuned
     with a tag at the beginning prompt to identify the task, e.g., [translate_fren]
     or [chat].
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，要使工作顺利进行，我们应该**仅组合那些在显著不同的提示格式下进行了微调的适配器**。理想情况下，它们应该在开头的提示中带有一个标签，以识别任务，例如，[translate_fren]
+    或 [chat]。
 - en: But even with different prompt formats, the new adapter may not perform as we
     want.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 但即使有不同的提示格式，新的适配器可能也无法按我们期望的方式工作。
 - en: For instance, this new adapter only generates short responses when chatting.
     This behavior is inherited from the translation adapter (fren) which was fine-tuned
     for sentence translation and thus learned to stop after generating one sentence.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，这个新适配器在聊天时仅生成简短的回答。这种行为继承自为句子翻译微调的翻译适配器（fren），因此学会了在生成一个句子后停止。
 - en: We can tweak the behavior of the new adapter by giving more weight to an adapter
     during the combination and/or changing the combination type. If we give more weight
     to the chat adapter the resulting adapter may be able to generate longer responses
     while still being good at translation.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过在组合过程中给适配器更多权重和/或更改组合类型来调整新适配器的行为。如果我们给聊天适配器更多权重，生成的适配器可能能够生成更长的响应，同时仍然擅长翻译。
 - en: Let’s try it!
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们来试试吧！
 - en: 'I changed the combination type to “svd” and tried different weights, as follows:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将组合类型更改为“svd”，并尝试了不同的权重，如下：
 - en: '[PRE24]'
+  id: totrans-109
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: 'I gave more weight to “oasst” so this new adapter will behave more like “oasst”.
     I tried it using the same examples used above. It generates:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 我给“oasst”分配了更多权重，因此这个新适配器将更像“oasst”。我用上面使用的相同示例进行了测试。它生成了：
 - en: '[PRE25]'
+  id: totrans-111
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: The result is much better for the chat prompt (printed after “- — — — -”) since
     the model generates a longer dialogue that looks like the data used to fine-tune
     the “oasst” adapter.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于聊天提示，结果要好得多（打印在“- — — — -”之后），因为模型生成了一个更长的对话，看起来像是用于微调“oasst”适配器的数据。
 - en: 'Then, I tried other weights to see how the combined adapter behaved but none
     of these other weights yielded better results. Here are some examples:'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我尝试了其他权重，以查看组合适配器的行为，但这些其他权重没有产生更好的结果。以下是一些示例：
 - en: 'With [0.2,1.0]:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用[0.2,1.0]：
 - en: '[PRE26]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: A weight of 0.2 is clearly too low for the translation adapter. The new adapter
     generates a lot of tokens with a translation prompt and behaves more like a chat
     model.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 权重为0.2显然对翻译适配器来说过低。新适配器在翻译提示下生成了大量标记，并且表现得更像一个聊天模型。
 - en: 'With [1.0,0.05]:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用[1.0,0.05]：
 - en: '[PRE27]'
+  id: totrans-118
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: I didn’t observe much difference compared with the original [1.0,1.0].
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 与原始的[1.0,1.0]相比，我没有观察到太大区别。
 - en: 'With [1.0,0.2]:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用[1.0,0.2]：
 - en: '[PRE28]'
+  id: totrans-121
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: The “oasst” weight is too low. For the chat prompt, the new adapter tends to
     generate only very short answers (like in this example) repeating what the “Human”
     wrote.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: “oasst”的权重过低。对于聊天提示，新适配器倾向于生成非常简短的回答（如本示例所示），重复“人类”写的内容。
 - en: Conclusion
+  id: totrans-123
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Combining multiple adapters is easy and cheap. It’s a useful way to add skills
     to an LLM without having to fine-tune new adapters. We can find many adapters
     online. For instance, the Hugging Face hub hosts adapters as “models” with the
     tag “PEFT” which stands for “parameter-efficient fine-tuning”.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 组合多个适配器既简单又便宜。这是一种在不需要微调新适配器的情况下为LLM添加技能的有用方法。我们可以在网上找到许多适配器。例如，Hugging Face
+    hub将适配器作为“模型”进行托管，并标记为“PEFT”，即“参数高效微调”。
 - en: The combination of several adapters works well but only if the adapters were
     fine-tuned with very different prompts. If not, the new adapter will be confused
     and won’t know which task to perform.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 多个适配器的组合效果很好，但前提是这些适配器经过了非常不同的提示的微调。如果没有，新适配器将会感到困惑，不知道应该执行什么任务。
 - en: I recommend trying different weights for the weighted combination. Since the
     combination is cheap, searching for better weights is quite fast.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 我推荐尝试不同的权重进行加权组合。由于组合成本低，寻找更好的权重非常迅速。
 - en: As for the combination method, I recommend SVD since it doesn’t produce an adapter
     with a higher rank, i.e., the new adapter will not consume more memory than the
     adapters used for the combination.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于组合方法，我推荐SVD，因为它不会生成一个更高秩的适配器，即新适配器不会比用于组合的适配器消耗更多内存。
 - en: 'To support my work, consider subscribing to my newsletter:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了支持我的工作，请考虑订阅我的新闻通讯：
 - en: '[](https://kaitchup.substack.com/?source=post_page-----ea0bef9025cf--------------------------------)
     [## The Kaitchup - AI on a Budget | Benjamin Marie, PhD | Substack'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://kaitchup.substack.com/?source=post_page-----ea0bef9025cf--------------------------------)
+    [## Kaitchup - 节省预算的人工智能 | Benjamin Marie, PhD | Substack'
 - en: Weekly news, tips, and tutorials on fine-tuning, running, and serving large
     language models on your computer. Each…
+  id: totrans-130
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 每周新闻、技巧和教程，关于在您的计算机上微调、运行和服务大型语言模型。每期...
 - en: kaitchup.substack.com](https://kaitchup.substack.com/?source=post_page-----ea0bef9025cf--------------------------------)
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: kaitchup.substack.com](https://kaitchup.substack.com/?source=post_page-----ea0bef9025cf--------------------------------)

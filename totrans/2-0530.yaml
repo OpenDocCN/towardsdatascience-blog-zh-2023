@@ -1,163 +1,255 @@
 - en: Combining Multiprocessing and Asyncio in Python for Performance Boosts
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 Python 中结合多进程和异步编程以提升性能
 - en: 原文：[https://towardsdatascience.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b](https://towardsdatascience.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b](https://towardsdatascience.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b)
 - en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '[PYTHON 并发](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
 - en: Using a real-world example to demonstrate a map-reduce program
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用实际示例演示 map-reduce 程序
 - en: '[](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)[![Peng
     Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)
     [Peng Qian](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)
     ·7 min read·May 4, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)
+    ·7 分钟阅读·2023 年 5 月 4 日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/77f3f292511afaa667c8f02679022e8b.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/77f3f292511afaa667c8f02679022e8b.png)'
 - en: Photo by [Mitchell Luo](https://unsplash.com/@mitchel3uo?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Mitchell Luo](https://unsplash.com/@mitchel3uo?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: Thanks to GIL, using multiple threads to perform CPU-bound tasks has never been
     an option. With the popularity of multicore CPUs, Python offers a multiprocessing
     solution to perform CPU-bound tasks. But until now, there were still some problems
     with using multiprocess-related APIs directly.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于全局解释器锁（GIL）的存在，使用多线程来执行 CPU 密集型任务从未成为一个选项。随着多核 CPU 的普及，Python 提供了一种多进程解决方案来执行
+    CPU 密集型任务。但直到现在，直接使用多进程相关 API 仍然存在一些问题。
 - en: 'Before we start, we still have a small piece of code to aid in the demonstration:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们开始之前，我们还有一小段代码来帮助演示：
 - en: The method takes one argument and starts accumulating from 0 to this argument.
     Print the method execution time and return the result.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 该方法接受一个参数，并从 0 开始累加到该参数。打印方法执行时间并返回结果。
 - en: Problems with multiprocessing
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 多进程的相关问题
 - en: 'As the code shows, we directly create and start multiple processes, and call
     the start and join methods of each process. However, there are some problems here:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 如代码所示，我们直接创建并启动多个进程，并调用每个进程的 start 和 join 方法。然而，这里存在一些问题：
 - en: The join method cannot return the result of task execution.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: join 方法不能返回任务执行的结果。
 - en: the join method blocks the main process and executes it sequentially.
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: join 方法会阻塞主进程，并按顺序执行。
 - en: 'Even if the later tasks are executed faster than the earlier ones, as shown
     in the following figure:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使后续任务比早期任务执行得更快，如下图所示：
 - en: '![](../Images/8364baa442670bc1f8998389c15d561a.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8364baa442670bc1f8998389c15d561a.png)'
 - en: The screenshot shows the execution sequence of join. Image by Author
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 截图显示了 join 的执行顺序。 图片由作者提供
 - en: '![](../Images/537ec0a40a7eaf342614f882c6bc4786.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/537ec0a40a7eaf342614f882c6bc4786.png)'
 - en: Although process_b finishes executing first, it still has to wait for process_a.
     Image by Author
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 `process_b` 首先完成执行，但仍需等待 `process_a`。 图片由作者提供
 - en: Problems of using Pool
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用池（Pool）的问题
 - en: 'If we use `multiprocessing.Pool`, there are also some problems:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们使用 `multiprocessing.Pool`，也会存在一些问题：
 - en: As the code shows, Pool’s `apply` method is synchronous, which means you have
     to wait for the previously apply task to finish before the next `apply` task can
     start executing.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 如代码所示，池的 `apply` 方法是同步的，这意味着在下一个 `apply` 任务开始执行之前，必须等待之前的 `apply` 任务完成。
 - en: '![](../Images/523e21930db88ead203380d32df96e40.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/523e21930db88ead203380d32df96e40.png)'
 - en: '[multiprocessing.Pool.apply](https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool)
     method is synchronous. Image by Author'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '[multiprocessing.Pool.apply](https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool)
+    方法是同步的。图片来源：作者'
 - en: 'Of course, we can use the `apply_async` method to create the task asynchronously.
     But again, you need to use the get method to get the result blockingly. It brings
     us back to the problem with the join method:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，我们可以使用 `apply_async` 方法来异步创建任务。但再次强调，你仍需使用 get 方法来阻塞性地获取结果。这使我们回到了 join 方法的问题：
 - en: '![](../Images/79d6980e92262ad8805f8cf58dcc1413.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/79d6980e92262ad8805f8cf58dcc1413.png)'
 - en: Although [apply_async](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async)
     is asynchronous, get will still block and execute sequentially. Image by Author
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 [apply_async](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async)
+    是异步的，但 get 仍然会阻塞并按顺序执行。图片来源：作者
 - en: The problem with using ProcessPoolExecutor directly
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 直接使用 ProcessPoolExecutor 的问题
 - en: So, what if we use `concurrent.futures.ProcesssPoolExecutor` to execute our
     CPU-bound tasks?
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，如果我们使用 `concurrent.futures.ProcessPoolExecutor` 来执行我们的 CPU 密集型任务，会怎么样呢？
 - en: 'As the code shows, everything looks great and is called just like `asyncio.as_completed`.
     But look at the results; they are still fetched in startup order. This is not
     at all the same as `asyncio.as_completed`, which gets the results in the order
     in which they were executed:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 如代码所示，一切看起来都很棒，并且调用方式就像 `asyncio.as_completed` 一样。但看看结果，它们仍然是按启动顺序获取的。这与 `asyncio.as_completed`
+    完全不同，后者是按照执行的顺序获取结果：
 - en: '![](../Images/404cfdbe924ffec96922748bbc22bf1d.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/404cfdbe924ffec96922748bbc22bf1d.png)'
 - en: Results are fetched in startup order. Image by Author
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果按启动顺序获取。图片来源：作者
 - en: '![](../Images/2a00805eb01261acdd9f10f48bc4893b.png)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2a00805eb01261acdd9f10f48bc4893b.png)'
 - en: The result of the iteration still maintains the call order and blocks. Image
     by Author
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 迭代结果仍保持调用顺序并阻塞。图片来源：作者
 - en: Use asyncio’s run_in_executor to fix it
+  id: totrans-37
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 asyncio 的 `run_in_executor` 来修复它
 - en: 'Fortunately, we can use asyncio to handle IO-bound tasks, and its `run_in_executor`
     method to invoke multi-process tasks in the same way as asyncio. Not only unifying
     concurrent and parallel APIs but also solving the various problems we encountered
     above:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，我们可以使用 asyncio 来处理 IO 密集型任务，并使用它的 `run_in_executor` 方法以与 asyncio 相同的方式调用多进程任务。这不仅统一了并发和并行
+    API，还解决了我们上述遇到的各种问题：
 - en: '![](../Images/c50f486af901f471331dfea012719094.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c50f486af901f471331dfea012719094.png)'
 - en: Combining asyncio and ProcessPoolExecutor. Image by Author
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 结合 asyncio 和 ProcessPoolExecutor。图片来源：作者
 - en: Since the sample code in the previous article was all about simulating what
     we should call the methods of the concurrent process, many readers still need
     help understanding how to use it in the actual coding after learning it. So after
@@ -165,283 +257,426 @@
     we will use a real-world example to explain how to use asyncio to handle IO-bound
     and CPU-bound tasks simultaneously and appreciate the efficiency of asyncio for
     our code.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于上一篇文章中的示例代码完全模拟了我们应该如何调用并发进程的方法，许多读者在学习后仍然很难理解如何在实际编码中使用它。因此，在理解为什么我们需要在 asyncio
+    中执行 CPU 密集型并行任务之后，今天我们将使用一个现实世界的例子来解释如何同时处理 IO 密集型和 CPU 密集型任务，并欣赏 asyncio 为我们的代码带来的高效。
 - en: 'Note: Before continuing, if you are interested in the practice of using `asyncio.gather`
     and `asyncio.as_completed`, you can read this article of mine:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意：在继续之前，如果你对使用 `asyncio.gather` 和 `asyncio.as_completed` 的实践感兴趣，你可以阅读我的这篇文章：
 - en: '[](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----15496ffe96b--------------------------------)
     [## Use These Methods to Make Your Python Concurrent Tasks Perform Better'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----15496ffe96b--------------------------------)
+    [## 使用这些方法提高 Python 并发任务的性能'
 - en: Best practices for asyncio.gather, asyncio.as_completed, and asyncio.wait
+  id: totrans-44
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: asyncio.gather、asyncio.as_completed 和 asyncio.wait 的最佳实践
 - en: towardsdatascience.com](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----15496ffe96b--------------------------------)
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----15496ffe96b--------------------------------)'
 - en: 'Real-world case: concurrent file reading and map-reduce data processing'
+  id: totrans-46
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 现实案例：并发文件读取和 map-reduce 数据处理
 - en: 'In this case today, we will deal with two problems:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在今天的案例中，我们将解决两个问题：
 - en: How to read multiple datasets concurrently. Especially if the datasets are large
     or many. How to use asyncio to improve efficiency.
+  id: totrans-48
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如何并发读取多个数据集，尤其是当数据集很大或很多时。如何使用asyncio提高效率。
 - en: How to use asyncio’s `run_in_executor` method to implement a MapReduce program
     and process datasets efficiently.
+  id: totrans-49
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如何使用asyncio的`run_in_executor`方法来实现MapReduce程序并高效处理数据集。
 - en: 'Before we start, I will explain to you how our code is going to be executed
     using a diagram:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们开始之前，我将通过图示向你解释我们的代码将如何执行：
 - en: '![](../Images/fa856454a320b44436788fbe3c4c0a9b.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa856454a320b44436788fbe3c4c0a9b.png)'
 - en: The diagram shows how the entire code works. Image by Author
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 图示展示了整个代码的工作原理。图片由作者提供
 - en: The yellow part represents our concurrent tasks. Since the CPU can process data
     from memory faster than IO can read data from disk, we first read all datasets
     into memory concurrently.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 黄色部分表示我们的并发任务。由于CPU可以比IO从磁盘读取数据更快地处理内存中的数据，因此我们首先将所有数据集并发地读取到内存中。
 - en: After the initial data merging and slicing, we come to the green part that represents
     the CPU parallel task. In this part, we will start several processes to map the
     data.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 在初步数据合并和切片后，我们来到了绿色部分，代表CPU并行任务。在这部分，我们将启动几个进程来映射数据。
 - en: Finally, we get the intermediate results of all the processes in the main process
     and then use a `reduce` program to get the final results.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，我们将在主进程中获取所有过程的中间结果，然后使用`reduce`程序获得最终结果。
 - en: Data preparation and installation of dependencies
+  id: totrans-56
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据准备和依赖项安装
 - en: Data preparation
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据准备
 - en: In this case, we will use the [Google Books Ngram Dataset](https://books.google.com/ngrams/info),
     which counts the frequency of each string combination in various books by year
     from 1500 to 2012.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个案例中，我们将使用[Google Books Ngram Dataset](https://books.google.com/ngrams/info)，它按年份统计了1500年至2012年间各种书籍中每个字符串组合的频率。
 - en: 'The Google Books Ngram dataset is free for any purpose, and today we will use
     these datasets below:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: Google Books Ngram数据集是免费用于任何目的的，今天我们将使用下面这些数据集：
 - en: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-a.gz](http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-a.gz)'
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-a.gz](http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-a.gz)'
 - en: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-b.gz](http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-b.gz)'
+  id: totrans-61
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-b.gz](http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-b.gz)'
 - en: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-c.gz](http://storage.googleapis.com/books/ngrams/
     books/googlebooks-eng-all-1gram-20120701-c.gz)'
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-c.gz](http://storage.googleapis.com/books/ngrams/
+    books/googlebooks-eng-all-1gram-20120701-c.gz)'
 - en: We aim to count the cumulative number of times each word is counted by the result
     set.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的目标是统计结果集中的每个词的累计出现次数。
 - en: Dependency installation
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 依赖项安装
 - en: To read the files concurrently, we will use the `[aiofiles](https://pypi.org/project/aiofiles/)`
     library, which can support asyncio’s concurrent implementation.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了并发读取文件，我们将使用`[aiofiles](https://pypi.org/project/aiofiles/)`库，它支持asyncio的并发实现。
 - en: 'If you are using pip, you can install it as follows:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你使用pip，你可以按照以下方式安装：
 - en: '[PRE0]'
+  id: totrans-67
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'If you are using Anaconda, you can install it as follows:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你使用Anaconda，你可以按照以下方式安装：
 - en: '[PRE1]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Code structure design
+  id: totrans-70
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 代码结构设计
 - en: Since this case is still relatively simple, for the sake of demonstration, we
     will use a `.py` script to do the whole thing here.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这个案例相对简单，为了演示，我们将在这里使用`.py`脚本完成整个过程。
 - en: 'As an architect, before you start, you should plan your methods according to
     the flowchart design and try to follow the “single responsibility principle” for
     each method. Thus, do only one thing once upon each method:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为架构师，在开始之前，你应该根据流程图设计规划你的方法，并尝试遵循每个方法的“单一职责原则”。因此，每个方法一次只做一件事：
 - en: Code Implementation
+  id: totrans-73
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 代码实现
 - en: Next, we will implement each method step by step and finally integrate them
     to run together in the `main` method.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将逐步实现每个方法，并最终将它们集成在`main`方法中一起运行。
 - en: File reading
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 文件读取
 - en: 'Method `read_file` will implement reading a single file with `aiofiles`:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法`read_file`将实现使用`aiofiles`读取单个文件：
 - en: Method `get_all_file_content` will start the file reading task and, after all
     the files have been read, will merge each line of text into a list and return
     it.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法`get_all_file_content`将启动文件读取任务，所有文件读取完成后，将每行文本合并到一个列表中并返回。
 - en: Data grouping
+  id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据分组
 - en: 'Method `partition` will decompose the list into multiple smaller lists of partition_size
     length according to the passed partition_size and facilitate subsequent iterations
     using the generator:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法`partition`将根据传递的partition_size将列表分解成多个较小的列表，并使用生成器来促进后续的迭代：
 - en: Map processing data
+  id: totrans-80
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 映射处理数据
 - en: Method `map_resource` is the actual map method. Use it to read each line of
     data from the list, use the word as the key and the sum of the frequencies as
     the value, and finally return a dict result.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法`map_resource`是实际的映射方法。使用它从列表中读取每一行数据，使用单词作为键，将频率的总和作为值，最后返回一个字典结果。
 - en: Integrating asyncio with multiprocessing
+  id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 将asyncio与多进程整合
 - en: Method `map_with_process` calls asyncio’s `run_in_executor` method, which starts
     a pool of processes according to the number of CPU cores and executes the map
     method in parallel. And the final result is merged into a list by `asyncio.gather`
     method.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法`map_with_process`调用了asyncio的`run_in_executor`方法，根据CPU核心的数量启动一个进程池，并并行执行映射方法。最终结果由`asyncio.gather`方法合并成一个列表。
 - en: Reducing the merged data
+  id: totrans-84
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 减少合并的数据
 - en: Since the previous map process ends up with a list of word frequencies processed
     by multiple processes, we also need to use a `reduce` method to merge numerous
     dicts into a single final result, recording the final frequency of each word.
     Here we first write the method implementation of the `reduce` process.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于之前的映射过程最终得到的是多个进程处理的单词频率列表，我们还需要使用`reduce`方法将多个字典合并成一个最终结果，记录每个单词的最终频率。在这里，我们首先编写`reduce`过程的方法实现。
 - en: Then we call the `functools.reduce` method directly to merge the data.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们直接调用`functools.reduce`方法来合并数据。
 - en: Finally, implement the main method
+  id: totrans-87
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最后，实施主方法
 - en: Eventually, we integrate all the methods into the `main` method and call.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，我们将所有的方法集成到`main`方法中并进行调用。
 - en: Great! We get the sum of the frequencies of the word Aardvark in all the datasets.
     Task complete.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 太棒了！我们得到了在所有数据集中单词Aardvark的频率总和。任务完成。
 - en: Using tqdm to indicate progress
+  id: totrans-90
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用tqdm指示进度
 - en: In the previous article, we explained how to use `[tqdm](https://github.com/tqdm/tqdm)`
     to indicate the progress of asyncio tasks.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一篇文章中，我们解释了如何使用[tqdm](https://github.com/tqdm/tqdm)来指示asyncio任务的进度。
 - en: '[](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----15496ffe96b--------------------------------)
     [## Using Tqdm with Asyncio in Python'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 使用 Tqdm 与 Asyncio 结合的 Python'
 - en: An Efficient Way to Monitor Concurrent Tasks Progress
+  id: totrans-93
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 监控并发任务进度的高效方法
 - en: towardsdatascience.com](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----15496ffe96b--------------------------------)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----15496ffe96b--------------------------------)'
 - en: Since in the real world, data processing of large datasets often takes a long
     time, during which we need to track the progress of code execution, we also need
     to add `tqdm` progress bars in the right places.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于在现实世界中，大数据集的数据处理通常需要较长时间，在此过程中我们需要跟踪代码执行的进度，因此我们还需要在适当的地方添加`tqdm`进度条。
 - en: It looks much more professional now.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在看起来专业多了。
 - en: '![](../Images/48cd3f1f43cdd935dc5988f93e76d620.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/48cd3f1f43cdd935dc5988f93e76d620.png)'
 - en: The resulting screenshot after adding the tqdm APIs. Image by Author
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 添加`tqdm` API后的结果截图。图片来自作者
 - en: Conclusion
+  id: totrans-99
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In today’s article, we explored some of the problems with multi-process code,
     such as the hassle of getting the results of each process and the inability to
     get the results in the order in which we execute the tasks.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 在今天的文章中，我们探讨了多进程代码的一些问题，比如获取每个进程结果的麻烦，以及无法按任务执行顺序获取结果的问题。
 - en: We also explored the feasibility of integrating asyncio with `ProcessPoolExecutor`
     and the advantages that such integration brings to us. For example, it unifies
     the API for concurrent and parallel programming, simplifies our programming process,
     and allows us to obtain execution results in order of completion.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还探讨了将asyncio与`ProcessPoolExecutor`集成的可行性以及这种集成给我们带来的优势。例如，它统一了并发和并行编程的API，简化了我们的编程过程，并允许我们按完成顺序获得执行结果。
 - en: Finally, we explain how we can alternate between concurrent and parallel programming
     techniques to help us execute our code efficiently in data science tasks through
     a real-world case study that exists.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们解释了如何通过一个实际案例，交替使用并发和并行编程技术，以帮助我们在数据科学任务中高效执行代码。
 - en: Due to the limited ability of individuals, there are inevitably few places in
     the case, so I welcome your comments and corrections so that we can learn and
     progress together.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于个人能力有限，难免有些地方存在不足，因此欢迎你的评论和修改，以便我们一起学习和进步。
 - en: 'In the following article, we will explore how to leverage the loop.run_in_execute
     API to spread many asyncio concurrent tasks across multiple CPU cores to unlock
     the CPU’s performance potential. Please click here to learn about:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的文章中，我们将深入探讨如何利用 loop.run_in_execute API 将多个 asyncio 并发任务分布到多个 CPU 核心，从而释放
+    CPU 的性能潜力。请点击这里了解：
 - en: '[](/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f?source=post_page-----15496ffe96b--------------------------------)
     [## Harnessing Multi-Core Power with Asyncio in Python'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f?source=post_page-----15496ffe96b--------------------------------)
+    [## 利用 Python 中的 Asyncio 发挥多核性能'
 - en: Boost your Python application’s performance by efficiently utilizing multiple
     CPU cores with asyncio
+  id: totrans-106
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过高效利用多个 CPU 核心来提升你的 Python 应用性能
 - en: towardsdatascience.com](/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f?source=post_page-----15496ffe96b--------------------------------)
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f?source=post_page-----15496ffe96b--------------------------------)
 - en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
     access to all of my posts and those of thousands of other authors. It only costs
     you the price of a cup of coffee, but it’s a great encouragement to me.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过[加入 Medium](https://medium.com/@qtalen/membership)，你将可以无限制地访问我的所有文章以及其他成千上万作者的文章。这只需要你花费一杯咖啡的钱，但对我来说是极大的鼓励。
 - en: 'This article was originally published at: [https://www.dataleadsfuture.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts/](https://www.dataleadsfuture.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts/)'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文最初发表于：[https://www.dataleadsfuture.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts/](https://www.dataleadsfuture.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts/)
