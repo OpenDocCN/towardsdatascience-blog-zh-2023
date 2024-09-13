@@ -1,40 +1,62 @@
 - en: Estimating Total Experimentation Impact
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 估算总体实验影响
 - en: 原文：[https://towardsdatascience.com/estimating-total-experimentation-impact-ab6cd56bffb](https://towardsdatascience.com/estimating-total-experimentation-impact-ab6cd56bffb)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/estimating-total-experimentation-impact-ab6cd56bffb](https://towardsdatascience.com/estimating-total-experimentation-impact-ab6cd56bffb)
 - en: How to control for false-discovery and selection biases when measuring your
     organization’s total impact
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何控制在衡量组织整体影响时的虚假发现和选择偏差
 - en: '[](https://dataneversleeps.medium.com/?source=post_page-----ab6cd56bffb--------------------------------)[![Jared
     M. Maruskin, PhD](../Images/771dcac046565d4760077afecb3fadef.png)](https://dataneversleeps.medium.com/?source=post_page-----ab6cd56bffb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab6cd56bffb--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ab6cd56bffb--------------------------------)
     [Jared M. Maruskin, PhD](https://dataneversleeps.medium.com/?source=post_page-----ab6cd56bffb--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://dataneversleeps.medium.com/?source=post_page-----ab6cd56bffb--------------------------------)[![贾雷德·M·马鲁斯金，博士](../Images/771dcac046565d4760077afecb3fadef.png)](https://dataneversleeps.medium.com/?source=post_page-----ab6cd56bffb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab6cd56bffb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ab6cd56bffb--------------------------------)
+    [贾雷德·M·马鲁斯金，博士](https://dataneversleeps.medium.com/?source=post_page-----ab6cd56bffb--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab6cd56bffb--------------------------------)
     ·16 min read·Sep 20, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab6cd56bffb--------------------------------)
+    ·阅读时间 16 分钟·2023年9月20日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/94df2a1643befd711d43b8bf8f43ca3d.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/94df2a1643befd711d43b8bf8f43ca3d.png)'
 - en: Photo by [CHUTTERSNAP](https://unsplash.com/@chuttersnap?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [CHUTTERSNAP](https://unsplash.com/@chuttersnap?utm_source=medium&utm_medium=referral)
+    提供，[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Introduction
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: Data-driven organizations often run hundreds or thousands of experiments at
     any given time, but what is the net impact of all of these experiments? A naive
     approach is to sum the difference-in-means across all experiments that resulted
@@ -43,47 +65,66 @@
     correlations between individual experiments. We will run a simulation of 10,000
     experiments and show that this naive approach overestimates the actual impact
     delivered by *45%*!
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据驱动的组织经常在任何给定时间进行数百或数千个实验，但所有这些实验的净影响是什么？一种简单的方法是将所有实验中显著且正面的处理效果的均值差异相加，并且这些实验已经投入生产。然而，这种估计可能极其有偏，即使我们假设各个实验之间没有相关性。我们将进行10,000个实验的模拟，并展示这种简单方法实际高估了影响
+    *45%*！
 - en: 'We review a theoretical bias correction formula, due to *Lee and Shen* [1].
     This approach, however, suffers from two defects: first, though it is theoretically
     unbiased, we show that its corresponding plug-in estimator nonetheless suffers
     from significant bias for similar reasons as the original problem. Second, it
     does not attribute impact to individual level experiments.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们回顾了一个理论偏差修正公式，由 *李和申* [1] 提出。然而，这种方法存在两个缺陷：首先，尽管它在理论上是无偏的，但我们表明其相应的插件估计器由于与原始问题类似的原因仍然存在显著偏差。其次，它未能将影响归因于个体级实验。
 - en: 'In this post, we explore two sources of bias:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们探讨了两个偏差来源：
 - en: '*False-discovery bias* — the estimate is inflated due to false positives;'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*虚假发现偏差* — 由于假阳性使估计值被夸大；'
 - en: '*Selection bias* — the estimate is inflated due to a bias introduced by the
     decision criterion: underestimates of the treatment effect are censored (false
     negatives), whereas overestimates are rewarded.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*选择偏差* — 由于决策标准引入的偏差使估计值被夸大：对处理效果的低估被审查（假阴性），而高估则被奖励。'
 - en: To address false discovery, we will construct a probability that a given result
     is actually non-zero. This probability is constructed by comparing the *p*-value
     density to the referred residual density from the true nulls.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决虚假发现问题，我们将构造一个概率，表示某一结果实际上为非零。这个概率是通过将 *p* 值密度与真实零假设的残差密度进行比较来构造的。
 - en: To address selection bias, we will compute a *posterior distribution* for each
     experimental result, using the empirical distribution, corrected for false discovery,
     as our prior.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决选择偏差，我们将为每个实验结果计算*后验分布*，使用经验分布作为我们的先验，并对假发现进行校正。
 - en: This process yields an accurate estimate of the average experimental impact
     across our simulated series of experiments, reducing the original *45%* error
     using the empirical measurements alone to a 0.4*%* error.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一过程提供了我们模拟系列实验中平均实验影响的准确估计，将仅使用经验测量得到的原始*45%*误差降低到0.4*%*误差。
 - en: The Effect Distribution
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 效应分布
 - en: 'So we’ve ran a bunch of experiments and want to quantify our total experimental
     impact delivered. To do this, we need to consider *the effect distribution*, or
     the distribution of treatment effects. To conceptualize this, imagine running
@@ -92,149 +133,212 @@
     *p*. Each experiment then estimates *θᵢ* through *Xᵢ* (which we may regard as
     the average difference-in-means)*.* We thus obtain the following model for our
     observations:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们进行了很多实验，并希望量化我们所传递的总实验影响。为此，我们需要考虑*效应分布*，即治疗效应的分布。为了使这一点更加清晰，可以想象进行许多实验。每个实验都有一个真实的效应值θ*ᵢ*，我们可以将其视为从某种真实效应分布*p*中抽取的随机变量。每个实验然后通过*Xᵢ*（我们可以视其为均值差异的平均值）来估计*θᵢ*。因此，我们得到如下的观察模型：
 - en: 'Here, *σᵢ² ~ 1/nₛ*, where *nₛ* is the sample size. We will consider the true
     effect distribution to be a mixture of three subpopulations: true nulls, positives,
     and negatives. To describe the effect distribution, we consider three parameters:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里，*σᵢ² ~ 1/nₛ*，其中*nₛ* 是样本大小。我们将真实效应分布视为三种子群体的混合：真实零效应、正效应和负效应。为了描述效应分布，我们考虑三个参数：
 - en: '*λ = P(θ != 0)* (*effectiveness*): the fraction of experiments with a nonzero
     effect,'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*λ = P(θ != 0)* (*有效性*): 具有非零效应的实验所占的比例，'
 - en: '*κ = P(θ > 0 | θ != 0)* (*asymmetry*): the fraction of experiments with positive
     effect, out of those that have a nonzero effect,'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*κ = P(θ > 0 | θ != 0)* (*不对称性*): 在具有非零效应的实验中，具有正向效应的实验所占的比例，'
 - en: '*ρ = P(θ > δ | θ > 0)* (*advantage*): the fraction of experiments with a *practically*
     significant effect (i.e., whose effect size is greater than *δ*), out of those
     that have a positive (significant) effect.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*ρ = P(θ > δ | θ > 0)* (*优势*): 在那些具有正向（显著）效应的实验中，*实际*显著效应（即效应值大于*δ*）的实验所占的比例。'
 - en: These parameters are illustrated in the figure below.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些参数在下图中进行了说明。
 - en: '![](../Images/019afe10fb49b721c056bb6c06e97033.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/019afe10fb49b721c056bb6c06e97033.png)'
 - en: 'Distribution of treatment effects: *(1-λ)* are null, κ λ are positive, and
     κ λ ρ are practically significant. Image by Author.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '治疗效应的分布: *(1-λ)* 为零，κ λ 为正，κ λ ρ 为*实际*显著。图像由作者提供。'
 - en: For newer products, it may be easy to come up with feature ideas that result
     in a significant effect, so that λ would be high. For mature products, however,
     it may be the case that it is very rare for an experiment to lead to a significant
     change, and *λ* would be low.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于较新的产品，可能容易提出产生显著效应的特性想法，因此λ会很高。然而，对于成熟的产品，实验导致显著变化的情况可能非常少见，*λ* 会较低。
 - en: Similarly, a given team might be very good at proposing product-change ideas
     that actually result in a *positive* effect, so that *κ > 1/2*, but another team
     might propose a bunch of bad ideas that result in performance loss, so that that
     the effects tend to be negative, so that *κ < 1/2*.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，一个团队可能非常擅长提出实际产生*正向*效应的产品改进想法，使得*κ > 1/2*，而另一个团队可能提出了一堆导致性能下降的糟糕想法，使得效应趋向于负向，从而*κ
+    < 1/2*。
 - en: Theoretical Bias Estimator
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 理论偏差估计器
 - en: Consider the random set *A* consisting of the positive significant results from
     a series of experiments, with decision criterion *X_i > c*. Define the total true
     and estimated effects as
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑随机集合*A*，其中包含一系列实验中的正向显著结果，决策标准为*X_i > c*。定义总的真实效应和估计效应为
 - en: 'The total expected bias can be described as *b = E[Sₐ— Tₐ].* If *Xᵢ ~ N(θᵢ,
     σᵢ)*, *Lee and Shen* [1] show that the total expected bias is given by:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 总期望偏差可以描述为*b = E[Sₐ— Tₐ]*。如果*Xᵢ ~ N(θᵢ, σᵢ)*，*Lee 和 Shen* [1] 显示总期望偏差为：
 - en: 'where *ϕ* is the density of the standard normal distribution. The details of
     this are further reviewed in [2]. There are two main drawbacks to this formula:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中*ϕ*是标准正态分布的密度。具体细节在[2]中进一步回顾。这个公式有两个主要缺点：
 - en: It relies on the true effects *θᵢ*. To actually use it, we must therefore replace
     the true effects with the observed effects, the so-called *plug-in estimator*.
     In our simulation, we show that the plug-in estimator can lead to a significantly
     biased estimate. (We will also show how to correct for this by taking into account
     false-discovery.)
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它依赖于真实效应*θᵢ*。因此，要实际使用它，我们必须用观察到的效应替换真实效应，即所谓的*插件估计器*。在我们的仿真中，我们展示了插件估计器可能导致显著偏差的估计。（我们还将展示如何通过考虑虚假发现来纠正这一点。）
 - en: The summation is over *all* experiments, not limited to those with a positive
     significant result. So even correcting for the first problem, it does not provide
     an estimate of impact at the individual experiment level, the so-called *attribution
     problem*.
+  id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 求和是针对*所有*实验的，不仅限于那些有显著正结果的实验。因此，即使纠正了第一个问题，它也无法提供个别实验水平的影响估计，即所谓的*归因问题*。
 - en: Simulating an Experimentation Platform
+  id: totrans-34
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 模拟实验平台
 - en: A Few Assumptions
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一些假设
 - en: 'Let’s start by making a few assumptions about the set of experiments we are
     analyzing:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们首先对我们分析的实验集做一些假设：
 - en: each experiment measures the difference-in-means for the same top-line metric
     (e.g., DAUs, time spent, revenue);
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个实验测量相同顶线指标的均值差异（例如DAUs、花费时间、收入）；
 - en: each experiment was run using the same significance level α and power β for
     effect size δ (which is the minimum effect that would be *practically significant*);
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个实验都使用相同的显著性水平α和效能β来计算效应大小δ（这是实际具有*实际意义*的最小效应）；
 - en: each experiment therefore has the same sample size *nₛ* and rejection criterion
     *Xᵢ > c*.
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 因此，每个实验具有相同的样本大小*nₛ*和拒绝标准*Xᵢ > c*。
 - en: 'For purposes of calculation, we will use *α = 0.05*, *β = 0.8* for effect size
     *δ = 0.1*, which yield *c* = 0.07 and *nₛ* = 785\. Note: we regard *α* as a two-sided
     significance. The actual significance for the positive test is *α/2.*'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了计算目的，我们将使用*α = 0.05*，*β = 0.8*来计算效应大小*δ = 0.1*，这将得到*c* = 0.07和*nₛ* = 785。注意：我们将*α*视为双侧显著性。实际的显著性对于正向测试是*α/2*。
 - en: Simulation in Python
+  id: totrans-41
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Python中的仿真
 - en: We next construct a simulated experimentation platform in Python, as shown below.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们在Python中构建一个模拟实验平台，如下所示。
 - en: '[PRE0]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We first assign *(1-λ)* of the experiments to have a true null effect.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先将*(1-λ)*的实验指定为真实的虚无效应。
 - en: For the remainder of experiments, we use a gamma distribution, ensuring that
     the survival function at *δ* is *ρ*.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于其余的实验，我们使用伽马分布，确保在*δ*处生存函数为*ρ*。
 - en: With the **PlatformSim** class, we can run a simulation with a few lines of
     code. We put the results into a dataframe **df**, and create a separate dataframe
     **dfs** for positive results. *Note:* this can be easily modified to model different
     distributions for the positive / negative wings. For the purpose of our simulation,
     however, we used a gamma random variable.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用**PlatformSim**类，我们可以用几行代码运行仿真。我们将结果放入数据框**df**中，并为正向结果创建一个单独的数据框**dfs**。*注意：*这可以很容易地修改为建模不同的正向/负向分布。然而，为了我们的仿真，我们使用了伽马随机变量。
 - en: '[PRE1]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Using our simulation, we can easily measure both the observed average treatment
     effect as well as the actual treatment effect, for experiments that had a significant
     and positive effect. In this simulation, the true average effect is *0.0792*,
     whereas our measured effect is *0.1132,* a +43% error! We also observe a false-discovery
     rate of 27%.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用我们的仿真，我们可以轻松地测量具有显著正效应的实验的观察到的平均处理效应和实际处理效应。在这个仿真中，真实的平均效应是*0.0792*，而我们测得的效应是*0.1132*，误差为+43%！我们还观察到27%的虚假发现率。
 - en: We also observe that the theoretical bias-correction formula works perfectly
     when using the true *θᵢ*s, with a 0.19% error, but fails when swapped for the
     plug-in estimator, which produces a 21% error. The theoretical estimator overcorrects
@@ -242,40 +346,56 @@
     bias formula picks up observations randomly scattered to the right, but not those
     scattered to the left, as the estimator value peaks for observed values near the
     decision boundary.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还观察到，当使用真实的*θᵢ*时，理论偏差修正公式的效果非常好，误差为0.19%，但当使用插件估计器时，效果不佳，产生了21%的误差。理论估计器对偏差进行了过度修正。这是由于真实的虚无效应数量庞大，并且偏差公式拾取了随机分布在右侧的观测值，但没有拾取左侧的观测值，因为估计器值在接近决策边界的观测值处达到峰值。
 - en: We can plot a histogram of the effect distribution. Below is a histogram of
     the true effects, with the positive test results highlighted in orange.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以绘制效应分布的直方图。下面是实际效应的直方图，正向测试结果用橙色突出显示。
 - en: '![](../Images/5157b96be91b93902aa7b770172307e6.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5157b96be91b93902aa7b770172307e6.png)'
 - en: Distribution of true effects, with orange representing the positive results.
     Image by Author.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 真实效应的分布，橙色代表正结果。图片来源于作者。
 - en: We notice there are a large number of false positives, much more than our *α/2
     = 2.5%* positive significance level. The fraction of false positives to overall
     positives is known as the *false discovery rate*, and we will discuss how to estimate
     it and adjust for it momentarily.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们注意到有大量假阳性，远远超过我们的*α/2 = 2.5%*显著性水平。假阳性与总体阳性的比例称为*假发现率*，我们将讨论如何估计和调整它。
 - en: 'Now, when conducting a series of experiments, one would not have access to
     this true distribution of treatment effects, but instead only to the distribution
     of *observed* treatment effects, which is plotted below. Here, we highlight those
     experiments in which the true effect actually was positive in orange. This view
     gives us insight into the second type of bias we must address: *selection bias*.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，在进行一系列实验时，我们无法获得这种真实的治疗效应分布，而只能获得*观察到的*治疗效应分布，如下图所示。在这里，我们用橙色突出显示那些实际具有正效应的实验。这一视角使我们深入了解第二种我们必须解决的偏差类型：*选择偏差*。
 - en: '![](../Images/712c4eeb58b66369c6130b7e9bc40bd4.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/712c4eeb58b66369c6130b7e9bc40bd4.png)'
 - en: Distribution of measured effects, with orange representing the experiments for
     which there actually was an effect. The decision boundary is represented by the
     dashed vertical line. Image by Author.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 测量效应的分布，橙色代表实际存在效应的实验。决策边界由虚线垂直线表示。图片来源于作者。
 - en: 'To understand selection bias, consider that the *false negatives* have true
     effects to the right of the vertical dashed line. For every experiment scattered
     to the left, one will be scattered to the right. So the false negatives may be
@@ -286,79 +406,107 @@
     effect, and ignoring the observations that have a lower effect. All of the false
     negatives highlighted in the above figure “balance out’’ with a true positives
     whose measured effect is inflated.'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了理解选择偏差，考虑到*假阴性*的真实效应在垂直虚线的右侧。对于每个散布在左侧的实验，将有一个散布在右侧。因此，假阴性可以被视为对实际阳性的过高估计。选择过程本身因此产生了一种偏差：只有当观察到的效应大于*c*时，我们才会将结果视为统计显著。因此，我们选择那些随机具有比其真实效应更高效应的观察结果，而忽略了那些效应较低的观察结果。上述图中突出显示的所有假阴性“平衡”了测量效应被夸大的真正阳性。
 - en: False Discovery
+  id: totrans-58
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 假发现
 - en: In this section, we discuss some theoretical relationships between *λ*, *κ*,
     power, and the false-discovery rate. We will use these in our simulation later
     in this note.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，我们讨论*λ*、*κ*、功效和假发现率之间的一些理论关系。我们将在本说明中的模拟中使用这些关系。
 - en: Estimating *λ* and *κ*
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 估计*λ*和*κ*
 - en: In order to estimate the false-discovery rate using the observational data that
     would be available in practice, we need to first estimate the population parameters
     *λ* and *κ*.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使用实践中可用的观察数据来估计假发现率，我们首先需要估计总体参数*λ*和*κ*。
 - en: To estimate *λ*, we consider the fraction *f* of experiments that led to statistically
     significant results. These consist of true positives and false positives . Of
     the *(1-λ)* experiments with no effect, we expect *α (1 — λ)* to produce false
     positives. Of the *λ* experiments with an actual effect, we expect *βₐ λ* to produce
     true positives, where *βₐ* is the average power over this set of experiments.
     The expected fraction of significant results is therefore given by
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 要估计*λ*，我们考虑导致统计显著结果的实验的比例*f*。这些包括真正的阳性和假阳性。在*(1-λ)*没有效应的实验中，我们期望*α (1 — λ)*产生假阳性。在*λ*具有实际效应的实验中，我们期望*βₐ
+    λ*产生真正的阳性，其中*βₐ*是这组实验的平均功效。因此，显著结果的预期比例由以下公式给出
 - en: which may be rearranged to produce the estimate
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以重新排列以生成估计值
 - en: where *βₐ* is the average power of the observed significant results. (I used
     β^* in displayed equations for βₐ, but they are the same.)
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中*βₐ*是观察到的显著结果的平均功效。（我在显示的方程中使用了β^*表示βₐ，但它们是相同的。）
 - en: Estimating False-Discovery Rate
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 估计假发现率
 - en: The *false-discovery rate* (FDR) is the fraction of positive results that are
     false positives. We observed a 27% false-discovery rate in our simulation.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
 - en: To estimate this, we will need the *average positive power*
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: Here, *β(θ) = P(X > c | θ)* is the probability of observing a positive significant
     effect, given *θ*. For the following, we will assume the average negative power
     *β₋* is negligible.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
 - en: The FDR can be expressed using Bayes’ law by the relation
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: We will later use this formula to obtain an estimate of 27.6% for our false
     discovery rate. The approximate equality reminds us that we are ignoring the power
     of the negative distribution, which in our simulation is negligible.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
 - en: Density Estimates and *p-probability*
+  id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'We next explore a method that can adjust for false-discovery bias using a two-step
     approach:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
 - en: determine the probability that each positive result is a true positive;
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: compute the discounted average treatment effect, where we discount each experiment’s
     effect by the probability that it is a false positive.
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -367,19 +515,23 @@
     *p*-values under the null hypothesis is a uniform distribution. This is evident
     in below figure, which represents a histogram of all our *p*-values, highlighting
     the *p*-values corresponding to actual nulls in orange.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/1067ac954f092c632b035f3ade051afe.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
 - en: Histogram of p-values; p-values of actual nulls are plotted in orange. Image
     by Author.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
 - en: Let *f(p)* be the observed probability density of *p*-values, and let *fₐ* represent
     the average probability density of *p*-values over the half-interval *[0.5, 1]*.
     We may infer that *fₐ* is the average probability density of the true nulls, which
     is constant over the full interval *[0, 1]*.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: 'In terms of *p*-values, we reject the null hypothesis whenever *p < α = 0.05*.
@@ -389,14 +541,17 @@
     we define as the *p*-*probability*. Note that this definition is two-sided: a
     large positive or negative observation will have equivalent *p*-probabilities,
     depending only on the magnitude of the effect.'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
 - en: Empirical Density Function
+  id: totrans-80
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: In order to implement this, we need an empirical density estimate. The standard
     go-to is the *binned density estimate*, defined by
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: 'where the *i*th bin is defined by *b_i = [i h , (i+1)h)*, for *i=0, n_b-1*,
@@ -406,163 +561,241 @@
     probability near the boundary *p=0*. The bin size must be sufficiently small to
     capture the near-zero behavior, which leads to a suboptimal estimate for the rest
     of the unit interval, with high variance.'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中，第*i*个区间由*b_i = [i h , (i+1)h)*定义，*i=0, n_b-1*，*h=1/n_b*是区间宽度。区间大小受到偏差-方差权衡的影响：如果区间大小太小，会有高方差；但如果区间大小太大，会有高偏差。这个估计的问题是概率在边界*p=0*附近有一个峰值。区间大小必须足够小以捕捉接近零的行为，这会导致对单位区间其余部分的次优估计，且方差较高。
 - en: We therefore propose an alternate empirical density, which we call the *nearest-neighbors
     density estimate:*
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们提出了一种替代的经验密度，我们称之为*最近邻密度估计*：
 - en: Here, NN*ₖ(x)* represents the *k* “nearest neighbors” to *x* in the set *{X₁,
     … Xₙ}*, and range represents the difference between the max and min of a set.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，NN*ₖ(x)*表示集合*{X₁, … Xₙ}*中距离*x*最近的*k*个“邻居”，范围表示集合的最大值和最小值之间的差异。
 - en: The binned estimate holds the bin sized constant and measures the variable count
     of data points within each bin, whereas the nearest-neighbors estimate holds the
     count fixed and measures the variable bin size.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 分箱估计保持区间大小不变，并测量每个区间内的数据点数量，而最近邻估计保持数量固定，并测量可变的区间大小。
 - en: In order to achieve this in code, we compute the nearest-neighbors density of
     *p*-values on a grid over *[0, 1]* with intervals of 0.001\. This is achieved
     in the code below.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在代码中实现这一点，我们计算了*p*值在* [0, 1]*区间上以0.001间隔的最近邻密度。这在下面的代码中实现。
 - en: '[PRE2]'
+  id: totrans-87
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The numerically computed density function is plotted in the figure below, along
     with a normalized histogram of *p*-values.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 数值计算得到的密度函数在下图中绘制，并附有*p*值的归一化直方图。
 - en: '![](../Images/ec8e22e6af95dd7d42daa3a9d9a4d1fc.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ec8e22e6af95dd7d42daa3a9d9a4d1fc.png)'
 - en: Histogram of p-values; empirical nearest-neighbors density function. Image by
     Author.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '*p*值的直方图；经验最近邻密度函数。图片作者提供。'
 - en: Estimating False Discovery Rate
+  id: totrans-91
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 估计假发现率
 - en: Now we use our *p*-probabilities to estimate the false discovery rate, using
     the calculations from earlier, as shown below.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们使用我们的*p*概率来估计假发现率，使用之前的计算，如下所示。
 - en: '[PRE3]'
+  id: totrans-93
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: This results in an estimated false-discovery rate of 27.6%, compared to an actual
     true rate of 27.0%.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 这导致估计的假发现率为27.6%，而实际的真实率为27.0%。
 - en: Correcting Impact Estimates for False Discovery
+  id: totrans-95
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 纠正假发现的影响估计
 - en: We may also use our *p*-probabilities to control for false discovery.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以使用我们的*p*概率来控制假发现。
 - en: '[PRE4]'
+  id: totrans-97
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Here, we recompute the theoretical bias estimate, weighting each observation
     by its corresponding *p*-probability, yielding an approximate impact with a 3.6%
     error. (Much better than the earlier uncorrected estimate!) It also substantially
     improves our empirical observed impact estimate, which now results in only a 13.3%
     error.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们重新计算了理论偏差估计，通过将每个观测值按其对应的*p*概率加权，得到一个误差为3.6%的近似影响。（比之前未经修正的估计好得多！）这也大大改进了我们的经验观察影响估计，现在的误差仅为13.3%。
 - en: Selection Bias
+  id: totrans-99
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 选择偏差
 - en: Calibration for True Positives
+  id: totrans-100
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 真实正例的校准
 - en: To get a sense for what is causing the selection bias, we can bin the data by
     observed impacts *X*, filter for true positives, and plot the actual impacts within
     each bin. This is shown in the calibration plot below.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了了解导致选择偏差的原因，我们可以按观察到的影响*X*对数据进行分箱，过滤真实正例，并绘制每个区间内的实际影响。这在下面的校准图中显示。
 - en: '![](../Images/7ff9a36eb039554681737f76d0ac0ee1.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7ff9a36eb039554681737f76d0ac0ee1.png)'
 - en: Theoretical (blue) and observed (red) average impacts, filtered for true positives,
     and binned by observed difference-in-means. Image by Author.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 理论（蓝色）和观察（红色）平均影响，经过真实正例过滤，并按观察到的均值差异分箱。图片作者提供。
 - en: Posterior Estimates
+  id: totrans-104
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 后验估计
 - en: 'Given the population, it is no longer true that the expected value of *θᵢ*
     is the observed mean *Xᵢ*. To account for the population effect, we will instead
     consider the *posterior effect distribution* for each individual experiment *P(θᵢ
     | Xᵢ)*. For the *prior,* we will just use the best thing we have: the empirical
     distribution, adjusted for the *p*-probabilities:'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定总体，*θᵢ*的期望值不再是观察到的均值*Xᵢ*。为了考虑总体效应，我们将改为考虑每个单独实验的*后验效应分布* *P(θᵢ | Xᵢ)*。对于*先验*，我们将仅使用我们所拥有的最佳信息：调整过的*p*概率的经验分布。
 - en: where *πᵢ* is the *p*-probability for the *i*th experiment. We therefore weight
     each observation point with the probability that it represents a true non-null,
     and then coalesce the probabilities of null across all experiments at the origin.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中*πᵢ*是第*i*个实验的*p*概率。因此，我们对每个观察点进行加权，以反映其作为真实非零结果的概率，然后将所有实验的零概率在原点合并。
 - en: The posterior distribution of *θ* for the *i*th experiment can be expressed
     as
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '*θ*的后验分布对于第*i*个实验可以表示为'
 - en: where *nₛ* is the sample size for that experiment. (Recall *Xᵢ* is the *average*
     over a sample of size *nₛ*.)
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中*nₛ*是该实验的样本大小。（回忆一下*Xᵢ*是样本大小*nₛ*上的*平均值*。）
 - en: We can operationalize these formula in the EffectDistribution class, shown below.
     The __init__ method computes the prior, and the getUpdate method returns the posterior.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以在EffectDistribution类中实现这些公式，如下所示。__init__方法计算先验，而getUpdate方法返回后验。
 - en: '[PRE5]'
+  id: totrans-110
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: We can now run through all of our positive significant results, computing both
     the new expected impact as well as a random sample from the posterior distribution,
     for each.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以遍历所有正显著结果，为每个结果计算新的预期影响以及来自后验分布的随机样本。
 - en: '[PRE6]'
+  id: totrans-112
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: We call this procedure the *posterior-effect impact estimate*, as it is based
     on the posterior distribution for each individual experiment. Our final corrected
     estimate shows a 0.39% error, though the bootstrap confidence bounds are (-3.3%,
     4.0%). The bootstrap sample is shown below.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们称这一过程为*后验效应影响估计*，因为它基于每个单独实验的后验分布。我们的最终校正估计显示0.39%的误差，尽管自助法置信区间为（-3.3%，4.0%）。自助样本如下面所示。
 - en: '![](../Images/8537e71911317983c73d2317271bbaa9.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8537e71911317983c73d2317271bbaa9.png)'
 - en: Posterior-Effect Bootstrap Estimate. Image by Author.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 后验-效应自助法估计。图片由作者提供。
 - en: 'Moreover, we can look at the overall final calibration plot (not filtered for
     true positives!):'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们可以查看整体最终校准图（未筛选真实正例！）：
 - en: '![](../Images/bcf9b9d1cc21e8e34ba3fe61e3f6dfef.png)'
+  id: totrans-117
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bcf9b9d1cc21e8e34ba3fe61e3f6dfef.png)'
 - en: Calibration plot, showing posterior-effect estimates (blue) and actual impacts
     (red), binned by observed values. Diagonal dashed line represents the uncorrected
     estimates X=X. Image by Author.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 校准图，显示了后验效应估计（蓝色）和实际影响（红色），按观察值进行分箱。对角线虚线表示未经校正的估计X=X。图片由作者提供。
 - en: Conclusion
+  id: totrans-119
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: When running a large series of experiments, the true total impact is often biased
     due to *false discovery* and *selection*.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 在进行一系列大规模实验时，由于*虚假发现*和*选择*，真实的总体影响往往会有所偏差。
 - en: In addition, we saw that these biases are worsened by high fraction *λ* of true
     nulls*.* This shows that it is crucial to run *high-quality* experiments that
     have a greater chance of actually making a meaningful impact. The *run-everything-you-can-think-of-and-see-what-sticks*
@@ -570,47 +803,69 @@
     This challenge is harder for more mature products, where it is difficult to come
     up with new meaningful ideas, than newer products, where many changes may lead
     to product improvements.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们发现这些偏差在真实零结果的高比例*λ*下会加剧。这表明运行*高质量*实验至关重要，这些实验更有可能真正产生有意义的影响。另一方面，*试验你能想到的一切，看看什么有效*的方法会导致高虚假发现率和高偏差。这一挑战对于较成熟的产品来说更难，因为很难提出新的有意义的想法，而对于较新的产品来说，许多变化可能会带来产品改进。
 - en: 'In order to correct for these, one must account for the *totality* of all experiments
     ran, in a two-step process:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了纠正这些偏差，必须在两步过程中考虑所有实验的*总体*。
 - en: Calculate the probability that each experiment is actually a non-null result,
     using the *p*-values.
+  id: totrans-123
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用*p*值计算每个实验实际上是非零结果的概率。
 - en: Compute the posterior distribution of the effect for each positive significant
     result, using the *p*-probability corrected empirical distribution (of all results)
     as the prior.
+  id: totrans-124
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用*p*概率校正的经验分布（所有结果）作为先验，计算每个正显著结果的效应的后验分布。
 - en: In our simulation, the naive observed average impact resulted in a 45% error
     compared to the true effect; correction for the *p-*probabilities reduced this
     error to 13%, and the final posterior estimates further reduced the error to sub
     1%, with a confidence interval of ±3%.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的模拟中，简单观察的平均影响与真实效应相比产生了45%的误差；对*p-*概率的校正将此误差降低到13%，而最终的后验估计将误差进一步降低到1%以下，置信区间为±3%。
 - en: Additional Reading
+  id: totrans-126
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 额外阅读
 - en: For a more mathematical approach to this problem, check out [1]. This paper
     gives an explicit formula that corrects for overall bias in measuring the impact.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 如需更数学化的方法，请查看[1]。该论文提供了一个明确的公式，用于修正测量影响时的总体偏差。
 - en: '[1] M.R. Lee and M. Shen, [Winner’s curse: bias estimation for total effects
     of features in online controlled experiments](https://dl.acm.org/doi/10.1145/3219819.3219905)
     (2018), KDD 18: Proceedings of the 24th ACM SIGKDD International Conference on
     Knowledge Discovery & Data Mining, July 2018, p. 491–499'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] M.R. Lee 和 M. Shen，[赢家的诅咒：在线控制实验中特征总效应的偏差估计](https://dl.acm.org/doi/10.1145/3219819.3219905)（2018），KDD
+    18: 第24届ACM SIGKDD国际知识发现与数据挖掘大会论文集，2018年7月，第491–499页'
 - en: '[2] M. Berk, [How to Measure Your Team’s A/B Testing Impact](https://medium.com/towards-data-science/how-to-measure-your-teams-a-b-testing-impact-f74c6f2b4660)
     (2021), *Towards Data Science,* June 2021.'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] M. Berk，[如何衡量团队的A/B测试影响](https://medium.com/towards-data-science/how-to-measure-your-teams-a-b-testing-impact-f74c6f2b4660)（2021），*Towards
+    Data Science,* 2021年6月。'
 - en: '*Unless otherwise noted, all images by the Author.*'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: '*除非另有说明，所有图片均由作者提供。*'
