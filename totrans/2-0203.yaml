@@ -1,788 +1,1206 @@
 - en: A Guide to Using Window Functions in BigQuery
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用BigQuery的窗口函数指南
 - en: 原文：[https://towardsdatascience.com/a-guide-to-using-window-functions-4b2768f589d9](https://towardsdatascience.com/a-guide-to-using-window-functions-4b2768f589d9)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/a-guide-to-using-window-functions-4b2768f589d9](https://towardsdatascience.com/a-guide-to-using-window-functions-4b2768f589d9)
 - en: Create running totals, moving averages and rankings with ease in BigQuery.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在BigQuery中轻松创建累计总数、移动平均和排名。
 - en: '[](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)[![Tom
     Ellyatt](../Images/8756acdd11fef8db9a868820251e7575.png)](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)
     [Tom Ellyatt](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)[![Tom
+    Ellyatt](../Images/8756acdd11fef8db9a868820251e7575.png)](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)
+    [Tom Ellyatt](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)
     ·16 min read·Jul 21, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)
+    ·16分钟阅读·2023年7月21日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/e881dc2a741d886c4abc1ac4ba0686bf.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e881dc2a741d886c4abc1ac4ba0686bf.png)'
 - en: Photo by [Benjamin Voros](https://unsplash.com/@vorosbenisop?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 [Benjamin Voros](https://unsplash.com/@vorosbenisop?utm_source=medium&utm_medium=referral)
+    拍摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: If you’ve ever searched for or stumbled upon something like ‘*6 SQL skills you
     need to know to ace that interview*’ or perhaps ‘*SQL concepts I wish I knew years
     ago*’. Chances are, window functions get their well-deserved mention somewhere
     in that list.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你曾经搜索过或偶然发现过类似于‘*你需要知道的6个SQL技能，以通过面试*’或‘*我希望早几年知道的SQL概念*’这样的内容，窗口函数很可能在那个列表中获得了应有的提及。
 - en: Window functions are fantastic.
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 窗口函数非常棒。
 - en: My goal for this article is to help you understand these window functions and
     how to use them. Once we’ve covered the tutorial, I’ve prepared a few use cases
     you can run in your project to play around with, as I’ve used public data for
     these examples.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我写这篇文章的目标是帮助你理解这些窗口函数以及如何使用它们。一旦我们完成了教程，我准备了一些用例，你可以在你的项目中运行这些用例进行尝试，因为我在这些示例中使用了公开数据。
 - en: 'We will cover:'
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 我们将涵盖：
 - en: '**What is a** **window function?**'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**什么是** **窗口函数？**'
 - en: The **syntax of a window function** — namely the partition, order by and frame
     parts
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**窗口函数的语法** — 即分区、排序和框架部分'
 - en: A close look at how you can create a 7-day moving average and how it works
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 详细了解如何创建7天的移动平均以及它是如何工作的
 - en: What **aggregate** and **window functions** are at your disposal?
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你可以使用的**聚合**和**窗口函数**是什么？
 - en: Finally, we’ll run through a few use cases to demonstrate how window functions
     can be applied.
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，我们将演示一些用例，以展示窗口函数如何应用。
 - en: What **is** a window function?
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**什么是** 窗口函数？'
 - en: 'The term ‘window’ may seem strange to use in SQL *(or computing in general)*.
     Usually, the name of the function type gives you a glimpse of how they can be
     used, such as:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: ‘窗口’这个词在SQL中使用可能看起来很奇怪（*或在计算中一般*）。通常，函数类型的名称会让你对其使用方式有个初步了解，例如：
 - en: '**Aggregate Functions** — take a bunch of things and give you one result that
     summarises them all'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**聚合函数** — 处理一堆数据并给出总结结果'
 - en: '**String Functions** — toolbox full of methods to manipulate words and sentences'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**字符串函数** — 一个包含处理单词和句子的工具箱'
 - en: '**Array Functions** — work with a collection or group of items all at once'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**数组函数** — 一次性处理一组项目'
 - en: And so on…
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 等等…
 - en: '![](../Images/124972bd1841e122622cafd4a7cb4cc4.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/124972bd1841e122622cafd4a7cb4cc4.png)'
 - en: Photo by [Cosmic Timetraveler](https://unsplash.com/@cosmictimetraveler?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 [Cosmic Timetraveler](https://unsplash.com/@cosmictimetraveler?utm_source=medium&utm_medium=referral)
+    拍摄于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: So what is a window function in SQL? Much like a window in the real world, it
     allows you to view a particular area while the rest remains out of sight. You’re
     focused solely on what’s being shown through the window.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么SQL中的窗口函数是什么？就像现实世界中的窗户一样，它允许你查看特定区域，而其余部分则不在视线范围内。你只关注窗户中显示的内容。
 - en: Returning to the world of data, let’s say you have a table containing monthly
     sales for liquor stores in IOWA.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 回到数据的世界，假设你有一个包含IOWA酒类店每月销售的表格。
 - en: The dataset used in this example is publicly accessible, provided by Google
     and already exists in BigQuery if you want to try these examples yourself.
+  id: totrans-27
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这个示例中使用的数据集是公开访问的，由Google提供，并且在BigQuery中已存在，如果你想自己尝试这些示例。
 - en: ([link](https://console.cloud.google.com/marketplace/product/iowa-department-of-commerce/iowa-liquor-sales?pli=1)
     (CC0 license))
+  id: totrans-28
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: ([link](https://console.cloud.google.com/marketplace/product/iowa-department-of-commerce/iowa-liquor-sales?pli=1)
+    (CC0 license))
 - en: '`bigquery-public-data.iowa_liquour_sales.sales`'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '`bigquery-public-data.iowa_liquour_sales.sales`'
 - en: The example below provides a simple view of sales by year and month.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下示例提供了按年份和月份销售的简单视图。
 - en: '![](../Images/355551bd99f2282322cfce2833435c68.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/355551bd99f2282322cfce2833435c68.png)'
 - en: I’ve saved the above as a view to keep our future queries as minimal as we can
     to focus on applying window functions.
+  id: totrans-32
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我将上述内容保存为视图，以便将来我们的查询尽可能简洁，专注于应用窗口函数。
 - en: If you want to use this view, you can use `spreadsheep-20220603.Dashboard_Datasets.iowa_liqour_monthly_sales`.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想使用这个视图，可以使用`spreadsheep-20220603.Dashboard_Datasets.iowa_liqour_monthly_sales`。
 - en: What if we also want the monthly average for each year as a separate column?
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们还想要每年的月平均值作为单独的列怎么办？
 - en: There are a few ways to achieve this, and if you’re new to window functions,
     you might try calculating the average as a sub-query and then joining to the original
     table, like below.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 有几种方法可以实现这一点，如果你对窗口函数不熟悉，可以尝试先计算平均值作为子查询，然后再与原始表连接，如下所示。
 - en: '![](../Images/5483e3292b9fbe584944a59fbb1b13f3.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5483e3292b9fbe584944a59fbb1b13f3.png)'
 - en: This works perfectly fine, but a window function will allow you to reach the
     same answer **without a sub-query!**
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这完全可以正常工作，但窗口函数将允许你在**没有子查询**的情况下得到相同的答案！
 - en: '![](../Images/241cec270d76d3f1c68f63f7cf30833c.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/241cec270d76d3f1c68f63f7cf30833c.png)'
 - en: The window function above allows us to perform an aggregate function, in this
     case, the **avg** function, over a specific group of rows defined by **partition
     by year.**
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述窗口函数允许我们对**partition by year**定义的特定行组执行聚合函数，这里是**avg**函数。
 - en: Thinking back to the window analogy earlier, the *partition by* part is our
     window in that scenario. Sure, we have the entire dataset in front of us, but
     the partition limits our view to just the year.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 回顾之前的窗口类比，*partition by*部分就是我们在这种情况下的窗口。确实，我们面前有整个数据集，但分区限制了我们的视图仅限于年份。
 - en: Time to dive into the syntax.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 是时候深入研究语法了。
 - en: '![](../Images/ed424eeb31d664fc70e4c0ff979ba791.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ed424eeb31d664fc70e4c0ff979ba791.png)'
 - en: Window Syntax
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 窗口语法
 - en: In the example above, we can split the function into two parts, the function
     name and the window.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的示例中，我们可以将函数拆分为两个部分：函数名和窗口。
 - en: In this scenario, the function name is the familiar aggregate function called
     **AVG**. The window part, however, is a little different.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，函数名是熟悉的聚合函数**AVG**。然而，窗口部分则有所不同。
 - en: Once you’ve specified your function, you start your window function with the
     **over** keyword, which must then be followed by parenthesis ().
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦你指定了你的函数，你需要使用**over**关键字开始你的窗口函数，后面必须跟上圆括号()。
 - en: '![](../Images/6576ec6fcf2c81ff578026e8fa53f7d0.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6576ec6fcf2c81ff578026e8fa53f7d0.png)'
 - en: Inside the parenthesis, you can specify what window we want to perform the aggregate
     using the **partition by** keyword, followed by a list of columns you wish to
     include in your window. Here, we’ve only included one column, **year,** but later
     we will bring another column into the mix.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在圆括号内，你可以使用**partition by**关键字指定我们想要执行聚合的窗口，后跟你希望包括在窗口中的列列表。在这里，我们只包含了一列**year**，但稍后我们将引入另一列。
 - en: '**Partition by is optional**; if you don’t include a **partition by**, the
     aggregate will consist of all rows in your dataset. As this exists in the SELECT
     statement, it’s worth noting that the WHERE clause will be actioned before this
     window function.'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Partition by是可选的**；如果你不包括**partition by**，聚合将包含数据集中的所有行。由于这存在于SELECT语句中，值得注意的是WHERE子句会在此窗口函数之前执行。'
 - en: What do I mean by this? Using the example I shared earlier, I specified a window
     by using **partition by year**. However, in my **WHERE clause,** I have a filter
     set only to return rows where the **year = 2022**.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 我这是什么意思？使用我之前分享的示例，我通过**按年分区**来指定窗口。然而，在我的**WHERE 子句**中，我设置了一个仅返回**年份 = 2022**的过滤器。
 - en: This means the dataset only has one year in view — 2022, when the window function
     runs. Therefore my **partition by year window is redundant,** and using the line
     below would give the same result in this scenario.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着数据集中只有一个年份——2022，当窗口函数运行时。因此，我的**按年分区窗口是多余的**，在这种情况下使用下面的行会得到相同的结果。
 - en: '![](../Images/bdfe8b2a5d9507740ddb2520cf4fa0b8.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bdfe8b2a5d9507740ddb2520cf4fa0b8.png)'
 - en: Let’s re-run our query earlier and, this time, remove our WHERE clause.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们重新运行之前的查询，这次去掉我们的 WHERE 子句。
 - en: '![](../Images/f1edde0974c55fe87d072c1d97317dd0.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f1edde0974c55fe87d072c1d97317dd0.png)'
 - en: Photo by [Nik](https://unsplash.com/@helloimnik?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Nik](https://unsplash.com/@helloimnik?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Here we can see different values for 2023 and 2022\. This is now showing the
     average monthly sales for each of the years offered.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里我们可以看到2023年和2022年的不同值。这现在显示了每一年提供的平均月销售额。
 - en: For example, in **line 7,** we have **2022** with **average monthly sales of
     35.7 million**, while the **average monthly sales for 2023 (so far) is 35.8 million**.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，在**第7行**，我们有**2022年**，其**平均月销售额为3570万**，而**2023年（至今）的平均月销售额为3580万**。
 - en: '![](../Images/57ad70ec62e55a26bece3f1c3384d864.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/57ad70ec62e55a26bece3f1c3384d864.png)'
 - en: Amending the report to focus on 2022 alone, we can cleanly visualise the monthly
     average revenue for the year to the actuals.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 将报告修改为仅关注2022年，我们可以清晰地可视化该年度的月度平均收入与实际情况的对比。
 - en: Accessing the monthly average data makes it easier to visualise and analyse
     sales trends. Specifically, it becomes evident that the year’s second half contributes
     significantly to sales.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 访问月度平均数据使得可视化和分析销售趋势变得更容易。具体来说，明显可以看出，年度的下半年对销售有显著贡献。
 - en: We used a window function to determine the average monthly sales for each year.
     Then, this function applied the result to all rows with that year. It’s like a
     left-join sub-query that we saw earlier.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用了一个窗口函数来确定每年的平均月销售额。然后，这个函数将结果应用于所有具有该年份的行。这就像我们之前看到的左连接子查询。
 - en: '![](../Images/468939b39525889d21c5d78895c4c801.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/468939b39525889d21c5d78895c4c801.png)'
 - en: Photo by [Daniel K Cheung](https://unsplash.com/fr/@danielkcheung?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Daniel K Cheung](https://unsplash.com/fr/@danielkcheung?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: '**Order By**'
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**Order By**'
 - en: We’ve focused mainly on aggregate functions and how to specify the window so
     far. We can also determine the order the window should carry out its task, which
     is a key part of ranking or running total/average solutions.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 迄今为止，我们主要关注了聚合函数和如何指定窗口。我们还可以确定窗口应该如何执行任务，这是一部分排名或运行总计/平均值解决方案的关键。
 - en: Returning to the Iowa dataset, let’s expand our view to include store_name and
     then give stores a numbered monthly ranking based on their total sales.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 返回到 Iowa 数据集，让我们扩展视图以包括 store_name，然后根据总销售额给商店一个编号的月度排名。
 - en: New View
+  id: totrans-67
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 新视图
 - en: spreadsheep-20220603.Dashboard_Datasets.iowa_liqour_monthly_sales_inc_store
+  id: totrans-68
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: spreadsheep-20220603.Dashboard_Datasets.iowa_liqour_monthly_sales_inc_store
 - en: Unlike aggregates, for the rank function, which is exclusive to window functions,
     you don’t specify a column inside the function itself.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 与聚合函数不同，对于专门用于窗口函数的排名函数，你不会在函数内部指定列。
 - en: '![](../Images/9aec38fbb3c644006f95d25c2190fb85.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9aec38fbb3c644006f95d25c2190fb85.png)'
 - en: However, if you try and run this as shown above, you’ll be greeted by an error.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，如果你尝试按照上述方式运行，你会遇到一个错误。
 - en: '![](../Images/5f1210d976d25c820ad962c14c436839.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5f1210d976d25c820ad962c14c436839.png)'
 - en: The issue here is we’ve told Bigquery we want to rank our results, but we haven’t
     specified how they should be ranked, which we can achieve using **ORDER BY**.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的问题是我们告诉 Bigquery 我们想对结果进行排序，但我们没有指定排序方式，这可以通过**ORDER BY**来实现。
 - en: '![](../Images/f6b27be18dca7d9773e2741a4bd6319c.png)![](../Images/d17df45dc93f434430ace8de8051b988.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f6b27be18dca7d9773e2741a4bd6319c.png)![](../Images/d17df45dc93f434430ace8de8051b988.png)'
 - en: This gives us a view of monthly sales on a store level, with a ranking for each
     store. You can then take this further and answer other questions, such as *What
     were the top 3 stores for each month in 2022*?
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这为我们提供了一个按商店级别的月度销售视图，并且每个商店都有一个排名。你可以进一步分析，回答其他问题，比如*2022年每个月的前三大商店是哪三家*？
 - en: In one of the examples towards the end of this article, we’ll use a new clause
     called **QUALIFY**, which allows you to filter on results given by window functions
     easily.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文接近尾声的一个例子中，我们将使用一个新的子句，**QUALIFY**，它可以让你轻松地过滤窗口函数给出的结果。
 - en: So far, our window functions have applied to all rows in each partition, but
     what if we only want a subset of the partition? For example, the average daily
     sales for the last seven days? For this, we need to specify a window frame.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们的窗口函数已应用于每个分区中的所有行，但如果我们只想要分区的一个子集呢？例如，过去七天的每日销售平均值？为此，我们需要指定一个窗口帧。
 - en: Window Frame
+  id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 窗口帧
 - en: Time to pull in a new dataset, introducing **Chicago taxies**! This is another
     public dataset (CC0 license) you can use to experiment. ([link](https://console.cloud.google.com/marketplace/product/city-of-chicago-public-data/chicago-taxi-trips?project=spreadsheep-20220603))
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在引入一个新的数据集，介绍**芝加哥出租车**！这是另一个你可以用来实验的公共数据集（CC0许可证）。([link](https://console.cloud.google.com/marketplace/product/city-of-chicago-public-data/chicago-taxi-trips?project=spreadsheep-20220603))
 - en: '[PRE0]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The public dataset is large at 75GB, quickly eating into your free 100GB monthly
     query allowance. Therefore, I’ve created a new table that only holds data from
     2023, so we can play around with the data without racking up a hefty bill.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个公共数据集很大，达到75GB，很快就会消耗掉你每月100GB的免费查询配额。因此，我创建了一个只包含2023年数据的新表，这样我们可以在不产生高额费用的情况下玩转数据。
 - en: I’ve made this table public, so I recommend you try my dataset for testing.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已经将这个表公开，所以我建议你尝试使用我的数据集进行测试。
 - en: '[PRE1]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Anyway, back to the subject…what is a window frame? This clause allows us to
     define what rows or ranges we need to use inside the partition. A popular use
     case for this is to create moving averages or running totals.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 不管怎样，回到主题……什么是窗口帧？这个子句允许我们定义在分区内需要使用哪些行或范围。一个常见的用例是创建移动平均或累计总和。
 - en: '[PRE2]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: This query provides us with revenue by date between May and June 2023.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个查询提供了2023年5月至6月的每日收入数据。
 - en: '![](../Images/54d9e8504337ccab92e7b973ddb2b565.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/54d9e8504337ccab92e7b973ddb2b565.png)'
 - en: Moving averages are very common with time series data, as it allows you to easily
     compare the performance of a specific day or month to what result you typically
     see for a given period.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 移动平均在时间序列数据中非常常见，因为它允许你轻松地将特定日期或月份的表现与给定周期内通常看到的结果进行比较。
 - en: First, let’s create a simple moving average and to save repeating date conversions
     and revenue rounding, I’ve put our initial query inside a CTE.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们来创建一个简单的移动平均，并且为了避免重复的日期转换和收入舍入，我将我们的初始查询放在了一个CTE中。
 - en: '[PRE3]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '![](../Images/894507e9c1c09c4dbc3ab403b0ac916d.png)'
+  id: totrans-91
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/894507e9c1c09c4dbc3ab403b0ac916d.png)'
 - en: If we look at the first five rows, we can see that the first average equals
     trip_total_revenue. This is because it’s the start of the window as we’ve ordered
     our data by trip_start_date in asc order. Therefore there isn’t anything to average
     against yet.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们查看前五行，可以看到第一个平均值等于trip_total_revenue。这是因为它是窗口的开始，因为我们按trip_start_date升序排列了数据。因此，目前还没有任何内容可供平均计算。
 - en: However, we now have a daily average between rows 1 and 2 for the second row,
     and we have a daily average for the third row between rows 1, 2 and 3.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们现在在第二行的第1行和第2行之间有一个每日平均值，而在第三行的第1行、第2行和第3行之间有一个每日平均值。
 - en: It’s a good start which shows us that our moving average is working, but let’s
     take it a step further. Let’s create a moving average which only includes the
     last seven days of revenue, and if the window doesn’t contain seven days, then
     show a null value as it’s an incomplete window.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个不错的开始，它显示了我们的移动平均正在工作，但我们可以更进一步。我们来创建一个仅包含最后七天收入的移动平均，如果窗口不包含七天，则显示空值，因为这是一个不完整的窗口。
 - en: 'To specify your window range, there are three keywords you need to remember:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 要指定你的窗口范围，你需要记住三个关键词：
 - en: current row
+  id: totrans-96
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当前行
 - en: preceding
+  id: totrans-97
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: preceding
 - en: following
+  id: totrans-98
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: following
 - en: You then construct your window starting with either rows or ranges (I’ll explain
     the difference between the two later), followed by between <<start>> and <<end>>.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，你从行或范围开始构建你的窗口（稍后我会解释这两者之间的区别），接着在<<start>>和<<end>>之间。
 - en: '[PRE4]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The example above is the window frame we need for our problem. We’ve specified
     the window to begin seven rows before the current row and end one before the current
     row.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的示例是我们问题所需的窗口框架。我们已经指定窗口从当前行之前的七行开始，到当前行之前的一行结束。
 - en: Here’s a simple example of how this window function works with a sum aggregate
     (running total).
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个简单的示例，展示了这个窗口函数如何与求和聚合（累积总和）一起工作。
 - en: '[PRE5]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/9928f4e257bd211e21957aefa50e4c42.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9928f4e257bd211e21957aefa50e4c42.png)'
 - en: As you can see, when we reach the 8th row, the value of the moving sum reaches
     7, where the window now contains seven rows of data. If you switch the window
     to 6 preceding and current rows, you’ll see the window has shifted to include
     the current row.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你所见，当我们到达第 8 行时，移动总和的值达到 7，此时窗口现在包含七行数据。如果你将窗口调整为 6 行之前和当前行，你会看到窗口已经移动，以包括当前行。
 - en: '![](../Images/3b9275c9a55b62d1b88ea25785061c3b.png)'
+  id: totrans-106
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3b9275c9a55b62d1b88ea25785061c3b.png)'
 - en: At the end of this section, I’ll provide some use case examples to highlight
     how they can be used, but back to the task at hand for now!
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节的最后，我将提供一些用例示例来突出它们的使用方式，但现在先回到当前任务！
 - en: Let’s put that window range into our moving average.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们把这个窗口范围应用到我们的移动平均中。
 - en: '[PRE6]'
+  id: totrans-109
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Now we have one final challenge, how do we make the value null if the window
     contains less than seven rows of data? Well, we can use an IF statement to check.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们面临最后一个挑战：如何在窗口中数据行少于七行时将值设为 null？好吧，我们可以使用 IF 语句来进行检查。
 - en: '[PRE7]'
+  id: totrans-111
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '[PRE8]'
+  id: totrans-112
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: We’ve brought in a second window function that counts how many rows exist in
     the window frame, which, if equal to 7, will provide the moving average result.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们引入了第二个窗口函数，该函数计算窗口框架中存在的行数，如果等于 7，将提供移动平均结果。
 - en: '![](../Images/d080603ba7ce983011e11f514131d911.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d080603ba7ce983011e11f514131d911.png)'
 - en: '**Good to know:**'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '**值得知道：**'
 - en: If the `ORDER BY` expression isn’t mentioned in your window function, the default
     specification is `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING.`
+  id: totrans-116
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '如果 `ORDER BY` 表达式未在窗口函数中提及，默认规范是 `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED
+    FOLLOWING.` '
 - en: If the `ORDER BY` expression is specified and you use an aggregation function,
     the default window frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`.
+  id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果指定了 `ORDER BY` 表达式并且使用了聚合函数，则默认窗口框架是 `RANGE BETWEEN UNBOUNDED PRECEDING AND
+    CURRENT ROW`。
 - en: '[BigQuery documentation for window frame specification here.](https://cloud.google.com/bigquery/docs/reference/standard-sql/window-function-calls#def_window_frame)'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '[有关窗口框架规范的 BigQuery 文档在这里。](https://cloud.google.com/bigquery/docs/reference/standard-sql/window-function-calls#def_window_frame)'
 - en: Difference between ROWS and RANGE
+  id: totrans-119
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: ROWS 和 RANGE 的区别
 - en: In SQL, both the ROWS and RANGE clauses help control which rows are used by
     a window function within a group.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 SQL 中，ROWS 和 RANGE 子句都帮助控制窗口函数在一个组内使用哪些行。
 - en: The ROWS clause works with a fixed number of rows. It counts a specific number
     of rows before or after the current row, regardless of their values. These rows
     are included in the window function.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: ROWS 子句处理固定数量的行。它计算当前行之前或之后的特定数量的行，无论这些行的值如何。这些行被包含在窗口函数中。
 - en: The RANGE clause works with rows based on their values. It considers the rows
     with values within a specific range relative to the current row. The actual values
     determine which rows are included in the window function calculation.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: RANGE 子句基于行的值来工作。它考虑与当前行相对的特定值范围内的行。实际值决定哪些行被包含在窗口函数计算中。
 - en: So, while the ROWS clause focuses on the physical position of the rows, the
     RANGE clause considers the logical value of the rows to determine their inclusion
     in the window function.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，虽然 ROWS 子句关注于行的物理位置，但 RANGE 子句考虑行的逻辑值来确定它们是否包含在窗口函数中。
 - en: Try this as an example to see it in action
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 试试这个示例，看看它的实际效果。
 - en: '[PRE9]'
+  id: totrans-125
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '![](../Images/3558a26debfc5e2eed168d20cd763863.png)'
+  id: totrans-126
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3558a26debfc5e2eed168d20cd763863.png)'
 - en: Look at rows 3 and 4 to compare the two clauses. The ROWS clause adds each row
     to the total, even with duplicate sale dates. But with the RANGE clause, rows
     with the same sale date are grouped as one range. For example, in this case, all
     rows with the date 2023–01–03 will be considered as one range.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看第 3 行和第 4 行以比较这两个子句。ROWS 子句将每一行都加入到总数中，即使存在重复的销售日期。而 RANGE 子句则将具有相同销售日期的行作为一个范围进行分组。例如，在这种情况下，所有日期为
+    2023-01-03 的行将被视为一个范围。
 - en: '![](../Images/c44ef6cece2b28def1a3c1cdfeb2c7f7.png)'
+  id: totrans-128
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c44ef6cece2b28def1a3c1cdfeb2c7f7.png)'
 - en: Photo by [Christopher Gower](https://unsplash.com/@cgower?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Christopher Gower](https://unsplash.com/@cgower?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上提供
 - en: What **are** the window functions?
+  id: totrans-130
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**窗口函数是什么？**'
 - en: There are a bunch of functions you can use with a window function.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 有很多可以与窗口函数一起使用的函数。
 - en: 'For **aggregate functions,** you can try:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 **聚合函数，** 你可以尝试：
 - en: '**SUM**: Calculates the sum of a numerical column.'
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**SUM**: 计算数值列的总和。'
 - en: '**AVG**: Calculates the average of a numerical column.'
+  id: totrans-134
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**AVG**: 计算数值列的平均值。'
 - en: '**MIN**: Retrieves the minimum value from a column.'
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**MIN**: 检索列中的最小值。'
 - en: '**MAX**: Retrieves the maximum value from a column.'
+  id: totrans-136
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**MAX**: 检索列中的最大值。'
 - en: '**COUNT**: Counts the number of rows in a column.'
+  id: totrans-137
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**COUNT**: 计算列中行的数量。'
 - en: '**COUNT** DISTINCT: Counts the number of distinct values in a column.'
+  id: totrans-138
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**COUNT** DISTINCT: 计算列中不同值的数量。'
 - en: 'Then you have a bunch of new functions exclusive to the window function, known
     as analytical functions:'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后你会有一系列仅适用于窗口函数的新函数，这些被称为分析函数：
 - en: '[**ROW_NUMBER**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#row_number):
     Assigns a unique number to each row within the window frame.'
+  id: totrans-140
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**ROW_NUMBER**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#row_number):
+    在窗口帧内为每一行分配一个唯一的编号。'
 - en: '[**RANK**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#rank):
     Assigns a rank to each row based on the order specified in the window frame.'
+  id: totrans-141
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**RANK**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#rank):
+    根据窗口帧中指定的顺序为每一行分配一个排名。'
 - en: '[**DENSE_RANK**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#dense_rank):
     Assigns a rank to each row, without gaps, based on the order specified in the
     window frame.'
+  id: totrans-142
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**DENSE_RANK**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#dense_rank):
+    根据窗口帧中指定的顺序为每一行分配一个排名，排名中没有间隙。'
 - en: '[**LAG**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#lag):
     Retrieves the value from a previous row within the window frame.'
+  id: totrans-143
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**LAG**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#lag):
+    从窗口帧中的前一行中检索值。'
 - en: '[**LEAD**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#lead):
     Retrieves the value from a subsequent row within the window frame.'
+  id: totrans-144
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**LEAD**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#lead):
+    从窗口帧中的后一行中检索值。'
 - en: '[**FIRST_VALUE**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#first_value):
     Retrieves the value from the first row within the window frame.'
+  id: totrans-145
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**FIRST_VALUE**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#first_value):
+    从窗口帧中的第一行中检索值。'
 - en: '[**LAST_VALUE**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#last_value):
     Retrieves the value from the last row within the window frame.'
+  id: totrans-146
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**LAST_VALUE**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#last_value):
+    从窗口帧中的最后一行中检索值。'
 - en: The functions above are hyperlinked to the BigQuery documentation.
+  id: totrans-147
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 上述函数均链接到 BigQuery 文档。
 - en: '![](../Images/81b39427fbba2b01ce00ce8b96780541.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/81b39427fbba2b01ce00ce8b96780541.png)'
 - en: Photo by [Susan Holt Simpson](https://unsplash.com/@shs521?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Susan Holt Simpson](https://unsplash.com/@shs521?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上提供
 - en: Working Examples
+  id: totrans-150
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实际示例
 - en: '**Daily Running Total**'
+  id: totrans-151
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**每日累计总数**'
 - en: One of the more simple use cases of window functions is the running total. For
     the Chicago taxies dataset, we could have revenue on a monthly level but require
     a new column which tracks our total revenue across the year so far.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 窗口函数的一个简单用例是累计总数。对于芝加哥出租车数据集，我们可以按月记录收入，但需要一个新列来跟踪迄今为止的总收入。
 - en: '![](../Images/0fadd5f53320d91584bed79bff4246a3.png)'
+  id: totrans-153
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0fadd5f53320d91584bed79bff4246a3.png)'
 - en: '[PRE10]'
+  id: totrans-154
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '**12-Week Moving Average**'
+  id: totrans-155
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**12周移动平均**'
 - en: This article’s tutorial highlights that moving averages are common when working
     with time series data.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文教程强调了在处理时间序列数据时移动平均是常见的。
 - en: '[PRE11]'
+  id: totrans-157
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '![](../Images/9c14c861ce0dfbbc629321552e47ef0d.png)![](../Images/6a58b00bf94ee3628f102d3ba5a6dcf8.png)'
+  id: totrans-158
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9c14c861ce0dfbbc629321552e47ef0d.png)![](../Images/6a58b00bf94ee3628f102d3ba5a6dcf8.png)'
 - en: Plotting the revenue alongside the moving average indicates a positive trend,
     as the moving average has continually climbed each week since April. Without the
     moving average, our eyes might be drawn to the lower-performing weeks rather than
     the bigger picture.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 将收入与移动平均线一起绘制表明了一个积极的趋势，因为自四月以来，移动平均线每周都在持续上升。如果没有移动平均线，我们的视线可能会被表现较差的周所吸引，而不是看到整体趋势。
 - en: '![](../Images/07ec677747f7459b63e7a8788e6d49ad.png)'
+  id: totrans-160
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/07ec677747f7459b63e7a8788e6d49ad.png)'
 - en: Photo by [Randy Fath](https://unsplash.com/@randyfath?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Randy Fath](https://unsplash.com/@randyfath?utm_source=medium&utm_medium=referral)
+    提供的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)'
 - en: '**Calculating a Z-score for anomaly detection**'
+  id: totrans-162
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**计算异常检测的 Z 分数**'
 - en: Z-Score calculation = (x — mean) / standard deviation
+  id: totrans-163
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Z-Score 计算 = (x — 平均值) / 标准差
 - en: A z-score is a way to measure how unusual or typical a number is compared to
     a group of other numbers. It tells you how far away a specific number is from
     the group’s average in terms of standard deviations.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: Z 分数是一种衡量一个数字相对于其他数字组的异常程度或典型程度的方法。它告诉您一个特定的数字距离该组的平均值有多少个标准差。
 - en: '[PRE12]'
+  id: totrans-165
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: In this example, we’ve taken the actual value of trip_total_revenue and subtracted
     the average daily revenue we’ve seen for the last 30 days.
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们取了 trip_total_revenue 的实际值，并减去了我们在过去 30 天里看到的平均每日收入。
 - en: We then divided that number by the standard deviation for those 30 days. This
     tells us how close a specific day of revenue is to the average or how many standard
     deviations that value is from the average.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们将该数字除以这 30 天的标准差。这告诉我们特定一天的收入离平均值有多近，或该值距离平均值有多少个标准差。
 - en: This is a handy metric to plot on a chart, such as below, as it gives context
     to your data. Although we only have the last 30 days in view, the z-score compares
     to the previous 30 days effortlessly, and we can see areas where peaks and dips
     seem insignificant until the z-score highlights how different that day performed
     compared to the norm.
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个很方便的指标，可以绘制在图表上，如下所示，因为它为您的数据提供了背景。虽然我们仅查看了过去 30 天的数据，但 Z 分数与之前的 30 天进行比较是毫不费力的，我们可以看到峰值和波动在
+    Z 分数突显出该天与常态的不同之前似乎微不足道。
 - en: '![](../Images/226555676a27e43f41f37cd2c4e54293.png)'
+  id: totrans-169
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/226555676a27e43f41f37cd2c4e54293.png)'
 - en: With these kinds of reports, you should set a value that suggests you have an
     abnormal event. I wouldn’t say any dates are abnormal in the chart above, but
     a typical go-to is a value of 3 (i.e., three standard deviations). However, this
     depends entirely on the volatility of your data.
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这类报告，您应该设置一个值来表明存在异常事件。我不会说上面的图表中的任何日期都是异常的，但一个典型的值是 3（即三个标准差）。然而，这完全取决于数据的波动性。
 - en: Full Query
+  id: totrans-171
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 完整查询
 - en: '[PRE13]'
+  id: totrans-172
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '![](../Images/10ec55cd9d4142cbf0839c38595bc667.png)'
+  id: totrans-173
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/10ec55cd9d4142cbf0839c38595bc667.png)'
 - en: Photo by [Giorgio Trovato](https://unsplash.com/@giorgiotrovato?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Giorgio Trovato](https://unsplash.com/@giorgiotrovato?utm_source=medium&utm_medium=referral)
+    提供的照片，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)'
 - en: '**Monthly Top Ranking Performers**'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: '**每月排名前列的表现者**'
 - en: There are numerous taxi companies in the Chicago taxies dataset, and we may
     ask ourselves who were the top 3 performing companies each month.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 在芝加哥出租车数据集中有很多出租车公司，我们可能会问每个月表现最好的前三家公司是谁。
 - en: To achieve this, we can use the rank analytical function, partitioned by trip_month
     and ordered by trip_total_revenue in descending order.
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了实现这一点，我们可以使用按 trip_month 分区并按 trip_total_revenue 降序排列的排名分析函数。
 - en: '[PRE14]'
+  id: totrans-178
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: However, this will still provide results for all companies in the dataset for
     each month rather than just the top 3\. Therefore, we can utilise the **QUALIFY**
     clause, which functions similarly to the **WHERE** clause, to allow you to filter
     your data.
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这仍然会为数据集中每个月的所有公司提供结果，而不仅仅是前三名。因此，我们可以利用 **QUALIFY** 子句，它的功能类似于 **WHERE**
+    子句，以便您可以过滤数据。
 - en: The qualify clause can only be used with window functions and can reference
     window functions you’ve created in your select statement. More details [here](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#qualify_clause).
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: qualify 子句只能与窗口函数一起使用，并且可以引用您在选择语句中创建的窗口函数。更多细节请见 [这里](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#qualify_clause)。
 - en: The results below make it clear three main companies are dominating the taxi
     ring.
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的结果清楚地表明三家公司主导了出租车市场。
 - en: '![](../Images/3e9df968915093c7ccc8fb596f0743dc.png)'
+  id: totrans-182
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3e9df968915093c7ccc8fb596f0743dc.png)'
 - en: '[PRE15]'
+  id: totrans-183
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '![](../Images/6c1ac4aa546426c43823986a818c0c36.png)'
+  id: totrans-184
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6c1ac4aa546426c43823986a818c0c36.png)'
 - en: Photo by [Towfiqu barbhuiya](https://unsplash.com/de/@towfiqu999999?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Towfiqu barbhuiya](https://unsplash.com/de/@towfiqu999999?utm_source=medium&utm_medium=referral)
+    提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: '**Monthly/Quarterly Comparisons**'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: '**月度/季度比较**'
 - en: Monthly and quarterly reporting is essential for tracking KPIs and to help gauge
     the direction the business is heading. However, creating a report in BigQuery,
     which provides month vs month changes, can prove tricky once you know how.
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 月度和季度报告对于跟踪KPI以及帮助评估业务发展方向至关重要。然而，创建一个在BigQuery中提供月度变化的报告，一旦你掌握了方法，可能会变得棘手。
 - en: Once you have your data on the level you want, such as monthly in my example
     below, you can use the LAG or LEAD functions to return the previous month’s revenue
     which allows you to calculate the % difference.
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦你有了你想要的数据层级，例如下例中的按月数据，你可以使用LAG或LEAD函数返回上一个月的收入，这样你就可以计算百分比差异。
 - en: You can use LAG or LEAD; both achieve the same depending on how you order your
     data. As we’re pulling the previous month’s revenue, it makes sense to use lag
     here.
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以使用LAG或LEAD，两者的效果相同，具体取决于你如何排序数据。由于我们要提取上个月的收入，因此在这里使用LAG更为合适。
 - en: '![](../Images/6c9c87ae76d4f7673bb5a72ffbabbc1c.png)'
+  id: totrans-190
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6c9c87ae76d4f7673bb5a72ffbabbc1c.png)'
 - en: '[PRE16]'
+  id: totrans-191
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: That brings this article to an end. If you have any questions or challenges,
     please feel free to comment, and I’ll answer as soon as possible.
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章到此结束。如果你有任何问题或挑战，请随时评论，我会尽快回答。
 - en: I frequently write articles for BigQuery and Looker Studio. If you’re interested,
     consider following me here on Medium for more!
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: 我经常为BigQuery和Looker Studio撰写文章。如果你感兴趣，可以考虑在Medium上关注我获取更多内容！
 - en: '*All images, unless otherwise noted, are by the author.*'
+  id: totrans-194
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*所有图片，除非另有说明，均由作者提供。*'
 - en: '***Stay classy folks!'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: '***保持优雅，各位！'
 - en: Tom***
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: Tom***
