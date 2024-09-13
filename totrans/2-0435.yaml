@@ -1,34 +1,54 @@
 - en: Building a Data Lake on PB scale with Apache Spark
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用Apache Spark在PB规模上构建数据湖
 - en: 原文：[https://towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46](https://towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46](https://towardsdatascience.com/building-a-data-lake-on-pb-scale-with-apache-spark-1622d7073d46)
 - en: How we deal with Big Data at Emplifi
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 我们在Emplifi如何处理大数据
 - en: '[](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)[![David
     Vrba](../Images/7689bf42fcfc0c029de87450d01069ba.png)](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)
     [David Vrba](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)[![David
+    Vrba](../Images/7689bf42fcfc0c029de87450d01069ba.png)](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)
+    [David Vrba](https://medium.com/@vrba.dave?source=post_page-----1622d7073d46--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)
     ·15 min read·Jan 26, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1622d7073d46--------------------------------)
+    ·15分钟阅读·2023年1月26日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/ec428d788058b2d1569bf4768b4938db.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ec428d788058b2d1569bf4768b4938db.png)'
 - en: Image by [Victor Hanacek](https://picjumbo.com/author/viktorhanacek/) on [picjumbo](https://picjumbo.com/big-data/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Victor Hanacek](https://picjumbo.com/author/viktorhanacek/)在[picjumbo](https://picjumbo.com/big-data/)提供
 - en: Professionally, I have spent the last four years in the data engineering team
     at the company Emplifi (formerly Socialbakers) and one of the largest projects
     I have been working on is building a distributed data storage system that holds
@@ -37,12 +57,16 @@
     imagine — building and maintaining such a Data Lake is not a trivial task considering
     that not only does the data change frequently but also its schema evolves over
     time having dozens or even hundreds of fields with different levels of nesting.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在职业上，我在Emplifi（前身为Socialbakers）公司的数据工程团队中度过了过去四年，其中一个我参与的最大项目是构建一个分布式数据存储系统，目前该系统存储了近一PB的数据，目的是为数据分析师和研究人员提供可以高效分析和研究的数据表。正如你可以想象的那样——构建和维护这样一个数据湖并非易事，因为数据不仅频繁变化，而且其架构随着时间的推移而演变，拥有几十个甚至几百个具有不同嵌套层级的字段。
 - en: In this article, I would like to share my experience and highlights from this
     journey mainly on the technical level.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我想分享我在这段旅程中的经验和亮点，主要集中在技术层面。
 - en: The origin of the data we are processing on a daily basis is social networks
     such as Facebook, Twitter, Instagram, YouTube, LinkedIn, or TikTok. The processed
     datasets are mainly public profiles with published posts on these networks. Some
@@ -52,12 +76,18 @@
     data is mainly in compressed JSON files, on the other hand, the processed and
     aggregated datasets are stored in the Apache Parquet format and are exposed to
     the users in the form of (Hive metastore) tables.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们每天处理的数据来源于社交网络，如Facebook、Twitter、Instagram、YouTube、LinkedIn或TikTok。处理的数据集主要是这些网络上的公共档案和发布的帖子。一小部分数据也来自内部系统。我们的存储系统建立在S3
+    AWS上，我们称之为数据湖，因为我们在这里以原始格式以及预处理、处理和聚合后的形式存储数据。原始数据主要以压缩的JSON文件形式存在，而处理和聚合的数据集则以Apache
+    Parquet格式存储，并以（Hive metastore）表格形式向用户公开。
 - en: Data Flow
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据流
 - en: The data passes through several points in the company infrastructure, first,
     it gets downloaded from social networks using public and in some cases also private
     APIs. Next, it comes to DynamoDB, a key-value distributed database service on
@@ -70,12 +100,17 @@
     tables that can be efficiently accessed using standard analytical tools by our
     data analysts and researchers. In the next sections, I will describe these steps
     more in detail.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据经过公司基础设施的多个点，首先，它通过公共和在某些情况下也通过私有API从社交网络下载。接下来，它到达DynamoDB，这是AWS上的一个键值分布式数据库服务，我们称之为主数据库。DynamoDB擅长处理记录的频繁更新，这对我们的用例非常有用，因为数据来自社交网络，其中每条记录（如post）随着时间的推移而演变——它收集互动并频繁变化。每次在DynamoDB中的更新也会在我们数据湖的*stage*层保存到S3。这是Apache
+    Spark中一系列步骤的起点，这些步骤将生成一致的表，数据分析师和研究人员可以使用标准分析工具高效访问。接下来的章节，我将更详细地描述这些步骤。
 - en: Structure of the Data
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据的结构
 - en: 'The incoming data to the *stage* is a continuous stream of records that are
     saved as compressed JSON files. Each record has two substructures — *oldImage*
     and *newImage* where the first one is what the record looked like before the update
@@ -85,15 +120,21 @@
     may occur here multiple times. We need to consider only the latest *version* for
     each *id* to correctly update the final table. Here you can see a simple example
     of the data structure:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 传入到*stage*的数据是以压缩JSON文件保存的连续记录流。每条记录有两个子结构——*oldImage*和*newImage*，其中第一个是记录更新前的状态，而后者包含更新后的数据。每条记录（post）可能在一天内被多次下载自社交网络，因此这个流中包含重复项，即每个*id*唯一标识的post可能出现多次。我们需要只考虑每个*id*的最新*version*来正确更新最终表。这里可以看到数据结构的一个简单示例：
 - en: '[PRE0]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Data Lake — Three Layers of Abstraction
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据湖——三层抽象
 - en: Our Data Lake is built on S3 (distributed object store on AWS) and has three
     levels of abstraction, which we call the *stage*, *target*, and *mart*. In the
     *stage* layer, we keep the raw data that comes mostly from DynamoDB, but also
@@ -101,78 +142,110 @@
     internal APIs. This data arrives here mostly in compressed JSON format and in
     some cases also in CSV. These datasets are preprocessed on a daily basis and saved
     in the Apache Parquet format also in the *stage*.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的数据湖构建在S3（AWS上的分布式对象存储）上，并有三层抽象，我们称之为*stage*、*target*和*mart*。在*stage*层，我们保存主要来自DynamoDB的原始数据，但也来自其他数据库，如Elasticsearch、Postgres、MongoDB，以及各种内部API。这些数据主要以压缩JSON格式到达，有时也以CSV格式到达。这些数据集每天进行预处理，并以Apache
+    Parquet格式保存于*stage*中。
 - en: These Parquet files are next processed and used to update our tables in the
     *target* also either on a daily basis or in some cases — where the data freshness
     is not so crucial — on a weekly basis. As opposed to the *stage* data, the *target*
     tables are directly accessed by our data users.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些Parquet文件接下来会被处理，并用于更新*target*中的表，更新可以是每日一次，也有些情况下——数据新鲜度不那么关键——每周一次。与*stage*数据不同，*target*表由我们的数据用户直接访问。
 - en: For some tables where the data structure is not very user-friendly, we create
     new tables where we transform the data so it can be easily queried and save them
     in the *mart* layer — we don’t do that in the *target* because here we want to
     keep the tables as mirrors of the source systems from which the data comes, so
     the users are not confused that for example, the data in DynamoDB differs from
     the data in the *target*.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于一些数据结构不太友好的表，我们创建新的表来转换数据，以便于查询，并将其保存到*mart*层——我们不在*target*层这样做，因为这里我们希望保持表作为数据来源系统的镜像，以避免用户混淆，例如，DynamoDB中的数据与*target*中的数据不同。
 - en: '![](../Images/5495216f31b7fb9c093199870c20c697.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5495216f31b7fb9c093199870c20c697.png)'
 - en: Structure of the Data Lake (image made by the author)
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据湖的结构（图片由作者制作）
 - en: 'Having the tables efficient for querying is a high priority for us. It is quite
     painful for a data analyst to have to wait several minutes for a query to finish.
     We achieve that with different success at both levels:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 对我们来说，使表格在查询时高效是一个重要优先事项。数据分析师不得不等待几分钟才能完成查询是非常痛苦的。我们在两个层面上以不同的成功程度实现了这一点：
 - en: 'In the *target*: our hands are tight a little bit because we guarantee the
     same structure of the data as is in the original database. We can however achieve
     quite a lot with custom organization of the files under the table using techniques
     such as partitioning, bucketing, and sorting. See the next sections for more details.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 *target* 中：我们的手脚会有些束缚，因为我们保证数据与原始数据库中的结构相同。然而，我们可以通过自定义文件组织来实现相当大的成果，例如使用分区、桶和排序等技术。有关更多细节，请参见下一节。
 - en: 'In the *mart*: we can do even more, simplify the nested structures, and pre-join,
     or pre-aggregate the data based on the typical queries that are executed against
     the table.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 *mart* 中：我们可以做得更多，简化嵌套结构，并根据对表执行的典型查询进行预连接或预聚合。
 - en: Stage
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 阶段
 - en: 'The *stage* is the entry point for the data that should be eventually exposed
     to users. The raw data that comes here is processed on daily basis with the following
     3 steps in the processing pipeline:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*stage* 是数据最终暴露给用户的入口点。这里传入的原始数据每天都会经过以下 3 个处理步骤：'
 - en: schema evolution
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模式演变
 - en: data cleansing
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据清理
 - en: data deduplication
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据去重
 - en: Schema Evolution — stage layer
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模式演变——阶段层
 - en: It is not unusual that the structure of the incoming data changes over time
     — new fields might be added to the dataset or even the datatype of some field
     can change. This is quite a problem if you don’t have a solid schema-evolution
     step in place. Apache Spark allows you to read the data either by providing the
     schema or letting Spark infer it (using a so-called schema-on-read).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自数据的结构随时间发生变化并不罕见——数据集中可能会添加新字段，甚至某些字段的数据类型可能会改变。如果没有一个健全的模式演变步骤，这将是一个相当大的问题。Apache
+    Spark 允许你通过提供模式来读取数据，或者让 Spark 推断它（使用所谓的 schema-on-read）。
 - en: 'Usually, you have some expectations of what the schema should be (ideally the
     same as the schema of the already existing *target* table), but providing this
     schema to Spark will lead to missing all new fields that might come for some reason
@@ -183,28 +256,41 @@
     about JSON schema evolution). On the other hand, letting Spark infer the schema
     seems more reasonable, however, there are also some drawbacks and points that
     you need to consider:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，你对模式应该是什么有一些期望（理想情况下与已经存在的 *target* 表的模式相同），但是将此模式提供给 Spark 会导致所有新字段可能因为某些原因在数据的新增量中缺失。此外，如果某个字段的数据类型发生变化，Spark
+    将会将其读取为 *NULL*（如果这两种数据类型不兼容），或者会丢弃这些行，或者根据指定的 [模式](https://spark.apache.org/docs/latest/sql-data-sources-json.html)
+    完全失败（另见我的另一篇 [文章](https://medium.com/swlh/notes-about-json-schema-handling-in-spark-sql-be1e7f13839d)
+    关于 JSON 模式演变）。另一方面，让 Spark 推断模式似乎更合理，但也有一些缺点和需要考虑的点：
 - en: timestamps will be inferred as strings (with the exception of Spark 3.0 where
     it is inferred as timestamp)
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间戳将被推断为字符串（除了 Spark 3.0 版本，它将被推断为时间戳）
 - en: map type is inferred as a struct
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: map 类型被推断为结构体
 - en: with no other logic in place, all new fields might be propagated to the final
     table which might be undesirable — someone should confirm that the new field can
     be exposed to the users (maybe the new field is produced just by some error)
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果没有其他逻辑，所有新字段可能会传播到最终表中，这可能是不希望的——有人应该确认新字段是否可以暴露给用户（也许新字段只是由于某些错误产生的）
 - en: with no other logic in place, if the data type is different from the type in
     the *target* table, merging the increment to the table in the *target* will fail
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果没有其他逻辑，如果数据类型与 *target* 表中的类型不同，将增量合并到 *target* 表中将会失败
 - en: The way how we approach this problem is by using an in-house tool for schema
     comparison that we developed internally. We have a versioning system (schema registry)
     for the schemas of all datasets. In the processing, we first let Spark infer the
@@ -214,8 +300,10 @@
     data to the versioned types. A new schema is created based on this comparison
     and the data is read again using this new schema and the changed fields are cast
     to the versioned fields.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们解决这个问题的方法是使用我们内部开发的架构比较工具。我们为所有数据集的架构建立了版本控制系统（架构注册表）。在处理过程中，我们首先让Spark推断架构，然后将其与版本化的架构进行比较。它会检测所有新字段并在一些通知渠道中报告。如果数据类型发生变化，算法会决定这些新类型是否可以安全地转换为版本化类型而不会丢失数据。基于这种比较，我们创建了一个新的架构，并使用这个新架构重新读取数据，将变化的字段转换为版本化字段。
 - en: The only problem occurs if the new data type cannot be safely cast in which
     case we proceed with the new data type but report an error in the notification
     channel because it means that the following job in the *target* layer will fail
@@ -223,21 +311,29 @@
     if this is just a one-time change caused by some error or if it is some permanent
     change in the data structure which means that we will have to adjust the final
     table accordingly.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 唯一的问题发生在新数据类型无法安全转换时，此时我们会使用新的数据类型，但在通知渠道中报告错误，因为这意味着在*目标*层的后续作业将会因为这个问题而失败。在这种情况下，我们需要手动调查为什么会发生这种情况，是否只是由于某些错误导致的单次更改，或者是数据结构中的永久性更改，这意味着我们需要相应地调整最终表格。
 - en: '![](../Images/1b488011a807daf13490281ba833d4c1.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1b488011a807daf13490281ba833d4c1.png)'
 - en: Our schema registry provides both API and web user interface. Here you can see
     a screenshot from the web UI where two schema versions of one datasource are compared.
     New fields that are present in version 1.0.6 and were not present in version 1.0.5
     are highlighted in green color.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的架构注册表提供了API和Web用户界面。在这里，你可以看到来自Web UI的截图，其中比较了一个数据源的两个架构版本。版本1.0.6中存在而版本1.0.5中不存在的新字段以绿色突出显示。
 - en: Data Cleansing
+  id: totrans-41
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据清洗
 - en: After reading the data into a DataFrame with the evolved schema and casting
     the types we apply a set of filters where we exclude records with *NULL* values
     in some crucial fields such as *id*, *version*, *created_time,* and so on. These
@@ -245,62 +341,86 @@
     to the final table in the *target* layer. We refer to these records as corrupted
     and save them in a separate folder where we can investigate why the values are
     missing.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 在使用演化后的架构读取数据到DataFrame并转换类型后，我们应用一系列过滤器，排除某些关键字段（如*id*、*version*、*created_time*等）中具有*NULL*值的记录。这些字段对于数据的正确去重和在*目标*层的最终表格中的正确合并是必要的。我们将这些记录称为损坏记录，并将其保存在一个单独的文件夹中，以便调查为什么缺少这些值。
 - en: Data Deduplication
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据去重
 - en: As mentioned before, the data in the *stage* may contain multiple versions of
     the record with the same *id*. This is because individual records (mostly posts
     from social networks) are continuously changing and we download them from social
     networks multiple times throughout the day.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，*stage*中的数据可能包含多个具有相同*id*的记录版本。这是因为个别记录（主要是来自社交网络的帖子）不断变化，我们一天内从社交网络下载这些记录多次。
 - en: 'The processing job in the *stage* layer runs in the early morning and its goal
     is to take the increments (new-coming data) for the previous day and prepare it
     for the *target* job that will merge it into the final table. After schema evolution
     and data cleansing, we also need to deduplicate it in the sense that for each
     *id* we will keep only the latest version:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '*stage*层的处理作业在清晨运行，目标是获取前一天的增量（新数据），并为将数据合并到最终表格的*目标*作业做准备。在架构演化和数据清洗之后，我们还需要进行去重，即对于每个*id*，我们将仅保留最新版本：'
 - en: '[PRE1]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: As you can see from the code, we select only the data from the *newImage* and
     deduplicate it using the window function [*row_number*()](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.functions.row_number.html#pyspark.sql.functions.row_number)(for
     details about using the window functions in Spark see my other [article](https://medium.com/towards-data-science/spark-sql-102-aggregations-and-window-functions-9f829eaa7549)).
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 从代码中可以看出，我们仅从*newImage*中选择数据，并使用窗口函数[*row_number*()](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.functions.row_number.html#pyspark.sql.functions.row_number)进行去重（有关在Spark中使用窗口函数的详细信息，请参见我另一篇[文章](https://medium.com/towards-data-science/spark-sql-102-aggregations-and-window-functions-9f829eaa7549)）。
 - en: Target
+  id: totrans-48
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 目标
 - en: The goal of the *target* layer is to create tables that are mirrors of DynamoDB,
     Elasticsearch, and other internal databases where these tables can be directly
     accessed by data analysts and researchers using standard analytical tools, such
     as SQL, DataFrame API in Spark or Pandas and the entire ecosystem of Python libraries
     for data science can be used on top of it. Note that this would be very difficult
     to achieve by accessing directly the original databases.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '*目标*层的目标是创建与DynamoDB、Elasticsearch和其他内部数据库镜像的表，这些表可以通过标准分析工具直接访问，如SQL、Spark中的DataFrame
+    API或Pandas，以及Python数据科学生态系统中的所有库都可以在其上使用。请注意，通过直接访问原始数据库实现这一点将非常困难。'
 - en: Technically, in the *target*, we take the parquet files from the *stage* and
     upsert them on the existing tables. We also want to provide the analysts with
     tables that are prepared for the analytical queries, so we invest some effort
     when creating the layout of the tables. A table itself is just some abstraction
     on top of the files for which, again, we use the Apache Parquet format.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 从技术上讲，在*目标*中，我们从*阶段*获取parquet文件，并将其插入到现有表中。我们还希望为分析师提供准备好的分析查询表，因此在创建表的布局时我们投入了一些精力。表本身只是对文件的某种抽象，我们再次使用Apache
+    Parquet格式。
 - en: Tables Layout
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 表布局
 - en: We use the concept of *copy-on-write* which means that the entire table with
     all files is overwritten during each update. This is quite expensive, especially
     for large tables, however, it allows us to keep the files compact and organized
     as is required for efficient reads.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用*写时复制*的概念，这意味着在每次更新时，整个表和所有文件都会被覆盖。这是相当昂贵的，特别是对于大型表，然而，它允许我们保持文件的紧凑和组织，以满足高效读取的要求。
 - en: The tables that represent posts from social networks are partitioned by the
     time dimension, typical partition columns are *created_year* and *created_month*
     where both are derived from the *created_time* of the post. This partitioning
@@ -313,12 +433,16 @@
     and so it will improve the overall efficiency of such queries. Also, bucket pruning
     can take place if the query contains a filter on the *profile_id* column (for
     more information about bucketing see my other [article](https://medium.com/towards-data-science/best-practices-for-bucketing-in-spark-sql-ea9f23f7dd53)).
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 表示社交网络帖子的数据表按时间维度进行分区，典型的分区列是*created_year*和*created_month*，这两个列都是从帖子的*created_time*派生出来的。这种分区加快了数据的读取，因为分析师通常对一些近期数据感兴趣。因此，处理引擎如Spark或Presto确保只扫描查询的分区，而跳过其他分区。这些表还按列*profile_id*进行分桶，因为它可以与表示个人资料的表在此列上连接。对该列进行聚合和连接的查询不会引起Spark中的数据洗牌，这样可以提高此类查询的总体效率。此外，如果查询包含对*profile_id*列的过滤条件，则可以进行分桶修剪（有关分桶的更多信息，请参见我另一篇[文章](https://medium.com/towards-data-science/best-practices-for-bucketing-in-spark-sql-ea9f23f7dd53)）。
 - en: Merging the Increment
+  id: totrans-54
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 合并增量
 - en: 'The processing job in the *target* layer runs in the early morning after the
     *stage* job and its goal is to merge the increments from the previous day into
     the *target* table. We read both, the increment and the table into DataFrames,
@@ -326,61 +450,86 @@
     the *stage* — we select the most recent version of the record that will be saved
     in the new snapshot. Thus, if a particular *id* is already in the table it will
     be replaced by the one coming from the increment if it has a bigger *version*:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '*target*层中的处理作业在*stage*作业后清晨运行，其目标是将前一天的增量合并到*target*表中。我们将增量和表都读取到DataFrames中，将它们联合，并使用窗口函数*row_number*
+    — 类似于我们在*stage*中所做的 — 选择将保存到新快照中的最新记录版本。因此，如果特定的*id*已经在表中，它将被来自增量的具有更大*version*的记录所替代：'
 - en: '[PRE2]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: This will not work, however, if the schemas of *stage_df* and *target_df* are
     different, thus we need to apply a schema evolution step yet again.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，如果*stage_df*和*target_df*的模式不同，这种方法将不起作用，因此我们需要再次应用模式演变步骤。
 - en: Schema Evolution — target layer
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模式演变 — 目标层
 - en: Similarly, as we evolved the schema in the *stage*, we need to do it also in
     the *target*. To merge successfully the increment to the *target* table it is
     necessary for both to have the same schema. This won’t be the case, however, if
     new fields were added to the increment.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样地，在*stage*中我们对模式进行了演变，我们也需要在*target*中进行相同的操作。要成功将增量合并到*target*表中，两个表的模式必须相同。然而，如果增量中添加了新字段，这种情况可能不会成立。
 - en: We are controlling if these new fields are added to the table or not using a
     schema that we call the *input_schema*. This *input_schema* is also versioned
     and if we want to promote new fields to the table we create a new version of this
     *input_schema* that contains these new fields. It is a manual step which seems
     plausible considering someone should confirm that the new fields can be exposed
     to the data users anyway.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用一种称为*input_schema*的模式来控制这些新字段是否已添加到表中。这个*input_schema*也有版本，如果我们想将新字段推广到表中，我们会创建一个包含这些新字段的新版本的*input_schema*。这是一个手动步骤，考虑到应该有人确认这些新字段可以暴露给数据用户，这似乎是合理的。
 - en: Next, we also need to change the schema of the table to be the same as the schema
     of the increment. Spark SQL provides a way to add a new column to the table using
     *ALTER TABLE table_name ADD COLUMNS* but it doesn’t provide a way how to add nested
     fields.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们还需要将表的模式更改为与增量的模式相同。Spark SQL提供了一种使用*ALTER TABLE table_name ADD COLUMNS*向表中添加新列的方法，但它没有提供添加嵌套字段的方法。
 - en: 'Thus we implemented this functionality into our framework ourselves. In this
     situation, the *target* job creates an empty table with the new schema at a temporal
     location. After that, we drop the original table and point the empty table to
     the location of the original table where the data sits. Thus we obtain a new table
     with the same data but a modified schema:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们将这一功能自行实现到我们的框架中。在这种情况下，*target*作业会在一个临时位置创建一个具有新模式的空表。之后，我们删除原始表，并将空表指向原始表的数据位置。这样，我们将获得一个具有相同数据但模式已修改的新表：
 - en: '[PRE3]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Atomic Writes
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 原子写入
 - en: One of the big challenges from the beginning of developing our Data Lake was
     having atomic writes in place. The problem is that when overwriting a table using
     simply…
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 从我们开发数据湖的初期开始，最大的挑战之一就是确保原子写入到位。问题是，当简单地覆盖一个表时...
 - en: '[PRE4]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '…is not atomic. If the Spark job fails for any reason during the write the
     table may stop existing or the S3 prefix may begin to contain partially written
     data. In our framework, we implemented the atomicity by always saving the table
@@ -388,40 +537,54 @@
     succeeds we swap the table names, so the new snapshot will become available for
     the users only after it is successfully written. If the job fails we never swap
     the names but rather start the process from the beginning in a new location:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: …不是原子的。如果Spark作业因任何原因在写入过程中失败，表可能会停止存在，或者S3前缀可能会开始包含部分写入的数据。在我们的框架中，我们通过始终将表保存在不同的位置并以新名称*table_name_temp*保存来实现原子性，在写入成功后，我们交换表名称，因此新的快照只有在成功写入后才会对用户可用。如果作业失败，我们不会交换名称，而是从头开始在新位置重新启动过程：
 - en: '[PRE5]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The path where we save the data contains the timestamp of the moment of the
     write and we always keep a couple of last snapshots which allows us for a so-called
     *time-travel* — if we realize that the newly created table is corrupted for some
     reason (due to some bug) we can point it back to any of the previous snapshots.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们保存数据的路径包含写入时的时间戳，并且我们始终保留最近的几个快照，这使得所谓的*时间旅行*成为可能——如果我们发现新创建的表因某些原因（由于某些错误）而损坏，我们可以将其指向任何之前的快照。
 - en: Data Quality
+  id: totrans-70
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据质量
 - en: The consistency and quality of the data in the *target* tables are crucial since
     the tables are directly exposed to the data users. This can be achieved by checking
     the tables after each update to make sure that data is not corrupted due to some
     bug in the code, corrupted export from the original database, or some other problem
     that could have happened along the way while the data was passing through the
     transformation steps before it got to the final table.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '*目标* 表中的数据的一致性和质量至关重要，因为这些表直接暴露给数据用户。这可以通过在每次更新后检查表格来实现，以确保数据没有由于代码中的某些错误、原始数据库的错误导出或数据在经过转换步骤后到达最终表时可能发生的其他问题而被破坏。'
 - en: We are using the data quality framework [Great Expectations](https://greatexpectations.io/)
     that can be integrated with Spark. For each dataset, we can define a set of expectations
     that are being validated after the new snapshot of the table is created. In case
     some crucial expectations fail we can time-travel the table to the previous snapshot
     and investigate the failed expectations in detail.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用的数据质量框架是[Great Expectations](https://greatexpectations.io/)，它可以与 Spark 集成。对于每个数据集，我们可以定义一组期望，这些期望会在创建表的新快照后进行验证。如果一些关键期望未能满足，我们可以将表“时间旅行”到之前的快照，并详细调查失败的期望。
 - en: Mart
+  id: totrans-73
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Mart
 - en: Even though accessing the data from the *target* tables is quite efficient,
     for some tables it is not very user-friendly. This is natural because, as mentioned
     before, we keep the structure of the data in the *target* tables the same as is
@@ -435,12 +598,18 @@
     group of users. These derived tables are saved in the *mart* layer of the lake.
     Another purpose of the *mart* is to keep there tables with some aggregations and
     results computed by the analysts.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管从*目标* 表中访问数据相当高效，但对于某些表来说，这并不是很用户友好。这是自然的，因为，如前所述，我们保持*目标* 表中的数据结构与数据在原始数据库中存储的结构相同，而这些数据库不一定是为分析目的存储的。这主要涉及嵌套数据结构中的列，例如数组或结构体。有时，使用
+    SQL 的人们在查询中转换这些字段可能太繁琐，因此我们创建了从*目标* 表派生的附加表，以便在这些表中转换数据结构，从而更容易进行查询。有时这些表也可以与其他表连接，并且它们是为某些特定用户群体量身定制的。这些派生表被保存在湖泊的*mart*
+    层中。*mart* 的另一个目的是保留由分析师计算的一些汇总和结果表。
 - en: Environment, Jobs, Orchestration
+  id: totrans-75
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 环境、作业、协调
 - en: All the processing in the *stage*, *target*, and *mart* layer is implemented
     in PySpark with some custom logic for handling the schema evolution implemented
     in Python. The code runs in the [Databricks](https://www.databricks.com/) platform
@@ -448,14 +617,19 @@
     *target* layer, for some datasources there are also jobs in the *mart* layer.
     All the jobs are orchestrated using the technology Apache Airflow which allows
     us to define the dependencies between the jobs.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*stage*、*target* 和*mart* 层中的所有处理都是用 PySpark 实现的，并且在 Python 中实现了处理模式演变的自定义逻辑。代码在[Databricks](https://www.databricks.com/)平台上运行，对于每个数据源，我们在*stage*
+    层和*target* 层都有一个作业，对于某些数据源，还有*mart* 层的作业。所有作业都使用 Apache Airflow 技术进行协调，这使我们能够定义作业之间的依赖关系。
 - en: The core logic for deduplication, schema evolution, atomic data saving, and
     others is implemented in classes and modules and is compiled into a wheel that
     is imported into the jobs so the code is re-used based on best practices in software
     engineering.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 去重、模式演变、原子数据保存等核心逻辑都在类和模块中实现，并编译成一个轮子（wheel），这个轮子被导入到任务中，以便基于软件工程的最佳实践复用代码。
 - en: All steps in the lake are fairly automated with just a few manual steps related
     to ingesting a new datasource. In that situation, we just add some configuration
     parameters into a config file and add the schema of the new datasource to the
@@ -463,8 +637,10 @@
     launched using Airflow according to predefined scheduling. The other manual steps
     are related to monitoring and approving new fields in incoming data and possible
     debugging of changed datatypes that cannot be safely cast to versioned ones.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 湖中的所有步骤基本上都是自动化的，仅有少数几个与引入新数据源相关的手动步骤。在这种情况下，我们只需在配置文件中添加一些配置参数，并将新数据源的模式添加到模式注册表中。Git管道会在Databricks中创建作业，并通过Airflow按照预定的调度启动它们。其他手动步骤与监控和审批新字段以及对无法安全转换为版本化类型的更改数据类型进行调试相关。
 - en: As mentioned before, the data users can access the *target* and *mart* tables
     using either SQL or DataFrame API in Spark that is easily integrated with Pandas
     and consequently the entire ecosystem of Python libraries for data science and
@@ -472,59 +648,79 @@
     — a user-friendly notebook interface — that is connected to the Presto engine,
     on the other hand, scientists that prefer using Spark can access the tables in
     the notebook environment in Databricks.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，数据用户可以使用SQL或Spark中的DataFrame API访问*目标*和*数据集市*表，这些API可以方便地与Pandas集成，从而实现与整个Python数据科学和机器学习库生态系统的集成。喜欢使用SQL的分析师可以使用[Querybook](https://www.querybook.org/)——一个用户友好的笔记本界面——它连接到Presto引擎，而喜欢使用Spark的科学家则可以在Databricks的笔记本环境中访问表格。
 - en: '![](../Images/55e7a234cc00623df4475ec964f357b3.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/55e7a234cc00623df4475ec964f357b3.png)'
 - en: Users of our Data Lake (analysts and researchers) can use data science and machine
     learning libraries on top of Spark, or they can query the data using SQL with
     the Presto engine. They can choose between working in Databricks and Querybook
     both of which provide notebook environments with user-friendly interfaces handy
     for various use cases.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的数据湖用户（分析师和研究人员）可以在Spark上使用数据科学和机器学习库，或者使用Presto引擎用SQL查询数据。他们可以选择在Databricks和Querybook中工作，这两个平台都提供了具有用户友好界面的笔记本环境，适用于各种使用场景。
 - en: Acknowledgment
+  id: totrans-82
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 致谢
 - en: Building and maintaining the data lake has been a collaborative work of the
     entire data engineering team. I would like to thank all my colleagues not only
     for the beneficial and productive cooperation on the Data Lake project, for a
     lot of interesting thoughts and ideas that we came up with during the last four
     years, but also for the review and helpful comments on this article.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 构建和维护数据湖是整个数据工程团队的协作工作。我想感谢所有同事，不仅感谢在数据湖项目中进行的有益且富有成效的合作，感谢我们在过去四年中提出的大量有趣的想法和意见，还要感谢对本文的审阅和有益的评论。
 - en: Conclusion
+  id: totrans-84
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Having a robust and reliable data lake seems a necessity in a company that deals
     with big data. Traditional data warehousing concepts are no longer appropriate
     because the data volume is huge, and is coming from different databases and systems
     having complex structures. There are however several challenges that one has to
     deal with when implementing such a storage system.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 在处理大数据的公司中，拥有一个强大且可靠的数据湖似乎是必需的。传统的数据仓库概念已不再适用，因为数据量庞大，并且来自具有复杂结构的不同数据库和系统。然而，在实现这样的存储系统时，仍然有几个挑战需要应对。
 - en: ACID transactions that we take for granted in a relational database are no longer
     so obvious and one has to deal with low-level concepts such as file organization
     in the storage system. With some additional effort, the ACID can be brought back
     — we achieved that for the atomicity. An alternative to this approach can be using
     some more advanced table format such as Delta or Iceberg that provide ACID.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在关系数据库中认为理所当然的ACID事务在此已不再那么明显，必须处理存储系统中的低级概念，如文件组织。通过一些额外的努力，可以恢复ACID——我们在原子性方面达到了这一点。另一种方法是使用更先进的表格格式，如Delta或Iceberg，它们提供ACID。
 - en: The changing schema of the data either because of some error during the export
     or just because the entities really change is quite a problem that may cause data
     loss if not treated with caution. Internally we developed a tool that we consider
     open-sourcing in the future. This tool allows us to version schemas for all datasources
     so we can see the history of how their schemas evolved. It also allows us to compare
     the schemas, do various actions with them, and handle the schema evolution painlessly.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据模式的变化，无论是由于导出过程中出现错误还是实体真的发生了变化，都是一个相当棘手的问题，如果不加以谨慎处理，可能会导致数据丢失。我们在内部开发了一个工具，我们考虑将来将其开源。这个工具允许我们对所有数据源进行模式版本控制，以便查看其模式如何演变的历史。它还允许我们比较模式，执行各种操作，并轻松处理模式演变。
 - en: Maintaining the data lake requires continuous discussion with the data users
     which are usually analysts, researchers, and data scientists. Knowing what kind
     of queries are being executed against a table allows us to highly optimize it
     by using a custom layout for the files in terms of partitioning, bucketing, and
     even sorting.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 维护数据湖需要与数据用户（通常是分析师、研究人员和数据科学家）进行持续讨论。了解对表执行了什么样的查询，使我们能够通过在分区、桶化甚至排序方面使用自定义布局来进行高度优化。
