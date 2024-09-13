@@ -1,380 +1,584 @@
 - en: 'Forecast Multiple Horizons: an Example with Weather Data'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 预测多个视野：以天气数据为例
 - en: 原文：[https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07](https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07](https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07)
 - en: Predict precipitations in Switzerland by using the forecasting horizon as a
     feature.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用预测视野作为特征预测瑞士的降水量。
 - en: '[](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[![Davide
     Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)
     [Davide Burba](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[![Davide
+    Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)
+    [Davide Burba](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)
     ·8 min read·Aug 6, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)
+    ·阅读时长8分钟·2023年8月6日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/0a51955e062687c7048d4f894669ee7e.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0a51955e062687c7048d4f894669ee7e.png)'
 - en: Weather forecast, by [Giulia Roggia](https://www.instagram.com/giulia_roggia__/).
     Used with permission.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 天气预报，作者：[Giulia Roggia](https://www.instagram.com/giulia_roggia__/)。已获许可使用。
 - en: '[Introduction](#38c0)'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[介绍](#38c0)'
 - en: '[Example: Precipitations in Switzerland](#65d9)'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[示例：瑞士的降水量](#65d9)'
 - en: Introduction
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: '*The traditional approach*'
+  id: totrans-11
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*传统方法*'
 - en: When we want to predict future values for a time-series, we are often interested
     in multiple future horizons, e.g. what will happen in 1, 2, or 3 months. The traditional
     approach to predict these different horizons consists in training a separate model
     for each target horizon.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们想要预测时间序列的未来值时，我们通常对多个未来视野感兴趣，例如1、2或3个月后的情况。预测这些不同视野的传统方法是为每个目标视野训练一个单独的模型。
 - en: '*Common alternatives*'
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*常见替代方案*'
 - en: 'A common alternative consists in training a single model on a short horizon,
     and extend it to multi-horizons by applying it recursively (i.e. by taking the
     previous predictions as inputs to produce the following ones). However this approach
     can be complex to implement in production systems, and it may lead to error propagation:
     an error on a close horizon can have detrimental effects for the following ones.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种常见的替代方法是训练一个短期视野的单一模型，然后通过递归应用（即将之前的预测作为输入来产生后续预测）将其扩展到多视野。然而，这种方法可能在生产系统中实施复杂，并且可能导致误差传播：在近视野上的误差可能对后续的视野产生不利影响。
 - en: Another alternative consists in forecasting all the horizons at the same time
     with a multi-variate model. However, the kind of models that support multi-variate
     outputs is limited, and it requires extra effort in data handling and model maintenance.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种替代方法是用多变量模型同时预测所有视野。然而，支持多变量输出的模型种类有限，并且在数据处理和模型维护上需要额外的努力。
 - en: '*Horizon as a feature*'
+  id: totrans-16
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*视野作为特征*'
 - en: 'A simpler approach consists in concatenating the data prepared for each horizon,
     and adding a new “horizon” feature. This approach has several **advantages**:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种更简单的方法是将为每个视野准备的数据拼接在一起，并添加一个新的“视野”特征。这种方法具有几个**优点**：
 - en: It’s simple to understand and implement, as it leads to a single model to train
     and maintain.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它易于理解和实施，因为它只需要训练和维护一个模型。
 - en: 'It potentially improves the predictions accuracy, since the model is trained
     on a larger dataset. It can even be used as a “data augmentation” technique: if
     you are interested in only a few horizons, you can still add additional ones in
     the training phase to improve model estimation.'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它可能提高预测准确性，因为模型是在更大的数据集上训练的。它甚至可以作为一种“数据增强”技术使用：如果你只对几个视野感兴趣，你仍然可以在训练阶段添加额外的视野来改善模型估计。
 - en: The model can be used to predict horizons on which it was not trained, which
     might be helpful if you have many horizons to predict.
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 该模型可以用于预测其未经过训练的范围，这在你有多个范围需要预测时可能很有帮助。
 - en: 'This approach is the alter-ego of a [global model](https://medium.com/towards-data-science/local-vs-global-forecasting-what-you-need-to-know-1cc29e66cae0),
     but in the context of multiple horizons instead of multiple time-series. Therefore,
     it shares similar **drawbacks**:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法是 [全球模型](https://medium.com/towards-data-science/local-vs-global-forecasting-what-you-need-to-know-1cc29e66cae0)
+    的另一种表现形式，但在多个预测范围的背景下，而不是多个时间序列。因此，它有类似的 **缺点**：
 - en: If performance for a specific horizon starts to degrade, it’s hard to update
     the model without impacting predictions on other horizons.
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果特定预测范围的性能开始下降，更新模型很难而且可能会影响其他范围的预测。
 - en: It might need full re-training when a new horizon appear (although it’s not
     mandatory).
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当出现新的预测范围时，可能需要完全重新训练（尽管这不是强制性的）。
 - en: You cannot use traditional forecasting models (such as ARIMA, exponential smoothing,
     etc.).
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你不能使用传统的预测模型（如 ARIMA、指数平滑等）。
 - en: 'Example: Precipitations in Switzerland'
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 示例：瑞士的降水量
 - en: '![](../Images/452022e982e461409438f520fa0b650a.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/452022e982e461409438f520fa0b650a.png)'
 - en: Lugano Lake, Image by [Makalu](https://pixabay.com/users/makalu-680451/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3098927)
     from [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3098927)
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 卢加诺湖，图片由 [Makalu](https://pixabay.com/users/makalu-680451/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3098927)
+    提供，来自 [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3098927)
 - en: In this section we show a concrete Python implementation of the “horizon as
     a feature” technique, and we compare it to the traditional approach of training
     one model per horizon.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，我们展示了“范围作为特征”技术的具体 Python 实现，并将其与每个范围训练一个模型的传统方法进行比较。
 - en: Our goal is to forecast precipitations in Lugano, a city in Switzerland. The
     data used in this example is provided by [MeteoSwiss](https://www.meteoswiss.admin.ch/)
     and is available [here](https://www.meteoswiss.admin.ch/climate/climate-change/changes-in-temperature-precipitation-and-sunshine/homogeneous-data-series-since-1864.html)
     (data used with permission).
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的目标是预测卢加诺的降水量，这是一座位于瑞士的城市。此示例中使用的数据由 [MeteoSwiss](https://www.meteoswiss.admin.ch/)
+    提供，数据可以在 [这里](https://www.meteoswiss.admin.ch/climate/climate-change/changes-in-temperature-precipitation-and-sunshine/homogeneous-data-series-since-1864.html)
+    获得（数据使用已获许可）。
 - en: Data loading
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据加载
 - en: Let’s start by importing the necessary libraries to manipulate the data, visualize
     it, and train a LightGBM model (if you are interested in the choice of the model,
     you can check [this article](https://medium.com/towards-data-science/gradient-boosting-a-silver-bullet-in-forecasting-5820ba7182fd)).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们首先导入必要的库，以便处理数据、可视化数据和训练 LightGBM 模型（如果你对模型的选择感兴趣，可以查看[这篇文章](https://medium.com/towards-data-science/gradient-boosting-a-silver-bullet-in-forecasting-5820ba7182fd)）。
 - en: '[PRE0]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Let us load the data in a Pandas dataframe:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将数据加载到 Pandas 数据框中：
 - en: '[PRE1]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Quick data exploration
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 快速数据探索
 - en: 'We can now have a look at the data:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以查看数据：
 - en: '[PRE2]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '![](../Images/7acaeb96eb0cf79cb913631c1d9ecbe8.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7acaeb96eb0cf79cb913631c1d9ecbe8.png)'
 - en: Temperature and Precipitation in Lugano. Image by Author.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 卢加诺的温度和降水量。图片来源：作者。
 - en: We can see that we have monthly data of temperature and precipitation starting
     from 1864 (that’s almost 160 years!). Let’ exploit [Plotly](https://plotly.com/)
     interactive functionalities to look a bit closer.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到，从 1864 年开始，我们有每月的温度和降水量数据（这几乎是 160 年！）。让我们利用 [Plotly](https://plotly.com/)
+    的交互功能更仔细地查看。
 - en: '![](../Images/7906a797810c81948633808f5612b930.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7906a797810c81948633808f5612b930.png)'
 - en: Temperature in Lugano in the past 10 years. Image by author.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 过去 10 年卢加诺的温度。图片来源：作者。
 - en: '![](../Images/30d5bf75cd36641f9af9e4110b00c9cf.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/30d5bf75cd36641f9af9e4110b00c9cf.png)'
 - en: Precipitations in Lugano in the past 10 years. Image by author.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 过去 10 年卢加诺的降水量。图片来源：作者。
 - en: We can see that the data is seasonal, and that temperature is more regular than
     precipitations, as expected.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到数据具有季节性，温度比降水量更规律，这符合预期。
 - en: Since precipitations are harder to predict, they are also more interesting!
     Let’s try to forecast their values for the next 1, 2, and 3 months.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于降水量更难预测，它们也更有趣！让我们尝试预测未来 1、2 和 3 个月的值。
 - en: Data engineering
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据工程
 - en: 'Let’s prepare the data to train a forecasting model. We are gonna use lagged
     values of precipitations and temperature to forecast future values of precipitation:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们准备数据以训练预测模型。我们将使用滞后的降水量和温度值来预测未来的降水量：
 - en: For precipitations, we consider the 3 most recent lags, plus the ones corresponding
     to 1, 2, and 3 years before the target month.
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于降水量，我们考虑最近3个滞后值，以及目标月份之前1年、2年和3年的滞后值。
 - en: For temperature, we consider the 2 most recent lags, plus the ones corresponding
     to 1 and 2 years before the target month.
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于温度，我们考虑最近2个滞后值，以及目标月份之前1年和2年的滞后值。
 - en: We also add a “*month_horizon*” feature, which indicates which month we are
     predicting (e.g. January or April) to help the model to learn seasonality. Note
     that this is not the same as the “horizon as a feature” which takes values 1,
     2, or 3.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还添加了一个“*month_horizon*”特征，指示我们正在预测哪个月份（例如1月或4月），以帮助模型学习季节性。注意这与“作为特征的时间跨度”不同，后者取值为1、2或3。
 - en: '[PRE3]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: We can now build the target and features for each horizon.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以为每个时间跨度构建目标和特征。
 - en: '[PRE4]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Split train and test set
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 拆分训练集和测试集
 - en: 'Let’s consider the last 10 years in the data as the test set:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将数据中最近10年的部分作为测试集：
 - en: '[PRE5]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Models training
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型训练
 - en: Since we only care about comparing the two different approaches, we’ll keep
     default hyper-parameters in both cases.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们只关心比较这两种不同的方法，因此两种情况下我们都保持默认超参数。
 - en: 'Let’s start by training models the traditional way, one for each horizon:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始传统方式训练模型，为每个时间跨度训练一个：
 - en: '[PRE6]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'And now let’s run the alternative approach: a single model using the horizon
     as a feature:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们运行另一种方法：使用时间跨度作为特征的单一模型：
 - en: '[PRE7]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Predict on the test set
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在测试集上进行预测
 - en: 'Let’s make predictions on the test set with the two approaches:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用这两种方法对测试集进行预测：
 - en: '[PRE8]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Error Analysis
+  id: totrans-67
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 错误分析
 - en: Let’s now evaluate the predictive performances. First, we combine the outputs
     in a format convenient for comparison.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们评估预测性能。首先，我们将输出合并成便于比较的格式。
 - en: '[PRE9]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Here below you can see the head of the output dataframe for horizon 1.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面您可以看到时间跨度为1个月的输出数据框的开头部分。
 - en: '![](../Images/90765a4b8d80fc16d4eacb23a57d6168.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/90765a4b8d80fc16d4eacb23a57d6168.png)'
 - en: Output dataframe for horizon 1 month. Image by author.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间跨度为1个月的输出数据框。图片由作者提供。
 - en: We now compute and print the Mean Absolute Error (MAE) overall, and for each
     horizon.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在计算并打印整体和每个时间跨度的平均绝对误差（MAE）。
 - en: '[PRE10]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Which gives:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将产生：
 - en: '![](../Images/b5a0e9185abbf8d0603eaaa2f7e3226b.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b5a0e9185abbf8d0603eaaa2f7e3226b.png)'
 - en: We see that the shared model across horizons always leads to a lower error.
     This is somewhat expected, since it was trained on a larger dataset.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到跨时间跨度共享的模型总是导致较低的误差。这在某种程度上是预期的，因为它是在更大的数据集上训练的。
 - en: 'Let’s have a look at some of the predictions:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看一些预测结果：
 - en: '[PRE11]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Here we display only predictions at horizon 3 for brevity:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里为了简洁，只显示时间跨度为3个月的预测：
 - en: '![](../Images/06b750da0c64d07d6b324001726420df.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/06b750da0c64d07d6b324001726420df.png)'
 - en: Predictions at horizon 3 months. Image by author.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间跨度为3个月的预测。图片由作者提供。
 - en: 'We see that the models still fail to capture extreme events (like August 2014).
     This is not surprising since:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到模型仍然无法捕捉到极端事件（如2014年8月）。这并不令人惊讶，因为：
 - en: We have very limited information on the real state of the system.
+  id: totrans-84
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们对系统的实际状态了解非常有限。
 - en: Extreme events are very hard to predict with ML, since by definition there are
     limited observations in the training set.
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 极端事件很难通过机器学习进行预测，因为定义上在训练集中观察到的实例有限。
 - en: Next steps
+  id: totrans-86
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 下一步
 - en: 'There are several things that we could try to improve the predictive performance.
     Here’s a non-exhaustive list:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以尝试几个方法来提高预测性能。以下是一些非详尽的列表：
 - en: Penalize large errors by using an L2 loss.
+  id: totrans-88
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过使用L2损失来惩罚大误差。
 - en: Target transformations, e.g. by taking the square root.
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 目标转换，例如取平方根。
 - en: Include infra-month data. Include additional data sources.
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 包括月内数据。包括额外的数据来源。
 - en: Use a global model trained on more targets.
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用在更多目标上训练的全局模型。
 - en: Retrain more frequently, e.g. every year.
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更频繁地进行再训练，例如每年。
 - en: Hyper-parameters tuning.
+  id: totrans-93
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 超参数调整。
 - en: To evaluate if these changes improve the accuracy of the predictions, you should
     rely on a [solid backtesting strategy](https://medium.com/towards-data-science/why-backtesting-matters-and-how-to-do-it-right-731fb9624a).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 要评估这些变化是否提高了预测准确性，您应该依赖于一个[可靠的回测策略](https://medium.com/towards-data-science/why-backtesting-matters-and-how-to-do-it-right-731fb9624a)。
 - en: '*The full code used in this example is available* [*here*](https://github.com/davide-burba/code-collection/)*.*'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: '*本示例中使用的完整代码可以在* [*这里*](https://github.com/davide-burba/code-collection/) *找到*。'
 - en: '*Enjoyed this article?* [*Checkout my other ones*](https://medium.com/@davide.burba)
     *and follow me for more!* [*Click here*](https://medium.com/@davide.burba/membership)
     *to read unlimited articles and support me at no additional cost for you* ❤️'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '*喜欢这篇文章吗？* [*查看我的其他文章*](https://medium.com/@davide.burba) *并关注我以获取更多内容！* [*点击这里*](https://medium.com/@davide.burba/membership)
+    *阅读无限制的文章，并在不增加您额外成本的情况下支持我* ❤️'
