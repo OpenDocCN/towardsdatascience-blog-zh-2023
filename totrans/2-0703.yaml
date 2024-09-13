@@ -1,305 +1,460 @@
 - en: 'Delta Lake: Keeping It Fast and Clean'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Delta Lake：保持快速和清洁
 - en: 原文：[https://towardsdatascience.com/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e](https://towardsdatascience.com/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e](https://towardsdatascience.com/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e)
 - en: Ever wondered how to improve your Delta tables’ performance? Hands-on on how
     to keep Delta tables fast and clean.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 曾经想过如何提高Delta表的性能吗？亲身体验如何保持Delta表的快速和清洁。
 - en: '[](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)[![Vitor
     Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)
     [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)[![Vitor
+    Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)
+    [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)
     ·11 min read·Feb 15, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于[数据科学前沿](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)·阅读时间11分钟·2023年2月15日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/8e8a76c0c9c9379df0e8dcc11ab6c839.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8e8a76c0c9c9379df0e8dcc11ab6c839.png)'
 - en: Simplified flow chart on how to keep Delta tables fast and clean (Image by Author)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何保持Delta表快速和清洁的简化流程图（作者提供的图片）
 - en: Keeping Delta tables fast and clean is important for maintaining the efficiency
     of data pipelines. Delta tables can grow very large over time, leading to slow
     query performance and increased storage costs. However, there are several operations
     and trade-offs that can positively influence the speed of the tables.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 保持Delta表的快速和清洁对维护数据管道的效率非常重要。Delta表可能会随着时间的推移变得非常庞大，导致查询性能下降和存储成本增加。然而，有几种操作和权衡可以积极影响表的速度。
 - en: In this blog post, we’ll use the [people10m public dataset](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)
     that is available on Databricks Community Edition, to showcase the best practices
     on how to keep the tables fast and clean using Delta operations while explaining
     what is happening behind the scenes.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇博客文章中，我们将使用[people10m公共数据集](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)，该数据集在Databricks
+    Community Edition上可用，展示如何利用Delta操作保持表的快速和清洁，同时解释幕后发生的情况。
 - en: Analyzing the delta log
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析delta日志
 - en: We will start by inspecting what is inside the dataset. It is available by default
     on Databricks and you can access it [here](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#sql).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从检查数据集的内容开始。默认情况下，它在Databricks上可用，你可以[在这里](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#sql)访问它。
 - en: '![](../Images/dd620f50f6840db8b87d9bbb40654d49.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dd620f50f6840db8b87d9bbb40654d49.png)'
 - en: A small sample of the dataset
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集的小样本
 - en: '![](../Images/8aaae8e3d80dd2015369c6e8b3546ce6.png)'
+  id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8aaae8e3d80dd2015369c6e8b3546ce6.png)'
 - en: Files from the original Delta table
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自原始Delta表的文件
 - en: We have 16 parquet entries and a *_delta_log* folder containing all the transaction
     logs with all the changes that stack up to create our delta table.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有16个parquet条目和一个*_*delta_log*文件夹，其中包含所有交易日志，这些日志堆积在一起形成我们的delta表。
 - en: If we check the contents of the log we can see a JSON file that describes the
     first transaction that was written when Databricks created this Delta table.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们检查日志的内容，可以看到一个JSON文件，描述了Databricks创建这个Delta表时写入的第一次交易。
 - en: '![](../Images/fb572f171ddb516f0c0a005504397dbb.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fb572f171ddb516f0c0a005504397dbb.png)'
 - en: 'From analysis, we can see that this transaction includes several actions:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 从分析中，我们可以看到这个交易包括几个操作：
 - en: '**Commit info**'
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**提交信息**'
 - en: '[PRE0]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '`commitInfo` contains all the information regarding the commit: which operation
     was made, by who, where, and at what time. The`operationMetrics` field shows that
     8 files were written with a total of 1000000 records.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '`commitInfo` 包含有关提交的所有信息：执行了什么操作、由谁执行、在哪里执行以及在什么时间。`operationMetrics` 字段显示写入了
+    8 个文件，总共 1000000 条记录。'
 - en: '**Protocol**'
+  id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**Protocol**'
 - en: '[PRE1]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The `protocol` action is used to increase the version of the Delta protocol
     that is required to read or write a given table. This allows excluding readers/writers
     that are on an old protocol and would miss the necessary features to correctly
     interpret the transaction log.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '`protocol` 操作用于增加读取或写入给定表所需的 Delta 协议版本。这允许排除那些使用旧协议的读者/写者，因为旧协议可能缺少正确解释事务日志所需的功能。'
 - en: '**Metadata**'
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**Metadata**'
 - en: '[PRE2]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The `metadata` action contains all the table metadata. It is required on the
     first action of a table as it contains its own definition. Subsequent modifications
     to the table metadata will originate a new action.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '`metadata` 操作包含所有表的元数据。它在表的第一个操作中是必需的，因为它包含了表的定义。对表元数据的后续修改将产生新的操作。'
 - en: '**Add**'
+  id: totrans-29
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**Add**'
 - en: '[PRE3]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The `add` action, as the name suggests, is used to modify the data in a table
     by adding individual *logical files*. It contains the metadata of the respective
     file as well as some data statistics that can be used for optimizations that we’ll
     talk about further down the article.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '`add` 操作，顾名思义，是通过添加单个 *逻辑文件* 来修改表中的数据。它包含相应文件的元数据以及一些可以用于优化的数据统计信息，我们将在文章的进一步部分讨论这些优化。'
 - en: The log contains 8 `add` entries, from part-00000 to part-00007, that were truncated
     for simplicity.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 日志包含 8 个 `add` 条目，从 part-00000 到 part-00007，为简化起见已被截断。
 - en: 'If you wish to learn more about Delta’s protocol please refer to: [https://github.com/delta-io/delta/blob/master/PROTOCOL.md](https://github.com/delta-io/delta/blob/master/PROTOCOL.md)'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你希望了解更多关于 Delta 协议的信息，请参阅：[https://github.com/delta-io/delta/blob/master/PROTOCOL.md](https://github.com/delta-io/delta/blob/master/PROTOCOL.md)
 - en: Setup
+  id: totrans-34
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Setup
 - en: Now that we have analyzed the transaction logs and the dataset we are going
     to copy it to our own directory so that we can modify the table.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经分析了事务日志和数据集，我们将其复制到自己的目录中，以便我们可以修改表。
 - en: '![](../Images/53a5a868920357412976e53db9928cfb.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53a5a868920357412976e53db9928cfb.png)'
 - en: Keeping it clean
+  id: totrans-37
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 保持清洁
 - en: Vacuum
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Vacuum
 - en: The first obvious answer is the `VACUUM`command. What this does is delete the
     files that no longer affect our Delta table, given a configurable `delta.deletedFileRetentionDuration`
     that defaults on 7 days.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个明显的答案是 `VACUUM` 命令。它的作用是删除不再影响我们的 Delta 表的文件，前提是配置了 `delta.deletedFileRetentionDuration`，默认为
+    7 天。
 - en: After analyzing the dataset and the delta log, we found that we had 16 files,
     all of them older than the default retention interval, but only 8 of them were
     referenced in the log. This means that in theory if we run the command the other
     8 files would be cleaned.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 在分析数据集和 Delta 日志后，我们发现有 16 个文件，所有文件都比默认保留时间间隔要旧，但日志中仅引用了 8 个文件。这意味着理论上，如果我们运行命令，另外
+    8 个文件将被清理。
 - en: '![](../Images/63157c2d2db212e7d4d832c88ecf4b37.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/63157c2d2db212e7d4d832c88ecf4b37.png)'
 - en: Let’s check the result in the underlying filesystem.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查一下底层文件系统中的结果。
 - en: '![](../Images/a29d8a1f870250b66783b4c0a82e97db.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a29d8a1f870250b66783b4c0a82e97db.png)'
 - en: Files after running VACUUM on default settings
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行 VACUUM 后的文件，使用默认设置
 - en: Surprisingly, the files were not cleaned up. What happened?
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 令人惊讶的是，文件并没有被清理。发生了什么事？
 - en: Something that I found surprising is that the timestamps that are internally
     used by `VACUUM` are not the ones referenced in the transaction log files in the
     `add` action but rather the `modificationTime` of the files. The reason for that
     is to avoid reading a huge number of JSON files to find what files should be selected
     for deletion. With that said, make sure to keep `modificationTime` intact when
     copying/migrating Delta tables.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我发现令人惊讶的是，`VACUUM` 内部使用的时间戳不是 `add` 操作中的事务日志文件中引用的时间戳，而是文件的 `modificationTime`。这样做的原因是为了避免读取大量
+    JSON 文件以查找应选择删除的文件。也就是说，在复制/迁移 Delta 表时，请确保保持 `modificationTime` 不变。
 - en: 'Given that we just copied the entire dataset, the `modificationTime` is as
     of now and it won’t be selected for removal, at least until 7 days have passed.
     If we try to do so we’ll get the following warning:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于我们刚刚复制了整个数据集，`modificationTime` 现在的时间，因此不会被选择删除，至少在 7 天内不会。如果我们尝试删除，将会收到以下警告：
 - en: '![](../Images/8c5678da7c6dbeefb2c60ab111b2f1ac.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8c5678da7c6dbeefb2c60ab111b2f1ac.png)'
 - en: For testing purposes, we are setting `delta.retentionDurationCheck.enable=false`
     so that we can demonstrate the command in action but it’s something that should
     be used with caution as it risks corrupting the table if any other active reader
     or writer depends on the data that is being deleted.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 出于测试目的，我们将`delta.retentionDurationCheck.enable=false`，以便我们可以演示命令的实际效果，但这应该谨慎使用，因为如果其他活动的读取器或写入器依赖于被删除的数据，可能会导致表损坏。
 - en: '![](../Images/888c6472f82fca3c452a356d20f20d62.png)![](../Images/4b991aabb85542c484455842d0e4aad2.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/888c6472f82fca3c452a356d20f20d62.png)![](../Images/4b991aabb85542c484455842d0e4aad2.png)'
 - en: Files after VACUUM
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: VACUUM后的文件
 - en: Voilá, everything looks cleaner now. What about the transaction log? There are
     4 new JSON files, each representing a new transaction.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 看，这样一来，一切看起来都更整洁了。那么事务日志呢？现在有4个新的JSON文件，每个文件代表一个新的事务。
 - en: Every time a `VACUUM` is requested, two new commits are generated in the transaction
     log, containing `VACUUM START` and`VACUUM END` operations, respectively.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 每次请求`VACUUM`时，事务日志中会生成两个新的提交，分别包含`VACUUM START`和`VACUUM END`操作。
 - en: '[PRE4]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The first one did not affect any files, hence the `numFilesToDelete` is 0.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个没有影响任何文件，因此`numFilesToDelete`为0。
 - en: '[PRE5]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The second one marked 8 files for deletion hence `numFilesToDelete` is 8.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二个标记了8个文件进行删除，因此`numFilesToDelete`为8。
 - en: In sum, `VACUUM`jobs are a must for storage cost reduction. However, we need
     to make sure to schedule them regularly (they don’t affect any running jobs),
     as they are not scheduled by default. In addition to this, we need to make sure
     to tweak the retention value for as long as we’d want to time travel and have
     the `modificationTime` in mind when migrating Delta tables.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，`VACUUM`作业对于减少存储成本是必不可少的。然而，我们需要确保定期安排这些作业（它们不会影响任何正在运行的作业），因为它们默认不会被安排。此外，我们还需要确保调整保留值，以便我们希望进行时间旅行时考虑`modificationTime`，并在迁移Delta表时加以考虑。
 - en: Optimize
+  id: totrans-59
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 优化
 - en: The next command we need to be aware of is `OPTIMIZE`. What this does is compact
     small files into larger ones, while keeping all the data intact and delta statistics
     re-calculated. It can greatly improve query performance, especially if the data
     is written using a Streaming job, where, depending on the trigger interval, a
     lot of small files can be generated.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要注意的下一个命令是`OPTIMIZE`。这个命令的作用是将小文件压缩成较大的文件，同时保持所有数据完整，并重新计算增量统计信息。它可以显著提高查询性能，特别是当数据是通过流式作业写入时，根据触发间隔，可能会生成很多小文件。
 - en: The target file size can be changed by tweaking `delta.targetFileSize`. Have
     in mind that setting this value does not guarantee that all the files will end
     up with the specified size. The operation will make a best-effort attempt to be
     true to the target size but it heavily depends on the amount of data we’re processing
     as well as the parallelism.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标文件大小可以通过调整`delta.targetFileSize`来改变。请记住，设置此值并不能保证所有文件都达到指定大小。该操作将尽最大努力接近目标大小，但这在很大程度上取决于我们处理的数据量以及并行性。
 - en: In this example, we’ll set it to 80MB, since the dataset is much smaller than
     the default size which is 1GB.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们将其设置为80MB，因为数据集远小于默认大小1GB。
 - en: '![](../Images/bc3160e8420262e96ec126dbdfe01231.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bc3160e8420262e96ec126dbdfe01231.png)'
 - en: 'Let’s analyze the transaction log commit after what happened after we run the
     command:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在运行命令后分析一下事务日志的提交情况：
 - en: '[PRE6]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: A total of 8 files were removed, and 3 were added. Our new target file size
     is 80MB so all of our files were compacted into three new ones. As the commit
     info shows, the log also contains 8 `remove` actions and three `add` actions that
     were omitted for simplicity.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 总共删除了8个文件，添加了3个。我们的新目标文件大小为80MB，因此所有文件都被压缩成三个新文件。正如提交信息所示，日志中还包含了8个`remove`操作和3个`add`操作，为了简化起见，这些操作被省略了。
 - en: '![](../Images/3cba56d1217a364f759eddf3dbd1753f.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3cba56d1217a364f759eddf3dbd1753f.png)'
 - en: You might be wondering if the `OPTIMIZE` command really did something useful
     in this specific dataset so let’s try and run a simple query.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会想知道`OPTIMIZE`命令在这个特定数据集上是否真的做了有用的事情，所以让我们尝试运行一个简单的查询。
 - en: '![](../Images/88ad4892f29d784d46df460a8c65212f.png)![](../Images/9d595ba26828b402703d9780dcc22002.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/88ad4892f29d784d46df460a8c65212f.png)![](../Images/9d595ba26828b402703d9780dcc22002.png)'
 - en: With `OPTIMIZE` we have improved the scan time since we read fewer files. Nevertheless,
     we are still reading the whole dataset while trying to find salaries that are
     greater than 80000\. We will tackle this issue in the next section of the article.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`OPTIMIZE`后，我们改善了扫描时间，因为我们读取了更少的文件。然而，我们仍然在尝试查找薪资大于80000的记录时读取了整个数据集。我们将在文章的下一部分解决这个问题。
 - en: In sum, one should schedule `OPTIMIZE` jobs regularly since query reads can
     heavily benefit from having fewer files to read. Databricks recommends running
     it daily but it really depends on the frequency of the updates. Have in mind that
     `OPTIMIZE` can take some time and will increase processing costs.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结来说，应该定期安排`OPTIMIZE`任务，因为查询读取可以从减少读取文件数量中获益。Databricks建议每天运行，但实际上这取决于更新的频率。请注意，`OPTIMIZE`可能需要一些时间，并会增加处理成本。
 - en: Z-Order Optimize
+  id: totrans-72
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Z-Order优化
 - en: '[Z-Ordering](https://en.wikipedia.org/wiki/Z-order_curve) is a technique that
     is used to colocate related information in the same set of files.'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Z-Ordering](https://en.wikipedia.org/wiki/Z-order_curve)是一种用于将相关信息放置在同一组文件中的技术。'
 - en: When files are written to a Delta table, min, max, and count statistics are
     automatically added in a `stats` field on the [add action](#52fa) as we’ve seen
     before. These statistics are used for data-skippingwhen querying the table. Data-skipping
@@ -309,156 +464,228 @@
     number. Have in mind that this can affect write performance, especially for long
     strings for which it is advised to move them to the end of the schema and set
     the property to a number lower than its index.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 当文件被写入Delta表时，最小值、最大值和计数统计数据会自动添加到[add action](#52fa)中的`stats`字段，如前所述。这些统计数据用于在查询表时进行数据跳过。数据跳过是一种优化，旨在优化包含`WHERE`子句的查询。默认情况下，数据集的前32列会收集统计数据。可以通过调整`delta.dataSkippingNumIndexedCols`到所需的数字来更改这一点。请注意，这可能会影响写入性能，特别是对于长字符串，建议将其移动到模式的末尾，并将属性设置为低于其索引的数字。
 - en: In the `OPTIMIZE` example, we’ve seen that even though we have these statistics
     collected we can’t really make use of them and still end up reading all the files.
     That’s because we don’t have any explicit ordering and the salaries are basically
     randomized between all files.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 在`OPTIMIZE`示例中，我们看到即使收集了这些统计数据，我们也不能真正利用它们，仍然会读取所有文件。这是因为我们没有任何明确的排序，薪资在所有文件之间基本是随机的。
 - en: 'By adding a `ZORDER-BY` column with `OPTIMIZE` we can easily solve this issue:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过在`OPTIMIZE`中添加`ZORDER-BY`列，我们可以轻松解决这个问题：
 - en: '![](../Images/2ec385374ca841d731734baafb3d8e29.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2ec385374ca841d731734baafb3d8e29.png)'
 - en: 'Let’s analyze the transaction log:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们分析事务日志：
 - en: '[PRE7]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: There are some differences between both `OPTIMIZE` commands. The first we can
     notice is that, as expected, we now have a `zOrderBy` column in `operationParameters`.
     Moreover, even though we have specified the same target file size, the `OPTIMIZE`
     resulted in 2 files instead of 3, due to the statistics of our column.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个`OPTIMIZE`命令之间存在一些差异。我们首先注意到的是，如预期的那样，现在在`operationParameters`中有一个`zOrderBy`列。此外，尽管我们指定了相同的目标文件大小，但由于列的统计数据，`OPTIMIZE`结果为2个文件而不是3个文件。
 - en: Below is the `add` action for the first file. The stats show that this file
     contains all the records that have salaries between -26884 and 73676\. With that
     said, our query should skip this file entirely since the salary value falls out
     of the range of our `WHERE` clause.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是第一个文件的`add`操作。统计数据显示该文件包含所有薪资在-26884和73676之间的记录。因此，我们的查询应该完全跳过这个文件，因为薪资值超出了我们`WHERE`子句的范围。
 - en: '[PRE8]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: By running the query again after Z-Ordering the files, we can see that only
     one file was read and the other one was pruned.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过在Z-Ordering文件后再次运行查询，我们可以看到只读取了一个文件，另一个文件被修剪掉了。
 - en: '![](../Images/8e508ddb5dd29fccfccd7c264687bbdf.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8e508ddb5dd29fccfccd7c264687bbdf.png)'
 - en: 'Even though Z-Ordering for data-skipping looks to be a game changer, it must
     be used correctly in order to be efficient. Below we’ll list some key considerations
     that we must have when using Z-Ordering:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管Z-Ordering在数据跳过方面看起来是一个改变游戏规则的技术，但必须正确使用才能提高效率。下面我们将列出使用Z-Ordering时必须考虑的一些关键点：
 - en: Z-Ordering is only suited for columns with high cardinality, if it has a low
     cardinality we cannot benefit from data-skipping.
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: Z-Ordering仅适用于高基数的列，如果列的基数较低，我们无法从数据跳过中受益。
 - en: We can specify multiple columns on Z-Order but the effectiveness of its data-skipping
     decreases with each extra column.
+  id: totrans-87
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们可以在 Z-Order 上指定多个列，但每增加一列，其数据跳过的效果会降低。
 - en: Make sure to Z-Order only on columns for which statistics are available. Have
     in mind the index of the columns and that only the first 32 columns are analyzed.
+  id: totrans-88
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确保仅在有统计数据的列上进行 Z-Order 操作。记住列的索引，只有前 32 列会被分析。
 - en: Partitioning
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分区
 - en: Another technique that can be used is physical partitioning. While Z-ordering
     groups data with similar values under the same file, partitioning groups data
     files under the same folder.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种可以使用的技术是物理分区。虽然 Z-ordering 将具有相似值的数据分组到同一文件中，但分区将数据文件分组到同一文件夹下。
 - en: Contrary to Z-Ordering, partitioning works best with low-cardinality columns.
     If we choose otherwise, we may end up with possibly infinite partitions and end
     up with a lot of small files which in the end results in performance issues.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 与 Z-Ordering 相反，分区在低基数列上效果最佳。如果我们选择其他列，可能会导致无限的分区，最终生成大量小文件，从而引发性能问题。
 - en: We’ll be using gender as our partition column since it is the only one with
     low cardinality present in this dataset.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用性别作为分区列，因为它是数据集中唯一具有低基数的列。
 - en: '![](../Images/5612e507c6002be0abd530bd1815f3d2.png)'
+  id: totrans-93
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5612e507c6002be0abd530bd1815f3d2.png)'
 - en: By doing this we end up with two folders, one for each gender. This type of
     segregation is rather useful for columns that have low cardinality, and are very
     often used in `WHERE` clauses in large tables.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过这样做，我们最终得到了两个文件夹，每个文件夹对应一个性别。这种类型的分隔对于具有低基数并且在大表中经常用于`WHERE`子句的列非常有用。
 - en: '![](../Images/a9482eb38d0eed8e649215f6f2d08560.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a9482eb38d0eed8e649215f6f2d08560.png)'
 - en: Let’s suppose we now want to be able to extract insights based on gender and
     salary.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们现在希望能够根据性别和薪资提取见解。
 - en: '![](../Images/3408e973c1f207ea1e1e4096fd319700.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3408e973c1f207ea1e1e4096fd319700.png)'
 - en: '`OPTIMIZE` can be paired with a partition column if we only want to optimize
     a subset of the data. Below we’ll analyze data-skipping with and without partitioning
     in Z-Ordered tables to show how can we take advantage of both approaches. We’ve
     decreased the target file size to showcase the differences now that our data is
     split by gender under different files.'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: '`OPTIMIZE` 可以与分区列配对使用，如果我们只想优化数据的一个子集。下面我们将分析 Z-Ordered 表中有无分区的数据跳过，以展示如何同时利用这两种方法。我们已经减少了目标文件大小，以展示我们的数据在不同文件下按性别拆分后的差异。'
 - en: '![](../Images/c928a39d5138e7f8db88e3c20ffbd6d8.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c928a39d5138e7f8db88e3c20ffbd6d8.png)'
 - en: As shown above, without partitioning we have to read two files to get our results.
     We were able to skip 3 files by having it Z-Ordered by salary but had to fully
     read them to extract the request gender. With partitioning, we were able to skip
     a full partition, which filtered the gender basically for free, and 3 files due
     to the Z-Ordering.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 如上所示，如果没有分区，我们必须读取两个文件才能获得结果。通过根据薪资进行 Z-Order，我们能够跳过 3 个文件，但必须完全读取这些文件以提取请求的性别。使用分区后，我们能够跳过整个分区，基本上“免费”过滤性别，并且由于
+    Z-Ordering 跳过了 3 个文件。
 - en: As we can see, there are benefits to using both approaches simultaneously but
     it needs to be thoroughly thought through as it might only make a significant
     difference for very large tables.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所见，同时使用这两种方法有其好处，但需要经过仔细考虑，因为它可能只对非常大的表格产生显著差异。
 - en: Conclusion
+  id: totrans-102
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In conclusion, keeping Delta tables clean is crucial for maintaining the performance
     and efficiency of data pipelines. Vacuuming and optimizing Delta tables can help
     reclaim storage space and improve query execution times. Understanding the small
     details of each operation is very important to proper fine-tuning which could
     otherwise lead to unnecessary storage and processing costs.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，保持 Delta 表的清洁对于维持数据管道的性能和效率至关重要。清理和优化 Delta 表有助于回收存储空间并提高查询执行时间。深入了解每个操作的细节对于正确的微调非常重要，否则可能会导致不必要的存储和处理成本。
 - en: References
+  id: totrans-104
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[https://docs.databricks.com/delta/vacuum.html](https://docs.databricks.com/delta/vacuum.html)'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://docs.databricks.com/delta/vacuum.html](https://docs.databricks.com/delta/vacuum.html)'
 - en: '[https://docs.databricks.com/delta/optimize.html](https://docs.databricks.com/delta/optimize.html)'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://docs.databricks.com/delta/optimize.html](https://docs.databricks.com/delta/optimize.html)'
 - en: '[https://docs.databricks.com/delta/data-skipping.html](https://docs.databricks.com/delta/data-skipping.html)'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://docs.databricks.com/delta/data-skipping.html](https://docs.databricks.com/delta/data-skipping.html)'
 - en: '[https://docs.databricks.com/tables/partitions.html](https://docs.databricks.com/tables/partitions.html)'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
 - en: '[https://docs.databricks.com/delta/best-practices.html](https://docs.databricks.com/delta/best-practices.html)'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
 - en: '[https://www.databricks.com/blog/2018/07/31/processing-petabytes-of-data-in-seconds-with-databricks-delta.html](https://www.databricks.com/blog/2018/07/31/processing-petabytes-of-data-in-seconds-with-databricks-delta.html)'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL

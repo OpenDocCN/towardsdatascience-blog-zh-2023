@@ -3,17 +3,20 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Delta Lake：删除向量
 - en: 原文：[https://towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63](https://towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63](https://towardsdatascience.com/delta-lake-deletion-vectors-65bc9dc90b63)
 - en: How are deletion vectors related to DML commands and how can they improve write
     performance?
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 删除向量与 DML 命令有何关联，它们如何改善写入性能？
 - en: '[](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)[![Vitor
     Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)
@@ -21,24 +24,33 @@
   id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)[![维托·特谢拉](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)
+    [维托·特谢拉](https://medium.com/@vitorf24?source=post_page-----65bc9dc90b63--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)
     ·9 min read·May 25, 2023
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65bc9dc90b63--------------------------------)
+    ·9 分钟阅读·2023年5月25日
 - en: --
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/a0f093c1a52476e936a00d6ef3306189.png)'
   id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a0f093c1a52476e936a00d6ef3306189.png)'
 - en: Photo by [Sam Pak](https://unsplash.com/@melocokr?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
   id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Sam Pak](https://unsplash.com/@melocokr?utm_source=medium&utm_medium=referral)
+    提供的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)'
 - en: Being able to update and delete records is a feature that was lost during the
     transition from traditional data warehouses to data lakes. While data lakes were
     great at solving scale and cost issues, they sacrifice the ability to update and
@@ -48,6 +60,7 @@
   id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 能够更新和删除记录是从传统数据仓库过渡到数据湖时失去的一个功能。虽然数据湖在解决规模和成本问题上表现出色，但它们牺牲了更新和删除记录的能力。数据湖由许多文件组成，这些文件很快会变成数据沼泽，这正是问题出现的地方，而湖仓架构则解决了这一问题。
 - en: The lakehouse architecture is a hybrid between data warehouses and data lakes
     that combines both to address their issues. One of those issues is the lack of
     ACID transactions with DML support that were much beloved in data warehouses and
@@ -56,16 +69,20 @@
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 湖仓架构是一种结合了数据仓库和数据湖的混合型架构，旨在解决它们各自的问题。其中一个问题是数据仓库中备受喜爱的缺乏 DML 支持的 ACID 事务，而这正是
+    Delta Lake 的亮点。然而，由于 Delta 的 ACID 保证，文件的原地修改是不可能的。
 - en: In this post, I will address how Delta supports DML commands, how deletion vectors
     work, and why they are important as a performance improvement.
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我将讨论 Delta 如何支持 DML 命令、删除向量如何工作以及它们作为性能改进的重要性。
 - en: Delta Lake — DML, under the hood
   id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Delta Lake — DML 背后的实现
 - en: With the help of the [transaction log](https://www.databricks.com/blog/2019/08/21/diving-into-delta-lake-unpacking-the-transaction-log.html),
     Delta Lake supports DML commands like *Update*, *Delete*, and *Merge*. For simplicity,
     we’ll focus on *Update* and *Delete* commands since they are simpler and work
@@ -73,42 +90,53 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [事务日志](https://www.databricks.com/blog/2019/08/21/diving-into-delta-lake-unpacking-the-transaction-log.html)
+    的帮助下，Delta Lake 支持如 *Update*、*Delete* 和 *Merge* 的 DML 命令。为了简便起见，我们将专注于 *Update*
+    和 *Delete* 命令，因为它们更简单，并且在底层的工作方式相同。
 - en: So, what happens when the following query is executed?
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，当执行以下查询时会发生什么？
 - en: '![](../Images/29e41e90ff7550f37c41c82f0d9a263c.png)'
   id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/29e41e90ff7550f37c41c82f0d9a263c.png)'
 - en: Files before/after the update — Image by author
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 更新前后的文件 — 图片来源于作者
 - en: 'There are three steps involved:'
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 涉及三个步骤：
 - en: Find the files where the predicate *gender = ‘M’* matches
   id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 查找谓词 *gender = ‘M’* 匹配的文件
 - en: For each of the files found, rewrite the file with the records updated
   id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于找到的每个文件，重写文件并更新记录
 - en: Remove File 2 and File 4 from the transaction log and add File 5 and File 6
   id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从事务日志中删除文件 2 和文件 4，并添加文件 5 和文件 6
 - en: The same logic is used for a *Delete* command. The process of rewriting the
     files with the required updates is called **copy-on-write**.
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 相同的逻辑也适用于*删除*命令。将文件重写为所需更新的过程称为**写时复制**。
 - en: By copying the entire file with the updated records we avoid having to do in-place
     modifications and are able to concurrently navigate through the transaction log
     and the several different versions that make up the latest state of a Delta table
@@ -116,12 +144,14 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过复制包含更新记录的整个文件，我们避免了就地修改，并能够同时浏览事务日志和构成 Delta 表最新状态的多个不同版本（时间旅行）。
 - en: For the above query, this strategy does not seem to be a problem since there
     is a high percentage of the records that will be updated, but what about this
     one?
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于上述查询，这种策略似乎没有问题，因为有很高比例的记录会被更新，但那这个呢？
 - en: In this case, the file that contains this specific id will have to be fully
     replaced by a new one without the record. For small files, this should not be
     an issue but let’s say we have files in the range of hundreds of MB, this is highly
@@ -129,6 +159,7 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，包含特定 id 的文件必须被没有该记录的新文件完全替换。对于小文件，这不应成为问题，但假设我们有几百 MB 的文件，这种做法是非常低效的。
 - en: In sum, copy-on-write is great for fast reads, as all the data is always present
     in the same file, and good when there are not many DML operations. On the contrary,
     the writes are expensive and it is a bad strategy when there are a lot of update
@@ -136,17 +167,20 @@
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，写时复制对于快速读取非常好，因为所有数据始终存在于同一个文件中，并且在 DML 操作不多的情况下表现良好。相反，写入操作成本高，当更新操作很多时，这种策略是不理想的，如上所述。
 - en: Deletion Vectors
   id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 删除向量
 - en: Delta Deletion Vectors (DVs) are a mechanism that is used to increase the performance
     of writes when an update only changes a very small percentage of the records in
     a file due to copy-on-write.
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: Delta 删除向量（DVs）是一种机制，用于在由于写时复制而只更新文件中很小百分比的记录时，提高写入性能。
 - en: Put in simple terms, they are an array of [RoaringBitmaps](https://github.com/RoaringBitmap/RoaringBitmap)
     that map directly into rows of Parquet files (the default implementation of 32-bit
     integers is not enough to cover the possible number of rows). DVs are created
@@ -157,70 +191,87 @@
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单来说，它们是 [RoaringBitmaps](https://github.com/RoaringBitmap/RoaringBitmap) 的数组，直接映射到
+    Parquet 文件的行中（32 位整数的默认实现不足以覆盖可能的行数）。DVs 由删除或更新现有数据的命令创建，作为标记用于在扫描数据时过滤行。在删除的情况下，它们充当删除标记，正如名称所示；在更新的情况下，它们充当行无效标记，我将在下面进一步详细说明。
 - en: Setup
   id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 设置
 - en: Let’s use the [people10m public dataset](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)
     that we’ve been using in the previous Delta Lake posts and analyze how DVs actually
     work.
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们使用之前 Delta Lake 文章中使用的 [people10m 公共数据集](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)
+    并分析 DVs 实际上是如何工作的。
 - en: 'We should have a table like this:'
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该有这样的表：
 - en: '![](../Images/dede0b7bb51dbde1d1d4f2f7620d58fe.png)'
   id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dede0b7bb51dbde1d1d4f2f7620d58fe.png)'
 - en: Delta Table people10m — Image by author
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: Delta Table people10m — 作者提供的图片
 - en: 'The first thing we need to do is enable the feature by running:'
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要做的第一件事是通过运行以下命令启用该功能：
 - en: Set deletion vectors flag
   id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 设置删除向量标志
 - en: '**Note:** Be aware that by turning this feature on the table protocols are
     updated to *readerVersion=3* and *writerVersion=7* and might break compatibility
     with older readers/writers.'
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意：** 请注意，通过启用此功能，表协议会更新为*readerVersion=3* 和 *writerVersion=7*，可能会与旧版本的读取器/写入器不兼容。'
 - en: 'Let’s force the creation of a deletion vector by deleting an id from the table:'
   id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过从表中删除一个 id 来强制创建一个删除向量：
 - en: Without DVs, we should have had a new file in the transaction log that would
     contain all the ids from the original file except id 1\. Let’s see what happened
     by inspecting the transaction log.
   id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 没有 DVs 的话，我们应该在事务日志中有一个新文件，包含原始文件中的所有 id，除了 id 1。让我们通过检查事务日志来看看发生了什么。
 - en: Unpacking the transaction log
   id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 解包事务日志
 - en: '**CommitInfo**'
   id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '**CommitInfo**'
 - en: The *commitInfo* entry contains the information about the DELETE operation.
   id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '*commitInfo* 条目包含有关 DELETE 操作的信息。'
 - en: Commit info entry in the transaction
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 事务中的提交信息条目
 - en: Here we see that *numDeletionVectorsAdded:”1"* and *numAddedFiles:”0"* which
     means that we avoided rewriting a file.
   id: totrans-42
@@ -397,19 +448,23 @@
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意：** 在写作时，DVs 不支持 *UPDATE* 和 *MERGE* 命令，只支持 *DELETE*。不过，它们将在 [未来支持](https://github.com/delta-io/delta/issues/1367#issuecomment-1485345562)。'
 - en: Reading tables with DVs
   id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 带有 DVs 的表的读取
 - en: '![](../Images/958146fc8d4d2c32348a55e5e7b93943.png)'
   id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/958146fc8d4d2c32348a55e5e7b93943.png)'
 - en: Reading tables with DVs — Image by author
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 带有 DVs 的表的读取 — 作者提供的图像
 - en: When files have associated DVs, the scan will implicitly read the DV and filter
     the resulting rows matched by the vector. While without DVs we read a single file
     to get a set of results, with DVs we’ll have to read both file and DV in order
@@ -417,61 +472,74 @@
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 当文件有相关的 DVs 时，扫描将隐式读取 DV，并根据向量过滤匹配的结果行。没有 DVs 时，我们读取单个文件以获得一组结果，而有 DVs 时，我们必须同时读取文件和
+    DV 才能找到正确的结果集，这可能会影响读取性能。
 - en: Delete with existing DVs
   id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 删除现有的 DVs
 - en: '![](../Images/26c11b1f621eab64cc38231cada997be.png)'
   id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/26c11b1f621eab64cc38231cada997be.png)'
 - en: Delete with existing DVs — Image by author
   id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 带有 DVs 的删除 — 作者提供的图像
 - en: In this case, we will execute a delete that will affect a file that already
     has an associated DV file. Since we are only deleting we won’t need to write any
     new files with updated rows but only update the existing DV.
   id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们将执行一个删除操作，这会影响一个已经有相关 DV 文件的文件。由于我们只是删除，不需要写入任何包含更新行的新文件，只需更新现有 DV。
 - en: Scan (File 2, DV 2.1) to find the latest set of rows
   id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 扫描 (File 2, DV 2.1) 以查找最新的行集
 - en: Write a new DV containing the old DV deleted rows plus the new one
   id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 写一个新的 DV，包含删除旧 DV 的行以及新的行。
 - en: Remove (File 2, DV 2.1) from the transaction log and add (File 2, DV 2.2)
   id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从事务日志中移除 (File 2, DV 2.1) 并添加 (File 2, DV 2.2)
 - en: Cleanup and compaction with DVs
   id: totrans-82
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 带有 DVs 的清理和压缩
 - en: VACUUM
   id: totrans-83
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*VACUUM*'
 - en: With constant updates, DVs might be constantly replaced and there are a lot
     of files left behind. *VACUUM* will also target DVs for deletion just like regular
     files.
   id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着不断的更新，DVs 可能会不断被替换，留下许多旧文件。*VACUUM* 也会像处理常规文件一样处理 DVs。
 - en: OPTIMIZE
   id: totrans-85
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*OPTIMIZE*'
 - en: Before DVs, *OPTIMIZE* used *minFileSize* propertyto choose which files should
     be selected for compaction. Since there are files that might have a huge part
     of their rows invalidated, it makes sense to also select those that fall off a
@@ -480,27 +548,33 @@
   id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 在没有 DVs 的情况下，*OPTIMIZE* 使用 *minFileSize* 属性选择应该进行压缩的文件。由于某些文件可能有大量行被作废，因此选择那些超出某个阈值的文件也是有意义的。*maxDeletedRowsRatio*
+    属性定义了文件被选择进行压缩并删除其 DV 的最大允许比例。
 - en: Z-ORDER OPTIMIZE
   id: totrans-87
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Z-ORDER OPTIMIZE
 - en: This *OPTIMIZE* strategy is not idempotent, each time it is executed it will
     try to generate a new set of organized files, which means that no DVs will result
     from this operation, and all previous DVs and files are marked for deletion.
   id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个 *OPTIMIZE* 策略不是幂等的，每次执行时都会尝试生成一组新的有序文件，这意味着这个操作不会生成 DVs，所有以前的 DVs 和文件都标记为待删除。
 - en: Performance differences
   id: totrans-89
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 性能差异
 - en: The theory is all covered but let’s see the improvements in practice by running
     a simple *DELETE* query.
   id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 理论已经涵盖，但让我们通过运行一个简单的 *DELETE* 查询来查看实际中的改进。
 - en: In order to simulate a real-life scenario of a write-intensive application with
     an average target file size I have compacted the dataset into a single file with
     approximately 236 MB and 10 million records and compared the performance of the
@@ -508,14 +582,18 @@
   id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了模拟一个写入密集型应用程序的真实场景，并考虑平均目标文件大小，我将数据集压缩到一个大约 236 MB 和 1000 万条记录的单一文件中，并比较了启用和未启用
+    DVs 的情况下查询的性能。
 - en: '![](../Images/a5e757435fb3bc9e831d9484668a67fc.png)'
   id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a5e757435fb3bc9e831d9484668a67fc.png)'
 - en: Job statistics for both approaches — Image by author
   id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种方法的作业统计信息 — 作者提供的图像
 - en: The first thing that we can notice on the left is the number of bytes added
     which is the same as the original file minus the row that was just deleted. There
     are two files added that total 9,999,999 rows and took 27.1s to run the entire
@@ -523,6 +601,8 @@
   id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先注意到左侧的字节数增加，这与原始文件的字节数相同，减去刚刚删除的行。有两个文件被添加，总计 9,999,999 行，运行整个操作（包括扫描文件和重写更新后的文件）花费了
+    27.1 秒。
 - en: On the right, we can see the DVs in action. We have 0 bytes added, as there
     are 0 new files. We see that a new DV with one row (34 bytes) was added to an
     existing file that still contains 9,999,999 valid rows. **Overall, the operation
