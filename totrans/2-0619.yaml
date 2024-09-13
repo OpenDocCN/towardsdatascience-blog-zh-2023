@@ -1,189 +1,269 @@
 - en: Custom Scoring Functions in Scikit-Learn
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 scikit-learn 中的自定义评分函数
 - en: 原文：[https://towardsdatascience.com/custom-scoring-functions-in-scikit-learn-d33a1ebc8f90](https://towardsdatascience.com/custom-scoring-functions-in-scikit-learn-d33a1ebc8f90)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/custom-scoring-functions-in-scikit-learn-d33a1ebc8f90](https://towardsdatascience.com/custom-scoring-functions-in-scikit-learn-d33a1ebc8f90)
 - en: A deep dive into scoring functions for use in RandomizedSearchCV, GridSearchCV
     and cross_val_score
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 深入研究 RandomizedSearchCV、GridSearchCV 和 cross_val_score 中的评分函数
 - en: '[](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)[![Zachary
     Raicik](../Images/860760b53fcc75013007067190e8ca65.png)](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)
     [Zachary Raicik](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)[![扎卡里·赖西克](../Images/860760b53fcc75013007067190e8ca65.png)](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)[![数据科学导向](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)
+    [扎卡里·赖西克](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)
     ·7 min read·Nov 16, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [数据科学导向](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)
+    ·7分钟阅读·2023年11月16日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/8365cc9231da4ae74d2b17f8e6e04ef9.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8365cc9231da4ae74d2b17f8e6e04ef9.png)'
 - en: Photo by [engin akyurt](https://unsplash.com/@enginakyurt?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [engin akyurt](https://unsplash.com/@enginakyurt?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: '`RandomizedSearchCV`, `GridSearchCV`, and `cross_val_score` are all tools to
     optimize and evaluate machine learning models in scikit-learn. Each of these tools
     offers a systematic approach to hyper-parameter tuning and model performance assessment.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '`RandomizedSearchCV`、`GridSearchCV` 和 `cross_val_score` 都是优化和评估 scikit-learn
+    中机器学习模型的工具。这些工具提供了一种系统化的方法来调整超参数和评估模型性能。'
 - en: For a long time, I used these tools out of the box without any consideration
     for the scoring function. However, I eventually learned that when using these
     tools, scikit-learn defaults to the model’s inherent scoring function to evaluate
     performance. The default scoring metric isn’t always appropriate, which can lead
     to misinformed decisions regarding the model.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 很长一段时间，我使用这些工具时没有考虑评分函数。然而，我最终了解到，在使用这些工具时，scikit-learn 默认使用模型的固有评分函数来评估性能。默认的评分指标并不总是合适的，这可能导致对模型的决策失误。
 - en: '**The remainder of this article will delve into how and when to utilize custom
     scoring functions in scikit-learn.**'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '**本文的其余部分将深入探讨如何以及何时在 scikit-learn 中使用自定义评分函数。**'
 - en: 'Example: Tweedie Regression on Insurance Claims'
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 示例：保险索赔中的 Tweedie 回归
 - en: In this example, we develop a regressor for predicting future insurance claim
     costs, a task complicated by the inherent uncertainty in insurance data. Uncertainty
     in insurance data stems from a couple of places.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个示例中，我们开发了一种回归器来预测未来的保险索赔成本，这一任务因保险数据中的固有不确定性而复杂。不确定性来自几个方面。
 - en: Once someone has purchased an insurance policy, there is no guarantee they will
     ever file a claim. This leads to a high concentration of zeroes in the target.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一旦有人购买了保险单，就没有保证他们会提出索赔。这导致目标变量中有很高的零值浓度。
 - en: If someone does file a claim, the size of that claim could be large or small.
     This leads to a large variance in our target variable.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果有人提出索赔，该索赔的金额可能大也可能小。这导致我们的目标变量具有较大的方差。
 - en: By default, `RandomizedSearchCV`, `GridSearchCV`, and `cross_val_score` use
     the default scoring metric associated with the classifier or regressor passed
     to it. For many widely used regressors traditional metrics like R² and RMSE are
     the default scores. However, using these metrics to make decisions about parameter
     tuning or evaluate model performance for insurance data will often lead to incorrect
     decisions and results.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，`RandomizedSearchCV`、`GridSearchCV`和`cross_val_score`使用与传递给它的分类器或回归器相关联的默认评分指标。对于许多广泛使用的回归器，传统的指标如R²和RMSE是默认分数。然而，使用这些指标来决定参数调优或评估保险数据模型的性能通常会导致错误的决定和结果。
 - en: Consequently, when working with insurance data we need to ensure we pass an
     appropriate scoring function to these tools to ensure we correctly set the model’s
     parameters and evaluate the model’s performance. More generally, any time you
     use these tools you should ensure that the scoring function being used is appropriate
     for your data. In some cases, you might just want to use a scoring function different
     than the default.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，在处理保险数据时，我们需要确保将适当的评分函数传递给这些工具，以确保我们正确设置模型参数并评估模型性能。更一般地说，每次使用这些工具时，您应该确保使用的评分函数适合您的数据。在某些情况下，您可能需要使用不同于默认的评分函数。
 - en: In the next few subsections, we will build a tweedie regressor using light GBM,
     `RandomizedSearchCV` , and a custom scoring function. This example is intended
     to demonstrate how to use scoring functions in tools like `RandomizedSearchCV`,
     `GridSearchCV`, or `cross_val_score` . This example is not intended to provide
     a detailed overview of machine learning model development, hyper-parameter tuning,
     or produce a good model.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的几个小节中，我们将使用light GBM、`RandomizedSearchCV`和自定义评分函数构建一个tweedie回归器。此示例旨在演示如何在像`RandomizedSearchCV`、`GridSearchCV`或`cross_val_score`这样的工具中使用评分函数。此示例并不旨在提供机器学习模型开发、超参数调优的详细概述或生成一个优秀的模型。
 - en: Simulating our Dataset
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模拟我们的数据集
 - en: Due to the sensitive nature of insurance data, it’s often hard to find publicly
     available claims history datasets. For that reason, we have simulated our own
     dataset using the code provided below. The dataset is intended to simulate insurance
     claims. Each row represents a policyholder where for each policyholder we simulate
     the number of claims they have incurred, as well as the size of any claims they
     have incurred. Simulating the dataset ensures the data has a few defining characteristics.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于保险数据的敏感性，通常很难找到公开可用的索赔历史数据集。因此，我们使用下面提供的代码模拟了自己的数据集。该数据集旨在模拟保险索赔。每一行代表一个投保人，我们模拟了每个投保人的索赔次数及其索赔金额。模拟数据集确保数据具有一些定义特征。
 - en: '`policy_exposure`, or how long the person has held the policy, is uniformly
     distributed between 1 and 12 months.'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`policy_exposure`，即个人持有保单的时间，均匀分布在1到12个月之间。'
 - en: '`num_claims`, or how many claims someone has filed, is poisson distributed.
     This ensures a right skewed distribution, where the majority of people haven’t
     filed any claims.'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`num_claims`，即某人提交的索赔次数，服从泊松分布。这确保了右偏分布，其中大多数人没有提交任何索赔。'
 - en: '`claim_cost`, or the total amount of an individuals claims, is gamma distributed.
     The claim cost is zero if the number of claims is 0.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`claim_cost`，即个人索赔的总金额，服从gamma分布。如果索赔次数为0，则索赔成本为零。'
 - en: '[PRE0]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Building our Regressor
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 构建我们的回归器
 - en: The first thing we will do is import our [light GBM](https://lightgbm.readthedocs.io/en/latest/index.html)
     (“LGBM”) regressor. We will set the regression objective to tweedie. The evaluation
     metric is independent of the objective.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先要导入我们的[light GBM](https://lightgbm.readthedocs.io/en/latest/index.html)（“LGBM”）回归器。我们将回归目标设置为tweedie。评估指标与目标无关。
 - en: '[PRE1]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The Tweedie distribution is a type of statistical distribution that encompasses
     a range of other well-known distributions, including the Normal, Poisson, and
     Gamma distributions. The Tweedie distribution’s power parameter determines the
     specific form of the distribution within the Tweedie family. A power parameter
     between 1 and 2 leads to a compound Poisson-Gamma distribution.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: Tweedie分布是一种统计分布类型，涵盖了包括正态分布、泊松分布和gamma分布在内的一系列其他知名分布。Tweedie分布的幂参数决定了Tweedie家族内分布的具体形式。幂参数在1和2之间会导致复合泊松-伽玛分布。
 - en: In our case, since we simulated our data, we already know that the number of
     claims follow a poisson distribution and the size of these claims follow a Gamma
     distribution. For that reason, we will set up a randomized grid search to find
     the optimal parameter value between 1 and 2.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的案例中，由于我们模拟了数据，我们已经知道索赔数量遵循泊松分布，这些索赔的大小遵循伽玛分布。因此，我们将设置一个随机网格搜索来找到1到2之间的最佳参数值。
 - en: '`RandomizedSearchCV` with Default Scoring'
+  id: totrans-29
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用默认评分的`RandomizedSearchCV`
 - en: When building tweedie models on insurance data, one common evaluation metric
     is `mean_tweedie_deviance`**.** However, our initial grid search will intentionally
     use the estimators default scoring function (R² in this case) to select the optimal
     parameter. Once the search is complete, we will calculate the `mean_tweedie_deviance`
     so that we can compare it to future grid searches designed to optimize `mean_tweedie_deviance`.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 在保险数据上构建Tweedie模型时，一个常见的评估指标是`mean_tweedie_deviance`。然而，我们的初始网格搜索将故意使用估计器的默认评分函数（在这种情况下为R²）来选择最佳参数。一旦搜索完成，我们将计算`mean_tweedie_deviance`，以便将其与未来旨在优化`mean_tweedie_deviance`的网格搜索进行比较。
 - en: '[PRE2]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: We confirm that the models score is equal to R².
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们确认模型的评分等于R²。
 - en: '[PRE3]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: We can alsoe view the optimal power parameter. Interpreting `mean_tweedie_deviance`
     on it’s own can be tricky. However, generally the lower the better. We will use
     this as value as our baseline to compare to future searches.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以查看最优的幂参数。单独解释`mean_tweedie_deviance`可能会有些棘手。然而，通常情况下，值越低越好。我们将使用这个值作为基准来与未来的搜索进行比较。
 - en: '[PRE4]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '`RandomizedSearchCV` using `make_scorer`'
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用`make_scorer`的`RandomizedSearchCV`
 - en: Without additional evaluation, the results using the default scorer look okay.
     However, let’s imagine we’re experienced data scientists and we recognize that
     using R² to tune our model is inappropriate. We decide we want to switch our scoring
     function to `mean_tweedie_deviance` .
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 在没有额外评估的情况下，使用默认评分器的结果看起来还不错。然而，假设我们是经验丰富的数据科学家，并且我们意识到使用R²来调整模型是不合适的。我们决定将评分函数切换到`mean_tweedie_deviance`。
 - en: To make this available to `RandomizedSearchCV` , we use scikit-learn’s `make_scorer`.
     From the Scikit-learn [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html),
     `make_scorer` is a function to “make a scorer from a performance metric or loss
@@ -192,26 +272,40 @@
     or `cross_val_score`. There are a few other available arguments in the documentation,
     however the only one we need is `greater_is_better` to tell our search that lower
     `mean_tweedie_deviance` is better.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了让`RandomizedSearchCV`能够使用这个功能，我们使用scikit-learn的`make_scorer`。根据Scikit-learn的[文档](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html)，`make_scorer`是一个“从性能指标或损失函数中创建评分器”的函数。换句话说，这个函数允许我们使用`sklearn.metrics`中任何可用的函数作为`RandomizedSearchCV`、`GridSearchCV`或`cross_val_score`中的评分函数。文档中还有一些其他可用的参数，但我们唯一需要的是`greater_is_better`，以告知我们的搜索较低的`mean_tweedie_deviance`更好。
 - en: It’s relatively easy to set up a scoring metric using `make_scorer`.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`make_scorer`设置评分指标相对容易。
 - en: '[PRE5]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: With our new scoring function, we run our search in the same way.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用我们新的评分函数，我们以相同的方式运行搜索。
 - en: '[PRE6]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Again, we can view the results of our grid search.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，我们可以查看网格搜索的结果。
 - en: '[PRE7]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: The results are the same as those from the default scorer, but why? When we
     create our custom scoring function using `make_scorer`, the search doesn’t use
     the whatever power it’s testing in the calculation of `mean_tweedie_deviance`.
@@ -219,55 +313,82 @@
     the default power for `mean_tweedie_deviance` is 0\. `Mean_tweedie_deviance` with
     a power of zero reduces to root mean squared error, which leads to the same power
     selection as when we use the default scoring metric.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果与默认评分器的结果相同，但为什么呢？当我们使用`make_scorer`创建自定义评分函数时，搜索不会在`mean_tweedie_deviance`的计算中使用测试的幂值。相反，它使用的是默认的幂值。根据scikit-learn的[文档](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_tweedie_deviance.html)，`mean_tweedie_deviance`的默认幂值为0。`Mean_tweedie_deviance`的幂值为零时，相当于均方根误差，这导致与使用默认评分指标时相同的幂选择。
 - en: '[PRE8]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: If we were focused on tuning other LGBM parameters and already knew the power
     we wanted, we could use a scoring function like the one below. However, since
     we are tuning the power parameter, this is not possible for us.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们专注于调整其他LGBM参数并且已经知道我们想要的功率，我们可以使用下面的评分函数。然而，由于我们正在调整功率参数，这对我们来说是不可能的。
 - en: '[PRE9]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '`RandomizedSearchCV` using Custom Scoring Object'
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '`RandomizedSearchCV`使用自定义评分对象'
 - en: Instead of using `make_scorer`, we can write our own function and use it as
     our scoring metric. As long as the function signature is `(y_true, y_pred)` or
     `(estimator, X, y)`, scikit-learn tools like RandomizedSearchCV, GridSearchCV,
     or cross_val_score can accept the function as a scoring function.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以编写自己的函数并将其用作评分标准，而不是使用`make_scorer`。只要函数签名是`(y_true, y_pred)`或`(estimator,
+    X, y)`，scikit-learn工具，如RandomizedSearchCV、GridSearchCV或cross_val_score，都可以接受该函数作为评分函数。
 - en: For our example, we elect to design our scoring function with the signature
     `(estimator, X, y)` . Having the estimator available in the function allows us
     to access the estimator’s power to correctly calculate `mean_tweedie_deviance`
     during the search.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于我们的示例，我们选择设计签名为`(estimator, X, y)`的评分函数。函数中包含估算器使我们能够访问估算器的功率，从而在搜索过程中正确计算`mean_tweedie_deviance`。
 - en: '[PRE10]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: Now, we simply pass this function to our search!
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们直接将这个函数传递给我们的搜索！
 - en: '[PRE11]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Like before, let’s look at the optimal power.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 和之前一样，让我们查看一下最佳功率。
 - en: '[PRE12]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: We notice that the `power` is a slightly higher, and the `mean_tweedie_deviance`
     is much lower! Since `mean_tweedie_deviance` is a more appropriate metric for
     this model, we can feel good about this result.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们注意到`power`稍微高一些，而`mean_tweedie_deviance`则低得多！由于`mean_tweedie_deviance`是这个模型更合适的度量指标，所以我们对这个结果感到满意。
 - en: You may have noticed that when we calculate our `mean_tweedie_deviance` after
     our search is complete, we pass sample weights as an input. However, in our custom
     scoring object, we don’t use any sample weights. Passing additional arguments
@@ -275,16 +396,22 @@
     in any of the variables in the required signature. Although it’s possible to provide
     additional inputs, it requires building your own k-fold validation methodology,
     which is beyond the scope of this post.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能已经注意到，当我们在搜索完成后计算我们的`mean_tweedie_deviance`时，我们会将样本权重作为输入。然而，在我们自定义的评分对象中，我们没有使用任何样本权重。如果所需信息在所需签名的任何变量中不可用，则需要将额外的参数传递给自定义评分对象。虽然可以提供额外的输入，但这需要构建自己的k折验证方法，这超出了本文的范围。
 - en: Conclusion
+  id: totrans-59
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this post, we explored the complexities of customizing scoring metrics in
     `RandomizedSearchCV`. The concepts covered in this article extend to additional
     tools like `GridSearchCV`, or `cross_val_score`. Additionally, we discussed a
     few limitations of this approach. Remember, it’s important to consider that the
     default scoring metrics might not always be appropriate for the task at hand!
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们探讨了在`RandomizedSearchCV`中自定义评分标准的复杂性。本文所涵盖的概念也适用于其他工具，如`GridSearchCV`或`cross_val_score`。此外，我们还讨论了这种方法的一些限制。请记住，默认评分标准可能并不总是适合当前任务！
