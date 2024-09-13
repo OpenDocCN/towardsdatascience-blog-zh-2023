@@ -1,495 +1,753 @@
 - en: Conformal Predictions in Time Series Forecasting
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 时间序列预测中的保形预测
 - en: 原文：[https://towardsdatascience.com/conformal-predictions-in-time-series-forecasting-32d3243d7479](https://towardsdatascience.com/conformal-predictions-in-time-series-forecasting-32d3243d7479)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/conformal-predictions-in-time-series-forecasting-32d3243d7479](https://towardsdatascience.com/conformal-predictions-in-time-series-forecasting-32d3243d7479)
 - en: Explore the concept of conformal predictions applied to the field of time series
     forecasting and implement it in Python
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 探讨应用于时间序列预测领域的**保形预测**概念，并在 Python 中实现它
 - en: '[](https://medium.com/@marcopeixeiro?source=post_page-----32d3243d7479--------------------------------)[![Marco
     Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----32d3243d7479--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32d3243d7479--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32d3243d7479--------------------------------)
     [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----32d3243d7479--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@marcopeixeiro?source=post_page-----32d3243d7479--------------------------------)[![Marco
+    Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----32d3243d7479--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32d3243d7479--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32d3243d7479--------------------------------)
+    [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----32d3243d7479--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32d3243d7479--------------------------------)
     ·10 min read·Dec 12, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32d3243d7479--------------------------------)
+    ·10 min 阅读·2023年12月12日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/c4815b8031d5f2b1e038b0ee4a966ea6.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c4815b8031d5f2b1e038b0ee4a966ea6.png)'
 - en: Photo by [Keith Markilie](https://unsplash.com/@rhino007?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 [Keith Markilie](https://unsplash.com/@rhino007?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 提供的照片
 - en: Consider the task of forecasting call volumes in a call center. The predictions
     play a primordial role, as they inform the budget allocation and workforce planning
     (if more calls are expected, more agents should be available to answer).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑预测呼叫中心的呼叫量这一任务。这些预测在预算分配和员工规划中扮演着至关重要的角色（如果预计会有更多的呼叫，就需要更多的代理来接听）。
 - en: So we build a forecasting model and report that next week the center will receive
     2451 calls.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们建立了一个预测模型，并报告下周中心将接到 2451 个电话。
 - en: Of course, with any prediction in the future comes some error and uncertainty.
     But how can we quantify it?
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，任何未来的预测都会带来一些误差和不确定性。但我们如何量化这些呢？
 - en: The logical answer is using **prediction intervals**. That way, we can report
     a range of possible future values with a certain confidence level.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 合理的答案是使用**预测区间**。这样，我们可以以一定的置信水平报告一系列可能的未来值。
 - en: While there are many methods for calculating prediction intervals, they are
     not applicable for all models and often rely on a particular distribution.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然有很多计算预测区间的方法，但它们并不适用于所有模型，并且通常依赖于特定的分布。
 - en: This comes with two major problems. First, the distribution assumption may not
     hold in certain scenarios. Second, we may be restricted in our choice of modeling
     techniques.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这带来了两个主要问题。首先，某些情况下分布假设可能不成立。其次，我们在建模技术的选择上可能受到限制。
 - en: For example, there are no straightforward ways to measuring prediction intervals
     for neural networks, but these models can possibly generate better predictions.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，目前没有简单的方法来测量神经网络的预测区间，但这些模型可能生成更好的预测。
 - en: This is where **conformal predictions** come in. They represent a method of
     quantifying uncertainty in predictions that is both model-free and distribution-free.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是**保形预测**派上用场的地方。它们代表了一种量化预测不确定性的方法，该方法既不依赖于模型，也不依赖于分布。
 - en: In this article, we first explore the general idea behind conformal predictions
     and discover the **EnbPI** method for time series forecasting. Finally, we apply
     it in a small forecasting exercise.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们首先探讨了保形预测背后的基本概念，并发现了用于时间序列预测的**EnbPI**方法。最后，我们在一个小的预测练习中应用它。
 - en: '***Learn the latest time series analysis techniques with my*** [***free time
     series cheat sheet***](https://www.datasciencewithmarco.com/pl/2147608294) ***in
     Python! Get the implementation of statistical and deep learning techniques, all
     in Python and TensorFlow!***'
+  id: totrans-17
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '***通过我的*** [***免费时间序列备忘单***](https://www.datasciencewithmarco.com/pl/2147608294)
+    ***在 Python 中学习最新的时间序列分析技术！获取统计和深度学习技术的实现，全部使用 Python 和 TensorFlow！***'
 - en: Let’s get started!
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始吧！
 - en: Quick overview of conformal predictions
+  id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一致性预测的快速概述
 - en: Conformal predictions represent an entire field of study to quantify uncertainty
     in predictions.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 一致性预测代表了一个研究领域，用于量化预测的不确定性。
 - en: They are applied across various tasks like regression, binary classification,
     multilabel classification and time series forecasting.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 它们应用于回归、二元分类、多标签分类和时间序列预测等各种任务。
 - en: The general idea behind conformal predictions is to generate a calibrated prediction
     interval, at a given confidence level, that guarantees that a point will lie inside
     it.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 一致性预测的基本思想是在给定的置信水平下生成一个校准的预测区间，保证一个点将位于其中。
 - en: In other words, with conformal predictions, you can create an 80% confidence
     interval that guarantees that the future real value will fall inside that interval
     80% of the time.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，使用一致性预测，你可以创建一个 80% 的置信区间，保证未来的真实值有 80% 的概率落在这个区间内。
 - en: Unlike other methods of estimating predictions intervals, conformal predictions
     can be used with any modeling techniques. Plus, they do not assume a normal distribution,
     which is usually the case for statistical methods.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 与其他预测区间估计方法不同，一致性预测可以与任何建模技术一起使用。而且，它们不假设正态分布，这通常是统计方法的情况。
 - en: Conformal predictions for time series forecasting
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列预测的一致性预测
 - en: Now, most methods of conformal predictions for regressions tasks rely on the
     *exchangeability hypothesis*.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，大多数一致性预测方法用于回归任务依赖于 *交换性假设*。
 - en: This means that the order in which data arrives does not impact inference.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着数据到达的顺序不会影响推断。
 - en: While this holds true for many regression scenarios, it is obviously not applicable
     in the context of time series forecasting.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管这一点在许多回归场景中是正确的，但显然在时间序列预测的背景下并不适用。
 - en: We know that time series are points ordered in time and that order must remain
     intact. In other words, Monday must always come after Sunday and before Tuesday.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们知道时间序列是按时间排序的点，这一顺序必须保持不变。换句话说，星期一必须总是出现在星期天之后，星期二之前。
 - en: Hence the need for a dedicated method for generating conformal prediction for
     time series.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，需要一种专门的方法来生成时间序列的一致性预测。
 - en: In 2020, researchers Chen Xu and Yao Xie presented the **En**semble **b**atch
     **P**rediction **I**ntervals (**EnbPI**) method in their article [Conformal prediction
     for time series](https://arxiv.org/pdf/2010.09107.pdf).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 2020 年，研究人员陈旭和肖耀在他们的文章 [时间序列的一致性预测](https://arxiv.org/pdf/2010.09107.pdf)
+    中介绍了 **En**semble **b**atch **P**rediction **I**ntervals (**EnbPI**) 方法。
 - en: This method removes the data exchangeability requirement and can thus be applied
     in time series forecasting.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 该方法取消了数据可交换性的要求，因此可以应用于时间序列预测。
 - en: Explore the EnbPI method
+  id: totrans-33
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 探索 EnbPI 方法
 - en: The EnbPI algorithm is a general conformal prediction framework for time series.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: EnbPI 算法是一个用于时间序列的通用一致性预测框架。
 - en: At a high level, the EnbPI method is composed of a training phase and a prediction
     phase. The training phase is shown in blue, and the prediction phase is shown
     in green in the figure below.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 从高层次来看，EnbPI 方法由训练阶段和预测阶段组成。训练阶段在下面的图中用蓝色表示，而预测阶段用绿色表示。
 - en: '![](../Images/949d09f06dad7c5ad47d0172fe4ded23.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/949d09f06dad7c5ad47d0172fe4ded23.png)'
 - en: High-level overview of the EnbPI method. Image by the author.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: EnbPI 方法的高级概述。图像由作者提供。
 - en: During the training phase, we fit a fixed number of *B* bootstrap models on
     non-overlapping subsets of the data. Usually, *B* is set to a value between 20
     and 50.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练阶段，我们在数据的非重叠子集上拟合固定数量的*B*自助模型。通常，*B* 设置在 20 到 50 之间。
 - en: Of course, the number of models that we can fit depends on the amount of data
     available, especially since the subsets cannot overlap.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，我们可以拟合的模型数量取决于可用的数据量，尤其是因为子集不能重叠。
 - en: Then, the predictions from each *B* model are aggregated in a leave-one-out
     (LOO) fashion, resulting in both LOO residuals and LOO models for predictions.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，每个 *B* 模型的预测以留一法 (LOO) 聚合， resulting in both LOO residuals and LOO models
+    for predictions.
 - en: In the prediction phase, EnbPI uses each predictor to make a prediction on every
     single test data point. The predictions are aggregated to compute the center of
     the prediction interval. Then, using the residuals, prediction intervals are constructed
     using the quantiles from the residuals. The width is also optimized in the process,
     such that we get the narrowest width possible for a certain confidence level.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 在预测阶段，EnbPI 使用每个预测器对每一个测试数据点进行预测。这些预测被汇总以计算预测区间的中心。然后，使用残差构建预测区间，并使用残差的分位数进行构建。在此过程中，宽度也会被优化，以便在特定置信水平下获得尽可能最窄的宽度。
 - en: Note that in the prediction phase, as new values are observed, the intervals
     are updated to ensure their adpativeness.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，在预测阶段，随着新值的观察，区间会被更新以确保其适应性。
 - en: Now that we understand how the EnbPI method can generate prediction intervals
     for any forecasting model, let’s apply it in a small forecasting project using
     Python.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们了解了 EnbPI 方法如何为任何预测模型生成预测区间，让我们在一个小的预测项目中使用 Python 应用它。
 - en: Apply EnbPI in forecasting
+  id: totrans-44
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 应用 EnbPI 进行预测
 - en: We are now ready to use the EnbPI method to generate prediction intervals for
     our forecasting model.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在准备使用 EnbPI 方法为我们的预测模型生成预测区间。
 - en: Luckily for us, the EnbPI algorithm is implemented and ready to use through
     the [MAPIE library](https://mapie.readthedocs.io/en/latest/), which stands for
     **M**odel **A**gnostic **P**rediction **I**nterval **E**stimator.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，EnbPI 算法已经通过[MAPIE 库](https://mapie.readthedocs.io/en/latest/)实现并准备使用，该库代表**M**odel
+    **A**gnostic **P**rediction **I**nterval **E**stimator。
 - en: Here, we use a dataset recording the daily visits to a website’s blog, publicly
     available [here](https://github.com/marcopeix/time-series-analysis/blob/master/data/medium_views_published_holidays.csv).
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们使用一个记录网站博客每日访问量的数据集，该数据集可以在[这里](https://github.com/marcopeix/time-series-analysis/blob/master/data/medium_views_published_holidays.csv)公开获取。
 - en: As always, the entire source code for this project is available on [GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/data/medium_views_published_holidays.csv).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 一如既往，整个项目的源代码可以在[GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/data/medium_views_published_holidays.csv)上找到。
 - en: The natural first step is to make the necessary imports and read our data.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然的第一步是进行必要的导入和读取我们的数据。
 - en: '[PRE0]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '![](../Images/2ec997fc130ee11aa1619f43de9cfbed.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2ec997fc130ee11aa1619f43de9cfbed.png)'
 - en: First five rows of the dataset. Image by the author.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集的前五行。图片由作者提供。
 - en: From the figure above, we see that our dataset contains a timestamp, the number
     of unique visitors, a flag to indicate if a new article was published or not,
     and a flag to indicate a national holiday.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上图中，我们可以看到我们的数据集包含时间戳、唯一访问者数量、一个标志来指示是否发布了新文章，以及一个标志来指示是否为国家假日。
 - en: Since we will be applying a machine learning model, we need to construct some
     features. Specifically, we extract the year, month and day from the date. We also
     add a flag to indicate the weekend and add the past seven lagged values.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们将应用机器学习模型，我们需要构建一些特征。具体来说，我们从日期中提取年份、月份和日期。我们还添加一个标志来指示是否为周末，并添加过去七个滞后值。
 - en: '[PRE1]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/fb9e34451685241862b53446ae0a330b.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fb9e34451685241862b53446ae0a330b.png)'
 - en: Dataset with engineered features. Image by the author.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 包含工程特征的数据集。图片由作者提供。
 - en: In the figure above, we notice that we have missing values. This is normal,
     since the first seven entries of the dataset do not have a complete list of seven
     past values.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上图中，我们注意到存在缺失值。这是正常的，因为数据集的前七个条目没有完整的七个过去值列表。
 - en: We can either drop the first seven rows of data or use a model that can natively
     deal with missing data. In this case, I decided to use a [Histogram-based Gradient
     Boosting Regressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html),
     which natively supports data with missing values.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以选择丢弃前七行数据，或者使用一个可以原生处理缺失数据的模型。在这种情况下，我决定使用一个[基于直方图的梯度提升回归器](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html)，它原生支持缺失值的数据。
 - en: Finally, we split our data into a training and a test set. Here, I decided to
     reserve 112 time steps for the test set.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们将数据拆分为训练集和测试集。在这里，我决定为测试集保留112个时间步。
 - en: '[PRE2]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Optionally, we can visualize the split of our data resulting in the figure below.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 可选地，我们可以可视化数据的分割，如下图所示。
 - en: '[PRE3]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '![](../Images/d05e53bc8728cd7ed0e430053fd2308e.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d05e53bc8728cd7ed0e430053fd2308e.png)'
 - en: Visualizing the train/test split. The last 112 time steps are reserved for the
     test set. Image by the author.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 可视化训练/测试拆分。最后112个时间步被保留为测试集。图片由作者提供。
 - en: Train a model
+  id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练模型
 - en: Once the data is preprocessed and split, we can focus on training a forecasting
     model.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦数据经过预处理和分割，我们可以专注于训练预测模型。
 - en: As mentioned, we implement here a histogram-based gradient boosting regressor.
     We also perform hyperparameter tuning to have the optimal model using random search.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，我们在这里实现了基于直方图的梯度提升回归器。我们还通过随机搜索进行超参数调优，以获得最佳模型。
 - en: '[PRE4]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Note that the best model is then saved using the `best_estimator_` attribute.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，最佳模型会使用`best_estimator_`属性进行保存。
 - en: Once we have an optimized model, we can now build prediction intervals using
     the EnbPI method.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们有了优化后的模型，我们现在可以使用EnbPI方法构建预测区间。
 - en: Estimate prediction intervals
+  id: totrans-72
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 估计预测区间
 - en: First, we make the necessary imports for this step.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们进行这一步所需的必要导入。
 - en: '[PRE5]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: To apply the EnbPI algorithm, we must use the `MapieTimeSeriesRegressor` object
     with `BlockBootstrap`. Remember that EnbPI fits a fixed number of models on non-overlapping
     blocks, and `BlockBootstrap` handles that for us.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 要应用EnbPI算法，我们必须使用`MapieTimeSeriesRegressor`对象与`BlockBootstrap`。请记住，EnbPI在不重叠的块上拟合固定数量的模型，而`BlockBootstrap`会为我们处理这一点。
 - en: Then, to evaluate the quality of our prediction intervals, we use the coverage
     and mean width score. Coverage reports the percentage of actual values that fall
     inside the intervals. The mean width score simply reports the average width of
     confidence intervals.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，为了评估我们预测区间的质量，我们使用覆盖率和平均宽度评分。覆盖率报告实际值在区间内的百分比。平均宽度评分则报告置信区间的平均宽度。
 - en: In an ideal situation, we have the narrowest intervals possible achieving the
     highest coverage possible.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 在理想情况下，我们可以获得尽可能狭窄的区间，从而实现最高的覆盖率。
 - en: With all of that in mind, let’s complete the setup to generate the intervals.
     Here, we wish to have 95% confidence intervals, and our model will make forecasts
     for the next time step.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑到这些，让我们完成设置以生成区间。在这里，我们希望有95%的置信区间，并且我们的模型将对下一个时间步进行预测。
 - en: '[PRE6]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: In the code block above, note that we use `n_blocks=9` since the training set
     is divisible by 9\. Also, make sure to set `overlapping=False` as the EnbPI methods
     requires the blocks to be non-overlapping.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码块中，请注意我们使用了`n_blocks=9`，因为训练集可以被9整除。另外，请确保设置`overlapping=False`，因为EnbPI方法要求块不能重叠。
 - en: Then, the regression model is simply wrapped in the `MapieTimeSeriesRegressor`object,
     which we can then fit and use to make predictions.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，将回归模型简单地封装在`MapieTimeSeriesRegressor`对象中，我们可以对其进行拟合并用来进行预测。
 - en: '[PRE7]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Now, we have access to both the predictions of the model and the confidence
     intervals. We can visualize them using the code block below.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以访问模型的预测结果和置信区间。我们可以使用下面的代码块进行可视化。
 - en: '[PRE8]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![](../Images/a76e4dd6ee638d14360ccd44801151ef.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a76e4dd6ee638d14360ccd44801151ef.png)'
 - en: Forecasting with a 95% confidence interval using the EnbPI method. Image by
     the author.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用EnbPI方法进行95%置信区间的预测。图片由作者提供。
 - en: From the figure above, we can see that the model fails to predict the peaks
     in visitors. However, it seems that the prediction intervals contain the majority
     of the actual values.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上图中，我们可以看到模型未能预测出访客的峰值。然而，预测区间似乎包含了大多数实际值。
 - en: To verify that, we can compute the coverage and mean interval width.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了验证这一点，我们可以计算覆盖率和平均区间宽度。
 - en: '[PRE9]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Here, we get a coverage of 58% and a mean interval width of 432.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们得到58%的覆盖率和432的平均区间宽度。
 - en: Again, in an ideal situation, the coverage should approach the value of 95%,
     since that was the probability that we set earlier. However, due to the model
     not being able to forecast those peaks, the coverage clearly suffered.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次强调，在理想情况下，覆盖率应该接近95%的值，因为这是我们之前设定的概率。然而，由于模型无法预测这些峰值，覆盖率显然受到了影响。
 - en: To potentially improve the coverage, let’s implement the EnbPI method with partial
     fit so that the intervals can adapt as new values are observed.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了潜在提高覆盖率，让我们使用部分拟合实现EnbPI方法，以便随着新值的观察，区间可以自适应。
 - en: Apply EnbPI with partial fit
+  id: totrans-93
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 应用EnbPI与部分拟合
 - en: As we learned earlier, the EnbPI method can benefit from new observed values
     and tweak the confidence intervals accordingly.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们之前所学，EnbPI方法可以从新的观察值中受益，并相应地调整置信区间。
 - en: This can be simulated by fitting the model on parts of data and computing the
     prediction intervals at each step.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以通过在数据的部分上拟合模型并在每一步计算预测区间来模拟。
 - en: '[PRE10]'
+  id: totrans-96
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: In the code block above, the logic remains identical. This time, we are simply
     doing a for loop to gradually fit the model on more data, simulating the fact
     that new data is being observed and generating a new prediction.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码块中，逻辑保持不变。这一次，我们只是做一个for循环，逐渐将模型拟合到更多数据上，模拟新数据的观测，并生成新的预测。
 - en: Again, we can visualize the predictions and their confidence intervals.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，我们可以可视化预测及其置信区间。
 - en: '[PRE11]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '![](../Images/c425bbf7fcbdaccee49f1f2030bac12c.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c425bbf7fcbdaccee49f1f2030bac12c.png)'
 - en: Conformal prediction intervals using partial fit. Image by the author.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用部分拟合的符合性预测区间。图片由作者提供。
 - en: Visually, from the figure above, it seems that using partial fit does not make
     a significant difference.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上面的图中可以直观地看出，使用部分拟合并没有显著的差异。
 - en: For that reason, let’s compute the coverage and mean interval width for the
     partial fit protocol.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，让我们计算部分拟合协议的覆盖率和平均区间宽度。
 - en: '[PRE12]'
+  id: totrans-104
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: This gives us a coverage of 63% and an average interval width of 436.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 这给我们带来了63%的覆盖率和436的平均区间宽度。
 - en: '![](../Images/49f74b39cc090af0fd46607d2abdc8f9.png)'
+  id: totrans-106
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/49f74b39cc090af0fd46607d2abdc8f9.png)'
 - en: Comparing the coverage and mean interval width for each protocol. Image by the
     author.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 比较每个协议的覆盖率和平均区间宽度。图片由作者提供。
 - en: From the figure above, we can see that using partial fit allows us to increase
     the coverage while keeping the mean interval width fairly constant. Therefore,
     there is an advantage in using partial fit in this situation.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上图可以看出，使用部分拟合允许我们在保持平均区间宽度相对恒定的同时增加覆盖率。因此，在这种情况下使用部分拟合是有优势的。
 - en: Conclusion
+  id: totrans-109
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article we learned that conformal predictions group methodologies to
     estimate uncertainty in predictions. They can be applied for both classification
     and regression algorithms.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们了解到，符合性预测方法用于估计预测的不确定性。这些方法可以应用于分类和回归算法。
 - en: In the case of time series, the Ensemble Prediction Interval method fits a fixed
     number of models over non-overlapping blocks of data to get the residuals and
     estimate the confidence bounds from their distribution.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 在时间序列的情况下，集成预测区间方法通过在不重叠的数据块上拟合固定数量的模型来获得残差，并从其分布中估计置信界限。
 - en: To evaluate the quality of our intervals, we use the coverage and mean interval
     width. The coverage indicates the percentage of true values that fall inside the
     intervals. Ideally, this value should approach the confidence set by the user,
     while minimizing the width of the interval.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了评估我们区间的质量，我们使用覆盖率和平均区间宽度。覆盖率表示真实值落在区间内的百分比。理想情况下，这个值应该接近用户设定的置信度，同时最小化区间宽度。
 - en: As we have seen, this is not always the case, as it also depends on the quality
     of the predictions of the model.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所见，这种情况并非总是如此，因为它还取决于模型预测的质量。
 - en: Still, thanks to MAPIE, we can generate conformal prediction intervals for virtually
     any model.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管如此，感谢MAPIE，我们可以为几乎任何模型生成符合性预测区间。
 - en: Thanks for reading! I hope that you enjoyed it and that you learned something
     new!
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读！希望你喜欢这篇文章，并且学到了新东西！
 - en: Looking to master time series forecasting? Then check out my course [Applied
     Time Series Forecasting in Python](https://www.datasciencewithmarco.com/offers/zTAs2hi6/checkout?coupon_code=ATSFP10).
     This is the only course that uses Python to implement statistical, deep learning
     and state-of-the-art models in 16 guided hands-on projects.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 想要掌握时间序列预测吗？那么请查看我的课程 [Python中的应用时间序列预测](https://www.datasciencewithmarco.com/offers/zTAs2hi6/checkout?coupon_code=ATSFP10)。这是唯一一门使用Python在16个指导性实践项目中实现统计、深度学习和最先进模型的课程。
 - en: Cheers 🍻
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 干杯 🍻
 - en: Support me
+  id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 支持我
 - en: Enjoying my work? Show your support with [Buy me a coffee](http://buymeacoffee.com/dswm),
     a simple way for you to encourage me, and I get to enjoy a cup of coffee! If you
     feel like it, just click the button below 👇
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 喜欢我的工作吗？通过 [买我一杯咖啡](http://buymeacoffee.com/dswm) 支持我，这是你鼓励我的简单方式，同时我可以享受一杯咖啡！如果你愿意，只需点击下面的按钮
+    👇
 - en: '[![](../Images/79199b76a90721439ab41d9e1afcfb58.png)](https://www.buymeacoffee.com/dswm)'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/79199b76a90721439ab41d9e1afcfb58.png)](https://www.buymeacoffee.com/dswm)'
 - en: References
+  id: totrans-121
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: Chen Xu, Yao Xie — [Conformal Predictions for Time Series](https://arxiv.org/pdf/2010.09107.pdf)
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 陈旭，肖姚 — [时间序列的符合性预测](https://arxiv.org/pdf/2010.09107.pdf)
 - en: 'MAPIE: [official documentation](https://mapie.readthedocs.io/en/latest/)'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 'MAPIE: [官方文档](https://mapie.readthedocs.io/en/latest/)'
