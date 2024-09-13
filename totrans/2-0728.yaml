@@ -1,98 +1,141 @@
 - en: Detection of Credit Card Fraud with an Autoencoder
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用自编码器检测信用卡欺诈
 - en: 原文：[https://towardsdatascience.com/detection-of-credit-card-fraud-with-an-autoencoder-9275854efd48](https://towardsdatascience.com/detection-of-credit-card-fraud-with-an-autoencoder-9275854efd48)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/detection-of-credit-card-fraud-with-an-autoencoder-9275854efd48](https://towardsdatascience.com/detection-of-credit-card-fraud-with-an-autoencoder-9275854efd48)
 - en: A guide for the implementation of an anomaly detector
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 实现异常检测器的指南
 - en: '[](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)[![Janik
     and Patrick Tinz](../Images/a08aa54f553f606ef5df86f9411c36ac.png)](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)
     [Janik and Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)[![Janik
+    and Patrick Tinz](../Images/a08aa54f553f606ef5df86f9411c36ac.png)](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)
+    [Janik and Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)
     ·10 min read·Jun 1, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)
+    ·10分钟阅读·2023年6月1日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/ead0f960668e0c078768fd7ab039672b.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ead0f960668e0c078768fd7ab039672b.png)'
 - en: Photo by [Christiann Koepke](https://unsplash.com/@christiannkoepke?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 [Christiann Koepke](https://unsplash.com/@christiannkoepke?utm_source=medium&utm_medium=referral)
+    提供的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Do you want to know how to create an **anomaly detector** using Python and TensorFlow?
     Then this article is for you. Credit card companies use anomaly detectors to detect
     fraudulent transactions. It is important to identify fraudulent transactions so
     that customers do not have to pay for something they did not buy.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 你想知道如何使用 Python 和 TensorFlow 创建一个**异常检测器**吗？那么这篇文章适合你。信用卡公司使用异常检测器来检测欺诈交易。识别欺诈交易很重要，以便客户不必为他们没有购买的东西付钱。
 - en: Many credit card transactions take place every day, but very few transactions
     are fraudulent. The fraudulent transactions are anomalies. The article presents
     an implementation of an autoencoder model to detect these fraudulent transactions.
     First, we define an anomaly and introduce different types of anomalies. Then we
     describe the implementation of the anomaly detector for credit card fraud detection.
     Let’s begin!
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 每天都有大量的信用卡交易，但只有极少数交易是欺诈性的。欺诈交易就是异常。文章展示了一个自编码器模型的实现，用于检测这些欺诈交易。首先，我们定义异常并介绍不同类型的异常。然后我们描述用于信用卡欺诈检测的异常检测器的实现。让我们开始吧！
 - en: Anomaly detection in general
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 异常检测概述
 - en: An anomaly detection algorithm identifies novel and unexpected structures in
     acquired datasets. There are many definitions of an anomaly in the literature.
     We derive a definition for our use case.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 异常检测算法识别在获取的数据集中出现的新颖和意外的结构。文献中有很多异常的定义。我们为我们的用例推导了一个定义。
 - en: Anomaly definition
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 异常定义
 - en: 'Chandola et al [1] describe anomalies as patterns in data that do not conform
     to a well-deﬁned notion of normal behaviour. Another widely used definition comes
     from Hawkins. Hawkins [2] describes an outlier as an observation that deviates
     from other observations to such an extent that it is suspected to have been generated
     by some other mechanism. Concerning the definitions presented, two essential aspects
     should be noted (cf. [3]):'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Chandola 等人 [1] 将异常描述为数据中不符合正常行为定义的模式。另一个广泛使用的定义来自 Hawkins。Hawkins [2] 将离群点描述为一个偏离其他观测值的程度，以至于怀疑它是由其他机制生成的。关于所呈现的定义，需要注意两个重要方面（参见
+    [3]）：
 - en: The distribution of the anomalies deviates strongly from the general distribution
     of the data.
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 异常的分布与数据的一般分布有很大偏离。
 - en: The majority of the data are normal observations, and the anomalies are only
     a small part.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 大多数数据是正常的观测值，而异常只是其中的一小部分。
 - en: '**We define an anomaly as follows:**'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: An anomaly is an observation or a sequence of observations that differ significantly
     from the majority of the data in distribution.
+  id: totrans-17
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Types of anomalies
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: We can basically distinguish three types of anomalies.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
 - en: A **punctual anomaly** or **point anomaly** is when an observation deviates
     significantly from the rest of the data [3] and only lasts for a short time [4].
     Fraudulent transactions can lead to point anomalies.
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -101,67 +144,83 @@
     normal, only the occurrence in a group makes them appear abnormal [4]. You can
     only detect collective anomalies in data where the individual observations are
     related.
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: A **contextual anomaly** describes an observation or several observations that
     appear abnormal in a specific context [3]. These anomalies, when considered globally,
     lie within the range of values valid for this variable [4].
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: In this article, we develop an autoencoder model that can only detect point
     anomalies. There are also more advanced Autoencoder models, such as GRU or LSTM
     Autoencoders, which include the temporal component in the data.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
 - en: Anomaly detection
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'There are two options for the output of anomaly detection methods:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: '**Anomaly Score:** Deviation of an observation from the expected value.'
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: '**Binary Label:** Normal or abnormal observation (Label: 0 or 1).'
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Some algorithms directly have a binary label as output, and others calculate
     the label based on the anomaly score over a certain threshold. Thus, you can derive
     the label from the anomaly score. [4]
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: 'In the following, you see the function for the anomaly score (cf. [3]):'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/748d372e3eac65db292330f274016c08.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
 - en: 'Function: Anomaly Score (Formula by authors)'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: In the equation, *γ* denotes the anomaly score, ***x_t*** an observation at
     time *t*. *n* is the number of observations, and *p* is the number of variables/features.
     You can convert the anomaly score into a binary label (normal or abnormal) by
     defining a threshold value *δ ∈ R*.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/e960fe6234deb833549ed2909e747967.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
 - en: 'Formula: Binary Label (Formula by authors)'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: 'The equation shows that you can adjust the binary label according to the threshold
     value *δ*. The implementation in this article uses a binary label (0: no fraud
     and 1: fraud).'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: Autoencoder concept
+  id: totrans-36
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -172,26 +231,33 @@
     (encoding) and finally reconstruct this compression (decoding) so that the reconstruction
     matches the input data as closely as possible. The compressed layer is called
     the latent representation.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: 'The network, therefore, consists of two sections (cf. [5], p. 499):'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: an encoder function ***z*** *= g(****x****)* and
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: a decoder function ***x′*** *= f (****z****)*
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: The following figure shows the general structure of an autoencoder.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/1c4d22a8e0ea0fb884a9b5c277e977c3.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
 - en: How an autoencoder works (Image by authors)
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: 'Furthermore, learning an exact reconstruction is not useful because we mainly
@@ -200,12 +266,15 @@
     difference between the input and the output as a reconstruction error. During
     training, we aim to minimise this error. You can use different error metrics as
     error functions, such as the mean squared error (MSE):'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/5de70035144db6990d4a7dadf64a1c2e.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
 - en: 'Formula: Mean Squared Error (MSE) (Formula by authors)'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: The equation shows the calculation of the reconstruction error (MSE) for an
@@ -213,9 +282,11 @@
     of the autoencoder depends on the particular application. For example, the encoder
     and decoder can consist of simple feedforward layers, LSTM/GRU layers or convolutional
     neural network (CNN) layers.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: Credit Card Fraud Detection Implementation
+  id: totrans-48
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -224,46 +295,60 @@
     from Kaggle to create our anomaly detector. The dataset contains anonymised credit
     card transactions of European credit card customers from September 2013\. The
     data was anonymised using PCA. Let’s start with the data preparation.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: Data Preparation
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: First, we read the data and output the first five data points.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'We see that there are 28 anonymised columns and two columns are not anonymised.
     The Time and Amount columns are not anonymised. There is also a Class column (0:
     normal transactions or 1: fraudulent transactions). In total, the dataset has
     31 columns.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: Next, we check if the dataset contains missing values.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The dataset does not contain any missing values. That’s great.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: Next, we are interested in the distribution of the two classes (No Fraud and
     Fraud). For this, we calculate the percentage share of the respective class in
     the total data.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: We see that the proportion of fraudulent transactions is small. In supervised
     learning methods, unbalanced data is dangerous because these methods learn based
     on labels. In our use case, however, we use a semi-supervised approach. The training
     only takes place with data from normal transactions. For this reason, no balancing
     of the data is necessary for the autoencoder approach.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: Next, we convert the feature Amount into a normally distributed log equivalent
@@ -271,206 +356,297 @@
     We also remove the Time feature. We split our data into training, validation and
     test data. Then we remove the fraudulent transactions from the training data because
     we train our autoencoder only with the normal transactions.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们通过对特征Amount进行对数转换，将其转换为正态分布的对数等价物。这种转换改善了自动编码器的训练。我们还移除了Time特征。我们将数据分为训练数据、验证数据和测试数据。然后，我们从训练数据中移除欺诈交易，因为我们只用正常交易来训练自动编码器。
 - en: Then we scale our data with the `MinMaxScaler` from the [sklearn library](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html).
     We train the scaler on the training data and then transform the training, validation
     and test data with this scaler. It is important to adjust the scaler only on the
     training data, otherwise information from the validation or test data would flow
     into the training. Now our data are ready for modelling.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们使用来自[sklearn库](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)的`MinMaxScaler`对数据进行缩放。我们在训练数据上训练缩放器，然后用这个缩放器转换训练、验证和测试数据。重要的是，只在训练数据上调整缩放器，否则验证或测试数据的信息会流入训练中。现在我们的数据已经准备好进行建模了。
 - en: Modelling
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 建模
 - en: 'In this section, we implement the autoencoder model with TensorFlow. The following
     listing shows the implementation of the autoencoder:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，我们使用TensorFlow实现了自动编码器模型。以下清单展示了自动编码器的实现：
 - en: '[PRE3]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The code shows the implementation for the encoder and the decoder. The encoder
     compresses the data into two features. Then the autoencoder performs decoding
     based on these two features. In this context, the autoencoder tries to reconstruct
     the input. The autoencoder aims to reconstruct the input as well as possible.
     We use ELU as an activation function because it performed best in our tests. Now
     we can train our model.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码展示了编码器和解码器的实现。编码器将数据压缩成两个特征。然后，自动编码器根据这两个特征执行解码。在这种情况下，自动编码器尝试重构输入。自动编码器的目标是尽可能准确地重构输入。我们使用ELU作为激活函数，因为它在我们的测试中表现最佳。现在我们可以训练我们的模型了。
 - en: '[PRE4]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: First, we initialise our model with the number of features. Then we define our
     optimiser and set the learning rate. In our case, we use the optimiser Adam. Finally,
     we compile our model with the optimiser and the loss function. In our case we
     use the MSE as loss function. We also define an early stopping by stopping the
     training if the validation loss does not change in five consecutive epochs.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们用特征数量初始化我们的模型。然后我们定义我们的优化器并设置学习率。在我们的情况下，我们使用优化器Adam。最后，我们用优化器和损失函数编译我们的模型。在我们的情况下，我们使用MSE作为损失函数。我们还定义了一个早停机制，通过在验证损失在连续五个epoch内没有变化时停止训练。
 - en: '[PRE5]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Once the autoencoder is trained and validated, we can try out the model on the
     test data. The autoencoder tries to reconstruct the input of the test data as
     well as possible. The autoencoder reconstructs a normal transaction well. On the
     other hand, it has to reconstruct fraudulent transactions poorly. We can calculate
     the error between the input and the reconstruction using the MSE. Fraudulent transactions
     produce a large MSE, and normal transactions produce a small MSE.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦自动编码器经过训练和验证，我们可以在测试数据上尝试模型。自动编码器尝试尽可能准确地重构测试数据的输入。自动编码器能很好地重构正常交易。另一方面，它必须对欺诈交易进行差的重构。我们可以使用MSE计算输入和重构之间的误差。欺诈交易会产生较大的MSE，而正常交易会产生较小的MSE。
 - en: Evaluation
+  id: totrans-70
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 评估
 - en: In the previous section, we trained our model. Now it’s time to evaluate the
     model. First, we look at the distribution of the MSE (reconstruction error).
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一节中，我们训练了我们的模型。现在是时候评估模型了。首先，我们查看均方误差（MSE，重构误差）的分布。
 - en: '![](../Images/e87e0d2ac2f888d0999d18b8fc5e3fd4.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e87e0d2ac2f888d0999d18b8fc5e3fd4.png)'
 - en: Distribution of the reconstruction loss (Image by authors)
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 重构损失的分布（图片来自作者）
 - en: The plot shows that the MSE (on the x axis) is higher for fraudulent transactions
     than for normal transactions. However, some fraudulent transactions also have
     a similar MSE to normal transactions.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 图表显示，欺诈交易的MSE（x轴）高于正常交易。然而，一些欺诈交易的MSE与正常交易相似。
 - en: 'In the following, you can see some metrics:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的内容中，您可以看到一些指标：
 - en: '![](../Images/310b3dfd36e95722991f82b53e3f635e.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/310b3dfd36e95722991f82b53e3f635e.png)'
 - en: Evaluation metrics autoencoder model (Image by authors)
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 评估指标自动编码器模型（图片来自作者）
 - en: In anomaly detection, recall is an important metric. Our model achieves a recall
     of 87%. That is a good value for an anomaly detection model. In addition, the
     model has a precision of 72%, which is also well for such a model. The true positive
     rate (TPR) is 75.2%, that means our model detects fraudulent transactions at 75%.
     On the other hand, our model fails to detect 25% of fraudulent transactions (false
     negative rate (FNR)).
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 在异常检测中，召回率是一个重要的指标。我们的模型实现了87%的召回率。这对于异常检测模型来说是一个很好的值。此外，模型的精确度为72%，这对于这样的模型也很不错。真正的正例率（TPR）为75.2%，这意味着我们的模型以75%的准确率检测到欺诈交易。另一方面，我们的模型未能检测到25%的欺诈交易（假阴性率（FNR））。
 - en: The aim of further optimisation must be to minimise the false negative rate.
     However, we must not forget that we trained our model without ever seeing fraud!
     In this respect, its performance is decent. Nevertheless, we can still try to
     improve the model a little.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 进一步优化的目标必须是最小化假阴性率。然而，我们必须记住，我们在训练模型时从未见过欺诈！在这方面，它的表现还算不错。然而，我们仍然可以尝试稍微改进模型。
 - en: Using our FNR, we could already see that the network was not able to generalise
     perfectly. To improve the performance of the model, we can use a different autoencoder
     model, e.g. a different number of neurons per layer, or a latent representation
     of three or four neurons. We did some tests and varied the number of neurons.
     As a result, the following model gave better results.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用我们的FNR，我们可以看到网络无法完美地进行泛化。为了提高模型的性能，我们可以使用不同的自编码器模型，例如，每层的神经元数量不同，或者使用三或四个神经元的潜在表示。我们进行了一些测试并变化了神经元的数量。结果，以下模型取得了更好的效果。
 - en: '[PRE6]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: We have increased the neurons in the latent layer to four. The first layer of
     the encoder has 32 neurons, and the last layer of the decoder has 32 neurons.
     The output layer uses the ReLU activation function. These changes lead to better
     results on the test data. You can see the results below.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将潜在层的神经元增加到四个。编码器的第一层有32个神经元，解码器的最后一层有32个神经元。输出层使用ReLU激活函数。这些变化在测试数据上导致了更好的结果。你可以在下面看到这些结果。
 - en: '![](../Images/42c99abff219b5f6ee56a0f177c0142c.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/42c99abff219b5f6ee56a0f177c0142c.png)'
 - en: Evaluation metrics improved autoencoder (Image by authors)
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 评估指标改进的自编码器（图片由作者提供）
 - en: We improved the recall and precision by two per cent with the adjustments. In
     addition, we have a TPR of 78.5% compared to 75.2% before. The new model has an
     FNR of 21.5%. That means that more fraudulent transactions are detected.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过调整将召回率和精确度提高了2个百分点。此外，我们的TPR从之前的75.2%提高到78.5%。新模型的FNR为21.5%。这意味着检测到的欺诈交易更多。
 - en: The results show that it is essential to try different model configurations
     to get the best possible model. In our use case, a larger autoencoder lead to
     better results. However, this does not always have to be the case. It is important
     to implement a model that works well for the use case.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果表明，尝试不同的模型配置以获得最佳模型是至关重要的。在我们的用例中，更大的自编码器导致了更好的结果。然而，这并不总是如此。重要的是实施一个适合用例的模型。
 - en: Implementing an autoencoder model is especially useful when you have few labels
     to test. An autoencoder only needs normal data and not anomalies for training.
     The presented approach is particularly suitable for use cases in which anomalies
     occur rarely, and only very few labels are available for these anomalies.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 实施自编码器模型在测试标签很少时特别有用。自编码器仅需要正常数据而不是异常数据进行训练。所提出的方法特别适用于异常发生较少且仅有极少数标签的用例。
 - en: Conclusion
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article, we showed the implementation of an anomaly detector for credit
     card fraud. First, we presented the basics of anomaly detection, followed by the
     intuition of autoencoders. An autoencoder compresses an input and tries to reconstruct
     it as well as possible. Moreover, an autoencoder only needs normal transactions
     for training. We then implemented an autoencoder with Tensorflow. The evaluation
     showed that the autoencoder performs well.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们展示了一个用于信用卡欺诈的异常检测器的实现。首先，我们介绍了异常检测的基础知识，然后是自编码器的直觉。自编码器压缩输入并尽可能重建它。此外，自编码器仅需要正常交易进行训练。然后，我们用Tensorflow实现了一个自编码器。评估结果表明，自编码器表现良好。
 - en: 👉🏽 [**Join our free weekly Magic AI newsletter for the latest AI updates!**](https://magicai.tinztwins.de)
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 👉🏽 [**加入我们的每周免费Magic AI通讯，获取最新的AI更新！**](https://magicai.tinztwins.de)
 - en: 👉🏽 [**You can find all our Freebies on our digital products page!**](https://shop.tinztwins.de/)
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 👉🏽 [**你可以在我们的数字产品页面找到所有免费的资源！**](https://shop.tinztwins.de/)
 - en: '[**Subscribe for free**](https://tinztwinspro.medium.com/subscribe) **to get
     notified when we publish a new story:**'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '[**免费订阅**](https://tinztwinspro.medium.com/subscribe) **以便在我们发布新故事时得到通知：**'
 - en: '[](https://tinztwinspro.medium.com/subscribe?source=post_page-----9275854efd48--------------------------------)
     [## Get an email whenever Janik and Patrick Tinz publishes.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 订阅我们的邮件，随时获取Janik和Patrick Tinz发布的内容。](https://tinztwinspro.medium.com/subscribe?source=post_page-----9275854efd48--------------------------------)'
 - en: Get an email whenever Janik and Patrick Tinz publishes. By signing up, you will
     create a Medium account if you don’t…
+  id: totrans-94
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 订阅邮件，随时获取Janik和Patrick Tinz发布的内容。通过注册，你将创建一个Medium账户，如果你还没有的话…
 - en: tinztwinspro.medium.com](https://tinztwinspro.medium.com/subscribe?source=post_page-----9275854efd48--------------------------------)
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: '[tinztwinspro.medium.com](https://tinztwinspro.medium.com/subscribe?source=post_page-----9275854efd48--------------------------------)'
 - en: Learn more about us on our [About page](https://medium.com/@tinztwinspro/about).
     Don’t forget to follow us on [X](https://twitter.com/tinztwins). Thanks so much
     for reading. If you liked this article, feel free to share it. **Have a great
     day!**
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 了解更多关于我们的信息，请访问我们的 [关于页面](https://medium.com/@tinztwinspro/about)。不要忘记关注我们 [X](https://twitter.com/tinztwins)。非常感谢阅读。如果你喜欢这篇文章，请随意分享。**祝你有美好的一天！**
 - en: Sign up for a Medium membership using [our link](https://tinztwinspro.medium.com/membership)
     to read unlimited Medium stories.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 [我们的链接](https://tinztwinspro.medium.com/membership) 注册Medium会员，阅读无限制的Medium故事。
 - en: References
+  id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Varun Chandola, Arindam Banerjee and Vipin Kumar. “Anomaly detection: A
     survey”. In: ACM computing surveys (CSUR) 41.3 (2009), p. 1–58.'
+  id: totrans-99
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[1] Varun Chandola, Arindam Banerjee 和 Vipin Kumar. “异常检测：综述”。发表于：ACM计算调查（CSUR）41.3
+    (2009), 第1–58页。'
 - en: '[2] Douglas M Hawkins. Identification of outliers. Bd. 11\. Springer, 1980.'
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[2] Douglas M Hawkins. 《离群点识别》。第11卷，Springer，1980。'
 - en: '[3] Mohammad Braei and Sebastian Wagner. “Anomaly detection in univariate time-series:
     A survey on the state-of-the-art”. In: arXiv preprint arXiv:2004.00433 (2020).'
+  id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[3] Mohammad Braei 和 Sebastian Wagner. “单变量时间序列中的异常检测：前沿综述”。发表于：arXiv预印本 arXiv:2004.00433
+    (2020)。'
 - en: '[4] Andrew A Cook, Göksel Mısırlı and Zhong Fan. “Anomaly detection for IoT
     time-series data: A survey”. In: IEEE Internet of Things Journal 7.7 (2019), S.
     6481–6494.'
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[4] Andrew A Cook, Göksel Mısırlı 和 Zhong Fan. “物联网时间序列数据的异常检测：综述”。发表于：IEEE物联网期刊
+    7.7 (2019), 第6481–6494页。'
 - en: '[5] Ian Goodfellow, Yoshua Bengio and Aaron Courville. Deep Learning. MIT Press,
     2016.'
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[5] Ian Goodfellow, Yoshua Bengio 和 Aaron Courville. 《深度学习》。MIT出版社，2016。'
