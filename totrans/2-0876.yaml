@@ -1,12 +1,15 @@
 - en: Fast and Scalable Hyperparameter Tuning and Cross-validation in AWS SageMaker
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb](https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Using SageMaker Managed Warm Pools
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,26 +17,32 @@
     Pereira](../Images/2946b185eb134ddfaa71cf5af5e3cda6.png)](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
     [João Pereira](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
     ·8 min read·Mar 3, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/125320a8ffef1abf9fcab6a60572290d.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
 - en: Photo by [SpaceX](https://unsplash.com/@spacex?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: This article shares a recipe to **speeding up to 60%** yourhyperparameter tuning
     with cross-validation in SageMaker Pipelines leveraging SageMaker Managed Warm
     Pools. By using Warm Pools, the runtime of a Tuning step with 120 sequential jobs
     is reduced **from 10h to 4h**.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Improving and evaluating the performance of a machine learning model often requires
@@ -42,18 +51,22 @@
     how a model will generalize to unseen data. These steps, combined, introduce computing
     challenges as they require training and validating a model multiple times, in
     parallel and/or in sequence.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: '***What this article is about…***'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: What are Warm Pools and how to leverage them to speed-up hyperparameter tuning
     with cross-validation.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: How to design a production-grade SageMaker Pipeline that includes Processing,
     Tuning, Training, and Lambda steps.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -62,68 +75,92 @@
     already tested to choose the hyperparameter set to test in the next round. We
     will use [*k*-fold cross-validation](https://medium.com/@zstern/k-fold-cross-validation-explained-5aeba90ebb3)
     to score each combination of hyperparameters, in which the splits are as follows:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/7f98ae8209ab60a0f673cbedde9fd943.png)'
+  id: totrans-14
   prefs: []
   type: TYPE_IMG
 - en: 𝑘-fold cross-validation strategy.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: The full dataset is partitioned into 𝑘 validation folds, the model trained on
     𝑘-1 folds, and validated on its corresponding held-out fold. The overall score
     is the average over the individual validation scores obtained for each validation
     fold.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整数据集被划分为𝑘个验证折叠，模型在𝑘-1个折叠上训练，并在相应的保留折叠上验证。总体得分是每个验证折叠得到的个别验证得分的平均值。
 - en: '**Storyline*:***'
+  id: totrans-17
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**故事情节：**'
 - en: ''
+  id: totrans-18
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 1\. [What are Warm Pools?](#5fb3)
+  id: totrans-19
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 1\. [什么是温暖池？](#5fb3)
 - en: ''
+  id: totrans-20
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 2\. [End-to-end SageMaker Pipeline](#9b0f)
+  id: totrans-21
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 2\. [端到端SageMaker管道](#9b0f)
 - en: ''
+  id: totrans-22
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 3\. [What happens inside the Tuning step?](#66e1)
+  id: totrans-23
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 3\. [调优步骤内部发生了什么？](#66e1)
 - en: ''
+  id: totrans-24
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 4\. [What do we get out of using Warm Pools?](#7360)
+  id: totrans-25
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 4\. [使用温暖池有什么好处？](#7360)
 - en: ''
+  id: totrans-26
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 5\. [Summary](#2c90)
+  id: totrans-27
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 5\. [总结](#2c90)
 - en: 1\. What are Warm Pools?
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 1\. 什么是温暖池？
 - en: Whenever a training job is launched in AWS, the provisioned instance takes roughly
     3min to bootstrap before the training script is executed. This startup time adds
     up when running multiple jobs sequentially, which is the case when performing
@@ -131,112 +168,163 @@
     even hundreds of jobs are run in sequence leading to a significant total time
     that can be on par with or even higher than the actual execution times of the
     scripts.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 每当在AWS中启动训练任务时，预配实例在执行训练脚本之前大约需要3分钟来引导。这种启动时间在顺序运行多个任务时会累积，这在使用贝叶斯优化策略进行超参数调优时尤其明显。在这种情况下，数十个甚至数百个任务被顺序运行，导致总时间显著增加，这可能与脚本的实际执行时间相当，甚至更高。
 - en: '[SageMaker Managed Warm Pools](https://aws.amazon.com/about-aws/whats-new/2022/09/reduce-ml-model-training-job-startup-time-8x-sagemaker-training-managed-warm-pools/)
     make it possible to retain training infrastructure after a job is completed for
     a desired number of seconds, enabling saving the instance startup time for every
     subsequent job.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '[SageMaker托管温暖池](https://aws.amazon.com/about-aws/whats-new/2022/09/reduce-ml-model-training-job-startup-time-8x-sagemaker-training-managed-warm-pools/)使得在任务完成后保留训练基础设施成为可能，从而为每个后续任务节省实例启动时间。'
 - en: 'Enabling Warm Pools is straightforward. You simply add an extra parameter (`keep_alive_period_in_seconds`)
     when creating a training job in SageMaker:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 启用温暖池是直接的。你只需在创建SageMaker训练任务时添加一个额外的参数（`keep_alive_period_in_seconds`）：
 - en: '[PRE0]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'If you want to learn more about SageMaker Managed Warm Pools, here is the documentation:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想了解更多关于SageMaker托管温暖池的信息，这里是文档：
 - en: '[## Train Using SageMaker Managed Warm Pools'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 使用SageMaker托管温暖池进行训练'
 - en: SageMaker Managed Warm Pools let you retain and reuse provisioned infrastructure
     after the completion of a training job…
+  id: totrans-35
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: SageMaker托管温暖池使你能够在训练任务完成后保留和重用预配的基础设施…
 - en: docs.aws.amazon.com](https://docs.aws.amazon.com/sagemaker/latest/dg/train-warm-pools.html?source=post_page-----d2b4095412eb--------------------------------)
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '[docs.aws.amazon.com](https://docs.aws.amazon.com/sagemaker/latest/dg/train-warm-pools.html?source=post_page-----d2b4095412eb--------------------------------)'
 - en: Now that we know what are Warm Pools, in [Section 2](#9b0f) we are going to
     dive deep into how to leverage them to speed-up the overall runtime of a SageMaker
     Pipeline that includes hyperparameter tuning with cross-validation.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们了解了什么是温暖池，在[第2节](#9b0f)中，我们将深入探讨如何利用它们来加速包含交叉验证的SageMaker管道的整体运行时间。
 - en: 2\. End-to-end SageMaker Pipeline
+  id: totrans-38
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 2\. 端到端SageMaker管道
 - en: The following figure depicts an end-to-end SageMaker Pipeline that performs
     hyperparameter tuning with cross-validation.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 下图展示了一个端到端的SageMaker管道，该管道通过交叉验证进行超参数调优。
 - en: '![](../Images/fb9e36cdf54d270bfa876e123c87e0b4.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fb9e36cdf54d270bfa876e123c87e0b4.png)'
 - en: Architecture diagram of the end-to-end SageMaker Pipeline.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 端到端SageMaker管道的架构图。
 - en: 'We will create the pipeline using the [SageMaker Python SDK](https://sagemaker.readthedocs.io/en/stable/),
     which is an open-source library that simplifies the process of training, tuning,
     and deploying machine learning models in AWS SageMaker. The pipeline steps in
     the diagram are summarized as follows:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用[SageMaker Python SDK](https://sagemaker.readthedocs.io/en/stable/)来创建管道，这是一个开源库，简化了在AWS
+    SageMaker中训练、调优和部署机器学习模型的过程。图中的管道步骤总结如下：
 - en: '**Data Preprocessing(**`ProcessingStep`**) —** Data is retrieved from the source,
     transformed, and split into *k* cross-validation folds. An additional full dataset
     is saved for final training.'
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**数据预处理（**`ProcessingStep`**）—** 数据从源中检索，转化，并划分为 *k* 个交叉验证折叠。一个额外的完整数据集被保存用于最终训练。'
 - en: '**Hyperparameter Tuning With CV(**`TuningStep`**) —** This is the step that
     we will concentrate on. It finds the combination of hyperparameters that achieves
     the best average performance across validation folds.'
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**超参数调优与交叉验证（**`TuningStep`**）—** 这是我们将重点关注的步骤。它找到在验证折中实现最佳平均性能的超参数组合。'
 - en: '**Optimal Hyperparameters Retrieval(**`LambdaStep`**) —** Fires a *Lambda*
     function that retrieves the optimal set of hyperparameters by accessing the results
     of the hyperparameter tuning job using *Boto3*.'
+  id: totrans-45
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**最佳超参数检索（**`LambdaStep`**）—** 触发一个*Lambda*函数，通过访问超参数调优作业的结果来检索最佳超参数集，使用 *Boto3*。'
 - en: '**Final Training(**`TrainingStep`**) —** Trains the model on the full dataset
     `train_full.csv` with the optimal hyperparameters.'
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**最终训练（**`TrainingStep`**）—** 使用最佳超参数在完整数据集 `train_full.csv` 上训练模型。'
 - en: '**Model Registration (**`ModelStep`**) —** Registers the final trained model
     in the SageMaker Model Registry.'
+  id: totrans-47
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**模型注册（**`ModelStep`**）—** 将最终训练好的模型注册到 SageMaker 模型注册表中。'
 - en: '**Inference (**`TransformStep`**) —** Generates predictions using the registered
     model.'
+  id: totrans-48
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**推理（**`TransformStep`**）—** 使用注册的模型生成预测结果。'
 - en: Please find detailed documentation on how to implement these steps on the [SageMaker
     Developer Guide](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html).
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 请在[SageMaker 开发者指南](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html)中查找有关如何实现这些步骤的详细文档。
 - en: 3\. What happens inside the Tuning step?
+  id: totrans-50
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 3\. 调优步骤内部发生了什么？
 - en: 'Let''s now dig deeper into the **pipeline step 2** that iteratively tries and
     cross-validates multiple hyperparameter combinations in parallel and in sequence.
     The solution is represented in the following diagram:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们来深入探讨**管道步骤 2**，该步骤迭代地并行和顺序地尝试和交叉验证多个超参数组合。该解决方案在下图中表示：
 - en: '![](../Images/82a6c6ada9427d721d1e193e628e4d1f.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/82a6c6ada9427d721d1e193e628e4d1f.png)'
 - en: Architecture diagram of the hyperparameter tuning with cross-validation step.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 超参数调优与交叉验证步骤的架构图。
 - en: The solution relies on SageMaker Automatic Model Tuning to create and orchestrate
     the training jobs that test multiple hyperparameter combinations. The Automatic
     Model Tuning job can be launched using the `HyperparameterTuner` available in
@@ -246,8 +334,10 @@
     Each of these jobs launches and monitors a set of *K* cross-validation jobs. At
     each tuning round, *M*x*K* instances in a Warm Pool are **retained for the next
     round**. In the subsequent rounds there is no instance startup time.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 该解决方案依赖于 SageMaker 自动模型调优来创建和协调测试多个超参数组合的训练作业。可以使用[SageMaker Python SDK](https://sagemaker.readthedocs.io/en/stable/)中的`HyperparameterTuner`启动自动模型调优作业。它创建了*M*x*N*个超参数调优训练作业，其中*M*个作业在*N*个顺序轮次中并行运行，逐步搜索最佳超参数。每个作业启动并监控一组*K*交叉验证作业。在每个调优轮次中，*M*x*K*个实例会**保留到下一轮**。在随后的轮次中，没有实例启动时间。
 - en: SageMaker's `HyperparameterTuner` already makes use of Warm Pools as announced
     on the [AWS News Blog](https://aws.amazon.com/about-aws/whats-new/2022/08/amazon-sagemaker-automatic-model-tuning-reuses-sagemaker-training-instances-reduce-start-up-overheads/).
     However, the cross-validation training jobs that are created in each tuning job
@@ -255,21 +345,31 @@
     created and monitored**, **and the provisioned** **instances are not kept in a
     Warm Pool**. Each hyperparameter tuning training job will only finish when all
     the underlying cross-validation training jobs have completed.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: SageMaker 的 `HyperparameterTuner` 已经利用了 Warm Pools，正如在[AWS 新闻博客](https://aws.amazon.com/about-aws/whats-new/2022/08/amazon-sagemaker-automatic-model-tuning-reuses-sagemaker-training-instances-reduce-start-up-overheads/)中所宣布的那样。然而，每个调优作业中创建的交叉验证训练作业
+    — 交叉验证特定的超参数组合 — 需要**手动创建和监控**，**且配置的** **实例不会保留在 Warm Pool 中**。每个超参数调优训练作业仅在所有基础的交叉验证训练作业完成后才会完成。
 - en: 'To bring the architecture above to life and enable Warm Pools for **all** training
     jobs, we need to create three main scripts: `pipeline.py`, `cross_validation.py`,
     and `training.py`:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使上述架构生效并为**所有**训练作业启用 Warm Pools，我们需要创建三个主要脚本：`pipeline.py`、`cross_validation.py`和`training.py`：
 - en: '`**pipeline.py**` **script —** Defines the SageMaker Pipeline steps described
     in [Section 2](#9b0f), which includes SageMaker''s `HyperparameterTuner`:'
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`**pipeline.py**` **脚本 —** 定义了在 [第 2 节](#9b0f) 中描述的 SageMaker Pipeline 步骤，包括
+    SageMaker 的 `HyperparameterTuner`：'
 - en: '[PRE1]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '`**cross_validation.py**` **script** — Serves as entry point of SageMaker''s
     `HyperparameterTuner`. It launches multiple cross-validation training jobs. It
     is inside this script that the `keep_alive_period_in_seconds` parameter has to
@@ -278,114 +378,169 @@
     value enables easy reading of that metric using *Regex* by the `HyperparameterTuner`
     (as in the code snippet above). This metric is going to be tagged to each combination
     of hyperparameters.'
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`**cross_validation.py**` **脚本**——作为 SageMaker 的 `HyperparameterTuner` 的入口点。它启动多个交叉验证训练任务。在调用
+    SageMaker 训练任务 API 时，必须在此脚本中指定 `keep_alive_period_in_seconds` 参数。该脚本计算并记录所有验证折的平均验证得分。记录这些值使得
+    `HyperparameterTuner` 可以通过 *Regex* 轻松读取该指标（如上述代码片段所示）。该指标将标记到每个超参数组合中。'
 - en: '**Tip:** Add a small delay, i.e., a few seconds, between the calls to the SageMaker
     APIs that create and monitor the training jobs to prevent the“Rate Exceeded” error,
     as in the example:'
+  id: totrans-60
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**提示：** 在调用创建和监控训练任务的 SageMaker API 之间添加几秒钟的小延迟，以防止“超出速率”错误，如示例所示：'
 - en: '[PRE2]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '**Tip:** [Disable the debugger profiler](https://docs.aws.amazon.com/sagemaker/latest/dg/debugger-turn-off.html)
     when launching your SageMaker training jobs. These profiler instances will be
     as many as the training instances and can make the overall cost increase significantly.
     You can do so by simply setting `disable_profiler=True`in the Estimator definition.'
+  id: totrans-62
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**提示：** [启动 SageMaker 训练任务时禁用调试器分析器](https://docs.aws.amazon.com/sagemaker/latest/dg/debugger-turn-off.html)。这些分析器实例将与训练实例数量相同，并且可能显著增加总体成本。你可以通过在
+    Estimator 定义中简单地设置 `disable_profiler=True` 来实现。'
 - en: '`**training.py**`**script** — Trains a model on a given input training set.
     The hyperparameters being cross-validated are passed as arguments of this script.'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`**training.py**`**脚本**——在给定的输入训练集上训练模型。交叉验证的超参数作为此脚本的参数传递。'
 - en: '**Tip:** Write a general-purpose `*training.py*`script and reuse it for training
     the model on cross-validation sets and for training the final model with the optimal
     hyperparameters on the full training set.'
+  id: totrans-64
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**提示：** 编写一个通用的 `*training.py*` 脚本，并在交叉验证集上训练模型以及在整个训练集上使用最佳超参数训练最终模型时重用它。'
 - en: To control each parallel cross-validation set of jobs, as well as to compute
     a final validation metric for each specific hyperparameter combination tested,
     there are several custom functions that have to be implemented inside the `cross_validation.py`
     script. [This example](https://github.com/aws-samples/sagemaker-cross-validation-pipeline)
     provides good inspiration, even though it does not enable Warm Pools or Lambda.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 要控制每个并行交叉验证任务集，以及为每个特定超参数组合计算最终验证指标，需要在 `cross_validation.py` 脚本中实现几个自定义函数。[这个示例](https://github.com/aws-samples/sagemaker-cross-validation-pipeline)
+    提供了很好的灵感，尽管它未启用 Warm Pools 或 Lambda。
 - en: How many jobs are created in total?
+  id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 总共创建了多少任务？
 - en: '*M* x *N* x *(K+1)* jobs. Why?'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '*M* x *N* x *(K+1)* 任务。为什么？'
 - en: '*M* x *N* hyperparameter tuning training jobs — M in parallel and N in sequence
     — matches the number of hyperparameter combinations.'
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*M* x *N* 超参数调整训练任务——M 个并行和 N 个串行——匹配超参数组合的数量。'
 - en: '*K* parallel cross-validation jobs *per* hyperparameter tuning training job
     + 1 (the hyperparameter tuning training job itself).'
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个超参数调整训练任务的 *K* 个并行交叉验证任务 + 1（超参数调整训练任务本身）。
 - en: If we have **5** validation folds, run **4** hyperparameter tuning training
     jobs in parallel and **120** in sequence, then the **total number of jobs will
     be 2880**.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们有 **5** 个验证折，运行 **4** 个超参数调整训练任务并行和 **120** 个串行，那么 **任务总数将是 2880**。
 - en: '**Important:** Make sure that you have all the required service quotas in place
     for the instance types that you are using. Check the AWS guides to understand
     how to set these quotas for both [Warm Pools](https://docs.aws.amazon.com/sagemaker/latest/dg/train-warm-pools.html#train-warm-pools-resource-limits)
     and [Automatic Model Tuning](https://docs.aws.amazon.com/sagemaker/latest/dg/automatic-model-tuning-limits.html).'
+  id: totrans-71
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**重要：** 确保你拥有所使用的实例类型所需的所有服务配额。查看 AWS 指南以了解如何为 [Warm Pools](https://docs.aws.amazon.com/sagemaker/latest/dg/train-warm-pools.html#train-warm-pools-resource-limits)
+    和 [自动模型调整](https://docs.aws.amazon.com/sagemaker/latest/dg/automatic-model-tuning-limits.html)
+    设置这些配额。'
 - en: 4\. What do we get out of using Warm Pools?
+  id: totrans-72
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 4\. 我们从使用 Warm Pools 中得到什么？
 - en: 'Let''s say we want to run N=120 sequential training jobs and that the startup
     time of the instances is 3min and that training takes 2min to run (5min per job).
     This means that the total runtime is approximately:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们想要运行 N=120 个顺序训练任务，并且实例的启动时间为 3 分钟，训练时间为 2 分钟（每个任务 5 分钟）。这意味着总运行时间大约为：
 - en: '*Without* Warm Pools: 5min x 120 jobs = **10h**'
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*没有* Warm Pools：5分钟 x 120个任务 = **10小时**'
 - en: '*With* Warm Pools: 5min x 1 job + 2min x 119 jobs ≈ **4h**'
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*有* Warm Pools：5分钟 x 1个任务 + 2分钟 x 119个任务 ≈ **4小时**'
 - en: '**This means that with Warm Pools the process takes 60% less time!**'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '**这意味着使用 Warm Pools 过程的时间减少了 60%！**'
 - en: 5\. Summary
+  id: totrans-77
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 5\. 总结
 - en: In this article, I showed how we can leverage Warm Pools to significantly speed-up
     hyperparameter tuning with cross-validation in SageMaker Pipelines. Warm Pools
     are a great feature of SageMaker that not only enables more efficient production
     pipelines, but also faster iterations in experiments. At the moment, SageMaker
     Managed Warm Pools have been integrated in SageMaker Training, but not in SageMaker
     Processing.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我展示了如何利用 Warm Pools 显著加快 SageMaker Pipelines 中的超参数调优。Warm Pools 是 SageMaker
+    的一个很棒的功能，它不仅使生产流水线更加高效，还加快了实验的迭代。目前，SageMaker 管理的 Warm Pools 已经集成到 SageMaker Training
+    中，但尚未集成到 SageMaker Processing。
 - en: — João Pereira
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: — 若昂·佩雷拉
 - en: '*Thank you for reading. Hope this article helps you scaling hyperparameter
     tuning in SageMaker. If you would like to read my future articles, please* [*follow
     me*](https://medium.com/@joao.pereira.abt/subscribe)*. Feedback is highly appreciated!
     Leave a comment below if you have any questions or reach out to me directly* [***by
     email***](mailto:mail@joao-pereira.pt) *or in* [***LinkedIn***](https://www.linkedin.com/in/jpcpereira/)*.*'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '*感谢阅读。希望这篇文章能帮助你在 SageMaker 中扩展超参数调优。如果你想阅读我未来的文章，请* [*关注我*](https://medium.com/@joao.pereira.abt/subscribe)*。非常感谢反馈！如果有任何问题，请在下方留言或直接联系我*
+    [***通过电子邮件***](mailto:mail@joao-pereira.pt) *或在* [***LinkedIn***](https://www.linkedin.com/in/jpcpereira/)*上联系我。*'
 - en: '*All images unless otherwise noted are by the author.*'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '*除非另有说明，所有图片均由作者提供。*'
