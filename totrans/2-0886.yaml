@@ -223,11 +223,13 @@
   id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 大部分情况下，我们将关注由单个英文句子组成的文档。我们可以想象，这些句子语料库是通过使用 NLP 将较长文档分割成句子从较长的文档语料库中得出的。也就是说，我们讨论的方法同样适用于更长的多句文档。只是对单句文档的描述更为方便。
 - en: In this post, we will describe a method that is conceptually simple to understand,
     simple to implement, and fast during training and inference.
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将描述一种概念上简单易懂、实现简单且在训练和推断过程中速度较快的方法。
 - en: That said, its scope is limited to filling in blanks in a single masked-off
     region, whether it be on the left tail, the right tail, or in the middle. A large
     language model could fill in blanks in multiple masked-off regions. Moreover,
@@ -236,22 +238,26 @@
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 也就是说，它的范围仅限于填补单个遮罩区域的空白，无论是在左尾、右尾还是中间。大型语言模型可以填补多个遮罩区域的空白。此外，LLM 通常会更准确，尤其是在长序列上，如完整段落或甚至整页文本。
 - en: '**The Method**'
   id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '**方法**'
 - en: Our method will comprise two tries, a forward trie, and a backward trie, fused
     together in a particular way. We will call this data structure a forward-backward
     trie (FB-Trie).
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的方法将包括两个 tries，一个前向 trie 和一个后向 trie，以特定的方式融合在一起。我们将这种数据结构称为前向-后向 trie（FB-Trie）。
 - en: We will use the following example to illustrate the forward-backward trie data
     structure. Imagine that we have just two sentences in our training set to build
     the trie.
   id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用以下示例来说明前向-后向 trie 数据结构。假设我们的训练集中只有两个句子来构建 trie。
 - en: '[PRE1]'
   id: totrans-37
   prefs: []
@@ -261,24 +267,29 @@
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们看看普通的前向 Trie。
 - en: '![](../Images/e89c30bc4a0035dfb07eba8f6e495aac.png)'
   id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e89c30bc4a0035dfb07eba8f6e495aac.png)'
 - en: 'Figure 1 (By Author): Forward Trie On Our Data'
   id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 1（作者提供）：我们的数据上的前向 Trie
 - en: This Trie just captures the two sequences of words on the two root-to-leaf paths
     shown.
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个 Trie 只捕捉了两个根到叶子的路径上显示的两个单词序列。
 - en: A node in the Trie implicitly represents the sequence of words in the root-to-node
     path that ends there.
   id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: Trie 中的一个节点隐式地表示在根到节点路径中以该节点结尾的单词序列。
 - en: Let’s fill in an important detail that was not depicted in Figure 1\. A node
     stores the number of sequences in the training set whose prefix matches it. So
     the root node in our example will store 2 since there are two sequences in our
@@ -288,38 +299,48 @@
   id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们填补图 1 中未显示的重要细节。一个节点存储训练集中前缀与其匹配的序列数量。因此，在我们的示例中，根节点将存储 2，因为我们的训练集中有两个序列。假设有一个更丰富的训练集，表示
+    [*work*, *causes*] 的节点将存储 15，如果有这么多的序列以 *work causes* 开头的话。
 - en: Let *i* denote a node and *n*(i) the count on it. Let *j* denote a child of
     *i*. The probability of taking the arc from *i* to *j* is *n*(*j*)/*n*(*i*) which
     we will refer to as *P*(*i*, *j*).
   id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 令 *i* 表示一个节点，*n*(i) 表示它的计数。令 *j* 表示 *i* 的一个子节点。从 *i* 到 *j* 的弧的概率是 *n*(*j*)/*n*(*i*)，我们将其称为
+    *P*(*i*, *j*)。
 - en: From this Trie, we can fill in a single blank on the right tail if there is
     a high-probability extension in an obvious way. Let’s illustrate this with examples.
   id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这个 Trie 中，如果存在明显的高概率扩展，我们可以在右尾填补单个空白。让我们通过示例来说明这一点。
 - en: Consider *work ____.* Wewouldn’t fill in the blanks as we can imagine that there
     are many different sentences that begin with *work*. If on the other hand, we
     had *work causes* ___*,* filling in the blank with stress would be more reasonable*.*
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑 *work ____*。我们不会填补这些空白，因为我们可以想象有很多不同的句子以 *work* 开头。另一方面，如果我们有 *work causes*
+    ___*，*用 stress 填补空白将更为合理*。
 - en: '**Filling In Blanks On The Left Tail**'
   id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '**填补左尾的空白**'
 - en: What if the fill-in-the-blank query was ___ *causes stress*? To extend our model
     to answer such queries, we’ll add a backward Trie.
   id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果填空查询是 ___ *causes stress* 呢？为了扩展我们的模型以回答这种查询，我们将添加一个后向 Trie。
 - en: The backward Trie is the trie we would get if we reversed the sequences in our
     training set. Its structure is the same as that of the forward trie (Fig 1). It
     also includes counts on its nodes.
   id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 后向 Trie 是如果我们反转训练集中序列而得到的 trie。它的结构与前向 trie 相同（图 1）。它还包括节点上的计数。
 - en: Left tail blanks can now be filled in (when possible) by following the same
     inference procedure, except that we look up the backward Trie on the reversed
     version of the sequence in which blanks have to be filled in.
@@ -467,15 +488,18 @@
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，由于我们有两个字典树——一个前向字典树和一个反向字典树。此外，我们还有桥接边。
 - en: In this post, we take the viewpoint that the size of the model in itself is
     not a concern. State-of-the-art technologies easily accommodate huge models.
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们认为模型的大小本身不是问题。最先进的技术可以轻松容纳巨大的模型。
 - en: The more interesting question is how long it takes to train the model.
   id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 更有趣的问题是训练模型需要多长时间。
 - en: First of all, the training can be incremental. That is, a new sequence can be
     added to the FB-Trie at any time. As it turns out, training in fact is very fast.
     This is because (i) it's fast to insert a new sequence into the forward trie and
@@ -485,10 +509,12 @@
   id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，训练可以是增量的。也就是说，可以随时向FB-Trie添加新序列。事实证明，训练实际上非常快速。这是因为（i）将新序列插入前向字典树及其逆序到反向字典树是很快的，和（ii）枚举所有这些序列的分裂，进行查找以发现要桥接的节点，并添加各种桥接边也是很快的。
 - en: '**Illustrating Filling-In-The-Blanks Using The Forward-Backward Trie**'
   id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使用前向-反向字典树填充空白的说明**'
 - en: Let’s illustrate this for *work __ stress*. First, we look up the forward trie
     to find the node, call it *u*, at which [*work*] ends. Then we look up the backward
     trie to find the node, call it *v*, at which [*stress*] ends. Next, we walk over
@@ -501,24 +527,30 @@
   id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用*work __ stress*来说明这一点。首先，我们查找前向字典树中的节点，称之为*u*，这是[*work*]结束的地方。接着我们查找反向字典树中的节点，称之为*v*，这是[*stress*]结束的地方。然后，我们沿着从反向字典树到前向字典树的桥接边走。接着，我们沿着[
+    *work*, *causes* ]在前向弧中的父节点走，最终到达[*work*]。现在我们在两个方向上都到达了相同的节点。在这个过程中我们沿着父弧走的标签序列，经过反转之后，将成为空白的值。在我们的示例中，我们只走了一条反向弧，这条弧标记为*causes*。所以我们的答案是*“causes”*。
 - en: '**Inference: A More General Description**'
   id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '**推断：更一般的描述**'
 - en: In our *work __ stress* example, the blank had a unique solution. In the general
     case, *L* __ *R,* there may be multiple solutions*.*
   id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的*work __ stress*示例中，空白有一个唯一的解决方案。在一般情况下，*L* __ *R*，可能会有多个解决方案*。
 - en: (We’ve switched terminology slightly because it will be helpful in this section.
     L and R are token sequences, not strings.)
   id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: （我们略微调整了术语，因为在本节中会有所帮助。L和R是标记序列，而不是字符串。）
 - en: Below we discuss how to treat the general case.
   id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面我们讨论如何处理一般情况。
 - en: First, we look up the largest prefix of L, call it L’, in the forward trie.
     Next, we look up the largest suffix of R, call it R’, using the backward trie.
     Let *u* denote the node that L’ ends at in the forward trie and *v* the node that
@@ -526,24 +558,29 @@
   id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们在前向字典树中查找L的最大前缀，称之为L'。接着，我们在反向字典树中查找R的最大后缀，称之为R'。让*u*表示前向字典树中L'结束的节点，*v*表示反向字典树中R'的逆序结束的节点。
 - en: This situation is depicted below.
   id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种情况如下图所示。
 - en: '![](../Images/0ea12264b8dd2b4c9dd51f0790753e84.png)'
   id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0ea12264b8dd2b4c9dd51f0790753e84.png)'
 - en: 'Figure 4 (By Author): Inference in the general — multiple solutions — case'
   id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4（作者提供）：一般推断——多解情况
 - en: Since v is not a leaf in the backward trie — otherwise there is no blank to
     fill in —there must be at least one bridge edge touching *v*, as depicted in the
     callout in Figure 4.
   id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于v在反向字典树中不是叶子节点——否则就没有空白可以填充——因此必须至少有一条桥接边接触到*v*，如图4中的标注所示。
 - en: Consider any one such bridge edge and let *w* denote the node in the forward
     trie at its other end. We follow the parent arcs in the forward trie in sequence,
     starting from *w*. We stop when we first arrive on a node, call it *x,* that is
@@ -552,11 +589,13 @@
   id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑任何一条这样的桥接边，并让*w*表示在前向字典树另一端的节点。我们按照前向字典树中的父弧顺序跟踪，从*w*开始。当我们首次到达一个节点，称之为*x*，这个节点位于前向字典树中的路径L'上时，我们停止。这种情况总是会发生（见下一段）。
 - en: The best-case scenario is that *x* equals *v*. The worst-case scenario is that
     *x* is the forward trie’s root.
   id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 最佳情况是*x*等于*v*。最坏情况是*x*是前向字典树的根。
 - en: Reversing the sequence of labels on the path from *w* to *x* yields one solution
     to this inference. More accurately, this solution is for fill-in-the-blanks problem
     *L’’* __ *R’,* which may be (much) wider than the problem *L* __ *R* we started
